@@ -246,8 +246,10 @@ ok('M14: SplashMark routes Machina to MachinaMark (the WRIZ[] wordmark, IDEAS / 
 ok('M14: the splash mark has a still state (reduced motion: the closed strip at once) and a floor trigger', /if \(reduced\) \{[\s\S]*?classList\.add\('closed'\)[\s\S]*?onFloorReached\(\);[\s\S]*?return;/.test(sm) && /window\.setTimeout\(onFloorReached, closeAt \+ 700\)/.test(sm), '');
 // M15 - the Run strip: Machina's own instrument, the gate Flux's Glitch uses, one celebration, sparks NEUTRAL only
 const rs = src('components/RunStrip.tsx');
-ok('M15: Run is gated on Machina + the instruments + Progress: Words + the Rhizome|Glitch|Run slot + a goal (the same gate as Flux\'s Glitch), and is mounted beside GlitchMeter on the framed page only',
-  /theme === 'machina' && settings\.instrumentsOn && settings\.progress === 'words' && settings\.progressStyle === 'rhizome' && goal != null && n > 0/.test(rs) && /\{glitch && <RunStrip text=\{text\} \/>\}/.test(src('components/DeskInstrument.tsx')), '');
+// SUPERSEDED (Fable, Oct 23: "under Machina the Run strip is the ONLY progress instrument"): this check used to require the Rhizome|Glitch|Run style slot
+// (`settings.progressStyle === 'rhizome'`) as part of the gate; Run no longer sits behind a style choice - successor below (the gate WITHOUT the slot, and M19).
+ok('M15: Run is gated on Machina + the instruments + Progress: Words + a goal - NOT on the style slot (it is Machina\'s only instrument) - and is mounted beside GlitchMeter on the framed page only',
+  /theme === 'machina' && settings\.instrumentsOn && settings\.progress === 'words' && goal != null && n > 0/.test(rs) && !/progressStyle/.test(rs.replace(/\/\/.*$/gm, '')) && /\{glitch && <RunStrip text=\{text\} \/>\}/.test(src('components/DeskInstrument.tsx')), '');
 ok('M15: twenty units; ONE celebration - the closed strip - and the sparks (eight ticks) appear ONLY under NEUTRAL and only when motion is welcome',
   /const UNITS = 20;/.test(rs) && /const sparks = celebrating && cast === 'neutral' && !still;/.test(rs) && /BURST_ANGLES = \[-90, -64, -38, -12, 12, 38, 64, 90\]/.test(rs) && /still = prefersReducedMotion\(\) \|\| dial === 0/.test(rs), '');
 ok('M15: the lap reuses useGoalProgress (one celebration grammar) and nothing in RunStrip is random', /useGoalProgress\(count, n\)/.test(rs) && !/Math\.random/.test(rs), '');
@@ -273,6 +275,13 @@ const EMBER = [
   /\[data-theme='machina'\] \.desk-frame-goalflare\{ display:none; \}/,
 ];
 ok('M18: the paper\'s resting and focused halos are plain dark shadows, the goal glow is dialled (the cap token) and recoloured to the live gray, and the celebration flare is not drawn - under Machina only', EMBER.every((r) => r.test(ccss)) && /\[data-theme='machina'\] \.wz-goal-glow\{ background:radial-gradient\(ellipse at center, color-mix\(in srgb, var\(--signal-live\)/.test(ccss), JSON.stringify(EMBER.map((r) => r.test(ccss))));
+
+// M19 - Run is the ONLY progress instrument under Machina: the framed page draws no Arbor bar, and the style choice (Bar | Run) is not offered in either settings surface
+const di = src('components/DeskInstrument.tsx');
+const BAR_GATE = /\{settings\.progressStyle === 'bar' && theme !== 'machina' && \(\s*<ProgressBar/;
+ok('M19: the framed page draws Arbor\'s bar only when the theme is not Machina (DeskInstrument) - the legacy surfaces\' bars (ModeStage / JournalEntry) are untouched', BAR_GATE.test(di) && /<ProgressBar/.test(src('pages/JournalEntry.tsx')), '');
+const SEG_GATES = [[/settings\.progress === 'words' && theme !== 'machina' && \(\s*<Seg label=\{t\('progressStyleLabel'\)\}/, src('components/Sliver.tsx')], [/framed && settings\.progress === 'words' && !machina;/, src('components/ModeStage.tsx')]];
+ok('M19: the Progress style choice is not offered under Machina - neither in the Sliver nor in the gear panel (one instrument, nothing to choose between)', SEG_GATES.every(([r, t]) => r.test(t)), JSON.stringify(SEG_GATES.map(([r, t]) => r.test(t))));
 
 // ---------------------------------------------------------------- MUTANTS
 const mutantCss = (mutate, asserts) => { const m = mutate(css); return m !== css && asserts(m); };
@@ -310,6 +319,8 @@ ok('MUTANT: a Machina desk string re-introducing "Drawer" - M8 must go RED', LEA
   const CASTGATE = /\{theme === 'machina' && \(\s*<div className="wz-cascade-row wz-cascade-cast"/;
   const cp2 = mut(cp, "{theme === 'machina' && (\n        <div className=\"wz-cascade-row wz-cascade-cast\"", '{(\n        <div className="wz-cascade-row wz-cascade-cast"');
   ok('MUTANT: the CAST row drawn under every theme (the Machina gate dropped) - M17 must go RED (the mutation LANDED)', cp2 !== null && !CASTGATE.test(cp2) && CASTGATE.test(cp), '');
+  const di2 = mut(di, "settings.progressStyle === 'bar' && theme !== 'machina' && (", "settings.progressStyle === 'bar' && (");
+  ok('MUTANT: Arbor\'s bar drawn on the framed Machina page again (the theme gate dropped) - M19 must go RED (the mutation LANDED)', di2 !== null && !BAR_GATE.test(di2) && BAR_GATE.test(di), '');
   const css2 = mut(ccss, "[data-theme='machina'] .desk-frame-goalflare{ display:none; }", '');
   ok('MUTANT: Arbor\'s celebration flare left drawn under Machina (the display:none rule deleted) - M18 must go RED (the mutation LANDED)', css2 !== null && !EMBER.every((r) => r.test(css2)) && EMBER.every((r) => r.test(ccss)), '');
   const GLYPH = /\{theme === 'machina' \? '◂' : '↩'\}/;

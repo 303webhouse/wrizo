@@ -9,6 +9,9 @@ import { useGoalProgress } from './WritingIncentives';
 // Machina-only" - each theme has its own: Arbor the rhizome, Flux Glitch, Machina Run). It is the REPLACEMENT for the thin sprint bar under Machina, the way GlitchMeter is under Flux:
 // the same gate (the framed page's lane, Progress: Words, the Rhizome|Glitch|Run style slot, a goal set), the same lap grammar (useGoalProgress - one celebration grammar, canon §9).
 //
+// THE ONLY INSTRUMENT (Fable, Oct 23): under Machina Run is the sole progress instrument, so it is NOT behind the Bar|Rhizome|Run style slot - a writer on the default style ("bar") gets Run, and the
+// Sliver's style choice is not offered under this theme (there is nothing to choose between). Arbor's thin bar is not drawn on the framed page (DeskInstrument.tsx).
+//
 // WHAT IT DRAWS (the mockup, verbatim in shape): twenty identical units, each one-twentieth of the goal's lap. A finished unit is gray (--signal-live), an unfinished one the line tone,
 // and the unit in progress carries a 3 x 16 px ORANGE NOTCH on its left edge. The count reads once, after the bar ("430 / 1000" - the lap's own count over the goal). At the goal the
 // WHOLE strip goes orange (a .35s colour crossfade, the foundations' fill handoff) and the notch stays on the last unit; then the lap resets for the next. Orange is scarce: the notch,
@@ -29,7 +32,7 @@ export function RunStrip({ text }: { text: string }) {
   const n = goal?.n ?? 0;
   const count = goal ? goalCount(text, goal) : 0;
   const { frac, celebrating } = useGoalProgress(count, n);
-  const active = theme === 'machina' && settings.instrumentsOn && settings.progress === 'words' && settings.progressStyle === 'rhizome' && goal != null && n > 0;
+  const active = theme === 'machina' && settings.instrumentsOn && settings.progress === 'words' && goal != null && n > 0;
   if (!active) return null;
 
   const done = celebrating ? UNITS : Math.min(UNITS, Math.floor(frac * UNITS));

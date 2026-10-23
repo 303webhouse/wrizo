@@ -751,6 +751,7 @@ function AssistIcon() {
 // that does nothing one click deeper.
 export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvailable = true }: { settings: { progress: ProgressMetric; fadeDepth: FadeDepth; timer: boolean; typewriter: boolean; progressStyle: ProgressStyle }; hasMilestones?: boolean; framed?: boolean; typewriterAvailable?: boolean }) {
   const { t: deskLex } = useDeskLexicon();
+  const machina = useTheme() === 'machina';
   const progressOpts: [string, string][] = [['words', 'Words'], ['time', 'Time'], ['off', 'Off']];
   // B2.1 S6 — the DISPLAY label only ("Project" -> "Drawer"); the stored
   // ProgressMetric value itself ('project', the setting persisted via
@@ -761,7 +762,8 @@ export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvail
   // 'Lines'/'Words'/'Time' are deliberately inline here, not per-option
   // lexicon keys).
   if (hasMilestones) progressOpts.splice(2, 0, ['project', 'Drawer']);
-  const showProgressStyle = !!framed && settings.progress === 'words';
+  // MACHINA has ONE progress instrument (Run), so the style choice is not offered under it.
+  const showProgressStyle = !!framed && settings.progress === 'words' && !machina;
   return (
     <div className="mode-settings" role="menu">
       <h4>settings</h4>

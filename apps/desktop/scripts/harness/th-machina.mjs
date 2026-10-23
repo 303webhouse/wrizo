@@ -27,12 +27,12 @@ const words = (n) => Array.from({ length: n }, (_, i) => ['rain', 'wire', 'neon'
 const RESOLVE = `window.__wzResolve = (v) => { const p = document.createElement('i'); p.style.color = 'var(' + v + ')'; document.body.appendChild(p); const c = getComputedStyle(p).color; p.remove(); return c; }`;
 const token = (app, v) => app.evalJs(`(${RESOLVE}, window.__wzResolve(${JSON.stringify(v)}))`);
 
-const boot = async (app, { theme = 'machina', cast = 'cool', page = 'dark', dial = 50, goal = 10, instruments = true, splash = false } = {}) => {
+const boot = async (app, { theme = 'machina', cast = 'cool', page = 'dark', dial = 50, goal = 10, instruments = true, splash = false, style = 'rhizome' } = {}) => {
   await app.emulateDpr(1, 1400, 900);   // framed (the Run strip lives on the framed desk, like Glitch)
   await app.goto('/');
   await app.evalJs(`localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4');
     ${splash ? '' : "localStorage.setItem('wrizo-splash-hold','50');"}
-    localStorage.setItem('wrizo-writing-settings', JSON.stringify({ progress: 'words', progressStyle: 'rhizome', instrumentsOn: ${instruments}, typewriter: false }));
+    localStorage.setItem('wrizo-writing-settings', JSON.stringify({ progress: 'words', progressStyle: '${style}', instrumentsOn: ${instruments}, typewriter: false }));
     localStorage.setItem('wrizo-writing-goal-lines', JSON.stringify({ n: ${goal}, unit: 'words' }));
     localStorage.setItem('wrizo-ambiance-dial', '${dial}'); localStorage.setItem('wrizo-theme', '${theme}'); localStorage.setItem('wrizo-machina-cast', '${cast}');`);
   await app.reload();
@@ -202,6 +202,22 @@ await withHarness(async (app) => {
     const rl = await run(app);
     ok(`LT [${cast}]: on the light page the paper is the cell's own and the Run strip still draws 20 units with its notch`, paper === paperWant && !!rl && rl.units === 20 && rl.here === 1, JSON.stringify({ paper, paperWant, units: rl && rl.units }));
     await frame(app, `run-${cast}-light`);
+  }
+
+  // ======================================================= ON - Run is the ONLY progress instrument: on the DEFAULT style ("bar") Machina draws Run and no Arbor bar / orange WORDS; Arbor (the control) still draws its bar
+  for (const mode of ['drafting', 'freewrite']) {
+    await boot(app, { cast: 'cool', dial: 50, goal: 10, style: 'bar' });
+    await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: `ma-on-${mode}`, text: words(15), createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page' })}); localStorage.setItem('wrizo-mode-page-ma-on-${mode}', '${mode}')`);
+    await sleep(500);
+    await app.evalJs(`location.hash = '#/page/ma-on-${mode}'`);
+    await app.waitFor(`!!document.querySelector('${ED}')`, { label: 'the page', timeout: 12000 }).catch(() => {});
+    await sleep(900);
+    const only = await app.evalJs("({ run: !!document.querySelector('.machina-run'), tracks: document.querySelectorAll('.desk-frame-instrument .mode-ptrack').length, metric: [...document.querySelectorAll('.desk-frame-instrument .mode-pmetric')].map((e) => e.textContent).join('|'), lane: !!document.querySelector('.desk-frame-instrument') })");
+    if (mode === 'drafting') await frame(app, 'run-default-style');
+    await app.evalJs("window.wrizoTheme.set('plateau')"); await sleep(600);
+    const ctl = await app.evalJs("({ tracks: document.querySelectorAll('.desk-frame-instrument .mode-ptrack').length, lane: !!document.querySelector('.desk-frame-instrument') })");
+    ok(`ON [${mode}]: on the default style Machina draws Run and NOT Arbor's thin bar or its orange WORDS; the control (Arbor, same page) still draws the bar, so the probe is not blind`,
+      only.lane && only.tracks === 0 && only.metric === '' && (mode === 'drafting' ? only.run : true) && ctl.tracks === 1, JSON.stringify({ only, ctl }));
   }
 
   // ======================================================= LX - the words on screen; PP - the page does not move

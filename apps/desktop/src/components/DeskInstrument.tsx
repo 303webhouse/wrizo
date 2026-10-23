@@ -3,6 +3,7 @@ import { ProgressBar, useGoalProgress, WORD_GOAL } from './WritingIncentives';
 import { RhizomeField } from './RhizomeField';
 import { GlitchMeter } from './GlitchMeter';
 import { RunStrip } from './RunStrip';
+import { useTheme } from '../store/theme';
 
 // M4 S3/S4 (SV15/SV16) — the progress instrument's framed home.
 //
@@ -71,6 +72,7 @@ export function DeskInstrument({ unitCount, text, seedKey, paperRef, glitch = fa
 // framed home is a different question from the one SV15 answered.
 function DeskGoalLane({ unitCount }: { unitCount: number }) {
   const settings = useWritingSettings();
+  const theme = useTheme();
   // The SAME pure hook the bar itself calls, on the SAME unit the host
   // already computes — the M2 precedent (RhizomeField.tsx's own header) for
   // "one celebration grammar, two consumers", not a second timing engine.
@@ -81,7 +83,9 @@ function DeskGoalLane({ unitCount }: { unitCount: number }) {
       {/* S4 — the flare. Decorative and inert: it carries no text, no number,
           and nothing that outlives its own ~1.1s window. */}
       <div className={`desk-frame-goalflare${celebrating ? ' lit' : ''}`} aria-hidden="true" />
-      {settings.progressStyle === 'bar' && (
+      {/* MACHINA (Fable, Oct 23): the Run strip (RunStrip.tsx, mounted above) is the ONLY progress instrument under this theme - Arbor's thin bar and its orange "WORDS" are not drawn on the framed
+          page. (The unframed legacy surfaces keep their bar: Run lives on the framed desk only.) */}
+      {settings.progressStyle === 'bar' && theme !== 'machina' && (
         <ProgressBar
           frac={frac}
           celebrating={celebrating}
