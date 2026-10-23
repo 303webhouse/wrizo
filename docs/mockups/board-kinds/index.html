@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Board kinds</title>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&family=Figtree:wght@400;500&family=Rajdhani:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+  svg { display: block; }
+  body { overflow: hidden; font-family: Figtree, system-ui, sans-serif; background: var(--desk); color: var(--ink); display: flex; flex-direction: column; }
+  html[data-theme='arbor'][data-mode='dark'] {
+    --desk: #110600; --chrome: #1F1A16; --ink: #EDE6DA; --muted: #B5A998; --low: #80766A; --line: #3A3128;
+    --card: #FBF6EA; --card-ink: #2B2014; --card-faint: #6B5F4E; --card-line: #D9CFB6;
+    --stage: #1A140F; --choice: #ff9800; --lane: rgba(0,0,0,.28);
+  }
+  html[data-theme='arbor'][data-mode='light'] {
+    --desk: #E7DFD2; --chrome: #F3EDE1; --ink: #2B2014; --muted: #6E6256; --low: #8A7C68; --line: #D8C8B4;
+    --card: #FBF7EF; --card-ink: #2B2014; --card-faint: #6B5F4E; --card-line: #E4D9C6;
+    --stage: #EFE6D8; --choice: #ff9800; --lane: rgba(43,32,20,.05);
+  }
+  html[data-theme='flux'][data-mode='dark'] {
+    --desk: #050c15; --chrome: #0b141e; --ink: #E7EEF6; --muted: #8BA3BB; --low: #6E86A0; --line: #26374a;
+    --card: #192838; --card-ink: #E7EEF6; --card-faint: #8BA3BB; --card-line: #34506f;
+    --stage: #101b28; --choice: #00C2FF; --orange: #ff9800; --lane: rgba(0,0,0,.28);
+  }
+  .top { height: 52px; flex: none; display: flex; align-items: center; gap: 16px; padding: 0 16px; background: var(--desk); border-bottom: 1px solid var(--line); }
+  .brand { font-weight: 500; }
+  .where { color: var(--muted); }
+  .top-right { margin-left: auto; display: flex; align-items: center; gap: 18px; }
+  .modes { display: flex; gap: 14px; align-items: flex-end; font-size: 13px; color: var(--muted); text-transform: uppercase; }
+  .modes .on { color: var(--ink); border-bottom: 2px solid var(--choice); padding-bottom: 4px; }
+  html[data-theme='flux'] body { font-family: Rajdhani, sans-serif; }
+  html[data-theme='flux'] .modes { font-family: 'Chakra Petch', sans-serif; text-transform: none; letter-spacing: 0; font-size: 13px; }
+  html[data-theme='flux'] .brand, html[data-theme='flux'] .where { font-family: Rajdhani, sans-serif; letter-spacing: .06em; }
+  .shell { flex: 1; min-height: 0; display: grid; grid-template-columns: 140px 1fr 156px; background: var(--stage); }
+  .rail, .pop { display: none; }
+  .tools, .side { background: var(--chrome); color: var(--muted); padding: 16px 14px; }
+  .tools { border-right: 1px solid var(--line); }
+  .side { border-left: 1px solid var(--line); }
+  .tools h2, .side h2, .pop h2 { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; font-weight: 500; color: var(--low); margin: 0 0 12px; }
+  .side h2 + .gap { margin-top: 26px; }
+  .tool, .graft { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 7px 0; color: var(--ink); font-size: 14px; }
+  html[data-theme='flux'] .tool, html[data-theme='flux'] .graft { font-family: 'Chakra Petch', sans-serif; font-size: 13px; }
+  .stage { position: relative; min-width: 0; min-height: 0; }
+  html[data-frame='listing'] .shell { grid-template-columns: 72px 328px 1fr 156px; }
+  html[data-frame='listing'] .rail, html[data-frame='listing'] .pop { display: flex; }
+  html[data-frame='listing'] .tools { display: none; }
+  .rail { flex-direction: column; gap: 4px; background: var(--desk); border-right: 1px solid var(--line); padding: 12px 8px; }
+  .rail .place { font-size: 12px; color: var(--muted); padding: 6px 4px 12px; line-height: 1.3; }
+  .rail button { text-align: left; font-size: 13px; color: var(--muted); padding: 8px 6px; border-radius: 7px; }
+  .rail button.on { color: var(--ink); box-shadow: inset 0 0 0 1px var(--choice); }
+  .pop { flex-direction: column; background: var(--chrome); border-right: 1px solid var(--line); padding: 16px 14px; gap: 4px; }
+  .brow { display: grid; grid-template-columns: 78px 1fr; gap: 12px; align-items: center; width: 100%; text-align: left; padding: 8px 4px; color: var(--ink); }
+  .brow b { display: block; font-weight: 500; }
+  .brow em { display: block; font-style: normal; color: var(--low); font-size: 12px; margin-top: 2px; }
+  .wide { width: 72px; height: 40px; border-radius: 3px; background: var(--card); border: 1px solid var(--card-line); }
+  .tallth { width: 40px; height: 58px; border-radius: 3px; background: var(--card); border: 1px solid var(--card-line); margin: 0 auto; }
+  .stack { position: relative; width: 74px; height: 52px; }
+  .stack i { position: absolute; width: 58px; height: 30px; border-radius: 3px; background: var(--card); border: 1px solid var(--card-line); }
+  .stack i:nth-child(1) { left: 16px; top: 0; }
+  .stack i:nth-child(2) { left: 8px; top: 8px; }
+  .stack i:nth-child(3) { left: 0; top: 16px; }
+  .showas-btn { width: 34px; height: 34px; display: grid; place-items: center; color: var(--muted); box-shadow: inset 0 0 0 1px var(--line); border-radius: 8px; }
+  .showas { display: flex; align-items: center; gap: 8px; }
+  .showas-name { font-size: 12px; color: var(--low); }
+  .showas-row { display: flex; gap: 4px; }
+  .showas-row button { display: flex; align-items: center; gap: 5px; padding: 5px 8px; border-radius: 8px; color: var(--muted); font-size: 12px; }
+  .showas-row button.on { color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--choice); }
+  html[data-theme='flux'] .showas-name, html[data-theme='flux'] .showas-row button { font-family: 'Chakra Petch', sans-serif; }
+  .walk { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 24px 22px; }
+  .walk-name { font-size: 13px; color: var(--low); margin-bottom: 12px; }
+  html[data-theme='flux'] .walk-name, html[data-theme='flux'] .nodes, html[data-theme='flux'] .readout { font-family: Rajdhani, sans-serif; letter-spacing: .14em; }
+  .card { position: relative; width: min(520px, 100%); min-height: 268px; padding: 26px 28px 32px; background: var(--card); color: var(--card-ink); border: 1px solid var(--card-line); border-radius: 5px; box-shadow: 0 18px 48px rgba(0,0,0,.28); }
+  html[data-mode='light'] .card { box-shadow: 0 12px 32px rgba(43,32,20,.1); }
+  .card.choice { box-shadow: 0 0 0 1.5px var(--choice), 0 18px 48px rgba(0,0,0,.28); }
+  html[data-mode='light'] .card.choice { box-shadow: 0 0 0 1.5px var(--choice), 0 12px 32px rgba(43,32,20,.1); }
+  html[data-theme='flux'] .card { border-radius: 0; box-shadow: none; }
+  html[data-theme='flux'] .card.choice { box-shadow: none; border: 1px solid var(--choice); border-left: 3px solid var(--orange); }
+  .card h1 { font-family: 'Crimson Pro', Georgia, serif; font-weight: 500; font-size: 30px; display: flex; align-items: center; gap: 8px; }
+  .ph { margin-top: 20px; font-family: 'Crimson Pro', Georgia, serif; font-style: italic; font-size: 20px; line-height: 1.45; color: var(--card-faint); max-width: 28em; }
+  .ask { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; box-shadow: inset 0 0 0 1px var(--card-faint); color: var(--card-faint); font-family: Figtree, sans-serif; font-size: 12px; }
+  .ask.on { box-shadow: inset 0 0 0 1.5px var(--choice); color: var(--choice); }
+  .readout { position: absolute; top: 14px; right: 16px; font-size: 14px; color: var(--muted); }
+  .doors { display: flex; gap: 6px; margin-top: 18px; align-items: center; }
+  .doors button { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; padding: 6px 8px; border-radius: 8px; }
+  .doors button svg { width: 16px; height: 16px; }
+  .doors button.on { color: var(--ink); box-shadow: inset 0 0 0 1px var(--choice); }
+  .nodes { margin-top: 18px; font-size: 12px; color: var(--low); text-transform: uppercase; }
+  .dots { display: flex; gap: 10px; align-items: center; justify-content: center; margin-top: 10px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--low); display: block; }
+  .dot.kindled { background: var(--muted); border-color: var(--muted); }
+  .dot.lit { background: var(--choice); border-color: var(--choice); }
+  .dot.now { width: 13px; height: 13px; border: 1.5px solid var(--choice); background: transparent; }
+  .dot.now.lit { background: var(--choice); }
+  .dot.now.kindled { background: var(--muted); }
+  .pager { width: min(520px, 100%); display: flex; justify-content: space-between; margin-top: 14px; }
+  .pager button { color: var(--low); font-size: 13px; }
+  .help { position: absolute; top: 18%; right: 22px; width: 232px; background: var(--card); color: var(--card-ink); border: 1px solid var(--card-line); border-radius: 5px; padding: 14px 14px 12px; box-shadow: 0 14px 36px rgba(0,0,0,.28); font-size: 13.5px; line-height: 1.45; }
+  .help em { display: block; margin-top: 8px; font-family: 'Crimson Pro', Georgia, serif; font-style: italic; font-size: 15px; color: var(--card-faint); }
+  .help .more { display: inline-block; margin-top: 12px; color: var(--choice); font-size: 13px; }
+  .table { position: absolute; inset: 0; }
+  .tcard { position: absolute; width: 196px; min-height: 84px; padding: 12px 14px; background: var(--card); color: var(--card-ink); border: 1px solid var(--card-line); border-radius: 4px; box-shadow: 0 10px 26px rgba(0,0,0,.2); }
+  html[data-mode='light'] .tcard { box-shadow: 0 8px 18px rgba(43,32,20,.08); }
+  .tcard strong { font-family: 'Crimson Pro', Georgia, serif; font-weight: 500; font-size: 17px; display: block; padding-right: 12px; }
+  .tcard span { display: block; margin-top: 6px; color: var(--card-faint); font-family: 'Crimson Pro', Georgia, serif; font-size: 13.5px; line-height: 1.35; }
+  .tcard .pip { position: absolute; top: 12px; right: 10px; width: 7px; height: 7px; border-radius: 50%; }
+  .pip.lit { background: var(--choice); }
+  .pip.kindled { background: var(--muted); }
+  .lanes { height: 100%; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; padding: 22px; align-items: start; }
+  .lane { background: var(--lane); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+  .lane h3 { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--low); font-weight: 500; }
+  .lcard { position: relative; background: var(--card); color: var(--card-ink); border: 1px solid var(--card-line); border-radius: 4px; padding: 10px 12px; }
+  .lcard strong { font-family: 'Crimson Pro', Georgia, serif; font-weight: 500; font-size: 16px; display: block; padding-right: 12px; }
+  .lcard span { display: block; margin-top: 4px; color: var(--card-faint); font-family: 'Crimson Pro', Georgia, serif; font-size: 13px; line-height: 1.35; }
+  .lcard .pip { position: absolute; top: 12px; right: 8px; width: 7px; height: 7px; border-radius: 50%; }
+  .flip { height: 100%; display: flex; align-items: center; justify-content: center; gap: 22px; }
+  .turn { color: var(--low); font-size: 28px; width: 36px; }
+  .sheet { width: 440px; height: min(620px, 86%); background: var(--card); color: var(--card-ink); border: 1px solid var(--card-line); border-radius: 4px; padding: 54px 46px; box-shadow: 0 18px 48px rgba(0,0,0,.28); position: relative; }
+  html[data-mode='light'] .sheet { box-shadow: 0 12px 32px rgba(43,32,20,.1); }
+  .sheet.choice { box-shadow: 0 0 0 1.5px var(--choice), 0 18px 48px rgba(0,0,0,.28); }
+  .sheet h1 { font-family: 'Crimson Pro', Georgia, serif; font-weight: 500; font-size: 32px; }
+  .sheet p { font-family: 'Crimson Pro', Georgia, serif; font-size: 19px; line-height: 1.55; margin-top: 18px; }
+  .sheet .num { position: absolute; bottom: 22px; right: 28px; color: var(--card-faint); font-size: 12px; }
+  .thumbs { height: 100%; display: flex; gap: 14px; align-items: center; justify-content: center; }
+  .pthumb { width: 118px; height: 168px; background: var(--card); color: var(--card-ink); border: 1px solid var(--card-line); border-radius: 3px; padding: 12px; }
+  .pthumb.on { box-shadow: 0 0 0 1.5px var(--choice); }
+  .pthumb b { font-family: 'Crimson Pro', Georgia, serif; font-weight: 500; font-size: 14px; }
+  .story { height: 100%; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; padding: 18px 18px 20px; }
+  .story article { min-width: 0; display: flex; flex-direction: column; }
+  .door-name { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; margin-bottom: 10px; border-radius: 8px; color: var(--ink); box-shadow: inset 0 0 0 1px var(--choice); font-size: 14px; }
+  .mini { flex: 1; min-height: 0; background: var(--stage); border: 1px solid var(--line); border-radius: 6px; position: relative; overflow: hidden; }
+  .mini-as { position: absolute; top: 10px; right: 10px; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--choice); border-radius: 7px; padding: 4px; }
+  .ghost { position: absolute; border: 1px solid var(--low); border-radius: 3px; width: 42%; height: 16%; background: var(--card); opacity: .35; }
+  .ghost.a { left: 10%; top: 26%; }
+  .ghost.b { left: 44%; top: 46%; }
+  .ghost.c { left: 16%; top: 66%; }
+  .mini-card { position: absolute; left: 12%; right: 12%; top: 18%; background: var(--card); color: var(--card-ink); border: 1px solid var(--card-line); border-radius: 4px; padding: 14px 14px 28px; box-shadow: 0 0 0 1.5px var(--choice); }
+  .mini-card b { font-family: 'Crimson Pro', Georgia, serif; font-weight: 500; font-size: 18px; }
+  .mini-card em { display: block; margin-top: 8px; font-family: 'Crimson Pro', Georgia, serif; font-size: 13px; color: var(--card-faint); line-height: 1.35; }
+  .mini .dots { position: absolute; left: 0; right: 0; bottom: 16px; }
+  .mini-flip { height: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .mini-page { width: 46%; height: 74%; background: var(--card); border: 1px solid var(--card-line); border-radius: 3px; box-shadow: 0 0 0 1.5px var(--choice); position: relative; }
+  .mini-page i { position: absolute; left: 16px; top: 22px; width: 1px; height: 18px; background: var(--choice); }
+  html[data-frame='phone'] .shell { display: block; }
+  html[data-frame='phone'] .tools, html[data-frame='phone'] .side, html[data-frame='phone'] .modes { display: none; }
+  html[data-frame='phone'] .top { height: 48px; }
+  html[data-frame='phone'] .walk { justify-content: flex-start; padding: 18px 0 12px; }
+  html[data-frame='phone'] .swipe { display: flex; flex-wrap: nowrap; gap: 14px; width: 100%; align-self: stretch; overflow: hidden; padding: 0 0 0 16px; }
+  html[data-frame='phone'] .card { width: 300px; min-width: 300px; max-width: 300px; flex: 0 0 300px; min-height: 250px; padding: 20px 18px 24px; }
+  html[data-frame='phone'] .card h1 { font-size: 24px; }
+  html[data-frame='phone'] .ph { font-size: 16px; }
+  html[data-frame='phone'] .doors { gap: 2px; }
+  html[data-frame='phone'] .doors button { font-size: 12px; padding: 6px; }
+  html[data-frame='phone'] .pager { display: none; }
+</style>
+</head>
+<body>
+<header class="top">
+  <strong class="brand" id="brand"></strong>
+  <span class="where" id="where"></span>
+  <div class="top-right">
+    <div id="showslot"></div>
+    <nav class="modes" id="modes"></nav>
+  </div>
+</header>
+<div class="shell">
+  <nav class="rail" id="rail"></nav>
+  <section class="pop" id="pop"></section>
+  <aside class="tools" id="tools"></aside>
+  <main class="stage" id="stage"></main>
+  <aside class="side" id="side"></aside>
+</div>
+<script>
+(function () {
+  var q = new URLSearchParams(location.search);
+  var frame = q.get('frame') || 'listing';
+  var theme = q.get('theme') || 'arbor';
+  var mode = q.get('mode') || 'dark';
+  var root = document.documentElement;
+  root.dataset.frame = frame;
+  root.dataset.theme = theme;
+  root.dataset.mode = mode;
+  var flux = theme === 'flux';
+  var W = {
+    show: flux ? 'Display' : 'Show as',
+    notes: flux ? 'Node' : 'Notes',
+    write: flux ? 'Compile this' : 'Write this',
+    place: flux ? 'Port a doc' : 'Place a page\u2026',
+    walk: 'Walk',
+    nodes: flux ? 'Nodes' : '',
+    board: flux ? 'Circuit' : 'Board',
+    book: flux ? 'Log' : 'Book',
+    pages: flux ? 'Docs' : 'Pages',
+    boards: flux ? 'Circuits' : 'Boards',
+    journal: flux ? 'Log' : 'Journal'
+  };
+  var I = {
+    deck: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 7h13M5 10.5h13"/><rect x="4" y="13" width="14" height="7" rx="1.2"/></svg>',
+    table: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="8" height="6" rx="1"/><rect x="13" y="4" width="8" height="6" rx="1"/><rect x="3" y="13" width="8" height="6" rx="1"/><rect x="13" y="13" width="8" height="6" rx="1"/></svg>',
+    lanes: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="16" rx="1"/><rect x="17" y="4" width="5" height="16" rx="1"/></svg>',
+    outline: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7h16M4 12h11M8 17h12"/></svg>',
+    flip: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 3.5h8.5L19 8v12.5H6z"/><path d="M14.5 3.5V8H19"/></svg>',
+    thumbs: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="3" width="6.5" height="18" rx="1"/><rect x="13" y="3" width="6.5" height="18" rx="1"/></svg>',
+    notes: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="3.5" width="14" height="17" rx="1.2"/><path d="M8 8.5h8M8 12.5h6"/></svg>',
+    write: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 19.5l2.2-.5L18.2 7.5 16 5.2 4.5 16.8z"/></svg>',
+    place: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 3h7.5L19 7.5V21H7z"/><path d="M14.5 3V8H19M12 12v6M9 15h6"/></svg>',
+    pen: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 4l6 6-9.5 9.5H4.5V13z"/></svg>',
+    card: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="6" width="18" height="12" rx="1.5"/></svg>',
+    ink: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></svg>',
+    wide: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="6" width="19" height="12" rx="1.2"/></svg>',
+    tall: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="7" y="2.5" width="10" height="19" rx="1.2"/></svg>'
+  };
+  var STEPS = [
+    { t: 'Hook', s: 'lit', note: 'The rope was already on the stone.' },
+    { t: 'Inciting incident', s: 'kindled', note: 'The bucket came up colder than the morning.' },
+    { t: 'Threshold', s: 'kindled', note: 'They went down anyway.' },
+    { t: 'Midpoint', s: 'empty', q: 'What do they learn here that changes the goal?' },
+    { t: 'Pressure', s: 'empty' },
+    { t: 'Crisis', s: 'empty' },
+    { t: 'Climax', s: 'kindled', note: 'The well', placed: true },
+    { t: 'Resolution', s: 'empty' },
+    { t: 'Last image', s: 'empty' }
+  ];
+  var ACTS = [['Act I', [0, 1, 2]], ['Act II', [3, 4, 5]], ['Act III', [6, 7, 8]]];
+  var PAGES = [
+    ['Morning', 'Morning took the heat out of the stones before we started.'],
+    ['The rope', 'The rope was already there when we reached the stone. We left the map and walked until the light went thin.'],
+    ['The map', 'We left the map on the stone, face down, so the wind would not read it.'],
+    ['The well', 'The bucket came up colder than the morning, and nobody spoke.'],
+    ['The light', 'We walked until the light went thin and the path forgot its name.'],
+    ['After', 'Whatever is worth carrying is already with you.']
+  ];
+  var POS = [[6, 8], [38, 16], [66, 7], [12, 38], [42, 40], [70, 34], [8, 66], [40, 64], [68, 62]];
+
+  function showAs(kind, open, current) {
+    var items = kind === 'book'
+      ? [['flip', 'Flip'], ['thumbs', 'Thumbnails']]
+      : [['deck', 'Deck'], ['table', 'Table'], ['lanes', 'Lanes'], ['outline', 'Outline']];
+    if (!open) {
+      var cur = items.filter(function (it) { return it[0] === current; })[0] || items[0];
+      return '<div class="showas"><button class="showas-btn" type="button" title="' + W.show + '">' + I[cur[0]] + '</button></div>';
+    }
+    return '<div class="showas"><span class="showas-name">' + W.show + '</span><div class="showas-row">' + items.map(function (it) {
+      return '<button type="button" class="' + (it[0] === current ? 'on' : '') + '">' + I[it[0]] + '<span>' + it[1] + '</span></button>';
+    }).join('') + '</div></div>';
+  }
+  function dots(current) {
+    var label = W.nodes ? '<div class="nodes">' + W.nodes + '</div>' : '<div class="nodes" style="height:8px"></div>';
+    return label + '<div class="dots">' + STEPS.map(function (s, i) {
+      return '<i class="dot ' + s.s + (i === current ? ' now' : '') + '"></i>';
+    }).join('') + '</div>';
+  }
+  function doors() {
+    return '<div class="doors"><button type="button" class="on">' + I.notes + '<span>' + W.notes + '</span></button><button type="button">' + I.write + '<span>' + W.write + '</span></button><button type="button">' + I.place + '<span>' + W.place + '</span></button></div>';
+  }
+  function card(i, choice) {
+    var s = STEPS[i];
+    var body = s.s === 'empty' && s.q ? '<p class="ph">' + s.q + '</p>' : '';
+    var read = flux && i === 3 ? '<div class="readout">TRK 4/9</div>' : '';
+    return '<article class="card' + (choice ? ' choice' : '') + '">' + read + '<h1>' + s.t + ' <button class="ask' + (frame === 'help' ? ' on' : '') + '" type="button" aria-label="About this step">?</button></h1>' + body + '</article>';
+  }
+  function pip(s) { return s.s === 'empty' ? '' : '<i class="pip ' + s.s + '"></i>'; }
+  function note(s) {
+    if (!s.note) return '';
+    return '<span>' + (s.placed ? 'Page · ' : '') + s.note + '</span>';
+  }
+
+  var stage = '';
+  var show = '';
+  if (frame === 'listing') {
+    var rows = [
+      ['<i class="wide"></i>', 'The second well', W.board],
+      ['<span class="stack"><i></i><i></i><i></i></span>', 'Three-Act', 'Deck'],
+      ['<i class="tallth"></i>', 'Journal', W.book]
+    ];
+    document.getElementById('pop').innerHTML = '<h2>' + W.boards + '</h2>' + rows.map(function (r) {
+      return '<button class="brow" type="button">' + r[0] + '<span><b>' + r[1] + '</b><em>' + r[2] + '</em></span></button>';
+    }).join('');
+    document.getElementById('rail').innerHTML = '<div class="place">The well</div><button type="button">' + W.pages + '</button><button type="button" class="on">' + W.boards + '</button><button type="button">' + W.journal + '</button>';
+  } else if (frame === 'walk' || frame === 'walk-open' || frame === 'help') {
+    show = showAs('deck', frame === 'walk-open', 'deck');
+    stage = '<div class="walk"><div class="walk-name">' + W.walk + '</div>' + card(3, true) + doors() + dots(3) + '<div class="pager"><button type="button">Previous</button><button type="button">Next</button></div></div>';
+    if (frame === 'help') {
+      stage += '<aside class="help"><p>The middle of the story. What they learn here makes the old goal the wrong one.</p><em>She learns the well is a door, not a way out.</em><button class="more" type="button">more \u2192 Tutor</button></aside>';
+    }
+  } else if (frame === 'table') {
+    show = showAs('deck', false, 'table');
+    stage = '<div class="table">' + STEPS.map(function (s, i) {
+      var p = POS[i];
+      return '<article class="tcard" style="left:' + p[0] + '%;top:' + p[1] + '%">' + pip(s) + '<strong>' + s.t + '</strong>' + note(s) + '</article>';
+    }).join('') + '</div>';
+  } else if (frame === 'lanes') {
+    show = showAs('deck', false, 'lanes');
+    stage = '<div class="lanes">' + ACTS.map(function (act) {
+      return '<section class="lane"><h3>' + act[0] + '</h3>' + act[1].map(function (i) {
+        var s = STEPS[i];
+        return '<article class="lcard">' + pip(s) + '<strong>' + s.t + '</strong>' + note(s) + '</article>';
+      }).join('') + '</section>';
+    }).join('') + '</div>';
+  } else if (frame === 'flip') {
+    show = showAs('book', false, 'flip');
+    var page = PAGES[1];
+    stage = '<div class="flip"><button class="turn" type="button" aria-label="Previous">\u2039</button><article class="sheet choice"><h1>' + page[0] + '</h1><p>' + page[1] + '</p><span class="num">2</span></article><button class="turn" type="button" aria-label="Next">\u203a</button></div>';
+  } else if (frame === 'thumbs') {
+    show = showAs('book', true, 'thumbs');
+    stage = '<div class="thumbs">' + PAGES.map(function (p, i) {
+      return '<article class="pthumb' + (i === 1 ? ' on' : '') + '"><b>' + p[0] + '</b></article>';
+    }).join('') + '</div>';
+  } else if (frame === 'doors') {
+    stage = '<div class="story">'
+      + '<article><div class="door-name">' + I.wide + '<span>New Board</span></div><div class="mini"><div class="mini-as">' + I.table + '</div><i class="ghost a"></i><i class="ghost b"></i><i class="ghost c"></i></div></article>'
+      + '<article><div class="door-name">' + I.deck + '<span>Three-Act</span></div><div class="mini"><div class="mini-card"><b>Hook</b><em>What is the first thing that makes this world feel off?</em></div><div class="dots"><i class="dot now"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i></div></div></article>'
+      + '<article><div class="door-name">' + I.tall + '<span>New Journal</span></div><div class="mini"><div class="mini-flip"><span class="turn">\u2039</span><div class="mini-page"><i></i></div><span class="turn">\u203a</span></div></div></article>'
+      + '</div>';
+  } else if (frame === 'phone') {
+    stage = '<div class="walk"><div class="walk-name">' + W.walk + '</div><div class="swipe">' + card(3, true) + '<article class="card"><h1>Pressure</h1></article></div>' + doors() + dots(3) + '</div>';
+  }
+
+  document.getElementById('stage').innerHTML = stage;
+  document.getElementById('showslot').innerHTML = show;
+  document.getElementById('brand').textContent = flux ? 'Flux' : 'Arbor';
+  var where = (frame === 'listing' || frame === 'doors') ? 'The well' : (frame === 'flip' || frame === 'thumbs' ? 'Journal' : 'Three-Act');
+  document.getElementById('where').textContent = where;
+  var modes = flux ? ['Wire In', 'Text', 'Patch', 'Relay', 'Uplink', 'Circuits'] : ['Free Write', 'Draft', 'Revise', 'Workshop', 'Publish', 'Boards'];
+  var onMode = flux ? 'Circuits' : 'Boards';
+  document.getElementById('modes').innerHTML = modes.map(function (n) {
+    return '<span' + (n === onMode ? ' class="on"' : '') + '>' + n + '</span>';
+  }).join('');
+  document.getElementById('tools').innerHTML = '<h2>Tools</h2><button class="tool" type="button">' + I.pen + 'Pen</button><button class="tool" type="button">' + I.card + 'Card</button><button class="tool" type="button">' + I.ink + 'Ink</button>';
+  document.getElementById('side').innerHTML = '<h2>Tutor</h2><h2 class="gap">Grafts</h2><button class="graft" type="button">The rope</button><button class="graft" type="button">The map</button>';
+})();
+</script>
+</body>
+</html>
