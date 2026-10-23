@@ -2754,28 +2754,37 @@ a:focus-visible,
    inboard, confirmed live via getBoundingClientRect before writing this
    fix). A scrollable element's own scrollbar always renders at that
    element's BORDER-BOX edge, ignoring its own padding — `.mode-scroll` sits
-   INSIDE `.mode-page`'s own 38px right padding (hand-synced below, the
-   same magic number `--sliver-paper-pad`/`--tutor-paper-pad` already hand-
-   sync elsewhere in this file — scaled by --paper-scale exactly the way
-   `.desk-frame-stage .mode-page`'s own padding already is, below, so this
-   stays correct at every wide-screen paper-scale step; --paper-scale is 1
-   outside that ramp, so the legacy/un-scaled 38px is unaffected), so its
-   scrollbar rendered that far inboard of the paper's true edge. Fix:
-   extend THIS element's own border box across that same 38px (a negative
-   right margin cancelling `.mode-page`'s padding exactly) and re-apply the
-   identical 38px as `.mode-scroll`'s OWN padding instead — the scrollbar
-   now renders flush against the paper (at the border box this extends
-   to), while the TEXT inside is still inset by the SAME 38px from that new
-   edge, landing at the byte-identical screen position it always occupied
-   (verified algebraically: content-box width is unchanged — the +38px
-   right-margin extension and the +38px new right-padding cancel exactly).
-   FX2's clearance law: the writing's own line length (the text measure) is
-   untouched by this move — only the scrollbar's own screen position
-   changes. Left edge/measure untouched (Nick's own words name the RIGHT
-   side only). */
+   INSIDE `.mode-page`'s own right padding, so its scrollbar rendered that
+   far inboard of the paper's true edge. Fix: extend THIS element's own
+   border box across that same padding (a negative right margin cancelling
+   `.mode-page`'s padding exactly) and re-apply the identical amount as
+   `.mode-scroll`'s OWN padding instead — the scrollbar now renders flush
+   against the paper (at the border box this extends to), while the TEXT
+   inside is still inset by the SAME amount from that new edge, landing at
+   the byte-identical screen position it always occupied.
+   SCROLLBAR-FLUSH (Fable Oct 23, Nick live on Flux: "bulky and floats
+   INSIDE the page" — Arbor had the same glitch): this cancellation was
+   hardcoded to the literal `38px`, `.mode-page`'s OWN pad-x value at the
+   time FX10 was written. ITEM 83 M3 (R6), two weeks later, made that
+   padding a per-page SETTING (`--wz-page-pad-x`, PAGE SETUP's margin
+   choice: narrow 26px / normal 38px / wide 58px — `.desk-frame-stage
+   .mode-page`'s own padding rule below reads this same variable) but
+   never touched this rule's own literal. Any page set to narrow or wide
+   margins broke the cancellation (wide: 20px of gap still inboard of the
+   true edge — exactly "floats inside the page"; narrow: overshoots past
+   it by 12px) while `normal` (the default) stayed byte-identical, which
+   is why this went unnoticed until a writer changed the margin. Reading
+   the SAME variable `.mode-page` itself reads, instead of a stale
+   literal, restores exact cancellation at every margin and every
+   --paper-scale step — zero behavior change when unset (the fallback is
+   still 38px either side). FX2's clearance law: the writing's own line
+   length (the text measure) is untouched by this move — only the
+   scrollbar's own screen position changes. Left edge/measure untouched
+   (Nick's own words name the RIGHT side only). */
 .mode-scroll{ position:relative; z-index:1; flex:1; min-height:0; overflow-y:auto; padding-bottom:30vh;
   background:transparent;
-  margin-right:calc(-38px * var(--paper-scale)); padding-right:calc(38px * var(--paper-scale)); }
+  margin-right:calc(-1 * var(--wz-page-pad-x, 38px) * var(--paper-scale));
+  padding-right:calc(var(--wz-page-pad-x, 38px) * var(--paper-scale)); }
 /* FX1 S1 — a fresh page's first line starts near the stage's vertical center
    (working value ~45%, --tw-start-offset, set by useTypewriterFade.ts's
    measure()) so the fade band below has room to engage early. Typewriter
