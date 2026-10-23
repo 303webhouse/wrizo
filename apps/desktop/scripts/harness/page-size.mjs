@@ -28,7 +28,7 @@
 //   STRENGTH is read from the SCREENSHOT (decoded in the page through a canvas - no new dependency), so it is what is PAINTED, masks and
 //   all: a line's ink = the largest colour distance from its own commonest colour (the paper); its strength = ink as painted / ink with
 //   every mask and opacity in the stage stripped. The stripped reference is a premise: it must itself show ink.
-//   MUTANTS (runtime, each asserts it LANDED before its predicate is read): MR page forced 760 wide; MC type at 14px; MB letter-spacing
+//   MUTANTS (runtime, each asserts it LANDED before its predicate is read): MR page forced 760 wide; MC type at 12px; MB letter-spacing
 //   changed while zoomed; MW the editor at opacity .5; MT every mask in the stage removed; MK the page scaled by an open panel (K fails).
 //
 // Seeding goes through the app's seams; the per-page mode and typewriter keys are this device's own UI keys (not collections).
@@ -147,10 +147,12 @@ const HELPERS = `(() => {
 })()`;
 const install = (app) => app.evalJs(HELPERS);
 
-// strip every fade the stage can paint, so a line's UNFADED ink can be read (layout is untouched: masks and opacity never move a line)
-const STRIP_CSS = `.desk-frame-stage, .desk-frame-stage *, .mode-stage, .mode-stage * { -webkit-mask-image:none !important; mask-image:none !important; }
-.mode-page, .mode-page * { opacity:1 !important; }
-.mode-page *::before, .mode-page *::after { background-image:none !important; }`;
+// strip every MASK the stage can paint, so a line's UNFADED ink can be read (layout is untouched: a mask never moves a line). MASKS ONLY - the red run (143)
+// showed why: the first cut also forced opacity:1 on everything inside the page, which UNHID an overlay and made the "unfaded" reference read LESS ink than
+// the page itself (strength 1.73 / 1.58 at 2560 and 3840) - so W passed blind. The fade this ticket builds is a mask; every strength now also carries the
+// premise that the reference never reads less ink than the painted page (REF_FLOOR), so an instrument that adds something cannot pass again.
+const STRIP_CSS = `.desk-frame-stage, .desk-frame-stage *, .mode-stage, .mode-stage * { -webkit-mask-image:none !important; mask-image:none !important; }`;
+const REF_FLOOR = 0.97;   // bare >= painted x this, on every line measured
 
 const shoot = async (app) => { const b64 = await app.screenshot(); return app.evalJs(`window.__psLoad(${J(b64)})`); };
 // strength of each line rect: painted ink / stripped ink. `keepStrip` measures the "painted" pass with the strip ALREADY applied (mutant MT).
@@ -181,14 +183,21 @@ const openPage = async (app, id) => {
 const rectOf = (app, sel) => app.evalJs(`(() => { const el = document.querySelector(${J(sel)}); if (!el) return null; const r = el.getBoundingClientRect(); return r.width && r.height ? { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) } : null; })()`);
 const attr = (app, sel, a) => app.evalJs(`document.querySelector(${J(sel)})?.getAttribute(${J(a)}) ?? null`);
 const TOGGLE = '[data-mode-toggle="typewriter"]';
-// the writer's own control: open the Sliver if it is closed, then press its typewriter button (trusted). Returns aria-pressed after.
+// the writer's own control: open the Sliver if it is closed, then press its typewriter button (trusted). Returns { pressed, at }.
+// The red run (143) showed the first cut pressed BLIND: at 768 and 1080 tall the button sits in the Sliver's scrolling foot, below the panel's visible part,
+// and after typing the OFF press missed too - the click landed on whatever was there and nothing said so. Now the drawer must SETTLE (its sliding layer at
+// rest), the button is brought into view inside the panel, and the click point must HIT the button (elementFromPoint) - or the press is refused and the
+// premise check that reads it fails with what was hit.
+const settledSliver = "(() => { const l = document.querySelector('.wz-sliver-panel > .wz-drawer-slide'); if (!l) return true; const cs = getComputedStyle(l); return cs.transform === 'none' && cs.pointerEvents !== 'none'; })()";
 const pressTypewriter = async (app) => {
-  if ((await attr(app, '.wz-sliver', 'data-open')) !== 'true') { const g = await rectOf(app, '.wz-sliver-grip'); if (g) { await click(app, g.x, g.y); await sleep(500); } }
-  const t = await rectOf(app, TOGGLE); if (!t) return null;
-  await click(app, t.x, t.y); await sleep(1100);
-  // the pressed state is read from the button if it is still on screen, else from the page's own key
-  const pressed = await attr(app, TOGGLE, 'aria-pressed');
-  return pressed;
+  if ((await attr(app, '.wz-sliver', 'data-open')) !== 'true') { const g = await rectOf(app, '.wz-sliver-grip'); if (g) { await click(app, g.x, g.y); await sleep(300); } }
+  await waitSoft(app, `document.querySelector('.wz-sliver')?.getAttribute('data-open') === 'true' && ${settledSliver}`, { label: 'the Sliver settled open', timeout: 3000 });
+  const at = await app.evalJs(`(() => { const b = document.querySelector(${J(TOGGLE)}); if (!b) return null; b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    const r = b.getBoundingClientRect(); const x = r.left + r.width / 2; const y = r.top + r.height / 2; const hit = document.elementFromPoint(x, y);
+    return { x: Math.round(x), y: Math.round(y), hits: !!hit && (hit === b || b.contains(hit)), hit: hit ? String(hit.className || hit.tagName).slice(0, 60) : null, before: b.getAttribute('aria-pressed') }; })()`);
+  if (!at || !at.hits) return { pressed: null, at };
+  await click(app, at.x, at.y); await sleep(1100);
+  return { pressed: await attr(app, TOGGLE, 'aria-pressed'), at };
 };
 const typewriterIs = async (app, id) => app.evalJs(`localStorage.getItem('wrizo-typewriter-page-${id}')`);
 const openTutor = async (app) => {
@@ -276,11 +285,11 @@ const normalCase = async (app, th, w, h) => {
     await app.evalJs("window.__psStyle('ps-mr', null)"); await sleep(200);
     ok(`${th.name} MR (mutant): with the page forced 760 wide (LANDED: ${g && Math.round(g.page.width)} -> ${gm && Math.round(gm.page.width)}), R fails`,
       !!g && !!gm && Math.abs(gm.page.width - g.page.width) >= 50 && !rPred(gm), J(gm && gm.page));
-    // MC: the type at 14px - C must fail
-    await app.evalJs(`window.__psStyle('ps-mc', '.forward-only-editor { font-size:14px !important; }')`); await sleep(300);
+    // MC: the type at 12px - C must fail (14px was too near: on main's Flux page it still landed 73 a line - red run 143)
+    await app.evalJs(`window.__psStyle('ps-mc', '.forward-only-editor { font-size:12px !important; }')`); await sleep(300);
     const gc = await app.evalJs('window.__psGeom()'); const lc = await app.evalJs('window.__psLines()');
     await app.evalJs("window.__psStyle('ps-mc', null)"); await sleep(200);
-    ok(`${th.name} MC (mutant): with the type at 14px (LANDED: ${gc && gc.fontPx}px), C fails`, !!gc && gc.fontPx === 14 && !cPred(lc), J({ median: median(fullLineLengths(lc || [])) }));
+    ok(`${th.name} MC (mutant): with the type at 12px (LANDED: ${gc && gc.fontPx}px), C fails`, !!gc && gc.fontPx === 12 && !cPred(lc), J({ median: median(fullLineLengths(lc || [])) }));
   }
   return { g, lines };
 };
@@ -297,8 +306,8 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
   const l0 = await app.evalJs('window.__psLines()');
   await app.evalJs('window.__psMark()');
   const pressedOn = await pressTypewriter(app);
-  const on = kind === 'draft' ? (await typewriterIs(app, id)) === 'on' : pressedOn === 'true' || (await app.evalJs("!!document.querySelector('.mode-scroll[data-typewriter=\"true\"]') || null"));
-  ok(`${tag} zoom (premise): the writer's typewriter control turned the zoom ON`, !!on, J({ pressedOn, key: await typewriterIs(app, id) }));
+  const on = kind === 'draft' ? (await typewriterIs(app, id)) === 'on' : pressedOn.pressed === 'true' || (await app.evalJs("!!document.querySelector('.mode-scroll[data-typewriter=\"true\"]') || null"));
+  ok(`${tag} zoom (premise): the writer's typewriter control turned the zoom ON (the press HIT the button)`, !!on && !!pressedOn.at && pressedOn.at.hits, J({ pressedOn, key: await typewriterIs(app, id) }));
   if (!on) return;
   const g1 = await app.evalJs('window.__psGeom()');
   const l1 = await app.evalJs('window.__psLines()');
@@ -331,18 +340,18 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
   if (premise) {
     const want = [lines[wi], lines[wi - 1], lines[wi - 3], lines[wi - 5]];
     const st = await strengths(app, want);
-    const bareOk = st.every((x) => x.bare != null && x.bare >= 60);
-    ok(`${tag} W/T (premise): the unfaded reference shows ink on all four lines`, bareOk, J(st));
+    const bareOk = st.every((x) => x.bare != null && x.bare >= 60 && x.painted != null && x.bare >= x.painted * REF_FLOOR);
+    ok(`${tag} W/T (premise): the unfaded reference shows ink on all four lines, and never LESS than the painted page (the instrument only removes masks)`, bareOk, J(st));
     ok(`${tag} W: the writing line paints at full strength (>= ${FULL})`, bareOk && st[0].s >= FULL, J(st[0]));
     ok(`${tag} T: the top fade is present - older lines fade as they rise (1 above > 3 above > 5 above, each by ${FADE_STEP}+), 5 above at ${FADED} or less`,
       tPred(st), J({ above1: st[1], above3: st[2], above5: st[3] }));
     if (mutants) {
       // MW: the editor at opacity .5 (applied BEFORE the strip, so the unfaded reference still removes it) - W must fail
-      await app.evalJs(`window.__psStyle('ps-mw', '.forward-only-editor { opacity:.5 !important; }')`);
-      const landedW = await app.evalJs("getComputedStyle(document.querySelector('.forward-only-editor')).opacity");
+      await app.evalJs(`window.__psStyle('ps-mw', '.forward-only-editor { -webkit-mask-image:linear-gradient(rgba(0,0,0,.5), rgba(0,0,0,.5)) !important; mask-image:linear-gradient(rgba(0,0,0,.5), rgba(0,0,0,.5)) !important; }')`);
+      const landedW = await app.evalJs("(() => { const cs = getComputedStyle(document.querySelector('.forward-only-editor')); return String(cs.maskImage || cs.webkitMaskImage || 'none').slice(0, 40); })()");
       const sw = await strengths(app, [lines[wi]]);
       await app.evalJs("window.__psStyle('ps-mw', null)");
-      ok(`${tag} MW (mutant): with the editor at opacity .5 (LANDED: ${landedW}), W fails`, landedW === '0.5' && !(sw[0].s >= FULL), J(sw[0]));
+      ok(`${tag} MW (mutant): with the editor masked to half strength (LANDED: ${landedW}), W fails`, landedW !== 'none' && !(sw[0].s >= FULL), J(sw[0]));
       // MT: every mask in the stage removed - T must fail
       const before = await app.evalJs('window.__psMasks()');
       await app.evalJs(`window.__psStyle('ps-strip-mut', ${J(STRIP_CSS)})`); const after = await app.evalJs('window.__psMasks()'); await app.evalJs("window.__psStyle('ps-strip-mut', null)");
@@ -371,9 +380,10 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
     ok(`${tag} G: a new line glides - the scroll passes through ${GLIDE_MIN} or more values`, !!v && moved > 0 && distinct.length >= GLIDE_MIN, J({ moved, values: distinct.length, lh }));
   }
   // leave the zoom through the same control
-  await pressTypewriter(app);
+  const pressedOff = await pressTypewriter(app);
   const g3 = await app.evalJs('window.__psGeom()');
-  ok(`${tag} zoom (premise): the writer's control turned the zoom OFF again`, (await typewriterIs(app, id)) === 'off', await typewriterIs(app, id));
+  ok(`${tag} zoom (premise): the writer's control turned the zoom OFF again (the press HIT the button)`, (await typewriterIs(app, id)) === 'off' && !!pressedOff.at && pressedOff.at.hits,
+    J({ pressedOff, key: await typewriterIs(app, id) }));
   ok(`${tag} U: the editor is still the SAME node after leaving the zoom`, await app.evalJs('window.__psMarked()'));
   const same = g0 && g3 && ['left', 'top', 'width', 'height'].every((k) => Math.abs(g0.page[k] - g3.page[k]) <= 0.5);
   ok(`${tag} X: leaving the zoom returns the exact normal rect`, same, J({ before: g0 && g0.page, after: g3 && g3.page }));
