@@ -1,0 +1,16 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=41 tree=b7f32eb1 bundle=index-BjVfelU6.js/797297b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/bpm-default
+[01/41] OK        exit=0   14s ab1.mjs :: ROWS-SHADOW VERIFY: PASS (34 renders checked, shadow == DOM on every one) ;; AB1 VERIFY: PASS (29 checks)
+[02/41] OK        exit=0   17s ab2.mjs :: ROWS-SHADOW VERIFY: PASS (20 renders checked, shadow == DOM on every one) ;; AB2 VERIFY: PASS (27 checks)
+[03/41] OK        exit=0   31s b1.mjs :: ROWS-SHADOW VERIFY: PASS (97 renders checked, shadow == DOM on every one) ;; B1 VERIFY: PASS (47 checks)
+
+SUITE ABORTED before blank-page-click.mjs: 1 foreign harness browser(s) appeared MID-RUN
+  browserPid=30936 ownerNodePid=50072
+  Another lane started while this sweep was running. Everything measured from here would be
+  measured under contention, so this run is VOID rather than partly trustworthy. Re-run it
+  whole in a quiet window — a sweep cannot be half-clean.
+
+SUITE DONE HARNESS_PARKED=unset — 3/3 of 41 returned a passing verdict
+SUITE RESULT: VOID (aborted mid-run at blank-page-click.mjs) — tree=b7f32eb1 bundle=index-BjVfelU6.js/797297b NO-REBUILD

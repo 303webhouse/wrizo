@@ -33,31 +33,115 @@
 // checkout has to read the same file. A grant inside a worktree would grant the
 // turn to a directory instead of to the box.
 import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
 
 export const GRANT_DIR = path.join(os.homedir(), '.wrizo');
 export const GRANT_PATH = path.join(GRANT_DIR, 'box-turn.json');
 
+// --- THE HOLDER (Oct 23: a token is checked, and so is WHO PRESENTS IT) ------
+//
+// THE HOLE THIS CLOSES. Item 140 made the grant a file and refused unless the exported token
+// MATCHES it. A token is a string, and the file is readable by every lane on the box: a lane
+// that reads the file and exports what it finds passes the match while another lane's turn is
+// running (two sweeps on Oct 23 were voided by a "foreign harness browser" that appeared while
+// this desk held the only grant). The fix binds the grant to a PROCESS TREE: whoever takes the
+// turn through box-take.mjs / box-turn.mjs records the process it was called from (the shell
+// or runner script that will go on to launch the harness), and `withHarness` refuses unless
+// ITS OWN ANCESTRY contains that process. A copied token from a different tree no longer
+// opens a browser. A grant written WITHOUT a holder (chat 1's older hand-written files) still
+// behaves exactly as item 140 did - nothing existing breaks.
+//
+// Processes are identified by PID AND START TIME, because Windows reuses PIDs. If the process
+// table cannot be read the check REFUSES (the same discipline as item 139: a guard that
+// proceeds when it cannot see is not a guard). A holder that is no longer alive refuses with
+// its own reason - a stale grant, which chat 1 clears.
+export function readProcessTable() {
+  const ps = spawnSync('powershell', ['-NoProfile', '-Command',
+    "Get-CimInstance Win32_Process | ForEach-Object { '{0}|{1}|{2}|{3}' -f $_.ProcessId, $_.ParentProcessId, $_.CreationDate.ToUniversalTime().ToString('o'), $_.Name }"],
+  { encoding: 'utf8', timeout: 20000 });
+  if (ps.status !== 0 || !ps.stdout) return null;
+  const table = new Map();
+  for (const line of ps.stdout.split(/\r?\n/)) {
+    const [pid, ppid, start, name] = line.trim().split('|');
+    if (pid && /^\d+$/.test(pid)) table.set(Number(pid), { ppid: Number(ppid), start: start || '', name: name || '' });
+  }
+  return table.size ? table : null;
+}
+
+// The process `pid` and every ancestor that is still in the table (stops at the first parent
+// that has gone, or at pid 0). Each as { pid, start }.
+export function ancestryOf(pid, table) {
+  const chain = [];
+  const seen = new Set();
+  let cur = pid;
+  while (cur && table.has(cur) && !seen.has(cur)) {
+    seen.add(cur);
+    const row = table.get(cur);
+    chain.push({ pid: cur, start: row.start });
+    cur = row.ppid;
+  }
+  return chain;
+}
+
+// The holder to record: the SESSION that called the taking script. Not simply its parent: under
+// Git Bash (msys) every external command runs as `bash(fork) -> program`, and the fork dies the
+// moment the program ends - recording it made the grant "holder-gone" the instant after it was
+// taken (found by the first live end-to-end run, Oct 23). So: start at the parent and climb past
+// any SHELL that was created within SKIP_MS of the taking process (a fork made for this very
+// command, or a script that took the box as its first act); the first ancestor that is not such
+// a shell is the holder - for a PowerShell caller that is PowerShell itself, for a script run
+// from a long-lived terminal shell it is that terminal shell. A different lane's terminal is a
+// different session, so it is outside the tree. `pure`: takes the table and the pid, so the rule
+// is tested with synthetic tables.
+export const SKIP_MS = 3000;
+const SHELL = /^(bash|sh|zsh|dash)(\.exe)?$/i;
+export function chooseHolder(table, selfPid) {
+  const self = table && table.get(selfPid);
+  if (!self) return null;
+  const selfStart = Date.parse(self.start);
+  let pid = self.ppid;
+  for (let hops = 0; hops < 10; hops += 1) {
+    const row = table.get(pid);
+    if (!row) return null;
+    const young = Number.isFinite(selfStart) && selfStart - Date.parse(row.start) < SKIP_MS;
+    if (SHELL.test(row.name || '') && young && table.get(row.ppid)) { pid = row.ppid; continue; }
+    return { pid, start: row.start };
+  }
+  return null;
+}
+
+export function holderOfCaller(table = readProcessTable()) {
+  return table ? chooseHolder(table, process.pid) : null;
+}
+
 // --- chat 1's half ---------------------------------------------------------
 
 // Written at the announcement. `lane` and `token` are what the relay called;
 // `time` is informational only — nothing reads it to decide anything, because
-// there is no expiry.
-export function writeGrant(lane, token) {
+// there is no expiry. `holder` ({ pid, start }) is optional: when present the grant is bound to
+// that process tree (see above).
+export function writeGrantAt(grantPath, lane, token, holder) {
   if (typeof lane !== 'string' || lane.length === 0) throw new Error('writeGrant: lane required');
   if (typeof token !== 'string' || token.length === 0) throw new Error('writeGrant: token required');
-  mkdirSync(GRANT_DIR, { recursive: true });
-  const body = JSON.stringify({ lane, token, time: new Date().toISOString() }, null, 2);
+  mkdirSync(path.dirname(grantPath), { recursive: true });
+  const rec = { lane, token, time: new Date().toISOString() };
+  if (holder && Number.isInteger(holder.pid)) { rec.holderPid = holder.pid; rec.holderStart = holder.start || ''; }
+  const body = JSON.stringify(rec, null, 2);
   // Written whole and replaced, so a reader never sees half a grant. A partial
   // read is treated as unreadable below and refuses, but the cheaper fix is not
   // to produce one.
-  const tmp = `${GRANT_PATH}.tmp`;
+  const tmp = `${grantPath}.tmp`;
   writeFileSync(tmp, body, 'utf8');
-  rmSync(GRANT_PATH, { force: true });
-  writeFileSync(GRANT_PATH, body, 'utf8');
+  rmSync(grantPath, { force: true });
+  writeFileSync(grantPath, body, 'utf8');
   rmSync(tmp, { force: true });
-  return GRANT_PATH;
+  return grantPath;
+}
+
+export function writeGrant(lane, token, holder) {
+  return writeGrantAt(GRANT_PATH, lane, token, holder);
 }
 
 // Cleared at the stamp. Idempotent: clearing a grant that is already gone is
@@ -77,7 +161,7 @@ export function clearGrant() {
 // refuses rather than guessing — the same discipline as item 139's pre-flight,
 // where an unreadable process table counts as a live foreign run. A guard that
 // proceeds when it cannot see is not a guard.
-export function checkGrantAt(grantPath, token) {
+export function checkGrantAt(grantPath, token, opts = {}) {
   if (typeof token !== 'string' || token.length === 0) {
     return {
       ok: false,
@@ -131,6 +215,41 @@ export function checkGrantAt(grantPath, token) {
         + '  and the file is what the announcement wrote — a token is checked against the\n'
         + '  FILE, never merely for being present.',
     };
+  }
+  // THE HOLDER (Oct 23): the token matches; now ask whether THIS process belongs to the process
+  // tree the grant is bound to. A grant with no holder behaves as item 140 did.
+  if (Number.isInteger(grant.holderPid)) {
+    const table = opts.processTable === undefined ? readProcessTable() : opts.processTable;
+    if (!table) {
+      return {
+        ok: false,
+        reason: 'ancestry-unreadable',
+        message: 'BOX TURN NOT GRANTED — the grant is bound to a process tree and the process table could not be read.\n'
+          + '  A guard that proceeds when it cannot see is not a guard; nothing was started.',
+      };
+    }
+    const chain = ancestryOf(opts.selfPid ?? process.pid, table);
+    const holder = table.get(grant.holderPid);
+    const holderAlive = !!holder && (!grant.holderStart || holder.start === grant.holderStart);
+    if (!holderAlive) {
+      return {
+        ok: false,
+        reason: 'holder-gone',
+        message: `BOX TURN NOT GRANTED — the grant names lane "${grant.lane}" and is bound to a process that is no longer running.\n`
+          + '  The turn is stale (its holder ended without clearing it). Chat 1 clears it; until then nothing starts.',
+      };
+    }
+    const inTree = chain.some((c) => c.pid === grant.holderPid && (!grant.holderStart || c.start === grant.holderStart));
+    if (!inTree) {
+      return {
+        ok: false,
+        reason: 'not-the-holder',
+        message: 'BOX TURN HELD BY ANOTHER PROCESS TREE — refusing to open a browser.\n'
+          + `  The grant names lane "${grant.lane}" and is bound to a different process tree than this one.\n`
+          + '  Your token matches the file, but a token can be copied; the turn belongs to the tree that took it.\n'
+          + '  Take the box yourself (box-take.mjs, in the SAME shell/script that runs the harness), or wait.',
+      };
+    }
   }
   return { ok: true, lane: grant.lane };
 }

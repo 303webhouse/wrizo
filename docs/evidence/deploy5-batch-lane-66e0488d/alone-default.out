@@ -1,0 +1,11 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=3 tree=9f6d4574 bundle=index-Dy_FKJi_.js/797297b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/sbf-default
+[01/3] OK        exit=0   98s fx5.mjs :: ROWS-SHADOW VERIFY: PASS (131 renders checked, shadow == DOM on every one) ;; FX5 VERIFY: PASS (57 checks)
+[02/3] OK        exit=0    0s scrollbar-flush-source.mjs :: SCROLLBAR-FLUSH-SOURCE VERIFY: PASS (7 checks)
+[03/3] FAIL      exit=1   15s scrollbar-flush.mjs :: ROWS-SHADOW VERIFY: PASS (4 renders checked, shadow == DOM on every one) ;; SCROLLBAR-FLUSH VERIFY: FAIL — 24/32 failed
+
+SUITE DONE HARNESS_PARKED=unset — 2/3 of 3 returned a passing verdict
+  FAIL: scrollbar-flush.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\sbf-default\scrollbar-flush.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=9f6d4574 bundle=index-Dy_FKJi_.js/797297b NO-REBUILD

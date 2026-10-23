@@ -1,0 +1,52 @@
+toplevel: C:/Users/nickh/writer-studio/.claude/worktrees/b5
+base: 95238995
+== merging flux-inputs @ deeabe91  (contains base: yes)
+   -> 8dfba387  unmerged files: 0
+== merging theme-picker @ 0b66c85d  (contains base: yes)
+Auto-merging apps/desktop/src/index.css
+   -> 67cc304e  unmerged files: 0
+== merging hide-workshop @ 38e38a0c  (contains base: yes)
+Auto-merging apps/desktop/scripts/harness/th2.mjs
+Auto-merging apps/desktop/src/index.css
+   -> d7d3d296  unmerged files: 0
+== merging scrollbar-flush @ acc97c64  (contains base: yes)
+Auto-merging apps/desktop/src/index.css
+   -> 66e0488d  unmerged files: 0
+ .../flux-inputs-a570443c/screens/README.md         |   1 +
+ .../flux-inputs-a570443c/screens/board-dark.jpg    | Bin 0 -> 71969 bytes
+ .../flux-inputs-a570443c/screens/board-light.jpg   | Bin 0 -> 77540 bytes
+ .../screens/emptypage-dark.jpg                     | Bin 0 -> 43555 bytes
+ .../screens/emptypage-light.jpg                    | Bin 0 -> 43996 bytes
+ .../flux-inputs-a570443c/screens/inputs-dark.jpg   | Bin 0 -> 78192 bytes
+ .../flux-inputs-a570443c/screens/inputs-light.jpg  | Bin 0 -> 79003 bytes
+ .../flux-inputs-a570443c/screens/page-dark.jpg     | Bin 0 -> 100407 bytes
+ .../flux-inputs-a570443c/screens/page-light.jpg    | Bin 0 -> 101246 bytes
+ .../flux-inputs-e5e63393/screens/README.md         |   1 +
+ .../flux-inputs-e5e63393/screens/board-dark.jpg    | Bin 0 -> 70706 bytes
+ .../flux-inputs-e5e63393/screens/board-light.jpg   | Bin 0 -> 77515 bytes
+ .../screens/emptypage-dark.jpg                     | Bin 0 -> 42538 bytes
+ .../screens/emptypage-light.jpg                    | Bin 0 -> 43105 bytes
+ .../flux-inputs-e5e63393/screens/inputs-dark.jpg   | Bin 0 -> 76884 bytes
+ .../flux-inputs-e5e63393/screens/inputs-light.jpg  | Bin 0 -> 77821 bytes
+ .../flux-inputs-e5e63393/screens/page-dark.jpg     | Bin 0 -> 97786 bytes
+ .../flux-inputs-e5e63393/screens/page-light.jpg    | Bin 0 -> 98672 bytes
+ .../flux-inputs-fbd53a2f/screens/README.txt        |   3 +
+ .../flux-inputs-fbd53a2f/screens/arrival.jpg       | Bin 0 -> 19312 bytes
+ .../flux-inputs-fbd53a2f/screens/board-dark.jpg    | Bin 0 -> 56843 bytes
+ .../flux-inputs-fbd53a2f/screens/board-light.jpg   | Bin 0 -> 65624 bytes
+ .../flux-inputs-fbd53a2f/screens/inputs-dark.jpg   | Bin 0 -> 61756 bytes
+ .../flux-inputs-fbd53a2f/screens/inputs-light.jpg  | Bin 0 -> 63692 bytes
+ .../flux-inputs-fbd53a2f/screens/popup-dark.jpg    | Bin 0 -> 32980 bytes
+ .../flux-inputs-fbd53a2f/screens/popup-light.jpg   | Bin 0 -> 42940 bytes
+ .../flux-inputs-fbd53a2f/screens/wizard-dark.jpg   | Bin 0 -> 35084 bytes
+ .../flux-inputs-fbd53a2f/screens/wizard-light.jpg  | Bin 0 -> 43176 bytes
+ pnpm-lock.yaml                                     |   8 +
+ 71 files changed, 2030 insertions(+), 176 deletions(-)
+Done in 12.5s using pnpm v10.28.2
+tsc-desktop=0
+tsc-server-done
+SEED-GUARD VERIFY: PASS (36 checks)
+TYPING-LATENCY READERS VERIFY: PASS (5 checks, 24 reads classified)
+TYPED-LITERAL-CHECK VERIFY: PASS (29 checks)
+GLITCH-METER-CHECK VERIFY: PASS (15 checks)
+[2mdist-web/[22m[36massets/index-CIpZEHIl.js                                          [39m[1m[33m801.00 kB[39m[22m[2m │ gzip: 252.03 kB[22m

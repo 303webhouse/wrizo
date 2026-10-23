@@ -772,6 +772,20 @@ export async function withHarness(scenario, opts = {}) {
   {
     const { checkGrant } = await import('./box-grant.mjs');
     const verdict = checkGrant(process.env.WS_BOX_TURN);
+    // THE LAUNCH LOG (Oct 23): every browser launch - allowed or REFUSED - leaves one line in ~/.wrizo/box-launches.log (time, pid, the tree it came from, a
+    // fingerprint of the token, the verdict and its reason). Two sweeps were voided by a "foreign harness browser"; when the next appears the log names its tree
+    // instead of this desk guessing. Best effort: a failure to log never changes a verdict.
+    try {
+      const { appendFileSync, mkdirSync } = await import('node:fs');
+      const { createHash } = await import('node:crypto');
+      const { GRANT_DIR } = await import('./box-grant.mjs');
+      mkdirSync(GRANT_DIR, { recursive: true });
+      const tok = process.env.WS_BOX_TURN || '';
+      appendFileSync(path.join(GRANT_DIR, 'box-launches.log'), JSON.stringify({
+        at: new Date().toISOString(), pid: process.pid, ppid: process.ppid, cwd: process.cwd(), script: process.argv[1] || null,
+        tokenFp: tok ? createHash('sha256').update(tok).digest('hex').slice(0, 8) : null, ok: !!verdict.ok, reason: verdict.ok ? 'ok' : verdict.reason,
+      }) + '\n');
+    } catch { /* best effort */ }
     if (!verdict.ok) {
       throw new Error(
         `${verdict.message}\n`

@@ -1,0 +1,16 @@
+toplevel: C:/Users/nickh/writer-studio/.claude/worktrees/sbf
+base: 95238995  branch: acc97c64
+merge: 9f6d4574  parents: 2
+ apps/desktop/scripts/harness/fx5.mjs               |  44 +++++++
+ .../scripts/harness/scrollbar-flush-source.mjs     | 101 ++++++++++++++++
+ apps/desktop/scripts/harness/scrollbar-flush.mjs   | 131 +++++++++++++++++++++
+ apps/desktop/src/index.css                         |  97 ++++++++++-----
+ 4 files changed, 345 insertions(+), 28 deletions(-)
+Done in 16.1s using pnpm v10.28.2
+tsc-desktop=0
+tsc-server-done
+SEED-GUARD VERIFY: PASS (36 checks)
+TYPING-LATENCY READERS VERIFY: PASS (5 checks, 24 reads classified)
+TYPED-LITERAL-CHECK VERIFY: PASS (29 checks)
+GLITCH-METER-CHECK VERIFY: PASS (15 checks)
+[2mdist-web/[22m[36massets/index-Dy_FKJi_.js                                          [39m[1m[33m796.58 kB[39m[22m[2m │ gzip: 250.45 kB[22m
