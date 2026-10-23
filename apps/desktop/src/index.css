@@ -370,15 +370,18 @@
    robust fix regardless of that inheritance quirk, and costs nothing
    beyond a one-time style-rule match (not a per-frame cost).
    ============================================================================ */
+/* SCROLLBAR-FLUSH, ONE MECHANISM (Fable Oct 23): the STANDARD properties below are the app's only scrollbar
+   mechanism. Since Chromium 121 (Electron 31 = Chromium 126) `::-webkit-scrollbar` is IGNORED on any element whose
+   `scrollbar-width` or `scrollbar-color` is not `auto` - and this `*` rule sets both on every element - so the 8px
+   `::-webkit-scrollbar{width:8px}` rule and its thumb/track/hover siblings that used to follow were dead code from the day
+   the app moved to Electron 31 (the harness measured the native thin bar, 10px, not 8). They are deleted, not kept as a
+   second source of truth: never both on one element. What a standard-properties thumb cannot do is a hover darken - the
+   honest cost of "barely noticeable", and the rule is Nick's (thin, flush on the page edge, tone-aware). The width is
+   whatever native `thin` renders (<=10px), so the harness asserts the RULE (thin, <=10px, flush), never a guessed number. */
 *{
   scrollbar-width: thin;
   scrollbar-color: var(--ink-border-strong) transparent;
 }
-::-webkit-scrollbar{ width:8px; height:8px; }
-::-webkit-scrollbar-track{ background:transparent; }
-::-webkit-scrollbar-thumb{ background:var(--ink-border-strong); border-radius:0; }
-::-webkit-scrollbar-thumb:hover{ background:var(--text-low); }
-::-webkit-scrollbar-corner{ background:transparent; }
 /* FX7 S4 — the systemic default's dark-chrome tokens read poorly against
    the LIGHT paper (a scrollbar tuned for `--ink-950`-family surfaces,
    painted over `--paper`'s cream tone, would sit closer to invisible than
@@ -418,19 +421,8 @@
   scrollbar-color: var(--ink-on-paper-low) transparent;
 }
 .board-text{ scrollbar-color: var(--ink-on-card-low) transparent; }
-.mode-scroll::-webkit-scrollbar-thumb,
-.desk-frame-scroll-cap::-webkit-scrollbar-thumb,
-.board-canvas-wrap::-webkit-scrollbar-thumb{ background:var(--ink-on-paper-low); }
-.board-text::-webkit-scrollbar-thumb{ background:var(--ink-on-card-low); }
-/* Hover darkens toward the paper's own primary ink (--ink-on-paper), the
-   mirror of the dark-chrome default's own rest-dark/hover-light relationship
-   — a LIGHT surface needs MORE contrast (darker), not less, to read as
-   "more visible" on hover; --paper-border would have gone the wrong way
-   (lighter, closer to the paper itself, i.e. LESS visible). */
-.mode-scroll::-webkit-scrollbar-thumb:hover,
-.desk-frame-scroll-cap::-webkit-scrollbar-thumb:hover,
-.board-canvas-wrap::-webkit-scrollbar-thumb:hover{ background:var(--ink-on-paper); }
-.board-text::-webkit-scrollbar-thumb:hover{ background:var(--ink-on-card); }
+/* (The per-element `::-webkit-scrollbar-thumb` colour and hover-darken rules that used to follow were dead under
+   Chromium >= 121 wherever scrollbar-color is set - see the one-mechanism note on the systemic `*` rule above.) */
 
 /* ============================================================================
    TH1 — the theme seam (docs/th1-theme-seam-brief.md, docs/flux-theme-canon.md).
@@ -1397,9 +1389,7 @@ a:focus-visible,
     -webkit-mask-image: linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
     mask-image: linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
   }
-  .beat-rail-dots::-webkit-scrollbar {
-    display: none;
-  }
+  /* (its `::-webkit-scrollbar{display:none}` twin is deleted: redundant with scrollbar-width:none above on Chromium >= 121 - one mechanism per element) */
 }
 
 /* Forward-only editor (CW2). Runs render as DOM spans; the native caret is used
@@ -4138,10 +4128,7 @@ a:focus-visible,
   scrollbar-color: color-mix(in srgb, var(--text-low) 28%, transparent) transparent;
 }
 .wz-sliver-panel > *{ direction: ltr; }
-.wz-sliver-panel::-webkit-scrollbar{ width: 4px; }
-.wz-sliver-panel::-webkit-scrollbar-track{ background: transparent; }
-.wz-sliver-panel::-webkit-scrollbar-thumb{ background: color-mix(in srgb, var(--text-low) 28%, transparent); }
-.wz-sliver-panel::-webkit-scrollbar-thumb:hover{ background: color-mix(in srgb, var(--text-low) 55%, transparent); }
+/* (Its `::-webkit-scrollbar` 4px rules are deleted: dead under Chromium >= 121 because scrollbar-width/color are set above - one mechanism per element.) */
 .wz-sliver-panel[data-open='true']{ opacity:1; pointer-events:auto; }
 /* item 83 errata E1 (2026-09-03) — THE POP-OUT HOLD. Nick's ruling: a foot
    pop-out fades after FIFTEEN WORDS WRITTEN or A PERIOD ENTERED, never on a
