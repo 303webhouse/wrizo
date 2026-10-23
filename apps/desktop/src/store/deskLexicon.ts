@@ -1566,8 +1566,7 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
   flux: {
     // PAGE TEMPLATES - Flux's circuit-register words for the picker (the approved templates mockup): Presets, and Raw / Script / Spine / Cover / Sources.
     // railTypeface's own Flux override already lives below (theme-leftovers) - not duplicated here.
-    // THEME PICKER (theme-rules.md B.5/D) - Flux's own word for the theme menu is "Skin".
-    cascadeThemeTitle: 'Skin',
+    // cascadeThemeTitle: 'Skin' - flux-v2's own addition (merged to main independently); not duplicated here.
     railTemplates: 'Presets',
     templateBlank: 'Raw',
     templateScreenplay: 'Script',
