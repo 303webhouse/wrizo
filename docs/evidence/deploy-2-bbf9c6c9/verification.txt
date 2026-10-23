@@ -1,0 +1,12 @@
+DEPLOY #2 - deployment bbf9c6c9-d9fe-4fda-93c3-ec8409b2b935 - SUCCESS - 2026-10-22 22:34:42 -06:00 (upload 04:34:30Z, build finished by 04:39Z)
+Tree: origin/main @ e2b2c872, the primary checkout fast-forwarded from the pin e01f2847; clean at upload. Product identical to the step-3 full-pair tree 6afdd31e (git diff of apps/desktop/src and apps/server/src: empty; the only difference in apps is the item207-core.mjs harness park).
+Local build of the tree: index-CazY2EnS.js, 783467 bytes, md5 f99949324eca94d3c37ed9344b1e1a2b - the same name and size as the pair tree's bundle.
+Verification (Oct 23 ~04:40Z):
+  healthz: 200 {"ok":true,"build":"index-CazY2EnS"}
+  auth/me: 401
+  signup-status: {"open":false}
+  served bundle index-CazY2EnS.js: 783467 bytes, md5 f99949324eca94d3c37ed9344b1e1a2b  ==  the local build
+  smoke-login: SMOKE: PASS (6/6)
+  the users migration (words_written, themes_opened, backfill): GET /api/theme-unlock as the smoke account -> 200; keys themesOpened, thresholds, wordsWritten; wordsWritten a number, 1 theme opened (the Arbor grandfather), 5 thresholds listed
+  service log: container started and listening, 0 error lines
+A backup (RESTORE-MATCH YES, 8 tables, 14 users, 374 rows) was taken at 22:32 local immediately before, outside the repo.

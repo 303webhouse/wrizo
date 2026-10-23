@@ -1,0 +1,10 @@
+DEPLOY #1 - deployment af635e0e-298e-4f5d-9923-28f00318236c - SUCCESS - 2026-10-22 19:58:20 -06:00 (upload 01:58:08Z, `railway up` exit 0 at 02:03:45Z)
+Tree: the primary checkout PINNED at e01f2847 (delete-for-good + help-buttons; tested tree da7056d7's product), clean at upload (docs/evidence and the untracked Flux Word Picker.html moved aside, restored by MD5).
+Verification (Oct 23 ~02:05Z):
+  healthz: 200 {"ok":true,"build":"index-FiDazln3"}
+  auth/me: 401
+  signup-status: {"open":false}
+  served bundle index-FiDazln3.js: 760340 bytes, md5 db7c3995e2e028aa0653c745dc35017e  ==  the local build: 760340 bytes, md5 db7c3995e2e028aa0653c745dc35017e
+  smoke-login: SMOKE: PASS (6/6) - its sync pull reads the purged_at columns, so the pinned migration ran
+  service log: container started and listening, 0 error lines
+Previous deployment 36206da7 (connector-b, Oct 18): REMOVED by Railway after this one went live.
