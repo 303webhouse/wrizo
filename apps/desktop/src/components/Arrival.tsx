@@ -1,3 +1,4 @@
+import { WrizoMark } from './WrizoMark';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { unbornHref } from '../store/unbornPage';
@@ -178,10 +179,10 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   return (
     <div className="wz-home wz-arrival">
       <div className="wz-ambient" aria-hidden="true" />
-      <img className="wz-mark show" src="/brand/wrizo-logo.png" alt="" aria-hidden="true" />
+      <WrizoMark className="wz-mark show" alt="" />
 
       <section className={stage === 'doors' ? 'wz-hero' : 'wz-hero gone'}>
-        <img className="wz-logo" src="/brand/wrizo-logo.png" alt="Wrizo" />
+        <WrizoMark className="wz-logo" alt="Wrizo" />
         <div className="wz-tagline">For humans writing</div>
         <div className="wz-arrival-bootbar" data-ready={ready ? 'true' : 'false'} aria-hidden="true">
           <div className="wz-arrival-bootbar-fill" />

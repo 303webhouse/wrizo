@@ -1,3 +1,4 @@
+import { WrizoMark } from './WrizoMark';
 import { useEffect, useRef, useState } from 'react';
 import { ForwardOnlyEditor } from './ForwardOnlyEditor';
 import { apiLogin, apiRegister, type AuthUser } from '../store/api';
@@ -143,11 +144,11 @@ export function HomeFlow({ onAuthed }: { onAuthed: (user: AuthUser) => void }) {
       )}
 
       {/* corner mark — present once writing begins */}
-      <img className={`wz-mark${stage !== 'landing' ? ' show' : ''}`} src="/brand/wrizo-logo.png" alt="" aria-hidden="true" />
+      <WrizoMark className={`wz-mark${stage !== 'landing' ? ' show' : ''}`} alt="" />
 
       {/* Hero */}
       <section className={`wz-hero${stage !== 'landing' ? ' gone' : ''}`} onClick={() => { if (stage === 'landing') setStage('writing'); }}>
-        <img className="wz-logo" src="/brand/wrizo-logo.png" alt="Wrizo" />
+        <WrizoMark className="wz-logo" alt="Wrizo" />
         <div className="wz-tagline">For humans writing</div>
         <div className="wz-invite">begin anywhere<span className="wz-cursor" /></div>
       </section>

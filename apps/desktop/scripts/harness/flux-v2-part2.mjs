@@ -196,6 +196,19 @@ export async function part2({ ok, sleepMs }) {
       ok('F13 a board card is a dark-glass node: dark fill (not Arbor cream), a thin cyan edge, light ink, and a cyan UPPERCASE first line', !!nd && nd.lum < 0.15 && /0,\s*194,\s*255/.test(nd.border) && nd.titleColor === 'rgb(87, 208, 245)' && nd.titleCase === 'uppercase', JSON.stringify(nd));
       ok('F13 the board wears the frame: the grid ring and the corner brackets, click-through', !!nd && nd.frame && nd.grid && nd.brackets && nd.frameClick === 'none', JSON.stringify(nd));
 
+      // ---- F18: the Inputs work on the board: the knob wears the INPUT glyph (through ThemeIcon), a node shows its true X / Y, the board shows its one hint, the Inputs panel is Flux glass --------------------
+      await click('.board-canvas .board-text');
+      const knobUp = await waitSoft("!!document.querySelector('.board-graft-knob')", { label: 'graft knob', timeout: 5000 });
+      const kn = knobUp ? await q(`(() => { const k = document.querySelector('.board-graft-knob'); const g = k.querySelector('svg[data-theme-icon="input"]'); const r = g ? g.getBoundingClientRect() : null; const cs = getComputedStyle(k);
+        return { glyph: !!g, w: r ? Math.round(r.width) : 0, h: r ? Math.round(r.height) : 0, border: cs.borderTopColor, color: cs.color }; })()`) : null;
+      ok('F18 the selected card\'s knob wears the INPUT glyph (12 x 12, through ThemeIcon) in the choice colour on a square glass knob', !!kn && kn.glyph && kn.w === 12 && kn.h === 12 && kn.border === 'rgb(0, 194, 255)' && kn.color === 'rgb(0, 194, 255)', JSON.stringify(kn));
+      const bx = await q(`(() => { const c = document.querySelector('.board-canvas .flux-card-coord'); const hint = document.querySelector('.flux-board-frame .flux-readout-hint'); return { coord: c ? c.textContent : null, hint: hint ? hint.textContent : null }; })()`);
+      ok('F18 a node shows its true position (the first card, stored at x .05 / y .05, reads X 050 · Y 050) and the board shows its one hint', !!bx && bx.coord === 'X 050 · Y 050' && bx.hint === 'DRAG A NODE ▪ DRAG ITS INPUT TO CONNECT', JSON.stringify(bx));
+      await q("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(900);
+      await q("document.querySelector('#wz-tutor-tab-links')?.click()"); await sleep(600);
+      const ip = await q(`(() => { const a = document.querySelector('.wz-graft-add'); if (!a) return null; const cs = getComputedStyle(a); const m = /rgba?\\(([^)]+)\\)/.exec(cs.backgroundColor); const p = m ? m[1].split(',').map((x) => parseFloat(x)) : [0, 0, 0]; return { text: a.textContent.trim(), bg: cs.backgroundColor, warm: p[0] - p[2] >= 6 && p[0] >= p[1], border: cs.borderTopColor }; })()`);
+      ok('F18 the Inputs panel\'s add control reads "+ Input…" on Flux glass (no Arbor brown)', !!ip && /Input…/.test(ip.text) && ip.warm === false, JSON.stringify(ip));
+
       // ---- F14: the rail's place block reads RACK ▸ <name> and WRAPS - never truncated -----------------------------------------------------------------------------------------------------
       await open('fx-m2');
       const pbk = await q(`(() => { const e = document.querySelector('.wz-place-block .wz-place-name'); if (!e) return null; const cs = getComputedStyle(e); return { text: e.textContent, ws: cs.whiteSpace, overflow: cs.textOverflow, clipped: e.scrollWidth > e.clientWidth + 1, h: Math.round(e.getBoundingClientRect().height) }; })()`);
@@ -233,6 +246,19 @@ export async function part2({ ok, sleepMs }) {
         await click('.wz-strip [data-category="page"]'); await q("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(900);
         const ol = await q(oliveScan);
         ok(`F17 [${pg}] no element paints an Arbor olive or muted green (any remaining green is lime #A6FF3D)`, Array.isArray(ol) && ol.length === 0, JSON.stringify(ol));
+      }
+
+
+      // ---- F19: the arrival wears Flux's own WRIZO wordmark, never Arbor's PNG; F20: the card tokens are glass in BOTH tones (a pop-up and the deck wizard read them) ----------------------------------------------
+      await fresh();
+      const arr = await q(`(() => { const l = document.querySelector('.wz-arrival .wz-logo'); const m = document.querySelector('.wz-arrival .wz-mark'); const imgs = [...document.querySelectorAll('img')].filter((i) => /wrizo-logo|wrizo-sketch/.test(i.getAttribute('src') || '') && i.getBoundingClientRect().width > 0).length;
+        return { logo: l ? l.tagName + ':' + l.textContent : null, mark: m ? m.tagName + ':' + m.textContent : null, imgs }; })()`);
+      ok('F19 the arrival\'s logo and corner mark are Flux\'s WRIZO wordmark (text), and no Arbor wrizo PNG is drawn', !!arr && arr.logo === 'SPAN:WRIZO' && arr.mark === 'SPAN:WRIZO' && arr.imgs === 0, JSON.stringify(arr));
+      for (const pg of ['dark', 'light']) {
+        await q(`window.wrizoThemePrefs.set({ page: '${pg}' })`); await sleep(300);
+        const tk = await q(`(() => { const cs = getComputedStyle(document.documentElement); return { stock: cs.getPropertyValue('--card-stock').trim(), ink: cs.getPropertyValue('--ink-on-card').trim(), badge: cs.getPropertyValue('--badge-on-card').trim() }; })()`);
+        const dark = (h) => { const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(h || ''); return !!m && (0.2126 * parseInt(m[1], 16) + 0.7152 * parseInt(m[2], 16) + 0.0722 * parseInt(m[3], 16)) / 255 < 0.2; };
+        ok(`F20 [${pg}] the card, its pop-up and the deck wizard read dark glass: card stock dark, ink light, badge cyan (never Arbor olive)`, !!tk && dark(tk.stock) && !dark(tk.ink) && tk.badge.toUpperCase() === '#57D0F5', JSON.stringify(tk));
       }
 
 

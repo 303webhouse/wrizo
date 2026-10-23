@@ -181,11 +181,19 @@ await withHarness(async (app) => {
     const vars = await app.evalJs(`(() => { const cs = getComputedStyle(document.documentElement);
       return { card: cs.getPropertyValue('--ink-on-card').trim(), cardLow: cs.getPropertyValue('--ink-on-card-low').trim(),
         paper: cs.getPropertyValue('--ink-on-paper').trim(), paperLow: cs.getPropertyValue('--ink-on-paper-low').trim() }; })()`);
-    const shouldAlias = !(theme === 'flux' && page === 'dark');
-    ok(`${T} C4: --ink-on-card ${shouldAlias ? 'aliases' : 'diverges from'} --ink-on-paper (${vars.card} vs ${vars.paper})`,
-      shouldAlias ? vars.card === vars.paper : vars.card !== vars.paper, JSON.stringify(vars));
-    ok(`${T} C4: --ink-on-card-low ${shouldAlias ? 'aliases' : 'diverges from'} --ink-on-paper-low (${vars.cardLow} vs ${vars.paperLow})`,
-      shouldAlias ? vars.cardLow === vars.paperLow : vars.cardLow !== vars.paperLow, JSON.stringify(vars));
+    // ---- PARKED - SUPERSEDED by the Flux glass cards (Fable, Oct 22-23: a card, its pop-up and the deck wizard are dark glass under Flux, in both tones): under Flux the card ink is the glass-card ink (#E8F6FA / #57D0F5) in BOTH tones, so it neither aliases nor diverges from the page ink by tone; Arbor still aliases.
+    // Kept VERBATIM below and no longer run; the live successor follows.
+    //
+    // const shouldAlias = !(theme === 'flux' && page === 'dark');
+    // ok(`${T} C4: --ink-on-card ${shouldAlias ? 'aliases' : 'diverges from'} --ink-on-paper (${vars.card} vs ${vars.paper})`,
+    //   shouldAlias ? vars.card === vars.paper : vars.card !== vars.paper, JSON.stringify(vars));
+    // ok(`${T} C4: --ink-on-card-low ${shouldAlias ? 'aliases' : 'diverges from'} --ink-on-paper-low (${vars.cardLow} vs ${vars.paperLow})`,
+    //   shouldAlias ? vars.cardLow === vars.paperLow : vars.cardLow !== vars.paperLow, JSON.stringify(vars));
+    const glass = theme === 'flux';
+    ok(`${T} C4 [flux-inputs successor]: --ink-on-card ${glass ? 'is Flux\'s glass-card ink #E8F6FA in both tones' : 'aliases --ink-on-paper'} (${vars.card} vs ${vars.paper})`,
+      glass ? vars.card.toUpperCase() === '#E8F6FA' : vars.card === vars.paper, JSON.stringify(vars));
+    ok(`${T} C4 [flux-inputs successor]: --ink-on-card-low ${glass ? 'is Flux\'s cyan #57D0F5 in both tones' : 'aliases --ink-on-paper-low'} (${vars.cardLow} vs ${vars.paperLow})`,
+      glass ? vars.cardLow.toUpperCase() === '#57D0F5' : vars.cardLow === vars.paperLow, JSON.stringify(vars));
   }
 
 });

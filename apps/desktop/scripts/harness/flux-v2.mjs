@@ -160,7 +160,11 @@ async function suite(M, mk = () => load()) {
   keep('RO4', M.rackReadout && M.rackReadout('The Late Ferry') === 'RACK ▸ The Late Ferry', M.rackReadout && M.rackReadout('The Late Ferry'));
   const H = M.HINTS || {};
   keep('RO5', H.prose === 'TYPE — THE CHROME RECEDES ▪ PASTE MEETS THE FIREWALL' && H.wireIn === 'FORWARD ONLY — NO WAY BACK ▪ PASTE MEETS THE FIREWALL' && M.hintFor && M.hintFor('prose') === H.prose && M.hintFor('wireIn') === H.wireIn, JSON.stringify(H));
-  keep('RO6', M.hintFor && M.hintFor('board') === null && M.hintFor('nope') === null && Object.keys(H).sort().join() === 'prose,wireIn', 'a board hint lands with the Inputs work after step 3; no other string can be shown');
+  // ---- PARKED - SUPERSEDED by the Inputs work (the board hint landed after step 3, Fable Oct 21 ruling 2): the board now has its one true hint, "DRAG A NODE ▪ DRAG ITS INPUT TO CONNECT"; nothing else can be shown.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // keep('RO6', M.hintFor && M.hintFor('board') === null && M.hintFor('nope') === null && Object.keys(H).sort().join() === 'prose,wireIn', 'a board hint lands with the Inputs work after step 3; no other string can be shown');
+  keep('RO6b', M.hintFor && M.hintFor('board') === 'DRAG A NODE ▪ DRAG ITS INPUT TO CONNECT' && M.HINTS.board === M.hintFor('board') && M.hintFor('nope') === null && Object.keys(H).sort().join() === 'board,prose,wireIn', 'the board hint is the landed string; no other string can be shown');
   keep('RO7', M.shouldAcquire && M.shouldAcquire(null, 'a') === true && M.shouldAcquire('a', 'a') === false && M.shouldAcquire('a', 'b') === true && M.shouldAcquire('a', null) === false, 'once per page open');
   keep('RO8', M.isDefaultRoot && M.isDefaultRoot({ id: 'top-drawer-u1', name: 'Top Drawer' }) === true && M.isDefaultRoot({ id: 'top-drawer-u1', name: 'The Late Ferry' }) === false && M.isDefaultRoot({ id: 'd2', name: 'Top Drawer' }) === false, 'Root only while the top drawer is still the default');
 
@@ -186,6 +190,28 @@ async function suite(M, mk = () => load()) {
   return r;
 }
 
+// ---- pin checks over source TEXT (so a mutant can edit the text and the check must go red) ------------------------------------------------------------------------------------------
+function pinChecks(rdT) {
+  const r = {};
+  const keep = (k, pass, detail = '') => { r[k] = { pass: !!pass, detail }; };
+  const arrival = rdT('components/Arrival.tsx'), home = rdT('components/HomeFlow.tsx'), mark = rdT('components/WrizoMark.tsx'), board = rdT('components/BoardEditor.tsx'), frame = rdT('components/FluxReadouts.tsx');
+  // WM1 - the arrival and home screens draw the theme's own mark: Flux's WRIZO wordmark, Arbor's PNG only for Arbor - never the PNG under Flux
+  keep('WM1', /<WrizoMark className="wz-logo"/.test(arrival) && /<WrizoMark className="wz-mark/.test(arrival) && /<WrizoMark className="wz-logo"/.test(home) && /<WrizoMark className=\{\x60wz-mark/.test(home)
+    && !/wrizo-logo\.png/.test(arrival) && !/wrizo-logo\.png/.test(home) && /theme === 'flux'/.test(mark) && />WRIZO</.test(mark), 'Arrival / HomeFlow render WrizoMark; the PNG lives only in WrizoMark, behind the theme test');
+  // KN1 - the knob's glyph has ONE theme-generic render site: ThemeIcon id="input" inside the knob (a theme with no INPUT set draws the plain dot)
+  keep('KN1', /className="board-graft-knob"[\s\S]{0,700}<ThemeIcon id="input" fallback=\{null\}/.test(board), 'the knob renders <ThemeIcon id="input">');
+  // CO1 - a node wears its true X / Y: FluxCardCoord on text / ink / page-pin cards, built from coordReadout; the board's frame carries the board hint
+  keep('CO1', /<FluxCardCoord x=\{box\.x\} y=\{box\.y\} \/>/.test(board) && /export function FluxCardCoord/.test(frame) && /coordReadout\(x, y\)/.test(frame) && /hintFor\('board'\)/.test(frame), 'FluxCardCoord on the card; hintFor(board) in the frame');
+  return r;
+}
+const TXT_MUT = [
+  { name: 'the arrival draws Arbor\'s PNG under Flux again', file: 'components/Arrival.tsx', find: '<WrizoMark className="wz-logo" alt="Wrizo" />', to: '<img className="wz-logo" src="/brand/wrizo-logo.png" alt="Wrizo" />', red: ['WM1'] },
+  { name: 'the knob loses its INPUT glyph', file: 'components/BoardEditor.tsx', find: '<ThemeIcon id="input" fallback={null} size={12} />', to: '', red: ['KN1'] },
+  { name: 'the card loses its X / Y', file: 'components/BoardEditor.tsx', find: '<FluxCardCoord x={box.x} y={box.y} />', to: '', red: ['CO1'] },
+];
+const pinBase = pinChecks(readSrc);
+for (const [k, v] of Object.entries(pinBase)) ok(k, v.pass, v.detail);
+
 // ---- mutants (each landed; each reddens its own check) ---------------------------------------------------------------------------------------------------------------------------
 const CSS_MUT = [
   { name: 'the ground token drifts back to the old teal', edit: (c) => c.replace('--ink-950: #020c10;', '--ink-950: #04141A;'), red: ['TK1'] },
@@ -199,6 +225,7 @@ const CSS_MUT = [
   { name: 'the chromatic offset turns red', edit: (c) => c.replace(/--flux-offset:\s*[^;]+;/, '--flux-offset: 0.5px 0 0 rgba(255, 40, 40, .4);'), red: ['CH1'] },
   { name: 'Arbor olive returns as the Flux dark door', edit: (c) => c.replace('--accent-door: #57D0F5;', '--accent-door: #A9B56A;'), red: ['TK5'] },
   { name: 'the rail\'s active state falls back to brass', edit: (c) => c.replace("[data-theme='flux'] .desk-rail-item.active{ color:var(--line-active);", "[data-theme='flux'] .desk-rail-item.active{ color:var(--brass);"), red: ['RL1'] },
+  { name: 'the card goes back to cream stock in the Flux root', edit: (c) => c.replace('  --card-stock: #0E2C32;', '  --card-stock: #FBF6EA;'), red: ['CD1'] },
   { name: 'an Arbor brown surface returns to the Flux root', edit: (c) => c.replace('--ink-800: #0E2C32;', '--ink-800: #2A241E;'), red: ['TK4'] },
   { name: 'Arbor\'s PNG mark paints again under Flux', edit: (c) => c.replace('-webkit-mask:none; mask:none; background:none;', 'background:var(--brass);'), red: ['BR1'] },
   { name: 'a board card goes back to cream stock', edit: (c) => c.replace('--card-stock:#0E2C32; --card-hairline:rgba(0, 194, 255, .55);', '--card-stock:#FBF6EA; --card-hairline:rgba(0, 194, 255, .55);'), red: ['BD1'] },
@@ -207,7 +234,11 @@ const CSS_MUT = [
 const SRC_MUT = [
   { name: 'trackOf is off by one', file: 'store/place.ts', find: /return \{ n: i \+ 1, m: items\.length \};/, to: 'return { n: i, m: items.length };', red: ['RO9', 'RO9b'] },
   { name: 'the acquire fires on every render', file: 'store/fluxReadouts.ts', find: /return prev !== id && id !== null;/, to: 'return id !== null;', red: ['RO7'] },
-  { name: 'the board gets a hint before step 3', file: 'store/fluxReadouts.ts', find: /if \(surface === 'prose'\) return HINTS\.prose;/, to: "if (surface === 'prose' || surface === 'board') return HINTS.prose;", red: ['RO6'] },
+  // ---- PARKED - SUPERSEDED by the Inputs work (the board hint landed after step 3, Fable Oct 21 ruling 2): its mutation (a board hint before step 3) is now the real behaviour; the successor breaks the landed board hint instead.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // { name: 'the board gets a hint before step 3', file: 'store/fluxReadouts.ts', find: /if \(surface === 'prose'\) return HINTS\.prose;/, to: "if (surface === 'prose' || surface === 'board') return HINTS.prose;", red: ['RO6'] },
+  { name: 'the board hint is replaced by the prose line', file: 'store/fluxReadouts.ts', find: /if \(surface === 'board'\) return HINTS\.board;/, to: "if (surface === 'board') return HINTS.prose;", red: ['RO6b'] },
   { name: 'DOC loses its zero padding', file: 'store/fluxReadouts.ts', find: /pad\(n, 2\)/, to: 'String(n)', red: ['RO1'] },
   { name: 'a coordinate is not clamped at 999', file: 'store/fluxReadouts.ts', find: /Math\.min\(999, /, to: 'Math.min(9999, ', red: ['RO3'] },
   { name: 'Root replaces a renamed top drawer', file: 'store/place.ts', find: /&& d\.name === DEFAULT_TOP_NAME/, to: '', red: ['RO8'] },
@@ -263,6 +294,10 @@ function cssChecks(css) {
   const firstLine = rules(css).find((x) => x.sel === "[data-theme='flux'] .board-text::first-line");
   keep('BD1', !!nodeStock && lum(hex(nodeStock[1])) < 0.05 && !!nodeInk && ratio(hex(nodeInk[1]), hex(nodeStock[1])) >= 7 && /--card-hairline:\s*rgba\(0,\s*194,\s*255/.test(nodeTok.body)
     && !!firstLine && /text-transform:\s*uppercase/.test(firstLine.body) && /color:\s*var\(--text-accent\)/.test(firstLine.body), nodeTok ? nodeTok.body.slice(0, 120) : 'no Flux board-canvas token rule');
+  // CD1 - a card, its pop-up and the deck wizard are dark glass in BOTH tones (the Flux root carries the card tokens; the dark tone no longer overrides a cream-card ink)
+  const cs = T('card-stock'), ci = T('ink-on-card'), cm = T('ink-on-card-meta');
+  keep('CD1', /^#[0-9a-f]{6}$/i.test(cs || '') && lum(hex(cs)) < 0.05 && /^#[0-9a-f]{6}$/i.test(ci || '') && ratio(hex(ci), hex(cs)) >= 7 && /^#[0-9a-f]{6}$/i.test(cm || '') && ratio(hex(cm), hex(cs)) >= 4.5 && !greenish(T('badge-on-card')) && !/--ink-on-card:/.test(B.dark),
+    `stock ${cs}, ink ${ci}, meta ${cm}, badge ${T('badge-on-card')}`);
   // OR - orange only where allowed, in rules that apply under Flux
   const bad = rules(css).filter((x) => /data-theme='flux'|data-theme="flux"/.test(x.sel) && ORANGE_RE.test(x.body.replace(/--orange\s*:[^;]+;/g, '')) && !ORANGE_OK.some((re) => re.test(x.sel))).map((x) => x.sel.slice(0, 90));
   keep('OR1', bad.length === 0 && /--choice:\s*#00C2FF/i.test(B.root), bad.slice(0, 4).join(' | '));
@@ -319,7 +354,7 @@ ok('P7 a Flux frame ring: the grid and brackets are an overlay on the page FRAME
 
 // mutants
 let landed = 0, killed = 0;
-const total = CSS_MUT.length + SRC_MUT.length;
+const total = CSS_MUT.length + SRC_MUT.length + TXT_MUT.length;
 for (const mu of CSS_MUT) {
   const m2 = mu.edit(cssNow);
   if (m2 === cssNow) { ok(`mutant "${mu.name}": the mutation LANDED`, false, 'no change'); continue; }
@@ -327,6 +362,16 @@ for (const mu of CSS_MUT) {
   const rr = cssChecks(m2);
   const went = mu.red.filter((k) => rr[k] && !rr[k].pass);
   ok(`mutant "${mu.name}" is KILLED (reddens: ${mu.red.join(', ')})`, went.length === mu.red.length, `red: ${went.join(', ') || 'none'}`);
+  if (went.length === mu.red.length) killed += 1;
+}
+for (const mu of TXT_MUT) {
+  const orig = readSrc(mu.file);
+  if (!orig.includes(mu.find)) { ok('mutant "' + mu.name + '": the mutation LANDED', false, 'anchor missing in ' + mu.file); continue; }
+  landed += 1;
+  const mutated = orig.replace(mu.find, () => mu.to);
+  const rr = pinChecks((rel) => (rel === mu.file ? mutated : readSrc(rel)));
+  const went = mu.red.filter((k) => rr[k] && !rr[k].pass);
+  ok('mutant "' + mu.name + '" is KILLED (reddens: ' + mu.red.join(', ') + ')', went.length === mu.red.length, 'red: ' + (went.join(', ') || 'none'));
   if (went.length === mu.red.length) killed += 1;
 }
 for (const mu of SRC_MUT) {

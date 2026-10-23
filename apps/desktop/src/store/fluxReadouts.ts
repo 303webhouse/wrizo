@@ -30,10 +30,11 @@ export function rackReadout(name: string): string {
   return `RACK ▸ ${name}`;
 }
 
-// The hint lines (Fable, Oct 21): the prose surface and Wire In each get one true line. A board hint lands with the Inputs work after step 3 - there is none until then.
+// The hint lines (Fable, Oct 21): the prose surface and Wire In each get one true line; the board's landed with the Inputs work, after step 3.
 export const HINTS = {
   prose: 'TYPE — THE CHROME RECEDES ▪ PASTE MEETS THE FIREWALL',
   wireIn: 'FORWARD ONLY — NO WAY BACK ▪ PASTE MEETS THE FIREWALL',
+  board: 'DRAG A NODE ▪ DRAG ITS INPUT TO CONNECT',
 } as const;
 
 export type HintSurface = 'prose' | 'wireIn' | 'board';
@@ -41,6 +42,7 @@ export type HintSurface = 'prose' | 'wireIn' | 'board';
 export function hintFor(surface: string): string | null {
   if (surface === 'prose') return HINTS.prose;
   if (surface === 'wireIn') return HINTS.wireIn;
+  if (surface === 'board') return HINTS.board;
   return null;
 }
 
