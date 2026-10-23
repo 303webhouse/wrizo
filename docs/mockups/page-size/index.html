@@ -12,6 +12,8 @@
   root.dataset.mode = q.get('mode') || 'dark';
   root.dataset.panels = q.get('panels') || 'open';
   root.dataset.w = q.get('w') || '1366';
+  root.dataset.view = q.get('view') || 'page';
+  root.dataset.glide = q.get('glide') || '';
   if (q.has('theme')) root.classList.add('shot');
 })();
 </script>
@@ -48,6 +50,14 @@
   html[data-theme='flux'] .page { box-shadow: none; border: 1px solid var(--line); }
   .prose { font-family: 'Crimson Pro', Georgia, serif; font-size: 16px; line-height: 1.7; }
   .prose p + p { margin-top: 1.05em; }
+  html[data-view='typewriter'] .panel { display: none; }
+  html[data-view='typewriter'] .page { padding: 0 !important; overflow: hidden; }
+  html[data-view='typewriter'] .port {
+    position: absolute; inset: 0; overflow: hidden;
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,.04) 0, rgba(0,0,0,.04) var(--ramp), rgba(0,0,0,.2) calc(var(--full) - var(--lh)), #000 var(--full), #000 var(--band), rgba(0,0,0,.4) calc(var(--band) + 2.2 * var(--lh)), rgba(0,0,0,.08) 100%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,.04) 0, rgba(0,0,0,.04) var(--ramp), rgba(0,0,0,.2) calc(var(--full) - var(--lh)), #000 var(--full), #000 var(--band), rgba(0,0,0,.4) calc(var(--band) + 2.2 * var(--lh)), rgba(0,0,0,.08) 100%);
+  }
+  html[data-view='typewriter'] .sheet { padding: var(--pad-y) var(--pad-x); will-change: transform; }
   .caret { display: inline-block; width: 1px; height: .9em; background: var(--accent); vertical-align: -.08em; }
   html[data-theme='flux'] .caret { width: .55em; height: 1em; background: rgba(255,152,0,.85); box-shadow: 0 0 8px rgba(255,152,0,.45); vertical-align: -.12em; }
   .panel { position: absolute; top: 12px; bottom: 12px; color: var(--muted); font-size: 15px; }
@@ -71,9 +81,7 @@
 </header>
 <div class="stage">
   <aside class="panel left" id="left"></aside>
-  <article class="page" id="page">
-    <div class="prose" id="prose"></div>
-  </article>
+  <article class="page" id="page"><div class="port" id="port"><div class="sheet" id="sheet"><div class="prose" id="prose"></div></div></div></article>
   <aside class="panel right" id="right"></aside>
 </div>
 <div class="note" id="note"></div>
@@ -85,11 +93,14 @@
   var theme = root.dataset.theme;
   var arbor = theme === 'arbor';
   document.getElementById('brand').textContent = arbor ? 'Arbor' : 'Flux';
+  var view = root.dataset.view;
+  var twName = arbor ? 'Typewriter' : 'Terminal Mode';
   document.getElementById('modes').innerHTML = (arbor
     ? ['Free Write','Draft','Revise','Workshop','Publish','Boards']
     : ['Wire In','Text','Patch','Relay','Uplink','Circuits']
   ).map(function (name, i) {
-    return '<span' + (i === 1 ? ' class="on"' : '') + '>' + name + '</span>';
+    var on = view === 'typewriter' ? i === 0 : i === 1;
+    return '<span' + (on ? ' class="on"' : '') + '>' + name + '</span>';
   }).join('');
   document.getElementById('left').innerHTML = '<h2>' + (arbor ? 'Pages' : 'Docs') + '</h2>'
     + '<button class="row" type="button">The second well<span>The rope was already there.</span></button>'
@@ -105,18 +116,59 @@
     var pageH = pageW * (11 / 8.5);
     var page = document.getElementById('page');
     var padX = (pageW - textW) / 2;
-    page.style.width = pageW + 'px';
-    page.style.height = pageH + 'px';
-    page.style.padding = (padX * 0.85) + 'px ' + padX + 'px';
-    document.getElementById('prose').innerHTML = '<p>' + LINE + '<span class="caret"></span></p><p>Whatever is worth carrying is already with you. The rest the wind can have.</p>';
-    var left = (innerWidth - pageW) / 2;
+    var paras = [
+      LINE,
+      'Whatever is worth carrying is already with you. The rest the wind can have.',
+      'We left the map on the stone and walked until the light went thin.',
+      'The bucket came up colder than the morning, and nobody spoke.'
+    ];
+    var caret = '<span class="caret"></span>';
+    var html = paras.map(function (p, i) {
+      return '<p>' + p + (i === paras.length - 1 && root.dataset.glide !== 'mid' ? caret : '') + '</p>';
+    }).join('');
+    if (root.dataset.glide === 'mid') html += '<p>' + caret + '</p>';
+    document.getElementById('prose').innerHTML = html;
+    var page = document.getElementById('page');
+    var baseW = textW / (6.5 / 8.5);
+    var baseH = baseW * (11 / 8.5);
+    var padX = (baseW - textW) / 2;
+    var padY = padX * 0.85;
+    var scale = 1;
+    if (view === 'typewriter') {
+      var roomH = document.querySelector('.stage').clientHeight - 16;
+      scale = Math.min(1.6, roomH / baseH, (innerWidth - 32) / baseW);
+    }
+    page.style.width = (baseW * scale) + 'px';
+    page.style.height = (baseH * scale) + 'px';
+    document.getElementById('prose').style.fontSize = (16 * scale) + 'px';
+    if (view === 'typewriter') {
+      page.style.setProperty('--pad-x', (padX * scale) + 'px');
+      page.style.setProperty('--pad-y', (padY * scale) + 'px');
+      var lh = 16 * scale * 1.7;
+      page.style.setProperty('--lh', lh + 'px');
+      page.style.setProperty('--full', 'calc(58% - ' + (3 * lh) + 'px)');
+      page.style.setProperty('--ramp', 'calc(58% - ' + (6.2 * lh) + 'px)');
+      page.style.setProperty('--band', 'calc(58% + ' + (1.15 * lh) + 'px)');
+      var caretEl = document.querySelector('.caret');
+      var sheet = document.getElementById('sheet');
+      var caretY = caretEl.getBoundingClientRect().top - sheet.getBoundingClientRect().top;
+      var target = page.clientHeight * 0.58;
+      var shift = target - caretY;
+      if (root.dataset.glide === 'mid') shift += lh * 0.5;
+      sheet.style.transform = 'translateY(' + shift + 'px)';
+    } else {
+      page.style.padding = padY + 'px ' + padX + 'px';
+    }
+    var left = (innerWidth - baseW) / 2;
     var panelW = Math.min(280, Math.max(160, left - 28));
     document.getElementById('left').style.width = panelW + 'px';
     document.getElementById('left').style.left = '16px';
     document.getElementById('right').style.width = panelW + 'px';
     document.getElementById('right').style.right = '16px';
     var words = LINE.trim().split(/\s+/).length;
-    document.getElementById('note').textContent = '12 pt · ' + LINE.length + ' characters · ' + words + ' words · letter ' + Math.round(pageW) + ' × ' + Math.round(pageH);
+    var kind = view === 'typewriter' ? twName + ' · ' + scale.toFixed(2) + '× · panels tucked' : 'page';
+    if (root.dataset.glide === 'mid') kind += ' · gliding up one line';
+    document.getElementById('note').textContent = kind + ' · 12 pt · ' + LINE.length + ' characters · ' + words + ' words · letter ' + Math.round(baseW) + ' × ' + Math.round(baseH);
   }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
   else layout();
