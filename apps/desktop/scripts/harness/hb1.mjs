@@ -233,7 +233,11 @@ await withHarness(async (app) => {
   // Board-Done supersession's own park cycle + live successors live in b2.mjs
   // and cd4.mjs. Cross-reference disclosure only, per the immutability codicil.
   const chromeLive = await app.evalJs(`(() => {
-    const publishTab = [...document.querySelectorAll('.desk-mode-strip .desk-mode-tab')].find(b => b.textContent === 'Publish');
+    // ---- PARKED - SUPERSEDED by FLUX V2 (the full pair on 21e18ae3, Fable's ruling Oct 22): the Publish tab reads Uplink under Flux, so it is found by its data attribute (data-mode-key), not by the word.
+    // Kept VERBATIM below and no longer run; the live successor follows.
+    //
+    // const publishTab = [...document.querySelectorAll('.desk-mode-strip .desk-mode-tab')].find(b => b.textContent === 'Publish');
+    const publishTab = document.querySelector('.desk-mode-strip .desk-mode-tab[data-mode-key="publish"]');
     return { publishPresent: !!publishTab, publishInert: !!publishTab?.closest('[inert]'), publishAriaDisabled: publishTab?.getAttribute('aria-disabled') };
   })()`);
   ok('CD3 successor of "S4: post-unlock chrome (Done) is reachable again — not still wrapped in an inert ancestor" (Page/Script only — the Board keeps its own Done, untouched, see cd1.mjs/b2.mjs): post-unlock chrome (the mode strip\'s Publish tab, Done\'s replacement doorway here) is reachable again — present, not aria-disabled, not wrapped in an inert ancestor',
@@ -242,7 +246,11 @@ await withHarness(async (app) => {
   // Function, not just presence (this file's own hb1.1 R1/F-1 discipline,
   // applied here too): actually click Publish and confirm the dialog
   // mounts — proves the control is genuinely wired, not just unwrapped.
-  await app.evalJs("[...document.querySelectorAll('.desk-mode-strip .desk-mode-tab')].find(b => b.textContent === 'Publish').click()");
+  // ---- PARKED - SUPERSEDED by FLUX V2 (the full pair on 21e18ae3, Fable's ruling Oct 22): the Publish tab reads Uplink under Flux, so it is found by its data attribute (data-mode-key), not by the word.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // await app.evalJs("[...document.querySelectorAll('.desk-mode-strip .desk-mode-tab')].find(b => b.textContent === 'Publish').click()");
+  await app.evalJs("document.querySelector('.desk-mode-strip .desk-mode-tab[data-mode-key=\"publish\"]').click()");
   await sleep(150);
   const publishDialogMounted = await app.evalJs("!!document.querySelector('.sprint-modal-backdrop')");
   ok('S4 (Page): clicking the post-unlock Publish tab actually opens the Publish dialog (function, not just presence)', publishDialogMounted);

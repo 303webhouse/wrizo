@@ -407,7 +407,11 @@ async function part2() {
       await waitSoft(`!!document.querySelector(".wz-sliver[data-open='true']")`, { label: 'strip open', timeout: 3000 });
       await sleep(500);
     };
-    const toDraft = async () => { await app.click('Draft'); await sleep(700); };
+    // ---- PARKED - SUPERSEDED by Nick's answer (Oct 21): Flux's Draft tab reads "Text": found by its text; the successor finds it by its key, whatever the theme calls it.
+    // Kept VERBATIM below and no longer run; the live successor follows.
+    //
+    // const toDraft = async () => { await app.click('Draft'); await sleep(700); };
+    const toDraft = async () => { await app.evalJs("document.querySelector('.desk-mode-tab[data-mode-key=\"draft\"]')?.click()"); await sleep(700); };
     const pickerNames = () => app.evalJs("[...document.querySelectorAll('.wz-sliver-templates .wz-template-row')].map((b) => b.getAttribute('aria-label'))");
     const chosen = () => app.evalJs("[...document.querySelectorAll('.wz-sliver-templates .wz-template-row[aria-pressed=\"true\"]')].map((b) => b.dataset.template)");
     const press = async (key) => {

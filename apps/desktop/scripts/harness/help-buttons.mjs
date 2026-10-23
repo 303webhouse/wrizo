@@ -81,7 +81,11 @@ const freshPage = async (app, theme, { width = 1400, id = 'hb-page' } = {}) => {
 };
 
 const openDraftSliver = async (app) => {
-  await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft')?.click()");
+  // ---- PARKED - SUPERSEDED by Nick's answer (Oct 21): Flux's Draft tab reads "Text": found by its text; the successor finds it by its key, whatever the theme calls it.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft')?.click()");
+  await app.evalJs("document.querySelector('.desk-mode-tab[data-mode-key=\"draft\"]')?.click()");
   await sleep(300);
   // REPAIR (Fable, Oct 17, ledger 91) — .wz-sliver-grip is a TOGGLE: calling
   // this unconditionally as each LOCATIONS entry's own reach step closed the
@@ -129,9 +133,21 @@ const openDraftSliverSettings = async (app) => {
 // Dedicated per-theme successor: S1b, below the generic loop.
 const LOCATIONS = [
   { key: 'helpTemplates', subject: 'Templates', reach: openDraftSliver, sel: '.wz-sliver-templates .wz-sliver-h .wz-help' },
-  { key: 'recedeHint', subject: 'Recede depth', reach: openDraftSliverSettings, sel: '.wz-help[aria-label="What is Recede depth?"]' },
-  { key: 'helpFreeWrite', subject: 'Free Write', reach: async () => {}, sel: '.desk-mode-tab-wrap .wz-help[aria-label^="What is Free"]' },
-  { key: 'helpPublish', subject: 'Publish', reach: async () => {}, sel: '.desk-mode-tab-wrap .wz-help[aria-label^="What is Publish"]' },
+  // ---- PARKED - SUPERSEDED by FLUX WORDS / the templates rows (box run b96e7cd1, Fable's ruling Oct 21): the "?" names its row, and Flux's row is Dissolve ("What is Dissolve?") - the product is right (the label comes from the lexicon); the selector takes either theme's own word.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // { key: 'recedeHint', subject: 'Recede depth', reach: openDraftSliverSettings, sel: '.wz-help[aria-label="What is Recede depth?"]' },
+    { key: 'recedeHint', subject: 'Recede depth', reach: openDraftSliverSettings, sel: '.wz-help[aria-label="What is Recede depth?"], .wz-help[aria-label="What is Dissolve?"]' },
+  // ---- PARKED - SUPERSEDED by FLUX WORDS (Nick's Oct 12 pass, folded into flux-v2): the "?" names its tab, and Flux's tab is Wire In - the selector takes either theme's own word.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // { key: 'helpFreeWrite', subject: 'Free Write', reach: async () => {}, sel: '.desk-mode-tab-wrap .wz-help[aria-label^="What is Free"]' },
+    { key: 'helpFreeWrite', subject: 'Free Write', reach: async () => {}, sel: '.desk-mode-tab-wrap .wz-help[aria-label^="What is Free"], .desk-mode-tab-wrap .wz-help[aria-label^="What is Wire"]' },
+  // ---- PARKED - SUPERSEDED by FLUX WORDS (Nick's Oct 12 pass, folded into flux-v2): the "?" names its tab, and Flux's tab is Uplink - the selector takes either theme's own word.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // { key: 'helpPublish', subject: 'Publish', reach: async () => {}, sel: '.desk-mode-tab-wrap .wz-help[aria-label^="What is Publish"]' },
+    { key: 'helpPublish', subject: 'Publish', reach: async () => {}, sel: '.desk-mode-tab-wrap .wz-help[aria-label^="What is Publish"], .desk-mode-tab-wrap .wz-help[aria-label^="What is Uplink"]' },
   { key: 'helpGrafts', subject: 'Grafts/Links', reach: openTutorDrawer, sel: '.wz-drawer-tabnotes .wz-help' },
 ];
 
@@ -148,7 +164,11 @@ const SENTENCES = {
     recedeHint: 'Type to dissolve the chrome; pause, reach an edge, or press Esc to bring it back.',
     helpFreeWrite: 'Write forward only. No editing back.',
     helpPublish: 'Send a doc out as a link or a file.',
-    helpGrafts: 'Links join docs, cards and circuits.',
+    // ---- PARKED - SUPERSEDED by FLUX V2 (Fable's brief, Nick Oct 21): Flux's Grafts help sentence now speaks Inputs and nodes ("the knob is an Input; the verb is connect").
+    // Kept VERBATIM below and no longer run; the live successor follows.
+    //
+    // helpGrafts: 'Links join docs, cards and circuits.',
+        helpGrafts: 'Inputs join docs, nodes and circuits.',
   },
 };
 
@@ -161,11 +181,19 @@ const SENTENCES = {
 const TEMPLATE_ROW_SENTENCES = {
   plateau: {},
   flux: {
-    Raw: 'A raw page. Nothing written yet.',
+    // ---- PARKED - SUPERSEDED by FLUX V2 (Fable's brief, Nick Oct 21): every Flux string that said Page says Doc.
+    // Kept VERBATIM below and no longer run; the live successor follows.
+    //
+    // Raw: 'A raw page. Nothing written yet.',
+        Raw: 'A raw doc. Nothing written yet.',
     Script: 'The script format: sluglines, dialogue, action.',
     Spine: 'A numbered spine. Tab indents.',
     Cover: 'A standard manuscript cover sheet.',
-    Sources: 'Your sources, collected on one page.',
+    // ---- PARKED - SUPERSEDED by FLUX V2 (Fable's brief, Nick Oct 21): every Flux string that said Page says Doc.
+    // Kept VERBATIM below and no longer run; the live successor follows.
+    //
+    // Sources: 'Your sources, collected on one page.',
+        Sources: 'Your sources, collected on one doc.',
   },
 };
 

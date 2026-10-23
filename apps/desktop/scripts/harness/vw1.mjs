@@ -111,6 +111,8 @@ const LAWFUL = [
     re: /getComputedStyle\(\s*document\.querySelector\(\s*['"]\.wz-strip-item/ },
   { why: 'a selector CONSTANT, not a selection',
     re: /(CAT_SEL|_SEL)\s*=\s*['"`]/ },
+  { why: "flux-v2.mjs's CSS mutant - the text of a STYLE RULE it appends to the stylesheet to prove the orange-only-where-allowed check goes red; it selects nothing in the DOM and depends on no position",
+    re: /edit:\s*\(c\)\s*=>\s*`\$\{c\}\\n\[data-theme='flux'\]\s*\.wz-strip-item\.active\{/ },
   { why: "this instrument's own source — it must name the thing it forbids",
     re: /OFFENDER|LAWFUL|data-category=\$\{cat\}|getAttribute\('data-category'\)/ },
 ];

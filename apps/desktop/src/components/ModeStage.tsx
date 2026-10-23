@@ -54,8 +54,9 @@ export const PEN_INKS = ['#1a0f06', '#b8231f', '#1f4fb8']; // black-brown, red, 
 // swatch keeps its hue family; only lightness moves, enough to clear 7:1
 // against #0B2429 (black-brown reuses --ink-on-paper itself, ~13.9:1; red and
 // blue are hand-lightened, ~7.4:1 and ~7.7:1).
+// FLUX V2: the dark page is now #0E1C24 with --ink-on-paper #E8F6FA, so the default swatch follows it (still ~15:1; red and blue only gain contrast on the darker glass).
 const PEN_INKS_FLUX_DARK: Record<string, string> = {
-  '#1a0f06': '#E3F1EC',
+  '#1a0f06': '#E8F6FA',
   '#b8231f': '#FF9088',
   '#1f4fb8': '#8AB4FF',
 };
@@ -68,8 +69,9 @@ const PEN_INKS_FLUX_DARK: Record<string, string> = {
 // (index.css), the same "reuse the theme's own ink" move the dark case
 // already makes. Scoped to the default swatch only, per the ticket's own
 // wording — red/blue aren't named and aren't touched.
+// FLUX V2: Flux light's --ink-on-paper is now #042632, and the default swatch is still that ink.
 const PEN_INKS_FLUX_LIGHT: Record<string, string> = {
-  '#1a0f06': '#14231F',
+  '#1a0f06': '#042632',
 };
 
 function effectivePenInk(ink: string, theme: ThemeId, pageTone: PageTone): string {
@@ -169,10 +171,12 @@ interface Props {
   // has no durable per-page memory of its own — a scratch surface) falls
   // through to the shared field exactly as every caller did before this.
   pageId?: string;
+  // FLUX V2 - the theme's frame readouts (components/FluxReadouts.tsx), drawn inside the lit page in its own padding. Absent for every host that passes none, so nothing changes there.
+  readouts?: React.ReactNode;
   children: (api: { noteWrite: () => void; penColor?: string }) => React.ReactNode;
 }
 
-export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle, onDissolveChange, onCelebrate, soundOn, onToggleSound, chromeRootRef, milestones, framed, penColor: penColorProp, instrument, inkPermission, firstRunGateActive, children }: Props) {
+export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle, onDissolveChange, onCelebrate, soundOn, onToggleSound, chromeRootRef, milestones, framed, penColor: penColorProp, instrument, inkPermission, firstRunGateActive, readouts, children }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const settings = useWritingSettings();
@@ -566,6 +570,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
               className="sprint-warmth-overlay"
               style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', borderRadius: 'var(--radius-md)', background: 'var(--ember)', opacity: 'calc(var(--sprint-warmth, 0) * var(--ambient-intensity))' }}
             />
+            {readouts}
             {pageTitle && <div className="mode-page-title">{pageTitle}</div>}
             <div
               ref={scrollRef}
@@ -734,8 +739,8 @@ export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvail
       {/* ITEM word-diet (Nick, Oct 13) — the standing hint below retires;
           its explanation moves here, behind a "?" beside this row's own
           label, one plain sentence (recedeHint, deskLexicon.ts). */}
-      <Seg label={<>Recede depth <DrawerNote label="About Recede depth">{deskLex('recedeHint')}</DrawerNote></>} value={settings.fadeDepth} opts={[['partial', 'Partial'], ['full', 'Full']]} onPick={v => setWritingSettings({ fadeDepth: v as FadeDepth })} />
-      <Seg label="Timer" value={settings.timer ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ timer: v === 'on' })} />
+      <Seg label={<>{deskLex('fadeDepthLabel')} <DrawerNote label={`About ${deskLex('fadeDepthLabel')}`}>{deskLex('recedeHint')}</DrawerNote></>} value={settings.fadeDepth} opts={[['partial', deskLex('fadeDepthPartial')], ['full', deskLex('fadeDepthFull')]]} onPick={v => setWritingSettings({ fadeDepth: v as FadeDepth })} />
+      <Seg label={deskLex('timerLabel')} value={settings.timer ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ timer: v === 'on' })} />
       {/* FX2 S2 — routes through setTypewriterExplicit, not the bare
           setter: the gear is the OTHER hand-click surface (beside the
           sliver's own TypewriterToggle), and both must arm the same

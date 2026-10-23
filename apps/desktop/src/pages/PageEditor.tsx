@@ -6,6 +6,7 @@ import { pageTypeStyle, ensureFaceLoaded } from '../store/fontRoster';
 import { SIZE_DEFAULT } from '../store/fontSize';
 import { describePageHome } from '../store/pageHome';
 import { LocationCrumb } from '../components/LocationCrumb';
+import { FluxReadouts } from '../components/FluxReadouts';
 import { firstLine } from '../store/entryText';
 import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEditor';
 import { useSurfaceSelection } from '../components/useSurfaceSelection';
@@ -1621,6 +1622,7 @@ function PageEditorView({ id }: { id: string }) {
                instrument: a Draft page is not "in TEXT", it is a word processor
                with ink on it. */
             inkPermission={inkPermission}
+            readouts={unborn ? undefined : <FluxReadouts entry={realEntry ?? null} surface={mode === 'journal' ? 'wireIn' : 'prose'} />}
             framed
             firstRunGateActive={gateActive}
           >

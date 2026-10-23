@@ -3375,6 +3375,12 @@ if (typeof window !== 'undefined') {
     return durable(stored(d, () => getDrawer(d.id)));
   };
 
+  // FLUX V2 harness seam: rename a drawer through the real path (renameDrawer), so a check can prove a renamed top drawer keeps its own name.
+  seams.wrizoRenameDrawer = (id: string, name: string) => {
+    renameDrawer(id, name);
+    return durable(getDrawer(id)?.name === name.trim() ? getDrawer(id) : false);
+  };
+
   // `setProjectDrawer` stores `drawerId ?? undefined`, so the read-back compares
   // against that same normalisation — asserting the stored shape, not the asked
   // one, which is the whole point of reading it back.

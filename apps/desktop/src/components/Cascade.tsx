@@ -4,6 +4,7 @@ import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
 import { CascadeSurvey } from './CascadeSurvey';
 import { PlaceBlock } from './PlaceBlock';
+import { ThemeIcon } from './ThemeIcon';
 import { renderCategoryPanel, buildSurvey, resolveStickyPlanSurvey, type CategoryId, type CascadeSurveyKind, type CascadeContext } from './CascadePanels';
 import type { PageFaceSubject } from './PageFace';
 import type { JournalEntry, Project } from '../types';
@@ -83,18 +84,18 @@ interface CategorySpec { id: CategoryId; labelTerm: DeskTermId; icon: ReactNode 
 // (History: VW1, item 134, grouped the rail by kind - Page and Plan; Drawers; Journal and Shelf. The Shelf left that band on purpose, and now leaves
 // the rail altogether.)
 const SECTION_A: CategorySpec[] = [
-  { id: 'page', labelTerm: 'drawerPage', icon: <PageIcon /> },
-  { id: 'plan', labelTerm: 'stripPlan', icon: <PlanIcon /> },
+  { id: 'page', labelTerm: 'drawerPage', icon: <ThemeIcon id="docs" fallback={<PageIcon />} /> },
+  { id: 'plan', labelTerm: 'stripPlan', icon: <ThemeIcon id="circuits" fallback={<PlanIcon />} /> },
 ];
 // B1 S5 (superseded by Nick's own placement) — the Trash NO LONGER lives in
 // section C; it sits at the very foot of the strip (SECTION_TRASH below), the
 // last place of all, a thin line above it.
 const SECTION_C: CategorySpec[] = [
-  { id: 'journal', labelTerm: 'drawerPlaceJournal', icon: <JournalIcon /> },
+  { id: 'journal', labelTerm: 'drawerPlaceJournal', icon: <ThemeIcon id="log" fallback={<JournalIcon />} /> },
 ];
 const SECTION_D: CategorySpec[] = [
-  { id: 'settings', labelTerm: 'stripSettings', icon: <SettingsIcon /> },
-  { id: 'theme', labelTerm: 'stripChangeTheme', icon: <ThemeIcon /> },
+  { id: 'settings', labelTerm: 'stripSettings', icon: <ThemeIcon id="config" fallback={<SettingsIcon />} /> },
+  { id: 'theme', labelTerm: 'stripChangeTheme', icon: <ThemeIcon id="skin" fallback={<SkinIcon />} /> },
 ];
 // The Trash is the very last place: pinned to the strip's foot, below
 // Settings/Themes and a thin dividing line — "reachable, never prominent"
@@ -102,7 +103,7 @@ const SECTION_D: CategorySpec[] = [
 // screen. Same strip-item chrome as every other category (no badge, no
 // color, no size marking it out).
 const SECTION_TRASH: CategorySpec[] = [
-  { id: 'trash', labelTerm: 'drawerPlaceTrash', icon: <TrashIcon /> },
+  { id: 'trash', labelTerm: 'drawerPlaceTrash', icon: <ThemeIcon id="trash" fallback={<TrashIcon />} /> },
 ];
 
 function panelTitleTerm(category: CategoryId): DeskTermId {
@@ -416,7 +417,7 @@ function SettingsIcon() {
     </svg>
   );
 }
-function ThemeIcon() {
+function SkinIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M12 3a9 9 0 1 0 0 18c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2H17a4 4 0 0 0 4-4c0-4.4-4-7.4-9-7.4Z" />

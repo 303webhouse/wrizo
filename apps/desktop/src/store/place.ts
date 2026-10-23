@@ -24,7 +24,10 @@ export const JOURNAL = 'journal';
 export interface SectionGroup { set: Project | null; items: JournalEntry[] }
 export type SectionView = 'pages' | 'boards';
 
-const topDrawerId = (uid: string): string => `top-drawer-${uid}`;
+/** The name a new account's top drawer is born with. Flux shows it as "Root" - but only while it is still this (a renamed one shows its own name). */
+export const DEFAULT_TOP_NAME = 'Top Drawer';
+const TOP_DRAWER_PREFIX = 'top-drawer-';
+const topDrawerId = (uid: string): string => `${TOP_DRAWER_PREFIX}${uid}`;
 const topSetId = (uid: string): string => `top-set-${uid}`;
 const autoSetId = (drawerId: string): string => `auto-set-${drawerId}`;
 
@@ -39,11 +42,19 @@ const autoSetId = (drawerId: string): string => `auto-set-${drawerId}`;
 export function ensureTopDrawer(uid: string): boolean {
   if (!uid || hasAnyDrawerRow()) return false;
   const now = new Date().toISOString();
-  const drawer: Drawer = { id: topDrawerId(uid), name: 'Top Drawer', order: 0, createdAt: now, updatedAt: now };
+  const drawer: Drawer = { id: topDrawerId(uid), name: DEFAULT_TOP_NAME, order: 0, createdAt: now, updatedAt: now };
   saveDrawer(drawer);
-  const set: Project = { id: topSetId(uid), title: 'Top Drawer', type: 'creative', storyPlanId: null, drawerId: drawer.id, createdAt: now, updatedAt: now };
+  const set: Project = { id: topSetId(uid), title: DEFAULT_TOP_NAME, type: 'creative', storyPlanId: null, drawerId: drawer.id, createdAt: now, updatedAt: now };
   saveProject(set);
   return true;
+}
+
+/**
+ * FLUX V2 - is this the account's untouched top drawer? A render-time question only (the Root word, ruled Oct 21): true for the born-with id AND the born-with name, so a drawer the
+ * writer renamed keeps its own name. Nothing here ever writes a name.
+ */
+export function isDefaultRoot(d: { id: string; name: string }): boolean {
+  return d.id.startsWith(TOP_DRAWER_PREFIX) && d.name === DEFAULT_TOP_NAME;
 }
 
 // ---- The first Journal (a read-time rule, no row) ----------------------------------------------------------------------------------------------
@@ -110,6 +121,29 @@ export function sectionsOf(place: Pick<Place, 'kind' | 'id'>, view: SectionView)
     if (items.length) out.push({ set, items });
   }
   return out;
+}
+
+/**
+ * FLUX V2 - TRK n/m: where a section really sits. Its position (1-based, in the writer's own Order) among the sections of its set, counting only its own kind (a board among boards),
+ * or - for a page in the Journal - among the Journal's pages. Null for an entry no pop-out lists (a system board, a plan face).
+ */
+export function trackOf(e: JournalEntry): { n: number; m: number } | null {
+  const view: SectionView = isBoard(e) ? 'boards' : 'pages';
+  for (const g of sectionsOf(placeOfEntry(e), view)) {
+    const items = g.items;
+    const i = items.findIndex((x) => x.id === e.id);
+    if (i >= 0) return { n: i + 1, m: items.length };
+  }
+  return null;
+}
+
+/** FLUX V2 - DOC nn: a page's number in its place - its 1-based position across every page the place lists (all its sets, in order; the Journal's pages for a Journal page). Null when no pop-out lists it. */
+export function docNumberOf(e: JournalEntry): number | null {
+  let n = 0;
+  for (const g of sectionsOf(placeOfEntry(e), 'pages')) {
+    for (const x of g.items) { n += 1; if (x.id === e.id) return n; }
+  }
+  return null;
 }
 
 /** Set headings show only once a second set exists - the word "set" appears nowhere before that. A Journal has none. */

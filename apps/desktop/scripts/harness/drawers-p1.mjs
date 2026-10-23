@@ -477,7 +477,11 @@ function partJ(act = actionsSrc, pa = pageActionsSrc, sliver = sliverSrc, c = cs
     confirmWords: /t\('actionDeleteConfirm'\)/.test(act) && /t\('actionDeleteYes'\)/.test(act) && /t\('actionDeleteKeep'\)/.test(act),
     softOnly: /softDeleteEntry\(entry\.id\)/.test(del) && /flushNow\(\)/.test(del) && /navigate\(getResumeTarget\(\)\?\.route \?\? '\/', \{ replace: true \}\)/.test(del) && !/hardDelete|removeEntry|deleteEntry\(/.test(pa),
     sliverBetween: tableOrder && /content\.kind === 'draft' && content\.actions && allowed\('actions'\)/.test(sliver),
-    pressedOutline: !!pressed && /color:var\(--brass\)/.test(pressed) && /border-color:var\(--brass\)/.test(pressed) && /background:none/.test(pressed) && !/color-mix/.test(pressed),
+    // ---- PARKED - SUPERSEDED by FLUX V2 (Fable's ruling Oct 21: brass is locked; a chosen / pressed state reads --choice, which is brass in Arbor): the pressed action's rule now says var(--choice).
+    // Kept VERBATIM below and no longer run; the live successor follows.
+    //
+    // pressedOutline: !!pressed && /color:var\(--brass\)/.test(pressed) && /border-color:var\(--brass\)/.test(pressed) && /background:none/.test(pressed) && !/color-mix/.test(pressed),
+    pressedOutline: !!pressed && /color:var\(--choice\)/.test(pressed) && /border-color:var\(--choice\)/.test(pressed) && /background:none/.test(pressed) && !/color-mix/.test(pressed),
     markInk: /content\.kind === 'freewrite' && content\.instrument\?\.value === 'ink'/.test(sliver) && /data-instrument="ink"/.test(sliver) && /TIP_ICONS\.pen/.test(sliver),
     markQuiet: !!mark && !/brass/.test(mark) && /width:10px; height:10px/.test(mark),
     tabBoxSame: !!grip && /width:16px; height:34px/.test(grip),
@@ -551,7 +555,11 @@ function partM(tutor = tutorSrc, tabs = tabsSrc, note = noteSrc, c = css) {
     // fact, sets pointer-events:auto. Reads current reality, same claim.
     overlayInert: !!overlay && /pointer-events:none/.test(overlay) && /pointer-events:auto/.test(ruleBody(c, '.wz-drawer-note{') || ''),
     popOverlay: !!pop && /position:absolute/.test(pop),
-    noteOpenOutline: !!noteBtn && /color:var\(--brass\)/.test(noteBtn) && /background:none/.test(noteBtn) && !/color-mix/.test(noteBtn),
+    // ---- PARKED - SUPERSEDED by FLUX V2 (Fable's ruling Oct 21: brass is locked; a chosen / pressed state reads --choice, which is brass in Arbor): the open "?" rule now says var(--choice).
+    // Kept VERBATIM below and no longer run; the live successor follows.
+    //
+    // noteOpenOutline: !!noteBtn && /color:var\(--brass\)/.test(noteBtn) && /background:none/.test(noteBtn) && !/color-mix/.test(noteBtn),
+    noteOpenOutline: !!noteBtn && /color:var\(--choice\)/.test(noteBtn) && /background:none/.test(noteBtn) && !/color-mix/.test(noteBtn),
   };
 }
 {
@@ -564,8 +572,13 @@ function partM(tutor = tutorSrc, tabs = tabsSrc, note = noteSrc, c = css) {
   // Successor: the SAME core claim (the word itself), against the union's
   // own current, accurate shape.
   const inUnionNow = /'tutorTabTutor' \| 'drawerLinks' \| 'drawerLinksEmpty' \| 'drawerRightTabsLabel'/.test(lexSrc);
-  ok('(K1 [help-buttons successor]) the right drawer\'s second tab word is the THEME\'S, from the lexicon: Grafts in Arbor (the canonical theme), Links in Flux',
-    k.arborWord === 'Grafts' && k.fluxWord === 'Links' && inUnionNow, JSON.stringify({ ...k, inUnionNow }));
+  // ---- PARKED - SUPERSEDED by FLUX V2 (Fable's brief, Nick Oct 21): the right drawer's second tab is INPUTS in Flux (the knob is an Input; the verb is connect).
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok('(K1 [help-buttons successor]) the right drawer\'s second tab word is the THEME\'S, from the lexicon: Grafts in Arbor (the canonical theme), Links in Flux',
+  //   k.arborWord === 'Grafts' && k.fluxWord === 'Links' && inUnionNow, JSON.stringify({ ...k, inUnionNow }));
+  ok('(K1 [flux-v2 successor]) the right drawer\'s second tab word is the THEME\'S, from the lexicon: Grafts in Arbor (the canonical theme), Inputs in Flux',
+    k.arborWord === 'Grafts' && k.fluxWord === 'Inputs' && inUnionNow, JSON.stringify({ ...k, inUnionNow }));
 
   // SUPERSEDED WHOLE (help-buttons): drawerLinksNote/-NoteLabel are DELETED
   // (not emptied) - the Arbor-only/Flux-empty explainer model this check
@@ -584,7 +597,11 @@ function partM(tutor = tutorSrc, tabs = tabsSrc, note = noteSrc, c = css) {
     noteKeysGone && !!helpGraftsArbor && !!helpGraftsFlux && helpGraftsArbor !== helpGraftsFlux,
     JSON.stringify({ noteKeysGone, helpGraftsArbor, helpGraftsFlux }));
 
-  ok('(K3) the empty pane\'s line follows the theme too (grafted / linked)', k.arborEmpty === 'Nothing grafted yet.' && k.fluxEmpty === 'Nothing linked yet.', JSON.stringify(k));
+  // ---- PARKED - SUPERSEDED by FLUX V2 (Fable's brief, Nick Oct 21): the empty pane reads "Nothing connected yet." in Flux.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok('(K3) the empty pane\'s line follows the theme too (grafted / linked)', k.arborEmpty === 'Nothing grafted yet.' && k.fluxEmpty === 'Nothing linked yet.', JSON.stringify(k));
+  ok('(K3 [flux-v2 successor]) the empty pane\'s line follows the theme too (grafted / connected)', k.arborEmpty === 'Nothing grafted yet.' && k.fluxEmpty === 'Nothing connected yet.', JSON.stringify(k));
   const l = await partL();
   ok('(K4) the right drawer\'s tabs are TUTOR then the links tab, from one constant', JSON.stringify(l.tabs) === JSON.stringify(['tutor', 'links']), JSON.stringify(l));
   const m = partM();
@@ -722,7 +739,11 @@ await mutant('the Delete button deletes at once (skips the gate) [one-dialog suc
 await mutant('Esc no longer cancels the confirm', async () => partJ(mutate(actionsSrc, "if (e.key === 'Escape' && open) { e.stopPropagation(); setOpen(null); }", "")), (j) => j.escCancels === false);
 await mutant('Delete hard-deletes', async () => partJ(actionsSrc, mutate(pageActionsSrc, 'softDeleteEntry(entry.id);', 'hardDelete(entry.id);')), (j) => j.softOnly === false);
 await mutant('Delete forgets to flush before leaving', async () => partJ(actionsSrc, mutate(pageActionsSrc, '      flushNow();\n      navigate(getResumeTarget()', '      navigate(getResumeTarget()')), (j) => j.softOnly === false);
-await mutant('the pressed action gets a fill', async () => partJ(actionsSrc, pageActionsSrc, sliverSrc, mutate(css, ".wz-action-btn[aria-pressed='true']{ color:var(--brass); border-color:var(--brass); background:none; }", ".wz-action-btn[aria-pressed='true']{ color:var(--brass); border-color:var(--brass); background:color-mix(in srgb,var(--brass) 14%,transparent); }")), (j) => j.pressedOutline === false);
+// ---- PARKED - SUPERSEDED by FLUX V2 (Fable's ruling Oct 21: brass is locked; a chosen / pressed state reads --choice, which is brass in Arbor): its mutation anchor is the --choice rule.
+// Kept VERBATIM below and no longer run; the live successor follows.
+//
+// await mutant('the pressed action gets a fill', async () => partJ(actionsSrc, pageActionsSrc, sliverSrc, mutate(css, ".wz-action-btn[aria-pressed='true']{ color:var(--brass); border-color:var(--brass); background:none; }", ".wz-action-btn[aria-pressed='true']{ color:var(--brass); border-color:var(--brass); background:color-mix(in srgb,var(--brass) 14%,transparent); }")), (j) => j.pressedOutline === false);
+await mutant('the pressed action gets a fill [flux-v2 successor]', async () => partJ(actionsSrc, pageActionsSrc, sliverSrc, mutate(css, ".wz-action-btn[aria-pressed='true']{ color:var(--choice); border-color:var(--choice); background:none; }", ".wz-action-btn[aria-pressed='true']{ color:var(--choice); border-color:var(--choice); background:color-mix(in srgb,var(--choice) 14%,transparent); }")), (j) => j.pressedOutline === false);
 await mutant('the instrument mark shows in TEXT too', async () => partJ(actionsSrc, pageActionsSrc, mutate(sliverSrc, "content.instrument?.value === 'ink' && (", "content.instrument && ("), css), (j) => j.markInk === false);
 await mutant('the instrument mark turns brass', async () => partJ(actionsSrc, pageActionsSrc, sliverSrc, mutate(css, '.wz-sliver-grip-mark{ display:flex; width:10px; height:10px; opacity:.9; }', '.wz-sliver-grip-mark{ display:flex; width:10px; height:10px; opacity:.9; color:var(--brass); }')), (j) => j.markQuiet === false);
 await mutant('the Sliver renders Actions without asking the table', async () => partJ(actionsSrc, pageActionsSrc, mutate(sliverSrc, "content.actions && allowed('actions')", "content.actions"), css), (j) => j.sliverBetween === false);
@@ -735,8 +756,17 @@ await mutant('the Sliver renders Actions without asking the table', async () => 
 //   await mutant('Flux gets the explainer too', async () => partK(mutate(lexSrc, "    drawerLinksNote: '',\n", "    drawerLinksNote: 'x',\n")), (k) => k.fluxNote !== '');
 // Successor: the SAME claim against helpGrafts's own Flux override - mutate
 // it to empty and the K2 successor's "never empty in either theme" must go red.
-await mutant('Flux\'s helpGrafts goes empty [help-buttons successor]', async () => {
-  const mutated = mutate(lexSrc, "helpGrafts: 'Links join docs, cards and circuits.',", "helpGrafts: '',");
+// ---- PARKED - SUPERSEDED by FLUX V2 (Fable's brief, Nick Oct 21): its mutation anchor is the Flux sentence, now "Inputs join docs, nodes and circuits."
+// Kept VERBATIM below and no longer run; the live successor follows.
+//
+// await mutant('Flux\'s helpGrafts goes empty [help-buttons successor]', async () => {
+//   const mutated = mutate(lexSrc, "helpGrafts: 'Links join docs, cards and circuits.',", "helpGrafts: '',");
+//   const over = mutated.slice(mutated.indexOf('const OVERRIDES'));
+//   const fluxVal = (new RegExp("helpGrafts:\\s*'([^']*)'").exec(over) || [])[1] ?? null;
+//   return { fluxVal };
+// }, (r) => !r.fluxVal);
+await mutant('Flux\'s helpGrafts goes empty [flux-v2 successor]', async () => {
+  const mutated = mutate(lexSrc, "helpGrafts: 'Inputs join docs, nodes and circuits.',", "helpGrafts: '',");
   const over = mutated.slice(mutated.indexOf('const OVERRIDES'));
   const fluxVal = (new RegExp("helpGrafts:\\s*'([^']*)'").exec(over) || [])[1] ?? null;
   return { fluxVal };
@@ -770,7 +800,11 @@ await mutant('a press outside no longer closes the note', async () => partM(tuto
 await mutant('the note opens on hover', async () => partM(tutorSrc, tabsSrc, mutate(noteSrc, 'className="wz-drawer-note"', 'className="wz-drawer-note" onMouseEnter={() => setOpen(true)}')), (m) => m.pressable === false);
 await mutant('the notes move inside the tablist', async () => partM(tutorSrc, mutate(tabsSrc, "    </div>\n    {hasNotes && notes && (", "    {hasNotes && notes && ("), noteSrc), (m) => m.outsideTablist === false);
 await mutant('the open note takes room (static, not an overlay)', async () => partM(tutorSrc, tabsSrc, noteSrc, mutate(css, '.wz-drawer-note-pop{ position:absolute;', '.wz-drawer-note-pop{ position:static;')), (m) => m.popOverlay === false);
-await mutant('the open "?" gets a fill', async () => partM(tutorSrc, tabsSrc, noteSrc, mutate(css, ".wz-drawer-note-btn[aria-expanded='true']{ color:var(--brass); border-color:var(--brass); background:none; }", ".wz-drawer-note-btn[aria-expanded='true']{ color:var(--brass); border-color:var(--brass); background:color-mix(in srgb,var(--brass) 14%,transparent); }")), (m) => m.noteOpenOutline === false);
+// ---- PARKED - SUPERSEDED by FLUX V2 (Fable's ruling Oct 21: brass is locked; a chosen / pressed state reads --choice, which is brass in Arbor): its mutation anchor is the --choice rule.
+// Kept VERBATIM below and no longer run; the live successor follows.
+//
+// await mutant('the open "?" gets a fill', async () => partM(tutorSrc, tabsSrc, noteSrc, mutate(css, ".wz-drawer-note-btn[aria-expanded='true']{ color:var(--brass); border-color:var(--brass); background:none; }", ".wz-drawer-note-btn[aria-expanded='true']{ color:var(--brass); border-color:var(--brass); background:color-mix(in srgb,var(--brass) 14%,transparent); }")), (m) => m.noteOpenOutline === false);
+await mutant('the open "?" gets a fill [flux-v2 successor]', async () => partM(tutorSrc, tabsSrc, noteSrc, mutate(css, ".wz-drawer-note-btn[aria-expanded='true']{ color:var(--choice); border-color:var(--choice); background:none; }", ".wz-drawer-note-btn[aria-expanded='true']{ color:var(--choice); border-color:var(--choice); background:color-mix(in srgb,var(--choice) 14%,transparent); }")), (m) => m.noteOpenOutline === false);
 
 await mutant('the layer stays live during the slide (the keyframe holds auto)', async () => partN(mutate(css, '@keyframes wz-drawer-live{ 0%, 99% { pointer-events:none; } 100% { pointer-events:auto; } }', '@keyframes wz-drawer-live{ 0%, 99% { pointer-events:auto; } 100% { pointer-events:auto; } }')), (n) => n.kf === false);
 await mutant('the guard is not applied to the open drawer', async () => partN(mutate(css, "[data-open='true'] > .wz-drawer-slide{ animation: wz-drawer-live var(--drawer-dur) linear; }", "[data-open='true'] > .wz-drawer-slide{ }")), (n) => n.use === false);

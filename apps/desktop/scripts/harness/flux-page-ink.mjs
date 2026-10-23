@@ -92,7 +92,16 @@ await withHarness(async (app) => {
     const now = await app.evalJs("(() => ({ theme: document.documentElement.getAttribute('data-theme') || 'plateau', page: document.documentElement.getAttribute('data-page') || 'light' }))()");
     ok(`${T} (premise) the page is in theme=${theme} page=${page}`, now.theme === theme && now.page === page, JSON.stringify(now));
 
-    for (const modeLabel of ['Free Write', 'Draft', 'Revise']) {
+    // ---- PARKED - SUPERSEDED by FLUX WORDS (Nick's Oct 12 pass, folded into flux-v2): under Flux the mode tabs read Wire In / Draft / Patch (Draft is held for Fable's confirmation and still reads Draft); Arbor keeps Free Write / Draft / Revise.
+    // Kept VERBATIM below and no longer run; the live successor follows.
+    //
+    // for (const modeLabel of ['Free Write', 'Draft', 'Revise']) {
+    // ---- PARKED - SUPERSEDED by Nick's answer (Oct 21): Flux's Draft tab reads "Text": the tab is found by its text.
+    // Kept VERBATIM below and no longer run; the live successor follows.
+    //
+    // const modeLabels = theme === 'flux' ? ['Wire In', 'Draft', 'Patch'] : ['Free Write', 'Draft', 'Revise'];
+    const modeLabels = theme === 'flux' ? ['Wire In', 'Text', 'Patch'] : ['Free Write', 'Draft', 'Revise'];
+    for (const modeLabel of modeLabels) {
       await switchMode(app, modeLabel);
       const active = await app.evalJs("document.querySelector('.desk-mode-tab.active')?.textContent");
       ok(`${T} (premise) ${modeLabel} tab is active after switching`, active === modeLabel, JSON.stringify({ active }));
@@ -150,8 +159,13 @@ await withHarness(async (app) => {
     const T = '[flux/light default ink]';
     await freshPage(app, 'flux', 'light', { id: 'fpi-p4' });
     const c = await contrastOf(app, ED);
-    ok(`${T} P4: Free Write's default pen ink is Flux's OWN ink (--ink-on-paper #14231F = rgb(20, 35, 31)), never Arbor's literal #1A0F06 (computed ${c?.fg})`,
-      !!c && c.fg === 'rgb(20, 35, 31)', JSON.stringify(c));
+    // ---- PARKED - SUPERSEDED by FLUX V2 (Fable's brief, Nick Oct 21): Flux light's --ink-on-paper is now #042632 (rgb(4, 38, 50)); the default pen ink still IS that ink - the identity claim is unchanged, the value moved.
+    // Kept VERBATIM below and no longer run; the live successor follows.
+    //
+    // ok(`${T} P4: Free Write's default pen ink is Flux's OWN ink (--ink-on-paper #14231F = rgb(20, 35, 31)), never Arbor's literal #1A0F06 (computed ${c?.fg})`,
+    //   !!c && c.fg === 'rgb(20, 35, 31)', JSON.stringify(c));
+    ok(`${T} P4 [flux-v2 successor]: Free Write's default pen ink is Flux's OWN ink (--ink-on-paper #042632 = rgb(4, 38, 50)), never Arbor's literal #1A0F06 (computed ${c?.fg})`,
+      !!c && c.fg === 'rgb(4, 38, 50)', JSON.stringify(c));
   }
 });
 

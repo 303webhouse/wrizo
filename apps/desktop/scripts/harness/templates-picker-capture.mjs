@@ -49,7 +49,11 @@ await withHarness(async (app) => {
     await app.evalJs(`location.hash = '#/page/tpc-${theme}'`);
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: `the page (${theme})` });
     await sleep(300);
-    await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft')?.click()");
+    // ---- PARKED - SUPERSEDED by Nick's answer (Oct 21): Flux's Draft tab reads "Text": found by its text; the successor finds it by its key.
+    // Kept VERBATIM below and no longer run; the live successor follows.
+    //
+    // await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft')?.click()");
+    await app.evalJs("document.querySelector('.desk-mode-tab[data-mode-key=\"draft\"]')?.click()");
     await sleep(300);
     await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
     await sleep(400);

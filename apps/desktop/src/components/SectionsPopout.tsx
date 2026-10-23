@@ -2,11 +2,14 @@ import { useEffect, useRef, useState, type ReactNode, type KeyboardEvent as Reac
 import type { NavigateFunction } from 'react-router-dom';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { flushNow, getDrawer, pinPageToBoard } from '../store/persistence';
+import { useTheme } from '../store/theme';
+import { rackReadout } from '../store/fluxReadouts';
 import {
-  UNSORTED, createSet, ensureSet, moveToJournal, reorderSections, sectionsOf, setsOfDrawer, showSetHeadings, undoMoveToJournal,
+  UNSORTED, createSet, isDefaultRoot, ensureSet, moveToJournal, reorderSections, sectionsOf, setsOfDrawer, showSetHeadings, undoMoveToJournal,
   type MoveToken, type Place, type SectionGroup,
 } from '../store/place';
 import { usePlace } from '../store/usePlace';
+import { ThemeIcon } from './ThemeIcon';
 import { unbornHref } from '../store/unbornPage';
 import { routeForEntry } from '../store/routeForEntry';
 import { firstLine } from '../store/entryText';
@@ -83,7 +86,11 @@ export function SectionsPopout({ view, currentId, navigate, boardId, journalLabe
 
   const isJournal = place.kind === 'journal';
   const drawer = place.kind === 'drawer' && place.id !== UNSORTED ? getDrawer(place.id) : null;
-  const placeName = isJournal ? journalLabel : place.id === UNSORTED ? t('switcherUnsorted') : drawer?.name ?? '';
+  // FLUX V2: Root while the top drawer is untouched (render-time), and in Flux the header reads RACK ▸ <name> for a real drawer. Arbor shows the name as before.
+  const theme = useTheme();
+  const shownName = drawer ? (isDefaultRoot(drawer) ? t('placeRootName') : drawer.name) : '';
+  const placeName = isJournal ? journalLabel : place.id === UNSORTED ? t('switcherUnsorted') : shownName;
+  const placeHead = theme === 'flux' && drawer ? rackReadout(shownName) : placeName;
   const groups: SectionGroup[] = sectionsOf(place, mode);
   const headings = showSetHeadings(place);
   const currentSet = place.setId ?? groups[0]?.set?.id ?? null;
@@ -209,7 +216,7 @@ export function SectionsPopout({ view, currentId, navigate, boardId, journalLabe
 
   return (
     <div className={`wz-cascade-panel-body wz-sections${mode === 'pages' ? ' wz-open-pages' : ''}`} data-kind={mode}>
-      <div className="wz-sections-place">{placeName}</div>
+      <div className="wz-sections-place">{drawer ? <ThemeIcon id="rack" fallback={null} size={14} /> : isJournal ? <ThemeIcon id="log" fallback={null} size={14} /> : null}<span className="wz-sections-place-name">{placeHead}</span></div>
       <button type="button" className="wz-cascade-action wz-cascade-action-door" onClick={mode === 'boards' ? newBoard : newPage}>{mode === 'boards' ? t('sectionsNewBoard') : t('cascadePageNewPage')}</button>
       {mode === 'boards' && zone}
       <div className="wz-sections-bar">
@@ -230,7 +237,7 @@ export function SectionsPopout({ view, currentId, navigate, boardId, journalLabe
           <div key={set ? set.id : 'journal'} className="wz-set" data-set-id={set ? set.id : ''}>
             {headings && set && (
               <button type="button" className="wz-set-head" aria-expanded={isOpen} onClick={() => setFolded(f => ({ ...f, [set.id]: isOpen }))}>
-                <span className="wz-set-name">{set.title}</span>
+                <ThemeIcon id="cartridge" fallback={null} size={14} /><span className="wz-set-name">{set.title}</span>
                 <span className="wz-set-count">{group.items.length}</span>
               </button>
             )}

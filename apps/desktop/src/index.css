@@ -101,6 +101,8 @@
      #ff9800 is locked and invariant — never recolor or remove. (Token name kept
      as --brass to avoid a global rename; this is a paint, not a refactor.) */
   --brass: #ff9800;
+  /* FLUX V2 (Fable's ruling): brass stays locked. CHOICE is the colour of a chosen / pressed / selected state: the same brass in Arbor, cyan under Flux. The selection selectors point here. */
+  --choice: var(--brass);
   --brass-hover: #ffab33;
   --brass-press: #e88900;
   --on-brass: #1C1610;
@@ -467,20 +469,31 @@
    anywhere in the brief or canon, and Journal ink is its own sealed domain,
    out of TH2's scope. */
 :root[data-theme='flux'] {
-  --ink-950: #04141A;             /* ground */
+  --ink-950: #020c10;             /* ground (Flux v2: was #04141A) */
   /* theme-leftovers (Nick approved Oct 16) — the teal twin of --lamp-glow's
      own brown gradient: the SAME stop positions/lightness/saturation ramp,
      hue shifted to this theme's own register (~194deg, between --ink-950's
      196.4deg and the dark page's own --paper 190deg). Was unset, so body's
      backdrop stayed Arbor-brown under Flux wherever a route's own content
      doesn't paint full-bleed over it (the unframed page view, Journal/Shelf). */
-  --lamp-glow: radial-gradient(135% 95% at 50% -8%, #0F2D36 0%, #102025 38%, #0A1417 70%, #070E10 100%);
+  --lamp-glow: radial-gradient(135% 95% at 50% -8%, #0A242B 0%, #071A1F 38%, #041218 70%, #020c10 100%);
   --chrome-surface: rgba(9, 30, 36, .9);
   --rail-surface: rgba(4, 17, 22, .78);
+  /* the Arbor ink surfaces are espresso browns (#1F1A16 / #2A241E) and ~60 rules + every input read them: the Flux glass replaces both (panel #0E2C32 for the raised tier) */
+  --ink-900: #091E24;
+  --ink-800: #0E2C32;
   --ink-border: #1D4A52;          /* line */
   --ink-border-strong: #2A6A76;   /* a brighter line tier — the dark page's own border value, reused */
   --line-active: #00C2FF;         /* canon §3 new slot */
   --signal-live: #A6FF3D;         /* canon §3 new slot */
+  /* FLUX V2 - a CHOSEN state is cyan. --brass stays Arbor's locked orange; --choice (the colour of every selected / pressed / current state, root block) is overridden here, and the orange
+     survives only where --orange is named (the caret, the sprint surge, Uplink, the mark, the current list item's left bar). */
+  --choice: #00C2FF;
+  --orange: var(--brass);
+  --text-accent: #57D0F5;
+  --accent-rest: #00C2FF;   /* "where you are" (the chosen tab, a current row's cue) is cyan in Flux; Arbor's is olive */
+  /* the chromatic offset: a faint cyan/blue hairline (never red) */
+  --flux-offset: 0.5px 0 0 rgba(0, 194, 255, .35);
   /* help-buttons (Nick approved Oct 12) — Flux's own "?" affordance colour,
      teal (never brass, never Arbor's olive --accent-rest). */
   --help: #5E9E98;
@@ -502,10 +515,11 @@
    canon §11). --paper-dim and the light page's border are this author's
    interpolation — not given explicit values by the canon's token table. */
 :root[data-theme='flux'][data-page='dark'] {
-  --paper: #0B2429;
-  --paper-dim: #091E23;
+  --paper: #0E1C24;
+  --paper-dim: #0A1620;
   --paper-border: #2A6A76;
-  --ink-on-paper: #E3F1EC;
+  --paper-edge: rgba(0, 194, 255, .55);   /* FLUX V2: the dark-glass page's thin cyan edge */
+  --ink-on-paper: #E8F6FA;
   --ink-on-paper-low: #57D0F5;    /* canon's "meta" slot, dark */
   /* BG2 S1 — the one theme whose paper is DARK, so the door olive steps back
      UP the same ramp rather than down: #4F5730 would measure 1.3:1 here. This
@@ -528,17 +542,91 @@
   --ink-on-card-low: #0A6B86;
 }
 :root[data-theme='flux'][data-page='light'] {
-  --paper: #EDF6F3;
-  --paper-dim: #E3EFEC;
+  --paper: #F4F7F8;
+  --paper-dim: #E9EFF1;
   --paper-border: #B7D4CE;
-  --ink-on-paper: #14231F;
+  --paper-edge: rgba(0, 150, 200, .5);    /* FLUX V2: the light page's edge (chrome stays dark) */
+  --ink-on-paper: #042632;
   /* faint-text-sweep (Fable, Oct 16: "the -low tier you flagged") — #0B7C9E
      measured 4.34:1 against this theme's own --paper and 4.43:1 against
      --card-stock, both under the 4.5:1 floor (the flux-dark override above
      quotes the same defect). Darkened one step down the same teal ramp to
      clear both: 5.65:1 on --paper, 5.77:1 on --card-stock. */
-  --ink-on-paper-low: #096986;    /* canon's "meta" slot, light */
+  --ink-on-paper-low: #063848;    /* canon's "meta" slot, light (Flux v2: was #096986) */
 }
+
+/* ============================================================================
+   FLUX V2 (Fable's brief, Nick Oct 21) - the new shell. Tokens above; this block is the rules that are not just a token.
+   ORANGE IS SCARCE: the caret (.flux-block-caret, above), the sprint surge (.mode-pfill.celebrate), Uplink, the mark, and the thin LEFT bar on the current list item.
+   Every other "selected" is cyan - and that comes for free, because --brass (the generic selection token) is cyan under Flux.
+   The page frame: a thin cyan edge, a faint grid and four corner brackets on the FRAME only (an overlay ring - never under text), and the readouts, all of which carry chrome-fade
+   and so recede with the chrome while the writer types. Nothing here changes the page's size or position: the readouts sit in the paper's own padding.
+   ========================================================================== */
+[data-theme='flux'] .mode-page{ border-color:var(--paper-edge); box-shadow:0 0 0 1px rgba(0, 194, 255, .08), 0 10px 44px rgba(0, 0, 0, .55); }
+[data-theme='flux'] .mode-page.focused{ box-shadow:0 0 0 1px rgba(0, 194, 255, .14), 0 0 26px rgba(0, 194, 255, .09), 0 10px 44px rgba(0, 0, 0, .55); }
+/* the chromatic offset: a faint cyan hairline beside the page edge, never red */
+[data-theme='flux'] .mode-page::after{ content:''; position:absolute; inset:0; pointer-events:none; box-shadow:inset var(--flux-offset); z-index:0; }
+
+.flux-readouts{ position:absolute; inset:0; z-index:1; pointer-events:none; font-family:var(--font-chromeLabel); }
+.flux-frame{ position:absolute; inset:0; pointer-events:none; box-sizing:border-box; padding:20px;
+  background-image:linear-gradient(rgba(0, 194, 255, .09) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 194, 255, .09) 1px, transparent 1px);
+  background-size:12px 12px;
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+.flux-brackets{ --flux-bracket:var(--line-active); position:absolute; inset:5px; pointer-events:none;
+  background:
+    linear-gradient(var(--flux-bracket), var(--flux-bracket)) top left / 14px 1px no-repeat,
+    linear-gradient(var(--flux-bracket), var(--flux-bracket)) top left / 1px 14px no-repeat,
+    linear-gradient(var(--flux-bracket), var(--flux-bracket)) top right / 14px 1px no-repeat,
+    linear-gradient(var(--flux-bracket), var(--flux-bracket)) top right / 1px 14px no-repeat,
+    linear-gradient(var(--flux-bracket), var(--flux-bracket)) bottom left / 14px 1px no-repeat,
+    linear-gradient(var(--flux-bracket), var(--flux-bracket)) bottom left / 1px 14px no-repeat,
+    linear-gradient(var(--flux-bracket), var(--flux-bracket)) bottom right / 14px 1px no-repeat,
+    linear-gradient(var(--flux-bracket), var(--flux-bracket)) bottom right / 1px 14px no-repeat; }
+:root[data-theme='flux'][data-page='light'] .flux-brackets{ --flux-bracket:var(--ink-on-paper-low); }
+/* the acquire: once per page open, 300 ms, transform and opacity only - and it has a still state (the brackets simply sit there) under reduced motion and at Ambiance 0 */
+.flux-brackets[data-acquire='true']{ animation:flux-acquire 300ms cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes flux-acquire{
+  0%{ opacity:0; transform:scale(1.045); }
+  100%{ opacity:1; transform:none; }
+}
+@media (prefers-reduced-motion: reduce){ .flux-brackets[data-acquire='true']{ animation:none } }
+.flux-readout{ position:absolute; left:16px; right:16px; display:flex; justify-content:space-between; gap:12px; font-size:10.5px; line-height:1; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--ink-on-paper-low); white-space:nowrap; }
+.flux-readout > span{ background:var(--paper); padding:0 6px; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.flux-readout-head{ top:8px; }
+.flux-readout-hint{ bottom:8px; left:50%; right:auto; transform:translateX(-50%); max-width:calc(100% - 32px); justify-content:center; background:var(--paper); padding:0 8px; overflow:hidden; text-overflow:ellipsis; }
+
+/* the pixel icons: 16 x 16, square, never smoothed */
+.theme-icon-pixels{ display:block; image-rendering:pixelated; shape-rendering:crispEdges; }
+/* the rail sizes its stroke icons at 21.6 px (and 14.5 px in the foot): a pixel map is drawn at its own 16 px, one screen pixel per map pixel, in both places */
+[data-theme='flux'] .wz-strip-glyph .theme-icon-pixels{ width:16px; height:16px; }
+[data-theme='flux'] .wz-sections-place{ display:flex; align-items:center; gap:8px; }
+[data-theme='flux'] .wz-set-head .theme-icon{ margin-right:6px; flex:none; }
+
+/* the current list item: a thin orange bar on its LEFT edge, and nothing else orange about it */
+[data-theme='flux'] .wz-section-open[aria-current='page']{ box-shadow:inset 2px 0 0 var(--orange); }
+/* the sprint surge is orange (Flux's selection is cyan, so the surge names its colour) */
+[data-theme='flux'] .mode-pfill-spark:not(.lime){ background:var(--orange); }
+
+/* ---- FLUX V2 - the screens against the mockup (Fable, Oct 22) ---------------------------------------------------------------------------------------------------------------
+   (1) the Ask box, Add Note, the search fields and every other input read --ink-800 / --ink-900 / --color-surface: Arbor's espresso browns. The Flux root block now carries the Flux glass
+       for both, so no input (dark page or light) can paint Arbor brown.
+   (2) Arbor's hand-drawn watermark is a PNG mask painted brass at the bottom right. Flux shows its own WRIZO mark: orange (one of orange's few homes), top left, set in the chrome label face.
+   (3) A board card is a dark-glass NODE: glass fill, a thin cyan edge, a cyan uppercase first line (its title), and the card tokens re-pointed INSIDE the canvas only (a card's popup and the
+       deck wizard keep their own sheet). The board's frame carries the same grid ring and corner brackets as the page's.
+   (4) The rail's place block wraps ("RACK ▸ The Late Ferry") instead of truncating. */
+[data-theme='flux'] .brand-mark{ top:10px; left:14px; bottom:auto; right:auto; width:auto; aspect-ratio:auto; opacity:1; -webkit-mask:none; mask:none; background:none; filter:none;
+  color:var(--orange); font-family:var(--font-chromeLabel); font-weight:700; font-size:15px; letter-spacing:.32em; line-height:1; }
+[data-theme='flux'] .brand-mark::before{ content:'WRIZO'; }
+
+[data-theme='flux'] .board-canvas{ --card-stock:#0E2C32; --card-hairline:rgba(0, 194, 255, .55); --ink-on-card:#E8F6FA; --ink-on-card-low:#57D0F5; --ink-on-card-meta:#8FD6EE; --badge-on-card:#57D0F5; }
+[data-theme='flux'] .board-text, [data-theme='flux'] .board-ink-canvas{ border:1px solid var(--card-hairline); box-shadow:0 0 0 1px rgba(0, 194, 255, .08), 0 6px 18px rgba(0, 0, 0, .45); }
+[data-theme='flux'] .board-text::first-line{ color:var(--text-accent); text-transform:uppercase; letter-spacing:.12em; font-family:var(--font-chromeLabel); font-weight:600; }
+[data-theme='flux'] .board-canvas-blur-wrap{ position:relative; }
+.flux-board-frame .flux-frame{ padding:12px; }
+
+[data-theme='flux'] .wz-place-block .wz-place-name{ overflow:visible; text-overflow:clip; white-space:normal; overflow-wrap:anywhere; text-align:center; line-height:1.2; }
 
 /* Slice 4 — the effects compositor scaffold (canon §6, ThemeEffectsLayer.tsx).
    One layer, absolutely positioned behind everything painted, pointer-events
@@ -1367,7 +1455,7 @@ a:focus-visible,
    (5.67:1 / 5.19:1), --text-mid clears it easily for the brighter --wz-ink-dim tier
    (8.30:1 / 7.60:1), --text-hi clears it by a wide margin for --wz-ink (16.12:1). */
 [data-theme='flux'] .wz-home {
-  --wz-ground:#04141A; --wz-lift:rgba(9,30,36,.9); --wz-ink:#E3F1EC; --wz-ink-dim:#8FB4AC;
+  --wz-ground:#020c10; --wz-lift:rgba(9,30,36,.9); --wz-ink:#E3F1EC; --wz-ink-dim:#8FB4AC;
   --wz-whisper:#1D4A52; --wz-hint:#6E958D;
 }
 .wz-ambient{ position:absolute; inset:0; z-index:0; pointer-events:none; transition:opacity 1.1s ease;
@@ -1481,7 +1569,7 @@ a:focus-visible,
 .spread-cell-paper{ width:104px; height:104px; box-sizing:border-box;
   border:1px solid var(--ink-border); border-radius:0; background:var(--paper);
   display:flex; align-items:center; justify-content:center; overflow:hidden; transition:box-shadow .15s; }
-.spread-cell[data-selected="true"] .spread-cell-paper{ border:2px solid var(--brass); }
+.spread-cell[data-selected="true"] .spread-cell-paper{ border:2px solid var(--choice); }
 .spread-cell[data-lifted="true"] .spread-cell-paper{ box-shadow:0 8px 20px rgba(0,0,0,.45); }
 @media (prefers-reduced-motion:no-preference){
   .spread-cell[data-lifted="true"] .spread-cell-paper{ transform:scale(1.06); }
@@ -1563,7 +1651,7 @@ a:focus-visible,
   pointer-events:none; text-align:center; white-space:nowrap;
 }
 .board-box{ border-radius:0; box-sizing:border-box; touch-action:none; }
-.board-box[data-selected="true"]{ outline:2px solid var(--brass); outline-offset:1px; }
+.board-box[data-selected="true"]{ outline:2px solid var(--choice); outline-offset:1px; }
 .board-text{
   width:100%; height:100%; overflow:auto; padding:6px 8px; box-sizing:border-box;
   border:1px solid var(--card-hairline); border-radius:0; background:var(--card-stock);
@@ -1631,7 +1719,7 @@ a:focus-visible,
 }
 .board-tcircle[data-solid='true']{ background:var(--brass); }
 .board-box[data-target='true'] > .board-tcircle, .board-box[data-peer='true'] > .board-tcircle{ display:block; }
-.board-box[data-target='true']{ outline:1.5px solid var(--brass); outline-offset:0; }
+.board-box[data-target='true']{ outline:1.5px solid var(--choice); outline-offset:0; }
 /* AB4 S2 — a page-pin card: a MEMBERSHIP card, not a copy. Shares
    .board-text's own look (now Stacked, S7); the badge is the only
    decoration (quiet olive, never brass — "nothing orange at rest" holds
@@ -1874,7 +1962,7 @@ a:focus-visible,
   border:1px solid var(--ink-border); border-radius:0; background:none;
   color:var(--text-mid); cursor:pointer;
 }
-.spread-lens-chip[data-active="true"]{ border-color:var(--brass); color:var(--brass); }
+.spread-lens-chip[data-active="true"]{ border-color:var(--choice); color:var(--choice); }
 .spread-lens-note{ color:var(--text-low); font-size:13px; margin:-4px 0 16px; }
 
 /* J5 — Add to… sheet: verb tags (the two-verb law made visible) + the toast. */
@@ -2091,7 +2179,7 @@ a:focus-visible,
   font-family:var(--font-ui); font-size:13px;
 }
 .script-autocomplete-opt{ padding:4px 10px; color:var(--text-mid); white-space:nowrap; }
-.script-autocomplete-opt[data-highlighted="true"]{ color:var(--brass); background:var(--ink-800); }
+.script-autocomplete-opt[data-highlighted="true"]{ color:var(--choice); background:var(--ink-800); }
 
 .wz-gate{ position:absolute; inset:0; display:flex; align-items:flex-start; justify-content:center; padding:15vh 8vw 12vh;
   opacity:0; pointer-events:none; transition:opacity .9s ease; z-index:4; }
@@ -2337,9 +2425,9 @@ a:focus-visible,
   background:var(--ink-900); border:1px solid var(--ink-border); border-radius:var(--radius-md);
   padding:.7rem .9rem; cursor:pointer; font-family:var(--font-ui); transition:border-color .2s; }
 .import-kind:hover{ border-color:var(--text-mid); }
-.import-kind.sel{ border-color:var(--brass); }
+.import-kind.sel{ border-color:var(--choice); }
 .import-kind-label{ font-size:.9rem; font-weight:600; color:var(--text-hi); }
-.import-kind.sel .import-kind-label{ color:var(--brass); }
+.import-kind.sel .import-kind-label{ color:var(--choice); }
 .import-kind-hint{ font-size:.72rem; color:var(--text-low); line-height:1.4; }
 .import-kind:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
 .import-actions{ margin-top:1.4rem; display:flex; justify-content:flex-end; }
@@ -2578,7 +2666,7 @@ a:focus-visible,
 .mode-tdiv{ width:1px; height:18px; background:var(--ink-border); margin:0 5px; }
 .mode-tmore{ margin-left:auto; color:var(--text-low); font-size:12px; }
 .mode-swatch{ width:22px; height:22px; border:1px solid var(--ink-border-strong); cursor:pointer; padding:0; }
-.mode-swatch.active{ outline:2px solid var(--brass); outline-offset:1px; }
+.mode-swatch.active{ outline:2px solid var(--choice); outline-offset:1px; }
 /* SWEPT (the narrow shell's rename, 2026-09-09) — `.mode-nib` styled the
    unframed pen bar's `nib · fine ▾` button, which was `title="Nib styles —
    coming soon"`: a control promising a capability the narrow shell does not
@@ -2695,7 +2783,7 @@ a:focus-visible,
    lime straight through the celebrate window (ignition sweep, orange
    notch, and sparks all rendering over a lime bar). A three-selector rule
    (attribute + two classes) beats both cleanly regardless of source order. */
-[data-theme='flux'] .mode-pfill.celebrate{ background:var(--brass); }
+[data-theme='flux'] .mode-pfill.celebrate{ background:var(--orange); }
 [data-theme='flux'] .mode-pfill::after{
   background:var(--line-active); box-shadow:0 0 4px 1px rgba(0,194,255,.55); }
 [data-theme='flux'] .mode-pfill.started::after{ animation:flux-caret-pulse 1.8s ease-in-out infinite; }
@@ -2703,11 +2791,11 @@ a:focus-visible,
   0%,100%{ opacity:.55; transform:translate(50%,-50%) scale(1); }
   50%{ opacity:1; transform:translate(50%,-50%) scale(1.35); }
 }
-[data-theme='flux'] .mode-pfill.celebrate::after{ animation:none; opacity:1; background:var(--brass-hover); box-shadow:0 0 8px 2px rgba(255,152,0,.7); }
+[data-theme='flux'] .mode-pfill.celebrate::after{ animation:none; opacity:1; background:#FFAB33; box-shadow:0 0 8px 2px rgba(255,152,0,.7); }
 /* Ignition sweep — white-to-orange gradient racing across the fill once, .55s. */
 [data-theme='flux'] .mode-pfill.celebrate::before{
   content:''; position:absolute; inset:0;
-  background:linear-gradient(90deg, transparent 0%, rgba(255,255,255,.95) 45%, var(--brass) 60%, transparent 100%);
+  background:linear-gradient(90deg, transparent 0%, rgba(255,255,255,.95) 45%, var(--orange) 60%, transparent 100%);
   background-size:250% 100%; background-position:-100% 0;
   animation:flux-ignition-sweep .55s ease-out; pointer-events:none; }
 @keyframes flux-ignition-sweep{
@@ -2799,7 +2887,7 @@ a:focus-visible,
 /* ITEM arbor-quiet-brass — brass outline, no fill, theme-invariant (brass is always
    available). An inset box-shadow stands in for a border here so the flush, divider-
    separated segments don't reflow when one becomes selected. */
-.mode-seg button.on{ background:none; color:var(--brass); box-shadow:inset 0 0 0 1px var(--brass); }
+.mode-seg button.on{ background:none; color:var(--choice); box-shadow:inset 0 0 0 1px var(--choice); }
 .mode-seg button.mode-seg-soon{ color:var(--text-low); opacity:.45; cursor:default; }
 .mode-settings-hint{ margin-top:9px; font-size:9.5px; color:var(--text-low); line-height:1.5; }
 
@@ -3782,7 +3870,7 @@ a:focus-visible,
 /* Orange fires once, here — the instant a human actually chooses (S4's own
    law). A transient, single-valued flash, never a resting brass button, so
    this never becomes a second .btn-brass on the same screen. */
-.hb1-territory-offered.chosen{ background:var(--brass); border-color:var(--brass); color:var(--on-brass); }
+.hb1-territory-offered.chosen{ background:var(--choice); border-color:var(--choice); color:var(--on-brass); }
 .hb1-territory-offered:disabled{ cursor:default; }
 .hb1-ceremony-future-label{ font-family:var(--font-ui); font-size:11px; letter-spacing:.12em;
   text-transform:uppercase; color:var(--text-low); margin-top:.5rem; }
@@ -3967,7 +4055,7 @@ a:focus-visible,
 .wz-action-btn{ flex:1; height:28px; display:flex; align-items:center; justify-content:center; background:none;
   border:1px solid var(--ink-border); border-radius:0; color:var(--text-mid); cursor:pointer; transition:color .15s ease, border-color .15s ease; }
 .wz-action-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
-.wz-action-btn[aria-pressed='true']{ color:var(--brass); border-color:var(--brass); background:none; }
+.wz-action-btn[aria-pressed='true']{ color:var(--choice); border-color:var(--choice); background:none; }
 .wz-action-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
 .wz-actions-tags{ display:flex; flex-wrap:wrap; gap:4px 6px; align-items:center; }
 .wz-actions-tag{ display:inline-flex; align-items:center; gap:4px; padding:2px 6px; border:1px solid var(--ink-border); color:var(--text-mid); font-size:12px; }
@@ -4055,15 +4143,15 @@ a:focus-visible,
 .wz-template-row{ display:flex; align-items:center; gap:12px; width:100%; min-height:46px; padding:0 12px 0 16px; text-align:left; cursor:pointer;
   background:none; border:1px solid transparent; color:var(--text-mid); font:inherit; font-size:13px; }
 .wz-template-row:hover{ color:var(--text-hi); background:var(--ink-800); }
-.wz-template-row[aria-pressed='true']{ color:var(--brass); border-color:var(--brass); background:color-mix(in srgb, var(--brass) 8%, transparent); }
+.wz-template-row[aria-pressed='true']{ color:var(--choice); border-color:var(--choice); background:color-mix(in srgb, var(--choice) 8%, transparent); }
 .wz-template-row svg.wz-template-sketch{ flex:0 0 auto; width:24px; height:32px; display:block; }
 .wz-template-sketch-page{ fill:var(--paper); stroke:var(--ink-border-strong); stroke-width:1; }
-.wz-template-row[aria-pressed='true'] .wz-template-sketch-page{ stroke:var(--brass); }
+.wz-template-row[aria-pressed='true'] .wz-template-sketch-page{ stroke:var(--choice); }
 .wz-template-sketch-line{ fill:var(--text-low); opacity:.85; }
 .wz-template-word{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 /* PAGE-TEMPLATES-MOVE - brass on the press; and, by Nick's standing rule that brass marks a choice the writer has MADE, brass
    at rest on the template the page already is (a screenplay page's Screenplay template, aria-pressed). */
-.wz-template-live:active, .wz-template-live[aria-pressed='true']{ color:var(--brass); border-color:var(--brass); }
+.wz-template-live:active, .wz-template-live[aria-pressed='true']{ color:var(--choice); border-color:var(--choice); }
 /* The Beginnings glyphs carry only a viewBox - the row sizes them (.wz-beginning-glyph svg) - so in the strip they are given the
    strip's own icon size, the TemplateIcon 16px, or they render at zero (the 43839ae frames showed an empty Screenplay slot). */
 .wz-template-live svg{ width:16px; height:16px; display:block; }
@@ -4089,11 +4177,11 @@ a:focus-visible,
 .wz-type-scope{ flex:1 1 auto; padding:6px 4px; font-family:var(--font-label, var(--font-ui)); font-size:12px; color:var(--text-mid);
   background:none; border:1px solid var(--ink-border-strong); border-radius:0; text-align:center; white-space:nowrap; cursor:pointer; }
 .wz-type-scope:hover{ color:var(--text-hi); }
-.wz-type-scope[data-on='true']{ color:var(--brass); border-color:var(--brass); }
+.wz-type-scope[data-on='true']{ color:var(--choice); border-color:var(--choice); }
 .wz-type-scope[aria-disabled='true']{ opacity:.4; cursor:default; }
 .wz-type-scope[aria-disabled='true']:hover{ color:var(--text-mid); }
 .wz-type[data-scoped='true'] .wz-type-list-inline{ border:none; padding:0; }
-.wz-type[data-scoped='true'] .wz-type-row[data-current='true']{ color:var(--brass); }
+.wz-type[data-scoped='true'] .wz-type-row[data-current='true']{ color:var(--choice); }
 .wz-type-size{ display:flex; align-items:center; gap:2px; }
 .wz-type-step[aria-disabled='true']{ opacity:.35; cursor:default; }
 .wz-type-num{ width:3.2em; text-align:center; padding:3px 2px; background:none; color:var(--text-hi);
@@ -4224,7 +4312,7 @@ a:focus-visible,
 .wz-sliver-mode-btn{ width:26px; height:26px; display:flex; align-items:center; justify-content:center; padding:0;
   background:none; border:1px solid var(--ink-border); color:var(--text-low); cursor:pointer; transition:.15s; }
 .wz-sliver-mode-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
-.wz-sliver-mode-btn[aria-pressed='true']{ color:var(--brass); background:none; }
+.wz-sliver-mode-btn[aria-pressed='true']{ color:var(--choice); background:none; }
 .wz-sliver-mode-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
 .wz-sliver-mode-btn svg{ display:block; }
 /* PHASE 1 (S4) - GREYED = unusable. A Seg row (or the goal number) whose mode is off, and the Format group while Typewriter is on. These are real
@@ -4414,7 +4502,7 @@ a:focus-visible,
   border:1px solid var(--ink-border); border-radius:0; color:var(--text-low); font-family:var(--font-ui); font-size:9.5px; line-height:1; cursor:pointer;
   transition:color .15s ease, border-color .15s ease; }
 .wz-drawer-note-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
-.wz-drawer-note-btn[aria-expanded='true']{ color:var(--brass); border-color:var(--brass); background:none; }
+.wz-drawer-note-btn[aria-expanded='true']{ color:var(--choice); border-color:var(--choice); background:none; }
 .wz-drawer-note-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
 .wz-drawer-note-pop{ position:absolute; left:0; top:calc(100% + 4px); z-index:5; width:max-content; max-width:260px; padding:10px 12px; background:var(--desk-ground);
   border:1px solid var(--ink-border-strong); color:var(--text-hi); font-family:var(--font-ui); font-size:12.5px; line-height:1.45; pointer-events:auto;
@@ -4863,7 +4951,7 @@ a:focus-visible,
    olive (S3's original "current marked olive"), but Fable's ruling makes this a
    CHOICE, not a where-you-are tab state — brass outline, theme-invariant, same as
    every other choice in this ticket (the segmented options, the page-setup chips). */
-.wz-cascade-action.active{ color:var(--brass); border-color:var(--brass); }
+.wz-cascade-action.active{ color:var(--choice); border-color:var(--choice); }
 /* FX6 S2a — the New Page door: unmissable at the head of the cascade's Page
    section. Olive (--accent-rest) at rest, not brass — "nothing orange at
    rest" (the olive/orange lane law) still holds; this reads unmissable via
@@ -5896,7 +5984,7 @@ a:focus-visible,
    reads brass, not olive's where-you-are treatment (R7's original reasoning, kept here
    as the reason this diverges from the tab/segmented-option law elsewhere in this file). */
 .wz-page-setup-chip[aria-checked='true'], .wz-page-setup-chip[aria-pressed='true']{
-  color:var(--brass); border-color:var(--brass); }
+  color:var(--choice); border-color:var(--choice); }
 .wz-page-setup-chip:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:1px; }
 .wz-page-setup-range{ flex:1 1 auto; accent-color:var(--accent-rest); }
 .wz-page-setup-text{ width:100%; background:var(--ink-950);
@@ -6140,23 +6228,23 @@ a:focus-visible,
    moved to Flux's own tokens per docs/briefs/splash-build-kit.md §2's own
    mapping: #2A6A76 -> --ink-border-strong, #1D4A52 -> --ink-border,
    #E3F1EC -> --text-hi, #8FB4AC -> --text-mid, #00C2FF -> --line-active,
-   brass -> --brass. Static (dim/dot-grid/tree/label) layers use the tokens
+   brass -> --brass (FLUX V2: the lit state is the MARK, one of orange's few places, so it names --orange). Static (dim/dot-grid/tree/label) layers use the tokens
    directly inline on the SVG elements (SplashMark.tsx); these classes are
    the ones the TIMELINE actually drives (a connector or node's own .lit
    state) or that need a transition to animate smoothly between states. */
 .fx-dim{ fill:none; stroke:var(--ink-border-strong); stroke-width:3; stroke-linecap:square; stroke-linejoin:miter; }
-.fx-hot{ fill:none; stroke:var(--brass); stroke-width:4; stroke-linecap:square; stroke-linejoin:miter; }
-.fx-box{ fill:#04141A; stroke:var(--ink-border-strong); stroke-width:3; }
+.fx-hot{ fill:none; stroke:var(--orange, var(--brass)); stroke-width:4; stroke-linecap:square; stroke-linejoin:miter; }
+.fx-box{ fill:var(--ink-950, #04141A); stroke:var(--ink-border-strong); stroke-width:3; }
 .fx-name{ fill:var(--text-hi); font-family:'Rajdhani','Figtree',sans-serif; font-weight:600; font-size:27px; letter-spacing:.08em; }
 .fx-tag{ fill:var(--line-active); font-family:'Chakra Petch','Figtree',sans-serif; font-size:17px; letter-spacing:.12em; }
 .fx-sub{ fill:var(--text-mid); font-family:'Chakra Petch','Figtree',sans-serif; font-size:19px; letter-spacing:.14em; }
 .fx-tree{ fill:none; stroke:var(--ink-border); stroke-width:2; }
 .fx-grid{ fill:var(--ink-border); }
-.tile rect{ fill:#04141A; stroke:var(--text-mid); stroke-width:3; transition:stroke .3s; }
+.tile rect{ fill:var(--ink-950, #04141A); stroke:var(--text-mid); stroke-width:3; transition:stroke .3s; }
 .tile text{ fill:var(--text-hi); font-family:'Rajdhani','Figtree',sans-serif; font-weight:600; font-size:28px; text-anchor:middle; transition:fill .3s; }
-.tile.lit rect{ stroke:var(--brass); }
+.tile.lit rect{ stroke:var(--orange, var(--brass)); }
 .fx-node rect, .fx-node circle{ transition:stroke .35s; }
-.fx-node.lit rect, .fx-node.lit circle{ stroke:var(--brass); }
+.fx-node.lit rect, .fx-node.lit circle{ stroke:var(--orange, var(--brass)); }
 
 /* BOARD CONTEXT MENU (Nick, Oct 15; cursor/board-context-menu mockup @ 0df8bf30) - the small themed menu, the "Send to Trash?" dialog, and the Settings switch. All overlays (position:fixed in a portal):
    page primacy - none of them moves or resizes anything beneath it. Tokens only, so Arbor and Flux both wear them. */
@@ -6185,7 +6273,7 @@ a:focus-visible,
 .wz-delete-chk{ display:flex; align-items:center; gap:9px; margin-bottom:18px; cursor:pointer; font-family:var(--font-ui); font-size:12px; color:var(--text-mid); }
 .wz-delete-chk input{ position:absolute; opacity:0; width:1px; height:1px; }
 .wz-delete-box{ width:13px; height:13px; box-sizing:border-box; border:1px solid var(--ink-border-strong); background:none; flex:none; }
-.wz-delete-chk input:checked + .wz-delete-box{ background:var(--brass); border-color:var(--brass); }
+.wz-delete-chk input:checked + .wz-delete-box{ background:var(--choice); border-color:var(--choice); }
 .wz-delete-chk input:focus-visible + .wz-delete-box{ outline:1px solid var(--brass); outline-offset:2px; }
 .wz-delete-btns{ display:flex; justify-content:flex-end; gap:8px; }
 .wz-delete-btn{
@@ -6204,8 +6292,8 @@ a:focus-visible,
 .wz-cascade-switch:hover, .wz-cascade-switch:focus-visible{ color:var(--text-hi); outline:none; }
 .wz-cascade-switch-track{ position:relative; width:30px; height:14px; box-sizing:border-box; border:1px solid var(--ink-border-strong); flex:none; }
 .wz-cascade-switch-track i{ position:absolute; top:2px; left:2px; width:8px; height:8px; background:var(--text-low); transition:left .15s ease, background-color .15s ease; }
-.wz-cascade-switch[aria-checked='true'] .wz-cascade-switch-track{ border-color:var(--brass); }
-.wz-cascade-switch[aria-checked='true'] .wz-cascade-switch-track i{ left:18px; background:var(--brass); }
+.wz-cascade-switch[aria-checked='true'] .wz-cascade-switch-track{ border-color:var(--choice); }
+.wz-cascade-switch[aria-checked='true'] .wz-cascade-switch-track i{ left:18px; background:var(--choice); }
 @media (prefers-reduced-motion: reduce){ .wz-cascade-switch-track i{ transition:none; } }
 
 /* CONNECTOR-B (Nick's approved connector mockup v6) - the Grafts / Links list in the right drawer; the circles the rail's thumbnails wear while a card is in connection mode; the ghost a thumbnail leaves under the
@@ -6295,9 +6383,9 @@ body[data-link-drag='true'], body[data-link-drag='true'] *{ cursor:grabbing !imp
    BIG PROJECTS 1a - the place block, the switcher and the Pages pop-out (docs/plans/big-projects.md). Tokens only; nothing here changes a rect of the page:
    the block lives in the strip (a fixed grid track that already recedes while typing) and the pop-out lives in the cascade panel (a stage overlay).
    ========================================================================================================================================================== */
-.wz-place-section{ border-left:2px solid var(--brass, var(--accent-rest)); margin-bottom:2px; }
+.wz-place-section{ border-left:2px solid var(--choice, var(--accent-rest)); margin-bottom:2px; }
 .wz-place-block .wz-place-name{ font-size:11.5px; font-weight:600; letter-spacing:.2px; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text-hi); }
-.wz-place-block .wz-place-icon{ color:var(--brass, var(--accent-rest)); }
+.wz-place-block .wz-place-icon{ color:var(--choice, var(--accent-rest)); }
 .wz-strip-section--bracketed{ border-left:1px solid var(--ink-border); margin-left:1px; }
 .wz-strip-section--bracketed .wz-strip-item.active{ border-left-color:var(--accent-rest); }
 
@@ -6308,13 +6396,13 @@ body[data-link-drag='true'], body[data-link-drag='true'] *{ cursor:grabbing !imp
   padding:7px 2px; color:var(--text-mid, var(--text-hi)); font:inherit; font-size:13px; }
 .wz-switcher-item:last-child{ border-bottom:0; }
 .wz-switcher-item:hover{ color:var(--text-hi); }
-.wz-switcher-item[aria-current='true']{ color:var(--text-hi); border-left:2px solid var(--brass, var(--accent-rest)); padding-left:8px; }
+.wz-switcher-item[aria-current='true']{ color:var(--text-hi); border-left:2px solid var(--choice, var(--accent-rest)); padding-left:8px; }
 .wz-switcher-item:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-1px; }
 .wz-switcher-new, .wz-switcher-new-input{ align-self:flex-start; }
 .wz-switcher-new-input{ width:100%; background:transparent; border:0; border-bottom:1px solid var(--accent-rest); color:var(--text-hi); font:inherit; font-size:13px; padding:4px 2px; outline:none; }
 
 .wz-sections{ display:flex; flex-direction:column; gap:8px; }
-.wz-sections-place{ font-size:15px; font-weight:600; color:var(--text-hi); border-left:2px solid var(--brass, var(--accent-rest)); padding-left:8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.wz-sections-place{ font-size:15px; font-weight:600; color:var(--text-hi); border-left:2px solid var(--choice, var(--accent-rest)); padding-left:8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .wz-sections-bar{ display:flex; align-items:center; gap:8px; }
 .wz-sections-heading{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-low); flex:1 1 auto; }
 .wz-sections-sort{ font-size:11px; color:var(--text-mid, var(--text-hi)); border:1px solid var(--ink-border); border-radius:3px; padding:1px 7px; }

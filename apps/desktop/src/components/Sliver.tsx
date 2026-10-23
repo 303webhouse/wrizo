@@ -1162,7 +1162,7 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
             {/* ITEM word-diet (Nick, Oct 13) — same fix as ModeStage.tsx's
                 own copy of this row: the standing hint retires, moved
                 behind a "?" beside the label. */}
-            <Seg label={<>Recede depth <HelpButton helpKey="recedeHint" subjectLabel="Recede depth" /></>} value={settings.fadeDepth} opts={[['partial', 'Partial'], ['full', 'Full']]} onPick={v => setWritingSettings({ fadeDepth: v as FadeDepth })} />
+            <Seg label={<>{t('fadeDepthLabel')} <HelpButton helpKey="recedeHint" subjectLabel={t('fadeDepthLabel')} /></>} value={settings.fadeDepth} opts={[['partial', t('fadeDepthPartial')], ['full', t('fadeDepthFull')]]} onPick={v => setWritingSettings({ fadeDepth: v as FadeDepth })} />
           </section>
         </div>
       )}
@@ -1264,7 +1264,7 @@ function ProgressFields({ target, hasMilestones }: { target: WritingGoal | null;
           opts={[['bar', t('progressStyleBar')], ['rhizome', t('progressStyleRhizome')]]}
           onPick={v => setWritingSettings({ progressStyle: v as ProgressStyle })} />
       )}
-      <Seg label="Timer" value={settings.timer ? 'on' : 'off'} disabled={off} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ timer: v === 'on' })} />
+      <Seg label={t('timerLabel')} value={settings.timer ? 'on' : 'off'} disabled={off} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ timer: v === 'on' })} />
     </>
   );
 }
