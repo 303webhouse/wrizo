@@ -146,6 +146,12 @@ next. Whatever runs here, on whatever tool:
   otherwise; `release <token>` removes it only if the token is yours). Never
   overwrite or clear a grant that is not yours, and name the turn (start and
   end, UTC) in your report. (Ratified 2026-10-22, Fable.)
+  **The turn is bound to the process tree that took it** (Oct 23): `box-take.mjs`
+  records the shell/script that called it, and the harness launcher refuses a
+  browser from any other tree even with the right token (a copied token is not a
+  turn). So take the box and run the harness in the SAME shell or script; a harness
+  started from another window is refused. Every launch attempt, allowed or refused,
+  is logged to `~/.wrizo/box-launches.log`.
 - **The ledger (`docs/open-threads.md`) is chat 1's.** Report your work to it
   through chat 1, not by editing it yourself.
 - **Fable reviews; Nick's ship word comes to chat 1.** Build lanes don't
