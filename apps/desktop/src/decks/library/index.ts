@@ -5,6 +5,12 @@ import { thesisDeck } from './thesis';
 import { grantDeck } from './grant';
 import { featureStoryDeck } from './featureStory';
 import { characterStudyDeck } from './characterStudy';
+import { heroJourneyDeck } from './heroJourney';
+import { storyCircleDeck } from './storyCircle';
+import { sceneSequelDeck } from './sceneSequel';
+import { argumentEssayDeck } from './argumentEssay';
+import { researchPaperDeck } from './researchPaper';
+import { businessProposalDeck } from './businessProposal';
 import type { DeckDefinition, DeckRoom } from '../types';
 
 // B3 S2 — the v1 ship set: the committee's six flagships plus Character
@@ -20,12 +26,19 @@ export const DECKS: DeckDefinition[] = [
   grantDeck,
   featureStoryDeck,
   characterStudyDeck,
+  // W3 - the new Tier 1 decks (Wrizors' game plan, wave 1). From my pages joins them when its page picker lands.
+  heroJourneyDeck,
+  storyCircleDeck,
+  sceneSequelDeck,
+  argumentEssayDeck,
+  researchPaperDeck,
+  businessProposalDeck,
 ];
 
 // The catalog's own room order (fiction -> speculative -> screen -> academy
 // -> business -> newsroom) — the library's own grouped-by-room roster reads
 // in this fixed order regardless of DECKS' own array order above.
-export const ROOM_ORDER: DeckRoom[] = ['fiction', 'speculative', 'screen', 'academy', 'business', 'newsroom'];
+export const ROOM_ORDER: DeckRoom[] = ['fiction', 'speculative', 'screen', 'academy', 'business', 'newsroom', 'every'];
 
 export function decksByRoom(decks: DeckDefinition[] = DECKS): Map<DeckRoom, DeckDefinition[]> {
   const map = new Map<DeckRoom, DeckDefinition[]>();

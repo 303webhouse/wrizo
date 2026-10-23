@@ -1,5 +1,6 @@
 import { deskTerm } from '../../store/deskLexicon';
 import { colX, colWidth, rowY, CARD_H } from '../layout';
+import { guidedStep } from '../guided';
 import type { DeckDefinition, DealtCardSpec } from '../types';
 
 // B3 S2 — Worldbuilding, the Speculative Annex's crown (catalog #7). Wizard:
@@ -11,22 +12,17 @@ import type { DeckDefinition, DealtCardSpec } from '../types';
 const COLS = 2;
 const W = colWidth(COLS);
 
-const COL_A: { title: string; body: string }[] = [
-  { title: deskTerm('deckWorldbuildingHistoryTitle'), body: deskTerm('deckWorldbuildingHistoryBody') },
-  { title: deskTerm('deckWorldbuildingPlacesTitle'), body: deskTerm('deckWorldbuildingPlacesBody') },
-  { title: deskTerm('deckWorldbuildingCulturesTitle'), body: deskTerm('deckWorldbuildingCulturesBody') },
+// W3: each step is a question (decks/guided.ts, decks/content.ts); the Rules step's question varies with the genre answer (fantasy / sf / other).
+const COL_A: { title: string; step: string }[] = [
+  { title: deskTerm('deckWorldbuildingHistoryTitle'), step: 'history' },
+  { title: deskTerm('deckWorldbuildingPlacesTitle'), step: 'places' },
+  { title: deskTerm('deckWorldbuildingCulturesTitle'), step: 'cultures' },
 ];
-const COL_B: { title: string; body: string }[] = [
-  { title: deskTerm('deckWorldbuildingPowerTitle'), body: deskTerm('deckWorldbuildingPowerBody') },
-  { title: deskTerm('deckWorldbuildingLanguageTitle'), body: deskTerm('deckWorldbuildingLanguageBody') },
-  { title: deskTerm('deckWorldbuildingIcebergTitle'), body: deskTerm('deckWorldbuildingIcebergBody') },
+const COL_B: { title: string; step: string }[] = [
+  { title: deskTerm('deckWorldbuildingPowerTitle'), step: 'power' },
+  { title: deskTerm('deckWorldbuildingLanguageTitle'), step: 'language' },
+  { title: deskTerm('deckWorldbuildingIcebergTitle'), step: 'iceberg' },
 ];
-
-const RULES_BODY: Record<string, string> = {
-  fantasy: deskTerm('deckWorldbuildingRulesBodyFantasy'),
-  sf: deskTerm('deckWorldbuildingRulesBodySF'),
-  other: deskTerm('deckWorldbuildingRulesBodyOther'),
-};
 
 export const worldbuildingDeck: DeckDefinition = {
   id: 'worldbuilding',
@@ -48,16 +44,15 @@ export const worldbuildingDeck: DeckDefinition = {
     const specs: DealtCardSpec[] = [];
     specs.push({
       key: 'rules',
-      title: deskTerm('deckWorldbuildingRulesTitle'),
-      body: RULES_BODY[genre],
+      ...guidedStep('worldbuilding', 'rules', deskTerm('deckWorldbuildingRulesTitle'), genre),
       x: colX(0, COLS), y: rowY(0), w: W, h: CARD_H,
     });
     COL_A.forEach((card, i) => specs.push({
-      key: `a-${i}`, title: card.title, body: card.body,
+      key: `a-${i}`, ...guidedStep('worldbuilding', card.step, card.title),
       x: colX(0, COLS), y: rowY(i + 1), w: W, h: CARD_H,
     }));
     COL_B.forEach((card, i) => specs.push({
-      key: `b-${i}`, title: card.title, body: card.body,
+      key: `b-${i}`, ...guidedStep('worldbuilding', card.step, card.title),
       x: colX(1, COLS), y: rowY(i), w: W, h: CARD_H,
     }));
     return specs;

@@ -51,6 +51,8 @@ import type { PageFaceSubject } from './PageFace';
 import { DeskFrame, useDeskFrameViewport } from './DeskFrame';
 import { DeckWizard } from './DeckWizard';
 import { DECKS } from '../decks/library';
+import { StepHelp } from './StepHelp';
+import { promptToShow, bodyIsEmpty } from '../store/guided';
 import { materializeDeck } from '../decks/engine';
 import type { DeckDefinition, DeckAnswers } from '../decks/types';
 import { armStartHere, getStartHereCardId, noteDealtCardEdited } from '../store/deckHint';
@@ -308,12 +310,15 @@ function BoardPinBox({ box }: { box: Box }) {
 // completely untouched — their own organic grow-as-you-type is FX4 S4's
 // intended, correct behavior, not a defect.
 function BoardTextBox({
-  boxId, initialText, measureRef, sourceEntryId, typeStyle,
+  boxId, initialText, measureRef, sourceEntryId, typeStyle, prompt,
 }: {
   boxId: string;
   initialText: string;
   measureRef: (id: string, el: HTMLDivElement | null) => void;
   sourceEntryId?: string;
+  // W3 - a dealt step's QUESTION, shown only while the card has no body (store/guided.ts promptToShow decides). It rides as an ATTRIBUTE and is painted by a CSS pseudo-element
+  // (.board-text[data-prompt]::after), so it is never a text node: never selectable, copyable, counted or read as the writer's words, and this element's textContent stays the stored text.
+  prompt?: string | null;
   // ITEM 207 - the card's own face/size (store/fontRoster.ts cardTypeStyle); undefined on a card that never chose, so its
   // element carries no style attribute at all.
   typeStyle?: React.CSSProperties;
@@ -364,6 +369,7 @@ function BoardTextBox({
       ref={el => measureRef(boxId, el)}
       className="board-text"
       style={typeStyle}
+      data-prompt={prompt ?? undefined}
       dangerouslySetInnerHTML={{ __html: decorateMarkdownForCard(initialText, null) }}
     />
   );
@@ -385,9 +391,11 @@ function BoardTextBox({
 // Voice Wall stands: foreign paste/drop is blocked + whispered; an allowed
 // own-ink paste proceeds natively (Draft's own law, unchanged here).
 function BoardCardPopup({
-  initialText, onCommit, onClose, fontFace, fontSize, onType,
+  initialText, onCommit, onClose, fontFace, fontSize, onType, prompt,
 }: {
   initialText: string;
+  // W3 - a dealt step's question, shown as the editor's placeholder while the body is empty (an attribute + CSS ::after, never text); the first keystroke into the body hides it.
+  prompt?: string;
   onCommit: (text: string) => void;
   onClose: () => void;
   // ITEM 207 - the card's own face/size and the one funnel that writes them (BoardEditor.commitType).
@@ -447,6 +455,13 @@ function BoardCardPopup({
   useEffect(() => {
     const el = elRef.current;
     if (!el) return;
+    // W3 - the placeholder is an attribute pair read by CSS (.board-popup-editor[data-prompt][data-body-empty]::after): the question, and whether the body is empty right now.
+    const syncPrompt = (plain: string) => {
+      if (!prompt) return;
+      el.setAttribute('data-prompt', prompt);
+      el.setAttribute('data-body-empty', bodyIsEmpty(plain) ? 'true' : 'false');
+    };
+    syncPrompt(initialText);
     decorateEditorFor(el, initialText, initialText.length, setCaretOffset, text => decorateMarkdownForCard(text, initialText.length));
     el.focus();
 
@@ -492,7 +507,7 @@ function BoardCardPopup({
       // ITEM 211 - the caret lands on the visible side of a hidden mark (store/hiddenMarksDom.ts), as on the page
       if (caret !== null) placeCaret(el, caret);
     };
-    const commit = (plain: string) => { textRef.current = plain; onCommit(plain); };
+    const commit = (plain: string) => { textRef.current = plain; syncPrompt(plain); onCommit(plain); };
     // ITEM 211, THE CARD PORT - the page's editing rules for marks that never show, from the ONE controller the page uses
     // (store/hiddenMarksEditing.ts): edits rebuilt so no lone mark survives, Enter computed, arrows over visible characters,
     // Backspace and Delete that never take a lone hidden mark, and the caret snap (a click keeps the side of a run's closing marks).
@@ -2151,7 +2166,7 @@ export function BoardEditor({ id }: { id: string }) {
       // for "a control inside a card needs its own untouched click, not
       // the canvas's own select/drag machinery") — stand down whole, let
       // the click proceed natively to the button's own onClick.
-      if (target.closest('.board-layer-toggle')) return;
+      if (target.closest('.board-layer-toggle, .board-step-help')) return;   // W3: the step "?" inside a card needs its own untouched click, like the layer toggle
 
       // THE GREEN TACK IS RETIRED (connector-a): there is no pin to press. A card is connected from its corner square (below).
       const handleEl = target.closest('.board-handle') as HTMLElement | null;
@@ -2875,7 +2890,7 @@ export function BoardEditor({ id }: { id: string }) {
             // (The browser fires dblclick straight after its own second mouseup, so a gesture's own double-click arrives within
             // milliseconds of the gesture's end; 100ms catches it, and a writer's REAL double-click a moment after a drag - fx8 S3's
             // ~220ms, say - still opens the card.)
-            if (hitEl?.closest('.board-handle')) return;
+            if (hitEl?.closest('.board-handle, .board-step-help, .board-step-pop')) return;   // W3: a double-click on the step "?" (or in its popover) opens nothing
             if (performance.now() - lastGestureEndRef.current < 100) return;
             const boxEl = hitEl?.closest('.board-box') as HTMLElement | null;
             const boxId = boxEl?.dataset.boxId;
@@ -3015,8 +3030,11 @@ export function BoardEditor({ id }: { id: string }) {
                   measureRef={measureRef}
                   sourceEntryId={box.sourceEntryId}
                   typeStyle={cardTypeStyle(box.fontFace, box.fontSize)}
+                  prompt={promptToShow(box)}
                 />
               )}
+              {/* W3 / W11a - the step's "?" at its title's end (components/StepHelp.tsx): only on a card DEALT from a Tier 1 deck (deckStep), never on a ported mirror. */}
+              {box.kind === 'text' && box.deckStep && !box.sourceEntryId && <StepHelp box={box} />}
               {/* CONNECTOR-A - the green tack is RETIRED. The circle below is the card's end of a link: shown only while the card is a target, a peer, or the far end of a link just made. */}
               <span className="board-tcircle" data-solid={circleSolid ? 'true' : 'false'} aria-hidden="true" />
               {/* B3 S1 — "Start Here" (R6's own hint): quiet, brass, present
@@ -3126,6 +3144,7 @@ export function BoardEditor({ id }: { id: string }) {
       {popupBox && (
         <BoardCardPopup
           initialText={popupBox.text ?? ''}
+          prompt={popupBox.kind === 'text' && !popupBox.sourceEntryId ? popupBox.prompt : undefined}
           onCommit={text => commitText(popupBox.id, text)}
           fontFace={popupBox.fontFace}
           fontSize={popupBox.fontSize}

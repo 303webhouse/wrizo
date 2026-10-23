@@ -1,5 +1,6 @@
 import { deskTerm } from '../../store/deskLexicon';
 import { colX, colWidth, rowY, CARD_H } from '../layout';
+import { guidedStep } from '../guided';
 import type { DeckDefinition, DealtCardSpec } from '../types';
 
 // B3 S2 — Three-Act Structure, the fiction room's workhorse (catalog #1).
@@ -17,16 +18,18 @@ const W = colWidth(COLS);
 
 type BeatKey = 'hook' | 'inciting' | 'threshold' | 'complications' | 'midpoint' | 'darkest' | 'climax' | 'resolution' | 'finalImage';
 
-const BEAT: Record<BeatKey, { title: string; body: string; col: 0 | 1 | 2 }> = {
-  hook: { title: deskTerm('deckThreeActHookTitle'), body: deskTerm('deckThreeActHookBody'), col: 0 },
-  inciting: { title: deskTerm('deckThreeActIncitingTitle'), body: deskTerm('deckThreeActIncitingBody'), col: 0 },
-  threshold: { title: deskTerm('deckThreeActThresholdTitle'), body: deskTerm('deckThreeActThresholdBody'), col: 0 },
-  complications: { title: deskTerm('deckThreeActComplicationsTitle'), body: deskTerm('deckThreeActComplicationsBody'), col: 1 },
-  midpoint: { title: deskTerm('deckThreeActMidpointTitle'), body: deskTerm('deckThreeActMidpointBody'), col: 1 },
-  darkest: { title: deskTerm('deckThreeActDarkestTitle'), body: deskTerm('deckThreeActDarkestBody'), col: 1 },
-  climax: { title: deskTerm('deckThreeActClimaxTitle'), body: deskTerm('deckThreeActClimaxBody'), col: 2 },
-  resolution: { title: deskTerm('deckThreeActResolutionTitle'), body: deskTerm('deckThreeActResolutionBody'), col: 2 },
-  finalImage: { title: deskTerm('deckThreeActFinalImageTitle'), body: deskTerm('deckThreeActFinalImageBody'), col: 2 },
+// W3: a step is dealt as a QUESTION (decks/guided.ts) - the card's body is empty and decks/content.ts holds the question, the "?" sentence and the example under `step`.
+// The old one-line bodies (deckThreeAct*Body) are no longer dealt; they stay in the lexicon, unused, for cards already on boards.
+const BEAT: Record<BeatKey, { title: string; step: string; col: 0 | 1 | 2 }> = {
+  hook: { title: deskTerm('deckThreeActHookTitle'), step: 'hook', col: 0 },
+  inciting: { title: deskTerm('deckThreeActIncitingTitle'), step: 'inciting', col: 0 },
+  threshold: { title: deskTerm('deckThreeActThresholdTitle'), step: 'threshold', col: 0 },
+  complications: { title: deskTerm('deckThreeActComplicationsTitle'), step: 'complications', col: 1 },
+  midpoint: { title: deskTerm('deckThreeActMidpointTitle'), step: 'midpoint', col: 1 },
+  darkest: { title: deskTerm('deckThreeActDarkestTitle'), step: 'darkest', col: 1 },
+  climax: { title: deskTerm('deckThreeActClimaxTitle'), step: 'climax', col: 2 },
+  resolution: { title: deskTerm('deckThreeActResolutionTitle'), step: 'resolution', col: 2 },
+  finalImage: { title: deskTerm('deckThreeActFinalImageTitle'), step: 'final-image', col: 2 },
 };
 
 const NOVEL: BeatKey[] = ['hook', 'inciting', 'threshold', 'complications', 'midpoint', 'darkest', 'climax', 'resolution', 'finalImage'];
@@ -40,8 +43,7 @@ function layout(keys: BeatKey[]): DealtCardSpec[] {
     const row = colCounts[beat.col]++;
     return {
       key,
-      title: beat.title,
-      body: beat.body,
+      ...guidedStep('three-act', beat.step, beat.title),
       x: colX(beat.col, COLS),
       y: rowY(row),
       w: W,

@@ -1,5 +1,6 @@
 import { deskTerm } from '../../store/deskLexicon';
 import { colX, colWidth, rowY, CARD_H } from '../layout';
+import { guidedStep } from '../guided';
 import type { DeckDefinition, DealtCardSpec } from '../types';
 
 // B3 S2 — Thesis / Dissertation, the Academy's flagship (catalog #13).
@@ -13,26 +14,27 @@ import type { DeckDefinition, DealtCardSpec } from '../types';
 const COLS = 3;
 const W = colWidth(COLS);
 
+// W3: each card is a question (decks/guided.ts, decks/content.ts). [title, step id]. The humanities chapter titles stay Chapter One / Two / Three (Fable's ruling 3).
 const FOUNDATIONS: [string, string][] = [
-  [deskTerm('deckThesisQuestionTitle'), deskTerm('deckThesisQuestionBody')],
-  [deskTerm('deckThesisMethodologyTitle'), deskTerm('deckThesisMethodologyBody')],
-  [deskTerm('deckThesisLitReviewTitle'), deskTerm('deckThesisLitReviewBody')],
+  [deskTerm('deckThesisQuestionTitle'), 'question'],
+  [deskTerm('deckThesisMethodologyTitle'), 'methodology'],
+  [deskTerm('deckThesisLitReviewTitle'), 'lit-review'],
 ];
 const LEDGER: [string, string][] = [
-  [deskTerm('deckThesisEvidenceTitle'), deskTerm('deckThesisEvidenceBody')],
-  [deskTerm('deckThesisCitationTitle'), deskTerm('deckThesisCitationBody')],
+  [deskTerm('deckThesisEvidenceTitle'), 'evidence'],
+  [deskTerm('deckThesisCitationTitle'), 'citation'],
 ];
 const CHAPTERS_HUMANITIES: [string, string][] = [
-  [deskTerm('deckThesisChapterOneTitle'), deskTerm('deckThesisChapterOneBody')],
-  [deskTerm('deckThesisChapterTwoTitle'), deskTerm('deckThesisChapterTwoBody')],
-  [deskTerm('deckThesisChapterThreeTitle'), deskTerm('deckThesisChapterThreeBody')],
-  [deskTerm('deckThesisConclusionTitle'), deskTerm('deckThesisConclusionBody')],
+  [deskTerm('deckThesisChapterOneTitle'), 'chapter-one'],
+  [deskTerm('deckThesisChapterTwoTitle'), 'chapter-two'],
+  [deskTerm('deckThesisChapterThreeTitle'), 'chapter-three'],
+  [deskTerm('deckThesisConclusionTitle'), 'conclusion'],
 ];
 const CHAPTERS_SCIENCES: [string, string][] = [
-  [deskTerm('deckThesisIntroTitle'), deskTerm('deckThesisIntroBody')],
-  [deskTerm('deckThesisMethodsTitle'), deskTerm('deckThesisMethodsBody')],
-  [deskTerm('deckThesisResultsTitle'), deskTerm('deckThesisResultsBody')],
-  [deskTerm('deckThesisDiscussionTitle'), deskTerm('deckThesisDiscussionBody')],
+  [deskTerm('deckThesisIntroTitle'), 'introduction'],
+  [deskTerm('deckThesisMethodsTitle'), 'methods'],
+  [deskTerm('deckThesisResultsTitle'), 'results'],
+  [deskTerm('deckThesisDiscussionTitle'), 'discussion'],
 ];
 
 export const thesisDeck: DeckDefinition = {
@@ -52,14 +54,14 @@ export const thesisDeck: DeckDefinition = {
   deal: (answers) => {
     const chapters = answers.field === 'sciences' ? CHAPTERS_SCIENCES : CHAPTERS_HUMANITIES;
     const specs: DealtCardSpec[] = [];
-    FOUNDATIONS.forEach(([title, body], i) => specs.push({
-      key: `foundation-${i}`, title, body, x: colX(0, COLS), y: rowY(i), w: W, h: CARD_H,
+    FOUNDATIONS.forEach(([title, step], i) => specs.push({
+      key: `foundation-${i}`, ...guidedStep('thesis', step, title), x: colX(0, COLS), y: rowY(i), w: W, h: CARD_H,
     }));
-    chapters.forEach(([title, body], i) => specs.push({
-      key: `chapter-${i}`, title, body, x: colX(1, COLS), y: rowY(i), w: W, h: CARD_H,
+    chapters.forEach(([title, step], i) => specs.push({
+      key: `chapter-${i}`, ...guidedStep('thesis', step, title), x: colX(1, COLS), y: rowY(i), w: W, h: CARD_H,
     }));
-    LEDGER.forEach(([title, body], i) => specs.push({
-      key: `ledger-${i}`, title, body, x: colX(2, COLS), y: rowY(i), w: W, h: CARD_H,
+    LEDGER.forEach(([title, step], i) => specs.push({
+      key: `ledger-${i}`, ...guidedStep('thesis', step, title), x: colX(2, COLS), y: rowY(i), w: W, h: CARD_H,
     }));
     return specs;
   },

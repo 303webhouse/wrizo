@@ -543,6 +543,15 @@ export interface Box {
   // everyday font). Additive inside `boxes` (jsonb) - zero schema - and ABSENT on every card that never chose.
   fontFace?: StoredFace;
   fontSize?: number;  // points; read through the default 11 (= today's card rendering)
+  // W3 (guided paths, Nick Oct 23) - A DEALT STEP IS A QUESTION, NOT TEXT. Two additive optional fields inside the board's own `boxes` jsonb (zero schema - sync stores the blob whole;
+  // the fontFace / seq / onCanvas precedent, ledgered), written ONLY by a NEW deal of a Tier 1 deck and absent on every other card, including every card dealt before W3:
+  //   prompt   - the step's question, RESOLVED AT DEAL TIME (store/guided.ts, decks/content.ts). It is the card's PLACEHOLDER: shown while the card has no body, never body text - never
+  //              in `text`, so it is never exported, copied, counted, synced as body or read by the Tutor as the writer's words (every such reader reads `text`; harness guided-w3 pins that
+  //              no reader names `.prompt`). A card the writer has written into keeps the field and simply stops showing it; delete the words and the question returns.
+  //   deckStep - which step of which deck this card was dealt as ({ deck: 'three-act', step: 'hook' }): the key the "?" reads its sentence and example by, and what W1's Walk and W5's
+  //              coverage will read. It owes the deck nothing else (the engine's "the deck forgets itself" stands for the CARD's text; this one pointer is the single exception).
+  prompt?: string;
+  deckStep?: { deck: string; step: string };
   strokes?: Stroke[];  // kind 'ink' (incl. erases) — re-normalized to the box on port
   sourceEntryId?: string;
   portedAt?: string;

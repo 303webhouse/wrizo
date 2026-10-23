@@ -549,6 +549,27 @@ export type DeskTermId =
   // Want vs. Need card.
   | 'deckCharacterStudyQPrompt' | 'deckCharacterStudyOptTwo' | 'deckCharacterStudyOptThree' | 'deckCharacterStudyOptFour'
   | 'deckCharacterStudyLabel'
+  // W3 (guided paths, Nick Oct 23) - the new Tier 1 decks' own chrome: names, wizard prompts / options and step titles (one block, generated from the Wrizors' content doc), the
+  // 'every room' heading for From my pages, and the Fifteen Beats' new 'Novel' answer. The QUESTIONS, '?' sentences and examples are deck content (decks/content.ts), not lexicon.
+  | 'deckNameHeroJourney' | 'deckNameStoryCircle' | 'deckNameSceneSequel' | 'deckNameArgumentEssay'
+  | 'deckNameResearchPaper' | 'deckNameBusinessProposal' | 'deckNameFromMyPages' | 'deckRoomEvery'
+  | 'deckHeroQPrompt' | 'deckHeroOptNovel' | 'deckHeroOptShortStory' | 'deckSceneSequelQPrompt'
+  | 'deckSceneSequelOptOne' | 'deckSceneSequelOptThree' | 'deckSceneSequelOptFive' | 'deckSceneSequelLabel'
+  | 'deckArgumentQPrompt' | 'deckArgumentOptShort' | 'deckArgumentOptFull' | 'deckScreenplayOptNovel'
+  | 'deckHeroOrdinaryWorldTitle' | 'deckHeroCallTitle' | 'deckHeroRefusalTitle' | 'deckHeroMentorTitle'
+  | 'deckHeroThresholdTitle' | 'deckHeroTestsTitle' | 'deckHeroApproachTitle' | 'deckHeroOrdealTitle'
+  | 'deckHeroRewardTitle' | 'deckHeroRoadBackTitle' | 'deckHeroResurrectionTitle' | 'deckHeroReturnTitle'
+  | 'deckCircleYouTitle' | 'deckCircleNeedTitle' | 'deckCircleGoTitle' | 'deckCircleSearchTitle'
+  | 'deckCircleFindTitle' | 'deckCircleTakeTitle' | 'deckCircleReturnTitle' | 'deckCircleChangeTitle'
+  | 'deckSceneSequelGoalTitle' | 'deckSceneSequelConflictTitle' | 'deckSceneSequelDisasterTitle' | 'deckSceneSequelReactionTitle'
+  | 'deckSceneSequelDilemmaTitle' | 'deckSceneSequelDecisionTitle' | 'deckArgumentClaimTitle' | 'deckArgumentCounterclaimTitle'
+  | 'deckArgumentEvidence1Title' | 'deckArgumentEvidence2Title' | 'deckArgumentEvidence3Title' | 'deckArgumentSynthesisTitle'
+  | 'deckArgumentSoWhatTitle' | 'deckImradIntroductionTitle' | 'deckImradMethodsTitle' | 'deckImradResultsTitle'
+  | 'deckImradDiscussionTitle' | 'deckImradAbstractTitle' | 'deckProposalProblemTitle' | 'deckProposalSolutionTitle'
+  | 'deckProposalMarketTitle' | 'deckProposalAskTitle' | 'deckProposalTimelineTitle' | 'deckProposalBudgetTitle'
+  | 'deckProposalObjectionsTitle'
+  // W3 - the step '?' (components/StepHelp.tsx): its glyph, its 'more' (hands the question to the Tutor) and the ask it stages.
+  | 'deckStepHelpGlyph' | 'deckStepHelpMore' | 'deckStepHelpLabel' | 'deckStepHelpAsk'
   | 'deckCharacterStudyWantNeedTitle' | 'deckCharacterStudyWantNeedBody'
   | 'deckCharacterStudyWoundTitle' | 'deckCharacterStudyWoundBody'
   | 'deckCharacterStudyContradictionTitle' | 'deckCharacterStudyContradictionBody'
@@ -667,7 +688,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   // Arbor "New Card · New Page · Templates · Connect Pages". "Load a Deck"
   // named the OBJECT it loads; "Templates" names what that object IS, the
   // same noun-door convention every other beginning here already uses.
-  beginLoadDeck: 'Templates',
+  beginLoadDeck: 'Presets',
   // ITEM word-diet-layouts (Fable, Oct 15) — Arbor's own word for this door
   // is now "Connect Pages" (was "+ Filed Pages", the ExistingPagePicker's
   // own button-face borrowed here; the two doors open the same sheet but
@@ -1364,7 +1385,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   deckWorldbuildingIcebergBody: 'What do you know that the reader never sees — but that makes everything else true?',
 
   // Feature Screenplay (Save the Cat's 15).
-  deckScreenplayQPrompt: 'Feature or pilot?',
+  deckScreenplayQPrompt: 'What is this for?',
   deckScreenplayOptFeature: 'Feature',
   deckScreenplayOptPilot: 'Pilot',
   deckScreenplayPilotNote: 'TV Pilot decks are coming in a future release — this deals Save the Cat’s 15 for a feature.',
@@ -1465,13 +1486,13 @@ const CANONICAL: Record<DeskTermId, string> = {
   deckFeatureStoryLedeBBody: 'A voice-first opening — let a quote or a line of dialogue lead.',
   deckFeatureStoryLedeCTitle: 'Lede Candidate C',
   deckFeatureStoryLedeCBody: 'A fact-first opening — the single detail that earns the whole story.',
-  deckFeatureStorySourceOneTitle: 'Source & Quote',
+  deckFeatureStorySourceOneTitle: 'Source & Quote (1)',
   deckFeatureStorySourceOneBody: 'Who said what — and why they’re the right person to say it.',
-  deckFeatureStorySourceTwoTitle: 'Source & Quote',
+  deckFeatureStorySourceTwoTitle: 'Source & Quote (2)',
   deckFeatureStorySourceTwoBody: 'A second voice — ideally one that complicates the first.',
-  deckFeatureStorySceneOneTitle: 'Scene Card',
+  deckFeatureStorySceneOneTitle: 'Scene Card (1)',
   deckFeatureStorySceneOneBody: 'A moment you can actually show, not summarize.',
-  deckFeatureStorySceneTwoTitle: 'Scene Card',
+  deckFeatureStorySceneTwoTitle: 'Scene Card (2)',
   deckFeatureStorySceneTwoBody: 'A second moment, from later in the reporting.',
   deckFeatureStoryKickerATitle: 'Kicker Candidate A',
   deckFeatureStoryKickerABody: 'A closing line that echoes the lede.',
@@ -1484,6 +1505,77 @@ const CANONICAL: Record<DeskTermId, string> = {
   deckCharacterStudyOptThree: 'Three',
   deckCharacterStudyOptFour: 'Four',
   deckCharacterStudyLabel: 'Character',
+  // W3 - generated from w3-deck-content.md: the new Tier 1 decks' names, wizard words and step titles (see the union above).
+  deckNameHeroJourney: 'Hero’s Journey',
+  deckNameStoryCircle: 'Story Circle',
+  deckNameSceneSequel: 'Scene–Sequel',
+  deckNameArgumentEssay: 'Argumentative Essay',
+  deckNameResearchPaper: 'Research Paper (IMRaD)',
+  deckNameBusinessProposal: 'Business Proposal',
+  deckNameFromMyPages: 'From my pages',
+  deckRoomEvery: 'Every Room',
+  deckHeroQPrompt: 'What are you writing?',
+  deckHeroOptNovel: 'Novel',
+  deckHeroOptShortStory: 'Short story',
+  deckSceneSequelQPrompt: 'How many scenes to lay out?',
+  deckSceneSequelOptOne: 'One',
+  deckSceneSequelOptThree: 'Three',
+  deckSceneSequelOptFive: 'Five',
+  deckSceneSequelLabel: 'Scene',
+  deckArgumentQPrompt: 'How long?',
+  deckArgumentOptShort: 'Short',
+  deckArgumentOptFull: 'Full',
+  deckScreenplayOptNovel: 'Novel',
+  deckHeroOrdinaryWorldTitle: 'Ordinary World',
+  deckHeroCallTitle: 'Call to Adventure',
+  deckHeroRefusalTitle: 'Refusal of the Call',
+  deckHeroMentorTitle: 'Meeting the Mentor',
+  deckHeroThresholdTitle: 'Crossing the Threshold',
+  deckHeroTestsTitle: 'Tests, Allies, Enemies',
+  deckHeroApproachTitle: 'Approach to the Inmost Cave',
+  deckHeroOrdealTitle: 'Ordeal',
+  deckHeroRewardTitle: 'Reward',
+  deckHeroRoadBackTitle: 'The Road Back',
+  deckHeroResurrectionTitle: 'Resurrection',
+  deckHeroReturnTitle: 'Return with the Elixir',
+  deckCircleYouTitle: 'You',
+  deckCircleNeedTitle: 'Need',
+  deckCircleGoTitle: 'Go',
+  deckCircleSearchTitle: 'Search',
+  deckCircleFindTitle: 'Find',
+  deckCircleTakeTitle: 'Take',
+  deckCircleReturnTitle: 'Return',
+  deckCircleChangeTitle: 'Change',
+  deckSceneSequelGoalTitle: 'Goal',
+  deckSceneSequelConflictTitle: 'Conflict',
+  deckSceneSequelDisasterTitle: 'Disaster',
+  deckSceneSequelReactionTitle: 'Reaction',
+  deckSceneSequelDilemmaTitle: 'Dilemma',
+  deckSceneSequelDecisionTitle: 'Decision',
+  deckArgumentClaimTitle: 'Claim',
+  deckArgumentCounterclaimTitle: 'Counterclaim',
+  deckArgumentEvidence1Title: 'Evidence (1)',
+  deckArgumentEvidence2Title: 'Evidence (2)',
+  deckArgumentEvidence3Title: 'Evidence (3)',
+  deckArgumentSynthesisTitle: 'Synthesis',
+  deckArgumentSoWhatTitle: 'So What',
+  deckImradIntroductionTitle: 'Introduction',
+  deckImradMethodsTitle: 'Methods',
+  deckImradResultsTitle: 'Results',
+  deckImradDiscussionTitle: 'Discussion',
+  deckImradAbstractTitle: 'Abstract (write me last)',
+  deckProposalProblemTitle: 'Problem',
+  deckProposalSolutionTitle: 'Solution',
+  deckProposalMarketTitle: 'Market',
+  deckProposalAskTitle: 'The Ask',
+  deckProposalTimelineTitle: 'Timeline',
+  deckProposalBudgetTitle: 'Budget',
+  deckProposalObjectionsTitle: 'Objections',
+  // W3 - the step '?': Arbor '?' / 'more'; Flux '[?]' / 'MORE'. {step} is the card's own title.
+  deckStepHelpGlyph: '?',
+  deckStepHelpMore: 'more',
+  deckStepHelpLabel: 'What does this step do?',
+  deckStepHelpAsk: 'What does {step} do?',
   deckCharacterStudyWantNeedTitle: 'Want vs. Need',
   deckCharacterStudyWantNeedBody: 'What they think they want — and what they actually need.',
   deckCharacterStudyWoundTitle: 'The Wound',
@@ -1634,6 +1726,9 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     actionDelete: 'Delete doc',
     actionDeleteConfirm: 'Send this doc to Trash?',
     backToDrawer: 'Back to Rack',
+    deckNameFromMyPages: 'From my docs',
+    deckStepHelpGlyph: '[?]',
+    deckStepHelpMore: 'MORE',
     beginConnectPage: 'Connect Docs',
     boardAddExistingPage: '+ Filed Docs',
     boardCanvasEmpty: 'Add Cards or Docs',

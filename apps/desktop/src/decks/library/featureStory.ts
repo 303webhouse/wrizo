@@ -1,5 +1,6 @@
 import { deskTerm } from '../../store/deskLexicon';
 import { colX, colWidth, rowY, CARD_H } from '../layout';
+import { guidedStep } from '../guided';
 import type { DeckDefinition, DealtCardSpec } from '../types';
 
 // B3 S2 — Feature Story, the Newsroom's flagship (catalog #20): nut graf,
@@ -12,24 +13,19 @@ import type { DeckDefinition, DealtCardSpec } from '../types';
 const COLS = 2;
 const W = colWidth(COLS);
 
-const NUT_GRAF_BODY: Record<string, string> = {
-  profile: deskTerm('deckFeatureStoryNutGrafBodyProfile'),
-  trend: deskTerm('deckFeatureStoryNutGrafBodyTrend'),
-  investigative: deskTerm('deckFeatureStoryNutGrafBodyInvestigative'),
-};
-
+// W3: each step is a question (decks/guided.ts, decks/content.ts); the Nut Graf question varies with the kind answer. [title, step id]
 const COL_A: [string, string][] = [
-  [deskTerm('deckFeatureStoryLedeATitle'), deskTerm('deckFeatureStoryLedeABody')],
-  [deskTerm('deckFeatureStoryLedeBTitle'), deskTerm('deckFeatureStoryLedeBBody')],
-  [deskTerm('deckFeatureStoryLedeCTitle'), deskTerm('deckFeatureStoryLedeCBody')],
-  [deskTerm('deckFeatureStorySourceOneTitle'), deskTerm('deckFeatureStorySourceOneBody')],
+  [deskTerm('deckFeatureStoryLedeATitle'), 'lede-a'],
+  [deskTerm('deckFeatureStoryLedeBTitle'), 'lede-b'],
+  [deskTerm('deckFeatureStoryLedeCTitle'), 'lede-c'],
+  [deskTerm('deckFeatureStorySourceOneTitle'), 'source-1'],
 ];
 const COL_B: [string, string][] = [
-  [deskTerm('deckFeatureStorySourceTwoTitle'), deskTerm('deckFeatureStorySourceTwoBody')],
-  [deskTerm('deckFeatureStorySceneOneTitle'), deskTerm('deckFeatureStorySceneOneBody')],
-  [deskTerm('deckFeatureStorySceneTwoTitle'), deskTerm('deckFeatureStorySceneTwoBody')],
-  [deskTerm('deckFeatureStoryKickerATitle'), deskTerm('deckFeatureStoryKickerABody')],
-  [deskTerm('deckFeatureStoryKickerBTitle'), deskTerm('deckFeatureStoryKickerBBody')],
+  [deskTerm('deckFeatureStorySourceTwoTitle'), 'source-2'],
+  [deskTerm('deckFeatureStorySceneOneTitle'), 'scene-1'],
+  [deskTerm('deckFeatureStorySceneTwoTitle'), 'scene-2'],
+  [deskTerm('deckFeatureStoryKickerATitle'), 'kicker-a'],
+  [deskTerm('deckFeatureStoryKickerBTitle'), 'kicker-b'],
 ];
 
 export const featureStoryDeck: DeckDefinition = {
@@ -51,15 +47,14 @@ export const featureStoryDeck: DeckDefinition = {
     const kind = answers.kind === 'trend' || answers.kind === 'investigative' ? answers.kind : 'profile';
     const specs: DealtCardSpec[] = [{
       key: 'nut-graf',
-      title: deskTerm('deckFeatureStoryNutGrafTitle'),
-      body: NUT_GRAF_BODY[kind],
+      ...guidedStep('feature-story', 'nut-graf', deskTerm('deckFeatureStoryNutGrafTitle'), kind),
       x: colX(0, COLS), y: rowY(0), w: W, h: CARD_H,
     }];
-    COL_A.forEach(([title, body], i) => specs.push({
-      key: `a-${i}`, title, body, x: colX(0, COLS), y: rowY(i + 1), w: W, h: CARD_H,
+    COL_A.forEach(([title, step], i) => specs.push({
+      key: `a-${i}`, ...guidedStep('feature-story', step, title), x: colX(0, COLS), y: rowY(i + 1), w: W, h: CARD_H,
     }));
-    COL_B.forEach(([title, body], i) => specs.push({
-      key: `b-${i}`, title, body, x: colX(1, COLS), y: rowY(i), w: W, h: CARD_H,
+    COL_B.forEach(([title, step], i) => specs.push({
+      key: `b-${i}`, ...guidedStep('feature-story', step, title), x: colX(1, COLS), y: rowY(i), w: W, h: CARD_H,
     }));
     return specs;
   },

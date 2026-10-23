@@ -21,7 +21,7 @@ import type { DeskTermId } from '../store/deskLexicon';
 // persistence.ts's own SYSTEM_BOARD_TITLE_TERM and kindLabels.ts already
 // use for exactly this "compose copy outside a component" situation.
 
-export type DeckRoom = 'fiction' | 'speculative' | 'screen' | 'academy' | 'business' | 'newsroom';
+export type DeckRoom = 'fiction' | 'speculative' | 'screen' | 'academy' | 'business' | 'newsroom' | 'every';   // 'every' (W3): From my pages, which belongs to no one room
 
 // Every question names its own narrowing choices (catalog Law 5): few,
 // concrete, clickable options. `noteTerm` is the ONE escape hatch R6 itself
@@ -68,6 +68,10 @@ export interface DealtCardSpec {
   key: string;
   title: string;
   body: string;
+  // W3 - a Tier 1 step is dealt as a QUESTION, not text: `body` is '' and these two ride onto the box (types/index.ts Box.prompt / Box.deckStep). A spec without them (a deck that has
+  // not been given guided content, or a hand-built one) deals exactly as it always did.
+  prompt?: string;
+  deckStep?: { deck: string; step: string };
   x: number;
   y: number;
   w: number;

@@ -22,6 +22,7 @@ import { HelpButton } from './HelpButton';
 import { ConnectionsDrawerPanel } from './ConnectionsDrawerPanel';
 import { RIGHT_TABS, type RightTab } from '../store/drawerSet';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
+import { TUTOR_STAGE_EVENT } from '../store/tutorStage';
 
 // TU1 S2/S3/S4/S5 — the Tutor. The sliver, mirrored, on the paper's RIGHT
 // edge — but rendered as TWO separate DeskFrame overlay anchors, not one
@@ -833,6 +834,25 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     setComposerText(text);                  // REPLACES — the composer stages one ask
     setStageTick((n) => n + 1);
   };
+
+  // W3 / W11a - a step's "more" (components/StepHelp.tsx) STAGES an ask here: the drawer opens on the Tutor tab and the ask lands in the composer as ordinary editable text,
+  // caret at the end - the same arrival as a roster chip's press. It is staging and nothing else: no fetch, no await, no auto-send. Like ask 1's press it names no selection, so any
+  // armed one is cleared (one chip cannot consent for another's wire).
+  useEffect(() => {
+    const onStage = (e: Event) => {
+      const text = (e as CustomEvent<{ text?: string }>).detail?.text;
+      if (!text) return;
+      setRightTab('tutor');
+      setOpen(true);
+      setArmedSelection(null);
+      setSelectionTruncated(false);
+      setSelectionSentWords(0);
+      setComposerText(text);
+      setStageTick((n) => n + 1);
+    };
+    window.addEventListener(TUTOR_STAGE_EVENT, onStage);
+    return () => window.removeEventListener(TUTOR_STAGE_EVENT, onStage);
+  }, []);
 
   const send = async () => {
     const text = composerText.trim();

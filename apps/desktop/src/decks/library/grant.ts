@@ -1,5 +1,6 @@
 import { deskTerm } from '../../store/deskLexicon';
 import { colX, colWidth, rowY, CARD_H } from '../layout';
+import { guidedStep } from '../guided';
 import type { DeckDefinition, DealtCardSpec } from '../types';
 
 // B3 S2 — Grant Application, the Business Desk's flagship (catalog #18).
@@ -13,19 +14,14 @@ import type { DeckDefinition, DealtCardSpec } from '../types';
 const COLS = 2;
 const W = colWidth(COLS);
 
+// W3: each step is a question (decks/guided.ts, decks/content.ts); the Funder Alignment question varies with the funder answer.
 const BASE: [string, string][] = [
-  [deskTerm('deckGrantNeedTitle'), deskTerm('deckGrantNeedBody')],
-  [deskTerm('deckGrantObjectivesTitle'), deskTerm('deckGrantObjectivesBody')],
-  [deskTerm('deckGrantMethodsTitle'), deskTerm('deckGrantMethodsBody')],
-  [deskTerm('deckGrantEvaluationTitle'), deskTerm('deckGrantEvaluationBody')],
-  [deskTerm('deckGrantBudgetTitle'), deskTerm('deckGrantBudgetBody')],
+  [deskTerm('deckGrantNeedTitle'), 'need'],
+  [deskTerm('deckGrantObjectivesTitle'), 'objectives'],
+  [deskTerm('deckGrantMethodsTitle'), 'methods'],
+  [deskTerm('deckGrantEvaluationTitle'), 'evaluation'],
+  [deskTerm('deckGrantBudgetTitle'), 'budget'],
 ];
-
-const ALIGNMENT_BODY: Record<string, string> = {
-  foundation: deskTerm('deckGrantAlignmentBodyFoundation'),
-  government: deskTerm('deckGrantAlignmentBodyGovernment'),
-  corporate: deskTerm('deckGrantAlignmentBodyCorporate'),
-};
 
 export const grantDeck: DeckDefinition = {
   id: 'grant',
@@ -44,14 +40,13 @@ export const grantDeck: DeckDefinition = {
   ],
   deal: (answers) => {
     const funder = answers.funder === 'government' || answers.funder === 'corporate' ? answers.funder : 'foundation';
-    const specs: DealtCardSpec[] = BASE.map(([title, body], i) => ({
-      key: `base-${i}`, title, body,
+    const specs: DealtCardSpec[] = BASE.map(([title, step], i) => ({
+      key: `base-${i}`, ...guidedStep('grant', step, title),
       x: colX(i % 2, COLS), y: rowY(Math.floor(i / 2)), w: W, h: CARD_H,
     }));
     specs.push({
       key: 'alignment',
-      title: deskTerm('deckGrantAlignmentTitle'),
-      body: ALIGNMENT_BODY[funder],
+      ...guidedStep('grant', 'alignment', deskTerm('deckGrantAlignmentTitle'), funder),
       x: colX(BASE.length % 2, COLS), y: rowY(Math.floor(BASE.length / 2)), w: W, h: CARD_H,
     });
     return specs;

@@ -46,6 +46,7 @@ const ROOM_TERM: Record<DeckRoom, DeskTermId> = {
   academy: 'deckRoomAcademy',
   business: 'deckRoomBusiness',
   newsroom: 'deckRoomNewsroom',
+  every: 'deckRoomEvery',
 };
 
 export function DeckWizard({ decks, onDeal, onClose, startDeckId }: DeckWizardProps) {
