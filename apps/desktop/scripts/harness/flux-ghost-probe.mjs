@@ -38,21 +38,30 @@ await withHarness(async (app) => {
       for (const e of root.querySelectorAll('*')) { const cs = getComputedStyle(e); const r = e.getBoundingClientRect(); if (r.width < 1 || r.height < 1 || cs.visibility === 'hidden' || cs.display === 'none') continue;
         const own = [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim().length > 0) || e.tagName === 'svg' || e.tagName === 'INPUT' || e.tagName === 'BUTTON'; if (!own) continue; out.push({ cls: String(e.className).slice(0, 34) || e.tagName, o: eff(e), t: (e.textContent || '').trim().slice(0, 18) }); }
       return out; })()`;
+    const rest = await q(probe);   // the drawer at rest: every node's own level (a disabled control sits at its own 0.4 - the comparison below is relative to THIS, not to 1)
     await q("document.querySelector('.forward-only-editor').focus()");
+    const t0 = Date.now();
     await app.typeKeys(' more words ');
     await waitSoft("document.querySelector('[data-chrome-receded]')?.getAttribute('data-chrome-receded') === 'true'", { label: 'receded', timeout: 8000 });
-    await sleep(3000);
-    const faded = await q(probe);
+    // how long the dissolve takes to reach the floor (information: a screenshot taken mid-fade shows a partway ghost)
+    let toFloor = null, faded = null;
+    for (let i = 0; i < 40; i += 1) { faded = await q(probe); if (faded && faded.length && Math.max(...faded.map((x) => x.o)) <= 0.12) { toFloor = Date.now() - t0; break; } await sleep(250); }
+    await sleep(1500);
+    faded = await q(probe);
     const maxO = faded && faded.length ? Math.max(...faded.map((x) => x.o)) : null;
     const mid = (faded || []).filter((x) => x.o > 0.12);
     ok(`[${page}] premise: the left drawer is OPEN while writing and has contents to measure`, opened === 'true' && Array.isArray(faded) && faded.length > 3, JSON.stringify({ opened, n: faded && faded.length }));
     ok(`[${page}] receded while typing, an open drawer's contents sit at the dissolve floor (<= 0.12, ~8%) or are gone - no mid-level ghost (highest ${maxO})`, Array.isArray(faded) && faded.length > 3 && mid.length === 0, JSON.stringify(mid.slice(0, 8)));
+    ok(`[${page}] (information) the dissolve reached the floor ${toFloor === null ? 'NEVER' : toFloor + ' ms'} after the first key`, true, String(toFloor));
     ok(`[${page}] (information) the drawer's contents while writing: ${faded ? faded.length : 0} painted node(s), effective opacity ${faded ? JSON.stringify([...new Set(faded.map((x) => x.o))].sort((p1, p2) => p1 - p2)) : 'n/a'}`, true, JSON.stringify((faded || []).slice(0, 6)));
     await app.mouseMove(700, 500); await app.mouseMove(720, 520); await sleep(400); await app.mouseMove(740, 540);
+    const key = (x) => `${x.cls}|${x.t}`;
+    const base = new Map((rest || []).map((x) => [key(x), x.o]));
+    const short = (arr) => (arr || []).filter((x) => base.has(key(x)) && x.o < base.get(key(x)) * 0.9);
     let back = null;
-    for (let i = 0; i < 20; i += 1) { await sleep(200); back = await q(probe); if (back && back.length && Math.min(...back.map((x) => x.o)) > 0.9) break; }
-    const backMin = back && back.length ? Math.min(...back.map((x) => x.o)) : null;
-    ok(`[${page}] on mouse move the drawer's contents come back (lowest effective opacity ${backMin})`, backMin !== null && backMin > 0.9, JSON.stringify((back || []).filter((x) => x.o <= 0.9).slice(0, 6)));
+    for (let i = 0; i < 20; i += 1) { await sleep(200); back = await q(probe); if (back && back.length && short(back).length === 0) break; }
+    const stillLow = short(back);
+    ok(`[${page}] on mouse move every node of the drawer comes back to its own resting level (${stillLow.length} still under 90% of it)`, Array.isArray(back) && back.length > 3 && stillLow.length === 0, JSON.stringify(stillLow.slice(0, 6).map((x) => ({ ...x, rest: base.get(key(x)) }))));
     if (shotAt) { fs.writeFileSync(shotAt.replace(/(\.png)?$/, `-${page}.png`), Buffer.from(await app.screenshot(), 'base64')); }
   }
 });
