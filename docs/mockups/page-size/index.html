@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Page size</title>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&family=Figtree:wght@400;500&family=Rajdhani:wght@500;600&display=swap" rel="stylesheet">
+<script>
+(function () {
+  var q = new URLSearchParams(location.search);
+  var root = document.documentElement;
+  root.dataset.theme = q.get('theme') || 'arbor';
+  root.dataset.mode = q.get('mode') || 'dark';
+  root.dataset.panels = q.get('panels') || 'open';
+  root.dataset.w = q.get('w') || '1366';
+  if (q.has('theme')) root.classList.add('shot');
+})();
+</script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { overflow: hidden; font-family: Figtree, system-ui, sans-serif; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+  html[data-theme='arbor'][data-mode='dark'] {
+    --desk: #110600; --chrome: #1F1A16; --ink: #EDE6DA; --muted: #B5A998; --low: #80766A;
+    --paper: #1C1612; --on: #F3EDE1; --onlow: #A89880; --line: #3A3128; --accent: #ff9800;
+  }
+  html[data-theme='arbor'][data-mode='light'] {
+    --desk: #E7DFD2; --chrome: #F3EDE1; --ink: #2B2014; --muted: #6E6256; --low: #8A7C68;
+    --paper: #FBF7EF; --on: #2B2014; --onlow: #8A7C68; --line: #D8C8B4; --accent: #ff9800;
+  }
+  html[data-theme='flux'][data-mode='dark'] {
+    --desk: #04141A; --chrome: #091E24; --ink: #E3F1EC; --muted: #8FB4AC; --low: #6E958D;
+    --paper: #0B2429; --on: #E3F1EC; --onlow: #57D0F5; --line: #2A6A76; --accent: #ff9800;
+  }
+  html[data-theme='flux'][data-mode='light'] {
+    --desk: #D5E6E2; --chrome: #EDF6F3; --ink: #14231F; --muted: #3E6F79; --low: #6E958D;
+    --paper: #F4FBFA; --on: #14231F; --onlow: #0B7C9E; --line: #B7D4CE; --accent: #ff9800;
+  }
+  body { background: var(--desk); color: var(--ink); }
+  .top { height: 52px; display: flex; align-items: center; gap: 18px; padding: 0 16px; position: relative; z-index: 3; }
+  html[data-theme='arbor'] .top { font-family: Figtree, sans-serif; }
+  html[data-theme='flux'] .top { font-family: Rajdhani, sans-serif; letter-spacing: .08em; }
+  .modes { margin-left: auto; display: flex; gap: 14px; align-items: flex-end; font-size: 13px; color: var(--muted); text-transform: uppercase; }
+  html[data-theme='flux'] .modes { font-family: 'Chakra Petch', sans-serif; letter-spacing: 0; text-transform: none; font-size: 13px; }
+  .modes .on { color: var(--ink); border-bottom: 2px solid var(--accent); padding-bottom: 4px; }
+  .stage { position: absolute; inset: 52px 0 28px; }
+  .page { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); background: var(--paper); color: var(--on); box-shadow: 0 10px 40px rgba(0,0,0,.28); }
+  html[data-theme='flux'] .page { box-shadow: none; border: 1px solid var(--line); }
+  .prose { font-family: 'Crimson Pro', Georgia, serif; font-size: 16px; line-height: 1.7; }
+  .prose p + p { margin-top: 1.05em; }
+  .caret { display: inline-block; width: 1px; height: .9em; background: var(--accent); vertical-align: -.08em; }
+  html[data-theme='flux'] .caret { width: .55em; height: 1em; background: rgba(255,152,0,.85); box-shadow: 0 0 8px rgba(255,152,0,.45); vertical-align: -.12em; }
+  .panel { position: absolute; top: 12px; bottom: 12px; color: var(--muted); font-size: 15px; }
+  html[data-panels='closed'] .panel { display: none; }
+  .panel h2 { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; font-weight: 500; margin-bottom: 12px; }
+  html[data-theme='flux'] .panel h2 { font-family: Rajdhani, sans-serif; }
+  .panel .row { display: block; text-align: left; padding: 8px 0; color: var(--ink); }
+  .panel .row span { display: block; color: var(--low); font-size: 13px; }
+  .panel.right .chip { display: block; text-align: left; padding: 6px 0; color: var(--ink); }
+  .note { position: absolute; left: 16px; bottom: 6px; font-size: 11px; letter-spacing: .08em; color: var(--low); }
+  .rig { position: absolute; top: 0; left: 0; right: 0; height: 28px; display: flex; gap: 8px; align-items: center; padding: 0 8px; background: #000; color: #ccc; font-size: 11px; z-index: 9; overflow: auto; }
+  html.shot .rig { display: none; }
+  #probe { position: absolute; left: -9999px; top: 0; white-space: nowrap; font: 16px/1.7 'Crimson Pro', Georgia, serif; }
+</style>
+</head>
+<body>
+<header class="rig" id="rig"></header>
+<header class="top">
+  <strong id="brand">Arbor</strong>
+  <div class="modes" id="modes"></div>
+</header>
+<div class="stage">
+  <aside class="panel left" id="left"></aside>
+  <article class="page" id="page">
+    <div class="prose" id="prose"></div>
+  </article>
+  <aside class="panel right" id="right"></aside>
+</div>
+<div class="note" id="note"></div>
+<div id="probe"></div>
+<script>
+(function () {
+  var LINE = 'The rope was already there, and the well took the bucket back colder still today'.slice(0, 75);
+  var root = document.documentElement;
+  var theme = root.dataset.theme;
+  var arbor = theme === 'arbor';
+  document.getElementById('brand').textContent = arbor ? 'Arbor' : 'Flux';
+  document.getElementById('modes').innerHTML = (arbor
+    ? ['Free Write','Draft','Revise','Workshop','Publish','Boards']
+    : ['Wire In','Text','Patch','Relay','Uplink','Circuits']
+  ).map(function (name, i) {
+    return '<span' + (i === 1 ? ' class="on"' : '') + '>' + name + '</span>';
+  }).join('');
+  document.getElementById('left').innerHTML = '<h2>' + (arbor ? 'Pages' : 'Docs') + '</h2>'
+    + '<button class="row" type="button">The second well<span>The rope was already there.</span></button>'
+    + '<button class="row" type="button">The first water<span>We reached it before dark.</span></button>';
+  document.getElementById('right').innerHTML = '<h2>' + (arbor ? 'Tutor' : 'Operator') + '</h2>'
+    + '<button class="chip" type="button">Where does this drag?</button>'
+    + '<button class="chip" type="button">What could go?</button>';
+  var probe = document.getElementById('probe');
+  probe.textContent = LINE;
+  function layout() {
+    var textW = probe.getBoundingClientRect().width + 14;
+    var pageW = textW / (6.5 / 8.5);
+    var pageH = pageW * (11 / 8.5);
+    var page = document.getElementById('page');
+    var padX = (pageW - textW) / 2;
+    page.style.width = pageW + 'px';
+    page.style.height = pageH + 'px';
+    page.style.padding = (padX * 0.85) + 'px ' + padX + 'px';
+    document.getElementById('prose').innerHTML = '<p>' + LINE + '<span class="caret"></span></p><p>Whatever is worth carrying is already with you. The rest the wind can have.</p>';
+    var left = (innerWidth - pageW) / 2;
+    var panelW = Math.min(280, Math.max(160, left - 28));
+    document.getElementById('left').style.width = panelW + 'px';
+    document.getElementById('left').style.left = '16px';
+    document.getElementById('right').style.width = panelW + 'px';
+    document.getElementById('right').style.right = '16px';
+    var words = LINE.trim().split(/\s+/).length;
+    document.getElementById('note').textContent = '12 pt · ' + LINE.length + ' characters · ' + words + ' words · letter ' + Math.round(pageW) + ' × ' + Math.round(pageH);
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+  else layout();
+  var frames = [];
+  ['arbor','flux'].forEach(function (th) {
+    ['dark','light'].forEach(function (mode) {
+      ['1366','1920'].forEach(function (w) {
+        ['open','closed'].forEach(function (panels) {
+          frames.push(th + '-' + mode + '-' + w + '-' + panels);
+        });
+      });
+    });
+  });
+  var here = theme + '-' + root.dataset.mode + '-' + root.dataset.w + '-' + root.dataset.panels;
+  document.getElementById('rig').innerHTML = frames.map(function (f) {
+    return '<button type="button" data-f="' + f + '"' + (f === here ? ' aria-pressed="true"' : '') + '>' + f + '</button>';
+  }).join('');
+  document.getElementById('rig').querySelectorAll('button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var p = b.dataset.f.split('-');
+      location.href = location.pathname + '?theme=' + p[0] + '&mode=' + p[1] + '&w=' + p[2] + '&panels=' + p[3];
+    });
+  });
+})();
+</script>
+</body>
+</html>
