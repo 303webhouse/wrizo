@@ -220,8 +220,8 @@ for (const [k, v] of Object.entries(pinBase)) ok(k, v.pass, v.detail);
 
 // ---- mutants (each landed; each reddens its own check) ---------------------------------------------------------------------------------------------------------------------------
 const CSS_MUT = [
-  { name: 'the ground token drifts back to the old teal', edit: (c) => c.replace('--ink-950: #020c10;', '--ink-950: #04141A;'), red: ['TK1'] },
-  { name: 'the structure line loses its steel blue', edit: (c) => c.replace("--ink-border: #1D4A52;", "--ink-border: #2A6A76;"), red: ['TK1'] },
+  { name: 'the ground token drifts back to the old teal', edit: (c) => c.replace('--ink-950: #010811;', '--ink-950: #04141A;'), red: ['TK1'] },
+  { name: 'the structure line loses its steel blue', edit: (c) => c.replace("--ink-border: #193556;", "--ink-border: #2A6A76;"), red: ['TK1'] },
   { name: 'selection falls back to brass orange', edit: (c) => c.replace("--choice: #00C2FF;", "--choice: #FF9800;"), red: ['TK2', 'OR1'] },
   { name: 'a segmented control goes back to pointing at brass', edit: (c) => c.replace(".mode-seg button.on{ background:none; color:var(--choice); box-shadow:inset 0 0 0 1px var(--choice); }", ".mode-seg button.on{ background:none; color:var(--brass); box-shadow:inset 0 0 0 1px var(--brass); }"), red: ['SEL1'] },
   { name: 'Flux overrides the locked brass', edit: (c) => c.replace("  --choice: #00C2FF;" + String.fromCharCode(10), "  --choice: #00C2FF;" + String.fromCharCode(10) + "  --brass: #00C2FF;" + String.fromCharCode(10)), red: ['TK2'] },
@@ -232,15 +232,20 @@ const CSS_MUT = [
   { name: 'Arbor olive returns as the Flux dark door', edit: (c) => c.replace('--accent-door: #57D0F5;', '--accent-door: #A9B56A;'), red: ['TK5'] },
   { name: 'the rail\'s active state falls back to brass', edit: (c) => c.replace("[data-theme='flux'] .desk-rail-item.active{ color:var(--line-active);", "[data-theme='flux'] .desk-rail-item.active{ color:var(--brass);"), red: ['RL1'] },
   { name: 'the board handle goes back to brass under Flux', edit: (c) => c.replace("[data-theme='flux'] .board-handle{ background:var(--choice); }", "[data-theme='flux'] .board-handle{ background:var(--brass); }"), red: ['HD1'] },
-  { name: 'the card goes back to cream stock in the Flux root', edit: (c) => c.replace('  --card-stock: #10232F;', '  --card-stock: #FBF6EA;'), red: ['CD1'] },
+  { name: 'the card goes back to cream stock in the Flux root', edit: (c) => c.replace('  --card-stock: #0E1E31;', '  --card-stock: #FBF6EA;'), red: ['CD1'] },
   { name: 'the arrival door goes back to brass under Flux', edit: (c) => c.replace("[data-theme='flux'] .wz-btn.wz-primary{ color:var(--choice);", "[data-theme='flux'] .wz-btn.wz-primary{ color:var(--brass);"), red: ['AR1'] },
-  { name: 'the room goes back to the teal panel', edit: (c) => c.replace('  --ink-900: #101C24;', '  --ink-900: #091E24;'), red: ['TK6'] },
+  { name: 'the room goes back to the teal panel', edit: (c) => c.replace('  --ink-900: #0F1926;', '  --ink-900: #091E24;'), red: ['TK6'] },
   { name: 'a green-grey text tier returns', edit: (c) => c.replace('  --text-mid: #9AD7EA;', '  --text-mid: #8FB4AC;'), red: ['TK6'] },
   { name: 'the board hint gets a dark fill again', edit: (c) => c.replace('.flux-board-frame .flux-readout-hint{ background:var(--paper); }', '.flux-board-frame .flux-readout-hint{ background:var(--ink-900); }'), red: ['BH1'] },
+  { name: 'the panel drifts back to hue 204', edit: (c) => c.replace('  --ink-900: #0F1926;', '  --ink-900: #101C24;'), red: ['TK6'] },
+  { name: 'the raised tier drifts back to hue 206', edit: (c) => c.replace('--ink-800: #122336;', '--ink-800: #142634;'), red: ['TK6'] },
+  { name: 'the lines family drifts back to teal', edit: (c) => c.replace('--ink-border-strong: #244D7C;', '--ink-border-strong: #2A6A76;'), red: ['TK6'] },
+  { name: 'the rail drifts back to the old hue', edit: (c) => c.replace('--rail-surface: rgba(15, 25, 38, .94);', '--rail-surface: rgba(16, 28, 36, .94);'), red: ['TK6'] },
+  { name: 'a lamp stop drifts back to hue 206', edit: (c) => c.replace('#081728 0%', '#0A1A26 0%'), red: ['TK6'] },
   { name: 'the vignette goes back over the page', edit: (c) => c.replace("[data-theme='flux'] body::after{ z-index:-1; }", "[data-theme='flux'] body::after{ z-index:2; }"), red: ['VG1'] },
-  { name: 'an Arbor brown surface returns to the Flux root', edit: (c) => c.replace('--ink-800: #142634;', '--ink-800: #2A241E;'), red: ['TK4'] },
+  { name: 'an Arbor brown surface returns to the Flux root', edit: (c) => c.replace('--ink-800: #122336;', '--ink-800: #2A241E;'), red: ['TK4'] },
   { name: 'Arbor\'s PNG mark paints again under Flux', edit: (c) => c.replace('-webkit-mask:none; mask:none; background:none;', 'background:var(--brass);'), red: ['BR1'] },
-  { name: 'a board card goes back to cream stock', edit: (c) => c.replace('--card-stock:#10232F; --card-hairline:rgba(0, 194, 255, .55);', '--card-stock:#FBF6EA; --card-hairline:rgba(0, 194, 255, .55);'), red: ['BD1'] },
+  { name: 'a board card goes back to cream stock', edit: (c) => c.replace('--card-stock:#0E1E31; --card-hairline:rgba(0, 194, 255, .55);', '--card-stock:#FBF6EA; --card-hairline:rgba(0, 194, 255, .55);'), red: ['BD1'] },
   { name: 'the acquire loses its still state under reduced motion', edit: (c) => c.replace(/@media \(prefers-reduced-motion:\s*reduce\)\s*\{\s*\.flux-brackets[^}]*\}\s*\}?/, ''), red: ['RC2'] },
 ];
 const SRC_MUT = [
@@ -274,7 +279,12 @@ function cssChecks(css) {
   const keep = (k, pass, detail = '') => { r[k] = { pass: !!pass, detail }; };
   const B = fluxBlocks(css);
   const T = (n) => tok(B.root, n);
-  keep('TK1', T('ink-950') === '#020c10' && T('chrome-surface') === '#101C24' && T('ink-border') === '#1D4A52' && T('line-active') === '#00C2FF' && T('signal-live') === '#A6FF3D' && tok(B.root, 'text-accent') === '#57D0F5',
+  // ---- PARKED - SUPERSEDED by the hue-212 pass (Nick picked option B, Fable Oct 23): the Flux root is now ground #010811 / panel #0F1926 / line #193556.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // keep('TK1', T('ink-950') === '#020c10' && T('chrome-surface') === '#101C24' && T('ink-border') === '#1D4A52' && T('line-active') === '#00C2FF' && T('signal-live') === '#A6FF3D' && tok(B.root, 'text-accent') === '#57D0F5',
+  //   JSON.stringify({ ground: T('ink-950'), panel: T('chrome-surface'), line: T('ink-border'), active: T('line-active'), lime: T('signal-live'), accent: tok(B.root, 'text-accent') }));
+  keep('TK1', T('ink-950') === '#010811' && T('chrome-surface') === '#0F1926' && T('ink-border') === '#193556' && T('line-active') === '#00C2FF' && T('signal-live') === '#A6FF3D' && tok(B.root, 'text-accent') === '#57D0F5',
     JSON.stringify({ ground: T('ink-950'), panel: T('chrome-surface'), line: T('ink-border'), active: T('line-active'), lime: T('signal-live'), accent: tok(B.root, 'text-accent') }));
   keep('TK2', T('choice') === '#00C2FF' && T('brass') === null && /--choice:\s*var\(--brass\);/.test(css) && /--brass:\s*#ff9800;/.test(css) && T('orange') === 'var(--brass)', `Flux --choice = ${T('choice')}, Flux overrides --brass: ${T('brass') !== null}, --orange = ${T('orange')}`);
   // SEL - the selection selectors point at --choice (never at the locked brass): a chosen / pressed / selected state is cyan under Flux, the same brass in Arbor
@@ -282,7 +292,11 @@ function cssChecks(css) {
   const usesBrass = (body) => /var\(--brass(?![-\w])/.test(body);
   const selMissing = SEL.filter((f) => { const rs = rules(css).filter((x) => x.sel.includes(f.replace(/\{$/, ''))); return !rs.length || !rs.some((x) => /var\(--choice/.test(x.body)) || rs.some((x) => usesBrass(x.body)); });
   keep('SEL1', selMissing.length === 0, `still on brass (or missing): ${selMissing.join(' | ')}`);
-  keep('TK3', tok(B.dark, 'paper') === '#0E1C24' && /rgba?\(0,\s*194,\s*255|#00C2FF/i.test(tok(B.dark, 'paper-edge') || ''), JSON.stringify({ paper: tok(B.dark, 'paper'), edge: tok(B.dark, 'paper-edge') }));
+  // ---- PARKED - SUPERSEDED by the hue-212 pass (Nick picked option B, Fable Oct 23): the dark page is now #0C1826.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // keep('TK3', tok(B.dark, 'paper') === '#0E1C24' && /rgba?\(0,\s*194,\s*255|#00C2FF/i.test(tok(B.dark, 'paper-edge') || ''), JSON.stringify({ paper: tok(B.dark, 'paper'), edge: tok(B.dark, 'paper-edge') }));
+  keep('TK3', tok(B.dark, 'paper') === '#0C1826' && /rgba?\(0,\s*194,\s*255|#00C2FF/i.test(tok(B.dark, 'paper-edge') || ''), JSON.stringify({ paper: tok(B.dark, 'paper'), edge: tok(B.dark, 'paper-edge') }));
   // TK4 - no Arbor brown in Flux: the two surface tiers every input and panel reads (--ink-900 / --ink-800) are Flux glass (teal-family: blue above red)
   const teal = (h) => !!h && /^#[0-9a-f]{6}$/i.test(h) && (() => { const [r, , b] = hex(h); return b > r + 8; })();
   keep('TK4', teal(T('ink-900')) && teal(T('ink-800')), `--ink-900 ${T('ink-900')}, --ink-800 ${T('ink-800')}`);
@@ -300,11 +314,25 @@ function cssChecks(css) {
   // and the green-grey text tiers (#8FB4AC / #6E958D) are gone from every Flux block
   const hueOf = (h) => { const [r, g, b] = hex(h).map((v) => v / 255); const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; if (!d) return 0; const k = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return (k * 60 + 360) % 360; };
   const isHex = (h) => !!h && /^#[0-9a-f]{6}$/i.test(h);
-  const surfaces = [['ground', T('ink-950'), 195], ['panel', T('chrome-surface'), 200], ['--ink-900', T('ink-900'), 200], ['--ink-800', T('ink-800'), 200], ['dark page', tok(B.dark, 'paper'), 200], ['card', T('card-stock'), 200]];
-  const notBlue = surfaces.filter(([, h, min]) => !isHex(h) || !(hex(h)[2] > hex(h)[1] && hueOf(h) >= min)).map(([n, h]) => n + ' ' + h + (isHex(h) ? ' (hue ' + Math.round(hueOf(h)) + ')' : ''));
-  const fluxText = B.root + B.dark + B.light + rules(css).filter((x) => /data-theme='flux'/.test(x.sel)).map((x) => x.body).join('');
-  const greyGreen = /#8FB4AC|#6E958D/i.test(fluxText);
-  keep('TK6', notBlue.length === 0 && !greyGreen && T('text-hi') === '#E7F4F1' && T('text-mid') === '#9AD7EA' && T('text-low') === '#7EB4C4', notBlue.join(', ') || (greyGreen ? 'a green-grey tier is still in a Flux block' : 'room hues: ' + surfaces.map(([n, h]) => n + ' ' + Math.round(hueOf(h))).join(', ')));
+  // ---- PARKED - SUPERSEDED by the hue-212 pass (Nick picked option B, Fable Oct 23): every dark surface (ground, lamp stops, rail, panels, raised, lines, dark page, card) sits at hue 212 +/- 6 with blue above green; the old band was >= 200.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // const surfaces = [['ground', T('ink-950'), 195], ['panel', T('chrome-surface'), 200], ['--ink-900', T('ink-900'), 200], ['--ink-800', T('ink-800'), 200], ['dark page', tok(B.dark, 'paper'), 200], ['card', T('card-stock'), 200]];
+  // const notBlue = surfaces.filter(([, h, min]) => !isHex(h) || !(hex(h)[2] > hex(h)[1] && hueOf(h) >= min)).map(([n, h]) => n + ' ' + h + (isHex(h) ? ' (hue ' + Math.round(hueOf(h)) + ')' : ''));
+  // const fluxText = B.root + B.dark + B.light + rules(css).filter((x) => /data-theme='flux'/.test(x.sel)).map((x) => x.body).join('');
+  // const greyGreen = /#8FB4AC|#6E958D/i.test(fluxText);
+  // keep('TK6', notBlue.length === 0 && !greyGreen && T('text-hi') === '#E7F4F1' && T('text-mid') === '#9AD7EA' && T('text-low') === '#7EB4C4', notBlue.join(', ') || (greyGreen ? 'a green-grey tier is still in a Flux block' : 'room hues: ' + surfaces.map(([n, h]) => n + ' ' + Math.round(hueOf(h))).join(', ')));
+  // TK6 (hue 212) - Nick picked option B: the room is hue 212 +/- 6 on EVERY dark surface (the ground, the lamp's four stops, the rail, panel, raised tier, the lines family, the dark page and its dim / border, the card);
+    // blue above green on each; the light page is untouched. The green-grey text tiers stay gone.
+    const HUE = 212, BAND = 6;
+    const rgbaHex = (v) => { const m = /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/.exec(v || ''); return m ? '#' + [m[1], m[2], m[3]].map((n) => (+n).toString(16).padStart(2, '0')).join('') : v; };
+    const lampStops = (T('lamp-glow') || '').match(/#[0-9a-f]{6}/gi) || [];
+    const surfaces = [['ground', T('ink-950')], ['panel', T('chrome-surface')], ['rail', rgbaHex(T('rail-surface'))], ['--ink-900', T('ink-900')], ['--ink-800', T('ink-800')], ['line', T('ink-border')], ['line strong', T('ink-border-strong')],
+      ['dark page', tok(B.dark, 'paper')], ['page dim', tok(B.dark, 'paper-dim')], ['page border', tok(B.dark, 'paper-border')], ['card', T('card-stock')], ...lampStops.map((h, i) => ['lamp stop ' + (i + 1), h])];
+    const notBlue = surfaces.filter(([, h]) => !isHex(h) || !(hex(h)[2] > hex(h)[1] && Math.abs(hueOf(h) - HUE) <= BAND)).map(([n, h]) => n + ' ' + h + (isHex(h) ? ' (hue ' + Math.round(hueOf(h)) + ')' : ''));
+    const fluxText = B.root + B.dark + B.light + rules(css).filter((x) => /data-theme='flux'/.test(x.sel)).map((x) => x.body).join('');
+    const greyGreen = /#8FB4AC|#6E958D/i.test(fluxText);
+    keep('TK6', lampStops.length === 4 && notBlue.length === 0 && !greyGreen && T('text-hi') === '#E7F4F1' && T('text-mid') === '#9AD7EA' && T('text-low') === '#7EB4C4', notBlue.join(', ') || (greyGreen ? 'a green-grey tier is still in a Flux block' : lampStops.length !== 4 ? 'lamp stops: ' + lampStops.length : 'room hues: ' + surfaces.map(([n, h]) => n + ' ' + Math.round(hueOf(h))).join(', ')));
   // BH1 - the board's hint line sits on the board's own paper, never a dark fill (the light board showed dark text on a dark bar)
   const bh = rules(css).find((x) => x.sel === '.flux-board-frame .flux-readout-hint');
   keep('BH1', !!bh && /background:\s*var\(--paper\)/.test(bh.body), bh ? bh.body : 'no board hint rule');
