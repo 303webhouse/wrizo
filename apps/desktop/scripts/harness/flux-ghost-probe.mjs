@@ -39,6 +39,15 @@ await withHarness(async (app) => {
       const out = []; for (const e of [root, ...root.querySelectorAll('*')]) { const cs = getComputedStyle(e); const r = e.getBoundingClientRect(); if (r.width < 1 || r.height < 1 || cs.visibility === 'hidden' || cs.display === 'none') continue;
         const o = eff(e); const painted = (e.textContent || '').trim().length > 0 || e.tagName === 'svg' || (cs.backgroundColor !== 'rgba(0, 0, 0, 0)') || parseFloat(cs.borderTopWidth) > 0; if (o > 0.02 && painted) out.push({ cls: String(e.className).slice(0, 36) || e.tagName, o: Math.round(o * 1000) / 1000, text: (e.children.length ? '' : (e.textContent || '').trim().slice(0, 24)), x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) }); }
       return out; })()`);
+    // WHAT IS PAINTED where the drawer would be: sample points across its box and the rail, list every element under each point that paints something (a fill, a border, text, a glow)
+    // with its effective opacity - the ghost, named. Information first; the verdict below is the closed-drawer rule.
+    const under = await q(`(() => { const eff = (e) => { let o = 1, n = e; while (n && n !== document.documentElement) { o *= parseFloat(getComputedStyle(n).opacity); n = n.parentElement; } return o; };
+      const seen = new Map(); const pts = []; for (let x = 262; x <= 430; x += 56) for (let y = 130; y <= 830; y += 70) pts.push([x, y]); for (let x = 20; x <= 70; x += 25) for (let y = 130; y <= 830; y += 100) pts.push([x, y]);
+      for (const [x, y] of pts) for (const e of document.elementsFromPoint(x, y)) { if (e === document.documentElement || e === document.body) continue; const cs = getComputedStyle(e); const o = eff(e);
+        const paintsBg = cs.backgroundColor !== 'rgba(0, 0, 0, 0)' || cs.backgroundImage !== 'none' || cs.boxShadow !== 'none' || cs.backdropFilter !== 'none'; if (!paintsBg || o < 0.003) continue;
+        const k = (e.id ? '#' + e.id : '') + '.' + String(e.className).split(' ').slice(0, 3).join('.'); if (!seen.has(k)) seen.set(k, { k, o: Math.round(o * 1000) / 1000, bg: cs.backgroundColor, shadow: cs.boxShadow.slice(0, 40), at: [x, y] }); }
+      return [...seen.values()].slice(0, 24); })()`);
+    ok(`[${page}] (information) what paints where the closed drawer and the rail sit: ${under.length} element(s)`, true, JSON.stringify(under));
     ok(`[${page}] the left drawer is CLOSED to start with`, closed === 'false', String(closed));
     const nonGrip = (seen || []).filter((x) => !/wz-sliver-grip/.test(x.cls));
     ok(`[${page}] closed = fully gone: while writing, no element of the closed drawer is painted at an effective opacity above 0.02 (the grip aside)`, Array.isArray(seen) && nonGrip.length === 0, JSON.stringify(nonGrip.slice(0, 12)));
