@@ -10,8 +10,9 @@
 //   C  chars per line at the default: the median full line of a seeded paragraph holds 72-78 characters (~75)
 //   F  the editor's type is 12 pt in PAGE units: 16px x k (within 1%) - ruling a
 //   L  the page breaks its lines exactly where it does at 1366x768, at every size (it grows, it never reflows)
-//   K  opening BOTH panels never moves or rescales the page (the scale comes from the stage, never the chrome)
-//   N  with both panels open, the page sits fully BETWEEN them
+//   K  opening the panels never moves or rescales the page (the scale comes from the stage, never the chrome)
+//   N  (Fable's 1366 rule, Oct 23) where both drawers fit beside the page at their minimum, BOTH stand open, each DRAWER_MIN or wider,
+//      and the page sits fully BETWEEN them; where they do not, opening one closes the other (Nick's Oct 7 rule) and it sits clear of the page
 //   THE ZOOM (Typewriter / Terminal Mode), both themes, at every size, entered and left LIVE through the writer's own control (the Sliver's
 //   typewriter button), with trusted input:
 //   Z  the page paints ~1.6x its normal width (within 0.03), unless that would not fit: then it is the largest that fits the stage's width
@@ -61,6 +62,9 @@ const INSTANT_MAX = 3;   // the start, then at most two instant whole-line steps
 const SIZES = [[1366, 768], [1920, 1080], [2560, 1440], [3840, 2160]];
 const FIT_SLACK = 96;       // "a small margin": the page's height is within this of the stage's when it is the largest that fits
 const ZOOM_FIT_SLACK = 96;  // a zoom capped below 1.6 fills the stage's width to within this
+// a drawer's narrowest open width (Fable, Oct 23 - drawers narrow to a minimum, scrolling inside). 200 is today's Tools drawer open
+// width (menusDrawers.ts CLOSED_TOOLS_W); the build names ONE token for it and this number must equal that token.
+const DRAWER_MIN = 200;
 const THEMES = [{ id: 'plateau', name: 'Arbor' }, { id: 'flux', name: 'Flux' }];
 
 const SENTENCES = [
@@ -233,13 +237,26 @@ const normalCase = async (app, th, w, h) => {
   if ((await attr(app, '.wz-sliver', 'data-open')) !== 'true') { const gr = await rectOf(app, '.wz-sliver-grip'); if (gr) { await click(app, gr.x, gr.y); await sleep(600); } }
   await openTutor(app); await sleep(300);
   const pp = await panels(); const gk = await app.evalJs('window.__psGeom()');
-  const bothOpen = !!pp && pp.sliverOpen === 'true' && pp.tutorOpen === 'true' && !!pp.sliver && !!pp.tutor;
-  ok(`${th.name} ${w}x${h} K/N (premise): both panels are OPEN`, bothOpen, J(pp));
+  const sOpen = !!pp && pp.sliverOpen === 'true'; const tOpen = !!pp && pp.tutorOpen === 'true';
+  const bothOpen = sOpen && tOpen && !!pp.sliver && !!pp.tutor;
+  ok(`${th.name} ${w}x${h} K/N (premise): both drawers were asked open (Sliver, then Tutor) and at least the Tutor stands open`, tOpen, J(pp));
   const kPred = (a, b) => !!a && !!b && ['left', 'top', 'width', 'height'].every((q) => Math.abs(a.page[q] - b.page[q]) <= 0.5);
-  if (bothOpen) {
-    ok(`${th.name} ${w}x${h} K: opening both panels never moves or rescales the page`, kPred(g, gk), J({ closed: g && g.page, open: gk && gk.page }));
-    ok(`${th.name} ${w}x${h} N: with both panels open, the page sits fully between them`, !!gk && pp.sliver.right <= gk.page.left + 0.5 && pp.tutor.left >= gk.page.right - 0.5,
-      J({ sliverRight: Math.round(pp.sliver.right), pageLeft: gk && Math.round(gk.page.left), pageRight: gk && Math.round(gk.page.right), tutorLeft: Math.round(pp.tutor.left) }));
+  // Fable, Oct 23 (the 1366 rule): the page never goes below 1.0 and never moves. If both drawers fit beside it, they open together
+  // (narrowing to DRAWER_MIN, scrolling inside); if even their minimums do not fit, opening one closes the other (Nick's Oct 7 rule).
+  // WHICH is owed is read from the geometry: the desk on each side of the page, with no drawer open.
+  const leftRoom = g && g.stage ? g.page.left - g.stage.left : 0; const rightRoom = g && g.stage ? g.stage.right - g.page.right : 0;
+  const roomForBoth = leftRoom >= DRAWER_MIN && rightRoom >= DRAWER_MIN;
+  if (tOpen) {
+    ok(`${th.name} ${w}x${h} K: opening the drawers never moves or rescales the page`, kPred(g, gk), J({ closed: g && g.page, open: gk && gk.page }));
+    if (roomForBoth) {
+      ok(`${th.name} ${w}x${h} N: there is room for both drawers at their minimum (${Math.round(leftRoom)} / ${Math.round(rightRoom)}px beside the page), so BOTH stand open, each ${DRAWER_MIN}px or wider, and the page sits fully between them`,
+        bothOpen && !!gk && pp.sliver.right <= gk.page.left + 0.5 && pp.tutor.left >= gk.page.right - 0.5
+          && pp.sliver.right - pp.sliver.left >= DRAWER_MIN - 0.5 && pp.tutor.right - pp.tutor.left >= DRAWER_MIN - 0.5,
+        J({ sOpen, tOpen, sliver: pp.sliver, tutor: pp.tutor, pageLeft: gk && Math.round(gk.page.left), pageRight: gk && Math.round(gk.page.right) }));
+    } else {
+      ok(`${th.name} ${w}x${h} N: there is NO room for both drawers at their minimum (${Math.round(leftRoom)} / ${Math.round(rightRoom)}px beside the page), so opening the Tutor closed the Sliver, and the Tutor sits clear of the page`,
+        !sOpen && !!pp.tutor && !!gk && pp.tutor.left >= gk.page.right - 0.5, J({ sOpen, tOpen, tutor: pp.tutor, pageRight: gk && Math.round(gk.page.right) }));
+    }
     if (w === 1366) {
       // MK: the page rescaled by an open panel (a :has() rule keyed on the Tutor's open state) - K must fail
       await app.evalJs(`window.__psStyle('ps-mk', ':root:has(.wz-tutor-panel[data-open="true"]) .desk-frame-stage .mode-page { transform:scale(.9) !important; }')`); await sleep(300);
