@@ -55,8 +55,12 @@ lets the whole law be pure CSS, using only length x number, never the length / l
 The width term is a CONSTANT reserve for the two drawers' open widths, never their open state. So the page sits between both panels
 whether or not they are open, and opening one never moves it (checks K and N). No JS runs on the normal view's sizing path. Main's
 stepped `--paper-scale` (1.1 at 1680, 1.2 at 1920) and the 1700px `font-size:19px` stop applying to the prose page. `--paper-scale`
-stays for everything else. **Risk to measure on the box:** at 1366x768 the page is at the 1.0 floor (620 wide). If 620 plus both open
-drawers is wider than the stage, the drawers must give up width at that size: they are chrome and the floor is ruled. N will show it.
+stays for everything else. **The 1366 rule (Fable, Oct 23).** The page never goes below 1.0 and never moves. If both drawers do not fit
+beside it, they narrow to a minimum (one token, `DRAWER_MIN`, today's 200px Tools width, scrolling inside with thin scrollbars). Below
+that minimum, opening one drawer closes the other (Nick's Oct 7 rule). **This changes main:** `store/menusDrawers.ts` (Phase 1, Fable
+Oct 12) closes the other drawer at EVERY width ("this one never asks"). Under the new rule that exclusivity becomes width-measured, the
+same way the cascade-vs-Tools law beside it already is. Both drawers open together wherever their minimums fit, and only below that
+does one close the other.
 
 Everything that today hand-copies the page's width reads the one pair `--wz-page-w` / `--wz-page-h` instead:
 `.desk-frame-stage--prose .mode-pagecol` (today `min(760px * scale, 60ch)`), the Sliver's and Tutor's `--sliver-paper-half` /
@@ -121,8 +125,8 @@ it measures what is painted, masks included. The page scale k is MEASURED (page 
 | C  | chars per line at the default: the median full line of a seeded paragraph holds 72-78 characters |
 | F  | the editor's type is 12 pt in page units: 16px x k (within 1%) |
 | L  | every size breaks its lines exactly where 1366x768 does (it grows, it never reflows) |
-| K  | opening BOTH panels never moves or rescales the page |
-| N  | with both panels open, the page sits fully between them |
+| K  | opening the panels never moves or rescales the page |
+| N  | where both drawers fit beside the page at `DRAWER_MIN` (measured: the desk on each side of the page), BOTH stand open, each `DRAWER_MIN`+ wide, and the page sits fully between them; where they do not, opening the Tutor closed the Sliver and the Tutor sits clear of the page |
 | Z  | zoom: the page paints ~1.6x its normal width (within 0.03), or, where that would not fit, the largest that fits the stage's width (within 96px); never overflowing the stage |
 | B  | identical line-break offsets in both views (same page, same text, toggled live) |
 | U  | the editor is the SAME node before, during and after the zoom (no unmount) |
