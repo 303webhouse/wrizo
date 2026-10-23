@@ -171,6 +171,8 @@ async function suite(M, mk = () => load()) {
   // RO10 - the block caret is a third of its old width (Nick, Oct 23): caretWidth(height) = max(3, round(height x 0.16)); the old rule was max(7, round(height x 0.48))
   const oldW = (h) => Math.max(7, Math.round(h * 0.48));
   keep('RO10', typeof M.caretWidth === 'function' && M.caretWidth(24) === 4 && M.caretWidth(18) === 3 && M.caretWidth(40) === 6 && M.caretWidth(4) === 3 && Math.abs(M.caretWidth(24) / oldW(24) - 1 / 3) < 0.05, M.caretWidth ? [18, 24, 40].map((h) => `${h}px line: ${oldW(h)} -> ${M.caretWidth(h)}`).join(' | ') : 'no caretWidth');
+  // RO11 - the recede while typing is quicker under Flux only (Nick, Oct 23): an open drawer reaches the 0.08 floor about 1 s after the first key; Arbor keeps the engine's own base
+  keep('RO11', typeof M.fadeOutSeconds === 'function' && M.fadeOutSeconds('flux', 2.8) === 0.8 && M.fadeOutSeconds('plateau', 2.8) === 2.8 && M.fadeOutSeconds('flux', 1.2) < 1, M.fadeOutSeconds ? ['flux', 'plateau'].map((t) => t + ' ' + M.fadeOutSeconds(t, 2.8) + ' s').join(' | ') : 'no fadeOutSeconds');
   // RO9 - trackOf: the section's REAL position in its set (and the Log's among its pages)
   const m2 = await mk();
   const d = m2.createDrawer('Rack A');
@@ -202,9 +204,13 @@ function pinChecks(rdT) {
   keep('KN1', /className="board-graft-knob"[\s\S]{0,700}<ThemeIcon id="input" fallback=\{null\}/.test(board), 'the knob renders <ThemeIcon id="input">');
   // CO1 - a node wears its true X / Y: FluxCardCoord on text / ink / page-pin cards, built from coordReadout; the board's frame carries the board hint
   keep('CO1', /<FluxCardCoord x=\{box\.x\} y=\{box\.y\} \/>/.test(board) && /export function FluxCardCoord/.test(frame) && /coordReadout\(x, y\)/.test(frame) && /hintFor\('board'\)/.test(frame), 'FluxCardCoord on the card; hintFor(board) in the frame');
+  // FD1 - the one shared chrome engine takes its recede time from fadeOutSeconds(theme, base), so EVERY dissolved surface (the drawers, the rail, the header) follows the theme
+  const dissolve = rdT('components/useChromeDissolve.ts');
+  keep('FD1', /fadeOutSeconds\(theme, FADE_OUT_S\)/.test(dissolve) && /useTheme\(\)/.test(dissolve) && /\[fade, theme, setFadeDur, resurface\]/.test(dissolve), 'noteWrite sets --fade-dur from fadeOutSeconds');
   return r;
 }
 const TXT_MUT = [
+  { name: 'the chrome engine ignores the theme again', file: 'components/useChromeDissolve.ts', find: 'setFadeDur(fadeOutSeconds(theme, FADE_OUT_S));', to: 'setFadeDur(FADE_OUT_S);', red: ['FD1'] },
   { name: 'the arrival draws Arbor\'s PNG under Flux again', file: 'components/Arrival.tsx', find: '<WrizoMark className="wz-logo" alt="Wrizo" />', to: '<img className="wz-logo" src="/brand/wrizo-logo.png" alt="Wrizo" />', red: ['WM1'] },
   { name: 'the knob loses its INPUT glyph', file: 'components/BoardEditor.tsx', find: '<ThemeIcon id="input" fallback={null} size={12} />', to: '', red: ['KN1'] },
   { name: 'the card loses its X / Y', file: 'components/BoardEditor.tsx', find: '<FluxCardCoord x={box.x} y={box.y} />', to: '', red: ['CO1'] },
@@ -246,6 +252,7 @@ const SRC_MUT = [
   { name: 'the Flux word for Settings is lost', file: 'store/deskLexicon.ts', find: /stripSettings: 'Config',/, to: "stripSettings: 'Settings',", red: ['LX1', 'LX2'] },
   { name: 'the Clock word is lost', file: 'store/deskLexicon.ts', find: /timerLabel: 'Clock',/, to: '', red: ['LX1'] },
   { name: 'the Flux Draft tab falls back to Draft', file: 'store/deskLexicon.ts', find: /modeDraft: 'Text',/, to: '', red: ['LX1', 'LX6'] },
+  { name: 'Flux recedes at Arbor\'s slow pace again', file: 'store/fluxReadouts.ts', find: /return theme === 'flux' \? FADE_OUT_FLUX_S : base;/, to: 'return base;', red: ['RO11'] },
   { name: 'the block caret goes back to its wide width', file: 'store/fluxReadouts.ts', find: /Math\.round\(height \* 0\.16\)/, to: 'Math.round(height * 0.48)', red: ['RO10'] },
   { name: 'Delete turns into Purge', file: 'store/deskLexicon.ts', find: /actionCopy: 'Clone doc text',/, to: "actionCopy: 'Clone doc text', actionDelete: 'Purge doc',", red: ['LX6'] },
   { name: 'a big-projects string falls back to Arbor', file: 'store/deskLexicon.ts', find: /sectionsEmptyBoards: 'No circuits here yet\.',/, to: '', red: ['LX2'] },
@@ -280,7 +287,7 @@ function cssChecks(css) {
   keep('TK5', oliveHits.length === 0 && T('sage') === '#A6FF3D' && !!tok(B.light, 'accent-door'), oliveHits.join(', ') || `sage ${T('sage')}, doors ${tok(B.dark, 'accent-door')} / ${tok(B.light, 'accent-door')}`);
   // RL1 - the rail's hover and active states are electric blue (#00C2FF = --line-active), never brass or a brown tile
   const rl = rules(css).filter((x) => /\[data-theme='flux'\] \.(wz-strip-item|desk-rail-item)(:hover|\.active)/.test(x.sel));
-  const rlHover = rl.find((x) => x.sel.includes(".wz-strip-item:hover")), rlActive = rl.find((x) => x.sel.includes(".desk-rail-item.active"));
+  const rlHover = rl.find((x) => x.sel.includes("wz-strip-item:hover")), rlActive = rl.find((x) => x.sel.includes(".desk-rail-item.active"));
   const ownColor = /(?:^|[\s;{])color:\s*var\(--line-active\)/;   // the text colour itself - not the tail of border-left-color
   keep('RL1', !!rlHover && ownColor.test(rlHover.body) && /rgba\(0,\s*194,\s*255/.test(rlHover.body) && !!rlActive && ownColor.test(rlActive.body) && /border-left-color:\s*var\(--line-active\)/.test(rlActive.body) && T('line-active') === '#00C2FF', rlActive ? rlActive.body.slice(0, 100) : 'no Flux rail state rule');
   // BR1 - Flux shows its own WRIZO mark (orange, top left); Arbor's PNG mask is switched off under Flux

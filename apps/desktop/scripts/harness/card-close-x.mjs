@@ -105,8 +105,14 @@ await withHarness(async (app) => {
       const token = getComputedStyle(probe).color; probe.remove();
       return { x: getComputedStyle(x).color, token, card: getComputedStyle(pop).backgroundColor };
     })()`);
-    ok(`${T} X3: the X paints in the theme's card ink (--ink-on-paper-low), never the card's own background`,
-      !!paint && paint.x === paint.token && paint.x !== paint.card, JSON.stringify(paint));
+    // ---- PARKED - SUPERSEDED by the Flux glass cards (Fable, Oct 22-23): the X paints in the CARD's own ink (--ink-on-card-low): the glass card's cyan, no longer the page ink --ink-on-paper-low (which is the dark light-page teal under Flux light). Arbor: the same two tokens resolve alike.
+    // Kept VERBATIM below and no longer run; the live successor follows.
+    //
+    // ok(`${T} X3: the X paints in the theme's card ink (--ink-on-paper-low), never the card's own background`,
+    //   !!paint && paint.x === paint.token && paint.x !== paint.card, JSON.stringify(paint));
+    const cardLow = await app.evalJs("(() => { const p = document.createElement('span'); p.style.color = 'var(--ink-on-card-low)'; document.body.appendChild(p); const c = getComputedStyle(p).color; p.remove(); return c; })()");
+    ok(`${T} X3 [flux-inputs successor]: the X paints in the card's own ink (--ink-on-card-low), never the card's own background`,
+      !!paint && paint.x === cardLow && paint.x !== paint.card, JSON.stringify({ paint, cardLow }));
 
     // X4 - a real click on the X closes the pop-up, un-blurs the board, and commits the edit (what the old Close did)
     await app.evalJs(`(() => { const el = document.querySelector('.board-popup-editor'); el.focus();

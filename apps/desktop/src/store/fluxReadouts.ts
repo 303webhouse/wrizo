@@ -9,6 +9,12 @@ export function caretWidth(height: number): number {
   return Math.max(3, Math.round(height * 0.16));
 }
 
+/** How long the chrome takes to recede while the writer types. Arbor keeps its slow curve (the engine's own base); FLUX is quicker (Nick, Oct 23: "an open drawer reaches the 0.08 floor about 1 s after the first key"), so a drawer's contents are never caught half-faded. */
+export const FADE_OUT_FLUX_S = 0.8;
+export function fadeOutSeconds(theme: string, base: number): number {
+  return theme === 'flux' ? FADE_OUT_FLUX_S : base;
+}
+
 /** DOC nn // title - the page's own number (its place in the sequence, 1-based, two digits at least) and its title. */
 export function docReadout(n: number, title: string): string {
   return `DOC ${pad(n, 2)} // ${title}`;

@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useWritingSession } from './WritingSession';
 import { useThemePrefs } from '../store/themePrefs';
+import { useTheme } from '../store/theme';
+import { fadeOutSeconds } from '../store/fluxReadouts';
 
 // Mode-aware editor (Phase 2) — the push-back-to-writing engine. The richer
 // successor to useChromeFade's binary recede, matching the prototype
@@ -25,7 +27,7 @@ import { useThemePrefs } from '../store/themePrefs';
 
 const WAIT_MS = 180_000;      // 3-minute pause before chrome returns
 const FADE_IN_S = 120;        // ~2-minute slow return
-const FADE_OUT_S = 2.8;       // recede on write/draw — slow + near-imperceptible (was 1.2, felt abrupt on the Journal pen)
+const FADE_OUT_S = 2.8;       // (Arbor's) recede on write/draw - Flux's is quicker, store/fluxReadouts.ts fadeOutSeconds — slow + near-imperceptible (was 1.2, felt abrupt on the Journal pen)
 const QUICK_S = 0.7;          // explicit-summon return — gentle, not a snap (was 0.4)
 const EDGE_PX = 56;           // reach this close to a viewport edge to summon
 const EDGE_DWELL_MS = 260;    // must linger at the edge this long — a deliberate reach, not a pass-through
@@ -135,6 +137,7 @@ export function useChromeDissolve({
   // shipped behavior exactly; 'off' is a new opt-in that keeps chrome fully
   // surfaced (noteWrite becomes a no-op below) — no chrome ever recedes.
   const { fade } = useThemePrefs();
+  const theme = useTheme();   // FLUX V2: the recede is quicker under Flux (fadeOutSeconds)
   const [dissolved, setDissolved] = useState(false);
   const dissolvedRef = useRef(false);
   dissolvedRef.current = dissolved;
@@ -161,11 +164,11 @@ export function useChromeDissolve({
   // A forward keystroke means writing: recede fast, then arm the 3-minute return.
   const noteWrite = useCallback(() => {
     if (fade === 'off') return; // Fade:off — chrome stays fully surfaced, always
-    setFadeDur(FADE_OUT_S);
+    setFadeDur(fadeOutSeconds(theme, FADE_OUT_S));
     setDissolved(true);
     clearTimer();
     returnTimer.current = setTimeout(() => { returnTimer.current = null; resurface(false); }, WAIT_MS);
-  }, [fade, setFadeDur, resurface]);
+  }, [fade, theme, setFadeDur, resurface]);
 
   // Keep the global header (and any other session reader) in step.
   useEffect(() => { setWriting(dissolved); }, [dissolved, setWriting]);

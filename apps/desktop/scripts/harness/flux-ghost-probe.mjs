@@ -12,7 +12,9 @@ const { withHarness } = await import('../runtime-verify.mjs');
 await withHarness(async (app) => {
   const q = (js) => app.evalJs(js);
   const waitSoft = async (expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
-  for (const page of ['dark', 'light']) {
+  // flux dark + light are the subject; plateau (Arbor) is the CONTROL: its recede is unchanged, so the timing check must go RED there (a check that cannot fail certifies nothing)
+  for (const [theme, page] of [['flux', 'dark'], ['flux', 'light'], ['plateau', 'light']]) {
+    const label = `${theme}/${page}`;
     await app.emulateDpr(1, 1400, 900);
     await app.goto('/');
     await q("localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-splash-hold','50'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4');");
@@ -20,10 +22,10 @@ await withHarness(async (app) => {
     await waitSoft("!!document.querySelector('.wz-arrival')", { label: 'front door' });
     await waitSoft("!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 14000 });
     await sleep(600);
-    await q("window.wrizoTheme && window.wrizoTheme.set('flux')");
-    await q(`window.wrizoThemePrefs && window.wrizoThemePrefs.set({ page: '${page}' })`);
+    await q(`window.wrizoTheme && window.wrizoTheme.set('${theme}')`);
+    if (theme === 'flux') await q(`window.wrizoThemePrefs && window.wrizoThemePrefs.set({ page: '${page}' })`);
     await sleep(300);
-    const id = `fg-${page}`;
+    const id = `fg-${theme}-${page}`;
     await q(`window.wrizoCreateJournalPage({ id: '${id}', text: 'The kettle clicks off and she still does not turn around.', origin: 'loose', source: 'page', createdAt: '2026-05-01T00:00:00.000Z' }); window.wrizoFlushNow(); localStorage.setItem('wrizo-mode-page-${id}', 'drafting');`);
     await sleep(500);
     await q(`location.hash = '#/page/${id}'`);
@@ -39,6 +41,10 @@ await withHarness(async (app) => {
         const own = [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim().length > 0) || e.tagName === 'svg' || e.tagName === 'INPUT' || e.tagName === 'BUTTON'; if (!own) continue; out.push({ cls: String(e.className).slice(0, 34) || e.tagName, o: eff(e), t: (e.textContent || '').trim().slice(0, 18) }); }
       return out; })()`;
     const rest = await q(probe);   // the drawer at rest: every node's own level (a disabled control sits at its own 0.4 - the comparison below is relative to THIS, not to 1)
+    // the dissolve's timing, measured IN the page on the frame clock: from the first keydown to the first frame at which every sampled node of the drawer is at or under 0.12
+    await q(`(() => { const eff = ${eff}; const root = document.querySelector('.wz-sliver-panel'); const nodes = [...root.querySelectorAll('*')].filter((e) => { const r = e.getBoundingClientRect(); return r.width > 1 && r.height > 1 && [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()); }).slice(0, 14);
+      window.__gh = { t0: null, floor: null, n: nodes.length }; document.addEventListener('keydown', () => { if (window.__gh.t0 === null) window.__gh.t0 = performance.now(); }, true);
+      const tick = () => { const g = window.__gh; if (g.t0 !== null && g.floor === null && nodes.length && Math.max(...nodes.map(eff)) <= 0.12) g.floor = performance.now() - g.t0; if (g.floor === null) requestAnimationFrame(tick); }; requestAnimationFrame(tick); })()`);
     await q("document.querySelector('.forward-only-editor').focus()");
     const t0 = Date.now();
     await app.typeKeys(' more words ');
@@ -47,13 +53,20 @@ await withHarness(async (app) => {
     let toFloor = null, faded = null;
     for (let i = 0; i < 40; i += 1) { faded = await q(probe); if (faded && faded.length && Math.max(...faded.map((x) => x.o)) <= 0.12) { toFloor = Date.now() - t0; break; } await sleep(250); }
     await sleep(1500);
+    const floorMs = await q('window.__gh && window.__gh.floor !== null ? Math.round(window.__gh.floor) : null');
     faded = await q(probe);
     const maxO = faded && faded.length ? Math.max(...faded.map((x) => x.o)) : null;
     const mid = (faded || []).filter((x) => x.o > 0.12);
-    ok(`[${page}] premise: the left drawer is OPEN while writing and has contents to measure`, opened === 'true' && Array.isArray(faded) && faded.length > 3, JSON.stringify({ opened, n: faded && faded.length }));
-    ok(`[${page}] receded while typing, an open drawer's contents sit at the dissolve floor (<= 0.12, ~8%) or are gone - no mid-level ghost (highest ${maxO})`, Array.isArray(faded) && faded.length > 3 && mid.length === 0, JSON.stringify(mid.slice(0, 8)));
-    ok(`[${page}] (information) the dissolve reached the floor ${toFloor === null ? 'NEVER' : toFloor + ' ms'} after the first key`, true, String(toFloor));
-    ok(`[${page}] (information) the drawer's contents while writing: ${faded ? faded.length : 0} painted node(s), effective opacity ${faded ? JSON.stringify([...new Set(faded.map((x) => x.o))].sort((p1, p2) => p1 - p2)) : 'n/a'}`, true, JSON.stringify((faded || []).slice(0, 6)));
+    ok(`[${label}] premise: the left drawer is OPEN while writing and has contents to measure`, opened === 'true' && Array.isArray(faded) && faded.length > 3, JSON.stringify({ opened, n: faded && faded.length }));
+    if (theme === 'flux') ok(`[${label}] the open drawer reaches the dissolve floor within 1.2 s of the first key (measured ${floorMs} ms, on the frame clock)`, floorMs !== null && floorMs <= 1200, String(floorMs));
+    else {
+      ok(`[${label}] CONTROL (Arbor, unchanged): the same measurement reads the old slow recede (${floorMs} ms) - so the 1.2 s check above can go red`, floorMs === null || floorMs > 1200, String(floorMs));
+      if (shotAt) { /* no frame for the control */ }
+      continue;
+    }
+    ok(`[${label}] receded while typing, an open drawer's contents sit at the dissolve floor (<= 0.12, ~8%) or are gone - no mid-level ghost (highest ${maxO})`, Array.isArray(faded) && faded.length > 3 && mid.length === 0, JSON.stringify(mid.slice(0, 8)));
+    ok(`[${label}] (information) the dissolve reached the floor ${toFloor === null ? 'NEVER' : toFloor + ' ms'} after the first key`, true, String(toFloor));
+    ok(`[${label}] (information) the drawer's contents while writing: ${faded ? faded.length : 0} painted node(s), effective opacity ${faded ? JSON.stringify([...new Set(faded.map((x) => x.o))].sort((p1, p2) => p1 - p2)) : 'n/a'}`, true, JSON.stringify((faded || []).slice(0, 6)));
     await app.mouseMove(700, 500); await app.mouseMove(720, 520); await sleep(400); await app.mouseMove(740, 540);
     const key = (x) => `${x.cls}|${x.t}`;
     const base = new Map((rest || []).map((x) => [key(x), x.o]));
@@ -61,7 +74,7 @@ await withHarness(async (app) => {
     let back = null;
     for (let i = 0; i < 20; i += 1) { await sleep(200); back = await q(probe); if (back && back.length && short(back).length === 0) break; }
     const stillLow = short(back);
-    ok(`[${page}] on mouse move every node of the drawer comes back to its own resting level (${stillLow.length} still under 90% of it)`, Array.isArray(back) && back.length > 3 && stillLow.length === 0, JSON.stringify(stillLow.slice(0, 6).map((x) => ({ ...x, rest: base.get(key(x)) }))));
+    ok(`[${label}] on mouse move every node of the drawer comes back to its own resting level (${stillLow.length} still under 90% of it)`, Array.isArray(back) && back.length > 3 && stillLow.length === 0, JSON.stringify(stillLow.slice(0, 6).map((x) => ({ ...x, rest: base.get(key(x)) }))));
     if (shotAt) { fs.writeFileSync(shotAt.replace(/(\.png)?$/, `-${page}.png`), Buffer.from(await app.screenshot(), 'base64')); }
   }
 });
