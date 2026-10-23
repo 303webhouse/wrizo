@@ -1,0 +1,22 @@
+
+=== MAIN product (baseline, icp)
+  run 1: rest median 22 | flash +2.5 | fade +3.6 | RHIZOME-LATENCY VERIFY: FAIL
+  run 2: rest median 23.1 | flash +1.4 | fade +2 | RHIZOME-LATENCY VERIFY: PASS
+  run 3: rest median 22.9 | flash +1.9 | fade +1.9 | RHIZOME-LATENCY VERIFY: PASS
+  run 4: rest median 21 | flash +4.1 | fade +3.5 | RHIZOME-LATENCY VERIFY: PASS
+  run 5: rest median 21.5 | flash +3.8 | fade +4.1 | RHIZOME-LATENCY VERIFY: PASS
+  POOLED rest  n=220 median 21.8 p95 31.7 max 41.5
+  POOLED flash n=243 median 25 p95 31.5 max 83.1  vs rest: median +3.2, p95 +-0.2
+  POOLED fade  n=490 median 24.9 p95 33.3 max 143.7  vs rest: median +3.1, p95 +1.6
+  gate (median <= +5, p95 <= +25, max <= 100): flash PASS, fade FAIL
+
+=== BLANK-PAGE tree (bpd)
+  run 1: rest median 20.7 | flash +4.8 | fade +4.6 | RHIZOME-LATENCY VERIFY: PASS
+  run 2: rest median 20.1 | flash +5.3 | fade +4.8 | RHIZOME-LATENCY VERIFY: FAIL
+  run 3: rest median 18.7 | flash +5.6 | fade +6.9 | RHIZOME-LATENCY VERIFY: FAIL
+  run 4: rest median 20.6 | flash +4.7 | fade +4.8 | RHIZOME-LATENCY VERIFY: PASS
+  run 5: rest median 19.6 | flash +6.1 | fade +6.2 | RHIZOME-LATENCY VERIFY: FAIL
+  POOLED rest  n=220 median 19.8 p95 31.3 max 36.8
+  POOLED flash n=238 median 25 p95 31.5 max 84.3  vs rest: median +5.2, p95 +0.2
+  POOLED fade  n=467 median 25.4 p95 33.5 max 74.8  vs rest: median +5.6, p95 +2.2
+  gate (median <= +5, p95 <= +25, max <= 100): flash FAIL, fade FAIL

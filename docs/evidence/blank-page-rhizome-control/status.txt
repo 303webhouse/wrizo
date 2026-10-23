@@ -1,0 +1,13 @@
+START 13:48:28Z
+icp run1 exit=1
+bpd run1 exit=0
+icp run2 exit=0
+bpd run2 exit=1
+icp run3 exit=0
+bpd run3 exit=1
+icp run4 exit=0
+bpd run4 exit=0
+icp run5 exit=0
+bpd run5 exit=1
+CTL COMPLETE
+released (mine)
