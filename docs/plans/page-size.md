@@ -62,6 +62,24 @@ Oct 12) closes the other drawer at EVERY width ("this one never asks"). Under th
 same way the cascade-vs-Tools law beside it already is. Both drawers open together wherever their minimums fit, and only below that
 does one close the other.
 
+**Ruled (Fable, Oct 23): page-size REPLACES the Oct 12 Phase 1 rule** with this measured one (Nick's own original ask in that file's
+header). The store's guard is written as exactly `if (stands.has(rival) && !canHoldBoth())`, because one-drawer.mjs's successor
+mutants anchor on that text. `canHoldBoth()` reads `.mode-page` against `.desk-frame-stage`: at least `DRAWER_MIN` of desk on each
+side. Both are measured with the drawers in any state, because the page never moves. The cascade-vs-Tools law beside it is unchanged.
+
+**Parks for the rule change: 14 check sites in 3 files**, each parked VERBATIM with a measured successor and a parked record
+(`pok`). Censused by grep, then each read against its source:
+- `drawers-p1-live.mjs` L7 x2: the right-then-left and left-then-right hand-overs, at 1100/1280/1400, per theme.
+- `item112a.mjs` x5, each at both reference widths: S7 (the Desk yielded), S7 (Desk-only), S7 §8 (the open hand closes), S3 (taking
+  turns) and S5 (taking turns). The file's stated park count goes from 6 to 16 records.
+- `one-drawer.mjs` x7: O1, O2, O5b's Tutor half, and four mutants (two mutate the unconditional exclusion; two take their witness from
+  O1 or O5b). The successors are O1m, O2m and O5m under ROOM/TIGHT fake documents, plus four measured mutants.
+
+Read and NOT parked (their predicates hold under the new rule): fx18 S1's successor (it opens each drawer alone); drawers-p1-live L1
+(the page rect never changes, whatever the hand-over); one-drawer O3-O7 and its hand-close mutant; item83e E1 S3 and item112a's S5 at
+WIDE (both test Tools against the far-left cascade, not Tools against the Tutor). Implicit fixture reliance that no grep can see will
+surface in page-size's FULL PAIR, which carries all of this.
+
 Everything that today hand-copies the page's width reads the one pair `--wz-page-w` / `--wz-page-h` instead:
 `.desk-frame-stage--prose .mode-pagecol` (today `min(760px * scale, 60ch)`), the Sliver's and Tutor's `--sliver-paper-half` /
 `--tutor-paper-half` (today `min(380px * scale, 30ch)`, hand-synced), and the 1700px rule's `min(760px, 46vw)` and `font-size:19px`.
