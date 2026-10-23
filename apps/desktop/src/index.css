@@ -2780,7 +2780,17 @@ a:focus-visible,
    still 38px either side). FX2's clearance law: the writing's own line
    length (the text measure) is untouched by this move — only the
    scrollbar's own screen position changes. Left edge/measure untouched
-   (Nick's own words name the RIGHT side only). */
+   (Nick's own words name the RIGHT side only).
+   AGREED WITH FIX (docs/plans/page-size.md §2, Fable Oct 23): page-size's
+   own build turns `--wz-page-pad-x` into a FINISHED length (already
+   scaled, built from `--wz-letter-in: calc(72.94px * var(--paper-scale))`)
+   rather than today's base measure that `.mode-page`'s own padding rule
+   (and this rule) multiply by `--paper-scale` themselves. FIX's plan
+   explicitly does not touch this rule — whoever merges SECOND must drop
+   the ` * var(--paper-scale)` factor below (both the margin-right and the
+   padding-right) in the SAME commit that changes `.mode-page`'s own
+   padding rule, or the two will double-scale against each other. Re-run
+   both scrollbar-flush-source.mjs and page-size.mjs after that merge. */
 .mode-scroll{ position:relative; z-index:1; flex:1; min-height:0; overflow-y:auto; padding-bottom:30vh;
   background:transparent;
   margin-right:calc(-1 * var(--wz-page-pad-x, 38px) * var(--paper-scale));
