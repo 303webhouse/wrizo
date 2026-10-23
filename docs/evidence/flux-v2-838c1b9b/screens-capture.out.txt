@@ -1,0 +1,16 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+
+ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one)
+page-both-panels-dark.jpg captured (70 KB)
+pages-popout-dark.jpg captured (51 KB)
+grafts-dark.jpg captured (45 KB)
+tutor-dark.jpg captured (58 KB)
+glitch-dark.jpg captured (40 KB)
+board-dark.jpg captured (38 KB)
+page-both-panels-light.jpg captured (72 KB)
+pages-popout-light.jpg captured (53 KB)
+grafts-light.jpg captured (47 KB)
+tutor-light.jpg captured (60 KB)
+glitch-light.jpg captured (41 KB)
+board-light.jpg captured (45 KB)
