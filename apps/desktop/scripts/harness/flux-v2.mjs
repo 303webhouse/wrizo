@@ -236,6 +236,7 @@ const CSS_MUT = [
   { name: 'the arrival door goes back to brass under Flux', edit: (c) => c.replace("[data-theme='flux'] .wz-btn.wz-primary{ color:var(--choice);", "[data-theme='flux'] .wz-btn.wz-primary{ color:var(--brass);"), red: ['AR1'] },
   { name: 'the room goes back to the teal panel', edit: (c) => c.replace('  --ink-900: #101C24;', '  --ink-900: #091E24;'), red: ['TK6'] },
   { name: 'a green-grey text tier returns', edit: (c) => c.replace('  --text-mid: #9AD7EA;', '  --text-mid: #8FB4AC;'), red: ['TK6'] },
+  { name: 'the board hint gets a dark fill again', edit: (c) => c.replace('.flux-board-frame .flux-readout-hint{ background:var(--paper); }', '.flux-board-frame .flux-readout-hint{ background:var(--ink-900); }'), red: ['BH1'] },
   { name: 'the vignette goes back over the page', edit: (c) => c.replace("[data-theme='flux'] body::after{ z-index:-1; }", "[data-theme='flux'] body::after{ z-index:2; }"), red: ['VG1'] },
   { name: 'an Arbor brown surface returns to the Flux root', edit: (c) => c.replace('--ink-800: #142634;', '--ink-800: #2A241E;'), red: ['TK4'] },
   { name: 'Arbor\'s PNG mark paints again under Flux', edit: (c) => c.replace('-webkit-mask:none; mask:none; background:none;', 'background:var(--brass);'), red: ['BR1'] },
@@ -304,6 +305,9 @@ function cssChecks(css) {
   const fluxText = B.root + B.dark + B.light + rules(css).filter((x) => /data-theme='flux'/.test(x.sel)).map((x) => x.body).join('');
   const greyGreen = /#8FB4AC|#6E958D/i.test(fluxText);
   keep('TK6', notBlue.length === 0 && !greyGreen && T('text-hi') === '#E7F4F1' && T('text-mid') === '#9AD7EA' && T('text-low') === '#7EB4C4', notBlue.join(', ') || (greyGreen ? 'a green-grey tier is still in a Flux block' : 'room hues: ' + surfaces.map(([n, h]) => n + ' ' + Math.round(hueOf(h))).join(', ')));
+  // BH1 - the board's hint line sits on the board's own paper, never a dark fill (the light board showed dark text on a dark bar)
+  const bh = rules(css).find((x) => x.sel === '.flux-board-frame .flux-readout-hint');
+  keep('BH1', !!bh && /background:\s*var\(--paper\)/.test(bh.body), bh ? bh.body : 'no board hint rule');
   // VG1 - the vignette (a fixed inset shadow over the whole viewport) sits BEHIND the content under Flux: it shades the room, not the page (the empty light page showed grey bands top and bottom)
   const vg = rules(css).find((x) => x.sel === "[data-theme='flux'] body::after");
   keep('VG1', !!vg && /z-index:\s*-1/.test(vg.body), vg ? vg.body : 'no Flux body::after rule');
