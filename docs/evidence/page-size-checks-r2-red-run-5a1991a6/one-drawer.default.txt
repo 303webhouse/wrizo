@@ -1,0 +1,15 @@
+FAIL (O1m) where the band holds the page AND both hands at their 200px minimum, opening one hand closes NOTHING - both stand, in either order | {"a":{"tools":false,"tutor":true,"cascade":false,"closes":["tools"]},"b":{"tools":true,"tutor":false,"cascade":false,"closes":["tutor"]}}
+PASS (O2m) where it does not, opening one hand closes the other through its own registered close path, in either order (Nick's Oct 7 rule)
+FAIL (O5m) the cascade keeps its own law beside the hands: cascade -> Tutor -> Tools closes the cascade either way (the band left of the page cannot hold it AND the Tools drawer), and closes the Tutor only where the hands have no room | {"tight":{"tools":true,"tutor":false,"cascade":false,"closes":["tutor","cascade"]},"room":{"tools":true,"tutor":false,"cascade":false,"closes":["tutor","cascade"]}}
+PASS (O3) no stale close: after the writer closes one by hand, opening the other calls nothing on the one already shut
+PASS (O4) a drawer opening with no rival standing closes nothing
+PASS (O5) the far-left CASCADE keeps its own width-measured law and is none of the Tutor's business: with room it coexists with the Tools drawer, and opening it closes nothing of the Tutor's
+PASS (O7) both announcements are LAYOUT effects, so the hand-over lands before paint - there is no single frame with both hands open
+PASS (O6) the Tutor announces from an EFFECT keyed on its open state (so every path that opens it announces) and registers its own close path; the Tools drawer still does the same
+PASS (M) a close by hand is never noted (the store believes the drawer still stands): the proof goes RED
+FAIL (MM) the measure is ignored - the hands are exclusive at every width again (the Oct 12 rule): THE MUTATION LANDED | anchor missing
+FAIL (MM) the pair is never exclusive (the rival is never closed, whatever the room): THE MUTATION LANDED | anchor missing
+PASS (MM) the width law tests only the most recent opener again (openDrawer === other): the proof goes RED
+PASS (MM) an opening drawer is never recorded as standing (the rival can never be found): the proof goes RED
+
+ONE-DRAWER VERIFY: FAIL - 4/13

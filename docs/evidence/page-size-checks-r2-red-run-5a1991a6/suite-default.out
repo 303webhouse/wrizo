@@ -1,0 +1,15 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=4 tree=25ab759c bundle=index-BjVfelU6.js/797297b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/psr-default
+[01/4] FAIL      exit=1  143s drawers-p1-live.mjs :: ROWS-SHADOW VERIFY: PASS (20 renders checked, shadow == DOM on every one) ;; DRAWERS-P1-LIVE VERIFY: FAIL - 12/94
+[02/4] FAIL      exit=1   60s item112a.mjs :: ROWS-SHADOW VERIFY: PASS (57 renders checked, shadow == DOM on every one) ;; ITEM112A VERIFY: FAIL — 10/59 failed
+[03/4] FAIL      exit=1    0s one-drawer.mjs :: ONE-DRAWER VERIFY: FAIL - 4/13
+[04/4] FAIL      exit=1  100s page-size.mjs :: ROWS-SHADOW VERIFY: PASS (24 renders checked, shadow == DOM on every one) ;; PAGE-SIZE VERIFY: FAIL - 53/131 failed
+
+SUITE DONE HARNESS_PARKED=unset — 0/4 of 4 returned a passing verdict
+  FAIL: drawers-p1-live.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\psr-default\drawers-p1-live.mjs.default.txt
+  FAIL: item112a.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\psr-default\item112a.mjs.default.txt
+  FAIL: one-drawer.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\psr-default\one-drawer.mjs.default.txt
+  FAIL: page-size.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\psr-default\page-size.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=25ab759c bundle=index-BjVfelU6.js/797297b NO-REBUILD

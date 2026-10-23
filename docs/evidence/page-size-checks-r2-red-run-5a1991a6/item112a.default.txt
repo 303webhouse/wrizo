@@ -1,0 +1,301 @@
+
+ROWS-SHADOW VERIFY: PASS (57 renders checked, shadow == DOM on every one)
+[
+  {
+    "name": "S1: the Revise tab RENDERS on the framed strip (the doorway exists at all)",
+    "pass": true,
+    "detail": "{\"before\":{\"ariaDisabled\":\"false\",\"ariaSelected\":\"false\",\"deferred\":false,\"active\":false,\"label\":\"Revise\"}}"
+  },
+  {
+    "name": "S1 (§7.1): the Revise tab is LIVE — `aria-disabled` is 'false' and the `deferred` class is GONE from that key; it no longer wears the coming-soon dress",
+    "pass": true,
+    "detail": "{\"ariaDisabled\":\"false\",\"ariaSelected\":\"false\",\"deferred\":false,\"active\":false,\"label\":\"Revise\"}"
+  },
+  {
+    "name": "S1 (§7.1): pressing it SWITCHES — Revise reads aria-selected='true' and carries `active`, through the strip's EXISTING switch behaviour and no new gesture",
+    "pass": true,
+    "detail": "{\"after\":{\"ariaDisabled\":\"false\",\"ariaSelected\":\"true\",\"deferred\":false,\"active\":true,\"label\":\"Revise\"}}"
+  },
+  {
+    "name": "S1: and the mode it left is genuinely released — Draft reads aria-selected=false, so the strip has one active posture rather than two",
+    "pass": true,
+    "detail": "{\"draft\":{\"ariaDisabled\":\"false\",\"ariaSelected\":\"false\",\"deferred\":false,\"active\":false,\"label\":\"Draft\"}}"
+  },
+  {
+    "name": "S1 (§7.1): NO coming-soon flash fires on the switch — `flashSoon` is off this key entirely, not merely outrun by the mode change",
+    "pass": true,
+    "detail": "{\"flash\":null}"
+  },
+  {
+    "name": "S1 CONTROL: Workshop STILL flashes coming-soon and does NOT switch — so the null above is Revise being live, not the flash mechanism having broken",
+    "pass": true,
+    "detail": "{\"wsFlash\":\"Workshop — coming soon\",\"stillRevise\":{\"ariaDisabled\":\"false\",\"ariaSelected\":\"true\",\"deferred\":false,\"active\":true,\"label\":\"Revise\"}}"
+  },
+  {
+    "name": "S1b: entering Revise PERSISTS it under the existing per-page key `wrizo-mode-page-<id>` — no new key, no new lifetime, the rule Draft already lives by",
+    "pass": true,
+    "detail": "{\"key\":\"wrizo-mode-page-mvlb0m5ju0dm4nmis\",\"stored\":\"revise\"}"
+  },
+  {
+    "name": "S1b: and the page RE-OPENS in Revise after a reload — the allowlist admits it, so Revise remembers itself exactly as Draft does rather than silently falling back to the default",
+    "pass": true,
+    "detail": "{\"restored\":{\"ariaDisabled\":\"false\",\"ariaSelected\":\"true\",\"deferred\":false,\"active\":true,\"label\":\"Revise\"}}"
+  },
+  {
+    "name": "S2 (§7.2): the RUN MODEL is absent in Revise — zero `.fo-run`, zero `.fo-struck`, zero `.fo-word`, no runway nudge. The forward-only surface's entire rendered footprint is missing, not hidden",
+    "pass": true,
+    "detail": "{\"runs\":0,\"struck\":0,\"word\":0,\"nudge\":false}"
+  },
+  {
+    "name": "S2 (§7.2): a BACKSPACE IN REVISE REALLY DELETES — the character leaves the surface and nothing is struck. The runway (strike, never erase) is not merely unrendered, it is not running",
+    "pass": true,
+    "detail": "{\"textBefore\":\"Alpha beta gamma.\",\"textAfter\":\"Alpha beta gamma\",\"struckAfter\":0}"
+  },
+  {
+    "name": "S2/§3 S0 [typed-literal successor]: Revise's rendered text RUNS THROUGH the decorator - the four typed stars render as literal stars with their escapes hidden (`.md-escape`), and nothing is bold: typed formatting characters are literal",
+    "pass": true,
+    "detail": "{\"md\":{\"bold\":0,\"marks\":4},\"mdLit\":{\"bold\":0,\"escapes\":4}}"
+  },
+  {
+    "name": "S2/§3 [typed-literal successor]: and `entry.text` stays PLAIN — every typed character is a real character in the surface, the typed stars stored ESCAPED (literal, count preserved 1:1 through decoration), deterministic at any typing speed",
+    "pass": true,
+    "detail": "{\"plain\":\"Alpha beta gamma \\\\*\\\\*bold\\\\*\\\\* done\",\"wantLit\":\"Alpha beta gamma \\\\*\\\\*bold\\\\*\\\\* done\"}"
+  },
+  {
+    "name": "S7 (§7.7 @ 1100x900): BOTH GRIPS ARE VISIBLE IN REVISE from 112-A — Desk and Counsel both render and both are hit-testable. Nick's ruling: the mirror is visually complete now, and 112-C fills the Desk drawer later",
+    "pass": true,
+    "detail": "{\"deskGrip\":{\"present\":true,\"reachable\":true,\"hit\":\"span.wz-sliver-grip-glyph\",\"rect\":{\"l\":256,\"r\":272,\"t\":123},\"z\":\"2\",\"pe\":\"auto\"},\"counselGrip\":{\"present\":true,\"reachable\":true,\"hit\":\"span.wz-tutor-grip-glyph\",\"rect\":{\"l\":858,\"r\":874,\"t\":123},\"z\":\"2\",\"pe\":\"auto\"}}"
+  },
+  {
+    "name": "S7 [measured] (premise @ 1100x900): the page and the stage are measurable with both hands shut",
+    "pass": true,
+    "detail": "{\"left\":209,\"right\":209,\"both\":true}"
+  },
+  {
+    "name": "S7 successor [measured] (§7.7 @ 1100x900): the Counsel opens onto its own tab, and the Desk hand STILL STANDS - the band holds the page and both hands at their minimum",
+    "pass": false,
+    "detail": "{\"open\":{\"sliverOpen\":\"false\",\"cascadeVisible\":null,\"tutorOpen\":\"true\"},\"room7\":{\"left\":209,\"right\":209,\"both\":true}}"
+  },
+  {
+    "name": "S7 successor [measured] (§7.7 @ 1100x900): the Desk drawer stands open onto EMPTY CONTENT WITHOUT ERROR (G3's absence-over-grayed does not govern an empty drawer), and the Counsel stands beside it",
+    "pass": false,
+    "detail": "{\"deskOnly\":{\"sliverOpen\":\"false\",\"cascadeVisible\":null,\"tutorOpen\":\"true\"},\"room7\":{\"left\":209,\"right\":209,\"both\":true}}"
+  },
+  {
+    "name": "S7 SUCCESSOR (@ 1100x900, item 207): the Desk drawer's ONE tenant is the Type control - exactly one tool section, and it is the full-form Type control (a number field), while the drawer itself still stands open",
+    "pass": true,
+    "detail": "{\"toolsBody\":1,\"sections\":1,\"types\":1,\"typeInputs\":1}"
+  },
+  {
+    "name": "S7 successor [measured] (§8 @ 1100x900): every open hand CLOSES BY ITS OWN GRIP - the Desk and the Counsel, each by its own second press - and nothing is left open. §8's exit names open AND close",
+    "pass": false,
+    "detail": "{\"open\":{\"sliverOpen\":\"false\",\"cascadeVisible\":null,\"tutorOpen\":\"true\"},\"shut\":{\"sliverOpen\":\"false\",\"cascadeVisible\":null,\"tutorOpen\":\"true\"},\"room7\":{\"left\":209,\"right\":209,\"both\":true}}"
+  },
+  {
+    "name": "S7 (§7.7 @ 1366x768): BOTH GRIPS ARE VISIBLE IN REVISE from 112-A — Desk and Counsel both render and both are hit-testable. Nick's ruling: the mirror is visually complete now, and 112-C fills the Desk drawer later",
+    "pass": true,
+    "detail": "{\"deskGrip\":{\"present\":true,\"reachable\":true,\"hit\":\"span.wz-sliver-grip-glyph\",\"rect\":{\"l\":359,\"r\":375,\"t\":123},\"z\":\"2\",\"pe\":\"auto\"},\"counselGrip\":{\"present\":true,\"reachable\":true,\"hit\":\"span.wz-tutor-grip-glyph\",\"rect\":{\"l\":991,\"r\":1007,\"t\":123},\"z\":\"2\",\"pe\":\"auto\"}}"
+  },
+  {
+    "name": "S7 [measured] (premise @ 1366x768): the page and the stage are measurable with both hands shut",
+    "pass": true,
+    "detail": "{\"left\":335,\"right\":335,\"both\":true}"
+  },
+  {
+    "name": "S7 successor [measured] (§7.7 @ 1366x768): the Counsel opens onto its own tab, and the Desk hand STILL STANDS - the band holds the page and both hands at their minimum",
+    "pass": false,
+    "detail": "{\"open\":{\"sliverOpen\":\"false\",\"cascadeVisible\":null,\"tutorOpen\":\"true\"},\"room7\":{\"left\":335,\"right\":335,\"both\":true}}"
+  },
+  {
+    "name": "S7 successor [measured] (§7.7 @ 1366x768): the Desk drawer stands open onto EMPTY CONTENT WITHOUT ERROR (G3's absence-over-grayed does not govern an empty drawer), and the Counsel stands beside it",
+    "pass": false,
+    "detail": "{\"deskOnly\":{\"sliverOpen\":\"false\",\"cascadeVisible\":null,\"tutorOpen\":\"true\"},\"room7\":{\"left\":335,\"right\":335,\"both\":true}}"
+  },
+  {
+    "name": "S7 SUCCESSOR (@ 1366x768, item 207): the Desk drawer's ONE tenant is the Type control - exactly one tool section, and it is the full-form Type control (a number field), while the drawer itself still stands open",
+    "pass": true,
+    "detail": "{\"toolsBody\":1,\"sections\":1,\"types\":1,\"typeInputs\":1}"
+  },
+  {
+    "name": "S7 successor [measured] (§8 @ 1366x768): every open hand CLOSES BY ITS OWN GRIP - the Desk and the Counsel, each by its own second press - and nothing is left open. §8's exit names open AND close",
+    "pass": false,
+    "detail": "{\"open\":{\"sliverOpen\":\"false\",\"cascadeVisible\":null,\"tutorOpen\":\"true\"},\"shut\":{\"sliverOpen\":\"false\",\"cascadeVisible\":null,\"tutorOpen\":\"true\"},\"room7\":{\"left\":335,\"right\":335,\"both\":true}}"
+  },
+  {
+    "name": "S3 (§7.3 @ 1100x900): opening the DESK hand does not move the paper — sheet rect AND rendered text column both unchanged. The measure is the constant",
+    "pass": true,
+    "detail": "{\"closed\":{\"paperL\":242.31,\"paperR\":857.67,\"paperW\":615.36,\"textL\":281.31,\"textR\":818.67,\"textW\":537.36},\"deskOpen\":{\"paperL\":242.31,\"paperR\":857.67,\"paperW\":615.36,\"textL\":281.31,\"textR\":818.67,\"textW\":537.36}}"
+  },
+  {
+    "name": "S3 (§7.3 @ 1100x900): opening the COUNSEL hand does not move the paper — the same two boxes, unchanged",
+    "pass": true,
+    "detail": "{\"closed\":{\"paperL\":242.31,\"paperR\":857.67,\"paperW\":615.36,\"textL\":281.31,\"textR\":818.67,\"textW\":537.36},\"counselOpen\":{\"paperL\":242.31,\"paperR\":857.67,\"paperW\":615.36,\"textL\":281.31,\"textR\":818.67,\"textW\":537.36}}"
+  },
+  {
+    "name": "S3 successor [measured] (§7.3 @ 1100x900): with the second hand opened, BOTH hands stand (the band holds the page and both at their minimum) - and the paper is STILL where it was with both shut - chrome never reflows the writer's line",
+    "pass": false,
+    "detail": "{\"closed\":{\"paperL\":242.31,\"paperR\":857.67,\"paperW\":615.36,\"textL\":281.31,\"textR\":818.67,\"textW\":537.36},\"bothOpen\":{\"paperL\":242.31,\"paperR\":857.67,\"paperW\":615.36,\"textL\":281.31,\"textR\":818.67,\"textW\":537.36},\"drawers\":{\"sliverOpen\":\"true\",\"cascadeVisible\":null,\"tutorOpen\":\"false\"},\"room3\":{\"left\":209,\"right\":209,\"both\":true}}"
+  },
+  {
+    "name": "S3 CONTROL (@ 1100x900): the paper and its text column are genuinely LAID OUT (non-zero, text narrower than sheet) — so the equalities above compare real boxes rather than three zeros",
+    "pass": true,
+    "detail": "{\"paperL\":242.31,\"paperR\":857.67,\"paperW\":615.36,\"textL\":281.31,\"textR\":818.67,\"textW\":537.36}"
+  },
+  {
+    "name": "S3 (§7.3 @ 1366x768): opening the DESK hand does not move the paper — sheet rect AND rendered text column both unchanged. The measure is the constant",
+    "pass": true,
+    "detail": "{\"closed\":{\"paperL\":375.31,\"paperR\":990.67,\"paperW\":615.36,\"textL\":414.31,\"textR\":951.67,\"textW\":537.36},\"deskOpen\":{\"paperL\":375.31,\"paperR\":990.67,\"paperW\":615.36,\"textL\":414.31,\"textR\":951.67,\"textW\":537.36}}"
+  },
+  {
+    "name": "S3 (§7.3 @ 1366x768): opening the COUNSEL hand does not move the paper — the same two boxes, unchanged",
+    "pass": true,
+    "detail": "{\"closed\":{\"paperL\":375.31,\"paperR\":990.67,\"paperW\":615.36,\"textL\":414.31,\"textR\":951.67,\"textW\":537.36},\"counselOpen\":{\"paperL\":375.31,\"paperR\":990.67,\"paperW\":615.36,\"textL\":414.31,\"textR\":951.67,\"textW\":537.36}}"
+  },
+  {
+    "name": "S3 successor [measured] (§7.3 @ 1366x768): with the second hand opened, BOTH hands stand (the band holds the page and both at their minimum) - and the paper is STILL where it was with both shut - chrome never reflows the writer's line",
+    "pass": false,
+    "detail": "{\"closed\":{\"paperL\":375.31,\"paperR\":990.67,\"paperW\":615.36,\"textL\":414.31,\"textR\":951.67,\"textW\":537.36},\"bothOpen\":{\"paperL\":375.31,\"paperR\":990.67,\"paperW\":615.36,\"textL\":414.31,\"textR\":951.67,\"textW\":537.36},\"drawers\":{\"sliverOpen\":\"true\",\"cascadeVisible\":null,\"tutorOpen\":\"false\"},\"room3\":{\"left\":335,\"right\":335,\"both\":true}}"
+  },
+  {
+    "name": "S3 CONTROL (@ 1366x768): the paper and its text column are genuinely LAID OUT (non-zero, text narrower than sheet) — so the equalities above compare real boxes rather than three zeros",
+    "pass": true,
+    "detail": "{\"paperL\":375.31,\"paperR\":990.67,\"paperW\":615.36,\"textL\":414.31,\"textR\":951.67,\"textW\":537.36}"
+  },
+  {
+    "name": "S4 (§7.4 @ 1100x900): PRE-EXISTING ANCHOR DEVIATION, PINNED — the Desk hand overhangs the paper's left edge by 29.7px at the frame's own minimum width. CONTROLLED AGAINST CLEAN origin/main 89c5955 (src reverted and rebuilt in this worktree): main reads the SAME -29.7 in Draft and Free Write, so this is app-wide and predates 112-A. Pinned here as a regression guard, and SURFACED to the desk for the 117/119 joint pass — not repaired in this build, per §5's stop-and-surface",
+    "pass": true,
+    "detail": "{\"geo\":{\"paper\":{\"l\":242.3,\"r\":857.7,\"w\":615.4},\"sheet\":{\"l\":242.3,\"r\":857.7,\"w\":615.4},\"dock\":{\"l\":112,\"r\":272,\"w\":160},\"tutor\":{\"l\":693,\"r\":1067,\"w\":374},\"stage\":{\"l\":33,\"r\":1067,\"w\":1034},\"vw\":1100},\"deskDelta\":-29.7,\"mainBaseline\":-29.7,\"controlSha\":\"89c5955\"}"
+  },
+  {
+    "name": "S4 (@ 1100x900): REVISE'S HANDS SIT EXACTLY WHERE DRAFT'S DO — Desk dock, Counsel panel and paper all at identical rects across the two modes. This is 112-A's own claim (§4: build to 119's geometry, carried onto Revise unchanged), and it is what a 112-A geometry regression would break",
+    "pass": true,
+    "detail": "{\"revise\":{\"dock\":{\"l\":112,\"r\":272,\"w\":160},\"tutor\":{\"l\":693,\"r\":1067,\"w\":374},\"paper\":{\"l\":242.3,\"r\":857.7,\"w\":615.4}},\"draft\":{\"paper\":{\"l\":242.3,\"r\":857.7,\"w\":615.4},\"sheet\":{\"l\":242.3,\"r\":857.7,\"w\":615.4},\"dock\":{\"l\":112,\"r\":272,\"w\":160},\"tutor\":{\"l\":693,\"r\":1067,\"w\":374}}}"
+  },
+  {
+    "name": "S4 (§7.4 @ 1100x900, margin 209.3px < 280): the COUNSEL hand takes FX18's documented narrow-margin degradation — it overlays at natural open-w rather than shrinking below a usable panel — and it is still positioned FROM THE PAPER, ending within the stage rather than pinned to the viewport edge",
+    "pass": true,
+    "detail": "{\"geo\":{\"paper\":{\"l\":242.3,\"r\":857.7,\"w\":615.4},\"sheet\":{\"l\":242.3,\"r\":857.7,\"w\":615.4},\"dock\":{\"l\":112,\"r\":272,\"w\":160},\"tutor\":{\"l\":693,\"r\":1067,\"w\":374},\"stage\":{\"l\":33,\"r\":1067,\"w\":1034},\"vw\":1100},\"margin\":209.3}"
+  },
+  {
+    "name": "S4 (@ 1100x900): NEITHER hand is screen-anchored — the Desk hand does not start at x=0 and the Counsel hand does not end at the viewport's right edge. This is the fault the Anchor Law names, asserted as an absence",
+    "pass": true,
+    "detail": "{\"dock\":{\"l\":112,\"r\":272,\"w\":160},\"tutor\":{\"l\":693,\"r\":1067,\"w\":374},\"vw\":1100}"
+  },
+  {
+    "name": "S4 (§7.4 @ 1366x768): the DESK hand is FLUSH TO THE PAPER — its right edge IS the paper column's left edge (delta 0px, tolerance 0.6). The ruled anchor contract, held",
+    "pass": true,
+    "detail": "{\"geo\":{\"paper\":{\"l\":375.3,\"r\":990.7,\"w\":615.4},\"sheet\":{\"l\":375.3,\"r\":990.7,\"w\":615.4},\"dock\":{\"l\":175.3,\"r\":375.3,\"w\":200},\"tutor\":{\"l\":991,\"r\":1326,\"w\":335},\"stage\":{\"l\":40,\"r\":1326,\"w\":1286},\"vw\":1366},\"deskDelta\":0}"
+  },
+  {
+    "name": "S4 (@ 1366x768): REVISE'S HANDS SIT EXACTLY WHERE DRAFT'S DO — Desk dock, Counsel panel and paper all at identical rects across the two modes. This is 112-A's own claim (§4: build to 119's geometry, carried onto Revise unchanged), and it is what a 112-A geometry regression would break",
+    "pass": true,
+    "detail": "{\"revise\":{\"dock\":{\"l\":175.3,\"r\":375.3,\"w\":200},\"tutor\":{\"l\":991,\"r\":1326,\"w\":335},\"paper\":{\"l\":375.3,\"r\":990.7,\"w\":615.4}},\"draft\":{\"paper\":{\"l\":375.3,\"r\":990.7,\"w\":615.4},\"sheet\":{\"l\":375.3,\"r\":990.7,\"w\":615.4},\"dock\":{\"l\":175.3,\"r\":375.3,\"w\":200},\"tutor\":{\"l\":991,\"r\":1326,\"w\":335}}}"
+  },
+  {
+    "name": "S4 (§7.4 @ 1366x768, margin 335.3px >= 280): the COUNSEL hand OCCUPIES THE MARGIN and never covers the paper — its left edge is at or past the sheet's right edge. Paper-anchored, per 119",
+    "pass": true,
+    "detail": "{\"geo\":{\"paper\":{\"l\":375.3,\"r\":990.7,\"w\":615.4},\"sheet\":{\"l\":375.3,\"r\":990.7,\"w\":615.4},\"dock\":{\"l\":175.3,\"r\":375.3,\"w\":200},\"tutor\":{\"l\":991,\"r\":1326,\"w\":335},\"stage\":{\"l\":40,\"r\":1326,\"w\":1286},\"vw\":1366},\"margin\":335.3}"
+  },
+  {
+    "name": "S4 (@ 1366x768): NEITHER hand is screen-anchored — the Desk hand does not start at x=0 and the Counsel hand does not end at the viewport's right edge. This is the fault the Anchor Law names, asserted as an absence",
+    "pass": true,
+    "detail": "{\"dock\":{\"l\":175.3,\"r\":375.3,\"w\":200},\"tutor\":{\"l\":991,\"r\":1326,\"w\":335},\"vw\":1366}"
+  },
+  {
+    "name": "S4 (§7.4): THE DESK HAND IS PAPER-ANCHORED, NOT SCREEN-ANCHORED — across the two reference widths the paper travels 133px and the dock holds station on its edge (within 30px at both), while NEITHER viewport offset stays constant: measured from the left it moves ~103px, from the right ~163px. A screen-anchored dock would have held one of those two fixed",
+    "pass": true,
+    "detail": "{\"anchorTrack\":[{\"w\":1100,\"dockR\":272,\"paperL\":242.3,\"vw\":1100},{\"w\":1366,\"dockR\":375.3,\"paperL\":375.3,\"vw\":1366}],\"paperTravel\":133,\"gapA\":29.7,\"gapB\":0,\"fromLeftA\":272,\"fromLeftB\":375.3,\"fromRightA\":828,\"fromRightB\":990.7}"
+  },
+  {
+    "name": "S5 (§7.5 @ 1100x900): GRACEFUL YIELD IN REVISE — a far-left open shuts the Desk drawer where the band cannot hold both. The two-drawer law governs this surface exactly as it governs every other",
+    "pass": true,
+    "detail": "{\"band\":{\"band\":158.3,\"tools\":160,\"cascade\":300},\"after\":{\"sliverOpen\":\"false\",\"cascadeVisible\":\"true\",\"tutorOpen\":\"false\"}}"
+  },
+  {
+    "name": "S5 CONTROL (@ 1100x900): the band genuinely CANNOT hold both, so the close above is the LAW firing and not a coincidence of this width",
+    "pass": true,
+    "detail": "{\"band\":158.3,\"tools\":160,\"cascade\":300}"
+  },
+  {
+    "name": "S5 (§7.5 @ 1366x768): GRACEFUL YIELD IN REVISE — a far-left open shuts the Desk drawer where the band cannot hold both. The two-drawer law governs this surface exactly as it governs every other",
+    "pass": true,
+    "detail": "{\"band\":{\"band\":291.3,\"tools\":200,\"cascade\":300},\"after\":{\"sliverOpen\":\"false\",\"cascadeVisible\":\"true\",\"tutorOpen\":\"false\"}}"
+  },
+  {
+    "name": "S5 CONTROL (@ 1366x768): the band genuinely CANNOT hold both, so the close above is the LAW firing and not a coincidence of this width",
+    "pass": true,
+    "detail": "{\"band\":291.3,\"tools\":200,\"cascade\":300}"
+  },
+  {
+    "name": "S5 (§7.5 @ 2600x1400): both drawers STAND in Revise when the band holds them — the coexistence law is permissive where there is room, not merely exclusive",
+    "pass": true,
+    "detail": "{\"wide\":{\"sliverOpen\":\"true\",\"cascadeVisible\":\"true\",\"tutorOpen\":\"false\"},\"wideBand\":{\"band\":846.8,\"tools\":200,\"cascade\":300}}"
+  },
+  {
+    "name": "S5 CONTROL (@ 2600): that coexistence is EARNED — the measured band is at least as wide as both tenants together",
+    "pass": true,
+    "detail": "{\"band\":846.8,\"tools\":200,\"cascade\":300}"
+  },
+  {
+    "name": "S5 successor [measured] (§7.5 @ 1100x900): the two HANDS coexist in Revise - Desk and Counsel both stand open and DO NOT OVERLAP (the band holds the page and both at their minimum), and the open Counsel panel is reachable",
+    "pass": false,
+    "detail": "{\"state\":{\"sliverOpen\":\"false\",\"cascadeVisible\":null,\"tutorOpen\":\"true\"},\"sliverPanel\":{\"l\":112,\"r\":256,\"t\":107,\"w\":144},\"tutorPanel\":{\"l\":693,\"r\":1067,\"t\":107,\"w\":374},\"room5\":{\"left\":209,\"right\":209,\"both\":true}}"
+  },
+  {
+    "name": "S5 successor [measured] (§7.5 @ 1366x768): the two HANDS coexist in Revise - Desk and Counsel both stand open and DO NOT OVERLAP (the band holds the page and both at their minimum), and the open Counsel panel is reachable",
+    "pass": false,
+    "detail": "{\"state\":{\"sliverOpen\":\"false\",\"cascadeVisible\":null,\"tutorOpen\":\"true\"},\"sliverPanel\":{\"l\":175.31,\"r\":359.31,\"t\":107,\"w\":184},\"tutorPanel\":{\"l\":991,\"r\":1326,\"t\":107,\"w\":335},\"room5\":{\"left\":335,\"right\":335,\"both\":true}}"
+  },
+  {
+    "name": "S6 (§7.6): a NON-TOGGLE open path works in Revise — the Ctrl+/ shortcut opens the Desk drawer without touching the grip handler",
+    "pass": true,
+    "detail": "{\"sliverOpen\":\"true\",\"cascadeVisible\":null,\"tutorOpen\":\"false\"}"
+  },
+  {
+    "name": "S6 (§7.6): and THAT open ANNOUNCED — a far-left open displaces it, so the store learned about a drawer that opened by a path other than the toggle handler. The announce-from-effect invariant holds on Revise from birth",
+    "pass": true,
+    "detail": "{\"byKey\":{\"sliverOpen\":\"true\",\"cascadeVisible\":null,\"tutorOpen\":\"false\"},\"displacedKey\":{\"sliverOpen\":\"false\",\"cascadeVisible\":\"true\",\"tutorOpen\":\"false\"}}"
+  },
+  {
+    "name": "S6 (§7.6): the GRIP path announces too — the affordance a writer actually taps, and the exact path the pre-errata build opened silently on. Every path announces because the announcement is an effect keyed on `open`, not a line inside one handler",
+    "pass": true,
+    "detail": "{\"byGrip\":{\"sliverOpen\":\"true\",\"cascadeVisible\":null,\"tutorOpen\":\"false\"},\"displacedGrip\":{\"sliverOpen\":\"false\",\"cascadeVisible\":\"true\",\"tutorOpen\":\"false\"}}"
+  },
+  {
+    "name": "S8 SUCCESSOR (item 207): the Revise drawer carries no INHERITED Draft rail (no .wz-sliver-format) and exactly ONE tool section, the Type control",
+    "pass": true,
+    "detail": "{\"sliverSections\":1,\"sliverFormat\":0,\"structureBtn\":0,\"askChips\":0,\"flags\":0,\"tutorMounted\":true,\"mentionsSelection\":false}"
+  },
+  {
+    "name": "S8 (§7.8): NO ROSTER renders in Revise — neither the Draft asks nor Free Write's presets, and no Revise roster of its own. That is 112-D, and §6 forbids it appearing early",
+    "pass": true,
+    "detail": "{\"sliverSections\":1,\"sliverFormat\":0,\"structureBtn\":0,\"askChips\":0,\"flags\":0,\"tutorMounted\":true,\"mentionsSelection\":false}"
+  },
+  {
+    "name": "S8 (§7.8): NO FLAGS of any kind render — the error lens is parked (T1-T7) and DR7-as-narrowed authorises its marks and nothing else. This ticket ships no unbidden anything",
+    "pass": true,
+    "detail": "{\"sliverSections\":1,\"sliverFormat\":0,\"structureBtn\":0,\"askChips\":0,\"flags\":0,\"tutorMounted\":true,\"mentionsSelection\":false}"
+  },
+  {
+    "name": "S8 CONTROL: the Counsel panel IS mounted and open — so the three absences above are Revise being EMPTY OF TENANTS, not the panel having failed to render at all",
+    "pass": true,
+    "detail": "{\"sliverSections\":1,\"sliverFormat\":0,\"structureBtn\":0,\"askChips\":0,\"flags\":0,\"tutorMounted\":true,\"mentionsSelection\":false}"
+  },
+  {
+    "name": "S9 (§7.9): DRAFT still enters and still carries its OWN Desk furniture — its rail sections render exactly as before. Revise did not take Draft's drawer with it on the way past",
+    "pass": true,
+    "detail": "{\"sections\":5,\"format\":3,\"tab\":\"true\"}"
+  },
+  {
+    "name": "S9 (§7.9): FREE WRITE still enters and still mounts the FORWARD-ONLY instrument — the run model renders on its own surface, which is the mirror of S2 and proves the instrument was moved out of Revise rather than deleted from the app",
+    "pass": true,
+    "detail": "{\"tab\":\"true\",\"runs\":2}"
+  },
+  {
+    "name": "S9: and Free Write's BACKSPACE STILL STRIKES rather than erases — the struck text stays visible on the surface. The forward-only law is untouched where it governs, which is what makes S2's absence in Revise a RELOCATION and not a deletion",
+    "pass": true,
+    "detail": "{\"fwBefore\":\"Forward only. \",\"fwAfter\":\"Forward only. \",\"fwStruck\":1}"
+  }
+]
+
+ITEM112A VERIFY: FAIL — 10/59 failed
