@@ -98,6 +98,14 @@ ok('T5: ...and the standard mechanism IS present: the systemic `*` rule sets scr
 ok('T5: ...and the paper-toned group (.mode-scroll, .desk-frame-scroll-cap, .board-canvas-wrap) and the card text keep their scrollbar-color',
   /\.mode-scroll, \.desk-frame-scroll-cap, \.board-canvas-wrap\{\s*scrollbar-color: var\(--ink-on-paper-low\) transparent;\s*\}/.test(css) && /\.board-text\{ scrollbar-color: var\(--ink-on-card-low\) transparent; \}/.test(css), '');
 
+// T6 - the board wrap paints the board surface, so the vertical bar (in its gutter) and the horizontal bar (below the canvas) sit on paper, not the dark desk ground
+const wrapRule = css.match(/\n\.board-canvas-wrap\{ scrollbar-gutter:stable; background:var\(--paper\); \}/);
+ok('T6: .board-canvas-wrap paints var(--paper) (the canvas\'s own surface) beside its stable gutter - the paper-toned thumb is not dark-on-dark', !!wrapRule, wrapRule ? 'found' : 'rule not found');
+{
+  const m = css.replace('background:var(--paper); }\n.board-canvas{', ' }\n.board-canvas{');
+  ok('MUTANT: the wrap loses its paper background (the dark-gutter, invisible-in-Flux-light state) - T6 must go RED', m !== css && !/\n\.board-canvas-wrap\{ scrollbar-gutter:stable; background:var\(--paper\); \}/.test(m), '');
+}
+
 // MUTANT - the dead webkit width rule comes back (the old 8px) - T5 must go RED
 {
   const mutated = (css + '\n::-webkit-scrollbar{ width:8px; height:8px; }\n').replace(/\/\*[\s\S]*?\*\//g, '');

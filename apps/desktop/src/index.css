@@ -1706,7 +1706,11 @@ a:focus-visible,
    both-edges` on `.desk-frame-scroll-cap`. Single-edge here — the board's
    canvas is left-aligned in its wrap, so reserving both edges would shift the
    content's optical centre for no benefit. */
-.board-canvas-wrap{ scrollbar-gutter:stable; }
+/* SCROLLBAR-FLUSH (Fable Oct 23): the wrap paints the BOARD SURFACE (--paper, the same token `.board-canvas` paints inline). The vertical bar lives in this
+   wrap's stable gutter BESIDE the canvas and the horizontal bar BELOW it - with no background of its own the wrap showed the dark desk ground there, so the
+   paper-toned thumb (--ink-on-paper-low, set with the paper group at the top of this file) was dark-on-dark and, in Flux light, effectively invisible.
+   On the paper, both bars sit on the surface their tone was chosen for. Background only - no geometry moves. */
+.board-canvas-wrap{ scrollbar-gutter:stable; background:var(--paper); }
 .board-canvas{ border-radius:0; }
 /* FX6 S2c — the empty board's own quiet one-line pointer (this canvas
    carried NO empty-state copy at all before this ticket). Centered, quiet
