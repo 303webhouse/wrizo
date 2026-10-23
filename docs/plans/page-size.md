@@ -26,9 +26,9 @@ zoom   = the same page at scale 1.6, writing line held at 60% of the stage heigh
          height above and below so the paper itself runs off into the desk
 ```
 
-At both 1366 and 1920 the mockup draws **620 x 803 at 16px (12 pt)**. Ruling (c) is pending Nick, and until he rules the build keeps
-main's growth, so the page is 620 x 803 at page scale 1 and ~744 x 963 at 1920 (scale 1.2). Cursor shot the normal-view frames at
-1366x1120 and 1920x1200 (tall enough to show the whole sheet) and the zoom frames at 1366x768 and 1920x1080.
+At both 1366 and 1920 the mockup draws **620 x 803 at 16px (12 pt)**: that is the page at scale 1.0, the floor. Under Nick's ruling (c)
+the page GROWS smoothly with the stage (section 2). Cursor shot the normal-view frames at 1366x1120 and 1920x1200 (tall enough to show
+the whole sheet) and the zoom frames at 1366x768 and 1920x1080; the build is tested at Nick's four sizes instead (section 4).
 
 The zoom's FINAL mask (e3c4e462) is on the whole stage, so text AND paper fade into the desk together. In line-heights from the
 anchor: 0 at the stage top, .12 at -6.6, .40 at -4.2, .72 at -2.2, full from -0.15 to +1.45 (the writing line alone), .40 at +2.8,
@@ -40,8 +40,24 @@ visible in all.
 > letter proportions, 12 pt, ~75 chars/line, matching cursor/page-size-mockup frames at 1366 + 1920. Per-page margins 26/38/58 still apply;
 > coordinate with TOOLS' scrollbar-flush (--wz-page-pad-x).
 
-**PAGE UNITS - one source for the page's size.** One letter-inch token, `--wz-letter-in: calc(72.94px * var(--paper-scale))`
-(620 / 8.5 at scale 1). The page is `8.5 x 11` of it, its margins are in it, and its type is in it: 12 pt = 16px x the page scale (ruling a).
+**PAGE UNITS - one source for the page's size.** One letter-inch token, `--wz-letter-in`, 72.94px at scale 1.0 (620 / 8.5). The page is
+`8.5 x 11` of it, its margins are in it, and its type is in it: 12 pt = 16px x the page scale k (ruling a).
+
+**The page scale (ruling c, Nick).** k comes from the STAGE's size alone, never from open panels (paper never reflows for chrome). It
+is smooth, not stepped: the largest k at which the whole letter page fits the stage height with a small margin, never below 1.0.
+The stage becomes a size container (`container-type: size`; Electron 31 is Chromium 126, so container units are supported). That
+lets the whole law be pure CSS, using only length x number, never the length / length that calc() cannot do:
+
+```
+--wz-letter-in: max(72.94px, min((100cqh - <fence>) / 11, (100cqw - 2 * <panel reserve>) / 8.5))
+```
+
+The width term is a CONSTANT reserve for the two drawers' open widths, never their open state. So the page sits between both panels
+whether or not they are open, and opening one never moves it (checks K and N). No JS runs on the normal view's sizing path. Main's
+stepped `--paper-scale` (1.1 at 1680, 1.2 at 1920) and the 1700px `font-size:19px` stop applying to the prose page. `--paper-scale`
+stays for everything else. **Risk to measure on the box:** at 1366x768 the page is at the 1.0 floor (620 wide). If 620 plus both open
+drawers is wider than the stage, the drawers must give up width at that size: they are chrome and the floor is ruled. N will show it.
+
 Everything that today hand-copies the page's width reads the one pair `--wz-page-w` / `--wz-page-h` instead:
 `.desk-frame-stage--prose .mode-pagecol` (today `min(760px * scale, 60ch)`), the Sliver's and Tutor's `--sliver-paper-half` /
 `--tutor-paper-half` (today `min(380px * scale, 30ch)`, hand-synced), and the 1700px rule's `min(760px, 46vw)` and `font-size:19px`.
@@ -72,8 +88,10 @@ scope. QuickSprint renders ModeStage and comes along automatically.
 
 - **Keyed on `typewriterOn`, not on a theme.** Only Arbor (`plateau`) and Flux are registered; Flow State and Vision belong to themes
   not yet in the union (`store/theme.ts`). Arbor's default is Typewriter ON, so **an Arbor page opens zoomed** unless the writer turns it off.
-- **Scale, never reflow:** `transform: scale(1.6)` on the page, never a bigger font or a wider box. A transform does not lay the
-  text out again, so line breaks are identical by construction. Bigger type in a wider box could break lines differently, because
+- **Scale, never reflow:** a `transform: scale(z)` on the page, never a bigger font or a wider box. z is ~1.6 from the current base
+  scale, capped to the largest that fits the stage's width with the panels tucked (ruling c). Unlike the base scale, a transform needs
+  a plain number, so z is written as `--wz-zoom` by one ResizeObserver on the stage. That observer runs on resize, never on typing.
+  A transform does not lay the text out again, so line breaks are identical by construction. Bigger type in a wider box could break lines differently, because
   font hinting is not linear. The editor never unmounts; caret, selection, text and scroll are kept. Leaving the zoom returns the
   exact normal rect.
 - **Panels tucked:** entering the zoom closes the Sliver and Tutor drawers (they are tools; collapsing is allowed by page primacy).
@@ -93,18 +111,19 @@ scope. QuickSprint renders ModeStage and comes along automatically.
 
 ## 4. Checks — `apps/desktop/scripts/harness/page-size.mjs` (brief point 4)
 
-Both themes. Normal view at Cursor's normal frame sizes (1366x1120, 1920x1200); zoom at Cursor's zoom frame sizes (1366x768, 1920x1080).
+Both themes, every check at Nick's four sizes: 1366x768, 1920x1080, 2560x1440 (his 27" 4K at 150%), 3840x2160.
 Seeding through the seams; trusted CDP input; opacity is read from the SCREENSHOT (decoded in the page through a canvas, no new dep), so
-it measures what is painted, masks included.
+it measures what is painted, masks included. The page scale k is MEASURED (page width / 620) and then held to ruling (c)'s law.
 
 | id | check |
 |----|-------|
-| R  | page ratio: `.mode-page` width / height = 8.5 / 11 (within 1%), width within 3% of 620 x the page scale |
+| R  | at k = 1: 620 wide (within 3%) and capped to the stage (ruling d). Above 1: letter (8.5 / 11 within 1%), inside the stage, and the largest that fits (its height within 96px of the stage's) |
 | C  | chars per line at the default: the median full line of a seeded paragraph holds 72-78 characters |
-| F  | the editor's type is 12 pt in page units: 16px x the page scale (1 at 1366, 1.2 at 1920 while ruling c is pending) |
-| L  | the page at 1920 breaks its lines exactly where it does at 1366 (it grows, it never reflows) |
-| S  | (lean (d) below) at 1366x768 the page keeps the 1366x1120 width and fits the stage |
-| Z  | zoom: the page's painted width is 1.6x its normal width (within 0.03) |
+| F  | the editor's type is 12 pt in page units: 16px x k (within 1%) |
+| L  | every size breaks its lines exactly where 1366x768 does (it grows, it never reflows) |
+| K  | opening BOTH panels never moves or rescales the page |
+| N  | with both panels open, the page sits fully between them |
+| Z  | zoom: the page paints ~1.6x its normal width (within 0.03), or, where that would not fit, the largest that fits the stage's width (within 96px); never overflowing the stage |
 | B  | identical line-break offsets in both views (same page, same text, toggled live) |
 | U  | the editor is the SAME node before, during and after the zoom (no unmount) |
 | X  | leaving the zoom returns the exact normal rect (within 0.5px) |
@@ -114,7 +133,8 @@ it measures what is painted, masks included.
 | G  | glide: a new line moves the scroll over more than one frame, by about one line; under reduced motion, in one frame |
 
 Mutants, each asserting it LANDED before its predicate is read: MR (page forced to 760px wide), MC (editor at 14px), MB (letter-spacing
-changed only while zoomed -> breaks differ), MW (the writing row at opacity .5), MT (every mask in the stage removed).
+changed only while zoomed -> breaks differ), MW (the writing row at opacity .5), MT (every mask in the stage removed), MK (the page
+rescaled while the Tutor is open -> K fails).
 
 ## 5. Parks to expect, and the sweep (Fable, Oct 21: every harness that reads the surfaces the branch changes)
 
@@ -129,7 +149,7 @@ audited against its source at build time, never parked from the grep.
 
 Full pair, including typing-latency-scroll, page-scroll-return, typewriter-fade, typewriter-page, typewriter-scope, blank-page-click
 and page-size. The latency probe at 5k and 50k runs WITH the transform on. Screens vs Cursor's final frames (both themes, dark and light,
-1366 + 1920, normal and zoom) for Fable's clear.
+normal and zoom) at Nick's four sizes, plus both panels open at each, for Fable's clear.
 
 ## 7. Rulings (Fable, Oct 23)
 
@@ -137,8 +157,11 @@ a. **Type size: YES, real points in PAGE units.** 12 = 16px, scaled with the pag
    (section 2, Type size).
 b. **Margins: YES, fixed paper; the margins move the text.** Normal 1in ~75, narrow ~82, wide ~64. Agree `--wz-page-pad-x` with TOOLS
    (section 2, Margins).
-c. **Wide screens: PENDING Nick.** Until he rules, keep main's growth: ~1.2x at 1920, same shape and line breaks. The harness reads
-   the page scale from one constant (`PAGE_SCALE`), so his ruling is a one-line change.
+c. **Big screens (Nick, Oct 23): the page GROWS.** The scale comes from the screen/stage size only, never from open panels (paper
+   never reflows for chrome). Smooth, not stepped: the largest scale where the whole letter page fits the stage height with a small
+   margin, never below 1.0 (620x803 at 1366x768). Same line breaks at every scale. Zoom modes: ~1.6x from the current base scale,
+   capped to the largest that fits with the panels tucked. Test sizes 1366x768, 1920x1080, 2560x1440, 3840x2160; with both panels
+   open, the page sits fully between them at every size (section 2, The page scale; section 4).
 d. **Short screens: YES, cap the page to the stage**; the text scrolls inside it.
 
 Park audit at build time: accepted. Chat 1 grants the short red run after the blank-page merged run. Code branches from main after

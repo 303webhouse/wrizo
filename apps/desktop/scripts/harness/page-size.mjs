@@ -1,16 +1,21 @@
 // PAGE SIZE (Fable, Oct 23 - Nick approved). Plan: docs/plans/page-size.md. Mockup: origin/cursor/page-size-mockup @ e3c4e462 (final).
-// RED-FIRST: written before the build. On main, R, C, F, Z and P are expected RED; B, U, X, W, T, G and S are regression guards that may
-// already hold. The mutants only mean something on the build (on main a predicate that already fails also fails under its mutant).
+// RED-FIRST: written before the build. On main, R, C, F, Z, P and N are expected RED; B, U, X, W, T, G and K are regression guards that
+// may already hold. The mutants only mean something on the build (on main a predicate that already fails also fails under its mutant).
 //
-//   NORMAL VIEW, both themes, at Cursor's normal frame sizes (1366x1120, 1920x1200):
-//   R  the page is letter-proportioned (width / height = 8.5 / 11 within 1%) and about 620 x the page scale wide (within 3%)
+//   EVERY CHECK RUNS AT NICK'S FOUR SIZES (ruling c, Oct 23): 1366x768, 1920x1080, 2560x1440 (his 27" 4K at 150%), 3840x2160. Both themes.
+//   THE PAGE SCALE k (ruling c) comes from the STAGE's size alone, smoothly: the largest at which the whole letter page fits the stage height
+//   with a small margin, never below 1.0 (620x803). It is MEASURED here as the page's width / 620, then held to that law:
+//   R  the page: at k = 1, 620 wide (within 3%) and capped to the stage (ruling d - the text scrolls inside); at k > 1, letter-proportioned
+//      (w/h = 8.5/11 within 1%) and the LARGEST that fits - its height within FIT_SLACK of the stage's - and inside the stage
 //   C  chars per line at the default: the median full line of a seeded paragraph holds 72-78 characters (~75)
-//   F  the editor's type is 12 pt in PAGE units: 16px x the page scale (ruling a; the page scale is 1.2 at 1920 under ruling c, pending)
-//   L  the page at 1920 breaks its lines exactly where it does at 1366 (the page grows in shape only - ruling c, pending)
-//   S  a short screen (1366x768): the page keeps its 1366x1120 width and fits the stage (plan section 7, lean d)
-//   THE ZOOM (Typewriter / Terminal Mode), both themes, at Cursor's zoom frame sizes (1366x768, 1920x1080), entered and left LIVE through
-//   the writer's own control (the Sliver's typewriter button), with trusted input:
-//   Z  the page paints 1.6x its normal width (within 0.03)
+//   F  the editor's type is 12 pt in PAGE units: 16px x k (within 1%) - ruling a
+//   L  the page breaks its lines exactly where it does at 1366x768, at every size (it grows, it never reflows)
+//   K  opening BOTH panels never moves or rescales the page (the scale comes from the stage, never the chrome)
+//   N  with both panels open, the page sits fully BETWEEN them
+//   THE ZOOM (Typewriter / Terminal Mode), both themes, at every size, entered and left LIVE through the writer's own control (the Sliver's
+//   typewriter button), with trusted input:
+//   Z  the page paints ~1.6x its normal width (within 0.03), unless that would not fit: then it is the largest that fits the stage's width
+//      with the panels tucked (within ZOOM_FIT_SLACK); either way it never overflows the stage
 //   B  the line breaks are IDENTICAL in both views (the character offsets where each visual line starts) - scale, never reflow
 //   U  the editor is the SAME node before, during and after (no unmount)
 //   X  leaving the zoom returns the exact normal rect (within 0.5px)
@@ -23,7 +28,7 @@
 //   all: a line's ink = the largest colour distance from its own commonest colour (the paper); its strength = ink as painted / ink with
 //   every mask and opacity in the stage stripped. The stripped reference is a premise: it must itself show ink.
 //   MUTANTS (runtime, each asserts it LANDED before its predicate is read): MR page forced 760 wide; MC type at 14px; MB letter-spacing
-//   changed while zoomed; MW the editor at opacity .5; MT every mask in the stage removed.
+//   changed while zoomed; MW the editor at opacity .5; MT every mask in the stage removed; MK the page scaled by an open panel (K fails).
 //
 // Seeding goes through the app's seams; the per-page mode and typewriter keys are this device's own UI keys (not collections).
 // Needs a box turn.  Run: WS_BOX_TURN=<token> node scripts/harness/page-size.mjs   (from apps/desktop, dist-web built)
@@ -52,11 +57,10 @@ const FADED = 0.5;
 const FADE_STEP = 0.08;  // Cursor's final mask drops ~.29 from 1 above to 3 above and ~.28 from 3 to 5; .08 is clearly a fade, not noise
 const GLIDE_MIN = 6;     // a 300ms ease passes through ~18 frames; 6 distinct scroll values is unmistakably a glide
 const INSTANT_MAX = 3;   // the start, then at most two instant whole-line steps
-const NORMAL_VIEWS = [[1366, 1120], [1920, 1200]];
-// ruling (c) PENDING Nick (Fable, Oct 23): plan for keeping main's growth - the page ~1.2x at 1920, same shape and line breaks. If Nick
-// rules the frames' fixed page instead, set 1920 -> 1 here; nothing else changes.
-const PAGE_SCALE = { 1366: 1, 1920: 1.2 };
-const ZOOM_VIEWS = [[1366, 768], [1920, 1080]];
+// ruling (c), Nick via Fable, Oct 23: the page grows smoothly with the stage; these are his four test sizes
+const SIZES = [[1366, 768], [1920, 1080], [2560, 1440], [3840, 2160]];
+const FIT_SLACK = 96;       // "a small margin": the page's height is within this of the stage's when it is the largest that fits
+const ZOOM_FIT_SLACK = 96;  // a zoom capped below 1.6 fills the stage's width to within this
 const THEMES = [{ id: 'plateau', name: 'Arbor' }, { id: 'flux', name: 'Flux' }];
 
 const SENTENCES = [
@@ -109,7 +113,7 @@ const HELPERS = `(() => {
     const sc = e.closest('.mode-scroll');
     const p = page.getBoundingClientRect(); const s = stage ? stage.getBoundingClientRect() : null; const c = sc ? sc.getBoundingClientRect() : null;
     return { page: { left: p.left, top: p.top, width: p.width, height: p.height, right: p.right, bottom: p.bottom },
-      stage: s ? { top: s.top, bottom: s.bottom } : null, scroll: c ? { top: c.top, bottom: c.bottom } : null,
+      stage: s ? { top: s.top, bottom: s.bottom, left: s.left, right: s.right, width: s.width, height: s.height } : null, scroll: c ? { top: c.top, bottom: c.bottom } : null,
       fontPx: parseFloat(getComputedStyle(e).fontSize), vh: innerHeight };
   };
   window.__psMark = () => { const e = ed(); if (e) e.__psMarked = 1; return !!e; };
@@ -191,7 +195,16 @@ const openTutor = async (app) => {
 };
 const fullLineLengths = (lines) => lines.slice(0, -1).map((l, i) => lines[i + 1].start - l.start);
 const median = (a) => { const s = [...a].sort((x, y) => x - y); return s.length ? s[Math.floor(s.length / 2)] : null; };
-const rPred = (g, k = 1) => !!g && Math.abs(g.page.width / g.page.height - LETTER) <= RATIO_TOL && Math.abs(g.page.width - FRAME_PAGE_W * k) / (FRAME_PAGE_W * k) <= PAGE_W_TOL;
+// R, held to ruling c's law: the scale k is MEASURED (width / 620), then the page must be what that law says a page at k is
+const kOf = (g) => (g ? g.page.width / FRAME_PAGE_W : null);
+const inStage = (g) => !!g && !!g.stage && g.page.top >= g.stage.top - 0.5 && g.page.bottom <= g.stage.bottom + 0.5 && g.page.left >= g.stage.left - 0.5 && g.page.right <= g.stage.right + 0.5;
+const rPred = (g) => {
+  if (!g || !g.stage) return false;
+  const k = kOf(g);
+  if (k < 1 - PAGE_W_TOL) return false;                                   // never below 1.0
+  if (k <= 1 + PAGE_W_TOL) return inStage(g) && g.page.height <= FRAME_PAGE_W / LETTER + 1;  // k = 1: 620 wide, capped to the stage
+  return Math.abs(g.page.width / g.page.height - LETTER) <= RATIO_TOL && inStage(g) && g.stage.height - g.page.height <= FIT_SLACK;
+};
 const cPred = (lines) => { const m = median(fullLineLengths(lines || [])); return m != null && m >= CPL_MIN && m <= CPL_MAX; };
 // strengths of [writing line, 1 above, 3 above, 5 above]: a steady fade upward, the oldest at half or less
 const tPred = (st) => st.length === 4 && st.every((x) => x.bare != null && x.bare >= 60 && x.s != null)
@@ -205,12 +218,40 @@ const normalCase = async (app, th, w, h) => {
   ok(`${th.name} ${w}x${h} normal (premise): the page is in the normal view (typewriter off)`, (await typewriterIs(app, id)) === 'off', await typewriterIs(app, id));
   const g = await app.evalJs('window.__psGeom()');
   const lines = await app.evalJs('window.__psLines()');
-  const k = PAGE_SCALE[w];
-  ok(`${th.name} ${w}x${h} R: the page is letter-proportioned (w/h = 8.5/11 within 1%) and ~${Math.round(FRAME_PAGE_W * k)} wide (Cursor's ${FRAME_PAGE_W} x the page scale ${k}, within 3%)`, rPred(g, k),
-    J({ w: g && Math.round(g.page.width), h: g && Math.round(g.page.height), ratio: g && Math.round((g.page.width / g.page.height) * 1000) / 1000, want: Math.round(LETTER * 1000) / 1000 }));
+  const k = kOf(g);
+  const kr = k == null ? null : Math.round(k * 1000) / 1000;
+  ok(`${th.name} ${w}x${h} R: the page follows the stage (k = ${kr}): at k = 1, 620 wide and capped to the stage; above 1, letter-proportioned and the largest that fits (within ${FIT_SLACK}px)`, rPred(g),
+    J({ k: kr, page: g && { w: Math.round(g.page.width), h: Math.round(g.page.height) }, ratio: g && Math.round((g.page.width / g.page.height) * 1000) / 1000, want: Math.round(LETTER * 1000) / 1000,
+      stageH: g && g.stage && Math.round(g.stage.height), slack: g && g.stage && Math.round(g.stage.height - g.page.height), inStage: inStage(g) }));
   const lens = fullLineLengths(lines || []);
   ok(`${th.name} ${w}x${h} C: at the default, the median full line holds ${CPL_MIN}-${CPL_MAX} characters (~75)`, cPred(lines), J({ median: median(lens), lines: lens.length, sample: lens.slice(0, 8) }));
-  ok(`${th.name} ${w}x${h} F: the editor's type is 12 pt in page units (${FONT_PX}px x the page scale ${k})`, !!g && Math.abs(g.fontPx - FONT_PX * k) < 0.25, J({ fontPx: g && g.fontPx, want: FONT_PX * k }));
+  ok(`${th.name} ${w}x${h} F: the editor's type is 12 pt in page units (${FONT_PX}px x k, within 1%)`, !!g && k != null && Math.abs(g.fontPx / (FONT_PX * k) - 1) <= 0.01, J({ fontPx: g && g.fontPx, want: k && Math.round(FONT_PX * k * 100) / 100 }));
+
+  // K + N: open BOTH panels - the page neither moves nor rescales (the scale comes from the stage), and it sits fully between them
+  const panels = async () => app.evalJs(`(() => { const r = (s) => { const el = document.querySelector(s); if (!el) return null; const b = el.getBoundingClientRect(); return b.width ? { left: b.left, right: b.right } : null; };
+    return { sliver: r('.wz-sliver-panel'), tutor: r('.wz-tutor-panel'), sliverOpen: document.querySelector('.wz-sliver')?.getAttribute('data-open'), tutorOpen: document.querySelector('.wz-tutor-panel')?.getAttribute('data-open') }; })()`);
+  if ((await attr(app, '.wz-sliver', 'data-open')) !== 'true') { const gr = await rectOf(app, '.wz-sliver-grip'); if (gr) { await click(app, gr.x, gr.y); await sleep(600); } }
+  await openTutor(app); await sleep(300);
+  const pp = await panels(); const gk = await app.evalJs('window.__psGeom()');
+  const bothOpen = !!pp && pp.sliverOpen === 'true' && pp.tutorOpen === 'true' && !!pp.sliver && !!pp.tutor;
+  ok(`${th.name} ${w}x${h} K/N (premise): both panels are OPEN`, bothOpen, J(pp));
+  const kPred = (a, b) => !!a && !!b && ['left', 'top', 'width', 'height'].every((q) => Math.abs(a.page[q] - b.page[q]) <= 0.5);
+  if (bothOpen) {
+    ok(`${th.name} ${w}x${h} K: opening both panels never moves or rescales the page`, kPred(g, gk), J({ closed: g && g.page, open: gk && gk.page }));
+    ok(`${th.name} ${w}x${h} N: with both panels open, the page sits fully between them`, !!gk && pp.sliver.right <= gk.page.left + 0.5 && pp.tutor.left >= gk.page.right - 0.5,
+      J({ sliverRight: Math.round(pp.sliver.right), pageLeft: gk && Math.round(gk.page.left), pageRight: gk && Math.round(gk.page.right), tutorLeft: Math.round(pp.tutor.left) }));
+    if (w === 1366) {
+      // MK: the page rescaled by an open panel (a :has() rule keyed on the Tutor's open state) - K must fail
+      await app.evalJs(`window.__psStyle('ps-mk', ':root:has(.wz-tutor-panel[data-open="true"]) .desk-frame-stage .mode-page { transform:scale(.9) !important; }')`); await sleep(300);
+      const gmk = await app.evalJs('window.__psGeom()');
+      await app.evalJs("window.__psStyle('ps-mk', null)"); await sleep(200);
+      ok(`${th.name} MK (mutant): with the page rescaled while the Tutor is open (LANDED: ${gk && Math.round(gk.page.width)} -> ${gmk && Math.round(gmk.page.width)}), K fails`,
+        !!gmk && !!gk && Math.abs(gmk.page.width - gk.page.width) >= 20 && !kPred(g, gmk), J(gmk && gmk.page));
+    }
+  }
+  // close both again (the zoom case opens what it needs itself)
+  if ((await attr(app, '.wz-tutor-panel', 'data-open')) === 'true') { const gr = await rectOf(app, '.wz-tutor-grip'); if (gr) { await click(app, gr.x, gr.y); await sleep(500); } }
+  if ((await attr(app, '.wz-sliver', 'data-open')) === 'true') { const gr = await rectOf(app, '.wz-sliver-grip'); if (gr) { await click(app, gr.x, gr.y); await sleep(500); } }
   if (w === 1366) {
     // MR: the page forced to today's 760px - R must fail
     await app.evalJs(`window.__psStyle('ps-mr', '.desk-frame-stage .mode-pagecol, .desk-frame-stage .mode-page { width:760px !important; max-width:none !important; }')`); await sleep(300);
@@ -245,7 +286,11 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
   const g1 = await app.evalJs('window.__psGeom()');
   const l1 = await app.evalJs('window.__psLines()');
   const scale = g0 && g1 ? Math.round((g1.page.width / g0.page.width) * 1000) / 1000 : null;
-  ok(`${tag} Z: the page paints ${ZOOM}x its normal width (within ${ZOOM_TOL})`, scale != null && Math.abs(scale - ZOOM) <= ZOOM_TOL, J({ normal: g0 && Math.round(g0.page.width), zoom: g1 && Math.round(g1.page.width), scale }));
+  // ~1.6x from the base scale, capped to the largest that fits the stage's width with the panels tucked; never overflowing the stage
+  const fitsW = !!g1 && !!g1.stage && g1.page.left >= g1.stage.left - 0.5 && g1.page.right <= g1.stage.right + 0.5;
+  const zPred = scale != null && fitsW && (Math.abs(scale - ZOOM) <= ZOOM_TOL || (scale < ZOOM && g1.stage.width - g1.page.width <= ZOOM_FIT_SLACK));
+  ok(`${tag} Z: the page paints ~${ZOOM}x its normal width (within ${ZOOM_TOL}), or the largest that fits the stage's width, and never overflows the stage`, zPred,
+    J({ normal: g0 && Math.round(g0.page.width), zoom: g1 && Math.round(g1.page.width), scale, stageW: g1 && g1.stage && Math.round(g1.stage.width), fitsW }));
   ok(`${tag} B: the line breaks are IDENTICAL in both views - scale, never reflow`, sameStarts(l0, l1),
     J({ normal: (l0 || []).length, zoom: (l1 || []).length, firstDiff: (l0 || []).findIndex((l, i) => !l1 || !l1[i] || l1[i].start !== l.start) }));
   if (kind === 'fw') { await pressTypewriter(app); return; }
@@ -318,7 +363,7 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
 };
 
 await withHarness(async (app) => {
-  await app.emulateDpr(1, 1366, 1120);
+  await app.emulateDpr(1, 1366, 768);
   await app.goto('/');
   await app.evalJs("localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-splash-hold','50'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4');");
   await app.reload();
@@ -347,20 +392,17 @@ await withHarness(async (app) => {
     const applied = await app.evalJs("document.documentElement.getAttribute('data-theme')");
     ok(`${th.name} (premise): the theme is applied (data-theme=${applied})`, applied === th.id, applied);
 
-    let tall = null; const startsAt = {};
-    for (const [w, h] of NORMAL_VIEWS) { const r = await normalCase(app, th, w, h); if (w === 1366) tall = r && r.g; startsAt[w] = r && r.lines; }
-    // L: a wider screen grows the page (ruling c) in SHAPE only - the same line breaks as at 1366
-    ok(`${th.name} L: the page at 1920 breaks its lines exactly where it does at 1366 (it grows, it never reflows)`, sameStarts(startsAt[1366], startsAt[1920]),
-      J({ at1366: (startsAt[1366] || []).length, at1920: (startsAt[1920] || []).length, firstDiff: (startsAt[1366] || []).findIndex((l, i) => !startsAt[1920] || !startsAt[1920][i] || startsAt[1920][i].start !== l.start) }));
-    // S: a short screen keeps the page's width and fits the stage
-    await app.emulateDpr(1, 1366, 768);
-    if (await openPage(app, pid(th.id, 'draft'))) {
-      const g = await app.evalJs('window.__psGeom()');
-      ok(`${th.name} 1366x768 S: a short screen keeps the 1366x1120 page width and the page fits the stage`,
-        !!g && !!tall && Math.abs(g.page.width - tall.page.width) <= 1 && !!g.stage && g.page.bottom <= g.stage.bottom + 1, J({ short: g && g.page, tall: tall && tall.page, stage: g && g.stage }));
-    } else ok(`${th.name} 1366x768 S fixture: the Draft page opened`, false, '');
+    const startsAt = {};
+    for (const [w, h] of SIZES) { const r = await normalCase(app, th, w, h); startsAt[w] = r && r.lines; }
+    // L: a bigger screen grows the page (ruling c) in SHAPE only - every size breaks its lines where 1366x768 does
+    const base = startsAt[1366];
+    for (const [w, h] of SIZES.slice(1)) {
+      const at = startsAt[w];
+      ok(`${th.name} ${w}x${h} L: the page breaks its lines exactly where it does at 1366x768 (it grows, it never reflows)`, sameStarts(base, at),
+        J({ at1366: (base || []).length, here: (at || []).length, firstDiff: (base || []).findIndex((l, i) => !at || !at[i] || at[i].start !== l.start) }));
+    }
 
-    for (const [w, h] of ZOOM_VIEWS) await zoomCase(app, th, w, h, { glide: w === 1366, mutants: w === 1366 });
+    for (const [w, h] of SIZES) await zoomCase(app, th, w, h, { glide: w === 1366, mutants: w === 1366 });
     if (th.id === 'plateau') await zoomCase(app, th, 1366, 768, { kind: 'fw' });
   }
 
