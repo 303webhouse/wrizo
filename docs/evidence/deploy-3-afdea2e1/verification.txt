@@ -1,0 +1,12 @@
+DEPLOY #3 - deployment afdea2e1-efa4-4086-a235-a5fb65902abc - SUCCESS - 2026-10-23 07:42:51 -06:00 (upload 13:42:37Z; the CLI's log stream failed after the upload - "Failed to stream build logs" - the deployment itself built and went live)
+Tree: origin/main @ 0a8d40c1 (flux-v2 @ 838c1b9b merged on e2b2c872's lineage), the primary checkout fast-forwarded from e2b2c872; clean at upload. The merged product equals the tested tree 0df6b1b7 (git diff of apps: empty). Local build: index-BnB3RyzR.js, 795740 bytes, md5 2ea998fce5e28928bb9842532410e1ef.
+Verification (Oct 23 ~13:46Z):
+  healthz: 200 {"ok":true,"build":"index-BnB3RyzR"}
+  auth/me: 401
+  signup-status: {"open":false}
+  served bundle index-BnB3RyzR.js: 795740 bytes, md5 2ea998fce5e28928bb9842532410e1ef  ==  the local build
+  smoke-login: SMOKE: PASS (6/6)
+  GET /api/theme-unlock as the smoke account: 200, wordsWritten a number, 1 theme opened, 5 thresholds
+  service log: container started and listening, 0 error lines
+  live Flux screenshots of the PRODUCTION origin (confirmed: location.origin is the production site, the page loads assets/index-BnB3RyzR.js), a local-first anonymous profile with a fixture seeded in the browser only (nothing signed in, nothing written to production): live-flux-page-dark.jpg, live-flux-board-dark.jpg (1366x768, looked at)
+Previous deployment bbf9c6c9 (deploy #2): REMOVED by Railway after this one went live.
