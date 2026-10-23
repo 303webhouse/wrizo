@@ -250,7 +250,8 @@ function cssChecks(css) {
   // RL1 - the rail's hover and active states are electric blue (#00C2FF = --line-active), never brass or a brown tile
   const rl = rules(css).filter((x) => /\[data-theme='flux'\] \.(wz-strip-item|desk-rail-item)(:hover|\.active)/.test(x.sel));
   const rlHover = rl.find((x) => x.sel.includes(".wz-strip-item:hover")), rlActive = rl.find((x) => x.sel.includes(".desk-rail-item.active"));
-  keep('RL1', !!rlHover && /color:\s*var\(--line-active\)/.test(rlHover.body) && /rgba\(0,\s*194,\s*255/.test(rlHover.body) && !!rlActive && /color:\s*var\(--line-active\)/.test(rlActive.body) && /border-left-color:\s*var\(--line-active\)/.test(rlActive.body) && T('line-active') === '#00C2FF', rlActive ? rlActive.body.slice(0, 100) : 'no Flux rail state rule');
+  const ownColor = /(?:^|[\s;{])color:\s*var\(--line-active\)/;   // the text colour itself - not the tail of border-left-color
+  keep('RL1', !!rlHover && ownColor.test(rlHover.body) && /rgba\(0,\s*194,\s*255/.test(rlHover.body) && !!rlActive && ownColor.test(rlActive.body) && /border-left-color:\s*var\(--line-active\)/.test(rlActive.body) && T('line-active') === '#00C2FF', rlActive ? rlActive.body.slice(0, 100) : 'no Flux rail state rule');
   // BR1 - Flux shows its own WRIZO mark (orange, top left); Arbor's PNG mask is switched off under Flux
   const brand = rules(css).find((x) => x.sel === "[data-theme='flux'] .brand-mark");
   keep('BR1', !!brand && /-webkit-mask:\s*none/.test(brand.body) && /mask:\s*none/.test(brand.body) && /color:\s*var\(--orange\)/.test(brand.body) && /top:\s*\d+px/.test(brand.body) && /left:\s*\d+px/.test(brand.body)
