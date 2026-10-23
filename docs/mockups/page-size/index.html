@@ -115,16 +115,11 @@
     var page = document.getElementById('page');
     var padX = (pageW - textW) / 2;
     var paras = [
-      'Morning took the heat out of the stones before we started.',
-      'We counted the jars and found one of them missing.',
-      'Someone had written a name and then crossed it out.',
-      'The path bent once, and after that it ran straight.',
       LINE,
       'Whatever is worth carrying is already with you. The rest the wind can have.',
       'We left the map on the stone and walked until the light went thin.',
       'The bucket came up colder than the morning, and nobody spoke.'
     ];
-    if (view !== 'typewriter') paras = [LINE, paras[5], paras[6], paras[7]];
     var caret = '<span class="caret"></span>';
     var html = paras.map(function (p, i) {
       return '<p>' + p + (i === paras.length - 1 && root.dataset.glide !== 'mid' ? caret : '') + '</p>';
