@@ -200,8 +200,8 @@ export async function part2({ ok, sleepMs }) {
       await click('.board-canvas .board-text');
       const knobUp = await waitSoft("!!document.querySelector('.board-graft-knob')", { label: 'graft knob', timeout: 5000 });
       const kn = knobUp ? await q(`(() => { const k = document.querySelector('.board-graft-knob'); const g = k.querySelector('svg[data-theme-icon="input"]'); const r = g ? g.getBoundingClientRect() : null; const cs = getComputedStyle(k);
-        return { glyph: !!g, w: r ? Math.round(r.width) : 0, h: r ? Math.round(r.height) : 0, border: cs.borderTopColor, color: cs.color }; })()`) : null;
-      ok('F18 the selected card\'s knob wears the INPUT glyph (12 x 12, through ThemeIcon) in the choice colour on a square glass knob', !!kn && kn.glyph && kn.w === 12 && kn.h === 12 && kn.border === 'rgb(0, 194, 255)' && kn.color === 'rgb(0, 194, 255)', JSON.stringify(kn));
+        return { glyph: !!g, w: r ? Math.round(r.width) : 0, h: r ? Math.round(r.height) : 0, box: Math.round(k.getBoundingClientRect().width), border: cs.borderTopColor, color: cs.color }; })()`) : null;
+      ok('F18 the selected card\'s knob wears the INPUT glyph (16 x 16 in a 22 px knob, through ThemeIcon) in the choice colour on a square glass knob', !!kn && kn.glyph && kn.w === 16 && kn.h === 16 && kn.box >= 20 && kn.border === 'rgb(0, 194, 255)' && kn.color === 'rgb(0, 194, 255)', JSON.stringify(kn));
       const hdl = await q("(() => { const h = document.querySelector('.board-canvas .board-handle'); return h ? getComputedStyle(h).backgroundColor : null; })()");
       ok('F18 the selected card\'s resize / connect corner is the choice colour (cyan), not brass', hdl === 'rgb(0, 194, 255)', String(hdl));
       const bx = await q(`(() => { const c = document.querySelector('.board-canvas .flux-card-coord'); const hint = document.querySelector('.flux-board-frame .flux-readout-hint'); return { coord: c ? c.textContent : null, hint: hint ? hint.textContent : null }; })()`);
@@ -254,7 +254,8 @@ export async function part2({ ok, sleepMs }) {
       // ---- F19: the arrival wears Flux's own WRIZO wordmark, never Arbor's PNG; F20: the card tokens are glass in BOTH tones (a pop-up and the deck wizard read them) ----------------------------------------------
       await fresh();
       const arr = await q(`(() => { const l = document.querySelector('.wz-arrival .wz-logo'); const m = document.querySelector('.wz-arrival .wz-mark'); const imgs = [...document.querySelectorAll('img')].filter((i) => /wrizo-logo|wrizo-sketch/.test(i.getAttribute('src') || '') && i.getBoundingClientRect().width > 0).length;
-        return { logo: l ? l.tagName + ':' + l.textContent : null, mark: m ? m.tagName + ':' + m.textContent : null, imgs }; })()`);
+        const w = document.querySelector('.wz-arrival-write'); return { logo: l ? l.tagName + ':' + l.textContent : null, mark: m ? m.tagName + ':' + m.textContent : null, imgs, write: w ? [getComputedStyle(w).color, getComputedStyle(w).borderTopColor] : null }; })()`);
+      ok('F19 the arrival\'s Write door is the choice colour (cyan), not brass', !!arr && !!arr.write && arr.write[0] === 'rgb(0, 194, 255)' && arr.write[1] === 'rgb(0, 194, 255)', JSON.stringify(arr && arr.write));
       ok('F19 the arrival\'s logo and corner mark are Flux\'s WRIZO wordmark (text), and no Arbor wrizo PNG is drawn', !!arr && arr.logo === 'SPAN:WRIZO' && arr.mark === 'SPAN:WRIZO' && arr.imgs === 0, JSON.stringify(arr));
       for (const pg of ['dark', 'light']) {
         await q(`window.wrizoThemePrefs.set({ page: '${pg}' })`); await sleep(300);
@@ -271,6 +272,9 @@ export async function part2({ ok, sleepMs }) {
       ok('F9 in light mode the page is light and the chrome stays dark', lp !== null && lp > 0.7 && (lr === null || lr < 0.1), JSON.stringify(lm));
       const cr = lp !== null && lro !== null ? (Math.max(lp, lro) + 0.05) / (Math.min(lp, lro) + 0.05) : 0;
       ok(`F9 the light page's readout text reads at >= 4.5:1 against the page (measured ${cr.toFixed(2)}:1)`, cr >= 4.5, cr.toFixed(2));
+      // the vignette (a fixed inset shadow over the viewport) is BEHIND the content under Flux, so the empty light page carries no grey band at its top or bottom; and the lamp/room is blue
+      const vgn = await q(`(() => { const v = getComputedStyle(document.body, '::after'); const g = getComputedStyle(document.documentElement).getPropertyValue('--lamp-glow'); const m = getComputedStyle(document.documentElement).getPropertyValue('--chrome-surface').trim(); return { z: v.zIndex, lamp: g.slice(0, 60), panel: m }; })()`);
+      ok('F9 [light] the vignette sits behind the page (z-index -1): no grey band at the empty light page\'s top or bottom', !!vgn && vgn.z === '-1', JSON.stringify(vgn));
 
       // ---- F10: Arbor is untouched ---------------------------------------------------------------------------------------------------------------------------------------------
       await fresh({ theme: 'plateau', page: null }); await seed(); await open('fx-m2');

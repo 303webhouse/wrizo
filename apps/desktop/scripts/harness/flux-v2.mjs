@@ -212,7 +212,7 @@ function pinChecks(rdT) {
 const TXT_MUT = [
   { name: 'the chrome engine ignores the theme again', file: 'components/useChromeDissolve.ts', find: 'setFadeDur(fadeOutSeconds(theme, FADE_OUT_S));', to: 'setFadeDur(FADE_OUT_S);', red: ['FD1'] },
   { name: 'the arrival draws Arbor\'s PNG under Flux again', file: 'components/Arrival.tsx', find: '<WrizoMark className="wz-logo" alt="Wrizo" />', to: '<img className="wz-logo" src="/brand/wrizo-logo.png" alt="Wrizo" />', red: ['WM1'] },
-  { name: 'the knob loses its INPUT glyph', file: 'components/BoardEditor.tsx', find: '<ThemeIcon id="input" fallback={null} size={12} />', to: '', red: ['KN1'] },
+  { name: 'the knob loses its INPUT glyph', file: 'components/BoardEditor.tsx', find: '<ThemeIcon id="input" fallback={null} size={16} />', to: '', red: ['KN1'] },
   { name: 'the card loses its X / Y', file: 'components/BoardEditor.tsx', find: '<FluxCardCoord x={box.x} y={box.y} />', to: '', red: ['CO1'] },
 ];
 const pinBase = pinChecks(readSrc);
@@ -232,10 +232,14 @@ const CSS_MUT = [
   { name: 'Arbor olive returns as the Flux dark door', edit: (c) => c.replace('--accent-door: #57D0F5;', '--accent-door: #A9B56A;'), red: ['TK5'] },
   { name: 'the rail\'s active state falls back to brass', edit: (c) => c.replace("[data-theme='flux'] .desk-rail-item.active{ color:var(--line-active);", "[data-theme='flux'] .desk-rail-item.active{ color:var(--brass);"), red: ['RL1'] },
   { name: 'the board handle goes back to brass under Flux', edit: (c) => c.replace("[data-theme='flux'] .board-handle{ background:var(--choice); }", "[data-theme='flux'] .board-handle{ background:var(--brass); }"), red: ['HD1'] },
-  { name: 'the card goes back to cream stock in the Flux root', edit: (c) => c.replace('  --card-stock: #0E2C32;', '  --card-stock: #FBF6EA;'), red: ['CD1'] },
-  { name: 'an Arbor brown surface returns to the Flux root', edit: (c) => c.replace('--ink-800: #0E2C32;', '--ink-800: #2A241E;'), red: ['TK4'] },
+  { name: 'the card goes back to cream stock in the Flux root', edit: (c) => c.replace('  --card-stock: #10232F;', '  --card-stock: #FBF6EA;'), red: ['CD1'] },
+  { name: 'the arrival door goes back to brass under Flux', edit: (c) => c.replace("[data-theme='flux'] .wz-btn.wz-primary{ color:var(--choice);", "[data-theme='flux'] .wz-btn.wz-primary{ color:var(--brass);"), red: ['AR1'] },
+  { name: 'the room goes back to the teal panel', edit: (c) => c.replace('  --ink-900: #101C24;', '  --ink-900: #091E24;'), red: ['TK6'] },
+  { name: 'a green-grey text tier returns', edit: (c) => c.replace('  --text-mid: #9AD7EA;', '  --text-mid: #8FB4AC;'), red: ['TK6'] },
+  { name: 'the vignette goes back over the page', edit: (c) => c.replace("[data-theme='flux'] body::after{ z-index:-1; }", "[data-theme='flux'] body::after{ z-index:2; }"), red: ['VG1'] },
+  { name: 'an Arbor brown surface returns to the Flux root', edit: (c) => c.replace('--ink-800: #142634;', '--ink-800: #2A241E;'), red: ['TK4'] },
   { name: 'Arbor\'s PNG mark paints again under Flux', edit: (c) => c.replace('-webkit-mask:none; mask:none; background:none;', 'background:var(--brass);'), red: ['BR1'] },
-  { name: 'a board card goes back to cream stock', edit: (c) => c.replace('--card-stock:#0E2C32; --card-hairline:rgba(0, 194, 255, .55);', '--card-stock:#FBF6EA; --card-hairline:rgba(0, 194, 255, .55);'), red: ['BD1'] },
+  { name: 'a board card goes back to cream stock', edit: (c) => c.replace('--card-stock:#10232F; --card-hairline:rgba(0, 194, 255, .55);', '--card-stock:#FBF6EA; --card-hairline:rgba(0, 194, 255, .55);'), red: ['BD1'] },
   { name: 'the acquire loses its still state under reduced motion', edit: (c) => c.replace(/@media \(prefers-reduced-motion:\s*reduce\)\s*\{\s*\.flux-brackets[^}]*\}\s*\}?/, ''), red: ['RC2'] },
 ];
 const SRC_MUT = [
@@ -269,7 +273,7 @@ function cssChecks(css) {
   const keep = (k, pass, detail = '') => { r[k] = { pass: !!pass, detail }; };
   const B = fluxBlocks(css);
   const T = (n) => tok(B.root, n);
-  keep('TK1', T('ink-950') === '#020c10' && /rgba\(\s*9\s*,\s*30\s*,\s*36\s*,\s*\.9\s*\)/.test(T('chrome-surface') || '') && T('ink-border') === '#1D4A52' && T('line-active') === '#00C2FF' && T('signal-live') === '#A6FF3D' && tok(B.root, 'text-accent') === '#57D0F5',
+  keep('TK1', T('ink-950') === '#020c10' && T('chrome-surface') === '#101C24' && T('ink-border') === '#1D4A52' && T('line-active') === '#00C2FF' && T('signal-live') === '#A6FF3D' && tok(B.root, 'text-accent') === '#57D0F5',
     JSON.stringify({ ground: T('ink-950'), panel: T('chrome-surface'), line: T('ink-border'), active: T('line-active'), lime: T('signal-live'), accent: tok(B.root, 'text-accent') }));
   keep('TK2', T('choice') === '#00C2FF' && T('brass') === null && /--choice:\s*var\(--brass\);/.test(css) && /--brass:\s*#ff9800;/.test(css) && T('orange') === 'var(--brass)', `Flux --choice = ${T('choice')}, Flux overrides --brass: ${T('brass') !== null}, --orange = ${T('orange')}`);
   // SEL - the selection selectors point at --choice (never at the locked brass): a chosen / pressed / selected state is cyan under Flux, the same brass in Arbor
@@ -291,6 +295,21 @@ function cssChecks(css) {
   const rlHover = rl.find((x) => x.sel.includes("wz-strip-item:hover")), rlActive = rl.find((x) => x.sel.includes(".desk-rail-item.active"));
   const ownColor = /(?:^|[\s;{])color:\s*var\(--line-active\)/;   // the text colour itself - not the tail of border-left-color
   keep('RL1', !!rlHover && ownColor.test(rlHover.body) && /rgba\(0,\s*194,\s*255/.test(rlHover.body) && !!rlActive && ownColor.test(rlActive.body) && /border-left-color:\s*var\(--line-active\)/.test(rlActive.body) && T('line-active') === '#00C2FF', rlActive ? rlActive.body.slice(0, 100) : 'no Flux rail state rule');
+  // TK6 - the room reads BLUE (Nick's live screenshot: teal/green; the Voight mockup's tokens win): every surface has blue above green and a hue of 200 degrees or more (the mandated ground #020c10 is 197 - at least 195),
+  // and the green-grey text tiers (#8FB4AC / #6E958D) are gone from every Flux block
+  const hueOf = (h) => { const [r, g, b] = hex(h).map((v) => v / 255); const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; if (!d) return 0; const k = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return (k * 60 + 360) % 360; };
+  const isHex = (h) => !!h && /^#[0-9a-f]{6}$/i.test(h);
+  const surfaces = [['ground', T('ink-950'), 195], ['panel', T('chrome-surface'), 200], ['--ink-900', T('ink-900'), 200], ['--ink-800', T('ink-800'), 200], ['dark page', tok(B.dark, 'paper'), 200], ['card', T('card-stock'), 200]];
+  const notBlue = surfaces.filter(([, h, min]) => !isHex(h) || !(hex(h)[2] > hex(h)[1] && hueOf(h) >= min)).map(([n, h]) => n + ' ' + h + (isHex(h) ? ' (hue ' + Math.round(hueOf(h)) + ')' : ''));
+  const fluxText = B.root + B.dark + B.light + rules(css).filter((x) => /data-theme='flux'/.test(x.sel)).map((x) => x.body).join('');
+  const greyGreen = /#8FB4AC|#6E958D/i.test(fluxText);
+  keep('TK6', notBlue.length === 0 && !greyGreen && T('text-hi') === '#E7F4F1' && T('text-mid') === '#9AD7EA' && T('text-low') === '#7EB4C4', notBlue.join(', ') || (greyGreen ? 'a green-grey tier is still in a Flux block' : 'room hues: ' + surfaces.map(([n, h]) => n + ' ' + Math.round(hueOf(h))).join(', ')));
+  // VG1 - the vignette (a fixed inset shadow over the whole viewport) sits BEHIND the content under Flux: it shades the room, not the page (the empty light page showed grey bands top and bottom)
+  const vg = rules(css).find((x) => x.sel === "[data-theme='flux'] body::after");
+  keep('VG1', !!vg && /z-index:\s*-1/.test(vg.body), vg ? vg.body : 'no Flux body::after rule');
+  // AR1 - the arrival's Write door is the choice colour under Flux, never brass
+  const ar = rules(css).find((x) => x.sel === "[data-theme='flux'] .wz-btn.wz-primary");
+  keep('AR1', !!ar && /(?:^|[\s;{])color:\s*var\(--choice\)/.test(ar.body) && /border-color:\s*var\(--choice\)/.test(ar.body), ar ? ar.body : 'no Flux .wz-primary rule');
   // BR1 - Flux shows its own WRIZO mark (orange, top left); Arbor's PNG mask is switched off under Flux
   const brand = rules(css).find((x) => x.sel === "[data-theme='flux'] .brand-mark");
   keep('BR1', !!brand && /-webkit-mask:\s*none/.test(brand.body) && /mask:\s*none/.test(brand.body) && /color:\s*var\(--orange\)/.test(brand.body) && /top:\s*\d+px/.test(brand.body) && /left:\s*\d+px/.test(brand.body)

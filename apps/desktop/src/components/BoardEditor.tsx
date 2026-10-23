@@ -3061,7 +3061,7 @@ export function BoardEditor({ id }: { id: string }) {
                   aria-label={t('graftKnobTip')}
                 >
                   {/* the knob's glyph: the theme's INPUT icon through the shared seam (Flux: the arrow into a socket; a theme with no set draws the plain dot) */}
-                  <ThemeIcon id="input" fallback={null} size={12} />
+                  <ThemeIcon id="input" fallback={null} size={16} />
                 </div>
               )}
               {!isSystemBoard && (box.kind === 'text' || box.kind === 'ink' || box.kind === 'page-pin') && <FluxCardCoord x={box.x} y={box.y} />}
