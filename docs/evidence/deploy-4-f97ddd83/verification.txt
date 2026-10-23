@@ -1,0 +1,11 @@
+DEPLOY #4 - deployment f97ddd83-533d-41fa-bfd2-545d9965f609 - SUCCESS - 2026-10-23 11:15:54 -06:00 (upload 17:15:53Z, railway up exit 0 at 17:20:51Z)
+Tree: origin/main @ d3220972 (fix/blank-page-click @ d576a4d7 merged onto the main that already carried flux-v2); the primary checkout fast-forwarded from 0a8d40c1; clean at upload. The merged product equals the tested tree b7f32eb1 (git diff of apps: empty). Local build: index-BjVfelU6.js, 797297 bytes, md5 c0516b301fe2e0a698cfd0c3aa48585e - the same name and size as the tested tree's bundle.
+Verification (Oct 23 ~17:22Z):
+  healthz: 200 {"ok":true,"build":"index-BjVfelU6"}
+  auth/me: 401
+  signup-status: {"open":false}
+  served bundle index-BjVfelU6.js: 797297 bytes, md5 c0516b301fe2e0a698cfd0c3aa48585e  ==  the local build
+  smoke-login: SMOKE: PASS (6/6)
+  GET /api/theme-unlock as the smoke account: 200, wordsWritten a number, 1 theme opened, 5 thresholds
+  service log: container started and listening, 0 error lines
+Previous deployment afdea2e1 (deploy #3): REMOVING after this one went live.
