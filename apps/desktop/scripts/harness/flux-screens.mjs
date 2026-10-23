@@ -55,13 +55,13 @@ await withHarness(async (app) => {
     await q("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(900);
     await q("document.querySelector('#wz-tutor-tab-links')?.click()"); await sleep(600);
     const added = await click('.wz-graft-add'); await sleep(600);
-    ok(`[${tone}] inputs: the Inputs tab is open and its picker is showing`, added && !!(await q("document.querySelector('.wz-graft-picker')")), String(added));
+    ok(`[${tone}] inputs: the Inputs tab is open and its picker is showing`, added && (await q("!!document.querySelector('.wz-graft-picker')")), String(added));
     await shot('inputs', tone);
     await q("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))");
     // board: a card selected (its knob), the hint and X · Y
     await open('fx-board', '.board-canvas .board-text');
     await click('.board-canvas .board-text'); await sleep(500);
-    ok(`[${tone}] board: a card is selected with its knob, the hint and a coordinate on screen`, !!(await q("document.querySelector('.board-graft-knob svg') && document.querySelector('.flux-board-frame .flux-readout-hint') && document.querySelector('.flux-card-coord')")), '');
+    ok(`[${tone}] board: a card is selected with its knob, the hint and a coordinate on screen`, (await q("!!(document.querySelector('.board-graft-knob svg') && document.querySelector('.flux-board-frame .flux-readout-hint') && document.querySelector('.flux-card-coord'))")), '');
     await shot('board', tone);
     // card pop-up: a real double-click on a hand-typed card
     const cp = await point('.board-canvas .board-text');
