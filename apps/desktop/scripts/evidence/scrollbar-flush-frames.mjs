@@ -53,7 +53,7 @@ await withHarness(async (app) => {
     // ---- the page, three margins
     await app.emulateDpr(1, 1400, 900);
     await app.goto('/');
-    await app.evalJs(`localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-theme', ${JSON.stringify(combo.theme)}); localStorage.setItem('wrizo-theme-prefs', ${prefs});`);
+    await app.evalJs(`localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-splash-hold','50'); localStorage.setItem('wrizo-theme', ${JSON.stringify(combo.theme)}); localStorage.setItem('wrizo-theme-prefs', ${prefs});`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: `Desk ${combo.id}` });
     await app.evalJs(`window.wrizoCreateJournalPage({ id: 'sbfr-${combo.id}', text: ${JSON.stringify(LONG_TEXT)}, createdAt: new Date().toISOString(), origin: null, source: 'page' })`);
@@ -61,6 +61,7 @@ await withHarness(async (app) => {
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after seed' });
     await app.evalJs(`location.hash = '#/page/sbfr-${combo.id}'`);
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: `page ${combo.id}` });
+    await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone (page)' });
     await sleep(500);
     for (const margin of MARGINS) {
       await setMargin(app, margin);
@@ -74,22 +75,34 @@ await withHarness(async (app) => {
     // ---- the board canvas (a tall card and one past the right edge, so the wrap scrolls both ways)
     await app.emulateDpr(1, 1400, 800);
     await app.goto('/');
-    await app.evalJs(`localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-theme', ${JSON.stringify(combo.theme)}); localStorage.setItem('wrizo-theme-prefs', ${prefs});`);
+    await app.evalJs(`localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-splash-hold','50'); localStorage.setItem('wrizo-theme', ${JSON.stringify(combo.theme)}); localStorage.setItem('wrizo-theme-prefs', ${prefs});`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: `Desk board ${combo.id}` });
     await app.evalJs(`window.wrizoCreateJournalPage({ id: 'sbfr-board-${combo.id}', text: 'Board', pageType: 'board', createdAt: new Date().toISOString(), origin: null,
-      boxes: [{ id: 'sbfr-a', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 3, z: 1, text: 'The harbour scene\\nWhere Mara first sees the ship.' }, { id: 'sbfr-b', kind: 'text', x: 0.55, y: 0.1, w: 0.3, h: 0.25, z: 2, text: 'The letter\\nWhat the captain left unsaid.' }] })`);
+      boxes: [{ id: 'sbfr-a', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 3, z: 1, text: 'The harbour scene\\nWhere Mara first sees the ship.' }, { id: 'sbfr-b', kind: 'text', x: 0.55, y: 0.1, w: 0.3, h: 0.25, z: 2, text: 'The letter\\nWhat the captain left unsaid.' }, { id: 'sbfr-c', kind: 'text', x: 0.9, y: 0.45, w: 0.3, h: 0.2, z: 3, text: 'A card past the right edge - the bottom bar.' }] })`);
     await app.reload();
     await app.evalJs(`location.hash = '#/page/sbfr-board-${combo.id}'`);
     await app.waitFor("!!document.querySelector('.board-canvas-wrap')", { label: `board ${combo.id}` });
+    await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone (board)' });
     await sleep(600);
     const board = await app.evalJs(`(() => { const w = document.querySelector('.board-canvas-wrap'); const cs = getComputedStyle(w);
-      return { vBar: w.offsetWidth - w.clientWidth, hBar: w.offsetHeight - w.clientHeight, scrollbarWidth: cs.scrollbarWidth, scrollbarColor: cs.scrollbarColor,
+      return { vBar: w.offsetWidth - w.clientWidth - (parseFloat(cs.borderLeftWidth) || 0) - (parseFloat(cs.borderRightWidth) || 0),
+        hBar: w.offsetHeight - w.clientHeight - (parseFloat(cs.borderTopWidth) || 0) - (parseFloat(cs.borderBottomWidth) || 0), scrollbarWidth: cs.scrollbarWidth, scrollbarColor: cs.scrollbarColor,
         canvasBackground: getComputedStyle(document.querySelector('.board-canvas')).backgroundColor }; })()`);
     await shot(app, combo, 'board-rest', board);
     await app.evalJs("(() => { const w = document.querySelector('.board-canvas-wrap'); w.scrollTop = Math.round((w.scrollHeight - w.clientHeight) * 0.5); })()");
     await sleep(250);
     await shot(app, combo, 'board-mid-scroll', board);
+    // A/B - a PROPOSAL, not shipped CSS: the vertical bar sits in the wrap's stable gutter beside the canvas (over the desk ground) while the
+    // horizontal bar overlays the canvas (over the paper), so one thumb colour is right for only one of them. Painting the wrap with the paper
+    // puts both on the board surface. Injected here only, for the picture.
+    await app.evalJs("(() => { const st = document.createElement('style'); st.id = 'sbfr-ab'; st.textContent = '.board-canvas-wrap{ background:var(--paper); }'; document.head.appendChild(st); })()");
+    await app.evalJs("(() => { const w = document.querySelector('.board-canvas-wrap'); w.scrollTop = 0; w.scrollLeft = 0; })()");
+    await sleep(300);
+    await shot(app, combo, 'board-rest-PROPOSAL-wrap-paper', { ...board, proposal: 'wrap background = var(--paper) (injected, not shipped)' });
+    await app.evalJs("(() => { const w = document.querySelector('.board-canvas-wrap'); w.scrollTop = Math.round((w.scrollHeight - w.clientHeight) * 0.5); w.scrollLeft = Math.round((w.scrollWidth - w.clientWidth) * 0.4); })()");
+    await sleep(250);
+    await shot(app, combo, 'board-mid-scroll-PROPOSAL-wrap-paper', { ...board, proposal: 'wrap background = var(--paper) (injected, not shipped)' });
   }
   return [];
 });

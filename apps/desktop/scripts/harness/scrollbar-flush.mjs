@@ -161,13 +161,18 @@ await withHarness(async (app) => {
       if (!w) return null;
       const cs = getComputedStyle(w);
       return { scrollbarWidthProp: cs.scrollbarWidth, scrollbarColor: cs.scrollbarColor,
-        vBar: w.offsetWidth - w.clientWidth, hBar: w.offsetHeight - w.clientHeight,
+        // the wrap carries a 1px inline border (BoardEditor.tsx), and offsetWidth - clientWidth includes it on both sides - the bar is what is LEFT
+        vBar: w.offsetWidth - w.clientWidth - (parseFloat(cs.borderLeftWidth) || 0) - (parseFloat(cs.borderRightWidth) || 0),
+        hBar: w.offsetHeight - w.clientHeight - (parseFloat(cs.borderTopWidth) || 0) - (parseFloat(cs.borderBottomWidth) || 0),
+        wrapBackground: cs.backgroundColor, canvasBackground: getComputedStyle(document.querySelector('.board-canvas')).backgroundColor,
         inkOnPaperLow: getComputedStyle(document.documentElement).getPropertyValue('--ink-on-paper-low').trim() };
     })()`);
     ok(`BOARD [${label}]: the canvas wrap's bars are THIN - scrollbar-width resolves to 'thin' and every bar that paints is 1-10px (a missing bar would be vacuous, so one must paint)`,
       !!b && b.scrollbarWidthProp === 'thin' && (b.vBar > 0 || b.hBar > 0) && b.vBar <= 10 && b.hBar <= 10 && (b.hBar === 0 || b.hBar >= 1), JSON.stringify(b));
     ok(`BOARD [${label}]: the canvas wrap's bar wears the cell's own paper-toned colour (--ink-on-paper-low), not the dark-chrome default`,
       !!b && !!b.inkOnPaperLow && b.scrollbarColor.includes(hexToRgbFragment(b.inkOnPaperLow)), JSON.stringify(b));
+    ok(`BOARD [${label}]: the bars sit on the board SURFACE - the wrap paints the same background as the canvas (the gutter beside it and the bar below it are paper, not the dark desk ground)`,
+      !!b && !!b.wrapBackground && b.wrapBackground === b.canvasBackground && b.wrapBackground !== 'rgba(0, 0, 0, 0)', JSON.stringify(b));
   }
   return checks;
 });
