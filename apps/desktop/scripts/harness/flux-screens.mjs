@@ -58,6 +58,15 @@ await withHarness(async (app) => {
     ok(`[${tone}] inputs: the Inputs tab is open and its picker is showing`, added && (await q("!!document.querySelector('.wz-graft-picker')")), String(added));
     await shot('inputs', tone);
     await q("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))");
+    // the page with both panels (the mockup's page-both-panels): the Docs pop-out on the left, the Operator drawer on the right
+    await q("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))"); await sleep(300);
+    await click('.wz-strip [data-category="page"]'); await sleep(700);
+    await q("document.querySelector('#wz-tutor-tab-tutor')?.click()"); await sleep(500);
+    ok(`[${tone}] page: the Docs pop-out is open beside the page and the Operator drawer is open`, !!(await q("!!(document.querySelector('.wz-sections') && document.querySelector('.wz-tutor-panel[data-open=\"true\"]'))")), '');
+    await shot('page', tone);
+    // an EMPTY page (the mockup's flux-light frame: a flat page, no grey bands top and bottom)
+    await app.goto('/page/new'); await waitSoft("!!document.querySelector('.forward-only-editor')", { label: 'empty page' }); await sleep(1200);
+    await shot('emptypage', tone);
     // board: a card selected (its knob), the hint and X · Y
     await open('fx-board', '.board-canvas .board-text');
     await click('.board-canvas .board-text'); await sleep(500);
