@@ -19,7 +19,7 @@ import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import os from 'node:os';
 import path from 'node:path';
-import { checkGrantAt, writeGrantAt, readProcessTable, ancestryOf } from '../box-grant.mjs';
+import { checkGrantAt, writeGrantAt, readProcessTable, ancestryOf, chooseHolder } from '../box-grant.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const GRANT_MOD = pathToFileURL(path.join(here, '..', 'box-grant.mjs')).href;
@@ -103,6 +103,34 @@ const tg = existsSync(takeFile) ? JSON.parse(readFileSync(takeFile, 'utf8')) : n
 ok('H7 box-take.mjs records its CALLER (the process that ran it) as the holder', !!tg && tg.holderPid === caller.pid, `${tg && tg.holderPid} vs ${caller.pid} :: ${takeOut.slice(0, 90)}`);
 const stranger = tg ? checkGrantAt(takeFile, 'take-test-token-20261023-xyz') : null;
 ok('H7 a stranger holding the right token is refused for that grant', !!stranger && stranger.ok === false && stranger.reason === 'not-the-holder', stranger && stranger.reason);
+
+// H9 - chooseHolder on synthetic tables: msys forks (young bash intermediates) are climbed past, the first older/non-shell ancestor is the holder
+{
+  const T0 = Date.parse('2026-10-23T12:00:00.000Z');
+  const iso = (ms) => new Date(T0 + ms).toISOString();
+  const row = (ppid, ms, name) => ({ ppid, start: iso(ms), name });
+  // node(100, self, t=10000) <- bash fork(90, t=9900) <- bash script(80, t=2000) <- terminal bash(70, t=0) <- Code(60)
+  const t1 = new Map([[100, row(90, 10000, 'node.exe')], [90, row(80, 9900, 'bash.exe')], [80, row(70, 2000, 'bash.exe')], [70, row(60, 0, 'bash.exe')], [60, row(1, 0, 'Code.exe')], [1, row(0, 0, 'System')]]);
+  const c1 = chooseHolder(t1, 100);
+  ok('H9a a young bash fork is climbed past: the holder is the older bash that ran the command', !!c1 && c1.pid === 80, JSON.stringify(c1));
+  // two young shells in a row (fork of fork)
+  const t2 = new Map([[100, row(90, 10000, 'node.exe')], [90, row(85, 9950, 'bash.exe')], [85, row(80, 9900, 'sh.exe')], [80, row(70, 100, 'bash.exe')], [70, row(1, 0, 'Code.exe')], [1, row(0, 0, 'System')]]);
+  const c2 = chooseHolder(t2, 100);
+  ok('H9b a chain of young shells is climbed past', !!c2 && c2.pid === 80, JSON.stringify(c2));
+  // a non-shell parent (PowerShell calling node directly) is the holder itself
+  const t3 = new Map([[100, row(50, 10000, 'node.exe')], [50, row(40, 9990, 'powershell.exe')], [40, row(1, 0, 'Code.exe')], [1, row(0, 0, 'System')]]);
+  const c3 = chooseHolder(t3, 100);
+  ok('H9c a non-shell parent is returned directly, however young', !!c3 && c3.pid === 50, JSON.stringify(c3));
+  // an OLD shell parent is the holder (a terminal shell that ran node by hand)
+  const t4 = new Map([[100, row(70, 600000, 'node.exe')], [70, row(60, 0, 'bash.exe')], [60, row(1, 0, 'Code.exe')], [1, row(0, 0, 'System')]]);
+  const c4 = chooseHolder(t4, 100);
+  ok('H9d an old shell parent (a terminal) is the holder: the climb does not pass it', !!c4 && c4.pid === 70, JSON.stringify(c4));
+  // two lanes' terminals are distinct holders: same shape, different terminal -> different holder
+  const t5 = new Map([[100, row(71, 600000, 'node.exe')], [71, row(60, 1000, 'bash.exe')], [60, row(1, 0, 'Code.exe')], [1, row(0, 0, 'System')]]);
+  const c5 = chooseHolder(t5, 100);
+  ok('H9e a second terminal shell is a different holder from the first', !!c5 && c5.pid === 71 && c5.pid !== c4.pid, JSON.stringify(c5));
+  ok('H9f a pid missing from the table yields no holder (refuse, not guess)', chooseHolder(t1, 999) === null);
+}
 
 // H8 - source pin: the launch path logs every attempt
 const rv = readFileSync(path.join(here, '..', 'runtime-verify.mjs'), 'utf8');

@@ -9,9 +9,14 @@
 // point; box-turn.mjs `grant` is chat 1's overwrite, this is the lane's refusal-by-default. The token is never
 // printed in full.
 import { existsSync, readFileSync } from 'node:fs';
-import { writeGrant, clearGrant, holderOfCaller, GRANT_PATH } from './box-grant.mjs';
+import { writeGrant, clearGrant, holderOfCaller, readProcessTable, GRANT_PATH } from './box-grant.mjs';
 
-const [, , cmd, a, b] = process.argv;
+// optional: --holder-pid N binds the turn to an explicit process (it must be running) instead of the climbed caller
+const argv = process.argv.slice(2);
+const hi = argv.indexOf('--holder-pid');
+const explicitPid = hi >= 0 ? Number(argv[hi + 1]) : null;
+if (hi >= 0) argv.splice(hi, 2);
+const [cmd, a, b] = argv;
 const read = () => { try { return JSON.parse(readFileSync(GRANT_PATH, 'utf8')); } catch { return { unreadable: true }; } };
 const short = (t) => (t ? String(t).slice(0, 8) + '...' : null);
 
@@ -23,7 +28,12 @@ if (cmd === 'take' && a && b) {
   }
   // The turn is BOUND to the process that called this script (the shell or runner that goes on to launch the harness): withHarness refuses a browser from any
   // other process tree even with a copied token (box-grant.mjs, "THE HOLDER"). Take the box and run the harness from the SAME shell/script.
-  const holder = holderOfCaller();
+  let holder;
+  if (explicitPid) {
+    const row = (readProcessTable() || new Map()).get(explicitPid);
+    if (!row) { console.log(`NOT TAKING: --holder-pid ${explicitPid} is not a running process`); process.exit(1); }
+    holder = { pid: explicitPid, start: row.start };
+  } else holder = holderOfCaller();
   writeGrant(a, b, holder);
   console.log(`granted to lane "${a}"${holder ? ` and bound to the calling process tree (pid ${holder.pid})` : ' - UNBOUND: the process table could not be read'} - name this turn's start and end in your report`);
   process.exit(0);

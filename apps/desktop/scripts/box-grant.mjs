@@ -59,13 +59,13 @@ export const GRANT_PATH = path.join(GRANT_DIR, 'box-turn.json');
 // its own reason - a stale grant, which chat 1 clears.
 export function readProcessTable() {
   const ps = spawnSync('powershell', ['-NoProfile', '-Command',
-    "Get-CimInstance Win32_Process | ForEach-Object { '{0}|{1}|{2}' -f $_.ProcessId, $_.ParentProcessId, $_.CreationDate.ToUniversalTime().ToString('o') }"],
+    "Get-CimInstance Win32_Process | ForEach-Object { '{0}|{1}|{2}|{3}' -f $_.ProcessId, $_.ParentProcessId, $_.CreationDate.ToUniversalTime().ToString('o'), $_.Name }"],
   { encoding: 'utf8', timeout: 20000 });
   if (ps.status !== 0 || !ps.stdout) return null;
   const table = new Map();
   for (const line of ps.stdout.split(/\r?\n/)) {
-    const [pid, ppid, start] = line.trim().split('|');
-    if (pid && /^\d+$/.test(pid)) table.set(Number(pid), { ppid: Number(ppid), start: start || '' });
+    const [pid, ppid, start, name] = line.trim().split('|');
+    if (pid && /^\d+$/.test(pid)) table.set(Number(pid), { ppid: Number(ppid), start: start || '', name: name || '' });
   }
   return table.size ? table : null;
 }
@@ -85,11 +85,35 @@ export function ancestryOf(pid, table) {
   return chain;
 }
 
-// The holder to record: the process that CALLED the taking script (its parent), with its start time.
+// The holder to record: the SESSION that called the taking script. Not simply its parent: under
+// Git Bash (msys) every external command runs as `bash(fork) -> program`, and the fork dies the
+// moment the program ends - recording it made the grant "holder-gone" the instant after it was
+// taken (found by the first live end-to-end run, Oct 23). So: start at the parent and climb past
+// any SHELL that was created within SKIP_MS of the taking process (a fork made for this very
+// command, or a script that took the box as its first act); the first ancestor that is not such
+// a shell is the holder - for a PowerShell caller that is PowerShell itself, for a script run
+// from a long-lived terminal shell it is that terminal shell. A different lane's terminal is a
+// different session, so it is outside the tree. `pure`: takes the table and the pid, so the rule
+// is tested with synthetic tables.
+export const SKIP_MS = 3000;
+const SHELL = /^(bash|sh|zsh|dash)(\.exe)?$/i;
+export function chooseHolder(table, selfPid) {
+  const self = table && table.get(selfPid);
+  if (!self) return null;
+  const selfStart = Date.parse(self.start);
+  let pid = self.ppid;
+  for (let hops = 0; hops < 10; hops += 1) {
+    const row = table.get(pid);
+    if (!row) return null;
+    const young = Number.isFinite(selfStart) && selfStart - Date.parse(row.start) < SKIP_MS;
+    if (SHELL.test(row.name || '') && young && table.get(row.ppid)) { pid = row.ppid; continue; }
+    return { pid, start: row.start };
+  }
+  return null;
+}
+
 export function holderOfCaller(table = readProcessTable()) {
-  const pid = process.ppid;
-  const row = table && table.get(pid);
-  return row ? { pid, start: row.start } : null;
+  return table ? chooseHolder(table, process.pid) : null;
 }
 
 // --- chat 1's half ---------------------------------------------------------
