@@ -11,6 +11,7 @@ import { sceneSequelDeck } from './sceneSequel';
 import { argumentEssayDeck } from './argumentEssay';
 import { researchPaperDeck } from './researchPaper';
 import { businessProposalDeck } from './businessProposal';
+import { fromMyPagesDeck } from './fromMyPages';
 import type { DeckDefinition, DeckRoom } from '../types';
 
 // B3 S2 — the v1 ship set: the committee's six flagships plus Character
@@ -26,13 +27,14 @@ export const DECKS: DeckDefinition[] = [
   grantDeck,
   featureStoryDeck,
   characterStudyDeck,
-  // W3 - the new Tier 1 decks (Wrizors' game plan, wave 1). From my pages joins them when its page picker lands.
+  // W3 - the new Tier 1 decks (Wrizors' game plan, wave 1); From my pages deals one grafted card per page the writer picks, in her order.
   heroJourneyDeck,
   storyCircleDeck,
   sceneSequelDeck,
   argumentEssayDeck,
   researchPaperDeck,
   businessProposalDeck,
+  fromMyPagesDeck,
 ];
 
 // The catalog's own room order (fiction -> speculative -> screen -> academy

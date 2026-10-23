@@ -261,7 +261,7 @@ export function SectionsPopout({ view, currentId, navigate, boardId, journalLabe
       <div className="wz-sections-presets">
         <div className="wz-sections-heading">{t('sectionsPresets')}</div>
         {mode === 'boards'
-          ? DECKS.map(deck => (
+          ? DECKS.filter(deck => !deck.questions.some(q => q.kind === 'pages')).map(deck => (   /* W3: a preset opens a NEW board, which has no pages to pick from - From my pages is dealt from a board that already exists (its "From a deck…" door) */
             <button key={deck.id} type="button" className="wz-sections-preset" data-preset={deck.id} onClick={() => deckPreset(deck.id)}>
               <span>{t(deck.nameTerm)}</span>
             </button>

@@ -53,6 +53,7 @@ import { DeckWizard } from './DeckWizard';
 import { DECKS } from '../decks/library';
 import { StepHelp } from './StepHelp';
 import { promptToShow, bodyIsEmpty } from '../store/guided';
+import { graftTo, searchGraftables } from '../store/grafts';
 import { materializeDeck } from '../decks/engine';
 import type { DeckDefinition, DeckAnswers } from '../decks/types';
 import { armStartHere, getStartHereCardId, noteDealtCardEdited } from '../store/deckHint';
@@ -1698,7 +1699,17 @@ export function BoardEditor({ id }: { id: string }) {
   // already lives there).
   const onDeckDealt = (deck: DeckDefinition, answers: DeckAnswers) => {
     const result = materializeDeck(deck, answers, boxesRef.current);
-    setBoxes(prev => [...prev, ...result.boxes]);
+    if (result.dealtIds.length === 0) return;   // W3: nothing dealt (the page step offers no empty deal; this is the belt)
+    // W3 - From my pages: each dealt card is GRAFTED to its page through the ordinary Grafts path. A page record is written at once (graftTo owns it); a page already pinned on this board comes back as
+    // a connection to be a box in the same array, so it lands with the cards in ONE setBoxes (the board owns its own boxes). A deck with no grafts adds nothing here.
+    const withCards = [...boxesRef.current, ...result.boxes];
+    const graftConnections: Box[] = [];
+    let graftZ = withCards.reduce((m, b) => Math.max(m, b.z), 0) + 1;
+    for (const g of result.grafts) {
+      const made = graftTo({ entryId: id, boxId: g.boxId }, { entryId: g.entryId }, withCards);
+      if (made && made.made === 'connection') graftConnections.push({ id: generateId(), kind: 'connection', x: 0, y: 0, w: 0, h: 0, z: graftZ++, connA: made.a, connB: made.b });
+    }
+    setBoxes(prev => [...prev, ...result.boxes, ...graftConnections]);
     armStartHere(id, result.firstCardId, result.dealtIds);
     setStartHereCardId(result.firstCardId);
   };
@@ -3165,7 +3176,7 @@ export function BoardEditor({ id }: { id: string }) {
         />
       )}
       {deckWizardOpen && (
-        <DeckWizard decks={DECKS} startDeckId={startDeckId ?? undefined} onDeal={onDeckDealt} onClose={() => { setDeckWizardOpen(false); setStartDeckId(null); }} />
+        <DeckWizard decks={DECKS} startDeckId={startDeckId ?? undefined} pagesFor={() => searchGraftables('', { entryId: id }, boxesRef.current).Pages.filter(r => !r.placeDiffers).map(r => ({ id: r.entryId, title: r.title }))} onDeal={onDeckDealt} onClose={() => { setDeckWizardOpen(false); setStartDeckId(null); }} />
       )}
     </>
   );

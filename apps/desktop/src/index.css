@@ -5915,6 +5915,14 @@ a:focus-visible,
 }
 .deck-wizard-option-btn:hover{ border-color:var(--accent-rest); }
 .deck-wizard-option-btn[aria-pressed="true"]{ border-color:var(--accent-rest); color:var(--ink-on-card); }
+/* W3 - From my pages' page step: the writer's own pages as a list, each numbered in the order picked (the same hairline / --accent-rest vocabulary as an option), then Deal these. */
+.deck-wizard-pages{ display:flex; flex-direction:column; gap:6px; max-height:46vh; overflow:auto; }
+.deck-wizard-page-btn{ display:flex; align-items:center; gap:10px; text-align:left; padding:8px 12px; font-family:var(--font-prose); font-size:15px; color:var(--ink-on-card); background:none; border:1px solid var(--card-hairline); border-radius:0; cursor:pointer; }
+.deck-wizard-page-btn:hover, .deck-wizard-page-btn[aria-pressed="true"]{ border-color:var(--accent-rest); }
+.deck-wizard-page-n{ flex:0 0 22px; height:22px; display:flex; align-items:center; justify-content:center; border:1px solid var(--card-hairline); font-family:var(--font-mono); font-size:11px; color:var(--ink-on-card); }
+.deck-wizard-page-btn[aria-pressed="true"] .deck-wizard-page-n{ border-color:var(--accent-rest); }
+.deck-wizard-deal{ margin-top:14px; }
+.deck-wizard-deal:disabled{ opacity:.5; cursor:default; }
 .deck-wizard-note{ margin-top:14px; }
 .deck-wizard-note p{ color:var(--ink-on-card); font-size:14px; margin-bottom:10px; }
 .deck-wizard-foot{ display:flex; justify-content:space-between; padding:12px 16px 18px; }

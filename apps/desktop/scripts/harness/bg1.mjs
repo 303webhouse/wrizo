@@ -181,8 +181,13 @@ await withHarness(async (app) => {
   //
   // ok('S1 (OPEN) [word-diet-layouts successor]: an empty ordinary board renders the Beginnings row with exactly its four doors, in the brief\'s order — New Card · New Page · Templates · Connect Pages',
   //   JSON.stringify(openDoors) === JSON.stringify(['New Card', 'New Page', 'Templates', 'Connect Pages']), JSON.stringify(openDoors));
-  ok('S1 (OPEN) [big-projects-2 successor]: an empty ordinary board renders the Beginnings row with exactly its three doors - New Card · Templates · Connect Pages (no New Page)',
-    JSON.stringify(openDoors) === JSON.stringify(['New Card', 'Templates', 'Connect Pages']), JSON.stringify(openDoors));
+  // ---- PARKED - SUPERSEDED by W3, guided paths (Nick / Fable, Oct 23): the board's load-a-deck door says Presets (Presets = decks, Templates = page dress - Nick, B1; W3 brief section 5).
+  // Kept VERBATIM below and no longer run; the live successor follows (scripts/harness/guided-w3.mjs carries the new law).
+  //
+  // ok('S1 (OPEN) [big-projects-2 successor]: an empty ordinary board renders the Beginnings row with exactly its three doors - New Card · Templates · Connect Pages (no New Page)',
+  //   JSON.stringify(openDoors) === JSON.stringify(['New Card', 'Templates', 'Connect Pages']), JSON.stringify(openDoors));
+  ok('S1 (OPEN) [guided-w3 successor]: an empty ordinary board renders the Beginnings row with exactly its three doors - New Card · Presets · Connect Pages (no New Page)',
+    JSON.stringify(openDoors) === JSON.stringify(['New Card', 'Presets', 'Connect Pages']), JSON.stringify(openDoors));
 
   // Quiet olive — the brief's own word for the doors' color, and the hue the
   // house reserves for "this is a door" (--accent-rest, #96a05a).
@@ -222,8 +227,13 @@ await withHarness(async (app) => {
   // SUPERSEDED (item word-diet-layouts, Fable Oct 15) — beginLoadDeck reworks, "Load a Deck" -> "Templates" (both board modes that carry this door).
   // ok('S1 (STORYBOARD): the row is Load a Deck · New Lane · New Card — the brief\'s own set for this mode, in order',
   //   JSON.stringify(sbDoors) === JSON.stringify(['Load a Deck', 'New Lane', 'New Card']), JSON.stringify(sbDoors));
-  ok('S1 (STORYBOARD) [word-diet-layouts successor]: the row is Templates · New Lane · New Card — the brief\'s own set for this mode, in order',
-    JSON.stringify(sbDoors) === JSON.stringify(['Templates', 'New Lane', 'New Card']), JSON.stringify(sbDoors));
+  // ---- PARKED - SUPERSEDED by W3, guided paths (Nick / Fable, Oct 23): the board's load-a-deck door says Presets (Presets = decks, Templates = page dress - Nick, B1; W3 brief section 5).
+  // Kept VERBATIM below and no longer run; the live successor follows (scripts/harness/guided-w3.mjs carries the new law).
+  //
+  // ok('S1 (STORYBOARD) [word-diet-layouts successor]: the row is Templates · New Lane · New Card — the brief\'s own set for this mode, in order',
+  //   JSON.stringify(sbDoors) === JSON.stringify(['Templates', 'New Lane', 'New Card']), JSON.stringify(sbDoors));
+  ok('S1 (STORYBOARD) [guided-w3 successor]: the row is Presets · New Lane · New Card - the brief\'s own set for this mode, in order',
+    JSON.stringify(sbDoors) === JSON.stringify(['Presets', 'New Lane', 'New Card']), JSON.stringify(sbDoors));
 
   // OUTLINE's own two.
   await setBoardMode(app, 'outline');
@@ -231,8 +241,13 @@ await withHarness(async (app) => {
   // SUPERSEDED (item word-diet-layouts, Fable Oct 15) — same beginLoadDeck rework.
   // ok('S1 (OUTLINE): the row is New Card · Load a Deck — the brief\'s own set for this mode, in order',
   //   JSON.stringify(olDoors) === JSON.stringify(['New Card', 'Load a Deck']), JSON.stringify(olDoors));
-  ok('S1 (OUTLINE) [word-diet-layouts successor]: the row is New Card · Templates — the brief\'s own set for this mode, in order',
-    JSON.stringify(olDoors) === JSON.stringify(['New Card', 'Templates']), JSON.stringify(olDoors));
+  // ---- PARKED - SUPERSEDED by W3, guided paths (Nick / Fable, Oct 23): the board's load-a-deck door says Presets (Presets = decks, Templates = page dress - Nick, B1; W3 brief section 5).
+  // Kept VERBATIM below and no longer run; the live successor follows (scripts/harness/guided-w3.mjs carries the new law).
+  //
+  // ok('S1 (OUTLINE) [word-diet-layouts successor]: the row is New Card · Templates — the brief\'s own set for this mode, in order',
+  //   JSON.stringify(olDoors) === JSON.stringify(['New Card', 'Templates']), JSON.stringify(olDoors));
+  ok('S1 (OUTLINE) [guided-w3 successor]: the row is New Card · Presets - the brief\'s own set for this mode, in order',
+    JSON.stringify(olDoors) === JSON.stringify(['New Card', 'Presets']), JSON.stringify(olDoors));
 
   // The projections' old empty lines are gone where the row stands.
   const projectionEmptyGone = await app.evalJs("!document.querySelector('.board-projection-empty')");
@@ -362,8 +377,13 @@ await withHarness(async (app) => {
   //
   // ok('S1 [word-diet-layouts successor]: a paired plan board takes OPEN\'s row — it is an ordinary board and gets the ordinary four doors',
   //   JSON.stringify(planBoardDoors) === JSON.stringify(['New Card', 'New Page', 'Templates', 'Connect Pages']), JSON.stringify(planBoardDoors));
-  ok('S1 [big-projects-2 successor]: a paired plan board takes OPEN\'s row - an ordinary board with the ordinary three doors',
-    JSON.stringify(planBoardDoors) === JSON.stringify(['New Card', 'Templates', 'Connect Pages']), JSON.stringify(planBoardDoors));
+  // ---- PARKED - SUPERSEDED by W3, guided paths (Nick / Fable, Oct 23): the board's load-a-deck door says Presets (Presets = decks, Templates = page dress - Nick, B1; W3 brief section 5).
+  // Kept VERBATIM below and no longer run; the live successor follows (scripts/harness/guided-w3.mjs carries the new law).
+  //
+  // ok('S1 [big-projects-2 successor]: a paired plan board takes OPEN\'s row - an ordinary board with the ordinary three doors',
+  //   JSON.stringify(planBoardDoors) === JSON.stringify(['New Card', 'Templates', 'Connect Pages']), JSON.stringify(planBoardDoors));
+  ok('S1 [guided-w3 successor]: a paired plan board takes OPEN\'s row - an ordinary board with the ordinary three doors',
+    JSON.stringify(planBoardDoors) === JSON.stringify(['New Card', 'Presets', 'Connect Pages']), JSON.stringify(planBoardDoors));
 
   // ==========================================================================
   // S2 — the page's row. THE load-bearing check first: the page is already

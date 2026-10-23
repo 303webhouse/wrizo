@@ -570,6 +570,8 @@ export type DeskTermId =
   | 'deckProposalObjectionsTitle'
   // W3 - the step '?' (components/StepHelp.tsx): its glyph, its 'more' (hands the question to the Tutor) and the ask it stages.
   | 'deckStepHelpGlyph' | 'deckStepHelpMore' | 'deckStepHelpLabel' | 'deckStepHelpAsk'
+  // W3 - From my pages' page step in the deck wizard (components/DeckWizard.tsx): its prompt, its deal button, and the line when there is nothing to pick.
+  | 'deckFromMyPagesQPrompt' | 'deckFromMyPagesDeal' | 'deckFromMyPagesNone'
   | 'deckCharacterStudyWantNeedTitle' | 'deckCharacterStudyWantNeedBody'
   | 'deckCharacterStudyWoundTitle' | 'deckCharacterStudyWoundBody'
   | 'deckCharacterStudyContradictionTitle' | 'deckCharacterStudyContradictionBody'
@@ -1576,6 +1578,9 @@ const CANONICAL: Record<DeskTermId, string> = {
   deckStepHelpMore: 'more',
   deckStepHelpLabel: 'What does this step do?',
   deckStepHelpAsk: 'What does {step} do?',
+  deckFromMyPagesQPrompt: 'Which pages, in what order?',
+  deckFromMyPagesDeal: 'Deal these',
+  deckFromMyPagesNone: 'No pages here yet.',
   deckCharacterStudyWantNeedTitle: 'Want vs. Need',
   deckCharacterStudyWantNeedBody: 'What they think they want — and what they actually need.',
   deckCharacterStudyWoundTitle: 'The Wound',
@@ -1729,6 +1734,8 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     deckNameFromMyPages: 'From my docs',
     deckStepHelpGlyph: '[?]',
     deckStepHelpMore: 'MORE',
+    deckFromMyPagesQPrompt: 'Which docs, in what order?',
+    deckFromMyPagesNone: 'No docs here yet.',
     beginConnectPage: 'Connect Docs',
     boardAddExistingPage: '+ Filed Docs',
     boardCanvasEmpty: 'Add Cards or Docs',

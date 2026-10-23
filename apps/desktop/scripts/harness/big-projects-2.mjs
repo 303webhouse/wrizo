@@ -204,7 +204,11 @@ async function part2() {
     await click('[data-category=plan]');
     const y1 = await app.evalJs(`(() => { const r = document.querySelector('.wz-sections[data-kind=boards]'); if (!r) return null; return { place: r.querySelector('.wz-sections-place')?.textContent, door: r.querySelector('.wz-cascade-action-door')?.textContent.trim(), heads: [...r.querySelectorAll('.wz-set-head')].map((h) => h.getAttribute('aria-expanded')), rows: [...r.querySelectorAll('.wz-section-row')].map((x) => x.dataset.entryId), pages: r.querySelectorAll('[data-entry-id=b2-pg]').length, presets: [...r.querySelectorAll('.wz-sections-preset')].map((b) => b.dataset.preset), title: document.querySelector('.wz-cascade-panel-title')?.textContent }; })()`);
     ok('Y1 the Boards tab opens the pop-out in boards mode: the place name, a New Board door, two set headings (the current set open, the other folded), only boards (no page), titled Boards', !!y1 && y1.place === 'The Late Ferry' && y1.door === 'New Board' && same(y1.heads, ['true', 'false']) && same(y1.rows, ['b2-bd1', 'b2-bd2', 'b2-bd3']) && y1.pages === 0 && y1.title === 'Boards', JSON.stringify(y1));
-    ok('Y1 the presets are the seven decks, in the library\'s own order', !!y1 && same(y1.presets, ['three-act', 'worldbuilding', 'feature-screenplay', 'thesis', 'grant', 'feature-story', 'character-study']), JSON.stringify(y1 && y1.presets));
+    // ---- PARKED - SUPERSEDED by W3, guided paths (Nick / Fable, Oct 23): the presets are thirteen decks now (the seven live + the six Tier 1 additions), still in the library's own order.
+    // Kept VERBATIM below and no longer run; the live successor follows (scripts/harness/guided-w3.mjs carries the new law).
+    //
+    // ok('Y1 the presets are the seven decks, in the library\'s own order', !!y1 && same(y1.presets, ['three-act', 'worldbuilding', 'feature-screenplay', 'thesis', 'grant', 'feature-story', 'character-study']), JSON.stringify(y1 && y1.presets));
+    ok('Y1 the presets are the thirteen decks, in the library\'s own order [guided-w3 successor]', !!y1 && same(y1.presets, ['three-act', 'worldbuilding', 'feature-screenplay', 'thesis', 'grant', 'feature-story', 'character-study', 'hero-journey', 'story-circle', 'scene-sequel', 'argument-essay', 'research-paper', 'business-proposal']), JSON.stringify(y1 && y1.presets));
     ok('Y1 every row declares data-link-entry equal to its entry (the connector\'s target) and none is natively draggable', (await app.evalJs("[...document.querySelectorAll('.wz-sections[data-kind=boards] .wz-section-row')].every((r) => r.dataset.linkEntry === r.dataset.entryId && !r.closest('[draggable=\"true\"]'))")) === true, '');
 
     // ---- Y2: a row opens its board -------------------------------------------------------------------------------------------------------------------------------------------
@@ -263,7 +267,11 @@ async function part2() {
     const starters = await app.evalJs("[...document.querySelectorAll('.wz-beginnings[data-beginnings=board] .wz-beginning')].map((b) => b.dataset.beginning)");
     ok('Y7 the empty board\'s starters read New Card, Templates, Connect Pages - and no New Page', same(starters, ['newCard', 'loadDeck', 'connectPage']), JSON.stringify(starters));
     const labels = await app.evalJs("[...document.querySelectorAll('.wz-beginnings[data-beginnings=board] .wz-beginning-label')].map((b) => b.textContent.trim())");
-    ok('Y7 ...by those words', same(labels, ['New Card', 'Templates', 'Connect Pages']), JSON.stringify(labels));
+    // ---- PARKED - SUPERSEDED by W3, guided paths (Nick / Fable, Oct 23): the board's load-a-deck door says Presets (Presets = decks, Templates = page dress - Nick, B1; W3 brief section 5).
+    // Kept VERBATIM below and no longer run; the live successor follows (scripts/harness/guided-w3.mjs carries the new law).
+    //
+    // ok('Y7 ...by those words', same(labels, ['New Card', 'Templates', 'Connect Pages']), JSON.stringify(labels));
+    ok('Y7 ...by those words [guided-w3 successor]', same(labels, ['New Card', 'Presets', 'Connect Pages']), JSON.stringify(labels));
   });
 }
 

@@ -40,6 +40,8 @@ export interface DeckQuestion {
   id: string;
   promptTerm: DeskTermId;
   options: DeckQuestionOption[];
+  // W3 - 'pages': not a choice among options but the writer's OWN PAGES, picked in order (From my pages). `options` is empty and the answer is the page ids joined by ','. Absent = a choice question.
+  kind?: 'pages';
 }
 
 // questionId -> the chosen option's own id.
@@ -72,6 +74,8 @@ export interface DealtCardSpec {
   // not been given guided content, or a hand-built one) deals exactly as it always did.
   prompt?: string;
   deckStep?: { deck: string; step: string };
+  // W3 - From my pages: the page this card is grafted to. The engine only RECORDS it (MaterializedDeal.grafts); the caller makes the graft through the board (BoardEditor.onDeckDealt).
+  graftTo?: string;
   x: number;
   y: number;
   w: number;

@@ -36,6 +36,8 @@ export interface MaterializedDeal {
   boxes: Box[];
   firstCardId: string;
   dealtIds: string[];
+  // W3 - the cards that are grafted to a page (From my pages), in dealt order: the caller grafts them through the board once the cards are on it. Empty for every other deck.
+  grafts: { boxId: string; entryId: string }[];
 }
 
 export function materializeDeck(deck: DeckDefinition, answers: DeckAnswers, existing: Box[]): MaterializedDeal {
@@ -56,6 +58,9 @@ export function materializeDeck(deck: DeckDefinition, answers: DeckAnswers, exis
     if (spec.deckStep) box.deckStep = spec.deckStep;
     return box;
   });
+
+  const grafts: { boxId: string; entryId: string }[] = [];
+  specs.forEach(spec => { if (spec.graftTo) grafts.push({ boxId: idByKey.get(spec.key)!, entryId: spec.graftTo }); });
 
   const threadBoxes: Box[] = [];
   const seenPairs = new Set<string>();
@@ -79,7 +84,8 @@ export function materializeDeck(deck: DeckDefinition, answers: DeckAnswers, exis
 
   return {
     boxes: [...cardBoxes, ...threadBoxes],
-    firstCardId: idByKey.get(specs[0].key)!,
+    firstCardId: specs.length > 0 ? idByKey.get(specs[0].key)! : '',   // W3: a deal of nothing (From my pages with no pages picked) is empty, not a crash
     dealtIds: cardBoxes.map(b => b.id),
+    grafts,
   };
 }

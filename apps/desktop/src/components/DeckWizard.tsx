@@ -33,6 +33,9 @@ export interface DeckWizardProps {
   onClose: () => void;
   // BIG PROJECTS step 2 - open straight on this deck's first question (a preset on the Boards tab); a deck with no questions deals at once. An unknown id opens the library.
   startDeckId?: string;
+  // W3 - the pages a `kind: 'pages'` question (From my pages) may pick from, in the order to list them. ABSENT = this door has no pages to offer (the new-project door), and a deck that asks
+  // for pages is left out of the library there - absent, not greyed. An empty list hides it the same way.
+  pagesFor?: () => { id: string; title: string }[];
 }
 
 type Step =
@@ -49,8 +52,10 @@ const ROOM_TERM: Record<DeckRoom, DeskTermId> = {
   every: 'deckRoomEvery',
 };
 
-export function DeckWizard({ decks, onDeal, onClose, startDeckId }: DeckWizardProps) {
+export function DeckWizard({ decks, onDeal, onClose, startDeckId, pagesFor }: DeckWizardProps) {
   const { t } = useDeskLexicon();
+  // W3 - the pages picked so far, in the order picked (the page step of From my pages)
+  const [picked, setPicked] = useState<string[]>([]);
   const startDeck = startDeckId ? decks.find(d => d.id === startDeckId) ?? null : null;
   const [step, setStep] = useState<Step>(() => (startDeck && startDeck.questions.length > 0
     ? { kind: 'question', deck: startDeck, index: 0, answers: {}, note: null }
@@ -91,7 +96,9 @@ export function DeckWizard({ decks, onDeal, onClose, startDeckId }: DeckWizardPr
     onClose();
   };
 
-  const grouped = decksByRoom(decks);
+  const asksForPages = (d: DeckDefinition) => d.questions.some(q => q.kind === 'pages');
+  const visibleDecks = decks.filter(d => !asksForPages(d) || (pagesFor ? pagesFor().length > 0 : false));
+  const grouped = decksByRoom(visibleDecks);
 
   // deckwizard-backdrop (Fable, 2026-10-15) - the card pop-up's fix (card-close-x), applied here. The backdrop is fixed at z-index
   // 220, but it rendered inside `.desk-frame-stage`, whose `isolation:isolate` makes it a stacking context: 220 ranked only within
@@ -163,6 +170,29 @@ export function DeckWizard({ decks, onDeal, onClose, startDeckId }: DeckWizardPr
                     </button>
                   ))}
                 </div>
+                {question.kind === 'pages' && (() => {
+                  const pages = pagesFor ? pagesFor() : [];
+                  const toggle = (id: string) => setPicked(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
+                  return (
+                    <>
+                      {pages.length === 0 && <div className="deck-wizard-note"><p>{t('deckFromMyPagesNone')}</p></div>}
+                      <div className="deck-wizard-pages" role="group" aria-label={t(question.promptTerm)}>
+                        {pages.map(p => {
+                          const at = picked.indexOf(p.id);
+                          return (
+                            <button key={p.id} type="button" className="deck-wizard-page-btn" data-page-id={p.id} aria-pressed={at >= 0} onClick={() => toggle(p.id)}>
+                              <span className="deck-wizard-page-n" aria-hidden="true">{at >= 0 ? at + 1 : ''}</span>
+                              <span className="deck-wizard-page-t">{p.title}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <button type="button" className="btn-brass deck-wizard-continue deck-wizard-deal" disabled={picked.length === 0} onClick={() => advance(deck, index, { ...answers, [question.id]: picked.join(',') })}>
+                        {t('deckFromMyPagesDeal')}
+                      </button>
+                    </>
+                  );
+                })()}
                 {note && (
                   <div className="deck-wizard-note">
                     <p>{note}</p>
