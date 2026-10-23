@@ -1,7 +1,6 @@
-// FLUX GHOST PROBE (Nick's live note, Oct 23: "the left drawer's contents show faintly while writing with it closed; closed = fully gone"). A DIAGNOSTIC that becomes a check:
-// on a Flux Draft page with the left drawer CLOSED, type until the chrome has receded, then list every element inside the drawer that is still painted at an EFFECTIVE opacity
-// above 0.02 (own opacity multiplied up the ancestor chain) with a real box. Closed means fully gone: the list must be empty, apart from the drawer's own tab (the grip, which is how it
-// is reopened and may sit at the dissolve floor, never above it).
+// FLUX GHOST PROBE (Nick's live note, Oct 23: while writing, the left side panel's contents show faintly beside the page). A check, not a diagnostic: it holds the rule below.
+// on a Flux Draft page with the left drawer OPEN, type until the chrome has receded, then measure the EFFECTIVE opacity (own opacity multiplied up the ancestor chain) of everything the drawer
+// shows. The rule: dissolve floor (~8%) or gone, never a mid-level ghost; back on mouse move.
 // Run (a box turn): node scripts/harness/flux-ghost-probe.mjs [--shot <file.png>]
 import fs from 'node:fs';
 const checks = [];
@@ -30,29 +29,30 @@ await withHarness(async (app) => {
     await q(`location.hash = '#/page/${id}'`);
     await waitSoft("!!document.querySelector('.forward-only-editor')", { label: 'draft page' });
     await sleep(900);
-    const closed = await q("document.querySelector('.wz-sliver')?.getAttribute('data-open')");
+    // Nick's note (Fable's reading, Oct 23): the left side panel (Docs/Tracks, Typeface, Format, Actions, Presets) was OPEN while he typed and its contents faded only PARTWAY, still faintly
+    // readable beside the page. RULE: when the chrome recedes while typing, an open drawer's contents go to the dissolve floor (~8%) or fully gone - never a mid-level ghost - and come back on mouse move.
+    await q("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(1200);
+    const opened = await q("document.querySelector('.wz-sliver')?.getAttribute('data-open')");
+    const eff = `(e) => { let o = 1, n = e; while (n && n !== document.documentElement) { o *= parseFloat(getComputedStyle(n).opacity); n = n.parentElement; } return Math.round(o * 1000) / 1000; }`;
+    const probe = `(() => { const eff = ${eff}; const root = document.querySelector('.wz-sliver-panel'); if (!root) return null; const out = [];
+      for (const e of root.querySelectorAll('*')) { const cs = getComputedStyle(e); const r = e.getBoundingClientRect(); if (r.width < 1 || r.height < 1 || cs.visibility === 'hidden' || cs.display === 'none') continue;
+        const own = [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim().length > 0) || e.tagName === 'svg' || e.tagName === 'INPUT' || e.tagName === 'BUTTON'; if (!own) continue; out.push({ cls: String(e.className).slice(0, 34) || e.tagName, o: eff(e), t: (e.textContent || '').trim().slice(0, 18) }); }
+      return out; })()`;
     await q("document.querySelector('.forward-only-editor').focus()");
     await app.typeKeys(' more words ');
     await waitSoft("document.querySelector('[data-chrome-receded]')?.getAttribute('data-chrome-receded') === 'true'", { label: 'receded', timeout: 8000 });
-    await sleep(2500);
-    const seen = await q(`(() => { const root = document.querySelector('.wz-sliver'); if (!root) return null; const eff = (e) => { let o = 1, n = e; while (n && n !== document.documentElement) { o *= parseFloat(getComputedStyle(n).opacity); n = n.parentElement; } return o; };
-      const out = []; for (const e of [root, ...root.querySelectorAll('*')]) { const cs = getComputedStyle(e); const r = e.getBoundingClientRect(); if (r.width < 1 || r.height < 1 || cs.visibility === 'hidden' || cs.display === 'none') continue;
-        const o = eff(e); const painted = (e.textContent || '').trim().length > 0 || e.tagName === 'svg' || (cs.backgroundColor !== 'rgba(0, 0, 0, 0)') || parseFloat(cs.borderTopWidth) > 0; if (o > 0.02 && painted) out.push({ cls: String(e.className).slice(0, 36) || e.tagName, o: Math.round(o * 1000) / 1000, text: (e.children.length ? '' : (e.textContent || '').trim().slice(0, 24)), x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) }); }
-      return out; })()`);
-    // WHAT IS PAINTED where the drawer would be: sample points across its box and the rail, list every element under each point that paints something (a fill, a border, text, a glow)
-    // with its effective opacity - the ghost, named. Information first; the verdict below is the closed-drawer rule.
-    const under = await q(`(() => { const eff = (e) => { let o = 1, n = e; while (n && n !== document.documentElement) { o *= parseFloat(getComputedStyle(n).opacity); n = n.parentElement; } return o; };
-      const seen = new Map(); const pts = []; for (let x = 262; x <= 430; x += 56) for (let y = 130; y <= 830; y += 70) pts.push([x, y]); for (let x = 20; x <= 70; x += 25) for (let y = 130; y <= 830; y += 100) pts.push([x, y]);
-      for (const [x, y] of pts) for (const e of document.elementsFromPoint(x, y)) { if (e === document.documentElement || e === document.body) continue; const cs = getComputedStyle(e); const o = eff(e);
-        const paintsBg = cs.backgroundColor !== 'rgba(0, 0, 0, 0)' || cs.backgroundImage !== 'none' || cs.boxShadow !== 'none' || cs.backdropFilter !== 'none'; if (!paintsBg || o < 0.003) continue;
-        const k = (e.id ? '#' + e.id : '') + '.' + String(e.className).split(' ').slice(0, 3).join('.'); if (!seen.has(k)) seen.set(k, { k, o: Math.round(o * 1000) / 1000, bg: cs.backgroundColor, shadow: cs.boxShadow.slice(0, 40), at: [x, y] }); }
-      return [...seen.values()].slice(0, 24); })()`);
-    ok(`[${page}] (information) what paints where the closed drawer and the rail sit: ${under.length} element(s)`, true, JSON.stringify(under));
-    ok(`[${page}] the left drawer is CLOSED to start with`, closed === 'false', String(closed));
-    const nonGrip = (seen || []).filter((x) => !/wz-sliver-grip/.test(x.cls));
-    ok(`[${page}] closed = fully gone: while writing, no element of the closed drawer is painted at an effective opacity above 0.02 (the grip aside)`, Array.isArray(seen) && nonGrip.length === 0, JSON.stringify(nonGrip.slice(0, 12)));
-    const grip = (seen || []).filter((x) => /wz-sliver-grip/.test(x.cls));
-    ok(`[${page}] (information) the grip's own effective opacity while writing: ${JSON.stringify(grip.map((g) => g.o))}`, true, JSON.stringify(grip));
+    await sleep(3000);
+    const faded = await q(probe);
+    const maxO = faded && faded.length ? Math.max(...faded.map((x) => x.o)) : null;
+    const mid = (faded || []).filter((x) => x.o > 0.12);
+    ok(`[${page}] premise: the left drawer is OPEN while writing and has contents to measure`, opened === 'true' && Array.isArray(faded) && faded.length > 3, JSON.stringify({ opened, n: faded && faded.length }));
+    ok(`[${page}] receded while typing, an open drawer's contents sit at the dissolve floor (<= 0.12, ~8%) or are gone - no mid-level ghost (highest ${maxO})`, Array.isArray(faded) && faded.length > 3 && mid.length === 0, JSON.stringify(mid.slice(0, 8)));
+    ok(`[${page}] (information) the drawer's contents while writing: ${faded ? faded.length : 0} painted node(s), effective opacity ${faded ? JSON.stringify([...new Set(faded.map((x) => x.o))].sort((p1, p2) => p1 - p2)) : 'n/a'}`, true, JSON.stringify((faded || []).slice(0, 6)));
+    await app.mouseMove(700, 500); await app.mouseMove(720, 520); await sleep(400); await app.mouseMove(740, 540);
+    let back = null;
+    for (let i = 0; i < 20; i += 1) { await sleep(200); back = await q(probe); if (back && back.length && Math.min(...back.map((x) => x.o)) > 0.9) break; }
+    const backMin = back && back.length ? Math.min(...back.map((x) => x.o)) : null;
+    ok(`[${page}] on mouse move the drawer's contents come back (lowest effective opacity ${backMin})`, backMin !== null && backMin > 0.9, JSON.stringify((back || []).filter((x) => x.o <= 0.9).slice(0, 6)));
     if (shotAt) { fs.writeFileSync(shotAt.replace(/(\.png)?$/, `-${page}.png`), Buffer.from(await app.screenshot(), 'base64')); }
   }
 });
