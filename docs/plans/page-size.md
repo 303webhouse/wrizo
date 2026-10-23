@@ -179,7 +179,6 @@ deploy #4 (blank-page) merges.
    defaults on every page born afterwards (persistence.ts, `pageSettings: getUserPageDefaults()`). One press on a page that stored
    a size gives every later page that same explicit size.
 
-**How many store 11 is a DATA question**, and production is not mine to read. The count is two numbers over `journal_entries`:
-pages with `page_settings->>'size' = '11'`, and pages with any `page_settings->>'size'`, plus users whose `users.page_defaults` hold a
-size. It goes to chat 1 as a read-only production probe, Nick's to run.
+**Ruled (Fable, Oct 23): NO probe, NO data rewrite.** A pinned size keeps its number, read in the new point scale. The deploy note
+tells Nick to press `+` if a page looks small.
 
