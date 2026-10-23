@@ -51,15 +51,13 @@
   .prose { font-family: 'Crimson Pro', Georgia, serif; font-size: 16px; line-height: 1.7; }
   .prose p + p { margin-top: 1.05em; }
   html[data-view='typewriter'] .panel { display: none; }
-  html[data-view='typewriter'] .page { padding: 0 !important; overflow: hidden; }
-  html[data-view='typewriter'] .port {
-    position: absolute; inset: 0; overflow: hidden;
-    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,.04) 0, rgba(0,0,0,.04) var(--ramp), rgba(0,0,0,.2) calc(var(--full) - var(--lh)), #000 var(--full), #000 var(--band), rgba(0,0,0,.4) calc(var(--band) + 2.2 * var(--lh)), rgba(0,0,0,.08) 100%);
-    mask-image: linear-gradient(to bottom, rgba(0,0,0,.04) 0, rgba(0,0,0,.04) var(--ramp), rgba(0,0,0,.2) calc(var(--full) - var(--lh)), #000 var(--full), #000 var(--band), rgba(0,0,0,.4) calc(var(--band) + 2.2 * var(--lh)), rgba(0,0,0,.08) 100%);
-  }
-  html[data-view='typewriter'] .sheet { padding: var(--pad-y) var(--pad-x); will-change: transform; }
+  html[data-view='typewriter'] .stage { overflow: hidden; mask-image: linear-gradient(to bottom, transparent 0, transparent calc(50% - 8.4 * var(--lh)), #000 calc(50% - 5.8 * var(--lh)), #000 calc(50% + 3.4 * var(--lh)), transparent calc(50% + 5.6 * var(--lh)), transparent 100%); -webkit-mask-image: linear-gradient(to bottom, transparent 0, transparent calc(50% - 8.4 * var(--lh)), #000 calc(50% - 5.8 * var(--lh)), #000 calc(50% + 3.4 * var(--lh)), transparent calc(50% + 5.6 * var(--lh)), transparent 100%); }
+  html[data-view='typewriter'] .page { padding: 0 !important; overflow: visible; box-shadow: none; border: 0; }
+  html[data-view='typewriter'] .port { position: static; overflow: visible; mask-image: none; -webkit-mask-image: none; }
+  html[data-view='typewriter'] .sheet { padding: var(--pad-y) var(--pad-x); }
   .caret { display: inline-block; width: 1px; height: .9em; background: var(--accent); vertical-align: -.08em; }
   html[data-theme='flux'] .caret { width: .55em; height: 1em; background: rgba(255,152,0,.85); box-shadow: 0 0 8px rgba(255,152,0,.45); vertical-align: -.12em; }
+  html[data-view='typewriter'] .caret { width: 1px; height: .9em; background: var(--accent); box-shadow: none; vertical-align: -.08em; }
   .panel { position: absolute; top: 12px; bottom: 12px; color: var(--muted); font-size: 15px; }
   html[data-panels='closed'] .panel { display: none; }
   .panel h2 { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; font-weight: 500; margin-bottom: 12px; }
@@ -117,11 +115,16 @@
     var page = document.getElementById('page');
     var padX = (pageW - textW) / 2;
     var paras = [
+      'Morning took the heat out of the stones before we started.',
+      'We counted the jars and found one of them missing.',
+      'Someone had written a name and then crossed it out.',
+      'The path bent once, and after that it ran straight.',
       LINE,
       'Whatever is worth carrying is already with you. The rest the wind can have.',
       'We left the map on the stone and walked until the light went thin.',
       'The bucket came up colder than the morning, and nobody spoke.'
     ];
+    if (view !== 'typewriter') paras = [LINE, paras[5], paras[6], paras[7]];
     var caret = '<span class="caret"></span>';
     var html = paras.map(function (p, i) {
       return '<p>' + p + (i === paras.length - 1 && root.dataset.glide !== 'mid' ? caret : '') + '</p>';
@@ -134,30 +137,26 @@
     var padX = (baseW - textW) / 2;
     var padY = padX * 0.85;
     var scale = 1;
-    if (view === 'typewriter') {
-      var roomH = document.querySelector('.stage').clientHeight - 16;
-      scale = Math.min(1.6, roomH / baseH, (innerWidth - 32) / baseW);
-    }
+    if (view === 'typewriter') scale = 1.6;
     page.style.width = (baseW * scale) + 'px';
     page.style.height = (baseH * scale) + 'px';
     document.getElementById('prose').style.fontSize = (16 * scale) + 'px';
     if (view === 'typewriter') {
+      var stage = document.querySelector('.stage');
+      var lh = 16 * scale * 1.7;
+      stage.style.setProperty('--lh', lh + 'px');
       page.style.setProperty('--pad-x', (padX * scale) + 'px');
       page.style.setProperty('--pad-y', (padY * scale) + 'px');
-      var lh = 16 * scale * 1.7;
-      page.style.setProperty('--lh', lh + 'px');
-      page.style.setProperty('--full', 'calc(58% - ' + (3 * lh) + 'px)');
-      page.style.setProperty('--ramp', 'calc(58% - ' + (6.2 * lh) + 'px)');
-      page.style.setProperty('--band', 'calc(58% + ' + (1.15 * lh) + 'px)');
+      page.style.top = '0px';
       var caretEl = document.querySelector('.caret');
-      var sheet = document.getElementById('sheet');
-      var caretY = caretEl.getBoundingClientRect().top - sheet.getBoundingClientRect().top;
-      var target = page.clientHeight * 0.58;
-      var shift = target - caretY;
-      if (root.dataset.glide === 'mid') shift += lh * 0.5;
-      sheet.style.transform = 'translateY(' + shift + 'px)';
+      var caretY = caretEl.getBoundingClientRect().top - page.getBoundingClientRect().top;
+      var target = stage.getBoundingClientRect().top + stage.clientHeight * 0.66;
+      var pageTop = target - caretY;
+      if (root.dataset.glide === 'mid') pageTop += lh * 0.5;
+      page.style.top = pageTop + 'px';
     } else {
       page.style.padding = padY + 'px ' + padX + 'px';
+      page.style.top = '12px';
     }
     var left = (innerWidth - baseW) / 2;
     var panelW = Math.min(280, Math.max(160, left - 28));
