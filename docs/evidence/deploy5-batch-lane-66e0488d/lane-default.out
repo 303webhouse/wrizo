@@ -1,0 +1,29 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=21 tree=66e0488d bundle=index-CIpZEHIl.js/801723b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/b5l-default
+[01/21] OK        exit=0   12s ab1.mjs :: ROWS-SHADOW VERIFY: PASS (34 renders checked, shadow == DOM on every one) ;; AB1 VERIFY: PASS (29 checks)
+[02/21] OK        exit=0   18s ab2.mjs :: ROWS-SHADOW VERIFY: PASS (20 renders checked, shadow == DOM on every one) ;; AB2 VERIFY: PASS (27 checks)
+[03/21] OK        exit=0   12s bg2.mjs :: BG2 VERIFY: PASS (23 checks)
+[04/21] OK        exit=0   27s card-close-x.mjs :: CARD-CLOSE-X VERIFY: PASS (24 checks)
+[05/21] OK        exit=0   36s card-label-contrast.mjs :: CARD-LABEL-CONTRAST VERIFY: PASS (25 checks)
+[06/21] OK        exit=0   13s cd1.mjs :: ROWS-SHADOW VERIFY: PASS (23 renders checked, shadow == DOM on every one) ;; CD1 VERIFY: PASS (25 checks)
+[07/21] OK        exit=0   33s cd2.mjs :: ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one) ;; CD2 VERIFY: PASS (52 checks)
+[08/21] OK        exit=0   40s flux-card-ink.mjs :: FLUX-CARD-INK VERIFY: PASS (51 checks)
+[09/21] OK        exit=0   27s flux-ghost-probe.mjs :: ROWS-SHADOW VERIFY: PASS (13 renders checked, shadow == DOM on every one) ;; FLUX-GHOST-PROBE VERIFY: PASS (14 checks)
+[10/21] OK        exit=0  113s flux-v2.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FLUX-V2 VERIFY: PASS (156 checks)
+[11/21] OK        exit=0   78s fx5.mjs :: ROWS-SHADOW VERIFY: PASS (131 renders checked, shadow == DOM on every one) ;; FX5 VERIFY: PASS (57 checks)
+[12/21] OK        exit=0    0s hide-workshop-source.mjs :: HIDE-WORKSHOP-SOURCE VERIFY: PASS (11 checks)
+[13/21] OK        exit=0   58s item112a.mjs :: ROWS-SHADOW VERIFY: PASS (57 renders checked, shadow == DOM on every one) ;; ITEM112A VERIFY: PASS (57 checks)
+[14/21] OK        exit=0   19s item170.mjs :: ROWS-SHADOW VERIFY: PASS (12 renders checked, shadow == DOM on every one) ;; ITEM170 VERIFY: PASS (19 checks)
+[15/21] OK        exit=0   49s pw1.mjs :: PW1 VERIFY: PASS (41 checks)
+[16/21] OK        exit=0   21s pw2.mjs :: PW2 VERIFY: PASS (24 checks)
+[17/21] OK        exit=0    0s scrollbar-flush-source.mjs :: SCROLLBAR-FLUSH-SOURCE VERIFY: PASS (7 checks)
+[18/21] FAIL      exit=1   14s scrollbar-flush.mjs :: ROWS-SHADOW VERIFY: PASS (4 renders checked, shadow == DOM on every one) ;; SCROLLBAR-FLUSH VERIFY: FAIL — 24/32 failed
+[19/21] OK        exit=0   33s th2.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; TH2 VERIFY: PASS (45 checks)
+[20/21] OK        exit=0    0s theme-picker-logic.mjs :: THEME-PICKER-LOGIC VERIFY: PASS (20 checks)
+[21/21] OK        exit=0   10s theme-picker.mjs :: THEME-PICKER VERIFY: PASS (15 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 20/21 of 21 returned a passing verdict
+  FAIL: scrollbar-flush.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\b5l-default\scrollbar-flush.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=66e0488d bundle=index-CIpZEHIl.js/801723b NO-REBUILD

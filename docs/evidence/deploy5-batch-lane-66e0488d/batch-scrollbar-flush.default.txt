@@ -1,0 +1,166 @@
+
+ROWS-SHADOW VERIFY: PASS (4 renders checked, shadow == DOM on every one)
+[
+  {
+    "name": "FULL HEIGHT [Arbor light]: the page genuinely overflows (a real scrollbar paints, not a vacuous measurement)",
+    "pass": true,
+    "detail": "{\"gapFromPageEdge\":0.999725341796875,\"scrollbarWidth\":10,\"scrollHeight\":11826,\"clientHeight\":631,\"pageHeight\":692.8314819335938}"
+  },
+  {
+    "name": "FULL HEIGHT [Arbor light]: .mode-scroll's own box is a large fraction of .mode-page's height (flex:1 filling the available space, not a short box leaving a visible gap above/below the track)",
+    "pass": true,
+    "detail": "{\"gapFromPageEdge\":0.999725341796875,\"scrollbarWidth\":10,\"scrollHeight\":11826,\"clientHeight\":631,\"pageHeight\":692.8314819335938}"
+  },
+  {
+    "name": "POSITION [Arbor light, margin=normal]: .mode-scroll's border-box sits flush at .mode-page's own right edge (gap ≈ 0, never mid-page)",
+    "pass": false,
+    "detail": "{\"gapFromPageEdge\":1,\"scrollbarWidth\":10,\"scrollHeight\":11826,\"clientHeight\":631,\"pageHeight\":693}"
+  },
+  {
+    "name": "WIDTH [Arbor light, margin=normal]: the rendered scrollbar is exactly 8px (thin, FX7's own systemic default)",
+    "pass": false,
+    "detail": "{\"gapFromPageEdge\":1,\"scrollbarWidth\":10,\"scrollHeight\":11826,\"clientHeight\":631,\"pageHeight\":693}"
+  },
+  {
+    "name": "POSITION [Arbor light, margin=narrow]: .mode-scroll's border-box sits flush at .mode-page's own right edge (gap ≈ 0, never mid-page)",
+    "pass": false,
+    "detail": "{\"gapFromPageEdge\":1,\"scrollbarWidth\":10,\"scrollHeight\":11826,\"clientHeight\":631,\"pageHeight\":693}"
+  },
+  {
+    "name": "WIDTH [Arbor light, margin=narrow]: the rendered scrollbar is exactly 8px (thin, FX7's own systemic default)",
+    "pass": false,
+    "detail": "{\"gapFromPageEdge\":1,\"scrollbarWidth\":10,\"scrollHeight\":11826,\"clientHeight\":631,\"pageHeight\":693}"
+  },
+  {
+    "name": "POSITION [Arbor light, margin=wide]: .mode-scroll's border-box sits flush at .mode-page's own right edge (gap ≈ 0, never mid-page)",
+    "pass": false,
+    "detail": "{\"gapFromPageEdge\":1,\"scrollbarWidth\":10,\"scrollHeight\":23383,\"clientHeight\":631,\"pageHeight\":693}"
+  },
+  {
+    "name": "WIDTH [Arbor light, margin=wide]: the rendered scrollbar is exactly 8px (thin, FX7's own systemic default)",
+    "pass": false,
+    "detail": "{\"gapFromPageEdge\":1,\"scrollbarWidth\":10,\"scrollHeight\":23383,\"clientHeight\":631,\"pageHeight\":693}"
+  },
+  {
+    "name": "FULL HEIGHT [Arbor dark (Plateau's own documented no-op, canon §11)]: the page genuinely overflows (a real scrollbar paints, not a vacuous measurement)",
+    "pass": true,
+    "detail": "{\"gapFromPageEdge\":0.999725341796875,\"scrollbarWidth\":10,\"scrollHeight\":11826,\"clientHeight\":631,\"pageHeight\":692.8314208984375}"
+  },
+  {
+    "name": "FULL HEIGHT [Arbor dark (Plateau's own documented no-op, canon §11)]: .mode-scroll's own box is a large fraction of .mode-page's height (flex:1 filling the available space, not a short box leaving a visible gap above/below the track)",
+    "pass": true,
+    "detail": "{\"gapFromPageEdge\":0.999725341796875,\"scrollbarWidth\":10,\"scrollHeight\":11826,\"clientHeight\":631,\"pageHeight\":692.8314208984375}"
+  },
+  {
+    "name": "POSITION [Arbor dark (Plateau's own documented no-op, canon §11), margin=normal]: .mode-scroll's border-box sits flush at .mode-page's own right edge (gap ≈ 0, never mid-page)",
+    "pass": false,
+    "detail": "{\"gapFromPageEdge\":1,\"scrollbarWidth\":10,\"scrollHeight\":11826,\"clientHeight\":631,\"pageHeight\":693}"
+  },
+  {
+    "name": "WIDTH [Arbor dark (Plateau's own documented no-op, canon §11), margin=normal]: the rendered scrollbar is exactly 8px (thin, FX7's own systemic default)",
+    "pass": false,
+    "detail": "{\"gapFromPageEdge\":1,\"scrollbarWidth\":10,\"scrollHeight\":11826,\"clientHeight\":631,\"pageHeight\":693}"
+  },
+  {
+    "name": "POSITION [Arbor dark (Plateau's own documented no-op, canon §11), margin=narrow]: .mode-scroll's border-box sits flush at .mode-page's own right edge (gap ≈ 0, never mid-page)",
+    "pass": false,
+    "detail": "{\"gapFromPageEdge\":1,\"scrollbarWidth\":10,\"scrollHeight\":11826,\"clientHeight\":631,\"pageHeight\":693}"
+  },
+  {
+    "name": "WIDTH [Arbor dark (Plateau's own documented no-op, canon §11), margin=narrow]: the rendered scrollbar is exactly 8px (thin, FX7's own systemic default)",
+    "pass": false,
+    "detail": "{\"gapFromPageEdge\":1,\"scrollbarWidth\":10,\"scrollHeight\":11826,\"clientHeight\":631,\"pageHeight\":693}"
+  },
+  {
+    "name": "POSITION [Arbor dark (Plateau's own documented no-op, canon §11), margin=wide]: .mode-scroll's border-box sits flush at .mode-page's own right edge (gap ≈ 0, never mid-page)",
+    "pass": false,
+    "detail": "{\"gapFromPageEdge\":1,\"scrollbarWidth\":10,\"scrollHeight\":23383,\"clientHeight\":631,\"pageHeight\":693}"
+  },
+  {
+    "name": "WIDTH [Arbor dark (Plateau's own documented no-op, canon §11), margin=wide]: the rendered scrollbar is exactly 8px (thin, FX7's own systemic default)",
+    "pass": false,
+    "detail": "{\"gapFromPageEdge\":1,\"scrollbarWidth\":10,\"scrollHeight\":23383,\"clientHeight\":631,\"pageHeight\":693}"
+  },
+  {
+    "name": "FULL HEIGHT [Flux light]: the page genuinely overflows (a real scrollbar paints, not a vacuous measurement)",
+    "pass": true,
+    "detail": "{\"gapFromPageEdge\":0.99981689453125,\"scrollbarWidth\":10,\"scrollHeight\":23383,\"clientHeight\":631,\"pageHeight\":692.8741455078125}"
+  },
+  {
+    "name": "FULL HEIGHT [Flux light]: .mode-scroll's own box is a large fraction of .mode-page's height (flex:1 filling the available space, not a short box leaving a visible gap above/below the track)",
+    "pass": true,
+    "detail": "{\"gapFromPageEdge\":0.99981689453125,\"scrollbarWidth\":10,\"scrollHeight\":23383,\"clientHeight\":631,\"pageHeight\":692.8741455078125}"
+  },
+  {
+    "name": "POSITION [Flux light, margin=normal]: .mode-scroll's border-box sits flush at .mode-page's own right edge (gap ≈ 0, never mid-page)",
+    "pass": false,
+    "detail": "{\"gapFromPageEdge\":1,\"scrollbarWidth\":10,\"scrollHeight\":23383,\"clientHeight\":631,\"pageHeight\":693}"
+  },
+  {
+    "name": "WIDTH [Flux light, margin=normal]: the rendered scrollbar is exactly 8px (thin, FX7's own systemic default)",
+    "pass": false,
+    "detail": "{\"gapFromPageEdge\":1,\"scrollbarWidth\":10,\"scrollHeight\":23383,\"clientHeight\":631,\"pageHeight\":693}"
+  },
+  {
+    "name": "POSITION [Flux light, margin=narrow]: .mode-scroll's border-box sits flush at .mode-page's own right edge (gap ≈ 0, never mid-page)",
+    "pass": false,
+    "detail": "{\"gapFromPageEdge\":1,\"scrollbarWidth\":10,\"scrollHeight\":23383,\"clientHeight\":631,\"pageHeight\":693}"
+  },
+  {
+    "name": "WIDTH [Flux light, margin=narrow]: the rendered scrollbar is exactly 8px (thin, FX7's own systemic default)",
+    "pass": false,
+    "detail": "{\"gapFromPageEdge\":1,\"scrollbarWidth\":10,\"scrollHeight\":23383,\"clientHeight\":631,\"pageHeight\":693}"
+  },
+  {
+    "name": "POSITION [Flux light, margin=wide]: .mode-scroll's border-box sits flush at .mode-page's own right edge (gap ≈ 0, never mid-page)",
+    "pass": false,
+    "detail": "{\"gapFromPageEdge\":1,\"scrollbarWidth\":10,\"scrollHeight\":23383,\"clientHeight\":631,\"pageHeight\":693}"
+  },
+  {
+    "name": "WIDTH [Flux light, margin=wide]: the rendered scrollbar is exactly 8px (thin, FX7's own systemic default)",
+    "pass": false,
+    "detail": "{\"gapFromPageEdge\":1,\"scrollbarWidth\":10,\"scrollHeight\":23383,\"clientHeight\":631,\"pageHeight\":693}"
+  },
+  {
+    "name": "FULL HEIGHT [Flux dark]: the page genuinely overflows (a real scrollbar paints, not a vacuous measurement)",
+    "pass": true,
+    "detail": "{\"gapFromPageEdge\":0.99981689453125,\"scrollbarWidth\":10,\"scrollHeight\":23383,\"clientHeight\":631,\"pageHeight\":692.8741455078125}"
+  },
+  {
+    "name": "FULL HEIGHT [Flux dark]: .mode-scroll's own box is a large fraction of .mode-page's height (flex:1 filling the available space, not a short box leaving a visible gap above/below the track)",
+    "pass": true,
+    "detail": "{\"gapFromPageEdge\":0.99981689453125,\"scrollbarWidth\":10,\"scrollHeight\":23383,\"clientHeight\":631,\"pageHeight\":692.8741455078125}"
+  },
+  {
+    "name": "POSITION [Flux dark, margin=normal]: .mode-scroll's border-box sits flush at .mode-page's own right edge (gap ≈ 0, never mid-page)",
+    "pass": false,
+    "detail": "{\"gapFromPageEdge\":1,\"scrollbarWidth\":10,\"scrollHeight\":23383,\"clientHeight\":631,\"pageHeight\":693}"
+  },
+  {
+    "name": "WIDTH [Flux dark, margin=normal]: the rendered scrollbar is exactly 8px (thin, FX7's own systemic default)",
+    "pass": false,
+    "detail": "{\"gapFromPageEdge\":1,\"scrollbarWidth\":10,\"scrollHeight\":23383,\"clientHeight\":631,\"pageHeight\":693}"
+  },
+  {
+    "name": "POSITION [Flux dark, margin=narrow]: .mode-scroll's border-box sits flush at .mode-page's own right edge (gap ≈ 0, never mid-page)",
+    "pass": false,
+    "detail": "{\"gapFromPageEdge\":1,\"scrollbarWidth\":10,\"scrollHeight\":23383,\"clientHeight\":631,\"pageHeight\":693}"
+  },
+  {
+    "name": "WIDTH [Flux dark, margin=narrow]: the rendered scrollbar is exactly 8px (thin, FX7's own systemic default)",
+    "pass": false,
+    "detail": "{\"gapFromPageEdge\":1,\"scrollbarWidth\":10,\"scrollHeight\":23383,\"clientHeight\":631,\"pageHeight\":693}"
+  },
+  {
+    "name": "POSITION [Flux dark, margin=wide]: .mode-scroll's border-box sits flush at .mode-page's own right edge (gap ≈ 0, never mid-page)",
+    "pass": false,
+    "detail": "{\"gapFromPageEdge\":1,\"scrollbarWidth\":10,\"scrollHeight\":23383,\"clientHeight\":631,\"pageHeight\":693}"
+  },
+  {
+    "name": "WIDTH [Flux dark, margin=wide]: the rendered scrollbar is exactly 8px (thin, FX7's own systemic default)",
+    "pass": false,
+    "detail": "{\"gapFromPageEdge\":1,\"scrollbarWidth\":10,\"scrollHeight\":23383,\"clientHeight\":631,\"pageHeight\":693}"
+  }
+]
+
+SCROLLBAR-FLUSH VERIFY: FAIL — 24/32 failed
