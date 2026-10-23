@@ -667,6 +667,28 @@
 /* THE SPARKS (NEUTRAL only, foundations §5): the selection wash on the page. COOL keeps the house's own grey selection. */
 :root[data-theme='machina'][data-cast='neutral'][data-page='dark'] .mode-scroll ::selection { background: rgba(255, 152, 0, .22); }
 :root[data-theme='machina'][data-cast='neutral'][data-page='light'] .mode-scroll ::selection { background: rgba(255, 152, 0, .28); }
+/* THE MARK (Fable's ruling, Oct 23: "ship the approved mockup's WRIZ▢ wordmark - the mockup wins over the plan prose"): the corporate wordmark, top left like Flux's - WRIZ in the content-label face
+   (Plex Sans 600, 13px, .08em) and the orange OUTLINED SQUARE (the O). Arbor's hand-drawn PNG mask is switched off exactly as Flux's is. Orange is one of its few homes. */
+[data-theme='machina'] .brand-mark{ top:10px; left:14px; bottom:auto; right:auto; width:auto; aspect-ratio:auto; opacity:1; -webkit-mask:none; mask:none; background:none; filter:none;
+  color:var(--text-hi); font-family:var(--font-contentLabel); font-weight:600; font-size:13px; letter-spacing:.08em; line-height:1; }
+[data-theme='machina'] .brand-mark::before{ content:'WRIZ'; }
+[data-theme='machina'] .brand-mark::after{ content:''; display:inline-block; width:.7em; height:.7em; border:1.5px solid var(--orange); margin-left:1px; vertical-align:-1px; }
+/* RUN (components/RunStrip.tsx) - the cursor/machina-v1-mockup footer strip: twenty identical 4px units 3px apart, gray when finished, an orange 3x16 notch on the unit in progress, the count once
+   after the bar. It rides the framed page's instrument lane (the band under the paper), right-aligned to the paper's edge - the mockup's "right of the footer". Closed at the goal = the whole strip
+   orange (a .35s colour crossfade - the foundations' fill handoff); NEUTRAL adds eight 9x1px sparks from the last unit (.6s, 20ms stagger, the RC's own constants), never under COOL. */
+.machina-run{ position:absolute; left:50%; bottom:5px; transform:translateX(-50%); width:min(calc(760px * var(--paper-scale)), 60ch); max-width:100%;
+  display:flex; align-items:center; justify-content:flex-end; gap:14px; pointer-events:none; font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.08em; color:var(--text-mid); }
+.machina-run-strip{ position:relative; width:240px; height:16px; display:flex; align-items:center; gap:3px; }
+.machina-run-strip > i{ flex:1; height:4px; background:var(--ink-border); position:relative; transition:background-color .35s ease; }
+.machina-run-strip > i.on{ background:var(--signal-live); }
+.machina-run-strip > i.here::after{ content:''; position:absolute; left:-1px; top:-6px; width:3px; height:16px; background:var(--orange); }
+.machina-run[data-closed='true'] .machina-run-strip > i{ background:var(--orange); }
+.machina-run-count{ min-width:92px; text-align:right; }
+.machina-run[data-still='true'] .machina-run-strip > i{ transition:none; }
+.machina-run-burst{ position:absolute; right:5px; top:50%; width:0; height:0; }
+.machina-run-burst > span{ position:absolute; left:0; top:0; width:9px; height:1px; background:var(--orange); opacity:0; transform-origin:left center; animation:machina-tick .6s ease-out forwards; }
+@keyframes machina-tick{ from{ opacity:.95; transform:rotate(var(--r)) translateX(3px); } to{ opacity:0; transform:rotate(var(--r)) translateX(19px); } }
+@media (prefers-reduced-motion: reduce){ .machina-run-strip > i{ transition:none; } .machina-run-burst{ display:none; } }
 
 /* ============================================================================
    FLUX V2 (Fable's brief, Nick Oct 21) - the new shell. Tokens above; this block is the rules that are not just a token.
@@ -5811,6 +5833,13 @@ a:focus-visible,
 .desk-rail-wayback .desk-rail-glyph{ font-size:16px; }
 .desk-rail-wayback-label{ font-size:8px; line-height:1.25; text-align:center;
   display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+/* MACHINA way-back (the approved mockup's header crumb): the glyph is a plain left-pointing triangle, GRAY under COOL and the one orange accent under NEUTRAL (orange is scarce -
+   the cool cast keeps the return chip quiet). The chip's own ember hover rail is Arbor's; Machina has no ember. */
+[data-theme='machina'] .desk-rail-wayback{ color:var(--text-mid); }
+[data-theme='machina'][data-cast='neutral'] .desk-rail-wayback{ color:var(--orange); }
+[data-theme='machina'] .desk-rail-wayback:hover{ color:var(--text-hi); border-left-color:var(--ink-border-strong); }
+[data-theme='machina'][data-cast='neutral'] .desk-rail-wayback:hover{ color:var(--orange); border-left-color:var(--orange); }
+.wz-cascade-cast > span{ margin-right:auto; }
 
 /* The file's navigation row. */
 .sprint-nav{ display:flex; align-items:center; gap:14px; flex-wrap:wrap;
@@ -6470,6 +6499,16 @@ a:focus-visible,
 .tile.lit rect{ stroke:var(--orange, var(--brass)); }
 .fx-node rect, .fx-node circle{ transition:stroke .35s; }
 .fx-node.lit rect, .fx-node.lit circle{ stroke:var(--orange, var(--brass)); }
+
+/* MACHINA SPLASH (SplashMark.tsx's MachinaMark; the approved mockup's wordmark, end labels and Run strip, on Machina's own tokens). The units fill gray one by one, the whole strip closes orange
+   once (the same .35s colour crossfade as the in-app Run strip); the orange square is the mark's one other orange. Reduced motion drops the transitions - the closed strip simply appears. */
+.ma-word{ fill:var(--text-hi); font-family:var(--font-contentLabel); font-weight:600; font-size:150px; letter-spacing:.14em; }
+.ma-square{ fill:none; stroke:var(--orange); stroke-width:10; }
+.ma-end{ fill:var(--text-mid); font-family:var(--font-chromeLabel); font-size:22px; letter-spacing:.14em; }
+.ma-unit{ fill:var(--ink-border); transition:fill .35s ease; }
+.ma-unit.on{ fill:var(--signal-live); }
+.ma-strip.closed .ma-unit{ fill:var(--orange); }
+@media (prefers-reduced-motion:reduce){ .ma-unit{ transition:none; } }
 
 /* BOARD CONTEXT MENU (Nick, Oct 15; cursor/board-context-menu mockup @ 0df8bf30) - the small themed menu, the "Send to Trash?" dialog, and the Settings switch. All overlays (position:fixed in a portal):
    page primacy - none of them moves or resizes anything beneath it. Tokens only, so Arbor and Flux both wear them. */

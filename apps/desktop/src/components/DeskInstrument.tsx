@@ -2,6 +2,7 @@ import { useWritingSettings } from '../store/writingSettings';
 import { ProgressBar, useGoalProgress, WORD_GOAL } from './WritingIncentives';
 import { RhizomeField } from './RhizomeField';
 import { GlitchMeter } from './GlitchMeter';
+import { RunStrip } from './RunStrip';
 
 // M4 S3/S4 (SV15/SV16) — the progress instrument's framed home.
 //
@@ -54,6 +55,7 @@ export function DeskInstrument({ unitCount, text, seedKey, paperRef, glitch = fa
     <>
       <RhizomeField text={text} seedKey={seedKey} paperRef={paperRef} />
       {glitch && <GlitchMeter text={text} />}
+      {glitch && <RunStrip text={text} />}
       <DeskGoalLane unitCount={unitCount} />
     </>
   );

@@ -1937,6 +1937,14 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     tutorDisclosureBodyV2: 'When you ask the Consultant, your question — and any new writing on this file since the Consultant last read it — travels to the language model provider configured for this app. Nothing is ever sent unless you ask. Your files remain yours.',
     tutorDraftStretchNeedsSelection: 'Select a stretch on the file first',
     tutorOpen: 'Open the Consultant',
+    // The Consultant's two chips read the approved mockup's wording (Fable's ruling 7); the staged ask IS the chip label.
+    tutorDraftAskLoadBearing: 'What is load-bearing — and what could go?',
+    tutorDraftAskThreadSlip: 'Where does the line slip?',
+    // No splash loading lines under Machina (Fable's ruling 6): the Run strip is the readout. Empty on purpose - NOT a missing key (a missing key falls back to Arbor's garden lines).
+    splashLoading1: '',
+    splashLoading2: '',
+    splashLoading3: '',
+    splashLoading4: '',
     zoneStage: 'Files',
     graftSearch: 'Search blocks, files, plans…',
     graftGroupCards: 'Blocks',

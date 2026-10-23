@@ -23,6 +23,8 @@ import type { Box } from '../types';
 import { getCurrentUser } from '../store/currentUser';
 import { requestLogout } from '../store/logoutRequest';
 import { useSigningOut } from '../store/useSigningOut';
+import { useTheme } from '../store/theme';
+import { useCast, setCast } from '../store/themeCast';
 import { FullscreenToggle, SyncIndicator } from './ChromeControls';
 import { ThemePicker } from './ThemePicker';
 import { PageFace, type PageFaceSubject } from './PageFace';
@@ -678,8 +680,22 @@ function CascadeSettingsPanel({ navigate }: { navigate: NavigateFunction }) {
   const authed = !!getCurrentUser();
   const signingOut = useSigningOut();
   const askBeforeDelete = useAskBeforeDelete();
+  const theme = useTheme();
+  const cast = useCast();
   return (
     <div className="wz-cascade-panel-body">
+      {/* MACHINA CAST (Fable's ruling: ONE Controls row, "Cast: Cool | Neutral"; the foundations' two temperaments of the one theme). Present only under Machina - the stored
+          value is kept across themes but means nothing outside it (the leak law, store/themeCast.ts), so no other theme draws the row. */}
+      {theme === 'machina' && (
+        <div className="wz-cascade-row wz-cascade-cast" role="group" aria-label="Cast">
+          <span>Cast</span>
+          {(['cool', 'neutral'] as const).map((c) => (
+            <button key={c} type="button" className={`wz-cascade-action${cast === c ? ' active' : ''}`} aria-pressed={cast === c} data-cast-option={c} onClick={() => setCast(c)}>
+              {c === 'cool' ? 'Cool' : 'Neutral'}
+            </button>
+          ))}
+        </div>
+      )}
       <div className="wz-cascade-row"><FullscreenToggle /></div>
       <div className="wz-cascade-row"><SyncIndicator /></div>
       {/* BOARD CONTEXT MENU: the one setting for every delete - ticking "Don't ask me again" in the dialog turns it off; this turns it back on (per device) */}

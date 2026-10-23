@@ -385,6 +385,57 @@ function FluxMark({ reduced, width, height, onFloorReached }: MarkProps) {
   );
 }
 
+// MACHINA - the approved mockup's splash (cursor/machina-v1-mockup @ 360f3db3): the WRIZ[] wordmark (28px, .14em, the orange outlined square), IDEAS and FINAL DRAFT as the two end labels, and
+// ONE twenty-unit Run strip between them that fills left to right, then closes orange once. No loading lines (Fable's ruling 6: the strip IS the readout). The same unit count and the same
+// closed-orange grammar as the in-app Run strip. Reduced motion: the closed strip at once, then the usual fade.
+const MA_UNITS = 20;
+const MA_UNIT_MS = 105;
+const MA_START_MS = 350;
+
+function MachinaMark({ reduced, width, height, onFloorReached }: MarkProps) {
+  const unitRefs = useRef<(SVGRectElement | null)[]>([]);
+  const stripRef = useRef<SVGGElement | null>(null);
+  const startedRef = useRef(false);
+
+  useEffect(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    if (reduced) {
+      unitRefs.current.forEach((r) => r?.classList.add('on'));
+      stripRef.current?.classList.add('closed');
+      onFloorReached();
+      return;
+    }
+    for (let i = 0; i < MA_UNITS; i += 1) {
+      window.setTimeout(() => unitRefs.current[i]?.classList.add('on'), MA_START_MS + i * MA_UNIT_MS);
+    }
+    const closeAt = MA_START_MS + MA_UNITS * MA_UNIT_MS + 120;
+    window.setTimeout(() => stripRef.current?.classList.add('closed'), closeAt);
+    window.setTimeout(onFloorReached, closeAt + 700);
+  }, [reduced, onFloorReached]);
+
+  // The strip spans exactly the two end labels' outer edges (x 175 .. 1175): 20 units of 45.25 + 19 gaps of 5.
+  const x0 = 175;
+  const unitW = 45.25;
+  const gap = 5;
+  return (
+    <svg
+      className="wz-splash-machina" width={width} height={height}
+      viewBox="0 0 1350 1080" role="img" aria-label="Wrizo: from Ideas to Final Draft"
+    >
+      <text x={845} y={500} textAnchor="end" className="ma-word">WRIZ</text>
+      <rect x={858} y={398} width={96} height={96} className="ma-square" />
+      <text x={x0} y={640} className="ma-end">IDEAS</text>
+      <text x={1175} y={640} textAnchor="end" className="ma-end">FINAL DRAFT</text>
+      <g ref={stripRef} className="ma-strip">
+        {Array.from({ length: MA_UNITS }, (_, i) => (
+          <rect key={i} ref={(el) => { unitRefs.current[i] = el; }} x={x0 + i * (unitW + gap) + 0} y={686} width={unitW} height={8} className="ma-unit" />
+        ))}
+      </g>
+    </svg>
+  );
+}
+
 export interface SplashMarkProps {
   theme: ThemeId;
   reduced: boolean;
@@ -394,5 +445,6 @@ export interface SplashMarkProps {
 }
 
 export function SplashMark({ theme, ...rest }: SplashMarkProps) {
+  if (theme === 'machina') return <MachinaMark {...rest} />;
   return theme === 'flux' ? <FluxMark {...rest} /> : <ArborMark {...rest} />;
 }

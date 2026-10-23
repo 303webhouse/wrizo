@@ -6,6 +6,7 @@ import { getWayBack, isWritingRoute, type WayBackSession } from '../store/wayBac
 import { getJournalEntry, getDraft } from '../store/persistence';
 import { firstLine, snippet } from '../store/entryText';
 import { useLexicon, type TermId } from '../store/themeLexicon';
+import { useTheme } from '../store/theme';
 import { useDeskFrameMounted } from '../store/deskFrameActive';
 import { setPlace, JOURNAL } from '../store/place';
 import { placeUid } from '../store/usePlace';
@@ -46,6 +47,7 @@ export function DeskRail() {
   const { isWriting } = useWritingSession();
   const doCatch = useCatch();
   const { t: lex, tMany: lexMany } = useLexicon();
+  const theme = useTheme();
   // CD1 S4 — the far-left rail retires on FRAMED surfaces only: wherever a
   // DeskFrame is actually mounted (store/deskFrameActive.ts — the SAME
   // signal App.tsx's GlobalHeader already reads to collapse its own
@@ -116,7 +118,7 @@ export function DeskRail() {
           aria-label="Return to the page"
           onClick={() => navigate(wayBack.route)}
         >
-          <span className="desk-rail-glyph" aria-hidden="true">↩</span>
+          <span className="desk-rail-glyph" aria-hidden="true">{theme === 'machina' ? '◂' : '↩'}</span>
           <span className="desk-rail-label desk-rail-wayback-label">{wayBackLabel}</span>
         </button>
       )}
