@@ -64,6 +64,17 @@ const LAPTOP_W = 1280;
 const WIDE_W = 2200;
 const FLOOR_W = 1100;
 
+// A minimal hex->rgb-fragment helper for a loose substring match against a computed
+// `rgb(r, g, b)` string (avoids a full color-parsing dependency) - copied verbatim from
+// fx7.mjs's own helper (SCROLLBAR-FLUSH, Fable Oct 23).
+function hexToRgbFragment(hex) {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
 const freshDesk = async (app, width = 1400, height = 900) => {
   await app.goto('/');
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
@@ -398,6 +409,39 @@ await withHarness(async (app) => {
   })()`);
   ok('S3 (a): the board canvas wrap declares a thin, low-contrast scrollbar (scrollbar-width:thin, a real scrollbar-color pair) — the Firefox-family half of the Plateau treatment',
     scrollbarCss.scrollbarWidth === 'thin' && !!scrollbarCss.scrollbarColor && scrollbarCss.scrollbarColor !== 'auto', JSON.stringify(scrollbarCss));
+
+  // SCROLLBAR-FLUSH (Fable Oct 23, Nick: INK's light board shows a thick dark thumb at the
+  // bottom) — the check above only asserted "thin" and "not auto," which the dark-chrome
+  // systemic default (--ink-border-strong) ALSO satisfies, so it never caught the real bug: the
+  // board canvas's own background is var(--paper) (light in both themes by default; Flux only
+  // goes dark under Page:dark), not the dark-chrome surface the systemic default is tuned for.
+  // .board-canvas-wrap now joins the paper-toned group (--ink-on-paper-low/--ink-on-paper,
+  // index.css) instead - proved here against the ACTUAL resolved token, in every live cell
+  // (Arbor light [default, already covered above]; Flux light; Flux dark - Arbor dark is
+  // Plateau's own documented no-op, canon §11, skipped as uninformative for a colour check).
+  const inkOnPaperLowArbor = await app.evalJs("getComputedStyle(document.documentElement).getPropertyValue('--ink-on-paper-low').trim()");
+  ok('S3 (a) [scrollbar-flush successor]: Arbor\'s board canvas wrap resolves the PAPER-toned thumb colour (--ink-on-paper-low), not the dark-chrome default',
+    scrollbarCss.scrollbarColor.includes(hexToRgbFragment(inkOnPaperLowArbor)), JSON.stringify({ scrollbarColor: scrollbarCss.scrollbarColor, inkOnPaperLowArbor }));
+
+  for (const [theme, pageTone, label] of [['flux', 'light', 'Flux light'], ['flux', 'dark', 'Flux dark']]) {
+    // freshBoard's own freshDesk() clears localStorage FIRST, so the theme/page-tone must be set
+    // AFTER it (and the board re-seeded under the new theme), never before - the same ordering
+    // scrollbar-flush.mjs's own seedAndOpen already established for the prose-page cells.
+    await freshBoard(app, `fx5-s3-scrollbar-board-${theme}-${pageTone}`, [
+      { id: `fx5-s3-tall-${theme}-${pageTone}`, kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 3, z: 1, text: 'A very tall card that forces the board canvas wrap to scroll.' },
+    ], LAPTOP_W, 700);
+    await app.evalJs(`localStorage.setItem('wrizo-theme', ${JSON.stringify(theme)}); localStorage.setItem('wrizo-theme-prefs', ${JSON.stringify(JSON.stringify({ voice: 'serif', page: pageTone, fade: 'on' }))});`);
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.desk-frame')", { label: `board framed, ${label}` });
+    await sleep(300);
+    const cellCss = await app.evalJs(`(() => {
+      const cs = getComputedStyle(document.querySelector('.board-canvas-wrap'));
+      return { scrollbarWidth: cs.scrollbarWidth, scrollbarColor: cs.scrollbarColor };
+    })()`);
+    const inkOnPaperLow = await app.evalJs("getComputedStyle(document.documentElement).getPropertyValue('--ink-on-paper-low').trim()");
+    ok(`S3 (a) [scrollbar-flush successor, ${label}]: the board canvas wrap resolves ITS OWN theme/page-tone paper colour with zero board-specific CSS of its own - genuinely theme-aware, not hardcoded`,
+      cellCss.scrollbarWidth === 'thin' && cellCss.scrollbarColor.includes(hexToRgbFragment(inkOnPaperLow)), JSON.stringify({ cellCss, inkOnPaperLow }));
+  }
 
   // (b/c) The content-minimum trap: a PORTED long page gets a bounded
   // notecard excerpt (not the full raw text) on its own card face, and its
