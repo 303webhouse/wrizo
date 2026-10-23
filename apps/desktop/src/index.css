@@ -649,6 +649,12 @@
 [data-theme='flux'] .board-graft-knob{ display:flex; align-items:center; justify-content:center; width:18px; height:18px; margin-top:-9px; right:-10px; border-radius:0; background:var(--ink-950); border:1px solid var(--choice); color:var(--choice); }
 [data-theme='flux'] .board-graft-knob[data-active='true']{ background:var(--choice); color:var(--ink-950); border-color:var(--choice); }
 [data-theme='flux'] .board-graft-knob .theme-icon{ display:block; }
+/* the card's resize / connect corner and the drop-target circle: the CHOICE colour (cyan), never brass - a handle on a selected node is a choice, and orange is scarce (the screens, Oct 23) */
+[data-theme='flux'] .board-handle{ background:var(--choice); }
+[data-theme='flux'] .board-handle[data-circle='true']{ background:var(--ink-950); border-color:var(--choice); }
+[data-theme='flux'] .board-handle[data-circle='true'][data-solid='true']{ background:var(--choice); }
+[data-theme='flux'] .board-tcircle{ border-color:var(--choice); }
+[data-theme='flux'] .board-tcircle[data-solid='true']{ background:var(--choice); }
 /* a node's true position, on the card: X ### · Y ### (the readout module's own string) */
 .flux-card-coord{ position:absolute; left:8px; bottom:4px; z-index:2; pointer-events:none; padding:0 4px; background:var(--card-stock); color:var(--text-accent); font-family:var(--font-chromeLabel); font-size:10px; letter-spacing:.14em; line-height:1.3; }
 /* the board's hint line, in the frame's bottom band */

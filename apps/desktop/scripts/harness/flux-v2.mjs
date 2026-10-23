@@ -231,6 +231,7 @@ const CSS_MUT = [
   { name: 'the chromatic offset turns red', edit: (c) => c.replace(/--flux-offset:\s*[^;]+;/, '--flux-offset: 0.5px 0 0 rgba(255, 40, 40, .4);'), red: ['CH1'] },
   { name: 'Arbor olive returns as the Flux dark door', edit: (c) => c.replace('--accent-door: #57D0F5;', '--accent-door: #A9B56A;'), red: ['TK5'] },
   { name: 'the rail\'s active state falls back to brass', edit: (c) => c.replace("[data-theme='flux'] .desk-rail-item.active{ color:var(--line-active);", "[data-theme='flux'] .desk-rail-item.active{ color:var(--brass);"), red: ['RL1'] },
+  { name: 'the board handle goes back to brass under Flux', edit: (c) => c.replace("[data-theme='flux'] .board-handle{ background:var(--choice); }", "[data-theme='flux'] .board-handle{ background:var(--brass); }"), red: ['HD1'] },
   { name: 'the card goes back to cream stock in the Flux root', edit: (c) => c.replace('  --card-stock: #0E2C32;', '  --card-stock: #FBF6EA;'), red: ['CD1'] },
   { name: 'an Arbor brown surface returns to the Flux root', edit: (c) => c.replace('--ink-800: #0E2C32;', '--ink-800: #2A241E;'), red: ['TK4'] },
   { name: 'Arbor\'s PNG mark paints again under Flux', edit: (c) => c.replace('-webkit-mask:none; mask:none; background:none;', 'background:var(--brass);'), red: ['BR1'] },
@@ -305,6 +306,9 @@ function cssChecks(css) {
   const cs = T('card-stock'), ci = T('ink-on-card'), cm = T('ink-on-card-meta');
   keep('CD1', /^#[0-9a-f]{6}$/i.test(cs || '') && lum(hex(cs)) < 0.05 && /^#[0-9a-f]{6}$/i.test(ci || '') && ratio(hex(ci), hex(cs)) >= 7 && /^#[0-9a-f]{6}$/i.test(cm || '') && ratio(hex(cm), hex(cs)) >= 4.5 && !greenish(T('badge-on-card')) && !/--ink-on-card:/.test(B.dark),
     `stock ${cs}, ink ${ci}, meta ${cm}, badge ${T('badge-on-card')}`);
+  // HD1 - a selected node's resize / connect corner and its drop-target circle read the CHOICE colour under Flux (cyan), never brass
+  const hd = rules(css).find((x) => x.sel === "[data-theme='flux'] .board-handle"), hdc = rules(css).find((x) => x.sel === "[data-theme='flux'] .board-tcircle[data-solid='true']");
+  keep('HD1', !!hd && /background:\s*var\(--choice\)/.test(hd.body) && !!hdc && /background:\s*var\(--choice\)/.test(hdc.body), hd ? hd.body : 'no Flux .board-handle rule');
   // OR - orange only where allowed, in rules that apply under Flux
   const bad = rules(css).filter((x) => /data-theme='flux'|data-theme="flux"/.test(x.sel) && ORANGE_RE.test(x.body.replace(/--orange\s*:[^;]+;/g, '')) && !ORANGE_OK.some((re) => re.test(x.sel))).map((x) => x.sel.slice(0, 90));
   keep('OR1', bad.length === 0 && /--choice:\s*#00C2FF/i.test(B.root), bad.slice(0, 4).join(' | '));

@@ -202,6 +202,8 @@ export async function part2({ ok, sleepMs }) {
       const kn = knobUp ? await q(`(() => { const k = document.querySelector('.board-graft-knob'); const g = k.querySelector('svg[data-theme-icon="input"]'); const r = g ? g.getBoundingClientRect() : null; const cs = getComputedStyle(k);
         return { glyph: !!g, w: r ? Math.round(r.width) : 0, h: r ? Math.round(r.height) : 0, border: cs.borderTopColor, color: cs.color }; })()`) : null;
       ok('F18 the selected card\'s knob wears the INPUT glyph (12 x 12, through ThemeIcon) in the choice colour on a square glass knob', !!kn && kn.glyph && kn.w === 12 && kn.h === 12 && kn.border === 'rgb(0, 194, 255)' && kn.color === 'rgb(0, 194, 255)', JSON.stringify(kn));
+      const hdl = await q("(() => { const h = document.querySelector('.board-canvas .board-handle'); return h ? getComputedStyle(h).backgroundColor : null; })()");
+      ok('F18 the selected card\'s resize / connect corner is the choice colour (cyan), not brass', hdl === 'rgb(0, 194, 255)', String(hdl));
       const bx = await q(`(() => { const c = document.querySelector('.board-canvas .flux-card-coord'); const hint = document.querySelector('.flux-board-frame .flux-readout-hint'); return { coord: c ? c.textContent : null, hint: hint ? hint.textContent : null }; })()`);
       ok('F18 a node shows its true position (the first card, stored at x .05 / y .05, reads X 050 · Y 050) and the board shows its one hint', !!bx && bx.coord === 'X 050 · Y 050' && bx.hint === 'DRAG A NODE ▪ DRAG ITS INPUT TO CONNECT', JSON.stringify(bx));
       await q("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(900);
