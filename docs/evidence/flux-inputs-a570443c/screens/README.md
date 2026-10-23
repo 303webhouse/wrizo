@@ -1,0 +1,1 @@
+Flux retheme screens (blue room, hue ~205), flux-inputs. Page with both panels (Docs pop-out + Operator drawer), the empty LIGHT page (flat, no grey bands), the board (hint + X . Y + knob), the Inputs picker. Dark + light page tone. Captured by scripts/harness/flux-screens.mjs on box turn 16:04:44Z-16:07:12Z (tree a570443c).
