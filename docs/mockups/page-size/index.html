@@ -51,7 +51,30 @@
   .prose { font-family: 'Crimson Pro', Georgia, serif; font-size: 16px; line-height: 1.7; }
   .prose p + p { margin-top: 1.05em; }
   html[data-view='typewriter'] .panel { display: none; }
-  html[data-view='typewriter'] .stage { overflow: hidden; mask-image: linear-gradient(to bottom, transparent 0, transparent calc(50% - 8.4 * var(--lh)), #000 calc(50% - 5.8 * var(--lh)), #000 calc(50% + 3.4 * var(--lh)), transparent calc(50% + 5.6 * var(--lh)), transparent 100%); -webkit-mask-image: linear-gradient(to bottom, transparent 0, transparent calc(50% - 8.4 * var(--lh)), #000 calc(50% - 5.8 * var(--lh)), #000 calc(50% + 3.4 * var(--lh)), transparent calc(50% + 5.6 * var(--lh)), transparent 100%); }
+  html[data-view='typewriter'] .stage {
+    overflow: hidden;
+    --anchor: 60%;
+    mask-image: linear-gradient(to bottom,
+      transparent 0,
+      rgba(0,0,0,.12) calc(var(--anchor) - 6.6 * var(--lh)),
+      rgba(0,0,0,.4) calc(var(--anchor) - 4.2 * var(--lh)),
+      rgba(0,0,0,.72) calc(var(--anchor) - 2.2 * var(--lh)),
+      #000 calc(var(--anchor) - 0.15 * var(--lh)),
+      #000 calc(var(--anchor) + 1.45 * var(--lh)),
+      rgba(0,0,0,.4) calc(var(--anchor) + 2.8 * var(--lh)),
+      transparent calc(var(--anchor) + 4.4 * var(--lh)),
+      transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom,
+      transparent 0,
+      rgba(0,0,0,.12) calc(var(--anchor) - 6.6 * var(--lh)),
+      rgba(0,0,0,.4) calc(var(--anchor) - 4.2 * var(--lh)),
+      rgba(0,0,0,.72) calc(var(--anchor) - 2.2 * var(--lh)),
+      #000 calc(var(--anchor) - 0.15 * var(--lh)),
+      #000 calc(var(--anchor) + 1.45 * var(--lh)),
+      rgba(0,0,0,.4) calc(var(--anchor) + 2.8 * var(--lh)),
+      transparent calc(var(--anchor) + 4.4 * var(--lh)),
+      transparent 100%);
+  }
   html[data-view='typewriter'] .page { padding: 0 !important; overflow: visible; box-shadow: none; border: 0; }
   html[data-view='typewriter'] .port { position: static; overflow: visible; mask-image: none; -webkit-mask-image: none; }
   html[data-view='typewriter'] .sheet { padding: var(--pad-y) var(--pad-x); }
@@ -139,13 +162,16 @@
     if (view === 'typewriter') {
       var stage = document.querySelector('.stage');
       var lh = 16 * scale * 1.7;
+      var anchor = 0.60;
       stage.style.setProperty('--lh', lh + 'px');
-      page.style.setProperty('--pad-x', (padX * scale) + 'px');
-      page.style.setProperty('--pad-y', (padY * scale) + 'px');
+      stage.style.setProperty('--anchor', (anchor * 100) + '%');
+      var bleed = stage.clientHeight;
+      document.getElementById('sheet').style.padding = bleed + 'px ' + (padX * scale) + 'px ' + bleed + 'px';
+      page.style.height = 'auto';
       page.style.top = '0px';
       var caretEl = document.querySelector('.caret');
       var caretY = caretEl.getBoundingClientRect().top - page.getBoundingClientRect().top;
-      var target = stage.getBoundingClientRect().top + stage.clientHeight * 0.66;
+      var target = stage.getBoundingClientRect().top + stage.clientHeight * anchor;
       var pageTop = target - caretY;
       if (root.dataset.glide === 'mid') pageTop += lh * 0.5;
       page.style.top = pageTop + 'px';
