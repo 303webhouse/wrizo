@@ -589,6 +589,12 @@
   --ink-border-strong: #343A46;   /* line-strong */
   --line-active: #7FA0BC;         /* steel - the active carrier (NEUTRAL: orange) */
   --signal-live: #9DA5B4;
+  /* Arbor's warm lights and success green have NO home in Machina (flux-v2 / flux-inputs gave Flux its own --ember* and --sage, and M1's coverage check caught the gap): all four read the neutral
+     live-gray ramp, so nothing here can leak a warm or green value - the faint "ember" dots, the goal flare (not drawn), the return chip's ember (re-coloured below) and the saved-status dot. */
+  --ember: var(--signal-live);
+  --ember-bright: var(--text-hi);
+  --ember-deep: var(--ink-border-strong);
+  --sage: var(--signal-live);
   --choice: #7FA0BC;              /* every chosen / pressed / current state follows the active carrier */
   --orange: var(--brass);
   --text-accent: #7FA0BC;
@@ -5177,6 +5183,27 @@ a:focus-visible,
   font-size:18px; color:var(--tp-cyan); letter-spacing:.08em; }
 .wz-theme-plate-tick{ position:absolute; left:18%; right:18%; top:22%; height:2px; background:var(--tp-cyan); }
 .wz-theme-plate-tick-lime{ top:30%; background:var(--tp-lime); opacity:.8; }
+/* Machina. Card art is the card's OWN theme in literals (the foundations' cool-cast values), never the ambient tokens - same reason as --tp-cyan above. The wordmark is Plex Sans 600 / .14em
+   (the theme's own mark face; the faces load on the card's first hover/focus, ThemePicker.tsx - until then the fallback stack), the orange outlined square its O. The plate is the Run strip:
+   twenty units, the notch on the first unfinished one; hover/focus RUNS it once (units fill in sequence, the notch travels), the still frame holds it part-filled. */
+.wz-theme-card-machina .wz-theme-plate{ background:linear-gradient(180deg, #12141A 0%, #0A0B0E 70%); }
+.wz-theme-wm-machina{ font-family:'IBM Plex Sans', system-ui, sans-serif; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:#E6E9F1; font-size:24px; }
+.wz-theme-wm-machina::after{ content:''; display:inline-block; width:.62em; height:.62em; border:2px solid #FF9800; margin-left:.18em; vertical-align:-.02em; }
+.wz-theme-plate-run{ position:absolute; left:14%; right:14%; bottom:22%; height:16px; display:flex; align-items:center; gap:3px; }
+.wz-theme-plate-run > i{ flex:1; height:4px; background:#252933; transition:background-color .2s ease; transition-delay:calc(var(--i) * 45ms); }
+.wz-theme-plate-run > i.on{ background:#9DA5B4; }
+.wz-theme-plate-notch{ position:absolute; top:0; width:3px; height:16px; background:#FF9800; left:calc(8 / 20 * 100% - 1px); transition:left .9s linear; }
+.wz-theme-card-machina:hover .wz-theme-plate-run > i, .wz-theme-card-machina:focus-visible .wz-theme-plate-run > i{ background:#9DA5B4; }
+.wz-theme-card-machina:hover .wz-theme-plate-notch, .wz-theme-card-machina:focus-visible .wz-theme-plate-notch{ left:calc(100% - 3px); }
+.wz-theme-card-machina[aria-pressed="true"]{ border-color:var(--brass); }
+.wz-theme-picker[data-still='true'] .wz-theme-plate-run > i, .wz-theme-picker[data-still='true'] .wz-theme-plate-notch{ transition:none; }
+.wz-theme-picker[data-still='true'] .wz-theme-card-machina:hover .wz-theme-plate-run > i:not(.on){ background:#252933; }
+.wz-theme-picker[data-still='true'] .wz-theme-card-machina:hover .wz-theme-plate-notch{ left:calc(8 / 20 * 100% - 1px); }
+@media (prefers-reduced-motion:reduce){
+  .wz-theme-plate-run > i, .wz-theme-plate-notch{ transition:none; }
+  .wz-theme-card-machina:hover .wz-theme-plate-run > i:not(.on){ background:#252933; }
+  .wz-theme-card-machina:hover .wz-theme-plate-notch{ left:calc(8 / 20 * 100% - 1px); }
+}
 /* note (e) (Fable's review, Oct 21): the hover Glitch is a FLASH (theme-rules.md §A.8's 3/sec
    budget), so it can no longer be a plain CSS `:hover -> infinite` loop a sustained hover runs
    forever — ThemePicker.tsx's own FluxCardGlitchController (store/fluxCardGlitch.ts) asks the

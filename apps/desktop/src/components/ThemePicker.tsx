@@ -4,6 +4,7 @@ import { useThemePrefs, setThemePrefs } from '../store/themePrefs';
 import { useThemeUnlockStatus, isThemeOpen, wordsToUnlock } from '../store/themeUnlock';
 import { useAmbianceDial, prefersReducedMotion } from '../store/ambianceDial';
 import { createFluxCardGlitchController, FLUX_CARD_GLITCH_MS } from '../store/fluxCardGlitch';
+import { ensureThemeFonts } from '../store/themeFonts';
 import { Seg } from './ModeStage';
 
 // THEME PICKER (step 2 of the Oct 21 build queue; theme-menu-brief.md / theme-rules.md §C,
@@ -13,8 +14,8 @@ import { Seg } from './ModeStage';
 // already reads the per-theme "Mood"/"Skin" word (deskLexicon's own cascadeThemeTitle).
 //
 // ABSENT, NOT GRAYED: THEME_CARDS below lists one entry per BUILT theme — today exactly
-// `ThemeId`'s own two members. Nomad/Volant/Machina do not appear at all until each gains its
-// own ThemeId and its own entry here; this list is never hand-filtered at render time.
+// `ThemeId`'s own three members (Machina joined with its build). Nomad/Volant do not appear at all
+// until each gains its own ThemeId and its own entry here; this list is never hand-filtered at render time.
 //
 // EACH CARD IS BRAND ART, NOT A THEME-SCOPED COMPONENT: unlike every other per-theme override
 // in this codebase (a `[data-theme="x"]` CSS block), a card must show FLUX'S look while the
@@ -78,8 +79,25 @@ function FluxPlate({ glitching }: { glitching: boolean }) {
   );
 }
 
+// Machina - the run. Twenty units like the theme's own Run strip: a few gray (finished), the orange notch on the first unfinished one; on hover/focus the strip RUNS (the units fill, the notch travels
+// to the end) once. Not a flash - no budget; the still frame (reduced motion / Ambiance 0) holds the strip part-filled.
+const MACHINA_PLATE_UNITS = 20;
+const MACHINA_PLATE_DONE = 8;
+function MachinaPlate() {
+  return (
+    <div className="wz-theme-plate-run" aria-hidden="true">
+      {Array.from({ length: MACHINA_PLATE_UNITS }, (_, i) => (
+        <i key={i} className={i < MACHINA_PLATE_DONE ? 'on' : undefined} style={{ ['--i' as string]: i } as React.CSSProperties} />
+      ))}
+      <b className="wz-theme-plate-notch" />
+    </div>
+  );
+}
+
+// ORDER follows theme-arc.md's narrative progression (Arbor -> Machina -> Flux; Fable's A3 ruling on TH2) - not launch order.
 const THEME_CARDS: ThemeCardDef[] = [
   { id: 'plateau', name: 'Arbor', cardClass: 'wz-theme-card-arbor', wordmarkClass: 'wz-theme-wm-arbor' },
+  { id: 'machina', name: 'Machina', cardClass: 'wz-theme-card-machina', wordmarkClass: 'wz-theme-wm-machina' },
   { id: 'flux', name: 'Flux', cardClass: 'wz-theme-card-flux', wordmarkClass: 'wz-theme-wm-flux' },
 ];
 
@@ -106,6 +124,9 @@ export function ThemePicker() {
     setTimeout(() => setFluxGlitching(false), FLUX_CARD_GLITCH_MS);
   };
 
+  // Machina's faces load WITH the theme (store/themeFonts.ts), never at boot - so the card asks for them on the first sign of intent (hover / focus), and shows its fallback stack until they land.
+  const loadMachinaFaces = () => ensureThemeFonts('machina');
+
   return (
     <div className="wz-cascade-panel-body wz-theme-picker" data-still={stillFrame ? 'true' : 'false'}>
       <div className="wz-theme-picker-field">
@@ -116,6 +137,7 @@ export function ThemePicker() {
           const open = isThemeOpen(card.id, status, current);
           const remaining = wordsToUnlock(card.id, status);
           const isFlux = card.id === 'flux';
+          const isMachina = card.id === 'machina';
           return (
             <button
               key={card.id}
@@ -124,10 +146,10 @@ export function ThemePicker() {
               disabled={!open}
               aria-pressed={open && current === card.id}
               onClick={() => setTheme(card.id)}
-              onMouseEnter={isFlux ? triggerFluxGlitch : undefined}
-              onFocus={isFlux ? triggerFluxGlitch : undefined}
+              onMouseEnter={isFlux ? triggerFluxGlitch : isMachina ? loadMachinaFaces : undefined}
+              onFocus={isFlux ? triggerFluxGlitch : isMachina ? loadMachinaFaces : undefined}
             >
-              <div className="wz-theme-plate" aria-hidden="true">{card.id === 'plateau' ? <ArborPlate /> : <FluxPlate glitching={fluxGlitching} />}</div>
+              <div className="wz-theme-plate" aria-hidden="true">{card.id === 'plateau' ? <ArborPlate /> : isMachina ? <MachinaPlate /> : <FluxPlate glitching={fluxGlitching} />}</div>
               <div className="wz-theme-nameblock">
                 <div className={`wz-theme-wm ${card.wordmarkClass}`}>{card.name}</div>
                 {/* note (a): readouts state only true things — a null `remaining` (no fetch yet,

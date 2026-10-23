@@ -225,6 +225,7 @@ await withHarness(async (app) => {
   await openPage(app, 'ma3', words(15));
   const tabs = await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].map((b) => b.textContent.trim())");
   ok('LX1: the mode strip reads Sprint / Build / Edit / Finalize on screen', ['Sprint', 'Build', 'Edit', 'Finalize'].every((w) => tabs.includes(w)), JSON.stringify(tabs));
+  ok('LX2: the Workshop tab is absent from the mode strip under Machina (hidden in every theme until it is built - Nick, Oct 23)', !tabs.includes('Workshop'), JSON.stringify(tabs));
   const withRun = await rectOf(app);
   await app.evalJs(`localStorage.setItem('wrizo-writing-settings', JSON.stringify({ progress: 'words', progressStyle: 'rhizome', instrumentsOn: false, typewriter: false }))`);
   await app.reload();
@@ -233,6 +234,28 @@ await withHarness(async (app) => {
   const noRun = await run(app);
   const withoutRun = await rectOf(app);
   ok('PP2: PAGE IS PRIMARY - the writing surface\'s rect is identical with the Run strip on and off (the strip rides the instrument lane, it never displaces)', noRun === null && !!withRun && withRun === withoutRun, JSON.stringify({ withRun, withoutRun, noRun }));
+
+  // ======================================================= PK - the picker card: present in the arc's order, locked while it is not the current theme (the unlock table decides; no server here = no note), current when chosen
+  const cardRead = () => app.evalJs(`(() => [...document.querySelectorAll('.wz-theme-card')].map((c) => ({ name: c.querySelector('.wz-theme-wm')?.textContent ?? null, locked: c.classList.contains('locked'), disabled: c.disabled, pressed: c.getAttribute('aria-pressed'), note: c.querySelector('.wz-theme-note')?.textContent ?? null, units: c.querySelectorAll('.wz-theme-plate-run > i').length, notch: !!c.querySelector('.wz-theme-plate-notch') })))()`);
+  await boot(app, { theme: 'plateau', goal: 10 });
+  await openPage(app, 'ma-pk', words(5));
+  await app.evalJs(`(() => { const b = document.querySelector('.wz-strip [data-category="theme"]'); if (b) b.click(); })()`);
+  await app.waitFor("!!document.querySelector('.wz-theme-cards')", { label: 'the picker', timeout: 8000 }).catch(() => {});
+  await sleep(300);
+  const pkA = await cardRead();
+  const mA = pkA.find((c) => c.name === 'Machina');
+  ok('PK1: under Arbor the picker lists Arbor, Machina, Flux in the arc\'s order; the Machina card draws its 20-unit Run plate and notch, and (no unlock data reachable) reads LOCKED with no guessed count',
+    pkA.map((c) => c.name).join(',') === 'Arbor,Machina,Flux' && !!mA && mA.locked && mA.disabled && mA.note === null && mA.units === 20 && mA.notch, JSON.stringify(pkA));
+  await frame(app, 'picker-arbor');
+  await boot(app, { theme: 'machina', goal: 10 });
+  await openPage(app, 'ma-pk2', words(5));
+  await app.evalJs(`(() => { const b = document.querySelector('.wz-strip [data-category="theme"]'); if (b) b.click(); })()`);
+  await app.waitFor("!!document.querySelector('.wz-theme-cards')", { label: 'the picker (Machina)', timeout: 8000 }).catch(() => {});
+  await sleep(300);
+  const pkM = await cardRead();
+  const mM = pkM.find((c) => c.name === 'Machina');
+  ok('PK2: with Machina current, its card is the pressed one (open by being current) and the other themes\' cards are not pressed', !!mM && !mM.locked && mM.pressed === 'true' && pkM.filter((c) => c.pressed === 'true').length === 1, JSON.stringify(pkM));
+  await frame(app, 'picker-machina');
 
   // ======================================================= RN under Arbor / Flux: no Run
   await app.evalJs(`localStorage.setItem('wrizo-writing-settings', JSON.stringify({ progress: 'words', progressStyle: 'rhizome', instrumentsOn: true, typewriter: false }))`);

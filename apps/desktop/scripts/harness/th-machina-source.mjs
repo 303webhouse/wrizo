@@ -283,6 +283,16 @@ ok('M19: the framed page draws Arbor\'s bar only when the theme is not Machina (
 const SEG_GATES = [[/settings\.progress === 'words' && theme !== 'machina' && \(\s*<Seg label=\{t\('progressStyleLabel'\)\}/, src('components/Sliver.tsx')], [/framed && settings\.progress === 'words' && !machina;/, src('components/ModeStage.tsx')]];
 ok('M19: the Progress style choice is not offered under Machina - neither in the Sliver nor in the gear panel (one instrument, nothing to choose between)', SEG_GATES.every(([r, t]) => r.test(t)), JSON.stringify(SEG_GATES.map(([r, t]) => r.test(t))));
 
+// M20 - the picker card (after theme-picker): Machina joins THEME_CARDS in the arc's order, locked by the server's own threshold, its faces asked for on first intent (hover / focus), never at boot
+const tp = src('components/ThemePicker.tsx');
+const cardIds = [...(/const THEME_CARDS: ThemeCardDef\[\] = \[([\s\S]*?)\n\];/.exec(tp) || [, ''])[1].matchAll(/id: '(\w+)'/g)].map((m) => m[1]);
+ok('M20: THEME_CARDS lists exactly the built themes in the arc\'s order (plateau, machina, flux) - Nomad / Volant absent', cardIds.join(',') === 'plateau,machina,flux', cardIds.join(','));
+ok('M20: the Machina card runs its Run-strip plate (20 units) and asks for the theme\'s faces on hover / focus only - ThemePicker holds no module-scope font import',
+  /isMachina \? loadMachinaFaces/.test(tp) && /const MACHINA_PLATE_UNITS = 20;/.test(tp) && /isMachina \? <MachinaPlate \/>/.test(tp) && !/^import .*@fontsource/m.test(tp) && /const loadMachinaFaces = \(\) => ensureThemeFonts\('machina'\);/.test(tp), '');
+const syncSrc = readFileSync(join(DESKTOP, '..', 'server', 'src', 'sync.ts'), 'utf8');
+ok('M20: the card is LOCKED by the server\'s own unlock table (machina has a threshold: 100 words) - nothing client-side invents an unlock', /machina: 100,/.test(syncSrc) && /isThemeOpen\(card\.id, status, current\)/.test(tp), '');
+ok('M20: the card art is the card\'s OWN theme in literals (never the ambient tokens) and still frames hold the strip', /\.wz-theme-card-machina \.wz-theme-plate\{ background:linear-gradient\(180deg, #12141A/.test(ccss) && /\.wz-theme-picker\[data-still='true'\] \.wz-theme-plate-run > i/.test(ccss), '');
+
 // ---------------------------------------------------------------- MUTANTS
 const mutantCss = (mutate, asserts) => { const m = mutate(css); return m !== css && asserts(m); };
 {
@@ -319,6 +329,11 @@ ok('MUTANT: a Machina desk string re-introducing "Drawer" - M8 must go RED', LEA
   const CASTGATE = /\{theme === 'machina' && \(\s*<div className="wz-cascade-row wz-cascade-cast"/;
   const cp2 = mut(cp, "{theme === 'machina' && (\n        <div className=\"wz-cascade-row wz-cascade-cast\"", '{(\n        <div className="wz-cascade-row wz-cascade-cast"');
   ok('MUTANT: the CAST row drawn under every theme (the Machina gate dropped) - M17 must go RED (the mutation LANDED)', cp2 !== null && !CASTGATE.test(cp2) && CASTGATE.test(cp), '');
+  const tp2 = mut(tp, "{ id: 'machina', name: 'Machina', cardClass: 'wz-theme-card-machina', wordmarkClass: 'wz-theme-wm-machina' },\n  { id: 'flux'", "{ id: 'flux'");
+  const ids2 = tp2 === null ? null : [...(/const THEME_CARDS: ThemeCardDef\[\] = \[([\s\S]*?)\n\];/.exec(tp2) || [, ''])[1].matchAll(/id: '(\w+)'/g)].map((m) => m[1]).join(',');
+  ok('MUTANT: the Machina card dropped from THEME_CARDS - M20 must go RED (the mutation LANDED)', tp2 !== null && ids2 !== 'plateau,machina,flux' && cardIds.join(',') === 'plateau,machina,flux', String(ids2));
+  const tp3 = mut(tp, "import { ensureThemeFonts } from '../store/themeFonts';", "import '@fontsource/ibm-plex-mono/500.css';\nimport { ensureThemeFonts } from '../store/themeFonts';");
+  ok('MUTANT: an eager IBM Plex import added to ThemePicker - M20 must go RED (the mutation LANDED)', tp3 !== null && /^import .*@fontsource/m.test(tp3) && !/^import .*@fontsource/m.test(tp), '');
   const di2 = mut(di, "settings.progressStyle === 'bar' && theme !== 'machina' && (", "settings.progressStyle === 'bar' && (");
   ok('MUTANT: Arbor\'s bar drawn on the framed Machina page again (the theme gate dropped) - M19 must go RED (the mutation LANDED)', di2 !== null && !BAR_GATE.test(di2) && BAR_GATE.test(di), '');
   const css2 = mut(ccss, "[data-theme='machina'] .desk-frame-goalflare{ display:none; }", '');
