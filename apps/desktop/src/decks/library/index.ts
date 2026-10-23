@@ -65,7 +65,7 @@ if (typeof window !== 'undefined') {
       const deck = DECKS.find(d => d.id === deckId);
       if (!deck) return {};
       const answers: Record<string, string> = {};
-      for (const q of deck.questions) answers[q.id] = q.options[0].id;
+      for (const q of deck.questions) answers[q.id] = q.kind === 'pages' ? '' : q.options[0].id;   // W3: a page step has no options - its default is no pages, which deals nothing
       return answers;
     },
     dealCount: (deckId: string, answers: Record<string, string>): number => {

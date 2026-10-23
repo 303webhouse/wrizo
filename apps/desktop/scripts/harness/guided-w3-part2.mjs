@@ -159,6 +159,27 @@ await withHarness(async (app) => {
   ok('each card is grafted to its own page: the first card\'s Inputs tab names The blue cup and not the other page', /The blue cup/.test(panel) && !/Mara at the window/.test(panel), panel.slice(0, 200));
   const pagesAfter = await q("(() => ['gw3-pg1', 'gw3-pg2', 'gw3-pg3'].map((id) => window.wrizoGetPageText ? window.wrizoGetPageText(id) : null))()");
   void pagesAfter;
+
+  // FROM MY PAGES AS A PRESET (Fable, Oct 23): it is IN the Presets list - first in Arbor - and its picker lists the CURRENT PLACE's pages, so a NEW board (unborn: no row, no pages of its own) works;
+  // the cards it deals are grafted once the first box births the board.
+  await fresh('plateau', 'dark');
+  await q(`(() => { for (const [id, text] of ${JSON.stringify(seedPages)}) window.wrizoCreateJournalPage({ id, text, projectId: window.__gw3Project, origin: 'project', source: 'page' }); window.wrizoFlushNow(); })()`);
+  await q("location.hash = '#/page/gw3-board'"); await sleep(900);
+  await click('.wz-strip [data-category="plan"]'); await sleep(700);
+  const presetIds = await q("[...document.querySelectorAll('.wz-sections-preset')].map((b) => b.getAttribute('data-preset'))");
+  ok('From my pages is in the Presets list, first in Arbor (the pantser\'s door), and the rest keep the library order', presetIds[0] === 'from-my-pages' && presetIds.length === 14 && presetIds[1] === 'three-act', JSON.stringify(presetIds));
+  await click(".wz-sections-preset[data-preset='from-my-pages']");
+  await waitSoft("!!document.querySelector('.deck-wizard-dialog')", { label: 'preset wizard', timeout: 6000 });
+  const listed = await q("[...document.querySelectorAll('.deck-wizard-page-btn')].map((b) => b.getAttribute('data-page-id'))");
+  ok('a NEW board from the preset: the picker lists the current drawer\'s pages (the three, in the writer\'s order) though the board has no row yet', ['gw3-pg1', 'gw3-pg2', 'gw3-pg3'].every((id) => listed.includes(id)), JSON.stringify(listed));
+  await click("[data-page-id='gw3-pg3']"); await click("[data-page-id='gw3-pg1']"); await click('.deck-wizard-deal'); await sleep(1200);
+  const born = (await boxes()).filter((b) => b.kind === 'text');
+  ok('the preset deal births the new board with one card per picked page, in the order picked', born.length === 2 && born[0].text === 'Second horn\n' && born[1].text === 'Mara at the window\n', JSON.stringify(born.map((b) => b.text)));
+  const bp = await point('[data-box-id="' + born[0].id + '"] .board-text'); await app.mouseMove(bp.x, bp.y); await app.mouseDown(bp.x, bp.y); await sleep(60); await app.mouseUp(bp.x, bp.y); await sleep(500);
+  await q("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(800);
+  await q("document.querySelector('#wz-tutor-tab-links')?.click()"); await sleep(900);
+  const panel2 = await q("document.querySelector('.wz-tutor-panel')?.textContent || ''");
+  ok('...and each is grafted to its page even though the board was born by that same deal: the first card\'s Inputs tab names Second horn, not the other page', /Second horn/.test(panel2) && !/Mara at the window/.test(panel2), panel2.slice(0, 200));
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);

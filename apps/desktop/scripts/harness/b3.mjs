@@ -508,7 +508,12 @@ await withHarness(async (app) => {
   // Kept VERBATIM below and no longer run; the live successor follows (scripts/harness/guided-w3.mjs carries the new law).
   //
   // ok('S4: the definitions sweep — all seven decks are registered', Object.keys(sweepResult).length === 7, JSON.stringify(Object.keys(sweepResult)));
-  ok('S4: the definitions sweep [guided-w3 successor] - all thirteen decks are registered (the seven live + the six Tier 1 additions)', Object.keys(sweepResult).length === 13, JSON.stringify(Object.keys(sweepResult)));
+  // ---- PARKED - SUPERSEDED by Fable's Oct 23 ruling on From my pages (change 5): From my pages is the fourteenth deck (the seam's default answer for its page step is no pages: it deals nothing).
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok('S4: the definitions sweep [guided-w3 successor] - all thirteen decks are registered (the seven live + the six Tier 1 additions)', Object.keys(sweepResult).length === 13, JSON.stringify(Object.keys(sweepResult)));
+  ok('S4: the definitions sweep [guided-w3 successor 2] - all fourteen decks are registered (the seven live + the six Tier 1 additions + From my pages)', Object.keys(sweepResult).length === 14, JSON.stringify(Object.keys(sweepResult)));
+  ok('S4 sweep [guided-w3]: "from-my-pages" with its default answers (no pages picked) deals nothing, without error', sweepResult['from-my-pages'] === 0, 'got ' + sweepResult['from-my-pages']);
   for (const [deckId, expected] of Object.entries({ 'hero-journey': 12, 'story-circle': 8, 'scene-sequel': 6, 'argument-essay': 5, 'research-paper': 5, 'business-proposal': 7 })) {
     ok(`S4 sweep [guided-w3]: "${deckId}" deals without error and lands its own exact declared card count (${expected})`, sweepResult[deckId] === expected, `got ${sweepResult[deckId]}`);
   }

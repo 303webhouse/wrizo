@@ -52,8 +52,9 @@ import { DeskFrame, useDeskFrameViewport } from './DeskFrame';
 import { DeckWizard } from './DeckWizard';
 import { DECKS } from '../decks/library';
 import { StepHelp } from './StepHelp';
-import { promptToShow, bodyIsEmpty } from '../store/guided';
-import { graftTo, searchGraftables } from '../store/grafts';
+import { promptToShow, bodyIsEmpty, pagesOfPlace } from '../store/guided';
+import { graftTo } from '../store/grafts';
+import { usePlace } from '../store/usePlace';
 import { materializeDeck } from '../decks/engine';
 import type { DeckDefinition, DeckAnswers } from '../decks/types';
 import { armStartHere, getStartHereCardId, noteDealtCardEdited } from '../store/deckHint';
@@ -969,6 +970,10 @@ export function BoardEditor({ id }: { id: string }) {
   // race this project has already diagnosed once, generalized) — see
   // decks/engine.ts's own header comment for the full reasoning.
   const [deckWizardOpen, setDeckWizardOpen] = useState(() => !!unborn?.descriptor.deck);
+  // W3 - From my pages' picker reads the writer's CURRENT PLACE (the Drawer she is in, or the Journal), so it works on a board that does not exist yet; the cards it deals are grafted once the board's row does
+  // (a graft needs the row: an unborn board is born by its first box, in the effect below the autosave).
+  const place = usePlace();
+  const pendingGraftsRef = useRef<{ boxId: string; entryId: string }[]>([]);
   // BIG PROJECTS step 2 - a PRESET on the Boards tab opens a new board with its deck's wizard already running: the deck id rides the address (descriptor.deck), is read once while
   // the board is unborn, and is dropped when the wizard closes (so a later Templates press opens the library as it always did).
   const [startDeckId, setStartDeckId] = useState<string | null>(() => unborn?.descriptor.deck ?? null);
@@ -1295,6 +1300,23 @@ export function BoardEditor({ id }: { id: string }) {
     const h = setTimeout(() => { saveBoardBoxes(id, boxesRef.current); lastSavedRef.current = boxesRef.current; }, AUTOSAVE_MS);
     return () => clearTimeout(h);
   }, [boxes, id]);
+
+  // W3 - FROM MY PAGES: the dealt cards are GRAFTED to their pages through the ordinary Grafts path (store/grafts.ts graftTo) - but only once the cards are on a board whose ROW exists: an unborn board is born by
+  // its first box (the effect above), and a graft is a record owned by the board's row, so it is made on the render after the birth. A page already pinned on this board comes back as a connection,
+  // which is a box in this same array. Nothing is queued for any other deck. The pages themselves are never touched (it shows only).
+  useEffect(() => {
+    if (pendingGraftsRef.current.length === 0 || unbornRef.current || !getJournalEntry(id)) return;
+    const todo = pendingGraftsRef.current;
+    pendingGraftsRef.current = [];
+    const connections: Box[] = [];
+    let z = boxes.reduce((m, b) => Math.max(m, b.z), 0) + 1;
+    for (const g of todo) {
+      if (!boxes.some(b => b.id === g.boxId)) continue;
+      const made = graftTo({ entryId: id, boxId: g.boxId }, { entryId: g.entryId }, boxes);
+      if (made && made.made === 'connection') connections.push({ id: generateId(), kind: 'connection', x: 0, y: 0, w: 0, h: 0, z: z++, connA: made.a, connB: made.b });
+    }
+    if (connections.length) setBoxes(prev => [...prev, ...connections]);
+  }, [boxes, id, unborn]);
 
   useEffect(() => {
     const onHide = () => {
@@ -1700,16 +1722,9 @@ export function BoardEditor({ id }: { id: string }) {
   const onDeckDealt = (deck: DeckDefinition, answers: DeckAnswers) => {
     const result = materializeDeck(deck, answers, boxesRef.current);
     if (result.dealtIds.length === 0) return;   // W3: nothing dealt (the page step offers no empty deal; this is the belt)
-    // W3 - From my pages: each dealt card is GRAFTED to its page through the ordinary Grafts path. A page record is written at once (graftTo owns it); a page already pinned on this board comes back as
-    // a connection to be a box in the same array, so it lands with the cards in ONE setBoxes (the board owns its own boxes). A deck with no grafts adds nothing here.
-    const withCards = [...boxesRef.current, ...result.boxes];
-    const graftConnections: Box[] = [];
-    let graftZ = withCards.reduce((m, b) => Math.max(m, b.z), 0) + 1;
-    for (const g of result.grafts) {
-      const made = graftTo({ entryId: id, boxId: g.boxId }, { entryId: g.entryId }, withCards);
-      if (made && made.made === 'connection') graftConnections.push({ id: generateId(), kind: 'connection', x: 0, y: 0, w: 0, h: 0, z: graftZ++, connA: made.a, connB: made.b });
-    }
-    setBoxes(prev => [...prev, ...result.boxes, ...graftConnections]);
+    // W3 - From my pages: each dealt card is to be GRAFTED to its page through the ordinary Grafts path - queued here, made by the effect below once the cards are on a board whose row exists.
+    pendingGraftsRef.current = [...pendingGraftsRef.current, ...result.grafts];
+    setBoxes(prev => [...prev, ...result.boxes]);
     armStartHere(id, result.firstCardId, result.dealtIds);
     setStartHereCardId(result.firstCardId);
   };
@@ -3176,7 +3191,7 @@ export function BoardEditor({ id }: { id: string }) {
         />
       )}
       {deckWizardOpen && (
-        <DeckWizard decks={DECKS} startDeckId={startDeckId ?? undefined} pagesFor={() => searchGraftables('', { entryId: id }, boxesRef.current).Pages.filter(r => !r.placeDiffers).map(r => ({ id: r.entryId, title: r.title }))} onDeal={onDeckDealt} onClose={() => { setDeckWizardOpen(false); setStartDeckId(null); }} />
+        <DeckWizard decks={DECKS} startDeckId={startDeckId ?? undefined} pagesFor={() => pagesOfPlace(place)} onDeal={onDeckDealt} onClose={() => { setDeckWizardOpen(false); setStartDeckId(null); }} />
       )}
     </>
   );

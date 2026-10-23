@@ -1,5 +1,7 @@
 import type { Box } from '../types';
 import { graftsOf } from './grafts';
+import { sectionsOf, type Place } from './place';
+import { firstLine } from './entryText';
 
 // W3 (guided paths) - the PURE reading of a dealt step. A card's text is `Title\nbody`; a dealt Tier 1 card is `Title\n` (an EMPTY body) and carries its question as `prompt`
 // (types/index.ts). Everything here reads the box; nothing writes. The placeholder is never part of `text`, so nothing that reads the writer's words can ever see it.
@@ -33,4 +35,10 @@ export function kindled(boardId: string, box: Pick<Box, 'id' | 'text'>, boxes?: 
   if (hasWriterText(box)) return true;
   const g = graftsOf({ entryId: boardId, boxId: box.id }, boxes);
   return g.Pages.length + g.Sources.length + g.Boards.length > 0;
+}
+
+/** FROM MY PAGES' picker (Fable, Oct 23): the pages of the writer's CURRENT PLACE - the pages the Pages pop-out lists for it, in the writer's own order: this Drawer's pages (every set in it), or the
+ *  Journal's when the writer is in the Journal. Not the board's own set: a NEW board has no pages yet, and the preset that opens it has to work. Boards, system boards and plan faces are never listed. */
+export function pagesOfPlace(place: Pick<Place, 'kind' | 'id'>): { id: string; title: string }[] {
+  return sectionsOf(place, 'pages').flatMap(g => g.items).map(e => ({ id: e.id, title: firstLine(e.text) }));
 }

@@ -5,7 +5,7 @@ import { guidedStep } from '../guided';
 import type { DeckDefinition, DealtCardSpec } from '../types';
 
 // W3 (Wrizors' game plan, wave 1; content decks/content.ts, from w3-deck-content.md section 2.7) - FROM MY PAGES, the reverse outline: look at what you already wrote and name what each part is doing.
-// The writer PICKS pages, in her order (the wizard's own page step - a `kind: 'pages'` question, components/DeckWizard.tsx); the deck deals ONE CARD PER PAGE, in that order, each card titled
+// The writer PICKS pages, in their order (the wizard's own page step - a `kind: 'pages'` question, components/DeckWizard.tsx); the deck deals ONE CARD PER PAGE, in that order, each card titled
 // with its page's title (or first words) and GRAFTED to that page (the card carries `graftTo`; the caller grafts it through the board - decks/engine.ts MaterializedDeal.grafts).
 //
 // IT SHOWS ONLY (Nick, Oct 23): nothing here writes a page, reorders a page or moves one - this file imports no store function but a READ (getJournalEntry), and a card's graft is the ordinary

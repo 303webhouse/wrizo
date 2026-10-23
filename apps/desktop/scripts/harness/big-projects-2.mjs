@@ -208,7 +208,11 @@ async function part2() {
     // Kept VERBATIM below and no longer run; the live successor follows (scripts/harness/guided-w3.mjs carries the new law).
     //
     // ok('Y1 the presets are the seven decks, in the library\'s own order', !!y1 && same(y1.presets, ['three-act', 'worldbuilding', 'feature-screenplay', 'thesis', 'grant', 'feature-story', 'character-study']), JSON.stringify(y1 && y1.presets));
-    ok('Y1 the presets are the thirteen decks, in the library\'s own order [guided-w3 successor]', !!y1 && same(y1.presets, ['three-act', 'worldbuilding', 'feature-screenplay', 'thesis', 'grant', 'feature-story', 'character-study', 'hero-journey', 'story-circle', 'scene-sequel', 'argument-essay', 'research-paper', 'business-proposal']), JSON.stringify(y1 && y1.presets));
+    // ---- PARKED - SUPERSEDED by Fable's Oct 23 ruling on From my pages (change 5): the presets are fourteen decks now and Arbor leads with From my pages (the pantser's door); the rest keep the library's own order.
+    // Kept VERBATIM below and no longer run; the live successor follows.
+    //
+    // ok('Y1 the presets are the thirteen decks, in the library\'s own order [guided-w3 successor]', !!y1 && same(y1.presets, ['three-act', 'worldbuilding', 'feature-screenplay', 'thesis', 'grant', 'feature-story', 'character-study', 'hero-journey', 'story-circle', 'scene-sequel', 'argument-essay', 'research-paper', 'business-proposal']), JSON.stringify(y1 && y1.presets));
+    ok('Y1 the presets are the fourteen decks - From my pages first in Arbor, the rest in the library\'s own order [guided-w3 successor 2]', !!y1 && same(y1.presets, ['from-my-pages', 'three-act', 'worldbuilding', 'feature-screenplay', 'thesis', 'grant', 'feature-story', 'character-study', 'hero-journey', 'story-circle', 'scene-sequel', 'argument-essay', 'research-paper', 'business-proposal']), JSON.stringify(y1 && y1.presets));
     ok('Y1 every row declares data-link-entry equal to its entry (the connector\'s target) and none is natively draggable', (await app.evalJs("[...document.querySelectorAll('.wz-sections[data-kind=boards] .wz-section-row')].every((r) => r.dataset.linkEntry === r.dataset.entryId && !r.closest('[draggable=\"true\"]'))")) === true, '');
 
     // ---- Y2: a row opens its board -------------------------------------------------------------------------------------------------------------------------------------------

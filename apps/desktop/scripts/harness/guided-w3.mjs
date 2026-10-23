@@ -50,7 +50,7 @@ async function load(over0 = {}) {
     "export * from './decks/content';",
     "export * from './store/guided';",
     "export { stageTutorAsk, TUTOR_STAGE_EVENT } from './store/tutorStage';",
-    "export { createJournalPage } from './store/persistence';",
+    "export { createJournalPage, createDrawer, createProject, setProjectDrawer } from './store/persistence';",
   ];
   const res = await build({
     stdin: { contents: lines.join('\n'), resolveDir: SRC, loader: 'ts' },
@@ -313,11 +313,50 @@ function suite(M, read, doc) {
   // FM2 - IT SHOWS ONLY: the deck file reads one page record and writes nothing (no store verb but getJournalEntry); the board grafts through the ordinary Grafts path, in ONE setBoxes
   const fmSrc = read('decks/library/fromMyPages.ts');
   const imports = [...fmSrc.matchAll(/^import .* from '(.*)';$/gm)].map((m) => m[0]);
-  keep('FM2', imports.some((i) => /\{ getJournalEntry \} from '\.\.\/\.\.\/store\/persistence'/.test(i)) && !/\b(?:save|patch|upsert|reorder|move|update|set|add|remove|delete)[A-Z]\w*\(/.test(fmSrc.replace(/\/\/.*$/gm, '')) && /graftTo\(\{ entryId: id, boxId: g\.boxId \}, \{ entryId: g\.entryId \}, withCards\)/.test(be) && /setBoxes\(prev => \[\.\.\.prev, \.\.\.result\.boxes, \.\.\.graftConnections\]\)/.test(be), imports.join(' | '));
+  // ---- PARKED - SUPERSEDED by Fable's Oct 23 ruling on From my pages (change 5): the cards' grafts are now QUEUED at the deal and made by an effect once the board's row exists (an unborn board is born by its first box), so the board no longer calls graftTo inside the deal.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // keep('FM2', imports.some((i) => /\{ getJournalEntry \} from '\.\.\/\.\.\/store\/persistence'/.test(i)) && !/\b(?:save|patch|upsert|reorder|move|update|set|add|remove|delete)[A-Z]\w*\(/.test(fmSrc.replace(/\/\/.*$/gm, '')) && /graftTo\(\{ entryId: id, boxId: g\.boxId \}, \{ entryId: g\.entryId \}, withCards\)/.test(be) && /setBoxes\(prev => \[\.\.\.prev, \.\.\.result\.boxes, \.\.\.graftConnections\]\)/.test(be), imports.join(' | '));
+  keep('FM2', imports.some((i) => /\{ getJournalEntry \} from '\.\.\/\.\.\/store\/persistence'/.test(i)) && !/\b(?:save|patch|upsert|reorder|move|update|set|add|remove|delete)[A-Z]\w*\(/.test(fmSrc.replace(/\/\/.*$/gm, ''))
+      && /pendingGraftsRef\.current = \[\.\.\.pendingGraftsRef\.current, \.\.\.result\.grafts\];/.test(be) && /if \(pendingGraftsRef\.current\.length === 0 \|\| unbornRef\.current \|\| !getJournalEntry\(id\)\) return;/.test(be)
+      && /graftTo\(\{ entryId: id, boxId: g\.boxId \}, \{ entryId: g\.entryId \}, boxes\)/.test(be) && /if \(connections\.length\) setBoxes\(prev => \[\.\.\.prev, \.\.\.connections\]\);/.test(be), imports.join(' | '));
+    // PP2 - the picker reads the writer's current PLACE through the hook, never the board's own entry (a new board has none)
+    keep('PP2', /const place = usePlace\(\);/.test(be) && /pagesFor=\{\(\) => pagesOfPlace\(place\)\}/.test(be) && !/searchGraftables\(/.test(be), 'the board door passes pagesOfPlace(place)');
   // FM3 - the door: the library offers From my pages only where there are pages to pick (a board's own door); the new-project door passes none, so the deck is absent there; a preset (a NEW board) never lists it
   const wiz = read('components/DeckWizard.tsx'), cp = read('pages/CreateProject.tsx'), sp = read('components/SectionsPopout.tsx');
-  keep('FM3', /const visibleDecks = decks\.filter\(d => !asksForPages\(d\) \|\| \(pagesFor \? pagesFor\(\)\.length > 0 : false\)\);/.test(wiz) && /decksByRoom\(visibleDecks\)/.test(wiz) && /question\.kind === 'pages' &&/.test(wiz) && !/pagesFor/.test(cp)
-    && /DECKS\.filter\(deck => !deck\.questions\.some\(q => q\.kind === 'pages'\)\)\.map/.test(sp) && /pagesFor=\{\(\) => searchGraftables\('', \{ entryId: id \}, boxesRef\.current\)\.Pages\.filter\(r => !r\.placeDiffers\)/.test(be), 'the library, the new-project door, the Presets list and the board door');
+  // ---- PARKED - SUPERSEDED by Fable's Oct 23 ruling on From my pages (change 5): From my pages is IN the Presets list (Arbor leads with it) - the old law hid it from presets because a preset opens a NEW board with no pages; the picker now reads the current place.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // keep('FM3', /const visibleDecks = decks\.filter\(d => !asksForPages\(d\) \|\| \(pagesFor \? pagesFor\(\)\.length > 0 : false\)\);/.test(wiz) && /decksByRoom\(visibleDecks\)/.test(wiz) && /question\.kind === 'pages' &&/.test(wiz) && !/pagesFor/.test(cp)
+  //   && /DECKS\.filter\(deck => !deck\.questions\.some\(q => q\.kind === 'pages'\)\)\.map/.test(sp) && /pagesFor=\{\(\) => searchGraftables\('', \{ entryId: id \}, boxesRef\.current\)\.Pages\.filter\(r => !r\.placeDiffers\)/.test(be), 'the library, the new-project door, the Presets list and the board door');
+  keep('FM3', /const visibleDecks = decks\.filter\(d => !asksForPages\(d\) \|\| \(pagesFor \? pagesFor\(\)\.length > 0 : false\)\);/.test(wiz) && /decksByRoom\(visibleDecks\)/.test(wiz) && /question\.kind === 'pages' &&/.test(wiz) && !/pagesFor/.test(cp),
+      'the library offers it only where a door supplies pages; the new-project door supplies none');
+    // PP3 - the Presets list carries From my pages; Arbor leads with it, every other theme keeps the library's own order
+    const leadSort = (decksIn) => [...decksIn].sort((a, b) => Number(b.id === 'from-my-pages') - Number(a.id === 'from-my-pages'));
+    const arborOrder = leadSort(decks).map((d) => d.id), libOrder = decks.map((d) => d.id);
+    keep('PP3', /const presetDecks = theme === 'plateau' \? \[\.\.\.DECKS\]\.sort\(\(a, b\) => Number\(b\.id === 'from-my-pages'\) - Number\(a\.id === 'from-my-pages'\)\) : DECKS;/.test(sp) && /presetDecks\.map\(deck => \(/.test(sp) && !/q\.kind === 'pages'/.test(sp)
+      && arborOrder[0] === 'from-my-pages' && same(arborOrder.slice(1), libOrder.filter((i) => i !== 'from-my-pages')) && libOrder.includes('from-my-pages'), arborOrder.slice(0, 3).join(','));
+
+  // PP1 - pagesOfPlace: this Drawer's pages across its sets, in the writer's order; the Journal's pages when the place is the Journal; never another Drawer's pages, never a board
+  const dA = M.createDrawer('Fiction'), dB = M.createDrawer('Essays');
+  const pA1 = M.createProject('Novel', 'creative'), pA2 = M.createProject('Stories', 'creative'), pB1 = M.createProject('Op-eds', 'creative');
+  M.setProjectDrawer(pA1.id, dA.id); M.setProjectDrawer(pA2.id, dA.id); M.setProjectDrawer(pB1.id, dB.id);
+  const seedP = (id, text, projectId, extra = {}) => M.createJournalPage({ id, text, projectId, origin: projectId ? 'project' : 'journal', source: 'page', createdAt: '2026-02-0' + id.slice(-1) + 'T00:00:00.000Z', ...extra });
+  seedP('pp-a1', 'Alpha scene\nbody', pA1.id); seedP('pp-a2', 'Beta chapter', pA2.id); seedP('pp-b3', 'Essay one', pB1.id); seedP('pp-j4', 'Journal note', null); seedP('pp-bd5', 'A board in the Fiction drawer', pA1.id, { pageType: 'board', boxes: [] });
+  const inA = M.pagesOfPlace({ kind: 'drawer', id: dA.id }).map((p) => p.title);
+  const inB = M.pagesOfPlace({ kind: 'drawer', id: dB.id }).map((p) => p.title);
+  const inJ = M.pagesOfPlace({ kind: 'journal', id: 'journal' }).map((p) => p.title);
+  keep('PP1', same(inA, ['Alpha scene', 'Beta chapter']) && same(inB, ['Essay one']) && inJ.includes('Journal note') && !['Alpha scene', 'Beta chapter', 'Essay one'].some((t) => inJ.includes(t)) && !inA.concat(inB, inJ).some((t) => /board/i.test(t)), JSON.stringify({ inA, inB, inJ }));
+
+  // DA1 - the test seam the old sweep (b3.mjs S4) walks: every deck has default answers and a deal count without throwing; a page step's default is no pages, which deals nothing
+  let daOk = false, daDetail = '';
+  try {
+    const w = globalThis.window.wrizoDecks;
+    const all = w.ids().map((id) => [id, w.dealCount(id, w.defaultAnswers(id))]);
+    daOk = all.length === 14 && same(w.defaultAnswers('from-my-pages'), { pages: '' }) && all.find(([id]) => id === 'from-my-pages')[1] === 0 && all.filter(([id]) => id !== 'from-my-pages').every(([, n]) => n >= 5);
+    daDetail = JSON.stringify(all);
+  } catch (e) { daDetail = String(e && e.message); }
+  keep('DA1', daOk, daDetail);
 
   // CS - the stylesheet
   const css = read('index.css');
@@ -388,9 +427,15 @@ const MUT = [
   { name: 'From my pages reorders the pages', file: 'decks/library/fromMyPages.ts', find: ".split(',').filter(Boolean)", to: ".split(',').filter(Boolean).sort()", red: ['FM1'] },
   { name: 'the engine stops recording the graft', file: 'decks/engine.ts', find: 'specs.forEach(spec => { if (spec.graftTo)', to: 'specs.forEach(spec => { if (false && spec.graftTo)', red: ['FM1'] },
   { name: 'From my pages writes a page', file: 'decks/library/fromMyPages.ts', find: "import { getJournalEntry } from '../../store/persistence';", to: "import { getJournalEntry, saveJournalEntry } from '../../store/persistence';\nvoid saveJournalEntry;", red: ['FM2'] },
-  { name: 'the board stops grafting the cards', file: 'components/BoardEditor.tsx', find: 'const made = graftTo({ entryId: id, boxId: g.boxId }, { entryId: g.entryId }, withCards);', to: 'const made = null as ReturnType<typeof graftTo>;', red: ['FM2'] },
+  { name: 'the board stops grafting the cards', file: 'components/BoardEditor.tsx', find: 'const made = graftTo({ entryId: id, boxId: g.boxId }, { entryId: g.entryId }, boxes);', to: 'const made = null as ReturnType<typeof graftTo>;', red: ['FM2'] },
+  { name: 'the grafts are made before the board has a row', file: 'components/BoardEditor.tsx', find: "if (pendingGraftsRef.current.length === 0 || unbornRef.current || !getJournalEntry(id)) return;", to: "if (pendingGraftsRef.current.length === 0) return;", red: ['FM2'] },
+  { name: 'the picker reads the board\'s own entry again', file: 'components/BoardEditor.tsx', find: 'pagesFor={() => pagesOfPlace(place)}', to: "pagesFor={() => []}", red: ['PP2'] },
+  { name: 'pagesOfPlace lists every page of every place', file: 'store/guided.ts', find: "return sectionsOf(place, 'pages').flatMap(g => g.items)", to: "return [...sectionsOf({ kind: 'journal', id: 'journal' }, 'pages'), ...sectionsOf(place, 'pages')].flatMap(g => g.items)", red: ['PP1'] },
+  { name: 'pagesOfPlace lists the boards too', file: 'store/guided.ts', find: "return sectionsOf(place, 'pages')", to: "return [...sectionsOf(place, 'pages'), ...sectionsOf(place, 'boards')]", red: ['PP1'] },
+  { name: 'the seam\'s default answers crash on a page step', file: 'decks/library/index.ts', find: "q.kind === 'pages' ? '' : q.options[0].id", to: "q.options[0].id", red: ['DA1'] },
   { name: 'the library offers From my pages with no pages', file: 'components/DeckWizard.tsx', find: "(pagesFor ? pagesFor().length > 0 : false)", to: "(pagesFor ? true : true)", red: ['FM3'] },
-  { name: 'a preset lists From my pages', file: 'components/SectionsPopout.tsx', find: "DECKS.filter(deck => !deck.questions.some(q => q.kind === 'pages')).map(", to: "DECKS.filter(deck => !!deck).map(", red: ['FM3'] },
+  { name: 'the Presets list drops From my pages', file: 'components/SectionsPopout.tsx', find: "const presetDecks = theme === 'plateau' ? [...DECKS]", to: "const presetDecks = theme === 'plateau' ? [...DECKS].filter((d) => d.id !== 'from-my-pages')", red: ['PP3'] },
+  { name: 'Arbor stops leading with From my pages', file: 'components/SectionsPopout.tsx', find: "Number(b.id === 'from-my-pages') - Number(a.id === 'from-my-pages')", to: "Number(a.id === 'from-my-pages') - Number(b.id === 'from-my-pages')", red: ['PP3'] },
   { name: 'the new-project door offers pages', file: 'pages/CreateProject.tsx', find: "<DeckWizard decks={DECKS} onDeal={onDeckDealt}", to: "<DeckWizard decks={DECKS} pagesFor={() => []} onDeal={onDeckDealt}", red: ['FM3'] },
   { name: 'the placeholder becomes real content', file: 'index.css', find: '  content:attr(data-prompt); display:block; margin-top:2px;', to: '  content:"x"; display:block; margin-top:2px;', red: ['CS1'] },
 ];
