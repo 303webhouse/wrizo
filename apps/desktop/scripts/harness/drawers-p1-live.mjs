@@ -60,6 +60,9 @@ const realClick = async (app, selector) => {
   await app.mouseUp(rect.x, rect.y);
 };
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
+// the parked recorder (page-size, Oct 23): records only, printed on the parked leg (HARNESS_PARKED=1), never counted in the default verdict
+const parkedChecks = [];
+const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass: !!pass, detail });
 const guard = async (name, fn) => { try { await fn(); } catch (e) { ok(`${name}: THE DRIVER THREW (not a product finding)`, false, String(e).slice(0, 240)); } };
 
 const W = 1280, H = 800;
@@ -101,6 +104,12 @@ const modeTab = async (app, key) => { await app.evalJs(`document.querySelector('
 const leftOpen = (app) => app.evalJs(`document.querySelector('.wz-sliver')?.getAttribute('data-open') === 'true'`);
 const rightOpen = (app) => app.evalJs(`document.querySelector('.wz-tutor-panel')?.getAttribute('data-open') === 'true'`);
 const settled = (app, panel) => waitSoft(app, `(() => { const l = document.querySelector('${panel} > .wz-drawer-slide'); if (!l) return false; const cs = getComputedStyle(l); return cs.transform === 'none' && cs.pointerEvents !== 'none'; })()`, { timeout: 3000, label: 'settled' });
+// page-size (Fable, Oct 23): whether the band holds the page AND both drawers at their minimum - the desk on each side of the page, measured with the drawers shut
+// (the page never moves, so this is the room the drawers will have). DRAWER_MIN equals the build's one token for a drawer's narrowest open width.
+const DRAWER_MIN = 200;
+const roomForBoth = (app) => app.evalJs(`(() => { const p = document.querySelector('.mode-page'); const s = document.querySelector('.desk-frame-stage'); if (!p || !s) return null;
+  const a = p.getBoundingClientRect(); const b = s.getBoundingClientRect(); const left = a.left - b.left; const right = b.right - a.right;
+  return { left: Math.round(left), right: Math.round(right), both: left >= ${DRAWER_MIN} && right >= ${DRAWER_MIN} }; })()`);
 const toggleLeft = async (app) => { await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(30); };
 const toggleRight = async (app) => { await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(30); };
 const ensureLeft = async (app, want) => { if ((await leftOpen(app)) !== want) await toggleLeft(app); await waitSoft(app, `document.querySelector('.wz-sliver')?.getAttribute('data-open') === '${want}'`, { timeout: 2500 }); if (want) await settled(app, '.wz-sliver-panel'); await sleep(want ? 300 : 500); };
@@ -338,16 +347,43 @@ await withHarness(async (app) => {
     // });
 
 
+    // ---- PARKED - SUPERSEDED by page-size (Fable's ruling, Oct 23): the Oct 12 "one drawer at a time, at every width" rule is REPLACED by the MEASURED rule - both
+    // drawers stand where the band holds the page AND both at their 200px minimum; otherwise opening one closes the other (Nick's Oct 7 rule, his original ask in
+    // menusDrawers.ts's header); the page never moves. The block below is the Oct 12 successor, kept VERBATIM and no longer run. Its measured successor follows.
+    //
+    // for (const w of [1100, 1280, 1400]) {
+    //   await guard(`L7 ${T} @${w}`, async () => {
+    //     if (!(await open(app, th, 'draft', w, 800))) { ok(`L7 ${T} fixture: draft opened at ${w}`, false); return; }
+    //     await ensureLeft(app, true);
+    //     await toggleRight(app); await sleep(900);
+    //     const a = { left: await leftOpen(app), right: await rightOpen(app) };
+    //     ok(`L7 ${T} @${w}: opening the RIGHT drawer while the left is open CLOSES the left - one drawer at a time`, a.right === true && a.left === false, JSON.stringify(a));
+    //     await toggleLeft(app); await sleep(900);
+    //     const b = { left: await leftOpen(app), right: await rightOpen(app) };
+    //     ok(`L7 ${T} @${w}: and opening the LEFT drawer while the right is open closes the right (the rule is symmetric)`, b.left === true && b.right === false, JSON.stringify(b));
+    //   });
+    // }
+    // ----------------------------------------------------------------------
+    pok(`PARKED (was "L7 ${T} @1100/1280/1400: opening the RIGHT drawer while the left is open CLOSES the left - one drawer at a time") - SUPERSEDED by page-size (Fable, Oct 23): the measured rule replaces Oct 12's`,
+      true, 'successor: L7 [measured] - both stand where the band holds the page and both at DRAWER_MIN, else the later one closes the other');
+    pok(`PARKED (was "L7 ${T} @1100/1280/1400: and opening the LEFT drawer while the right is open closes the right (the rule is symmetric)") - SUPERSEDED by page-size (Fable, Oct 23)`,
+      true, 'successor: L7 [measured], the symmetric half');
     for (const w of [1100, 1280, 1400]) {
-      await guard(`L7 ${T} @${w}`, async () => {
-        if (!(await open(app, th, 'draft', w, 800))) { ok(`L7 ${T} fixture: draft opened at ${w}`, false); return; }
+      await guard(`L7 ${T} @${w} [measured]`, async () => {
+        if (!(await open(app, th, 'draft', w, 800))) { ok(`L7 ${T} [measured] fixture: draft opened at ${w}`, false); return; }
+        await ensureLeft(app, false); await ensureRight(app, false);
+        const room = await roomForBoth(app);
+        ok(`L7 ${T} @${w} [measured] (premise): the page and the stage are measurable with both drawers shut`, !!room, JSON.stringify(room));
+        if (!room) return;
+        const rule = room.both ? 'BOTH stand (the band holds the page and both drawers at their minimum)' : 'the other CLOSES (no room for both at their minimum)';
         await ensureLeft(app, true);
         await toggleRight(app); await sleep(900);
         const a = { left: await leftOpen(app), right: await rightOpen(app) };
-        ok(`L7 ${T} @${w}: opening the RIGHT drawer while the left is open CLOSES the left - one drawer at a time`, a.right === true && a.left === false, JSON.stringify(a));
+        ok(`L7 ${T} @${w} successor [measured]: opening the RIGHT drawer while the left is open - ${rule}`, a.right === true && a.left === room.both, JSON.stringify({ a, room }));
+        await ensureLeft(app, false); await ensureRight(app, true);
         await toggleLeft(app); await sleep(900);
         const b = { left: await leftOpen(app), right: await rightOpen(app) };
-        ok(`L7 ${T} @${w}: and opening the LEFT drawer while the right is open closes the right (the rule is symmetric)`, b.left === true && b.right === false, JSON.stringify(b));
+        ok(`L7 ${T} @${w} successor [measured]: and opening the LEFT drawer while the right is open - the same rule, symmetric: ${rule}`, b.left === true && b.right === room.both, JSON.stringify({ b, room }));
       });
     }
 
@@ -454,6 +490,15 @@ await withHarness(async (app) => {
 
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
+if (process.env.HARNESS_PARKED === '1') {
+  // eslint-disable-next-line no-console
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.length > 0 && parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nDRAWERS-P1-LIVE PARKED: PASS (${parkedChecks.length} records) - this FILE parks 2 (page-size, Oct 23): L7's two Oct 12 one-drawer-at-every-width checks, recorded once per theme; the older two-drawer law above L7 stays a comment-only park from Oct 12`
+    : `\nDRAWERS-P1-LIVE PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed (or none recorded)`);
+}
 const failed = checks.filter((c) => !c.pass);
 // eslint-disable-next-line no-console
 console.log(failed.length === 0 ? `\nDRAWERS-P1-LIVE VERIFY: PASS (${checks.length} checks)` : `\nDRAWERS-P1-LIVE VERIFY: FAIL - ${failed.length}/${checks.length}\n` + failed.map((c) => '  FAIL ' + c.name + ' | ' + String(c.detail).slice(0, 240)).join('\n'));
