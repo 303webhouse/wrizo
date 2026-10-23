@@ -205,12 +205,25 @@ await withHarness(async (app) => {
 
     // Workshop is the control: it proves the flash mechanism still WORKS, so S1's
     // null above is Revise being live and not the flash being broken app-wide.
-    await enterMode(app, 'workshop');
+    // ---- PARKED - SUPERSEDED by hide-workshop (Nick, Oct 23 11:01 am: the Workshop tab is HIDDEN in every theme until it is built).
+    // The control pressed a tab that no longer exists: Workshop was the strip's only deferred posture on the prose page, so the flash mechanism
+    // has no control left HERE (the screenplay's strip still flashes for Free Write/Revise - ab1.mjs). Kept VERBATIM, not run; the record is pok'd
+    // below and the successor asserts the absence itself.
+    // await enterMode(app, 'workshop');
+    // const wsFlash = await app.evalJs("(() => { const el = document.querySelector('.desk-mode-soon'); return el ? el.textContent : null; })()");
+    // const stillRevise = await tabState(app, 'revise');
+    // ok('S1 CONTROL: Workshop STILL flashes coming-soon and does NOT switch — so the null above is Revise being live, not the flash mechanism having broken',
+    //   typeof wsFlash === 'string' && wsFlash.length > 0 && !!stillRevise && stillRevise.ariaSelected === 'true',
+    //   JSON.stringify({ wsFlash, stillRevise }));
+    const wsTab = await tabState(app, 'workshop');
+    await enterMode(app, 'workshop');   // a no-op by construction (the tab is absent) - kept so the press is the writer's, and the absence is what is asserted
     const wsFlash = await app.evalJs("(() => { const el = document.querySelector('.desk-mode-soon'); return el ? el.textContent : null; })()");
     const stillRevise = await tabState(app, 'revise');
-    ok('S1 CONTROL: Workshop STILL flashes coming-soon and does NOT switch — so the null above is Revise being live, not the flash mechanism having broken',
-      typeof wsFlash === 'string' && wsFlash.length > 0 && !!stillRevise && stillRevise.ariaSelected === 'true',
-      JSON.stringify({ wsFlash, stillRevise }));
+    pok('PARKED (was "S1 CONTROL: Workshop STILL flashes coming-soon and does NOT switch — so the null above is Revise being live, not the flash mechanism having broken") - hide-workshop: the Workshop tab is absent, so there is nothing to flash or switch; live successor: S1 CONTROL [hide-workshop successor]',
+      wsTab === null && wsFlash === null && !!stillRevise && stillRevise.ariaSelected === 'true', JSON.stringify({ wsTab, wsFlash, stillRevise }));
+    ok('S1 CONTROL [hide-workshop successor]: there is NO Workshop tab (no data-mode-key="workshop"), no coming-soon flash can fire from it, and Revise stays selected - absent, not greyed',
+      wsTab === null && wsFlash === null && !!stillRevise && stillRevise.ariaSelected === 'true',
+      JSON.stringify({ wsTab, wsFlash, stillRevise }));
   }
 
   // =========================================================================
@@ -822,7 +835,7 @@ if (process.env.HARNESS_PARKED === '1') {
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nITEM112A PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; this FILE parks 6: S2/§3 S0 and S2/§3's deterministic successor (typed-literal), S2/§3's placement (item112a-deterministic), and 3 since ITEM 207 (S7 at the two reference widths, S8 once) - and, before it, 0 of its own; the ticket's ONE original park is in item84b.mjs (the file that owns the assertion): "the Revise tab is inert", superseded by Revise standing up. See this file's park block for why the first sweep counted 0 and how the suite corrected it.`
+    ? `\nITEM112A PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; this FILE parks 7: S2/§3 S0 and S2/§3's deterministic successor (typed-literal), S2/§3's placement (item112a-deterministic), 3 since ITEM 207 (S7 at the two reference widths, S8 once), and 1 since hide-workshop (S1 CONTROL: Workshop absent) - and, before it, 0 of its own; the ticket's ONE original park is in item84b.mjs (the file that owns the assertion): "the Revise tab is inert", superseded by Revise standing up. See this file's park block for why the first sweep counted 0 and how the suite corrected it.`
     : `\nITEM112A PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 const pass = checks.every((c) => c.pass);

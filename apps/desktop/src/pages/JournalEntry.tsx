@@ -1285,7 +1285,7 @@ function JournalEntryView() {
               <span className="mode-tab__label">{lex('freewrite')}</span>
               <span className="mode-tab__sub">capture</span>
             </button>
-            {['Draft', 'Format', 'Workshop', lex('publish')].map(label => (
+            {['Draft', 'Format', lex('publish')].map(label => (
               <button key={label} type="button" role="tab" aria-selected="false" className="mode-tab deferred" onClick={() => setTabPrompt(true)}>
                 <span className="mode-tab__label">{label}</span>
               </button>

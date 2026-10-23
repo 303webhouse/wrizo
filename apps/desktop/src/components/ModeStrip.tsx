@@ -11,7 +11,7 @@ import { HelpButton } from './HelpButton';
 // every surface under the 1100px gate).
 //
 // ITEM 112-A — REVISE IS LIVE. Free Write, Draft and Revise are live
-// EditorModes; Workshop remains deferred (flashes "coming soon"), and Publish
+// EditorModes; Workshop is HIDDEN until built (Oct 23 - it used to flash "coming soon"), and Publish
 // opens the same stub dialog PageEditor already ships. Revise takes THE STRIP'S
 // EXISTING SWITCH BEHAVIOUR and no new gesture: it is `onSwitch('revise')`, the
 // identical call Draft makes, so the doorway is the mode's only new thing about
@@ -61,7 +61,8 @@ export function ModeStrip({ mode, onSwitch, onPublish, freeWriteEnabled = true, 
       key: 'revise', label: t('modeRevise'), live: reviseEnabled, active: mode === 'revise',
       onClick: () => (reviseEnabled ? onSwitch('revise') : flashSoon(t('modeRevise'))),
     },
-    { key: 'workshop', label: t('modeWorkshop'), live: false, active: false, onClick: () => flashSoon(t('modeWorkshop')) },
+    // Workshop is ABSENT until it is built (Nick, Oct 23 11:01 am) - every theme's word for it
+    // (Workshop / Relay / Commune ...) goes with the tab; re-add the item here to bring it back.
     { key: 'publish', label: t('modePublish'), live: true, active: false, onClick: onPublish, help: 'helpPublish' },
   ];
 

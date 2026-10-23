@@ -22,6 +22,8 @@ import { withHarness } from '../runtime-verify.mjs';
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// hide-workshop: the default leg's observation, re-verified in the parked block (the retired five-string read).
+const parkObs = {};
 
 const rectOf = (sel) => `(() => { const r = document.querySelector(${JSON.stringify(sel)}).getBoundingClientRect(); return {left:r.left, top:r.top, width:r.width, height:r.height}; })()`;
 
@@ -138,8 +140,14 @@ await withHarness(async (app) => {
     planDoor: (() => { const d = document.querySelector('.desk-mode-strip [data-page-plan-door]'); return d ? d.textContent.trim() : null; })(),
     catchAnywhere: !!document.querySelector('.desk-rail-catch, .wz-catch') || document.body.innerText.includes('Catch a thought'),
   })`);
-  ok('S1: the top line reads the exact ratified strings, left-set inside the header row',
-    JSON.stringify(topLine.stripLabels) === JSON.stringify(['Free Write', 'Draft', 'Revise', 'Workshop', 'Publish']) && topLine.stripInHeader,
+  // ---- PARKED - SUPERSEDED by hide-workshop (Nick, Oct 23 11:01 am: the Workshop tab is HIDDEN until built). Kept VERBATIM and no longer run;
+  // its parked record is in the HARNESS_PARKED block, and its successor follows.
+  // ok('S1: the top line reads the exact ratified strings, left-set inside the header row',
+  //   JSON.stringify(topLine.stripLabels) === JSON.stringify(['Free Write', 'Draft', 'Revise', 'Workshop', 'Publish']) && topLine.stripInHeader,
+  //   JSON.stringify(topLine.stripLabels));
+  parkObs.topLine = { stripLabels: topLine.stripLabels, stripInHeader: topLine.stripInHeader };
+  ok('S1 [hide-workshop successor]: the top line reads the exact ratified strings (Workshop absent), left-set inside the header row',
+    JSON.stringify(topLine.stripLabels) === JSON.stringify(['Free Write', 'Draft', 'Revise', 'Publish']) && topLine.stripInHeader,
     JSON.stringify(topLine.stripLabels));
   // PW1 S6 (2026-09-08) — PARKED. The framed Page carries a location crumb
   // again (Nick, Q7), so this check's claim is false by ruling, not by defect.
@@ -731,6 +739,10 @@ if (process.env.HARNESS_PARKED === '1') {
     // Live successor: this file's own live CD4 S2 successor (S1/cd1.1 section).
     pok('PARKED (was "CD3 successor of \\"S1/cd1.1: ScriptEditor\'s header also carries the Pages/Plan flight toggle beside Done on a project-origin screenplay\\": ScriptEditor\'s header carries ONLY the Pages/Plan flight toggle on a project-origin screenplay (Done scrapped)") — CD4 S2: the elder Plan flight tab retires; the script header carries ONLY [\'Pages\'] now — live successor: this file\'s own live CD4 S2 successor (S1/cd1.1 section)',
       JSON.stringify(scriptActionButtonsParked) === JSON.stringify(['Pages']), JSON.stringify(scriptActionButtonsParked));
+
+    // hide-workshop (Oct 23) - record frozen; re-verifies the NEW truth from the default leg's observation (parkObs).
+    pok('PARKED (was "S1: the top line reads the exact ratified strings, left-set inside the header row", five strings) - hide-workshop: Workshop is hidden until built, four strings; live successor: S1 [hide-workshop successor]',
+      !!parkObs.topLine && JSON.stringify(parkObs.topLine.stripLabels) === JSON.stringify(['Free Write', 'Draft', 'Revise', 'Publish']) && parkObs.topLine.stripInHeader === true, JSON.stringify(parkObs.topLine));
 
     return parkedChecks;
   });

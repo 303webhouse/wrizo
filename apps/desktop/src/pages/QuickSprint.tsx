@@ -425,12 +425,11 @@ function QuickSprintView() {
           </div>
         )}
 
-        {/* Postures + file actions (Workshop / Publish) inline in one strip. */}
+        {/* Postures + the Publish file action inline in one strip (Workshop tab hidden until built - Nick, Oct 23 11:01 am). */}
         <ModeSwitcher
           mode={mode}
           onSwitch={switchMode}
           actions={[
-            { label: 'Workshop', sub: 'coming soon', deferred: true },
             { label: lex('publish'), sub: 'export', onClick: () => setShowPublish(true) },
           ]}
         />

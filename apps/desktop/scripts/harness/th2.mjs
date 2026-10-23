@@ -140,9 +140,11 @@ await withHarness(async (app) => {
   // verbatim, no longer run:
   //   ok('check 2: the Free-write tab renders Flux\'s "Overclock" (ModeSwitcher sweep)', tabLabel === 'Overclock', String(tabLabel));
   ok('check 2 [theme-leftovers successor]: the Free-write tab renders Flux\'s "Wire In" (ModeSwitcher sweep)', tabLabel === 'Wire In', String(tabLabel));
-  // Two .mode-tab--action tabs render (Workshop, then Publish/Connect) —
-  // target the second explicitly rather than the ambiguous first match.
-  await app.evalJs("[...document.querySelectorAll('.mode-tab--action')][1]?.click()");
+  // Two .mode-tab--action tabs rendered (Workshop, then Publish/Connect) — the second was targeted by INDEX.
+  // MAINTENANCE (hide-workshop, Oct 23): Workshop is hidden until built, so the lone action tab is Publish and index [1] is gone
+  // (the click would silently do nothing). The claim is unchanged (the Publish action opens its dialog); the locator is now the
+  // one live, non-deferred action tab - Publish is the only action that is not deferred, in every theme's word for it.
+  await app.evalJs("document.querySelector('.mode-tab--action:not(.deferred)')?.click()");
   await sleep(150);
   const publishDialogTitle = await app.evalJs("document.querySelector('.card-title')?.textContent");
   // SUPERSEDED (item arbor-quiet-brass): themeLexicon.ts's Flux `publish` override
