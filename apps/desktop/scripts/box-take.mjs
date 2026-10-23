@@ -9,7 +9,7 @@
 // point; box-turn.mjs `grant` is chat 1's overwrite, this is the lane's refusal-by-default. The token is never
 // printed in full.
 import { existsSync, readFileSync } from 'node:fs';
-import { writeGrant, clearGrant, GRANT_PATH } from './box-grant.mjs';
+import { writeGrant, clearGrant, holderOfCaller, GRANT_PATH } from './box-grant.mjs';
 
 const [, , cmd, a, b] = process.argv;
 const read = () => { try { return JSON.parse(readFileSync(GRANT_PATH, 'utf8')); } catch { return { unreadable: true }; } };
@@ -21,8 +21,11 @@ if (cmd === 'take' && a && b) {
     console.log(`GRANT HELD BY ANOTHER: lane=${g.lane ?? '?'} token=${short(g.token)} time=${g.time ?? '?'} - not taking the box`);
     process.exit(1);
   }
-  writeGrant(a, b);
-  console.log(`granted to lane "${a}" - name this turn's start and end in your report`);
+  // The turn is BOUND to the process that called this script (the shell or runner that goes on to launch the harness): withHarness refuses a browser from any
+  // other process tree even with a copied token (box-grant.mjs, "THE HOLDER"). Take the box and run the harness from the SAME shell/script.
+  const holder = holderOfCaller();
+  writeGrant(a, b, holder);
+  console.log(`granted to lane "${a}"${holder ? ` and bound to the calling process tree (pid ${holder.pid})` : ' - UNBOUND: the process table could not be read'} - name this turn's start and end in your report`);
   process.exit(0);
 }
 if (cmd === 'release' && a) {
