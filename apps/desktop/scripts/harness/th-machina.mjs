@@ -1,0 +1,242 @@
+// TH-MACHINA, THE BOX-TURN HALF (step 4 of the Oct 21 build queue; docs/plans/machina-build.md §4; Fable's Phase B GO, Oct 23). The browserless half (th-machina-source.mjs) proves the
+// SOURCE; this drives the real app and reads COMPUTED styles and the live DOM, so a rule the stylesheet states but the cascade loses cannot pass.
+//
+//   SP  splash     under Machina the splash draws the WRIZ[] mark, twenty units that fill and close orange, and NO loading line (the status region is absent); Arbor still has its line
+//   RN  Run        the strip is mounted on the framed Draft page under Machina (not under Arbor); 20 units; the lap's own count ("5 / 10"); ten finished units are the live gray, the rest the
+//                  line tone; ONE notch, 3 x 16 px, orange
+//   CL  celebrate  crossing the goal closes the whole strip orange ONCE; NEUTRAL draws eight sparks, COOL draws none; Ambiance 0 (the still state) draws none and has no colour transition
+//   WB  way back   leaving the page draws the return chip with the "◂" glyph; GRAY under COOL, ORANGE under NEUTRAL
+//   CA  CAST       ONE Controls row "Cast" with Cool | Neutral under Machina; pressing Neutral flips data-cast on <html>; under Arbor the row is absent
+//   LX  words      the mode strip reads Sprint / Build / Edit / Finalize on screen
+//   PP  primacy    PAGE IS PRIMARY: the writing surface's rect is identical with the Run strip on and off, and the editor never unmounts across a celebration
+//
+// Run (repo root or apps/desktop; needs a box turn - node apps/desktop/scripts/box-take.mjs take <lane> <token>):  node scripts/harness/th-machina.mjs     MA_FRAMES=<dir> saves frames
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { withHarness } from '../runtime-verify.mjs';
+
+const checks = [];
+const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const FRAMES = process.env.MA_FRAMES || null;
+const frame = async (app, name) => { if (!FRAMES) return; mkdirSync(FRAMES, { recursive: true }); writeFileSync(join(FRAMES, `${name}.png`), Buffer.from(await app.screenshot(), 'base64')); };
+const ED = '.forward-only-editor';
+const words = (n) => Array.from({ length: n }, (_, i) => ['rain', 'wire', 'neon', 'relay', 'ash'][i % 5]).join(' ') + ' ';
+
+// resolve a token to the browser's own computed colour, in the cascade of the live document
+const RESOLVE = `window.__wzResolve = (v) => { const p = document.createElement('i'); p.style.color = 'var(' + v + ')'; document.body.appendChild(p); const c = getComputedStyle(p).color; p.remove(); return c; }`;
+const token = (app, v) => app.evalJs(`(${RESOLVE}, window.__wzResolve(${JSON.stringify(v)}))`);
+
+const boot = async (app, { theme = 'machina', cast = 'cool', page = 'dark', dial = 50, goal = 10, instruments = true, splash = false } = {}) => {
+  await app.emulateDpr(1, 1400, 900);   // framed (the Run strip lives on the framed desk, like Glitch)
+  await app.goto('/');
+  await app.evalJs(`localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4');
+    ${splash ? '' : "localStorage.setItem('wrizo-splash-hold','50');"}
+    localStorage.setItem('wrizo-writing-settings', JSON.stringify({ progress: 'words', progressStyle: 'rhizome', instrumentsOn: ${instruments}, typewriter: false }));
+    localStorage.setItem('wrizo-writing-goal-lines', JSON.stringify({ n: ${goal}, unit: 'words' }));
+    localStorage.setItem('wrizo-ambiance-dial', '${dial}'); localStorage.setItem('wrizo-theme', '${theme}'); localStorage.setItem('wrizo-machina-cast', '${cast}');`);
+  await app.reload();
+  if (splash) return;
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
+  try { await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 }); } catch { /* the checks record what follows */ }
+  await app.evalJs(`window.wrizoTheme.set('${theme}'); window.wrizoThemePrefs && window.wrizoThemePrefs.set({ page: '${page}' }); window.wrizoCast && window.wrizoCast.set('${cast}')`);
+};
+const openPage = async (app, id, text) => {
+  await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id, text, createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page' })})`);
+  await app.evalJs(`localStorage.setItem('wrizo-mode-page-${id}', 'drafting')`);
+  await sleep(500);
+  await app.evalJs(`location.hash = '#/page/${id}'`);
+  const up = await app.waitFor(`!!document.querySelector('${ED}')`, { label: 'the page', timeout: 12000 }).then(() => true, () => false);
+  await sleep(700);
+  return up;
+};
+const run = (app) => app.evalJs(`(() => { const r = document.querySelector('.machina-run'); if (!r) return null; const units = [...r.querySelectorAll('.machina-run-strip > i')];
+  const here = r.querySelectorAll('.machina-run-strip > i.here');
+  const note = here[0] ? getComputedStyle(here[0], '::after') : null;
+  return { units: units.length, on: units.filter((u) => u.classList.contains('on')).length, here: here.length, closed: r.dataset.closed, still: r.dataset.still, count: (r.querySelector('.machina-run-count') || {}).textContent,
+    sparks: r.querySelectorAll('.machina-run-burst > span').length,
+    notch: note ? { w: note.width, h: note.height, bg: note.backgroundColor } : null,
+    bgFirst: units[0] ? getComputedStyle(units[0]).backgroundColor : null, bgLast: units.length ? getComputedStyle(units[units.length - 1]).backgroundColor : null,
+    transition: units[0] ? getComputedStyle(units[0]).transitionDuration : null }; })()`);
+// the editor's rect AND the paper's (.mode-page): the editor's height follows its text, the paper's is the fixed frame
+const rectOf = (app) => app.evalJs(`(() => { const out = []; for (const sel of ['${ED}', '.mode-page']) { const e = document.querySelector(sel); if (!e) return null; const r = e.getBoundingClientRect(); out.push([r.left, r.top, r.width, r.height].map((v) => Math.round(v * 10) / 10).join(',')); } return out.join(' | '); })()`);
+// watch the strip for a celebration: the max sparks ever seen, whether it ever closed, how long it stayed closed
+const watchCelebration = async (app, ms) => {
+  let maxSparks = 0, closedAt = null, openAt = null, allOrange = false;
+  const orange = await token(app, '--orange');
+  const t0 = Date.now();
+  while (Date.now() - t0 < ms) {
+    const r = await run(app);
+    if (r) {
+      maxSparks = Math.max(maxSparks, r.sparks);
+      if (r.closed === 'true') { if (closedAt === null) closedAt = Date.now() - t0; if (r.bgFirst === orange && r.bgLast === orange) allOrange = true; }
+      else if (closedAt !== null && openAt === null) openAt = Date.now() - t0;
+    }
+    await sleep(60);
+  }
+  return { maxSparks, closedAt, openAt, allOrange };
+};
+
+await withHarness(async (app) => {
+  // ======================================================= SP - the splash (a real launch, not the held one)
+  await boot(app, { theme: 'machina', splash: true });
+  const seen = await app.waitFor("!!document.querySelector('.wz-splash[data-splash-theme=\"machina\"] .wz-splash-machina')", { label: 'the Machina splash', timeout: 8000 }).then(() => true, () => false);
+  const sp = seen ? await app.evalJs(`(() => ({ units: document.querySelectorAll('.wz-splash .ma-unit').length, loading: document.querySelectorAll('.wz-splash .wz-splash-loading').length, word: (document.querySelector('.ma-word') || {}).textContent, ends: [...document.querySelectorAll('.ma-end')].map((e) => e.textContent) }))()`) : null;
+  ok('SP1: the Machina splash draws the WRIZ mark, IDEAS / FINAL DRAFT, and twenty units - and NO loading line (the Run strip is the readout)',
+    !!sp && sp.units === 20 && sp.loading === 0 && sp.word === 'WRIZ' && sp.ends.join('|') === 'IDEAS|FINAL DRAFT', JSON.stringify(sp));
+  await frame(app, 'splash-early');
+  await sleep(1800);
+  await frame(app, 'splash-filling');
+  const closedSplash = await app.waitFor("!!document.querySelector('.wz-splash .ma-strip.closed')", { label: 'the splash strip closing', timeout: 9000 }).then(() => true, () => false);
+  const lit = await app.evalJs("document.querySelectorAll('.wz-splash .ma-unit.on').length");
+  ok('SP2: the splash strip fills to all twenty units and closes orange once', closedSplash && lit === 20, JSON.stringify({ closedSplash, lit }));
+  await frame(app, 'splash-closed');
+  const gone = await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 12000 }).then(() => true, () => false);
+  ok('SP3: the splash ends by itself after the strip closes (the floor trigger fires)', gone);
+  await app.evalJs("window.wrizoTheme.set('plateau')");
+  await app.evalJs("window.wrizoSplash && window.wrizoSplash.reset()");
+
+  // ======================================================= RN - the Run strip, COOL
+  await boot(app, { cast: 'cool', page: 'dark', dial: 100, goal: 10 });
+  const up = await openPage(app, 'ma1', words(15));
+  const r0 = await run(app);
+  ok('RN1 (premise): a framed Machina Draft page with Progress on, the style set to Run and a goal draws the strip', up && !!r0, JSON.stringify(r0));
+  const live = await token(app, '--signal-live'), line = await token(app, '--ink-border'), orange = await token(app, '--orange');
+  ok('RN2: twenty units; the lap reads "5 / 10" (15 words toward a 10-word goal); ten finished units; exactly one notch',
+    !!r0 && r0.units === 20 && r0.count === '5 / 10' && r0.on === 10 && r0.here === 1, JSON.stringify(r0));
+  ok('RN3: the notch is 3 x 16 px and ORANGE; a finished unit is the live gray, an unfinished unit the line tone (computed)',
+    !!r0 && !!r0.notch && r0.notch.w === '3px' && r0.notch.h === '16px' && r0.notch.bg === orange && r0.bgFirst === live && r0.bgLast === line, JSON.stringify({ notch: r0 && r0.notch, first: r0 && r0.bgFirst, last: r0 && r0.bgLast, live, line, orange }));
+  await frame(app, 'run-cool-dark');
+  const rectWith = await rectOf(app);
+  // OR1 - orange is scarce: no Arbor ember on the page (the resting and focused halos), the goal glow dialled down and not orange, the celebration flare not drawn
+  // a colour reads as warm when red leads blue by 30 / 255; computed gradients may serialize as rgb() or color(srgb r g b), so both are parsed - and the parse count is asserted (a blind scan passes)
+  const warm = await app.evalJs(`(() => { const seen = { n: 0 }; const hot = (s) => { let any = false; for (const m of String(s).matchAll(/rgba?\\(([^)]+)\\)/g)) { const [r, g, b] = m[1].split(',').map((x) => parseFloat(x)); seen.n += 1; if (r - b > 30) any = true; }
+      for (const m of String(s).matchAll(/color\\(srgb ([\\d.]+) ([\\d.]+) ([\\d.]+)/g)) { seen.n += 1; if ((parseFloat(m[1]) - parseFloat(m[3])) * 255 > 30) any = true; } return any; };
+    const page = document.querySelector('.mode-page'); const glow = document.querySelector('.wz-goal-glow'); const flare = document.querySelector('.desk-frame-goalflare');
+    page.classList.add('focused'); const focused = getComputedStyle(page).boxShadow; page.classList.remove('focused');
+    const out = { rest: getComputedStyle(page).boxShadow, focused, restHot: hot(getComputedStyle(page).boxShadow), focusedHot: hot(focused), cap: getComputedStyle(document.documentElement).getPropertyValue('--goal-glow-cap').trim(),
+      glowHot: glow ? hot(getComputedStyle(glow).backgroundImage) : null, flare: flare ? getComputedStyle(flare).display : 'absent' }; out.parsed = seen.n; return out; })()`);
+  ok('OR1: no Arbor ember on the page - the resting and focused halos are not warm, the goal glow is dialled to .16 and is not orange, and the celebration flare is not drawn (and the scan parsed colours: it is not blind)',
+    !!warm && warm.parsed >= 4 && !warm.restHot && !warm.focusedHot && warm.cap === '.16' && warm.glowHot === false && (warm.flare === 'none' || warm.flare === 'absent'), JSON.stringify(warm));
+
+  // ======================================================= CL - the celebration, COOL: closes orange, NO sparks
+  await app.evalJs(`document.querySelector('${ED}').focus()`);
+  await app.key('End').catch(() => {});
+  const watchCool = watchCelebration(app, 2600);
+  await app.typeKeys(' ' + words(6));
+  const wc = await watchCool;
+  ok('CL1 [COOL]: crossing the goal closes the WHOLE strip orange, then the lap resets - and COOL draws NO sparks', wc.allOrange && wc.closedAt !== null && wc.openAt !== null && wc.maxSparks === 0, JSON.stringify(wc));
+  const after = await run(app);
+  ok('CL2: after the celebration the next lap reads from the remainder (21 words: "1 / 10")', !!after && after.closed === 'false' && after.count === '1 / 10', JSON.stringify(after));
+  const edUp = await app.evalJs(`!!document.querySelector('${ED}')`);
+  ok('PP1: the editor never unmounted across the celebration (PAGE IS PRIMARY)', edUp);
+
+  // ======================================================= CA - the CAST row (the Controls panel lives on the page's own strip)
+  const opened = await app.evalJs(`(() => { const b = document.querySelector('.wz-strip [data-category="settings"]'); if (!b) return false; b.click(); return true; })()`);
+  await sleep(700);
+  const row = await app.evalJs(`(() => { const r = document.querySelectorAll('.wz-cascade-cast'); return { rows: r.length, label: r[0] ? r[0].querySelector('span').textContent : null, opts: r[0] ? [...r[0].querySelectorAll('button')].map((b) => b.textContent) : [], pressed: r[0] ? [...r[0].querySelectorAll('button')].filter((b) => b.getAttribute('aria-pressed') === 'true').map((b) => b.textContent) : [] }; })()`);
+  ok('CA1: Controls carries ONE "Cast" row, Cool | Neutral, with Cool pressed (the default)', opened && row.rows === 1 && row.label === 'Cast' && row.opts.join('|') === 'Cool|Neutral' && row.pressed.join('|') === 'Cool', JSON.stringify({ opened, row }));
+  await frame(app, 'controls-cool');
+  await app.evalJs(`(() => { const b = document.querySelector('.wz-cascade-cast [data-cast-option="neutral"]'); if (b) b.click(); })()`);
+  await sleep(400);
+  const flipped = await app.evalJs("({ attr: document.documentElement.getAttribute('data-cast'), stored: localStorage.getItem('wrizo-machina-cast') })");
+  ok('CA2: pressing Neutral flips data-cast on <html> and stores it', flipped.attr === 'neutral' && flipped.stored === 'neutral', JSON.stringify(flipped));
+  await frame(app, 'controls-neutral');
+
+  // ======================================================= WB - the way-back glyph. The return chip lives on the DeskRail, which retires on a FRAMED surface (DeskRail.tsx, CD1 S4) - so this leg runs at the
+  // legacy width (< 1100 px), where the rail is the return door: leave the page for the Journal board and read the chip under each cast.
+  await app.emulateDpr(1, 1000, 800);
+  await app.evalJs("location.hash = '#/'");
+  await sleep(500);
+  await app.evalJs("location.hash = '#/page/ma1'");
+  await app.waitFor(`!!document.querySelector('${ED}')`, { label: 'the page at the legacy width', timeout: 12000 }).catch(() => {});
+  await sleep(900);
+  await app.evalJs("location.hash = '#/journal'");
+  await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'the Journal board', timeout: 12000 }).catch(() => {});
+  await sleep(800);
+  const wbChip = () => app.evalJs(`(() => { const b = document.querySelector('.desk-rail-wayback'); if (!b) return null; return { glyph: (b.querySelector('.desk-rail-glyph') || {}).textContent, color: getComputedStyle(b).color }; })()`);
+  const wbN = await wbChip();
+  const orangeN = await token(app, '--orange');
+  ok('WB1 [NEUTRAL]: the return chip draws "◂" in the one ORANGE accent', !!wbN && wbN.glyph === '◂' && wbN.color === orangeN, JSON.stringify({ wbN, orangeN }));
+  await frame(app, 'journal-neutral-dark');
+  await app.evalJs("window.wrizoCast.set('cool')");
+  await sleep(300);
+  const wbCool = await wbChip();
+  const mid = await token(app, '--text-mid');
+  ok('WB2 [COOL]: the same chip is the quiet gray (--text-mid), not Arbor\'s ember', !!wbCool && wbCool.glyph === '◂' && wbCool.color === mid, JSON.stringify({ wbCool, mid }));
+  await frame(app, 'journal-cool-dark');
+  await app.evalJs("window.wrizoCast.set('neutral')");
+  await app.emulateDpr(1, 1400, 900);
+  await sleep(500);
+
+  // ======================================================= CL under NEUTRAL: eight sparks
+  await app.evalJs("location.hash = '#/page/ma1'");
+  await app.waitFor(`!!document.querySelector('${ED}')`, { label: 'back on the page', timeout: 8000 }).catch(() => {});
+  await sleep(700);
+  await frame(app, 'run-neutral-dark');
+  await app.evalJs(`document.querySelector('${ED}').focus()`);
+  await app.key('End').catch(() => {});
+  const watchN = watchCelebration(app, 2600);
+  await app.typeKeys(' ' + words(10));
+  const wn = await watchN;
+  ok('CL3 [NEUTRAL]: crossing the goal closes the strip orange AND draws the eight sparks', wn.allOrange && wn.maxSparks === 8, JSON.stringify(wn));
+  await frame(app, 'run-neutral-after');
+
+  // ======================================================= CL under Ambiance 0: the still state
+  await boot(app, { cast: 'neutral', dial: 0, goal: 10 });
+  await openPage(app, 'ma2', words(8));
+  const still0 = await run(app);
+  await app.evalJs(`document.querySelector('${ED}').focus()`);
+  await app.key('End').catch(() => {});
+  const watchS = watchCelebration(app, 2200);
+  await app.typeKeys(' ' + words(4));
+  const ws = await watchS;
+  ok('CL4 [Ambiance 0]: the still state - the strip turns orange with NO sparks and no colour transition', !!still0 && still0.still === 'true' && parseFloat(still0.transition) === 0 && ws.maxSparks === 0 && ws.closedAt !== null, JSON.stringify({ still0: still0 && { still: still0.still, transition: still0.transition }, ws }));
+
+  // ======================================================= LT - the light page, both casts: the paper is the foundations' own, the Run strip still reads (frames for the clear)
+  for (const cast of ['cool', 'neutral']) {
+    await boot(app, { cast, page: 'light', dial: 50, goal: 10 });
+    await openPage(app, `ma-l-${cast}`, words(15));
+    const paper = await app.evalJs("getComputedStyle(document.querySelector('.mode-page')).backgroundColor");
+    const paperWant = await token(app, '--paper');
+    const rl = await run(app);
+    ok(`LT [${cast}]: on the light page the paper is the cell's own and the Run strip still draws 20 units with its notch`, paper === paperWant && !!rl && rl.units === 20 && rl.here === 1, JSON.stringify({ paper, paperWant, units: rl && rl.units }));
+    await frame(app, `run-${cast}-light`);
+  }
+
+  // ======================================================= LX - the words on screen; PP - the page does not move
+  await boot(app, { cast: 'cool', dial: 50, goal: 10 });
+  await openPage(app, 'ma3', words(15));
+  const tabs = await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].map((b) => b.textContent.trim())");
+  ok('LX1: the mode strip reads Sprint / Build / Edit / Finalize on screen', ['Sprint', 'Build', 'Edit', 'Finalize'].every((w) => tabs.includes(w)), JSON.stringify(tabs));
+  const withRun = await rectOf(app);
+  await app.evalJs(`localStorage.setItem('wrizo-writing-settings', JSON.stringify({ progress: 'words', progressStyle: 'rhizome', instrumentsOn: false, typewriter: false }))`);
+  await app.reload();
+  await app.waitFor(`!!document.querySelector('${ED}')`, { label: 'the page after a reload', timeout: 12000 }).catch(() => {});
+  await sleep(900);
+  const noRun = await run(app);
+  const withoutRun = await rectOf(app);
+  ok('PP2: PAGE IS PRIMARY - the writing surface\'s rect is identical with the Run strip on and off (the strip rides the instrument lane, it never displaces)', noRun === null && !!withRun && withRun === withoutRun, JSON.stringify({ withRun, withoutRun, noRun }));
+
+  // ======================================================= RN under Arbor / Flux: no Run
+  await app.evalJs(`localStorage.setItem('wrizo-writing-settings', JSON.stringify({ progress: 'words', progressStyle: 'rhizome', instrumentsOn: true, typewriter: false }))`);
+  await app.reload();
+  await app.waitFor(`!!document.querySelector('${ED}')`, { label: 'reload', timeout: 12000 }).catch(() => {});
+  await sleep(700);
+  await app.evalJs("window.wrizoTheme.set('plateau')"); await sleep(500);
+  const arbor = await run(app);
+  await app.evalJs("window.wrizoTheme.set('flux')"); await sleep(500);
+  const flux = await run(app);
+  ok('RN4: the Run strip is Machina-only - absent under Arbor and under Flux', arbor === null && flux === null, JSON.stringify({ arbor, flux }));
+  await app.evalJs("window.wrizoTheme.set('plateau')"); await sleep(300);
+  const openedA = await app.evalJs(`(() => { const b = document.querySelector('.wz-strip [data-category="settings"]'); if (!b) return false; b.click(); return true; })()`);
+  await sleep(700);
+  const rowArbor = await app.evalJs("document.querySelectorAll('.wz-cascade-cast').length");
+  const panelArbor = await app.evalJs("document.querySelectorAll('.wz-cascade-panel-body').length");
+  ok('CA3: under Arbor the Controls panel opens and the Cast row is absent (CAST means nothing outside Machina)', openedA && panelArbor > 0 && rowArbor === 0, JSON.stringify({ openedA, panelArbor, rowArbor }));
+});
+
+for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 420)}]` : ''}`);
+const passed = checks.filter((c) => c.pass).length;
+console.log(passed === checks.length ? `\nTH-MACHINA VERIFY: PASS (${checks.length} checks)` : `\nTH-MACHINA VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
+process.exit(passed === checks.length ? 0 : 1);

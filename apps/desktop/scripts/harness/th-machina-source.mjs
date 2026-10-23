@@ -227,6 +227,53 @@ ok('M11: themeFonts.ts loads the four slots\' faces (Plex Mono 500; Plex Sans 40
   /theme !== 'machina'/.test(tf) && ['ibm-plex-mono/500', 'ibm-plex-sans/400', 'ibm-plex-sans/500', 'ibm-plex-sans/600', 'ibm-plex-serif/400.css', 'ibm-plex-serif/500', 'ibm-plex-serif/400-italic', 'atkinson-hyperlegible/400', 'atkinson-hyperlegible/700'].every((f) => tf.includes(f)), '');
 ok('M11: applyAttribute calls ensureThemeFonts - the faces follow every theme switch and the boot', /ensureThemeFonts\(theme\)/.test(th), '');
 
+// ---------------------------------------------------------------- PHASE B
+// M12 - the Consultant's two chips read the mockup's wording (Fable's ruling 7); the staged ask is the chip label, so one key serves both
+ok('M12: the Consultant chips read the mockup\'s wording under Machina ("What is load-bearing — and what could go?" / "Where does the line slip?")',
+  D('tutorDraftAskLoadBearing') === 'What is load-bearing — and what could go?' && D('tutorDraftAskThreadSlip') === 'Where does the line slip?', JSON.stringify([D('tutorDraftAskLoadBearing'), D('tutorDraftAskThreadSlip')]));
+ok('M12: ...and Arbor\'s own chips are untouched (the override is Machina\'s alone)',
+  L.deskLexicon.deskTerm('tutorDraftAskThreadSlip', 'plateau') === 'Where does the thread slip?' && L.deskLexicon.deskTerm('tutorDraftAskLoadBearing', 'plateau') === "What's load-bearing here — and what could go?", '');
+// M13 - no splash loading lines (ruling 6): EMPTY strings (not a missing key, which would fall back to Arbor's garden lines), and Splash.tsx draws nothing for an empty line
+const loadKeys = ['splashLoading1', 'splashLoading2', 'splashLoading3', 'splashLoading4'];
+ok('M13: every splash loading line is the EMPTY string under Machina - present, not absent (an absent key would fall back to Arbor\'s "Turning the soil...")', loadKeys.every((k) => D(k) === '' && new RegExp(`^    ${k}: '',`, 'm').test(mBlock)), JSON.stringify(loadKeys.map(D)));
+ok('M13: ...Arbor and Flux keep their lines', loadKeys.every((k) => L.deskLexicon.deskTerm(k, 'plateau') !== '' && L.deskLexicon.deskTerm(k, 'flux') !== ''), '');
+const splash = src('components/Splash.tsx');
+ok('M13: Splash.tsx renders the loading element ONLY for a non-empty line (the status region is absent under Machina, not an empty live region)', /\{t\(LOADING_LINE_KEYS\[lineIndex\]\) !== '' && \(\s*<div className="wz-splash-loading"/.test(splash), '');
+// M14 - the splash mark
+const sm = src('components/SplashMark.tsx');
+ok('M14: SplashMark routes Machina to MachinaMark (the WRIZ[] wordmark, IDEAS / FINAL DRAFT end labels, twenty units that close orange once); Arbor and Flux routes unchanged',
+  /if \(theme === 'machina'\) return <MachinaMark \{\.\.\.rest\} \/>;/.test(sm) && /theme === 'flux' \? <FluxMark/.test(sm) && /const MA_UNITS = 20;/.test(sm) && />IDEAS</.test(sm) && />FINAL DRAFT</.test(sm) && />WRIZ</.test(sm), '');
+ok('M14: the splash mark has a still state (reduced motion: the closed strip at once) and a floor trigger', /if \(reduced\) \{[\s\S]*?classList\.add\('closed'\)[\s\S]*?onFloorReached\(\);[\s\S]*?return;/.test(sm) && /window\.setTimeout\(onFloorReached, closeAt \+ 700\)/.test(sm), '');
+// M15 - the Run strip: Machina's own instrument, the gate Flux's Glitch uses, one celebration, sparks NEUTRAL only
+const rs = src('components/RunStrip.tsx');
+ok('M15: Run is gated on Machina + the instruments + Progress: Words + the Rhizome|Glitch|Run slot + a goal (the same gate as Flux\'s Glitch), and is mounted beside GlitchMeter on the framed page only',
+  /theme === 'machina' && settings\.instrumentsOn && settings\.progress === 'words' && settings\.progressStyle === 'rhizome' && goal != null && n > 0/.test(rs) && /\{glitch && <RunStrip text=\{text\} \/>\}/.test(src('components/DeskInstrument.tsx')), '');
+ok('M15: twenty units; ONE celebration - the closed strip - and the sparks (eight ticks) appear ONLY under NEUTRAL and only when motion is welcome',
+  /const UNITS = 20;/.test(rs) && /const sparks = celebrating && cast === 'neutral' && !still;/.test(rs) && /BURST_ANGLES = \[-90, -64, -38, -12, 12, 38, 64, 90\]/.test(rs) && /still = prefersReducedMotion\(\) \|\| dial === 0/.test(rs), '');
+ok('M15: the lap reuses useGoalProgress (one celebration grammar) and nothing in RunStrip is random', /useGoalProgress\(count, n\)/.test(rs) && !/Math\.random/.test(rs), '');
+const clean = (c) => c.replace(/\/\*[\s\S]*?\*\//g, '');
+const ccss = clean(css);
+ok('M15: the CSS - the in-progress notch is 3 x 16 px ORANGE, a finished unit is the live gray, the closed strip is orange, and reduced motion removes the sparks and the crossfade',
+  /\.machina-run-strip > i\.here::after\{[^}]*width:3px; height:16px; background:var\(--orange\)/.test(ccss) && /\.machina-run-strip > i\.on\{ background:var\(--signal-live\)/.test(ccss)
+  && /\.machina-run\[data-closed='true'\] \.machina-run-strip > i\{ background:var\(--orange\)/.test(ccss) && /@media \(prefers-reduced-motion: reduce\)\{ \.machina-run-strip > i\{ transition:none; \} \.machina-run-burst\{ display:none; \} \}/.test(ccss), '');
+// M16 - the way-back glyph
+const rail = src('components/DeskRail.tsx');
+ok('M16: the way-back chip draws "◂" under Machina and the old "↩" elsewhere; gray under COOL, the one orange under NEUTRAL',
+  /\{theme === 'machina' \? '◂' : '↩'\}/.test(rail) && /\[data-theme='machina'\] \.desk-rail-wayback\{ color:var\(--text-mid\); \}/.test(ccss) && /\[data-theme='machina'\]\[data-cast='neutral'\] \.desk-rail-wayback\{ color:var\(--orange\); \}/.test(ccss), '');
+// M17 - the CAST control: ONE row in Controls, Machina only, both options
+const cp = src('components/CascadePanels.tsx');
+ok('M17: CAST is ONE Controls row ("Cast": Cool | Neutral), drawn ONLY under Machina, wired to setCast with both options',
+  (cp.match(/aria-label="Cast"/g) || []).length === 1 && /\{theme === 'machina' && \(\s*<div className="wz-cascade-row wz-cascade-cast"/.test(cp) && /\(\['cool', 'neutral'\] as const\)\.map/.test(cp) && /onClick=\{\(\) => setCast\(c\)\}/.test(cp)
+  && /c === 'cool' \? 'Cool' : 'Neutral'/.test(cp), '');
+// M18 - orange is scarce: Arbor's ember halos / goal glow / flare are switched off under Machina (the first Phase B screens showed a warm halo round the paper)
+const EMBER = [
+  /\[data-theme='machina'\] \.mode-page\{ box-shadow:0 10px 44px rgba\(0, 0, 0, \.55\); \}/,
+  /\[data-theme='machina'\] \.mode-page\.focused\{ box-shadow:0 0 0 1px var\(--paper-border\), 0 10px 44px rgba\(0, 0, 0, \.55\); \}/,
+  /\[data-theme='machina'\]\{ --goal-glow-cap:\.16; \}/,
+  /\[data-theme='machina'\] \.desk-frame-goalflare\{ display:none; \}/,
+];
+ok('M18: the paper\'s resting and focused halos are plain dark shadows, the goal glow is dialled (the cap token) and recoloured to the live gray, and the celebration flare is not drawn - under Machina only', EMBER.every((r) => r.test(ccss)) && /\[data-theme='machina'\] \.wz-goal-glow\{ background:radial-gradient\(ellipse at center, color-mix\(in srgb, var\(--signal-live\)/.test(ccss), JSON.stringify(EMBER.map((r) => r.test(ccss))));
+
 // ---------------------------------------------------------------- MUTANTS
 const mutantCss = (mutate, asserts) => { const m = mutate(css); return m !== css && asserts(m); };
 {
@@ -248,6 +295,27 @@ ok('MUTANT: --text-low reverted to the mockup\'s own #6C7482 (3.8-4.2:1 on the c
 ok('MUTANT: the Notebook swapped for the old ruled-ledger glyph - M10 must go RED', JSON.stringify(['M4 3h16v18H4z', 'M4 7.5h16M9.5 7.5V21M4 11.8h16M4 16.2h16']) !== JSON.stringify(log?.paths.slice(0, 2)), '');
 ok('MUTANT: an eager IBM Plex import added to main.tsx - M11 must go RED', /@fontsource\/ibm-plex/.test(main + "\nimport '@fontsource/ibm-plex-mono/500.css';"), '');
 ok('MUTANT: a Machina desk string re-introducing "Drawer" - M8 must go RED', LEAK.test('Back to Drawer'), '');
+{
+  // PHASE B mutants - each rewrites the real source text, asserts the mutation LANDED, and re-runs the check's own predicate
+  const SPARKS = /const sparks = celebrating && cast === 'neutral' && !still;/;
+  const mut = (text, from, to) => { const next = text.replace(from, to); return next === text ? null : next; };
+  const rs2 = mut(rs, "celebrating && cast === 'neutral' && !still", 'celebrating && !still');
+  ok('MUTANT: sparks drawn under COOL as well (the cast gate dropped) - M15 must go RED (the mutation LANDED)', rs2 !== null && !SPARKS.test(rs2) && SPARKS.test(rs), '');
+  const GATE = /theme === 'machina' && settings\.instrumentsOn/;
+  const rs3 = mut(rs, "theme === 'machina' && settings.instrumentsOn", 'settings.instrumentsOn');
+  ok('MUTANT: Run drawn under every theme (the Machina gate dropped) - M15 must go RED (the mutation LANDED)', rs3 !== null && !GATE.test(rs3) && GATE.test(rs), '');
+  const dsrc2 = mut(dsrc, "    splashLoading1: '',", '');
+  const hasEmpty = (t) => { const s = t.indexOf('\n  machina: {'); return /^    splashLoading1: '',/m.test(t.slice(s)); };
+  ok('MUTANT: Machina\'s splashLoading1 key deleted (so it would fall back to Arbor\'s "Gathering your pages...") - M13 must go RED (the mutation LANDED)', dsrc2 !== null && !hasEmpty(dsrc2) && hasEmpty(dsrc), '');
+  const CASTGATE = /\{theme === 'machina' && \(\s*<div className="wz-cascade-row wz-cascade-cast"/;
+  const cp2 = mut(cp, "{theme === 'machina' && (\n        <div className=\"wz-cascade-row wz-cascade-cast\"", '{(\n        <div className="wz-cascade-row wz-cascade-cast"');
+  ok('MUTANT: the CAST row drawn under every theme (the Machina gate dropped) - M17 must go RED (the mutation LANDED)', cp2 !== null && !CASTGATE.test(cp2) && CASTGATE.test(cp), '');
+  const css2 = mut(ccss, "[data-theme='machina'] .desk-frame-goalflare{ display:none; }", '');
+  ok('MUTANT: Arbor\'s celebration flare left drawn under Machina (the display:none rule deleted) - M18 must go RED (the mutation LANDED)', css2 !== null && !EMBER.every((r) => r.test(css2)) && EMBER.every((r) => r.test(ccss)), '');
+  const GLYPH = /\{theme === 'machina' \? '◂' : '↩'\}/;
+  const rail2 = mut(rail, "{theme === 'machina' ? '◂' : '↩'}", '↩');
+  ok('MUTANT: the way-back glyph left as the ember "↩" under Machina - M16 must go RED (the mutation LANDED)', rail2 !== null && !GLYPH.test(rail2) && GLYPH.test(rail), '');
+}
 
 for (const t of tmps) rmSync(t, { recursive: true, force: true });
 const bad = checks.filter((c) => !c.pass).length;

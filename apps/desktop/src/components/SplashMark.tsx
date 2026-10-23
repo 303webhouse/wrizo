@@ -392,8 +392,17 @@ const MA_UNITS = 20;
 const MA_UNIT_MS = 105;
 const MA_START_MS = 350;
 
+// The lockup is the mockup's own proportions, in the 1350 x 1080 box the other marks share: the strip spans the two end labels' outer edges (x 125 .. 1225) - 20 units of 50.25 and 19 gaps of 5 -
+// and the orange notch (3 x 16 px at the box's scale: 6 x 31 units) rides the first unfinished unit, exactly as the in-app Run strip's does.
+const MA_X0 = 125;
+const MA_UNIT_W = 50.25;
+const MA_GAP = 5;
+const MA_STRIP_Y = 626;
+const maNotchX = (i: number) => MA_X0 + Math.min(i, MA_UNITS - 1) * (MA_UNIT_W + MA_GAP) - 3;
+
 function MachinaMark({ reduced, width, height, onFloorReached }: MarkProps) {
   const unitRefs = useRef<(SVGRectElement | null)[]>([]);
+  const notchRef = useRef<SVGRectElement | null>(null);
   const stripRef = useRef<SVGGElement | null>(null);
   const startedRef = useRef(false);
 
@@ -402,35 +411,36 @@ function MachinaMark({ reduced, width, height, onFloorReached }: MarkProps) {
     startedRef.current = true;
     if (reduced) {
       unitRefs.current.forEach((r) => r?.classList.add('on'));
+      notchRef.current?.setAttribute('x', String(maNotchX(MA_UNITS - 1)));
       stripRef.current?.classList.add('closed');
       onFloorReached();
       return;
     }
     for (let i = 0; i < MA_UNITS; i += 1) {
-      window.setTimeout(() => unitRefs.current[i]?.classList.add('on'), MA_START_MS + i * MA_UNIT_MS);
+      window.setTimeout(() => {
+        unitRefs.current[i]?.classList.add('on');
+        notchRef.current?.setAttribute('x', String(maNotchX(i + 1)));
+      }, MA_START_MS + i * MA_UNIT_MS);
     }
     const closeAt = MA_START_MS + MA_UNITS * MA_UNIT_MS + 120;
     window.setTimeout(() => stripRef.current?.classList.add('closed'), closeAt);
     window.setTimeout(onFloorReached, closeAt + 700);
   }, [reduced, onFloorReached]);
 
-  // The strip spans exactly the two end labels' outer edges (x 175 .. 1175): 20 units of 45.25 + 19 gaps of 5.
-  const x0 = 175;
-  const unitW = 45.25;
-  const gap = 5;
   return (
     <svg
       className="wz-splash-machina" width={width} height={height}
       viewBox="0 0 1350 1080" role="img" aria-label="Wrizo: from Ideas to Final Draft"
     >
-      <text x={845} y={500} textAnchor="end" className="ma-word">WRIZ</text>
-      <rect x={858} y={398} width={96} height={96} className="ma-square" />
-      <text x={x0} y={640} className="ma-end">IDEAS</text>
-      <text x={1175} y={640} textAnchor="end" className="ma-end">FINAL DRAFT</text>
+      <text x={740} y={491} textAnchor="end" className="ma-word">WRIZ</text>
+      <rect x={746} y={452} width={37} height={37} className="ma-square" />
+      <text x={MA_X0} y={585} className="ma-end">IDEAS</text>
+      <text x={1225} y={585} textAnchor="end" className="ma-end">FINAL DRAFT</text>
       <g ref={stripRef} className="ma-strip">
         {Array.from({ length: MA_UNITS }, (_, i) => (
-          <rect key={i} ref={(el) => { unitRefs.current[i] = el; }} x={x0 + i * (unitW + gap) + 0} y={686} width={unitW} height={8} className="ma-unit" />
+          <rect key={i} ref={(el) => { unitRefs.current[i] = el; }} x={MA_X0 + i * (MA_UNIT_W + MA_GAP)} y={MA_STRIP_Y} width={MA_UNIT_W} height={8} className="ma-unit" />
         ))}
+        <rect ref={notchRef} x={maNotchX(0)} y={MA_STRIP_Y - 11.5} width={6} height={31} className="ma-notch" />
       </g>
     </svg>
   );

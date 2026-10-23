@@ -673,6 +673,14 @@
   color:var(--text-hi); font-family:var(--font-contentLabel); font-weight:600; font-size:13px; letter-spacing:.08em; line-height:1; }
 [data-theme='machina'] .brand-mark::before{ content:'WRIZ'; }
 [data-theme='machina'] .brand-mark::after{ content:''; display:inline-block; width:.7em; height:.7em; border:1.5px solid var(--orange); margin-left:1px; vertical-align:-1px; }
+/* ORANGE IS SCARCE (the first Phase B screens): Arbor's warm lights are NOT Machina's. The paper's resting and focused halos, the goal's glow and the celebration flare are all Arbor ember; under
+   Machina the page sits in a plain dark shadow, the goal glow is dialled down (the token's own contract: themes dial the cap, never remove it) and recoloured to the live gray, and the flare is not
+   drawn at all - the ONE celebration is the Run strip closing orange (components/RunStrip.tsx). */
+[data-theme='machina'] .mode-page{ box-shadow:0 10px 44px rgba(0, 0, 0, .55); }
+[data-theme='machina'] .mode-page.focused{ box-shadow:0 0 0 1px var(--paper-border), 0 10px 44px rgba(0, 0, 0, .55); }
+[data-theme='machina']{ --goal-glow-cap:.16; }
+[data-theme='machina'] .wz-goal-glow{ background:radial-gradient(ellipse at center, color-mix(in srgb, var(--signal-live) 50%, transparent) 0%, color-mix(in srgb, var(--signal-live) 20%, transparent) 40%, transparent 68%); }
+[data-theme='machina'] .desk-frame-goalflare{ display:none; }
 /* RUN (components/RunStrip.tsx) - the cursor/machina-v1-mockup footer strip: twenty identical 4px units 3px apart, gray when finished, an orange 3x16 notch on the unit in progress, the count once
    after the bar. It rides the framed page's instrument lane (the band under the paper), right-aligned to the paper's edge - the mockup's "right of the footer". Closed at the goal = the whole strip
    orange (a .35s colour crossfade - the foundations' fill handoff); NEUTRAL adds eight 9x1px sparks from the last unit (.6s, 20ms stagger, the RC's own constants), never under COOL. */
@@ -6502,8 +6510,9 @@ a:focus-visible,
 
 /* MACHINA SPLASH (SplashMark.tsx's MachinaMark; the approved mockup's wordmark, end labels and Run strip, on Machina's own tokens). The units fill gray one by one, the whole strip closes orange
    once (the same .35s colour crossfade as the in-app Run strip); the orange square is the mark's one other orange. Reduced motion drops the transitions - the closed strip simply appears. */
-.ma-word{ fill:var(--text-hi); font-family:var(--font-contentLabel); font-weight:600; font-size:150px; letter-spacing:.14em; }
-.ma-square{ fill:none; stroke:var(--orange); stroke-width:10; }
+.ma-word{ fill:var(--text-hi); font-family:var(--font-contentLabel); font-weight:600; font-size:55px; letter-spacing:.14em; }
+.ma-square{ fill:none; stroke:var(--orange); stroke-width:3.5; }
+.ma-notch{ fill:var(--orange); }
 .ma-end{ fill:var(--text-mid); font-family:var(--font-chromeLabel); font-size:22px; letter-spacing:.14em; }
 .ma-unit{ fill:var(--ink-border); transition:fill .35s ease; }
 .ma-unit.on{ fill:var(--signal-live); }
