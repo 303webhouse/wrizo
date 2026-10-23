@@ -164,6 +164,9 @@ async function suite(M, mk = () => load()) {
   keep('RO7', M.shouldAcquire && M.shouldAcquire(null, 'a') === true && M.shouldAcquire('a', 'a') === false && M.shouldAcquire('a', 'b') === true && M.shouldAcquire('a', null) === false, 'once per page open');
   keep('RO8', M.isDefaultRoot && M.isDefaultRoot({ id: 'top-drawer-u1', name: 'Top Drawer' }) === true && M.isDefaultRoot({ id: 'top-drawer-u1', name: 'The Late Ferry' }) === false && M.isDefaultRoot({ id: 'd2', name: 'Top Drawer' }) === false, 'Root only while the top drawer is still the default');
 
+  // RO10 - the block caret is a third of its old width (Nick, Oct 23): caretWidth(height) = max(3, round(height x 0.16)); the old rule was max(7, round(height x 0.48))
+  const oldW = (h) => Math.max(7, Math.round(h * 0.48));
+  keep('RO10', typeof M.caretWidth === 'function' && M.caretWidth(24) === 4 && M.caretWidth(18) === 3 && M.caretWidth(40) === 6 && M.caretWidth(4) === 3 && Math.abs(M.caretWidth(24) / oldW(24) - 1 / 3) < 0.05, M.caretWidth ? [18, 24, 40].map((h) => `${h}px line: ${oldW(h)} -> ${M.caretWidth(h)}`).join(' | ') : 'no caretWidth');
   // RO9 - trackOf: the section's REAL position in its set (and the Log's among its pages)
   const m2 = await mk();
   const d = m2.createDrawer('Rack A');
@@ -194,6 +197,8 @@ const CSS_MUT = [
   { name: 'the dark page text loses contrast', edit: (c) => c.replace('--ink-on-paper: #E8F6FA;', '--ink-on-paper: #6E8A93;'), red: ['CT1'] },
   { name: 'a label tier drops under 4.5:1', edit: (c) => c.replace('--ink-on-paper-low: #57D0F5;', '--ink-on-paper-low: #1D4A52;'), red: ['CT2'] },
   { name: 'the chromatic offset turns red', edit: (c) => c.replace(/--flux-offset:\s*[^;]+;/, '--flux-offset: 0.5px 0 0 rgba(255, 40, 40, .4);'), red: ['CH1'] },
+  { name: 'Arbor olive returns as the Flux dark door', edit: (c) => c.replace('--accent-door: #57D0F5;', '--accent-door: #A9B56A;'), red: ['TK5'] },
+  { name: 'the rail\'s active state falls back to brass', edit: (c) => c.replace("[data-theme='flux'] .desk-rail-item.active{ color:var(--line-active);", "[data-theme='flux'] .desk-rail-item.active{ color:var(--brass);"), red: ['RL1'] },
   { name: 'an Arbor brown surface returns to the Flux root', edit: (c) => c.replace('--ink-800: #0E2C32;', '--ink-800: #2A241E;'), red: ['TK4'] },
   { name: 'Arbor\'s PNG mark paints again under Flux', edit: (c) => c.replace('-webkit-mask:none; mask:none; background:none;', 'background:var(--brass);'), red: ['BR1'] },
   { name: 'a board card goes back to cream stock', edit: (c) => c.replace('--card-stock:#0E2C32; --card-hairline:rgba(0, 194, 255, .55);', '--card-stock:#FBF6EA; --card-hairline:rgba(0, 194, 255, .55);'), red: ['BD1'] },
@@ -210,6 +215,7 @@ const SRC_MUT = [
   { name: 'the Flux word for Settings is lost', file: 'store/deskLexicon.ts', find: /stripSettings: 'Config',/, to: "stripSettings: 'Settings',", red: ['LX1', 'LX2'] },
   { name: 'the Clock word is lost', file: 'store/deskLexicon.ts', find: /timerLabel: 'Clock',/, to: '', red: ['LX1'] },
   { name: 'the Flux Draft tab falls back to Draft', file: 'store/deskLexicon.ts', find: /modeDraft: 'Text',/, to: '', red: ['LX1', 'LX6'] },
+  { name: 'the block caret goes back to its wide width', file: 'store/fluxReadouts.ts', find: /Math\.round\(height \* 0\.16\)/, to: 'Math.round(height * 0.48)', red: ['RO10'] },
   { name: 'Delete turns into Purge', file: 'store/deskLexicon.ts', find: /actionCopy: 'Clone doc text',/, to: "actionCopy: 'Clone doc text', actionDelete: 'Purge doc',", red: ['LX6'] },
   { name: 'a big-projects string falls back to Arbor', file: 'store/deskLexicon.ts', find: /sectionsEmptyBoards: 'No circuits here yet\.',/, to: '', red: ['LX2'] },
 ];
@@ -236,6 +242,15 @@ function cssChecks(css) {
   // TK4 - no Arbor brown in Flux: the two surface tiers every input and panel reads (--ink-900 / --ink-800) are Flux glass (teal-family: blue above red)
   const teal = (h) => !!h && /^#[0-9a-f]{6}$/i.test(h) && (() => { const [r, , b] = hex(h); return b > r + 8; })();
   keep('TK4', teal(T('ink-900')) && teal(T('ink-800')), `--ink-900 ${T('ink-900')}, --ink-800 ${T('ink-800')}`);
+  // TK5 - no Arbor olive in Flux: every Flux green is lime (#A6FF3D, saturated); a muted green (hue 55-150, saturation under .7) is Arbor's olive / sage
+  const greenish = (h) => { if (!h || !/^#[0-9a-f]{6}$/i.test(h)) return false; const [r, g, b] = hex(h).map((v) => v / 255); const mx = Math.max(r, g, b), mn = Math.min(r, g, b); if (mx === mn) return false;
+    const d = mx - mn; let hue = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; hue = (hue * 60 + 360) % 360; const sat = d / mx; return hue >= 55 && hue <= 150 && sat < 0.7 && mx >= 0.25; };
+  const oliveHits = [['root --accent-rest', T('accent-rest')], ['root --sage', T('sage')], ['root --badge-on-card', T('badge-on-card')], ['dark --accent-door', tok(B.dark, 'accent-door')], ['light --accent-door', tok(B.light, 'accent-door')]].filter(([, v]) => greenish(v)).map(([n, v]) => `${n} ${v}`);
+  keep('TK5', oliveHits.length === 0 && T('sage') === '#A6FF3D' && !!tok(B.light, 'accent-door'), oliveHits.join(', ') || `sage ${T('sage')}, doors ${tok(B.dark, 'accent-door')} / ${tok(B.light, 'accent-door')}`);
+  // RL1 - the rail's hover and active states are electric blue (#00C2FF = --line-active), never brass or a brown tile
+  const rl = rules(css).filter((x) => /\[data-theme='flux'\] \.(wz-strip-item|desk-rail-item)(:hover|\.active)/.test(x.sel));
+  const rlHover = rl.find((x) => x.sel.includes(".wz-strip-item:hover")), rlActive = rl.find((x) => x.sel.includes(".desk-rail-item.active"));
+  keep('RL1', !!rlHover && /color:\s*var\(--line-active\)/.test(rlHover.body) && /rgba\(0,\s*194,\s*255/.test(rlHover.body) && !!rlActive && /color:\s*var\(--line-active\)/.test(rlActive.body) && /border-left-color:\s*var\(--line-active\)/.test(rlActive.body) && T('line-active') === '#00C2FF', rlActive ? rlActive.body.slice(0, 100) : 'no Flux rail state rule');
   // BR1 - Flux shows its own WRIZO mark (orange, top left); Arbor's PNG mask is switched off under Flux
   const brand = rules(css).find((x) => x.sel === "[data-theme='flux'] .brand-mark");
   keep('BR1', !!brand && /-webkit-mask:\s*none/.test(brand.body) && /mask:\s*none/.test(brand.body) && /color:\s*var\(--orange\)/.test(brand.body) && /top:\s*\d+px/.test(brand.body) && /left:\s*\d+px/.test(brand.body)
@@ -295,6 +310,8 @@ ok('P5 the acquire runs once per page open and only above Ambiance 0 (shouldAcqu
 ok('P6 the Root substitution is render-time only: PlaceBlock and the pop-out name the place through isDefaultRoot + placeRootName, and nothing writes the drawer\'s name', /isDefaultRoot\(/.test(placeBlock) && /placeRootName/.test(placeBlock) && /isDefaultRoot\(/.test(popout), '');
 const sliverSrc = rd('components/Sliver.tsx'), modeStageSrc = rd('components/ModeStage.tsx');
 const boardSrc = rd('components/BoardEditor.tsx');
+const caretSrc = rd('components/FluxBlockCaret.tsx');
+ok('P10 the block caret takes its width from caretWidth (the slim caret), not an inline ratio', /caretWidth\(height\)/.test(caretSrc) && !/0\.48/.test(caretSrc), '');
 ok('P9 the board wears the Flux frame (grid ring + brackets) through FluxBoardFrame, and the rail\'s place block reads the rack readout in Flux', /<FluxBoardFrame/.test(boardSrc) && /export function FluxBoardFrame/.test(readoutsSrc) && /rackReadout\(/.test(placeBlock), '');
 ok('P8 the Recede-depth and Timer rows name themselves through the lexicon on both surfaces (the framed sliver and the settings panel) - no inline word', /fadeDepthLabel/.test(sliverSrc) && /timerLabel/.test(sliverSrc) && /fadeDepthLabel/.test(modeStageSrc) && /timerLabel/.test(modeStageSrc) && !/label="Timer"/.test(sliverSrc + modeStageSrc), '');
 ok('P7 a Flux frame ring: the grid and brackets are an overlay on the page FRAME (pointer-events none, masked to a ring) - never a background of the text area', /\.flux-frame\{[^}]*pointer-events:\s*none/.test(cssNow) && /\.flux-frame\{[^}]*mask/.test(cssNow), '');

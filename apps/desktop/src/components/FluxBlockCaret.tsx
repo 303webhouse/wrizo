@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTheme } from '../store/theme';
+import { caretWidth } from '../store/fluxReadouts';
 
-// TH2 Slice 5 — the wide orange block caret (canon §13). One global mount
+// TH2 Slice 5 — the orange block caret (canon §13); FLUX V2 slimmed it to a third of its old width (store/fluxReadouts.ts caretWidth). One global mount
 // point (the VoiceWallWhisper pattern: a single document-level
 // `selectionchange` listener rather than wiring every writing surface
 // individually) tracking the NATIVE caret's rect via the Selection API —
@@ -67,7 +68,7 @@ export function FluxBlockCaret() {
       activeElRef.current = surface;
       surface.setAttribute('data-flux-caret-active', 'true');
       const height = r.height || 18;
-      setRect({ left: r.left, top: r.top, width: Math.max(7, Math.round(height * 0.48)), height });
+      setRect({ left: r.left, top: r.top, width: caretWidth(height), height });
     };
 
     const onBlurCheck = () => {

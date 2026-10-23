@@ -202,6 +202,40 @@ export async function part2({ ok, sleepMs }) {
       ok('F14 the place block reads "RACK ▸ The Late Ferry", wraps (white-space normal, no ellipsis) and nothing is clipped', !!pbk && pbk.text === 'RACK ▸ The Late Ferry' && pbk.ws === 'normal' && pbk.overflow !== 'ellipsis' && !pbk.clipped, JSON.stringify(pbk));
 
 
+      // ---- F15: the block caret is slim (about a third of its old width) ----------------------------------------------------------------------------------------------------------------------
+      await fresh(); await seed(); await open('fx-m2');
+      await click('.forward-only-editor'); await app.typeKeys('x');
+      const caretUp = await waitSoft("!!document.querySelector('.flux-block-caret')", { label: 'block caret', timeout: 6000 });
+      const caretRect = caretUp ? await q("(() => { const e = document.querySelector('.flux-block-caret'); const r = e.getBoundingClientRect(); return { w: Math.round(r.width * 10) / 10, h: Math.round(r.height * 10) / 10 }; })()") : null;
+      ok('F15 the block caret is slim: its width is at most 20% of its height (it was 48%) and never under 3 px', !!caretRect && caretRect.w >= 3 && caretRect.w / caretRect.h <= 0.2, JSON.stringify(caretRect));
+
+      // ---- F16: the rail's hover and active states are electric blue, with no Arbor brown tile (F11 extended to hover and active) ---------------------------------------------------------------
+      await fresh(); await seed(); await open('fx-m2');
+      const railPt = await q("(() => { const b = document.querySelector('.wz-strip [data-category=\"plan\"]'); if (!b) return null; const r = b.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
+      const warm = (rgb) => { const m = /rgba?\(([^)]+)\)/.exec(rgb || ''); if (!m) return false; const p = m[1].split(',').map((x) => parseFloat(x)); const a = p.length > 3 ? p[3] : 1; return a > 0.3 && p[0] - p[2] >= 6 && p[0] >= p[1]; };
+      let hov = null;
+      if (railPt) { await app.mouseMove(railPt.x, railPt.y); await sleep(350); hov = await q("(() => { const b = document.querySelector('.wz-strip [data-category=\"plan\"]'); const cs = getComputedStyle(b); return { color: cs.color, bg: cs.backgroundColor }; })()"); }
+      ok('F16 hovering a rail item paints it electric blue (#00C2FF) on a glass tile - not Arbor brown, not brass', !!hov && hov.color === 'rgb(0, 194, 255)' && !warm(hov.bg), JSON.stringify(hov));
+      await click('.wz-strip [data-category="page"]'); await app.mouseMove(700, 500); await sleep(400);
+      const act = await q("(() => { const b = document.querySelector('.wz-strip-item.active'); if (!b) return null; const cs = getComputedStyle(b); return { color: cs.color, edge: cs.borderLeftColor, bg: cs.backgroundColor }; })()");
+      ok('F16 the active rail item is electric blue with a #00C2FF left edge and no brown tile', !!act && act.color === 'rgb(0, 194, 255)' && act.edge === 'rgb(0, 194, 255)' && !warm(act.bg), JSON.stringify(act));
+      // F11 extended: with a rail pop-out open, still no input / tile of Arbor brown anywhere in the visible chrome
+      const chromeWarm = await q(`(() => { const out = []; for (const e of document.querySelectorAll('.wz-strip, .wz-strip *, .wz-cascade-panel, .wz-cascade-panel *, .desk-mode-strip, .desk-mode-strip *')) { const r = e.getBoundingClientRect(); if (r.width < 2 || r.height < 2) continue; const m = /rgba?\\(([^)]+)\\)/.exec(getComputedStyle(e).backgroundColor); if (!m) continue; const p = m[1].split(',').map((x) => parseFloat(x)); const a = p.length > 3 ? p[3] : 1; if (a > 0.3 && p[0] - p[2] >= 6 && p[0] >= p[1]) out.push(String(e.className).slice(0, 40) + ' ' + getComputedStyle(e).backgroundColor); } return out.slice(0, 8); })()`);
+      ok('F16 no rail, pop-out or mode-strip element paints an Arbor brown fill', Array.isArray(chromeWarm) && chromeWarm.length === 0, JSON.stringify(chromeWarm));
+
+      // ---- F17: no Arbor olive anywhere: every green on a Flux screen is lime, dark and light, with the rail pop-out and the Tutor drawer open ------------------------------------------------------
+      const oliveScan = `(() => { const out = []; const isOlive = (rgb) => { const m = /rgba?\\(([^)]+)\\)/.exec(rgb || ''); if (!m) return false; const p = m[1].split(',').map((x) => parseFloat(x)); if ((p.length > 3 ? p[3] : 1) < 0.2) return false; const r = p[0] / 255, g = p[1] / 255, b = p[2] / 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b); if (mx === mn) return false;
+        const d = mx - mn; let h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h = (h * 60 + 360) % 360; const s = d / mx; return h >= 55 && h <= 150 && s < 0.7 && mx >= 0.25; };
+        for (const e of document.querySelectorAll('body *')) { const r = e.getBoundingClientRect(); if (r.width < 1 || r.height < 1) continue; const cs = getComputedStyle(e); if (cs.visibility === 'hidden' || cs.display === 'none') continue;
+          const vals = [cs.color, cs.backgroundColor, cs.borderTopColor, cs.borderLeftColor, cs.outlineColor, cs.fill, cs.stroke]; const hit = vals.find((v) => isOlive(v)); if (hit) out.push((e.tagName + '.' + String(e.className).split(' ').slice(0, 2).join('.')).slice(0, 50) + ' ' + hit); } return out.slice(0, 10); })()`;
+      for (const pg of ['dark', 'light']) {
+        await fresh({ page: pg }); await seed(); await open('fx-m2');
+        await click('.wz-strip [data-category="page"]'); await q("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(900);
+        const ol = await q(oliveScan);
+        ok(`F17 [${pg}] no element paints an Arbor olive or muted green (any remaining green is lime #A6FF3D)`, Array.isArray(ol) && ol.length === 0, JSON.stringify(ol));
+      }
+
+
       // ---- F9: light mode: page light, chrome dark; the readouts follow the page ---------------------------------------------------------------------------------------------
       await fresh({ page: 'light' }); await seed(); await open('fx-m2');
       const lm = await q("(() => { const pg = document.querySelector('.mode-page'); const rl = document.querySelector('.wz-strip'); const ro = document.querySelector('.flux-readout-doc'); return { page: pg ? getComputedStyle(pg).backgroundColor : null, rail: rl ? getComputedStyle(rl).backgroundColor : null, readout: ro ? getComputedStyle(ro).color : null }; })()");

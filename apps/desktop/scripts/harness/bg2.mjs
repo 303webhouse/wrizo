@@ -343,8 +343,13 @@ await withHarness(async (app) => {
   await sleep(250);
   const darkContrast = await app.evalJs(CONTRAST_JS);
   const darkToken = await app.evalJs("getComputedStyle(document.documentElement).getPropertyValue('--accent-door').trim()");
-  ok(`S1: the door olive is SLOTTED, not hardcoded — on the one theme whose paper is dark it steps back up the same ramp (${darkToken}) and still measures ${darkContrast.ratio}:1 (>=4.5). A value that only worked on cream would be a trap laid for this theme`,
-    darkToken === '#A9B56A' && darkContrast.ratio >= 4.5, JSON.stringify({ darkToken, darkContrast }));
+  // ---- PARKED - SUPERSEDED by Nick's live note (Oct 23: "any remaining green is lime, never Arbor olive"): Flux's door colour is no longer Arbor's olive stepped up (#A9B56A); it is the palette's text accent #57D0F5 on the dark glass.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok(`S1: the door olive is SLOTTED, not hardcoded — on the one theme whose paper is dark it steps back up the same ramp (${darkToken}) and still measures ${darkContrast.ratio}:1 (>=4.5). A value that only worked on cream would be a trap laid for this theme`,
+  //   darkToken === '#A9B56A' && darkContrast.ratio >= 4.5, JSON.stringify({ darkToken, darkContrast }));
+  ok(`S1 [flux-inputs successor]: the door colour is SLOTTED, not hardcoded - on the one theme whose paper is dark it is Flux's text accent (${darkToken}), never Arbor's olive, and still measures ${darkContrast.ratio}:1 (>=4.5). A value that only worked on cream would be a trap laid for this theme`,
+    darkToken === '#57D0F5' && darkContrast.ratio >= 4.5, JSON.stringify({ darkToken, darkContrast }));
   await app.evalJs("document.documentElement.removeAttribute('data-page'); document.documentElement.removeAttribute('data-theme')");
 
   // ==========================================================================

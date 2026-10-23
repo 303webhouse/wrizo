@@ -4,6 +4,11 @@
 
 const pad = (n: number, width: number): string => String(Math.max(0, Math.trunc(n))).padStart(width, '0');
 
+/** The block caret's width for a line of this height: a third of the old 0.48 ratio (Nick, Oct 23: "a slimmer caret, the block at about 1/3 width"), never under 3 px. */
+export function caretWidth(height: number): number {
+  return Math.max(3, Math.round(height * 0.16));
+}
+
 /** DOC nn // title - the page's own number (its place in the sequence, 1-based, two digits at least) and its title. */
 export function docReadout(n: number, title: string): string {
   return `DOC ${pad(n, 2)} // ${title}`;
