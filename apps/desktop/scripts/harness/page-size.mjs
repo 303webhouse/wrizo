@@ -3,9 +3,10 @@
 // already hold. The mutants only mean something on the build (on main a predicate that already fails also fails under its mutant).
 //
 //   NORMAL VIEW, both themes, at Cursor's normal frame sizes (1366x1120, 1920x1200):
-//   R  the page is letter-proportioned (width / height = 8.5 / 11 within 1%) and about 620 wide (within 3%), as in the frames
+//   R  the page is letter-proportioned (width / height = 8.5 / 11 within 1%) and about 620 x the page scale wide (within 3%)
 //   C  chars per line at the default: the median full line of a seeded paragraph holds 72-78 characters (~75)
-//   F  the editor's type is 16px (12 pt)
+//   F  the editor's type is 12 pt in PAGE units: 16px x the page scale (ruling a; the page scale is 1.2 at 1920 under ruling c, pending)
+//   L  the page at 1920 breaks its lines exactly where it does at 1366 (the page grows in shape only - ruling c, pending)
 //   S  a short screen (1366x768): the page keeps its 1366x1120 width and fits the stage (plan section 7, lean d)
 //   THE ZOOM (Typewriter / Terminal Mode), both themes, at Cursor's zoom frame sizes (1366x768, 1920x1080), entered and left LIVE through
 //   the writer's own control (the Sliver's typewriter button), with trusted input:
@@ -52,6 +53,9 @@ const FADE_STEP = 0.08;  // Cursor's final mask drops ~.29 from 1 above to 3 abo
 const GLIDE_MIN = 6;     // a 300ms ease passes through ~18 frames; 6 distinct scroll values is unmistakably a glide
 const INSTANT_MAX = 3;   // the start, then at most two instant whole-line steps
 const NORMAL_VIEWS = [[1366, 1120], [1920, 1200]];
+// ruling (c) PENDING Nick (Fable, Oct 23): plan for keeping main's growth - the page ~1.2x at 1920, same shape and line breaks. If Nick
+// rules the frames' fixed page instead, set 1920 -> 1 here; nothing else changes.
+const PAGE_SCALE = { 1366: 1, 1920: 1.2 };
 const ZOOM_VIEWS = [[1366, 768], [1920, 1080]];
 const THEMES = [{ id: 'plateau', name: 'Arbor' }, { id: 'flux', name: 'Flux' }];
 
@@ -187,7 +191,7 @@ const openTutor = async (app) => {
 };
 const fullLineLengths = (lines) => lines.slice(0, -1).map((l, i) => lines[i + 1].start - l.start);
 const median = (a) => { const s = [...a].sort((x, y) => x - y); return s.length ? s[Math.floor(s.length / 2)] : null; };
-const rPred = (g) => !!g && Math.abs(g.page.width / g.page.height - LETTER) <= RATIO_TOL && Math.abs(g.page.width - FRAME_PAGE_W) / FRAME_PAGE_W <= PAGE_W_TOL;
+const rPred = (g, k = 1) => !!g && Math.abs(g.page.width / g.page.height - LETTER) <= RATIO_TOL && Math.abs(g.page.width - FRAME_PAGE_W * k) / (FRAME_PAGE_W * k) <= PAGE_W_TOL;
 const cPred = (lines) => { const m = median(fullLineLengths(lines || [])); return m != null && m >= CPL_MIN && m <= CPL_MAX; };
 // strengths of [writing line, 1 above, 3 above, 5 above]: a steady fade upward, the oldest at half or less
 const tPred = (st) => st.length === 4 && st.every((x) => x.bare != null && x.bare >= 60 && x.s != null)
@@ -201,11 +205,12 @@ const normalCase = async (app, th, w, h) => {
   ok(`${th.name} ${w}x${h} normal (premise): the page is in the normal view (typewriter off)`, (await typewriterIs(app, id)) === 'off', await typewriterIs(app, id));
   const g = await app.evalJs('window.__psGeom()');
   const lines = await app.evalJs('window.__psLines()');
-  ok(`${th.name} ${w}x${h} R: the page is letter-proportioned (w/h = 8.5/11 within 1%) and ~${FRAME_PAGE_W} wide (within 3%), as in Cursor's frames`, rPred(g),
+  const k = PAGE_SCALE[w];
+  ok(`${th.name} ${w}x${h} R: the page is letter-proportioned (w/h = 8.5/11 within 1%) and ~${Math.round(FRAME_PAGE_W * k)} wide (Cursor's ${FRAME_PAGE_W} x the page scale ${k}, within 3%)`, rPred(g, k),
     J({ w: g && Math.round(g.page.width), h: g && Math.round(g.page.height), ratio: g && Math.round((g.page.width / g.page.height) * 1000) / 1000, want: Math.round(LETTER * 1000) / 1000 }));
   const lens = fullLineLengths(lines || []);
   ok(`${th.name} ${w}x${h} C: at the default, the median full line holds ${CPL_MIN}-${CPL_MAX} characters (~75)`, cPred(lines), J({ median: median(lens), lines: lens.length, sample: lens.slice(0, 8) }));
-  ok(`${th.name} ${w}x${h} F: the editor's type is ${FONT_PX}px (12 pt)`, !!g && Math.abs(g.fontPx - FONT_PX) < 0.25, J({ fontPx: g && g.fontPx }));
+  ok(`${th.name} ${w}x${h} F: the editor's type is 12 pt in page units (${FONT_PX}px x the page scale ${k})`, !!g && Math.abs(g.fontPx - FONT_PX * k) < 0.25, J({ fontPx: g && g.fontPx, want: FONT_PX * k }));
   if (w === 1366) {
     // MR: the page forced to today's 760px - R must fail
     await app.evalJs(`window.__psStyle('ps-mr', '.desk-frame-stage .mode-pagecol, .desk-frame-stage .mode-page { width:760px !important; max-width:none !important; }')`); await sleep(300);
@@ -219,7 +224,7 @@ const normalCase = async (app, th, w, h) => {
     await app.evalJs("window.__psStyle('ps-mc', null)"); await sleep(200);
     ok(`${th.name} MC (mutant): with the type at 14px (LANDED: ${gc && gc.fontPx}px), C fails`, !!gc && gc.fontPx === 14 && !cPred(lc), J({ median: median(fullLineLengths(lc || [])) }));
   }
-  return g;
+  return { g, lines };
 };
 
 const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants = false } = {}) => {
@@ -342,8 +347,11 @@ await withHarness(async (app) => {
     const applied = await app.evalJs("document.documentElement.getAttribute('data-theme')");
     ok(`${th.name} (premise): the theme is applied (data-theme=${applied})`, applied === th.id, applied);
 
-    let tall = null;
-    for (const [w, h] of NORMAL_VIEWS) { const g = await normalCase(app, th, w, h); if (w === 1366) tall = g; }
+    let tall = null; const startsAt = {};
+    for (const [w, h] of NORMAL_VIEWS) { const r = await normalCase(app, th, w, h); if (w === 1366) tall = r && r.g; startsAt[w] = r && r.lines; }
+    // L: a wider screen grows the page (ruling c) in SHAPE only - the same line breaks as at 1366
+    ok(`${th.name} L: the page at 1920 breaks its lines exactly where it does at 1366 (it grows, it never reflows)`, sameStarts(startsAt[1366], startsAt[1920]),
+      J({ at1366: (startsAt[1366] || []).length, at1920: (startsAt[1920] || []).length, firstDiff: (startsAt[1366] || []).findIndex((l, i) => !startsAt[1920] || !startsAt[1920][i] || startsAt[1920][i].start !== l.start) }));
     // S: a short screen keeps the page's width and fits the stage
     await app.emulateDpr(1, 1366, 768);
     if (await openPage(app, pid(th.id, 'draft'))) {
