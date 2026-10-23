@@ -61,7 +61,9 @@ await withHarness(async (app) => {
     // the page with both panels (the mockup's page-both-panels): the Docs pop-out on the left, the Operator drawer on the right
     await q("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))"); await sleep(300);
     await click('.wz-strip [data-category="page"]'); await sleep(700);
+    await q("(() => { const g = document.querySelector('.wz-tutor-grip'); if (g && g.getAttribute('data-open') !== 'true') g.click(); })()"); await sleep(900);
     await q("document.querySelector('#wz-tutor-tab-tutor')?.click()"); await sleep(500);
+    await waitSoft("!!document.querySelector('.wz-tutor-panel[data-open=\"true\"]')", { label: 'operator drawer', timeout: 3000 });
     ok(`[${tone}] page: the Docs pop-out is open beside the page and the Operator drawer is open`, !!(await q("!!(document.querySelector('.wz-sections') && document.querySelector('.wz-tutor-panel[data-open=\"true\"]'))")), '');
     await shot('page', tone);
     // an EMPTY page (the mockup's flux-light frame: a flat page, no grey bands top and bottom)
