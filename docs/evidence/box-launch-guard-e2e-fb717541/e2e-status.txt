@@ -1,0 +1,10 @@
+START 17:40:45Z
+granted to lane "chat1" and bound to the calling process tree (pid 58684) - name this turn's start and end in your report
+grant holder recorded: "holderPid": 58684 ; this script's pid: 32722 (msys) 
+A. inside the tree: exit=0 SUITE RESULT: CLEAN — tree=fb717541 bundle=index-BnB3RyzR.js/795740b NO-REBUILD
+created pid 55196 returnValue 0
+foreign run finished or timed out
+B. foreign tree, same token: 2 refusal line(s); SUITE REFUSED: BOX TURN NOT GRANTED.
+released
+launch log lines added: 1
+E2E COMPLETE

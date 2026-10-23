@@ -1,0 +1,7 @@
+SUITE REFUSED: BOX TURN NOT GRANTED.
+  BOX TURN HELD BY ANOTHER PROCESS TREE — refusing to open a browser.
+    The grant names lane "chat1" and is bound to a different process tree than this one.
+    Your token matches the file, but a token can be copied; the turn belongs to the tree that took it.
+    Take the box yourself (box-take.mjs, in the SAME shell/script that runs the harness), or wait.
+  (ITEM 139/140 — the guard lives in the runner, not in whichever driver
+   remembered it, and it reads the grant rather than the environment. reason=not-the-holder)
