@@ -567,6 +567,108 @@
 }
 
 /* ============================================================================
+   MACHINA - the third theme (docs/theme-foundations/machina/machina-foundations.md, LOCKED Jul 14; the approved mockup cursor/machina-v1-mockup @ 360f3db3;
+   docs/plans/machina-build.md). "The machine's room": neutral, precise, professional. Strictly additive under [data-theme='machina'] - the seam working as designed.
+   TWO TEMPERAMENTS (CAST, store/themeCast.ts; data-cast is on <html> ONLY while the theme is Machina): COOL is the BASE block (steel active lines, sparks off), NEUTRAL
+   only lists what changes (the active carrier turns orange, sparks on). PAGE INK IS INDEPENDENT OF ROOM INK: the Page pref (data-page) flips only the paper trio and the card
+   tokens - the chrome stays dark in the light frame. Orange is scarce in BOTH casts: the caret, Finalize, the mark and the Run notch (--brass, invariant).
+   Values: the mockup's own (--ground/--chrome/--rail/--line/--strong/--active/--live/--ink/--meta/--muted/--page/--edge/--pageink), mapped onto the app's slots (docs/plans/machina-build.md
+   §1a). DERIVED (the mockup gives no value): --lamp-glow, --ink-800, --paper-dim, --accent-door, the light page's --ink-on-paper-low and the card family - measured, below.
+   ONE DEVIATION FROM THE MOCKUP, for the 4.5:1 text floor (faint-text-sweep): the mockup's --muted (#6C7482 cool / #6F6F6F neutral) measures 3.8-4.2:1 on the chrome surfaces, so
+   --text-low (the app's "muted" text tier) is lifted to #7A8290 / #7D7D7D (4.75 / 4.55:1 on --chrome-surface, higher on the ground and rail).
+   MEASURED (WCAG): page text 14.6:1 cool-dark, 17.2:1 cool-light, 14.9:1 neutral-dark, 17.7:1 neutral-light (floor 7:1); meta on paper 5.4 / 5.67 / 5.2 / 6.7:1 (floor 4.5:1).
+   ============================================================================ */
+:root[data-theme='machina'] {
+  --ink-950: #0A0B0E;             /* ground */
+  --lamp-glow: radial-gradient(135% 95% at 50% -8%, #12141A 0%, #0E1015 38%, #0A0B0E 100%);   /* DERIVED: the same ramp as Flux's, in the ground's own hue - no warm glow */
+  --chrome-surface: #12141A;
+  --rail-surface: #0E1015;
+  --ink-900: #12141A;
+  --ink-800: #1A1D25;             /* DERIVED: the raised tier, one step above the chrome */
+  --ink-border: #252933;          /* line */
+  --ink-border-strong: #343A46;   /* line-strong */
+  --line-active: #7FA0BC;         /* steel - the active carrier (NEUTRAL: orange) */
+  --signal-live: #9DA5B4;
+  --choice: #7FA0BC;              /* every chosen / pressed / current state follows the active carrier */
+  --orange: var(--brass);
+  --text-accent: #7FA0BC;
+  --accent-rest: #7FA0BC;         /* "where you are": the active tab's underline, the current rail edge */
+  --help: #7A8290;
+  --help-hi: #9DA5B4;
+  --text-hi: #E6E9F1;             /* the mockup's --ink */
+  --text-mid: #878E9C;            /* the mockup's --meta */
+  --text-low: #7A8290;            /* the mockup's --muted, lifted for the 4.5:1 floor (see above) */
+
+  --font-chromeLabel:  'IBM Plex Mono', monospace;
+  --font-contentLabel: 'IBM Plex Sans', sans-serif;
+  --font-proseSerif:   'IBM Plex Serif', Georgia, serif;
+  --font-proseSans:    'Atkinson Hyperlegible', sans-serif;
+}
+:root[data-theme='machina'][data-cast='neutral'] {
+  --ink-950: #0A0A0A;
+  --lamp-glow: radial-gradient(135% 95% at 50% -8%, #121212 0%, #0E0E0E 38%, #0A0A0A 100%);
+  --chrome-surface: #121212;
+  --rail-surface: #0E0E0E;
+  --ink-900: #121212;
+  --ink-800: #1B1B1B;
+  --ink-border: #242424;
+  --ink-border-strong: #333333;
+  --line-active: #FF9800;         /* NEUTRAL: the active carrier IS the accent */
+  --signal-live: #A3A3A3;
+  --choice: #FF9800;
+  --text-accent: #FF9800;
+  --accent-rest: #FF9800;
+  --help: #7D7D7D;
+  --help-hi: #A3A3A3;
+  --text-hi: #E9E9E9;
+  --text-mid: #8A8A8A;
+  --text-low: #7D7D7D;            /* the mockup's #6F6F6F, lifted for the 4.5:1 floor */
+}
+/* PAGE (dark | light) x CAST - the four pairs of foundations §4. Only the paper trio (and the card family that rides it) flips; the room stays dark. */
+:root[data-theme='machina'][data-page='dark'] {
+  --paper: #16181F;
+  --paper-dim: #121419;           /* DERIVED */
+  --paper-border: #2F3541;
+  --ink-on-paper: #E6E9F1;
+  --ink-on-paper-low: #878E9C;    /* the foundations' "meta" - 5.4:1 on this paper */
+  --accent-door: #8FB0CC;         /* DERIVED: steel, 7.8:1 on this paper (Arbor's olive reads out of place in the machine's room) */
+}
+:root[data-theme='machina'][data-page='light'] {
+  --paper: #F8F9FC;
+  --paper-dim: #EEF0F5;           /* DERIVED */
+  --paper-border: #D3D8E1;
+  --ink-on-paper: #13161C;
+  --ink-on-paper-low: #5C6472;    /* DERIVED, measured against THIS paper (not inherited from the dark pair): 5.67:1, 5.96:1 on a white card */
+  --accent-door: #2F5F86;         /* DERIVED: 6.4:1 on this paper */
+}
+:root[data-theme='machina'][data-cast='neutral'][data-page='dark'] {
+  --paper: #161616;
+  --paper-dim: #121212;
+  --paper-border: #2E2E2E;
+  --ink-on-paper: #E9E9E9;
+  --ink-on-paper-low: #8A8A8A;    /* 5.2:1 */
+  --accent-door: #FFA733;         /* 9.3:1 */
+}
+:root[data-theme='machina'][data-cast='neutral'][data-page='light'] {
+  --paper: #FAFAFA;
+  --paper-dim: #F0F0F0;
+  --paper-border: #D6D6D6;
+  --ink-on-paper: #141414;
+  --ink-on-paper-low: #595959;    /* DERIVED: 6.7:1 on this paper, 7.0:1 on white */
+  --accent-door: #A85A00;         /* 4.9:1 */
+}
+/* The board's cards follow the page tone (the mockup's .bcard: the chrome tone on the dark page, white on the light), square, 1px hairline - not Arbor's cream stock. */
+:root[data-theme='machina'][data-page='dark'] .board-canvas { --card-stock: var(--ink-900); --card-hairline: var(--ink-border); --ink-on-card: var(--text-hi); --ink-on-card-low: var(--text-mid); --ink-on-card-meta: var(--text-mid); --badge-on-card: var(--text-mid); }
+:root[data-theme='machina'][data-page='light'] .board-canvas { --card-stock: #FFFFFF; --card-hairline: var(--ink-border); --ink-on-card: #141414; --ink-on-card-low: #5C6472; --ink-on-card-meta: #5C6472; --badge-on-card: #5C6472; }
+:root[data-theme='machina'][data-cast='neutral'][data-page='light'] .board-canvas { --ink-on-card-low: #595959; --ink-on-card-meta: #595959; --badge-on-card: #595959; }
+/* The mockup's active rail item is INK-coloured with only the left edge in the carrier colour (the app's own rule paints the label in --accent-rest too); Finalize alone is orange in both casts. */
+[data-theme='machina'] .wz-strip-item.active { color: var(--text-hi); }
+[data-theme='machina'] .desk-mode-tab[data-mode-key='publish'] { color: var(--orange); }
+/* THE SPARKS (NEUTRAL only, foundations §5): the selection wash on the page. COOL keeps the house's own grey selection. */
+:root[data-theme='machina'][data-cast='neutral'][data-page='dark'] .mode-scroll ::selection { background: rgba(255, 152, 0, .22); }
+:root[data-theme='machina'][data-cast='neutral'][data-page='light'] .mode-scroll ::selection { background: rgba(255, 152, 0, .28); }
+
+/* ============================================================================
    FLUX V2 (Fable's brief, Nick Oct 21) - the new shell. Tokens above; this block is the rules that are not just a token.
    ORANGE IS SCARCE: the caret (.flux-block-caret, above), the sprint surge (.mode-pfill.celebrate), Uplink, the mark, and the thin LEFT bar on the current list item.
    Every other "selected" is cyan - and that comes for free, because --brass (the generic selection token) is cyan under Flux.

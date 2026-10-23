@@ -25,6 +25,7 @@ import { App } from './App';
 import './index.css';
 import { initTheme } from './store/theme';
 import { initThemePrefs } from './store/themePrefs';
+import { initThemeCast } from './store/themeCast';
 // TH2 — registers Flux's texture/glow handlers onto TH1's effects scaffold
 // (registerThemeFx side effect). Import-for-effect only; nothing here reads
 // the binding. Harmless on Plateau — registration just sits unused.
@@ -36,6 +37,7 @@ import './store/deleteSeams';
 // render so there is never a themeless/wrong-voice flash.
 initTheme();
 initThemePrefs();
+initThemeCast();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

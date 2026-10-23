@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { ensureThemeFonts } from './themeFonts';
 
 // TH1 Slice 0 — the theme seam's selection mechanism. A theme is a
 // `data-theme` attribute on <html> plus per-theme CSS blocks (index.css);
@@ -8,20 +9,20 @@ import { useEffect, useState } from 'react';
 //
 // TH2 — 'flux' joins the union, exactly the literal-add TH1's comment
 // anticipated; later Volant/Nomad/Machina follow the same pattern.
-export type ThemeId = 'plateau' | 'flux';
+export type ThemeId = 'plateau' | 'flux' | 'machina';
 
-const REGISTERED: readonly ThemeId[] = ['plateau', 'flux'];
+const REGISTERED: readonly ThemeId[] = ['plateau', 'flux', 'machina'];
 
 // PHASE 1 (S5) - PER-THEME CONFIG. What a NEW page opens with is the theme's call. Today the one field is the typewriter's default for a page that has no
 // remembered value (store/writingSettings.ts, enterPageTypewriter): plateau (shown as "Arbor") on, flux off.
 //   MARKED SLOTS - these themes are not registered yet (ThemeId above); each joins the union and this table in the same edit:
-//     machina: { typewriterDefault: false },
 //     nomad:   { typewriterDefault: true },
 //     volant:  TBD - Nick has a different mode in mind; do NOT guess a boolean here.
 export interface ThemeConfig { typewriterDefault: boolean }
 export const THEME_CONFIG: Record<ThemeId, ThemeConfig> = {
   plateau: { typewriterDefault: true },
   flux: { typewriterDefault: false },
+  machina: { typewriterDefault: false },
 };
 const KEY = 'wrizo-theme';
 const DEFAULT: ThemeId = 'plateau';
@@ -46,6 +47,13 @@ function applyAttribute(theme: ThemeId) {
   if (typeof document !== 'undefined') {
     document.documentElement.setAttribute('data-theme', theme);
   }
+  ensureThemeFonts(theme);
+}
+
+/** Follow every theme switch (themeCast.ts's data-cast attribute appears and disappears with Machina itself). Returns the unsubscribe. */
+export function subscribeTheme(fn: (t: ThemeId) => void): () => void {
+  subs.add(fn);
+  return () => { subs.delete(fn); };
 }
 
 export function getTheme(): ThemeId {

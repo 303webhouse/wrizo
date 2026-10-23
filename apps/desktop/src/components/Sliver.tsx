@@ -621,6 +621,9 @@ function BulletControl({ onFormat, t }: { onFormat: (action: FormatAction) => vo
 const THEME_UNIQUE_TEMPLATES: Record<ThemeId, ReadonlySet<TemplateKey>> = {
   plateau: new Set(),
   flux: new Set(['blank', 'screenplay', 'outline', 'title', 'bibliography']),
+  // MACHINA: "Forms" - the mockup draws Memorandum / Report / Minutes (and Org chart / Timeline for plans), which do not map 1:1 onto the app's five
+  // template rows; until Nick/Fable rule on the mapping the five rows keep their canonical words, so none is renamed and none gets a "?" yet.
+  machina: new Set(),
 };
 const TEMPLATE_HELP_KEYS: Record<TemplateKey, DeskTermId> = {
   blank: 'helpTemplateBlank',

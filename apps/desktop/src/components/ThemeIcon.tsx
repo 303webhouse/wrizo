@@ -17,8 +17,9 @@ export function ThemeIcon({ id, fallback, size = 16 }: { id: string; fallback: R
     );
   }
   return (
-    <svg className="theme-icon theme-icon-paths" data-theme-icon={id} width={size} height={size} viewBox={spec.viewBox} fill="none" stroke="currentColor" aria-hidden="true" focusable="false">
-      {spec.paths.map((d, i) => <path key={i} d={d} />)}
+    <svg className="theme-icon theme-icon-paths" data-theme-icon={id} width={size} height={size} viewBox={spec.viewBox} fill="none" stroke="currentColor"
+      strokeWidth={spec.strokeWidth} strokeLinecap={spec.linecap} strokeLinejoin={spec.linejoin} aria-hidden="true" focusable="false">
+      {spec.paths.map((p, i) => (typeof p === 'string' ? <path key={i} d={p} /> : <path key={i} d={p.d} fill={p.fill} fillOpacity={p.fillOpacity} />))}
     </svg>
   );
 }
