@@ -402,13 +402,25 @@
    ticket fixes on `.board-text`'s own colour, just painted on its
    scrollbar thumb instead of its text. --ink-on-card-low carries the same
    "theme-scoped, subdued but legible" property this comment asks for,
-   just measured against the card's own stock rather than the page's. */
-.mode-scroll, .desk-frame-scroll-cap{
+   just measured against the card's own stock rather than the page's.
+   SCROLLBAR-FLUSH (Fable Oct 23, Nick: INK's light board shows a thick
+   dark thumb at the bottom): `.board-canvas-wrap` (the board's own
+   pannable canvas, BoardEditor.tsx) was never added to this group — its
+   own CSS comment (now corrected, see the FX5 S3(a)/FX7 S4 note near
+   `.board-canvas-wrap{ scrollbar-gutter:stable; }` below) wrongly
+   claimed the plain dark-chrome systemic default was fine for it. It
+   isn't: `.board-canvas`'s own background is `var(--paper)` (BoardEditor.
+   tsx's own inline style), the SAME paper surface `.mode-scroll` sits on
+   — not the card family `.board-text` uses — so it joins the PAPER pair,
+   not the card pair, tracking `--paper`'s own light/dark flip correctly
+   in both themes with zero new tokens. */
+.mode-scroll, .desk-frame-scroll-cap, .board-canvas-wrap{
   scrollbar-color: var(--ink-on-paper-low) transparent;
 }
 .board-text{ scrollbar-color: var(--ink-on-card-low) transparent; }
 .mode-scroll::-webkit-scrollbar-thumb,
-.desk-frame-scroll-cap::-webkit-scrollbar-thumb{ background:var(--ink-on-paper-low); }
+.desk-frame-scroll-cap::-webkit-scrollbar-thumb,
+.board-canvas-wrap::-webkit-scrollbar-thumb{ background:var(--ink-on-paper-low); }
 .board-text::-webkit-scrollbar-thumb{ background:var(--ink-on-card-low); }
 /* Hover darkens toward the paper's own primary ink (--ink-on-paper), the
    mirror of the dark-chrome default's own rest-dark/hover-light relationship
@@ -416,7 +428,8 @@
    "more visible" on hover; --paper-border would have gone the wrong way
    (lighter, closer to the paper itself, i.e. LESS visible). */
 .mode-scroll::-webkit-scrollbar-thumb:hover,
-.desk-frame-scroll-cap::-webkit-scrollbar-thumb:hover{ background:var(--ink-on-paper); }
+.desk-frame-scroll-cap::-webkit-scrollbar-thumb:hover,
+.board-canvas-wrap::-webkit-scrollbar-thumb:hover{ background:var(--ink-on-paper); }
 .board-text::-webkit-scrollbar-thumb:hover{ background:var(--ink-on-card); }
 
 /* ============================================================================
@@ -1800,10 +1813,19 @@ a:focus-visible,
    scrollbar rule near the top of this file, right after the reset) rather
    than staying a one-off tuned to this class alone — Nick's own "bulky and
    most white... dominate visually" verdict named EVERY scrollable region,
-   not just the board. `.board-canvas-wrap` no longer needs its own copy of
-   these six rules: the systemic default already produces byte-identical
-   values (the SAME two tokens), so this comment is what's left here —
-   removing the duplicate keeps the two from ever silently drifting apart. */
+   not just the board.
+   SCROLLBAR-FLUSH, CORRECTED (Fable Oct 23, Nick: INK's light board shows
+   a thick dark thumb at the bottom): the sentence this comment used to
+   carry — "`.board-canvas-wrap` no longer needs its own copy... the
+   systemic default already produces byte-identical values" — was wrong.
+   The systemic default is the DARK-chrome pair (`--ink-border-strong`),
+   tuned for dark surfaces; `.board-canvas`'s own background is
+   `var(--paper)` (BoardEditor.tsx's inline style), a LIGHT-paper surface
+   in both themes by default (Arbor always; Flux unless Page:dark) — the
+   exact mismatch FX7 S4's own comment above already names for
+   `.mode-scroll`. `.board-canvas-wrap` now joins that paper-toned group
+   (`.mode-scroll, .desk-frame-scroll-cap, .board-canvas-wrap`, near the
+   top of this file) instead of relying on the dark default. */
 /* FX17 S1 (SV22) — THE STUTTER'S ROOT. Reserve the scrollbar's gutter always,
    so `clientWidth` is the same number whether the scrollbar is showing or not.
    That one property breaks a genuine closed feedback loop, measured on the
