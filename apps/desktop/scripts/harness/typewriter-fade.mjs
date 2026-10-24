@@ -11,6 +11,7 @@
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
+const twParks = {};   // page-size: the default leg's band observation, for the parked records
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ED = '.forward-only-editor';
@@ -114,27 +115,92 @@ await withHarness(async (app) => {
   const lines = (m && m.lines) || [];
   const inversions = [];
   for (let i = 1; i < lines.length; i++) if (lines[i].alpha < lines[i - 1].alpha - 0.01) inversions.push({ older: lines[i - 1], newer: lines[i] });
-  ok('(premise) the page is a typewriter page whose history has scrolled, with a fade mask and several lines on screen',
-    !!m && !m.missing && m.typewriter === 'true' && m.scrolled === 'true' && (m.stops || []).length >= 2 && lines.length >= 6, JSON.stringify({ typewriter: m && m.typewriter, scrolled: m && m.scrolled, stops: m && m.stops, lines: lines.length }));
-  // THE PREMISE THAT MAKES THE ORDER MEASURABLE (Fable, 2026-10-12): at least 3 lines inside the fade band, and the oldest line in
-  // the box's first line (where FX5's lead-in lived). Without it the checks below pass or fail on nothing.
-  const pxOf = (v) => parseFloat(String(v || '').trim()) || 0;
-  const bandEnd = m && m.geo ? pxOf(m.geo.fadeStart) + pxOf(m.geo.fadeBand) : 0;
-  const fadeStart = m && m.geo ? pxOf(m.geo.fadeStart) : 0;
-  const inBand = lines.filter((l) => l.y >= -((m && m.geo && m.geo.lineHeight) || 28) / 2 && l.y <= bandEnd);
-  ok('(premise) the fade band is FULL: at least 3 lines sit inside it, and the oldest visible line sits in the box\'s first line (y < --tw-fade-start)',
-    bandEnd > 0 && inBand.length >= 3 && lines.length > 0 && lines[0].y < fadeStart,
-    JSON.stringify({ bandEnd, fadeStart, inBand: inBand.length, top: lines[0] || null, aligned }));
-  ok('THE ORDER: going down the page no line is fainter than the older line above it (Nick: "a newer line dims while the older one above it stays dark")',
-    lines.length >= 6 && inversions.length === 0, JSON.stringify({ inversions: inversions.slice(0, 4), lines: lines.slice(0, 8) }));
-  const minAlpha = lines.length ? Math.min(...lines.map((l) => l.alpha)) : null;
-  ok('THE OLDEST IS THE FAINTEST: the topmost visible line carries the lowest strength of all, and it is genuinely faded (< 0.5)',
-    lines.length >= 6 && lines[0].alpha === minAlpha && lines[0].alpha < 0.5, JSON.stringify({ top: lines[0], minAlpha, geo: m && m.geo }));
-  ok('THE NEWEST IS WHOLE: the last visible line (where the writer is) is fully shown',
-    lines.length >= 6 && lines[lines.length - 1].alpha >= 0.99, JSON.stringify(lines[lines.length - 1]));
+  // ---- PARKED - SUPERSEDED by page-size (Fable + Nick, Oct 23; Cursor's final mockup @ e3c4e462): Typewriter is now the ZOOM, and its fade is ONE
+  // band mask on the page COLUMN (.mode-pagecol[data-zoom]) anchored at the writing line - the top-of-box mask on .mode-scroll these five read stands
+  // down while zoomed. On the page-size build two went red and three passed BLIND (no mask -> every line alpha 1 -> "no inversion" held vacuously).
+  // All five are kept VERBATIM and no longer run; records in this file's parked section; successors (the same five claims, read from the band) follow.
+  //
+  // ok('(premise) the page is a typewriter page whose history has scrolled, with a fade mask and several lines on screen',
+  //   !!m && !m.missing && m.typewriter === 'true' && m.scrolled === 'true' && (m.stops || []).length >= 2 && lines.length >= 6, JSON.stringify({ typewriter: m && m.typewriter, scrolled: m && m.scrolled, stops: m && m.stops, lines: lines.length }));
+  // // THE PREMISE THAT MAKES THE ORDER MEASURABLE (Fable, 2026-10-12): at least 3 lines inside the fade band, and the oldest line in
+  // // the box's first line (where FX5's lead-in lived). Without it the checks below pass or fail on nothing.
+  // const pxOf = (v) => parseFloat(String(v || '').trim()) || 0;
+  // const bandEnd = m && m.geo ? pxOf(m.geo.fadeStart) + pxOf(m.geo.fadeBand) : 0;
+  // const fadeStart = m && m.geo ? pxOf(m.geo.fadeStart) : 0;
+  // const inBand = lines.filter((l) => l.y >= -((m && m.geo && m.geo.lineHeight) || 28) / 2 && l.y <= bandEnd);
+  // ok('(premise) the fade band is FULL: at least 3 lines sit inside it, and the oldest visible line sits in the box\'s first line (y < --tw-fade-start)',
+  //   bandEnd > 0 && inBand.length >= 3 && lines.length > 0 && lines[0].y < fadeStart,
+  //   JSON.stringify({ bandEnd, fadeStart, inBand: inBand.length, top: lines[0] || null, aligned }));
+  // ok('THE ORDER: going down the page no line is fainter than the older line above it (Nick: "a newer line dims while the older one above it stays dark")',
+  //   lines.length >= 6 && inversions.length === 0, JSON.stringify({ inversions: inversions.slice(0, 4), lines: lines.slice(0, 8) }));
+  // const minAlpha = lines.length ? Math.min(...lines.map((l) => l.alpha)) : null;
+  // ok('THE OLDEST IS THE FAINTEST: the topmost visible line carries the lowest strength of all, and it is genuinely faded (< 0.5)',
+  //   lines.length >= 6 && lines[0].alpha === minAlpha && lines[0].alpha < 0.5, JSON.stringify({ top: lines[0], minAlpha, geo: m && m.geo }));
+  // ok('THE NEWEST IS WHOLE: the last visible line (where the writer is) is fully shown',
+  //   lines.length >= 6 && lines[lines.length - 1].alpha >= 0.99, JSON.stringify(lines[lines.length - 1]));
+  // ------------------------------------------------------------------
+  const z = await app.evalJs(`(() => {
+    const col = document.querySelector('.mode-pagecol'); const ed = document.querySelector('${ED}');
+    if (!col || !ed) return { missing: true };
+    const cs = getComputedStyle(col); const mask = cs.webkitMaskImage || cs.maskImage || ''; const box = col.getBoundingClientRect();
+    // a stop's position, resolved against the column's own height: "12px", "60%", "calc(60% - 287.2px)", "calc(60% + 63.1px)"
+    const len = (s) => { s = String(s || '').trim(); if (!s) return null; const c = s.match(/^calc\\((.*)\\)$/); const body = c ? c[1] : s; let total = 0; let sign = 1; let ok = false;
+      for (const tok of body.split(/\\s+/)) { if (tok === '+') { sign = 1; continue; } if (tok === '-') { sign = -1; continue; } const n = parseFloat(tok); if (!Number.isFinite(n)) continue;
+        total += sign * (tok.endsWith('%') ? (n / 100) * box.height : n); ok = true; sign = 1; } return ok ? total : null; };
+    const inner = (mask.match(/linear-gradient\\((.*)\\)\\s*$/) || [])[1] || '';
+    const parts = []; let depth = 0, cur = '';
+    for (const ch of inner) { if (ch === '(') depth++; if (ch === ')') depth--; if (ch === ',' && depth === 0) { parts.push(cur.trim()); cur = ''; } else cur += ch; }
+    if (cur.trim()) parts.push(cur.trim());
+    const stops = [];
+    for (const p of parts) { const col2 = p.match(/^(rgba?\\([^)]*\\)|transparent|#[0-9a-f]+)\\s*(.*)$/i); if (!col2) continue;
+      const nums = (col2[1].match(/[\\d.]+/g) || []).map(Number); const alpha = col2[1] === 'transparent' ? 0 : col2[1].startsWith('rgba') ? nums[3] : 1;
+      const at = len(col2[2] || '0px'); if (at != null) stops.push({ alpha, at: Math.round(at * 10) / 10 }); }
+    const alphaAt = (y) => { if (!stops.length) return 1; if (y <= stops[0].at) return stops[0].alpha;
+      for (let i = 1; i < stops.length; i++) { const a = stops[i - 1], b = stops[i]; if (y <= b.at) return b.at === a.at ? b.alpha : a.alpha + (b.alpha - a.alpha) * ((y - a.at) / (b.at - a.at)); }
+      return stops[stops.length - 1].alpha; };
+    const r = document.createRange(); r.selectNodeContents(ed); const mids = [];
+    for (const rc of r.getClientRects()) { if (rc.height < 4 || rc.bottom <= Math.max(box.top, 0) || rc.top >= Math.min(box.bottom, innerHeight)) continue;
+      const mid = Math.round((rc.top + rc.bottom) / 2); if (!mids.some((m2) => Math.abs(m2 - mid) < 4)) mids.push(mid); }
+    mids.sort((a, b) => a - b);
+    const sel = getSelection(); const cr = sel && sel.rangeCount ? sel.getRangeAt(0).getBoundingClientRect() : null;
+    const caretMid = cr && cr.height ? (cr.top + cr.bottom) / 2 : null;
+    const lines = mids.map((mid) => ({ y: Math.round(mid - box.top), alpha: Math.round(alphaAt(mid - box.top) * 1000) / 1000, writing: caretMid != null && Math.abs(mid - caretMid) < 4 }));
+    return { zoom: col.getAttribute('data-zoom'), mask: mask.slice(0, 160), stops, lines, boxH: Math.round(box.height) };
+  })()`);
+  const zl = (z && z.lines) || [];
+  const wi = zl.findIndex((l) => l.writing);
+  const upTo = wi >= 0 ? zl.slice(0, wi + 1) : zl;   // the history: the lines from the top down to the writing line
+  const zInv = []; for (let i = 1; i < upTo.length; i++) if (upTo[i].alpha < upTo[i - 1].alpha - 0.01) zInv.push({ older: upTo[i - 1], newer: upTo[i] });
+  const ramp = upTo.filter((l) => l.alpha > 0.1 && l.alpha < 0.95);
+  twParks.band = { zoom: z && z.zoom, stops: z && z.stops && z.stops.length, lines: zl.length, wi, ramp: ramp.length, inversions: zInv.length, top: zl[0] || null, writing: wi >= 0 ? zl[wi] : null };
+  ok('(premise) [page-size successor] the page is ZOOMED (Typewriter) with the band mask on the page column - its stops resolved - and several lines on screen, the writing line among them',
+    !!z && !z.missing && z.zoom === 'true' && (z.stops || []).length >= 6 && zl.length >= 6 && wi >= 0, JSON.stringify({ zoom: z && z.zoom, stops: z && z.stops, lines: zl.length, wi, mask: z && z.mask }));
+  ok('(premise) [page-size successor] the fade is FULL: at least 3 lines of the history sit inside the band\'s ramp (strength between .1 and .95), so the order cannot pass on nothing',
+    ramp.length >= 3, JSON.stringify({ ramp: ramp.slice(0, 6) }));
+  ok('THE ORDER [page-size successor]: going down the history to the writing line, no line is fainter than the older line above it',
+    upTo.length >= 6 && zInv.length === 0, JSON.stringify({ inversions: zInv.slice(0, 4), lines: upTo.slice(0, 10) }));
+  const zMin = upTo.length ? Math.min(...upTo.map((l) => l.alpha)) : null;
+  ok('THE OLDEST IS THE FAINTEST [page-size successor]: the topmost visible line carries the lowest strength of all, and it is genuinely faded (< 0.5)',
+    upTo.length >= 6 && upTo[0].alpha === zMin && upTo[0].alpha < 0.5, JSON.stringify({ top: upTo[0], zMin }));
+  ok('THE NEWEST IS WHOLE [page-size successor]: the writing line is fully shown (strength 1)',
+    wi >= 0 && zl[wi].alpha >= 0.99, JSON.stringify(wi >= 0 ? zl[wi] : null));
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${c.detail}]` : ''}`);
+if (process.env.HARNESS_PARKED === '1') {
+  // PAGE-SIZE (Oct 23) - FIVE parks: the five checks that read .mode-scroll's top-of-box mask, which the zoom's band replaces. Records frozen with
+  // their original names; each re-verifies the new truth from the default leg's band observation (twParks.band).
+  const b = twParks.band || {};
+  const rec = [
+    ['(premise) the page is a typewriter page whose history has scrolled, with a fade mask and several lines on screen', b.zoom === 'true' && b.stops >= 6 && b.lines >= 6],
+    ['(premise) the fade band is FULL: at least 3 lines sit inside it, and the oldest visible line sits in the box\'s first line (y < --tw-fade-start)', b.ramp >= 3],
+    ['THE ORDER: going down the page no line is fainter than the older line above it (Nick: "a newer line dims while the older one above it stays dark")', b.inversions === 0 && b.lines >= 6],
+    ['THE OLDEST IS THE FAINTEST: the topmost visible line carries the lowest strength of all, and it is genuinely faded (< 0.5)', !!b.top && b.top.alpha < 0.5],
+    ['THE NEWEST IS WHOLE: the last visible line (where the writer is) is fully shown', !!b.writing && b.writing.alpha >= 0.99],
+  ].map(([n, p]) => ({ name: `PARKED (was "${n}") - page-size: the zoom's band on the page column replaces .mode-scroll's top-of-box mask; successor reads the band`, pass: !!p, detail: JSON.stringify(b) }));
+  for (const c of rec) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}  [${c.detail}]`);
+  console.log(rec.every((c) => c.pass) ? `\nTYPEWRITER-FADE PARKED: PASS (${rec.length} records) - this FILE parks 5 (page-size, Oct 23)` : `\nTYPEWRITER-FADE PARKED: FAIL - ${rec.filter((c) => !c.pass).length}/${rec.length}`);
+}
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nTYPEWRITER-FADE VERIFY: PASS (${checks.length} checks)` : `\nTYPEWRITER-FADE VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
 process.exit(passed === checks.length ? 0 : 1);

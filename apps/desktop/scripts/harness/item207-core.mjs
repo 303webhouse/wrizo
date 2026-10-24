@@ -72,9 +72,26 @@ ok('TYPED NUMBER: displays "10.5" and "11", never "10.50" or "11.0"', M.formatSi
 // "11 IS TODAY" — an untouched page emits nothing, so its editor style is the one it always had
 // ---------------------------------------------------------------------------
 ok('11 = TODAY: a page that never chose (no face, no size) yields an EMPTY style — byte-identical to the prior build', JSON.stringify(M.pageTypeStyle(undefined, undefined)) === '{}', JSON.stringify(M.pageTypeStyle(undefined, undefined)));
-ok('11 = TODAY: an explicit 11 yields no font-size either (the default is the absence of a rule)', M.pageTypeStyle(undefined, 11).fontSize === undefined && M.pageTypeStyle(M.storedFaceFor(M.rosterFace('Crimson Pro')), 11).fontSize === undefined, '');
-ok('SIZE: 12 renders 17px x 12/11 x the paper scale, and 6 / 120 scale the same way (the number is the printed size; the screen is a uniform zoom)',
-  M.pageTypeStyle(undefined, 12).fontSize === `calc(17px * ${12 / 11} * var(--paper-scale))` && M.pageTypeStyle(undefined, 120).fontSize === `calc(17px * ${120 / 11} * var(--paper-scale))`, M.pageTypeStyle(undefined, 12).fontSize);
+// ---- PARKED - SUPERSEDED by page-size (Fable's ruling a, Oct 23: the page's number is REAL POINTS IN PAGE UNITS - 12 = 16px at page scale 1,
+// scaled with the page - and a NEW page defaults to 12; cards keep their own 11). Kept VERBATIM and no longer run. An explicit 11 is now a real,
+// smaller size (it emits a font-size), and 12 is no longer "17 x 12/11 x the paper scale". Successors follow; records in the parked section.
+//
+// ok('11 = TODAY: an explicit 11 yields no font-size either (the default is the absence of a rule)', M.pageTypeStyle(undefined, 11).fontSize === undefined && M.pageTypeStyle(M.storedFaceFor(M.rosterFace('Crimson Pro')), 11).fontSize === undefined, '');
+// ok('SIZE: 12 renders 17px x 12/11 x the paper scale, and 6 / 120 scale the same way (the number is the printed size; the screen is a uniform zoom)',
+//   M.pageTypeStyle(undefined, 12).fontSize === `calc(17px * ${12 / 11} * var(--paper-scale))` && M.pageTypeStyle(undefined, 120).fontSize === `calc(17px * ${120 / 11} * var(--paper-scale))`, M.pageTypeStyle(undefined, 12).fontSize);
+// ------------------------------------------------------------------
+let pageSizePark = null;   // page-size: the default leg's observation, for the parked leg's records (coreParks is declared further down)
+{
+  const fs12 = M.pageTypeStyle(undefined, 12).fontSize; const fs12face = M.pageTypeStyle(M.storedFaceFor(M.rosterFace('Crimson Pro')), 12).fontSize;
+  const fs11 = M.pageTypeStyle(undefined, 11).fontSize; const fs13 = M.pageTypeStyle(undefined, 13).fontSize;
+  const fs6 = M.pageTypeStyle(undefined, 6).fontSize; const fs120 = M.pageTypeStyle(undefined, 120).fontSize;
+  const pt = (n) => `calc(${n} * var(--wz-pt, 1.33333px))`;
+  pageSizePark = { fs12, fs12face, fs11, fs13, fs6, fs120, defaultOk: fs12 === undefined && fs12face === undefined && fs11 === pt(11), scaleOk: fs13 === pt(13) && fs6 === pt(6) && fs120 === pt(120) };
+  ok('12 = THE PAGE DEFAULT [page-size successor]: an explicit 12 yields no font-size (the default is the absence of a rule), and an explicit 11 is now a real, smaller size (11 page points)',
+    pageSizePark.defaultOk, JSON.stringify({ fs12, fs12face, fs11 }));
+  ok('SIZE [page-size successor]: n renders n x --wz-pt - real points in PAGE units (12 = 16px at page scale 1, growing with the page) - and 6 / 120 the same way',
+    pageSizePark.scaleOk, JSON.stringify({ fs13, fs6, fs120 }));
+}
 
 // ---------------------------------------------------------------------------
 // THE ROSTER AND THE RESOLVER
@@ -285,12 +302,16 @@ if (process.env.HARNESS_PARKED === '1') {
   // truth from the default leg's observation (coreParks.minimal).
   { const m = coreParks.minimal; parkedChecks.push({ name: 'PARKED (was "MINIMAL (his law): the control is exactly a face button and a `-` `+` pair (3 buttons) plus ONE number input, and that input exists only in the full form") - font-span: 5 buttons in source, the scope pair only under `scope`; live successor: MINIMAL [font-span successor]',
     pass: !!m && m.buttons === 5 && m.scopeOnly && m.inputs === 1 && m.inputGuardedByFullForm, detail: JSON.stringify(m) }); }
+  // PAGE-SIZE (Oct 23, Fable's ruling a) - a FIFTH and SIXTH park: "11 = TODAY"'s explicit 11 and SIZE's 17px x n/11 formula. Records frozen;
+  // each re-verifies the new truth from the default leg's observation (pageSizePark).
+  { const p = pageSizePark; parkedChecks.push({ name: 'PARKED (was "11 = TODAY: an explicit 11 yields no font-size either (the default is the absence of a rule)") - page-size ruling a: 12 is the page default; 11 is a real smaller size', pass: !!p && p.defaultOk, detail: JSON.stringify(p) }); }
+  { const p = pageSizePark; parkedChecks.push({ name: 'PARKED (was "SIZE: 12 renders 17px x 12/11 x the paper scale, and 6 / 120 scale the same way") - page-size ruling a: n x --wz-pt, real points in page units', pass: !!p && p.scaleOk, detail: JSON.stringify(p) }); }
   // ONE park (2026-10-12): MOUNT [C3 successor]'s literal-shape match, superseded by its guard-tolerant successor. The record
   // asserts the new truth: the guard-tolerant match finds the one Typeface section on this tree's Sliver.
   parkedChecks.push({ name: 'PARKED (was "MOUNT [C3 successor]: the sliver mounts the control on the Free Write, Draft and Revise arms only, in one section headed \\"Typeface\\" ...") - its literal `content.type && (` match read any further guard (phase1-drawers\' `&& allowed(\'typeface\')`) as a missing mount; live successor: MOUNT [C3 successor, guard-tolerant]',
     pass: !!mountC3, detail: mountC3 ? 'found' : 'mount block not found' });
   console.log(parkedChecks.every((c) => c.pass)
-    ? `\nITEM207-CORE PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; FOUR parks: MOUNT [C3 successor]'s literal-shape match, MINIMAL's three buttons, FORMS' literal Draft form (font-span), and FORMS [font-span successor]'s own fixed-window regex (typewriter-scope)`
+    ? `\nITEM207-CORE PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; SIX parks: page-size's two (11 = TODAY's explicit 11, SIZE's 17px formula), MOUNT [C3 successor]'s literal-shape match, MINIMAL's three buttons, FORMS' literal Draft form (font-span), and FORMS [font-span successor]'s own fixed-window regex (typewriter-scope)`
     : `\nITEM207-CORE PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 const all = checks.concat(parkedChecks);

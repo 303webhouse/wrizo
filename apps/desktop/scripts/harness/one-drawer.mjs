@@ -114,6 +114,8 @@ function scenarioMeasured(m) {
   // O5b's sequence, cascade -> Tutor -> Tools, under each document: the two laws answer independently
   under(TIGHT, () => { r.open('cascade'); r.open('tutor'); r.open('tools'); }); out.tightCascade = snap(); reset();
   under(ROOM, () => { r.open('cascade'); r.open('tutor'); r.open('tools'); }); out.roomCascade = snap(); reset();
+  // a hand closes Tools, then the Tutor opens WHERE THEY CANNOT SHARE: nothing may be closed (a stale 'still standing' would close Tools again)
+  under(TIGHT, () => { r.open('tools'); r.close('tools'); r.s.closes.length = 0; r.open('tutor'); }); out.tightManualClose = snap(); reset();
   return out;
 }
 function verdictMeasured(o) {
@@ -125,6 +127,7 @@ function verdictMeasured(o) {
     tightCascade: o.tightCascade.tools === true && o.tightCascade.tutor === false && o.tightCascade.cascade === false
       && o.tightCascade.closes.includes('tutor') && o.tightCascade.closes.includes('cascade'),
     roomCascade: o.roomCascade.tools === true && o.roomCascade.tutor === true && o.roomCascade.cascade === false && o.roomCascade.closes.join() === 'cascade',
+    tightManualClose: o.tightManualClose.tutor === true && o.tightManualClose.closes.length === 0,
   };
 }
 
@@ -196,7 +199,15 @@ pok('PARKED (was "(M) the pair is no longer exclusive (the rival is not closed):
 pok('PARKED (was "(M) the exclusion becomes the width-measured law again (only when the band cannot hold both): the proof goes RED") - SUPERSEDED by page-size (Fable, Oct 23): a measured exclusion is now the ruled behaviour', true, 'successor: (MM) the measure is ignored');
 pok('PARKED (was "(M) the width law tests only the most recent opener again (openDrawer === other): the proof goes RED", witness O5b) - SUPERSEDED by page-size (Fable, Oct 23)', true, 'successor: the same mutation, witness O5m (TIGHT)');
 pok('PARKED (was "(M) an opening drawer is never recorded as standing (the rival can never be found): the proof goes RED", witness O1) - SUPERSEDED by page-size (Fable, Oct 23)', true, 'successor: the same mutation, witness O2m');
-await mutant('a close by hand is never noted (the store believes the drawer still stands)', { [MD]: swap('  stands.delete(id);\n  if (openDrawer === id)', '  if (openDrawer === id)') }, 'afterManualClose');
+// ---- PARKED - SUPERSEDED by page-size (Fable, Oct 23): its witness (afterManualClose) runs where the hands have ROOM, so under the measured rule
+// nothing is ever closed there and a stale 'still standing' cannot show - the mutant stopped biting (lane run on fb1e28fb). Kept VERBATIM and no
+// longer run; the successor runs the same mutation against the TIGHT witness, where a stale stand WOULD close the drawer the writer already shut.
+//
+// await mutant('a close by hand is never noted (the store believes the drawer still stands)', { [MD]: swap('  stands.delete(id);\n  if (openDrawer === id)', '  if (openDrawer === id)') }, 'afterManualClose');
+// ----------------------------------------------------------------------
+pok('PARKED (was "(M) a close by hand is never noted (the store believes the drawer still stands): the proof goes RED", witness afterManualClose) - SUPERSEDED by page-size (Fable, Oct 23): with room nothing is closed, so the witness cannot see it', true, 'successor: (MM) the same mutation, witness tightManualClose');
+await mutantMeasured('a close by hand is never noted (the store believes the drawer still stands)', { [MD]: swap('  stands.delete(id);\n  if (openDrawer === id)', '  if (openDrawer === id)') }, 'tightManualClose');
+ok('(O3m) where the hands cannot share, a drawer the writer closed by hand is never closed AGAIN when the other opens (no stale stand)', vm.tightManualClose, JSON.stringify(measured.tightManualClose));
 // The build writes the hands' guard as exactly `if (stands.has(rival) && !canHoldBoth())` (docs/plans/page-size.md); if it is written otherwise these say so LOUDLY.
 await mutantMeasured('the measure is ignored - the hands are exclusive at every width again (the Oct 12 rule)', { [MD]: swap('if (stands.has(rival) && !canHoldBoth())', 'if (stands.has(rival))') }, 'roomBoth');
 await mutantMeasured('the pair is never exclusive (the rival is never closed, whatever the room)', { [MD]: swap('if (stands.has(rival) && !canHoldBoth())', 'if (false)') }, 'tightExclusive');
@@ -212,7 +223,7 @@ if (process.env.HARNESS_PARKED === '1') {
   for (const c of parkedChecks) console.log((c.pass ? 'PASS ' : 'FAIL ') + c.name + (c.detail ? ' | ' + c.detail : ''));
   const parkedPass = parkedChecks.length > 0 && parkedChecks.every((c) => c.pass);
   console.log(parkedPass
-    ? `\nONE-DRAWER PARKED: PASS (${parkedChecks.length} records) - this FILE parks 7 (page-size, Oct 23): O1, O2, O5b and four mutants that read the Oct 12 one-drawer-at-every-width rule`
+    ? `\nONE-DRAWER PARKED: PASS (${parkedChecks.length} records) - this FILE parks 8 (page-size, Oct 23): O1, O2, O5b and five mutants that read the Oct 12 one-drawer-at-every-width rule (the hand-close mutant through its witness)`
     : `\nONE-DRAWER PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed (or none recorded)`);
 }
 console.log(failed === 0 ? `\nONE-DRAWER VERIFY: PASS (${checks.length} checks)` : `\nONE-DRAWER VERIFY: FAIL - ${failed}/${checks.length}`);

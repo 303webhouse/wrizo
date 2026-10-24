@@ -86,6 +86,7 @@ const gripDiag = (app) => app.evalJs(`(() => {
   };
 })()`);
 
+const fx18Parks = [];   // page-size: each writing leg's observation, for the parked records (declared before the run so the legs can fill it)
 await withHarness(async (app) => {
   // ── S1 — the arrow mirrors (on a framed prose page, both grips, both states) ──
   {
@@ -146,26 +147,56 @@ await withHarness(async (app) => {
       await s.setup(app, w, h);
       await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(200);
       await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(300);
+      // ---- PARKED - SUPERSEDED by page-size (Fable's 1366 rule, Oct 23: a drawer NARROWS to fit beside the page down to DRAWER_MIN, 200px, and only
+      // below that overlays - the floor is 200, not FX18's 280; and the prose page is PAINTED by a transform, so the margin is the PAINTED page's).
+      // The regime branch below picked its law from 280 and the layout column; at Script @ 1366 (margin 235) it demanded the old overlay. Kept
+      // VERBATIM and no longer run; successor follows (the same three-regime law, floor 200, the painted page). Records in the parked section.
+      //
+      // const panel = await rectOf(app, '.wz-tutor-panel');
+      // const paper = await rectOf(app, writingPaperSel);
+      // const margin = await marginOf(app);
+      // const gd = await gripDiag(app); const grip = gd.reachable;
+      // const inRoom = inRoomOf(panel, w);
+      // const ow = openW(w);
+      // if (margin != null && margin >= USABLE_FLOOR) {
+      //   // Regime (1) — the WIDE LAW (the norm): occupy the margin, NEVER cover the paper.
+      //   ok(`S2 WIDE LAW (${s.name} @ ${w}x${h}, margin ${margin}px >= ${USABLE_FLOOR}): the OPEN panel OCCUPIES the margin and NEVER covers the paper (panel.left >= paper.right), stays wholly in the room, grip reachable`,
+      //     !!panel && !!paper && panel.l >= paper.r - 2 && inRoom && grip === true,
+      //     JSON.stringify({ panel, paper, margin, grip, gd, w }));
+      //   // SV26 — the wide regime has room, so the two open panels must not overlap.
+      //   const sliverPanel = await rectOf(app, '.wz-sliver-panel');
+      //   ok(`S2 WIDE LAW (${s.name} @ ${w}x${h}): the open left toolbar and the open right panel DO NOT overlap — every control under them stays reachable (SV26)`,
+      //     !!sliverPanel && !!panel && sliverPanel.r <= panel.l + 1,
+      //     JSON.stringify({ sliverPanel, tutorPanel: panel }));
+      // } else {
+      //   // Regime (2) — the DOCUMENTED NARROW-SCREEN DEGRADATION (not the norm): overlay the
+      //   // paper at natural open-w, "as before" — and the grip STAYS reachable atop it (z-lift).
+      //   ok(`S2 DEGRADATION (${s.name} @ ${w}x${h}, margin ${margin}px < ${USABLE_FLOOR} — the documented narrow-screen mode, NOT the norm): the OPEN panel OVERLAYS the paper at natural open-w (~${ow.toFixed(0)}px), stays in the room, grip STAYS reachable atop it`,
+      //     !!panel && !!paper && panel.l < paper.r - 2 && Math.abs(panel.w - ow) < 2 && inRoom && grip === true,
+      //     JSON.stringify({ panel, paper, margin, expectedOpenW: ow, grip, gd, w }));
+      // }
+      // ------------------------------------------------------------------
       const panel = await rectOf(app, '.wz-tutor-panel');
-      const paper = await rectOf(app, writingPaperSel);
-      const margin = await marginOf(app);
+      const paper = await app.evalJs(`(() => { const el = document.querySelector('.desk-frame-stage--prose .mode-page') || document.querySelector('${writingPaperSel}'); if (!el) return null;
+        const r = el.getBoundingClientRect(); return { l: Math.round(r.left), r: Math.round(r.right), w: Math.round(r.width) }; })()`);
+      const margin = await app.evalJs(`(() => { const stage = document.querySelector('.desk-frame-stage');
+        const paper = document.querySelector('.desk-frame-stage--prose .mode-page') || document.querySelector('.mode-pagecol, .entry-full, .board-canvas-wrap');
+        if (!stage || !paper) return null; return Math.round(stage.getBoundingClientRect().right - paper.getBoundingClientRect().right); })()`);
       const gd = await gripDiag(app); const grip = gd.reachable;
       const inRoom = inRoomOf(panel, w);
       const ow = openW(w);
-      if (margin != null && margin >= USABLE_FLOOR) {
-        // Regime (1) — the WIDE LAW (the norm): occupy the margin, NEVER cover the paper.
-        ok(`S2 WIDE LAW (${s.name} @ ${w}x${h}, margin ${margin}px >= ${USABLE_FLOOR}): the OPEN panel OCCUPIES the margin and NEVER covers the paper (panel.left >= paper.right), stays wholly in the room, grip reachable`,
+      const FLOOR = 200;   // = store/menusDrawers.ts DRAWER_MIN (page-size)
+      fx18Parks.push({ s: s.name, w, margin, panel, paper });
+      if (margin != null && margin >= FLOOR) {
+        ok(`S2 WIDE LAW [page-size successor] (${s.name} @ ${w}x${h}, margin ${margin}px >= ${FLOOR}): the OPEN panel OCCUPIES the margin (narrowed to it if need be) and NEVER covers the painted paper, stays wholly in the room, grip reachable`,
           !!panel && !!paper && panel.l >= paper.r - 2 && inRoom && grip === true,
           JSON.stringify({ panel, paper, margin, grip, gd, w }));
-        // SV26 — the wide regime has room, so the two open panels must not overlap.
         const sliverPanel = await rectOf(app, '.wz-sliver-panel');
-        ok(`S2 WIDE LAW (${s.name} @ ${w}x${h}): the open left toolbar and the open right panel DO NOT overlap — every control under them stays reachable (SV26)`,
+        ok(`S2 WIDE LAW [page-size successor] (${s.name} @ ${w}x${h}): the open left toolbar and the open right panel DO NOT overlap - every control under them stays reachable (SV26)`,
           !!sliverPanel && !!panel && sliverPanel.r <= panel.l + 1,
           JSON.stringify({ sliverPanel, tutorPanel: panel }));
       } else {
-        // Regime (2) — the DOCUMENTED NARROW-SCREEN DEGRADATION (not the norm): overlay the
-        // paper at natural open-w, "as before" — and the grip STAYS reachable atop it (z-lift).
-        ok(`S2 DEGRADATION (${s.name} @ ${w}x${h}, margin ${margin}px < ${USABLE_FLOOR} — the documented narrow-screen mode, NOT the norm): the OPEN panel OVERLAYS the paper at natural open-w (~${ow.toFixed(0)}px), stays in the room, grip STAYS reachable atop it`,
+        ok(`S2 DEGRADATION [page-size successor] (${s.name} @ ${w}x${h}, margin ${margin}px < ${FLOOR}): the OPEN panel OVERLAYS the paper at natural open-w (~${ow.toFixed(0)}px), stays in the room, grip STAYS reachable atop it`,
           !!panel && !!paper && panel.l < paper.r - 2 && Math.abs(panel.w - ow) < 2 && inRoom && grip === true,
           JSON.stringify({ panel, paper, margin, expectedOpenW: ow, grip, gd, w }));
       }
@@ -225,12 +256,16 @@ console.log(JSON.stringify(checks, null, 2));
 // authority + successors asserting the new law), landed in this same commit at verify.
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  // PAGE-SIZE (Oct 23) - the S2 regime branch (floor 280, the layout column) is parked; ONE record per writing leg, re-verifying that each leg
+  // was judged by the successor's law (floor 200, the painted page) - the successor's own checks carry the pass/fail of that law.
+  for (const o of fx18Parks) parkedChecks.push({ name: `PARKED (was "S2 WIDE LAW / S2 DEGRADATION (${o.s} @ ${o.w}) - regime chosen at a 280px floor from the layout column") - page-size: floor 200, the painted page`,
+    pass: o.margin != null && !!o.paper, detail: JSON.stringify(o) });
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nFX18 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; FX18 parks nothing of its own.`
+    ? `\nFX18 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; FX18 parks its S2 regime branch (page-size, Oct 23) - one record per writing leg.`
     : `\nFX18 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 const pass = checks.every((c) => c.pass);
