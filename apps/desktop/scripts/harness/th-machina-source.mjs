@@ -21,7 +21,7 @@
 //
 // Run (repo root, no server/grant needed): node apps/desktop/scripts/harness/th-machina-source.mjs
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -223,8 +223,35 @@ ok('M10: Flux\'s pixel set is untouched and the renderer passes the set\'s strok
 const main = src('main.tsx');
 ok('M11: main.tsx imports NONE of the IBM Plex families eagerly (Machina\'s faces load WITH the theme - item207-core\'s LOAD-ON-CHOOSE eager list does not grow)', !/@fontsource\/ibm-plex/.test(main), '');
 const tf = src('store/themeFonts.ts');
-ok('M11: themeFonts.ts loads the four slots\' faces (Plex Mono 500; Plex Sans 400/500/600; Plex Serif 400/500 + italic 400; Atkinson 400/700) only for \'machina\'',
-  /theme !== 'machina'/.test(tf) && ['ibm-plex-mono/500', 'ibm-plex-sans/400', 'ibm-plex-sans/500', 'ibm-plex-sans/600', 'ibm-plex-serif/400.css', 'ibm-plex-serif/500', 'ibm-plex-serif/400-italic', 'atkinson-hyperlegible/400', 'atkinson-hyperlegible/700'].every((f) => tf.includes(f)), '');
+const tff = src('store/themeFontFaces.ts');
+const stripC = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+// (the probe follows the code: the faces' literal imports moved to store/themeFontFaces.ts on Oct 24 - see M11's strict-bundle checks below; the CLAIM is unchanged: Machina's nine faces, Machina only)
+ok("M11: Machina loads the four slots' faces (Plex Mono 500; Plex Sans 400/500/600; Plex Serif 400/500 + italic 400; Atkinson 400/700) only for 'machina' - ensureThemeFonts gates on the theme, the registered loader names the nine",
+  /theme !== 'machina'/.test(tf) && /registerThemeFonts\('machina'/.test(tff) && ['ibm-plex-mono/500', 'ibm-plex-sans/400', 'ibm-plex-sans/500', 'ibm-plex-sans/600', 'ibm-plex-serif/400.css', 'ibm-plex-serif/500', 'ibm-plex-serif/400-italic', 'atkinson-hyperlegible/400', 'atkinson-hyperlegible/700'].every((f) => tff.includes(f)), '');
+// the Oct 24 train-#6 fix: nothing the harnesses' store loaders bundle may name a font package (esbuild resolves the css and dies on its .woff2); the literals live in themeFontFaces.ts, which only main.tsx imports
+const importers = readdirSync(SRC, { recursive: true }).map(String).filter((f) => /\.(ts|tsx)$/.test(f) && !/(^|[\\/])themeFontFaces\.ts$/.test(f)).filter((f) => /themeFontFaces/.test(readFileSync(join(SRC, f), 'utf8')));
+ok('M11: themeFonts.ts (reached from store/theme.ts, which the harness loaders bundle) names NO font package, and store/themeFontFaces.ts is imported by main.tsx ALONE - so no store loader can reach a literal @fontsource import',
+  !/@fontsource/.test(stripC(tf)) && /^import '\.\/store\/themeFontFaces';$/m.test(main) && importers.length === 1 && importers[0] === 'main.tsx', JSON.stringify(importers));
+{
+  // the REAL failure, reproduced: bundle store/theme.ts with NO @fontsource externals (what the harness store loaders do). Must succeed on the real source, and must DIE on a literal import re-added to themeFonts.ts.
+  const strict = (themeFontsText) => {
+    const pnpmDir = join(ROOT, 'node_modules', '.pnpm');
+    const esb = readdirSync(pnpmDir).find((d) => /^esbuild@/.test(d));
+    const bin = join(pnpmDir, esb, 'node_modules', 'esbuild', 'bin', 'esbuild');
+    // inside apps/desktop/node_modules/.cache so the font packages RESOLVE (as they do in the real tree) - the death under test is the .woff2 loader, not a missing package
+    mkdirSync(join(DESKTOP, 'node_modules', '.cache'), { recursive: true });
+    const tmp = mkdtempSync(join(DESKTOP, 'node_modules', '.cache', 'wz-m11-')); tmps.push(tmp);
+    writeFileSync(join(tmp, 'theme.ts'), readFileSync(join(SRC, 'store', 'theme.ts'), 'utf8'));
+    writeFileSync(join(tmp, 'themeFonts.ts'), themeFontsText);
+    try { execFileSync(process.execPath, [bin, join(tmp, 'theme.ts'), '--bundle', '--format=esm', '--platform=node', `--outfile=${join(tmp, 'out.mjs')}`, '--log-level=error', '--external:react'], { stdio: 'pipe', cwd: DESKTOP }); return { ok: true }; }
+    catch (e) { return { ok: false, err: String(e.stderr || e.message || e).slice(0, 200) }; }
+  };
+  const realText = readFileSync(join(SRC, 'store', 'themeFonts.ts'), 'utf8');
+  const real = strict(realText);
+  ok("M11: store/theme.ts BUNDLES with no @fontsource externals (the harness store loaders' own condition) - the \"No loader for .woff2\" death is gone", real.ok === true, real.err || '');
+  const bad = strict(realText + "\nvoid import('@fontsource/ibm-plex-mono/500.css');\n");
+  ok("MUTANT: a literal import('@fontsource/ibm-plex-mono/500.css') re-added to themeFonts.ts - the strict bundle must DIE (No loader for .woff2) - the mutation LANDED and the real source still bundles", real.ok === true && bad.ok === false && /woff|loader/i.test(bad.err || ''), bad.err || '');
+}
 ok('M11: applyAttribute calls ensureThemeFonts - the faces follow every theme switch and the boot', /ensureThemeFonts\(theme\)/.test(th), '');
 
 // ---------------------------------------------------------------- PHASE B
