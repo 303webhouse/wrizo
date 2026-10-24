@@ -469,39 +469,52 @@
    anywhere in the brief or canon, and Journal ink is its own sealed domain,
    out of TH2's scope. */
 :root[data-theme='flux'] {
-  --ink-950: #020c10;             /* ground (Flux v2: was #04141A) */
+  --ink-950: #010811;             /* ground (Flux v2: was #04141A; hue 212 since Oct 23, was #020c10) */
   /* theme-leftovers (Nick approved Oct 16) — the teal twin of --lamp-glow's
      own brown gradient: the SAME stop positions/lightness/saturation ramp,
      hue shifted to this theme's own register (~194deg, between --ink-950's
      196.4deg and the dark page's own --paper 190deg). Was unset, so body's
      backdrop stayed Arbor-brown under Flux wherever a route's own content
      doesn't paint full-bleed over it (the unframed page view, Journal/Shelf). */
-  --lamp-glow: radial-gradient(135% 95% at 50% -8%, #0A242B 0%, #071A1F 38%, #041218 70%, #020c10 100%);
-  --chrome-surface: rgba(9, 30, 36, .9);
-  --rail-surface: rgba(4, 17, 22, .78);
+  /* FLUX V2 (Nick, live screenshot; Fable Oct 23): the room reads BLUE, not teal/green. Nick picked hue 212 (option B): every dark surface below sits at ~212 deg, the lightness it had at ~204, slightly more saturated. Dark at rest; the warmth overlay (--ember, below) grows it with typing. */
+  --lamp-glow: radial-gradient(135% 95% at 50% -8%, #081728 0%, #05111E 38%, #030B15 70%, #010811 100%);
+  --chrome-surface: #0F1926;
+  --rail-surface: rgba(15, 25, 38, .94);
   /* the Arbor ink surfaces are espresso browns (#1F1A16 / #2A241E) and ~60 rules + every input read them: the Flux glass replaces both (panel #0E2C32 for the raised tier) */
-  --ink-900: #091E24;
-  --ink-800: #0E2C32;
-  --ink-border: #1D4A52;          /* line */
-  --ink-border-strong: #2A6A76;   /* a brighter line tier — the dark page's own border value, reused */
+  --ink-900: #0F1926;
+  --ink-800: #122336;
+  --ink-border: #193556;          /* line (hue 212) */
+  --ink-border-strong: #244D7C;   /* a brighter line tier — the dark page's own border value, reused */
   --line-active: #00C2FF;         /* canon §3 new slot */
   --signal-live: #A6FF3D;         /* canon §3 new slot */
   /* FLUX V2 - a CHOSEN state is cyan. --brass stays Arbor's locked orange; --choice (the colour of every selected / pressed / current state, root block) is overridden here, and the orange
      survives only where --orange is named (the caret, the sprint surge, Uplink, the mark, the current list item's left bar). */
   --choice: #00C2FF;
   --orange: var(--brass);
+  /* the ember is the typing-driven lamp (warmth overlay opacity = --sprint-warmth x --ambient-intensity, dark at rest): blue under Flux */
+  --ember: #2B8CFF;
+  --ember-bright: #57D0F5;
+  --ember-deep: #0A3A6B;
   --text-accent: #57D0F5;
+  --sage: #A6FF3D;          /* "saved, complete" - the only green in Flux is lime (progress), never Arbor's sage or olive */
+  /* FLUX V2 (Fable, Oct 22-23): a card is dark glass - and so are its pop-up and the deck wizard, which read the same tokens. Both tones: the glass is the glass, whatever the page is. */
+  --card-stock: #0E1E31;
+  --card-hairline: rgba(0, 194, 255, .55);
+  --ink-on-card: #E8F6FA;
+  --ink-on-card-low: #57D0F5;
+  --ink-on-card-meta: #8FD6EE;
+  --badge-on-card: #57D0F5;   /* the pin badge: cyan on glass - never Arbor's olive #4F5730 */
   --accent-rest: #00C2FF;   /* "where you are" (the chosen tab, a current row's cue) is cyan in Flux; Arbor's is olive */
   /* the chromatic offset: a faint cyan/blue hairline (never red) */
   --flux-offset: 0.5px 0 0 rgba(0, 194, 255, .35);
   /* help-buttons (Nick approved Oct 12) — Flux's own "?" affordance colour,
      teal (never brass, never Arbor's olive --accent-rest). */
-  --help: #5E9E98;
-  --help-hi: #86C9C1;
+  --help: #7EB4C4;
+  --help-hi: #9AD7EA;
 
-  --text-hi: #E3F1EC;             /* chrome high-contrast text — the canon table has no explicit row for this tier; reusing the page-dark ink value for visual consistency */
-  --text-mid: #8FB4AC;            /* canon's "text muted" */
-  --text-low: #6E958D;            /* canon's "dimmer" — the table's third tier ("counts" #5E837C) is close enough in practice to skip a fourth CSS variable for */
+  --text-hi: #E7F4F1;             /* chrome high-contrast text — the canon table has no explicit row for this tier; reusing the page-dark ink value for visual consistency */
+  --text-mid: #9AD7EA;            /* canon's "text muted" */
+  --text-low: #7EB4C4;            /* canon's "dimmer" — the table's third tier ("counts" #5E837C) is close enough in practice to skip a fourth CSS variable for */
 
   --font-chromeLabel:  'Rajdhani', sans-serif;
   --font-contentLabel: 'Chakra Petch', sans-serif;
@@ -515,17 +528,15 @@
    canon §11). --paper-dim and the light page's border are this author's
    interpolation — not given explicit values by the canon's token table. */
 :root[data-theme='flux'][data-page='dark'] {
-  --paper: #0E1C24;
-  --paper-dim: #0A1620;
-  --paper-border: #2A6A76;
+  --paper: #0C1826;
+  --paper-dim: #081422;
+  --paper-border: #244D7C;
   --paper-edge: rgba(0, 194, 255, .55);   /* FLUX V2: the dark-glass page's thin cyan edge */
   --ink-on-paper: #E8F6FA;
   --ink-on-paper-low: #57D0F5;    /* canon's "meta" slot, dark */
-  /* BG2 S1 — the one theme whose paper is DARK, so the door olive steps back
-     UP the same ramp rather than down: #4F5730 would measure 1.3:1 here. This
-     value measures 7.3:1 against this block's own --paper. Same hue family,
-     same meaning; only the value follows the ground. */
-  --accent-door: #A9B56A;
+  /* BG2 S1 — the door colour follows the ground. FLUX V2 (Nick, Oct 23: "any remaining green is lime, never Arbor olive"): Arbor's door olive (#4F5730, stepped up to #A9B56A here)
+     is gone from Flux; the door reads the palette's text accent #57D0F5 on the dark glass (measured against this block's own --paper by bg2's S1). */
+  --accent-door: #57D0F5;
   /* flux-card-ink — the card is still cream here (--card-stock, un-themed),
      so its own ink can't follow --ink-on-paper's flip to light. Dark values
      in the SAME teal family as this tone's own --ink-on-paper-low (#57D0F5)
@@ -538,14 +549,14 @@
      (below) to #096986, which WOULD now clear this card-stock floor too,
      but this override stays — a per-theme card/paper split already exists
      here and collapsing it is a separate, un-asked-for refactor. */
-  --ink-on-card: #14231F;
-  --ink-on-card-low: #0A6B86;
+  /* (FLUX V2: the card is glass in both tones now - its ink tokens live in the Flux root block above, not here) */
 }
 :root[data-theme='flux'][data-page='light'] {
   --paper: #F4F7F8;
   --paper-dim: #E9EFF1;
   --paper-border: #B7D4CE;
   --paper-edge: rgba(0, 150, 200, .5);    /* FLUX V2: the light page's edge (chrome stays dark) */
+  --accent-door: #096986;                 /* FLUX V2: the door on the light page - teal (5.6:1), never Arbor's olive */
   --ink-on-paper: #042632;
   /* faint-text-sweep (Fable, Oct 16: "the -low tier you flagged") — #0B7C9E
      measured 4.34:1 against this theme's own --paper and 4.43:1 against
@@ -608,6 +619,12 @@
 [data-theme='flux'] .wz-section-open[aria-current='page']{ box-shadow:inset 2px 0 0 var(--orange); }
 /* the sprint surge is orange (Flux's selection is cyan, so the surge names its colour) */
 [data-theme='flux'] .mode-pfill-spark:not(.lime){ background:var(--orange); }
+/* the vignette sits BEHIND the content under Flux: it shades the room, never the page (the empty light page showed grey bands top and bottom) */
+[data-theme='flux'] body::after{ z-index:-1; }
+/* the rail's hover and active states are ELECTRIC BLUE (#00C2FF, --line-active): no brown tile, no olive, no brass (Nick, Oct 23) */
+[data-theme='flux'] .wz-strip-item:hover, [data-theme='flux'] .desk-rail-item:hover{ color:var(--line-active); background:rgba(0, 194, 255, .08); }
+[data-theme='flux'] .wz-strip-item:active{ color:var(--line-active); }
+[data-theme='flux'] .wz-strip-item.active, [data-theme='flux'] .desk-rail-item.active{ color:var(--line-active); border-left-color:var(--line-active); background:rgba(0, 194, 255, .10); }
 
 /* ---- FLUX V2 - the screens against the mockup (Fable, Oct 22) ---------------------------------------------------------------------------------------------------------------
    (1) the Ask box, Add Note, the search fields and every other input read --ink-800 / --ink-900 / --color-surface: Arbor's espresso browns. The Flux root block now carries the Flux glass
@@ -620,12 +637,44 @@
   color:var(--orange); font-family:var(--font-chromeLabel); font-weight:700; font-size:15px; letter-spacing:.32em; line-height:1; }
 [data-theme='flux'] .brand-mark::before{ content:'WRIZO'; }
 
-[data-theme='flux'] .board-canvas{ --card-stock:#0E2C32; --card-hairline:rgba(0, 194, 255, .55); --ink-on-card:#E8F6FA; --ink-on-card-low:#57D0F5; --ink-on-card-meta:#8FD6EE; --badge-on-card:#57D0F5; }
+[data-theme='flux'] .board-canvas{ --card-stock:#0E1E31; --card-hairline:rgba(0, 194, 255, .55); --ink-on-card:#E8F6FA; --ink-on-card-low:#57D0F5; --ink-on-card-meta:#8FD6EE; --badge-on-card:#57D0F5; }
 [data-theme='flux'] .board-text, [data-theme='flux'] .board-ink-canvas{ border:1px solid var(--card-hairline); box-shadow:0 0 0 1px rgba(0, 194, 255, .08), 0 6px 18px rgba(0, 0, 0, .45); }
 [data-theme='flux'] .board-text::first-line{ color:var(--text-accent); text-transform:uppercase; letter-spacing:.12em; font-family:var(--font-chromeLabel); font-weight:600; }
 [data-theme='flux'] .board-canvas-blur-wrap{ position:relative; }
 .flux-board-frame .flux-frame{ padding:12px; }
 
+/* the Inputs panel (the right drawer's second tab), its picker and the board's knob: glass, cyan edges, the arrow-into-a-socket glyph */
+[data-theme='flux'] .wz-graft-add{ background:var(--chrome-surface); border-color:var(--ink-border-strong); color:var(--text-hi); }
+[data-theme='flux'] .wz-graft-add > span[aria-hidden]{ color:var(--choice); }
+[data-theme='flux'] .wz-graft-add:hover, [data-theme='flux'] .wz-graft-add:focus-visible, [data-theme='flux'] .wz-graft-add[aria-expanded='true']{ border-color:var(--choice); color:var(--choice); }
+[data-theme='flux'] .wz-graft-connected{ color:var(--text-accent); }
+[data-theme='flux'] .wz-graft-gh{ color:var(--text-accent); letter-spacing:.2em; }
+[data-theme='flux'] .wz-graft-picker{ background:var(--chrome-surface); border-color:var(--choice); box-shadow:0 0 0 1px rgba(0, 194, 255, .12), 0 10px 30px rgba(0, 0, 0, .55); }
+[data-theme='flux'] .wz-graft-search{ background:var(--ink-900); border-color:var(--ink-border-strong); }
+[data-theme='flux'] .wz-graft-search:focus{ border-color:var(--choice); }
+[data-theme='flux'] .wz-graft-ck{ color:var(--choice); }
+[data-theme='flux'] .board-graft-knob{ display:flex; align-items:center; justify-content:center; width:22px; height:22px; margin-top:-11px; right:-12px; border-radius:0; background:var(--ink-950); border:1px solid var(--choice); color:var(--choice); }
+[data-theme='flux'] .board-graft-knob[data-active='true']{ background:var(--choice); color:var(--ink-950); border-color:var(--choice); }
+[data-theme='flux'] .board-graft-knob .theme-icon{ display:block; }
+/* the arrival's Write door is the CHOICE colour (cyan), not brass: orange keeps only its fixed homes (the caret, the sprint surge, Uplink, the mark, the current item's bar) - Fable, Oct 23 */
+[data-theme='flux'] .wz-btn.wz-primary{ color:var(--choice); border-color:var(--choice); }
+[data-theme='flux'] .wz-btn:hover, [data-theme='flux'] .wz-btn.wz-primary:hover{ color:var(--text-accent); border-color:var(--text-accent); }
+[data-theme='flux'] .wz-btn:focus-visible, [data-theme='flux'] .wz-field:focus-visible{ outline-color:var(--choice); }
+/* the card's resize / connect corner and the drop-target circle: the CHOICE colour (cyan), never brass - a handle on a selected node is a choice, and orange is scarce (the screens, Oct 23) */
+[data-theme='flux'] .board-handle{ background:var(--choice); }
+[data-theme='flux'] .board-handle[data-circle='true']{ background:var(--ink-950); border-color:var(--choice); }
+[data-theme='flux'] .board-handle[data-circle='true'][data-solid='true']{ background:var(--choice); }
+[data-theme='flux'] .board-tcircle{ border-color:var(--choice); }
+[data-theme='flux'] .board-tcircle[data-solid='true']{ background:var(--choice); }
+/* a node's true position, on the card: X ### · Y ### (the readout module's own string) */
+.flux-card-coord{ position:absolute; left:8px; bottom:4px; z-index:2; pointer-events:none; padding:0 4px; background:var(--card-stock); color:var(--text-accent); font-family:var(--font-chromeLabel); font-size:10px; letter-spacing:.14em; line-height:1.3; }
+/* the board's hint line, in the frame's bottom band: it sits on the board's own paper (a dark fill under a LIGHT board made the dim line unreadable) */
+.flux-board-frame .flux-readout-hint{ background:var(--paper); }
+/* the corner mark on the arrival / home screens: Flux's own wordmark, never Arbor's PNG */
+.wz-flux-wordmark{ display:block; font-family:var(--font-chromeLabel); font-weight:700; letter-spacing:.32em; color:var(--orange); line-height:1; white-space:nowrap; }
+.wz-hero .wz-flux-wordmark{ font-size:clamp(34px, 7vw, 66px); }
+.wz-mark.wz-flux-wordmark{ position:absolute; top:1.3rem; left:1.6rem; font-size:14px; opacity:0; transition:opacity 1s ease .3s; z-index:6; pointer-events:none; }
+.wz-mark.wz-flux-wordmark.show{ opacity:1; }
 [data-theme='flux'] .wz-place-block .wz-place-name{ overflow:visible; text-overflow:clip; white-space:normal; overflow-wrap:anywhere; text-align:center; line-height:1.2; }
 
 /* Slice 4 — the effects compositor scaffold (canon §6, ThemeEffectsLayer.tsx).
@@ -1455,8 +1504,8 @@ a:focus-visible,
    (5.67:1 / 5.19:1), --text-mid clears it easily for the brighter --wz-ink-dim tier
    (8.30:1 / 7.60:1), --text-hi clears it by a wide margin for --wz-ink (16.12:1). */
 [data-theme='flux'] .wz-home {
-  --wz-ground:#020c10; --wz-lift:rgba(9,30,36,.9); --wz-ink:#E3F1EC; --wz-ink-dim:#8FB4AC;
-  --wz-whisper:#1D4A52; --wz-hint:#6E958D;
+  --wz-ground:#010811; --wz-lift:#0F1926; --wz-ink:#E7F4F1; --wz-ink-dim:#9AD7EA;
+  --wz-whisper:#193556; --wz-hint:#7EB4C4;
 }
 .wz-ambient{ position:absolute; inset:0; z-index:0; pointer-events:none; transition:opacity 1.1s ease;
   background:
@@ -2395,7 +2444,7 @@ a:focus-visible,
    blocking event and fades, same as Plateau's own whisper. */
 .flux-firewall-chip{ position:fixed; top:52px; right:24px; z-index:120;
   font-family:var(--font-chromeLabel); letter-spacing:.08em; font-size:11px;
-  color:var(--brass); border:1px solid var(--brass); background:rgba(9,30,36,.9);
+  color:var(--brass); border:1px solid var(--brass); background:var(--chrome-surface);
   padding:5px 12px; opacity:0; pointer-events:none; transition:opacity .4s ease;
   box-shadow:0 0 10px rgba(255,152,0,.28); }
 .flux-firewall-chip[data-shown='true']{ opacity:1; }

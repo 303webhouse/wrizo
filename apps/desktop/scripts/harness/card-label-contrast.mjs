@@ -158,7 +158,16 @@ await withHarness(async (app) => {
     seen.add(JSON.stringify(vars));
     ok(`${T} C4: --ink-on-card-meta/--badge-on-card resolve (${vars.meta} / ${vars.badge})`, !!vars.meta && !!vars.badge, JSON.stringify(vars));
   }
-  ok('C4: the same two values resolve in every tone - one un-themed ink, not three coincidences', seen.size === 1, JSON.stringify([...seen]));
+  // ---- PARKED - SUPERSEDED by Nick's live note (Oct 23: "any remaining green is lime, never Arbor olive"): Flux's pin badge on a cream sheet is teal (#0A6B86), not Arbor's olive (#4F5730), so the badge is one value per THEME, no longer one value in every tone. The meta ink is still one un-themed value.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok('C4: the same two values resolve in every tone - one un-themed ink, not three coincidences', seen.size === 1, JSON.stringify([...seen]));
+  const seenVars = [...seen].map((j) => JSON.parse(j));
+  // ---- PARKED - SUPERSEDED by the Flux glass cards (Fable, Oct 22-23: a card, its pop-up and the deck wizard are dark glass under Flux, in both tones): Flux's card is glass now, so its badge ink is cyan #57D0F5 and its meta ink the glass meta #8FD6EE: each is one value per THEME (Arbor's browns in Arbor, Flux's glass inks in both Flux tones).
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok('C4 [flux-inputs successor]: --ink-on-card-meta is ONE un-themed ink in every tone, and --badge-on-card is one value per theme - Arbor\'s olive #4F5730 in Arbor, Flux\'s teal #0A6B86 in both Flux tones (never Arbor\'s olive under Flux)', new Set(seenVars.map((v) => v.meta)).size === 1 && seen.size === 2 && new Set(seenVars.map((v) => v.badge)).size === 2 && seenVars.some((v) => v.badge === '#4F5730') && seenVars.some((v) => v.badge === '#0A6B86'), JSON.stringify([...seen]));
+  ok('C4 [flux-inputs successor 2]: each of --ink-on-card-meta and --badge-on-card is one value per THEME - Arbor\'s olive badge #4F5730 in Arbor, Flux\'s glass inks (#8FD6EE / #57D0F5) in both Flux tones; never Arbor\'s olive under Flux', seen.size === 2 && seenVars.filter((v) => v.badge === '#57D0F5' && v.meta === '#8FD6EE').length === 1 && seenVars.filter((v) => v.badge === '#4F5730').length === 1, JSON.stringify([...seen]));
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${c.detail}]` : ''}`);

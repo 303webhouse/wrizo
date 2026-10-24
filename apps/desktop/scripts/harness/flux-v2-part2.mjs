@@ -196,10 +196,73 @@ export async function part2({ ok, sleepMs }) {
       ok('F13 a board card is a dark-glass node: dark fill (not Arbor cream), a thin cyan edge, light ink, and a cyan UPPERCASE first line', !!nd && nd.lum < 0.15 && /0,\s*194,\s*255/.test(nd.border) && nd.titleColor === 'rgb(87, 208, 245)' && nd.titleCase === 'uppercase', JSON.stringify(nd));
       ok('F13 the board wears the frame: the grid ring and the corner brackets, click-through', !!nd && nd.frame && nd.grid && nd.brackets && nd.frameClick === 'none', JSON.stringify(nd));
 
+      // ---- F18: the Inputs work on the board: the knob wears the INPUT glyph (through ThemeIcon), a node shows its true X / Y, the board shows its one hint, the Inputs panel is Flux glass --------------------
+      await click('.board-canvas .board-text');
+      const knobUp = await waitSoft("!!document.querySelector('.board-graft-knob')", { label: 'graft knob', timeout: 5000 });
+      const kn = knobUp ? await q(`(() => { const k = document.querySelector('.board-graft-knob'); const g = k.querySelector('svg[data-theme-icon="input"]'); const r = g ? g.getBoundingClientRect() : null; const cs = getComputedStyle(k);
+        return { glyph: !!g, w: r ? Math.round(r.width) : 0, h: r ? Math.round(r.height) : 0, box: Math.round(k.getBoundingClientRect().width), border: cs.borderTopColor, color: cs.color }; })()`) : null;
+      ok('F18 the selected card\'s knob wears the INPUT glyph (16 x 16 in a 22 px knob, through ThemeIcon) in the choice colour on a square glass knob', !!kn && kn.glyph && kn.w === 16 && kn.h === 16 && kn.box >= 20 && kn.border === 'rgb(0, 194, 255)' && kn.color === 'rgb(0, 194, 255)', JSON.stringify(kn));
+      const hdl = await q("(() => { const h = document.querySelector('.board-canvas .board-handle'); return h ? getComputedStyle(h).backgroundColor : null; })()");
+      ok('F18 the selected card\'s resize / connect corner is the choice colour (cyan), not brass', hdl === 'rgb(0, 194, 255)', String(hdl));
+      const bx = await q(`(() => { const c = document.querySelector('.board-canvas .flux-card-coord'); const hint = document.querySelector('.flux-board-frame .flux-readout-hint'); return { coord: c ? c.textContent : null, hint: hint ? hint.textContent : null }; })()`);
+      ok('F18 a node shows its true position (the first card, stored at x .05 / y .05, reads X 050 · Y 050) and the board shows its one hint', !!bx && bx.coord === 'X 050 · Y 050' && bx.hint === 'DRAG A NODE ▪ DRAG ITS INPUT TO CONNECT', JSON.stringify(bx));
+      await q("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(900);
+      await q("document.querySelector('#wz-tutor-tab-links')?.click()"); await sleep(600);
+      const ip = await q(`(() => { const a = document.querySelector('.wz-graft-add'); if (!a) return null; const cs = getComputedStyle(a); const m = /rgba?\\(([^)]+)\\)/.exec(cs.backgroundColor); const p = m ? m[1].split(',').map((x) => parseFloat(x)) : [0, 0, 0]; return { text: a.textContent.trim(), bg: cs.backgroundColor, warm: p[0] - p[2] >= 6 && p[0] >= p[1], border: cs.borderTopColor }; })()`);
+      ok('F18 the Inputs panel\'s add control reads "+ Input…" on Flux glass (no Arbor brown)', !!ip && /Input…/.test(ip.text) && ip.warm === false, JSON.stringify(ip));
+
       // ---- F14: the rail's place block reads RACK ▸ <name> and WRAPS - never truncated -----------------------------------------------------------------------------------------------------
       await open('fx-m2');
       const pbk = await q(`(() => { const e = document.querySelector('.wz-place-block .wz-place-name'); if (!e) return null; const cs = getComputedStyle(e); return { text: e.textContent, ws: cs.whiteSpace, overflow: cs.textOverflow, clipped: e.scrollWidth > e.clientWidth + 1, h: Math.round(e.getBoundingClientRect().height) }; })()`);
       ok('F14 the place block reads "RACK ▸ The Late Ferry", wraps (white-space normal, no ellipsis) and nothing is clipped', !!pbk && pbk.text === 'RACK ▸ The Late Ferry' && pbk.ws === 'normal' && pbk.overflow !== 'ellipsis' && !pbk.clipped, JSON.stringify(pbk));
+
+
+      // ---- F15: the block caret is slim (about a third of its old width) ----------------------------------------------------------------------------------------------------------------------
+      await fresh(); await seed(); await open('fx-m2');
+      await click('.forward-only-editor'); await app.typeKeys('x');
+      const caretUp = await waitSoft("!!document.querySelector('.flux-block-caret')", { label: 'block caret', timeout: 6000 });
+      const caretRect = caretUp ? await q("(() => { const e = document.querySelector('.flux-block-caret'); const r = e.getBoundingClientRect(); return { w: Math.round(r.width * 10) / 10, h: Math.round(r.height * 10) / 10 }; })()") : null;
+      ok('F15 the block caret is slim: its width is at most 20% of its height (it was 48%) and never under 3 px', !!caretRect && caretRect.w >= 3 && caretRect.w / caretRect.h <= 0.2, JSON.stringify(caretRect));
+
+      // ---- F16: the rail's hover and active states are electric blue, with no Arbor brown tile (F11 extended to hover and active) ---------------------------------------------------------------
+      await fresh(); await seed(); await open('fx-m2');
+      const railPt = await q("(() => { const b = document.querySelector('.wz-strip [data-category=\"plan\"]'); if (!b) return null; const r = b.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
+      const warm = (rgb) => { const m = /rgba?\(([^)]+)\)/.exec(rgb || ''); if (!m) return false; const p = m[1].split(',').map((x) => parseFloat(x)); const a = p.length > 3 ? p[3] : 1; return a > 0.3 && p[0] - p[2] >= 6 && p[0] >= p[1]; };
+      let hov = null;
+      if (railPt) { await app.mouseMove(railPt.x, railPt.y); await sleep(350); hov = await q("(() => { const b = document.querySelector('.wz-strip [data-category=\"plan\"]'); const cs = getComputedStyle(b); return { color: cs.color, bg: cs.backgroundColor }; })()"); }
+      ok('F16 hovering a rail item paints it electric blue (#00C2FF) on a glass tile - not Arbor brown, not brass', !!hov && hov.color === 'rgb(0, 194, 255)' && !warm(hov.bg), JSON.stringify(hov));
+      await click('.wz-strip [data-category="page"]'); await app.mouseMove(700, 500); await sleep(400);
+      const act = await q("(() => { const b = document.querySelector('.wz-strip [data-category].active'); if (!b) return null; const cs = getComputedStyle(b); return { color: cs.color, edge: cs.borderLeftColor, bg: cs.backgroundColor }; })()");
+      ok('F16 the active rail item is electric blue with a #00C2FF left edge and no brown tile', !!act && act.color === 'rgb(0, 194, 255)' && act.edge === 'rgb(0, 194, 255)' && !warm(act.bg), JSON.stringify(act));
+      // F11 extended: with a rail pop-out open, still no input / tile of Arbor brown anywhere in the visible chrome
+      const chromeWarm = await q(`(() => { const out = []; for (const e of document.querySelectorAll('.wz-strip, .wz-strip *, .wz-cascade-panel, .wz-cascade-panel *, .desk-mode-strip, .desk-mode-strip *')) { const r = e.getBoundingClientRect(); if (r.width < 2 || r.height < 2) continue; const m = /rgba?\\(([^)]+)\\)/.exec(getComputedStyle(e).backgroundColor); if (!m) continue; const p = m[1].split(',').map((x) => parseFloat(x)); const a = p.length > 3 ? p[3] : 1; if (a > 0.3 && p[0] - p[2] >= 6 && p[0] >= p[1]) out.push(String(e.className).slice(0, 40) + ' ' + getComputedStyle(e).backgroundColor); } return out.slice(0, 8); })()`);
+      ok('F16 no rail, pop-out or mode-strip element paints an Arbor brown fill', Array.isArray(chromeWarm) && chromeWarm.length === 0, JSON.stringify(chromeWarm));
+
+      // ---- F17: no Arbor olive anywhere: every green on a Flux screen is lime, dark and light, with the rail pop-out and the Tutor drawer open ------------------------------------------------------
+      const oliveScan = `(() => { const out = []; const isOlive = (rgb) => { const m = /rgba?\\(([^)]+)\\)/.exec(rgb || ''); if (!m) return false; const p = m[1].split(',').map((x) => parseFloat(x)); if ((p.length > 3 ? p[3] : 1) < 0.2) return false; const r = p[0] / 255, g = p[1] / 255, b = p[2] / 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b); if (mx === mn) return false;
+        const d = mx - mn; let h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h = (h * 60 + 360) % 360; const s = d / mx; return h >= 55 && h <= 150 && s < 0.7 && mx >= 0.25; };
+        for (const e of document.querySelectorAll('body *')) { const r = e.getBoundingClientRect(); if (r.width < 1 || r.height < 1) continue; const cs = getComputedStyle(e); if (cs.visibility === 'hidden' || cs.display === 'none') continue;
+          const vals = [cs.color, cs.backgroundColor, cs.borderTopColor, cs.borderLeftColor, cs.outlineColor, cs.fill, cs.stroke]; const hit = vals.find((v) => isOlive(v)); if (hit) out.push((e.tagName + '.' + String(e.className).split(' ').slice(0, 2).join('.')).slice(0, 50) + ' ' + hit); } return out.slice(0, 10); })()`;
+      for (const pg of ['dark', 'light']) {
+        await fresh({ page: pg }); await seed(); await open('fx-m2');
+        await click('.wz-strip [data-category="page"]'); await q("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(900);
+        const ol = await q(oliveScan);
+        ok(`F17 [${pg}] no element paints an Arbor olive or muted green (any remaining green is lime #A6FF3D)`, Array.isArray(ol) && ol.length === 0, JSON.stringify(ol));
+      }
+
+
+      // ---- F19: the arrival wears Flux's own WRIZO wordmark, never Arbor's PNG; F20: the card tokens are glass in BOTH tones (a pop-up and the deck wizard read them) ----------------------------------------------
+      await fresh();
+      const arr = await q(`(() => { const l = document.querySelector('.wz-arrival .wz-logo'); const m = document.querySelector('.wz-arrival .wz-mark'); const imgs = [...document.querySelectorAll('img')].filter((i) => /wrizo-logo|wrizo-sketch/.test(i.getAttribute('src') || '') && i.getBoundingClientRect().width > 0).length;
+        const w = document.querySelector('.wz-arrival-write'); return { logo: l ? l.tagName + ':' + l.textContent : null, mark: m ? m.tagName + ':' + m.textContent : null, imgs, write: w ? [getComputedStyle(w).color, getComputedStyle(w).borderTopColor] : null }; })()`);
+      ok('F19 the arrival\'s Write door is the choice colour (cyan), not brass', !!arr && !!arr.write && arr.write[0] === 'rgb(0, 194, 255)' && arr.write[1] === 'rgb(0, 194, 255)', JSON.stringify(arr && arr.write));
+      ok('F19 the arrival\'s logo and corner mark are Flux\'s WRIZO wordmark (text), and no Arbor wrizo PNG is drawn', !!arr && arr.logo === 'SPAN:WRIZO' && arr.mark === 'SPAN:WRIZO' && arr.imgs === 0, JSON.stringify(arr));
+      for (const pg of ['dark', 'light']) {
+        await q(`window.wrizoThemePrefs.set({ page: '${pg}' })`); await sleep(300);
+        const tk = await q(`(() => { const cs = getComputedStyle(document.documentElement); return { stock: cs.getPropertyValue('--card-stock').trim(), ink: cs.getPropertyValue('--ink-on-card').trim(), badge: cs.getPropertyValue('--badge-on-card').trim() }; })()`);
+        const dark = (h) => { const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(h || ''); return !!m && (0.2126 * parseInt(m[1], 16) + 0.7152 * parseInt(m[2], 16) + 0.0722 * parseInt(m[3], 16)) / 255 < 0.2; };
+        ok(`F20 [${pg}] the card, its pop-up and the deck wizard read dark glass: card stock dark, ink light, badge cyan (never Arbor olive)`, !!tk && dark(tk.stock) && !dark(tk.ink) && tk.badge.toUpperCase() === '#57D0F5', JSON.stringify(tk));
+      }
 
 
       // ---- F9: light mode: page light, chrome dark; the readouts follow the page ---------------------------------------------------------------------------------------------
@@ -209,6 +272,9 @@ export async function part2({ ok, sleepMs }) {
       ok('F9 in light mode the page is light and the chrome stays dark', lp !== null && lp > 0.7 && (lr === null || lr < 0.1), JSON.stringify(lm));
       const cr = lp !== null && lro !== null ? (Math.max(lp, lro) + 0.05) / (Math.min(lp, lro) + 0.05) : 0;
       ok(`F9 the light page's readout text reads at >= 4.5:1 against the page (measured ${cr.toFixed(2)}:1)`, cr >= 4.5, cr.toFixed(2));
+      // the vignette (a fixed inset shadow over the viewport) is BEHIND the content under Flux, so the empty light page carries no grey band at its top or bottom; and the lamp/room is blue
+      const vgn = await q(`(() => { const v = getComputedStyle(document.body, '::after'); const g = getComputedStyle(document.documentElement).getPropertyValue('--lamp-glow'); const m = getComputedStyle(document.documentElement).getPropertyValue('--chrome-surface').trim(); return { z: v.zIndex, lamp: g.slice(0, 60), panel: m }; })()`);
+      ok('F9 [light] the vignette sits behind the page (z-index -1): no grey band at the empty light page\'s top or bottom', !!vgn && vgn.z === '-1', JSON.stringify(vgn));
 
       // ---- F10: Arbor is untouched ---------------------------------------------------------------------------------------------------------------------------------------------
       await fresh({ theme: 'plateau', page: null }); await seed(); await open('fx-m2');

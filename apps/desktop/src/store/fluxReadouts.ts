@@ -4,6 +4,17 @@
 
 const pad = (n: number, width: number): string => String(Math.max(0, Math.trunc(n))).padStart(width, '0');
 
+/** The block caret's width for a line of this height: a third of the old 0.48 ratio (Nick, Oct 23: "a slimmer caret, the block at about 1/3 width"), never under 3 px. */
+export function caretWidth(height: number): number {
+  return Math.max(3, Math.round(height * 0.16));
+}
+
+/** How long the chrome takes to recede while the writer types. Arbor keeps its slow curve (the engine's own base); FLUX is quicker (Nick, Oct 23: "an open drawer reaches the 0.08 floor about 1 s after the first key"), so a drawer's contents are never caught half-faded. */
+export const FADE_OUT_FLUX_S = 0.8;
+export function fadeOutSeconds(theme: string, base: number): number {
+  return theme === 'flux' ? FADE_OUT_FLUX_S : base;
+}
+
 /** DOC nn // title - the page's own number (its place in the sequence, 1-based, two digits at least) and its title. */
 export function docReadout(n: number, title: string): string {
   return `DOC ${pad(n, 2)} // ${title}`;
@@ -25,10 +36,11 @@ export function rackReadout(name: string): string {
   return `RACK ▸ ${name}`;
 }
 
-// The hint lines (Fable, Oct 21): the prose surface and Wire In each get one true line. A board hint lands with the Inputs work after step 3 - there is none until then.
+// The hint lines (Fable, Oct 21): the prose surface and Wire In each get one true line; the board's landed with the Inputs work, after step 3.
 export const HINTS = {
   prose: 'TYPE — THE CHROME RECEDES ▪ PASTE MEETS THE FIREWALL',
   wireIn: 'FORWARD ONLY — NO WAY BACK ▪ PASTE MEETS THE FIREWALL',
+  board: 'DRAG A NODE ▪ DRAG ITS INPUT TO CONNECT',
 } as const;
 
 export type HintSurface = 'prose' | 'wireIn' | 'board';
@@ -36,6 +48,7 @@ export type HintSurface = 'prose' | 'wireIn' | 'board';
 export function hintFor(surface: string): string | null {
   if (surface === 'prose') return HINTS.prose;
   if (surface === 'wireIn') return HINTS.wireIn;
+  if (surface === 'board') return HINTS.board;
   return null;
 }
 

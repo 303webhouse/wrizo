@@ -1,4 +1,5 @@
-import { FluxBoardFrame } from './FluxReadouts';
+import { FluxBoardFrame, FluxCardCoord } from './FluxReadouts';
+import { ThemeIcon } from './ThemeIcon';
 import { liveBoxes } from '../store/boxTombstones';
 import { openContextMenu, type ContextMenuItem } from '../store/contextMenu';
 import { requestDelete } from '../store/deleteGate';
@@ -3058,8 +3059,12 @@ export function BoardEditor({ id }: { id: string }) {
                   data-active={inMode && threadArmedFrom === box.id && connectFromKnob ? 'true' : 'false'}
                   title={t('graftKnobTip')}
                   aria-label={t('graftKnobTip')}
-                />
+                >
+                  {/* the knob's glyph: the theme's INPUT icon through the shared seam (Flux: the arrow into a socket; a theme with no set draws the plain dot) */}
+                  <ThemeIcon id="input" fallback={null} size={16} />
+                </div>
               )}
+              {!isSystemBoard && (box.kind === 'text' || box.kind === 'ink' || box.kind === 'page-pin') && <FluxCardCoord x={box.x} y={box.y} />}
               {/* FX5 S4 (c) — the quiet layer-order icon: only a selected
                   card that's genuinely overlapping a sibling gets it. */}
               {showLayerToggle && (

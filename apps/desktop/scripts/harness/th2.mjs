@@ -63,8 +63,13 @@ await withHarness(async (app) => {
   // Kept VERBATIM below and no longer run; the live successor follows.
   //
   // ok('check 1: ground token is Flux\'s #04141A', tokenSpots.ground.toLowerCase() === '#04141a', tokenSpots.ground);
-  ok('check 1 [flux-v2 successor]: ground token is Flux\'s #020c10', tokenSpots.ground.toLowerCase() === '#020c10', tokenSpots.ground);
-  ok('check 1: line token is Flux\'s #1D4A52', tokenSpots.line.toLowerCase() === '#1d4a52', tokenSpots.line);
+  // ---- PARKED - SUPERSEDED by the hue-212 pass (Nick picked option B, Fable Oct 23): the ground is now #010811 and the line #193556 (hue 212).
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok('check 1 [flux-v2 successor]: ground token is Flux\'s #020c10', tokenSpots.ground.toLowerCase() === '#020c10', tokenSpots.ground);
+  // ok('check 1: line token is Flux\'s #1D4A52', tokenSpots.line.toLowerCase() === '#1d4a52', tokenSpots.line);
+  ok('check 1 [hue-212 successor]: ground token is Flux\'s #010811', tokenSpots.ground.toLowerCase() === '#010811', tokenSpots.ground);
+  ok('check 1 [hue-212 successor]: line token is Flux\'s #193556', tokenSpots.line.toLowerCase() === '#193556', tokenSpots.line);
   ok('check 1: line-active is Flux\'s electric blue #00C2FF', tokenSpots.lineActive.toLowerCase() === '#00c2ff', tokenSpots.lineActive);
   ok('check 1: signal-live is Flux\'s lime #A6FF3D', tokenSpots.signalLive.toLowerCase() === '#a6ff3d', tokenSpots.signalLive);
   ok('check 1: the accent invariant (--brass) is untouched by the theme switch', tokenSpots.accent.toLowerCase() === '#ff9800', tokenSpots.accent);
@@ -83,7 +88,11 @@ await withHarness(async (app) => {
   // Kept VERBATIM below and no longer run; the live successor follows.
   //
   // ok('check 1: Page:dark applies Flux\'s dark pair (#0B2429 / #E3F1EC)', pageDark.paper.toLowerCase() === '#0b2429' && pageDark.ink.toLowerCase() === '#e3f1ec', JSON.stringify(pageDark));
-  ok('check 1 [flux-v2 successor]: Page:dark applies Flux\'s dark-glass pair (#0E1C24 / #E8F6FA)', pageDark.paper.toLowerCase() === '#0e1c24' && pageDark.ink.toLowerCase() === '#e8f6fa', JSON.stringify(pageDark));
+  // ---- PARKED - SUPERSEDED by the hue-212 pass (Nick picked option B, Fable Oct 23): the dark page is now #0C1826 (text #E8F6FA unchanged).
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok('check 1 [flux-v2 successor]: Page:dark applies Flux\'s dark-glass pair (#0E1C24 / #E8F6FA)', pageDark.paper.toLowerCase() === '#0e1c24' && pageDark.ink.toLowerCase() === '#e8f6fa', JSON.stringify(pageDark));
+  ok('check 1 [hue-212 successor]: Page:dark applies Flux\'s dark-glass pair (#0C1826 / #E8F6FA)', pageDark.paper.toLowerCase() === '#0c1826' && pageDark.ink.toLowerCase() === '#e8f6fa', JSON.stringify(pageDark));
   await app.evalJs("window.wrizoThemePrefs.set({ page: 'light' })");
   const pageLight = await app.evalJs("(() => { const cs = getComputedStyle(document.documentElement); return { paper: cs.getPropertyValue('--paper').trim(), ink: cs.getPropertyValue('--ink-on-paper').trim() }; })()");
   // ---- PARKED - SUPERSEDED by FLUX V2 (Fable's brief, Nick Oct 21): the light page is #F4F7F8 with text #042632 (the chrome stays dark).
