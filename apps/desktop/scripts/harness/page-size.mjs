@@ -37,8 +37,9 @@
 // Seeding goes through the app's seams; the per-page mode and typewriter keys are this device's own UI keys (not collections).
 // Needs a box turn.  Run: WS_BOX_TURN=<token> node scripts/harness/page-size.mjs   (from apps/desktop, dist-web built)
 import { withHarness } from '../runtime-verify.mjs';
-import { writeFileSync, mkdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 const SHOTS = process.env.WS_PS_SHOTS || null;
 const snap = async (app, name) => { if (!SHOTS) return; mkdirSync(SHOTS, { recursive: true }); writeFileSync(join(SHOTS, `${name}.png`), Buffer.from(await app.screenshot(), 'base64')); };
 
@@ -74,7 +75,7 @@ const ZOOM_FIT_SLACK = 100; // a zoom capped below 1.6 fills the stage's width t
 const DRAWER_MIN = 200;
 const DRAWER_RESERVE = 320;   // = store/pageScale.ts DRAWER_RESERVE: the desk each side keeps for its drawer when the page is width-bound
 const natural = {};          // each drawer's natural open width, measured alone at 1366
-const THEMES = [{ id: 'plateau', name: 'Arbor' }, { id: 'flux', name: 'Flux' }];
+const THEMES = [{ id: 'plateau', name: 'Arbor' }, { id: 'flux', name: 'Flux' }, { id: 'machina', name: 'Machina' }];   // every REGISTERED theme (store/theme.ts) - Machina joined with train #6
 
 const SENTENCES = [
   'The rope was already there, and the well took the bucket back colder still.',
@@ -194,6 +195,8 @@ const strengths = async (app, rects, { keepStrip = false } = {}) => {
 
 const openPage = async (app, id) => {
   await app.evalJs("location.hash = '#/'"); await sleep(300);
+  // G diagnostics: the typewriter engine reads this ONCE at mount and records its decisions in memory (useTypewriterFade.ts; gated - see GATE below)
+  await app.evalJs('(() => { window.__wzTwTrace = window.__wzTwTrace || []; return true; })()');
   await app.evalJs(`location.hash = '#/page/${id}'`);
   const there = await waitSoft(app, "!!document.querySelector('.forward-only-editor') && !!document.querySelector('.mode-page')", { label: id, timeout: 10000 });
   await sleep(900);
@@ -423,18 +426,21 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
       const v = [sc.scrollTop]; const t0 = performance.now(); const f = () => { v.push(sc.scrollTop); if (performance.now() - t0 < 1000) requestAnimationFrame(f); else res(v); }; requestAnimationFrame(f); }))()`;
     // (G was intermittent at 1366 - moved 0 on Flux 7ff7b8ea and Arbor d02409f0. The detail now says whether the keys LANDED, where focus was, and
     // where the caret sits against the 60% anchor before and after - so a red names its cause.)
-    const gProbe = `(() => { const ed = document.querySelector('.forward-only-editor'); const col = document.querySelector('.mode-pagecol'); const c = window.__psCaret();
+    const gProbe = `(() => { const ed = document.querySelector('.forward-only-editor'); const col = document.querySelector('.mode-pagecol'); const c = window.__psCaret(); const sc = document.querySelector('.mode-scroll');
       const cr = col ? col.getBoundingClientRect() : null; return { len: ed ? ed.textContent.length : null, focus: !!ed && ed.contains(document.activeElement),
-        caretTop: c ? Math.round(c.top) : null, anchorY: cr ? Math.round(cr.top + cr.height * 0.6) : null, scrollTop: Math.round(document.querySelector('.mode-scroll')?.scrollTop ?? -1) }; })()`;
+        caretTop: c ? Math.round(c.top) : null, anchorY: cr ? Math.round(cr.top + cr.height * 0.6) : null, scrollTop: Math.round(sc?.scrollTop ?? -1), maxTop: sc ? Math.round(sc.scrollHeight - sc.clientHeight) : null, traceLen: (window.__wzTwTrace || []).length }; })()`;
     const g0 = await app.evalJs(gProbe);
     const p = app.evalJs(sample);
     await sleep(30); await app.key('Enter'); await app.typeKeys('y');
     const v = await p; const distinct = v ? [...new Set(v)] : [];
     const gEnd = await app.evalJs(gProbe);
+    await sleep(1500);
+    const gLate = await app.evalJs(gProbe);   // late versus never: did the scroll move AFTER the 1s sample?
+    const gTrace = await app.evalJs(`(window.__wzTwTrace || []).slice(${(g0 && g0.traceLen) || 0})`);
     const lh = await app.evalJs("parseFloat(getComputedStyle(document.querySelector('.forward-only-editor')).lineHeight) || null");
     const moved = v ? v[v.length - 1] - v[0] : null;
     // a glide passes through many in-between values; an instant move (even one taken in two or three whole-line steps) does not
-    ok(`${tag} G: a new line glides - the scroll passes through ${GLIDE_MIN} or more values`, !!v && moved > 0 && distinct.length >= GLIDE_MIN, J({ moved, values: distinct.length, lh, before: g0, after: gEnd }));
+    ok(`${tag} G: a new line glides - the scroll passes through ${GLIDE_MIN} or more values`, !!v && moved > 0 && distinct.length >= GLIDE_MIN, J({ moved, values: distinct.length, lh, before: g0, after: gEnd, late: gLate, trace: (gTrace || []).slice(-12) }));
   }
   // leave the zoom through the same control
   const pressedOff = await pressTypewriter(app);
@@ -446,6 +452,20 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
   ok(`${tag} X: leaving the zoom returns the exact normal rect`, same, J({ before: g0 && g0.page, after: g3 && g3.page }));
 };
 
+// GATE (Fable, Oct 24): the engine's G diagnostics live in MEMORY only and are written ONLY when the harness flag is on. Read from the source:
+//   the flag is read exactly once (one `__wzTwTrace`, assigned to `const trace`); every write is `if (trace) trace.push(`; nothing on a trace line
+//   touches the DOM (no dataset, no setAttribute, no style).
+{
+  const here = dirname(fileURLToPath(import.meta.url));
+  const tw = readFileSync(join(here, '..', '..', 'src', 'components', 'useTypewriterFade.ts'), 'utf8');
+  const reads = tw.split(/\r?\n/).filter((l) => l.includes('__wzTwTrace')).length;   // LINES that touch the flag (the one assignment names it twice)
+  const assigned = /const trace = \(typeof window !== 'undefined' \? \(window as unknown as \{ __wzTwTrace\?: unknown\[\] \}\)\.__wzTwTrace : undefined\);/.test(tw);
+  const pushes = (tw.match(/trace\.push\(/g) || []).length;
+  const gated = (tw.match(/if \(trace\) trace\.push\(/g) || []).length;
+  const domOnTrace = tw.split(/\r?\n/).filter((l) => /\btrace\b/.test(l) && /dataset|setAttribute|\.style\./.test(l));
+  ok('GATE (source): the engine reads the G flag ONCE (one __wzTwTrace, as const trace), every write is behind if (trace), and no trace line touches the DOM',
+    reads === 1 && assigned && pushes > 0 && pushes === gated && domOnTrace.length === 0, J({ reads, assigned, pushes, gated, domOnTrace }));
+}
 await withHarness(async (app) => {
   await app.emulateDpr(1, 1366, 768);
   await app.goto('/');

@@ -130,6 +130,11 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     // position in scroll-INDEPENDENT "document space" (see band() below).
     let engaged = false;
     let prevDocCaretBottom: number | null = null;
+    // PAGE-SIZE G DIAGNOSTICS (Fable, Oct 24 - approved with conditions): the engine's decisions, in MEMORY only - an array the harness puts on
+    // window before the page mounts. Read ONCE here, at mount; when it is absent (every real session) nothing below is ever written. No DOM
+    // attribute, no DOM write, nothing on the keystroke path but one branch. page-size.mjs's source check pins this gate.
+    const trace = (typeof window !== 'undefined' ? (window as unknown as { __wzTwTrace?: unknown[] }).__wzTwTrace : undefined);
+    if (trace) trace.push({ d: 'mount', at: Math.round(performance.now()), zoom: !!zoom });
 
     const setScrolled = () => {
       // Window mode: gate on the SHEET's own top vs the viewport (has content
@@ -280,7 +285,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         const last = ed.lastElementChild as HTMLElement | null;
         caretBottom = last ? last.getBoundingClientRect().bottom : ed.getBoundingClientRect().top;
       }
-      if (caretBottom === null) return;
+      if (caretBottom === null) { if (trace) trace.push({ d: 'no-caret' }); return; }
       const box = readBox(!!useWindowScroll, container);
       // PAGE-SIZE - zoomed, the page is TRANSFORMED: rects are screen pixels, the scroller's scrollTop and clientHeight are layout pixels. Every
       // screen distance is divided by the zoom before it meets the scroller, so one line of advance is still one LAYOUT line.
@@ -311,12 +316,13 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         : box.clientHeight * holdBandValue;
 
       if (!engaged) {
-        if (within - thresholdPx <= 1) { setScrolled(); return; } // fresh/short content: don't scroll, don't fade (C2)
+        if (within - thresholdPx <= 1) { if (trace) trace.push({ d: 'fresh', within: Math.round(within), threshold: Math.round(thresholdPx) }); setScrolled(); return; } // fresh/short content: don't scroll, don't fade (C2)
         // First engage (S1 a: "must not lurch"): owe exactly the same delta
         // the old absolute design would have jumped in one shot, but pay it
         // off below via the SAME one-line-at-a-time stepping every later
         // engaged call uses — one code path, no special-cased jump.
         engaged = true;
+        if (trace) trace.push({ d: 'engage', within: Math.round(within), threshold: Math.round(thresholdPx), top: Math.round(box.scrollTop) });
         prevDocCaretBottom = docCaretBottom - (within - thresholdPx);
       }
       const advance = docCaretBottom - (prevDocCaretBottom as number);
@@ -335,11 +341,12 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         // PAGE-SIZE - one line per glide: while the last glide is still travelling, WAIT for it (the next frame looks again; nothing owed is
         // lost - prevDocCaretBottom has not moved). Reduced motion moves instantly, so it never waits.
         const gliding = !reduce && glideTarget != null && Math.abs(box.scrollTop - glideTarget) > 1 && performance.now() - glideAt < GLIDE_MS;
-        if (gliding) { raf = requestAnimationFrame(band); return; }
+        if (gliding) { if (trace) trace.push({ d: 'wait', top: Math.round(box.scrollTop), target: glideTarget }); raf = requestAnimationFrame(band); return; }
         // the target is clamped to what the box can actually scroll to, so a glide that hits the bottom still counts as landed
         const maxTop = useWindowScroll ? Infinity : Math.max(0, container.scrollHeight - container.clientHeight);
         const to = Math.min(box.scrollTop + step, maxTop);
         box.setScrollTop(to, !reduce);
+        if (trace) trace.push({ d: 'step', from: Math.round(box.scrollTop), to: Math.round(to), maxTop: Math.round(maxTop), advance: Math.round(advance) });
         glideTarget = to; glideAt = performance.now();
         prevDocCaretBottom = (prevDocCaretBottom as number) + step;
         // FX5 review fix — this chained catch-up frame MUST be tracked into
@@ -365,6 +372,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         // shrank the document) — resync without scrolling; no advance is
         // "owed" backward.
         prevDocCaretBottom = docCaretBottom;
+        if (trace) trace.push({ d: 'resync', advance: Math.round(advance) });
       }
       setScrolled();
     };
@@ -379,6 +387,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     setScrolled();
     schedule();
     return () => {
+      if (trace) trace.push({ d: 'unmount', at: Math.round(performance.now()) });
       mo.disconnect();
       container.removeEventListener('input', schedule);
       scrollListenTarget.removeEventListener('scroll', setScrolled);

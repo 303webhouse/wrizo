@@ -296,6 +296,7 @@ ok('M15: Run is gated on Machina + the instruments + Progress: Words + a goal - 
 ok('M15: twenty units; ONE celebration - the closed strip - and the sparks (eight ticks) appear ONLY under NEUTRAL and only when motion is welcome',
   /const UNITS = 20;/.test(rs) && /const sparks = celebrating && cast === 'neutral' && !still;/.test(rs) && /BURST_ANGLES = \[-90, -64, -38, -12, 12, 38, 64, 90\]/.test(rs) && /still = prefersReducedMotion\(\) \|\| dial === 0/.test(rs), '');
 ok('M15: the lap reuses useGoalProgress (one celebration grammar) and nothing in RunStrip is random', /useGoalProgress\(count, n\)/.test(rs) && !/Math\.random/.test(rs), '');
+const machinaParks = {};   // page-size: observations for the parked records
 const clean = (c) => c.replace(/\/\*[\s\S]*?\*\//g, '');
 const ccss = clean(css);
 ok('M15: the CSS - the in-progress notch is 3 x 16 px ORANGE, a finished unit is the live gray, the closed strip is orange, and reduced motion removes the sparks and the crossfade',
@@ -318,7 +319,19 @@ const EMBER = [
   /\[data-theme='machina'\] \.desk-frame-goalflare\{ display:none; \}/,
   /\[data-theme='machina'\] body::after\{ z-index:-1; \}/,
 ];
-ok('M18: the paper\'s resting and focused halos are plain dark shadows, the goal glow is dialled (the cap token) and recoloured to the live gray, and the celebration flare is not drawn - under Machina only', EMBER.every((r) => r.test(ccss)) && /\[data-theme='machina'\] \.wz-goal-glow\{ background:radial-gradient\(ellipse at center, color-mix\(in srgb, var\(--signal-live\)/.test(ccss), JSON.stringify(EMBER.map((r) => r.test(ccss))));
+// ---- PARKED - SUPERSEDED by page-size (Fable, Oct 23: the grey-band rule existed three times - Flux, Machina, and page-size's all-theme rule -
+// and collapses into the ONE base rule): Machina's own `[data-theme='machina'] body::after{ z-index:-1; }` is gone, so EMBER's fifth pattern no longer
+// matches and M18 falls with it. Kept VERBATIM and no longer run; record in this file's parked section; successor below (EMBER's other four, plus
+// the base rule).
+//
+// ok('M18: the paper\'s resting and focused halos are plain dark shadows, the goal glow is dialled (the cap token) and recoloured to the live gray, and the celebration flare is not drawn - under Machina only', EMBER.every((r) => r.test(ccss)) && /\[data-theme='machina'\] \.wz-goal-glow\{ background:radial-gradient\(ellipse at center, color-mix\(in srgb, var\(--signal-live\)/.test(ccss), JSON.stringify(EMBER.map((r) => r.test(ccss))));
+// ------------------------------------------------------------------
+const EMBER_PS = EMBER.filter((r) => !/body::after/.test(r.source));
+const VIGNETTE_BASE = (x) => /(^|\n)\s*body::after\s*\{[^}]*z-index:\s*-1;/.test(x) && /body\s*\{\s*isolation:\s*isolate;\s*\}/.test(x) && !/\[data-theme='[a-z]+'\] body::after\{[^}]*z-index:\s*(?!-)/.test(x);
+const M18PS = (x) => EMBER_PS.every((r) => r.test(x)) && VIGNETTE_BASE(x) && /\[data-theme='machina'\] \.wz-goal-glow\{ background:radial-gradient\(ellipse at center, color-mix\(in srgb, var\(--signal-live\)/.test(x);
+machinaParks.m18 = { ember4: EMBER_PS.every((r) => r.test(ccss)), vignetteBase: VIGNETTE_BASE(ccss) };
+ok('M18 [page-size successor]: the paper\'s halos are plain dark shadows, the goal glow is dialled and recoloured, the flare is not drawn - under Machina only; and the vignette sits behind the page by the ONE base rule (body::after at -1, body isolated, no theme raising it)',
+  M18PS(ccss), JSON.stringify(machinaParks.m18));
 
 // M19 - Run is the ONLY progress instrument under Machina: the framed page draws no Arbor bar, and the style choice (Bar | Run) is not offered in either settings surface
 const di = src('components/DeskInstrument.tsx');
@@ -380,16 +393,36 @@ ok('MUTANT: a Machina desk string re-introducing "Drawer" - M8 must go RED', LEA
   ok('MUTANT: an eager IBM Plex import added to ThemePicker - M20 must go RED (the mutation LANDED)', tp3 !== null && /^import .*@fontsource/m.test(tp3) && !/^import .*@fontsource/m.test(tp), '');
   const di2 = mut(di, "settings.progressStyle === 'bar' && theme !== 'machina' && (", "settings.progressStyle === 'bar' && (");
   ok('MUTANT: Arbor\'s bar drawn on the framed Machina page again (the theme gate dropped) - M19 must go RED (the mutation LANDED)', di2 !== null && !BAR_GATE.test(di2) && BAR_GATE.test(di), '');
-  const css3 = mut(ccss, "[data-theme='machina'] body::after{ z-index:-1; }", '');
-  ok('MUTANT: the vignette left ABOVE the page under Machina (the body::after rule deleted - the grey bands return) - M18 must go RED (the mutation LANDED)', css3 !== null && !EMBER.every((r) => r.test(css3)) && EMBER.every((r) => r.test(ccss)), '');
-  const css2 = mut(ccss, "[data-theme='machina'] .desk-frame-goalflare{ display:none; }", '');
-  ok('MUTANT: Arbor\'s celebration flare left drawn under Machina (the display:none rule deleted) - M18 must go RED (the mutation LANDED)', css2 !== null && !EMBER.every((r) => r.test(css2)) && EMBER.every((r) => r.test(ccss)), '');
+  // ---- PARKED - SUPERSEDED by page-size (Oct 23): the line this mutant deletes no longer exists (collapsed into the base rule); kept VERBATIM, no longer run.
+  // const css3 = mut(ccss, "[data-theme='machina'] body::after{ z-index:-1; }", '');
+  // ok('MUTANT: the vignette left ABOVE the page under Machina (the body::after rule deleted - the grey bands return) - M18 must go RED (the mutation LANDED)', css3 !== null && !EMBER.every((r) => r.test(css3)) && EMBER.every((r) => r.test(ccss)), '');
+  // ------------------------------------------------------------------
+  const css3b = mut(ccss, /(body::after\s*\{[^}]*?)z-index:\s*-1;/, '$1z-index: 2;');
+  ok('MUTANT [page-size successor]: the vignette put back ABOVE the page by the BASE rule (z-index 2) - M18 [page-size successor] must go RED (the mutation LANDED)', css3b !== null && !M18PS(css3b) && M18PS(ccss), '');
+  // ---- PARKED - SUPERSEDED by page-size (Oct 23): it reads EMBER whole, and EMBER's vignette pattern no longer matches the real CSS; kept VERBATIM, no longer run.
+  // const css2 = mut(ccss, "[data-theme='machina'] .desk-frame-goalflare{ display:none; }", '');
+  // ok('MUTANT: Arbor\'s celebration flare left drawn under Machina (the display:none rule deleted) - M18 must go RED (the mutation LANDED)', css2 !== null && !EMBER.every((r) => r.test(css2)) && EMBER.every((r) => r.test(ccss)), '');
+  // ------------------------------------------------------------------
+  const css2b = mut(ccss, "[data-theme='machina'] .desk-frame-goalflare{ display:none; }", '');
+  ok('MUTANT [page-size successor]: Arbor\'s celebration flare left drawn under Machina (the display:none rule deleted) - M18 [page-size successor] must go RED (the mutation LANDED)', css2b !== null && !M18PS(css2b) && M18PS(ccss), '');
   const GLYPH = /\{theme === 'machina' \? '◂' : '↩'\}/;
   const rail2 = mut(rail, "{theme === 'machina' ? '◂' : '↩'}", '↩');
   ok('MUTANT: the way-back glyph left as the ember "↩" under Machina - M16 must go RED (the mutation LANDED)', rail2 !== null && !GLYPH.test(rail2) && GLYPH.test(rail), '');
 }
 
 for (const t of tmps) rmSync(t, { recursive: true, force: true });
+if (process.env.HARNESS_PARKED === '1') {
+  // PAGE-SIZE (Oct 23) - THREE parks: M18 and its two mutants read Machina's own vignette line, collapsed into the one base rule. Records frozen with
+  // their original names; each re-verifies the new truth from this run's observation (machinaParks.m18).
+  const o = machinaParks.m18 || {};
+  const rec = [
+    'M18: the paper\'s resting and focused halos are plain dark shadows, the goal glow is dialled (the cap token) and recoloured to the live gray, and the celebration flare is not drawn - under Machina only',
+    'MUTANT: the vignette left ABOVE the page under Machina (the body::after rule deleted - the grey bands return) - M18 must go RED (the mutation LANDED)',
+    'MUTANT: Arbor\'s celebration flare left drawn under Machina (the display:none rule deleted) - M18 must go RED (the mutation LANDED)',
+  ].map((n) => ({ name: `PARKED (was "${n}") - page-size: Machina's vignette line collapsed into the base rule; successors read the base rule`, pass: !!o.ember4 && !!o.vignetteBase, detail: JSON.stringify(o) }));
+  for (const r of rec) console.log(`${r.pass ? 'PASS' : 'FAIL'}  ${r.name}  [${r.detail}]`);
+  console.log(rec.every((r) => r.pass) ? `\nTH-MACHINA-SOURCE PARKED: PASS (${rec.length} records) - this FILE parks 3 (page-size, Oct 23)` : `\nTH-MACHINA-SOURCE PARKED: FAIL - ${rec.filter((r) => !r.pass).length}/${rec.length}`);
+}
 const bad = checks.filter((c) => !c.pass).length;
 console.log(bad === 0 ? `\nTH-MACHINA-SOURCE VERIFY: PASS (${checks.length} checks)` : `\nTH-MACHINA-SOURCE VERIFY: FAIL - ${bad}/${checks.length}`);
 process.exit(bad === 0 ? 0 : 1);

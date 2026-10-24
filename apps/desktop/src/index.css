@@ -688,7 +688,8 @@
 [data-theme='machina'] .wz-goal-glow{ background:radial-gradient(ellipse at center, color-mix(in srgb, var(--signal-live) 50%, transparent) 0%, color-mix(in srgb, var(--signal-live) 20%, transparent) 40%, transparent 68%); }
 [data-theme='machina'] .desk-frame-goalflare{ display:none; }
 /* the vignette sits BEHIND the content (the rule Flux's flux-inputs gave itself, Oct 23): it shades the room, never the page - the empty light page showed grey bands top and bottom */
-[data-theme='machina'] body::after{ z-index:-1; }
+/* (Machina's own vignette line that stood here is COLLAPSED into the one base rule - body::after, under the atmosphere overlays - which puts
+   the vignette behind the page in EVERY theme: page-size, Fable Oct 23. th-machina-source.mjs M18 [page-size successor] checks the base rule.) */
 /* RUN (components/RunStrip.tsx) - the cursor/machina-v1-mockup footer strip: twenty identical 4px units 3px apart, gray when finished, an orange 3x16 notch on the unit in progress, the count once
    after the bar. It rides the framed page's instrument lane (the band under the paper), right-aligned to the paper's edge - the mockup's "right of the footer". Closed at the goal = the whole strip
    orange (a .35s colour crossfade - the foundations' fill handoff); NEUTRAL adds eight 9x1px sparks from the last unit (.6s, 20ms stagger, the RC's own constants), never under COOL. */
