@@ -52,10 +52,10 @@ const resultNames = (app) => app.evalJs(`(() => { const p = document.querySelect
 // CONTRAST (Fable, W4 review): every TEXT in the olive alcove clears 4.5:1 against its own ground - the nearest opaque background, or, on the panel's gradient, its LIGHTEST stop (the worst case for light text).
 // Brass is a ring / emblem colour here, never a text colour (brass on the tile measured 3.79:1, on the panel 2.4-2.9).
 const SCAN = `(() => { const p = document.querySelector('.help-panel'); if (!p) return null;
-  const rgb = (c) => { const m = /rgba?\(([^)]+)\)/.exec(c || ''); if (!m) return null; const v = m[1].split(',').map((x) => parseFloat(x)); return { c: v.slice(0, 3), a: v.length > 3 ? v[3] : 1 }; };
+  const rgb = (c) => { const m = /rgba?\\(([^)]+)\\)/.exec(c || ''); if (!m) return null; const v = m[1].split(',').map((x) => parseFloat(x)); return { c: v.slice(0, 3), a: v.length > 3 ? v[3] : 1 }; };
   const lum = ([r, g, b]) => { const f = (x) => { const s = x / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
   const ratio = (a, b) => { const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x); return (hi + 0.05) / (lo + 0.05); };
-  const lightest = (() => { const m = [...(getComputedStyle(p).backgroundImage.match(/rgb\([^)]+\)/g) || [])].map((x) => rgb(x).c); return m.sort((a, b) => lum(b) - lum(a))[0] || [0, 0, 0]; })();
+  const lightest = (() => { const m = [...(getComputedStyle(p).backgroundImage.match(/rgba?\\([^)]+\\)/g) || [])].map((x) => rgb(x).c); return m.sort((a, b) => lum(b) - lum(a))[0] || [0, 0, 0]; })();
   const groundOf = (el) => { for (let n = el; n && n !== document.body; n = n.parentElement) { const bg = rgb(getComputedStyle(n).backgroundColor); if (bg && bg.a > 0.5) return bg.c; } return lightest; };
   const rows = []; const probe = document.createElement('i'); probe.style.color = 'var(--brass)'; document.body.appendChild(probe); const brass = rgb(getComputedStyle(probe).color).c; probe.remove();
   for (const el of p.querySelectorAll('*')) { if (el.closest('svg')) continue; const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()); if (!own) continue; const col = rgb(getComputedStyle(el).color); if (!col) continue;

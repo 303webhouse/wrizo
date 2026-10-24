@@ -11,3 +11,5 @@ Captured by `scripts/harness/help-choose.mjs` (HC_FRAMES) on the box at 1366 x 7
 | machina-q1 / machina-result | Machina Intake: the plain square panel in the theme tokens (no mockup yet) |
 
 The Arbor and Flux chrome stays dark behind the dimmed page in both page tones (the page tone changes only the paper). The helpWhy lines are on the result frames for your review.
+
+- arbor-result-contrast-fix.jpg: the Arbor librarian result after the contrast fix (the question text on the olive panel was 4.34:1, now the kicker cream #fff3dc at 4.64:1); help-choose.log.txt is the 24/24 box run of that tree (2026-10-24 21:44Z).
