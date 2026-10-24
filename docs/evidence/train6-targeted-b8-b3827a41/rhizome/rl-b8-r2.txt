@@ -1,0 +1,16 @@
+PASS  P1 the drop-shadow lives ONLY in the flash-true rule and the pop keyframes - never on the field at rest, in the fading hold, or on the seed root
+PASS  P2 the flash rule is the one that carries it (filter, then the 420 ms pop), and under prefers-reduced-motion the pop is off
+PASS  P3 the flash states change no geometry (no transform, size, position or margin on the field in any flash state) - only filter, opacity and stroke
+PASS  P4 (mutant, landed) a drop-shadow on the field AT REST turns P1 red
+PASS  P5 FULL_COVER is gone from the growth module (it was kept "for the old fill-the-ground target" and nothing reads it)
+PASS  A the rest numbers: 40+ keys with the field at rest are measured (the baseline every flash number is held against)  [{"n":44,"median":20.3,"p95":31.4,"max":32.2}]
+PASS  A at rest the field carries NO filter (the drop-shadow is the flash's alone)
+PASS  B premise: every round crossed the goal and the flash was HOLDING with the drop-shadow actually applied to the full field
+PASS  B premise: at least 40 keys were painted while data-flash was true (3 round(s); a flash that was over before the keys landed certifies nothing)  [{"n":41,"median":23.5,"p95":30.8,"max":31.9}]
+PASS  B typing inside the flash is as fast as typing at rest: median within 5 ms and p95 within 25 ms of the rest numbers, and no key over 100 ms  [rest {"n":44,"median":20.3,"p95":31.4,"max":32.2} | flash {"n":41,"median":23.5,"p95":30.8,"max":31.9}]
+PASS  C premise: at least 40 keys were painted during the fade (enough that a percentile means something)  [{"n":71,"median":24.2,"p95":33.4,"max":33.6}]
+PASS  C typing inside the fade is as fast as at rest (same budgets)  [rest {"n":44,"median":20.3,"p95":31.4,"max":32.2} | fade {"n":71,"median":24.2,"p95":33.4,"max":33.6}]
+PASS  C attribution (information, never a verdict): 0 slow fade key(s) over 3 round(s), 0 within 150 ms of the fade's start - none slow
+PASS  D no key was dropped across the crossing: in every round the stored text ends with " tail" followed by every typed "a" (36 of them)
+
+RHIZOME-LATENCY VERIFY: PASS (14 checks)

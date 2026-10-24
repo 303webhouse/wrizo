@@ -1,0 +1,24 @@
+PASS (P1) a NEW page opens ON in Arbor (plateau) and OFF in Flux, and remembers that choice from its first open
+PASS (P2) toggle, reload, and the SAME page keeps it - OFF in Arbor and ON in Flux (the saved value beats both the theme and "has text")
+PASS (P3) a SECOND page keeps its OWN setting: A (turned off) and B (its own) each come back as they were
+PASS (P4) a pre-existing page with text and no saved value opens OFF (in Arbor too), is saved as OFF, and a later change cannot flip it; a SHORT page is no longer ON (the 1-9-line rule is gone)
+PASS (P5) FREE WRITE is unchanged: a toggle with no held Draft page writes no page value, and a page that has been released stops receiving toggles
+PASS (P12, new) typewriterForPage resolves the theme default correctly for a page that has NEVER been opened (no prior enterPageTypewriter save to fall back on) - Arbor ON, Flux OFF, a pre-existing-text page OFF
+PASS (P6) the retired machinery is gone from the store: no seedTypewriterDefault, no DRAFT_TYPEWRITER_LINE_THRESHOLD (and no session flag, below)
+FAIL (P7) the default is a VALUE in each theme's config (plateau true, flux false), and Machina (off), Nomad (on) and Volant (TBD) are marked slots in comments - not registered, not guessed | {"tc":false,"slots":false}
+PASS (P8) the session-only flag is gone: no explicitlySetThisSession anywhere in the store
+PASS (P9) PageEditor reads the page's memory ONCE, at mount, and only when the page opens into Draft (Free Write never calls it); the page is held only while Draft is mounted
+PASS (P9b) a page opened in FREE WRITE reads its memory the FIRST time it reaches Draft (by the strip), once per mount - so a page that remembers OFF is never left on the global ON left by another page
+PASS (P10) SCREENPLAY follows the same rule: ScriptEditor enters the page's memory at mount (empty = no scenes with text) and holds the page while mounted
+PASS (P11) TAB STILL INDENTS: the Tab path (applyFormatAt, a separate gate from applyRailFormat) is untouched by S5 - it does not mention the typewriter
+PASS (M) the theme default is ignored (every new page OFF): the proof goes RED
+PASS (M) Flux inherits Arbor's default (the table is read wrongly): the proof goes RED
+PASS (M) a toggle is not written to the page: the proof goes RED
+PASS (M) the saved value is ignored at mount (text pages always OFF): the proof goes RED
+PASS (M) every page shares ONE key: the proof goes RED
+PASS (M) a page with text takes the theme default: the proof goes RED
+PASS (M) the first open is not saved (the page does not remember until it is toggled): the proof goes RED
+PASS (M) Free Write toggles write a page value (no held-page test): the proof goes RED
+PASS (M) a released page keeps receiving toggles: the proof goes RED
+
+TYPEWRITER-PAGE VERIFY: FAIL — 1/22

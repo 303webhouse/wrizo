@@ -1,0 +1,78 @@
+PASS M1: every token Flux's blocks set is ALSO set by Machina's blocks (a missing one would leak Arbor's value into Machina) - minus --paper-edge / --flux-offset (Flux-only)  {"fluxTokens":38,"missing":[]}
+PASS M1: the cool-dark page pair defines the paper trio + low tier + door accent  []
+PASS M1: the cool-light page pair defines the paper trio + low tier + door accent  []
+PASS M1: the neutral-dark page pair defines the paper trio + low tier + door accent  []
+PASS M1: the neutral-light page pair defines the paper trio + low tier + door accent  []
+PASS M2 [cool]: ground / chrome / rail / line / line-strong / steel carrier / live / ink are the mockup's own  {"--ink-950":"#0A0B0E","--lamp-glow":"radial-gradient(135% 95% at 50% -8%, #12141A 0%, #0E1015 38%, #0A0B0E 100%)","--chrome-surface":"#12141A","--rail-surface":"#0E1015","--ink-900":"#12141A","--ink-800":"#1A1D25","--in
+PASS M2 [neutral]: the same slots, and the active carrier (--line-active, --choice, --accent-rest, --text-accent) is the ORANGE accent  {"--ink-950":"#0A0A0A","--lamp-glow":"radial-gradient(135% 95% at 50% -8%, #121212 0%, #0E0E0E 38%, #0A0A0A 100%)","--chrome-surface":"#121212","--rail-surface":"#0E0E0E","--ink-900":"#121212","--ink-800":"#1B1B1B","--in
+PASS M2 [cool]: steel is the carrier of every chosen / current / where-you-are state (--choice, --accent-rest, --text-accent = --line-active)
+PASS M2: the four page pairs are foundations §4's own
+PASS M2: the accent is invariant - Machina never re-points --brass (the orange through-line); --orange reads it
+PASS M3 [cool/dark]: page text >= 7:1 and meta (--ink-on-paper-low) >= 4.5:1 on THIS cell's own paper  text 14.60, meta 5.39
+PASS M3 [cool/light]: page text >= 7:1 and meta (--ink-on-paper-low) >= 4.5:1 on THIS cell's own paper  text 17.21, meta 5.67
+PASS M3 [cool]: --text-low (the muted text tier) clears 4.5:1 on the ground, the rail AND the chrome surface  5.08 / 4.91 / 4.75
+PASS M3 [neutral/dark]: page text >= 7:1 and meta (--ink-on-paper-low) >= 4.5:1 on THIS cell's own paper  text 14.91, meta 5.24
+PASS M3 [neutral/light]: page text >= 7:1 and meta (--ink-on-paper-low) >= 4.5:1 on THIS cell's own paper  text 17.65, meta 6.71
+PASS M3 [neutral]: --text-low (the muted text tier) clears 4.5:1 on the ground, the rail AND the chrome surface  4.81 / 4.69 / 4.55
+PASS M4: machina is in ThemeId, REGISTERED and THEME_CONFIG (typewriterDefault false - the marked slot)
+PASS M5: CAST, run for real - default cool; neutral under Machina reflects data-cast; switching to Arbor REMOVES the attribute and answers the fixed default while the STORED value survives; back to Machina restores it; Flux likewise  {"defaultCool":true,"neutralUnderMachina":true,"noAttrUnderArbor":true,"fixedDefaultUnderArbor":true,"storedSurvives":true,"restored":true,"noAttrUnderFlux":true}
+PASS M5: a garbage stored CAST falls through to cool (never a garbage data-* value on <html>)  cool
+PASS M5: zero schema - CAST never reaches the server (no storage key, attribute or store of it in sync.ts or migrate.ts)
+PASS M6: the locked words resolve under Machina (strip Sprint / Build / Edit / Finalize and the Plan door kept as "Plan"; Files, Plans, Notebook, Controls, Theme, Consultant, Assets, Parts, Forms, Run, Inbox)  []
+PASS M6: ...and the same keys under Arbor are NOT these words (the override is Machina's alone, not a canonical edit)
+PASS M7: themeLexicon under Machina - Project / Folder / File / Plan / Block / Notebook / Deliverable / Sprint / HQ / Compliance / Finalize  []
+PASS M7: the Voice Wall chip reads COMPLIANCE (VoiceWallWhisper renders t('voicewall').toUpperCase() + " ▪ PASTE BLOCKED")
+PASS M7: 'notebook' (a DIFFERENT concept from the journal) is left canonical - Machina's Notebook is the Journal word, and no word is invented for the other (hand-up item)  [{"one":"Notebook","many":"Notebooks"},{"one":"Notebook","many":"Notebooks"}]
+PASS M8: NO LEAK - no Machina desk string still names an Arbor or Flux noun (drawer / board / page / journal / graft / rack / cartridge / circuit / node / doc / operator / tutor / link / track / section / set / preset) outside a reviewed keep-list  {"entries":145,"leaks":[]}
+PASS M9: Workshop has NO Machina word - modeWorkshop is not overridden (the tab is hidden in every theme until it is built, Nick Oct 23)
+PASS M10: all nine ThemeIconId slots have a Machina glyph, each a stroked svg set in the 1.25 / square / miter register  []
+PASS M10: the Notebook (log) is the SPIRAL glyph of Fable's round-3 build note - binder-ring ticks above, three ruled lines - not the old ruled ledger  ["M5 5h14v16H5z","M8 3v4M11 3v4M14 3v4M17 3v4","M8 11h8M8 14h8M8 17h5"]
+PASS M10: the Theme swatch has its two SOLID blocks (one at .45 opacity) as filled paths - the spec can carry a fill
+PASS M10: Flux's pixel set is untouched and the renderer passes the set's stroke register through (strokeWidth / linecap / linejoin) and handles a filled path
+PASS M11: main.tsx imports NONE of the IBM Plex families eagerly (Machina's faces load WITH the theme - item207-core's LOAD-ON-CHOOSE eager list does not grow)
+PASS M11: Machina loads the four slots' faces (Plex Mono 500; Plex Sans 400/500/600; Plex Serif 400/500 + italic 400; Atkinson 400/700) only for 'machina' - ensureThemeFonts gates on the theme, the registered loader names the nine
+FAIL M11: themeFonts.ts (reached from store/theme.ts, which the harness loaders bundle) names NO font package, and store/themeFontFaces.ts is imported by main.tsx ALONE - so no store loader can reach a literal @fontsource import  ["main.tsx","store\\themeFonts.ts"]
+PASS M11: store/theme.ts BUNDLES with no @fontsource externals (the harness store loaders' own condition) - the "No loader for .woff2" death is gone
+PASS MUTANT: a literal import('@fontsource/ibm-plex-mono/500.css') re-added to themeFonts.ts - the strict bundle must DIE (No loader for .woff2) - the mutation LANDED and the real source still bundles  X [ERROR] No loader is configured for ".woff2" files: ../../node_modules/.pnpm/@fontsource+ibm-plex-mono@5.3.0/node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-cyrillic-ext-500-normal.woff2
+
+PASS M11: applyAttribute calls ensureThemeFonts - the faces follow every theme switch and the boot
+PASS M12: the Consultant chips read the mockup's wording under Machina ("What is load-bearing — and what could go?" / "Where does the line slip?")  ["What is load-bearing — and what could go?","Where does the line slip?"]
+PASS M12: ...and Arbor's own chips are untouched (the override is Machina's alone)
+PASS M13: every splash loading line is the EMPTY string under Machina - present, not absent (an absent key would fall back to Arbor's "Turning the soil...")  ["","","",""]
+PASS M13: ...Arbor and Flux keep their lines
+PASS M13: Splash.tsx renders the loading element ONLY for a non-empty line (the status region is absent under Machina, not an empty live region)
+PASS M14: SplashMark routes Machina to MachinaMark (the WRIZ[] wordmark, IDEAS / FINAL DRAFT end labels, twenty units that close orange once); Arbor and Flux routes unchanged
+PASS M14: the splash mark has a still state (reduced motion: the closed strip at once) and a floor trigger
+PASS M15: Run is gated on Machina + the instruments + Progress: Words + a goal - NOT on the style slot (it is Machina's only instrument) - and is mounted beside GlitchMeter on the framed page only
+PASS M15: twenty units; ONE celebration - the closed strip - and the sparks (eight ticks) appear ONLY under NEUTRAL and only when motion is welcome
+PASS M15: the lap reuses useGoalProgress (one celebration grammar) and nothing in RunStrip is random
+PASS M15: the CSS - the in-progress notch is 3 x 16 px ORANGE, a finished unit is the live gray, the closed strip is orange, and reduced motion removes the sparks and the crossfade
+PASS M16: the way-back chip draws "◂" under Machina and the old "↩" elsewhere; gray under COOL, the one orange under NEUTRAL
+PASS M17: CAST is ONE Controls row ("Cast": Cool | Neutral), drawn ONLY under Machina, wired to setCast with both options
+PASS M18: the paper's resting and focused halos are plain dark shadows, the goal glow is dialled (the cap token) and recoloured to the live gray, and the celebration flare is not drawn - under Machina only  [true,true,true,true,true]
+PASS M19: the framed page draws Arbor's bar only when the theme is not Machina (DeskInstrument) - the legacy surfaces' bars (ModeStage / JournalEntry) are untouched
+PASS M19: the Progress style choice is not offered under Machina - neither in the Sliver nor in the gear panel (one instrument, nothing to choose between)  [true,true]
+PASS M20: THEME_CARDS lists exactly the built themes in the arc's order (plateau, machina, flux) - Nomad / Volant absent  plateau,machina,flux
+PASS M20: the Machina card runs its Run-strip plate (20 units) and asks for the theme's faces on hover / focus only - ThemePicker holds no module-scope font import
+PASS M20: the card is LOCKED by the server's own unlock table (machina has a threshold: 100 words) - nothing client-side invents an unlock
+PASS M20: the card art is the card's OWN theme in literals (never the ambient tokens) and still frames hold the strip
+PASS MUTANT: --help-hi dropped from Machina's COOL block - M1 must go RED  ["--card-stock","--card-hairline","--ink-on-card","--ink-on-card-low","--ink-on-card-meta","--badge-on-card","--help-hi"]
+PASS MUTANT: the neutral carrier left steel (--line-active #7FA0BC in the neutral block) - M2 must go RED
+PASS MUTANT: --text-low reverted to the mockup's own #6C7482 (3.8-4.2:1 on the chrome) - M3 must go RED  3.91 on chrome
+PASS MUTANT: data-cast applied under EVERY theme (the leak) - M5 must go RED (the mutation LANDED - no error - and the Arbor leg went false)  {"defaultCool":true,"neutralUnderMachina":true,"noAttrUnderArbor":false,"fixedDefaultUnderArbor":true,"storedSurvives":true,"restored":true,"noAttrUnderFlux":false}
+PASS MUTANT: getCast() ignores the theme (a stale cast read under Arbor) - M5 must go RED (the mutation LANDED and the fixed-default leg went false)  {"defaultCool":true,"neutralUnderMachina":true,"noAttrUnderArbor":true,"fixedDefaultUnderArbor":false,"storedSurvives":true,"restored":true,"noAttrUnderFlux":false}
+PASS MUTANT: the Notebook swapped for the old ruled-ledger glyph - M10 must go RED
+PASS MUTANT: an eager IBM Plex import added to main.tsx - M11 must go RED
+PASS MUTANT: a Machina desk string re-introducing "Drawer" - M8 must go RED
+PASS MUTANT: sparks drawn under COOL as well (the cast gate dropped) - M15 must go RED (the mutation LANDED)
+PASS MUTANT: Run drawn under every theme (the Machina gate dropped) - M15 must go RED (the mutation LANDED)
+PASS MUTANT: Machina's splashLoading1 key deleted (so it would fall back to Arbor's "Gathering your pages...") - M13 must go RED (the mutation LANDED)
+PASS MUTANT: the CAST row drawn under every theme (the Machina gate dropped) - M17 must go RED (the mutation LANDED)
+PASS MUTANT: the Machina card dropped from THEME_CARDS - M20 must go RED (the mutation LANDED)  plateau,flux
+PASS MUTANT: an eager IBM Plex import added to ThemePicker - M20 must go RED (the mutation LANDED)
+PASS MUTANT: Arbor's bar drawn on the framed Machina page again (the theme gate dropped) - M19 must go RED (the mutation LANDED)
+PASS MUTANT: the vignette left ABOVE the page under Machina (the body::after rule deleted - the grey bands return) - M18 must go RED (the mutation LANDED)
+PASS MUTANT: Arbor's celebration flare left drawn under Machina (the display:none rule deleted) - M18 must go RED (the mutation LANDED)
+PASS MUTANT: the way-back glyph left as the ember "↩" under Machina - M16 must go RED (the mutation LANDED)
+
+TH-MACHINA-SOURCE VERIFY: FAIL - 1/75

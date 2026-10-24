@@ -1,0 +1,48 @@
+toplevel: C:/Users/nickh/writer-studio/.claude/worktrees/b8
+base: d106597d
+== merging machina-build @ 8ee33abf  (contains base: yes)
+   -> 24a593a4  unmerged files: 0
+== merging box-token-hash @ 038f2b2e  (contains base: yes)
+   -> d92bb097  unmerged files: 0
+== merging guided-w3 @ 295cd5da  (contains base: yes)
+Auto-merging apps/desktop/src/index.css
+Auto-merging apps/desktop/src/store/deskLexicon.ts
+   -> b3827a41  unmerged files: 0
+ .../train6-pair-b7-3601148b/b7-nonok-parked.txt    |  16 -
+ .../connector-a.default.txt                        |  39 --
+ .../logs/b7p-default-c00.out                       |  32 --
+ .../logs/b7p-default-c01.out                       |  29 -
+ .../logs/b7p-default-c02.out                       |  31 -
+ .../logs/b7p-default-c03.out                       |  27 -
+ .../logs/b7p-default-c04.out                       |  29 -
+ .../logs/b7p-default-c05.out                       |  27 -
+ .../logs/b7p-default-c06.out                       |  28 -
+ .../logs/b7p-default-c07.out                       |  28 -
+ .../logs/b7p-default-c08.out                       |  28 -
+ .../logs/b7p-default-c09.out                       |  20 -
+ .../logs/b7p-parked-c00.out                        |  30 -
+ .../logs/b7p-parked-c01.out                        |  29 -
+ .../logs/b7p-parked-c02.out                        |  31 -
+ .../logs/b7p-parked-c03.out                        |  27 -
+ .../logs/b7p-parked-c04.out                        |  29 -
+ .../logs/b7p-parked-c05.out                        |  27 -
+ .../logs/b7p-parked-c06.out                        |  28 -
+ .../logs/b7p-parked-c07.out                        |  29 -
+ .../logs/b7p-parked-c08.out                        |  28 -
+ .../logs/b7p-parked-c09.out                        |  20 -
+ .../train6-pair-b7-3601148b/pair-status.txt        |  40 --
+ .../rhizome-latency.parked.txt                     |  16 -
+ .../train6-pair-b7-3601148b/tree-setup.txt         |  48 --
+ docs/guided-paths/w3-deck-content.md               | 278 +++++++++
+ docs/guided-paths/w3-w4-build-brief.md             |  70 +++
+ docs/open-threads.md                               |   8 -
+ pnpm-lock.yaml                                     |  24 +
+ 128 files changed, 4410 insertions(+), 951 deletions(-)
+Done in 11s using pnpm v10.28.2
+tsc-desktop=0
+tsc-server-done
+SEED-GUARD VERIFY: PASS (36 checks)
+TYPING-LATENCY READERS VERIFY: PASS (5 checks, 24 reads classified)
+TYPED-LITERAL-CHECK VERIFY: PASS (29 checks)
+GLITCH-METER-CHECK VERIFY: PASS (15 checks)
+[2mdist-web/[22m[36massets/index-f9DD8_pW.js                                          [39m[1m[33m855.52 kB[39m[22m[2m │ gzip: 270.88 kB[22m
