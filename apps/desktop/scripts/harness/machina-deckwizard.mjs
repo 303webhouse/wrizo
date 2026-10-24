@@ -108,6 +108,7 @@ if (!process.env.BROWSERLESS_ONLY) {
       }
     }
     // Arbor control: the wizard under Arbor is UNCHANGED (still its own cream card)
+    await app.goto('/');   // off the wizard route first (the hash survives a reload), then switch the theme and reload onto the Desk
     await app.evalJs("localStorage.setItem('wrizo-theme','plateau')"); await app.reload();
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk (Arbor)' });
     await app.evalJs("location.hash = '#/page/new?kind=board&deck=library'");
