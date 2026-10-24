@@ -1,0 +1,48 @@
+toplevel: C:/Users/nickh/writer-studio/.claude/worktrees/b7
+base: d106597d
+== merging machina-build @ 900d2f2b  (contains base: yes)
+   -> 033c90bc  unmerged files: 0
+== merging box-token-hash @ 038f2b2e  (contains base: yes)
+   -> 357f93ac  unmerged files: 0
+== merging guided-w3 @ c085e757  (contains base: yes)
+Auto-merging apps/desktop/src/index.css
+Auto-merging apps/desktop/src/store/deskLexicon.ts
+   -> 3601148b  unmerged files: 0
+ .../screens/three-act-flux-dark.jpg                | Bin 0 -> 101961 bytes
+ .../screens/three-act-flux-light.jpg               | Bin 0 -> 112199 bytes
+ .../screens/three-act-help-arbor-dark.jpg          | Bin 0 -> 88552 bytes
+ .../screens/three-act-help-arbor-light.jpg         | Bin 0 -> 88552 bytes
+ .../screens/three-act-help-flux-dark.jpg           | Bin 0 -> 104031 bytes
+ .../screens/three-act-help-flux-light.jpg          | Bin 0 -> 113861 bytes
+ docs/evidence/machina-phase-b/README.md            |  15 +
+ .../evidence/machina-phase-b/app-controls-cool.jpg | Bin 0 -> 31535 bytes
+ .../machina-phase-b/app-controls-neutral.jpg       | Bin 0 -> 31932 bytes
+ .../machina-phase-b/app-journal-cool-dark.jpg      | Bin 0 -> 14758 bytes
+ .../machina-phase-b/app-journal-neutral-dark.jpg   | Bin 0 -> 14576 bytes
+ docs/evidence/machina-phase-b/app-picker-arbor.jpg | Bin 0 -> 40541 bytes
+ .../machina-phase-b/app-picker-machina.jpg         | Bin 0 -> 38232 bytes
+ .../machina-phase-b/app-run-cool-light.jpg         | Bin 0 -> 34640 bytes
+ .../machina-phase-b/app-run-default-style.jpg      | Bin 0 -> 32806 bytes
+ .../machina-phase-b/app-run-neutral-after.jpg      | Bin 0 -> 27184 bytes
+ .../machina-phase-b/app-run-neutral-dark.jpg       | Bin 0 -> 34977 bytes
+ .../machina-phase-b/app-run-neutral-light.jpg      | Bin 0 -> 34867 bytes
+ .../evidence/machina-phase-b/app-splash-closed.jpg | Bin 0 -> 13346 bytes
+ .../machina-phase-b/app-splash-filling.jpg         | Bin 0 -> 12913 bytes
+ docs/evidence/machina-phase-b/mockup-both.jpg      | Bin 0 -> 76325 bytes
+ .../evidence/machina-phase-b/mockup-consultant.jpg | Bin 0 -> 52954 bytes
+ docs/evidence/machina-phase-b/mockup-light.jpg     | Bin 0 -> 70942 bytes
+ docs/evidence/machina-phase-b/mockup-neutral.jpg   | Bin 0 -> 69428 bytes
+ docs/evidence/machina-phase-b/mockup-run.jpg       | Bin 0 -> 70801 bytes
+ docs/evidence/machina-phase-b/mockup-splash.jpg    | Bin 0 -> 13166 bytes
+ docs/guided-paths/w3-deck-content.md               | 278 +++++++++
+ docs/guided-paths/w3-w4-build-brief.md             |  70 +++
+ pnpm-lock.yaml                                     |  24 +
+ 98 files changed, 4324 insertions(+), 207 deletions(-)
+Done in 14.2s using pnpm v10.28.2
+tsc-desktop=0
+tsc-server-done
+SEED-GUARD VERIFY: PASS (36 checks)
+TYPING-LATENCY READERS VERIFY: PASS (5 checks, 24 reads classified)
+TYPED-LITERAL-CHECK VERIFY: PASS (29 checks)
+GLITCH-METER-CHECK VERIFY: PASS (15 checks)
+[2mdist-web/[22m[36massets/index-CeNeUpeB.js                                          [39m[1m[33m855.38 kB[39m[22m[2m │ gzip: 270.81 kB[22m

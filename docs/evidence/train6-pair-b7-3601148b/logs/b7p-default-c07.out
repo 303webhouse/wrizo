@@ -1,0 +1,28 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=19 tree=3601148b bundle=index-CeNeUpeB.js/856141b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/b7p-default-c07
+[01/19] NOVERDICT exit=1    0s page-links.mjs :: (no verdict — see C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\b7p-default-c07\page-links.mjs.default.txt)
+[02/19] OK        exit=0   15s page-scroll-return.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; PAGE-SCROLL-RETURN VERIFY: PASS (9 checks)
+[03/19] OK        exit=0   66s page-templates-r2.mjs :: ROWS-SHADOW VERIFY: PASS (72 renders checked, shadow == DOM on every one) ;; PAGE-TEMPLATES-R2 VERIFY: PASS (134 checks)
+[04/19] OK        exit=0   22s page-templates.mjs :: ROWS-SHADOW VERIFY: PASS (4 renders checked, shadow == DOM on every one) ;; PAGE-TEMPLATES VERIFY: PASS (20 checks)
+[05/19] OK        exit=0   36s pb1.mjs :: ROWS-SHADOW VERIFY: PASS (26 renders checked, shadow == DOM on every one) ;; PB1 VERIFY: PASS (22 checks)
+[06/19] OK        exit=0   49s pw1.mjs :: PW1 VERIFY: PASS (41 checks)
+[07/19] OK        exit=0   20s pw2.mjs :: PW2 VERIFY: PASS (24 checks)
+[08/19] OK        exit=0   37s resume-on-open.mjs :: RESUME-ON-OPEN VERIFY: PASS (57 checks)
+[09/19] OK        exit=0   19s reveal.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; REVEAL VERIFY: PASS (19 checks)
+[10/19] OK        exit=0   26s revealmark.mjs :: ROWS-SHADOW VERIFY: PASS (4 renders checked, shadow == DOM on every one) ;; REVEALMARK VERIFY: PASS (16 checks)
+[11/19] OK        exit=0    6s revspell.mjs :: ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one) ;; REVSPELL VERIFY: PASS (12 checks)
+[12/19] OK        exit=0    0s rhizome-goal-core.mjs :: RHIZOME-GOAL-CORE VERIFY: PASS (33 checks)
+[13/19] OK        exit=0   20s rhizome-goal.mjs :: RHIZOME-GOAL-CORE VERIFY: PASS (33 checks) ;; RHIZOME-GOAL VERIFY: PASS (10 checks)
+[14/19] OK        exit=0    0s rhizome-growth.mjs :: RHIZOME-GROWTH VERIFY: PASS (51 checks)
+[15/19] OK        exit=0   27s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (14 checks)
+[16/19] OK        exit=0   15s s1.mjs :: S1 VERIFY: PASS (86 checks)
+[17/19] OK        exit=0   41s sc1.mjs :: SC1 VERIFY: PASS (71 checks)
+[18/19] OK        exit=0   40s sc2.mjs :: SC2 VERIFY: PASS (72 checks)
+[19/19] OK        exit=0    1s seed-guard.mjs :: SEED-GUARD VERIFY: PASS (36 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 18/19 of 19 returned a passing verdict
+  NOVERDICT: page-links.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\b7p-default-c07\page-links.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=3601148b bundle=index-CeNeUpeB.js/856141b NO-REBUILD
+CHUNK 07 EXIT 1

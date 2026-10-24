@@ -1,0 +1,16 @@
+b101.mjs NOVERDICT exit=1
+big-projects-1a.mjs FAIL exit=1
+big-projects-2.mjs FAIL exit=1
+box-tombstones.mjs NOVERDICT exit=1
+connector-a.mjs FAIL exit=1
+drafts-integrity.mjs NOVERDICT exit=1
+flux-screens.mjs NOVERDICT exit=2
+flux-v2-part2.mjs NOVERDICT exit=0
+flux-v2.mjs FAIL exit=1
+guided-w3-part2.mjs NOVERDICT exit=0
+item-storage-full.mjs NOVERDICT exit=1
+logout-flush.mjs NOVERDICT exit=1
+page-links.mjs NOVERDICT exit=1
+rhizome-latency.mjs FAIL exit=1
+tutor-drawer-probe.mjs NOVERDICT exit=0
+typewriter-page.mjs NOVERDICT exit=1
