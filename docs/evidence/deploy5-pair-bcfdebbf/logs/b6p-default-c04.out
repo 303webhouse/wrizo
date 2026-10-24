@@ -1,0 +1,27 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=19 tree=bcfdebbf bundle=index-BIASw7Pm.js/801723b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/b6p-default-c04
+[01/19] OK        exit=0   11s hb2.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; HB2 VERIFY: PASS (10 checks)
+[02/19] OK        exit=0   32s help-buttons.mjs :: ROWS-SHADOW VERIFY: PASS (5 renders checked, shadow == DOM on every one) ;; HELP-BUTTONS VERIFY: PASS (24 checks)
+[03/19] OK        exit=0    0s hide-workshop-source.mjs :: HIDE-WORKSHOP-SOURCE VERIFY: PASS (11 checks)
+[04/19] OK        exit=0    2s hooks-order-ast.mjs :: HOOKS-ORDER-AST VERIFY: PASS (7 checks)
+[05/19] OK        exit=0    0s hooks-order.mjs :: HOOKS-ORDER VERIFY: PASS (2 checks)
+[06/19] OK        exit=0  109s in-app-copy-format.mjs :: ROWS-SHADOW VERIFY: PASS (15 renders checked, shadow == DOM on every one) ;; IN-APP-COPY-FORMAT VERIFY: PASS (32 checks)
+[07/19] OK        exit=0    9s item-storage-full.mjs :: ITEM-STORAGE-FULL VERIFY: PASS (56 checks)
+[08/19] OK        exit=0   21s item104.mjs :: ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one) ;; ITEM104 VERIFY: PASS (15 checks)
+[09/19] OK        exit=0   13s item109.mjs :: ITEM109 VERIFY: PASS (9 checks)
+[10/19] OK        exit=0   61s item112a.mjs :: ROWS-SHADOW VERIFY: PASS (57 renders checked, shadow == DOM on every one) ;; ITEM112A VERIFY: PASS (57 checks)
+[11/19] OK        exit=0   12s item118.mjs :: ITEM118 VERIFY: PASS (10 checks)
+[12/19] OK        exit=0   42s item121.mjs :: ROWS-SHADOW VERIFY: PASS (8 renders checked, shadow == DOM on every one) ;; ITEM121 VERIFY: PASS (44 checks)
+[13/19] OK        exit=0  108s item126.mjs :: ROWS-SHADOW VERIFY: PASS (94 renders checked, shadow == DOM on every one) ;; ITEM126 VERIFY: PASS (42 checks)
+[14/19] OK        exit=0    8s item130.mjs :: ITEM130 VERIFY: PASS (16 checks)
+[15/19] OK        exit=0   11s item133.mjs :: ITEM133 VERIFY: PASS (14 checks)
+[16/19] OK        exit=0    0s item135.mjs :: ITEM135 VERIFY: PASS (9 checks)
+[17/19] OK        exit=0    6s item137.mjs :: ITEM137 VERIFY: PASS (9 checks)
+[18/19] OK        exit=0   12s item138.mjs :: ITEM138 VERIFY: PASS (19 checks)
+[19/19] OK        exit=0    2s item139.mjs :: ITEM139 VERIFY: PASS (10 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 19/19 of 19 returned a passing verdict
+SUITE RESULT: CLEAN — tree=bcfdebbf bundle=index-BIASw7Pm.js/801723b NO-REBUILD
+CHUNK 04 EXIT 0

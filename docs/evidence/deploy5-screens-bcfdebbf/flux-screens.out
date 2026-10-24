@@ -1,0 +1,18 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+
+ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one)
+PASS  [dark] arrival: Flux's own WRIZO wordmark is on screen
+PASS  [dark] inputs: the Inputs tab is open and its picker is showing
+PASS  [dark] page: the Docs pop-out is open beside the page and the Operator drawer is open
+PASS  [dark] board: a card is selected with its knob, the hint and a coordinate on screen
+PASS  [dark] pop-up: the card's pop-up is open
+PASS  [dark] wizard: the deck wizard is open (preset pressed: true)
+PASS  [light] arrival: Flux's own WRIZO wordmark is on screen
+PASS  [light] inputs: the Inputs tab is open and its picker is showing
+PASS  [light] page: the Docs pop-out is open beside the page and the Operator drawer is open
+PASS  [light] board: a card is selected with its knob, the hint and a coordinate on screen
+PASS  [light] pop-up: the card's pop-up is open
+PASS  [light] wizard: the deck wizard is open (preset pressed: true)
+
+FLUX-SCREENS: PASS (12 surfaces shown; frames in C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/d5s-a)

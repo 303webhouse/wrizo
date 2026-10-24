@@ -1,0 +1,16 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+[arbor] mode-tab labels: ["Free Write","Draft","Revise","Publish","Text","Ink","Tutor","Grafts"]  workshop/relay word on screen: false
+[arbor] picker cards: ["Arbor",">_Flux"]
+[flux] mode-tab labels: ["Wire In","Text","Patch","Uplink","Text","Ink","Operator","Inputs"]  workshop/relay word on screen: false
+[flux] picker cards: ["Arbor",">_Flux"]
+PASS  [arbor] the writing surface is up
+PASS  [arbor] mode controls were found (so an absent Workshop is a reading, not a miss)
+PASS  [arbor] no mode control reads Workshop (or Flux's Relay)
+PASS  [arbor] the theme picker is open
+PASS  [flux] the writing surface is up
+PASS  [flux] mode controls were found (so an absent Workshop is a reading, not a miss)
+PASS  [flux] no mode control reads Workshop (or Flux's Relay)
+PASS  [flux] the theme picker is open
+
+DEPLOY5-SCREENS: PASS (8 surfaces shown; frames in C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/d5s-b)
