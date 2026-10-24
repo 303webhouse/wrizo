@@ -209,7 +209,7 @@ await withHarness(async (app) => {
   await q(`(() => { for (const [id, t] of [['j1', 'First journal page'], ['j2', 'Second journal page'], ['j3', 'Third journal page']]) window.wrizoCreateJournalPage({ id, text: t, origin: 'journal', source: 'page', createdAt: '2026-02-0' + id.slice(1) + 'T00:00:00.000Z' }); window.wrizoFlushNow(); })()`);
   await q("location.hash = '#/journal'"); await waitSoft("!!document.querySelector('.show-as')", { label: 'journal', timeout: 8000 }); await sleep(900);
   const bookViews = await q("[...document.querySelectorAll('.show-as-btn')].map((b) => b.getAttribute('data-view'))");
-  ok('the Journal is a Book: Show as offers Flip and Thumbnails (and none of the Board views), and it opens in Flip', same(bookViews, ['flip', 'thumbnails']) && (await pressed()) === 'flip', JSON.stringify(bookViews));
+  ok('the Journal is a Book: Show as offers Flip, Thumbnails and Open (none of the Board views), and it opens in Flip', same(bookViews, ['flip', 'thumbnails', 'open']) && (await pressed()) === 'flip', JSON.stringify(bookViews));
   const flip = await q("({ one: document.querySelectorAll('.walk-card').length === 1, nav: !!document.querySelector('.walk-nav[data-dir=prev]') && !!document.querySelector('.walk-nav[data-dir=next]') })");
   ok('Flip shows one page at a time with the same top-corner chevrons as the Walk', flip.one && flip.nav, JSON.stringify(flip));
   await shot('04-flip-arbor-dark');
@@ -217,6 +217,9 @@ await withHarness(async (app) => {
   const grid = await q("({ pages: document.querySelectorAll('.book-thumb').length, current: document.querySelectorAll('.book-thumb[data-current=\"true\"]').length })");
   ok('Thumbnails is a grid of tall pages with the current page marked', grid.pages >= 3 && grid.current === 1, JSON.stringify(grid));
   await shot('04-thumbnails-arbor-dark');
+  await showAs('open'); await sleep(700);
+  const jopen = await q("({ canvas: !!document.querySelector('.board-canvas'), pressed: document.querySelector('.show-as-btn[aria-pressed=\"true\"]')?.getAttribute('data-view') })");
+  ok('the Journal\'s open canvas (its page-pins) is still reachable as the third Book view', jopen.canvas && jopen.pressed === 'open', JSON.stringify(jopen));
 
   });
   await guard('S small screens', async () => {
