@@ -6,7 +6,9 @@
 // is only unit conversion, the same role BoardEditor.tsx's own
 // ADD_CARD_GAP/NEW_CARD_W constants already play for the "Add card" tool.
 
-export const CARD_H = 0.09;
+// W3: 0.09 -> 0.105. A dealt step now carries a QUESTION of up to three lines in the narrowest columns (Scene-Sequel x5, the Fifteen Beats) beside its title and, under Flux, the card's own X . Y readout in its
+// bottom band: the taller card holds all three without the question running into the readout (found in the box-turn frame, not by a check - PART 2 now measures it). Every deck deals from this one constant.
+export const CARD_H = 0.105;
 export const ROW_GAP = 0.02;
 export const START_Y = 0.04;
 export const COL_GAP = 0.02;

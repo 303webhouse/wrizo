@@ -358,6 +358,11 @@ function suite(M, read, doc) {
   } catch (e) { daDetail = String(e && e.message); }
   keep('DA1', daOk, daDetail);
 
+  // CH1 - the dealt card is tall enough for a three-line question + title + the Flux X . Y band (0.105 of the page width; the 0.09 of before ran the question into the readout - found in a box-turn frame)
+  const lay = read('decks/layout.ts');
+  const cardH = Number((/export const CARD_H = ([0-9.]+);/.exec(lay) || [])[1]);
+  keep('CH1', cardH >= 0.105 && cardH <= 0.12, 'CARD_H = ' + cardH);
+
   // CS - the stylesheet
   const css = read('index.css');
   const rules = []; { const re = /([^{}]+)\{([^{}]*)\}/g; let m; while ((m = re.exec(css))) rules.push({ sel: m[1].trim().replace(/\/\*[\s\S]*?\*\//g, '').trim(), body: m[2] }); }
@@ -444,6 +449,7 @@ const MUT = [
   { name: 'the popover gets its drop shadow back', file: 'index.css', find: "box-shadow:0 0 0 1px var(--badge-on-card);   /* flat 1 px edge", to: "box-shadow:0 0 0 1px var(--badge-on-card), 0 14px 30px rgba(0,0,0,.35);   /* flat 1 px edge", red: ['CS4'] },
   { name: 'the Flux popover gets its drop shadow back', file: 'index.css', find: "box-shadow:0 0 0 1px var(--card-hairline); }\n[data-theme='flux'] .board-step-pop::before", to: "box-shadow:0 0 0 1px var(--card-hairline), 0 14px 30px rgba(0, 0, 0, .55); }\n[data-theme='flux'] .board-step-pop::before", red: ['CS4'] },
   { name: 'the popover is rounded', file: 'index.css', find: "position:fixed; z-index:420; box-sizing:border-box; padding:14px 16px; border-radius:0;", to: "position:fixed; z-index:420; box-sizing:border-box; padding:14px 16px; border-radius:8px;", red: ['CS4'] },
+  { name: 'the dealt card goes back to 0.09', file: 'decks/layout.ts', find: 'export const CARD_H = 0.105;', to: 'export const CARD_H = 0.09;', red: ['CH1'] },
   { name: 'the placeholder becomes real content', file: 'index.css', find: '  content:attr(data-prompt); display:block; margin-top:2px;', to: '  content:"x"; display:block; margin-top:2px;', red: ['CS1'] },
 ];
 
