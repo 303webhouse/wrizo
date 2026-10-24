@@ -3506,8 +3506,9 @@ a:focus-visible,
    is never framed by an edge or a shadow while zoomed. The old top-of-scroller mask (a .15 floor) stands down: this band replaces it. */
 /* PAGE-SIZE - while zoomed the drawers' anchors follow the ZOOMED edge, which leaves the Sliver only the zoom's gutter of desk: opened there, it
    was crushed to 48px (2560) / 22px (3840) with its own buttons outside it (screens on 67ebc075). Opened while zoomed it keeps DRAWER_MIN by
-   growing LEFTWARD from its grip over the desk - its right edge and grip stay put, nothing is displaced (a tool overlays). */
-.desk-frame-stage--prose:has(.mode-pagecol[data-zoom='true']) .wz-sliver-panel{ min-width:200px; }
+   growing RIGHTWARD from its anchor, OVER the zoomed band (a tool overlays; nothing is displaced). Not leftward: at 1366 that ran it under
+   the strip, which covered its own buttons (c9b8035b). Its grip (z-index 2 within the Sliver) stays on top of it, so it still closes. */
+.desk-frame-stage--prose:has(.mode-pagecol[data-zoom='true']) .wz-sliver-panel{ left:0; right:auto; width:max(calc(100% - 16px), 200px); }
 /* the zoomed column must REALLY be stage-wide: `.mode-stage` is a content-sized flex item of the stage, so a 100% column inside it stayed 620px
    and the band mask - drawn in the column's box - CUT the enlarged page at its sides (screens on 7ff7b8ea). While zoomed, it fills the stage. */
 .desk-frame-stage--prose:has(.mode-pagecol[data-zoom='true']) > .mode-stage{ flex:1 1 auto; width:100%; }
