@@ -15,6 +15,9 @@ import { routeForEntry } from '../store/routeForEntry';
 import { firstLine } from '../store/entryText';
 import { TEMPLATE_ORDER, TemplateSketch, type TemplateKey } from './TemplateSketch';
 import { DECKS } from '../decks/library';
+import { thumbKind } from '../store/boardKind';
+import { walkOrder } from '../store/walk';
+import { kindled } from '../store/guided';
 import type { JournalEntry } from '../types';
 
 // BIG PROJECTS 1a (docs/plans/big-projects.md) - THE PAGES POP-OUT. Where you are (a Drawer or a Journal), the sections in it in the writer's
@@ -192,6 +195,13 @@ export function SectionsPopout({ view, currentId, navigate, boardId, journalLabe
     force();
   };
 
+  // W1 - a Deck's fact under its thumbnail: how many of its cards the writer has BEGUN (kindled: the writer's words, or a graft to a page), in words - "4 of 9 begun" / Flux "LOAD 4/9" - never a bare 4 / 9.
+  const deckFactOf = (e: JournalEntry): string => {
+    const cards = walkOrder(e.boxes ?? []);
+    const n = cards.filter(b => kindled(e.id, b, e.boxes ?? [])).length;
+    return t('deckFact').replace('{n}', String(n)).replace('{m}', String(cards.length));
+  };
+
   const renderRow = (group: SectionGroup, e: JournalEntry, i: number) => (
     <div key={e.id} className={`wz-section-row wz-open-pages-row${drag?.id === e.id ? ' dragging' : ''}${drag && drag.id !== e.id && drag.over === i ? ' drop-here' : ''}`}
       role="listitem" data-entry-id={e.id} data-page-id={e.id} data-link-entry={e.id}>
@@ -199,7 +209,15 @@ export function SectionsPopout({ view, currentId, navigate, boardId, journalLabe
         onPointerDown={(ev) => startDrag(ev, group, i)} onKeyDown={(ev) => nudge(ev, group, i)}>{'⠿'}</button>
       <button type="button" className="wz-section-open wz-place-page-row wz-open-pages-open"
         aria-current={e.id === currentId ? 'page' : undefined} onClick={() => open(e)}>
-        <span className="wz-place-page-title">{titleOf(e)}</span>
+        {mode === 'boards' ? (
+          <>
+            <span className="wz-thumb" data-thumb={thumbKind(e)} aria-hidden="true" />
+            <span className="wz-thumb-text">
+              <span className="wz-place-page-title">{titleOf(e)}</span>
+              {thumbKind(e) === 'deck' && <span className="wz-thumb-fact">{deckFactOf(e)}</span>}
+            </span>
+          </>
+        ) : <span className="wz-place-page-title">{titleOf(e)}</span>}
       </button>
       {mode === 'pages' && boardId && (
         <button type="button" className="wz-open-pages-more" aria-label={t('openPagesMore')} aria-haspopup="menu" aria-expanded={menuFor === e.id}
@@ -251,6 +269,18 @@ export function SectionsPopout({ view, currentId, navigate, boardId, journalLabe
           </div>
         );
       })}
+      {mode === 'boards' && (
+        <div className="wz-set" data-set-id="journal-book">
+          <div className="wz-sections-rows wz-place-page-list" role="list">
+            <div className="wz-section-row wz-journal-row" role="listitem" data-journal-book="true">
+              <button type="button" className="wz-section-open wz-place-page-row" onClick={() => { flushNow(); navigate('/journal'); }}>
+                <span className="wz-thumb" data-thumb="book" aria-hidden="true" />
+                <span className="wz-thumb-text"><span className="wz-place-page-title">{t('drawerPlaceJournal')}</span></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {place.kind === 'drawer' && place.id !== UNSORTED && (
         naming ? (
           <input className="wz-sections-newset-input" autoFocus aria-label={t('sectionsNewSetName')} placeholder={t('sectionsNewSetName')}

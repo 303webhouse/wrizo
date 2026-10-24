@@ -629,6 +629,9 @@ export type DeskTermId =
   // board-side explicit pairing entry. "The plan serves the page." travels
   // verbatim from the brief (Nick did not edit the proposed string).
   | 'boardModeOpen' | 'boardModeStoryboard' | 'boardModeOutline'
+  // W1 (the Walk, board kinds and "Show as"): the three new views' words (a Board's Walk; a Book's Flip and Thumbnails), the Show-as label, the Walk's own chrome, and the Deck's progress fact.
+  | 'boardModeWalk' | 'boardModeFlip' | 'boardModeThumbs' | 'showAsLabel'
+  | 'walkNotes' | 'walkPrev' | 'walkNext' | 'walkRail' | 'walkResize' | 'walkOpen' | 'flipEmpty' | 'deckFact'
   | 'boardPageDoor' | 'pagePlanDoor' | 'pageEscHint' | 'boardTelos'
   | 'boardLaneDefault' | 'boardStoryboardEmpty' | 'boardOutlineEmpty'
   | 'boardPairWithPage'
@@ -658,6 +661,19 @@ const CANONICAL: Record<DeskTermId, string> = {
   boardModeOpen: 'Open',
   boardModeStoryboard: 'Storyboard',
   boardModeOutline: 'Outline',
+  boardModeWalk: 'Walk',
+  boardModeFlip: 'Flip',
+  boardModeThumbs: 'Thumbnails',
+  showAsLabel: 'Show as',
+  walkNotes: 'Notes',
+  walkPrev: 'Previous card',
+  walkNext: 'Next card',
+  walkRail: 'Cards',
+  walkResize: 'Resize the card',
+  walkOpen: 'Open',
+  flipEmpty: 'Nothing here yet.',
+  // the Deck's progress fact under its thumbnail: how many of its cards the writer has BEGUN (kindled: words, or a graft to a page). It says so in words - never a bare 4 / 9 - so it cannot be read as the Walk's position (Flux: TRK n/m).
+  deckFact: '{n} of {m} begun',
   boardPageDoor: 'Pages', // ITEM word-diet, pages-rename bucket (a)
   pagePlanDoor: 'Plan',
   // A1 (accessibility audit): Tab indents on the page, so the way out is said aloud. Screen-reader-only; never drawn.
@@ -1874,6 +1890,18 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     boardModeOpen: 'Live',
     boardModeStoryboard: 'Sequence',
     boardModeOutline: 'Spine',
+    boardModeWalk: 'Trace',
+    boardModeFlip: 'Playback',
+    boardModeThumbs: 'Index',
+    showAsLabel: 'Render',
+    walkNotes: '[NOTE]',
+    walkPrev: 'Previous node',
+    walkNext: 'Next node',
+    walkRail: 'Nodes',
+    walkResize: 'Resize the node',
+    walkOpen: '[OPEN]',
+    flipEmpty: 'NO SIGNAL',
+    deckFact: 'LOAD {n}/{m}',
     boardAddCard: 'Add node',
     boardPortedBadge: 'From a doc',
     boardThreadUntitled: 'Unnamed',

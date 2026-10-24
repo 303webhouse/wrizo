@@ -125,8 +125,8 @@ await withHarness(async (app) => {
         await app.mouseMove(300, 300); await app.mouseMove(320, 320); await sleep(900);
         const back = await q("parseFloat(getComputedStyle(document.querySelector('.walk-nav[data-dir=prev]')).opacity)");
         ok(`[${T}] the chevrons RECEDE while the writer types and return on pointer move`, typing < 0.2 && back > 0.5, JSON.stringify({ typing, back }));
-        const rail2 = await q("[...document.querySelectorAll('.walk-mark')].map((m) => m.getAttribute('data-state'))");
-        ok(`[${T}] writing in the card kindles its mark: the first rail mark is now a leaf (the card has the writer's words), stored as ordinary card text`, rail2[0] === 'leaf' && (await boxes()).find((b) => b.id === 'd1').text.includes('She waits'), JSON.stringify(rail2));
+        const rail2 = await q("[...document.querySelectorAll('.walk-mark')].map((m) => m.getAttribute('data-state') + ':' + m.getAttribute('data-kindled'))");
+        ok(`[${T}] writing in the card kindles its mark (the first mark stays the current ring and is now kindled - the card has the writer's words), stored as ordinary card text`, rail2[0] === 'current:true' && rail2.slice(1, 9).every((x) => x === 'seed:false') && (await boxes()).find((b) => b.id === 'd1').text.includes('She waits'), JSON.stringify(rail2));
         await shot(`02-writing-${tag}`);
 
         // G - geometry: the card grows with its text to 520, then scrolls INSIDE; the page / stage never moves when a drawer opens (the K-style check)
