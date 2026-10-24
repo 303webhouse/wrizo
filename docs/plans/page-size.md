@@ -204,3 +204,28 @@ deploy #4 (blank-page) merges.
 **Ruled (Fable, Oct 23): NO probe, NO data rewrite.** A pinned size keeps its number, read in the new point scale. The deploy note
 tells Nick to press `+` if a page looks small.
 
+## 9. As built (branch `page-size`) - where the build differs from the sections above, and why
+
+- **The base scale is MEASURED, not a container query.** `container-type: size` on the stage would make it the containing block for every
+  `position: fixed` element inside it (the stage holds the Sliver, the Tutor, the cascade and the page; index.css has 39 fixed rules).
+  Instead, one ResizeObserver in DeskFrame writes `--wz-letter-in` and `--wz-zoom` on the prose stage, in a layout effect, on resize only,
+  never on typing. The law itself lives in `store/pageScale.ts` (pure). The page's top is read through `offsetTop`, so the zoom's transform
+  can never feed back into the base scale.
+- **The zoom holds the writing line's TOP at 60%** (Cursor's mockup places the caret's top at the anchor). So the engine holds the caret's
+  bottom one line below that, inside the mask's full-strength band (-0.15 to +1.45 lines). One anchor: `ZOOM_ANCHOR` in pageScale.ts; the
+  engine writes it to the column as `--tw-anchor`, and the CSS 60% is only the fallback.
+- **The band mask is on the page COLUMN**, which widens to the stage while zoomed. The page keeps an explicit width, so widening the column
+  never re-lays a line. The mask clips the transformed page to the column's box, so no `overflow` rule is needed.
+- **`scrollbar-gutter: stable` on the prose scroller.** Main's one REAL red in run 143 (B, Arbor 3840: 34 -> 35 lines) was a scrollbar
+  appearing when Typewriter's start offset made the content taller, narrowing the column. With the gutter reserved, no scrollbar can move a
+  line break.
+- **Margins travel as a multiplier** (`--wz-page-margin-in`: 0.684 / 1 / 1.526), never as `--wz-page-pad-x` inline. Inline, it would
+  override the stylesheet's derivation. Off the letter page the multiplier gives exactly 26/38/58px again.
+- **The Flux block caret** redraws on scroll (capture), resize and ModeStage's `wz-caret-moved`, batched into one frame. On those triggers it
+  never inserts its empty-line probe, which would mutate the editor on every scroll frame while the typewriter engine observes mutations.
+- **The vignette** (Fable, Oct 23, folded in) sits behind the page in EVERY theme: `body::after` at z-index -1, with `body` given
+  `isolation: isolate` so it stays visible on the room (html carries its own background, so a bare -1 would vanish under the lamp). Checks V,
+  V-room and MV.
+- **Scope:** the framed prose page (PageEditor at 1100px and wider: Draft, Free Write, Revise). QuickSprint is not framed and keeps its own
+  sheet; the unframed narrow layout and the legacy Journal surface are unchanged.
+

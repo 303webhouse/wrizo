@@ -3339,9 +3339,40 @@ a:focus-visible,
 .desk-frame-stage--prose .mode-page{
   --paper-scale: 1;
   --wz-page-pad-x: calc(var(--wz-letter-in) * var(--wz-page-margin-in, 1));
+  /* an explicit width (not the column's stretch), so the zoom below can widen the COLUMN without ever re-laying a line */
+  width:var(--wz-page-w); max-width:100%; align-self:center;
   height:var(--wz-page-h); flex:0 1 auto; min-height:0;
   padding:calc(var(--wz-letter-in) * .85) var(--wz-page-pad-x);
 }
+/* PAGE-SIZE - a scrollbar arriving or leaving (Typewriter's start offset makes the content taller) narrowed the text column and REFLOWED lines on
+   main (red run 143: Arbor 3840, 34 -> 35 lines). The gutter is reserved always, so no scrollbar can ever move a line break. */
+.desk-frame-stage--prose .mode-scroll{ scrollbar-gutter:stable; }
+/* PAGE-SIZE (spec point 3; Cursor's mockup @ e3c4e462, FINAL) - THE ZOOM. The SAME page, transformed ~1.6x (--wz-zoom, DeskFrame's observer:
+   1.6 capped to what fits the stage's width) - scale, never reflow: the page's own layout box, its width and every line break stay exactly as in
+   the normal view. The column widens to the stage so the band mask (drawn in ITS box) spans the zoomed page; the page keeps its own width.
+   THE BAND: Cursor's final stops, in line-heights (--tw-lh, the real line height x the zoom, written by the typewriter engine) from the anchor
+   (60% of the column - the engine holds the writing line's top there): 0 at the top, .12 / .40 / .72 at 6.6 / 4.2 / 2.2 lines above, full from
+   0.15 above to 1.45 below (the writing line alone), .40 at 2.8 below, 0 from 4.4 below. Text AND paper fade into the desk together - the paper
+   is never framed by an edge or a shadow while zoomed. The old top-of-scroller mask (a .15 floor) stands down: this band replaces it. */
+.desk-frame-stage--prose .mode-pagecol[data-zoom='true']{
+  width:100%;
+  --tw-anchor: 60%;
+  -webkit-mask-image:linear-gradient(to bottom, transparent 0,
+    rgba(0,0,0,.12) calc(var(--tw-anchor) - 6.6 * var(--tw-lh, 43.52px)), rgba(0,0,0,.4) calc(var(--tw-anchor) - 4.2 * var(--tw-lh, 43.52px)),
+    rgba(0,0,0,.72) calc(var(--tw-anchor) - 2.2 * var(--tw-lh, 43.52px)), #000 calc(var(--tw-anchor) - .15 * var(--tw-lh, 43.52px)),
+    #000 calc(var(--tw-anchor) + 1.45 * var(--tw-lh, 43.52px)), rgba(0,0,0,.4) calc(var(--tw-anchor) + 2.8 * var(--tw-lh, 43.52px)),
+    transparent calc(var(--tw-anchor) + 4.4 * var(--tw-lh, 43.52px)), transparent 100%);
+          mask-image:linear-gradient(to bottom, transparent 0,
+    rgba(0,0,0,.12) calc(var(--tw-anchor) - 6.6 * var(--tw-lh, 43.52px)), rgba(0,0,0,.4) calc(var(--tw-anchor) - 4.2 * var(--tw-lh, 43.52px)),
+    rgba(0,0,0,.72) calc(var(--tw-anchor) - 2.2 * var(--tw-lh, 43.52px)), #000 calc(var(--tw-anchor) - .15 * var(--tw-lh, 43.52px)),
+    #000 calc(var(--tw-anchor) + 1.45 * var(--tw-lh, 43.52px)), rgba(0,0,0,.4) calc(var(--tw-anchor) + 2.8 * var(--tw-lh, 43.52px)),
+    transparent calc(var(--tw-anchor) + 4.4 * var(--tw-lh, 43.52px)), transparent 100%);
+}
+.desk-frame-stage--prose .mode-pagecol[data-zoom='true'] .mode-page{
+  transform:scale(var(--wz-zoom, 1.6)); transform-origin:50% 0;
+  box-shadow:none; border-color:transparent;
+}
+.desk-frame-stage--prose .mode-pagecol[data-zoom='true'] .mode-scroll{ -webkit-mask-image:none; mask-image:none; }
 /* The script sheet has no bounded height of its own by design (see
    .desk-frame-scroll-cap's own comment below — it wraps content that grows
    with the document); FX3 S1 replaced the SCROLL-CAP's old fixed
