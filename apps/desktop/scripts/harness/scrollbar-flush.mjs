@@ -46,6 +46,8 @@ import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
+const parkedChecks = [];
+const parkReads = { page: [] };   // the default leg's own page-bar reads, for the parked records at the foot (item 3, 3840)
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 function hexToRgbFragment(hex) {
   const h = hex.replace('#', '');
@@ -54,8 +56,8 @@ function hexToRgbFragment(hex) {
 
 const LONG_TEXT = Array.from({ length: 400 }, (_, i) => `Line ${i + 1} of a long page, written only to force a real vertical scrollbar to paint.`).join('\n');
 
-const seedAndOpen = async (app, theme, pageTone) => {
-  await app.emulateDpr(1, 1400, 900);
+const seedAndOpen = async (app, theme, pageTone, [vw, vh] = [1400, 900]) => {
+  await app.emulateDpr(1, vw, vh);
   await app.goto('/');
   await app.evalJs(`localStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-theme', ${JSON.stringify(theme)}); localStorage.setItem('wrizo-theme-prefs', ${JSON.stringify(JSON.stringify({ voice: 'serif', page: pageTone, fade: 'on' }))});`);
   await app.reload();
@@ -64,11 +66,11 @@ const seedAndOpen = async (app, theme, pageTone) => {
   // flush handler (the Desk, confirmed by freshDesk's own house convention)
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    window.wrizoCreateJournalPage({ id: 'sbf-${theme}-${pageTone}', text: ${JSON.stringify(LONG_TEXT)}, createdAt: now, origin: null, source: 'page' });
+    window.wrizoCreateJournalPage({ id: 'sbf-${theme}-${pageTone}-${vw}', text: ${JSON.stringify(LONG_TEXT)}, createdAt: now, origin: null, source: 'page' });
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after seed' });
-  await app.evalJs(`location.hash = '#/page/sbf-${theme}-${pageTone}'`);
+  await app.evalJs(`location.hash = '#/page/sbf-${theme}-${pageTone}-${vw}'`);
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'The long page, mounted' });
   await sleep(300);
 };
@@ -103,6 +105,10 @@ const measure = (app) => app.evalJs(`(() => {
     scrollHeight: scroll.scrollHeight,
     clientHeight: scroll.clientHeight,
     pageHeight: page.getBoundingClientRect().height,
+    // the applied scale is read from the page's OWN computed transform (matrix(a, ...)), never from the variable the rule reads - an independent measurement
+    appliedScale: (() => { const t = getComputedStyle(page).transform; const mm = /^matrix(([^,]+),/.exec(t); return mm ? parseFloat(mm[1]) : 1; })(),
+    thumbColor: getComputedStyle(scroll, '::-webkit-scrollbar-thumb').backgroundColor,
+    viewport: [innerWidth, innerHeight],
   };
 })()`);
 
@@ -131,12 +137,33 @@ await withHarness(async (app) => {
       const m = await measure(app);
       ok(`POSITION [${label}, margin=${margin}]: the bar is flush on the page edge - the gap is at most the page's own border (<= 1px) and never negative (no overshoot), never mid-page`,
         !!m && m.gapFromPageEdge >= -0.5 && m.gapFromPageEdge <= Math.max(1, m.pageBorderRight) + 0.01, JSON.stringify(m));
-      ok(`WIDTH [${label}, margin=${margin}]: the bar is THIN - scrollbar-width resolves to 'thin' and the rendered width is 1-10px (whatever the one mechanism renders)`,
-        !!m && m.scrollbarWidthProp === 'thin' && m.scrollbarWidth >= 1 && m.scrollbarWidth <= 10, JSON.stringify(m));
-      ok(`TONE [${label}, margin=${margin}]: the bar wears this cell's own paper-toned colour (--ink-on-paper-low), not the dark-chrome default`,
-        !!m && !!m.inkOnPaperLow && m.scrollbarColor.includes(hexToRgbFragment(m.inkOnPaperLow)), JSON.stringify(m));
+      parkReads.page.push({ label, margin, m });
+      // SUPERSEDED (item 3, Fable Oct 23, reading A): the page bar is the ONE webkit exception now (index.css, inside @supports selector(::-webkit-scrollbar)), so `scrollbar-width` and `scrollbar-color` resolve to
+      // 'auto' on it. WIDTH used to say "THIN - scrollbar-width resolves to 'thin' and the rendered width is 1-10px" and TONE read the resolved scrollbar-color; both are quoted verbatim in the PARKED records at the
+      // foot. Their live successors: the bar is 10px PAINTED (layout width x the applied scale), thin ('thin' is still what every OTHER scroller resolves - the BOARD checks), and its square thumb wears the
+      // cell's own paper-toned --ink-on-paper-low (read from the thumb's own pseudo-element style).
+      ok(`WIDTH [${label}, margin=${margin}] [item 3 successor]: the page bar is 10px PAINTED - the exception's scrollbar-width resolves to 'auto' (the pseudo rules are honoured), and (layout width x the applied scale) is within the pixel the scale rounds it to`,
+        !!m && m.scrollbarWidthProp === 'auto' && m.scrollbarWidth >= 1 && Math.abs(m.scrollbarWidth * m.appliedScale - 10) <= 0.5 * m.appliedScale + 0.25, JSON.stringify(m));
+      ok(`TONE [${label}, margin=${margin}] [item 3 successor]: the page bar's SQUARE thumb wears this cell's own paper-toned colour (--ink-on-paper-low), not the dark-chrome default`,
+        !!m && !!m.inkOnPaperLow && typeof m.thumbColor === 'string' && m.thumbColor.includes(hexToRgbFragment(m.inkOnPaperLow)), JSON.stringify(m));
     }
   }
+  // ITEM 3 (Fable Oct 23: "at 3840 the page scrollbar scales up with the page"): page-size paints the prose page with transform:scale(--wz-k) (k x --wz-zoom while zoomed) and `.mode-scroll` sits inside it, so a
+  // native bar would paint at 10 x the scale. The exception makes the layout width 10px / the applied scale; here the PAINTED width - (offsetWidth - clientWidth) x the scale the browser REALLY applied to .mode-page
+  // (its computed transform's matrix, not the variable the rule reads) - must be 10px at every size, including zoomed. The scale is asserted > 1 where the scenario claims it (3840, zoom): a check that measures
+  // the same 10 because nothing was scaled would pass blind. Pixel rounding: the bar's layout width is whole pixels, so the painted width is within half a layout pixel x the scale of 10.
+  const paint = {};
+  for (const [name, size, zoom] of [['1366', [1366, 768], false], ['3840', [3840, 2160], false], ['3840 zoomed', [3840, 2160], true], ['1366 zoomed', [1366, 768], true]]) {
+    await seedAndOpen(app, 'plateau', 'light', size);
+    if (zoom) { await app.evalJs("document.querySelector('.mode-pagecol')?.setAttribute('data-zoom', 'true')"); await sleep(250); }
+    const m = await measure(app);
+    paint[name] = m;
+    const tol = m ? 0.5 * m.appliedScale + 0.25 : 0;
+    ok(`PAINT [${name}]: the page bar paints 10px (layout width ${m ? m.scrollbarWidth : '?'} x the applied scale ${m ? m.appliedScale.toFixed(3) : '?'}) - never the native bar scaled up with the page`,
+      !!m && m.scrollbarWidth >= 1 && Math.abs(m.scrollbarWidth * m.appliedScale - 10) <= tol, JSON.stringify(m));
+    if (name !== '1366') ok(`PAINT [${name}] premise: the page really IS scaled up here (applied scale > 1) - so the 10px above is the exception working, not an unscaled page`, !!m && m.appliedScale > 1.0001, m ? String(m.appliedScale) : '');
+  }
+  ok('PAINT: the page bar is the SAME painted width at 1366 and 3840 and zoomed (within one scaled pixel) - the scale does not leak into it', !!paint['1366'] && !!paint['3840'] && !!paint['3840 zoomed'] && [paint['3840'], paint['3840 zoomed']].every((q) => Math.abs(q.scrollbarWidth * q.appliedScale - paint['1366'].scrollbarWidth * paint['1366'].appliedScale) <= q.appliedScale + 0.5), JSON.stringify(Object.fromEntries(Object.entries(paint).map(([k, q]) => [k, q && [q.scrollbarWidth, q.appliedScale]]))));
   // THE BOARD CANVAS (Fable Oct 23 - "INK's light board shows a thick dark thumb at the bottom"): the same rule on the board's own
   // scroll wrap - thin, <= 10px, paper-toned (the board's background is var(--paper)). Fixture = fx5's proven one: a tall card forces
   // the wrap to scroll; seeded through the app's seam while off any flush-handler surface (the Desk). The HORIZONTAL bar's thickness
@@ -176,6 +203,19 @@ await withHarness(async (app) => {
   }
   return checks;
 });
+
+if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  const reads = parkReads.page;
+  pok("PARKED (was \"WIDTH [${label}, margin=${margin}]: the bar is THIN - scrollbar-width resolves to 'thin' and the rendered width is 1-10px (whatever the one mechanism renders)\") - item 3 (Fable Oct 23, reading A): the page bar is the one scoped webkit exception, so scrollbar-width resolves to 'auto' on it; live successor: WIDTH [..] [item 3 successor] and PAINT [..]",
+    reads.length === 12 && reads.every((r) => r.m && r.m.scrollbarWidthProp === 'auto' && r.m.scrollbarWidth >= 1 && r.m.scrollbarWidth <= 10), JSON.stringify(reads.map((r) => r.m && [r.m.scrollbarWidthProp, r.m.scrollbarWidth])));
+  pok("PARKED (was \"TONE [${label}, margin=${margin}]: the bar wears this cell's own paper-toned colour (--ink-on-paper-low), not the dark-chrome default\") - item 3 (Fable Oct 23, reading A): the page bar's scrollbar-color resolves to 'auto' (the exception resets it); the tone is read from the thumb's own pseudo-element; live successor: TONE [..] [item 3 successor]",
+    reads.length === 12 && reads.every((r) => r.m && r.m.scrollbarColor === 'auto'), JSON.stringify(reads.map((r) => r.m && r.m.scrollbarColor)));
+  // eslint-disable-next-line no-console
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  // eslint-disable-next-line no-console
+  console.log(parkedChecks.every((c) => c.pass) ? `\nSCROLLBAR-FLUSH PARKED: PASS (${parkedChecks.length} checks) - HARNESS_PARKED=1 armed; this FILE parks 2: the page bar's WIDTH-thin and TONE-scrollbar-color claims` : `\nSCROLLBAR-FLUSH PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
+}
 
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));

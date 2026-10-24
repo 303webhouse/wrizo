@@ -421,6 +421,21 @@
   scrollbar-color: var(--ink-on-paper-low) transparent;
 }
 .board-text{ scrollbar-color: var(--ink-on-card-low) transparent; }
+/* THE ONE EXCEPTION (Fable Oct 23, reading A; "at 3840 the page scrollbar scales up with the page"): page-size paints the prose page with
+   `transform: scale(--wz-k)` (and k x --wz-zoom while zoomed), and `.mode-scroll` sits INSIDE that transformed `.mode-page`, so its native `thin` bar -
+   a fixed 10px of layout - paints at 10 x the applied scale (24px+ at 3840). The standard properties cannot name a thickness, so on THIS one element the
+   bar is the webkit mechanism: its layout width is 10px / the applied scale, which the transform paints back to exactly 10px at every size. It must also
+   reset scrollbar-width/color to auto - the pseudo rules are IGNORED (Chromium >= 121) wherever either is set, which is the dead-code trap the one-mechanism
+   note above records. Everything else keeps the standard properties. Wrapped in @supports so a browser without the webkit pseudo (Firefox) keeps `thin`.
+   The thumb is a square in the paper-toned --ink-on-paper-low, 6px of the 10px bar, hard against the page's edge (the transparent 4px sits inboard);
+   the track is clear. The applied scale is --wz-k, times --wz-zoom while the column is zoomed - the SAME expressions page-size's own transform rules use. */
+@supports selector(::-webkit-scrollbar){
+  .desk-frame-stage--prose .mode-scroll{ --wz-sb-k: var(--wz-k, 1); scrollbar-width:auto; scrollbar-color:auto; }
+  .desk-frame-stage--prose .mode-pagecol[data-zoom='true'] .mode-scroll{ --wz-sb-k: calc(var(--wz-k, 1) * var(--wz-zoom, 1.6)); }
+  .desk-frame-stage--prose .mode-scroll::-webkit-scrollbar{ width:calc(10px / var(--wz-sb-k)); }
+  .desk-frame-stage--prose .mode-scroll::-webkit-scrollbar-track{ background:transparent; }
+  .desk-frame-stage--prose .mode-scroll::-webkit-scrollbar-thumb{ background:var(--ink-on-paper-low); background-clip:padding-box; border-left:calc(4px / var(--wz-sb-k)) solid transparent; border-radius:0; }
+}
 /* (The per-element `::-webkit-scrollbar-thumb` colour and hover-darken rules that used to follow were dead under
    Chromium >= 121 wherever scrollbar-color is set - see the one-mechanism note on the systemic `*` rule above.) */
 
