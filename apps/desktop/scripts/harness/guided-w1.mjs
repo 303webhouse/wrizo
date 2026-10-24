@@ -217,6 +217,7 @@ async function suite(M, read) {
     const walk = read('components/Walk.tsx');
     chk('D7', () => [/receded/.test(walk) && /walk-nav/.test(walk) && /data-recede/.test(walk) && /pointermove/.test(walk) && /onPointerLeave/.test(walk) && /useChromeDissolve/.test(readRaw('components/BoardEditor.tsx')) && /receded=\{boardDissolve\.dissolved\}/.test(readRaw('components/BoardEditor.tsx')), 'the chevrons recede with the board\'s chrome (the dissolve engine\'s state, passed in) while the writer types, and return on a pointer move or when the pointer leaves the card']);
     chk('D8', () => [walk.length > 500 && /StepHelp/.test(walk) && !/writeThis|placeAPage|walkDoorWrite|walkDoorPlace/.test(walk.replace(/\/\/.*$/gm, '')) && /extraDoors/.test(walk), 'the Walk shows the question mark (W3) and Notes only; "Write this" / "Place a page..." are ABSENT (FIX wires them through extraDoors after W1 merges)']);
+    chk('D10', () => { const f = rules.find((x) => x.sel === '.walk-fade'); const on = rules.find((x) => x.sel === ".walk-fade[data-on='true']"); return [!!f && /linear-gradient\(to bottom, transparent, var\(--card-stock\)\)/.test(f.body) && !/box-shadow/.test(f.body) && /opacity:\s*0/.test(f.body) && !!on && /opacity:\s*1/.test(on.body) && /walk-fade/.test(walk) && /data-on=\{fade \? 'true' : 'false'\}/.test(walk) && /scrollTop \+ el\.clientHeight < el\.scrollHeight - 2/.test(walk), 'a soft fade at the foot of the scrolling card: a flat gradient to the card\'s own stock (no shadow), on only while it scrolls and there is more below']; });
     chk('D9', () => [/renderEditor/.test(walk) && !/<textarea|contentEditable/.test(walk) && /<BoardCardPopup[\s\S]{0,200}inline/.test(readRaw('components/BoardEditor.tsx')), 'writing in the Walk card is the ordinary card writing engine (the same decoration / undo / paste wall), mounted inline - not a second editor']);
   }
 
@@ -286,6 +287,8 @@ const MUT = [
   { name: 'the swipe keyframes cross-fade', file: 'index.css', find: /@keyframes walk-in-next\s*\{\s*from\s*\{\s*transform/, to: '@keyframes walk-in-next { from { opacity: 0; transform', red: ['M2'] },
   { name: 'the Walk card gets a drop shadow', file: 'index.css', find: /\.walk-card\s*\{/, to: '.walk-card { box-shadow:0 8px 24px rgba(0,0,0,.4);', red: ['D1'] },
   { name: 'the chevrons stop resting at 55%', file: 'index.css', find: /\.walk-nav\s*\{([^}]*)opacity:\s*\.55/, to: '.walk-nav {$1opacity: 1', red: ['D4'] },
+  { name: 'the bottom fade is a drop shadow', file: 'index.css', find: /background:linear-gradient\(to bottom, transparent, var\(--card-stock\)\);/, to: 'box-shadow:inset 0 -20px 20px rgba(0,0,0,.4);', red: ['D10'] },
+  { name: 'the bottom fade stays on at the end of the text', file: 'components/Walk.tsx', find: /el\.scrollTop \+ el\.clientHeight < el\.scrollHeight - 2/, to: 'true', red: ['D10'] },
   { name: 'the Walk offers Write this before W2', file: 'components/Walk.tsx', find: /extraDoors/, to: 'extraDoors, writeThis', red: ['D8'] },
   { name: 'Show as drops its pressed state', file: 'components/ShowAs.tsx', find: /aria-pressed=/, to: 'data-pressed=', red: ['S5'] },
   { name: 'the Show-as words lose Trace', file: 'store/deskLexicon.ts', find: /boardModeWalk: 'Trace'/, to: "boardModeWalk: 'Walk'", red: ['L1'] },
