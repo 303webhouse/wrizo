@@ -421,13 +421,20 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
     // G: a new line - the scroll moves over several frames (a glide), by about one line
     const sample = `(() => new Promise((res) => { const sc = document.querySelector('.forward-only-editor')?.closest('.mode-scroll'); if (!sc) return res(null);
       const v = [sc.scrollTop]; const t0 = performance.now(); const f = () => { v.push(sc.scrollTop); if (performance.now() - t0 < 1000) requestAnimationFrame(f); else res(v); }; requestAnimationFrame(f); }))()`;
+    // (G was intermittent at 1366 - moved 0 on Flux 7ff7b8ea and Arbor d02409f0. The detail now says whether the keys LANDED, where focus was, and
+    // where the caret sits against the 60% anchor before and after - so a red names its cause.)
+    const gProbe = `(() => { const ed = document.querySelector('.forward-only-editor'); const col = document.querySelector('.mode-pagecol'); const c = window.__psCaret();
+      const cr = col ? col.getBoundingClientRect() : null; return { len: ed ? ed.textContent.length : null, focus: !!ed && ed.contains(document.activeElement),
+        caretTop: c ? Math.round(c.top) : null, anchorY: cr ? Math.round(cr.top + cr.height * 0.6) : null, scrollTop: Math.round(document.querySelector('.mode-scroll')?.scrollTop ?? -1) }; })()`;
+    const g0 = await app.evalJs(gProbe);
     const p = app.evalJs(sample);
     await sleep(30); await app.key('Enter'); await app.typeKeys('y');
     const v = await p; const distinct = v ? [...new Set(v)] : [];
+    const gEnd = await app.evalJs(gProbe);
     const lh = await app.evalJs("parseFloat(getComputedStyle(document.querySelector('.forward-only-editor')).lineHeight) || null");
     const moved = v ? v[v.length - 1] - v[0] : null;
     // a glide passes through many in-between values; an instant move (even one taken in two or three whole-line steps) does not
-    ok(`${tag} G: a new line glides - the scroll passes through ${GLIDE_MIN} or more values`, !!v && moved > 0 && distinct.length >= GLIDE_MIN, J({ moved, values: distinct.length, lh }));
+    ok(`${tag} G: a new line glides - the scroll passes through ${GLIDE_MIN} or more values`, !!v && moved > 0 && distinct.length >= GLIDE_MIN, J({ moved, values: distinct.length, lh, before: g0, after: gEnd }));
   }
   // leave the zoom through the same control
   const pressedOff = await pressTypewriter(app);
