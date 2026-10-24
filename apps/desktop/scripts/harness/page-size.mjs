@@ -28,7 +28,8 @@
 //   STRENGTH is read from the SCREENSHOT (decoded in the page through a canvas - no new dependency), so it is what is PAINTED, masks and
 //   all: a line's ink = the largest colour distance from its own commonest colour (the paper); its strength = ink as painted / ink with
 //   every mask and opacity in the stage stripped. The stripped reference is a premise: it must itself show ink.
-//   MUTANTS (runtime, each asserts it LANDED before its predicate is read): MR page forced 760 wide; MC type at 12px; MB letter-spacing
+//   V  (Fable, Oct 23) the vignette sits BEHIND the page in every theme and page tone: the paper's foot and lower corners paint the same with it hidden
+//   MUTANTS (runtime, each asserts it LANDED before its predicate is read): MV the vignette forced back on top (V fails); MR page forced 760 wide; MC type at 12px; MB letter-spacing
 //   changed while zoomed; MW the editor at opacity .5; MT every mask in the stage removed; MK the page scaled by an open panel (K fails).
 //
 // Seeding goes through the app's seams; the per-page mode and typewriter keys are this device's own UI keys (not collections).
@@ -140,6 +141,17 @@ const HELPERS = `(() => {
     let max = 0;
     for (let y = y0; y < y1; y += 1) for (let x = x0; x < x1; x += 1) { const i = (y * W + x) * 4; const dd = Math.hypot(d[i] - pr, d[i + 1] - pg, d[i + 2] - pb); if (dd > max) max = dd; }
     return Math.round(max * 10) / 10;
+  };
+  window.__psKeep = () => { window.__psPxA = window.__psPx; return !!window.__psPxA; };
+  // the mean and largest per-channel difference between the KEPT screenshot and the last one, over a rect
+  window.__psDiff = (x0, y0, x1, y1) => {
+    const A = window.__psPxA; const P = window.__psPx; if (!A || !P || A.width !== P.width || A.height !== P.height) return null;
+    const W = P.width; const H = P.height;
+    x0 = Math.max(0, Math.floor(x0)); y0 = Math.max(0, Math.floor(y0)); x1 = Math.min(W, Math.ceil(x1)); y1 = Math.min(H, Math.ceil(y1));
+    if (x1 <= x0 || y1 <= y0) return null;
+    let sum = 0; let max = 0; let n = 0;
+    for (let y = y0; y < y1; y += 1) for (let x = x0; x < x1; x += 1) { const i = (y * W + x) * 4; for (let c = 0; c < 3; c += 1) { const d = Math.abs(A.data[i + c] - P.data[i + c]); sum += d; if (d > max) max = d; n += 1; } }
+    return { mean: Math.round((sum / n) * 100) / 100, max };
   };
   window.__psMasks = () => { const root = document.querySelector('.desk-frame-stage') || document.querySelector('.mode-stage'); if (!root) return -1;
     return [root, ...root.querySelectorAll('*')].filter((el) => { const cs = getComputedStyle(el); const m = cs.maskImage || cs.webkitMaskImage; return m && m !== 'none'; }).length; };
@@ -432,6 +444,51 @@ await withHarness(async (app) => {
     for (const [w, h] of SIZES) await zoomCase(app, th, w, h, { glide: w === 1366, mutants: w === 1366 });
     if (th.id === 'plateau') await zoomCase(app, th, 1366, 768, { kind: 'fw' });
   }
+
+  // ---- V: THE VIGNETTE SITS BEHIND THE PAGE, in every theme and page tone (Fable, Oct 23 - folded into page-size: Arbor's light page showed a grey band
+  // at the paper's foot in deploy #5's screens, the same vignette-over-the-page bug INK fixed for Flux alone in flux-inputs). Read from PAINT: the paper's
+  // bottom strip and its two lower corners (its own padding - no text there) must look the SAME with the vignette shown and with it hidden.
+  // MV (the mutant, and the instrument's liveness): with the vignette forced back ON TOP, the same strip must CHANGE - so V cannot pass on an instrument
+  // that sees nothing, and a vignette that is too faint to matter would show here as a mutant that does not land.
+  const VIG_HIDE = 'body::after { display:none !important; }';
+  const VIG_TOP = 'body::after { z-index:2147483647 !important; }';
+  const VIG_MEAN = 0.6;   // a strip the vignette does not touch differs by noise only
+  for (const th of THEMES) {
+    for (const tone of ['light', 'dark']) {
+      await app.evalJs("location.hash = '#/'"); await sleep(300);
+      await app.evalJs(`localStorage.setItem('wrizo-theme', '${th.id}'); localStorage.setItem('wrizo-theme-prefs', ${J(J({ voice: 'serif', page: tone, fade: 'on' }))})`);
+      await app.reload();
+      await app.waitFor("typeof window.wrizoCreateJournalPage === 'function'", { label: 'the seams' });
+      await app.emulateDpr(1, 1366, 768);
+      const tag = `${th.name} ${tone} page 1366x768`;
+      if (!(await openPage(app, pid(th.id, 'draft')))) { ok(`${tag} V fixture: the Draft page opened`, false, ''); continue; }
+      await app.evalJs('(() => { const a = document.activeElement; if (a && a.blur) a.blur(); return true; })()');
+      const vig = await app.evalJs("(() => { const cs = getComputedStyle(document.body, '::after'); return { content: cs.content, shadow: cs.boxShadow, z: cs.zIndex }; })()");
+      const g = await app.evalJs('window.__psGeom()');
+      const live = !!vig && vig.content !== 'none' && !!vig.shadow && vig.shadow !== 'none' && !!g;
+      ok(`${tag} V (premise): the vignette exists (body::after carries its shadow) and the page is measurable`, live, J({ vig, page: g && g.page }));
+      if (!live) continue;
+      const b = Math.min(g.page.bottom, g.vh) - 3;
+      const strips = [[g.page.left + 3, b - 24, g.page.right - 3, b], [g.page.left + 3, b - 60, g.page.left + 63, b], [g.page.right - 63, b - 60, g.page.right - 3, b]];
+      const diffs = async (css) => {
+        await app.evalJs('window.__psFrames(3)'); await shoot(app); await app.evalJs('window.__psKeep()');
+        await app.evalJs(`window.__psStyle('ps-vig', ${J(css)})`); await app.evalJs('window.__psFrames(3)'); await shoot(app);
+        await app.evalJs("window.__psStyle('ps-vig', null)"); await app.evalJs('window.__psFrames(2)');
+        return app.evalJs(`(${J(strips)}).map((s) => window.__psDiff(...s))`);
+      };
+      const shown = await diffs(VIG_HIDE);   // as shipped vs the vignette hidden
+      ok(`${tag} V: the vignette sits BEHIND the page - the paper's foot and lower corners look the same with it shown or hidden (mean diff <= ${VIG_MEAN})`,
+        shown.every((d) => !!d && d.mean <= VIG_MEAN), J({ shown, z: vig.z }));
+      // MV: the vignette forced on top, then hidden - the same strips must now CHANGE
+      await app.evalJs(`window.__psStyle('ps-vig-top', ${J(VIG_TOP)})`);
+      const landed = await app.evalJs("getComputedStyle(document.body, '::after').zIndex");
+      const onTop = await diffs(VIG_HIDE);
+      await app.evalJs("window.__psStyle('ps-vig-top', null)");
+      ok(`${tag} MV (mutant): with the vignette forced ON TOP (LANDED: z-index ${landed}), the paper's foot CHANGES when it is hidden - V fails`,
+        landed === '2147483647' && !onTop.every((d) => !!d && d.mean <= VIG_MEAN), J({ onTop }));
+    }
+  }
+  await app.evalJs("localStorage.setItem('wrizo-theme-prefs', " + J(J({ voice: 'serif', page: 'light', fade: 'on' })) + ")");
 
   // G under reduced motion (Arbor, 1366x768): the same new line moves the scroll in ONE step
   await app.evalJs("location.hash = '#/'"); await sleep(300);
