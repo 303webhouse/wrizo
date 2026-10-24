@@ -19,6 +19,8 @@ let s4RowsSeen = null;   // S4's picker rows (PAGE TEMPLATES R2), kept for its p
 let s4TemplatesSeen = null;   // S4's placeholder roster, kept for its parked record (PAGE-TEMPLATES-MOVE)
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// hide-workshop: the default leg's observation, re-verified in the parked block (the retired five-string read).
+const parkObs = {};
 
 const rectOf = (sel) => `(() => { const r = document.querySelector(${JSON.stringify(sel)}).getBoundingClientRect(); return {left:r.left, top:r.top, width:r.width, height:r.height}; })()`;
 
@@ -771,8 +773,14 @@ await withHarness(async (app) => {
     stripState.textTransform === 'uppercase' && /^[A-Z][a-z]+( [A-Z][a-z]+)*$/.test(stripState.textContent),
     JSON.stringify(stripState));
   const allStripLabels = await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].map(b => b.textContent)");
-  ok('S7: the strip\'s DOM textContent stays the ratified title case for every tab (deskLexicon untouched)',
-    JSON.stringify(allStripLabels) === JSON.stringify(['Free Write', 'Draft', 'Revise', 'Workshop', 'Publish']),
+  // ---- PARKED - SUPERSEDED by hide-workshop (Nick, Oct 23 11:01 am: the Workshop tab is HIDDEN until built). Kept VERBATIM and no longer run;
+  // its parked record is in the HARNESS_PARKED block, and its successor follows.
+  // ok('S7: the strip\'s DOM textContent stays the ratified title case for every tab (deskLexicon untouched)',
+  //   JSON.stringify(allStripLabels) === JSON.stringify(['Free Write', 'Draft', 'Revise', 'Workshop', 'Publish']),
+  //   JSON.stringify(allStripLabels));
+  parkObs.allStrip = allStripLabels;
+  ok('S7 [hide-workshop successor]: the strip\'s DOM textContent stays the ratified title case for every tab that renders (deskLexicon untouched; Workshop absent)',
+    JSON.stringify(allStripLabels) === JSON.stringify(['Free Write', 'Draft', 'Revise', 'Publish']),
     JSON.stringify(allStripLabels));
 
   // === S6 — the Journal's page enters the frame [PARKED WHOLE — FX14 S2] =====
@@ -1375,6 +1383,10 @@ if (process.env.HARNESS_PARKED === '1') {
     pok('PARKED (was "PAGE IS PRIMARY: the tool-rail track rect is byte-identical across a mode switch, even though its CONTENTS changed", reading .desk-frame-toolrail) — CD2 S1/S5: the SAME comparison, .desk-frame-strip now, same truth',
       JSON.stringify(stripRectBeforeNow) === JSON.stringify(stripRectAfterNow),
       `${JSON.stringify(stripRectBeforeNow)} -> ${JSON.stringify(stripRectAfterNow)}`);
+
+    // hide-workshop (Oct 23) - record frozen; re-verifies the NEW truth from the default leg's observation (parkObs).
+    pok('PARKED (was "S7: the strip\'s DOM textContent stays the ratified title case for every tab (deskLexicon untouched)", five strings) - hide-workshop: Workshop is hidden until built, four strings; live successor: S7 [hide-workshop successor]',
+      JSON.stringify(parkObs.allStrip) === JSON.stringify(['Free Write', 'Draft', 'Revise', 'Publish']), JSON.stringify(parkObs.allStrip));
 
     return parkedChecks;
   });

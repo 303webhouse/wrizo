@@ -1660,7 +1660,7 @@ function PageEditorView({ id }: { id: string }) {
           onSwitch={switchMode}
           reviseEnabled
           actions={[
-            { label: 'Workshop', sub: 'coming soon', deferred: true },
+            // Workshop tab hidden until built (Nick, Oct 23 11:01 am).
             { label: lex('publish'), sub: 'export', onClick: () => setShowPublish(true) },
           ]}
         />

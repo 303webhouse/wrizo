@@ -42,6 +42,8 @@ import { withHarness } from '../runtime-verify.mjs';
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// hide-workshop: the default leg's observations, re-verified in the parked block below (the retired five-string reads).
+const parkObs = {};
 
 const rectOf = (sel) => `(() => { const r = document.querySelector(${JSON.stringify(sel)}).getBoundingClientRect(); return {left:r.left, top:r.top, width:r.width, height:r.height}; })()`;
 
@@ -100,8 +102,14 @@ await withHarness(async (app) => {
 
   // -- S2: the unified mode strip, exact ratified strings, title case -------
   const stripLabels = await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].map(b => b.textContent)");
-  ok('S2: the mode strip reads exactly Free Write / Draft / Revise / Workshop / Publish',
-    JSON.stringify(stripLabels) === JSON.stringify(['Free Write', 'Draft', 'Revise', 'Workshop', 'Publish']),
+  // ---- PARKED - SUPERSEDED by hide-workshop (Nick, Oct 23 11:01 am: the Workshop tab is HIDDEN in every theme until it is built).
+  // Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
+  // ok('S2: the mode strip reads exactly Free Write / Draft / Revise / Workshop / Publish',
+  //   JSON.stringify(stripLabels) === JSON.stringify(['Free Write', 'Draft', 'Revise', 'Workshop', 'Publish']),
+  //   JSON.stringify(stripLabels));
+  parkObs.strip = stripLabels;
+  ok('S2 [hide-workshop successor]: the mode strip reads exactly Free Write / Draft / Revise / Publish - Workshop is absent, not greyed',
+    JSON.stringify(stripLabels) === JSON.stringify(['Free Write', 'Draft', 'Revise', 'Publish']),
     JSON.stringify(stripLabels));
 
   // -- S2/AB2 — four checks retired here, moved to the PARKED section below
@@ -241,13 +249,23 @@ await withHarness(async (app) => {
   await sleep(200);
   ok('Script mounts inside DeskFrame at >=1100px', await app.evalJs("!!document.querySelector('.desk-frame')"));
   const scriptStripLabels = await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].map(b => b.textContent)");
-  ok('S6/finding-5: the mode strip is present on the script surface too, same five strings',
-    JSON.stringify(scriptStripLabels) === JSON.stringify(['Free Write', 'Draft', 'Revise', 'Workshop', 'Publish']),
+  // ---- PARKED - SUPERSEDED by hide-workshop (Oct 23): Workshop is hidden on every surface, the script's strip included.
+  // Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
+  // ok('S6/finding-5: the mode strip is present on the script surface too, same five strings',
+  //   JSON.stringify(scriptStripLabels) === JSON.stringify(['Free Write', 'Draft', 'Revise', 'Workshop', 'Publish']),
+  //   JSON.stringify(scriptStripLabels));
+  parkObs.scriptStrip = scriptStripLabels;
+  ok('S6/finding-5 [hide-workshop successor]: the mode strip is present on the script surface too, same four strings (Workshop absent)',
+    JSON.stringify(scriptStripLabels) === JSON.stringify(['Free Write', 'Draft', 'Revise', 'Publish']),
     JSON.stringify(scriptStripLabels));
   const scriptActiveTab = await app.evalJs("document.querySelector('.desk-mode-tab.active')?.textContent");
   ok('Script: Draft is the only live/active posture (script Free-write is AB2)', scriptActiveTab === 'Draft', String(scriptActiveTab));
   const scriptDeferred = await app.evalJs("[...document.querySelectorAll('.desk-mode-tab.deferred')].map(b => b.textContent)");
-  ok('Script: Free Write/Revise/Workshop are deferred (not silently live)', JSON.stringify(scriptDeferred) === JSON.stringify(['Free Write', 'Revise', 'Workshop']), JSON.stringify(scriptDeferred));
+  // ---- PARKED - SUPERSEDED by hide-workshop (Oct 23): Workshop no longer renders, so it can no longer be deferred. Kept VERBATIM, not run;
+  // parked record in the HARNESS_PARKED block, successor follows.
+  // ok('Script: Free Write/Revise/Workshop are deferred (not silently live)', JSON.stringify(scriptDeferred) === JSON.stringify(['Free Write', 'Revise', 'Workshop']), JSON.stringify(scriptDeferred));
+  parkObs.scriptDeferred = scriptDeferred;
+  ok('Script [hide-workshop successor]: Free Write/Revise are deferred (not silently live) and no Workshop tab exists at all', JSON.stringify(scriptDeferred) === JSON.stringify(['Free Write', 'Revise']) && !scriptStripLabels.includes('Workshop'), JSON.stringify(scriptDeferred));
 
   // -- PAGE IS PRIMARY across pageTypes: the FRAME's own tracks (the strip,
   // formerly the toolrail) sit at the same structural position regardless
@@ -817,6 +835,14 @@ if (process.env.HARNESS_PARKED === '1') {
     pok('PARKED (was "S3: Board resurfaces on the same pointer-edge dwell rule" + "S3 R1: Board\'s sprint-nav row restores on the same edge-dwell resurface") — FX4 S5: re-derived after closing BoardCardPopup (Done) instead of blurring the retired inline editor',
       boardResurfacedNow === 'false' && boardNavRestoredNow.pointerEvents !== 'none' && boardNavRestoredNow.hostReceded === 'false',
       JSON.stringify({ boardResurfacedNow, boardNavRestoredNow }));
+
+    // hide-workshop (Nick, Oct 23 11:01 am) - three parks, records frozen; each re-verifies the NEW truth from the default leg's observation (parkObs).
+    pok('PARKED (was "S2: the mode strip reads exactly Free Write / Draft / Revise / Workshop / Publish") - hide-workshop: Workshop is hidden until built; live successor: S2 [hide-workshop successor]',
+      JSON.stringify(parkObs.strip) === JSON.stringify(['Free Write', 'Draft', 'Revise', 'Publish']), JSON.stringify(parkObs.strip));
+    pok('PARKED (was "S6/finding-5: the mode strip is present on the script surface too, same five strings") - hide-workshop: the same four on script; live successor: S6/finding-5 [hide-workshop successor]',
+      JSON.stringify(parkObs.scriptStrip) === JSON.stringify(['Free Write', 'Draft', 'Revise', 'Publish']), JSON.stringify(parkObs.scriptStrip));
+    pok('PARKED (was "Script: Free Write/Revise/Workshop are deferred (not silently live)") - hide-workshop: Workshop is absent, so only Free Write/Revise remain deferred; live successor: Script [hide-workshop successor]',
+      JSON.stringify(parkObs.scriptDeferred) === JSON.stringify(['Free Write', 'Revise']), JSON.stringify(parkObs.scriptDeferred));
 
     return parkedChecks;
   });

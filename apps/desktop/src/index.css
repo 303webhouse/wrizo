@@ -2568,11 +2568,11 @@ a:focus-visible,
 .mode-tab:first-child{ border-left:1px solid var(--ink-border); }
 .mode-tab__label{ display:block; line-height:1.2; font-family:var(--font-contentLabel); } /* canon §4 — "tab names" */
 .mode-tab__sub{ display:block; font-size:7.5px; letter-spacing:1px; text-transform:uppercase; opacity:.5; margin-top:1px; }
-/* Inline file-action tabs (Workshop / Publish) — same strip as the postures. */
+/* Inline file-action tabs (Publish today; Workshop returns here when built) — same strip as the postures. */
 .mode-tab--action{ color:var(--text-mid); border-left:1px solid var(--ink-border); }
 .mode-tab--action.deferred{ color:var(--text-low); cursor:not-allowed; opacity:.6; }
 .mode-tab--action.deferred:hover{ background:none; color:var(--text-low); }
-/* Vertical seam splitting the strip into writing | workshop | delivery groups. */
+/* Vertical seam splitting the strip into writing | delivery groups (a middle "workshop" group returns when Workshop is built - hidden until then, Oct 23). */
 .mode-tab-sep{ width:1px; height:26px; background:#3a2613; margin:0 9px; align-self:center; flex:0 0 auto; }
 .mode-tab:hover{ color:var(--text-hi); background:var(--ink-800); }
 /* ITEM arbor-quiet-brass — a selected mode tab is a WHERE-YOU-ARE state, not an act (the

@@ -7,7 +7,7 @@ import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 // active tab filled brass. Internal keys stay journal/drafting so the editor +
 // persisted mode keep working; only the labels changed. Free write = forward-only
 // (idea generation, AI sealed); Draft = free edit. Format is greyed. File actions
-// (Workshop / Publish) render inline as trailing tabs in the same strip.
+// (Publish today; Workshop returns when built) render inline as trailing tabs in the same strip.
 //
 // TH2 lexicon sweep — this is the SHARED component PageEditor/QuickSprint
 // mount (JournalEntry has its own separate tab row, already swept in TH1);
@@ -57,7 +57,7 @@ const MODES: ModeDef[] = [
   { key: 'formatting', deskTerm: 'railFormat', label: 'Format', sub: 'convention', live: false },
 ];
 
-// A trailing action tab (Workshop / Publish) — styled like a mode tab but a file
+// A trailing action tab (Publish today; Workshop when built) — styled like a mode tab but a file
 // action, not a posture. `deferred` greys it (coming soon).
 export interface ActionTab { label: string; sub: string; onClick?: () => void; deferred?: boolean }
 
@@ -89,7 +89,8 @@ export function ModeSwitcher({ mode, onSwitch, actions = [], reviseEnabled = fal
         );
       })}
       {/* A separator before each action tab splits the strip into three sections:
-          writing (postures) | workshop | delivery. Visual only — the actions still
+          writing (postures) | delivery (a workshop group returns when Workshop is built;
+          hidden until then, Oct 23). Visual only — the actions still
           dispatch as actions, not postures. */}
       {actions.map(a => (
         <Fragment key={a.label}>
