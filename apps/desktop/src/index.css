@@ -687,6 +687,8 @@
 [data-theme='machina']{ --goal-glow-cap:.16; }
 [data-theme='machina'] .wz-goal-glow{ background:radial-gradient(ellipse at center, color-mix(in srgb, var(--signal-live) 50%, transparent) 0%, color-mix(in srgb, var(--signal-live) 20%, transparent) 40%, transparent 68%); }
 [data-theme='machina'] .desk-frame-goalflare{ display:none; }
+/* the vignette sits BEHIND the content (the rule Flux's flux-inputs gave itself, Oct 23): it shades the room, never the page - the empty light page showed grey bands top and bottom */
+[data-theme='machina'] body::after{ z-index:-1; }
 /* RUN (components/RunStrip.tsx) - the cursor/machina-v1-mockup footer strip: twenty identical 4px units 3px apart, gray when finished, an orange 3x16 notch on the unit in progress, the count once
    after the bar. It rides the framed page's instrument lane (the band under the paper), right-aligned to the paper's edge - the mockup's "right of the footer". Closed at the goal = the whole strip
    orange (a .35s colour crossfade - the foundations' fill handoff); NEUTRAL adds eight 9x1px sparks from the last unit (.6s, 20ms stagger, the RC's own constants), never under COOL. */
@@ -5187,7 +5189,7 @@ a:focus-visible,
    (the theme's own mark face; the faces load on the card's first hover/focus, ThemePicker.tsx - until then the fallback stack), the orange outlined square its O. The plate is the Run strip:
    twenty units, the notch on the first unfinished one; hover/focus RUNS it once (units fill in sequence, the notch travels), the still frame holds it part-filled. */
 .wz-theme-card-machina .wz-theme-plate{ background:linear-gradient(180deg, #12141A 0%, #0A0B0E 70%); }
-.wz-theme-wm-machina{ font-family:'IBM Plex Sans', system-ui, sans-serif; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:#E6E9F1; font-size:24px; }
+.wz-theme-wm-machina{ font-family:'IBM Plex Sans', system-ui, sans-serif; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:#E6E9F1; font-size:15px; white-space:nowrap; }
 .wz-theme-wm-machina::after{ content:''; display:inline-block; width:.62em; height:.62em; border:2px solid #FF9800; margin-left:.18em; vertical-align:-.02em; }
 .wz-theme-plate-run{ position:absolute; left:14%; right:14%; bottom:22%; height:16px; display:flex; align-items:center; gap:3px; }
 .wz-theme-plate-run > i{ flex:1; height:4px; background:#252933; transition:background-color .2s ease; transition-delay:calc(var(--i) * 45ms); }

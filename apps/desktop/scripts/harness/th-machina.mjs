@@ -201,6 +201,8 @@ await withHarness(async (app) => {
     const paperWant = await token(app, '--paper');
     const rl = await run(app);
     ok(`LT [${cast}]: on the light page the paper is the cell's own and the Run strip still draws 20 units with its notch`, paper === paperWant && !!rl && rl.units === 20 && rl.here === 1, JSON.stringify({ paper, paperWant, units: rl && rl.units }));
+    const vig = await app.evalJs("(() => { const c = getComputedStyle(document.body, '::after'); return { z: c.zIndex, content: c.content, pos: c.position }; })()");
+    ok(`LT [${cast}]: the vignette sits BEHIND the content (body::after z-index -1) - no grey bands over the empty light page (the control: it has a real pseudo-element, so the read is not blind)`, vig.z === '-1' && vig.content !== 'none', JSON.stringify(vig));
     await frame(app, `run-${cast}-light`);
   }
 

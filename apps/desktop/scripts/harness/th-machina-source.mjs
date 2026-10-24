@@ -273,6 +273,7 @@ const EMBER = [
   /\[data-theme='machina'\] \.mode-page\.focused\{ box-shadow:0 0 0 1px var\(--paper-border\), 0 10px 44px rgba\(0, 0, 0, \.55\); \}/,
   /\[data-theme='machina'\]\{ --goal-glow-cap:\.16; \}/,
   /\[data-theme='machina'\] \.desk-frame-goalflare\{ display:none; \}/,
+  /\[data-theme='machina'\] body::after\{ z-index:-1; \}/,
 ];
 ok('M18: the paper\'s resting and focused halos are plain dark shadows, the goal glow is dialled (the cap token) and recoloured to the live gray, and the celebration flare is not drawn - under Machina only', EMBER.every((r) => r.test(ccss)) && /\[data-theme='machina'\] \.wz-goal-glow\{ background:radial-gradient\(ellipse at center, color-mix\(in srgb, var\(--signal-live\)/.test(ccss), JSON.stringify(EMBER.map((r) => r.test(ccss))));
 
@@ -336,6 +337,8 @@ ok('MUTANT: a Machina desk string re-introducing "Drawer" - M8 must go RED', LEA
   ok('MUTANT: an eager IBM Plex import added to ThemePicker - M20 must go RED (the mutation LANDED)', tp3 !== null && /^import .*@fontsource/m.test(tp3) && !/^import .*@fontsource/m.test(tp), '');
   const di2 = mut(di, "settings.progressStyle === 'bar' && theme !== 'machina' && (", "settings.progressStyle === 'bar' && (");
   ok('MUTANT: Arbor\'s bar drawn on the framed Machina page again (the theme gate dropped) - M19 must go RED (the mutation LANDED)', di2 !== null && !BAR_GATE.test(di2) && BAR_GATE.test(di), '');
+  const css3 = mut(ccss, "[data-theme='machina'] body::after{ z-index:-1; }", '');
+  ok('MUTANT: the vignette left ABOVE the page under Machina (the body::after rule deleted - the grey bands return) - M18 must go RED (the mutation LANDED)', css3 !== null && !EMBER.every((r) => r.test(css3)) && EMBER.every((r) => r.test(ccss)), '');
   const css2 = mut(ccss, "[data-theme='machina'] .desk-frame-goalflare{ display:none; }", '');
   ok('MUTANT: Arbor\'s celebration flare left drawn under Machina (the display:none rule deleted) - M18 must go RED (the mutation LANDED)', css2 !== null && !EMBER.every((r) => r.test(css2)) && EMBER.every((r) => r.test(ccss)), '');
   const GLYPH = /\{theme === 'machina' \? '◂' : '↩'\}/;
