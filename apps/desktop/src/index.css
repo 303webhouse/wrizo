@@ -6384,6 +6384,10 @@ a:focus-visible,
 .wz-beginnings[data-beginnings='page']{
   position:absolute; top:50%; left:0; right:0; transform:translateY(-50%);
 }
+/* PAGE-SIZE (FIX's turn 3 on d4a89f48, escexit S4) - IN THE ZOOM the writing line is held at the band's anchor and a fresh page's sheet is that one line
+   tall, so "centred on the sheet" put the row ON the line: a press on the line pressed a door, and the first Esc found nothing open. Zoomed, the row
+   takes BG1's own placement instead - just below the line, inside the band's lower fade - so the line itself stays clear. */
+.mode-pagecol[data-zoom='true'] .wz-beginnings[data-beginnings='page']{ top:calc(100% + 0.75em); transform:none; }
 /* S1 — the same row inside STORYBOARD/OUTLINE, which are ordinary flow blocks
    with no positioned ancestor: it simply takes the place their empty line held. */
 .wz-beginnings[data-beginnings='projection']{ padding:22px 0 6px; }

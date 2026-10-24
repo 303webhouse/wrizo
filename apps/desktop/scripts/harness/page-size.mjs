@@ -30,6 +30,7 @@
 //   all: a line's ink = the largest colour distance from its own commonest colour (the paper); its strength = ink as painted / ink with
 //   every mask and opacity in the stage stripped. The stripped reference is a premise: it must itself show ink.
 //   S  (lane 3) the zoomed page never slides under the strip (+ MS)
+//   BR (turn 3) on an empty zoomed page the beginnings row sits below the writing line, never on it (+ MBR)
 //   C  PARKED (Fable's C ruling, Oct 24): the measure is the face's; successor records it, I holds the column
 //   I  (Nick, Oct 24) the skin changes ONLY the skin: every skin (light + dark) has the same page box, margins, type size and zoom band/anchor (±1px)
 //   V  (Fable, Oct 23) the vignette sits BEHIND the page in every theme and page tone: the paper's foot and lower corners paint the same with it hidden
@@ -684,6 +685,30 @@ await withHarness(async (app) => {
         !!sMut && !!sNow && sMut.pageWidth > sNow.pageWidth && !(sMut.pageLeft >= sMut.stripRight), J({ now: sNow, mutated: sMut }));
     } else ok('S fixture: the Arbor Draft page opened at 1100x900', false, '');
     await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${sid}', 'off')`);
+  }
+
+  // BR (FIX's turn 3 on d4a89f48, escexit S4's A/B): on an EMPTY page in the zoom the beginnings row sits wholly BELOW the writing line - the zoom holds the
+  // line at the band's anchor and the sheet is that one line tall, so the row, centred on the sheet, sat ON the line and a click on the line pressed a door.
+  // MBR: the row put back on the sheet's centre (the old rule) - BR must fail.
+  {
+    await app.emulateDpr(1, 1366, 768);
+    const eid = 'ps-empty';
+    await app.evalJs("location.hash = '#/'"); await sleep(300);
+    await app.evalJs(`window.wrizoCreateJournalPage(${J({ id: eid, text: '', createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose' })})`);
+    await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${eid}', 'on')`);
+    await app.evalJs('window.wrizoFlushNow()'); await sleep(300);
+    if (await openPage(app, eid)) {
+      const brProbe = `(() => { const row = document.querySelector('.wz-beginnings[data-beginnings="page"]'); const ed = document.querySelector('.forward-only-editor'); if (!row || !ed) return { row: !!row };
+        const a = row.getBoundingClientRect(); const b = ed.getBoundingClientRect(); return { row: true, zoom: document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null, rowTop: Math.round(a.top), rowBottom: Math.round(a.bottom), lineTop: Math.round(b.top), lineBottom: Math.round(b.bottom), vh: innerHeight }; })()`;
+      const br = await app.evalJs(brProbe);
+      ok('BR (Arbor 1366x768, an empty page, zoomed): the beginnings row sits wholly BELOW the writing line, and on screen - a press on the line can never land on a door',
+        !!br && br.row && br.zoom === 'true' && br.rowTop >= br.lineBottom - 0.5 && br.rowBottom <= br.vh, J(br));
+      await app.evalJs("window.__psStyle('ps-mbr', \".wz-beginnings[data-beginnings='page']{ top:50% !important; transform:translateY(-50%) !important; }\")"); await sleep(250);
+      const mbr = await app.evalJs(brProbe);
+      await app.evalJs("window.__psStyle('ps-mbr', null)");
+      ok(`MBR (mutant): with the row put back on the sheet's centre (LANDED: its top ${br && br.rowTop} -> ${mbr && mbr.rowTop}), it covers the line - BR fails`,
+        !!mbr && !!br && mbr.rowTop !== br.rowTop && !(mbr.rowTop >= mbr.lineBottom - 0.5), J({ now: br, mutated: mbr }));
+    } else ok('BR fixture: the empty page opened', false, '');
   }
 
   // G under reduced motion (Arbor, 1366x768): the same new line moves the scroll in ONE step
