@@ -651,7 +651,26 @@ export type DeskTermId =
   // ITEM splash-hold, ROUND 3 — the splash's own cycling loading line, four
   // per-theme phrases (Nick's ruling). Arbor's own voice is the canonical one;
   // Flux's own circuit-register voice is a Flux override, below.
-  | 'splashLoading1' | 'splashLoading2' | 'splashLoading3' | 'splashLoading4';
+  | 'splashLoading1' | 'splashLoading2' | 'splashLoading3' | 'splashLoading4'
+  // W4 (Help me choose) - one "why" line per pick, written to the content doc's register; Fable reviews the strings with the screens.
+  | 'helpWhyStoryCircle'
+  | 'helpWhyThreeAct'
+  | 'helpWhyWorldbuilding'
+  | 'helpWhyCharacterStudy'
+  | 'helpWhyFromMyPages'
+  | 'helpWhyThreeActShortStory'
+  | 'helpWhyCharacterStudyTwo'
+  | 'helpWhyFeatureScreenplayFeature'
+  | 'helpWhyFeatureScreenplayPilot'
+  | 'helpWhyArgumentEssayFull'
+  | 'helpWhyResearchPaper'
+  | 'helpWhyThesisHumanities'
+  | 'helpWhyThesisSciences'
+  | 'helpWhyBusinessProposal'
+  | 'helpWhyGrant'
+  | 'helpWhyFeatureStoryProfile'
+  | 'helpWhyFeatureStoryTrend'
+  | 'helpWhyFeatureStoryInvestigative';
 
 const CANONICAL: Record<DeskTermId, string> = {
   // BM1 — the Board's Own Modes.
@@ -1653,6 +1672,25 @@ const CANONICAL: Record<DeskTermId, string> = {
   splashLoading2: 'Turning the soil…',
   splashLoading3: 'Watering the roots…',
   splashLoading4: 'Opening the notebook…',
+  // W4 - the "why" lines of Help me choose (decks/helpMeChoose.ts whyKeyFor). Deck content: the other themes' lexicons do not translate them.
+  helpWhyStoryCircle: 'One person changes, and you want to follow that change from comfort to return.',
+  helpWhyThreeAct: 'Events press on someone, and you want a spine to hang them on.',
+  helpWhyWorldbuilding: 'The world comes first, so you start by laying out how it works.',
+  helpWhyCharacterStudy: 'People are what you have so far, and you want to see how they pull on each other.',
+  helpWhyFromMyPages: 'You would rather write first, so the shape can come after, from pages you already have.',
+  helpWhyThreeActShortStory: 'A short story needs a spine too, only a tighter one: six beats and no padding.',
+  helpWhyCharacterStudyTwo: 'Two people carry this one, so the study sets them side by side.',
+  helpWhyFeatureScreenplayFeature: 'A feature is fifteen beats of picture, and you want them laid out before you write.',
+  helpWhyFeatureScreenplayPilot: "A pilot borrows the feature's fifteen beats for now, and the deck says so plainly.",
+  helpWhyArgumentEssayFull: 'You have a position to defend, so the essay runs claim, evidence and counterclaim in order.',
+  helpWhyResearchPaper: 'A question and a method call for the usual order: introduction, method, results, discussion.',
+  helpWhyThesisHumanities: 'A long argument in chapters needs a frame the chapters can lean on.',
+  helpWhyThesisSciences: "A question and a method fit the sciences' thesis, from foundation to findings.",
+  helpWhyBusinessProposal: 'A problem and a solution make a proposal: what is wrong, what you would do, why you.',
+  helpWhyGrant: "A funder's priorities set the shape, so the application answers them in their own order.",
+  helpWhyFeatureStoryProfile: 'A person is the story, and a profile gives their scenes and their stakes room.',
+  helpWhyFeatureStoryTrend: 'A trend needs proof that it is one, so the feature gathers its cases before its claim.',
+  helpWhyFeatureStoryInvestigative: "Something you found needs a trail, so the feature lays out what you know and don't.",
 };
 
 // Flux registers its own capture-module name (the app's other live theme

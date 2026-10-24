@@ -197,8 +197,28 @@ ok('C1: Q3 is little / shape / everything', !!m && same(m.Q3, Q3), m ? JSON.stri
   ok('C8: the module is pure data and functions - no React, no effect, no listener, nothing that could open a panel by itself', !!m && !/from 'react'|useEffect|addEventListener|document\.|window\./.test(text.replace(/\/\/.*$/gm, '')), '');
 }
 
-// MUTANTS are added WITH the build, against the real source (each rewrites it, asserts the mutation LANDED, and re-runs the check it targets): story-circle -> hero-journey in the first row (C3);
-// a Q2 set collapsed to one shared list (C2); WALK_SHIPPED flipped to true (C6); a Math.random tie-break added (C5); the Pilot answer dropped (C3); a deck id that does not exist (C9).
+// ------------------------------------------------------------------ MUTANTS: each rewrites the REAL module, asserts the mutation LANDED, bundles it, and re-runs the check it targets - which must go RED
+if (m) {
+  const moduleText = readFileSync(MODULE, 'utf8').replace(/\r\n/g, '\n');
+  const mutated = async (name, from, to, redIf) => {
+    const next = moduleText.replace(from, to);
+    if (next === moduleText) { ok(`MUTANT: ${name} - the mutation LANDED`, false, 'did not land: ' + String(from).slice(0, 60)); return; }
+    const dir = mkdtempSync(join(DESKTOP, 'node_modules', '.cache', 'wz-w4m-')); tmps.push(dir);
+    const file = join(dir, 'helpMeChoose.ts'); writeFileSync(file, next);
+    const r = await load(file);
+    if (!r.m) { ok(`MUTANT: ${name} - the mutated module bundles (a crash is not a kill)`, false, r.err); return; }
+    const red = await run(() => redIf(r.m));
+    ok(`MUTANT: ${name} - its check must go RED (the mutation LANDED and the module still bundles)`, red === true, String(red && red.threw ? red.threw : red));
+  };
+  const rowsWrong = (mm) => TABLE.some(([q1, q2, pick, alt]) => { const r = mm.pickFor(q1, q2); return !same(norm(r.pick), norm(pick)) || !same(norm(r.alt), norm(alt)); });
+  await mutated('Story Circle swapped for the Hero\'s Journey in the first row (C3)', "'novel/person-change': [STORY_CIRCLE, HERO]", "'novel/person-change': [HERO, STORY_CIRCLE]", rowsWrong);
+  await mutated('the Pilot answer is dropped to the plain Feature form (C3)', "'screenplay/pilot': [beats('pilot'), SCENE_SEQUEL]", "'screenplay/pilot': [beats('feature'), SCENE_SEQUEL]", rowsWrong);
+  await mutated('Poems gains an alternative before the Verse Shape exists (C3)', "'poems/': [MY_PAGES, null]", "'poems/': [MY_PAGES, SCENE_SEQUEL]", rowsWrong);
+  await mutated('Q2 collapses to ONE shared answer list (C2: Q2 no longer depends on Q1)', "return Q2_BY_Q1[q1] ?? [];", "return FICTION;", (mm) => !same(mm.q2Options('poems'), Q2.poems) || !same(mm.q2Options('essay'), Q2.essay));
+  await mutated('the Walk is declared shipped (C6: the W1-absent fallback)', 'export const WALK_SHIPPED = false;', 'export const WALK_SHIPPED = true;', (mm) => !same(mm.q3Landing('little'), { view: 'open', helpOpen: false }));
+  await mutated('a Math.random tie-break is added to the pick (C5: nothing varying)', "const row = TABLE[`${q1}/${q2 ?? ''}`];", "const row = Math.random() < 2 ? TABLE[`${q1}/${q2 ?? ''}`] : undefined;", (mm) => { const rand = Math.random; let touched = false; Math.random = () => { touched = true; return 0; }; try { mm.pickFor('novel', 'person-change'); } finally { Math.random = rand; } return touched; });
+  await mutated('a pick names a deck that does not exist (C9)', "const STORY_CIRCLE = C('story-circle');", "const STORY_CIRCLE = C('story-wheel');", (mm) => mm.pickFor('novel', 'person-change').pick.deck === 'story-wheel');
+}
 
 for (const t of tmps) rmSync(t, { recursive: true, force: true });
 const bad = checks.filter((c) => !c.pass).length;
