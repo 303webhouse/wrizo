@@ -105,6 +105,11 @@ sheets, toasts, any future panel or menu. **Navigation** (may replace, must
 be return-faithful): DeskRail destinations, the notebook pager, Pages⟷Plan,
 opening any document from any list.
 
+**The one ruled exception (page-size, Oct 2026; first approved in the Oct 12 typewriter plan):** the Typewriter zoom (Terminal Mode and the
+themes' later names) changes the page's rect ON PURPOSE - the same page, transformed ~1.6x, so no line reflows and the editor never unmounts -
+and leaving it returns the exact normal rect, scroll, caret and text. It is a writing posture the writer chooses, not a tool that displaces the
+page; nothing else may claim it. (Checked by `scripts/harness/page-size.mjs` Z, B, U, X.)
+
 ## Opposition note (Marketing, for the record)
 
 An overlay drawer demos flashier; the chip demos quieter. The principle *is*

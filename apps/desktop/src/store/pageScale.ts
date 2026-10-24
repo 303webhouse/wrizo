@@ -19,6 +19,7 @@ export const PAGE_FENCE = 40;                                // the small margin
 export const DRAWER_RESERVE = 216;                           // each side: menusDrawers' DRAWER_MIN (200) + the grip's 16
 export const ZOOM = 1.6;
 export const ZOOM_GUTTER = 48;                               // the zoomed page keeps this much of the stage's width free
+export const ZOOM_ANCHOR = 0.6;                              // the writing line's hold, as a fraction of the page column's height (Cursor's --anchor)
 
 /** The base page scale for a stage of this size, with the page's top this far below the stage's top. Never below 1. */
 export function pageScaleFor(stageW: number, stageH: number, pageTop: number): number {

@@ -196,6 +196,14 @@ export function noteClosed(id: DrawerId): void {
   if (openDrawer === id) { openDrawer = null; notify(); }
 }
 
+/** PAGE-SIZE (spec point 3) - the zoom TUCKS the page's two hands: each closes through its OWN registered path (the same slide it uses when
+ *  closed by hand), and each path notes its own close back here. A hand already shut is asked nothing. The grips stay; the writer may reopen. */
+export function tuckDrawers(): void {
+  for (const id of ['tools', 'tutor'] as const) {
+    if (stands.has(id)) closers.get(id)?.();
+  }
+}
+
 function subscribe(l: () => void): () => void {
   listeners.add(l);
   return () => { listeners.delete(l); };
