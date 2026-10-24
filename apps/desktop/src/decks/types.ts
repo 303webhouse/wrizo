@@ -21,7 +21,7 @@ import type { DeskTermId } from '../store/deskLexicon';
 // persistence.ts's own SYSTEM_BOARD_TITLE_TERM and kindLabels.ts already
 // use for exactly this "compose copy outside a component" situation.
 
-export type DeckRoom = 'fiction' | 'speculative' | 'screen' | 'academy' | 'business' | 'newsroom';
+export type DeckRoom = 'fiction' | 'speculative' | 'screen' | 'academy' | 'business' | 'newsroom' | 'every';   // 'every' (W3): From my pages, which belongs to no one room
 
 // Every question names its own narrowing choices (catalog Law 5): few,
 // concrete, clickable options. `noteTerm` is the ONE escape hatch R6 itself
@@ -40,6 +40,8 @@ export interface DeckQuestion {
   id: string;
   promptTerm: DeskTermId;
   options: DeckQuestionOption[];
+  // W3 - 'pages': not a choice among options but the writer's OWN PAGES, picked in order (From my pages). `options` is empty and the answer is the page ids joined by ','. Absent = a choice question.
+  kind?: 'pages';
 }
 
 // questionId -> the chosen option's own id.
@@ -68,6 +70,12 @@ export interface DealtCardSpec {
   key: string;
   title: string;
   body: string;
+  // W3 - a Tier 1 step is dealt as a QUESTION, not text: `body` is '' and these two ride onto the box (types/index.ts Box.prompt / Box.deckStep). A spec without them (a deck that has
+  // not been given guided content, or a hand-built one) deals exactly as it always did.
+  prompt?: string;
+  deckStep?: { deck: string; step: string };
+  // W3 - From my pages: the page this card is grafted to. The engine only RECORDS it (MaterializedDeal.grafts); the caller makes the graft through the board (BoardEditor.onDeckDealt).
+  graftTo?: string;
   x: number;
   y: number;
   w: number;

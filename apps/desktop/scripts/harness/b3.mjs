@@ -246,9 +246,18 @@ await withHarness(async (app) => {
     // Zero deck back-reference — every dealt box's OWN keys are a subset of
     // the known Box interface fields; specifically, no deckId/templateId/
     // definitionId/anything naming the deck this card came from.
-    const foreignKeys = dealtTextBoxes.flatMap(b => Object.keys(b).filter(k => !KNOWN_BOX_KEYS.has(k)));
-    ok(`@${width}px: dealt cards own NOTHING to their template — zero keys outside the ordinary Box interface (no deckId, no back-reference of any kind)`,
-      foreignKeys.length === 0, JSON.stringify(foreignKeys));
+    // ---- PARKED - SUPERSEDED by W3, guided paths (Nick / Fable, Oct 23): a dealt Tier 1 card now carries TWO additive Box fields beyond the ordinary interface - prompt (its question) and deckStep ({ deck, step }) - the one pointer a guided step keeps (decks/engine.ts, W3 amendment).
+    // Kept VERBATIM below and no longer run; the live successor follows (scripts/harness/guided-w3.mjs carries the new law).
+    //
+    // const foreignKeys = dealtTextBoxes.flatMap(b => Object.keys(b).filter(k => !KNOWN_BOX_KEYS.has(k)));
+    // ok(`@${width}px: dealt cards own NOTHING to their template — zero keys outside the ordinary Box interface (no deckId, no back-reference of any kind)`,
+    //   foreignKeys.length === 0, JSON.stringify(foreignKeys));
+    // W3: the two fields are the ONLY exceptions, and deckStep is exactly { deck, step } - everything that names a template (deckId, templateId, definitionId, any other back-reference) is still forbidden.
+    const W3_KEYS = new Set(['prompt', 'deckStep']);
+    const foreignKeysW3 = dealtTextBoxes.flatMap(b => Object.keys(b).filter(k => !KNOWN_BOX_KEYS.has(k) && !W3_KEYS.has(k)));
+    const stepShapeOk = dealtTextBoxes.every(b => typeof b.prompt === 'string' && !!b.deckStep && Object.keys(b.deckStep).sort().join() === 'deck,step');
+    ok(`@${width}px: dealt cards own NOTHING to their template [guided-w3 successor] - only the two W3 fields (prompt, deckStep: { deck, step }) beyond the ordinary Box interface, no deckId / back-reference of any other kind`,
+      foreignKeysW3.length === 0 && stepShapeOk, JSON.stringify({ foreignKeysW3, stepShapeOk }));
 
     // Start Here: present on the first dealt card (Hook) only.
     const hookBox = dealtTextBoxes.find(b => (b.text || '').startsWith('Hook\n'));
@@ -459,8 +468,15 @@ await withHarness(async (app) => {
   // two adjacent-pair relationship cards -> 2 threads each = 4 connections.
   ok('S2: Character Study is dealt PRE-THREADED — each of the two relationship cards threads to BOTH characters it names (2 threads x 2 relationship cards = 4 connections), the SAME \'connection\' Box kind the hand-drawn thread gesture mints',
     csConnections.length === 4, String(csConnections.length));
-  const csForeignKeys = csBoxes.flatMap(b => Object.keys(b).filter(k => !KNOWN_BOX_KEYS.has(k)));
-  ok('S2: Character Study\'s own dealt cards AND threads carry zero deck back-reference too', csForeignKeys.length === 0, JSON.stringify(csForeignKeys));
+  // ---- PARKED - SUPERSEDED by W3, guided paths (Nick / Fable, Oct 23): Character Study's dealt cards now carry the two W3 fields (prompt, deckStep); its threads still carry nothing.
+  // Kept VERBATIM below and no longer run; the live successor follows (scripts/harness/guided-w3.mjs carries the new law).
+  //
+  // const csForeignKeys = csBoxes.flatMap(b => Object.keys(b).filter(k => !KNOWN_BOX_KEYS.has(k)));
+  // ok('S2: Character Study\'s own dealt cards AND threads carry zero deck back-reference too', csForeignKeys.length === 0, JSON.stringify(csForeignKeys));
+  const W3_KEYS_CS = new Set(['prompt', 'deckStep']);
+  const csForeignKeysW3 = csBoxes.flatMap(b => Object.keys(b).filter(k => !KNOWN_BOX_KEYS.has(k) && !W3_KEYS_CS.has(k)));
+  const csThreadsClean = csBoxes.filter(b => b.kind === 'connection').every(b => !('prompt' in b) && !('deckStep' in b));
+  ok('S2: Character Study\'s own dealt cards AND threads carry zero deck back-reference too [guided-w3 successor] - only the two W3 fields on the CARDS, nothing on a thread', csForeignKeysW3.length === 0 && csThreadsClean, JSON.stringify({ csForeignKeysW3, csThreadsClean }));
   // Every thread's own endpoints are real dealt card ids (no dangling connA/connB).
   const csIds = new Set(csTextBoxes.map(b => b.id));
   const csThreadsValid = csConnections.every(c => csIds.has(c.connA) && csIds.has(c.connB));
@@ -488,7 +504,19 @@ await withHarness(async (app) => {
     }
     return out;
   })()`);
-  ok('S4: the definitions sweep — all seven decks are registered', Object.keys(sweepResult).length === 7, JSON.stringify(Object.keys(sweepResult)));
+  // ---- PARKED - SUPERSEDED by W3, guided paths (Nick / Fable, Oct 23): the library is thirteen decks: the seven live ones + the six Tier 1 additions (Hero's Journey, Story Circle, Scene-Sequel, Argumentative Essay, Research Paper, Business Proposal).
+  // Kept VERBATIM below and no longer run; the live successor follows (scripts/harness/guided-w3.mjs carries the new law).
+  //
+  // ok('S4: the definitions sweep — all seven decks are registered', Object.keys(sweepResult).length === 7, JSON.stringify(Object.keys(sweepResult)));
+  // ---- PARKED - SUPERSEDED by Fable's Oct 23 ruling on From my pages (change 5): From my pages is the fourteenth deck (the seam's default answer for its page step is no pages: it deals nothing).
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok('S4: the definitions sweep [guided-w3 successor] - all thirteen decks are registered (the seven live + the six Tier 1 additions)', Object.keys(sweepResult).length === 13, JSON.stringify(Object.keys(sweepResult)));
+  ok('S4: the definitions sweep [guided-w3 successor 2] - all fourteen decks are registered (the seven live + the six Tier 1 additions + From my pages)', Object.keys(sweepResult).length === 14, JSON.stringify(Object.keys(sweepResult)));
+  ok('S4 sweep [guided-w3]: "from-my-pages" with its default answers (no pages picked) deals nothing, without error', sweepResult['from-my-pages'] === 0, 'got ' + sweepResult['from-my-pages']);
+  for (const [deckId, expected] of Object.entries({ 'hero-journey': 12, 'story-circle': 8, 'scene-sequel': 6, 'argument-essay': 5, 'research-paper': 5, 'business-proposal': 7 })) {
+    ok(`S4 sweep [guided-w3]: "${deckId}" deals without error and lands its own exact declared card count (${expected})`, sweepResult[deckId] === expected, `got ${sweepResult[deckId]}`);
+  }
   for (const [deckId, expected] of Object.entries(EXPECTED_COUNTS)) {
     ok(`S4 sweep: "${deckId}" deals without error and lands its own exact declared card count (${expected})`,
       sweepResult[deckId] === expected, `got ${sweepResult[deckId]}`);

@@ -6083,6 +6083,14 @@ a:focus-visible,
 }
 .deck-wizard-option-btn:hover{ border-color:var(--accent-rest); }
 .deck-wizard-option-btn[aria-pressed="true"]{ border-color:var(--accent-rest); color:var(--ink-on-card); }
+/* W3 - From my pages' page step: the writer's own pages as a list, each numbered in the order picked (the same hairline / --accent-rest vocabulary as an option), then Deal these. */
+.deck-wizard-pages{ display:flex; flex-direction:column; gap:6px; max-height:46vh; overflow:auto; }
+.deck-wizard-page-btn{ display:flex; align-items:center; gap:10px; text-align:left; padding:8px 12px; font-family:var(--font-prose); font-size:15px; color:var(--ink-on-card); background:none; border:1px solid var(--card-hairline); border-radius:0; cursor:pointer; }
+.deck-wizard-page-btn:hover, .deck-wizard-page-btn[aria-pressed="true"]{ border-color:var(--accent-rest); }
+.deck-wizard-page-n{ flex:0 0 22px; height:22px; display:flex; align-items:center; justify-content:center; border:1px solid var(--card-hairline); font-family:var(--font-mono); font-size:11px; color:var(--ink-on-card); }
+.deck-wizard-page-btn[aria-pressed="true"] .deck-wizard-page-n{ border-color:var(--accent-rest); }
+.deck-wizard-deal{ margin-top:14px; }
+.deck-wizard-deal:disabled{ opacity:.5; cursor:default; }
 .deck-wizard-note{ margin-top:14px; }
 .deck-wizard-note p{ color:var(--ink-on-card); font-size:14px; margin-bottom:10px; }
 .deck-wizard-foot{ display:flex; justify-content:space-between; padding:12px 16px 18px; }
@@ -6105,6 +6113,62 @@ a:focus-visible,
   color:var(--brass); background:var(--paper); border:1px solid var(--brass);
   padding:1px 7px; pointer-events:none;
 }
+
+/* ── W3 / W11a - guided paths: a dealt step's QUESTION and its "?" (Wrizors' game plan wave 1; Fable's frames 06 / 08 / 09 of board-kinds-final) ───────────────────────────────────────
+   THE QUESTION is the card's placeholder, painted from data-prompt by a pseudo-element: it is never a text node, so it cannot be selected, copied or counted, and textContent stays the
+   stored text. It shows only while the card has no body (store/guided.ts promptToShow; in the pop-up, data-body-empty) and the first keystroke into the body hides it.
+   Colours follow Nick's Oct 23 rule: GREEN (olive) = options, books, guidance - so Arbor's question is olive italic (the card's own --badge-on-card: #4F5730, 7.1:1 on cream, never the lighter
+   #8f9a58 of the frame, which is 2.9:1); BRASS = human action only - the "?" turns --choice on hover/open. Flux: the dim readout prompt line  > question ▮ . Any other theme: its muted card text. */
+.board-text[data-prompt]::after,
+.board-popup-editor[data-prompt][data-body-empty='true']::after{
+  content:attr(data-prompt); display:block; margin-top:2px;
+  font-family:var(--font-proseSerif, serif); font-style:italic; font-size:.92em; line-height:1.45;
+  color:var(--ink-on-card-low);
+  pointer-events:none; -webkit-user-select:none; user-select:none;
+}
+:root:not([data-theme='flux']) .board-text[data-prompt]::after,
+:root:not([data-theme='flux']) .board-popup-editor[data-prompt][data-body-empty='true']::after{ color:var(--badge-on-card); }
+[data-theme='flux'] .board-text[data-prompt]::after,
+[data-theme='flux'] .board-popup-editor[data-prompt][data-body-empty='true']::after{
+  content:'> ' attr(data-prompt) ' \25AE';
+  font-family:var(--font-chromeLabel); font-style:normal; font-size:.82em; letter-spacing:.04em; color:var(--ink-on-card-meta);
+}
+/* THE "?" - a small round glyph at the end of the card's title (a sibling of the face, positioned by StepHelp from the title's own rect); olive at rest, --choice on hover / open. Its hit area is
+   wider than the glyph (the ::before) so a fingertip finds it. Flux draws it as the bracketed readout glyph [?] with no ring. */
+.board-step-help{
+  position:absolute; left:8px; top:6px; z-index:3; width:18px; height:18px; padding:0; box-sizing:border-box;
+  display:flex; align-items:center; justify-content:center; border-radius:50%;
+  border:1px solid var(--badge-on-card); background:transparent; color:var(--badge-on-card);
+  font:600 11px/1 var(--font-prose); cursor:pointer;
+}
+.board-step-help::before{ content:''; position:absolute; inset:-8px; }
+.board-step-help:hover, .board-step-help[data-open='true'], .board-step-help:focus-visible{ border-color:var(--choice); color:var(--choice); outline:none; }
+[data-theme='flux'] .board-step-help{ width:auto; min-width:18px; height:auto; padding:0 2px; border:0; border-radius:0; font-family:var(--font-chromeLabel); font-weight:600; font-size:11px; letter-spacing:.04em; color:var(--ink-on-card-low); }
+[data-theme='flux'] .board-step-help:hover, [data-theme='flux'] .board-step-help[data-open='true'], [data-theme='flux'] .board-step-help:focus-visible{ color:var(--choice); }
+/* THE POPOVER (frame 06) - a portal overlay anchored at the "?", never part of the board: the step's name, one plain sentence, one italic example, "more -> Tutor". It sits above the card pop-up's
+   backdrop (z 220) and the drawers. */
+.board-step-pop{
+  position:fixed; z-index:420; box-sizing:border-box; padding:14px 16px; border-radius:0;
+  background:var(--card-stock); color:var(--ink-on-card);
+  box-shadow:0 0 0 1px var(--badge-on-card);   /* flat 1 px edge, no blur (Nick's standing dress rule for new work) */
+  font-family:var(--font-prose); font-size:13px; line-height:1.5;
+}
+.board-step-pop::before{
+  content:''; position:absolute; top:-6px; left:22px; width:10px; height:10px; box-sizing:border-box;
+  background:var(--card-stock); transform:rotate(45deg); box-shadow:-1px -1px 0 0 var(--badge-on-card);
+}
+.board-step-pop[data-flip='true']::before{ top:auto; bottom:-6px; box-shadow:1px 1px 0 0 var(--badge-on-card); }
+.board-step-pop-k{ margin-bottom:6px; font-family:var(--font-chromeLabel, var(--font-prose)); font-size:9px; letter-spacing:.16em; text-transform:uppercase; color:var(--badge-on-card); }
+.board-step-pop-e{ margin:0; }
+.board-step-pop-x{ margin:8px 0 0; font-family:var(--font-proseSerif, serif); font-style:italic; color:var(--ink-on-card-low); }
+.board-step-pop-more{ margin-top:10px; padding:0; border:0; background:none; font:inherit; font-size:12px; color:var(--badge-on-card); cursor:pointer; }
+.board-step-pop-more:hover, .board-step-pop-more:focus-visible{ color:var(--choice); outline:none; text-decoration:underline; }
+[data-theme='flux'] .board-step-pop{ font-family:var(--font-chromeLabel); box-shadow:0 0 0 1px var(--card-hairline); }
+[data-theme='flux'] .board-step-pop::before{ box-shadow:-1px -1px 0 0 var(--card-hairline); }
+[data-theme='flux'] .board-step-pop[data-flip='true']::before{ box-shadow:1px 1px 0 0 var(--card-hairline); }
+[data-theme='flux'] .board-step-pop-k{ color:var(--ink-on-card-meta); }
+[data-theme='flux'] .board-step-pop-x{ font-family:var(--font-proseSerif, serif); }
+[data-theme='flux'] .board-step-pop-more{ text-transform:uppercase; letter-spacing:.12em; }
 
 /* ── BM1 — the Board's Own Modes ─────────────────────────────────────────────
    The board's mode strip mirrors .desk-mode-tab's ratified grammar (no brass

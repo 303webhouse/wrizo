@@ -88,6 +88,8 @@ export function SectionsPopout({ view, currentId, navigate, boardId, journalLabe
   const drawer = place.kind === 'drawer' && place.id !== UNSORTED ? getDrawer(place.id) : null;
   // FLUX V2: Root while the top drawer is untouched (render-time), and in Flux the header reads RACK ▸ <name> for a real drawer. Arbor shows the name as before.
   const theme = useTheme();
+  // W3 (Fable, Oct 23): From my pages is IN the Presets list - the pantser's door - and Arbor leads with it; every other theme keeps the library's own order. Its picker reads the writer's current place, so a NEW board works.
+  const presetDecks = theme === 'plateau' ? [...DECKS].sort((a, b) => Number(b.id === 'from-my-pages') - Number(a.id === 'from-my-pages')) : DECKS;
   const shownName = drawer ? (isDefaultRoot(drawer) ? t('placeRootName') : drawer.name) : '';
   const placeName = isJournal ? journalLabel : place.id === UNSORTED ? t('switcherUnsorted') : shownName;
   const placeHead = theme === 'flux' && drawer ? rackReadout(shownName) : placeName;
@@ -261,7 +263,7 @@ export function SectionsPopout({ view, currentId, navigate, boardId, journalLabe
       <div className="wz-sections-presets">
         <div className="wz-sections-heading">{t('sectionsPresets')}</div>
         {mode === 'boards'
-          ? DECKS.map(deck => (
+          ? presetDecks.map(deck => (
             <button key={deck.id} type="button" className="wz-sections-preset" data-preset={deck.id} onClick={() => deckPreset(deck.id)}>
               <span>{t(deck.nameTerm)}</span>
             </button>

@@ -44,6 +44,9 @@ const ROOM_PROJECT_META: Record<DeckRoom, { type: 'creative' | 'academic' | 'pro
   academy: { type: 'academic', kind: 'thesis' },
   business: { type: 'professional', kind: 'proposal' },
   newsroom: { type: 'professional', kind: 'article' },
+  // W3: From my pages belongs to no one room and is dealt onto an EXISTING board (it reads the pages already written) - never from this new-project door, so this entry is only the type's
+  // total; it is never read.
+  every: { type: 'creative', kind: 'book' },
 };
 
 export function CreateProject() {

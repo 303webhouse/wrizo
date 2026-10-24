@@ -55,8 +55,15 @@ const pins = (text) => ({
 });
 {
   const p = pins(be);
-  ok('S1: the tack is gone from the component; the corner square has BOTH new doors (a second press at the same spot, soon, with nothing moved in between; a right-button press); the relock guard is KEPT (the dblclick-on-the-corner return, the <100ms-after-a-gesture return, the selection clear before a resize, the native-drag refusal)',
-    p.noTack && p.doubleDoor && p.rightDoor && p.relockKept, JSON.stringify(p));
+  // ---- PARKED - SUPERSEDED by W3 (guided paths, Oct 23; train #6 red, Fable Oct 24): W3 widened the dblclick guard's selector so a double-click on the step question mark (or in its popover) opens nothing: `hitEl?.closest('.board-handle, .board-step-help, .board-step-pop')`. The pin's source regex named the exact old line.
+  // Kept VERBATIM below and no longer run; the live successor follows. The behaviour is intact (Fable read the diff): the dblclick-on-the-corner return still names .board-handle and the < 100 ms gesture guard still follows it.
+  //
+  // ok('S1: the tack is gone from the component; the corner square has BOTH new doors (a second press at the same spot, soon, with nothing moved in between; a right-button press); the relock guard is KEPT (the dblclick-on-the-corner return, the <100ms-after-a-gesture return, the selection clear before a resize, the native-drag refusal)',
+  //   p.noTack && p.doubleDoor && p.rightDoor && p.relockKept, JSON.stringify(p));
+  // the relock guard, as W3 left it: the return's selector may be WIDENED but must still name .board-handle, and it must still be followed by the < 100 ms-after-a-gesture return; the selection clear before a resize and the native-drag refusal are unchanged
+  const relockKept2 = (text) => /if \(hitEl\?\.closest\('\.board-handle(?:, [^']*)?'\)\) return;[^\n]*\n\s*if \(performance\.now\(\) - lastGestureEndRef\.current < 100\) return;/.test(text) && /clearBoardSelection\(\);\n\s*startX = e\.clientX; startY = e\.clientY; ptype = e\.pointerType; activePointerId = e\.pointerId;\n\s*try \{ canvas\.setPointerCapture/.test(text) && /const onDragStart/.test(text);
+  ok('S1 [widened-selector successor]: the tack is gone from the component; the corner square has BOTH new doors (a second press at the same spot, soon, with nothing moved in between; a right-button press); the relock guard is KEPT (the dblclick-on-the-corner return - its selector may be widened but still names .board-handle - the <100ms-after-a-gesture return, the selection clear before a resize, the native-drag refusal)',
+    p.noTack && p.doubleDoor && p.rightDoor && relockKept2(be), JSON.stringify({ ...p, relockKept2: relockKept2(be) }));
   // ---- PARKED - SUPERSEDED by board-context-menu (Nick approved the mockup, Oct 15; pair ledger 69) ----
   // `ctxScoped` is a SOURCE regex on the board's contextmenu handler as connector-a wrote it (`... ) e.preventDefault();`). board-context-menu rewrote that handler: the browser's menu is still suppressed in connection mode, on the corner square and for the beat after a right-drag lets go, and a right-click ANYWHERE ELSE on a card or on empty board now opens the board's own menu. The literal text is gone; the claim (the corner square, and only it, is connection mode; nothing but the app's own menu ever shows) stands.
   // Quoted VERBATIM below. Successor: the check directly below (the new handler's shape) + board-context-menu.mjs K1/K2 (behaviour: a card right-click opens the menu, the corner square is connection mode with no menu).
@@ -91,8 +98,16 @@ const pins = (text) => ({
   //
   // ok('S (mutants) [context-menu successor]: dropping "nothing moved in between", suppressing the menu everywhere (re-aimed at the rewritten handler), dropping the cancel-on-empty, dropping the relock return, dropping the unlink branch, or putting the tack back each turn a pin RED, while a history COMMENT naming the tack does not (each mutation landed)',
   //   m1 !== be && !pins(m1).doubleDoor && m2b !== be && !ctxNew(m2b) && m3 !== be && !pins(m3).cancelOnEmpty && m4 !== be && !pins(m4).relockKept && m5 !== be && !pins(m5).toggle && m6 !== be && !pins(m6).noTack && m7 !== be && pins(m7).noTack, '');
-  ok('S (mutants) [stopPropagation successor]: dropping "nothing moved in between", suppressing the menu everywhere (re-aimed at the handler as it now reads, stop included), dropping the cancel-on-empty, dropping the relock return, dropping the unlink branch, or putting the tack back each turn a pin RED, while a history COMMENT naming the tack does not (each mutation landed)',
-    m1 !== be && !pins(m1).doubleDoor && m2c !== be && !ctxNew2(m2c) && m3 !== be && !pins(m3).cancelOnEmpty && m4 !== be && !pins(m4).relockKept && m5 !== be && !pins(m5).toggle && m6 !== be && !pins(m6).noTack && m7 !== be && pins(m7).noTack, '');
+  // ---- PARKED - SUPERSEDED by W3 (guided paths, Oct 23; train #6 red, Fable Oct 24): the mutant m4 patches the old text of the dblclick-return line (`if (hitEl?.closest('.board-handle')) return;`), so it no longer lands (its "each mutation landed" cannot hold).
+  // Kept VERBATIM below and no longer run; the live successor follows. The behaviour is intact (Fable read the diff): the dblclick-on-the-corner return still names .board-handle and the < 100 ms gesture guard still follows it.
+  //
+  // ok('S (mutants) [stopPropagation successor]: dropping "nothing moved in between", suppressing the menu everywhere (re-aimed at the handler as it now reads, stop included), dropping the cancel-on-empty, dropping the relock return, dropping the unlink branch, or putting the tack back each turn a pin RED, while a history COMMENT naming the tack does not (each mutation landed)',
+  //   m1 !== be && !pins(m1).doubleDoor && m2c !== be && !ctxNew2(m2c) && m3 !== be && !pins(m3).cancelOnEmpty && m4 !== be && !pins(m4).relockKept && m5 !== be && !pins(m5).toggle && m6 !== be && !pins(m6).noTack && m7 !== be && pins(m7).noTack, '');
+  // m4 re-aimed at the line as it now reads (any selector list that starts with .board-handle), and a second mutant on the < 100 ms guard that follows it
+  const m4b = be.replace(/if \(hitEl\?\.closest\('\.board-handle(?:, [^']*)?'\)\) return;/, '');
+  const m4c = be.replace('if (performance.now() - lastGestureEndRef.current < 100) return;', '');
+  ok('S (mutants) [widened-selector successor]: dropping "nothing moved in between", suppressing the menu everywhere (re-aimed at the handler as it now reads, stop included), dropping the cancel-on-empty, dropping the relock return (as it now reads), dropping the < 100 ms gesture guard, dropping the unlink branch, or putting the tack back each turn a pin RED, while a history COMMENT naming the tack does not (each mutation landed)',
+    m1 !== be && !pins(m1).doubleDoor && m2c !== be && !ctxNew2(m2c) && m3 !== be && !pins(m3).cancelOnEmpty && m4b !== be && !relockKept2(m4b) && m4c !== be && !relockKept2(m4c) && m5 !== be && !pins(m5).toggle && m6 !== be && !pins(m6).noTack && m7 !== be && pins(m7).noTack, '');
 }
 
 // ---- the box half -----------------------------------------------------------------------------------------------------------------------------------------------------------------------

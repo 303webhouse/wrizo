@@ -9,7 +9,9 @@ import type { DeckDefinition, DeckAnswers } from './types';
 // `{ id, kind:'text', x, y, w, h, z, text }` — the SAME shape any hand-typed
 // "Add card" box already has (BoardEditor.tsx's own onAddCard) — and owes
 // NOTHING to its template afterward: no deckId, no definition id, no back-
-// reference of any kind, on the card OR the thread. `spec.title`/`spec.body`
+// reference of any kind, on the card OR the thread. (W3 AMENDMENT, Nick Oct 23: a GUIDED step - a Tier 1 deck's dealt card - carries ONE pointer, `deckStep: { deck, step }`,
+// plus its question as `prompt`; both optional and additive inside `boxes`, written only here, only on a NEW deal. Nothing else about the deck follows the card, and every card
+// dealt before W3 is untouched.) `spec.title`/`spec.body`
 // arrive here ALREADY resolved (each deck's own deal() function builds them
 // by calling deskTerm() itself — the established non-hook lexicon escape
 // hatch persistence.ts's own SYSTEM_BOARD_TITLE_TERM already uses — see
@@ -34,6 +36,8 @@ export interface MaterializedDeal {
   boxes: Box[];
   firstCardId: string;
   dealtIds: string[];
+  // W3 - the cards that are grafted to a page (From my pages), in dealt order: the caller grafts them through the board once the cards are on it. Empty for every other deck.
+  grafts: { boxId: string; entryId: string }[];
 }
 
 export function materializeDeck(deck: DeckDefinition, answers: DeckAnswers, existing: Box[]): MaterializedDeal {
@@ -49,8 +53,14 @@ export function materializeDeck(deck: DeckDefinition, answers: DeckAnswers, exis
       z: maxZ + 1 + i,
       text: `${spec.title}\n${spec.body}`,
     };
+    // W3 - a guided step's question and its step key ride along as the two optional additive box fields; a card dealt without them gets neither key (byte-identical to before).
+    if (spec.prompt) box.prompt = spec.prompt;
+    if (spec.deckStep) box.deckStep = spec.deckStep;
     return box;
   });
+
+  const grafts: { boxId: string; entryId: string }[] = [];
+  specs.forEach(spec => { if (spec.graftTo) grafts.push({ boxId: idByKey.get(spec.key)!, entryId: spec.graftTo }); });
 
   const threadBoxes: Box[] = [];
   const seenPairs = new Set<string>();
@@ -74,7 +84,8 @@ export function materializeDeck(deck: DeckDefinition, answers: DeckAnswers, exis
 
   return {
     boxes: [...cardBoxes, ...threadBoxes],
-    firstCardId: idByKey.get(specs[0].key)!,
+    firstCardId: specs.length > 0 ? idByKey.get(specs[0].key)! : '',   // W3: a deal of nothing (From my pages with no pages picked) is empty, not a crash
     dealtIds: cardBoxes.map(b => b.id),
+    grafts,
   };
 }

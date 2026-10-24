@@ -151,7 +151,11 @@ ok('Q1 the pop-out has a boards mode: a `view` prop of pages | boards, a data-ki
 ok('Q2 the Boards tab renders the pop-out in boards mode, and the old creation doors (Create a Board, Plot a Story) and the no-project lead are gone from it', /<SectionsPopout[^>]*view="boards"/.test(planBody) && !/cascadePlanCreateBoard|cascadePlanPlotStory|cascadePlanNoProject/.test(planBody), '');
 ok('Q3 the connected-boards zone (PW1) stays inside the Boards tab until step 3 moves it to Grafts: still rendered, still keyed by data-link-entry rows', /connectedBoardsFor\(/.test(planBody) && /data-link-entry=\{row\.id\}/.test(panels), '');
 ok('Q4 the empty board\'s starters are New Card, Templates, Connect Pages - the default branch of the door table has no newPageCard (the sliver keeps its own tool)', exists('components/BoardEditor.tsx') && /key: 'newCard'[\s\S]*key: 'loadDeck'[\s\S]*key: 'connectPage'/.test(doors) && (doors.match(/key: 'newPageCard'/g) || []).length === 0, `newPageCard x${(doors.match(/key: 'newPageCard'/g) || []).length}`);
-ok('Q5 the presets ARE the deck library: the pop-out imports DECKS and names each row by the deck\'s own nameTerm - there is no second list of deck names', /import \{ DECKS \} from '\.\.\/decks\/library'/.test(popout) && /DECKS\.map\(/.test(popout) && /deck\.nameTerm/.test(popout), '');
+// ---- PARKED - SUPERSEDED by W3 change 5 (Fable, Oct 23): the Presets list is presetDecks - the library itself, with From my pages moved first under Arbor - so the pin that read "DECKS.map(" reads that.
+// Kept VERBATIM below and no longer run; the live successor follows.
+//
+// ok('Q5 the presets ARE the deck library: the pop-out imports DECKS and names each row by the deck\'s own nameTerm - there is no second list of deck names', /import \{ DECKS \} from '\.\.\/decks\/library'/.test(popout) && /DECKS\.map\(/.test(popout) && /deck\.nameTerm/.test(popout), '');
+ok('Q5 the presets ARE the deck library [guided-w3 successor]: the pop-out imports DECKS, lists it through presetDecks (the library itself; Arbor moves From my pages first) and names each row by the deck\'s own nameTerm - still no second list of deck names', /import \{ DECKS \} from '\.\.\/decks\/library'/.test(popout) && /const presetDecks = theme === 'plateau' \? \[\.\.\.DECKS\]\.sort\(.*\) : DECKS;/.test(popout) && /presetDecks\.map\(/.test(popout) && /deck\.nameTerm/.test(popout), '');
 ok('Q6 a preset opens a new board in the place with its deck in the address (unbornHref carries deck), and presses nothing else', /deck: deckId/.test(popout) && /deckPreset\(deck\.id\)/.test(popout) && /kind: 'board'/.test(popout), '');
 ok('Q7 the address carries the deck: the descriptor has a `deck` field, written and read by unbornHref / readDescriptor', /deck: string \| null/.test(unborn) && /q\.set\('deck'/.test(unborn) && /q\.get\('deck'\)/.test(unborn), '');
 ok('Q8 the editor opens the wizard ONCE from the address while the board is unborn, and the wizard can start at a deck (startDeckId: no library step)', /descriptor\.deck/.test(editor) && /startDeckId/.test(editor) && /startDeckId/.test(wizard), '');
@@ -204,7 +208,15 @@ async function part2() {
     await click('[data-category=plan]');
     const y1 = await app.evalJs(`(() => { const r = document.querySelector('.wz-sections[data-kind=boards]'); if (!r) return null; return { place: r.querySelector('.wz-sections-place')?.textContent, door: r.querySelector('.wz-cascade-action-door')?.textContent.trim(), heads: [...r.querySelectorAll('.wz-set-head')].map((h) => h.getAttribute('aria-expanded')), rows: [...r.querySelectorAll('.wz-section-row')].map((x) => x.dataset.entryId), pages: r.querySelectorAll('[data-entry-id=b2-pg]').length, presets: [...r.querySelectorAll('.wz-sections-preset')].map((b) => b.dataset.preset), title: document.querySelector('.wz-cascade-panel-title')?.textContent }; })()`);
     ok('Y1 the Boards tab opens the pop-out in boards mode: the place name, a New Board door, two set headings (the current set open, the other folded), only boards (no page), titled Boards', !!y1 && y1.place === 'The Late Ferry' && y1.door === 'New Board' && same(y1.heads, ['true', 'false']) && same(y1.rows, ['b2-bd1', 'b2-bd2', 'b2-bd3']) && y1.pages === 0 && y1.title === 'Boards', JSON.stringify(y1));
-    ok('Y1 the presets are the seven decks, in the library\'s own order', !!y1 && same(y1.presets, ['three-act', 'worldbuilding', 'feature-screenplay', 'thesis', 'grant', 'feature-story', 'character-study']), JSON.stringify(y1 && y1.presets));
+    // ---- PARKED - SUPERSEDED by W3, guided paths (Nick / Fable, Oct 23): the presets are thirteen decks now (the seven live + the six Tier 1 additions), still in the library's own order.
+    // Kept VERBATIM below and no longer run; the live successor follows (scripts/harness/guided-w3.mjs carries the new law).
+    //
+    // ok('Y1 the presets are the seven decks, in the library\'s own order', !!y1 && same(y1.presets, ['three-act', 'worldbuilding', 'feature-screenplay', 'thesis', 'grant', 'feature-story', 'character-study']), JSON.stringify(y1 && y1.presets));
+    // ---- PARKED - SUPERSEDED by Fable's Oct 23 ruling on From my pages (change 5): the presets are fourteen decks now and Arbor leads with From my pages (the pantser's door); the rest keep the library's own order.
+    // Kept VERBATIM below and no longer run; the live successor follows.
+    //
+    // ok('Y1 the presets are the thirteen decks, in the library\'s own order [guided-w3 successor]', !!y1 && same(y1.presets, ['three-act', 'worldbuilding', 'feature-screenplay', 'thesis', 'grant', 'feature-story', 'character-study', 'hero-journey', 'story-circle', 'scene-sequel', 'argument-essay', 'research-paper', 'business-proposal']), JSON.stringify(y1 && y1.presets));
+    ok('Y1 the presets are the fourteen decks - From my pages first in Arbor, the rest in the library\'s own order [guided-w3 successor 2]', !!y1 && same(y1.presets, ['from-my-pages', 'three-act', 'worldbuilding', 'feature-screenplay', 'thesis', 'grant', 'feature-story', 'character-study', 'hero-journey', 'story-circle', 'scene-sequel', 'argument-essay', 'research-paper', 'business-proposal']), JSON.stringify(y1 && y1.presets));
     ok('Y1 every row declares data-link-entry equal to its entry (the connector\'s target) and none is natively draggable', (await app.evalJs("[...document.querySelectorAll('.wz-sections[data-kind=boards] .wz-section-row')].every((r) => r.dataset.linkEntry === r.dataset.entryId && !r.closest('[draggable=\"true\"]'))")) === true, '');
 
     // ---- Y2: a row opens its board -------------------------------------------------------------------------------------------------------------------------------------------
@@ -263,7 +275,11 @@ async function part2() {
     const starters = await app.evalJs("[...document.querySelectorAll('.wz-beginnings[data-beginnings=board] .wz-beginning')].map((b) => b.dataset.beginning)");
     ok('Y7 the empty board\'s starters read New Card, Templates, Connect Pages - and no New Page', same(starters, ['newCard', 'loadDeck', 'connectPage']), JSON.stringify(starters));
     const labels = await app.evalJs("[...document.querySelectorAll('.wz-beginnings[data-beginnings=board] .wz-beginning-label')].map((b) => b.textContent.trim())");
-    ok('Y7 ...by those words', same(labels, ['New Card', 'Templates', 'Connect Pages']), JSON.stringify(labels));
+    // ---- PARKED - SUPERSEDED by W3, guided paths (Nick / Fable, Oct 23): the board's load-a-deck door says Presets (Presets = decks, Templates = page dress - Nick, B1; W3 brief section 5).
+    // Kept VERBATIM below and no longer run; the live successor follows (scripts/harness/guided-w3.mjs carries the new law).
+    //
+    // ok('Y7 ...by those words', same(labels, ['New Card', 'Templates', 'Connect Pages']), JSON.stringify(labels));
+    ok('Y7 ...by those words [guided-w3 successor]', same(labels, ['New Card', 'Presets', 'Connect Pages']), JSON.stringify(labels));
   });
 }
 

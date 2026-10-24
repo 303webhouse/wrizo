@@ -1,5 +1,6 @@
 import { deskTerm } from '../../store/deskLexicon';
 import { colX, colWidth, rowY, CARD_H } from '../layout';
+import { guidedStep } from '../guided';
 import type { DeckDefinition, DealtCardSpec } from '../types';
 
 // B3 S2 — Character Study, promoted onto B3's ship set on Fable's own call
@@ -21,16 +22,16 @@ import type { DeckDefinition, DealtCardSpec } from '../types';
 // answer, contradicting the very reason this deck was promoted. A judgment
 // call, recorded in the build report.
 
-const SELF_TYPES: { key: string; title: string; body: string }[] = [
-  { key: 'wantneed', title: deskTerm('deckCharacterStudyWantNeedTitle'), body: deskTerm('deckCharacterStudyWantNeedBody') },
-  { key: 'wound', title: deskTerm('deckCharacterStudyWoundTitle'), body: deskTerm('deckCharacterStudyWoundBody') },
-  { key: 'contradiction', title: deskTerm('deckCharacterStudyContradictionTitle'), body: deskTerm('deckCharacterStudyContradictionBody') },
-  { key: 'voice', title: deskTerm('deckCharacterStudyVoiceTitle'), body: deskTerm('deckCharacterStudyVoiceBody') },
+// W3: each card is a question (decks/guided.ts, decks/content.ts). `step` is the content key shared by every character's copy of that card; the card's own title still names its character.
+const SELF_TYPES: { key: string; title: string; step: string }[] = [
+  { key: 'wantneed', title: deskTerm('deckCharacterStudyWantNeedTitle'), step: 'want-need' },
+  { key: 'wound', title: deskTerm('deckCharacterStudyWoundTitle'), step: 'wound' },
+  { key: 'contradiction', title: deskTerm('deckCharacterStudyContradictionTitle'), step: 'contradiction' },
+  { key: 'voice', title: deskTerm('deckCharacterStudyVoiceTitle'), step: 'voice' },
 ];
 
 const LABEL = deskTerm('deckCharacterStudyLabel');
 const REL_TITLE = deskTerm('deckCharacterStudyRelationshipTitle');
-const REL_BODY = deskTerm('deckCharacterStudyRelationshipBody');
 const LETTERS = ['A', 'B', 'C', 'D'];
 
 function characterCount(answers: Record<string, string>): number {
@@ -51,8 +52,7 @@ function layout(n: number): DealtCardSpec[] {
     SELF_TYPES.forEach((type, row) => {
       specs.push({
         key: `char-${i}-${type.key}`,
-        title: `${LABEL} ${letter}: ${type.title}`,
-        body: type.body,
+        ...guidedStep('character-study', type.step, `${LABEL} ${letter}: ${type.title}`),
         x, y: rowY(row), w, h: CARD_H,
       });
     });
@@ -63,8 +63,7 @@ function layout(n: number): DealtCardSpec[] {
     const xb = colX(i + 1, n, marginX, gap);
     specs.push({
       key: `rel-${i}-${i + 1}`,
-      title: `${REL_TITLE}: ${LETTERS[i]} ↔ ${LETTERS[i + 1]}`,
-      body: REL_BODY,
+      ...guidedStep('character-study', 'relationship', `${REL_TITLE}: ${LETTERS[i]} ↔ ${LETTERS[i + 1]}`),
       x: (xa + xb) / 2, y: rowY(SELF_TYPES.length), w, h: CARD_H,
       threadTo: [`char-${i}-wantneed`, `char-${i + 1}-wantneed`],
     });
