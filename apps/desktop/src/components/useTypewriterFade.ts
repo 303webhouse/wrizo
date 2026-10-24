@@ -168,13 +168,14 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       const s = page && page.offsetWidth > 0 ? page.getBoundingClientRect().width / page.offsetWidth : 1;
       return s > 0 ? s : 1;
     };
-    // PAGE-SIZE - the glide's own TARGET. Each one-line step is a smooth scroll, and a chained catch-up step used to read box.scrollTop while the
-    // previous step was still in flight - so every step started short and a deep engage under-scrolled (the lane run on fb1e28fb: the writing line
-    // came to rest below the band, strength 0.02 at 2560). The next step builds on where the last one is GOING while it is still going; a writer's
-    // own scroll after it lands is honoured as before (FX5 S1 c).
+    // PAGE-SIZE - ONE LINE PER GLIDE. Each step is a one-line smooth scroll, and a chained catch-up step used to fire on the very next frame,
+    // reading box.scrollTop while the last step was still in flight - every step started short and a deep engage under-scrolled (lane run on
+    // fb1e28fb). Building each step on the last one's TARGET instead (64e5b7f9) folded the queued lines into ONE long smooth scroll - a multi-line
+    // lurch at up to 167px a frame (fx5 S1 a on 64e5b7f9). So the next step WAITS until the last glide has landed, then steps from where it landed:
+    // one line at a time, and no line lost. A glide that never lands (a writer's own scroll took over) stops waiting after GLIDE_MS.
     let glideTarget: number | null = null;
     let glideAt = 0;
-    const GLIDE_MS = 450;
+    const GLIDE_MS = 600;
     // S1 — the fade band (line-height based) and the fresh-page start offset
     // (stage-height based) are both STATIC CSS the writing surface reads via
     // custom properties; this just keeps them in step with the actual
@@ -201,6 +202,10 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         zoom.holdRef.current.style.setProperty('--tw-anchor', `${zoom.anchor * 100}%`);   // the ONE anchor: the hold below and the mask read it
         const startPx = (h.top + h.height * zoom.anchor - container.getBoundingClientRect().top) / sc;
         scrolledEl.style.setProperty('--tw-start-offset', `${Math.max(0, Math.round(startPx))}px`);
+        // and room BELOW the last line, so the last line can rise to the anchor at all: zoomed, the scroller's box reaches far below the stage,
+        // and 30vh of end padding let the scroll bottom out with the writing line still 1-3 lines under the band (W/T on 64e5b7f9). Its own
+        // height (layout px) is always enough - the sheet "bleeds a full stage height below" in Cursor's mockup for the same reason.
+        scrolledEl.style.setProperty('--tw-end-pad', `${Math.round(container.clientHeight)}px`);
       }
     };
     const band = () => {
@@ -327,11 +332,15 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         // writer's own scroll currently sits (S1 c: scroll freedom) — this
         // never fights a manual scroll, it only ever adds to it.
         const step = Math.min(advance, lineHeight());
-        // PAGE-SIZE - build on the glide still in flight (its target), never on its half-way scrollTop; instant moves (reduced motion) need no target
-        const inFlight = !reduce && glideTarget != null && performance.now() - glideAt < GLIDE_MS;
-        const from = inFlight ? (glideTarget as number) : box.scrollTop;
-        box.setScrollTop(from + step, !reduce);
-        glideTarget = from + step; glideAt = performance.now();
+        // PAGE-SIZE - one line per glide: while the last glide is still travelling, WAIT for it (the next frame looks again; nothing owed is
+        // lost - prevDocCaretBottom has not moved). Reduced motion moves instantly, so it never waits.
+        const gliding = !reduce && glideTarget != null && Math.abs(box.scrollTop - glideTarget) > 1 && performance.now() - glideAt < GLIDE_MS;
+        if (gliding) { raf = requestAnimationFrame(band); return; }
+        // the target is clamped to what the box can actually scroll to, so a glide that hits the bottom still counts as landed
+        const maxTop = useWindowScroll ? Infinity : Math.max(0, container.scrollHeight - container.clientHeight);
+        const to = Math.min(box.scrollTop + step, maxTop);
+        box.setScrollTop(to, !reduce);
+        glideTarget = to; glideAt = performance.now();
         prevDocCaretBottom = (prevDocCaretBottom as number) + step;
         // FX5 review fix — this chained catch-up frame MUST be tracked into
         // the SAME `raf` variable `schedule()` uses, not fired as a raw

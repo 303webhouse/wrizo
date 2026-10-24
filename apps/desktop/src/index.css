@@ -3382,7 +3382,8 @@ a:focus-visible,
   transform:scale(calc(var(--wz-k, 1) * var(--wz-zoom, 1.6))); transform-origin:50% 0;
   box-shadow:none; border-color:transparent;
 }
-.desk-frame-stage--prose .mode-pagecol[data-zoom='true'] .mode-scroll{ -webkit-mask-image:none; mask-image:none; }
+.desk-frame-stage--prose .mode-pagecol[data-zoom='true'] .mode-scroll{ -webkit-mask-image:none; mask-image:none;
+  padding-bottom:max(30vh, var(--tw-end-pad, 30vh)); }   /* room for the LAST line to rise to the anchor (the engine writes --tw-end-pad) */
 /* The script sheet has no bounded height of its own by design (see
    .desk-frame-scroll-cap's own comment below — it wraps content that grows
    with the document); FX3 S1 replaced the SCROLL-CAP's old fixed

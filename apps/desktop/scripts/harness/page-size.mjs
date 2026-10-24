@@ -37,6 +37,10 @@
 // Seeding goes through the app's seams; the per-page mode and typewriter keys are this device's own UI keys (not collections).
 // Needs a box turn.  Run: WS_BOX_TURN=<token> node scripts/harness/page-size.mjs   (from apps/desktop, dist-web built)
 import { withHarness } from '../runtime-verify.mjs';
+import { writeFileSync, mkdirSync } from 'node:fs';
+import { join } from 'node:path';
+const SHOTS = process.env.WS_PS_SHOTS || null;
+const snap = async (app, name) => { if (!SHOTS) return; mkdirSync(SHOTS, { recursive: true }); writeFileSync(join(SHOTS, `${name}.png`), Buffer.from(await app.screenshot(), 'base64')); };
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
@@ -68,6 +72,8 @@ const ZOOM_FIT_SLACK = 96;  // a zoom capped below 1.6 fills the stage's width t
 // a drawer's narrowest open width (Fable, Oct 23 - drawers narrow to a minimum, scrolling inside). 200 is today's Tools drawer open
 // width (menusDrawers.ts CLOSED_TOOLS_W); the build names ONE token for it and this number must equal that token.
 const DRAWER_MIN = 200;
+const DRAWER_RESERVE = 260;   // = store/pageScale.ts DRAWER_RESERVE: the desk each side keeps for its drawer when the page is width-bound
+const natural = {};          // each drawer's natural open width, measured alone at 1366
 const THEMES = [{ id: 'plateau', name: 'Arbor' }, { id: 'flux', name: 'Flux' }];
 
 const SENTENCES = [
@@ -206,9 +212,13 @@ const settledSliver = "(() => { const l = document.querySelector('.wz-sliver-pan
 const pressTypewriter = async (app) => {
   if ((await attr(app, '.wz-sliver', 'data-open')) !== 'true') { const g = await rectOf(app, '.wz-sliver-grip'); if (g) { await click(app, g.x, g.y); await sleep(300); } }
   await waitSoft(app, `document.querySelector('.wz-sliver')?.getAttribute('data-open') === 'true' && ${settledSliver}`, { label: 'the Sliver settled open', timeout: 3000 });
-  const at = await app.evalJs(`(() => { const b = document.querySelector(${J(TOGGLE)}); if (!b) return null; b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  // (lane run on 64e5b7f9: at 2560/3840 the press hit the Sliver's own container - right after typing the chrome is DISSOLVED, pointer-events off,
+  // until the pointer moves; a writer's hand moving to the button restores it. So the pointer goes there, and the hit is waited for, up to 2.5s.)
+  const probe = () => app.evalJs(`(() => { const b = document.querySelector(${J(TOGGLE)}); if (!b) return null; b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     const r = b.getBoundingClientRect(); const x = r.left + r.width / 2; const y = r.top + r.height / 2; const hit = document.elementFromPoint(x, y);
     return { x: Math.round(x), y: Math.round(y), hits: !!hit && (hit === b || b.contains(hit)), hit: hit ? String(hit.className || hit.tagName).slice(0, 60) : null, before: b.getAttribute('aria-pressed') }; })()`);
+  let at = await probe();
+  for (let i = 0; at && !at.hits && i < 16; i += 1) { await app.mouseMove(at.x, at.y); await sleep(150); at = await probe(); }
   if (!at || !at.hits) return { pressed: null, at };
   await click(app, at.x, at.y); await sleep(1100);
   return { pressed: await attr(app, TOGGLE, 'aria-pressed'), at };
@@ -234,7 +244,7 @@ const rPred = (g) => {
   // FIT_SLACK/2 of the drawers' constant reserve, DRAWER_MIN + the grip) - at 3840 the page is width-bound, keeping both drawers beside it
   const sideDesk = (g.stage.width - g.page.width) / 2;
   const heightBound = g.stage.height - g.page.height <= FIT_SLACK;
-  const widthBound = sideDesk >= DRAWER_MIN + 16 - 1 && sideDesk - (DRAWER_MIN + 16) <= FIT_SLACK / 2;
+  const widthBound = sideDesk >= DRAWER_RESERVE - 1 && sideDesk - DRAWER_RESERVE <= FIT_SLACK / 2;
   return Math.abs(g.page.width / g.page.height - LETTER) <= RATIO_TOL && inStage(g) && (heightBound || widthBound);
 };
 const cPred = (lines) => { const m = median(fullLineLengths(lines || [])); return m != null && m >= CPL_MIN && m <= CPL_MAX; };
@@ -248,6 +258,7 @@ const normalCase = async (app, th, w, h) => {
   const id = pid(th.id, 'draft');
   if (!(await openPage(app, id))) { ok(`${th.name} ${w}x${h} normal fixture: the Draft page opened`, false, ''); return null; }
   ok(`${th.name} ${w}x${h} normal (premise): the page is in the normal view (typewriter off)`, (await typewriterIs(app, id)) === 'off', await typewriterIs(app, id));
+  await snap(app, `${th.id}-${w}x${h}-normal`);
   const g = await app.evalJs('window.__psGeom()');
   const lines = await app.evalJs('window.__psLines()');
   const k = kOf(g);
@@ -271,6 +282,7 @@ const normalCase = async (app, th, w, h) => {
   // open width is 184px, under DRAWER_MIN: it is never asked to narrow at all) - red run 143's numbers
   const wOf = (b) => (b ? b.right - b.left : null);
   const sliverAlone = wOf((await panels()).sliver);
+  if (w === 1366 && sliverAlone) natural.sliver = sliverAlone;
   await openTutor(app); await sleep(300);
   const pp = await panels(); const gk = await app.evalJs('window.__psGeom()');
   const sOpen = !!pp && pp.sliverOpen === 'true'; const tOpen = !!pp && pp.tutorOpen === 'true';
@@ -288,11 +300,13 @@ const normalCase = async (app, th, w, h) => {
       // the Tutor's width alone: shut the Sliver (the Tutor stands), read it, then the Sliver is reopened for nothing - the close-down below shuts both
       let tutorAlone = null;
       if (bothOpen) { const gr = await rectOf(app, '.wz-sliver-grip'); if (gr) { await click(app, gr.x, gr.y); await sleep(600); } tutorAlone = wOf((await panels()).tutor); }
-      const floor = (alone) => Math.min(DRAWER_MIN, alone ?? DRAWER_MIN) - 0.5;
-      ok(`${th.name} ${w}x${h} N: there is room for both drawers at their minimum (${Math.round(leftRoom)} / ${Math.round(rightRoom)}px beside the page), so BOTH stand open, each no narrower than ${DRAWER_MIN}px (or its own width alone, if less), and the page sits fully between them`,
+      if (w === 1366 && tutorAlone) natural.tutor = tutorAlone;
+      // (the alone-width at THIS size could itself be squeezed - 144px at 3840 on 64e5b7f9 - so the floor is the 1366 natural width)
+      const floor = (nat) => Math.min(DRAWER_MIN, nat ?? DRAWER_MIN) - 0.5;
+      ok(`${th.name} ${w}x${h} N: there is room for both drawers at their minimum (${Math.round(leftRoom)} / ${Math.round(rightRoom)}px beside the page), so BOTH stand open, each no narrower than ${DRAWER_MIN}px (or its natural width at 1366, if less), and the page sits fully between them`,
         bothOpen && !!gk && pp.sliver.right <= gk.page.left + 0.5 && pp.tutor.left >= gk.page.right - 0.5
-          && wOf(pp.sliver) >= floor(sliverAlone) && wOf(pp.tutor) >= floor(tutorAlone),
-        J({ sOpen, tOpen, sliver: pp.sliver, tutor: pp.tutor, sliverAlone, tutorAlone, pageLeft: gk && Math.round(gk.page.left), pageRight: gk && Math.round(gk.page.right) }));
+          && wOf(pp.sliver) >= floor(natural.sliver) && wOf(pp.tutor) >= floor(natural.tutor),
+        J({ sOpen, tOpen, sliver: pp.sliver, tutor: pp.tutor, sliverAlone, tutorAlone, natural, pageLeft: gk && Math.round(gk.page.left), pageRight: gk && Math.round(gk.page.right) }));
     } else {
       ok(`${th.name} ${w}x${h} N: there is NO room for both drawers at their minimum (${Math.round(leftRoom)} / ${Math.round(rightRoom)}px beside the page), so opening the Tutor closed the Sliver, and the Tutor sits clear of the page`,
         !sOpen && !!pp.tutor && !!gk && pp.tutor.left >= gk.page.right - 0.5, J({ sOpen, tOpen, tutor: pp.tutor, pageRight: gk && Math.round(gk.page.right) }));
@@ -340,6 +354,7 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
   const on = kind === 'draft' ? (await typewriterIs(app, id)) === 'on' : pressedOn.pressed === 'true' || (await app.evalJs("!!document.querySelector('.mode-scroll[data-typewriter=\"true\"]') || null"));
   ok(`${tag} zoom (premise): the writer's typewriter control turned the zoom ON (the press HIT the button)`, !!on && !!pressedOn.at && pressedOn.at.hits, J({ pressedOn, key: await typewriterIs(app, id) }));
   if (!on) return;
+  await sleep(400); await snap(app, `${th.id}-${w}x${h}-${kind}-zoom-entered`);
   const g1 = await app.evalJs('window.__psGeom()');
   const l1 = await app.evalJs('window.__psLines()');
   const scale = g0 && g1 ? Math.round((g1.page.width / g0.page.width) * 1000) / 1000 : null;
@@ -359,6 +374,7 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
   // the writing line: caret to the end, one trusted letter so the typewriter engages, then let any glide settle
   await app.evalJs('window.__psCaretToEnd()'); await app.typeKeys('x'); await sleep(1200);
   const lines = await app.evalJs('window.__psLines()'); const caret = await app.evalJs('window.__psCaret()'); const g2 = await app.evalJs('window.__psGeom()');
+  await snap(app, `${th.id}-${w}x${h}-${kind}-zoom-writing`);
   const wi = lines && caret ? lines.findIndex((l) => caret.mid >= l.top && caret.mid <= l.bottom) : -1;
   // the part of the paper a writer can SEE: inside the page, the stage, the scroller's clip and the viewport
   const visTop = g2 ? Math.max(g2.page.top, g2.stage ? g2.stage.top : 0, g2.scroll ? g2.scroll.top : 0, 0) : 0;
@@ -378,11 +394,11 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
       tPred(st), J({ above1: st[1], above3: st[2], above5: st[3] }));
     if (mutants) {
       // MW: the editor at opacity .5 (applied BEFORE the strip, so the unfaded reference still removes it) - W must fail
-      await app.evalJs(`window.__psStyle('ps-mw', '.mode-scroll { -webkit-mask-image:linear-gradient(rgba(0,0,0,.5), rgba(0,0,0,.5)) !important; mask-image:linear-gradient(rgba(0,0,0,.5), rgba(0,0,0,.5)) !important; }')`);
-      const landedW = await app.evalJs("(() => { const cs = getComputedStyle(document.querySelector('.mode-scroll')); return String(cs.maskImage || cs.webkitMaskImage || 'none').slice(0, 40); })()");
+      await app.evalJs(`window.__psStyle('ps-mw', ".mode-pagecol[data-zoom='true'] { --tw-anchor: 25% !important; }")`);
+      const landedW = await app.evalJs("(() => { const cs = getComputedStyle(document.querySelector('.mode-pagecol')); return cs.getPropertyValue('--tw-anchor').trim(); })()");
       const sw = await strengths(app, [lines[wi]]);
       await app.evalJs("window.__psStyle('ps-mw', null)");
-      ok(`${tag} MW (mutant): with the page's scroller masked to half strength (LANDED: ${landedW}), W fails`, landedW !== 'none' && !(sw[0].s >= FULL), J(sw[0]));
+      ok(`${tag} MW (mutant): with the band's anchor moved up to 25% while the line is held at 60% (LANDED: --tw-anchor ${landedW}), W fails`, landedW === '25%' && !(sw[0].s >= FULL), J(sw[0]));
       // MT: every mask in the stage removed - T must fail
       const before = await app.evalJs('window.__psMasks()');
       await app.evalJs(`window.__psStyle('ps-strip-mut', ${J(STRIP_CSS)})`); const after = await app.evalJs('window.__psMasks()'); await app.evalJs("window.__psStyle('ps-strip-mut', null)");
@@ -503,7 +519,7 @@ await withHarness(async (app) => {
       const tag = `${th.name} ${tone} page 1366x768`;
       if (!(await openPage(app, pid(th.id, 'draft')))) { ok(`${tag} V fixture: the Draft page opened`, false, ''); continue; }
       await app.evalJs('(() => { const a = document.activeElement; if (a && a.blur) a.blur(); return true; })()');
-      const vig = await app.evalJs("(() => { const cs = getComputedStyle(document.body, '::after'); return { content: cs.content, shadow: cs.boxShadow, z: cs.zIndex }; })()");
+      const vig = await app.evalJs("(() => { const cs = getComputedStyle(document.body, '::after'); const p = document.querySelector('.mode-page'); const ps = p ? getComputedStyle(p) : null; return { content: cs.content, shadow: cs.boxShadow, z: cs.zIndex, paper: ps && ps.backgroundColor, pageOpacity: ps && ps.opacity, pageTransform: ps && ps.transform }; })()");
       const g = await app.evalJs('window.__psGeom()');
       const live = !!vig && vig.content !== 'none' && !!vig.shadow && vig.shadow !== 'none' && !!g;
       ok(`${tag} V (premise): the vignette exists (body::after carries its shadow) and the page is measurable`, live, J({ vig, page: g && g.page }));

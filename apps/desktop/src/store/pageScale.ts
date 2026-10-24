@@ -17,9 +17,14 @@ export const PAGE_W_BASE = 620;                              // px at scale 1
 export const LETTER_IN_BASE = PAGE_W_BASE / LETTER_W_IN;     // 72.94px: one page-inch at scale 1
 export const PAGE_H_BASE = LETTER_IN_BASE * LETTER_H_IN;     // 803.5px
 export const PAGE_FENCE = 40;                                // the small margin below the page (index.css --fx3-paper-fence)
-export const DRAWER_RESERVE = 216;                           // each side: menusDrawers' DRAWER_MIN (200) + the grip's 16
+// each side, the desk the drawers keep beside the page. 260 (not DRAWER_MIN + the grip, 216): the Sliver's anchor spends ~72px of its side on the
+// strip's gap and its own grip lane, so at 216 a width-bound page (3840) squeezed the Sliver to 144px and clipped its own buttons (the lane run on
+// 64e5b7f9). 260 leaves it its natural 184 and the Tutor its DRAWER_MIN floor.
+export const DRAWER_RESERVE = 260;
 export const ZOOM = 1.6;
-export const ZOOM_GUTTER = 48;                               // the zoomed page keeps this much of the stage's width free
+// the zoomed page keeps this much of the stage's width free - 48px a side, the grips' lane: at 48 in all (64e5b7f9) the grips, which follow the
+// painted edge, were pushed onto the strip at 1100 (fx2 S1)
+export const ZOOM_GUTTER = 96;
 export const ZOOM_ANCHOR = 0.6;                              // the writing line's hold, as a fraction of the page column's height (Cursor's --anchor)
 
 /** The base page scale for a stage of this size, with the page's top this far below the stage's top. Never below 1. */
