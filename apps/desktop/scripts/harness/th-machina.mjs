@@ -239,8 +239,14 @@ await withHarness(async (app) => {
 
   // ======================================================= PK - the picker card: present in the arc's order, locked while it is not the current theme (the unlock table decides; no server here = no note), current when chosen
   const cardRead = () => app.evalJs(`(() => [...document.querySelectorAll('.wz-theme-card')].map((c) => ({ name: c.querySelector('.wz-theme-wm')?.textContent ?? null, locked: c.classList.contains('locked'), disabled: c.disabled, pressed: c.getAttribute('aria-pressed'), note: c.querySelector('.wz-theme-note')?.textContent ?? null, units: c.querySelectorAll('.wz-theme-plate-run > i').length, notch: !!c.querySelector('.wz-theme-plate-notch') })))()`);
+  // FN - LOAD-ON-CHOOSE, proved in the browser (Fable, Oct 24): under Arbor nothing of IBM Plex / Atkinson is even DECLARED at boot (no face in document.fonts, no font request in the resource timeline); choosing Machina declares and loads them
+  const fontState = () => app.evalJs(`(() => { const faces = [...document.fonts].filter((f) => /IBM Plex|Atkinson Hyperlegible/.test(f.family)); const res = performance.getEntriesByType('resource').map((e) => e.name).filter((n) => /ibm-plex|atkinson/i.test(n));
+    return { declared: [...new Set(faces.map((f) => f.family.replace(/["']/g, '')))].sort(), loaded: [...new Set(faces.filter((f) => f.status === 'loaded').map((f) => f.family.replace(/["']/g, '')))].sort(), requests: res.length }; })()`);
   await boot(app, { theme: 'plateau', goal: 10 });
   await openPage(app, 'ma-pk', words(5));
+  await sleep(600);
+  const fnArbor = await fontState();
+  ok('FN1: under Arbor, at boot, NO IBM Plex / Atkinson face is declared or loaded and no font request was made - Machina\'s faces are not in the eager set (load-on-choose)', fnArbor.declared.length === 0 && fnArbor.loaded.length === 0 && fnArbor.requests === 0, JSON.stringify(fnArbor));
   await app.evalJs(`(() => { const b = document.querySelector('.wz-strip [data-category="theme"]'); if (b) b.click(); })()`);
   await app.waitFor("!!document.querySelector('.wz-theme-cards')", { label: 'the picker', timeout: 8000 }).catch(() => {});
   await sleep(300);
@@ -251,6 +257,9 @@ await withHarness(async (app) => {
   await frame(app, 'picker-arbor');
   await boot(app, { theme: 'machina', goal: 10 });
   await openPage(app, 'ma-pk2', words(5));
+  let fnMachina = await fontState();
+  for (let i = 0; i < 40 && !(fnMachina.loaded.includes('IBM Plex Mono') && fnMachina.loaded.includes('IBM Plex Sans') && fnMachina.loaded.includes('IBM Plex Serif')); i += 1) { await sleep(250); fnMachina = await fontState(); }
+  ok('FN2: choosing Machina DECLARES its faces (IBM Plex Mono / Sans / Serif and Atkinson Hyperlegible in document.fonts) and LOADS the three Plex slots the chrome and the prose use, with font requests on the wire', ['IBM Plex Mono', 'IBM Plex Sans', 'IBM Plex Serif', 'Atkinson Hyperlegible'].every((f) => fnMachina.declared.includes(f)) && ['IBM Plex Mono', 'IBM Plex Sans', 'IBM Plex Serif'].every((f) => fnMachina.loaded.includes(f)) && fnMachina.requests > 0, JSON.stringify(fnMachina));
   await app.evalJs(`(() => { const b = document.querySelector('.wz-strip [data-category="theme"]'); if (b) b.click(); })()`);
   await app.waitFor("!!document.querySelector('.wz-theme-cards')", { label: 'the picker (Machina)', timeout: 8000 }).catch(() => {});
   await sleep(300);
