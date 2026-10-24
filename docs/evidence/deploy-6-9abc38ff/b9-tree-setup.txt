@@ -1,0 +1,48 @@
+toplevel: C:/Users/nickh/writer-studio/.claude/worktrees/b9
+base: d106597d
+== merging machina-build @ 50f6caed  (contains base: yes)
+   -> c99a752f  unmerged files: 0
+== merging box-token-hash @ 038f2b2e  (contains base: yes)
+   -> 4c9c239c  unmerged files: 0
+== merging guided-w3 @ 295cd5da  (contains base: yes)
+Auto-merging apps/desktop/src/index.css
+Auto-merging apps/desktop/src/store/deskLexicon.ts
+   -> 2e09f19a  unmerged files: 0
+ .../logs/b7p-parked-c06.out                        |  28 -
+ .../logs/b7p-parked-c07.out                        |  29 -
+ .../logs/b7p-parked-c08.out                        |  28 -
+ .../logs/b7p-parked-c09.out                        |  20 -
+ .../train6-pair-b7-3601148b/pair-status.txt        |  40 --
+ .../rhizome-latency.parked.txt                     |  16 -
+ .../train6-pair-b7-3601148b/tree-setup.txt         |  48 --
+ .../rhizome/rl-b6-r1.suite.out                     |   9 -
+ .../rhizome/rl-b6-r1.txt                           |  16 -
+ .../rhizome/rl-b6-r2.suite.out                     |   8 -
+ .../rhizome/rl-b6-r2.txt                           |  16 -
+ .../rhizome/rl-b6-r3.suite.out                     |   8 -
+ .../rhizome/rl-b6-r3.txt                           |  16 -
+ .../rhizome/rl-b8-r1.suite.out                     |   8 -
+ .../rhizome/rl-b8-r1.txt                           |  16 -
+ .../rhizome/rl-b8-r2.suite.out                     |   8 -
+ .../rhizome/rl-b8-r2.txt                           |  16 -
+ .../rhizome/rl-b8-r3.suite.out                     |   8 -
+ .../rhizome/rl-b8-r3.txt                           |  16 -
+ .../train6-targeted-b8-b3827a41/run-status.txt     |  13 -
+ .../targeted-default.out                           |  25 -
+ .../targeted-parked.out                            |  25 -
+ .../th-machina-source.default.txt                  |  78 ---
+ .../train6-targeted-b8-b3827a41/tree-setup.txt     |  48 --
+ .../typewriter-page.default.txt                    |  24 -
+ docs/guided-paths/w3-deck-content.md               | 278 +++++++++
+ docs/guided-paths/w3-w4-build-brief.md             |  70 +++
+ docs/open-threads.md                               |  16 -
+ pnpm-lock.yaml                                     |  24 +
+ 147 files changed, 4437 insertions(+), 1321 deletions(-)
+Done in 15s using pnpm v10.28.2
+tsc-desktop=0
+tsc-server-done
+SEED-GUARD VERIFY: PASS (36 checks)
+TYPING-LATENCY READERS VERIFY: PASS (5 checks, 24 reads classified)
+TYPED-LITERAL-CHECK VERIFY: PASS (29 checks)
+GLITCH-METER-CHECK VERIFY: PASS (15 checks)
+[2mdist-web/[22m[36massets/index-f9DD8_pW.js                                          [39m[1m[33m855.52 kB[39m[22m[2m │ gzip: 270.88 kB[22m
