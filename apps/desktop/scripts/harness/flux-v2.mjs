@@ -242,7 +242,12 @@ const CSS_MUT = [
   { name: 'the lines family drifts back to teal', edit: (c) => c.replace('--ink-border-strong: #244D7C;', '--ink-border-strong: #2A6A76;'), red: ['TK6'] },
   { name: 'the rail drifts back to the old hue', edit: (c) => c.replace('--rail-surface: rgba(15, 25, 38, .94);', '--rail-surface: rgba(16, 28, 36, .94);'), red: ['TK6'] },
   { name: 'a lamp stop drifts back to hue 206', edit: (c) => c.replace('#081728 0%', '#0A1A26 0%'), red: ['TK6'] },
-  { name: 'the vignette goes back over the page', edit: (c) => c.replace("[data-theme='flux'] body::after{ z-index:-1; }", "[data-theme='flux'] body::after{ z-index:2; }"), red: ['VG1'] },
+  // ---- PARKED - SUPERSEDED by page-size (Fable, Oct 23: the grey-band rule existed three times - Flux, Machina, and page-size's all-theme rule -
+  // and collapses into the ONE base rule): there is no Flux-only body::after rule left to mutate. Kept VERBATIM and no longer run; the successor
+  // puts the BASE vignette back over the page instead.
+  //
+  // { name: 'the vignette goes back over the page', edit: (c) => c.replace("[data-theme='flux'] body::after{ z-index:-1; }", "[data-theme='flux'] body::after{ z-index:2; }"), red: ['VG1'] },
+  { name: 'the vignette goes back over the page (the base rule)', edit: (c) => c.replace(/(body::after \{[^}]*?)z-index:\s*-1;/, '$1z-index: 2;'), red: ['VG1b'] },
   { name: 'an Arbor brown surface returns to the Flux root', edit: (c) => c.replace('--ink-800: #122336;', '--ink-800: #2A241E;'), red: ['TK4'] },
   { name: 'Arbor\'s PNG mark paints again under Flux', edit: (c) => { const at = c.indexOf("[data-theme='flux'] .brand-mark{"); const cut = '-webkit-mask:none; mask:none; background:none;'; const i = at < 0 ? -1 : c.indexOf(cut, at); return i < 0 ? c : c.slice(0, i) + 'background:var(--brass);' + c.slice(i + cut.length); }, red: ['BR1'] },   // anchored on the FLUX rule: Machina's identical [data-theme='machina'] .brand-mark rule comes first in the file, and a bare first-match replace landed there (44/45 killed)
   { name: 'a board card goes back to cream stock', edit: (c) => c.replace('--card-stock:#0E1E31; --card-hairline:rgba(0, 194, 255, .55);', '--card-stock:#FBF6EA; --card-hairline:rgba(0, 194, 255, .55);'), red: ['BD1'] },
@@ -337,8 +342,17 @@ function cssChecks(css) {
   const bh = rules(css).find((x) => x.sel === '.flux-board-frame .flux-readout-hint');
   keep('BH1', !!bh && /background:\s*var\(--paper\)/.test(bh.body), bh ? bh.body : 'no board hint rule');
   // VG1 - the vignette (a fixed inset shadow over the whole viewport) sits BEHIND the content under Flux: it shades the room, not the page (the empty light page showed grey bands top and bottom)
-  const vg = rules(css).find((x) => x.sel === "[data-theme='flux'] body::after");
-  keep('VG1', !!vg && /z-index:\s*-1/.test(vg.body), vg ? vg.body : 'no Flux body::after rule');
+  // ---- PARKED - SUPERSEDED by page-size (Fable, Oct 23): the Flux-only rule is collapsed into the ONE base rule that puts the vignette behind the
+  // page in EVERY theme (index.css body::after, with body isolated so it still shades the room). Kept VERBATIM and no longer run; successor VG1b.
+  //
+  // const vg = rules(css).find((x) => x.sel === "[data-theme='flux'] body::after");
+  // keep('VG1', !!vg && /z-index:\s*-1/.test(vg.body), vg ? vg.body : 'no Flux body::after rule');
+  // VG1b - the vignette sits behind the content in every theme, Flux included: the BASE body::after is z-index -1, and body is its own stacking
+  // context (isolation) so the vignette still shades the room; no theme rule raises it again (the runtime half is flux-v2-part2 F9 and page-size V)
+  const vgBase = rules(css).find((x) => x.sel === 'body::after');
+  const vgIso = rules(css).some((x) => x.sel === 'body' && /isolation:\s*isolate/.test(x.body));
+  const vgRaised = rules(css).filter((x) => /\bbody::after\b/.test(x.sel) && x.sel !== 'body::after' && /z-index:\s*(?!-)/.test(x.body)).map((x) => x.sel);
+  keep('VG1b', !!vgBase && /z-index:\s*-1/.test(vgBase.body) && vgIso && vgRaised.length === 0, JSON.stringify({ base: vgBase ? vgBase.body.replace(/\s+/g, ' ').slice(0, 120) : null, vgIso, vgRaised }));
   // AR1 - the arrival's Write door is the choice colour under Flux, never brass
   const ar = rules(css).find((x) => x.sel === "[data-theme='flux'] .wz-btn.wz-primary");
   keep('AR1', !!ar && /(?:^|[\s;{])color:\s*var\(--choice\)/.test(ar.body) && /border-color:\s*var\(--choice\)/.test(ar.body), ar ? ar.body : 'no Flux .wz-primary rule');
