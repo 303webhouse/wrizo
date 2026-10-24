@@ -6095,6 +6095,28 @@ a:focus-visible,
 .deck-wizard-note p{ color:var(--ink-on-card); font-size:14px; margin-bottom:10px; }
 .deck-wizard-foot{ display:flex; justify-content:space-between; padding:12px 16px 18px; }
 
+/* MACHINA'S DECK WIZARD (Nick, Oct 24: Board -> Presets -> "CHOOSE A DECK" was a tall cream panel with near-invisible pale text). ROOT CAUSE: the wizard is portalled to <body>, so it reads :root tokens - and Machina sets the card family
+   (--card-stock, --ink-on-card ...) only inside `.board-canvas` (where cards live), so at :root they fall through to Arbor's cream stock while --ink-on-paper is the dark page's PALE ink. Pale on cream. The fix is Machina's own dress,
+   on the theme's tokens only: the chrome surface, a 1px hairline, square, NO shadow, Plex (mono for the small labels, sans for the names); COOL and NEUTRAL follow their tokens, and the chrome is dark on both page tones. Names
+   (deck titles, the question, the options) are --text-hi (>= 7:1); labels (the eyebrow, the room headings, the buttons, the note) are --text-mid or better (>= 4.5:1). A hovered row / a picked option is carried by --accent-rest
+   (steel under COOL, orange under NEUTRAL) as a left bar or a border - never as text colour. Its fuller form (Forms + Intake) comes later from the mockups. */
+[data-theme='machina'] .deck-wizard-dialog{ background:var(--chrome-surface); color:var(--text-hi); border:1px solid var(--ink-border-strong); box-shadow:none; border-radius:0; font-family:var(--font-contentLabel); }
+[data-theme='machina'] .deck-wizard-strip{ border-bottom:1px solid var(--ink-border); }
+[data-theme='machina'] .deck-wizard-eyebrow{ font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--text-hi); }
+[data-theme='machina'] .deck-wizard-dialog .btn-quiet{ color:var(--text-mid); font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.1em; text-transform:uppercase; }
+[data-theme='machina'] .deck-wizard-dialog .btn-quiet:hover{ color:var(--text-hi); }
+[data-theme='machina'] .deck-wizard-room-heading{ font-family:var(--font-chromeLabel); color:var(--text-mid); letter-spacing:.12em; }
+[data-theme='machina'] .deck-wizard-deck-row{ font-family:var(--font-contentLabel); font-size:14px; color:var(--text-hi); padding:9px 8px; border-bottom:1px solid var(--ink-border); }
+[data-theme='machina'] .deck-wizard-deck-row:hover, [data-theme='machina'] .deck-wizard-deck-row:focus-visible{ color:var(--text-hi); text-decoration:none; background:var(--ink-800); box-shadow:inset 2px 0 0 var(--accent-rest); outline:none; }
+[data-theme='machina'] .deck-wizard-question{ font-family:var(--font-contentLabel); font-weight:600; font-size:17px; color:var(--text-hi); }
+[data-theme='machina'] .deck-wizard-option-btn, [data-theme='machina'] .deck-wizard-page-btn{ font-family:var(--font-contentLabel); font-size:14px; color:var(--text-hi); border-color:var(--ink-border); }
+[data-theme='machina'] .deck-wizard-option-btn:hover, [data-theme='machina'] .deck-wizard-page-btn:hover, [data-theme='machina'] .deck-wizard-page-btn[aria-pressed="true"],
+[data-theme='machina'] .deck-wizard-option-btn[aria-pressed="true"]{ border-color:var(--accent-rest); color:var(--text-hi); background:var(--ink-800); }
+[data-theme='machina'] .deck-wizard-page-n{ border-color:var(--ink-border-strong); color:var(--text-mid); font-family:var(--font-chromeLabel); }
+[data-theme='machina'] .deck-wizard-note p{ color:var(--text-mid); }
+[data-theme='machina'] .deck-wizard-dialog .btn-brass{ background:none; color:var(--text-hi); border:1px solid var(--accent-rest); border-radius:0; box-shadow:none; font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.1em; text-transform:uppercase; }
+[data-theme='machina'] .deck-wizard-dialog .btn-brass:hover{ background:var(--ink-800); color:var(--text-hi); border-color:var(--accent-rest); }
+
 /* CreateProject.tsx's own analog of .board-canvas-blur-wrap/.board-canvas-
    blurred (FX4 S5) — identical values, a distinct name since this host has
    no board canvas at all. */
