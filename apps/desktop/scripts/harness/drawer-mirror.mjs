@@ -238,7 +238,7 @@ await withHarness(async (app) => {
       rd[which] = { first, rest };
       await setOpen(app, which, false); await sleep(400);
     }
-    const noTravel = (o) => !!o.first && !!o.rest && o.first.transform === 'none' && /^0s/.test(o.first.transition) && o.first.panelLeft === o.rest.panelLeft && o.first.panelWidth === o.rest.panelWidth;
+    const noTravel = (o) => !!o.first && !!o.rest && o.first.transform === 'none' && Math.max(...String(o.first.transition).split(',').map((d) => parseFloat(d) * (/ms$/.test(d.trim()) ? 0.001 : 1) || 0)) <= 0.001 && o.first.panelLeft === o.rest.panelLeft && o.first.panelWidth === o.rest.panelWidth;
     if (reduce) {
       ok('7 (Tools, reduced motion): the drawer arrives with NO travel - on the first read after the press its sliding layer is untransformed and untransitioned, and the panel is already at its final rect',
         noTravel(rd.tools), J(rd.tools));

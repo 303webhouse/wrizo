@@ -166,10 +166,12 @@ await withHarness(async (app) => {
     const sel = getSelection(); const rg = sel && sel.rangeCount && ed.contains(sel.anchorNode) ? sel.getRangeAt(0) : null;
     let cr = null;
     if (rg) { const rs = rg.getClientRects(); cr = rs[rs.length - 1] || null;
-      if ((!cr || !cr.height) && rg.startContainer.nodeType === 3 && rg.startOffset > 0) { const rr = document.createRange(); rr.setStart(rg.startContainer, rg.startOffset - 1); rr.setEnd(rg.startContainer, rg.startOffset); const xs = rr.getClientRects(); cr = xs[xs.length - 1] || null; } }
+      if ((!cr || !cr.height) && rg.startContainer.nodeType === 3 && rg.startOffset > 0) { const rr = document.createRange(); rr.setStart(rg.startContainer, rg.startOffset - 1); rr.setEnd(rg.startContainer, rg.startOffset); const xs = rr.getClientRects(); cr = xs[xs.length - 1] || null; }
+      // the caret at an ELEMENT boundary (turn on 8d3673bd: still wi = -1): the last painted piece of everything from the editor's start up to it
+      if (!cr || !cr.height) { const pre = document.createRange(); pre.setStart(ed, 0); pre.setEnd(rg.startContainer, rg.startOffset); const ps = [...pre.getClientRects()].filter((q) => q.height >= 4); cr = ps[ps.length - 1] || null; } }
     const caretMid = cr && cr.height ? (cr.top + cr.bottom) / 2 : null;
     const lines = mids.map((mid) => ({ y: Math.round(mid - box.top), alpha: Math.round(alphaAt(mid - box.top) * 1000) / 1000, writing: caretMid != null && Math.abs(mid - caretMid) < 4 }));
-    return { zoom: col.getAttribute('data-zoom'), mask: mask.slice(0, 160), stops, lines, boxH: Math.round(box.height) };
+    return { zoom: col.getAttribute('data-zoom'), mask: mask.slice(0, 160), stops, lines, boxH: Math.round(box.height), caret: caretMid == null ? null : Math.round(caretMid - box.top), inEditor: !!rg };
   })()`);
   const zl = (z && z.lines) || [];
   const wi = zl.findIndex((l) => l.writing);
@@ -178,7 +180,7 @@ await withHarness(async (app) => {
   const ramp = upTo.filter((l) => l.alpha > 0.1 && l.alpha < 0.95);
   twParks.band = { zoom: z && z.zoom, stops: z && z.stops && z.stops.length, lines: zl.length, wi, ramp: ramp.length, inversions: zInv.length, top: zl[0] || null, writing: wi >= 0 ? zl[wi] : null };
   ok('(premise) [page-size successor] the page is ZOOMED (Typewriter) with the band mask on the page column - its stops resolved - and several lines on screen, the writing line among them',
-    !!z && !z.missing && z.zoom === 'true' && (z.stops || []).length >= 6 && zl.length >= 6 && wi >= 0, JSON.stringify({ zoom: z && z.zoom, stops: z && z.stops, lines: zl.length, wi, mask: z && z.mask }));
+    !!z && !z.missing && z.zoom === 'true' && (z.stops || []).length >= 6 && zl.length >= 6 && wi >= 0, JSON.stringify({ zoom: z && z.zoom, caret: z && z.caret, inEditor: z && z.inEditor, lines: zl.map((l) => l.y), wi, stops: z && z.stops && z.stops.length }));
   ok('(premise) [page-size successor] the fade is FULL: at least 3 lines of the history sit inside the band\'s ramp (strength between .1 and .95), so the order cannot pass on nothing',
     ramp.length >= 3, JSON.stringify({ ramp: ramp.slice(0, 6) }));
   ok('THE ORDER [page-size successor]: going down the history to the writing line, no line is fainter than the older line above it',

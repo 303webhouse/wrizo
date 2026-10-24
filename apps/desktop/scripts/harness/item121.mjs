@@ -49,6 +49,7 @@
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
+const i121Ps = {};   // page-size's park audit (Oct 24): S5's mouse reads, for the parked record
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -374,16 +375,37 @@ await withHarness(async (app) => {
   const sheetBox = await app.evalJs(rectOf(SHEET));
   const before5 = (await strokesOf(app, mousePageId)).length;
   // MOUSE — the laptop is the primary target, so it MUST draw.
-  await app.mouseDown(sheetBox.left + sheetBox.width * 0.3, sheetBox.top + 60);
-  for (let i = 1; i <= 8; i++) {
-    await app.mouseMove(sheetBox.left + sheetBox.width * (0.3 + 0.04 * i), sheetBox.top + 60 + i * 3);
-    await sleep(16);
+  // ---- PARKED - SUPERSEDED by page-size (the Typewriter zoom, Oct 23): a fresh Free Write page opens ZOOMED, its one line held at the band's anchor,
+  // and the ink sheet is that one line tall (FIX's probe, turn on 8d3673bd: the sheet 467-510 at 1366x768). A drag at the sheet's top + 60px lands
+  // BELOW it, on the scroller - the probe found "mode-scroll" under the press - so nothing draws; the SAME drag through the middle of the sheet draws
+  // (probe: +1 stroke). The claim - a trusted mouse drag draws in INK - is the successor's, its gesture inside the sheet's visible box. Kept VERBATIM
+  // and no longer run; record in the parked section. (Whether a fresh page's ink sheet should cover more than its one line is handed up, not built.)
+  //
+  // await app.mouseDown(sheetBox.left + sheetBox.width * 0.3, sheetBox.top + 60);
+  // for (let i = 1; i <= 8; i++) {
+  //   await app.mouseMove(sheetBox.left + sheetBox.width * (0.3 + 0.04 * i), sheetBox.top + 60 + i * 3);
+  //   await sleep(16);
+  // }
+  // await app.mouseUp(sheetBox.left + sheetBox.width * 0.62, sheetBox.top + 84);
+  // await sleep(600);
+  // const afterMouse = (await strokesOf(app, mousePageId)).length;
+  // ok('S5 (mouse): in INK a trusted MOUSE drag draws — the laptop is the primary target, and a sketch pad the primary target cannot draw on is not a sketch pad',
+  //   afterMouse === before5 + 1, JSON.stringify({ before: before5, afterMouse }));
+  // ------------------------------------------------------------------
+  // the sheet's VISIBLE box (inside the stage and the viewport), and a drag through its vertical middle; the press is proven to land ON the sheet
+  const visBox = await app.evalJs(`(() => { const s = document.querySelector('${SHEET}'); const st = document.querySelector('.desk-frame-stage'); if (!s) return null; const r = s.getBoundingClientRect(); const t = st ? st.getBoundingClientRect() : { top: 0, bottom: innerHeight };
+    const top = Math.max(r.top, t.top, 0); const bottom = Math.min(r.bottom, t.bottom, innerHeight); const midY = (top + bottom) / 2; const x = r.left + r.width * 0.3; const hit = document.elementFromPoint(x, midY);
+    return { left: r.left, width: r.width, top, bottom, midY, onSheet: !!hit && !!hit.closest('${SHEET}'), zoom: document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null, sheetH: Math.round(r.height) }; })()`);
+  if (visBox && visBox.onSheet) {
+    await app.mouseDown(visBox.left + visBox.width * 0.3, visBox.midY);
+    for (let i = 1; i <= 8; i++) { await app.mouseMove(visBox.left + visBox.width * (0.3 + 0.04 * i), visBox.midY + i); await sleep(16); }
+    await app.mouseUp(visBox.left + visBox.width * 0.62, visBox.midY + 8);
+    await sleep(600);
   }
-  await app.mouseUp(sheetBox.left + sheetBox.width * 0.62, sheetBox.top + 84);
-  await sleep(600);
   const afterMouse = (await strokesOf(app, mousePageId)).length;
-  ok('S5 (mouse): in INK a trusted MOUSE drag draws — the laptop is the primary target, and a sketch pad the primary target cannot draw on is not a sketch pad',
-    afterMouse === before5 + 1, JSON.stringify({ before: before5, afterMouse }));
+  i121Ps.s5 = { before: before5, afterMouse, visBox, originalOffBelow: !!visBox && visBox.sheetH < 84 };
+  ok('S5 (mouse) [page-size successor]: in INK a trusted MOUSE drag through the sheet the writer SEES draws — the press proven to land on the sheet — the laptop is the primary target',
+    !!visBox && visBox.onSheet && afterMouse === before5 + 1, JSON.stringify(i121Ps.s5));
 
   // PEN — draws, and marks the session as pen-present.
   await safePen(app, SHEET, arc(), 'pen stroke');
@@ -718,10 +740,17 @@ console.log(JSON.stringify(checks, null, 2));
 // file is a park nobody looking for it would find.
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  // PAGE-SIZE (Oct 24) - ONE park of item121's own: S5 (mouse)'s fixed-offset gesture. Its record re-verifies the new truth from the live run: the sheet
+  // is one line tall on a fresh zoomed page (so top + 60 is off it), and a drag through it draws.
+  {
+    const o = i121Ps.s5 || {};
+    parkedChecks.push({ name: 'PARKED (was "S5 (mouse): in INK a trusted MOUSE drag draws — the laptop is the primary target, and a sketch pad the primary target cannot draw on is not a sketch pad") - page-size: a fresh page opens zoomed with a one-line sheet; the fixed top + 60px gesture lands below it; live successor: S5 (mouse) [page-size successor]',
+      pass: !!o.visBox && o.visBox.onSheet && o.afterMouse === o.before + 1 && o.originalOffBelow === true, detail: JSON.stringify(o) });
+  }
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   // eslint-disable-next-line no-console
-  console.log(`\nITEM121 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; item121.mjs parks nothing of its own (its parks live in the files that own the falsified assertions).`);
+  console.log(parkedChecks.some((c) => !c.pass) ? `\nITEM121 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed` : `\nITEM121 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; item121.mjs parks ONE of its own (page-size, Oct 24: S5's mouse gesture); its other parks live in the files that own the falsified assertions.`);
 }
 
 const pass = checks.every((c) => c.pass);

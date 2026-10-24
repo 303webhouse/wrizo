@@ -54,6 +54,7 @@ const checks = [];
 let fx5MaskSeen = null;   // S1 (b)'s computed mask, kept for its parked record (TYPEWRITER-FADE-ORDER)
 let fx5BandSeen = null;   // page-size: S1 (b)'s page-column band (the zoom's mask), kept for the re-parked record
 let fx5StartSeen = null;  // page-size: S1 (d)'s start reading, kept for its parked record
+let fx5FreeSeen = null;   // page-size: S1 (c)'s reading, kept for its parked record
 // Declared up here, above the harness run that ASSIGNS it: a `let` declared below a top-level await is in its temporal dead zone
 // while that await runs (the first run of the card port died on exactly this: 'Cannot access fx5CardReveal before initialization').
 let fx5CardReveal = null;   // the S6 card reading, kept for its parked record
@@ -308,13 +309,27 @@ await withHarness(async (app) => {
     await app.evalJs(`document.querySelector('.mode-scroll').scrollTo({ top: ${manualTarget}, behavior: 'auto' })`);
     await sleep(150);
     const afterManualScroll = await app.evalJs("document.querySelector('.mode-scroll').scrollTop");
+    // page-size: the editor's VISUAL line count around the typed line (a wrap is one line of honest advance)
+    const visualLines = () => app.evalJs("(() => { const ed = document.querySelector('.forward-only-editor'); const r = document.createRange(); r.selectNodeContents(ed); const tops = []; for (const q of r.getClientRects()) { if (q.height < 4) continue; const t = Math.round(q.top); if (!tops.some((x) => Math.abs(x - t) < 4)) tops.push(t); } return tops.length; })()");
+    const linesBeforeType = await visualLines();
     await app.typeKeys('one more line after scrolling up manually, the writer now owns this position\n');
     await sleep(350);
     const afterTypeScrollTop = await app.evalJs("document.querySelector('.mode-scroll').scrollTop");
     const lineHeightPx = await app.evalJs("parseFloat(getComputedStyle(document.querySelector('.forward-only-editor')).lineHeight) || 28");
-    ok('S1 (c): typing after a manual scroll-up does NOT snap the page back to the band — the post-keystroke scrollTop stays within about one line of the writer\'s OWN manually-chosen position, not reset toward the (much larger) pre-scroll settled value',
-      Math.abs(afterTypeScrollTop - afterManualScroll) <= lineHeightPx * 1.6 && afterTypeScrollTop < settled - 40,
-      JSON.stringify({ settled, manualTarget, afterManualScroll, afterTypeScrollTop, lineHeightPx }));
+    // ---- PARKED - SUPERSEDED by page-size (rulings a-b, Oct 23: ~75 characters a line): the typed sentence (76 characters) now WRAPS, so with its Enter it
+    // adds TWO visual lines, and the engine pays exactly that advance, a line per glide - FIX's probe on 8d3673bd traced two 27px steps and nothing
+    // else (496 -> 523 -> 550), no snap toward the band (616). "About one line" was the fixture's single line; the claim - the box moves only by the
+    // writer's own new lines, never back toward the band - is the successor's. Kept VERBATIM and no longer run; record in the parked section.
+    //
+    // ok('S1 (c): typing after a manual scroll-up does NOT snap the page back to the band — the post-keystroke scrollTop stays within about one line of the writer\'s OWN manually-chosen position, not reset toward the (much larger) pre-scroll settled value',
+    //   Math.abs(afterTypeScrollTop - afterManualScroll) <= lineHeightPx * 1.6 && afterTypeScrollTop < settled - 40,
+    //   JSON.stringify({ settled, manualTarget, afterManualScroll, afterTypeScrollTop, lineHeightPx }));
+    // ------------------------------------------------------------------
+    const linesAdded = (await visualLines()) - linesBeforeType;
+    fx5FreeSeen = { settled, afterManualScroll, afterTypeScrollTop, lineHeightPx, linesAdded };
+    ok('S1 (c) [page-size successor]: typing after a manual scroll-up does NOT snap the page back to the band — the box moves by no more than the writer\'s OWN new lines (each visual line the typing added, + 0.6 of a line), and stays well short of the pre-scroll settled value',
+      linesAdded >= 1 && afterTypeScrollTop - afterManualScroll <= lineHeightPx * (linesAdded + 0.6) && afterTypeScrollTop >= afterManualScroll - 1 && afterTypeScrollTop < settled - 40,
+      JSON.stringify(fx5FreeSeen));
 
     // (c, viewport fade) — the top-of-VIEWPORT still carries the fade
     // after the writer settled somewhere else entirely (a VIEWPORT
@@ -1292,6 +1307,12 @@ if (process.env.HARNESS_PARKED === '1') {
   // ------------------------------------------------------------------
   pok('PARKED, generation 2 (was gen-1 "PARKED (was \'S1 (b): the container mask genuinely carries a two-stage ramp now (opaque lead-in, then the fade) ...\') - TYPEWRITER-FADE-ORDER: the mask now starts at the 15% floor") - page-size: in the zoom the box carries no mask; the band is on the page column, transparent at its top; live successor: typewriter-fade.mjs [page-size successor]',
     (fx5MaskSeen === 'none' || fx5MaskSeen == null) && !!fx5BandSeen && fx5BandSeen.zoom === 'true' && /^linear-gradient\(rgba\(0, 0, 0, 0\) /.test(fx5BandSeen.mask), JSON.stringify({ box: fx5MaskSeen, band: fx5BandSeen }));
+  // PAGE-SIZE (Oct 24) - S1 (c)'s "about one line". Its record re-verifies the new truth from the live run: the box moved by the typing's own lines only.
+  {
+    const o = fx5FreeSeen || {};
+    pok('PARKED (was "S1 (c): typing after a manual scroll-up does NOT snap the page back to the band — the post-keystroke scrollTop stays within about one line of the writer\'s OWN manually-chosen position ...") - page-size: the typed line wraps at ~75 characters, so the honest advance is its visual lines; live successor: S1 (c) [page-size successor]',
+      o.linesAdded >= 1 && o.afterTypeScrollTop - o.afterManualScroll <= o.lineHeightPx * (o.linesAdded + 0.6) && o.afterTypeScrollTop < o.settled - 40, JSON.stringify(o));
+  }
   // PAGE-SIZE'S PARK AUDIT (Oct 24) - S1 (d)'s quarter start. Its record re-verifies the new truth from the live run: zoomed, the start is the anchor.
   pok('PARKED (was "S1 (d): the start offset (25%) is unchanged — the visual start still reads as \"about a quarter\"") - page-size: a fresh Arbor page opens zoomed; the first line starts at the band\'s anchor (60%); live successor: S1 (d) [page-size successor]',
     !!fx5StartSeen && fx5StartSeen.zoom === 'true' && Math.abs(fx5StartSeen.fraction - 0.6) <= 0.05, JSON.stringify(fx5StartSeen));

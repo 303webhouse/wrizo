@@ -14,8 +14,9 @@
 /** The id of the screen-reader-only hint both writing surfaces describe themselves by ("Press Escape to leave the page"). */
 export const ESC_HINT_ID = 'wz-esc-hint';
 
+// DRAWER MIRROR (Oct 24): the Tools drawer closes on Esc too now, so it is counted - else its Esc, having closed it, also took focus off the page.
 const OPEN_SELECTOR = [
-  '[role="dialog"]', '[role="menu"]', '.wz-cascade-panel', '.wz-tutor-panel[data-open="true"]', '.wz-beginnings',
+  '[role="dialog"]', '[role="menu"]', '.wz-cascade-panel', '.wz-tutor-panel[data-open="true"]', '.wz-sliver-panel[data-open="true"]', '.wz-beginnings',
 ].join(', ');
 
 /** How many popups are open AND rendered (an aria-hidden or zero-size node is not open). */

@@ -655,7 +655,7 @@ await withHarness(async (app) => {
     const mi = ident['Flux dark'] && ident['Flux dark'][1366] && ident['Flux dark'][1366].mutated;
     const miBase = ident[base] && ident[base][1366] && ident[base][1366].normal;
     ok('MI (mutant): with Flux dark\'s page padding widened 90px (LANDED: its left padding moved), the identity check FAILS - it can see a skin changing the size',
-      !!mi && !!miBase && Math.abs(mi.padL - miBase.padL) >= 30 && !sameNormal(miBase, mi), J({ base: miBase, mutated: mi }));
+      !!mi && !!miBase && Math.abs(mi.padL - 90) < 0.5 && Math.abs(miBase.padL - 90) >= 10 && !sameNormal(miBase, mi), J({ base: miBase, mutated: mi }));
   }
   await app.evalJs("localStorage.setItem('wrizo-theme-prefs', " + J(J({ voice: 'serif', page: 'light', fade: 'on' })) + ")");
 

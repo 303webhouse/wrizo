@@ -69,7 +69,10 @@ const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const fx10Mirror = [];   // the drawer mirror (Oct 24): the page surface's open-grip reads, for the parked records
 // the tab never moves (closed vs open, within half a pixel) and the open panel starts at its right edge (within 1.5px) - the drawer mirror
-const fx10MirrorOk = (o) => !!o.gripClosed && !!o.gripOpen && Math.abs(o.gripClosed.left - o.gripOpen.left) < 0.5 && Math.abs(o.panelLeft - o.gripOpen.right) < 1.5;
+// ...or, where the painted page leaves under DRAWER_MIN (200px) beside it (the zoom at 1100 and 1280), the panel overlays from the stage's edge (the
+// documented narrow degradation) and the unmoved tab rides ABOVE it - the topmost element at its centre (turn on 8d3673bd: panel 693 / 807, tab 970 / 1110)
+const fx10MirrorOk = (o) => !!o.gripClosed && !!o.gripOpen && Math.abs(o.gripClosed.left - o.gripOpen.left) < 0.5
+  && (Math.abs(o.panelLeft - o.gripOpen.right) < 1.5 || (o.margin != null && o.margin < 200 && o.gripOnTop === true));
 const fx10Ps = [];   // page-size's park audit (Oct 24): the page surface's grip reads, for the parked records
 // page-size: the Tutor grip against the PAINTED page (the column is stage-wide in the zoom), with the editor's edge and the margin the CSS reads
 const PS_GRIP = `(() => { const g = document.querySelector('.wz-tutor-grip'); const p = document.querySelector('.desk-frame-stage--prose .mode-page'); const e = document.querySelector('.forward-only-editor');
@@ -192,9 +195,10 @@ await withHarness(async (app) => {
           Math.abs((panelOpen.left - gripOpen.right) - GRIP_GUTTER_PX) < 1.5,
           JSON.stringify({ gripRight: gripOpen.right, panelLeft: panelOpen.left, gap: panelOpen.left - gripOpen.right }));
       } else {
-        const o = { width, gripClosed, gripOpen, panelLeft: panelOpen.left };
+        const ov = await app.evalJs("(() => { const p = document.querySelector('.desk-frame-stage--prose .mode-page'); const st = document.querySelector('.desk-frame-stage'); const g = document.querySelector('.wz-tutor-grip'); if (!p || !st || !g) return {}; const r = g.getBoundingClientRect(); const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return { margin: Math.round(st.getBoundingClientRect().right - p.getBoundingClientRect().right), gripOnTop: !!hit && g.contains(hit) }; })()");
+        const o = { width, gripClosed, gripOpen, panelLeft: panelOpen.left, margin: ov.margin ?? null, gripOnTop: ov.gripOnTop ?? null };
         fx10Mirror.push(o);
-        ok(`S1 geometry @${width}px/page: grip-clears-panel (open) [drawer-mirror successor] — the grip never moves once the panel opens, and the panel starts AT it (never inside its tab row)`,
+        ok(`S1 geometry @${width}px/page: grip-clears-panel (open) [drawer-mirror successor] — the grip never moves once the panel opens, and the panel starts AT it (never inside its tab row) - or, under DRAWER_MIN beside the page, overlays from the stage's edge with the tab riding above it`,
           fx10MirrorOk(o), JSON.stringify(o));
       }
       ok(`S1 geometry @${width}px/${surface}: paper rect BYTE-IDENTICAL, closed -> open`,
