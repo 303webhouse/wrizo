@@ -93,6 +93,8 @@ await withHarness(async (app) => {
         await shot(`three-act-help-${theme === 'plateau' ? 'arbor' : 'flux'}-${tone}`);
         ok(`[${T}] the "?" opens a popover ANCHORED at it: the step's name, one sentence, one example, and "more -> ${theme === 'flux' ? 'Operator' : 'Tutor'}"; focus moves to "more"`,
           opened && !!pop && pop.dialog === 'dialog' && pop.below && pop.arrowUnder && pop.focusMore && pop.expanded === 'true' && /first image or line/.test(pop.text) && /dead man is dead/.test(pop.text) && pop.text.toLowerCase().includes(theme === 'flux' ? 'more' : 'more') && pop.text.includes(theme === 'flux' ? 'Operator' : 'Tutor'), JSON.stringify(pop));
+        const ex = await q("(() => { const e = document.querySelector('.board-step-pop-x'); if (!e) return null; const cs = getComputedStyle(e); return { family: cs.fontFamily, style: cs.fontStyle }; })()");
+        ok(`[${T}] the popover's example line wears ${theme === 'flux' ? "Flux's own type (Chakra Petch, upright)" : "Arbor's italic serif"}`, !!ex && (theme === 'flux' ? /Chakra Petch/.test(ex.family) && ex.style === 'normal' : ex.style === 'italic'), JSON.stringify(ex));
         const rectsOpen = await q("(() => { const c = document.querySelector('.board-canvas').getBoundingClientRect(); const k = document.querySelector('.board-box').getBoundingClientRect(); return [c.left, c.top, c.width, c.height, k.left, k.top, k.width, k.height].map(Math.round); })()");
         ok(`[${T}] PAGE IS PRIMARY: the board canvas and the card do not move or resize while the popover is open`, JSON.stringify(rectsBefore) === JSON.stringify(rectsOpen), JSON.stringify({ rectsBefore, rectsOpen }));
         await app.key('Escape'); await sleep(250);

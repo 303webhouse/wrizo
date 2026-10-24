@@ -5999,7 +5999,7 @@ a:focus-visible,
 [data-theme='flux'] .board-step-pop::before{ box-shadow:-1px -1px 0 0 var(--card-hairline); }
 [data-theme='flux'] .board-step-pop[data-flip='true']::before{ box-shadow:1px 1px 0 0 var(--card-hairline); }
 [data-theme='flux'] .board-step-pop-k{ color:var(--ink-on-card-meta); }
-[data-theme='flux'] .board-step-pop-x{ font-family:var(--font-proseSerif, serif); }
+[data-theme='flux'] .board-step-pop-x{ font-family:var(--font-proseSans); font-style:normal; }   /* Flux's own type (Chakra Petch), not Arbor's italic serif - Fable, Oct 23 */
 [data-theme='flux'] .board-step-pop-more{ text-transform:uppercase; letter-spacing:.12em; }
 
 /* ── BM1 — the Board's Own Modes ─────────────────────────────────────────────
