@@ -68,7 +68,7 @@ const INSTANT_MAX = 3;   // the start, then at most two instant whole-line steps
 // ruling (c), Nick via Fable, Oct 23: the page grows smoothly with the stage; these are his four test sizes
 const SIZES = [[1366, 768], [1920, 1080], [2560, 1440], [3840, 2160]];
 const FIT_SLACK = 96;       // "a small margin": the page's height is within this of the stage's when it is the largest that fits
-const ZOOM_FIT_SLACK = 96;  // a zoom capped below 1.6 fills the stage's width to within this
+const ZOOM_FIT_SLACK = 100; // a zoom capped below 1.6 fills the stage's width to within this (the product keeps a 96px gutter, store/pageScale.ts ZOOM_GUTTER; + sub-pixel)
 // a drawer's narrowest open width (Fable, Oct 23 - drawers narrow to a minimum, scrolling inside). 200 is today's Tools drawer open
 // width (menusDrawers.ts CLOSED_TOOLS_W); the build names ONE token for it and this number must equal that token.
 const DRAWER_MIN = 200;
