@@ -390,6 +390,10 @@ function suite(M, read, doc) {
   const pop = rule('.board-step-pop'), popFlux = rule("[data-theme='flux'] .board-step-pop");
   const flatRing = (body) => { const m = /box-shadow:\s*([^;]+);/.exec(body || ''); return !!m && !m[1].includes(',') && /^0 0 0 1px /.test(m[1].trim()); };
   keep('CS4', !!pop && !!popFlux && flatRing(pop.body) && flatRing(popFlux.body) && /border-radius:\s*0/.test(pop.body), `${pop ? (/box-shadow:\s*([^;]+);/.exec(pop.body) || [])[1] : 'no rule'} | ${popFlux ? (/box-shadow:\s*([^;]+);/.exec(popFlux.body) || [])[1] : 'no flux rule'}`);
+  // FP1 - the Flux popover's example line wears Flux's OWN type (--font-proseSans = Chakra Petch, upright), never Arbor's italic serif (Fable, Oct 23: it rendered in Arbor's italic serif under Flux)
+  const popXFlux = rule("[data-theme='flux'] .board-step-pop-x");
+  const fluxSans = (/--font-proseSans:\s*'([^']+)'/.exec(css.slice(css.indexOf(":root[data-theme='flux'] {"))) || [])[1];
+  keep('FP1', !!popXFlux && /font-family:\s*var\(--font-proseSans\)/.test(popXFlux.body) && /font-style:\s*normal/.test(popXFlux.body) && !/proseSerif/.test(popXFlux.body) && fluxSans === 'Chakra Petch', popXFlux ? popXFlux.body : 'no Flux example rule');
   void rootCss;
   return r;
 }
@@ -446,6 +450,7 @@ const MUT = [
   { name: 'the Presets list drops From my pages', file: 'components/SectionsPopout.tsx', find: "const presetDecks = theme === 'plateau' ? [...DECKS]", to: "const presetDecks = theme === 'plateau' ? [...DECKS].filter((d) => d.id !== 'from-my-pages')", red: ['PP3'] },
   { name: 'Arbor stops leading with From my pages', file: 'components/SectionsPopout.tsx', find: "Number(b.id === 'from-my-pages') - Number(a.id === 'from-my-pages')", to: "Number(a.id === 'from-my-pages') - Number(b.id === 'from-my-pages')", red: ['PP3'] },
   { name: 'the new-project door offers pages', file: 'pages/CreateProject.tsx', find: "<DeckWizard decks={DECKS} onDeal={onDeckDealt}", to: "<DeckWizard decks={DECKS} pagesFor={() => []} onDeal={onDeckDealt}", red: ['FM3'] },
+  { name: 'the Flux example goes back to the Arbor italic serif', file: 'index.css', find: "[data-theme='flux'] .board-step-pop-x{ font-family:var(--font-proseSans); font-style:normal; }", to: "[data-theme='flux'] .board-step-pop-x{ font-family:var(--font-proseSerif, serif); }", red: ['FP1'] },
   { name: 'the popover gets its drop shadow back', file: 'index.css', find: "box-shadow:0 0 0 1px var(--badge-on-card);   /* flat 1 px edge", to: "box-shadow:0 0 0 1px var(--badge-on-card), 0 14px 30px rgba(0,0,0,.35);   /* flat 1 px edge", red: ['CS4'] },
   { name: 'the Flux popover gets its drop shadow back', file: 'index.css', find: "box-shadow:0 0 0 1px var(--card-hairline); }\n[data-theme='flux'] .board-step-pop::before", to: "box-shadow:0 0 0 1px var(--card-hairline), 0 14px 30px rgba(0, 0, 0, .55); }\n[data-theme='flux'] .board-step-pop::before", red: ['CS4'] },
   { name: 'the popover is rounded', file: 'index.css', find: "position:fixed; z-index:420; box-sizing:border-box; padding:14px 16px; border-radius:0;", to: "position:fixed; z-index:420; box-sizing:border-box; padding:14px 16px; border-radius:8px;", red: ['CS4'] },
