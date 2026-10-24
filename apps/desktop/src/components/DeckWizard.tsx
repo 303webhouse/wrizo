@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { decksByRoom } from '../decks/library';
 import { HelpMeChoose } from './HelpMeChoose';
+import { useTheme } from '../store/theme';
+import { FORMS_GROUPS, blockRangeLabel, coverTermKey } from '../decks/formCounts';
 import type { DeckDefinition, DeckAnswers, DeckRoom } from '../decks/types';
 
 // B3 S1 — the deck engine's own UI: ONE generic wizard runtime any deck
@@ -57,6 +59,7 @@ const ROOM_TERM: Record<DeckRoom, DeskTermId> = {
 
 export function DeckWizard({ decks, onDeal, onClose, startDeckId, startAnswers, pagesFor }: DeckWizardProps) {
   const { t } = useDeskLexicon();
+  const machina = useTheme() === 'machina';
   // W3 - the pages picked so far, in the order picked (the page step of From my pages)
   const [picked, setPicked] = useState<string[]>([]);
   const startDeck = startDeckId ? decks.find(d => d.id === startDeckId) ?? null : null;
@@ -114,6 +117,21 @@ export function DeckWizard({ decks, onDeal, onClose, startDeckId, startAnswers, 
     onClose();
   };
 
+  // MACHINA FORMS: Esc closes the panel (not while Intake is open over it - Intake owns that Esc), and the arrow keys walk the rows
+  useEffect(() => {
+    if (!machina) return undefined;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape' && !helpOpen) { e.stopPropagation(); onClose(); } };
+    document.addEventListener('keydown', onKey, true);
+    return () => document.removeEventListener('keydown', onKey, true);
+  }, [machina, helpOpen, onClose]);
+  const moveRow = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    const rows = [...e.currentTarget.querySelectorAll<HTMLElement>('.forms-row, .wz-help-door')];
+    const at = rows.indexOf(document.activeElement as HTMLElement);
+    const next = rows[Math.max(0, Math.min(rows.length - 1, at + (e.key === 'ArrowDown' ? 1 : -1)))];
+    if (next) { e.preventDefault(); next.focus(); }
+  };
+
   const asksForPages = (d: DeckDefinition) => d.questions.some(q => q.kind === 'pages');
   const visibleDecks = decks.filter(d => !asksForPages(d) || (pagesFor ? pagesFor().length > 0 : false));
   const grouped = decksByRoom(visibleDecks);
@@ -133,7 +151,42 @@ export function DeckWizard({ decks, onDeal, onClose, startDeckId, startAnswers, 
         aria-label={t('deckWizardChooseTitle')}
         onClick={e => e.stopPropagation()}
       >
-        {step.kind === 'library' && (
+        {step.kind === 'library' && machina && (
+          <>
+            <div className="deck-wizard-strip">
+              <span className="eyebrow deck-wizard-eyebrow">{t('deckWizardChooseTitle')}</span>
+              <button type="button" className="btn-quiet deck-wizard-close" aria-label={t('deckWizardClose')} onClick={onClose}>×</button>
+            </div>
+            <div className="deck-wizard-body forms-body" onKeyDown={moveRow}>
+              {pagesFor && (
+                <button type="button" ref={helpDoorRef} className="wz-help-door forms-intake" data-preset="help-me-choose" onClick={() => setHelpOpen(true)}>
+                  <span className="forms-intake-word">{t('helpDoor')}</span><span className="forms-intake-hint">{t('formsIntakeHint')}</span>
+                </button>
+              )}
+              {FORMS_GROUPS.map((g) => {
+                const shown = g.decks.map((id) => visibleDecks.find((d) => d.id === id)).filter((d): d is DeckDefinition => !!d);
+                if (shown.length === 0) return null;
+                return (
+                  <div className="forms-group" key={g.group} data-group={g.group}>
+                    <div className="forms-kicker">{t(ROOM_TERM[g.room])}</div>
+                    {shown.map((deck) => (
+                      <button key={deck.id} type="button" className="forms-row" data-deck-id={deck.id} onClick={() => chooseDeck(deck)}>
+                        <span className="forms-name">{t(deck.nameTerm)}</span>
+                        <span className="forms-cover">{t(coverTermKey(deck.id) as DeskTermId)}</span>
+                        <span className="forms-count">{blockRangeLabel(deck)}</span>
+                      </button>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="deck-wizard-foot forms-foot">
+              <span>{t('formsFoot')}</span><span>{t('formsFootBlocks')}</span>
+            </div>
+          </>
+        )}
+
+        {step.kind === 'library' && !machina && (
           <>
             <div className="deck-wizard-strip">
               <span className="eyebrow deck-wizard-eyebrow">{t('deckWizardChooseTitle')}</span>

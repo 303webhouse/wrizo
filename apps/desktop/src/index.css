@@ -6117,6 +6117,26 @@ a:focus-visible,
 [data-theme='machina'] .deck-wizard-dialog .btn-brass{ background:none; color:var(--text-hi); border:1px solid var(--accent-rest); border-radius:0; box-shadow:none; font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.1em; text-transform:uppercase; }
 [data-theme='machina'] .deck-wizard-dialog .btn-brass:hover{ background:var(--ink-800); color:var(--text-hi); border-color:var(--accent-rest); }
 
+/* MACHINA FORMS (m7 / m8; Fable's brief Oct 24 §1): the deck library as a panel 600 wide inside the stage - never past its bottom, the list scrolling inside - a FORMS header, the Intake row boxed in a hairline, seven mono kickers,
+   rows of name (Plex Sans 14, --text-hi) - cover line (--text-mid) - the block count right-aligned in mono. Hover / focus = a 2 px left bar in --choice (steel COOL / orange NEUTRAL) + the --ink-800 fill; the carrier is never text at
+   rest. Square, a hairline, no shadow, and NO MOTION (cuts only): nothing in the panel transitions. The backdrop is clear - Forms is a tool over the stage, the rail beside it stays in view. */
+[data-theme='machina'] .deck-wizard-backdrop{ align-items:flex-start; justify-content:center; padding:118px 0 10px 84px; background:transparent; }
+[data-theme='machina'] .deck-wizard-dialog{ width:min(600px, calc(100vw - 108px)); max-height:calc(100vh - 128px); }
+[data-theme='machina'] .deck-wizard-dialog *{ transition:none !important; animation:none !important; }
+[data-theme='machina'] .forms-body{ padding:10px 18px 6px; }
+[data-theme='machina'] .forms-intake{ display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; box-sizing:border-box; margin:0 0 6px; padding:10px 12px; border:1px solid var(--ink-border-strong); border-bottom:1px solid var(--ink-border-strong); color:var(--text-mid); font-size:14px; }
+[data-theme='machina'] .forms-intake-word{ color:var(--text-accent); font-weight:600; font-size:14px; }
+[data-theme='machina'] .forms-intake-hint{ color:var(--text-mid); font-size:13px; }
+[data-theme='machina'] .forms-intake:hover, [data-theme='machina'] .forms-intake:focus-visible{ background:var(--ink-800); box-shadow:inset 2px 0 0 var(--choice); color:var(--text-mid); outline:none; }
+[data-theme='machina'] .forms-kicker{ margin:16px 0 4px; font-family:var(--font-chromeLabel); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--text-mid); }
+[data-theme='machina'] .forms-row{ display:grid; grid-template-columns:210px minmax(0, 1fr) 56px; align-items:baseline; gap:12px; width:100%; box-sizing:border-box; padding:6px 10px; background:none; border:0; border-radius:0; cursor:pointer; text-align:left; font-family:var(--font-contentLabel); }
+[data-theme='machina'] .forms-name{ color:var(--text-hi); font-size:14px; }
+[data-theme='machina'] .forms-cover{ color:var(--text-mid); font-size:13px; }
+[data-theme='machina'] .forms-count{ text-align:right; font-family:var(--font-chromeLabel); font-size:12px; color:var(--text-mid); }
+[data-theme='machina'] .forms-row:hover, [data-theme='machina'] .forms-row:focus-visible{ background:var(--ink-800); box-shadow:inset 2px 0 0 var(--choice); outline:none; }
+[data-theme='machina'] .forms-row:hover .forms-count, [data-theme='machina'] .forms-row:focus-visible .forms-count{ color:var(--text-hi); }
+[data-theme='machina'] .forms-foot{ display:flex; justify-content:space-between; align-items:center; padding:10px 18px; border-top:1px solid var(--ink-border); font-family:var(--font-chromeLabel); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-low); }
+
 /* CreateProject.tsx's own analog of .board-canvas-blur-wrap/.board-canvas-
    blurred (FX4 S5) — identical values, a distinct name since this host has
    no board canvas at all. */

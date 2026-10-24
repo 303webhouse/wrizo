@@ -25,6 +25,9 @@ export function blockRangeLabel(deck: DeckDefinition): string {
   return t[0] === t[t.length - 1] ? String(t[0]) : `${t[0]}–${t[t.length - 1]}`;
 }
 
+/** the lexicon key of a deck's cover line (W4's helpCover<Deck>) - the row's second column */
+export const coverTermKey = (deckId: string): string => 'helpCover' + deckId.split(/[^A-Za-z0-9]+/).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join('');
+
 export interface FormsGroup { group: string; room: DeckRoom; decks: readonly string[] }
 
 /** Machina's group labels (the `group` strings are the canonical English kickers; the panel reads the lexicon's deckRoom* words for display) and their decks, in the mockup's order. */

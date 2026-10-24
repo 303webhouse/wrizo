@@ -653,6 +653,7 @@ export type DeskTermId =
   // Flux's own circuit-register voice is a Flux override, below.
   | 'splashLoading1' | 'splashLoading2' | 'splashLoading3' | 'splashLoading4'
   // W4 (Help me choose) - the panel's chrome words and the questions' answers (labels + hints) and the deck cover lines.
+  | 'formsIntakeHint' | 'formsBlocksHead' | 'formsFoot' | 'formsFootBlocks'
   | 'helpDoor'
   | 'helpDialogLabel'
   | 'helpKicker'
@@ -1784,6 +1785,11 @@ const CANONICAL: Record<DeskTermId, string> = {
   helpWhyFeatureStoryInvestigative: "Something you found needs a trail, so the feature lays out what you know and don't.",
   // W4 - Help me choose: chrome + the questions' answers (label, hint) + the deck cover lines. The ANSWERS and the COVERS are deck content (every theme reads them); the chrome words take theme overrides.
   helpDoor: 'Ask the librarian',
+  // MACHINA FORMS (m7 / m8): the panel's own words. Canonical English; only Machina draws them (the deck library reads the deck wizard's Arbor / Flux wording elsewhere).
+  formsIntakeHint: 'three fields, one recommendation',
+  formsBlocksHead: 'Blocks',
+  formsFoot: '↑ ↓ Move · Enter Create Agenda · Esc Close',
+  formsFootBlocks: 'Blocks',
   helpDialogLabel: 'Help me choose',
   helpKicker: 'The librarian',
   helpPickKicker: "The librarian's pick",
@@ -2133,6 +2139,15 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
   machina: {
     // W4 - Intake: Machina's plain, square panel of Help me choose (no mockup yet).
     helpDoor: 'Intake',
+    // MACHINA FORMS (m7 / m8): the deck library is the Forms panel; its seven group kickers are Machina's own labels for the registry's rooms.
+    deckWizardChooseTitle: 'Forms',
+    deckRoomFiction: 'Fiction',
+    deckRoomSpeculative: 'World',
+    deckRoomScreen: 'Screen',
+    deckRoomAcademy: 'Academic',
+    deckRoomBusiness: 'Business',
+    deckRoomNewsroom: 'Newsroom',
+    deckRoomEvery: 'Your files',
     helpDialogLabel: 'Intake',
     helpKicker: 'Intake',
     helpPickKicker: 'Recommended',
