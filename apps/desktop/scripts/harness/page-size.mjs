@@ -216,10 +216,13 @@ const pressTypewriter = async (app) => {
   // until the pointer moves; a writer's hand moving to the button restores it. So the pointer goes there, and the hit is waited for, up to 2.5s.)
   const probe = () => app.evalJs(`(() => { const b = document.querySelector(${J(TOGGLE)}); if (!b) return null; b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     const r = b.getBoundingClientRect(); const x = r.left + r.width / 2; const y = r.top + r.height / 2; const hit = document.elementFromPoint(x, y);
-    return { x: Math.round(x), y: Math.round(y), hits: !!hit && (hit === b || b.contains(hit)), hit: hit ? String(hit.className || hit.tagName).slice(0, 60) : null, before: b.getAttribute('aria-pressed') }; })()`);
+    return { x: Math.round(x), y: Math.round(y), hits: !!hit && (hit === b || b.contains(hit)), hit: hit ? String(hit.className || hit.tagName).slice(0, 60) : null, before: b.getAttribute('aria-pressed'),
+    btn: { l: Math.round(r.left), t: Math.round(r.top), r: Math.round(r.right), b: Math.round(r.bottom) },
+    panel: (() => { const p = document.querySelector('.wz-sliver-panel'); if (!p) return null; const q = p.getBoundingClientRect(); const cs = getComputedStyle(p); return { l: Math.round(q.left), t: Math.round(q.top), r: Math.round(q.right), b: Math.round(q.bottom), pe: cs.pointerEvents, op: cs.opacity, ov: cs.overflowY, sh: p.scrollHeight, ch: p.clientHeight }; })(),
+    writing: document.querySelector('.desk-frame')?.getAttribute('data-writing') ?? null }; })()`);
   let at = await probe();
   for (let i = 0; at && !at.hits && i < 16; i += 1) { await app.mouseMove(at.x, at.y); await sleep(150); at = await probe(); }
-  if (!at || !at.hits) return { pressed: null, at };
+  if (!at || !at.hits) { await snap(app, `press-miss-${Date.now()}`); return { pressed: null, at }; }
   await click(app, at.x, at.y); await sleep(1100);
   return { pressed: await attr(app, TOGGLE, 'aria-pressed'), at };
 };
