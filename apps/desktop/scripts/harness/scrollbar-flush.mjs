@@ -108,6 +108,8 @@ const measure = (app) => app.evalJs(`(() => {
     // the applied scale is read from the page's OWN computed transform (matrix(a, ...)), never from the variable the rule reads - an independent measurement
     appliedScale: (() => { const t = getComputedStyle(page).transform; return !t || t === 'none' ? 1 : new DOMMatrixReadOnly(t).a; })(),
     thumbColor: getComputedStyle(scroll, '::-webkit-scrollbar-thumb').backgroundColor,
+    stageK: parseFloat(getComputedStyle(document.querySelector('.desk-frame-stage--prose') || document.body).getPropertyValue('--wz-k')) || 1,
+    zoomVar: parseFloat(getComputedStyle(document.querySelector('.desk-frame-stage--prose') || document.body).getPropertyValue('--wz-zoom')) || 1.6,
     viewport: [innerWidth, innerHeight],
   };
 })()`);
@@ -156,8 +158,11 @@ await withHarness(async (app) => {
   for (const [name, size, zoom] of [['1366', [1366, 768], false], ['3840', [3840, 2160], false], ['3840 zoomed', [3840, 2160], true], ['1366 zoomed', [1366, 768], true]]) {
     await seedAndOpen(app, 'plateau', 'light', size);
     if (zoom) { await app.evalJs("document.querySelector('.mode-pagecol')?.setAttribute('data-zoom', 'true')"); await sleep(250); }
-    const m = await measure(app);
+    let m = await measure(app);
+    const want = (q) => (q ? q.stageK * (zoom ? q.zoomVar : 1) : 1);
+    for (let i = 0; i < 24 && m && Math.abs(m.appliedScale - want(m)) > 0.005 * want(m); i += 1) { await sleep(250); m = await measure(app); }
     paint[name] = m;
+    ok(`PAINT [${name}] settled: the transform the browser applied to .mode-page (${m ? m.appliedScale.toFixed(3) : '?'}) equals the scale page-size intends (--wz-k ${m ? m.stageK : '?'}${zoom ? ' x --wz-zoom ' + (m ? m.zoomVar : '?') : ''}) - the measurement is of the settled page, not a frame mid-arrival`, !!m && Math.abs(m.appliedScale - want(m)) <= 0.005 * want(m), JSON.stringify(m && { applied: m.appliedScale, stageK: m.stageK, zoomVar: m.zoomVar }));
     const tol = m ? 0.5 * m.appliedScale + 0.25 : 0;
     ok(`PAINT [${name}]: the page bar paints 10px (layout width ${m ? m.scrollbarWidth : '?'} x the applied scale ${m ? m.appliedScale.toFixed(3) : '?'}) - never the native bar scaled up with the page`,
       !!m && m.scrollbarWidth >= 1 && Math.abs(m.scrollbarWidth * m.appliedScale - 10) <= tol, JSON.stringify(m));

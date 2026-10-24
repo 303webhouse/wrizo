@@ -109,8 +109,8 @@ ok('T5 [successor]: the exception RESETS scrollbar-width and scrollbar-color to 
 const barRule = exceptionRules.find(([s]) => s === EXC + '::-webkit-scrollbar');
 const thumbRule = exceptionRules.find(([s]) => s === EXC + '::-webkit-scrollbar-thumb');
 const zoomRule = exceptionRules.find(([s]) => s === ".desk-frame-stage--prose .mode-pagecol[data-zoom='true'] .mode-scroll");
-ok('T5 [successor]: the bar is 10px / the APPLIED scale (--wz-sb-k = --wz-k, times --wz-zoom while the column is zoomed - the expressions page-size\'s own transform rules use)',
-  !!barRule && /width:\s*calc\(10px \/ var\(--wz-sb-k\)\)/.test(barRule[1]) && !!resetRule && /--wz-sb-k:\s*var\(--wz-k, 1\)/.test(resetRule[1])
+ok('T5 [successor]: the bar is 10px / the APPLIED scale, rounded to the nearest whole layout pixel (the engine truncates a fractional bar width: 10/1.74 = 5.74 painted 8.7px) (--wz-sb-k = --wz-k, times --wz-zoom while the column is zoomed - the expressions page-size\'s own transform rules use)',
+  !!barRule && /width:\s*round\(nearest, calc\(10px \/ var\(--wz-sb-k\)\), 1px\)/.test(barRule[1]) && !!resetRule && /--wz-sb-k:\s*var\(--wz-k, 1\)/.test(resetRule[1])
   && !!zoomRule && /--wz-sb-k:\s*calc\(var\(--wz-k, 1\) \* var\(--wz-zoom, 1\.6\)\)/.test(zoomRule[1]), JSON.stringify({ barRule, zoomRule }));
 ok('T5 [successor]: the thumb is a SQUARE (border-radius 0) in the paper-toned --ink-on-paper-low, the track clear',
   !!thumbRule && /background:\s*var\(--ink-on-paper-low\)/.test(thumbRule[1]) && /border-radius:\s*0/.test(thumbRule[1]) && exceptionRules.some(([s, b]) => s === EXC + '::-webkit-scrollbar-track' && /background:\s*transparent/.test(b)), JSON.stringify(thumbRule));
@@ -141,8 +141,8 @@ ok('T6: .board-canvas-wrap paints var(--paper) (the canvas\'s own surface) besid
   const resetGone = land(`  .desk-frame-stage--prose .mode-scroll{ --wz-sb-k: var(--wz-k, 1); scrollbar-width:auto; scrollbar-color:auto; }`, `  .desk-frame-stage--prose .mode-scroll{ --wz-sb-k: var(--wz-k, 1); }`);
   const resetOf = (t) => { const b = (/@supports selector\(::-webkit-scrollbar\)\{([\s\S]*?)\n\}/.exec(t) || [, ''])[1]; const r = [...b.matchAll(/([^{}]+)\{([^{}]*)\}/g)].find((m) => m[1].trim() === EXC); return !!r && /scrollbar-width:\s*auto/.test(r[2]) && /scrollbar-color:\s*auto/.test(r[2]); };
   ok('MUTANT: the auto reset is removed from the exception (the pseudo rules would be dead under Chromium >= 121) - T5 [successor] must go RED (the mutation LANDED)', resetGone !== null && !resetOf(resetGone) && resetOf(cssRules), '');
-  const unscaled = land('width:calc(10px / var(--wz-sb-k)); }', 'width:10px; }');
-  ok('MUTANT: the bar is a flat 10px of layout (the scaled-up bar of 3840 returns) - T5 [successor] must go RED (the mutation LANDED)', unscaled !== null && !/width:\s*calc\(10px \/ var\(--wz-sb-k\)\)/.test(unscaled) && /width:\s*calc\(10px \/ var\(--wz-sb-k\)\)/.test(cssRules), '');
+  const unscaled = land('width:round(nearest, calc(10px / var(--wz-sb-k)), 1px); }', 'width:10px; }');
+  ok('MUTANT: the bar is a flat 10px of layout (the scaled-up bar of 3840 returns) - T5 [successor] must go RED (the mutation LANDED)', unscaled !== null && !/width:\s*round\(nearest, calc\(10px \/ var\(--wz-sb-k\)\), 1px\)/.test(unscaled) && /width:\s*round\(nearest, calc\(10px \/ var\(--wz-sb-k\)\), 1px\)/.test(cssRules), '');
   const unwrapped = land('@supports selector(::-webkit-scrollbar){\n  .desk-frame-stage--prose .mode-scroll{ --wz-sb-k', '.desk-frame-stage--prose .mode-scroll{ --wz-sb-k');
   ok('MUTANT: the @supports wrapper is dropped (Firefox would lose `thin`) - T5 [successor] must go RED (the mutation LANDED)', unwrapped !== null && !/@supports selector\(::-webkit-scrollbar\)/.test(unwrapped) && /@supports selector\(::-webkit-scrollbar\)/.test(cssRules), '');
   const noZoom = land("--wz-sb-k: calc(var(--wz-k, 1) * var(--wz-zoom, 1.6));", '--wz-sb-k: var(--wz-k, 1);');
