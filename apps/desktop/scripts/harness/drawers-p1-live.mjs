@@ -449,10 +449,30 @@ await withHarness(async (app) => {
         await pressEnter(app); await sleep(400);
         const t2 = await app.evalJs(`document.querySelector('${sel}')?.getAttribute('aria-pressed') ?? null`);
         ok(`L9 ${T}: Enter on the focused Typewriter toggle FLIPS it, like any button`, t1 != null && t2 != null && t2 !== t1, JSON.stringify({ t1, t2 }));
+        // ---- PARKED - SUPERSEDED by page-size (Nick + Fable, Oct 23: the zoom's "panels tucked"): when Enter turns the Typewriter ON, the page enters the
+        // zoom, which TUCKS both drawers - the Sliver holding this toggle closes - and hands a stranded focus to the editor. The press below then
+        // focuses a hidden control and Space goes to the page (lane 3, Flux, whose default is off: t2 true, t3 true). Arbor passed only because its
+        // default is ON, so its Enter turned the zoom OFF. Kept VERBATIM and no longer run; successor follows; one record per theme in the parked section.
+        //
+        // await app.evalJs(`document.querySelector('${sel}')?.focus()`);
+        // await pressSpace(app); await sleep(400);
+        // const t3 = await app.evalJs(`document.querySelector('${sel}')?.getAttribute('aria-pressed') ?? null`);
+        // ok(`L9 ${T}: and Space flips it back`, t3 != null && t3 !== t2, JSON.stringify({ t2, t3 }));
+        // ------------------------------------------------------------------
+        let tuck = null;
+        if (t2 === 'true') {
+          // the zoom is ON now: the drawer is tucked and the focus is on the page, not stranded on the hidden toggle
+          tuck = await app.evalJs("({ left: document.querySelector('.wz-sliver')?.getAttribute('data-open') ?? null, zoom: document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null, focusOnPage: !!document.activeElement && !!document.activeElement.closest('.forward-only-editor') })");
+          ok(`L9 ${T} [page-size successor]: Enter turned the Typewriter ON - the page is in the zoom, the drawer holding the toggle is TUCKED, and the focus is on the page (never stranded on a hidden control)`,
+            !!tuck && tuck.zoom === 'true' && tuck.left !== 'true' && tuck.focusOnPage === true, JSON.stringify(tuck));
+          await ensureLeft(app, true);   // the writer re-opens the drawer to reach the toggle again
+        }
         await app.evalJs(`document.querySelector('${sel}')?.focus()`);
         await pressSpace(app); await sleep(400);
         const t3 = await app.evalJs(`document.querySelector('${sel}')?.getAttribute('aria-pressed') ?? null`);
-        ok(`L9 ${T}: and Space flips it back`, t3 != null && t3 !== t2, JSON.stringify({ t2, t3 }));
+        pok(`PARKED (was "L9 ${T}: and Space flips it back") - SUPERSEDED by page-size (the zoom tucks the drawer holding the toggle); live successor: L9 ${T}: and Space flips it back [page-size successor]`,
+          t3 != null && t3 !== t2 && (t2 !== 'true' || (!!tuck && tuck.zoom === 'true' && tuck.left !== 'true')), JSON.stringify({ t2, t3, tuck }));
+        ok(`L9 ${T}: and Space flips it back [page-size successor] (the drawer re-opened by the writer if the zoom tucked it)`, t3 != null && t3 !== t2, JSON.stringify({ t2, t3, tuck }));
       }
       // SUPERSEDED WHOLE (help-buttons, Nick approved Oct 12): the Grafts/
       // Links tab's own "?" moved off DrawerNote (.wz-drawer-note-btn) onto
@@ -496,7 +516,7 @@ if (process.env.HARNESS_PARKED === '1') {
   const parkedPass = parkedChecks.length > 0 && parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nDRAWERS-P1-LIVE PARKED: PASS (${parkedChecks.length} records) - this FILE parks 2 (page-size, Oct 23): L7's two Oct 12 one-drawer-at-every-width checks, recorded once per theme; the older two-drawer law above L7 stays a comment-only park from Oct 12`
+    ? `\nDRAWERS-P1-LIVE PARKED: PASS (${parkedChecks.length} records) - this FILE parks 3 (page-size, Oct 23-24): L7's two Oct 12 one-drawer-at-every-width checks and L9's Space-flips-back (the zoom tucks its drawer), each recorded once per theme; the older two-drawer law above L7 stays a comment-only park from Oct 12`
     : `\nDRAWERS-P1-LIVE PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed (or none recorded)`);
 }
 const failed = checks.filter((c) => !c.pass);

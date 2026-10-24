@@ -74,6 +74,14 @@ import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
+const tu2Ps = [];   // page-size's park audit (Oct 24): the page surface's grip reads, for the parked records
+// page-size: the Tutor grip against the PAINTED page (the column is stage-wide in the zoom), with the editor's edge and the margin the CSS reads
+const PS_GRIP = `(() => { const g = document.querySelector('.wz-tutor-grip'); const p = document.querySelector('.desk-frame-stage--prose .mode-page'); const e = document.querySelector('.forward-only-editor');
+  const st = document.querySelector('.desk-frame-stage'); if (!g || !p || !e || !st) return null; const pr = p.getBoundingClientRect();
+  return { gripLeft: g.getBoundingClientRect().left, pageRight: pr.right, textRight: e.getBoundingClientRect().right, margin: st.getBoundingClientRect().right - pr.right, zoom: document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null }; })()`;
+// flush on the painted edge - or, where the margin is under 160px (the zoom at 1100/1280), inside the page's own margin by at most the anchor's 38px
+// overflow (index.css --tutor-overflow; TU2 S4's algebra), and never into the text
+const psGripOk = (o) => !!o && (Math.abs(o.gripLeft - o.pageRight) < 1.5 || (o.margin < 160 && o.gripLeft >= o.pageRight - 38.5 && o.gripLeft < o.pageRight && o.gripLeft >= o.textRight - 0.5));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const FLOOR_W = 1100; // DESKFRAME_MIN_WIDTH — the mandatory floor, never skipped
@@ -439,8 +447,19 @@ await withHarness(async (app) => {
 
       const paperClosed = await rectOf(app, paperSel);
       const gripClosed = await rectOf(app, '.wz-tutor-grip');
-      ok(`Geometry @${width}px/${surface}: grip-flush — the grip's own left edge sits flush (no gap) against the paper's right edge`,
-        Math.abs(gripClosed.left - paperClosed.right) < 1.5, JSON.stringify({ gripLeft: gripClosed.left, paperRight: paperClosed.right }));
+      // ---- PARKED FOR THE PAGE SURFACE - SUPERSEDED there by page-size (Nick + Fable, Oct 23): .mode-pagecol is no longer the paper. The prose page is
+      // PAINTED by a transform inside it, and in the Typewriter zoom (Arbor's default) the column is the whole stage - lane 3 read the grip 981 / 1110 / 1596
+      // against a "paper right" of 1067 / 1242 / 1960. Against the painted page the grip is flush at 2200 and, where the zoom leaves under 160px of
+      // margin, overlaps the page's own 1in margin by the anchor's documented overflow (<= 38px), never the text. The check runs VERBATIM, unchanged,
+      // on the board surface; on the page its successor runs instead. Records in the parked section.
+      if (surface !== 'page') {
+        ok(`Geometry @${width}px/${surface}: grip-flush — the grip's own left edge sits flush (no gap) against the paper's right edge`,
+          Math.abs(gripClosed.left - paperClosed.right) < 1.5, JSON.stringify({ gripLeft: gripClosed.left, paperRight: paperClosed.right }));
+      } else {
+        const pg = await app.evalJs(PS_GRIP);
+        tu2Ps.push({ width, ...pg });
+        ok(`Geometry @${width}px/page: grip-flush [page-size successor]: the grip's own left edge sits flush on the PAINTED page's right edge - or, where the zoom leaves under 160px of margin, inside the page's own margin by at most the anchor's 38px overflow, never into the text`, psGripOk(pg), JSON.stringify(pg));
+      }
 
       await openTutor(app);
       const panelOpen = await rectOf(app, '.wz-tutor-panel');
@@ -701,6 +720,12 @@ console.log(JSON.stringify(checks, null, 2));
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  // PAGE-SIZE'S PARK AUDIT (Oct 24) - THREE parks: grip-flush on the PAGE surface at the three reference widths (the board's still runs). Records re-verify
+  // the new truth from the default leg's own reads.
+  for (const o of tu2Ps) {
+    pok(`PARKED for the page surface (was "Geometry @${o.width}px/page: grip-flush — the grip's own left edge sits flush (no gap) against the paper's right edge") — page-size: the paper is the painted .mode-page; live successor: Geometry @${o.width}px/page: grip-flush [page-size successor]`,
+      psGripOk(o), JSON.stringify(o));
+  }
 
   for (const surface of ['page', 'board']) {
     for (const width of [FLOOR_W, LAPTOP_W, WIDE_W]) {

@@ -197,7 +197,9 @@ function assembleBible(facts: Fact[]): string | null {
 function availableTutorMargin(): number {
   if (typeof document === 'undefined') return Infinity;
   const stage = document.querySelector('.desk-frame-stage');
-  const paper = document.querySelector('.mode-pagecol, .entry-full, .board-canvas-wrap');
+  // PAGE-SIZE - the prose page is PAINTED by a transform, ~1.6x and in a stage-wide column while zoomed: the margin is the painted page's (lane 3,
+  // tu1 S2: read from the column it was ~0, and the dock control closed the panel)
+  const paper = document.querySelector('.desk-frame-stage--prose .mode-page') ?? document.querySelector('.mode-pagecol, .entry-full, .board-canvas-wrap');
   if (!stage || !paper) return Infinity;
   const stageRect = stage.getBoundingClientRect();
   const paperRect = paper.getBoundingClientRect();

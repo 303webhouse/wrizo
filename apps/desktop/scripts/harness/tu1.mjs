@@ -57,6 +57,7 @@ import path from 'node:path';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
+const tu1Ps = [];   // page-size's park audit (Oct 24): S6's grip and text reads, for the parked records
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -184,8 +185,18 @@ await withHarness(async (app) => {
     // The grip's own rect: 16px wide at the anchor's own left:0.
     const gripRect = { left: gripAnchor.left, right: gripAnchor.left + 16 };
     const paperTextRight = paperClosed.right - 38; // .mode-page{padding:30px 38px}
-    ok(`S6 geometry @${width}: the grip never enters the paper's text measure`,
-      gripRect.left >= paperTextRight - 0.5, JSON.stringify({ gripRect, paperTextRight }));
+    // ---- PARKED - SUPERSEDED by page-size (Nick + Fable, Oct 23, rulings a-b and the zoom): the text's right edge is no longer the column's right minus
+    // 38px. The page is painted by a transform inside its column, its margins are page-inches (1in), and in the Typewriter zoom the column is the whole
+    // stage (lane 3: "paperTextRight" 1029 at 1100, while the real text ended ~909). The text measure is the editor itself; the successor reads it.
+    // Kept VERBATIM and no longer run; records in the parked section.
+    //
+    // ok(`S6 geometry @${width}: the grip never enters the paper's text measure`,
+    //   gripRect.left >= paperTextRight - 0.5, JSON.stringify({ gripRect, paperTextRight }));
+    // ------------------------------------------------------------------
+    const textRect = await rectOf(app, '.forward-only-editor');
+    tu1Ps.push({ width, gripRect, textRight: textRect && textRect.right });
+    ok(`S6 geometry @${width} [page-size successor]: the grip never enters the paper's text measure - the editor's own right edge`,
+      !!textRect && gripRect.left >= textRect.right - 0.5, JSON.stringify({ gripRect, textRight: textRect && textRect.right }));
 
     await openTutor(app);
     const panelOpen = await rectOf(app, '.wz-tutor-panel');
@@ -739,6 +750,12 @@ console.log(JSON.stringify(checks, null, 2));
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  // PAGE-SIZE'S PARK AUDIT (Oct 24) - THREE parks: S6's text-measure check at 1100, 1280 and 2200. Records byte-frozen; each re-verifies the new truth from
+  // the default leg's own reads: the grip stays clear of the editor's right edge.
+  for (const o of tu1Ps) {
+    pok(`PARKED (was "S6 geometry @${o.width}: the grip never enters the paper's text measure") — page-size: the text's edge is the editor's (the page is painted inside its column, 1in margins; stage-wide column in the zoom); live successor: S6 geometry @${o.width} [page-size successor]`,
+      o.textRight != null && o.gripRect.left >= o.textRight - 0.5, JSON.stringify(o));
+  }
 
   // TU2 S4 replaced the docked/open panel's hardcoded 300px cap with
   // `calc(var(--strip-width) * 2)` (168px today, --strip-width:84px) — a

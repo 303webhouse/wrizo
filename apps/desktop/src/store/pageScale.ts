@@ -25,6 +25,10 @@ export const ZOOM = 1.6;
 // the zoomed page keeps this much of the stage's width free - 48px a side, the grips' lane: at 48 in all (64e5b7f9) the grips, which follow the
 // painted edge, were pushed onto the strip at 1100 (fx2 S1)
 export const ZOOM_GUTTER = 96;
+// ...and never less than this past anything that already stands over the stage's edge: the strip is position:fixed at the window's left and
+// reaches 51px into the stage at 1100, so 48 a side put the zoomed page 3px UNDER it (the lane run on d80010ae, cd2 S1/S5 + fx2 S1 @ 1100). The
+// page is centred, so the larger intrusion is kept on both sides.
+export const ZOOM_CLEAR = 8;
 export const ZOOM_ANCHOR = 0.6;                              // the writing line's hold, as a fraction of the page column's height (Cursor's --anchor)
 
 /** The base page scale for a stage of this size, with the page's top this far below the stage's top. Never below 1. */
@@ -44,10 +48,12 @@ export function pageLayoutHeightFor(stageH: number, pageTop: number, k: number):
   return Math.max(0, Math.min(PAGE_H_BASE, room));
 }
 
-/** The zoom for a page of base scale `k` on a stage this wide: ~1.6, or less where 1.6 would not fit (panels tucked). Never below 1. */
-export function zoomFor(stageW: number, k: number): number {
+/** The zoom for a page of base scale `k` on a stage this wide: ~1.6, or less where 1.6 would not fit (panels tucked). Never below 1.
+ *  `sideInset`: how far chrome already stands over the stage's side (the strip) - the page keeps ZOOM_CLEAR beyond it. */
+export function zoomFor(stageW: number, k: number, sideInset = 0): number {
   if (!(stageW > 0) || !(k > 0)) return ZOOM;
-  const fit = (stageW - ZOOM_GUTTER) / (PAGE_W_BASE * k);
+  const gutter = Math.max(ZOOM_GUTTER, 2 * (Math.max(0, sideInset) + ZOOM_CLEAR));
+  const fit = (stageW - gutter) / (PAGE_W_BASE * k);
   const z = Math.min(ZOOM, fit);
   return Number.isFinite(z) && z > 1 ? z : 1;
 }

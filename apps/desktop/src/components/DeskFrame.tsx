@@ -238,8 +238,11 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
       const col = page?.parentElement;
       const top = page && col ? col.getBoundingClientRect().top - s.top + page.offsetTop : 0;
       const k = pageScaleFor(s.width, s.height, top);
+      // the strip is fixed at the window's left and stands over the stage's edge: the zoomed page keeps clear of it (pageScale.ts ZOOM_CLEAR)
+      const strip = rootRef.current?.querySelector<HTMLElement>('.desk-frame-strip')?.getBoundingClientRect();
+      const inset = strip && strip.width > 0 ? strip.right - s.left : 0;
       stage.style.setProperty('--wz-k', k.toFixed(4));
-      stage.style.setProperty('--wz-zoom', zoomFor(s.width, k).toFixed(4));
+      stage.style.setProperty('--wz-zoom', zoomFor(s.width, k, inset).toFixed(4));
       stage.style.setProperty('--wz-page-hl', `${pageLayoutHeightFor(s.height, top, k).toFixed(2)}px`);
     };
     apply();

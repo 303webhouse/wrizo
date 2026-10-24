@@ -235,3 +235,25 @@ tells Nick to press `+` if a page looks small.
 - **Scope:** the framed prose page (PageEditor at 1100px and wider: Draft, Free Write, Revise). QuickSprint is not framed and keeps its own
   sheet; the unframed narrow layout and the legacy Journal surface are unchanged.
 
+
+## 10. The park audit, part 2 (lane 3 on `d80010ae`, Oct 24)
+
+Lane 3 ran 43 files on both legs: 61 reds on the default leg. Every one has a disposition.
+
+- **Parked: 43 red instances in 15 files.** Each is kept verbatim, with a successor and a frozen record. Almost all read `.mode-pagecol` as "the
+  paper", but the paper is now the PAINTED `.mode-page`, and in the Typewriter zoom (Arbor's default) the column spans the whole stage. The rest
+  are the zoom's own rulings: the start offset is at the band's anchor, the panels tuck, and the page runs past the stage. Also parked is page-size C,
+  under Fable's C ruling: the measure belongs to the face, and I holds the text column identical across skins.
+- **Records re-parked (generation 2): 4.** These are ab1, fx1 (x2) and fx5. Their probes read the same column or the old start offset.
+- **Product fixes: 3, each caught by a red check.**
+  1. The zoom's gutter now counts the strip, which stands 51px over the stage at 1100 (`pageScale.ts ZOOM_CLEAR`; cd2 S1/S5, fx2 S1 @ 1100). New
+     check S with its mutant MS.
+  2. The Tutor's dock floor now measures the painted page (`availableTutorMargin`; tu1 S2). Measured from the column, the margin was ~0 in the zoom.
+  3. G's lost glide, fixed in `f03a7fe0`.
+- **Instrument fix: 1.** typewriter-fade's successors read the caret from an empty bounding rect. They now read it as page-size's `__psCaret` does.
+- **TOOLS': 9.** fx10 S4, the scrollbar. Their fix builds on this branch.
+- **Open: 2,** to be probed in the next turn and not parked on a guess:
+  - item121 S5: an INK mouse drag drew nothing on a zoomed page, while the pen leg drew.
+  - fx5 S1 (c): after a manual scroll-up, one typed line moved the box two lines (lane 2 moved it one).
+- **Found, not built: the Cascade's twin.** `availableCascadeMargin` (Cascade.tsx) reads the column too, so its dock floor is wrong in the zoom.
+  No check covers it yet. A check comes first, then the same one-line fix.

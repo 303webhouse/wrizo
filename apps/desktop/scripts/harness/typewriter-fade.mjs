@@ -162,7 +162,11 @@ await withHarness(async (app) => {
     for (const rc of r.getClientRects()) { if (rc.height < 4 || rc.bottom <= Math.max(box.top, 0) || rc.top >= Math.min(box.bottom, innerHeight)) continue;
       const mid = Math.round((rc.top + rc.bottom) / 2); if (!mids.some((m2) => Math.abs(m2 - mid) < 4)) mids.push(mid); }
     mids.sort((a, b) => a - b);
-    const sel = getSelection(); const cr = sel && sel.rangeCount ? sel.getRangeAt(0).getBoundingClientRect() : null;
+    // the caret: a collapsed range at a text end has an EMPTY bounding rect (lane 3: wi = -1), so read its last client rect, else the character before it
+    const sel = getSelection(); const rg = sel && sel.rangeCount && ed.contains(sel.anchorNode) ? sel.getRangeAt(0) : null;
+    let cr = null;
+    if (rg) { const rs = rg.getClientRects(); cr = rs[rs.length - 1] || null;
+      if ((!cr || !cr.height) && rg.startContainer.nodeType === 3 && rg.startOffset > 0) { const rr = document.createRange(); rr.setStart(rg.startContainer, rg.startOffset - 1); rr.setEnd(rg.startContainer, rg.startOffset); const xs = rr.getClientRects(); cr = xs[xs.length - 1] || null; } }
     const caretMid = cr && cr.height ? (cr.top + cr.bottom) / 2 : null;
     const lines = mids.map((mid) => ({ y: Math.round(mid - box.top), alpha: Math.round(alphaAt(mid - box.top) * 1000) / 1000, writing: caretMid != null && Math.abs(mid - caretMid) < 4 }));
     return { zoom: col.getAttribute('data-zoom'), mask: mask.slice(0, 160), stops, lines, boxH: Math.round(box.height) };

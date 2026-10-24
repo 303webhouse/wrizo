@@ -236,8 +236,19 @@ await withHarness(async (app) => {
   // slipped through AB2 on JournalEntry (ab2.1 F1) — cheap to catch here,
   // transition-independent, covering every framed surface, not just the
   // one that broke.
-  ok('F2 geometry: framed prose page column renders a sane width [600,800]',
-    pageRectBefore.width >= 600 && pageRectBefore.width <= 800, JSON.stringify(pageRectBefore));
+  // ---- PARKED - SUPERSEDED by page-size (Nick + Fable, Oct 23): the column is no longer the paper. The prose page is a letter page PAINTED by a
+  // transform at the stage's scale (never below 1.0), and in the Typewriter zoom (Arbor's default) the column widens to the whole stage - lane 3
+  // read 1320px. F2's point - the writing surface never collapses - is the successor's: the PAINTED page is at least the scale-1 letter page
+  // (620px) and stays inside the stage. Kept VERBATIM and no longer run; record in the parked section.
+  //
+  // ok('F2 geometry: framed prose page column renders a sane width [600,800]',
+  //   pageRectBefore.width >= 600 && pageRectBefore.width <= 800, JSON.stringify(pageRectBefore));
+  // ------------------------------------------------------------------
+  const paperBefore = await app.evalJs(`(() => { const p = document.querySelector('.desk-frame-stage--prose .mode-page'); const st = document.querySelector('.desk-frame-stage--prose');
+    if (!p || !st) return null; const r = p.getBoundingClientRect(); const s = st.getBoundingClientRect(); return { left: r.left, right: r.right, width: r.width, stageLeft: s.left, stageRight: s.right }; })()`);
+  parkObs.f2 = { pagecol: pageRectBefore, paper: paperBefore };
+  ok('F2 geometry [page-size successor]: the framed prose PAPER (painted) never collapses - at least the scale-1 letter page (620px) - and stays inside the stage',
+    !!paperBefore && paperBefore.width >= 619 && paperBefore.left >= paperBefore.stageLeft - 0.5 && paperBefore.right <= paperBefore.stageRight + 0.5, JSON.stringify(paperBefore));
 
   await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft').click()");
   await sleep(150);
@@ -860,6 +871,12 @@ console.log(JSON.stringify(checks, null, 2));
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  // PAGE-SIZE'S PARK AUDIT (Oct 24) - F2's prose-column band. Its record re-verifies the new truth from the live run: the painted paper never collapses.
+  {
+    const f2 = parkObs.f2 || {};
+    pok('PARKED (was "F2 geometry: framed prose page column renders a sane width [600,800]") - page-size: the column is not the paper (painted by a transform; stage-wide in the zoom); live successor: F2 geometry [page-size successor]',
+      !!f2.paper && f2.paper.width >= 619 && f2.paper.left >= f2.paper.stageLeft - 0.5 && f2.paper.right <= f2.paper.stageRight + 0.5, JSON.stringify(f2));
+  }
   // PAGE-TEMPLATES-MOVE (2026-10-08) - S4's placeholder roster, read in the live run above.
   // ---- PARKED - SUPERSEDED by PAGE TEMPLATES R2 (2026-10-16): the stand-in roster this record quoted no longer exists. Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
   //

@@ -29,6 +29,8 @@
 //   STRENGTH is read from the SCREENSHOT (decoded in the page through a canvas - no new dependency), so it is what is PAINTED, masks and
 //   all: a line's ink = the largest colour distance from its own commonest colour (the paper); its strength = ink as painted / ink with
 //   every mask and opacity in the stage stripped. The stripped reference is a premise: it must itself show ink.
+//   S  (lane 3) the zoomed page never slides under the strip (+ MS)
+//   C  PARKED (Fable's C ruling, Oct 24): the measure is the face's; successor records it, I holds the column
 //   I  (Nick, Oct 24) the skin changes ONLY the skin: every skin (light + dark) has the same page box, margins, type size and zoom band/anchor (±1px)
 //   V  (Fable, Oct 23) the vignette sits BEHIND the page in every theme and page tone: the paper's foot and lower corners paint the same with it hidden
 //   V-room  and it is behind, not GONE: a corner of the room still changes when it is hidden
@@ -174,9 +176,10 @@ const IDENT_PROBE = `(() => { const p = document.querySelector('.mode-page'); co
   if (!p || !e || !col) return null; const r = p.getBoundingClientRect(); const ps = getComputedStyle(p); const cs = getComputedStyle(col);
   const R = (n) => Math.round(n * 10) / 10;
   return { page: { left: R(r.left), top: R(r.top), width: R(r.width), height: R(r.height) }, padT: parseFloat(ps.paddingTop), padR: parseFloat(ps.paddingRight), padB: parseFloat(ps.paddingBottom), padL: parseFloat(ps.paddingLeft),
-    fontPx: parseFloat(getComputedStyle(e).fontSize), transform: ps.transform, zoom: col.getAttribute('data-zoom'), anchor: cs.getPropertyValue('--tw-anchor').trim(),
+    fontPx: parseFloat(getComputedStyle(e).fontSize), colW: e.offsetWidth, transform: ps.transform, zoom: col.getAttribute('data-zoom'), anchor: cs.getPropertyValue('--tw-anchor').trim(),
     lh: parseFloat(cs.getPropertyValue('--tw-lh')) || null, mask: String(cs.webkitMaskImage || cs.maskImage || 'none') }; })()`;
 const ident = {};
+const psParks = { C: [] };   // the park audit (Oct 24): the default leg's observations, for the parked records
 const IDENT_TOL = 1;   // Nick's law, ±1px
 
 // strip every MASK the stage can paint, so a line's UNFADED ink can be read (layout is untouched: a mask never moves a line). MASKS ONLY - the red run (143)
@@ -284,7 +287,16 @@ const normalCase = async (app, th, w, h) => {
     J({ k: kr, page: g && { w: Math.round(g.page.width), h: Math.round(g.page.height) }, ratio: g && Math.round((g.page.width / g.page.height) * 1000) / 1000, want: Math.round(LETTER * 1000) / 1000,
       stageH: g && g.stage && Math.round(g.stage.height), slack: g && g.stage && Math.round(g.stage.height - g.page.height), inStage: inStage(g) }));
   const lens = fullLineLengths(lines || []);
-  ok(`${th.name} ${w}x${h} C: at the default, the median full line holds ${CPL_MIN}-${CPL_MAX} characters (~75)`, cPred(lines), J({ median: median(lens), lines: lens.length, sample: lens.slice(0, 8) }));
+  // ---- PARKED - SUPERSEDED by Fable's C ruling (Nick, Oct 24): characters per line belong to the FACE, not the page. Machina's face set 61 on the same
+  // column where Arbor and Flux set ~75 (lane 3, d80010ae); the page's claim is the COLUMN, and I (below) holds the text column's width identical across
+  // skins. Machina at 61 is accepted for #7 (its default face moves to Source Sans 3, ~72, in the fonts ticket). Kept VERBATIM and no longer run;
+  // successor follows; one record per skin and size in the parked section.
+  //
+  // ok(`${th.name} ${w}x${h} C: at the default, the median full line holds ${CPL_MIN}-${CPL_MAX} characters (~75)`, cPred(lines), J({ median: median(lens), lines: lens.length, sample: lens.slice(0, 8) }));
+  // ------------------------------------------------------------------
+  psParks.C.push({ skin: th.name, w, h, median: median(lens), lines: lens.length });
+  ok(`${th.name} ${w}x${h} C (successor): this FACE's measure is recorded on the shared column - median ${median(lens)} characters a full line (the column itself is held identical across skins by I)`,
+    lens.length >= 10 && median(lens) > 0, J({ median: median(lens), lines: lens.length, sample: lens.slice(0, 8) }));
   // (the page lays out at scale 1 and is PAINTED at k - the as-built design - so the computed type is 16px and the painted type is 16 x k)
   const painted = g && g.layoutW > 0 ? g.fontPx * (g.page.width / g.layoutW) : null;
   ok(`${th.name} ${w}x${h} F: the editor's type is 12 pt in page units - laid out at ${FONT_PX}px and painted at ${FONT_PX}px x k (within 1%)`,
@@ -626,7 +638,7 @@ await withHarness(async (app) => {
     const base = skins[0];
     const near = (a, b) => a != null && b != null && Math.abs(a - b) <= IDENT_TOL;
     const sameNormal = (a, b) => !!a && !!b && ['left', 'top', 'width', 'height'].every((k) => near(a.page[k], b.page[k]))
-      && ['padT', 'padR', 'padB', 'padL'].every((k) => near(a[k], b[k])) && near(a.fontPx, b.fontPx) && a.transform === b.transform;
+      && ['padT', 'padR', 'padB', 'padL'].every((k) => near(a[k], b[k])) && near(a.fontPx, b.fontPx) && near(a.colW, b.colW) && a.transform === b.transform;
     const sameZoom = (a, b) => !!a && !!b && a.zoom === 'true' && b.zoom === 'true' && ['left', 'top', 'width', 'height'].every((k) => near(a.page[k], b.page[k]))
       && a.anchor === b.anchor && near(a.lh, b.lh) && a.mask === b.mask;
     ok(`I (premise): every registered skin, light and dark, was measured at 1366 and 1920, normal and zoomed (${skins.length} skins)`,
@@ -634,7 +646,7 @@ await withHarness(async (app) => {
     for (const w of [1366, 1920]) {
       for (const s of skins.slice(1)) {
         const a = ident[base][w]; const b = ident[s][w];
-        ok(`I ${s} vs ${base} @ ${w}: the NORMAL page is the same box, the same margins and the same type size (within ${IDENT_TOL}px) - the skin changed only the skin`,
+        ok(`I ${s} vs ${base} @ ${w}: the NORMAL page is the same box, the same margins, the same text column and the same type size (within ${IDENT_TOL}px) - the skin changed only the skin`,
           !!a && !!b && sameNormal(a.normal, b.normal), J({ base: a && a.normal, here: b && b.normal }));
         ok(`I ${s} vs ${base} @ ${w}: the ZOOM is the same - its page box, the band's anchor and line unit, the mask's stops (within ${IDENT_TOL}px)`,
           !!a && !!b && sameZoom(a.zoomed, b.zoomed), J({ base: a && a.zoomed, here: b && b.zoomed }));
@@ -646,6 +658,33 @@ await withHarness(async (app) => {
       !!mi && !!miBase && Math.abs(mi.padL - miBase.padL) >= 30 && !sameNormal(miBase, mi), J({ base: miBase, mutated: mi }));
   }
   await app.evalJs("localStorage.setItem('wrizo-theme-prefs', " + J(J({ voice: 'serif', page: 'light', fade: 'on' })) + ")");
+
+  // S (the lane run on d80010ae, cd2 S1/S5 + fx2 S1 @ 1100): the ZOOMED page never slides under the strip. The strip is fixed at the window's left and
+  // stands 51px over the stage at the gate floor; the zoom's 48px-a-side gutter put the page 3px under it. Now the gutter counts it (pageScale.ts
+  // ZOOM_CLEAR). MS: the zoom the old gutter gave, written back on the stage - S must fail.
+  await app.evalJs("location.hash = '#/'"); await sleep(300);
+  await app.evalJs("localStorage.setItem('wrizo-theme', 'plateau')"); await app.reload();
+  await app.waitFor("typeof window.wrizoCreateJournalPage === 'function'", { label: 'the seams' });
+  await app.emulateDpr(1, 1100, 900);
+  {
+    const sid = pid('plateau', 'draft');
+    await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${sid}', 'on')`);
+    if (await openPage(app, sid)) {
+      const stripProbe = `(() => { const s = document.querySelector('.desk-frame-strip'); const p = document.querySelector('.desk-frame-stage--prose .mode-page'); const col = document.querySelector('.mode-pagecol');
+        if (!s || !p || !col) return null; const a = s.getBoundingClientRect(); const b = p.getBoundingClientRect();
+        return { zoom: col.getAttribute('data-zoom'), stripRight: Math.round(a.right * 10) / 10, pageLeft: Math.round(b.left * 10) / 10, pageWidth: Math.round(b.width) }; })()`;
+      const sNow = await app.evalJs(stripProbe);
+      ok('S (1100x900, Arbor, zoomed): the zoomed page never slides under the strip - its painted left edge clears the strip\'s right edge',
+        !!sNow && sNow.zoom === 'true' && sNow.pageLeft >= sNow.stripRight, J(sNow));
+      const landedS = await app.evalJs(`(() => { const st = document.querySelector('.desk-frame-stage--prose'); if (!st) return null; const k = parseFloat(getComputedStyle(st).getPropertyValue('--wz-k')) || 1;
+        const z = Math.min(1.6, (st.getBoundingClientRect().width - 96) / (620 * k)); st.style.setProperty('--wz-zoom', z.toFixed(4)); return z.toFixed(4); })()`);
+      await sleep(300);
+      const sMut = await app.evalJs(stripProbe);
+      ok(`MS (mutant): with the old gutter's zoom written back (LANDED: --wz-zoom ${landedS}, the page wider), the page slides under the strip - S fails`,
+        !!sMut && !!sNow && sMut.pageWidth > sNow.pageWidth && !(sMut.pageLeft >= sMut.stripRight), J({ now: sNow, mutated: sMut }));
+    } else ok('S fixture: the Arbor Draft page opened at 1100x900', false, '');
+    await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${sid}', 'off')`);
+  }
 
   // G under reduced motion (Arbor, 1366x768): the same new line moves the scroll in ONE step
   await app.evalJs("location.hash = '#/'"); await sleep(300);
@@ -672,6 +711,14 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 500)}]` : ''}`);
+if (process.env.HARNESS_PARKED === '1') {
+  // C, parked (Fable's C ruling, Oct 24): one record per skin and size, under its original name; each re-verifies the new truth from the default leg -
+  // the face's measure was MEASURED (and recorded here), on the column I holds identical across skins.
+  const rec = psParks.C.map((o) => ({ name: `PARKED (was "${o.skin} ${o.w}x${o.h} C: at the default, the median full line holds ${CPL_MIN}-${CPL_MAX} characters (~75)") - Fable's C ruling (Oct 24): the measure is the FACE's; the column is I's`,
+    pass: o.lines >= 10 && o.median > 0, detail: J(o) }));
+  for (const c of rec) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}  [${c.detail}]`);
+  console.log(rec.length && rec.every((c) => c.pass) ? `\nPAGE-SIZE PARKED: PASS (${rec.length} records) - this FILE parks 1 (C, one record per skin x size)` : `\nPAGE-SIZE PARKED: FAIL - ${rec.filter((c) => !c.pass).length}/${rec.length} (${rec.length} records)`);
+}
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nPAGE-SIZE VERIFY: PASS (${checks.length} checks)` : `\nPAGE-SIZE VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
 process.exit(passed === checks.length ? 0 : 1);

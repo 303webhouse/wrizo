@@ -52,6 +52,8 @@ import { assertHittable } from '../trusted-point.mjs';
 
 const checks = [];
 let fx5MaskSeen = null;   // S1 (b)'s computed mask, kept for its parked record (TYPEWRITER-FADE-ORDER)
+let fx5BandSeen = null;   // page-size: S1 (b)'s page-column band (the zoom's mask), kept for the re-parked record
+let fx5StartSeen = null;  // page-size: S1 (d)'s start reading, kept for its parked record
 // Declared up here, above the harness run that ASSIGNS it: a `let` declared below a top-level await is in its temporal dead zone
 // while that await runs (the first run of the card port died on exactly this: 'Cannot access fx5CardReveal before initialization').
 let fx5CardReveal = null;   // the S6 card reading, kept for its parked record
@@ -277,6 +279,7 @@ await withHarness(async (app) => {
     ok('S1 (b): --tw-fade-start is set to approximately one line-height (the fade band\'s own new starting offset)',
       Math.abs(fadeInfo.fadeStartPx - fadeInfo.lineHeight) <= 2, JSON.stringify(fadeInfo));
     fx5MaskSeen = fadeInfo.maskImage;
+    fx5BandSeen = await app.evalJs("(() => { const col = document.querySelector('.mode-pagecol'); if (!col) return null; const cs = getComputedStyle(col); return { zoom: col.getAttribute('data-zoom'), mask: String(cs.webkitMaskImage || cs.maskImage || 'none').slice(0, 200) }; })()");
     // ---- PARKED - SUPERSEDED by TYPEWRITER-FADE-ORDER (Nick's live bug, 2026-10-10: "lines fade out of order - a newer line
     // dims while the older one above it stays dark"). Kept VERBATIM and no longer run. The "opaque lead-in" it names WAS the bug:
     // it showed the oldest visible line whole above faint newer ones. The mask now holds the 15% floor through --tw-fade-start
@@ -333,8 +336,17 @@ await withHarness(async (app) => {
       const stageR = stage.getBoundingClientRect(), edR = ed.getBoundingClientRect();
       return { fraction: (edR.top - stageR.top) / stageR.height };
     })()`);
-    ok('S1 (d): the start offset (25%) is unchanged — the visual start still reads as "about a quarter"',
-      proseInfo.fraction >= 0.20 && proseInfo.fraction <= 0.32, JSON.stringify(proseInfo));
+    // ---- PARKED - SUPERSEDED by page-size (Nick + Fable, Oct 23; Cursor's mockup e3c4e462): a fresh Arbor page opens in the Typewriter ZOOM, and the
+    // zoom holds the writing line at the band's anchor - 60% of the column (pageScale.ts ZOOM_ANCHOR) - so the first line starts there, not a quarter
+    // down (lane 3 read 0.6002). Kept VERBATIM and no longer run; record in the parked section; successor follows.
+    //
+    // ok('S1 (d): the start offset (25%) is unchanged — the visual start still reads as "about a quarter"',
+    //   proseInfo.fraction >= 0.20 && proseInfo.fraction <= 0.32, JSON.stringify(proseInfo));
+    // ------------------------------------------------------------------
+    const startZoom = await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null");
+    fx5StartSeen = { ...proseInfo, zoom: startZoom };
+    ok('S1 (d) [page-size successor]: a fresh prose page opens in the Typewriter zoom and its first line starts at the band\'s anchor - 60% of the column (within 5%)',
+      startZoom === 'true' && Math.abs(proseInfo.fraction - 0.6) <= 0.05, JSON.stringify(fx5StartSeen));
   }
 
   // --- S1 STOP-clause ink-coordinate re-proof [PARKED WHOLE — FX14 S2] ------
@@ -1272,8 +1284,17 @@ if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
   // TYPEWRITER-FADE-ORDER (2026-10-10) - S1 (b)'s "opaque lead-in" check. Its record asserts the new truth from the live run's
   // own reading: the mask's FIRST stop is the 15% floor, not an opaque one.
-  pok('PARKED (was "S1 (b): the container mask genuinely carries a two-stage ramp now (opaque lead-in, then the fade) ...") - TYPEWRITER-FADE-ORDER (Nick, 2026-10-10): the opaque lead-in showed the oldest line whole above fainter newer ones; the mask now starts at the 15% floor; live successor: typewriter-fade.mjs',
-    typeof fx5MaskSeen === 'string' && /linear-gradient\(\s*(?:to bottom,\s*)?rgba\(0, 0, 0, 0\.15\)/.test(fx5MaskSeen), String(fx5MaskSeen));
+  // ---- RE-PARKED, generation 2, by page-size's park audit (Oct 24): the zoom (Arbor's default) switches .mode-scroll's mask off - lane 3 read "none" -
+  // and paints the band on the page column instead. The gen-1 record, VERBATIM, no longer runs; its successor record reads the band.
+  //
+  // pok('PARKED (was "S1 (b): the container mask genuinely carries a two-stage ramp now (opaque lead-in, then the fade) ...") - TYPEWRITER-FADE-ORDER (Nick, 2026-10-10): the opaque lead-in showed the oldest line whole above fainter newer ones; the mask now starts at the 15% floor; live successor: typewriter-fade.mjs',
+  //   typeof fx5MaskSeen === 'string' && /linear-gradient\(\s*(?:to bottom,\s*)?rgba\(0, 0, 0, 0\.15\)/.test(fx5MaskSeen), String(fx5MaskSeen));
+  // ------------------------------------------------------------------
+  pok('PARKED, generation 2 (was gen-1 "PARKED (was \'S1 (b): the container mask genuinely carries a two-stage ramp now (opaque lead-in, then the fade) ...\') - TYPEWRITER-FADE-ORDER: the mask now starts at the 15% floor") - page-size: in the zoom the box carries no mask; the band is on the page column, transparent at its top; live successor: typewriter-fade.mjs [page-size successor]',
+    (fx5MaskSeen === 'none' || fx5MaskSeen == null) && !!fx5BandSeen && fx5BandSeen.zoom === 'true' && /^linear-gradient\(rgba\(0, 0, 0, 0\) /.test(fx5BandSeen.mask), JSON.stringify({ box: fx5MaskSeen, band: fx5BandSeen }));
+  // PAGE-SIZE'S PARK AUDIT (Oct 24) - S1 (d)'s quarter start. Its record re-verifies the new truth from the live run: zoomed, the start is the anchor.
+  pok('PARKED (was "S1 (d): the start offset (25%) is unchanged — the visual start still reads as \"about a quarter\"") - page-size: a fresh Arbor page opens zoomed; the first line starts at the band\'s anchor (60%); live successor: S1 (d) [page-size successor]',
+    !!fx5StartSeen && fx5StartSeen.zoom === 'true' && Math.abs(fx5StartSeen.fraction - 0.6) <= 0.05, JSON.stringify(fx5StartSeen));
   // TYPED-LITERAL (2026-10-16) - S6's typed-marks reading. Its record asserts the new truth from the live run: the hidden marks are a Ctrl+B run's.
   pok('PARKED (was "S6 [PR #7 successor]: Draft mode hides its marks too - its .md-mark spans carry .md-mark-hidden (item 211 applies to every writing surface)") - typed-literal: typed `**` is literal now; live successor: S6 [typed-literal successor] (Ctrl+B)',
     !!fx5DraftBold && fx5DraftBold.bold >= 1 && fx5DraftBold.marks >= 2 && fx5DraftBold.allHidden, JSON.stringify(fx5DraftBold));
