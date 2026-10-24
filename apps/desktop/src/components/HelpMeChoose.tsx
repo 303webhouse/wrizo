@@ -217,7 +217,7 @@ export function HelpMeChoose({ onBegin, onBrowse, onClose, returnFocusTo }: Help
             <h2 className="help-q">{deckName(result.pick)}</h2>
             <p className="help-why">{t(whyKeyFor(result.pick) as DeskTermId)}</p>
             <button type="button" className="help-begin" data-help-begin onClick={() => begin(result.pick)}>{t('helpBegin')}</button>
-            {result.alt && <button type="button" className="help-alt-plain" data-help-alt onClick={() => begin(result.alt as HelpChoice)}>{t('helpAlt')} {deckName(result.alt)} - {t(coverKey(result.alt.deck))}</button>}
+            {result.alt && <button type="button" className="help-alt-plain" data-help-alt onClick={() => begin(result.alt as HelpChoice)}>{t('helpAlt')} {deckName(result.alt)} · {t(coverKey(result.alt.deck))}</button>}
             <button type="button" className="help-browse" data-help-browse onClick={onBrowse}>{t('helpBrowse')} →</button>
           </>
         ) : null}

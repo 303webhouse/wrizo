@@ -49,6 +49,19 @@ const panelState = (app) => app.evalJs(`(() => { const p = document.querySelecto
 const store = (app) => app.evalJs("JSON.stringify(Object.keys(localStorage).sort().map((k) => [k, localStorage.getItem(k)]))");
 const resultNames = (app) => app.evalJs(`(() => { const p = document.querySelector('.help-panel'); if (!p) return null; const b = p.querySelector('.help-book-title, .help-rline span, .help-q'); const al = p.querySelector('[data-help-alt]'); return { pick: (p.querySelector('.help-book-title') || p.querySelector('.help-rline span') || p.querySelector('.help-q') || {}).textContent || null, alt: al ? al.textContent.replace(/\\s+/g, ' ').trim() : null }; })()`);
 
+// CONTRAST (Fable, W4 review): every TEXT in the olive alcove clears 4.5:1 against its own ground - the nearest opaque background, or, on the panel's gradient, its LIGHTEST stop (the worst case for light text).
+// Brass is a ring / emblem colour here, never a text colour (brass on the tile measured 3.79:1, on the panel 2.4-2.9).
+const SCAN = `(() => { const p = document.querySelector('.help-panel'); if (!p) return null;
+  const rgb = (c) => { const m = /rgba?\(([^)]+)\)/.exec(c || ''); if (!m) return null; const v = m[1].split(',').map((x) => parseFloat(x)); return { c: v.slice(0, 3), a: v.length > 3 ? v[3] : 1 }; };
+  const lum = ([r, g, b]) => { const f = (x) => { const s = x / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+  const ratio = (a, b) => { const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x); return (hi + 0.05) / (lo + 0.05); };
+  const lightest = (() => { const m = [...(getComputedStyle(p).backgroundImage.match(/rgb\([^)]+\)/g) || [])].map((x) => rgb(x).c); return m.sort((a, b) => lum(b) - lum(a))[0] || [0, 0, 0]; })();
+  const groundOf = (el) => { for (let n = el; n && n !== document.body; n = n.parentElement) { const bg = rgb(getComputedStyle(n).backgroundColor); if (bg && bg.a > 0.5) return bg.c; } return lightest; };
+  const rows = []; const probe = document.createElement('i'); probe.style.color = 'var(--brass)'; document.body.appendChild(probe); const brass = rgb(getComputedStyle(probe).color).c; probe.remove();
+  for (const el of p.querySelectorAll('*')) { if (el.closest('svg')) continue; const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()); if (!own) continue; const col = rgb(getComputedStyle(el).color); if (!col) continue;
+    rows.push({ el: el.className || el.tagName, ratio: Math.round(ratio(col.c, groundOf(el)) * 100) / 100, brassText: col.c.join() === brass.join() }); }
+  return { n: rows.length, min: rows.reduce((m, r) => Math.min(m, r.ratio), 99), worst: rows.sort((a, b) => a.ratio - b.ratio).slice(0, 3), brassText: rows.filter((r) => r.brassText).length }; })()`;
+
 await withHarness(async (app) => {
   // ======================================================= ARBOR - the door, the flow, the laws
   await boot(app, { theme: 'plateau', page: 'dark' });
@@ -93,6 +106,9 @@ await withHarness(async (app) => {
   ok('L3: the answers slide in <= 300 ms (the swipe grammar)', !!stepAnim && stepAnim.name === 'help-slide' && parseFloat(stepAnim.dur) <= 0.3, JSON.stringify(stepAnim));
   const dressA = await app.evalJs(`(() => { const p = document.querySelector('.help-panel'); const cs = getComputedStyle(p); const blurs = [...cs.boxShadow.matchAll(/(?:rgba?\\([^)]*\\)|#[0-9a-f]+)\\s+(-?[\\d.]+)px\\s+(-?[\\d.]+)px\\s+([\\d.]+)px/g)].map((m) => parseFloat(m[3])); return { bg: cs.backgroundImage.slice(0, 120), radius: cs.borderRadius, blurs, shadow: cs.boxShadow }; })()`);
   ok('S1 [Arbor]: the olive alcove - an olive gradient ground, square edges, and no blurred shadow (flat 1px edges only)', /rgb\(105, 115, 61\)/.test(dressA.bg) && parseFloat(dressA.radius) === 0 && dressA.blurs.every((b) => b === 0), JSON.stringify(dressA));
+
+  const scanResult = await app.evalJs(SCAN);
+  ok('C1 [Arbor result]: every text in the olive alcove clears 4.5:1 against its own ground (the lightest gradient stop on the panel) and NONE is brass - '+(scanResult ? scanResult.n : 0)+' texts, min '+(scanResult ? scanResult.min : '?'), !!scanResult && scanResult.n >= 8 && scanResult.min >= 4.5 && scanResult.brassText === 0, JSON.stringify(scanResult));
 
   // Q3: all three answers land the same while the Walk is not shipped
   const landings = [];
@@ -158,8 +174,10 @@ await withHarness(async (app) => {
   await option(app, 'novel'); await sleep(450);
   const tileRect = await app.evalJs("(() => { const r = document.querySelector('.help-panel [data-help-option=\"world-system\"]').getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
   await app.mouseMove(tileRect.x, tileRect.y); await sleep(450);
-  const brass = await app.evalJs(`(() => { const t = document.querySelector('.help-panel [data-help-option="world-system"]'); const probe = document.createElement('i'); probe.style.color = 'var(--brass)'; document.body.appendChild(probe); const want = getComputedStyle(probe).color; probe.remove(); return { want, hovered: t.matches(':hover'), shadow: getComputedStyle(t).boxShadow, color: getComputedStyle(t).color }; })()`);
-  ok('S1 [Arbor]: a tile under a REAL pointer turns brass (the ring and the label)', brass.hovered && brass.shadow.includes(brass.want) && brass.color === brass.want, JSON.stringify(brass));
+  const brass = await app.evalJs(`(() => { const t = document.querySelector('.help-panel [data-help-option="world-system"]'); const probe = document.createElement('i'); probe.style.color = 'var(--brass)'; document.body.appendChild(probe); const want = getComputedStyle(probe).color; probe.remove(); return { want, hovered: t.matches(':hover'), shadow: getComputedStyle(t).boxShadow, color: getComputedStyle(t).color, emblem: getComputedStyle(t.querySelector('.help-emblem')).color }; })()`);
+  ok('S1 [Arbor]: a tile under a REAL pointer wears brass on its RING and its line EMBLEM - and its label stays cream (brass text on olive is under 4.5:1)', brass.hovered && brass.shadow.includes(brass.want) && brass.emblem === brass.want && brass.color !== brass.want, JSON.stringify(brass));
+  const scanQ = await app.evalJs(SCAN);
+  ok('C1 [Arbor question, a tile under the pointer]: every text clears 4.5:1 and none is brass - the hovered tile label stays cream (the ring and the emblem carry the brass) - '+(scanQ ? scanQ.n : 0)+' texts, min '+(scanQ ? scanQ.min : '?'), !!scanQ && scanQ.n >= 10 && scanQ.min >= 4.5 && scanQ.brassText === 0, JSON.stringify(scanQ));
   await frame(app, 'arbor-light-q2');
   await option(app, 'world-system'); await sleep(350); await option(app, 'shape'); await sleep(450);
   await frame(app, 'arbor-light-result');
