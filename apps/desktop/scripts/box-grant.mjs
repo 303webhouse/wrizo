@@ -34,11 +34,42 @@
 // turn to a directory instead of to the box.
 import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
+import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import os from 'node:os';
 import path from 'node:path';
 
 export const GRANT_DIR = path.join(os.homedir(), '.wrizo');
 export const GRANT_PATH = path.join(GRANT_DIR, 'box-turn.json');
+
+// --- THE TOKEN IS NOT IN THE FILE (Oct 23, after (145)) ----------------------------------------
+//
+// The hole the process-tree binding was built for: the grant file is readable by every lane on
+// the box, so a lane could read the token out of it and present it. Binding the grant to a
+// process tree closed that, but msys nests forks (script -> function -> `bash chunk.sh` -> node)
+// and the Windows parent link breaks across the second nested fork, so the guard refused its own
+// owner's harness. The fix does not depend on the process tree at all: the file stores only a
+// HASH of the token. Whoever knows the token - the lane that took the box, or whoever it handed
+// the token to - presents it from its environment and matches; whoever merely reads the file has
+// a hash, which is not accepted as a token, and cannot run the hash backwards for a token that
+// was drawn at random (`box-take.mjs take <lane>` with no token draws 128 random bits and prints
+// them once, to the caller). HONEST LIMITS: a token chosen by hand ("chat1-b6p-20261023") is
+// guessable offline from its hash; the token is visible on the command line of `box-take` for
+// the instant it runs and in the environment of the harness processes; the process-tree holder
+// below stays as an OPTIONAL extra (`box-take.mjs take --bind`), off by default. A grant written
+// the old way (a plain `token` field) still matches exactly as before.
+export const hashToken = (token) => createHash('sha256').update(`wrizo-box-turn:${token}`).digest('hex');
+export const newToken = () => randomBytes(16).toString('hex');
+export const grantHasToken = (g) => !!g && ((typeof g.tokenHash === 'string' && g.tokenHash.length === 64) || (typeof g.token === 'string' && g.token.length > 0));
+export function tokenMatches(g, token) {
+  if (!grantHasToken(g) || typeof token !== 'string' || token.length === 0) return false;
+  if (typeof g.tokenHash === 'string' && g.tokenHash.length === 64) {
+    const a = Buffer.from(hashToken(token), 'hex'); const b = Buffer.from(g.tokenHash, 'hex');
+    return a.length === b.length && timingSafeEqual(a, b);
+  }
+  return g.token === token;
+}
+// what to print about a grant's token: never the token (there is none to print), only a short fingerprint
+export const grantFingerprint = (g) => ((g && (g.tokenHash || g.token)) ? String(g.tokenHash || g.token).slice(0, 8) + '...' : null);
 
 // --- THE HOLDER (Oct 23: a token is checked, and so is WHO PRESENTS IT) ------
 //
@@ -126,7 +157,7 @@ export function writeGrantAt(grantPath, lane, token, holder) {
   if (typeof lane !== 'string' || lane.length === 0) throw new Error('writeGrant: lane required');
   if (typeof token !== 'string' || token.length === 0) throw new Error('writeGrant: token required');
   mkdirSync(path.dirname(grantPath), { recursive: true });
-  const rec = { lane, token, time: new Date().toISOString() };
+  const rec = { lane, tokenHash: hashToken(token), time: new Date().toISOString() };
   if (holder && Number.isInteger(holder.pid)) { rec.holderPid = holder.pid; rec.holderStart = holder.start || ''; }
   const body = JSON.stringify(rec, null, 2);
   // Written whole and replaced, so a reader never sees half a grant. A partial
@@ -191,14 +222,14 @@ export function checkGrantAt(grantPath, token, opts = {}) {
         + '  An unreadable grant refuses, rather than being treated as absent or as a match.',
     };
   }
-  if (!grant || typeof grant.token !== 'string' || grant.token.length === 0) {
+  if (!grantHasToken(grant)) {
     return {
       ok: false,
       reason: 'grant-malformed',
       message: 'BOX TURN NOT GRANTED — the grant file carries no token.',
     };
   }
-  if (grant.token !== token) {
+  if (!tokenMatches(grant, token)) {
     // The timestamp is read under EITHER name. writeGrant writes `time`; chat 1's
     // first live grant (2026-09-16) was written by hand as `granted` — the path
     // matched and the format drifted, which is precisely what importing
