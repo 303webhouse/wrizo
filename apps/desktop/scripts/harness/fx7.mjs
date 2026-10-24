@@ -24,6 +24,7 @@ import { assertHittable } from '../trusted-point.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
+const fx7ParkReads = {};   // the default leg's own S4 read, for the parked record at the foot (scrollbar-flush item 3)
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const LAPTOP_W = 1280;
@@ -446,11 +447,17 @@ await withHarness(async (app) => {
   await sleep(200);
   const modeScrollStyle = await app.evalJs(`(() => {
     const cs = getComputedStyle(document.querySelector('.mode-scroll'));
-    return { scrollbarWidth: cs.scrollbarWidth, scrollbarColor: cs.scrollbarColor };
+    return { scrollbarWidth: cs.scrollbarWidth, scrollbarColor: cs.scrollbarColor, thumb: getComputedStyle(document.querySelector('.mode-scroll'), '::-webkit-scrollbar-thumb').backgroundColor };
   })()`);
   const inkOnPaperLow = await app.evalJs("getComputedStyle(document.documentElement).getPropertyValue('--ink-on-paper-low').trim()");
-  ok('S4: the page/script editor content area (.mode-scroll — used to hide its scrollbar ENTIRELY) now carries the minimal, THIN, paper-toned treatment instead of the bulky OS default',
-    modeScrollStyle.scrollbarWidth === 'thin' && modeScrollStyle.scrollbarColor.includes('rgba(0, 0, 0, 0)'),
+  // ORIGINAL (this file's own live S4 check, pre item 3): ok('S4: the page/script editor content area (.mode-scroll — used to hide its scrollbar ENTIRELY) now carries
+  // the minimal, THIN, paper-toned treatment instead of the bulky OS default', modeScrollStyle.scrollbarWidth === 'thin' && modeScrollStyle.scrollbarColor.includes('rgba(0, 0, 0, 0)'), ...);
+  // SUPERSEDED (scrollbar-flush item 3, Fable Oct 23, reading A): on the framed PROSE page the bar is the one scoped webkit exception (index.css, inside @supports selector(::-webkit-scrollbar)) - its
+  // layout width is 10px / the page-size scale so the transform paints it at 10px - so scrollbar-width / scrollbar-color resolve to 'auto' there and the paper-toned thumb is the pseudo-element's own
+  // style. The treatment itself (thin, paper-toned, minimal) is unchanged. Quoted verbatim in this file's PARKED record at the foot; the live successor is the check below.
+  fx7ParkReads.modeScroll = modeScrollStyle;
+  ok('S4 [item 3 successor]: the page/script editor content area (.mode-scroll) carries the minimal, THIN, paper-toned treatment - on the framed prose page that is the exception\'s webkit bar (scrollbar-width resolves to auto) with a paper-toned thumb (--ink-on-paper-low)',
+    modeScrollStyle.scrollbarWidth === 'auto' && !!inkOnPaperLow && modeScrollStyle.thumb.includes(`rgb(${[1, 3, 5].map((i) => parseInt(inkOnPaperLow.replace('#', '').slice(i - 1, i + 1), 16)).join(', ')})`),
     JSON.stringify({ modeScrollStyle, inkOnPaperLow }));
 
   await openPageCategory(app);
@@ -842,6 +849,9 @@ console.log(JSON.stringify(checks, null, 2));
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  // SCROLLBAR-FLUSH item 3 (Oct 23) - the page bar's S4 claim, retired verbatim; the condition is the ruled truth from the default leg's own read (successor: S4 [item 3 successor]).
+  pok('PARKED (was "S4: the page/script editor content area (.mode-scroll — used to hide its scrollbar ENTIRELY) now carries the minimal, THIN, paper-toned treatment instead of the bulky OS default") — scrollbar-flush item 3 (Fable Oct 23, reading A): on the framed prose page the bar is the one scoped webkit exception, so scrollbar-width / scrollbar-color resolve to auto there; the treatment is unchanged; live successor: S4 [item 3 successor]',
+    !!fx7ParkReads.modeScroll && fx7ParkReads.modeScroll.scrollbarWidth === 'auto' && fx7ParkReads.modeScroll.scrollbarColor === 'auto', JSON.stringify(fx7ParkReads.modeScroll));
   await withHarness(async (app) => {
     // ORIGINAL (this file's own live S1 section, pre-SC1, once per reference
     // width): ok(`S1 @${w}px: the sliver anchor's own right edge is flush

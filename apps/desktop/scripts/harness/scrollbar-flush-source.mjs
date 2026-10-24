@@ -60,7 +60,8 @@ const scriptEditor = src('components/ScriptEditor.tsx');
 const SHARED_VAR = "var(--wz-page-pad-x, 38px)";
 
 // T1 - .mode-scroll reads the shared variable, not a hardcoded literal
-const modeScrollMatch = css.match(/\.mode-scroll\{[^}]*\}/);
+// (probe re-anchored to the rule's own line start: the page-scale exception below adds `.desk-frame-stage--prose .mode-scroll{...}` EARLIER in the file, and an unanchored match would read THAT rule - the claim T1 makes is unchanged)
+const modeScrollMatch = css.match(/\n\.mode-scroll\{[^}]*\}/);
 ok('T1: .mode-scroll\'s own margin-right cancellation reads the shared page-margin variable, not a hardcoded 38px literal',
   !!modeScrollMatch && modeScrollMatch[0].includes(`margin-right:calc(-1 * ${SHARED_VAR} * var(--paper-scale))`), modeScrollMatch?.[0] ?? null);
 ok('T1: .mode-scroll\'s own padding-right re-application reads the SAME shared variable too (both halves of the cancellation, not just one)',
@@ -91,8 +92,28 @@ ok('T4: .desk-frame-scroll-cap\'s own rule is unchanged by this ticket (no margi
 // (comments stripped first: the explanatory notes in index.css name the selector in prose; only RULES count)
 const cssRules = css.replace(/\/\*[\s\S]*?\*\//g, '');
 const webkitScrollbarRules = (cssRules.match(/::-webkit-scrollbar[\w-]*/g) || []);
-ok('T5: ONE mechanism - index.css carries NO ::-webkit-scrollbar rule (they are dead under Chromium >= 121 wherever the standard properties are set, and the `*` rule sets them everywhere)',
-  webkitScrollbarRules.length === 0, JSON.stringify(webkitScrollbarRules));
+// SUPERSEDED (Fable Oct 23, "at 3840 the page scrollbar scales up with the page", reading A): T5 used to say "ONE mechanism - index.css carries NO ::-webkit-scrollbar rule (they are dead
+// under Chromium >= 121 wherever the standard properties are set, and the `*` rule sets them everywhere)". page-size paints the prose page with a transform, so the native `thin` bar paints at
+// 10 x the scale; the standard properties cannot name a thickness, so ONE scoped exception is allowed (below). The original is quoted verbatim in the PARKED record at the foot of this file.
+// The exception's block - everything inside @supports selector(::-webkit-scrollbar){ ... } - and the rules OUTSIDE it, which must still carry no webkit scrollbar selector at all:
+const exceptionBlock = (/@supports selector\(::-webkit-scrollbar\)\{([\s\S]*?)\n\}/.exec(cssRules) || [, ''])[1];
+const outsideException = cssRules.replace(/@supports selector\(::-webkit-scrollbar\)\{[\s\S]*?\n\}/, '');
+const EXC = '.desk-frame-stage--prose .mode-scroll';
+const exceptionRules = [...exceptionBlock.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => [m[1].trim(), m[2].trim()]);
+const webkitSelectors = exceptionRules.map(([s]) => s).filter((s) => /::-webkit-scrollbar/.test(s));
+ok('T5 [successor]: the webkit mechanism lives in EXACTLY ONE place - inside @supports selector(::-webkit-scrollbar){} (so Firefox keeps `thin`), and every ::-webkit-scrollbar selector there is on `.desk-frame-stage--prose .mode-scroll` - none anywhere else in index.css',
+  exceptionBlock.length > 0 && !/::-webkit-scrollbar/.test(outsideException) && webkitSelectors.length === 3 && webkitSelectors.every((s) => s.startsWith(EXC + '::-webkit-scrollbar')), JSON.stringify({ outside: (outsideException.match(/::-webkit-scrollbar[\w-]*/g) || []), inside: webkitSelectors }));
+const resetRule = exceptionRules.find(([s]) => s === EXC);
+ok('T5 [successor]: the exception RESETS scrollbar-width and scrollbar-color to auto on that element (the pseudo rules are ignored wherever either is set - the dead-code trap this ticket\'s one-mechanism note records)',
+  !!resetRule && /scrollbar-width:\s*auto/.test(resetRule[1]) && /scrollbar-color:\s*auto/.test(resetRule[1]), JSON.stringify(resetRule));
+const barRule = exceptionRules.find(([s]) => s === EXC + '::-webkit-scrollbar');
+const thumbRule = exceptionRules.find(([s]) => s === EXC + '::-webkit-scrollbar-thumb');
+const zoomRule = exceptionRules.find(([s]) => s === ".desk-frame-stage--prose .mode-pagecol[data-zoom='true'] .mode-scroll");
+ok('T5 [successor]: the bar is 10px / the APPLIED scale (--wz-sb-k = --wz-k, times --wz-zoom while the column is zoomed - the expressions page-size\'s own transform rules use)',
+  !!barRule && /width:\s*calc\(10px \/ var\(--wz-sb-k\)\)/.test(barRule[1]) && !!resetRule && /--wz-sb-k:\s*var\(--wz-k, 1\)/.test(resetRule[1])
+  && !!zoomRule && /--wz-sb-k:\s*calc\(var\(--wz-k, 1\) \* var\(--wz-zoom, 1\.6\)\)/.test(zoomRule[1]), JSON.stringify({ barRule, zoomRule }));
+ok('T5 [successor]: the thumb is a SQUARE (border-radius 0) in the paper-toned --ink-on-paper-low, the track clear',
+  !!thumbRule && /background:\s*var\(--ink-on-paper-low\)/.test(thumbRule[1]) && /border-radius:\s*0/.test(thumbRule[1]) && exceptionRules.some(([s, b]) => s === EXC + '::-webkit-scrollbar-track' && /background:\s*transparent/.test(b)), JSON.stringify(thumbRule));
 ok('T5: ...and the standard mechanism IS present: the systemic `*` rule sets scrollbar-width:thin and a theme-token scrollbar-color',
   /\*\{\s*scrollbar-width: thin;\s*scrollbar-color: var\(--ink-border-strong\) transparent;\s*\}/.test(css), '');
 ok('T5: ...and the paper-toned group (.mode-scroll, .desk-frame-scroll-cap, .board-canvas-wrap) and the card text keep their scrollbar-color',
@@ -106,11 +127,26 @@ ok('T6: .board-canvas-wrap paints var(--paper) (the canvas\'s own surface) besid
   ok('MUTANT: the wrap loses its paper background (the dark-gutter, invisible-in-Flux-light state) - T6 must go RED', m !== css && !/\n\.board-canvas-wrap\{ scrollbar-gutter:stable; background:var\(--paper\); \}/.test(m), '');
 }
 
-// MUTANT - the dead webkit width rule comes back (the old 8px) - T5 must go RED
+// MUTANT - the dead webkit width rule comes back (the old 8px), OUTSIDE the one exception - T5 [successor] must go RED
 {
   const mutated = (css + '\n::-webkit-scrollbar{ width:8px; height:8px; }\n').replace(/\/\*[\s\S]*?\*\//g, '');
-  ok('MUTANT: the ::-webkit-scrollbar{width:8px} rule is re-added - T5 must go RED',
-    mutated !== cssRules && (mutated.match(/::-webkit-scrollbar[\w-]*/g) || []).length > 0, '');
+  const outside = mutated.replace(/@supports selector\(::-webkit-scrollbar\)\{[\s\S]*?\n\}/, '');
+  ok('MUTANT: a ::-webkit-scrollbar{width:8px} rule is re-added OUTSIDE the exception - T5 [successor] must go RED (the mutation LANDED, and the real source has none outside)',
+    mutated !== cssRules && /::-webkit-scrollbar/.test(outside) && !/::-webkit-scrollbar/.test(outsideException), '');
+}
+// MUTANTS of the exception itself - each rewrites the real CSS, asserts the mutation LANDED, and the successor's own predicate goes false
+{
+  const strip = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '');
+  const land = (from, to) => { const next = css.replace(from, to); return next === css ? null : strip(next); };
+  const resetGone = land(`  .desk-frame-stage--prose .mode-scroll{ --wz-sb-k: var(--wz-k, 1); scrollbar-width:auto; scrollbar-color:auto; }`, `  .desk-frame-stage--prose .mode-scroll{ --wz-sb-k: var(--wz-k, 1); }`);
+  const resetOf = (t) => { const b = (/@supports selector\(::-webkit-scrollbar\)\{([\s\S]*?)\n\}/.exec(t) || [, ''])[1]; const r = [...b.matchAll(/([^{}]+)\{([^{}]*)\}/g)].find((m) => m[1].trim() === EXC); return !!r && /scrollbar-width:\s*auto/.test(r[2]) && /scrollbar-color:\s*auto/.test(r[2]); };
+  ok('MUTANT: the auto reset is removed from the exception (the pseudo rules would be dead under Chromium >= 121) - T5 [successor] must go RED (the mutation LANDED)', resetGone !== null && !resetOf(resetGone) && resetOf(cssRules), '');
+  const unscaled = land('width:calc(10px / var(--wz-sb-k)); }', 'width:10px; }');
+  ok('MUTANT: the bar is a flat 10px of layout (the scaled-up bar of 3840 returns) - T5 [successor] must go RED (the mutation LANDED)', unscaled !== null && !/width:\s*calc\(10px \/ var\(--wz-sb-k\)\)/.test(unscaled) && /width:\s*calc\(10px \/ var\(--wz-sb-k\)\)/.test(cssRules), '');
+  const unwrapped = land('@supports selector(::-webkit-scrollbar){\n  .desk-frame-stage--prose .mode-scroll{ --wz-sb-k', '.desk-frame-stage--prose .mode-scroll{ --wz-sb-k');
+  ok('MUTANT: the @supports wrapper is dropped (Firefox would lose `thin`) - T5 [successor] must go RED (the mutation LANDED)', unwrapped !== null && !/@supports selector\(::-webkit-scrollbar\)/.test(unwrapped) && /@supports selector\(::-webkit-scrollbar\)/.test(cssRules), '');
+  const noZoom = land("--wz-sb-k: calc(var(--wz-k, 1) * var(--wz-zoom, 1.6));", '--wz-sb-k: var(--wz-k, 1);');
+  ok('MUTANT: the zoom multiplier is dropped (the bar would scale 1.6x while the page is zoomed) - T5 [successor] must go RED (the mutation LANDED)', noZoom !== null && !/--wz-sb-k:\s*calc\(var\(--wz-k, 1\) \* var\(--wz-zoom, 1\.6\)\)/.test(noZoom) && !!zoomRule, '');
 }
 
 // MUTANT - revert to the exact pre-fix regression (the hardcoded literal ITEM 83 M3 silently broke)
@@ -124,6 +160,16 @@ ok('T6: .board-canvas-wrap paints var(--paper) (the canvas\'s own surface) besid
   const wentRed = landed && !(mutatedMatch?.[0].includes(SHARED_VAR));
   ok('MUTANT: .mode-scroll\'s cancellation reverts to the old hardcoded 38px literal (the exact ITEM-83-M3 regression) - T1 must go RED',
     wentRed, JSON.stringify({ landed }));
+}
+
+// PARKED (HARNESS_PARKED=1) - the retired claim, quoted verbatim, with the ruled truth as its condition (successor: T5 [successor])
+const parkedChecks = [];
+if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  pok('PARKED (was "T5: ONE mechanism - index.css carries NO ::-webkit-scrollbar rule (they are dead under Chromium >= 121 wherever the standard properties are set, and the `*` rule sets them everywhere)") - Fable Oct 23 (3840: the page bar scales with page-size\'s transform), reading A: ONE scoped exception on `.desk-frame-stage--prose .mode-scroll`, inside @supports selector(::-webkit-scrollbar); live successor: T5 [successor]',
+    webkitScrollbarRules.length > 0 && webkitSelectors.length === 3 && !/::-webkit-scrollbar/.test(outsideException), JSON.stringify({ total: webkitScrollbarRules.length, outside: (outsideException.match(/::-webkit-scrollbar[\w-]*/g) || []).length }));
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  console.log(parkedChecks.every((c) => c.pass) ? `\nSCROLLBAR-FLUSH-SOURCE PARKED: PASS (${parkedChecks.length} check) - this FILE parks 1: T5's no-webkit claim` : '\nSCROLLBAR-FLUSH-SOURCE PARKED: FAIL');
 }
 
 const bad = checks.filter((c) => !c.pass).length;
