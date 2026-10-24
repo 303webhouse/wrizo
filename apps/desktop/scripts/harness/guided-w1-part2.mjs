@@ -80,9 +80,10 @@ await withHarness(async (app) => {
       if (full) {
         await open('w1-three', '.board-canvas');
         const before = (await boxes()).filter((b) => b.kind === 'text').map((b) => [b.id, b.x, b.y, b.seq]);
-        for (const v of ['storyboard', 'outline', 'walk', 'open']) { await showAs(v); await sleep(500); }
+        const seen = [];
+        for (const v of ['storyboard', 'outline', 'walk', 'open']) { await showAs(v); await sleep(500); seen.push(await pressed()); }   // the views must REALLY switch - an unchanged board proves nothing if no view ever changed (the red run on 90c01bcc passed this vacuously)
         const after = (await boxes()).filter((b) => b.kind === 'text').map((b) => [b.id, b.x, b.y, b.seq]);
-        ok(`[${T}] Show as switches Open / Storyboard / Outline / Walk without moving a card or touching the order (x, y and seq are byte-identical)`, JSON.stringify(before) === JSON.stringify(after) && before.length === 3, JSON.stringify({ before, after }));
+        ok(`[${T}] Show as switches Open / Storyboard / Outline / Walk without moving a card or touching the order (x, y and seq are byte-identical)`, JSON.stringify(seen) === JSON.stringify(['storyboard', 'outline', 'walk', 'open']) && JSON.stringify(before) === JSON.stringify(after) && before.length === 3, JSON.stringify({ seen, before, after }));
         await showAs('storyboard'); await sleep(400);
         await app.reload(); await waitSoft("!!document.querySelector('.show-as')", { label: 'show-as after reload', timeout: 8000 }); await sleep(900);
         const remembered = await pressed();
