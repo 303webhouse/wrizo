@@ -6822,7 +6822,7 @@ body[data-link-drag='true'], body[data-link-drag='true'] *{ cursor:grabbing !imp
 .help-librarian .help-dots{ margin-top:12px; display:flex; justify-content:center; gap:10px; }
 .help-librarian .help-dots i{ width:7px; height:7px; border-radius:50%; border:1px solid #f1e6c8; } .help-librarian .help-dots i.f{ background:#f1e6c8; }
 .help-librarian .help-made{ margin-top:14px; font-style:italic; font-size:14px; color:#fff3dc; text-align:center; } .help-librarian .help-made b{ font-style:normal; color:#fff3dc; font-weight:600; }
-.help-librarian .help-q{ margin:10px 0 0; font-family:var(--font-prose); font-weight:600; font-size:40px; color:#F4ECDB; text-align:center; line-height:1.15; }
+.help-librarian .help-q{ margin:10px 0 0; font-family:var(--font-prose); font-weight:600; font-size:40px; color:#fff3dc; text-align:center; line-height:1.15; }
 .help-librarian .help-scratch{ color:#f1e6c8; }
 .help-librarian .help-tiles{ margin-top:34px; display:flex; flex-wrap:wrap; justify-content:center; gap:22px; }
 .help-librarian .help-tile{ width:200px; min-height:220px; box-sizing:border-box; display:flex; flex-direction:column; align-items:center; padding:30px 16px 18px; text-align:center;
