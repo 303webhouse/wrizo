@@ -40,6 +40,9 @@ importers:
       '@fontsource/rajdhani':
         specifier: ^5.2.7
         version: 5.2.7
+      '@fontsource/silkscreen':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@fontsource/tinos':
         specifier: ^5.3.0
         version: 5.3.0
@@ -402,6 +405,9 @@ packages:
 
   '@fontsource/rajdhani@5.2.7':
     resolution: {integrity: sha512-7Gy10U688fCdeFfYKebUF2TZotdgH/ghKyMsseXPmB60lpaUHC8aoCSJl5/OpZ+KHKSU2TqBfKfteVkcIXxTAQ==}
+
+  '@fontsource/silkscreen@5.3.0':
+    resolution: {integrity: sha512-M1NQ3LQH0LFNvyFPd/piHEGMImPPtpLglNnLC6Vdcq9kL0jNIOtTQmksAWCc4enbDnw1OnIpZtjNEfRqYm/QmA==}
 
   '@fontsource/tinos@5.3.0':
     resolution: {integrity: sha512-VVDyyZdbcsLKxo/W7rClAvacD/7DsGc7J5xzzp51Tndib8kDkEe/0bqbb3Xb3iH6+IUjt07aRsvtQ9MGeGGi4w==}
@@ -2001,6 +2007,8 @@ snapshots:
   '@fontsource/courier-prime@5.2.8': {}
 
   '@fontsource/rajdhani@5.2.7': {}
+
+  '@fontsource/silkscreen@5.3.0': {}
 
   '@fontsource/tinos@5.3.0': {}
 

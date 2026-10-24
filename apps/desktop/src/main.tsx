@@ -17,6 +17,10 @@ import '@fontsource/rajdhani/600.css';
 import '@fontsource/rajdhani/700.css';
 import '@fontsource/chakra-petch/400.css';
 import '@fontsource/chakra-petch/500.css';
+// THEME PICKER (theme-rules.md B.4 / the picker's own brief) - Flux's card wordmark, bundled
+// locally like every other theme font here, no CDN. One weight: a wordmark is static display
+// text, never a body face.
+import '@fontsource/silkscreen/400.css';
 import { App } from './App';
 import './index.css';
 import { initTheme } from './store/theme';

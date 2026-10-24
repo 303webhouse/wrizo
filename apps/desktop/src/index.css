@@ -4996,6 +4996,80 @@ a:focus-visible,
   text-align:left; font-family:var(--font-ui); font-size:13px; padding:8px 10px; cursor:pointer;
   transition:.15s; border-radius:var(--radius-sm); }
 .wz-cascade-action:hover{ color:var(--text-hi); background:var(--ink-800); }
+
+/* THEME PICKER (step 2, Oct 21 build queue; theme-menu-brief.md / theme-rules.md §C,
+   cursor/theme-picker-mockup @ 1a057bea). Brand cards, not a button list. The CARD ART below is
+   deliberately NOT scoped by [data-theme] - a card shows its OWN theme's look regardless of the
+   ambient active theme, so --tp-cyan/--tp-lime are local constants here, not the theme-token
+   system (Flux's own --line-active would resolve to whatever theme is CURRENTLY active, which is
+   exactly the value a cross-theme card must not take). --brass is the one real exception: it is
+   already theme-invariant everywhere (theme-rules.md A.1), so the current-card outline reuses it
+   directly. */
+.wz-theme-picker{ --tp-cyan:#00C2FF; --tp-lime:#A6FF3D; }
+.wz-theme-picker-field{ display:flex; justify-content:flex-end; }
+.wz-theme-cards{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:14px; }
+.wz-theme-card{ display:flex; flex-direction:column; min-height:180px; text-align:center;
+  padding:0; border:2px solid transparent; border-radius:var(--radius-sm); position:relative;
+  overflow:hidden; background:transparent; cursor:pointer; }
+.wz-theme-card:focus-visible{ outline:2px solid var(--brass); outline-offset:3px; }
+.wz-theme-card[aria-pressed="true"]{ border-color:var(--brass); }
+/* Flux's own exception (theme-rules.md A.1): cyan outline, plus a thin orange bar on the LEFT
+   edge rather than the brass outline every other theme's current card wears. */
+.wz-theme-card-flux[aria-pressed="true"]{ border-color:var(--tp-cyan); }
+.wz-theme-card-flux[aria-pressed="true"]::before{ content:""; position:absolute; left:0; top:0;
+  bottom:0; width:4px; background:var(--brass); z-index:2; }
+.wz-theme-card.locked{ cursor:default; }
+.wz-theme-card.locked .wz-theme-plate{ filter:grayscale(1); opacity:.5; }
+.wz-theme-card.locked .wz-theme-wm{ filter:grayscale(1); opacity:.75; }
+.wz-theme-plate{ flex:1; position:relative; min-height:140px; }
+.wz-theme-nameblock{ position:absolute; inset:0; z-index:2; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; text-align:center; padding:12px; pointer-events:none; }
+.wz-theme-wm{ font-size:32px; letter-spacing:.02em; line-height:1; }
+.wz-theme-note{ margin-top:8px; max-width:16em; font-size:12px; line-height:1.3; color:var(--text-mid); }
+/* Arbor. */
+.wz-theme-card-arbor .wz-theme-plate{ background:radial-gradient(120% 80% at 50% 0%, #3a2e24, #1c1612 70%); color:#96a05a; }
+/* A literal, not var(--font-proseSerif): that token is theme-scoped and would resolve to
+   whatever theme is AMBIENTLY active, not Arbor's own face, for a writer viewing this card
+   while sitting in Flux - the same reason --tp-cyan/--tp-lime above are local constants. */
+.wz-theme-wm-arbor{ font-family:'Crimson Pro Variable', Georgia, serif; color:#f4efe4; }
+.wz-theme-plate-rhizome, .wz-theme-plate-grow{ position:absolute; inset:0; width:100%; height:100%; }
+.wz-theme-plate-grow{ z-index:1; opacity:0; color:#c6b15a; }
+.wz-theme-plate-grow path{ stroke-dasharray:120; stroke-dashoffset:120; }
+.wz-theme-card-arbor:hover .wz-theme-plate-grow, .wz-theme-card-arbor:focus-visible .wz-theme-plate-grow{ opacity:1; }
+.wz-theme-card-arbor:hover .wz-theme-plate-grow path, .wz-theme-card-arbor:focus-visible .wz-theme-plate-grow path{
+  stroke-dashoffset:0; transition:stroke-dashoffset 1.1s ease; }
+/* Flux. */
+.wz-theme-card-flux .wz-theme-plate{ background:radial-gradient(90% 70% at 50% 0%, rgba(0,194,255,.28), #04141a 62%); }
+.wz-theme-wm-flux{ font-family:'Silkscreen', monospace; letter-spacing:.1em; color:var(--tp-cyan); font-size:28px; }
+.wz-theme-plate-prompt{ position:absolute; left:14px; top:14px; font-family:'Silkscreen', monospace;
+  font-size:18px; color:var(--tp-cyan); letter-spacing:.08em; }
+.wz-theme-plate-tick{ position:absolute; left:18%; right:18%; top:22%; height:2px; background:var(--tp-cyan); }
+.wz-theme-plate-tick-lime{ top:30%; background:var(--tp-lime); opacity:.8; }
+/* note (e) (Fable's review, Oct 21): the hover Glitch is a FLASH (theme-rules.md §A.8's 3/sec
+   budget), so it can no longer be a plain CSS `:hover -> infinite` loop a sustained hover runs
+   forever — ThemePicker.tsx's own FluxCardGlitchController (store/fluxCardGlitch.ts) asks the
+   shared global flash budget first and toggles this class for exactly one iteration
+   (`animation-iteration-count:1`, not `infinite`); a refused or mid-pulse re-trigger (quick
+   hover out/in) never stacks a second one on top. */
+.wz-theme-plate-tick.wz-theme-glitching{ animation:wz-theme-glitch .45s steps(2, end) 1; }
+@keyframes wz-theme-glitch{
+  0%{ transform:none; opacity:1; }
+  40%{ transform:translateX(10px); opacity:.35; }
+  70%{ transform:translateX(-6px); opacity:.9; }
+  100%{ transform:none; }
+}
+/* note (d): the still frame applies to reduced motion AND Ambiance 0 — the OS/media fact below,
+   and ThemePicker.tsx's own `data-still` attribute (the dial is pure JS state no @media rule can
+   see; same combination as GlitchMeter.tsx's own `prefersReducedMotion() || getAmbianceDial() ===
+   0`). Both land on the identical still rules, so the two signals can never visually disagree. */
+@media (prefers-reduced-motion:reduce){
+  .wz-theme-plate-grow{ opacity:1; }
+  .wz-theme-plate-grow path{ stroke-dashoffset:0; transition:none; }
+  .wz-theme-plate-tick{ animation:none; }
+}
+.wz-theme-picker[data-still='true'] .wz-theme-plate-grow{ opacity:1; }
+.wz-theme-picker[data-still='true'] .wz-theme-plate-grow path{ stroke-dashoffset:0; transition:none; }
+.wz-theme-picker[data-still='true'] .wz-theme-plate-tick{ animation:none; transform:translateX(6px); }
 /* ITEM arbor-quiet-brass, round 2 — SUPERSEDED: the theme list's own selection was
    olive (S3's original "current marked olive"), but Fable's ruling makes this a
    CHOICE, not a where-you-are tab state — brass outline, theme-invariant, same as
