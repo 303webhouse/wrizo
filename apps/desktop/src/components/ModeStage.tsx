@@ -222,7 +222,8 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
     if (stranded) (scrollRef.current?.querySelector('.forward-only-editor') as HTMLElement | null)?.focus();
   }, [zoomed]);
   useEffect(() => {
-    const raf = requestAnimationFrame(() => document.dispatchEvent(new Event('wz-caret-moved')));
+    // the caret moved under the Flux block caret; and the painted page's edge moved, which the Tutor's own width and grip measure against
+    const raf = requestAnimationFrame(() => { document.dispatchEvent(new Event('wz-caret-moved')); document.dispatchEvent(new Event('wz-zoom-changed')); });
     return () => cancelAnimationFrame(raf);
   }, [zoomed]);
   // AB1 S3 fix (found while generalizing the vanishing law to DeskFrame,

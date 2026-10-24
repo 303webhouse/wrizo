@@ -551,7 +551,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     };
     measure();
     window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
+    document.addEventListener('wz-zoom-changed', measure);   // PAGE-SIZE - the painted page's edge moves when the zoom toggles
+    return () => { window.removeEventListener('resize', measure); document.removeEventListener('wz-zoom-changed', measure); };
   }, [open, docked, pageKind]);
 
   // tutor-drawer-arrow — the grip's own open-state position, measured from
@@ -587,7 +588,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     };
     measure();
     window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
+    document.addEventListener('wz-zoom-changed', measure);   // PAGE-SIZE - the painted page's edge moves when the zoom toggles
+    return () => { window.removeEventListener('resize', measure); document.removeEventListener('wz-zoom-changed', measure); };
   }, [open, docked, pageKind, panelWidthPx]);
 
   // ITEM word-diet (Nick, Oct 13): REMOVE — the one-time "Before you ask"
