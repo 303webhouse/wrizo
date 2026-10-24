@@ -263,6 +263,21 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
   // exactly the way the writer's own click would.
   useEffect(() => registerDrawer('tools', () => setOpen(false)), []);
 
+  // DRAWER MIRROR (Fable's check 5, Oct 24): Esc closes the open drawer - unless a control inside already handled it - and the focus goes back to the
+  // tab when it was in the drawer. An Esc pressed on the page closes it and leaves the focus on the page (the page is primary).
+  useEffect(() => {
+    if (!open) return;
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || e.defaultPrevented) return;
+      const root = rootRef.current;
+      const inDrawer = !!root && !!document.activeElement && root.contains(document.activeElement);
+      setOpen(false);
+      if (inDrawer) root?.querySelector<HTMLElement>('.wz-sliver-grip')?.focus();
+    };
+    document.addEventListener('keydown', onEsc);
+    return () => document.removeEventListener('keydown', onEsc);
+  }, [open]);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== '/' || !(e.ctrlKey || e.metaKey)) return;

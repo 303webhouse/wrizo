@@ -203,8 +203,20 @@ await withHarness(async (app) => {
           const last = s[s.length - 1];
           const gripRight = last.grip[0] + last.grip[2];
           const gap = Math.round((last.panelLeft - gripRight) * 100) / 100;
-          ok(`L2 ${T} (${hand}) [tutor-drawer-arrow successor]: the tab's rect MOVES while the drawer opens, settling ${GRIP_GUTTER_PX}px outside the open panel's own left edge (never inside its tab row)`,
-            Math.abs(gap - GRIP_GUTTER_PX) < 1.5, JSON.stringify({ gripRight, panelLeft: last.panelLeft, gap }));
+          // ---- PARKED - SUPERSEDED by the DRAWER MIRROR (Nick, via Fable, Oct 24: "a tab's rect is unchanged by open/close, only the arrow flips";
+          // the Tutor | Grafts drawer is anchored to the page's right edge, the mirror of the Tools drawer). The tab no longer moves: the PANEL now
+          // starts at the tab ([page][tab][panel]), so the tab can never sit inside the panel's tab row - the bug the arrow move cured (ledger 57) is
+          // cured by the panel's place instead. Kept VERBATIM and no longer run; the successor restores the LEFT hand's claim for the right hand,
+          // plus the panel against its tab; record per theme (pok).
+          //
+          // ok(`L2 ${T} (${hand}) [tutor-drawer-arrow successor]: the tab's rect MOVES while the drawer opens, settling ${GRIP_GUTTER_PX}px outside the open panel's own left edge (never inside its tab row)`,
+          //   Math.abs(gap - GRIP_GUTTER_PX) < 1.5, JSON.stringify({ gripRight, panelLeft: last.panelLeft, gap }));
+          // ------------------------------------------------------------------
+          const still = s.every((x) => same(x.grip, s[0].grip));
+          pok(`PARKED (was "L2 ${T} (${hand}) [tutor-drawer-arrow successor]: the tab's rect MOVES while the drawer opens, settling 16px outside the open panel's own left edge (never inside its tab row)") - SUPERSEDED by the drawer mirror (Oct 24): the tab never moves; the panel starts at it; live successor: L2 ${T} (${hand}) [drawer-mirror successor]`,
+            still && Math.abs(gap) < 1.5, JSON.stringify({ gripRight, panelLeft: last.panelLeft, gap, still }));
+          ok(`L2 ${T} (${hand}) [drawer-mirror successor]: the tab's rect never changes while the drawer opens (only its glyph), and the open panel starts AT the tab - never under it, never inside its tab row`,
+            still && Math.abs(gap) < 1.5, JSON.stringify({ gripRight, panelLeft: last.panelLeft, gap, moved: s.map((x) => x.grip).filter((g, i, a) => i === 0 || !same(g, a[0])).slice(0, 3) }));
         }
         const glyphs = [...new Set(s.map((x) => x.glyph))];
         ok(`L3 ${T} (${hand}): the arrow glyph flips and nothing else on the tab does`, glyphs.length === 2, JSON.stringify(glyphs));
@@ -516,7 +528,7 @@ if (process.env.HARNESS_PARKED === '1') {
   const parkedPass = parkedChecks.length > 0 && parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nDRAWERS-P1-LIVE PARKED: PASS (${parkedChecks.length} records) - this FILE parks 3 (page-size, Oct 23-24): L7's two Oct 12 one-drawer-at-every-width checks and L9's Space-flips-back (the zoom tucks its drawer), each recorded once per theme; the older two-drawer law above L7 stays a comment-only park from Oct 12`
+    ? `\nDRAWERS-P1-LIVE PARKED: PASS (${parkedChecks.length} records) - this FILE parks 4 (page-size, Oct 23-24, and the drawer mirror, Oct 24): L7's two Oct 12 one-drawer-at-every-width checks, L9's Space-flips-back (the zoom tucks its drawer) and L2's right-hand tab move (the tab never moves now), each recorded once per theme; the older two-drawer law above L7 stays a comment-only park from Oct 12`
     : `\nDRAWERS-P1-LIVE PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed (or none recorded)`);
 }
 const failed = checks.filter((c) => !c.pass);

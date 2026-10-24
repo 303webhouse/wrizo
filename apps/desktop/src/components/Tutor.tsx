@@ -70,6 +70,7 @@ const DOCK_FLOOR_PX = 120;
 // narrow-screen degradation (the measure-effect below sets the panel's inline width to
 // natural open-w there). Distinct from DOCK_FLOOR_PX above: that gates whether the DOCK
 // affordance is offered; this gates whether an open panel occupies the margin or overlays.
+const TUTOR_TAB_PX = 16;   // .wz-tutor-grip{ width:16px } - the drawer mirror counts the tab in the drawer's width, as the Tools drawer does
 const USABLE_PANEL_FLOOR_PX = 280;   // SUPERSEDED by page-size (Fable's 1366 rule, Oct 23): the measure-effect's floor is DRAWER_MIN (200); kept as the record
 void USABLE_PANEL_FLOOR_PX;
 
@@ -327,6 +328,9 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // floor it becomes natural open-w (overlay). null on Board (the --board CSS rule owns it)
   // and while docked (the docked CSS rule owns it).
   const [panelWidthPx, setPanelWidthPx] = useState(null);
+  // DRAWER MIRROR (Nick, via Fable, Oct 24): how far the open panel stands in from the stage's right edge, so that its left edge meets its own tab on
+  // the page's right edge - the mirror of the Tools drawer ([panel][tab][page] on the left, [page][tab][panel] here). 0 in every other regime.
+  const [panelOffsetPx, setPanelOffsetPx] = useState(0);
   // tutor-drawer-arrow (Nick's live bug report, confirmed by tutor-drawer-
   // probe.mjs, ledger 57) — "anchor the grip to the drawer's board/page-
   // facing edge, just outside the tab row, the exact mirror of the Tools
@@ -519,6 +523,15 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     const onKeyDown = (e: KeyboardEvent) => {
       if (showDisclosure) return; // the disclosure has no Escape-dismiss, by design (hb1.1's own UnlockCeremony precedent)
       const target = e.target as HTMLElement | null;
+      // DRAWER MIRROR (Fable's check 5, Oct 24): Esc closes the drawer from INSIDE it too (it used to be ignored there, behind the zone guard below),
+      // unless a control inside already handled it (the Bible editor's own Escape cancels its edit); the focus goes back to the tab - when it was in
+      // the drawer. An Esc pressed on the page closes it and leaves the focus on the page.
+      if (e.key === 'Escape' && !e.defaultPrevented) {
+        const inDrawer = !!target?.closest?.('.wz-tutor-zone');
+        setOpen(false); setDocked(false);
+        if (inDrawer) document.querySelector<HTMLElement>('.wz-tutor-grip')?.focus();
+        return;
+      }
       if (target?.closest?.('.wz-tutor-zone')) return;
       if (e.key === 'Escape') { setOpen(false); setDocked(false); return; }
       if (docked) return; // a docked panel survives keystrokes
@@ -538,8 +551,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // CSS rule owns the width). The paper rect is stable open<->closed (the panel is absolutely
   // positioned, never pushes it — fx10's "paper rect byte-identical" invariant), so one read on
   // open + a resize listener suffices.
-  useEffect(() => {
-    if (!open || docked || pageKind === 'board') { setPanelWidthPx(null); return; }
+  useLayoutEffect(() => {
+    if (!open || docked || pageKind === 'board') { setPanelWidthPx(null); setPanelOffsetPx(0); return; }
     const measure = () => {
       const stage = document.querySelector('.desk-frame-stage');
       // PAGE-SIZE - the prose page is PAINTED larger than its column by a transform, so the margin is measured from the painted page itself
@@ -549,7 +562,19 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
       const geoMargin = stage.getBoundingClientRect().right - paper.getBoundingClientRect().right;
       // PAGE-SIZE (Fable's 1366 rule, Oct 23): a drawer NARROWS to fit beside the page, down to DRAWER_MIN (scrolling inside); only below that
       // does it overlay - DRAWER_MIN replaces FX18's 280 here (the page is never covered while a drawer still fits at 200)
-      setPanelWidthPx(Math.round(geoMargin >= DRAWER_MIN ? Math.min(geoMargin, openW) : openW));
+      // DRAWER MIRROR (Nick, via Fable, Oct 24): where it fits, the drawer - its 16px tab ON the page's edge plus its panel - is anchored to the page's
+      // right edge, the mirror of the Tools drawer (whose 200px is its 184px panel + its tab). Before, the panel was pinned to the STAGE's edge: flush
+      // only while the margin was narrower than open-w (63px off the page at 1920), and its tab was moved left of it on open. Now the tab never
+      // moves and the panel starts at the tab: width = min(margin, tab + open-w) - tab, stood in from the stage's edge by what is left over.
+      // Below DRAWER_MIN it still overlays at open-w from the stage's edge (the documented narrow degradation); the tab stays put, lifted above it.
+      if (geoMargin >= DRAWER_MIN) {
+        const drawerW = Math.min(geoMargin, TUTOR_TAB_PX + openW);
+        setPanelWidthPx(Math.round(drawerW - TUTOR_TAB_PX));
+        setPanelOffsetPx(Math.max(0, Math.round(geoMargin - drawerW)));
+      } else {
+        setPanelWidthPx(Math.round(openW));
+        setPanelOffsetPx(0);
+      }
     };
     measure();
     window.addEventListener('resize', measure);
@@ -576,8 +601,10 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // null, handing position back to the static paper-anchored CSS formula
   // (TU2 S4's own algebra) exactly as before — this effect only ever
   // overrides the OPEN position.
+  // DRAWER MIRROR (Nick, via Fable, Oct 24): on a writing surface the tab NEVER moves - opening or closing a drawer only flips its arrow; it rides the
+  // painted page's edge (the CSS formula above). The move below stays for the Board alone, whose panel overlays the canvas from the stage's edge.
   useEffect(() => {
-    if (!open) { setGripLeftPx(null); return; }
+    if (!open || pageKind !== 'board') { setGripLeftPx(null); return; }
     const GRIP_GUTTER_PX = 16;
     const GRIP_WIDTH_PX = 16; // .wz-tutor-grip{ width:16px }
     const measure = () => {
@@ -1040,7 +1067,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
       </div>
 
       <div className={`desk-frame-tutor-panel-anchor desk-frame-tutor-panel-anchor--${pageKind} wz-tutor-zone`}>
-        <div className="wz-tutor-panel" ref={(el) => setDrawerInert(el, !open)} aria-hidden={!open} data-open={open ? 'true' : 'false'} data-docked={docked ? 'true' : 'false'} style={panelWidthPx != null ? { width: `${panelWidthPx}px`, maxWidth: `${panelWidthPx}px` } : undefined}>
+        <div className="wz-tutor-panel" ref={(el) => setDrawerInert(el, !open)} aria-hidden={!open} data-open={open ? 'true' : 'false'} data-docked={docked ? 'true' : 'false'} style={panelWidthPx != null ? { width: `${panelWidthPx}px`, maxWidth: `${panelWidthPx}px`, marginRight: `${panelOffsetPx}px` } : undefined}>
           {/* PHASE 1 - the sliding layer: the panel above is the clip and the scroller; <SideDrawer> is what slides in from behind the tab.
               No tab row yet (S3 adds TUTOR | the theme's links word). */}
           <SideDrawer side="right" idPrefix="wz-tutor" tabs={rightTabs}>
