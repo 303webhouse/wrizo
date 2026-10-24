@@ -791,11 +791,18 @@ body::before {
   background-size: 160px 160px;
 }
 
+/* PAGE-SIZE (Fable, Oct 23): the vignette sits BEHIND the content in EVERY theme - it shades the room, never the page.
+   At z-index 2 it was painted over everything, so the paper's foot wore a grey band wherever the page reached the viewport's edge (Arbor's light page,
+   deploy #5's screens; INK fixed the same for Flux alone in flux-inputs). One rule here, not one per theme, so a theme added later cannot bring it back.
+   `isolation:isolate` on body is what keeps it VISIBLE: html carries its own background, so body's lamp background is painted as body's own block - and
+   a bare z-index:-1 in the root stacking context would sit under that lamp too, deleting the vignette everywhere. With body its own stacking context, the
+   vignette paints above the lamp and below everything in #root. Checked by page-size.mjs V/MV (never on the page) and V-room (still on the room), from paint. */
+body { isolation: isolate; }
 body::after {
   content: '';
   position: fixed;
   inset: 0;
-  z-index: 2;
+  z-index: -1;
   pointer-events: none;
   box-shadow: inset 0 0 170px 55px rgba(0, 0, 0, 0.55);
 }
