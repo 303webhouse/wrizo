@@ -16,7 +16,7 @@
 // SIZE-ADJUST (Fable's ruling, 2026-09-24): every face carries `sizeAdjust`, and every one is 1. The size number is
 // LITERAL printed points - a writer following a style guide types 12 and means 12 - so no face is normalised to
 // another's x-height. The field is the seam: changing a face's apparent size later is one number in this table.
-import { PROSE_BASE_PX, SIZE_DEFAULT } from './fontSize';
+import { SIZE_DEFAULT, PAGE_SIZE_DEFAULT, PAGE_PT_FALLBACK } from './fontSize';
 import type { StoredFace, FaceGeneric, FaceSource } from '../types';
 
 export type { StoredFace };
@@ -147,14 +147,15 @@ export function cardTypeStyle(face: StoredFace | undefined, size: number | undef
   return Object.keys(out).length ? out : undefined;
 }
 
-/** The inline style a writing surface applies for its page's own face and size; empty when the page never chose, which
- *  is what keeps an untouched page byte-identical. `size` is points; 11 is today's rendering. */
+/** The inline style a writing surface applies for its page's own face and size; empty when the page never chose (the host then draws
+ *  PAGE_SIZE_DEFAULT). `size` is points. PAGE-SIZE (ruling a): real points in page units, `n x --wz-pt`, so the type scales with the page.
+ *  (Before page-size: `17px x n/11 x --paper-scale`, with 11 the default - PROSE_BASE_PX / SIZE_DEFAULT, now the card's record only.) */
 export function pageTypeStyle(face: StoredFace | undefined, size: number | undefined): { fontFamily?: string; fontSize?: string } {
   const out: { fontFamily?: string; fontSize?: string } = {};
   const stack = faceStack(face);
   if (stack) out.fontFamily = stack;
   const adjust = rosterFace(face?.name)?.sizeAdjust ?? 1;
-  const points = size ?? SIZE_DEFAULT;
-  if (points !== SIZE_DEFAULT || adjust !== 1) out.fontSize = `calc(${PROSE_BASE_PX}px * ${(points / SIZE_DEFAULT) * adjust} * var(--paper-scale))`;
+  const points = size ?? PAGE_SIZE_DEFAULT;
+  if (points !== PAGE_SIZE_DEFAULT || adjust !== 1) out.fontSize = `calc(${points * adjust} * var(--wz-pt, ${PAGE_PT_FALLBACK}))`;
   return out;
 }

@@ -257,6 +257,10 @@ const normalCase = async (app, th, w, h) => {
   const panels = async () => app.evalJs(`(() => { const r = (s) => { const el = document.querySelector(s); if (!el) return null; const b = el.getBoundingClientRect(); return b.width ? { left: b.left, right: b.right } : null; };
     return { sliver: r('.wz-sliver-panel'), tutor: r('.wz-tutor-panel'), sliverOpen: document.querySelector('.wz-sliver')?.getAttribute('data-open'), tutorOpen: document.querySelector('.wz-tutor-panel')?.getAttribute('data-open') }; })()`);
   if ((await attr(app, '.wz-sliver', 'data-open')) !== 'true') { const gr = await rectOf(app, '.wz-sliver-grip'); if (gr) { await click(app, gr.x, gr.y); await sleep(600); } }
+  // each drawer's width ALONE - a drawer narrows to DRAWER_MIN beside the other, never below it, and never wider than it stands alone (the Sliver's own
+  // open width is 184px, under DRAWER_MIN: it is never asked to narrow at all) - red run 143's numbers
+  const wOf = (b) => (b ? b.right - b.left : null);
+  const sliverAlone = wOf((await panels()).sliver);
   await openTutor(app); await sleep(300);
   const pp = await panels(); const gk = await app.evalJs('window.__psGeom()');
   const sOpen = !!pp && pp.sliverOpen === 'true'; const tOpen = !!pp && pp.tutorOpen === 'true';
@@ -271,10 +275,14 @@ const normalCase = async (app, th, w, h) => {
   if (tOpen) {
     ok(`${th.name} ${w}x${h} K: opening the drawers never moves or rescales the page`, kPred(g, gk), J({ closed: g && g.page, open: gk && gk.page }));
     if (roomForBoth) {
-      ok(`${th.name} ${w}x${h} N: there is room for both drawers at their minimum (${Math.round(leftRoom)} / ${Math.round(rightRoom)}px beside the page), so BOTH stand open, each ${DRAWER_MIN}px or wider, and the page sits fully between them`,
+      // the Tutor's width alone: shut the Sliver (the Tutor stands), read it, then the Sliver is reopened for nothing - the close-down below shuts both
+      let tutorAlone = null;
+      if (bothOpen) { const gr = await rectOf(app, '.wz-sliver-grip'); if (gr) { await click(app, gr.x, gr.y); await sleep(600); } tutorAlone = wOf((await panels()).tutor); }
+      const floor = (alone) => Math.min(DRAWER_MIN, alone ?? DRAWER_MIN) - 0.5;
+      ok(`${th.name} ${w}x${h} N: there is room for both drawers at their minimum (${Math.round(leftRoom)} / ${Math.round(rightRoom)}px beside the page), so BOTH stand open, each no narrower than ${DRAWER_MIN}px (or its own width alone, if less), and the page sits fully between them`,
         bothOpen && !!gk && pp.sliver.right <= gk.page.left + 0.5 && pp.tutor.left >= gk.page.right - 0.5
-          && pp.sliver.right - pp.sliver.left >= DRAWER_MIN - 0.5 && pp.tutor.right - pp.tutor.left >= DRAWER_MIN - 0.5,
-        J({ sOpen, tOpen, sliver: pp.sliver, tutor: pp.tutor, pageLeft: gk && Math.round(gk.page.left), pageRight: gk && Math.round(gk.page.right) }));
+          && wOf(pp.sliver) >= floor(sliverAlone) && wOf(pp.tutor) >= floor(tutorAlone),
+        J({ sOpen, tOpen, sliver: pp.sliver, tutor: pp.tutor, sliverAlone, tutorAlone, pageLeft: gk && Math.round(gk.page.left), pageRight: gk && Math.round(gk.page.right) }));
     } else {
       ok(`${th.name} ${w}x${h} N: there is NO room for both drawers at their minimum (${Math.round(leftRoom)} / ${Math.round(rightRoom)}px beside the page), so opening the Tutor closed the Sliver, and the Tutor sits clear of the page`,
         !sOpen && !!pp.tutor && !!gk && pp.tutor.left >= gk.page.right - 0.5, J({ sOpen, tOpen, tutor: pp.tutor, pageRight: gk && Math.round(gk.page.right) }));

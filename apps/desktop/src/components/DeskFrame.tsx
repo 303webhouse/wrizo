@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { LETTER_IN_BASE, pageScaleFor, zoomFor } from '../store/pageScale';
 import { setDeskFrameMounted } from '../store/deskFrameActive';
 import { useDeskLexicon } from '../store/deskLexicon';
 
@@ -220,6 +221,30 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
   // spent on a dead 260px column instead of reaching the composed frame.
   const hasCorkboard = corkboard != null;
 
+  // PAGE-SIZE (Nick's ruling c) - the prose page's scale, from the STAGE's size alone (store/pageScale.ts holds the law). One ResizeObserver on the
+  // stage writes two numbers the CSS reads: --wz-letter-in (one page-inch; everything on the page is a multiple of it) and --wz-zoom (the
+  // Typewriter's transform). It runs on resize, never on typing, and in a layout effect so the first paint is already at scale. Measured, not a
+  // container query: a size container would make the stage the containing block for every position:fixed element inside it.
+  // The page's top is read through offsetTop (transforms never move it), so the zoom can never feed back into the base scale.
+  const stageRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const stage = stageRef.current;
+    if (pageKind !== 'prose' || !stage) return;
+    const apply = () => {
+      const s = stage.getBoundingClientRect();
+      const page = stage.querySelector<HTMLElement>('.mode-page');
+      const col = page?.parentElement;
+      const top = page && col ? col.getBoundingClientRect().top - s.top + page.offsetTop : 0;
+      const k = pageScaleFor(s.width, s.height, top);
+      stage.style.setProperty('--wz-letter-in', `${(LETTER_IN_BASE * k).toFixed(3)}px`);
+      stage.style.setProperty('--wz-zoom', zoomFor(s.width, k).toFixed(4));
+    };
+    apply();
+    const ro = new ResizeObserver(apply);
+    ro.observe(stage);
+    return () => ro.disconnect();
+  }, [pageKind]);
+
   return (
     <div ref={rootRef} className="desk-frame" data-writing={dissolved ? 'true' : 'false'}>
       <div className="desk-frame-grid" data-corkboard={hasCorkboard ? 'true' : 'false'}>
@@ -232,7 +257,7 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
           {strip}
         </aside>
         <div className="desk-frame-stagecol">
-          <div className={`desk-frame-stage desk-frame-stage--${pageKind}`}>
+          <div ref={stageRef} className={`desk-frame-stage desk-frame-stage--${pageKind}`}>
             {/* CD1 S6 — the glow sits behind the paper (DOM order first,
                 negative z-index — see index.css); centered on the SAME
                 canonical paper width the sliver anchors against. */}
