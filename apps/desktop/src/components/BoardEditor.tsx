@@ -24,7 +24,7 @@ import { StoryboardProjection, OutlineProjection } from './BoardProjection';
 import { withLanes } from '../store/boardStructure';
 import { BeginningsRow, type BeginningDoor } from './BeginningsRow';
 import { useUnborn } from './UnbornSurface';
-import { unbornHref } from '../store/unbornPage';
+import { unbornHref, decodeDeckAnswers } from '../store/unbornPage';
 import { renderStroke } from '../store/ink';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { getSelectionOffsets, getCaretOffset, setCaretOffset, setSelectionOffsets } from '../store/caretOffset';
@@ -977,6 +977,8 @@ export function BoardEditor({ id }: { id: string }) {
   // BIG PROJECTS step 2 - a PRESET on the Boards tab opens a new board with its deck's wizard already running: the deck id rides the address (descriptor.deck), is read once while
   // the board is unborn, and is dropped when the wizard closes (so a later Templates press opens the library as it always did).
   const [startDeckId, setStartDeckId] = useState<string | null>(() => unborn?.descriptor.deck ?? null);
+  // W4 - the librarian's pre-answered deal questions ride the address with the deck id (store/unbornPage.ts deckAnswers)
+  const [startAnswers] = useState(() => decodeDeckAnswers(unborn?.descriptor.deckAnswers ?? null));
   // B3 S1 — the "Start Here" hint's own id (store/deckHint.ts, keyed per
   // board, never schema). Read fresh on every mount of THIS board (the
   // lazy initializer re-runs whenever `id` changes — PageEditor.tsx's own
@@ -3191,7 +3193,7 @@ export function BoardEditor({ id }: { id: string }) {
         />
       )}
       {deckWizardOpen && (
-        <DeckWizard decks={DECKS} startDeckId={startDeckId ?? undefined} pagesFor={() => pagesOfPlace(place)} onDeal={onDeckDealt} onClose={() => { setDeckWizardOpen(false); setStartDeckId(null); }} />
+        <DeckWizard decks={DECKS} startDeckId={startDeckId ?? undefined} startAnswers={startAnswers} pagesFor={() => pagesOfPlace(place)} onDeal={onDeckDealt} onClose={() => { setDeckWizardOpen(false); setStartDeckId(null); }} />
       )}
     </>
   );

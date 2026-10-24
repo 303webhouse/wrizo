@@ -10,7 +10,8 @@ import {
 } from '../store/place';
 import { usePlace } from '../store/usePlace';
 import { ThemeIcon } from './ThemeIcon';
-import { unbornHref } from '../store/unbornPage';
+import { unbornHref, encodeDeckAnswers } from '../store/unbornPage';
+import { HelpMeChoose } from './HelpMeChoose';
 import { routeForEntry } from '../store/routeForEntry';
 import { firstLine } from '../store/entryText';
 import { TEMPLATE_ORDER, TemplateSketch, type TemplateKey } from './TemplateSketch';
@@ -69,6 +70,8 @@ export function SectionsPopout({ view, currentId, navigate, boardId, journalLabe
   const [naming, setNaming] = useState(false);
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [drag, setDrag] = useState<{ id: string; over: number } | null>(null);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const helpDoorRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => () => { if (undoTimer.current != null) window.clearTimeout(undoTimer.current); }, []);
 
@@ -106,6 +109,17 @@ export function SectionsPopout({ view, currentId, navigate, boardId, journalLabe
   const newBoard = () => {
     const setId = targetSetId(place);
     navigate(unbornHref({ kind: 'board', ...(setId ? { binderId: setId } : { origin: isJournal ? 'journal' as const : 'loose' as const }) }));
+  };
+  // W4 - the librarian's pick, dealt in the writer's CURRENT place (the same unborn board a preset opens, with the deck's pre-answered questions on the address); browsing opens the full library
+  const helpBegin = (choice: { deck: string; answers: Record<string, string> }) => {
+    const setId = targetSetId(place);
+    setHelpOpen(false);
+    navigate(unbornHref({ kind: 'board', deck: choice.deck, deckAnswers: encodeDeckAnswers(choice.answers), ...(setId ? { binderId: setId } : { origin: isJournal ? 'journal' as const : 'loose' as const }) }));
+  };
+  const helpBrowse = () => {
+    const setId = targetSetId(place);
+    setHelpOpen(false);
+    navigate(unbornHref({ kind: 'board', deck: 'library', ...(setId ? { binderId: setId } : { origin: isJournal ? 'journal' as const : 'loose' as const }) }));
   };
   const deckPreset = (deckId: string) => {
     const setId = targetSetId(place);
@@ -262,6 +276,9 @@ export function SectionsPopout({ view, currentId, navigate, boardId, journalLabe
       )}
       <div className="wz-sections-presets">
         <div className="wz-sections-heading">{t('sectionsPresets')}</div>
+        {mode === 'boards' && (
+          <button type="button" ref={helpDoorRef} className="wz-help-door" data-preset="help-me-choose" onClick={() => setHelpOpen(true)}>{t('helpDoor')}</button>
+        )}
         {mode === 'boards'
           ? presetDecks.map(deck => (
             <button key={deck.id} type="button" className="wz-sections-preset" data-preset={deck.id} onClick={() => deckPreset(deck.id)}>
@@ -275,6 +292,7 @@ export function SectionsPopout({ view, currentId, navigate, boardId, journalLabe
             </button>
           ))}
       </div>
+      {helpOpen && <HelpMeChoose onBegin={helpBegin} onBrowse={helpBrowse} onClose={() => setHelpOpen(false)} returnFocusTo={helpDoorRef.current} />}
     </div>
   );
 }

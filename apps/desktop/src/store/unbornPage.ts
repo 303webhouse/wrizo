@@ -56,12 +56,31 @@ export interface UnbornDescriptor {
   // BIG PROJECTS step 2 - a PRESET on the Boards tab opens a new board with this deck's wizard already on its first question (components/BoardEditor.tsx reads it while the board is unborn). A deck id from decks/library; unknown
   // ids are harmless (the wizard finds no such deck and opens at the library). Rides the address like the rest of the descriptor, so nothing is stored.
   deck: string | null;
+  // W4 (Help me choose) - the deck's OWN deal answers the librarian already settled (questionId:optionId pairs, comma-joined; e.g. `format:short-story`), so the wizard asks only what is left. Rides the address like `deck`;
+  // nothing is stored, and an unknown or malformed value degrades to "no answers" (the deck simply asks).
+  deckAnswers: string | null;
 }
 
 // A malformed or unknown descriptor degrades to a plain loose page rather than
 // throwing. The address is a hint about a room that does not exist yet, so it
 // can never be authoritative enough to fail on — and the writer stays on paper,
 // which is the posture the whole product is built around.
+// W4 - the deal answers as an address-safe string: `question:option` pairs joined by commas, each token [a-z0-9-] only.
+const DA_TOKEN = /^[a-z0-9-]+$/;
+function cleanDeckAnswers(raw: string | null): string | null {
+  if (!raw) return null;
+  const pairs = raw.split(',').map((p) => p.split(':')).filter((p) => p.length === 2 && DA_TOKEN.test(p[0]) && DA_TOKEN.test(p[1]));
+  return pairs.length > 0 ? pairs.map((p) => p.join(':')).join(',') : null;
+}
+export function encodeDeckAnswers(answers: Record<string, string>): string | null {
+  return cleanDeckAnswers(Object.entries(answers).map(([k, v]) => `${k}:${v}`).join(','));
+}
+export function decodeDeckAnswers(raw: string | null): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const pair of (cleanDeckAnswers(raw) ?? '').split(',')) { const [k, v] = pair.split(':'); if (k && v) out[k] = v; }
+  return out;
+}
+
 export function readDescriptor(search: string): UnbornDescriptor {
   const q = new URLSearchParams(search);
   const origin = q.get('origin') === 'journal' ? 'journal' : 'loose';
@@ -81,6 +100,7 @@ export function readDescriptor(search: string): UnbornDescriptor {
     structure: rawStructure === 'screenplay' ? 'screenplay' : rawStructure === 'prose' ? 'prose' : null,
     template: rawTemplate === 'outline' || rawTemplate === 'title' || rawTemplate === 'bibliography' ? rawTemplate : null,
     deck: rawDeck && rawDeck.trim() ? rawDeck.trim() : null,
+    deckAnswers: cleanDeckAnswers(q.get('da')),
   };
 }
 
@@ -93,6 +113,7 @@ export function unbornHref(d: Partial<UnbornDescriptor> = {}): string {
   if (d.structure && d.structure !== 'prose') q.set('structure', d.structure);
   if (d.template) q.set('template', d.template);
   if (d.deck) q.set('deck', d.deck);
+  if (d.deck && d.deckAnswers) q.set('da', d.deckAnswers);
   const s = q.toString();
   return `/page/new${s ? `?${s}` : ''}`;
 }

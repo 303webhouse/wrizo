@@ -6796,3 +6796,111 @@ body[data-link-drag='true'], body[data-link-drag='true'] *{ cursor:grabbing !imp
 .wz-sections-presets{ display:flex; flex-direction:column; gap:2px; margin-top:4px; }
 .wz-sections-preset{ display:flex; align-items:center; gap:10px; background:none; border:0; cursor:pointer; color:var(--text-mid, var(--text-hi)); font:inherit; font-size:13px; padding:4px 2px; text-align:left; }
 .wz-sections-preset:hover{ color:var(--text-hi); }
+
+/* ============================================================================================================================================================
+   W4 - HELP ME CHOOSE (components/HelpMeChoose.tsx; decks/helpMeChoose.ts is the logic). Three dresses, ONE structure: Arbor's OLIVE alcove (the final frames 08 - the brown ALT frames are not built), Flux's RUN DIAGNOSTIC terminal
+   (frame 09), and a plain, square, theme-tokened panel for every other theme (Machina's Intake; Nomad / Volant until they have mockups). Square edges everywhere, NO drop shadows, no literal wood or desk. Hover / choice = brass
+   (Arbor) or the line colour (Flux). Motion: an answer advances with a short slide (<= 300 ms); reduced motion and Ambiance 0 (data-still) are cuts.
+   ============================================================================================================================================================ */
+.help-backdrop{ position:fixed; inset:0; z-index:230; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.45); }
+.help-panel{ position:relative; box-sizing:border-box; max-height:92vh; overflow:auto; border-radius:0; box-shadow:none; }
+.help-step{ animation:help-slide .26s cubic-bezier(.2,.8,.2,1); }
+.help-step[data-still='true']{ animation:none; }
+@keyframes help-slide{ from{ opacity:0; transform:translateX(24px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){ .help-step{ animation:none; } }
+.help-panel button{ font:inherit; color:inherit; background:none; border:0; border-radius:0; cursor:pointer; padding:0; text-align:inherit; }
+.help-panel button:focus-visible{ outline:2px solid currentColor; outline-offset:2px; }
+.help-foot{ display:flex; align-items:center; justify-content:center; gap:10px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; }
+.help-back{ letter-spacing:.12em; text-transform:uppercase; font-size:11px; }
+.help-scratch{ display:block; margin:10px auto 0; opacity:.55; }
+
+/* ---- ARBOR: the olive alcove ---- */
+.help-librarian{ width:min(1000px, calc(100vw - 48px)); min-height:560px; padding:44px 40px 30px; color:#EFE6D3;
+  background:linear-gradient(170deg,#69733d 0%,#5c6634 60%,#525b2e 100%); box-shadow:0 0 0 1px rgba(60,48,30,.6); font-family:var(--font-prose); display:flex; flex-direction:column; }
+.help-librarian::before{ content:''; position:absolute; inset:14px; border:1px solid rgba(240,230,200,.30); pointer-events:none; }
+.help-librarian .help-kicker{ font-family:var(--font-ui); font-size:11px; letter-spacing:.32em; text-transform:uppercase; color:#f1e6c8; text-align:center; }
+.help-librarian .help-dots{ margin-top:12px; display:flex; justify-content:center; gap:10px; }
+.help-librarian .help-dots i{ width:7px; height:7px; border-radius:50%; border:1px solid #f1e6c8; } .help-librarian .help-dots i.f{ background:#f1e6c8; }
+.help-librarian .help-made{ margin-top:14px; font-style:italic; font-size:14px; color:#e2d8bd; text-align:center; } .help-librarian .help-made b{ font-style:normal; color:#F4ECDB; font-weight:600; }
+.help-librarian .help-q{ margin:10px 0 0; font-family:var(--font-prose); font-weight:600; font-size:40px; color:#F4ECDB; text-align:center; line-height:1.15; }
+.help-librarian .help-scratch{ color:#f1e6c8; }
+.help-librarian .help-tiles{ margin-top:34px; display:flex; flex-wrap:wrap; justify-content:center; gap:22px; }
+.help-librarian .help-tile{ width:200px; min-height:220px; box-sizing:border-box; display:flex; flex-direction:column; align-items:center; padding:30px 16px 18px; text-align:center;
+  background:#4b5329; box-shadow:inset 0 0 0 1px rgba(240,230,200,.35); color:#efe6cf; transition:box-shadow .15s ease, color .15s ease; }
+.help-librarian .help-tiles[data-count='10'] .help-tile, .help-librarian .help-tiles[data-count='5'] .help-tile{ width:160px; min-height:130px; padding:22px 12px 16px; }
+.help-librarian .help-tiles[data-count='5'] .help-tile{ min-height:200px; }
+.help-librarian .help-tile:hover, .help-librarian .help-tile:focus-visible{ box-shadow:inset 0 0 0 1.5px var(--brass); color:var(--brass); outline:none; }
+.help-librarian .help-emblem{ display:block; height:58px; }
+.help-librarian .help-tile-name{ margin-top:20px; font-weight:600; font-size:19px; color:inherit; }
+.help-librarian .help-tiles[data-count='10'] .help-tile-name, .help-librarian .help-tiles[data-count='5'] .help-tile-name{ margin-top:0; font-size:17px; }
+.help-librarian .help-tile-hint{ margin-top:8px; font-style:italic; font-size:13px; line-height:1.4; color:#e2d8bd; }
+.help-librarian .help-tile:hover .help-tile-hint, .help-librarian .help-tile:focus-visible .help-tile-hint{ color:#efe6cf; }
+.help-librarian .help-foot{ margin-top:auto; padding-top:26px; color:#d8ceb2; }
+.help-librarian .help-browse-foot, .help-librarian .help-back{ color:#f1e6c8; }
+/* the result: a square bookcloth cover, the "why", Begin, the alternative as a spine, Browse */
+.help-librarian .help-result{ display:flex; gap:56px; align-items:flex-start; margin-top:6px; }
+.help-librarian .help-book{ position:relative; box-sizing:border-box; width:290px; min-height:390px; flex:0 0 auto; display:flex; flex-direction:column; align-items:center; padding:46px 30px; background:#434b24; box-shadow:inset 0 0 0 1px rgba(240,230,200,.30); color:#efe6cf; }
+.help-librarian .help-book::before{ content:''; position:absolute; inset:16px 16px 16px 26px; border:1px solid rgba(240,230,200,.45); }
+.help-librarian .help-book-title{ margin-top:24px; font-weight:600; font-size:30px; line-height:1.15; text-align:center; color:#E8DFC6; }
+.help-librarian .help-book-sub{ margin-top:12px; font-style:italic; font-size:13px; line-height:1.5; text-align:center; color:#e2d8bd; }
+.help-librarian .help-right{ flex:1 1 auto; min-width:0; padding-top:14px; }
+.help-librarian .help-right .help-kicker{ text-align:left; }
+.help-librarian .help-why{ margin:18px 0 0; font-style:italic; font-size:23px; line-height:1.45; color:#F1E8D6; }
+.help-librarian .help-right .help-scratch{ margin-left:0; }
+.help-librarian .help-begin{ display:inline-block; margin-top:30px; padding:12px 24px; font-weight:600; font-size:16px; color:#fff3dc; box-shadow:inset 0 0 0 1.5px var(--brass); }
+.help-librarian .help-begin:hover, .help-librarian .help-begin:focus-visible{ color:var(--brass); }
+.help-librarian .help-alt{ margin-top:34px; display:flex; align-items:center; gap:16px; color:#e2d8bd; font-size:14px; line-height:1.5; text-align:left; }
+.help-librarian .help-spine{ width:44px; height:150px; flex:0 0 auto; display:flex; align-items:center; justify-content:center; background:#434b24; box-shadow:inset 0 0 0 1px rgba(240,230,200,.35); }
+.help-librarian .help-spine span{ writing-mode:vertical-rl; text-orientation:sideways; transform:rotate(180deg); font-weight:600; font-size:14px; color:#efe6cf; }
+.help-librarian .help-alt:hover .help-spine, .help-librarian .help-alt:focus-visible .help-spine{ box-shadow:inset 0 0 0 1.5px var(--brass); }
+.help-librarian .help-alt b{ color:#F4ECDB; }
+.help-librarian .help-right .help-browse{ display:block; margin-top:30px; font-family:var(--font-ui); font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:#f1e6c8; }
+
+/* ---- FLUX: RUN DIAGNOSTIC ---- */
+.help-diagnostic{ width:min(760px, calc(100vw - 48px)); padding:24px 26px 18px; background:var(--chrome-surface); color:var(--text-mid); font-family:var(--font-chromeLabel); font-size:13px; line-height:1.9;
+  border:1px solid color-mix(in srgb, var(--line-active) 35%, transparent); overflow:visible; }
+.help-diagnostic .help-br{ position:absolute; width:14px; height:14px; border:0 solid var(--line-active); }
+.help-diagnostic .help-br.a{ left:-6px; top:-6px; border-width:1.5px 0 0 1.5px; } .help-diagnostic .help-br.b{ right:-6px; top:-6px; border-width:1.5px 1.5px 0 0; }
+.help-diagnostic .help-br.c{ left:-6px; bottom:-6px; border-width:0 0 1.5px 1.5px; } .help-diagnostic .help-br.d{ right:-6px; bottom:-6px; border-width:0 1.5px 1.5px 0; }
+.help-diagnostic .help-kicker{ color:var(--text-hi); letter-spacing:.2em; margin-bottom:8px; }
+.help-diagnostic .help-line{ display:flex; flex-wrap:wrap; gap:0 12px; align-items:baseline; }
+.help-diagnostic .help-prompt{ color:var(--text-mid); text-transform:uppercase; white-space:nowrap; }
+.help-diagnostic .help-opts{ display:inline-flex; flex-wrap:wrap; gap:0 12px; }
+.help-diagnostic .help-opt{ color:var(--line-active); text-transform:uppercase; padding:0 3px; }
+.help-diagnostic .help-opt:hover, .help-diagnostic .help-opt:focus-visible{ color:var(--chrome-surface); background:var(--line-active); outline:none; }
+.help-diagnostic .help-opt-sel{ color:var(--chrome-surface); background:var(--line-active); }
+.help-diagnostic .help-progress{ display:flex; gap:4px; margin:14px 0 14px; }
+.help-diagnostic .help-progress i{ flex:1; height:5px; background:color-mix(in srgb, var(--sage) 14%, transparent); }
+.help-diagnostic .help-progress i[data-on='true']{ background:var(--sage); }
+.help-diagnostic .help-resultlines{ border-left:2px solid var(--orange); padding-left:12px; }
+.help-diagnostic .help-rline{ display:flex; align-items:baseline; gap:8px; color:var(--text-hi); }
+.help-diagnostic .help-rline-alt{ color:var(--text-mid); }
+.help-diagnostic .help-leader{ flex:1; border-bottom:1px dotted currentColor; opacity:.6; transform:translateY(-4px); }
+.help-diagnostic .help-load{ color:var(--line-active); } .help-diagnostic .help-load:hover, .help-diagnostic .help-load:focus-visible{ color:var(--chrome-surface); background:var(--line-active); outline:none; }
+.help-diagnostic .help-why{ margin:2px 0 4px; color:var(--text-mid); font-size:12px; line-height:1.6; text-transform:none; }
+.help-diagnostic .help-browse{ display:block; margin-top:12px; color:var(--text-mid); text-transform:uppercase; }
+.help-diagnostic .help-browse:hover, .help-diagnostic .help-browse:focus-visible{ color:var(--text-hi); }
+.help-diagnostic .help-foot{ margin-top:16px; justify-content:flex-start; color:var(--text-low); font-size:10px; }
+
+/* ---- PLAIN: Machina's Intake, Nomad's Scout, Volant's one dialog (square, theme tokens only) ---- */
+.help-plain{ width:min(560px, calc(100vw - 48px)); padding:28px 30px 20px; background:var(--chrome-surface); color:var(--text-mid); border:1px solid var(--ink-border-strong); font-family:var(--font-contentLabel); }
+.help-plain .help-kicker{ font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--text-hi); }
+.help-plain .help-stepof{ margin-top:6px; font-family:var(--font-chromeLabel); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-mid); }
+.help-plain .help-made{ margin-top:10px; font-size:13px; color:var(--text-mid); } .help-plain .help-made b{ color:var(--text-hi); font-weight:600; }
+.help-plain .help-q{ margin:10px 0 0; font-size:22px; font-weight:600; color:var(--text-hi); line-height:1.25; }
+.help-plain .help-list{ margin-top:16px; display:flex; flex-direction:column; border-top:1px solid var(--ink-border); }
+.help-plain .help-row{ display:flex; flex-direction:column; gap:2px; padding:10px 6px; border-bottom:1px solid var(--ink-border); text-align:left; }
+.help-plain .help-row:hover, .help-plain .help-row:focus-visible{ background:var(--ink-800); box-shadow:inset 2px 0 0 var(--accent-rest); outline:none; }
+.help-plain .help-row-name{ color:var(--text-hi); font-size:14px; } .help-plain .help-row-hint{ color:var(--text-mid); font-size:12px; }
+.help-plain .help-why{ margin:12px 0 0; color:var(--text-mid); font-size:14px; line-height:1.5; }
+.help-plain .help-begin{ display:inline-block; margin-top:20px; padding:9px 20px; color:var(--text-hi); box-shadow:inset 0 0 0 1px var(--accent-rest); }
+.help-plain .help-begin:hover, .help-plain .help-begin:focus-visible{ background:var(--ink-800); outline:none; }
+.help-plain .help-alt-plain{ display:block; margin-top:18px; color:var(--text-mid); font-size:13px; } .help-plain .help-alt-plain:hover{ color:var(--text-hi); }
+.help-plain .help-browse{ display:block; margin-top:16px; color:var(--text-mid); font-size:12px; letter-spacing:.08em; text-transform:uppercase; } .help-plain .help-browse:hover{ color:var(--text-hi); }
+.help-plain .help-foot{ margin-top:22px; justify-content:flex-start; color:var(--text-low); font-size:10px; }
+
+/* the door: the ONE row at the top of the Presets list (SectionsPopout) and of the deck library (DeckWizard) */
+.wz-help-door{ display:flex; align-items:center; gap:8px; width:100%; background:none; border:0; border-bottom:1px solid var(--ink-border); padding:4px 2px 8px; margin-bottom:4px; cursor:pointer; color:var(--accent-rest); font:inherit; font-size:13px; text-align:left; }
+.wz-help-door:hover, .wz-help-door:focus-visible{ color:var(--text-hi); }
+.wz-help-door-glyph{ display:inline-block; width:16px; text-align:center; opacity:.9; }
+.deck-wizard-help-door{ color:var(--ink-on-card); border-bottom-color:var(--card-hairline); padding:10px 4px; font-size:14px; }

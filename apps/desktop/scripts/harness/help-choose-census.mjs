@@ -197,6 +197,23 @@ ok('C1: Q3 is little / shape / everything', !!m && same(m.Q3, Q3), m ? JSON.stri
   ok('C8: the module is pure data and functions - no React, no effect, no listener, nothing that could open a panel by itself', !!m && !/from 'react'|useEffect|addEventListener|document\.|window\./.test(text.replace(/\/\/.*$/gm, '')), '');
 }
 
+// C10 - the panel never opens itself and stores nothing (source half; the DOM half is help-choose.mjs D1 / L2)
+{
+  const strip = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+  const panel = existsSync(join(SRC, 'components', 'HelpMeChoose.tsx')) ? strip(readFileSync(join(SRC, 'components', 'HelpMeChoose.tsx'), 'utf8')) : '';
+  const STORAGE = /localStorage|sessionStorage|indexedDB|wrizo-|saveJournalEntry|scheduleFlush|setWritingSettings|fetch\(/;
+  const mounts = ['components/SectionsPopout.tsx', 'components/DeckWizard.tsx'].map((f) => (existsSync(join(SRC, f)) ? strip(readFileSync(join(SRC, f), 'utf8')) : ''));
+  // every <HelpMeChoose mount sits behind `{helpOpen &&`, and the only `setHelpOpen(true)` is inside an onClick
+  const mountOk = (t) => (t.match(/<HelpMeChoose/g) || []).length === 1 && /\{helpOpen && <HelpMeChoose/.test(t) && (t.match(/setHelpOpen\(true\)/g) || []).length === 1 && /onClick=\{\(\) => setHelpOpen\(true\)\}/.test(t);
+  ok('C10: the panel stores nothing - HelpMeChoose.tsx names no storage, sync or save path', panel.length > 0 && !STORAGE.test(panel), '');
+  ok('C10: it NEVER opens itself - each of its two hosts mounts it exactly once, behind `{helpOpen &&`, and flips helpOpen to true ONLY from an onClick', mounts.every(mountOk), JSON.stringify(mounts.map(mountOk)));
+  ok('C10: and it has no timer, no auto-open effect, no interval (the only effects are focus, Esc and focus-return)', panel.length > 0 && !/setTimeout|setInterval|requestAnimationFrame/.test(panel), '');
+  const withStorage = STORAGE.test(panel + "\nlocalStorage.setItem('wrizo-help-seen','1');");
+  const autoOpen = mountOk(mounts[0].replace('onClick={() => setHelpOpen(true)}', 'onClick={() => setHelpOpen(true)}').replace('{helpOpen && <HelpMeChoose', '{<HelpMeChoose'));
+  ok('MUTANT: a localStorage write added to the panel - C10 must go RED (the mutation LANDED: the real panel is clean)', panel.length > 0 && !STORAGE.test(panel) && withStorage, '');
+  ok('MUTANT: the panel mounted without its `helpOpen &&` gate (it would open by itself) - C10 must go RED (the mutation LANDED: the real host passes)', mountOk(mounts[0]) && !autoOpen, '');
+}
+
 // ------------------------------------------------------------------ MUTANTS: each rewrites the REAL module, asserts the mutation LANDED, bundles it, and re-runs the check it targets - which must go RED
 if (m) {
   const moduleText = readFileSync(MODULE, 'utf8').replace(/\r\n/g, '\n');

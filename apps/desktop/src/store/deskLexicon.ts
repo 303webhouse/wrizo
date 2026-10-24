@@ -652,6 +652,97 @@ export type DeskTermId =
   // per-theme phrases (Nick's ruling). Arbor's own voice is the canonical one;
   // Flux's own circuit-register voice is a Flux override, below.
   | 'splashLoading1' | 'splashLoading2' | 'splashLoading3' | 'splashLoading4'
+  // W4 (Help me choose) - the panel's chrome words and the questions' answers (labels + hints) and the deck cover lines.
+  | 'helpDoor'
+  | 'helpDialogLabel'
+  | 'helpKicker'
+  | 'helpPickKicker'
+  | 'helpMaking'
+  | 'helpQ1Prompt'
+  | 'helpQ2Prompt'
+  | 'helpQ3Prompt'
+  | 'helpBegin'
+  | 'helpAlt'
+  | 'helpBrowse'
+  | 'helpClose'
+  | 'helpBack'
+  | 'helpStepOf'
+  | 'helpANovel'
+  | 'helpHNovel'
+  | 'helpAShortStory'
+  | 'helpHShortStory'
+  | 'helpAScreenplay'
+  | 'helpHScreenplay'
+  | 'helpAEssay'
+  | 'helpHEssay'
+  | 'helpAResearchPaper'
+  | 'helpHResearchPaper'
+  | 'helpAThesis'
+  | 'helpHThesis'
+  | 'helpAProposal'
+  | 'helpHProposal'
+  | 'helpAArticle'
+  | 'helpHArticle'
+  | 'helpAWorldOrCast'
+  | 'helpHWorldOrCast'
+  | 'helpAPoems'
+  | 'helpHPoems'
+  | 'helpAPersonChange'
+  | 'helpHPersonChange'
+  | 'helpAEventsPressure'
+  | 'helpHEventsPressure'
+  | 'helpAWorldSystem'
+  | 'helpHWorldSystem'
+  | 'helpARelationshipCast'
+  | 'helpHRelationshipCast'
+  | 'helpAImageVoice'
+  | 'helpHImageVoice'
+  | 'helpAFeature'
+  | 'helpHFeature'
+  | 'helpAPilot'
+  | 'helpHPilot'
+  | 'helpAPosition'
+  | 'helpHPosition'
+  | 'helpAQuestion'
+  | 'helpHQuestion'
+  | 'helpAQuestionMethod'
+  | 'helpHQuestionMethod'
+  | 'helpAArgumentChapters'
+  | 'helpHArgumentChapters'
+  | 'helpAProblemSolution'
+  | 'helpHProblemSolution'
+  | 'helpAFunderPriorities'
+  | 'helpHFunderPriorities'
+  | 'helpAPerson'
+  | 'helpHPerson'
+  | 'helpATrend'
+  | 'helpHTrend'
+  | 'helpAFound'
+  | 'helpHFound'
+  | 'helpAWorld'
+  | 'helpHWorld'
+  | 'helpAPeople'
+  | 'helpHPeople'
+  | 'helpALittle'
+  | 'helpHLittle'
+  | 'helpAShape'
+  | 'helpHShape'
+  | 'helpAEverything'
+  | 'helpHEverything'
+  | 'helpCoverThreeAct'
+  | 'helpCoverStoryCircle'
+  | 'helpCoverHeroJourney'
+  | 'helpCoverWorldbuilding'
+  | 'helpCoverCharacterStudy'
+  | 'helpCoverSceneSequel'
+  | 'helpCoverFeatureScreenplay'
+  | 'helpCoverArgumentEssay'
+  | 'helpCoverResearchPaper'
+  | 'helpCoverThesis'
+  | 'helpCoverBusinessProposal'
+  | 'helpCoverGrant'
+  | 'helpCoverFeatureStory'
+  | 'helpCoverFromMyPages'
   // W4 (Help me choose) - one "why" line per pick, written to the content doc's register; Fable reviews the strings with the screens.
   | 'helpWhyStoryCircle'
   | 'helpWhyThreeAct'
@@ -1691,6 +1782,97 @@ const CANONICAL: Record<DeskTermId, string> = {
   helpWhyFeatureStoryProfile: 'A person is the story, and a profile gives their scenes and their stakes room.',
   helpWhyFeatureStoryTrend: 'A trend needs proof that it is one, so the feature gathers its cases before its claim.',
   helpWhyFeatureStoryInvestigative: "Something you found needs a trail, so the feature lays out what you know and don't.",
+  // W4 - Help me choose: chrome + the questions' answers (label, hint) + the deck cover lines. The ANSWERS and the COVERS are deck content (every theme reads them); the chrome words take theme overrides.
+  helpDoor: 'Ask the librarian',
+  helpDialogLabel: 'Help me choose',
+  helpKicker: 'The librarian',
+  helpPickKicker: "The librarian's pick",
+  helpMaking: "You're making",
+  helpQ1Prompt: 'What are you making?',
+  helpQ2Prompt: 'What carries it?',
+  helpQ3Prompt: 'How much do you want to know before you start?',
+  helpBegin: 'Begin',
+  helpAlt: 'or',
+  helpBrowse: 'Browse the shelves',
+  helpClose: 'Esc to close',
+  helpBack: 'Back',
+  helpStepOf: 'Step {n} of 3',
+  helpANovel: 'a novel or novella',
+  helpHNovel: 'a long story, front to back',
+  helpAShortStory: 'a short story',
+  helpHShortStory: 'one sitting, one turn',
+  helpAScreenplay: 'a screenplay or pilot',
+  helpHScreenplay: 'pictures and talk, in scenes',
+  helpAEssay: 'an essay or argument',
+  helpHEssay: 'a case you mean to make',
+  helpAResearchPaper: 'a research paper',
+  helpHResearchPaper: 'a question, a method, a finding',
+  helpAThesis: 'a thesis or dissertation',
+  helpHThesis: 'the long work, in chapters',
+  helpAProposal: 'a proposal or grant',
+  helpHProposal: 'asking someone for something',
+  helpAArticle: 'an article or profile',
+  helpHArticle: 'a true story, told well',
+  helpAWorldOrCast: 'a world or a cast, before the story',
+  helpHWorldOrCast: 'the place or the people first',
+  helpAPoems: 'poems or a sequence',
+  helpHPoems: 'lines before structure',
+  helpAPersonChange: "a person's change",
+  helpHPersonChange: 'someone wants something, and pays for it',
+  helpAEventsPressure: 'events and pressure',
+  helpHEventsPressure: 'things happen, and something has to give',
+  helpAWorldSystem: 'a world or a system',
+  helpHWorldSystem: 'the place is the story: its rules, its maps',
+  helpARelationshipCast: 'a relationship or a cast',
+  helpHRelationshipCast: 'the people, and what pulls between them',
+  helpAImageVoice: 'an image or a voice',
+  helpHImageVoice: "one picture you can't stop seeing",
+  helpAFeature: 'a feature',
+  helpHFeature: 'a full-length film',
+  helpAPilot: 'a pilot',
+  helpHPilot: 'the first episode of a series',
+  helpAPosition: "a position I'm defending",
+  helpHPosition: 'a claim, and the case for it',
+  helpAQuestion: "a question I'm still answering",
+  helpHQuestion: "you don't know the answer yet",
+  helpAQuestionMethod: 'a question and a method',
+  helpHQuestionMethod: 'what you asked, and how you looked',
+  helpAArgumentChapters: 'a long argument in chapters',
+  helpHArgumentChapters: 'one claim, carried across the book',
+  helpAProblemSolution: 'a problem and a solution',
+  helpHProblemSolution: 'what is wrong, and what you would do',
+  helpAFunderPriorities: "a funder's priorities",
+  helpHFunderPriorities: 'their questions set the shape',
+  helpAPerson: 'a person',
+  helpHPerson: 'a profile: one life, closely',
+  helpATrend: 'a trend',
+  helpHTrend: 'a pattern, with the cases that prove it',
+  helpAFound: 'something I found',
+  helpHFound: 'a lead, and where it goes',
+  helpAWorld: 'the world',
+  helpHWorld: 'the place, before anyone in it',
+  helpAPeople: 'the people',
+  helpHPeople: 'who they are, before what happens',
+  helpALittle: "a little (I'm new to this)",
+  helpHLittle: 'show me, step by step',
+  helpAShape: 'the shape',
+  helpHShape: "the outline, then I'll write",
+  helpAEverything: 'everything (just give me the cards)',
+  helpHEverything: 'all of it, at once',
+  helpCoverThreeAct: 'a beginning, a turn, an end',
+  helpCoverStoryCircle: 'eight steps, around and home again',
+  helpCoverHeroJourney: 'twelve steps, out and back',
+  helpCoverWorldbuilding: 'the place, its rules, its people',
+  helpCoverCharacterStudy: 'each person, and what lies between them',
+  helpCoverSceneSequel: 'a scene, then what it costs',
+  helpCoverFeatureScreenplay: 'fifteen beats, front to back',
+  helpCoverArgumentEssay: 'claim, evidence, counterclaim, close',
+  helpCoverResearchPaper: 'introduction, method, results, discussion',
+  helpCoverThesis: 'foundations, then the chapters',
+  helpCoverBusinessProposal: 'the problem, the plan, the ask',
+  helpCoverGrant: 'what you want to fund, and why',
+  helpCoverFeatureStory: 'a lead, a nut graf, the story',
+  helpCoverFromMyPages: 'your own pages, in your own order',
 };
 
 // Flux registers its own capture-module name (the app's other live theme
@@ -1699,6 +1881,16 @@ const CANONICAL: Record<DeskTermId, string> = {
 // the same theme, even though they're independent maps.
 const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> = {
   flux: {
+    // W4 - RUN DIAGNOSTIC: the terminal dress of Help me choose (frame 09). The questions and answers are NOT overridden - deck content.
+    helpDoor: 'RUN DIAGNOSTIC',
+    helpDialogLabel: 'Diagnostic',
+    helpKicker: 'DIAGNOSTIC v1',
+    helpPickKicker: 'RESULT',
+    helpBegin: '[LOAD]',
+    helpAlt: 'ALT',
+    helpBrowse: 'BROWSE ALL STACKS',
+    helpClose: 'ESC TO CLOSE',
+    helpBack: 'BACK',
     // PAGE TEMPLATES - Flux's circuit-register words for the picker (the approved templates mockup): Presets, and Raw / Script / Spine / Cover / Sources.
     // railTypeface's own Flux override already lives below (theme-leftovers) - not duplicated here.
     // cascadeThemeTitle: 'Skin' - flux-v2's own addition (merged to main independently); not duplicated here.
@@ -1939,6 +2131,12 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     graftPairedPage: 'Doc',
   },
   machina: {
+    // W4 - Intake: Machina's plain, square panel of Help me choose (no mockup yet).
+    helpDoor: 'Intake',
+    helpDialogLabel: 'Intake',
+    helpKicker: 'Intake',
+    helpPickKicker: 'Recommended',
+    helpBrowse: 'Browse all forms',
     // MACHINA (docs/plans/machina-build.md §1c) - the corporate / mechanical register: Project, Folder, Part, File, Plan, Block, Notebook, Consultant, Asset, Controls, Theme.
     // Derived from Flux's own noun-bearing entries (same keys, Machina's noun) so no string that still names an Arbor or Flux noun survives under this theme; the words Nick locked
     // follow. Flux's own REGISTER words (Wire In, Patch, Terminal Mode, Quota, ...) are not carried over - Machina keeps canonical wherever Nick named no word.
