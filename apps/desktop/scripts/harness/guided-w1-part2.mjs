@@ -1,0 +1,244 @@
+// W1 PART 2 - THE LIVE APP (a box turn). PART 1 (guided-w1.mjs) holds the contract and the pure model; this proves what only a browser can, against the DOM contract in that file's header:
+//   .show-as > .show-as-btn[data-view][aria-pressed]   .walk > .walk-stage > .walk-card[data-box-id] (+ .walk-grip)   .walk-nav[data-dir]   .walk-doors > .walk-door[data-door]   .walk-rail > .walk-mark[data-state][data-current]
+//   .book-thumbs > .book-thumb[data-current]   .wz-thumb[data-thumb=board|deck|book]
+// WRITTEN BEFORE THE BUILD (red on the W3 tip). Sections: H home views by door, V show-as switching + memory, A adding follows the view, G walk geometry, P the page never moves, N chevrons, M motion, Y keyboard, R the rail,
+// D dress in computed style, T thumbnails by kind, B the Journal as a Book, S small screens. Run: node scripts/harness/guided-w1-part2.mjs [outDir]   (a box turn; with outDir it also writes the frames Fable clears).
+import fs from 'node:fs';
+import path from 'node:path';
+const out = process.argv[2] || null;
+if (out) fs.mkdirSync(out, { recursive: true });
+const checks = [];
+const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+process.env.WS_PLACE = '1';
+const { withHarness } = await import('../runtime-verify.mjs');
+
+await withHarness(async (app) => {
+  const q = (js) => app.evalJs(js);
+  const waitSoft = async (expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
+  const shot = async (name) => { if (out) fs.writeFileSync(path.join(out, `${name}.png`), Buffer.from(await app.screenshot(), 'base64')); };
+  const point = (sel) => q(`(() => { const b = document.querySelector(${JSON.stringify(sel)}); if (!b) return null; const r = b.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()`);
+  const click = async (sel) => { const p = await point(sel); if (!p) return false; await app.mouseMove(p.x, p.y); await app.mouseDown(p.x, p.y); await sleep(50); await app.mouseUp(p.x, p.y); await sleep(350); return true; };
+  const boxes = () => q('window.wrizoBoard()');
+  const rectOf = (sel) => q(`(() => { const e = document.querySelector(${JSON.stringify(sel)}); if (!e) return null; const r = e.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map(Math.round); })()`);
+  const pressed = () => q("(() => { const b = document.querySelector('.show-as-btn[aria-pressed=\"true\"]'); return b ? b.getAttribute('data-view') : null; })()");
+
+  const fresh = async (theme, tone, width = 1400) => {
+    await app.emulateDpr(1, width, 900);
+    await app.goto('/');
+    await q("localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-splash-hold','50'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4');");
+    await app.reload();
+    await waitSoft("!!document.querySelector('.wz-arrival')", { label: 'front door' });
+    await waitSoft("!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 14000 });
+    await sleep(600);
+    await q(`window.wrizoTheme && window.wrizoTheme.set('${theme}')`);
+    await q(`window.wrizoThemePrefs && window.wrizoThemePrefs.set({ page: '${tone}' })`);
+    await sleep(400);
+  };
+  // a project with a plain board (no board-meta), a three-card board with x/y and seq, and a Deck (board-meta homeView walk)
+  const seed = async () => {
+    await q(`(() => { const d = window.wrizoCreateDrawer('The Well'); const p = window.wrizoCreateProject('The Well', 'creative'); window.wrizoSetProjectDrawer(p.id, d.id); window.__w1p = p.id;
+      const text = (id, x, y, seq, t) => ({ id, kind: 'text', x, y, w: 0.2, h: 0.105, z: 1, text: t, ...(seq ? { seq } : {}) });
+      window.wrizoCreateJournalPage({ id: 'w1-plain', text: 'A plain board', pageType: 'board', projectId: p.id, boxes: [], origin: 'project', source: 'page', createdAt: '2026-01-01T00:00:01.000Z' });
+      window.wrizoCreateJournalPage({ id: 'w1-three', text: 'Three cards', pageType: 'board', projectId: p.id, boxes: [text('t1', 0.05, 0.06, 1, 'First\\nOne.'), text('t2', 0.4, 0.2, 2, 'Second\\nTwo.'), text('t3', 0.2, 0.4, 3, 'Third\\n')], origin: 'project', source: 'page', createdAt: '2026-01-01T00:00:02.000Z' });
+      const nine = []; for (let i = 1; i <= 9; i++) nine.push({ ...text('d' + i, 0.03 + ((i - 1) % 3) * 0.32, 0.04 + Math.floor((i - 1) / 3) * 0.14, i, 'Step ' + i + '\\n'), prompt: 'What happens in step ' + i + '?', deckStep: { deck: 'three-act', step: 'hook' } });
+      nine.push({ id: 'dm', kind: 'board-meta', x: 0, y: 0, w: 0, h: 0, z: 0, homeView: 'walk' });
+      window.wrizoCreateJournalPage({ id: 'w1-deck', text: 'Three-Act', pageType: 'board', projectId: p.id, boxes: nine, origin: 'project', source: 'page', createdAt: '2026-01-01T00:00:03.000Z' });
+      window.wrizoFlushNow(); })()`);
+    await sleep(500);
+  };
+  const open = async (id, sel) => { await q(`location.hash = '#/page/${id}'`); await waitSoft(`!!document.querySelector('${sel}')`, { label: id, timeout: 8000 }); await sleep(900); };
+  const showAs = async (view) => click(`.show-as-btn[data-view="${view}"]`);
+
+  for (const theme of ['plateau', 'flux']) {
+    for (const tone of theme === 'flux' ? ['dark', 'light'] : ['dark']) {
+      const T = `${theme === 'plateau' ? 'Arbor' : 'Flux'} ${tone}`;
+      const full = tone === 'dark';
+      const tag = `${theme === 'plateau' ? 'arbor' : 'flux'}-${tone}`;
+      try {
+      await fresh(theme, tone); await seed();
+
+      // H - home views by door: a plain board opens in Open; a Deck (board-meta homeView walk) opens in the Walk; a board with NO field is Open (no migration)
+      await open('w1-plain', '.board-canvas');
+      const h1 = await pressed();
+      await open('w1-deck', '.walk');
+      const h2 = await pressed();
+      if (full) {
+        ok(`[${T}] no field = a Board that opens in Open (the Show-as shows Open pressed, the canvas is up)`, h1 === 'open', String(h1));
+        ok(`[${T}] a Deck (board-meta homeView walk) opens in the Walk: the card is up and Walk is the pressed view`, h2 === 'walk' && !!(await q("!!document.querySelector('.walk-card')")), String(h2));
+      }
+      await shot(`02-walk-${tag}`);
+
+      // the Walk's anatomy
+      const anatomy = await q(`(() => { const c = document.querySelector('.walk-card'); const r = c && c.getBoundingClientRect(); return { card: !!c, w: r ? Math.round(r.width) : 0, prev: !!document.querySelector('.walk-nav[data-dir=prev]'), next: !!document.querySelector('.walk-nav[data-dir=next]'), doors: [...document.querySelectorAll('.walk-door')].map((d) => d.getAttribute('data-door')), marks: document.querySelectorAll('.walk-mark').length, grip: !!document.querySelector('.walk-grip'), help: !!document.querySelector('.walk-card .board-step-help') }; })()`);
+      if (full) {
+        ok(`[${T}] the Walk card is 700 wide at a wide viewport; Previous / Next, the resize grip, the question mark and one rail mark per card (9) are there`, anatomy.card && anatomy.w === 700 && anatomy.prev && anatomy.next && anatomy.grip && anatomy.help && anatomy.marks === 9, JSON.stringify(anatomy));
+        ok(`[${T}] the doors under the card are Notes only - "Write this" and "Place a page..." are ABSENT until W2 wires them`, same(anatomy.doors, ['notes']), JSON.stringify(anatomy.doors));
+      }
+
+      // V - show as: positions and order are untouched by switching; the memory is per board; the words
+      if (full) {
+        await open('w1-three', '.board-canvas');
+        const before = (await boxes()).filter((b) => b.kind === 'text').map((b) => [b.id, b.x, b.y, b.seq]);
+        for (const v of ['storyboard', 'outline', 'walk', 'open']) { await showAs(v); await sleep(500); }
+        const after = (await boxes()).filter((b) => b.kind === 'text').map((b) => [b.id, b.x, b.y, b.seq]);
+        ok(`[${T}] Show as switches Open / Storyboard / Outline / Walk without moving a card or touching the order (x, y and seq are byte-identical)`, JSON.stringify(before) === JSON.stringify(after) && before.length === 3, JSON.stringify({ before, after }));
+        await showAs('storyboard'); await sleep(400);
+        await app.reload(); await waitSoft("!!document.querySelector('.show-as')", { label: 'show-as after reload', timeout: 8000 }); await sleep(900);
+        const remembered = await pressed();
+        await open('w1-plain', '.board-canvas');
+        const other = await pressed();
+        ok(`[${T}] "last shown as" is remembered per board on the device: the board reopens in Storyboard after a reload; another board is unaffected`, remembered === 'storyboard' && other === 'open', JSON.stringify({ remembered, other }));
+        const views = await q("[...document.querySelectorAll('.show-as-btn')].map((b) => b.getAttribute('data-view'))");
+        ok(`[${T}] a Board offers Open, Storyboard, Outline, Walk (in that order) - icons, the word on hover`, same(views, ['open', 'storyboard', 'outline', 'walk']) && (await q("[...document.querySelectorAll('.show-as-btn')].every((b) => !!(b.getAttribute('title') || b.getAttribute('aria-label')))")), JSON.stringify(views));
+        await shot(`02-walk-showas-open-${tag}`);
+      }
+
+      // A - adding follows the view shown: in the Walk a new card is appended to the order (seq) and becomes the current card
+      if (full) {
+        await open('w1-deck', '.walk');
+        await q("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(400);
+        await q("[...document.querySelectorAll('.wz-sliver-item-btn')].find((b) => /^(add card|add node)$/i.test(b.textContent.trim()))?.click()"); await sleep(700);
+        const afterAdd = (await boxes()).filter((b) => b.kind === 'text');
+        const added = afterAdd.find((b) => !/^d\d$/.test(b.id));
+        const maxSeq = Math.max(...afterAdd.filter((b) => /^d\d$/.test(b.id)).map((b) => b.seq));
+        ok(`[${T}] adding in the Walk appends a card to the order (seq after the last), not a card at a position`, !!added && afterAdd.length === 10 && added.seq > maxSeq, JSON.stringify({ n: afterAdd.length, seq: added && added.seq, maxSeq }));
+        await open('w1-plain', '.board-canvas');
+        const nOpen = (await boxes()).filter((b) => b.kind === 'text').length;
+        await q("[...document.querySelectorAll('.wz-sliver-item-btn')].find((b) => /^(add card|add node)$/i.test(b.textContent.trim()))?.click()"); await sleep(700);
+        const openAdded = (await boxes()).filter((b) => b.kind === 'text');
+        ok(`[${T}] adding in Open still places a card at a position (x / y), and writes no seq`, openAdded.length === nOpen + 1 && openAdded.every((b) => typeof b.x === 'number'), JSON.stringify({ nOpen, n: openAdded.length }));
+      }
+
+      await open('w1-deck', '.walk');
+      if (full) {
+        // R - the rail: empty = seed, kindled = leaf, current = ring; Start Here folds into the first seed
+        const rail = await q("[...document.querySelectorAll('.walk-mark')].map((m) => m.getAttribute('data-state') + (m.getAttribute('data-current') === 'true' ? '*' : ''))");
+        ok(`[${T}] the rail is one mark per card: the first is current, the rest seeds (no card has words yet)`, rail.length >= 9 && rail[0].startsWith('current') && rail.slice(1, 9).every((s) => s === 'seed'), JSON.stringify(rail));
+
+        // N - chevrons: inside the card's width, just above its corners, ~55% at rest, square hit boxes; they recede while typing and return on pointer move
+        const nav = await q(`(() => { const c = document.querySelector('.walk-card').getBoundingClientRect(); const p = document.querySelector('.walk-nav[data-dir=prev]'), n = document.querySelector('.walk-nav[data-dir=next]'); const pr = p.getBoundingClientRect(), nr = n.getBoundingClientRect(); const op = parseFloat(getComputedStyle(p).opacity); return { inside: pr.left >= c.left - 1 && nr.right <= c.right + 1, above: pr.bottom <= c.top + 2 && nr.bottom <= c.top + 2, prevLeft: Math.abs(pr.left - c.left) < 30, nextRight: Math.abs(nr.right - c.right) < 30, opacity: op, squareP: Math.abs(pr.width - pr.height) <= 1, squareN: Math.abs(nr.width - nr.height) <= 1 }; })()`);
+        ok(`[${T}] the chevrons sit just above the card's top corners inside its width, rest at about 55%, with square hit boxes`, nav.inside && nav.above && nav.prevLeft && nav.nextRight && nav.opacity > 0.5 && nav.opacity < 0.6 && nav.squareP && nav.squareN, JSON.stringify(nav));
+        await click('.walk-card'); await sleep(300);
+        await app.typeKeys('She waits'); await sleep(1500);
+        const typing = await q("parseFloat(getComputedStyle(document.querySelector('.walk-nav[data-dir=prev]')).opacity)");
+        await app.mouseMove(300, 300); await app.mouseMove(320, 320); await sleep(900);
+        const back = await q("parseFloat(getComputedStyle(document.querySelector('.walk-nav[data-dir=prev]')).opacity)");
+        ok(`[${T}] the chevrons RECEDE while the writer types and return on pointer move`, typing < 0.2 && back > 0.5, JSON.stringify({ typing, back }));
+        const rail2 = await q("[...document.querySelectorAll('.walk-mark')].map((m) => m.getAttribute('data-state'))");
+        ok(`[${T}] writing in the card kindles its mark: the first rail mark is now a leaf (the card has the writer's words), stored as ordinary card text`, rail2[0] === 'leaf' && (await boxes()).find((b) => b.id === 'd1').text.includes('She waits'), JSON.stringify(rail2));
+        await shot(`02-writing-${tag}`);
+
+        // G - geometry: the card grows with its text to 520, then scrolls INSIDE; the page / stage never moves when a drawer opens (the K-style check)
+        await app.typeKeys(' and she waits and she waits and she waits '.repeat(60)); await sleep(800);
+        const grown = await q("(() => { const c = document.querySelector('.walk-card'); const r = c.getBoundingClientRect(); const cs = getComputedStyle(c); return { h: Math.round(r.height), overflow: cs.overflowY, scrolls: c.scrollHeight > c.clientHeight }; })()");
+        ok(`[${T}] the card grows with its text up to 520 and then scrolls INSIDE`, grown.h <= 521 && grown.h >= 500 && /auto|scroll/.test(grown.overflow) && grown.scrolls, JSON.stringify(grown));
+        const stageBefore = await rectOf('.walk-stage');
+        await q("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(700);
+        await q("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(700);
+        const stageOpen = await rectOf('.walk-stage');
+        ok(`[${T}] PAGE IS PRIMARY: the Walk's stage does not move or resize when the side drawers open`, JSON.stringify(stageBefore) === JSON.stringify(stageOpen), JSON.stringify({ stageBefore, stageOpen }));
+        await q("document.querySelector('.wz-tutor-grip')?.click()"); await q("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(500);
+
+        // resize persists per board on the device
+        const grip = await point('.walk-grip');
+        const cardNow = await rectOf('.walk-card');
+        await app.mouseMove(grip.x, grip.y); await app.mouseDown(grip.x, grip.y); await app.mouseMove(grip.x - 120, grip.y); await app.mouseMove(grip.x - 160, grip.y); await app.mouseUp(grip.x - 160, grip.y); await sleep(500);
+        const resized = await rectOf('.walk-card');
+        await app.reload(); await waitSoft("!!document.querySelector('.walk-card')", { label: 'walk after reload', timeout: 8000 }); await sleep(900);
+        const afterReload = await rectOf('.walk-card');
+        ok(`[${T}] the card's resize is remembered per board on the device (width ${cardNow[2]} -> ${resized[2]}; the same after a reload; never below 360)`, resized[2] < cardNow[2] && afterReload[2] === resized[2] && afterReload[2] >= 360, JSON.stringify({ cardNow, resized, afterReload }));
+      }
+
+      // M - motion: the swipe is a pure slide, about 280 ms; reduced motion is an instant cut
+      await open('w1-deck', '.walk');
+      if (full) {
+        const motion = await q(`(async () => { const nx = document.querySelector('.walk-nav[data-dir=next]'); const before = [...document.querySelectorAll('.walk-card')].length; nx.click(); await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); const cards = [...document.querySelectorAll('.walk-card')]; const anims = cards.map((c) => { const cs = getComputedStyle(c); return { dur: cs.animationDuration, name: cs.animationName, op: cs.opacity }; }); return { before, during: cards.length, anims }; })()`);
+        await sleep(500);
+        ok(`[${T}] the swipe is a pure slide: both cards fully opaque while it runs, 280 ms, its animation moves transform and never opacity`, motion.during === 2 && motion.anims.every((a) => a.op === '1' && a.dur === '0.28s' && /walk-/.test(a.name)), JSON.stringify(motion));
+        await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]); await sleep(300);
+        const cut = await q(`(async () => { document.querySelector('.walk-nav[data-dir=next]').click(); await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); const cards = [...document.querySelectorAll('.walk-card')]; return { n: cards.length, anim: cards.map((c) => getComputedStyle(c).animationName) }; })()`);
+        await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
+        ok(`[${T}] reduced motion is an instant cut: one card, no animation`, cut.n === 1 && cut.anim.every((a) => a === 'none'), JSON.stringify(cut));
+
+        // Y - keyboard: left / right step, Esc leaves for the board's last shown view, Enter on the focused door
+        await open('w1-deck', '.walk');
+        const idx = async () => q("[...document.querySelectorAll('.walk-mark')].findIndex((m) => m.getAttribute('data-current') === 'true')");
+        const i0 = await idx(); await app.key('ArrowRight'); await sleep(500); const i1 = await idx(); await app.key('ArrowRight'); await sleep(500); const i2 = await idx(); await app.key('ArrowLeft'); await sleep(500); const i3 = await idx();
+        ok(`[${T}] ArrowRight / ArrowLeft step through the cards (and stop at the ends)`, i0 === 0 && i1 === 1 && i2 === 2 && i3 === 1, JSON.stringify([i0, i1, i2, i3]));
+        await q("document.querySelector('.walk-door[data-door=notes]')?.focus()"); await app.key('Enter'); await sleep(400);
+        const notesFocus = await q("!!document.activeElement && !!document.activeElement.closest('.walk-card')");
+        ok(`[${T}] Enter on the focused Notes door puts the caret in the card`, notesFocus, String(notesFocus));
+        await q("(window.wrizoBoardMode && window.wrizoBoardMode.set('w1-deck', 'outline'))"); await sleep(300);
+        await showAs('walk'); await sleep(500);
+        await app.key('Escape'); await sleep(700);
+        const afterEsc = await pressed();
+        ok(`[${T}] Esc leaves the Walk for the board in its last shown view (Outline here)`, afterEsc === 'outline', String(afterEsc));
+      }
+
+      // D - dress in computed style
+      await open('w1-deck', '.walk');
+      if (full) {
+        const dress = await q(`(() => { const sel = ['.walk-card', '.walk-door', '.walk-nav', '.show-as-btn', '.walk-stage']; const out = {}; for (const s of sel) { const e = document.querySelector(s); if (!e) { out[s] = null; continue; } const cs = getComputedStyle(e); const sh = cs.boxShadow; out[s] = { radius: cs.borderTopLeftRadius, blur: sh === 'none' ? 0 : Math.max(...sh.split(/rgba?\\([^)]*\\)/).join(' ').split(',').map((x) => parseFloat(x.trim().split(/\\s+/)[2] || '0'))) }; } const mark = document.querySelector('.walk-mark'); out.markRadius = mark && getComputedStyle(mark).borderTopLeftRadius; return out; })()`);
+        ok(`[${T}] square edges and no blurred shadow on the Walk card, doors, chevrons, Show-as and stage (computed style); circles only for the rail marks`, ['.walk-card', '.walk-door', '.walk-nav', '.show-as-btn', '.walk-stage'].every((s) => dress[s] && parseFloat(dress[s].radius) === 0 && dress[s].blur === 0) && /50%|\d{2,}px/.test(dress.markRadius || ''), JSON.stringify(dress));
+        if (theme === 'plateau') {
+          const rest = await q("(() => [...document.querySelectorAll('.walk-door, .show-as-btn[aria-pressed=\"false\"]')].map((e) => getComputedStyle(e).color + '|' + getComputedStyle(e).borderTopColor))()");
+          ok(`[${T}] Arbor: no brass on a rest-state door or Show-as icon (brass is human action only: current, chosen, hover)`, rest.length >= 4 && rest.every((c) => !c.includes('rgb(255, 152, 0)')), JSON.stringify(rest));
+        } else {
+          const tick = await q("(() => { const m = document.querySelector('.walk-mark[data-state=current]'); return m ? getComputedStyle(m).borderLeftColor + ' ' + getComputedStyle(m).borderLeftWidth : null; })()");
+          ok(`[${T}] Flux: the current tick wears the thin orange LEFT bar`, !!tick && tick.startsWith('rgb(255, 152, 0)'), String(tick));
+        }
+      }
+      } catch (e) { ok(`[${T}] the section ran to the end (nothing it needs was missing)`, false, String((e && e.message) || e).slice(0, 200)); }
+    }
+  }
+
+  const guard = async (name, fn) => { try { await fn(); } catch (e) { ok(`${name}: the section ran to the end (nothing it needs was missing)`, false, String((e && e.message) || e).slice(0, 200)); } };
+  // T - thumbnails by kind (the Boards pop-out): Board wide, Deck a stack of three with its fact, Book tall
+  await guard('T thumbnails', async () => {
+  await fresh('plateau', 'dark'); await seed();
+  await open('w1-plain', '.board-canvas');
+  await click('.wz-strip [data-category="plan"]'); await sleep(900);
+  const thumbs = await q("[...document.querySelectorAll('.wz-thumb')].map((t) => t.getAttribute('data-thumb') + ':' + (t.closest('.wz-section-row, .wz-journal-row')?.textContent || '').replace(/\\s+/g, ' ').trim().slice(0, 40))");
+  ok('the Boards pop-out draws thumbnails by kind: a Board (wide), a Deck (a short stack, with its "n of 9" fact), the Journal (a tall book)', thumbs.some((t) => t.startsWith('board:')) && thumbs.some((t) => t.startsWith('deck:') && /\d of 9/.test(t)) && thumbs.some((t) => t.startsWith('book:')) && !thumbs.some((t) => /\b(board|deck|book)\b/i.test(t.split(':')[1].replace(/Three cards|Three-Act|A plain board/g, ''))), JSON.stringify(thumbs));
+  await shot('01-listing-arbor-dark');
+
+  });
+  await guard('B journal book', async () => {
+  // B - the Journal as a Book: Flip and Thumbnails only; Flip walks the pages one at a time with the same chevrons and swipe
+  await q(`(() => { for (const [id, t] of [['j1', 'First journal page'], ['j2', 'Second journal page'], ['j3', 'Third journal page']]) window.wrizoCreateJournalPage({ id, text: t, origin: 'journal', source: 'page', createdAt: '2026-02-0' + id.slice(1) + 'T00:00:00.000Z' }); window.wrizoFlushNow(); })()`);
+  await q("location.hash = '#/journal'"); await waitSoft("!!document.querySelector('.show-as')", { label: 'journal', timeout: 8000 }); await sleep(900);
+  const bookViews = await q("[...document.querySelectorAll('.show-as-btn')].map((b) => b.getAttribute('data-view'))");
+  ok('the Journal is a Book: Show as offers Flip and Thumbnails (and none of the Board views), and it opens in Flip', same(bookViews, ['flip', 'thumbnails']) && (await pressed()) === 'flip', JSON.stringify(bookViews));
+  const flip = await q("({ one: document.querySelectorAll('.walk-card').length === 1, nav: !!document.querySelector('.walk-nav[data-dir=prev]') && !!document.querySelector('.walk-nav[data-dir=next]') })");
+  ok('Flip shows one page at a time with the same top-corner chevrons as the Walk', flip.one && flip.nav, JSON.stringify(flip));
+  await shot('04-flip-arbor-dark');
+  await showAs('thumbnails'); await sleep(700);
+  const grid = await q("({ pages: document.querySelectorAll('.book-thumb').length, current: document.querySelectorAll('.book-thumb[data-current=\"true\"]').length })");
+  ok('Thumbnails is a grid of tall pages with the current page marked', grid.pages >= 3 && grid.current === 1, JSON.stringify(grid));
+  await shot('04-thumbnails-arbor-dark');
+
+  });
+  await guard('S small screens', async () => {
+  // S - small screens (frame 07): below the DeskFrame width a Deck's only view is the Walk
+  await fresh('plateau', 'dark', 900); await seed();
+  await open('w1-deck', '.walk');
+  const small = await q("({ walk: !!document.querySelector('.walk-card'), views: document.querySelectorAll('.show-as-btn').length, peek: !!document.querySelector('.walk-peek'), stacked: (() => { const d = document.querySelector('.walk-doors'); return d ? getComputedStyle(d).flexDirection : null; })() })");
+  ok('below the DeskFrame width a Deck is only ever the Walk: one card, the doors stacked, the next card peeking, no view choice', small.walk && small.views <= 1 && small.peek && small.stacked === 'column', JSON.stringify(small));
+  await shot('07-phone-arbor-dark');
+
+  });
+  await guard('10 long card', async () => {
+  // 10 - a long card (the question or the writer's words fill the card, then scroll)
+  await fresh('plateau', 'dark'); await seed();
+  await open('w1-deck', '.walk'); await click('.walk-card'); await app.typeKeys('A long first card. '.repeat(120)); await sleep(800);
+  await shot('10-long-card-arbor-dark');
+  });
+});
+
+for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
+const failed = checks.filter((c) => !c.pass);
+console.log(failed.length ? `\nGUIDED-W1 PART 2: FAIL - ${failed.length}/${checks.length}` : `\nGUIDED-W1 PART 2: PASS (${checks.length} checks${out ? '; frames in ' + out : ''})`);
+process.exit(failed.length ? 1 : 0);
+
+function same(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
