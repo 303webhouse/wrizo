@@ -125,11 +125,22 @@ await withHarness(async (app) => {
   // ==== 2 · "11 = TODAY" — an untouched page's editor style is the prior build's two strings =======================
   await openPage(app, { id: 'i207-untouched', mode: 'drafting' });
   const untouched = await app.evalJs(`(() => { const w = document.querySelector('.forward-only-editor-wrap'); return w ? { ff: w.style.fontFamily, fs: w.style.fontSize } : null; })()`);
-  ok('11 = TODAY: a page that never chose keeps the editor\'s two prior style strings (`var(--font-prose)` and `calc(17px * var(--paper-scale))`) byte-for-byte',
-    untouched && untouched.ff === 'var(--font-prose)' && untouched.fs === 'calc(17px * var(--paper-scale))', JSON.stringify(untouched));
-  const scale = await scaleNow(app);
+  // ---- PARKED - SUPERSEDED by page-size (Fable's ruling a, Oct 23: the page's number is REAL POINTS IN PAGE UNITS - 12 = 16px at page scale 1, a NEW
+  // page defaults to 12, and the page LAYS OUT at scale 1 and is PAINTED at its scale by a transform, so the editor's computed size is n x 4/3 px at
+  // every screen). An untouched page now writes `calc(12 * var(--wz-pt, 1.33333px))` and computes 16px. Kept VERBATIM and no longer run; record in this file's parked section, successor below.
+  //
+  // ok('11 = TODAY: a page that never chose keeps the editor\'s two prior style strings (`var(--font-prose)` and `calc(17px * var(--paper-scale))`) byte-for-byte',
+  //   untouched && untouched.ff === 'var(--font-prose)' && untouched.fs === 'calc(17px * var(--paper-scale))', JSON.stringify(untouched));
+  // const scale = await scaleNow(app);
+  // const base = await sizeOfEditor(app);
+  // ok('11 = TODAY: the untouched editor renders at 17px x the paper scale (computed)', base !== null && Math.abs(base - 17 * scale) < 0.05, `${base}px at scale ${scale}`);
+  // ------------------------------------------------------------------
+  const scale = await scaleNow(app); void scale;   // (kept: the parked SIZE line below read it; the prose page no longer scales by --paper-scale)
   const base = await sizeOfEditor(app);
-  ok('11 = TODAY: the untouched editor renders at 17px x the paper scale (computed)', base !== null && Math.abs(base - 17 * scale) < 0.05, `${base}px at scale ${scale}`);
+  i207Parks.untouched = { untouched, base };
+  ok('12 = THE PAGE DEFAULT [page-size successor]: a page that never chose writes the editor\'s prose face and 12 page points - `var(--font-prose)` and `calc(12 * var(--wz-pt, 1.33333px))`',
+    !!untouched && untouched.ff === 'var(--font-prose)' && untouched.fs === 'calc(12 * var(--wz-pt, 1.33333px))', JSON.stringify(untouched));
+  ok('12 = THE PAGE DEFAULT [page-size successor]: the untouched editor computes 16px - 12 points laid out at page scale 1 (the page is painted at its scale)', base !== null && Math.abs(base - 16) < 0.05, `${base}px`);
   const row0 = await entryRow(app, 'i207-untouched');
   ok('11 = TODAY: an untouched page carries NO face or size key on disk', row0 && !(row0.pageSettings && ('face' in row0.pageSettings || 'size' in row0.pageSettings)), JSON.stringify(row0 && row0.pageSettings));
 
@@ -152,12 +163,26 @@ await withHarness(async (app) => {
   i207Parks.label = brassNow;
   ok('LABEL [font-span successor]: on a page that never chose, the BRASS row of the roster names the face that ACTUALLY renders and is set in it',
     !!brassNow && brassNow.label === brassNow.rendered && brassNow.rowFamily === brassNow.rendered, JSON.stringify(brassNow));
-  ok('SIZE: the number field opens at 11', (await numAt()) === '11', String(await numAt()));
+  // ---- PARKED - SUPERSEDED by page-size (Fable's ruling a, Oct 23: the page's number is REAL POINTS IN PAGE UNITS - 12 = 16px at page scale 1, a NEW
+  // page defaults to 12, and the page LAYS OUT at scale 1 and is PAINTED at its scale by a transform, so the editor's computed size is n x 4/3 px at
+  // every screen). The field opens at 12; `+` goes to 13, drawn 13 x 4/3 px; 13 is written. Kept VERBATIM and no longer run; record in this file's parked section, successor below.
+  //
+  // ok('SIZE: the number field opens at 11', (await numAt()) === '11', String(await numAt()));
+  // await press(app, "document.querySelectorAll('.wz-type-step')[1]", 'the `+` button');
+  // await sleep(300);
+  // ok('SIZE: `+` from 11 shows 12, and the editor renders 17 x 12/11 x the scale', (await numAt()) === '12' && Math.abs((await sizeOfEditor(app)) - 17 * (12 / 11) * scale) < 0.06, `${await numAt()} / ${await sizeOfEditor(app)}px`);
+  // const r12 = await entryRow(app, 'i207-untouched');
+  // ok('SIZE: choosing wrote pageSettings.size = 12 (points, not a step index) and NO face key', r12 && r12.pageSettings && r12.pageSettings.size === 12 && !('face' in r12.pageSettings), JSON.stringify(r12 && r12.pageSettings));
+  // ------------------------------------------------------------------
+  const opens = await numAt();
+  ok('SIZE [page-size successor]: the number field opens at 12 (the page default)', opens === '12', String(opens));
   await press(app, "document.querySelectorAll('.wz-type-step')[1]", 'the `+` button');
   await sleep(300);
-  ok('SIZE: `+` from 11 shows 12, and the editor renders 17 x 12/11 x the scale', (await numAt()) === '12' && Math.abs((await sizeOfEditor(app)) - 17 * (12 / 11) * scale) < 0.06, `${await numAt()} / ${await sizeOfEditor(app)}px`);
+  const n13 = await numAt(); const px13 = await sizeOfEditor(app);
+  ok('SIZE [page-size successor]: `+` from 12 shows 13, and the editor computes 13 page points (13 x 4/3 px)', n13 === '13' && px13 !== null && Math.abs(px13 - 13 * 4 / 3) < 0.06, `${n13} / ${px13}px`);
   const r12 = await entryRow(app, 'i207-untouched');
-  ok('SIZE: choosing wrote pageSettings.size = 12 (points, not a step index) and NO face key', r12 && r12.pageSettings && r12.pageSettings.size === 12 && !('face' in r12.pageSettings), JSON.stringify(r12 && r12.pageSettings));
+  ok('SIZE [page-size successor]: choosing wrote pageSettings.size = 13 (points, not a step index) and NO face key', !!r12 && !!r12.pageSettings && r12.pageSettings.size === 13 && !('face' in r12.pageSettings), JSON.stringify(r12 && r12.pageSettings));
+  i207Parks.size = { opens, n13, px13, written: r12 && r12.pageSettings };
   await typeInto(app, '24');
   ok('SIZE: a typed 24 is taken', (await numAt()) === '24' && ((await entryRow(app, 'i207-untouched')) || {}).pageSettings?.size === 24, String(await numAt()));
   await press(app, "document.querySelectorAll('.wz-type-step')[1]", 'the `+` button (from 24)');
@@ -194,7 +219,15 @@ await withHarness(async (app) => {
     await openPage(app, { id: 'i207-modes', mode, settings: dressed });
     inMode[mode] = { family: await familyOfEditor(app), size: await sizeOfEditor(app), scale: await scaleNow(app) };
   }
-  ok('EVERY MODE: a page dressed in Lora at 14 renders in Lora at 14 in Free Write, Draft and Revise — identically', Object.values(inMode).every((m) => /Lora/.test(m.family) && Math.abs(m.size - 17 * (14 / 11) * m.scale) < 0.06), JSON.stringify(inMode));
+  // ---- PARKED - SUPERSEDED by page-size (Fable's ruling a, Oct 23: the page's number is REAL POINTS IN PAGE UNITS - 12 = 16px at page scale 1, a NEW
+  // page defaults to 12, and the page LAYS OUT at scale 1 and is PAINTED at its scale by a transform, so the editor's computed size is n x 4/3 px at
+  // every screen). Lora at 14 computes 14 x 4/3 px in every mode. Kept VERBATIM and no longer run; record in this file's parked section, successor below.
+  //
+  // ok('EVERY MODE: a page dressed in Lora at 14 renders in Lora at 14 in Free Write, Draft and Revise — identically', Object.values(inMode).every((m) => /Lora/.test(m.family) && Math.abs(m.size - 17 * (14 / 11) * m.scale) < 0.06), JSON.stringify(inMode));
+  // ------------------------------------------------------------------
+  i207Parks.modes = inMode;
+  ok('EVERY MODE [page-size successor]: a page dressed in Lora at 14 renders in Lora at 14 page points (14 x 4/3 px) in Free Write, Draft and Revise - identically',
+    Object.values(inMode).every((m) => /Lora/.test(m.family) && Math.abs(m.size - 14 * 4 / 3) < 0.06), JSON.stringify(inMode));
 
   // ==== 6 · THE PAPER NEVER MOVES, AND THE MEASURE IS RE-MEASURED IN THE REAL ENGINE ================================
   for (const w of [1100, 1280, 1920]) {
@@ -289,11 +322,21 @@ if (process.env.HARNESS_PARKED === '1') {
     !!l && l.label === l.rendered && l.rowFamily === l.rendered, JSON.stringify(l));
   pk('PARKED (was "CARD: the styling dock carries the smallest form — a face button and `-` `+` (3 buttons), no number field") - font-span: the scoped small form; live successor: CARD [font-span successor]',
     !!c && c.buttons === 4 && c.inputs === 0 && !c.faceButton && c.rows === 9, JSON.stringify(c));
+  // PAGE-SIZE (Oct 23, Fable's ruling a) - SIX more parks, each frozen with its original name, re-verifying the NEW truth from the default leg's
+  // observations (i207Parks.untouched / .size / .modes).
+  const u = i207Parks.untouched, s = i207Parks.size, m = i207Parks.modes;
+  pk('PARKED (was "11 = TODAY: a page that never chose keeps the editor\'s two prior style strings (`var(--font-prose)` and `calc(17px * var(--paper-scale))`) byte-for-byte") - page-size ruling a: 12 page points',
+    !!u && !!u.untouched && u.untouched.fs === 'calc(12 * var(--wz-pt, 1.33333px))', JSON.stringify(u));
+  pk('PARKED (was "11 = TODAY: the untouched editor renders at 17px x the paper scale (computed)") - page-size ruling a: 16px computed', !!u && Math.abs(u.base - 16) < 0.05, JSON.stringify(u));
+  pk('PARKED (was "SIZE: the number field opens at 11") - page-size ruling a: 12', !!s && s.opens === '12', JSON.stringify(s));
+  pk('PARKED (was "SIZE: `+` from 11 shows 12, and the editor renders 17 x 12/11 x the scale") - page-size ruling a: 12 -> 13, 13 x 4/3 px', !!s && s.n13 === '13' && Math.abs(s.px13 - 13 * 4 / 3) < 0.06, JSON.stringify(s));
+  pk('PARKED (was "SIZE: choosing wrote pageSettings.size = 12 (points, not a step index) and NO face key") - page-size ruling a: 13 written', !!s && !!s.written && s.written.size === 13, JSON.stringify(s));
+  pk('PARKED (was "EVERY MODE: a page dressed in Lora at 14 renders in Lora at 14 in Free Write, Draft and Revise - identically") - page-size ruling a: 14 x 4/3 px', !!m && Object.values(m).every((x) => Math.abs(x.size - 14 * 4 / 3) < 0.06), JSON.stringify(m));
   // Parks nothing: 207a adds a control and falsifies no earlier assertion. (Item 83's "the sought door is never offered" and
   // 177-Q3's "typeface hidden with Typewriter ON" are superseded by the design, but no committed check asserts either; the
   // count is printed from the array so a later park cannot be added without this line seeing it.)
   console.log(parkedChecks.every((c) => c.pass)
-    ? `\nITEM207 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; font-span's three parks re-verified`
+    ? `\nITEM207 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; font-span's three parks and page-size's six re-verified`
     : `\nITEM207 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 const all = checks.concat(parkedChecks);
