@@ -3207,9 +3207,23 @@ a:focus-visible,
    (character count) never changes, only its pixel width does (Law 1). The
    760px cap is scaled too so it can never clamp the ch-derived width once
    the scale grows it past the old flat cap. */
+/* PAGE-SIZE (Fable + Nick, Oct 23; docs/plans/page-size.md) - THE PROSE PAGE IS A LETTER PAGE, in PAGE UNITS. The FX3 S2 measure above
+   (`min(760px x scale, 60ch)`) is retired for prose: the page is 8.5 x 11 page-inches, its margins are page-inches (pageDress.ts) and its type is
+   points in page units (12 pt = 16px at scale 1, fontSize.ts). ONE number scales all three - `--wz-letter-in`, one page-inch, written on this stage
+   by DeskFrame's observer from the STAGE's size alone (store/pageScale.ts; ruling c) - so the page grows in SHAPE only and every line breaks where
+   it did. The value here is scale 1, for the first paint. `--wz-page-w`/`--wz-page-half` are what every anchor that used to hand-copy the page's
+   width now reads (the sliver, both Tutor anchors, the glow, the instrument, the cascade). */
+.desk-frame-stage--prose{
+  --wz-letter-in: 72.941px;
+  --wz-pt: calc(var(--wz-letter-in) / 54.70588);
+  --wz-page-w: calc(var(--wz-letter-in) * 8.5);
+  --wz-page-h: calc(var(--wz-letter-in) * 11);
+  --wz-page-half: calc(var(--wz-letter-in) * 4.25);
+}
 .desk-frame-stage--prose .mode-pagecol{
-  width:min(calc(760px * var(--paper-scale)), 60ch); max-width:100%; min-width:0;
-  font-size:calc(1rem * var(--paper-scale));
+  width:var(--wz-page-w); max-width:100%; min-width:0;
+  font-size:calc(12 * var(--wz-pt));
+  height:100%;   /* a DEFINITE height, so the letter-tall page below shrinks to the stage (ruling d) instead of growing the column past it */
 }
 /* SC1 S1/S4 — the screenplay column STOPS sharing prose's measure. FX1 S2 put
    script on `.mode-pagecol` to end a worse defect (the stage sizing itself,
@@ -3263,7 +3277,21 @@ a:focus-visible,
      scaled HERE, so --paper-scale keeps its single owner. The fallback is the
      exact 38px this rule carried before M3, so a page with no dress renders
      byte-identically to today. */
+  /* PAGE-SIZE: the margin choice now arrives as a multiplier (--wz-page-margin-in, pageDress.ts); off the letter page it is today's exact
+     26/38/58px base measure again. */
+  --wz-page-pad-x: calc(38px * var(--wz-page-margin-in, 1));
   padding:calc(30px * var(--paper-scale)) calc(var(--wz-page-pad-x, 38px) * var(--paper-scale));
+}
+/* PAGE-SIZE - the prose page: letter height, capped to the stage (ruling d - a flex item that may shrink, so on a short screen the sheet stops at
+   the stage's fence and the text scrolls inside it as it always has); margins in page-inches (ruling b: normal 1in, narrow 0.684, wide 1.526);
+   the top and bottom margin 0.85in (Cursor's mockup). `--paper-scale:1` INSIDE the page: page units carry the scale here, so any rule inside
+   the page that still multiplies by --paper-scale (TOOLS' scrollbar-flush cancellation on .mode-scroll among them) multiplies by 1 - correct
+   whichever of the two branches merges first. `--wz-page-pad-x` is the one FINISHED margin length that cancellation reads. */
+.desk-frame-stage--prose .mode-page{
+  --paper-scale: 1;
+  --wz-page-pad-x: calc(var(--wz-letter-in) * var(--wz-page-margin-in, 1));
+  height:var(--wz-page-h); flex:0 1 auto; min-height:0;
+  padding:calc(var(--wz-letter-in) * .85) var(--wz-page-pad-x);
 }
 /* The script sheet has no bounded height of its own by design (see
    .desk-frame-scroll-cap's own comment below — it wraps content that grows
@@ -3419,7 +3447,7 @@ a:focus-visible,
      same headless-harness-before-CSS-reasoning discipline FX2 S1's own
      comment below already established for this exact rule. */
   font-size:calc(1rem * var(--paper-scale));
-  --sliver-paper-half: min(calc(380px * var(--paper-scale)), 30ch);
+  --sliver-paper-half: var(--wz-page-half, min(calc(380px * var(--paper-scale)), 30ch));   /* PAGE-SIZE: the prose page's own half-width; the old formula elsewhere */
   --sliver-paper-pad: 38px;   /* .mode-page{ padding:30px 38px } — hand-synced, see comment above */
   /* FX5 S10 — this formula's own "50%" is relative to `.desk-frame-stage`'s
      own box, and `+ var(--frame-gap)` alone used to be the whole
@@ -3590,7 +3618,7 @@ a:focus-visible,
      already proves out (one more than the panel, not a bare coincidence). */
   position:absolute; top:0; z-index:56; pointer-events:none; height:100%;
   font-size:calc(1rem * var(--paper-scale));
-  --tutor-paper-half: min(calc(380px * var(--paper-scale)), 30ch);
+  --tutor-paper-half: var(--wz-page-half, min(calc(380px * var(--paper-scale)), 30ch));   /* PAGE-SIZE */
   --tutor-paper-pad: 38px;   /* .mode-page{ padding:30px 38px } — hand-synced, mirrors --sliver-paper-pad's own comment */
   --tutor-margin: calc(50% - var(--tutor-paper-half) + var(--frame-gap));
   --tutor-overflow: clamp(0px, calc(160px - var(--tutor-margin)), var(--tutor-paper-pad));
@@ -3659,7 +3687,7 @@ a:focus-visible,
   position:absolute; top:0; left:0; right:0; height:100%; z-index:55;
   display:flex; align-items:stretch; justify-content:flex-end; pointer-events:none;
   font-size:calc(1rem * var(--paper-scale));
-  --tutor-panel-paper-half: min(calc(380px * var(--paper-scale)), 30ch);
+  --tutor-panel-paper-half: var(--wz-page-half, min(calc(380px * var(--paper-scale)), 30ch));   /* PAGE-SIZE */
   --tutor-panel-margin: calc(50% - var(--tutor-panel-paper-half) + var(--frame-gap));
   /* FX10 S1 — Fable's own corrected ruling, replacing TU2 S4's "exactly 2x
      --strip-width" spec (~168px — the brief's own acknowledged error, not a
@@ -3699,8 +3727,8 @@ a:focus-visible,
    drifts out of alignment with the (now-scaled) paper at wide viewports. */
 .desk-frame-goalglow-anchor{ position:absolute; top:0; z-index:-1; pointer-events:none;
   font-size:calc(1rem * var(--paper-scale));
-  width:min(calc(760px * var(--paper-scale)), 60ch); height:100%;
-  left:calc(50% - min(calc(380px * var(--paper-scale)), 30ch)); }
+  width:var(--wz-page-w, min(calc(760px * var(--paper-scale)), 60ch)); height:100%;
+  left:calc(50% - var(--wz-page-half, min(calc(380px * var(--paper-scale)), 30ch))); }   /* PAGE-SIZE */
 
 /* CD1 S6 — the goal's glow itself (components/GoalGlow.tsx). Warmth, never
    brass (the olive/orange lanes hold): a fixed warm gradient whose ONLY
@@ -3741,7 +3769,7 @@ a:focus-visible,
    ground can never become a control. */
 .desk-frame-instrument{ position:absolute; left:50%; bottom:5px; transform:translateX(-50%);
   font-size:calc(1rem * var(--paper-scale));
-  width:min(calc(760px * var(--paper-scale)), 60ch); max-width:100%;
+  width:var(--wz-page-w, min(calc(760px * var(--paper-scale)), 60ch)); max-width:100%;   /* PAGE-SIZE */
   pointer-events:none; }
 
 /* M4 S4 (SV16) — THE COMPLETION MOMENT. Root-caused first (the finding, for
@@ -4896,7 +4924,7 @@ a:focus-visible,
   /* Same canonical-half-width formula .desk-frame-sliver-anchor already
      uses (FX3 S2 taught it to scale with --paper-scale; this anchor reads
      the identical formula so it drifts in lockstep, not independently). */
-  --cascade-paper-half: min(calc(380px * var(--paper-scale)), 30ch);
+  --cascade-paper-half: var(--wz-page-half, min(calc(380px * var(--paper-scale)), 30ch));   /* PAGE-SIZE */
   /* The margin available between the strip's own right edge and the
      paper's own left edge, WITHIN this stage box — the mirror twin of
      .desk-frame-sliver-anchor's own --sliver-margin (that comment block
