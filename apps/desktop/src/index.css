@@ -3262,12 +3262,20 @@ a:focus-visible,
    by DeskFrame's observer from the STAGE's size alone (store/pageScale.ts; ruling c) - so the page grows in SHAPE only and every line breaks where
    it did. The value here is scale 1, for the first paint. `--wz-page-w`/`--wz-page-half` are what every anchor that used to hand-copy the page's
    width now reads (the sliver, both Tutor anchors, the glow, the instrument, the cascade). */
+/* AS BUILT (the lane run on fb1e28fb): the page LAYS OUT at scale 1 always - --wz-letter-in is the scale-1 inch - and is PAINTED at the base scale
+   --wz-k by a transform (below), so every line breaks where it does at 1366 at every size. The anchors (sliver, Tutor, glow, instrument, cascade)
+   read the PAINTED width: --wz-anchor-w / --wz-page-half - the zoomed width while the zoom is on. */
 .desk-frame-stage--prose{
   --wz-letter-in: 72.941px;
   --wz-pt: calc(var(--wz-letter-in) / 54.70588);
   --wz-page-w: calc(var(--wz-letter-in) * 8.5);
   --wz-page-h: calc(var(--wz-letter-in) * 11);
-  --wz-page-half: calc(var(--wz-letter-in) * 4.25);
+  --wz-k: 1;
+  --wz-anchor-w: calc(var(--wz-page-w) * var(--wz-k));
+  --wz-page-half: calc(var(--wz-anchor-w) / 2);
+}
+.desk-frame-stage--prose:has(.mode-pagecol[data-zoom='true']){
+  --wz-anchor-w: calc(var(--wz-page-w) * var(--wz-k) * var(--wz-zoom, 1.6));
 }
 .desk-frame-stage--prose .mode-pagecol{
   width:var(--wz-page-w); max-width:100%; min-width:0;
@@ -3341,8 +3349,10 @@ a:focus-visible,
   --wz-page-pad-x: calc(var(--wz-letter-in) * var(--wz-page-margin-in, 1));
   /* an explicit width (not the column's stretch), so the zoom below can widen the COLUMN without ever re-laying a line */
   width:var(--wz-page-w); max-width:100%; align-self:center;
-  height:var(--wz-page-h); flex:0 1 auto; min-height:0;
+  /* the LAYOUT height DeskFrame computes (letter, or what the stage holds once painted at --wz-k - ruling d); the transform paints it at k */
+  height:var(--wz-page-hl, var(--wz-page-h)); flex:0 1 auto; min-height:0;
   padding:calc(var(--wz-letter-in) * .85) var(--wz-page-pad-x);
+  transform:scale(var(--wz-k, 1)); transform-origin:50% 0;
 }
 /* PAGE-SIZE - a scrollbar arriving or leaving (Typewriter's start offset makes the content taller) narrowed the text column and REFLOWED lines on
    main (red run 143: Arbor 3840, 34 -> 35 lines). The gutter is reserved always, so no scrollbar can ever move a line break. */
@@ -3369,7 +3379,7 @@ a:focus-visible,
     transparent calc(var(--tw-anchor) + 4.4 * var(--tw-lh, 43.52px)), transparent 100%);
 }
 .desk-frame-stage--prose .mode-pagecol[data-zoom='true'] .mode-page{
-  transform:scale(var(--wz-zoom, 1.6)); transform-origin:50% 0;
+  transform:scale(calc(var(--wz-k, 1) * var(--wz-zoom, 1.6))); transform-origin:50% 0;
   box-shadow:none; border-color:transparent;
 }
 .desk-frame-stage--prose .mode-pagecol[data-zoom='true'] .mode-scroll{ -webkit-mask-image:none; mask-image:none; }
@@ -3807,7 +3817,7 @@ a:focus-visible,
    drifts out of alignment with the (now-scaled) paper at wide viewports. */
 .desk-frame-goalglow-anchor{ position:absolute; top:0; z-index:-1; pointer-events:none;
   font-size:calc(1rem * var(--paper-scale));
-  width:var(--wz-page-w, min(calc(760px * var(--paper-scale)), 60ch)); height:100%;
+  width:var(--wz-anchor-w, min(calc(760px * var(--paper-scale)), 60ch)); height:100%;
   left:calc(50% - var(--wz-page-half, min(calc(380px * var(--paper-scale)), 30ch))); }   /* PAGE-SIZE */
 
 /* CD1 S6 — the goal's glow itself (components/GoalGlow.tsx). Warmth, never
@@ -3849,7 +3859,7 @@ a:focus-visible,
    ground can never become a control. */
 .desk-frame-instrument{ position:absolute; left:50%; bottom:5px; transform:translateX(-50%);
   font-size:calc(1rem * var(--paper-scale));
-  width:var(--wz-page-w, min(calc(760px * var(--paper-scale)), 60ch)); max-width:100%;   /* PAGE-SIZE */
+  width:var(--wz-anchor-w, min(calc(760px * var(--paper-scale)), 60ch)); max-width:100%;   /* PAGE-SIZE */
   pointer-events:none; }
 
 /* M4 S4 (SV16) — THE COMPLETION MOMENT. Root-caused first (the finding, for

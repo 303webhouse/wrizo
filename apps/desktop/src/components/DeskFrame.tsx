@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { LETTER_IN_BASE, pageScaleFor, zoomFor } from '../store/pageScale';
+import { pageLayoutHeightFor, pageScaleFor, zoomFor } from '../store/pageScale';
 import { setDeskFrameMounted } from '../store/deskFrameActive';
 import { useDeskLexicon } from '../store/deskLexicon';
 
@@ -222,10 +222,12 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
   const hasCorkboard = corkboard != null;
 
   // PAGE-SIZE (Nick's ruling c) - the prose page's scale, from the STAGE's size alone (store/pageScale.ts holds the law). One ResizeObserver on the
-  // stage writes two numbers the CSS reads: --wz-letter-in (one page-inch; everything on the page is a multiple of it) and --wz-zoom (the
-  // Typewriter's transform). It runs on resize, never on typing, and in a layout effect so the first paint is already at scale. Measured, not a
-  // container query: a size container would make the stage the containing block for every position:fixed element inside it.
-  // The page's top is read through offsetTop (transforms never move it), so the zoom can never feed back into the base scale.
+  // stage writes the numbers the CSS reads: --wz-k (the base scale), --wz-zoom (the Typewriter's further zoom) and --wz-page-hl (the page's
+  // LAYOUT height: the letter height, or less where the stage cannot hold it at this scale - ruling d). The page always LAYS OUT at scale 1 and is
+  // PAINTED at k by a transform - "same line breaks at every scale" by construction (the lane run on fb1e28fb proved that scaling the type and the
+  // box together re-broke lines at 2560 and 3840: glyph advances do not scale exactly linearly). It runs on resize, never on typing, and in a layout
+  // effect so the first paint is already at scale. Measured, not a container query: a size container would make the stage the containing block for
+  // every position:fixed element inside it. The page's top is read through offsetTop (transforms never move it), so no transform feeds back.
   const stageRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const stage = stageRef.current;
@@ -236,8 +238,9 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
       const col = page?.parentElement;
       const top = page && col ? col.getBoundingClientRect().top - s.top + page.offsetTop : 0;
       const k = pageScaleFor(s.width, s.height, top);
-      stage.style.setProperty('--wz-letter-in', `${(LETTER_IN_BASE * k).toFixed(3)}px`);
+      stage.style.setProperty('--wz-k', k.toFixed(4));
       stage.style.setProperty('--wz-zoom', zoomFor(s.width, k).toFixed(4));
+      stage.style.setProperty('--wz-page-hl', `${pageLayoutHeightFor(s.height, top, k).toFixed(2)}px`);
     };
     apply();
     const ro = new ResizeObserver(apply);

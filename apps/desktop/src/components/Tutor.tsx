@@ -22,6 +22,7 @@ import { HelpButton } from './HelpButton';
 import { ConnectionsDrawerPanel } from './ConnectionsDrawerPanel';
 import { RIGHT_TABS, type RightTab } from '../store/drawerSet';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
+import { DRAWER_MIN } from '../store/menusDrawers';   // its own line: one-drawer.mjs O6 reads the line above verbatim
 
 // TU1 S2/S3/S4/S5 — the Tutor. The sliver, mirrored, on the paper's RIGHT
 // edge — but rendered as TWO separate DeskFrame overlay anchors, not one
@@ -68,7 +69,8 @@ const DOCK_FLOOR_PX = 120;
 // narrow-screen degradation (the measure-effect below sets the panel's inline width to
 // natural open-w there). Distinct from DOCK_FLOOR_PX above: that gates whether the DOCK
 // affordance is offered; this gates whether an open panel occupies the margin or overlays.
-const USABLE_PANEL_FLOOR_PX = 280;
+const USABLE_PANEL_FLOOR_PX = 280;   // SUPERSEDED by page-size (Fable's 1366 rule, Oct 23): the measure-effect's floor is DRAWER_MIN (200); kept as the record
+void USABLE_PANEL_FLOOR_PX;
 
 // TU2 S2 — the listener's delta assembly. No real tokenizer is available
 // client-side, so the cap is a disclosed, documented character-based
@@ -537,11 +539,14 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     if (!open || docked || pageKind === 'board') { setPanelWidthPx(null); return; }
     const measure = () => {
       const stage = document.querySelector('.desk-frame-stage');
-      const paper = document.querySelector('.mode-pagecol, .entry-full, .board-canvas-wrap');
+      // PAGE-SIZE - the prose page is PAINTED larger than its column by a transform, so the margin is measured from the painted page itself
+      const paper = document.querySelector('.desk-frame-stage--prose .mode-page') ?? document.querySelector('.mode-pagecol, .entry-full, .board-canvas-wrap');
       if (!stage || !paper) { setPanelWidthPx(null); return; }
       const openW = Math.max(320, Math.min(0.34 * window.innerWidth, 460)); // --tutor-panel-open-w
       const geoMargin = stage.getBoundingClientRect().right - paper.getBoundingClientRect().right;
-      setPanelWidthPx(Math.round(geoMargin >= USABLE_PANEL_FLOOR_PX ? Math.min(geoMargin, openW) : openW));
+      // PAGE-SIZE (Fable's 1366 rule, Oct 23): a drawer NARROWS to fit beside the page, down to DRAWER_MIN (scrolling inside); only below that
+      // does it overlay - DRAWER_MIN replaces FX18's 280 here (the page is never covered while a drawer still fits at 200)
+      setPanelWidthPx(Math.round(geoMargin >= DRAWER_MIN ? Math.min(geoMargin, openW) : openW));
     };
     measure();
     window.addEventListener('resize', measure);

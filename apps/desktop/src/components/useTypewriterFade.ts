@@ -160,12 +160,21 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       const ed = container.querySelector(editorSelector) as HTMLElement | null;
       return ed ? (parseFloat(getComputedStyle(ed).lineHeight) || 28) : 28;
     };
-    // PAGE-SIZE - the zoom the page is drawn at (DeskFrame's --wz-zoom, inherited); 1 whenever this call is not zoomed
+    // PAGE-SIZE - the scale the page is PAINTED at (the base scale x the zoom: every transform between the scroller and the screen), read from the
+    // page's own two boxes - painted width over layout width - so no constant can drift from what is drawn. 1 whenever this call is not zoomed.
     const zoomScale = () => {
       if (!zoom) return 1;
-      const z = parseFloat(getComputedStyle(container).getPropertyValue('--wz-zoom'));
-      return z > 0 ? z : 1;
+      const page = container.closest('.mode-page') as HTMLElement | null;
+      const s = page && page.offsetWidth > 0 ? page.getBoundingClientRect().width / page.offsetWidth : 1;
+      return s > 0 ? s : 1;
     };
+    // PAGE-SIZE - the glide's own TARGET. Each one-line step is a smooth scroll, and a chained catch-up step used to read box.scrollTop while the
+    // previous step was still in flight - so every step started short and a deep engage under-scrolled (the lane run on fb1e28fb: the writing line
+    // came to rest below the band, strength 0.02 at 2560). The next step builds on where the last one is GOING while it is still going; a writer's
+    // own scroll after it lands is honoured as before (FX5 S1 c).
+    let glideTarget: number | null = null;
+    let glideAt = 0;
+    const GLIDE_MS = 450;
     // S1 — the fade band (line-height based) and the fresh-page start offset
     // (stage-height based) are both STATIC CSS the writing surface reads via
     // custom properties; this just keeps them in step with the actual
@@ -182,10 +191,16 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       // stops — see index.css.
       scrolledEl.style.setProperty('--tw-fade-start', `${Math.round(lineHeight())}px`);
       scrolledEl.style.setProperty('--tw-start-offset', `${Math.round(stageHeight * START_FRACTION)}px`);
-      // PAGE-SIZE - the band mask's line unit, in SCREEN pixels (the real line height x the zoom), written where the mask is drawn
+      // PAGE-SIZE - the band mask's line unit, in SCREEN pixels (the real line height x the paint scale), written where the mask is drawn; and the
+      // start offset, ZOOMED, puts a fresh page's first line at the anchor itself - inside the band's full strength (a quarter of the stage put
+      // it about a line ABOVE the anchor, on the .88 ramp: fx5 S1(d) on fb1e28fb). Layout px: the screen distance divided by the paint scale.
       if (zoom?.holdRef.current) {
-        zoom.holdRef.current.style.setProperty('--tw-lh', `${(lineHeight() * zoomScale()).toFixed(2)}px`);
+        const sc = zoomScale();
+        const h = zoom.holdRef.current.getBoundingClientRect();
+        zoom.holdRef.current.style.setProperty('--tw-lh', `${(lineHeight() * sc).toFixed(2)}px`);
         zoom.holdRef.current.style.setProperty('--tw-anchor', `${zoom.anchor * 100}%`);   // the ONE anchor: the hold below and the mask read it
+        const startPx = (h.top + h.height * zoom.anchor - container.getBoundingClientRect().top) / sc;
+        scrolledEl.style.setProperty('--tw-start-offset', `${Math.max(0, Math.round(startPx))}px`);
       }
     };
     const band = () => {
@@ -312,7 +327,11 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         // writer's own scroll currently sits (S1 c: scroll freedom) — this
         // never fights a manual scroll, it only ever adds to it.
         const step = Math.min(advance, lineHeight());
-        box.setScrollTop(box.scrollTop + step, !reduce);
+        // PAGE-SIZE - build on the glide still in flight (its target), never on its half-way scrollTop; instant moves (reduced motion) need no target
+        const inFlight = !reduce && glideTarget != null && performance.now() - glideAt < GLIDE_MS;
+        const from = inFlight ? (glideTarget as number) : box.scrollTop;
+        box.setScrollTop(from + step, !reduce);
+        glideTarget = from + step; glideAt = performance.now();
         prevDocCaretBottom = (prevDocCaretBottom as number) + step;
         // FX5 review fix — this chained catch-up frame MUST be tracked into
         // the SAME `raf` variable `schedule()` uses, not fired as a raw
