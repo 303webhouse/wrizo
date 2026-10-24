@@ -146,12 +146,15 @@ next. Whatever runs here, on whatever tool:
   otherwise; `release <token>` removes it only if the token is yours). Never
   overwrite or clear a grant that is not yours, and name the turn (start and
   end, UTC) in your report. (Ratified 2026-10-22, Fable.)
-  **The turn is bound to the process tree that took it** (Oct 23): `box-take.mjs`
-  records the shell/script that called it, and the harness launcher refuses a
-  browser from any other tree even with the right token (a copied token is not a
-  turn). So take the box and run the harness in the SAME shell or script; a harness
-  started from another window is refused. Every launch attempt, allowed or refused,
-  is logged to `~/.wrizo/box-launches.log`.
+  **The grant file holds only a HASH of the token** (Oct 23): the harness launcher
+  matches the token in `WS_BOX_TURN` against that hash, so reading the file gives
+  nothing to present. Prefer `box-take.mjs take <lane>` with no token: it draws a
+  random one and prints it once - export it in the shell or script that runs the
+  harness (any shell, nested scripts included). A token you pick by hand is weaker
+  (guessable from its hash). Binding the turn to a process tree is OPTIONAL
+  (`take --bind`, flat scripts only: msys breaks the parent link across nested
+  forks). Every launch attempt, allowed or refused, is logged to
+  `~/.wrizo/box-launches.log`.
 - **The ledger (`docs/open-threads.md`) is chat 1's.** Report your work to it
   through chat 1, not by editing it yourself.
 - **Fable reviews; Nick's ship word comes to chat 1.** Build lanes don't

@@ -92,7 +92,7 @@ ok('H6 an unreadable process table refuses', h6.ok === false && h6.reason === 'a
 const home = path.join(tmp, 'home');
 const callerJs = `
 const { spawnSync } = require('node:child_process');
-const r = spawnSync(process.execPath, [${JSON.stringify(path.join(here, '..', 'box-take.mjs'))}, 'take', 'lane-y', 'take-test-token-20261023-xyz'], { encoding: 'utf8', env: { ...process.env, USERPROFILE: ${JSON.stringify(home)}, HOME: ${JSON.stringify(home)} } });
+const r = spawnSync(process.execPath, [${JSON.stringify(path.join(here, '..', 'box-take.mjs'))}, 'take', 'lane-y', 'take-test-token-20261023-xyz', '--bind'], { encoding: 'utf8', env: { ...process.env, USERPROFILE: ${JSON.stringify(home)}, HOME: ${JSON.stringify(home)} } });
 console.log(r.stdout.trim());
 setTimeout(() => process.exit(0), 30000);`;
 const caller = spawn(process.execPath, ['-e', callerJs], { stdio: ['ignore', 'pipe', 'ignore'] });
