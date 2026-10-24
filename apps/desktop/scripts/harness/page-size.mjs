@@ -72,7 +72,7 @@ const ZOOM_FIT_SLACK = 96;  // a zoom capped below 1.6 fills the stage's width t
 // a drawer's narrowest open width (Fable, Oct 23 - drawers narrow to a minimum, scrolling inside). 200 is today's Tools drawer open
 // width (menusDrawers.ts CLOSED_TOOLS_W); the build names ONE token for it and this number must equal that token.
 const DRAWER_MIN = 200;
-const DRAWER_RESERVE = 260;   // = store/pageScale.ts DRAWER_RESERVE: the desk each side keeps for its drawer when the page is width-bound
+const DRAWER_RESERVE = 320;   // = store/pageScale.ts DRAWER_RESERVE: the desk each side keeps for its drawer when the page is width-bound
 const natural = {};          // each drawer's natural open width, measured alone at 1366
 const THEMES = [{ id: 'plateau', name: 'Arbor' }, { id: 'flux', name: 'Flux' }];
 
@@ -513,6 +513,8 @@ await withHarness(async (app) => {
     for (const tone of ['light', 'dark']) {
       await app.evalJs("location.hash = '#/'"); await sleep(300);
       await app.evalJs(`localStorage.setItem('wrizo-theme', '${th.id}'); localStorage.setItem('wrizo-theme-prefs', ${J(J({ voice: 'serif', page: tone, fade: 'on' }))})`);
+      // V reads the NORMAL page: an earlier zoom case can leave the page's own Typewriter key on (7ff7b8ea: V measured a zoomed page's bottom fade)
+      await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${pid(th.id, 'draft')}', 'off')`);
       await app.reload();
       await app.waitFor("typeof window.wrizoCreateJournalPage === 'function'", { label: 'the seams' });
       await app.emulateDpr(1, 1366, 768);
@@ -521,8 +523,9 @@ await withHarness(async (app) => {
       await app.evalJs('(() => { const a = document.activeElement; if (a && a.blur) a.blur(); return true; })()');
       const vig = await app.evalJs("(() => { const cs = getComputedStyle(document.body, '::after'); const p = document.querySelector('.mode-page'); const ps = p ? getComputedStyle(p) : null; return { content: cs.content, shadow: cs.boxShadow, z: cs.zIndex, paper: ps && ps.backgroundColor, pageOpacity: ps && ps.opacity, pageTransform: ps && ps.transform }; })()");
       const g = await app.evalJs('window.__psGeom()');
-      const live = !!vig && vig.content !== 'none' && !!vig.shadow && vig.shadow !== 'none' && !!g;
-      ok(`${tag} V (premise): the vignette exists (body::after carries its shadow) and the page is measurable`, live, J({ vig, page: g && g.page }));
+      const flat = !(await app.evalJs("!!document.querySelector('.mode-pagecol[data-zoom=\"true\"]')"));
+      const live = !!vig && vig.content !== 'none' && !!vig.shadow && vig.shadow !== 'none' && !!g && flat;
+      ok(`${tag} V (premise): the vignette exists (body::after carries its shadow), the page is measurable and in the NORMAL view (not zoomed)`, live, J({ vig, flat, page: g && g.page }));
       if (!live) continue;
       const b = Math.min(g.page.bottom, g.vh) - 3;
       const strips = [[g.page.left + 3, b - 24, g.page.right - 3, b], [g.page.left + 3, b - 60, g.page.left + 63, b], [g.page.right - 63, b - 60, g.page.right - 3, b]];
