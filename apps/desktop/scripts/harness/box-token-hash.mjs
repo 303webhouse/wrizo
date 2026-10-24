@@ -102,6 +102,17 @@ ok('T8 ... and one presenting the HASH read from the file is refused (token-mism
 const withTok = foreign(LIVE);
 ok('T9 the same outside process WITH the token is allowed - the token, not the process tree, is what proves ownership (the design, stated)', !!withTok && withTok.ok === true, JSON.stringify(withTok));
 
+// T10 TEARDOWN: nothing this run started is still alive - every helper process carries the throwaway directory's name on its command line, so a leftover is findable by it. (Fable, Oct 24: a leftover
+// harness-path process counts as a LIVE FOREIGN RUN to every other lane's launcher, so a test that leaves one behind blocks a box turn.) Waits up to 8 s for stragglers, then kills and FAILS.
+const leftovers = () => {
+  const r = spawnSync('powershell', ['-NoProfile', '-Command', `Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -and $_.CommandLine.Contains('${path.basename(tmp)}') -and $_.ProcessId -ne ${process.pid} -and $_.Name -ne 'powershell.exe' } | ForEach-Object { "$($_.ProcessId)|$($_.Name)" }`], { encoding: 'utf8' });
+  return r.stdout.split(/\r?\n/).filter(Boolean);
+};
+let left = leftovers();
+for (let i = 0; left.length && i < 16; i += 1) { await new Promise((r) => setTimeout(r, 500)); left = leftovers(); }
+const stuck = [...left];
+for (const l of left) { try { process.kill(Number(l.split('|')[0])); } catch { /* gone */ } }
+ok('T10 TEARDOWN: no process this run started is still alive (a leftover harness-path process blocks every other lane\'s box turn)', stuck.length === 0, stuck.join(' ; '));
 rmSync(tmp, { recursive: true, force: true });
 const failed = checks.filter((c) => !c.pass);
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
