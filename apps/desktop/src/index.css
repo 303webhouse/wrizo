@@ -5982,7 +5982,7 @@ a:focus-visible,
 .board-step-pop{
   position:fixed; z-index:420; box-sizing:border-box; padding:14px 16px; border-radius:0;
   background:var(--card-stock); color:var(--ink-on-card);
-  box-shadow:0 0 0 1px var(--badge-on-card), 0 14px 30px rgba(0,0,0,.35);
+  box-shadow:0 0 0 1px var(--badge-on-card);   /* flat 1 px edge, no blur (Nick's standing dress rule for new work) */
   font-family:var(--font-prose); font-size:13px; line-height:1.5;
 }
 .board-step-pop::before{
@@ -5995,7 +5995,7 @@ a:focus-visible,
 .board-step-pop-x{ margin:8px 0 0; font-family:var(--font-proseSerif, serif); font-style:italic; color:var(--ink-on-card-low); }
 .board-step-pop-more{ margin-top:10px; padding:0; border:0; background:none; font:inherit; font-size:12px; color:var(--badge-on-card); cursor:pointer; }
 .board-step-pop-more:hover, .board-step-pop-more:focus-visible{ color:var(--choice); outline:none; text-decoration:underline; }
-[data-theme='flux'] .board-step-pop{ font-family:var(--font-chromeLabel); box-shadow:0 0 0 1px var(--card-hairline), 0 14px 30px rgba(0, 0, 0, .55); }
+[data-theme='flux'] .board-step-pop{ font-family:var(--font-chromeLabel); box-shadow:0 0 0 1px var(--card-hairline); }
 [data-theme='flux'] .board-step-pop::before{ box-shadow:-1px -1px 0 0 var(--card-hairline); }
 [data-theme='flux'] .board-step-pop[data-flip='true']::before{ box-shadow:1px 1px 0 0 var(--card-hairline); }
 [data-theme='flux'] .board-step-pop-k{ color:var(--ink-on-card-meta); }

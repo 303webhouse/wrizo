@@ -131,6 +131,29 @@ await withHarness(async (app) => {
         const back = await q("document.querySelector('.board-box .board-text').getAttribute('data-prompt')");
         ok(`[${T}] delete the words and the question returns ("a card with no words still shows its question")`, !!back, String(back));
       }
+      if (!full) {   // the light-tone frame of the question mark open (the assertions ran on the dark leg)
+        await click('.board-box .board-step-help');
+        await shot(`three-act-help-${theme === 'plateau' ? 'arbor' : 'flux'}-${tone}`);
+        await app.key('Escape'); await sleep(250);
+      }
+    }
+  }
+
+  // THE LONG-QUESTION BOARDS: the narrowest cards carry the longest questions (the Fifteen Beats: four columns; Scene-Sequel with five scenes: five columns). The question is a placeholder INSIDE the card -
+  // it must not overflow the card face, grow the card into its neighbour, or push anything: no face scrolls, no two cards overlap, and no stored card grew past its dealt height.
+  for (const theme of ['plateau', 'flux']) {
+    for (const [deckId, optionId, tag] of [['feature-screenplay', 'feature', 'beats'], ['scene-sequel', 'five', 'scenes']]) {
+      const T = (theme === 'plateau' ? 'Arbor' : 'Flux') + ' ' + deckId;
+      await fresh(theme, 'dark');
+      await click(".wz-beginnings[data-beginnings=board] .wz-beginning[data-beginning='loadDeck']");
+      await waitSoft("!!document.querySelector('.deck-wizard-dialog')", { label: 'wizard (long)', timeout: 5000 });
+      await q("document.querySelector('[data-deck-id=\"" + deckId + "\"]')?.click()"); await sleep(400);
+      await q("document.querySelector('[data-option-id=\"" + optionId + "\"]')?.click()"); await sleep(1100);
+      const fit = await q("(() => { const boxes = [...document.querySelectorAll('.board-box')].filter((b) => b.querySelector('.board-text')); const r = boxes.map((b) => b.getBoundingClientRect()); let overlaps = 0; for (let i = 0; i < r.length; i++) for (let j = i + 1; j < r.length; j++) if (r[i].left < r[j].right - 1 && r[j].left < r[i].right - 1 && r[i].top < r[j].bottom - 1 && r[j].top < r[i].bottom - 1) overlaps++; const over = boxes.map((b) => { const f = b.querySelector('.board-text'); return f.scrollHeight - f.clientHeight; }).filter((d) => d > 1); const longest = Math.max(...boxes.map((b) => (b.querySelector('.board-text').getAttribute('data-prompt') || '').length)); return { n: boxes.length, overlaps, overflowing: over.length, maxOver: Math.max(0, ...over), longest }; })()");
+      const stored = (await boxes()).filter((b) => b.kind === 'text');
+      const grown = stored.filter((b) => b.h > 0.0905).length;
+      ok('[' + T + '] the narrowest cards fit their questions: ' + fit.n + ' cards, none overflows its face (a scroll), none overlaps another, none grew past its dealt height (longest question ' + fit.longest + ' chars)', fit.n === (deckId === 'scene-sequel' ? 30 : 15) && fit.overlaps === 0 && fit.overflowing === 0 && grown === 0, JSON.stringify({ fit, grown }));
+      await shot('long-question-' + tag + '-' + (theme === 'plateau' ? 'arbor' : 'flux'));
     }
   }
 

@@ -381,6 +381,10 @@ function suite(M, read, doc) {
   const help = rule('.board-step-help'), helpOn = rule(".board-step-help:hover, .board-step-help[data-open='true'], .board-step-help:focus-visible");
   keep('CS3', !!help && /color:\s*var\(--badge-on-card\)/.test(help.body) && !!helpOn && /color:\s*var\(--choice\)/.test(helpOn.body) && !/var\(--brass\)/.test(w3css.replace(/\/\*[\s\S]*?\*\//g, '')) && !/#8f9a58/i.test(w3css.replace(/\/\*[\s\S]*?\*\//g, '')),
     'olive at rest, --choice on hover / open, no brass, no #8f9a58');
+  // CS4 - DRESS (Nick's standing rule for new work): square edges, flat 1 px edges, NO blur - the popover is a hairline box in both themes (a single 0-blur ring, border-radius 0)
+  const pop = rule('.board-step-pop'), popFlux = rule("[data-theme='flux'] .board-step-pop");
+  const flatRing = (body) => { const m = /box-shadow:\s*([^;]+);/.exec(body || ''); return !!m && !m[1].includes(',') && /^0 0 0 1px /.test(m[1].trim()); };
+  keep('CS4', !!pop && !!popFlux && flatRing(pop.body) && flatRing(popFlux.body) && /border-radius:\s*0/.test(pop.body), `${pop ? (/box-shadow:\s*([^;]+);/.exec(pop.body) || [])[1] : 'no rule'} | ${popFlux ? (/box-shadow:\s*([^;]+);/.exec(popFlux.body) || [])[1] : 'no flux rule'}`);
   void rootCss;
   return r;
 }
@@ -437,6 +441,9 @@ const MUT = [
   { name: 'the Presets list drops From my pages', file: 'components/SectionsPopout.tsx', find: "const presetDecks = theme === 'plateau' ? [...DECKS]", to: "const presetDecks = theme === 'plateau' ? [...DECKS].filter((d) => d.id !== 'from-my-pages')", red: ['PP3'] },
   { name: 'Arbor stops leading with From my pages', file: 'components/SectionsPopout.tsx', find: "Number(b.id === 'from-my-pages') - Number(a.id === 'from-my-pages')", to: "Number(a.id === 'from-my-pages') - Number(b.id === 'from-my-pages')", red: ['PP3'] },
   { name: 'the new-project door offers pages', file: 'pages/CreateProject.tsx', find: "<DeckWizard decks={DECKS} onDeal={onDeckDealt}", to: "<DeckWizard decks={DECKS} pagesFor={() => []} onDeal={onDeckDealt}", red: ['FM3'] },
+  { name: 'the popover gets its drop shadow back', file: 'index.css', find: "box-shadow:0 0 0 1px var(--badge-on-card);   /* flat 1 px edge", to: "box-shadow:0 0 0 1px var(--badge-on-card), 0 14px 30px rgba(0,0,0,.35);   /* flat 1 px edge", red: ['CS4'] },
+  { name: 'the Flux popover gets its drop shadow back', file: 'index.css', find: "box-shadow:0 0 0 1px var(--card-hairline); }\n[data-theme='flux'] .board-step-pop::before", to: "box-shadow:0 0 0 1px var(--card-hairline), 0 14px 30px rgba(0, 0, 0, .55); }\n[data-theme='flux'] .board-step-pop::before", red: ['CS4'] },
+  { name: 'the popover is rounded', file: 'index.css', find: "position:fixed; z-index:420; box-sizing:border-box; padding:14px 16px; border-radius:0;", to: "position:fixed; z-index:420; box-sizing:border-box; padding:14px 16px; border-radius:8px;", red: ['CS4'] },
   { name: 'the placeholder becomes real content', file: 'index.css', find: '  content:attr(data-prompt); display:block; margin-top:2px;', to: '  content:"x"; display:block; margin-top:2px;', red: ['CS1'] },
 ];
 
