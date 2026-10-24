@@ -698,6 +698,8 @@ await withHarness(async (app) => {
     await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${eid}', 'on')`);
     await app.evalJs('window.wrizoFlushNow()'); await sleep(300);
     if (await openPage(app, eid)) {
+      // (turn 4 on 5921df05: this page opened in the NORMAL view - zoom null - so the writer's own control turns the zoom on, as zoomCase does)
+      if ((await attr(app, '.mode-pagecol', 'data-zoom')) !== 'true') { await pressTypewriter(app); await sleep(600); }
       const brProbe = `(() => { const row = document.querySelector('.wz-beginnings[data-beginnings="page"]'); const ed = document.querySelector('.forward-only-editor'); if (!row || !ed) return { row: !!row };
         const a = row.getBoundingClientRect(); const b = ed.getBoundingClientRect(); return { row: true, zoom: document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null, rowTop: Math.round(a.top), rowBottom: Math.round(a.bottom), lineTop: Math.round(b.top), lineBottom: Math.round(b.bottom), vh: innerHeight }; })()`;
       const br = await app.evalJs(brProbe);
