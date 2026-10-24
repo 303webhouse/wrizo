@@ -6055,6 +6055,9 @@ a:focus-visible,
   to { transform:translateX(0); }
 }
 @media (prefers-reduced-motion: reduce){ .walk-card, .walk-card-leaving{ animation:none !important; } }
+.walk-fade{ position:absolute; left:81px; right:81px; bottom:1px; height:44px; pointer-events:none; opacity:0; transition:opacity .2s ease; background:linear-gradient(to bottom, transparent, var(--card-stock)); }
+.walk-fade[data-on='true']{ opacity:1; }
+@media (prefers-reduced-motion: reduce){ .walk-fade{ transition:none; } }
 .walk-grip{ position:absolute; right:8px; bottom:7px; width:14px; height:14px; color:var(--ink-on-card-low); cursor:nwse-resize; touch-action:none; }
 .walk-grip svg{ display:block; }
 /* the chevrons: just ABOVE the card's top corners, inside its width; about 55% at rest, brass on hover (a human act), square hit boxes; they recede while the writer types */

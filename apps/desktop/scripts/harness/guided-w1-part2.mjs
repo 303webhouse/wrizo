@@ -133,6 +133,12 @@ await withHarness(async (app) => {
         await app.typeKeys(' and she waits and she waits and she waits '.repeat(60)); await sleep(800);
         const grown = await q("(() => { const c = document.querySelector('.walk-card'); const r = c.getBoundingClientRect(); const cs = getComputedStyle(c); return { h: Math.round(r.height), overflow: cs.overflowY, scrolls: c.scrollHeight > c.clientHeight }; })()");
         ok(`[${T}] the card grows with its text up to 520 and then scrolls INSIDE`, grown.h <= 521 && grown.h >= 500 && /auto|scroll/.test(grown.overflow) && grown.scrolls, JSON.stringify(grown));
+        await q("(() => { const c = document.querySelector('.walk-card'); c.scrollTop = 0; })()"); await sleep(400);   // typing leaves the card scrolled to the caret (the end), where the fade is correctly off
+        const fadeOn = await q("(() => { const f = document.querySelector('.walk-fade'); return f ? [f.getAttribute('data-on'), parseFloat(getComputedStyle(f).opacity)] : null; })()");
+        await q("(() => { const c = document.querySelector('.walk-card'); c.scrollTop = c.scrollHeight; })()"); await sleep(500);
+        const fadeEnd = await q("(() => { const f = document.querySelector('.walk-fade'); return f ? [f.getAttribute('data-on'), parseFloat(getComputedStyle(f).opacity)] : null; })()");
+        await q("(() => { const c = document.querySelector('.walk-card'); c.scrollTop = 0; })()"); await sleep(300);
+        ok(`[${T}] a soft fade sits at the foot of the scrolling card while there is more below, and is gone once the writer has scrolled to the end`, !!fadeOn && fadeOn[0] === 'true' && fadeOn[1] > 0.9 && !!fadeEnd && fadeEnd[0] === 'false' && fadeEnd[1] < 0.1, JSON.stringify({ fadeOn, fadeEnd }));
         const stageBefore = await rectOf('.walk-stage');
         await q("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(700);
         await q("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(700);

@@ -73,10 +73,26 @@ export function Walk(p: WalkProps) {
   const [incoming, setIncoming] = useState<SwipePlan | null>(null);
   const [size, setSize] = useState(() => getWalkSize(p.boardId));
   const [woke, setWoke] = useState(false);
+  // the soft fade at the card's bottom: on only while the card scrolls AND there is more below the fold
+  const [fade, setFade] = useState(false);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const cardRef = useRef<HTMLDivElement | null>(null);
   const timer = useRef<number | null>(null);
   const box = walkCardBox(0, size);
+
+  // THE BOTTOM FADE (brief: a soft fade at the bottom of the scrolling card): measured from the card itself - it scrolls (the text outgrew 520) and the writer is not at the end of it. A flat gradient to the card's own
+  // stock (never a shadow); an overlay beside the card, not on it, so it stays put while the text scrolls under it.
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    const measure = () => setFade(el.scrollHeight > el.clientHeight + 2 && el.scrollTop + el.clientHeight < el.scrollHeight - 2);
+    measure();
+    el.addEventListener('scroll', measure, { passive: true });
+    const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(measure) : null;
+    ro?.observe(el);
+    if (el.firstElementChild) ro?.observe(el.firstElementChild);
+    return () => { el.removeEventListener('scroll', measure); ro?.disconnect(); };
+  }, [card?.id, card?.text, size]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   // where the writer was in this board's Walk is remembered on this device
   useEffect(() => { if (card) setWalkPos(p.boardId, card.id); }, [p.boardId, card?.id]);
@@ -180,6 +196,7 @@ export function Walk(p: WalkProps) {
                 <svg viewBox="0 0 12 12" width="12" height="12" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" aria-hidden="true"><path d="M11 5L5 11M11 8.5L8.5 11" /></svg>
               </span>
             </div>
+            <div className="walk-fade" data-on={fade ? 'true' : 'false'} aria-hidden="true" />
           </div>
         </div>
         <div className="walk-doors" role="group">
