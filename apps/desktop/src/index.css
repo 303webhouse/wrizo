@@ -619,8 +619,8 @@
 [data-theme='flux'] .wz-section-open[aria-current='page']{ box-shadow:inset 2px 0 0 var(--orange); }
 /* the sprint surge is orange (Flux's selection is cyan, so the surge names its colour) */
 [data-theme='flux'] .mode-pfill-spark:not(.lime){ background:var(--orange); }
-/* the vignette sits BEHIND the content under Flux: it shades the room, never the page (the empty light page showed grey bands top and bottom) */
-[data-theme='flux'] body::after{ z-index:-1; }
+/* (the Flux-only vignette rule that stood here is COLLAPSED into the one base rule - body::after, under the atmosphere overlays below - which puts the vignette
+   behind the page in EVERY theme: page-size, Fable Oct 23. flux-v2.mjs VG1b checks the base rule; flux-v2-part2 F9 still reads Flux's computed -1.) */
 /* the rail's hover and active states are ELECTRIC BLUE (#00C2FF, --line-active): no brown tile, no olive, no brass (Nick, Oct 23) */
 [data-theme='flux'] .wz-strip-item:hover, [data-theme='flux'] .desk-rail-item:hover{ color:var(--line-active); background:rgba(0, 194, 255, .08); }
 [data-theme='flux'] .wz-strip-item:active{ color:var(--line-active); }

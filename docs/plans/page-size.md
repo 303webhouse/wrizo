@@ -226,6 +226,12 @@ tells Nick to press `+` if a page looks small.
 - **The vignette** (Fable, Oct 23, folded in) sits behind the page in EVERY theme: `body::after` at z-index -1, with `body` given
   `isolation: isolate` so it stays visible on the room (html carries its own background, so a bare -1 would vanish under the lamp). Checks V,
   V-room and MV.
+- **One grey-band rule, not three** (Fable, Oct 23, for train #7): Flux's `[data-theme='flux'] body::after{ z-index:-1; }` (flux-inputs) is
+  removed. Its source check `flux-v2.mjs` VG1 and VG1's mutant are parked verbatim, with successor VG1b: the BASE rule is -1, body is isolated,
+  and no theme raises it again. The runtime check `flux-v2-part2` F9 is kept unchanged and still holds. **Machina's copy**
+  (`[data-theme='machina'] body::after{ z-index:-1; }`, TOOLS' machina-build, train #6) is not on main yet. When page-size rebases after #6,
+  remove it the same way and park `th-machina-source.mjs`'s two source reads of it (the presence regex and its mutant) with the same successor.
+  Each theme keeps its own check; page-size V runs in every registered theme.
 - **Scope:** the framed prose page (PageEditor at 1100px and wider: Draft, Free Write, Revise). QuickSprint is not framed and keeps its own
   sheet; the unframed narrow layout and the legacy Journal surface are unchanged.
 
