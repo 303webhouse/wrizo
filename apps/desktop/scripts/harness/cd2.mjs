@@ -27,6 +27,7 @@ import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
 const paperY = {};   // the CD3 canon (b) paper tops, kept for the parked leg (display pass, aa11f58)
+const themeCardNames = {};   // S3's own card read, kept for the parked leg (Machina's build, Oct 23)
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -423,8 +424,11 @@ await withHarness(async (app) => {
     pressed: c.getAttribute('aria-pressed'),
     note: c.querySelector('.wz-theme-note')?.textContent ?? null,
   }))`);
-  ok('S3 (theme-picker successor): exactly two theme cards render (Arbor, Flux) - absent, not grayed',
-    themeCards.length === 2 && themeCards.map((c) => c.name).join(',') === 'Arbor,Flux', JSON.stringify(themeCards));
+  // SUPERSEDED (Machina's build, Oct 23): this check said "exactly two theme cards render (Arbor, Flux)"; Machina joined with its own card, in the arc's order. Original quoted verbatim in the
+  // PARKED record at the foot of this file; live successor: the check below.
+  themeCardNames.names = themeCards.map((c) => c.name).join(',');
+  ok('S3 (theme-picker successor) [Machina successor]: exactly three theme cards render (Arbor, Machina, Flux) - the built themes; absent, not grayed',
+    themeCards.length === 3 && themeCards.map((c) => c.name).join(',') === 'Arbor,Machina,Flux', JSON.stringify(themeCards));
   const arborCard = themeCards.find((c) => c.name === 'Arbor');
   ok('S3 (theme-picker successor): Arbor (the fixture\'s current theme) reads unlocked - not .locked, not disabled, aria-pressed="true"',
     arborCard?.locked === false && arborCard?.disabled === false && arborCard?.pressed === 'true', JSON.stringify(arborCard));
@@ -1064,6 +1068,9 @@ console.log(JSON.stringify(checks, null, 2));
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  // MACHINA'S BUILD (Oct 23) - ONE park: S3's two-card claim, superseded when Machina's card joined (the arc's order: Arbor, Machina, Flux).
+  pok('PARKED (was "S3 (theme-picker successor): exactly two theme cards render (Arbor, Flux) - absent, not grayed") - Machina\'s build (Oct 23): Machina joined with its own ThemeId and card; live successor: S3 [Machina successor]',
+    themeCardNames.names === 'Arbor,Machina,Flux', String(themeCardNames.names));
   // DISPLAY PASS (aa11f58) - TWO parks: the CD3 canon (b) Y-position checks at 1100 and 2200, superseded when the smaller mode tabs
   // moved the paper a further 2px. Records byte-frozen; probes re-verify the new truth (12px) from the default section's own reads.
   for (const w of [1100, 2200]) {

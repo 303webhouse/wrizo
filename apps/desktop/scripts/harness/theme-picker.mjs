@@ -29,6 +29,7 @@
 //
 // What is proven:
 //   D1 ABSENT, NOT GRAYED: exactly two cards render (Arbor, Flux) - today's only ThemeId members
+//      [SUPERSEDED Oct 23, Machina's build: three cards, in the arc's order - Arbor, Machina, Flux; see the parked record at the foot and D1 [Machina successor]]
 //   D2 the CURRENT theme (Arbor, the app's own default) reads unlocked: not .locked, not disabled,
 //      aria-pressed="true", brass outline
 //   D3 note (a): Flux (not current, no server data reachable - status is null) reads LOCKED:
@@ -69,6 +70,8 @@ import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
+const parkedChecks = [];
+const parkReads = {};   // the default leg's own reads, for the parked records below
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -112,10 +115,13 @@ await withHarness(async (app) => {
   await freshDesk(app);
   await openThemePanel(app);
 
-  // D1 — absent, not grayed: exactly two cards
+  // D1 — absent, not grayed: exactly the BUILT themes' cards
+  // SUPERSEDED (Machina's build, Oct 23): D1 used to say "exactly two cards render (Arbor, Flux)"; Machina joined with its own ThemeId and card, in the arc's order (Fable's A3: Arbor, Machina, Flux).
+  // The original is quoted verbatim in the PARKED record at the foot of this file; the live successor is the check below.
   const cards = await cardState(app);
-  ok('D1: exactly two cards render (Arbor, Flux) - today\'s only built themes, nothing grayed in their place',
-    cards.length === 2 && cards.map((c) => c.name).join(',') === 'Arbor,Flux', JSON.stringify(cards));
+  parkReads.cards = cards;
+  ok('D1 [Machina successor]: exactly three cards render, in the arc\'s order (Arbor, Machina, Flux) - the built themes, nothing grayed in their place (Nomad / Volant absent)',
+    cards.length === 3 && cards.map((c) => c.name).join(',') === 'Arbor,Machina,Flux', JSON.stringify(cards));
 
   // D2 — the current theme (Arbor) is unlocked
   const arbor = cards.find((c) => c.name === 'Arbor');
@@ -130,7 +136,8 @@ await withHarness(async (app) => {
     JSON.stringify(flux));
 
   // D4 — a locked card's click does nothing (it is disabled); the panel title still reads "Mood"
-  await app.evalJs("document.querySelectorAll('.wz-theme-card')[1]?.click()");
+  // (selected BY NAME: an index went to the Machina card when it joined second - a locked card too, so it would have stayed green about the wrong card)
+  await app.evalJs("[...document.querySelectorAll('.wz-theme-card')].find((b) => b.textContent.includes('Flux'))?.click()");
   await sleep(150);
   const titleAfterLockedClick = await app.evalJs("document.querySelector('.wz-cascade-panel-title')?.textContent ?? null");
   ok('D4: clicking a LOCKED card does nothing - the panel title stays "Mood" (still Arbor)',
@@ -265,6 +272,18 @@ await withHarness(async (app) => {
     stillAttr === 'true', String(stillAttr));
   return checks;
 });
+
+if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  const names = (parkReads.cards || []).map((c) => c.name).join(',');
+  pok('PARKED (was "D1: exactly two cards render (Arbor, Flux) - today\'s only built themes, nothing grayed in their place") - Machina\'s build (Oct 23): Machina joined with its own ThemeId and card, in the arc\'s order; live successor: D1 [Machina successor]',
+    names === 'Arbor,Machina,Flux', names);
+  // eslint-disable-next-line no-console
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass ? `\nTHEME-PICKER PARKED: PASS (${parkedChecks.length} checks) - HARNESS_PARKED=1 armed; this FILE parks 1: D1's two-card claim` : `\nTHEME-PICKER PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
+}
 
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));

@@ -318,9 +318,11 @@ export function Splash({ ready }: { ready: boolean }) {
       {/* role="status" (Nick's ruling): announced politely, never interrupting.
           `key` forces a remount on every line change, restarting the CSS fade —
           reduced motion drops that animation entirely (index.css), an instant swap. */}
-      <div className="wz-splash-loading" role="status">
-        <span key={lineIndex} className="wz-splash-loading-text">{t(LOADING_LINE_KEYS[lineIndex])}</span>
-      </div>
+      {t(LOADING_LINE_KEYS[lineIndex]) !== '' && (
+        <div className="wz-splash-loading" role="status">
+          <span key={lineIndex} className="wz-splash-loading-text">{t(LOADING_LINE_KEYS[lineIndex])}</span>
+        </div>
+      )}
     </div>
   );
 }

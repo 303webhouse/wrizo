@@ -621,6 +621,9 @@ function BulletControl({ onFormat, t }: { onFormat: (action: FormatAction) => vo
 const THEME_UNIQUE_TEMPLATES: Record<ThemeId, ReadonlySet<TemplateKey>> = {
   plateau: new Set(),
   flux: new Set(['blank', 'screenplay', 'outline', 'title', 'bibliography']),
+  // MACHINA: "Forms" - the mockup draws Memorandum / Report / Minutes (and Org chart / Timeline for plans), which do not map 1:1 onto the app's five
+  // template rows; until Nick/Fable rule on the mapping the five rows keep their canonical words, so none is renamed and none gets a "?" yet.
+  machina: new Set(),
 };
 const TEMPLATE_HELP_KEYS: Record<TemplateKey, DeskTermId> = {
   blank: 'helpTemplateBlank',
@@ -1227,6 +1230,7 @@ function TypewriterFields({ pageId, pageEmpty }: { pageId?: string; pageEmpty?: 
 // minutes are recorded (the sliver's clock is an opt-in timer, not a measure of writing).
 function ProgressFields({ target, hasMilestones }: { target: WritingGoal | null; hasMilestones?: boolean }) {
   const { t } = useDeskLexicon();
+  const theme = useTheme();
   const settings = useWritingSettings();
   const [unit, setUnit] = useState<GoalUnit>(() => target?.unit ?? 'lines');
   const [draft, setDraft] = useState(() => String(target?.n ?? DEFAULT_GOAL_LINES));
@@ -1259,7 +1263,7 @@ function ProgressFields({ target, hasMilestones }: { target: WritingGoal | null;
         <span className="wz-tw-unit">{unit === 'words' ? t('goalUnitWords') : t('goalUnitLines')}</span>
       </label>
       <Seg label="Progress" value={settings.progress} disabled={off} opts={progressOpts} onPick={v => setWritingSettings({ progress: v as ProgressMetric })} />
-      {settings.progress === 'words' && (
+      {settings.progress === 'words' && theme !== 'machina' && (
         <Seg label={t('progressStyleLabel')} value={settings.progressStyle} disabled={off}
           opts={[['bar', t('progressStyleBar')], ['rhizome', t('progressStyleRhizome')]]}
           onPick={v => setWritingSettings({ progressStyle: v as ProgressStyle })} />

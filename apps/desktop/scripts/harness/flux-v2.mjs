@@ -244,7 +244,7 @@ const CSS_MUT = [
   { name: 'a lamp stop drifts back to hue 206', edit: (c) => c.replace('#081728 0%', '#0A1A26 0%'), red: ['TK6'] },
   { name: 'the vignette goes back over the page', edit: (c) => c.replace("[data-theme='flux'] body::after{ z-index:-1; }", "[data-theme='flux'] body::after{ z-index:2; }"), red: ['VG1'] },
   { name: 'an Arbor brown surface returns to the Flux root', edit: (c) => c.replace('--ink-800: #122336;', '--ink-800: #2A241E;'), red: ['TK4'] },
-  { name: 'Arbor\'s PNG mark paints again under Flux', edit: (c) => c.replace('-webkit-mask:none; mask:none; background:none;', 'background:var(--brass);'), red: ['BR1'] },
+  { name: 'Arbor\'s PNG mark paints again under Flux', edit: (c) => { const at = c.indexOf("[data-theme='flux'] .brand-mark{"); const cut = '-webkit-mask:none; mask:none; background:none;'; const i = at < 0 ? -1 : c.indexOf(cut, at); return i < 0 ? c : c.slice(0, i) + 'background:var(--brass);' + c.slice(i + cut.length); }, red: ['BR1'] },   // anchored on the FLUX rule: Machina's identical [data-theme='machina'] .brand-mark rule comes first in the file, and a bare first-match replace landed there (44/45 killed)
   { name: 'a board card goes back to cream stock', edit: (c) => c.replace('--card-stock:#0E1E31; --card-hairline:rgba(0, 194, 255, .55);', '--card-stock:#FBF6EA; --card-hairline:rgba(0, 194, 255, .55);'), red: ['BD1'] },
   { name: 'the acquire loses its still state under reduced motion', edit: (c) => c.replace(/@media \(prefers-reduced-motion:\s*reduce\)\s*\{\s*\.flux-brackets[^}]*\}\s*\}?/, ''), red: ['RC2'] },
 ];

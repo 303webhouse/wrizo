@@ -77,6 +77,24 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<TermId, Partial<TermForm
     // word. "Uplink" keeps Flux's own circuit register without the collision.
     publish: { one: 'Uplink', many: 'Uplink' }, // a verb/label, mirrors Plateau's own .many=.one shape
   },
+  // MACHINA (Nick's words pass, Oct 21; docs/plans/machina-build.md §1c) - the corporate register. The locked map: Drawer -> Project, Set -> Folder, Pages -> Files,
+  // Boards -> Plans, Box/card -> Block, Journal -> Notebook, Milestone -> Deliverable, Home -> HQ, Voice Wall -> Compliance, Publish -> Finalize, Free Write -> Sprint.
+  // NOT overridden, on purpose: 'plan' (canonical "Plan"/"Plans" already IS Machina's word), 'script' (dual-natured, as for Flux), and 'notebook' - Machina's Notebook is the
+  // JOURNAL word, so the canonical `notebook` term (a different concept) would read identically to `journal` under this theme; it keeps its canonical form until Nick names
+  // a word for it (a hand-up item in the build report, not a guess). 'home' has no locked plural: HQ both ways (like Publish).
+  machina: {
+    page: { one: 'File', many: 'Files' },
+    drawer: { one: 'Project', many: 'Projects' },
+    binder: { one: 'Folder', many: 'Folders' },
+    box: { one: 'Block', many: 'Blocks' },
+    board: { one: 'Plan', many: 'Plans' },
+    journal: { one: 'Notebook', many: 'Notebooks' },
+    milestone: { one: 'Deliverable', many: 'Deliverables' },
+    freewrite: { one: 'Sprint', many: 'Sprints' },
+    home: { one: 'HQ', many: 'HQ' },
+    voicewall: { one: 'Compliance', many: 'Compliance' },
+    publish: { one: 'Finalize', many: 'Finalize' },
+  },
 };
 
 function resolveTheme(theme: ThemeId | undefined): ThemeId {

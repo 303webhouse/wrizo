@@ -567,6 +567,146 @@
 }
 
 /* ============================================================================
+   MACHINA - the third theme (docs/theme-foundations/machina/machina-foundations.md, LOCKED Jul 14; the approved mockup cursor/machina-v1-mockup @ 360f3db3;
+   docs/plans/machina-build.md). "The machine's room": neutral, precise, professional. Strictly additive under [data-theme='machina'] - the seam working as designed.
+   TWO TEMPERAMENTS (CAST, store/themeCast.ts; data-cast is on <html> ONLY while the theme is Machina): COOL is the BASE block (steel active lines, sparks off), NEUTRAL
+   only lists what changes (the active carrier turns orange, sparks on). PAGE INK IS INDEPENDENT OF ROOM INK: the Page pref (data-page) flips only the paper trio and the card
+   tokens - the chrome stays dark in the light frame. Orange is scarce in BOTH casts: the caret, Finalize, the mark and the Run notch (--brass, invariant).
+   Values: the mockup's own (--ground/--chrome/--rail/--line/--strong/--active/--live/--ink/--meta/--muted/--page/--edge/--pageink), mapped onto the app's slots (docs/plans/machina-build.md
+   §1a). DERIVED (the mockup gives no value): --lamp-glow, --ink-800, --paper-dim, --accent-door, the light page's --ink-on-paper-low and the card family - measured, below.
+   ONE DEVIATION FROM THE MOCKUP, for the 4.5:1 text floor (faint-text-sweep): the mockup's --muted (#6C7482 cool / #6F6F6F neutral) measures 3.8-4.2:1 on the chrome surfaces, so
+   --text-low (the app's "muted" text tier) is lifted to #7A8290 / #7D7D7D (4.75 / 4.55:1 on --chrome-surface, higher on the ground and rail).
+   MEASURED (WCAG): page text 14.6:1 cool-dark, 17.2:1 cool-light, 14.9:1 neutral-dark, 17.7:1 neutral-light (floor 7:1); meta on paper 5.4 / 5.67 / 5.2 / 6.7:1 (floor 4.5:1).
+   ============================================================================ */
+:root[data-theme='machina'] {
+  --ink-950: #0A0B0E;             /* ground */
+  --lamp-glow: radial-gradient(135% 95% at 50% -8%, #12141A 0%, #0E1015 38%, #0A0B0E 100%);   /* DERIVED: the same ramp as Flux's, in the ground's own hue - no warm glow */
+  --chrome-surface: #12141A;
+  --rail-surface: #0E1015;
+  --ink-900: #12141A;
+  --ink-800: #1A1D25;             /* DERIVED: the raised tier, one step above the chrome */
+  --ink-border: #252933;          /* line */
+  --ink-border-strong: #343A46;   /* line-strong */
+  --line-active: #7FA0BC;         /* steel - the active carrier (NEUTRAL: orange) */
+  --signal-live: #9DA5B4;
+  /* Arbor's warm lights and success green have NO home in Machina (flux-v2 / flux-inputs gave Flux its own --ember* and --sage, and M1's coverage check caught the gap): all four read the neutral
+     live-gray ramp, so nothing here can leak a warm or green value - the faint "ember" dots, the goal flare (not drawn), the return chip's ember (re-coloured below) and the saved-status dot. */
+  --ember: var(--signal-live);
+  --ember-bright: var(--text-hi);
+  --ember-deep: var(--ink-border-strong);
+  --sage: var(--signal-live);
+  --choice: #7FA0BC;              /* every chosen / pressed / current state follows the active carrier */
+  --orange: var(--brass);
+  --text-accent: #7FA0BC;
+  --accent-rest: #7FA0BC;         /* "where you are": the active tab's underline, the current rail edge */
+  --help: #7A8290;
+  --help-hi: #9DA5B4;
+  --text-hi: #E6E9F1;             /* the mockup's --ink */
+  --text-mid: #878E9C;            /* the mockup's --meta */
+  --text-low: #7A8290;            /* the mockup's --muted, lifted for the 4.5:1 floor (see above) */
+
+  --font-chromeLabel:  'IBM Plex Mono', monospace;
+  --font-contentLabel: 'IBM Plex Sans', sans-serif;
+  --font-proseSerif:   'IBM Plex Serif', Georgia, serif;
+  --font-proseSans:    'Atkinson Hyperlegible', sans-serif;
+}
+:root[data-theme='machina'][data-cast='neutral'] {
+  --ink-950: #0A0A0A;
+  --lamp-glow: radial-gradient(135% 95% at 50% -8%, #121212 0%, #0E0E0E 38%, #0A0A0A 100%);
+  --chrome-surface: #121212;
+  --rail-surface: #0E0E0E;
+  --ink-900: #121212;
+  --ink-800: #1B1B1B;
+  --ink-border: #242424;
+  --ink-border-strong: #333333;
+  --line-active: #FF9800;         /* NEUTRAL: the active carrier IS the accent */
+  --signal-live: #A3A3A3;
+  --choice: #FF9800;
+  --text-accent: #FF9800;
+  --accent-rest: #FF9800;
+  --help: #7D7D7D;
+  --help-hi: #A3A3A3;
+  --text-hi: #E9E9E9;
+  --text-mid: #8A8A8A;
+  --text-low: #7D7D7D;            /* the mockup's #6F6F6F, lifted for the 4.5:1 floor */
+}
+/* PAGE (dark | light) x CAST - the four pairs of foundations §4. Only the paper trio (and the card family that rides it) flips; the room stays dark. */
+:root[data-theme='machina'][data-page='dark'] {
+  --paper: #16181F;
+  --paper-dim: #121419;           /* DERIVED */
+  --paper-border: #2F3541;
+  --ink-on-paper: #E6E9F1;
+  --ink-on-paper-low: #878E9C;    /* the foundations' "meta" - 5.4:1 on this paper */
+  --accent-door: #8FB0CC;         /* DERIVED: steel, 7.8:1 on this paper (Arbor's olive reads out of place in the machine's room) */
+}
+:root[data-theme='machina'][data-page='light'] {
+  --paper: #F8F9FC;
+  --paper-dim: #EEF0F5;           /* DERIVED */
+  --paper-border: #D3D8E1;
+  --ink-on-paper: #13161C;
+  --ink-on-paper-low: #5C6472;    /* DERIVED, measured against THIS paper (not inherited from the dark pair): 5.67:1, 5.96:1 on a white card */
+  --accent-door: #2F5F86;         /* DERIVED: 6.4:1 on this paper */
+}
+:root[data-theme='machina'][data-cast='neutral'][data-page='dark'] {
+  --paper: #161616;
+  --paper-dim: #121212;
+  --paper-border: #2E2E2E;
+  --ink-on-paper: #E9E9E9;
+  --ink-on-paper-low: #8A8A8A;    /* 5.2:1 */
+  --accent-door: #FFA733;         /* 9.3:1 */
+}
+:root[data-theme='machina'][data-cast='neutral'][data-page='light'] {
+  --paper: #FAFAFA;
+  --paper-dim: #F0F0F0;
+  --paper-border: #D6D6D6;
+  --ink-on-paper: #141414;
+  --ink-on-paper-low: #595959;    /* DERIVED: 6.7:1 on this paper, 7.0:1 on white */
+  --accent-door: #A85A00;         /* 4.9:1 */
+}
+/* The board's cards follow the page tone (the mockup's .bcard: the chrome tone on the dark page, white on the light), square, 1px hairline - not Arbor's cream stock. */
+:root[data-theme='machina'][data-page='dark'] .board-canvas { --card-stock: var(--ink-900); --card-hairline: var(--ink-border); --ink-on-card: var(--text-hi); --ink-on-card-low: var(--text-mid); --ink-on-card-meta: var(--text-mid); --badge-on-card: var(--text-mid); }
+:root[data-theme='machina'][data-page='light'] .board-canvas { --card-stock: #FFFFFF; --card-hairline: var(--ink-border); --ink-on-card: #141414; --ink-on-card-low: #5C6472; --ink-on-card-meta: #5C6472; --badge-on-card: #5C6472; }
+:root[data-theme='machina'][data-cast='neutral'][data-page='light'] .board-canvas { --ink-on-card-low: #595959; --ink-on-card-meta: #595959; --badge-on-card: #595959; }
+/* The mockup's active rail item is INK-coloured with only the left edge in the carrier colour (the app's own rule paints the label in --accent-rest too); Finalize alone is orange in both casts. */
+[data-theme='machina'] .wz-strip-item.active { color: var(--text-hi); }
+[data-theme='machina'] .desk-mode-tab[data-mode-key='publish'] { color: var(--orange); }
+/* THE SPARKS (NEUTRAL only, foundations §5): the selection wash on the page. COOL keeps the house's own grey selection. */
+:root[data-theme='machina'][data-cast='neutral'][data-page='dark'] .mode-scroll ::selection { background: rgba(255, 152, 0, .22); }
+:root[data-theme='machina'][data-cast='neutral'][data-page='light'] .mode-scroll ::selection { background: rgba(255, 152, 0, .28); }
+/* THE MARK (Fable's ruling, Oct 23: "ship the approved mockup's WRIZ▢ wordmark - the mockup wins over the plan prose"): the corporate wordmark, top left like Flux's - WRIZ in the content-label face
+   (Plex Sans 600, 13px, .08em) and the orange OUTLINED SQUARE (the O). Arbor's hand-drawn PNG mask is switched off exactly as Flux's is. Orange is one of its few homes. */
+[data-theme='machina'] .brand-mark{ top:10px; left:14px; bottom:auto; right:auto; width:auto; aspect-ratio:auto; opacity:1; -webkit-mask:none; mask:none; background:none; filter:none;
+  color:var(--text-hi); font-family:var(--font-contentLabel); font-weight:600; font-size:13px; letter-spacing:.08em; line-height:1; }
+[data-theme='machina'] .brand-mark::before{ content:'WRIZ'; }
+[data-theme='machina'] .brand-mark::after{ content:''; display:inline-block; width:.7em; height:.7em; border:1.5px solid var(--orange); margin-left:1px; vertical-align:-1px; }
+/* ORANGE IS SCARCE (the first Phase B screens): Arbor's warm lights are NOT Machina's. The paper's resting and focused halos, the goal's glow and the celebration flare are all Arbor ember; under
+   Machina the page sits in a plain dark shadow, the goal glow is dialled down (the token's own contract: themes dial the cap, never remove it) and recoloured to the live gray, and the flare is not
+   drawn at all - the ONE celebration is the Run strip closing orange (components/RunStrip.tsx). */
+[data-theme='machina'] .mode-page{ box-shadow:0 10px 44px rgba(0, 0, 0, .55); }
+[data-theme='machina'] .mode-page.focused{ box-shadow:0 0 0 1px var(--paper-border), 0 10px 44px rgba(0, 0, 0, .55); }
+[data-theme='machina']{ --goal-glow-cap:.16; }
+[data-theme='machina'] .wz-goal-glow{ background:radial-gradient(ellipse at center, color-mix(in srgb, var(--signal-live) 50%, transparent) 0%, color-mix(in srgb, var(--signal-live) 20%, transparent) 40%, transparent 68%); }
+[data-theme='machina'] .desk-frame-goalflare{ display:none; }
+/* the vignette sits BEHIND the content (the rule Flux's flux-inputs gave itself, Oct 23): it shades the room, never the page - the empty light page showed grey bands top and bottom */
+[data-theme='machina'] body::after{ z-index:-1; }
+/* RUN (components/RunStrip.tsx) - the cursor/machina-v1-mockup footer strip: twenty identical 4px units 3px apart, gray when finished, an orange 3x16 notch on the unit in progress, the count once
+   after the bar. It rides the framed page's instrument lane (the band under the paper), right-aligned to the paper's edge - the mockup's "right of the footer". Closed at the goal = the whole strip
+   orange (a .35s colour crossfade - the foundations' fill handoff); NEUTRAL adds eight 9x1px sparks from the last unit (.6s, 20ms stagger, the RC's own constants), never under COOL. */
+.machina-run{ position:absolute; left:50%; bottom:5px; transform:translateX(-50%); width:min(calc(760px * var(--paper-scale)), 60ch); max-width:100%;
+  display:flex; align-items:center; justify-content:flex-end; gap:14px; pointer-events:none; font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.08em; color:var(--text-mid); }
+.machina-run-strip{ position:relative; width:240px; height:16px; display:flex; align-items:center; gap:3px; }
+.machina-run-strip > i{ flex:1; height:4px; background:var(--ink-border); position:relative; transition:background-color .35s ease; }
+.machina-run-strip > i.on{ background:var(--signal-live); }
+.machina-run-strip > i.here::after{ content:''; position:absolute; left:-1px; top:-6px; width:3px; height:16px; background:var(--orange); }
+.machina-run[data-closed='true'] .machina-run-strip > i{ background:var(--orange); }
+.machina-run-count{ min-width:92px; text-align:right; }
+.machina-run[data-still='true'] .machina-run-strip > i{ transition:none; }
+.machina-run-burst{ position:absolute; right:5px; top:50%; width:0; height:0; }
+.machina-run-burst > span{ position:absolute; left:0; top:0; width:9px; height:1px; background:var(--orange); opacity:0; transform-origin:left center; animation:machina-tick .6s ease-out forwards; }
+@keyframes machina-tick{ from{ opacity:.95; transform:rotate(var(--r)) translateX(3px); } to{ opacity:0; transform:rotate(var(--r)) translateX(19px); } }
+@media (prefers-reduced-motion: reduce){ .machina-run-strip > i{ transition:none; } .machina-run-burst{ display:none; } }
+
+/* ============================================================================
    FLUX V2 (Fable's brief, Nick Oct 21) - the new shell. Tokens above; this block is the rules that are not just a token.
    ORANGE IS SCARCE: the caret (.flux-block-caret, above), the sprint surge (.mode-pfill.celebrate), Uplink, the mark, and the thin LEFT bar on the current list item.
    Every other "selected" is cyan - and that comes for free, because --brass (the generic selection token) is cyan under Flux.
@@ -5045,6 +5185,27 @@ a:focus-visible,
   font-size:18px; color:var(--tp-cyan); letter-spacing:.08em; }
 .wz-theme-plate-tick{ position:absolute; left:18%; right:18%; top:22%; height:2px; background:var(--tp-cyan); }
 .wz-theme-plate-tick-lime{ top:30%; background:var(--tp-lime); opacity:.8; }
+/* Machina. Card art is the card's OWN theme in literals (the foundations' cool-cast values), never the ambient tokens - same reason as --tp-cyan above. The wordmark is Plex Sans 600 / .14em
+   (the theme's own mark face; the faces load on the card's first hover/focus, ThemePicker.tsx - until then the fallback stack), the orange outlined square its O. The plate is the Run strip:
+   twenty units, the notch on the first unfinished one; hover/focus RUNS it once (units fill in sequence, the notch travels), the still frame holds it part-filled. */
+.wz-theme-card-machina .wz-theme-plate{ background:linear-gradient(180deg, #12141A 0%, #0A0B0E 70%); }
+.wz-theme-wm-machina{ font-family:'IBM Plex Sans', system-ui, sans-serif; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:#E6E9F1; font-size:15px; white-space:nowrap; }
+.wz-theme-wm-machina::after{ content:''; display:inline-block; width:.62em; height:.62em; border:2px solid #FF9800; margin-left:.18em; vertical-align:-.02em; }
+.wz-theme-plate-run{ position:absolute; left:14%; right:14%; bottom:22%; height:16px; display:flex; align-items:center; gap:3px; }
+.wz-theme-plate-run > i{ flex:1; height:4px; background:#252933; transition:background-color .2s ease; transition-delay:calc(var(--i) * 45ms); }
+.wz-theme-plate-run > i.on{ background:#9DA5B4; }
+.wz-theme-plate-notch{ position:absolute; top:0; width:3px; height:16px; background:#FF9800; left:calc(8 / 20 * 100% - 1px); transition:left .9s linear; }
+.wz-theme-card-machina:hover .wz-theme-plate-run > i, .wz-theme-card-machina:focus-visible .wz-theme-plate-run > i{ background:#9DA5B4; }
+.wz-theme-card-machina:hover .wz-theme-plate-notch, .wz-theme-card-machina:focus-visible .wz-theme-plate-notch{ left:calc(100% - 3px); }
+.wz-theme-card-machina[aria-pressed="true"]{ border-color:var(--brass); }
+.wz-theme-picker[data-still='true'] .wz-theme-plate-run > i, .wz-theme-picker[data-still='true'] .wz-theme-plate-notch{ transition:none; }
+.wz-theme-picker[data-still='true'] .wz-theme-card-machina:hover .wz-theme-plate-run > i:not(.on){ background:#252933; }
+.wz-theme-picker[data-still='true'] .wz-theme-card-machina:hover .wz-theme-plate-notch{ left:calc(8 / 20 * 100% - 1px); }
+@media (prefers-reduced-motion:reduce){
+  .wz-theme-plate-run > i, .wz-theme-plate-notch{ transition:none; }
+  .wz-theme-card-machina:hover .wz-theme-plate-run > i:not(.on){ background:#252933; }
+  .wz-theme-card-machina:hover .wz-theme-plate-notch{ left:calc(8 / 20 * 100% - 1px); }
+}
 /* note (e) (Fable's review, Oct 21): the hover Glitch is a FLASH (theme-rules.md §A.8's 3/sec
    budget), so it can no longer be a plain CSS `:hover -> infinite` loop a sustained hover runs
    forever — ThemePicker.tsx's own FluxCardGlitchController (store/fluxCardGlitch.ts) asks the
@@ -5709,6 +5870,13 @@ a:focus-visible,
 .desk-rail-wayback .desk-rail-glyph{ font-size:16px; }
 .desk-rail-wayback-label{ font-size:8px; line-height:1.25; text-align:center;
   display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+/* MACHINA way-back (the approved mockup's header crumb): the glyph is a plain left-pointing triangle, GRAY under COOL and the one orange accent under NEUTRAL (orange is scarce -
+   the cool cast keeps the return chip quiet). The chip's own ember hover rail is Arbor's; Machina has no ember. */
+[data-theme='machina'] .desk-rail-wayback{ color:var(--text-mid); }
+[data-theme='machina'][data-cast='neutral'] .desk-rail-wayback{ color:var(--orange); }
+[data-theme='machina'] .desk-rail-wayback:hover{ color:var(--text-hi); border-left-color:var(--ink-border-strong); }
+[data-theme='machina'][data-cast='neutral'] .desk-rail-wayback:hover{ color:var(--orange); border-left-color:var(--orange); }
+.wz-cascade-cast > span{ margin-right:auto; }
 
 /* The file's navigation row. */
 .sprint-nav{ display:flex; align-items:center; gap:14px; flex-wrap:wrap;
@@ -6368,6 +6536,17 @@ a:focus-visible,
 .tile.lit rect{ stroke:var(--orange, var(--brass)); }
 .fx-node rect, .fx-node circle{ transition:stroke .35s; }
 .fx-node.lit rect, .fx-node.lit circle{ stroke:var(--orange, var(--brass)); }
+
+/* MACHINA SPLASH (SplashMark.tsx's MachinaMark; the approved mockup's wordmark, end labels and Run strip, on Machina's own tokens). The units fill gray one by one, the whole strip closes orange
+   once (the same .35s colour crossfade as the in-app Run strip); the orange square is the mark's one other orange. Reduced motion drops the transitions - the closed strip simply appears. */
+.ma-word{ fill:var(--text-hi); font-family:var(--font-contentLabel); font-weight:600; font-size:55px; letter-spacing:.14em; }
+.ma-square{ fill:none; stroke:var(--orange); stroke-width:3.5; }
+.ma-notch{ fill:var(--orange); }
+.ma-end{ fill:var(--text-mid); font-family:var(--font-chromeLabel); font-size:22px; letter-spacing:.14em; }
+.ma-unit{ fill:var(--ink-border); transition:fill .35s ease; }
+.ma-unit.on{ fill:var(--signal-live); }
+.ma-strip.closed .ma-unit{ fill:var(--orange); }
+@media (prefers-reduced-motion:reduce){ .ma-unit{ transition:none; } }
 
 /* BOARD CONTEXT MENU (Nick, Oct 15; cursor/board-context-menu mockup @ 0df8bf30) - the small themed menu, the "Send to Trash?" dialog, and the Settings switch. All overlays (position:fixed in a portal):
    page primacy - none of them moves or resizes anything beneath it. Tokens only, so Arbor and Flux both wear them. */
