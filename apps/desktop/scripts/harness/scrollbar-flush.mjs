@@ -106,7 +106,7 @@ const measure = (app) => app.evalJs(`(() => {
     clientHeight: scroll.clientHeight,
     pageHeight: page.getBoundingClientRect().height,
     // the applied scale is read from the page's OWN computed transform (matrix(a, ...)), never from the variable the rule reads - an independent measurement
-    appliedScale: (() => { const t = getComputedStyle(page).transform; const mm = /^matrix(([^,]+),/.exec(t); return mm ? parseFloat(mm[1]) : 1; })(),
+    appliedScale: (() => { const t = getComputedStyle(page).transform; return !t || t === 'none' ? 1 : new DOMMatrixReadOnly(t).a; })(),
     thumbColor: getComputedStyle(scroll, '::-webkit-scrollbar-thumb').backgroundColor,
     viewport: [innerWidth, innerHeight],
   };
