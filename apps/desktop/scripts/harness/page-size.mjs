@@ -29,6 +29,7 @@
 //   all: a line's ink = the largest colour distance from its own commonest colour (the paper); its strength = ink as painted / ink with
 //   every mask and opacity in the stage stripped. The stripped reference is a premise: it must itself show ink.
 //   V  (Fable, Oct 23) the vignette sits BEHIND the page in every theme and page tone: the paper's foot and lower corners paint the same with it hidden
+//   V-room  and it is behind, not GONE: a corner of the room still changes when it is hidden
 //   MUTANTS (runtime, each asserts it LANDED before its predicate is read): MV the vignette forced back on top (V fails); MR page forced 760 wide; MC type at 12px; MB letter-spacing
 //   changed while zoomed; MW the editor at opacity .5; MT every mask in the stage removed; MK the page scaled by an open panel (K fails).
 //
@@ -453,6 +454,7 @@ await withHarness(async (app) => {
   const VIG_HIDE = 'body::after { display:none !important; }';
   const VIG_TOP = 'body::after { z-index:2147483647 !important; }';
   const VIG_MEAN = 0.6;   // a strip the vignette does not touch differs by noise only
+  const VIG_ROOM = 2;     // the room's corner, where the inset shadow is darkest, moves well past noise
   for (const th of THEMES) {
     for (const tone of ['light', 'dark']) {
       await app.evalJs("location.hash = '#/'"); await sleep(300);
@@ -479,6 +481,16 @@ await withHarness(async (app) => {
       const shown = await diffs(VIG_HIDE);   // as shipped vs the vignette hidden
       ok(`${tag} V: the vignette sits BEHIND the page - the paper's foot and lower corners look the same with it shown or hidden (mean diff <= ${VIG_MEAN})`,
         shown.every((d) => !!d && d.mean <= VIG_MEAN), J({ shown, z: vig.z }));
+      // V-room: BEHIND, not GONE - a "fix" that deleted the vignette would pass V, so the room must still change when it is hidden: at least one of the
+      // viewport's four corners (the desk, where the inset shadow is darkest) differs by more than noise (the guard against a fix that just removes it)
+      const vw = await app.evalJs('innerWidth'); const vh = g.vh;
+      const corners = [[0, 0, 40, 40], [vw - 40, 0, vw, 40], [0, vh - 40, 40, vh], [vw - 40, vh - 40, vw, vh]];
+      await app.evalJs('window.__psFrames(3)'); await shoot(app); await app.evalJs('window.__psKeep()');
+      await app.evalJs(`window.__psStyle('ps-vig', ${J(VIG_HIDE)})`); await app.evalJs('window.__psFrames(3)'); await shoot(app);
+      await app.evalJs("window.__psStyle('ps-vig', null)"); await app.evalJs('window.__psFrames(2)');
+      const room = await app.evalJs(`(${J(corners)}).map((s) => window.__psDiff(...s))`);
+      ok(`${tag} V-room: the vignette is BEHIND, not gone - it still shades the room (a viewport corner changes by more than ${VIG_ROOM} when it is hidden)`,
+        room.some((d) => !!d && d.mean > VIG_ROOM), J({ room }));
       // MV: the vignette forced on top, then hidden - the same strips must now CHANGE
       await app.evalJs(`window.__psStyle('ps-vig-top', ${J(VIG_TOP)})`);
       const landed = await app.evalJs("getComputedStyle(document.body, '::after').zIndex");
