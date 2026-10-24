@@ -157,7 +157,7 @@ async function suite(M, read) {
   {
     const types = read('types/index.ts'), be = read('components/BoardEditor.tsx');
     chk('K9', () => [/boardKind\?: 'board' \| 'book';/.test(types) && /homeView\?: /.test(types) && /kind: 'text' \| 'ink' \| 'page-pin' \| 'connection' \| 'board-meta';/.test(types), 'the two fields are on Box (named boardKind / homeView - Box.kind stays the discriminator)']);
-    chk('K10', () => [/withHomeView\(/.test(be) && /doorHome\('preset'\)|descriptor\.deck/.test(be) && !/onDeckDealt[\s\S]{0,900}withHomeView/.test(be), 'a Preset-born (unborn, deck descriptor) board writes homeView walk at birth; dealing onto an EXISTING board never touches its view (Fable, assumption 3)']);
+    chk('K10', () => { const calls = [...be.matchAll(/withHomeView\(/g)].map((m) => be.slice(Math.max(0, m.index - 260), m.index)); return [calls.length >= 1 && calls.every((c) => /descriptor\.deck/.test(c) || /presetBorn/.test(c)) && /doorHome\('preset'\)/.test(be), 'a Preset-born (unborn, deck descriptor) board writes homeView walk with its first cards; dealing onto an EXISTING board never touches its view (Fable, assumption 3) - every withHomeView call sits under the presetBorn guard']; });
   }
 
   // ---- S: show as + the device-local view memory -------------------------------------------------------------------------------------------------------------------------------------
@@ -167,7 +167,7 @@ async function suite(M, read) {
   {
     const bm = read('store/boardMode.ts'), sa = read('components/ShowAs.tsx'), be = read('components/BoardEditor.tsx');
     chk('S4', () => [/'walk'/.test(bm) && /'flip'/.test(bm) && /'thumbnails'/.test(bm) && /localStorage/.test(bm) && !/saveBoardBoxes|saveJournalEntry/.test(bm), 'the view memory stays localStorage-only (no sync, no save)']);
-    chk('S5', () => [sa.length > 200 && /className="show-as"/.test(sa) && /show-as-btn/.test(sa) && /aria-pressed=/.test(sa) && /data-view=/.test(sa) && /viewsOf\(/.test(sa) && /title=\{/.test(sa), 'ShowAs: icons first, the word on hover (title), aria-pressed on the current view, the views from viewsOf(kind)']);
+    chk('S5', () => [sa.length > 200 && /className="show-as"/.test(sa) && /show-as-btn/.test(sa) && /aria-pressed=/.test(sa) && /data-view=/.test(sa) && /viewsFor\(/.test(sa) && /title=\{/.test(sa), 'ShowAs: icons first, the word on hover (title), aria-pressed on the current view, the views from viewsOf(kind)']);
     chk('S6', () => [/<ShowAs/.test(be) && !/boardModeTabs\.map\(/.test(be), '"Show as" replaces the three view tabs']);
     chk('S7', () => [!/setBoxes[^;]{0,60}boardMode|setBoardMode[^;]{0,120}setBoxes/.test(be.replace(/\s+/g, ' ')), 'switching view never writes boxes (positions and order are untouched)']);
   }
@@ -214,17 +214,18 @@ async function suite(M, read) {
     chk('D5', () => [/\[data-theme='flux'\] \.walk-mark\[data-state='current'\][^{]*\{[^}]*border-left:[^;}]*var\(--orange\)/.test(css), 'Flux: the current tick wears the thin orange LEFT bar']);
     chk('D6', () => [/\.walk-nav[^{]*\{[^}]*(width|min-width):\s*\d+px[^}]*(height|min-height):\s*\d+px/.test(css) || /\.walk-nav[^{]*\{[^}]*aspect-ratio:\s*1/.test(css), 'the chevron hit box is square']);
     const walk = read('components/Walk.tsx');
-    chk('D7', () => [/chrome-fade|useChromeDissolve/.test(walk) && /walk-nav/.test(walk), 'the chevrons carry the chrome recede (they recede while the writer types, return on pointer move or when the pointer leaves the card)']);
+    chk('D7', () => [/receded/.test(walk) && /walk-nav/.test(walk) && /data-recede/.test(walk) && /pointermove/.test(walk) && /onPointerLeave/.test(walk) && /useChromeDissolve/.test(readRaw('components/BoardEditor.tsx')) && /receded=\{boardDissolve\.dissolved\}/.test(readRaw('components/BoardEditor.tsx')), 'the chevrons recede with the board\'s chrome (the dissolve engine\'s state, passed in) while the writer types, and return on a pointer move or when the pointer leaves the card']);
     chk('D8', () => [walk.length > 500 && /StepHelp/.test(walk) && !/writeThis|placeAPage|walkDoorWrite|walkDoorPlace/.test(walk.replace(/\/\/.*$/gm, '')) && /extraDoors/.test(walk), 'the Walk shows the question mark (W3) and Notes only; "Write this" / "Place a page..." are ABSENT (FIX wires them through extraDoors after W1 merges)']);
-    chk('D9', () => [/BoardCardPopup|useCardEditor|CardEditor/.test(walk) && !/<textarea/.test(walk), 'writing in the Walk card is the ordinary card writing engine (the same decoration / undo / paste wall), not a second editor']);
+    chk('D9', () => [/renderEditor/.test(walk) && !/<textarea|contentEditable/.test(walk) && /<BoardCardPopup[\s\S]{0,200}inline/.test(readRaw('components/BoardEditor.tsx')), 'writing in the Walk card is the ordinary card writing engine (the same decoration / undo / paste wall), mounted inline - not a second editor']);
   }
 
   // ---- Y: keyboard ----------------------------------------------------------------------------------------------------------------------------------------------------------------
   chk('Y1', () => [M.walkKey('ArrowRight', { onDoor: false }) === 'next' && M.walkKey('ArrowLeft', { onDoor: false }) === 'prev' && M.walkKey('Escape', { onDoor: false }) === 'exit' && M.walkKey('Enter', { onDoor: true }) === 'activate' && M.walkKey('Enter', { onDoor: false }) === null && M.walkKey('a', { onDoor: false }) === null, 'left / right step, Enter activates the focused door, Esc leaves for the board in its last shown view']);
-  chk('Y2', () => { const w = read('components/Walk.tsx'); return [/walkKey\(/.test(w) && /getBoardMode|lastShown/.test(w), 'the Walk reads its keys through walkKey and Esc returns to the last shown view']; });
+  chk('Y2', () => { const w = read('components/Walk.tsx'), be = read('components/BoardEditor.tsx'); return [/walkKey\(/.test(w) && /onExit\(\)/.test(w) && /onExit=\{\(\) => setBoardMode\(lastShownBeforeWalk\(id, homeView\)\)\}/.test(be), 'the Walk reads its keys through walkKey and Esc returns the board to its last shown view']; });
 
   // ---- L: lexicon ---------------------------------------------------------------------------------------------------------------------------------------------------------------
   chk('L1', () => { const T = (id, th) => M.deskTerm(id, th); return [T('boardModeWalk', 'plateau') === 'Walk' && T('boardModeFlip', 'plateau') === 'Flip' && T('boardModeThumbs', 'plateau') === 'Thumbnails' && T('boardModeWalk', 'flux') === 'Trace' && T('boardModeFlip', 'flux') === 'Playback' && T('boardModeThumbs', 'flux') === 'Index' && T('boardModeOpen', 'flux') === 'Live' && T('boardModeStoryboard', 'flux') === 'Sequence' && T('boardModeOutline', 'flux') === 'Spine', 'Arbor Walk / Flip / Thumbnails; Flux Live / Sequence / Spine / Trace and Playback / Index']; });
+  chk('L3', () => { const a = M.deskTerm('deckFact', 'plateau'), f = M.deskTerm('deckFact', 'flux'); const trk = (n, m) => `TRK ${n}/${m}`; return [/\{n\}/.test(a) && /\{m\}/.test(a) && /[a-z]{3,}/i.test(a.replace(/\{[nm]\}/g, '')) && /\{n\}/.test(f) && /\{m\}/.test(f) && /[A-Z]{3,}/.test(f.replace(/\{[nm]\}/g, '')) && !/TRK/i.test(a + f) && a.replace('{n}', '4').replace('{m}', '9') !== '4 of 9' && f.replace('{n}', '4').replace('{m}', '9') !== trk(4, 9) && a !== f, `${a} | ${f}`]; });
   {
     const lex = read('store/deskLexicon.ts');
     const FORBID = /\b(boards?|pages?|links?|grafts?|grafted|shelf|schematics?|drawers?|journals?|settings|themes?|tutor|sections?|binder)\b/i;
@@ -264,12 +265,12 @@ async function suite(M, read) {
 // ---- mutants: each reaches the real source, its LANDING asserted, and must redden exactly the checks it names ------------------------------------------------------------------------------
 const MUT = [
   { name: 'the Journal stops being a Book', file: 'store/boardKind.ts', find: /systemKind === 'journal'/, to: "systemKind === 'trash'", red: ['K3'] },
-  { name: 'a bad homeView stops falling back', file: 'store/boardKind.ts', find: /return valid \? hv : kindDefault/, to: 'return hv', red: ['K5'] },
+  { name: 'a bad homeView stops falling back', file: 'store/boardKind.ts', find: /hv !== undefined && viewsOf\(kind\)\.includes\(hv\) \? hv : kindDefault/, to: 'hv ?? kindDefault', red: ['K5'] },
   { name: 'withHomeView stops stamping updatedAt', file: 'store/boardKind.ts', find: /updatedAt: new Date\(\)\.toISOString\(\)/, to: 'updatedAt: undefined', red: ['K6', 'X4'] },
   { name: 'withHomeView drops the other board-meta fields', file: 'store/boardKind.ts', find: /\.\.\.existing,/, to: '', red: ['K6'] },
   { name: 'a Preset no longer makes a Deck', file: 'store/boardKind.ts', find: /preset: \{ boardKind: 'board', homeView: 'walk' \}/, to: "preset: { boardKind: 'board', homeView: 'open' }", red: ['K7'] },
   { name: 'the view memory stops falling back to the home view', file: 'store/boardMode.ts', find: /return m && MODES\.includes\(m\) \? m : \(homeView && MODES\.includes\(homeView\) \? homeView : 'open'\)/, to: "return m && MODES.includes(m) ? m : 'open'", red: ['S1'] },
-  { name: 'the walk order ignores seq', file: 'store/walk.ts', find: /boardStructure\(boxes\)/, to: 'boardStructure([])', red: ['S8'] },
+  { name: 'the walk order ignores seq', file: 'store/walk.ts', find: /boardStructure\(live\)/, to: 'boardStructure([])', red: ['S8'] },
   { name: 'the Walk wraps at the ends', file: 'store/walk.ts', find: /Math\.max\(0, Math\.min\(len - 1, index \+ dir\)\)/, to: '((index + dir) % Math.max(1, len) + Math.max(1, len)) % Math.max(1, len)', red: ['W2'] },
   { name: 'the rail shows Lit', file: 'store/walk.ts', find: /state: current \? 'current' : kindled \? 'leaf' : 'seed'/, to: "state: current ? 'current' : kindled ? 'lit' : 'seed'", red: ['W3'] },
   { name: 'the card never scrolls', file: 'store/walk.ts', find: /scroll: contentH > WALK\.MAX_H/, to: 'scroll: false', red: ['W4'] },
@@ -277,7 +278,9 @@ const MUT = [
   { name: 'the swipe takes 400 ms', file: 'store/walk.ts', find: /SWIPE_MS: 280/, to: 'SWIPE_MS: 400', red: ['W1', 'M1'] },
   { name: 'reduced motion still slides', file: 'store/walk.ts', find: /reduced \? \{ kind: 'cut'/, to: "false ? { kind: 'cut'", red: ['M1'] },
   { name: 'Enter steps the Walk', file: 'store/walk.ts', find: /key === 'Enter' && ctx\.onDoor/, to: "key === 'Enter'", red: ['Y1'] },
-  { name: 'adding in the Walk places by position', file: 'store/walk.ts', find: /view === 'open' \? \{ mode: 'position' \}/, to: "view !== 'flip' ? { mode: 'position' }", red: ['A1'] },
+  { name: 'adding in the Walk places by position', file: 'store/walk.ts', find: /if \(view === 'open'\) return \{ mode: 'position' \};/, to: "if (view !== 'flip') return { mode: 'position' };", red: ['A1'] },
+  { name: 'the Deck fact becomes a bare n of m', file: 'store/deskLexicon.ts', find: /deckFact: '\{n\} of \{m\} begun'/, to: "deckFact: '{n} of {m}'", red: ['L3'] },
+  { name: 'the Flux Deck fact reads like the track readout', file: 'store/deskLexicon.ts', find: /deckFact: 'LOAD \{n\}\/\{m\}'/, to: "deckFact: 'TRK {n}/{m}'", red: ['L3'] },
   { name: 'a Deck on a small screen keeps Open', file: 'store/walk.ts', find: /narrow && deck \? \['walk'\]/, to: 'false ? [\'walk\']', red: ['S9'] },
   { name: 'the swipe keyframes cross-fade', file: 'index.css', find: /@keyframes walk-in-next\s*\{\s*from\s*\{\s*transform/, to: '@keyframes walk-in-next { from { opacity: 0; transform', red: ['M2'] },
   { name: 'the Walk card gets a drop shadow', file: 'index.css', find: /\.walk-card\s*\{/, to: '.walk-card { box-shadow:0 8px 24px rgba(0,0,0,.4);', red: ['D1'] },
@@ -295,7 +298,7 @@ try {
   const M0 = base.M || {};
   const res0 = await suite(M0, rd({}));
   for (const [k, v] of Object.entries(res0)) ok(k, v.pass, v.detail);
-  ok('the suite ran every check it names', Object.keys(res0).length >= 48, `${Object.keys(res0).length} checks`);
+  ok('the suite ran every check it names', Object.keys(res0).length >= 55, `${Object.keys(res0).length} checks`);
 
   let landed = 0, killed = 0, notLanded = 0;
   for (const m of MUT) {

@@ -19,7 +19,7 @@ import {
   setPinDisplayed, toggleEntryLink, isCardLinkedToEntry, livePinFor, getLinkPeersByCard, addPageLink,
   boardNestChain, pinAspectFor } from '../store/persistence';
 import { SURVEY_DRAG_TYPE } from './CascadeSurvey';
-import { useBoardMode } from '../store/boardMode';
+import { useBoardMode, lastShownBeforeWalk } from '../store/boardMode';
 import { StoryboardProjection, OutlineProjection } from './BoardProjection';
 import { withLanes } from '../store/boardStructure';
 import { BeginningsRow, type BeginningDoor } from './BeginningsRow';
@@ -52,7 +52,14 @@ import { DeskFrame, useDeskFrameViewport } from './DeskFrame';
 import { DeckWizard } from './DeckWizard';
 import { DECKS } from '../decks/library';
 import { StepHelp } from './StepHelp';
-import { promptToShow, bodyIsEmpty, pagesOfPlace } from '../store/guided';
+import { Walk } from './Walk';
+import { ShowAs } from './ShowAs';
+import { BookFlip, BookThumbs } from './BookViews';
+import { kindOf, homeViewOf, isDeck, withHomeView, doorHome, type BoardView } from '../store/boardKind';
+import { addPlacement, viewsFor, walkOrder, setWalkPos } from '../store/walk';
+import { useTheme } from '../store/theme';
+import { getNotebookPages } from '../store/persistence';
+import { promptToShow, bodyIsEmpty, pagesOfPlace, kindled } from '../store/guided';
 import { graftTo } from '../store/grafts';
 import { usePlace } from '../store/usePlace';
 import { materializeDeck } from '../decks/engine';
@@ -392,10 +399,14 @@ function BoardTextBox({
 // contained within the dialog's own focusable elements while it's open).
 // Voice Wall stands: foreign paste/drop is blocked + whispered; an allowed
 // own-ink paste proceeds natively (Draft's own law, unchanged here).
-function BoardCardPopup({
-  initialText, onCommit, onClose, fontFace, fontSize, onType, prompt,
+export function BoardCardPopup({
+  initialText, onCommit, onClose, fontFace, fontSize, onType, prompt, inline, autoFocus,
 }: {
   initialText: string;
+  // W1 - INLINE: the Walk's card IS this editor (the ordinary card writing engine: decoration, undo, hidden marks, the paste wall) mounted in place - no portal, no backdrop, no dock, no Esc-to-close (Esc belongs to the Walk,
+  // which leaves for the board's last shown view). It takes the caret only when asked (autoFocus: the Notes door), never on mount - stepping through cards must not steal focus.
+  inline?: boolean;
+  autoFocus?: boolean;
   // W3 - a dealt step's question, shown as the editor's placeholder while the body is empty (an attribute + CSS ::after, never text); the first keystroke into the body hides it.
   prompt?: string;
   onCommit: (text: string) => void;
@@ -465,7 +476,7 @@ function BoardCardPopup({
     };
     syncPrompt(initialText);
     decorateEditorFor(el, initialText, initialText.length, setCaretOffset, text => decorateMarkdownForCard(text, initialText.length));
-    el.focus();
+    if (!inline || autoFocus) el.focus();
 
     // I0 pen discipline (park-sweep audit finding — the retired inline
     // BoardTextBox editing branch carried this same guard; the popup's own
@@ -697,6 +708,7 @@ function BoardCardPopup({
   // hb1.1's own focus-trap pattern (UnlockCeremony.tsx), reused verbatim:
   // Tab wraps within this dialog's own focusable elements while it's open.
   useEffect(() => {
+    if (inline) return;   // W1: the Walk owns Esc and focus; there is no dialog to trap or close
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') { e.preventDefault(); onClose(); return; }
       if (e.key !== 'Tab') return;
@@ -785,6 +797,20 @@ function BoardCardPopup({
   // holds "Remove"). Portalled to <body>, the backdrop ranks in the root context, above the rail and the page's chrome (toasts and the stale-client banner
   // still sit above it, as they should). Nothing in this
   // component reads its DOM ancestors, its colours are :root tokens, and React events still bubble through the component tree.
+  if (inline) {
+    return (
+      <div
+        ref={elRef}
+        className="board-popup-editor"
+        contentEditable
+        suppressContentEditableWarning
+        role="textbox"
+        aria-multiline="true"
+        aria-label={`${lex('board')} text box`}
+        style={cardTypeStyle(fontFace, fontSize)}
+      />
+    );
+  }
   return createPortal(
     <div className="board-popup-backdrop" role="presentation" onClick={onClose}>
       <div
@@ -947,10 +973,22 @@ export function BoardEditor({ id }: { id: string }) {
   // and the bar's PAGE → door meaningless there). The flip preserves this: the
   // mode is read back from the store on every mount, so a round trip lands on
   // the same face (S8's "mode survives a round trip").
-  const [boardModeRaw, setBoardMode] = useBoardMode(id);
-  const boardMode = isSystemBoard ? 'open' : boardModeRaw;
 
-  const [boxes, setBoxes] = useState<Box[]>(() => liveBoxes(initialEntry?.boxes));   // LIVE boxes only: a deleted card is a tombstone in storage, carried through every save by saveBoardBoxes
+  const [boxes, setBoxes] = useState<Box[]>(() => liveBoxes(initialEntry?.boxes));
+  // W1 (the Walk, board kinds and "Show as"; store/boardKind.ts): the board's KIND and HOME VIEW are read from its own board-meta (`boxes`, so a Preset-born deal that has not been saved yet already reads as a Deck). The view SHOWN is the
+  // device-local "last shown as", else the home view, else Open - and only ever one of the views this kind OFFERS (a Board: Open / Storyboard / Outline / Walk; a Book - the Journal: Flip / Thumbnails; a Deck on a narrow screen: only the Walk;
+  // Trash and the Shelf: Open, no choice). Switching a view writes nothing to the board.
+  const theme = useTheme();
+  const boardKind = kindOf({ boxes });
+  const homeView = homeViewOf({ boxes });
+  const narrowBoard = !framed;
+  const deckBoard = isDeck({ boxes });
+  const [boardModeRaw, setBoardModeRaw] = useBoardMode(id, homeView);
+  const offeredViews: BoardView[] = isSystemBoard && boardKind !== 'book' ? ['open'] : viewsFor(boardKind, narrowBoard, deckBoard);
+  const boardMode: BoardView = offeredViews.includes(boardModeRaw) ? boardModeRaw : offeredViews.includes(homeView) ? homeView : offeredViews[0];
+  const setBoardMode = (m: BoardView) => setBoardModeRaw(m, boardMode);
+  // a card added in the Walk: the Walk lands on it
+  const [walkJumpId, setWalkJumpId] = useState<string | null>(null);   // LIVE boxes only: a deleted card is a tombstone in storage, carried through every save by saveBoardBoxes
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // FX4 S5 — the card popup (inline contenteditable editing RETIRES whole):
   // the id of the text card currently open in BoardCardPopup, or null. The
@@ -1606,9 +1644,12 @@ export function BoardEditor({ id }: { id: string }) {
   const onAddCard = () => {
     const y = maxBottom(boxesRef.current) + ADD_CARD_GAP;
     const maxZ = boxesRef.current.reduce((m, b) => Math.max(m, b.z), 0);
-    const box: Box = { id: generateId(), kind: 'text', x: 0.05, y, w: NEW_CARD_W, h: NEW_CARD_H, z: maxZ + 1, text: '' };
+    // W1 - ADDING FOLLOWS THE VIEW SHOWN: Open places a card at a position; Storyboard, Outline and the Walk append it to the order (`seq`, after the last).
+    const placement = addPlacement(boardMode, boxesRef.current);
+    const box: Box = { id: generateId(), kind: 'text', x: 0.05, y, w: NEW_CARD_W, h: NEW_CARD_H, z: maxZ + 1, text: '', ...(placement.mode === 'append' ? { seq: placement.seq } : {}) };
     setBoxes(prev => [...prev, box]);
     setSelectedId(box.id);
+    if (boardMode === 'walk') setWalkJumpId(box.id);
     // BG1 S1 — "opens it straight into edit mode" is an OPEN-canvas fact: the
     // popup (BoardCardPopup) is mounted inside `boardBody`, which only the OPEN
     // projection renders. BG1's row puts New Card in STORYBOARD and OUTLINE too,
@@ -1724,7 +1765,9 @@ export function BoardEditor({ id }: { id: string }) {
     if (result.dealtIds.length === 0) return;   // W3: nothing dealt (the page step offers no empty deal; this is the belt)
     // W3 - From my pages: each dealt card is to be GRAFTED to its page through the ordinary Grafts path - queued here, made by the effect below once the cards are on a board whose row exists.
     pendingGraftsRef.current = [...pendingGraftsRef.current, ...result.grafts];
-    setBoxes(prev => [...prev, ...result.boxes]);
+    // W1 - a Preset (an UNBORN board whose address carries a deck) is born a DECK: its home view is the Walk, written with the first cards in the one birth. A deal onto an EXISTING board never touches that board's view.
+    const presetBorn = !!unbornRef.current?.descriptor.deck;
+    setBoxes(prev => (presetBorn ? withHomeView([...prev, ...result.boxes], doorHome('preset').homeView, generateId) : [...prev, ...result.boxes]));
     armStartHere(id, result.firstCardId, result.dealtIds);
     setStartHereCardId(result.firstCardId);
   };
@@ -3291,11 +3334,6 @@ export function BoardEditor({ id }: { id: string }) {
     pairBoardWithPage(id, page.id);
     setBoxes(prev => prev.slice()); // nudge a re-render so the PAGE → door resolves
   };
-  const boardModeTabs: { key: 'open' | 'storyboard' | 'outline'; label: string }[] = [
-    { key: 'open', label: t('boardModeOpen') },
-    { key: 'storyboard', label: t('boardModeStoryboard') },
-    { key: 'outline', label: t('boardModeOutline') },
-  ];
   // CD4 S1 — renders for EVERY board now (was `!isSystemBoard ? … : null`). The
   // mode TABS stay non-system only (a system board has no projections); the
   // PAGE → door is the one universal control (Fable's ruling: system boards
@@ -3307,23 +3345,10 @@ export function BoardEditor({ id }: { id: string }) {
   const boardModeBar = (
     <div
       className="board-mode-strip"
-      role={isSystemBoard ? undefined : 'tablist'}
-      aria-label={isSystemBoard ? undefined : 'Board mode'}
       style={{ display: 'flex', alignItems: 'center', gap: 4 }}
     >
-      {!isSystemBoard && boardModeTabs.map(tab => (
-        <button
-          key={tab.key}
-          type="button"
-          role="tab"
-          aria-selected={boardMode === tab.key}
-          className={`board-mode-tab${boardMode === tab.key ? ' active' : ''}`}
-          data-board-mode-tab={tab.key}
-          onClick={() => setBoardMode(tab.key)}
-        >
-          {tab.label}
-        </button>
-      ))}
+      {/* W1 - "Show as" replaces the three view tabs (components/ShowAs.tsx): icons first, the word on hover; a Board offers four views, a Book (the Journal) two. */}
+      {(!isSystemBoard || boardKind === 'book') && <ShowAs kind={boardKind} deck={deckBoard} narrow={narrowBoard} current={boardMode} onPick={setBoardMode} />}
       <button
         type="button"
         className="board-door"
@@ -3344,8 +3369,45 @@ export function BoardEditor({ id }: { id: string }) {
   // STORYBOARD/OUTLINE render the ONE structure description (store/
   // boardStructure.ts). Order is single-sourced (seq on the shared boxes), so a
   // reorder in one projection is the board's truth in all three.
+  // W1 - THE WALK (components/Walk.tsx): one card at a time on the board's own order, writing in the card with the ordinary card engine (the card editor, mounted INLINE). Esc leaves for the board's last shown view.
+  const walkKindled = new Set(boardMode === 'walk' ? walkOrder(boxes).filter(b => kindled(id, b, boxes)).map(b => b.id) : []);
+  const walkContent = boardMode === 'walk' ? (
+    <Walk
+      boardId={id}
+      boxes={boxes}
+      kindledIds={walkKindled}
+      startHereId={startHereCardId}
+      jumpToId={walkJumpId}
+      onJumped={() => setWalkJumpId(null)}
+      receded={boardDissolve.dissolved}
+      flux={theme === 'flux'}
+      narrow={narrowBoard}
+      onExit={() => setBoardMode(lastShownBeforeWalk(id, homeView))}
+      renderEditor={(box) => (
+        <BoardCardPopup
+          key={box.id}
+          inline
+          initialText={box.text ?? ''}
+          prompt={box.kind === 'text' && !box.sourceEntryId ? box.prompt : undefined}
+          onCommit={text => commitText(box.id, text)}
+          onClose={() => undefined}
+          fontFace={box.fontFace}
+          fontSize={box.fontSize}
+          onType={patch => commitType(box.id, patch)}
+        />
+      )}
+      empty={<BeginningsRow surface="projection" doors={beginningDoors} />}
+    />
+  ) : null;
+  // W1 - THE JOURNAL AS A BOOK: Flip (one page at a time, the Walk's own chevrons and swipe) and Thumbnails (a grid of tall pages). The pages are the loose Journal in the writer's order (J1); nothing here writes a page or a pin.
+  const bookPages = boardKind === 'book' ? getNotebookPages() : [];
+  const flipContent = boardMode === 'flip' ? <BookFlip boardId={id} pages={bookPages} receded={boardDissolve.dissolved} onOpen={(pg) => { flushNow(); navigate(routeForEntry(pg)); }} /> : null;
+  const thumbsContent = boardMode === 'thumbnails' ? <BookThumbs boardId={id} pages={bookPages} onPick={(pg) => { setWalkPos(id, pg.id); setBoardMode('flip'); }} /> : null;
   const boardContent = boardMode === 'open'
     ? boardBody
+    : boardMode === 'walk' ? walkContent
+    : boardMode === 'flip' ? flipContent
+    : boardMode === 'thumbnails' ? thumbsContent
     : boardMode === 'storyboard'
       ? <StoryboardProjection boxes={boxes} setBoxes={setBoxes} labelFor={boxLabel} onEditText={commitText}
           onAddLane={onAddLane}

@@ -6170,6 +6170,115 @@ a:focus-visible,
 [data-theme='flux'] .board-step-pop-x{ font-family:var(--font-proseSans); font-style:normal; }   /* Flux's own type (Chakra Petch), not Arbor's italic serif - Fable, Oct 23 */
 [data-theme='flux'] .board-step-pop-more{ text-transform:uppercase; letter-spacing:.12em; }
 
+/* ── W1 - THE WALK, "SHOW AS", the Journal as a Book, thumbnails by kind (brief docs/guided-paths/w1-walk-brief.md; Fable's board-kinds-final frames 01 / 02 / 04 / 07 / 10 + 02-trace) ──────────────────────────────────────────────
+   DRESS (Nick's standing rules for new work): SQUARE edges on every box, FLAT 1 px edges, NO drop shadows; circles only for MARKS (the "?" badge, the rail). Arbor colour rule: brown / cream = surfaces; OLIVE = options and guidance
+   (doors, the Show-as icons, rail marks at rest); BRASS = human action only (the current / chosen view, hover, press). Decorative lines are muted, never brass. Flux: brackets, TRK n/m, pixel ticks (hollow, lime, cyan with a thin
+   ORANGE LEFT bar for the current one), [NOTE]. The swipe is a PURE SLIDE: its keyframes move TRANSFORM only (both cards stay opaque - never a cross-fade), 280 ms, a soft edge mask on the window; reduced motion = a cut. */
+.show-as{ display:flex; align-items:center; gap:2px; }
+.show-as .show-as-btn{ display:flex; align-items:center; gap:6px; padding:6px 8px; background:none; border:1px solid transparent; border-radius:0; box-shadow:none; color:var(--accent-door); font:inherit; font-size:12px; text-transform:none; letter-spacing:0; cursor:pointer; }
+.show-as .show-as-word{ display:none; }
+.show-as[data-open='true'] .show-as-word{ display:inline; }
+.show-as .show-as-btn:hover, .show-as .show-as-btn:focus-visible{ background:none; color:var(--choice); outline:none; }
+.show-as .show-as-btn[aria-pressed='true']{ color:var(--choice); border-color:var(--choice); }
+[data-theme='flux'] .show-as .show-as-btn{ font-family:var(--font-chromeLabel); text-transform:uppercase; letter-spacing:.1em; color:var(--text-mid); }
+[data-theme='flux'] .show-as .show-as-btn[aria-pressed='true']{ color:var(--choice); }
+
+.walk{ width:100%; display:flex; justify-content:center; padding:56px 0 24px; box-sizing:border-box; overflow-x:hidden; }
+.walk-stage{ display:flex; flex-direction:column; align-items:center; width:100%; }
+.walk-frame{ position:relative; max-width:100%; }
+.walk-window{
+  position:relative; margin:0 -80px; padding:0 80px; overflow:hidden;
+  -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%); mask-image:linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%);
+}
+.walk-card{
+  position:relative; box-sizing:border-box; width:100%; padding:30px 36px 44px;
+  background:var(--card-stock); color:var(--ink-on-card); border:1px solid var(--card-hairline); border-radius:0; box-shadow:none;
+  overflow-y:auto; scrollbar-width:thin; scrollbar-color:var(--ink-on-card-low) transparent;
+}
+.walk-card .board-popup-editor, .walk-card .walk-static{
+  display:block; width:100%; min-height:140px; padding:0; border:0; background:none; box-shadow:none; box-sizing:border-box; outline:none;
+  font-family:var(--font-prose); font-size:calc(17px * var(--card-type-k, 1)); line-height:1.6; white-space:pre-wrap; color:var(--ink-on-card); overflow:visible;
+}
+.walk-card .board-popup-editor::first-line{ font-size:1.75em; font-weight:600; }
+[data-theme='flux'] .walk-card .board-popup-editor::first-line{ color:var(--text-accent); text-transform:uppercase; letter-spacing:.12em; font-family:var(--font-chromeLabel); font-size:1.35em; }
+.walk-card-leaving{ position:absolute; top:0; left:80px; right:80px; width:auto; pointer-events:none; overflow:hidden; }
+.walk-card-leaving[data-out='left']{ animation:walk-out-next 280ms ease-in-out both; }
+.walk-card-leaving[data-out='right']{ animation:walk-out-prev 280ms ease-in-out both; }
+.walk-card[data-in='right']{ animation:walk-in-next 280ms ease-in-out both; }
+.walk-card[data-in='left']{ animation:walk-in-prev 280ms ease-in-out both; }
+@keyframes walk-out-next {
+  from { transform:translateX(0); }
+  to { transform:translateX(-60%); }
+}
+@keyframes walk-in-next {
+  from { transform:translateX(60%); }
+  to { transform:translateX(0); }
+}
+@keyframes walk-out-prev {
+  from { transform:translateX(0); }
+  to { transform:translateX(60%); }
+}
+@keyframes walk-in-prev {
+  from { transform:translateX(-60%); }
+  to { transform:translateX(0); }
+}
+@media (prefers-reduced-motion: reduce){ .walk-card, .walk-card-leaving{ animation:none !important; } }
+.walk-grip{ position:absolute; right:8px; bottom:7px; width:14px; height:14px; color:var(--ink-on-card-low); cursor:nwse-resize; touch-action:none; }
+.walk-grip svg{ display:block; }
+/* the chevrons: just ABOVE the card's top corners, inside its width; about 55% at rest, brass on hover (a human act), square hit boxes; they recede while the writer types */
+.walk-nav{
+  position:absolute; top:-38px; z-index:2; width:32px; height:32px; padding:0; display:flex; align-items:center; justify-content:center;
+  background:none; border:1px solid transparent; border-radius:0; box-shadow:none; color:var(--ink-on-paper-low, var(--text-mid)); opacity:.55; cursor:pointer;
+  transition:opacity .2s ease, color .15s ease, border-color .15s ease;
+}
+.walk-nav[data-dir='prev']{ left:0; }
+.walk-nav[data-dir='next']{ right:0; }
+.walk-nav:hover, .walk-nav:focus-visible{ opacity:1; color:var(--choice); border-color:var(--choice); outline:none; }
+.walk-nav[aria-disabled='true']{ cursor:default; }
+.walk-nav[data-recede='true']{ opacity:0; pointer-events:none; }
+.walk-doors{ display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin-top:22px; }
+.walk-door{ display:inline-flex; align-items:center; gap:6px; padding:6px 12px; background:none; border:1px solid var(--accent-door); border-radius:0; box-shadow:none; color:var(--accent-door); font:inherit; font-size:12px; cursor:pointer; }
+.walk-door:hover, .walk-door:focus-visible{ color:var(--choice); border-color:var(--choice); outline:none; }
+[data-theme='flux'] .walk-door{ font-family:var(--font-chromeLabel); letter-spacing:.1em; }
+.walk-note{ color:var(--accent-door); font-size:13px; }
+.walk-rail{ display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin-top:18px; }
+.walk-mark{ width:24px; height:24px; padding:0; display:flex; align-items:center; justify-content:center; background:none; border:1px solid transparent; border-radius:50%; color:var(--accent-door); cursor:pointer; opacity:.8; }
+.walk-mark[data-state='leaf']{ opacity:1; }
+.walk-mark[data-state='current']{ border-color:var(--choice); color:var(--choice); opacity:1; }
+[data-theme='flux'] .walk-mark{ width:12px; height:12px; border-radius:0; border:1px solid var(--line-active); color:transparent; opacity:1; }
+[data-theme='flux'] .walk-mark svg{ display:none; }
+[data-theme='flux'] .walk-mark[data-state='leaf']{ background:var(--sage); border-color:var(--sage); }
+[data-theme='flux'] .walk-mark[data-state='current']{ border:1px solid var(--line-active); border-left:3px solid var(--orange); }
+.walk-brackets{ inset:-6px; }
+.walk-trk{ position:absolute; top:8px; right:12px; font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.14em; color:var(--ink-on-card-meta); pointer-events:none; }
+/* a small screen (frame 07): the doors stack, the next card peeks beneath */
+.walk[data-narrow='true'] .walk-doors{ flex-direction:column; align-items:stretch; width:min(100%, 360px); }
+.walk[data-narrow='true'] .walk-frame{ width:min(100%, 520px) !important; }
+.walk-peek{ width:min(100%, 520px); max-height:46px; overflow:hidden; margin-top:14px; border:1px solid var(--card-hairline); border-radius:0; background:var(--card-stock); opacity:.7; box-sizing:border-box; padding:10px 14px 0; }
+.walk-peek .walk-static{ font-size:13px; }
+.walk-empty{ min-height:240px; align-items:center; }
+
+/* the Journal as a Book: THUMBNAILS - a grid of tall pages, the current one in brass */
+.book-thumbs{ display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:18px; padding:30px 16px; }
+.book-thumb{ display:flex; flex-direction:column; align-items:stretch; gap:6px; padding:0; background:none; border:0; border-radius:0; cursor:pointer; color:var(--accent-door); font:inherit; font-size:12px; text-align:left; }
+.book-thumb-sheet{ display:block; aspect-ratio:3 / 4; padding:10px; box-sizing:border-box; overflow:hidden; background:var(--card-stock); color:var(--ink-on-card); border:1px solid var(--card-hairline); border-radius:0; box-shadow:none; font-family:var(--font-prose); font-size:10px; line-height:1.4; white-space:pre-wrap; }
+.book-thumb[data-current='true'] .book-thumb-sheet{ border-color:var(--choice); }
+.book-thumb[data-current='true'] .book-thumb-caption{ color:var(--choice); }
+.book-thumb:hover .book-thumb-sheet, .book-thumb:focus-visible .book-thumb-sheet{ border-color:var(--choice); }
+.book-thumb:focus-visible{ outline:none; }
+
+/* THUMBNAILS BY KIND (frame 01), in the Boards pop-out: a Board is WIDE, a Deck a short STACK of three (with its "n of m begun" fact), a Book TALL with a spine line. No kind words as subtitles. */
+.wz-thumb{ display:inline-block; position:relative; flex:0 0 auto; box-sizing:border-box; margin-right:10px; vertical-align:middle; }
+.wz-thumb[data-thumb='board']{ width:44px; height:30px; background:var(--card-stock); border:1px solid var(--card-hairline); border-radius:0; }
+.wz-thumb[data-thumb='deck']{ width:44px; height:30px; background:var(--ink-900); border:1px solid var(--accent-door); border-radius:0; box-shadow:none; }
+.wz-thumb[data-thumb='deck']::before, .wz-thumb[data-thumb='deck']::after{ content:''; position:absolute; box-sizing:border-box; width:100%; height:100%; border:1px solid var(--accent-door); border-radius:0; background:var(--ink-900); }
+.wz-thumb[data-thumb='deck']::before{ top:-3px; left:3px; z-index:-1; }
+.wz-thumb[data-thumb='deck']::after{ top:-6px; left:6px; z-index:-2; }
+.wz-thumb[data-thumb='book']{ width:28px; height:38px; background:var(--card-stock); border:1px solid var(--card-hairline); border-left:3px solid var(--accent-door); border-radius:0; }
+.wz-thumb-fact{ display:block; color:var(--ink-on-paper-low, var(--text-low)); font-size:11px; }
+.wz-section-open:has(.wz-thumb){ display:flex; align-items:center; }
+.wz-thumb-text{ display:inline-flex; flex-direction:column; align-items:flex-start; text-align:left; }
+
 /* ── BM1 — the Board's Own Modes ─────────────────────────────────────────────
    The board's mode strip mirrors .desk-mode-tab's ratified grammar (no brass
    fill; an olive --accent-rest hairline under the active tab — ab2.mjs S7's own
