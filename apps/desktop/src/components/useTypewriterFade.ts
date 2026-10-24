@@ -105,12 +105,21 @@ interface Options {
   // shared TYPEWRITER_BAND exactly, byte-identical to pre-FX3 — the Journal
   // carve-out. ModeStage.tsx/ScriptEditor.tsx pass CONTAINER_HOLD_BAND.
   holdBand?: number;
+  // PAGE-SIZE - the ZOOM (ModeStage, framed prose with Typewriter on): the page is transformed, and the writing line is held at `anchor` of
+  // `holdRef`'s box (the page column the band mask is drawn in) instead of `holdBand` of the scroller. Omitted everywhere else - unchanged.
+  zoom?: { holdRef: React.RefObject<HTMLElement>; anchor: number };
 }
 
-export function useTypewriterFade({ enabled, containerRef, editorSelector, useWindowScroll, scrolledTarget, holdBand }: Options): void {
+export function useTypewriterFade({ enabled, containerRef, editorSelector, useWindowScroll, scrolledTarget, holdBand, zoom: zoomOpt }: Options): void {
+  // the effect keys on the zoom's PARTS (a caller builds a new options object every render; keyed on that, the engine would restart - and lose
+  // its engaged state - on every keystroke)
+  const zoomOn = !!zoomOpt;
+  const zoomHoldRef = zoomOpt?.holdRef;
+  const zoomAnchor = zoomOpt?.anchor ?? 0;
   useEffect(() => {
     const container = containerRef.current;
     if (!container || !enabled) return;
+    const zoom = zoomOn && zoomHoldRef ? { holdRef: zoomHoldRef, anchor: zoomAnchor } : undefined;
     const holdBandValue = holdBand ?? TYPEWRITER_BAND;
     const scrolledEl = scrolledTarget?.current ?? container;
     const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -151,6 +160,12 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       const ed = container.querySelector(editorSelector) as HTMLElement | null;
       return ed ? (parseFloat(getComputedStyle(ed).lineHeight) || 28) : 28;
     };
+    // PAGE-SIZE - the zoom the page is drawn at (DeskFrame's --wz-zoom, inherited); 1 whenever this call is not zoomed
+    const zoomScale = () => {
+      if (!zoom) return 1;
+      const z = parseFloat(getComputedStyle(container).getPropertyValue('--wz-zoom'));
+      return z > 0 ? z : 1;
+    };
     // S1 — the fade band (line-height based) and the fresh-page start offset
     // (stage-height based) are both STATIC CSS the writing surface reads via
     // custom properties; this just keeps them in step with the actual
@@ -167,6 +182,11 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       // stops — see index.css.
       scrolledEl.style.setProperty('--tw-fade-start', `${Math.round(lineHeight())}px`);
       scrolledEl.style.setProperty('--tw-start-offset', `${Math.round(stageHeight * START_FRACTION)}px`);
+      // PAGE-SIZE - the band mask's line unit, in SCREEN pixels (the real line height x the zoom), written where the mask is drawn
+      if (zoom?.holdRef.current) {
+        zoom.holdRef.current.style.setProperty('--tw-lh', `${(lineHeight() * zoomScale()).toFixed(2)}px`);
+        zoom.holdRef.current.style.setProperty('--tw-anchor', `${zoom.anchor * 100}%`);   // the ONE anchor: the hold below and the mask read it
+      }
     };
     const band = () => {
       measure();
@@ -242,7 +262,10 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       }
       if (caretBottom === null) return;
       const box = readBox(!!useWindowScroll, container);
-      const within = caretBottom - box.top;
+      // PAGE-SIZE - zoomed, the page is TRANSFORMED: rects are screen pixels, the scroller's scrollTop and clientHeight are layout pixels. Every
+      // screen distance is divided by the zoom before it meets the scroller, so one line of advance is still one LAYOUT line.
+      const sc = zoomScale();
+      const within = (caretBottom - box.top) / sc;
       // FX5 S1 (a, c) — "document space": the caret's position independent
       // of the CURRENT scroll offset. The OLD design recomputed an ABSOLUTE
       // `target = box.scrollTop + delta` on every keystroke, which always
@@ -260,7 +283,12 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       // the writer just produce" from "where did the viewport happen to be
       // sitting" — the two concerns S1 asks to be decoupled.
       const docCaretBottom = within + box.scrollTop;
-      const thresholdPx = box.clientHeight * holdBandValue;
+      // PAGE-SIZE - zoomed, the hold is the writing line's TOP at `anchor` of the hold element (the page column, the box the band mask is drawn
+      // in), as Cursor's mockup places it - so the caret's BOTTOM sits one line below that, inside the mask's full-strength band.
+      const holdEl = zoom?.holdRef.current ?? null;
+      const thresholdPx = holdEl
+        ? (holdEl.getBoundingClientRect().top + holdEl.getBoundingClientRect().height * zoom!.anchor - box.top) / sc + lineHeight()
+        : box.clientHeight * holdBandValue;
 
       if (!engaged) {
         if (within - thresholdPx <= 1) { setScrolled(); return; } // fresh/short content: don't scroll, don't fade (C2)
@@ -329,5 +357,5 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       window.removeEventListener('resize', measure);
       cancelAnimationFrame(raf);
     };
-  }, [enabled, containerRef, editorSelector, useWindowScroll, scrolledTarget, holdBand]);
+  }, [enabled, containerRef, editorSelector, useWindowScroll, scrolledTarget, holdBand, zoomOn, zoomHoldRef, zoomAnchor]);
 }

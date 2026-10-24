@@ -52,6 +52,10 @@ sheets, toasts, any future panel or menu. **Navigation** (may replace, must
 be return-faithful): DeskRail destinations, the notebook pager, Pages⟷Plan,
 opening any document from any list.
 
+**The one ruled exception (page-size, Oct 2026):** the Typewriter zoom changes the page's rect on purpose
+(the same page transformed ~1.6x: no reflow, no unmount) and leaving returns the exact rect, scroll, caret
+and text. Nothing else may claim it (`docs/page-primacy-canon.md`).
+
 ## Harness scenarios persist
 Every ticket's verification scenario is a committed artifact, not a throwaway:
 `scripts/harness/<ticket>.mjs` (or the ticket's established harness location),

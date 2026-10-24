@@ -37,7 +37,9 @@ export function FluxBlockCaret() {
       setRect(null);
     };
 
-    const update = () => {
+    // `probe` false: a MOVED caret (below) is redrawn only from a rect the selection already gives - never by inserting the probe span, which
+    // would mutate the editor on every scroll frame (and the typewriter engine observes the editor's mutations).
+    const update = (probe = true) => {
       const sel = window.getSelection();
       if (!sel || !sel.rangeCount || !sel.isCollapsed) { clearActive(); return; }
       const anchor = sel.anchorNode;
@@ -47,6 +49,7 @@ export function FluxBlockCaret() {
 
       const range = sel.getRangeAt(0).cloneRange();
       let r = range.getClientRects()[0];
+      if (!r && !probe) return;   // keep the drawn caret; the next selectionchange resolves an empty line
       if (!r) {
         // Collapsed at an empty position (e.g. an empty line) — a
         // zero-width probe span resolves a rect the same way the RC-2
@@ -78,12 +81,25 @@ export function FluxBlockCaret() {
       }, 120);
     };
 
-    document.addEventListener('selectionchange', update);
+    // PAGE-SIZE (the Oct 13 addendum: the block caret went stale when Typewriter toggled) - the caret can MOVE without the selection changing:
+    // the zoom transforms the page, a typewriter glide scrolls it, a resize rescales it. Each now redraws it too, batched into one frame (scroll
+    // is heard in the CAPTURE phase so an inner scroller's scroll counts; `wz-caret-moved` is ModeStage's own announcement when the zoom toggles).
+    let raf = 0;
+    const onSel = () => update(true);
+    const moved = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => update(false)); };
+    document.addEventListener('selectionchange', onSel);
     document.addEventListener('focusout', onBlurCheck, true);
+    document.addEventListener('scroll', moved, { capture: true, passive: true });
+    document.addEventListener('wz-caret-moved', moved);
+    window.addEventListener('resize', moved);
     update();
     return () => {
-      document.removeEventListener('selectionchange', update);
+      cancelAnimationFrame(raf);
+      document.removeEventListener('selectionchange', onSel);
       document.removeEventListener('focusout', onBlurCheck, true);
+      document.removeEventListener('scroll', moved, { capture: true });
+      document.removeEventListener('wz-caret-moved', moved);
+      window.removeEventListener('resize', moved);
       clearActive();
     };
   }, [theme]);
