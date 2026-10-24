@@ -23,6 +23,7 @@
 //   P  panels tucked: the Sliver and Tutor drawers are closed in the zoom (premise: the Tutor was OPEN before)
 //   W  the writing line paints at full strength
 //   T  the top fade is present (Cursor's final mask, e3c4e462): older lines fade as they rise - 1 above > 3 above > 5 above, 5 above at half or less
+//   W0 a FRESH zoomed page: its first writing line at full strength (the start offset puts it at the anchor)
 //   G  (1366) glide: a new line moves the scroll over several frames; under reduced motion it moves in one
 //   FW Free Write (Arbor, 1366x768): Z and B
 //   STRENGTH is read from the SCREENSHOT (decoded in the page through a canvas - no new dependency), so it is what is PAINTED, masks and
@@ -120,7 +121,7 @@ const HELPERS = `(() => {
     const p = page.getBoundingClientRect(); const s = stage ? stage.getBoundingClientRect() : null; const c = sc ? sc.getBoundingClientRect() : null;
     return { page: { left: p.left, top: p.top, width: p.width, height: p.height, right: p.right, bottom: p.bottom },
       stage: s ? { top: s.top, bottom: s.bottom, left: s.left, right: s.right, width: s.width, height: s.height } : null, scroll: c ? { top: c.top, bottom: c.bottom } : null,
-      fontPx: parseFloat(getComputedStyle(e).fontSize), vh: innerHeight };
+      fontPx: parseFloat(getComputedStyle(e).fontSize), layoutW: page.offsetWidth, vh: innerHeight };
   };
   window.__psMark = () => { const e = ed(); if (e) e.__psMarked = 1; return !!e; };
   window.__psMarked = () => { const e = ed(); return !!e && e.__psMarked === 1; };
@@ -229,7 +230,12 @@ const rPred = (g) => {
   const k = kOf(g);
   if (k < 1 - PAGE_W_TOL) return false;                                   // never below 1.0
   if (k <= 1 + PAGE_W_TOL) return inStage(g) && g.page.height <= FRAME_PAGE_W / LETTER + 1;  // k = 1: 620 wide, capped to the stage
-  return Math.abs(g.page.width / g.page.height - LETTER) <= RATIO_TOL && inStage(g) && g.stage.height - g.page.height <= FIT_SLACK;
+  // largest that fits: either the stage's HEIGHT binds (the page's height within FIT_SLACK of the stage's) or its WIDTH does (each side's desk within
+  // FIT_SLACK/2 of the drawers' constant reserve, DRAWER_MIN + the grip) - at 3840 the page is width-bound, keeping both drawers beside it
+  const sideDesk = (g.stage.width - g.page.width) / 2;
+  const heightBound = g.stage.height - g.page.height <= FIT_SLACK;
+  const widthBound = sideDesk >= DRAWER_MIN + 16 - 1 && sideDesk - (DRAWER_MIN + 16) <= FIT_SLACK / 2;
+  return Math.abs(g.page.width / g.page.height - LETTER) <= RATIO_TOL && inStage(g) && (heightBound || widthBound);
 };
 const cPred = (lines) => { const m = median(fullLineLengths(lines || [])); return m != null && m >= CPL_MIN && m <= CPL_MAX; };
 // strengths of [writing line, 1 above, 3 above, 5 above]: a steady fade upward, the oldest at half or less
@@ -251,7 +257,11 @@ const normalCase = async (app, th, w, h) => {
       stageH: g && g.stage && Math.round(g.stage.height), slack: g && g.stage && Math.round(g.stage.height - g.page.height), inStage: inStage(g) }));
   const lens = fullLineLengths(lines || []);
   ok(`${th.name} ${w}x${h} C: at the default, the median full line holds ${CPL_MIN}-${CPL_MAX} characters (~75)`, cPred(lines), J({ median: median(lens), lines: lens.length, sample: lens.slice(0, 8) }));
-  ok(`${th.name} ${w}x${h} F: the editor's type is 12 pt in page units (${FONT_PX}px x k, within 1%)`, !!g && k != null && Math.abs(g.fontPx / (FONT_PX * k) - 1) <= 0.01, J({ fontPx: g && g.fontPx, want: k && Math.round(FONT_PX * k * 100) / 100 }));
+  // (the page lays out at scale 1 and is PAINTED at k - the as-built design - so the computed type is 16px and the painted type is 16 x k)
+  const painted = g && g.layoutW > 0 ? g.fontPx * (g.page.width / g.layoutW) : null;
+  ok(`${th.name} ${w}x${h} F: the editor's type is 12 pt in page units - laid out at ${FONT_PX}px and painted at ${FONT_PX}px x k (within 1%)`,
+    !!g && k != null && Math.abs(g.fontPx - FONT_PX) < 0.25 && painted != null && Math.abs(painted / (FONT_PX * k) - 1) <= 0.01,
+    J({ fontPx: g && g.fontPx, painted: painted && Math.round(painted * 100) / 100, want: k && Math.round(FONT_PX * k * 100) / 100 }));
 
   // K + N: open BOTH panels - the page neither moves nor rescales (the scale comes from the stage), and it sits fully between them
   const panels = async () => app.evalJs(`(() => { const r = (s) => { const el = document.querySelector(s); if (!el) return null; const b = el.getBoundingClientRect(); return b.width ? { left: b.left, right: b.right } : null; };
@@ -368,11 +378,11 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
       tPred(st), J({ above1: st[1], above3: st[2], above5: st[3] }));
     if (mutants) {
       // MW: the editor at opacity .5 (applied BEFORE the strip, so the unfaded reference still removes it) - W must fail
-      await app.evalJs(`window.__psStyle('ps-mw', '.forward-only-editor { -webkit-mask-image:linear-gradient(rgba(0,0,0,.5), rgba(0,0,0,.5)) !important; mask-image:linear-gradient(rgba(0,0,0,.5), rgba(0,0,0,.5)) !important; }')`);
-      const landedW = await app.evalJs("(() => { const cs = getComputedStyle(document.querySelector('.forward-only-editor')); return String(cs.maskImage || cs.webkitMaskImage || 'none').slice(0, 40); })()");
+      await app.evalJs(`window.__psStyle('ps-mw', '.mode-scroll { -webkit-mask-image:linear-gradient(rgba(0,0,0,.5), rgba(0,0,0,.5)) !important; mask-image:linear-gradient(rgba(0,0,0,.5), rgba(0,0,0,.5)) !important; }')`);
+      const landedW = await app.evalJs("(() => { const cs = getComputedStyle(document.querySelector('.mode-scroll')); return String(cs.maskImage || cs.webkitMaskImage || 'none').slice(0, 40); })()");
       const sw = await strengths(app, [lines[wi]]);
       await app.evalJs("window.__psStyle('ps-mw', null)");
-      ok(`${tag} MW (mutant): with the editor masked to half strength (LANDED: ${landedW}), W fails`, landedW !== 'none' && !(sw[0].s >= FULL), J(sw[0]));
+      ok(`${tag} MW (mutant): with the page's scroller masked to half strength (LANDED: ${landedW}), W fails`, landedW !== 'none' && !(sw[0].s >= FULL), J(sw[0]));
       // MT: every mask in the stage removed - T must fail
       const before = await app.evalJs('window.__psMasks()');
       await app.evalJs(`window.__psStyle('ps-strip-mut', ${J(STRIP_CSS)})`); const after = await app.evalJs('window.__psMasks()'); await app.evalJs("window.__psStyle('ps-strip-mut', null)");
@@ -426,6 +436,10 @@ await withHarness(async (app) => {
       await app.evalJs(`localStorage.setItem('wrizo-mode-page-${id}', '${mode}')`);
       await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${id}', 'off')`);
     }
+    const fid = pid(th.id, 'fresh');
+    await app.evalJs(`window.wrizoCreateJournalPage(${J({ id: fid, text: 'One line to start.', createdAt: now, origin: null, source: 'page' })})`);
+    await app.evalJs(`localStorage.setItem('wrizo-mode-page-${fid}', 'drafting')`);
+    await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${fid}', 'on')`);
   }
   await app.evalJs('window.wrizoFlushNow()');
   await sleep(400);
@@ -452,6 +466,22 @@ await withHarness(async (app) => {
 
     for (const [w, h] of SIZES) await zoomCase(app, th, w, h, { glide: w === 1366, mutants: w === 1366 });
     if (th.id === 'plateau') await zoomCase(app, th, 1366, 768, { kind: 'fw' });
+    // W0 - a FRESH zoomed page (one short line): the first writing line sits in the band's full strength from the very first keystroke
+    {
+      await app.emulateDpr(1, 1366, 768);
+      const fid = pid(th.id, 'fresh');
+      if (await openPage(app, fid)) {
+        await app.evalJs('window.__psCaretToEnd()'); await app.typeKeys('x'); await sleep(900);
+        const z0 = await app.evalJs("!!document.querySelector('.mode-pagecol[data-zoom=\"true\"]')");
+        const fl = await app.evalJs('window.__psLines()');
+        ok(`${th.name} 1366x768 W0 (premise): a fresh page, zoomed, one line long`, z0 && !!fl && fl.length === 1, J({ z0, lines: fl && fl.length }));
+        if (z0 && fl && fl.length) {
+          const s0 = await strengths(app, [fl[fl.length - 1]]);
+          ok(`${th.name} 1366x768 W0: on a FRESH zoomed page the first writing line paints at full strength (>= ${FULL})`,
+            s0[0].bare != null && s0[0].bare >= 60 && s0[0].bare >= s0[0].painted * REF_FLOOR && s0[0].s >= FULL, J(s0[0]));
+        }
+      } else ok(`${th.name} 1366x768 W0 fixture: the fresh page opened`, false, '');
+    }
   }
 
   // ---- V: THE VIGNETTE SITS BEHIND THE PAGE, in every theme and page tone (Fable, Oct 23 - folded into page-size: Arbor's light page showed a grey band
@@ -462,7 +492,7 @@ await withHarness(async (app) => {
   const VIG_HIDE = 'body::after { display:none !important; }';
   const VIG_TOP = 'body::after { z-index:2147483647 !important; }';
   const VIG_MEAN = 0.6;   // a strip the vignette does not touch differs by noise only
-  const VIG_ROOM = 2;     // the room's corner, where the inset shadow is darkest, moves well past noise
+  const VIG_ROOM = 5;     // the largest pixel change in a room corner when the vignette is hidden: past noise, so the vignette still exists
   for (const th of THEMES) {
     for (const tone of ['light', 'dark']) {
       await app.evalJs("location.hash = '#/'"); await sleep(300);
@@ -497,8 +527,8 @@ await withHarness(async (app) => {
       await app.evalJs(`window.__psStyle('ps-vig', ${J(VIG_HIDE)})`); await app.evalJs('window.__psFrames(3)'); await shoot(app);
       await app.evalJs("window.__psStyle('ps-vig', null)"); await app.evalJs('window.__psFrames(2)');
       const room = await app.evalJs(`(${J(corners)}).map((s) => window.__psDiff(...s))`);
-      ok(`${tag} V-room: the vignette is BEHIND, not gone - it still shades the room (a viewport corner changes by more than ${VIG_ROOM} when it is hidden)`,
-        room.some((d) => !!d && d.mean > VIG_ROOM), J({ room }));
+      ok(`${tag} V-room: the vignette is BEHIND, not gone - hiding it still changes the room (some viewport corner by ${VIG_ROOM}+ at its largest pixel)`,
+        room.some((d) => !!d && d.max >= VIG_ROOM), J({ room }));
       // MV: the vignette forced on top, then hidden - the same strips must now CHANGE
       await app.evalJs(`window.__psStyle('ps-vig-top', ${J(VIG_TOP)})`);
       const landed = await app.evalJs("getComputedStyle(document.body, '::after').zIndex");

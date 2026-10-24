@@ -212,7 +212,15 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
   // Entering tucks both drawers (tools: they collapse, their grips stay); the Flux block caret is told the layout moved under it.
   const zoomed = !!framed && typewriterOn;
   const pagecolRef = useRef<HTMLDivElement>(null);
-  useEffect(() => { if (zoomed) tuckDrawers(); }, [zoomed]);
+  useEffect(() => {
+    if (!zoomed) return;
+    // focus that was INSIDE a drawer the zoom tucks would be stranded in an inert panel (the lane run on fb1e28fb: Enter on the Sliver's own
+    // Typewriter toggle turned the zoom on, the drawer tucked, and the next key went nowhere). It goes to the page - where the writer is about to write.
+    const a = document.activeElement as HTMLElement | null;
+    const stranded = !!a?.closest?.('.wz-sliver, .wz-tutor-panel, .desk-frame-tutor-panel-anchor');
+    tuckDrawers();
+    if (stranded) (scrollRef.current?.querySelector('.forward-only-editor') as HTMLElement | null)?.focus();
+  }, [zoomed]);
   useEffect(() => {
     const raf = requestAnimationFrame(() => document.dispatchEvent(new Event('wz-caret-moved')));
     return () => cancelAnimationFrame(raf);

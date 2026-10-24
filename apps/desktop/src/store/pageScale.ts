@@ -2,8 +2,9 @@
 //
 // The prose page is a US Letter sheet (docs/plans/page-size.md). At scale 1 it is 620 x 803px: Cursor's mockup sized the text column to a
 // 75-character line of 12 pt (16px) type and made that column the letter page's 6.5in between 1in margins, so ONE page-inch is 620 / 8.5 px.
-// Everything on the page - its width and height, its margins, its type - is a multiple of that inch, so the page grows in SHAPE only and every
-// line breaks where it did at any scale.
+// Everything on the page - its width and height, its margins, its type - is a multiple of that inch. The page always LAYS OUT at scale 1 and is
+// PAINTED at the scale by a transform, so it grows in SHAPE only and every line breaks exactly where it did at any scale (scaling the layout
+// itself re-broke lines at 2560 and 3840 - the lane run on fb1e28fb: glyph advances do not scale exactly linearly).
 //
 // THE LAW (ruling c): the scale comes from the STAGE's size alone, never from an open panel (paper never reflows for chrome). It is smooth, not
 // stepped: the largest scale at which the whole letter page fits the stage's height with a small margin, never below 1.0. The width term keeps
@@ -28,6 +29,14 @@ export function pageScaleFor(stageW: number, stageH: number, pageTop: number): n
   const byWidth = (stageW - 2 * DRAWER_RESERVE) / PAGE_W_BASE;
   const k = Math.min(byHeight, byWidth);
   return Number.isFinite(k) && k > 1 ? k : 1;
+}
+
+/** The page's LAYOUT height at base scale `k`: the letter height, or less where the stage cannot hold the painted page (ruling d - capped to the
+ *  stage, the text scrolls inside). Painted, it is this x k. */
+export function pageLayoutHeightFor(stageH: number, pageTop: number, k: number): number {
+  if (!(stageH > 0) || !(k > 0)) return PAGE_H_BASE;
+  const room = (stageH - Math.max(0, pageTop) - PAGE_FENCE) / k;
+  return Math.max(0, Math.min(PAGE_H_BASE, room));
 }
 
 /** The zoom for a page of base scale `k` on a stage this wide: ~1.6, or less where 1.6 would not fit (panels tucked). Never below 1. */
