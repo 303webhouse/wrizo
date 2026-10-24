@@ -76,7 +76,21 @@ const PEN_INKS_FLUX_LIGHT: Record<string, string> = {
   '#1a0f06': '#042632',
 };
 
+// MACHINA (Oct 24; Nick: "Sprint page text is nearly invisible, dark on dark"): the SAME gap Flux's dark page had, and it was never closed for Machina - effectivePenInk only knew Flux, so Free Write
+// (the Sprint tab: its rail hands the editor a PEN ink) painted the raw default swatch #1a0f06 on Machina's dark page: 1.06:1 cool / 1.04:1 neutral. The default swatch becomes the theme's OWN ink
+// as a CSS variable (var(--ink-on-paper): the page's own text colour in every cast and tone, 14.6-17.7:1, so it follows a cast switch with no JS); red and blue are lightened on the dark page
+// like Flux's (8.1-8.7:1) and left alone on the light one. The substitution is display-only - the stored/selected swatch is still the hex.
+const PEN_DEFAULT_INK = '#1a0f06';
+const PEN_INKS_MACHINA_DARK: Record<string, string> = {
+  '#b8231f': '#FF9088',
+  '#1f4fb8': '#8AB4FF',
+};
+
 function effectivePenInk(ink: string, theme: ThemeId, pageTone: PageTone): string {
+  if (theme === 'machina') {
+    if (ink === PEN_DEFAULT_INK) return 'var(--ink-on-paper)';
+    return pageTone === 'dark' ? (PEN_INKS_MACHINA_DARK[ink] ?? ink) : ink;
+  }
   if (theme !== 'flux') return ink;
   if (pageTone === 'dark') return PEN_INKS_FLUX_DARK[ink] ?? ink;
   return PEN_INKS_FLUX_LIGHT[ink] ?? ink;
