@@ -180,6 +180,14 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     // one line at a time, and no line lost. A glide that never lands (a writer's own scroll took over) stops waiting after GLIDE_MS.
     let glideTarget: number | null = null;
     let glideAt = 0;
+    // PAGE-SIZE - A GLIDE IS PAID ONLY WHEN IT LANDS. The lane run on d80010ae caught G's cause in its own trace: the engine issued its one-line
+    // smooth scroll (972 -> 999) and credited the line at once - and the scroll never moved (972 at 1s and at 1.5s): the browser CANCELLED the
+    // smooth scroll (its own caret-into-view on the next keystroke is the likely canceller). The next pass saw nothing owed and the writing line
+    // stayed a line low. Now a glide that ends short of its target - the box still between where it started and where it was going - has its
+    // unscrolled remainder owed again, and is re-issued. A box that went BACK past where the glide began is the writer's own scroll: honoured,
+    // as before (FX5 S1 c). A timer re-checks just after each glide's time, so a lost line is recovered even if the writer stops typing.
+    let glideFrom: number | null = null;
+    let verifyTimer: ReturnType<typeof setTimeout> | null = null;
     const GLIDE_MS = 600;
     // S1 — the fade band (line-height based) and the fresh-page start offset
     // (stage-height based) are both STATIC CSS the writing surface reads via
@@ -325,6 +333,13 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         if (trace) trace.push({ d: 'engage', within: Math.round(within), threshold: Math.round(thresholdPx), top: Math.round(box.scrollTop) });
         prevDocCaretBottom = docCaretBottom - (within - thresholdPx);
       }
+      if (engaged && !reduce && glideTarget != null && glideFrom != null && performance.now() - glideAt >= GLIDE_MS
+          && box.scrollTop >= glideFrom - 1 && box.scrollTop < glideTarget - 1) {
+        const owed = glideTarget - box.scrollTop;
+        prevDocCaretBottom = (prevDocCaretBottom as number) - owed;
+        if (trace) trace.push({ d: 'lost', from: Math.round(glideFrom), target: Math.round(glideTarget), at: Math.round(box.scrollTop), owed: Math.round(owed) });
+        glideTarget = null; glideFrom = null;
+      }
       const advance = docCaretBottom - (prevDocCaretBottom as number);
       if (advance > 1) {
         // Never more than one line-height per call, however large the raw
@@ -347,7 +362,9 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         const to = Math.min(box.scrollTop + step, maxTop);
         box.setScrollTop(to, !reduce);
         if (trace) trace.push({ d: 'step', from: Math.round(box.scrollTop), to: Math.round(to), maxTop: Math.round(maxTop), advance: Math.round(advance) });
-        glideTarget = to; glideAt = performance.now();
+        glideFrom = box.scrollTop; glideTarget = to; glideAt = performance.now();
+        if (verifyTimer) clearTimeout(verifyTimer);
+        verifyTimer = setTimeout(() => { verifyTimer = null; schedule(); }, GLIDE_MS + 50);   // did it land? (see glideFrom's comment)
         prevDocCaretBottom = (prevDocCaretBottom as number) + step;
         // FX5 review fix — this chained catch-up frame MUST be tracked into
         // the SAME `raf` variable `schedule()` uses, not fired as a raw
@@ -393,6 +410,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       scrollListenTarget.removeEventListener('scroll', setScrolled);
       window.removeEventListener('resize', measure);
       cancelAnimationFrame(raf);
+      if (verifyTimer) clearTimeout(verifyTimer);
     };
   }, [enabled, containerRef, editorSelector, useWindowScroll, scrolledTarget, holdBand, zoomOn, zoomHoldRef, zoomAnchor]);
 }

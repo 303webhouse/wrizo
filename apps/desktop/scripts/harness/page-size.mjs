@@ -29,6 +29,7 @@
 //   STRENGTH is read from the SCREENSHOT (decoded in the page through a canvas - no new dependency), so it is what is PAINTED, masks and
 //   all: a line's ink = the largest colour distance from its own commonest colour (the paper); its strength = ink as painted / ink with
 //   every mask and opacity in the stage stripped. The stripped reference is a premise: it must itself show ink.
+//   I  (Nick, Oct 24) the skin changes ONLY the skin: every skin (light + dark) has the same page box, margins, type size and zoom band/anchor (±1px)
 //   V  (Fable, Oct 23) the vignette sits BEHIND the page in every theme and page tone: the paper's foot and lower corners paint the same with it hidden
 //   V-room  and it is behind, not GONE: a corner of the room still changes when it is hidden
 //   MUTANTS (runtime, each asserts it LANDED before its predicate is read): MV the vignette forced back on top (V fails); MR page forced 760 wide; MC type at 12px; MB letter-spacing
@@ -167,6 +168,16 @@ const HELPERS = `(() => {
   return true;
 })()`;
 const install = (app) => app.evalJs(HELPERS);
+// I - the geometry a skin must not change: the page box (painted), its padding and type (layout px), its transform; zoomed, the band's anchor, its
+// line unit and the column's mask as computed
+const IDENT_PROBE = `(() => { const p = document.querySelector('.mode-page'); const e = document.querySelector('.forward-only-editor'); const col = document.querySelector('.mode-pagecol');
+  if (!p || !e || !col) return null; const r = p.getBoundingClientRect(); const ps = getComputedStyle(p); const cs = getComputedStyle(col);
+  const R = (n) => Math.round(n * 10) / 10;
+  return { page: { left: R(r.left), top: R(r.top), width: R(r.width), height: R(r.height) }, padT: parseFloat(ps.paddingTop), padR: parseFloat(ps.paddingRight), padB: parseFloat(ps.paddingBottom), padL: parseFloat(ps.paddingLeft),
+    fontPx: parseFloat(getComputedStyle(e).fontSize), transform: ps.transform, zoom: col.getAttribute('data-zoom'), anchor: cs.getPropertyValue('--tw-anchor').trim(),
+    lh: parseFloat(cs.getPropertyValue('--tw-lh')) || null, mask: String(cs.webkitMaskImage || cs.maskImage || 'none') }; })()`;
+const ident = {};
+const IDENT_TOL = 1;   // Nick's law, ±1px
 
 // strip every MASK the stage can paint, so a line's UNFADED ink can be read (layout is untouched: a mask never moves a line). MASKS ONLY - the red run (143)
 // showed why: the first cut also forced opacity:1 on everything inside the page, which UNHID an overlay and made the "unfaded" reference read LESS ink than
@@ -585,7 +596,54 @@ await withHarness(async (app) => {
       await app.evalJs("window.__psStyle('ps-vig-top', null)");
       ok(`${tag} MV (mutant): with the vignette forced ON TOP (LANDED: z-index ${landed}), the paper's foot CHANGES when it is hidden - V fails`,
         landed === '2147483647' && !onTop.every((d) => !!d && d.mean <= VIG_MEAN), J({ onTop }));
+      // I - THE SKIN CHANGES ONLY THE SKIN (Nick, Oct 24): this skin's geometry, normal and zoomed, at two sizes - compared across skins below
+      const skin = `${th.name} ${tone}`;
+      ident[skin] = {};
+      for (const [iw, ih] of [[1366, 768], [1920, 1080]]) {
+        const did = pid(th.id, 'draft');
+        await app.emulateDpr(1, iw, ih);
+        await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${did}', 'off')`);
+        if (!(await openPage(app, did))) { ident[skin][iw] = null; continue; }
+        const normal = await app.evalJs(IDENT_PROBE);
+        // MI (the mutant, once): Flux dark's page padding widened 90px - the identity below must catch it (asserted to have LANDED)
+        let mutated = null;
+        if (th.id === 'flux' && tone === 'dark' && iw === 1366) {
+          await app.evalJs("window.__psStyle('ps-mi', \"[data-theme='flux'] .desk-frame-stage--prose .mode-page { padding-left: 90px !important; }\")"); await sleep(300);
+          mutated = await app.evalJs(IDENT_PROBE);
+          await app.evalJs("window.__psStyle('ps-mi', null)"); await sleep(200);
+        }
+        await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${did}', 'on')`);
+        const zoomed = (await openPage(app, did)) ? await app.evalJs(IDENT_PROBE) : null;
+        await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${did}', 'off')`);
+        ident[skin][iw] = { normal, zoomed, mutated };
+      }
     }
+  }
+  // I: every skin's geometry equals the FIRST skin's (Arbor light) within IDENT_TOL px - the page box, its margins, its type size; zoomed, the page
+  // box, the band's anchor and line unit and the mask's own stops. Line breaks are NOT compared (the law allows them to differ by a word).
+  {
+    const skins = Object.keys(ident);
+    const base = skins[0];
+    const near = (a, b) => a != null && b != null && Math.abs(a - b) <= IDENT_TOL;
+    const sameNormal = (a, b) => !!a && !!b && ['left', 'top', 'width', 'height'].every((k) => near(a.page[k], b.page[k]))
+      && ['padT', 'padR', 'padB', 'padL'].every((k) => near(a[k], b[k])) && near(a.fontPx, b.fontPx) && a.transform === b.transform;
+    const sameZoom = (a, b) => !!a && !!b && a.zoom === 'true' && b.zoom === 'true' && ['left', 'top', 'width', 'height'].every((k) => near(a.page[k], b.page[k]))
+      && a.anchor === b.anchor && near(a.lh, b.lh) && a.mask === b.mask;
+    ok(`I (premise): every registered skin, light and dark, was measured at 1366 and 1920, normal and zoomed (${skins.length} skins)`,
+      skins.length === THEMES.length * 2 && skins.every((s) => [1366, 1920].every((w) => ident[s][w] && ident[s][w].normal && ident[s][w].zoomed)), J(skins));
+    for (const w of [1366, 1920]) {
+      for (const s of skins.slice(1)) {
+        const a = ident[base][w]; const b = ident[s][w];
+        ok(`I ${s} vs ${base} @ ${w}: the NORMAL page is the same box, the same margins and the same type size (within ${IDENT_TOL}px) - the skin changed only the skin`,
+          !!a && !!b && sameNormal(a.normal, b.normal), J({ base: a && a.normal, here: b && b.normal }));
+        ok(`I ${s} vs ${base} @ ${w}: the ZOOM is the same - its page box, the band's anchor and line unit, the mask's stops (within ${IDENT_TOL}px)`,
+          !!a && !!b && sameZoom(a.zoomed, b.zoomed), J({ base: a && a.zoomed, here: b && b.zoomed }));
+      }
+    }
+    const mi = ident['Flux dark'] && ident['Flux dark'][1366] && ident['Flux dark'][1366].mutated;
+    const miBase = ident[base] && ident[base][1366] && ident[base][1366].normal;
+    ok('MI (mutant): with Flux dark\'s page padding widened 90px (LANDED: its left padding moved), the identity check FAILS - it can see a skin changing the size',
+      !!mi && !!miBase && Math.abs(mi.padL - miBase.padL) >= 30 && !sameNormal(miBase, mi), J({ base: miBase, mutated: mi }));
   }
   await app.evalJs("localStorage.setItem('wrizo-theme-prefs', " + J(J({ voice: 'serif', page: 'light', fade: 'on' })) + ")");
 
