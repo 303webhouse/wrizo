@@ -229,9 +229,25 @@ const stripC = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, ''
 ok("M11: Machina loads the four slots' faces (Plex Mono 500; Plex Sans 400/500/600; Plex Serif 400/500 + italic 400; Atkinson 400/700) only for 'machina' - ensureThemeFonts gates on the theme, the registered loader names the nine",
   /theme !== 'machina'/.test(tf) && /registerThemeFonts\('machina'/.test(tff) && ['ibm-plex-mono/500', 'ibm-plex-sans/400', 'ibm-plex-sans/500', 'ibm-plex-sans/600', 'ibm-plex-serif/400.css', 'ibm-plex-serif/500', 'ibm-plex-serif/400-italic', 'atkinson-hyperlegible/400', 'atkinson-hyperlegible/700'].every((f) => tff.includes(f)), '');
 // the Oct 24 train-#6 fix: nothing the harnesses' store loaders bundle may name a font package (esbuild resolves the css and dies on its .woff2); the literals live in themeFontFaces.ts, which only main.tsx imports
-const importers = readdirSync(SRC, { recursive: true }).map(String).filter((f) => /\.(ts|tsx)$/.test(f) && !/(^|[\\/])themeFontFaces\.ts$/.test(f)).filter((f) => /themeFontFaces/.test(readFileSync(join(SRC, f), 'utf8')));
-ok('M11: themeFonts.ts (reached from store/theme.ts, which the harness loaders bundle) names NO font package, and store/themeFontFaces.ts is imported by main.tsx ALONE - so no store loader can reach a literal @fontsource import',
-  !/@fontsource/.test(stripC(tf)) && /^import '\.\/store\/themeFontFaces';$/m.test(main) && importers.length === 1 && importers[0] === 'main.tsx', JSON.stringify(importers));
+// (comments are stripped from EVERY file before matching: themeFonts.ts's own explanatory comments name "@fontsource" and "store/themeFontFaces.ts" in prose - only CODE counts)
+const tsFiles = readdirSync(SRC, { recursive: true }).map(String).filter((f) => /\.(ts|tsx)$/.test(f)).map((f) => [f, stripC(readFileSync(join(SRC, f), 'utf8'))]);
+const IMPORTS_FACES = /(?:\bfrom\s*|\bimport\s*\(?\s*)['"][^'"]*themeFontFaces['"]/;
+// the M11 claim as a predicate over (themeFonts.ts code, every file's code, main.tsx code), so the mutants below re-run the SAME predicate
+const m11Names = (tfCode, files, mainCode) => {
+  const importers = files.filter(([f, code]) => !/(^|[\\/])themeFontFaces\.ts$/.test(f) && IMPORTS_FACES.test(code)).map(([f]) => f);
+  return { pass: !/@fontsource/.test(tfCode) && /import\s+'\.\/store\/themeFontFaces'/.test(mainCode) && importers.length === 1 && importers[0] === 'main.tsx', importers };
+};
+const m11Real = m11Names(stripC(tf), tsFiles, stripC(main));
+ok('M11: themeFonts.ts (reached from store/theme.ts, which the harness loaders bundle) names NO font package IN CODE, and store/themeFontFaces.ts is imported by main.tsx ALONE - so no store loader can reach a literal @fontsource import',
+  m11Real.pass, JSON.stringify(m11Real.importers));
+{
+  const withLiteral = m11Names(stripC(tf + "\nvoid import('@fontsource/ibm-plex-mono/500.css');\n"), tsFiles, stripC(main));
+  ok('MUTANT: a REAL literal import(\'@fontsource/ibm-plex-mono/500.css\') added to themeFonts.ts (code, not a comment) - the M11 text check must go RED (the mutation LANDED: the real source passes)', m11Real.pass && !withLiteral.pass, '');
+  const inComment = m11Names(stripC(tf + "\n// import('@fontsource/ibm-plex-mono/500.css') - a comment only\n/* @fontsource/ibm-plex-sans */\n"), tsFiles, stripC(main));
+  ok('CONTROL: the same string in a COMMENT in themeFonts.ts leaves the M11 text check GREEN (only code counts - this is the false red b8 hit)', inComment.pass, '');
+  const second = m11Names(stripC(tf), [...tsFiles, ['store/theme.ts', "import './themeFontFaces';"]], stripC(main));
+  ok('MUTANT: a second STATIC importer of themeFontFaces (store/theme.ts) - the M11 sole-importer check must go RED (the mutation LANDED)', m11Real.pass && !second.pass && second.importers.includes('store/theme.ts'), JSON.stringify(second.importers));
+}
 {
   // the REAL failure, reproduced: bundle store/theme.ts with NO @fontsource externals (what the harness store loaders do). Must succeed on the real source, and must DIE on a literal import re-added to themeFonts.ts.
   const strict = (themeFontsText) => {

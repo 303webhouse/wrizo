@@ -172,12 +172,17 @@ ok('(P12, new) typewriterForPage resolves the theme default correctly for a page
 ok('(P6) the retired machinery is gone from the store: no seedTypewriterDefault, no DRAFT_TYPEWRITER_LINE_THRESHOLD (and no session flag, below)', v.retired === true, JSON.stringify(base.retired));
 
 // ---- source claims ------------------------------------------------------------------------------------------------------------------------
+const p7Reads = {};   // the default leg's own P7 reads, for the parked record at the foot (Machina's build)
 {
   const ws = read('store/writingSettings.ts'), theme = read('store/theme.ts'), pe = read('pages/PageEditor.tsx'), se = read('components/ScriptEditor.tsx');
-  const tc = /export const THEME_CONFIG: Record<ThemeId, ThemeConfig> = \{\s*plateau: \{ typewriterDefault: true \},\s*flux: \{ typewriterDefault: false \},\s*\};/.test(theme);
-  const slots = /machina: \{ typewriterDefault: false \}/.test(theme) && /nomad:\s+\{ typewriterDefault: true \}/.test(theme) && /volant:\s+TBD/.test(theme)
-    && !/^\s*(machina|nomad|volant):/m.test(theme.replace(/\/\/.*$/gm, ''));
-  ok('(P7) the default is a VALUE in each theme\'s config (plateau true, flux false), and Machina (off), Nomad (on) and Volant (TBD) are marked slots in comments - not registered, not guessed', tc && slots, JSON.stringify({ tc, slots }));
+  // SUPERSEDED (Machina's build, Phase A, Oct 22): P7 used to say "the default is a VALUE in each theme's config (plateau true, flux false), and Machina (off), Nomad (on) and Volant (TBD) are marked slots
+  // in comments - not registered, not guessed" - its THEME_CONFIG regex wanted exactly plateau + flux, and its slots check wanted Machina as a comment-only slot. Machina is a registered theme now (typewriterDefault
+  // false - the very value the old comment marked); Nomad (on) and Volant (TBD) are still comment-only slots. The original is quoted verbatim in the PARKED record at the foot; the live successor is below.
+  const tc = /export const THEME_CONFIG: Record<ThemeId, ThemeConfig> = \{\s*plateau: \{ typewriterDefault: true \},\s*flux: \{ typewriterDefault: false \},\s*machina: \{ typewriterDefault: false \},\s*\};/.test(theme);
+  const slots = /nomad:\s+\{ typewriterDefault: true \}/.test(theme) && /volant:\s+TBD/.test(theme)
+    && !/^\s*(nomad|volant):/m.test(theme.replace(/\/\/.*$/gm, ''));
+  p7Reads.tc = tc; p7Reads.slots = slots;
+  ok('(P7) [Machina successor] the default is a VALUE in each REGISTERED theme\'s config (plateau true, flux false, machina false), and Nomad (on) and Volant (TBD) are marked slots in comments - not registered, not guessed', tc && slots, JSON.stringify({ tc, slots }));
   ok('(P8) the session-only flag is gone: no explicitlySetThisSession anywhere in the store', !/explicitlySetThisSession/.test(ws.replace(/\/\/.*$/gm, '')), '');
   ok('(P9) PageEditor reads the page\'s memory ONCE, at mount, and only when the page opens into Draft (Free Write never calls it); the page is held only while Draft is mounted',
     /useEffect\(\(\) => \{\n[\s\S]{0,1800}?if \(mode === 'drafting'\) \{ enterPageTypewriter\(id, initialText\.trim\(\)\.length === 0\); typewriterEnteredRef\.current = true; \}[^\n]*\n\s*\/\/ eslint-disable-next-line react-hooks\/exhaustive-deps\n\s*\}, \[\]\);/.test(pe)
@@ -223,6 +228,8 @@ if (process.env.HARNESS_PARKED === '1') {
     await untouched(async (m) => { m.enterPageTypewriter('p-sentinel-d', true); }));
   pok('PARKED (was "(P4) a pre-existing page with text opens OFF" via the shared field) - the shared field is UNTOUCHED by enterPageTypewriter for a pre-existing page that already holds text',
     await untouched(async (m) => { m.setTheme('plateau'); m.enterPageTypewriter('p-sentinel-e', false); }));
+  pok('PARKED (was "(P7) the default is a VALUE in each theme\'s config (plateau true, flux false), and Machina (off), Nomad (on) and Volant (TBD) are marked slots in comments - not registered, not guessed") - Machina\'s build (Phase A, Oct 22): Machina is a REGISTERED theme (THEME_CONFIG = plateau + flux + machina, typewriterDefault false); Nomad and Volant stay comment-only slots; live successor: (P7) [Machina successor]',
+    p7Reads.tc === true && p7Reads.slots === true, JSON.stringify(p7Reads));
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
