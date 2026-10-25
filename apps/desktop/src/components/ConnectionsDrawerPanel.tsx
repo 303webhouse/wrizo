@@ -2,6 +2,7 @@ import { useDeskLexicon } from '../store/deskLexicon';
 import { useBoardSnapshot, getBoardActions } from '../store/boardSelection';
 import { getJournalEntry, getUnbornEntry, removePageLink, subscribe } from '../store/persistence';
 import { requestDelete } from '../store/deleteGate';
+import { withoutFontMarks } from '../store/markRuns';   // POLISH #10 item 4
 import { graftsOf, hidePlanCard, pairedPageRow, planGroupOf, restorePageLink, unhidePlanCard, type GraftRow, type GraftSubject } from '../store/grafts';
 import { GraftPicker, type CameFrom } from './GraftPicker';
 import { useUnborn } from './UnbornSurface';
@@ -24,7 +25,7 @@ import { useLocation } from 'react-router-dom';
 //     faint place label on anything from another place.
 //   - NO placeholder text: with nothing grafted, the pane is the "+ Graft..." control alone.
 type Undo = { line: string; run: () => void } | null;
-const titleOf = (text: string | undefined): string => ((text ?? '').trim().split('\n')[0] ?? '').trim().slice(0, 60) || 'Untitled';
+const titleOf = (text: string | undefined): string => (withoutFontMarks(text ?? '').trim().split('\n')[0] ?? '').trim().slice(0, 60) || 'Untitled';
 
 export function ConnectionsDrawerPanel() {
   const { t } = useDeskLexicon();
