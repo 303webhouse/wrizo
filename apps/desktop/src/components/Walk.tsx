@@ -120,6 +120,14 @@ export function Walk(p: WalkProps) {
   }, [p.jumpToId, order]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   // KEYBOARD: left / right step (never while the caret is in the card - those keys move it), Enter on a focused door is the door's own, Esc leaves.
+  // The listener is registered ONCE and calls the latest handler through a ref: re-registering on every step (go changes with the card) moved it to the back of the document's listener list, behind any
+  // handler that takes the arrows first.
+  const keyRef = useRef<(e: KeyboardEvent) => void>(() => undefined);
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => keyRef.current(e);
+    document.addEventListener('keydown', h);
+    return () => document.removeEventListener('keydown', h);
+  }, []);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.defaultPrevented || e.isComposing) return;
@@ -131,8 +139,7 @@ export function Walk(p: WalkProps) {
       if (action === 'exit') { e.preventDefault(); p.onExit(); return; }
       if ((action === 'next' || action === 'prev') && !inEditor && !e.metaKey && !e.ctrlKey && !e.altKey) { e.preventDefault(); go(action === 'next' ? 1 : -1); }
     };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
+    keyRef.current = onKey;
   }, [go, p.onExit]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   // the chevrons return on a pointer move (anywhere in the Walk) or when the pointer leaves the card

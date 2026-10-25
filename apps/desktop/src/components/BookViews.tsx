@@ -38,14 +38,18 @@ export function BookFlip({ boardId, pages, onOpen, receded }: { boardId: string;
     setIndex(next);
   }, [pages.length, cur, page]);
 
+  const keyRef = useRef<(e: KeyboardEvent) => void>(() => undefined);   // registered once, latest handler through a ref (the Walk's reasoning: a re-registration per step moves the listener behind its rivals)
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
+    const h = (e: KeyboardEvent) => keyRef.current(e);
+    document.addEventListener('keydown', h);
+    return () => document.removeEventListener('keydown', h);
+  }, []);
+  useEffect(() => {
+    keyRef.current = (e: KeyboardEvent) => {
       if (e.defaultPrevented || e.isComposing || e.metaKey || e.ctrlKey || e.altKey) return;
       if ((e.target as HTMLElement | null)?.closest?.('[contenteditable="true"], input, textarea')) return;
       if (e.key === 'ArrowRight') { e.preventDefault(); go(1); } else if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
     };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
   }, [go]);
 
   if (!page) return <div className="walk walk-empty" data-walk data-book="flip"><div className="walk-doors"><span className="walk-note">{t('flipEmpty')}</span></div></div>;
