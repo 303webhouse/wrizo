@@ -365,7 +365,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
   // retunes; Journal's own window-scroll call is untouched (see
   // useTypewriterFade.ts's own comment).
   useTypewriterFade({ enabled: typewriterOn, containerRef: scrollRef, editorSelector: '.forward-only-editor', holdBand: CONTAINER_HOLD_BAND,
-    // PAGE-SIZE - zoomed, the writing line is held at ZOOM_ANCHOR (60%) of the page column, the anchor Cursor's band mask is drawn against
+    // PAGE-SIZE - zoomed, the writing line is held at ZOOM_ANCHOR (50% since polish #10 item 19) of the page column, the anchor Cursor's band mask is drawn against
     zoom: zoomed ? { holdRef: pagecolRef, anchor: ZOOM_ANCHOR } : undefined });
 
   // Pagination: watch the editor's content height against the sheet height. On
