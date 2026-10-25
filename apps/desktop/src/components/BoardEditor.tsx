@@ -480,7 +480,7 @@ export function BoardCardPopup({
     if (!inline || autoFocus) el.focus();
     // W1: placing the caret in a contenteditable focuses it in Chromium. An inline (Walk) card that mounts on a step must not take the caret - the arrows would then move it instead of stepping (the probe on the
     // fourth box turn: focus was in the card after one step). The Notes door, or a click in the card, puts the caret there.
-    else if (inline && !hadFocus && document.activeElement === el) el.blur();
+    else if (inline && !hadFocus) { if (document.activeElement === el) el.blur(); const sel = window.getSelection(); if (sel && sel.rangeCount > 0 && el.contains(sel.anchorNode)) sel.removeAllRanges(); }   // and no selection left inside it: a later selectionchange handler placing a caret would focus the editor again
 
     // I0 pen discipline (park-sweep audit finding — the retired inline
     // BoardTextBox editing branch carried this same guard; the popup's own
