@@ -6258,6 +6258,10 @@ a:focus-visible,
 /* Flux with the LIGHT page (frame 02-trace-flux-light): the Walk's card is the page, so it takes the paper trio and its ink - the dark Flux card tokens are the Open board's, whose cards stay dark */
 :root[data-theme='flux'][data-page='light'] .walk{ --card-stock:var(--paper); --card-hairline:var(--paper-edge); --ink-on-card:var(--ink-on-paper); --ink-on-card-low:var(--ink-on-paper-low); --ink-on-card-meta:var(--ink-on-paper-low); }
 :root[data-theme='flux'][data-page='light'] .walk-card .board-popup-editor::first-line{ color:var(--ink-on-paper); }
+/* The Walk's chrome (chevrons, doors, rail) sits on the room's dark ground in every theme and tone, so it takes the theme's ON-DARK door colour: the --accent-door token is the on-PAPER door (Arbor #4F5730 is 2.4:1 on the dark brown; Flux light's teal and Machina light's blue are darker still) */
+[data-theme='plateau'] :is(.walk-nav, .walk-doors, .walk-rail, .show-as){ --accent-door:#8f9a58; }
+:root[data-theme='flux'][data-page='light'] :is(.walk-nav, .walk-doors, .walk-rail, .show-as){ --accent-door:#57D0F5; }
+:root[data-theme='machina'][data-page='light'] :is(.walk-nav, .walk-doors, .walk-rail, .show-as){ --accent-door:#8FB0CC; }
 .walk-brackets{ inset:0 74px; }
 [data-theme='flux'] .walk-card:not(.walk-card-leaving){ border-left:3px solid var(--orange); }
 .walk-trk{ position:absolute; top:8px; right:12px; font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.14em; color:var(--ink-on-card-meta); pointer-events:none; }

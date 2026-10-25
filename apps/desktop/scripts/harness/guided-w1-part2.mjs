@@ -191,9 +191,15 @@ await withHarness(async (app) => {
         // Y - keyboard: left / right step, Esc leaves for the board's last shown view, Enter on the focused door
         await open('w1-deck', '.walk'); await rewind();
         const idx = async () => q("[...document.querySelectorAll('.walk-mark')].findIndex((m) => m.getAttribute('data-current') === 'true')");
+        // the caret is in the card when the Walk opens (the card is the page): the arrows move the caret there and never step; with focus out of the card they step
+        await q("document.querySelector('.walk-card .board-popup-editor')?.focus()"); await app.key('ArrowRight'); await sleep(400); const iEdit = await idx();
+        ok(`[${T}] with the caret in the card, ArrowRight moves the caret and does not step the Walk`, iEdit === 0, String(iEdit));
+        await q("document.activeElement && document.activeElement.blur && document.activeElement.blur()"); await sleep(150);
         const i0 = await idx(); await app.key('ArrowRight'); await sleep(500); const i1 = await idx(); await app.key('ArrowRight'); await sleep(500); const i2 = await idx(); await app.key('ArrowLeft'); await sleep(500); const i3 = await idx();
         ok(`[${T}] ArrowRight / ArrowLeft step through the cards (and stop at the ends)`, i0 === 0 && i1 === 1 && i2 === 2 && i3 === 1, JSON.stringify([i0, i1, i2, i3]));
-        await q("document.querySelector('.walk-door[data-door=notes]')?.focus()"); await app.key('Enter'); await sleep(400);
+        await q("document.querySelector('.walk-door[data-door=notes]')?.focus()");
+        { const ent = { key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 }; await app.cdp('Input.dispatchKeyEvent', { type: 'keyDown', text: '\r', ...ent }); await app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', ...ent }); }   // a trusted keyDown WITH its text: a native button activates on the keypress that app.key's rawKeyDown never sends
+        await sleep(400);
         const notesFocus = await q("!!document.activeElement && !!document.activeElement.closest('.walk-card')");
         ok(`[${T}] Enter on the focused Notes door puts the caret in the card`, notesFocus, String(notesFocus));
         await q("(window.wrizoBoardMode && window.wrizoBoardMode.set('w1-deck', 'outline'))"); await sleep(300);
@@ -204,12 +210,17 @@ await withHarness(async (app) => {
       }
 
       // D - dress in computed style
-      await open('w1-deck', '.walk'); await app.mouseMove(5, 450); await sleep(300);   // the pointer rests away from every control: hover is brass by design, the rest state is what is measured
+      await open('w1-deck', '.walk');
+      if (!(await q("!!document.querySelector('.walk-card')"))) { await showAs('walk'); await waitSoft("!!document.querySelector('.walk-card')", { label: 'walk back', timeout: 6000 }); await sleep(500); }   // the Esc check above left the board in Outline (the hash is unchanged, so open() is a no-op)
+      await app.mouseMove(5, 450); await sleep(300);   // the pointer rests away from every control: hover is brass by design, the rest state is what is measured
       if (full) {
         const dress = await q(`(() => { const sel = ['.walk-card', '.walk-door', '.walk-nav', '.show-as-btn', '.walk-stage']; const out = {}; for (const s of sel) { const e = document.querySelector(s); if (!e) { out[s] = null; continue; } const cs = getComputedStyle(e); const sh = cs.boxShadow; out[s] = { radius: cs.borderTopLeftRadius, blur: sh === 'none' ? 0 : Math.max(...sh.split(/rgba?\\([^)]*\\)/).join(' ').split(',').map((x) => parseFloat(x.trim().split(/\\s+/)[2] || '0'))) }; } const mark = document.querySelector('.walk-mark'); out.markRadius = mark && getComputedStyle(mark).borderTopLeftRadius; return out; })()`);
         ok(`[${T}] square edges and no blurred shadow on the Walk card, doors, chevrons, Show-as and stage (computed style); circles only for the rail marks`, ['.walk-card', '.walk-door', '.walk-nav', '.show-as-btn', '.walk-stage'].every((s) => dress[s] && parseFloat(dress[s].radius) === 0 && dress[s].blur === 0) && /50%|\d{2,}px/.test(dress.markRadius || ''), JSON.stringify(dress));
         if (theme === 'plateau') {
           const rest = await q("(() => [...document.querySelectorAll('.walk-door, .show-as-btn[aria-pressed=\"false\"]')].map((e) => getComputedStyle(e).color + '|' + getComputedStyle(e).borderTopColor))()");
+          const lumOf = (c) => { const m = /(\d+),\s*(\d+),\s*(\d+)/.exec(c); if (!m) return 0; const f = [m[1], m[2], m[3]].map((v) => { const s = +v / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; }); return 0.2126 * f[0] + 0.7152 * f[1] + 0.0722 * f[2]; };
+          const groundL = lumOf('rgb(29, 24, 20)'), doorL = lumOf(rest[0].split('|')[0]);
+          ok(`[${T}] Arbor: the door text reads on the room's dark ground (contrast ${((Math.max(doorL, groundL) + 0.05) / (Math.min(doorL, groundL) + 0.05)).toFixed(1)}:1, floor 4.5:1 - the on-paper olive is 2.4:1 there)`, (Math.max(doorL, groundL) + 0.05) / (Math.min(doorL, groundL) + 0.05) >= 4.5, rest[0]);
           ok(`[${T}] Arbor: no brass on a rest-state door or Show-as icon (brass is human action only: current, chosen, hover)`, rest.length >= 4 && rest.every((c) => !c.includes('rgb(255, 152, 0)')), JSON.stringify(rest));
         } else {
           const tick = await q("(() => { const m = document.querySelector('.walk-mark[data-state=current]'); return m ? getComputedStyle(m).borderLeftColor + ' ' + getComputedStyle(m).borderLeftWidth : null; })()");
