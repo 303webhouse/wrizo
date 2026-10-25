@@ -150,7 +150,7 @@ export type DeskTermId =
   | 'linksSelectCard' | 'linksRemoveTitle' | 'linksRemoveAria' | 'linksKindPage' | 'linksKindBoard' | 'linksKindCard'
   // BIG PROJECTS STEP 3 - Grafts across places and the graft doors (docs/plans/big-projects.md step 3; mockup cursor/graft-doors-mockup @ c4f34eb0)
   | 'graftAdd' | 'graftSearch' | 'graftConnectedTo' | 'graftGroupCards' | 'graftGroupSources' | 'graftGroupBoards' | 'graftGroupPages' | 'graftSharedTags'
-  | 'graftPlanBoard' | 'graftPlanCardsOne' | 'graftPlanCardsMany' | 'graftHideAria' | 'graftHiddenLine' | 'graftRemovedLine' | 'graftUndo' | 'graftCameFrom'
+  | 'graftPlanBoard' | 'graftPlanCardsOne' | 'graftPlanCardsMany' | 'graftHideAria' | 'graftHiddenLine' | 'graftRemovedLine' | 'graftUndo' | 'graftCameFrom' | 'graftDock' | 'graftDockAria' | 'linkDockCloseAria' | 'linkDockGone'
   | 'graftKnobTip' | 'graftPairedPage'
   // TU1 S2/S3/S4/S5 — the Tutor (components/Tutor.tsx), the sliver's own
   // mirror on the paper's right edge. One seam, all of the Tutor's static
@@ -928,6 +928,10 @@ const CANONICAL: Record<DeskTermId, string> = {
   graftHiddenLine: '{title} hidden from this page.',
   graftRemovedLine: 'Graft to {title} removed.',
   graftUndo: 'Undo',
+  graftDock: 'Dock',                                    // POLISH #10 item 24: dock a linked card or page beside the page
+  graftDockAria: 'Dock beside the page',
+  linkDockCloseAria: 'Close the docked reader',
+  linkDockGone: 'Nothing here now',
   graftCameFrom: 'Came from',
   graftKnobTip: 'Drag to graft',
   graftPairedPage: 'Page',
