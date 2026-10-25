@@ -22,7 +22,9 @@ import { HelpButton } from './HelpButton';
 import { ConnectionsDrawerPanel } from './ConnectionsDrawerPanel';
 import { RIGHT_TABS, type RightTab } from '../store/drawerSet';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
-import { DRAWER_MIN } from '../store/menusDrawers';   // its own line: one-drawer.mjs O6 reads the line above verbatim
+import { DRAWER_MIN } from '../store/menusDrawers';
+import { getLinkDock, setLinkDock, useLinkDock } from '../store/linkDock';   // POLISH #10 item 24
+import { LinkDockReader } from './LinkDockReader';   // its own line: one-drawer.mjs O6 reads the line above verbatim
 import { TUTOR_STAGE_EVENT } from '../store/tutorStage';
 
 // TU1 S2/S3/S4/S5 — the Tutor. The sliver, mirrored, on the paper's RIGHT
@@ -331,6 +333,22 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // DRAWER MIRROR (Nick, via Fable, Oct 24): how far the open panel stands in from the stage's right edge, so that its left edge meets its own tab on
   // the page's right edge - the mirror of the Tools drawer ([panel][tab][page] on the left, [page][tab][panel] here). 0 in every other regime.
   const [panelOffsetPx, setPanelOffsetPx] = useState(0);
+  // POLISH #10 item 24 (Nick, via Fable, Oct 25): a linked card or page docked beside this page (this device's own slot) - the Tutor's own DOCK carries
+  // it, so it stays while the writer writes. Docking it from the Grafts list opens and docks the panel; a dock found on mount (a reload) docks again.
+  const linkDock = useLinkDock(pageKind === 'board' ? null : entry.id);
+  useEffect(() => {
+    const onOpen = () => { setOpen(true); if (availableTutorMargin() >= DOCK_FLOOR_PX) setDocked(true); };
+    document.addEventListener('wz-link-dock-open', onOpen);
+    return () => document.removeEventListener('wz-link-dock-open', onOpen);
+  }, []);
+  const dockedOnMount = useRef(false);
+  useEffect(() => {
+    if (dockedOnMount.current || !linkDock) return;
+    dockedOnMount.current = true;
+    const id = setTimeout(() => { setOpen(true); if (availableTutorMargin() >= DOCK_FLOOR_PX) setDocked(true); }, 0);
+    return () => clearTimeout(id);
+  }, [linkDock]);
+  const closeLinkDock = () => { setLinkDock(entry.id, null); setDocked(false); setOpen(false); };
   // tutor-drawer-arrow (Nick's live bug report, confirmed by tutor-drawer-
   // probe.mjs, ledger 57) — "anchor the grip to the drawer's board/page-
   // facing edge, just outside the tab row, the exact mirror of the Tools
@@ -528,6 +546,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
       // the drawer. An Esc pressed on the page closes it and leaves the focus on the page.
       if (e.key === 'Escape' && !e.defaultPrevented) {
         const inDrawer = !!target?.closest?.('.wz-tutor-zone');
+        if (getLinkDock(entry.id)) setLinkDock(entry.id, null);   // POLISH #10 item 24: Esc leaves a docked reader with the dock
         setOpen(false); setDocked(false);
         if (inDrawer) document.querySelector<HTMLElement>('.wz-tutor-grip')?.focus();
         return;
@@ -631,7 +650,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // treatment store/tutorNudges.ts already carries ("sleeps dormant") for
   // exactly this kind of retirement.
   const handleGripClick = () => {
-    if (docked) { setDocked(false); return; } // reopening the grip while docked restores the panel (Cascade's own T5 rider, mirrored)
+    if (docked) { if (linkDock) setLinkDock(entry.id, null); setDocked(false); return; } // reopening the grip while docked restores the panel (Cascade's own T5 rider, mirrored); POLISH #10 item 24: a docked reader is left with it
     setOpen((o) => !o);
   };
 
@@ -1070,6 +1089,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
         <div className="wz-tutor-panel" ref={(el) => setDrawerInert(el, !open)} aria-hidden={!open} data-open={open ? 'true' : 'false'} data-docked={docked ? 'true' : 'false'} style={panelWidthPx != null ? { width: `${panelWidthPx}px`, maxWidth: `${panelWidthPx}px`, marginRight: `${panelOffsetPx}px` } : undefined}>
           {/* PHASE 1 - the sliding layer: the panel above is the clip and the scroller; <SideDrawer> is what slides in from behind the tab.
               No tab row yet (S3 adds TUTOR | the theme's links word). */}
+          {/* POLISH #10 item 24: while a linked card or page stands docked, the docked panel is its reader */}
+          {linkDock && docked ? <LinkDockReader dock={linkDock} onClose={closeLinkDock} /> : (
           <SideDrawer side="right" idPrefix="wz-tutor" tabs={rightTabs}>
           {/* A11Y AUDIT A8 — the reply announcement, visually hidden. Lives at
               the panel's own top level (not inside the `{open && …}` content
@@ -1398,6 +1419,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
           )}
           {rightTab === 'links' && <ConnectionsDrawerPanel />}
           </SideDrawer>
+          )}
         </div>
       </div>
 
