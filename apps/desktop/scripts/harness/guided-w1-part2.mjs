@@ -20,6 +20,17 @@ await withHarness(async (app) => {
   const point = (sel) => q(`(() => { const b = document.querySelector(${JSON.stringify(sel)}); if (!b) return null; const r = b.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()`);
   const click = async (sel) => { const p = await point(sel); if (!p) return false; await app.mouseMove(p.x, p.y); await app.mouseDown(p.x, p.y); await sleep(50); await app.mouseUp(p.x, p.y); await sleep(350); return true; };
   const boxes = () => q('window.wrizoBoard()');
+  // is the card FLAT? one pixel in its left margin near the top edge against one at mid-height (no text in that column): a vignette painted over the card shows as a band at the top. Screenshot at DPR 1, read with sharp.
+  const flatAt = async (sel) => {
+    const sharp = (await import('sharp')).default;
+    const r = await q(`(() => { const e = document.querySelector(${JSON.stringify(sel)}); if (!e) return null; const b = e.getBoundingClientRect(); return [b.left, b.top, b.width, b.height].map(Math.round); })()`);
+    if (!r) return null;
+    const { data, info } = await sharp(Buffer.from(await app.screenshot(), 'base64')).raw().toBuffer({ resolveWithObject: true });
+    const px = (x, y) => [0, 1, 2].map((c) => data[(y * info.width + x) * info.channels + c]);
+    const x = r[0] + 20;
+    const top = px(x, r[1] + 8), mid = px(x, r[1] + Math.round(r[3] / 2));
+    return { top, mid, diff: Math.max(...top.map((v, i) => Math.abs(v - mid[i]))) };
+  };
   const rectOf = (sel) => q(`(() => { const e = document.querySelector(${JSON.stringify(sel)}); if (!e) return null; const r = e.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map(Math.round); })()`);
   const pressed = () => q("(() => { const b = document.querySelector('.show-as-btn[aria-pressed=\"true\"]'); return b ? b.getAttribute('data-view') : null; })()");
 
@@ -57,7 +68,7 @@ await withHarness(async (app) => {
   };
 
   for (const theme of ['plateau', 'flux']) {
-    for (const tone of theme === 'flux' ? ['dark', 'light'] : ['dark']) {
+    for (const tone of ['dark', 'light']) {
       const T = `${theme === 'plateau' ? 'Arbor' : 'Flux'} ${tone}`;
       const full = tone === 'dark';
       const tag = `${theme === 'plateau' ? 'arbor' : 'flux'}-${tone}`;
@@ -73,7 +84,10 @@ await withHarness(async (app) => {
         ok(`[${T}] no field = a Board that opens in Open (the Show-as shows Open pressed, the canvas is up)`, h1 === 'open', String(h1));
         ok(`[${T}] a Deck (board-meta homeView walk) opens in the Walk: the card is up and Walk is the pressed view`, h2 === 'walk' && !!(await q("!!document.querySelector('.walk-card')")), String(h2));
       }
+      await app.mouseMove(5, 450); await sleep(250);
       await shot(`02-walk-${tag}`);
+      const flat = await flatAt('.walk-card');
+      ok(`[${T}] the Walk card is flat - no grey vignette band at its top (top pixel ${flat && flat.top} against mid ${flat && flat.mid})`, !!flat && flat.diff <= 4, JSON.stringify(flat));
       if (theme === 'flux') {
         const lum = await q("(() => { const c = getComputedStyle(document.querySelector('.walk-card')); const m = /rgba?\\((\\d+),\\s*(\\d+),\\s*(\\d+)/.exec(c.backgroundColor); if (!m) return null; return Math.round((0.2126 * +m[1] + 0.7152 * +m[2] + 0.0722 * +m[3]) / 2.55); })()");
         ok(`[${T}] Flux: the Walk card follows the page tone - ${tone === 'light' ? 'a light card on the light page' : 'a dark card on the dark page'} (luminance ${lum}%)`, lum !== null && (tone === 'light' ? lum > 85 : lum < 20), String(lum));
@@ -110,6 +124,13 @@ await withHarness(async (app) => {
         // a touch or pen pointer over the strip must NOT open it (opening shifts the icons between pointer-down and up, and the tap would land on another icon)
         const touchOpen = await q("(() => { const s = document.querySelector('.show-as'); s.dispatchEvent(new PointerEvent('pointerover', { pointerType: 'touch', bubbles: true })); s.dispatchEvent(new PointerEvent('pointerenter', { pointerType: 'touch' })); return new Promise((r) => setTimeout(() => r(s.getAttribute('data-open')), 200)); })()");
         ok(`[${T}] a touch pointer over the strip does not open it (no icon shifts under a tap)`, touchOpen === 'false', String(touchOpen));
+      }
+
+      // 03 / 05 frames - the same three-card board shown Open, as a Storyboard and as an Outline (Arbor, both tones)
+      if (theme === 'plateau') {
+        await open('w1-three', '.show-as');
+        for (const v of ['open', 'storyboard', 'outline']) { await showAs(v); await sleep(900); await app.mouseMove(5, 450); await sleep(250); await shot(`${v === 'outline' ? '05' : '03'}-${v}-${tag}`); }
+        await showAs('open'); await sleep(500);
       }
 
       // A - adding follows the view shown: in the Walk a new card is appended to the order (seq) and becomes the current card
@@ -191,15 +212,42 @@ await withHarness(async (app) => {
         // Y - keyboard: left / right step, Esc leaves for the board's last shown view, Enter on the focused door
         await open('w1-deck', '.walk'); await rewind();
         const idx = async () => q("[...document.querySelectorAll('.walk-mark')].findIndex((m) => m.getAttribute('data-current') === 'true')");
-        // the caret is in the card when the Walk opens (the card is the page): the arrows move the caret there and never step; with focus out of the card they step
-        await q("document.querySelector('.walk-card .board-popup-editor')?.focus()"); await app.key('ArrowRight'); await sleep(400); const iEdit = await idx();
-        ok(`[${T}] with the caret in the card, ArrowRight moves the caret and does not step the Walk`, iEdit === 0, String(iEdit));
-        await q("document.activeElement && document.activeElement.blur && document.activeElement.blur()"); await sleep(150);
+        // NICK'S RULING, Oct 25: the CARET lands in the card on opening and on every step; left / right step only while the card is EMPTY; with words in it they move the caret, and PageUp / PageDown and the chevrons always step.
+        // PARKED, never edited (the original assertion, kept verbatim, no longer run - it assumed the caret is NOT in the card on a step and that the arrows never move the caret from an empty one):
+        //   await q("document.querySelector('.walk-card .board-popup-editor')?.focus()"); await app.key('ArrowRight'); await sleep(400); const iEdit = await idx();
+        //   ok(`[${T}] with the caret in the card, ArrowRight moves the caret and does not step the Walk`, iEdit === 0, String(iEdit));
+        // SUPERSEDED: it is false for an EMPTY card now (the arrow steps). Successors: C1-C5 below. (Park count this file: 1.)
+        const where = () => q("(() => { const a = document.activeElement; return { inCard: !!a && !!a.closest('.walk-card'), editor: !!a && a.classList.contains('board-popup-editor') }; })()");
+        const caret = () => q("(() => { const s = getSelection(); return s && s.rangeCount ? s.anchorOffset + ':' + (s.anchorNode ? s.anchorNode.nodeName : '') : null; })()");
+        const pageKey = async (k) => { const vk = k === 'PageDown' ? 34 : 33; const p = { key: k, code: k, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk }; await app.cdp('Input.dispatchKeyEvent', { type: 'rawKeyDown', ...p }); await app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', ...p }); await sleep(500); };
+        const goMark = async (i) => { await q(`document.querySelectorAll('.walk-mark')[${i}]?.click()`); await sleep(600); };
+        // C1 - the caret lands in the card on stepping (the rewind stepped here) and on opening (a reload mounts the Walk fresh)
+        const c1step = await where();
+        await app.reload(); await waitSoft("!!document.querySelector('.walk-card')", { label: 'walk after reload', timeout: 8000 }); await sleep(900);
+        const c1open = await where();
+        ok(`[${T}] the caret LANDS in the card on opening the Walk and on stepping it (Nick, Oct 25)`, c1step.editor && c1open.editor, JSON.stringify({ c1step, c1open }));
+        // C3 - a card with the writer's words (d1 holds some): the arrows move the caret and never step; PageDown / PageUp and the chevrons step
+        await goMark(0);
+        const w0 = await idx(); const off0 = await caret();
+        await app.key('ArrowRight'); await sleep(400); const wR = await idx();
+        await app.key('ArrowLeft'); await sleep(400); const wL = await idx(); const off1 = await caret();
+        ok(`[${T}] with the writer's words in the card, the arrows move the caret and do NOT step the Walk (left / right at card ${w0 + 1}: still on ${wL + 1}; the caret ${off0} -> ${off1})`, w0 === 0 && wR === 0 && wL === 0 && off0 !== off1, JSON.stringify({ w0, wR, wL, off0, off1 }));
+        await pageKey('PageDown'); const p1 = await idx(); await pageKey('PageUp'); const p0 = await idx();
+        await q("document.querySelector('.walk-nav[data-dir=next]')?.click()"); await sleep(600); const n1 = await idx(); await q("document.querySelector('.walk-nav[data-dir=prev]')?.click()"); await sleep(600); const n0 = await idx();
+        ok(`[${T}] PageDown / PageUp and the chevrons step the Walk with the caret in a card that has words`, p1 === 1 && p0 === 0 && n1 === 1 && n0 === 0, JSON.stringify({ p1, p0, n1, n0 }));
         // a probe on the page records each arrow as the document sees it (target, whether anything already took it) - the detail of a red names the thing that ate the key
-        await q("(() => { window.__kd = []; document.addEventListener('keydown', (e) => window.__kd.push([e.key, e.defaultPrevented, (e.target.tagName || '') + '.' + String(e.target.className || '').slice(0, 24)]), false); window.__kc = []; document.addEventListener('keydown', (e) => window.__kc.push([e.key, e.defaultPrevented]), true); })()");
-        const i0 = await idx(); await app.key('ArrowRight'); await sleep(500); const i1 = await idx(); await app.key('ArrowRight'); await sleep(500); const i2 = await idx(); await app.key('ArrowLeft'); await sleep(500); const i3 = await idx();
-        const kd = await q("({ bubble: window.__kd, capture: window.__kc, active: document.activeElement ? document.activeElement.tagName + '.' + String(document.activeElement.className || '').slice(0, 30) : null })");
-        ok(`[${T}] ArrowRight / ArrowLeft step through the cards (and stop at the ends)`, i0 === 0 && i1 === 1 && i2 === 2 && i3 === 1, JSON.stringify({ idx: [i0, i1, i2, i3], kd }));
+        await q("(() => { window.__kd = []; document.addEventListener('keydown', (e) => window.__kd.push([e.key, e.defaultPrevented, (e.target.tagName || '') + '.' + String(e.target.className || '').slice(0, 24)]), false); })()");
+        // C2 - an EMPTY card (d2): left / right step from inside it, the caret landing in each card they arrive at
+        await goMark(1);
+        const e0 = await idx(); const emptyWhere = await where();
+        await app.key('ArrowRight'); await sleep(500); const e1 = await idx(); const afterStep = await where();
+        await app.key('ArrowRight'); await sleep(500); const e2 = await idx(); await app.key('ArrowLeft'); await sleep(500); const e3 = await idx();
+        const kd = await q("({ bubble: window.__kd, active: document.activeElement ? document.activeElement.tagName + '.' + String(document.activeElement.className || '').slice(0, 30) : null })");
+        ok(`[${T}] ArrowRight / ArrowLeft step through EMPTY cards from inside them, and the caret lands in each card they reach`, e0 === 1 && emptyWhere.editor && e1 === 2 && afterStep.editor && e2 === 3 && e3 === 2, JSON.stringify({ idx: [e0, e1, e2, e3], emptyWhere, afterStep, kd }));
+        // C5 - the ends stop (no wrap)
+        await goMark(0); await q("document.querySelector('.walk-card .board-popup-editor')?.blur()"); await sleep(200);
+        await app.key('ArrowLeft'); await sleep(400); const endL = await idx();
+        ok(`[${T}] the arrows stop at the first card (no wrap)`, endL === 0, String(endL));
         await q("document.querySelector('.walk-door[data-door=notes]')?.focus()");
         { const ent = { key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 }; await app.cdp('Input.dispatchKeyEvent', { type: 'keyDown', text: '\r', ...ent }); await app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', ...ent }); }   // a trusted keyDown WITH its text: a native button activates on the keypress that app.key's rawKeyDown never sends
         await sleep(400);
@@ -260,7 +308,10 @@ await withHarness(async (app) => {
   ok('the Journal is a Book: Show as offers Flip, Thumbnails and Open (none of the Board views), and it opens in Flip', same(bookViews, ['flip', 'thumbnails', 'open']) && (await pressed()) === 'flip', JSON.stringify(bookViews));
   const flip = await q("({ one: document.querySelectorAll('.walk-card').length === 1, nav: !!document.querySelector('.walk-nav[data-dir=prev]') && !!document.querySelector('.walk-nav[data-dir=next]') })");
   ok('Flip shows one page at a time with the same top-corner chevrons as the Walk', flip.one && flip.nav, JSON.stringify(flip));
+  await app.mouseMove(5, 450); await sleep(250);
   await shot('04-flip-arbor-dark');
+  const flipFlat = await flatAt('.walk-card');
+  ok(`the Flip leaf is flat - no grey vignette band at its top (top pixel ${flipFlat && flipFlat.top} against mid ${flipFlat && flipFlat.mid})`, !!flipFlat && flipFlat.diff <= 4, JSON.stringify(flipFlat));
   await showAs('thumbnails'); await sleep(700);
   const grid = await q("({ pages: document.querySelectorAll('.book-thumb').length, current: document.querySelectorAll('.book-thumb[data-current=\"true\"]').length })");
   ok('Thumbnails is a grid of tall pages with the current page marked', grid.pages >= 3 && grid.current === 1, JSON.stringify(grid));

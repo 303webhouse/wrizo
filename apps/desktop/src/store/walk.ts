@@ -51,13 +51,30 @@ export function swipePlan(dir: 1 | -1, reduced: boolean): SwipePlan {
 }
 
 export type WalkKeyAction = 'next' | 'prev' | 'exit' | 'activate' | null;
-/** Keyboard: left / right step, Enter activates a focused door (and only a door), Esc leaves for the board in its last shown view. */
+/** Keyboard: left / right and PageDown / PageUp step, Enter activates a focused door (and only a door), Esc leaves for the board in its last shown view. */
 export function walkKey(key: string, ctx: { onDoor: boolean }): WalkKeyAction {
-  if (key === 'ArrowRight') return 'next';
-  if (key === 'ArrowLeft') return 'prev';
+  if (key === 'ArrowRight' || key === 'PageDown') return 'next';
+  if (key === 'ArrowLeft' || key === 'PageUp') return 'prev';
   if (key === 'Escape') return 'exit';
   if (key === 'Enter' && ctx.onDoor) return 'activate';
   return null;
+}
+
+/** Nick, Oct 25: the caret lands in the card on opening and on stepping, so the arrows may only step while the card is EMPTY (nothing to move the caret through); with the writer's words in it they move the caret,
+ *  and PageUp / PageDown (and the chevrons) always step. Outside the editor (focus on a door, the rail) the arrows step as ever. */
+export function keyMaySteps(key: string, ctx: { inEditor: boolean; empty: boolean }): boolean {
+  if (key === 'PageDown' || key === 'PageUp') return true;
+  if (key === 'ArrowRight' || key === 'ArrowLeft') return !ctx.inEditor || ctx.empty;
+  return false;
+}
+
+/** EMPTY, for that rule: no words of the writer's in the card. A dealt step's title is the deck's, so a dealt card with an empty body is empty; a plain card is empty only while its title line is too. */
+export function cardIsEmpty(box: Pick<Box, 'text' | 'deckStep'>): boolean {
+  const t = box.text ?? '';
+  const nl = t.indexOf('\n');
+  const title = nl < 0 ? t : t.slice(0, nl);
+  const body = nl < 0 ? '' : t.slice(nl + 1);
+  return body.trim() === '' && (!!box.deckStep || title.trim() === '');
 }
 
 /** Adding follows the view shown: Open places a card at a position; Storyboard, Outline, the Walk (and a Book's pages) APPEND to the order (`seq`, after the last). */

@@ -6184,6 +6184,9 @@ a:focus-visible,
 [data-theme='flux'] .show-as .show-as-btn{ font-family:var(--font-chromeLabel); text-transform:uppercase; letter-spacing:.1em; color:var(--text-mid); }
 [data-theme='flux'] .show-as .show-as-btn[aria-pressed='true']{ color:var(--choice); }
 
+/* the body vignette (body::after, z-index 2) shades the ROOM, never the page - the Walk card and the Flip leaf showed a soft grey band at their top. Flux and Machina already put it behind (page-size's rule); here it goes behind only while a
+   Walk / Flip is mounted, so no other Arbor surface changes. (The stage is an isolated stacking context, so a z-index on the card itself could not lift it above the vignette.) */
+body:has(.walk)::after{ z-index:-1; }
 .walk{ width:100%; display:flex; justify-content:center; padding:56px 0 24px; box-sizing:border-box; overflow-x:hidden; }
 .walk-stage{ display:flex; flex-direction:column; align-items:center; width:100%; }
 .walk-frame{ position:relative; max-width:100%; }

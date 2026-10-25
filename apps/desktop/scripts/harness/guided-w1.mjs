@@ -38,6 +38,8 @@ const { build } = createRequire(require.resolve('vite'))('esbuild');
 const ts = require('typescript');
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
+const PARKED = [];   // falsified assertions: the original kept verbatim in the source, never run, counted and printed here (the park rule)
+const park = (id, why, original) => { if (!PARKED.some((p) => p.id === id)) PARKED.push({ id, why, original }); };
 const noCR = (t) => t.replace(/\r\n?/g, '\n');
 const has = (rel) => fs.existsSync(path.join(SRC, rel));
 const readRaw = (rel) => (has(rel) ? noCR(fs.readFileSync(path.join(SRC, rel), 'utf8')) : '');
@@ -168,7 +170,16 @@ async function suite(M, read) {
   {
     const bm = read('store/boardMode.ts'), sa = read('components/ShowAs.tsx'), be = read('components/BoardEditor.tsx');
     chk('S4', () => [/'walk'/.test(bm) && /'flip'/.test(bm) && /'thumbnails'/.test(bm) && /localStorage/.test(bm) && !/saveBoardBoxes|saveJournalEntry/.test(bm), 'the view memory stays localStorage-only (no sync, no save)']);
-    chk('Y3', () => { const be = read('components/BoardEditor.tsx'); return [/else if \(inline && !hadFocus\) \{ if \(document\.activeElement === el\) el\.blur\(\);/.test(be) && /sel\.removeAllRanges\(\)/.test(be),'an inline (Walk) card that mounts on a step does not keep the caret (placing it focuses the editor in Chromium, and the arrows would move it instead of stepping)']; });
+    // PARKED, never edited (the park rule): Y3 was true of the tip it was written on (2eb6455f) and is FALSIFIED by Nick's ruling of Oct 25 - the caret now LANDS in the card on opening and stepping. Its original body is kept verbatim below,
+    // never run; successors are Y6 (the Walk asks for the caret) and Y4 / Y5 (the keys that go with it).
+    park('Y3', 'SUPERSEDED Oct 25 (Nick): the caret lands in the card on opening / stepping; successors Y4 Y5 Y6', () => { const be = read('components/BoardEditor.tsx'); return [/else if \(inline && !hadFocus\) \{ if \(document\.activeElement === el\) el\.blur\(\);/.test(be) && /sel\.removeAllRanges\(\)/.test(be),'an inline (Walk) card that mounts on a step does not keep the caret (placing it focuses the editor in Chromium, and the arrows would move it instead of stepping)']; });
+    chk('Y4', () => [M.walkKey('PageDown', { onDoor: false }) === 'next' && M.walkKey('PageUp', { onDoor: false }) === 'prev' && M.walkKey('PageDown', { onDoor: true }) === 'next', 'PageDown / PageUp step the Walk (always - they have no caret meaning, so they work with the caret in a card)']);
+    chk('Y5', () => { const may = (k, inEditor, empty) => M.keyMaySteps(k, { inEditor, empty }); const e = (text, deckStep) => M.cardIsEmpty({ text, ...(deckStep ? { deckStep } : {}) }); const ds = { deck: 'three-act', step: 'hook' };
+      return [may('ArrowRight', true, true) && may('ArrowLeft', true, true) && !may('ArrowRight', true, false) && !may('ArrowLeft', true, false) && may('ArrowRight', false, false) && may('ArrowLeft', false, false) && may('PageDown', true, false) && may('PageUp', true, false) && !may('a', false, true)
+        && e('', null) && e('\n', null) && !e('A title\n', null) && !e('A title', null) && e('Step 1\n', ds) && e('Step 1\n   \n', ds) && !e('Step 1\nShe waits', ds),
+        'with the caret in a card the arrows step only while it is EMPTY (a dealt step with an empty body is empty; a plain card with a title is not); outside the editor they step; PageUp / PageDown always']; });
+    chk('Y6', () => { const be = read('components/BoardEditor.tsx'); const i = be.indexOf('renderEditor={(box) => ('); const blk = i >= 0 ? be.slice(i, i + 400) : ''; return [/<BoardCardPopup[\s\S]*?\binline\b[\s\S]*?\bautoFocus\b/.test(blk) && /if \(!inline \|\| autoFocus\) el\.focus\(\);/.test(be) && !/hadFocus/.test(be), 'the Walk mounts its card editor WITH the caret (autoFocus): it lands in the card on opening and on every step - no blur-on-mount survives']; });
+    chk('D11', () => [/body:has\(\.walk\)::after\s*\{\s*z-index:\s*-1;?\s*\}/.test(read('index.css')), 'the body vignette goes BEHIND while a Walk / Flip is mounted (it shades the room, never the page)']);
     chk('S10', () => [/pointerType === 'mouse'/.test(sa) && /:focus-visible/.test(sa) && !/onPointerEnter=\{\(\) =>/.test(sa) && !/onFocusCapture=\{\(\) =>/.test(sa), 'ShowAs opens its words for a mouse hover or keyboard focus only - a touch / pen tap or a mouse press must not shift the icons between pointer-down and up']);
     chk('S5', () => [sa.length > 200 && /className="show-as"/.test(sa) && /show-as-btn/.test(sa) && /aria-pressed=/.test(sa) && /data-view=/.test(sa) && /viewsFor\(/.test(sa) && /title=\{/.test(sa), 'ShowAs: icons first, the word on hover (title), aria-pressed on the current view, the views from viewsOf(kind)']);
     chk('S6', () => [/<ShowAs/.test(be) && !/boardModeTabs\.map\(/.test(be), '"Show as" replaces the three view tabs']);
@@ -296,7 +307,15 @@ const MUT = [
   { name: 'Show as drops its pressed state', file: 'components/ShowAs.tsx', find: /aria-pressed=/, to: 'data-pressed=', red: ['S5'] },
   { name: 'Show as opens on a touch pointer too', file: 'components/ShowAs.tsx', find: /onPointerEnter=\{\(e\) => \{ if \(e\.pointerType === 'mouse'\) setOpen\(true\); \}\}/, to: 'onPointerEnter={() => setOpen(true)}', red: ['S10'] },
   { name: 'Show as opens on a mouse-press focus too', file: 'components/ShowAs.tsx', find: /onFocusCapture=\{\(e\) => \{ if \(\(e\.target as HTMLElement\)\.matches\?\.\(':focus-visible'\)\) setOpen\(true\); \}\}/, to: 'onFocusCapture={() => setOpen(true)}', red: ['S10'] },
-  { name: 'a Walk card keeps the caret it was mounted with', file: 'components/BoardEditor.tsx', find: /else if \(inline && !hadFocus\) \{ if \(document\.activeElement === el\) el\.blur\(\);/, to: 'else if (false) { if (document.activeElement === el) el.blur();', red: ['Y3'] },
+  // PARKED with Y3 (never run, kept verbatim): { name: 'a Walk card keeps the caret it was mounted with', file: 'components/BoardEditor.tsx', find: /else if \(inline && !hadFocus\) \{ if \(document\.activeElement === el\) el\.blur\(\);/, to: 'else if (false) { if (document.activeElement === el) el.blur();', red: ['Y3'] },
+  { name: 'PageDown stops stepping the Walk', file: 'store/walk.ts', find: /key === 'ArrowRight' \|\| key === 'PageDown'/, to: "key === 'ArrowRight'", red: ['Y4'] },
+  { name: 'PageUp stops stepping the Walk', file: 'store/walk.ts', find: /key === 'ArrowLeft' \|\| key === 'PageUp'/, to: "key === 'ArrowLeft'", red: ['Y4'] },
+  { name: 'the arrows step with words in the card (they would never move the caret)', file: 'store/walk.ts', find: /return !ctx\.inEditor \|\| ctx\.empty;/, to: 'return true;', red: ['Y5'] },
+  { name: 'the arrows never step from inside the card (an empty card would trap them)', file: 'store/walk.ts', find: /return !ctx\.inEditor \|\| ctx\.empty;/, to: 'return !ctx.inEditor;', red: ['Y5'] },
+  { name: 'PageDown stops stepping from inside the card', file: 'store/walk.ts', find: /if \(key === 'PageDown' \|\| key === 'PageUp'\) return true;/, to: "if (key === 'PageDown' || key === 'PageUp') return !ctx.inEditor;", red: ['Y5'] },
+  { name: 'a dealt card with a title counts as written', file: 'store/walk.ts', find: /\(!!box\.deckStep \|\| title\.trim\(\) === ''\)/, to: "(title.trim() === '')", red: ['Y5'] },
+  { name: 'the Walk stops asking for the caret', file: 'components/BoardEditor.tsx', find: /key=\{box\.id\}\n          inline\n          autoFocus\n/, to: 'key={box.id}\n          inline\n', red: ['Y6'] },
+  { name: 'the vignette stays over the Walk card', file: 'index.css', find: /body:has\(\.walk\)::after\s*\{\s*z-index:\s*-1;\s*\}/, to: 'body:has(.walk)::after{ z-index:2; }', red: ['D11'] },
   { name: 'the Show-as words lose Trace', file: 'store/deskLexicon.ts', find: /boardModeWalk: 'Trace'/, to: "boardModeWalk: 'Walk'", red: ['L1'] },
 ];
 
@@ -308,7 +327,8 @@ try {
   const M0 = base.M || {};
   const res0 = await suite(M0, rd({}));
   for (const [k, v] of Object.entries(res0)) ok(k, v.pass, v.detail);
-  ok('the suite ran every check it names', Object.keys(res0).length === 55, `${Object.keys(res0).length} checks`);
+  ok('the suite ran every check it names', Object.keys(res0).length === 58, `${Object.keys(res0).length} checks (54 + Y4 Y5 Y6 D11 = 58; Y3 parked)`);
+  ok('the park count is exactly 1 (Y3, with its mutant)', PARKED.length === 1 && PARKED[0].id === 'Y3' && typeof PARKED[0].original === 'function', `${PARKED.length} parked`);
 
   let landed = 0, killed = 0, notLanded = 0;
   for (const m of MUT) {
@@ -327,6 +347,7 @@ try {
     ok(`mutant "${m.name}" is KILLED by a check (reddens: ${red.join(', ') || 'none'})`, hit && how === 'checks', hit ? (how === 'CRASH' ? 'crashed the bundle - not evidence' : '') : `expected ${m.red.join(', ')}; got ${red.join(', ') || 'none'}`);
   }
   ok(`all ${MUT.length} mutations landed and ${MUT.length} were killed`, landed === MUT.length && killed === MUT.length, `${landed} landed / ${killed} killed / ${notLanded} found nothing to mutate`);
+  console.log(`PARKED (never run, original kept verbatim in the source): ${PARKED.map((p) => `${p.id} - ${p.why}`).join(' | ')}`);
 } finally {
   fs.rmSync(tmpServer, { recursive: true, force: true });
 }

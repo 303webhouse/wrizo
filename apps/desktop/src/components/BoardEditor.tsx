@@ -404,7 +404,7 @@ export function BoardCardPopup({
 }: {
   initialText: string;
   // W1 - INLINE: the Walk's card IS this editor (the ordinary card writing engine: decoration, undo, hidden marks, the paste wall) mounted in place - no portal, no backdrop, no dock, no Esc-to-close (Esc belongs to the Walk,
-  // which leaves for the board's last shown view). It takes the caret only when asked (autoFocus: the Notes door), never on mount - stepping through cards must not steal focus.
+  // which leaves for the board's last shown view). It takes the caret when asked (autoFocus): the Walk asks on every mount, so the caret lands in the card on opening and on stepping (Nick, Oct 25); the arrows then step only while the card is empty (store/walk.ts keyMaySteps).
   inline?: boolean;
   autoFocus?: boolean;
   // W3 - a dealt step's question, shown as the editor's placeholder while the body is empty (an attribute + CSS ::after, never text); the first keystroke into the body hides it.
@@ -475,12 +475,8 @@ export function BoardCardPopup({
       el.setAttribute('data-body-empty', bodyIsEmpty(plain) ? 'true' : 'false');
     };
     syncPrompt(initialText);
-    const hadFocus = document.activeElement === el;
     decorateEditorFor(el, initialText, initialText.length, setCaretOffset, text => decorateMarkdownForCard(text, initialText.length));
-    if (!inline || autoFocus) el.focus();
-    // W1: placing the caret in a contenteditable focuses it in Chromium. An inline (Walk) card that mounts on a step must not take the caret - the arrows would then move it instead of stepping (the probe on the
-    // fourth box turn: focus was in the card after one step). The Notes door, or a click in the card, puts the caret there.
-    else if (inline && !hadFocus) { if (document.activeElement === el) el.blur(); const sel = window.getSelection(); if (sel && sel.rangeCount > 0 && el.contains(sel.anchorNode)) sel.removeAllRanges(); }   // and no selection left inside it: a later selectionchange handler placing a caret would focus the editor again
+    if (!inline || autoFocus) el.focus();   // the Walk asks for it (autoFocus): the caret lands in the card on opening and on every step (Nick, Oct 25)
 
     // I0 pen discipline (park-sweep audit finding — the retired inline
     // BoardTextBox editing branch carried this same guard; the popup's own
@@ -3391,6 +3387,7 @@ export function BoardEditor({ id }: { id: string }) {
         <BoardCardPopup
           key={box.id}
           inline
+          autoFocus
           initialText={box.text ?? ''}
           prompt={box.kind === 'text' && !box.sourceEntryId ? box.prompt : undefined}
           onCommit={text => commitText(box.id, text)}

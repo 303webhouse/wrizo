@@ -48,7 +48,7 @@ export function BookFlip({ boardId, pages, onOpen, receded }: { boardId: string;
     keyRef.current = (e: KeyboardEvent) => {
       if (e.defaultPrevented || e.isComposing || e.metaKey || e.ctrlKey || e.altKey) return;
       if ((e.target as HTMLElement | null)?.closest?.('[contenteditable="true"], input, textarea')) return;
-      if (e.key === 'ArrowRight') { e.preventDefault(); go(1); } else if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+      if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); go(1); } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(-1); }
     };
   }, [go]);
 
