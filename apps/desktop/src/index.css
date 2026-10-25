@@ -146,6 +146,7 @@
      ever sit on is `--paper` (the page sheet and the board canvas both), so a
      theme that darkens the paper must lighten the door in step. */
   --accent-door: #4F5730;
+  --accent-door-on-dark: #8f9a58;   /* W1: the same olive for a door on the room's dark ground (the Walk's chrome, the Boards pop-out thumbnails) - --accent-door is the on-PAPER olive, 2.4:1 there */
 
   /* CD2 S1/S5 — the strip's fixed geometry, a per-theme constant, replacing
      AB3's --drawer-width (200px) whole: the left drawer retires, and its
@@ -6259,7 +6260,7 @@ a:focus-visible,
 :root[data-theme='flux'][data-page='light'] .walk{ --card-stock:var(--paper); --card-hairline:var(--paper-edge); --ink-on-card:var(--ink-on-paper); --ink-on-card-low:var(--ink-on-paper-low); --ink-on-card-meta:var(--ink-on-paper-low); }
 :root[data-theme='flux'][data-page='light'] .walk-card .board-popup-editor::first-line{ color:var(--ink-on-paper); }
 /* The Walk's chrome (chevrons, doors, rail) sits on the room's dark ground in every theme and tone, so it takes the theme's ON-DARK door colour: the --accent-door token is the on-PAPER door (Arbor #4F5730 is 2.4:1 on the dark brown; Flux light's teal and Machina light's blue are darker still) */
-[data-theme='plateau'] :is(.walk-nav, .walk-doors, .walk-rail, .show-as){ --accent-door:#8f9a58; }
+[data-theme='plateau'] :is(.walk-nav, .walk-doors, .walk-rail, .show-as){ --accent-door:var(--accent-door-on-dark); }
 :root[data-theme='flux'][data-page='light'] :is(.walk-nav, .walk-doors, .walk-rail, .show-as){ --accent-door:#57D0F5; }
 :root[data-theme='machina'][data-page='light'] :is(.walk-nav, .walk-doors, .walk-rail, .show-as){ --accent-door:#8FB0CC; }
 .walk-brackets{ inset:0 74px; }
@@ -6293,7 +6294,7 @@ a:focus-visible,
 .wz-thumb[data-thumb='board']{ width:44px; height:30px; background:var(--card-stock); border:1px solid var(--card-hairline); border-radius:0; }
 /* the pop-out is the room's dark ground: the thumbnails' olive edge is the on-dark olive (the --accent-door token is the on-paper one, 2.4:1 here). A Deck is a short stack of THREE sheets: two flat, hard-edged
    offset shadows behind the top sheet (no blur - a stack, not a drop shadow); pseudo-elements at a negative z-index painted over the sheet, so they could not draw it. */
-[data-theme='plateau'] .wz-thumb{ --accent-door:#8f9a58; }
+[data-theme='plateau'] .wz-thumb{ --accent-door:var(--accent-door-on-dark); }
 .wz-thumb[data-thumb='deck']{ width:44px; height:30px; margin-top:6px; margin-right:16px; background:var(--ink-900); border:1px solid var(--accent-door); border-radius:0;
   box-shadow:3px -3px 0 0 var(--ink-900), 3px -3px 0 1px var(--accent-door), 6px -6px 0 0 var(--ink-900), 6px -6px 0 1px var(--accent-door); }
 [data-theme='plateau'] .wz-thumb[data-thumb='deck']{ background:#2a1f16; box-shadow:3px -3px 0 0 #2a1f16, 3px -3px 0 1px var(--accent-door), 6px -6px 0 0 #2a1f16, 6px -6px 0 1px var(--accent-door); }
