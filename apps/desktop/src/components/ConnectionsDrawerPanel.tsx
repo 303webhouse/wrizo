@@ -2,6 +2,7 @@ import { useDeskLexicon } from '../store/deskLexicon';
 import { useBoardSnapshot, getBoardActions } from '../store/boardSelection';
 import { getJournalEntry, getUnbornEntry, removePageLink, subscribe } from '../store/persistence';
 import { requestDelete } from '../store/deleteGate';
+import { setLinkDock } from '../store/linkDock';   // POLISH #10 item 24
 import { graftsOf, hidePlanCard, pairedPageRow, planGroupOf, restorePageLink, unhidePlanCard, type GraftRow, type GraftSubject } from '../store/grafts';
 import { searchSteps } from '../store/writePlace';
 import { liveBoxes } from '../store/boxTombstones';
@@ -160,6 +161,11 @@ export function ConnectionsDrawerPanel() {
                 <span className={`wz-links-thumb wz-links-thumb--${kindOf(r)}`} aria-hidden="true" />
                 <span className="wz-links-label wz-graft-title" title={kindWord(kindOf(r))}>{r.title}</span>
                 {r.placeDiffers && r.place && <span className="wz-graft-place">{r.place}</span>}
+                {page && kindOf(r) !== 'board' && (
+                  // POLISH #10 item 24: dock this linked card or page beside the page (this device; one at a time) - the Tutor's own dock carries it
+                  <button type="button" className="wz-graft-dock" aria-label={`${t('graftDockAria')}: ${r.title}`}
+                    onClick={() => { setLinkDock(page.id, { entryId: r.entryId, ...(r.boxId ? { boxId: r.boxId } : {}) }); document.dispatchEvent(new Event('wz-link-dock-open')); }}>{t('graftDock')}</button>
+                )}
                 <button type="button" className="wz-links-x wz-graft-x" aria-label={`${t('linksRemoveAria')}: ${r.title}`} onClick={() => remove(r)}>×</button>
               </li>
             ))}
