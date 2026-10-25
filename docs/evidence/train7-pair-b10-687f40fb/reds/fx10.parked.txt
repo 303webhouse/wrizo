@@ -1,0 +1,645 @@
+
+ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one)
+[
+  {
+    "name": "S1 geometry @1100px/page: grip-flush (closed) [page-size successor]: the grip's own left edge sits flush on the PAINTED page's right edge - or, where the zoom leaves under 160px of margin, inside the page's own margin by at most the anchor's 38px overflow, never into the text",
+    "pass": true,
+    "detail": "{\"gripLeft\":970,\"pageRight\":1007.9745788574219,\"textRight\":888.3975830078125,\"margin\":59.025421142578125,\"zoom\":\"true\"}"
+  },
+  {
+    "name": "S1 geometry @1100px/page: grip-clears-panel (open) [drawer-mirror successor] — the grip never moves once the panel opens, and the panel starts AT it (never inside its tab row) - or, under DRAWER_MIN beside the page, overlays from the stage's edge with the tab riding above it",
+    "pass": true,
+    "detail": "{\"width\":1100,\"gripClosed\":{\"left\":970,\"right\":986,\"top\":123,\"bottom\":157,\"width\":16,\"height\":34},\"gripOpen\":{\"left\":970,\"right\":986,\"top\":123,\"bottom\":157,\"width\":16,\"height\":34},\"panelLeft\":693,\"margin\":59,\"gripOnTop\":true}"
+  },
+  {
+    "name": "S1 geometry @1100px/page: paper rect BYTE-IDENTICAL, closed -> open",
+    "pass": true,
+    "detail": "{\"paperClosed\":{\"left\":33,\"right\":1067,\"top\":107,\"bottom\":840,\"width\":1034,\"height\":733},\"paperOpen\":{\"left\":33,\"right\":1067,\"top\":107,\"bottom\":840,\"width\":1034,\"height\":733}}"
+  },
+  {
+    "name": "S1 geometry @1100px/page: [FX18 successor — the new margin-aware law] the OPEN panel never exceeds the reading measure open-w (374px), and on a WIDE writing surface (margin 0px >= 280) it occupies the margin WITHOUT covering the paper (panel.left >= paper.right). FX10 S1's \"always full open-w overlay\" is A4-parked above; superseded by SV24/SV26.",
+    "pass": true,
+    "detail": "{\"panelOpenWidth\":374,\"expectedOpenW\":374,\"marginOpen\":0,\"paperRight\":1067,\"panelLeft\":693,\"surface\":\"page\",\"width\":1100}"
+  },
+  {
+    "name": "S1 geometry @1100px/page: paper rect BYTE-IDENTICAL after invoking the dock control (whether it genuinely docks or, below the floor, falls back to closing — either way the paper never moves)",
+    "pass": true,
+    "detail": "{\"paperClosed\":{\"left\":33,\"right\":1067,\"top\":107,\"bottom\":840,\"width\":1034,\"height\":733},\"paperAfterDock\":{\"left\":33,\"right\":1067,\"top\":107,\"bottom\":840,\"width\":1034,\"height\":733},\"dockedState\":\"false\"}"
+  },
+  {
+    "name": "S1 geometry @1280px/page: grip-flush (closed) [page-size successor]: the grip's own left edge sits flush on the PAINTED page's right edge - or, where the zoom leaves under 160px of margin, inside the page's own margin by at most the anchor's 38px overflow, never into the text",
+    "pass": true,
+    "detail": "{\"gripLeft\":1109.625,\"pageRight\":1135.9797668457031,\"textRight\":1008.0797119140625,\"margin\":105.62960815429688,\"zoom\":\"true\"}"
+  },
+  {
+    "name": "S1 geometry @1280px/page: grip-clears-panel (open) [drawer-mirror successor] — the grip never moves once the panel opens, and the panel starts AT it (never inside its tab row) - or, under DRAWER_MIN beside the page, overlays from the stage's edge with the tab riding above it",
+    "pass": true,
+    "detail": "{\"width\":1280,\"gripClosed\":{\"left\":1109.625,\"right\":1125.625,\"top\":123,\"bottom\":157,\"width\":16,\"height\":34},\"gripOpen\":{\"left\":1109.625,\"right\":1125.625,\"top\":123,\"bottom\":157,\"width\":16,\"height\":34},\"panelLeft\":806.609375,\"margin\":106,\"gripOnTop\":true}"
+  },
+  {
+    "name": "S1 geometry @1280px/page: paper rect BYTE-IDENTICAL, closed -> open",
+    "pass": true,
+    "detail": "{\"paperClosed\":{\"left\":38.390625,\"right\":1241.609375,\"top\":107,\"bottom\":840,\"width\":1203.21875,\"height\":733},\"paperOpen\":{\"left\":38.390625,\"right\":1241.609375,\"top\":107,\"bottom\":840,\"width\":1203.21875,\"height\":733}}"
+  },
+  {
+    "name": "S1 geometry @1280px/page: [FX18 successor — the new margin-aware law] the OPEN panel never exceeds the reading measure open-w (435px), and on a WIDE writing surface (margin 0px >= 280) it occupies the margin WITHOUT covering the paper (panel.left >= paper.right). FX10 S1's \"always full open-w overlay\" is A4-parked above; superseded by SV24/SV26.",
+    "pass": true,
+    "detail": "{\"panelOpenWidth\":435,\"expectedOpenW\":435.20000000000005,\"marginOpen\":0,\"paperRight\":1241.609375,\"panelLeft\":806.609375,\"surface\":\"page\",\"width\":1280}"
+  },
+  {
+    "name": "S1 geometry @1280px/page: paper rect BYTE-IDENTICAL after invoking the dock control (whether it genuinely docks or, below the floor, falls back to closing — either way the paper never moves)",
+    "pass": true,
+    "detail": "{\"paperClosed\":{\"left\":38.390625,\"right\":1241.609375,\"top\":107,\"bottom\":840,\"width\":1203.21875,\"height\":733},\"paperAfterDock\":{\"left\":38.390625,\"right\":1241.609375,\"top\":107,\"bottom\":840,\"width\":1203.21875,\"height\":733},\"dockedState\":\"true\"}"
+  },
+  {
+    "name": "S1 geometry @2200px/page: grip-flush (closed) [page-size successor]: the grip's own left edge sits flush on the PAINTED page's right edge - or, where the zoom leaves under 160px of margin, inside the page's own margin by at most the anchor's 38px overflow, never into the text",
+    "pass": true,
+    "detail": "{\"gripLeft\":1596,\"pageRight\":1595.979736328125,\"textRight\":1468.0797119140625,\"margin\":364.020263671875,\"zoom\":\"true\"}"
+  },
+  {
+    "name": "S1 geometry @2200px/page: grip-clears-panel (open) [drawer-mirror successor] — the grip never moves once the panel opens, and the panel starts AT it (never inside its tab row) - or, under DRAWER_MIN beside the page, overlays from the stage's edge with the tab riding above it",
+    "pass": true,
+    "detail": "{\"width\":2200,\"gripClosed\":{\"left\":1596,\"right\":1612,\"top\":123,\"bottom\":157,\"width\":16,\"height\":34},\"gripOpen\":{\"left\":1596,\"right\":1612,\"top\":123,\"bottom\":157,\"width\":16,\"height\":34},\"panelLeft\":1612,\"margin\":364,\"gripOnTop\":true}"
+  },
+  {
+    "name": "S1 geometry @2200px/page: paper rect BYTE-IDENTICAL, closed -> open",
+    "pass": true,
+    "detail": "{\"paperClosed\":{\"left\":240,\"right\":1960,\"top\":107,\"bottom\":840,\"width\":1720,\"height\":733},\"paperOpen\":{\"left\":240,\"right\":1960,\"top\":107,\"bottom\":840,\"width\":1720,\"height\":733}}"
+  },
+  {
+    "name": "S1 geometry @2200px/page: [FX18 successor — the new margin-aware law] the OPEN panel never exceeds the reading measure open-w (460px), and on a WIDE writing surface (margin 0px >= 280) it occupies the margin WITHOUT covering the paper (panel.left >= paper.right). FX10 S1's \"always full open-w overlay\" is A4-parked above; superseded by SV24/SV26.",
+    "pass": true,
+    "detail": "{\"panelOpenWidth\":348,\"expectedOpenW\":460,\"marginOpen\":0,\"paperRight\":1960,\"panelLeft\":1612,\"surface\":\"page\",\"width\":2200}"
+  },
+  {
+    "name": "S1 geometry @2200px/page: paper rect BYTE-IDENTICAL after invoking the dock control (whether it genuinely docks or, below the floor, falls back to closing — either way the paper never moves)",
+    "pass": true,
+    "detail": "{\"paperClosed\":{\"left\":240,\"right\":1960,\"top\":107,\"bottom\":840,\"width\":1720,\"height\":733},\"paperAfterDock\":{\"left\":240,\"right\":1960,\"top\":107,\"bottom\":840,\"width\":1720,\"height\":733},\"dockedState\":\"true\"}"
+  },
+  {
+    "name": "S1 geometry @1100px/board: grip-flush (closed) — the grip's own left edge sits flush (no gap) against the paper's right edge",
+    "pass": true,
+    "detail": "{\"gripLeft\":1067,\"paperRight\":1067}"
+  },
+  {
+    "name": "S1 geometry @1100px/board: grip-clears-panel (open) [tutor-drawer-arrow successor] — the grip MOVES once the panel opens, landing 16px outside the panel's own near edge (never inside its tab row)",
+    "pass": true,
+    "detail": "{\"gripRight\":677,\"panelLeft\":693,\"gap\":16}"
+  },
+  {
+    "name": "S1 geometry @1100px/board: paper rect BYTE-IDENTICAL, closed -> open",
+    "pass": true,
+    "detail": "{\"paperClosed\":{\"left\":33,\"right\":1067,\"top\":105,\"bottom\":836,\"width\":1034,\"height\":731},\"paperOpen\":{\"left\":33,\"right\":1067,\"top\":105,\"bottom\":836,\"width\":1034,\"height\":731}}"
+  },
+  {
+    "name": "S1 geometry @1100px/board: [FX18 successor — the new margin-aware law] the OPEN panel never exceeds the reading measure open-w (374px), and on a WIDE writing surface (margin 0px >= 280) it occupies the margin WITHOUT covering the paper (panel.left >= paper.right). FX10 S1's \"always full open-w overlay\" is A4-parked above; superseded by SV24/SV26.",
+    "pass": true,
+    "detail": "{\"panelOpenWidth\":374,\"expectedOpenW\":374,\"marginOpen\":0,\"paperRight\":1067,\"panelLeft\":693,\"surface\":\"board\",\"width\":1100}"
+  },
+  {
+    "name": "S1 geometry @1100px/board: paper rect BYTE-IDENTICAL after invoking the dock control (whether it genuinely docks or, below the floor, falls back to closing — either way the paper never moves)",
+    "pass": true,
+    "detail": "{\"paperClosed\":{\"left\":33,\"right\":1067,\"top\":105,\"bottom\":836,\"width\":1034,\"height\":731},\"paperAfterDock\":{\"left\":33,\"right\":1067,\"top\":105,\"bottom\":836,\"width\":1034,\"height\":731},\"dockedState\":\"false\"}"
+  },
+  {
+    "name": "S1 geometry @1280px/board: grip-flush (closed) — the grip's own left edge sits flush (no gap) against the paper's right edge",
+    "pass": true,
+    "detail": "{\"gripLeft\":1190,\"paperRight\":1190}"
+  },
+  {
+    "name": "S1 geometry @1280px/board: grip-clears-panel (open) [tutor-drawer-arrow successor] — the grip MOVES once the panel opens, landing 16px outside the panel's own near edge (never inside its tab row)",
+    "pass": true,
+    "detail": "{\"gripRight\":790.390625,\"panelLeft\":806.421875,\"gap\":16.03125}"
+  },
+  {
+    "name": "S1 geometry @1280px/board: paper rect BYTE-IDENTICAL, closed -> open",
+    "pass": true,
+    "detail": "{\"paperClosed\":{\"left\":90,\"right\":1190,\"top\":105,\"bottom\":836,\"width\":1100,\"height\":731},\"paperOpen\":{\"left\":90,\"right\":1190,\"top\":105,\"bottom\":836,\"width\":1100,\"height\":731}}"
+  },
+  {
+    "name": "S1 geometry @1280px/board: [FX18 successor — the new margin-aware law] the OPEN panel never exceeds the reading measure open-w (435px), and on a WIDE writing surface (margin 52px >= 280) it occupies the margin WITHOUT covering the paper (panel.left >= paper.right). FX10 S1's \"always full open-w overlay\" is A4-parked above; superseded by SV24/SV26.",
+    "pass": true,
+    "detail": "{\"panelOpenWidth\":435.1875,\"expectedOpenW\":435.20000000000005,\"marginOpen\":52,\"paperRight\":1190,\"panelLeft\":806.421875,\"surface\":\"board\",\"width\":1280}"
+  },
+  {
+    "name": "S1 geometry @1280px/board: paper rect BYTE-IDENTICAL after invoking the dock control (whether it genuinely docks or, below the floor, falls back to closing — either way the paper never moves)",
+    "pass": true,
+    "detail": "{\"paperClosed\":{\"left\":90,\"right\":1190,\"top\":105,\"bottom\":836,\"width\":1100,\"height\":731},\"paperAfterDock\":{\"left\":90,\"right\":1190,\"top\":105,\"bottom\":836,\"width\":1100,\"height\":731},\"dockedState\":\"false\"}"
+  },
+  {
+    "name": "S1 geometry @2200px/board: grip-flush (closed) — the grip's own left edge sits flush (no gap) against the paper's right edge",
+    "pass": true,
+    "detail": "{\"gripLeft\":1650,\"paperRight\":1650}"
+  },
+  {
+    "name": "S1 geometry @2200px/board: grip-clears-panel (open) [tutor-drawer-arrow successor] — the grip MOVES once the panel opens, landing 16px outside the panel's own near edge (never inside its tab row)",
+    "pass": true,
+    "detail": "{\"gripRight\":1484,\"panelLeft\":1500,\"gap\":16}"
+  },
+  {
+    "name": "S1 geometry @2200px/board: paper rect BYTE-IDENTICAL, closed -> open",
+    "pass": true,
+    "detail": "{\"paperClosed\":{\"left\":550,\"right\":1650,\"top\":108,\"bottom\":839,\"width\":1100,\"height\":731},\"paperOpen\":{\"left\":550,\"right\":1650,\"top\":108,\"bottom\":839,\"width\":1100,\"height\":731}}"
+  },
+  {
+    "name": "S1 geometry @2200px/board: [FX18 successor — the new margin-aware law] the OPEN panel never exceeds the reading measure open-w (460px), and on a WIDE writing surface (margin 310px >= 280) it occupies the margin WITHOUT covering the paper (panel.left >= paper.right). FX10 S1's \"always full open-w overlay\" is A4-parked above; superseded by SV24/SV26.",
+    "pass": true,
+    "detail": "{\"panelOpenWidth\":460,\"expectedOpenW\":460,\"marginOpen\":310,\"paperRight\":1650,\"panelLeft\":1500,\"surface\":\"board\",\"width\":2200}"
+  },
+  {
+    "name": "S1 geometry @2200px/board: paper rect BYTE-IDENTICAL after invoking the dock control (whether it genuinely docks or, below the floor, falls back to closing — either way the paper never moves)",
+    "pass": true,
+    "detail": "{\"paperClosed\":{\"left\":550,\"right\":1650,\"top\":108,\"bottom\":839,\"width\":1100,\"height\":731},\"paperAfterDock\":{\"left\":550,\"right\":1650,\"top\":108,\"bottom\":839,\"width\":1100,\"height\":731},\"dockedState\":\"true\"}"
+  },
+  {
+    "name": "S1 motion: the tutor panel's own live computed transition-duration EQUALS the tool pop-out's (the sliver panel's) own live computed transition-duration",
+    "pass": true,
+    "detail": "{\"tutorMotion\":{\"duration\":\"0.2s, 0s\",\"property\":\"opacity, visibility\",\"easing\":\"ease, linear\"},\"sliverMotion\":{\"duration\":\"0.2s, 0s\",\"property\":\"opacity, visibility\",\"easing\":\"ease, linear\"}}"
+  },
+  {
+    "name": "S1 motion: the tutor panel's own live computed transition-timing-function (easing) EQUALS the tool pop-out's own",
+    "pass": true,
+    "detail": "{\"tutorMotion\":{\"duration\":\"0.2s, 0s\",\"property\":\"opacity, visibility\",\"easing\":\"ease, linear\"},\"sliverMotion\":{\"duration\":\"0.2s, 0s\",\"property\":\"opacity, visibility\",\"easing\":\"ease, linear\"}}"
+  },
+  {
+    "name": "S1 motion [Phase 1 successor]: the panel keeps the FADE (opacity, never width/border) and its sliding layer carries the SLIDE (transform) - on both hands, with the same duration and easing",
+    "pass": true,
+    "detail": "{\"tutorMotion\":{\"duration\":\"0.2s, 0s\",\"property\":\"opacity, visibility\",\"easing\":\"ease, linear\"},\"sliverMotion\":{\"duration\":\"0.2s, 0s\",\"property\":\"opacity, visibility\",\"easing\":\"ease, linear\"},\"layerMotion\":{\"tutor\":{\"property\":\"transform\",\"duration\":\"0.2s\",\"easing\":\"ease\"},\"sliver\":{\"property\":\"transform\",\"duration\":\"0.2s\",\"easing\":\"ease\"}}}"
+  },
+  {
+    "name": "S1 motion [Phase 1 successor]: the SLIDING LAYER's transform genuinely changes open vs closed (a real translateX, from behind the tab) while the panel itself stays put",
+    "pass": true,
+    "detail": "{\"closedLayerTransform\":\"matrix(1, 0, 0, 1, -280, 0)\",\"openLayerTransform\":\"none\",\"closedTransform\":\"none\",\"openTransform\":\"none\"}"
+  },
+  {
+    "name": "S1/A15 [Phase 1 successor]: under prefers-reduced-motion the drawer is FADE ONLY and SHORT - the panel still fades over a real time (> 0 and <= 150 ms), and its sliding layer has no travel (no transform, and nothing longer than the app's 1 ms floor)",
+    "pass": true,
+    "detail": "{\"reducedTransition\":\"0.12s\",\"reducedLayerTransition\":\"1e-05s\",\"reducedLayerTransform\":\"none\"}"
+  },
+  {
+    "name": "S1 no-scroll-within-scroll: the rich fixture actually mounts a real subtree to walk (not a vacuous sweep)",
+    "pass": true,
+    "detail": "46"
+  },
+  {
+    "name": "S1 no-scroll-within-scroll: NO descendant of the panel owns its own scrollbar (computed overflow walked across every actual descendant) — the panel itself is the ONLY scroll region",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "S1 no-scroll-within-scroll: the panel itself IS the one scroll region (overflow-y: auto)",
+    "pass": true,
+    "detail": "auto"
+  },
+  {
+    "name": "S1 no-scroll-within-scroll: no message bubble carries a max-height clamp — it grows to its own content",
+    "pass": true,
+    "detail": "[{\"maxHeight\":\"none\",\"height\":\"39px\"},{\"maxHeight\":\"none\",\"height\":\"104px\"}]"
+  },
+  {
+    "name": "S1 center of gravity: the conversation block renders BEFORE the lens/nudge sections in DOM order",
+    "pass": true,
+    "detail": "{\"order\":[\"wz-tutor-dock-btn\",\"wz-tutor-convo\",\"wz-tutor-sections\"],\"convoIdx\":1,\"sectionsIdx\":2}"
+  },
+  {
+    "name": "A13 structural walk (repeated): the rich fixture actually mounts multiple control species (not a vacuous sweep)",
+    "pass": true,
+    "detail": "14"
+  },
+  {
+    "name": "A13 structural walk (repeated): no insert/apply/copy-into-page affordance keyword exists anywhere in the panel",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a fragment-item control TRAVELS (a lawful exception — never inserts into any page)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): activating a \"wz-drawer-tab\" control never changes the page's own text",
+    "pass": true,
+    "detail": "wz-drawer-tab"
+  },
+  {
+    "name": "A13 structural walk (repeated): the sweep actually walked at least one control",
+    "pass": true,
+    "detail": "41"
+  },
+  {
+    "name": "A15: an undocked panel dissolves (closes) on the first keystroke back in the editor",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "A15: a DOCKED panel survives a keystroke (the dock rider)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "A15: Escape dismisses a DOCKED panel too (closes and undocks)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "A15: Escape closes an open, undocked panel",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "S2 root cause @1100px: DeskRail itself does NOT mount on a framed surface — the \"far left menu strip\" Nick saw is .desk-frame-strip, not .desk-rail",
+    "pass": true,
+    "detail": "{\"railExists\":false,\"stripExists\":true,\"stripClasses\":\"desk-frame-strip chrome-fade desk-dissolve\"}"
+  },
+  {
+    "name": "S2 root cause @1100px: the strip now carries the SAME chrome-fade + desk-dissolve pair every other dissolving DeskFrame track carries — the one vanishing engine, no second implementation",
+    "pass": true,
+    "detail": "desk-frame-strip chrome-fade desk-dissolve"
+  },
+  {
+    "name": "S2 @1100px: the SAME first-keystroke trigger every other piece of chrome obeys also dissolves the strip (data-chrome-receded/data-writing both flip true)",
+    "pass": true,
+    "detail": "{\"hostChromeReceded\":\"true\",\"frameWriting\":\"true\",\"stripOpacity\":0.109244,\"stripPointerEvents\":\"none\"}"
+  },
+  {
+    "name": "S2 @1100px: the strip's own opacity drops to the SAME ambient floor every other dissolving surface uses (--fade-min, ~0.08) — no longer exempting itself from the vanishing law",
+    "pass": true,
+    "detail": "{\"hostChromeReceded\":\"true\",\"frameWriting\":\"true\",\"stripOpacity\":0.109244,\"stripPointerEvents\":\"none\"}"
+  },
+  {
+    "name": "S2 @1100px: the dissolved strip is genuinely inert (pointer-events:none) — the SAME contract every dissolved surface carries",
+    "pass": true,
+    "detail": "none"
+  },
+  {
+    "name": "S2 root cause @1280px: DeskRail itself does NOT mount on a framed surface — the \"far left menu strip\" Nick saw is .desk-frame-strip, not .desk-rail",
+    "pass": true,
+    "detail": "{\"railExists\":false,\"stripExists\":true,\"stripClasses\":\"desk-frame-strip chrome-fade desk-dissolve\"}"
+  },
+  {
+    "name": "S2 root cause @1280px: the strip now carries the SAME chrome-fade + desk-dissolve pair every other dissolving DeskFrame track carries — the one vanishing engine, no second implementation",
+    "pass": true,
+    "detail": "desk-frame-strip chrome-fade desk-dissolve"
+  },
+  {
+    "name": "S2 @1280px: the SAME first-keystroke trigger every other piece of chrome obeys also dissolves the strip (data-chrome-receded/data-writing both flip true)",
+    "pass": true,
+    "detail": "{\"hostChromeReceded\":\"true\",\"frameWriting\":\"true\",\"stripOpacity\":0.110942,\"stripPointerEvents\":\"none\"}"
+  },
+  {
+    "name": "S2 @1280px: the strip's own opacity drops to the SAME ambient floor every other dissolving surface uses (--fade-min, ~0.08) — no longer exempting itself from the vanishing law",
+    "pass": true,
+    "detail": "{\"hostChromeReceded\":\"true\",\"frameWriting\":\"true\",\"stripOpacity\":0.110942,\"stripPointerEvents\":\"none\"}"
+  },
+  {
+    "name": "S2 @1280px: the dissolved strip is genuinely inert (pointer-events:none) — the SAME contract every dissolved surface carries",
+    "pass": true,
+    "detail": "none"
+  },
+  {
+    "name": "S2 root cause @2200px: DeskRail itself does NOT mount on a framed surface — the \"far left menu strip\" Nick saw is .desk-frame-strip, not .desk-rail",
+    "pass": true,
+    "detail": "{\"railExists\":false,\"stripExists\":true,\"stripClasses\":\"desk-frame-strip chrome-fade desk-dissolve\"}"
+  },
+  {
+    "name": "S2 root cause @2200px: the strip now carries the SAME chrome-fade + desk-dissolve pair every other dissolving DeskFrame track carries — the one vanishing engine, no second implementation",
+    "pass": true,
+    "detail": "desk-frame-strip chrome-fade desk-dissolve"
+  },
+  {
+    "name": "S2 @2200px: the SAME first-keystroke trigger every other piece of chrome obeys also dissolves the strip (data-chrome-receded/data-writing both flip true)",
+    "pass": true,
+    "detail": "{\"hostChromeReceded\":\"true\",\"frameWriting\":\"true\",\"stripOpacity\":0.112697,\"stripPointerEvents\":\"none\"}"
+  },
+  {
+    "name": "S2 @2200px: the strip's own opacity drops to the SAME ambient floor every other dissolving surface uses (--fade-min, ~0.08) — no longer exempting itself from the vanishing law",
+    "pass": true,
+    "detail": "{\"hostChromeReceded\":\"true\",\"frameWriting\":\"true\",\"stripOpacity\":0.112697,\"stripPointerEvents\":\"none\"}"
+  },
+  {
+    "name": "S2 @2200px: the dissolved strip is genuinely inert (pointer-events:none) — the SAME contract every dissolved surface carries",
+    "pass": true,
+    "detail": "none"
+  },
+  {
+    "name": "S2 reduced-motion: the strip's own opacity transition is suppressed under prefers-reduced-motion (the SAME branch every other chrome-fade/desk-dissolve surface already honors)",
+    "pass": true,
+    "detail": "1e-05s"
+  },
+  {
+    "name": "S2 legacy (<1100px) sanity: DeskRail still mounts (unframed) and its own dissolve is untouched by this ticket",
+    "pass": true,
+    "detail": "{\"railExists\":true,\"receded\":\"true\"}"
+  },
+  {
+    "name": "S3 sliver: chrome is genuinely dissolved with the menu structurally still open (data-open stays true — only its ambient opacity changed)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "S3 sliver: the dissolved panel is genuinely inert (pointer-events:none) — proving a hover-driven restore CANNOT rely on the panel's own hover/pointerenter (it cannot fire one)",
+    "pass": true,
+    "detail": "none"
+  },
+  {
+    "name": "S3 sliver: the dissolved-but-open panel sits well inland from any viewport edge (not a coincidental edge-dwell match)",
+    "pass": true,
+    "detail": "{\"left\":111.984375,\"right\":311.984375,\"top\":107,\"bottom\":840,\"width\":200,\"height\":733}"
+  },
+  {
+    "name": "S3 sliver: a GENUINE TRUSTED pointer move onto the dissolved-but-open panel (no click, ever) restores it to full view",
+    "pass": true,
+    "detail": "{\"resurfaced\":true}"
+  },
+  {
+    "name": "S3 strip: chrome (including the newly-dissolving strip, S2) is genuinely dissolved",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "S3 strip: the SAME genuine trusted hover-restore (no click) also restores the strip — proving the fix is shared machinery every dissolved surface inherits, not a one-off patch on the sliver alone",
+    "pass": true,
+    "detail": "{\"stripResurfaced\":true}"
+  },
+  {
+    "name": "S3 negative control: casual pointer movement over the PAGE itself (never touching any chrome-fade/desk-dissolve rect) does NOT summon chrome — reaching for chrome still takes deliberate contact",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "S4 @1100px: the scrollbar's own rect (mode-scroll's border-box edge) sits FLUSH against the paper's right edge — zero gap beyond the paper's own 1px border",
+    "pass": true,
+    "detail": "{\"scrollRight\":1006.4971923828125,\"pageRight\":1007.9745788574219,\"gap\":1.477386474609375,\"scrollLeft\":201.2449951171875,\"pageContentLeft\":165.95073510742188,\"scrollContentWidth\":732.311197265625,\"pageContentWidth\":768.0828437499999}"
+  },
+  {
+    "name": "S4 @1100px: the text measure is UNCHANGED — mode-scroll's own content-box width still equals mode-page's own content-box width, exactly the equivalence the pre-fix (zero-padding) markup guaranteed by construction",
+    "pass": false,
+    "detail": "{\"scrollRight\":1006.4971923828125,\"pageRight\":1007.9745788574219,\"gap\":1.477386474609375,\"scrollLeft\":201.2449951171875,\"pageContentLeft\":165.95073510742188,\"scrollContentWidth\":732.311197265625,\"pageContentWidth\":768.0828437499999}"
+  },
+  {
+    "name": "S4 @1100px: the LEFT edge of the writing area is untouched (only the right side moved, per Nick's own words)",
+    "pass": false,
+    "detail": "{\"scrollRight\":1006.4971923828125,\"pageRight\":1007.9745788574219,\"gap\":1.477386474609375,\"scrollLeft\":201.2449951171875,\"pageContentLeft\":165.95073510742188,\"scrollContentWidth\":732.311197265625,\"pageContentWidth\":768.0828437499999}"
+  },
+  {
+    "name": "S4 @1280px: the scrollbar's own rect (mode-scroll's border-box edge) sits FLUSH against the paper's right edge — zero gap beyond the paper's own 1px border",
+    "pass": true,
+    "detail": "{\"scrollRight\":1134.379638671875,\"pageRight\":1135.9797668457031,\"gap\":1.600128173828125,\"scrollLeft\":262.3046875,\"pageContentLeft\":217.94566918945313,\"scrollContentWidth\":799.133951171875,\"pageContentWidth\":844.0930976562499}"
+  },
+  {
+    "name": "S4 @1280px: the text measure is UNCHANGED — mode-scroll's own content-box width still equals mode-page's own content-box width, exactly the equivalence the pre-fix (zero-padding) markup guaranteed by construction",
+    "pass": false,
+    "detail": "{\"scrollRight\":1134.379638671875,\"pageRight\":1135.9797668457031,\"gap\":1.600128173828125,\"scrollLeft\":262.3046875,\"pageContentLeft\":217.94566918945313,\"scrollContentWidth\":799.133951171875,\"pageContentWidth\":844.0930976562499}"
+  },
+  {
+    "name": "S4 @1280px: the LEFT edge of the writing area is untouched (only the right side moved, per Nick's own words)",
+    "pass": false,
+    "detail": "{\"scrollRight\":1134.379638671875,\"pageRight\":1135.9797668457031,\"gap\":1.600128173828125,\"scrollLeft\":262.3046875,\"pageContentLeft\":217.94566918945313,\"scrollContentWidth\":799.133951171875,\"pageContentWidth\":844.0930976562499}"
+  },
+  {
+    "name": "S4 @2200px: the scrollbar's own rect (mode-scroll's border-box edge) sits FLUSH against the paper's right edge — zero gap beyond the paper's own 1px border",
+    "pass": true,
+    "detail": "{\"scrollRight\":1594.379638671875,\"pageRight\":1595.979736328125,\"gap\":1.60009765625,\"scrollLeft\":722.3046875,\"pageContentLeft\":677.945638671875,\"scrollContentWidth\":799.133951171875,\"pageContentWidth\":844.0930976562499}"
+  },
+  {
+    "name": "S4 @2200px: the text measure is UNCHANGED — mode-scroll's own content-box width still equals mode-page's own content-box width, exactly the equivalence the pre-fix (zero-padding) markup guaranteed by construction",
+    "pass": false,
+    "detail": "{\"scrollRight\":1594.379638671875,\"pageRight\":1595.979736328125,\"gap\":1.60009765625,\"scrollLeft\":722.3046875,\"pageContentLeft\":677.945638671875,\"scrollContentWidth\":799.133951171875,\"pageContentWidth\":844.0930976562499}"
+  },
+  {
+    "name": "S4 @2200px: the LEFT edge of the writing area is untouched (only the right side moved, per Nick's own words)",
+    "pass": false,
+    "detail": "{\"scrollRight\":1594.379638671875,\"pageRight\":1595.979736328125,\"gap\":1.60009765625,\"scrollLeft\":722.3046875,\"pageContentLeft\":677.945638671875,\"scrollContentWidth\":799.133951171875,\"pageContentWidth\":844.0930976562499}"
+  }
+]
+[
+  {
+    "name": "PARKED for the page surface (was \"S1 geometry @1100px/page: grip-clears-panel (open) [tutor-drawer-arrow successor] — the grip MOVES once the panel opens, landing 16px outside the panel's own near edge (never inside its tab row)\") — the drawer mirror: the tab never moves, the panel starts at it; live successor: S1 geometry @1100px/page: grip-clears-panel (open) [drawer-mirror successor]",
+    "pass": true,
+    "detail": "{\"width\":1100,\"gripClosed\":{\"left\":970,\"right\":986,\"top\":123,\"bottom\":157,\"width\":16,\"height\":34},\"gripOpen\":{\"left\":970,\"right\":986,\"top\":123,\"bottom\":157,\"width\":16,\"height\":34},\"panelLeft\":693,\"margin\":59,\"gripOnTop\":true}"
+  },
+  {
+    "name": "PARKED for the page surface (was \"S1 geometry @1280px/page: grip-clears-panel (open) [tutor-drawer-arrow successor] — the grip MOVES once the panel opens, landing 16px outside the panel's own near edge (never inside its tab row)\") — the drawer mirror: the tab never moves, the panel starts at it; live successor: S1 geometry @1280px/page: grip-clears-panel (open) [drawer-mirror successor]",
+    "pass": true,
+    "detail": "{\"width\":1280,\"gripClosed\":{\"left\":1109.625,\"right\":1125.625,\"top\":123,\"bottom\":157,\"width\":16,\"height\":34},\"gripOpen\":{\"left\":1109.625,\"right\":1125.625,\"top\":123,\"bottom\":157,\"width\":16,\"height\":34},\"panelLeft\":806.609375,\"margin\":106,\"gripOnTop\":true}"
+  },
+  {
+    "name": "PARKED for the page surface (was \"S1 geometry @2200px/page: grip-clears-panel (open) [tutor-drawer-arrow successor] — the grip MOVES once the panel opens, landing 16px outside the panel's own near edge (never inside its tab row)\") — the drawer mirror: the tab never moves, the panel starts at it; live successor: S1 geometry @2200px/page: grip-clears-panel (open) [drawer-mirror successor]",
+    "pass": true,
+    "detail": "{\"width\":2200,\"gripClosed\":{\"left\":1596,\"right\":1612,\"top\":123,\"bottom\":157,\"width\":16,\"height\":34},\"gripOpen\":{\"left\":1596,\"right\":1612,\"top\":123,\"bottom\":157,\"width\":16,\"height\":34},\"panelLeft\":1612,\"margin\":364,\"gripOnTop\":true}"
+  },
+  {
+    "name": "PARKED for the page surface (was \"S1 geometry @1100px/page: grip-flush (closed) — the grip's own left edge sits flush (no gap) against the paper's right edge\") — page-size: the paper is the painted .mode-page; live successor: S1 geometry @1100px/page: grip-flush (closed) [page-size successor]",
+    "pass": true,
+    "detail": "{\"width\":1100,\"gripLeft\":970,\"pageRight\":1007.9745788574219,\"textRight\":888.3975830078125,\"margin\":59.025421142578125,\"zoom\":\"true\"}"
+  },
+  {
+    "name": "PARKED for the page surface (was \"S1 geometry @1280px/page: grip-flush (closed) — the grip's own left edge sits flush (no gap) against the paper's right edge\") — page-size: the paper is the painted .mode-page; live successor: S1 geometry @1280px/page: grip-flush (closed) [page-size successor]",
+    "pass": true,
+    "detail": "{\"width\":1280,\"gripLeft\":1109.625,\"pageRight\":1135.9797668457031,\"textRight\":1008.0797119140625,\"margin\":105.62960815429688,\"zoom\":\"true\"}"
+  },
+  {
+    "name": "PARKED for the page surface (was \"S1 geometry @2200px/page: grip-flush (closed) — the grip's own left edge sits flush (no gap) against the paper's right edge\") — page-size: the paper is the painted .mode-page; live successor: S1 geometry @2200px/page: grip-flush (closed) [page-size successor]",
+    "pass": true,
+    "detail": "{\"width\":2200,\"gripLeft\":1596,\"pageRight\":1595.979736328125,\"textRight\":1468.0797119140625,\"margin\":364.020263671875,\"zoom\":\"true\"}"
+  }
+]
+
+FX10 PARKED: PASS (6 checks) — HARNESS_PARKED=1 armed; fx10.mjs parks 6 of its own (Oct 24: page-size's S1 grip-flush and the drawer mirror's S1 grip-clears-panel, each on the page surface)
+
+FX10 VERIFY: FAIL — 6/121 failed

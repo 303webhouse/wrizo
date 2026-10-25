@@ -1,0 +1,15 @@
+toplevel: C:/Users/nickh/writer-studio/.claude/worktrees/b10
+base: c81c39bc
+== merging page-size-r3 @ abffa813  (contains base: yes)
+   -> dbbb3d5c  unmerged files: 0
+== merging scrollbar-flush @ 0cdf4d72  (contains base: yes)
+Auto-merging apps/desktop/scripts/harness/fx5.mjs
+Auto-merging apps/desktop/src/index.css
+   -> 8eae05cf  unmerged files: 0
+== merging machina-fixes-7 @ 8d7a7d61  (contains base: yes)
+CONFLICT (content): Merge conflict in apps/desktop/scripts/harness/th-machina-source.mjs
+Auto-merging apps/desktop/src/components/ModeStage.tsx
+Auto-merging apps/desktop/src/index.css
+Automatic merge failed; fix conflicts and then commit the result.
+   -> 8eae05cf  unmerged files: 1
+CONFLICT - STOP

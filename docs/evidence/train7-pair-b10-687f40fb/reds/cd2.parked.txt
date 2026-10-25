@@ -1,0 +1,355 @@
+
+ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one)
+[
+  {
+    "name": "BIG PROJECTS 1a successor of the CD3 strip-shape check @ 1280px: the strip is present with four groups (3 hairline separators) and SEVEN categories (the place block, Pages, Boards, Journal, Settings, Themes, Trash), icon+label, focusable (real <button>s)",
+    "pass": true,
+    "detail": "{\"present\":true,\"sepCount\":3,\"itemCount\":7,\"labels\":[\"Unsorted\",\"Pages\",\"Boards\",\"Journal\",\"Settings\",\"Themes\",\"Trash\"],\"focusable\":true,\"stripCats\":[\"drawers\",\"page\",\"plan\",\"journal\",\"settings\",\"theme\",\"trash\"]}"
+  },
+  {
+    "name": "BIG PROJECTS 1a successor of the VW1 roster-as-a-set check @ 1280px: the strip carries the SAME seven categories at both widths, compared as a SET by data-category (order is vw1.mjs's to rule)",
+    "pass": true,
+    "detail": "[\"drawers\",\"page\",\"plan\",\"journal\",\"settings\",\"theme\",\"trash\"]"
+  },
+  {
+    "name": "BIG PROJECTS 1a successor of the CD3 strip-shape check @ 2200px: the strip is present with four groups (3 hairline separators) and SEVEN categories (the place block, Pages, Boards, Journal, Settings, Themes, Trash), icon+label, focusable (real <button>s)",
+    "pass": true,
+    "detail": "{\"present\":true,\"sepCount\":3,\"itemCount\":7,\"labels\":[\"Unsorted\",\"Pages\",\"Boards\",\"Journal\",\"Settings\",\"Themes\",\"Trash\"],\"focusable\":true,\"stripCats\":[\"drawers\",\"page\",\"plan\",\"journal\",\"settings\",\"theme\",\"trash\"]}"
+  },
+  {
+    "name": "BIG PROJECTS 1a successor of the VW1 roster-as-a-set check @ 2200px: the strip carries the SAME seven categories at both widths, compared as a SET by data-category (order is vw1.mjs's to rule)",
+    "pass": true,
+    "detail": "[\"drawers\",\"page\",\"plan\",\"journal\",\"settings\",\"theme\",\"trash\"]"
+  },
+  {
+    "name": "S3 [word-diet-layouts successor]: clicking Journal opens layer 2 with \"Open the Journal\" and \"New Page\"",
+    "pass": true,
+    "detail": "{\"open\":true,\"title\":\"Journal\",\"hasOpenJournal\":true,\"hasNewPage\":true}"
+  },
+  {
+    "name": "B2 S4 successor [word-diet successor]: the Page panel carries the Page face's contents (title, star, home line, tags, Move/Copy, Port)",
+    "pass": true,
+    "detail": "{\"title\":\"Pages\",\"hasTitle\":true,\"hasStar\":true,\"hasHome\":true,\"hasTags\":true,\"moveCopyGone\":true,\"hasPort\":true,\"hasPlaces\":true,\"footerAbsentOnProjectPage\":true}"
+  },
+  {
+    "name": "S3 [word-diet successor]: the home label still names the project (\"Untitled\" — this fixture never typed a title — name, not narration) through the cascade's Page panel",
+    "pass": true,
+    "detail": "Untitled"
+  },
+  {
+    "name": "S3/DoD [word-diet successor]: on a loose (unfiled) page, the Page panel carries NO footer at all now (REMOVE)",
+    "pass": true,
+    "detail": "undefined"
+  },
+  {
+    "name": "S3 (successor to ab3.mjs's \"S2: the Page face's star toggle actually persists to entry.starred\"): the star toggle still persists through the cascade's Page panel",
+    "pass": true,
+    "detail": "true / true"
+  },
+  {
+    "name": "S1 (successor to ab3.mjs's \"R3: the drawer's active pull is not brass\"): the strip's active category is not brass either (olive/--accent-rest per the foundations)",
+    "pass": true,
+    "detail": "rgb(150, 160, 90)"
+  },
+  {
+    "name": "S3 (successor to ab3.mjs's own keystroke-dissolve check, Page-panel-specific): typing while the Page panel is open dissolves it too, same engine",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "S3: clicking Drawers opens layer 2, titled \"Drawers\"",
+    "pass": true,
+    "detail": "Drawers"
+  },
+  {
+    "name": "S3 [big-projects-1a successor]: there is no Shelf tab - the Shelf is merged into the Journal (display only)",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "S3: the Settings panel is site-wide (Full screen present) — \"what exists today, invent nothing\"",
+    "pass": true,
+    "detail": "{\"title\":\"Settings\",\"hasFullscreen\":true}"
+  },
+  {
+    "name": "S3 (theme-picker successor) [Machina successor]: exactly three theme cards render (Arbor, Machina, Flux) - the built themes; absent, not grayed",
+    "pass": true,
+    "detail": "[{\"name\":\"Arbor\",\"locked\":false,\"disabled\":false,\"pressed\":\"true\",\"note\":null},{\"name\":\"Machina\",\"locked\":true,\"disabled\":true,\"pressed\":\"false\",\"note\":null},{\"name\":\"Flux\",\"locked\":true,\"disabled\":true,\"pressed\":\"false\",\"note\":null}]"
+  },
+  {
+    "name": "S3 (theme-picker successor): Arbor (the fixture's current theme) reads unlocked - not .locked, not disabled, aria-pressed=\"true\"",
+    "pass": true,
+    "detail": "{\"name\":\"Arbor\",\"locked\":false,\"disabled\":false,\"pressed\":\"true\",\"note\":null}"
+  },
+  {
+    "name": "S3 (theme-picker successor): Flux (not current; the test-double has no /api/theme-unlock route, status is null) reads LOCKED - disabled, aria-pressed=\"false\", no guessed note",
+    "pass": true,
+    "detail": "{\"name\":\"Flux\",\"locked\":true,\"disabled\":true,\"pressed\":\"false\",\"note\":null}"
+  },
+  {
+    "name": "S3 (theme-picker successor) of \"one click switches the theme\": while Flux is LOCKED, clicking its card does nothing - data-theme and storage stay on Arbor/plateau",
+    "pass": true,
+    "detail": "{\"dataTheme\":\"plateau\",\"persisted\":null}"
+  },
+  {
+    "name": "S3 (theme-picker successor): once Flux is the active theme, its card reads unlocked and current (aria-pressed=\"true\") with no server unlock data - the \"current theme\" clause needs none",
+    "pass": true,
+    "detail": "{\"locked\":false,\"disabled\":false,\"pressed\":\"true\"}"
+  },
+  {
+    "name": "S2: Journal's \"All pages →\" auto-opens the survey (layer 3) from a layer-2 choice — never something to discover",
+    "pass": true,
+    "detail": "{\"open\":true,\"title\":\"Journal\",\"stripStillPresent\":true}"
+  },
+  {
+    "name": "S2/DoD: the paper rect is byte-identical closed, with the panel open, and with the survey open too — the paper NEVER reflows",
+    "pass": true,
+    "detail": "{\"paperRest\":{\"left\":38.390625,\"top\":107,\"width\":1203.21875,\"height\":733,\"right\":1241.609375,\"bottom\":840},\"paperPanelOpen\":{\"left\":38.390625,\"top\":107,\"width\":1203.21875,\"height\":733,\"right\":1241.609375,\"bottom\":840},\"paperSurveyOpen\":{\"left\":38.390625,\"top\":107,\"width\":1203.21875,\"height\":733,\"right\":1241.609375,\"bottom\":840}}"
+  },
+  {
+    "name": "S2: Escape walks back exactly one layer — survey closes, the panel (layer 2) stays open",
+    "pass": true,
+    "detail": "{\"surveyGone\":true,\"panelStillOpen\":true}"
+  },
+  {
+    "name": "S2: Escape walks back the second layer too — panel closes, the strip persists",
+    "pass": true,
+    "detail": "{\"panelGone\":true,\"stripPresent\":true}"
+  },
+  {
+    "name": "S2: a keystroke dissolves BOTH open layers (2-3) via the one vanishing engine, while the strip survives, fully opaque (never dissolving, S1's own law)",
+    "pass": true,
+    "detail": "{\"panelGone\":true,\"surveyGone\":true,\"stripPresent\":true,\"stripOpacity\":\"1\"}"
+  },
+  {
+    "name": "S4: the survey renders large thumbnails (title present on every card, no counts/badges begging attention)",
+    "pass": true,
+    "detail": "{\"thumbCount\":2,\"hasTitleText\":true,\"noBadgesOrCounts\":true,\"currentCount\":1,\"currentColor\":\"rgb(150, 160, 90)\"}"
+  },
+  {
+    "name": "S4: exactly ONE item — the current page — is marked olive; the sibling is not",
+    "pass": true,
+    "detail": "{\"thumbCount\":2,\"hasTitleText\":true,\"noBadgesOrCounts\":true,\"currentCount\":1,\"currentColor\":\"rgb(150, 160, 90)\"}"
+  },
+  {
+    "name": "S4: clicking a survey thumbnail travels (mounts it in the main area)",
+    "pass": true,
+    "detail": "#/page/cd2-journal-b"
+  },
+  {
+    "name": "BIG PROJECTS 1a successor of \"B2 S7 ...\": the Drawers tab is the place switcher - Drawers then Journals, + New Drawer, no tiles, and NO count/badge/timestamp anywhere in its text",
+    "pass": true,
+    "detail": "{\"groups\":[\"drawers\",\"journals\"],\"hasNewDrawer\":true,\"tilesGone\":true,\"bodyText\":\"DRAWERS\\nUnsorted\\nJOURNALS\\nJournal\\n＋ New Drawer\"}"
+  },
+  {
+    "name": "BIG PROJECTS 1a successor of \"B2 S7: a Drawers tile tap travels\": a section row in the Pages pop-out opens its page (the row is where the tile was)",
+    "pass": true,
+    "detail": "{\"sectionRowTap\":true,\"sectionRowRoute\":\"#/page/mvn90fzrtar3c0jul\"}"
+  },
+  {
+    "name": "S2 (dock, pre-condition): the panel sits left of the survey (strip -> panel -> survey -> paper, cascading rightward)",
+    "pass": true,
+    "detail": "{\"panelLeft\":83.984375,\"surveyLeft\":393.984375,\"surveyTitle\":\"Journal\",\"categoryActive\":true,\"surveyCount\":1}"
+  },
+  {
+    "name": "S2 (dock): closing layer 2 collapses the panel (data-visible=false, width->0) and the survey moves LEFT into its vacated slot — the SAME survey node (title unchanged, no duplicate), not a remount",
+    "pass": true,
+    "detail": "{\"beforeDock\":{\"panelLeft\":83.984375,\"surveyLeft\":393.984375,\"surveyTitle\":\"Journal\",\"categoryActive\":true,\"surveyCount\":1},\"afterDock\":{\"panelVisible\":\"false\",\"panelWidth\":0,\"surveyDocked\":\"true\",\"surveyLeft\":83.984375,\"surveyTitle\":\"Journal\",\"surveyCount\":1,\"categoryActive\":true}}"
+  },
+  {
+    "name": "S2 (dock): the strip's category stays olive throughout — the survey is still its open reach",
+    "pass": true,
+    "detail": "{\"panelVisible\":\"false\",\"panelWidth\":0,\"surveyDocked\":\"true\",\"surveyLeft\":83.984375,\"surveyTitle\":\"Journal\",\"surveyCount\":1,\"categoryActive\":true}"
+  },
+  {
+    "name": "T5 (vanishing-law rider): a DOCKED survey survives a keystroke — the writer's deliberate word to keep it",
+    "pass": true,
+    "detail": "{\"surveyStillPresent\":true,\"stillDocked\":\"true\"}"
+  },
+  {
+    "name": "S2 (dock): reopening the category restores BOTH the panel and the survey to their ORIGINAL slots",
+    "pass": true,
+    "detail": "{\"beforeDock\":{\"panelLeft\":83.984375,\"surveyLeft\":393.984375,\"surveyTitle\":\"Journal\",\"categoryActive\":true,\"surveyCount\":1},\"afterReopen\":{\"panelVisible\":\"true\",\"panelLeft\":83.984375,\"surveyDocked\":\"false\",\"surveyLeft\":393.984375}}"
+  },
+  {
+    "name": "T5 (contrast, SAME fixture): an UNDOCKED layer still dissolves on keystroke as before — the rider is genuinely conditional on docked state, not blanket",
+    "pass": true,
+    "detail": "{\"panelGone\":true,\"surveyGone\":true}"
+  },
+  {
+    "name": "T5: a docked survey's own explicit close button dismisses it entirely (category no longer olive)",
+    "pass": true,
+    "detail": "{\"surveyGone\":true,\"panelGone\":true,\"categoryActive\":false}"
+  },
+  {
+    "name": "S2: with prefers-reduced-motion, the panel's own dock transition is disabled (~0s — no animated slide)",
+    "pass": true,
+    "detail": "{\"panelDurations\":[0.00001]}"
+  },
+  {
+    "name": "S2: with prefers-reduced-motion, the survey's own slide/dock transition is disabled too (~0s)",
+    "pass": true,
+    "detail": "[0.00001]"
+  },
+  {
+    "name": "S2 @ 1100px floor: the paper rect never changes with the panel open (layers overlay, never reflow, at any width)",
+    "pass": true,
+    "detail": "{\"floorPaperClosed\":{\"left\":33,\"top\":107,\"width\":1034,\"height\":733,\"right\":1067,\"bottom\":840},\"floorPaperPanelOpen\":{\"left\":33,\"top\":107,\"width\":1034,\"height\":733,\"right\":1067,\"bottom\":840}}"
+  },
+  {
+    "name": "S2 @ 1100px floor (--cascade-margin=28.0px, BELOW the 120px floor): the dock affordance is unavailable — closing falls back to a full close instead of occluding the measure",
+    "pass": true,
+    "detail": "{\"marginAtFloor\":28,\"floorDockAttempt\":{\"surveyPresent\":false,\"surveyDocked\":null,\"surveyWidth\":null}}"
+  },
+  {
+    "name": "S2 @ 1100px floor: the paper rect stays byte-identical through the dock attempt too — the small-screen rule never reflows the paper, only ever overlays it",
+    "pass": true,
+    "detail": "{\"floorPaperClosed\":{\"left\":33,\"top\":107,\"width\":1034,\"height\":733,\"right\":1067,\"bottom\":840},\"floorPaperAfterDockAttempt\":{\"left\":33,\"top\":107,\"width\":1034,\"height\":733,\"right\":1067,\"bottom\":840}}"
+  },
+  {
+    "name": "S1/S5 (successor to ab1.mjs's \"...tool-rail/stage tracks are present\"): the strip track fills its own fixed width (--strip-width, 84px)",
+    "pass": true,
+    "detail": "{\"left\":0,\"top\":103,\"width\":84,\"height\":797,\"right\":84,\"bottom\":900}"
+  },
+  {
+    "name": "S1/S5 (successor to ab2.mjs's \"...tool-rail track rect is byte-identical across a mode switch...\"): the strip track rect is byte-identical across a mode switch too",
+    "pass": true,
+    "detail": "{\"left\":0,\"top\":103,\"width\":84,\"height\":797,\"right\":84,\"bottom\":900} -> {\"left\":0,\"top\":103,\"width\":84,\"height\":797,\"right\":84,\"bottom\":900}"
+  },
+  {
+    "name": "S1/S5 (successor to ab1.mjs's \"...tool-rail track sits at the same position on Board and Script...\"): the strip track sits at the same position regardless of pageType",
+    "pass": true,
+    "detail": "board={\"left\":0,\"top\":103,\"width\":84,\"height\":797,\"right\":84,\"bottom\":900} script={\"left\":0,\"top\":103,\"width\":84,\"height\":797,\"right\":84,\"bottom\":900}"
+  },
+  {
+    "name": "S1/S5 [page-size successor]: the PAPER (the painted .mode-page, zoomed or not) never overlaps the strip track at the gate floor (1100px)",
+    "pass": true,
+    "detail": "{\"gateFloorStripRect\":{\"left\":0,\"top\":103,\"width\":84,\"height\":797,\"right\":84,\"bottom\":900},\"gateFloorPaper\":{\"left\":92.00973510742188,\"right\":1007.9745788574219,\"width\":915.96484375,\"stageLeft\":33,\"stageRight\":1067,\"layoutW\":620,\"k\":1,\"z\":1.4774,\"zoomed\":true,\"editorW\":465}}"
+  },
+  {
+    "name": "CD3 canon (a) [big-projects-1a successor]: every one of the SEVEN strip items reads its resting color as --text-hi (never --brass), no hover/force applied - the place block included",
+    "pass": true,
+    "detail": "{\"textHi\":\"rgb(237, 230, 218)\",\"brass\":\"rgb(255, 152, 0)\",\"items\":[{\"label\":\"Unsorted\",\"color\":\"rgb(237, 230, 218)\",\"active\":false},{\"label\":\"Pages\",\"color\":\"rgb(237, 230, 218)\",\"active\":false},{\"label\":\"Boards\",\"color\":\"rgb(237, 230, 218)\",\"active\":false},{\"label\":\"Journal\",\"color\":\"rgb(237, 230, 218)\",\"active\":false},{\"label\":\"Settings\",\"color\":\"rgb(237, 230, 218)\",\"active\":false},{\"label\":\"Themes\",\"color\":\"rgb(237, 230, 218)\",\"active\":false},{\"label\":\"Trash\",\"color\":\"rgb(237, 230, 218)\",\"active\":false}]}"
+  },
+  {
+    "name": "CD3 canon (b) @ 1100px [page-size successor]: the painted paper is exactly the ruled page at the stage's scale - 8.5 page-inches (620px laid out) x k x the zoom, within 1px - and centred on the stage within 1px: the strip costs it nothing",
+    "pass": true,
+    "detail": "{\"ps\":{\"left\":92.00973510742188,\"right\":1007.9745788574219,\"width\":915.96484375,\"stageLeft\":33,\"stageRight\":1067,\"layoutW\":620,\"k\":1,\"z\":1.4774,\"zoomed\":true,\"editorW\":465},\"want\":915.988}"
+  },
+  {
+    "name": "CD3 canon (b) @ 1100px [display-pass successor]: the paper's Y position moves by EXACTLY the two disclosed amounts - 10px (the mode-strip box's dropped border+padding) + 2px (the display pass's smaller mode tabs, aa11f58) = 12px — not a silent additional drift",
+    "pass": true,
+    "detail": "{\"baselineTop\":119,\"nowTop\":107,\"delta\":12}"
+  },
+  {
+    "name": "CD3 canon (b) @ 2200px [page-size successor]: the painted paper is exactly the ruled page at the stage's scale - 8.5 page-inches (620px laid out) x k x the zoom, within 1px - and centred on the stage within 1px: the strip costs it nothing",
+    "pass": true,
+    "detail": "{\"ps\":{\"left\":604.004638671875,\"right\":1595.979736328125,\"width\":991.97509765625,\"stageLeft\":240,\"stageRight\":1960,\"layoutW\":620,\"k\":1,\"z\":1.6,\"zoomed\":true,\"editorW\":466},\"want\":992}"
+  },
+  {
+    "name": "CD3 canon (b) [page-size successor]: the text measure is the PAGE's, not the stage's - the editor's line length (layout px) is identical at 1100 and 2200",
+    "pass": false,
+    "detail": "{\"at1100\":465,\"at2200\":466}"
+  },
+  {
+    "name": "CD3 canon (b) @ 2200px [display-pass successor]: the paper's Y position moves by EXACTLY the two disclosed amounts - 10px (the mode-strip box's dropped border+padding) + 2px (the display pass's smaller mode tabs, aa11f58) = 12px — not a silent additional drift",
+    "pass": true,
+    "detail": "{\"baselineTop\":119,\"nowTop\":107,\"delta\":12}"
+  }
+]
+[
+  {
+    "name": "PARKED (was \"S3 (theme-picker successor): exactly two theme cards render (Arbor, Flux) - absent, not grayed\") - Machina's build (Oct 23): Machina joined with its own ThemeId and card; live successor: S3 [Machina successor]",
+    "pass": true,
+    "detail": "Arbor,Machina,Flux"
+  },
+  {
+    "name": "PARKED (was \"S1/S5 (successor to ab1.mjs's \"...at the gate floor (1100px): the page column never overlaps the tool-rail\"): the page column never overlaps the strip track at the gate floor either\") — page-size: the column is not the paper (painted by a transform; stage-wide in the zoom); live successor: S1/S5 [page-size successor]",
+    "pass": true,
+    "detail": "{\"strip\":{\"left\":0,\"top\":103,\"width\":84,\"height\":797,\"right\":84,\"bottom\":900},\"paper\":{\"left\":92.00973510742188,\"right\":1007.9745788574219,\"width\":915.96484375,\"stageLeft\":33,\"stageRight\":1067,\"layoutW\":620,\"k\":1,\"z\":1.4774,\"zoomed\":true,\"editorW\":465},\"pagecol\":{\"left\":33,\"top\":107,\"width\":1034,\"height\":733,\"right\":1067,\"bottom\":840}}"
+  },
+  {
+    "name": "PARKED (was \"CD3 canon (b) @ 1100px: the paper's own rect (.mode-pagecol/.mode-page) is byte-identical to main @ 8884d49 in left/width/right/height\") — page-size rulings a-c: the paper is the ruled letter page at the stage's scale; live successor: CD3 canon (b) @ 1100px [page-size successor]",
+    "pass": true,
+    "detail": "{\"left\":92.00973510742188,\"right\":1007.9745788574219,\"width\":915.96484375,\"stageLeft\":33,\"stageRight\":1067,\"layoutW\":620,\"k\":1,\"z\":1.4774,\"zoomed\":true,\"editorW\":465}"
+  },
+  {
+    "name": "PARKED (was \"CD3 canon (b) @ 1100px: the text measure is byte-identical to main @ 8884d49 — .forward-only-editor's own computed width (line length) and .mode-pagecol's own computed width (column width)\") — page-size: the measure is the page's (1in margins, page units), identical at every stage size; live successor: CD3 canon (b) [page-size successor]",
+    "pass": false,
+    "detail": "{\"at1100\":465,\"at2200\":466}"
+  },
+  {
+    "name": "PARKED (was \"CD3 canon (b) @ 2200px: the paper's own rect (.mode-pagecol/.mode-page) is byte-identical to main @ 8884d49 in left/width/right/height\") — page-size rulings a-c: the paper is the ruled letter page at the stage's scale; live successor: CD3 canon (b) @ 2200px [page-size successor]",
+    "pass": true,
+    "detail": "{\"left\":604.004638671875,\"right\":1595.979736328125,\"width\":991.97509765625,\"stageLeft\":240,\"stageRight\":1960,\"layoutW\":620,\"k\":1,\"z\":1.6,\"zoomed\":true,\"editorW\":466}"
+  },
+  {
+    "name": "PARKED (was \"CD3 canon (b) @ 2200px: the text measure is byte-identical to main @ 8884d49 — .forward-only-editor's own computed width (line length) and .mode-pagecol's own computed width (column width)\") — page-size: the measure is the page's (1in margins, page units), identical at every stage size; live successor: CD3 canon (b) [page-size successor]",
+    "pass": false,
+    "detail": "{\"at1100\":465,\"at2200\":466}"
+  },
+  {
+    "name": "PARKED (was \"CD3 canon (b) @ 1100px: the paper's Y position moves by EXACTLY the disclosed 10px (the mode-strip box's own dropped border+padding) — not a silent additional drift\") — display pass (aa11f58): 10px + a disclosed 2px (smaller mode tabs) = 12px; live successor: this file's CD3 canon (b) @ 1100px [display-pass successor]",
+    "pass": true,
+    "detail": "{\"baselineTop\":119,\"nowTop\":107,\"delta\":12}"
+  },
+  {
+    "name": "PARKED (was \"CD3 canon (b) @ 2200px: the paper's Y position moves by EXACTLY the disclosed 10px (the mode-strip box's own dropped border+padding) — not a silent additional drift\") — display pass (aa11f58): 10px + a disclosed 2px (smaller mode tabs) = 12px; live successor: this file's CD3 canon (b) @ 2200px [display-pass successor]",
+    "pass": true,
+    "detail": "{\"baselineTop\":119,\"nowTop\":107,\"delta\":12}"
+  },
+  {
+    "name": "PARKED (was \"S3/S4: Plan's \\\"Open…\\\" opens the survey listing this project's own boards\") — PW1 S1: \"Open…\" retires with the survey it opened; the PANEL is the list now, and it lists the boards CONNECTED to this page rather than the drawer's own siblings. Live successor: pw1.mjs's own S1 section (which also asserts a decoy sibling is absent)",
+    "pass": true,
+    "detail": "[\"Second Board\"]"
+  },
+  {
+    "name": "PARKED (was \"S3: Move/Delete live behind a quiet disclosure — closed by default, never first position\") — PW1 S1: the SAME BoardRowMenu, re-homed from the survey's rows to the panel's board rows",
+    "pass": true,
+    "detail": "{\"menuBtnThere\":true,\"menuClosedByDefault\":true}"
+  },
+  {
+    "name": "PARKED (was \"S3: the disclosure reveals Move and Delete\") — PW1 S2/PW22: it reveals Move and Delete still, and now \"Open the board\" beside them — the double-click's menu twin, so no act is reachable by gesture alone",
+    "pass": true,
+    "detail": "{\"hasOpenBoard\":true,\"hasMove\":true,\"hasDelete\":true,\"confirmNotYetShown\":true}"
+  },
+  {
+    "name": "PARKED, generation 2 [context-menu successor] (was \"T4: one plain confirm appears\") - the board row's Delete opens the ONE \"Send to Trash?\" dialog (Cancel / Delete / Don't ask me again); the inline confirm is retired",
+    "pass": true,
+    "detail": "{\"shown\":true,\"title\":\"Send to Trash?\",\"hasCancel\":true,\"hasDelete\":true,\"hasDontAsk\":true,\"inlineConfirm\":false}"
+  },
+  {
+    "name": "PARKED, generation 2 [context-menu successor] (was \"T4/S6 DoD: Delete - one plain confirm, then gone from BOTH the open list AND the store\") - after the dialog's Delete the board is gone from the PANEL's list and soft-deleted in the store (deletedAt stamped)",
+    "pass": true,
+    "detail": "{\"rows\":[],\"store\":\"2026-10-25T03:09:03.698Z\"}"
+  },
+  {
+    "name": "PARKED, generation 2 (was PW1's \"the two creation doors stand unchanged\") - BIG PROJECTS step 2: the doors are the New Board door and the presets; Open... stays absent and the zone stays absent with nothing connected",
+    "pass": true,
+    "detail": "{\"hasNewBoard\":true,\"hasOld\":false,\"hasOpenLink\":false,\"hasZone\":false}"
+  },
+  {
+    "name": "PARKED, generation 7 (was generation 6's re-assertion of the eight labels as a sorted set) - BIG PROJECTS 1a: the strip carries SEVEN categories, compared as a SET by data-category (the place block's label is the place, not a fixed word)",
+    "pass": true,
+    "detail": "{\"itemCount\":7,\"stripCatsParked\":[\"drawers\",\"journal\",\"page\",\"plan\",\"settings\",\"theme\",\"trash\"]}"
+  },
+  {
+    "name": "PARKED (was \"S3/DoD: the Page panel carries the Page face's contents (title, star, home line, tags, Move/Copy, Port)...\") — B2 S4: Move/Copy is gone, superseded by the Places panel — live successor: this file's own live S3 section, amended",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "PARKED, generation 2 (was B2 S7's \"the old Drawer-entity list/survey is GONE whole, replaced by the large-tile Drawers panel\") - BIG PROJECTS 1a: still no survey column; the Drawers tab is now the place switcher and the tiles are gone",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "PARKED (was \"S1: even while the room itself is mid-dissolve (data-writing=true), the strip stays fully opaque and interactive — never dissolving\") — FX10 S2: Nick's own device finding overturns CD2 S1's \"never dissolving\" law; the strip now genuinely dissolves (pointer-events:none while data-writing=true) — live successor: fx10.mjs's own S2 section",
+    "pass": true,
+    "detail": "{\"frameWriting\":\"true\",\"stripPointerEvents\":\"none\",\"stripClasses\":\"desk-frame-strip chrome-fade desk-dissolve\"}"
+  }
+]
+
+CD2 PARKED: FAIL — 2/18 failed
+
+CD2 VERIFY: FAIL — 1/51 failed

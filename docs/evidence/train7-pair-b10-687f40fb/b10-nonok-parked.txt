@@ -1,0 +1,13 @@
+cd2.mjs FAIL exit=1
+flux-screens.mjs NOVERDICT exit=2
+flux-v2-part2.mjs NOVERDICT exit=0
+flux-v2.mjs FAIL exit=1
+fx10.mjs FAIL exit=1
+fx4.mjs FAIL exit=1
+guided-w3-part2.mjs NOVERDICT exit=0
+help-choose-census.mjs FAIL exit=1
+item130.mjs FAIL exit=1
+machina-deckwizard.mjs FAIL exit=1
+page-size.mjs FAIL exit=1
+th1.mjs NOVERDICT exit=1
+tutor-drawer-probe.mjs NOVERDICT exit=0

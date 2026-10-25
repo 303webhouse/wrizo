@@ -1,0 +1,42 @@
+STAMP: tree=687f40fb bundle=index-CrHu22nt.js/888200b
+default c00: CLEAN same stamp (verified not VOID)
+default c01: NOT CLEAN; non-launch-crash failures=1
+RED (real) at default c01 - continuing to collect all reds
+default c02: NOT CLEAN; non-launch-crash failures=3
+RED (real) at default c02 - continuing to collect all reds
+default c03: NOT CLEAN; non-launch-crash failures=2
+RED (real) at default c03 - continuing to collect all reds
+default c04: NOT CLEAN; non-launch-crash failures=2
+RED (real) at default c04 - continuing to collect all reds
+default c05: NOT CLEAN; non-launch-crash failures=1
+RED (real) at default c05 - continuing to collect all reds
+default c06: CLEAN same stamp (verified not VOID)
+default c07: NOT CLEAN; non-launch-crash failures=2
+RED (real) at default c07 - continuing to collect all reds
+default c08: NOT CLEAN; non-launch-crash failures=1
+RED (real) at default c08 - continuing to collect all reds
+default c09: NOT CLEAN; non-launch-crash failures=1
+RED (real) at default c09 - continuing to collect all reds
+default c10: CLEAN same stamp (verified not VOID)
+DEFAULT LEG COMPLETE
+parked c00: CLEAN same stamp (verified not VOID)
+parked c01: NOT CLEAN; non-launch-crash failures=1
+RED (real) at parked c01 - continuing to collect all reds
+parked c02: NOT CLEAN; non-launch-crash failures=3
+RED (real) at parked c02 - continuing to collect all reds
+parked c03: NOT CLEAN; non-launch-crash failures=2
+RED (real) at parked c03 - continuing to collect all reds
+parked c04: NOT CLEAN; non-launch-crash failures=2
+RED (real) at parked c04 - continuing to collect all reds
+parked c05: NOT CLEAN; non-launch-crash failures=1
+RED (real) at parked c05 - continuing to collect all reds
+parked c06: CLEAN same stamp (verified not VOID)
+parked c07: NOT CLEAN; non-launch-crash failures=2
+RED (real) at parked c07 - continuing to collect all reds
+parked c08: NOT CLEAN; non-launch-crash failures=1
+RED (real) at parked c08 - continuing to collect all reds
+parked c09: NOT CLEAN; non-launch-crash failures=1
+RED (real) at parked c09 - continuing to collect all reds
+parked c10: CLEAN same stamp (verified not VOID)
+PAIR COMPLETE
+released (mine)

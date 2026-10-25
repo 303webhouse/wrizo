@@ -1,0 +1,28 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=1 files=19 tree=687f40fb bundle=index-CrHu22nt.js/888200b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/b10p-parked-c05
+[01/19] FAIL      exit=1    7s item130.mjs :: ITEM130 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; item 130 parks nothing. No prior assertion covered real-pointer reachability of the strip, so none is superseded by restoring it. ;; ITEM130 VERIFY: FAIL — 3/16 failed
+[02/19] OK        exit=0   10s item133.mjs :: ITEM133 PARKED: PASS (0 checks) -- HARNESS_PARKED=1 armed; item 133 parks nothing. ;; ITEM133 VERIFY: PASS (14 checks)
+[03/19] OK        exit=0    0s item135.mjs :: ITEM135 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; item 135 parks nothing. It adds a status the runner did not have; no existing assertion changes meaning. ;; ITEM135 VERIFY: PASS (9 checks)
+[04/19] OK        exit=0    5s item137.mjs :: ITEM137 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; item 137 parks nothing. No existing check asserted where the Trash sits, so none is superseded by pinning it. ;; ITEM137 VERIFY: PASS (9 checks)
+[05/19] OK        exit=0   11s item138.mjs :: ITEM138 VERIFY: PASS (19 checks)
+[06/19] OK        exit=0    2s item139.mjs :: "name": "PARKED (was \"S2 (the control): WITH a granted turn the box guards pass ...\") — the SAME sentinel, with the verdict 140 gives it: refused before the bundle check, because a token must match the grant file rather than merely be present. Live successor: S2 above, with the matching token", ;; "name": "PARKED (was \"S3: with a LIVE FOREIGN RUN on the box, withHarness refuses even WITH a granted turn\") — with the old sentinel the GRANT refusal now fires first, so the foreign-run refusal is never reached; the claim itself survives in the live successor, which grants the turn with the matching token", ;; ITEM139 PARKED: PASS (2 checks) — HARNESS_PARKED=1 armed, all retired-check successors green ;; ITEM139 VERIFY: PASS (10 checks)
+[07/19] OK        exit=0    0s item140.mjs :: ITEM140 VERIFY: PASS (13 checks)
+[08/19] OK        exit=0    0s item141.mjs :: ITEM141 VERIFY: PASS (11 checks)
+[09/19] OK        exit=0   41s item158.mjs :: ROWS-SHADOW VERIFY: PASS (7 renders checked, shadow == DOM on every one) ;; ITEM158 VERIFY: PASS (12 checks)
+[10/19] OK        exit=0    8s item159.mjs :: ITEM159 VERIFY: PASS (9 checks)
+[11/19] OK        exit=0    7s item163.mjs :: ITEM163 VERIFY: PASS (14 checks)
+[12/19] OK        exit=0   19s item170.mjs :: ROWS-SHADOW VERIFY: PASS (12 renders checked, shadow == DOM on every one) ;; ITEM170 VERIFY: PASS (19 checks)
+[13/19] OK        exit=0    4s item207-core.mjs :: ITEM207-CORE PARKED: PASS (6 checks) — HARNESS_PARKED=1 armed; SIX parks: page-size's two (11 = TODAY's explicit 11, SIZE's 17px formula), MOUNT [C3 successor]'s literal-shape match, MINIMAL's three buttons, FORMS' literal Draft form (font-span), and FORMS [font-span successor]'s own fixed-window regex (typewriter-scope) ;; ITEM207-CORE VERIFY: PASS (54 checks)
+[14/19] OK        exit=0   45s item207.mjs :: ROWS-SHADOW VERIFY: PASS (8 renders checked, shadow == DOM on every one) ;; ITEM207 PARKED: PASS (9 checks) — HARNESS_PARKED=1 armed; font-span's three parks and page-size's six re-verified ;; ITEM207 VERIFY: PASS (50 checks)
+[15/19] OK        exit=0   15s item210.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; ITEM210 VERIFY: PASS (9 checks)
+[16/19] OK        exit=0  216s item211.mjs :: ROWS-SHADOW VERIFY: PASS (104 renders checked, shadow == DOM on every one) ;; ITEM211 PARKED: 4 checks (R1 card reveal; the WALK click park; C2, the picker rows [page-templates R2]; C3, the Font heading [page-templates R2]) ;; ITEM211 VERIFY: PASS (82 checks)
+[17/19] OK        exit=0   63s item211b.mjs :: ROWS-SHADOW VERIFY: PASS (12 renders checked, shadow == DOM on every one) ;; ITEM211B VERIFY: PASS (12 checks)
+[18/19] OK        exit=0    1s item215.mjs :: ITEM215 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; this file parks nothing: item 215's own S0 (tutor20-max-messages.mjs) proved the CAUSE and is untouched; this file proves the FIX on top of it, falsifying no earlier check. ;; ITEM215 VERIFY: PASS (26 checks)
+[19/19] OK        exit=0    1s item224a-sync-integrity.mjs :: ITEM224A PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; this file parks nothing: sync integrity is new this commit, falsifying no earlier check. ;; ITEM224A VERIFY: PASS (15 checks)
+
+SUITE DONE HARNESS_PARKED=1 — 18/19 of 19 returned a passing verdict
+  FAIL: item130.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\b10p-parked-c05\item130.mjs.parked.txt
+SUITE RESULT: NOT CLEAN — tree=687f40fb bundle=index-CrHu22nt.js/888200b NO-REBUILD
+CHUNK 05 EXIT 1

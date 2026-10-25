@@ -1,0 +1,37 @@
+PASS (premise) the module src/decks/helpMeChoose.ts exists and bundles  Q1,Q3,WALK_SHIPPED,pickFor,q2Options,q3Landing,whyKeyFor
+PASS C1: Q1 is the ten answers, in the doc's order  ["novel","short-story","screenplay","essay","research-paper","thesis","proposal","article","world-or-cast","poems"]
+PASS C1: Q3 is little / shape / everything  ["little","shape","everything"]
+PASS C2: Q2's answers are the doc's, per Q1 (fiction x5 / screenplay 2 / essay 2 / research+thesis 2 / proposal 2 / article 3 / world-or-cast 2 / poems none)  {"novel":["person-change","events-pressure","world-system","relationship-cast","image-voice"],"short-story":["person-change","events-pressure","world-system","relationship-cast","image-voice"],"screen
+PASS C2: Q2 DEPENDS on Q1 - at least seven distinct answer sets, and the fiction Q1s share one
+PASS C3: the full pick table as a census - all 26 rows (every Q1 x Q2 combination, poems with no Q2) return the doc's pick and alternative, and "browse all" as the third line
+PASS C3: the census is COMPLETE - the oracle covers every Q1 x its Q2 set (a missing row would be invisible to a green run)  26 rows (5 + 5 fiction, 2 + 2 + 2 + 2 + 2 + 3 + 2, 1 poems)
+PASS C3: a pick is never its own alternative
+PASS C3: Poems has NO alternative until the Verse Shape ships (W8): pick From my pages, alt null
+PASS C3: the Pilot answer deals the deck's OWN pilot option (feature-screenplay, form: pilot - the Feature beats with the Pilot note, natively)
+PASS C3 (H1, ruled): "a novel or novella" deals Three-Act with NO answers - the deck asks Novel vs Novella itself
+PASS C9: every pick and alternative in the table (22 distinct) names a REAL deck in W3's registry and only answers that deck asks
+PASS C9: ...and the MODULE's own output only ever names registered decks
+PASS C4: determinism - the same answers give the same result twice, and in any order of asking  twice=true shuffled=true
+PASS C5: nothing stored, nothing varying - the whole module runs with localStorage / sessionStorage / indexedDB / fetch / Math.random / Date.now all trapped, and touches none
+PASS C5: and the source names none of them (no storage key, no sync, no timer, no model)
+PASS C6: Q3 with the Walk shipped - "a little" opens the Walk with the first step's "?" open; "the shape" the Walk, "?" closed; "everything" Open (the table), no Walk  {"little":{"view":"walk","helpOpen":true},"shape":{"view":"walk","helpOpen":false},"everything":{"view":"open","helpOpen":false}}
+PASS C6: the W1-ABSENT fallback - with the Walk not shipped, ALL THREE answers open as Open, the "?" closed  {"little":{"view":"open","helpOpen":false},"shape":{"view":"open","helpOpen":false},"everything":{"view":"open","helpOpen":false}}
+PASS C6: the switch is ONE line - exactly one `export const WALK_SHIPPED = <boolean>;`, and q3Landing's default reads it (a one-line change when W1 lands)  1 declaration(s)
+PASS C6: until W1 merges the shipped value is false (the fallback is the default, not an opt-in)  false
+PASS C7: every distinct pick (18) has its own helpWhy<Pick> key, none shared  ["helpWhyStoryCircle","helpWhyThreeAct","helpWhyWorldbuilding","helpWhyCharacterStudy","helpWhyFromMyPages","helpWhyThreeActShortStory","helpWhyCharacterStudyTw
+PASS C7: each key is in the Arbor lexicon as ONE short sentence (a capital, one terminal stop, <= 18 words) - Fable reviews the strings with the screens  18/18 present
+PASS C8: the module is pure data and functions - no React, no effect, no listener, nothing that could open a panel by itself
+PASS C10: the panel stores nothing - HelpMeChoose.tsx names no storage, sync or save path
+FAIL C10: it NEVER opens itself - each of its two hosts mounts it exactly once, behind `{helpOpen &&`, and flips helpOpen to true ONLY from an onClick  [true,false]
+PASS C10: and it has no timer, no auto-open effect, no interval (the only effects are focus, Esc and focus-return)
+PASS MUTANT: a localStorage write added to the panel - C10 must go RED (the mutation LANDED: the real panel is clean)
+PASS MUTANT: the panel mounted without its `helpOpen &&` gate (it would open by itself) - C10 must go RED (the mutation LANDED: the real host passes)
+PASS MUTANT: Story Circle swapped for the Hero's Journey in the first row (C3) - its check must go RED (the mutation LANDED and the module still bundles)  true
+PASS MUTANT: the Pilot answer is dropped to the plain Feature form (C3) - its check must go RED (the mutation LANDED and the module still bundles)  true
+PASS MUTANT: Poems gains an alternative before the Verse Shape exists (C3) - its check must go RED (the mutation LANDED and the module still bundles)  true
+PASS MUTANT: Q2 collapses to ONE shared answer list (C2: Q2 no longer depends on Q1) - its check must go RED (the mutation LANDED and the module still bundles)  true
+PASS MUTANT: the Walk is declared shipped (C6: the W1-absent fallback) - its check must go RED (the mutation LANDED and the module still bundles)  true
+PASS MUTANT: a Math.random tie-break is added to the pick (C5: nothing varying) - its check must go RED (the mutation LANDED and the module still bundles)  true
+PASS MUTANT: a pick names a deck that does not exist (C9) - its check must go RED (the mutation LANDED and the module still bundles)  true
+
+HELP-CHOOSE-CENSUS VERIFY: FAIL - 1/35 failed

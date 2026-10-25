@@ -1,0 +1,29 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=19 tree=687f40fb bundle=index-CrHu22nt.js/888200b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/b10p-default-c04
+[01/19] OK        exit=0   64s glitch-meter.mjs :: ROWS-SHADOW VERIFY: PASS (27 renders checked, shadow == DOM on every one) ;; GLITCH-METER VERIFY: PASS (28 checks)
+[02/19] NOVERDICT exit=0   71s guided-w3-part2.mjs :: (no verdict — see C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\b10p-default-c04\guided-w3-part2.mjs.default.txt)
+[03/19] OK        exit=0   14s guided-w3.mjs :: GUIDED-W3 VERIFY: PASS (96 checks)
+[04/19] OK        exit=0   17s hb1.mjs :: HB1 VERIFY: PASS (32 checks)
+[05/19] OK        exit=0    9s hb2.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; HB2 VERIFY: PASS (10 checks)
+[06/19] OK        exit=0   30s help-buttons.mjs :: ROWS-SHADOW VERIFY: PASS (5 renders checked, shadow == DOM on every one) ;; HELP-BUTTONS VERIFY: PASS (24 checks)
+[07/19] FAIL      exit=1    1s help-choose-census.mjs :: HELP-CHOOSE-CENSUS VERIFY: FAIL - 1/35 failed
+[08/19] OK        exit=0   44s help-choose.mjs :: HELP-CHOOSE VERIFY: PASS (24 checks)
+[09/19] OK        exit=0    0s hide-workshop-source.mjs :: HIDE-WORKSHOP-SOURCE VERIFY: PASS (11 checks)
+[10/19] OK        exit=0    1s hooks-order-ast.mjs :: HOOKS-ORDER-AST VERIFY: PASS (7 checks)
+[11/19] OK        exit=0    0s hooks-order.mjs :: HOOKS-ORDER VERIFY: PASS (2 checks)
+[12/19] OK        exit=0  107s in-app-copy-format.mjs :: ROWS-SHADOW VERIFY: PASS (15 renders checked, shadow == DOM on every one) ;; IN-APP-COPY-FORMAT VERIFY: PASS (32 checks)
+[13/19] OK        exit=0    9s item-storage-full.mjs :: ITEM-STORAGE-FULL VERIFY: PASS (56 checks)
+[14/19] OK        exit=0   20s item104.mjs :: ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one) ;; ITEM104 VERIFY: PASS (15 checks)
+[15/19] OK        exit=0   11s item109.mjs :: ITEM109 VERIFY: PASS (9 checks)
+[16/19] OK        exit=0   60s item112a.mjs :: ROWS-SHADOW VERIFY: PASS (57 renders checked, shadow == DOM on every one) ;; ITEM112A VERIFY: PASS (59 checks)
+[17/19] OK        exit=0    9s item118.mjs :: ITEM118 VERIFY: PASS (10 checks)
+[18/19] OK        exit=0   40s item121.mjs :: ROWS-SHADOW VERIFY: PASS (8 renders checked, shadow == DOM on every one) ;; ITEM121 VERIFY: PASS (44 checks)
+[19/19] OK        exit=0  100s item126.mjs :: ROWS-SHADOW VERIFY: PASS (94 renders checked, shadow == DOM on every one) ;; ITEM126 VERIFY: PASS (42 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 17/19 of 19 returned a passing verdict
+  NOVERDICT: guided-w3-part2.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\b10p-default-c04\guided-w3-part2.mjs.default.txt
+  FAIL: help-choose-census.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\b10p-default-c04\help-choose-census.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=687f40fb bundle=index-CrHu22nt.js/888200b NO-REBUILD
+CHUNK 04 EXIT 1

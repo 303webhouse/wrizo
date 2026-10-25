@@ -1,0 +1,87 @@
+[
+  {
+    "name": "ITEM130 S1 @ 1100: the strip and its items are present to measure",
+    "pass": true,
+    "detail": "{\"count\":7}"
+  },
+  {
+    "name": "ITEM130 S1 @ 1100: EVERY strip item's own centre hit-tests to the item — elementFromPoint returns the control a finger would land on, not the stage painted over it",
+    "pass": true,
+    "detail": "{\"missed\":[],\"stripLeft\":0,\"stripRight\":84,\"stageLeft\":33,\"overlapPx\":51,\"count\":7}"
+  },
+  {
+    "name": "ITEM130 S1 @ 1100: CONTROL — the stage still overlaps the strip's band, so the hit-test above is answering the real question and not a geometry change that quietly removed it",
+    "pass": true,
+    "detail": "{\"overlapPx\":51,\"stripRight\":84,\"stageLeft\":33}"
+  },
+  {
+    "name": "ITEM130 S2 @ 1100: OWED TO C2 (surface anchoring) — the dock overlaps the paper by 29.69px at the gate floor, the PROSE row of C2's own measured trio, reproduced here independently. Pre-existing and identical pre-fix and post-fix; this check asserts only that item 130's repair did NOT move it",
+    "pass": false,
+    "detail": "{\"paperLeft\":92.01,\"dockRight\":130,\"delta\":-37.99,\"knownPreExisting\":-29.69}"
+  },
+  {
+    "name": "ITEM130 S1 @ 1280: the strip and its items are present to measure",
+    "pass": true,
+    "detail": "{\"count\":7}"
+  },
+  {
+    "name": "ITEM130 S1 @ 1280: EVERY strip item's own centre hit-tests to the item — elementFromPoint returns the control a finger would land on, not the stage painted over it",
+    "pass": true,
+    "detail": "{\"missed\":[],\"stripLeft\":0,\"stripRight\":84,\"stageLeft\":38.4,\"overlapPx\":45.6,\"count\":7}"
+  },
+  {
+    "name": "ITEM130 S1 @ 1280: CONTROL — the stage still overlaps the strip's band, so the hit-test above is answering the real question and not a geometry change that quietly removed it",
+    "pass": true,
+    "detail": "{\"overlapPx\":45.6,\"stripRight\":84,\"stageLeft\":38.4}"
+  },
+  {
+    "name": "ITEM130 S2 @ 1280: the dock is still flush at the paper (0.00 +/- 0.6) — the repair bought reachability WITHOUT reflowing the paper for chrome",
+    "pass": false,
+    "detail": "{\"paperLeft\":144,\"dockRight\":181.98,\"delta\":-37.98}"
+  },
+  {
+    "name": "ITEM130 S1 @ 1366: the strip and its items are present to measure",
+    "pass": true,
+    "detail": "{\"count\":7}"
+  },
+  {
+    "name": "ITEM130 S1 @ 1366: EVERY strip item's own centre hit-tests to the item — elementFromPoint returns the control a finger would land on, not the stage painted over it",
+    "pass": true,
+    "detail": "{\"missed\":[],\"stripLeft\":0,\"stripRight\":84,\"stageLeft\":40,\"overlapPx\":44,\"count\":7}"
+  },
+  {
+    "name": "ITEM130 S1 @ 1366: CONTROL — the stage still overlaps the strip's band, so the hit-test above is answering the real question and not a geometry change that quietly removed it",
+    "pass": true,
+    "detail": "{\"overlapPx\":44,\"stripRight\":84,\"stageLeft\":40}"
+  },
+  {
+    "name": "ITEM130 S2 @ 1366: the dock is still flush at the paper (0.00 +/- 0.6) — the repair bought reachability WITHOUT reflowing the paper for chrome",
+    "pass": false,
+    "detail": "{\"paperLeft\":187,\"dockRight\":224.98,\"delta\":-37.98}"
+  },
+  {
+    "name": "ITEM130 S1 @ 1680: the strip and its items are present to measure",
+    "pass": true,
+    "detail": "{\"count\":7}"
+  },
+  {
+    "name": "ITEM130 S1 @ 1680: EVERY strip item's own centre hit-tests to the item — elementFromPoint returns the control a finger would land on, not the stage painted over it",
+    "pass": true,
+    "detail": "{\"missed\":[],\"stripLeft\":0,\"stripRight\":84,\"stageLeft\":40,\"overlapPx\":44,\"count\":7}"
+  },
+  {
+    "name": "ITEM130 S1 @ 1680: CONTROL — the stage still overlaps the strip's band, so the hit-test above is answering the real question and not a geometry change that quietly removed it",
+    "pass": true,
+    "detail": "{\"overlapPx\":44,\"stripRight\":84,\"stageLeft\":40}"
+  },
+  {
+    "name": "ITEM130 S2 @ 1680: the dock is still flush at the paper (0.00 +/- 0.6) — the repair bought reachability WITHOUT reflowing the paper for chrome",
+    "pass": true,
+    "detail": "{\"paperLeft\":344,\"dockRight\":344,\"delta\":0}"
+  }
+]
+[]
+
+ITEM130 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; item 130 parks nothing. No prior assertion covered real-pointer reachability of the strip, so none is superseded by restoring it.
+
+ITEM130 VERIFY: FAIL — 3/16 failed

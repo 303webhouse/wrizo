@@ -1,0 +1,214 @@
+[
+  {
+    "name": "S1 @ 1280px (prose): the visual start position reads as \"about a quarter\" (20-32% of the stage height)",
+    "pass": false,
+    "detail": "{\"fraction\":0.6002387115769953}"
+  },
+  {
+    "name": "S1 @ 2200px (prose): the visual start position reads as \"about a quarter\" (20-32% of the stage height)",
+    "pass": false,
+    "detail": "{\"fraction\":0.6002387115769953}"
+  },
+  {
+    "name": "S1 @ 1100px (prose): the visual start position reads as \"about a quarter\" (20-32% of the stage height)",
+    "pass": false,
+    "detail": "{\"fraction\":0.6288208174347715}"
+  },
+  {
+    "name": "SC1 S3 @ 1280px (was \"S1 (script): the visual start position also reads as 'about a quarter'\"): a script page starts at the TOP of the stage — page one begins at its top margin (SC-V4), no start-offset on this surface",
+    "pass": true,
+    "detail": "{\"fraction\":0}"
+  },
+  {
+    "name": "S2: .desk-frame-stage establishes its own stacking context (isolation:isolate) — the structural fix that lets the goal glow actually paint above the desk background instead of behind the whole app",
+    "pass": true,
+    "detail": "isolate"
+  },
+  {
+    "name": "S2: at 50% progress, the glow's own computed opacity clears a genuinely perceivable floor (>=0.08) — the eased curve's whole point, verified as a real computed style, not a class-presence check",
+    "pass": true,
+    "detail": "{\"opacity\":0.28,\"intensityVar\":0.28}"
+  },
+  {
+    "name": "S2: a screenshot was captured at 50% progress for visual record (see the build report)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "S3 @ 1280px: the cascade strip sits flush at x===0 (the screen's own left edge, not the frame's)",
+    "pass": true,
+    "detail": "0"
+  },
+  {
+    "name": "S3 @ 2200px: the cascade strip sits flush at x===0 (the screen's own left edge, not the frame's)",
+    "pass": true,
+    "detail": "0"
+  },
+  {
+    "name": "S3 @ 1100px: the cascade strip sits flush at x===0 (the screen's own left edge, not the frame's)",
+    "pass": true,
+    "detail": "0"
+  },
+  {
+    "name": "S3 @ 1280px: the board's own sliver anchors flush to the board paper's own left edge (the diagnosed half-width-formula defect, fixed)",
+    "pass": true,
+    "detail": "{\"sliverGap\":0,\"stripLeft\":0}"
+  },
+  {
+    "name": "S3 @ 1280px: the board's own strip is ALSO flush at x===0",
+    "pass": true,
+    "detail": "{\"sliverGap\":0,\"stripLeft\":0}"
+  },
+  {
+    "name": "S3 @ 2200px: the board's own sliver anchors flush to the board paper's own left edge (the diagnosed half-width-formula defect, fixed)",
+    "pass": true,
+    "detail": "{\"sliverGap\":0,\"stripLeft\":0}"
+  },
+  {
+    "name": "S3 @ 2200px: the board's own strip is ALSO flush at x===0",
+    "pass": true,
+    "detail": "{\"sliverGap\":0,\"stripLeft\":0}"
+  },
+  {
+    "name": "S3 @ 1100px: the board's own sliver anchors flush to the board paper's own left edge (the diagnosed half-width-formula defect, fixed)",
+    "pass": true,
+    "detail": "{\"sliverGap\":0,\"stripLeft\":0}"
+  },
+  {
+    "name": "S3 @ 1100px: the board's own strip is ALSO flush at x===0",
+    "pass": true,
+    "detail": "{\"sliverGap\":0,\"stripLeft\":0}"
+  },
+  {
+    "name": "S4: a text card resizes freeform on BOTH axes now (height was reflow-only before this ticket)",
+    "pass": true,
+    "detail": "{\"textBefore\":{\"id\":\"fx4-s4-text\",\"kind\":\"text\",\"x\":0.05,\"y\":0.05,\"w\":0.2,\"h\":0.08,\"z\":1,\"text\":\"Card A\"},\"textAfter\":{\"id\":\"fx4-s4-text\",\"kind\":\"text\",\"x\":0.05,\"y\":0.05,\"w\":0.2735294117647059,\"h\":0.1351470588235294,\"z\":1,\"text\":\"Card A\"}}"
+  },
+  {
+    "name": "S4: reflow is a MINIMUM floor now, not a two-way dictate — a card shrunk (but still above content's own need) stays at the writer's own size, not snapped back to the measured content height",
+    "pass": true,
+    "detail": "{\"textAfter\":{\"id\":\"fx4-s4-text\",\"kind\":\"text\",\"x\":0.05,\"y\":0.05,\"w\":0.2735294117647059,\"h\":0.1351470588235294,\"z\":1,\"text\":\"Card A\"},\"textAfterShrink\":{\"id\":\"fx4-s4-text\",\"kind\":\"text\",\"x\":0.05,\"y\":0.05,\"w\":0.23676470588235296,\"h\":0.11676470588235292,\"z\":1,\"text\":\"Card A\"}}"
+  },
+  {
+    "name": "S4: the board canvas itself resizes on BOTH axes via the quiet bottom-right drag handle",
+    "pass": true,
+    "detail": "{\"canvasWidthBefore\":1088,\"canvasWidthAfter\":1188,\"canvasHeightAfter\":809}"
+  },
+  {
+    "name": "S4: the canvas resize persists as a single 'board-meta' element in the SAME boxes array (the 'connection'-kind precedent)",
+    "pass": true,
+    "detail": "{\"id\":\"mvn6j8wizrl1wq6pb\",\"kind\":\"board-meta\",\"x\":0,\"y\":0,\"w\":0,\"h\":0,\"z\":0,\"canvasW\":1188,\"canvasH\":809}"
+  },
+  {
+    "name": "S4: the board-meta element never renders as a positioned card (filtered out of the render loop, same discipline 'connection' already gets)",
+    "pass": true,
+    "detail": "2"
+  },
+  {
+    "name": "S4: the board canvas's own dimensions persist across reload",
+    "pass": true,
+    "detail": "{\"canvasWidthAfterReload\":1188,\"canvasWidthAfter\":1188,\"metaAfterReload\":{\"id\":\"mvn6j8wizrl1wq6pb\",\"kind\":\"board-meta\",\"x\":0,\"y\":0,\"w\":0,\"h\":0,\"z\":0,\"canvasW\":1188,\"canvasH\":809}}"
+  },
+  {
+    "name": "S4 (legacy): a board with no board-meta element auto-fits its wrapper's own CONTENT width exactly — byte-identical to pre-FX4 behavior",
+    "pass": true,
+    "detail": "{\"wrapContentWidth\":1088,\"canvasWidth\":1088}"
+  },
+  {
+    "name": "S4 (regression): a page-pin card still resizes freeform on both axes, unaffected by the text-card change",
+    "pass": true,
+    "detail": "{\"pinBefore\":{\"id\":\"fx4-s4-pin\",\"kind\":\"page-pin\",\"x\":0.05,\"y\":0.05,\"w\":0.2,\"h\":0.08,\"z\":1,\"entryId\":\"fx4-s4-pin-target-page\"},\"pinAfter\":{\"id\":\"fx4-s4-pin\",\"kind\":\"page-pin\",\"x\":0.05,\"y\":0.05,\"w\":0.2551470588235294,\"h\":0.35082720588235294,\"z\":1,\"entryId\":\"fx4-s4-pin-target-page\"}}"
+  },
+  {
+    "name": "S5: double-clicking a text card opens the popup over a BLURRED, dimmed board (the mockup's own treatment), focus lands in the editor",
+    "pass": true,
+    "detail": "{\"popupPresent\":true,\"filterBlurred\":true,\"opacity\":0.55,\"activeIsEditor\":true,\"hasTypewriter\":false,\"hasProgress\":false}"
+  },
+  {
+    "name": "S5: no typewriter, no progress instrument anywhere in the popup — Nick's own word",
+    "pass": true,
+    "detail": "{\"popupPresent\":true,\"filterBlurred\":true,\"opacity\":0.55,\"activeIsEditor\":true,\"hasTypewriter\":false,\"hasProgress\":false}"
+  },
+  {
+    "name": "S5 [ITEM 207 step 4 successor]: the opened card's DOCK carries B/I/U plus the Type control's size steps - five styling tools",
+    "pass": true,
+    "detail": "5"
+  },
+  {
+    "name": "S5: Bold wraps the selection in ** markers, rendered via the SAME iA dimmed-syntax display register Draft mode already uses (.md-mark dimmed, .md-bold weighted)",
+    "pass": true,
+    "detail": "{\"hasMdMark\":true,\"hasMdBold\":true,\"text\":\"**Before edit**\"}"
+  },
+  {
+    "name": "S5 [R13.v successor]: Tab is still contained within the popups own focusable elements - from the last element Tab wraps to the first, whatever the dock adds to the count",
+    "pass": true,
+    "detail": "{\"focusableCount\":10,\"wrappedToFirst\":true}"
+  },
+  {
+    "name": "S5 [card-close-x successor]: the close X (accessible name \"Close\", class board-popup-done) closes the popup, un-blurs the board, and commits the edit",
+    "pass": true,
+    "detail": "{\"popupGone\":true,\"blurGone\":true,\"committedText\":\"**Before edit**\",\"closeBtnLabel\":\"×\",\"closeBtnName\":\"Close\"}"
+  },
+  {
+    "name": "S5: Escape also closes the popup",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "S5: inline contenteditable editing has retired whole (no .board-text-editing anywhere in the codebase's live render output — ab4.mjs's own inline-editing check parks per A4)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "S7: the text card carries the Stacked treatment — square corners, a two-layer box-shadow (the 2px offset hard edge + the soft shadow)",
+    "pass": true,
+    "detail": "{\"boxShadow\":\"rgb(217, 207, 182) 2px 2px 0px 0px, rgba(43, 39, 33, 0.16) 4px 5px 10px 0px\",\"borderRadius\":\"0px\",\"background\":\"rgb(251, 246, 234)\",\"borderColor\":\"rgb(217, 207, 182)\"}"
+  },
+  {
+    "name": "S7: ink cards wear the SAME Stacked treatment identically (square corners, the same two-layer shadow)",
+    "pass": true,
+    "detail": "{\"boxShadow\":\"rgb(217, 207, 182) 2px 2px 0px 0px, rgba(43, 39, 33, 0.16) 4px 5px 10px 0px\",\"borderRadius\":\"0px\",\"background\":\"rgb(251, 246, 234)\",\"borderColor\":\"rgb(217, 207, 182)\"}"
+  },
+  {
+    "name": "S7: the text card's stock is genuinely a DIFFERENT (lighter) color than the board's own paper background",
+    "pass": true,
+    "detail": "rgb(251, 246, 234)"
+  },
+  {
+    "name": "S7: page-pin cards wear the Stacked treatment identically too",
+    "pass": true,
+    "detail": "{\"boxShadow\":\"rgb(217, 207, 182) 2px 2px 0px 0px, rgba(43, 39, 33, 0.16) 4px 5px 10px 0px\",\"borderRadius\":\"0px\"}"
+  },
+  {
+    "name": "S7: selection still reads brass (unchanged lane law)",
+    "pass": true,
+    "detail": "rgb(255, 152, 0)"
+  },
+  {
+    "name": "S8: dwelling at the LEFT edge resurfaces faded chrome (cycle 1 of 4, same mount — the fix's own multi-cycle proof)",
+    "pass": true,
+    "detail": "before=true after=false"
+  },
+  {
+    "name": "S8: dwelling at the TOP edge resurfaces faded chrome (cycle 2 of 4, same mount — the fix's own multi-cycle proof)",
+    "pass": true,
+    "detail": "before=true after=false"
+  },
+  {
+    "name": "S8: dwelling at the LEFT again edge resurfaces faded chrome (cycle 3 of 4, same mount — the fix's own multi-cycle proof)",
+    "pass": true,
+    "detail": "before=true after=false"
+  },
+  {
+    "name": "S8: dwelling at the RIGHT edge resurfaces faded chrome (cycle 4 of 4, same mount — the fix's own multi-cycle proof)",
+    "pass": true,
+    "detail": "before=true after=false"
+  },
+  {
+    "name": "S8 (Board): the SAME multi-cycle proof holds on the Board surface too (a second dissolve/resurface cycle within the same mount)",
+    "pass": true,
+    "detail": "{\"boardAfter1\":\"false\",\"boardAfter2\":\"false\"}"
+  }
+]
+
+FX4 VERIFY: FAIL — 3/42 failed

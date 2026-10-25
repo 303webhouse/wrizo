@@ -1,0 +1,160 @@
+
+ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one)
+PASS  WM1
+PASS  KN1
+PASS  CO1
+PASS  FD1
+PASS  LX1
+FAIL  LX2  -- 2 still name an Arbor noun: helpWhyFromMyPages, helpCoverFromMyPages
+PASS  LX3
+PASS  LX4
+PASS  LX5
+PASS  LX6
+PASS  IC1
+PASS  IC2
+PASS  IC3
+PASS  IC4  [[{"x":0,"y":0,"w":1},{"x":2,"y":0,"w":1},{"x":0,"y":1,"w":3}]]
+PASS  RO1
+PASS  RO2
+PASS  RO3
+PASS  RO4
+PASS  RO5
+PASS  RO6b
+PASS  RO7
+PASS  RO8
+PASS  RO10
+PASS  RO11
+PASS  RO9  [[{"n":3,"m":5},{"n":1,"m":5},{"n":1,"m":1}]]
+PASS  RO9b  [the position follows the writer's own Order: [{"n":1,"m":5},{"n":4,"m":5}]]
+PASS  RO9c  [the Log: position among its pages [{"n":1,"m":2},{"n":2,"m":2}]]
+PASS  RO9d  [a board counts among boards, not pages: {"n":1,"m":1}]
+PASS  TK1
+PASS  TK2
+PASS  SEL1
+PASS  TK3
+PASS  TK4
+PASS  TK5
+PASS  RL1
+PASS  TK6
+PASS  BH1
+PASS  VG1b
+PASS  AR1
+PASS  BR1  [ top:10px; left:14px; bottom:auto; right:auto; width:auto; aspect-ratio:auto; opacity:1; -webkit-mask:none; mask:none; b]
+PASS  BD1
+PASS  CD1
+PASS  HD1
+PASS  OR1
+PASS  CT1  [dark page text 16.18:1 (floor 13.9)]
+PASS  CT2
+PASS  CT3  [LIGHT pair (measured, reported): ink 14.68:1, meta 11.70:1]
+PASS  CH1
+PASS  RC1
+PASS  RC2
+PASS  RC3
+PASS  P1 the icon seam is generic: ThemeIcon reads the theme and the icon id, asks themeIcon(), and falls back to the caller's own icon when the theme has no set
+PASS  P2 the rail, the place block and the pop-out all draw through ThemeIcon (TOOLS adds Arbor and Machina sets to the seam later)
+PASS  P3 the readouts recede with the rest of the chrome: they carry chrome-fade
+PASS  P4 the readouts speak only from the readout module: DOC / TRK / RACK / hint strings are built by docReadout, trackReadout, rackReadout and hintFor - no string literal of its own
+PASS  P5 the acquire runs once per page open and only above Ambiance 0 (shouldAcquire + effectiveAmbianceDial)
+PASS  P6 the Root substitution is render-time only: PlaceBlock and the pop-out name the place through isDefaultRoot + placeRootName, and nothing writes the drawer's name
+PASS  P10 the block caret takes its width from caretWidth (the slim caret), not an inline ratio
+PASS  P9 the board wears the Flux frame (grid ring + brackets) through FluxBoardFrame, and the rail's place block reads the rack readout in Flux
+PASS  P8 the Recede-depth and Timer rows name themselves through the lexicon on both surfaces (the framed sliver and the settings panel) - no inline word
+PASS  P7 a Flux frame ring: the grid and brackets are an overlay on the page FRAME (pointer-events none, masked to a ring) - never a background of the text area
+PASS  mutant "the ground token drifts back to the old teal" is KILLED (reddens: TK1)
+PASS  mutant "the structure line loses its steel blue" is KILLED (reddens: TK1)
+PASS  mutant "selection falls back to brass orange" is KILLED (reddens: TK2, OR1)
+PASS  mutant "a segmented control goes back to pointing at brass" is KILLED (reddens: SEL1)
+PASS  mutant "Flux overrides the locked brass" is KILLED (reddens: TK2)
+PASS  mutant "orange leaks onto the active rail item" is KILLED (reddens: OR1)
+PASS  mutant "the dark page text loses contrast" is KILLED (reddens: CT1)
+PASS  mutant "a label tier drops under 4.5:1" is KILLED (reddens: CT2)
+PASS  mutant "the chromatic offset turns red" is KILLED (reddens: CH1)
+PASS  mutant "Arbor olive returns as the Flux dark door" is KILLED (reddens: TK5)
+PASS  mutant "the rail's active state falls back to brass" is KILLED (reddens: RL1)
+PASS  mutant "the board handle goes back to brass under Flux" is KILLED (reddens: HD1)
+PASS  mutant "the card goes back to cream stock in the Flux root" is KILLED (reddens: CD1)
+PASS  mutant "the arrival door goes back to brass under Flux" is KILLED (reddens: AR1)
+PASS  mutant "the room goes back to the teal panel" is KILLED (reddens: TK6)
+PASS  mutant "a green-grey text tier returns" is KILLED (reddens: TK6)
+PASS  mutant "the board hint gets a dark fill again" is KILLED (reddens: BH1)
+PASS  mutant "the panel drifts back to hue 204" is KILLED (reddens: TK6)
+PASS  mutant "the raised tier drifts back to the teal (hue 190)" is KILLED (reddens: TK6)
+PASS  mutant "the lines family drifts back to teal" is KILLED (reddens: TK6)
+PASS  mutant "the rail drifts back to the old hue" is KILLED (reddens: TK6)
+PASS  mutant "a lamp stop drifts back to hue 206" is KILLED (reddens: TK6)
+PASS  mutant "the vignette goes back over the page (the base rule)" is KILLED (reddens: VG1b)
+PASS  mutant "an Arbor brown surface returns to the Flux root" is KILLED (reddens: TK4)
+PASS  mutant "Arbor's PNG mark paints again under Flux" is KILLED (reddens: BR1)
+PASS  mutant "a board card goes back to cream stock" is KILLED (reddens: BD1)
+PASS  mutant "the acquire loses its still state under reduced motion" is KILLED (reddens: RC2)
+PASS  mutant "the chrome engine ignores the theme again" is KILLED (reddens: FD1)
+PASS  mutant "the arrival draws Arbor's PNG under Flux again" is KILLED (reddens: WM1)
+PASS  mutant "the knob loses its INPUT glyph" is KILLED (reddens: KN1)
+PASS  mutant "the card loses its X / Y" is KILLED (reddens: CO1)
+PASS  mutant "trackOf is off by one" is KILLED by a check, not a crash (reddens: RO9, RO9b)
+PASS  mutant "the acquire fires on every render" is KILLED by a check, not a crash (reddens: RO7)
+PASS  mutant "the board hint is replaced by the prose line" is KILLED by a check, not a crash (reddens: RO6b)
+PASS  mutant "DOC loses its zero padding" is KILLED by a check, not a crash (reddens: RO1)
+PASS  mutant "a coordinate is not clamped at 999" is KILLED by a check, not a crash (reddens: RO3)
+PASS  mutant "Root replaces a renamed top drawer" is KILLED by a check, not a crash (reddens: RO8)
+PASS  mutant "one pixel of the Rack icon flips" is KILLED by a check, not a crash (reddens: IC1)
+PASS  mutant "the Flux word for Settings is lost" is KILLED by a check, not a crash (reddens: LX1, LX2)
+PASS  mutant "the Clock word is lost" is KILLED by a check, not a crash (reddens: LX1)
+PASS  mutant "the Flux Draft tab falls back to Draft" is KILLED by a check, not a crash (reddens: LX1, LX6)
+PASS  mutant "Flux recedes at Arbor's slow pace again" is KILLED by a check, not a crash (reddens: RO11)
+PASS  mutant "the block caret goes back to its wide width" is KILLED by a check, not a crash (reddens: RO10)
+PASS  mutant "Delete turns into Purge" is KILLED by a check, not a crash (reddens: LX6)
+PASS  mutant "a big-projects string falls back to Arbor" is KILLED by a check, not a crash (reddens: LX2)
+PASS  all 45 mutations landed and 45 were killed
+PASS  F1 premise: the Flux page carries the readouts inside the lit page
+PASS  F1 DOC nn // title is the page's true reading (the second page of the place, "Words of fx-m2")
+PASS  F1 TRK n/m is the section's real position in its set (2 of the 3 in Manuscript)
+PASS  F1 a page in the second set reads TRK 1/1 and DOC 04 (the fourth page of the rack) - the TRK is its set's, the DOC its rack's
+PASS  F1 the hint line on a prose page reads the ruled string
+PASS  F1 the hint line in Wire In (Free Write) reads the ruled string
+PASS  F2 PAGE IS PRIMARY: with the readouts removed the page and the editor keep exactly the same rects  [{"pageA":{"l":390,"t":108,"w":620,"h":693},"pageB":{"l":390,"t":108,"w":620,"h":693},"edA":{"l":463.9,"t":171,"w":462.1,"h":27.2},"edB":{"l":463.9,"t":171,"w":462.1,"h":27.2}}]
+PASS  F3 the frame ring is masked, click-through, and the editor's text box sits wholly inside the ring's clear middle (the grid is never under text)
+PASS  F3 no readout element is stacked at a point inside the writing area
+PASS  F4 opening a page closes the brackets in: data-acquire=true, flux-acquire, 0.3s
+PASS  F4 under reduced motion the brackets are STILL: no acquire, no animation, drawn
+PASS  F4 at Ambiance 0 the brackets are still: no acquire
+PASS  F5 while typing the chrome recedes AND the readouts go with it: the EFFECTIVE opacity of the rail and of the readouts both fall near 0 (all chrome fades together)
+PASS  F6 no element outside the allowed places paints in orange (caret, sprint surge, Uplink, the mark, the current item's left bar)
+PASS  F6 the current list item wears the thin orange LEFT bar (and only that)
+PASS  F6 the selected rail item is cyan, not orange
+PASS  F7 every rail item draws its Flux icon (docs, circuits, log, config, skin, trash) at 16 x 16
+PASS  F7 each rail item is at least a 44 px target
+PASS  F7 the place block draws the rack icon
+PASS  F8 the rail reads the Flux words: Docs, Circuits, Log, Config, Skin, Trash
+PASS  F8 the Docs pop-out header reads RACK ▸ <the rack's name>
+PASS  F8 the list heading reads Tracks
+PASS  F8 premise: a fresh account was given its top drawer and its one set (the default flag is its id)
+PASS  F8 the default (flagged) top drawer is shown as Root, render-time only: its stored name is untouched
+PASS  F8 a top drawer the writer RENAMED keeps its own name (not Root)
+PASS  F11 [dark] the Tutor drawer's Ask box and Add Note are Flux glass: NO input, textarea or select paints an Arbor brown (checked 3 fields)
+PASS  F11 [light] the Tutor drawer's Ask box and Add Note are Flux glass: NO input, textarea or select paints an Arbor brown (checked 3 fields)
+PASS  F12 Flux shows its own WRIZO mark (orange, top left, text) and no element paints Arbor's wrizo PNG  [{"word":"\"WRIZO\"","color":"rgb(255, 152, 0)","mask":"none","top":10,"left":14,"right":78,"vw":1400,"bad":[]}]
+PASS  F13 a board card is a dark-glass node: dark fill (not Arbor cream), a thin cyan edge, light ink, and a cyan UPPERCASE first line
+PASS  F13 the board wears the frame: the grid ring and the corner brackets, click-through
+PASS  F18 the selected card's knob wears the INPUT glyph (16 x 16 in a 22 px knob, through ThemeIcon) in the choice colour on a square glass knob  [{"glyph":true,"w":16,"h":16,"box":22,"border":"rgb(0, 194, 255)","color":"rgb(0, 194, 255)"}]
+PASS  F18 the selected card's resize / connect corner is the choice colour (cyan), not brass
+PASS  F18 a node shows its true position (the first card, stored at x .05 / y .05, reads X 050 · Y 050) and the board shows its one hint
+PASS  F18 the Inputs panel's add control reads "+ Input…" on Flux glass (no Arbor brown)
+PASS  F14 the place block reads "RACK ▸ The Late Ferry", wraps (white-space normal, no ellipsis) and nothing is clipped
+PASS  F15 the block caret is slim: its width is at most 20% of its height (it was 48%) and never under 3 px  [{"w":3,"h":17}]
+PASS  F16 hovering a rail item paints it electric blue (#00C2FF) on a glass tile - not Arbor brown, not brass
+PASS  F16 the active rail item is electric blue with a #00C2FF left edge and no brown tile
+PASS  F16 no rail, pop-out or mode-strip element paints an Arbor brown fill
+PASS  F17 [dark] no element paints an Arbor olive or muted green (any remaining green is lime #A6FF3D)
+PASS  F17 [light] no element paints an Arbor olive or muted green (any remaining green is lime #A6FF3D)
+PASS  F19 the arrival's Write door is the choice colour (cyan), not brass
+PASS  F19 the arrival's logo and corner mark are Flux's WRIZO wordmark (text), and no Arbor wrizo PNG is drawn
+PASS  F20 [dark] the card, its pop-up and the deck wizard read dark glass: card stock dark, ink light, badge cyan (never Arbor olive)
+PASS  F20 [light] the card, its pop-up and the deck wizard read dark glass: card stock dark, ink light, badge cyan (never Arbor olive)
+PASS  F9 in light mode the page is light and the chrome stays dark
+PASS  F9 the light page's readout text reads at >= 4.5:1 against the page (measured 11.70:1)
+PASS  F9 [light] the vignette sits behind the page (z-index -1): no grey band at the empty light page's top or bottom
+PASS  F10 Arbor: no Flux readouts, no seam icons, and the old words (Pages, Boards, Journal, Settings, Themes)
+
+FLUX-V2 VERIFY: FAIL - 1/156 failed
