@@ -234,14 +234,26 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
   // in-flight dwell timer before EDGE_DWELL_MS could ever elapse — an
   // edge-reach resurface could never actually complete. Memoized on the one
   // input that should matter (chromeRootRef itself, a stable ref object).
+  // POLISH #10 item 23: on the framed desk the root element joins the roots, so the engine's fade timing (--fade-dur) reaches the chrome that lives
+  // outside the host too (the wordmark, the "...", Flux's glitch meter) - one curve for everything that recedes
+  const htmlRef = useRef<HTMLElement>(typeof document !== 'undefined' ? document.documentElement : null);
   const dissolveRootRef = useMemo(
-    () => (chromeRootRef ? [stageRef, chromeRootRef] : stageRef),
-    [chromeRootRef],
+    () => (chromeRootRef ? (framed ? [stageRef, chromeRootRef, htmlRef] : [stageRef, chromeRootRef]) : stageRef),
+    [chromeRootRef, framed],
   );
   const { dissolved, noteWrite: engineNote, resurface } = useChromeDissolve({
     surface: 'sprint',
     rootRef: dissolveRootRef,
   });
+
+  // POLISH #10 item 23 (Nick, Oct 25): WHILE TYPING, EVERYTHING OFF THE PAGE GOES TO 0 - the framed desk announces it on the root element, so the
+  // chrome that lives outside the desk's own tree (the wordmark, the ember dot, the progress lane, Flux's glitch meter) recedes with it (index.css)
+  useEffect(() => {
+    if (!framed || typeof document === 'undefined') return;
+    const root = document.documentElement;
+    if (dissolved) root.setAttribute('data-wz-writing', 'true'); else root.removeAttribute('data-wz-writing');
+    return () => { root.removeAttribute('data-wz-writing'); };
+  }, [framed, dissolved]);
 
   const firstWriteRef = useRef<number | null>(null);
   // TH2 — a short-lived "actively typing" signal for the glow's sputter

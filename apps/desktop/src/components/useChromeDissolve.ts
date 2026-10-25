@@ -258,14 +258,23 @@ export function useChromeDissolve({
       const t = e.target as Element | null;
       if (!t || !t.closest || !t.closest(editorSelector)) { clearDwell(); resurface(true); } // deliberate tap off the text
     };
+    // POLISH #10 item 23 (Nick, Oct 25): keyboard focus restores the chrome - focus landing on anything outside the text (a rail item, a mode tab, a
+    // drawer's tab, the "...") brings it back, as a pointer reaching it does. (Before, a Tab onto dissolved chrome left it invisible.)
+    const onFocusIn = (e: FocusEvent) => {
+      if (!dissolvedRef.current) return;
+      const t = e.target as Element | null;
+      if (t && t.closest && !t.closest(editorSelector)) { clearDwell(); resurface(true); }
+    };
     window.addEventListener('pointermove', onMove, { passive: true });
     window.addEventListener('keydown', onKey);
     window.addEventListener('pointerdown', onDown, true);
+    window.addEventListener('focusin', onFocusIn, true);
     return () => {
       clearDwell();
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('keydown', onKey);
       window.removeEventListener('pointerdown', onDown, true);
+      window.removeEventListener('focusin', onFocusIn, true);
     };
   }, [resurface, editorSelector]);
 
