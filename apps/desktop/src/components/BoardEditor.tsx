@@ -6,6 +6,7 @@ import { requestDelete } from '../store/deleteGate';
 import { publishBoardSnapshot, registerBoardActions } from '../store/boardSelection';
 import { getResumeTarget } from '../store/resume';
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { DRAWER_MIN, useStandingHands } from '../store/menusDrawers';
 import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { boardName, plainLines } from '../store/entryText';
@@ -1263,7 +1264,14 @@ export function BoardEditor({ id }: { id: string }) {
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
-    const measure = () => setContainerWidthPx(Math.max(320, el.clientWidth));
+    // POLISH #10 item 1: while a drawer narrows the board, the canvas keeps the width the board has with the drawers shut (its natural width less the
+    // wrap's own border and gutter), so no card shrinks or moves - the board scrolls instead
+    const measure = () => {
+      const area = el.closest('.board-area') as HTMLElement | null; const stage = el.closest('.desk-frame-stage') as HTMLElement | null;
+      const chrome = el.offsetWidth - el.clientWidth;
+      const natural = area && stage ? Math.min(stage.clientWidth, 1100) - chrome : el.clientWidth;
+      setContainerWidthPx(Math.max(320, area && stage ? Math.max(el.clientWidth, natural) : el.clientWidth));
+    };
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
@@ -1318,6 +1326,39 @@ export function BoardEditor({ id }: { id: string }) {
   // the canvas wider/narrower, else the wrap's own natural (auto-fit)
   // width — byte-identical to pre-FX4 in the untouched case.
   const pageWidthPx = canvasOverrideW != null ? Math.max(canvasOverrideW, CANVAS_MIN_W) : containerWidthPx;
+
+  // POLISH #10 item 1 (Nick, Oct 25) - DRAWERS NEVER COVER A BOARD'S CARDS. The board area (min(100%, 1100px), centred) narrows to the room beside the
+  // open drawers: the Tools drawer needs DRAWER_MIN (200px, its tab included) clear of the strip on the left, the Tutor | Grafts drawer its tab + its
+  // open width on the right. The side that already has the room keeps its margin; only a side that is short pulls in. The CANVAS keeps its width - it is
+  // measured from the board's natural width, not the narrowed one - so no card shrinks or moves on it; the board scrolls to reach them. The drawers are
+  // flush to the board (index.css reads --board-l / --board-r), and its tabs ride its edges. The both-or-one rule is menusDrawers' own.
+  const hands = useStandingHands();
+  const [boardBox, setBoardBox] = useState<{ l: number; w: number; r: number; natural: number } | null>(null);
+  useLayoutEffect(() => {
+    const stage = wrapRef.current?.closest('.desk-frame-stage') as HTMLElement | null;
+    if (!stage) { setBoardBox(null); return; }
+    const apply = () => {
+      const s = stage.getBoundingClientRect();
+      const W = stage.clientWidth;
+      const natural = Math.min(W, 1100);
+      const m = (W - natural) / 2;
+      const strip = document.querySelector('.desk-frame-strip')?.getBoundingClientRect();
+      const intrusion = strip && strip.width > 0 ? Math.max(0, strip.right - s.left) : 0;
+      const openW = Math.max(320, Math.min(0.34 * window.innerWidth, 460));   // --tutor-panel-open-w
+      const l = Math.max(m, hands.tools ? DRAWER_MIN + intrusion : 0);
+      const r = Math.max(m, hands.tutor ? 16 + openW : 0);
+      const w = Math.max(240, W - l - r);
+      stage.style.setProperty('--board-l', `${l}px`);
+      stage.style.setProperty('--board-r', `${r}px`);
+      stage.style.setProperty('--board-strip', `${intrusion}px`);
+      setBoardBox((prev) => (prev && prev.l === l && prev.r === r && prev.w === w && prev.natural === natural ? prev : { l, w, r, natural }));
+      document.dispatchEvent(new Event('wz-board-moved'));   // the Tutor re-measures its panel against the board's new edge
+    };
+    apply();
+    const ro = new ResizeObserver(apply);
+    ro.observe(stage);
+    return () => ro.disconnect();
+  }, [hands.tools, hands.tutor]);
 
   // B1 S2 — the reconcile. Runs once on mount (a system Board may have
   // qualifying pages the writer hasn't visited it since) and again on every
@@ -3729,7 +3770,9 @@ export function BoardEditor({ id }: { id: string }) {
               .board-canvas-wrap rendered at ~2px. legacy's own
               board-page container caps at maxWidth:1100 (board wants more
               room than prose's 720/760 measure); mirrored here. */}
-          <div style={{ width: 'min(100%, 1100px)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+          <div className="board-area" style={boardBox
+            ? { width: boardBox.w, marginLeft: boardBox.l, marginRight: boardBox.r, flex: '0 0 auto', display: 'flex', flexDirection: 'column', position: 'relative' }
+            : { width: 'min(100%, 1100px)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
             {/* W5 - a Deck completes: the theme's existing goal celebration, once (an overlay on the stage's top edge; it takes no room) */}
             <GoalCelebration celebrating={deckRewards.deck} />
             {boardContent}

@@ -192,8 +192,9 @@ export function requestOpen(id: DrawerId): DrawerId | null {
 }
 
 export function noteClosed(id: DrawerId): void {
-  stands.delete(id);
+  const had = stands.delete(id);
   if (openDrawer === id) { openDrawer = null; notify(); }
+  else if (had) notify();   // POLISH #10 item 1: a hand that stood and closed is news to useStandingHands, even when it was not the latest opener
 }
 
 /** PAGE-SIZE (spec point 3) - the zoom TUCKS the page's two hands: each closes through its OWN registered path (the same slide it uses when
@@ -212,4 +213,12 @@ const getSnapshot = (): DrawerId | null => openDrawer;
 
 export function useOpenDrawer(): DrawerId | null {
   return useSyncExternalStore(subscribe, getSnapshot);
+}
+
+/** POLISH #10 item 1 (Nick, Oct 25) - which of the page's two hands stand open right now: the Board narrows beside them. A string snapshot ('', 'T', 'U',
+ *  'TU') so the store's identity is stable between changes. */
+const getHands = (): string => (stands.has('tools') ? 'T' : '') + (stands.has('tutor') ? 'U' : '');
+export function useStandingHands(): { tools: boolean; tutor: boolean } {
+  const h = useSyncExternalStore(subscribe, getHands);
+  return { tools: h.includes('T'), tutor: h.includes('U') };
 }
