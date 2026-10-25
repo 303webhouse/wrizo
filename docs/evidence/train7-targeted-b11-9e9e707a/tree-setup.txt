@@ -1,0 +1,11 @@
+toplevel: C:/Users/nickh/writer-studio/.claude/worktrees/b11
+base: c81c39bc
+== merging page-size-r3 @ 243cf8f0
+   -> 5b41c721  unmerged files: 0
+== merging fx10-s4-park @ 930d6eb4
+CONFLICT (content): Merge conflict in apps/desktop/scripts/harness/fx10.mjs
+Auto-merging apps/desktop/scripts/harness/fx5.mjs
+Auto-merging apps/desktop/src/index.css
+Automatic merge failed; fix conflicts and then commit the result.
+   -> 5b41c721  unmerged files: 1
+CONFLICT - STOP
