@@ -7,6 +7,7 @@
 import type { JournalEntry, Project } from '../types';
 import { describePageHome } from './pageHome';
 import { getBoardsConnecting, getJournalEntries } from './persistence';
+import { withoutFontMarks } from './markRuns';
 
 // --- Structure --------------------------------------------------------
 // "Where this page sits: its home and its memberships (getBoardsConnecting).
@@ -44,7 +45,7 @@ const RECENT_CAPTURE_LIMIT = 5;
 // Exported — S4's nudges (tutorNudges.ts) reuse this exact title-reading
 // convention rather than re-deriving it a second way.
 export function titleOf(e: JournalEntry): string {
-  const line = e.text.trim().split('\n')[0]?.trim();
+  const line = withoutFontMarks(e.text).trim().split('\n')[0]?.trim();   // POLISH #10 item 4: a title reads the words, never a style span's marks
   return line ? line.slice(0, 60) : 'Untitled';
 }
 
