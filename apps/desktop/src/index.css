@@ -3982,6 +3982,11 @@ a:focus-visible,
    at once. Closed, `open` is false and the inline override is absent, so
    this formula is exactly as unchanged as the comment above describes. */
 .desk-frame-tutor-anchor--prose{ /* intentionally empty — mirrors the sliver anchor's own hook */ }
+/* POLISH #10 item 3 (Nick, Oct 25) - A POP-OUT ON THE PAGE NEVER EXTENDS PAST THE PAGE SURFACE: the page's drawers end at its foot (DeskFrame writes
+   --wz-page-foot, the painted page's bottom from the stage's top) and scroll inside; where the page runs past the stage (the zoom), the stage's foot. */
+.desk-frame-stage--prose .desk-frame-sliver-anchor,
+.desk-frame-stage--prose .desk-frame-tutor-anchor,
+.desk-frame-stage--prose .desk-frame-tutor-panel-anchor{ height: min(100%, var(--wz-page-foot, 100%)); }
 /* SC1 S4 — the exact mirror of `.desk-frame-sliver-anchor--screenplay` (see
    that rule for the full SC-V1 derivation): the screenplay page is 8.5in
    wide, so the Tutor's grip rides half of that, not prose's half-measure. */
@@ -6128,6 +6133,14 @@ html[data-wz-writing='true'] .chrome-handle{ opacity:0 !important; }   /* still 
    (InkStratum.tsx's header). Stated in CSS too so a later hand that reaches
    for `pointer-events:auto` here meets the reason first. */
 .wz-ink-sheet > .ink-canvas{ pointer-events:none; }
+/* POLISH #10 item 5 (Nick, Oct 25) - IN THE ZOOM THE INK SHEET COVERS THE VISIBLE PAGE. The scroller's huge paddings (the start offset above, the end
+   room below) left the sheet - and so the pen - only as tall as the text: a fresh page's one line. The sheet reaches over both with matching negative
+   margins and paddings, so its text stays exactly where it was; ink is measured from where the text starts (InkStratum.tsx inkOriginY), so a stroke
+   keeps its place against the words in both views. */
+.desk-frame-stage--prose .mode-pagecol[data-zoom='true'] .wz-ink-sheet{
+  margin-top: calc(-1 * var(--tw-start-offset, 0px)); padding-top: var(--tw-start-offset, 0px);
+  margin-bottom: calc(-1 * max(30vh, var(--tw-end-pad, 30vh))); padding-bottom: max(30vh, var(--tw-end-pad, 30vh));
+}
 /* FX3 S4 — TRIAL (Nick's own working-value experiment; not settled law).
    The modes move toward the right instead of sitting flush left; Done
    stays the rightmost element with a fixed gap (not auto-margin) keeping
@@ -6684,7 +6697,7 @@ body:has(.walk)::after{ z-index:-1; }
 /* PAGE-SIZE (FIX's turn 3 on d4a89f48, escexit S4) - IN THE ZOOM the writing line is held at the band's anchor and a fresh page's sheet is that one line
    tall, so "centred on the sheet" put the row ON the line: a press on the line pressed a door, and the first Esc found nothing open. Zoomed, the row
    takes BG1's own placement instead - just below the line, inside the band's lower fade - so the line itself stays clear. */
-.mode-pagecol[data-zoom='true'] .wz-beginnings[data-beginnings='page']{ top:calc(100% + 0.75em); transform:none; }
+.mode-pagecol[data-zoom='true'] .wz-beginnings[data-beginnings='page']{ top:calc(100% - max(30vh, var(--tw-end-pad, 30vh)) + 0.75em); transform:none; }   /* polish #10 item 5: less the sheet's reach below */
 /* S1 — the same row inside STORYBOARD/OUTLINE, which are ordinary flow blocks
    with no positioned ancestor: it simply takes the place their empty line held. */
 .wz-beginnings[data-beginnings='projection']{ padding:22px 0 6px; }
