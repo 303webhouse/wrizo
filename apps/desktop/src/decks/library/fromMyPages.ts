@@ -1,5 +1,6 @@
 import { deskTerm } from '../../store/deskLexicon';
 import { getJournalEntry } from '../../store/persistence';
+import { withoutFontMarks } from '../../store/markRuns';   // POLISH #10 item 4
 import { colX, colWidth, rowY, CARD_H } from '../layout';
 import { guidedStep } from '../guided';
 import type { DeckDefinition, DealtCardSpec } from '../types';
@@ -17,7 +18,7 @@ import type { DeckDefinition, DealtCardSpec } from '../types';
 const COLS = 3;
 const W = colWidth(COLS);
 
-const titleOf = (text: string | undefined): string => ((text ?? '').trim().split('\n')[0] ?? '').trim().slice(0, 60) || deskTerm('boardThreadUntitled');
+const titleOf = (text: string | undefined): string => (withoutFontMarks(text ?? '').trim().split('\n')[0] ?? '').trim().slice(0, 60) || deskTerm('boardThreadUntitled');
 
 function layout(ids: string[]): DealtCardSpec[] {
   return ids.map((id, i) => ({

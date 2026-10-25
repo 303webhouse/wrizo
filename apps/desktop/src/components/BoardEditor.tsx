@@ -1717,7 +1717,9 @@ export function BoardEditor({ id }: { id: string }) {
       if (el.closest('[draggable="true"]') || (e.target as Element).closest('.wz-cascade-thumb-menu-btn, .wz-cascade-thumb-menu, [data-reorder-grip]')) return;   // BIG PROJECTS 1a: a Pages pop-out row's reorder grip keeps its own drag   // a draggable survey row keeps its own (membership) drag
       const eid = el.dataset.linkEntry!;
       if (eid === id || !getJournalEntryIncludingDeleted(eid)) return;
-      press = { x: e.clientX, y: e.clientY, entryId: eid, label: (el.textContent ?? '').trim().split('\n')[0].slice(0, 60) || 'Untitled' };
+      // POLISH #10 item 4: the label is the card's WORDS - its hidden marks (a style span's included) are dropped before it is read
+      const words = el.cloneNode(true) as HTMLElement; words.querySelectorAll('.md-mark-hidden').forEach((n) => n.remove());
+      press = { x: e.clientX, y: e.clientY, entryId: eid, label: (words.textContent ?? '').trim().split('\n')[0].slice(0, 60) || 'Untitled' };
       window.addEventListener('pointermove', onMove, true); window.addEventListener('pointerup', onUp, true); window.addEventListener('pointercancel', onCancel, true);
     };
     document.addEventListener('pointerdown', onDown, true);
