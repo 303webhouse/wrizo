@@ -685,6 +685,8 @@ await withHarness(async (app) => {
         scrollContentWidth, pageContentWidth,
         k,
         layoutScrollContentWidth: sr.width / k - parseFloat(scs.paddingLeft) - parseFloat(scs.paddingRight),
+        // scrollbar-flush r2.1: .mode-scroll's right padding is the margin cancellation (the page's own right padding) PLUS the bar pairing's (10px - the bar), which keeps the text column one width at every scale
+        layoutPadExtra: parseFloat(scs.paddingRight) - parseFloat(pcs.paddingRight),
         layoutPageContentWidth: pr.width / k - parseFloat(pcs.paddingLeft) - parseFloat(pcs.paddingRight) - pageBorder,
         layoutScrollLeft: (sr.left - pr.left) / k, layoutPageContentLeft: parseFloat(pcs.borderLeftWidth) + parseFloat(pcs.paddingLeft),
       };
@@ -697,7 +699,8 @@ await withHarness(async (app) => {
     // SUPERSEDED (page-size r3): the rects are PAINTED px (the page is scaled by --wz-k) but the paddings and border they are subtracted by are LAYOUT px, so the raw equivalence only holds at k = 1 (measured: k < 1 at
     // 1100 / 1280 / 2200, scroll 732 vs page 768 at 1100). Quoted verbatim in this file's PARKED record at the foot; the live successor reads BOTH sides in layout px (rect / k), where the equivalence is exactly as before.
     ok(`S4 [r3 successor] @${width}px: the text measure is UNCHANGED — mode-scroll's own content-box width still equals mode-page's own content-box width, both read in LAYOUT px (painted rect / the applied scale k = ${info.k.toFixed(4)})`,
-      info.k > 0 && Math.abs(info.layoutScrollContentWidth - info.layoutPageContentWidth) < 1, JSON.stringify(info));
+      info.k > 0 && Math.abs(info.layoutScrollContentWidth + info.layoutPadExtra - info.layoutPageContentWidth) < 1, JSON.stringify(info));
+    // (r2.1: the equivalence reads the scroll's content box PLUS the pairing's extra right padding - the one deliberate difference from the pre-fix zero-extra markup; the extra is 0 wherever the bar is the full 10px.)
     // ORIGINAL: ok(`S4 @${width}px: the LEFT edge of the writing area is untouched (only the right side moved, per Nick's own words)`, Math.abs(info.scrollLeft - info.pageContentLeft) < 1, JSON.stringify(info));
     // SUPERSEDED (page-size r3): the same painted-vs-layout mix (scrollLeft is a painted offset, pageContentLeft adds LAYOUT border + padding to a painted pr.left). Successor: the offset from the paper's left edge, in layout px.
     ok(`S4 [r3 successor] @${width}px: the LEFT edge of the writing area is untouched (only the right side moved, per Nick's own words) — mode-scroll starts exactly at the page's own border + padding, both in LAYOUT px (k = ${info.k.toFixed(4)})`,
@@ -735,7 +738,7 @@ if (process.env.HARNESS_PARKED === '1') {
   // read at that width: the page is painted at k != 1 (so the RAW painted-vs-layout mix cannot equal), and both claims hold exactly in layout px (the live successors).
   for (const o of fx10ParkReads) {
     parkedChecks.push({ name: `PARKED (was "S4 @${o.width}px: the text measure is UNCHANGED — mode-scroll's own content-box width still equals mode-page's own content-box width, exactly the equivalence the pre-fix (zero-padding) markup guaranteed by construction") — page-size r3: the rects are painted px, the paddings layout px; live successor: S4 [r3 successor] @${o.width}px (text measure, layout px)`,
-      pass: o.k > 0 && Math.abs(o.k - 1) > 0.001 && Math.abs(o.scrollContentWidth - o.pageContentWidth) >= 1 && Math.abs(o.layoutScrollContentWidth - o.layoutPageContentWidth) < 1, detail: JSON.stringify(o) });
+      pass: o.k > 0 && Math.abs(o.k - 1) > 0.001 && Math.abs(o.scrollContentWidth - o.pageContentWidth) >= 1 && Math.abs(o.layoutScrollContentWidth + o.layoutPadExtra - o.layoutPageContentWidth) < 1, detail: JSON.stringify(o) });
     parkedChecks.push({ name: `PARKED (was "S4 @${o.width}px: the LEFT edge of the writing area is untouched (only the right side moved, per Nick's own words)") — page-size r3: same painted-vs-layout mix; live successor: S4 [r3 successor] @${o.width}px (left edge, layout px)`,
       pass: o.k > 0 && Math.abs(o.k - 1) > 0.001 && Math.abs(o.scrollLeft - o.pageContentLeft) >= 1 && Math.abs(o.layoutScrollLeft - o.layoutPageContentLeft) < 1, detail: JSON.stringify(o) });
   }
