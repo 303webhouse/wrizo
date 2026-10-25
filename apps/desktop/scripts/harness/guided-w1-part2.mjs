@@ -105,7 +105,7 @@ await withHarness(async (app) => {
         const strip = await point('.show-as'); await app.mouseMove(strip.x, strip.y); await sleep(400);
         const openWords = await q("(() => ({ open: document.querySelector('.show-as')?.getAttribute('data-open'), words: [...document.querySelectorAll('.show-as-word')].map((w) => getComputedStyle(w).display !== 'none' && w.textContent.trim()) }))()");
         ok(`[${T}] hovering the strip with a mouse opens it: icons AND words`, openWords.open === 'true' && openWords.words.length === 4 && openWords.words.every(Boolean), JSON.stringify(openWords));
-        await shot(`02-walk-showas-open-${tag}`);
+        await sleep(600); await shot(`02-walk-showas-open-${tag}`);   // a capture taken straight after the hover came back tiled once (the eighth box turn's Arbor frame): let the repaint settle first
         await app.mouseMove(5, 450); await sleep(300);
         // a touch or pen pointer over the strip must NOT open it (opening shifts the icons between pointer-down and up, and the tap would land on another icon)
         const touchOpen = await q("(() => { const s = document.querySelector('.show-as'); s.dispatchEvent(new PointerEvent('pointerover', { pointerType: 'touch', bubbles: true })); s.dispatchEvent(new PointerEvent('pointerenter', { pointerType: 'touch' })); return new Promise((r) => setTimeout(() => r(s.getAttribute('data-open')), 200)); })()");
