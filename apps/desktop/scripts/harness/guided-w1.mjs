@@ -168,6 +168,7 @@ async function suite(M, read) {
   {
     const bm = read('store/boardMode.ts'), sa = read('components/ShowAs.tsx'), be = read('components/BoardEditor.tsx');
     chk('S4', () => [/'walk'/.test(bm) && /'flip'/.test(bm) && /'thumbnails'/.test(bm) && /localStorage/.test(bm) && !/saveBoardBoxes|saveJournalEntry/.test(bm), 'the view memory stays localStorage-only (no sync, no save)']);
+    chk('Y2', () => { const be = read('components/BoardEditor.tsx'); return [/else if \(inline && !hadFocus && document\.activeElement === el\) el\.blur\(\)/.test(be), 'an inline (Walk) card that mounts on a step does not keep the caret (placing it focuses the editor in Chromium, and the arrows would move it instead of stepping)']; });
     chk('S10', () => [/pointerType === 'mouse'/.test(sa) && /:focus-visible/.test(sa) && !/onPointerEnter=\{\(\) =>/.test(sa) && !/onFocusCapture=\{\(\) =>/.test(sa), 'ShowAs opens its words for a mouse hover or keyboard focus only - a touch / pen tap or a mouse press must not shift the icons between pointer-down and up']);
     chk('S5', () => [sa.length > 200 && /className="show-as"/.test(sa) && /show-as-btn/.test(sa) && /aria-pressed=/.test(sa) && /data-view=/.test(sa) && /viewsFor\(/.test(sa) && /title=\{/.test(sa), 'ShowAs: icons first, the word on hover (title), aria-pressed on the current view, the views from viewsOf(kind)']);
     chk('S6', () => [/<ShowAs/.test(be) && !/boardModeTabs\.map\(/.test(be), '"Show as" replaces the three view tabs']);
@@ -295,6 +296,7 @@ const MUT = [
   { name: 'Show as drops its pressed state', file: 'components/ShowAs.tsx', find: /aria-pressed=/, to: 'data-pressed=', red: ['S5'] },
   { name: 'Show as opens on a touch pointer too', file: 'components/ShowAs.tsx', find: /onPointerEnter=\{\(e\) => \{ if \(e\.pointerType === 'mouse'\) setOpen\(true\); \}\}/, to: 'onPointerEnter={() => setOpen(true)}', red: ['S10'] },
   { name: 'Show as opens on a mouse-press focus too', file: 'components/ShowAs.tsx', find: /onFocusCapture=\{\(e\) => \{ if \(\(e\.target as HTMLElement\)\.matches\?\.\(':focus-visible'\)\) setOpen\(true\); \}\}/, to: 'onFocusCapture={() => setOpen(true)}', red: ['S10'] },
+  { name: 'a Walk card keeps the caret it was mounted with', file: 'components/BoardEditor.tsx', find: /else if \(inline && !hadFocus && document\.activeElement === el\) el\.blur\(\);/, to: ';', red: ['Y2'] },
   { name: 'the Show-as words lose Trace', file: 'store/deskLexicon.ts', find: /boardModeWalk: 'Trace'/, to: "boardModeWalk: 'Walk'", red: ['L1'] },
 ];
 
@@ -306,7 +308,7 @@ try {
   const M0 = base.M || {};
   const res0 = await suite(M0, rd({}));
   for (const [k, v] of Object.entries(res0)) ok(k, v.pass, v.detail);
-  ok('the suite ran every check it names', Object.keys(res0).length === 54, `${Object.keys(res0).length} checks`);
+  ok('the suite ran every check it names', Object.keys(res0).length === 55, `${Object.keys(res0).length} checks`);
 
   let landed = 0, killed = 0, notLanded = 0;
   for (const m of MUT) {
