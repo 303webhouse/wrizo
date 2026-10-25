@@ -80,7 +80,7 @@ function withInkNote(body: string, entry: JournalEntry): string {
 // points at rather than duplicating that page's content here (the
 // referenced page gets its own full entry elsewhere in a multi-page export,
 // or can be downloaded directly on its own).
-function boardBody(entry: JournalEntry): string {
+function boardBody(entry: JournalEntry, plainCards = false): string {
   // S4 (E1.1) — the whitelist INVERTED. This loop used to filter the boxes
   // down to a text/ink/page-pin whitelist and SILENTLY DROP everything else,
   // so a future box kind could vanish from a "complete" export with no trace.
@@ -108,7 +108,7 @@ function boardBody(entry: JournalEntry): string {
     if (box.kind === 'connection' || box.kind === 'board-meta') continue; // not cards — skipped by name (lane titles ride the header above)
     if (box.kind === 'text') {
       const title = firstLine(box.text ?? '');
-      parts.push(`## ${title}\n\n${box.text ?? ''}`);
+      parts.push(`## ${title}\n\n${plainCards ? stripMarkdownConventions(box.text ?? '') : (box.text ?? '')}`);   // POLISH #10 item 4: the .txt reads the words
     } else if (box.kind === 'ink') {
       parts.push(`## Ink card\n\n${INK_PLACEHOLDER}`);
     } else if (box.kind === 'page-pin') {
@@ -143,7 +143,7 @@ export function pageBodyFormatted(entry: JournalEntry): string {
 // stripped back to honest plain reading text.
 export function pageBodyPlain(entry: JournalEntry): string {
   if (entry.pageType === 'script') return entry.script ? plainScriptWords(entry.script) : (entry.text ?? '');
-  if (entry.pageType === 'board') return boardBody(entry); // no separate "plain" convention for a card list
+  if (entry.pageType === 'board') return boardBody(entry, true); // POLISH #10 item 4: the .txt strips the cards' conventions and style spans to their words
   if (entry.pageSettings?.template === 'outline') return outlineBody(entry.text ?? '', 'plain');
   if (entry.pageSettings?.template === 'bibliography') return bibliographyBody(entry.text ?? '', 'plain');
   return stripMarkdownConventions(entry.text ?? '');

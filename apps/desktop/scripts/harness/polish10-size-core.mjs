@@ -90,7 +90,7 @@ const p1 = has(df, 'applySizePick') ? call(df.applySizePick, base, 4, 9, 14) : n
 ok('PICK: a size pick wraps the highlight and keeps it highlighted', !!p1 && p1.text === 'The [ferry]{.size-14} was late and the harbour was cold' && sel(p1) === 'ferry', J(p1));
 const p2 = has(df, 'applySizePick') ? call(df.applySizePick, base, 4, 5, 18) : null;
 ok('PICK: ONE character takes a size alone', !!p2 && p2.text === 'The [f]{.size-18}erry was late and the harbour was cold' && sel(p2) === 'f', J(p2));
-const p3 = p1 && has(df, 'applySizePick') ? call(df.applySizePick, p1.text, p1.end, p1.end + 9, 14) : null;
+const p3 = p1 && has(df, 'applySizePick') ? call(df.applySizePick, p1.text, p1.text.indexOf(' was late'), p1.text.indexOf(' was late') + ' was late'.length, 14) : null;
 ok('PICK: neighbours of one size MERGE into one span', !!p3 && p3.text === 'The [ferry was late]{.size-14} and the harbour was cold', J(p3));
 const p4 = p3 && has(df, 'applySizePick') ? call(df.applySizePick, p3.text, p3.text.indexOf('was'), p3.text.indexOf('was') + 3, 20) : null;
 ok('PICK: a partial re-pick SPLITS the span - never two sizes stacked', !!p4 && p4.text === 'The [ferry]{.size-14} [was]{.size-20} [late]{.size-14} and the harbour was cold' && noCrossing(p4.text), J(p4));
