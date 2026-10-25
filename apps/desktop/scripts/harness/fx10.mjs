@@ -73,6 +73,7 @@ const fx10Mirror = [];   // the drawer mirror (Oct 24): the page surface's open-
 // documented narrow degradation) and the unmoved tab rides ABOVE it - the topmost element at its centre (turn on 8d3673bd: panel 693 / 807, tab 970 / 1110)
 const fx10MirrorOk = (o) => !!o.gripClosed && !!o.gripOpen && Math.abs(o.gripClosed.left - o.gripOpen.left) < 0.5
   && (Math.abs(o.panelLeft - o.gripOpen.right) < 1.5 || (o.margin != null && o.margin < 200 && o.gripOnTop === true));
+const fx10ParkReads = [];   // the default leg's own S4 reads (one per width), for the parked records at the foot (page-size r3)
 const fx10Ps = [];   // page-size's park audit (Oct 24): the page surface's grip reads, for the parked records
 // page-size: the Tutor grip against the PAINTED page (the column is stage-wide in the zoom), with the editor's edge and the margin the CSS reads
 const PS_GRIP = `(() => { const g = document.querySelector('.wz-tutor-grip'); const p = document.querySelector('.desk-frame-stage--prose .mode-page'); const e = document.querySelector('.forward-only-editor');
@@ -693,18 +694,35 @@ await withHarness(async (app) => {
       const scrollContentWidth = sr.width - parseFloat(scs.paddingLeft) - parseFloat(scs.paddingRight);
       const pageBorder = parseFloat(pcs.borderLeftWidth) + parseFloat(pcs.borderRightWidth);
       const pageContentWidth = pr.width - parseFloat(pcs.paddingLeft) - parseFloat(pcs.paddingRight) - pageBorder;
+      // page-size r3 (the item 3 / scrollbar-flush train): .mode-page is PAINTED with transform: scale(--wz-k) and .mode-scroll sits inside it, so every rect above is in
+      // PAINTED px while the computed paddings / border are LAYOUT px. k is the applied scale (painted width over layout width); the layout-unit reads divide the rects by it.
+      const k = pr.width / page.offsetWidth;
       return {
         scrollRight: sr.right, pageRight: pr.right, gap: pr.right - sr.right,
         scrollLeft: sr.left, pageContentLeft: pr.left + parseFloat(pcs.borderLeftWidth) + parseFloat(pcs.paddingLeft),
         scrollContentWidth, pageContentWidth,
+        k,
+        layoutScrollContentWidth: sr.width / k - parseFloat(scs.paddingLeft) - parseFloat(scs.paddingRight),
+        // scrollbar-flush r2.1: .mode-scroll's right padding is the margin cancellation (the page's own right padding) PLUS the bar pairing's (10px - the bar), which keeps the text column one width at every scale
+        layoutPadExtra: parseFloat(scs.paddingRight) - parseFloat(pcs.paddingRight),
+        layoutPageContentWidth: pr.width / k - parseFloat(pcs.paddingLeft) - parseFloat(pcs.paddingRight) - pageBorder,
+        layoutScrollLeft: (sr.left - pr.left) / k, layoutPageContentLeft: parseFloat(pcs.borderLeftWidth) + parseFloat(pcs.paddingLeft),
       };
     })()`);
+    fx10ParkReads.push({ width, ...info });
     ok(`S4 @${width}px: the scrollbar's own rect (mode-scroll's border-box edge) sits FLUSH against the paper's right edge — zero gap beyond the paper's own 1px border`,
       info.gap < 2, JSON.stringify(info));
-    ok(`S4 @${width}px: the text measure is UNCHANGED — mode-scroll's own content-box width still equals mode-page's own content-box width, exactly the equivalence the pre-fix (zero-padding) markup guaranteed by construction`,
-      Math.abs(info.scrollContentWidth - info.pageContentWidth) < 1, JSON.stringify(info));
-    ok(`S4 @${width}px: the LEFT edge of the writing area is untouched (only the right side moved, per Nick's own words)`,
-      Math.abs(info.scrollLeft - info.pageContentLeft) < 1, JSON.stringify(info));
+    // ORIGINAL (this file's own live S4 check, pre page-size r3): ok(`S4 @${width}px: the text measure is UNCHANGED — mode-scroll's own content-box width still equals mode-page's own content-box width, exactly the equivalence the pre-fix (zero-padding) markup guaranteed by construction`,
+    //   Math.abs(info.scrollContentWidth - info.pageContentWidth) < 1, JSON.stringify(info));
+    // SUPERSEDED (page-size r3): the rects are PAINTED px (the page is scaled by --wz-k) but the paddings and border they are subtracted by are LAYOUT px, so the raw equivalence only holds at k = 1 (measured: k < 1 at
+    // 1100 / 1280 / 2200, scroll 732 vs page 768 at 1100). Quoted verbatim in this file's PARKED record at the foot; the live successor reads BOTH sides in layout px (rect / k), where the equivalence is exactly as before.
+    ok(`S4 [r3 successor] @${width}px: the text measure is UNCHANGED — mode-scroll's own content-box width still equals mode-page's own content-box width, both read in LAYOUT px (painted rect / the applied scale k = ${info.k.toFixed(4)})`,
+      info.k > 0 && Math.abs(info.layoutScrollContentWidth + info.layoutPadExtra - info.layoutPageContentWidth) < 1, JSON.stringify(info));
+    // (r2.1: the equivalence reads the scroll's content box PLUS the pairing's extra right padding - the one deliberate difference from the pre-fix zero-extra markup; the extra is 0 wherever the bar is the full 10px.)
+    // ORIGINAL: ok(`S4 @${width}px: the LEFT edge of the writing area is untouched (only the right side moved, per Nick's own words)`, Math.abs(info.scrollLeft - info.pageContentLeft) < 1, JSON.stringify(info));
+    // SUPERSEDED (page-size r3): the same painted-vs-layout mix (scrollLeft is a painted offset, pageContentLeft adds LAYOUT border + padding to a painted pr.left). Successor: the offset from the paper's left edge, in layout px.
+    ok(`S4 [r3 successor] @${width}px: the LEFT edge of the writing area is untouched (only the right side moved, per Nick's own words) — mode-scroll starts exactly at the page's own border + padding, both in LAYOUT px (k = ${info.k.toFixed(4)})`,
+      info.k > 0 && Math.abs(info.layoutScrollLeft - info.layoutPageContentLeft) < 1, JSON.stringify(info));
   }
 
   return checks;
@@ -739,12 +757,21 @@ if (process.env.HARNESS_PARKED === '1') {
     parkedChecks.push({ name: `PARKED for the page surface (was "S1 geometry @${o.width}px/page: grip-flush (closed) — the grip's own left edge sits flush (no gap) against the paper's right edge") — page-size: the paper is the painted .mode-page; live successor: S1 geometry @${o.width}px/page: grip-flush (closed) [page-size successor]`,
       pass: psGripOk(o), detail: JSON.stringify(o) });
   }
+  // S4's TWO text-measure / left-edge checks, retired verbatim (page-size r3, the scrollbar-flush train; the flush check - the gap - still runs and passes). The condition is the ruled truth, from the default leg's own
+  // read at that width: the page is painted at k != 1 (so the RAW painted-vs-layout mix cannot equal), and both claims hold exactly in layout px (the live successors).
+  for (const o of fx10ParkReads) {
+    parkedChecks.push({ name: `PARKED (was "S4 @${o.width}px: the text measure is UNCHANGED — mode-scroll's own content-box width still equals mode-page's own content-box width, exactly the equivalence the pre-fix (zero-padding) markup guaranteed by construction") — page-size r3: the rects are painted px, the paddings layout px; live successor: S4 [r3 successor] @${o.width}px (text measure, layout px)`,
+      pass: o.k > 0 && Math.abs(o.k - 1) > 0.001 && Math.abs(o.scrollContentWidth - o.pageContentWidth) >= 1 && Math.abs(o.layoutScrollContentWidth + o.layoutPadExtra - o.layoutPageContentWidth) < 1, detail: JSON.stringify(o) });
+    parkedChecks.push({ name: `PARKED (was "S4 @${o.width}px: the LEFT edge of the writing area is untouched (only the right side moved, per Nick's own words)") — page-size r3: same painted-vs-layout mix; live successor: S4 [r3 successor] @${o.width}px (left edge, layout px)`,
+      pass: o.k > 0 && Math.abs(o.k - 1) > 0.001 && Math.abs(o.scrollLeft - o.pageContentLeft) >= 1 && Math.abs(o.layoutScrollLeft - o.layoutPageContentLeft) < 1, detail: JSON.stringify(o) });
+  }
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nFX10 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; fx10.mjs parks 6 of its own (Oct 24: page-size's S1 grip-flush and the drawer mirror's S1 grip-clears-panel, each on the page surface)`
+    ? `
+FX10 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; fx10.mjs parks its own (Oct 24: page-size's S1 grip-flush on the page surface x3; the drawer mirror's S1 grip-clears-panel on the page surface; page-size r3: S4's text measure + left edge x3 widths each)`
     : `\nFX10 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 

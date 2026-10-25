@@ -370,15 +370,18 @@
    robust fix regardless of that inheritance quirk, and costs nothing
    beyond a one-time style-rule match (not a per-frame cost).
    ============================================================================ */
+/* SCROLLBAR-FLUSH, ONE MECHANISM (Fable Oct 23): the STANDARD properties below are the app's only scrollbar
+   mechanism. Since Chromium 121 (Electron 31 = Chromium 126) `::-webkit-scrollbar` is IGNORED on any element whose
+   `scrollbar-width` or `scrollbar-color` is not `auto` - and this `*` rule sets both on every element - so the 8px
+   `::-webkit-scrollbar{width:8px}` rule and its thumb/track/hover siblings that used to follow were dead code from the day
+   the app moved to Electron 31 (the harness measured the native thin bar, 10px, not 8). They are deleted, not kept as a
+   second source of truth: never both on one element. What a standard-properties thumb cannot do is a hover darken - the
+   honest cost of "barely noticeable", and the rule is Nick's (thin, flush on the page edge, tone-aware). The width is
+   whatever native `thin` renders (<=10px), so the harness asserts the RULE (thin, <=10px, flush), never a guessed number. */
 *{
   scrollbar-width: thin;
   scrollbar-color: var(--ink-border-strong) transparent;
 }
-::-webkit-scrollbar{ width:8px; height:8px; }
-::-webkit-scrollbar-track{ background:transparent; }
-::-webkit-scrollbar-thumb{ background:var(--ink-border-strong); border-radius:0; }
-::-webkit-scrollbar-thumb:hover{ background:var(--text-low); }
-::-webkit-scrollbar-corner{ background:transparent; }
 /* FX7 S4 — the systemic default's dark-chrome tokens read poorly against
    the LIGHT paper (a scrollbar tuned for `--ink-950`-family surfaces,
    painted over `--paper`'s cream tone, would sit closer to invisible than
@@ -402,22 +405,43 @@
    ticket fixes on `.board-text`'s own colour, just painted on its
    scrollbar thumb instead of its text. --ink-on-card-low carries the same
    "theme-scoped, subdued but legible" property this comment asks for,
-   just measured against the card's own stock rather than the page's. */
-.mode-scroll, .desk-frame-scroll-cap{
+   just measured against the card's own stock rather than the page's.
+   SCROLLBAR-FLUSH (Fable Oct 23, Nick: INK's light board shows a thick
+   dark thumb at the bottom): `.board-canvas-wrap` (the board's own
+   pannable canvas, BoardEditor.tsx) was never added to this group — its
+   own CSS comment (now corrected, see the FX5 S3(a)/FX7 S4 note near
+   `.board-canvas-wrap{ scrollbar-gutter:stable; }` below) wrongly
+   claimed the plain dark-chrome systemic default was fine for it. It
+   isn't: `.board-canvas`'s own background is `var(--paper)` (BoardEditor.
+   tsx's own inline style), the SAME paper surface `.mode-scroll` sits on
+   — not the card family `.board-text` uses — so it joins the PAPER pair,
+   not the card pair, tracking `--paper`'s own light/dark flip correctly
+   in both themes with zero new tokens. */
+.mode-scroll, .desk-frame-scroll-cap, .board-canvas-wrap{
   scrollbar-color: var(--ink-on-paper-low) transparent;
 }
 .board-text{ scrollbar-color: var(--ink-on-card-low) transparent; }
-.mode-scroll::-webkit-scrollbar-thumb,
-.desk-frame-scroll-cap::-webkit-scrollbar-thumb{ background:var(--ink-on-paper-low); }
-.board-text::-webkit-scrollbar-thumb{ background:var(--ink-on-card-low); }
-/* Hover darkens toward the paper's own primary ink (--ink-on-paper), the
-   mirror of the dark-chrome default's own rest-dark/hover-light relationship
-   — a LIGHT surface needs MORE contrast (darker), not less, to read as
-   "more visible" on hover; --paper-border would have gone the wrong way
-   (lighter, closer to the paper itself, i.e. LESS visible). */
-.mode-scroll::-webkit-scrollbar-thumb:hover,
-.desk-frame-scroll-cap::-webkit-scrollbar-thumb:hover{ background:var(--ink-on-paper); }
-.board-text::-webkit-scrollbar-thumb:hover{ background:var(--ink-on-card); }
+/* THE ONE EXCEPTION (Fable Oct 23, reading A; "at 3840 the page scrollbar scales up with the page"): page-size paints the prose page with
+   `transform: scale(--wz-k)` (and k x --wz-zoom while zoomed), and `.mode-scroll` sits INSIDE that transformed `.mode-page`, so its native `thin` bar -
+   a fixed 10px of layout - paints at 10 x the applied scale (24px+ at 3840). The standard properties cannot name a thickness, so on THIS one element the
+   bar is the webkit mechanism: its layout width is 10px / the applied scale, which the transform paints back to exactly 10px at every size. It must also
+   reset scrollbar-width/color to auto - the pseudo rules are IGNORED (Chromium >= 121) wherever either is set, which is the dead-code trap the one-mechanism
+   note above records. Everything else keeps the standard properties. Wrapped in @supports so a browser without the webkit pseudo (Firefox) keeps `thin`.
+   The thumb is a square in the paper-toned --ink-on-paper-low, 6px of the 10px bar, hard against the page's edge (the transparent 4px sits inboard);
+   the track is clear. The applied scale is --wz-k, times --wz-zoom while the column is zoomed - the SAME expressions page-size's own transform rules use. */
+@supports selector(::-webkit-scrollbar){
+  /* THE TEXT COLUMN IS ONE WIDTH AT EVERY SCALE (Fable Oct 25, FIX's diagnosis of the line-break reds): the bar's layout width (--wz-sb-w) changes with the scale and, left alone, takes a different bite out of the
+     column each time - reflowing the lines. The padding is the margin cancellation the plain `.mode-scroll` rule already carries (the page's own pad-x, offsetting its negative right margin) PLUS (10px - the bar),
+     so bar + that extra is exactly 10 layout px at every scale and zoom and the column is the same width everywhere. (The first form of this rule REPLACED the cancellation - the text column grew by one page margin.) The bar is capped at 10
+     layout px (a page painted BELOW scale 1 would otherwise need a negative padding), so there it paints 10 x k - under 10px, by under a pixel at the narrowest window. */
+  .desk-frame-stage--prose .mode-scroll{ --wz-sb-k: var(--wz-k, 1); --wz-sb-w: min(10px, round(nearest, calc(10px / var(--wz-sb-k)), 1px)); padding-right:calc(var(--wz-page-pad-x, 38px) * var(--paper-scale, 1) + 10px - var(--wz-sb-w)); scrollbar-width:auto; scrollbar-color:auto; }
+  .desk-frame-stage--prose .mode-pagecol[data-zoom='true'] .mode-scroll{ --wz-sb-k: calc(var(--wz-k, 1) * var(--wz-zoom, 1.6)); }
+  .desk-frame-stage--prose .mode-scroll::-webkit-scrollbar{ width:var(--wz-sb-w); }
+  .desk-frame-stage--prose .mode-scroll::-webkit-scrollbar-track{ background:transparent; }
+  .desk-frame-stage--prose .mode-scroll::-webkit-scrollbar-thumb{ background:var(--ink-on-paper-low); background-clip:padding-box; border-left:calc(4px / var(--wz-sb-k)) solid transparent; border-radius:0; }
+}
+/* (The per-element `::-webkit-scrollbar-thumb` colour and hover-darken rules that used to follow were dead under
+   Chromium >= 121 wherever scrollbar-color is set - see the one-mechanism note on the systemic `*` rule above.) */
 
 /* ============================================================================
    TH1 — the theme seam (docs/th1-theme-seam-brief.md, docs/flux-theme-canon.md).
@@ -1525,9 +1549,7 @@ a:focus-visible,
     -webkit-mask-image: linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
     mask-image: linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
   }
-  .beat-rail-dots::-webkit-scrollbar {
-    display: none;
-  }
+  /* (its `::-webkit-scrollbar{display:none}` twin is deleted: redundant with scrollbar-width:none above on Chromium >= 121 - one mechanism per element) */
 }
 
 /* Forward-only editor (CW2). Runs render as DOM spans; the native caret is used
@@ -1800,10 +1822,19 @@ a:focus-visible,
    scrollbar rule near the top of this file, right after the reset) rather
    than staying a one-off tuned to this class alone — Nick's own "bulky and
    most white... dominate visually" verdict named EVERY scrollable region,
-   not just the board. `.board-canvas-wrap` no longer needs its own copy of
-   these six rules: the systemic default already produces byte-identical
-   values (the SAME two tokens), so this comment is what's left here —
-   removing the duplicate keeps the two from ever silently drifting apart. */
+   not just the board.
+   SCROLLBAR-FLUSH, CORRECTED (Fable Oct 23, Nick: INK's light board shows
+   a thick dark thumb at the bottom): the sentence this comment used to
+   carry — "`.board-canvas-wrap` no longer needs its own copy... the
+   systemic default already produces byte-identical values" — was wrong.
+   The systemic default is the DARK-chrome pair (`--ink-border-strong`),
+   tuned for dark surfaces; `.board-canvas`'s own background is
+   `var(--paper)` (BoardEditor.tsx's inline style), a LIGHT-paper surface
+   in both themes by default (Arbor always; Flux unless Page:dark) — the
+   exact mismatch FX7 S4's own comment above already names for
+   `.mode-scroll`. `.board-canvas-wrap` now joins that paper-toned group
+   (`.mode-scroll, .desk-frame-scroll-cap, .board-canvas-wrap`, near the
+   top of this file) instead of relying on the dark default. */
 /* FX17 S1 (SV22) — THE STUTTER'S ROOT. Reserve the scrollbar's gutter always,
    so `clientWidth` is the same number whether the scrollbar is showing or not.
    That one property breaks a genuine closed feedback loop, measured on the
@@ -1835,7 +1866,11 @@ a:focus-visible,
    both-edges` on `.desk-frame-scroll-cap`. Single-edge here — the board's
    canvas is left-aligned in its wrap, so reserving both edges would shift the
    content's optical centre for no benefit. */
-.board-canvas-wrap{ scrollbar-gutter:stable; }
+/* SCROLLBAR-FLUSH (Fable Oct 23): the wrap paints the BOARD SURFACE (--paper, the same token `.board-canvas` paints inline). The vertical bar lives in this
+   wrap's stable gutter BESIDE the canvas and the horizontal bar BELOW it - with no background of its own the wrap showed the dark desk ground there, so the
+   paper-toned thumb (--ink-on-paper-low, set with the paper group at the top of this file) was dark-on-dark and, in Flux light, effectively invisible.
+   On the paper, both bars sit on the surface their tone was chosen for. Background only - no geometry moves. */
+.board-canvas-wrap{ scrollbar-gutter:stable; background:var(--paper); }
 .board-canvas{ border-radius:0; }
 /* FX6 S2c — the empty board's own quiet one-line pointer (this canvas
    carried NO empty-state copy at all before this ticket). Centered, quiet
@@ -2895,28 +2930,47 @@ a:focus-visible,
    inboard, confirmed live via getBoundingClientRect before writing this
    fix). A scrollable element's own scrollbar always renders at that
    element's BORDER-BOX edge, ignoring its own padding — `.mode-scroll` sits
-   INSIDE `.mode-page`'s own 38px right padding (hand-synced below, the
-   same magic number `--sliver-paper-pad`/`--tutor-paper-pad` already hand-
-   sync elsewhere in this file — scaled by --paper-scale exactly the way
-   `.desk-frame-stage .mode-page`'s own padding already is, below, so this
-   stays correct at every wide-screen paper-scale step; --paper-scale is 1
-   outside that ramp, so the legacy/un-scaled 38px is unaffected), so its
-   scrollbar rendered that far inboard of the paper's true edge. Fix:
-   extend THIS element's own border box across that same 38px (a negative
-   right margin cancelling `.mode-page`'s padding exactly) and re-apply the
-   identical 38px as `.mode-scroll`'s OWN padding instead — the scrollbar
-   now renders flush against the paper (at the border box this extends
-   to), while the TEXT inside is still inset by the SAME 38px from that new
-   edge, landing at the byte-identical screen position it always occupied
-   (verified algebraically: content-box width is unchanged — the +38px
-   right-margin extension and the +38px new right-padding cancel exactly).
-   FX2's clearance law: the writing's own line length (the text measure) is
-   untouched by this move — only the scrollbar's own screen position
-   changes. Left edge/measure untouched (Nick's own words name the RIGHT
-   side only). */
+   INSIDE `.mode-page`'s own right padding, so its scrollbar rendered that
+   far inboard of the paper's true edge. Fix: extend THIS element's own
+   border box across that same padding (a negative right margin cancelling
+   `.mode-page`'s padding exactly) and re-apply the identical amount as
+   `.mode-scroll`'s OWN padding instead — the scrollbar now renders flush
+   against the paper (at the border box this extends to), while the TEXT
+   inside is still inset by the SAME amount from that new edge, landing at
+   the byte-identical screen position it always occupied.
+   SCROLLBAR-FLUSH (Fable Oct 23, Nick live on Flux: "bulky and floats
+   INSIDE the page" — Arbor had the same glitch): this cancellation was
+   hardcoded to the literal `38px`, `.mode-page`'s OWN pad-x value at the
+   time FX10 was written. ITEM 83 M3 (R6), two weeks later, made that
+   padding a per-page SETTING (`--wz-page-pad-x`, PAGE SETUP's margin
+   choice: narrow 26px / normal 38px / wide 58px — `.desk-frame-stage
+   .mode-page`'s own padding rule below reads this same variable) but
+   never touched this rule's own literal. Any page set to narrow or wide
+   margins broke the cancellation (wide: 20px of gap still inboard of the
+   true edge — exactly "floats inside the page"; narrow: overshoots past
+   it by 12px) while `normal` (the default) stayed byte-identical, which
+   is why this went unnoticed until a writer changed the margin. Reading
+   the SAME variable `.mode-page` itself reads, instead of a stale
+   literal, restores exact cancellation at every margin and every
+   --paper-scale step — zero behavior change when unset (the fallback is
+   still 38px either side). FX2's clearance law: the writing's own line
+   length (the text measure) is untouched by this move — only the
+   scrollbar's own screen position changes. Left edge/measure untouched
+   (Nick's own words name the RIGHT side only).
+   AGREED WITH FIX (docs/plans/page-size.md §2, Fable Oct 23): page-size's
+   own build turns `--wz-page-pad-x` into a FINISHED length (already
+   scaled, built from `--wz-letter-in: calc(72.94px * var(--paper-scale))`)
+   rather than today's base measure that `.mode-page`'s own padding rule
+   (and this rule) multiply by `--paper-scale` themselves. FIX's plan
+   explicitly does not touch this rule — whoever merges SECOND must drop
+   the ` * var(--paper-scale)` factor below (both the margin-right and the
+   padding-right) in the SAME commit that changes `.mode-page`'s own
+   padding rule, or the two will double-scale against each other. Re-run
+   both scrollbar-flush-source.mjs and page-size.mjs after that merge. */
 .mode-scroll{ position:relative; z-index:1; flex:1; min-height:0; overflow-y:auto; padding-bottom:30vh;
   background:transparent;
-  margin-right:calc(-38px * var(--paper-scale)); padding-right:calc(38px * var(--paper-scale)); }
+  margin-right:calc(-1 * var(--wz-page-pad-x, 38px) * var(--paper-scale));
+  padding-right:calc(var(--wz-page-pad-x, 38px) * var(--paper-scale)); }
 /* FX1 S1 — a fresh page's first line starts near the stage's vertical center
    (working value ~45%, --tw-start-offset, set by useTypewriterFade.ts's
    measure()) so the fade band below has room to engage early. Typewriter
@@ -4238,10 +4292,7 @@ a:focus-visible,
   scrollbar-color: color-mix(in srgb, var(--text-low) 28%, transparent) transparent;
 }
 .wz-sliver-panel > *{ direction: ltr; }
-.wz-sliver-panel::-webkit-scrollbar{ width: 4px; }
-.wz-sliver-panel::-webkit-scrollbar-track{ background: transparent; }
-.wz-sliver-panel::-webkit-scrollbar-thumb{ background: color-mix(in srgb, var(--text-low) 28%, transparent); }
-.wz-sliver-panel::-webkit-scrollbar-thumb:hover{ background: color-mix(in srgb, var(--text-low) 55%, transparent); }
+/* (Its `::-webkit-scrollbar` 4px rules are deleted: dead under Chromium >= 121 because scrollbar-width/color are set above - one mechanism per element.) */
 .wz-sliver-panel[data-open='true']{ opacity:1; pointer-events:auto; }
 /* item 83 errata E1 (2026-09-03) — THE POP-OUT HOLD. Nick's ruling: a foot
    pop-out fades after FIFTEEN WORDS WRITTEN or A PERIOD ENTERED, never on a
