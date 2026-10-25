@@ -6229,6 +6229,8 @@ a:focus-visible,
   color:var(--text-hi); font-family:var(--font-contentLabel); font-size:14px; padding:2px 0; }
 .board-outline-text:focus{ outline:none; border-bottom:1px solid var(--accent-rest); }
 .board-outline-readonly{ color:var(--text-mid); }
+/* the card's text beside its title: one quiet line, an ellipsis, never a wrapped block under the outline (the full text is its title attribute) */
+.board-outline-body{ flex:1 1 120px; min-width:0; color:var(--text-low); font-family:var(--font-contentLabel); font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .board-outline-ctl{ display:flex; gap:2px; flex:0 0 auto; }
 
 /* ==========================================================================
