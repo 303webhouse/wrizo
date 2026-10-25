@@ -6231,7 +6231,7 @@ a:focus-visible,
 /* the chevrons: just ABOVE the card's top corners, inside its width; about 55% at rest, brass on hover (a human act), square hit boxes; they recede while the writer types */
 .walk-nav{
   position:absolute; top:-38px; z-index:2; width:32px; height:32px; padding:0; display:flex; align-items:center; justify-content:center;
-  background:none; border:1px solid transparent; border-radius:0; box-shadow:none; color:var(--ink-on-paper-low, var(--text-mid)); opacity:.55; cursor:pointer;
+  background:none; border:1px solid transparent; border-radius:0; box-shadow:none; color:var(--text-mid); opacity:.55; cursor:pointer;   /* the chevrons sit on the room's dark ground: the room's mid ink, never the on-paper ink (dark on dark) */
   transition:opacity .2s ease, color .15s ease, border-color .15s ease;
 }
 .walk-nav[data-dir='prev']{ left:0; }
@@ -6291,10 +6291,12 @@ a:focus-visible,
 /* THUMBNAILS BY KIND (frame 01), in the Boards pop-out: a Board is WIDE, a Deck a short STACK of three (with its "n of m begun" fact), a Book TALL with a spine line. No kind words as subtitles. */
 .wz-thumb{ display:inline-block; position:relative; flex:0 0 auto; box-sizing:border-box; margin-right:10px; vertical-align:middle; }
 .wz-thumb[data-thumb='board']{ width:44px; height:30px; background:var(--card-stock); border:1px solid var(--card-hairline); border-radius:0; }
-.wz-thumb[data-thumb='deck']{ width:44px; height:30px; background:var(--ink-900); border:1px solid var(--accent-door); border-radius:0; box-shadow:none; }
-.wz-thumb[data-thumb='deck']::before, .wz-thumb[data-thumb='deck']::after{ content:''; position:absolute; box-sizing:border-box; width:100%; height:100%; border:1px solid var(--accent-door); border-radius:0; background:var(--ink-900); }
-.wz-thumb[data-thumb='deck']::before{ top:-3px; left:3px; z-index:-1; }
-.wz-thumb[data-thumb='deck']::after{ top:-6px; left:6px; z-index:-2; }
+/* the pop-out is the room's dark ground: the thumbnails' olive edge is the on-dark olive (the --accent-door token is the on-paper one, 2.4:1 here). A Deck is a short stack of THREE sheets: two flat, hard-edged
+   offset shadows behind the top sheet (no blur - a stack, not a drop shadow); pseudo-elements at a negative z-index painted over the sheet, so they could not draw it. */
+[data-theme='plateau'] .wz-thumb{ --accent-door:#8f9a58; }
+.wz-thumb[data-thumb='deck']{ width:44px; height:30px; margin-top:6px; margin-right:16px; background:var(--ink-900); border:1px solid var(--accent-door); border-radius:0;
+  box-shadow:3px -3px 0 0 var(--ink-900), 3px -3px 0 1px var(--accent-door), 6px -6px 0 0 var(--ink-900), 6px -6px 0 1px var(--accent-door); }
+[data-theme='plateau'] .wz-thumb[data-thumb='deck']{ background:#2a1f16; box-shadow:3px -3px 0 0 #2a1f16, 3px -3px 0 1px var(--accent-door), 6px -6px 0 0 #2a1f16, 6px -6px 0 1px var(--accent-door); }
 .wz-thumb[data-thumb='book']{ width:28px; height:38px; background:var(--card-stock); border:1px solid var(--card-hairline); border-left:3px solid var(--accent-door); border-radius:0; }
 .wz-thumb-fact{ display:block; color:var(--ink-on-paper-low, var(--text-low)); font-size:11px; }
 .wz-section-open:has(.wz-thumb){ display:flex; align-items:center; }

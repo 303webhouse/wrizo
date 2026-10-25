@@ -224,6 +224,8 @@ await withHarness(async (app) => {
           const lumOf = (c) => { const m = /(\d+),\s*(\d+),\s*(\d+)/.exec(c); if (!m) return 0; const f = [m[1], m[2], m[3]].map((v) => { const s = +v / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; }); return 0.2126 * f[0] + 0.7152 * f[1] + 0.0722 * f[2]; };
           const groundL = lumOf('rgb(29, 24, 20)'), doorL = lumOf(rest[0].split('|')[0]);
           ok(`[${T}] Arbor: the door text reads on the room's dark ground (contrast ${((Math.max(doorL, groundL) + 0.05) / (Math.min(doorL, groundL) + 0.05)).toFixed(1)}:1, floor 4.5:1 - the on-paper olive is 2.4:1 there)`, (Math.max(doorL, groundL) + 0.05) / (Math.min(doorL, groundL) + 0.05) >= 4.5, rest[0]);
+          const navL = lumOf(await q("getComputedStyle(document.querySelector('.walk-nav')).color"));
+          ok(`[${T}] Arbor: the chevrons read on the dark ground at full strength (the room's mid ink, not the on-paper ink: contrast ${((navL + 0.05) / (groundL + 0.05)).toFixed(1)}:1)`, (navL + 0.05) / (groundL + 0.05) >= 4.5, String(navL));
           ok(`[${T}] Arbor: no brass on a rest-state door or Show-as icon (brass is human action only: current, chosen, hover)`, rest.length >= 4 && rest.every((c) => !c.includes('rgb(255, 152, 0)')), JSON.stringify(rest));
         } else {
           const tick = await q("(() => { const m = document.querySelector('.walk-mark[data-state=current]'); return m ? getComputedStyle(m).borderLeftColor + ' ' + getComputedStyle(m).borderLeftWidth : null; })()");
@@ -245,6 +247,8 @@ await withHarness(async (app) => {
   await click('.wz-strip [data-category="plan"]'); await sleep(900);
   const thumbs = await q("[...document.querySelectorAll('.wz-thumb')].map((t) => t.getAttribute('data-thumb') + ':' + (t.closest('.wz-section-row, .wz-journal-row')?.textContent || '').replace(/\\s+/g, ' ').trim().slice(0, 40))");
   ok('the Boards pop-out draws thumbnails by kind: a Board (wide), a Deck (a short stack, with its "n of 9" fact), the Journal (a tall book)', thumbs.some((t) => t.startsWith('board:')) && thumbs.some((t) => t.startsWith('deck:') && /\d of 9/.test(t)) && thumbs.some((t) => t.startsWith('book:')) && !thumbs.some((t) => /\b(board|deck|book)\b/i.test(t.split(':')[1].replace(/Three cards|Three-Act|A plain board/g, ''))), JSON.stringify(thumbs));
+  const stack = await q("(() => { const t = document.querySelector('.wz-thumb[data-thumb=deck]'); if (!t) return null; const sh = getComputedStyle(t).boxShadow; const layers = sh.split(/,(?![^(]*\\))/).map((s) => s.trim()); return { n: layers.length, blur: Math.max(...layers.map((l) => parseFloat(l.replace(/rgba?\\([^)]*\\)/g, '').trim().split(/\\s+/)[2] || '0'))), edge: getComputedStyle(t).borderTopColor }; })()");
+  ok('a Deck thumbnail is a stack of three sheets: two hard-edged offset layers behind the top sheet, no blur, an olive edge that reads on the dark pop-out', !!stack && stack.n === 4 && stack.blur === 0 && stack.edge === 'rgb(143, 154, 88)', JSON.stringify(stack));
   await shot('01-listing-arbor-dark');
 
   });
