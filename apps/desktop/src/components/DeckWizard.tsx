@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { decksByRoom } from '../decks/library';
+import { HelpMeChoose } from './HelpMeChoose';
+import { useTheme } from '../store/theme';
+import { FORMS_GROUPS, blockRangeLabel, coverTermKey } from '../decks/formCounts';
 import type { DeckDefinition, DeckAnswers, DeckRoom } from '../decks/types';
 
 // B3 S1 — the deck engine's own UI: ONE generic wizard runtime any deck
@@ -33,6 +36,8 @@ export interface DeckWizardProps {
   onClose: () => void;
   // BIG PROJECTS step 2 - open straight on this deck's first question (a preset on the Boards tab); a deck with no questions deals at once. An unknown id opens the library.
   startDeckId?: string;
+  // W4 - the deck's own deal answers already settled (the librarian's pick, riding the address); the wizard opens on the first question NOT answered, and deals at once when every question is.
+  startAnswers?: DeckAnswers;
   // W3 - the pages a `kind: 'pages'` question (From my pages) may pick from, in the order to list them. ABSENT = this door has no pages to offer (the new-project door), and a deck that asks
   // for pages is left out of the library there - absent, not greyed. An empty list hides it the same way.
   pagesFor?: () => { id: string; title: string }[];
@@ -52,17 +57,23 @@ const ROOM_TERM: Record<DeckRoom, DeskTermId> = {
   every: 'deckRoomEvery',
 };
 
-export function DeckWizard({ decks, onDeal, onClose, startDeckId, pagesFor }: DeckWizardProps) {
+export function DeckWizard({ decks, onDeal, onClose, startDeckId, startAnswers, pagesFor }: DeckWizardProps) {
   const { t } = useDeskLexicon();
+  const machina = useTheme() === 'machina';
   // W3 - the pages picked so far, in the order picked (the page step of From my pages)
   const [picked, setPicked] = useState<string[]>([]);
   const startDeck = startDeckId ? decks.find(d => d.id === startDeckId) ?? null : null;
-  const [step, setStep] = useState<Step>(() => (startDeck && startDeck.questions.length > 0
-    ? { kind: 'question', deck: startDeck, index: 0, answers: {}, note: null }
+  // W4 - the first question the librarian has not already answered (-1 = every question is settled, or the deck asks none)
+  const firstOpen = (deck: DeckDefinition, answers: DeckAnswers) => deck.questions.findIndex((q) => answers[q.id] == null);
+  const seeded = startDeck ? Object.fromEntries(Object.entries(startAnswers ?? {}).filter(([qid, oid]) => startDeck.questions.some((q) => q.id === qid && q.options.some((o) => o.id === oid)))) : {};
+  const [step, setStep] = useState<Step>(() => (startDeck && startDeck.questions.length > 0 && firstOpen(startDeck, seeded) >= 0
+    ? { kind: 'question', deck: startDeck, index: firstOpen(startDeck, seeded), answers: seeded, note: null }
     : { kind: 'library' }));
+  const [helpOpen, setHelpOpen] = useState(false);
+  const helpDoorRef = useRef<HTMLButtonElement>(null);
   const dealtAtOnce = useRef(false);
   useEffect(() => {
-    if (startDeck && startDeck.questions.length === 0 && !dealtAtOnce.current) { dealtAtOnce.current = true; onDeal(startDeck, {}); onClose(); }
+    if (startDeck && (startDeck.questions.length === 0 || firstOpen(startDeck, seeded) < 0) && !dealtAtOnce.current) { dealtAtOnce.current = true; onDeal(startDeck, startDeck.questions.length === 0 ? {} : seeded); onClose(); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -73,6 +84,16 @@ export function DeckWizard({ decks, onDeal, onClose, startDeckId, pagesFor }: De
       return;
     }
     setStep({ kind: 'question', deck, index: 0, answers: {}, note: null });
+  };
+
+  // W4 - "Begin" on a librarian pick: the deck, with the deal answers the table settled; the wizard asks only the rest
+  const beginChoice = (choice: { deck: string; answers: DeckAnswers }) => {
+    const deck = decks.find((d) => d.id === choice.deck);
+    setHelpOpen(false);
+    if (!deck) return;
+    const open = firstOpen(deck, choice.answers);
+    if (deck.questions.length === 0 || open < 0) { onDeal(deck, deck.questions.length === 0 ? {} : choice.answers); onClose(); return; }
+    setStep({ kind: 'question', deck, index: open, answers: choice.answers, note: null });
   };
 
   const pickOption = (deck: DeckDefinition, index: number, answers: DeckAnswers, questionId: string, optionId: string, noteTerm?: DeskTermId) => {
@@ -96,6 +117,21 @@ export function DeckWizard({ decks, onDeal, onClose, startDeckId, pagesFor }: De
     onClose();
   };
 
+  // MACHINA FORMS: Esc closes the panel (not while Intake is open over it - Intake owns that Esc), and the arrow keys walk the rows
+  useEffect(() => {
+    if (!machina) return undefined;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape' && !helpOpen) { e.stopPropagation(); onClose(); } };
+    document.addEventListener('keydown', onKey, true);
+    return () => document.removeEventListener('keydown', onKey, true);
+  }, [machina, helpOpen, onClose]);
+  const moveRow = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    const rows = [...e.currentTarget.querySelectorAll<HTMLElement>('.forms-row, .wz-help-door')];
+    const at = rows.indexOf(document.activeElement as HTMLElement);
+    const next = rows[Math.max(0, Math.min(rows.length - 1, at + (e.key === 'ArrowDown' ? 1 : -1)))];
+    if (next) { e.preventDefault(); next.focus(); }
+  };
+
   const asksForPages = (d: DeckDefinition) => d.questions.some(q => q.kind === 'pages');
   const visibleDecks = decks.filter(d => !asksForPages(d) || (pagesFor ? pagesFor().length > 0 : false));
   const grouped = decksByRoom(visibleDecks);
@@ -115,13 +151,51 @@ export function DeckWizard({ decks, onDeal, onClose, startDeckId, pagesFor }: De
         aria-label={t('deckWizardChooseTitle')}
         onClick={e => e.stopPropagation()}
       >
-        {step.kind === 'library' && (
+        {step.kind === 'library' && machina && (
+          <>
+            <div className="deck-wizard-strip">
+              <span className="eyebrow deck-wizard-eyebrow">{t('deckWizardChooseTitle')}</span>
+              <button type="button" className="btn-quiet deck-wizard-close" aria-label={t('deckWizardClose')} onClick={onClose}>×</button>
+            </div>
+            <div className="deck-wizard-body forms-body" onKeyDown={moveRow}>
+              {pagesFor && (
+                <button type="button" ref={helpDoorRef} className="wz-help-door forms-intake" data-preset="help-me-choose" onClick={() => setHelpOpen(true)}>
+                  <span className="forms-intake-word">{t('helpDoor')}</span><span className="forms-intake-hint">{t('formsIntakeHint')}</span>
+                </button>
+              )}
+              {FORMS_GROUPS.map((g) => {
+                const shown = g.decks.map((id) => visibleDecks.find((d) => d.id === id)).filter((d): d is DeckDefinition => !!d);
+                if (shown.length === 0) return null;
+                return (
+                  <div className="forms-group" key={g.group} data-group={g.group}>
+                    <div className="forms-kicker">{t(ROOM_TERM[g.room])}</div>
+                    {shown.map((deck) => (
+                      <button key={deck.id} type="button" className="forms-row" data-deck-id={deck.id} onClick={() => chooseDeck(deck)}>
+                        <span className="forms-name">{t(deck.nameTerm)}</span>
+                        <span className="forms-cover">{t(coverTermKey(deck.id) as DeskTermId)}</span>
+                        <span className="forms-count">{blockRangeLabel(deck)}</span>
+                      </button>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="deck-wizard-foot forms-foot">
+              <span>{t('formsFoot')}</span><span>{t('formsFootBlocks')}</span>
+            </div>
+          </>
+        )}
+
+        {step.kind === 'library' && !machina && (
           <>
             <div className="deck-wizard-strip">
               <span className="eyebrow deck-wizard-eyebrow">{t('deckWizardChooseTitle')}</span>
               <button type="button" className="btn-quiet deck-wizard-close" aria-label={t('deckWizardClose')} onClick={onClose}>×</button>
             </div>
             <div className="deck-wizard-body">
+              {pagesFor && (
+                <button type="button" ref={helpDoorRef} className="wz-help-door deck-wizard-help-door" data-preset="help-me-choose" onClick={() => setHelpOpen(true)}>{t('helpDoor')}</button>
+              )}
               {[...grouped.entries()].filter(([, list]) => list.length > 0).map(([room, list]) => (
                 <div className="deck-wizard-room-group" key={room}>
                   <div className="deck-wizard-room-heading">{t(ROOM_TERM[room])}</div>
@@ -222,6 +296,7 @@ export function DeckWizard({ decks, onDeal, onClose, startDeckId, pagesFor }: De
           );
         })()}
       </div>
+      {helpOpen && <HelpMeChoose onBegin={(choice) => beginChoice(choice)} onBrowse={() => setHelpOpen(false)} onClose={() => setHelpOpen(false)} returnFocusTo={helpDoorRef.current} />}
     </div>,
     document.body,
   );
