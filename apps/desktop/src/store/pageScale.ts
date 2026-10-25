@@ -29,7 +29,9 @@ export const ZOOM_GUTTER = 96;
 // reaches 51px into the stage at 1100, so 48 a side put the zoomed page 3px UNDER it (the lane run on d80010ae, cd2 S1/S5 + fx2 S1 @ 1100). The
 // page is centred, so the larger intrusion is kept on both sides.
 export const ZOOM_CLEAR = 8;
-export const ZOOM_ANCHOR = 0.6;                              // the writing line's hold, as a fraction of the page column's height (Cursor's --anchor)
+// POLISH #10 item 19 (Nick, Oct 25): the MIDDLE of the visible page - "seems too low on the screen to start" at Cursor's 0.6. The band's stops are drawn
+// from this same anchor (index.css --tw-anchor), so they move with it.
+export const ZOOM_ANCHOR = 0.5;                              // the writing line's hold, as a fraction of the page column's height (Cursor's --anchor)
 
 /** The base page scale for a stage of this size, with the page's top this far below the stage's top. Never below 1. */
 export function pageScaleFor(stageW: number, stageH: number, pageTop: number): number {

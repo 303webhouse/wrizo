@@ -180,7 +180,7 @@ const IDENT_PROBE = `(() => { const p = document.querySelector('.mode-page'); co
     fontPx: parseFloat(getComputedStyle(e).fontSize), colW: e.offsetWidth, transform: ps.transform, zoom: col.getAttribute('data-zoom'), anchor: cs.getPropertyValue('--tw-anchor').trim(),
     lh: parseFloat(cs.getPropertyValue('--tw-lh')) || null, mask: String(cs.webkitMaskImage || cs.maskImage || 'none') }; })()`;
 const ident = {};
-const psParks = { C: [], MBR: null };   // the park audit (Oct 24): the default leg's observations, for the parked records
+const psParks = { C: [], MBR: null, MW: [] };   // the park audit (Oct 24): the default leg's observations, for the parked records
 const IDENT_TOL = 1;   // Nick's law, ±1px
 
 // strip every MASK the stage can paint, so a line's UNFADED ink can be read (layout is untouched: a mask never moves a line). MASKS ONLY - the red run (143)
@@ -428,7 +428,12 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
       const landedW = await app.evalJs("(() => { const cs = getComputedStyle(document.querySelector('.mode-pagecol')); return cs.getPropertyValue('--tw-anchor').trim(); })()");
       const sw = await strengths(app, [lines[wi]]);
       await app.evalJs("window.__psStyle('ps-mw', null)");
-      ok(`${tag} MW (mutant): with the band's anchor moved up to 25% while the line is held at 60% (LANDED: --tw-anchor ${landedW}), W fails`, landedW === '25%' && !(sw[0].s >= FULL), J(sw[0]));
+      // ---- PARKED - SUPERSEDED by POLISH #10 item 19 (Nick, Oct 25: "seems too low on the screen to start"): the writing line - and a fresh page's first line - is held at the MIDDLE of the visible page, 50% of the column (pageScale.ts ZOOM_ANCHOR), not 60%: the name says the line is held at 60%. Kept VERBATIM and no longer run; record in the parked section.
+      //
+      // ok(`${tag} MW (mutant): with the band's anchor moved up to 25% while the line is held at 60% (LANDED: --tw-anchor ${landedW}), W fails`, landedW === '25%' && !(sw[0].s >= FULL), J(sw[0]));
+      // ------------------------------------------------------------------
+      psParks.MW.push({ tag, landedW, s: sw[0] && sw[0].s });
+      ok(`${tag} MW (mutant) [polish #10 item 19 successor]: with the band's anchor moved up to 25% while the line is held at the middle, 50% (LANDED: --tw-anchor ${landedW}), W fails`, landedW === '25%' && !(sw[0].s >= FULL), J(sw[0]));
       // MT: every mask in the stage removed - T must fail
       const before = await app.evalJs('window.__psMasks()');
       await app.evalJs(`window.__psStyle('ps-strip-mut', ${J(STRIP_CSS)})`); const after = await app.evalJs('window.__psMasks()'); await app.evalJs("window.__psStyle('ps-strip-mut', null)");
@@ -762,8 +767,11 @@ if (process.env.HARNESS_PARKED === '1') {
   // centre now lies below the line (the exact falsification: the row moved, and wholly below the line).
   if (psParks.MBR) { const o = psParks.MBR; rec.push({ name: `PARKED (was "MBR (mutant): with the row put back on the sheet's centre (LANDED: its top ${o.now && o.now.rowTop} -> ${o.mutated && o.mutated.rowTop}), it covers the line - BR fails") - polish #10 item 5: the zoomed sheet covers the visible page, so its centre lies below the line`,
     pass: !!o.now && !!o.mutated && o.mutated.rowTop !== o.now.rowTop && (!(o.mutated.rowTop >= o.mutated.lineBottom - 0.5) || o.mutated.rowTop > o.mutated.lineBottom), detail: J(o) }); }
+  // POLISH #10 item 19 - MW's name (the line held at 60%): one record per run of it, re-verifying the mutant still bites with the line at 50%
+  for (const o of psParks.MW) rec.push({ name: `PARKED (was "${o.tag} MW (mutant): with the band's anchor moved up to 25% while the line is held at 60% (LANDED: --tw-anchor ${o.landedW}), W fails") - polish #10 item 19: the line is held at 50%`,
+    pass: o.landedW === '25%' && !(o.s >= FULL), detail: J(o) });
   for (const c of rec) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}  [${c.detail}]`);
-  console.log(rec.length && rec.every((c) => c.pass) ? `\nPAGE-SIZE PARKED: PASS (${rec.length} records) - this FILE parks 2 (C, one record per skin x size; MBR's sheet centre, polish #10 item 5)` : `\nPAGE-SIZE PARKED: FAIL - ${rec.filter((c) => !c.pass).length}/${rec.length} (${rec.length} records)`);
+  console.log(rec.length && rec.every((c) => c.pass) ? `\nPAGE-SIZE PARKED: PASS (${rec.length} records) - this FILE parks 3 (C, one record per skin x size; MBR's sheet centre, polish #10 item 5; MW's 60% name, polish #10 item 19 - anchor sits on top of page)` : `\nPAGE-SIZE PARKED: FAIL - ${rec.filter((c) => !c.pass).length}/${rec.length} (${rec.length} records)`);
 }
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nPAGE-SIZE VERIFY: PASS (${checks.length} checks)` : `\nPAGE-SIZE VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);

@@ -575,8 +575,13 @@ if (process.env.HARNESS_PARKED === '1') {
     //   startFracParked >= 0.28 && startFracParked <= 0.37, String(startFracParked));
     // ------------------------------------------------------------------
     const startZoomParked = await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null");
-    pok('PARKED, generation 2 (was gen-1 "PARKED (was \'S1: a fresh prose page\'s first line starts within 40-55% of the stage height\') — FX3 S3: the working value moved to a NEW 30-35% band") — page-size: in the Typewriter zoom (Arbor\'s default) a fresh page\'s first line starts at the band\'s anchor, 60% of the column',
-      startZoomParked === 'true' && Math.abs(startFracParked - 0.6) <= 0.05, JSON.stringify({ startFracParked, zoom: startZoomParked }));
+    // ---- RE-PARKED, generation 3: POLISH #10 item 19 (Nick, Oct 25: "seems too low on the screen to start"): the writing line - and a fresh page's first line - is held at the MIDDLE of the visible page, 50% of the column (pageScale.ts ZOOM_ANCHOR), not 60%. The gen-2 record, VERBATIM, no longer runs.
+    //
+    // pok('PARKED, generation 2 (was gen-1 "PARKED (was \'S1: a fresh prose page\'s first line starts within 40-55% of the stage height\') — FX3 S3: the working value moved to a NEW 30-35% band") — page-size: in the Typewriter zoom (Arbor\'s default) a fresh page\'s first line starts at the band\'s anchor, 60% of the column',
+    //   startZoomParked === 'true' && Math.abs(startFracParked - 0.6) <= 0.05, JSON.stringify({ startFracParked, zoom: startZoomParked }));
+    // ------------------------------------------------------------------
+    pok('PARKED, generation 3 (was gen-2 "PARKED, generation 2 (...) — page-size: in the Typewriter zoom a fresh page\'s first line starts at the band\'s anchor, 60% of the column") — polish #10 item 19: the anchor is the middle, 50%',
+      startZoomParked === 'true' && Math.abs(startFracParked - 0.5) <= 0.05, JSON.stringify({ startFracParked, zoom: startZoomParked }));
 
     // ORIGINAL (S1): ok('S1: a fresh script page\'s first line also starts
     // within 40-55% of the stage height', scriptStartFrac >= 0.40 &&
