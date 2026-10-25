@@ -896,7 +896,9 @@
   animation:flux-block-caret-blink 1.05s steps(2,start) infinite;
 }
 @keyframes flux-block-caret-blink{ 0%{ opacity:1; } 50%{ opacity:0; } }
-[data-theme='flux'] [data-flux-caret-active='true']{ caret-color:transparent; }
+/* POLISH #10 item 18 (Nick, Oct 25): ONE caret - !important, because the page's editor carries its pen ink as an INLINE caret colour, which beat this
+   attribute rule and left the native line drawn on top of the orange block. */
+[data-theme='flux'] [data-flux-caret-active='true']{ caret-color:transparent !important; }
 @media (prefers-reduced-motion:reduce){
   .flux-block-caret{ animation:none; opacity:1; }
 }
