@@ -165,8 +165,13 @@ await withHarness(async (app) => {
     // ------------------------------------------------------------------
     const startZoom = await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null");
     fx4Start.push({ width, ...proseInfo, zoom: startZoom });
-    ok(`S1 @ ${width}px (prose) [page-size successor]: a fresh prose page opens in the Typewriter zoom and its first line starts at the band's anchor - 60% of the column (within 5%)`,
-      startZoom === 'true' && Math.abs(proseInfo.fraction - 0.6) <= 0.05, JSON.stringify({ ...proseInfo, zoom: startZoom }));
+    // ---- PARKED - SUPERSEDED by POLISH #10 item 19 (Nick, Oct 25: "seems too low on the screen to start"): the writing line - and a fresh page's first line - is held at the MIDDLE of the visible page, 50% of the column (pageScale.ts ZOOM_ANCHOR), not 60%. Kept VERBATIM and no longer run; records in the parked section; successor follows.
+    //
+    // ok(`S1 @ ${width}px (prose) [page-size successor]: a fresh prose page opens in the Typewriter zoom and its first line starts at the band's anchor - 60% of the column (within 5%)`,
+    //   startZoom === 'true' && Math.abs(proseInfo.fraction - 0.6) <= 0.05, JSON.stringify({ ...proseInfo, zoom: startZoom }));
+    // ------------------------------------------------------------------
+    ok(`S1 @ ${width}px (prose) [polish #10 item 19 successor]: a fresh prose page opens in the Typewriter zoom and its first line starts at the band's anchor - the MIDDLE, 50% of the column (within 5%)`,
+      startZoom === 'true' && Math.abs(proseInfo.fraction - 0.5) <= 0.05, JSON.stringify({ ...proseInfo, zoom: startZoom }));
   }
 
   await freshScriptPage(app, LAPTOP_W, 900);
@@ -833,14 +838,31 @@ if (process.env.HARNESS_PARKED === '1') {
     //   JSON.stringify({ scriptStartParked, proseStartParked }));
     // ------------------------------------------------------------------
     const proseZoomParked = await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null");
-    pok('PARKED, generation 2 (was gen-1 "PARKED (was \'S1 @ 1280px (script, S7 mirrors prose): the visual start position also reads as about a quarter\') — SC1 S3: script starts at the TOP of page one while prose KEEPS FX4\'s quarter") — page-size: script still at the top; prose opens zoomed, its first line at the band\'s anchor (60%)',
+    // ---- RE-PARKED, generation 3: POLISH #10 item 19 (Nick, Oct 25: "seems too low on the screen to start"): the writing line - and a fresh page's first line - is held at the MIDDLE of the visible page, 50% of the column (pageScale.ts ZOOM_ANCHOR), not 60%. The gen-2 record, VERBATIM, no longer runs.
+    //
+    // pok('PARKED, generation 2 (was gen-1 "PARKED (was \'S1 @ 1280px (script, S7 mirrors prose): the visual start position also reads as about a quarter\') — SC1 S3: script starts at the TOP of page one while prose KEEPS FX4\'s quarter") — page-size: script still at the top; prose opens zoomed, its first line at the band\'s anchor (60%)',
+    //   scriptStartParked.fraction >= 0 && scriptStartParked.fraction <= 0.02
+    //     && proseZoomParked === 'true' && Math.abs(proseStartParked.fraction - 0.6) <= 0.05,
+    //   JSON.stringify({ scriptStartParked, proseStartParked, proseZoomParked }));
+    // ------------------------------------------------------------------
+    pok('PARKED, generation 3 (was gen-2 "PARKED, generation 2 (...) — page-size: script still at the top; prose opens zoomed, its first line at the band\'s anchor (60%)") — polish #10 item 19: script still at the top; prose\'s first line at the middle, 50%',
       scriptStartParked.fraction >= 0 && scriptStartParked.fraction <= 0.02
-        && proseZoomParked === 'true' && Math.abs(proseStartParked.fraction - 0.6) <= 0.05,
+        && proseZoomParked === 'true' && Math.abs(proseStartParked.fraction - 0.5) <= 0.05,
       JSON.stringify({ scriptStartParked, proseStartParked, proseZoomParked }));
     // PAGE-SIZE (train #7, Oct 25) - THREE parks: S1 (prose)'s quarter at the three widths. Records re-verify the new truth from the live run's reads.
+    // RE-PARKED, generation 2, by POLISH #10 item 19 (Nick, Oct 25: "seems too low on the screen to start"): the writing line - and a fresh page's first line - is held at the MIDDLE of the visible page, 50% of the column (pageScale.ts ZOOM_ANCHOR), not 60%: the records below, VERBATIM, no longer run; their generation-2 records follow, and THREE more parks join them
+    // (the page-size successor itself, at the three widths).
+    //
+    // for (const o of fx4Start) {
+    //   pok(`PARKED (was "S1 @ ${o.width}px (prose): the visual start position reads as \"about a quarter\" (20-32% of the stage height)") — page-size: a fresh Arbor page opens zoomed; the first line starts at the band's anchor (60%); live successor: S1 @ ${o.width}px (prose) [page-size successor]`,
+    //     o.zoom === 'true' && Math.abs(o.fraction - 0.6) <= 0.05, JSON.stringify(o));
+    // }
+    // ------------------------------------------------------------------
     for (const o of fx4Start) {
-      pok(`PARKED (was "S1 @ ${o.width}px (prose): the visual start position reads as \"about a quarter\" (20-32% of the stage height)") — page-size: a fresh Arbor page opens zoomed; the first line starts at the band's anchor (60%); live successor: S1 @ ${o.width}px (prose) [page-size successor]`,
-        o.zoom === 'true' && Math.abs(o.fraction - 0.6) <= 0.05, JSON.stringify(o));
+      pok(`PARKED, generation 2 (was "S1 @ ${o.width}px (prose): the visual start position reads as \"about a quarter\"", re-parked by page-size at 60%) — polish #10 item 19: the first line starts at the middle, 50%; live successor: S1 @ ${o.width}px (prose) [polish #10 item 19 successor]`,
+        o.zoom === 'true' && Math.abs(o.fraction - 0.5) <= 0.05, JSON.stringify(o));
+      pok(`PARKED (was "S1 @ ${o.width}px (prose) [page-size successor]: a fresh prose page opens in the Typewriter zoom and its first line starts at the band's anchor - 60% of the column (within 5%)") — polish #10 item 19: the anchor is the middle, 50%; live successor: S1 @ ${o.width}px (prose) [polish #10 item 19 successor]`,
+        o.zoom === 'true' && Math.abs(o.fraction - 0.5) <= 0.05, JSON.stringify(o));
     }
 
     // ITEM 207 STEP 4 — the card dock's tool count, re-derived (see the live S5 section
