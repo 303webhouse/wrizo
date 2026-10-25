@@ -10,6 +10,7 @@ import { isSignedOutHere } from './signedOutHere';
 import { isStaleClient } from './staleClient';
 import { getCurrentUser, subscribeCurrentUser } from './currentUser';
 import { liveBoxes, carryHiddenOnSave, tombstone, restoreBox, purgeMarker, mergeBoxLists, isTombstoned, isHiddenSelf } from './boxTombstones';
+import { withoutFontMarks } from './markRuns';   // POLISH #10 item 4: page-link labels read the words
 
 // ---------------------------------------------------------------------------
 // Storage adapter (A2)
@@ -1289,7 +1290,7 @@ export function getTrashedCards(): { boardId: string; boardTitle: string; box: B
 //   the whole array travels with the owner entry's updatedAt. A delete is a tombstone (deletedAt + updatedAt) so it syncs and cannot resurrect.
 // ============================================================================================================================================================
 const liveLink = (l: PageLink): boolean => !l.deletedAt;
-const labelOf = (text: string | undefined): string => ((text ?? '').trim().split('\n')[0] ?? '').trim().slice(0, 60) || 'Untitled';
+const labelOf = (text: string | undefined): string => (withoutFontMarks(text ?? '').trim().split('\n')[0] ?? '').trim().slice(0, 60) || 'Untitled';   // POLISH #10 item 4: the words, never a span's marks
 
 /** Link records OWNED by this entry (live only). */
 export function getPageLinksOf(entryId: string): PageLink[] {

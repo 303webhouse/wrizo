@@ -17,6 +17,7 @@ import {
   getPageLinksTo, getPairedPageId, getPlanBoardId, getSystemKind, livePinFor, saveJournalEntry,
 } from './persistence';
 import { liveBoxes } from './boxTombstones';
+import { withoutFontMarks } from './markRuns';   // POLISH #10 item 4: titles and search read the words, never a style span's marks
 import { deskTerm } from './deskLexicon';
 import { UNSORTED, placeOfEntry } from './place';
 import { isDeck } from './boardKind';
@@ -56,7 +57,7 @@ export const STEP_SEP = ' · ';
 export function stepLabel(deck: string, card: string): string { return `${deck}${STEP_SEP}${card}`; }
 
 const CARD_KINDS = new Set<Box['kind']>(['text', 'ink']);
-const titleOf = (text: string | undefined): string => ((text ?? '').trim().split('\n')[0] ?? '').trim().slice(0, 60) || 'Untitled';
+const titleOf = (text: string | undefined): string => (withoutFontMarks(text ?? '').trim().split('\n')[0] ?? '').trim().slice(0, 60) || 'Untitled';
 const cardTitle = (b: Box): string => (b.kind === 'ink' ? 'A sketch' : titleOf(b.text));
 const isShell = (e: JournalEntry | null | undefined): boolean => !!(e as { purgedAt?: string } | null | undefined)?.purgedAt;
 

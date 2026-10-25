@@ -175,6 +175,18 @@ if (has(tl, 'titleOf')) {
   ok('TITLES: the Tutor\'s lens titles read no span mark', typeof t === 'string' && !/\{\.|\]/.test(t) && t.includes('Big title line'), J(t));
 }
 
+// ---- SWEEP: no title or search helper reads a raw first line (it would show a style span's marks, or miss the words in a search) - the four that did
+// (grafts' titleOf + its search, ConnectionsDrawerPanel, fromMyPages, persistence's labelOf) read through withoutFontMarks
+{
+  const { readFileSync } = await import('node:fs');
+  const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(join(d, e.name)) : /\.(ts|tsx)$/.test(e.name) ? [join(d, e.name)] : []));
+  const RAW_TITLE = /\(\(text \?\? ''\)\.trim\(\)\.split\('\\n'\)\[0\]/;
+  const hits = walk(join(DESKTOP, 'src')).filter((f) => RAW_TITLE.test(readFileSync(f, 'utf8'))).map((f) => f.slice(DESKTOP.length + 1));
+  ok('SWEEP: no title/search helper in src reads a raw first line (each reads through withoutFontMarks)', hits.length === 0, J(hits));
+  const live = RAW_TITLE.test("const titleOf = (text) => ((text ?? '').trim().split('\\n')[0] ?? '')");
+  ok('SWEEP (instrument): the pattern bites on the raw shape it hunts (liveness)', live, '');
+}
+
 // ---- CLIP
 if (has(cf, 'copyPayload')) {
   const t = 'a [big word]{.size-14} b';
