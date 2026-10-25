@@ -188,7 +188,6 @@ export function Walk(p: WalkProps) {
               style={{ minHeight: box.height, maxHeight: WALK.MAX_H }}
               onPointerLeave={() => setWoke(true)}
             >
-              {p.flux && <div className="flux-brackets walk-brackets" aria-hidden="true" />}
               {p.flux && <span className="walk-trk" aria-hidden="true">{trackReadout(cur + 1, order.length)}</span>}
               {p.renderEditor(card)}
               {card.deckStep && !card.sourceEntryId && <StepHelp box={card} faceSelector=".board-popup-editor" />}
@@ -197,6 +196,7 @@ export function Walk(p: WalkProps) {
               </span>
             </div>
             <div className="walk-fade" data-on={fade ? 'true' : 'false'} aria-hidden="true" />
+            {p.flux && <div className="flux-brackets walk-brackets" aria-hidden="true" />}   {/* a sibling of the card, not inside it: the card scrolls and clips, and the brackets stand just outside its corners */}
           </div>
         </div>
         <div className="walk-doors" role="group">

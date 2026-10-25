@@ -6,6 +6,7 @@ import type { BoardKind, BoardView } from '../store/boardKind';
 // W1 - "SHOW AS" (brief docs/guided-paths/w1-walk-brief.md; frame 02-walk-showas-open): it REPLACES the three view tabs. Icons first, the word on hover (the title); while the strip is open - the pointer on it, or
 // focus inside it - icons AND words (data-open). A Board offers Open / Storyboard / Outline / Walk; a Book (the Journal) Flip / Thumbnails; below the DeskFrame width a Deck offers only the Walk, which is no choice, so
 // nothing is drawn. Arbor words Open / Storyboard / Outline / Walk, Flip / Thumbnails; Flux Live / Sequence / Spine / Trace, Playback / Index (lexicon). "Last shown as" is the device-local memory (store/boardMode.ts).
+// The words open for a MOUSE hover or KEYBOARD focus only (:focus-visible) - never for a touch or pen tap or a mouse press: opening shifts the icons, and a tap that opened the strip between pointer-down and up would land on a different icon (the first box turn: every click mis-landed).
 // The icons are the frames' own (18 x 18, 1.3 stroke, currentColor); colour is the stylesheet's: olive at rest, brass for the CHOSEN view (a human choice), never brass at rest.
 
 const WORD: Record<BoardView, DeskTermId> = {
@@ -38,9 +39,9 @@ export function ShowAs({ kind, deck, narrow, current, onPick }: { kind: BoardKin
       role="group"
       aria-label={t('showAsLabel')}
       data-open={open ? 'true' : 'false'}
-      onPointerEnter={() => setOpen(true)}
+      onPointerEnter={(e) => { if (e.pointerType === 'mouse') setOpen(true); }}
       onPointerLeave={() => setOpen(false)}
-      onFocusCapture={() => setOpen(true)}
+      onFocusCapture={(e) => { if ((e.target as HTMLElement).matches?.(':focus-visible')) setOpen(true); }}
       onBlurCapture={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setOpen(false); }}
     >
       {views.map((v) => (

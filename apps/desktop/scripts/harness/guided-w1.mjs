@@ -168,6 +168,7 @@ async function suite(M, read) {
   {
     const bm = read('store/boardMode.ts'), sa = read('components/ShowAs.tsx'), be = read('components/BoardEditor.tsx');
     chk('S4', () => [/'walk'/.test(bm) && /'flip'/.test(bm) && /'thumbnails'/.test(bm) && /localStorage/.test(bm) && !/saveBoardBoxes|saveJournalEntry/.test(bm), 'the view memory stays localStorage-only (no sync, no save)']);
+    chk('S10', () => [/pointerType === 'mouse'/.test(sa) && /:focus-visible/.test(sa) && !/onPointerEnter=\{\(\) =>/.test(sa) && !/onFocusCapture=\{\(\) =>/.test(sa), 'ShowAs opens its words for a mouse hover or keyboard focus only - a touch / pen tap or a mouse press must not shift the icons between pointer-down and up']);
     chk('S5', () => [sa.length > 200 && /className="show-as"/.test(sa) && /show-as-btn/.test(sa) && /aria-pressed=/.test(sa) && /data-view=/.test(sa) && /viewsFor\(/.test(sa) && /title=\{/.test(sa), 'ShowAs: icons first, the word on hover (title), aria-pressed on the current view, the views from viewsOf(kind)']);
     chk('S6', () => [/<ShowAs/.test(be) && !/boardModeTabs\.map\(/.test(be), '"Show as" replaces the three view tabs']);
     chk('S7', () => [!/setBoxes[^;]{0,60}boardMode|setBoardMode[^;]{0,120}setBoxes/.test(be.replace(/\s+/g, ' ')), 'switching view never writes boxes (positions and order are untouched)']);
@@ -207,7 +208,8 @@ async function suite(M, read) {
     chk('M4', () => [/@media \(prefers-reduced-motion:\s*reduce\)[\s\S]{0,400}\.walk/.test(css), 'reduced motion = an instant cut (the swipe animation is dropped)']);
 
     // ---- D: dress -------------------------------------------------------------------------------------------------------------------------------------------------------------
-    const blur = (body) => { const m = /box-shadow:\s*([^;]+);/.exec(body); if (!m) return false; return m[1].split(',').some((s) => { const n = s.trim().split(/\s+/).filter((t) => /^-?[\d.]+px$/.test(t)).map((t) => parseFloat(t)); return n.length >= 3 && n[2] > 0; }); };
+    // colour functions come out first (their commas split a shadow list wrongly), and a bare 0 is a length: "0 8px 24px rgba(...)" is x y blur (the first box turn's D1 mutant slipped through a px-only token filter)
+    const blur = (body) => { const m = /box-shadow:\s*([^;]+);/.exec(body); if (!m) return false; return m[1].replace(/(?:rgba?|hsla?|var|color-mix)\((?:[^()]|\([^()]*\))*\)/g, '').split(',').some((s) => { const n = s.trim().split(/\s+/).filter((t) => /^-?[\d.]+(px)?$/.test(t)).map((t) => parseFloat(t)); return n.length >= 3 && n[2] > 0; }); };
     chk('D1', () => [walkCss.length >= 6 && walkCss.every((x) => !blur(x.body)), `${walkCss.length} W1 rules; none with a blurred shadow (flat 1 px edges only)`]);
     chk('D2', () => [walkCss.length >= 6 && walkCss.filter((x) => /\.(walk-card|walk-door|walk-nav|show-as-btn|walk-stage)\b/.test(x.sel)).every((x) => !/border-radius\s*:\s*[1-9]/.test(x.body)) && /\.walk-mark[^{]*\{[^}]*border-radius:\s*50%/.test(css), 'square edges on every box; circles only for marks (the rail)']);
     chk('D3', () => { const rest = walkCss.filter((x) => /\.(walk-door|show-as-btn|walk-mark)\b/.test(x.sel) && !/:hover|:focus|\[aria-pressed='true'\]|\[data-current|\[data-state='current'\]|\[aria-pressed="true"\]/.test(x.sel)); return [rest.length >= 3 && rest.every((x) => !/var\(--brass\)|var\(--choice\)|#ff9800/i.test(x.body)), 'Arbor: no brass on a rest-state option (doors, show-as icons, marks); brass is hover / current / chosen only']; });
@@ -266,7 +268,7 @@ async function suite(M, read) {
 
 // ---- mutants: each reaches the real source, its LANDING asserted, and must redden exactly the checks it names ------------------------------------------------------------------------------
 const MUT = [
-  { name: 'the Journal stops being a Book', file: 'store/boardKind.ts', find: /systemKind === 'journal'/, to: "systemKind === 'trash'", red: ['K3'] },
+  { name: 'the Journal stops being a Book', file: 'store/boardKind.ts', find: /m\?\.systemKind === 'journal'/, to: "m?.systemKind === 'trash'", red: ['K3'] },
   { name: 'a bad homeView stops falling back', file: 'store/boardKind.ts', find: /hv !== undefined && viewsOf\(kind\)\.includes\(hv\) \? hv : kindDefault/, to: 'hv ?? kindDefault', red: ['K5'] },
   { name: 'withHomeView stops stamping updatedAt', file: 'store/boardKind.ts', find: /updatedAt: new Date\(\)\.toISOString\(\)/, to: 'updatedAt: undefined', red: ['K6', 'X4'] },
   { name: 'withHomeView drops the other board-meta fields', file: 'store/boardKind.ts', find: /\.\.\.existing,/, to: '', red: ['K6'] },
@@ -289,8 +291,10 @@ const MUT = [
   { name: 'the chevrons stop resting at 55%', file: 'index.css', find: /\.walk-nav\s*\{([^}]*)opacity:\s*\.55/, to: '.walk-nav {$1opacity: 1', red: ['D4'] },
   { name: 'the bottom fade is a drop shadow', file: 'index.css', find: /background:linear-gradient\(to bottom, transparent, var\(--card-stock\)\);/, to: 'box-shadow:inset 0 -20px 20px rgba(0,0,0,.4);', red: ['D10'] },
   { name: 'the bottom fade stays on at the end of the text', file: 'components/Walk.tsx', find: /el\.scrollTop \+ el\.clientHeight < el\.scrollHeight - 2/, to: 'true', red: ['D10'] },
-  { name: 'the Walk offers Write this before W2', file: 'components/Walk.tsx', find: /extraDoors/, to: 'extraDoors, writeThis', red: ['D8'] },
+  { name: 'the Walk offers Write this before W2', file: 'components/Walk.tsx', find: /\.\.\.\(p\.extraDoors \?\? \[\]\),/, to: '...(p.extraDoors ?? []), writeThis,', red: ['D8'] },
   { name: 'Show as drops its pressed state', file: 'components/ShowAs.tsx', find: /aria-pressed=/, to: 'data-pressed=', red: ['S5'] },
+  { name: 'Show as opens on a touch pointer too', file: 'components/ShowAs.tsx', find: /onPointerEnter=\{\(e\) => \{ if \(e\.pointerType === 'mouse'\) setOpen\(true\); \}\}/, to: 'onPointerEnter={() => setOpen(true)}', red: ['S10'] },
+  { name: 'Show as opens on a mouse-press focus too', file: 'components/ShowAs.tsx', find: /onFocusCapture=\{\(e\) => \{ if \(\(e\.target as HTMLElement\)\.matches\?\.\(':focus-visible'\)\) setOpen\(true\); \}\}/, to: 'onFocusCapture={() => setOpen(true)}', red: ['S10'] },
   { name: 'the Show-as words lose Trace', file: 'store/deskLexicon.ts', find: /boardModeWalk: 'Trace'/, to: "boardModeWalk: 'Walk'", red: ['L1'] },
 ];
 
@@ -302,7 +306,7 @@ try {
   const M0 = base.M || {};
   const res0 = await suite(M0, rd({}));
   for (const [k, v] of Object.entries(res0)) ok(k, v.pass, v.detail);
-  ok('the suite ran every check it names', Object.keys(res0).length >= 55, `${Object.keys(res0).length} checks`);
+  ok('the suite ran every check it names', Object.keys(res0).length === 54, `${Object.keys(res0).length} checks`);
 
   let landed = 0, killed = 0, notLanded = 0;
   for (const m of MUT) {

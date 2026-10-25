@@ -43,12 +43,18 @@ await withHarness(async (app) => {
       window.wrizoCreateJournalPage({ id: 'w1-three', text: 'Three cards', pageType: 'board', projectId: p.id, boxes: [text('t1', 0.05, 0.06, 1, 'First\\nOne.'), text('t2', 0.4, 0.2, 2, 'Second\\nTwo.'), text('t3', 0.2, 0.4, 3, 'Third\\n')], origin: 'project', source: 'page', createdAt: '2026-01-01T00:00:02.000Z' });
       const nine = []; for (let i = 1; i <= 9; i++) nine.push({ ...text('d' + i, 0.03 + ((i - 1) % 3) * 0.32, 0.04 + Math.floor((i - 1) / 3) * 0.14, i, 'Step ' + i + '\\n'), prompt: 'What happens in step ' + i + '?', deckStep: { deck: 'three-act', step: 'hook' } });
       nine.push({ id: 'dm', kind: 'board-meta', x: 0, y: 0, w: 0, h: 0, z: 0, homeView: 'walk' });
+      window.wrizoCreateJournalPage({ id: 'w1-adddeck', text: 'Short run', pageType: 'board', projectId: p.id, boxes: [1, 2, 3].map((i) => ({ ...text('e' + i, 0.03 + (i - 1) * 0.32, 0.04, i, 'Step ' + i + '\\n'), prompt: 'What happens?', deckStep: { deck: 'three-act', step: 'hook' } })).concat([{ id: 'am', kind: 'board-meta', x: 0, y: 0, w: 0, h: 0, z: 0, homeView: 'walk' }]), origin: 'project', source: 'page', createdAt: '2026-01-01T00:00:04.000Z' });
       window.wrizoCreateJournalPage({ id: 'w1-deck', text: 'Three-Act', pageType: 'board', projectId: p.id, boxes: nine, origin: 'project', source: 'page', createdAt: '2026-01-01T00:00:03.000Z' });
       window.wrizoFlushNow(); })()`);
     await sleep(500);
   };
   const open = async (id, sel) => { await q(`location.hash = '#/page/${id}'`); await waitSoft(`!!document.querySelector('${sel}')`, { label: id, timeout: 8000 }); await sleep(900); };
-  const showAs = async (view) => click(`.show-as-btn[data-view="${view}"]`);
+  // a mouse writer hovers the strip first (its words open and the icons shift), then aims - so does the driver: hover, wait for the open state, re-measure, click
+  const showAs = async (view) => {
+    const strip = await point('.show-as');
+    if (strip) { await app.mouseMove(strip.x, strip.y); await waitSoft("document.querySelector('.show-as')?.getAttribute('data-open') === 'true'", { label: 'show-as open', timeout: 2000 }); await sleep(120); }
+    return click(`.show-as-btn[data-view="${view}"]`);
+  };
 
   for (const theme of ['plateau', 'flux']) {
     for (const tone of theme === 'flux' ? ['dark', 'light'] : ['dark']) {
@@ -68,6 +74,10 @@ await withHarness(async (app) => {
         ok(`[${T}] a Deck (board-meta homeView walk) opens in the Walk: the card is up and Walk is the pressed view`, h2 === 'walk' && !!(await q("!!document.querySelector('.walk-card')")), String(h2));
       }
       await shot(`02-walk-${tag}`);
+      if (theme === 'flux') {
+        const lum = await q("(() => { const c = getComputedStyle(document.querySelector('.walk-card')); const m = /rgba?\\((\\d+),\\s*(\\d+),\\s*(\\d+)/.exec(c.backgroundColor); if (!m) return null; return Math.round((0.2126 * +m[1] + 0.7152 * +m[2] + 0.0722 * +m[3]) / 2.55); })()");
+        ok(`[${T}] Flux: the Walk card follows the page tone - ${tone === 'light' ? 'a light card on the light page' : 'a dark card on the dark page'} (luminance ${lum}%)`, lum !== null && (tone === 'light' ? lum > 85 : lum < 20), String(lum));
+      }
 
       // the Walk's anatomy
       const anatomy = await q(`(() => { const c = document.querySelector('.walk-card'); const r = c && c.getBoundingClientRect(); return { card: !!c, w: r ? Math.round(r.width) : 0, prev: !!document.querySelector('.walk-nav[data-dir=prev]'), next: !!document.querySelector('.walk-nav[data-dir=next]'), doors: [...document.querySelectorAll('.walk-door')].map((d) => d.getAttribute('data-door')), marks: document.querySelectorAll('.walk-mark').length, grip: !!document.querySelector('.walk-grip'), help: !!document.querySelector('.walk-card .board-step-help') }; })()`);
@@ -92,18 +102,26 @@ await withHarness(async (app) => {
         ok(`[${T}] "last shown as" is remembered per board on the device: the board reopens in Storyboard after a reload; another board is unaffected`, remembered === 'storyboard' && other === 'open', JSON.stringify({ remembered, other }));
         const views = await q("[...document.querySelectorAll('.show-as-btn')].map((b) => b.getAttribute('data-view'))");
         ok(`[${T}] a Board offers Open, Storyboard, Outline, Walk (in that order) - icons, the word on hover`, same(views, ['open', 'storyboard', 'outline', 'walk']) && (await q("[...document.querySelectorAll('.show-as-btn')].every((b) => !!(b.getAttribute('title') || b.getAttribute('aria-label')))")), JSON.stringify(views));
+        const strip = await point('.show-as'); await app.mouseMove(strip.x, strip.y); await sleep(400);
+        const openWords = await q("(() => ({ open: document.querySelector('.show-as')?.getAttribute('data-open'), words: [...document.querySelectorAll('.show-as-word')].map((w) => getComputedStyle(w).display !== 'none' && w.textContent.trim()) }))()");
+        ok(`[${T}] hovering the strip with a mouse opens it: icons AND words`, openWords.open === 'true' && openWords.words.length === 4 && openWords.words.every(Boolean), JSON.stringify(openWords));
         await shot(`02-walk-showas-open-${tag}`);
+        await app.mouseMove(5, 450); await sleep(300);
+        // a touch or pen pointer over the strip must NOT open it (opening shifts the icons between pointer-down and up, and the tap would land on another icon)
+        const touchOpen = await q("(() => { const s = document.querySelector('.show-as'); s.dispatchEvent(new PointerEvent('pointerover', { pointerType: 'touch', bubbles: true })); s.dispatchEvent(new PointerEvent('pointerenter', { pointerType: 'touch' })); return new Promise((r) => setTimeout(() => r(s.getAttribute('data-open')), 200)); })()");
+        ok(`[${T}] a touch pointer over the strip does not open it (no icon shifts under a tap)`, touchOpen === 'false', String(touchOpen));
       }
 
       // A - adding follows the view shown: in the Walk a new card is appended to the order (seq) and becomes the current card
       if (full) {
-        await open('w1-deck', '.walk');
+        await open('w1-adddeck', '.walk');   // its OWN deck: the Walk jumps to the card just added and remembers it, which must not leak into the decks the other sections read
         await q("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(400);
         await q("[...document.querySelectorAll('.wz-sliver-item-btn')].find((b) => /^(add card|add node)$/i.test(b.textContent.trim()))?.click()"); await sleep(700);
         const afterAdd = (await boxes()).filter((b) => b.kind === 'text');
-        const added = afterAdd.find((b) => !/^d\d$/.test(b.id));
-        const maxSeq = Math.max(...afterAdd.filter((b) => /^d\d$/.test(b.id)).map((b) => b.seq));
-        ok(`[${T}] adding in the Walk appends a card to the order (seq after the last), not a card at a position`, !!added && afterAdd.length === 10 && added.seq > maxSeq, JSON.stringify({ n: afterAdd.length, seq: added && added.seq, maxSeq }));
+        const added = afterAdd.find((b) => !/^e\d$/.test(b.id));
+        const maxSeq = Math.max(...afterAdd.filter((b) => /^e\d$/.test(b.id)).map((b) => b.seq));
+        const nowOn = await q("[...document.querySelectorAll('.walk-mark')].findIndex((m) => m.getAttribute('data-current') === 'true')");
+        ok(`[${T}] adding in the Walk appends a card to the order (seq after the last), not a card at a position, and the Walk jumps to it`, !!added && afterAdd.length === 4 && added.seq > maxSeq && nowOn === 3, JSON.stringify({ n: afterAdd.length, seq: added && added.seq, maxSeq, nowOn }));
         await open('w1-plain', '.board-canvas');
         const nOpen = (await boxes()).filter((b) => b.kind === 'text').length;
         await q("[...document.querySelectorAll('.wz-sliver-item-btn')].find((b) => /^(add card|add node)$/i.test(b.textContent.trim()))?.click()"); await sleep(700);
@@ -112,6 +130,8 @@ await withHarness(async (app) => {
       }
 
       await open('w1-deck', '.walk');
+      const rewind = async () => { await q("document.querySelector('.walk-mark')?.click()"); await sleep(600); };   // the Walk resumes where the writer was (device memory); each section starts from the first card
+      await rewind();
       if (full) {
         // R - the rail: empty = seed, kindled = leaf, current = ring; Start Here folds into the first seed
         const rail = await q("[...document.querySelectorAll('.walk-mark')].map((m) => m.getAttribute('data-state') + (m.getAttribute('data-current') === 'true' ? '*' : ''))");
@@ -158,7 +178,7 @@ await withHarness(async (app) => {
       }
 
       // M - motion: the swipe is a pure slide, about 280 ms; reduced motion is an instant cut
-      await open('w1-deck', '.walk');
+      await open('w1-deck', '.walk'); await rewind();
       if (full) {
         const motion = await q(`(async () => { const nx = document.querySelector('.walk-nav[data-dir=next]'); const before = [...document.querySelectorAll('.walk-card')].length; nx.click(); await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); const cards = [...document.querySelectorAll('.walk-card')]; const anims = cards.map((c) => { const cs = getComputedStyle(c); return { dur: cs.animationDuration, name: cs.animationName, op: cs.opacity }; }); return { before, during: cards.length, anims }; })()`);
         await sleep(500);
@@ -169,7 +189,7 @@ await withHarness(async (app) => {
         ok(`[${T}] reduced motion is an instant cut: one card, no animation`, cut.n === 1 && cut.anim.every((a) => a === 'none'), JSON.stringify(cut));
 
         // Y - keyboard: left / right step, Esc leaves for the board's last shown view, Enter on the focused door
-        await open('w1-deck', '.walk');
+        await open('w1-deck', '.walk'); await rewind();
         const idx = async () => q("[...document.querySelectorAll('.walk-mark')].findIndex((m) => m.getAttribute('data-current') === 'true')");
         const i0 = await idx(); await app.key('ArrowRight'); await sleep(500); const i1 = await idx(); await app.key('ArrowRight'); await sleep(500); const i2 = await idx(); await app.key('ArrowLeft'); await sleep(500); const i3 = await idx();
         ok(`[${T}] ArrowRight / ArrowLeft step through the cards (and stop at the ends)`, i0 === 0 && i1 === 1 && i2 === 2 && i3 === 1, JSON.stringify([i0, i1, i2, i3]));
@@ -184,7 +204,7 @@ await withHarness(async (app) => {
       }
 
       // D - dress in computed style
-      await open('w1-deck', '.walk');
+      await open('w1-deck', '.walk'); await app.mouseMove(5, 450); await sleep(300);   // the pointer rests away from every control: hover is brass by design, the rest state is what is measured
       if (full) {
         const dress = await q(`(() => { const sel = ['.walk-card', '.walk-door', '.walk-nav', '.show-as-btn', '.walk-stage']; const out = {}; for (const s of sel) { const e = document.querySelector(s); if (!e) { out[s] = null; continue; } const cs = getComputedStyle(e); const sh = cs.boxShadow; out[s] = { radius: cs.borderTopLeftRadius, blur: sh === 'none' ? 0 : Math.max(...sh.split(/rgba?\\([^)]*\\)/).join(' ').split(',').map((x) => parseFloat(x.trim().split(/\\s+/)[2] || '0'))) }; } const mark = document.querySelector('.walk-mark'); out.markRadius = mark && getComputedStyle(mark).borderTopLeftRadius; return out; })()`);
         ok(`[${T}] square edges and no blurred shadow on the Walk card, doors, chevrons, Show-as and stage (computed style); circles only for the rail marks`, ['.walk-card', '.walk-door', '.walk-nav', '.show-as-btn', '.walk-stage'].every((s) => dress[s] && parseFloat(dress[s].radius) === 0 && dress[s].blur === 0) && /50%|\d{2,}px/.test(dress.markRadius || ''), JSON.stringify(dress));
@@ -194,6 +214,9 @@ await withHarness(async (app) => {
         } else {
           const tick = await q("(() => { const m = document.querySelector('.walk-mark[data-state=current]'); return m ? getComputedStyle(m).borderLeftColor + ' ' + getComputedStyle(m).borderLeftWidth : null; })()");
           ok(`[${T}] Flux: the current tick wears the thin orange LEFT bar`, !!tick && tick.startsWith('rgb(255, 152, 0)'), String(tick));
+          // the corner brackets stand just OUTSIDE the card's corners, and are not clipped by it (inside the scrolling card they were invisible in the first box turn's frames)
+          const br = await q("(() => { const c = document.querySelector('.walk-card').getBoundingClientRect(); const b = document.querySelector('.walk-brackets'); if (!b) return null; const r = b.getBoundingClientRect(); const bg = getComputedStyle(b).backgroundImage; return { dl: Math.round(c.left - r.left), dr: Math.round(r.right - c.right), dt: Math.round(c.top - r.top), db: Math.round(r.bottom - c.bottom), inCard: !!document.querySelector('.walk-card .walk-brackets'), drawn: /linear-gradient/.test(bg) }; })()");
+          ok(`[${T}] Flux: the corner brackets stand 6 px outside the card (a sibling of it, never inside the scrolling card that would clip them)`, !!br && !br.inCard && br.drawn && [br.dl, br.dr, br.dt, br.db].every((n) => n >= 4 && n <= 8), JSON.stringify(br));
         }
       }
       } catch (e) { ok(`[${T}] the section ran to the end (nothing it needs was missing)`, false, String((e && e.message) || e).slice(0, 200)); }
