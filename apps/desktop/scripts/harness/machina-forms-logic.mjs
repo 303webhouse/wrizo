@@ -71,6 +71,20 @@ for (const [, rows] of MOCK) for (const [id, want] of rows) {
   ok('C2: EVERY registered deck is listed exactly once (nothing the library knows is left out, nothing is listed twice, nothing is invented)', registry.length === 14 && all.length === registry.length && new Set(all).size === all.length && registry.every((id) => all.includes(id)), JSON.stringify({ missing: registry.filter((id) => !all.includes(id)), extra: all.filter((id) => !registry.includes(id)) }));
   ok('C2: each group maps onto the registry\'s own room of its decks (the rooms are Machina\'s group labels\' source: fiction, speculative, screen, academy, business, newsroom, every)', !!g && g.every((x) => x.decks.every((id) => { const d = byId(id); return !!d && d.room === x.room; })), JSON.stringify(g && g.map((x) => x.room)));
 }
+// C3 - Machina's WORD for pages is FILES (train #7 red 6, Oct 25): every string the From-my-pages row and its question and the librarian's pick can say under Machina says "files", never "pages" - the canonical
+// Arbor words fall through to Machina where no override exists, and Forms now draws them (the YOUR FILES row). Written red first: Machina overrides none of these six before this fix.
+{
+  let lex = null, lexErr = '';
+  try { lex = await load(`export { deskTerm } from '${SRCP}/store/deskLexicon';`); } catch (e) { lexErr = String(e.message || e).split('\n')[0]; }
+  ok('(premise) the real lexicon bundles', !!lex && typeof lex.deskTerm === 'function', lexErr);
+  const IDS = ['deckNameFromMyPages', 'deckFromMyPagesQPrompt', 'deckFromMyPagesNone', 'helpWhyFromMyPages', 'helpCoverFromMyPages'];
+  for (const id of IDS) {
+    const w = lex ? lex.deskTerm(id, 'machina') : '';
+    ok(`C3: Machina's ${id} says "files" and not "pages" ("${w}")`, !!w && /\bfiles?\b/i.test(w) && !/\bpages?\b/i.test(w), w);
+  }
+  const canon = lex ? lex.deskTerm('deckNameFromMyPages', 'plateau') : '';
+  ok('C3 control: Arbor keeps "pages" (the canonical word is untouched - the override is Machina\'s alone)', /pages/.test(canon), canon);
+}
 for (const t of tmps) rmSync(t, { recursive: true, force: true });
 const bad = checks.filter((c) => !c.pass).length;
 console.log(bad === 0 ? `\nMACHINA-FORMS-LOGIC VERIFY: PASS (${checks.length} checks)` : `\nMACHINA-FORMS-LOGIC VERIFY: FAIL - ${bad}/${checks.length} failed`);
