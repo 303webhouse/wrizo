@@ -360,8 +360,13 @@ await withHarness(async (app) => {
     // ------------------------------------------------------------------
     const startZoom = await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null");
     fx5StartSeen = { ...proseInfo, zoom: startZoom };
-    ok('S1 (d) [page-size successor]: a fresh prose page opens in the Typewriter zoom and its first line starts at the band\'s anchor - 60% of the column (within 5%)',
-      startZoom === 'true' && Math.abs(proseInfo.fraction - 0.6) <= 0.05, JSON.stringify(fx5StartSeen));
+    // ---- PARKED - SUPERSEDED by POLISH #10 item 19 (Nick, Oct 25: "seems too low on the screen to start"): the writing line - and a fresh page's first line - is held at the MIDDLE of the visible page, 50% of the column (pageScale.ts ZOOM_ANCHOR), not 60%. Kept VERBATIM and no longer run; record in the parked section; successor follows.
+    //
+    // ok('S1 (d) [page-size successor]: a fresh prose page opens in the Typewriter zoom and its first line starts at the band\'s anchor - 60% of the column (within 5%)',
+    //   startZoom === 'true' && Math.abs(proseInfo.fraction - 0.6) <= 0.05, JSON.stringify(fx5StartSeen));
+    // ------------------------------------------------------------------
+    ok('S1 (d) [polish #10 item 19 successor]: a fresh prose page opens in the Typewriter zoom and its first line starts at the band\'s anchor - the MIDDLE, 50% of the column (within 5%)',
+      startZoom === 'true' && Math.abs(proseInfo.fraction - 0.5) <= 0.05, JSON.stringify(fx5StartSeen));
   }
 
   // --- S1 STOP-clause ink-coordinate re-proof [PARKED WHOLE — FX14 S2] ------
@@ -1314,8 +1319,15 @@ if (process.env.HARNESS_PARKED === '1') {
       o.linesAdded >= 1 && o.afterTypeScrollTop - o.afterManualScroll <= o.lineHeightPx * (o.linesAdded + 0.6) && o.afterTypeScrollTop < o.settled - 40, JSON.stringify(o));
   }
   // PAGE-SIZE'S PARK AUDIT (Oct 24) - S1 (d)'s quarter start. Its record re-verifies the new truth from the live run: zoomed, the start is the anchor.
-  pok('PARKED (was "S1 (d): the start offset (25%) is unchanged — the visual start still reads as \"about a quarter\"") - page-size: a fresh Arbor page opens zoomed; the first line starts at the band\'s anchor (60%); live successor: S1 (d) [page-size successor]',
-    !!fx5StartSeen && fx5StartSeen.zoom === 'true' && Math.abs(fx5StartSeen.fraction - 0.6) <= 0.05, JSON.stringify(fx5StartSeen));
+  // ---- RE-PARKED, generation 2: POLISH #10 item 19 (Nick, Oct 25: "seems too low on the screen to start"): the writing line - and a fresh page's first line - is held at the MIDDLE of the visible page, 50% of the column (pageScale.ts ZOOM_ANCHOR), not 60%. The record, VERBATIM, no longer runs; its successor record and the successor's own park follow.
+  //
+  // pok('PARKED (was "S1 (d): the start offset (25%) is unchanged — the visual start still reads as \"about a quarter\"") - page-size: a fresh Arbor page opens zoomed; the first line starts at the band\'s anchor (60%); live successor: S1 (d) [page-size successor]',
+  //   !!fx5StartSeen && fx5StartSeen.zoom === 'true' && Math.abs(fx5StartSeen.fraction - 0.6) <= 0.05, JSON.stringify(fx5StartSeen));
+  // ------------------------------------------------------------------
+  pok('PARKED, generation 2 (was "S1 (d): the start offset (25%) is unchanged ...", re-parked by page-size at 60%) - polish #10 item 19: the first line starts at the middle, 50%; live successor: S1 (d) [polish #10 item 19 successor]',
+    !!fx5StartSeen && fx5StartSeen.zoom === 'true' && Math.abs(fx5StartSeen.fraction - 0.5) <= 0.05, JSON.stringify(fx5StartSeen));
+  pok('PARKED (was "S1 (d) [page-size successor]: a fresh prose page opens in the Typewriter zoom and its first line starts at the band\'s anchor - 60% of the column (within 5%)") - polish #10 item 19: the middle, 50%; live successor: S1 (d) [polish #10 item 19 successor]',
+    !!fx5StartSeen && fx5StartSeen.zoom === 'true' && Math.abs(fx5StartSeen.fraction - 0.5) <= 0.05, JSON.stringify(fx5StartSeen));
   // TYPED-LITERAL (2026-10-16) - S6's typed-marks reading. Its record asserts the new truth from the live run: the hidden marks are a Ctrl+B run's.
   pok('PARKED (was "S6 [PR #7 successor]: Draft mode hides its marks too - its .md-mark spans carry .md-mark-hidden (item 211 applies to every writing surface)") - typed-literal: typed `**` is literal now; live successor: S6 [typed-literal successor] (Ctrl+B)',
     !!fx5DraftBold && fx5DraftBold.bold >= 1 && fx5DraftBold.marks >= 2 && fx5DraftBold.allHidden, JSON.stringify(fx5DraftBold));
