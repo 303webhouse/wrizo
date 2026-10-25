@@ -404,8 +404,11 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
       if (!eraserArmedRef.current) { ring.style.display = 'none'; return; }
       const rect = sheet.getBoundingClientRect();
       ring.style.display = 'block';
-      ring.style.left = `${e.clientX - rect.left}px`;
-      ring.style.top = `${e.clientY - rect.top}px`;
+      // PAGE-SIZE - the sheet may be PAINTED at a scale (the page's transform); the ring is positioned in the sheet's own LAYOUT px, so the screen
+      // distance is divided by that scale (1 on an unscaled sheet - unchanged)
+      const sc = sheet.offsetWidth > 0 ? rect.width / sheet.offsetWidth : 1;
+      ring.style.left = `${(e.clientX - rect.left) / (sc || 1)}px`;
+      ring.style.top = `${(e.clientY - rect.top) / (sc || 1)}px`;
     };
     const onLeave = () => { const ring = ringRef.current; if (ring) ring.style.display = 'none'; };
 

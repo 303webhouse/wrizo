@@ -26,6 +26,7 @@
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
+const fx2Ps = [];   // page-size's park audit (Oct 24): S1's grip and text-column reads, for the parked records
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -174,8 +175,17 @@ await withHarness(async (app) => {
 
     const gripClosed = await app.evalJs(rectOf('.wz-sliver-grip'));
     const paperClosed = await app.evalJs(rectOf('.mode-pagecol'));
-    ok(`S1 @ ${width}px: the grip rect and the text-column rect never intersect, sliver CLOSED`,
-      disjoint(gripClosed, paperClosed), JSON.stringify({ gripClosed, paperClosed }));
+    // ---- PARKED - SUPERSEDED by page-size (Nick + Fable, Oct 23): .mode-pagecol is no longer the text column. The prose page is PAINTED by a transform
+    // inside it, and in the Typewriter zoom (Arbor's default) the column is the whole stage, so every grip on the stage "intersects" it (lane 3).
+    // The text column is the editor itself; the successor reads .forward-only-editor. Kept VERBATIM and no longer run; records in the parked section.
+    //
+    // ok(`S1 @ ${width}px: the grip rect and the text-column rect never intersect, sliver CLOSED`,
+    //   disjoint(gripClosed, paperClosed), JSON.stringify({ gripClosed, paperClosed }));
+    // ------------------------------------------------------------------
+    const textClosed = await app.evalJs(rectOf('.forward-only-editor'));
+    fx2Ps.push({ width, state: 'CLOSED', grip: gripClosed, text: textClosed });
+    ok(`S1 @ ${width}px [page-size successor]: the grip rect and the TEXT column (the editor itself) never intersect, sliver CLOSED`,
+      disjoint(gripClosed, textClosed), JSON.stringify({ gripClosed, textClosed }));
 
     const gripVisClosed = await app.evalJs(`(() => { const cs = getComputedStyle(document.querySelector('.wz-sliver-grip')); return { opacity: cs.opacity, display: cs.display, visibility: cs.visibility }; })()`);
     ok(`S1 @ ${width}px: the grip persists VISIBLE while the sliver is closed (persistent chrome, never dissolves on its own)`,
@@ -187,8 +197,17 @@ await withHarness(async (app) => {
 
     const gripOpen = await app.evalJs(rectOf('.wz-sliver-grip'));
     const paperOpen = await app.evalJs(rectOf('.mode-pagecol'));
-    ok(`S1 @ ${width}px: the grip rect and the text-column rect never intersect, sliver OPEN`,
-      disjoint(gripOpen, paperOpen), JSON.stringify({ gripOpen, paperOpen }));
+    // ---- PARKED - SUPERSEDED by page-size (Nick + Fable, Oct 23): .mode-pagecol is no longer the text column. The prose page is PAINTED by a transform
+    // inside it, and in the Typewriter zoom (Arbor's default) the column is the whole stage, so every grip on the stage "intersects" it (lane 3).
+    // The text column is the editor itself; the successor reads .forward-only-editor. Kept VERBATIM and no longer run; records in the parked section.
+    //
+    // ok(`S1 @ ${width}px: the grip rect and the text-column rect never intersect, sliver OPEN`,
+    //   disjoint(gripOpen, paperOpen), JSON.stringify({ gripOpen, paperOpen }));
+    // ------------------------------------------------------------------
+    const textOpen = await app.evalJs(rectOf('.forward-only-editor'));
+    fx2Ps.push({ width, state: 'OPEN', grip: gripOpen, text: textOpen });
+    ok(`S1 @ ${width}px [page-size successor]: the grip rect and the TEXT column (the editor itself) never intersect, sliver OPEN`,
+      disjoint(gripOpen, textOpen), JSON.stringify({ gripOpen, textOpen }));
 
     const gripVisOpen = await app.evalJs(`(() => { const cs = getComputedStyle(document.querySelector('.wz-sliver-grip')); return { opacity: cs.opacity, display: cs.display, visibility: cs.visibility }; })()`);
     ok(`S1 @ ${width}px: the grip persists VISIBLE while the sliver is open too`,
@@ -535,6 +554,12 @@ console.log(JSON.stringify(checks, null, 2));
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  // PAGE-SIZE'S PARK AUDIT (Oct 24) - FOUR parks: S1's grip-vs-text-column checks at 1280 and 2200, closed and open. Records byte-frozen; each re-verifies
+  // the new truth from the default leg's own reads: the grip never meets the editor.
+  for (const o of fx2Ps) {
+    pok(`PARKED (was "S1 @ ${o.width}px: the grip rect and the text-column rect never intersect, sliver ${o.state}") — page-size: .mode-pagecol is not the text column (the page is painted inside it; stage-wide in the zoom); live successor: S1 @ ${o.width}px [page-size successor], sliver ${o.state}`,
+      !!o.grip && !!o.text && disjoint(o.grip, o.text), JSON.stringify(o));
+  }
   await withHarness(async (app) => {
     await freshProsePage(app, 1100, 900);
     const drawerGone = await app.evalJs("!document.querySelector('.wz-drawer')");

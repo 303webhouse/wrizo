@@ -39,6 +39,7 @@ import { useSyncExternalStore } from 'react';
 // PHASE 1 (Fable, Oct 12) - ONE DRAWER AT A TIME, AT EVERY WIDTH, for the page's own two hands: the Tools drawer (left, 'tools') and the Tutor drawer (right,
 // 'tutor'). Opening either closes the other, through the other's own close path (so it leaves with the slide it uses when closed independently). This is NOT the
 // width-measured law below, which still governs the far-left cascade against the Tools drawer: that one asks whether the band holds both; this one never asks.
+// SUPERSEDED (page-size, Fable's ruling Oct 23): the two hands are now MEASURED too - see canHoldBoth below. Phase 1's text above is kept as the record.
 export type DrawerId = 'cascade' | 'tools' | 'tutor';
 
 /** Which drawers believe they stand open (so the always-exclusive pair can find its rival without measuring anything). */
@@ -129,6 +130,28 @@ export function canCoexist(): boolean {
   return band >= tools + cascade;
 }
 
+/**
+ * PAGE-SIZE (Fable's ruling, Oct 23) - THE PAGE'S TWO HANDS, MEASURED. This REPLACES Phase 1's "one drawer at a time, at every width" (Oct 12) with
+ * Nick's own original ask in this file's header: on a screen with room, both stand; where they would crowd the page, the later one closes the other.
+ * "Room" is the desk on EACH side of the page the writer sees: at least DRAWER_MIN of it left of the paper (the Tools drawer's side) AND right of it (the
+ * Tutor's), inside the stage. The page never moves for either drawer (page primacy), so this reads the same whether they are open or shut. Same posture
+ * as canCoexist above: a failed measurement says YES (it self-corrects on the next pass; a wrong NO is visible to the writer).
+ */
+export const DRAWER_MIN = 200;   // a drawer's narrowest open width, px - page-size.mjs and the drawer harnesses read the same number
+export function canHoldBoth(): boolean {
+  if (typeof document === 'undefined') return true;
+  const paper = document.querySelector(PAPER_SEL);
+  const stage = document.querySelector('.desk-frame-stage');
+  if (!paper || !stage) return true;
+  const p = paper.getBoundingClientRect();
+  const s = stage.getBoundingClientRect();
+  if (!(p.width > 0 && p.height > 0 && s.width > 0 && s.height > 0)) return true;   // not laid out yet
+  const left = p.left - s.left;
+  const right = s.right - p.right;
+  if (!Number.isFinite(left) || !Number.isFinite(right)) return true;
+  return left >= DRAWER_MIN && right >= DRAWER_MIN;
+}
+
 /** Each drawer registers its OWN close path here on mount. The exclusion
  *  handoff then calls that path rather than reimplementing a close, so the
  *  displaced drawer animates with exactly the slide it uses when closed
@@ -147,11 +170,12 @@ export function registerDrawer(id: DrawerId, close: () => void): () => void {
  * drawer that yielded, or null when both may stand.
  */
 export function requestOpen(id: DrawerId): DrawerId | null {
-  // the page's two hands: always exclusive, no measuring
+  // the page's two hands: MEASURED (page-size, Oct 23) - the rival yields only where the page and both hands do not fit (canHoldBoth). The guard's text
+  // is exact: one-drawer.mjs's mutants anchor on it.
   let yielded: DrawerId | null = null;
   if (id === 'tools' || id === 'tutor') {
     const rival: DrawerId = id === 'tools' ? 'tutor' : 'tools';
-    if (stands.has(rival)) { stands.delete(rival); closers.get(rival)?.(); yielded = rival; }
+    if (stands.has(rival) && !canHoldBoth()) { stands.delete(rival); closers.get(rival)?.(); yielded = rival; }
   }
   // the far-left cascade against the Tools drawer: the width-measured law, exactly as before
   let mustClose: DrawerId | null = null;
@@ -170,6 +194,14 @@ export function requestOpen(id: DrawerId): DrawerId | null {
 export function noteClosed(id: DrawerId): void {
   stands.delete(id);
   if (openDrawer === id) { openDrawer = null; notify(); }
+}
+
+/** PAGE-SIZE (spec point 3) - the zoom TUCKS the page's two hands: each closes through its OWN registered path (the same slide it uses when
+ *  closed by hand), and each path notes its own close back here. A hand already shut is asked nothing. The grips stay; the writer may reopen. */
+export function tuckDrawers(): void {
+  for (const id of ['tools', 'tutor'] as const) {
+    if (stands.has(id)) closers.get(id)?.();
+  }
 }
 
 function subscribe(l: () => void): () => void {

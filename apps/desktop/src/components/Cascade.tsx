@@ -139,7 +139,9 @@ function panelTitleTerm(category: CategoryId): DeskTermId {
 function availableCascadeMargin(): number {
   if (typeof document === 'undefined') return Infinity;
   const stage = document.querySelector('.desk-frame-stage');
-  const paper = document.querySelector('.mode-pagecol, .entry-full');
+  // PAGE-SIZE (drawer-mirror CD, Oct 24) - the prose page is PAINTED by a transform, ~1.6x and in a stage-wide column while zoomed: the margin is the
+  // painted page's (read from the column it was ~0 in the zoom, and the survey never docked) - the twin of Tutor.tsx's availableTutorMargin
+  const paper = document.querySelector('.desk-frame-stage--prose .mode-page') ?? document.querySelector('.mode-pagecol, .entry-full');
   if (!stage || !paper) return Infinity;
   const stageRect = stage.getBoundingClientRect();
   const paperRect = paper.getBoundingClientRect();

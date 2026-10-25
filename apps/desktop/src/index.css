@@ -688,7 +688,8 @@
 [data-theme='machina'] .wz-goal-glow{ background:radial-gradient(ellipse at center, color-mix(in srgb, var(--signal-live) 50%, transparent) 0%, color-mix(in srgb, var(--signal-live) 20%, transparent) 40%, transparent 68%); }
 [data-theme='machina'] .desk-frame-goalflare{ display:none; }
 /* the vignette sits BEHIND the content (the rule Flux's flux-inputs gave itself, Oct 23): it shades the room, never the page - the empty light page showed grey bands top and bottom */
-[data-theme='machina'] body::after{ z-index:-1; }
+/* (Machina's own vignette line that stood here is COLLAPSED into the one base rule - body::after, under the atmosphere overlays - which puts
+   the vignette behind the page in EVERY theme: page-size, Fable Oct 23. th-machina-source.mjs M18 [page-size successor] checks the base rule.) */
 /* RUN (components/RunStrip.tsx) - the cursor/machina-v1-mockup footer strip: twenty identical 4px units 3px apart, gray when finished, an orange 3x16 notch on the unit in progress, the count once
    after the bar. It rides the framed page's instrument lane (the band under the paper), right-aligned to the paper's edge - the mockup's "right of the footer". Closed at the goal = the whole strip
    orange (a .35s colour crossfade - the foundations' fill handoff); NEUTRAL adds eight 9x1px sparks from the last unit (.6s, 20ms stagger, the RC's own constants), never under COOL. */
@@ -759,8 +760,8 @@
 [data-theme='flux'] .wz-section-open[aria-current='page']{ box-shadow:inset 2px 0 0 var(--orange); }
 /* the sprint surge is orange (Flux's selection is cyan, so the surge names its colour) */
 [data-theme='flux'] .mode-pfill-spark:not(.lime){ background:var(--orange); }
-/* the vignette sits BEHIND the content under Flux: it shades the room, never the page (the empty light page showed grey bands top and bottom) */
-[data-theme='flux'] body::after{ z-index:-1; }
+/* (the Flux-only vignette rule that stood here is COLLAPSED into the one base rule - body::after, under the atmosphere overlays below - which puts the vignette
+   behind the page in EVERY theme: page-size, Fable Oct 23. flux-v2.mjs VG1b checks the base rule; flux-v2-part2 F9 still reads Flux's computed -1.) */
 /* the rail's hover and active states are ELECTRIC BLUE (#00C2FF, --line-active): no brown tile, no olive, no brass (Nick, Oct 23) */
 [data-theme='flux'] .wz-strip-item:hover, [data-theme='flux'] .desk-rail-item:hover{ color:var(--line-active); background:rgba(0, 194, 255, .08); }
 [data-theme='flux'] .wz-strip-item:active{ color:var(--line-active); }
@@ -931,11 +932,18 @@ body::before {
   background-size: 160px 160px;
 }
 
+/* PAGE-SIZE (Fable, Oct 23): the vignette sits BEHIND the content in EVERY theme - it shades the room, never the page.
+   At z-index 2 it was painted over everything, so the paper's foot wore a grey band wherever the page reached the viewport's edge (Arbor's light page,
+   deploy #5's screens; INK fixed the same for Flux alone in flux-inputs). One rule here, not one per theme, so a theme added later cannot bring it back.
+   `isolation:isolate` on body is what keeps it VISIBLE: html carries its own background, so body's lamp background is painted as body's own block - and
+   a bare z-index:-1 in the root stacking context would sit under that lamp too, deleting the vignette everywhere. With body its own stacking context, the
+   vignette paints above the lamp and below everything in #root. Checked by page-size.mjs V/MV (never on the page) and V-room (still on the room), from paint. */
+body { isolation: isolate; }
 body::after {
   content: '';
   position: fixed;
   inset: 0;
-  z-index: 2;
+  z-index: -1;
   pointer-events: none;
   box-shadow: inset 0 0 170px 55px rgba(0, 0, 0, 0.55);
 }
@@ -3389,9 +3397,31 @@ a:focus-visible,
    (character count) never changes, only its pixel width does (Law 1). The
    760px cap is scaled too so it can never clamp the ch-derived width once
    the scale grows it past the old flat cap. */
+/* PAGE-SIZE (Fable + Nick, Oct 23; docs/plans/page-size.md) - THE PROSE PAGE IS A LETTER PAGE, in PAGE UNITS. The FX3 S2 measure above
+   (`min(760px x scale, 60ch)`) is retired for prose: the page is 8.5 x 11 page-inches, its margins are page-inches (pageDress.ts) and its type is
+   points in page units (12 pt = 16px at scale 1, fontSize.ts). ONE number scales all three - `--wz-letter-in`, one page-inch, written on this stage
+   by DeskFrame's observer from the STAGE's size alone (store/pageScale.ts; ruling c) - so the page grows in SHAPE only and every line breaks where
+   it did. The value here is scale 1, for the first paint. `--wz-page-w`/`--wz-page-half` are what every anchor that used to hand-copy the page's
+   width now reads (the sliver, both Tutor anchors, the glow, the instrument, the cascade). */
+/* AS BUILT (the lane run on fb1e28fb): the page LAYS OUT at scale 1 always - --wz-letter-in is the scale-1 inch - and is PAINTED at the base scale
+   --wz-k by a transform (below), so every line breaks where it does at 1366 at every size. The anchors (sliver, Tutor, glow, instrument, cascade)
+   read the PAINTED width: --wz-anchor-w / --wz-page-half - the zoomed width while the zoom is on. */
+.desk-frame-stage--prose{
+  --wz-letter-in: 72.941px;
+  --wz-pt: calc(var(--wz-letter-in) / 54.70588);
+  --wz-page-w: calc(var(--wz-letter-in) * 8.5);
+  --wz-page-h: calc(var(--wz-letter-in) * 11);
+  --wz-k: 1;
+  --wz-anchor-w: calc(var(--wz-page-w) * var(--wz-k));
+  --wz-page-half: calc(var(--wz-anchor-w) / 2);
+}
+.desk-frame-stage--prose:has(.mode-pagecol[data-zoom='true']){
+  --wz-anchor-w: calc(var(--wz-page-w) * var(--wz-k) * var(--wz-zoom, 1.6));
+}
 .desk-frame-stage--prose .mode-pagecol{
-  width:min(calc(760px * var(--paper-scale)), 60ch); max-width:100%; min-width:0;
-  font-size:calc(1rem * var(--paper-scale));
+  width:var(--wz-page-w); max-width:100%; min-width:0;
+  font-size:calc(12 * var(--wz-pt));
+  height:100%;   /* a DEFINITE height, so the letter-tall page below shrinks to the stage (ruling d) instead of growing the column past it */
 }
 /* SC1 S1/S4 — the screenplay column STOPS sharing prose's measure. FX1 S2 put
    script on `.mode-pagecol` to end a worse defect (the stage sizing itself,
@@ -3445,8 +3475,64 @@ a:focus-visible,
      scaled HERE, so --paper-scale keeps its single owner. The fallback is the
      exact 38px this rule carried before M3, so a page with no dress renders
      byte-identically to today. */
+  /* PAGE-SIZE: the margin choice now arrives as a multiplier (--wz-page-margin-in, pageDress.ts); off the letter page it is today's exact
+     26/38/58px base measure again. */
+  --wz-page-pad-x: calc(38px * var(--wz-page-margin-in, 1));
   padding:calc(30px * var(--paper-scale)) calc(var(--wz-page-pad-x, 38px) * var(--paper-scale));
 }
+/* PAGE-SIZE - the prose page: letter height, capped to the stage (ruling d - a flex item that may shrink, so on a short screen the sheet stops at
+   the stage's fence and the text scrolls inside it as it always has); margins in page-inches (ruling b: normal 1in, narrow 0.684, wide 1.526);
+   the top and bottom margin 0.85in (Cursor's mockup). `--paper-scale:1` INSIDE the page: page units carry the scale here, so any rule inside
+   the page that still multiplies by --paper-scale (TOOLS' scrollbar-flush cancellation on .mode-scroll among them) multiplies by 1 - correct
+   whichever of the two branches merges first. `--wz-page-pad-x` is the one FINISHED margin length that cancellation reads. */
+.desk-frame-stage--prose .mode-page{
+  --paper-scale: 1;
+  --wz-page-pad-x: calc(var(--wz-letter-in) * var(--wz-page-margin-in, 1));
+  /* an explicit width (not the column's stretch), so the zoom below can widen the COLUMN without ever re-laying a line */
+  width:var(--wz-page-w); max-width:100%; align-self:center;
+  /* the LAYOUT height DeskFrame computes (letter, or what the stage holds once painted at --wz-k - ruling d); the transform paints it at k */
+  height:var(--wz-page-hl, var(--wz-page-h)); flex:0 1 auto; min-height:0;
+  padding:calc(var(--wz-letter-in) * .85) var(--wz-page-pad-x);
+  transform:scale(var(--wz-k, 1)); transform-origin:50% 0;
+}
+/* PAGE-SIZE - a scrollbar arriving or leaving (Typewriter's start offset makes the content taller) narrowed the text column and REFLOWED lines on
+   main (red run 143: Arbor 3840, 34 -> 35 lines). The gutter is reserved always, so no scrollbar can ever move a line break. */
+.desk-frame-stage--prose .mode-scroll{ scrollbar-gutter:stable; }
+/* PAGE-SIZE (spec point 3; Cursor's mockup @ e3c4e462, FINAL) - THE ZOOM. The SAME page, transformed ~1.6x (--wz-zoom, DeskFrame's observer:
+   1.6 capped to what fits the stage's width) - scale, never reflow: the page's own layout box, its width and every line break stay exactly as in
+   the normal view. The column widens to the stage so the band mask (drawn in ITS box) spans the zoomed page; the page keeps its own width.
+   THE BAND: Cursor's final stops, in line-heights (--tw-lh, the real line height x the zoom, written by the typewriter engine) from the anchor
+   (60% of the column - the engine holds the writing line's top there): 0 at the top, .12 / .40 / .72 at 6.6 / 4.2 / 2.2 lines above, full from
+   0.15 above to 1.45 below (the writing line alone), .40 at 2.8 below, 0 from 4.4 below. Text AND paper fade into the desk together - the paper
+   is never framed by an edge or a shadow while zoomed. The old top-of-scroller mask (a .15 floor) stands down: this band replaces it. */
+/* PAGE-SIZE - while zoomed the drawers' anchors follow the ZOOMED edge, which leaves the Sliver only the zoom's gutter of desk: opened there, it
+   was crushed to 48px (2560) / 22px (3840) with its own buttons outside it (screens on 67ebc075). Opened while zoomed it keeps DRAWER_MIN by
+   growing RIGHTWARD from its anchor, OVER the zoomed band (a tool overlays; nothing is displaced). Not leftward: at 1366 that ran it under
+   the strip, which covered its own buttons (c9b8035b). Its grip (z-index 2 within the Sliver) stays on top of it, so it still closes. */
+.desk-frame-stage--prose:has(.mode-pagecol[data-zoom='true']) .wz-sliver-panel{ left:0; right:auto; width:max(calc(100% - 16px), 200px); }
+/* the zoomed column must REALLY be stage-wide: `.mode-stage` is a content-sized flex item of the stage, so a 100% column inside it stayed 620px
+   and the band mask - drawn in the column's box - CUT the enlarged page at its sides (screens on 7ff7b8ea). While zoomed, it fills the stage. */
+.desk-frame-stage--prose:has(.mode-pagecol[data-zoom='true']) > .mode-stage{ flex:1 1 auto; width:100%; }
+.desk-frame-stage--prose .mode-pagecol[data-zoom='true']{
+  width:100%;
+  --tw-anchor: 60%;
+  -webkit-mask-image:linear-gradient(to bottom, transparent 0,
+    rgba(0,0,0,.12) calc(var(--tw-anchor) - 6.6 * var(--tw-lh, 43.52px)), rgba(0,0,0,.4) calc(var(--tw-anchor) - 4.2 * var(--tw-lh, 43.52px)),
+    rgba(0,0,0,.72) calc(var(--tw-anchor) - 2.2 * var(--tw-lh, 43.52px)), #000 calc(var(--tw-anchor) - .15 * var(--tw-lh, 43.52px)),
+    #000 calc(var(--tw-anchor) + 1.45 * var(--tw-lh, 43.52px)), rgba(0,0,0,.4) calc(var(--tw-anchor) + 2.8 * var(--tw-lh, 43.52px)),
+    transparent calc(var(--tw-anchor) + 4.4 * var(--tw-lh, 43.52px)), transparent 100%);
+          mask-image:linear-gradient(to bottom, transparent 0,
+    rgba(0,0,0,.12) calc(var(--tw-anchor) - 6.6 * var(--tw-lh, 43.52px)), rgba(0,0,0,.4) calc(var(--tw-anchor) - 4.2 * var(--tw-lh, 43.52px)),
+    rgba(0,0,0,.72) calc(var(--tw-anchor) - 2.2 * var(--tw-lh, 43.52px)), #000 calc(var(--tw-anchor) - .15 * var(--tw-lh, 43.52px)),
+    #000 calc(var(--tw-anchor) + 1.45 * var(--tw-lh, 43.52px)), rgba(0,0,0,.4) calc(var(--tw-anchor) + 2.8 * var(--tw-lh, 43.52px)),
+    transparent calc(var(--tw-anchor) + 4.4 * var(--tw-lh, 43.52px)), transparent 100%);
+}
+.desk-frame-stage--prose .mode-pagecol[data-zoom='true'] .mode-page{
+  transform:scale(calc(var(--wz-k, 1) * var(--wz-zoom, 1.6))); transform-origin:50% 0;
+  box-shadow:none; border-color:transparent;
+}
+.desk-frame-stage--prose .mode-pagecol[data-zoom='true'] .mode-scroll{ -webkit-mask-image:none; mask-image:none;
+  padding-bottom:max(30vh, var(--tw-end-pad, 30vh)); }   /* room for the LAST line to rise to the anchor (the engine writes --tw-end-pad) */
 /* The script sheet has no bounded height of its own by design (see
    .desk-frame-scroll-cap's own comment below — it wraps content that grows
    with the document); FX3 S1 replaced the SCROLL-CAP's old fixed
@@ -3601,7 +3687,7 @@ a:focus-visible,
      same headless-harness-before-CSS-reasoning discipline FX2 S1's own
      comment below already established for this exact rule. */
   font-size:calc(1rem * var(--paper-scale));
-  --sliver-paper-half: min(calc(380px * var(--paper-scale)), 30ch);
+  --sliver-paper-half: var(--wz-page-half, min(calc(380px * var(--paper-scale)), 30ch));   /* PAGE-SIZE: the prose page's own half-width; the old formula elsewhere */
   --sliver-paper-pad: 38px;   /* .mode-page{ padding:30px 38px } — hand-synced, see comment above */
   /* FX5 S10 — this formula's own "50%" is relative to `.desk-frame-stage`'s
      own box, and `+ var(--frame-gap)` alone used to be the whole
@@ -3772,7 +3858,7 @@ a:focus-visible,
      already proves out (one more than the panel, not a bare coincidence). */
   position:absolute; top:0; z-index:56; pointer-events:none; height:100%;
   font-size:calc(1rem * var(--paper-scale));
-  --tutor-paper-half: min(calc(380px * var(--paper-scale)), 30ch);
+  --tutor-paper-half: var(--wz-page-half, min(calc(380px * var(--paper-scale)), 30ch));   /* PAGE-SIZE */
   --tutor-paper-pad: 38px;   /* .mode-page{ padding:30px 38px } — hand-synced, mirrors --sliver-paper-pad's own comment */
   --tutor-margin: calc(50% - var(--tutor-paper-half) + var(--frame-gap));
   --tutor-overflow: clamp(0px, calc(160px - var(--tutor-margin)), var(--tutor-paper-pad));
@@ -3841,7 +3927,7 @@ a:focus-visible,
   position:absolute; top:0; left:0; right:0; height:100%; z-index:55;
   display:flex; align-items:stretch; justify-content:flex-end; pointer-events:none;
   font-size:calc(1rem * var(--paper-scale));
-  --tutor-panel-paper-half: min(calc(380px * var(--paper-scale)), 30ch);
+  --tutor-panel-paper-half: var(--wz-page-half, min(calc(380px * var(--paper-scale)), 30ch));   /* PAGE-SIZE */
   --tutor-panel-margin: calc(50% - var(--tutor-panel-paper-half) + var(--frame-gap));
   /* FX10 S1 — Fable's own corrected ruling, replacing TU2 S4's "exactly 2x
      --strip-width" spec (~168px — the brief's own acknowledged error, not a
@@ -3881,8 +3967,8 @@ a:focus-visible,
    drifts out of alignment with the (now-scaled) paper at wide viewports. */
 .desk-frame-goalglow-anchor{ position:absolute; top:0; z-index:-1; pointer-events:none;
   font-size:calc(1rem * var(--paper-scale));
-  width:min(calc(760px * var(--paper-scale)), 60ch); height:100%;
-  left:calc(50% - min(calc(380px * var(--paper-scale)), 30ch)); }
+  width:var(--wz-anchor-w, min(calc(760px * var(--paper-scale)), 60ch)); height:100%;
+  left:calc(50% - var(--wz-page-half, min(calc(380px * var(--paper-scale)), 30ch))); }   /* PAGE-SIZE */
 
 /* CD1 S6 — the goal's glow itself (components/GoalGlow.tsx). Warmth, never
    brass (the olive/orange lanes hold): a fixed warm gradient whose ONLY
@@ -3923,7 +4009,7 @@ a:focus-visible,
    ground can never become a control. */
 .desk-frame-instrument{ position:absolute; left:50%; bottom:5px; transform:translateX(-50%);
   font-size:calc(1rem * var(--paper-scale));
-  width:min(calc(760px * var(--paper-scale)), 60ch); max-width:100%;
+  width:var(--wz-anchor-w, min(calc(760px * var(--paper-scale)), 60ch)); max-width:100%;   /* PAGE-SIZE */
   pointer-events:none; }
 
 /* M4 S4 (SV16) — THE COMPLETION MOMENT. Root-caused first (the finding, for
@@ -5078,7 +5164,7 @@ a:focus-visible,
   /* Same canonical-half-width formula .desk-frame-sliver-anchor already
      uses (FX3 S2 taught it to scale with --paper-scale; this anchor reads
      the identical formula so it drifts in lockstep, not independently). */
-  --cascade-paper-half: min(calc(380px * var(--paper-scale)), 30ch);
+  --cascade-paper-half: var(--wz-page-half, min(calc(380px * var(--paper-scale)), 30ch));   /* PAGE-SIZE */
   /* The margin available between the strip's own right edge and the
      paper's own left edge, WITHIN this stage box — the mirror twin of
      .desk-frame-sliver-anchor's own --sliver-margin (that comment block
@@ -6298,6 +6384,10 @@ a:focus-visible,
 .wz-beginnings[data-beginnings='page']{
   position:absolute; top:50%; left:0; right:0; transform:translateY(-50%);
 }
+/* PAGE-SIZE (FIX's turn 3 on d4a89f48, escexit S4) - IN THE ZOOM the writing line is held at the band's anchor and a fresh page's sheet is that one line
+   tall, so "centred on the sheet" put the row ON the line: a press on the line pressed a door, and the first Esc found nothing open. Zoomed, the row
+   takes BG1's own placement instead - just below the line, inside the band's lower fade - so the line itself stays clear. */
+.mode-pagecol[data-zoom='true'] .wz-beginnings[data-beginnings='page']{ top:calc(100% + 0.75em); transform:none; }
 /* S1 — the same row inside STORYBOARD/OUTLINE, which are ordinary flow blocks
    with no positioned ancestor: it simply takes the place their empty line held. */
 .wz-beginnings[data-beginnings='projection']{ padding:22px 0 6px; }

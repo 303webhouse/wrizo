@@ -19,6 +19,8 @@ import { FirstRunVeil } from './FirstRunGate';
 import { usePageDress, dressVars } from '../store/pageDress';
 import { setCaretOffset } from '../store/caretOffset';
 import { editorPlainText, rowsFor, rowsOffsetOf } from '../store/lineRows';
+import { tuckDrawers } from '../store/menusDrawers';
+import { ZOOM_ANCHOR } from '../store/pageScale';
 
 const ASSIST_INTRO_KEY = 'wrizo-assist-introduced';      // first pop-out fired (once)
 const ASSIST_COLLAPSED_KEY = 'wrizo-assist-collapsed';   // persisted panel state
@@ -204,6 +206,26 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
   const typewriterOn = mode === 'drafting' && pageId != null
     ? typewriterForPage(pageId, words === 0)
     : (mode === 'journal' || mode === 'drafting') && settings.typewriter;
+  // PAGE-SIZE (spec point 3) - THE ZOOM: on the framed prose page, Typewriter (Terminal Mode, and the themes' later names) is the SAME page scaled
+  // ~1.6x (index.css `.mode-pagecol[data-zoom]`, --wz-zoom from DeskFrame's observer) - a transform, so no line ever reflows and the editor never
+  // unmounts. The ruled exception to page primacy (docs/page-primacy-canon.md): the rect changes on purpose, and leaving returns it exactly.
+  // Entering tucks both drawers (tools: they collapse, their grips stay); the Flux block caret is told the layout moved under it.
+  const zoomed = !!framed && typewriterOn;
+  const pagecolRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!zoomed) return;
+    // focus that was INSIDE a drawer the zoom tucks would be stranded in an inert panel (the lane run on fb1e28fb: Enter on the Sliver's own
+    // Typewriter toggle turned the zoom on, the drawer tucked, and the next key went nowhere). It goes to the page - where the writer is about to write.
+    const a = document.activeElement as HTMLElement | null;
+    const stranded = !!a?.closest?.('.wz-sliver, .wz-tutor-panel, .desk-frame-tutor-panel-anchor');
+    tuckDrawers();
+    if (stranded) (scrollRef.current?.querySelector('.forward-only-editor') as HTMLElement | null)?.focus();
+  }, [zoomed]);
+  useEffect(() => {
+    // the caret moved under the Flux block caret; and the painted page's edge moved, which the Tutor's own width and grip measure against
+    const raf = requestAnimationFrame(() => { document.dispatchEvent(new Event('wz-caret-moved')); document.dispatchEvent(new Event('wz-zoom-changed')); });
+    return () => cancelAnimationFrame(raf);
+  }, [zoomed]);
   // AB1 S3 fix (found while generalizing the vanishing law to DeskFrame,
   // pre-existing on this surface too — not new here) — this array literal
   // was previously rebuilt on every ModeStage render, so useChromeDissolve's
@@ -316,7 +338,9 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
   // container-mode call, one of the two "paper" surfaces the brief's S3
   // retunes; Journal's own window-scroll call is untouched (see
   // useTypewriterFade.ts's own comment).
-  useTypewriterFade({ enabled: typewriterOn, containerRef: scrollRef, editorSelector: '.forward-only-editor', holdBand: CONTAINER_HOLD_BAND });
+  useTypewriterFade({ enabled: typewriterOn, containerRef: scrollRef, editorSelector: '.forward-only-editor', holdBand: CONTAINER_HOLD_BAND,
+    // PAGE-SIZE - zoomed, the writing line is held at ZOOM_ANCHOR (60%) of the page column, the anchor Cursor's band mask is drawn against
+    zoom: zoomed ? { holdRef: pagecolRef, anchor: ZOOM_ANCHOR } : undefined });
 
   // Pagination: watch the editor's content height against the sheet height. On
   // crossing a sheet boundary, flip (page-turn animation + soft sound). Height-
@@ -511,7 +535,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
           </aside>
         )}
 
-        <div className="mode-pagecol">
+        <div className="mode-pagecol" ref={pagecolRef} data-zoom={zoomed ? 'true' : undefined}>
           {/* Format / pen bar (top of page) — chrome, dissolves on write.
               AB2 S2/S3 — retires when framed: its ink swatches and Draft's
               format tools both have a home now in the sliver (CD1:

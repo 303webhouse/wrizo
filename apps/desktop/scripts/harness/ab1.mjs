@@ -764,8 +764,16 @@ if (process.env.HARNESS_PARKED === '1') {
       pagecol: ${rectOf('.mode-pagecol')},
     })`);
     const stripRightNow = gateFloorRectsNow.strip.left + gateFloorRectsNow.strip.width;
-    pok('PARKED (was "PAGE IS PRIMARY at the gate floor (1100px): the page column never overlaps the tool-rail", reading .desk-frame-toolrail) — CD2 S1/S5: the SAME non-overlap claim, .desk-frame-strip now, same truth',
-      gateFloorRectsNow.pagecol.left >= stripRightNow, JSON.stringify({ ...gateFloorRectsNow, stripRightNow }));
+    // ---- RE-PARKED by page-size's park audit (Oct 24): this record's probe read .mode-pagecol, and its live successor (cd2.mjs S1/S5) is itself
+    // parked - the column is no longer the paper (the page is painted by a transform inside it; in the Typewriter zoom the column is stage-wide,
+    // under the strip that always stood over the stage's edge). The record, VERBATIM, no longer runs; its successor record reads the painted page.
+    //
+    // pok('PARKED (was "PAGE IS PRIMARY at the gate floor (1100px): the page column never overlaps the tool-rail", reading .desk-frame-toolrail) — CD2 S1/S5: the SAME non-overlap claim, .desk-frame-strip now, same truth',
+    //   gateFloorRectsNow.pagecol.left >= stripRightNow, JSON.stringify({ ...gateFloorRectsNow, stripRightNow }));
+    // ------------------------------------------------------------------
+    const gateFloorPaperNow = await app.evalJs(`(() => { const p = document.querySelector('.desk-frame-stage--prose .mode-page'); if (!p) return null; const r = p.getBoundingClientRect(); return { left: r.left, right: r.right, width: r.width }; })()`);
+    pok('PARKED (was "PAGE IS PRIMARY at the gate floor (1100px): the page column never overlaps the tool-rail", reading .desk-frame-toolrail, then .desk-frame-strip at CD2 S1/S5) — page-size: the column is not the paper; the PAINTED page never overlaps the strip; live successor: cd2.mjs S1/S5 [page-size successor]',
+      !!gateFloorPaperNow && gateFloorPaperNow.left >= stripRightNow, JSON.stringify({ strip: gateFloorRectsNow.strip, paper: gateFloorPaperNow, stripRightNow }));
 
     // ORIGINAL (this file's own live "S3 on Board" section): await app.
     // evalJs("document.querySelector('[data-box-id=\"ab1-board-box\"]').

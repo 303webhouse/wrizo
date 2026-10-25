@@ -105,12 +105,21 @@ interface Options {
   // shared TYPEWRITER_BAND exactly, byte-identical to pre-FX3 — the Journal
   // carve-out. ModeStage.tsx/ScriptEditor.tsx pass CONTAINER_HOLD_BAND.
   holdBand?: number;
+  // PAGE-SIZE - the ZOOM (ModeStage, framed prose with Typewriter on): the page is transformed, and the writing line is held at `anchor` of
+  // `holdRef`'s box (the page column the band mask is drawn in) instead of `holdBand` of the scroller. Omitted everywhere else - unchanged.
+  zoom?: { holdRef: React.RefObject<HTMLElement>; anchor: number };
 }
 
-export function useTypewriterFade({ enabled, containerRef, editorSelector, useWindowScroll, scrolledTarget, holdBand }: Options): void {
+export function useTypewriterFade({ enabled, containerRef, editorSelector, useWindowScroll, scrolledTarget, holdBand, zoom: zoomOpt }: Options): void {
+  // the effect keys on the zoom's PARTS (a caller builds a new options object every render; keyed on that, the engine would restart - and lose
+  // its engaged state - on every keystroke)
+  const zoomOn = !!zoomOpt;
+  const zoomHoldRef = zoomOpt?.holdRef;
+  const zoomAnchor = zoomOpt?.anchor ?? 0;
   useEffect(() => {
     const container = containerRef.current;
     if (!container || !enabled) return;
+    const zoom = zoomOn && zoomHoldRef ? { holdRef: zoomHoldRef, anchor: zoomAnchor } : undefined;
     const holdBandValue = holdBand ?? TYPEWRITER_BAND;
     const scrolledEl = scrolledTarget?.current ?? container;
     const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -121,6 +130,11 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     // position in scroll-INDEPENDENT "document space" (see band() below).
     let engaged = false;
     let prevDocCaretBottom: number | null = null;
+    // PAGE-SIZE G DIAGNOSTICS (Fable, Oct 24 - approved with conditions): the engine's decisions, in MEMORY only - an array the harness puts on
+    // window before the page mounts. Read ONCE here, at mount; when it is absent (every real session) nothing below is ever written. No DOM
+    // attribute, no DOM write, nothing on the keystroke path but one branch. page-size.mjs's source check pins this gate.
+    const trace = (typeof window !== 'undefined' ? (window as unknown as { __wzTwTrace?: unknown[] }).__wzTwTrace : undefined);
+    if (trace) trace.push({ d: 'mount', at: Math.round(performance.now()), zoom: !!zoom });
 
     const setScrolled = () => {
       // Window mode: gate on the SHEET's own top vs the viewport (has content
@@ -151,6 +165,30 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       const ed = container.querySelector(editorSelector) as HTMLElement | null;
       return ed ? (parseFloat(getComputedStyle(ed).lineHeight) || 28) : 28;
     };
+    // PAGE-SIZE - the scale the page is PAINTED at (the base scale x the zoom: every transform between the scroller and the screen), read from the
+    // page's own two boxes - painted width over layout width - so no constant can drift from what is drawn. 1 whenever this call is not zoomed.
+    const zoomScale = () => {
+      if (!zoom) return 1;
+      const page = container.closest('.mode-page') as HTMLElement | null;
+      const s = page && page.offsetWidth > 0 ? page.getBoundingClientRect().width / page.offsetWidth : 1;
+      return s > 0 ? s : 1;
+    };
+    // PAGE-SIZE - ONE LINE PER GLIDE. Each step is a one-line smooth scroll, and a chained catch-up step used to fire on the very next frame,
+    // reading box.scrollTop while the last step was still in flight - every step started short and a deep engage under-scrolled (lane run on
+    // fb1e28fb). Building each step on the last one's TARGET instead (64e5b7f9) folded the queued lines into ONE long smooth scroll - a multi-line
+    // lurch at up to 167px a frame (fx5 S1 a on 64e5b7f9). So the next step WAITS until the last glide has landed, then steps from where it landed:
+    // one line at a time, and no line lost. A glide that never lands (a writer's own scroll took over) stops waiting after GLIDE_MS.
+    let glideTarget: number | null = null;
+    let glideAt = 0;
+    // PAGE-SIZE - A GLIDE IS PAID ONLY WHEN IT LANDS. The lane run on d80010ae caught G's cause in its own trace: the engine issued its one-line
+    // smooth scroll (972 -> 999) and credited the line at once - and the scroll never moved (972 at 1s and at 1.5s): the browser CANCELLED the
+    // smooth scroll (its own caret-into-view on the next keystroke is the likely canceller). The next pass saw nothing owed and the writing line
+    // stayed a line low. Now a glide that ends short of its target - the box still between where it started and where it was going - has its
+    // unscrolled remainder owed again, and is re-issued. A box that went BACK past where the glide began is the writer's own scroll: honoured,
+    // as before (FX5 S1 c). A timer re-checks just after each glide's time, so a lost line is recovered even if the writer stops typing.
+    let glideFrom: number | null = null;
+    let verifyTimer: ReturnType<typeof setTimeout> | null = null;
+    const GLIDE_MS = 600;
     // S1 — the fade band (line-height based) and the fresh-page start offset
     // (stage-height based) are both STATIC CSS the writing surface reads via
     // custom properties; this just keeps them in step with the actual
@@ -167,6 +205,21 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       // stops — see index.css.
       scrolledEl.style.setProperty('--tw-fade-start', `${Math.round(lineHeight())}px`);
       scrolledEl.style.setProperty('--tw-start-offset', `${Math.round(stageHeight * START_FRACTION)}px`);
+      // PAGE-SIZE - the band mask's line unit, in SCREEN pixels (the real line height x the paint scale), written where the mask is drawn; and the
+      // start offset, ZOOMED, puts a fresh page's first line at the anchor itself - inside the band's full strength (a quarter of the stage put
+      // it about a line ABOVE the anchor, on the .88 ramp: fx5 S1(d) on fb1e28fb). Layout px: the screen distance divided by the paint scale.
+      if (zoom?.holdRef.current) {
+        const sc = zoomScale();
+        const h = zoom.holdRef.current.getBoundingClientRect();
+        zoom.holdRef.current.style.setProperty('--tw-lh', `${(lineHeight() * sc).toFixed(2)}px`);
+        zoom.holdRef.current.style.setProperty('--tw-anchor', `${zoom.anchor * 100}%`);   // the ONE anchor: the hold below and the mask read it
+        const startPx = (h.top + h.height * zoom.anchor - container.getBoundingClientRect().top) / sc;
+        scrolledEl.style.setProperty('--tw-start-offset', `${Math.max(0, Math.round(startPx))}px`);
+        // and room BELOW the last line, so the last line can rise to the anchor at all: zoomed, the scroller's box reaches far below the stage,
+        // and 30vh of end padding let the scroll bottom out with the writing line still 1-3 lines under the band (W/T on 64e5b7f9). Its own
+        // height (layout px) is always enough - the sheet "bleeds a full stage height below" in Cursor's mockup for the same reason.
+        scrolledEl.style.setProperty('--tw-end-pad', `${Math.round(container.clientHeight)}px`);
+      }
     };
     const band = () => {
       measure();
@@ -240,9 +293,12 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         const last = ed.lastElementChild as HTMLElement | null;
         caretBottom = last ? last.getBoundingClientRect().bottom : ed.getBoundingClientRect().top;
       }
-      if (caretBottom === null) return;
+      if (caretBottom === null) { if (trace) trace.push({ d: 'no-caret' }); return; }
       const box = readBox(!!useWindowScroll, container);
-      const within = caretBottom - box.top;
+      // PAGE-SIZE - zoomed, the page is TRANSFORMED: rects are screen pixels, the scroller's scrollTop and clientHeight are layout pixels. Every
+      // screen distance is divided by the zoom before it meets the scroller, so one line of advance is still one LAYOUT line.
+      const sc = zoomScale();
+      const within = (caretBottom - box.top) / sc;
       // FX5 S1 (a, c) — "document space": the caret's position independent
       // of the CURRENT scroll offset. The OLD design recomputed an ABSOLUTE
       // `target = box.scrollTop + delta` on every keystroke, which always
@@ -260,16 +316,29 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       // the writer just produce" from "where did the viewport happen to be
       // sitting" — the two concerns S1 asks to be decoupled.
       const docCaretBottom = within + box.scrollTop;
-      const thresholdPx = box.clientHeight * holdBandValue;
+      // PAGE-SIZE - zoomed, the hold is the writing line's TOP at `anchor` of the hold element (the page column, the box the band mask is drawn
+      // in), as Cursor's mockup places it - so the caret's BOTTOM sits one line below that, inside the mask's full-strength band.
+      const holdEl = zoom?.holdRef.current ?? null;
+      const thresholdPx = holdEl
+        ? (holdEl.getBoundingClientRect().top + holdEl.getBoundingClientRect().height * zoom!.anchor - box.top) / sc + lineHeight()
+        : box.clientHeight * holdBandValue;
 
       if (!engaged) {
-        if (within - thresholdPx <= 1) { setScrolled(); return; } // fresh/short content: don't scroll, don't fade (C2)
+        if (within - thresholdPx <= 1) { if (trace) trace.push({ d: 'fresh', within: Math.round(within), threshold: Math.round(thresholdPx) }); setScrolled(); return; } // fresh/short content: don't scroll, don't fade (C2)
         // First engage (S1 a: "must not lurch"): owe exactly the same delta
         // the old absolute design would have jumped in one shot, but pay it
         // off below via the SAME one-line-at-a-time stepping every later
         // engaged call uses — one code path, no special-cased jump.
         engaged = true;
+        if (trace) trace.push({ d: 'engage', within: Math.round(within), threshold: Math.round(thresholdPx), top: Math.round(box.scrollTop) });
         prevDocCaretBottom = docCaretBottom - (within - thresholdPx);
+      }
+      if (engaged && !reduce && glideTarget != null && glideFrom != null && performance.now() - glideAt >= GLIDE_MS
+          && box.scrollTop >= glideFrom - 1 && box.scrollTop < glideTarget - 1) {
+        const owed = glideTarget - box.scrollTop;
+        prevDocCaretBottom = (prevDocCaretBottom as number) - owed;
+        if (trace) trace.push({ d: 'lost', from: Math.round(glideFrom), target: Math.round(glideTarget), at: Math.round(box.scrollTop), owed: Math.round(owed) });
+        glideTarget = null; glideFrom = null;
       }
       const advance = docCaretBottom - (prevDocCaretBottom as number);
       if (advance > 1) {
@@ -284,7 +353,18 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         // writer's own scroll currently sits (S1 c: scroll freedom) — this
         // never fights a manual scroll, it only ever adds to it.
         const step = Math.min(advance, lineHeight());
-        box.setScrollTop(box.scrollTop + step, !reduce);
+        // PAGE-SIZE - one line per glide: while the last glide is still travelling, WAIT for it (the next frame looks again; nothing owed is
+        // lost - prevDocCaretBottom has not moved). Reduced motion moves instantly, so it never waits.
+        const gliding = !reduce && glideTarget != null && Math.abs(box.scrollTop - glideTarget) > 1 && performance.now() - glideAt < GLIDE_MS;
+        if (gliding) { if (trace) trace.push({ d: 'wait', top: Math.round(box.scrollTop), target: glideTarget }); raf = requestAnimationFrame(band); return; }
+        // the target is clamped to what the box can actually scroll to, so a glide that hits the bottom still counts as landed
+        const maxTop = useWindowScroll ? Infinity : Math.max(0, container.scrollHeight - container.clientHeight);
+        const to = Math.min(box.scrollTop + step, maxTop);
+        box.setScrollTop(to, !reduce);
+        if (trace) trace.push({ d: 'step', from: Math.round(box.scrollTop), to: Math.round(to), maxTop: Math.round(maxTop), advance: Math.round(advance) });
+        glideFrom = box.scrollTop; glideTarget = to; glideAt = performance.now();
+        if (verifyTimer) clearTimeout(verifyTimer);
+        verifyTimer = setTimeout(() => { verifyTimer = null; schedule(); }, GLIDE_MS + 50);   // did it land? (see glideFrom's comment)
         prevDocCaretBottom = (prevDocCaretBottom as number) + step;
         // FX5 review fix — this chained catch-up frame MUST be tracked into
         // the SAME `raf` variable `schedule()` uses, not fired as a raw
@@ -309,6 +389,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         // shrank the document) — resync without scrolling; no advance is
         // "owed" backward.
         prevDocCaretBottom = docCaretBottom;
+        if (trace) trace.push({ d: 'resync', advance: Math.round(advance) });
       }
       setScrolled();
     };
@@ -323,11 +404,13 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     setScrolled();
     schedule();
     return () => {
+      if (trace) trace.push({ d: 'unmount', at: Math.round(performance.now()) });
       mo.disconnect();
       container.removeEventListener('input', schedule);
       scrollListenTarget.removeEventListener('scroll', setScrolled);
       window.removeEventListener('resize', measure);
       cancelAnimationFrame(raf);
+      if (verifyTimer) clearTimeout(verifyTimer);
     };
-  }, [enabled, containerRef, editorSelector, useWindowScroll, scrolledTarget, holdBand]);
+  }, [enabled, containerRef, editorSelector, useWindowScroll, scrolledTarget, holdBand, zoomOn, zoomHoldRef, zoomAnchor]);
 }

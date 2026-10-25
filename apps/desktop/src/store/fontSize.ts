@@ -10,7 +10,15 @@
 // uniform zoom of it. 11 IS TODAY'S RENDERING exactly (17px at scale 1), so a page that never chose is untouched:
 //     px = 17 x (n / 11) x --paper-scale
 // Stored as the NUMBER OF POINTS, never a step index, so the lattice can change later without touching a page.
+//
+// PAGE-SIZE (Fable's ruling a, Oct 23) - ON THE PAGE the number is now REAL POINTS IN PAGE UNITS: 12 pt = 16px at page scale 1, scaled with the page
+// (index.css `--wz-pt`, one point of the letter page as it is drawn):  px = n x --wz-pt. A NEW page defaults to 12 (PAGE_SIZE_DEFAULT). NO data
+// rewrite: a page that never chose reads through the new default; a page that stored a size keeps its number, now in real points (a stored 11
+// draws 14.7px where it drew 17px - the deploy note tells the writer to press + if a page looks small). CARDS are untouched: they keep their own
+// default 11 and their own formula (cardTypeStyle), so SIZE_DEFAULT below stays the CARD default and PROSE_BASE_PX stays its pre-page-size record.
 export const SIZE_DEFAULT = 11;
+export const PAGE_SIZE_DEFAULT = 12;
+export const PAGE_PT_FALLBACK = '1.33333px';   // one page point at scale 1, for a surface with no letter page around it
 export const SIZE_MIN = 6;
 export const SIZE_STEP_MAX = 118;   // where `+` stops
 export const SIZE_TYPED_MAX = 120;  // where a typed number stops

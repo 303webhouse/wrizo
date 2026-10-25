@@ -34,6 +34,7 @@ import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
+const fx4Start = [];   // page-size (train #7, Oct 25): S1's prose start reads, for the parked records
 let fx4S5CloseX = null; // card-close-x - the live S5 observation, kept for the parked leg's record
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -155,8 +156,17 @@ await withHarness(async (app) => {
       const stageR = stage.getBoundingClientRect(), edR = ed.getBoundingClientRect();
       return { fraction: (edR.top - stageR.top) / stageR.height };
     })()`);
-    ok(`S1 @ ${width}px (prose): the visual start position reads as "about a quarter" (20-32% of the stage height)`,
-      proseInfo.fraction >= 0.20 && proseInfo.fraction <= 0.32, JSON.stringify(proseInfo));
+    // ---- PARKED - SUPERSEDED by page-size (Nick + Fable, Oct 23; Cursor's mockup e3c4e462): a fresh Arbor page opens in the Typewriter ZOOM, which holds
+    // the writing line at the band's anchor - 60% of the column (pageScale.ts ZOOM_ANCHOR) - so the first line starts there, not a quarter down (train #7
+    // on b10 687f40fb: 0.60 / 0.60 / 0.63). fx5 S1 (d) and fx1 S1 carry the same park. Kept VERBATIM and no longer run; records in the parked section.
+    //
+    // ok(`S1 @ ${width}px (prose): the visual start position reads as "about a quarter" (20-32% of the stage height)`,
+    //   proseInfo.fraction >= 0.20 && proseInfo.fraction <= 0.32, JSON.stringify(proseInfo));
+    // ------------------------------------------------------------------
+    const startZoom = await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null");
+    fx4Start.push({ width, ...proseInfo, zoom: startZoom });
+    ok(`S1 @ ${width}px (prose) [page-size successor]: a fresh prose page opens in the Typewriter zoom and its first line starts at the band's anchor - 60% of the column (within 5%)`,
+      startZoom === 'true' && Math.abs(proseInfo.fraction - 0.6) <= 0.05, JSON.stringify({ ...proseInfo, zoom: startZoom }));
   }
 
   await freshScriptPage(app, LAPTOP_W, 900);
@@ -814,10 +824,24 @@ if (process.env.HARNESS_PARKED === '1') {
       const ed = document.querySelector('.forward-only-editor').getBoundingClientRect();
       return { fraction: (ed.top - stage.top) / stage.height };
     })()`);
-    pok('PARKED (was "S1 @ 1280px (script, S7 mirrors prose): the visual start position also reads as \'about a quarter\'") — SC1 S3: script starts at the TOP of page one (SC-V4) while prose KEEPS FX4\'s quarter; live successor in this file\'s own live S1 section',
+    // ---- RE-PARKED, generation 2, by page-size (train #7, Oct 25): this record's prose half - "prose KEEPS FX4's quarter" - is falsified by the zoom
+    // (a fresh Arbor page starts at the band's anchor, 0.60). The script half still holds. The gen-1 record, VERBATIM, no longer runs.
+    //
+    // pok('PARKED (was "S1 @ 1280px (script, S7 mirrors prose): the visual start position also reads as \'about a quarter\'") — SC1 S3: script starts at the TOP of page one (SC-V4) while prose KEEPS FX4\'s quarter; live successor in this file\'s own live S1 section',
+    //   scriptStartParked.fraction >= 0 && scriptStartParked.fraction <= 0.02
+    //     && proseStartParked.fraction >= 0.20 && proseStartParked.fraction <= 0.32,
+    //   JSON.stringify({ scriptStartParked, proseStartParked }));
+    // ------------------------------------------------------------------
+    const proseZoomParked = await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null");
+    pok('PARKED, generation 2 (was gen-1 "PARKED (was \'S1 @ 1280px (script, S7 mirrors prose): the visual start position also reads as about a quarter\') — SC1 S3: script starts at the TOP of page one while prose KEEPS FX4\'s quarter") — page-size: script still at the top; prose opens zoomed, its first line at the band\'s anchor (60%)',
       scriptStartParked.fraction >= 0 && scriptStartParked.fraction <= 0.02
-        && proseStartParked.fraction >= 0.20 && proseStartParked.fraction <= 0.32,
-      JSON.stringify({ scriptStartParked, proseStartParked }));
+        && proseZoomParked === 'true' && Math.abs(proseStartParked.fraction - 0.6) <= 0.05,
+      JSON.stringify({ scriptStartParked, proseStartParked, proseZoomParked }));
+    // PAGE-SIZE (train #7, Oct 25) - THREE parks: S1 (prose)'s quarter at the three widths. Records re-verify the new truth from the live run's reads.
+    for (const o of fx4Start) {
+      pok(`PARKED (was "S1 @ ${o.width}px (prose): the visual start position reads as \"about a quarter\" (20-32% of the stage height)") — page-size: a fresh Arbor page opens zoomed; the first line starts at the band's anchor (60%); live successor: S1 @ ${o.width}px (prose) [page-size successor]`,
+        o.zoom === 'true' && Math.abs(o.fraction - 0.6) <= 0.05, JSON.stringify(o));
+    }
 
     // ITEM 207 STEP 4 — the card dock's tool count, re-derived (see the live S5 section
     // above for the full explanation: the Type control's small-form size steps carry

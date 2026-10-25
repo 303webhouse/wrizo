@@ -36,6 +36,7 @@ import { assertHittable } from '../trusted-point.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
+const bg2Ps = {};   // page-size's park audit (Oct 24): S1/S3's reads, for the parked record
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const LAPTOP_W = 1280;
@@ -328,9 +329,26 @@ await withHarness(async (app) => {
   const pageStyle = await app.evalJs(styleOn);
   await freshBoard(app, 'bg2-grammar-board2', [], LAPTOP_W, 900);
   const boardStyle = await app.evalJs(styleOn);
-  ok('S1/S3: the revision was made in ONE place and both surfaces inherited it — identical type, colour, stacking direction and glyph size on page and board',
-    JSON.stringify(pageStyle) === JSON.stringify(boardStyle) && pageStyle.dir === 'column',
-    JSON.stringify({ pageStyle, boardStyle }));
+  // ---- PARKED - SUPERSEDED by page-size (Nick + Fable, Oct 23): the prose page is PAINTED by a transform - at the stage's scale, and ~1.6x in the
+  // Typewriter zoom (Arbor's default) - and the beginnings row lives on the page, so its glyph PAINTS 1.6x the board's (lane 3: 38 vs 24px) while its
+  // type, colour and layout are identical. The claim - one component, one revision, both surfaces - is the successor's, with the page's glyph read
+  // in the page's own units (its painted width divided by the page's paint scale). Kept VERBATIM and no longer run; record in the parked section.
+  //
+  // ok('S1/S3: the revision was made in ONE place and both surfaces inherited it — identical type, colour, stacking direction and glyph size on page and board',
+  //   JSON.stringify(pageStyle) === JSON.stringify(boardStyle) && pageStyle.dir === 'column',
+  //   JSON.stringify({ pageStyle, boardStyle }));
+  // ------------------------------------------------------------------
+  const unitGlyph = `(() => { const g = document.querySelector('.wz-beginning-glyph'); if (!g) return null; const p = g.closest('.mode-page');
+    const scale = p && p.offsetWidth ? p.getBoundingClientRect().width / p.offsetWidth : 1; return { glyph: Math.round(g.getBoundingClientRect().width / scale), scale: Math.round(scale * 1000) / 1000 }; })()`;
+  await freshPage(app, 'bg2-grammar-page', '', LAPTOP_W, 900);
+  const pageUnit = await app.evalJs(unitGlyph);
+  await freshBoard(app, 'bg2-grammar-board2', [], LAPTOP_W, 900);
+  const boardUnit = await app.evalJs(unitGlyph);
+  const sameBut = (a, b) => !!a && !!b && a.font === b.font && a.size === b.size && a.color === b.color && a.dir === b.dir;
+  bg2Ps.s13 = { pageStyle, boardStyle, pageUnit, boardUnit };
+  ok('S1/S3 [page-size successor]: the revision was made in ONE place and both surfaces inherited it — identical type, colour and stacking direction, and the glyph the same size in each surface\'s own units (the page\'s painted glyph divided by its paint scale, within 1px)',
+    sameBut(pageStyle, boardStyle) && pageStyle.dir === 'column' && !!pageUnit && !!boardUnit && Math.abs(pageUnit.glyph - boardUnit.glyph) <= 1,
+    JSON.stringify(bg2Ps.s13));
 
   // ==========================================================================
   // The token is slotted, not hardcoded: the one theme with DARK paper.
@@ -398,12 +416,20 @@ console.log(JSON.stringify(checks, null, 2));
 // falsified them (the P2 standing invariant).
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  // PAGE-SIZE'S PARK AUDIT (Oct 24) - ONE park of BG2's own: S1/S3's painted glyph. Its record re-verifies the new truth from the live run.
+  {
+    const s = bg2Ps.s13 || {};
+    const a = s.pageStyle; const b = s.boardStyle;
+    parkedChecks.push({ name: 'PARKED (was "S1/S3: the revision was made in ONE place and both surfaces inherited it — identical type, colour, stacking direction and glyph size on page and board") - page-size: the page is painted by a transform (~1.6x zoomed), so its glyph paints larger; in the page\'s own units it is the board\'s; live successor: S1/S3 [page-size successor]',
+      pass: !!a && !!b && a.font === b.font && a.size === b.size && a.color === b.color && a.dir === b.dir && !!s.pageUnit && !!s.boardUnit && Math.abs(s.pageUnit.glyph - s.boardUnit.glyph) <= 1,
+      detail: JSON.stringify(s) });
+  }
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nBG2 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; BG2 parks nothing of its own (its two parks live in bg1.mjs, which names this file as the successor).`
+    ? `\nBG2 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; BG2 parks ONE of its own (page-size, Oct 24: S1/S3's painted glyph); its two earlier parks live in bg1.mjs, which names this file as the successor.`
     : `\nBG2 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 const pass = checks.every((c) => c.pass);

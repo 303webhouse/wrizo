@@ -75,6 +75,7 @@ const freshScriptPage = async (app, width = 1400, height = 900) => {
 };
 
 const fx3Stage = {};   // the prose stage bottoms, kept for the parked leg's records
+const fx3Ps = { s1: {}, s2: null };   // page-size's park audit (Oct 24): S1's fence and S2's anchors, for the parked records
 const openSliver = (app) => app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
 
 await withHarness(async (app) => {
@@ -88,8 +89,18 @@ await withHarness(async (app) => {
     const stage = await app.evalJs(rectOf('.desk-frame-stage'));
     const paper = await app.evalJs(rectOf('.mode-page'));
     const fence = stage.bottom - paper.bottom;
-    ok(`S1 @ ${width}px (prose): the paper's bottom edge sits within the 32-48px fence of the stage's own bottom`,
-      fence >= 30 && fence <= 50, JSON.stringify({ stageBottom: stage.bottom, paperBottom: paper.bottom, fence }));
+    // ---- PARKED - SUPERSEDED by page-size (Nick + Fable, Oct 23; rulings c-d and the zoom): the letter page is capped to the stage with a small margin
+    // in the NORMAL view (pageScale.ts PAGE_FENCE, 40px - the fence still holds there), but a fresh Arbor page opens in the Typewriter ZOOM, where the
+    // page paints ~1.6x and runs past the stage's bottom, clipped by its column (lane 3: 1215 vs 840). The claim - the paper fills down, no dead band -
+    // is the successor's, per view. Kept VERBATIM and no longer run; records in the parked section.
+    //
+    // ok(`S1 @ ${width}px (prose): the paper's bottom edge sits within the 32-48px fence of the stage's own bottom`,
+    //   fence >= 30 && fence <= 50, JSON.stringify({ stageBottom: stage.bottom, paperBottom: paper.bottom, fence }));
+    // ------------------------------------------------------------------
+    const zoomedS1 = await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') === 'true'");
+    fx3Ps.s1[width] = { stageBottom: stage.bottom, paperBottom: paper.bottom, fence, zoomed: zoomedS1 };
+    ok(`S1 @ ${width}px (prose) [page-size successor]: the paper fills down to the stage - no dead band: within the 30-50px fence in the normal view, or past the stage's bottom in the zoom (the page is ~1.6x and its column clips it)`,
+      zoomedS1 ? paper.bottom >= stage.bottom : fence >= 30 && fence <= 50, JSON.stringify(fx3Ps.s1[width]));
     // ---- PARKED - SUPERSEDED by the framed-desk display pass (aa11f58, 2026-09-30) ----------------------------------------
     // Kept VERBATIM and no longer run. TRACED: the pass set `.desk-mode-tab` from font-size 13px to 10.4px, which makes the mode
     // row 2px shorter; the stage's HEIGHT is a fixed `calc(100vh - var(--fx3-chrome-budget))` (167px, unchanged), so the whole
@@ -172,11 +183,22 @@ await withHarness(async (app) => {
     const paper = document.querySelector('.mode-pagecol').getBoundingClientRect();
     return { anchorRight: anchor.right, glowLeft: glow.left, glowRight: glow.right, paperLeft: paper.left, paperRight: paper.right };
   })()`);
-  ok('S2 @ 1920px: the sliver anchor stays flush with the SCALED paper\'s left edge (no drift introduced by the scale token)',
-    Math.abs(anchorAlign.anchorRight - anchorAlign.paperLeft) < 1, JSON.stringify(anchorAlign));
-  ok('S2 @ 1920px: the goal-glow anchor stays flush with the SCALED paper\'s box on both edges',
-    Math.abs(anchorAlign.glowLeft - anchorAlign.paperLeft) < 1 && Math.abs(anchorAlign.glowRight - anchorAlign.paperRight) < 1,
-    JSON.stringify(anchorAlign));
+  // ---- PARKED - SUPERSEDED by page-size (Nick + Fable, Oct 23): the paper is the PAINTED .mode-page, not .mode-pagecol - the page is painted by a
+  // transform inside its column, and in the Typewriter zoom the column is the whole stage (lane 3: the anchors sat flush on the painted page, 464 /
+  // 1456, while the column ran 100 to 1820). Kept VERBATIM and no longer run; successors read the painted page; records in the parked section.
+  //
+  // ok('S2 @ 1920px: the sliver anchor stays flush with the SCALED paper\'s left edge (no drift introduced by the scale token)',
+  //   Math.abs(anchorAlign.anchorRight - anchorAlign.paperLeft) < 1, JSON.stringify(anchorAlign));
+  // ok('S2 @ 1920px: the goal-glow anchor stays flush with the SCALED paper\'s box on both edges',
+  //   Math.abs(anchorAlign.glowLeft - anchorAlign.paperLeft) < 1 && Math.abs(anchorAlign.glowRight - anchorAlign.paperRight) < 1,
+  //   JSON.stringify(anchorAlign));
+  // ------------------------------------------------------------------
+  const painted = await app.evalJs("(() => { const p = document.querySelector('.desk-frame-stage--prose .mode-page'); if (!p) return null; const r = p.getBoundingClientRect(); return { left: r.left, right: r.right }; })()");
+  fx3Ps.s2 = { ...anchorAlign, pageLeft: painted && painted.left, pageRight: painted && painted.right };
+  ok('S2 @ 1920px [page-size successor]: the sliver anchor stays flush with the PAINTED paper\'s left edge (no drift introduced by the scale)',
+    !!painted && Math.abs(anchorAlign.anchorRight - painted.left) < 1, JSON.stringify(fx3Ps.s2));
+  ok('S2 @ 1920px [page-size successor]: the goal-glow anchor stays flush with the PAINTED paper\'s box on both edges',
+    !!painted && Math.abs(anchorAlign.glowLeft - painted.left) < 1 && Math.abs(anchorAlign.glowRight - painted.right) < 1, JSON.stringify(fx3Ps.s2));
 
   await app.emulateDpr(1, 1400, 900);
   await sleep(150);
@@ -590,6 +612,20 @@ console.log(JSON.stringify(checks, null, 2));
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  // PAGE-SIZE'S PARK AUDIT (Oct 24) - FOUR parks: S1's prose fence at 1280 and 2200, S2's two anchor checks. Records byte-frozen; each re-verifies the new
+  // truth from the default leg's own reads.
+  for (const w of [1280, 2200]) {
+    const o = fx3Ps.s1[w];
+    pok(`PARKED (was "S1 @ ${w}px (prose): the paper's bottom edge sits within the 32-48px fence of the stage's own bottom") — page-size: zoomed, the page is ~1.6x and runs past the stage (its column clips it); the fence holds in the normal view; live successor: S1 @ ${w}px (prose) [page-size successor]`,
+      !!o && (o.zoomed ? o.paperBottom >= o.stageBottom : o.fence >= 30 && o.fence <= 50), JSON.stringify(o));
+  }
+  {
+    const o = fx3Ps.s2;
+    pok('PARKED (was "S2 @ 1920px: the sliver anchor stays flush with the SCALED paper\'s left edge (no drift introduced by the scale token)") — page-size: the paper is the painted .mode-page, not the column; live successor: S2 @ 1920px [page-size successor]',
+      !!o && o.pageLeft != null && Math.abs(o.anchorRight - o.pageLeft) < 1, JSON.stringify(o));
+    pok('PARKED (was "S2 @ 1920px: the goal-glow anchor stays flush with the SCALED paper\'s box on both edges") — page-size: the paper is the painted .mode-page, not the column; live successor: S2 @ 1920px [page-size successor]',
+      !!o && o.pageLeft != null && Math.abs(o.glowLeft - o.pageLeft) < 1 && Math.abs(o.glowRight - o.pageRight) < 1, JSON.stringify(o));
+  }
   // DISPLAY PASS (aa11f58) - TWO parks: S1's prose "no dead band" checks at 1280 and 2200 (the stage rides 2px higher).
   for (const w of [1280, 2200]) {
     pok(`PARKED (was "S1 @ ${w}px (prose): no dead band below the frame — the stage itself reaches near the viewport's own bottom") — display pass (aa11f58): the mode row is 2px shorter and the stage's height is fixed, so the band is exactly 60px (was 58); live successor: this file's S1 @ ${w}px (prose) [display-pass successor]`,

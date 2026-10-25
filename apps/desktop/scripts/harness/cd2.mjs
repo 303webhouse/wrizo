@@ -27,6 +27,13 @@ import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
 const paperY = {};   // the CD3 canon (b) paper tops, kept for the parked leg (display pass, aa11f58)
+const cd2Ps = { cd3: {} };   // page-size's park audit (Oct 24): the default leg's painted-page reads, for the parked records
+// page-size: the PAINTED page (.mode-page through its transform) against the stage, and the stage's own scale numbers
+const PS_PAGE = `(() => { const p = document.querySelector('.desk-frame-stage--prose .mode-page'); const st = document.querySelector('.desk-frame-stage--prose');
+  const col = document.querySelector('.mode-pagecol'); const ed = document.querySelector('.forward-only-editor'); if (!p || !st || !col || !ed) return null;
+  const r = p.getBoundingClientRect(); const s = st.getBoundingClientRect(); const cs = getComputedStyle(st); const zoomed = col.getAttribute('data-zoom') === 'true';
+  const k = parseFloat(cs.getPropertyValue('--wz-k')) || 1; const z = zoomed ? (parseFloat(cs.getPropertyValue('--wz-zoom')) || 1) : 1;
+  return { left: r.left, right: r.right, width: r.width, stageLeft: s.left, stageRight: s.right, layoutW: p.offsetWidth, k, z, zoomed, editorW: ed.offsetWidth }; })()`;
 const themeCardNames = {};   // S3's own card read, kept for the parked leg (Machina's build, Oct 23)
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -916,9 +923,20 @@ await withHarness(async (app) => {
   await freshProsePage(app, 1100, 900);
   const gateFloorStripRect = await app.evalJs(rectOf('.desk-frame-strip'));
   const gateFloorPagecolRect = await app.evalJs(rectOf('.mode-pagecol'));
-  ok('S1/S5 (successor to ab1.mjs\'s "...at the gate floor (1100px): the page column never overlaps the tool-rail"): the page column never overlaps the strip track at the gate floor either',
-    gateFloorPagecolRect.left >= gateFloorStripRect.left + gateFloorStripRect.width,
-    JSON.stringify({ gateFloorStripRect, gateFloorPagecolRect }));
+  // ---- PARKED - SUPERSEDED by page-size (Nick + Fable, Oct 23-24): the page column is no longer the paper. The prose page is PAINTED by a transform
+  // inside it, and in the Typewriter zoom (Arbor's default) the column widens to the whole stage - which the strip, fixed at the window's left,
+  // always stood over. The claim's subject is the PAPER; the successor reads the painted .mode-page. (Lane 3 also caught the paper itself 3px under
+  // the strip at this width - a real defect, fixed: pageScale.ts ZOOM_CLEAR.) Kept VERBATIM and no longer run; record in the parked section.
+  //
+  // ok('S1/S5 (successor to ab1.mjs\'s "...at the gate floor (1100px): the page column never overlaps the tool-rail"): the page column never overlaps the strip track at the gate floor either',
+  //   gateFloorPagecolRect.left >= gateFloorStripRect.left + gateFloorStripRect.width,
+  //   JSON.stringify({ gateFloorStripRect, gateFloorPagecolRect }));
+  // ------------------------------------------------------------------
+  const gateFloorPaper = await app.evalJs(PS_PAGE);
+  cd2Ps.gate = { strip: gateFloorStripRect, paper: gateFloorPaper, pagecol: gateFloorPagecolRect };
+  ok('S1/S5 [page-size successor]: the PAPER (the painted .mode-page, zoomed or not) never overlaps the strip track at the gate floor (1100px)',
+    !!gateFloorPaper && gateFloorPaper.left >= gateFloorStripRect.left + gateFloorStripRect.width,
+    JSON.stringify({ gateFloorStripRect, gateFloorPaper }));
 
   // ==========================================================================
   // CD3 (2026-07-22) — two new canon checks, homed here (not fx9.mjs):
@@ -1018,15 +1036,29 @@ await withHarness(async (app) => {
       };
     })()`);
     const baseline = PAPER_BASELINE_8884D49[width];
-    ok(`CD3 canon (b) @ ${width}px: the paper's own rect (.mode-pagecol/.mode-page) is byte-identical to main @ 8884d49 in left/width/right/height`,
-      paperNow.pagecol.left === baseline.pagecol.left && paperNow.pagecol.width === baseline.pagecol.width
-        && paperNow.pagecol.right === baseline.pagecol.right && paperNow.pagecol.height === baseline.pagecol.height
-        && paperNow.page.left === baseline.page.left && paperNow.page.width === baseline.page.width
-        && paperNow.page.right === baseline.page.right && paperNow.page.height === baseline.page.height,
-      JSON.stringify({ paperNow, baseline }));
-    ok(`CD3 canon (b) @ ${width}px: the text measure is byte-identical to main @ 8884d49 — .forward-only-editor's own computed width (line length) and .mode-pagecol's own computed width (column width)`,
-      paperNow.editorWidth === baseline.editorWidth && paperNow.pagecolWidth === baseline.pagecolWidth,
-      JSON.stringify({ paperNow, baseline }));
+    // ---- PARKED - SUPERSEDED by page-size (Nick, Oct 23: rulings a-c - the prose page is a letter page in page units, 8.5 x 11 page-inches with
+    // 1in margins, painted at the stage's scale; and the Typewriter zoom widens the column to the stage). The two byte-identity checks below pinned
+    // the 8884d49 paper (615px, a 537px line); page-size moved both ON PURPOSE. Their POINT - the strip costs the paper nothing; the paper's size
+    // comes from the page, not from the chrome - is what the successors assert: the painted page is exactly the ruled page at the stage's scale,
+    // centred on the stage, and the line length is the page's own (identical at 1100 and 2200). Kept VERBATIM and no longer run; records in the
+    // parked section. (The Y-position successor after them is untouched.)
+    //
+    // ok(`CD3 canon (b) @ ${width}px: the paper's own rect (.mode-pagecol/.mode-page) is byte-identical to main @ 8884d49 in left/width/right/height`,
+    //   paperNow.pagecol.left === baseline.pagecol.left && paperNow.pagecol.width === baseline.pagecol.width
+    //     && paperNow.pagecol.right === baseline.pagecol.right && paperNow.pagecol.height === baseline.pagecol.height
+    //     && paperNow.page.left === baseline.page.left && paperNow.page.width === baseline.page.width
+    //     && paperNow.page.right === baseline.page.right && paperNow.page.height === baseline.page.height,
+    //   JSON.stringify({ paperNow, baseline }));
+    // ok(`CD3 canon (b) @ ${width}px: the text measure is byte-identical to main @ 8884d49 — .forward-only-editor's own computed width (line length) and .mode-pagecol's own computed width (column width)`,
+    //   paperNow.editorWidth === baseline.editorWidth && paperNow.pagecolWidth === baseline.pagecolWidth,
+    //   JSON.stringify({ paperNow, baseline }));
+    // ------------------------------------------------------------------
+    const ps = await app.evalJs(PS_PAGE);
+    cd2Ps.cd3[width] = ps;
+    const want = ps ? ps.layoutW * ps.k * ps.z : null;
+    ok(`CD3 canon (b) @ ${width}px [page-size successor]: the painted paper is exactly the ruled page at the stage's scale - 8.5 page-inches (620px laid out) x k${ps && ps.zoomed ? ' x the zoom' : ''}, within 1px - and centred on the stage within 1px: the strip costs it nothing`,
+      !!ps && Math.abs(ps.layoutW - 620) <= 0.5 && Math.abs(ps.width - want) <= 1 && Math.abs((ps.left + ps.right) / 2 - (ps.stageLeft + ps.stageRight) / 2) <= 1,
+      JSON.stringify({ ps, want }));
     // ---- PARKED - SUPERSEDED by the framed-desk display pass (aa11f58, 2026-09-30) ----------------------------------------
     // Kept VERBATIM and no longer run. The disclosed 10px is still there; the display pass adds a second, separately disclosed
     // 2px (the smaller mode tabs), so the paper now sits 12px above the 8884d49 baseline. The check's POINT - the Y move is
@@ -1038,6 +1070,11 @@ await withHarness(async (app) => {
     //   JSON.stringify({ baselineTop: baseline.pagecol.top, nowTop: paperNow.pagecol.top, delta: baseline.pagecol.top - paperNow.pagecol.top }));
     // ------------------------------------------------------------------
     paperY[width] = { baselineTop: baseline.pagecol.top, nowTop: paperNow.pagecol.top, delta: baseline.pagecol.top - paperNow.pagecol.top };
+    if (width === 2200) {
+      const a = cd2Ps.cd3[1100]; const b = cd2Ps.cd3[2200];
+      ok('CD3 canon (b) [page-size successor]: the text measure is the PAGE\'s, not the stage\'s - the editor\'s line length (layout px) is identical at 1100 and 2200',
+        !!a && !!b && a.editorW > 0 && a.editorW === b.editorW, JSON.stringify({ at1100: a && a.editorW, at2200: b && b.editorW }));
+    }
     ok(`CD3 canon (b) @ ${width}px [display-pass successor]: the paper's Y position moves by EXACTLY the two disclosed amounts - ${CHROME_SHRINK_PX}px (the mode-strip box's dropped border+padding) + ${DISPLAY_PASS_PX}px (the display pass's smaller mode tabs, aa11f58) = ${CHROME_SHRINK_PX + DISPLAY_PASS_PX}px — not a silent additional drift`,
       baseline.pagecol.top - paperNow.pagecol.top === CHROME_SHRINK_PX + DISPLAY_PASS_PX,
       JSON.stringify(paperY[width]));
@@ -1073,6 +1110,20 @@ if (process.env.HARNESS_PARKED === '1') {
     themeCardNames.names === 'Arbor,Machina,Flux', String(themeCardNames.names));
   // DISPLAY PASS (aa11f58) - TWO parks: the CD3 canon (b) Y-position checks at 1100 and 2200, superseded when the smaller mode tabs
   // moved the paper a further 2px. Records byte-frozen; probes re-verify the new truth (12px) from the default section's own reads.
+  // PAGE-SIZE'S PARK AUDIT (Oct 24) - FIVE parks: S1/S5's gate-floor claim (the column is no longer the paper) and the four CD3 canon (b) byte-identity
+  // checks (rulings a-c moved the paper on purpose). Records byte-frozen; each re-verifies the new truth from the default section's own reads.
+  {
+    const g = cd2Ps.gate || {};
+    pok('PARKED (was "S1/S5 (successor to ab1.mjs\'s \"...at the gate floor (1100px): the page column never overlaps the tool-rail\"): the page column never overlaps the strip track at the gate floor either") — page-size: the column is not the paper (painted by a transform; stage-wide in the zoom); live successor: S1/S5 [page-size successor]',
+      !!g.paper && !!g.strip && g.paper.left >= g.strip.left + g.strip.width, JSON.stringify(g));
+    for (const w of [1100, 2200]) {
+      const ps = cd2Ps.cd3[w];
+      pok(`PARKED (was "CD3 canon (b) @ ${w}px: the paper's own rect (.mode-pagecol/.mode-page) is byte-identical to main @ 8884d49 in left/width/right/height") — page-size rulings a-c: the paper is the ruled letter page at the stage's scale; live successor: CD3 canon (b) @ ${w}px [page-size successor]`,
+        !!ps && Math.abs(ps.width - ps.layoutW * ps.k * ps.z) <= 1 && Math.abs((ps.left + ps.right) / 2 - (ps.stageLeft + ps.stageRight) / 2) <= 1, JSON.stringify(ps));
+      pok(`PARKED (was "CD3 canon (b) @ ${w}px: the text measure is byte-identical to main @ 8884d49 — .forward-only-editor's own computed width (line length) and .mode-pagecol's own computed width (column width)") — page-size: the measure is the page's (1in margins, page units), identical at every stage size; live successor: CD3 canon (b) [page-size successor]`,
+        !!cd2Ps.cd3[1100] && !!cd2Ps.cd3[2200] && cd2Ps.cd3[1100].editorW > 0 && cd2Ps.cd3[1100].editorW === cd2Ps.cd3[2200].editorW, JSON.stringify({ at1100: cd2Ps.cd3[1100] && cd2Ps.cd3[1100].editorW, at2200: cd2Ps.cd3[2200] && cd2Ps.cd3[2200].editorW }));
+    }
+  }
   for (const w of [1100, 2200]) {
     pok(`PARKED (was "CD3 canon (b) @ ${w}px: the paper's Y position moves by EXACTLY the disclosed 10px (the mode-strip box's own dropped border+padding) — not a silent additional drift") — display pass (aa11f58): 10px + a disclosed 2px (smaller mode tabs) = 12px; live successor: this file's CD3 canon (b) @ ${w}px [display-pass successor]`,
       !!paperY[w] && paperY[w].delta === 12, JSON.stringify(paperY[w]));

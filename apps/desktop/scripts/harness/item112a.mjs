@@ -37,6 +37,8 @@ const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 // the REFERENCE loop) can park where they stand. Same shape as item84b.mjs's.
 const parkedChecks = [];
 const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+// page-size (park audit, Oct 24): the 1100 Desk-hand overhang re-pinned on the letter page - main @ 89c5955's -29.7, plus the 2.3px a side the 620px page adds
+const PAGE_SIZE_PIN = -32;
 const i112aParks = {};   // item112a-deterministic: the default leg's observation, for the parked record
 const tlParks = {};   // TYPED-LITERAL: the default leg's S2/§3 readings, for the parked records
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -149,6 +151,12 @@ const openTutorByGrip = async (app) => {
   await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()");
   await sleep(400);
 };
+// page-size (Fable, Oct 23): whether the band holds the page AND both hands at their minimum - the desk on each side of the page, measured with the hands shut
+// (the page never moves, so this is the room they will have). DRAWER_MIN equals the build's one token for a drawer's narrowest open width.
+const DRAWER_MIN = 200;
+const roomForBoth = (app) => app.evalJs(`(() => { const p = document.querySelector('.mode-page'); const s = document.querySelector('.desk-frame-stage'); if (!p || !s) return null;
+  const a = p.getBoundingClientRect(); const b = s.getBoundingClientRect(); const left = a.left - b.left; const right = b.right - a.right;
+  return { left: Math.round(left), right: Math.round(right), both: left >= ${DRAWER_MIN} && right >= ${DRAWER_MIN} }; })()`);
 const openFarLeft = (app) => app.evalJs(`(() => {
   const b = document.querySelector('.wz-strip-item[data-category=journal]');
   if (!b) return null;
@@ -345,6 +353,10 @@ await withHarness(async (app) => {
         && counselGrip.present === true && counselGrip.reachable === true,
       JSON.stringify({ deskGrip, counselGrip }));
 
+    // page-size (Oct 23): the room the two hands have, measured with both shut (the page never moves) - it decides which rule the successors below expect
+    const room7 = await roomForBoth(app);
+    ok(`S7 [measured] (premise @ ${w}x${h}): the page and the stage are measurable with both hands shut`, !!room7, JSON.stringify(room7));
+    const both7 = !!room7 && room7.both;
     await openSliverByGrip(app);
     await openTutorByGrip(app);
     const open = await app.evalJs(DRAWERS);
@@ -355,14 +367,31 @@ await withHarness(async (app) => {
     // open.sliverOpen === 'true' && open.tutorOpen === 'true',
     // JSON.stringify(open));
     // ----------------------------------------------------------------------
-    ok(`S7 successor [one drawer at a time] (§7.7 @ ${w}x${h}): the Counsel opens onto its own tab and the Desk hand HAS YIELDED - only one drawer is open at a time`,
-      open.tutorOpen === 'true' && open.sliverOpen === 'false',
-      JSON.stringify(open));
-    await openSliverByGrip(app);   // the other hand: the Desk drawer opens onto EMPTY CONTENT WITHOUT ERROR, and the Counsel yields
+    // ---- PARKED - SUPERSEDED by page-size (Fable's ruling, Oct 23: the Oct 12 "one drawer at a time, at every width" rule is REPLACED by the MEASURED rule - both
+    // hands stand where the band holds the page AND both at their 200px minimum, otherwise opening one closes the other; the page never moves), 2026-10-23 ----
+    // Kept VERBATIM and no longer run (the Oct 12 successors, with the driver press that assumed the Counsel had yielded). The measured successors follow.
+    //
+    // ok(`S7 successor [one drawer at a time] (§7.7 @ ${w}x${h}): the Counsel opens onto its own tab and the Desk hand HAS YIELDED - only one drawer is open at a time`,
+    //   open.tutorOpen === 'true' && open.sliverOpen === 'false',
+    //   JSON.stringify(open));
+    // await openSliverByGrip(app);   // the other hand: the Desk drawer opens onto EMPTY CONTENT WITHOUT ERROR, and the Counsel yields
+    // const deskOnly = await app.evalJs(DRAWERS);
+    // ok(`S7 successor (§7.7 @ ${w}x${h}): the Desk drawer opens onto EMPTY CONTENT WITHOUT ERROR (G3's absence-over-grayed does not govern an empty drawer), and the Counsel has yielded`,
+    //   deskOnly.sliverOpen === 'true' && deskOnly.tutorOpen === 'false',
+    //   JSON.stringify(deskOnly));
+    // ----------------------------------------------------------------------
+    pok(`PARKED (was, VERBATIM: "S7 successor [one drawer at a time] (§7.7 @ ${w}x${h}): the Counsel opens onto its own tab and the Desk hand HAS YIELDED - only one drawer is open at a time") - SUPERSEDED by page-size (Fable, Oct 23): the measured rule replaces Oct 12's`,
+      true, 'successor: S7 successor [measured] - the Desk still stands where the band holds the page and both hands at DRAWER_MIN, else it has yielded');
+    pok(`PARKED (was, VERBATIM: "S7 successor (§7.7 @ ${w}x${h}): the Desk drawer opens onto EMPTY CONTENT WITHOUT ERROR (G3's absence-over-grayed does not govern an empty drawer), and the Counsel has yielded") - SUPERSEDED by page-size (Fable, Oct 23)`,
+      true, 'successor: S7 successor [measured] - the Desk stands open onto empty content, the Counsel beside it where there is room, else yielded');
+    ok(`S7 successor [measured] (§7.7 @ ${w}x${h}): the Counsel opens onto its own tab, and the Desk hand ${both7 ? 'STILL STANDS - the band holds the page and both hands at their minimum' : 'HAS YIELDED - no room for both at their minimum'}`,
+      open.tutorOpen === 'true' && open.sliverOpen === (both7 ? 'true' : 'false'),
+      JSON.stringify({ open, room7 }));
+    if (!both7) await openSliverByGrip(app);   // with no room the Desk must open again (and the Counsel yields); with room it never closed
     const deskOnly = await app.evalJs(DRAWERS);
-    ok(`S7 successor (§7.7 @ ${w}x${h}): the Desk drawer opens onto EMPTY CONTENT WITHOUT ERROR (G3's absence-over-grayed does not govern an empty drawer), and the Counsel has yielded`,
-      deskOnly.sliverOpen === 'true' && deskOnly.tutorOpen === 'false',
-      JSON.stringify(deskOnly));
+    ok(`S7 successor [measured] (§7.7 @ ${w}x${h}): the Desk drawer stands open onto EMPTY CONTENT WITHOUT ERROR (G3's absence-over-grayed does not govern an empty drawer), and the Counsel ${both7 ? 'stands beside it' : 'has yielded'}`,
+      deskOnly.sliverOpen === 'true' && deskOnly.tutorOpen === (both7 ? 'true' : 'false'),
+      JSON.stringify({ deskOnly, room7 }));
 
     // The empty drawer is empty of TENANTS, not of the sliver's own standing
     // furniture — that distinction is the ruling, and asserting the wrong one would
@@ -386,8 +415,6 @@ await withHarness(async (app) => {
     // await openTutorByGrip(app);
     // const shut = await app.evalJs(DRAWERS);
     // ----------------------------------------------------------------------
-    await openSliverByGrip(app);   // the open hand (the Desk) closes by its own grip
-    const shut = await app.evalJs(DRAWERS);
     // ---- PARKED - SUPERSEDED by Phase 1 (Fable's ruling, Oct 12: ONE DRAWER AT A TIME at every width - opening either hand closes the other), 2026-10-12 ----
     // Kept VERBATIM and no longer run. The successor follows the parked lines.
     //
@@ -395,9 +422,23 @@ await withHarness(async (app) => {
     // shut.sliverOpen === 'false' && shut.tutorOpen === 'false',
     // JSON.stringify({ open, shut }));
     // ----------------------------------------------------------------------
-    ok(`S7 successor (§8 @ ${w}x${h}): the open hand CLOSES BY ITS OWN GRIP - a second press shuts the empty Desk drawer, and nothing is left open. §8's exit names open AND close`,
+    // ---- PARKED - SUPERSEDED by page-size (Fable's ruling, Oct 23: the measured rule replaces Oct 12's one-drawer-at-every-width), 2026-10-23 ----
+    // Kept VERBATIM and no longer run (the Oct 12 successor and its driver press, which closed only the Desk because the Counsel had yielded).
+    //
+    // await openSliverByGrip(app);   // the open hand (the Desk) closes by its own grip
+    // const shut = await app.evalJs(DRAWERS);
+    // ok(`S7 successor (§8 @ ${w}x${h}): the open hand CLOSES BY ITS OWN GRIP - a second press shuts the empty Desk drawer, and nothing is left open. §8's exit names open AND close`,
+    //   shut.sliverOpen === 'false' && shut.tutorOpen === 'false',
+    //   JSON.stringify({ open, shut }));
+    // ----------------------------------------------------------------------
+    pok(`PARKED (was, VERBATIM: "S7 successor (§8 @ ${w}x${h}): the open hand CLOSES BY ITS OWN GRIP - a second press shuts the empty Desk drawer, and nothing is left open. §8's exit names open AND close") - SUPERSEDED by page-size (Fable, Oct 23)`,
+      true, 'successor: S7 successor [measured] (§8) - every open hand closes by its own grip, both where both stood');
+    await openSliverByGrip(app);                  // the Desk closes by its own grip
+    if (both7) await openTutorByGrip(app);        // and, with both standing, the Counsel by its own
+    const shut = await app.evalJs(DRAWERS);
+    ok(`S7 successor [measured] (§8 @ ${w}x${h}): every open hand CLOSES BY ITS OWN GRIP - ${both7 ? 'the Desk and the Counsel, each by its own second press' : 'the Desk (the Counsel had yielded)'} - and nothing is left open. §8's exit names open AND close`,
       shut.sliverOpen === 'false' && shut.tutorOpen === 'false',
-      JSON.stringify({ open, shut }));
+      JSON.stringify({ open, shut, room7 }));
   }
 
   // =========================================================================
@@ -410,6 +451,7 @@ await withHarness(async (app) => {
     await sleep(250);
 
     const closed = await measureOf(app);
+    const room3 = await roomForBoth(app);   // page-size (Oct 23): the room the hands have, measured with both shut
     await openSliverByGrip(app);
     const deskOpen = await measureOf(app);
     await openSliverByGrip(app);                  // close it again
@@ -435,8 +477,17 @@ await withHarness(async (app) => {
     // ok(`S3 (§7.3 @ ${w}x${h}): and with BOTH hands standing, the paper is STILL where it was with both shut — chrome never reflows the writer's line`,
     // same(closed, bothOpen), JSON.stringify({ closed, bothOpen, drawers }));
     // ----------------------------------------------------------------------
-    ok(`S3 successor (§7.3 @ ${w}x${h}): and with the hands TAKING TURNS (the second opening closes the first - one drawer at a time) the paper is STILL where it was with both shut - chrome never reflows the writer's line`,
-      same(closed, bothOpen) && drawers.sliverOpen === 'true' && drawers.tutorOpen === 'false', JSON.stringify({ closed, bothOpen, drawers }));
+    // ---- PARKED - SUPERSEDED by page-size (Fable's ruling, Oct 23: the measured rule replaces Oct 12's one-drawer-at-every-width), 2026-10-23 ----
+    // Kept VERBATIM and no longer run (the Oct 12 successor). The measured successor follows.
+    //
+    // ok(`S3 successor (§7.3 @ ${w}x${h}): and with the hands TAKING TURNS (the second opening closes the first - one drawer at a time) the paper is STILL where it was with both shut - chrome never reflows the writer's line`,
+    //   same(closed, bothOpen) && drawers.sliverOpen === 'true' && drawers.tutorOpen === 'false', JSON.stringify({ closed, bothOpen, drawers }));
+    // ----------------------------------------------------------------------
+    pok(`PARKED (was, VERBATIM: "S3 successor (§7.3 @ ${w}x${h}): and with the hands TAKING TURNS (the second opening closes the first - one drawer at a time) the paper is STILL where it was with both shut - chrome never reflows the writer's line") - SUPERSEDED by page-size (Fable, Oct 23)`,
+      true, 'successor: S3 successor [measured] - both hands stand where there is room, else they take turns; the paper never moves either way');
+    const both3 = !!room3 && room3.both;
+    ok(`S3 successor [measured] (§7.3 @ ${w}x${h}): with the second hand opened, ${both3 ? 'BOTH hands stand (the band holds the page and both at their minimum)' : 'the hands TAKE TURNS (no room for both at their minimum)'} - and the paper is STILL where it was with both shut - chrome never reflows the writer's line`,
+      !!room3 && same(closed, bothOpen) && drawers.sliverOpen === 'true' && drawers.tutorOpen === (both3 ? 'true' : 'false'), JSON.stringify({ closed, bothOpen, drawers, room3 }));
 
     // CONTROL — the measurement must prove it was measuring something real. A
     // collapsed or unrendered sheet would satisfy every equality above trivially.
@@ -492,8 +543,18 @@ await withHarness(async (app) => {
       ok(`S4 (§7.4 @ ${w}x${h}): the DESK hand is FLUSH TO THE PAPER — its right edge IS the paper column's left edge (delta ${deskDelta}px, tolerance 0.6). The ruled anchor contract, held`,
         deskDelta != null && Math.abs(deskDelta) <= 0.6, JSON.stringify({ geo, deskDelta }));
     } else {
-      ok(`S4 (§7.4 @ ${w}x${h}): PRE-EXISTING ANCHOR DEVIATION, PINNED — the Desk hand overhangs the paper's left edge by 29.7px at the frame's own minimum width. CONTROLLED AGAINST CLEAN origin/main 89c5955 (src reverted and rebuilt in this worktree): main reads the SAME -29.7 in Draft and Free Write, so this is app-wide and predates 112-A. Pinned here as a regression guard, and SURFACED to the desk for the 117/119 joint pass — not repaired in this build, per §5's stop-and-surface`,
-        deskDelta != null && Math.abs(deskDelta - (-29.7)) <= 1.0, JSON.stringify({ geo, deskDelta, mainBaseline: -29.7, controlSha: '89c5955' }));
+      // ---- PARKED - SUPERSEDED by page-size (Nick + Fable, Oct 23, rulings a-b): the prose page is the letter page, 8.5 page-inches = 620px laid out,
+      // where 8884d49-era pages were 615.4 - so the paper's left edge sits 2.3px further left at 1100 and the same pre-existing overhang now reads -32
+      // (lane 3), not -29.7. The pin's point - a regression guard on a measured, disclosed deviation - is the successor's, re-pinned on the letter
+      // page. Kept VERBATIM and no longer run; record below (pok).
+      //
+      // ok(`S4 (§7.4 @ ${w}x${h}): PRE-EXISTING ANCHOR DEVIATION, PINNED — the Desk hand overhangs the paper's left edge by 29.7px at the frame's own minimum width. CONTROLLED AGAINST CLEAN origin/main 89c5955 (src reverted and rebuilt in this worktree): main reads the SAME -29.7 in Draft and Free Write, so this is app-wide and predates 112-A. Pinned here as a regression guard, and SURFACED to the desk for the 117/119 joint pass — not repaired in this build, per §5's stop-and-surface`,
+      //   deskDelta != null && Math.abs(deskDelta - (-29.7)) <= 1.0, JSON.stringify({ geo, deskDelta, mainBaseline: -29.7, controlSha: '89c5955' }));
+      // ------------------------------------------------------------------
+      pok(`PARKED (was "S4 (§7.4 @ ${w}x${h}): PRE-EXISTING ANCHOR DEVIATION, PINNED — the Desk hand overhangs the paper's left edge by 29.7px at the frame's own minimum width ...") - page-size rulings a-b: the letter page is 620px, so the same overhang reads -32; live successor: S4 [page-size successor] PRE-EXISTING ANCHOR DEVIATION, RE-PINNED`,
+        deskDelta != null && Math.abs(deskDelta - PAGE_SIZE_PIN) <= 1.0, JSON.stringify({ deskDelta, pin: PAGE_SIZE_PIN }));
+      ok(`S4 (§7.4 @ ${w}x${h}) [page-size successor]: PRE-EXISTING ANCHOR DEVIATION, RE-PINNED on the letter page — the Desk hand overhangs the paper's left edge by ${-PAGE_SIZE_PIN}px at the frame's own minimum width (the 29.7px of main @ 89c5955, plus the 2.3px the 620px letter page adds on each side). A regression guard, still surfaced to the desk for 117/119`,
+        deskDelta != null && Math.abs(deskDelta - PAGE_SIZE_PIN) <= 1.0, JSON.stringify({ geo, deskDelta, pin: PAGE_SIZE_PIN, was: -29.7 }));
     }
 
     // WHAT 112-A ITSELF OWES, asserted directly: Revise's hand geometry is the SAME
@@ -511,6 +572,18 @@ await withHarness(async (app) => {
     // nothing.
     await freshProsePage(app, w, h);
     await enterMode(app, 'draft');
+    // page-size: a fresh Draft page opens in the Typewriter ZOOM (Arbor's default), which tucks both hands by ruling - so the successor below compares
+    // Revise with Draft in the NORMAL view: the writer's own toggle turned off first (pressed through the DOM; the hands stay closed, as in Revise's leg)
+    const draftZoomed = await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') === 'true'");
+    if (draftZoomed) {
+      await app.evalJs("document.querySelector('[data-mode-toggle=\"typewriter\"]')?.click()"); await sleep(500);
+      if (await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') === 'true'")) {
+        await openSliverByGrip(app); await sleep(300);
+        await app.evalJs("document.querySelector('[data-mode-toggle=\"typewriter\"]')?.click()"); await sleep(500);
+        await openSliverByGrip(app); await sleep(400);
+      }
+    }
+    const draftNormal = await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') !== 'true'");
     await openSliverByGrip(app);
     await openTutorByGrip(app);
     await sleep(350);
@@ -519,9 +592,20 @@ await withHarness(async (app) => {
       return { paper: r('.mode-pagecol'), sheet: r('.mode-page'), dock: r('.wz-sliver'), tutor: r('.wz-tutor-panel') };
     })()`);
     const near = (a, b) => !!a && !!b && Math.abs(a.l - b.l) < 0.6 && Math.abs(a.r - b.r) < 0.6;
-    ok(`S4 (@ ${w}x${h}): REVISE'S HANDS SIT EXACTLY WHERE DRAFT'S DO — Desk dock, Counsel panel and paper all at identical rects across the two modes. This is 112-A's own claim (§4: build to 119's geometry, carried onto Revise unchanged), and it is what a 112-A geometry regression would break`,
-      near(geo.dock, draftGeo.dock) && near(geo.tutor, draftGeo.tutor) && near(geo.paper, draftGeo.paper),
-      JSON.stringify({ revise: { dock: geo.dock, tutor: geo.tutor, paper: geo.paper }, draft: draftGeo }));
+    // ---- PARKED - SUPERSEDED by page-size (Nick + Fable, Oct 23; the zoom's "panels tucked"): Draft opened in the Typewriter ZOOM (Arbor's default) -
+    // the page ~1.6x in a stage-wide column, both hands tucked - so its rects could never equal Revise's, which has no typewriter (lane 3: Draft's
+    // column 1034 wide at 1100). The claim holds in the view both modes share; the successor compares Revise with Draft in the NORMAL view (Draft's
+    // own toggle off, above). Kept VERBATIM and no longer run; record below (pok).
+    //
+    // ok(`S4 (@ ${w}x${h}): REVISE'S HANDS SIT EXACTLY WHERE DRAFT'S DO — Desk dock, Counsel panel and paper all at identical rects across the two modes. This is 112-A's own claim (§4: build to 119's geometry, carried onto Revise unchanged), and it is what a 112-A geometry regression would break`,
+    //   near(geo.dock, draftGeo.dock) && near(geo.tutor, draftGeo.tutor) && near(geo.paper, draftGeo.paper),
+    //   JSON.stringify({ revise: { dock: geo.dock, tutor: geo.tutor, paper: geo.paper }, draft: draftGeo }));
+    // ------------------------------------------------------------------
+    const sameHands = draftNormal && near(geo.dock, draftGeo.dock) && near(geo.tutor, draftGeo.tutor) && near(geo.paper, draftGeo.paper) && near(geo.sheet, draftGeo.sheet);
+    pok(`PARKED (was "S4 (@ ${w}x${h}): REVISE'S HANDS SIT EXACTLY WHERE DRAFT'S DO — Desk dock, Counsel panel and paper all at identical rects across the two modes ...") - page-size: Draft opens zoomed (hands tucked by ruling); live successor: S4 (@ ${w}x${h}) [page-size successor], in the normal view`,
+      sameHands, JSON.stringify({ revise: { dock: geo.dock, tutor: geo.tutor, paper: geo.paper, sheet: geo.sheet }, draft: draftGeo, draftZoomed, draftNormal }));
+    ok(`S4 (@ ${w}x${h}) [page-size successor]: REVISE'S HANDS SIT EXACTLY WHERE DRAFT'S DO in the view they share — Desk dock, Counsel panel, column and painted page at identical rects, with Draft in the NORMAL view (its Typewriter off: the zoom tucks both hands by ruling)`,
+      sameHands, JSON.stringify({ revise: { dock: geo.dock, tutor: geo.tutor, paper: geo.paper, sheet: geo.sheet }, draft: draftGeo, draftZoomed, draftNormal }));
 
     // The Counsel hand: paper-anchored means it begins where the paper ends, in the
     // margin — never pinned to the viewport. Item 119 supersedes FX18 S2 regime (3)
@@ -569,11 +653,24 @@ await withHarness(async (app) => {
     const fromLeftB = b ? b.dockR : null;
     const fromRightA = a ? +(a.vw - a.dockR).toFixed(1) : null;
     const fromRightB = b ? +(b.vw - b.dockR).toFixed(1) : null;
-    ok('S4 (§7.4): THE DESK HAND IS PAPER-ANCHORED, NOT SCREEN-ANCHORED — across the two reference widths the paper travels 133px and the dock holds station on its edge (within 30px at both), while NEITHER viewport offset stays constant: measured from the left it moves ~103px, from the right ~163px. A screen-anchored dock would have held one of those two fixed',
-      paperTravel != null && Math.abs(paperTravel) > 100
-        && gapA != null && gapB != null && Math.abs(gapA) <= 30 && Math.abs(gapB) <= 30
-        && Math.abs(fromLeftB - fromLeftA) > 20 && Math.abs(fromRightB - fromRightA) > 20,
-      JSON.stringify({ anchorTrack, paperTravel, gapA, gapB, fromLeftA, fromLeftB, fromRightA, fromRightB }));
+    // ---- PARKED - SUPERSEDED by page-size (rulings a-b): "within 30px" was sized to the old pin (29.7px); the letter page moves that overhang to 32px
+    // (lane 3: gapA 32, every other term held). The successor keeps the claim and sizes the station to the re-pinned deviation. Kept VERBATIM and no
+    // longer run; record below (pok).
+    //
+    // ok('S4 (§7.4): THE DESK HAND IS PAPER-ANCHORED, NOT SCREEN-ANCHORED — across the two reference widths the paper travels 133px and the dock holds station on its edge (within 30px at both), while NEITHER viewport offset stays constant: measured from the left it moves ~103px, from the right ~163px. A screen-anchored dock would have held one of those two fixed',
+    //   paperTravel != null && Math.abs(paperTravel) > 100
+    //     && gapA != null && gapB != null && Math.abs(gapA) <= 30 && Math.abs(gapB) <= 30
+    //     && Math.abs(fromLeftB - fromLeftA) > 20 && Math.abs(fromRightB - fromRightA) > 20,
+    //   JSON.stringify({ anchorTrack, paperTravel, gapA, gapB, fromLeftA, fromLeftB, fromRightA, fromRightB }));
+    // ------------------------------------------------------------------
+    const station = -PAGE_SIZE_PIN + 1;
+    const anchored = paperTravel != null && Math.abs(paperTravel) > 100
+      && gapA != null && gapB != null && Math.abs(gapA) <= station && Math.abs(gapB) <= station
+      && Math.abs(fromLeftB - fromLeftA) > 20 && Math.abs(fromRightB - fromRightA) > 20;
+    pok('PARKED (was "S4 (§7.4): THE DESK HAND IS PAPER-ANCHORED, NOT SCREEN-ANCHORED — across the two reference widths the paper travels 133px and the dock holds station on its edge (within 30px at both) ...") - page-size rulings a-b: the re-pinned overhang is 32px; live successor: S4 (§7.4) [page-size successor]',
+      anchored, JSON.stringify({ paperTravel, gapA, gapB, station }));
+    ok(`S4 (§7.4) [page-size successor]: THE DESK HAND IS PAPER-ANCHORED, NOT SCREEN-ANCHORED — across the two reference widths the paper travels 100px+ and the dock holds station on its edge (within the re-pinned ${station}px at both), while NEITHER viewport offset stays constant`,
+      anchored, JSON.stringify({ anchorTrack, paperTravel, gapA, gapB, station, fromLeftA, fromLeftB, fromRightA, fromRightB }));
   }
 
   // =========================================================================
@@ -620,6 +717,7 @@ await withHarness(async (app) => {
     // covers the other.
     await freshProsePage(app, w, h);
     await enterMode(app, 'revise');
+    const room5 = await roomForBoth(app);   // page-size (Oct 23): the room the hands have, measured with both shut
     await openSliverByGrip(app);
     await openTutorByGrip(app);
     await sleep(350);
@@ -634,9 +732,20 @@ await withHarness(async (app) => {
     // && !!sliverPanel && !!tutorPanel && sliverPanel.r <= tutorPanel.l + 1,
     // JSON.stringify({ state, sliverPanel, tutorPanel }));
     // ----------------------------------------------------------------------
-    ok(`S5 successor (§7.5 @ ${w}x${h}): the two HANDS TAKE TURNS in Revise - opening the Counsel closes the Desk (one drawer at a time, at every width), and the open Counsel panel is reachable`,
-      state.sliverOpen === 'false' && state.tutorOpen === 'true' && !!tutorPanel,
-      JSON.stringify({ state, sliverPanel, tutorPanel }));
+    // ---- PARKED - SUPERSEDED by page-size (Fable's ruling, Oct 23: the measured rule replaces Oct 12's one-drawer-at-every-width), 2026-10-23 ----
+    // Kept VERBATIM and no longer run (the Oct 12 successor). The measured successor follows; where there is room it is the original S5 above again.
+    //
+    // ok(`S5 successor (§7.5 @ ${w}x${h}): the two HANDS TAKE TURNS in Revise - opening the Counsel closes the Desk (one drawer at a time, at every width), and the open Counsel panel is reachable`,
+    //   state.sliverOpen === 'false' && state.tutorOpen === 'true' && !!tutorPanel,
+    //   JSON.stringify({ state, sliverPanel, tutorPanel }));
+    // ----------------------------------------------------------------------
+    pok(`PARKED (was, VERBATIM: "S5 successor (§7.5 @ ${w}x${h}): the two HANDS TAKE TURNS in Revise - opening the Counsel closes the Desk (one drawer at a time, at every width), and the open Counsel panel is reachable") - SUPERSEDED by page-size (Fable, Oct 23)`,
+      true, 'successor: S5 successor [measured] - both hands stand and do not overlap where there is room, else they take turns');
+    const both5 = !!room5 && room5.both;
+    ok(`S5 successor [measured] (§7.5 @ ${w}x${h}): ${both5 ? 'the two HANDS coexist in Revise - Desk and Counsel both stand open and DO NOT OVERLAP (the band holds the page and both at their minimum)' : 'the two HANDS TAKE TURNS in Revise - opening the Counsel closes the Desk (no room for both at their minimum)'}, and the open Counsel panel is reachable`,
+      !!room5 && state.tutorOpen === 'true' && !!tutorPanel && state.sliverOpen === (both5 ? 'true' : 'false')
+        && (!both5 || (!!sliverPanel && sliverPanel.r <= tutorPanel.l + 1)),
+      JSON.stringify({ state, sliverPanel, tutorPanel, room5 }));
   }
 
   // =========================================================================
@@ -835,7 +944,7 @@ if (process.env.HARNESS_PARKED === '1') {
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nITEM112A PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; this FILE parks 7: S2/§3 S0 and S2/§3's deterministic successor (typed-literal), S2/§3's placement (item112a-deterministic), 3 since ITEM 207 (S7 at the two reference widths, S8 once), and 1 since hide-workshop (S1 CONTROL: Workshop absent) - and, before it, 0 of its own; the ticket's ONE original park is in item84b.mjs (the file that owns the assertion): "the Revise tab is inert", superseded by Revise standing up. See this file's park block for why the first sweep counted 0 and how the suite corrected it.`
+    ? `\nITEM112A PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; this FILE parks 21: S2/§3 S0 and S2/§3's deterministic successor (typed-literal), S2/§3's placement (item112a-deterministic), 3 since ITEM 207 (S7 at the two reference widths, S8 once), 1 since hide-workshop (S1 CONTROL: Workshop absent), 10 since page-size (Oct 23: the Oct 12 one-drawer successors S7 x2, S7 §8, S3 and S5, each at the two reference widths), and 4 since page-size's park audit (Oct 24: S4's 1100 pin, Revise-vs-Draft at the two reference widths, and the cross-width station) - and, before it, 0 of its own; the ticket's ONE original park is in item84b.mjs (the file that owns the assertion): "the Revise tab is inert", superseded by Revise standing up. See this file's park block for why the first sweep counted 0 and how the suite corrected it.`
     : `\nITEM112A PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 const pass = checks.every((c) => c.pass);

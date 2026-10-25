@@ -567,8 +567,16 @@ if (process.env.HARNESS_PARKED === '1') {
       const ed = document.querySelector('.forward-only-editor').getBoundingClientRect();
       return (ed.top - stage.top) / stage.height;
     })()`);
-    pok('PARKED (was "S1: a fresh prose page\'s first line starts within 40-55% of the stage height") — FX3 S3: the working value moved to a NEW 30-35% band',
-      startFracParked >= 0.28 && startFracParked <= 0.37, String(startFracParked));
+    // ---- RE-PARKED, generation 2, by page-size's park audit (Oct 24): a fresh prose page now opens in the Typewriter ZOOM (Arbor's default), where
+    // the writing line is held at the band's anchor - 60% of the column (Cursor's mockup, e3c4e462; pageScale.ts ZOOM_ANCHOR) - and the first line
+    // starts there (lane 3 read 0.6002). The gen-1 record, VERBATIM, no longer runs (its "double supersession" precedent is quoted above at S1 script).
+    //
+    // pok('PARKED (was "S1: a fresh prose page\'s first line starts within 40-55% of the stage height") — FX3 S3: the working value moved to a NEW 30-35% band',
+    //   startFracParked >= 0.28 && startFracParked <= 0.37, String(startFracParked));
+    // ------------------------------------------------------------------
+    const startZoomParked = await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null");
+    pok('PARKED, generation 2 (was gen-1 "PARKED (was \'S1: a fresh prose page\'s first line starts within 40-55% of the stage height\') — FX3 S3: the working value moved to a NEW 30-35% band") — page-size: in the Typewriter zoom (Arbor\'s default) a fresh page\'s first line starts at the band\'s anchor, 60% of the column',
+      startZoomParked === 'true' && Math.abs(startFracParked - 0.6) <= 0.05, JSON.stringify({ startFracParked, zoom: startZoomParked }));
 
     // ORIGINAL (S1): ok('S1: a fresh script page\'s first line also starts
     // within 40-55% of the stage height', scriptStartFrac >= 0.40 &&
@@ -622,12 +630,25 @@ if (process.env.HARNESS_PARKED === '1') {
     // Live successor in this file's own live S2 section above.
     await freshProsePage(app);
     const proseGeomRectParked = await app.evalJs(rectOf('.mode-pagecol'));
+    // page-size: the prose PAPER, painted (the column is stage-wide in the zoom) - read here, on the same fresh prose page
+    const prosePaperParked = await app.evalJs(`(() => { const p = document.querySelector('.desk-frame-stage--prose .mode-page'); const st = document.querySelector('.desk-frame-stage--prose');
+      const col = document.querySelector('.mode-pagecol'); if (!p || !st || !col) return null; const cs = getComputedStyle(st); const zoomed = col.getAttribute('data-zoom') === 'true';
+      return { width: p.getBoundingClientRect().width, layoutW: p.offsetWidth, k: parseFloat(cs.getPropertyValue('--wz-k')) || 1, z: zoomed ? (parseFloat(cs.getPropertyValue('--wz-zoom')) || 1) : 1, zoomed }; })()`);
     await freshScriptPage(app);
     const scriptGeomRectParked = await app.evalJs(rectOf('.mode-pagecol'));
-    pok('PARKED (was "S2: the script paper\'s rect matches the prose paper\'s asserted width band [600,800], within 2px of the prose value") — SC1 S1: script is a true 8.5in US Letter page and no longer shares prose\'s measure; prose\'s own band is unchanged',
+    // ---- RE-PARKED, generation 2, by page-size's park audit (Oct 24): "prose's own band is unchanged" is falsified by page-size itself - prose is now
+    // a letter page too (8.5 page-inches, 620px laid out), painted at the stage's scale and, zoomed, stage-wide in its column (lane 3: 1320px). The
+    // gen-1 record, VERBATIM, no longer runs.
+    //
+    // pok('PARKED (was "S2: the script paper\'s rect matches the prose paper\'s asserted width band [600,800], within 2px of the prose value") — SC1 S1: script is a true 8.5in US Letter page and no longer shares prose\'s measure; prose\'s own band is unchanged',
+    //   Math.abs(scriptGeomRectParked.width - 816) <= 1
+    //     && proseGeomRectParked.width >= 600 && proseGeomRectParked.width <= 800,
+    //   JSON.stringify({ proseGeomRectParked, scriptGeomRectParked }));
+    // ------------------------------------------------------------------
+    pok('PARKED, generation 2 (was gen-1 "PARKED (was \'S2: the script paper\'s rect matches the prose paper\'s asserted width band [600,800], within 2px of the prose value\') — SC1 S1: script is a true 8.5in US Letter page and no longer shares prose\'s measure; prose\'s own band is unchanged") — page-size: script is still 816px; prose\'s PAPER is the ruled letter page (620px laid out) painted at k (x the zoom)',
       Math.abs(scriptGeomRectParked.width - 816) <= 1
-        && proseGeomRectParked.width >= 600 && proseGeomRectParked.width <= 800,
-      JSON.stringify({ proseGeomRectParked, scriptGeomRectParked }));
+        && !!prosePaperParked && Math.abs(prosePaperParked.layoutW - 620) <= 0.5 && Math.abs(prosePaperParked.width - prosePaperParked.layoutW * prosePaperParked.k * prosePaperParked.z) <= 1,
+      JSON.stringify({ proseGeomRectParked, prosePaperParked, scriptGeomRectParked }));
 
     // ORIGINAL (this file's own live "same fixture, once on a script page"
     // block, pre-SC1), both checks quoted verbatim:

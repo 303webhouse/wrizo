@@ -3,7 +3,7 @@ import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { flushNow, getDrawer, getJournalEntry, getProject, saveJournalEntry, patchJournalEntry, getBoardsConnecting, inJournalView, getOrCreatePlanBoard } from '../store/persistence';
 import { setPageDress } from '../store/pageDress';
 import { pageTypeStyle, ensureFaceLoaded } from '../store/fontRoster';
-import { SIZE_DEFAULT } from '../store/fontSize';
+import { PAGE_SIZE_DEFAULT, PAGE_PT_FALLBACK } from '../store/fontSize';
 import { describePageHome } from '../store/pageHome';
 import { LocationCrumb } from '../components/LocationCrumb';
 import { FluxReadouts } from '../components/FluxReadouts';
@@ -959,7 +959,8 @@ function PageEditorView({ id }: { id: string }) {
           // `.forward-only-editor-wrap`, not the `.forward-only-editor`
           // node itself — font-size is an inherited property, so this
           // still works).
-          fontSize: typeStyle.fontSize ?? 'calc(17px * var(--paper-scale))', lineHeight: 1.7,
+          // PAGE-SIZE (ruling a): 12 real points in page units - 16px at page scale 1, growing with the page (index.css --wz-pt).
+          fontSize: typeStyle.fontSize ?? `calc(${PAGE_SIZE_DEFAULT} * var(--wz-pt, ${PAGE_PT_FALLBACK}))`, lineHeight: 1.7,
         }}
       />
       )}
@@ -1251,7 +1252,7 @@ function PageEditorView({ id }: { id: string }) {
   const typeMember = (form: 'small' | 'full', scoped = false) => ({
     form,
     face: pageFace,
-    size: entry.pageSettings?.size ?? SIZE_DEFAULT,
+    size: entry.pageSettings?.size ?? PAGE_SIZE_DEFAULT,   // PAGE-SIZE (ruling a): a page's default is 12 real points; cards keep 11
     onPickFace: (face: StoredFace) => { clearFontSpansOnPage(); patchPageSettings({ face }); },
     onSize: (size: number) => patchPageSettings({ size }),
     scope: scoped ? { has: fontSel.has, face: fontSel.face, wholeLabel: dt('typeScopeWholeDocument'), onPickSelection: applyFontAt } : undefined,

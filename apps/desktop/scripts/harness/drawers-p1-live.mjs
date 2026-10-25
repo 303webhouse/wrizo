@@ -60,6 +60,9 @@ const realClick = async (app, selector) => {
   await app.mouseUp(rect.x, rect.y);
 };
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
+// the parked recorder (page-size, Oct 23): records only, printed on the parked leg (HARNESS_PARKED=1), never counted in the default verdict
+const parkedChecks = [];
+const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass: !!pass, detail });
 const guard = async (name, fn) => { try { await fn(); } catch (e) { ok(`${name}: THE DRIVER THREW (not a product finding)`, false, String(e).slice(0, 240)); } };
 
 const W = 1280, H = 800;
@@ -101,6 +104,12 @@ const modeTab = async (app, key) => { await app.evalJs(`document.querySelector('
 const leftOpen = (app) => app.evalJs(`document.querySelector('.wz-sliver')?.getAttribute('data-open') === 'true'`);
 const rightOpen = (app) => app.evalJs(`document.querySelector('.wz-tutor-panel')?.getAttribute('data-open') === 'true'`);
 const settled = (app, panel) => waitSoft(app, `(() => { const l = document.querySelector('${panel} > .wz-drawer-slide'); if (!l) return false; const cs = getComputedStyle(l); return cs.transform === 'none' && cs.pointerEvents !== 'none'; })()`, { timeout: 3000, label: 'settled' });
+// page-size (Fable, Oct 23): whether the band holds the page AND both drawers at their minimum - the desk on each side of the page, measured with the drawers shut
+// (the page never moves, so this is the room the drawers will have). DRAWER_MIN equals the build's one token for a drawer's narrowest open width.
+const DRAWER_MIN = 200;
+const roomForBoth = (app) => app.evalJs(`(() => { const p = document.querySelector('.mode-page'); const s = document.querySelector('.desk-frame-stage'); if (!p || !s) return null;
+  const a = p.getBoundingClientRect(); const b = s.getBoundingClientRect(); const left = a.left - b.left; const right = b.right - a.right;
+  return { left: Math.round(left), right: Math.round(right), both: left >= ${DRAWER_MIN} && right >= ${DRAWER_MIN} }; })()`);
 const toggleLeft = async (app) => { await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(30); };
 const toggleRight = async (app) => { await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(30); };
 const ensureLeft = async (app, want) => { if ((await leftOpen(app)) !== want) await toggleLeft(app); await waitSoft(app, `document.querySelector('.wz-sliver')?.getAttribute('data-open') === '${want}'`, { timeout: 2500 }); if (want) await settled(app, '.wz-sliver-panel'); await sleep(want ? 300 : 500); };
@@ -194,8 +203,20 @@ await withHarness(async (app) => {
           const last = s[s.length - 1];
           const gripRight = last.grip[0] + last.grip[2];
           const gap = Math.round((last.panelLeft - gripRight) * 100) / 100;
-          ok(`L2 ${T} (${hand}) [tutor-drawer-arrow successor]: the tab's rect MOVES while the drawer opens, settling ${GRIP_GUTTER_PX}px outside the open panel's own left edge (never inside its tab row)`,
-            Math.abs(gap - GRIP_GUTTER_PX) < 1.5, JSON.stringify({ gripRight, panelLeft: last.panelLeft, gap }));
+          // ---- PARKED - SUPERSEDED by the DRAWER MIRROR (Nick, via Fable, Oct 24: "a tab's rect is unchanged by open/close, only the arrow flips";
+          // the Tutor | Grafts drawer is anchored to the page's right edge, the mirror of the Tools drawer). The tab no longer moves: the PANEL now
+          // starts at the tab ([page][tab][panel]), so the tab can never sit inside the panel's tab row - the bug the arrow move cured (ledger 57) is
+          // cured by the panel's place instead. Kept VERBATIM and no longer run; the successor restores the LEFT hand's claim for the right hand,
+          // plus the panel against its tab; record per theme (pok).
+          //
+          // ok(`L2 ${T} (${hand}) [tutor-drawer-arrow successor]: the tab's rect MOVES while the drawer opens, settling ${GRIP_GUTTER_PX}px outside the open panel's own left edge (never inside its tab row)`,
+          //   Math.abs(gap - GRIP_GUTTER_PX) < 1.5, JSON.stringify({ gripRight, panelLeft: last.panelLeft, gap }));
+          // ------------------------------------------------------------------
+          const still = s.every((x) => same(x.grip, s[0].grip));
+          pok(`PARKED (was "L2 ${T} (${hand}) [tutor-drawer-arrow successor]: the tab's rect MOVES while the drawer opens, settling 16px outside the open panel's own left edge (never inside its tab row)") - SUPERSEDED by the drawer mirror (Oct 24): the tab never moves; the panel starts at it; live successor: L2 ${T} (${hand}) [drawer-mirror successor]`,
+            still && Math.abs(gap) < 1.5, JSON.stringify({ gripRight, panelLeft: last.panelLeft, gap, still }));
+          ok(`L2 ${T} (${hand}) [drawer-mirror successor]: the tab's rect never changes while the drawer opens (only its glyph), and the open panel starts AT the tab - never under it, never inside its tab row`,
+            still && Math.abs(gap) < 1.5, JSON.stringify({ gripRight, panelLeft: last.panelLeft, gap, moved: s.map((x) => x.grip).filter((g, i, a) => i === 0 || !same(g, a[0])).slice(0, 3) }));
         }
         const glyphs = [...new Set(s.map((x) => x.glyph))];
         ok(`L3 ${T} (${hand}): the arrow glyph flips and nothing else on the tab does`, glyphs.length === 2, JSON.stringify(glyphs));
@@ -338,16 +359,43 @@ await withHarness(async (app) => {
     // });
 
 
+    // ---- PARKED - SUPERSEDED by page-size (Fable's ruling, Oct 23): the Oct 12 "one drawer at a time, at every width" rule is REPLACED by the MEASURED rule - both
+    // drawers stand where the band holds the page AND both at their 200px minimum; otherwise opening one closes the other (Nick's Oct 7 rule, his original ask in
+    // menusDrawers.ts's header); the page never moves. The block below is the Oct 12 successor, kept VERBATIM and no longer run. Its measured successor follows.
+    //
+    // for (const w of [1100, 1280, 1400]) {
+    //   await guard(`L7 ${T} @${w}`, async () => {
+    //     if (!(await open(app, th, 'draft', w, 800))) { ok(`L7 ${T} fixture: draft opened at ${w}`, false); return; }
+    //     await ensureLeft(app, true);
+    //     await toggleRight(app); await sleep(900);
+    //     const a = { left: await leftOpen(app), right: await rightOpen(app) };
+    //     ok(`L7 ${T} @${w}: opening the RIGHT drawer while the left is open CLOSES the left - one drawer at a time`, a.right === true && a.left === false, JSON.stringify(a));
+    //     await toggleLeft(app); await sleep(900);
+    //     const b = { left: await leftOpen(app), right: await rightOpen(app) };
+    //     ok(`L7 ${T} @${w}: and opening the LEFT drawer while the right is open closes the right (the rule is symmetric)`, b.left === true && b.right === false, JSON.stringify(b));
+    //   });
+    // }
+    // ----------------------------------------------------------------------
+    pok(`PARKED (was "L7 ${T} @1100/1280/1400: opening the RIGHT drawer while the left is open CLOSES the left - one drawer at a time") - SUPERSEDED by page-size (Fable, Oct 23): the measured rule replaces Oct 12's`,
+      true, 'successor: L7 [measured] - both stand where the band holds the page and both at DRAWER_MIN, else the later one closes the other');
+    pok(`PARKED (was "L7 ${T} @1100/1280/1400: and opening the LEFT drawer while the right is open closes the right (the rule is symmetric)") - SUPERSEDED by page-size (Fable, Oct 23)`,
+      true, 'successor: L7 [measured], the symmetric half');
     for (const w of [1100, 1280, 1400]) {
-      await guard(`L7 ${T} @${w}`, async () => {
-        if (!(await open(app, th, 'draft', w, 800))) { ok(`L7 ${T} fixture: draft opened at ${w}`, false); return; }
+      await guard(`L7 ${T} @${w} [measured]`, async () => {
+        if (!(await open(app, th, 'draft', w, 800))) { ok(`L7 ${T} [measured] fixture: draft opened at ${w}`, false); return; }
+        await ensureLeft(app, false); await ensureRight(app, false);
+        const room = await roomForBoth(app);
+        ok(`L7 ${T} @${w} [measured] (premise): the page and the stage are measurable with both drawers shut`, !!room, JSON.stringify(room));
+        if (!room) return;
+        const rule = room.both ? 'BOTH stand (the band holds the page and both drawers at their minimum)' : 'the other CLOSES (no room for both at their minimum)';
         await ensureLeft(app, true);
         await toggleRight(app); await sleep(900);
         const a = { left: await leftOpen(app), right: await rightOpen(app) };
-        ok(`L7 ${T} @${w}: opening the RIGHT drawer while the left is open CLOSES the left - one drawer at a time`, a.right === true && a.left === false, JSON.stringify(a));
+        ok(`L7 ${T} @${w} successor [measured]: opening the RIGHT drawer while the left is open - ${rule}`, a.right === true && a.left === room.both, JSON.stringify({ a, room }));
+        await ensureLeft(app, false); await ensureRight(app, true);
         await toggleLeft(app); await sleep(900);
         const b = { left: await leftOpen(app), right: await rightOpen(app) };
-        ok(`L7 ${T} @${w}: and opening the LEFT drawer while the right is open closes the right (the rule is symmetric)`, b.left === true && b.right === false, JSON.stringify(b));
+        ok(`L7 ${T} @${w} successor [measured]: and opening the LEFT drawer while the right is open - the same rule, symmetric: ${rule}`, b.left === true && b.right === room.both, JSON.stringify({ b, room }));
       });
     }
 
@@ -413,10 +461,30 @@ await withHarness(async (app) => {
         await pressEnter(app); await sleep(400);
         const t2 = await app.evalJs(`document.querySelector('${sel}')?.getAttribute('aria-pressed') ?? null`);
         ok(`L9 ${T}: Enter on the focused Typewriter toggle FLIPS it, like any button`, t1 != null && t2 != null && t2 !== t1, JSON.stringify({ t1, t2 }));
+        // ---- PARKED - SUPERSEDED by page-size (Nick + Fable, Oct 23: the zoom's "panels tucked"): when Enter turns the Typewriter ON, the page enters the
+        // zoom, which TUCKS both drawers - the Sliver holding this toggle closes - and hands a stranded focus to the editor. The press below then
+        // focuses a hidden control and Space goes to the page (lane 3, Flux, whose default is off: t2 true, t3 true). Arbor passed only because its
+        // default is ON, so its Enter turned the zoom OFF. Kept VERBATIM and no longer run; successor follows; one record per theme in the parked section.
+        //
+        // await app.evalJs(`document.querySelector('${sel}')?.focus()`);
+        // await pressSpace(app); await sleep(400);
+        // const t3 = await app.evalJs(`document.querySelector('${sel}')?.getAttribute('aria-pressed') ?? null`);
+        // ok(`L9 ${T}: and Space flips it back`, t3 != null && t3 !== t2, JSON.stringify({ t2, t3 }));
+        // ------------------------------------------------------------------
+        let tuck = null;
+        if (t2 === 'true') {
+          // the zoom is ON now: the drawer is tucked and the focus is on the page, not stranded on the hidden toggle
+          tuck = await app.evalJs("({ left: document.querySelector('.wz-sliver')?.getAttribute('data-open') ?? null, zoom: document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null, focusOnPage: !!document.activeElement && !!document.activeElement.closest('.forward-only-editor') })");
+          ok(`L9 ${T} [page-size successor]: Enter turned the Typewriter ON - the page is in the zoom, the drawer holding the toggle is TUCKED, and the focus is on the page (never stranded on a hidden control)`,
+            !!tuck && tuck.zoom === 'true' && tuck.left !== 'true' && tuck.focusOnPage === true, JSON.stringify(tuck));
+          await ensureLeft(app, true);   // the writer re-opens the drawer to reach the toggle again
+        }
         await app.evalJs(`document.querySelector('${sel}')?.focus()`);
         await pressSpace(app); await sleep(400);
         const t3 = await app.evalJs(`document.querySelector('${sel}')?.getAttribute('aria-pressed') ?? null`);
-        ok(`L9 ${T}: and Space flips it back`, t3 != null && t3 !== t2, JSON.stringify({ t2, t3 }));
+        pok(`PARKED (was "L9 ${T}: and Space flips it back") - SUPERSEDED by page-size (the zoom tucks the drawer holding the toggle); live successor: L9 ${T}: and Space flips it back [page-size successor]`,
+          t3 != null && t3 !== t2 && (t2 !== 'true' || (!!tuck && tuck.zoom === 'true' && tuck.left !== 'true')), JSON.stringify({ t2, t3, tuck }));
+        ok(`L9 ${T}: and Space flips it back [page-size successor] (the drawer re-opened by the writer if the zoom tucked it)`, t3 != null && t3 !== t2, JSON.stringify({ t2, t3, tuck }));
       }
       // SUPERSEDED WHOLE (help-buttons, Nick approved Oct 12): the Grafts/
       // Links tab's own "?" moved off DrawerNote (.wz-drawer-note-btn) onto
@@ -454,6 +522,15 @@ await withHarness(async (app) => {
 
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
+if (process.env.HARNESS_PARKED === '1') {
+  // eslint-disable-next-line no-console
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.length > 0 && parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nDRAWERS-P1-LIVE PARKED: PASS (${parkedChecks.length} records) - this FILE parks 4 (page-size, Oct 23-24, and the drawer mirror, Oct 24): L7's two Oct 12 one-drawer-at-every-width checks, L9's Space-flips-back (the zoom tucks its drawer) and L2's right-hand tab move (the tab never moves now), each recorded once per theme; the older two-drawer law above L7 stays a comment-only park from Oct 12`
+    : `\nDRAWERS-P1-LIVE PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed (or none recorded)`);
+}
 const failed = checks.filter((c) => !c.pass);
 // eslint-disable-next-line no-console
 console.log(failed.length === 0 ? `\nDRAWERS-P1-LIVE VERIFY: PASS (${checks.length} checks)` : `\nDRAWERS-P1-LIVE VERIFY: FAIL - ${failed.length}/${checks.length}\n` + failed.map((c) => '  FAIL ' + c.name + ' | ' + String(c.detail).slice(0, 240)).join('\n'));

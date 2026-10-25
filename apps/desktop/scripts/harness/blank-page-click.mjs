@@ -67,6 +67,21 @@ const pressPoint = (app, script) => app.evalJs(`(() => {
   const y = Math.min(lineBottom + 140, paperBottom - 30);
   return { x: Math.round(er.left + er.width * 0.5), y: Math.round(y), lineBottom: Math.round(lineBottom), paperBottom: Math.round(paperBottom) };
 })()`);
+// PAGE-SIZE (park audit, Oct 24): the press point on a ZOOMED page. The zoom holds the writing line at the band's anchor (60% of the column) and the
+// band fades the page out below it; the ink sheet ends with the text, and the paper the writer sees below the line is the scroller's own padding
+// (its click focuses the editor - the very mechanism B and T guard). So: 40px below the last line - inside the visible fade - on the scroller.
+const pressPointZoomed = (app) => app.evalJs(`(() => {
+  const vh = window.innerHeight; const ed = document.querySelector('.forward-only-editor'); const sc = ed && ed.closest('.mode-scroll'); const page = ed && ed.closest('.mode-page');
+  const stage = document.querySelector('.desk-frame-stage'); if (!ed || !sc || !page) return null;
+  const rows = [...ed.querySelectorAll('.wz-row')].filter((r) => r.getBoundingClientRect().height > 0);
+  const er = ed.getBoundingClientRect();
+  const lineBottom = rows.length ? rows[rows.length - 1].getBoundingClientRect().bottom : er.top + 30;
+  const paperBottom = Math.min(sc.getBoundingClientRect().bottom, page.getBoundingClientRect().bottom, stage ? stage.getBoundingClientRect().bottom : vh, vh);
+  const x = Math.round(er.left + er.width * 0.5); const y = Math.round(Math.min(lineBottom + 40, paperBottom - 10));
+  const hit = document.elementFromPoint(x, y);
+  return { x, y, lineBottom: Math.round(lineBottom), paperBottom: Math.round(paperBottom), zoom: true, onScroller: !!hit && sc.contains(hit) };
+})()`);
+const bpcPs = [];   // page-size's park audit: the zoomed cases' press points, for the parked records
 const focusedIn = (app, script) => app.evalJs(`(() => { const root = document.querySelector(${JSON.stringify(script ? '.script-sequence' : '.forward-only-editor')}); return !!root && !!document.activeElement && root.contains(document.activeElement); })()`);
 // the editor saves on its own debounce: wait on the STORED text, never on a flush call
 const waitStored = async (app, id, test) => { let row = null; for (let i = 0; i < 24; i += 1) { row = await stored(app, id); if (row && test(row.text || '')) return row; await sleep(250); } return row; };
@@ -88,9 +103,22 @@ const runCase = async (app, m, kind) => {
   const id = pageId(m, kind);
   const there = await openPage(app, m, kind);
   if (!there) { ok(`${m.name} ${kind === 'blank' ? 'B' : 'T'} fixture: the page opened`, false, await app.evalJs('location.hash')); return; }
-  const p = await pressPoint(app, !!m.script);
-  const below = !!p && p.y > p.lineBottom + 10 && p.y < p.paperBottom;
-  ok(`${m.name} ${kind === 'blank' ? 'B' : 'T'} (premise): the press point lies on the paper BELOW the last line of text`, below, JSON.stringify(p));
+  // ---- PARKED FOR THE ZOOMED REGIME - SUPERSEDED there by page-size (Nick + Fable, Oct 23; Cursor's mockup): on a page in the Typewriter zoom the
+  // writing line is held at 60% of the column and the band fades the page out below it; the ink sheet ends with the text (lane 3: the line's foot at
+  // 601-623, the sheet's at 614-623), so "140px below the last line, on the sheet" does not exist there. The premise below is VERBATIM and runs
+  // unchanged wherever the page is NOT zoomed; on a zoomed page its successor runs instead (the press 40px below the line, inside the visible fade,
+  // on the scroller whose click is the mechanism). One record per zoomed case in the parked section.
+  const zoomed = !m.script && (await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') === 'true'"));
+  const p = zoomed ? await pressPointZoomed(app) : await pressPoint(app, !!m.script);
+  let below;
+  if (!zoomed) {
+    below = !!p && p.y > p.lineBottom + 10 && p.y < p.paperBottom;
+    ok(`${m.name} ${kind === 'blank' ? 'B' : 'T'} (premise): the press point lies on the paper BELOW the last line of text`, below, JSON.stringify(p));
+  } else {
+    below = !!p && p.y > p.lineBottom + 10 && p.y < p.paperBottom && p.onScroller;
+    bpcPs.push({ name: `${m.name} ${kind === 'blank' ? 'B' : 'T'}`, p, below });
+    ok(`${m.name} ${kind === 'blank' ? 'B' : 'T'} (premise) [page-size successor, zoomed]: the press point lies on the paper the writer sees BELOW the last line - inside the band's visible fade, on the scroller`, below, JSON.stringify(p));
+  }
   if (!below) return;
   await click(app, p.x, p.y); await sleep(300);
   const focus = await focusedIn(app, !!m.script);
@@ -277,6 +305,13 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 500)}]` : ''}`);
+if (process.env.HARNESS_PARKED === '1') {
+  // PAGE-SIZE'S PARK AUDIT (Oct 24): the press-point premise, parked for the ZOOMED regime - one record per zoomed case, under its original name,
+  // re-verifying the new truth from the live run: the paper the writer sees below the line is the band's fade, on the scroller.
+  const rec = bpcPs.map((o) => ({ name: `PARKED for the zoomed regime (was "${o.name} (premise): the press point lies on the paper BELOW the last line of text") - page-size: zoomed, the line sits at the band's anchor and the sheet ends with the text; live successor: ${o.name} (premise) [page-size successor, zoomed]`, pass: !!o.below, detail: JSON.stringify(o.p) }));
+  for (const c of rec) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}  [${c.detail}]`);
+  console.log(rec.length && rec.every((c) => c.pass) ? `\nBLANK-PAGE-CLICK PARKED: PASS (${rec.length} records) - this FILE parks 1 (the press-point premise, zoomed regime; one record per zoomed case)` : `\nBLANK-PAGE-CLICK PARKED: FAIL - ${rec.filter((c) => !c.pass).length}/${rec.length} (${rec.length} zoomed cases)`);
+}
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nBLANK-PAGE-CLICK VERIFY: PASS (${checks.length} checks)` : `\nBLANK-PAGE-CLICK VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
 process.exit(passed === checks.length ? 0 : 1);

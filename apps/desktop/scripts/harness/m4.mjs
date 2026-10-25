@@ -42,6 +42,9 @@
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
+const m4Ps = [];   // page-size's park audit (Oct 24): S3's lane, paper and band reads, for the parked records
+// page-size: where the zoom's band ends - the page column's mask fully transparent below the writing line (viewport px)
+const BAND_END = `(() => { const col = document.querySelector('.mode-pagecol'); if (!col) return null; const cs = getComputedStyle(col); const mask = String(cs.webkitMaskImage || cs.maskImage || 'none'); const box = col.getBoundingClientRect(); const zoom = col.getAttribute('data-zoom'); const len = (s) => { s = String(s || '').trim(); const c = s.match(/^calc\\((.*)\\)$/); const body = c ? c[1] : s; let t = 0; let sign = 1; let ok = false; for (const tok of body.split(/\\s+/)) { if (tok === '+') { sign = 1; continue; } if (tok === '-') { sign = -1; continue; } const n = parseFloat(tok); if (!Number.isFinite(n)) continue; t += sign * (tok.endsWith('%') ? (n / 100) * box.height : n); ok = true; sign = 1; } return ok ? t : null; }; const inner = (mask.match(/linear-gradient\\((.*)\\)\\s*$/) || [])[1] || ''; const parts = []; let depth = 0; let cur = ''; for (const ch of inner) { if (ch === '(') depth++; if (ch === ')') depth--; if (ch === ',' && depth === 0) { parts.push(cur.trim()); cur = ''; } else cur += ch; } if (cur.trim()) parts.push(cur.trim()); const stops = []; for (const p of parts) { const m = p.match(/^(rgba?\\([^)]*\\))\\s*(.*)$/); if (!m) continue; const nums = (m[1].match(/[\\d.]+/g) || []).map(Number); const alpha = m[1].startsWith('rgba') ? nums[3] : 1; const at = len(m[2] || '0px'); if (at != null) stops.push({ alpha, at }); } const full = stops.findIndex((s) => s.alpha >= 0.99); const end = full < 0 ? null : stops.slice(full).find((s) => s.alpha <= 0.001); return { zoom, bandEnd: end ? Math.round((box.top + end.at) * 100) / 100 : null, stops: stops.length }; })()`;
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -224,9 +227,22 @@ await withHarness(async (app) => {
 
     ok(`S3 ${tag}: the progress bar RENDERS on the framed desk — and inside the rhizome's OWN lane (.desk-frame-instrument, inside .desk-frame-rhizome-anchor). It rendered nowhere framed before this ticket.`,
       g.hasTrack && g.trackInLane && g.laneInAnchor, JSON.stringify({ hasTrack: g.hasTrack, trackInLane: g.trackInLane, laneInAnchor: g.laneInAnchor }));
-    ok(`S3 ${tag}: the bar sits UNDER THE PAGE — wholly below the paper's bottom edge and wholly inside the stage (the reserved --fx3-paper-fence band)`,
-      !!g.lane && !!g.paper && !!g.stage && g.lane.t >= g.paper.b - 0.5 && g.lane.b <= g.stage.b + 0.5,
-      JSON.stringify({ paperBottom: g.paper?.b, laneTop: g.lane?.t, laneBottom: g.lane?.b, stageBottom: g.stage?.b }));
+    // ---- PARKED - SUPERSEDED by page-size (Nick + Fable, Oct 23; Cursor's mockup): a fresh Arbor page opens in the Typewriter ZOOM, where the page paints
+    // ~1.6x and runs past the stage's bottom, clipped by its column (lane 3: the paper's foot at 1004-1504, the stage's at 708-1020) - so no bar inside
+    // the stage can lie below it. What the writer SEES there is the band: the column's mask fades the page out below the writing line. The claim - the
+    // bar never sits over the paper the writer sees - is the successor's, per view. Kept VERBATIM and no longer run; records in the parked section.
+    //
+    // ok(`S3 ${tag}: the bar sits UNDER THE PAGE — wholly below the paper's bottom edge and wholly inside the stage (the reserved --fx3-paper-fence band)`,
+    //   !!g.lane && !!g.paper && !!g.stage && g.lane.t >= g.paper.b - 0.5 && g.lane.b <= g.stage.b + 0.5,
+    //   JSON.stringify({ paperBottom: g.paper?.b, laneTop: g.lane?.t, laneBottom: g.lane?.b, stageBottom: g.stage?.b }));
+    // ------------------------------------------------------------------
+    const band = await app.evalJs(BAND_END);
+    const underSeen = (o) => !!o.lane && !!o.paper && !!o.stage && o.lane.b <= o.stage.b + 0.5
+      && (o.band && o.band.zoom === 'true' ? o.band.bandEnd != null && o.lane.t >= o.band.bandEnd - 0.5 : o.lane.t >= o.paper.b - 0.5);
+    const s3 = { tag, lane: g.lane, paper: g.paper, stage: g.stage, band };
+    m4Ps.push(s3);
+    ok(`S3 ${tag} [page-size successor]: the bar sits under the paper the writer SEES — wholly inside the stage, and below the paper's bottom edge in the normal view or below the band's end (its mask fully transparent) in the zoom`,
+      underSeen(s3), JSON.stringify({ paperBottom: g.paper?.b, bandEnd: band && band.bandEnd, zoom: band && band.zoom, laneTop: g.lane?.t, laneBottom: g.lane?.b, stageBottom: g.stage?.b }));
     ok(`S3 ${tag}: the lane is clamped to the paper's OWN canonical measure — its left/right edges track the paper's at this --paper-scale step`,
       !!g.lane && !!g.paper && Math.abs(g.lane.l - g.paper.l) <= 1 && Math.abs(g.lane.r - g.paper.r) <= 1,
       JSON.stringify({ lane: g.lane, paper: g.paper }));
@@ -462,10 +478,17 @@ console.log(JSON.stringify(checks, null, 2));
 // whose supersessions live in their own homes.
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  // PAGE-SIZE'S PARK AUDIT (Oct 24) - ONE park of m4's own: S3's "under the page", recorded at each of its three widths from the live run's reads.
+  for (const o of m4Ps) {
+    const zoomed = !!o.band && o.band.zoom === 'true';
+    parkedChecks.push({ name: `PARKED (was "S3 ${o.tag}: the bar sits UNDER THE PAGE — wholly below the paper's bottom edge and wholly inside the stage (the reserved --fx3-paper-fence band)") — page-size: zoomed, the page runs past the stage and the band fades it out above the bar; live successor: S3 ${o.tag} [page-size successor]`,
+      pass: !!o.lane && !!o.stage && o.lane.b <= o.stage.b + 0.5 && (zoomed ? o.band.bandEnd != null && o.lane.t >= o.band.bandEnd - 0.5 : !!o.paper && o.lane.t >= o.paper.b - 0.5),
+      detail: JSON.stringify(o) });
+  }
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   // eslint-disable-next-line no-console
-  console.log(`\nM4 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; m4.mjs parks nothing of its own (the entries M4 supersedes are parked in m2.mjs and m3.mjs, with the live successors here).`);
+  console.log(parkedChecks.length && parkedChecks.some((c) => !c.pass) ? `\nM4 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed` : `\nM4 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; m4.mjs parks ONE of its own (page-size, Oct 24: S3's under-the-page, one record per width); the entries M4 supersedes are parked in m2.mjs and m3.mjs, with the live successors here.`);
 }
 
 const pass = checks.every((c) => c.pass);

@@ -67,6 +67,20 @@ import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
+const fx10Mirror = [];   // the drawer mirror (Oct 24): the page surface's open-grip reads, for the parked records
+// the tab never moves (closed vs open, within half a pixel) and the open panel starts at its right edge (within 1.5px) - the drawer mirror
+// ...or, where the painted page leaves under DRAWER_MIN (200px) beside it (the zoom at 1100 and 1280), the panel overlays from the stage's edge (the
+// documented narrow degradation) and the unmoved tab rides ABOVE it - the topmost element at its centre (turn on 8d3673bd: panel 693 / 807, tab 970 / 1110)
+const fx10MirrorOk = (o) => !!o.gripClosed && !!o.gripOpen && Math.abs(o.gripClosed.left - o.gripOpen.left) < 0.5
+  && (Math.abs(o.panelLeft - o.gripOpen.right) < 1.5 || (o.margin != null && o.margin < 200 && o.gripOnTop === true));
+const fx10Ps = [];   // page-size's park audit (Oct 24): the page surface's grip reads, for the parked records
+// page-size: the Tutor grip against the PAINTED page (the column is stage-wide in the zoom), with the editor's edge and the margin the CSS reads
+const PS_GRIP = `(() => { const g = document.querySelector('.wz-tutor-grip'); const p = document.querySelector('.desk-frame-stage--prose .mode-page'); const e = document.querySelector('.forward-only-editor');
+  const st = document.querySelector('.desk-frame-stage'); if (!g || !p || !e || !st) return null; const pr = p.getBoundingClientRect();
+  return { gripLeft: g.getBoundingClientRect().left, pageRight: pr.right, textRight: e.getBoundingClientRect().right, margin: st.getBoundingClientRect().right - pr.right, zoom: document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null }; })()`;
+// flush on the painted edge - or, where the margin is under 160px (the zoom at 1100/1280), inside the page's own margin by at most the anchor's 38px
+// overflow (index.css --tutor-overflow; TU2 S4's algebra), and never into the text
+const psGripOk = (o) => !!o && (Math.abs(o.gripLeft - o.pageRight) < 1.5 || (o.margin < 160 && o.gripLeft >= o.pageRight - 38.5 && o.gripLeft < o.pageRight && o.gripLeft >= o.textRight - 0.5));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const FLOOR_W = 1100; // DESKFRAME_MIN_WIDTH — the mandatory floor, never skipped
@@ -144,8 +158,19 @@ await withHarness(async (app) => {
 
       const paperClosed = await rectOf(app, paperSel);
       const gripClosed = await rectOf(app, '.wz-tutor-grip');
-      ok(`S1 geometry @${width}px/${surface}: grip-flush (closed) — the grip's own left edge sits flush (no gap) against the paper's right edge`,
-        Math.abs(gripClosed.left - paperClosed.right) < 1.5, JSON.stringify({ gripLeft: gripClosed.left, paperRight: paperClosed.right }));
+      // ---- PARKED FOR THE PAGE SURFACE - SUPERSEDED there by page-size (Nick + Fable, Oct 23): .mode-pagecol is no longer the paper. The prose page is
+      // PAINTED by a transform inside it, and in the Typewriter zoom (Arbor's default) the column is the whole stage - lane 3 read the grip 981 / 1110 / 1596
+      // against a "paper right" of 1067 / 1242 / 1960. Against the painted page the grip is flush at 2200 and, where the zoom leaves under 160px of
+      // margin, overlaps the page's own 1in margin by the anchor's documented overflow (<= 38px), never the text. The check runs VERBATIM, unchanged,
+      // on the board surface; on the page its successor runs instead. Records in the parked section.
+      if (surface !== 'page') {
+        ok(`S1 geometry @${width}px/${surface}: grip-flush (closed) — the grip's own left edge sits flush (no gap) against the paper's right edge`,
+          Math.abs(gripClosed.left - paperClosed.right) < 1.5, JSON.stringify({ gripLeft: gripClosed.left, paperRight: paperClosed.right }));
+      } else {
+        const pg = await app.evalJs(PS_GRIP);
+        fx10Ps.push({ width, ...pg });
+        ok(`S1 geometry @${width}px/page: grip-flush (closed) [page-size successor]: the grip's own left edge sits flush on the PAINTED page's right edge - or, where the zoom leaves under 160px of margin, inside the page's own margin by at most the anchor's 38px overflow, never into the text`, psGripOk(pg), JSON.stringify(pg));
+      }
 
       await openTutor(app);
       const panelOpen = await rectOf(app, '.wz-tutor-panel');
@@ -161,9 +186,21 @@ await withHarness(async (app) => {
       // ok(`S1 geometry @${width}px/${surface}: grip-flush (open) — the grip never moves once the panel opens`,
       //   Math.abs(gripOpen.left - paperOpen.right) < 1.5, JSON.stringify({ gripLeft: gripOpen.left, paperRight: paperOpen.right }));
       const GRIP_GUTTER_PX = 16; // Tutor.tsx's own GRIP_GUTTER_PX, the exact mirror of .wz-sliver-panel's static 16px inset
-      ok(`S1 geometry @${width}px/${surface}: grip-clears-panel (open) [tutor-drawer-arrow successor] — the grip MOVES once the panel opens, landing ${GRIP_GUTTER_PX}px outside the panel's own near edge (never inside its tab row)`,
-        Math.abs((panelOpen.left - gripOpen.right) - GRIP_GUTTER_PX) < 1.5,
-        JSON.stringify({ gripRight: gripOpen.right, panelLeft: panelOpen.left, gap: panelOpen.left - gripOpen.right }));
+      // ---- PARKED FOR THE PAGE SURFACE - SUPERSEDED there by the DRAWER MIRROR (Nick, via Fable, Oct 24): on a writing surface the tab never moves and
+      // the panel starts AT it ([page][tab][panel], the mirror of the Tools drawer), so it can never sit inside the panel's tab row. The check runs
+      // VERBATIM, unchanged, on the BOARD, whose panel still overlays the canvas from the stage's edge and whose tab still moves clear of it. On the page
+      // its successor runs instead; records in the parked section.
+      if (surface !== 'page') {
+        ok(`S1 geometry @${width}px/${surface}: grip-clears-panel (open) [tutor-drawer-arrow successor] — the grip MOVES once the panel opens, landing ${GRIP_GUTTER_PX}px outside the panel's own near edge (never inside its tab row)`,
+          Math.abs((panelOpen.left - gripOpen.right) - GRIP_GUTTER_PX) < 1.5,
+          JSON.stringify({ gripRight: gripOpen.right, panelLeft: panelOpen.left, gap: panelOpen.left - gripOpen.right }));
+      } else {
+        const ov = await app.evalJs("(() => { const p = document.querySelector('.desk-frame-stage--prose .mode-page'); const st = document.querySelector('.desk-frame-stage'); const g = document.querySelector('.wz-tutor-grip'); if (!p || !st || !g) return {}; const r = g.getBoundingClientRect(); const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return { margin: Math.round(st.getBoundingClientRect().right - p.getBoundingClientRect().right), gripOnTop: !!hit && g.contains(hit) }; })()");
+        const o = { width, gripClosed, gripOpen, panelLeft: panelOpen.left, margin: ov.margin ?? null, gripOnTop: ov.gripOnTop ?? null };
+        fx10Mirror.push(o);
+        ok(`S1 geometry @${width}px/page: grip-clears-panel (open) [drawer-mirror successor] — the grip never moves once the panel opens, and the panel starts AT it (never inside its tab row) - or, under DRAWER_MIN beside the page, overlays from the stage's edge with the tab riding above it`,
+          fx10MirrorOk(o), JSON.stringify(o));
+      }
       ok(`S1 geometry @${width}px/${surface}: paper rect BYTE-IDENTICAL, closed -> open`,
         JSON.stringify(paperClosed) === JSON.stringify(paperOpen), JSON.stringify({ paperClosed, paperOpen }));
 
@@ -691,12 +728,23 @@ console.log(JSON.stringify(checks, null, 2));
 // own precedent for an armed-but-empty gate on a brand-new file.
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  // PAGE-SIZE'S PARK AUDIT (Oct 24) - THREE parks of fx10's own: S1's grip-flush (closed) on the PAGE surface at the three reference widths (the board's
+  // still runs). Records re-verify the new truth from the default leg's own reads. (S4's scrollbar checks are TOOLS' - their fix builds on page-size.)
+  // THE DRAWER MIRROR (Oct 24) - THREE more: S1's grip-clears-panel (open) on the PAGE surface at the three reference widths (the board's still runs).
+  for (const o of fx10Mirror) {
+    parkedChecks.push({ name: `PARKED for the page surface (was "S1 geometry @${o.width}px/page: grip-clears-panel (open) [tutor-drawer-arrow successor] — the grip MOVES once the panel opens, landing 16px outside the panel's own near edge (never inside its tab row)") — the drawer mirror: the tab never moves, the panel starts at it; live successor: S1 geometry @${o.width}px/page: grip-clears-panel (open) [drawer-mirror successor]`,
+      pass: fx10MirrorOk(o), detail: JSON.stringify(o) });
+  }
+  for (const o of fx10Ps) {
+    parkedChecks.push({ name: `PARKED for the page surface (was "S1 geometry @${o.width}px/page: grip-flush (closed) — the grip's own left edge sits flush (no gap) against the paper's right edge") — page-size: the paper is the painted .mode-page; live successor: S1 geometry @${o.width}px/page: grip-flush (closed) [page-size successor]`,
+      pass: psGripOk(o), detail: JSON.stringify(o) });
+  }
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nFX10 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, nothing parked out of fx10.mjs itself`
+    ? `\nFX10 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; fx10.mjs parks 6 of its own (Oct 24: page-size's S1 grip-flush and the drawer mirror's S1 grip-clears-panel, each on the page surface)`
     : `\nFX10 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
