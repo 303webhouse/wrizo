@@ -1240,7 +1240,7 @@ export function BoardEditor({ id }: { id: string }) {
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [boardMode === 'open']);   // W1: the wrap exists only while the board is shown Open - a board that mounts in the Walk (a Deck) or was shown another way must measure when Open arrives (it came back 700 px wide and never re-measured)
   // FX13 S2 (the board fits the room) — the WRAP's height is the DeskFrame
   // stage's ACTUAL available height, not a magic viewport ratio. The old
   // `maxHeight: 78vh` was the width-only-geometry law showing through: a fixed
@@ -1284,7 +1284,7 @@ export function BoardEditor({ id }: { id: string }) {
     ro.observe(stage);
     window.addEventListener('resize', schedule);
     return () => { if (raf) cancelAnimationFrame(raf); ro.disconnect(); window.removeEventListener('resize', schedule); };
-  }, []);
+  }, [boardMode === 'open']);   // W1: as the width measure above - re-attach when the wrap (re)mounts
   // FX4 S4 — the effective page width every normalized box coordinate
   // converts against: the persisted override once the writer has dragged
   // the canvas wider/narrower, else the wrap's own natural (auto-fit)

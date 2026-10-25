@@ -106,10 +106,20 @@ await withHarness(async (app) => {
       if (full) {
         await open('w1-three', '.board-canvas');
         const before = (await boxes()).filter((b) => b.kind === 'text').map((b) => [b.id, b.x, b.y, b.seq]);
+        const openW0 = await rectOf('.board-canvas-wrap');
         const seen = [];
         for (const v of ['storyboard', 'outline', 'walk', 'open']) { await showAs(v); await sleep(500); seen.push(await pressed()); }   // the views must REALLY switch - an unchanged board proves nothing if no view ever changed (the red run on 90c01bcc passed this vacuously)
         const after = (await boxes()).filter((b) => b.kind === 'text').map((b) => [b.id, b.x, b.y, b.seq]);
         ok(`[${T}] Show as switches Open / Storyboard / Outline / Walk without moving a card or touching the order (x, y and seq are byte-identical)`, JSON.stringify(seen) === JSON.stringify(['storyboard', 'outline', 'walk', 'open']) && JSON.stringify(before) === JSON.stringify(after) && before.length === 3, JSON.stringify({ seen, before, after }));
+        // the Open canvas is full width again after the board was shown another way (Walk -> Open left it 700 wide: the measuring effects ran once, at mount, with no wrap to measure)
+        const backOpen = await rectOf('.board-canvas-wrap');
+        ok(`[${T}] Open comes back at the same full width after Storyboard / Outline / Walk (wrap ${backOpen && backOpen[2]}px, first shown ${openW0 && openW0[2]}px)`, !!backOpen && !!openW0 && openW0[2] > 900 && Math.abs(backOpen[2] - openW0[2]) <= 2, JSON.stringify({ backOpen, openW0 }));
+        // and a Deck (it MOUNTS in the Walk, so its first mount has no wrap at all) opens at full width when the writer shows it as Open
+        await open('w1-deck', '.walk'); await showAs('open'); await sleep(900);
+        const deckOpen = await rectOf('.board-canvas-wrap');
+        ok(`[${T}] a Deck shown as Open has a full-width canvas (wrap ${deckOpen && deckOpen[2]}px)`, !!deckOpen && deckOpen[2] > 900, JSON.stringify(deckOpen));
+        await showAs('walk'); await sleep(700);
+        await open('w1-three', '.show-as');
         await showAs('storyboard'); await sleep(400);
         await app.reload(); await waitSoft("!!document.querySelector('.show-as')", { label: 'show-as after reload', timeout: 8000 }); await sleep(900);
         const remembered = await pressed();
