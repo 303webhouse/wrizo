@@ -179,20 +179,22 @@ await withHarness(async (app) => {
   // scale took a different bite out of the column and reflowed the lines. The fix pairs the bar with a right padding of (10px - that width), so bar + padding is always 10 layout px and the column is the SAME width
   // at k = 1, k < 1, k > 1 and zoomed. Measured in layout px (offsetWidth / clientWidth), each against the k = 1 read; the scale is asserted to differ from 1 where the scenario claims it (the blind-pass guard).
   const col = {};
-  for (const [name, size, zoom, want] of [['1366', [1366, 768], false, 'one'], ['1100x900', [1100, 900], false, 'scaled'], ['1280x900', [1280, 900], false, 'scaled'], ['3840 (k>1)', [3840, 2160], false, 'scaled'], ['3840 zoomed', [3840, 2160], true, 'scaled'], ['1366 zoomed', [1366, 768], true, 'scaled']]) {
+  for (const [name, size, zoom, want] of [['1366', [1366, 768], false, 'one'], ['1100x900', [1100, 900], false, 'floor'], ['1280x900', [1280, 900], false, 'floor'], ['3840 (k>1)', [3840, 2160], false, 'scaled'], ['3840 zoomed', [3840, 2160], true, 'scaled'], ['1366 zoomed', [1366, 768], true, 'scaled']]) {
     await seedAndOpen(app, 'plateau', 'light', size);
     if (zoom) { await app.evalJs("document.querySelector('.mode-pagecol')?.setAttribute('data-zoom', 'true')"); await sleep(250); }
     let m = await measure(app);
     const target = (q) => (q ? q.stageK * (zoom ? q.zoomVar : 1) : 1);
     for (let i = 0; i < 24 && m && Math.abs(m.appliedScale - target(m)) > 0.005 * target(m); i += 1) { await sleep(250); m = await measure(app); }
     col[name] = m;
-    ok(`COLUMN [${name}] premise: the page really is at the scale the scenario claims (${m ? m.appliedScale.toFixed(3) : '?'} - ${want === 'one' ? 'k = 1' : 'k != 1'})`, !!m && (want === 'one' ? Math.abs(m.appliedScale - 1) < 0.005 : Math.abs(m.appliedScale - 1) > 0.005), m ? String(m.appliedScale) : '');
+    ok(`COLUMN [${name}] premise: the page really is at the scale the scenario claims (${m ? m.appliedScale.toFixed(3) : '?'} - ${want === 'one' ? 'k = 1' : want === 'floor' ? 'k at its floor, ~1' : 'k > 1'})`, !!m && (want === 'one' ? Math.abs(m.appliedScale - 1) < 0.005 : want === 'floor' ? m.appliedScale > 0.99 && m.appliedScale < 1.005 : m.appliedScale > 1.005), m ? String(m.appliedScale) : '');
   }
   {
     const base = col['1366'];
     const sizes = Object.keys(col);
     const ks = sizes.map((n) => col[n] && col[n].appliedScale).filter((x) => typeof x === 'number');
-    ok(`COLUMN premise: the scenarios really cover k < 1, k = 1 and k > 1 (applied scales ${ks.map((x) => x.toFixed(3)).join(', ')}) - the equality below is not three reads of an unscaled page`, ks.some((x) => x < 0.995) && ks.some((x) => Math.abs(x - 1) < 0.005) && ks.some((x) => x > 1.005), JSON.stringify(ks));
+    // k BELOW 1 does not occur: page-size floors the applied scale at ~0.9996 (measured at 1000 / 1100 / 1280 wide, 700-900 tall), so the 10px cap (the 'k < 1' side of the bar's rounding) binds only by that rounding. The premise asserts the floor itself
+    // (nothing renders below 0.99) and that the scenarios cover k at the floor, k > 1 and zoomed - so the equality below is not reads of one unscaled page.
+    ok(`COLUMN premise: the scenarios cover k at its floor, k > 1 and zoomed, and the page never renders below 0.99 (applied scales ${ks.map((x) => x.toFixed(4)).join(', ')})`, ks.every((x) => x > 0.99) && ks.some((x) => x >= 0.99 && x < 1.005) && ks.some((x) => x > 1.005), JSON.stringify(ks));
     ok(`COLUMN: the text column (the editor's layout width) is IDENTICAL at k = 1, k < 1, k > 1 and zoomed (${sizes.map((n) => `${n}: ${col[n] ? col[n].columnEditor : '?'}`).join(', ')})`, !!base && sizes.every((n) => !!col[n] && Math.abs(col[n].columnEditor - base.columnEditor) < 0.5), JSON.stringify(Object.fromEntries(sizes.map((n) => [n, col[n] && col[n].columnEditor]))));
     ok(`COLUMN: .mode-scroll's content box (clientWidth less its padding) is identical at every scale too (${sizes.map((n) => `${n}: ${col[n] ? col[n].columnScroll : '?'}`).join(', ')})`, !!base && sizes.every((n) => !!col[n] && Math.abs(col[n].columnScroll - base.columnScroll) < 0.5), JSON.stringify(Object.fromEntries(sizes.map((n) => [n, col[n] && col[n].columnScroll]))));
     ok(`COLUMN: bar + the pairing's extra right padding is 10 layout px at every scale (${sizes.map((n) => `${n}: ${col[n] ? col[n].scrollbarWidth + '+' + col[n].scrollPadExtra : '?'}`).join(', ')}), and the bar never exceeds 10`, !!base && sizes.every((n) => !!col[n] && col[n].scrollbarWidth <= 10 && Math.abs(col[n].scrollbarWidth + col[n].scrollPadExtra - 10) < 0.5), JSON.stringify(Object.fromEntries(sizes.map((n) => [n, col[n] && [col[n].scrollbarWidth, col[n].scrollPadExtra]]))));
