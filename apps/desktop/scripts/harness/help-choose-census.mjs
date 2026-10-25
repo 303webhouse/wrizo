@@ -204,14 +204,28 @@ ok('C1: Q3 is little / shape / everything', !!m && same(m.Q3, Q3), m ? JSON.stri
   const STORAGE = /localStorage|sessionStorage|indexedDB|wrizo-|saveJournalEntry|scheduleFlush|setWritingSettings|fetch\(/;
   const mounts = ['components/SectionsPopout.tsx', 'components/DeckWizard.tsx'].map((f) => (existsSync(join(SRC, f)) ? strip(readFileSync(join(SRC, f), 'utf8')) : ''));
   // every <HelpMeChoose mount sits behind `{helpOpen &&`, and the only `setHelpOpen(true)` is inside an onClick
-  const mountOk = (t) => (t.match(/<HelpMeChoose/g) || []).length === 1 && /\{helpOpen && <HelpMeChoose/.test(t) && (t.match(/setHelpOpen\(true\)/g) || []).length === 1 && /onClick=\{\(\) => setHelpOpen\(true\)\}/.test(t);
+  // ORIGINAL (this block's own live predicate, pre Machina Forms): const mountOk = (t) => (t.match(/<HelpMeChoose/g) || []).length === 1 && /\{helpOpen && <HelpMeChoose/.test(t) && (t.match(/setHelpOpen\(true\)/g) || []).length === 1 && /onClick=\{\(\) => setHelpOpen\(true\)\}/.test(t);
+  //   and the check that used it: ok('C10: it NEVER opens itself - each of its two hosts mounts it exactly once, behind `{helpOpen &&`, and flips helpOpen to true ONLY from an onClick', mounts.every(mountOk), ...);
+  // SUPERSEDED (train #7 red 7, Oct 25 - Machina Forms): DeckWizard now carries TWO doors to the one panel (Machina's Forms panel has its boxed Intake row; Arbor / Flux keep the library's door), so `setHelpOpen(true)` is
+  // written twice there - the ORIGINAL pinned the COUNT (exactly 1). The sense is unchanged and is what the successor pins: the panel is mounted once, behind `{helpOpen &&`, and EVERY `setHelpOpen(true)` is an onClick (the
+  // count of the onClick form equals the count of the bare call, and is at least 1 - a liveness floor, so an empty match cannot pass). The original is run below as a PARKED RECORD (it must keep failing on DeckWizard for exactly that reason).
+  const origMountOk = (t) => (t.match(/<HelpMeChoose/g) || []).length === 1 && /\{helpOpen && <HelpMeChoose/.test(t) && (t.match(/setHelpOpen\(true\)/g) || []).length === 1 && /onClick=\{\(\) => setHelpOpen\(true\)\}/.test(t);
+  const opens = (t) => (t.match(/setHelpOpen\(true\)/g) || []).length;
+  const clickOpens = (t) => (t.match(/onClick=\{\(\) => setHelpOpen\(true\)\}/g) || []).length;
+  const mountOk = (t) => (t.match(/<HelpMeChoose/g) || []).length === 1 && /\{helpOpen && <HelpMeChoose/.test(t) && opens(t) >= 1 && clickOpens(t) === opens(t);
   ok('C10: the panel stores nothing - HelpMeChoose.tsx names no storage, sync or save path', panel.length > 0 && !STORAGE.test(panel), '');
-  ok('C10: it NEVER opens itself - each of its two hosts mounts it exactly once, behind `{helpOpen &&`, and flips helpOpen to true ONLY from an onClick', mounts.every(mountOk), JSON.stringify(mounts.map(mountOk)));
+  ok('C10 [Forms successor]: it NEVER opens itself - each of its two hosts mounts it exactly once, behind `{helpOpen &&`, and flips helpOpen to true ONLY from an onClick (however many doors: every call is an onClick)', mounts.every(mountOk), JSON.stringify(mounts.map((t) => ({ ok: mountOk(t), opens: opens(t), onClick: clickOpens(t) }))));
+  ok('C10 [parked record]: the ORIGINAL (exactly one setHelpOpen(true)) still holds on SectionsPopout and fails on DeckWizard ONLY because it now has two doors, both onClick (opens 2, onClick 2)', origMountOk(mounts[0]) && !origMountOk(mounts[1]) && opens(mounts[1]) === 2 && clickOpens(mounts[1]) === 2, JSON.stringify({ popout: origMountOk(mounts[0]), wizard: origMountOk(mounts[1]), opens: opens(mounts[1]), onClick: clickOpens(mounts[1]) }));
   ok('C10: and it has no timer, no auto-open effect, no interval (the only effects are focus, Esc and focus-return)', panel.length > 0 && !/setTimeout|setInterval|requestAnimationFrame/.test(panel), '');
   const withStorage = STORAGE.test(panel + "\nlocalStorage.setItem('wrizo-help-seen','1');");
   const autoOpen = mountOk(mounts[0].replace('onClick={() => setHelpOpen(true)}', 'onClick={() => setHelpOpen(true)}').replace('{helpOpen && <HelpMeChoose', '{<HelpMeChoose'));
   ok('MUTANT: a localStorage write added to the panel - C10 must go RED (the mutation LANDED: the real panel is clean)', panel.length > 0 && !STORAGE.test(panel) && withStorage, '');
   ok('MUTANT: the panel mounted without its `helpOpen &&` gate (it would open by itself) - C10 must go RED (the mutation LANDED: the real host passes)', mountOk(mounts[0]) && !autoOpen, '');
+  // the successor's own mutants (it must not have gone blind): an auto-open effect in DeckWizard (a bare setHelpOpen(true) that is not an onClick), and the Forms door losing its onClick
+  const effectOpen = mounts[1].replace('const [helpOpen, setHelpOpen] = useState(false);', 'const [helpOpen, setHelpOpen] = useState(false);\n  useEffect(() => { setHelpOpen(true); }, []);');
+  ok('MUTANT: an auto-open effect in DeckWizard (a bare setHelpOpen(true)) - the successor must go RED (the mutation LANDED: the real host passes)', mountOk(mounts[1]) && effectOpen !== mounts[1] && !mountOk(effectOpen), JSON.stringify({ real: mountOk(mounts[1]), landed: effectOpen !== mounts[1], mutant: mountOk(effectOpen) }));
+  const noMatches = mountOk('{helpOpen && <HelpMeChoose />}');
+  ok('MUTANT (liveness): a host with the gated mount but NO door at all must not pass (the successor demands at least one onClick open)', noMatches === false, String(noMatches));
 }
 
 // ------------------------------------------------------------------ MUTANTS: each rewrites the REAL module, asserts the mutation LANDED, bundles it, and re-runs the check it targets - which must go RED
