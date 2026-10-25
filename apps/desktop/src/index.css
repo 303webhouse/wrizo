@@ -4156,6 +4156,17 @@ a:focus-visible,
    inherited from an ancestor the host's useChromeDissolve already writes to
    (see components/DeskFrame.tsx's header comment). */
 .desk-dissolve{ transition:opacity var(--fade-dur,1.2s) ease; }
+/* POLISH #10 item 23 (Nick, Oct 25) - WHILE TYPING, EVERYTHING OFF THE PAGE GOES TO 0. The desk's own chrome read --fade-min, which is defined only on
+   .mode-stage - never an ancestor of it - so it always fell back to .08 (the rail "ghosting"). On the framed desk the floor is 0 (whatever the Recede
+   setting says; it still governs the narrow, unframed layout). And the chrome that lives outside the desk's dissolve classes - the wordmark, the ember
+   dot, the progress lane (the rhizome, the bar, Machina's run strip), Flux's glitch meter - recedes with it while the desk writes (ModeStage writes
+   data-wz-writing on the root). Only the page and the drawers' tab arrows stay. It returns as today (the engine's own curve, --fade-dur). */
+.desk-frame{ --fade-min:0; }
+.brand-mark, .chrome-handle, .glitch-meter-layer, .desk-frame-rhizome-anchor{ transition:opacity var(--fade-dur,1.2s) ease; }
+html[data-wz-writing='true'] .brand-mark,
+html[data-wz-writing='true'] .glitch-meter-layer,
+html[data-wz-writing='true'] .desk-frame-rhizome-anchor{ opacity:0 !important; pointer-events:none; }
+html[data-wz-writing='true'] .chrome-handle{ opacity:0 !important; }   /* still takes the pointer: reaching it is one way back */
 .desk-frame[data-writing='true'] .desk-dissolve{ opacity:var(--fade-min,.08); pointer-events:none; }
 @media (prefers-reduced-motion:reduce){ .desk-dissolve{ transition:none; } }
 
