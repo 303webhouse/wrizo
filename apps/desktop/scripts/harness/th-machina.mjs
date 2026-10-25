@@ -222,6 +222,40 @@ await withHarness(async (app) => {
       only.lane && only.tracks === 0 && only.metric === '' && (mode === 'drafting' ? only.run : true) && ctl.tracks === 1, JSON.stringify({ only, ctl }));
   }
 
+  // ======================================================= SV - Oct 24 (Nick, train #7): the Sprint page text is READABLE, and FINALIZE / PLAN are plain at rest
+  // Sprint (Free Write) hands the editor a PEN ink, which used to be the raw #1a0f06 on the dark page (1.06:1). Computed contrast of the editor's text against the page's own paper, Sprint AND Build, both casts, both page tones: >= 13.9:1.
+  const rgbOf = (c) => { const m = /rgba?\(([^)]+)\)/.exec(c || ''); return m ? m[1].split(',').slice(0, 3).map((x) => parseFloat(x)) : null; };
+  const relLum = ([r, g, b]) => { const f = (v) => { const x = v / 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+  const contrast = (a, b) => { const [hi, lo] = [relLum(a), relLum(b)].sort((p, q) => q - p); return (hi + 0.05) / (lo + 0.05); };
+  const clickTab = (label) => app.evalJs(`(() => { const t = [...document.querySelectorAll('.desk-mode-tab')].find((b) => b.textContent.trim() === ${JSON.stringify(label)}); if (!t) return false; t.click(); return true; })()`);
+  const sv = [];
+  for (const cast of ['cool', 'neutral']) {
+    for (const tone of ['dark', 'light']) {
+      await boot(app, { cast, page: tone, dial: 50, goal: 10 });
+      await openPage(app, `ma-sv-${cast}-${tone}`, words(12));
+      for (const mode of ['Sprint', 'Build']) {
+        const clicked = await clickTab(mode);
+        await app.waitFor(`!!document.querySelector('${ED}')`, { label: `${mode} editor`, timeout: 8000 }).catch(() => {});
+        await sleep(600);
+        const r = await app.evalJs(`(() => { const ed = document.querySelector('${ED}'); const pg = document.querySelector('.mode-page'); if (!ed || !pg) return null; return { text: getComputedStyle(ed).color, paper: getComputedStyle(pg).backgroundColor, pen: ed.style.color || null, tab: [...document.querySelectorAll('.desk-mode-tab.active')].map((b) => b.textContent.trim()).join('|') }; })()`);
+        const ratioV = r && rgbOf(r.text) && rgbOf(r.paper) ? contrast(rgbOf(r.text), rgbOf(r.paper)) : 0;
+        sv.push({ cast, tone, mode, ratio: Math.round(ratioV * 100) / 100 });
+        ok(`SV [${cast}/${tone}, ${mode}]: the editor's text is >= 13.9:1 against the page's own paper (computed ${ratioV.toFixed(2)}:1) - the active mode really is ${mode}`, clicked && !!r && r.tab === mode && ratioV >= 13.9, JSON.stringify(r));
+        if (mode === 'Sprint') await frame(app, `sprint-${cast}-${tone}`);
+      }
+    }
+  }
+  // FINALIZE and the PLAN door at rest: --text-mid, in both casts (not orange)
+  for (const cast of ['cool', 'neutral']) {
+    await boot(app, { cast, page: 'dark', dial: 50, goal: 10 });
+    await openPage(app, `ma-sv2-${cast}`, words(12));
+    const mid = await token(app, '--text-mid');
+    const orangeT = await token(app, '--orange');
+    const cols = await app.evalJs(`(() => ({ finalize: (document.querySelector('.desk-mode-tab[data-mode-key="publish"]') ? getComputedStyle(document.querySelector('.desk-mode-tab[data-mode-key="publish"]')).color : null), build: getComputedStyle([...document.querySelectorAll('.desk-mode-tab')].find((b) => b.textContent.trim() === 'Edit') || document.body).color, plan: (document.querySelector('.sprint-nav .page-plan-door') ? getComputedStyle(document.querySelector('.sprint-nav .page-plan-door')).color : null) }))()`);
+    ok(`SV [${cast}]: FINALIZE and the PLAN door are plain at rest - the same --text-mid as the other modes, never the orange`, cols.finalize === mid && cols.plan === mid && cols.build === mid && cols.finalize !== orangeT && cols.plan !== orangeT, JSON.stringify({ cols, mid, orangeT }));
+    if (cast === 'neutral') await frame(app, 'modes-plain-neutral');
+  }
+
   // ======================================================= LX - the words on screen; PP - the page does not move
   await boot(app, { cast: 'cool', dial: 50, goal: 10 });
   await openPage(app, 'ma3', words(15));

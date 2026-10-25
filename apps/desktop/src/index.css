@@ -691,9 +691,13 @@
 :root[data-theme='machina'][data-page='dark'] .board-canvas { --card-stock: var(--ink-900); --card-hairline: var(--ink-border); --ink-on-card: var(--text-hi); --ink-on-card-low: var(--text-mid); --ink-on-card-meta: var(--text-mid); --badge-on-card: var(--text-mid); }
 :root[data-theme='machina'][data-page='light'] .board-canvas { --card-stock: #FFFFFF; --card-hairline: var(--ink-border); --ink-on-card: #141414; --ink-on-card-low: #5C6472; --ink-on-card-meta: #5C6472; --badge-on-card: #5C6472; }
 :root[data-theme='machina'][data-cast='neutral'][data-page='light'] .board-canvas { --ink-on-card-low: #595959; --ink-on-card-meta: #595959; --badge-on-card: #595959; }
-/* The mockup's active rail item is INK-coloured with only the left edge in the carrier colour (the app's own rule paints the label in --accent-rest too); Finalize alone is orange in both casts. */
+/* The mockup's active rail item is INK-coloured with only the left edge in the carrier colour (the app's own rule paints the label in --accent-rest too). */
 [data-theme='machina'] .wz-strip-item.active { color: var(--text-hi); }
-[data-theme='machina'] .desk-mode-tab[data-mode-key='publish'] { color: var(--orange); }
+/* FINALIZE and the PLAN door are PLAIN (Nick, Oct 24): the mockup drew Finalize orange at rest and the page's Plan door wears --accent-rest (orange under NEUTRAL, steel under COOL); both now read like every other mode -
+   quiet at rest (--text-mid), --text-hi on hover (the shared .desk-mode-tab:hover / .page-plan-door:hover), and the carrier colour only where it already means "current" (the active tab's underline, --accent-rest).
+   Orange is for the notch, the closed strip and a chosen state - not a resting label. */
+[data-theme='machina'] .sprint-nav .page-plan-door{ color:var(--text-mid); }
+[data-theme='machina'] .sprint-nav .page-plan-door:hover{ color:var(--text-hi); }
 /* THE SPARKS (NEUTRAL only, foundations §5): the selection wash on the page. COOL keeps the house's own grey selection. */
 :root[data-theme='machina'][data-cast='neutral'][data-page='dark'] .mode-scroll ::selection { background: rgba(255, 152, 0, .22); }
 :root[data-theme='machina'][data-cast='neutral'][data-page='light'] .mode-scroll ::selection { background: rgba(255, 152, 0, .28); }

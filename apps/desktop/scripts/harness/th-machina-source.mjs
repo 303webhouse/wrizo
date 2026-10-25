@@ -350,6 +350,33 @@ const syncSrc = readFileSync(join(DESKTOP, '..', 'server', 'src', 'sync.ts'), 'u
 ok('M20: the card is LOCKED by the server\'s own unlock table (machina has a threshold: 100 words) - nothing client-side invents an unlock', /machina: 100,/.test(syncSrc) && /isThemeOpen\(card\.id, status, current\)/.test(tp), '');
 ok('M20: the card art is the card\'s OWN theme in literals (never the ambient tokens) and still frames hold the strip', /\.wz-theme-card-machina \.wz-theme-plate\{ background:linear-gradient\(180deg, #12141A/.test(ccss) && /\.wz-theme-picker\[data-still='true'\] \.wz-theme-plate-run > i/.test(ccss), '');
 
+// M21 - Oct 24 (Nick, train #7): the Sprint page text, FINALIZE / PLAN at rest, and the Tutor's Free Write words
+// (a) PAGE TEXT >= 13.9:1 in every Machina cast and page tone - computed from the tokens; and the Free Write PEN (the Sprint tab's rail hands the editor a pen ink) can never be the raw dark swatch on a dark page
+for (const cast of ['cool', 'neutral']) {
+  for (const tone of ['dark', 'light']) {
+    const t = cell(cast, tone);
+    const r = ratio(t['--ink-on-paper'], t['--paper']);
+    ok(`M21 [${cast}/${tone}]: page text (--ink-on-paper on --paper) is >= 13.9:1 - the figure the default pen now follows`, r >= 13.9, r.toFixed(2));
+  }
+}
+const modeStage = src('components/ModeStage.tsx');
+const penFn = (/function effectivePenInk\([^)]*\): string \{([\s\S]*?)\n\}\n/.exec(modeStage) || [, ''])[1];
+const penRaw = '#1a0f06';
+ok('M21: effectivePenInk knows Machina - the default swatch becomes var(--ink-on-paper) (the page\'s own ink, every cast and tone), so Free Write can never paint #1a0f06 on the dark page (1.06:1)',
+  /theme === 'machina'/.test(penFn) && /ink === PEN_DEFAULT_INK\) return 'var\(--ink-on-paper\)'/.test(modeStage) && /const PEN_DEFAULT_INK = '#1a0f06';/.test(modeStage) && /export const PEN_INKS = \['#1a0f06'/.test(modeStage), '');
+ok('M21: ...and the RAW default really is invisible on Machina\'s dark pages (the regression this guards: < 1.2:1 in both casts) while the page ink clears 13.9', ['cool', 'neutral'].every((c) => ratio(penRaw, cell(c, 'dark')['--paper']) < 1.2 && ratio(cell(c, 'dark')['--ink-on-paper'], cell(c, 'dark')['--paper']) >= 13.9), ['cool', 'neutral'].map((c) => ratio(penRaw, cell(c, 'dark')['--paper']).toFixed(2)).join(' / '));
+{
+  const dark = Object.fromEntries([...(/const PEN_INKS_MACHINA_DARK: Record<string, string> = \{([\s\S]*?)\};/.exec(modeStage) || [, ''])[1].matchAll(/'(#[0-9a-fA-F]{6})': '(#[0-9a-fA-F]{6})'/g)].map((m) => [m[1], m[2]]));
+  const rows = ['cool', 'neutral'].flatMap((c) => Object.values(dark).map((hex) => ratio(hex, cell(c, 'dark')['--paper'])));
+  ok('M21: the lightened red and blue pens clear 7:1 on BOTH dark pages (computed)', Object.keys(dark).length === 2 && rows.length === 4 && rows.every((r) => r >= 7), rows.map((r) => r.toFixed(2)).join(' / '));
+}
+// (b) FINALIZE and the PLAN door are plain at rest - no Machina rule colours either of them, except the PLAN door's own text-mid / text-hi pair
+const plainOk = (c) => !/\[data-theme='machina'\] \.desk-mode-tab\[data-mode-key='publish'\]\s*\{[^}]*color/.test(c)
+  && /\[data-theme='machina'\] \.sprint-nav \.page-plan-door\{ color:var\(--text-mid\); \}/.test(c) && /\[data-theme='machina'\] \.sprint-nav \.page-plan-door:hover\{ color:var\(--text-hi\); \}/.test(c);
+ok('M21: FINALIZE has NO Machina colour rule of its own (it reads like every other mode), and the PLAN door is --text-mid at rest, --text-hi on hover - orange only where it already means current', plainOk(ccss), '');
+// (c) the Tutor's Free Write words follow Machina's Free Write word
+ok('M21: the Tutor\'s Free Write roster reads "Sprint Tips" / "Sprint tools" under Machina, and Arbor keeps "Free Writing Tips"', D('tutorFreeWriteTips') === 'Sprint Tips' && D('tutorFreeWriteRoster') === 'Sprint tools' && L.deskLexicon.deskTerm('tutorFreeWriteTips', 'plateau') === 'Free Writing Tips', JSON.stringify([D('tutorFreeWriteTips'), D('tutorFreeWriteRoster')]));
+
 // ---------------------------------------------------------------- MUTANTS
 const mutantCss = (mutate, asserts) => { const m = mutate(css); return m !== css && asserts(m); };
 {
@@ -405,6 +432,13 @@ ok('MUTANT: a Machina desk string re-introducing "Drawer" - M8 must go RED', LEA
   // ------------------------------------------------------------------
   const css2b = mut(ccss, "[data-theme='machina'] .desk-frame-goalflare{ display:none; }", '');
   ok('MUTANT [page-size successor]: Arbor\'s celebration flare left drawn under Machina (the display:none rule deleted) - M18 [page-size successor] must go RED (the mutation LANDED)', css2b !== null && !M18PS(css2b) && M18PS(ccss), '');
+  // M21 mutants (Oct 24)
+  const orangeBack = ccss + "\n[data-theme='machina'] .desk-mode-tab[data-mode-key='publish'] { color: var(--orange); }\n";
+  ok('MUTANT: FINALIZE orange at rest again (the old rule re-added) - M21 must go RED (the mutation LANDED: the real CSS passes)', plainOk(ccss) && !plainOk(orangeBack), '');
+  const planGone = mut(ccss, "[data-theme='machina'] .sprint-nav .page-plan-door{ color:var(--text-mid); }", '');
+  ok('MUTANT: the PLAN door\'s plain rule deleted (it falls back to --accent-rest: orange under NEUTRAL) - M21 must go RED (the mutation LANDED)', planGone !== null && !plainOk(planGone), '');
+  const penBack = mut(modeStage, "if (ink === PEN_DEFAULT_INK) return 'var(--ink-on-paper)';", 'if (ink === PEN_DEFAULT_INK) return ink;');
+  ok('MUTANT: the Machina default pen left as the raw #1a0f06 (the invisible Sprint text) - M21 must go RED (the mutation LANDED)', penBack !== null && !/ink === PEN_DEFAULT_INK\) return 'var\(--ink-on-paper\)'/.test(penBack) && /ink === PEN_DEFAULT_INK\) return 'var\(--ink-on-paper\)'/.test(modeStage), '');
   const GLYPH = /\{theme === 'machina' \? '◂' : '↩'\}/;
   const rail2 = mut(rail, "{theme === 'machina' ? '◂' : '↩'}", '↩');
   ok('MUTANT: the way-back glyph left as the ember "↩" under Machina - M16 must go RED (the mutation LANDED)', rail2 !== null && !GLYPH.test(rail2) && GLYPH.test(rail), '');
