@@ -109,9 +109,18 @@ ok('T5 [successor]: the exception RESETS scrollbar-width and scrollbar-color to 
 const barRule = exceptionRules.find(([s]) => s === EXC + '::-webkit-scrollbar');
 const thumbRule = exceptionRules.find(([s]) => s === EXC + '::-webkit-scrollbar-thumb');
 const zoomRule = exceptionRules.find(([s]) => s === ".desk-frame-stage--prose .mode-pagecol[data-zoom='true'] .mode-scroll");
-ok('T5 [successor]: the bar is 10px / the APPLIED scale, rounded to the nearest whole layout pixel (the engine truncates a fractional bar width: 10/1.74 = 5.74 painted 8.7px) (--wz-sb-k = --wz-k, times --wz-zoom while the column is zoomed - the expressions page-size\'s own transform rules use)',
-  !!barRule && /width:\s*round\(nearest, calc\(10px \/ var\(--wz-sb-k\)\), 1px\)/.test(barRule[1]) && !!resetRule && /--wz-sb-k:\s*var\(--wz-k, 1\)/.test(resetRule[1])
-  && !!zoomRule && /--wz-sb-k:\s*calc\(var\(--wz-k, 1\) \* var\(--wz-zoom, 1\.6\)\)/.test(zoomRule[1]), JSON.stringify({ barRule, zoomRule }));
+// ORIGINAL (this file's own live T5 [successor] width check, scrollbar-flush's first build; parked verbatim):
+// ok('T5 [successor]: the bar is 10px / the APPLIED scale, rounded to the nearest whole layout pixel (the engine truncates a fractional bar width: 10/1.74 = 5.74 painted 8.7px) (--wz-sb-k = --wz-k, times --wz-zoom while the column is zoomed - the expressions page-size\'s own transform rules use)',
+//   !!barRule && /width:\s*round\(nearest, calc\(10px \/ var\(--wz-sb-k\)\), 1px\)/.test(barRule[1]) && !!resetRule && /--wz-sb-k:\s*var\(--wz-k, 1\)/.test(resetRule[1])
+//   && !!zoomRule && /--wz-sb-k:\s*calc\(var\(--wz-k, 1\) \* var\(--wz-zoom, 1\.6\)\)/.test(zoomRule[1]), JSON.stringify({ barRule, zoomRule }));
+// SUPERSEDED (Fable Oct 25, FIX's diagnosis of the line-break reds): a bar whose layout width changes with the scale takes a different bite out of the text column and reflows the lines. The bar's layout width is now a
+// variable (--wz-sb-w = min(10px, round(nearest, 10px / --wz-sb-k, 1px))) and .mode-scroll takes a right padding of (10px - that width), so bar + padding is 10 layout px at every scale and zoom. The same 10px / applied-scale
+// sense is kept (the variable carries the original expression, unchanged); what is new is the cap and the padding. Live successor below; the DOM half is scrollbar-flush.mjs COLUMN.
+ok('T5 [r2 successor]: the bar is 10px / the APPLIED scale rounded to the nearest whole layout pixel, capped at 10 (--wz-sb-w), and the bar rule reads that variable; --wz-sb-k = --wz-k, times --wz-zoom while the column is zoomed',
+  !!barRule && /width:\s*var\(--wz-sb-w\)/.test(barRule[1]) && !!resetRule && /--wz-sb-w:\s*min\(10px, round\(nearest, calc\(10px \/ var\(--wz-sb-k\)\), 1px\)\)/.test(resetRule[1]) && /--wz-sb-k:\s*var\(--wz-k, 1\)/.test(resetRule[1])
+  && !!zoomRule && /--wz-sb-k:\s*calc\(var\(--wz-k, 1\) \* var\(--wz-zoom, 1\.6\)\)/.test(zoomRule[1]), JSON.stringify({ barRule, resetRule, zoomRule }));
+ok('T5 [r2 successor]: the PAIRING - .mode-scroll takes padding-right: calc(10px - var(--wz-sb-w)), so bar + padding is 10 layout px and the text column is one width at every scale and zoom',
+  !!resetRule && /padding-right:\s*calc\(10px - var\(--wz-sb-w\)\)/.test(resetRule[1]), JSON.stringify(resetRule));
 ok('T5 [successor]: the thumb is a SQUARE (border-radius 0) in the paper-toned --ink-on-paper-low, the track clear',
   !!thumbRule && /background:\s*var\(--ink-on-paper-low\)/.test(thumbRule[1]) && /border-radius:\s*0/.test(thumbRule[1]) && exceptionRules.some(([s, b]) => s === EXC + '::-webkit-scrollbar-track' && /background:\s*transparent/.test(b)), JSON.stringify(thumbRule));
 ok('T5: ...and the standard mechanism IS present: the systemic `*` rule sets scrollbar-width:thin and a theme-token scrollbar-color',
@@ -138,12 +147,16 @@ ok('T6: .board-canvas-wrap paints var(--paper) (the canvas\'s own surface) besid
 {
   const strip = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '');
   const land = (from, to) => { const next = css.replace(from, to); return next === css ? null : strip(next); };
-  const resetGone = land(`  .desk-frame-stage--prose .mode-scroll{ --wz-sb-k: var(--wz-k, 1); scrollbar-width:auto; scrollbar-color:auto; }`, `  .desk-frame-stage--prose .mode-scroll{ --wz-sb-k: var(--wz-k, 1); }`);
+  const resetGone = land(`padding-right:calc(10px - var(--wz-sb-w)); scrollbar-width:auto; scrollbar-color:auto; }`, `padding-right:calc(10px - var(--wz-sb-w)); }`);
   const resetOf = (t) => { const b = (/@supports selector\(::-webkit-scrollbar\)\{([\s\S]*?)\n\}/.exec(t) || [, ''])[1]; const r = [...b.matchAll(/([^{}]+)\{([^{}]*)\}/g)].find((m) => m[1].trim() === EXC); return !!r && /scrollbar-width:\s*auto/.test(r[2]) && /scrollbar-color:\s*auto/.test(r[2]); };
   ok('MUTANT: the auto reset is removed from the exception (the pseudo rules would be dead under Chromium >= 121) - T5 [successor] must go RED (the mutation LANDED)', resetGone !== null && !resetOf(resetGone) && resetOf(cssRules), '');
-  const unscaled = land('width:round(nearest, calc(10px / var(--wz-sb-k)), 1px); }', 'width:10px; }');
-  ok('MUTANT: the bar is a flat 10px of layout (the scaled-up bar of 3840 returns) - T5 [successor] must go RED (the mutation LANDED)', unscaled !== null && !/width:\s*round\(nearest, calc\(10px \/ var\(--wz-sb-k\)\), 1px\)/.test(unscaled) && /width:\s*round\(nearest, calc\(10px \/ var\(--wz-sb-k\)\), 1px\)/.test(cssRules), '');
-  const unwrapped = land('@supports selector(::-webkit-scrollbar){\n  .desk-frame-stage--prose .mode-scroll{ --wz-sb-k', '.desk-frame-stage--prose .mode-scroll{ --wz-sb-k');
+  const unscaled = land('width:var(--wz-sb-w); }', 'width:10px; }');
+  ok('MUTANT: the bar is a flat 10px of layout (the scaled-up bar of 3840 returns) - T5 [r2 successor] must go RED (the mutation LANDED)', unscaled !== null && !/width:\s*var\(--wz-sb-w\)/.test(unscaled) && /width:\s*var\(--wz-sb-w\)/.test(cssRules), '');
+  const noPad = land('padding-right:calc(10px - var(--wz-sb-w)); ', '');
+  ok('MUTANT: the right padding is dropped (the text column takes a different bite at every scale again) - the PAIRING check must go RED (the mutation LANDED)', noPad !== null && !/padding-right:\s*calc\(10px - var\(--wz-sb-w\)\)/.test(noPad) && /padding-right:\s*calc\(10px - var\(--wz-sb-w\)\)/.test(cssRules), '');
+  const uncapped = land('--wz-sb-w: min(10px, round(nearest, calc(10px / var(--wz-sb-k)), 1px));', '--wz-sb-w: round(nearest, calc(10px / var(--wz-sb-k)), 1px);');
+  ok('MUTANT: the 10px cap is dropped (below scale 1 the padding would have to go negative) - T5 [r2 successor] must go RED (the mutation LANDED)', uncapped !== null && !/--wz-sb-w:\s*min\(10px,/.test(uncapped) && /--wz-sb-w:\s*min\(10px,/.test(cssRules), '');
+  const unwrapped = land('@supports selector(::-webkit-scrollbar){\n', '');
   ok('MUTANT: the @supports wrapper is dropped (Firefox would lose `thin`) - T5 [successor] must go RED (the mutation LANDED)', unwrapped !== null && !/@supports selector\(::-webkit-scrollbar\)/.test(unwrapped) && /@supports selector\(::-webkit-scrollbar\)/.test(cssRules), '');
   const noZoom = land("--wz-sb-k: calc(var(--wz-k, 1) * var(--wz-zoom, 1.6));", '--wz-sb-k: var(--wz-k, 1);');
   ok('MUTANT: the zoom multiplier is dropped (the bar would scale 1.6x while the page is zoomed) - T5 [successor] must go RED (the mutation LANDED)', noZoom !== null && !/--wz-sb-k:\s*calc\(var\(--wz-k, 1\) \* var\(--wz-zoom, 1\.6\)\)/.test(noZoom) && !!zoomRule, '');
@@ -168,8 +181,10 @@ if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
   pok('PARKED (was "T5: ONE mechanism - index.css carries NO ::-webkit-scrollbar rule (they are dead under Chromium >= 121 wherever the standard properties are set, and the `*` rule sets them everywhere)") - Fable Oct 23 (3840: the page bar scales with page-size\'s transform), reading A: ONE scoped exception on `.desk-frame-stage--prose .mode-scroll`, inside @supports selector(::-webkit-scrollbar); live successor: T5 [successor]',
     webkitScrollbarRules.length > 0 && webkitSelectors.length === 3 && !/::-webkit-scrollbar/.test(outsideException), JSON.stringify({ total: webkitScrollbarRules.length, outside: (outsideException.match(/::-webkit-scrollbar[\w-]*/g) || []).length }));
+  pok('PARKED (was "T5 [successor]: the bar is 10px / the APPLIED scale, rounded to the nearest whole layout pixel (the engine truncates a fractional bar width: 10/1.74 = 5.74 painted 8.7px) (--wz-sb-k = --wz-k, times --wz-zoom while the column is zoomed - the expressions page-size\'s own transform rules use)" - the bar rule carried the width expression itself) - Fable Oct 25 (FIX\'s line-break diagnosis): the expression moved into --wz-sb-w, capped at 10px, with the bar rule reading the variable and a right padding of 10px less that width; live successors: T5 [r2 successor] x2',
+    !!barRule && !/width:\s*round\(nearest/.test(barRule[1]) && /width:\s*var\(--wz-sb-w\)/.test(barRule[1]) && !!resetRule && /--wz-sb-w:\s*min\(10px, round\(nearest, calc\(10px \/ var\(--wz-sb-k\)\), 1px\)\)/.test(resetRule[1]), JSON.stringify({ barRule }));
   console.log(JSON.stringify(parkedChecks, null, 2));
-  console.log(parkedChecks.every((c) => c.pass) ? `\nSCROLLBAR-FLUSH-SOURCE PARKED: PASS (${parkedChecks.length} check) - this FILE parks 1: T5's no-webkit claim` : '\nSCROLLBAR-FLUSH-SOURCE PARKED: FAIL');
+  console.log(parkedChecks.every((c) => c.pass) ? `\nSCROLLBAR-FLUSH-SOURCE PARKED: PASS (${parkedChecks.length} checks) - this FILE parks 2: T5's no-webkit claim; T5's bar-width expression (item 3 r2)` : '\nSCROLLBAR-FLUSH-SOURCE PARKED: FAIL');
 }
 
 const bad = checks.filter((c) => !c.pass).length;

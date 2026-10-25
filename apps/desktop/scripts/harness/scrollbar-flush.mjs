@@ -111,6 +111,10 @@ const measure = (app) => app.evalJs(`(() => {
     stageK: parseFloat(getComputedStyle(document.querySelector('.desk-frame-stage--prose') || document.body).getPropertyValue('--wz-k')) || 1,
     zoomVar: parseFloat(getComputedStyle(document.querySelector('.desk-frame-stage--prose') || document.body).getPropertyValue('--wz-zoom')) || 1.6,
     viewport: [innerWidth, innerHeight],
+    // the TEXT COLUMN, in layout px (offsetWidth / clientWidth are layout widths, never the painted ones): the editor's own width, and .mode-scroll's content box (clientWidth less its padding)
+    columnEditor: (document.querySelector('.forward-only-editor') || {}).offsetWidth,
+    columnScroll: scroll.clientWidth - parseFloat(getComputedStyle(scroll).paddingLeft) - parseFloat(getComputedStyle(scroll).paddingRight),
+    scrollPadRight: parseFloat(getComputedStyle(scroll).paddingRight),
   };
 })()`);
 
@@ -169,6 +173,26 @@ await withHarness(async (app) => {
     if (name !== '1366') ok(`PAINT [${name}] premise: the page really IS scaled up here (applied scale > 1) - so the 10px above is the exception working, not an unscaled page`, !!m && m.appliedScale > 1.0001, m ? String(m.appliedScale) : '');
   }
   ok('PAINT: the page bar is the SAME painted width at 1366 and 3840 and zoomed (within one scaled pixel) - the scale does not leak into it', !!paint['1366'] && !!paint['3840'] && !!paint['3840 zoomed'] && [paint['3840'], paint['3840 zoomed']].every((q) => Math.abs(q.scrollbarWidth * q.appliedScale - paint['1366'].scrollbarWidth * paint['1366'].appliedScale) <= q.appliedScale + 0.5), JSON.stringify(Object.fromEntries(Object.entries(paint).map(([k, q]) => [k, q && [q.scrollbarWidth, q.appliedScale]]))));
+  // THE TEXT COLUMN IS ONE WIDTH AT EVERY SCALE (Fable Oct 25, FIX's diagnosis of the L/B x19 + cd2 reds): the bar's layout width is round(10 / the applied scale), so a bar that takes a DIFFERENT layout width at each
+  // scale took a different bite out of the column and reflowed the lines. The fix pairs the bar with a right padding of (10px - that width), so bar + padding is always 10 layout px and the column is the SAME width
+  // at k = 1, k < 1, k > 1 and zoomed. Measured in layout px (offsetWidth / clientWidth), each against the k = 1 read; the scale is asserted to differ from 1 where the scenario claims it (the blind-pass guard).
+  const col = {};
+  for (const [name, size, zoom, want] of [['1366', [1366, 768], false, 'one'], ['1000 (k<1)', [1000, 700], false, 'below'], ['3840 (k>1)', [3840, 2160], false, 'above'], ['3840 zoomed', [3840, 2160], true, 'above'], ['1366 zoomed', [1366, 768], true, 'above']]) {
+    await seedAndOpen(app, 'plateau', 'light', size);
+    if (zoom) { await app.evalJs("document.querySelector('.mode-pagecol')?.setAttribute('data-zoom', 'true')"); await sleep(250); }
+    let m = await measure(app);
+    const target = (q) => (q ? q.stageK * (zoom ? q.zoomVar : 1) : 1);
+    for (let i = 0; i < 24 && m && Math.abs(m.appliedScale - target(m)) > 0.005 * target(m); i += 1) { await sleep(250); m = await measure(app); }
+    col[name] = m;
+    ok(`COLUMN [${name}] premise: the page really is at the scale the scenario claims (${m ? m.appliedScale.toFixed(3) : '?'} - ${want === 'one' ? 'k = 1' : want === 'below' ? 'k < 1' : 'k > 1'})`, !!m && (want === 'one' ? Math.abs(m.appliedScale - 1) < 0.005 : want === 'below' ? m.appliedScale < 0.995 : m.appliedScale > 1.005), m ? String(m.appliedScale) : '');
+  }
+  {
+    const base = col['1366'];
+    const sizes = Object.keys(col);
+    ok(`COLUMN: the text column (the editor's layout width) is IDENTICAL at k = 1, k < 1, k > 1 and zoomed (${sizes.map((n) => `${n}: ${col[n] ? col[n].columnEditor : '?'}`).join(', ')})`, !!base && sizes.every((n) => !!col[n] && Math.abs(col[n].columnEditor - base.columnEditor) < 0.5), JSON.stringify(Object.fromEntries(sizes.map((n) => [n, col[n] && col[n].columnEditor]))));
+    ok(`COLUMN: .mode-scroll's content box (clientWidth less its padding) is identical at every scale too (${sizes.map((n) => `${n}: ${col[n] ? col[n].columnScroll : '?'}`).join(', ')})`, !!base && sizes.every((n) => !!col[n] && Math.abs(col[n].columnScroll - base.columnScroll) < 0.5), JSON.stringify(Object.fromEntries(sizes.map((n) => [n, col[n] && col[n].columnScroll]))));
+    ok(`COLUMN: bar + right padding is 10 layout px wherever the bar is narrower than 10 (${sizes.map((n) => `${n}: ${col[n] ? col[n].scrollbarWidth + '+' + col[n].scrollPadRight : '?'}`).join(', ')}), and the bar never exceeds 10`, !!base && sizes.every((n) => !!col[n] && col[n].scrollbarWidth <= 10 && Math.abs(col[n].scrollbarWidth + col[n].scrollPadRight - 10) < 0.5), JSON.stringify(Object.fromEntries(sizes.map((n) => [n, col[n] && [col[n].scrollbarWidth, col[n].scrollPadRight]]))));
+  }
   // THE BOARD CANVAS (Fable Oct 23 - "INK's light board shows a thick dark thumb at the bottom"): the same rule on the board's own
   // scroll wrap - thin, <= 10px, paper-toned (the board's background is var(--paper)). Fixture = fx5's proven one: a tall card forces
   // the wrap to scroll; seeded through the app's seam while off any flush-handler surface (the Desk). The HORIZONTAL bar's thickness
