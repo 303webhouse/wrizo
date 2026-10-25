@@ -1,0 +1,26 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: LIVE RUN PRESENT — BOX IS THEIRS. 1 foreign run(s); NOTHING is reaped, whatever any owner or age reads.
+  live pid=50588 "C:\Program Files\nodejs\node.exe" C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/faebbc23-035c-4
+  This is the gate in front of both licences: a pathological file keeps its suite alive, so
+  its browsers are never reapable however old they look. It is the box-free test every
+  lane already runs by hand before taking the box, made canonical inside the runner.
+REAPER: survivors=0 (untouched) in 1246ms
+SUITE START HARNESS_PARKED=unset files=8 tree=243077fa bundle=index-Ckcs-AqN.js/888200b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/3w-tc2-default
+[01/8] OK        exit=0   34s cd2.mjs :: ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one) ;; CD2 VERIFY: PASS (51 checks)
+[02/8] FAIL      exit=1  117s flux-v2.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FLUX-V2 VERIFY: FAIL - 1/156 failed
+[03/8] FAIL      exit=1   63s fx10.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FX10 VERIFY: FAIL — 9/121 failed
+[04/8] FAIL      exit=1   37s fx4.mjs :: FX4 VERIFY: FAIL — 3/42 failed
+[05/8] FAIL      exit=1    1s help-choose-census.mjs :: HELP-CHOOSE-CENSUS VERIFY: FAIL - 1/35 failed
+[06/8] FAIL      exit=1    7s item130.mjs :: ITEM130 VERIFY: FAIL — 3/16 failed
+[07/8] FAIL      exit=1   18s machina-deckwizard.mjs :: MACHINA-DECKWIZARD VERIFY: FAIL - 12/29 failed
+[08/8] OK        exit=0  238s page-size.mjs :: ROWS-SHADOW VERIFY: PASS (83 renders checked, shadow == DOM on every one) ;; PAGE-SIZE VERIFY: PASS (335 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 2/8 of 8 returned a passing verdict
+  FAIL: flux-v2.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\3w-tc2-default\flux-v2.mjs.default.txt
+  FAIL: fx10.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\3w-tc2-default\fx10.mjs.default.txt
+  FAIL: fx4.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\3w-tc2-default\fx4.mjs.default.txt
+  FAIL: help-choose-census.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\3w-tc2-default\help-choose-census.mjs.default.txt
+  FAIL: item130.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\3w-tc2-default\item130.mjs.default.txt
+  FAIL: machina-deckwizard.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\3w-tc2-default\machina-deckwizard.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=243077fa bundle=index-Ckcs-AqN.js/888200b NO-REBUILD

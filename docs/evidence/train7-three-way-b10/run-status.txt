@@ -1,0 +1,11 @@
+WAITING 05:24:55Z
+granted (mine), UNBOUND (item 140 behaviour)
+START 05:25:08Z
+ta2 default done exit=1 05:33:40Z
+ta2 parked done exit=1 05:42:31Z
+tb2 default done exit=1 05:50:59Z
+tb2 parked done exit=1 05:59:42Z
+tc2 default done exit=1 06:08:23Z
+tc2 parked done exit=1 06:17:21Z
+3WAY COMPLETE 06:17:21Z
+released (mine)

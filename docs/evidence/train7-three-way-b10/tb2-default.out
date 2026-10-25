@@ -1,0 +1,23 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: LIVE RUN PRESENT — BOX IS THEIRS. 1 foreign run(s); NOTHING is reaped, whatever any owner or age reads.
+  live pid=50588 "C:\Program Files\nodejs\node.exe" C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/faebbc23-035c-4
+  This is the gate in front of both licences: a pathological file keeps its suite alive, so
+  its browsers are never reapable however old they look. It is the box-free test every
+  lane already runs by hand before taking the box, made canonical inside the runner.
+REAPER: survivors=0 (untouched) in 1162ms
+SUITE START HARNESS_PARKED=unset files=6 tree=642268ea bundle=index-CnmzyyEP.js/862183b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/3w-tb2-default
+[01/6] FAIL      exit=1   35s cd2.mjs :: ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one) ;; CD2 VERIFY: FAIL — 1/51 failed
+[02/6] OK        exit=0  119s flux-v2.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FLUX-V2 VERIFY: PASS (156 checks)
+[03/6] FAIL      exit=1   63s fx10.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FX10 VERIFY: FAIL — 6/121 failed
+[04/6] FAIL      exit=1   37s fx4.mjs :: FX4 VERIFY: FAIL — 3/42 failed
+[05/6] FAIL      exit=1    7s item130.mjs :: ITEM130 VERIFY: FAIL — 3/16 failed
+[06/6] FAIL      exit=1  240s page-size.mjs :: ROWS-SHADOW VERIFY: PASS (83 renders checked, shadow == DOM on every one) ;; PAGE-SIZE VERIFY: FAIL - 19/335 failed
+
+SUITE DONE HARNESS_PARKED=unset — 1/6 of 6 returned a passing verdict
+  FAIL: cd2.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\3w-tb2-default\cd2.mjs.default.txt
+  FAIL: fx10.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\3w-tb2-default\fx10.mjs.default.txt
+  FAIL: fx4.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\3w-tb2-default\fx4.mjs.default.txt
+  FAIL: item130.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\3w-tb2-default\item130.mjs.default.txt
+  FAIL: page-size.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\3w-tb2-default\page-size.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=642268ea bundle=index-CnmzyyEP.js/862183b NO-REBUILD

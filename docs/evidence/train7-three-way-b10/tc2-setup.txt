@@ -1,0 +1,25 @@
+toplevel: C:/Users/nickh/writer-studio/.claude/worktrees/tc2
+base: c81c39bc
+== merging page-size-r3 @ abffa813
+   -> 77358088  unmerged files: 0
+== merging machina-fixes-7 @ 8d7a7d61
+CONFLICT (content): Merge conflict in apps/desktop/scripts/harness/th-machina-source.mjs
+Auto-merging apps/desktop/src/components/ModeStage.tsx
+Auto-merging apps/desktop/src/index.css
+Automatic merge failed; fix conflicts and then commit the result.
+ours 12 m21 7 dropped 4
+   (th-machina-source.mjs conflict resolved per Fable's ruling)
+   -> a0174279  unmerged files: 0
+== merging machina-forms @ 23cc169f
+Auto-merging apps/desktop/src/index.css
+Auto-merging apps/desktop/src/store/deskLexicon.ts
+   -> 243077fa  unmerged files: 0
+Done in 10.7s using pnpm v10.28.2
+tsc-desktop=0
+tsc-server-done
+SEED-GUARD VERIFY: PASS (36 checks)
+TYPING-LATENCY READERS VERIFY: PASS (5 checks, 24 reads classified)
+TYPED-LITERAL-CHECK VERIFY: PASS (29 checks)
+GLITCH-METER-CHECK VERIFY: PASS (15 checks)
+[2mdist-web/[22m[36massets/index-Ckcs-AqN.js                                          [39m[1m[33m887.42 kB[39m[22m[2m │ gzip: 280.77 kB[22m
+888200 dist-web/assets/index-Ckcs-AqN.js

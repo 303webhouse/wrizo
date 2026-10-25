@@ -1,0 +1,16 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=6 tree=c54abb43 bundle=index-BM2QG_Rz.js/862183b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/3w-ta2-default
+[01/6] OK        exit=0   34s cd2.mjs :: ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one) ;; CD2 VERIFY: PASS (51 checks)
+[02/6] OK        exit=0  118s flux-v2.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FLUX-V2 VERIFY: PASS (156 checks)
+[03/6] FAIL      exit=1   65s fx10.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FX10 VERIFY: FAIL — 9/121 failed
+[04/6] FAIL      exit=1   40s fx4.mjs :: FX4 VERIFY: FAIL — 3/42 failed
+[05/6] FAIL      exit=1    7s item130.mjs :: ITEM130 VERIFY: FAIL — 3/16 failed
+[06/6] OK        exit=0  242s page-size.mjs :: ROWS-SHADOW VERIFY: PASS (83 renders checked, shadow == DOM on every one) ;; PAGE-SIZE VERIFY: PASS (335 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 3/6 of 6 returned a passing verdict
+  FAIL: fx10.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\3w-ta2-default\fx10.mjs.default.txt
+  FAIL: fx4.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\3w-ta2-default\fx4.mjs.default.txt
+  FAIL: item130.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\3w-ta2-default\item130.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=c54abb43 bundle=index-BM2QG_Rz.js/862183b NO-REBUILD

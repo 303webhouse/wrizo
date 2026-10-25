@@ -1,0 +1,17 @@
+toplevel: C:/Users/nickh/writer-studio/.claude/worktrees/tb2
+base: c81c39bc
+== merging page-size-r3 @ abffa813
+   -> 03f06d7a  unmerged files: 0
+== merging scrollbar-flush @ 0cdf4d72
+Auto-merging apps/desktop/scripts/harness/fx5.mjs
+Auto-merging apps/desktop/src/index.css
+   -> 642268ea  unmerged files: 0
+Done in 10.8s using pnpm v10.28.2
+tsc-desktop=0
+tsc-server-done
+SEED-GUARD VERIFY: PASS (36 checks)
+TYPING-LATENCY READERS VERIFY: PASS (5 checks, 24 reads classified)
+TYPED-LITERAL-CHECK VERIFY: PASS (29 checks)
+GLITCH-METER-CHECK VERIFY: PASS (15 checks)
+[2mdist-web/[22m[36massets/index-CnmzyyEP.js                                          [39m[1m[33m861.42 kB[39m[22m[2m │ gzip: 272.68 kB[22m
+862183 dist-web/assets/index-CnmzyyEP.js
