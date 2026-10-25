@@ -238,7 +238,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
   // outside the host too (the wordmark, the "...", Flux's glitch meter) - one curve for everything that recedes
   const htmlRef = useRef<HTMLElement>(typeof document !== 'undefined' ? document.documentElement : null);
   const dissolveRootRef = useMemo(
-    () => (chromeRootRef ? (framed ? [stageRef, chromeRootRef, htmlRef] : [stageRef, chromeRootRef]) : stageRef),
+    () => (chromeRootRef ? [stageRef, chromeRootRef, htmlRef] : [stageRef, htmlRef]),   // Nick's ruling (via Fable, Oct 25): "Recede depth" is REMOVED - the narrow layout follows the full recede: the root everywhere
     [chromeRootRef, framed],
   );
   const { dissolved, noteWrite: engineNote, resurface } = useChromeDissolve({
@@ -249,11 +249,11 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
   // POLISH #10 item 23 (Nick, Oct 25): WHILE TYPING, EVERYTHING OFF THE PAGE GOES TO 0 - the framed desk announces it on the root element, so the
   // chrome that lives outside the desk's own tree (the wordmark, the ember dot, the progress lane, Flux's glitch meter) recedes with it (index.css)
   useEffect(() => {
-    if (!framed || typeof document === 'undefined') return;
+    if (typeof document === 'undefined') return;   // Nick's ruling (via Fable, Oct 25): "Recede depth" is REMOVED - the narrow layout follows the full recede: the narrow layout too
     const root = document.documentElement;
     if (dissolved) root.setAttribute('data-wz-writing', 'true'); else root.removeAttribute('data-wz-writing');
     return () => { root.removeAttribute('data-wz-writing'); };
-  }, [framed, dissolved]);
+  }, [dissolved]);
 
   const firstWriteRef = useRef<number | null>(null);
   // TH2 — a short-lived "actively typing" signal for the glow's sputter
@@ -818,7 +818,7 @@ export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvail
       {/* ITEM word-diet (Nick, Oct 13) — the standing hint below retires;
           its explanation moves here, behind a "?" beside this row's own
           label, one plain sentence (recedeHint, deskLexicon.ts). */}
-      <Seg label={<>{deskLex('fadeDepthLabel')} <DrawerNote label={`About ${deskLex('fadeDepthLabel')}`}>{deskLex('recedeHint')}</DrawerNote></>} value={settings.fadeDepth} opts={[['partial', deskLex('fadeDepthPartial')], ['full', deskLex('fadeDepthFull')]]} onPick={v => setWritingSettings({ fadeDepth: v as FadeDepth })} />
+      {/* Nick's ruling (via Fable, Oct 25): "Recede depth" is REMOVED - the narrow layout follows the full recede - the row that stood here (the fadeDepth Seg) is gone */}
       <Seg label={deskLex('timerLabel')} value={settings.timer ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ timer: v === 'on' })} />
       {/* FX2 S2 — routes through setTypewriterExplicit, not the bare
           setter: the gear is the OTHER hand-click surface (beside the

@@ -12,7 +12,11 @@
 //   R3 the two tab arrows stay: each grip at full strength
 //   R4 it returns as today: Escape brings the chrome back (the rail and the mode bar above half strength within 2s)
 //   R5 keyboard focus restores it: with the chrome receded again, focus landing on a chrome control (the rail's first item) brings it back
-//   R6 with 'partial' stored (the old default, saved with any setting), the framed desk still recedes to 0
+//   R6 with 'partial' stored (the old default, saved with any setting), the framed desk still recedes to 0; and "Recede depth" is offered nowhere (Nick:
+//      REMOVED - the narrow layout follows the full recede)
+//   R7 a PROGRESS strip stays visible and live while typing (each that is on: the rhizome, the bar, Machina's run strip, Flux's glitch meter)
+//   R8 a DOCKED panel stays visible while typing (the Tutor, docked)
+//   R9 the NARROW layout (1000px, unframed) follows the full recede: its census is empty too
 // Mutant (Arbor): MR1 the wordmark forced to full strength - R1 fails and names it.
 // Seeding goes through the app's seams. Needs a box turn. Run: WS_BOX_TURN=<token> node scripts/harness/polish10-recede.mjs (apps/desktop, dist-web built)
 import { withHarness } from '../runtime-verify.mjs';
@@ -28,8 +32,9 @@ const FADE_WAIT = 4500;   // the slowest fade out (2.8s) and a margin
 
 // THE CENSUS: painted elements off the page (not the page, not the tab arrows, not a ground that fills most of the viewport), with their effective opacity
 const CENSUS = `(() => {
-  const vw = innerWidth, vh = innerHeight; const page = document.querySelector('.desk-frame-stage--prose .mode-page');
-  const keep = (el) => (page && page.contains(el)) || !!el.closest('.wz-sliver-grip, .wz-tutor-grip, .flux-block-caret');
+  const vw = innerWidth, vh = innerHeight; const page = document.querySelector('.desk-frame-stage--prose .mode-page') || document.querySelector('.mode-page');
+  // the exceptions (Nick, Oct 25): the page, the tab arrows, PROGRESS STRIPS (any theme's, or the bar - and the narrow layout's incentive row), DOCKED panels
+  const keep = (el) => (page && page.contains(el)) || !!el.closest('.wz-sliver-grip, .wz-tutor-grip, .flux-block-caret, .desk-frame-rhizome-anchor, .glitch-meter-layer, .mode-incentive-row, .wz-tutor-panel[data-docked="true"], .wz-cascade-survey[data-docked="true"]');
   const eff = (el) => { let o = 1; for (let n = el; n && n.nodeType === 1; n = n.parentElement) { const cs = getComputedStyle(n); if (cs.visibility === 'hidden' || cs.display === 'none') return 0; o *= parseFloat(cs.opacity); } return o; };
   const paints = (el) => { const cs = getComputedStyle(el);
     if ([...el.childNodes].some((c) => c.nodeType === 3 && c.data.trim())) return 'text';
@@ -117,6 +122,41 @@ await withHarness(async (app) => {
     ok(`${tag} R5: keyboard focus restores it - focus on the rail's first item brings the chrome back (rail ${before} -> ${after.strip}, bar ${after.bar})`, before <= 0.01 && after.strip > 0.5 && after.bar > 0.5, J({ before, after }));
   }
 
+  // R7 + R8 (each skin, 1366): progress strips and a docked panel stay
+  for (const th of THEMES) {
+    await app.evalJs("location.hash = '#/'"); await sleep(300);
+    await app.evalJs(`localStorage.setItem('wrizo-theme', '${th.id}')`); await app.reload();
+    await app.waitFor("typeof window.wrizoCreateJournalPage === 'function'", { label: 'the seams' });
+    if (!(await openPage(app, `p10r-${th.id}`))) { ok(`${th.name} R7 fixture: the page opened`, false, ''); continue; }
+    await typeOn(app);
+    const prog = await app.evalJs(`[...document.querySelectorAll('.desk-frame-instrument, .wz-rhizome-field, .machina-run, .glitch-meter-layer')].filter((el) => el.getBoundingClientRect().width > 0)
+      .map((el) => { let o = 1; for (let n = el; n && n.nodeType === 1; n = n.parentElement) o *= parseFloat(getComputedStyle(n).opacity); return { el: String(el.className).split(' ')[0], o: Math.round(o * 1000) / 1000 }; })`);
+    ok(`${th.name} R7: every progress strip that is on stays visible and live while typing (${prog.map((p) => p.el + ' ' + p.o).join(', ') || 'none found'})`, prog.length > 0 && prog.every((p) => p.o >= 0.99), J(prog));
+    // R8: dock the Tutor, type, wait - it stays
+    if ((await app.evalJs("document.querySelector('.wz-tutor-panel')?.getAttribute('data-open')")) !== 'true') await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()");
+    await sleep(600);
+    await app.evalJs("document.querySelector('.wz-tutor-dock-btn')?.click()"); await sleep(500);
+    const docked = await app.evalJs("document.querySelector('.wz-tutor-panel')?.getAttribute('data-docked')");
+    await typeOn(app);
+    const dockO = await app.evalJs(EFF('.wz-tutor-panel'));
+    ok(`${th.name} R8: a DOCKED panel stays visible while typing (the docked Tutor at ${dockO})`, docked === 'true' && dockO >= 0.99, J({ docked, dockO }));
+    await app.evalJs("document.querySelector('.wz-tutor-dock-btn')?.click()"); await sleep(300);
+  }
+
+  // R9 (Arbor): the narrow layout follows the full recede
+  await app.evalJs("location.hash = '#/'"); await sleep(300);
+  await app.evalJs("localStorage.setItem('wrizo-theme', 'plateau')"); await app.reload();
+  await app.waitFor("typeof window.wrizoCreateJournalPage === 'function'", { label: 'the seams' });
+  await app.emulateDpr(1, 1000, 800);
+  if (await waitSoft(app, "true", { timeout: 100 }) && (await (async () => { await app.evalJs("location.hash = '#/page/p10r-plateau'"); return waitSoft(app, "!!document.querySelector('.forward-only-editor')", { timeout: 10000 }); })())) {
+    await sleep(1200);
+    await typeOn(app);
+    const framedNow = await app.evalJs("!!document.querySelector('.desk-frame')");
+    const left9 = await app.evalJs(CENSUS);
+    ok(`Arbor 1000x800 R9: the NARROW layout (unframed: ${!framedNow}) follows the full recede - nothing off the page paints while typing${left9.length ? ` - still showing: ${left9.slice(0, 6).map((x) => x.el).join(', ')}` : ''}`, !framedNow && left9.length === 0, J(left9.slice(0, 12)));
+  } else ok('R9 fixture: the narrow page opened', false, '');
+  await app.emulateDpr(1, 1366, 768);
+
   // R6 (Arbor): with 'partial' stored, the framed desk still recedes to 0 (Nick: everything)
   await app.evalJs("location.hash = '#/'"); await sleep(300);
   await app.evalJs("localStorage.setItem('wrizo-theme', 'plateau'); localStorage.setItem('wrizo-writing-settings', JSON.stringify({ ...JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}'), fadeDepth: 'partial' }))");
@@ -125,6 +165,10 @@ await withHarness(async (app) => {
     await typeOn(app);
     const strip = await app.evalJs(EFF('.desk-frame-strip'));
     ok(`Arbor R6: with 'partial' stored (the old default), the framed desk still recedes to 0 - the rail at ${strip}`, strip <= 0.01, String(strip));
+    const { readFileSync } = await import('node:fs'); const { fileURLToPath } = await import('node:url'); const { dirname, join } = await import('node:path');
+    const srcDir = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'src', 'components');
+    const offered = ['Sliver.tsx', 'ModeStage.tsx'].filter((f) => /<Seg label=\{<>\{(?:t|deskLex)\('fadeDepthLabel'\)/.test(readFileSync(join(srcDir, f), 'utf8')));
+    ok('R6 (source): "Recede depth" is offered nowhere - neither the Tools drawer nor the narrow layout\'s settings panel renders its row (Nick: REMOVED)', offered.length === 0, J(offered));
   } else ok('R6 fixture: the page opened', false, '');
 });
 
