@@ -86,6 +86,8 @@ await withHarness(async (app) => {
       }
       await app.mouseMove(5, 450); await sleep(250);
       await shot(`02-walk-${tag}`);
+      const qPull = await q("(() => { const e = document.querySelector('.walk-card .board-popup-editor[data-prompt][data-body-empty=\"true\"]'); return e ? parseFloat(getComputedStyle(e, '::after').marginTop) : null; })()");
+      ok(`[${T}] the dealt question stands on the caret's line (pulled up one editor line: margin ${qPull}px)`, qPull !== null && qPull < -15, String(qPull));
       const flat = await flatAt('.walk-card');
       ok(`[${T}] the Walk card is flat - no grey vignette band at its top (top pixel ${flat && flat.top} against mid ${flat && flat.mid})`, !!flat && flat.diff <= 4, JSON.stringify(flat));
       if (theme === 'flux') {

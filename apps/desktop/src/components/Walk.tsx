@@ -131,9 +131,12 @@ export function Walk(p: WalkProps) {
   }, []);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.defaultPrevented || e.isComposing) return;
       const target = e.target as HTMLElement | null;
       const inEditor = !!target?.closest?.('[contenteditable="true"], input, textarea');
+      // the card editor's own handler takes the arrows first (it moves the caret over visible characters and calls preventDefault) - so an EMPTY card must not be turned away for that: its arrows are the Walk's
+      const arrow = e.key === 'ArrowLeft' || e.key === 'ArrowRight';
+      const emptyHere = inEditor && !!card && cardIsEmpty(card);
+      if ((e.defaultPrevented && !(arrow && emptyHere)) || e.isComposing) return;
       const onDoor = !!target?.closest?.('.walk-door');
       const action = walkKey(e.key, { onDoor });
       if (isTypingKey(e)) setWoke(false);   // a keystroke re-arms the recede

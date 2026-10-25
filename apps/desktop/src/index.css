@@ -6204,6 +6204,8 @@ body:has(.walk)::after{ z-index:-1; }
   font-family:var(--font-prose); font-size:calc(17px * var(--card-type-k, 1)); line-height:1.6; white-space:pre-wrap; color:var(--ink-on-card); overflow:visible;
 }
 .walk-card .board-popup-editor::first-line{ font-size:1.75em; font-weight:600; }
+/* the caret lands in the card (Nick, Oct 25): it stands on the body's empty first line, so the dealt question - the placeholder - is pulled up onto THAT line, one editor line (1.6 x 17px x the card type scale) back, and the question reads as where the writer begins */
+.walk-card .board-popup-editor[data-prompt][data-body-empty='true']::after{ margin-top:calc(2px - 1.6 * 17px * var(--card-type-k, 1)); }
 [data-theme='flux'] .walk-card .board-popup-editor::first-line{ color:var(--text-accent); text-transform:uppercase; letter-spacing:.12em; font-family:var(--font-chromeLabel); font-size:1.35em; }
 .walk-card-leaving{ position:absolute; top:0; left:80px; right:80px; width:auto; pointer-events:none; overflow:hidden; }
 .walk-card-leaving[data-out='left']{ animation:walk-out-next 280ms ease-in-out both; }

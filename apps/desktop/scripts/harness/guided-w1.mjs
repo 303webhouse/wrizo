@@ -179,6 +179,8 @@ async function suite(M, read) {
         && e('', null) && e('\n', null) && !e('A title\n', null) && !e('A title', null) && e('Step 1\n', ds) && e('Step 1\n   \n', ds) && !e('Step 1\nShe waits', ds),
         'with the caret in a card the arrows step only while it is EMPTY (a dealt step with an empty body is empty; a plain card with a title is not); outside the editor they step; PageUp / PageDown always']; });
     chk('Y6', () => { const be = read('components/BoardEditor.tsx'); const i = be.indexOf('renderEditor={(box) => ('); const blk = i >= 0 ? be.slice(i, i + 400) : ''; return [/<BoardCardPopup[\s\S]*?\binline\b[\s\S]*?\bautoFocus\b/.test(blk) && /if \(!inline \|\| autoFocus\) el\.focus\(\);/.test(be) && !/hadFocus/.test(be), 'the Walk mounts its card editor WITH the caret (autoFocus): it lands in the card on opening and on every step - no blur-on-mount survives']; });
+    chk('Y7', () => [/\(e\.defaultPrevented && !\(arrow && emptyHere\)\) \|\| e\.isComposing/.test(read('components/Walk.tsx')), 'the card editor takes the arrows first (preventDefault), so an EMPTY card must not be turned away for it: the first box turn of the follow-up showed the arrow doing nothing from inside an empty card']);
+    chk('D12', () => [/\.walk-card \.board-popup-editor\[data-prompt\]\[data-body-empty='true'\]::after\s*\{\s*margin-top:\s*calc\(2px - 1\.6 \* 17px \* var\(--card-type-k, 1\)\);\s*\}/.test(read('index.css')), 'in the Walk the dealt question is pulled up onto the caret\'s line (one editor line back) - the caret landed above it in the first follow-up frames']);
     chk('D11', () => [/body:has\(\.walk\)::after\s*\{\s*z-index:\s*-1;?\s*\}/.test(read('index.css')), 'the body vignette goes BEHIND while a Walk / Flip is mounted (it shades the room, never the page)']);
     chk('S10', () => [/pointerType === 'mouse'/.test(sa) && /:focus-visible/.test(sa) && !/onPointerEnter=\{\(\) =>/.test(sa) && !/onFocusCapture=\{\(\) =>/.test(sa), 'ShowAs opens its words for a mouse hover or keyboard focus only - a touch / pen tap or a mouse press must not shift the icons between pointer-down and up']);
     chk('S5', () => [sa.length > 200 && /className="show-as"/.test(sa) && /show-as-btn/.test(sa) && /aria-pressed=/.test(sa) && /data-view=/.test(sa) && /viewsFor\(/.test(sa) && /title=\{/.test(sa), 'ShowAs: icons first, the word on hover (title), aria-pressed on the current view, the views from viewsOf(kind)']);
@@ -315,6 +317,8 @@ const MUT = [
   { name: 'PageDown stops stepping from inside the card', file: 'store/walk.ts', find: /if \(key === 'PageDown' \|\| key === 'PageUp'\) return true;/, to: "if (key === 'PageDown' || key === 'PageUp') return !ctx.inEditor;", red: ['Y5'] },
   { name: 'a dealt card with a title counts as written', file: 'store/walk.ts', find: /\(!!box\.deckStep \|\| title\.trim\(\) === ''\)/, to: "(title.trim() === '')", red: ['Y5'] },
   { name: 'the Walk stops asking for the caret', file: 'components/BoardEditor.tsx', find: /key=\{box\.id\}\n          inline\n          autoFocus\n/, to: 'key={box.id}\n          inline\n', red: ['Y6'] },
+  { name: 'an empty card turns the arrows away when the editor has taken them', file: 'components/Walk.tsx', find: /\(e\.defaultPrevented && !\(arrow && emptyHere\)\) \|\| e\.isComposing/, to: 'e.defaultPrevented || e.isComposing', red: ['Y7'] },
+  { name: 'the Walk question stays a line below the caret', file: 'index.css', find: /margin-top:calc\(2px - 1\.6 \* 17px \* var\(--card-type-k, 1\)\);/, to: 'margin-top:2px;', red: ['D12'] },
   { name: 'the vignette stays over the Walk card', file: 'index.css', find: /body:has\(\.walk\)::after\s*\{\s*z-index:\s*-1;\s*\}/, to: 'body:has(.walk)::after{ z-index:2; }', red: ['D11'] },
   { name: 'the Show-as words lose Trace', file: 'store/deskLexicon.ts', find: /boardModeWalk: 'Trace'/, to: "boardModeWalk: 'Walk'", red: ['L1'] },
 ];
@@ -327,7 +331,7 @@ try {
   const M0 = base.M || {};
   const res0 = await suite(M0, rd({}));
   for (const [k, v] of Object.entries(res0)) ok(k, v.pass, v.detail);
-  ok('the suite ran every check it names', Object.keys(res0).length === 58, `${Object.keys(res0).length} checks (54 + Y4 Y5 Y6 D11 = 58; Y3 parked)`);
+  ok('the suite ran every check it names', Object.keys(res0).length === 60, `${Object.keys(res0).length} checks (54 + Y4 Y5 Y6 Y7 D11 D12 = 60; Y3 parked)`);
   ok('the park count is exactly 1 (Y3, with its mutant)', PARKED.length === 1 && PARKED[0].id === 'Y3' && typeof PARKED[0].original === 'function', `${PARKED.length} parked`);
 
   let landed = 0, killed = 0, notLanded = 0;
