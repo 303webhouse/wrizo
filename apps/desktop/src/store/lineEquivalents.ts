@@ -1,3 +1,4 @@
+import { withoutFontMarks } from './markRuns';
 // CD1 S6 — the goal system's unit of measure. A "line-equivalent" is
 // deterministic and viewport-independent: hard newlines split the text into
 // segments, and each segment's SOFT WRAP is computed against the paper's
@@ -21,7 +22,7 @@ export const CANONICAL_MEASURE_CH = 60;
 // lines, not 1.02).
 export function countLineEquivalents(text: string, measureCh: number = CANONICAL_MEASURE_CH): number {
   if (!text) return 0;
-  const segments = text.split('\n');
+  const segments = withoutFontMarks(text).split('\n');   // POLISH #10 item 4: a style span's marks are not lines written
   let total = 0;
   for (const seg of segments) {
     total += seg.length === 0 ? 1 : Math.max(1, Math.ceil(seg.length / measureCh));

@@ -110,9 +110,18 @@ function decorateInlineForCard(text: string, caret: number | null): string {
       // mark. A face this build does not have loaded yet is fetched now (memoised; the stack's fallback shows meanwhile).
       let wrap: string;
       if (r.kind === 'font') {
-        const face = faceForSlug(r.face ?? '');
-        void ensureFaceLoaded(face.name);
-        wrap = `<span class="md-font" data-face="${escHtml(face.name).replace(/"/g, '&quot;')}" style="font-family:${escHtml(faceStack(face) ?? '').replace(/"/g, '&quot;')}">`;
+        // POLISH #10 item 4: a style span paints its face, its size (real points in page units, as the page's own size), or both. Its hidden marks keep
+        // their own zero size (.md-mark-hidden is on the marks themselves, so the span's size never reaches them).
+        const style: string[] = [];
+        let attrs = '';
+        if (r.face) {
+          const face = faceForSlug(r.face);
+          void ensureFaceLoaded(face.name);
+          attrs += ` data-face="${escHtml(face.name).replace(/"/g, '&quot;')}"`;
+          style.push(`font-family:${escHtml(faceStack(face) ?? '').replace(/"/g, '&quot;')}`);
+        }
+        if (r.points != null) { attrs += ` data-size="${r.points}"`; style.push(`font-size:calc(${r.points} * var(--wz-pt, 1.33333px))`); }
+        wrap = `<span class="md-font"${attrs} style="${style.join(';')}">`;
       } else wrap = `<span class="${cls[r.kind]}">`;
       out += `${wrap}<span class="${markCls}">${escHtml(r.mark)}</span>${emit(r.open + ml, r.close, kids)}<span class="${markCls}">${escHtml(cm)}</span></span>`;
       cur = end;

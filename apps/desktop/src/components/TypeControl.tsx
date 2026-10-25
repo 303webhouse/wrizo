@@ -44,6 +44,10 @@ export interface TypeScope {
   wholeLabel: string;
   /** Give the highlighted words a face: a slug, or null for the surface's own face (their spans removed). One undo step. */
   onPickSelection: (slug: string | null) => void;
+  /** POLISH #10 item 4 (Nick ruled A, Oct 25): the highlight's size (N, null for the surface's own, 'mixed'), and the road that sizes ONLY the
+   *  highlighted words - one undo step. With these, the size's `-` [ N ] `+` follow the scope exactly as the face list does. */
+  size?: number | null | 'mixed';
+  onSizeSelection?: (points: number) => void;
 }
 
 /** The face that ACTUALLY renders when nothing is chosen: the first family of the resolved `--font-prose` (voice dial and
@@ -94,12 +98,17 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
     if (!scope || whole) { onPickFace(storedFaceFor(f)); return; }
     scope.onPickSelection(f.name === currentName ? null : fontSlug(f.name));
   };
-  const up = stepUp(size); const down = stepDown(size);
+  // POLISH #10 item 4: under the Selection scope the size is the HIGHLIGHT's (its own, or the surface's where it has none) and a step sizes only the
+  // highlighted words; under Whole document (or with nothing highlighted) it is the surface's, as before
+  const selSize = scope && !whole && scope.onSizeSelection ? (typeof scope.size === 'number' ? scope.size : size) : null;
+  const shownSize = selSize ?? size;
+  const sizeTo = (n: number) => { if (selSize !== null && scope?.onSizeSelection) scope.onSizeSelection(n); else onSize(n); };
+  const up = stepUp(shownSize); const down = stepDown(shownSize);
   const commitDraft = () => {
     if (draft === null) return;
     const n = normalizeTypedSize(draft);
     setDraft(null);                          // a refused entry snaps back to the previous value
-    if (n !== null && n !== size) onSize(n);
+    if (n !== null && n !== shownSize) sizeTo(n);
   };
 
   return (
@@ -153,20 +162,20 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
         </ul>
       )}
       <div className="wz-type-size">
-        <button type="button" className="mode-tbtn wz-type-step" aria-label={t('typeSmaller')} aria-disabled={down === null} onMouseDown={keepFocus} onClick={() => { if (down !== null) onSize(down); }}>{'−'}</button>
+        <button type="button" className="mode-tbtn wz-type-step" aria-label={t('typeSmaller')} aria-disabled={down === null} onMouseDown={keepFocus} onClick={() => { if (down !== null) sizeTo(down); }}>{'−'}</button>
         {form === 'full' && (
           <input
             className="wz-type-num"
             type="text"
             inputMode="decimal"
             aria-label={t('typeSize')}
-            value={draft ?? formatSize(size)}
+            value={draft ?? formatSize(shownSize)}
             onChange={(e) => setDraft(e.target.value)}
             onBlur={commitDraft}
             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commitDraft(); (e.target as HTMLInputElement).blur(); } else if (e.key === 'Escape') setDraft(null); }}
           />
         )}
-        <button type="button" className="mode-tbtn wz-type-step" aria-label={t('typeLarger')} aria-disabled={up === null} onMouseDown={keepFocus} onClick={() => { if (up !== null) onSize(up); }}>+</button>
+        <button type="button" className="mode-tbtn wz-type-step" aria-label={t('typeLarger')} aria-disabled={up === null} onMouseDown={keepFocus} onClick={() => { if (up !== null) sizeTo(up); }}>+</button>
       </div>
     </div>
   );

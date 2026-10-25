@@ -28,7 +28,7 @@ import { unbornHref } from '../store/unbornPage';
 import { renderStroke } from '../store/ink';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { getSelectionOffsets, getCaretOffset, setCaretOffset, setSelectionOffsets } from '../store/caretOffset';
-import { applyFormat, formatShortcutAction, applyFontPick, fontFaceAt, clearFontSpans, type FormatAction } from '../store/draftFormat';
+import { applyFormat, formatShortcutAction, applyFontPick, fontFaceAt, clearFontSpans, applySizePick, fontSizeAt, clearSizeSpans, type FormatAction } from '../store/draftFormat';
 import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText, revealAtCaret } from '../store/draftDecoration';
 import { attachHiddenMarkEditing, hiddenMarkEditingFor } from '../store/hiddenMarksEditing';
 import { placeCaret } from '../store/hiddenMarksDom';
@@ -428,7 +428,7 @@ function BoardCardPopup({
   const [dockOpen, setDockOpen] = useState(false);
   // FONT-SPAN: whether words are highlighted in the card, and their face - the dock's Typeface scopes and brass read it. Declared
   // with the hooks (item 133's lesson, above).
-  const [fontSel, setFontSel] = useState<{ has: boolean; face: string | null | 'mixed' }>({ has: false, face: null });
+  const [fontSel, setFontSel] = useState<{ has: boolean; face: string | null | 'mixed'; size: number | null | 'mixed' }>({ has: false, face: null, size: null });   // POLISH #10 item 4: and its size
   useEffect(() => {
     const onSel = () => {
       const el = elRef.current;
@@ -439,8 +439,8 @@ function BoardCardPopup({
       const cur = textRef.current;
       const lo = fo ? Math.min(fo.start, fo.end, cur.length) : 0;
       const hi = fo ? Math.min(Math.max(fo.start, fo.end), cur.length) : 0;
-      const next = fo && hi > lo ? { has: true, face: fontFaceAt(cur, lo, hi) } : { has: false, face: null };
-      setFontSel((prev) => (prev.has === next.has && prev.face === next.face ? prev : next));
+      const next = fo && hi > lo ? { has: true, face: fontFaceAt(cur, lo, hi), size: fontSizeAt(cur, lo, hi) } : { has: false, face: null, size: null };
+      setFontSel((prev) => (prev.has === next.has && prev.face === next.face && prev.size === next.size ? prev : next));
     };
     document.addEventListener('selectionchange', onSel);
     return () => document.removeEventListener('selectionchange', onSel);
@@ -761,7 +761,39 @@ function BoardCardPopup({
       decorateEditorFor(el, result.text, result.start, setCaretOffset, text => decorateMarkdownForCard(text, null));
     }
     setSelectionOffsets(el, result.start, result.end);
-    setFontSel({ has: true, face: fontFaceAt(result.text, result.start, result.end) });
+    setFontSel({ has: true, face: fontFaceAt(result.text, result.start, result.end), size: fontSizeAt(result.text, result.start, result.end) });
+  };
+  // POLISH #10 item 4 (Nick ruled A, Oct 25): a size for the HIGHLIGHTED words of this card only - the face's own road
+  const applyBoardSize = (points: number) => {
+    const el = elRef.current;
+    if (!el) return;
+    el.focus();
+    const sel = getSelectionOffsets(el);
+    if (!sel || sel.start === sel.end) return;
+    const cur = textRef.current;
+    const result = applySizePick(cur, Math.min(sel.start, cur.length), Math.min(sel.end, cur.length), points);
+    if (result.text !== cur) {
+      undoStackRef.current?.record({ text: result.text, caret: result.start }, 'atomic');
+      textRef.current = result.text;
+      onCommit(result.text);
+      decorateEditorFor(el, result.text, result.start, setCaretOffset, text => decorateMarkdownForCard(text, null));
+    }
+    setSelectionOffsets(el, result.start, result.end);
+    setFontSel({ has: true, face: fontFaceAt(result.text, result.start, result.end), size: fontSizeAt(result.text, result.start, result.end) });
+  };
+  // POLISH #10 item 4: the Whole card SIZE - the card's spans' sizes go (one undo step), then the card's size
+  const pickWholeCardSize = (size: number) => {
+    const el = elRef.current;
+    const cur = textRef.current;
+    const next = clearSizeSpans(cur);
+    if (el && next !== cur) {
+      const caret = Math.min(getCaretOffset(el) ?? next.length, next.length);
+      undoStackRef.current?.record({ text: next, caret }, 'atomic');
+      textRef.current = next;
+      onCommit(next);
+      decorateEditorFor(el, next, caret, setCaretOffset, text => decorateMarkdownForCard(text, null));
+    }
+    onType({ fontSize: size });
   };
   // FONT-SPAN: the Whole card pick - every word takes the card's new face, so the card's spans go (one undo step), then the face.
   const pickWholeCardFace = (face: StoredFace) => {
@@ -833,8 +865,8 @@ function BoardCardPopup({
           <button type="button" className="mode-tbtn board-popup-tool" title={dt('stylingUnderline')} onClick={() => applyBoardFormat('underline')}><u>U</u></button>
           {/* ITEM 207 - the card's face and size: the smallest form (-/+, no number, no heading). FONT-SPAN: the face is chosen through
               the two scopes - Selection / Whole card - over the roster as a list (the approved mockup's card scene). */}
-          <TypeControl form="small" face={fontFace} size={fontSize ?? SIZE_DEFAULT} onPickFace={pickWholeCardFace} onSize={size => onType({ fontSize: size })}
-            scope={{ has: fontSel.has, face: fontSel.face, wholeLabel: dt('typeScopeWholeCard'), onPickSelection: applyBoardFont }} />
+          <TypeControl form="small" face={fontFace} size={fontSize ?? SIZE_DEFAULT} onPickFace={pickWholeCardFace} onSize={pickWholeCardSize}
+            scope={{ has: fontSel.has, face: fontSel.face, wholeLabel: dt('typeScopeWholeCard'), onPickSelection: applyBoardFont, size: fontSel.size, onSizeSelection: applyBoardSize }} />
         </div>
         )}
         <div className="board-popup-strip">
