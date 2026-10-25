@@ -50,7 +50,7 @@ import { PAGE_KIND_DEFAULT, PAGE_SETTINGS_FALLBACK, STYLE_GUIDE_DEFAULT } from '
 import { PortToBoardSheet } from '../components/PortToBoardSheet';
 import { PinToBoardSheet } from '../components/PinToBoardSheet';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
-import { applyFormat, marksAt, headingLevelAt, stripMarkdownConventions, applyFontPick, fontFaceAt, clearFontSpans, type FormatAction } from '../store/draftFormat';
+import { applyFormat, marksAt, headingLevelAt, stripMarkdownConventions, applyFontPick, fontFaceAt, clearFontSpans, applySizePick, fontSizeAt, clearSizeSpans, type FormatAction } from '../store/draftFormat';
 import { hiddenMarkEditingFor } from '../store/hiddenMarksEditing';
 import { createTabChord, type TabAct } from '../store/tabChord';
 import { escapeFromEditor, ESC_HINT_ID } from '../store/escapeExit';
@@ -318,7 +318,7 @@ function PageEditorView({ id }: { id: string }) {
   const [headingLevel, setHeadingLevel] = useState<number | null>(null);
   const [headingPop, setHeadingPop] = useState<{ x: number; y: number } | null>(null);
   // FONT-SPAN: whether words are highlighted on the page, and their face - the Typeface section's scope and brass read it
-  const [fontSel, setFontSel] = useState<{ has: boolean; face: string | null | 'mixed' }>({ has: false, face: null });
+  const [fontSel, setFontSel] = useState<{ has: boolean; face: string | null | 'mixed'; size: number | null | 'mixed' }>({ has: false, face: null, size: null });   // POLISH #10 item 4: and its size
   // ITEM 121 I6 — FX7 S2's rail-driven marker-insertion escape hatch is gone
   // with the STYLING zone that was its only caller. ForwardOnlyEditor's
   // `insertMarkerRef` PROP is deliberately left standing: it is that shared
@@ -403,8 +403,8 @@ function PageEditorView({ id }: { id: string }) {
         const fo = ranged ? getSelectionOffsets(el) : null;
         const lo = fo ? Math.min(fo.start, fo.end, plain.length) : 0;
         const hi = fo ? Math.min(Math.max(fo.start, fo.end), plain.length) : 0;
-        const next = fo && hi > lo ? { has: true, face: fontFaceAt(plain, lo, hi) } : { has: false, face: null };
-        setFontSel((prev) => (prev.has === next.has && prev.face === next.face ? prev : next));
+        const next = fo && hi > lo ? { has: true, face: fontFaceAt(plain, lo, hi), size: fontSizeAt(plain, lo, hi) } : { has: false, face: null, size: null };
+        setFontSel((prev) => (prev.has === next.has && prev.face === next.face && prev.size === next.size ? prev : next));
       }
       // THE FLOATING +/- (Nick: "a '+/-' option ... that hovers over the heading text on the page when it is highlighted"). Shown only
       // while a SELECTION sits on a heading line. It is placed where it can never cover a word: just past the end of the heading's own
@@ -1102,10 +1102,39 @@ function PageEditorView({ id }: { id: string }) {
       if (!writeRows(el, result.text, result.start, null)) decorateEditorFor(el, result.text, result.start, setCaretOffset, t => decorateMarkdownForCard(t, null));
     }
     setSelectionOffsets(el, result.start, result.end);
-    setFontSel({ has: true, face: fontFaceAt(result.text, result.start, result.end) });
+    setFontSel({ has: true, face: fontFaceAt(result.text, result.start, result.end), size: fontSizeAt(result.text, result.start, result.end) });
   };
   // FONT-SPAN: the Whole document pick, as the mockup has it - every word takes the page's new face, so the spans go (free-edit modes,
   // where the page's text can be rewritten in place; Free Write's forward-only runway is never rewritten by a tool). One undo step.
+  // POLISH #10 item 4 (Nick ruled A, Oct 25): a size for the HIGHLIGHTED words only - the face's own road (one atomic undo step, through the rows)
+  const applySizeAt = (points: number) => {
+    const el = editorRef.current;
+    if (!el) return;
+    el.focus();
+    const sel = getSelectionOffsets(el);
+    if (!sel || sel.start === sel.end) return;
+    const cur = textRef.current;
+    const result = applySizePick(cur, Math.min(sel.start, cur.length), Math.min(sel.end, cur.length), points);
+    if (result.text !== cur) {
+      getRegisteredUndoStack(el)?.record({ text: result.text, caret: result.start }, 'atomic');
+      setText(result.text);
+      if (!writeRows(el, result.text, result.start, null)) decorateEditorFor(el, result.text, result.start, setCaretOffset, t => decorateMarkdownForCard(t, null));
+    }
+    setSelectionOffsets(el, result.start, result.end);
+    setFontSel({ has: true, face: fontFaceAt(result.text, result.start, result.end), size: fontSizeAt(result.text, result.start, result.end) });
+  };
+  // POLISH #10 item 4: the whole-document SIZE pick - the spans' sizes go (the faces stay), one undo step, through the rows
+  const clearSizeSpansOnPage = () => {
+    const el = editorRef.current;
+    if (!el || (mode !== 'drafting' && mode !== 'revise')) return;
+    const cur = textRef.current;
+    const next = clearSizeSpans(cur);
+    if (next === cur) return;
+    const caret = Math.min(getCaretOffset(el) ?? next.length, next.length);
+    getRegisteredUndoStack(el)?.record({ text: next, caret }, 'atomic');
+    setText(next);
+    if (!writeRows(el, next, caret, null)) decorateEditorFor(el, next, caret, setCaretOffset, t => decorateMarkdownForCard(t, null));
+  };
   const clearFontSpansOnPage = () => {
     const el = editorRef.current;
     if (!el || (mode !== 'drafting' && mode !== 'revise')) return;
@@ -1271,8 +1300,8 @@ function PageEditorView({ id }: { id: string }) {
     size: entry.pageSettings?.size ?? PAGE_SIZE_DEFAULT,   // PAGE-SIZE (ruling a): a page's default is 12 real points; cards keep 11
     // TOOLS #10 item 10: `undefined` is "Default" - the stored face is CLEARED (no stored face = the theme's default; that rule already existed), after the same whole-page span clear a face pick does.
     onPickFace: (face: StoredFace | undefined) => { clearFontSpansOnPage(); if (face) patchPageSettings({ face }); else clearPageFace(); },
-    onSize: (size: number) => patchPageSettings({ size }),
-    scope: scoped ? { has: fontSel.has, face: fontSel.face, wholeLabel: dt('typeScopeWholeDocument'), onPickSelection: applyFontAt } : undefined,
+    onSize: (size: number) => { clearSizeSpansOnPage(); patchPageSettings({ size }); },   // POLISH #10 item 4: the whole page's size - its spans' sizes go
+    scope: scoped ? { has: fontSel.has, face: fontSel.face, wholeLabel: dt('typeScopeWholeDocument'), onPickSelection: applyFontAt, size: fontSel.size, onSizeSelection: applySizeAt } : undefined,
   });
 
   const sliverContent: SliverContent = !framed
