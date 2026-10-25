@@ -119,8 +119,13 @@ const zoomRule = exceptionRules.find(([s]) => s === ".desk-frame-stage--prose .m
 ok('T5 [r2 successor]: the bar is 10px / the APPLIED scale rounded to the nearest whole layout pixel, capped at 10 (--wz-sb-w), and the bar rule reads that variable; --wz-sb-k = --wz-k, times --wz-zoom while the column is zoomed',
   !!barRule && /width:\s*var\(--wz-sb-w\)/.test(barRule[1]) && !!resetRule && /--wz-sb-w:\s*min\(10px, round\(nearest, calc\(10px \/ var\(--wz-sb-k\)\), 1px\)\)/.test(resetRule[1]) && /--wz-sb-k:\s*var\(--wz-k, 1\)/.test(resetRule[1])
   && !!zoomRule && /--wz-sb-k:\s*calc\(var\(--wz-k, 1\) \* var\(--wz-zoom, 1\.6\)\)/.test(zoomRule[1]), JSON.stringify({ barRule, resetRule, zoomRule }));
-ok('T5 [r2 successor]: the PAIRING - .mode-scroll takes padding-right: calc(10px - var(--wz-sb-w)), so bar + padding is 10 layout px and the text column is one width at every scale and zoom',
-  !!resetRule && /padding-right:\s*calc\(10px - var\(--wz-sb-w\)\)/.test(resetRule[1]), JSON.stringify(resetRule));
+// ORIGINAL (r2's first pairing check, e2adbfb7; parked verbatim): ok('T5 [r2 successor]: the PAIRING - .mode-scroll takes padding-right: calc(10px - var(--wz-sb-w)), so bar + padding is 10 layout px and the text column is one width at every scale and zoom',
+//   !!resetRule && /padding-right:\s*calc\(10px - var\(--wz-sb-w\)\)/.test(resetRule[1]), JSON.stringify(resetRule));
+// SUPERSEDED (r2.1, the box run of e2adbfb7): that form of the rule REPLACED the plain `.mode-scroll` rule's own padding-right (the page's pad-x, which cancels its negative right margin), so the text column grew by one
+// page margin (fx10 S1 grip reds, COLUMN). The pairing ADDS to the cancellation: pad-x x paper-scale + (10px - the bar). Successor below.
+const PAIR = /padding-right:\s*calc\(var\(--wz-page-pad-x, 38px\) \* var\(--paper-scale, 1\) \+ 10px - var\(--wz-sb-w\)\)/;
+ok('T5 [r2.1 successor]: the PAIRING - .mode-scroll takes padding-right: calc(<the margin cancellation it already carries: pad-x x paper-scale> + 10px - var(--wz-sb-w)), so bar + the extra is 10 layout px and the text column is one width at every scale and zoom',
+  !!resetRule && PAIR.test(resetRule[1]), JSON.stringify(resetRule));
 ok('T5 [successor]: the thumb is a SQUARE (border-radius 0) in the paper-toned --ink-on-paper-low, the track clear',
   !!thumbRule && /background:\s*var\(--ink-on-paper-low\)/.test(thumbRule[1]) && /border-radius:\s*0/.test(thumbRule[1]) && exceptionRules.some(([s, b]) => s === EXC + '::-webkit-scrollbar-track' && /background:\s*transparent/.test(b)), JSON.stringify(thumbRule));
 ok('T5: ...and the standard mechanism IS present: the systemic `*` rule sets scrollbar-width:thin and a theme-token scrollbar-color',
@@ -147,13 +152,15 @@ ok('T6: .board-canvas-wrap paints var(--paper) (the canvas\'s own surface) besid
 {
   const strip = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '');
   const land = (from, to) => { const next = css.replace(from, to); return next === css ? null : strip(next); };
-  const resetGone = land(`padding-right:calc(10px - var(--wz-sb-w)); scrollbar-width:auto; scrollbar-color:auto; }`, `padding-right:calc(10px - var(--wz-sb-w)); }`);
+  const resetGone = land(`+ 10px - var(--wz-sb-w)); scrollbar-width:auto; scrollbar-color:auto; }`, `+ 10px - var(--wz-sb-w)); }`);
   const resetOf = (t) => { const b = (/@supports selector\(::-webkit-scrollbar\)\{([\s\S]*?)\n\}/.exec(t) || [, ''])[1]; const r = [...b.matchAll(/([^{}]+)\{([^{}]*)\}/g)].find((m) => m[1].trim() === EXC); return !!r && /scrollbar-width:\s*auto/.test(r[2]) && /scrollbar-color:\s*auto/.test(r[2]); };
   ok('MUTANT: the auto reset is removed from the exception (the pseudo rules would be dead under Chromium >= 121) - T5 [successor] must go RED (the mutation LANDED)', resetGone !== null && !resetOf(resetGone) && resetOf(cssRules), '');
   const unscaled = land('width:var(--wz-sb-w); }', 'width:10px; }');
   ok('MUTANT: the bar is a flat 10px of layout (the scaled-up bar of 3840 returns) - T5 [r2 successor] must go RED (the mutation LANDED)', unscaled !== null && !/width:\s*var\(--wz-sb-w\)/.test(unscaled) && /width:\s*var\(--wz-sb-w\)/.test(cssRules), '');
-  const noPad = land('padding-right:calc(10px - var(--wz-sb-w)); ', '');
-  ok('MUTANT: the right padding is dropped (the text column takes a different bite at every scale again) - the PAIRING check must go RED (the mutation LANDED)', noPad !== null && !/padding-right:\s*calc\(10px - var\(--wz-sb-w\)\)/.test(noPad) && /padding-right:\s*calc\(10px - var\(--wz-sb-w\)\)/.test(cssRules), '');
+  const noPad = land(' + 10px - var(--wz-sb-w));', ');');
+  ok('MUTANT: the (10px - the bar) extra is dropped from the padding (the text column takes a different bite at every scale again) - the PAIRING check must go RED (the mutation LANDED)', noPad !== null && !PAIR.test(noPad) && PAIR.test(cssRules), '');
+  const replaced = land('padding-right:calc(var(--wz-page-pad-x, 38px) * var(--paper-scale, 1) + 10px - var(--wz-sb-w));', 'padding-right:calc(10px - var(--wz-sb-w));');
+  ok('MUTANT: the padding REPLACES the margin cancellation (the first r2 form: the text column grew by a page margin) - the PAIRING check must go RED (the mutation LANDED)', replaced !== null && !PAIR.test(replaced) && PAIR.test(cssRules), '');
   const uncapped = land('--wz-sb-w: min(10px, round(nearest, calc(10px / var(--wz-sb-k)), 1px));', '--wz-sb-w: round(nearest, calc(10px / var(--wz-sb-k)), 1px);');
   ok('MUTANT: the 10px cap is dropped (below scale 1 the padding would have to go negative) - T5 [r2 successor] must go RED (the mutation LANDED)', uncapped !== null && !/--wz-sb-w:\s*min\(10px,/.test(uncapped) && /--wz-sb-w:\s*min\(10px,/.test(cssRules), '');
   const unwrapped = land('@supports selector(::-webkit-scrollbar){\n', '');
@@ -169,7 +176,9 @@ ok('T6: .board-canvas-wrap paints var(--paper) (the canvas\'s own surface) besid
     `margin-right:calc(-38px * var(--paper-scale)); padding-right:calc(38px * var(--paper-scale)); }`,
   );
   const landed = mutated !== css;
-  const mutatedMatch = mutated.match(/\.mode-scroll\{[^}]*\}/);
+  // r2.1: anchored to the plain rule's own line start. The unanchored probe (`/\.mode-scroll\{[^}]*\}/`) found the FIRST `.mode-scroll{` in the file - the page-scale exception's rule, which has carried no shared variable
+  // until the pairing - and so went "red" for the wrong rule (a blind pass); the pairing now reads the variable too, which exposed it.
+  const mutatedMatch = mutated.match(/\n\.mode-scroll\{[^}]*\}/);
   const wentRed = landed && !(mutatedMatch?.[0].includes(SHARED_VAR));
   ok('MUTANT: .mode-scroll\'s cancellation reverts to the old hardcoded 38px literal (the exact ITEM-83-M3 regression) - T1 must go RED',
     wentRed, JSON.stringify({ landed }));

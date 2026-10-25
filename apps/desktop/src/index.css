@@ -431,9 +431,10 @@
    the track is clear. The applied scale is --wz-k, times --wz-zoom while the column is zoomed - the SAME expressions page-size's own transform rules use. */
 @supports selector(::-webkit-scrollbar){
   /* THE TEXT COLUMN IS ONE WIDTH AT EVERY SCALE (Fable Oct 25, FIX's diagnosis of the line-break reds): the bar's layout width (--wz-sb-w) changes with the scale and, left alone, takes a different bite out of the
-     column each time - reflowing the lines. A right padding of (10px - the bar) makes bar + padding exactly 10 layout px at every scale and zoom, so the column is the same width everywhere. The bar is capped at 10
+     column each time - reflowing the lines. The padding is the margin cancellation the plain `.mode-scroll` rule already carries (the page's own pad-x, offsetting its negative right margin) PLUS (10px - the bar),
+     so bar + that extra is exactly 10 layout px at every scale and zoom and the column is the same width everywhere. (The first form of this rule REPLACED the cancellation - the text column grew by one page margin.) The bar is capped at 10
      layout px (a page painted BELOW scale 1 would otherwise need a negative padding), so there it paints 10 x k - under 10px, by under a pixel at the narrowest window. */
-  .desk-frame-stage--prose .mode-scroll{ --wz-sb-k: var(--wz-k, 1); --wz-sb-w: min(10px, round(nearest, calc(10px / var(--wz-sb-k)), 1px)); padding-right:calc(10px - var(--wz-sb-w)); scrollbar-width:auto; scrollbar-color:auto; }
+  .desk-frame-stage--prose .mode-scroll{ --wz-sb-k: var(--wz-k, 1); --wz-sb-w: min(10px, round(nearest, calc(10px / var(--wz-sb-k)), 1px)); padding-right:calc(var(--wz-page-pad-x, 38px) * var(--paper-scale, 1) + 10px - var(--wz-sb-w)); scrollbar-width:auto; scrollbar-color:auto; }
   .desk-frame-stage--prose .mode-pagecol[data-zoom='true'] .mode-scroll{ --wz-sb-k: calc(var(--wz-k, 1) * var(--wz-zoom, 1.6)); }
   .desk-frame-stage--prose .mode-scroll::-webkit-scrollbar{ width:var(--wz-sb-w); }
   .desk-frame-stage--prose .mode-scroll::-webkit-scrollbar-track{ background:transparent; }
