@@ -1175,13 +1175,7 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
             <h4>{t('footMenuProgress')}</h4>
             <ProgressFields target={target} hasMilestones={hasMilestones} />
           </section>
-          <section className="wz-foot-settings-block">
-            <h4>{t('footMenuPreferences')}</h4>
-            {/* ITEM word-diet (Nick, Oct 13) — same fix as ModeStage.tsx's
-                own copy of this row: the standing hint retires, moved
-                behind a "?" beside the label. */}
-            <Seg label={<>{t('fadeDepthLabel')} <HelpButton helpKey="recedeHint" subjectLabel={t('fadeDepthLabel')} /></>} value={settings.fadeDepth} opts={[['partial', t('fadeDepthPartial')], ['full', t('fadeDepthFull')]]} onPick={v => setWritingSettings({ fadeDepth: v as FadeDepth })} />
-          </section>
+          {/* Nick's ruling (via Fable, Oct 25): "Recede depth" is REMOVED - the narrow layout follows the full recede. It was the Preferences block's only row, so the block is gone too. */}
         </div>
       )}
     </div>

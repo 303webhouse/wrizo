@@ -430,7 +430,11 @@ const boardSrc = rd('components/BoardEditor.tsx');
 const caretSrc = rd('components/FluxBlockCaret.tsx');
 ok('P10 the block caret takes its width from caretWidth (the slim caret), not an inline ratio', /caretWidth\(height\)/.test(caretSrc) && !/0\.48/.test(caretSrc), '');
 ok('P9 the board wears the Flux frame (grid ring + brackets) through FluxBoardFrame, and the rail\'s place block reads the rack readout in Flux', /<FluxBoardFrame/.test(boardSrc) && /export function FluxBoardFrame/.test(readoutsSrc) && /rackReadout\(/.test(placeBlock), '');
-ok('P8 the Recede-depth and Timer rows name themselves through the lexicon on both surfaces (the framed sliver and the settings panel) - no inline word', /fadeDepthLabel/.test(sliverSrc) && /timerLabel/.test(sliverSrc) && /fadeDepthLabel/.test(modeStageSrc) && /timerLabel/.test(modeStageSrc) && !/label="Timer"/.test(sliverSrc + modeStageSrc), '');
+// ---- PARKED - SUPERSEDED by Nick's ruling (via Fable, Oct 25): "Recede depth" is REMOVED - the narrow layout follows the full recede (polish #10 item 23): the Recede-depth row is gone from both surfaces. Kept VERBATIM and no longer run; successor follows.
+//
+// ok('P8 the Recede-depth and Timer rows name themselves through the lexicon on both surfaces (the framed sliver and the settings panel) - no inline word', /fadeDepthLabel/.test(sliverSrc) && /timerLabel/.test(sliverSrc) && /fadeDepthLabel/.test(modeStageSrc) && /timerLabel/.test(modeStageSrc) && !/label="Timer"/.test(sliverSrc + modeStageSrc), '');
+// ------------------------------------------------------------------
+ok('P8 [polish #10 item 23 successor] the Timer row names itself through the lexicon on both surfaces - no inline word - and the Recede-depth row is rendered on neither (Nick: removed)', /timerLabel/.test(sliverSrc) && /timerLabel/.test(modeStageSrc) && !/label="Timer"/.test(sliverSrc + modeStageSrc) && !/<Seg label=\{<>\{(?:t|deskLex)\('fadeDepthLabel'\)/.test(sliverSrc + modeStageSrc), '');
 ok('P7 a Flux frame ring: the grid and brackets are an overlay on the page FRAME (pointer-events none, masked to a ring) - never a background of the text area', /\.flux-frame\{[^}]*pointer-events:\s*none/.test(cssNow) && /\.flux-frame\{[^}]*mask/.test(cssNow), '');
 
 // mutants

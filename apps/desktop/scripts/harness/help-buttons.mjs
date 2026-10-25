@@ -137,7 +137,10 @@ const LOCATIONS = [
   // Kept VERBATIM below and no longer run; the live successor follows.
   //
   // { key: 'recedeHint', subject: 'Recede depth', reach: openDraftSliverSettings, sel: '.wz-help[aria-label="What is Recede depth?"]' },
-    { key: 'recedeHint', subject: 'Recede depth', reach: openDraftSliverSettings, sel: '.wz-help[aria-label="What is Recede depth?"], .wz-help[aria-label="What is Dissolve?"]' },
+  // ---- PARKED - SUPERSEDED by Nick's ruling (via Fable, Oct 25): "Recede depth" is REMOVED - the narrow layout follows the full recede (polish #10 item 23): the row and its "?" are gone. Kept VERBATIM and no longer run; the successor (the "?" is
+  // ABSENT, in both themes) follows the loop.
+  //
+  //  { key: 'recedeHint', subject: 'Recede depth', reach: openDraftSliverSettings, sel: '.wz-help[aria-label="What is Recede depth?"], .wz-help[aria-label="What is Dissolve?"]' },
   // ---- PARKED - SUPERSEDED by FLUX WORDS (Nick's Oct 12 pass, folded into flux-v2): the "?" names its tab, and Flux's tab is Wire In - the selector takes either theme's own word.
   // Kept VERBATIM below and no longer run; the live successor follows.
   //
@@ -227,6 +230,12 @@ await withHarness(async (app) => {
   await freshPage(app, 'plateau', { id: 'hb-s1b-plateau' });
   await openDraftSliver(app);
   const arborRowHelps = await app.evalJs("[...document.querySelectorAll('.wz-template-list .wz-template-row-wrap .wz-help')].length");
+  // polish #10 item 23 successor to the parked recedeHint row: the Recede-depth "?" is ABSENT from the Tools drawer's settings, in both themes
+  for (const [theme, page] of [['plateau', 'hb-s1-plateau'], ['flux', 'hb-s1-flux']]) {
+    await freshPage(app, theme, { id: page }); await openDraftSliverSettings(app);
+    const there = await app.evalJs("!!document.querySelector('.wz-help[aria-label=\"What is Recede depth?\"], .wz-help[aria-label=\"What is Dissolve?\"]')");
+    ok(`S1 [${theme}] Recede depth [polish #10 item 23 successor]: the row and its "?" are gone (Nick: removed)`, there === false, String(there));
+  }
   ok('S1b Arbor: none of the five picker rows carry a "?" (Arbor\'s own five words are the canonical baseline, none renamed)',
     arborRowHelps === 0, String(arborRowHelps));
 
