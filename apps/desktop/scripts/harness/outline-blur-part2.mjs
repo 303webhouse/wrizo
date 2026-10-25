@@ -65,8 +65,9 @@ await withHarness(async (app) => {
     ok(`[${T}] a single-line card edits as before ("Third, renamed")`, !!single && single.text === 'Third, renamed', JSON.stringify(single && single.text));
     // Open shows the same words: the edit travelled to the card the Open view draws
     await click('[data-board-mode-tab="open"]'); await waitSoft("!!document.querySelector('.board-box')", { label: 'open' }); await sleep(700);
-    const openText = await q("(document.querySelector('[data-box-id=c1] .board-text')?.innerText || '').replace(/\\s+/g, ' ').trim()");
-    ok(`[${T}] Open shows the edited card with its text ("First EDITED One.")`, /First EDITED\s+One\./.test(openText || ''), String(openText));
+    await waitSoft("!!document.querySelector('[data-box-id=\"c1\"]')", { label: 'card c1 in Open', timeout: 6000 }); await sleep(500);
+    const openProbe = await q(`(() => { const b = document.querySelector('[data-box-id="c1"]'); return b ? { text: (b.textContent || '').replace(/\\s+/g, ' ').trim(), boxes: document.querySelectorAll('.board-box').length, outline: !!document.querySelector('[data-board-projection]') } : { none: true, boxes: document.querySelectorAll('.board-box').length, outline: !!document.querySelector('[data-board-projection]'), hash: location.hash }; })()`);
+    ok(`[${T}] Open shows the edited card with its text ("First EDITED One.")`, !!openProbe && /First EDITED\s+One\./.test(openProbe.text || ''), JSON.stringify(openProbe));
   }
 });
 
