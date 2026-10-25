@@ -107,6 +107,16 @@ const PAPER_FLUSH = `(() => {
   const p = paper.getBoundingClientRect(), d = dock.getBoundingClientRect();
   return { paperLeft: +p.left.toFixed(2), dockRight: +d.right.toFixed(2), delta: +(p.left - d.right).toFixed(2) };
 })()`;
+// page-size (train #7, Oct 25): the same two boxes, plus the zoom, the margin beside the painted page and the text's own left edge
+const PS_FLUSH = `(() => {
+  const paper = document.querySelector('.mode-page'); const dock = document.querySelector('[data-menus-dock], .wz-sliver'); const st = document.querySelector('.desk-frame-stage');
+  const ed = document.querySelector('.forward-only-editor'); if (!paper || !dock || !st || !ed) return null;
+  const p = paper.getBoundingClientRect(), d = dock.getBoundingClientRect();
+  return { paperLeft: +p.left.toFixed(2), dockRight: +d.right.toFixed(2), delta: +(p.left - d.right).toFixed(2), margin: +(p.left - st.getBoundingClientRect().left).toFixed(2),
+    textLeft: +ed.getBoundingClientRect().left.toFixed(2), zoom: document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null };
+})()`;
+const psFlushOk = (g) => !!g && (Math.abs(g.delta) < 0.6 || (g.zoom === 'true' && g.margin < 160 + 38 && g.delta >= -38.6 && g.delta < 0 && g.dockRight <= g.textLeft));
+const i130Ps = [];   // page-size (train #7): S2's reads, for the parked records
 
 await withHarness(async (app) => {
   for (const w of WIDTHS) {
@@ -156,13 +166,24 @@ await withHarness(async (app) => {
       // else's defect; asserting the overlap would ratify a bug as law. So it
       // asserts the only thing THIS ticket actually owes: that the repair did
       // not move the paper at this width either. The overhang is C2's to close.
-      ok(`ITEM130 S2 @ ${w}: OWED TO C2 (surface anchoring) — the dock overlaps the paper by 29.69px at the gate floor, the PROSE row of C2's own measured trio, reproduced here independently. Pre-existing and identical pre-fix and post-fix; this check asserts only that item 130's repair did NOT move it`,
-        !!f && Math.abs(f.delta - GATE_FLOOR_KNOWN_DELTA) < 0.6,
-        JSON.stringify({ ...f, knownPreExisting: GATE_FLOOR_KNOWN_DELTA }));
+      // ---- PARKED - SUPERSEDED by page-size (train #7, Oct 25): a fresh Arbor page opens in the Typewriter ZOOM, the 1.6x page leaves under 160px of margin
+      // beside it, and the Tools anchor then overflows into the page's own 1in margin by up to 38px (index.css --sliver-overflow; the FX2/TU2 narrow-margin
+      // algebra) - b10 read -37.99. The pinned -29.69 was the old 615px page in the normal view. Kept VERBATIM and no longer run; successor + record.
+      //
+      // ok(`ITEM130 S2 @ ${w}: OWED TO C2 (surface anchoring) — the dock overlaps the paper by 29.69px at the gate floor, the PROSE row of C2's own measured trio, reproduced here independently. Pre-existing and identical pre-fix and post-fix; this check asserts only that item 130's repair did NOT move it`,
+      //   !!f && Math.abs(f.delta - GATE_FLOOR_KNOWN_DELTA) < 0.6,
+      //   JSON.stringify({ ...f, knownPreExisting: GATE_FLOOR_KNOWN_DELTA }));
     } else {
-      ok(`ITEM130 S2 @ ${w}: the dock is still flush at the paper (0.00 +/- 0.6) — the repair bought reachability WITHOUT reflowing the paper for chrome`,
-        !!f && Math.abs(f.delta) < 0.6, JSON.stringify(f));
+      // ---- PARKED - SUPERSEDED by page-size (train #7, Oct 25): as above - zoomed, the anchor's documented overflow (b10: -37.98 at 1280 and 1366). Kept
+      // VERBATIM and no longer run; successor + record.
+      //
+      // ok(`ITEM130 S2 @ ${w}: the dock is still flush at the paper (0.00 +/- 0.6) — the repair bought reachability WITHOUT reflowing the paper for chrome`,
+      //   !!f && Math.abs(f.delta) < 0.6, JSON.stringify(f));
     }
+    const g = await app.evalJs(PS_FLUSH);
+    i130Ps.push({ w, g });
+    ok(`ITEM130 S2 @ ${w} [page-size successor]: the dock is flush at the paper - or, zoomed with under 160px beside the page, overlaps only the page's own margin by at most the anchor's 38px, never the text - and the paper did not move to buy reachability`,
+      psFlushOk(g), JSON.stringify(g));
   }
 
   return checks;
@@ -181,10 +202,19 @@ if (process.env.HARNESS_PARKED === '1') {
   // not the human line below it, so a harness that prints only prose
   // declares a park count nothing can audit -- and the day this file DOES
   // park something it would be parked invisibly.
+  // PAGE-SIZE (train #7, Oct 25) - THREE parks: S2 at 1100 (the -29.69 pin) and at 1280 / 1366 (flush), falsified by the zoom's anchor overflow. Records
+  // re-verify the new truth from the live run's reads.
+  for (const o of i130Ps) {
+    const was = o.w === GATE_FLOOR
+      ? `ITEM130 S2 @ ${o.w}: OWED TO C2 (surface anchoring) — the dock overlaps the paper by 29.69px at the gate floor ...`
+      : `ITEM130 S2 @ ${o.w}: the dock is still flush at the paper (0.00 +/- 0.6) — the repair bought reachability WITHOUT reflowing the paper for chrome`;
+    parkedChecks.push({ name: `PARKED (was "${was}") - page-size: zoomed, under 160px beside the page, the Tools anchor overlaps the page's own margin by its 38px overflow, never the text; live successor: ITEM130 S2 @ ${o.w} [page-size successor]`,
+      pass: psFlushOk(o.g), detail: JSON.stringify(o.g) });
+  }
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   // eslint-disable-next-line no-console
-  console.log('\nITEM130 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; item 130 parks nothing. No prior assertion covered real-pointer reachability of the strip, so none is superseded by restoring it.');
+  console.log(parkedChecks.some((c) => !c.pass) ? `\nITEM130 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed` : `\nITEM130 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; item 130 parks 3 (page-size, train #7: S2 at its three widths - the zoom's anchor overflow).`);
 }
 
 const pass = checks.every((c) => c.pass);
