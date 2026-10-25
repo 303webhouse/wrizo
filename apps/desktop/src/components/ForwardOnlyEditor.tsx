@@ -1,4 +1,5 @@
-import { forwardRef, useEffect, useMemo, useReducer, useRef } from 'react';
+import { forwardRef, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { Run } from '../types';
 import { append, derivedText, eraseTail, isBoundary, seedContent, strikeStep } from '../store/forwardOnly';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
@@ -723,6 +724,31 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   const content = contentRef.current;
   const word = wordRef.current;
   const nudge = nudgeRef.current;
+  // POLISH #10 item 2 (Nick, Oct 25) - THE HINT NEVER COVERS TEXT. Pinned 8px above this editor's bottom, it sat on the LAST line wherever the text filled
+  // the box - the writing line itself. On the framed prose page it now goes ONTO THE PAGE (a portal into .mode-page, in the page's own layout px): at the
+  // page's foot - its bottom margin, where text never runs - in the normal view, and in the zoom (whose foot is off the stage) just below the writing
+  // line, inside the band's lower fade. In Free Write the caret is always at the end, so nothing is below it to cover. Elsewhere (no framed page) it
+  // keeps its old place. Measured before paint, so the old place is never drawn.
+  const [nudgePlace, setNudgePlace] = useState<{ host: HTMLElement; top: number; left: number; right: number } | null>(null);
+  useLayoutEffect(() => {
+    const page = nudge ? (hostRef.current?.closest('.desk-frame-stage--prose .mode-page') as HTMLElement | null) : null;
+    if (!nudge || !page || !hostRef.current) { setNudgePlace(null); return; }
+    const pr = page.getBoundingClientRect();
+    const scale = page.offsetWidth > 0 ? pr.width / page.offsetWidth : 1;
+    const cs = getComputedStyle(page);
+    const padB = parseFloat(cs.paddingBottom) || 0;
+    const left = parseFloat(cs.paddingLeft) || 0; const right = parseFloat(cs.paddingRight) || 0;
+    const zoomed = page.closest('.mode-pagecol')?.getAttribute('data-zoom') === 'true';
+    let top: number;
+    if (zoomed) {
+      const rg = document.createRange(); rg.selectNodeContents(hostRef.current);
+      const bottom = [...rg.getClientRects()].filter((q) => q.height >= 4).reduce((m, q) => Math.max(m, q.bottom), pr.top);
+      top = (bottom - pr.top) / scale + 6;
+    } else {
+      top = page.offsetHeight - padB / 2 - 10;   // the foot: centred in the page's bottom margin (the hint is one ~20px line)
+    }
+    setNudgePlace({ host: page, top, left, right });
+  }, [nudge]);
   const isEmpty = content.length === 0 && word.length === 0;
 
   // Render the editable content via innerHTML (not React child spans). Setting
@@ -788,8 +814,9 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       {isEmpty && placeholder && (
         <div className="fo-placeholder" aria-hidden="true">{placeholder}</div>
       )}
-      {nudge && (
-        <div className="fo-nudge" aria-live="polite">{nudge}</div>
+      {nudge && (nudgePlace
+        ? createPortal(<div className="fo-nudge fo-nudge--page" aria-live="polite" style={{ top: nudgePlace.top, left: nudgePlace.left, right: nudgePlace.right }}>{nudge}</div>, nudgePlace.host)
+        : <div className="fo-nudge" aria-live="polite">{nudge}</div>
       )}
     </div>
   );
