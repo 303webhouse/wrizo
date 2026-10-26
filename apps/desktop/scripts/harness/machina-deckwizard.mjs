@@ -63,15 +63,15 @@ if (!process.env.BROWSERLESS_ONLY) {
     const lum = ([r, g, b]) => { const f = (x) => { const s = x / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
     const ratio = (a, b) => { const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x); return (hi + 0.05) / (lo + 0.05); };
     const ground = (el) => { for (let n = el; n; n = n.parentElement) { const bg = rgb(getComputedStyle(n).backgroundColor); if (bg && bg.a > 0.5) return bg.c; } return [0, 0, 0]; };
-    const NAMES = '.deck-wizard-deck-row, .deck-wizard-question, .deck-wizard-option-btn, .deck-wizard-page-btn';
+    const NAMES = '.deck-wizard-deck-row, .deck-wizard-question, .deck-wizard-option-btn, .deck-wizard-page-btn, .forms-name';
     const rows = [];
     for (const el of d.querySelectorAll('*')) { const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()); if (!own) continue; const col = rgb(getComputedStyle(el).color); if (!col) continue;
       rows.push({ cls: String(el.className || el.tagName).slice(0, 40), kind: el.matches(NAMES) ? 'name' : 'label', ratio: Math.round(ratio(col.c, ground(el)) * 100) / 100 }); }
     const cs = getComputedStyle(d); const bg = rgb(cs.backgroundColor).c;
     const probe = document.createElement('i'); probe.style.background = 'var(--chrome-surface)'; document.body.appendChild(probe); const chrome = rgb(getComputedStyle(probe).backgroundColor).c; probe.remove();
-    const eyebrow = d.querySelector('.deck-wizard-eyebrow'); const row = d.querySelector('.deck-wizard-deck-row, .deck-wizard-option-btn');
+    const eyebrow = d.querySelector('.deck-wizard-eyebrow'); const row = d.querySelector('.deck-wizard-deck-row, .deck-wizard-option-btn'); const formsName = d.querySelector('.forms-name');
     return { bg, chrome, lum: Math.round(lum(bg) * 1000) / 1000, radius: cs.borderRadius, shadow: cs.boxShadow, border: cs.borderTopWidth + ' ' + cs.borderTopStyle, borderL: cs.borderLeftWidth,
-      eyebrowFont: eyebrow ? getComputedStyle(eyebrow).fontFamily : null, rowFont: row ? getComputedStyle(row).fontFamily : null,
+      eyebrowFont: eyebrow ? getComputedStyle(eyebrow).fontFamily : null, rowFont: row ? getComputedStyle(row).fontFamily : null, formsFont: formsName ? getComputedStyle(formsName).fontFamily : null, deckRows: d.querySelectorAll('.deck-wizard-deck-row').length, formsRows: d.querySelectorAll('.forms-row').length,
       names: rows.filter((r) => r.kind === 'name'), labels: rows.filter((r) => r.kind === 'label'),
       minName: rows.filter((r) => r.kind === 'name').reduce((m, r) => Math.min(m, r.ratio), 99), minLabel: rows.filter((r) => r.kind === 'label').reduce((m, r) => Math.min(m, r.ratio), 99) }; })()`;
   const boot = async (app, { cast, page }) => {
