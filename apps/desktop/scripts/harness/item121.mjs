@@ -147,12 +147,39 @@ const where = (app) => app.evalJs(`({ hash: location.hash,
   paper: !!document.querySelector('.mode-page'),
   framed: !!document.querySelector('.desk-frame'),
   mode: (document.querySelector('.desk-mode-tab.active') || {}).textContent })`);
+// ---- PARKED - SUPERSEDED by POLISH #10 item 5 (Nick, Oct 25: in the zoom the ink sheet covers the visible page): both drivers aimed their fractions
+// at the WHOLE sheet, which was the text's own box. In the zoom the sheet now reaches over the scroller's start offset and end room with matching
+// paddings, so the same fractions land above the text or past the stage (FIX's turn on e2ebe51d, Oct 26: S2/S4/S5 pen/S7/S8/S11 all drew nothing).
+// Kept VERBATIM and no longer called; the record (parked section) measures the sheet against its text box on each run.
+//
+// const safePen = async (app, sel, points, label) => {
+//   if (!(await present(app, sel))) {
+//     ok(`DRIVER: ${label} — target ${sel} was ABSENT, so no pen stroke was dispatched`, false, JSON.stringify(await where(app)));
+//     return false;
+//   }
+//   await app.penStroke(sel, points);
+//   return true;
+// };
+// ------------------------------------------------------------------
+// SUCCESSOR: the same fractions, aimed at the sheet's TEXT box - its content box (the sheet less its paddings, at the painted scale), exactly where
+// the old sheet was - through a pointer-transparent marker laid over it, so every press still lands on the sheet itself.
+const i121Aim = [];
+const aimAtText = async (app, sel) => {
+  const box = await app.evalJs(`(() => { const s = document.querySelector(${JSON.stringify(sel)}); if (!s) return null; const r = s.getBoundingClientRect(); const cs = getComputedStyle(s);
+    const k = s.offsetWidth > 0 ? r.width / s.offsetWidth : 1; const pt = (parseFloat(cs.paddingTop) || 0) * k; const pb = (parseFloat(cs.paddingBottom) || 0) * k;
+    const pl = (parseFloat(cs.paddingLeft) || 0) * k; const pr = (parseFloat(cs.paddingRight) || 0) * k;
+    let m = document.getElementById('i121-aim'); if (!m) { m = document.createElement('div'); m.id = 'i121-aim'; document.body.appendChild(m); }
+    m.style.cssText = 'position:fixed;pointer-events:none;z-index:2147483647;left:' + (r.left + pl) + 'px;top:' + (r.top + pt) + 'px;width:' + (r.width - pl - pr) + 'px;height:' + (r.height - pt - pb) + 'px';
+    return { sheet: { top: Math.round(r.top), h: Math.round(r.height) }, text: { top: Math.round(r.top + pt), h: Math.round(r.height - pt - pb) }, zoom: document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null }; })()`);
+  if (box && i121Aim.length < 12) i121Aim.push(box);
+  return '#i121-aim';
+};
 const safePen = async (app, sel, points, label) => {
   if (!(await present(app, sel))) {
     ok(`DRIVER: ${label} — target ${sel} was ABSENT, so no pen stroke was dispatched`, false, JSON.stringify(await where(app)));
     return false;
   }
-  await app.penStroke(sel, points);
+  await app.penStroke(await aimAtText(app, sel), points);
   return true;
 };
 const safeTouch = async (app, sel, points, label) => {
@@ -160,7 +187,9 @@ const safeTouch = async (app, sel, points, label) => {
     ok(`DRIVER: ${label} — target ${sel} was ABSENT, so no touch drag was dispatched`, false, JSON.stringify(await where(app)));
     return false;
   }
-  await app.touchDrag(sel, points);
+  // PARKED (polish #10 item 5, as safePen above) - kept verbatim, no longer called:
+  // await app.touchDrag(sel, points);
+  await app.touchDrag(await aimAtText(app, sel), points);   // successor: the same fractions on the sheet's text box
   return true;
 };
 
@@ -495,7 +524,13 @@ await withHarness(async (app) => {
     const ctx = c.getContext('2d');
     const dpr = window.devicePixelRatio || 1;
     // Both axes denormalize by WIDTH — the renderer's own rule.
-    const cx = Math.round(mid.x * r.width * dpr), cy = Math.round(mid.y * r.width * dpr);
+    // PARKED - SUPERSEDED by POLISH #10 item 5 (Oct 26): the renderer draws from where the sheet's TEXT starts (InkStratum.tsx inkOriginY - the sheet's
+    // padding-top at its painted scale, 0 outside the zoom), so in the zoom the ink sits that far below mid.y * width. Kept VERBATIM, no longer used:
+    // const cx = Math.round(mid.x * r.width * dpr), cy = Math.round(mid.y * r.width * dpr);
+    // SUCCESSOR: the renderer's own rule, origin included.
+    const sh = document.querySelector('${SHEET}'); const shr = sh ? sh.getBoundingClientRect() : null;
+    const oy = sh && shr ? (parseFloat(getComputedStyle(sh).paddingTop) || 0) * (sh.offsetWidth > 0 ? shr.width / sh.offsetWidth : 1) : 0;
+    const cx = Math.round(mid.x * r.width * dpr), cy = Math.round((mid.y * r.width + oy) * dpr);
     // A patch, not a pixel: a 1px anti-aliasing miss must not decide a check.
     const d = ctx.getImageData(Math.max(0, cx - 7), Math.max(0, cy - 7), 15, 15).data;
     let max = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > max) max = d[i];
@@ -747,10 +782,15 @@ if (process.env.HARNESS_PARKED === '1') {
     parkedChecks.push({ name: 'PARKED (was "S5 (mouse): in INK a trusted MOUSE drag draws — the laptop is the primary target, and a sketch pad the primary target cannot draw on is not a sketch pad") - page-size: a fresh page opens zoomed with a one-line sheet; the fixed top + 60px gesture lands below it; live successor: S5 (mouse) [page-size successor]',
       pass: !!o.visBox && o.visBox.onSheet && o.afterMouse === o.before + 1 && o.originalOffBelow === true, detail: JSON.stringify(o) });
   }
+  // POLISH #10 item 5 (Oct 26) - the pen + touch drivers' aim. Its record re-verifies the falsification from the live run: in the zoom the sheet is
+  // TALLER than its text box (it covers the visible page), and the text box sits inside it; outside the zoom the two are one box.
+  parkedChecks.push({ name: 'PARKED (was the drivers safePen/safeTouch: "fractions of the whole .wz-ink-sheet") - polish #10 item 5: in the zoom the sheet covers the visible page; successor: the same fractions on the sheet\'s text box',
+    pass: i121Aim.length > 0 && i121Aim.every((b) => b.text.top >= b.sheet.top - 0.5 && b.text.top + b.text.h <= b.sheet.top + b.sheet.h + 0.5 && (b.zoom === 'true' ? b.sheet.h > b.text.h + 20 : Math.abs(b.sheet.h - b.text.h) <= 1)),
+    detail: JSON.stringify(i121Aim) });
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   // eslint-disable-next-line no-console
-  console.log(parkedChecks.some((c) => !c.pass) ? `\nITEM121 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed` : `\nITEM121 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; item121.mjs parks ONE of its own (page-size, Oct 24: S5's mouse gesture); its other parks live in the files that own the falsified assertions.`);
+  console.log(parkedChecks.some((c) => !c.pass) ? `\nITEM121 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed` : `\nITEM121 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; item121.mjs parks TWO of its own (page-size, Oct 24: S5's mouse gesture; polish #10 item 5, Oct 26: the pen + touch drivers' aim, with S7's sampler following the renderer's origin); its other parks live in the files that own the falsified assertions.`);
 }
 
 const pass = checks.every((c) => c.pass);
