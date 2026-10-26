@@ -30,6 +30,23 @@ const PARA = (() => { let s = ''; let i = 0; while (s.length < 1600) { s += (s ?
 const style = (app, id, css) => app.evalJs(css == null
   ? `(() => { document.getElementById(${J(id)})?.remove(); return true; })()`
   : `(() => { let s = document.getElementById(${J(id)}); if (!s) { s = document.createElement('style'); s.id = ${J(id)}; document.head.appendChild(s); } s.textContent = ${J(css)}; return true; })()`);
+// the writer's own Typewriter control (page-size's press): the Sliver open, the pointer to the button until it is HIT, the press, the Sliver closed
+// (review of turn 1, Oct 26: a Free Write page reopens zoomed though its key says off - the view is set by the control, never the key)
+const setView = async (app, zoom) => {
+  const zoomedNow = () => app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') === 'true'");
+  if ((await zoomedNow()) === zoom) return zoom;
+  const grip = () => app.evalJs("(() => { const g = document.querySelector('.wz-sliver-grip'); if (!g) return null; const r = g.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
+  const open = () => app.evalJs("document.querySelector('.wz-sliver')?.getAttribute('data-open') === 'true'");
+  if (!(await open())) { const g = await grip(); if (g) { await click(app, g.x, g.y); await sleep(600); } }
+  const probe = () => app.evalJs(`(() => { const b = document.querySelector('[data-mode-toggle="typewriter"]'); if (!b) return null; b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    const r = b.getBoundingClientRect(); const x = r.left + r.width / 2; const y = r.top + r.height / 2; const hit = document.elementFromPoint(x, y);
+    return { x: Math.round(x), y: Math.round(y), hits: !!hit && (hit === b || b.contains(hit)) }; })()`);
+  let at = await probe();
+  for (let i = 0; at && !at.hits && i < 16; i += 1) { await app.mouseMove(at.x, at.y); await sleep(150); at = await probe(); }
+  if (at && at.hits) { await click(app, at.x, at.y); await sleep(1100); }
+  if (await open()) { const g = await grip(); if (g) { await click(app, g.x, g.y); await sleep(600); } }
+  return zoomedNow();
+};
 const openPage = async (app, id) => {
   await app.evalJs("location.hash = '#/'"); await sleep(300);
   await app.evalJs(`location.hash = '#/page/${id}'`);
@@ -140,10 +157,11 @@ await withHarness(async (app) => {
     await app.evalJs("location.hash = '#/'"); await sleep(300);
     await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${fid}', 'off')`);
     let nInk = null; let ng = null;
-    if (await openPage(app, fid)) { await app.evalJs("document.querySelector('#wz-sliver-tab-ink')?.click()"); await sleep(400); nInk = await app.evalJs(INKBOX); ng = await app.evalJs(P5PROBE); }
+    let viewNormal = null;
+    if (await openPage(app, fid)) { viewNormal = (await setView(app, false)) === false; await app.evalJs("document.querySelector('#wz-sliver-tab-ink')?.click()"); await sleep(400); nInk = await app.evalJs(INKBOX); ng = await app.evalJs(P5PROBE); }
     const dz = zInk && zg ? (zInk.top - zg.lineTop) / zg.scale : null; const dn = nInk && ng ? (nInk.top - ng.lineTop) / ng.scale : null;
     ok(`${tag} P5-ALIGN: the stroke drawn above the line keeps its place relative to the text in both views - its ink's top, from the first line's top in page units, zoom ${dz && dz.toFixed(1)} vs normal ${dn && dn.toFixed(1)} (within 2px)`,
-      dz != null && dn != null && dz < -20 && Math.abs(dz - dn) <= 2 && !!ng && ng.zoom !== 'true', J({ zInk, zg, nInk, ng }));
+      dz != null && dn != null && dz < -20 && Math.abs(dz - dn) <= 2 && !!ng && ng.zoom !== 'true', J({ zInk, zg, nInk, ng, viewNormal }));
     // MP5: the sheet's reach undone (a fresh page, zoomed again) - the drag above the line draws nothing
     await app.evalJs("location.hash = '#/'"); await sleep(300);
     const mid = `p10p-ink-mut`;
