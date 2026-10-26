@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { viewsFor } from '../store/walk';
 import type { BoardKind, BoardView } from '../store/boardKind';
@@ -8,6 +8,8 @@ import type { BoardKind, BoardView } from '../store/boardKind';
 // nothing is drawn. Arbor words Open / Storyboard / Outline / Walk, Flip / Thumbnails; Flux Live / Sequence / Spine / Trace, Playback / Index (lexicon). "Last shown as" is the device-local memory (store/boardMode.ts).
 // The words open for a MOUSE hover or KEYBOARD focus only (:focus-visible) - never for a touch or pen tap or a mouse press: opening shifts the icons, and a tap that opened the strip between pointer-down and up would land on a different icon (the first box turn: every click mis-landed).
 // The icons are the frames' own (18 x 18, 1.3 stroke, currentColor); colour is the stylesheet's: olive at rest, brass for the CHOSEN view (a human choice), never brass at rest.
+
+const HOVER_INTENT_MS = 180;
 
 const WORD: Record<BoardView, DeskTermId> = {
   open: 'boardModeOpen', storyboard: 'boardModeStoryboard', outline: 'boardModeOutline', walk: 'boardModeWalk', flip: 'boardModeFlip', thumbnails: 'boardModeThumbs',
@@ -31,6 +33,9 @@ function ViewIcon({ view }: { view: BoardView }) {
 export function ShowAs({ kind, deck, narrow, current, onPick }: { kind: BoardKind; deck: boolean; narrow: boolean; current: BoardView; onPick: (view: BoardView) => void }) {
   const { t } = useDeskLexicon();
   const [open, setOpen] = useState(false);
+  const intent = useRef<number | null>(null);
+  const clearIntent = () => { if (intent.current !== null) { window.clearTimeout(intent.current); intent.current = null; } };
+  useEffect(() => clearIntent, []);
   const views = viewsFor(kind, narrow, deck);
   if (views.length < 2) return null;
   return (
@@ -39,8 +44,11 @@ export function ShowAs({ kind, deck, narrow, current, onPick }: { kind: BoardKin
       role="group"
       aria-label={t('showAsLabel')}
       data-open={open ? 'true' : 'false'}
-      onPointerEnter={(e) => { if (e.pointerType === 'mouse') setOpen(true); }}
-      onPointerLeave={() => setOpen(false)}
+      // HOVER INTENT: the words open once a mouse has RESTED on the strip for HOVER_INTENT_MS, never on arrival. Opening shifts the icons, so a pointer that lands and presses at once (a quick aim, a driver that teleports the pointer
+      // and clicks) must still hit the icon it aimed at - the first box turn's clicks mis-landed, and fx11 / bm1 flaked on the same race. A press cancels a pending open.
+      onPointerEnter={(e) => { if (e.pointerType === 'mouse') { clearIntent(); intent.current = window.setTimeout(() => { intent.current = null; setOpen(true); }, HOVER_INTENT_MS); } }}
+      onPointerDown={clearIntent}
+      onPointerLeave={() => { clearIntent(); setOpen(false); }}
       onFocusCapture={(e) => { if ((e.target as HTMLElement).matches?.(':focus-visible')) setOpen(true); }}
       onBlurCapture={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setOpen(false); }}
     >

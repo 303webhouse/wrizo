@@ -1,4 +1,5 @@
 import type { Box } from '../types';
+import { liveBoxes } from './boxTombstones';
 
 // W1 - BOARD KINDS AND HOME VIEWS (Nick's option C; brief docs/guided-paths/w1-walk-brief.md). Pure: reads and writes only the board-meta box inside a board's own `boxes`; nothing here touches a store or the DOM.
 //
@@ -14,7 +15,7 @@ export const BOARD_VIEWS: BoardView[] = ['open', 'storyboard', 'outline', 'walk'
 export const BOOK_VIEWS: BoardView[] = ['flip', 'thumbnails', 'open'];
 
 type EntryLike = { boxes?: Box[] | null } | null | undefined;
-const metaOf = (entry: EntryLike): Box | undefined => (entry?.boxes ?? []).find((b) => b.kind === 'board-meta');
+const metaOf = (entry: EntryLike): Box | undefined => liveBoxes(entry?.boxes).find((b) => b.kind === 'board-meta');
 
 /** The kind of a board entry: the Journal is a Book (derived from its systemKind); a stored 'book' is a Book; everything else - including a board with no field at all - is a Board. */
 export function kindOf(entry: EntryLike): BoardKind {
@@ -30,7 +31,10 @@ export function viewsOf(kind: BoardKind): BoardView[] {
 /** The view a board opens in before the writer has chosen one on this device. A value the kind does not have (or junk from an older / newer client) falls back to the kind's own default. */
 export function homeViewOf(entry: EntryLike): BoardView {
   const kind = kindOf(entry);
-  const kindDefault: BoardView = kind === 'book' ? 'flip' : 'open';
+  // HARNESS ONLY (the __wrizoNoLanding / __wrizoNoBootstrap precedent: the harness server's index.html carries the flag, scripts/runtime-verify.mjs): ~15 older harnesses reach the Journal's board by its canvas, which W1 moved behind Flip.
+  // They get the canvas as the Book's home unless WS_KEEP_BOOK=1 (the W1 harnesses, which test Flip itself). A real writer's page never carries the flag.
+  const harnessBook: BoardView | null = typeof window !== 'undefined' && (window as unknown as { __wrizoBookHome?: string }).__wrizoBookHome === 'open' ? 'open' : null;
+  const kindDefault: BoardView = kind === 'book' ? (harnessBook ?? 'flip') : 'open';
   const hv = metaOf(entry)?.homeView;
   return hv !== undefined && viewsOf(kind).includes(hv) ? hv : kindDefault;
 }

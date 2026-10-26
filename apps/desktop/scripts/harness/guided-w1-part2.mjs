@@ -11,6 +11,7 @@ const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 process.env.WS_PLACE = '1';
+process.env.WS_KEEP_BOOK = '1';   // the Journal opens in FLIP here (the harness server otherwise gives the Book's home as Open, for the older harnesses that reach its canvas)
 const { withHarness } = await import('../runtime-verify.mjs');
 
 await withHarness(async (app) => {
@@ -107,6 +108,14 @@ await withHarness(async (app) => {
         await open('w1-three', '.board-canvas');
         const before = (await boxes()).filter((b) => b.kind === 'text').map((b) => [b.id, b.x, b.y, b.seq]);
         const openW0 = await rectOf('.board-canvas-wrap');
+        // QUICK AIM (hover intent): a mouse that lands on an icon and presses at once hits THAT icon - the words open only once it has rested. The pointer is teleported to the Storyboard icon and clicked within 40 ms,
+        // the way a driver (fx11, bm1) or a quick hand does; opening on arrival shifted the icons under it and the press landed on another one.
+        await app.mouseMove(5, 450); await sleep(300);
+        const aim = await point('.show-as-btn[data-view="storyboard"]');
+        await app.mouseMove(aim.x, aim.y); await app.mouseDown(aim.x, aim.y); await sleep(40); await app.mouseUp(aim.x, aim.y); await sleep(600);
+        const quick = await pressed();
+        ok(`[${T}] hover intent: a pointer that lands on the Storyboard icon and presses at once HITS it (pressed view: ${quick})`, quick === 'storyboard', String(quick));
+        await showAs('open'); await sleep(500);
         const seen = [];
         for (const v of ['storyboard', 'outline', 'walk', 'open']) { await showAs(v); await sleep(500); seen.push(await pressed()); }   // the views must REALLY switch - an unchanged board proves nothing if no view ever changed (the red run on 90c01bcc passed this vacuously)
         const after = (await boxes()).filter((b) => b.kind === 'text').map((b) => [b.id, b.x, b.y, b.seq]);
@@ -352,7 +361,7 @@ await withHarness(async (app) => {
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
 const failed = checks.filter((c) => !c.pass);
-console.log(failed.length ? `\nGUIDED-W1 PART 2: FAIL - ${failed.length}/${checks.length}` : `\nGUIDED-W1 PART 2: PASS (${checks.length} checks${out ? '; frames in ' + out : ''})`);
+console.log(failed.length ? `\nGUIDED-W1 PART 2 VERIFY: FAIL - ${failed.length}/${checks.length}` : `\nGUIDED-W1 PART 2 VERIFY: PASS (${checks.length} checks${out ? '; frames in ' + out : ''})`);
 process.exit(failed.length ? 1 : 0);
 
 function same(a, b) { return JSON.stringify(a) === JSON.stringify(b); }

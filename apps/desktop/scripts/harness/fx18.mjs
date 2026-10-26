@@ -230,14 +230,21 @@ await withHarness(async (app) => {
       const crumbRect = crumb?.getBoundingClientRect();
       return {
         transform: tab ? getComputedStyle(tab).textTransform : null,
+        shownAs: !!tab && !!tab.closest('.show-as') && tab.hasAttribute('data-board-mode-tab'),
         barLeft: barRect ? Math.round(barRect.left) : null,
         navCenter: navRect ? Math.round(navRect.left + navRect.width/2) : null,
         crumbLeft: crumbRect ? Math.round(crumbRect.left) : null,
         navLeft: navRect ? Math.round(navRect.left) : null,
       };
     })()`);
-    ok("S3 (SV27): the Board's mode tabs render ALL CAPS (computed text-transform: uppercase) — mirroring the Page's mode strip; the words/DOM text are unchanged",
-      s3.transform === 'uppercase', JSON.stringify(s3));
+    // ---- PARKED - SUPERSEDED by W1 (the Walk, board kinds and "Show as"; Fable's clear of Oct 25, train #8 red): the Board's three text tabs became the "Show as" strip - icons first, the word on hover (Arbor: Open / Storyboard / Outline / Walk
+    // in the lexicon's own case, in Fable's frame 02-walk-showas-open; Flux: LIVE / SEQUENCE / SPINE / TRACE in its own uppercase). The words are no longer forced to ALL CAPS in Arbor.
+    // Kept VERBATIM below and no longer run; the live successor follows (the right-alignment check after it is untouched and still green).
+    //
+    // ok("S3 (SV27): the Board's mode tabs render ALL CAPS (computed text-transform: uppercase) — mirroring the Page's mode strip; the words/DOM text are unchanged",
+    //   s3.transform === 'uppercase', JSON.stringify(s3));
+    ok("S3 (SV27) [W1 successor]: the Board's mode strip is the Show-as strip - its buttons carry the lexicon's words in the lexicon's own case (computed text-transform none; the DOM text is unchanged), still the .board-mode-tab / data-board-mode-tab the selectors know",
+      s3.transform === 'none' && s3.shownAs === true, JSON.stringify(s3));
     ok("S3: the Board's mode bar is RIGHT-aligned (its left edge is past the nav's centre) while the crumb stays on the left — the two top menus read as siblings",
       s3.barLeft != null && s3.navCenter != null && s3.barLeft > s3.navCenter && s3.crumbLeft != null && s3.navLeft != null && s3.crumbLeft - s3.navLeft < 60,
       JSON.stringify(s3));

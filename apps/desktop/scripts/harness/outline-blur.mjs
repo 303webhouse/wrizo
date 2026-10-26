@@ -79,5 +79,5 @@ ok(`all ${MUT.length} mutations landed and ${MUT.length} were killed`, landed ==
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
 const failed = checks.filter((c) => !c.pass);
-console.log(failed.length ? `\nOUTLINE-BLUR: FAIL - ${failed.length}/${checks.length} failed` : `\nOUTLINE-BLUR: PASS (${checks.length} checks)`);
+console.log(failed.length ? `\nOUTLINE-BLUR VERIFY: FAIL - ${failed.length}/${checks.length} failed` : `\nOUTLINE-BLUR VERIFY: PASS (${checks.length} checks)`);
 process.exit(failed.length ? 1 : 0);

@@ -56,6 +56,9 @@ function noLandingIndex(body) {
   let flags = '';
   if (process.env.WS_LANDING !== '1') flags += 'window.__wrizoNoLanding=true;';
   if (process.env.WS_PLACE !== '1') flags += 'window.__wrizoNoBootstrap=true;';
+  // W1 (the Walk, board kinds, Show as): the Journal is a BOOK and opens in Flip; ~15 older harnesses reach its board by the canvas (pins, empty points, cards), which is its third view, Open. They get Open as the Book's home
+  // (window.__wrizoBookHome, read by store/boardKind.ts homeViewOf) unless WS_KEEP_BOOK=1 - the W1 harnesses (guided-w1-part2.mjs), which test Flip and Thumbnails themselves.
+  if (process.env.WS_KEEP_BOOK !== '1') flags += "window.__wrizoBookHome='open';";
   if (!flags) return body;
   return Buffer.from(String(body).replace('<head>', `<head><script>${flags}</script>`));
 }

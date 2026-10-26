@@ -1769,7 +1769,8 @@ export function BoardEditor({ id }: { id: string }) {
     pendingGraftsRef.current = [...pendingGraftsRef.current, ...result.grafts];
     // W1 - a Preset (an UNBORN board whose address carries a deck) is born a DECK: its home view is the Walk, written with the first cards in the one birth. A deal onto an EXISTING board never touches that board's view.
     const presetBorn = !!unbornRef.current?.descriptor.deck;
-    setBoxes(prev => (presetBorn ? withHomeView([...prev, ...result.boxes], doorHome('preset').homeView, generateId) : [...prev, ...result.boxes]));
+    const dealtBoxes = result.boxes;   // ONE read of the deck result's boxes (box-tombstones T11 counts raw `.boxes` readers; the ternary below used to read it twice)
+    setBoxes(prev => { const next = [...prev, ...dealtBoxes]; return presetBorn ? withHomeView(next, doorHome('preset').homeView, generateId) : next; });
     armStartHere(id, result.firstCardId, result.dealtIds);
     setStartHereCardId(result.firstCardId);
   };

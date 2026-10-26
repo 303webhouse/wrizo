@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { useDeskLexicon } from '../store/deskLexicon';
 import { decorateMarkdownForCard } from '../store/draftDecoration';
 import { trackReadout } from '../store/fluxReadouts';
+import { liveBoxes } from '../store/boxTombstones';
 import { WALK, walkOrder, walkStep, railMarks, walkCardBox, swipePlan, walkKey, keyMaySteps, cardIsEmpty, getWalkSize, setWalkSize, getWalkPos, setWalkPos, type SwipePlan } from '../store/walk';
 import { StepHelp } from './StepHelp';
 import type { Box } from '../types';
@@ -65,7 +66,7 @@ function MarkGlyph({ leaf }: { leaf: boolean }) {
 
 export function Walk(p: WalkProps) {
   const { t } = useDeskLexicon();
-  const order = useMemo(() => walkOrder(p.boxes), [p.boxes]);
+  const order = useMemo(() => walkOrder(liveBoxes(p.boxes)), [p.boxes]);   // live cards only (box-tombstones T11: a reader of a board's boxes goes through liveBoxes)
   const [index, setIndex] = useState(() => { const id = getWalkPos(p.boardId); const i = id ? order.findIndex((b) => b.id === id) : -1; return i >= 0 ? i : 0; });
   const cur = Math.min(index, Math.max(0, order.length - 1));
   const card = order[cur];
@@ -195,6 +196,7 @@ export function Walk(p: WalkProps) {
               ref={cardRef}
               className="walk-card"
               data-box-id={card.id}
+              aria-current="step"
               data-in={incoming ? incoming.incoming : undefined}
               style={{ minHeight: box.height, maxHeight: WALK.MAX_H }}
               onPointerLeave={() => setWoke(true)}

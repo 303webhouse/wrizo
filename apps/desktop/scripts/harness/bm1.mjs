@@ -225,8 +225,15 @@ async function scenario(app) {
         noPageModeTabs: !document.querySelector('.mode-tabs') && !document.querySelector('.mode-tab--action') && !document.querySelector('.desk-mode-strip'),
       };
     })()`);
-    ok(`S3 @${width}px: OPEN·STORYBOARD·OUTLINE tabs + PAGE → door present`,
-      JSON.stringify(bar.tabs) === JSON.stringify(['open', 'storyboard', 'outline']) && bar.doorPresent === true,
+    // ---- PARKED - SUPERSEDED by W1 (the Walk, board kinds and "Show as"; Fable's clear of Oct 25, train #8 red): a Board now offers FOUR views - Open, Storyboard, Outline, Walk - drawn as the "Show as" strip, which REPLACED the three
+    // view tabs (the buttons keep the .board-mode-tab class and the data-board-mode-tab attribute, so every selector in this file still finds them). The assertion named the exact three.
+    // Kept VERBATIM below and no longer run; the live successor follows. (Park count for this file: 1 assertion, run at three widths = 3 reds on train #8.)
+    //
+    // ok(`S3 @${width}px: OPEN·STORYBOARD·OUTLINE tabs + PAGE → door present`,
+    //   JSON.stringify(bar.tabs) === JSON.stringify(['open', 'storyboard', 'outline']) && bar.doorPresent === true,
+    //   JSON.stringify(bar));
+    ok(`S3 @${width}px [W1 successor]: OPEN·STORYBOARD·OUTLINE·WALK (the Show-as strip, in that order) + PAGE → door present`,
+      JSON.stringify(bar.tabs) === JSON.stringify(['open', 'storyboard', 'outline', 'walk']) && bar.doorPresent === true,
       JSON.stringify(bar));
     ok(`S3 @${width}px: the door NEVER carries a selected/active state`, bar.doorHasSelected === false);
     // SUPERSEDED (item word-diet, Nick, Oct 13) — boardTelos REMOVE: the
