@@ -74,10 +74,17 @@ await withHarness(async (app) => {
         !!g1 && g1.zoom === 'true' && g1.first != null && Math.abs(g1.first - 0.5) <= 0.03, J(g1));
       await app.evalJs("(() => { const e = document.querySelector('.forward-only-editor'); e.focus(); const r = document.createRange(); r.selectNodeContents(e); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()");
       for (let i = 1; i <= 16; i += 1) { await app.typeKeys(`\nLine ${i} of the writing, long enough to be a line.`); await sleep(80); }
-      await sleep(1500);
-      const g2 = await app.evalJs(PROBE);
+      // REVIEW OF TURN 1 (Oct 26): the engine pays a burst back ONE LINE PER GLIDE (each up to 600ms, then a 650ms land check), so 16 lines take
+      // seconds to pay; a fixed 1.5s read the staircase mid-way (the same drift on r3: 87-92%). Wait on observable state instead: the scroller still
+      // for 1s, capped at 15s - the settle is part of the reading.
+      const settle = await (async () => { const t0 = Date.now(); let last = null; let still = 0;
+        while (Date.now() - t0 < 15000) { await sleep(200);
+          const top = await app.evalJs("(() => { const s = document.querySelector('.mode-scroll'); return s ? Math.round(s.scrollTop) : null; })()");
+          if (top != null && top === last) { still += 200; if (still >= 1000) return { ms: Date.now() - t0, top, settled: true }; } else { still = 0; last = top; } }
+        return { ms: Date.now() - t0, top: last, settled: false }; })();
+      const g2 = { ...(await app.evalJs(PROBE)), settle };
       ok(`${tag} A2: writing on, the writing line is held at the middle (its top at ${g2 && g2.caret != null ? (g2.caret * 100).toFixed(1) : '?'}%, want 50% within one line)`,
-        !!g2 && g2.caret != null && Math.abs(g2.caret - 0.5) <= g2.lh / g2.colH + 0.005, J(g2));
+        !!g2 && g2.settle.settled && g2.caret != null && Math.abs(g2.caret - 0.5) <= g2.lh / g2.colH + 0.005, J(g2));
       ok(`${tag} A3: the band is drawn against the same middle - the writing line at FULL strength (${g2 && g2.alphaAtCaret}), the top fade ending just above it`,
         !!g2 && g2.alphaAtCaret >= 0.99 && g2.fullFrom != null && g2.fullFrom <= g2.caretRel && g2.caretRel - g2.fullFrom <= 2 * g2.lh / g2.colH, J({ anchor: g2 && g2.anchor, fullFrom: g2 && g2.fullFrom, caret: g2 && g2.caretRel, alpha: g2 && g2.alphaAtCaret }));
       if (th.id === 'plateau' && w === 1366) {
