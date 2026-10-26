@@ -628,6 +628,14 @@ export interface Box {
   // ticket's brief), not inJournalView/deletedAt — see persistence.ts's own
   // qualifyingPagesFor.
   systemKind?: 'journal' | 'trash' | 'shelf';
+  // W1 (the Walk, board kinds and "Show as" - Nick's option C, Fable Oct 23) - TWO TRUE KINDS, Board and Book, as two optional additive fields on this SAME board-meta box inside the board's own `boxes` jsonb
+  // (the systemKind precedent: zero schema, no column, no migration, no server change; ledgered). NOT named `kind`: Box.kind is the box discriminator ('text' / 'ink' / 'page-pin' / 'connection' / 'board-meta').
+  //   boardKind - 'board' | 'book'. Absent = a Board. The Journal's kind is DERIVED from systemKind and never stored on it; no other Book exists yet (no "New Journal" door).
+  //   homeView  - the view the board opens in until the writer has chosen one on this device (the device-local "last shown as", store/boardMode.ts, beats it). Absent = the kind's default: a Board opens in Open, a Book in Flip.
+  //               A Deck is a Board whose homeView is 'walk' (born from a Preset). A value the kind does not have is ignored (store/boardKind.ts homeViewOf).
+  // IT SYNCS (the whole boxes blob; last write wins): store/boardKind.ts withHomeView stamps this box's `updatedAt`, so the newer write wins the box-level merge (mergeBoxLists) rather than a tie going to whichever side won the entry.
+  boardKind?: 'board' | 'book';
+  homeView?: 'open' | 'storyboard' | 'outline' | 'walk' | 'flip' | 'thumbnails';
   // BM1 S4 — the projection seam's persisted structure. Decks are DATA, modes
   // are PROJECTIONS: one board, three views (OPEN/STORYBOARD/OUTLINE). The
   // ORDER and the SECTIONING are the board's own truth, single-sourced across
