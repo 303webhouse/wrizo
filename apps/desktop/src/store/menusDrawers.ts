@@ -192,7 +192,8 @@ export function requestOpen(id: DrawerId): DrawerId | null {
 }
 
 export function noteClosed(id: DrawerId): void {
-  const had = stands.delete(id);
+  const had = stands.has(id);
+  stands.delete(id);
   if (openDrawer === id) { openDrawer = null; notify(); }
   else if (had) notify();   // POLISH #10 item 1: a hand that stood and closed is news to useStandingHands, even when it was not the latest opener
 }
