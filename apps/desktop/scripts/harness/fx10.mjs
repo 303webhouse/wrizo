@@ -142,6 +142,11 @@ const openTutor = async (app) => {
 const rectOf = async (app, sel) =>
   app.evalJs(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); if (!el) return null; const r = el.getBoundingClientRect(); return { left:r.left, right:r.right, top:r.top, bottom:r.bottom, width:r.width, height:r.height }; })()`);
 
+// POLISH #10 items 1 + 16 (Nick, Oct 25): THE BOARD NARROWS beside an open drawer and the drawer is MIRRORED there - [board][tab][panel]: the board's
+// left, top and bottom never move, its right edge meets the tab's left edge, and the panel starts AT the tab's right edge (never inside its tab row).
+const fx10Board = [];
+const boardBesideOk = (closed, now, grip, panelLeft) => !!closed && !!now && !!grip && now.left === closed.left && now.top === closed.top
+  && now.bottom === closed.bottom && now.width < closed.width - 1 && Math.abs(now.right - grip.left) < 1.5 && (panelLeft == null || Math.abs(panelLeft - grip.right) < 1.5);
 await withHarness(async (app) => {
   // ==========================================================================
   // S1 — geometry: three widths (1100 floor mandatory / 1280 / 2200), BOTH
@@ -190,10 +195,23 @@ await withHarness(async (app) => {
       // the panel starts AT it ([page][tab][panel], the mirror of the Tools drawer), so it can never sit inside the panel's tab row. The check runs
       // VERBATIM, unchanged, on the BOARD, whose panel still overlays the canvas from the stage's edge and whose tab still moves clear of it. On the page
       // its successor runs instead; records in the parked section.
+      // ---- PARKED FOR THE BOARD SURFACE TOO - SUPERSEDED there by POLISH #10 items 1 + 16 (Nick, Oct 25: the board narrows beside the drawers, which
+      // sit flush to it; drawers flush and mirrored on card surfaces): the board no longer lies under the panel, so the tab no longer moves clear of an
+      // overlay - it stands on the board's narrowed edge with the panel starting AT it. Measured on FIX's turn (Oct 26): gap 0 / 0.19 / 0 at
+      // 1100 / 1280 / 2200. Kept VERBATIM and no longer run; records in the parked section. Successor: [board-mirror successor] below.
+      //
+      // if (surface !== 'page') {
+      //   ok(`S1 geometry @${width}px/${surface}: grip-clears-panel (open) [tutor-drawer-arrow successor] — the grip MOVES once the panel opens, landing ${GRIP_GUTTER_PX}px outside the panel's own near edge (never inside its tab row)`,
+      //     Math.abs((panelOpen.left - gripOpen.right) - GRIP_GUTTER_PX) < 1.5,
+      //     JSON.stringify({ gripRight: gripOpen.right, panelLeft: panelOpen.left, gap: panelOpen.left - gripOpen.right }));
+      // } else {
+      // ------------------------------------------------------------------
       if (surface !== 'page') {
-        ok(`S1 geometry @${width}px/${surface}: grip-clears-panel (open) [tutor-drawer-arrow successor] — the grip MOVES once the panel opens, landing ${GRIP_GUTTER_PX}px outside the panel's own near edge (never inside its tab row)`,
-          Math.abs((panelOpen.left - gripOpen.right) - GRIP_GUTTER_PX) < 1.5,
-          JSON.stringify({ gripRight: gripOpen.right, panelLeft: panelOpen.left, gap: panelOpen.left - gripOpen.right }));
+        const ob = { width, paperClosed, paperOpen, gripOpen, panelLeft: panelOpen.left };
+        fx10Board.push(ob);
+        ok(`S1 geometry @${width}px/board: grip-clears-panel (open) [board-mirror successor, polish #10 items 1 + 16] — [board][tab][panel]: the tab stands on the board's narrowed right edge and the panel starts AT it (never inside its tab row)`,
+          !!gripOpen && Math.abs(paperOpen.right - gripOpen.left) < 1.5 && Math.abs(panelOpen.left - gripOpen.right) < 1.5,
+          JSON.stringify({ paperRight: paperOpen.right, gripLeft: gripOpen.left, gripRight: gripOpen.right, panelLeft: panelOpen.left }));
       } else {
         const ov = await app.evalJs("(() => { const p = document.querySelector('.desk-frame-stage--prose .mode-page'); const st = document.querySelector('.desk-frame-stage'); const g = document.querySelector('.wz-tutor-grip'); if (!p || !st || !g) return {}; const r = g.getBoundingClientRect(); const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return { margin: Math.round(st.getBoundingClientRect().right - p.getBoundingClientRect().right), gripOnTop: !!hit && g.contains(hit) }; })()");
         const o = { width, gripClosed, gripOpen, panelLeft: panelOpen.left, margin: ov.margin ?? null, gripOnTop: ov.gripOnTop ?? null };
@@ -201,8 +219,15 @@ await withHarness(async (app) => {
         ok(`S1 geometry @${width}px/page: grip-clears-panel (open) [drawer-mirror successor] — the grip never moves once the panel opens, and the panel starts AT it (never inside its tab row) - or, under DRAWER_MIN beside the page, overlays from the stage's edge with the tab riding above it`,
           fx10MirrorOk(o), JSON.stringify(o));
       }
+      // ---- PARKED FOR THE BOARD SURFACE - SUPERSEDED there by POLISH #10 item 1 (Nick, Oct 25: the board narrows beside open drawers): kept VERBATIM;
+      // it runs unchanged on the page; on the board its successor runs instead. Records in the parked section.
+      if (surface === 'page') {
       ok(`S1 geometry @${width}px/${surface}: paper rect BYTE-IDENTICAL, closed -> open`,
         JSON.stringify(paperClosed) === JSON.stringify(paperOpen), JSON.stringify({ paperClosed, paperOpen }));
+      } else {
+        ok(`S1 geometry @${width}px/board: the board NARROWS beside the open drawer [polish #10 item 1 successor] — its left, top and bottom unchanged, its right edge on the tab, the panel starting at the tab`,
+          boardBesideOk(paperClosed, paperOpen, gripOpen, panelOpen.left), JSON.stringify({ paperClosed, paperOpen, gripOpen, panelLeft: panelOpen.left }));
+      }
 
       // ── FX18 S2 A4-PARK (Fable's ruling, 2026-07-29): FX18 SUPERSEDES FX10 S1. ──
       //  PARKED VERBATIM — the FX10 S1 assertion this position carried (and its own ruling
@@ -241,8 +266,19 @@ await withHarness(async (app) => {
       await sleep(250);
       const paperAfterDock = await rectOf(app, paperSel);
       const dockedState = await app.evalJs("document.querySelector('.wz-tutor-panel')?.dataset.docked");
+      // ---- PARKED FOR THE BOARD SURFACE - SUPERSEDED there by POLISH #10 item 1 (as above): kept VERBATIM; it runs unchanged on the page.
+      if (surface === 'page') {
       ok(`S1 geometry @${width}px/${surface}: paper rect BYTE-IDENTICAL after invoking the dock control (whether it genuinely docks or, below the floor, falls back to closing — either way the paper never moves)`,
         JSON.stringify(paperClosed) === JSON.stringify(paperAfterDock), JSON.stringify({ paperClosed, paperAfterDock, dockedState }));
+      } else {
+        const gripDocked = await rectOf(app, '.wz-tutor-grip');
+        const panelDocked = await rectOf(app, '.wz-tutor-panel');
+        const ob = fx10Board[fx10Board.length - 1];
+        if (ob && ob.width === width) Object.assign(ob, { paperAfterDock, gripDocked, panelDockedLeft: panelDocked && panelDocked.left, dockedState });
+        ok(`S1 geometry @${width}px/board: after the dock control the board stands BESIDE the docked drawer, or - if it fell back to closing - is whole again [polish #10 item 1 successor]`,
+          dockedState === 'true' ? boardBesideOk(paperClosed, paperAfterDock, gripDocked, panelDocked && panelDocked.left) : JSON.stringify(paperClosed) === JSON.stringify(paperAfterDock),
+          JSON.stringify({ paperClosed, paperAfterDock, gripDocked, panelDockedLeft: panelDocked && panelDocked.left, dockedState }));
+      }
     }
   }
 
@@ -735,6 +771,16 @@ if (process.env.HARNESS_PARKED === '1') {
     parkedChecks.push({ name: `PARKED for the page surface (was "S1 geometry @${o.width}px/page: grip-clears-panel (open) [tutor-drawer-arrow successor] — the grip MOVES once the panel opens, landing 16px outside the panel's own near edge (never inside its tab row)") — the drawer mirror: the tab never moves, the panel starts at it; live successor: S1 geometry @${o.width}px/page: grip-clears-panel (open) [drawer-mirror successor]`,
       pass: fx10MirrorOk(o), detail: JSON.stringify(o) });
   }
+  // POLISH #10 items 1 + 16 (Oct 26) - NINE more, on the BOARD surface at the three reference widths: grip-clears-panel (open) and the paper rect's
+  // two BYTE-IDENTICAL checks. Each record re-verifies the new truth (the board beside the drawer) from the default leg's own reads.
+  for (const o of fx10Board) {
+    parkedChecks.push({ name: `PARKED for the board surface (was "S1 geometry @${o.width}px/board: grip-clears-panel (open) [tutor-drawer-arrow successor] — the grip MOVES once the panel opens, landing 16px outside the panel's own near edge (never inside its tab row)") — polish #10 items 1 + 16: the board narrows, [board][tab][panel]; live successor: [board-mirror successor]`,
+      pass: !!o.gripOpen && Math.abs(o.paperOpen.right - o.gripOpen.left) < 1.5 && Math.abs(o.panelLeft - o.gripOpen.right) < 1.5, detail: JSON.stringify(o) });
+    parkedChecks.push({ name: `PARKED for the board surface (was "S1 geometry @${o.width}px/board: paper rect BYTE-IDENTICAL, closed -> open") — polish #10 item 1: the board narrows beside open drawers; live successor: [polish #10 item 1 successor]`,
+      pass: boardBesideOk(o.paperClosed, o.paperOpen, o.gripOpen, o.panelLeft), detail: JSON.stringify(o) });
+    parkedChecks.push({ name: `PARKED for the board surface (was "S1 geometry @${o.width}px/board: paper rect BYTE-IDENTICAL after invoking the dock control (whether it genuinely docks or, below the floor, falls back to closing — either way the paper never moves)") — polish #10 item 1; live successor: [polish #10 item 1 successor]`,
+      pass: o.dockedState === 'true' ? boardBesideOk(o.paperClosed, o.paperAfterDock, o.gripDocked, o.panelDockedLeft) : JSON.stringify(o.paperClosed) === JSON.stringify(o.paperAfterDock), detail: JSON.stringify(o) });
+  }
   for (const o of fx10Ps) {
     parkedChecks.push({ name: `PARKED for the page surface (was "S1 geometry @${o.width}px/page: grip-flush (closed) — the grip's own left edge sits flush (no gap) against the paper's right edge") — page-size: the paper is the painted .mode-page; live successor: S1 geometry @${o.width}px/page: grip-flush (closed) [page-size successor]`,
       pass: psGripOk(o), detail: JSON.stringify(o) });
@@ -744,7 +790,7 @@ if (process.env.HARNESS_PARKED === '1') {
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nFX10 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; fx10.mjs parks 6 of its own (Oct 24: page-size's S1 grip-flush and the drawer mirror's S1 grip-clears-panel, each on the page surface)`
+    ? `\nFX10 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; fx10.mjs parks 15 of its own (Oct 24: page-size's S1 grip-flush and the drawer mirror's S1 grip-clears-panel, each on the page surface; Oct 26: polish #10 items 1 + 16, S1's grip-clears-panel and both paper-rect checks on the board surface)`
     : `\nFX10 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
