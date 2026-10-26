@@ -225,6 +225,7 @@ const RAW_BASELINE = {
   'components/ConnectionsDrawerPanel.tsx': 1,   // connector-b: the board's own published snapshot (the editor's LIVE boxes), handed to getLinkPeersOfCard
   'components/BoardEditor.tsx': 2,   // the board-meta lookup on open; a deck result's boxes (not stored ones)
   'pages/CreateProject.tsx': 1,      // a deck result's boxes
+  'store/boardKind.ts': 1,           // W1: withHomeView's spread of the caller's own list when it adds the board-meta (a WRITE path: it must carry every tombstone it was handed; its kind / home-view reads go through liveBoxes)
   'store/boardStructure.ts': 1,      // a spread of the caller's own list
   'store/pageExport.ts': 1,          // the board-meta lookup (lane titles) - the cards themselves go through liveBoxes
   'store/unbornPage.ts': 3,          // building a NEW page's boxes (writes)

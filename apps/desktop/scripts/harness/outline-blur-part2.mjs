@@ -73,5 +73,5 @@ await withHarness(async (app) => {
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
 const failed = checks.filter((c) => !c.pass);
-console.log(failed.length ? `\nOUTLINE-BLUR PART 2: FAIL - ${failed.length}/${checks.length} failed` : `\nOUTLINE-BLUR PART 2: PASS (${checks.length} checks)`);
+console.log(failed.length ? `\nOUTLINE-BLUR PART 2 VERIFY: FAIL - ${failed.length}/${checks.length} failed` : `\nOUTLINE-BLUR PART 2 VERIFY: PASS (${checks.length} checks)`);
 process.exit(failed.length ? 1 : 0);

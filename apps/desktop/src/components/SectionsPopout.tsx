@@ -18,6 +18,7 @@ import { TEMPLATE_ORDER, TemplateSketch, type TemplateKey } from './TemplateSket
 import { DECKS } from '../decks/library';
 import { thumbKind } from '../store/boardKind';
 import { walkOrder } from '../store/walk';
+import { liveBoxes } from '../store/boxTombstones';
 import { kindled } from '../store/guided';
 import type { JournalEntry } from '../types';
 
@@ -211,8 +212,9 @@ export function SectionsPopout({ view, currentId, navigate, boardId, journalLabe
 
   // W1 - a Deck's fact under its thumbnail: how many of its cards the writer has BEGUN (kindled: the writer's words, or a graft to a page), in words - "4 of 9 begun" / Flux "LOAD 4/9" - never a bare 4 / 9.
   const deckFactOf = (e: JournalEntry): string => {
-    const cards = walkOrder(e.boxes ?? []);
-    const n = cards.filter(b => kindled(e.id, b, e.boxes ?? [])).length;
+    const live = liveBoxes(e.boxes);   // the live cards: a deleted card is a tombstone in storage and is not a step
+    const cards = walkOrder(live);
+    const n = cards.filter(b => kindled(e.id, b, live)).length;
     return t('deckFact').replace('{n}', String(n)).replace('{m}', String(cards.length));
   };
 
@@ -286,7 +288,7 @@ export function SectionsPopout({ view, currentId, navigate, boardId, journalLabe
       {mode === 'boards' && (
         <div className="wz-set" data-set-id="journal-book">
           <div className="wz-sections-rows wz-place-page-list" role="list">
-            <div className="wz-section-row wz-journal-row" role="listitem" data-journal-book="true">
+            <div className="wz-journal-row" role="listitem" data-journal-book="true">{/* NOT a .wz-section-row: that class is a BOARD's row (data-entry-id, the grip, the drag reorder, the X) and every reader of the list counts it - the Journal is no board in this list */}
               <button type="button" className="wz-section-open wz-place-page-row" onClick={() => { flushNow(); navigate('/journal'); }}>
                 <span className="wz-thumb" data-thumb="book" aria-hidden="true" />
                 <span className="wz-thumb-text"><span className="wz-place-page-title">{t('drawerPlaceJournal')}</span></span>
