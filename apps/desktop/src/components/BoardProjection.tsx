@@ -6,6 +6,7 @@ import {
 } from '../store/boardStructure';
 import type { Box } from '../types';
 import { generateId } from '../store/persistence';
+import { splitOutlineText, outlineTitleEdit } from '../store/outlineRow';
 
 // BM1 S6/S7 — the STORYBOARD and OUTLINE projections. Both are renderers of the
 // ONE structure description (store/boardStructure.ts) derived from the board's
@@ -154,6 +155,9 @@ function OutlineRow({ node, laneId, boxes, setBoxes, labelFor, onEditText, depth
   const b = map.get(node.boxId);
   if (!b) return null;
   const editable = b.kind === 'text';
+  // The row's <input> holds the card's TITLE (the first line - an input cannot hold a newline); the card's text shows beside it, read-only. A blur writes only a CHANGED title, through outlineTitleEdit, so the text
+  // after the title always survives (it used to write the newline-less input value over the card every time: "First\nOne." became "FirstOne." on a bare click-and-leave).
+  const { title: rowTitle, body: rowBody } = splitOutlineText(b.text);
 
   // Indent: become a child of the immediately-preceding sibling (Tab in an
   // outliner). Outdent: become a sibling of the current parent.
@@ -172,13 +176,17 @@ function OutlineRow({ node, laneId, boxes, setBoxes, labelFor, onEditText, depth
     <li className="board-outline-row" data-outline-row={node.boxId} style={{ marginLeft: depth * 20 }}>
       <span className="board-outline-bullet" aria-hidden="true">•</span>
       {editable ? (
-        <input
-          className="board-outline-text"
-          data-outline-input={node.boxId}
-          defaultValue={b.text ?? ''}
-          readOnly={readOnly}
-          onBlur={(e) => { if (!readOnly) onEditText(node.boxId, e.target.value); }}
-        />
+        <>
+          <input
+            className="board-outline-text"
+            data-outline-input={node.boxId}
+            defaultValue={rowTitle}
+            readOnly={readOnly}
+            style={rowBody.trim() ? { flex: '0 1 auto', width: `${Math.max(4, rowTitle.length + 2)}ch`, maxWidth: '60%' } : undefined}
+            onBlur={(e) => { if (readOnly) return; const next = outlineTitleEdit(b.text, e.target.value); if (next !== null) onEditText(node.boxId, next); }}
+          />
+          {rowBody.trim() && <span className="board-outline-body" title={rowBody}>{rowBody.replace(/\s*\n\s*/g, ' ')}</span>}
+        </>
       ) : (
         <span className="board-outline-text board-outline-readonly">{labelFor(b)}</span>
       )}
