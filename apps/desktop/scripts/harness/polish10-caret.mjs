@@ -10,11 +10,17 @@
 //             made was already paid for - and the block stays on that line
 //   C18       while the block is mounted, the editor's caret is transparent (one caret)
 // Mutants (normal view): MC17 the block nudged 40px up after Enter - C17-AT fails; MC18 a caret colour forced back on - C18 fails.
+// REVIEW OF TURN 1 (Oct 26): the red against r3 PASSED, so the Draft fixture never saw Nick's bug. r3 hides the native caret with a plain rule, and FREE
+// WRITE's pen tool writes the ink as an INLINE caret-color (ForwardOnlyEditor's style) - inline beats the rule, so in Free Write both carets show. The same
+// three checks now run on a FREE WRITE page too (normal + zoom; Draft's check names unchanged). MC18 could not land on the build: its
+// `.forward-only-editor{...!important}` loses to the fix's more specific selector - PARKED (HARNESS_PARKED=1 runs it verbatim and records that it no longer
+// lands); successor MC18m forces the colour through a selector that outranks the fix, in each mode's normal view.
 // Each red reading carries what the instrument saw (the block, the row, the selection's anchor), so a red run is also the diagnosis.
 // Seeding goes through the app's seams. Needs a box turn. Run: WS_BOX_TURN=<token> node scripts/harness/polish10-caret.mjs (apps/desktop, dist-web built)
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
+let parkedRecords = 0;
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
@@ -43,32 +49,45 @@ await withHarness(async (app) => {
   await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 14000 });
   await app.waitFor("typeof window.wrizoCreateJournalPage === 'function'", { label: 'the seams' });
   ok('fixture: Flux applied', (await app.evalJs("document.documentElement.getAttribute('data-theme')")) === 'flux');
-  for (const zoom of [false, true]) {
+  for (const [mode, modeName] of [['drafting', 'Draft'], ['journal', 'Free Write']]) for (const zoom of [false, true]) {
     const view = zoom ? 'zoom' : 'normal';
-    const id = `p10c-${view}`;
+    const id = mode === 'drafting' ? `p10c-${view}` : `p10c-fw-${view}`;
+    const tag = mode === 'drafting' ? `Flux ${view}` : `Flux Free Write ${view}`;   // Draft's names are the originals, unchanged
     await app.evalJs("location.hash = '#/'"); await sleep(300);
     await app.evalJs(`window.wrizoCreateJournalPage(${J({ id, text: TEXT, createdAt: new Date().toISOString(), origin: null, source: 'page' })})`);
-    await app.evalJs(`localStorage.setItem('wrizo-mode-page-${id}', 'drafting'); localStorage.setItem('wrizo-typewriter-page-${id}', '${zoom ? 'on' : 'off'}')`);
+    await app.evalJs(`localStorage.setItem('wrizo-mode-page-${id}', '${mode}'); localStorage.setItem('wrizo-typewriter-page-${id}', '${zoom ? 'on' : 'off'}')`);
     await app.evalJs('window.wrizoFlushNow()'); await sleep(300);
     await app.evalJs(`location.hash = '#/page/${id}'`);
-    if (!(await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: id, timeout: 10000 }))) { ok(`${view} fixture: the page opened`, false, ''); continue; }
+    if (!(await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: id, timeout: 10000 }))) { ok(`${tag} fixture: the page opened`, false, ''); continue; }
     await sleep(900);
     await app.evalJs("(() => { const e = document.querySelector('.forward-only-editor'); e.focus(); const r = document.createRange(); r.selectNodeContents(e); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()");
     await app.typeKeys(' And'); await sleep(900);
     const g0 = await app.evalJs(PROBE);
-    ok(`Flux ${view} (premise): the page is in the ${view} view, the block is mounted on the writer's line`, !!g0 && (g0.zoom === 'true') === zoom && onRow(g0), J(g0));
-    ok(`Flux ${view} C18: while the block is mounted the native caret is transparent - ONE caret`, !!g0 && !!g0.block && /rgba\(0, 0, 0, 0\)|transparent/.test(g0.caretColor), J({ caretColor: g0 && g0.caretColor }));
+    ok(`${tag} (premise): the page is in the ${view} view, the block is mounted on the writer's line`, !!g0 && (g0.zoom === 'true') === zoom && onRow(g0), J(g0));
+    if (mode === 'journal') {
+      // the condition Nick hit: Free Write is the active mode AND the pen's ink is written INLINE on the editor (caret-color among it)
+      const fw = await app.evalJs("({ tab: document.querySelector('.desk-mode-tab.active')?.getAttribute('data-mode-key') ?? null, inlineCaret: document.querySelector('.forward-only-editor')?.style.caretColor || null })");
+      ok(`${tag} (premise): the page is in Free Write and the pen's ink is the editor's INLINE caret colour`, !!fw && fw.tab === 'freewrite' && !!fw.inlineCaret, J(fw));
+    }
+    ok(`${tag} C18: while the block is mounted the native caret is transparent - ONE caret`, !!g0 && !!g0.block && /rgba\(0, 0, 0, 0\)|transparent/.test(g0.caretColor), J({ caretColor: g0 && g0.caretColor }));
     await enter(app);
     const g1 = await app.evalJs(PROBE);
-    ok(`Flux ${view} C17-AT: within two frames of Enter the orange block stands on the NEW line (its middle inside the new row)`,
+    ok(`${tag} C17-AT: within two frames of Enter the orange block stands on the NEW line (its middle inside the new row)`,
       !!g1 && !!g0 && g1.rows === g0.rows + 1 && onRow(g1) && g1.block.top > g0.block.top + 4, J({ before: g0 && { block: g0.block, rows: g0.rows }, after: g1 }));
     await sleep(900);
     const g2 = await app.evalJs(PROBE);
     await app.typeKeys('x'); await sleep(900);
     const g3 = await app.evalJs(PROBE);
-    ok(`Flux ${view} C17-HOLD: the next keystroke moves nothing - the text does not jump (first visible line ${g2 && g2.firstLine} -> ${g3 && g3.firstLine}) and the block stays on its line`,
+    ok(`${tag} C17-HOLD: the next keystroke moves nothing - the text does not jump (first visible line ${g2 && g2.firstLine} -> ${g3 && g3.firstLine}) and the block stays on its line`,
       !!g2 && !!g3 && g2.firstLine != null && Math.abs(g3.firstLine - g2.firstLine) <= 2 && !!g2.block && !!g3.block && Math.abs(g3.block.top - g2.block.top) <= 2, J({ g2, g3 }));
     if (!zoom) {
+      // MC18m (successor to MC18, Oct 26): a caret colour forced back on through a selector that OUTRANKS the fix's - C18 must fail
+      await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'p10c-m18m'; s.textContent = \"html[data-theme] .forward-only-editor[data-flux-caret-active]{ caret-color: rgb(255, 0, 0) !important; }\"; document.head.appendChild(s); return true; })()");
+      const cmm = await app.evalJs("getComputedStyle(document.querySelector('.forward-only-editor')).caretColor");
+      await app.evalJs("document.getElementById('p10c-m18m')?.remove()");
+      ok(`${tag} MC18m (mutant, successor to MC18): with a caret colour forced back on above the fix (LANDED: ${cmm}), C18 fails`, cmm === 'rgb(255, 0, 0)' && !/rgba\(0, 0, 0, 0\)|transparent/.test(cmm), cmm);
+    }
+    if (!zoom && mode === 'drafting') {
       // MC17: the block nudged 40px up just after Enter - C17-AT must fail
       await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'p10c-m17'; s.textContent = '.flux-block-caret{ translate: 0 -40px !important; }'; document.head.appendChild(s); return true; })()");
       await enter(app);
@@ -77,16 +96,22 @@ await withHarness(async (app) => {
       ok(`MC17 (mutant): with the block nudged 40px up after Enter (LANDED: block middle ${gm && gm.block && Math.round(gm.block.top + gm.block.height / 2)} vs row ${gm && gm.row && gm.row.top}-${gm && gm.row && gm.row.bottom}), C17-AT fails`,
         !!gm && !onRow(gm), J(gm));
       // MC18: a caret colour forced back on - C18 must fail
+      // PARKED (Oct 26): on the build this mutant cannot land - the fix's own selector outranks it. Kept verbatim; it runs only under HARNESS_PARKED=1,
+      // where its record confirms it still does not land. Successor: MC18m above.
+      if (process.env.HARNESS_PARKED === '1') {
       await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'p10c-m18'; s.textContent = '.forward-only-editor{ caret-color: rgb(255, 0, 0) !important; }'; document.head.appendChild(s); return true; })()");
       const cm = await app.evalJs("getComputedStyle(document.querySelector('.forward-only-editor')).caretColor");
       await app.evalJs("document.getElementById('p10c-m18')?.remove()");
-      ok(`MC18 (mutant): with a caret colour forced back on (LANDED: ${cm}), C18 fails`, cm === 'rgb(255, 0, 0)' && !/rgba\(0, 0, 0, 0\)|transparent/.test(cm), cm);
+      const was = `MC18 (mutant): with a caret colour forced back on (LANDED: ${cm}), C18 fails`;
+      ok(`PARKED (was "${was}") - SUPERSEDED (Oct 26): the fix's selector outranks the mutant's, so it cannot land on the build | successor: MC18m`, !(cm === 'rgb(255, 0, 0)' && !/rgba\(0, 0, 0, 0\)|transparent/.test(cm)), cm);
+      parkedRecords += 1;
+      }
     }
   }
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 700)}]` : ''}`);
-if (process.env.HARNESS_PARKED === '1') console.log('\nPOLISH10-CARET PARKED: PASS (0 records) - a new file; it parks nothing of its own');
+if (process.env.HARNESS_PARKED === '1') console.log(`\nPOLISH10-CARET PARKED: ${parkedRecords === 1 ? 'PASS' : 'FAIL'} (${parkedRecords} records) - this FILE parks 1 (MC18: it cannot land on the build; successor MC18m)`);
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nPOLISH10-CARET VERIFY: PASS (${checks.length} checks)` : `\nPOLISH10-CARET VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
 process.exit(passed === checks.length ? 0 : 1);
