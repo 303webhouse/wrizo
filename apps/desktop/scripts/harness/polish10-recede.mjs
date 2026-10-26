@@ -18,10 +18,14 @@
 //   R8 a DOCKED panel stays visible while typing (the Tutor, docked)
 //   R9 the NARROW layout (1000px, unframed) follows the full recede: its census is empty too
 // Mutant (Arbor): MR1 the wordmark forced to full strength - R1 fails and names it.
+// REVIEW OF TURN 1 (Oct 26): MR1 cannot land on the build - its '.brand-mark{opacity:1 !important}' loses to the fix's own more specific
+// html[data-wz-writing='true'] rule. PARKED (HARNESS_PARKED=1 runs it verbatim and records that it no longer lands); successor MR1m forces the wordmark
+// through a selector that outranks the fix and reports what landed.
 // Seeding goes through the app's seams. Needs a box turn. Run: WS_BOX_TURN=<token> node scripts/harness/polish10-recede.mjs (apps/desktop, dist-web built)
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
+let parkedRecords = 0;
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
@@ -102,10 +106,22 @@ await withHarness(async (app) => {
     const gs = await app.evalJs(EFF('.wz-sliver-grip')); const gt = await app.evalJs(EFF('.wz-tutor-grip'));
     ok(`${tag} R3: the two tab arrows stay - Tools ${gs}, Tutor ${gt}`, gs >= 0.9 && gt >= 0.9, J({ gs, gt }));
     if (th.id === 'plateau') {
+      // MR1m (successor to MR1, Oct 26): the wordmark forced to full strength ABOVE the fix's own rule - R1 fails and names it
+      await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'p10r-mr1m'; s.textContent = \"html[data-wz-writing] body .brand-mark{ opacity: 1 !important; }\"; document.head.appendChild(s); return true; })()"); await sleep(200);
+      const landed = await app.evalJs("(() => { const b = document.querySelector('.brand-mark'); return b ? getComputedStyle(b).opacity : null; })()");
+      const lmm = await app.evalJs(CENSUS);
+      await app.evalJs("document.getElementById('p10r-mr1m')?.remove()");
+      ok(`MR1m (mutant, successor to MR1): with the wordmark forced to full strength above the fix (LANDED: opacity ${landed}), R1 fails and names it`, landed === '1' && lmm.some((x) => /brand-mark/.test(x.el)), J(lmm.slice(0, 6)));
+      if (process.env.HARNESS_PARKED === '1') {
+      // PARKED (Oct 26) - MR1, kept verbatim: on the build it cannot land (the fix's selector outranks it). Successor: MR1m above.
       await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'p10r-mr1'; s.textContent = '.brand-mark{ opacity: 1 !important; }'; document.head.appendChild(s); return true; })()"); await sleep(200);
       const lm = await app.evalJs(CENSUS);
       await app.evalJs("document.getElementById('p10r-mr1')?.remove()");
-      ok(`MR1 (mutant): with the wordmark forced to full strength, R1 fails and names it`, lm.some((x) => /brand-mark/.test(x.el)), J(lm.slice(0, 6)));
+      // ok(`MR1 (mutant): with the wordmark forced to full strength, R1 fails and names it`, lm.some((x) => /brand-mark/.test(x.el)), J(lm.slice(0, 6)));
+      ok(`PARKED (was "MR1 (mutant): with the wordmark forced to full strength, R1 fails and names it") - SUPERSEDED (Oct 26): the fix's selector outranks the mutant's, so it cannot land on the build | successor: MR1m`,
+        !lm.some((x) => /brand-mark/.test(x.el)), J(lm.slice(0, 6)));
+      parkedRecords += 1;
+      }
     }
     // R4: Escape brings it back
     const p = { key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27, nativeVirtualKeyCode: 27 };
@@ -173,7 +189,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 700)}]` : ''}`);
-if (process.env.HARNESS_PARKED === '1') console.log('\nPOLISH10-RECEDE PARKED: PASS (0 records) - a new file; it parks nothing of its own');
+if (process.env.HARNESS_PARKED === '1') console.log(`\nPOLISH10-RECEDE PARKED: ${parkedRecords === 1 ? 'PASS' : 'FAIL'} (${parkedRecords} records) - this FILE parks 1 (MR1: it cannot land on the build; successor MR1m)`);
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nPOLISH10-RECEDE VERIFY: PASS (${checks.length} checks)` : `\nPOLISH10-RECEDE VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
 process.exit(passed === checks.length ? 0 : 1);
