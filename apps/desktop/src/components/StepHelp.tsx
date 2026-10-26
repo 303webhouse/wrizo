@@ -42,7 +42,8 @@ function titleEnd(face: HTMLElement, titleLen: number): { right: number; top: nu
   return { right: r.right, top: r.top, height: r.height };
 }
 
-export function StepHelp({ box }: { box: Box }) {
+// `faceSelector`: the sibling element whose first line is the title the "?" sits after - the card face (.board-text) on the board; the live editor (.board-popup-editor) in the Walk card.
+export function StepHelp({ box, faceSelector = '.board-text' }: { box: Box; faceSelector?: string }) {
   const { t } = useDeskLexicon();
   const btnRef = useRef<HTMLButtonElement | null>(null);
   const popRef = useRef<HTMLDivElement | null>(null);
@@ -57,7 +58,7 @@ export function StepHelp({ box }: { box: Box }) {
   useLayoutEffect(() => {
     const btn = btnRef.current;
     const host = btn?.parentElement;
-    const face = host?.querySelector('.board-text') as HTMLElement | null;
+    const face = host?.querySelector(faceSelector) as HTMLElement | null;
     if (!btn || !host || !face) return;
     const place = () => {
       const hostRect = host.getBoundingClientRect();
@@ -72,7 +73,7 @@ export function StepHelp({ box }: { box: Box }) {
     const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(place) : null;
     ro?.observe(face);
     return () => ro?.disconnect();
-  }, [box.text, box.w, box.h, box.x, box.y]);
+  }, [box.text, box.w, box.h, box.x, box.y, faceSelector]);
 
   const close = useCallback((returnFocus: boolean) => {
     setOpen(false);
