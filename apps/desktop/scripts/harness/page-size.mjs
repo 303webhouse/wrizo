@@ -180,7 +180,7 @@ const IDENT_PROBE = `(() => { const p = document.querySelector('.mode-page'); co
     fontPx: parseFloat(getComputedStyle(e).fontSize), colW: e.offsetWidth, transform: ps.transform, zoom: col.getAttribute('data-zoom'), anchor: cs.getPropertyValue('--tw-anchor').trim(),
     lh: parseFloat(cs.getPropertyValue('--tw-lh')) || null, mask: String(cs.webkitMaskImage || cs.maskImage || 'none') }; })()`;
 const ident = {};
-const psParks = { C: [] };   // the park audit (Oct 24): the default leg's observations, for the parked records
+const psParks = { C: [], MBR: null };   // the park audit (Oct 24): the default leg's observations, for the parked records
 const IDENT_TOL = 1;   // Nick's law, ±1px
 
 // strip every MASK the stage can paint, so a line's UNFADED ink can be read (layout is untouched: a mask never moves a line). MASKS ONLY - the red run (143)
@@ -708,8 +708,23 @@ await withHarness(async (app) => {
       await app.evalJs("window.__psStyle('ps-mbr', \".wz-beginnings[data-beginnings='page']{ top:50% !important; transform:translateY(-50%) !important; }\")"); await sleep(250);
       const mbr = await app.evalJs(brProbe);
       await app.evalJs("window.__psStyle('ps-mbr', null)");
-      ok(`MBR (mutant): with the row put back on the sheet's centre (LANDED: its top ${br && br.rowTop} -> ${mbr && mbr.rowTop}), it covers the line - BR fails`,
-        !!mbr && !!br && mbr.rowTop !== br.rowTop && !(mbr.rowTop >= mbr.lineBottom - 0.5), J({ now: br, mutated: mbr }));
+      // ---- PARKED - SUPERSEDED by POLISH #10 item 5 (Nick, Oct 25: in the zoom the ink sheet covers the visible page): "the sheet's centre" was the writing
+      // line only while the zoomed sheet was one line tall; it now lies below the line (FIX's turn on e2ebe51d: LANDED 530 -> 777, the line 467-510), so
+      // the mutant no longer covers it. Kept VERBATIM and no longer gating; its reading is recorded per run in the parked section.
+      //
+      // ok(`MBR (mutant): with the row put back on the sheet's centre (LANDED: its top ${br && br.rowTop} -> ${mbr && mbr.rowTop}), it covers the line - BR fails`,
+      //   !!mbr && !!br && mbr.rowTop !== br.rowTop && !(mbr.rowTop >= mbr.lineBottom - 0.5), J({ now: br, mutated: mbr }));
+      // ------------------------------------------------------------------
+      psParks.MBR = { now: br, mutated: mbr };
+      // SUCCESSOR: the row moved ONTO the writing line itself (its top to the line's top, in the row's own layout px at the painted scale) - BR must fail
+      const mv = br && br.row ? await app.evalJs(`(() => { const row = document.querySelector('.wz-beginnings[data-beginnings="page"]'); if (!row) return null; const p = row.closest('.mode-page');
+        const k = p && p.offsetWidth ? p.getBoundingClientRect().width / p.offsetWidth : 1; return (${br.lineTop} - row.getBoundingClientRect().top) / k; })()`) : null;
+      if (mv != null) await app.evalJs(`window.__psStyle('ps-mbr2', ".wz-beginnings[data-beginnings='page']{ translate: 0 ${mv}px !important; }")`);
+      await sleep(250);
+      const mbr2 = await app.evalJs(brProbe);
+      await app.evalJs("window.__psStyle('ps-mbr2', null)");
+      ok(`MBR (mutant) [polish #10 item 5 successor]: with the row moved onto the writing line (LANDED: its top ${br && br.rowTop} -> ${mbr2 && mbr2.rowTop}, the line ${br && br.lineTop}-${br && br.lineBottom}), it covers the line - BR fails`,
+        !!mbr2 && !!br && Math.abs(mbr2.rowTop - br.lineTop) <= 2 && !(mbr2.rowTop >= mbr2.lineBottom - 0.5), J({ now: br, mutated: mbr2, moveLayoutPx: mv }));
     } else ok('BR fixture: the empty page opened', false, '');
   }
 
@@ -743,8 +758,12 @@ if (process.env.HARNESS_PARKED === '1') {
   // the face's measure was MEASURED (and recorded here), on the column I holds identical across skins.
   const rec = psParks.C.map((o) => ({ name: `PARKED (was "${o.skin} ${o.w}x${o.h} C: at the default, the median full line holds ${CPL_MIN}-${CPL_MAX} characters (~75)") - Fable's C ruling (Oct 24): the measure is the FACE's; the column is I's`,
     pass: o.lines >= 10 && o.median > 0, detail: J(o) }));
+  // POLISH #10 item 5 - MBR: one record per run. It passes when the old mutant still covered the line, or when it missed it ONLY because the sheet's
+  // centre now lies below the line (the exact falsification: the row moved, and wholly below the line).
+  if (psParks.MBR) { const o = psParks.MBR; rec.push({ name: `PARKED (was "MBR (mutant): with the row put back on the sheet's centre (LANDED: its top ${o.now && o.now.rowTop} -> ${o.mutated && o.mutated.rowTop}), it covers the line - BR fails") - polish #10 item 5: the zoomed sheet covers the visible page, so its centre lies below the line`,
+    pass: !!o.now && !!o.mutated && o.mutated.rowTop !== o.now.rowTop && (!(o.mutated.rowTop >= o.mutated.lineBottom - 0.5) || o.mutated.rowTop > o.mutated.lineBottom), detail: J(o) }); }
   for (const c of rec) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}  [${c.detail}]`);
-  console.log(rec.length && rec.every((c) => c.pass) ? `\nPAGE-SIZE PARKED: PASS (${rec.length} records) - this FILE parks 1 (C, one record per skin x size)` : `\nPAGE-SIZE PARKED: FAIL - ${rec.filter((c) => !c.pass).length}/${rec.length} (${rec.length} records)`);
+  console.log(rec.length && rec.every((c) => c.pass) ? `\nPAGE-SIZE PARKED: PASS (${rec.length} records) - this FILE parks 2 (C, one record per skin x size; MBR's sheet centre, polish #10 item 5)` : `\nPAGE-SIZE PARKED: FAIL - ${rec.filter((c) => !c.pass).length}/${rec.length} (${rec.length} records)`);
 }
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nPAGE-SIZE VERIFY: PASS (${checks.length} checks)` : `\nPAGE-SIZE VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
