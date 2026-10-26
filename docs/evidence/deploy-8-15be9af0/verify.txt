@@ -1,0 +1,11 @@
+healthz: {"ok":true,"build":"index-CujoQGFv"}
+auth/me: 401
+signup-status: {"open":false}
+served bundle: index-CujoQGFv.js 908767 bytes md5 a3739511653c5b16f48fdbb6729b85c2 (local build and tested b14 bundle identical)
+ok   POST /auth/login  -> 200 (expected 200)
+ok   GET  /auth/me  -> 200 (expected 200)
+ok   POST /api/sync (pull only)  -> 200 (expected 200)
+ok   POST /auth/logout  -> 204 (expected 204)
+ok   GET  /auth/me (after logout, jar)  -> 401 (expected 401)
+ok   GET  /auth/me (pre-logout cookie replayed)  -> 401 (expected 401)
+SMOKE: PASS (6/6)

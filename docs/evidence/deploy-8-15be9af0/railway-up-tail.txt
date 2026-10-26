@@ -1,0 +1,12 @@
+
+[stage-0  9/11] RUN --mount=type=cache,id=s/d9a7894f-c7a0-415a-9fb5-48a34624fd18-node_modules/cache,target=/app/node_modules/.cache pnpm install --prod=false && pnpm --filter @writer-studio/desktop build:web && pnpm --filter @writer-studio/server build
+[stage-0 10/11] RUN printf '\nPATH=/app/node_modules/.bin:$PATH' >> /root/.profile
+[stage-0 10/11] RUN printf '\nPATH=/app/node_modules/.bin:$PATH' >> /root/.profile
+[stage-0 11/11] COPY . /app
+[stage-0 11/11] COPY . /app
+exporting to docker image format
+exporting to docker image format
+image push
+image push
+image push
+Deploy complete

@@ -1,0 +1,24 @@
+toplevel: C:/Users/nickh/writer-studio/.claude/worktrees/b14
+base: 28aa6aab
+== merging guided-w1 @ 32ad6997
+Auto-merging apps/desktop/src/components/BoardEditor.tsx
+Auto-merging apps/desktop/src/components/SectionsPopout.tsx
+Auto-merging apps/desktop/src/index.css
+Auto-merging apps/desktop/src/store/deskLexicon.ts
+   -> 9537789f  unmerged files: 0
+== merging outline-blur-data @ 4d21bdfc
+Auto-merging apps/desktop/src/index.css
+   -> 7fe707cc  unmerged files: 0
+== merging machina-forms-reds @ bc33f5df
+   -> 3b4d6f61  unmerged files: 0
+== merging w1-board-reds @ 807f99d1
+   -> 299641bf  unmerged files: 0
+Done in 13.4s using pnpm v10.28.2
+tsc-desktop=0
+tsc-server-done
+SEED-GUARD VERIFY: PASS (36 checks)
+TYPING-LATENCY READERS VERIFY: PASS (5 checks, 24 reads classified)
+TYPED-LITERAL-CHECK VERIFY: PASS (29 checks)
+GLITCH-METER-CHECK VERIFY: PASS (15 checks)
+[2mdist-web/[22m[36massets/index-CujoQGFv.js                                          [39m[1m[33m907.98 kB[39m[22m[2m │ gzip: 286.77 kB[22m
+908767 dist-web/assets/index-CujoQGFv.js
