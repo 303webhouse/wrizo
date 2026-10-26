@@ -1,0 +1,29 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=19 tree=09b368b7 bundle=index-D2yVeb5j.js/907957b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/b12p-default-c03
+[01/19] OK        exit=0   71s font-span.mjs :: ROWS-SHADOW VERIFY: PASS (32 renders checked, shadow == DOM on every one) ;; FONT-SPAN VERIFY: PASS (38 checks)
+[02/19] OK        exit=0   22s fx1.mjs :: ROWS-SHADOW VERIFY: PASS (10 renders checked, shadow == DOM on every one) ;; FX1 VERIFY: PASS (23 checks)
+[03/19] OK        exit=0   63s fx10.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FX10 VERIFY: PASS (121 checks)
+[04/19] FAIL      exit=1   16s fx11.mjs :: FX11 VERIFY: FAIL — 2/19 failed
+[05/19] OK        exit=0    8s fx12.mjs :: FX12 VERIFY: PASS (5 checks)
+[06/19] OK        exit=0    9s fx13.mjs :: FX13 VERIFY: PASS (10 checks)
+[07/19] OK        exit=0    8s fx14.mjs :: ROWS-SHADOW VERIFY: PASS (12 renders checked, shadow == DOM on every one) ;; FX14 VERIFY: PASS (11 checks)
+[08/19] OK        exit=0   12s fx15.mjs :: FX15 VERIFY: PASS (13 checks)
+[09/19] OK        exit=0    7s fx16.mjs :: FX16 VERIFY: PASS (6 checks)
+[10/19] OK        exit=0   20s fx17.mjs :: FX17 VERIFY: PASS (18 checks)
+[11/19] FAIL      exit=1   20s fx18.mjs :: FX18 VERIFY: FAIL — 1/16 failed
+[12/19] OK        exit=0   13s fx2.mjs :: ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one) ;; FX2 VERIFY: PASS (34 checks)
+[13/19] OK        exit=0   15s fx3.mjs :: FX3 VERIFY: PASS (28 checks)
+[14/19] OK        exit=0   38s fx4.mjs :: FX4 VERIFY: PASS (42 checks)
+[15/19] OK        exit=0   87s fx5.mjs :: ROWS-SHADOW VERIFY: PASS (131 renders checked, shadow == DOM on every one) ;; FX5 VERIFY: PASS (57 checks)
+[16/19] OK        exit=0   30s fx6.mjs :: ROWS-SHADOW VERIFY: PASS (137 renders checked, shadow == DOM on every one) ;; FX6 VERIFY: PASS (38 checks)
+[17/19] OK        exit=0   32s fx7.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FX7 VERIFY (partial): PASS (43 checks)
+[18/19] OK        exit=0   10s fx8.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FX8 VERIFY: PASS (20 checks)
+[19/19] OK        exit=0    8s fx9.mjs :: FX9 VERIFY: PASS (13 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 17/19 of 19 returned a passing verdict
+  FAIL: fx11.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\b12p-default-c03\fx11.mjs.default.txt
+  FAIL: fx18.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\b12p-default-c03\fx18.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=09b368b7 bundle=index-D2yVeb5j.js/907957b NO-REBUILD
+CHUNK 03 EXIT 1

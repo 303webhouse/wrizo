@@ -1,0 +1,28 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=19 tree=09b368b7 bundle=index-D2yVeb5j.js/907957b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/b12p-default-c07
+[01/19] OK        exit=0   33s m2.mjs :: M2 VERIFY: PASS (26 checks)
+[02/19] OK        exit=0   27s m3.mjs :: M3 VERIFY: PASS (6 checks)
+[03/19] OK        exit=0   27s m4.mjs :: M4 VERIFY: PASS (35 checks)
+[04/19] FAIL      exit=1   18s machina-deckwizard.mjs :: FAIL W3/W4 [cool/dark, PARKED RECORD]: the library the originals read is gone under Machina - zero .deck-wizard-deck-row nodes (undefined), the Forms rows in their place (undefined >= 12)  {} ;; FAIL W3/W4 [cool/light, PARKED RECORD]: the library the originals read is gone under Machina - zero .deck-wizard-deck-row nodes (undefined), the Forms rows in their place (undefined >= 12)  {} ;; FAIL W3/W4 [neutral/dark, PARKED RECORD]: the library the originals read is gone under Machina - zero .deck-wizard-deck-row nodes (undefined), the Forms rows in their place (undefined >= 12)  {} ;; FAIL W3/W4 [neutral/light, PARKED RECORD]: the library the originals read is gone under Machina - zero .deck-wizard-deck-row nodes (undefined), the Forms rows in their place (undefined >= 12)  {} ;; MACHINA-DECKWIZARD VERIFY: FAIL - 12/33 failed
+[05/19] OK        exit=0    0s machina-forms-logic.mjs :: MACHINA-FORMS-LOGIC VERIFY: PASS (26 checks)
+[06/19] OK        exit=0   29s machina-forms.mjs :: MACHINA-FORMS VERIFY: PASS (44 checks)
+[07/19] OK        exit=0    0s one-drawer.mjs :: ONE-DRAWER VERIFY: PASS (14 checks)
+[08/19] OK        exit=0    8s outdent.mjs :: ROWS-SHADOW VERIFY: PASS (32 renders checked, shadow == DOM on every one) ;; OUTDENT VERIFY: PASS (10 checks)
+[09/19] OK        exit=0    1s page-links.mjs :: PAGE-LINKS VERIFY: PASS (29 checks)
+[10/19] OK        exit=0   15s page-scroll-return.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; PAGE-SCROLL-RETURN VERIFY: PASS (9 checks)
+[11/19] OK        exit=0  240s page-size.mjs :: ROWS-SHADOW VERIFY: PASS (83 renders checked, shadow == DOM on every one) ;; PAGE-SIZE VERIFY: PASS (335 checks)
+[12/19] OK        exit=0   66s page-templates-r2.mjs :: ROWS-SHADOW VERIFY: PASS (72 renders checked, shadow == DOM on every one) ;; PAGE-TEMPLATES-R2 VERIFY: PASS (134 checks)
+[13/19] OK        exit=0   21s page-templates.mjs :: ROWS-SHADOW VERIFY: PASS (4 renders checked, shadow == DOM on every one) ;; PAGE-TEMPLATES VERIFY: PASS (20 checks)
+[14/19] OK        exit=0   36s pb1.mjs :: ROWS-SHADOW VERIFY: PASS (26 renders checked, shadow == DOM on every one) ;; PB1 VERIFY: PASS (22 checks)
+[15/19] OK        exit=0   48s pw1.mjs :: PW1 VERIFY: PASS (41 checks)
+[16/19] OK        exit=0   20s pw2.mjs :: PW2 VERIFY: PASS (24 checks)
+[17/19] OK        exit=0   37s resume-on-open.mjs :: RESUME-ON-OPEN VERIFY: PASS (57 checks)
+[18/19] OK        exit=0   19s reveal.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; REVEAL VERIFY: PASS (19 checks)
+[19/19] OK        exit=0   27s revealmark.mjs :: ROWS-SHADOW VERIFY: PASS (4 renders checked, shadow == DOM on every one) ;; REVEALMARK VERIFY: PASS (16 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 18/19 of 19 returned a passing verdict
+  FAIL: machina-deckwizard.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\b12p-default-c07\machina-deckwizard.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=09b368b7 bundle=index-D2yVeb5j.js/907957b NO-REBUILD
+CHUNK 07 EXIT 1

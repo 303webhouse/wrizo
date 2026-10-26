@@ -1,0 +1,35 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=19 tree=09b368b7 bundle=index-D2yVeb5j.js/907957b out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/b12p-default-c00
+(node:56404) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[01/19] OK        exit=0    6s a11y-signin.mjs :: A11Y-SIGNIN VERIFY: PASS (15 checks)
+[02/19] OK        exit=0    6s a11y-tutor-live-region.mjs :: A11Y-TUTOR-LIVE-REGION VERIFY: PASS (13 checks)
+[03/19] OK        exit=0   13s ab1.mjs :: ROWS-SHADOW VERIFY: PASS (34 renders checked, shadow == DOM on every one) ;; AB1 VERIFY: PASS (29 checks)
+[04/19] OK        exit=0   18s ab2.mjs :: ROWS-SHADOW VERIFY: PASS (20 renders checked, shadow == DOM on every one) ;; AB2 VERIFY: PASS (27 checks)
+[05/19] NOVERDICT exit=1   34s ab3.mjs :: (no verdict — see C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\b12p-default-c00\ab3.mjs.default.txt)
+[06/19] OK        exit=0   20s ab4.mjs :: AB4 VERIFY: PASS (19 checks)
+[07/19] OK        exit=0   18s arrival-signin-walk.mjs :: ARRIVAL-SIGNIN-WALK VERIFY: PASS (15 checks)
+[08/19] OK        exit=0   15s arrival-signin.mjs :: ARRIVAL-SIGNIN VERIFY: PASS (103 checks) — screenshots and live walk not run (box turn)
+[09/19] NOVERDICT exit=1   10s b1.mjs :: (no verdict — see C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\b12p-default-c00\b1.mjs.default.txt)
+[10/19] OK        exit=0   46s b101.mjs :: B101 VERIFY: PASS (73 checks)
+[11/19] NOVERDICT exit=1   11s b2-1.mjs :: (no verdict — see C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\b12p-default-c00\b2-1.mjs.default.txt)
+[12/19] NOVERDICT exit=1   11s b2.mjs :: (no verdict — see C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\b12p-default-c00\b2.mjs.default.txt)
+[13/19] NOVERDICT exit=1   17s b3.mjs :: (no verdict — see C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\b12p-default-c00\b3.mjs.default.txt)
+[14/19] OK        exit=0   40s bg1.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; BG1 VERIFY: PASS (36 checks)
+[15/19] OK        exit=0   14s bg2.mjs :: BG2 VERIFY: PASS (23 checks)
+[16/19] OK        exit=0   42s big-projects-1a.mjs :: ROWS-SHADOW VERIFY: PASS (36 renders checked, shadow == DOM on every one) ;; BIG-PROJECTS-1A VERIFY: PASS (92 checks)
+[17/19] FAIL      exit=1   22s big-projects-2.mjs :: BIG-PROJECTS-2 VERIFY: FAIL - 4/43 failed
+[18/19] OK        exit=0   45s big-projects-3.mjs :: ROWS-SHADOW VERIFY: PASS (10 renders checked, shadow == DOM on every one) ;; BIG-PROJECTS-3 VERIFY: PASS (32 checks)
+[19/19] OK        exit=0   58s blank-page-click.mjs :: ROWS-SHADOW VERIFY: PASS (35 renders checked, shadow == DOM on every one) ;; BLANK-PAGE-CLICK VERIFY: PASS (26 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 13/19 of 19 returned a passing verdict
+  NOVERDICT: ab3.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\b12p-default-c00\ab3.mjs.default.txt
+  NOVERDICT: b1.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\b12p-default-c00\b1.mjs.default.txt
+  NOVERDICT: b2-1.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\b12p-default-c00\b2-1.mjs.default.txt
+  NOVERDICT: b2.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\b12p-default-c00\b2.mjs.default.txt
+  NOVERDICT: b3.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\b12p-default-c00\b3.mjs.default.txt
+  FAIL: big-projects-2.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\b12p-default-c00\big-projects-2.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=09b368b7 bundle=index-D2yVeb5j.js/907957b
+CHUNK 00 EXIT 1

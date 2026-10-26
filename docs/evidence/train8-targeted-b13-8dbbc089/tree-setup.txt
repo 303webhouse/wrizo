@@ -1,0 +1,22 @@
+toplevel: C:/Users/nickh/writer-studio/.claude/worktrees/b13
+base: 799496f9
+== merging guided-w1 @ 32ad6997
+Auto-merging apps/desktop/src/components/BoardEditor.tsx
+Auto-merging apps/desktop/src/components/SectionsPopout.tsx
+Auto-merging apps/desktop/src/index.css
+Auto-merging apps/desktop/src/store/deskLexicon.ts
+   -> 7f3f8040  unmerged files: 0
+== merging outline-blur-data @ 4d21bdfc
+Auto-merging apps/desktop/src/index.css
+   -> 69ac1e39  unmerged files: 0
+== merging machina-forms-reds @ bc33f5df
+   -> 8dbbc089  unmerged files: 0
+Done in 12.1s using pnpm v10.28.2
+tsc-desktop=0
+tsc-server-done
+SEED-GUARD VERIFY: PASS (36 checks)
+TYPING-LATENCY READERS VERIFY: PASS (5 checks, 24 reads classified)
+TYPED-LITERAL-CHECK VERIFY: PASS (29 checks)
+GLITCH-METER-CHECK VERIFY: PASS (15 checks)
+[2mdist-web/[22m[36massets/index-B2tSAKgk.js                                          [39m[1m[33m907.69 kB[39m[22m[2m │ gzip: 286.64 kB[22m
+908478 dist-web/assets/index-B2tSAKgk.js

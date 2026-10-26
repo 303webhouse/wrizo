@@ -1,0 +1,5 @@
+STAMP: tree=09b368b7 bundle=index-D2yVeb5j.js/907957b
+default c00: NOT CLEAN; non-launch-crash failures=6
+RED (real) at default c00 - continuing to collect all reds
+STOP before default c01: 1 harness node processes, 0 browsers
+RESUMED at default c01 after the 18:31Z stop (the grant was held, not released, until 00:48Z)

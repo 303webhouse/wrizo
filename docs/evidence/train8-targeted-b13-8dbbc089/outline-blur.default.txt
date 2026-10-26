@@ -1,0 +1,18 @@
+PASS  store/outlineRow.ts exists and loads
+PASS  O1
+PASS  O2
+PASS  O3
+PASS  O4
+PASS  O5
+PASS  O6
+PASS  the suite ran every check it names
+PASS  mutant "a blur with nothing changed still writes" is KILLED by a check (reddens: O2)
+PASS  mutant "an edit drops the text after the title" is KILLED by a check (reddens: O3, O4)
+PASS  mutant "the split takes the LAST newline" is KILLED by a check (reddens: O1, O2, O3)
+PASS  mutant "a typed newline survives into the stored title" is KILLED by a check (reddens: O4)
+PASS  mutant "the row blur writes the raw input value again" is KILLED by a check (reddens: O5)
+PASS  mutant "the row stops showing the text beside the title" is KILLED by a check (reddens: O5)
+PASS  mutant "the text beside the title wraps" is KILLED by a check (reddens: O6)
+PASS  all 7 mutations landed and 7 were killed
+
+OUTLINE-BLUR: PASS (16 checks)
