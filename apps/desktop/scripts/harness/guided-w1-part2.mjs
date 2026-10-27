@@ -100,7 +100,10 @@ await withHarness(async (app) => {
       const anatomy = await q(`(() => { const c = document.querySelector('.walk-card'); const r = c && c.getBoundingClientRect(); return { card: !!c, w: r ? Math.round(r.width) : 0, prev: !!document.querySelector('.walk-nav[data-dir=prev]'), next: !!document.querySelector('.walk-nav[data-dir=next]'), doors: [...document.querySelectorAll('.walk-door')].map((d) => d.getAttribute('data-door')), marks: document.querySelectorAll('.walk-mark').length, grip: !!document.querySelector('.walk-grip'), help: !!document.querySelector('.walk-card .board-step-help') }; })()`);
       if (full) {
         ok(`[${T}] the Walk card is 700 wide at a wide viewport; Previous / Next, the resize grip, the question mark and one rail mark per card (9) are there`, anatomy.card && anatomy.w === 700 && anatomy.prev && anatomy.next && anatomy.grip && anatomy.help && anatomy.marks === 9, JSON.stringify(anatomy));
-        ok(`[${T}] the doors under the card are Notes only - "Write this" and "Place a page..." are ABSENT until W2 wires them`, same(anatomy.doors, ['notes']), JSON.stringify(anatomy.doors));
+        // PARKED VERBATIM (W2 landed Oct 26: "Write this" and "Place a page..." are wired through extraDoors, as this check's own name said they would be). The original, kept here and never run:
+        //   ok(`[${T}] the doors under the card are Notes only - "Write this" and "Place a page..." are ABSENT until W2 wires them`, same(anatomy.doors, ['notes']), JSON.stringify(anatomy.doors));
+        // SUCCESSOR (and the record: scripts/harness/guided-w2-part2.mjs D1 / D2 hold the doors' words in every skin): Notes first, then W2's two doors, in that order. 1 check parked, 1 successor.
+        ok(`[${T}] the doors under the card are Notes, then W2's Write this and Place a page (SUCCESSOR of the parked "Notes only" check)`, same(anatomy.doors, ['notes', 'write', 'place']), JSON.stringify(anatomy.doors));
       }
 
       // V - show as: positions and order are untouched by switching; the memory is per board; the words

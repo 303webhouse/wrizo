@@ -3,6 +3,8 @@ import { useBoardSnapshot, getBoardActions } from '../store/boardSelection';
 import { getJournalEntry, getUnbornEntry, removePageLink, subscribe } from '../store/persistence';
 import { requestDelete } from '../store/deleteGate';
 import { graftsOf, hidePlanCard, pairedPageRow, planGroupOf, restorePageLink, unhidePlanCard, type GraftRow, type GraftSubject } from '../store/grafts';
+import { searchSteps } from '../store/writePlace';
+import { liveBoxes } from '../store/boxTombstones';
 import { GraftPicker, type CameFrom } from './GraftPicker';
 import { useUnborn } from './UnbornSurface';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -33,9 +35,11 @@ export function ConnectionsDrawerPanel() {
   const [, setTick] = useState(0);
   useEffect(() => subscribe(() => setTick((n) => n + 1)), []);   // a link added or removed anywhere redraws the list
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [placeOpen, setPlaceOpen] = useState(false);
   const [planOpen, setPlanOpen] = useState(false);
   const [undo, setUndo] = useState<Undo>(null);
   const addRef = useRef<HTMLButtonElement | null>(null);
+  const placeRef = useRef<HTMLButtonElement | null>(null);
 
   // the subject: a board (its selected card, or the board) when a board is open; otherwise the page on the address.
   // A BRAND-NEW page (/page/new) has no row yet. RULING (Fable, Oct 21): a pick in "+ Graft..." CREATES it - through the unborn surface's own
@@ -48,15 +52,18 @@ export function ConnectionsDrawerPanel() {
   const slotId = isNew ? (getUnbornEntry()?.id ?? null) : null;
   if (slotId) lastUnbornRef.current = slotId;
   const unborn = useUnborn(isNew ? (slotId ?? lastUnbornRef.current ?? '') : '');
-  const pageId = !snap && pageMatch ? (isNew ? (slotId ?? lastUnbornRef.current) : decodeURIComponent(pageMatch[1])) : null;
+  // W2: a pane first drawn AFTER the birth (the writer opened Grafts once they had typed) never saw the unborn slot, and the router still says /page/new - but the ADDRESS BAR was corrected at birth (replaceState), so it names the page.
+  const bornHashId = isNew && !slotId && !lastUnbornRef.current ? (/^#\/page\/([^/?#]+)/.exec(window.location.hash)?.[1] ?? null) : null;
+  const pageId = !snap && pageMatch ? (isNew ? (slotId ?? lastUnbornRef.current ?? (bornHashId && bornHashId !== 'new' ? decodeURIComponent(bornHashId) : null)) : decodeURIComponent(pageMatch[1])) : null;
   const page = pageId ? getJournalEntry(pageId) : null;
   const birthFirst = unborn ? () => { unborn.birthWith({ text: '' }); } : undefined;
   const subject: GraftSubject | null = snap
     ? (snap.selectedId ? { entryId: snap.boardId, boxId: snap.selectedId } : { entryId: snap.boardId })
     : (page ? { entryId: page.id } : null);
   const subjectKey = subject ? `${subject.entryId}:${subject.boxId ?? ''}` : '';
-  useEffect(() => { setUndo(null); setPickerOpen(false); setPlanOpen(false); }, [subjectKey]);
+  useEffect(() => { setUndo(null); setPickerOpen(false); setPlaceOpen(false); setPlanOpen(false); }, [subjectKey]);
   const closePicker = useCallback(() => setPickerOpen(false), []);
+  const closePlace = useCallback(() => setPlaceOpen(false), []);
 
   const boxes = snap ? snap.boxes : undefined;
   const subjectTitle = (() => {
@@ -70,10 +77,14 @@ export function ConnectionsDrawerPanel() {
   const hasConnected = !!g && (!!plan || g.Cards.length + g.Sources.length + g.Boards.length + g.Pages.length + g.sharedTags.length > 0);
 
   // "Came from <surface>": the router state the Back chip reads (fromBoardId / fromBoardTitle), on a page only, never the page itself
-  const st = location.state as { fromBoardId?: string; fromBoardTitle?: string } | null;
+  const st = location.state as { fromBoardId?: string; fromBoardTitle?: string; fromCardId?: string; fromStepLabel?: string } | null;
   const fromId = page && st?.fromBoardId && st.fromBoardId !== page.id ? st.fromBoardId : null;
   const fromEntry = fromId ? getJournalEntry(fromId) : null;
-  const cameFrom: CameFrom | null = fromEntry ? { entryId: fromEntry.id, title: st?.fromBoardTitle || titleOf(fromEntry.text) } : null;
+  // W2: a page born by "Write this" came from a STEP - "Came from" names it ("Three-Act · Midpoint") and points at that card (while the card is still there)
+  const fromStep = fromEntry && st?.fromCardId && st.fromStepLabel && liveBoxes(fromEntry.boxes ?? []).some((b) => b.id === st.fromCardId) ? { boxId: st.fromCardId, label: st.fromStepLabel } : null;
+  const cameFrom: CameFrom | null = fromEntry ? (fromStep ? { entryId: fromEntry.id, title: fromStep.label, boxId: fromStep.boxId } : { entryId: fromEntry.id, title: st?.fromBoardTitle || titleOf(fromEntry.text) }) : null;
+  // W2 "Place this...": on a PAGE (not a board), offered while any Deck has a step to place it on
+  const canPlace = !!page && !snap && searchSteps('', page.id).length > 0;
 
   const remove = (r: GraftRow) => requestDelete(() => {
     if (r.via === 'card' && r.connId) {
@@ -100,9 +111,15 @@ export function ConnectionsDrawerPanel() {
   return (
     <div className="wz-links-pane" data-links-pane="">
       <button ref={addRef} type="button" className="wz-graft-add" data-graft-add="" disabled={!subject} aria-expanded={pickerOpen ? 'true' : 'false'}
-        onClick={() => setPickerOpen((o) => !o)}>
+        onClick={() => { setPlaceOpen(false); setPickerOpen((o) => !o); }}>
         <span aria-hidden="true">+</span> {t('graftAdd')}
       </button>
+      {canPlace && (
+        <button ref={placeRef} type="button" className="wz-graft-add" data-graft-place-this="" aria-expanded={placeOpen ? 'true' : 'false'}
+          onClick={() => { setPickerOpen(false); setPlaceOpen((o) => !o); }}>
+          {t('graftPlaceThis')}
+        </button>
+      )}
       {paired && (
         <div className="wz-graft-paired" data-graft-paired="" data-graft-entry={paired.entryId}>
           <span className="wz-links-thumb wz-links-thumb--page" aria-hidden="true" />
@@ -170,6 +187,7 @@ export function ConnectionsDrawerPanel() {
         </div>
       )}
       {pickerOpen && subject && <GraftPicker subject={subject} boxes={boxes} anchor={addRef.current} cameFrom={cameFrom} onClose={closePicker} beforePick={birthFirst} />}
+      {placeOpen && canPlace && subject && <GraftPicker mode="steps" title={t('graftPlaceThis')} subject={subject} anchor={placeRef.current} cameFrom={null} onClose={closePlace} beforePick={birthFirst} />}
     </div>
   );
 }

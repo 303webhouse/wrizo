@@ -1,4 +1,6 @@
-import { generateId, saveJournalEntry, setUnbornEntry, pinPageToBoard } from './persistence';
+import { generateId, getJournalEntry, saveJournalEntry, setUnbornEntry, pinPageToBoard } from './persistence';
+import { graftTo } from './grafts';
+import { liveBoxes } from './boxTombstones';
 import type { Box, JournalEntry, PageTemplate } from '../types';
 import { PAGE_SETTINGS_FALLBACK } from '../types';
 import { getUserPageDefaults } from './pageDefaults';
@@ -59,6 +61,9 @@ export interface UnbornDescriptor {
   // W4 (Help me choose) - the deck's OWN deal answers the librarian already settled (questionId:optionId pairs, comma-joined; e.g. `format:short-story`), so the wizard asks only what is left. Rides the address like `deck`;
   // nothing is stored, and an unknown or malformed value degrades to "no answers" (the deck simply asks).
   deckAnswers: string | null;
+  // W2 - "WRITE THIS": the card on a board this page is being written FOR. It rides the address (`gb` board, `gc` card) like `pin` and `deck`, so a reload keeps the door's meaning with no storage, and nothing is
+  // written until `birth` (the first keystroke): then the page and its graft to that card are one act. Null for every other door.
+  graft: { boardId: string; boxId: string } | null;
 }
 
 // A malformed or unknown descriptor degrades to a plain loose page rather than
@@ -101,6 +106,7 @@ export function readDescriptor(search: string): UnbornDescriptor {
     template: rawTemplate === 'outline' || rawTemplate === 'title' || rawTemplate === 'bibliography' ? rawTemplate : null,
     deck: rawDeck && rawDeck.trim() ? rawDeck.trim() : null,
     deckAnswers: cleanDeckAnswers(q.get('da')),
+    graft: q.get('gb')?.trim() && q.get('gc')?.trim() ? { boardId: q.get('gb')!.trim(), boxId: q.get('gc')!.trim() } : null,
   };
 }
 
@@ -114,6 +120,7 @@ export function unbornHref(d: Partial<UnbornDescriptor> = {}): string {
   if (d.template) q.set('template', d.template);
   if (d.deck) q.set('deck', d.deck);
   if (d.deck && d.deckAnswers) q.set('da', d.deckAnswers);
+  if (d.graft) { q.set('gb', d.graft.boardId); q.set('gc', d.graft.boxId); }
   const s = q.toString();
   return `/page/new${s ? `?${s}` : ''}`;
 }
@@ -202,6 +209,13 @@ export function birth(
   // PW1 S3 — BOARD-SIDE: this page was opened FROM a board's own door (the
   // board is in the address), so the card belongs on that board's wall.
   if (pinTo) pinPageToBoard(born.id, pinTo, { display: true });
+  // W2 - WRITE THIS: the page was opened FOR a card, so the card and the page are grafted in this same act (the record the board owns: store/grafts.ts graftTo). A card that has gone since the door was pressed is
+  // simply not grafted - the page is the writer's words and stands on its own; a link to nothing is never made. The page opens in Free Write (this device remembers it past a reload).
+  if (d.graft) {
+    const board = getJournalEntry(d.graft.boardId);
+    if (board && liveBoxes(board.boxes ?? []).some(b => b.id === d.graft!.boxId)) graftTo({ entryId: d.graft.boardId, boxId: d.graft.boxId }, { entryId: born.id });
+    try { localStorage.setItem(`wrizo-mode-page-${born.id}`, 'journal'); } catch { /* blocked: the page opens in its default posture */ }
+  }
   // The store now has the row, so getJournalEntry resolves it from the cache
   // and the slot no longer matters; clearing it keeps the invariant "at most
   // one unborn surface, and only while it is genuinely unborn."

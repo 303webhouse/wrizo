@@ -4,6 +4,7 @@ import { useDeskLexicon } from '../store/deskLexicon';
 import { subscribe } from '../store/persistence';
 import { getBoardActions } from '../store/boardSelection';
 import { graftTo, isGrafted, searchGraftables, type GraftRow, type GraftSubject } from '../store/grafts';
+import { placeThis, searchSteps } from '../store/writePlace';
 import type { Box } from '../types';
 
 // BIG PROJECTS STEP 3 (3b, 3d) - "+ Graft...": the picker (Nick's approved mockup, cursor/graft-doors-mockup @ c4f34eb0, frames graft-picker-page,
@@ -13,11 +14,15 @@ import type { Box } from '../types';
 // to ungraft). "Came from <surface>" is the top row only when the page was just opened from a surface (the router state the Back chip reads):
 // an offered row like any other - nothing is written when the page opens.
 // An OVERLAY portalled to <body> and anchored under the "+ Graft..." control: it displaces nothing (page primacy). Esc or a press outside closes it.
-export interface CameFrom { entryId: string; title: string }
+// W2: `boxId` makes "Came from" a STEP ("Three-Act · Midpoint": a page born by "Write this" came from that card, and is already placed on it, so the row shows checked).
+export interface CameFrom { entryId: string; title: string; boxId?: string }
 
 // `boxes`: the open board's LIVE boxes (the editor's own, ahead of its autosave), handed down by the Grafts pane that already reads the board's snapshot.
 // `beforePick`: on a brand-new page, the pane's birth of the page (ruling, Oct 21: a pick CREATES the page) - run before the graft is written.
-export function GraftPicker({ subject, boxes, anchor, cameFrom, onClose, beforePick }: { subject: GraftSubject; boxes?: readonly Box[]; anchor: HTMLElement | null; cameFrom: CameFrom | null; onClose: () => void; beforePick?: () => void }) {
+// W2 - `mode`: 'all' is the Grafts "+ Graft..." picker (Cards / Pages / Boards); 'pages' is "Place a page..." (the same picker filtered to PAGES; "Came from" still first); 'steps' is the page's "Place this..." (the Decks' steps, as "Deck · Step"
+// rows; a press places THIS page on that step). `title` is the door's own word. `onPicked` runs after a press that made a graft, so the opener can redraw (a card kindles).
+export type PickerMode = 'all' | 'pages' | 'steps';
+export function GraftPicker({ subject, boxes, anchor, cameFrom, onClose, beforePick, mode = 'all', title, onPicked }: { subject: GraftSubject; boxes?: readonly Box[]; anchor: HTMLElement | null; cameFrom: CameFrom | null; onClose: () => void; beforePick?: () => void; mode?: PickerMode; title?: string; onPicked?: () => void }) {
   const { t } = useDeskLexicon();
   const [query, setQuery] = useState('');
   const [, setTick] = useState(0);
@@ -49,29 +54,36 @@ export function GraftPicker({ subject, boxes, anchor, cameFrom, onClose, beforeP
     setPos({ left, top });
   }, [anchor]);
 
-  const res = searchGraftables(query, subject, boxes);
+  const res = mode === 'steps' ? { Cards: searchSteps(query, subject.entryId), Pages: [] as GraftRow[], Boards: [] as GraftRow[] } : searchGraftables(query, subject, boxes, mode === 'pages' ? 'pages' : undefined);
   const pick = (r: { entryId: string; boxId?: string }) => {
     beforePick?.();
-    const made = graftTo(subject, { entryId: r.entryId, ...(r.boxId ? { boxId: r.boxId } : {}) }, boxes);
+    const target = { entryId: r.entryId, ...(r.boxId ? { boxId: r.boxId } : {}) };
+    const made = mode === 'steps' ? placeThis(subject.entryId, target) : graftTo(subject, target, boxes);
     if (made && made.made === 'connection') getBoardActions()?.addConnection(made.a, made.b);
+    if (made) onPicked?.();
     setTick((n) => n + 1);
   };
-  const cameChecked = cameFrom ? isGrafted(subject, { entryId: cameFrom.entryId }, boxes) : false;
-  const groups: Array<[GraftRow['group'], GraftRow[], string]> = [['Cards', res.Cards, t('graftGroupCards')], ['Pages', res.Pages, t('graftGroupPages')], ['Boards', res.Boards, t('graftGroupBoards')]];
+  const cameTarget = cameFrom ? { entryId: cameFrom.entryId, ...(cameFrom.boxId ? { boxId: cameFrom.boxId } : {}) } : null;
+  const cameChecked = cameTarget ? isGrafted(subject, cameTarget, boxes) : false;
+  const groups: Array<[GraftRow['group'], GraftRow[], string]> = mode === 'steps'
+    ? [['Cards', res.Cards, '']]
+    : [['Cards', res.Cards, t('graftGroupCards')], ['Pages', res.Pages, t('graftGroupPages')], ['Boards', res.Boards, t('graftGroupBoards')]];
+  const heading = title ?? t('graftAdd');
+  const searchWord = mode === 'pages' ? t('graftPlaceSearchPages') : mode === 'steps' ? t('graftPlaceSearchSteps') : t('graftSearch');
 
   // `wz-tutor-zone` (ledger 131): the picker is portalled to <body>, so without the drawer's own marker class a keystroke in its search reads to
   // the Tutor drawer as "the writer resumed writing" and CLOSES the Grafts panel under it. With the marker it is part of the drawer's zone - the
   // mechanism Tutor.tsx's keydown listener already uses for both of its anchors.
   return createPortal(
-    <div ref={boxRef} className="wz-graft-picker wz-tutor-zone" data-graft-picker="" role="dialog" aria-label={t('graftAdd')}
+    <div ref={boxRef} className="wz-graft-picker wz-tutor-zone" data-graft-picker="" data-graft-mode={mode} role="dialog" aria-label={heading}
       style={pos ? { left: pos.left, top: pos.top } : { visibility: 'hidden' }}>
-      <div className="wz-graft-picker-h">{t('graftAdd')}</div>
-      <input ref={inputRef} className="wz-graft-search" data-graft-search="" type="search" placeholder={t('graftSearch')} aria-label={t('graftSearch')}
+      <div className="wz-graft-picker-h">{heading}</div>
+      <input ref={inputRef} className="wz-graft-search" data-graft-search="" type="search" placeholder={searchWord} aria-label={searchWord}
         value={query} onChange={(e) => setQuery(e.target.value)} autoComplete="off" />
       <div className="wz-graft-picker-body">
         {cameFrom && (
           <button type="button" className="wz-graft-came" data-graft-came="" aria-checked={cameChecked ? 'true' : 'false'}
-            onClick={() => { if (!cameChecked) pick({ entryId: cameFrom.entryId }); }}>
+            onClick={() => { if (!cameChecked && cameTarget) pick(cameTarget); }}>
             <span className="wz-graft-from">{t('graftCameFrom')}</span>
             <span className="wz-graft-title">{cameFrom.title}</span>
             <span className="wz-graft-ck" aria-hidden="true">{cameChecked ? '✓' : ''}</span>
@@ -79,7 +91,7 @@ export function GraftPicker({ subject, boxes, anchor, cameFrom, onClose, beforeP
         )}
         {groups.map(([g, rows, label]) => rows.length > 0 && (
           <div key={g} className="wz-graft-pickgroup" data-graft-pickgroup={g}>
-            <div className="wz-graft-gh">{label}</div>
+            {label && <div className="wz-graft-gh">{label}</div>}
             {rows.map((r) => (
               <button key={r.key} type="button" className="wz-graft-pick" role="menuitemcheckbox" data-graft-pick="" data-graft-group={g}
                 data-graft-entry={r.entryId} {...(r.boxId ? { 'data-graft-box': r.boxId } : {})} aria-checked={r.checked ? 'true' : 'false'}
