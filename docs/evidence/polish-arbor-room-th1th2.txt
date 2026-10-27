@@ -1,0 +1,20 @@
+﻿BOX TURN: granted to lane "polish" ΓÇö token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) ΓÇö  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=2 tree=348bc174+10dirty bundle=index-Bxp4gqvg.js/927001b out=C:\Users\nickh\AppData\Local\Temp\wrizo-suite-31884
+node : (node:31884) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to 
+security vulnerabilities, as the arguments are not escaped, only concatenated.
+At C:\Users\nickh\AppData\Local\Temp\ps-script-313874cb-27d9-471c-bea9-07fd250c69e5.ps1:80 char:171
++ ... ps/desktop; node scripts/run-suite.mjs --only th1.mjs,th2.mjs 2>&1 |  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ((node:31884) [D...y concatenated.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[01/2] FAIL      exit=1    6s th1.mjs :: TH1 VERIFY: FAIL ΓÇö 1/27 failed
+[02/2] FAIL      exit=1   35s th2.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; TH2 VERIFY: FAIL ΓÇö 1/45 failed
+
+SUITE DONE HARNESS_PARKED=unset ΓÇö 0/2 of 2 returned a passing verdict
+  FAIL: th1.mjs ΓÇö full output at C:\Users\nickh\AppData\Local\Temp\wrizo-suite-31884\th1.mjs.default.txt
+  FAIL: th2.mjs ΓÇö full output at C:\Users\nickh\AppData\Local\Temp\wrizo-suite-31884\th2.mjs.default.txt
+SUITE RESULT: NOT CLEAN ΓÇö tree=348bc174+10dirty bundle=index-Bxp4gqvg.js/927001b
