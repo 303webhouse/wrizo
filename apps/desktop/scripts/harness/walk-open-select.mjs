@@ -50,7 +50,7 @@ await withHarness(async (app) => {
   const point = (sel) => q(`(() => { const b = document.querySelector(${JSON.stringify(sel)}); if (!b) return null; const r = b.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()`);
   const click = async (sel) => { const p = await point(sel); if (!p) return false; await app.mouseMove(p.x, p.y); await app.mouseDown(p.x, p.y); await sleep(50); await app.mouseUp(p.x, p.y); await sleep(350); return true; };
   const selectedIds = () => q(`[...document.querySelectorAll('.board-box[data-selected="true"]')].map((e) => e.getAttribute('data-box-id'))`);
-  const fresh = async (theme) => {
+  const fresh = async (theme, seed = true) => {
     await app.emulateDpr(1, 1400, 900);
     await app.goto('/');
     await q("localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-splash-hold','50'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4');");
@@ -60,11 +60,12 @@ await withHarness(async (app) => {
     await sleep(600);
     await q(`window.wrizoTheme && window.wrizoTheme.set('${theme}')`);
     await sleep(400);
-    // a plain board (the control) and a Deck of three steps (board-meta homeView walk comes from the deckStep cards), seeded through the app's own seams
+    if (!seed) return;
+    // a plain board (the control) and a Deck of three steps (a Deck is a board whose board-meta homeView is walk), seeded through the app's own seams
     await q(`(() => { const d = window.wrizoCreateDrawer('Select'); const p = window.wrizoCreateProject('Select', 'creative'); window.wrizoSetProjectDrawer(p.id, d.id);
       const text = (id, x, y, seq, t) => ({ id, kind: 'text', x, y, w: 0.2, h: 0.105, z: 1, text: t, seq });
       window.wrizoCreateJournalPage({ id: 'wos-plain', text: 'A plain board', pageType: 'board', projectId: p.id, boxes: [text('p1', 0.05, 0.06, 1, 'First\\n'), text('p2', 0.4, 0.2, 2, 'Second\\n')], origin: 'project', source: 'page', createdAt: '2026-01-01T00:00:01.000Z' });
-      window.wrizoCreateJournalPage({ id: 'wos-deck', text: 'Three-Act', pageType: 'board', projectId: p.id, boxes: [1, 2, 3].map((i) => ({ ...text('d' + i, 0.03 + (i - 1) * 0.32, 0.04, i, 'Step ' + i + '\\n'), prompt: 'What happens in step ' + i + '?', deckStep: { deck: 'three-act', step: 'hook' } })), origin: 'project', source: 'page', createdAt: '2026-01-01T00:00:02.000Z' }); })()`);
+      window.wrizoCreateJournalPage({ id: 'wos-deck', text: 'Three-Act', pageType: 'board', projectId: p.id, boxes: [1, 2, 3].map((i) => ({ ...text('d' + i, 0.03 + (i - 1) * 0.32, 0.04, i, 'Step ' + i + '\\n'), prompt: 'What happens in step ' + i + '?', deckStep: { deck: 'three-act', step: 'hook' } })).concat([{ id: 'dm', kind: 'board-meta', x: 0, y: 0, w: 0, h: 0, z: 0, homeView: 'walk' }]), origin: 'project', source: 'page', createdAt: '2026-01-01T00:00:02.000Z' }); })()`);
     await sleep(500);
   };
   const open = async (id, sel) => { await q(`location.hash = '#/page/${id}'`); await waitSoft(`!!document.querySelector('${sel}')`, { label: id, timeout: 8000 }); await sleep(900); };
@@ -100,6 +101,28 @@ await withHarness(async (app) => {
       ok(`[${T}] B4 the next press moves the selection to the third card`, (await selectedIds()).join() === 'd3', JSON.stringify(await selectedIds()));
     } catch (e) { ok(`[${T}] the scenario ran to the end`, false, String(e && e.message || e).slice(0, 200)); }
   }
+
+  // C - INK's own path (glue-9): a board BORN by the preset wizard (From my pages) is a Deck; the deal lands in the Walk; the writer shows it as Open with the strip (no reload) and presses a card.
+  try {
+    await fresh('plateau', false);
+    await q(`(() => { const p = window.wrizoCreateProject('Select C', 'creative'); window.__wosProject = p.id; window.wrizoCreateJournalPage({ id: 'wos-empty', text: 'Empty board', pageType: 'board', projectId: p.id, boxes: [], origin: 'project', source: 'page' });
+      for (const [id, text] of [['wos-pg1', 'Mara at the window\\nShe watches the ferry light.'], ['wos-pg2', 'The blue cup\\nTheir mother.'], ['wos-pg3', 'Second horn']]) window.wrizoCreateJournalPage({ id, text, projectId: p.id, origin: 'project', source: 'page' }); window.wrizoFlushNow(); })()`);
+    await q("location.hash = '#/page/wos-empty'"); await sleep(900);
+    await click('.wz-strip [data-category="plan"]'); await sleep(700);
+    await click(".wz-sections-preset[data-preset='from-my-pages']");
+    await waitSoft("!!document.querySelector('.deck-wizard-dialog')", { label: 'preset wizard', timeout: 6000 });
+    await click("[data-page-id='wos-pg3']"); await click("[data-page-id='wos-pg1']"); await click('.deck-wizard-deal'); await sleep(1200);
+    const born = (await q('window.wrizoBoard()')).filter((b) => b.kind === 'text');
+    ok('[Arbor] C0 the preset deal births two cards', born.length === 2, JSON.stringify(born.map((b) => b.text)));
+    await waitSoft("!!document.querySelector('.walk-card')", { label: 'the Walk after the preset deal', timeout: 6000 }); await sleep(700);
+    ok('[Arbor] C1 the preset-born board lands in the Walk', !!(await point('.walk-card')), 'no .walk-card');
+    await showAs('open');
+    await waitSoft("!!document.querySelector('.board-canvas')", { label: 'the canvas after Show as Open', timeout: 6000 }); await sleep(900);
+    ok('[Arbor] C2 the preset-born board is now shown Open (the canvas is mounted)', !!(await point('.board-canvas')), 'no canvas');
+    const cp2 = born[0] ? await point('[data-box-id="' + born[0].id + '"] .board-text') : null;
+    if (cp2) { await app.mouseMove(cp2.x, cp2.y); await app.mouseDown(cp2.x, cp2.y); await sleep(60); await app.mouseUp(cp2.x, cp2.y); await sleep(600); }
+    ok('[Arbor] C3 a press on a card of the preset-born board, shown Open from the Walk with no reload, SELECTS it', !!born[0] && (await selectedIds()).includes(born[0].id), JSON.stringify(await selectedIds()));
+  } catch (e) { ok('[Arbor] section C ran to the end', false, String(e && e.message || e).slice(0, 200)); }
 });
 
 report('WALK-OPEN-SELECT');
