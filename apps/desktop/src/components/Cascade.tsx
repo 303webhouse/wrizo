@@ -151,6 +151,16 @@ function availableCascadeMargin(): number {
   return (paperRect.left - stageRect.left) + gap;
 }
 
+/** How long a closing pop-out stays drawn: the Tools strip's own slide (--drawer-dur), or the short fade under reduced motion (--drawer-dur-reduced). Read from the tokens, never restated. */
+function cascadeExitMs(): number {
+  if (typeof document === 'undefined') return 0;
+  const reduced = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const raw = getComputedStyle(document.documentElement).getPropertyValue(reduced ? '--drawer-dur-reduced' : '--drawer-dur').trim();
+  const n = parseFloat(raw);
+  if (!Number.isFinite(n)) return 200;
+  return raw.endsWith('ms') ? n : n * 1000;
+}
+
 export function useCascade({ subject, project, navigate }: CascadeProps): { strip: ReactNode; layers: ReactNode } {
   const { t } = useDeskLexicon();
   // PW1 S4 — THE CASCADE SURVIVES TRAVEL. This state is per-surface: a travel
@@ -294,26 +304,43 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
     </div>
   );
 
-  const layers = state.category === null ? null : (
+  // TOOLS #10 item 8 - THE POP-OUTS USE THE TOOLS STRIP'S SLIDE-AND-FADE (Nick's "quiet" motion, every theme; Nomad's own comes with Nomad). Opening plays the CSS slide-and-fade on mount; CLOSING keeps the layers
+  // drawn for the same length (--drawer-dur, the short fade under reduced motion) with data-leaving, inert, so they slide back and fade out instead of vanishing. `state` stays the one truth: every effect above
+  // still reads it, so the two-drawer announcements and Escape are exactly as before; only what is DRAWN lags a close.
+  const lastOpen = useRef<CascadeState | null>(null);
+  if (state.category !== null) lastOpen.current = state;
+  const [leaving, setLeaving] = useState<CascadeState | null>(null);
+  useEffect(() => {
+    if (state.category !== null) { setLeaving(null); return undefined; }
+    const prev = lastOpen.current;
+    if (!prev) return undefined;
+    setLeaving(prev);
+    const id = window.setTimeout(() => { setLeaving(null); lastOpen.current = null; }, cascadeExitMs());
+    return () => window.clearTimeout(id);
+  }, [state.category]);
+  const view = state.category !== null ? state : leaving;
+  const isLeaving = state.category === null && !!leaving;
+
+  const layers = view === null || view.category === null ? null : (
     <>
-      <div className="wz-cascade-panel" data-visible={state.docked ? 'false' : 'true'}>
+      <div className="wz-cascade-panel" data-visible={view.docked ? 'false' : 'true'} data-leaving={isLeaving ? 'true' : undefined}>
         <div className="wz-cascade-panel-head">
-          <span className="wz-cascade-panel-title">{t(panelTitleTerm(state.category))}</span>
+          <span className="wz-cascade-panel-title">{t(panelTitleTerm(view.category))}</span>
           <button
             type="button"
             className="wz-cascade-dock-btn"
-            aria-label={state.survey ? t('cascadeDockClose') : 'Close'}
+            aria-label={view.survey ? t('cascadeDockClose') : 'Close'}
             onClick={closePanel}
           >
             ×
           </button>
         </div>
-        {renderCategoryPanel(state.category, ctx)}
+        {renderCategoryPanel(view.category, ctx)}
       </div>
-      {state.survey && (
+      {view.survey && (
         <CascadeSurvey
-          {...buildSurvey(state.survey, ctx, currentEntryId)}
-          docked={state.docked}
+          {...buildSurvey(view.survey, ctx, currentEntryId)}
+          docked={view.docked}
           onDismiss={dismissSurvey}
         />
       )}
