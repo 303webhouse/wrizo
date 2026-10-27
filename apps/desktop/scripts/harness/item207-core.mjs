@@ -169,8 +169,24 @@ const coreParks = {};   // FONT-SPAN: the default leg's observations, for the pa
 const scopeOnly = /\{scope && \(\s*<>\s*<div className="wz-type-scopes"[\s\S]*?<button[\s\S]*?<button[\s\S]*?<\/div>/.test(noComments(src('components/TypeControl.tsx')))
   && /\{!scope && <button/.test(noComments(src('components/TypeControl.tsx')));
 coreParks.minimal = { ...shape, scopeOnly };
-ok('MINIMAL [font-span successor]: the control is a face button (unscoped hosts) OR the two scope buttons (scoped hosts), plus the `-` `+` pair - 5 buttons in source, the scope pair only under `scope`, the face button only without it - and ONE number input, only in the full form',
-  shape.buttons === 5 && scopeOnly && shape.inputs === 1 && shape.inputGuardedByFullForm, JSON.stringify(coreParks.minimal));
+// ---- PARKED - SUPERSEDED by TOOLS #10 item 9 (Fable, Oct 27: "the font list is collapsed by default in the Draft Tools drawer") ----
+// Kept VERBATIM and no longer run. The scoped form now carries its own face button (the disclosure that opens the collapsed list) between the scope pair and the list, so it is 6 buttons in source and the face
+// button is no longer "only without scope". Successor below; the original is run as a PARKED RECORD (it must now fail, for exactly that reason).
+// ok('MINIMAL [font-span successor]: the control is a face button (unscoped hosts) OR the two scope buttons (scoped hosts), plus the `-` `+` pair - 5 buttons in source, the scope pair only under `scope`, the face button only without it - and ONE number input, only in the full form',
+//   shape.buttons === 5 && scopeOnly && shape.inputs === 1 && shape.inputGuardedByFullForm, JSON.stringify(coreParks.minimal));
+// ------------------------------------------------------------------
+const tcSrc = noComments(src('components/TypeControl.tsx'));
+const scopeFaceBtn = /\{scope && \(\s*<>\s*<div className="wz-type-scopes"[\s\S]*?<\/div>\s*<button\s+type="button"\s+className="wz-type-face"[\s\S]*?aria-expanded=\{listOpen\}[\s\S]*?onClick=\{\(\) => setListOpen\(\(o\) => !o\)\}[\s\S]*?<ul className="wz-type-list wz-type-list-inline"[^>]*hidden=\{!listOpen\}/.test(tcSrc);
+ok('MINIMAL [item-9 successor]: the control is a face button (unscoped hosts) OR the two scope buttons + a face button that opens the COLLAPSED list (scoped hosts), plus the `-` `+` pair - 6 buttons in source - and ONE number input, only in the full form',
+  shape.buttons === 6 && scopeFaceBtn && /\{!scope && <button/.test(tcSrc) && shape.inputs === 1 && shape.inputGuardedByFullForm, JSON.stringify({ ...coreParks.minimal, scopeFaceBtn }));
+ok('MINIMAL [parked record]: the ORIGINAL (5 buttons) now fails ONLY because the scoped form gained its face button (6)', !(shape.buttons === 5 && scopeOnly && shape.inputs === 1 && shape.inputGuardedByFullForm) && shape.buttons === 6, JSON.stringify({ buttons: shape.buttons }));
+ok('COLLAPSED (item 9): the scoped list is HIDDEN until the face button is pressed - hidden={!listOpen}, listOpen starts false, and Esc / an outside press close it', /const \[listOpen, setListOpen\] = useState\(false\)/.test(tcSrc) && /hidden=\{!listOpen\}/.test(tcSrc) && /if \(!open && !listOpen\) return undefined;/.test(tcSrc) && /if \(e\.key === 'Escape'\) close\(\)/.test(tcSrc), '');
+{
+  const sut = tcSrc.replace('hidden={!listOpen}', '');
+  const sut2 = tcSrc.replace('useState(false);\n  const rootRef', 'useState(true);\n  const rootRef').replace('const [listOpen, setListOpen] = useState(false)', 'const [listOpen, setListOpen] = useState(true)');
+  ok('MUTANT: the scoped list loses its `hidden` (it would always show) - COLLAPSED must go RED (the mutation LANDED)', sut !== tcSrc && !/hidden=\{!listOpen\}/.test(sut), '');
+  ok('MUTANT: the scoped list starts OPEN - COLLAPSED must go RED (the mutation LANDED)', sut2 !== tcSrc && !/const \[listOpen, setListOpen\] = useState\(false\)/.test(sut2), '');
+}
 ok('MINIMAL: no caption or heading of any kind in the control (no label, legend or heading element, no eyebrow class) — a control\'s name lives in its aria-label', !shape.caption, JSON.stringify(shape));
 ok('NO ADD DOOR (207a): the control carries no "Add a font…" row — it arrives with Route A (207b), and Free Write never gets it (his Q2)', !shape.addDoor, '');
 const LBL = M.faceNameFromStack;

@@ -55,6 +55,8 @@ function everydayFaceName(): string {
 export function TypeControl({ form, face, size, onPickFace, onSize, scope }: TypeControlProps) {
   const { t } = useDeskLexicon();
   const [open, setOpen] = useState(false);
+  // TOOLS #10 item 9: in the scoped form (Draft's drawer, a card's dock) the face list is COLLAPSED until the face button is pressed. The list stays mounted (hidden), so it is the same list either way.
+  const [listOpen, setListOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const currentName = face?.name ?? everydayFaceName();
   // Unchosen: the button wears whatever the page really wears (`--font-prose`), roster face or not.
@@ -62,13 +64,14 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
   const [draft, setDraft] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!open) return undefined;
-    const onDown = (e: MouseEvent) => { if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false); };
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    if (!open && !listOpen) return undefined;
+    const close = () => { setOpen(false); setListOpen(false); };
+    const onDown = (e: MouseEvent) => { if (rootRef.current && !rootRef.current.contains(e.target as Node)) close(); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
     document.addEventListener('mousedown', onDown);
     document.addEventListener('keydown', onKey);
     return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
-  }, [open]);
+  }, [open, listOpen]);
 
   const keepFocus = (e: React.MouseEvent) => e.preventDefault();
   // FONT-SPAN: the scope. It FOLLOWS the highlight - a fresh highlight returns the choice to Selection - unless the writer tapped
@@ -112,7 +115,17 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
             <button type="button" className="wz-type-scope" data-scope="whole" data-on={whole ? 'true' : 'false'} aria-pressed={whole}
               onMouseDown={keepFocus} onClick={() => setWholeByHand(true)}>{scope.wholeLabel}</button>
           </div>
-          <ul className="wz-type-list wz-type-list-inline" role="listbox" aria-label={t('typeFace')} onMouseDown={keepFocus}>
+          <button
+            type="button"
+            className="wz-type-face"
+            aria-haspopup="listbox"
+            aria-expanded={listOpen}
+            aria-label={`${t('typeFace')}: ${brassName ?? currentName}`}
+            style={{ fontFamily: brassName ? (ROSTER.find((x) => x.name === brassName)?.stack ?? currentStack) : currentStack }}
+            onMouseDown={keepFocus}
+            onClick={() => setListOpen((o) => !o)}
+          >{brassName ?? currentName}</button>
+          <ul className="wz-type-list wz-type-list-inline" role="listbox" aria-label={t('typeFace')} hidden={!listOpen} onMouseDown={keepFocus}>
             {ROSTER.map((f) => (
               <li
                 key={f.name}
