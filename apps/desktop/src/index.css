@@ -967,12 +967,17 @@
 [data-theme='plateau'] .desk-rail-item:hover{ background-color:var(--ink-800); }
 /* the top bar: a bronze rule under it, tabs and buttons 20% bigger, the active tab's rule 2 px */
 [data-theme='plateau'] .sprint-nav{ border-bottom-color:var(--arbor-rule); }
-[data-theme='plateau'] .desk-mode-tab{ font-size:12.48px; padding:10.8px 15.36px; border-bottom-width:2px; } /* 2 px at rest too, so the active tab's rule never shifts it */
-[data-theme='plateau'] .sprint-crumb,
-[data-theme='plateau'] .sprint-nav .btn-quiet{ font-size:15.6px; }
+[data-theme='plateau'] .desk-mode-tab{ font-size:12.48px; padding:7.5px 15.36px; border-bottom-width:2px; } /* bigger type, same tab height: the bar must stay 51 px tall or the PAGE moves. 2 px rule at rest too, so the active tab's rule never shifts it */
+[data-theme='plateau'] .desk-mode-tab.active{ border-bottom-width:2px; }
+[data-theme='plateau'] .sprint-crumb{ font-size:15.6px; }
+[data-theme='plateau'] .sprint-nav .btn-quiet{ font-size:15.6px; padding-top:6px; padding-bottom:6px; } /* the Boards door is the tallest thing in the bar: its padding gives back what the bigger type took, so the bar stays 51 px */
+[data-theme='plateau'] .sprint-nav .page-plan-door{ font-size:12.48px; padding:7.5px 15.36px; } /* the Plan door matches the tabs (its own rule says so) */
+[data-theme='plateau'] .sprint-toggle-btn{ font-size:15.6px; padding:4px 14px; }
 @media (min-width:1700px){
-  [data-theme='plateau'] .sprint-crumb,
-  [data-theme='plateau'] .sprint-nav .btn-quiet{ font-size:18px; }
+  [data-theme='plateau'] .sprint-crumb{ font-size:18px; }
+  [data-theme='plateau'] .sprint-nav .btn-quiet{ font-size:18px; padding-top:4.3px; padding-bottom:4.3px; }
+  [data-theme='plateau'] .sprint-nav .page-plan-door{ font-size:12.48px; padding:7.5px 15.36px; } /* the door stays the tabs' size at every width */
+  [data-theme='plateau'] .sprint-toggle-btn{ font-size:18px; padding:2px 14px; }
   [data-theme='plateau'] .desk-rail-glyph{ font-size:27.6px; }
   [data-theme='plateau'] .desk-rail-label{ font-size:13.2px; }
 }
