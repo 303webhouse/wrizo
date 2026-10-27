@@ -10,7 +10,8 @@
 //   P3  nothing in the rail is clipped at 768 tall (the rail clips what overflows; Trash is the last item and the first to go)
 //   P4  the top bar's tabs are 20% bigger (10.4 px -> 12.48 px) and the bar itself did NOT grow past the 63 px the page's height budget
 //       (--fx3-chrome-budget: 167) was measured against - the page must not move or resize because a menu got bigger
-//   P5  their own look: muted bronze rules (#8f7a4c), a lifted hover tile, an olive ribbon on the open item
+//   P5  their own look: a lifted hover tile and an olive ribbon on the open item. NO OUTLINING (Nick, later Oct 27): the bronze rules first built here
+//       were taken out - the lines are the room's own (--ink-border)
 //   P6  the rules of the house: square corners, no drop shadows, labels >= 4.5:1, rail marks >= 4.5:1 (measured)
 //   P7  SCOPE: Flux and Machina are untouched (same sizes as shipped, no bronze)
 //   P8  THE PAGE DOES NOT MOVE: the paper's rect is the same in the rail's rest state and with the theme switched around (it is a
@@ -148,8 +149,8 @@ await withHarness(async (app) => {
       !!m.tab && near(m.door, m.tab.size) && near(m.toggle, w >= 1700 ? 18 : 15.6), JSON.stringify({ door: m.door, tab: m.tab && m.tab.size, toggle: m.toggle }));
 
     // P5
-    ok(`P5 ${tag}: their own look - the rail's outer rule, its dividers and the top bar's rule are muted bronze ${BRONZE}`,
-      m.aside.right === BRONZE && m.sep === BRONZE && m.nav.bottom === BRONZE, JSON.stringify({ rail: m.aside.right, sep: m.sep, nav: m.nav.bottom }));
+    ok(`P5 ${tag}: NO OUTLINING - the rail's edge, its dividers and the top bar's rule are NOT bronze (the committee reviews the menus' look; the lines are the room's own)`,
+      m.aside.right !== BRONZE && m.sep !== BRONZE && m.nav.bottom !== BRONZE, JSON.stringify({ rail: m.aside.right, sep: m.sep, nav: m.nav.bottom }));
     ok(`P5 ${tag}: the open item wears an olive ribbon (the full-height bar and the wash are Flux's), its label stays olive`,
       m.act.borderLeft === 'rgba(0, 0, 0, 0)' && /gradient/.test(m.act.bgImage) && /rgb\(150, 160, 90\)/.test(m.act.color), JSON.stringify(m.act));
     const at = await app.evalJs(HOVER_AT);
