@@ -39,12 +39,13 @@ export function gapsOf(order: readonly Box[], kindledIds: ReadonlySet<string>, f
 /** WHICH MOMENTS FIRE, as a pure decision over two frames of the kindled set. `prev` null is the first frame (the mount): a baseline, nothing fires. `newly` = the steps that turned kindled between the frames (her words,
  *  or a graft - never a Lit mark, which changes no kindled set). A step's moment fires only if it was never celebrated on this device (a re-kindle after deleting and retyping does not fire again). The Deck's fires only
  *  when a kindle was the one that completed it and it never has: deleting the one empty step completes nothing - a reward is for words or pages, never for a click. */
-export function kindleMoments(a: { prev: ReadonlySet<string> | null; next: ReadonlySet<string>; stepIds: readonly string[]; celebratedCards: ReadonlySet<string>; deckDone: boolean }): { cards: string[]; deck: boolean } {
+export function kindleMoments(a: { prev: ReadonlySet<string> | null; next: ReadonlySet<string>; stepIds: readonly string[]; mainIds?: readonly string[]; celebratedCards: ReadonlySet<string>; deckDone: boolean }): { cards: string[]; deck: boolean } {
   const { prev, next, stepIds, celebratedCards, deckDone } = a;
+  const main = a.mainIds ?? stepIds;   // a Deck completes when every MAIN step is kindled; a sub-step never blocks it
   if (!prev) return { cards: [], deck: false };
   const newly = stepIds.filter((id) => next.has(id) && !prev.has(id));
   const cards = newly.filter((id) => !celebratedCards.has(id));
-  const complete = stepIds.length > 0 && stepIds.every((id) => next.has(id));
+  const complete = main.length > 0 && main.every((id) => next.has(id));
   return { cards, deck: newly.length > 0 && complete && !deckDone };
 }
 

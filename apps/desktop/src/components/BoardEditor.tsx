@@ -1032,7 +1032,9 @@ export function BoardEditor({ id }: { id: string }) {
   const deckSteps = deckBoard ? walkOrder(boxes) : [];
   const deckKindled = new Set(deckSteps.filter(b => kindled(id, b, boxes)).map(b => b.id));
   const deckLit = new Set(deckSteps.filter(b => isLit(b)).map(b => b.id));
-  const deckRewards = useDeckRewards(id, deckBoard, deckSteps.map(b => b.id), deckKindled);
+  // a SUB-STEP (a card nested under a step by `parentId`) is walked and begun on its own, but the gaps line names MAIN steps only and a Deck completes when every main step is kindled (children never block it)
+  const deckMain = deckSteps.filter(b => !b.parentId);
+  const deckRewards = useDeckRewards(id, deckBoard, deckSteps.map(b => b.id), deckKindled, deckMain.map(b => b.id));
   const [walkCurId, setWalkCurId] = useState<string | null>(null);
   const [canUndo, setCanUndo] = useState(false);
   // FX8 S3 — a small, read-only flag for the card-body cursor's own
@@ -3384,7 +3386,7 @@ export function BoardEditor({ id }: { id: string }) {
   // W5 - THE GAPS LINE, in a Deck's header (the Walk and Open views): names of the steps with nothing yet, never a count; gone when every step is kindled. One line that never wraps, so the header's height - and with it
   // the page's place - cannot change when it appears or goes. In the Walk it reads on from the current step; in Open, from the first.
   const gapsLine = deckBoard && (boardMode === 'walk' || boardMode === 'open')
-    ? <DeckGaps order={deckSteps} kindledIds={deckKindled} fromIndex={boardMode === 'walk' ? deckSteps.findIndex(b => b.id === walkCurId) : -1} deckName={title} flux={theme === 'flux'} onJump={jumpToGap} />
+    ? <DeckGaps order={deckMain} kindledIds={deckKindled} fromIndex={boardMode === 'walk' ? deckMain.findIndex(b => b.id === (deckSteps.find(s => s.id === walkCurId)?.parentId ?? walkCurId)) : -1} deckName={title} flux={theme === 'flux'} onJump={jumpToGap} />
     : null;
 
   const boardModeBar = (

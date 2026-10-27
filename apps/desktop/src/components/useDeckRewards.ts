@@ -17,22 +17,23 @@ function motionAllowed(): boolean {
   return effectiveAmbianceDial() > 0;   // zero under reduced motion too (store/ambianceDial.ts)
 }
 
-export function useDeckRewards(boardId: string, enabled: boolean, stepIds: readonly string[], kindledIds: ReadonlySet<string>): DeckRewardMoments {
+export function useDeckRewards(boardId: string, enabled: boolean, stepIds: readonly string[], kindledIds: ReadonlySet<string>, mainIds?: readonly string[]): DeckRewardMoments {
   const [kindling, setKindling] = useState<ReadonlySet<string>>(NONE);
   const [deck, setDeck] = useState(false);
   const prev = useRef<{ board: string; set: ReadonlySet<string> } | null>(null);
   const kTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const stepKey = stepIds.join('|');
+  const stepKey = stepIds.join('|') + '#' + (mainIds ?? stepIds).join('|');
   const kindledKey = stepIds.filter((id) => kindledIds.has(id)).join('|');
 
   useEffect(() => {
     if (!enabled) { prev.current = null; return; }
     const before = prev.current && prev.current.board === boardId ? prev.current.set : null;
     const celebratedCards = new Set(stepIds.filter((id) => hasCelebrated('card', id)));
-    const m = kindleMoments({ prev: before, next: kindledIds, stepIds, celebratedCards, deckDone: hasCelebrated('deck', boardId) });
+    const m = kindleMoments({ prev: before, next: kindledIds, stepIds, mainIds, celebratedCards, deckDone: hasCelebrated('deck', boardId) });
     for (const id of stepIds) if (kindledIds.has(id)) markCelebrated('card', id);
-    if ((m.deck || (before === null && stepIds.length > 0 && stepIds.every((id) => kindledIds.has(id))))) markCelebrated('deck', boardId);
+    const main = mainIds ?? stepIds;
+    if ((m.deck || (before === null && main.length > 0 && main.every((id) => kindledIds.has(id))))) markCelebrated('deck', boardId);
     prev.current = { board: boardId, set: new Set(kindledIds) };
     if (!motionAllowed()) return;
     if (m.cards.length > 0) {
