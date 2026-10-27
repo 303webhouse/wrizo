@@ -337,7 +337,7 @@ const MUT = [
   { name: 'the arrows step with words in the card (they would never move the caret)', file: 'store/walk.ts', find: /return !ctx\.inEditor \|\| ctx\.empty;/, to: 'return true;', red: ['Y5'] },
   { name: 'the arrows never step from inside the card (an empty card would trap them)', file: 'store/walk.ts', find: /return !ctx\.inEditor \|\| ctx\.empty;/, to: 'return !ctx.inEditor;', red: ['Y5'] },
   { name: 'PageDown stops stepping from inside the card', file: 'store/walk.ts', find: /if \(key === 'PageDown' \|\| key === 'PageUp'\) return true;/, to: "if (key === 'PageDown' || key === 'PageUp') return !ctx.inEditor;", red: ['Y5'] },
-  { name: 'a dealt card with a title counts as written', file: 'store/walk.ts', find: /\(!!box\.deckStep \|\| title\.trim\(\) === ''\)/, to: "(title.trim() === '')", red: ['Y5'] },
+  { name: 'a dealt card with a title counts as written', file: 'store/walk.ts', find: /\(!!box\.deckStep \|\| \(inDeck && !!box\.parentId\) \|\| title\.trim\(\) === ''\)/, to: "(title.trim() === '')", red: ['Y5'] },
   { name: 'the Walk stops asking for the caret', file: 'components/BoardEditor.tsx', find: /key=\{box\.id\}\n          inline\n          autoFocus\n/, to: 'key={box.id}\n          inline\n', red: ['Y6'] },
   { name: 'an empty card turns the arrows away when the editor has taken them', file: 'components/Walk.tsx', find: /\(e\.defaultPrevented && !\(arrow && emptyHere\)\) \|\| e\.isComposing/, to: 'e.defaultPrevented || e.isComposing', red: ['Y7'] },
   { name: 'the Walk question stays a line below the caret', file: 'index.css', find: /margin-top:calc\(2px - 1\.6 \* 17px \* var\(--card-type-k, 1\)\);/, to: 'margin-top:2px;', red: ['D12'] },

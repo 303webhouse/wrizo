@@ -41,6 +41,7 @@ function layout(): DealtCardSpec[] {
 export const storyCircleDeck: DeckDefinition = {
   id: 'story-circle',
   room: 'fiction',
+  childWord: 'scene',   // W-scenes: the word its "Add ...…" door and its child cards use (store/childSteps.ts)
   nameTerm: 'deckNameStoryCircle',
   questions: [],
   deal: () => layout(),

@@ -43,6 +43,7 @@ function layout(n: number): DealtCardSpec[] {
 export const sceneSequelDeck: DeckDefinition = {
   id: 'scene-sequel',
   room: 'fiction',
+  childWord: 'beat',   // W-scenes: the word its "Add ...…" door and its child cards use (store/childSteps.ts)
   nameTerm: 'deckNameSceneSequel',
   questions: [
     {

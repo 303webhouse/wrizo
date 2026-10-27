@@ -31,6 +31,7 @@ const COL_B: [string, string][] = [
 export const featureStoryDeck: DeckDefinition = {
   id: 'feature-story',
   room: 'newsroom',
+  childWord: 'section',   // W-scenes: the word its "Add ...…" door and its child cards use (store/childSteps.ts)
   nameTerm: 'deckNameFeatureStory',
   questions: [
     {

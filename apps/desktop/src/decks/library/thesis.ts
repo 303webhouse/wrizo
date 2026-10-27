@@ -40,6 +40,7 @@ const CHAPTERS_SCIENCES: [string, string][] = [
 export const thesisDeck: DeckDefinition = {
   id: 'thesis',
   room: 'academy',
+  childWord: 'section',   // W-scenes: the word its "Add ...…" door and its child cards use (store/childSteps.ts)
   nameTerm: 'deckNameThesis',
   questions: [
     {

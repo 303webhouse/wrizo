@@ -2,6 +2,7 @@ import type { Box } from '../types';
 import { graftsOf } from './grafts';
 import { sectionsOf, type Place } from './place';
 import { firstLine } from './entryText';
+import { liveBoxes } from './boxTombstones';
 
 // W3 (guided paths) - the PURE reading of a dealt step. A card's text is `Title\nbody`; a dealt Tier 1 card is `Title\n` (an EMPTY body) and carries its question as `prompt`
 // (types/index.ts). Everything here reads the box; nothing writes. The placeholder is never part of `text`, so nothing that reads the writer's words can ever see it.
@@ -29,9 +30,17 @@ export function hasWriterText(box: Pick<Box, 'text'>): boolean {
   return !bodyIsEmpty(box.text);
 }
 
-/** KINDLED (no UI yet - W1's Walk and W5's coverage read it): a card is kindled when its body has the writer's text OR the card has a graft to a page. A graft to another CARD does not
+/** KINDLED (W1's Walk and W5's coverage read it): a card is kindled when its body has the writer's text OR the card has a graft to a page, OR (a step) any of its children is. A graft to another CARD does not
  *  count - it is a connection, not a page the writer wrote. `boardId` is the board the card lives on; `boxes` (optional) is that board's live boxes, as graftsOf takes them. */
 export function kindled(boardId: string, box: Pick<Box, 'id' | 'text'>, boxes?: readonly Box[]): boolean {
+  if (begun(boardId, box, boxes)) return true;
+  // ADD SCENES: a parent is kindled when it OR any of its (live) children is - the children have their own kindled, one level deep
+  if (!boxes) return false;
+  return liveBoxes(boxes).some((c) => c.parentId === box.id && c.kind === 'text' && begun(boardId, c, boxes));
+}
+
+/** A card's OWN begun-ness: the writer's words, or a graft to a page. */
+function begun(boardId: string, box: Pick<Box, 'id' | 'text'>, boxes?: readonly Box[]): boolean {
   if (hasWriterText(box)) return true;
   const g = graftsOf({ entryId: boardId, boxId: box.id }, boxes);
   return g.Pages.length + g.Sources.length + g.Boards.length > 0;

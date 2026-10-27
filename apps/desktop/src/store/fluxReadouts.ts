@@ -25,6 +25,11 @@ export function trackReadout(n: number, m: number): string {
   return `TRK ${n}/${m}`;
 }
 
+/** TRK 5.2/9 - a sub-step's position: its parent's place among the main steps, the sub-step's number under it, over the main steps' size. A position, never a count. */
+export function subTrackReadout(n: number, k: number, m: number): string {
+  return `TRK ${n}.${k}/${m}`;
+}
+
 /** X ### · Y ### - a node's position as thousandths of the board, three digits, clamped to 0..999. */
 export function coordReadout(x: number, y: number): string {
   const c = (v: number): string => pad(Math.min(999, Math.max(0, Math.round(v * 1000))), 3);

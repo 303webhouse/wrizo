@@ -7380,3 +7380,41 @@ body[data-link-drag='true'], body[data-link-drag='true'] *{ cursor:grabbing !imp
   .walk-mark[data-fx='kindle']::after{ animation:none; opacity:0; }
 }
 /* W5-END */
+/* SCENES-BEGIN  "ADD SCENES..." - child cards under a step (brief add-scenes; mockups s1-s5; Nick approved). The door's "How many?" popover, the sub-step's readout above the Walk card, its 3 px bronze edge, and the small marks that hang
+   from the parent's mark on a hairline. Square edges, no shadow, circles only for the small marks, NO MOTION at all (the popover simply appears: reduced motion is the same still state). Arbor: olive guidance (kicker, chips at rest),
+   brass for the human act (the chosen chip, Add), muted BRONZE #8f7a4c for decorative lines (the edge, the hairline). Flux: the choice colour (cyan) for chosen, the line colour for the hairline; the orange bar stays "current only", as today. */
+.walk-doors-wrap{ position:relative; }
+.scenes-door-wrap{ position:relative; display:inline-block; }
+.scenes-pop{ position:absolute; top:calc(100% + 6px); left:50%; transform:translateX(-50%); z-index:6; width:272px; box-sizing:border-box; padding:12px 14px 14px; text-align:left; background:var(--ink-900); border:1px solid var(--accent-door); border-radius:0; box-shadow:none; color:var(--text-hi); font-family:var(--font-ui); }
+[data-theme='plateau'] .scenes-pop{ --accent-door:var(--accent-door-on-dark); }
+:root[data-theme='flux'][data-page='light'] .scenes-pop{ --accent-door:#57D0F5; }
+.scenes-kicker{ font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent-door); }
+.scenes-q{ margin-top:6px; font-size:15px; color:var(--text-hi); }
+.scenes-chips{ display:flex; gap:6px; margin-top:10px; }
+.scenes-chip{ width:28px; height:28px; padding:0; background:none; border:1px solid var(--accent-door); border-radius:0; box-shadow:none; color:var(--accent-door); font:inherit; font-size:13px; cursor:pointer; }
+.scenes-chip:hover, .scenes-chip:focus-visible{ color:var(--choice); border-color:var(--choice); outline:none; }
+.scenes-chip[aria-pressed='true']{ color:var(--text-hi); border-color:var(--choice); }
+.scenes-foot{ display:flex; align-items:center; gap:10px; margin-top:12px; }
+.scenes-add{ padding:5px 14px; background:none; border:1px solid var(--choice); border-radius:0; box-shadow:none; color:var(--text-hi); font:inherit; font-size:12px; cursor:pointer; }
+.scenes-add:hover, .scenes-add:focus-visible{ color:var(--choice); outline:none; }
+.scenes-note{ font-size:11px; color:var(--text-mid); line-height:1.35; }
+[data-theme='flux'] .scenes-kicker, [data-theme='flux'] .scenes-add{ font-family:var(--font-chromeLabel); letter-spacing:.1em; text-transform:uppercase; }
+.board-outline-row .scenes-pop, .board-sb-card .scenes-pop{ left:auto; right:0; transform:none; top:calc(100% + 4px); }
+
+/* the Walk's readout above a sub-step's card: PARENT > SCENE 2 OF 3 (Flux 2/3) */
+.walk-readout{ position:absolute; top:-30px; left:44px; right:44px; text-align:center; font-family:var(--font-ui); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-mid); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none; }
+[data-theme='flux'] .walk-readout{ font-family:var(--font-chromeLabel); }
+
+/* the sub-step card's own edge: 3 px bronze (Flux keeps the orange bar for the current card, as today) */
+.walk-card[data-sub='true']{ border-left:3px solid #8f7a4c; }
+
+/* the rail: small marks hang from the parent's mark on a hairline; same states, smaller */
+.walk-mark-group{ display:inline-flex; flex-direction:column; align-items:center; }
+.walk-subrail{ position:relative; display:flex; gap:6px; margin-top:6px; padding-top:5px; border-top:1px solid #8f7a4c; }
+.walk-subrail::before{ content:''; position:absolute; top:-6px; left:50%; height:6px; border-left:1px solid #8f7a4c; }
+.walk-mark[data-sub='true']{ width:10px; height:10px; }
+.walk-mark[data-sub='true'] svg{ width:9px; height:9px; }
+[data-theme='flux'] .walk-subrail{ border-top-color:var(--line-active); }
+[data-theme='flux'] .walk-subrail::before{ border-left-color:var(--line-active); }
+[data-theme='flux'] .walk-mark[data-sub='true']{ width:8px; height:8px; }
+/* SCENES-END */
