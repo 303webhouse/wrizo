@@ -69,13 +69,13 @@ export function keyMaySteps(key: string, ctx: { inEditor: boolean; empty: boolea
   return false;
 }
 
-/** EMPTY, for that rule: no words of the writer's in the card. A dealt step's title is the deck's, so a dealt card with an empty body is empty; a plain card is empty only while its title line is too. */
-export function cardIsEmpty(box: Pick<Box, 'text' | 'deckStep'>): boolean {
+/** EMPTY, for that rule: no words of the writer's in the card. A dealt step's title is the deck's (and so is a Deck's sub-step's: "Scene 2"), so such a card with an empty body is empty; a plain card is empty only while its title line is too. */
+export function cardIsEmpty(box: Pick<Box, 'text' | 'deckStep' | 'parentId'>, inDeck = false): boolean {
   const t = box.text ?? '';
   const nl = t.indexOf('\n');
   const title = nl < 0 ? t : t.slice(0, nl);
   const body = nl < 0 ? '' : t.slice(nl + 1);
-  return body.trim() === '' && (!!box.deckStep || title.trim() === '');
+  return body.trim() === '' && (!!box.deckStep || (inDeck && !!box.parentId) || title.trim() === '');
 }
 
 /** Adding follows the view shown: Open places a card at a position; Storyboard, Outline, the Walk (and a Book's pages) APPEND to the order (`seq`, after the last). */

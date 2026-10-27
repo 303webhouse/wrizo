@@ -75,6 +75,7 @@ function layout(n: number): DealtCardSpec[] {
 export const characterStudyDeck: DeckDefinition = {
   id: 'character-study',
   room: 'fiction',
+  childWord: 'moment',   // W-scenes: the word its "Add ...…" door and its child cards use (store/childSteps.ts)
   nameTerm: 'deckNameCharacterStudy',
   questions: [
     {

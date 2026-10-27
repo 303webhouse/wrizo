@@ -26,6 +26,7 @@ const BASE: [string, string][] = [
 export const grantDeck: DeckDefinition = {
   id: 'grant',
   room: 'business',
+  childWord: 'part',   // W-scenes: the word its "Add ...…" door and its child cards use (store/childSteps.ts)
   nameTerm: 'deckNameGrant',
   questions: [
     {

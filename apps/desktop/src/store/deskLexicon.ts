@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import type { ChildWord } from '../decks/types';
 import { useTheme, type ThemeId } from './theme';
 
 // AB1 S5 — the strings-as-theme-vocabulary seam. Every user-facing zone /
@@ -647,6 +648,9 @@ export type DeskTermId =
   // instruction, no "get started", nothing that could be read as a checklist
   // item. The page's three travel verbatim from P1 amendment 2 (Nick's word,
   // 2026-07-25) — one word each, "Sprout" superseding "Start from a Spark".
+  // ADD SCENES (child cards under a step): per deck-word the door, its plural, the child's title word and its question; Feature Story's section asks its own; the popover's words; the Walk's readout (Flux n/m)
+  | `kidDoor_${ChildWord}` | `kidPlural_${ChildWord}` | `kidTitle_${ChildWord}` | `kidQ_${ChildWord}` | 'kidQ_section_story'
+  | 'kidHowMany' | 'kidKicker' | 'kidNote' | 'kidAdd' | 'kidReadout'
   | 'beginNewCard' | 'beginNewPageCard' | 'beginLoadDeck' | 'beginConnectPage'
   | 'beginNewLane'
   | 'beginScreenplay' | 'beginSprout' | 'beginPlan'
@@ -808,6 +812,44 @@ const CANONICAL: Record<DeskTermId, string> = {
   walkKeysHint: '← → step · Esc leave',
   deckFactKind: '',
   deckStepHelpEg: 'e.g.',
+  kidDoor_scene: 'Add scenes…',
+  kidPlural_scene: 'scenes',
+  kidTitle_scene: 'Scene',
+  kidQ_scene: 'What happens in this scene, and what has changed by its end?',
+  kidDoor_beat: 'Add beats…',
+  kidPlural_beat: 'beats',
+  kidTitle_beat: 'Beat',
+  kidQ_beat: 'What happens in this beat?',
+  kidDoor_moment: 'Add moments…',
+  kidPlural_moment: 'moments',
+  kidTitle_moment: 'Moment',
+  kidQ_moment: 'What does this moment show about them?',
+  kidDoor_entry: 'Add entries…',
+  kidPlural_entry: 'entries',
+  kidTitle_entry: 'Entry',
+  kidQ_entry: 'What is it, and what does it change for the people here?',
+  kidDoor_subsection: 'Add subsections…',
+  kidPlural_subsection: 'subsections',
+  kidTitle_subsection: 'Subsection',
+  kidQ_subsection: 'What does this subsection report?',
+  kidDoor_section: 'Add sections…',
+  kidPlural_section: 'sections',
+  kidTitle_section: 'Section',
+  kidQ_section: 'What does this section argue or show?',
+  kidDoor_point: 'Add points…',
+  kidPlural_point: 'points',
+  kidTitle_point: 'Point',
+  kidQ_point: 'What is the point, and what backs it?',
+  kidDoor_part: 'Add parts…',
+  kidPlural_part: 'parts',
+  kidTitle_part: 'Part',
+  kidQ_part: 'What does this part need to say?',
+  kidQ_section_story: 'What does this section of the story do?',
+  kidHowMany: 'How many {plural}?',
+  kidKicker: 'Add {plural} under this step',
+  kidNote: 'They go right under {step}.',
+  kidAdd: 'Add',
+  kidReadout: '{parent} › {word} {n} of {m}',
   boardPageDoor: 'Pages', // ITEM word-diet, pages-rename bucket (a)
   pagePlanDoor: 'Plan',
   // A1 (accessibility audit): Tab indents on the page, so the way out is said aloud. Screen-reader-only; never drawn.
@@ -2183,6 +2225,15 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     deckStack: 'STACK',
     walkLit: '[LOCK]',
     walkUnlit: '[UNLOCK]',
+    kidDoor_scene: '[+ SCENES]',
+    kidDoor_beat: '[+ BEATS]',
+    kidDoor_moment: '[+ MOMENTS]',
+    kidDoor_entry: '[+ ENTRIES]',
+    kidDoor_subsection: '[+ SUBSECTIONS]',
+    kidDoor_section: '[+ SECTIONS]',
+    kidDoor_point: '[+ POINTS]',
+    kidDoor_part: '[+ PARTS]',
+    kidReadout: '{parent} › {word} {n}/{m}',
     boardAddCard: 'Add node',
     boardPortedBadge: 'From a doc',
     boardThreadUntitled: 'Unnamed',

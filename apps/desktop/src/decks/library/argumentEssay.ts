@@ -31,6 +31,7 @@ function layout(keep: string[]): DealtCardSpec[] {
 export const argumentEssayDeck: DeckDefinition = {
   id: 'argument-essay',
   room: 'academy',
+  childWord: 'point',   // W-scenes: the word its "Add ...…" door and its child cards use (store/childSteps.ts)
   nameTerm: 'deckNameArgumentEssay',
   questions: [
     {

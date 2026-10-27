@@ -30,6 +30,7 @@ function layout(keep: string[]): DealtCardSpec[] {
 export const businessProposalDeck: DeckDefinition = {
   id: 'business-proposal',
   room: 'business',
+  childWord: 'part',   // W-scenes: the word its "Add ...…" door and its child cards use (store/childSteps.ts)
   nameTerm: 'deckNameBusinessProposal',
   questions: [],
   deal: () => layout(STEPS.map(([step]) => step)),

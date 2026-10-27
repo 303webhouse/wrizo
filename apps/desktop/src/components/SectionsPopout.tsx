@@ -214,7 +214,7 @@ export function SectionsPopout({ view, currentId, navigate, boardId, journalLabe
   // W1 - a Deck's fact under its thumbnail: how many of its cards the writer has BEGUN (kindled: the writer's words, or a graft to a page), in words - "4 of 9 begun" / Flux "LOAD 4/9" - never a bare 4 / 9.
   const deckFactOf = (e: JournalEntry): string => {
     const live = liveBoxes(e.boxes);   // the live cards: a deleted card is a tombstone in storage and is not a step
-    const cards = walkOrder(live);
+    const cards = walkOrder(live).filter((b) => !b.parentId);   // a Deck's fact counts its MAIN steps (a sub-step under a step is not one more of the nine)
     const n = cards.filter(b => kindled(e.id, b, live)).length;
     const fact = t('deckFact').replace('{n}', String(n)).replace('{m}', String(cards.length));
     return t('deckFactKind') ? `${t('deckFactKind')} · ${fact}` : fact;   // Machina's row reads "Agenda · 2 of 5 filled" (m5); the other themes' fact stands alone

@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { decorateMarkdownForCard } from '../store/draftDecoration';
-import { trackReadout } from '../store/fluxReadouts';
+import { trackReadout, subTrackReadout } from '../store/fluxReadouts';
+import { subStepInfo, railGroups, childWordOf } from '../store/childSteps';
+import { ScenesPopover } from './ScenesPopover';
+import type { DeskTermId } from '../store/deskLexicon';
+import type { ChildWord } from '../decks/types';
 import { liveBoxes } from '../store/boxTombstones';
 import { WALK, walkOrder, walkStep, railMarks, walkCardBox, swipePlan, walkKey, keyMaySteps, cardIsEmpty, getWalkSize, setWalkSize, getWalkPos, setWalkPos, type SwipePlan } from '../store/walk';
 import { StepHelp } from './StepHelp';
@@ -59,6 +63,8 @@ export interface WalkProps {
   onToggleLit?: (box: Box) => void;
   /** W5 - the step the Walk is on, so the Deck's gaps line can start after it. */
   onCurrent?: (boxId: string) => void;
+  /** ADD SCENES - the door, LAST among a step's own doors: `word` says which word this step's deck uses (null = no door: a sub-step, a plain card, From my pages); `onAdd` creates the children (the board's, through store/childSteps addChildren). */
+  scenes?: { word: (box: Box) => ChildWord | null; onAdd: (box: Box, n: number) => void };
 }
 
 const isTypingKey = (e: KeyboardEvent) => !e.metaKey && !e.ctrlKey && !e.altKey && (e.key.length === 1 || e.key === 'Backspace' || e.key === 'Delete' || e.key === 'Enter');
@@ -110,6 +116,7 @@ export function Walk(p: WalkProps) {
   const [incoming, setIncoming] = useState<SwipePlan | null>(null);
   const [size, setSize] = useState(() => getWalkSize(p.boardId));
   const [woke, setWoke] = useState(false);
+  const [scenesOpen, setScenesOpen] = useState(false);   // the "How many?" popover: nothing is created until Add; stepping to another card closes it
   // the soft fade at the card's bottom: on only while the card scrolls AND there is more below the fold
   const [fade, setFade] = useState(false);
   const stageRef = useRef<HTMLDivElement | null>(null);
@@ -134,6 +141,7 @@ export function Walk(p: WalkProps) {
   // where the writer was in this board's Walk is remembered on this device
   useEffect(() => { if (card) { setWalkPos(p.boardId, card.id); p.onCurrent?.(card.id); } }, [p.boardId, card?.id]);   // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => () => { if (timer.current !== null) window.clearTimeout(timer.current); }, []);
+  useEffect(() => { setScenesOpen(false); }, [card?.id]);
 
   const go = useCallback((dir: 1 | -1, to?: number) => {
     const next = to ?? walkStep(order.length, cur, dir);
@@ -172,13 +180,13 @@ export function Walk(p: WalkProps) {
       const inEditor = !!target?.closest?.('[contenteditable="true"], input, textarea');
       // the card editor's own handler takes the arrows first (it moves the caret over visible characters and calls preventDefault) - so an EMPTY card must not be turned away for that: its arrows are the Walk's
       const arrow = e.key === 'ArrowLeft' || e.key === 'ArrowRight';
-      const emptyHere = inEditor && !!card && cardIsEmpty(card);
+      const emptyHere = inEditor && !!card && cardIsEmpty(card, !!p.scenes);
       if ((e.defaultPrevented && !(arrow && emptyHere)) || e.isComposing) return;
       const onDoor = !!target?.closest?.('.walk-door');
       const action = walkKey(e.key, { onDoor });
       if (isTypingKey(e)) setWoke(false);   // a keystroke re-arms the recede
       if (action === 'exit') { e.preventDefault(); p.onExit(); return; }
-      if ((action === 'next' || action === 'prev') && keyMaySteps(e.key, { inEditor, empty: card ? cardIsEmpty(card) : false }) && !e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey) { e.preventDefault(); go(action === 'next' ? 1 : -1); }
+      if ((action === 'next' || action === 'prev') && keyMaySteps(e.key, { inEditor, empty: card ? cardIsEmpty(card, !!p.scenes) : false }) && !e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey) { e.preventDefault(); go(action === 'next' ? 1 : -1); }
     };
     keyRef.current = onKey;
   }, [go, p.onExit]);   // eslint-disable-line react-hooks/exhaustive-deps
@@ -208,9 +216,16 @@ export function Walk(p: WalkProps) {
 
   if (!card) return <div className="walk walk-empty" data-walk>{p.empty}</div>;
 
+  const sceneWord = p.scenes ? p.scenes.word(card) : null;
+  const sub = subStepInfo(order, card.id);
+  const subParent = sub ? order.find((b) => b.id === sub.parentId) : undefined;
+  const subWord = (subParent?.deckStep ? childWordOf(subParent.deckStep.deck) : null) ?? 'scene';
+  const mains = order.filter((b) => !b.parentId);
   const doors: WalkDoor[] = [
     { key: 'notes', label: t('walkNotes'), onOpen: () => (cardRef.current?.querySelector('.board-popup-editor') as HTMLElement | null)?.focus() },
     ...(p.extraDoors ?? []),
+    // ADD SCENES - last among the step's own doors; only on a top-level step of a Deck (the board says so through `scenes.word`)
+    ...(sceneWord ? [{ key: 'scenes', label: t(`kidDoor_${sceneWord}` as DeskTermId), onOpen: () => setScenesOpen((o) => !o) }] : []),
     // W5 - the writer's own finished-mark, LAST in the row; the same door marks and unmarks. Marking never celebrates and never counts toward completion.
     ...(p.onToggleLit ? [{ key: 'lit', label: p.litIds?.has(card.id) ? t('walkUnlit') : t('walkLit'), onOpen: () => p.onToggleLit?.(card) }] : []),
   ];
@@ -232,6 +247,7 @@ export function Walk(p: WalkProps) {
           )}
           <button type="button" className="walk-nav" data-dir="prev" data-recede={navHidden ? 'true' : 'false'} aria-label={t('walkPrev')} aria-disabled={cur === 0} onClick={() => go(-1)}><ChevronIcon dir="prev" /></button>
           <button type="button" className="walk-nav" data-dir="next" data-recede={navHidden ? 'true' : 'false'} aria-label={t('walkNext')} aria-disabled={cur >= order.length - 1} onClick={() => go(1)}><ChevronIcon dir="next" /></button>
+          {sub && <div className="walk-readout" data-walk-readout="true">{t('kidReadout').replace('{parent}', sub.parentTitle).replace('{word}', t(`kidTitle_${subWord}` as DeskTermId)).replace('{n}', String(sub.n)).replace('{m}', String(sub.m))}</div>}
           <div className="walk-window">
             {leaving && (
               <div className="walk-card walk-card-leaving" data-out={leaving.plan.outgoing} aria-hidden="true" style={{ minHeight: box.height }}>
@@ -245,13 +261,14 @@ export function Walk(p: WalkProps) {
               data-box-id={card.id}
               aria-current="step"
               data-in={incoming ? incoming.incoming : undefined}
+              data-sub={sub ? 'true' : undefined}
               data-kindled={p.deck && cardKindled ? 'true' : undefined}
               data-lit={p.deck && cardLit ? 'true' : undefined}
               data-fx={cardFx}
               style={{ minHeight: box.height, maxHeight: WALK.MAX_H }}
               onPointerLeave={() => setWoke(true)}
             >
-              {p.flux && <span className="walk-trk" data-fx={cardFx} aria-hidden="true">{trackReadout(cur + 1, order.length)}</span>}
+              {p.flux && <span className="walk-trk" data-fx={cardFx} aria-hidden="true">{sub ? subTrackReadout(sub.mainN, sub.n, sub.mainM) : trackReadout(mains.findIndex((b) => b.id === card.id) + 1, mains.length)}</span>}
               {p.deck && cardKindled && <KindleMark />}
               {p.deck && cardLit && <LitMark />}
               {p.renderEditor(card)}
@@ -264,17 +281,43 @@ export function Walk(p: WalkProps) {
             {p.flux && <div className="flux-brackets walk-brackets" aria-hidden="true" />}   {/* a sibling of the card, not inside it: the card scrolls and clips, and the brackets stand just outside its corners */}
           </div>
         </div>
-        <div className="walk-doors" role="group" style={p.readout ? { width: box.width } : undefined}>
-          {doors.map((d) => <button key={d.key} type="button" className="walk-door" data-door={d.key} onClick={(e) => d.onOpen(card, e.currentTarget)}>{d.label}</button>)}
-          {p.readout && <span className="walk-keys">{t('walkKeysHint')}</span>}
+        <div className="walk-doors-wrap">
+          <div className="walk-doors" role="group" style={p.readout ? { width: box.width } : undefined}>
+            {doors.map((d) => <button key={d.key} type="button" className="walk-door" data-door={d.key} onClick={(e) => d.onOpen(card, e.currentTarget)}>{d.label}</button>)}
+            {p.readout && <span className="walk-keys">{t('walkKeysHint')}</span>}
+          </div>
+          {scenesOpen && sceneWord && p.scenes && (
+            <ScenesPopover
+              kicker={t('kidKicker').replace('{plural}', t(`kidPlural_${sceneWord}` as DeskTermId))}
+              question={t('kidHowMany').replace('{plural}', t(`kidPlural_${sceneWord}` as DeskTermId))}
+              note={t('kidNote').replace('{step}', (card.text ?? '').split('\n')[0].trim())}
+              addLabel={t('kidAdd')}
+              onClose={() => setScenesOpen(false)}
+              onAdd={(n) => { setScenesOpen(false); p.scenes!.onAdd(card, n); }}
+            />
+          )}
         </div>
         <div className="walk-rail" role="list" aria-label={t('walkRail')}>
-          {marks.map((m, i) => (
-            <button key={m.id} type="button" role="listitem" className="walk-mark" data-state={m.state} data-current={m.current ? 'true' : 'false'} data-kindled={p.kindledIds.has(m.id) ? 'true' : 'false'} data-lit={p.deck && m.lit ? 'true' : undefined} data-fx={p.kindlingIds?.has(m.id) ? 'kindle' : undefined} data-start-here={m.startHere ? 'true' : undefined}
-              aria-label={`${i + 1}`} title={m.startHere ? t('deckStartHereLabel') : undefined} aria-current={m.current ? 'step' : undefined} onClick={() => go(i > cur ? 1 : -1, i)}>
-              <MarkGlyph leaf={m.state === 'leaf' || m.state === 'lit' || (m.current && (p.kindledIds.has(m.id) || m.lit))} />
-            </button>
-          ))}
+          {railGroups(order).map((g) => {
+            // ADD SCENES - one mark per MAIN step; a step's sub-steps hang from its mark on a hairline, smaller, with the same states (seed / leaf / current)
+            const mark = (id: string, subMark: boolean) => {
+              const i = order.findIndex((b) => b.id === id);
+              const m = marks[i];
+              return (
+                <button key={m.id} type="button" role="listitem" className="walk-mark" data-sub={subMark ? 'true' : undefined} data-state={m.state} data-current={m.current ? 'true' : 'false'} data-kindled={p.kindledIds.has(m.id) ? 'true' : 'false'} data-lit={p.deck && m.lit ? 'true' : undefined} data-fx={p.kindlingIds?.has(m.id) ? 'kindle' : undefined} data-start-here={m.startHere ? 'true' : undefined}
+                  aria-label={`${i + 1}`} title={m.startHere ? t('deckStartHereLabel') : undefined} aria-current={m.current ? 'step' : undefined} onClick={() => go(i > cur ? 1 : -1, i)}>
+                  <MarkGlyph leaf={m.state === 'leaf' || m.state === 'lit' || (m.current && (p.kindledIds.has(m.id) || m.lit))} />
+                </button>
+              );
+            };
+            if (g.kids.length === 0) return mark(g.id, false);
+            return (
+              <div key={g.id} className="walk-mark-group" role="presentation">
+                {mark(g.id, false)}
+                <div className="walk-subrail" role="presentation">{g.kids.map((k) => mark(k, true))}</div>
+              </div>
+            );
+          })}
         </div>
         {peek && <div className="walk-peek" aria-hidden="true"><div className="board-popup-editor walk-static" dangerouslySetInnerHTML={{ __html: decorateMarkdownForCard(peek.text ?? '', null) }} /></div>}
       </div>

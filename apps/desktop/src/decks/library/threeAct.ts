@@ -55,6 +55,7 @@ function layout(keys: BeatKey[]): DealtCardSpec[] {
 export const threeActDeck: DeckDefinition = {
   id: 'three-act',
   room: 'fiction',
+  childWord: 'scene',   // W-scenes: the word its "Add ...…" door and its child cards use (store/childSteps.ts)
   nameTerm: 'deckNameThreeAct',
   questions: [
     {
