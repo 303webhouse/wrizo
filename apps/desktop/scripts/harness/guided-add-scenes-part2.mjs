@@ -17,7 +17,8 @@ const NAMES = ['Hook', 'Midpoint Reversal', 'Darkest Point', 'Climax', 'Final Im
 await withHarness(async (app) => {
   const q = (js) => app.evalJs(js);
   const waitSoft = async (expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
-  const shot = async (name) => { if (out) fs.writeFileSync(path.join(out, `${name}.png`), Buffer.from(await app.screenshot(), 'base64')); };
+  const tones = [];   // every frame's page-tone attribute (Fable, Oct 27): frames.json beside the PNGs
+  const shot = async (name) => { if (out) { fs.writeFileSync(path.join(out, `${name}.png`), Buffer.from(await app.screenshot(), 'base64')); tones.push({ frame: `${name}.png`, dataPage: await q("document.documentElement.getAttribute('data-page')"), dataTheme: await q("document.documentElement.getAttribute('data-theme')") }); } };
   const point = (sel) => q(`(() => { const b = document.querySelector(${JSON.stringify(sel)}); if (!b) return null; const r = b.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()`);
   const click = async (sel) => { const p = await point(sel); if (!p) return false; await app.mouseMove(p.x, p.y); await app.mouseDown(p.x, p.y); await sleep(50); await app.mouseUp(p.x, p.y); await sleep(400); return true; };
   const boxes = () => q('(window.wrizoBoard ? window.wrizoBoard() : [])');
@@ -115,20 +116,29 @@ await withHarness(async (app) => {
           ok(`[${T}] stepping on: the next card is the second scene (the walk order is the parent, then its children)`, second === kids[1]?.id, String(second));
         }
 
-        if (full) {
+        {
           // Outline: ordinary nested cards; the door sits on the top-level steps only
           await showAs('outline'); await waitSoft("!!document.querySelector('.board-outline')", { label: 'outline' }); await sleep(700);
           const ol = await q("({ rows: document.querySelectorAll('.board-outline-row').length, nested: document.querySelectorAll('.board-outline-children .board-outline-row').length, doors: [...document.querySelectorAll('.board-scenes-door')].length, doorOnChild: !!document.querySelector('.board-outline-children .board-scenes-door') })");
           ok(`[${T}] in Outline the scenes are ordinary nested cards under their step, and only the five main steps carry the door`, ol.rows === 7 && ol.nested === 2 && ol.doors === 5 && !ol.doorOnChild, JSON.stringify(ol));
+          // THE OUTLINE NESTS (Fable, Oct 27: the scenes sat in a 2nd column at x ~ 950): each scene is indented under its step, its top is between its step's and the next step's, its arrows are on its own row, and it carries 2.1 / 2.2
+          const geo = await q(`(() => { const r = (s) => { const e = document.querySelector(s); if (!e) return null; const b = e.getBoundingClientRect(); return { l: Math.round(b.left), t: Math.round(b.top), b: Math.round(b.bottom) }; }; const kid = (id) => ({ input: r('[data-outline-input="' + id + '"]'), num: document.querySelector('[data-outline-row="' + id + '"] > .board-outline-num')?.textContent || null, ctl: r('[data-outline-row="' + id + '"] > .board-outline-ctl'), bullet: r('[data-outline-row="' + id + '"] > .board-outline-bullet') }); return { parent: kid('s2'), next: kid('s3'), kids: ${JSON.stringify(kids.map((k) => k.id))}.map(kid) }; })()`);
+          const nestedOk = !!geo.parent.input && geo.kids.length === 2 && geo.kids.every((k) => !!k.input && k.input.l > geo.parent.input.l + 8 && k.bullet.l > geo.parent.bullet.l + 8 && k.input.t > geo.parent.input.t && k.input.t < geo.next.input.t && !!k.ctl && Math.abs((k.ctl.t + k.ctl.b) / 2 - (k.input.t + k.input.b) / 2) < 14) && geo.kids[0].input.t < geo.kids[1].input.t;
+          ok(`[${T}] in Outline each scene NESTS under its step: indented (left edge past the step's), its top between the step's and the next step's, its arrows on its own row`, nestedOk, JSON.stringify(geo));
+          ok(`[${T}] a Deck's Outline numbers its rows: the step 2, its scenes 2.1 and 2.2`, geo.parent.num === '2' && geo.kids[0].num === '2.1' && geo.kids[1].num === '2.2', JSON.stringify([geo.parent.num, ...geo.kids.map((k) => k.num)]));
+          const caseOf = await q(`(() => { const u = (id) => getComputedStyle(document.querySelector('[data-outline-input="' + id + '"]')).textTransform; return { s2: u('s2'), kid1: u(${JSON.stringify(kids[0].id)}), kid2: u(${JSON.stringify(kids[1].id)}) }; })()`);
+          ok(`[${T}] one rule for the title's case in Outline (${flux ? 'Flux: every title uppercase by style, typed or not' : 'Arbor: as typed'})`, flux ? caseOf.s2 === 'uppercase' && caseOf.kid1 === 'uppercase' && caseOf.kid2 === 'uppercase' : caseOf.s2 === 'none' && caseOf.kid1 === 'none' && caseOf.kid2 === 'none', JSON.stringify(caseOf));
           await shot(`s3-outline-${tag}`);
           await click('.board-outline-row[data-outline-row="s3"] > .board-outline-ctl .board-scenes-door'); await sleep(400);
           const popO = await q("!!document.querySelector('.board-outline-row .scenes-pop')");
           await click('.scenes-chip[data-n="1"]'); await click('.scenes-add'); await sleep(800);
           const k2 = (await boxes()).filter((b) => b.parentId === 's3');
           ok(`[${T}] adding from Outline: the same popover, one card "Scene 1" under Darkest Point`, popO && k2.length === 1 && k2[0].text === 'Scene 1\n', JSON.stringify(k2.map((k) => k.text)));
+          if (full) {
           await showAs('storyboard'); await waitSoft("!!document.querySelector('.board-storyboard')", { label: 'storyboard' }); await sleep(600);
           const sb = await q("({ doors: document.querySelectorAll('.board-sb-card .board-scenes-door').length, cards: document.querySelectorAll('.board-sb-card').length })");
           ok(`[${T}] in Storyboard the door shows on the five main steps and not on their scenes`, sb.doors === 5 && sb.cards === 8, JSON.stringify(sb));
+          }
         }
       });
       if (full) {
@@ -145,6 +155,7 @@ await withHarness(async (app) => {
   }
 });
 
+if (out) fs.writeFileSync(path.join(out, 'frames.json'), JSON.stringify(tones, null, 2));
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
 const failed = checks.filter((c) => !c.pass);
 console.log(failed.length ? `\nGUIDED-ADD-SCENES PART 2 VERIFY: FAIL - ${failed.length}/${checks.length}` : `\nGUIDED-ADD-SCENES PART 2 VERIFY: PASS (${checks.length} checks${out ? '; frames in ' + out : ''})`);
