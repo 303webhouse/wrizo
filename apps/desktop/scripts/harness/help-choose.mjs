@@ -3,7 +3,8 @@
 //          D2  ONE row at the top of the Presets list, first after the heading; Arbor "Ask the librarian", Flux "RUN DIAGNOSTIC", Machina "Intake"
 //   FLOW   F1  Q2's answers depend on Q1 (a novel -> 5, a screenplay -> 2, poems -> straight to Q3)
 //          F2  the result is the table's: short story / events and pressure -> Three-Act (Short story) + Scene-Sequel; novel / events -> Three-Act + Fifteen Beats (Novel)
-//          F3  Q3's three answers all land the same while the Walk is not shipped (every answer opens as Open), and the panel says nothing of a Walk
+//          F3  Q3's three answers never change the pick, and the panel says nothing of a Walk (was: "all land the same while the Walk is not shipped" - parked in the body, TOOLS #9)
+//          L4  Q3 "everything" -> the dealt board opens as Open (no Walk)      L5  Q3 "a little" -> the Walk, with the first step's "?" popover already open (once: not again after Esc and a reload of the view); "the shape" -> the Walk, "?" closed
 //   LAWS   L1  Esc closes it and focus returns to the door; L2 nothing is stored: localStorage is byte-identical after a full pass to the result; L3 the answers slide in <= 300 ms, and are CUTS at Ambiance 0
 //   DEAL   B1  "Begin" opens the unborn board in the writer's CURRENT place (the same place params a preset carries) and DEALS the pick: short story -> Three-Act with the 6 cards of its short form, no question asked
 //          B2  a pick whose deck still has a question (novel -> Three-Act) opens the wizard on that question; "Browse the shelves" opens the full library
@@ -110,14 +111,16 @@ await withHarness(async (app) => {
   const scanResult = await app.evalJs(SCAN);
   ok('C1 [Arbor result]: every text in the olive alcove clears 4.5:1 against its own ground (the lightest gradient stop on the panel) and NONE is brass - '+(scanResult ? scanResult.n : 0)+' texts, min '+(scanResult ? scanResult.min : '?'), !!scanResult && scanResult.n >= 8 && scanResult.min >= 4.5 && scanResult.brassText === 0, JSON.stringify(scanResult));
 
-  // Q3: all three answers land the same while the Walk is not shipped
+  // Q3 changes WHERE the pick lands (L4/L5 below), never WHAT is picked: all three answers show the same result
   const landings = [];
   for (const a of ['little', 'everything']) {
     await app.evalJs("document.querySelector('.help-back')?.click()"); await sleep(300);
     await option(app, a); await sleep(400);
     landings.push({ a, r: await resultNames(app), text: (await panelState(app)).text });
   }
-  ok('F3: Q3\'s answers all land the same while the Walk is not shipped - "a little", "the shape" and "everything" each give the same pick and nothing mentions a Walk', landings.every((l) => l.r && l.r.pick === r1.pick && !/walk/i.test(l.text)), JSON.stringify(landings.map((l) => l.r)));
+  // ORIGINAL (parked, W1-absent era): ok('F3: Q3\'s answers all land the same while the Walk is not shipped - "a little", "the shape" and "everything" each give the same pick and nothing mentions a Walk', landings.every((l) => l.r && l.r.pick === r1.pick && !/walk/i.test(l.text)), JSON.stringify(landings.map((l) => l.r)));
+  // SUCCESSOR (TOOLS #9, W1 live): the sense that still holds is "Q3 never changes the pick, and the panel never talks about a Walk" - where each answer LANDS is L4/L5's.
+  ok('F3 [W1-live successor]: Q3\'s answers never change the pick - "a little", "the shape" and "everything" each show the same result, and the panel says nothing of a Walk (the landing is the board\'s, L4 / L5)', landings.every((l) => l.r && l.r.pick === r1.pick && !/walk/i.test(l.text)), JSON.stringify(landings.map((l) => l.r)));
 
   // L1: Esc closes it and focus returns to the door
   await app.key('Escape').catch(() => {});
@@ -158,6 +161,26 @@ await withHarness(async (app) => {
   await press(app, '[data-help-browse]'); await sleep(1500);
   const lib = await app.evalJs("({ dialog: !!document.querySelector('.deck-wizard-dialog'), rows: document.querySelectorAll('.deck-wizard-deck-row').length })");
   ok('B2: "Browse the shelves" opens the full library (the deck wizard on its list of decks)', lib.dialog && lib.rows >= 10, JSON.stringify(lib));
+
+  // ---- L4 / L5: Q3's landing is honoured by the host (TOOLS #9). short story / events and pressure deals at once (no deck question), so each answer lands straight on the dealt board.
+  const landAs = async (q3) => {
+    await app.evalJs("location.hash = '#/page/hc-page'"); await app.waitFor(`!!document.querySelector('${ED}')`, { label: 'back', timeout: 8000 }).catch(() => {}); await sleep(500);
+    await openBoards(app);
+    await press(app, '[data-preset="help-me-choose"]'); await sleep(450);
+    await option(app, 'short-story'); await sleep(300); await option(app, 'events-pressure'); await sleep(300); await option(app, q3); await sleep(450);
+    await press(app, '[data-help-begin]'); await sleep(2000);
+    return app.evalJs(`({ walk: !!document.querySelector('[data-walk]'), pop: !!document.querySelector('.board-step-pop'), popTitle: (document.querySelector('.board-step-pop .board-step-pop-k') || {}).textContent || null, openTab: (document.querySelector('[data-board-mode-tab][aria-pressed="true"]') || {}).dataset ? document.querySelector('[data-board-mode-tab][aria-pressed="true"]').dataset.view : null, cards: document.querySelectorAll('.board-card, [data-box-id]').length })`);
+  };
+  const everything = await landAs('everything');
+  ok('L4: Q3 "everything" - the dealt board opens as Open, all cards at once, no Walk, no "?" popover', !everything.walk && !everything.pop && everything.openTab === 'open', JSON.stringify(everything));
+  const little = await landAs('little');
+  await frame(app, 'arbor-dark-little-walk');
+  ok('L5: Q3 "a little" - the dealt board opens in the Walk with the first step\'s "?" popover already open', little.walk && little.pop && !!little.popTitle, JSON.stringify(little));
+  await app.key('Escape').catch(() => {}); await sleep(300);
+  const littleShut = await app.evalJs("({ walk: !!document.querySelector('[data-walk]'), pop: !!document.querySelector('.board-step-pop') })");
+  ok('L5: the "?" is a ONE-SHOT - Esc closes it, the Walk stays, and it does not open itself again', littleShut.walk && !littleShut.pop, JSON.stringify(littleShut));
+  const shape = await landAs('shape');
+  ok('L5: Q3 "the shape" - the Walk, "?" closed', shape.walk && !shape.pop, JSON.stringify(shape));
 
   // ---- Ambiance 0: the slide is a cut
   await boot(app, { theme: 'plateau', page: 'dark', dial: 0 });

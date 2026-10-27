@@ -29,6 +29,9 @@ export interface WalkProps {
   kindledIds: ReadonlySet<string>;
   /** "Start Here" folds into the first seed. */
   startHereId?: string | null;
+  /** TOOLS #9 - one-shot: open THIS card's step "?" as the card shows (the librarian's "a little"), then call onHelpShown so it is never opened again. Nothing is stored. */
+  helpCardId?: string | null;
+  onHelpShown?: () => void;
   /** Jump to this card (a card just added in the Walk), then call onJumped. */
   jumpToId?: string | null;
   onJumped?: () => void;
@@ -204,7 +207,7 @@ export function Walk(p: WalkProps) {
             >
               {p.flux && <span className="walk-trk" aria-hidden="true">{trackReadout(cur + 1, order.length)}</span>}
               {p.renderEditor(card)}
-              {card.deckStep && !card.sourceEntryId && <StepHelp box={card} faceSelector=".board-popup-editor" />}
+              {card.deckStep && !card.sourceEntryId && <StepHelp box={card} faceSelector=".board-popup-editor" openOnce={p.helpCardId === card.id} onOpened={p.onHelpShown} />}
               <span className="walk-grip" role="separator" aria-label={t('walkResize')} onPointerDown={onGripDown}>
                 <svg viewBox="0 0 12 12" width="12" height="12" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" aria-hidden="true"><path d="M11 5L5 11M11 8.5L8.5 11" /></svg>
               </span>
