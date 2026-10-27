@@ -37,6 +37,23 @@ export function kindled(boardId: string, box: Pick<Box, 'id' | 'text'>, boxes?: 
   return g.Pages.length + g.Sources.length + g.Boards.length > 0;
 }
 
+/** LIT (W5, Nick Oct 26): the writer has marked this step finished. Her statement, not a measurement - kindled() above never reads it. */
+export function isLit(box: Pick<Box, 'lit'>): boolean {
+  return box.lit === true;
+}
+
+/** Mark or unmark ONE card lit. ON writes `lit: true`; OFF REMOVES the key (absent = not lit, so there is one way to be unlit). Either way the card's `updatedAt` is stamped, because that per-box change time is what
+ *  decides a sync merge (store/boxTombstones.ts changedAt): the newer mark or unmark wins on every device. Pure: the other cards are returned as the very same objects. */
+export function withLit(boxes: readonly Box[], id: string, on: boolean, now: string): Box[] {
+  return boxes.map((b) => {
+    if (b.id !== id) return b;
+    if (on) return { ...b, lit: true, updatedAt: now };
+    const { lit: _l, ...rest } = b;
+    void _l;
+    return { ...rest, updatedAt: now };
+  });
+}
+
 /** FROM MY PAGES' picker (Fable, Oct 23): the pages of the writer's CURRENT PLACE - the pages the Pages pop-out lists for it, in the writer's own order: this Drawer's pages (every set in it), or the
  *  Journal's when the writer is in the Journal. Not the board's own set: a NEW board has no pages yet, and the preset that opens it has to work. Boards, system boards and plan faces are never listed. */
 export function pagesOfPlace(place: Pick<Place, 'kind' | 'id'>): { id: string; title: string }[] {

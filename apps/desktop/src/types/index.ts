@@ -552,6 +552,10 @@ export interface Box {
   //              coverage will read. It owes the deck nothing else (the engine's "the deck forgets itself" stands for the CARD's text; this one pointer is the single exception).
   prompt?: string;
   deckStep?: { deck: string; step: string };
+  // W5 (guided paths, Nick Oct 26: LIT IS APPROVED) - the writer marks a step FINISHED by hand. One additive optional field inside the board's own `boxes` jsonb (zero schema: no column, no migration, no server
+  // change - sync stores the blob whole, like seq / onCanvas / deckStep). `true` = lit; ABSENT = not lit (unmarking REMOVES the key, so there is one way to be unlit). The writer can unmark it from the same door.
+  // It is a statement of the writer's, never a measurement: it never counts toward coverage (kindled() ignores it), never completes a Deck and never celebrates (store/guided.ts withLit, store/deckRewards.ts).
+  lit?: boolean;
   strokes?: Stroke[];  // kind 'ink' (incl. erases) — re-normalized to the box on port
   sourceEntryId?: string;
   portedAt?: string;

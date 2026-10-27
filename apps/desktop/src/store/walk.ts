@@ -22,16 +22,17 @@ export function walkStep(len: number, index: number, dir: 1 | -1): number {
   return Math.max(0, Math.min(len - 1, index + dir));
 }
 
-export type RailState = 'seed' | 'leaf' | 'current';
-export interface RailMark { id: string; state: RailState; current: boolean; startHere: boolean }
+export type RailState = 'seed' | 'leaf' | 'lit' | 'current';
+export interface RailMark { id: string; state: RailState; current: boolean; startHere: boolean; lit: boolean }
 
-/** The rail: one mark per card, in order. Empty = a seed outline; kindled (store/guided.ts kindled) = a leaf; the current card = a ring. The current card is always `current`, whatever else it is.
- *  "Start Here" (store/deckHint.ts) folds into the first seed: the flag marks that card's mark. There is no Lit state until W5. */
-export function railMarks(order: Box[], currentIndex: number, kindledIds: ReadonlySet<string>, startHereId?: string | null): RailMark[] {
+/** The rail: one mark per card, in order. Empty = a seed outline; kindled (store/guided.ts kindled) = a leaf; marked by the writer (W5 Lit) = a lit leaf; the current card = a ring. The current card is always `current`,
+ *  whatever else it is (its `lit` flag still tells). Lit outranks kindled for a non-current card, and changes nothing about coverage. "Start Here" (store/deckHint.ts) folds into the first seed: the flag marks that card's mark. */
+export function railMarks(order: Box[], currentIndex: number, kindledIds: ReadonlySet<string>, startHereId?: string | null, litIds?: ReadonlySet<string>): RailMark[] {
   return order.map((b, i) => {
     const current = i === currentIndex;
     const kindled = kindledIds.has(b.id);
-    return { id: b.id, state: current ? 'current' : kindled ? 'leaf' : 'seed', current, startHere: !!startHereId && b.id === startHereId };
+    const lit = !!litIds?.has(b.id);
+    return { id: b.id, state: current ? 'current' : lit ? 'lit' : kindled ? 'leaf' : 'seed', current, startHere: !!startHereId && b.id === startHereId, lit };
   });
 }
 

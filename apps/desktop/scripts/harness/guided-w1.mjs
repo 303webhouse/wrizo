@@ -233,7 +233,9 @@ async function suite(M, read) {
     const blur = (body) => { const m = /box-shadow:\s*([^;]+);/.exec(body); if (!m) return false; return m[1].replace(/(?:rgba?|hsla?|var|color-mix)\((?:[^()]|\([^()]*\))*\)/g, '').split(',').some((s) => { const n = s.trim().split(/\s+/).filter((t) => /^-?[\d.]+(px)?$/.test(t)).map((t) => parseFloat(t)); return n.length >= 3 && n[2] > 0; }); };
     chk('D1', () => [walkCss.length >= 6 && walkCss.every((x) => !blur(x.body)), `${walkCss.length} W1 rules; none with a blurred shadow (flat 1 px edges only)`]);
     chk('D2', () => [walkCss.length >= 6 && walkCss.filter((x) => /\.(walk-card|walk-door|walk-nav|show-as-btn|walk-stage)\b/.test(x.sel)).every((x) => !/border-radius\s*:\s*[1-9]/.test(x.body)) && /\.walk-mark[^{]*\{[^}]*border-radius:\s*50%/.test(css), 'square edges on every box; circles only for marks (the rail)']);
-    chk('D3', () => { const rest = walkCss.filter((x) => /\.(walk-door|show-as-btn|walk-mark)\b/.test(x.sel) && !/:hover|:focus|\[aria-pressed='true'\]|\[data-current|\[data-state='current'\]|\[aria-pressed="true"\]/.test(x.sel)); return [rest.length >= 3 && rest.every((x) => !/var\(--brass\)|var\(--choice\)|#ff9800/i.test(x.body)), 'Arbor: no brass on a rest-state option (doors, show-as icons, marks); brass is hover / current / chosen only']; });
+    // PARKED, never edited (the park rule): D3 was true of W1's tip and is FALSIFIED IN PART by Nick's W5 ruling (Oct 26: LIT IS APPROVED - brass is the Lit mark's colour, and a lit mark is a rest-state mark the writer made). Original kept verbatim below; successor D14.
+    park('D3', 'SUPERSEDED Oct 26 (Nick, W5 Lit): a lit mark is brass at rest (the writer\'s own act); successor D14', () => { const rest = walkCss.filter((x) => /\.(walk-door|show-as-btn|walk-mark)\b/.test(x.sel) && !/:hover|:focus|\[aria-pressed='true'\]|\[data-current|\[data-state='current'\]|\[aria-pressed="true"\]/.test(x.sel)); return [rest.length >= 3 && rest.every((x) => !/var\(--brass\)|var\(--choice\)|#ff9800/i.test(x.body)), 'Arbor: no brass on a rest-state option (doors, show-as icons, marks); brass is hover / current / chosen only']; });
+chk('D14', () => { const rest = walkCss.filter((x) => /\.(walk-door|show-as-btn|walk-mark)\b/.test(x.sel) && !/:hover|:focus|\[data-lit|\[data-fx|\[aria-pressed='true'\]|\[data-current|\[data-state='current'\]|\[aria-pressed="true"\]/.test(x.sel)); return [rest.length >= 3 && rest.every((x) => !/var\(--brass\)|var\(--choice\)|#ff9800/i.test(x.body)), 'Arbor: no brass on a rest-state option (doors, show-as icons, marks); brass is hover / current / chosen only']; });
     chk('D4', () => [/\.walk-nav[^{]*\{[^}]*opacity:\s*\.55/.test(css) && /\.walk-nav:hover[^{]*\{[^}]*(var\(--choice\)|var\(--brass\))/.test(css), 'chevrons rest at about 55% and turn brass (the choice colour) on hover']);
     // PARKED, never edited - SUPERSEDED by flux-v2 OR1 (train #8 red): the current tick's orange bar must ride an [aria-current] rule (orange is allowed only there); the selector the pin named is gone. Kept VERBATIM, never run; the live successor follows
     // (the behaviour is the same - the live check in guided-w1-part2 reads the computed bar on .walk-mark[data-state=current] and stays green).
@@ -301,7 +303,7 @@ const MUT = [
   { name: 'the view memory stops falling back to the home view', file: 'store/boardMode.ts', find: /return m && MODES\.includes\(m\) \? m : \(homeView && MODES\.includes\(homeView\) \? homeView : 'open'\)/, to: "return m && MODES.includes(m) ? m : 'open'", red: ['S1'] },
   { name: 'the walk order ignores seq', file: 'store/walk.ts', find: /boardStructure\(live\)/, to: 'boardStructure([])', red: ['S8'] },
   { name: 'the Walk wraps at the ends', file: 'store/walk.ts', find: /Math\.max\(0, Math\.min\(len - 1, index \+ dir\)\)/, to: '((index + dir) % Math.max(1, len) + Math.max(1, len)) % Math.max(1, len)', red: ['W2'] },
-  { name: 'the rail shows Lit', file: 'store/walk.ts', find: /state: current \? 'current' : kindled \? 'leaf' : 'seed'/, to: "state: current ? 'current' : kindled ? 'lit' : 'seed'", red: ['W3'] },
+  { name: 'the rail shows Lit', file: 'store/walk.ts', find: /: kindled \? 'leaf' : 'seed'/, to: ": kindled ? 'lit' : 'seed'", red: ['W3'] },
   { name: 'the card never scrolls', file: 'store/walk.ts', find: /scroll: contentH > WALK\.MAX_H/, to: 'scroll: false', red: ['W4'] },
   { name: 'the swipe cross-fades', file: 'store/walk.ts', find: /crossfade: false, outgoing/, to: 'crossfade: true, outgoing', red: ['M1'] },
   { name: 'the swipe takes 400 ms', file: 'store/walk.ts', find: /SWIPE_MS: 280/, to: 'SWIPE_MS: 400', red: ['W1', 'M1'] },
@@ -353,8 +355,8 @@ try {
   const M0 = base.M || {};
   const res0 = await suite(M0, rd({}));
   for (const [k, v] of Object.entries(res0)) ok(k, v.pass, v.detail);
-  ok('the suite ran every check it names', Object.keys(res0).length === 65, `${Object.keys(res0).length} checks (54 + Y4 Y5 Y6 Y7 D11 D12 S11 K12 S12 S13 D13 = 65; Y3 parked)`);
-  ok('the park count is exactly 1 (Y3, with its mutant)', PARKED.length === 1 && PARKED[0].id === 'Y3' && typeof PARKED[0].original === 'function', `${PARKED.length} parked`);
+  ok('the suite ran every check it names', Object.keys(res0).length === 65, `${Object.keys(res0).length} checks (54 + Y4 Y5 Y6 Y7 D11 D12 S11 K12 S12 S13 D13 = 65; Y3 and D3 parked; D14, D3's successor, is one of the 65)`);
+  ok('the park count is exactly 2 (Y3 with its mutant; D3 with its successor D14)', PARKED.length === 2 && PARKED.map((x) => x.id).sort().join() === 'D3,Y3' && PARKED.every((x) => typeof x.original === 'function'), `${PARKED.length} parked`);
 
   let landed = 0, killed = 0, notLanded = 0;
   for (const m of MUT) {
