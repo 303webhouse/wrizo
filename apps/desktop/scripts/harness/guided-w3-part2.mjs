@@ -195,12 +195,22 @@ await withHarness(async (app) => {
   ok('From my pages is in the Presets list, first in Arbor (the pantser\'s door), and the rest keep the library order', presetIds[0] === 'from-my-pages' && presetIds.length === 14 && presetIds[1] === 'three-act', JSON.stringify(presetIds));
   await click(".wz-sections-preset[data-preset='from-my-pages']");
   await waitSoft("!!document.querySelector('.deck-wizard-dialog')", { label: 'preset wizard', timeout: 6000 });
+  // a preset-born board is a DECK (W1: home view Walk), so the deal would land in the Walk, where there is no .board-text to press (train #9's verdict, item 3). The fixture asks for TOOLS' own landing hint, `land=open`: the same address with it added, the wizard reopened.
+  await q("location.hash = location.hash + (location.hash.includes('?') ? '&' : '?') + 'land=open'"); await sleep(900);
+  await waitSoft("!!document.querySelector('.deck-wizard-dialog')", { label: 'preset wizard after land=open', timeout: 6000 });
   const listed = await q("[...document.querySelectorAll('.deck-wizard-page-btn')].map((b) => b.getAttribute('data-page-id'))");
   ok('a NEW board from the preset: the picker lists the current drawer\'s pages (the three, in the writer\'s order) though the board has no row yet', ['gw3-pg1', 'gw3-pg2', 'gw3-pg3'].every((id) => listed.includes(id)), JSON.stringify(listed));
   await click("[data-page-id='gw3-pg3']"); await click("[data-page-id='gw3-pg1']"); await click('.deck-wizard-deal'); await sleep(1200);
   const born = (await boxes()).filter((b) => b.kind === 'text');
   ok('the preset deal births the new board with one card per picked page, in the order picked', born.length === 2 && born[0].text === 'Second horn\n' && born[1].text === 'Mara at the window\n', JSON.stringify(born.map((b) => b.text)));
-  const bp = await point('[data-box-id="' + born[0].id + '"] .board-text'); await app.mouseMove(bp.x, bp.y); await app.mouseDown(bp.x, bp.y); await sleep(60); await app.mouseUp(bp.x, bp.y); await sleep(500);
+  // the preset-born board is a DECK: the deal lands in the Walk, and the first card of the Walk is the first card dealt - the Inputs tab reads the card the Walk is on (train #9, item 3: "read the Walk")
+  await waitSoft("!!document.querySelector('.walk-card')", { label: 'the Walk after the preset deal', timeout: 6000 }); await sleep(700);
+  ok('the preset-born board lands in the Walk on the first dealt card', (await q("document.querySelector('.walk-card')?.getAttribute('data-box-id')")) === born[0].id, 'walk card id');
+  // ...then the writer shows it as Open (the device-local "last shown as") and the page reloads onto the canvas: the Inputs tab reads the card SELECTED on the canvas, which is where the graft shows (train #9, item 3).
+  await q("window.wrizoFlushNow()");
+  await q("(() => { const id = location.hash.split('/page/')[1].split('?')[0]; const m = JSON.parse(localStorage.getItem('wrizo-board-mode') || '{}'); m[id] = 'open'; localStorage.setItem('wrizo-board-mode', JSON.stringify(m)); })()");
+  await app.reload(); await waitSoft("!!document.querySelector('.board-text')", { label: 'the canvas after showing it as Open', timeout: 8000 }); await sleep(900);
+  { const bp = await point('[data-box-id="' + born[0].id + '"] .board-text'); if (bp) { await app.mouseMove(bp.x, bp.y); await app.mouseDown(bp.x, bp.y); await sleep(60); await app.mouseUp(bp.x, bp.y); await sleep(600); } }
   await q("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(800);
   await q("document.querySelector('#wz-tutor-tab-links')?.click()"); await sleep(900);
   const panel2 = await q("document.querySelector('.wz-tutor-panel')?.textContent || ''");
