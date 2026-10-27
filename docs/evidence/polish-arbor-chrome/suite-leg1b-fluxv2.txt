@@ -1,0 +1,17 @@
+﻿BOX TURN: granted to lane "polish" ΓÇö token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) ΓÇö  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=1 tree=f955767f+5dirty bundle=index-B1WYauYu.js/926927b out=C:\Users\nickh\AppData\Local\Temp\wrizo-suite-32452
+node : (node:32452) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to 
+security vulnerabilities, as the arguments are not escaped, only concatenated.
+At C:\Users\nickh\AppData\Local\Temp\ps-script-a632cb5e-489b-4bc0-a4cb-587d0ac68bd9.ps1:78 char:350
++ ... TEXITCODE"; node scripts/run-suite.mjs --only flux-v2.mjs 2>&1 | Out- ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ((node:32452) [D...y concatenated.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[01/1] OK        exit=0  121s flux-v2.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FLUX-V2 VERIFY: PASS (156 checks)
+
+SUITE DONE HARNESS_PARKED=unset ΓÇö 1/1 of 1 returned a passing verdict
+SUITE RESULT: CLEAN ΓÇö tree=f955767f+5dirty bundle=index-B1WYauYu.js/926927b
