@@ -2567,7 +2567,7 @@ export function BoardEditor({ id }: { id: string }) {
       // (A no-op when no drag is in flight — React bails on an unchanged value.)
       setIsDragging(false);
     };
-  }, [pageWidthPx]);
+  }, [pageWidthPx, boardMode === 'open']);   // a Deck mounts in the Walk (no canvas: this effect bails at `if (!canvas) return`); re-attach when Open arrives, as the wrap effects above (walk-open-select.mjs)
 
   // Esc: while the card popup is open, IT owns Escape entirely (its own
   // focus-trap effect closes it — see BoardCardPopup above); this handler
