@@ -6,7 +6,7 @@ import {
 } from '../store/boardStructure';
 import type { Box } from '../types';
 import { generateId } from '../store/persistence';
-import { splitOutlineText, outlineTitleEdit } from '../store/outlineRow';
+import { splitOutlineText, outlineTitleEdit, outlineNumber } from '../store/outlineRow';
 import { ScenesDoor } from './ScenesPopover';
 import type { ChildWord } from '../decks/types';
 
@@ -152,10 +152,12 @@ export function StoryboardProjection({ boxes, setBoxes, labelFor, readOnly, begi
 
 // --- OUTLINE (the nesting floor — render AND edit genuine nesting) ----------
 
-function OutlineRow({ node, laneId, boxes, setBoxes, labelFor, onEditText, depth, siblings, index, readOnly, sceneWord, onAddScenes }: {
+function OutlineRow({ node, laneId, boxes, setBoxes, labelFor, onEditText, depth, siblings, index, readOnly, sceneWord, onAddScenes, path, numbered }: {
   node: OutlineNode; laneId: string; boxes: Box[]; setBoxes: BoardMutator;
   labelFor: (b: Box) => string; onEditText: (boxId: string, text: string) => void;
   depth: number; siblings: string[]; index: number; readOnly?: boolean;
+  path: number[];      // this row's place in the tree (zero-based indices): its Outline number
+  numbered?: boolean;  // a Deck's Outline shows 1 / 5.1 numbers in place of bullets
 } & Pick<ProjectionProps, 'sceneWord' | 'onAddScenes'>) {
   const map = byId(boxes);
   const b = map.get(node.boxId);
@@ -180,7 +182,9 @@ function OutlineRow({ node, laneId, boxes, setBoxes, labelFor, onEditText, depth
 
   return (
     <li className="board-outline-row" data-outline-row={node.boxId} style={{ marginLeft: depth * 20 }}>
-      <span className="board-outline-bullet" aria-hidden="true">•</span>
+      {numbered
+        ? <span className="board-outline-bullet board-outline-num" data-outline-num={outlineNumber(path)} aria-hidden="true">{outlineNumber(path)}</span>
+        : <span className="board-outline-bullet" aria-hidden="true">•</span>}
       {editable ? (
         <>
           <input
@@ -214,7 +218,7 @@ function OutlineRow({ node, laneId, boxes, setBoxes, labelFor, onEditText, depth
           {node.children.map((child, i) => (
             <OutlineRow key={child.boxId} node={child} laneId={laneId} boxes={boxes} setBoxes={setBoxes}
               labelFor={labelFor} onEditText={onEditText} depth={depth + 1}
-              siblings={node.children.map((c) => c.boxId)} index={i} readOnly={readOnly} sceneWord={sceneWord} onAddScenes={onAddScenes} />
+              siblings={node.children.map((c) => c.boxId)} index={i} readOnly={readOnly} sceneWord={sceneWord} onAddScenes={onAddScenes} path={[...path, i]} numbered={numbered} />
           ))}
         </ul>
       )}
@@ -241,7 +245,7 @@ export function OutlineProjection({ boxes, setBoxes, labelFor, onEditText, readO
             {lane.items.map((node, i) => (
               <OutlineRow key={node.boxId} node={node} laneId={lane.id} boxes={boxes} setBoxes={setBoxes}
                 labelFor={labelFor} onEditText={onEditText} depth={0}
-                siblings={lane.items.map((n) => n.boxId)} index={i} readOnly={readOnly} sceneWord={sceneWord} onAddScenes={onAddScenes} />
+                siblings={lane.items.map((n) => n.boxId)} index={i} readOnly={readOnly} sceneWord={sceneWord} onAddScenes={onAddScenes} path={[i]} numbered={!!sceneWord} />
             ))}
           </ul>
         </section>

@@ -42,6 +42,7 @@ async function load(over = {}) {
   nonce += 1;
   const lines = [`export const __n = ${nonce};`, "export { deskTerm } from './store/deskLexicon';", "export { mergeBoxLists, liveBoxes } from './store/boxTombstones';", "export { kindled } from './store/guided';", "export { walkOrder, cardIsEmpty } from './store/walk';", "export { trackReadout } from './store/fluxReadouts';", "export { DECKS } from './decks/library';"];
   if (has('store/childSteps.ts')) lines.push("export * from './store/childSteps';");
+  if (/export function outlineNumber/.test(readRaw('store/outlineRow.ts'))) lines.push("export { outlineNumber } from './store/outlineRow';");
   if (/subTrackReadout/.test(readRaw('store/fluxReadouts.ts'))) lines.push("export { subTrackReadout } from './store/fluxReadouts';");
   const res = await build({
     stdin: { contents: lines.join('\n'), resolveDir: SRC, loader: 'ts' },
@@ -206,6 +207,11 @@ async function suite(M, rd) {
   chk('W6', () => { const g = rd('store/guided.ts'); return [/parentId/.test(g.slice(g.indexOf('export function kindled'))) && /liveBoxes/.test(g), 'kindled() reads the live children (one gate, no second definition of "begun")']; });
   chk('W7', () => { const s = rd('store/childSteps.ts').replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, ''); return [s.length > 0 && !/localStorage|toast|setInterval/.test(s) && !/\bchildOf\b|childIds|isScene|childOfId/.test(s), 'no new data: no storage, no new field named anywhere (only parentId, laneId, seq, prompt)']; });
   chk('W8', () => { const t = rd('types/index.ts'); return [!/childWord|isScene|scenes\?:/.test(t), 'the Box type gains nothing']; });
+  // ---- O: the Outline (Fable, Oct 27: the scenes sat in a 2nd column at x ~ 950; they must NEST under their step, indented, numbered 2.1 / 2.2, one rule for the title's case) ----
+  chk('O1', () => [typeof M.outlineNumber === 'function' && M.outlineNumber([0]) === '1' && M.outlineNumber([4]) === '5' && M.outlineNumber([4, 0]) === '5.1' && M.outlineNumber([4, 2]) === '5.3' && M.outlineNumber([1, 0, 1]) === '2.1.2', 'the Outline number of a row from its path: 1, 5, 5.1, 5.3 (the mockup\'s)']);
+  chk('O2', () => { const css = rd('index.css'); const z2 = zone(css); return [/\.board-outline-children\s*\{[^}]*flex:\s*0 0 100%/.test(z2), 'a nested list takes its OWN line under the row (flex-basis 100%): the row is a wrapping flex, and without this the children sat beside the parent in a 2nd column - the same on main for ANY nested card']; });
+  chk('O3', () => { const css = rd('index.css'); const z2 = zone(css); return [/\[data-theme='flux'\]\s+\.board-outline-text\s*\{[^}]*text-transform:\s*uppercase/.test(z2) && /\.board-outline-num\b/.test(z2), 'Flux: ONE rule - every Outline title reads uppercase by style (the stored text is whatever the writer typed: an edited "Scene 1" is stored SCENE 1, an untouched "Scene 2" is not), and the number has its own quiet label']; });
+  chk('O4', () => { const bp = rd('components/BoardProjection.tsx'); return [/outlineNumber\(/.test(bp) && /numbered=\{!!sceneWord\}/.test(bp) && /board-outline-num/.test(bp), 'numbers show on a Deck\'s Outline only (a plain Board keeps its bullets): the rows take their path from the tree']; });
   return R;
 }
 
@@ -224,6 +230,10 @@ const MUT = [
   { name: 'Flux door is plain', file: 'store/deskLexicon.ts', find: /kidDoor_scene: '\[\+ SCENES\]'/, to: "kidDoor_scene: 'Add scenes\\u2026'", red: ['H2'] },
   { name: 'Feature Story gets the wrong word', file: 'decks/library/featureStory.ts', find: /childWord: 'section'/, to: "childWord: 'point'", red: ['A1', 'A2'] },
   { name: 'a child blocks the arrows', file: 'store/walk.ts', find: / \|\| \(inDeck && !!box\.parentId\)/, to: '', red: ['G1'] },
+  { name: 'the Outline number is off by one', file: 'store/outlineRow.ts', find: /map\(\(i\) => i \+ 1\)/, to: 'map((i) => i)', red: ['O1'] },
+  { name: 'the nested list shares the row again', file: 'index.css', find: /\.board-outline-children\{ flex:0 0 100%;/, to: '.board-outline-children{ flex:0 1 auto;', red: ['O2'] },
+  { name: 'Flux titles are not uppercased', file: 'index.css', find: /(\[data-theme='flux'\] \.board-outline-text\{ )text-transform:uppercase;/, to: '$1', red: ['O3'] },
+  { name: 'a plain Board gets numbers too', file: 'components/BoardProjection.tsx', find: /numbered=\{!!sceneWord\}/, to: 'numbered', red: ['O4'] },
 ];
 
 let failedHard = false;

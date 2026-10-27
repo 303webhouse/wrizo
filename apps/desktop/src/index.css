@@ -7416,4 +7416,9 @@ body[data-link-drag='true'], body[data-link-drag='true'] *{ cursor:grabbing !imp
 [data-theme='flux'] .walk-subrail{ border-top-color:var(--line-active); }
 [data-theme='flux'] .walk-subrail::before{ border-left-color:var(--line-active); }
 [data-theme='flux'] .walk-mark[data-sub='true']{ width:8px; height:8px; }
+/* the Outline (Fable, Oct 27): a nested list takes its OWN line under its row - the row is a wrapping flex, and the list used to sit BESIDE the parent in a 2nd column (the same on main for any nested card). A Deck's rows carry their Outline
+   number (1, 5, 5.1) in place of the bullet. Flux: ONE rule for the title's case - every title reads uppercase by style, whatever was typed (an edited title is stored uppercase by the Flux editor, an untouched one is not). */
+.board-outline-children{ flex:0 0 100%; }
+.board-outline-num{ min-width:2.4em; font-family:var(--font-ui); font-size:11px; color:var(--text-low); }
+[data-theme='flux'] .board-outline-text{ text-transform:uppercase; }
 /* SCENES-END */
