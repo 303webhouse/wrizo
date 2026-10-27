@@ -121,6 +121,7 @@ export function Walk(p: WalkProps) {
   const [fade, setFade] = useState(false);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const cardRef = useRef<HTMLDivElement | null>(null);
+  const doorsRef = useRef<HTMLDivElement | null>(null);
   const timer = useRef<number | null>(null);
   const box = walkCardBox(0, size);
 
@@ -282,7 +283,7 @@ export function Walk(p: WalkProps) {
           </div>
         </div>
         <div className="walk-doors-wrap">
-          <div className="walk-doors" role="group" style={p.readout ? { width: box.width } : undefined}>
+          <div className="walk-doors" ref={doorsRef} role="group" style={p.readout ? { width: box.width } : undefined}>
             {doors.map((d) => <button key={d.key} type="button" className="walk-door" data-door={d.key} onClick={(e) => d.onOpen(card, e.currentTarget)}>{d.label}</button>)}
             {p.readout && <span className="walk-keys">{t('walkKeysHint')}</span>}
           </div>
@@ -292,6 +293,7 @@ export function Walk(p: WalkProps) {
               question={t('kidHowMany').replace('{plural}', t(`kidPlural_${sceneWord}` as DeskTermId))}
               note={t('kidNote').replace('{step}', (card.text ?? '').split('\n')[0].trim())}
               addLabel={t('kidAdd')}
+              anchor={doorsRef.current?.querySelector<HTMLElement>('[data-door="scenes"]') ?? null}
               onClose={() => setScenesOpen(false)}
               onAdd={(n) => { setScenesOpen(false); p.scenes!.onAdd(card, n); }}
             />

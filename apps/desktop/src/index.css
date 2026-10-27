@@ -7385,7 +7385,7 @@ body[data-link-drag='true'], body[data-link-drag='true'] *{ cursor:grabbing !imp
    brass for the human act (the chosen chip, Add), muted BRONZE #8f7a4c for decorative lines (the edge, the hairline). Flux: the choice colour (cyan) for chosen, the line colour for the hairline; the orange bar stays "current only", as today. */
 .walk-doors-wrap{ position:relative; }
 .scenes-door-wrap{ position:relative; display:inline-block; }
-.scenes-pop{ position:absolute; top:calc(100% + 6px); left:50%; transform:translateX(-50%); z-index:6; width:272px; box-sizing:border-box; padding:12px 14px 14px; text-align:left; background:var(--ink-900); border:1px solid var(--accent-door); border-radius:0; box-shadow:none; color:var(--text-hi); font-family:var(--font-ui); }
+.scenes-pop{ position:fixed; z-index:6; width:272px; box-sizing:border-box; padding:12px 14px 14px; text-align:left; background:var(--ink-900); border:1px solid var(--accent-door); border-radius:0; box-shadow:none; color:var(--text-hi); font-family:var(--font-ui); }
 [data-theme='plateau'] .scenes-pop{ --accent-door:var(--accent-door-on-dark); }
 :root[data-theme='flux'][data-page='light'] .scenes-pop{ --accent-door:#57D0F5; }
 .scenes-kicker{ font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent-door); }
@@ -7399,7 +7399,6 @@ body[data-link-drag='true'], body[data-link-drag='true'] *{ cursor:grabbing !imp
 .scenes-add:hover, .scenes-add:focus-visible{ color:var(--choice); outline:none; }
 .scenes-note{ font-size:11px; color:var(--text-mid); line-height:1.35; }
 [data-theme='flux'] .scenes-kicker, [data-theme='flux'] .scenes-add{ font-family:var(--font-chromeLabel); letter-spacing:.1em; text-transform:uppercase; }
-.board-outline-row .scenes-pop, .board-sb-card .scenes-pop{ left:auto; right:0; transform:none; top:calc(100% + 4px); }
 
 /* the Walk's readout above a sub-step's card: PARENT > SCENE 2 OF 3 (Flux 2/3) */
 .walk-readout{ position:absolute; top:-30px; left:44px; right:44px; text-align:center; font-family:var(--font-ui); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-mid); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none; }
