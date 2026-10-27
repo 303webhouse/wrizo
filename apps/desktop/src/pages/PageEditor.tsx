@@ -71,6 +71,10 @@ import { enterPageTypewriter, holdTypewriterPage, typewriterForPage } from '../s
 import { countLineEquivalents } from '../store/lineEquivalents';
 
 import { registerFlush } from '../store/flushRegistry';
+import { celebrateReturnChip } from '../store/deckRewards';
+
+/** W5 - the glow for a page born from a step: a STABLE ref callback (one function for the module), so a re-render never re-fires it; celebrateReturnChip itself is once-per-element. */
+const glowStepChip = (el: HTMLElement | null): void => { if (el) celebrateReturnChip(el); };
 
 // HB1 F1 — the gate's fixed instrument: 100 whitespace-delimited words.
 const FIRST_RUN_WORD_TARGET = 100;
@@ -1525,8 +1529,8 @@ function PageEditorView({ id }: { id: string }) {
                 </div>
               )}
               {fromBoard && (
-                /* W5 HOOK (one line): when W5's export lands, a ref on this chip calls celebrateReturnChip(el) for a page born from a step (data-return-chip="step"). W5 has not landed. */
-                <button type="button" className="btn-quiet wz-back-to-board" data-return-chip={fromStepLabel ? 'step' : undefined} title={fromStepLabel ?? undefined}
+                /* W5 - a page born from a step (data-return-chip="step"): ONE glow on the chip as the page opens (store/deckRewards.ts celebrateReturnChip: once per element, still under reduced motion / Ambiance 0). */
+                <button type="button" ref={fromStepLabel ? glowStepChip : undefined} className="btn-quiet wz-back-to-board" data-return-chip={fromStepLabel ? 'step' : undefined} title={fromStepLabel ?? undefined}
                   aria-label={openedByTemplate && fromBoardTitle ? `Back to ${fromBoardTitle}` : undefined} onClick={() => { flush(); flushNow(); navigate(`/page/${fromBoard}`); }}>
                   {openedByTemplate ? `‹ ${dt('templateOpenedNewBack')}` : fromBoardTitle ? `‹ Back to ${fromBoardTitle}` : '‹ Back to the board'}
                 </button>
@@ -1675,7 +1679,7 @@ function PageEditorView({ id }: { id: string }) {
         <div className="sprint-actions">
           {/* W2 - below the frame gate the chip exists ONLY for a page born from a step ("Write this" on a phone: the Walk is a Deck's only view there, so the way back must be one tap too); every other legacy route stays byte-identical. */}
           {fromBoard && fromStepLabel && (
-            <button type="button" className="btn-quiet wz-back-to-board" data-return-chip="step" title={fromStepLabel} onClick={() => { flush(); flushNow(); navigate(`/page/${fromBoard}`); }}>
+            <button type="button" ref={glowStepChip} className="btn-quiet wz-back-to-board" data-return-chip="step" title={fromStepLabel} onClick={() => { flush(); flushNow(); navigate(`/page/${fromBoard}`); }}>
               {fromBoardTitle ? `‹ Back to ${fromBoardTitle}` : '‹ Back to the board'}
             </button>
           )}
