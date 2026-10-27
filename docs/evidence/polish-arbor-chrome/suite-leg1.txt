@@ -1,0 +1,32 @@
+﻿BOX TURN: granted to lane "polish" ΓÇö token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) ΓÇö  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=15 tree=f955767f+5dirty bundle=index-B1WYauYu.js/926927b out=C:\Users\nickh\AppData\Local\Temp\wrizo-suite-38180
+node : (node:38180) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to 
+security vulnerabilities, as the arguments are not escaped, only concatenated.
+At C:\Users\nickh\AppData\Local\Temp\ps-script-b036357b-3126-4107-980a-00c651e0d346.ps1:80 char:256
++ ... 3f.mjs,fx1.mjs'; node scripts/run-suite.mjs --only $only 2>&1 | Out-F ...
++                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ((node:38180) [D...y concatenated.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[01/15] OK        exit=0   15s ab1.mjs :: ROWS-SHADOW VERIFY: PASS (34 renders checked, shadow == DOM on every one) ;; AB1 VERIFY: PASS (29 checks)
+[02/15] OK        exit=0   36s ab3.mjs :: ROWS-SHADOW VERIFY: PASS (63 renders checked, shadow == DOM on every one) ;; AB3 VERIFY: PASS (24 checks)
+[03/15] OK        exit=0   13s cd1.mjs :: ROWS-SHADOW VERIFY: PASS (23 renders checked, shadow == DOM on every one) ;; CD1 VERIFY: PASS (25 checks)
+[04/15] OK        exit=0   34s cd2.mjs :: ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one) ;; CD2 VERIFY: PASS (51 checks)
+[05/15] NOVERDICT exit=0    0s flux-v2-part2.mjs :: (no verdict ΓÇö see C:\Users\nickh\AppData\Local\Temp\wrizo-suite-38180\flux-v2-part2.mjs.default.txt)
+[06/15] OK        exit=0   23s fx1.mjs :: ROWS-SHADOW VERIFY: PASS (10 renders checked, shadow == DOM on every one) ;; FX1 VERIFY: PASS (23 checks)
+[07/15] OK        exit=0   63s fx10.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FX10 VERIFY: PASS (121 checks)
+[08/15] OK        exit=0   15s fx3.mjs :: FX3 VERIFY: PASS (28 checks)
+[09/15] OK        exit=0   34s fx7.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FX7 VERIFY (partial): PASS (43 checks)
+[10/15] OK        exit=0    7s item130.mjs :: ITEM130 VERIFY: PASS (16 checks)
+[11/15] OK        exit=0    5s item137.mjs :: ITEM137 VERIFY: PASS (9 checks)
+[12/15] OK        exit=0   32s item83f.mjs :: ROWS-SHADOW VERIFY: PASS (45 renders checked, shadow == DOM on every one) ;; ITEM83F VERIFY: PASS (33 checks)
+[13/15] OK        exit=0   25s polish-arbor-chrome.mjs :: POLISH-ARBOR-CHROME VERIFY: PASS (31 checks)
+[14/15] OK        exit=0   65s th-machina.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; TH-MACHINA VERIFY: PASS (41 checks)
+[15/15] OK        exit=0   53s tu2.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; TU2 VERIFY: PASS (92 checks)
+
+SUITE DONE HARNESS_PARKED=unset ΓÇö 14/15 of 15 returned a passing verdict
+  NOVERDICT: flux-v2-part2.mjs ΓÇö full output at C:\Users\nickh\AppData\Local\Temp\wrizo-suite-38180\flux-v2-part2.mjs.default.txt
+SUITE RESULT: NOT CLEAN ΓÇö tree=f955767f+5dirty bundle=index-B1WYauYu.js/926927b
