@@ -25,6 +25,13 @@ export function blockRangeLabel(deck: DeckDefinition): string {
   return t[0] === t[t.length - 1] ? String(t[0]) : `${t[0]}–${t[t.length - 1]}`;
 }
 
+/** Intake's "N BLOCKS" for a pick: the exact total when the pick settles every deal question (deal() on those answers), else the deck's range (a question is still to be asked); '' when it has no fixed total (From my pages). */
+export function blocksFor(deck: DeckDefinition, answers: DeckAnswers): string {
+  if (HAND_SET[deck.id]) return HAND_SET[deck.id];
+  if (deck.questions.some((q) => q.kind === 'pages')) return '';
+  return deck.questions.every((q) => answers[q.id] != null) ? String(deck.deal(answers).length) : blockRangeLabel(deck);
+}
+
 /** the lexicon key of a deck's cover line (W4's helpCover<Deck>) - the row's second column */
 export const coverTermKey = (deckId: string): string => 'helpCover' + deckId.split(/[^A-Za-z0-9]+/).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join('');
 

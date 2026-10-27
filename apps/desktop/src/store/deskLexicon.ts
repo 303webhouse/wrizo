@@ -636,6 +636,8 @@ export type DeskTermId =
   | 'walkWrite' | 'walkPlace' | 'graftPlaceThis' | 'graftPlaceSearchPages' | 'graftPlaceSearchSteps'
   // W5 (gaps, rewards, Lit): the Deck header's line (its lead words and Flux's STACK) and the writer's own finished-mark door (never a verdict: she says it, the app does not)
   | 'gapsLead' | 'deckStack' | 'walkLit' | 'walkUnlit'
+  // TOOLS #9 - MACHINA STEP (m1-m4): the readout row above the Block, the keys hint under it, the Plans row's kind word, the "?" box's example label. Canonical English; only Machina draws them.
+  | 'walkReadoutAgenda' | 'walkReadoutPlan' | 'walkBlockOf' | 'walkKeysHint' | 'deckFactKind' | 'deckStepHelpEg'
   | 'boardPageDoor' | 'pagePlanDoor' | 'pageEscHint' | 'boardTelos'
   | 'boardLaneDefault' | 'boardStoryboardEmpty' | 'boardOutlineEmpty'
   | 'boardPairWithPage'
@@ -675,6 +677,8 @@ export type DeskTermId =
   | 'helpClose'
   | 'helpBack'
   | 'helpStepOf'
+  // TOOLS #9 - MACHINA INTAKE (m5 / m6): one form, three fields at once.
+  | 'helpFieldsNote' | 'helpFieldsCount' | 'helpFieldDocument' | 'helpFieldCarried' | 'helpFieldBriefing' | 'helpChoose' | 'helpNoCarried' | 'helpBlocksN'
   | 'helpANovel'
   | 'helpHNovel'
   | 'helpAShortStory'
@@ -798,6 +802,12 @@ const CANONICAL: Record<DeskTermId, string> = {
   deckStack: 'Stack',
   walkLit: 'Mark lit',
   walkUnlit: 'Unmark',
+  walkReadoutAgenda: 'Deck',
+  walkReadoutPlan: 'Board',
+  walkBlockOf: 'Card {n} / {m}',
+  walkKeysHint: '← → step · Esc leave',
+  deckFactKind: '',
+  deckStepHelpEg: 'e.g.',
   boardPageDoor: 'Pages', // ITEM word-diet, pages-rename bucket (a)
   pagePlanDoor: 'Plan',
   // A1 (accessibility audit): Tab indents on the page, so the way out is said aloud. Screen-reader-only; never drawn.
@@ -1832,6 +1842,15 @@ const CANONICAL: Record<DeskTermId, string> = {
   helpClose: 'Esc to close',
   helpBack: 'Back',
   helpStepOf: 'Step {n} of 3',
+  // MACHINA INTAKE (m5 / m6): canonical English; only Machina's Intake draws these.
+  helpFieldsNote: '3 fields · nothing stored',
+  helpFieldsCount: '{n} / 3',
+  helpFieldDocument: 'Document',
+  helpFieldCarried: 'Carried by',
+  helpFieldBriefing: 'Briefing',
+  helpChoose: '— choose —',
+  helpNoCarried: 'not asked for this one',
+  helpBlocksN: '{n} blocks',
   helpANovel: 'a novel or novella',
   helpHNovel: 'a long story, front to back',
   helpAShortStory: 'a short story',
@@ -2208,8 +2227,24 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     helpCoverFromMyPages: 'your own files, in your own order',
     helpDialogLabel: 'Intake',
     helpKicker: 'Intake',
-    helpPickKicker: 'Recommended',
-    helpBrowse: 'Browse all forms',
+    helpPickKicker: 'Recommended form',
+    // MACHINA STEP (m1-m4; brief section 3): the Walk is the Step, a card a Block, a Deck an Agenda.
+    walkNotes: 'Note',
+    walkPrev: 'Previous block',
+    walkNext: 'Next block',
+    walkRail: 'Blocks',
+    walkResize: 'Resize the block',
+    walkReadoutAgenda: 'Agenda',
+    walkReadoutPlan: 'Plan',
+    walkBlockOf: 'Block {n} / {m}',
+    walkKeysHint: '← → Step · Esc Plan',
+    deckFact: '{n} of {m} filled',
+    deckFactKind: 'Agenda',
+    deckStepHelpEg: 'E.G.',
+    helpBegin: 'Create Agenda',
+    helpAlt: 'or',
+    helpBrowse: 'All forms',
+    helpAEverything: 'everything (just give me the blocks)',
     // MACHINA (docs/plans/machina-build.md §1c) - the corporate / mechanical register: Project, Folder, Part, File, Plan, Block, Notebook, Consultant, Asset, Controls, Theme.
     // Derived from Flux's own noun-bearing entries (same keys, Machina's noun) so no string that still names an Arbor or Flux noun survives under this theme; the words Nick locked
     // follow. Flux's own REGISTER words (Wire In, Patch, Terminal Mode, Quota, ...) are not carried over - Machina keeps canonical wherever Nick named no word.
