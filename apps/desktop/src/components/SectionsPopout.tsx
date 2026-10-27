@@ -216,7 +216,8 @@ export function SectionsPopout({ view, currentId, navigate, boardId, journalLabe
     const live = liveBoxes(e.boxes);   // the live cards: a deleted card is a tombstone in storage and is not a step
     const cards = walkOrder(live);
     const n = cards.filter(b => kindled(e.id, b, live)).length;
-    return t('deckFact').replace('{n}', String(n)).replace('{m}', String(cards.length));
+    const fact = t('deckFact').replace('{n}', String(n)).replace('{m}', String(cards.length));
+    return t('deckFactKind') ? `${t('deckFactKind')} · ${fact}` : fact;   // Machina's row reads "Agenda · 2 of 5 filled" (m5); the other themes' fact stands alone
   };
 
   const renderRow = (group: SectionGroup, e: JournalEntry, i: number) => (

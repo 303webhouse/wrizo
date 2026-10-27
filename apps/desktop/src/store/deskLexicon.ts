@@ -632,6 +632,8 @@ export type DeskTermId =
   // W1 (the Walk, board kinds and "Show as"): the three new views' words (a Board's Walk; a Book's Flip and Thumbnails), the Show-as label, the Walk's own chrome, and the Deck's progress fact.
   | 'boardModeWalk' | 'boardModeFlip' | 'boardModeThumbs' | 'showAsLabel'
   | 'walkNotes' | 'walkPrev' | 'walkNext' | 'walkRail' | 'walkResize' | 'walkOpen' | 'flipEmpty' | 'deckFact'
+  // TOOLS #9 - MACHINA STEP (m1-m4): the readout row above the Block, the keys hint under it, the Plans row's kind word, the "?" box's example label. Canonical English; only Machina draws them.
+  | 'walkReadoutAgenda' | 'walkReadoutPlan' | 'walkBlockOf' | 'walkKeysHint' | 'deckFactKind' | 'deckStepHelpEg'
   | 'boardPageDoor' | 'pagePlanDoor' | 'pageEscHint' | 'boardTelos'
   | 'boardLaneDefault' | 'boardStoryboardEmpty' | 'boardOutlineEmpty'
   | 'boardPairWithPage'
@@ -787,6 +789,12 @@ const CANONICAL: Record<DeskTermId, string> = {
   flipEmpty: 'Nothing here yet.',
   // the Deck's progress fact under its thumbnail: how many of its cards the writer has BEGUN (kindled: words, or a graft to a page). It says so in words - never a bare 4 / 9 - so it cannot be read as the Walk's position (Flux: TRK n/m).
   deckFact: '{n} of {m} begun',
+  walkReadoutAgenda: 'Deck',
+  walkReadoutPlan: 'Board',
+  walkBlockOf: 'Card {n} / {m}',
+  walkKeysHint: '← → step · Esc leave',
+  deckFactKind: '',
+  deckStepHelpEg: 'e.g.',
   boardPageDoor: 'Pages', // ITEM word-diet, pages-rename bucket (a)
   pagePlanDoor: 'Plan',
   // A1 (accessibility audit): Tab indents on the page, so the way out is said aloud. Screen-reader-only; never drawn.
@@ -2198,6 +2206,19 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     helpDialogLabel: 'Intake',
     helpKicker: 'Intake',
     helpPickKicker: 'Recommended form',
+    // MACHINA STEP (m1-m4; brief section 3): the Walk is the Step, a card a Block, a Deck an Agenda.
+    walkNotes: 'Note',
+    walkPrev: 'Previous block',
+    walkNext: 'Next block',
+    walkRail: 'Blocks',
+    walkResize: 'Resize the block',
+    walkReadoutAgenda: 'Agenda',
+    walkReadoutPlan: 'Plan',
+    walkBlockOf: 'Block {n} / {m}',
+    walkKeysHint: '← → Step · Esc Plan',
+    deckFact: '{n} of {m} filled',
+    deckFactKind: 'Agenda',
+    deckStepHelpEg: 'E.G.',
     helpBegin: 'Create Agenda',
     helpAlt: 'or',
     helpBrowse: 'All forms',

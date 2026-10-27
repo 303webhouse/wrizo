@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useDeskLexicon } from '../store/deskLexicon';
+import { useTheme } from '../store/theme';
 import { splitCard } from '../store/guided';
 import { stageTutorAsk } from '../store/tutorStage';
 import { stepExplain, stepExample } from '../decks/content';
@@ -46,6 +47,7 @@ function titleEnd(face: HTMLElement, titleLen: number): { right: number; top: nu
 // `openOnce` (TOOLS #9): open the popover once when this turns true (the librarian's "a little": the writer asked to be shown), then tell the host via `onOpened` so it can drop the flag. Not a stored state.
 export function StepHelp({ box, faceSelector = '.board-text', openOnce = false, onOpened }: { box: Box; faceSelector?: string; openOnce?: boolean; onOpened?: () => void }) {
   const { t } = useDeskLexicon();
+  const machina = useTheme() === 'machina';   // Machina labels the example "E.G." (m2); the other themes draw it as they always did
   const btnRef = useRef<HTMLButtonElement | null>(null);
   const popRef = useRef<HTMLDivElement | null>(null);
   const moreRef = useRef<HTMLButtonElement | null>(null);
@@ -162,7 +164,7 @@ export function StepHelp({ box, faceSelector = '.board-text', openOnce = false, 
         >
           <div className="board-step-pop-k">{title}</div>
           <p className="board-step-pop-e">{explain}</p>
-          {example && <p className="board-step-pop-x">{example}</p>}
+          {example && <p className="board-step-pop-x">{t('deckStepHelpEg') && machina ? <span className="board-step-pop-eg">{t('deckStepHelpEg')}</span> : null}{example}</p>}
           <button ref={moreRef} type="button" className="board-step-pop-more" onClick={more}>
             {t('deckStepHelpMore')} <span aria-hidden="true">{'→'}</span> {t('tutorTitle').replace(/^The\s+/i, '')}
           </button>

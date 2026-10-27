@@ -7266,6 +7266,50 @@ body[data-link-drag='true'], body[data-link-drag='true'] *{ cursor:grabbing !imp
 .help-intake .help-foot-intake .help-browse, .help-intake .help-foot-intake .help-back{ font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-mid); } .help-intake .help-foot-intake .help-browse:hover, .help-intake .help-foot-intake .help-back:hover{ color:var(--text-hi); }
 .help-intake .help-foot-intake .help-browse:focus-visible, .help-intake .help-foot-intake .help-back:focus-visible{ outline:1px solid var(--choice); outline-offset:2px; }
 
+/* ---- MACHINA STEP (TOOLS #9; frames m1-m4; brief section 3): W1's Walk in Machina's dress. DRESS ONLY - INK owns the Walk's behaviour (geometry, keys, rail states, the recede). The chrome stays dark on both page tones: the Block
+   is the chrome surface, never the paper. Square, 1px hairlines (--ink-border-strong on the Block and the doors, --ink-border-strong on the rail), no shadow, NO MOTION (the step is a cut: no swipe, no transition). Plex Mono for the
+   readout, the Block's title, the rail's numbers and the keys hint; Plex Sans for the question and the writer's words. The carrier (--choice) marks only the current notch, the open "?", focus and the pressed state. */
+[data-theme='machina'] .walk{ --card-stock:var(--chrome-surface); --card-hairline:var(--ink-border-strong); --ink-on-card:var(--text-hi); --ink-on-card-low:var(--text-low); --ink-on-card-meta:var(--text-mid); --badge-on-card:var(--text-low); }
+[data-theme='machina'] .walk-card, [data-theme='machina'] .walk-card-leaving, [data-theme='machina'] .walk-card[data-in]{ animation:none !important; }
+[data-theme='machina'] .walk-card{ padding:26px 30px; background:var(--chrome-surface); border:1px solid var(--ink-border-strong); }
+[data-theme='machina'] .walk-card .board-popup-editor, [data-theme='machina'] .walk-card .walk-static{ font-family:var(--font-contentLabel); font-size:16px; line-height:1.6; color:var(--text-hi); }
+[data-theme='machina'] .walk-card .board-popup-editor::first-line{ font-family:var(--font-chromeLabel); font-size:.875em; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--text-hi); }
+[data-theme='machina'] .walk-card .board-popup-editor[data-prompt][data-body-empty='true']::after{ margin-top:calc(2px - 1.6 * 16px * var(--card-type-k, 1)); font-family:var(--font-contentLabel); font-size:17px; color:var(--text-low); }
+[data-theme='machina'] .walk-fade{ transition:none; }
+[data-theme='machina'] .walk-readout{ display:flex; justify-content:space-between; align-items:center; box-sizing:border-box; height:22px; margin-bottom:6px; padding:0 32px; font-family:var(--font-chromeLabel); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-mid); }
+[data-theme='machina'] .walk-nav{ top:0; width:22px; height:22px; border:1px solid var(--ink-border-strong); color:var(--text-mid); opacity:1; transition:none; }
+[data-theme='machina'] .walk-nav svg{ width:12px; height:12px; }
+[data-theme='machina'] .walk-nav:hover, [data-theme='machina'] .walk-nav:focus-visible{ border-color:var(--choice); color:var(--text-hi); }
+[data-theme='machina'] .walk-nav[data-recede='true']{ opacity:0; pointer-events:none; }
+[data-theme='machina'] .walk-doors{ justify-content:flex-start; align-items:center; gap:8px; margin-top:18px; }
+[data-theme='machina'] .walk-door{ padding:8px 14px; font-family:var(--font-contentLabel); font-size:13px; letter-spacing:0; color:var(--text-hi); border-color:var(--ink-border-strong); transition:none; }
+[data-theme='machina'] .walk-door:hover, [data-theme='machina'] .walk-door:focus-visible{ border-color:var(--choice); color:var(--text-hi); }
+[data-theme='machina'] .walk-keys{ margin-left:auto; font-family:var(--font-chromeLabel); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-low); }
+[data-theme='machina'] .walk-rail{ position:relative; display:flex; flex-wrap:nowrap; justify-content:space-between; align-items:flex-start; gap:0; width:min(100%, 520px); height:19px; margin-top:64px; margin-bottom:34px; counter-reset:notch; }
+[data-theme='machina'] .walk-rail::before{ content:''; position:absolute; left:0; right:0; top:9px; height:1px; background:var(--ink-border-strong); }
+[data-theme='machina'] .walk-mark{ position:relative; flex:0 0 auto; width:1px; height:19px; padding:0; border:0; border-radius:0; background:none; color:transparent; opacity:1; overflow:visible; }
+[data-theme='machina'] .walk-mark svg{ display:none; }
+[data-theme='machina'] .walk-mark::before{ content:''; position:absolute; left:0; top:5px; width:1px; height:9px; background:var(--ink-border-strong); }
+[data-theme='machina'] .walk-mark[data-kindled='true']::before{ left:-4px; top:5px; width:9px; height:9px; background:var(--signal-live); }
+[data-theme='machina'] .walk-mark[data-state='current']::before, [data-theme='machina'] .walk-mark[aria-current='step']::before{ left:-1px; top:0; width:3px; height:19px; background:var(--choice); }
+[data-theme='machina'] .walk-mark::after{ counter-increment:notch; content:counter(notch, decimal-leading-zero); position:absolute; top:24px; left:-16px; width:33px; padding:4px 0; text-align:center; font-family:var(--font-chromeLabel); font-size:10.5px; letter-spacing:.08em; color:var(--text-mid); }
+[data-theme='machina'] .walk-mark:focus-visible{ outline:1px solid var(--choice); outline-offset:6px; }
+[data-theme='machina'] .board-step-help{ border-radius:0; border:1px solid var(--ink-border-strong); color:var(--text-mid); font-family:var(--font-chromeLabel); font-weight:400; transition:none; }
+[data-theme='machina'] .board-step-help:hover, [data-theme='machina'] .board-step-help[data-open='true'], [data-theme='machina'] .board-step-help:focus-visible{ border-color:var(--choice); color:var(--choice); }
+[data-theme='machina'] .board-step-pop{ background:var(--ink-800); color:var(--text-hi); border:1px solid var(--ink-border-strong); box-shadow:none; font-family:var(--font-contentLabel); }
+[data-theme='machina'] .board-step-pop::before{ display:none; }
+[data-theme='machina'] .board-step-pop-k{ font-size:10px; color:var(--text-mid); }
+[data-theme='machina'] .board-step-pop-e{ color:var(--text-hi); }
+[data-theme='machina'] .board-step-pop-x{ font-family:var(--font-contentLabel); font-style:normal; color:var(--text-mid); }
+[data-theme='machina'] .board-step-pop-eg{ margin-right:12px; font-family:var(--font-chromeLabel); font-size:10px; letter-spacing:.14em; color:var(--text-mid); }
+[data-theme='machina'] .board-step-pop-more{ font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--choice); }
+/* the Plans pop-out's Agenda row (m5): the stacked hairline thumbnail - three 16 x 11 rectangles offset 2px - and "Agenda · 2 of 5 filled" under the name */
+[data-theme='machina'] .wz-thumb[data-thumb='deck']{ box-sizing:border-box; width:16px; height:11px; margin:4px 16px 0 0; background:var(--chrome-surface); border:1px solid var(--text-mid); box-shadow:none; }
+[data-theme='machina'] .wz-thumb[data-thumb='deck']::before, [data-theme='machina'] .wz-thumb[data-thumb='deck']::after{ content:''; position:absolute; box-sizing:border-box; width:16px; height:11px; background:var(--chrome-surface); border:1px solid var(--text-mid); }
+[data-theme='machina'] .wz-thumb[data-thumb='deck']::before{ left:1px; top:-3px; }
+[data-theme='machina'] .wz-thumb[data-thumb='deck']::after{ left:3px; top:-5px; }
+[data-theme='machina'] .wz-thumb-fact{ font-family:var(--font-chromeLabel); font-size:10.5px; letter-spacing:.06em; color:var(--text-mid); }
+
 /* the door: the ONE row at the top of the Presets list (SectionsPopout) and of the deck library (DeckWizard) */
 .wz-help-door{ display:flex; align-items:center; gap:8px; width:100%; background:none; border:0; border-bottom:1px solid var(--ink-border); padding:4px 2px 8px; margin-bottom:4px; cursor:pointer; color:var(--accent-rest); font:inherit; font-size:13px; text-align:left; }
 .wz-help-door:hover, .wz-help-door:focus-visible{ color:var(--text-hi); }

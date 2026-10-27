@@ -3389,6 +3389,13 @@ export function BoardEditor({ id }: { id: string }) {
   // boardStructure.ts). Order is single-sourced (seq on the shared boxes), so a
   // reorder in one projection is the board's truth in all three.
   // W1 - THE WALK (components/Walk.tsx): one card at a time on the board's own order, writing in the card with the ordinary card engine (the card editor, mounted INLINE). Esc leaves for the board's last shown view.
+  // TOOLS #9 - Machina's Step readout row: "AGENDA · <the Deck's name>" for a Deck (a board whose cards carry a deck step), else "PLAN · <the board's name>". Words only; read from what is already on the board.
+  const machinaReadout = (() => {
+    if (theme !== 'machina') return undefined;
+    const deckId = deckBoard ? liveBoxes(boxes).find((b) => b.deckStep)?.deckStep?.deck : undefined;
+    const deck = deckId ? DECKS.find((d) => d.id === deckId) : undefined;
+    return deck ? { kind: 'agenda' as const, name: t(deck.nameTerm) } : { kind: 'plan' as const, name: title };
+  })();
   const walkKindled = new Set(boardMode === 'walk' ? walkOrder(boxes).filter(b => kindled(id, b, boxes)).map(b => b.id) : []);
   const walkContent = boardMode === 'walk' ? (
     <Walk
@@ -3402,6 +3409,8 @@ export function BoardEditor({ id }: { id: string }) {
       onJumped={() => setWalkJumpId(null)}
       receded={boardDissolve.dissolved}
       flux={theme === 'flux'}
+      readout={theme === 'machina' ? machinaReadout : undefined}
+      still={theme === 'machina'}
       narrow={narrowBoard}
       onExit={() => setBoardMode(lastShownBeforeWalk(id, homeView))}
       renderEditor={(box) => (
