@@ -1,0 +1,3 @@
+START 14:11:14Z
+default done exit=1 15:21:48Z
+parked leg STOPPED at ~15:38Z by chat1: default leg attributed (box-tombstones T11 = add-scenes' raw setBoxes(made.boxes)); shipping b18 per Fable (b)
