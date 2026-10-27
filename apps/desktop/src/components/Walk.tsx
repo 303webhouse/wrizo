@@ -41,6 +41,16 @@ export interface WalkProps {
   empty?: ReactNode;
   /** W2's doors (Write this / Place a page...), wired by FIX after W1 merges. None in W1. */
   extraDoors?: WalkDoor[];
+  /** W5 - this board is a DECK: its kindled cards wear the root line / lit edge, and the rewards play. Absent = the Walk exactly as W1 drew it. */
+  deck?: boolean;
+  /** W5 - the cards the writer has marked lit (her own statement; never coverage). */
+  litIds?: ReadonlySet<string>;
+  /** W5 - the cards whose kindle moment is playing NOW (about 1.1 s; empty under reduced motion / Ambiance 0). */
+  kindlingIds?: ReadonlySet<string>;
+  /** W5 - the Lit door, the LAST in the row: marks the card lit, or unmarks it (the same door). Absent = no door. */
+  onToggleLit?: (box: Box) => void;
+  /** W5 - the step the Walk is on, so the Deck's gaps line can start after it. */
+  onCurrent?: (boxId: string) => void;
 }
 
 const isTypingKey = (e: KeyboardEvent) => !e.metaKey && !e.ctrlKey && !e.altKey && (e.key.length === 1 || e.key === 'Backspace' || e.key === 'Delete' || e.key === 'Enter');
@@ -61,6 +71,24 @@ function MarkGlyph({ leaf }: { leaf: boolean }) {
     </svg>
   ) : (
     <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><ellipse cx="8" cy="10" rx="3" ry="2.2" fill="none" stroke="currentColor" strokeWidth="1.2" /></svg>
+  );
+}
+
+/** W5 - the kindled card's mark: ARBOR a faint bronze root line that grows from the card's bottom-left corner a short way and stays (a hint, never a drawing of a plant); FLUX the card's edge, lit lime then resting cyan.
+ *  One element, dressed per theme in the stylesheet's W5 zone; it never takes a click. */
+export function KindleMark() {
+  return (
+    <span className="kindle-mark" aria-hidden="true">
+      <svg className="kindle-root" viewBox="0 0 48 16" width="48" height="16" fill="none" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"><path d="M1 15C8 14 10 9 17 8C24 7 27 4 34 3" /><path d="M17 8C19 10 22 11 26 11" /></svg>
+    </span>
+  );
+}
+/** W5 - the writer's own Lit mark on the card: a small leaf (Arbor, brass: a human act); Flux draws the tick filled and the orange left bar instead. */
+export function LitMark() {
+  return (
+    <span className="lit-mark" aria-hidden="true">
+      <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" aria-hidden="true"><path d="M8 15V7" /><path d="M8 9C5 9 3.5 7 3.5 4.5C6 4.5 8 6 8 9Z" fill="currentColor" fillOpacity=".45" /><path d="M8 7.5C10.5 7.5 12.5 6 12.5 3.5C10 3.5 8 5 8 7.5Z" fill="currentColor" fillOpacity=".45" /></svg>
+    </span>
   );
 }
 
@@ -96,7 +124,7 @@ export function Walk(p: WalkProps) {
   }, [card?.id, card?.text, size]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   // where the writer was in this board's Walk is remembered on this device
-  useEffect(() => { if (card) setWalkPos(p.boardId, card.id); }, [p.boardId, card?.id]);
+  useEffect(() => { if (card) { setWalkPos(p.boardId, card.id); p.onCurrent?.(card.id); } }, [p.boardId, card?.id]);   // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => () => { if (timer.current !== null) window.clearTimeout(timer.current); }, []);
 
   const go = useCallback((dir: 1 | -1, to?: number) => {
@@ -175,8 +203,13 @@ export function Walk(p: WalkProps) {
   const doors: WalkDoor[] = [
     { key: 'notes', label: t('walkNotes'), onOpen: () => (cardRef.current?.querySelector('.board-popup-editor') as HTMLElement | null)?.focus() },
     ...(p.extraDoors ?? []),
+    // W5 - the writer's own finished-mark, LAST in the row; the same door marks and unmarks. Marking never celebrates and never counts toward completion.
+    ...(p.onToggleLit ? [{ key: 'lit', label: p.litIds?.has(card.id) ? t('walkUnlit') : t('walkLit'), onOpen: () => p.onToggleLit?.(card) }] : []),
   ];
-  const marks = railMarks(order, cur, p.kindledIds, p.startHereId);
+  const marks = railMarks(order, cur, p.kindledIds, p.startHereId, p.litIds);
+  const cardLit = !!p.litIds?.has(card.id);
+  const cardKindled = p.kindledIds.has(card.id);
+  const cardFx = p.kindlingIds?.has(card.id) ? 'kindle' : undefined;
   const peek = p.narrow ? order[cur + 1] : undefined;
 
   return (
@@ -198,10 +231,15 @@ export function Walk(p: WalkProps) {
               data-box-id={card.id}
               aria-current="step"
               data-in={incoming ? incoming.incoming : undefined}
+              data-kindled={p.deck && cardKindled ? 'true' : undefined}
+              data-lit={p.deck && cardLit ? 'true' : undefined}
+              data-fx={cardFx}
               style={{ minHeight: box.height, maxHeight: WALK.MAX_H }}
               onPointerLeave={() => setWoke(true)}
             >
-              {p.flux && <span className="walk-trk" aria-hidden="true">{trackReadout(cur + 1, order.length)}</span>}
+              {p.flux && <span className="walk-trk" data-fx={cardFx} aria-hidden="true">{trackReadout(cur + 1, order.length)}</span>}
+              {p.deck && cardKindled && <KindleMark />}
+              {p.deck && cardLit && <LitMark />}
               {p.renderEditor(card)}
               {card.deckStep && !card.sourceEntryId && <StepHelp box={card} faceSelector=".board-popup-editor" />}
               <span className="walk-grip" role="separator" aria-label={t('walkResize')} onPointerDown={onGripDown}>
@@ -217,9 +255,9 @@ export function Walk(p: WalkProps) {
         </div>
         <div className="walk-rail" role="list" aria-label={t('walkRail')}>
           {marks.map((m, i) => (
-            <button key={m.id} type="button" role="listitem" className="walk-mark" data-state={m.state} data-current={m.current ? 'true' : 'false'} data-kindled={p.kindledIds.has(m.id) ? 'true' : 'false'} data-start-here={m.startHere ? 'true' : undefined}
+            <button key={m.id} type="button" role="listitem" className="walk-mark" data-state={m.state} data-current={m.current ? 'true' : 'false'} data-kindled={p.kindledIds.has(m.id) ? 'true' : 'false'} data-lit={p.deck && m.lit ? 'true' : undefined} data-fx={p.kindlingIds?.has(m.id) ? 'kindle' : undefined} data-start-here={m.startHere ? 'true' : undefined}
               aria-label={`${i + 1}`} title={m.startHere ? t('deckStartHereLabel') : undefined} aria-current={m.current ? 'step' : undefined} onClick={() => go(i > cur ? 1 : -1, i)}>
-              <MarkGlyph leaf={m.state === 'leaf' || (m.current && p.kindledIds.has(m.id))} />
+              <MarkGlyph leaf={m.state === 'leaf' || m.state === 'lit' || (m.current && (p.kindledIds.has(m.id) || m.lit))} />
             </button>
           ))}
         </div>

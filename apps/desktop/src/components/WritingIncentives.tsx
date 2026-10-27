@@ -156,6 +156,17 @@ export function ProgressBar({ frac, celebrating, label, metricLabel, hidden, rig
   );
 }
 
+// W5 - A DECK COMPLETES (every step kindled, for the first time): the theme's EXISTING goal celebration, once - this very bar with `celebrating` on (Arbor: the brass surge; Flux: the ignition sweep + the fourteen
+// sparks), not a copy of it. It is a decorative, ephemeral track the board mounts for CELEBRATE_MS and then removes; it carries no number, no label and no fraction of anything.
+export function GoalCelebration({ celebrating }: { celebrating: boolean }) {
+  if (!celebrating) return null;
+  return (
+    <div className="deck-celebration" aria-hidden="true">
+      <ProgressBar frac={1} celebrating label="" metricLabel="" />
+    </div>
+  );
+}
+
 // M1 — the milestone circle-bar's celebration tracking, the useGoalProgress
 // mount-seeding law generalized to a keyed collection (per the canon: "Apply
 // the W1-R1 lesson as law: seed state on mount; celebrate only transitions

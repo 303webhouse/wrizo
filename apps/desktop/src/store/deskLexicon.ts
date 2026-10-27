@@ -632,6 +632,8 @@ export type DeskTermId =
   // W1 (the Walk, board kinds and "Show as"): the three new views' words (a Board's Walk; a Book's Flip and Thumbnails), the Show-as label, the Walk's own chrome, and the Deck's progress fact.
   | 'boardModeWalk' | 'boardModeFlip' | 'boardModeThumbs' | 'showAsLabel'
   | 'walkNotes' | 'walkPrev' | 'walkNext' | 'walkRail' | 'walkResize' | 'walkOpen' | 'flipEmpty' | 'deckFact'
+  // W5 (gaps, rewards, Lit): the Deck header's line (its lead words and Flux's STACK) and the writer's own finished-mark door (never a verdict: she says it, the app does not)
+  | 'gapsLead' | 'deckStack' | 'walkLit' | 'walkUnlit'
   | 'boardPageDoor' | 'pagePlanDoor' | 'pageEscHint' | 'boardTelos'
   | 'boardLaneDefault' | 'boardStoryboardEmpty' | 'boardOutlineEmpty'
   | 'boardPairWithPage'
@@ -785,6 +787,10 @@ const CANONICAL: Record<DeskTermId, string> = {
   flipEmpty: 'Nothing here yet.',
   // the Deck's progress fact under its thumbnail: how many of its cards the writer has BEGUN (kindled: words, or a graft to a page). It says so in words - never a bare 4 / 9 - so it cannot be read as the Walk's position (Flux: TRK n/m).
   deckFact: '{n} of {m} begun',
+  gapsLead: 'Nothing yet:',
+  deckStack: 'Stack',
+  walkLit: 'Mark lit',
+  walkUnlit: 'Unmark',
   boardPageDoor: 'Pages', // ITEM word-diet, pages-rename bucket (a)
   pagePlanDoor: 'Plan',
   // A1 (accessibility audit): Tab indents on the page, so the way out is said aloud. Screen-reader-only; never drawn.
@@ -2141,6 +2147,10 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     walkOpen: '[OPEN]',
     flipEmpty: 'NO SIGNAL',
     deckFact: 'LOAD {n}/{m}',
+    gapsLead: 'NO SIGNAL:',
+    deckStack: 'STACK',
+    walkLit: '[LOCK]',
+    walkUnlit: '[UNLOCK]',
     boardAddCard: 'Add node',
     boardPortedBadge: 'From a doc',
     boardThreadUntitled: 'Unnamed',
