@@ -61,7 +61,11 @@ import { kindOf, homeViewOf, isDeck, withHomeView, doorHome, type BoardView } fr
 import { addPlacement, viewsFor, walkOrder, setWalkPos } from '../store/walk';
 import { useTheme } from '../store/theme';
 import { getNotebookPages } from '../store/persistence';
-import { promptToShow, bodyIsEmpty, pagesOfPlace, kindled } from '../store/guided';
+import { promptToShow, bodyIsEmpty, pagesOfPlace, kindled, isLit, withLit } from '../store/guided';
+import { DeckGaps } from './DeckGaps';
+import { useDeckRewards } from './useDeckRewards';
+import { KindleMark, LitMark } from './Walk';
+import { GoalCelebration } from './WritingIncentives';
 import { graftTo } from '../store/grafts';
 import { usePlace } from '../store/usePlace';
 import { materializeDeck } from '../decks/engine';
@@ -1030,6 +1034,15 @@ export function BoardEditor({ id }: { id: string }) {
   // delegation already keys BoardEditor by id, so navigating to a
   // DIFFERENT board is a genuine remount, not a stale carry-over).
   const [startHereCardId, setStartHereCardId] = useState<string | null>(() => getStartHereCardId(id));
+  // W5 (gaps, rewards, Lit) - ONLY on a Deck. The Deck's steps are the Walk's order; `kindled()` (store/guided.ts) is the single gate. The rewards hook decides and times the moments (store/deckRewards.ts);
+  // Lit is the writer's own mark (`lit` on the card's box) and never counts, never completes, never celebrates.
+  const deckSteps = deckBoard ? walkOrder(boxes) : [];
+  const deckKindled = new Set(deckSteps.filter(b => kindled(id, b, boxes)).map(b => b.id));
+  const deckLit = new Set(deckSteps.filter(b => isLit(b)).map(b => b.id));
+  // a SUB-STEP (a card nested under a step by `parentId`) is walked and begun on its own, but the gaps line names MAIN steps only and a Deck completes when every main step is kindled (children never block it)
+  const deckMain = deckSteps.filter(b => !b.parentId);
+  const deckRewards = useDeckRewards(id, deckBoard, deckSteps.map(b => b.id), deckKindled, deckMain.map(b => b.id));
+  const [walkCurId, setWalkCurId] = useState<string | null>(null);
   const [canUndo, setCanUndo] = useState(false);
   // FX8 S3 — a small, read-only flag for the card-body cursor's own
   // `grab` -> `grabbing` swap during an actual active move-drag (CC's own
@@ -1458,6 +1471,23 @@ export function BoardEditor({ id }: { id: string }) {
   const commitType = (boxId: string, patch: { fontFace?: StoredFace; fontSize?: number }) => {
     if (patch.fontFace) void ensureFaceLoaded(patch.fontFace.name);
     setBoxes(prev => prev.map(b => (b.id === boxId ? { ...b, ...patch } : b)));
+  };
+
+  // W5 - LIT: the writer marks a step finished, or takes the mark back (the same door both ways). It stamps the card's `updatedAt` so the newer mark or unmark wins a sync merge; it touches nothing else and
+  // celebrates nothing (the rewards hook never sees it: Lit changes no kindled set).
+  const toggleLit = (box: Box) => {
+    if (framed) boardDissolve.noteWrite();
+    setBoxes(prev => withLit(prev, box.id, !isLit(box), new Date().toISOString()));
+  };
+  // W5 - a name on the gaps line: in the Walk the card comes up; in Open the board scrolls to it and focuses it (the card's own editor, else the card).
+  const jumpToGap = (boxId: string) => {
+    if (boardMode === 'walk') { setWalkJumpId(boxId); return; }
+    setSelectedId(boxId);
+    const el = canvasRef.current?.querySelector<HTMLElement>(`.board-box[data-box-id="${boxId}"]`);
+    if (!el) return;
+    el.scrollIntoView({ block: 'center', inline: 'nearest' });
+    if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
+    el.focus({ preventScroll: true });
   };
 
   const snapshot = (type: NonNullable<LastAction>['type']) => {
@@ -2758,6 +2788,8 @@ export function BoardEditor({ id }: { id: string }) {
     const items: ContextMenuItem[] = [];
     if (box.groupId) items.push({ label: t('ctxUngroup'), onSelect: ungroup });
     if (box.kind === 'text' && box.sourceEntryId) items.push({ label: t('boardEditCopy'), onSelect: () => setPopupBoxId(box.id) });
+    // W5 - the writer's finished-mark, on a Deck's text cards: "Mark lit" / "Unmark" (Flux [LOCK] / [UNLOCK]) - the same door as the Walk's, last of the card's own acts
+    if (deckBoard && box.kind === 'text' && !isSystemBoard) items.push({ label: isLit(box) ? t('walkUnlit') : t('walkLit'), onSelect: () => toggleLit(box) });
     if (systemKind === 'trash' && box.kind === 'page-pin' && box.entryId) items.push({ label: t('boardRestore'), onSelect: () => restoreSelected(box.entryId!) });
     if (systemKind === 'trash' && box.trashedFrom) {
       const from = box.trashedFrom;
@@ -3091,6 +3123,9 @@ export function BoardEditor({ id }: { id: string }) {
               data-target={isTarget || isFlashB ? 'true' : 'false'}
               data-peer={isPeer ? 'true' : 'false'}
               data-overlapping={selected && box.id === selectedId && isOverlapping ? 'true' : 'false'}
+              data-kindled={deckBoard && deckKindled.has(box.id) ? 'true' : undefined}
+              data-lit={deckBoard && deckLit.has(box.id) ? 'true' : undefined}
+              data-fx={deckRewards.kindling.has(box.id) ? 'kindle' : undefined}
               style={{
                 position: 'absolute',
                 left: box.x * pageWidthPx, top: box.y * pageWidthPx,
@@ -3114,6 +3149,9 @@ export function BoardEditor({ id }: { id: string }) {
               )}
               {/* W3 / W11a - the step's "?" at its title's end (components/StepHelp.tsx): only on a card DEALT from a Tier 1 deck (deckStep), never on a ported mirror. */}
               {box.kind === 'text' && box.deckStep && !box.sourceEntryId && <StepHelp box={box} />}
+              {/* W5 - a kindled step on a Deck wears its quiet mark (Arbor: a bronze root line; Flux: the lit edge), and a step the writer marked lit wears her leaf. Both are overlays: no layout of their own. */}
+              {deckBoard && box.kind === 'text' && deckKindled.has(box.id) && <KindleMark />}
+              {deckBoard && box.kind === 'text' && deckLit.has(box.id) && <LitMark />}
               {/* CONNECTOR-A - the green tack is RETIRED. The circle below is the card's end of a link: shown only while the card is a target, a peer, or the far end of a link just made. */}
               <span className="board-tcircle" data-solid={circleSolid ? 'true' : 'false'} aria-hidden="true" />
               {/* B3 S1 — "Start Here" (R6's own hint): quiet, brass, present
@@ -3373,6 +3411,12 @@ export function BoardEditor({ id }: { id: string }) {
   // PW2 S2 — the nest chain for this board's own address (see the crumb below).
   const nestChain = boardNestChain(id);
 
+  // W5 - THE GAPS LINE, in a Deck's header (the Walk and Open views): names of the steps with nothing yet, never a count; gone when every step is kindled. One line that never wraps, so the header's height - and with it
+  // the page's place - cannot change when it appears or goes. In the Walk it reads on from the current step; in Open, from the first.
+  const gapsLine = deckBoard && (boardMode === 'walk' || boardMode === 'open')
+    ? <DeckGaps order={deckMain} kindledIds={deckKindled} fromIndex={boardMode === 'walk' ? deckMain.findIndex(b => b.id === (deckSteps.find(s => s.id === walkCurId)?.parentId ?? walkCurId)) : -1} deckName={title} flux={theme === 'flux'} onJump={jumpToGap} />
+    : null;
+
   const boardModeBar = (
     <div
       className="board-mode-strip"
@@ -3409,6 +3453,11 @@ export function BoardEditor({ id }: { id: string }) {
       boxes={boxes}
       extraDoors={walkDoors}
       kindledIds={walkKindled}
+      deck={deckBoard}
+      litIds={deckBoard ? deckLit : undefined}
+      kindlingIds={deckBoard ? deckRewards.kindling : undefined}
+      onToggleLit={deckBoard ? toggleLit : undefined}
+      onCurrent={setWalkCurId}
       startHereId={startHereCardId}
       jumpToId={walkJumpId}
       onJumped={() => setWalkJumpId(null)}
@@ -3565,6 +3614,7 @@ export function BoardEditor({ id }: { id: string }) {
                 onClick={() => { setNameDraft(boardName(getJournalEntry(id)?.text, '')); setRenaming(true); }}
               >{title}</button>
             )}
+            {gapsLine}
           </div>
           {boardModeBar}
           <div className="sprint-actions" style={{ display: 'flex', alignItems: 'center', gap: 12, marginLeft: 0 }}>
@@ -3627,7 +3677,9 @@ export function BoardEditor({ id }: { id: string }) {
               .board-canvas-wrap rendered at ~2px. legacy's own
               board-page container caps at maxWidth:1100 (board wants more
               room than prose's 720/760 measure); mirrored here. */}
-          <div style={{ width: 'min(100%, 1100px)', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ width: 'min(100%, 1100px)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+            {/* W5 - a Deck completes: the theme's existing goal celebration, once (an overlay on the stage's top edge; it takes no room) */}
+            <GoalCelebration celebrating={deckRewards.deck} />
             {boardContent}
           </div>
         </DeskFrame>
@@ -3639,12 +3691,13 @@ export function BoardEditor({ id }: { id: string }) {
   }
 
   return (
-    <div className="page board-page" style={{ maxWidth: 1100, paddingTop: '2.5rem' }}>
+    <div className="page board-page" style={{ maxWidth: 1100, paddingTop: '2.5rem', position: 'relative' }}>
       <div className="sprint-nav" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <div className="sprint-crumb" aria-label="Location">
           {drawer && <><span className="crumb-item">{drawer.name}</span><span className="crumb-sep">/</span></>}
           {project && <><span className="crumb-item">{project.title}</span><span className="crumb-sep">/</span></>}
           <span className="crumb-here">{title}</span>
+          {gapsLine}
         </div>
         {boardModeBar}
         <div className="sprint-actions" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -3658,6 +3711,7 @@ export function BoardEditor({ id }: { id: string }) {
 
       <div style={{ height: 16 }} />
 
+      <GoalCelebration celebrating={deckRewards.deck} />
       {boardContent}
       {actionToast.node}
     </div>
