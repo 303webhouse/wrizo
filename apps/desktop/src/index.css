@@ -941,16 +941,21 @@
    (1) 20% bigger: the rail's icons and names (24.48 / 25.92 / 12.96 px, were 20.4 / 21.6 / 10.8), the place block's name (13.8, was 11.5), the legacy rail's, and
        the top bar's tabs, crumbs and buttons. The top bar's HEIGHT is not allowed to grow: --fx3-chrome-budget (167) was measured against its 63 px row.
    (2) Settings, Themes and Trash are the SAME size as the places above them (they shipped a third smaller: 13.668 / 14.472 / 7.236).
-   (3) Their own look, against Flux's electric-blue wash + bar and Machina's grey hairlines: muted bronze rules (#8f7a4c - Arbor's decorative line), a warm tile on
-       hover (it painted the rail's own colour, so hover showed nothing), and an olive ribbon - a short bar, not Flux's full-height one - on the open item.
+   (3) A warm tile on hover (it painted the rail's own colour, so hover showed nothing) and an olive ribbon - a short bar, not Flux's full-height one - on the open item.
+       NO OUTLINING (Nick, later the same day: a design committee will review the menus' look): the bronze rules first tried here are gone; the lines are the room's own.
    Square corners, flat 1 px edges, no shadows. Olive marks where you are; brass stays for the press (.wz-strip-item:active, untouched).
+
+   POLISH - ARBOR'S ROOM (Nick, Oct 27): DEEP ESPRESSO (option A of docs/evidence/polish-arbor-ground) replaces the dark brown, for Arbor only - the five room tokens and the
+   lamplight pool are re-pointed under :root[data-theme='plateau'], so Flux and Machina (which read their own) are untouched. NO PURE WHITE: two named colours stand in wherever
+   a light accent is needed that is neither olive nor brass - --arbor-line (a moderate cream-brown: borders and accents) and --arbor-letter (a light cream-tan: lettering).
    ========================================================================================================================================================== */
-[data-theme='plateau']{ --arbor-rule:#8f7a4c; }
-/* the rail: bronze edge, plus a faint second rule inside it (a binder's edge) */
-[data-theme='plateau'] .desk-frame-strip{ border-color:var(--arbor-rule);
-  background-image:linear-gradient(to left, transparent 3px, rgba(143, 122, 76, .4) 3px, rgba(143, 122, 76, .4) 4px, transparent 4px); }
-[data-theme='plateau'] .wz-strip-sep{ background:var(--arbor-rule); }
-[data-theme='plateau'] .wz-strip-section--bracketed{ border-left-color:var(--arbor-rule); }
+:root[data-theme='plateau']{
+  --ink-950:#0A0503; --ink-900:#150F0B; --ink-800:#1F1711; --ink-border:#2A2018; --ink-border-strong:#3A2D22;
+  --lamp-glow: radial-gradient(135% 95% at 50% -8%, #2A1A0C 0%, #1C1209 38%, #110B07 70%, #0B0704 100%);
+  --arbor-line:#9C8A6E; --arbor-letter:#E8DCC2;
+}
+[data-theme='plateau'] .dz-toggle:hover{ color:var(--arbor-letter); }       /* was #fff */
+[data-theme='plateau'] .wz-page-setup-range{ background-color:transparent; } /* the slider's own box painted white; its track is the browser's, tinted olive */
 [data-theme='plateau'] .wz-strip-glyph,
 [data-theme='plateau'] .wz-strip-foot .wz-strip-glyph{ font-size:24.48px; }
 [data-theme='plateau'] .wz-strip-glyph svg,
@@ -963,12 +968,10 @@
 [data-theme='plateau'] .wz-strip-section--bracketed .wz-strip-item.active{ border-left-color:transparent;
   background-image:linear-gradient(var(--accent-rest), var(--accent-rest)); background-repeat:no-repeat; background-position:left center; background-size:3px 56%; }
 /* the legacy left rail (under 1100 px), same 20% */
-[data-theme='plateau'] .desk-rail{ border-right-color:var(--arbor-rule); }
 [data-theme='plateau'] .desk-rail-glyph{ font-size:21.6px; }
 [data-theme='plateau'] .desk-rail-label{ font-size:10.8px; }
 [data-theme='plateau'] .desk-rail-item:hover{ background-color:var(--ink-800); }
-/* the top bar: a bronze rule under it, tabs and buttons 20% bigger, the active tab's rule 2 px */
-[data-theme='plateau'] .sprint-nav{ border-bottom-color:var(--arbor-rule); }
+/* the top bar: tabs and buttons 20% bigger, the active tab's rule 2 px */
 [data-theme='plateau'] .desk-mode-tab{ font-size:12.48px; padding:7.5px 15.36px; border-bottom-width:2px; } /* bigger type, same tab height: the bar must stay 51 px tall or the PAGE moves. 2 px rule at rest too, so the active tab's rule never shifts it */
 [data-theme='plateau'] .desk-mode-tab.active{ border-bottom-width:2px; }
 [data-theme='plateau'] .sprint-crumb{ font-size:15.6px; }

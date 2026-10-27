@@ -1,0 +1,132 @@
+﻿node : REAPER: 0 harness browser(s), 0 owner(s) ΓÇö  | floor=300s | targets=0
+At C:\Users\nickh\AppData\Local\Temp\ps-script-81fdbb2e-5a8e-4223-a7e6-580a9c75e737.ps1:80 char:313
++ ... HOTS='after'; node scripts/harness/polish-arbor-room.mjs 2>&1 | Out-F ...
++                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (REAPER: 0 harne...00s | targets=0:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+REAPER: nothing to reap.
+[
+  {
+    "name": "R1: the room is deep espresso - --ink-900 (the room), --ink-950, --ink-800 and the two line colours",
+    "pass": true,
+    "detail": "{\"i950\":\"rgb(10, 5, 3)\",\"i900\":\"rgb(21, 15, 11)\",\"i800\":\"rgb(31, 23, 17)\",\"border\":\"rgb(42, 32, 24)\",\"strong\":\"rgb(58, 45, 34)\",\"htmlBg\":\"rgb(10, 5, 3)\",\"rail\":\"rgb(42, 32, 24)\",\"railBg\":\"none\",\"sep\":\"rgb(42, 32, 24)\",\"navRule\":\"rgb(42, 32, 24)\",\"bracket\":\"rgb(42, 32, 24)\",\"tokens\":{\"line\":\"#9C8A6E\",\"letter\":\"#E8DCC2\",\"lineRgb\":{\"r\":156,\"g\":138,\"b\":110},\"letterRgb\":{\"r\":232,\"g\":220,\"b\":194}},\"ratios\":{\"letter\":13.98,\"line\":5.68},\"paper\":{\"x\":187,\"y\":107,\"w\":992,\"h\":897.6,\"bg\":\"rgb(243, 237, 225)\"},\"navH\":51,\"glyphs\":{\"place\":[24.48,24.48,24.48],\"foot\":[24.48,24.48,24.48]}}"
+  },
+  {
+    "name": "R2: NO OUTLINING on the menus - the rail edge, its dividers, its bracket and the top bar rule are the room's own quiet lines, not bronze; no second rule drawn inside the rail",
+    "pass": true,
+    "detail": "{\"rail\":\"rgb(42, 32, 24)\",\"sep\":\"rgb(42, 32, 24)\",\"nav\":\"rgb(42, 32, 24)\",\"bracket\":\"rgb(42, 32, 24)\",\"bg\":\"none\"}"
+  },
+  {
+    "name": "R2: ...and they are the espresso lines (--ink-border) - quiet, as they were",
+    "pass": true,
+    "detail": "{\"rail\":\"rgb(42, 32, 24)\",\"nav\":\"rgb(42, 32, 24)\"}"
+  },
+  {
+    "name": "R4: the two replacement colours exist as tokens - --arbor-line and --arbor-letter - and clear their floors on the room (lettering >= 4.5:1, lines >= 3:1)",
+    "pass": true,
+    "detail": "{\"tokens\":{\"line\":\"#9C8A6E\",\"letter\":\"#E8DCC2\",\"lineRgb\":{\"r\":156,\"g\":138,\"b\":110},\"letterRgb\":{\"r\":232,\"g\":220,\"b\":194}},\"ratios\":{\"letter\":13.98,\"line\":5.68}}"
+  },
+  {
+    "name": "R5: the page is the very rect main paints (the room changed; the page did not)",
+    "pass": true,
+    "detail": "{\"x\":187,\"y\":107,\"w\":992,\"h\":897.6,\"bg\":\"rgb(243, 237, 225)\"}"
+  },
+  {
+    "name": "R6: the menus keep what was asked before - places 24.48 px, the foot as big (24.48), the top bar still 51 px",
+    "pass": true,
+    "detail": "{\"glyphs\":{\"place\":[24.48,24.48,24.48],\"foot\":[24.48,24.48,24.48]},\"navH\":51}"
+  },
+  {
+    "name": "R3 [writing page]: no pure white - not in a colour, background, border, shadow, icon stroke, gradient stop (alpha >= .5) or filter",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "R3 [writing page]: no image that is mostly white (the logo)",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "R3 [panel: Pages]: no pure white - not in a colour, background, border, shadow, icon stroke, gradient stop (alpha >= .5) or filter",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "R3 [panel: Pages]: no image that is mostly white (the logo)",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "R3 [panel: Boards]: no pure white - not in a colour, background, border, shadow, icon stroke, gradient stop (alpha >= .5) or filter",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "R3 [panel: Boards]: no image that is mostly white (the logo)",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "R3 [panel: Journal]: no pure white - not in a colour, background, border, shadow, icon stroke, gradient stop (alpha >= .5) or filter",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "R3 [panel: Journal]: no image that is mostly white (the logo)",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "R3 [panel: Settings]: no pure white - not in a colour, background, border, shadow, icon stroke, gradient stop (alpha >= .5) or filter",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "R3 [panel: Settings]: no image that is mostly white (the logo)",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "R3 [panel: Themes]: no pure white - not in a colour, background, border, shadow, icon stroke, gradient stop (alpha >= .5) or filter",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "R3 [panel: Themes]: no image that is mostly white (the logo)",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "R3 [panel: Trash]: no pure white - not in a colour, background, border, shadow, icon stroke, gradient stop (alpha >= .5) or filter",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "R3 [panel: Trash]: no image that is mostly white (the logo)",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "R3 [Desk (home)]: no pure white - not in a colour, background, border, shadow, icon stroke, gradient stop (alpha >= .5) or filter",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "R3 [Desk (home)]: no image that is mostly white (the logo)",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "R5 flux: keeps its own room (not the espresso) and its own menu sizes",
+    "pass": true,
+    "detail": "{\"i900\":\"rgb(15, 25, 38)\",\"i950\":\"rgb(1, 8, 17)\",\"foot\":[13.668,13.668,13.668]}"
+  },
+  {
+    "name": "R5 machina: keeps its own room (not the espresso) and its own menu sizes",
+    "pass": true,
+    "detail": "{\"i900\":\"rgb(18, 20, 26)\",\"i950\":\"rgb(10, 11, 14)\",\"foot\":[13.668,13.668,13.668]}"
+  }
+]
+
+POLISH-ARBOR-ROOM VERIFY: PASS (24 checks)
