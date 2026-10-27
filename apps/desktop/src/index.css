@@ -934,6 +934,49 @@
   .flux-block-caret{ animation:none; opacity:1; }
 }
 
+/* ==========================================================================================================================================================
+   POLISH - ARBOR'S MENUS (Nick, Oct 27). Arbor-scoped ([data-theme='plateau'] is Arbor), cosmetic only: no rect, track, token or behaviour changes.
+   (1) 20% bigger: the rail's icons and names (24.48 / 25.92 / 12.96 px, were 20.4 / 21.6 / 10.8), the place block's name (13.8, was 11.5), the legacy rail's, and
+       the top bar's tabs, crumbs and buttons. The top bar's HEIGHT is not allowed to grow: --fx3-chrome-budget (167) was measured against its 63 px row.
+   (2) Settings, Themes and Trash are the SAME size as the places above them (they shipped a third smaller: 13.668 / 14.472 / 7.236).
+   (3) Their own look, against Flux's electric-blue wash + bar and Machina's grey hairlines: muted bronze rules (#8f7a4c - Arbor's decorative line), a warm tile on
+       hover (it painted the rail's own colour, so hover showed nothing), and an olive ribbon - a short bar, not Flux's full-height one - on the open item.
+   Square corners, flat 1 px edges, no shadows. Olive marks where you are; brass stays for the press (.wz-strip-item:active, untouched).
+   ========================================================================================================================================================== */
+[data-theme='plateau']{ --arbor-rule:#8f7a4c; }
+/* the rail: bronze edge, plus a faint second rule inside it (a binder's edge) */
+[data-theme='plateau'] .desk-frame-strip{ border-color:var(--arbor-rule);
+  background-image:linear-gradient(to left, transparent 3px, rgba(143, 122, 76, .4) 3px, rgba(143, 122, 76, .4) 4px, transparent 4px); }
+[data-theme='plateau'] .wz-strip-sep{ background:var(--arbor-rule); }
+[data-theme='plateau'] .wz-strip-section--bracketed{ border-left-color:var(--arbor-rule); }
+[data-theme='plateau'] .wz-strip-glyph,
+[data-theme='plateau'] .wz-strip-foot .wz-strip-glyph{ font-size:24.48px; }
+[data-theme='plateau'] .wz-strip-glyph svg,
+[data-theme='plateau'] .wz-strip-foot .wz-strip-glyph svg{ width:25.92px; height:25.92px; }
+[data-theme='plateau'] .wz-strip-label,
+[data-theme='plateau'] .wz-strip-foot .wz-strip-label{ font-size:12.96px; }
+[data-theme='plateau'] .wz-place-block .wz-place-name{ font-size:13.8px; }
+[data-theme='plateau'] .wz-strip-item:hover{ background-color:var(--ink-800); }
+[data-theme='plateau'] .wz-strip-item.active,
+[data-theme='plateau'] .wz-strip-section--bracketed .wz-strip-item.active{ border-left-color:transparent;
+  background-image:linear-gradient(var(--accent-rest), var(--accent-rest)); background-repeat:no-repeat; background-position:left center; background-size:3px 56%; }
+/* the legacy left rail (under 1100 px), same 20% */
+[data-theme='plateau'] .desk-rail{ border-right-color:var(--arbor-rule); }
+[data-theme='plateau'] .desk-rail-glyph{ font-size:21.6px; }
+[data-theme='plateau'] .desk-rail-label{ font-size:10.8px; }
+[data-theme='plateau'] .desk-rail-item:hover{ background-color:var(--ink-800); }
+/* the top bar: a bronze rule under it, tabs and buttons 20% bigger, the active tab's rule 2 px */
+[data-theme='plateau'] .sprint-nav{ border-bottom-color:var(--arbor-rule); }
+[data-theme='plateau'] .desk-mode-tab{ font-size:12.48px; padding:10.8px 15.36px; border-bottom-width:2px; } /* 2 px at rest too, so the active tab's rule never shifts it */
+[data-theme='plateau'] .sprint-crumb,
+[data-theme='plateau'] .sprint-nav .btn-quiet{ font-size:15.6px; }
+@media (min-width:1700px){
+  [data-theme='plateau'] .sprint-crumb,
+  [data-theme='plateau'] .sprint-nav .btn-quiet{ font-size:18px; }
+  [data-theme='plateau'] .desk-rail-glyph{ font-size:27.6px; }
+  [data-theme='plateau'] .desk-rail-label{ font-size:13.2px; }
+}
+
 html {
   /* theme-leftovers (Nick approved Oct 16) — was a hardcoded Arbor literal,
      never themed (the one place --ink-950 existed to prevent exactly this).
