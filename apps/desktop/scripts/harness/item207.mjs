@@ -114,8 +114,20 @@ await withHarness(async (app) => {
   const drScoped = await app.evalJs(`(() => { const t = document.querySelector('.wz-sliver .wz-type'); if (!t) return null; return { buttons: t.querySelectorAll('button').length, inputs: t.querySelectorAll('input').length,
     faceButton: !!t.querySelector('.wz-type-face'), scopes: [...t.querySelectorAll('.wz-type-scope')].map(b => b.textContent), rows: t.querySelectorAll('.wz-type-list-inline .wz-type-row').length }; })()`);
   i207Parks.draftForm = drScoped;
-  ok('DRAFT [font-span successor]: the Typeface control is the scoped form - "Selection" / "Whole document" over the nine faces shown as a list, `-` `+` and ONE number field, no face button',
-    !!drScoped && drScoped.buttons === 4 && drScoped.inputs === 1 && !drScoped.faceButton && JSON.stringify(drScoped.scopes) === JSON.stringify(['Selection', 'Whole document']) && drScoped.rows === 9, JSON.stringify(drScoped));
+  // ---- PARKED - SUPERSEDED by TOOLS #10 item 9 (the font list is collapsed by default): the scoped form now has a face button that opens the list. Kept VERBATIM, no longer run:
+  // ok('DRAFT [font-span successor]: the Typeface control is the scoped form - "Selection" / "Whole document" over the nine faces shown as a list, `-` `+` and ONE number field, no face button',
+  //   !!drScoped && drScoped.buttons === 4 && drScoped.inputs === 1 && !drScoped.faceButton && JSON.stringify(drScoped.scopes) === JSON.stringify(['Selection', 'Whole document']) && drScoped.rows === 9, JSON.stringify(drScoped));
+  // ------------------------------------------------------------------
+  ok('DRAFT [item-9 successor]: the Typeface control is the scoped form - "Selection" / "Whole document", a face button, the nine faces as a list COLLAPSED by default, `-` `+` and ONE number field',
+    !!drScoped && drScoped.buttons === 5 && drScoped.inputs === 1 && drScoped.faceButton && JSON.stringify(drScoped.scopes) === JSON.stringify(['Selection', 'Whole document']) && drScoped.rows === 9, JSON.stringify(drScoped));
+  const collapsed = await app.evalJs(`(() => { const t = document.querySelector('.wz-sliver .wz-type'); const ul = t.querySelector('.wz-type-list-inline'); const b = t.querySelector('.wz-type-face'); return { shown: !!ul && ul.getBoundingClientRect().height > 0, hidden: ul && ul.hidden, expanded: b && b.getAttribute('aria-expanded') }; })()`);
+  ok('DRAFT [item 9]: the face list is COLLAPSED by default - hidden, no height, the face button aria-expanded=false', !!collapsed && !collapsed.shown && collapsed.hidden === true && collapsed.expanded === 'false', JSON.stringify(collapsed));
+  await app.evalJs("document.querySelector('.wz-sliver .wz-type-face').click()"); await sleep(250);
+  const expanded = await app.evalJs(`(() => { const t = document.querySelector('.wz-sliver .wz-type'); const ul = t.querySelector('.wz-type-list-inline'); const rows = [...ul.querySelectorAll('.wz-type-row')]; return { shown: ul.getBoundingClientRect().height > 0, rows: rows.filter((r) => r.getBoundingClientRect().height > 0).length, expanded: t.querySelector('.wz-type-face').getAttribute('aria-expanded') }; })()`);
+  ok('DRAFT [item 9]: pressing the face button opens the list (the nine rows have height, aria-expanded=true)', !!expanded && expanded.shown && expanded.rows === 9 && expanded.expanded === 'true', JSON.stringify(expanded));
+  await app.key('Escape'); await sleep(250);
+  const closedAgain = await app.evalJs("(() => { const ul = document.querySelector('.wz-sliver .wz-type .wz-type-list-inline'); return { hidden: ul.hidden, h: Math.round(ul.getBoundingClientRect().height) }; })()");
+  ok('DRAFT [item 9]: Esc closes it again', !!closedAgain && closedAgain.hidden === true && closedAgain.h === 0, JSON.stringify(closedAgain));
 
   await openPage(app, { id: 'i207-rv', mode: 'revise' });
   await openDrawer(app);
@@ -290,8 +302,12 @@ await withHarness(async (app) => {
     const csScoped = await app.evalJs(`(() => { const t = document.querySelector('.board-popup-dock .wz-type'); if (!t) return null; return { buttons: t.querySelectorAll('button').length, inputs: t.querySelectorAll('input').length,
     faceButton: !!t.querySelector('.wz-type-face'), scopes: [...t.querySelectorAll('.wz-type-scope')].map(b => b.textContent), rows: t.querySelectorAll('.wz-type-list-inline .wz-type-row').length }; })()`);
     i207Parks.cardForm = csScoped;
-    ok('CARD [font-span successor]: the dock carries the scoped small form - "Selection" / "Whole card" over the nine faces, `-` `+`, no number field, no face button',
-      !!csScoped && csScoped.buttons === 4 && csScoped.inputs === 0 && !csScoped.faceButton && JSON.stringify(csScoped.scopes) === JSON.stringify(['Selection', 'Whole card']) && csScoped.rows === 9, JSON.stringify(csScoped));
+    // ---- PARKED - SUPERSEDED by TOOLS #10 item 9 (the list is collapsed by default; the scoped form has a face button). Kept VERBATIM, no longer run:
+    // ok('CARD [font-span successor]: the dock carries the scoped small form - "Selection" / "Whole card" over the nine faces, `-` `+`, no number field, no face button',
+    //   !!csScoped && csScoped.buttons === 4 && csScoped.inputs === 0 && !csScoped.faceButton && JSON.stringify(csScoped.scopes) === JSON.stringify(['Selection', 'Whole card']) && csScoped.rows === 9, JSON.stringify(csScoped));
+    // ------------------------------------------------------------------
+    ok('CARD [item-9 successor]: the dock carries the scoped small form - "Selection" / "Whole card", a face button (the nine faces COLLAPSED behind it), `-` `+`, no number field',
+      !!csScoped && csScoped.buttons === 5 && csScoped.inputs === 0 && csScoped.faceButton && JSON.stringify(csScoped.scopes) === JSON.stringify(['Selection', 'Whole card']) && csScoped.rows === 9, JSON.stringify(csScoped));
     await press(app, "document.querySelectorAll('.board-popup-dock .wz-type-step')[1]", "the card's `+`");
     await sleep(300);
     await pickFace(app, 'Atkinson Hyperlegible');
