@@ -5260,6 +5260,19 @@ a:focus-visible,
   overflow:hidden; pointer-events:none;
 }
 @media (prefers-reduced-motion:reduce){ .wz-cascade-panel{ transition:none; } }
+/* TOOLS #10 item 8 - the rail pop-outs (Pages, Boards, ...; their surveys) use the Tools strip's slide-and-fade in every theme: they slide out from the rail AND fade in together, and on close slide back AND fade out, on the
+   strip's own tokens (--drawer-dur / --drawer-ease; the short fade alone under reduced motion). `backwards` fill on the way in: once it has played, the ordinary rules (the dock's collapse above) govern again. The leaving layers
+   (Cascade.tsx keeps them drawn for the exit, data-leaving) take no input. Overlay only: nothing here moves the page. */
+@keyframes wz-cascade-in{ from{ opacity:0; transform:translateX(-28px); } to{ opacity:1; transform:none; } }
+@keyframes wz-cascade-out{ from{ opacity:1; transform:none; } to{ opacity:0; transform:translateX(-28px); } }
+@keyframes wz-cascade-fade-in{ from{ opacity:0; } to{ opacity:1; } }
+@keyframes wz-cascade-fade-out{ from{ opacity:1; } to{ opacity:0; } }
+.wz-cascade-panel, .wz-cascade-survey{ animation:wz-cascade-in var(--drawer-dur) var(--drawer-ease) backwards; }
+.wz-cascade-panel[data-leaving='true'], .wz-cascade-panel[data-leaving='true'] ~ .wz-cascade-survey{ animation:wz-cascade-out var(--drawer-dur) var(--drawer-ease) forwards; pointer-events:none; }
+@media (prefers-reduced-motion:reduce){
+  .wz-cascade-panel, .wz-cascade-survey{ animation-name:wz-cascade-fade-in; animation-duration:var(--drawer-dur-reduced); animation-timing-function:linear; }
+  .wz-cascade-panel[data-leaving='true'], .wz-cascade-panel[data-leaving='true'] ~ .wz-cascade-survey{ animation-name:wz-cascade-fade-out; animation-duration:var(--drawer-dur-reduced); animation-timing-function:linear; }
+}
 .wz-cascade-panel-head{ display:flex; align-items:center; justify-content:space-between; gap:8px;
   padding:12px 14px 10px; border-bottom:1px solid var(--ink-border); }
 /* item 83 M1 (R7) — the cascade drawer's engraved heading, same register as
