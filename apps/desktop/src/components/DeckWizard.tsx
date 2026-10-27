@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { decksByRoom } from '../decks/library';
 import { HelpMeChoose } from './HelpMeChoose';
+import type { HelpLanding } from '../decks/helpMeChoose';
 import { useTheme } from '../store/theme';
 import { FORMS_GROUPS, blockRangeLabel, coverTermKey } from '../decks/formCounts';
 import type { DeckDefinition, DeckAnswers, DeckRoom } from '../decks/types';
@@ -34,6 +35,8 @@ export interface DeckWizardProps {
   decks: DeckDefinition[];
   onDeal: (deck: DeckDefinition, answers: DeckAnswers) => void;
   onClose: () => void;
+  // TOOLS #9 - "Begin" on a librarian pick carries Q3's landing (open / the Walk / the Walk with "?" open). Told to the host BEFORE the deal (the deal may come after more questions); the host applies it when it deals. Absent = a host with no views to land in.
+  onLanding?: (landing: HelpLanding) => void;
   // BIG PROJECTS step 2 - open straight on this deck's first question (a preset on the Boards tab); a deck with no questions deals at once. An unknown id opens the library.
   startDeckId?: string;
   // W4 - the deck's own deal answers already settled (the librarian's pick, riding the address); the wizard opens on the first question NOT answered, and deals at once when every question is.
@@ -57,7 +60,7 @@ const ROOM_TERM: Record<DeckRoom, DeskTermId> = {
   every: 'deckRoomEvery',
 };
 
-export function DeckWizard({ decks, onDeal, onClose, startDeckId, startAnswers, pagesFor }: DeckWizardProps) {
+export function DeckWizard({ decks, onDeal, onClose, onLanding, startDeckId, startAnswers, pagesFor }: DeckWizardProps) {
   const { t } = useDeskLexicon();
   const machina = useTheme() === 'machina';
   // W3 - the pages picked so far, in the order picked (the page step of From my pages)
@@ -87,9 +90,10 @@ export function DeckWizard({ decks, onDeal, onClose, startDeckId, startAnswers, 
   };
 
   // W4 - "Begin" on a librarian pick: the deck, with the deal answers the table settled; the wizard asks only the rest
-  const beginChoice = (choice: { deck: string; answers: DeckAnswers }) => {
+  const beginChoice = (choice: { deck: string; answers: DeckAnswers }, landing: HelpLanding) => {
     const deck = decks.find((d) => d.id === choice.deck);
     setHelpOpen(false);
+    onLanding?.(landing);
     if (!deck) return;
     const open = firstOpen(deck, choice.answers);
     if (deck.questions.length === 0 || open < 0) { onDeal(deck, deck.questions.length === 0 ? {} : choice.answers); onClose(); return; }
@@ -296,7 +300,7 @@ export function DeckWizard({ decks, onDeal, onClose, startDeckId, startAnswers, 
           );
         })()}
       </div>
-      {helpOpen && <HelpMeChoose onBegin={(choice) => beginChoice(choice)} onBrowse={() => setHelpOpen(false)} onClose={() => setHelpOpen(false)} returnFocusTo={helpDoorRef.current} />}
+      {helpOpen && <HelpMeChoose onBegin={(choice, landing) => beginChoice(choice, landing)} onBrowse={() => setHelpOpen(false)} onClose={() => setHelpOpen(false)} returnFocusTo={helpDoorRef.current} />}
     </div>,
     document.body,
   );

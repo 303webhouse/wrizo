@@ -29,6 +29,9 @@ export interface WalkProps {
   kindledIds: ReadonlySet<string>;
   /** "Start Here" folds into the first seed. */
   startHereId?: string | null;
+  /** TOOLS #9 - one-shot: open THIS card's step "?" as the card shows (the librarian's "a little"), then call onHelpShown so it is never opened again. Nothing is stored. */
+  helpCardId?: string | null;
+  onHelpShown?: () => void;
   /** Jump to this card (a card just added in the Walk), then call onJumped. */
   jumpToId?: string | null;
   onJumped?: () => void;
@@ -36,6 +39,10 @@ export interface WalkProps {
   receded: boolean;
   /** Flux dress: brackets and TRK n/m. */
   flux: boolean;
+  /** TOOLS #9 - Machina's Step (dress only): the readout row above the Block (AGENDA · NAME ... BLOCK 02 / 05) and the keys hint under it. Absent = no readout (every other theme). */
+  readout?: { kind: 'agenda' | 'plan'; name: string };
+  /** Machina: no motion - the step is a cut, as under reduced motion. */
+  still?: boolean;
   /** Below the DeskFrame width: the doors stack and the next card peeks. */
   narrow: boolean;
   /** Shown when the board has no card yet (the Beginnings row). */
@@ -131,7 +138,7 @@ export function Walk(p: WalkProps) {
   const go = useCallback((dir: 1 | -1, to?: number) => {
     const next = to ?? walkStep(order.length, cur, dir);
     if (next === cur || !card) return;
-    const reduced = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const reduced = !!p.still || (typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
     const plan = swipePlan(next > cur ? 1 : -1, reduced);
     if (timer.current !== null) window.clearTimeout(timer.current);
     if (plan.kind === 'slide') {
@@ -140,7 +147,7 @@ export function Walk(p: WalkProps) {
       timer.current = window.setTimeout(() => { setLeaving(null); setIncoming(null); }, plan.ms + 30);
     } else { setLeaving(null); setIncoming(null); }
     setIndex(next);
-  }, [order.length, cur, card]);
+  }, [order.length, cur, card, p.still]);
 
   // a card just added in the Walk: land on it (no swipe)
   useEffect(() => {
@@ -217,6 +224,12 @@ export function Walk(p: WalkProps) {
     <div className="walk" data-walk data-flux={p.flux ? 'true' : 'false'} data-narrow={p.narrow ? 'true' : 'false'}>
       <div className="walk-stage" ref={stageRef}>
         <div className="walk-frame" style={{ width: box.width }}>
+          {p.readout && (
+            <div className="walk-readout">
+              <span className="walk-readout-name">{t(p.readout.kind === 'agenda' ? 'walkReadoutAgenda' : 'walkReadoutPlan')} · {p.readout.name}</span>
+              <span className="walk-readout-count">{t('walkBlockOf').replace('{n}', String(cur + 1).padStart(2, '0')).replace('{m}', String(order.length).padStart(2, '0'))}</span>
+            </div>
+          )}
           <button type="button" className="walk-nav" data-dir="prev" data-recede={navHidden ? 'true' : 'false'} aria-label={t('walkPrev')} aria-disabled={cur === 0} onClick={() => go(-1)}><ChevronIcon dir="prev" /></button>
           <button type="button" className="walk-nav" data-dir="next" data-recede={navHidden ? 'true' : 'false'} aria-label={t('walkNext')} aria-disabled={cur >= order.length - 1} onClick={() => go(1)}><ChevronIcon dir="next" /></button>
           <div className="walk-window">
@@ -242,7 +255,7 @@ export function Walk(p: WalkProps) {
               {p.deck && cardKindled && <KindleMark />}
               {p.deck && cardLit && <LitMark />}
               {p.renderEditor(card)}
-              {card.deckStep && !card.sourceEntryId && <StepHelp box={card} faceSelector=".board-popup-editor" />}
+              {card.deckStep && !card.sourceEntryId && <StepHelp box={card} faceSelector=".board-popup-editor" openOnce={p.helpCardId === card.id} onOpened={p.onHelpShown} />}
               <span className="walk-grip" role="separator" aria-label={t('walkResize')} onPointerDown={onGripDown}>
                 <svg viewBox="0 0 12 12" width="12" height="12" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" aria-hidden="true"><path d="M11 5L5 11M11 8.5L8.5 11" /></svg>
               </span>
@@ -251,8 +264,9 @@ export function Walk(p: WalkProps) {
             {p.flux && <div className="flux-brackets walk-brackets" aria-hidden="true" />}   {/* a sibling of the card, not inside it: the card scrolls and clips, and the brackets stand just outside its corners */}
           </div>
         </div>
-        <div className="walk-doors" role="group">
+        <div className="walk-doors" role="group" style={p.readout ? { width: box.width } : undefined}>
           {doors.map((d) => <button key={d.key} type="button" className="walk-door" data-door={d.key} onClick={(e) => d.onOpen(card, e.currentTarget)}>{d.label}</button>)}
+          {p.readout && <span className="walk-keys">{t('walkKeysHint')}</span>}
         </div>
         <div className="walk-rail" role="list" aria-label={t('walkRail')}>
           {marks.map((m, i) => (

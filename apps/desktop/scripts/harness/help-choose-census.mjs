@@ -179,7 +179,13 @@ ok('C1: Q3 is little / shape / everything', !!m && same(m.Q3, Q3), m ? JSON.stri
   const text = existsSync(MODULE) ? readFileSync(MODULE, 'utf8').replace(/\r\n/g, '\n') : '';
   const flags = [...text.matchAll(/export const WALK_SHIPPED(?::\s*boolean)?\s*=\s*(true|false)\s*;/g)];
   ok('C6: the switch is ONE line - exactly one `export const WALK_SHIPPED = <boolean>;`, and q3Landing\'s default reads it (a one-line change when W1 lands)', flags.length === 1 && /q3Landing\([^)]*walkShipped(?::\s*boolean)?\s*=\s*WALK_SHIPPED/.test(text), `${flags.length} declaration(s)`);
-  ok('C6: until W1 merges the shipped value is false (the fallback is the default, not an opt-in)', flags.length === 1 && flags[0][1] === 'false' && !!m && m.WALK_SHIPPED === false, flags[0] ? flags[0][1] : '');
+  // ORIGINAL (this check's own live predicate, until W1 merged): ok('C6: until W1 merges the shipped value is false (the fallback is the default, not an opt-in)', flags.length === 1 && flags[0][1] === 'false' && !!m && m.WALK_SHIPPED === false, flags[0] ? flags[0][1] : '');
+  // SUPERSEDED (TOOLS #9, Oct 26 - W1 is live and in main): the ruling it pinned ("false until W1 merges") is falsified by W1 merging. The sense is unchanged and is what the successor pins: the switch is the ONE
+  // declaration, it now reads true, and with NO argument q3Landing gives the content doc's three landings. The original is run below as a PARKED RECORD (it must now fail, for exactly that reason).
+  const origShippedFalse = flags.length === 1 && flags[0][1] === 'false' && !!m && m.WALK_SHIPPED === false;
+  const DEFAULT = m ? await run(() => Object.fromEntries(Q3.map((q) => [q, m.q3Landing(q)]))) : null;
+  ok('C6 [W1-live successor]: the switch reads true (W1 is live) and the DEFAULT landing (no argument) is Q3\'s - "a little" the Walk with "?" open, "the shape" the Walk, "?" closed, "everything" Open', flags.length === 1 && flags[0][1] === 'true' && !!m && m.WALK_SHIPPED === true && !!DEFAULT && !DEFAULT.threw && same(DEFAULT.little, { view: 'walk', helpOpen: true }) && same(DEFAULT.shape, { view: 'walk', helpOpen: false }) && same(DEFAULT.everything, { view: 'open', helpOpen: false }), JSON.stringify({ flag: flags[0] ? flags[0][1] : null, DEFAULT }));
+  ok('C6 [parked record]: the ORIGINAL (WALK_SHIPPED is false) now fails ONLY because W1 merged and the switch was flipped to true', !origShippedFalse && flags.length === 1 && flags[0][1] === 'true', flags[0] ? flags[0][1] : '');
 }
 // C7 - the "why" lines: one per distinct pick, in the lexicon, one short sentence
 {
@@ -228,6 +234,71 @@ ok('C1: Q3 is little / shape / everything', !!m && same(m.Q3, Q3), m ? JSON.stri
   ok('MUTANT (liveness): a host with the gated mount but NO door at all must not pass (the successor demands at least one onClick open)', noMatches === false, String(noMatches));
 }
 
+// C11 - TOOLS #9: the hosts HONOUR q3Landing (Fable, Oct 26). The token round trip is the module's (browserless); the wiring is read from source (the DOM half is help-choose.mjs L4/L5 on a box turn).
+{
+  const strip = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+  const rd = (f) => (existsSync(join(SRC, f)) ? strip(readFileSync(join(SRC, f), 'utf8').replace(/\r\n/g, '\n')) : '');
+  const TOK = [{ view: 'open', helpOpen: false }, { view: 'walk', helpOpen: false }, { view: 'walk', helpOpen: true }];
+  const rt = m ? await run(() => TOK.map((l) => m.landingFromToken(m.landingToken(l)))) : null;
+  ok('C11: the landing rides the address as a token and comes back whole - open / walk / walk-help round-trip, each its own token', !!rt && !rt.threw && rt.every((l, i) => same(l, TOK[i])) && new Set(TOK.map((l) => m.landingToken(l))).size === 3, JSON.stringify(rt));
+  const junk = m ? await run(() => [null, undefined, '', 'Open', 'walk-help ', 'everything', 'walk,open'].map((x) => m.landingFromToken(x))) : null;
+  ok('C11: an unknown or missing token is "no landing" (null) - never a guess', !!junk && !junk.threw && junk.every((x) => x === null), JSON.stringify(junk));
+  const unborn = rd('store/unbornPage.ts'), popout = rd('components/SectionsPopout.tsx'), wizard = rd('components/DeckWizard.tsx'), editor = rd('components/BoardEditor.tsx'), walk = rd('components/Walk.tsx'), stepHelp = rd('components/StepHelp.tsx');
+  const unbornOk = (t) => /landing: rawDeck && rawDeck\.trim\(\) \? landingFromToken\(q\.get\('land'\)\) : null/.test(t) && /if \(d\.deck && d\.landing\) q\.set\('land', landingToken\(d\.landing\)\)/.test(t);
+  const popoutOk = (t) => /const helpBegin = \(choice: [^)]*\}, landing: HelpLanding\)/.test(t) && /unbornHref\(\{ kind: 'board', deck: choice\.deck, deckAnswers: encodeDeckAnswers\(choice\.answers\), landing,/.test(t);
+  const wizardOk = (t) => /beginChoice = \(choice: [^)]*\}, landing: HelpLanding\)/.test(t) && /onLanding\?\.\(landing\)/.test(t) && /onBegin=\{\(choice, landing\) => beginChoice\(choice, landing\)\}/.test(t);
+  const editorOk = (t) => /landingRef = useRef<HelpLanding \| null>\(unborn\?\.descriptor\.landing \?\? null\)/.test(t) && /if \(landing\.view === 'open'\) setBoardMode\('open'\)/.test(t) && /if \(landing\.helpOpen && .*&& result\.firstCardId\) setWalkHelpId\(result\.firstCardId\)/.test(t)
+    && /onLanding=\{\(l\) => \{ landingRef\.current = l; \}\}/.test(t) && /helpCardId=\{walkHelpId\}/.test(t) && /onHelpShown=\{\(\) => setWalkHelpId\(null\)\}/.test(t) && /landingRef\.current = null;\s*\n\s*if \(landing\)/.test(t);
+  const walkOk = (t) => /openOnce=\{p\.helpCardId === card\.id\} onOpened=\{p\.onHelpShown\}/.test(t);
+  const stepOk = (t) => /if \(!openOnce\) \{ shown\.current = false; return; \}\s*\n\s*if \(at == null \|\| shown\.current\) return;[^\n]*\n\s*shown\.current = true;\s*\n\s*setOpen\(true\);\s*\n\s*onOpened\?\.\(\);/.test(t)
+    && /\}, \[open\]\);/.test(t) && !/\}, \[open, at\]\);/.test(t);   // the popover's position effect sets state: keyed on `at` (every keystroke in a growing card) it was a render loop (React #185)
+  ok('C11: the address carries the landing - readDescriptor reads `land` (only beside a deck) and unbornHref writes it (only beside a deck)', unbornOk(unborn), '');
+  ok('C11: the Boards pop-out\'s Begin hands the pick\'s landing to the address (helpBegin takes it and puts it in unbornHref)', popoutOk(popout), '');
+  ok('C11: the wizard\'s own Begin tells its host the landing BEFORE the deal (beginChoice -> onLanding)', wizardOk(wizard), '');
+  ok('C11: the board applies it ONCE at the deal - "everything" -> setBoardMode(\'open\'); "a little" -> the first dealt card\'s "?" one-shot; cleared on use and when the wizard closes; the Walk gets the one-shot props', editorOk(editor), '');
+  ok('C11: the Walk opens the one card\'s "?" once (openOnce on the matching card) and StepHelp opens then reports it', walkOk(walk) && stepOk(stepHelp), '');
+  const muts = [
+    ['the pop-out drops the landing from the address', popout, (t) => t.replace('encodeDeckAnswers(choice.answers), landing,', 'encodeDeckAnswers(choice.answers),'), popoutOk],
+    ['the wizard never tells its host the landing', wizard, (t) => t.replace('onLanding?.(landing);', ''), wizardOk],
+    ['"everything" no longer opens the board as Open', editor, (t) => t.replace("if (landing.view === 'open') setBoardMode('open');", "if (landing.view === 'open') { /* nothing */ }"), editorOk],
+    ['the landing is never consumed (it would apply to every later deal)', editor, (t) => t.replace(/landingRef\.current = null;(\s*\n\s*if \(landing\))/, '$1'), editorOk],
+    ['readDescriptor ignores `land`', unborn, (t) => t.replace("landingFromToken(q.get('land'))", 'null'), unbornOk],
+    ['the Walk never asks the "?" to open', walk, (t) => t.replace('openOnce={p.helpCardId === card.id}', 'openOnce={false}'), walkOk],
+    ['StepHelp never opens on openOnce', stepHelp, (t) => t.replace('setOpen(true);\n    onOpened?.();', 'onOpened?.();'), stepOk],
+    ['the popover position effect is keyed on the "?" position again (the render loop on long typing)', stepHelp, (t) => t.replace('}, [open]);', '}, [open, at]);'), stepOk],
+  ];
+  for (const [name, text, mutate, pred] of muts) {
+    const next = mutate(text);
+    ok(`MUTANT: ${name} - its C11 check must go RED (the mutation LANDED: the real source passes)`, next !== text && pred(text) && !pred(next), '');
+  }
+}
+
+// C12 - TOOLS #9: Machina's INTAKE is a dress and a form over the SAME table (source half; machina-intake.mjs is the DOM half). No second table, no new logic, nothing stored, no motion.
+{
+  const strip = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+  const panel = existsSync(join(SRC, 'components', 'HelpMeChoose.tsx')) ? strip(readFileSync(join(SRC, 'components', 'HelpMeChoose.tsx'), 'utf8').replace(/\r\n/g, '\n')) : '';
+  const variantOk = (t) => /theme === 'machina' \? 'intake'/.test(t);
+  const fieldsOk = (t) => /slug: 'document'[^\n]*ids: Q1/.test(t) && /slug: 'carried'[^\n]*ids: q1 != null \? q2Options\(q1\) : \[\]/.test(t) && /slug: 'briefing'[^\n]*ids: Q3/.test(t) && /\{step < 3 \? fields\.map\(/.test(t);
+  const stillOk = (t) => /const still = variant === 'intake' \|\|/.test(t);
+  const sameTableOk = (t) => /pickFor\(q1, hasQ2 \? q2 : null\)/.test(t) && !/\bTABLE\b|\bQ2_BY_Q1\b|'novel\/person-change'/.test(t) && /import \{ Q1, Q3, q2Options, pickFor, q3Landing, whyKeyFor/.test(t);
+  const inPlaceOk = (t) => /\)\) : result \? \(\s*<>\s*<div className="help-readout">/.test(t) && !/help-show-result|setShowResult|onShowResult/.test(t);
+  ok('C12: Machina maps to the Intake variant (and only Machina)', variantOk(panel) && /theme === 'plateau' \? 'librarian' : theme === 'flux' \? 'diagnostic' : theme === 'machina' \? 'intake' : 'plain'/.test(panel), '');
+  ok('C12: Intake is ONE form with three fields on screen at once - DOCUMENT = Q1, CARRIED BY = Q2 (its answers follow Document), BRIEFING = Q3 - all drawn together while the result is not yet there', fieldsOk(panel), '');
+  ok('C12: the result appears IN PLACE (the readout replaces the fields) - there is no button or state that asks for it', inPlaceOk(panel), '');
+  ok('C12: Intake reads the SAME census table (pickFor / q2Options / Q1 / Q3 / q3Landing / whyKeyFor from decks/helpMeChoose) and holds no second table', sameTableOk(panel), '');
+  ok('C12: Intake is still - no motion (the step is marked data-still under it)', stillOk(panel), '');
+  const imuts = [
+    ['Machina falls back to the plain panel', (t) => t.replace("theme === 'machina' ? 'intake'", "theme === 'machina' ? 'plain'"), variantOk],
+    ['only the current field is drawn (the other two vanish)', (t) => t.replace('{step < 3 ? fields.map(', '{step < 3 ? fields.filter((f) => f.n === openField).map('), fieldsOk],
+    ['Intake grows a second table of its own', (t) => t.replace('pickFor(q1, hasQ2 ? q2 : null)', "TABLE[q1 + '/' + q2]"), sameTableOk],
+    ['Intake slides (not still)', (t) => t.replace("const still = variant === 'intake' ||", 'const still ='), stillOk],
+  ];
+  for (const [name, mutate, pred] of imuts) {
+    const next = mutate(panel);
+    ok(`MUTANT: ${name} - its C12 check must go RED (the mutation LANDED: the real panel passes)`, next !== panel && pred(panel) && !pred(next), '');
+  }
+}
+
 // ------------------------------------------------------------------ MUTANTS: each rewrites the REAL module, asserts the mutation LANDED, bundles it, and re-runs the check it targets - which must go RED
 if (m) {
   const moduleText = readFileSync(MODULE, 'utf8').replace(/\r\n/g, '\n');
@@ -246,7 +317,9 @@ if (m) {
   await mutated('the Pilot answer is dropped to the plain Feature form (C3)', "'screenplay/pilot': [beats('pilot'), SCENE_SEQUEL]", "'screenplay/pilot': [beats('feature'), SCENE_SEQUEL]", rowsWrong);
   await mutated('Poems gains an alternative before the Verse Shape exists (C3)', "'poems/': [MY_PAGES, null]", "'poems/': [MY_PAGES, SCENE_SEQUEL]", rowsWrong);
   await mutated('Q2 collapses to ONE shared answer list (C2: Q2 no longer depends on Q1)', "return Q2_BY_Q1[q1] ?? [];", "return FICTION;", (mm) => !same(mm.q2Options('poems'), Q2.poems) || !same(mm.q2Options('essay'), Q2.essay));
-  await mutated('the Walk is declared shipped (C6: the W1-absent fallback)', 'export const WALK_SHIPPED = false;', 'export const WALK_SHIPPED = true;', (mm) => !same(mm.q3Landing('little'), { view: 'open', helpOpen: false }));
+  // ORIGINAL (parked, W1-absent era): await mutated('the Walk is declared shipped (C6: the W1-absent fallback)', 'export const WALK_SHIPPED = false;', 'export const WALK_SHIPPED = true;', (mm) => !same(mm.q3Landing('little'), { view: 'open', helpOpen: false }));
+  // SUCCESSOR (W1 live): the same switch the other way - declared NOT shipped, the default landing must go wrong (the Walk would silently disappear from Q3).
+  await mutated('the Walk is declared NOT shipped (C6: the W1-live default)', 'export const WALK_SHIPPED = true;', 'export const WALK_SHIPPED = false;', (mm) => !same(mm.q3Landing('little'), { view: 'walk', helpOpen: true }));
   await mutated('a Math.random tie-break is added to the pick (C5: nothing varying)', "const row = TABLE[`${q1}/${q2 ?? ''}`];", "const row = Math.random() < 2 ? TABLE[`${q1}/${q2 ?? ''}`] : undefined;", (mm) => { const rand = Math.random; let touched = false; Math.random = () => { touched = true; return 0; }; try { mm.pickFor('novel', 'person-change'); } finally { Math.random = rand; } return touched; });
   await mutated('a pick names a deck that does not exist (C9)', "const STORY_CIRCLE = C('story-circle');", "const STORY_CIRCLE = C('story-wheel');", (mm) => mm.pickFor('novel', 'person-change').pick.deck === 'story-wheel');
 }

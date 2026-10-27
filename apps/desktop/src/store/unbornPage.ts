@@ -4,6 +4,7 @@ import { liveBoxes } from './boxTombstones';
 import type { Box, JournalEntry, PageTemplate } from '../types';
 import { PAGE_SETTINGS_FALLBACK } from '../types';
 import { getUserPageDefaults } from './pageDefaults';
+import { landingToken, landingFromToken, type HelpLanding } from '../decks/helpMeChoose';
 
 // PB1 — Born on the First Word (docs/wrizo-alpha/p1-wave.md §PB1, item 71;
 // the specification is docs/wrizo-alpha/pb1-unborn-surface.md).
@@ -64,6 +65,9 @@ export interface UnbornDescriptor {
   // W2 - "WRITE THIS": the card on a board this page is being written FOR. It rides the address (`gb` board, `gc` card) like `pin` and `deck`, so a reload keeps the door's meaning with no storage, and nothing is
   // written until `birth` (the first keystroke): then the page and its graft to that card are one act. Null for every other door.
   graft: { boardId: string; boxId: string } | null;
+  // TOOLS #9 - Q3's landing for a librarian pick (`land=open|walk|walk-help`): "everything" opens the dealt board as Open; "a little" the Walk with the first step's "?" open; "the shape" the Walk. A one-shot
+  // hint read once while the board is unborn (components/BoardEditor.tsx onDeckDealt); rides the address like `deck`, nothing is stored; unknown -> null (the deck lands as it always did).
+  landing: HelpLanding | null;
 }
 
 // A malformed or unknown descriptor degrades to a plain loose page rather than
@@ -107,6 +111,7 @@ export function readDescriptor(search: string): UnbornDescriptor {
     deck: rawDeck && rawDeck.trim() ? rawDeck.trim() : null,
     deckAnswers: cleanDeckAnswers(q.get('da')),
     graft: q.get('gb')?.trim() && q.get('gc')?.trim() ? { boardId: q.get('gb')!.trim(), boxId: q.get('gc')!.trim() } : null,
+    landing: rawDeck && rawDeck.trim() ? landingFromToken(q.get('land')) : null,
   };
 }
 
@@ -121,6 +126,7 @@ export function unbornHref(d: Partial<UnbornDescriptor> = {}): string {
   if (d.deck) q.set('deck', d.deck);
   if (d.deck && d.deckAnswers) q.set('da', d.deckAnswers);
   if (d.graft) { q.set('gb', d.graft.boardId); q.set('gc', d.graft.boxId); }
+  if (d.deck && d.landing) q.set('land', landingToken(d.landing));
   const s = q.toString();
   return `/page/new${s ? `?${s}` : ''}`;
 }

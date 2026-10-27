@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useDeskLexicon } from '../store/deskLexicon';
+import { useTheme } from '../store/theme';
 import { splitCard } from '../store/guided';
 import { stageTutorAsk } from '../store/tutorStage';
 import { stepExplain, stepExample } from '../decks/content';
@@ -43,8 +44,10 @@ function titleEnd(face: HTMLElement, titleLen: number): { right: number; top: nu
 }
 
 // `faceSelector`: the sibling element whose first line is the title the "?" sits after - the card face (.board-text) on the board; the live editor (.board-popup-editor) in the Walk card.
-export function StepHelp({ box, faceSelector = '.board-text' }: { box: Box; faceSelector?: string }) {
+// `openOnce` (TOOLS #9): open the popover once when this turns true (the librarian's "a little": the writer asked to be shown), then tell the host via `onOpened` so it can drop the flag. Not a stored state.
+export function StepHelp({ box, faceSelector = '.board-text', openOnce = false, onOpened }: { box: Box; faceSelector?: string; openOnce?: boolean; onOpened?: () => void }) {
   const { t } = useDeskLexicon();
+  const machina = useTheme() === 'machina';   // Machina labels the example "E.G." (m2); the other themes draw it as they always did
   const btnRef = useRef<HTMLButtonElement | null>(null);
   const popRef = useRef<HTMLDivElement | null>(null);
   const moreRef = useRef<HTMLButtonElement | null>(null);
@@ -75,6 +78,16 @@ export function StepHelp({ box, faceSelector = '.board-text' }: { box: Box; face
     return () => ro?.disconnect();
   }, [box.text, box.w, box.h, box.x, box.y, faceSelector]);
 
+  const shown = useRef(false);
+  useEffect(() => {
+    if (!openOnce) { shown.current = false; return; }
+    if (at == null || shown.current) return;   // wait until the "?" has been placed at the end of its title, so the popover anchors where the glyph really is
+    shown.current = true;
+    setOpen(true);
+    onOpened?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openOnce, at]);
+
   const close = useCallback((returnFocus: boolean) => {
     setOpen(false);
     if (returnFocus) btnRef.current?.focus({ preventScroll: true });
@@ -96,7 +109,7 @@ export function StepHelp({ box, faceSelector = '.board-text' }: { box: Box; face
     window.addEventListener('resize', place);
     window.addEventListener('scroll', place, true);
     return () => { window.removeEventListener('resize', place); window.removeEventListener('scroll', place, true); };
-  }, [open]);
+  }, [open]);   // NOT [open, at]: `at` changes on every keystroke in a growing card, and this effect sets state - that was a render loop (React #185) found by guided-w1-part2 on long typing
 
   useEffect(() => {
     if (!open) return;
@@ -154,7 +167,7 @@ export function StepHelp({ box, faceSelector = '.board-text' }: { box: Box; face
         >
           <div className="board-step-pop-k">{title}</div>
           <p className="board-step-pop-e">{explain}</p>
-          {example && <p className="board-step-pop-x">{example}</p>}
+          {example && <p className="board-step-pop-x">{t('deckStepHelpEg') && machina ? <span className="board-step-pop-eg">{t('deckStepHelpEg')}</span> : null}{example}</p>}
           <button ref={moreRef} type="button" className="board-step-pop-more" onClick={more}>
             {t('deckStepHelpMore')} <span aria-hidden="true">{'→'}</span> {t('tutorTitle').replace(/^The\s+/i, '')}
           </button>
