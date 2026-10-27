@@ -671,6 +671,8 @@ export type DeskTermId =
   | 'helpClose'
   | 'helpBack'
   | 'helpStepOf'
+  // TOOLS #9 - MACHINA INTAKE (m5 / m6): one form, three fields at once.
+  | 'helpFieldsNote' | 'helpFieldsCount' | 'helpFieldDocument' | 'helpFieldCarried' | 'helpFieldBriefing' | 'helpChoose' | 'helpNoCarried' | 'helpBlocksN'
   | 'helpANovel'
   | 'helpHNovel'
   | 'helpAShortStory'
@@ -1819,6 +1821,15 @@ const CANONICAL: Record<DeskTermId, string> = {
   helpClose: 'Esc to close',
   helpBack: 'Back',
   helpStepOf: 'Step {n} of 3',
+  // MACHINA INTAKE (m5 / m6): canonical English; only Machina's Intake draws these.
+  helpFieldsNote: '3 fields · nothing stored',
+  helpFieldsCount: '{n} / 3',
+  helpFieldDocument: 'Document',
+  helpFieldCarried: 'Carried by',
+  helpFieldBriefing: 'Briefing',
+  helpChoose: '— choose —',
+  helpNoCarried: 'not asked for this one',
+  helpBlocksN: '{n} blocks',
   helpANovel: 'a novel or novella',
   helpHNovel: 'a long story, front to back',
   helpAShortStory: 'a short story',
@@ -2186,8 +2197,11 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     helpCoverFromMyPages: 'your own files, in your own order',
     helpDialogLabel: 'Intake',
     helpKicker: 'Intake',
-    helpPickKicker: 'Recommended',
-    helpBrowse: 'Browse all forms',
+    helpPickKicker: 'Recommended form',
+    helpBegin: 'Create Agenda',
+    helpAlt: 'or',
+    helpBrowse: 'All forms',
+    helpAEverything: 'everything (just give me the blocks)',
     // MACHINA (docs/plans/machina-build.md §1c) - the corporate / mechanical register: Project, Folder, Part, File, Plan, Block, Notebook, Consultant, Asset, Controls, Theme.
     // Derived from Flux's own noun-bearing entries (same keys, Machina's noun) so no string that still names an Arbor or Flux noun survives under this theme; the words Nick locked
     // follow. Flux's own REGISTER words (Wire In, Patch, Terminal Mode, Quota, ...) are not carried over - Machina keeps canonical wherever Nick named no word.

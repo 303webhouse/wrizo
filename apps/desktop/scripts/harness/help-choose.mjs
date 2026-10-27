@@ -9,7 +9,7 @@
 //   DEAL   B1  "Begin" opens the unborn board in the writer's CURRENT place (the same place params a preset carries) and DEALS the pick: short story -> Three-Act with the 6 cards of its short form, no question asked
 //          B2  a pick whose deck still has a question (novel -> Three-Act) opens the wizard on that question; "Browse the shelves" opens the full library
 //   DRESS  S1  Arbor: the olive panel, square, no blurred shadow; hover is brass         S2  Flux: bracket corners, the lime line fills by thirds, the orange bar on the result line
-//          S3  Machina: a plain square panel in the theme's own tokens (Intake)
+//          S3  Machina: a square panel in the theme's own tokens (Intake) - its variant is `intake` since TOOLS #9 (was `plain`, parked in the body); machina-intake.mjs owns the form
 //
 // Run (repo root; needs a box turn - node apps/desktop/scripts/box-take.mjs take <lane> <token>):  node scripts/harness/help-choose.mjs      HC_FRAMES=<dir> saves frames
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -238,7 +238,11 @@ await withHarness(async (app) => {
   await option(app, 'proposal'); await sleep(350); await option(app, 'problem-solution'); await sleep(350); await option(app, 'everything'); await sleep(450);
   await frame(app, 'machina-result');
   const pm = await app.evalJs(`(() => { const p = document.querySelector('.help-panel'); const cs = getComputedStyle(p); const probe = document.createElement('i'); probe.style.color = 'var(--chrome-surface)'; document.body.appendChild(probe); const chrome = getComputedStyle(probe).backgroundColor; const c = getComputedStyle(probe).color; probe.remove(); return { variant: p.dataset.helpTheme, bg: cs.backgroundColor, chrome: c, radius: cs.borderRadius, shadow: cs.boxShadow, text: p.innerText.replace(/\\s+/g, ' ').slice(0, 200) }; })()`);
-  ok('S3 [Machina]: a plain square panel in the theme\'s own tokens (the chrome surface), no shadow - the same questions; the result is the table\'s Business Proposal', pm.variant === 'plain' && pm.bg === pm.chrome && parseFloat(pm.radius) === 0 && pm.shadow === 'none' && /Business Proposal/i.test(pm.text), JSON.stringify(pm));
+  // ORIGINAL (parked, pre-Intake): ok('S3 [Machina]: a plain square panel in the theme\'s own tokens (the chrome surface), no shadow - the same questions; the result is the table\'s Business Proposal', pm.variant === 'plain' && pm.bg === pm.chrome && parseFloat(pm.radius) === 0 && pm.shadow === 'none' && /Business Proposal/i.test(pm.text), JSON.stringify(pm));
+  // SUPERSEDED (TOOLS #9, Oct 26 - Machina Intake, frames m5 / m6): Machina's panel is no longer the plain variant but its own `intake` form (three fields at once). The sense is unchanged and is what the successor pins: a square panel in the
+  // theme's own tokens (the chrome surface), no shadow, the same table - the result is Business Proposal. The Intake's own dress, form and floors are machina-intake.mjs's.
+  ok('S3 [Machina successor]: Intake is a square panel in the theme\'s own tokens (the chrome surface), no shadow - the same table; the result is Business Proposal', pm.variant === 'intake' && pm.bg === pm.chrome && parseFloat(pm.radius) === 0 && pm.shadow === 'none' && /Business Proposal/i.test(pm.text), JSON.stringify(pm));
+  ok('S3 [parked record]: the ORIGINAL (variant "plain") now fails ONLY because Machina\'s panel became "intake"', pm.variant !== 'plain' && pm.variant === 'intake', pm.variant);
   return checks;
 });
 

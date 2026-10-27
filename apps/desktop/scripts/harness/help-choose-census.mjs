@@ -271,6 +271,32 @@ ok('C1: Q3 is little / shape / everything', !!m && same(m.Q3, Q3), m ? JSON.stri
   }
 }
 
+// C12 - TOOLS #9: Machina's INTAKE is a dress and a form over the SAME table (source half; machina-intake.mjs is the DOM half). No second table, no new logic, nothing stored, no motion.
+{
+  const strip = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+  const panel = existsSync(join(SRC, 'components', 'HelpMeChoose.tsx')) ? strip(readFileSync(join(SRC, 'components', 'HelpMeChoose.tsx'), 'utf8').replace(/\r\n/g, '\n')) : '';
+  const variantOk = (t) => /theme === 'machina' \? 'intake'/.test(t);
+  const fieldsOk = (t) => /slug: 'document'[^\n]*ids: Q1/.test(t) && /slug: 'carried'[^\n]*ids: q1 != null \? q2Options\(q1\) : \[\]/.test(t) && /slug: 'briefing'[^\n]*ids: Q3/.test(t) && /\{step < 3 \? fields\.map\(/.test(t);
+  const stillOk = (t) => /const still = variant === 'intake' \|\|/.test(t);
+  const sameTableOk = (t) => /pickFor\(q1, hasQ2 \? q2 : null\)/.test(t) && !/\bTABLE\b|\bQ2_BY_Q1\b|'novel\/person-change'/.test(t) && /import \{ Q1, Q3, q2Options, pickFor, q3Landing, whyKeyFor/.test(t);
+  const inPlaceOk = (t) => /\)\) : result \? \(\s*<>\s*<div className="help-readout">/.test(t) && !/help-show-result|setShowResult|onShowResult/.test(t);
+  ok('C12: Machina maps to the Intake variant (and only Machina)', variantOk(panel) && /theme === 'plateau' \? 'librarian' : theme === 'flux' \? 'diagnostic' : theme === 'machina' \? 'intake' : 'plain'/.test(panel), '');
+  ok('C12: Intake is ONE form with three fields on screen at once - DOCUMENT = Q1, CARRIED BY = Q2 (its answers follow Document), BRIEFING = Q3 - all drawn together while the result is not yet there', fieldsOk(panel), '');
+  ok('C12: the result appears IN PLACE (the readout replaces the fields) - there is no button or state that asks for it', inPlaceOk(panel), '');
+  ok('C12: Intake reads the SAME census table (pickFor / q2Options / Q1 / Q3 / q3Landing / whyKeyFor from decks/helpMeChoose) and holds no second table', sameTableOk(panel), '');
+  ok('C12: Intake is still - no motion (the step is marked data-still under it)', stillOk(panel), '');
+  const imuts = [
+    ['Machina falls back to the plain panel', (t) => t.replace("theme === 'machina' ? 'intake'", "theme === 'machina' ? 'plain'"), variantOk],
+    ['only the current field is drawn (the other two vanish)', (t) => t.replace('{step < 3 ? fields.map(', '{step < 3 ? fields.filter((f) => f.n === openField).map('), fieldsOk],
+    ['Intake grows a second table of its own', (t) => t.replace('pickFor(q1, hasQ2 ? q2 : null)', "TABLE[q1 + '/' + q2]"), sameTableOk],
+    ['Intake slides (not still)', (t) => t.replace("const still = variant === 'intake' ||", 'const still ='), stillOk],
+  ];
+  for (const [name, mutate, pred] of imuts) {
+    const next = mutate(panel);
+    ok(`MUTANT: ${name} - its C12 check must go RED (the mutation LANDED: the real panel passes)`, next !== panel && pred(panel) && !pred(next), '');
+  }
+}
+
 // ------------------------------------------------------------------ MUTANTS: each rewrites the REAL module, asserts the mutation LANDED, bundles it, and re-runs the check it targets - which must go RED
 if (m) {
   const moduleText = readFileSync(MODULE, 'utf8').replace(/\r\n/g, '\n');

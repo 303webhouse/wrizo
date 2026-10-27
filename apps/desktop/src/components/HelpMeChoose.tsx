@@ -4,6 +4,7 @@ import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { useTheme } from '../store/theme';
 import { prefersReducedMotion, useAmbianceDial } from '../store/ambianceDial';
 import { DECKS } from '../decks/library';
+import { blocksFor } from '../decks/formCounts';
 import { Q1, Q3, q2Options, pickFor, q3Landing, whyKeyFor, type HelpChoice, type HelpLanding } from '../decks/helpMeChoose';
 
 // W4 - "HELP ME CHOOSE". The panel over the deck library: Arbor's olive librarian (frames 08), Flux's RUN DIAGNOSTIC (frame 09), and a plain, square, theme-tokened panel for every other theme (Machina's Intake,
@@ -23,7 +24,7 @@ export interface HelpMeChooseProps {
   returnFocusTo?: HTMLElement | null;
 }
 
-type Variant = 'librarian' | 'diagnostic' | 'plain';
+type Variant = 'librarian' | 'diagnostic' | 'intake' | 'plain';
 const key = (prefix: 'helpA' | 'helpH', id: string): DeskTermId => (prefix + id.split(/[^A-Za-z0-9]+/).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join('')) as DeskTermId;
 const coverKey = (deckId: string): DeskTermId => ('helpCover' + deckId.split(/[^A-Za-z0-9]+/).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join('')) as DeskTermId;
 
@@ -72,8 +73,10 @@ export function HelpMeChoose({ onBegin, onBrowse, onClose, returnFocusTo }: Help
   const { t } = useDeskLexicon();
   const theme = useTheme();
   const dial = useAmbianceDial();
-  const variant: Variant = theme === 'plateau' ? 'librarian' : theme === 'flux' ? 'diagnostic' : 'plain';
-  const still = prefersReducedMotion() || dial === 0;
+  const variant: Variant = theme === 'plateau' ? 'librarian' : theme === 'flux' ? 'diagnostic' : theme === 'machina' ? 'intake' : 'plain';
+  const still = variant === 'intake' || prefersReducedMotion() || dial === 0;   // Machina: no motion, cuts only
+  // Machina's Intake: which field's list is open under it (null = none). The first unanswered field opens by itself once the panel is up (it is already open by the writer's press), then the next after each answer.
+  const [openField, setOpenField] = useState<0 | 1 | 2 | null>(0);
   const [q1, setQ1] = useState<string | null>(null);
   const [q2, setQ2] = useState<string | null>(null);
   const [q3, setQ3] = useState<string | null>(null);
@@ -97,9 +100,19 @@ export function HelpMeChoose({ onBegin, onBrowse, onClose, returnFocusTo }: Help
 
   // each new step lands its first answer under focus (a keyboard writer never has to hunt for it)
   useEffect(() => {
+    if (variant === 'intake') return;   // Intake keeps its own focus (the open field's list, then the Create Agenda press)
     const first = rootRef.current?.querySelector<HTMLElement>('[data-help-option], [data-help-begin]');
     first?.focus();
   }, [step]);
+
+  // Machina's Intake focus: the open field's list lands on its chosen (else first) answer; the result lands on Create Agenda. Nothing else moves focus.
+  useEffect(() => {
+    if (variant !== 'intake') return;
+    const root = rootRef.current;
+    if (!root) return;
+    const el = step === 3 ? root.querySelector<HTMLElement>('[data-help-begin]') : openField != null ? (root.querySelector<HTMLElement>('[data-help-list] [aria-selected="true"]') ?? root.querySelector<HTMLElement>('[data-help-list] [data-help-option]')) : null;
+    el?.focus();
+  }, [variant, step, openField]);
 
   const result = useMemo(() => (step === 3 && q1 != null ? pickFor(q1, hasQ2 ? q2 : null) : null), [step, q1, q2, hasQ2]);
   const landing = q3 != null ? q3Landing(q3) : null;
@@ -110,6 +123,21 @@ export function HelpMeChoose({ onBegin, onBrowse, onClose, returnFocusTo }: Help
   const choose = (id: string) => { if (step === 0) { setQ1(id); setQ2(null); setQ3(null); } else if (step === 1) setQ2(id); else setQ3(id); };
   const back = () => { if (step === 3) setQ3(null); else if (step === 2) { if (hasQ2) setQ2(null); else setQ1(null); } else if (step === 1) setQ1(null); };
   const begin = (c: HelpChoice) => { if (landing) onBegin(c, landing); };
+  // Intake: answer one FIELD (all three are on screen at once). The same state, the same resets as choose(); the next unanswered field's list opens, none when all three are set (the result appears in place).
+  const chooseField = (f: 0 | 1 | 2, id: string) => {
+    let n1 = q1, n2 = q2, n3 = q3;
+    if (f === 0) { n1 = id; n2 = null; n3 = null; setQ1(id); setQ2(null); setQ3(null); } else if (f === 1) { n2 = id; setQ2(id); } else { n3 = id; setQ3(id); }
+    const has2 = n1 != null && q2Options(n1).length > 0;
+    setOpenField(n1 == null ? 0 : has2 && n2 == null ? 1 : n3 == null ? 2 : null);
+  };
+  const intakeBack = () => { setQ3(null); setOpenField(2); };
+  const listKeys = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    const rows = [...e.currentTarget.querySelectorAll<HTMLElement>('[data-help-option]')];
+    const at = rows.indexOf(document.activeElement as HTMLElement);
+    const next = rows[Math.max(0, Math.min(rows.length - 1, at + (e.key === 'ArrowDown' ? 1 : -1)))];
+    if (next) { e.preventDefault(); next.focus(); }
+  };
 
   const dots = (
     <div className="help-dots" aria-hidden="true">{[0, 1, 2].map((i) => <i key={i} className={i < answered ? 'f' : undefined} />)}</div>
@@ -192,8 +220,66 @@ export function HelpMeChoose({ onBegin, onBrowse, onClose, returnFocusTo }: Help
         {result && <button type="button" className="help-browse" data-help-browse onClick={onBrowse}>{t('helpBrowse')}</button>}
       </div>
     );
+  } else if (variant === 'intake') {
+    // MACHINA INTAKE (frames m5 / m6): ONE form, three fields visible at once - DOCUMENT (Q1) / CARRIED BY (Q2, its answers follow Document) / BRIEFING (Q3). An open list sits under its field with the chosen answer marked by the
+    // carrier bar. The result appears IN PLACE the moment all three are set (no button asks for it): the answers as a readout, the recommended form, why, Create Agenda, the alternative. The same table; nothing stored.
+    const fields: { n: 0 | 1 | 2; slug: string; label: string; ids: readonly string[]; value: string | null; enabled: boolean; na: boolean }[] = [
+      { n: 0, slug: 'document', label: t('helpFieldDocument'), ids: Q1, value: q1, enabled: true, na: false },
+      { n: 1, slug: 'carried', label: t('helpFieldCarried'), ids: q1 != null ? q2Options(q1) : [], value: q2, enabled: q1 != null && hasQ2, na: q1 != null && !hasQ2 },
+      { n: 2, slug: 'briefing', label: t('helpFieldBriefing'), ids: Q3, value: q3, enabled: q1 != null && (!hasQ2 || q2 != null), na: false },
+    ];
+    const pickDeck = result ? DECKS.find((d) => d.id === result.pick.deck) : undefined;
+    const blocks = result && pickDeck ? blocksFor(pickDeck, result.pick.answers) : '';
+    body = (
+      <div className="help-step" key="intake" data-still="true">
+        <div className="help-intake-head">
+          <span className="help-kicker">{t('helpKicker')}</span>
+          <span className="help-fieldsnote">{answered > 0 ? t('helpFieldsCount').replace('{n}', String(answered)) : t('helpFieldsNote')}</span>
+        </div>
+        {step < 3 ? fields.map((f) => (
+          <div key={f.slug} className="help-field" data-field={f.slug} data-open={openField === f.n ? 'true' : 'false'}>
+            <div className="help-field-label">{f.label}</div>
+            {f.na ? (
+              <div className="help-select help-select-na">{t('helpNoCarried')}</div>
+            ) : (
+              <button type="button" className="help-select" data-help-field={f.slug} aria-haspopup="listbox" aria-expanded={openField === f.n} disabled={!f.enabled}
+                onClick={() => setOpenField(openField === f.n ? null : f.n)}>
+                <span className={f.value != null ? 'help-select-val' : 'help-select-ph'}>{f.value != null ? t(key('helpA', f.value)) : t('helpChoose')}</span>
+                <span className="help-select-caret" aria-hidden="true">▾</span>
+              </button>
+            )}
+            {openField === f.n && f.enabled && (
+              <div className="help-optlist" role="listbox" aria-label={f.label} data-help-list onKeyDown={listKeys}>
+                {f.ids.map((id) => (
+                  <button key={id} type="button" role="option" aria-selected={id === f.value} className="help-optrow" data-help-option={id} data-chosen={id === f.value ? 'true' : 'false'} onClick={() => chooseField(f.n, id)}>
+                    {t(key('helpA', id))}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )) : result ? (
+          <>
+            <div className="help-readout">
+              {fields.map((f) => <div key={f.slug} className="help-readout-row"><span className="help-readout-k">{f.label}</span><span className="help-readout-v">{f.value != null ? t(key('helpA', f.value)) : '—'}</span></div>)}
+            </div>
+            <div className="help-rule" aria-hidden="true" />
+            <div className="help-stepof">{t('helpPickKicker')}</div>
+            <div className="help-pickline">
+              <h2 className="help-q">{deckName(result.pick)}</h2>
+              {blocks && <span className="help-blocks">{t('helpBlocksN').replace('{n}', blocks)}</span>}
+            </div>
+            <p className="help-why">{t(whyKeyFor(result.pick) as DeskTermId)}</p>
+            <div className="help-actions">
+              <button type="button" className="help-begin" data-help-begin onClick={() => begin(result.pick)}>{t('helpBegin')}</button>
+              {result.alt && <button type="button" className="help-alt-plain" data-help-alt onClick={() => begin(result.alt as HelpChoice)}>{t('helpAlt')} {deckName(result.alt)} · {t(coverKey(result.alt.deck))}</button>}
+            </div>
+          </>
+        ) : null}
+      </div>
+    );
   } else {
-    // plain: Machina's Intake, Nomad's Scout, Volant's one dialog - the same questions in a square, theme-tokened panel
+    // plain: Nomad's Scout, Volant's one dialog - the same questions in a square, theme-tokened panel
     body = (
       <div className="help-step" key={step === 3 ? 'result' : step} data-still={still ? 'true' : 'false'}>
         <div className="help-kicker">{t('helpKicker')}</div>
@@ -230,11 +316,19 @@ export function HelpMeChoose({ onBegin, onBrowse, onClose, returnFocusTo }: Help
       <div ref={rootRef} className={`help-panel help-${variant}`} role="dialog" aria-modal="true" aria-label={t('helpDialogLabel')} data-help-theme={variant} onClick={(e) => e.stopPropagation()}>
         {variant === 'diagnostic' && <><i className="help-br a" /><i className="help-br b" /><i className="help-br c" /><i className="help-br d" /></>}
         {body}
-        <div className="help-foot">
-          {step > 0 && <button type="button" className="help-back" onClick={back}>{t('helpBack')}</button>}
-          <span className="help-esc">{t('helpClose')}</span>
-          {variant === 'librarian' && step < 3 && <> · <button type="button" className="help-browse help-browse-foot" data-help-browse onClick={onBrowse}>{t('helpBrowse')}</button></>}
-        </div>
+        {variant === 'intake' ? (
+          <div className="help-foot help-foot-intake">
+            <button type="button" className="help-browse help-browse-foot" data-help-browse onClick={onBrowse}>{t('helpBrowse')} →</button>
+            {step === 3 && <button type="button" className="help-back" onClick={intakeBack}>{t('helpBack')}</button>}
+            <span className="help-esc">{t('helpClose')}</span>
+          </div>
+        ) : (
+          <div className="help-foot">
+            {step > 0 && <button type="button" className="help-back" onClick={back}>{t('helpBack')}</button>}
+            <span className="help-esc">{t('helpClose')}</span>
+            {variant === 'librarian' && step < 3 && <> · <button type="button" className="help-browse help-browse-foot" data-help-browse onClick={onBrowse}>{t('helpBrowse')}</button></>}
+          </div>
+        )}
       </div>
     </div>,
     document.body,
