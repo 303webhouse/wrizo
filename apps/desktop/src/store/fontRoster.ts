@@ -44,7 +44,8 @@ export const ROSTER: readonly RosterFace[] = [
   { name: 'Lora', generic: 'serif', source: 'bundled', group: 'serif', sizeAdjust: 1, eager: false,
     load: both(() => import('@fontsource-variable/lora/wght.css'), () => import('@fontsource-variable/lora/wght-italic.css')),
     stack: "'Lora Variable', Georgia, serif" },
-  { name: 'EB Garamond', generic: 'serif', source: 'bundled', group: 'serif', sizeAdjust: 1, eager: false,
+  // EB Garamond is ARBOR'S DEFAULT writing face (TOOLS #10 item 10): main.tsx imports it eagerly, so it is present at first paint - `load` is then a no-op.
+  { name: 'EB Garamond', generic: 'serif', source: 'bundled', group: 'serif', sizeAdjust: 1, eager: true,
     load: both(() => import('@fontsource-variable/eb-garamond/wght.css'), () => import('@fontsource-variable/eb-garamond/wght-italic.css')),
     stack: "'EB Garamond Variable', Georgia, serif" },
   { name: 'Source Serif 4', generic: 'serif', source: 'bundled', group: 'serif', sizeAdjust: 1, eager: false,
@@ -55,6 +56,13 @@ export const ROSTER: readonly RosterFace[] = [
     stack: "'Times New Roman', 'Tinos', Times, serif" },
   { name: 'Figtree', generic: 'sans-serif', source: 'bundled', group: 'sans', sizeAdjust: 1, eager: true, load: none,
     stack: "'Figtree Variable', system-ui, sans-serif" },
+  // TOOLS #10 item 10: two new roster faces - the theme defaults Flux (Titillium Web) and Machina (Source Sans 3) wear. Load on choose, or with their theme (store/themeFontFaces.ts); never eager.
+  { name: 'Source Sans 3', generic: 'sans-serif', source: 'bundled', group: 'sans', sizeAdjust: 1, eager: false,
+    load: both(() => import('@fontsource-variable/source-sans-3/wght.css'), () => import('@fontsource-variable/source-sans-3/wght-italic.css')),
+    stack: "'Source Sans 3 Variable', system-ui, sans-serif" },
+  { name: 'Titillium Web', generic: 'sans-serif', source: 'bundled', group: 'sans', sizeAdjust: 1, eager: false,
+    load: both(() => import('@fontsource/titillium-web/400.css'), () => import('@fontsource/titillium-web/400-italic.css'), () => import('@fontsource/titillium-web/700.css'), () => import('@fontsource/titillium-web/700-italic.css')),
+    stack: "'Titillium Web', system-ui, sans-serif" },
   { name: 'Atkinson Hyperlegible', generic: 'sans-serif', source: 'bundled', group: 'sans', sizeAdjust: 1, eager: false,
     load: both(() => import('@fontsource/atkinson-hyperlegible/400.css'), () => import('@fontsource/atkinson-hyperlegible/400-italic.css'), () => import('@fontsource/atkinson-hyperlegible/700.css'), () => import('@fontsource/atkinson-hyperlegible/700-italic.css')),
     stack: "'Atkinson Hyperlegible', system-ui, sans-serif" },

@@ -4,6 +4,10 @@ import ReactDOM from 'react-dom/client';
 // Wrizo brand: Figtree (titles/UI), Crimson Pro (body/writing surface).
 import '@fontsource-variable/figtree';
 import '@fontsource-variable/crimson-pro';
+// TOOLS #10 item 10 - EB Garamond is ARBOR'S default writing face (the first-run theme), so it is present at first paint, not loaded on choose. Flux's (Titillium Web) and Machina's (Source Sans 3) load WITH their
+// theme (store/themeFontFaces.ts); Nomad's and Volant's will register theirs the same way.
+import '@fontsource-variable/eb-garamond/wght.css';
+import '@fontsource-variable/eb-garamond/wght-italic.css';
 // S1 — Courier Prime, scoped to the script surface only (--font-script);
 // not variable-weight, so Regular + Bold load as two explicit files.
 import '@fontsource/courier-prime/400.css';
