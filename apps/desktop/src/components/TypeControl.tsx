@@ -20,7 +20,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { useTheme } from '../store/theme';
 import { useThemePrefs } from '../store/themePrefs';
-import { ROSTER, faceStack, faceNameFromStack, themeDefaultFaceName, storedFaceFor, ensureFaceLoaded, faceForSlug, fontSlug, DEFAULT_FACE_NAME, type StoredFace } from '../store/fontRoster';
+import { useInstalledFonts, addInstalledFont, queryLocalFamilies, fontIsAvailable } from '../store/installedFonts';
+import { ROSTER, faceStack, faceNameFromStack, themeDefaultFaceName, deviceFace, storedFaceFor, ensureFaceLoaded, faceForSlug, fontSlug, DEFAULT_FACE_NAME, type StoredFace } from '../store/fontRoster';
 import { stepUp, stepDown, normalizeTypedSize, formatSize } from '../store/fontSize';
 
 export interface TypeControlProps {
@@ -118,6 +119,44 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
     if (!scope || whole) { onPickFace(storedFaceFor(f)); return; }
     scope.onPickSelection(f.name === currentName ? null : fontSlug(f.name));
   };
+  // TOOLS #10 item 11 - the writer's own installed fonts. The device-local list (store/installedFonts.ts) follows the roster in BOTH lists; the face this surface already wears from another device joins it, so it can be seen and
+  // re-picked. A face not installed HERE shows a quiet note and renders as the theme's default (faceStack). "Add a font..." exists only in the scoped form (Draft, a card) - Free Write and Revise never get it (Nick's Q2).
+  const installed = useInstalledFonts();
+  const deviceNames = [...installed, ...(face?.source === 'device' && !installed.some((n) => n.toLowerCase() === face.name.toLowerCase()) ? [face.name] : [])];
+  const [adding, setAdding] = useState(false);
+  const [draftName, setDraftName] = useState('');
+  const [lookup, setLookup] = useState<string[]>([]);
+  const canLookup = typeof window !== 'undefined' && typeof (window as unknown as { queryLocalFonts?: unknown }).queryLocalFonts === 'function';
+  const pickDevice = (name: string) => {
+    if (!scope || whole) { onPickFace(deviceFace(name)); return; }
+    scope.onPickSelection(name === currentName ? null : fontSlug(name));
+  };
+  const submitAdd = () => {
+    const n = addInstalledFont(draftName);
+    if (!n) return;
+    setDraftName(''); setAdding(false);
+    pickDevice(n);
+  };
+  const deviceRows = (isCurrent: (name: string) => boolean, onPick: (name: string) => void) => deviceNames.map((name) => {
+    const missing = !fontIsAvailable(name);
+    return (
+      <li key={`device:${name}`} role="option" aria-selected={isCurrent(name)} data-current={isCurrent(name) ? 'true' : 'false'} data-device="true" data-missing={missing ? 'true' : undefined}
+        className="wz-type-row" style={{ fontFamily: faceStack(deviceFace(name)) }} onClick={() => onPick(name)}>
+        {name}{missing && <span className="wz-type-note">{t('typeFaceMissing')}</span>}
+      </li>
+    );
+  });
+  const addRow = () => (adding ? (
+    <li key="__add" className="wz-type-addform" onMouseDown={(e) => e.stopPropagation()}>
+      <input className="wz-type-addinput" type="text" list="wz-type-local-fonts" placeholder={t('typeAddFontName')} aria-label={t('typeAddFontName')} autoFocus value={draftName}
+        onChange={(e) => setDraftName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitAdd(); } else if (e.key === 'Escape') { e.stopPropagation(); setAdding(false); } }} />
+      <datalist id="wz-type-local-fonts">{lookup.map((n) => <option key={n} value={n} />)}</datalist>
+      <button type="button" className="wz-type-addgo" onClick={submitAdd}>{t('typeAddFontAdd')}</button>
+      {canLookup && <button type="button" className="wz-type-addlookup" onClick={() => { void queryLocalFamilies().then((names) => { if (names) setLookup(names); }); }}>{t('typeAddFontLookup')}</button>}
+    </li>
+  ) : (
+    <li key="__add" role="option" aria-selected={false} className="wz-type-add" data-add-font="true" onClick={() => setAdding(true)}>{t('typeAddFont')}</li>
+  ));
   const up = stepUp(size); const down = stepDown(size);
   const commitDraft = () => {
     if (draft === null) return;
@@ -159,6 +198,8 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
                 onClick={() => pickRow(f.name)}
               >{f.name}</li>
             ))}
+            {deviceRows((n) => n === brassKey, pickDevice)}
+            {addRow()}
           </ul>
         </>
       )}
@@ -186,6 +227,7 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
               onClick={() => { void ensureFaceLoaded(f.name); onPickFace(storedFaceFor(f)); setOpen(false); }}
             >{f.name}</li>
           ))}
+          {deviceRows((n) => face?.source === 'device' && face.name === n, (n) => { onPickFace(deviceFace(n)); setOpen(false); })}
         </ul>
       )}
       <div className="wz-type-size">

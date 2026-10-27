@@ -679,7 +679,7 @@ export type DeskTermId =
   | 'helpStepOf'
   // TOOLS #9 - MACHINA INTAKE (m5 / m6): one form, three fields at once.
   // TOOLS #10 item 10 - the font list's first row; {face} is the face that really renders when nothing is chosen (read from --font-prose).
-  | 'typeFaceDefault'
+  | 'typeFaceDefault' | 'typeAddFont' | 'typeAddFontName' | 'typeAddFontLookup' | 'typeAddFontAdd' | 'typeFaceMissing'
   | 'helpFieldsNote' | 'helpFieldsCount' | 'helpFieldDocument' | 'helpFieldCarried' | 'helpFieldBriefing' | 'helpChoose' | 'helpNoCarried' | 'helpBlocksN'
   | 'helpANovel'
   | 'helpHNovel'
@@ -1846,6 +1846,12 @@ const CANONICAL: Record<DeskTermId, string> = {
   helpStepOf: 'Step {n} of 3',
   // MACHINA INTAKE (m5 / m6): canonical English; only Machina's Intake draws these.
   typeFaceDefault: 'Default ({face})',
+  // TOOLS #10 item 11 - the writer's own installed fonts (device-local list). The missing-face note is quiet and says what happens.
+  typeAddFont: 'Add a font…',
+  typeAddFontName: 'Font name',
+  typeAddFontLookup: 'Find installed fonts',
+  typeAddFontAdd: 'Add',
+  typeFaceMissing: 'not on this device - showing the default',
   helpFieldsNote: '3 fields · nothing stored',
   helpFieldsCount: '{n} / 3',
   helpFieldDocument: 'Document',
