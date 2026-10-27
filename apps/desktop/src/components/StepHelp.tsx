@@ -43,7 +43,8 @@ function titleEnd(face: HTMLElement, titleLen: number): { right: number; top: nu
 }
 
 // `faceSelector`: the sibling element whose first line is the title the "?" sits after - the card face (.board-text) on the board; the live editor (.board-popup-editor) in the Walk card.
-export function StepHelp({ box, faceSelector = '.board-text' }: { box: Box; faceSelector?: string }) {
+// `openOnce` (TOOLS #9): open the popover once when this turns true (the librarian's "a little": the writer asked to be shown), then tell the host via `onOpened` so it can drop the flag. Not a stored state.
+export function StepHelp({ box, faceSelector = '.board-text', openOnce = false, onOpened }: { box: Box; faceSelector?: string; openOnce?: boolean; onOpened?: () => void }) {
   const { t } = useDeskLexicon();
   const btnRef = useRef<HTMLButtonElement | null>(null);
   const popRef = useRef<HTMLDivElement | null>(null);
@@ -75,6 +76,13 @@ export function StepHelp({ box, faceSelector = '.board-text' }: { box: Box; face
     return () => ro?.disconnect();
   }, [box.text, box.w, box.h, box.x, box.y, faceSelector]);
 
+  useEffect(() => {
+    if (!openOnce) return;
+    setOpen(true);
+    onOpened?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openOnce]);
+
   const close = useCallback((returnFocus: boolean) => {
     setOpen(false);
     if (returnFocus) btnRef.current?.focus({ preventScroll: true });
@@ -96,7 +104,7 @@ export function StepHelp({ box, faceSelector = '.board-text' }: { box: Box; face
     window.addEventListener('resize', place);
     window.addEventListener('scroll', place, true);
     return () => { window.removeEventListener('resize', place); window.removeEventListener('scroll', place, true); };
-  }, [open]);
+  }, [open, at]);   // `at`: the "?" itself may still be moving to the end of the title when a one-shot opens it
 
   useEffect(() => {
     if (!open) return;

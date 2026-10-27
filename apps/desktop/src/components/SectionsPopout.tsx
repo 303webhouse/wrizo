@@ -12,6 +12,7 @@ import { usePlace } from '../store/usePlace';
 import { ThemeIcon } from './ThemeIcon';
 import { unbornHref, encodeDeckAnswers } from '../store/unbornPage';
 import { HelpMeChoose } from './HelpMeChoose';
+import type { HelpLanding } from '../decks/helpMeChoose';
 import { routeForEntry } from '../store/routeForEntry';
 import { firstLine } from '../store/entryText';
 import { TEMPLATE_ORDER, TemplateSketch, type TemplateKey } from './TemplateSketch';
@@ -115,10 +116,10 @@ export function SectionsPopout({ view, currentId, navigate, boardId, journalLabe
     navigate(unbornHref({ kind: 'board', ...(setId ? { binderId: setId } : { origin: isJournal ? 'journal' as const : 'loose' as const }) }));
   };
   // W4 - the librarian's pick, dealt in the writer's CURRENT place (the same unborn board a preset opens, with the deck's pre-answered questions on the address); browsing opens the full library
-  const helpBegin = (choice: { deck: string; answers: Record<string, string> }) => {
+  const helpBegin = (choice: { deck: string; answers: Record<string, string> }, landing: HelpLanding) => {
     const setId = targetSetId(place);
     setHelpOpen(false);
-    navigate(unbornHref({ kind: 'board', deck: choice.deck, deckAnswers: encodeDeckAnswers(choice.answers), ...(setId ? { binderId: setId } : { origin: isJournal ? 'journal' as const : 'loose' as const }) }));
+    navigate(unbornHref({ kind: 'board', deck: choice.deck, deckAnswers: encodeDeckAnswers(choice.answers), landing, ...(setId ? { binderId: setId } : { origin: isJournal ? 'journal' as const : 'loose' as const }) }));
   };
   const helpBrowse = () => {
     const setId = targetSetId(place);

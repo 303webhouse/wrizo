@@ -103,6 +103,16 @@ export function q3Landing(q3: string, walkShipped: boolean = WALK_SHIPPED): Help
   return { view: 'walk', helpOpen: false };
 }
 
+/** The landing as an address-safe token (it rides `land=` on the unborn address like `deck` and `da`; nothing is stored) and back. An unknown or missing token is "no landing" - never a guess. */
+export type LandingToken = 'open' | 'walk' | 'walk-help';
+export function landingToken(l: HelpLanding): LandingToken { return l.view === 'open' ? 'open' : l.helpOpen ? 'walk-help' : 'walk'; }
+export function landingFromToken(raw: string | null | undefined): HelpLanding | null {
+  if (raw === 'open') return { view: 'open', helpOpen: false };
+  if (raw === 'walk') return { view: 'walk', helpOpen: false };
+  if (raw === 'walk-help') return { view: 'walk', helpOpen: true };
+  return null;
+}
+
 const pascal = (s: string) => s.split(/[^A-Za-z0-9]+/).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join('');
 
 /** The lexicon key of a pick's "why" line: helpWhy + the deck + the deck's own answers (in question-id order). One key per distinct pick; the strings live in store/deskLexicon.ts. */

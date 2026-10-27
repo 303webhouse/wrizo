@@ -234,6 +234,43 @@ ok('C1: Q3 is little / shape / everything', !!m && same(m.Q3, Q3), m ? JSON.stri
   ok('MUTANT (liveness): a host with the gated mount but NO door at all must not pass (the successor demands at least one onClick open)', noMatches === false, String(noMatches));
 }
 
+// C11 - TOOLS #9: the hosts HONOUR q3Landing (Fable, Oct 26). The token round trip is the module's (browserless); the wiring is read from source (the DOM half is help-choose.mjs L4/L5 on a box turn).
+{
+  const strip = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+  const rd = (f) => (existsSync(join(SRC, f)) ? strip(readFileSync(join(SRC, f), 'utf8').replace(/\r\n/g, '\n')) : '');
+  const TOK = [{ view: 'open', helpOpen: false }, { view: 'walk', helpOpen: false }, { view: 'walk', helpOpen: true }];
+  const rt = m ? await run(() => TOK.map((l) => m.landingFromToken(m.landingToken(l)))) : null;
+  ok('C11: the landing rides the address as a token and comes back whole - open / walk / walk-help round-trip, each its own token', !!rt && !rt.threw && rt.every((l, i) => same(l, TOK[i])) && new Set(TOK.map((l) => m.landingToken(l))).size === 3, JSON.stringify(rt));
+  const junk = m ? await run(() => [null, undefined, '', 'Open', 'walk-help ', 'everything', 'walk,open'].map((x) => m.landingFromToken(x))) : null;
+  ok('C11: an unknown or missing token is "no landing" (null) - never a guess', !!junk && !junk.threw && junk.every((x) => x === null), JSON.stringify(junk));
+  const unborn = rd('store/unbornPage.ts'), popout = rd('components/SectionsPopout.tsx'), wizard = rd('components/DeckWizard.tsx'), editor = rd('components/BoardEditor.tsx'), walk = rd('components/Walk.tsx'), stepHelp = rd('components/StepHelp.tsx');
+  const unbornOk = (t) => /landing: rawDeck && rawDeck\.trim\(\) \? landingFromToken\(q\.get\('land'\)\) : null/.test(t) && /if \(d\.deck && d\.landing\) q\.set\('land', landingToken\(d\.landing\)\)/.test(t);
+  const popoutOk = (t) => /const helpBegin = \(choice: [^)]*\}, landing: HelpLanding\)/.test(t) && /unbornHref\(\{ kind: 'board', deck: choice\.deck, deckAnswers: encodeDeckAnswers\(choice\.answers\), landing,/.test(t);
+  const wizardOk = (t) => /beginChoice = \(choice: [^)]*\}, landing: HelpLanding\)/.test(t) && /onLanding\?\.\(landing\)/.test(t) && /onBegin=\{\(choice, landing\) => beginChoice\(choice, landing\)\}/.test(t);
+  const editorOk = (t) => /landingRef = useRef<HelpLanding \| null>\(unborn\?\.descriptor\.landing \?\? null\)/.test(t) && /if \(landing\.view === 'open'\) setBoardMode\('open'\)/.test(t) && /if \(landing\.helpOpen && .*&& result\.firstCardId\) setWalkHelpId\(result\.firstCardId\)/.test(t)
+    && /onLanding=\{\(l\) => \{ landingRef\.current = l; \}\}/.test(t) && /helpCardId=\{walkHelpId\}/.test(t) && /onHelpShown=\{\(\) => setWalkHelpId\(null\)\}/.test(t) && /landingRef\.current = null;\s*\n\s*if \(landing\)/.test(t);
+  const walkOk = (t) => /openOnce=\{p\.helpCardId === card\.id\} onOpened=\{p\.onHelpShown\}/.test(t);
+  const stepOk = (t) => /if \(!openOnce\) return;\s*\n\s*setOpen\(true\);\s*\n\s*onOpened\?\.\(\);/.test(t);
+  ok('C11: the address carries the landing - readDescriptor reads `land` (only beside a deck) and unbornHref writes it (only beside a deck)', unbornOk(unborn), '');
+  ok('C11: the Boards pop-out\'s Begin hands the pick\'s landing to the address (helpBegin takes it and puts it in unbornHref)', popoutOk(popout), '');
+  ok('C11: the wizard\'s own Begin tells its host the landing BEFORE the deal (beginChoice -> onLanding)', wizardOk(wizard), '');
+  ok('C11: the board applies it ONCE at the deal - "everything" -> setBoardMode(\'open\'); "a little" -> the first dealt card\'s "?" one-shot; cleared on use and when the wizard closes; the Walk gets the one-shot props', editorOk(editor), '');
+  ok('C11: the Walk opens the one card\'s "?" once (openOnce on the matching card) and StepHelp opens then reports it', walkOk(walk) && stepOk(stepHelp), '');
+  const muts = [
+    ['the pop-out drops the landing from the address', popout, (t) => t.replace('encodeDeckAnswers(choice.answers), landing,', 'encodeDeckAnswers(choice.answers),'), popoutOk],
+    ['the wizard never tells its host the landing', wizard, (t) => t.replace('onLanding?.(landing);', ''), wizardOk],
+    ['"everything" no longer opens the board as Open', editor, (t) => t.replace("if (landing.view === 'open') setBoardMode('open');", "if (landing.view === 'open') { /* nothing */ }"), editorOk],
+    ['the landing is never consumed (it would apply to every later deal)', editor, (t) => t.replace(/landingRef\.current = null;(\s*\n\s*if \(landing\))/, '$1'), editorOk],
+    ['readDescriptor ignores `land`', unborn, (t) => t.replace("landingFromToken(q.get('land'))", 'null'), unbornOk],
+    ['the Walk never asks the "?" to open', walk, (t) => t.replace('openOnce={p.helpCardId === card.id}', 'openOnce={false}'), walkOk],
+    ['StepHelp never opens on openOnce', stepHelp, (t) => t.replace('setOpen(true);\n    onOpened?.();', 'onOpened?.();'), stepOk],
+  ];
+  for (const [name, text, mutate, pred] of muts) {
+    const next = mutate(text);
+    ok(`MUTANT: ${name} - its C11 check must go RED (the mutation LANDED: the real source passes)`, next !== text && pred(text) && !pred(next), '');
+  }
+}
+
 // ------------------------------------------------------------------ MUTANTS: each rewrites the REAL module, asserts the mutation LANDED, bundles it, and re-runs the check it targets - which must go RED
 if (m) {
   const moduleText = readFileSync(MODULE, 'utf8').replace(/\r\n/g, '\n');

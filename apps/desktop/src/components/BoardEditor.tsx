@@ -25,6 +25,7 @@ import { withLanes } from '../store/boardStructure';
 import { BeginningsRow, type BeginningDoor } from './BeginningsRow';
 import { useUnborn } from './UnbornSurface';
 import { unbornHref, decodeDeckAnswers } from '../store/unbornPage';
+import type { HelpLanding } from '../decks/helpMeChoose';
 import { renderStroke } from '../store/ink';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { getSelectionOffsets, getCaretOffset, setCaretOffset, setSelectionOffsets } from '../store/caretOffset';
@@ -1017,6 +1018,10 @@ export function BoardEditor({ id }: { id: string }) {
   const [startDeckId, setStartDeckId] = useState<string | null>(() => unborn?.descriptor.deck ?? null);
   // W4 - the librarian's pre-answered deal questions ride the address with the deck id (store/unbornPage.ts deckAnswers)
   const [startAnswers] = useState(() => decodeDeckAnswers(unborn?.descriptor.deckAnswers ?? null));
+  // TOOLS #9 - Q3's landing for the librarian's pick: from the address (a pick made in the Boards pop-out) or told by the wizard's own "Begin" (a pick made inside it). Applied ONCE, by the deal that follows;
+  // dropped when the wizard closes. `walkHelpId` is the one-shot for "a little": the first dealt card whose "?" the Walk opens once, then forgets (nothing stored).
+  const landingRef = useRef<HelpLanding | null>(unborn?.descriptor.landing ?? null);
+  const [walkHelpId, setWalkHelpId] = useState<string | null>(null);
   // B3 S1 — the "Start Here" hint's own id (store/deckHint.ts, keyed per
   // board, never schema). Read fresh on every mount of THIS board (the
   // lazy initializer re-runs whenever `id` changes — PageEditor.tsx's own
@@ -1773,6 +1778,17 @@ export function BoardEditor({ id }: { id: string }) {
     setBoxes(prev => { const next = [...prev, ...dealtBoxes]; return presetBorn ? withHomeView(next, doorHome('preset').homeView, generateId) : next; });
     armStartHere(id, result.firstCardId, result.dealtIds);
     setStartHereCardId(result.firstCardId);
+    // TOOLS #9 - Q3's landing, if the librarian made this deal: "everything" shows the board as Open; the Walk landings show it in the Walk (a Preset is born in it already; an existing board is shown in it only
+    // if it offers the Walk), and "a little" also opens the first step's "?" once. This is the writer's own "last shown as" (store/boardMode.ts), never the board's home view - nothing new is stored.
+    const landing = landingRef.current;
+    landingRef.current = null;
+    if (landing) {
+      if (landing.view === 'open') setBoardMode('open');
+      else {
+        if (!presetBorn && offeredViews.includes('walk')) setBoardMode('walk');
+        if (landing.helpOpen && (presetBorn || offeredViews.includes('walk')) && result.firstCardId) setWalkHelpId(result.firstCardId);
+      }
+    }
   };
 
   // AB4 S4 — double-click travel from a page-pin card, "the board is one
@@ -3237,7 +3253,7 @@ export function BoardEditor({ id }: { id: string }) {
         />
       )}
       {deckWizardOpen && (
-        <DeckWizard decks={DECKS} startDeckId={startDeckId ?? undefined} startAnswers={startAnswers} pagesFor={() => pagesOfPlace(place)} onDeal={onDeckDealt} onClose={() => { setDeckWizardOpen(false); setStartDeckId(null); }} />
+        <DeckWizard decks={DECKS} startDeckId={startDeckId ?? undefined} startAnswers={startAnswers} pagesFor={() => pagesOfPlace(place)} onDeal={onDeckDealt} onLanding={(l) => { landingRef.current = l; }} onClose={() => { landingRef.current = null; setDeckWizardOpen(false); setStartDeckId(null); }} />
       )}
     </>
   );
@@ -3380,6 +3396,8 @@ export function BoardEditor({ id }: { id: string }) {
       boxes={boxes}
       kindledIds={walkKindled}
       startHereId={startHereCardId}
+      helpCardId={walkHelpId}
+      onHelpShown={() => setWalkHelpId(null)}
       jumpToId={walkJumpId}
       onJumped={() => setWalkJumpId(null)}
       receded={boardDissolve.dissolved}

@@ -2,6 +2,7 @@ import { generateId, saveJournalEntry, setUnbornEntry, pinPageToBoard } from './
 import type { Box, JournalEntry, PageTemplate } from '../types';
 import { PAGE_SETTINGS_FALLBACK } from '../types';
 import { getUserPageDefaults } from './pageDefaults';
+import { landingToken, landingFromToken, type HelpLanding } from '../decks/helpMeChoose';
 
 // PB1 — Born on the First Word (docs/wrizo-alpha/p1-wave.md §PB1, item 71;
 // the specification is docs/wrizo-alpha/pb1-unborn-surface.md).
@@ -59,6 +60,9 @@ export interface UnbornDescriptor {
   // W4 (Help me choose) - the deck's OWN deal answers the librarian already settled (questionId:optionId pairs, comma-joined; e.g. `format:short-story`), so the wizard asks only what is left. Rides the address like `deck`;
   // nothing is stored, and an unknown or malformed value degrades to "no answers" (the deck simply asks).
   deckAnswers: string | null;
+  // TOOLS #9 - Q3's landing for a librarian pick (`land=open|walk|walk-help`): "everything" opens the dealt board as Open; "a little" the Walk with the first step's "?" open; "the shape" the Walk. A one-shot
+  // hint read once while the board is unborn (components/BoardEditor.tsx onDeckDealt); rides the address like `deck`, nothing is stored; unknown -> null (the deck lands as it always did).
+  landing: HelpLanding | null;
 }
 
 // A malformed or unknown descriptor degrades to a plain loose page rather than
@@ -101,6 +105,7 @@ export function readDescriptor(search: string): UnbornDescriptor {
     template: rawTemplate === 'outline' || rawTemplate === 'title' || rawTemplate === 'bibliography' ? rawTemplate : null,
     deck: rawDeck && rawDeck.trim() ? rawDeck.trim() : null,
     deckAnswers: cleanDeckAnswers(q.get('da')),
+    landing: rawDeck && rawDeck.trim() ? landingFromToken(q.get('land')) : null,
   };
 }
 
@@ -114,6 +119,7 @@ export function unbornHref(d: Partial<UnbornDescriptor> = {}): string {
   if (d.template) q.set('template', d.template);
   if (d.deck) q.set('deck', d.deck);
   if (d.deck && d.deckAnswers) q.set('da', d.deckAnswers);
+  if (d.deck && d.landing) q.set('land', landingToken(d.landing));
   const s = q.toString();
   return `/page/new${s ? `?${s}` : ''}`;
 }
