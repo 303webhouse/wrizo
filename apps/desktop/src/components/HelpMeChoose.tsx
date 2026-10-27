@@ -14,7 +14,7 @@ import { Q1, Q3, q2Options, pickFor, q3Landing, whyKeyFor, type HelpChoice, type
 // answers advance with a short slide (<= 300 ms), which is a cut under reduced motion or Ambiance 0. The questions and answers are deck content: every theme reads the same words, only the chrome words
 // (kicker, Begin / [LOAD], Browse...) take theme overrides.
 export interface HelpMeChooseProps {
-  /** "Begin" / [LOAD]: deal this choice. The landing is Q3's (the Walk is not shipped yet, so it is always Open - decks/helpMeChoose.ts WALK_SHIPPED). */
+  /** "Begin" / [LOAD]: deal this choice. The landing is Q3's (decks/helpMeChoose.ts q3Landing, behind the WALK_SHIPPED switch). */
   onBegin: (choice: HelpChoice, landing: HelpLanding) => void;
   /** "Browse the shelves" / BROWSE ALL STACKS: open the full library. */
   onBrowse: () => void;
