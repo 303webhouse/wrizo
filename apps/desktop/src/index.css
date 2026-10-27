@@ -7245,7 +7245,7 @@ body[data-link-drag='true'], body[data-link-drag='true'] *{ cursor:grabbing !imp
 :root[data-theme='flux'][data-page='light'] .deck-gaps{ --accent-door:#57D0F5; }
 .deck-gaps > *{ display:inline; }
 .deck-gaps-lead{ margin-right:6px; }
-.deck-gap{ background:none; border:0; border-radius:0; box-shadow:none; padding:0; margin:0; font:inherit; color:var(--accent-door); cursor:pointer; }
+.deck-gap{ background:none; border:0; border-radius:0; box-shadow:none; padding:0; margin:0; font:inherit; letter-spacing:inherit; text-transform:inherit; color:var(--accent-door); cursor:pointer; }
 .deck-gap:hover, .deck-gap:focus-visible{ color:var(--choice); outline:none; text-decoration:underline; }
 .deck-gaps-sep, .deck-gaps-more{ margin:0 5px; color:var(--text-mid); }
 [data-theme='flux'] .deck-gaps{ font-family:var(--font-chromeLabel); letter-spacing:.1em; text-transform:uppercase; }

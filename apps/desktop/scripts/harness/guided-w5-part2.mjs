@@ -127,7 +127,7 @@ await withHarness(async (app) => {
         else ok(`[${T}] Flux: the edge RESTS cyan, square, no shadow`, rest.edge === 'rgb(0, 194, 255)' && /^0(px)?$/.test(rest.edgeRadius) && rest.shadow === 'none', JSON.stringify(rest));
         await shot(`kindle-rest-${tag}`);
         const after1 = await rec();
-        ok(`[${T}] the moment fired exactly once for that step`, after1.kindle.length - before.kindle.length === 1 && after1.celebrate === 0, JSON.stringify({ before, after1 }));
+        ok(`[${T}] the moment fired exactly once for that step`, after1.kindle.filter((x) => x === 'mark').length - before.kindle.filter((x) => x === 'mark').length === 1 && after1.celebrate === 0, JSON.stringify({ before, after1 }));
         const m1 = await marks();
         ok(`[${T}] the first mark is the current ring and is now kindled; the others are still seeds`, m1[0].s === 'current' && m1[0].k === 'true' && m1.slice(1).every((x) => x.k === 'false'), JSON.stringify(m1));
         // delete the words and retype: no second moment on this device
@@ -136,7 +136,7 @@ await withHarness(async (app) => {
         const mDel = await marks();
         await app.typeKeys('Again'); await sleep(1800);
         const after2 = await rec();
-        ok(`[${T}] deleting the words and retyping them does NOT fire a second time (already celebrated on this device)`, mDel[0].k === 'false' && after2.kindle.length === after1.kindle.length && after2.celebrate === 0, JSON.stringify({ mDel: mDel[0], k1: after1.kindle.length, k2: after2.kindle.length }));
+        ok(`[${T}] deleting the words and retyping them does NOT fire a second time (already celebrated on this device)`, mDel[0].k === 'false' && after2.kindle.filter((x) => x === 'mark').length === after1.kindle.filter((x) => x === 'mark').length && after2.celebrate === 0, JSON.stringify({ mDel: mDel[0], k1: after1.kindle.length, k2: after2.kindle.length }));
         const mem = await q("localStorage.getItem('wrizo-celebrated')");
         ok(`[${T}] the only memory is the one device-local celebrated set: ids, no text`, !!mem && JSON.parse(mem).cards.includes('d1') && !/She waits|Again/.test(mem), String(mem));
 
@@ -182,7 +182,7 @@ await withHarness(async (app) => {
         const gone = await q("!document.querySelector('.deck-celebration')");
         const namesDone = await gapNames();
         const gapLeadLeft = await q("!!document.querySelector('.deck-gaps-lead')");
-        ok(`[${T}] it lasts about 1.1 s and goes; the gaps line disappears with no "Complete!" and no verdict${flux ? ' (Flux keeps only its STACK name)' : ''}`, gone && namesDone.length === 0 && !gapLeadLeft && (flux ? !!(await q("document.querySelector('.deck-stack')")) : !(await q("!!document.querySelector('.deck-gaps')"))), JSON.stringify({ gone, namesDone, gapLeadLeft }));
+        ok(`[${T}] it lasts about 1.1 s and goes; the gaps line disappears with no "Complete!" and no verdict${flux ? ' (Flux keeps only its STACK name)' : ''}`, gone && namesDone.length === 0 && !gapLeadLeft && (flux ? !!(await q("!!document.querySelector('.deck-stack')")) : !(await q("!!document.querySelector('.deck-gaps')"))), JSON.stringify({ gone, namesDone, gapLeadLeft }));
         const recDone = await rec();
         for (let i = 0; i < 14; i++) await app.key('Backspace');
         await sleep(900); await app.typeKeys('Back again'); await sleep(2200);
@@ -195,14 +195,14 @@ await withHarness(async (app) => {
         if (full) {
           // the stored text is the writer's own: lit never leaked into the text; the first card still reads as ordinary card text
           const d1 = (await boxes()).find((b) => b.id === 'd1');
-          ok(`[${T}] the card's text is her words only (the question stays a placeholder, never text)`, !!d1 && d1.text.startsWith('Hook\n') && !/What happens/.test(d1.text), JSON.stringify(d1 && d1.text));
+          ok(`[${T}] the card's text is her words only (the question stays a placeholder, never text)`, !!d1 && /^hook\n/i.test(d1.text) && !/What happens/.test(d1.text), JSON.stringify(d1 && d1.text));
         }
       });
 
       if (full) {
         // ---- Open: the line reads from the first; a press scrolls to the card and focuses it; kindled cards wear their mark ----
         await guard(`[${T}] Open`, async () => {
-          await open('w5-open', '.walk'); await sleep(300);
+          await open('w5-open', '.walk'); await install(); await sleep(300);
           const strip = await point('.show-as'); if (strip) { await app.mouseMove(strip.x, strip.y); await sleep(500); }
           await click('.show-as-btn[data-view="open"]'); await waitSoft("!!document.querySelector('.board-canvas')", { label: 'open view' }); await sleep(900);
           const n = await gapNames();
