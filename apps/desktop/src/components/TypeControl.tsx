@@ -18,7 +18,9 @@
 // Buttons preventDefault on mousedown so pressing one never steals the caret from a writing surface.
 import { useEffect, useRef, useState } from 'react';
 import { useDeskLexicon } from '../store/deskLexicon';
-import { ROSTER, faceStack, faceNameFromStack, storedFaceFor, ensureFaceLoaded, faceForSlug, fontSlug, DEFAULT_FACE_NAME, type StoredFace } from '../store/fontRoster';
+import { useTheme } from '../store/theme';
+import { useThemePrefs } from '../store/themePrefs';
+import { ROSTER, faceStack, faceNameFromStack, themeDefaultFaceName, storedFaceFor, ensureFaceLoaded, faceForSlug, fontSlug, DEFAULT_FACE_NAME, type StoredFace } from '../store/fontRoster';
 import { stepUp, stepDown, normalizeTypedSize, formatSize } from '../store/fontSize';
 
 export interface TypeControlProps {
@@ -51,7 +53,10 @@ const DEFAULT_KEY = '\u0000default';   // the "Default (<face>)" row's key: not 
 
 /** The face that ACTUALLY renders when nothing is chosen: the first family of the resolved `--font-prose` (voice dial and
  *  theme already applied), never the dial's own label - under the Chakra Petch voice this says Chakra Petch. */
-function everydayFaceName(): string {
+function everydayFaceName(theme?: string, voice?: string): string {
+  // TOOLS #10 item 10: the theme's own default first (a table that is checked against the CSS tokens) - "Default (<face>)" must always NAME the face; the DOM read is the fallback for a theme the table does not know.
+  const themed = themeDefaultFaceName(theme, voice);
+  if (themed) return themed;
   try { return faceNameFromStack(getComputedStyle(document.documentElement).getPropertyValue('--font-prose')) ?? DEFAULT_FACE_NAME; } catch { return DEFAULT_FACE_NAME; }
 }
 
@@ -61,7 +66,10 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
   // TOOLS #10 item 9: in the scoped form (Draft's drawer, a card's dock) the face list is COLLAPSED until the face button is pressed. The list stays mounted (hidden), so it is the same list either way.
   const [listOpen, setListOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const currentName = face?.name ?? everydayFaceName();
+  const theme = useTheme();
+  const { voice } = useThemePrefs();   // the voice dial, from its store (never read off the document)
+  const defaultName = everydayFaceName(theme, voice);
+  const currentName = face?.name ?? defaultName;
   // Unchosen: the button wears whatever the page really wears (`--font-prose`), roster face or not.
   const currentStack = faceStack(face) ?? 'var(--font-prose)';
   const [draft, setDraft] = useState<string | null>(null);
@@ -100,7 +108,7 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
   const pickDefault = () => { if (!scope || whole) onPickFace(undefined); else scope.onPickSelection(null); };
   const defaultRow = (current: boolean, onPick: () => void) => (
     <li key="__default" role="option" aria-selected={current} data-current={current ? 'true' : 'false'} data-default="true" className="wz-type-row" style={{ fontFamily: 'var(--font-prose)' }} onClick={onPick}>
-      {t('typeFaceDefault').replace('{face}', everydayFaceName())}
+      {t('typeFaceDefault').replace('{face}', defaultName)}
     </li>
   );
   const pickRow = (name: string) => {
