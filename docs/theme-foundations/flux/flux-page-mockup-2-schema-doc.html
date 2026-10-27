@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FLUX // DOC — Page mockup 2: SCHEMA DOC</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Chakra+Petch:wght@400;500;600&family=Crimson+Pro:wght@400;500&display=swap">
+<style>
+/* MOCKUP ONLY — not product code. The Flux page as a node in the circuit: its blocks are records, its links leave the page as traces. */
+:root{
+  --ground:#010811; --chrome:#0F1926; --glass:#0E1E31; --line:#193556; --line-strong:#244D7C;
+  --cyan:#00C2FF; --cyan-soft:#57D0F5; --ink:#E8F6FA; --mid:#9AD7EA; --low:#7EB4C4; --lime:#A6FF3D; --orange:#FF9800;
+  --f-chrome:'Rajdhani','Arial Narrow',system-ui,sans-serif; --f-content:'Chakra Petch',system-ui,sans-serif; --f-serif:'Crimson Pro',Georgia,serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--ground);color:var(--ink);font-family:var(--f-content)}
+#bg,#lk,#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+#bg{z-index:0} #lk{z-index:1} #fx{z-index:5}
+.hud{position:fixed;z-index:10;font-family:var(--f-chrome);letter-spacing:.14em;text-transform:uppercase}
+#top{top:0;left:0;right:0;height:46px;display:flex;align-items:center;gap:18px;padding:0 16px;background:rgba(15,25,38,.9);border-bottom:1px solid var(--line)}
+#top .crumb{font-size:13px;color:var(--low)} #top .crumb b{color:var(--ink);font-weight:600}
+#top .tabs{margin-left:auto;display:flex;gap:2px}
+.tab{background:none;border:1px solid transparent;color:var(--mid);font:600 12px var(--f-chrome);letter-spacing:.16em;text-transform:uppercase;padding:7px 12px;cursor:pointer}
+.tab:hover{color:var(--ink)} .tab[aria-pressed="true"]{color:var(--cyan);border-bottom:2px solid var(--cyan)}
+.tab.door{color:var(--cyan-soft)}
+
+/* ---- the rail: command boxes with a readout line (variant B) ---- */
+#rail{left:0;top:46px;bottom:0;width:216px;padding:14px 12px;display:flex;flex-direction:column;gap:7px;background:rgba(1,8,17,.55);border-right:1px solid var(--line)}
+.rb{display:grid;grid-template-columns:1fr auto;gap:0 8px;width:100%;background:rgba(15,25,38,.92);border:1px solid var(--line-strong);color:var(--mid);font:600 13px var(--f-chrome);letter-spacing:.16em;text-transform:uppercase;padding:7px 11px 6px;cursor:pointer;text-align:left;position:relative}
+.rb .k{color:var(--low);font-size:10px;align-self:center}
+.rb small{grid-column:1 / -1;font-size:10px;letter-spacing:.2em;color:#4F7FA6;margin-top:1px}
+.rb:hover{color:var(--cyan);border-color:var(--cyan)}
+.rb::before{content:'';position:absolute;left:-4px;top:-4px;width:7px;height:7px;border:2px solid transparent;border-right:none;border-bottom:none}
+.rb:hover::before,.rb.on::before{border-color:var(--cyan)}
+.rb.on{color:var(--cyan);border-color:var(--cyan)}
+.rb.here{border-color:var(--orange);color:var(--orange);padding:10px 11px 8px}
+.rb.here::before{border-color:var(--orange)} .rb.here small{color:#B86A00}
+.rail-foot{margin-top:auto;display:flex;flex-direction:column;gap:7px}
+
+/* ---- the page as a record: blocks with a schema gutter ---- */
+#wrap{position:fixed;left:216px;right:0;top:46px;bottom:0;display:flex;justify-content:center;z-index:2;pointer-events:none}
+#page{position:relative;pointer-events:auto;margin-top:30px;width:min(760px,calc(100% - 300px));height:calc(100% - 118px);background:rgba(12,24,38,.93);border:1px solid rgba(0,194,255,.5);display:flex;flex-direction:column}
+#page::before,#page::after{content:'';position:absolute;width:16px;height:16px;border:2px solid var(--cyan);z-index:2}
+#page::before{left:-5px;top:-5px;border-right:none;border-bottom:none} #page::after{right:-5px;bottom:-5px;border-left:none;border-top:none}
+#page .hd{display:flex;justify-content:space-between;padding:9px 18px;border-bottom:1px solid rgba(0,194,255,.2);font-family:var(--f-chrome);font-weight:600;font-size:11px;letter-spacing:.2em;color:var(--low)}
+#page .hd .id{color:var(--cyan-soft)} #page .hd .typ{color:var(--orange)}
+#scroll{flex:1;overflow:auto;position:relative;padding:26px 54px 40px 108px}
+#gutter{position:absolute;left:0;top:0;width:96px;pointer-events:none}
+.gl{position:absolute;left:14px;width:78px;font-family:var(--f-chrome);font-size:10px;letter-spacing:.16em;color:#4F7FA6;line-height:1.35;border-left:1px solid rgba(0,194,255,.25);padding-left:7px}
+.gl b{display:block;color:var(--cyan-soft);font-weight:600} .gl.on{border-left:2px solid var(--orange);color:var(--low)} .gl.on b{color:var(--orange)}
+#title{font-family:var(--f-serif);font-size:30px;font-weight:500;color:var(--ink);margin:0 0 18px;outline:none}
+#text{font-family:var(--f-serif);font-size:19px;line-height:1.75;color:#E8F6FA;outline:none;caret-color:var(--orange);caret-shape:block}
+#text p{margin:0 0 1.1em}
+
+/* nodes the page links to, out in the room */
+.ext{position:fixed;z-index:3;width:190px;background:rgba(14,30,49,.9);border:1px solid rgba(166,255,61,.55);font-family:var(--f-chrome);pointer-events:auto;cursor:pointer}
+.ext::before{content:'';position:absolute;left:-4px;top:-4px;width:9px;height:9px;border:2px solid var(--lime);border-right:none;border-bottom:none}
+.ext .h{display:flex;justify-content:space-between;padding:4px 8px;border-bottom:1px solid rgba(0,194,255,.2);font-size:10px;letter-spacing:.16em;color:var(--low)} .ext .h .t{color:var(--lime)}
+.ext .n{padding:5px 8px 6px;font-weight:700;font-size:13px;letter-spacing:.12em;color:var(--lime)}
+.ext.txt{border-color:rgba(0,194,255,.5)} .ext.txt::before{border-color:var(--cyan)} .ext.txt .h .t,.ext.txt .n{color:var(--cyan-soft)}
+.ext.hot{box-shadow:0 0 22px rgba(0,194,255,.3)}
+
+/* the sprint readout: a segmented bar with glitching letters */
+#meter{position:absolute;left:0;right:0;bottom:-50px;display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;font-family:var(--f-chrome);font-size:12px;letter-spacing:.22em;color:var(--low)}
+#meter .lab b{color:var(--lime)} #meter .lab .mode{color:var(--cyan-soft)}
+#segs{display:flex;gap:3px;height:10px}
+#segs i{flex:1;background:rgba(0,194,255,.14)} #segs i.on{background:var(--lime)} #segs i.head{background:var(--cyan);animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+#meter.glitching .lab{color:var(--orange)}
+#meter.done #segs i.on{background:var(--orange)} #meter.done .lab b{color:var(--orange)}
+
+.plus{position:absolute;right:-58px;top:50%;margin-top:-19px;width:38px;height:38px;background:rgba(1,8,17,.9);border:1px solid var(--cyan);color:var(--cyan);cursor:pointer}
+.plus::before,.plus::after{content:'';position:absolute;left:50%;top:50%;background:currentColor;transform:translate(-50%,-50%)}
+.plus::before{width:16px;height:2px} .plus::after{width:2px;height:16px}
+.plus:hover,.plus[aria-expanded="true"]{background:var(--cyan);color:var(--ground)}
+.pmenu{position:absolute;right:-10px;top:50%;transform:translateY(-50%);z-index:20;min-width:290px;display:none;background:rgba(9,18,30,.97);border:1px solid var(--cyan);padding:6px 0;font-family:var(--f-chrome)}
+.pmenu.open{display:block}
+.pmenu .mh{padding:6px 14px 4px;font-size:11px;letter-spacing:.22em;color:var(--low);text-transform:uppercase}
+.pmenu button{display:flex;justify-content:space-between;width:100%;background:none;border:0;border-left:2px solid transparent;color:var(--mid);font:600 13px var(--f-chrome);letter-spacing:.14em;text-transform:uppercase;padding:7px 14px;cursor:pointer;text-align:left}
+.pmenu button:hover{color:var(--ink);border-left-color:var(--cyan);background:rgba(0,194,255,.08)} .pmenu button .s{color:var(--low);font-size:11px}
+.pmenu .sub{margin:0 0 4px 14px;border-left:1px solid var(--line)} .pmenu hr{border:0;border-top:1px solid var(--line);margin:5px 0}
+
+.hand-tab{position:fixed;z-index:30;top:50%;transform:translateY(-50%);width:40px;padding:12px 0 10px;background:rgba(9,18,30,.94);border:1px solid var(--line-strong);color:var(--mid);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;font-family:var(--f-chrome);font-weight:700;font-size:10px;letter-spacing:.24em}
+.hand-tab span{writing-mode:vertical-rl;transform:rotate(180deg)} .hand-tab.r span{transform:none}
+.hand-tab:hover,.hand-tab[aria-expanded="true"]{color:var(--cyan);border-color:var(--cyan)}
+.hand-tab.l{left:216px;border-left:none} .hand-tab.r{right:0;border-right:none} .hand-tab svg{width:26px;height:26px}
+.hand{position:fixed;z-index:29;top:46px;bottom:0;width:320px;background:rgba(9,18,30,.96);border:1px solid var(--line-strong);padding:16px 18px;overflow:auto;transition:transform .22s ease;font-family:var(--f-chrome);text-transform:uppercase;letter-spacing:.14em}
+.hand.l{left:256px;transform:translateX(calc(-100% - 270px))} .hand.r{right:40px;transform:translateX(calc(100% + 50px))} .hand.open{transform:none}
+.hand::after{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,194,255,.035) 0 1px,transparent 1px 4px)}
+.hand h3{margin:0 0 4px;font-size:16px;letter-spacing:.24em;color:var(--cyan)} .hand .ctx{font-size:11px;color:var(--low);margin-bottom:14px}
+.hand .grp{margin:14px 0 6px;font-size:11px;letter-spacing:.22em;color:var(--low);border-bottom:1px solid var(--line);padding-bottom:4px}
+.hand .it{display:flex;justify-content:space-between;width:100%;background:rgba(15,25,38,.6);border:1px solid var(--line);color:var(--mid);font:600 13px var(--f-chrome);letter-spacing:.14em;text-transform:uppercase;padding:8px 10px;margin:4px 0;cursor:pointer}
+.hand .it .k{color:var(--low);font-size:10px}
+.hand .lens{border:1px solid var(--line);padding:8px 10px;margin:6px 0;font-size:12px;color:var(--mid);text-transform:none;letter-spacing:.02em;font-family:var(--f-content);line-height:1.5}
+.hand .lens b{display:block;font-family:var(--f-chrome);letter-spacing:.2em;text-transform:uppercase;color:var(--cyan-soft);font-size:12px;margin-bottom:3px}
+.hand input{width:100%;background:rgba(1,8,17,.8);border:1px solid var(--line-strong);color:var(--ink);font:500 13px var(--f-content);padding:8px 10px;margin-top:6px}
+
+body.writing .hud,body.writing .hand-tab,body.writing .plus,body.writing .ext,body.writing #page .hd,body.writing #gutter{opacity:.06;transition:opacity .7s}
+.hud,.hand-tab,.plus,.ext,#page .hd,#gutter{transition:opacity .9s}
+#toast{left:50%;bottom:14px;transform:translateX(-50%);padding:8px 14px;background:rgba(9,18,30,.96);border:1px solid var(--cyan);color:var(--ink);font-size:12px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:40}
+#toast.on{opacity:1}
+#notesBtn{right:56px;top:56px}
+#notes{position:fixed;z-index:60;top:58px;right:56px;bottom:14px;width:min(540px,calc(100vw - 120px));overflow:auto;background:rgba(9,18,30,.97);border:1px solid var(--line-strong);padding:18px 20px;display:none;font-size:13px;line-height:1.6;color:var(--mid)}
+#notes.open{display:block} #notes h2{font-family:var(--f-chrome);font-size:15px;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);margin:16px 0 6px}
+#notes h2:first-of-type{margin-top:0} #notes b{color:var(--ink)} #notes ul{padding-left:18px} #notes .x{float:right}
+.btn{background:rgba(15,25,38,.92);border:1px solid var(--line-strong);color:var(--mid);font:600 12px var(--f-chrome);letter-spacing:.16em;text-transform:uppercase;padding:7px 12px;cursor:pointer}
+.btn:hover{color:var(--cyan);border-color:var(--cyan)}
+@media (prefers-reduced-motion:reduce){ #segs i.head{animation:none} }
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas><canvas id="lk"></canvas><canvas id="fx"></canvas>
+<div id="top" class="hud">
+  <span class="crumb">NOVELS ▸ THE LATE FERRY ▸ <b>DOC // CHAPTER 3</b></span>
+  <div class="tabs" role="group" aria-label="Mode">
+    <button class="tab" aria-pressed="false">Overclock</button><button class="tab" aria-pressed="true">Build</button><button class="tab" aria-pressed="false">Patch</button><button class="tab" aria-pressed="false">Uplink</button>
+    <button class="tab door" aria-pressed="false">Schematic →</button>
+  </div>
+</div>
+<nav id="rail" class="hud" aria-label="Wayfinding">
+  <button class="rb here">The Late Ferry <span class="k">▸</span><small>CARTRIDGE · 4 CIRCUITS · 12 DOCS</small></button>
+  <button class="rb on">Docs <span class="k">1</span><small>12 · CH 3 OPEN</small></button>
+  <button class="rb">Circuits <span class="k">2</span><small>4 · PLOT LINKED</small></button>
+  <button class="rb">Logs <span class="k">3</span><small>41 ENTRIES</small></button>
+  <button class="rb" id="locate" style="border-color:var(--orange);color:var(--orange)">Last node <span class="k" style="color:var(--orange)">L</span><small style="color:#B86A00">RISING ACTION · PLOT</small></button>
+  <div class="rail-foot">
+    <button class="rb">Config <span class="k">,</span><small>VOICE SERIF · FADE ON</small></button>
+    <button class="rb">Skin <span class="k">K</span><small>FLUX</small></button>
+    <button class="rb">Trash <span class="k">⌫</span><small>3 ITEMS</small></button>
+  </div>
+</nav>
+<button class="hand-tab l" id="tabL" aria-expanded="false" title="Tools"></button>
+<button class="hand-tab r" id="tabR" aria-expanded="false" title="Operator"></button>
+<aside class="hand l" id="handL"></aside><aside class="hand r" id="handR"></aside>
+
+<div id="wrap">
+  <div id="page">
+    <div class="hd"><span class="id">DOC // 0x2D7A</span><span class="typ">DOC · CHAPTER</span><span id="wc">0 WORDS</span></div>
+    <div id="scroll"><div id="gutter"></div><h1 id="title" contenteditable="true" spellcheck="false">Chapter 3 — The Two Logbooks</h1><div id="text" contenteditable="true" spellcheck="false"></div></div>
+    <div id="meter"><span class="lab"><span class="mode">BUILD</span> // SPRINT <b id="mw">0</b> / 300</span><div id="segs"></div><span id="mst">LIVE · 06:12</span></div>
+    <button class="plus" id="plus" aria-expanded="false" title="Connect or open"></button><div class="pmenu" id="pmenu"></div>
+  </div>
+</div>
+<div id="toast" class="hud"></div>
+<button id="notesBtn" class="btn hud">Design notes</button>
+<div id="notes">
+  <button class="btn x" id="notesX">Close</button>
+  <h2>Page mockup 2 — SCHEMA DOC</h2>
+  <p>The Flux page as <b>a node in the circuit</b>. The same doc, read as a record: each paragraph is a <b>block</b> with an id and a word count in a schema gutter, and the links this doc has to circuit nodes leave the page as <b>traces</b> to those nodes, waiting out in the room.</p>
+  <ul>
+    <li><b>Electrons where you are</b>, as on the circuit: the traces always move; the block your caret is in fires electrons along its own links, and its node lights up.</li>
+    <li><b>The rail is the board's command boxes</b>, variant B: each box has a readout line under its name (counts, what is open), a bracket corner when current, the place you are in in orange, and "Last node" always one box away.</li>
+    <li><b>The sprint readout</b> is a segmented bar (one segment per 15 words) whose letters glitch, then resolve; at the goal it hands off to orange and the letters resolve to CHECKPOINT.</li>
+    <li>The hands and + match the circuit. Writing fades the gutter, the traces' nodes and all chrome; the words stay.</li>
+  </ul>
+  <h2>For Fable</h2>
+  <p>Block ids are display only (no stored field): paragraphs are counted at render. "This doc's links to nodes" reads the existing page pins and grafts. The page itself never moves or resizes.</p>
+</div>
+
+<script>
+'use strict';
+const PARAS = ['He wrote the crossings in pencil and the weather in ink, as if one could be rubbed out and the other could not.',
+  'Mara found the second logbook under the bench in the wheelhouse, wrapped in a feed sack, dry as a biscuit. The entries stopped in the winter of 1987 and started again in March, in a different hand.',
+  'She read the March entries twice. The new hand pressed harder. It wrote the times to the minute, as if somebody had told it once that minutes mattered, and it had believed them.'];
+const LINKS = [{ p: 0, node: 'RISING ACTION', id: '0x2679', kind: 'TEXT', y: .26 }, { p: 1, node: 'MIDPOINT', id: '0x2678', kind: 'PRESET · THREE-ACT', y: .5 }, { p: 1, node: 'THE ISLAND', id: '0x2677', kind: 'TEXT', y: .66 }, { p: 2, node: 'CRISIS', id: '0x267C', kind: 'PRESET · THREE-ACT', y: .84 }];
+const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+let typingUntil = 0; const typing = () => performance.now() < typingUntil;
+const text = document.getElementById('text'); text.innerHTML = PARAS.map(p => '<p></p>').join(''); text.querySelectorAll('p').forEach((el, i) => el.textContent = PARAS[i]);
+let W, H, DPR; const bg = document.getElementById('bg'), bgx = bg.getContext('2d'), lk = document.getElementById('lk'), lkx = lk.getContext('2d'), fx = document.getElementById('fx'), fxx = fx.getContext('2d');
+function resize() { W = innerWidth; H = innerHeight; DPR = Math.min(2, devicePixelRatio || 1); for (const c of [bg, lk, fx]) { c.width = W * DPR; c.height = H * DPR; c.getContext('2d').setTransform(DPR, 0, 0, DPR, 0, 0); } }
+addEventListener('resize', resize); resize();
+function rnd(a, b, c) { let h = (a * 374761393 + b * 668265263 + c * 2147483647) | 0; h = (h ^ (h >>> 13)) * 1274126177 | 0; h ^= h >>> 16; return ((h >>> 0) % 100000) / 100000; }
+function along(pts, f) { let L = 0; const seg = []; for (let i = 1; i < pts.length; i++) { const d = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); seg.push(d); L += d; } let d = f * L; for (let i = 0; i < seg.length; i++) { if (d <= seg[i]) { const u = seg[i] ? d / seg[i] : 0; return [pts[i][0] + (pts[i + 1][0] - pts[i][0]) * u, pts[i][1] + (pts[i + 1][1] - pts[i][1]) * u]; } d -= seg[i]; } return pts[pts.length - 1]; }
+function drawGround(t) {
+  const damp = typing() ? .15 : 1;
+  bgx.fillStyle = '#010811'; bgx.fillRect(0, 0, W, H);
+  const g = bgx.createRadialGradient(W * .56, H * .5, 0, W * .56, H * .5, Math.max(W, H) * .7); g.addColorStop(0, 'rgba(8,40,72,.6)'); g.addColorStop(1, 'rgba(1,8,17,0)'); bgx.fillStyle = g; bgx.fillRect(0, 0, W, H);
+  bgx.strokeStyle = 'rgba(25,53,86,.3)'; bgx.lineWidth = 1; bgx.beginPath(); for (let x = .5; x < W; x += 40) { bgx.moveTo(x, 0); bgx.lineTo(x, H); } for (let y = .5; y < H; y += 40) { bgx.moveTo(0, y); bgx.lineTo(W, y); } bgx.stroke();
+  const cell = 160;
+  for (let cx = 0; cx * cell < W; cx++) for (let cy = 0; cy * cell < H; cy++) {
+    const r = (k) => rnd(cx * 13 + k, cy * 7, 5);
+    const x0 = (cx + r(1)) * cell, y0 = (cy + Math.round(r(2) * 4) / 4) * cell, x1 = (cx + r(3)) * cell, y1 = (cy + Math.round(r(4) * 4) / 4) * cell, m = (cx + Math.round(r(5) * 4) / 4) * cell, pts = [[x0, y0], [m, y0], [m, y1], [x1, y1]];
+    bgx.strokeStyle = 'rgba(36,77,124,.5)'; bgx.beginPath(); pts.forEach((p, j) => j ? bgx.lineTo(p[0], p[1]) : bgx.moveTo(p[0], p[1])); bgx.stroke();
+    if (!reduced() && r(7) < .14) { const q = along(pts, ((t / 1000) * (.18 + r(8) * .25) + r(9)) % 1); bgx.fillStyle = r(10) < .35 ? `rgba(166,255,61,${.75 * damp})` : `rgba(0,194,255,${.85 * damp})`; bgx.fillRect(q[0] - 2, q[1] - 2, 4, 4); }
+  }
+}
+// the nodes this doc links to, out in the room, and the traces to them
+const exts = LINKS.map((l, i) => { const d = document.createElement('div'); d.className = 'ext' + (l.kind.startsWith('PRESET') ? '' : ' txt'); d.innerHTML = `<div class="h"><span>NODE ${l.id}</span><span class="t">${l.kind}</span></div><div class="n">${l.node}</div>`; d.onclick = () => toast('OPENS ' + l.node + ' AS A HOLOGRAM (SEE SCHEMA v2)'); document.body.appendChild(d); return d; });
+function caretPara() { const s = getSelection(); if (!s.rangeCount) return -1; let n = s.anchorNode; while (n && n !== text) { if (n.tagName === 'P') return [...text.children].indexOf(n); n = n.parentNode; } return -1; }
+function drawLinks(t) {
+  lkx.clearRect(0, 0, W, H);
+  const page = document.getElementById('page').getBoundingClientRect(), ps = [...text.querySelectorAll('p')], cur = caretPara();
+  LINKS.forEach((l, i) => {
+    const p = ps[l.p]; if (!p) return; const r = p.getBoundingClientRect();
+    const ex = exts[i], ey = 46 + (H - 46) * l.y - 24, exX = Math.min(W - 250, page.right + 90);
+    ex.style.left = exX + 'px'; ex.style.top = ey + 'px';
+    const y = Math.max(page.top + 50, Math.min(page.bottom - 20, r.top + 14)), hot = l.p === cur;
+    ex.classList.toggle('hot', hot);
+    const pts = [[page.right, y], [page.right + 40 + i * 10, y], [page.right + 40 + i * 10, ey + 22], [exX, ey + 22]];
+    lkx.setLineDash([6, 5]); lkx.lineDashOffset = reduced() ? 0 : -(t / 60) % 11; lkx.lineWidth = hot ? 2 : 1.4; lkx.strokeStyle = hot ? 'rgba(0,194,255,.75)' : 'rgba(0,194,255,.35)';
+    lkx.beginPath(); pts.forEach((q, j) => j ? lkx.lineTo(q[0], q[1]) : lkx.moveTo(q[0], q[1])); lkx.stroke(); lkx.setLineDash([]);
+    if (hot && !reduced()) for (let k = 0; k < 2; k++) { const q = along(pts, ((t / 1000) * .16 + k / 2) % 1); lkx.fillStyle = '#00C2FF'; lkx.shadowColor = '#00C2FF'; lkx.shadowBlur = 10; lkx.fillRect(q[0] - 3, q[1] - 3, 6, 6); lkx.shadowBlur = 0; }
+  });
+}
+// the schema gutter: one record line per block
+const gutter = document.getElementById('gutter');
+function drawGutter() {
+  const ps = [...text.querySelectorAll('p')], cur = caretPara(), sr = document.getElementById('scroll');
+  while (gutter.children.length < ps.length) gutter.appendChild(Object.assign(document.createElement('div'), { className: 'gl' }));
+  while (gutter.children.length > ps.length) gutter.lastChild.remove();
+  ps.forEach((p, i) => { const g = gutter.children[i]; g.style.top = (p.offsetTop) + 'px'; const w = (p.textContent.match(/\S+/g) || []).length, n = LINKS.filter(l => l.p === i).length; g.innerHTML = `<b>BLK ${String(i + 1).padStart(2, '0')}</b>${w} W${n ? ' · ' + n + (n === 1 ? ' LINK' : ' LINKS') : ''}`; g.classList.toggle('on', i === cur); });
+}
+// texture, never on the page
+const ev = []; const sch = { tear: 0, block: 0 };
+function texture(t) {
+  fxx.clearRect(0, 0, W, H); if (reduced()) return;
+  if (!typing() && t > sch.tear) { sch.tear = t + 7000 + Math.random() * 5000; for (let i = 0; i < 4; i++) ev.push({ k: 'tear', at: t + i * 45, d: 150, y: Math.random() * H, lime: Math.random() < .35 }); }
+  if (!typing() && t > sch.block) { sch.block = t + 2600 + Math.random() * 2200; const x = Math.random() * W, y = Math.random() * H; for (let i = 0; i < 6; i++) ev.push({ k: 'b', at: t, d: 80 + Math.random() * 130, x: x + (Math.random() - .5) * 160, y: y + (Math.random() - .5) * 90, s: 10 + Math.random() * 20, lime: Math.random() < .35 }); }
+  const page = document.getElementById('page').getBoundingClientRect(), damp = typing() ? .13 : 1;
+  fxx.save(); fxx.beginPath(); fxx.rect(0, 0, W, H); fxx.rect(page.left, page.top, page.width, page.height); fxx.clip('evenodd');
+  for (let i = ev.length - 1; i >= 0; i--) { const e = ev[i]; if (t > e.at + e.d) { ev.splice(i, 1); continue; } if (t < e.at) continue; fxx.fillStyle = e.lime ? `rgba(166,255,61,${(e.k === 'tear' ? .5 : .22) * damp})` : `rgba(0,194,255,${(e.k === 'tear' ? .55 : .25) * damp})`; if (e.k === 'tear') fxx.fillRect(0, e.y, W, 1); else fxx.fillRect(e.x, e.y, e.s, e.s * .6); }
+  fxx.restore();
+}
+// the segmented readout, with glitching letters
+const CODE = '01<>{}[]/\\=+*#$%&_:;ABCDEF0123456789', meter = document.getElementById('meter'), lab = meter.querySelector('.lab'), segs = document.getElementById('segs');
+for (let i = 0; i < 20; i++) segs.appendChild(document.createElement('i'));
+const words = () => (text.innerText.match(/\S+/g) || []).length; const base = words(); let glitching = false, done = false;
+function scramble(node, ms, after) { const keep = node.innerHTML, orig = node.textContent, steps = Math.round(ms / 120); let i = 0; glitching = true; meter.classList.add('glitching'); const iv = setInterval(() => { i++; const k = i <= steps ? i / steps : (2 * steps - i) / steps; node.textContent = orig.replace(/[^\s/]/g, (ch) => Math.random() < k * .85 ? CODE[(Math.random() * CODE.length) | 0] : ch); if (i >= 2 * steps) { clearInterval(iv); node.innerHTML = after || keep; glitching = false; meter.classList.remove('glitching'); } }, 60); }
+function stepMeter() {
+  const n = Math.max(0, words() - base + 214), f = Math.min(1, n / 300), on = Math.floor(f * 20);
+  [...segs.children].forEach((s, i) => { s.className = i < on ? 'on' : i === on && !done ? 'head' : ''; });
+  document.getElementById('wc').textContent = words() + ' WORDS · ' + text.querySelectorAll('p').length + ' BLOCKS · ' + LINKS.length + ' LINKS';
+  if (!glitching && !done) { const b = document.getElementById('mw'); if (b) b.textContent = n; }
+  if (!done && n >= 300) { done = true; meter.classList.add('done'); const fin = '<span class="mode">CHECKPOINT</span> // SPRINT <b>300</b> / 300'; if (!reduced()) scramble(lab, 420, fin); else lab.innerHTML = fin; }
+}
+setInterval(() => { if (!reduced() && !typing() && !glitching && !done && Math.random() < .5) scramble(lab, 420); }, 5200);
+text.addEventListener('input', () => { typingUntil = performance.now() + 1500; document.body.classList.add('writing'); clearTimeout(text.h); text.h = setTimeout(() => document.body.classList.remove('writing'), 4200); });
+addEventListener('pointermove', () => { if (!typing()) document.body.classList.remove('writing'); });
+
+const HAND_TOOLS = `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 30 V17 L5 13 V10 L8 12 V5 H10 V14 M10 4 H12 V14 M12 3 H14 V14 M14 4 H16 V15 L19 12 H21 L16 22 V30"/><rect x="18" y="20" width="9" height="7"/><path d="M20 20 v-2 M25 20 v-2 M20 27 v2 M25 27 v2"/></svg>`;
+const HAND_OP = `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M24 30 V17 L27 13 V10 L24 12 V5 H22 V14 M22 4 H20 V14 M20 3 H18 V14 M18 4 H16 V15 L13 12 H11 L16 22 V30"/><circle cx="8" cy="9" r="4"/><circle cx="8" cy="9" r="1.2" fill="currentColor"/><path d="M8 13 V18 H14"/></svg>`;
+const tabL = document.getElementById('tabL'), tabR = document.getElementById('tabR'), handL = document.getElementById('handL'), handR = document.getElementById('handR');
+tabL.innerHTML = HAND_TOOLS + '<span>TOOLS</span>'; tabR.innerHTML = HAND_OP + '<span>OPERATOR</span>';
+const it = (l, k) => `<button class="it"><span>${l}</span><span class="k">${k || ''}</span></button>`;
+handL.innerHTML = `<h3>TOOLS</h3><div class="ctx">DOC · CHAPTER 3</div><div class="grp">TEXT | INK</div>${it('Text', 'ON')}${it('Ink', '')}<div class="grp">STYLING</div>${it('Markup', 'B I U')}${it('Font', 'CRIMSON')}<div class="grp">DOC TYPE</div>${it('Plain', 'ON')}${it('Script', '')}${it('Dossier', '')}<div class="grp">BLOCK</div>${it('Link this block to a node', '▸')}${it('Port block to circuit', '▸')}`;
+handR.innerHTML = `<h3>OPERATOR</h3><div class="ctx">DOC · NEVER WRITES FOR YOU</div><div class="lens"><b>Schema</b>BLK 02 carries two links (MIDPOINT, THE ISLAND); BLK 03 is the only block tied to ACT III.</div><div class="lens"><b>Checksum</b>“The winter of 1987” here; “the winter the light went out” on MIDPOINT. Same winter?</div><div class="lens"><b>Shards</b>Two loose lines in your logs mention the ferryman.</div><div class="grp">ASK THE OPERATOR</div><input placeholder="A question about your work…">`;
+tabL.onclick = () => { const o = !handL.classList.contains('open'); handL.classList.toggle('open', o); tabL.setAttribute('aria-expanded', String(o)); };
+tabR.onclick = () => { const o = !handR.classList.contains('open'); handR.classList.toggle('open', o); tabR.setAttribute('aria-expanded', String(o)); };
+const plus = document.getElementById('plus'), pmenu = document.getElementById('pmenu');
+const toast = (s) => { const t = document.getElementById('toast'); t.textContent = s; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 2400); };
+plus.onclick = (e) => {
+  e.stopPropagation(); const open = !pmenu.classList.contains('open'); pmenu.classList.toggle('open', open); plus.setAttribute('aria-expanded', String(open)); if (!open) return;
+  const b = (l, s) => `<button data-a="${l}"><span>${l}</span><span class="s">${s || ''}</span></button>`;
+  pmenu.innerHTML = `<div class="mh">This doc · Chapter 3</div>${b('New connected doc', 'SPLIT')}<div class="mh">Open an existing doc</div><div class="sub">${b('Chapter 1 — The Last Ferry')}${b('Chapter 2 — Feed Sacks')}</div>${b('Connect to a new circuit', 'SPLIT')}<div class="mh">Connect to an existing circuit</div><div class="sub">${b('PLOT', 'LINKED')}${b('CAST')}${b('HARBOUR TOWN')}</div><hr>${b('Disconnect this doc', '1 LINKED')}`;
+  pmenu.querySelectorAll('button').forEach(x => x.onclick = () => { pmenu.classList.remove('open'); plus.setAttribute('aria-expanded', 'false'); toast(x.dataset.a.toUpperCase() + ' · OPENS IN A SPLIT PANE (SEE SCHEMA v2)'); });
+};
+addEventListener('pointerdown', (e) => { if (!e.target.closest('.pmenu,.plus')) { pmenu.classList.remove('open'); plus.setAttribute('aria-expanded', 'false'); } });
+document.getElementById('locate').onclick = () => toast('RETURN TO LAST NODE · RISING ACTION ON PLOT');
+document.getElementById('notesBtn').onclick = () => document.getElementById('notes').classList.toggle('open');
+document.getElementById('notesX').onclick = () => document.getElementById('notes').classList.remove('open');
+document.querySelectorAll('#top .tab:not(.door)').forEach(b => b.onclick = () => { document.querySelectorAll('#top .tab:not(.door)').forEach(x => x.setAttribute('aria-pressed', String(x === b))); lab.querySelector('.mode').textContent = b.textContent.toUpperCase(); });
+function frame(t) { drawGround(t); drawLinks(t); drawGutter(); texture(t); stepMeter(); requestAnimationFrame(frame); }
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

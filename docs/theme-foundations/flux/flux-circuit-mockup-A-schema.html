@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>FLUX // CIRCUIT — Mockup A: SCHEMA (infinite zoom)</title>
+<title>FLUX // CIRCUIT — Mockup A: SCHEMA v2</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Chakra+Petch:wght@400;500;600&family=Crimson+Pro:wght@400;500&display=swap">
 <style>
-/* MOCKUP ONLY — not product code. Flux tokens as shipped (index.css :root[data-theme='flux'], hue 212). */
+/* MOCKUP ONLY — not product code. Flux tokens as shipped (index.css :root[data-theme='flux'], hue 212). v2: Nick's notes of Oct 27. */
 :root{
   --ground:#010811; --chrome:#0F1926; --glass:#0E1E31; --line:#193556; --line-strong:#244D7C;
   --cyan:#00C2FF; --cyan-soft:#57D0F5; --ink:#E8F6FA; --mid:#9AD7EA; --low:#7EB4C4;
@@ -15,108 +15,217 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;overflow:hidden;background:var(--ground);color:var(--ink);font-family:var(--f-content)}
-#bg,#links{position:fixed;inset:0;width:100%;height:100%;display:block}
-#bg{z-index:0} #links{z-index:2;pointer-events:none}
-#nodes{position:fixed;inset:0;z-index:3;pointer-events:none}
-#fx{position:fixed;inset:0;z-index:4;pointer-events:none}
-#dip{position:fixed;inset:0;z-index:5;pointer-events:none;background:#000;opacity:0;transition:opacity .2s}
+#bg,#fx{position:fixed;inset:0;width:100%;height:100%;display:block;pointer-events:none}
+#bg{z-index:0} #fx{z-index:6}
+#dip{position:fixed;inset:0;z-index:7;pointer-events:none;background:#000;opacity:0;transition:opacity .2s}
+#stage{position:fixed;left:0;right:0;top:46px;bottom:0;z-index:2}
 
-/* ---- the node (a card, drawn as a record) ---- */
-.node{position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:auto;background:rgba(14,30,49,.88);
-  border:1px solid rgba(0,194,255,.45);min-height:40px;cursor:grab;user-select:none}
-.node::before,.node::after{content:'';position:absolute;width:10px;height:10px;border:2px solid var(--cyan);pointer-events:none}
+/* ---- panes (split screen: up to four, one shared ground behind them all) ---- */
+.pane{position:absolute;overflow:hidden}
+.pane > canvas.lk{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.pane > .nodes{position:absolute;inset:0;pointer-events:none;perspective:1400px;perspective-origin:50% 45%;transform-style:preserve-3d}
+body.split .pane{border:1px solid rgba(36,77,124,.8)}
+body.split .pane.focus{border-color:var(--cyan)}
+.pane-hd{position:absolute;left:10px;top:8px;z-index:3;display:none;font-family:var(--f-chrome);font-weight:600;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--low);background:rgba(1,8,17,.75);padding:3px 8px;border:1px solid var(--line)}
+.pane-hd b{color:var(--ink)} .pane-hd .lnk{color:var(--cyan-soft)}
+body.split .pane-hd{display:block}
+.pclose{position:absolute;right:8px;top:8px;z-index:3;display:none;background:rgba(1,8,17,.8);border:1px solid var(--line-strong);color:var(--mid);font:600 12px var(--f-chrome);letter-spacing:.14em;padding:3px 8px;cursor:pointer}
+body.split .pclose{display:block} .pclose:hover{color:var(--cyan);border-color:var(--cyan)}
+
+/* the "+" square, to the right of the surface */
+.plus{position:absolute;right:12px;top:50%;margin-top:-19px;width:38px;height:38px;z-index:4;background:rgba(1,8,17,.85);border:1px solid var(--cyan);color:var(--cyan);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.plus::before,.plus::after{content:'';position:absolute;background:currentColor}
+.plus::before{width:16px;height:2px} .plus::after{width:2px;height:16px}
+.plus:hover,.plus[aria-expanded="true"]{background:var(--cyan);color:var(--ground)}
+.pmenu{position:absolute;right:58px;top:50%;transform:translateY(-50%);z-index:5;min-width:290px;display:none;background:rgba(9,18,30,.97);border:1px solid var(--cyan);padding:6px 0;font-family:var(--f-chrome)}
+.pmenu.open{display:block}
+.pmenu .mh{padding:6px 14px 4px;font-size:11px;letter-spacing:.22em;color:var(--low);text-transform:uppercase}
+.pmenu button{display:flex;justify-content:space-between;width:100%;background:none;border:0;border-left:2px solid transparent;color:var(--mid);font:600 13px var(--f-chrome);letter-spacing:.14em;text-transform:uppercase;padding:7px 14px;cursor:pointer;text-align:left}
+.pmenu button:hover{color:var(--ink);border-left-color:var(--cyan);background:rgba(0,194,255,.08)}
+.pmenu button[disabled]{color:#3E6A8F;cursor:not-allowed;background:none;border-left-color:transparent}
+.pmenu button .s{color:var(--low);font-size:11px}
+.pmenu .sub{padding-left:14px;border-left:1px solid var(--line);margin:0 0 4px 14px}
+.pmenu hr{border:0;border-top:1px solid var(--line);margin:5px 0}
+
+/* ---- the node (a card, drawn as a record). Accents by kind: preset = lime, doc = orange (brass), media/text = cyan ---- */
+.node{position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:auto;background:rgba(14,30,49,.9);--acc:var(--cyan);--accs:rgba(0,194,255,.45);
+  border:1px solid var(--accs);min-height:40px;cursor:grab;user-select:none;backface-visibility:hidden}
+.node::before,.node::after{content:'';position:absolute;width:10px;height:10px;border:2px solid var(--acc);pointer-events:none}
 .node::before{left:-4px;top:-4px;border-right:none;border-bottom:none}
 .node::after{right:-4px;bottom:-4px;border-left:none;border-top:none}
-.node .hd{display:flex;justify-content:space-between;gap:8px;padding:5px 9px;border-bottom:1px solid rgba(0,194,255,.25);
+.node.k-preset{--acc:var(--lime);--accs:rgba(166,255,61,.55)}
+.node.k-doc{--acc:var(--orange);--accs:rgba(255,152,0,.6)}
+.node .hd{display:flex;justify-content:space-between;gap:8px;padding:5px 9px;border-bottom:1px solid rgba(0,194,255,.22);
   font-family:var(--f-chrome);font-weight:600;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--low)}
 .node .hd .id{color:var(--cyan-soft)}
+.node .hd .typ{color:var(--acc)}
 .node .ttl{padding:7px 10px 0;font-family:var(--f-chrome);font-weight:700;font-size:15px;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan-soft)}
+.node.k-preset .ttl{color:var(--lime)}
+.node.k-doc .ttl{font-family:var(--f-serif);text-transform:none;letter-spacing:0;font-size:17px;color:var(--ink)}
 .node .body{padding:4px 10px 8px;font-size:13px;line-height:1.55;color:var(--ink);white-space:pre-wrap;outline:none}
 .node .body[contenteditable="true"]{cursor:text;caret-color:var(--orange);background:rgba(0,0,0,.25);user-select:text}
 .node .ft{display:flex;justify-content:space-between;padding:5px 10px 6px;border-top:1px dashed rgba(0,194,255,.2);
   font-family:var(--f-chrome);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--low)}
 .node .ft .ok{color:var(--lime)}
-.node .ft .bug{color:var(--cyan-soft)}
-.node .port{position:absolute;right:-7px;top:50%;width:12px;height:12px;margin-top:-6px;background:var(--ground);border:1px solid var(--cyan);cursor:crosshair}
-.node .port:hover{background:var(--cyan)}
-.node.sel{border-color:var(--cyan);box-shadow:0 0 0 1px rgba(0,194,255,.35),0 0 24px rgba(0,194,255,.18)}
-.node.last{box-shadow:inset 3px 0 0 var(--orange)}                    /* orange = you: the last node you touched */
-.node.sel.last{box-shadow:inset 3px 0 0 var(--orange),0 0 0 1px rgba(0,194,255,.35),0 0 24px rgba(0,194,255,.18)}
-.node.lit{border-color:rgba(166,255,61,.55)}
-.node.lit::before,.node.lit::after{border-color:var(--lime)}
-.node.pin .ttl{font-family:var(--f-serif);text-transform:none;letter-spacing:0;font-size:17px;color:var(--ink)}
-.node.ink svg{display:block;margin:6px 10px 8px}
-.node.correcting .hd .st{color:var(--orange)}
-/* LOD: SUBNET - the node is a chip, title only */
-.node.chip .hd,.node.chip .body,.node.chip .ft,.node.chip svg{display:none}
+.node .port{position:absolute;right:-7px;top:50%;width:12px;height:12px;margin-top:-6px;background:var(--ground);border:1px solid var(--acc);cursor:crosshair}
+.node .port:hover{background:var(--acc)}
+.node.sel{border-color:var(--acc);box-shadow:0 0 0 1px var(--accs),0 0 24px rgba(0,194,255,.18)}
+.node.last{box-shadow:inset 3px 0 0 var(--orange)}
+.node.sel.last{box-shadow:inset 3px 0 0 var(--orange),0 0 0 1px var(--accs),0 0 24px rgba(0,194,255,.18)}
+.node .media{margin:6px 10px 4px;height:86px;border:1px solid rgba(0,194,255,.25);position:relative;overflow:hidden}
+.node .media.jpg{background:linear-gradient(180deg,#0A2A48 0%,#16466E 55%,#08243C 56%,#031627 100%)}
+.node .media.jpg svg{position:absolute;inset:0}
+.node .media.jpg::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.25) 0 1px,transparent 1px 3px)}
+.node .media.pdf{background:#0B1A2C;padding:8px 10px}
+.node .media.pdf i{display:block;height:4px;margin:5px 0;background:rgba(87,208,245,.35)}
+.node .media.pdf i:nth-child(3n){width:62%} .node .media.pdf i:nth-child(4n){width:80%}
+.node.ink svg.sk{display:block;margin:6px 10px 8px}
+.node.correcting .hd .st,.node.correcting .ft .st{color:var(--orange)}
+.node.chip .hd,.node.chip .body,.node.chip .ft,.node.chip svg,.node.chip .media{display:none}
 .node.chip .ttl{padding:8px 12px;font-size:22px}
-/* LOD: GLYPH - every character is a cell with its code point */
+.node.flying{transition:transform .8s cubic-bezier(.2,.8,.2,1),opacity .6s}
+.node.stacked .port{display:none}
+.node.stacked.center{cursor:pointer;box-shadow:0 0 0 1px var(--accs),0 0 40px rgba(0,194,255,.28)}
 .node:has(.glyphs){background:#0E1E31}
 .glyphs{display:flex;flex-wrap:wrap;gap:1px;padding:6px 8px 8px}
 .glyph{width:16px;height:20px;border:.5px solid rgba(0,194,255,.22);display:flex;flex-direction:column;align-items:center;justify-content:center}
 .glyph b{font-family:var(--f-content);font-weight:500;font-size:9px;line-height:1;color:var(--ink)}
-.glyph i{font-style:normal;font-family:var(--f-chrome);font-size:3.2px;letter-spacing:.02em;color:var(--low);margin-top:1.5px}
+.glyph i{font-style:normal;font-family:var(--f-chrome);font-size:3.2px;color:var(--low);margin-top:1.5px}
 .glyph.sp b{color:transparent} .glyph.sp{border-style:dashed;opacity:.5}
 
-/* ---- chrome: HUD ---- */
+/* ---- a doc in a pane (the Flux page, as in the Page mockups) ---- */
+.doc{position:absolute;inset:0;display:flex;justify-content:center;padding:40px 70px 70px;overflow:auto}
+.paper{position:relative;width:min(680px,100%);min-height:100%;background:rgba(12,24,38,.9);border:1px solid rgba(0,194,255,.5);padding:34px 44px 70px}
+.paper::before,.paper::after{content:'';position:absolute;width:14px;height:14px;border:2px solid var(--orange)}
+.paper::before{left:-4px;top:-4px;border-right:none;border-bottom:none} .paper::after{right:-4px;bottom:-4px;border-left:none;border-top:none}
+.paper .dmeta{font-family:var(--f-chrome);font-weight:600;font-size:11px;letter-spacing:.2em;color:var(--low);display:flex;justify-content:space-between;margin-bottom:14px}
+.paper .dtitle{font-family:var(--f-serif);font-size:26px;color:var(--ink);margin:0 0 14px}
+.paper .dbody{font-family:var(--f-serif);font-size:18px;line-height:1.7;color:#E8F6FA;outline:none;white-space:pre-wrap;caret-color:var(--orange)}
+.meter{position:absolute;left:44px;right:44px;bottom:22px;font-family:var(--f-chrome);font-size:11px;letter-spacing:.2em;color:var(--low)}
+.meter .bar{height:3px;background:rgba(0,194,255,.15);margin-top:6px;position:relative;overflow:hidden}
+.meter .fill{position:absolute;left:0;top:0;bottom:0;background:var(--lime)}
+.meter .notch{position:absolute;top:-3px;width:2px;height:9px;background:var(--cyan)}
+.meter .lbl{display:flex;justify-content:space-between}
+.meter .lbl b{color:var(--lime);font-weight:600}
+.meter .g{color:var(--orange)}
+
+/* ---- chrome ---- */
 .hud{position:fixed;z-index:10;font-family:var(--f-chrome);letter-spacing:.14em;text-transform:uppercase}
-#top{top:0;left:0;right:0;height:46px;display:flex;align-items:center;gap:18px;padding:0 16px;background:rgba(15,25,38,.86);border-bottom:1px solid var(--line)}
+#top{top:0;left:0;right:0;height:46px;display:flex;align-items:center;gap:18px;padding:0 16px;background:rgba(15,25,38,.9);border-bottom:1px solid var(--line)}
 #top .crumb{font-size:13px;color:var(--low)} #top .crumb b{color:var(--ink);font-weight:600}
 #top .tabs{margin-left:auto;display:flex;gap:2px}
 .tab{background:none;border:1px solid transparent;color:var(--mid);font:600 12px var(--f-chrome);letter-spacing:.16em;text-transform:uppercase;padding:7px 12px;cursor:pointer}
 .tab:hover{color:var(--ink)} .tab[aria-pressed="true"]{color:var(--cyan);border-bottom:2px solid var(--cyan)}
-#tele{right:14px;bottom:14px;width:260px;padding:10px 12px;background:rgba(15,25,38,.86);border:1px solid var(--line);font-size:11px;color:var(--low);line-height:1.7}
+#tele{right:14px;bottom:14px;width:260px;padding:10px 12px;background:rgba(15,25,38,.88);border:1px solid var(--line);font-size:11px;color:var(--low);line-height:1.7}
 #tele b{color:var(--cyan-soft);font-weight:600} #tele .lvl{color:var(--lime)}
-#mini{position:fixed;z-index:10;right:14px;bottom:150px;width:260px;height:150px;background:rgba(1,8,17,.8);border:1px solid var(--line)}
-#acts{left:14px;bottom:14px;display:flex;flex-direction:column;gap:6px}
-.btn{background:rgba(15,25,38,.9);border:1px solid var(--line-strong);color:var(--mid);font:600 12px var(--f-chrome);letter-spacing:.16em;text-transform:uppercase;padding:7px 12px;cursor:pointer;text-align:left}
+#mini{position:fixed;z-index:10;right:14px;bottom:122px;width:260px;height:130px;background:rgba(1,8,17,.82);border:1px solid var(--line)}
+#acts{left:56px;bottom:14px;display:flex;flex-direction:column;gap:6px}
+.btn{background:rgba(15,25,38,.92);border:1px solid var(--line-strong);color:var(--mid);font:600 12px var(--f-chrome);letter-spacing:.16em;text-transform:uppercase;padding:7px 12px;cursor:pointer;text-align:left}
 .btn:hover{color:var(--cyan);border-color:var(--cyan)} .btn .k{color:var(--low);margin-left:8px;font-size:10px}
 .btn.you{border-color:var(--orange);color:var(--orange)}
-#dial{left:14px;top:60px;padding:8px 10px;background:rgba(15,25,38,.86);border:1px solid var(--line);font-size:11px;color:var(--low);display:flex;flex-direction:column;gap:6px;width:200px}
+#dial{left:56px;top:56px;padding:8px 10px;background:rgba(15,25,38,.88);border:1px solid var(--line);font-size:11px;color:var(--low);display:flex;flex-direction:column;gap:6px;width:200px}
 #dial input{accent-color:var(--cyan)} #dial input[type=range]{width:100%}
 #dial label{display:flex;gap:6px;align-items:center;cursor:pointer}
-#hint{left:50%;top:58px;transform:translateX(-50%);font-size:11px;color:var(--low);background:rgba(1,8,17,.7);padding:4px 10px;border:1px solid var(--line)}
-#notesBtn{right:14px;top:58px}
-#notes{position:fixed;z-index:20;top:58px;right:14px;bottom:14px;width:min(560px,calc(100vw - 28px));overflow:auto;background:rgba(9,18,30,.97);border:1px solid var(--line-strong);padding:18px 20px;display:none;
+#hint{left:50%;top:54px;transform:translateX(-50%);font-size:11px;color:var(--low);background:rgba(1,8,17,.7);padding:4px 10px;border:1px solid var(--line);white-space:nowrap}
+#notesBtn{right:56px;top:56px}
+#toast{left:50%;bottom:24px;transform:translateX(-50%);padding:8px 14px;background:rgba(9,18,30,.96);border:1px solid var(--cyan);color:var(--ink);font-size:12px;opacity:0;transition:opacity .25s;pointer-events:none}
+#toast.on{opacity:1}
+#notes{position:fixed;z-index:60;top:58px;right:56px;bottom:14px;width:min(580px,calc(100vw - 120px));overflow:auto;background:rgba(9,18,30,.97);border:1px solid var(--line-strong);padding:18px 20px;display:none;
   font-family:var(--f-content);font-size:13px;line-height:1.6;color:var(--mid);text-transform:none;letter-spacing:0}
 #notes.open{display:block}
 #notes h2{font-family:var(--f-chrome);font-size:15px;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);margin:16px 0 6px}
-#notes h2:first-child{margin-top:0} #notes b{color:var(--ink)} #notes ul{padding-left:18px;margin:4px 0}
-#notes .x{float:right}
+#notes h2:first-of-type{margin-top:0} #notes b{color:var(--ink)} #notes ul{padding-left:18px;margin:4px 0} #notes .x{float:right}
 
-/* ---- the theme-switch demo: the same nodes, as Arbor would draw them ---- */
+/* ---- the two hands: TOOLS (left) and OPERATOR (right) ---- */
+.hand-tab{position:fixed;z-index:30;top:50%;transform:translateY(-50%);width:40px;padding:12px 0 10px;background:rgba(9,18,30,.94);border:1px solid var(--line-strong);color:var(--mid);cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:8px;font-family:var(--f-chrome);font-weight:700;font-size:10px;letter-spacing:.24em}
+.hand-tab span{writing-mode:vertical-rl;transform:rotate(180deg)}
+.hand-tab.r span{transform:none}
+.hand-tab:hover,.hand-tab[aria-expanded="true"]{color:var(--cyan);border-color:var(--cyan)}
+.hand-tab.l{left:0;border-left:none} .hand-tab.r{right:0;border-right:none}
+.hand-tab svg{width:26px;height:26px}
+.hand{position:fixed;z-index:29;top:46px;bottom:0;width:320px;background:rgba(9,18,30,.96);border:1px solid var(--line-strong);padding:16px 18px 18px 18px;overflow:auto;
+  transition:transform .22s ease;font-family:var(--f-chrome);text-transform:uppercase;letter-spacing:.14em}
+.hand.l{left:40px;transform:translateX(calc(-100% - 50px));border-left:none} .hand.r{right:40px;transform:translateX(calc(100% + 50px));border-right:none}
+.hand.open{transform:none}
+.hand::after{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,194,255,.035) 0 1px,transparent 1px 4px)}
+.hand h3{margin:0 0 4px;font-size:16px;letter-spacing:.24em;color:var(--cyan)}
+.hand .ctx{font-size:11px;color:var(--low);margin-bottom:14px}
+.hand .grp{margin:14px 0 6px;font-size:11px;letter-spacing:.22em;color:var(--low);border-bottom:1px solid var(--line);padding-bottom:4px}
+.hand .it{display:flex;justify-content:space-between;align-items:center;width:100%;background:rgba(15,25,38,.6);border:1px solid var(--line);color:var(--mid);font:600 13px var(--f-chrome);letter-spacing:.14em;text-transform:uppercase;padding:8px 10px;margin:4px 0;cursor:pointer;text-align:left}
+.hand .it:hover{border-color:var(--cyan);color:var(--ink)}
+.hand .it .k{color:var(--low);font-size:10px}
+.hand .lens{border:1px solid var(--line);padding:8px 10px;margin:6px 0;font-size:12px;color:var(--mid);text-transform:none;letter-spacing:.02em;font-family:var(--f-content);line-height:1.5}
+.hand .lens b{display:block;font-family:var(--f-chrome);letter-spacing:.2em;text-transform:uppercase;color:var(--cyan-soft);font-size:12px;margin-bottom:3px}
+.hand input{width:100%;background:rgba(1,8,17,.8);border:1px solid var(--line-strong);color:var(--ink);font:500 13px var(--f-content);padding:8px 10px;margin-top:6px}
+.hand input:focus{outline:none;border-color:var(--cyan)}
+
+/* ---- an opened card: the hologram deck (the card is the dominant surface) ---- */
+#holo{position:fixed;left:0;right:0;top:46px;bottom:0;z-index:20;display:none;background:radial-gradient(70% 60% at 50% 55%,rgba(8,40,72,.8),rgba(1,8,17,.97) 70%)}
+#holo.on{display:block}
+body.holo-on #stage{opacity:.15;transition:opacity .4s}
+body.split #hint,body.split #dial{display:none}
+#holo .deck{position:absolute;inset:0;perspective:1600px;perspective-origin:50% 45%;transform-style:preserve-3d}
+.hcard{position:absolute;left:50%;top:46%;width:520px;margin-left:-260px;transform-origin:50% 50%;background:rgba(14,30,49,.72);border:1px solid var(--accs);--acc:var(--cyan);--accs:rgba(0,194,255,.55);
+  transition:transform .55s cubic-bezier(.2,.8,.2,1),opacity .4s;backface-visibility:hidden;cursor:grab;user-select:none}
+.hcard.k-preset{--acc:var(--lime);--accs:rgba(166,255,61,.6)} .hcard.k-doc{--acc:var(--orange);--accs:rgba(255,152,0,.65)}
+.hcard::before,.hcard::after{content:'';position:absolute;width:18px;height:18px;border:2px solid var(--acc);pointer-events:none}
+.hcard::before{left:-5px;top:-5px;border-right:none;border-bottom:none} .hcard::after{right:-5px;bottom:-5px;border-left:none;border-top:none}
+.hcard .scan{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,194,255,.06) 0 1px,transparent 1px 3px);animation:holo 3.2s ease-in-out infinite}
+@keyframes holo{0%,100%{opacity:.9}50%{opacity:.55}}
+.hcard .hh{display:flex;justify-content:space-between;padding:10px 16px;border-bottom:1px solid rgba(0,194,255,.25);font-family:var(--f-chrome);font-weight:600;font-size:12px;letter-spacing:.2em;color:var(--low)}
+.hcard .hh .typ{color:var(--acc)}
+.hcard .ht{padding:16px 18px 2px;font-family:var(--f-chrome);font-weight:700;font-size:26px;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan-soft)}
+.hcard.k-preset .ht{color:var(--lime)} .hcard.k-doc .ht{font-family:var(--f-serif);text-transform:none;letter-spacing:0;font-size:30px;color:var(--ink)}
+.hcard .hb{padding:8px 18px 16px;font-size:17px;line-height:1.65;color:var(--ink);white-space:pre-wrap;outline:none;min-height:90px}
+.hcard .hb[contenteditable="true"]{caret-color:var(--orange);background:rgba(0,0,0,.25);cursor:text;user-select:text}
+.hcard .hl{padding:10px 16px 14px;border-top:1px dashed rgba(0,194,255,.25);font-family:var(--f-chrome);font-size:11px;letter-spacing:.18em;color:var(--low);display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.hcard .hl button{background:none;border:1px solid var(--line-strong);color:var(--cyan-soft);font:600 11px var(--f-chrome);letter-spacing:.16em;text-transform:uppercase;padding:3px 7px;cursor:pointer}
+.hcard .hl button:hover{border-color:var(--cyan);color:var(--ink)}
+.hcard .media{margin:8px 18px;height:200px} .hcard.ink svg.sk{margin:8px 18px;width:480px;height:220px}
+.hcard.center{cursor:default}
+#holo .emitter{position:absolute;left:50%;bottom:6%;width:560px;margin-left:-280px;height:38%;pointer-events:none;
+  background:linear-gradient(0deg,rgba(0,194,255,.20),rgba(0,194,255,0));clip-path:polygon(44% 100%,56% 100%,100% 0,0 0);opacity:.55}
+#holo .emitter::after{content:'';position:absolute;left:44%;right:44%;bottom:0;height:3px;background:var(--cyan)}
+#holo .hbar{position:absolute;left:56px;right:56px;top:12px;display:flex;justify-content:space-between;align-items:center;font-family:var(--f-chrome);letter-spacing:.18em;font-size:12px;color:var(--low);z-index:2}
+#holo .hbar b{color:var(--ink)}
+#holo .count{position:absolute;left:0;right:0;bottom:22px;text-align:center;font-family:var(--f-chrome);letter-spacing:.3em;font-size:12px;color:var(--low)}
+#holo .count b{color:var(--cyan)}
+#holo .plus{right:56px}
+#holo .pmenu{right:102px}
+
+/* ---- the theme-switch demo ---- */
 body.arbor{background:#150F0B}
 body.arbor #bg{opacity:0}
 body.arbor .node{background:#FBF6EA;border-color:#D9CFB6;color:#2B2014}
 body.arbor .node::before,body.arbor .node::after,body.arbor .node .port,body.arbor .node .hd,body.arbor .node .ft{display:none}
-body.arbor .node .ttl{color:#2B2014;font-family:'Figtree',system-ui,sans-serif;letter-spacing:.02em;text-transform:none;font-size:15px}
+body.arbor .node .ttl{color:#2B2014 !important;font-family:system-ui,sans-serif;letter-spacing:.02em;text-transform:none;font-size:15px}
 body.arbor .node .body{color:#2B2014;font-family:var(--f-serif);font-size:15px}
 body.arbor .node.last{box-shadow:inset 3px 0 0 #96A05A}
-body.arbor .node.lit{border-color:#96A05A}
-body.arbor .hud:not(#acts),body.arbor #mini{opacity:.25}
-#swap{position:fixed;inset:0;z-index:30;pointer-events:none;opacity:0;background:repeating-linear-gradient(0deg,rgba(0,194,255,.10) 0 1px,transparent 1px 3px)}
+body.arbor .hud:not(#acts),body.arbor #mini,body.arbor .plus,body.arbor .hand-tab{opacity:.25}
+body.arbor .paper{background:#F3EDE1;border-color:#d8c8b4} body.arbor .paper .dbody,body.arbor .paper .dtitle{color:#2B2014}
+#swap{position:fixed;inset:0;z-index:70;pointer-events:none;opacity:0;background:repeating-linear-gradient(0deg,rgba(0,194,255,.10) 0 1px,transparent 1px 3px)}
 #swap.go{animation:swap .9s ease}
 @keyframes swap{0%{opacity:0}35%{opacity:1;transform:scaleY(.02)}60%{opacity:1;transform:scaleY(1)}100%{opacity:0}}
-
-@media (prefers-reduced-motion:reduce){ #swap.go{animation:none} }
+@media (prefers-reduced-motion:reduce){ #swap.go,.hcard .scan{animation:none} .hcard,.node.flying{transition:none} }
 </style>
 </head>
 <body>
 <canvas id="bg"></canvas>
-<canvas id="links"></canvas>
-<div id="nodes"></div>
+<div id="stage"></div>
 <canvas id="fx"></canvas>
 <div id="dip"></div>
 <div id="swap"></div>
 
 <div id="top" class="hud">
-  <span class="crumb">NOVELS ▸ THE LATE FERRY ▸ <b>PLOT // CIRCUIT</b></span>
+  <span class="crumb" id="crumb"></span>
   <div class="tabs" role="group" aria-label="Circuit view">
     <button class="tab" data-view="live" aria-pressed="true">Live</button>
     <button class="tab" data-view="sequence" aria-pressed="false">Sequence</button>
+    <button class="tab" data-view="stack" aria-pressed="false">Stack</button>
   </div>
 </div>
-<div id="hint" class="hud">Wheel / pinch = zoom (no limit) · drag space = pan · drag a node · ▣ port → node = link · double-click text = edit</div>
+<div id="hint" class="hud">Wheel = zoom (no limit) · drag space = pan · ▣ port → node = link · double-click a node = open it · Stack = swipe through · + = connect a circuit or doc</div>
 <div id="dial" class="hud">
   <span>Glitch <b id="dialv" style="color:var(--cyan-soft)">60</b></span>
   <input id="dialr" type="range" min="0" max="100" value="60" aria-label="Glitch amount">
@@ -130,164 +239,105 @@ body.arbor .hud:not(#acts),body.arbor #mini{opacity:.25}
 </div>
 <canvas id="mini"></canvas>
 <div id="tele" class="hud"></div>
+<div id="toast" class="hud"></div>
+
+<button class="hand-tab l" id="tabL" aria-expanded="false" title="Tools"></button>
+<button class="hand-tab r" id="tabR" aria-expanded="false" title="Operator"></button>
+<aside class="hand l" id="handL"></aside>
+<aside class="hand r" id="handR"></aside>
+
+<div id="holo"><div class="hbar"><button class="btn" id="holoBack">◂ Back to circuit <span class="k">ESC</span></button><span id="holoWhere"></span></div>
+  <div class="emitter"></div><div class="deck" id="deck"></div><div class="count" id="holoCount"></div>
+  <button class="plus" id="holoPlus" aria-expanded="false" title="Add or link"></button><div class="pmenu" id="holoMenu"></div></div>
 
 <div id="notes">
   <button class="btn x" id="notesX">Close</button>
-  <h2>Mockup A — SCHEMA</h2>
-  <p>The Flux Circuit is not a board on a desk. It is a <b>region of cyberspace</b>: an infinite schema where each card is a <b>record</b> (a node with an id, a type, a token count and a status), links are <b>live traces</b> with data packets running along them, and the ground is circuitry at every scale. You can zoom out past the circuit into its cartridge, rack and cache, and in past a node until the words dissolve into their <b>code points</b>.</p>
-  <h2>The design team (two passes)</h2>
-  <p><b>Convened:</b> a sci-fi game UI designer (diegetic HUDs), a motion / VFX designer (glitch, signal), a data-visualisation architect (graphs, level of detail), with the house Experts (cognitive scientist, Deleuzean philosopher) and Architects (frontend, interaction).</p>
-  <p><b>Pass 1 — proposals.</b> (1) A node graph on circuitry with semantic zoom. (2) Stacked 3D strata (see Mockup B). (3) A literal Matrix code-rain wall with cards inside it. (4) A "terminal" board where cards are lines of code in a file.</p>
-  <p><b>Pass 2 — critique and trim.</b> The terminal board (4) loses spatial memory: the writer cannot find "the card top-right". Cut. The full code-rain wall (3) is ambient, not stimulating, and fights the text for attention; it is kept only as a <i>substrate</i> made of the writer's own words (Mockup B). The cognitive scientist set the motion budget: stimulation lives in the connectors and the zoom, the glitch stays under 3 Hz and <b>damps while you drag, zoom or type</b> (canon §6). The architect held the line that every view is a <b>projection of the same card data</b>: no new fields.</p>
-  <p><b>Recommendation.</b> Build two contrasting directions: <b>A (this file): a flat infinite schema</b> — precise, readable, closest to today's interactions; <b>B: strata</b> — the spectacle direction, layers in depth.</p>
-  <h2>Guiding concepts, as built here</h2>
+  <h2>Mockup A — SCHEMA, v2</h2>
+  <p>Nick picked Schema. This version takes his ten notes of Oct 27:</p>
   <ul>
-    <li><b>Conceptual space over physical space</b> — no surface, no edge, no weight. Position means relation; scale means level of abstraction (node → circuit → cartridge → rack → cache → unindexed).</li>
-    <li><b>Visual stimulation over ambient feeling</b> — packets on every link, traces that carry current, Signal-Loss glitch events (tear lines, shear, macroblocks, backlight dips) on the ground, never on the text.</li>
-    <li><b>Language as code</b> — each node shows its id, type and token count; zoom in far enough and every letter becomes a cell with its Unicode code point.</li>
-    <li><b>Humanity as a bug</b> — every human-written node carries <b>STATUS: UNRESOLVED // HUMAN</b>; hover one and the system attempts an autocorrect, scrambles the text toward code, and is <b>rejected</b>. It is theatre: <b>the stored words are never touched</b>.</li>
+    <li><b>Electrons only where you are looking.</b> At rest a link is a moving dashed trace with no electrons. Select a node and its links fire electric-blue electrons. Dragging a new link fires nothing; the moment it connects, the trace <b>lights up</b> (the connection is established), then settles.</li>
+    <li><b>Slower.</b> Link electrons run slower; the ground's current runs at the same speed on fewer traces.</li>
+    <li><b>No token count.</b> The footer now says how many <b>links</b> a node has — the number of things it is connected to.</li>
+    <li><b>Kinds, labelled.</b> PRESET (a card dealt from a preset, with its preset's name) in lime; DOC (a page) in orange; and for imported files their own type — PDF, JPG — next to TEXT and INK.</li>
+    <li><b>The two hands, redrawn.</b> TOOLS (left) and OPERATOR (right, the Tutor) are circuit-drawn hands; each opens a holographic panel over the surface (never pushing it), its contents follow what you are looking at.</li>
+    <li><b>The + square</b>, right of the surface: a new connected circuit, open an existing circuit, connect a new or existing doc, disconnect this circuit.</li>
+    <li><b>Split screen.</b> Whatever + opens comes up beside it — up to four panes (three splits). One ground runs behind every pane; each pane keeps its own links. Connected panes are joined by a trace across the ground.</li>
+    <li><b>An opened node is a hologram.</b> Double-click a node (or the centre of the stack): it becomes the surface, projected over an emitter. Swipe, drag, wheel or arrow keys flip through the others like holograms. The hands and a + (new node, link an existing node, unlink) come with it.</li>
+    <li><b>Stack</b> view: every node, doc and file flies out of its place on the circuit into one stack you can swipe through; leaving Stack flies them home. The circuit stays faintly behind, so you see where each one came from.</li>
   </ul>
-  <h2>Familiar, not lost (the switch)</h2>
+  <h2>What would be new data (would go to Fable)</h2>
   <ul>
-    <li>Every node sits at the card's own x / y, at the card's own size: the shape of your board is the shape of your circuit. Spatial memory survives the switch.</li>
-    <li><b>Orange is you</b>: the last node you touched carries the thin orange bar, and <b>Locate last node</b> flies the camera to it from any zoom level.</li>
-    <li>Press <b>Jack out</b>: the same nodes become Arbor cards in place, camera unchanged. Press again to jack back in.</li>
-    <li>Views map one to one: Live = Open, Sequence = Storyboard (lanes by act, in reading order). Outline / Walk would follow.</li>
+    <li><b>PDF and JPG nodes</b>: the board stores text, ink and page pins today. Imported files would be a new card kind.</li>
+    <li><b>Orange for docs</b>: the Flux canon keeps orange for the writer's own acts. Nick asked for docs in orange; Fable should rule how that sits with the orange "last node" bar.</li>
+    <li><b>Split screen</b> and the <b>3D stack / hologram</b> are new stage machinery, an architecture pass. Opening two surfaces at once must keep page primacy: no pane may move or resize another while you write.</li>
+    <li>Board-to-board and board-to-page connections already exist (PW1). Remembering panes, camera and stack position would be new saved fields.</li>
   </ul>
-  <h2>What this mockup does not decide (would go to Fable)</h2>
-  <ul>
-    <li>Remembering the camera (zoom / position) per board would be a new saved field — not assumed here; the camera lives in memory only.</li>
-    <li>Building it means a Flux-only renderer for the board stage (level of detail, canvas layers): an architecture pass, not a cosmetic one.</li>
-    <li>The cartridge / rack / cache levels read today's real membership (board → project → drawer → shelf); sibling contents are drawn as placeholders here.</li>
-  </ul>
+  <h2>Unchanged from v1</h2>
+  <p>Infinite zoom (node → circuit → cartridge → rack → cache → unindexed, and in to code points), the Signal-Loss glitch on the ground only, damped while you drag or type, humanity as a bug (the autocorrect that is always rejected; no stored word ever changes), Locate last node, Jack out to Arbor.</p>
 </div>
 
 <script>
 'use strict';
 // ============================================================================
-// THE DATA — the same shape the app stores for a board (types/index.ts Box):
-// id, kind ('text' | 'ink' | 'page-pin'), x, y, w, h, groupId, text, lit, and
-// connections between ids. Nothing below adds a field; every view projects it.
+// THE DATA — the shapes the app stores (types/index.ts Box), plus two kinds a build would add (pdf, jpg). 'preset' = a text card dealt from a preset (Box.deckStep).
 // ============================================================================
-const CARDS = [
-  { id:'c1', kind:'text', x:80,   y:60,  w:250, h:150, groupId:'act1', lit:true,  text:'HOOK\nMara misses the last ferry on purpose. She wants the island to think she drowned.' },
-  { id:'c2', kind:'text', x:430,  y:40,  w:250, h:150, groupId:'act1', lit:true,  text:'INCITING INCIDENT\nA stranger on the dock is wearing her coat — the one she left folded on the rail.' },
-  { id:'c3', kind:'text', x:250,  y:330, w:250, h:150, groupId:'act1', lit:false, text:'THE ISLAND\nNo cars. One bell. A lighthouse that has been dark since 1987.' },
-  { id:'c4', kind:'text', x:800,  y:120, w:250, h:150, groupId:'act2', lit:false, text:'MIDPOINT\nThe stranger is her sister, declared dead the winter the light went out.' },
-  { id:'c5', kind:'text', x:700,  y:420, w:250, h:150, groupId:'act2', lit:false, text:'RISING ACTION\nThe ferryman keeps two logbooks. Only one of them is for the harbour master.' },
-  { id:'c6', kind:'page-pin', x:1050, y:400, w:260, h:130, groupId:'act2', lit:false, text:'Chapter 3 — The Two Logbooks\nHe wrote the crossings in pencil and the weather in ink, as if one could be rubbed out.' },
-  { id:'c7', kind:'ink',  x:20,   y:560, w:220, h:150, groupId:null,  lit:false, text:'MAP OF THE HARBOUR' },
-  { id:'c8', kind:'text', x:1200, y:90,  w:250, h:150, groupId:'act3', lit:false, text:'CRISIS\nThe bell rings at 2 a.m. Nobody pulled the rope.' },
-  { id:'c9', kind:'text', x:1420, y:330, w:250, h:150, groupId:'act3', lit:false, text:'CLIMAX\nMara climbs the dead lighthouse and lights it by hand.' },
-  { id:'c10',kind:'text', x:430,  y:640, w:230, h:110, groupId:null,  lit:false, text:'salt in the hinges\n(not sure where this goes)' },
-];
-const LINKS = [['c1','c2'],['c2','c4'],['c3','c5'],['c4','c8'],['c5','c6'],['c8','c9'],['c3','c9'],['c7','c3'],['c10','c5'],['c4','c5']];
-const GROUPS = { act1:'ACT I', act2:'ACT II', act3:'ACT III' };
-let lastTouched = 'c5';
-const byId = Object.fromEntries(CARDS.map(c => [c.id, c]));
+const BOARDS = {
+  plot: { id: 'plot', name: 'PLOT', cards: [
+    { id:'c1', kind:'preset', deck:'THREE-ACT', x:80,   y:60,  w:250, h:150, groupId:'act1', lit:true,  text:'HOOK\nMara misses the last ferry on purpose. She wants the island to think she drowned.' },
+    { id:'c2', kind:'preset', deck:'THREE-ACT', x:430,  y:40,  w:250, h:150, groupId:'act1', lit:true,  text:'INCITING INCIDENT\nA stranger on the dock is wearing her coat — the one she left folded on the rail.' },
+    { id:'c3', kind:'text',   x:250,  y:330, w:250, h:150, groupId:'act1', text:'THE ISLAND\nNo cars. One bell. A lighthouse that has been dark since 1987.' },
+    { id:'c4', kind:'preset', deck:'THREE-ACT', x:800,  y:120, w:250, h:150, groupId:'act2', text:'MIDPOINT\nThe stranger is her sister, declared dead the winter the light went out.' },
+    { id:'c5', kind:'text',   x:700,  y:420, w:250, h:150, groupId:'act2', text:'RISING ACTION\nThe ferryman keeps two logbooks. Only one of them is for the harbour master.' },
+    { id:'c6', kind:'page-pin', doc:'ch3', x:1050, y:400, w:260, h:130, groupId:'act2', text:'Chapter 3 — The Two Logbooks\nHe wrote the crossings in pencil and the weather in ink, as if one could be rubbed out.' },
+    { id:'c7', kind:'ink',    x:20,   y:560, w:220, h:150, groupId:null, text:'MAP OF THE HARBOUR' },
+    { id:'c8', kind:'preset', deck:'THREE-ACT', x:1200, y:90,  w:250, h:150, groupId:'act3', text:'CRISIS\nThe bell rings at 2 a.m. Nobody pulled the rope.' },
+    { id:'c9', kind:'preset', deck:'THREE-ACT', x:1420, y:330, w:250, h:150, groupId:'act3', text:'CLIMAX\nMara climbs the dead lighthouse and lights it by hand.' },
+    { id:'c10',kind:'text',   x:430,  y:640, w:230, h:110, groupId:null, text:'salt in the hinges\n(not sure where this goes)' },
+    { id:'c11',kind:'pdf',    x:1430, y:600, w:230, h:150, groupId:null, text:'tide-tables-1987.pdf\n14 pages · harbour authority' },
+    { id:'c12',kind:'jpg',    x:1080, y:620, w:240, h:160, groupId:'act3', text:'lighthouse.jpg\nReference: the light, unlit' },
+  ], links: [['c1','c2'],['c2','c4'],['c3','c5'],['c4','c8'],['c5','c6'],['c8','c9'],['c3','c9'],['c7','c3'],['c10','c5'],['c4','c5'],['c12','c9'],['c11','c8']] },
+  cast: { id: 'cast', name: 'CAST', cards: [
+    { id:'k1', kind:'text', x:60, y:60, w:250, h:140, groupId:null, text:'MARA VOSS\nLeaves on purpose. Lies by omission. Counts bells.' },
+    { id:'k2', kind:'text', x:400, y:40, w:250, h:140, groupId:null, text:'ILSE VOSS\nThe sister. Dead since 1987, officially.' },
+    { id:'k3', kind:'jpg', x:200, y:300, w:240, h:160, groupId:null, text:'ferryman.jpg\nReference photo, 1970s' },
+    { id:'k4', kind:'preset', deck:'CHARACTER', x:520, y:290, w:250, h:150, groupId:null, text:'WOUND\nThe winter the light went out.' },
+  ], links: [['k1','k2'],['k2','k4'],['k3','k1']] },
+  harbour: { id: 'harbour', name: 'HARBOUR TOWN', cards: [
+    { id:'h1', kind:'ink', x:60, y:80, w:220, h:150, groupId:null, text:'THE QUAY' },
+    { id:'h2', kind:'text', x:360, y:60, w:250, h:140, groupId:null, text:'THE BELL\nCast in 1902. Rung for drownings, weddings, and once by the wind.' },
+    { id:'h3', kind:'pdf', x:240, y:300, w:230, h:150, groupId:null, text:'harbour-plan.pdf\n3 pages · 1961 survey' },
+  ], links: [['h1','h2'],['h3','h1']] },
+};
+const DOCS = {
+  ch3: { id: 'ch3', name: 'Chapter 3 — The Two Logbooks', goal: 500, text: 'He wrote the crossings in pencil and the weather in ink, as if one could be rubbed out and the other could not.\n\nMara found the second logbook under the bench in the wheelhouse, wrapped in a feed sack, dry as a biscuit. The entries stopped in the winter of 1987 and started again in March, in a different hand.' },
+  ch1: { id: 'ch1', name: 'Chapter 1 — The Last Ferry', goal: 500, text: 'The last ferry left at 6:40, and Mara watched it go from the top of the slipway with her coat folded over the rail like a note.' },
+};
+const GROUPS = { act1: 'ACT I', act2: 'ACT II', act3: 'ACT III' };
+const connections = new Set(['plot|doc:ch3']);   // PW1: boards connect to boards and pages already
+let newBoardN = 0, newDocN = 0;
+let last = { board: 'plot', id: 'c5' };
+const card = (b, id) => BOARDS[b].cards.find(c => c.id === id);
 const hex = (id) => '0x' + (Array.from(id).reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7) & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
 const title = (c) => c.text.split('\n')[0];
 const body = (c) => c.text.split('\n').slice(1).join('\n');
-const tokens = (c) => (c.text.match(/\S+/g) || []).length;
+const typeLabel = (c) => ({ preset: 'PRESET · ' + (c.deck || ''), 'page-pin': 'DOC', pdf: 'PDF', jpg: 'JPG', ink: 'INK', text: 'TEXT' })[c.kind];
+const kindClass = (c) => c.kind === 'preset' ? 'k-preset' : c.kind === 'page-pin' ? 'k-doc' : 'k-' + c.kind;
+const linkCount = (b, id) => BOARDS[b].links.filter(l => l[0] === id || l[1] === id).length;
+const status = (c) => c.kind === 'ink' ? 'RASTER // HUMAN' : c.kind === 'pdf' || c.kind === 'jpg' ? 'IMPORTED // UNPARSED' : 'UNRESOLVED // HUMAN';
+const stackOrder = (b) => { const order = ['act1', 'act2', 'act3', null]; return [...BOARDS[b].cards].sort((p, q) => order.indexOf(p.groupId) - order.indexOf(q.groupId) || p.x - q.x); };
 
-// ============================================================================
-// THE CAMERA — position in world units + scale. Scale is unbounded (1e-7 .. 1e4).
-// ============================================================================
-const cam = { x: 760, y: 380, s: 0.8 };
-let W = innerWidth, H = innerHeight, DPR = Math.min(2, devicePixelRatio || 1);
-const toScreen = (x, y) => [(x - cam.x) * cam.s + W / 2, (y - cam.y) * cam.s + H / 2];
-const toWorld = (sx, sy) => [(sx - W / 2) / cam.s + cam.x, (sy - H / 2) / cam.s + cam.y];
 const reduced = () => document.getElementById('rm').checked || matchMedia('(prefers-reduced-motion: reduce)').matches;
-let glitch = 60;                 // 0..100, the canon's Ambiance dial
-let busyUntil = 0;               // damping: dragging / zooming / typing
-const busy = () => performance.now() < busyUntil || !!document.querySelector('.body[contenteditable="true"]');
+let glitch = 60, busyUntil = 0;
+const busy = () => performance.now() < busyUntil || !!document.querySelector('[contenteditable="true"]');
 const touch = (ms = 700) => { busyUntil = performance.now() + ms; };
+let W = innerWidth, H = innerHeight, DPR = Math.min(2, devicePixelRatio || 1);
+const toast = (s) => { const t = document.getElementById('toast'); t.textContent = s; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 2200); };
 
-// Level of detail, by scale
 function lod(s) {
-  if (s >= 3.2) return 'GLYPH';
-  if (s >= 0.55) return 'NODE';
-  if (s >= 0.18) return 'SUBNET';
-  if (s >= 0.02) return 'CIRCUIT';
-  if (s >= 0.0016) return 'CARTRIDGE';
-  if (s >= 0.00012) return 'RACK';
-  if (s >= 0.00001) return 'CACHE';
-  return 'UNINDEXED';
+  if (s >= 3.2) return 'GLYPH'; if (s >= 0.55) return 'NODE'; if (s >= 0.18) return 'SUBNET'; if (s >= 0.02) return 'CIRCUIT';
+  if (s >= 0.0016) return 'CARTRIDGE'; if (s >= 0.00012) return 'RACK'; if (s >= 0.00001) return 'CACHE'; return 'UNINDEXED';
 }
-
-// ============================================================================
-// CANVASES
-// ============================================================================
-const bg = document.getElementById('bg'), bgx = bg.getContext('2d');
-const lk = document.getElementById('links'), lkx = lk.getContext('2d');
-const fx = document.getElementById('fx'), fxx = fx.getContext('2d');
-const mini = document.getElementById('mini'), mx = mini.getContext('2d');
-function resize() {
-  W = innerWidth; H = innerHeight; DPR = Math.min(2, devicePixelRatio || 1);
-  for (const c of [bg, lk, fx]) { c.width = W * DPR; c.height = H * DPR; c.getContext('2d').setTransform(DPR, 0, 0, DPR, 0, 0); }
-  mini.width = 260 * DPR; mini.height = 150 * DPR; mx.setTransform(DPR, 0, 0, DPR, 0, 0);
-}
-addEventListener('resize', resize); resize();
-
-// deterministic hash → [0,1)
 function rnd(a, b, c) { let h = (a * 374761393 + b * 668265263 + c * 2147483647) | 0; h = (h ^ (h >>> 13)) * 1274126177 | 0; h ^= h >>> 16; return ((h >>> 0) % 100000) / 100000; }
-
-// ---- the ground: an infinite multi-scale grid with circuit traces at every scale ----
-const G = 40;  // world units of the finest grid
-function drawGround(t) {
-  const damp = busy() ? .2 : 1, still = reduced();
-  bgx.clearRect(0, 0, W, H);
-  bgx.fillStyle = '#010811'; bgx.fillRect(0, 0, W, H);
-  // radial pool behind the focus (canon §8 glow, teal-blue family)
-  const g = bgx.createRadialGradient(W * .5, H * .48, 0, W * .5, H * .48, Math.max(W, H) * .7);
-  g.addColorStop(0, 'rgba(8,40,72,.55)'); g.addColorStop(1, 'rgba(1,8,17,0)'); bgx.fillStyle = g; bgx.fillRect(0, 0, W, H);
-  const k = Math.ceil(Math.log(14 / (G * cam.s)) / Math.log(8));
-  for (let lvl = k; lvl <= k + 2; lvl++) {
-    const step = G * Math.pow(8, lvl), px = step * cam.s;
-    if (px < 6) continue;
-    const a = Math.min(1, (px - 6) / 90);
-    // grid
-    bgx.strokeStyle = `rgba(25,53,86,${(.35 * a).toFixed(3)})`; bgx.lineWidth = 1;
-    const [wx0, wy0] = toWorld(0, 0), [wx1, wy1] = toWorld(W, H);
-    bgx.beginPath();
-    for (let x = Math.floor(wx0 / step) * step; x <= wx1; x += step) { const sx = Math.round(toScreen(x, 0)[0]) + .5; bgx.moveTo(sx, 0); bgx.lineTo(sx, H); }
-    for (let y = Math.floor(wy0 / step) * step; y <= wy1; y += step) { const sy = Math.round(toScreen(0, y)[1]) + .5; bgx.moveTo(0, sy); bgx.lineTo(W, sy); }
-    bgx.stroke();
-    // circuit traces, one cell = 4 grid steps, deterministic per (cell, level)
-    const cell = step * 4, cpx = cell * cam.s;
-    if (cpx < 110 || cpx > 2600) continue;
-    const ta = Math.min(1, (cpx - 110) / 160) * Math.min(1, (2600 - cpx) / 900);
-    for (let cx = Math.floor(wx0 / cell); cx <= Math.floor(wx1 / cell); cx++) {
-      for (let cy = Math.floor(wy0 / cell); cy <= Math.floor(wy1 / cell); cy++) {
-        const n = 1 + Math.floor(rnd(cx, cy, lvl) * 3);
-        for (let i = 0; i < n; i++) {
-          const pts = trace(cx, cy, lvl, i, cell);
-          const sp = pts.map(p => toScreen(p[0], p[1]));
-          bgx.strokeStyle = `rgba(36,77,124,${(.55 * ta).toFixed(3)})`; bgx.lineWidth = Math.max(1, Math.min(2.5, cpx / 400));
-          bgx.beginPath(); sp.forEach((p, j) => j ? bgx.lineTo(p[0], p[1]) : bgx.moveTo(p[0], p[1])); bgx.stroke();
-          // vias
-          bgx.fillStyle = `rgba(87,208,245,${(.35 * ta).toFixed(3)})`;
-          for (const p of [sp[0], sp[sp.length - 1]]) bgx.fillRect(p[0] - 2, p[1] - 2, 4, 4);
-          // current running along one in three traces (visual stimulation; frozen when reduced)
-          if (!still && rnd(cx, cy, lvl * 7 + i) < .34) {
-            const ph = ((t / 1000) * (.18 + rnd(cy, cx, i) * .25) + rnd(cx, i, lvl)) % 1;
-            const q = along(sp, ph);
-            const lime = rnd(i, cx, cy) < .35;
-            bgx.fillStyle = lime ? `rgba(166,255,61,${(.75 * ta * damp).toFixed(3)})` : `rgba(0,194,255,${(.85 * ta * damp).toFixed(3)})`;
-            bgx.fillRect(q[0] - 2, q[1] - 2, 4, 4);
-          }
-        }
-      }
-    }
-  }
-}
-function trace(cx, cy, lvl, i, cell) {
-  const r = (n) => rnd(cx * 13 + n, cy * 7 + i, lvl);
-  const x0 = (cx + r(1)) * cell, y0 = (cy + Math.round(r(2) * 4) / 4) * cell;
-  const x1 = (cx + r(3)) * cell, y1 = (cy + Math.round(r(4) * 4) / 4) * cell;
-  const mxw = (cx + Math.round(r(5) * 4) / 4) * cell;
-  return r(6) < .5 ? [[x0, y0], [mxw, y0], [mxw, y1], [x1, y1]] : [[x0, y0], [x0, (y0 + y1) / 2], [x1, (y0 + y1) / 2], [x1, y1]];
-}
 function along(pts, f) {
   let L = 0; const seg = [];
   for (let i = 1; i < pts.length; i++) { const d = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); seg.push(d); L += d; }
@@ -296,129 +346,91 @@ function along(pts, f) {
   return pts[pts.length - 1];
 }
 
-// ---- the levels above the circuit: cartridge, rack, cache (placeholder siblings) ----
-const BOUNDS = (() => { const xs = CARDS.flatMap(c => [c.x, c.x + c.w]), ys = CARDS.flatMap(c => [c.y, c.y + c.h]); return { x0: Math.min(...xs) - 60, y0: Math.min(...ys) - 60, x1: Math.max(...xs) + 60, y1: Math.max(...ys) + 60 }; })();
-const CX = (BOUNDS.x0 + BOUNDS.x1) / 2, CY = (BOUNDS.y0 + BOUNDS.y1) / 2, BW = BOUNDS.x1 - BOUNDS.x0, BH = BOUNDS.y1 - BOUNDS.y0;
-const LEVELS = [
-  { name: 'CIRCUIT', label: 'PLOT', k: 1, sibs: ['CAST', 'HARBOUR TOWN', 'RESEARCH', 'ENDINGS', 'TIMELINE'] },
-  { name: 'CARTRIDGE', label: 'THE LATE FERRY', k: 14, sibs: ['SALT HOUSE', 'NORTH SOUND', 'UNTITLED 3', 'LETTERS'] },
-  { name: 'RACK', label: 'NOVELS', k: 14 * 13, sibs: ['SHORT STORIES', 'ESSAYS', 'POEMS'] },
-  { name: 'CACHE', label: 'CACHE', k: 14 * 13 * 12, sibs: [] },
-];
-function drawLevels() {
-  // each level: a bracketed frame around its content, siblings on a ring around it
-  for (let li = 0; li < LEVELS.length; li++) {
-    const L = LEVELS[li], w = BW * L.k * (li ? 3.2 : 1), h = BH * L.k * (li ? 3.2 : 1);
-    const pw = w * cam.s; if (pw < 30 || pw > W * 9) continue;
-    const a = Math.min(1, (pw - 30) / 120) * Math.min(1, (W * 9 - pw) / (W * 4));
-    frame(CX - w / 2, CY - h / 2, w, h, `${L.name} // ${L.label}`, a, li === 0 ? 'rgba(0,194,255,' : 'rgba(87,208,245,');
-    const R = Math.max(w, h) * 1.25;
-    L.sibs.forEach((nm, i) => {
-      const ang = -Math.PI / 2 + (i + .5) * (2 * Math.PI / L.sibs.length);
-      const sx = CX + Math.cos(ang) * R, sy = CY + Math.sin(ang) * R;
-      frame(sx - w / 2, sy - h / 2, w, h, `${L.name} // ${nm}`, a * .7, 'rgba(36,77,124,');
-      // placeholder contents: a scatter of nodes
-      for (let j = 0; j < 14; j++) {
-        const [px, py] = toScreen(sx - w / 2 + rnd(i, j, li) * w, sy - h / 2 + rnd(j, i, li + 9) * h);
-        lkx.fillStyle = `rgba(87,208,245,${(.5 * a).toFixed(3)})`; lkx.fillRect(px - 1.5, py - 1.5, 3, 3);
-      }
-    });
-  }
+// ============================================================================
+// THE SHARED GROUND — one canvas behind every pane
+// ============================================================================
+const bg = document.getElementById('bg'), bgx = bg.getContext('2d');
+const fx = document.getElementById('fx'), fxx = fx.getContext('2d');
+const mini = document.getElementById('mini'), mx = mini.getContext('2d');
+function resize() {
+  W = innerWidth; H = innerHeight; DPR = Math.min(2, devicePixelRatio || 1);
+  for (const c of [bg, fx]) { c.width = W * DPR; c.height = H * DPR; c.getContext('2d').setTransform(DPR, 0, 0, DPR, 0, 0); }
+  mini.width = 260 * DPR; mini.height = 130 * DPR; mx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  layoutPanes();
 }
-function frame(x, y, w, h, label, a, col) {
-  const [sx, sy] = toScreen(x, y), sw = w * cam.s, sh = h * cam.s, c = Math.min(18, sw / 6);
-  lkx.strokeStyle = col + (.55 * a).toFixed(3) + ')'; lkx.lineWidth = 1; lkx.strokeRect(sx + .5, sy + .5, sw, sh);
-  lkx.strokeStyle = col + (.95 * a).toFixed(3) + ')'; lkx.lineWidth = 2;
-  lkx.beginPath();
-  lkx.moveTo(sx, sy + c); lkx.lineTo(sx, sy); lkx.lineTo(sx + c, sy);
-  lkx.moveTo(sx + sw - c, sy + sh); lkx.lineTo(sx + sw, sy + sh); lkx.lineTo(sx + sw, sy + sh - c);
-  lkx.stroke();
-  lkx.fillStyle = col + (.9 * a).toFixed(3) + ')'; lkx.font = '600 12px Rajdhani, sans-serif';
-  lkx.fillText(label.toUpperCase().split('').join('\u200A'), sx + 6, sy - 6);
-}
-
-// ---- links: orthogonal traces with packets ----
-let linkFlash = null; // { a, b, until } - the writer's own act, orange for a moment
-function route(a, b) {
-  const A = byId[a], B = byId[b];
-  const ax = A.x + A.w, ay = A.y + Math.min(A.h, 60) / 2 + 20, bx = B.x, by = B.y + Math.min(B.h, 60) / 2 + 20;
-  if (bx >= ax + 30) { const m = (ax + bx) / 2; return [[ax, ay], [m, ay], [m, by], [bx, by]]; }
-  const ax2 = A.x + A.w / 2, ay2 = A.y + A.h, bx2 = B.x + B.w / 2, by2 = B.y;
-  if (by2 >= ay2 + 30) { const m = (ay2 + by2) / 2; return [[ax2, ay2], [ax2, m], [bx2, m], [bx2, by2]]; }
-  const ux = Math.min(A.x, B.x) - 40; return [[A.x, ay], [ux, ay], [ux, by], [B.x, by]];
-}
-function drawLinks(t) {
-  lkx.clearRect(0, 0, W, H);
-  const level = lod(cam.s);
-  if (document.body.classList.contains('arbor')) {          // Arbor draws the same links as thin brass lines, no packets, no frames
-    lkx.strokeStyle = 'rgba(201,162,74,.8)'; lkx.lineWidth = 1;
-    for (const [a, b] of LINKS) { const A = byId[a], B = byId[b], [ax, ay] = toScreen(A.x + A.w / 2, A.y + A.h / 2), [bx, by] = toScreen(B.x + B.w / 2, B.y + B.h / 2); lkx.beginPath(); lkx.moveTo(ax, ay); lkx.lineTo(bx, by); lkx.stroke(); }
-    return;
-  }
-  drawLevels();
-  if (level === 'CARTRIDGE' || level === 'RACK' || level === 'CACHE' || level === 'UNINDEXED') { drawDots(); return; }
-  if (level === 'SUBNET' || level === 'CIRCUIT') drawSubnets();
-  const sel = selected;
-  for (const [a, b] of LINKS) {
-    const pts = route(a, b).map(p => toScreen(p[0], p[1]));
-    const hot = sel && (a === sel || b === sel);
-    const flash = linkFlash && linkFlash.until > t && ((linkFlash.a === a && linkFlash.b === b));
-    lkx.lineWidth = Math.max(1, Math.min(3, cam.s * (hot ? 2.4 : 1.4)));
-    lkx.strokeStyle = flash ? 'rgba(255,152,0,.95)' : hot ? 'rgba(0,194,255,.95)' : 'rgba(0,194,255,.38)';
-    lkx.setLineDash(level === 'CIRCUIT' ? [] : [6, 5]);
-    lkx.lineDashOffset = reduced() ? 0 : -(t / 40) % 11;
-    lkx.beginPath(); pts.forEach((p, j) => j ? lkx.lineTo(p[0], p[1]) : lkx.moveTo(p[0], p[1])); lkx.stroke();
-    lkx.setLineDash([]);
-    // packets
-    if (!reduced()) {
-      const n = hot ? 3 : 2, sp = hot ? .5 : .22;
+const G = 40;
+function drawGround(t, cam) {
+  const damp = busy() ? .2 : 1, still = reduced();
+  bgx.fillStyle = '#010811'; bgx.fillRect(0, 0, W, H);
+  const g = bgx.createRadialGradient(W * .5, H * .48, 0, W * .5, H * .48, Math.max(W, H) * .7);
+  g.addColorStop(0, 'rgba(8,40,72,.55)'); g.addColorStop(1, 'rgba(1,8,17,0)'); bgx.fillStyle = g; bgx.fillRect(0, 0, W, H);
+  const ts = (x, y) => [(x - cam.x) * cam.s + W / 2, (y - cam.y) * cam.s + H / 2];
+  const tw = (sx, sy) => [(sx - W / 2) / cam.s + cam.x, (sy - H / 2) / cam.s + cam.y];
+  const k = Math.ceil(Math.log(14 / (G * cam.s)) / Math.log(8));
+  for (let lvl = k; lvl <= k + 2; lvl++) {
+    const step = G * Math.pow(8, lvl), px = step * cam.s; if (px < 6) continue;
+    const a = Math.min(1, (px - 6) / 90);
+    bgx.strokeStyle = `rgba(25,53,86,${(.35 * a).toFixed(3)})`; bgx.lineWidth = 1;
+    const [wx0, wy0] = tw(0, 0), [wx1, wy1] = tw(W, H);
+    bgx.beginPath();
+    for (let x = Math.floor(wx0 / step) * step; x <= wx1; x += step) { const sx = Math.round(ts(x, 0)[0]) + .5; bgx.moveTo(sx, 0); bgx.lineTo(sx, H); }
+    for (let y = Math.floor(wy0 / step) * step; y <= wy1; y += step) { const sy = Math.round(ts(0, y)[1]) + .5; bgx.moveTo(0, sy); bgx.lineTo(W, sy); }
+    bgx.stroke();
+    const cell = step * 4, cpx = cell * cam.s; if (cpx < 110 || cpx > 2600) continue;
+    const ta = Math.min(1, (cpx - 110) / 160) * Math.min(1, (2600 - cpx) / 900);
+    for (let cx = Math.floor(wx0 / cell); cx <= Math.floor(wx1 / cell); cx++) for (let cy = Math.floor(wy0 / cell); cy <= Math.floor(wy1 / cell); cy++) {
+      const n = 1 + Math.floor(rnd(cx, cy, lvl) * 3);
       for (let i = 0; i < n; i++) {
-        const q = along(pts, ((t / 1000) * sp + i / n + (a.charCodeAt(1) * .13)) % 1);
-        const s = Math.max(3, Math.min(7, cam.s * 6));
-        lkx.fillStyle = flash ? '#FF9800' : hot ? '#E8F6FA' : 'rgba(87,208,245,.95)';
-        lkx.fillRect(q[0] - s / 2, q[1] - s / 2, s, s);
+        const sp = trace(cx, cy, lvl, i, cell).map(p => ts(p[0], p[1]));
+        bgx.strokeStyle = `rgba(36,77,124,${(.55 * ta).toFixed(3)})`; bgx.lineWidth = Math.max(1, Math.min(2.5, cpx / 400));
+        bgx.beginPath(); sp.forEach((p, j) => j ? bgx.lineTo(p[0], p[1]) : bgx.moveTo(p[0], p[1])); bgx.stroke();
+        bgx.fillStyle = `rgba(87,208,245,${(.35 * ta).toFixed(3)})`;
+        for (const p of [sp[0], sp[sp.length - 1]]) bgx.fillRect(p[0] - 2, p[1] - 2, 4, 4);
+        // current on the ground: same speed as v1, on fewer traces (14% where v1 had 34%)
+        if (!still && rnd(cx, cy, lvl * 7 + i) < .14) {
+          const q = along(sp, ((t / 1000) * (.18 + rnd(cy, cx, i) * .25) + rnd(cx, i, lvl)) % 1);
+          bgx.fillStyle = rnd(i, cx, cy) < .35 ? `rgba(166,255,61,${(.75 * ta * damp).toFixed(3)})` : `rgba(0,194,255,${(.85 * ta * damp).toFixed(3)})`;
+          bgx.fillRect(q[0] - 2, q[1] - 2, 4, 4);
+        }
       }
     }
   }
-  if (dragLink) {
-    const A = byId[dragLink.from], [ax, ay] = toScreen(A.x + A.w, A.y + 50);
-    lkx.strokeStyle = 'rgba(255,152,0,.9)'; lkx.lineWidth = 2; lkx.setLineDash([4, 4]);
-    lkx.beginPath(); lkx.moveTo(ax, ay); lkx.lineTo(dragLink.x, ay); lkx.lineTo(dragLink.x, dragLink.y); lkx.stroke(); lkx.setLineDash([]);
+  drawPaneBridges(t);
+}
+function trace(cx, cy, lvl, i, cell) {
+  const r = (n) => rnd(cx * 13 + n, cy * 7 + i, lvl);
+  const x0 = (cx + r(1)) * cell, y0 = (cy + Math.round(r(2) * 4) / 4) * cell, x1 = (cx + r(3)) * cell, y1 = (cy + Math.round(r(4) * 4) / 4) * cell, mxw = (cx + Math.round(r(5) * 4) / 4) * cell;
+  return r(6) < .5 ? [[x0, y0], [mxw, y0], [mxw, y1], [x1, y1]] : [[x0, y0], [x0, (y0 + y1) / 2], [x1, (y0 + y1) / 2], [x1, y1]];
+}
+// connected panes are joined by a trace across the shared ground
+function drawPaneBridges(t) {
+  if (panes.length < 2) return;
+  for (const p of panes) for (const q of panes) {
+    if (p.uid >= q.uid) continue;
+    const key1 = paneKey(p), key2 = paneKey(q);
+    if (!(connections.has(key1 + '|' + key2) || connections.has(key2 + '|' + key1))) continue;
+    const a = p.rect, b = q.rect;
+    const ax = a.x + a.w / 2, ay = a.y + a.h / 2 + 46, bx = b.x + b.w / 2, by = b.y + b.h / 2 + 46;
+    bgx.strokeStyle = 'rgba(0,194,255,.6)'; bgx.lineWidth = 2; bgx.setLineDash([8, 6]); bgx.lineDashOffset = reduced() ? 0 : -(t / 50) % 14;
+    bgx.beginPath(); bgx.moveTo(ax, ay); bgx.lineTo(ax, (ay + by) / 2); bgx.lineTo(bx, (ay + by) / 2); bgx.lineTo(bx, by); bgx.stroke(); bgx.setLineDash([]);
   }
 }
-function drawSubnets() {
-  for (const [g, name] of Object.entries(GROUPS)) {
-    const cs = CARDS.filter(c => c.groupId === g); if (!cs.length) continue;
-    const x0 = Math.min(...cs.map(c => c.x)) - 30, y0 = Math.min(...cs.map(c => c.y)) - 40, x1 = Math.max(...cs.map(c => c.x + c.w)) + 30, y1 = Math.max(...cs.map(c => c.y + c.h)) + 30;
-    frame(x0, y0, x1 - x0, y1 - y0, 'SUBNET // ' + name, 1, 'rgba(166,255,61,');
-  }
-  const orphans = CARDS.filter(c => !c.groupId);
-  for (const c of orphans) { const [sx, sy] = toScreen(c.x, c.y); lkx.fillStyle = 'rgba(126,180,196,.8)'; lkx.font = '600 11px Rajdhani'; lkx.fillText('ORPHAN PROCESS', sx, sy - 8); }
-}
-function drawDots() {
-  for (const c of CARDS) {
-    const [sx, sy] = toScreen(c.x + c.w / 2, c.y + c.h / 2);
-    lkx.fillStyle = c.id === lastTouched ? '#FF9800' : c.lit ? '#A6FF3D' : '#57D0F5';
-    lkx.fillRect(sx - 2, sy - 2, 4, 4);
-  }
-}
+const paneKey = (p) => p.kind === 'board' ? p.ref : 'doc:' + p.ref;
 
-// ---- texture: the Signal-Loss dialect (canon §7), rates scaled by the dial, damped while busy ----
-const events = [];
-const sched = { tear: 0, shear: 0, block: 0, dip: 0, jump: 0, fix: 0 };
+// ---- texture: Signal-Loss dialect, damped while busy ----
+const events = [], sched = { tear: 0, shear: 0, block: 0, dip: 0, jump: 0, fix: 0 };
 function spawnTexture(t) {
   if (reduced() || glitch === 0) return;
-  const k = 60 / Math.max(1, glitch);            // dial 60 = canon rates; higher = more often
-  const due = (name, lo, hi) => { if (t < sched[name]) return false; sched[name] = t + (lo + Math.random() * (hi - lo)) * 1000 * k; return !busy(); };
+  const k = 60 / Math.max(1, glitch);
+  const due = (n, lo, hi) => { if (t < sched[n]) return false; sched[n] = t + (lo + Math.random() * (hi - lo)) * 1000 * k; return !busy(); };
   if (due('tear', 7, 12)) { const n = 3 + Math.floor(Math.random() * 3); for (let i = 0; i < n; i++) events.push({ type: 'tear', at: t + i * 45, dur: 150, y: Math.random() * H, lime: Math.random() < .35 }); }
   if (due('shear', 9, 15)) events.push({ type: 'shear', at: t, dur: 160, y: Math.random() * (H - 26), dx: 10 + Math.random() * 18 });
   if (due('block', 2.6, 4.8)) { const n = 5 + Math.floor(Math.random() * 5), x = Math.random() * W, y = Math.random() * H; for (let i = 0; i < n; i++) events.push({ type: 'block', at: t, dur: 80 + Math.random() * 130, x: x + (Math.random() - .5) * 160, y: y + (Math.random() - .5) * 90, s: 10 + Math.random() * 20, lime: Math.random() < .35 }); }
   if (due('dip', 10, 17)) { dip(); if (Math.random() < .5) setTimeout(dip, 520); }
-  if (due('jump', 9, 15)) { jump(); if (Math.random() < .4) setTimeout(jump, 160); }
-  if (due('fix', 5, 9)) attemptCorrection(CARDS[Math.floor(Math.random() * CARDS.length)].id);
+  if (due('jump', 9, 15)) { bg.style.transform = `translate(${(Math.random() < .5 ? -1 : 1) * 4}px,0)`; setTimeout(() => bg.style.transform = '', 80); }
+  if (due('fix', 5, 9)) { const p = panes.find(x => x.kind === 'board'); if (p) { const cs = BOARDS[p.ref].cards; attemptCorrection(p, cs[Math.floor(Math.random() * cs.length)].id); } }
 }
 function dip() { const d = document.getElementById('dip'); d.style.opacity = '.13'; setTimeout(() => d.style.opacity = '0', 400); }
-function jump() { bg.style.transform = `translate(${(Math.random() < .5 ? -1 : 1) * 4}px,0)`; setTimeout(() => bg.style.transform = '', 80); }
 function drawTexture(t) {
   fxx.clearRect(0, 0, W, H);
   const damp = busy() ? .13 : 1;
@@ -432,230 +444,507 @@ function drawTexture(t) {
   }
 }
 
-// ---- humanity as a bug: the system tries to correct a human node, and is rejected ----
+// ---- humanity as a bug ----
 const CODE = '01<>{}[]/\\=+*#$%&_:;ABCDEF0123456789';
 const lastFix = {};
-function attemptCorrection(id) {
-  if (reduced() || busy()) return;
-  const t = performance.now(); if (lastFix[id] && t - lastFix[id] < 6000) return; lastFix[id] = t;
-  const el = els[id]; if (!el || el.classList.contains('chip')) return;
-  const b = el.querySelector('.body'), st = el.querySelector('.st'); if (!b || b.isContentEditable) return;
-  const orig = body(byId[id]); const steps = 7; let i = 0;
-  el.classList.add('correcting'); st.textContent = 'AUTOCORRECT…';
-  const iv = setInterval(() => {         // 7 frames at 60ms in, 7 back out: ~0.84 s, no flash above 3 Hz (text, not light)
-    i++;
-    const k = i <= steps ? i / steps : (2 * steps - i) / steps;
-    b.textContent = orig.replace(/\S/g, (ch) => Math.random() < k * .8 ? CODE[(Math.random() * CODE.length) | 0] : ch);
-    if (i >= 2 * steps) { clearInterval(iv); b.textContent = orig; st.textContent = 'REJECTED // HUMAN'; setTimeout(() => { el.classList.remove('correcting'); st.textContent = status(byId[id]); }, 1400); }
+function scramble(node, getText, st, okLabel, done) {
+  const orig = getText(); const steps = 7; let i = 0;
+  const iv = setInterval(() => {
+    i++; const k = i <= steps ? i / steps : (2 * steps - i) / steps;
+    node.textContent = orig.replace(/\S/g, (ch) => Math.random() < k * .8 ? CODE[(Math.random() * CODE.length) | 0] : ch);
+    if (i >= 2 * steps) { clearInterval(iv); node.textContent = orig; if (done) done(); }
   }, 60);
 }
-const status = (c) => c.kind === 'ink' ? 'STATUS: RASTER // HUMAN' : 'STATUS: UNRESOLVED // HUMAN';
+function attemptCorrection(p, id) {
+  if (reduced() || busy() || p.view === 'stack') return;
+  const t = performance.now(), key = p.uid + id; if (lastFix[key] && t - lastFix[key] < 6000) return; lastFix[key] = t;
+  const el = p.els[id]; if (!el || el.style.display === 'none' || el.classList.contains('chip')) return;
+  const b = el.querySelector('.body'), st = el.querySelector('.st'); if (!b || b.isContentEditable) return;
+  const c = card(p.ref, id);
+  el.classList.add('correcting'); st.textContent = 'AUTOCORRECT…';
+  scramble(b, () => body(c), st, '', () => { st.textContent = 'REJECTED // HUMAN'; setTimeout(() => { el.classList.remove('correcting'); st.textContent = status(c); }, 1400); });
+}
 
 // ============================================================================
-// NODES (DOM) — positioned in screen space every frame; content by level of detail
+// PANES
 // ============================================================================
-const host = document.getElementById('nodes');
-const els = {};
-let selected = null;
-function inkSvg() {
-  return '<svg width="200" height="96" viewBox="0 0 200 96" fill="none" stroke="#57D0F5" stroke-width="1.6" stroke-linecap="round"><path d="M8 70 C40 40 70 80 100 52 S160 30 192 58"/><path d="M60 20 l10 10 l-10 10"/><circle cx="140" cy="30" r="9"/><path d="M20 86 h60 M110 86 h70" stroke-dasharray="3 5"/></svg>';
+const stage = document.getElementById('stage');
+const panes = []; let focused = null, paneSeq = 0;
+const inkSvg = (w = 200, h = 96) => `<svg class="sk" width="${w}" height="${h}" viewBox="0 0 200 96" fill="none" stroke="#57D0F5" stroke-width="1.6" stroke-linecap="round"><path d="M8 70 C40 40 70 80 100 52 S160 30 192 58"/><path d="M60 20 l10 10 l-10 10"/><circle cx="140" cy="30" r="9"/><path d="M20 86 h60 M110 86 h70" stroke-dasharray="3 5"/></svg>`;
+const jpgSvg = () => `<svg viewBox="0 0 240 86" preserveAspectRatio="none"><path d="M150 86 L156 22 L170 22 L176 86 Z" fill="#081B2E" stroke="#57D0F5" stroke-width=".8"/><rect x="152" y="12" width="22" height="10" fill="#0C2A44" stroke="#57D0F5" stroke-width=".8"/><path d="M0 70 Q60 60 120 68 T240 64 V86 H0Z" fill="#04121F"/></svg>`;
+function nodeInner(c) {
+  const media = c.kind === 'jpg' ? `<div class="media jpg">${jpgSvg()}</div>` : c.kind === 'pdf' ? `<div class="media pdf">${'<i></i>'.repeat(8)}</div>` : c.kind === 'ink' ? inkSvg() : '<div class="body"></div>';
+  return `<div class="hd"><span class="id">NODE ${hex(c.id)}</span><span class="typ">${typeLabel(c)}</span></div><div class="ttl"></div>${media}
+    <div class="ft"><span class="st"></span><span class="lc"></span></div><div class="port" title="Drag to another node to link"></div>`;
 }
-function buildNode(c) {
-  const el = document.createElement('div'); el.className = 'node ' + c.kind.replace('page-', ''); el.dataset.id = c.id;
-  el.style.width = c.w + 'px';
-  const typ = c.kind === 'page-pin' ? 'DOC LINK' : c.kind === 'ink' ? 'INK' : 'TEXT';
-  el.innerHTML = `<div class="hd"><span class="id">NODE ${hex(c.id)}</span><span>${typ}</span></div>
-    <div class="ttl"></div>${c.kind === 'ink' ? inkSvg() : '<div class="body"></div>'}
-    <div class="ft"><span class="st"></span><span class="${c.lit ? 'ok' : 'bug'}">${c.lit ? 'CHECKSUM OK' : tokens(c) + ' TOKENS'}</span></div><div class="port" title="Drag to another node to link"></div>`;
-  host.appendChild(el); els[c.id] = el; fill(c);
-  el.addEventListener('pointerdown', (e) => nodeDown(e, c));
-  el.addEventListener('dblclick', (e) => edit(e, c));
-  el.addEventListener('mouseenter', () => { if (Math.random() < .5) attemptCorrection(c.id); });
+function makePane(kind, ref) {
+  const p = { uid: ++paneSeq, kind, ref, cam: { x: 760, y: 380, s: .8 }, view: 'live', stackIdx: 0, els: {}, home: null, morph: null, flight: null, linkFlash: null, dragLink: null, selected: null, rect: { x: 0, y: 0, w: 1, h: 1 }, W: 1, H: 1 };
+  const el = document.createElement('div'); el.className = 'pane'; p.el = el;
+  el.innerHTML = `<canvas class="lk"></canvas><div class="nodes"></div><div class="pane-hd"></div><button class="pclose">Close ×</button><button class="plus" aria-expanded="false" title="Connect or open"></button><div class="pmenu"></div>`;
+  p.lk = el.querySelector('canvas'); p.lkx = p.lk.getContext('2d'); p.host = el.querySelector('.nodes');
+  if (kind === 'board') { BOARDS[ref].cards.forEach(c => buildNode(p, c)); }
+  else {
+    const d = DOCS[ref], dv = document.createElement('div'); dv.className = 'doc';
+    dv.innerHTML = `<div class="paper"><div class="dmeta"><span>DOC // ${hex(ref)}</span><span>BUILD</span></div><h1 class="dtitle"></h1><div class="dbody" contenteditable="true" spellcheck="false"></div>
+      <div class="meter"><div class="lbl"><span class="mlab">SPRINT <b class="mw">0</b> / ${d.goal} WORDS</span><span class="mst">LIVE</span></div><div class="bar"><div class="fill"></div><div class="notch"></div></div></div></div>`;
+    dv.querySelector('.dtitle').textContent = d.name; dv.querySelector('.dbody').textContent = d.text;
+    dv.querySelector('.dbody').addEventListener('input', (e) => { d.text = e.target.innerText; touch(1500); });
+    el.insertBefore(dv, el.querySelector('.pane-hd')); p.doc = dv;
+  }
+  el.querySelector('.pclose').onclick = () => closePane(p);
+  const plus = el.querySelector('.plus'), menu = el.querySelector('.pmenu');
+  plus.onclick = (e) => { e.stopPropagation(); const open = !menu.classList.contains('open'); closeMenus(); if (open) { fillPlusMenu(p, menu); menu.classList.add('open'); plus.setAttribute('aria-expanded', 'true'); } };
+  el.addEventListener('pointerdown', (e) => paneDown(p, e));
+  el.addEventListener('wheel', (e) => paneWheel(p, e), { passive: false });
+  stage.appendChild(el); panes.push(p); focus(p); layoutPanes();
+  panes.forEach(q => { if (q.kind === 'board' && !q.flight) fit(q, true); });   // every circuit refits to its new pane
+  return p;
 }
-function fill(c) {
-  const el = els[c.id];
-  el.querySelector('.ttl').textContent = c.kind === 'ink' ? 'MAP OF THE HARBOUR' : title(c);
+function closePane(p) {
+  if (panes.length < 2) return;
+  panes.splice(panes.indexOf(p), 1); p.el.remove(); if (focused === p) focus(panes[0]); layoutPanes();
+  panes.forEach(q => { if (q.kind === 'board') fit(q); });
+}
+function focus(p) { focused = p; panes.forEach(q => q.el.classList.toggle('focus', q === p)); syncTabs(); handsContext(); }
+function layoutPanes() {
+  const SX = 0, SY = 0, SW = W, SH = H - 46, gap = 10, n = panes.length;
+  document.body.classList.toggle('split', n > 1);
+  const R = [];
+  if (n === 1) R.push([SX, SY, SW, SH]);
+  if (n === 2) R.push([SX + 46, SY + 6, SW / 2 - 46 - gap / 2, SH - 12], [SW / 2 + gap / 2, SY + 6, SW / 2 - 46 - gap / 2, SH - 12]);
+  if (n === 3) R.push([SX + 46, SY + 6, SW / 2 - 46 - gap / 2, SH - 12], [SW / 2 + gap / 2, SY + 6, SW / 2 - 46 - gap / 2, SH / 2 - 6 - gap / 2], [SW / 2 + gap / 2, SH / 2 + gap / 2, SW / 2 - 46 - gap / 2, SH / 2 - 6 - gap / 2]);
+  if (n === 4) { const w = SW / 2 - 46 - gap / 2, h = SH / 2 - 6 - gap / 2; R.push([46, 6, w, h], [SW / 2 + gap / 2, 6, w, h], [46, SH / 2 + gap / 2, w, h], [SW / 2 + gap / 2, SH / 2 + gap / 2, w, h]); }
+  panes.forEach((p, i) => {
+    const [x, y, w, h] = R[i]; p.rect = { x, y, w, h }; p.W = w; p.H = h;
+    Object.assign(p.el.style, { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px' });
+    p.lk.width = w * DPR; p.lk.height = h * DPR; p.lkx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  });
+}
+const ts = (p, x, y) => [(x - p.cam.x) * p.cam.s + p.W / 2, (y - p.cam.y) * p.cam.s + p.H / 2];
+const tw = (p, sx, sy) => [(sx - p.W / 2) / p.cam.s + p.cam.x, (sy - p.H / 2) / p.cam.s + p.cam.y];
+const bounds = (b) => { const cs = BOARDS[b].cards; if (!cs.length) return { x0: 0, y0: 0, x1: 600, y1: 400 }; const xs = cs.flatMap(c => [c.x, c.x + c.w]), ys = cs.flatMap(c => [c.y, c.y + c.h]); return { x0: Math.min(...xs) - 60, y0: Math.min(...ys) - 60, x1: Math.max(...xs) + 60, y1: Math.max(...ys) + 60 }; };
+
+// ---- nodes ----
+function buildNode(p, c) {
+  const el = document.createElement('div'); el.className = 'node ' + kindClass(c) + ' ' + c.kind; el.dataset.id = c.id; el.style.width = c.w + 'px';
+  el.innerHTML = nodeInner(c);
+  p.host.appendChild(el); p.els[c.id] = el; fill(p, c);
+  el.addEventListener('pointerdown', (e) => nodeDown(p, e, c));
+  el.addEventListener('dblclick', (e) => { if (e.target.isContentEditable) return; openHolo(p, c.id); });
+  el.addEventListener('mouseenter', () => { if (Math.random() < .5) attemptCorrection(p, c.id); });
+}
+function fill(p, c) {
+  const el = p.els[c.id];
+  el.querySelector('.ttl').textContent = title(c);
   const b = el.querySelector('.body'); if (b && !b.isContentEditable) b.textContent = body(c);
   el.querySelector('.st').textContent = status(c);
-  el.classList.toggle('lit', !!c.lit);
+  const lc = el.querySelector('.lc'), n = linkCount(p.ref, c.id);
+  lc.textContent = c.lit ? 'CHECKSUM OK · ' + n + (n === 1 ? ' LINK' : ' LINKS') : n + (n === 1 ? ' LINK' : ' LINKS'); lc.className = 'lc' + (c.lit ? ' ok' : '');
 }
-CARDS.forEach(buildNode);
-let glyphFor = null;
-function placeNodes() {
-  const level = lod(cam.s);
-  const show = level === 'GLYPH' || level === 'NODE' || level === 'SUBNET';
-  for (const c of CARDS) {
-    const el = els[c.id];
+function stackXf(p, i, n, idx) {
+  const o = i - idx, ao = Math.abs(o), cx = p.W / 2, cy = p.H * .46, sc = o === 0 ? Math.min(1.5, p.W / 520) : Math.min(1.05, p.W / 760);
+  const x = cx + Math.sign(o) * (ao === 0 ? 0 : 150 + (ao - 1) * 70) * Math.min(1, p.W / 1100), z = -ao * 160, ry = o === 0 ? 0 : (o < 0 ? 52 : -52);
+  return { t: `translate3d(${(x - 125 * sc).toFixed(1)}px,${(cy - 90 * sc).toFixed(1)}px,${z}px) rotateY(${ry}deg) scale(${sc.toFixed(3)})`, op: ao > 5 ? 0 : 1 - ao * .12, z: 100 - ao };
+}
+function placeNodes(p) {
+  const level = lod(p.cam.s), show = level === 'GLYPH' || level === 'NODE' || level === 'SUBNET';
+  const order = p.view === 'stack' ? stackOrder(p.ref) : null;
+  for (const c of BOARDS[p.ref].cards) {
+    const el = p.els[c.id]; if (!el) continue;
+    el.classList.toggle('sel', p.selected === c.id); el.classList.toggle('last', last.board === p.ref && last.id === c.id);
+    if (order) {
+      const i = order.indexOf(c), xf = stackXf(p, i, order.length, p.stackIdx);
+      el.style.display = ''; el.style.transform = xf.t; el.style.opacity = String(xf.op); el.style.zIndex = String(xf.z);
+      el.classList.add('stacked'); el.classList.toggle('center', i === p.stackIdx); el.classList.remove('chip'); continue;
+    }
+    el.classList.remove('stacked', 'center'); el.style.opacity = ''; el.style.zIndex = '';
     if (!show) { el.style.display = 'none'; continue; }
-    const [sx, sy] = toScreen(c.x, c.y);
-    // cull
-    if (sx > W + 50 || sy > H + 50 || sx + c.w * cam.s < -50 || sy + c.h * cam.s * 3 < -50) { el.style.display = 'none'; continue; }
+    const [sx, sy] = ts(p, c.x, c.y);
+    if (!el.classList.contains('flying') && (sx > p.W + 50 || sy > p.H + 50 || sx + c.w * p.cam.s < -50 || sy + c.h * p.cam.s * 3 < -50)) { el.style.display = 'none'; continue; }
     el.style.display = '';
-    el.style.transform = `translate(${sx.toFixed(2)}px,${sy.toFixed(2)}px) scale(${cam.s.toFixed(5)})`;
+    el.style.transform = `translate(${sx.toFixed(2)}px,${sy.toFixed(2)}px) scale(${p.cam.s.toFixed(5)})`;
     el.classList.toggle('chip', level === 'SUBNET');
-    el.classList.toggle('sel', selected === c.id);
-    el.classList.toggle('last', lastTouched === c.id);
-    const wantGlyph = level === 'GLYPH' && c.kind !== 'ink';
-    const has = !!el.querySelector('.glyphs');
+    const wantGlyph = level === 'GLYPH' && el.querySelector('.body'), has = !!el.querySelector('.glyphs');
     if (wantGlyph && !has) {
-      const b = el.querySelector('.body'); if (b) b.style.display = 'none';
+      el.querySelector('.body').style.display = 'none';
       const g = document.createElement('div'); g.className = 'glyphs';
-      for (const ch of body(c) || title(c)) {
-        const cp = ch.codePointAt(0).toString(16).toUpperCase().padStart(4, '0');
-        const d = document.createElement('div'); d.className = 'glyph' + (ch === ' ' ? ' sp' : '');
-        d.innerHTML = `<b></b><i>U+${cp}</i>`; d.firstChild.textContent = ch === '\n' ? '↵' : ch; g.appendChild(d);
-      }
+      for (const ch of body(c) || title(c)) { const d = document.createElement('div'); d.className = 'glyph' + (ch === ' ' ? ' sp' : ''); d.innerHTML = `<b></b><i>U+${ch.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}</i>`; d.firstChild.textContent = ch === '\n' ? '↵' : ch; g.appendChild(d); }
       el.insertBefore(g, el.querySelector('.ft'));
-    } else if (!wantGlyph && has) {
-      el.querySelector('.glyphs').remove(); const b = el.querySelector('.body'); if (b) b.style.display = '';
+    } else if (!wantGlyph && has) { el.querySelector('.glyphs').remove(); const b = el.querySelector('.body'); if (b) b.style.display = ''; }
+  }
+}
+
+// ---- links: a moving dashed trace; electrons ONLY on the selected node's links; a new link lights up when it connects ----
+function route(b, a, z) {
+  const A = card(b, a), B = card(b, z);
+  const ax = A.x + A.w, ay = A.y + 46, bx = B.x, by = B.y + 46;
+  if (bx >= ax + 30) { const m = (ax + bx) / 2; return [[ax, ay], [m, ay], [m, by], [bx, by]]; }
+  const ax2 = A.x + A.w / 2, ay2 = A.y + A.h, bx2 = B.x + B.w / 2, by2 = B.y;
+  if (by2 >= ay2 + 30) { const m = (ay2 + by2) / 2; return [[ax2, ay2], [ax2, m], [bx2, m], [bx2, by2]]; }
+  const ux = Math.min(A.x, B.x) - 40; return [[A.x, ay], [ux, ay], [ux, by], [B.x, by]];
+}
+function drawPane(p, t) {
+  const x = p.lkx; x.clearRect(0, 0, p.W, p.H);
+  if (p.kind !== 'board') return;
+  const level = lod(p.cam.s), B = BOARDS[p.ref];
+  if (document.body.classList.contains('arbor')) {
+    x.strokeStyle = 'rgba(201,162,74,.8)'; x.lineWidth = 1;
+    for (const [a, z] of B.links) { const A = card(p.ref, a), Z = card(p.ref, z), [ax, ay] = ts(p, A.x + A.w / 2, A.y + A.h / 2), [zx, zy] = ts(p, Z.x + Z.w / 2, Z.y + Z.h / 2); x.beginPath(); x.moveTo(ax, ay); x.lineTo(zx, zy); x.stroke(); }
+    return;
+  }
+  if (p.view === 'stack') {     // the circuit stays faintly behind: each node's empty slot, and its links
+    for (const c of B.cards) { const [sx, sy] = ts(p, c.x, c.y); x.strokeStyle = 'rgba(0,194,255,.22)'; x.setLineDash([4, 4]); x.strokeRect(sx, sy, c.w * p.cam.s, c.h * p.cam.s); x.setLineDash([]); }
+    x.strokeStyle = 'rgba(0,194,255,.12)';
+    for (const [a, z] of B.links) { const pts = route(p.ref, a, z).map(q => ts(p, q[0], q[1])); x.beginPath(); pts.forEach((q, j) => j ? x.lineTo(q[0], q[1]) : x.moveTo(q[0], q[1])); x.stroke(); }
+    return;
+  }
+  drawLevels(p);
+  if (!['GLYPH', 'NODE', 'SUBNET', 'CIRCUIT'].includes(level)) { for (const c of B.cards) { const [sx, sy] = ts(p, c.x + c.w / 2, c.y + c.h / 2); x.fillStyle = last.id === c.id && last.board === p.ref ? '#FF9800' : c.kind === 'preset' ? '#A6FF3D' : '#57D0F5'; x.fillRect(sx - 2, sy - 2, 4, 4); } return; }
+  if (level === 'SUBNET' || level === 'CIRCUIT') drawSubnets(p);
+  for (const [a, z] of B.links) {
+    const pts = route(p.ref, a, z).map(q => ts(p, q[0], q[1]));
+    const hot = p.selected && (a === p.selected || z === p.selected);
+    const lf = p.linkFlash && p.linkFlash.a === a && p.linkFlash.b === z ? Math.max(0, 1 - (t - p.linkFlash.t0) / 1100) : 0;
+    x.setLineDash(level === 'CIRCUIT' ? [] : [6, 5]);
+    x.lineDashOffset = reduced() ? 0 : -(t / 60) % 11;            // the dashes always move, slowly
+    x.lineWidth = Math.max(1, Math.min(3, p.cam.s * (hot ? 2 : 1.4))) + lf * 4;
+    x.strokeStyle = lf > 0 ? `rgba(166,240,255,${.5 + .5 * lf})` : hot ? 'rgba(0,194,255,.7)' : 'rgba(0,194,255,.36)';
+    if (lf > 0) { x.shadowColor = '#00C2FF'; x.shadowBlur = 18 * lf; }
+    x.beginPath(); pts.forEach((q, j) => j ? x.lineTo(q[0], q[1]) : x.moveTo(q[0], q[1])); x.stroke();
+    x.setLineDash([]); x.shadowBlur = 0;
+    if (hot && !reduced()) {                                        // electrons: electric blue, only on the selected node's links, slow
+      for (let i = 0; i < 2; i++) {
+        const q = along(pts, ((t / 1000) * .16 + i / 2 + a.charCodeAt(1) * .13) % 1), s = Math.max(4, Math.min(7, p.cam.s * 6));
+        x.fillStyle = '#00C2FF'; x.shadowColor = '#00C2FF'; x.shadowBlur = 10; x.fillRect(q[0] - s / 2, q[1] - s / 2, s, s); x.shadowBlur = 0;
+      }
     }
+  }
+  if (p.dragLink) {                                                // drawing a new link: a plain orange draft, no electrons until it connects
+    const A = card(p.ref, p.dragLink.from), [ax, ay] = ts(p, A.x + A.w, A.y + 46);
+    x.strokeStyle = 'rgba(255,152,0,.85)'; x.lineWidth = 2; x.setLineDash([4, 4]);
+    x.beginPath(); x.moveTo(ax, ay); x.lineTo(p.dragLink.x, ay); x.lineTo(p.dragLink.x, p.dragLink.y); x.stroke(); x.setLineDash([]);
+  }
+}
+function drawSubnets(p) {
+  for (const [g, name] of Object.entries(GROUPS)) {
+    const cs = BOARDS[p.ref].cards.filter(c => c.groupId === g); if (!cs.length) continue;
+    const x0 = Math.min(...cs.map(c => c.x)) - 30, y0 = Math.min(...cs.map(c => c.y)) - 40, x1 = Math.max(...cs.map(c => c.x + c.w)) + 30, y1 = Math.max(...cs.map(c => c.y + c.h)) + 30;
+    frame(p, x0, y0, x1 - x0, y1 - y0, 'SUBNET // ' + name, 1, 'rgba(166,255,61,');
+  }
+}
+const LEVELS = [
+  { name: 'CIRCUIT', k: 1, sibs: ['CAST', 'HARBOUR TOWN', 'RESEARCH', 'ENDINGS', 'TIMELINE'] },
+  { name: 'CARTRIDGE', label: 'THE LATE FERRY', k: 14, sibs: ['SALT HOUSE', 'NORTH SOUND', 'UNTITLED 3', 'LETTERS'] },
+  { name: 'RACK', label: 'NOVELS', k: 14 * 13, sibs: ['SHORT STORIES', 'ESSAYS', 'POEMS'] },
+  { name: 'CACHE', label: 'CACHE', k: 14 * 13 * 12, sibs: [] },
+];
+function drawLevels(p) {
+  const bd = bounds(p.ref), CX = (bd.x0 + bd.x1) / 2, CY = (bd.y0 + bd.y1) / 2, BW = bd.x1 - bd.x0, BH = bd.y1 - bd.y0;
+  LEVELS.forEach((L, li) => {
+    const w = BW * L.k * (li ? 3.2 : 1), h = BH * L.k * (li ? 3.2 : 1), pw = w * p.cam.s; if (pw < 30 || pw > p.W * 9) return;
+    const a = Math.min(1, (pw - 30) / 120) * Math.min(1, (p.W * 9 - pw) / (p.W * 4));
+    frame(p, CX - w / 2, CY - h / 2, w, h, `${L.name} // ${li ? L.label : BOARDS[p.ref].name}`, a, li === 0 ? 'rgba(0,194,255,' : 'rgba(87,208,245,');
+    const R = Math.max(w, h) * 1.25;
+    L.sibs.forEach((nm, i) => {
+      const ang = -Math.PI / 2 + (i + .5) * (2 * Math.PI / L.sibs.length), sx = CX + Math.cos(ang) * R, sy = CY + Math.sin(ang) * R;
+      frame(p, sx - w / 2, sy - h / 2, w, h, `${L.name} // ${nm}`, a * .7, 'rgba(36,77,124,');
+      for (let j = 0; j < 14; j++) { const [px, py] = ts(p, sx - w / 2 + rnd(i, j, li) * w, sy - h / 2 + rnd(j, i, li + 9) * h); p.lkx.fillStyle = `rgba(87,208,245,${(.5 * a).toFixed(3)})`; p.lkx.fillRect(px - 1.5, py - 1.5, 3, 3); }
+    });
+  });
+}
+function frame(p, x, y, w, h, label, a, col) {
+  const c2 = p.lkx, [sx, sy] = ts(p, x, y), sw = w * p.cam.s, sh = h * p.cam.s, c = Math.min(18, sw / 6);
+  c2.strokeStyle = col + (.55 * a).toFixed(3) + ')'; c2.lineWidth = 1; c2.strokeRect(sx + .5, sy + .5, sw, sh);
+  c2.strokeStyle = col + (.95 * a).toFixed(3) + ')'; c2.lineWidth = 2;
+  c2.beginPath(); c2.moveTo(sx, sy + c); c2.lineTo(sx, sy); c2.lineTo(sx + c, sy); c2.moveTo(sx + sw - c, sy + sh); c2.lineTo(sx + sw, sy + sh); c2.lineTo(sx + sw, sy + sh - c); c2.stroke();
+  c2.fillStyle = col + (.9 * a).toFixed(3) + ')'; c2.font = '600 12px Rajdhani, sans-serif'; c2.fillText(label.toUpperCase().split('').join('\u200A'), sx + 6, sy - 6);
+}
+
+// ---- the doc in a pane: its word meter, with the glitching letters ----
+function stepDoc(p, t) {
+  const d = DOCS[p.ref], words = (d.text.match(/\S+/g) || []).length, f = Math.min(1, words / d.goal);
+  const m = p.doc.querySelector('.meter');
+  m.querySelector('.fill').style.width = (f * 100) + '%'; m.querySelector('.notch').style.left = (f * 100) + '%';
+  const mw = m.querySelector('.mw'); if (!m.dataset.g) mw.textContent = words;
+  if (!reduced() && !busy() && glitch && !m.dataset.g && Math.random() < .002 * glitch / 60) {
+    m.dataset.g = '1'; const lab = m.querySelector('.mlab'), keep = lab.innerHTML; lab.classList.add('g');
+    scramble(lab, () => lab.textContent, null, '', () => { lab.innerHTML = keep; lab.classList.remove('g'); delete m.dataset.g; });
   }
 }
 
 // ============================================================================
-// INPUT — pan, zoom (wheel + pinch), drag nodes, link from port, edit text
+// INPUT
 // ============================================================================
-let pan = null, drag = null, dragLink = null; const pointers = new Map(); let pinch = null;
-function zoomAt(sx, sy, f) {
-  const [wx, wy] = toWorld(sx, sy);
-  cam.s = Math.max(1e-7, Math.min(1e4, cam.s * f));
-  cam.x = wx - (sx - W / 2) / cam.s; cam.y = wy - (sy - H / 2) / cam.s;
-  touch();
+let pan = null; const pointers = new Map(); let pinch = null;
+function zoomAt(p, sx, sy, f) { const [wx, wy] = tw(p, sx, sy); p.cam.s = Math.max(1e-7, Math.min(1e4, p.cam.s * f)); p.cam.x = wx - (sx - p.W / 2) / p.cam.s; p.cam.y = wy - (sy - p.H / 2) / p.cam.s; touch(); }
+function paneWheel(p, e) {
+  if (p.kind !== 'board') return;
+  e.preventDefault(); focus(p);
+  if (p.view === 'stack') { const n = BOARDS[p.ref].cards.length; if (performance.now() - (p.lastSwipe || 0) > 200 && Math.abs(e.deltaX || e.deltaY) > 4) { p.stackIdx = Math.max(0, Math.min(n - 1, p.stackIdx + Math.sign(e.deltaX || e.deltaY))); p.lastSwipe = performance.now(); } return; }
+  const r = p.el.getBoundingClientRect(); zoomAt(p, e.clientX - r.left, e.clientY - r.top, Math.exp(-e.deltaY * (e.ctrlKey ? .01 : .0016)));
 }
-addEventListener('wheel', (e) => { e.preventDefault(); zoomAt(e.clientX, e.clientY, Math.exp(-e.deltaY * (e.ctrlKey ? .01 : .0016))); }, { passive: false });
-bg.addEventListener('pointerdown', (e) => {
-  pointers.set(e.pointerId, [e.clientX, e.clientY]); bg.setPointerCapture(e.pointerId);
-  if (pointers.size === 2) { const [p, q] = [...pointers.values()]; pinch = { d: Math.hypot(p[0] - q[0], p[1] - q[1]) }; pan = null; return; }
-  pan = { x: e.clientX, y: e.clientY, cx: cam.x, cy: cam.y }; selected = null; stopEdit();
-});
-bg.addEventListener('pointermove', (e) => {
-  if (pointers.has(e.pointerId)) pointers.set(e.pointerId, [e.clientX, e.clientY]);
-  if (pinch && pointers.size === 2) { const [p, q] = [...pointers.values()]; const d = Math.hypot(p[0] - q[0], p[1] - q[1]); zoomAt((p[0] + q[0]) / 2, (p[1] + q[1]) / 2, d / pinch.d); pinch.d = d; return; }
-  if (pan) { cam.x = pan.cx - (e.clientX - pan.x) / cam.s; cam.y = pan.cy - (e.clientY - pan.y) / cam.s; touch(); }
-});
-const up = (e) => { pointers.delete(e.pointerId); if (pointers.size < 2) pinch = null; pan = null; };
-bg.addEventListener('pointerup', up); bg.addEventListener('pointercancel', up);
-
-function nodeDown(e, c) {
+function paneDown(p, e) {
+  focus(p);
+  if (e.target.closest('.node,.plus,.pmenu,.pclose,.doc')) return;
+  closeMenus();
+  if (p.kind !== 'board') return;
+  p.el.setPointerCapture(e.pointerId);
+  pointers.set(e.pointerId, [e.clientX, e.clientY]);
+  if (pointers.size === 2) { const [a, b] = [...pointers.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]) }; pan = null; return; }
+  pan = { p, x: e.clientX, y: e.clientY, cx: p.cam.x, cy: p.cam.y, idx: p.stackIdx }; p.selected = null; stopEdit();
+  const mv = (ev) => {
+    if (pointers.has(ev.pointerId)) pointers.set(ev.pointerId, [ev.clientX, ev.clientY]);
+    if (pinch && pointers.size === 2) { const [a, b] = [...pointers.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]), r = p.el.getBoundingClientRect(); zoomAt(p, (a[0] + b[0]) / 2 - r.left, (a[1] + b[1]) / 2 - r.top, d / pinch.d); pinch.d = d; return; }
+    if (!pan) return;
+    if (p.view === 'stack') { const n = BOARDS[p.ref].cards.length; p.stackIdx = Math.max(0, Math.min(n - 1, pan.idx - Math.round((ev.clientX - pan.x) / 120))); return; }   // swipe
+    p.cam.x = pan.cx - (ev.clientX - pan.x) / p.cam.s; p.cam.y = pan.cy - (ev.clientY - pan.y) / p.cam.s; touch();
+  };
+  const up = (ev) => { pointers.delete(ev.pointerId); if (pointers.size < 2) pinch = null; pan = null; p.el.removeEventListener('pointermove', mv); p.el.removeEventListener('pointerup', up); };
+  p.el.addEventListener('pointermove', mv); p.el.addEventListener('pointerup', up);
+}
+function nodeDown(p, e, c) {
   if (e.target.isContentEditable) return;
-  e.stopPropagation();
-  selected = c.id; lastTouched = c.id;
-  if (e.target.classList.contains('port')) { dragLink = { from: c.id, x: e.clientX, y: e.clientY }; }
-  else drag = { id: c.id, x: e.clientX, y: e.clientY, ox: c.x, oy: c.y };
-  addEventListener('pointermove', nodeMove); addEventListener('pointerup', nodeUp, { once: true });
-}
-function nodeMove(e) {
-  touch();
-  if (drag) { const c = byId[drag.id]; c.x = drag.ox + (e.clientX - drag.x) / cam.s; c.y = drag.oy + (e.clientY - drag.y) / cam.s; }
-  if (dragLink) { dragLink.x = e.clientX; dragLink.y = e.clientY; }
-}
-function nodeUp(e) {
-  removeEventListener('pointermove', nodeMove);
-  if (dragLink) {
-    const hit = document.elementsFromPoint(e.clientX, e.clientY).map(n => n.closest && n.closest('.node')).find(Boolean);
-    const to = hit && hit.dataset.id;
-    if (to && to !== dragLink.from && !LINKS.some(([a, b]) => (a === dragLink.from && b === to) || (a === to && b === dragLink.from))) {
-      LINKS.push([dragLink.from, to]); linkFlash = { a: dragLink.from, b: to, until: performance.now() + 1200 };
+  e.stopPropagation(); focus(p); closeMenus();
+  if (p.view === 'stack') { const order = stackOrder(p.ref), i = order.indexOf(c); if (i === p.stackIdx) openHolo(p, c.id); else p.stackIdx = i; return; }
+  p.selected = c.id; last = { board: p.ref, id: c.id };
+  const r = p.el.getBoundingClientRect();
+  if (e.target.classList.contains('port')) p.dragLink = { from: c.id, x: e.clientX - r.left, y: e.clientY - r.top };
+  else p.drag = { id: c.id, x: e.clientX, y: e.clientY, ox: c.x, oy: c.y };
+  const mv = (ev) => { touch(); if (p.drag) { const k = card(p.ref, p.drag.id); k.x = p.drag.ox + (ev.clientX - p.drag.x) / p.cam.s; k.y = p.drag.oy + (ev.clientY - p.drag.y) / p.cam.s; } if (p.dragLink) { p.dragLink.x = ev.clientX - r.left; p.dragLink.y = ev.clientY - r.top; } };
+  const up = (ev) => {
+    removeEventListener('pointermove', mv);
+    if (p.dragLink) {
+      const hit = document.elementsFromPoint(ev.clientX, ev.clientY).map(n => n.closest && n.closest('.node')).find(n => n && p.host.contains(n));
+      const to = hit && hit.dataset.id, from = p.dragLink.from, L = BOARDS[p.ref].links;
+      if (to && to !== from && !L.some(([a, b]) => (a === from && b === to) || (a === to && b === from))) {
+        L.push([from, to]); p.linkFlash = { a: from, b: to, t0: performance.now() };   // the connection is established: the trace lights up
+        BOARDS[p.ref].cards.forEach(k => fill(p, k));
+      }
     }
+    p.drag = null; p.dragLink = null;
+  };
+  addEventListener('pointermove', mv); addEventListener('pointerup', up, { once: true });
+}
+function stopEdit() { const b = document.querySelector('.node .body[contenteditable="true"]'); if (b) b.blur(); }
+
+// ---- the + menu ----
+function closeMenus() { document.querySelectorAll('.pmenu.open').forEach(m => m.classList.remove('open')); document.querySelectorAll('.plus').forEach(b => b.setAttribute('aria-expanded', 'false')); }
+addEventListener('pointerdown', (e) => { if (!e.target.closest('.pmenu,.plus')) closeMenus(); });
+function mi(menu, label, fn, opts = {}) { const b = document.createElement('button'); b.innerHTML = `<span>${label}</span><span class="s">${opts.s || ''}</span>`; if (opts.disabled) b.disabled = true; else b.onclick = (e) => { e.stopPropagation(); closeMenus(); fn(); }; (opts.into || menu).appendChild(b); return b; }
+function mh(menu, label, into) { const d = document.createElement('div'); d.className = 'mh'; d.textContent = label; (into || menu).appendChild(d); }
+function sub(menu) { const d = document.createElement('div'); d.className = 'sub'; menu.appendChild(d); return d; }
+function fillPlusMenu(p, menu) {
+  menu.innerHTML = '';
+  const me = paneKey(p), linked = [...connections].filter(k => k.split('|').includes(me)).map(k => k.split('|').find(x => x !== me));
+  const nameOf = (k) => k.startsWith('doc:') ? 'DOC // ' + DOCS[k.slice(4)].name.toUpperCase() : 'CIRCUIT // ' + BOARDS[k].name;
+  mh(menu, p.kind === 'board' ? 'This circuit · ' + BOARDS[p.ref].name : 'This doc');
+  if (p.kind === 'board') {
+    mi(menu, 'New connected circuit', () => { const id = 'new' + (++newBoardN); BOARDS[id] = { id, name: 'UNTITLED CIRCUIT ' + newBoardN, cards: [{ id: id + 'a', kind: 'text', x: 60, y: 60, w: 250, h: 120, groupId: null, text: 'FIRST NODE\n' }], links: [] }; connections.add(me + '|' + id); openPane('board', id); }, { s: 'SPLIT' });
+    mh(menu, 'Open an existing circuit');
+    const s1 = sub(menu); Object.values(BOARDS).filter(b => b.id !== p.ref).forEach(b => mi(menu, b.name, () => openPane('board', b.id), { into: s1, s: linked.includes(b.id) ? 'LINKED' : '' }));
   }
-  drag = null; dragLink = null;
+  mi(menu, 'Connect to a new doc', () => { const id = 'nd' + (++newDocN); DOCS[id] = { id, name: 'Untitled doc ' + newDocN, goal: 500, text: '' }; connections.add(me + '|doc:' + id); openPane('doc', id); }, { s: 'SPLIT' });
+  mh(menu, 'Connect to an existing doc');
+  const s2 = sub(menu); Object.values(DOCS).filter(d => !(p.kind === 'doc' && d.id === p.ref)).forEach(d => mi(menu, d.name, () => { connections.add(me + '|doc:' + d.id); openPane('doc', d.id); }, { into: s2, s: linked.includes('doc:' + d.id) ? 'LINKED' : '' }));
+  const hr = document.createElement('hr'); menu.appendChild(hr);
+  mi(menu, p.kind === 'board' ? 'Disconnect this circuit' : 'Disconnect this doc', () => { [...connections].forEach(k => { if (k.split('|').includes(me)) connections.delete(k); }); toast('DISCONNECTED FROM ' + linked.length + ' · NOTHING DELETED'); }, { disabled: !linked.length, s: linked.length ? linked.length + ' LINKED' : 'NONE' });
+  if (linked.length) { const s3 = sub(menu); linked.forEach(k => { const d = document.createElement('div'); d.className = 'mh'; d.style.color = 'var(--cyan-soft)'; d.textContent = '↔ ' + nameOf(k); s3.appendChild(d); }); }
 }
-function edit(e, c) {
-  const b = els[c.id].querySelector('.body'); if (!b || lod(cam.s) !== 'NODE') return;
-  e.stopPropagation(); lastTouched = c.id; selected = c.id;
-  b.contentEditable = 'true'; b.focus();
-  b.addEventListener('input', () => touch(1500));
-  b.addEventListener('blur', () => { c.text = title(c) + '\n' + b.textContent; b.contentEditable = 'false'; fill(c); }, { once: true });
+function openPane(kind, ref) {
+  const open = panes.find(q => q.kind === kind && q.ref === ref); if (open) { focus(open); return; }
+  if (panes.length >= 4) { toast('FOUR PANES IS THE LIMIT · CLOSE ONE FIRST'); return; }
+  makePane(kind, ref);
 }
-function stopEdit() { const b = document.querySelector('.body[contenteditable="true"]'); if (b) b.blur(); }
 
-// ---- camera flights ----
-let flight = null;
-function flyTo(x, y, s, ms = 900) { flight = { from: { ...cam }, to: { x, y, s }, t0: performance.now(), ms: reduced() ? 1 : ms }; }
-function stepFlight(t) {
-  if (!flight) return;
-  const u = Math.min(1, (t - flight.t0) / flight.ms), e = u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
-  const ls = Math.log(flight.from.s) + (Math.log(flight.to.s) - Math.log(flight.from.s)) * e;   // zoom in log space: infinite zoom stays smooth
-  cam.s = Math.exp(ls); cam.x = flight.from.x + (flight.to.x - flight.from.x) * e; cam.y = flight.from.y + (flight.to.y - flight.from.y) * e;
-  touch(200); if (u >= 1) flight = null;
+// ---- camera flights, views ----
+function flyTo(p, x, y, s, ms = 900) { p.flight = { from: { ...p.cam }, to: { x, y, s }, t0: performance.now(), ms: reduced() ? 1 : ms }; }
+function stepFlight(p, t) {
+  if (!p.flight) return; const f = p.flight, u = Math.min(1, (t - f.t0) / f.ms), e = u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+  p.cam.s = Math.exp(Math.log(f.from.s) + (Math.log(f.to.s) - Math.log(f.from.s)) * e); p.cam.x = f.from.x + (f.to.x - f.from.x) * e; p.cam.y = f.from.y + (f.to.y - f.from.y) * e;
+  touch(200); if (u >= 1) p.flight = null;
 }
-const locate = () => { const c = byId[lastTouched]; selected = c.id; flyTo(c.x + c.w / 2, c.y + c.h / 2, 1.15, 1300); };
-const fit = () => flyTo(CX, CY, Math.min(W / (BW + 200), (H - 120) / (BH + 200)));
-document.getElementById('locate').onclick = locate;
-document.getElementById('fit').onclick = fit;
-
-// ---- views: Live (stored x/y) and Sequence (lanes by act) - projections, the stored positions never change ----
-const home = Object.fromEntries(CARDS.map(c => [c.id, { x: c.x, y: c.y }]));
-let morph = null;
-function setView(v) {
-  document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === v)));
+function fit(p, instant) { if (p.kind !== 'board') return; const b = bounds(p.ref), s = Math.min(p.W / (b.x1 - b.x0 + 200), (p.H - 60) / (b.y1 - b.y0 + 200)); if (instant) Object.assign(p.cam, { x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2, s }); else flyTo(p, (b.x0 + b.x1) / 2, (b.y0 + b.y1) / 2, s); }
+function locate() {
+  let p = panes.find(q => q.kind === 'board' && q.ref === last.board); if (!p) p = makePane('board', last.board);
+  focus(p); const c = card(p.ref, last.id); p.selected = c.id;
+  if (p.view === 'stack') p.stackIdx = stackOrder(p.ref).indexOf(c); else flyTo(p, c.x + c.w / 2, c.y + c.h / 2, 1.15, 1300);
+}
+function syncTabs() { const v = focused && focused.kind === 'board' ? focused.view : null; document.querySelectorAll('.tab').forEach(b => { b.setAttribute('aria-pressed', String(b.dataset.view === v)); b.disabled = !v; }); }
+function setView(p, v) {
+  if (!p || p.kind !== 'board' || p.view === v) return;
+  const prev = p.view, cards = BOARDS[p.ref].cards;
+  if (!p.home) p.home = Object.fromEntries(cards.map(c => [c.id, { x: c.x, y: c.y }]));
+  if (v === 'stack' || prev === 'stack') {                 // the gather: every node flies into (or out of) the stack, staggered
+    const order = stackOrder(p.ref);
+    if (v === 'stack') { const c = card(last.board === p.ref ? p.ref : p.ref, last.board === p.ref ? last.id : order[0].id); p.stackIdx = Math.max(0, order.indexOf(c)); }
+    order.forEach((c, i) => { const el = p.els[c.id]; el.classList.add('flying'); el.style.transitionDelay = (reduced() ? 0 : i * 40) + 'ms'; setTimeout(() => { el.classList.remove('flying'); el.style.transitionDelay = ''; }, 900 + i * 40); });
+    if (v === 'stack') { p.view = 'stack'; syncTabs(); return; }
+  }
+  p.view = v; syncTabs();
   const target = {};
-  if (v === 'live') for (const c of CARDS) target[c.id] = home[c.id];
-  else {
-    for (const c of CARDS) home[c.id] = home[c.id] || { x: c.x, y: c.y };
-    const lanes = ['act1', 'act2', 'act3', null];
-    lanes.forEach((g, li) => CARDS.filter(c => c.groupId === g).sort((a, b) => home[a.id].x - home[b.id].x).forEach((c, i) => target[c.id] = { x: 80 + i * 300, y: 40 + li * 230 }));
-  }
-  if (v === 'sequence') for (const c of CARDS) if (!morph || morph.view === 'live') home[c.id] = { x: c.x, y: c.y };
-  morph = { view: v, from: Object.fromEntries(CARDS.map(c => [c.id, { x: c.x, y: c.y }])), to: target, t0: performance.now(), ms: reduced() ? 1 : 700 };
+  if (v === 'live') cards.forEach(c => target[c.id] = p.home[c.id]);
+  else { if (prev === 'live') cards.forEach(c => p.home[c.id] = { x: c.x, y: c.y }); ['act1', 'act2', 'act3', null].forEach((g, li) => cards.filter(c => c.groupId === g).sort((a, b) => p.home[a.id].x - p.home[b.id].x).forEach((c, i) => target[c.id] = { x: 80 + i * 300, y: 40 + li * 240 })); }
+  p.morph = { from: Object.fromEntries(cards.map(c => [c.id, { x: c.x, y: c.y }])), to: target, t0: performance.now(), ms: reduced() ? 1 : 700 };
 }
-document.querySelectorAll('.tab').forEach(b => b.onclick = () => setView(b.dataset.view));
-function stepMorph(t) {
-  if (!morph || morph.done) return;
-  const u = Math.min(1, (t - morph.t0) / morph.ms), e = 1 - Math.pow(1 - u, 3);
-  for (const c of CARDS) { const f = morph.from[c.id], g = morph.to[c.id]; c.x = f.x + (g.x - f.x) * e; c.y = f.y + (g.y - f.y) * e; }
-  touch(100); if (u >= 1) morph.done = true;
+function stepMorph(p, t) {
+  if (!p.morph) return; const u = Math.min(1, (t - p.morph.t0) / p.morph.ms), e = 1 - Math.pow(1 - u, 3);
+  for (const c of BOARDS[p.ref].cards) { const f = p.morph.from[c.id], g = p.morph.to[c.id]; if (!f || !g) continue; c.x = f.x + (g.x - f.x) * e; c.y = f.y + (g.y - f.y) * e; }
+  touch(100); if (u >= 1) p.morph = null;
 }
+document.querySelectorAll('.tab').forEach(b => b.onclick = () => setView(focused, b.dataset.view));
 
-// ---- jack out: the same nodes, drawn by Arbor, in place ----
-document.getElementById('jack').onclick = () => {
-  const s = document.getElementById('swap'); s.classList.remove('go'); void s.offsetWidth; s.classList.add('go');
-  setTimeout(() => { document.body.classList.toggle('arbor'); document.getElementById('jack').firstChild.textContent = document.body.classList.contains('arbor') ? 'Jack in → back to Flux ' : 'Jack out → see it in Arbor '; }, 320);
+// ============================================================================
+// THE HOLOGRAM: an opened node is the surface; flip through the rest like holograms
+// ============================================================================
+const holoEl = document.getElementById('holo'), deck = document.getElementById('deck');
+let holo = null;
+function openHolo(p, id) {
+  if (p.kind !== 'board') return;
+  last = { board: p.ref, id }; p.selected = id;
+  const list = stackOrder(p.ref);
+  holo = { p, list, idx: list.findIndex(c => c.id === id), drag: null };
+  deck.innerHTML = '';
+  holo.els = list.map((c, i) => { const el = document.createElement('div'); el.className = 'hcard ' + kindClass(c) + ' ' + c.kind; el.dataset.i = i; deck.appendChild(el); renderHcard(el, c); return el; });
+  holoEl.classList.add('on'); document.body.classList.add('holo-on'); document.getElementById('holoWhere').innerHTML = `CIRCUIT // <b>${BOARDS[p.ref].name}</b> · HOLOGRAM`;
+  // the projection: the card leaves its place on the circuit and is projected over the emitter
+  holo.els.forEach((el, i) => { const o = i - holo.idx; el.style.transition = 'none'; el.style.transform = `translate3d(${o * 40}px,260px,-600px) scale(.2)`; el.style.opacity = '0'; });
+  requestAnimationFrame(() => requestAnimationFrame(() => { holo.els.forEach(el => el.style.transition = ''); placeHolo(); }));
+  handsContext();
+}
+function renderHcard(el, c) {
+  const B = BOARDS[holo.p.ref], outs = B.links.filter(l => l[0] === c.id).map(l => l[1]), ins = B.links.filter(l => l[1] === c.id).map(l => l[0]);
+  const media = c.kind === 'jpg' ? `<div class="media jpg" style="margin:8px 18px;height:200px">${jpgSvg()}</div>` : c.kind === 'pdf' ? `<div class="media pdf" style="margin:8px 18px;height:200px">${'<i></i>'.repeat(18)}</div>` : c.kind === 'ink' ? inkSvg(480, 220) : '<div class="hb"></div>';
+  el.innerHTML = `<div class="scan"></div><div class="hh"><span>NODE ${hex(c.id)}</span><span class="typ">${typeLabel(c)}</span></div><div class="ht"></div>${media}
+    <div class="hl">CALLS ${outs.map(o => `<button data-go="${o}">${title(card(holo.p.ref, o))} ▸</button>`).join('') || '—'} &nbsp; CALLED BY ${ins.map(o => `<button data-go="${o}">◂ ${title(card(holo.p.ref, o))}</button>`).join('') || '—'}</div>`;
+  el.querySelector('.ht').textContent = title(c);
+  const hb = el.querySelector('.hb'); if (hb) { hb.textContent = body(c); hb.addEventListener('dblclick', () => { if (!el.classList.contains('center')) return; hb.contentEditable = 'true'; hb.focus(); }); hb.addEventListener('blur', () => { hb.contentEditable = 'false'; c.text = title(c) + '\n' + hb.innerText; fill(holo.p, c); }); hb.addEventListener('input', () => touch(1500)); }
+  el.querySelectorAll('[data-go]').forEach(b => b.onclick = (e) => { e.stopPropagation(); holoGo(holo.list.findIndex(x => x.id === b.dataset.go)); });
+  el.addEventListener('click', () => { const i = +el.dataset.i; if (i !== holo.idx && !holo.dragged) holoGo(i); });
+}
+function placeHolo(frac = 0) {
+  holo.els.forEach((el, i) => {
+    const o = i - holo.idx - frac, ao = Math.abs(o);
+    const x = Math.sign(o) * (ao < 1 ? ao * 420 : 420 + (ao - 1) * 120), z = -Math.min(ao, 4) * 260, ry = Math.max(-62, Math.min(62, -o * 62));
+    el.style.transform = `translate3d(${x}px,0,${z}px) rotateY(${ry}deg) ${ao < .5 ? 'rotateX(' + (holo.tilt ? holo.tilt.y : 0) + 'deg) rotateY(' + (holo.tilt ? holo.tilt.x : 0) + 'deg)' : ''}`;
+    el.style.opacity = ao > 4 ? '0' : String(Math.max(.15, 1 - ao * .28)); el.style.zIndex = String(100 - Math.round(ao * 10));
+    el.classList.toggle('center', Math.round(o) === 0);
+  });
+  document.getElementById('holoCount').innerHTML = `<b>${String(holo.idx + 1).padStart(2, '0')}</b> / ${String(holo.list.length).padStart(2, '0')} · SWIPE, DRAG, WHEEL OR ← →`;
+  const c = holo.list[holo.idx]; last = { board: holo.p.ref, id: c.id }; holo.p.selected = c.id;
+}
+function holoGo(i) { if (!holo) return; holo.idx = Math.max(0, Math.min(holo.list.length - 1, i)); placeHolo(); }
+function closeHolo() {
+  if (!holo) return; const p = holo.p; const hb = deck.querySelector('[contenteditable="true"]'); if (hb) hb.blur();
+  holo.els.forEach((el, i) => { el.style.transform = `translate3d(${(i - holo.idx) * 40}px,260px,-600px) scale(.2)`; el.style.opacity = '0'; });
+  document.body.classList.remove('holo-on');
+  setTimeout(() => { holoEl.classList.remove('on'); holo = null; handsContext(); if (p.view !== 'stack') { const c = card(p.ref, last.id); flyTo(p, c.x + c.w / 2, c.y + c.h / 2, Math.max(p.cam.s, .9), 700); } else p.stackIdx = stackOrder(p.ref).findIndex(c => c.id === last.id); }, reduced() ? 0 : 420);
+}
+document.getElementById('holoBack').onclick = closeHolo;
+holoEl.addEventListener('wheel', (e) => { e.preventDefault(); if (performance.now() - (holo.lw || 0) > 260 && Math.abs(e.deltaX || e.deltaY) > 4) { holoGo(holo.idx + Math.sign(e.deltaX || e.deltaY)); holo.lw = performance.now(); } }, { passive: false });
+deck.addEventListener('pointerdown', (e) => { if (e.target.isContentEditable || e.target.closest('button')) return; holo.drag = { x: e.clientX, i: holo.idx }; holo.dragged = false; deck.setPointerCapture(e.pointerId); });
+deck.addEventListener('pointermove', (e) => {
+  if (!holo) return;
+  if (holo.drag) { const dx = e.clientX - holo.drag.x; if (Math.abs(dx) > 6) holo.dragged = true; holo.els.forEach(el => el.style.transition = 'none'); placeHolo(-dx / 420); }
+  else { const r = deck.getBoundingClientRect(); holo.tilt = { x: ((e.clientX - r.width / 2) / r.width) * 10, y: -((e.clientY - r.height / 2) / r.height) * 8 }; if (!reduced()) placeHolo(); }   // the hologram follows the pointer, slightly
+});
+deck.addEventListener('pointerup', (e) => { if (!holo || !holo.drag) return; const dx = e.clientX - holo.drag.x; holo.els.forEach(el => el.style.transition = ''); holoGo(holo.drag.i - Math.round(dx / 300)); holo.drag = null; setTimeout(() => holo && (holo.dragged = false), 0); });
+// the hologram's + : new node, link an existing node, unlink
+const holoPlus = document.getElementById('holoPlus'), holoMenu = document.getElementById('holoMenu');
+holoPlus.onclick = (e) => {
+  e.stopPropagation(); const open = !holoMenu.classList.contains('open'); closeMenus(); if (!open) return;
+  holoMenu.innerHTML = ''; const p = holo.p, B = BOARDS[p.ref], c = holo.list[holo.idx];
+  mh(holoMenu, 'This node · ' + title(c));
+  mi(holoMenu, 'New node, linked to this one', () => {
+    const id = 'n' + Date.now().toString(36), nc = { id, kind: 'text', x: c.x + c.w + 60, y: c.y + 30, w: 250, h: 140, groupId: c.groupId, text: 'NEW NODE\n' };
+    B.cards.push(nc); B.links.push([c.id, id]); buildNode(p, nc); B.cards.forEach(k => fill(p, k)); const keep = id; closeHolo(); setTimeout(() => openHolo(p, keep), 500);
+  });
+  mh(holoMenu, 'Link an existing node in the stack');
+  const s1 = sub(holoMenu); holo.list.filter(k => k.id !== c.id && !B.links.some(l => (l[0] === c.id && l[1] === k.id) || (l[1] === c.id && l[0] === k.id))).forEach(k => mi(holoMenu, title(k), () => { B.links.push([c.id, k.id]); B.cards.forEach(x => fill(p, x)); renderHcard(holo.els[holo.idx], c); placeHolo(); toast('LINK ESTABLISHED · ' + title(c) + ' → ' + title(k)); }, { into: s1, s: typeLabel(k).split(' ')[0] }));
+  const linked = B.links.filter(l => l[0] === c.id || l[1] === c.id);
+  mh(holoMenu, 'Unlink'); const s2 = sub(holoMenu);
+  if (!linked.length) mi(holoMenu, 'No links', () => {}, { into: s2, disabled: true });
+  linked.forEach(l => { const other = l[0] === c.id ? l[1] : l[0]; mi(holoMenu, title(card(p.ref, other)), () => { B.links.splice(B.links.indexOf(l), 1); B.cards.forEach(x => fill(p, x)); renderHcard(holo.els[holo.idx], c); placeHolo(); toast('UNLINKED · NOTHING DELETED'); }, { into: s2 }); });
+  holoMenu.classList.add('open'); holoPlus.setAttribute('aria-expanded', 'true');
 };
 
-// ---- dial, notes, keys ----
-const dialr = document.getElementById('dialr');
-dialr.oninput = () => { glitch = +dialr.value; document.getElementById('dialv').textContent = glitch; };
+// ============================================================================
+// THE TWO HANDS
+// ============================================================================
+const HAND_TOOLS = `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="miter"><path d="M8 30 V17 L5 13 V10 L8 12 V5 H10 V14 M10 4 H12 V14 M12 3 H14 V14 M14 4 H16 V15 L19 12 H21 L16 22 V30"/><rect x="18" y="20" width="9" height="7"/><path d="M20 20 v-2 M25 20 v-2 M20 27 v2 M25 27 v2"/><rect x="9" y="2.5" width="2" height="2" fill="currentColor"/><rect x="13" y="1.5" width="2" height="2" fill="currentColor"/></svg>`;
+const HAND_OP = `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M24 30 V17 L27 13 V10 L24 12 V5 H22 V14 M22 4 H20 V14 M20 3 H18 V14 M18 4 H16 V15 L13 12 H11 L16 22 V30"/><circle cx="8" cy="9" r="4"/><circle cx="8" cy="9" r="1.2" fill="currentColor"/><path d="M8 13 V18 H14"/><rect x="21" y="2.5" width="2" height="2" fill="currentColor"/><rect x="17" y="1.5" width="2" height="2" fill="currentColor"/></svg>`;
+const tabL = document.getElementById('tabL'), tabR = document.getElementById('tabR'), handL = document.getElementById('handL'), handR = document.getElementById('handR');
+tabL.innerHTML = HAND_TOOLS + '<span>TOOLS</span>'; tabR.innerHTML = HAND_OP + '<span>OPERATOR</span>';
+tabL.onclick = () => { const o = !handL.classList.contains('open'); handL.classList.toggle('open', o); tabL.setAttribute('aria-expanded', String(o)); };
+tabR.onclick = () => { const o = !handR.classList.contains('open'); handR.classList.toggle('open', o); tabR.setAttribute('aria-expanded', String(o)); };
+function handsContext() {
+  const p = focused; const where = holo ? 'NODE · ' + title(holo.list[holo.idx]) : p ? (p.kind === 'board' ? 'CIRCUIT · ' + BOARDS[p.ref].name : 'DOC · ' + DOCS[p.ref].name.toUpperCase()) : '';
+  const it = (l, k) => `<button class="it"><span>${l}</span><span class="k">${k || ''}</span></button>`;
+  if (holo) handL.innerHTML = `<h3>TOOLS</h3><div class="ctx">${where}</div><div class="grp">THIS NODE</div>${it('Markup', 'B I U')}${it('Font', 'CHAKRA')}${it('Flags', '+')}${it('Clone', '⌘D')}${it('Port to doc', '▸')}<div class="grp">OPS</div>${it('Purge', 'ASKS FIRST')}`;
+  else if (p && p.kind === 'doc') handL.innerHTML = `<h3>TOOLS</h3><div class="ctx">${where}</div><div class="grp">TEXT | INK</div>${it('Text', 'ON')}${it('Ink', '')}<div class="grp">STYLING</div>${it('Markup', 'B I U')}${it('Font', 'CRIMSON')}${it('Doc type', 'PLAIN')}<div class="grp">PRESETS</div>${it('Spine (outline)', '')}${it('Cover (title doc)', '')}`;
+  else handL.innerHTML = `<h3>TOOLS</h3><div class="ctx">${where}</div><div class="grp">ADD</div>${it('Add node', 'N')}${it('Ink node', 'I')}${it('Import file', 'PDF · JPG')}<div class="grp">PRESETS</div>${it('Three-Act', '9 STEPS')}${it("Hero's Journey", '12 STEPS')}${it('Character', '6 STEPS')}<div class="grp">OPS</div>${it('Flags', '+')}${it('Clone', '⌘D')}${it('Purge', 'ASKS FIRST')}`;
+  const B = p && p.kind === 'board' ? BOARDS[p.ref] : holo ? BOARDS[holo.p.ref] : null;
+  const counts = B ? Object.entries(GROUPS).map(([g, n]) => `${n} ${B.cards.filter(c => c.groupId === g).length}`).join(' · ') : '';
+  const orphans = B ? B.cards.filter(c => !c.groupId).length : 0;
+  handR.innerHTML = `<h3>OPERATOR</h3><div class="ctx">${where} · NEVER WRITES FOR YOU</div>
+    <div class="lens"><b>Schema</b>${B ? counts + '. ' + orphans + ' orphan process' + (orphans === 1 ? '' : 'es') + ' not in any act.' : 'One doc, 3 paragraphs, no headings yet.'}</div>
+    <div class="lens"><b>Checksum</b>${B ? 'The lighthouse is “dark since 1987” in THE ISLAND and “the winter the light went out” in MIDPOINT. Same winter?' : '“Second logbook” — named twice, described once.'}</div>
+    <div class="lens"><b>Shards</b>${B ? '“salt in the hinges” has 1 link and no act. Where does it belong?' : 'Two loose sentences in the cache mention the ferryman.'}</div>
+    <div class="grp">ASK THE OPERATOR</div><input placeholder="A question about your work…" aria-label="Ask the operator">`;
+}
+
+// ============================================================================
+// TELEMETRY, MINIMAP, KEYS, DIAL, JACK
+// ============================================================================
+const tele = document.getElementById('tele'), crumb = document.getElementById('crumb');
+function drawTele() {
+  const p = focused; if (!p) return;
+  if (p.kind === 'doc') { const d = DOCS[p.ref]; tele.innerHTML = `SURFACE <span class="lvl">DOC</span><br>WORDS <b>${(d.text.match(/\S+/g) || []).length}</b> / ${d.goal}<br>PANES <b>${panes.length}</b> / 4<br>LAST <b style="color:var(--orange)">${title(card(last.board, last.id)).slice(0, 18)}</b>`; crumb.innerHTML = `NOVELS ▸ THE LATE FERRY ▸ <b>DOC // ${d.name.toUpperCase()}</b>`; return; }
+  const ex = Math.floor(Math.log10(p.cam.s)), m = p.cam.s / Math.pow(10, ex), B = BOARDS[p.ref];
+  tele.innerHTML = `LEVEL <span class="lvl">${p.view === 'stack' ? 'STACK' : lod(p.cam.s)}</span><br>ZOOM <b>${m.toFixed(2)}×10<sup>${ex}</sup></b><br>
+    NODES <b>${B.cards.length}</b> · LINKS <b>${B.links.length}</b> · PANES <b>${panes.length}</b>/4<br>LAST <b style="color:var(--orange)">${title(card(last.board, last.id)).slice(0, 18)} ${hex(last.id)}</b>`;
+  crumb.innerHTML = `NOVELS ▸ THE LATE FERRY ▸ <b>${B.name} // CIRCUIT</b>`;
+  panes.forEach(q => { const me = paneKey(q), n = [...connections].filter(k => k.split('|').includes(me)).length; q.el.querySelector('.pane-hd').innerHTML = q.kind === 'board' ? `CIRCUIT // <b>${BOARDS[q.ref].name}</b>${n ? ` · <span class="lnk">↔ ${n} LINKED</span>` : ''}` : `DOC // <b>${DOCS[q.ref].name.toUpperCase()}</b>${n ? ` · <span class="lnk">↔ ${n} LINKED</span>` : ''}`; });
+}
+function drawMini() {
+  mx.clearRect(0, 0, 260, 130); const p = focused && focused.kind === 'board' ? focused : panes.find(q => q.kind === 'board'); if (!p) return;
+  const b = bounds(p.ref), BW = b.x1 - b.x0, BH = b.y1 - b.y0, sc = Math.min(240 / BW, 110 / BH), ox = 10 - b.x0 * sc + (240 - BW * sc) / 2, oy = 10 - b.y0 * sc;
+  mx.strokeStyle = 'rgba(0,194,255,.35)';
+  for (const [a, z] of BOARDS[p.ref].links) { const A = card(p.ref, a), Z = card(p.ref, z); mx.beginPath(); mx.moveTo(ox + (A.x + A.w / 2) * sc, oy + (A.y + A.h / 2) * sc); mx.lineTo(ox + (Z.x + Z.w / 2) * sc, oy + (Z.y + Z.h / 2) * sc); mx.stroke(); }
+  for (const c of BOARDS[p.ref].cards) { mx.fillStyle = last.id === c.id && last.board === p.ref ? '#FF9800' : c.kind === 'preset' ? '#A6FF3D' : c.kind === 'page-pin' ? '#B86A00' : '#57D0F5'; mx.fillRect(ox + c.x * sc, oy + c.y * sc, c.w * sc, Math.max(2, c.h * sc)); }
+  const [x0, y0] = tw(p, 0, 0), [x1, y1] = tw(p, p.W, p.H); mx.strokeStyle = '#E8F6FA'; mx.strokeRect(ox + x0 * sc, oy + y0 * sc, (x1 - x0) * sc, (y1 - y0) * sc);
+}
+document.getElementById('locate').onclick = locate;
+document.getElementById('fit').onclick = () => focused && fit(focused);
+document.getElementById('jack').onclick = () => { const s = document.getElementById('swap'); s.classList.remove('go'); void s.offsetWidth; s.classList.add('go'); setTimeout(() => { document.body.classList.toggle('arbor'); document.getElementById('jack').firstChild.textContent = document.body.classList.contains('arbor') ? 'Jack in → back to Flux ' : 'Jack out → see it in Arbor '; }, 320); };
+const dialr = document.getElementById('dialr'); dialr.oninput = () => { glitch = +dialr.value; document.getElementById('dialv').textContent = glitch; };
 document.getElementById('notesBtn').onclick = () => document.getElementById('notes').classList.toggle('open');
 document.getElementById('notesX').onclick = () => document.getElementById('notes').classList.remove('open');
 addEventListener('keydown', (e) => {
-  if (e.target.isContentEditable) return;
+  if (e.target.isContentEditable || e.target.tagName === 'INPUT') return;
+  if (holo) { if (e.key === 'Escape') closeHolo(); if (e.key === 'ArrowRight') holoGo(holo.idx + 1); if (e.key === 'ArrowLeft') holoGo(holo.idx - 1); return; }
+  const p = focused;
+  if (p && p.view === 'stack') { if (e.key === 'ArrowRight') p.stackIdx = Math.min(BOARDS[p.ref].cards.length - 1, p.stackIdx + 1); if (e.key === 'ArrowLeft') p.stackIdx = Math.max(0, p.stackIdx - 1); if (e.key === 'Enter') openHolo(p, stackOrder(p.ref)[p.stackIdx].id); }
   if (e.key === 'l' || e.key === 'L') locate();
-  if (e.key === '0') fit();
+  if (e.key === '0') p && fit(p);
   if (e.key === 'j' || e.key === 'J') document.getElementById('jack').click();
-  if (e.key === '+' || e.key === '=') zoomAt(W / 2, H / 2, 1.4);
-  if (e.key === '-') zoomAt(W / 2, H / 2, 1 / 1.4);
+  if (e.key === 's' || e.key === 'S') setView(p, p && p.view === 'stack' ? 'live' : 'stack');
 });
-
-// ---- telemetry + minimap ----
-const tele = document.getElementById('tele');
-function drawTele() {
-  const e = Math.floor(Math.log10(cam.s)), m = cam.s / Math.pow(10, e);
-  const c = byId[lastTouched];
-  tele.innerHTML = `LEVEL <span class="lvl">${lod(cam.s)}</span><br>ZOOM <b>${m.toFixed(2)}×10<sup>${e}</sup></b><br>
-    COORD <b>X ${Math.round(cam.x).toString(16).toUpperCase()}</b> · <b>Y ${Math.round(cam.y).toString(16).toUpperCase()}</b><br>
-    NODES <b>${CARDS.length}</b> · LINKS <b>${LINKS.length}</b> · LIT <b style="color:var(--lime)">${CARDS.filter(c => c.lit).length}</b><br>
-    LAST <b style="color:var(--orange)">${title(c).slice(0, 18)} ${hex(c.id)}</b>`;
-}
-function drawMini() {
-  mx.clearRect(0, 0, 260, 150);
-  const sc = Math.min(240 / BW, 130 / BH), ox = 10 - BOUNDS.x0 * sc + (240 - BW * sc) / 2, oy = 10 - BOUNDS.y0 * sc;
-  mx.strokeStyle = 'rgba(0,194,255,.35)'; mx.lineWidth = 1;
-  for (const [a, b] of LINKS) { const A = byId[a], B = byId[b]; mx.beginPath(); mx.moveTo(ox + (A.x + A.w / 2) * sc, oy + (A.y + A.h / 2) * sc); mx.lineTo(ox + (B.x + B.w / 2) * sc, oy + (B.y + B.h / 2) * sc); mx.stroke(); }
-  for (const c of CARDS) { mx.fillStyle = c.id === lastTouched ? '#FF9800' : c.lit ? '#A6FF3D' : '#57D0F5'; mx.fillRect(ox + c.x * sc, oy + c.y * sc, c.w * sc, Math.max(2, c.h * sc)); }
-  const [x0, y0] = toWorld(0, 0), [x1, y1] = toWorld(W, H);
-  mx.strokeStyle = '#E8F6FA'; mx.strokeRect(ox + x0 * sc, oy + y0 * sc, (x1 - x0) * sc, (y1 - y0) * sc);
-}
 
 // ============================================================================
 function frameLoop(t) {
-  stepFlight(t); stepMorph(t);
-  if (!document.body.classList.contains('arbor')) { drawGround(t); spawnTexture(t); drawTexture(t); } else { fxx.clearRect(0, 0, W, H); }
-  drawLinks(t); placeNodes(); drawTele(); drawMini();
+  const cam = (focused && focused.kind === 'board' ? focused : panes.find(q => q.kind === 'board') || { cam: { x: 0, y: 0, s: 1 } }).cam;
+  panes.forEach(p => { stepFlight(p, t); if (p.kind === 'board') stepMorph(p, t); });
+  if (!document.body.classList.contains('arbor')) { drawGround(t, cam); spawnTexture(t); drawTexture(t); } else { bgx.clearRect(0, 0, W, H); fxx.clearRect(0, 0, W, H); }
+  panes.forEach(p => { drawPane(p, t); if (p.kind === 'board') placeNodes(p); else stepDoc(p, t); });
+  drawTele(); drawMini();
   requestAnimationFrame(frameLoop);
 }
-// jack in: start from a point and zoom to the circuit (the arrival)
-cam.s = 0.004; flyTo(CX, CY, Math.min(W / (BW + 200), (H - 120) / (BH + 200)), 1800);
+addEventListener('resize', resize);
+resize();
+const first = makePane('board', 'plot');
+first.cam.s = .004; { const b = bounds('plot'); first.cam.x = (b.x0 + b.x1) / 2; first.cam.y = (b.y0 + b.y1) / 2; }
+setTimeout(() => fit(first), 50);
+handsContext();
 requestAnimationFrame(frameLoop);
 </script>
 </body>
