@@ -112,9 +112,19 @@ ok('ROSTER: Times New Roman and Arial are NAMED (source "named"), installed-firs
 ok('ROSTER: the stored form of a named face carries its fallback; a bundled one does not', JSON.stringify(M.storedFaceFor(TNR)) === JSON.stringify({ name: 'Times New Roman', generic: 'serif', source: 'named', fallback: 'Tinos' }) && !('fallback' in M.storedFaceFor(M.rosterFace('Lora'))), JSON.stringify(M.storedFaceFor(TNR)));
 ok('SIZE-ADJUST (Fable\'s ruling): every face carries sizeAdjust and every one is 1 — the number is literal printed points; the field is the seam', M.ROSTER.every((f) => f.sizeAdjust === 1), '');
 ok('RESOLVER: a known face resolves to its stack; an absent face resolves to nothing (the theme/voice face stands)', M.faceStack(M.storedFaceFor(M.rosterFace('Lora'))) === "'Lora Variable', Georgia, serif" && M.faceStack(undefined) === undefined, '');
-ok('FALLBACK IN KIND: a face this build does not know still renders — its own name, then its generic class (a serif falls back to a serif, a monospace to a monospace, never a sans)',
-  /'Some Device Font', Georgia, serif$/.test(M.faceStack({ name: 'Some Device Font', generic: 'serif', source: 'device' })) && /monospace$/.test(M.faceStack({ name: 'X', generic: 'monospace', source: 'device' })) && /sans-serif$/.test(M.faceStack({ name: 'Y', generic: 'sans-serif', source: 'file' })),
+// ---- PARKED - SUPERSEDED by TOOLS #10 item 11 (Fable: GO, Oct 27: the writer's own installed fonts - device-local list, StoredFace source 'device') ----
+// A face whose source is 'device' no longer falls back to a generic class of its own - it falls back to the THEME'S DEFAULT (--font-prose). The in-kind rule still holds for every other unknown face (source 'named' / 'file'). Kept VERBATIM below and no longer run; the successor follows, and the original is run as a PARKED RECORD (it must now fail, for exactly that reason).
+// ok('FALLBACK IN KIND: a face this build does not know still renders — its own name, then its generic class (a serif falls back to a serif, a monospace to a monospace, never a sans)',
+//   /'Some Device Font', Georgia, serif$/.test(M.faceStack({ name: 'Some Device Font', generic: 'serif', source: 'device' })) && /monospace$/.test(M.faceStack({ name: 'X', generic: 'monospace', source: 'device' })) && /sans-serif$/.test(M.faceStack({ name: 'Y', generic: 'sans-serif', source: 'file' })),
+//   M.faceStack({ name: 'Some Device Font', generic: 'serif', source: 'device' }));
+// ------------------------------------------------------------------
+ok('FALLBACK IN KIND [item-11 successor]: a face this build does not know (source named / file) still renders its own name, then its generic class (a serif to a serif, a monospace to a monospace, never a sans)',
+  /'Some Named Font', Georgia, serif$/.test(M.faceStack({ name: 'Some Named Font', generic: 'serif', source: 'named' })) && /monospace$/.test(M.faceStack({ name: 'X', generic: 'monospace', source: 'file' })) && /sans-serif$/.test(M.faceStack({ name: 'Y', generic: 'sans-serif', source: 'named' })),
+  M.faceStack({ name: 'Some Named Font', generic: 'serif', source: 'named' }));
+ok('FALLBACK [item-11]: a face from THIS device (source "device") falls back to the theme\'s default - its own name, then var(--font-prose) - never to a generic class, whatever generic it carries',
+  M.faceStack({ name: 'Some Device Font', generic: 'serif', source: 'device' }) === "'Some Device Font', var(--font-prose)" && M.faceStack({ name: 'X', generic: 'monospace', source: 'device' }) === "'X', var(--font-prose)" && M.faceStack({ name: 'Y', generic: 'sans-serif', source: 'device' }) === "'Y', var(--font-prose)",
   M.faceStack({ name: 'Some Device Font', generic: 'serif', source: 'device' }));
+ok('FALLBACK IN KIND [parked record]: the ORIGINAL (a device face falls to Georgia, serif) now fails ONLY because a device face falls to the theme default', !/'Some Device Font', Georgia, serif$/.test(M.faceStack({ name: 'Some Device Font', generic: 'serif', source: 'device' })), '');
 ok('RESOLVER: a hostile name cannot break out of the font-family value (quotes and backslashes are stripped)', !/[\\]/.test(M.faceStack({ name: "A'; } body { x:", generic: 'serif', source: 'device' })) && (M.faceStack({ name: "A'; } body { x:", generic: 'serif', source: 'device' }).match(/'/g) || []).length === 2, M.faceStack({ name: "A'; } body { x:", generic: 'serif', source: 'device' }));
 
 // ---------------------------------------------------------------------------
@@ -187,9 +197,9 @@ coreParks.minimal = { ...shape, scopeOnly };
 // ------------------------------------------------------------------
 const tcSrc = noComments(src('components/TypeControl.tsx'));
 const scopeFaceBtn = /\{scope && \(\s*<>\s*<div className="wz-type-scopes"[\s\S]*?<\/div>\s*<button\s+type="button"\s+className="wz-type-face"[\s\S]*?aria-expanded=\{listOpen\}[\s\S]*?onClick=\{\(\) => setListOpen\(\(o\) => !o\)\}[\s\S]*?<ul className="wz-type-list wz-type-list-inline"[^>]*hidden=\{!listOpen\}/.test(tcSrc);
-ok('MINIMAL [item-9 successor]: the control is a face button (unscoped hosts) OR the two scope buttons + a face button that opens the COLLAPSED list (scoped hosts), plus the `-` `+` pair - 6 buttons in source - and ONE number input, only in the full form',
-  shape.buttons === 6 && scopeFaceBtn && /\{!scope && <button/.test(tcSrc) && shape.inputs === 1 && shape.inputGuardedByFullForm, JSON.stringify({ ...coreParks.minimal, scopeFaceBtn }));
-ok('MINIMAL [parked record]: the ORIGINAL (5 buttons) now fails ONLY because the scoped form gained its face button (6)', !(shape.buttons === 5 && scopeOnly && shape.inputs === 1 && shape.inputGuardedByFullForm) && shape.buttons === 6, JSON.stringify({ buttons: shape.buttons }));
+ok('MINIMAL [item-9 successor]: the control is a face button (unscoped hosts) OR the two scope buttons + a face button that opens the COLLAPSED list (scoped hosts), plus the `-` `+` pair and the add-font form (its Add / Find buttons and name input) - 8 buttons and 2 inputs in source, the NUMBER input only in the full form',
+  shape.buttons === 8 && scopeFaceBtn && /\{!scope && <button/.test(tcSrc) && shape.inputs === 2 && shape.inputGuardedByFullForm, JSON.stringify({ ...coreParks.minimal, scopeFaceBtn }));
+ok('MINIMAL [parked record]: the ORIGINAL (5 buttons) now fails ONLY because the scoped form gained its face button and the add-font form (8)', !(shape.buttons === 5 && scopeOnly && shape.inputs === 1 && shape.inputGuardedByFullForm) && shape.buttons === 8, JSON.stringify({ buttons: shape.buttons }));
 ok('COLLAPSED (item 9): the scoped list is HIDDEN until the face button is pressed - hidden={!listOpen}, listOpen starts false, and Esc / an outside press close it', /const \[listOpen, setListOpen\] = useState\(false\)/.test(tcSrc) && /hidden=\{!listOpen\}/.test(tcSrc) && /if \(!open && !listOpen\) return undefined;/.test(tcSrc) && /if \(e\.key === 'Escape'\) close\(\)/.test(tcSrc), '');
 {
   const sut = tcSrc.replace('hidden={!listOpen}', '');
@@ -198,7 +208,14 @@ ok('COLLAPSED (item 9): the scoped list is HIDDEN until the face button is press
   ok('MUTANT: the scoped list starts OPEN - COLLAPSED must go RED (the mutation LANDED)', sut2 !== tcSrc && !/const \[listOpen, setListOpen\] = useState\(false\)/.test(sut2), '');
 }
 ok('MINIMAL: no caption or heading of any kind in the control (no label, legend or heading element, no eyebrow class) — a control\'s name lives in its aria-label', !shape.caption, JSON.stringify(shape));
-ok('NO ADD DOOR (207a): the control carries no "Add a font…" row — it arrives with Route A (207b), and Free Write never gets it (his Q2)', !shape.addDoor, '');
+// ---- PARKED - SUPERSEDED by TOOLS #10 item 11 (Fable: GO, Oct 27: the writer's own installed fonts - device-local list, StoredFace source 'device') ----
+// The control now carries an "Add a font..." row - in the SCOPED form only (Draft's drawer, a card's dock). Free Write and Revise still never get it (Nick's Q2). Kept VERBATIM below and no longer run; the successor follows, and the original is run as a PARKED RECORD (it must now fail, for exactly that reason).
+// ok('NO ADD DOOR (207a): the control carries no "Add a font…" row — it arrives with Route A (207b), and Free Write never gets it (his Q2)', !shape.addDoor, '');
+// ------------------------------------------------------------------
+const tcAdd = noComments(src('components/TypeControl.tsx'));
+const addRowScoped = /\{addRow\(\)\}\s*<\/ul>\s*<\/>/.test(tcAdd) && (tcAdd.match(/\{addRow\(\)\}/g) || []).length === 1;   // the one call sits inside the scoped list, never the unscoped popup
+ok('ADD DOOR [item-11 successor]: the control carries "Add a font..." in the SCOPED form only - one addRow() call, inside the scoped list, and none in the unscoped (Free Write / Revise) list (his Q2)', addRowScoped && /typeAddFont/.test(tcAdd), '');
+ok('NO ADD DOOR [parked record]: the ORIGINAL (no Add row anywhere in the control) now fails ONLY because the scoped form has one', shape.addDoor && addRowScoped, '');
 const LBL = M.faceNameFromStack;
 ok('LABEL: the unchosen face is named from what ACTUALLY renders — the first family of the resolved --font-prose, quotes and " Variable" removed (Crimson Pro, Figtree, and under the Flux voice Chakra Petch — never the voice dial\'s own word)',
   LBL("'Crimson Pro Variable', Georgia, serif") === 'Crimson Pro' && LBL("'Figtree Variable', system-ui, sans-serif") === 'Figtree' && LBL("'Chakra Petch', sans-serif") === 'Chakra Petch' && LBL('Georgia, serif') === 'Georgia' && LBL('') === null && LBL(null) === null && LBL('  ') === null,

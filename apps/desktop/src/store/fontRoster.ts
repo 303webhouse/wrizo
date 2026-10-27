@@ -112,6 +112,11 @@ export function faceForSlug(slug: string): StoredFace {
   return { name, generic: 'serif', source: 'named' };
 }
 
+/** The stored form of a face the writer added from this device's own fonts (TOOLS #10 item 11): the record that already existed, `source: 'device'`. */
+export function deviceFace(name: string): StoredFace {
+  return { name, generic: 'serif', source: 'device' };
+}
+
 /** The stored form of a roster face (what a page writes when the writer chooses it). */
 export function storedFaceFor(face: RosterFace): StoredFace {
   return face.fallback
@@ -128,6 +133,8 @@ export function faceStack(stored: StoredFace | undefined): string | undefined {
   if (!stored || typeof stored.name !== 'string' || !stored.name) return undefined;
   const known = rosterFace(stored.name);
   if (known) return known.stack;
+  // TOOLS #10 item 11: a face the writer added from THIS device (store/installedFonts.ts) falls back to the THEME'S DEFAULT when it is not installed (another device) - never to a generic class of its own.
+  if (stored.source === 'device') return `${quote(stored.name)}, var(--font-prose)`;
   const generic: FaceGeneric = stored.generic === 'sans-serif' || stored.generic === 'monospace' ? stored.generic : 'serif';
   return `${quote(stored.name)}, ${GENERIC_STACK[generic]}`;
 }
