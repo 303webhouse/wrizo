@@ -44,8 +44,8 @@ export const ROSTER: readonly RosterFace[] = [
   { name: 'Lora', generic: 'serif', source: 'bundled', group: 'serif', sizeAdjust: 1, eager: false,
     load: both(() => import('@fontsource-variable/lora/wght.css'), () => import('@fontsource-variable/lora/wght-italic.css')),
     stack: "'Lora Variable', Georgia, serif" },
-  // EB Garamond is ARBOR'S DEFAULT writing face (TOOLS #10 item 10): main.tsx imports it eagerly, so it is present at first paint - `load` is then a no-op.
-  { name: 'EB Garamond', generic: 'serif', source: 'bundled', group: 'serif', sizeAdjust: 1, eager: true,
+  // EB Garamond is ARBOR'S DEFAULT writing face (TOOLS #10 item 10): it loads WITH the theme (store/themeFontFaces.ts) or when chosen - never eagerly.
+  { name: 'EB Garamond', generic: 'serif', source: 'bundled', group: 'serif', sizeAdjust: 1, eager: false,
     load: both(() => import('@fontsource-variable/eb-garamond/wght.css'), () => import('@fontsource-variable/eb-garamond/wght-italic.css')),
     stack: "'EB Garamond Variable', Georgia, serif" },
   { name: 'Source Serif 4', generic: 'serif', source: 'bundled', group: 'serif', sizeAdjust: 1, eager: false,
@@ -74,6 +74,18 @@ export const ROSTER: readonly RosterFace[] = [
 ];
 
 export const DEFAULT_FACE_NAME = 'Crimson Pro';
+
+/** TOOLS #10 item 10 - the face each theme's DEFAULT writing face is, by voice (Nick, Oct 24): serif voice = the theme's default, sans voice = its sans. Kept in step with index.css's --font-proseSerif / --font-proseSans per theme
+ *  (theme-fonts-source.mjs reads both and fails on drift). It is what "Default (<face>)" names, so the row never depends on a DOM read to say a name. */
+export const THEME_DEFAULT_FACE: Readonly<Record<string, { serif: string; sans: string }>> = {
+  plateau: { serif: 'EB Garamond', sans: 'Figtree' },
+  flux: { serif: 'Titillium Web', sans: 'Chakra Petch' },
+  machina: { serif: 'Source Sans 3', sans: 'Atkinson Hyperlegible' },
+};
+export function themeDefaultFaceName(theme: string | null | undefined, voice: string | null | undefined): string | null {
+  const t = theme ? THEME_DEFAULT_FACE[theme] : undefined;
+  return t ? (voice === 'sans' ? t.sans : t.serif) : null;
+}
 
 const GENERIC_STACK: Record<FaceGeneric, string> = {
   serif: 'Georgia, serif',
