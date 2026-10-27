@@ -632,6 +632,8 @@ export type DeskTermId =
   // W1 (the Walk, board kinds and "Show as"): the three new views' words (a Board's Walk; a Book's Flip and Thumbnails), the Show-as label, the Walk's own chrome, and the Deck's progress fact.
   | 'boardModeWalk' | 'boardModeFlip' | 'boardModeThumbs' | 'showAsLabel'
   | 'walkNotes' | 'walkPrev' | 'walkNext' | 'walkRail' | 'walkResize' | 'walkOpen' | 'flipEmpty' | 'deckFact'
+  // W2 (Write this / Place a page... / Place this...): the Walk's two doors, the page's own door, and the two filtered pickers' search words.
+  | 'walkWrite' | 'walkPlace' | 'graftPlaceThis' | 'graftPlaceSearchPages' | 'graftPlaceSearchSteps'
   | 'boardPageDoor' | 'pagePlanDoor' | 'pageEscHint' | 'boardTelos'
   | 'boardLaneDefault' | 'boardStoryboardEmpty' | 'boardOutlineEmpty'
   | 'boardPairWithPage'
@@ -777,6 +779,11 @@ const CANONICAL: Record<DeskTermId, string> = {
   boardModeThumbs: 'Thumbnails',
   showAsLabel: 'Show as',
   walkNotes: 'Notes',
+  walkWrite: 'Write this',
+  walkPlace: 'Place a page…',
+  graftPlaceThis: 'Place this…',
+  graftPlaceSearchPages: 'Search pages…',
+  graftPlaceSearchSteps: 'Search decks and steps…',
   walkPrev: 'Previous card',
   walkNext: 'Next card',
   walkRail: 'Cards',
@@ -2134,6 +2141,11 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     boardModeThumbs: 'Index',
     showAsLabel: 'Render',
     walkNotes: '[NOTE]',
+    walkWrite: '[BOOT DOC]',
+    walkPlace: '[INPUT DOC]',
+    graftPlaceThis: 'PORT TO…',
+    graftPlaceSearchPages: 'Search docs…',
+    graftPlaceSearchSteps: 'Search decks and nodes…',
     walkPrev: 'Previous node',
     walkNext: 'Next node',
     walkRail: 'Nodes',
@@ -2338,6 +2350,11 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     splashLoading3: '',
     splashLoading4: '',
     zoneStage: 'Files',
+    walkWrite: 'Draft File',
+    walkPlace: 'Attach File…',
+    graftPlaceThis: 'Attach to…',
+    graftPlaceSearchPages: 'Search files…',
+    graftPlaceSearchSteps: 'Search decks and blocks…',
     graftSearch: 'Search blocks, files, plans…',
     graftGroupCards: 'Blocks',
     graftGroupBoards: 'Plans',

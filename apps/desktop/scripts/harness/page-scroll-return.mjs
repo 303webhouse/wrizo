@@ -32,7 +32,11 @@ const noCR = (t) => t.replace(/\r\n?/g, '\n');
 // ---- R1: the source pin (browserless half) ---------------------------------------------------------------------------------------------------------------------------
 {
   const be = noCR(fs.readFileSync(path.join(SRC, 'components/BoardEditor.tsx'), 'utf8'));
-  const pin = /const \[participatesInWayBack\] = useState\(\(\) => !isSystemBoard && !getPairedPageId\(id\)\);\n\s*useWayBack\(\{ entryId: id, participatesInWayBack \}\);/.test(be);
+  // PARKED VERBATIM (W2 "Write this", Oct 26 - the Walk's card editor is a writing surface, so BoardEditor's useWayBack call now also hands over the Walk's editor and a caret applier; the paired-board clause and the
+  // decided-once useState are UNTOUCHED, only the call's argument list grew). The original assertion, kept here and never run:
+  //   const pin = /const \[participatesInWayBack\] = useState\(\(\) => !isSystemBoard && !getPairedPageId\(id\)\);\n\s*useWayBack\(\{ entryId: id, participatesInWayBack \}\);/.test(be);
+  // SUCCESSOR: the same useState line, then a useWayBack call that still names participatesInWayBack and adds only the Walk's editor / caret options (scripts/harness/guided-w2.mjs checks the wiring).
+  const pin = /const \[participatesInWayBack\] = useState\(\(\) => !isSystemBoard && !getPairedPageId\(id\)\);\n(?:\s*\/\/[^\n]*\n)*\s*const walkEditor = [^\n]*\n\s*useWayBack\(\{ entryId: id, participatesInWayBack, editorEl: walkEditor, applyCaret: [^\n]*\}\);/.test(be);
   ok('R1: a board that is a page\'s paired Plan face takes no part in the way-back (and a system board still does not), decided ONCE per mount (useState initializer, so a later unpairing cannot fire a stray capture)', pin, pin ? '' : 'pin not found');
   const mutated = be.replace('!isSystemBoard && !getPairedPageId(id)', '!isSystemBoard');
   ok('R1 (mutant): without the paired-board clause the pin goes RED (the mutation landed and the pin noticed)', mutated !== be && !/useState\(\(\) => !isSystemBoard && !getPairedPageId\(id\)\)/.test(mutated), '');

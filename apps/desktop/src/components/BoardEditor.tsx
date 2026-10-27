@@ -53,6 +53,8 @@ import { DeckWizard } from './DeckWizard';
 import { DECKS } from '../decks/library';
 import { StepHelp } from './StepHelp';
 import { Walk } from './Walk';
+import { GraftPicker, type CameFrom } from './GraftPicker';
+import { planWriteThis } from '../store/writePlace';
 import { ShowAs } from './ShowAs';
 import { BookFlip, BookThumbs } from './BookViews';
 import { kindOf, homeViewOf, isDeck, withHomeView, doorHome, type BoardView } from '../store/boardKind';
@@ -964,7 +966,10 @@ export function BoardEditor({ id }: { id: string }) {
   // BOARD's own entry. The page then mounted, found a slot naming someone else, and restored nothing: the writer landed at the top. A board that is a page's paired
   // Plan face takes no part in the way-back at all (the slot keeps the PAGE's own departure), decided ONCE per mount so a later unpairing cannot fire a stray capture.
   const [participatesInWayBack] = useState(() => !isSystemBoard && !getPairedPageId(id));
-  useWayBack({ entryId: id, participatesInWayBack });
+  // W2 - THE WALK'S CARET: a card written in the Walk is a writing surface, so "Write this" (and any departure from the Walk) keeps the caret in the card for the way back. Only while the Walk's card editor is mounted; every other board
+  // view still hands this hook neither element nor offset, as before. The step itself and the view are the Deck's own device-local memory (setWalkPos, boardMode).
+  const walkEditor = () => document.querySelector<HTMLElement>('.walk-card .board-popup-editor');
+  useWayBack({ entryId: id, participatesInWayBack, editorEl: walkEditor, applyCaret: offset => { const el = walkEditor(); if (el) setCaretOffset(el, offset); } });
 
   // BM1 S3/S8 — the board's own mode, persisted per board (client-local, zero
   // schema, the FX9 family). A system Board is never a projection surface —
@@ -988,6 +993,8 @@ export function BoardEditor({ id }: { id: string }) {
   const boardMode: BoardView = offeredViews.includes(boardModeRaw) ? boardModeRaw : offeredViews.includes(homeView) ? homeView : offeredViews[0];
   const setBoardMode = (m: BoardView) => setBoardModeRaw(m, boardMode);
   // a card added in the Walk: the Walk lands on it
+  const [placeFor, setPlaceFor] = useState<{ box: Box; el: HTMLElement } | null>(null);   // W2 "Place a page...": the card and the door it was pressed on (the picker anchors under it)
+  const [, setPlacedTick] = useState(0);   // a page was placed: the rail's leaf for the card is read again
   const [walkJumpId, setWalkJumpId] = useState<string | null>(null);   // LIVE boxes only: a deleted card is a tombstone in storage, carried through every save by saveBoardBoxes
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // FX4 S5 — the card popup (inline contenteditable editing RETIRES whole):
@@ -3328,6 +3335,27 @@ export function BoardEditor({ id }: { id: string }) {
     const href = unbornHrefFromThisBoard();
     navigate(href ?? backTo);
   };
+  // W2 - THE WALK'S TWO DOORS (store/writePlace.ts; docs/guided-paths/w2-write-place-brief.md).
+  // WRITE THIS: a NEW page for this card, in the Deck's own set. The door writes NOTHING for the page - it saves the board (so the card is in the row the graft will hang from), remembers the step, and opens an UNBORN address that names
+  // the card; the page is born by the first keystroke, and in that act it is grafted to the card (unbornPage.ts birth). Leave without typing and no page exists. The page opens in Free Write with the return chip "‹ Back to <Deck>".
+  const writeThis = (box: Box) => {
+    if (unbornRef.current) unbornRef.current.birthWith({ boxes: boxesRef.current });
+    else saveBoardBoxes(id, boxesRef.current);
+    lastSavedRef.current = boxesRef.current;
+    flushNow();
+    setWalkPos(id, box.id);
+    const plan = planWriteThis({ boardId: id, boardTitle: title, setId: project?.id ?? null, origin: initialEntry?.origin === 'journal' ? 'journal' : 'loose' }, box);
+    navigate(plan.href, { state: plan.state });
+  };
+  // PLACE A PAGE: the graft picker, filtered to pages (a press grafts; nothing is placed without one), anchored under the door. An overlay: the Walk never moves.
+  const walkDoors = [
+    { key: 'write', label: t('walkWrite'), onOpen: (card: Box) => writeThis(card) },
+    { key: 'place', label: t('walkPlace'), onOpen: (card: Box, el: HTMLElement) => setPlaceFor((p) => (p && p.box.id === card.id ? null : { box: card, el })) },
+  ];
+  const fromSt = location.state as { fromBoardId?: string; fromBoardTitle?: string } | null;
+  const fromPage = fromSt?.fromBoardId && fromSt.fromBoardId !== id ? getJournalEntry(fromSt.fromBoardId) : null;
+  const placeCameFrom: CameFrom | null = fromPage && fromPage.pageType !== 'board' ? { entryId: fromPage.id, title: fromSt?.fromBoardTitle || boardName(fromPage.text, 'Untitled') } : null;
+
   // Board-side explicit pairing (S2 — "an existing board gains a Write face
   // only by explicit pairing from its side"): v1 uses the brief's create-new
   // branch (a fresh loose page becomes this board's page face). A full page
@@ -3375,9 +3403,11 @@ export function BoardEditor({ id }: { id: string }) {
   // W1 - THE WALK (components/Walk.tsx): one card at a time on the board's own order, writing in the card with the ordinary card engine (the card editor, mounted INLINE). Esc leaves for the board's last shown view.
   const walkKindled = new Set(boardMode === 'walk' ? walkOrder(boxes).filter(b => kindled(id, b, boxes)).map(b => b.id) : []);
   const walkContent = boardMode === 'walk' ? (
+    <>
     <Walk
       boardId={id}
       boxes={boxes}
+      extraDoors={walkDoors}
       kindledIds={walkKindled}
       startHereId={startHereCardId}
       jumpToId={walkJumpId}
@@ -3402,6 +3432,12 @@ export function BoardEditor({ id }: { id: string }) {
       )}
       empty={<BeginningsRow surface="projection" doors={beginningDoors} />}
     />
+    {placeFor && (
+      <GraftPicker mode="pages" title={t('walkPlace')} subject={{ entryId: id, boxId: placeFor.box.id }} boxes={boxes} anchor={placeFor.el} cameFrom={placeCameFrom}
+        onClose={() => setPlaceFor(null)} onPicked={() => setPlacedTick((n) => n + 1)}
+        beforePick={() => { if (unbornRef.current) unbornRef.current.birthWith({ boxes: boxesRef.current }); }} />
+    )}
+    </>
   ) : null;
   // W1 - THE JOURNAL AS A BOOK: Flip (one page at a time, the Walk's own chevrons and swipe) and Thumbnails (a grid of tall pages). The pages are the loose Journal in the writer's order (J1); nothing here writes a page or a pin.
   const bookPages = boardKind === 'book' ? getNotebookPages() : [];
