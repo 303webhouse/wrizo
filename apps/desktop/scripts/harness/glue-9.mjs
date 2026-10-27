@@ -3,6 +3,7 @@
 //   G2 celebrateReturnChip is wired into FIX's chip, on BOTH of its renderings, and only where data-return-chip is "step" (a page born from a step), through ONE stable ref callback
 //   G3 the glow is the W5 export: once per element, idempotent (the real module, a fake element)
 //   G4 nothing else calls it (W5 exports it; FIX's chip is the one caller)
+//   G5 Flux's walkReadoutPlan is "Circuit" (Fable's ruling Oct 26) - W1's L2 (no Arbor noun under Flux) goes green on train #9's tree
 // Every check has a mutant, its landing asserted.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -19,11 +20,12 @@ const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
 
 let nonce = 0;
-async function load() {
+async function load(over = {}) {
   nonce += 1;
   const res = await build({
-    stdin: { contents: `export const __n = ${nonce}; export { celebrateReturnChip } from './store/deckRewards';`, resolveDir: SRC, loader: 'ts' },
+    stdin: { contents: `export const __n = ${nonce}; export { celebrateReturnChip } from './store/deckRewards'; export { deskTerm } from './store/deskLexicon';`, resolveDir: SRC, loader: 'ts' },
     bundle: true, write: false, format: 'esm', platform: 'node', logLevel: 'silent', nodePaths: [path.join(DESKTOP, 'node_modules')], external: ['@fontsource/*', '@fontsource-variable/*'],
+    plugins: [{ name: 'ov', setup(b) { b.onLoad({ filter: /\.ts$/ }, (args) => { const rel = path.relative(SRC, args.path).split('\\').join('/'); const text = noCR(fs.readFileSync(args.path, 'utf8')); return { contents: over[rel] ? over[rel](text) : text, loader: 'ts' }; }); } }],
   });
   const map = new Map();
   globalThis.window = { addEventListener() {}, removeEventListener() {}, dispatchEvent() { return true; }, matchMedia: () => ({ matches: false }), innerWidth: 1400 };
@@ -40,12 +42,14 @@ function suite(M, rd) {
   chk('G2', () => { const refs = [...pe.matchAll(/<button[^>]*data-return-chip=[^>]*>/g)].map((m) => m[0]); const calls = (pe.match(/celebrateReturnChip\(/g) || []).length; return [refs.length === 2 && refs.every((r) => /ref=\{(fromStepLabel \? )?glowStepChip(\s*: undefined)?\}/.test(pe.slice(pe.indexOf(r) - 80, pe.indexOf(r) + r.length)) || /glowStepChip/.test(r)) && /const glowStepChip = \(el: HTMLElement \| null\): void => \{ if \(el\) celebrateReturnChip\(el\); \};/.test(pe) && calls === 1 && /import \{ celebrateReturnChip \} from '\.\.\/store\/deckRewards';/.test(pe), `${refs.length} chips, one stable callback, ${calls} call`]; });
   chk('G3', () => { const el = { attrs: {}, classList: { add() {}, remove() {} }, setAttribute(k, v) { this.attrs[k] = v; }, hasAttribute(k) { return k in this.attrs; } }; const a = M.celebrateReturnChip(el), b = M.celebrateReturnChip(el); return [a === true && b === false && M.celebrateReturnChip(null) === false, 'once per element, then nothing']; });
   chk('G4', () => { const hits = []; const walk = (d) => { for (const f of fs.readdirSync(path.join(SRC, d), { withFileTypes: true })) { const rel = path.posix.join(d, f.name); if (f.isDirectory()) walk(rel); else if (/\.(ts|tsx)$/.test(f.name) && /celebrateReturnChip\(/.test(rd(rel))) hits.push(rel); } }; walk('.'); return [hits.sort().join() === 'pages/PageEditor.tsx,store/deckRewards.ts', 'callers: ' + hits.join(', ')]; });
+  chk('G5', () => { const f = M.deskTerm('walkReadoutPlan', 'flux'), a = M.deskTerm('walkReadoutPlan', 'plateau'), m = M.deskTerm('walkReadoutPlan', 'machina'); return [f === 'Circuit' && a === 'Board' && m === 'Plan' && !/\b(boards?|pages?)\b/i.test(f), `Flux ${f} / Arbor ${a} / Machina ${m}: a Flux board is a Circuit, never an Arbor noun`]; });
   return R;
 }
 const MUT = [
   { name: 'Lit moves before W2\'s doors', file: 'components/Walk.tsx', find: /    \.\.\.\(p\.extraDoors \?\? \[\]\),\n/, to: '', red: ['G1'] },
   { name: 'the first chip is not wired', file: 'pages/PageEditor.tsx', find: /<button type="button" ref=\{fromStepLabel \? glowStepChip : undefined\} /, to: '<button type="button" ', red: ['G2'] },
   { name: 'the phone chip is not wired', file: 'pages/PageEditor.tsx', find: /ref=\{glowStepChip\} className="btn-quiet wz-back-to-board" data-return-chip="step"/, to: 'className="btn-quiet wz-back-to-board" data-return-chip="step"', red: ['G2'] },
+  { name: 'Flux says Board again', file: 'store/deskLexicon.ts', find: /walkReadoutPlan: 'Circuit',/, to: '', red: ['G5'] },
 ];
 const rdOver = (over) => (rel) => { const t = readRaw(rel); return over[rel] ? over[rel](t) : t; };
 const M0 = await load();
@@ -54,7 +58,7 @@ let killed = 0;
 for (const m of MUT) {
   let did = false;
   const over = { [m.file]: (t) => { const o = t.replace(m.find, () => m.to); if (o !== t) did = true; return o; } };
-  const res = suite(M0, rdOver(over));
+  const res = suite(await load(over), rdOver(over));
   const red = Object.entries(res).filter(([, v]) => !v.pass).map(([k]) => k);
   if (!did) { ok(`mutant "${m.name}" LANDED`, false, 'no match'); continue; }
   const hit = m.red.every((k) => red.includes(k));

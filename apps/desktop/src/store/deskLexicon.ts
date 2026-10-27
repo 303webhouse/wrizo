@@ -2178,6 +2178,7 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     walkOpen: '[OPEN]',
     flipEmpty: 'NO SIGNAL',
     deckFact: 'LOAD {n}/{m}',
+    walkReadoutPlan: 'Circuit',   // Fable's ruling Oct 26: Flux's boards are Circuits (the Arbor word is "Board"; Machina's is "Plan")
     gapsLead: 'NO SIGNAL:',
     deckStack: 'STACK',
     walkLit: '[LOCK]',
