@@ -14,9 +14,10 @@ import type { Box } from '../types';
 // WRITING IN THE CARD IS ORDINARY CARD WRITING: `renderEditor` (BoardEditor supplies its card editor mounted INLINE) is the same engine the card pop-up uses - the same decoration, undo, hidden marks, paste wall. The card is a
 // surface; the board stays a container. This file draws the Walk and decides nothing about the writing.
 // THE PAGE IS PRIMARY: the stage is laid out in the page's own box and nothing here moves it - the drawers overlay it.
-// DOORS: Notes (puts the caret in the card) is the only door W1 draws. "Write this" and "Place a page..." are W2's: ABSENT here (not greyed); FIX wires them through `extraDoors` after W1 merges.
+// DOORS: Notes (puts the caret in the card) is the only door this file draws. "Write this" and "Place a page..." (W2) come in through `extraDoors` - BoardEditor wires them, with the theme's words; each is handed the CARD
+// it was pressed on and its own element (the picker anchors under it). This file knows nothing about what they do.
 
-export interface WalkDoor { key: string; label: string; onOpen: () => void }
+export interface WalkDoor { key: string; label: string; onOpen: (card: Box, anchor: HTMLElement) => void }
 export interface WalkProps {
   boardId: string;
   boxes: Box[];
@@ -39,7 +40,7 @@ export interface WalkProps {
   narrow: boolean;
   /** Shown when the board has no card yet (the Beginnings row). */
   empty?: ReactNode;
-  /** W2's doors (Write this / Place a page...), wired by FIX after W1 merges. None in W1. */
+  /** W2's doors (Write this / Place a page...), wired by BoardEditor. */
   extraDoors?: WalkDoor[];
 }
 
@@ -213,7 +214,7 @@ export function Walk(p: WalkProps) {
           </div>
         </div>
         <div className="walk-doors" role="group">
-          {doors.map((d) => <button key={d.key} type="button" className="walk-door" data-door={d.key} onClick={d.onOpen}>{d.label}</button>)}
+          {doors.map((d) => <button key={d.key} type="button" className="walk-door" data-door={d.key} onClick={(e) => d.onOpen(card, e.currentTarget)}>{d.label}</button>)}
         </div>
         <div className="walk-rail" role="list" aria-label={t('walkRail')}>
           {marks.map((m, i) => (

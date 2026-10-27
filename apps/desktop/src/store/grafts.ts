@@ -19,6 +19,7 @@ import {
 import { liveBoxes } from './boxTombstones';
 import { deskTerm } from './deskLexicon';
 import { UNSORTED, placeOfEntry } from './place';
+import { isDeck } from './boardKind';
 
 /** What Grafts is about: a page or a board (an entry), or a card on a board (the entry is the board, `boxId` the card). */
 export interface GraftSubject { entryId: string; boxId?: string }
@@ -49,6 +50,10 @@ export interface Grafts { Cards: GraftRow[]; Sources: GraftRow[]; Boards: GraftR
 export interface PlanGroup { boardId: string; cards: { boxId: string; title: string }[]; count: number }
 
 export type GraftMade = { made: 'link'; linkId: string } | { made: 'connection'; a: string; b: string } | null;
+
+/** W2: how a step of a Deck is named away from its own board: "Three-Act · Midpoint" (the Deck's name, then the step's). */
+export const STEP_SEP = ' · ';
+export function stepLabel(deck: string, card: string): string { return `${deck}${STEP_SEP}${card}`; }
 
 const CARD_KINDS = new Set<Box['kind']>(['text', 'ink']);
 const titleOf = (text: string | undefined): string => ((text ?? '').trim().split('\n')[0] ?? '').trim().slice(0, 60) || 'Untitled';
@@ -87,7 +92,7 @@ export function isGrafted(subject: GraftSubject, target: GraftTarget, boxes?: re
 
 /** The picker: Cards / Pages / Boards from EVERY place, each with its place label and whether it is already grafted. Never the subject
  *  itself, a built-in place, a trashed entry or a shell. Filters by title or place label, case-insensitively. */
-export function searchGraftables(query: string, subject: GraftSubject, boxes?: readonly Box[]): { Cards: GraftRow[]; Pages: GraftRow[]; Boards: GraftRow[] } {
+export function searchGraftables(query: string, subject: GraftSubject, boxes?: readonly Box[], only?: 'pages'): { Cards: GraftRow[]; Pages: GraftRow[]; Boards: GraftRow[] } {
   const q = query.trim().toLowerCase();
   const subjectPlace = placeLabelOf(subject.entryId);
   const out = { Cards: [] as GraftRow[], Pages: [] as GraftRow[], Boards: [] as GraftRow[] };
@@ -96,6 +101,7 @@ export function searchGraftables(query: string, subject: GraftSubject, boxes?: r
   for (const e of entries) {
     const place = placeLabelOf(e.id);
     if (e.pageType === 'board') {
+      if (only === 'pages') continue;   // W2 "Place a page...": the picker filtered to pages - no board, no card
       const title = titleOf(e.text);
       const isSubject = e.id === subject.entryId && !subject.boxId;
       if (!isSubject && match(title, place)) {
@@ -163,6 +169,8 @@ export function graftsOf(subject: GraftSubject, boxes?: readonly Box[]): Grafts 
       const b = liveBoxes(e.boxes ?? []).find(x => x.id === end.boxId);
       if (!b) return;
       title = cardTitle(b);
+      // W2: a step of a DECK reads "Deck · Step" on another surface's list ("Three-Act · Midpoint"); on its own board it is just the card
+      if (e.id !== subject.entryId && isDeck(e)) title = stepLabel(titleOf(e.text), title);
     }
     seen.add(key);
     const place = placeLabelOf(e.id);

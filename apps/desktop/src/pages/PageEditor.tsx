@@ -168,7 +168,8 @@ function PageEditorView({ id }: { id: string }) {
   const [mode, setMode] = useState<EditorMode>(() => {
     const saved = localStorage.getItem(modeKey);
     if (saved === 'journal' || saved === 'drafting' || saved === 'revise') return saved;
-    return entry?.pageType === 'manuscript' || entry?.origin === 'loose' ? 'journal' : 'drafting';
+    // W2: a page opened by "Write this" is written FOR a card, in Free Write (birth() leaves the device its own `journal` mark, so a reload agrees)
+    return entry?.pageType === 'manuscript' || entry?.origin === 'loose' || unborn?.descriptor.graft ? 'journal' : 'drafting';
   });
 
   // ITEM 84, TD4 — the selected stretch, read HERE (this surface's owner) and
@@ -711,6 +712,9 @@ function PageEditorView({ id }: { id: string }) {
   // the enemy (CA1). The title is a plain read; the fallback keeps every
   // pre-existing caller's wording byte-identical.
   const fromBoardTitle = (location.state as { fromBoardTitle?: string } | null)?.fromBoardTitle ?? null;
+  // W2 - a page born by "Write this" came from a STEP: the same chip, naming the Deck, with the step on its title ("Three-Act · Midpoint"); the way back is the Deck's own memory (its view and its place in the Walk - device-local) and the
+  // way-back slot (the caret in the card). `fromStepLabel` is also what marks the chip as the step's, for the W5 glow.
+  const fromStepLabel = (location.state as { fromStepLabel?: string } | null)?.fromStepLabel ?? null;
   // PAGE TEMPLATES - set by a template pick that opened THIS page (the words never moved): the chip then reads "Opened as a new page · Back".
   const openedByTemplate = (location.state as { openedByTemplate?: boolean } | null)?.openedByTemplate === true;
   const pageTitle = text.trim() ? firstLine(text).slice(0, 40) : 'Untitled';
@@ -1521,7 +1525,9 @@ function PageEditorView({ id }: { id: string }) {
                 </div>
               )}
               {fromBoard && (
-                <button type="button" className="btn-quiet wz-back-to-board" aria-label={openedByTemplate && fromBoardTitle ? `Back to ${fromBoardTitle}` : undefined} onClick={() => { flush(); flushNow(); navigate(`/page/${fromBoard}`); }}>
+                /* W5 HOOK (one line): when W5's export lands, a ref on this chip calls celebrateReturnChip(el) for a page born from a step (data-return-chip="step"). W5 has not landed. */
+                <button type="button" className="btn-quiet wz-back-to-board" data-return-chip={fromStepLabel ? 'step' : undefined} title={fromStepLabel ?? undefined}
+                  aria-label={openedByTemplate && fromBoardTitle ? `Back to ${fromBoardTitle}` : undefined} onClick={() => { flush(); flushNow(); navigate(`/page/${fromBoard}`); }}>
                   {openedByTemplate ? `‹ ${dt('templateOpenedNewBack')}` : fromBoardTitle ? `‹ Back to ${fromBoardTitle}` : '‹ Back to the board'}
                 </button>
               )}
@@ -1667,6 +1673,12 @@ function PageEditorView({ id }: { id: string }) {
         />
 
         <div className="sprint-actions">
+          {/* W2 - below the frame gate the chip exists ONLY for a page born from a step ("Write this" on a phone: the Walk is a Deck's only view there, so the way back must be one tap too); every other legacy route stays byte-identical. */}
+          {fromBoard && fromStepLabel && (
+            <button type="button" className="btn-quiet wz-back-to-board" data-return-chip="step" title={fromStepLabel} onClick={() => { flush(); flushNow(); navigate(`/page/${fromBoard}`); }}>
+              {fromBoardTitle ? `‹ Back to ${fromBoardTitle}` : '‹ Back to the board'}
+            </button>
+          )}
           {project && (
             <div className="sprint-toggle" role="tablist" aria-label={`${lex('binder')} view`}>
               {/* CD4 S2 — elder "Plan" flight tab (→ legacy StructureBoard) retired; the
