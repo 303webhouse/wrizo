@@ -67,7 +67,7 @@ await withHarness(async (app) => {
         const d0 = await doors();
         const doorText = await q("document.querySelector('.walk-door[data-door=scenes]')?.textContent.trim() || ''");
         const rect0 = await rectOf('.walk-window');
-        ok(`[${T}] a top-level step of a Deck has the scenes door, LAST in its row, in the theme's word (${flux ? '[+ SCENES]' : 'Add scenes…'})`, onStep === 's2' && d0[d0.length - 1] === 'scenes' && (flux ? doorText === '[+ SCENES]' : doorText === 'Add scenes\u2026'), JSON.stringify({ d0, doorText }));
+        ok(`[${T}] a top-level step of a Deck has the scenes door, the last of its own doors (Mark lit stays last), in the theme's word (${flux ? '[+ SCENES]' : 'Add scenes…'})`, onStep === 's2' && d0.filter((k) => k !== 'lit').slice(-1)[0] === 'scenes' && d0[d0.length - 1] === 'lit' && (flux ? doorText === '[+ SCENES]' : doorText === 'Add scenes\u2026'), JSON.stringify({ d0, doorText }));
 
         // the popover: kicker, How many, chips 1-5 with 3 chosen, Add, the note - nothing created until Add
         await click('.walk-door[data-door="scenes"]'); await sleep(400);
@@ -109,8 +109,8 @@ await withHarness(async (app) => {
         const parentIdx = 1;
         ok(`[${T}] a parent counts as kindled when a child has words (the parent's own text is still empty)`, before.k === 'false' && afterM[parentIdx].k === 'true' && ((await boxes()).find((b) => b.id === 's2').text === 'Midpoint Reversal\n'), JSON.stringify({ before, afterM: afterM[parentIdx] }));
         if (full) {
-          // the arrows still step from the empty second scene (an empty child is empty), and the readout moves
-          await app.key('ArrowRight'); await sleep(500);
+          // the first scene has words now, so the arrows belong to its caret: the Next chevron steps on
+          await click('.walk-nav[data-dir="next"]'); await sleep(500);   // the Next chevron (always steps)
           const second = await curId();
           ok(`[${T}] stepping on: the next card is the second scene (the walk order is the parent, then its children)`, second === kids[1]?.id, String(second));
         }

@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { CHILD_DEFAULT, CHILD_MAX } from '../store/childSteps';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import type { ChildWord } from '../decks/types';
@@ -15,11 +15,26 @@ export interface ScenesPopoverProps {
   addLabel: string;
   onAdd: (n: number) => void;
   onClose: () => void;
+  /** The door it opens under. The popover is FIXED to the viewport beneath it (never in the flow, never part of a scroll container's overflow), so opening it cannot add a scrollbar or move the page: PAGE IS PRIMARY. */
+  anchor?: HTMLElement | null;
   style?: CSSProperties;
 }
 
 export function ScenesPopover(p: ScenesPopoverProps) {
   const [n, setN] = useState<number>(CHILD_DEFAULT);
+  const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+  const ref = useRef<HTMLDivElement | null>(null);
+  useLayoutEffect(() => {
+    const place = () => {
+      if (!p.anchor) return;
+      const r = p.anchor.getBoundingClientRect();
+      const w = ref.current?.offsetWidth ?? 272;
+      setPos({ left: Math.max(8, Math.min(window.innerWidth - w - 8, Math.round(r.left + r.width / 2 - w / 2))), top: Math.round(r.bottom + 6) });
+    };
+    place();
+    window.addEventListener('resize', place);
+    return () => window.removeEventListener('resize', place);
+  }, [p.anchor]);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
@@ -31,7 +46,7 @@ export function ScenesPopover(p: ScenesPopoverProps) {
     return () => document.removeEventListener('keydown', onKey, true);
   }, [p.onClose]);   // eslint-disable-line react-hooks/exhaustive-deps
   return (
-    <div className="scenes-pop" role="dialog" aria-label={p.kicker} style={p.style} data-scenes-pop="true">
+    <div className="scenes-pop" ref={ref} role="dialog" aria-label={p.kicker} style={{ ...p.style, ...(pos ? { left: pos.left, top: pos.top } : { visibility: 'hidden' as const }) }} data-scenes-pop="true">
       <div className="scenes-kicker">{p.kicker}</div>
       <div className="scenes-q">{p.question}</div>
       <div className="scenes-chips" role="group">
@@ -51,16 +66,18 @@ export function ScenesPopover(p: ScenesPopoverProps) {
 export function ScenesDoor({ box, word, onAdd }: { box: Box; word: ChildWord; onAdd: (box: Box, n: number) => void }) {
   const { t } = useDeskLexicon();
   const [open, setOpen] = useState(false);
+  const btn = useRef<HTMLButtonElement | null>(null);
   const plural = t(`kidPlural_${word}` as DeskTermId);
   return (
     <span className="scenes-door-wrap">
-      <button type="button" className="btn-quiet board-scenes-door" data-door="scenes" aria-expanded={open} onClick={() => setOpen((o) => !o)}>{t(`kidDoor_${word}` as DeskTermId)}</button>
+      <button type="button" ref={btn} className="btn-quiet board-scenes-door" data-door="scenes" aria-expanded={open} onClick={() => setOpen((o) => !o)}>{t(`kidDoor_${word}` as DeskTermId)}</button>
       {open && (
         <ScenesPopover
           kicker={t('kidKicker').replace('{plural}', plural)}
           question={t('kidHowMany').replace('{plural}', plural)}
           note={t('kidNote').replace('{step}', (box.text ?? '').split('\n')[0].trim())}
           addLabel={t('kidAdd')}
+          anchor={btn.current}
           onClose={() => setOpen(false)}
           onAdd={(n) => { setOpen(false); onAdd(box, n); }}
         />
