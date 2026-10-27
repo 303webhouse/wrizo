@@ -7274,7 +7274,7 @@ body[data-link-drag='true'], body[data-link-drag='true'] *{ cursor:grabbing !imp
 [data-theme='machina'] .walk-card{ padding:26px 30px; background:var(--chrome-surface); border:1px solid var(--ink-border-strong); }
 [data-theme='machina'] .walk-card .board-popup-editor, [data-theme='machina'] .walk-card .walk-static{ font-family:var(--font-contentLabel); font-size:16px; line-height:1.6; color:var(--text-hi); }
 [data-theme='machina'] .walk-card .board-popup-editor::first-line{ font-family:var(--font-chromeLabel); font-size:.875em; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--text-hi); }
-[data-theme='machina'] .walk-card .board-popup-editor[data-prompt][data-body-empty='true']::after{ margin-top:calc(2px - 1.6 * 16px * var(--card-type-k, 1)); font-family:var(--font-contentLabel); font-size:17px; color:var(--text-low); }
+[data-theme='machina'] .walk-card .board-popup-editor[data-prompt][data-body-empty='true']::after{ margin-top:calc(2px - 1.6 * 16px * var(--card-type-k, 1)); font-family:var(--font-contentLabel); font-size:17px; font-style:normal; color:var(--text-low); }
 [data-theme='machina'] .walk-fade{ transition:none; }
 [data-theme='machina'] .walk-readout{ display:flex; justify-content:space-between; align-items:center; box-sizing:border-box; height:22px; margin-bottom:6px; padding:0 32px; font-family:var(--font-chromeLabel); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-mid); }
 [data-theme='machina'] .walk-nav{ top:0; width:22px; height:22px; border:1px solid var(--ink-border-strong); color:var(--text-mid); opacity:1; transition:none; }

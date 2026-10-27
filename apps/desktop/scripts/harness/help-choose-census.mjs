@@ -250,7 +250,8 @@ ok('C1: Q3 is little / shape / everything', !!m && same(m.Q3, Q3), m ? JSON.stri
   const editorOk = (t) => /landingRef = useRef<HelpLanding \| null>\(unborn\?\.descriptor\.landing \?\? null\)/.test(t) && /if \(landing\.view === 'open'\) setBoardMode\('open'\)/.test(t) && /if \(landing\.helpOpen && .*&& result\.firstCardId\) setWalkHelpId\(result\.firstCardId\)/.test(t)
     && /onLanding=\{\(l\) => \{ landingRef\.current = l; \}\}/.test(t) && /helpCardId=\{walkHelpId\}/.test(t) && /onHelpShown=\{\(\) => setWalkHelpId\(null\)\}/.test(t) && /landingRef\.current = null;\s*\n\s*if \(landing\)/.test(t);
   const walkOk = (t) => /openOnce=\{p\.helpCardId === card\.id\} onOpened=\{p\.onHelpShown\}/.test(t);
-  const stepOk = (t) => /if \(!openOnce\) return;\s*\n\s*setOpen\(true\);\s*\n\s*onOpened\?\.\(\);/.test(t);
+  const stepOk = (t) => /if \(!openOnce\) \{ shown\.current = false; return; \}\s*\n\s*if \(at == null \|\| shown\.current\) return;[^\n]*\n\s*shown\.current = true;\s*\n\s*setOpen\(true\);\s*\n\s*onOpened\?\.\(\);/.test(t)
+    && /\}, \[open\]\);/.test(t) && !/\}, \[open, at\]\);/.test(t);   // the popover's position effect sets state: keyed on `at` (every keystroke in a growing card) it was a render loop (React #185)
   ok('C11: the address carries the landing - readDescriptor reads `land` (only beside a deck) and unbornHref writes it (only beside a deck)', unbornOk(unborn), '');
   ok('C11: the Boards pop-out\'s Begin hands the pick\'s landing to the address (helpBegin takes it and puts it in unbornHref)', popoutOk(popout), '');
   ok('C11: the wizard\'s own Begin tells its host the landing BEFORE the deal (beginChoice -> onLanding)', wizardOk(wizard), '');
@@ -264,6 +265,7 @@ ok('C1: Q3 is little / shape / everything', !!m && same(m.Q3, Q3), m ? JSON.stri
     ['readDescriptor ignores `land`', unborn, (t) => t.replace("landingFromToken(q.get('land'))", 'null'), unbornOk],
     ['the Walk never asks the "?" to open', walk, (t) => t.replace('openOnce={p.helpCardId === card.id}', 'openOnce={false}'), walkOk],
     ['StepHelp never opens on openOnce', stepHelp, (t) => t.replace('setOpen(true);\n    onOpened?.();', 'onOpened?.();'), stepOk],
+    ['the popover position effect is keyed on the "?" position again (the render loop on long typing)', stepHelp, (t) => t.replace('}, [open]);', '}, [open, at]);'), stepOk],
   ];
   for (const [name, text, mutate, pred] of muts) {
     const next = mutate(text);

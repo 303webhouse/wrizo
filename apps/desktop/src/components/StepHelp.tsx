@@ -78,12 +78,15 @@ export function StepHelp({ box, faceSelector = '.board-text', openOnce = false, 
     return () => ro?.disconnect();
   }, [box.text, box.w, box.h, box.x, box.y, faceSelector]);
 
+  const shown = useRef(false);
   useEffect(() => {
-    if (!openOnce) return;
+    if (!openOnce) { shown.current = false; return; }
+    if (at == null || shown.current) return;   // wait until the "?" has been placed at the end of its title, so the popover anchors where the glyph really is
+    shown.current = true;
     setOpen(true);
     onOpened?.();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [openOnce]);
+  }, [openOnce, at]);
 
   const close = useCallback((returnFocus: boolean) => {
     setOpen(false);
@@ -106,7 +109,7 @@ export function StepHelp({ box, faceSelector = '.board-text', openOnce = false, 
     window.addEventListener('resize', place);
     window.addEventListener('scroll', place, true);
     return () => { window.removeEventListener('resize', place); window.removeEventListener('scroll', place, true); };
-  }, [open, at]);   // `at`: the "?" itself may still be moving to the end of the title when a one-shot opens it
+  }, [open]);   // NOT [open, at]: `at` changes on every keystroke in a growing card, and this effect sets state - that was a render loop (React #185) found by guided-w1-part2 on long typing
 
   useEffect(() => {
     if (!open) return;

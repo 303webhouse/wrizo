@@ -82,9 +82,9 @@ await withHarness(async (app) => {
       ok(`H1a [${label}]: the "?" is an 18px hairline box`, !!L && !!L.help && L.help.w === 18 && L.help.h === 18 && L.helpBorder === '1px', JSON.stringify(L && { help: L.help, border: L.helpBorder }));
       const sc = await app.evalJs(SCAN);
       const rl = await app.evalJs(RAIL);
-      if (page === 'dark') await frame(app, `step-${cast}-fresh`);
-      ok(`N1 [${label}]: one hairline, ${rl ? rl.n : '?'} notches numbered 01..05 in mono, the rail 520 wide; empty notches are 1px ticks, the current one a 3x19 bar in the carrier`,
-        !!rl && rl.n === 5 && rl.marks.map((m) => m.num).join() === '01,02,03,04,05' && rl.marks.every((m) => /IBM Plex Mono/.test(m.numFont)) && rl.railW === 520 && rl.lineH === '1px' && rl.marks[0].w === 3 && rl.marks[0].h === 19 && rl.marks[0].bg === rl.choice && rl.marks.slice(1).every((m) => m.w === 1 && m.h === 9), JSON.stringify(rl && rl.marks.map((m) => [m.state, m.w, m.h, m.bg])));
+      await frame(app, `step-${cast}-${page}-fresh`);
+      ok(`N1 [${label}]: one hairline, ${rl ? rl.n : '?'} notches numbered 01..05 in mono (a CSS counter, decimal-leading-zero - the computed content is the counter() itself; the digits are seen in the frames), the rail 520 wide; empty notches are 1px ticks, the current one a 3x19 bar in the carrier`,
+        !!rl && rl.n === 5 && rl.marks.every((m) => m.num === 'counter(notch, decimal-leading-zero)') && rl.marks.every((m) => /IBM Plex Mono/.test(m.numFont)) && rl.railW === 520 && rl.lineH === '1px' && rl.marks[0].w === 3 && rl.marks[0].h === 19 && rl.marks[0].bg === rl.choice && rl.marks.slice(1).every((m) => m.w === 1 && m.h === 9), JSON.stringify(rl && rl.marks.map((m) => [m.state, m.w, m.h, m.bg])));
       ok(`M1 [${label}]: nothing in the Step transitions or animates (computed 0s)`, !!sc && sc.maxMotion === 0, String(sc && sc.maxMotion));
       ok(`K1 [${label}]: no text at rest is in the carrier colour (${sc ? sc.rows.length : 0} texts, pseudo-elements included)`, !!sc && sc.carrier === 0 && sc.rows.length >= 10, JSON.stringify(sc && { carrier: sc.carrier, n: sc.rows.length }));
       ok(`C1 [${label}]: names >= 7:1 (min ${sc ? sc.minName : '?'}) and labels >= 4.5:1 (min ${sc ? sc.minLabel : '?'}) - ${sc ? sc.names.length : 0} names, ${sc ? sc.labels.length : 0} labels`, !!sc && sc.names.length >= 2 && sc.labels.length >= 8 && sc.minName >= 7 && sc.minLabel >= 4.5, JSON.stringify(sc && { worstName: sc.names.slice().sort((a, b) => a.ratio - b.ratio)[0], worstLabel: sc.labels.slice().sort((a, b) => a.ratio - b.ratio)[0] }));
@@ -93,7 +93,7 @@ await withHarness(async (app) => {
       await app.evalJs("document.querySelector('.walk-card .board-step-help').click()"); await sleep(400);
       const pop = await app.evalJs(`(() => { ${R} const p = document.querySelector('.board-step-pop'), h = document.querySelector('.walk-card .board-step-help'); if (!p) return null; const cs = getComputedStyle(p), hs = getComputedStyle(h), choice = probe('--choice'); const more = p.querySelector('.board-step-pop-more'), eg = p.querySelector('.board-step-pop-eg'); const fill = probe('--ink-800');
         const bg = rgb(cs.backgroundColor).c.join(); return { text: p.innerText.replace(/\\s+/g, ' ').trim(), bgOk: bg === fill.join(), radius: cs.borderRadius, shadow: cs.boxShadow, border: cs.borderTopWidth, helpBorderOk: rgb(hs.borderTopColor).c.join() === choice.join(), helpTextOk: rgb(hs.color).c.join() === choice.join(), moreOk: rgb(getComputedStyle(more).color).c.join() === choice.join(), egMono: /IBM Plex Mono/.test(getComputedStyle(eg).fontFamily), moreText: more.innerText.replace(/\\s+/g, ' ').trim() }; })()`);
-      if (page === 'dark') await frame(app, `step-${cast}-help`);
+      await frame(app, `step-${cast}-${page}-help`);
       ok(`H1 [${label}]: the "?" open - its border and glyph in the carrier; the box raised (--ink-800), square, a hairline, no shadow; the step's title as the kicker, the sentence, mono "E.G." + example, "MORE → CONSULTANT" in the carrier`,
         !!pop && pop.helpBorderOk && pop.helpTextOk && pop.bgOk && parseFloat(pop.radius) === 0 && pop.shadow === 'none' && pop.border === '1px' && /E\.G\./i.test(pop.text) && pop.egMono && pop.moreOk && /^MORE → CONSULTANT$/i.test(pop.moreText), JSON.stringify(pop));
       await key(app, 'Escape'); await sleep(250);
@@ -102,7 +102,7 @@ await withHarness(async (app) => {
       await app.evalJs("(() => { const e = document.querySelector('.walk-card .board-popup-editor'); e.focus(); })()"); await sleep(150);
       await app.cdp('Input.insertText', { text: ' We matched two classes for last term\'s reading scores.' }); await sleep(900);
       const rl2 = await app.evalJs(RAIL);
-      if (page === 'dark') await frame(app, `step-${cast}-writing`);
+      await frame(app, `step-${cast}-${page}-writing`);
       ok(`N1 [${label}]: while Block 01 is current its notch stays the carrier bar (current wins over kindled)`, !!rl2 && rl2.marks[0].w === 3 && rl2.marks[0].h === 19 && rl2.marks[0].bg === rl2.choice, JSON.stringify(rl2 && rl2.marks.slice(0, 2).map((m) => [m.state, m.kindled, m.w, m.h, m.bg])));
       // a card with words keeps the caret: step with the chevron (always steps), then check the cut
       await app.evalJs("document.querySelector('.walk-nav[data-dir=\"next\"]').click()");
@@ -111,7 +111,7 @@ await withHarness(async (app) => {
       const rl3 = await app.evalJs(RAIL);
       ok(`M1 [${label}]: stepping is a CUT - no leaving card, no slide attribute, no animation, no transform - and the readout moves to BLOCK 02 / 05`, !cut.leaving && !cut.inAttr && cut.anim === 'none' && (cut.transform === 'none' || cut.transform === 'matrix(1, 0, 0, 1, 0, 0)') && /BLOCK 02 \/ 05/i.test(cut.row), JSON.stringify(cut));
       ok(`N1 [${label}]: at Block 02 the carrier bar is on notch 02 and notch 01 stays a kindled square`, !!rl3 && rl3.marks[1].w === 3 && rl3.marks[1].bg === rl3.choice && rl3.marks[0].w === 9 && rl3.marks[0].bg === rl3.live, JSON.stringify(rl3 && rl3.marks.slice(0, 3).map((m) => [m.state, m.w, m.h, m.bg])));
-      if (page === 'dark') await frame(app, `step-${cast}-block2`);
+      await frame(app, `step-${cast}-${page}-block2`);
 
       if (page === 'dark') {
         // P1 - the Plans pop-out's Agenda row (the board is born by the first word)
