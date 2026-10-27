@@ -30,7 +30,7 @@ export function registerThemeFonts(theme: ThemeId, load: Loader): void {
 }
 
 export function ensureThemeFonts(theme: ThemeId): void {
-  if (theme !== 'machina') return;
+  // TOOLS #10 item 10: any theme that registered faces loads them with the theme (Flux's Titillium Web, Machina's set); a theme that registered none (Arbor's are eager in main.tsx) is a no-op.
   wanted.add(theme);
   run(theme);
 }

@@ -78,7 +78,12 @@ await withHarness(async (app) => {
   ok('check 1 [flux-v2]: the choice token (--choice) is the Flux cyan #00C2FF while --brass stays #FF9800', choiceToken.toLowerCase() === '#00c2ff' && tokenSpots.accent.toLowerCase() === '#ff9800', JSON.stringify({ choice: choiceToken, brass: tokenSpots.accent }));
   ok('check 1: chromeLabel font slot is Rajdhani', tokenSpots.chromeLabel.includes('Rajdhani'), tokenSpots.chromeLabel);
   ok('check 1: contentLabel font slot is Chakra Petch', tokenSpots.contentLabel.includes('Chakra Petch'), tokenSpots.contentLabel);
-  ok('check 1: proseSerif stays Crimson Pro (voice continuity, canon §4)', tokenSpots.proseSerif.includes('Crimson Pro'), tokenSpots.proseSerif);
+// ---- PARKED - SUPERSEDED by TOOLS #10 item 10 (Nick, Oct 24: theme default writing faces - Flux's default writing face is Titillium Web) ----
+  // The ORIGINAL pinned Flux's --font-proseSerif to Crimson Pro (voice continuity). Kept VERBATIM below, no longer run; the successor follows and the original is a PARKED RECORD.
+// ok('check 1: proseSerif stays Crimson Pro (voice continuity, canon §4)', tokenSpots.proseSerif.includes('Crimson Pro'), tokenSpots.proseSerif);
+// ------------------------------------------------------------------
+  ok('check 1 [item-10 successor]: proseSerif is Flux\'s default writing face, Titillium Web (Nick, Oct 24)', tokenSpots.proseSerif.includes('Titillium Web'), tokenSpots.proseSerif);
+  ok('check 1 [parked record]: the ORIGINAL (proseSerif stays Crimson Pro) now fails ONLY because Flux\'s default became Titillium Web', !tokenSpots.proseSerif.includes('Crimson Pro') && tokenSpots.proseSerif.includes('Titillium Web'), tokenSpots.proseSerif);
   ok('check 1: proseSans font slot is Chakra Petch', tokenSpots.proseSans.includes('Chakra Petch'), tokenSpots.proseSans);
 
   // Page dark/light pairs (canon §3 + §11).

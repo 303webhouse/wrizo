@@ -27,7 +27,8 @@ export interface TypeControlProps {
   face: StoredFace | undefined;
   /** The size in points in effect (11 when never chosen). */
   size: number;
-  onPickFace: (face: StoredFace) => void;
+  /** A roster face, or `undefined` for "Default" (TOOLS #10 item 10): the host CLEARS its stored face - no stored face = the theme's default, which is the rule that already existed. */
+  onPickFace: (face: StoredFace | undefined) => void;
   onSize: (points: number) => void;
   /** FONT-SPAN (Nick approved the font-choices mockup, cursor/font-choices @ 6cc5f529): where words can be highlighted and given their
    *  own face (Draft, a card), the Typeface section carries the two scopes - "Selection" and "Whole document" ("Whole card") - over the
@@ -45,6 +46,8 @@ export interface TypeScope {
   /** Give the highlighted words a face: a slug, or null for the surface's own face (their spans removed). One undo step. */
   onPickSelection: (slug: string | null) => void;
 }
+
+const DEFAULT_KEY = '\u0000default';   // the "Default (<face>)" row's key: not a face name
 
 /** The face that ACTUALLY renders when nothing is chosen: the first family of the resolved `--font-prose` (voice dial and
  *  theme already applied), never the dial's own label - under the Chakra Petch voice this says Chakra Petch. */
@@ -85,11 +88,21 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
   }, [scope?.has]);
   const whole = !scope || !scope.has || wholeByHand;
   // the face in brass: the surface's own face for a whole pick; the highlight's face for a selection (none when it is mixed)
-  const brassName = !scope ? currentName
-    : whole ? currentName
-      : scope.face === 'mixed' ? null
-        : scope.face === null ? currentName
-          : faceForSlug(scope.face).name;
+  // TOOLS #10 item 10: an UNCHOSEN surface marks the "Default (<face>)" row, never a roster row - the writer has not picked that face, the theme has. `brassKey` is the row in force: DEFAULT_KEY, a roster face's
+  // name, or null (a mixed highlight); `brassName` is only the face button's label (the default's real name when nothing is chosen).
+  const ownKey = face ? face.name : DEFAULT_KEY;
+  const brassKey: string | null = !scope || whole ? ownKey
+    : scope.face === 'mixed' ? null
+      : scope.face === null ? ownKey
+        : faceForSlug(scope.face).name;
+  const brassName = brassKey === DEFAULT_KEY ? currentName : brassKey;
+  // Default = clear. A whole pick clears the surface's stored face; a pick on a selection removes its span (the words fall back to the surface's own face).
+  const pickDefault = () => { if (!scope || whole) onPickFace(undefined); else scope.onPickSelection(null); };
+  const defaultRow = (current: boolean, onPick: () => void) => (
+    <li key="__default" role="option" aria-selected={current} data-current={current ? 'true' : 'false'} data-default="true" className="wz-type-row" style={{ fontFamily: 'var(--font-prose)' }} onClick={onPick}>
+      {t('typeFaceDefault').replace('{face}', everydayFaceName())}
+    </li>
+  );
   const pickRow = (name: string) => {
     const f = ROSTER.find((x) => x.name === name);
     if (!f) return;
@@ -126,12 +139,13 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
             onClick={() => setListOpen((o) => !o)}
           >{brassName ?? currentName}</button>
           <ul className="wz-type-list wz-type-list-inline" role="listbox" aria-label={t('typeFace')} hidden={!listOpen} onMouseDown={keepFocus}>
+            {defaultRow(brassKey === DEFAULT_KEY, pickDefault)}
             {ROSTER.map((f) => (
               <li
                 key={f.name}
                 role="option"
-                aria-selected={f.name === brassName}
-                data-current={f.name === brassName ? 'true' : 'false'}
+                aria-selected={f.name === brassKey}
+                data-current={f.name === brassKey ? 'true' : 'false'}
                 className="wz-type-row"
                 style={{ fontFamily: f.stack }}
                 onClick={() => pickRow(f.name)}
@@ -152,12 +166,13 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
       >{currentName}</button>}
       {!scope && open && (
         <ul className="wz-type-list" role="listbox" aria-label={t('typeFace')} onMouseDown={keepFocus}>
+          {defaultRow(!face, () => { onPickFace(undefined); setOpen(false); })}
           {ROSTER.map((f) => (
             <li
               key={f.name}
               role="option"
-              aria-selected={f.name === currentName}
-              data-current={f.name === currentName ? 'true' : 'false'}
+              aria-selected={f.name === face?.name}
+              data-current={f.name === face?.name ? 'true' : 'false'}
               className="wz-type-row"
               style={{ fontFamily: f.stack }}
               onClick={() => { void ensureFaceLoaded(f.name); onPickFace(storedFaceFor(f)); setOpen(false); }}

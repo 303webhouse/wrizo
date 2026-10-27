@@ -277,10 +277,12 @@
      provisional value (flagged debt, Slice 3). */
   --font-chromeLabel:  'Figtree Variable', system-ui, sans-serif;
   --font-contentLabel: 'Figtree Variable', system-ui, sans-serif;
-  --font-proseSerif:   'Crimson Pro Variable', Georgia, serif;
+  /* TOOLS #10 item 10 (Nick, Oct 24): each theme's DEFAULT writing face rides this token - Arbor EB Garamond (here, the root), Flux Titillium Web, Machina Source Sans 3 (their blocks below); Nomad Figtree and Volant
+     Crimson Pro when those themes exist. A page or card that never chose a face wears it ("Default (<face>)" in the list); the list's label is read from the resolved token, so it can never drift from what renders. */
+  --font-proseSerif:   'EB Garamond Variable', Georgia, serif;
   --font-proseSans:    'Figtree Variable', system-ui, sans-serif;
 
-  /* Type — Wrizo brand. Figtree for titles/UI/buttons/labels; Crimson Pro for
+  /* Type — Wrizo brand. Figtree for titles/UI/buttons/labels; the theme's default writing face (--font-proseSerif above) for
      body + the writing surface (inherited via --font-prose on .paper-page). */
   --font-display: var(--font-chromeLabel);
   --font-prose:   var(--font-proseSerif);
@@ -544,8 +546,9 @@
   --font-chromeLabel:  'Rajdhani', sans-serif;
   --font-contentLabel: 'Chakra Petch', sans-serif;
   --font-proseSans:    'Chakra Petch', sans-serif;
-  /* --font-proseSerif is NOT overridden — Crimson Pro rides unchanged
-     cross-theme, per canon §4's "voice continuity across themes". */
+  /* TOOLS #10 item 10 (Nick, Oct 24): Flux's default writing face is Titillium Web. This SUPERSEDES the original line here -
+     "--font-proseSerif is NOT overridden - Crimson Pro rides unchanged cross-theme, per canon §4's voice continuity across themes" - kept as the record. */
+  --font-proseSerif:   'Titillium Web', system-ui, sans-serif;
 }
 
 /* Page (dark|light), canon §3 + §11 — Flux is the first theme with BOTH
@@ -632,7 +635,7 @@
 
   --font-chromeLabel:  'IBM Plex Mono', monospace;
   --font-contentLabel: 'IBM Plex Sans', sans-serif;
-  --font-proseSerif:   'IBM Plex Serif', Georgia, serif;
+  --font-proseSerif:   'Source Sans 3 Variable', system-ui, sans-serif;   /* TOOLS #10 item 10 (Nick, Oct 24): Machina's default writing face. Was 'IBM Plex Serif', Georgia, serif. */
   --font-proseSans:    'Atkinson Hyperlegible', sans-serif;
 }
 :root[data-theme='machina'][data-cast='neutral'] {

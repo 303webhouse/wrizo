@@ -678,6 +678,8 @@ export type DeskTermId =
   | 'helpBack'
   | 'helpStepOf'
   // TOOLS #9 - MACHINA INTAKE (m5 / m6): one form, three fields at once.
+  // TOOLS #10 item 10 - the font list's first row; {face} is the face that really renders when nothing is chosen (read from --font-prose).
+  | 'typeFaceDefault'
   | 'helpFieldsNote' | 'helpFieldsCount' | 'helpFieldDocument' | 'helpFieldCarried' | 'helpFieldBriefing' | 'helpChoose' | 'helpNoCarried' | 'helpBlocksN'
   | 'helpANovel'
   | 'helpHNovel'
@@ -1843,6 +1845,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   helpBack: 'Back',
   helpStepOf: 'Step {n} of 3',
   // MACHINA INTAKE (m5 / m6): canonical English; only Machina's Intake draws these.
+  typeFaceDefault: 'Default ({face})',
   helpFieldsNote: '3 fields · nothing stored',
   helpFieldsCount: '{n} / 3',
   helpFieldDocument: 'Document',

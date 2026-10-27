@@ -96,9 +96,16 @@ await withHarness(async (app) => {
     await press(app, "document.querySelector('.wz-type-face')", 'the face button (Free Write roster)');
     await sleep(150);
     const open = await typeShape(app);
-    ok('FREE WRITE: the roster lists the nine faces, in order, and has NO "Add a font…" row (his Q2)', open && JSON.stringify(open.rows) === JSON.stringify(NINE) && !/add a font/i.test(open.text), JSON.stringify(open && open.rows));
+// ---- PARKED - SUPERSEDED by TOOLS #10 item 10 (Nick, Oct 24: the font list's first row is "Default (<face>)", and Source Sans 3 + Titillium Web join the roster). Kept VERBATIM below, no longer run; successor follows. ----
+    // ok('FREE WRITE: the roster lists the nine faces, in order, and has NO "Add a font…" row (his Q2)', open && JSON.stringify(open.rows) === JSON.stringify(NINE) && !/add a font/i.test(open.text), JSON.stringify(open && open.rows));
+    // ------------------------------------------------------------------
+    const ELEVEN = ['Crimson Pro', 'Lora', 'EB Garamond', 'Source Serif 4', 'Times New Roman', 'Figtree', 'Source Sans 3', 'Titillium Web', 'Atkinson Hyperlegible', 'Arial', 'Courier Prime'];
+    ok('FREE WRITE [item-10 successor]: the list opens on "Default (<face>)", then the eleven faces in order, and has NO "Add a font..." row (his Q2)', open && /^Default \(.+\)$/.test(open.rows[0] || '') && JSON.stringify(open.rows.slice(1)) === JSON.stringify(ELEVEN) && !/add a font/i.test(open.text), JSON.stringify(open && open.rows));
     const rowFonts = await app.evalJs(`[...document.querySelectorAll('.wz-type-row')].map(r => [r.textContent, getComputedStyle(r).fontFamily])`);
-    ok('FREE WRITE: each roster row is SET IN ITS OWN FACE', Array.isArray(rowFonts) && rowFonts.length === 9 && rowFonts.every(([n, f]) => f.replace(/["']/g, '').includes(n === 'Crimson Pro' ? 'Crimson Pro' : n === 'Lora' ? 'Lora' : n === 'EB Garamond' ? 'EB Garamond' : n === 'Source Serif 4' ? 'Source Serif 4' : n)), JSON.stringify(rowFonts));
+// ---- PARKED - SUPERSEDED by TOOLS #10 item 10 (Nick, Oct 24: the font list's first row is "Default (<face>)", and Source Sans 3 + Titillium Web join the roster). Kept VERBATIM below, no longer run; successor follows. ----
+    // ok('FREE WRITE: each roster row is SET IN ITS OWN FACE', Array.isArray(rowFonts) && rowFonts.length === 9 && rowFonts.every(([n, f]) => f.replace(/["']/g, '').includes(n === 'Crimson Pro' ? 'Crimson Pro' : n === 'Lora' ? 'Lora' : n === 'EB Garamond' ? 'EB Garamond' : n === 'Source Serif 4' ? 'Source Serif 4' : n)), JSON.stringify(rowFonts));
+    // ------------------------------------------------------------------
+    ok('FREE WRITE [item-10 successor]: each roster row is SET IN ITS OWN FACE (the Default row in the theme\'s own prose face)', Array.isArray(rowFonts) && rowFonts.length === 12 && rowFonts.slice(1).every(([n, f]) => f.replace(/["']/g, '').includes(n)) && /Garamond|Crimson|Titillium|Source Sans/.test(rowFonts[0][1].replace(/["']/g, '')), JSON.stringify(rowFonts));
     await app.key('Escape');
     await sleep(100);
   }
@@ -118,13 +125,13 @@ await withHarness(async (app) => {
   // ok('DRAFT [font-span successor]: the Typeface control is the scoped form - "Selection" / "Whole document" over the nine faces shown as a list, `-` `+` and ONE number field, no face button',
   //   !!drScoped && drScoped.buttons === 4 && drScoped.inputs === 1 && !drScoped.faceButton && JSON.stringify(drScoped.scopes) === JSON.stringify(['Selection', 'Whole document']) && drScoped.rows === 9, JSON.stringify(drScoped));
   // ------------------------------------------------------------------
-  ok('DRAFT [item-9 successor]: the Typeface control is the scoped form - "Selection" / "Whole document", a face button, the nine faces as a list COLLAPSED by default, `-` `+` and ONE number field',
-    !!drScoped && drScoped.buttons === 5 && drScoped.inputs === 1 && drScoped.faceButton && JSON.stringify(drScoped.scopes) === JSON.stringify(['Selection', 'Whole document']) && drScoped.rows === 9, JSON.stringify(drScoped));
+  ok('DRAFT [item-9 successor]: the Typeface control is the scoped form - "Selection" / "Whole document", a face button, Default + the eleven faces as a list COLLAPSED by default, `-` `+` and ONE number field',
+    !!drScoped && drScoped.buttons === 5 && drScoped.inputs === 1 && drScoped.faceButton && JSON.stringify(drScoped.scopes) === JSON.stringify(['Selection', 'Whole document']) && drScoped.rows === 12, JSON.stringify(drScoped));
   const collapsed = await app.evalJs(`(() => { const t = document.querySelector('.wz-sliver .wz-type'); const ul = t.querySelector('.wz-type-list-inline'); const b = t.querySelector('.wz-type-face'); return { shown: !!ul && ul.getBoundingClientRect().height > 0, hidden: ul && ul.hidden, expanded: b && b.getAttribute('aria-expanded') }; })()`);
   ok('DRAFT [item 9]: the face list is COLLAPSED by default - hidden, no height, the face button aria-expanded=false', !!collapsed && !collapsed.shown && collapsed.hidden === true && collapsed.expanded === 'false', JSON.stringify(collapsed));
   await app.evalJs("document.querySelector('.wz-sliver .wz-type-face').click()"); await sleep(250);
   const expanded = await app.evalJs(`(() => { const t = document.querySelector('.wz-sliver .wz-type'); const ul = t.querySelector('.wz-type-list-inline'); const rows = [...ul.querySelectorAll('.wz-type-row')]; return { shown: ul.getBoundingClientRect().height > 0, rows: rows.filter((r) => r.getBoundingClientRect().height > 0).length, expanded: t.querySelector('.wz-type-face').getAttribute('aria-expanded') }; })()`);
-  ok('DRAFT [item 9]: pressing the face button opens the list (the nine rows have height, aria-expanded=true)', !!expanded && expanded.shown && expanded.rows === 9 && expanded.expanded === 'true', JSON.stringify(expanded));
+  ok('DRAFT [item 9]: pressing the face button opens the list (the twelve rows - Default + eleven - have height, aria-expanded=true)', !!expanded && expanded.shown && expanded.rows === 12 && expanded.expanded === 'true', JSON.stringify(expanded));
   await app.key('Escape'); await sleep(250);
   const closedAgain = await app.evalJs("(() => { const ul = document.querySelector('.wz-sliver .wz-type .wz-type-list-inline'); return { hidden: ul.hidden, h: Math.round(ul.getBoundingClientRect().height) }; })()");
   ok('DRAFT [item 9]: Esc closes it again', !!closedAgain && closedAgain.hidden === true && closedAgain.h === 0, JSON.stringify(closedAgain));
@@ -306,8 +313,8 @@ await withHarness(async (app) => {
     // ok('CARD [font-span successor]: the dock carries the scoped small form - "Selection" / "Whole card" over the nine faces, `-` `+`, no number field, no face button',
     //   !!csScoped && csScoped.buttons === 4 && csScoped.inputs === 0 && !csScoped.faceButton && JSON.stringify(csScoped.scopes) === JSON.stringify(['Selection', 'Whole card']) && csScoped.rows === 9, JSON.stringify(csScoped));
     // ------------------------------------------------------------------
-    ok('CARD [item-9 successor]: the dock carries the scoped small form - "Selection" / "Whole card", a face button (the nine faces COLLAPSED behind it), `-` `+`, no number field',
-      !!csScoped && csScoped.buttons === 5 && csScoped.inputs === 0 && csScoped.faceButton && JSON.stringify(csScoped.scopes) === JSON.stringify(['Selection', 'Whole card']) && csScoped.rows === 9, JSON.stringify(csScoped));
+    ok('CARD [item-9 successor]: the dock carries the scoped small form - "Selection" / "Whole card", a face button (Default + the eleven faces COLLAPSED behind it), `-` `+`, no number field',
+      !!csScoped && csScoped.buttons === 5 && csScoped.inputs === 0 && csScoped.faceButton && JSON.stringify(csScoped.scopes) === JSON.stringify(['Selection', 'Whole card']) && csScoped.rows === 12, JSON.stringify(csScoped));
     await press(app, "document.querySelectorAll('.board-popup-dock .wz-type-step')[1]", "the card's `+`");
     await sleep(300);
     await pickFace(app, 'Atkinson Hyperlegible');
@@ -332,12 +339,13 @@ if (process.env.HARNESS_PARKED === '1') {
   // section's own observations (i207Parks). The line just below said this file parks nothing; it is kept as it was.
   const pk = (name, pass, detail) => parkedChecks.push({ name, pass, detail });
   const d = i207Parks.draftForm, l = i207Parks.label, c = i207Parks.cardForm;
+  // (the two records below follow the NEWEST truth - TOOLS #10 items 9 + 10: the scoped form has a face button over a COLLAPSED list of Default + eleven faces = 5 buttons, 12 rows)
   pk('PARKED (was "DRAFT: the Type control is mounted, full form — a face button, `-` `+` (3 buttons) and ONE number field") - font-span: the scoped form, no face button; live successor: DRAFT [font-span successor]',
-    !!d && d.buttons === 4 && d.inputs === 1 && !d.faceButton && d.rows === 9, JSON.stringify(d));
+    !!d && d.buttons === 5 && d.inputs === 1 && d.faceButton && d.rows === 12, JSON.stringify(d));
   pk('PARKED (was "LABEL: on a page that never chose, the face button names the face that ACTUALLY renders (the first family the editor computes) and is set in it") - font-span: the brass roster row does; live successor: LABEL [font-span successor]',
     !!l && l.label === l.rendered && l.rowFamily === l.rendered, JSON.stringify(l));
   pk('PARKED (was "CARD: the styling dock carries the smallest form — a face button and `-` `+` (3 buttons), no number field") - font-span: the scoped small form; live successor: CARD [font-span successor]',
-    !!c && c.buttons === 4 && c.inputs === 0 && !c.faceButton && c.rows === 9, JSON.stringify(c));
+    !!c && c.buttons === 5 && c.inputs === 0 && c.faceButton && c.rows === 12, JSON.stringify(c));
   // PAGE-SIZE (Oct 23, Fable's ruling a) - SIX more parks, each frozen with its original name, re-verifying the NEW truth from the default leg's
   // observations (i207Parks.untouched / .size / .modes).
   const u = i207Parks.untouched, s = i207Parks.size, m = i207Parks.modes;

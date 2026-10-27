@@ -1253,6 +1253,14 @@ function PageEditorView({ id }: { id: string }) {
     saveJournalEntry({ ...entry, pageSettings: { ...base, ...next }, updatedAt: new Date().toISOString() });
   };
 
+  // TOOLS #10 item 10 - "Default": drop the page's own face. A page that never chose one is left exactly as it is (no write).
+  const clearPageFace = () => {
+    const cur = entry.pageSettings;
+    if (!cur || cur.face === undefined) return;
+    const { face: _dropped, ...rest } = cur;
+    saveJournalEntry({ ...entry, pageSettings: rest, updatedAt: new Date().toISOString() });
+  };
+
   // ITEM 207 - the Type control's props, one funnel into the page's own page_settings (the same patch every page-level
   // choice uses). `size` reads through the default 11 and is written as the number of points; a face is written whole.
   // FONT-SPAN: `scoped` gives the section its two scopes and the roster as a list (Draft only: the mode with styling tools - Free Write
@@ -1261,7 +1269,8 @@ function PageEditorView({ id }: { id: string }) {
     form,
     face: pageFace,
     size: entry.pageSettings?.size ?? PAGE_SIZE_DEFAULT,   // PAGE-SIZE (ruling a): a page's default is 12 real points; cards keep 11
-    onPickFace: (face: StoredFace) => { clearFontSpansOnPage(); patchPageSettings({ face }); },
+    // TOOLS #10 item 10: `undefined` is "Default" - the stored face is CLEARED (no stored face = the theme's default; that rule already existed), after the same whole-page span clear a face pick does.
+    onPickFace: (face: StoredFace | undefined) => { clearFontSpansOnPage(); if (face) patchPageSettings({ face }); else clearPageFace(); },
     onSize: (size: number) => patchPageSettings({ size }),
     scope: scoped ? { has: fontSel.has, face: fontSel.face, wholeLabel: dt('typeScopeWholeDocument'), onPickSelection: applyFontAt } : undefined,
   });

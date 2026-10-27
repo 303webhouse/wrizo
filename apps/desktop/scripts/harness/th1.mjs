@@ -34,7 +34,11 @@ const PRE_TH1 = {
   '--ink-950': '#110600',
   '--paper': '#F3EDE1',
   '--font-display': '"Figtree Variable", system-ui, sans-serif',
-  '--font-prose': '"Crimson Pro Variable", Georgia, serif',
+// ---- PARKED - SUPERSEDED by TOOLS #10 item 10 (Nick, Oct 24: theme default writing faces - Arbor's default writing face is EB Garamond) ----
+  // The ORIGINAL expected Arbor's resolved --font-prose to equal its pre-TH1 value (Crimson Pro). The default face changed by ruling, so the expectation follows; the original is kept VERBATIM below, not run.
+// '--font-prose': '"Crimson Pro Variable", Georgia, serif',
+// ------------------------------------------------------------------
+  '--font-prose': '"EB Garamond Variable", Georgia, serif',   // successor: Arbor's default writing face (TOOLS #10 item 10)
   '--font-ui': '"Figtree Variable", system-ui, sans-serif',
 };
 

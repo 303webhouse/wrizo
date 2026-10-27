@@ -96,8 +96,15 @@ let pageSizePark = null;   // page-size: the default leg's observation, for the 
 // ---------------------------------------------------------------------------
 // THE ROSTER AND THE RESOLVER
 // ---------------------------------------------------------------------------
+// ---- PARKED - SUPERSEDED by TOOLS #10 item 10 (Nick, Oct 24: theme default writing faces; Titillium Web + Source Sans 3 join the roster; Arbor's default, EB Garamond, is present at first paint) ----
+// The roster was nine faces; it is eleven now (Source Sans 3, Titillium Web). Kept VERBATIM below and no longer run; the successor follows, and the original is run as a PARKED RECORD (it must now fail, for exactly that reason).
+// const NINE = ['Crimson Pro', 'Lora', 'EB Garamond', 'Source Serif 4', 'Times New Roman', 'Figtree', 'Atkinson Hyperlegible', 'Arial', 'Courier Prime'];
+// ok('ROSTER: exactly the nine approved faces, by name', JSON.stringify(M.ROSTER.map((f) => f.name)) === JSON.stringify(NINE), JSON.stringify(M.ROSTER.map((f) => f.name)));
+// ------------------------------------------------------------------
+const ELEVEN = ['Crimson Pro', 'Lora', 'EB Garamond', 'Source Serif 4', 'Times New Roman', 'Figtree', 'Source Sans 3', 'Titillium Web', 'Atkinson Hyperlegible', 'Arial', 'Courier Prime'];
 const NINE = ['Crimson Pro', 'Lora', 'EB Garamond', 'Source Serif 4', 'Times New Roman', 'Figtree', 'Atkinson Hyperlegible', 'Arial', 'Courier Prime'];
-ok('ROSTER: exactly the nine approved faces, by name', JSON.stringify(M.ROSTER.map((f) => f.name)) === JSON.stringify(NINE), JSON.stringify(M.ROSTER.map((f) => f.name)));
+ok('ROSTER [item-10 successor]: the nine approved faces plus the two theme defaults (Source Sans 3, Titillium Web), by name, in this order', JSON.stringify(M.ROSTER.map((f) => f.name)) === JSON.stringify(ELEVEN), JSON.stringify(M.ROSTER.map((f) => f.name)));
+ok('ROSTER [parked record]: the ORIGINAL (exactly nine) now fails ONLY because two faces joined (the nine are all still there, in order)', JSON.stringify(M.ROSTER.map((f) => f.name)) !== JSON.stringify(NINE) && JSON.stringify(M.ROSTER.map((f) => f.name).filter((n) => NINE.includes(n))) === JSON.stringify(NINE), '');
 const TNR = M.rosterFace('Times New Roman'); const ARIAL = M.rosterFace('Arial');
 ok('ROSTER: Times New Roman and Arial are NAMED (source "named"), installed-first, with Tinos / Arimo as the metric-compatible fallback in the stack',
   TNR.source === 'named' && TNR.fallback === 'Tinos' && /^'Times New Roman', 'Tinos'/.test(TNR.stack) && ARIAL.source === 'named' && ARIAL.fallback === 'Arimo' && /^'Arial', 'Arimo'/.test(ARIAL.stack),
@@ -115,12 +122,24 @@ ok('RESOLVER: a hostile name cannot break out of the font-family value (quotes a
 // ---------------------------------------------------------------------------
 const mainSrc = readFileSync(join(SRC, 'main.tsx'), 'utf8');
 const eagerImports = [...mainSrc.matchAll(/^import '(@fontsource[^']*)';/gm)].map((m) => m[1]);
-const NEW_SIX = ['lora', 'eb-garamond', 'source-serif-4', 'atkinson-hyperlegible', 'tinos', 'arimo'];
-ok('LOAD-ON-CHOOSE: main.tsx imports NONE of the six new families eagerly (the eager list did not grow)', NEW_SIX.every((n) => !eagerImports.some((i) => i.includes(`/${n}`))), JSON.stringify(eagerImports));
-ok('LOAD-ON-CHOOSE: the roster\'s eager faces are exactly the ones main.tsx imports (Crimson Pro, Figtree, Courier Prime), and every other face has a real loader',
-  JSON.stringify(M.ROSTER.filter((f) => f.eager).map((f) => f.name).sort()) === JSON.stringify(['Courier Prime', 'Crimson Pro', 'Figtree'])
-  && ['crimson-pro', 'figtree', 'courier-prime'].every((n) => eagerImports.some((i) => i.includes(`/${n}`)))
+// ---- PARKED - SUPERSEDED by TOOLS #10 item 10 (Nick, Oct 24: theme default writing faces; Titillium Web + Source Sans 3 join the roster; Arbor's default, EB Garamond, is present at first paint) ----
+// The eager list was Crimson Pro, Figtree, Courier Prime, and EB Garamond was load-on-choose; EB Garamond is Arbor's default now, so it is eager (the default face is present at first paint). Kept VERBATIM below and no longer run; the successor follows, and the original is run as a PARKED RECORD (it must now fail, for exactly that reason).
+// const NEW_SIX = ['lora', 'eb-garamond', 'source-serif-4', 'atkinson-hyperlegible', 'tinos', 'arimo'];
+// ok('LOAD-ON-CHOOSE: main.tsx imports NONE of the six new families eagerly (the eager list did not grow)', NEW_SIX.every((n) => !eagerImports.some((i) => i.includes(`/${n}`))), JSON.stringify(eagerImports));
+// ok('LOAD-ON-CHOOSE: the roster\'s eager faces are exactly the ones main.tsx imports (Crimson Pro, Figtree, Courier Prime), and every other face has a real loader',
+//   JSON.stringify(M.ROSTER.filter((f) => f.eager).map((f) => f.name).sort()) === JSON.stringify(['Courier Prime', 'Crimson Pro', 'Figtree'])
+//   && ['crimson-pro', 'figtree', 'courier-prime'].every((n) => eagerImports.some((i) => i.includes(`/${n}`)))
+//   && M.ROSTER.filter((f) => !f.eager).every((f) => f.load.toString() !== M.ROSTER[0].load.toString()), '');
+// ------------------------------------------------------------------
+const NEW_SIX = ['lora', 'eb-garamond', 'source-serif-4', 'atkinson-hyperlegible', 'tinos', 'arimo'];   // (the original constant, kept for the parked records)
+const LAZY_SEVEN = ['lora', 'source-serif-4', 'atkinson-hyperlegible', 'tinos', 'arimo', 'source-sans-3', 'titillium-web'];
+const eagerOk = !LAZY_SEVEN.some((n) => eagerImports.some((i) => i.includes(`/${n}`))) && eagerImports.some((i) => i.includes('/eb-garamond'));
+ok('LOAD-ON-CHOOSE [item-10 successor]: main.tsx imports NONE of the seven lazy families eagerly (Lora, Source Serif 4, Atkinson, Tinos, Arimo, and the two theme faces that load WITH their theme) - the eager list grew by exactly one, Arbor\'s default EB Garamond', eagerOk, JSON.stringify(eagerImports));
+ok('LOAD-ON-CHOOSE [item-10 successor]: the roster\'s eager faces are exactly the ones main.tsx imports (Crimson Pro, EB Garamond, Figtree, Courier Prime), and every other face has a real loader',
+  JSON.stringify(M.ROSTER.filter((f) => f.eager).map((f) => f.name).sort()) === JSON.stringify(['Courier Prime', 'Crimson Pro', 'EB Garamond', 'Figtree'])
+  && ['crimson-pro', 'eb-garamond', 'figtree', 'courier-prime'].every((n) => eagerImports.some((i) => i.includes(`/${n}`)))
   && M.ROSTER.filter((f) => !f.eager).every((f) => f.load.toString() !== M.ROSTER[0].load.toString()), '');
+ok('LOAD-ON-CHOOSE [parked record]: the ORIGINAL (main.tsx imports none of the six, EB Garamond among them) now fails ONLY because EB Garamond became the eager default', !NEW_SIX.every((n) => !eagerImports.some((i) => i.includes(`/${n}`))) && eagerImports.some((i) => i.includes('/eb-garamond')), '');
 
 // The BUILD: run it, then read what shipped.
 let buildNote = '';
@@ -134,10 +153,17 @@ ok('LICENCE GUARD: no Times New Roman or Arial font file ships in the build outp
 const html = existsSync(join(dist, 'index.html')) ? readFileSync(join(dist, 'index.html'), 'utf8') : '';
 const eagerCss = [...html.matchAll(/(?:href|src)="\.\/(assets\/[^"]+\.css)"/g)].map((m) => m[1]);
 const eagerCssText = eagerCss.map((f) => readFileSync(join(dist, f), 'utf8')).join('\n');
-ok('LOAD-ON-CHOOSE (the build): the eagerly-loaded CSS carries @font-face for the default faces and NONE of the six new families', eagerCss.length >= 1 && /Crimson Pro Variable/.test(eagerCssText) && NEW_SIX.every((n) => !new RegExp(`font-family:\\s*['"]?${n.replace(/-/g, '[ -]')}`, 'i').test(eagerCssText)), `${eagerCss.length} eager css file(s), ${Math.round(eagerCssText.length / 1024)} KB`);
-const cssFiles = files.filter((f) => f.rel.endsWith('.css'));
-const lazyFamilies = NEW_SIX.filter((n) => cssFiles.some((f) => !eagerCss.includes(f.rel) && new RegExp(`font-family:\\s*['"]?${n.replace(/-/g, '[ -]')}`, 'i').test(readFileSync(f.p, 'utf8'))));
-ok('LOAD-ON-CHOOSE (the build): each of the six new families is in a SEPARATE lazily-fetched CSS chunk, so choosing fetches it and opening the app does not', lazyFamilies.length === 6, JSON.stringify(lazyFamilies));
+// ---- PARKED - SUPERSEDED by TOOLS #10 item 10 (Nick, Oct 24: theme default writing faces; Titillium Web + Source Sans 3 join the roster; Arbor's default, EB Garamond, is present at first paint) ----
+// The build's eager CSS carried none of the six families (EB Garamond among them) and all six were lazy chunks; EB Garamond is eager now and the two theme faces are lazy chunks too. Kept VERBATIM below and no longer run; the successor follows, and the original is run as a PARKED RECORD (it must now fail, for exactly that reason).
+// ok('LOAD-ON-CHOOSE (the build): the eagerly-loaded CSS carries @font-face for the default faces and NONE of the six new families', eagerCss.length >= 1 && /Crimson Pro Variable/.test(eagerCssText) && NEW_SIX.every((n) => !new RegExp(`font-family:\\s*['"]?${n.replace(/-/g, '[ -]')}`, 'i').test(eagerCssText)), `${eagerCss.length} eager css file(s), ${Math.round(eagerCssText.length / 1024)} KB`);
+// const cssFiles = files.filter((f) => f.rel.endsWith('.css'));
+// const lazyFamilies = NEW_SIX.filter((n) => cssFiles.some((f) => !eagerCss.includes(f.rel) && new RegExp(`font-family:\\s*['"]?${n.replace(/-/g, '[ -]')}`, 'i').test(readFileSync(f.p, 'utf8'))));
+// ok('LOAD-ON-CHOOSE (the build): each of the six new families is in a SEPARATE lazily-fetched CSS chunk, so choosing fetches it and opening the app does not', lazyFamilies.length === 6, JSON.stringify(lazyFamilies));
+// ------------------------------------------------------------------
+ok('LOAD-ON-CHOOSE (the build) [item-10 successor]: the eagerly-loaded CSS carries @font-face for the default faces (Crimson Pro, EB Garamond) and NONE of the seven lazy families', eagerCss.length >= 1 && /Crimson Pro Variable/.test(eagerCssText) && /EB Garamond Variable/.test(eagerCssText) && LAZY_SEVEN.every((n) => !new RegExp(`font-family:\\s*['"]?${n.replace(/-/g, '[ -]')}`, 'i').test(eagerCssText)), `${eagerCss.length} eager css file(s), ${Math.round(eagerCssText.length / 1024)} KB`);
+const cssFiles = files.filter((f) => f.rel.endsWith('.css'));   // (unchanged: the parked block's own declaration, carried so the REPORT below still reads it)
+const lazyFamiliesNow = LAZY_SEVEN.filter((n) => files.filter((f) => f.rel.endsWith('.css')).some((f) => !eagerCss.includes(f.rel) && new RegExp(`font-family:\\s*['"]?${n.replace(/-/g, '[ -]')}`, 'i').test(readFileSync(f.p, 'utf8'))));
+ok('LOAD-ON-CHOOSE (the build) [item-10 successor]: each of the seven lazy families is in a SEPARATE lazily-fetched CSS chunk, so choosing it (or switching to its theme) fetches it and opening the app does not', lazyFamiliesNow.length === 7, JSON.stringify(lazyFamiliesNow));
 const eagerBytes = files.filter((f) => eagerCss.includes(f.rel) || /assets\/index-[^/]*\.js$/.test(f.rel)).reduce((n, f) => n + f.size, 0);
 ok('REPORT: eager entry bytes (the entry JS + eager CSS) — recorded so the next change can be compared, not judged', true, `${Math.round(eagerBytes / 1024)} KB across ${eagerCss.length + 1} files; lazy font CSS ${cssFiles.length - eagerCss.length} chunk(s)`);
 

@@ -783,7 +783,7 @@ export function BoardCardPopup({
     setFontSel({ has: true, face: fontFaceAt(result.text, result.start, result.end) });
   };
   // FONT-SPAN: the Whole card pick - every word takes the card's new face, so the card's spans go (one undo step), then the face.
-  const pickWholeCardFace = (face: StoredFace) => {
+  const pickWholeCardFace = (face: StoredFace | undefined) => {   // undefined = "Default" (TOOLS #10 item 10): the card's face is cleared (fontFace absent = the theme's default)
     const el = elRef.current;
     const cur = textRef.current;
     const next = clearFontSpans(cur);
@@ -1475,7 +1475,13 @@ export function BoardEditor({ id }: { id: string }) {
   // ITEM 207 - a card's own face and size: the same functional setBoxes every card edit uses, touching this Box only.
   const commitType = (boxId: string, patch: { fontFace?: StoredFace; fontSize?: number }) => {
     if (patch.fontFace) void ensureFaceLoaded(patch.fontFace.name);
-    setBoxes(prev => prev.map(b => (b.id === boxId ? { ...b, ...patch } : b)));
+    // TOOLS #10 item 10: a fontFace patch of `undefined` CLEARS the card's face (the key goes; absent = Default), it never stores an empty one
+    setBoxes(prev => prev.map(b => {
+      if (b.id !== boxId) return b;
+      const next = { ...b, ...patch };
+      if ('fontFace' in patch && !patch.fontFace) delete next.fontFace;
+      return next;
+    }));
   };
 
   // W5 - LIT: the writer marks a step finished, or takes the mark back (the same door both ways). It stamps the card's `updatedAt` so the newer mark or unmark wins a sync merge; it touches nothing else and

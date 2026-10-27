@@ -15,6 +15,7 @@
     "@fontsource-variable/eb-garamond": "^5.3.0",
     "@fontsource-variable/figtree": "^5.2.10",
     "@fontsource-variable/lora": "^5.3.0",
+    "@fontsource-variable/source-sans-3": "^5.3.1",
     "@fontsource-variable/source-serif-4": "^5.3.0",
     "@fontsource/arimo": "^5.3.0",
     "@fontsource/atkinson-hyperlegible": "^5.3.0",
@@ -26,6 +27,7 @@
     "@fontsource/rajdhani": "^5.2.7",
     "@fontsource/silkscreen": "^5.3.0",
     "@fontsource/tinos": "^5.3.0",
+    "@fontsource/titillium-web": "^5.3.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.13.0"
