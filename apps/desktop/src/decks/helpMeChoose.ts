@@ -90,13 +90,13 @@ export function pickFor(q1: string, q2: string | null): HelpResult {
   return { pick: clone(row[0]), alt: row[1] ? clone(row[1]) : null, browse: true };
 }
 
-/** THE ONE SWITCH: false until W1 (the Walk) has merged - until then every Q3 answer opens as Open (the table), because there is no Walk to open in. One line to flip, with a check. */
-export const WALK_SHIPPED = false;
+/** THE ONE SWITCH: true now that W1 (the Walk) is live (TOOLS #9). Were it false, every Q3 answer would open as Open (the table), because there would be no Walk to open in. One line, with a check. */
+export const WALK_SHIPPED = true;
 
 export interface HelpLanding { view: 'walk' | 'open'; helpOpen: boolean }
 
 /** Q3's landing (Fable's ruling, Oct 23). A little: the pick deals and opens in the Walk with the first step's "?" already open (the writer asked to be shown). The shape: the Walk, "?" closed. Everything:
- *  Open (the table), all cards at once, no Walk. With the Walk not shipped, all three open as Open. Nothing is stored. */
+ *  Open (the table), all cards at once, no Walk. With the Walk not shipped (the switch false), all three would open as Open. Nothing is stored. */
 export function q3Landing(q3: string, walkShipped: boolean = WALK_SHIPPED): HelpLanding {
   if (!walkShipped || q3 === 'everything') return { view: 'open', helpOpen: false };
   if (q3 === 'little') return { view: 'walk', helpOpen: true };

@@ -179,7 +179,13 @@ ok('C1: Q3 is little / shape / everything', !!m && same(m.Q3, Q3), m ? JSON.stri
   const text = existsSync(MODULE) ? readFileSync(MODULE, 'utf8').replace(/\r\n/g, '\n') : '';
   const flags = [...text.matchAll(/export const WALK_SHIPPED(?::\s*boolean)?\s*=\s*(true|false)\s*;/g)];
   ok('C6: the switch is ONE line - exactly one `export const WALK_SHIPPED = <boolean>;`, and q3Landing\'s default reads it (a one-line change when W1 lands)', flags.length === 1 && /q3Landing\([^)]*walkShipped(?::\s*boolean)?\s*=\s*WALK_SHIPPED/.test(text), `${flags.length} declaration(s)`);
-  ok('C6: until W1 merges the shipped value is false (the fallback is the default, not an opt-in)', flags.length === 1 && flags[0][1] === 'false' && !!m && m.WALK_SHIPPED === false, flags[0] ? flags[0][1] : '');
+  // ORIGINAL (this check's own live predicate, until W1 merged): ok('C6: until W1 merges the shipped value is false (the fallback is the default, not an opt-in)', flags.length === 1 && flags[0][1] === 'false' && !!m && m.WALK_SHIPPED === false, flags[0] ? flags[0][1] : '');
+  // SUPERSEDED (TOOLS #9, Oct 26 - W1 is live and in main): the ruling it pinned ("false until W1 merges") is falsified by W1 merging. The sense is unchanged and is what the successor pins: the switch is the ONE
+  // declaration, it now reads true, and with NO argument q3Landing gives the content doc's three landings. The original is run below as a PARKED RECORD (it must now fail, for exactly that reason).
+  const origShippedFalse = flags.length === 1 && flags[0][1] === 'false' && !!m && m.WALK_SHIPPED === false;
+  const DEFAULT = m ? await run(() => Object.fromEntries(Q3.map((q) => [q, m.q3Landing(q)]))) : null;
+  ok('C6 [W1-live successor]: the switch reads true (W1 is live) and the DEFAULT landing (no argument) is Q3\'s - "a little" the Walk with "?" open, "the shape" the Walk, "?" closed, "everything" Open', flags.length === 1 && flags[0][1] === 'true' && !!m && m.WALK_SHIPPED === true && !!DEFAULT && !DEFAULT.threw && same(DEFAULT.little, { view: 'walk', helpOpen: true }) && same(DEFAULT.shape, { view: 'walk', helpOpen: false }) && same(DEFAULT.everything, { view: 'open', helpOpen: false }), JSON.stringify({ flag: flags[0] ? flags[0][1] : null, DEFAULT }));
+  ok('C6 [parked record]: the ORIGINAL (WALK_SHIPPED is false) now fails ONLY because W1 merged and the switch was flipped to true', !origShippedFalse && flags.length === 1 && flags[0][1] === 'true', flags[0] ? flags[0][1] : '');
 }
 // C7 - the "why" lines: one per distinct pick, in the lexicon, one short sentence
 {
@@ -246,7 +252,9 @@ if (m) {
   await mutated('the Pilot answer is dropped to the plain Feature form (C3)', "'screenplay/pilot': [beats('pilot'), SCENE_SEQUEL]", "'screenplay/pilot': [beats('feature'), SCENE_SEQUEL]", rowsWrong);
   await mutated('Poems gains an alternative before the Verse Shape exists (C3)', "'poems/': [MY_PAGES, null]", "'poems/': [MY_PAGES, SCENE_SEQUEL]", rowsWrong);
   await mutated('Q2 collapses to ONE shared answer list (C2: Q2 no longer depends on Q1)', "return Q2_BY_Q1[q1] ?? [];", "return FICTION;", (mm) => !same(mm.q2Options('poems'), Q2.poems) || !same(mm.q2Options('essay'), Q2.essay));
-  await mutated('the Walk is declared shipped (C6: the W1-absent fallback)', 'export const WALK_SHIPPED = false;', 'export const WALK_SHIPPED = true;', (mm) => !same(mm.q3Landing('little'), { view: 'open', helpOpen: false }));
+  // ORIGINAL (parked, W1-absent era): await mutated('the Walk is declared shipped (C6: the W1-absent fallback)', 'export const WALK_SHIPPED = false;', 'export const WALK_SHIPPED = true;', (mm) => !same(mm.q3Landing('little'), { view: 'open', helpOpen: false }));
+  // SUCCESSOR (W1 live): the same switch the other way - declared NOT shipped, the default landing must go wrong (the Walk would silently disappear from Q3).
+  await mutated('the Walk is declared NOT shipped (C6: the W1-live default)', 'export const WALK_SHIPPED = true;', 'export const WALK_SHIPPED = false;', (mm) => !same(mm.q3Landing('little'), { view: 'walk', helpOpen: true }));
   await mutated('a Math.random tie-break is added to the pick (C5: nothing varying)', "const row = TABLE[`${q1}/${q2 ?? ''}`];", "const row = Math.random() < 2 ? TABLE[`${q1}/${q2 ?? ''}`] : undefined;", (mm) => { const rand = Math.random; let touched = false; Math.random = () => { touched = true; return 0; }; try { mm.pickFor('novel', 'person-change'); } finally { Math.random = rand; } return touched; });
   await mutated('a pick names a deck that does not exist (C9)', "const STORY_CIRCLE = C('story-circle');", "const STORY_CIRCLE = C('story-wheel');", (mm) => mm.pickFor('novel', 'person-change').pick.deck === 'story-wheel');
 }
