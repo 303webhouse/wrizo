@@ -70,7 +70,10 @@ await withHarness(async (app) => {
 
         // D - the doors, in this skin's words, after Notes
         const doors = await q("[...document.querySelectorAll('.walk-door')].map((b) => ({ key: b.dataset.door, text: b.textContent.trim() }))");
-        ok(`${T}: D1 the doors are Notes, Write this, Place a page, in that order`, doors && doors.map((d) => d.key).join() === 'notes,write,place', JSON.stringify(doors));
+        // PARKED VERBATIM (W5 landed Oct 26: Nick's Lit - "Mark lit" / [LOCK] - is the LAST door of a Deck's Walk). The original, kept here and never run:
+        //   ok(`${T}: D1 the doors are Notes, Write this, Place a page, in that order`, doors && doors.map((d) => d.key).join() === 'notes,write,place', JSON.stringify(doors));
+        // SUCCESSOR D1b: Notes, Write this, Place a page, (Add scenes), Mark lit - LIT LAST. 1 check parked, 1 successor.
+        ok(`${T}: D1b the doors are Notes, Write this, Place a page, (Add scenes), then Mark lit LAST (SUCCESSOR of D1)`, doors && doors.map((d) => d.key).filter((k) => k !== 'scenes').join() === 'notes,write,place,lit' && doors[doors.length - 1].key === 'lit', JSON.stringify(doors));
         ok(`${T}: D2 the doors speak the skin's words`, doors && doors[1]?.text === W.write && doors[2]?.text === W.place, `${doors && doors[1]?.text} | ${doors && doors[2]?.text}`);
         await shot(`${tag}-doors`);
 
