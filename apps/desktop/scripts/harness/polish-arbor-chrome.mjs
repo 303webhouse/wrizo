@@ -33,7 +33,7 @@ const near = (a, b, tol = 0.35) => typeof a === 'number' && Math.abs(a - b) <= t
 // The shipped (pre-POLISH) values, from index.css: .wz-strip-glyph 20.4, svg 21.6, label 10.8; foot 13.668 / 14.472 / 7.236; .desk-mode-tab 10.4.
 const WAS = { glyph: 20.4, svg: 21.6, label: 10.8, footGlyph: 13.668, footSvg: 14.472, footLabel: 7.236, tab: 10.4 };
 const NOW = { glyph: +(WAS.glyph * 1.2).toFixed(3), svg: +(WAS.svg * 1.2).toFixed(3), label: +(WAS.label * 1.2).toFixed(3), tab: +(WAS.tab * 1.2).toFixed(3) };
-const NAV_BUDGET_PX = 63; // --fx3-chrome-budget's own measured nav row
+const NAV_MAIN_PX = 51; // the top bar's height on main (measured Oct 27; --fx3-chrome-budget's own comment still says 63 - stale, not this ticket's)
 const BRONZE = 'rgb(143, 122, 76)'; // #8f7a4c, Arbor's decorative line
 
 const VIEWPORTS = [[1366, 768], [1920, 1080]];
@@ -49,10 +49,11 @@ const freshProsePage = async (app, w, h, theme) => {
   await app.evalJs("document.querySelector('[data-kind=\"book\"]').click()");
   await app.click('Start writing');
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted, framed' });
-  await sleep(450);
+  await app.waitFor("!document.querySelector('.wz-splash')", { timeout: 20000, label: 'splash gone' }).catch(() => {}); // the splash veils the app for the first seconds; the pictures must be of the app
+  await sleep(600);
 };
 
-const MEASURE = `(() => {
+const MEASURE = `(async () => {
   const cs = (el) => getComputedStyle(el);
   const num = (v) => parseFloat(v);
   const rgb = (s) => { const m = /rgba?\\(([^)]+)\\)/.exec(s); if (!m) return null; const p = m[1].split(/[ ,\\/]+/).filter(Boolean).map(Number); return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 }; };
@@ -74,6 +75,7 @@ const MEASURE = `(() => {
   const sep = document.querySelector('.wz-strip-sep');
   // the open item's look, measured by marking one item open (the class the app itself sets) - restored after
   const probe = place[0]; const had = probe.classList.contains('active'); probe.classList.add('active');
+  await new Promise((r) => setTimeout(r, 320)); // the item's colour fades in over .15s - read it after the fade, not at its first frame
   const act = { borderLeft: cs(probe).borderLeftColor, bgImage: cs(probe).backgroundImage, color: cs(probe.querySelector('.wz-strip-label')).color };
   if (!had) probe.classList.remove('active');
   const hoverProbe = place[1]; const hoverBgRest = cs(hoverProbe).backgroundColor;
@@ -87,7 +89,10 @@ const MEASURE = `(() => {
     clipped: items.filter((i) => i.getBoundingClientRect().bottom > ab.bottom + 0.5).map((i) => (i.textContent || '').trim()),
     sep: sep ? cs(sep).backgroundColor : null,
     nav: { ...flat(nav), h: +nr.height.toFixed(1), bottom: cs(nav).borderBottomColor, bg: cs(nav).backgroundColor },
+    navKids: [...nav.children].map((c) => (c.className || c.tagName) + ':' + +c.getBoundingClientRect().height.toFixed(1)),
     tab: tab ? { size: num(cs(tab).fontSize), color: cs(tab).color, shadow: cs(tab).boxShadow, radius: cs(tab).borderTopLeftRadius, tx: cs(tab).textTransform } : null,
+    door: (() => { const d = document.querySelector('.sprint-nav .page-plan-door'); return d ? num(cs(d).fontSize) : null; })(),
+    toggle: (() => { const d = document.querySelector('.sprint-toggle-btn'); return d ? num(cs(d).fontSize) : null; })(),
     paper: { x: +pr.x.toFixed(1), y: +pr.y.toFixed(1), w: +pr.width.toFixed(1), h: +pr.height.toFixed(1) },
     act, hoverBgRest,
     ratios: {
@@ -136,8 +141,11 @@ await withHarness(async (app) => {
 
     // P4
     ok(`P4 ${tag}: the top bar's tabs are 20% bigger (${NOW.tab} px; shipped ${WAS.tab})`, !!m.tab && near(m.tab.size, NOW.tab), JSON.stringify(m.tab));
-    ok(`P4 ${tag}: the top bar did NOT grow past ${NAV_BUDGET_PX} px - the page's height budget was measured against it, so the page cannot be made to move by a bigger menu`,
-      m.nav.h <= NAV_BUDGET_PX + 0.5, JSON.stringify(m.nav));
+    ok(`P4 ${tag}: the top bar is EXACTLY as tall as main painted it (${NAV_MAIN_PX} px) - the stage sits under it, so a taller bar pushes the PAGE down (the first build of this change did: 6.6 px at 1366, 9 px at 1920)`,
+      Math.abs(m.nav.h - NAV_MAIN_PX) <= 0.5, JSON.stringify({ nav: m.nav, kids: m.navKids }));
+
+    ok(`P4 ${tag}: the Plan door is the SAME size as the tabs (its own rule says so; the first build made it 15.6) and the Pages switch on the right is 20% bigger`,
+      !!m.tab && near(m.door, m.tab.size) && near(m.toggle, w >= 1700 ? 18 : 15.6), JSON.stringify({ door: m.door, tab: m.tab && m.tab.size, toggle: m.toggle }));
 
     // P5
     ok(`P5 ${tag}: their own look - the rail's outer rule, its dividers and the top bar's rule are muted bronze ${BRONZE}`,
@@ -174,9 +182,17 @@ await withHarness(async (app) => {
   }
 
   // P8 - the page is the same box in every skin at the same window: the paper's size does not depend on which menu is drawn.
+  // Arbor's paper as `main` painted it BEFORE this change (measured Oct 27 on the box, red run: docs/evidence/polish-arbor-chrome/red-on-main.txt).
+  // (Arbor sits 1 px higher than Flux and Machina on main already - a separate matter - so Arbor is held to ITS OWN old rect, and to the others' size.)
+  const MAIN = { '1366x768': { x: 187, y: 107, w: 992, h: 897.6 }, '1920x1080': { x: 420.4, y: 107, w: 1079.3, h: 1396.7 } };
+  for (const k of Object.keys(MAIN)) {
+    const p = papers[k], w = MAIN[k];
+    ok(`P8 @ ${k}: THE PAGE DOES NOT MOVE OR RESIZE - Arbor's paper is the very rect main painted (${JSON.stringify(w)}); the menus changed, the page did not`,
+      !!p && near(p.x, w.x, 0.6) && near(p.y, w.y, 0.6) && near(p.w, w.w, 0.6) && near(p.h, w.h, 0.6), JSON.stringify(p));
+  }
   const a = papers['1366x768'], f = papers['flux-1366x768'], mc = papers['machina-1366x768'];
-  ok('P8 @ 1366x768: THE PAGE DOES NOT MOVE OR RESIZE - the paper is the same size in Arbor, Flux and Machina (the menus changed; the page did not)',
-    !!a && !!f && !!mc && near(a.w, f.w, 0.6) && near(a.h, f.h, 0.6) && near(a.w, mc.w, 0.6) && near(a.h, mc.h, 0.6) && near(a.x, f.x, 0.6) && near(a.y, f.y, 0.6),
+  ok('P8 @ 1366x768: the paper is the same SIZE in Arbor, Flux and Machina (the page-size law)',
+    !!a && !!f && !!mc && near(a.w, f.w, 0.6) && near(a.h, f.h, 0.6) && near(a.w, mc.w, 0.6) && near(a.h, mc.h, 0.6),
     JSON.stringify({ arbor: a, flux: f, machina: mc }));
 
   return checks;
