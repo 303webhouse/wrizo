@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FLUX // CIRCUIT — Mockup A: SCHEMA (infinite zoom)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Chakra+Petch:wght@400;500;600&family=Crimson+Pro:wght@400;500&display=swap">
+<style>
+/* MOCKUP ONLY — not product code. Flux tokens as shipped (index.css :root[data-theme='flux'], hue 212). */
+:root{
+  --ground:#010811; --chrome:#0F1926; --glass:#0E1E31; --line:#193556; --line-strong:#244D7C;
+  --cyan:#00C2FF; --cyan-soft:#57D0F5; --ink:#E8F6FA; --mid:#9AD7EA; --low:#7EB4C4;
+  --lime:#A6FF3D; --orange:#FF9800;
+  --f-chrome:'Rajdhani','Arial Narrow',system-ui,sans-serif; --f-content:'Chakra Petch',system-ui,sans-serif; --f-serif:'Crimson Pro',Georgia,serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--ground);color:var(--ink);font-family:var(--f-content)}
+#bg,#links{position:fixed;inset:0;width:100%;height:100%;display:block}
+#bg{z-index:0} #links{z-index:2;pointer-events:none}
+#nodes{position:fixed;inset:0;z-index:3;pointer-events:none}
+#fx{position:fixed;inset:0;z-index:4;pointer-events:none}
+#dip{position:fixed;inset:0;z-index:5;pointer-events:none;background:#000;opacity:0;transition:opacity .2s}
+
+/* ---- the node (a card, drawn as a record) ---- */
+.node{position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:auto;background:rgba(14,30,49,.88);
+  border:1px solid rgba(0,194,255,.45);min-height:40px;cursor:grab;user-select:none}
+.node::before,.node::after{content:'';position:absolute;width:10px;height:10px;border:2px solid var(--cyan);pointer-events:none}
+.node::before{left:-4px;top:-4px;border-right:none;border-bottom:none}
+.node::after{right:-4px;bottom:-4px;border-left:none;border-top:none}
+.node .hd{display:flex;justify-content:space-between;gap:8px;padding:5px 9px;border-bottom:1px solid rgba(0,194,255,.25);
+  font-family:var(--f-chrome);font-weight:600;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--low)}
+.node .hd .id{color:var(--cyan-soft)}
+.node .ttl{padding:7px 10px 0;font-family:var(--f-chrome);font-weight:700;font-size:15px;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan-soft)}
+.node .body{padding:4px 10px 8px;font-size:13px;line-height:1.55;color:var(--ink);white-space:pre-wrap;outline:none}
+.node .body[contenteditable="true"]{cursor:text;caret-color:var(--orange);background:rgba(0,0,0,.25);user-select:text}
+.node .ft{display:flex;justify-content:space-between;padding:5px 10px 6px;border-top:1px dashed rgba(0,194,255,.2);
+  font-family:var(--f-chrome);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--low)}
+.node .ft .ok{color:var(--lime)}
+.node .ft .bug{color:var(--cyan-soft)}
+.node .port{position:absolute;right:-7px;top:50%;width:12px;height:12px;margin-top:-6px;background:var(--ground);border:1px solid var(--cyan);cursor:crosshair}
+.node .port:hover{background:var(--cyan)}
+.node.sel{border-color:var(--cyan);box-shadow:0 0 0 1px rgba(0,194,255,.35),0 0 24px rgba(0,194,255,.18)}
+.node.last{box-shadow:inset 3px 0 0 var(--orange)}                    /* orange = you: the last node you touched */
+.node.sel.last{box-shadow:inset 3px 0 0 var(--orange),0 0 0 1px rgba(0,194,255,.35),0 0 24px rgba(0,194,255,.18)}
+.node.lit{border-color:rgba(166,255,61,.55)}
+.node.lit::before,.node.lit::after{border-color:var(--lime)}
+.node.pin .ttl{font-family:var(--f-serif);text-transform:none;letter-spacing:0;font-size:17px;color:var(--ink)}
+.node.ink svg{display:block;margin:6px 10px 8px}
+.node.correcting .hd .st{color:var(--orange)}
+/* LOD: SUBNET - the node is a chip, title only */
+.node.chip .hd,.node.chip .body,.node.chip .ft,.node.chip svg{display:none}
+.node.chip .ttl{padding:8px 12px;font-size:22px}
+/* LOD: GLYPH - every character is a cell with its code point */
+.node:has(.glyphs){background:#0E1E31}
+.glyphs{display:flex;flex-wrap:wrap;gap:1px;padding:6px 8px 8px}
+.glyph{width:16px;height:20px;border:.5px solid rgba(0,194,255,.22);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.glyph b{font-family:var(--f-content);font-weight:500;font-size:9px;line-height:1;color:var(--ink)}
+.glyph i{font-style:normal;font-family:var(--f-chrome);font-size:3.2px;letter-spacing:.02em;color:var(--low);margin-top:1.5px}
+.glyph.sp b{color:transparent} .glyph.sp{border-style:dashed;opacity:.5}
+
+/* ---- chrome: HUD ---- */
+.hud{position:fixed;z-index:10;font-family:var(--f-chrome);letter-spacing:.14em;text-transform:uppercase}
+#top{top:0;left:0;right:0;height:46px;display:flex;align-items:center;gap:18px;padding:0 16px;background:rgba(15,25,38,.86);border-bottom:1px solid var(--line)}
+#top .crumb{font-size:13px;color:var(--low)} #top .crumb b{color:var(--ink);font-weight:600}
+#top .tabs{margin-left:auto;display:flex;gap:2px}
+.tab{background:none;border:1px solid transparent;color:var(--mid);font:600 12px var(--f-chrome);letter-spacing:.16em;text-transform:uppercase;padding:7px 12px;cursor:pointer}
+.tab:hover{color:var(--ink)} .tab[aria-pressed="true"]{color:var(--cyan);border-bottom:2px solid var(--cyan)}
+#tele{right:14px;bottom:14px;width:260px;padding:10px 12px;background:rgba(15,25,38,.86);border:1px solid var(--line);font-size:11px;color:var(--low);line-height:1.7}
+#tele b{color:var(--cyan-soft);font-weight:600} #tele .lvl{color:var(--lime)}
+#mini{position:fixed;z-index:10;right:14px;bottom:150px;width:260px;height:150px;background:rgba(1,8,17,.8);border:1px solid var(--line)}
+#acts{left:14px;bottom:14px;display:flex;flex-direction:column;gap:6px}
+.btn{background:rgba(15,25,38,.9);border:1px solid var(--line-strong);color:var(--mid);font:600 12px var(--f-chrome);letter-spacing:.16em;text-transform:uppercase;padding:7px 12px;cursor:pointer;text-align:left}
+.btn:hover{color:var(--cyan);border-color:var(--cyan)} .btn .k{color:var(--low);margin-left:8px;font-size:10px}
+.btn.you{border-color:var(--orange);color:var(--orange)}
+#dial{left:14px;top:60px;padding:8px 10px;background:rgba(15,25,38,.86);border:1px solid var(--line);font-size:11px;color:var(--low);display:flex;flex-direction:column;gap:6px;width:200px}
+#dial input{accent-color:var(--cyan)} #dial input[type=range]{width:100%}
+#dial label{display:flex;gap:6px;align-items:center;cursor:pointer}
+#hint{left:50%;top:58px;transform:translateX(-50%);font-size:11px;color:var(--low);background:rgba(1,8,17,.7);padding:4px 10px;border:1px solid var(--line)}
+#notesBtn{right:14px;top:58px}
+#notes{position:fixed;z-index:20;top:58px;right:14px;bottom:14px;width:min(560px,calc(100vw - 28px));overflow:auto;background:rgba(9,18,30,.97);border:1px solid var(--line-strong);padding:18px 20px;display:none;
+  font-family:var(--f-content);font-size:13px;line-height:1.6;color:var(--mid);text-transform:none;letter-spacing:0}
+#notes.open{display:block}
+#notes h2{font-family:var(--f-chrome);font-size:15px;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);margin:16px 0 6px}
+#notes h2:first-child{margin-top:0} #notes b{color:var(--ink)} #notes ul{padding-left:18px;margin:4px 0}
+#notes .x{float:right}
+
+/* ---- the theme-switch demo: the same nodes, as Arbor would draw them ---- */
+body.arbor{background:#150F0B}
+body.arbor #bg{opacity:0}
+body.arbor .node{background:#FBF6EA;border-color:#D9CFB6;color:#2B2014}
+body.arbor .node::before,body.arbor .node::after,body.arbor .node .port,body.arbor .node .hd,body.arbor .node .ft{display:none}
+body.arbor .node .ttl{color:#2B2014;font-family:'Figtree',system-ui,sans-serif;letter-spacing:.02em;text-transform:none;font-size:15px}
+body.arbor .node .body{color:#2B2014;font-family:var(--f-serif);font-size:15px}
+body.arbor .node.last{box-shadow:inset 3px 0 0 #96A05A}
+body.arbor .node.lit{border-color:#96A05A}
+body.arbor .hud:not(#acts),body.arbor #mini{opacity:.25}
+#swap{position:fixed;inset:0;z-index:30;pointer-events:none;opacity:0;background:repeating-linear-gradient(0deg,rgba(0,194,255,.10) 0 1px,transparent 1px 3px)}
+#swap.go{animation:swap .9s ease}
+@keyframes swap{0%{opacity:0}35%{opacity:1;transform:scaleY(.02)}60%{opacity:1;transform:scaleY(1)}100%{opacity:0}}
+
+@media (prefers-reduced-motion:reduce){ #swap.go{animation:none} }
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<canvas id="links"></canvas>
+<div id="nodes"></div>
+<canvas id="fx"></canvas>
+<div id="dip"></div>
+<div id="swap"></div>
+
+<div id="top" class="hud">
+  <span class="crumb">NOVELS ▸ THE LATE FERRY ▸ <b>PLOT // CIRCUIT</b></span>
+  <div class="tabs" role="group" aria-label="Circuit view">
+    <button class="tab" data-view="live" aria-pressed="true">Live</button>
+    <button class="tab" data-view="sequence" aria-pressed="false">Sequence</button>
+  </div>
+</div>
+<div id="hint" class="hud">Wheel / pinch = zoom (no limit) · drag space = pan · drag a node · ▣ port → node = link · double-click text = edit</div>
+<div id="dial" class="hud">
+  <span>Glitch <b id="dialv" style="color:var(--cyan-soft)">60</b></span>
+  <input id="dialr" type="range" min="0" max="100" value="60" aria-label="Glitch amount">
+  <label><input id="rm" type="checkbox"> Reduced motion</label>
+</div>
+<button id="notesBtn" class="btn hud">Design notes</button>
+<div id="acts" class="hud">
+  <button class="btn you" id="locate">Locate last node <span class="k">L</span></button>
+  <button class="btn" id="fit">Fit circuit <span class="k">0</span></button>
+  <button class="btn" id="jack">Jack out → see it in Arbor <span class="k">J</span></button>
+</div>
+<canvas id="mini"></canvas>
+<div id="tele" class="hud"></div>
+
+<div id="notes">
+  <button class="btn x" id="notesX">Close</button>
+  <h2>Mockup A — SCHEMA</h2>
+  <p>The Flux Circuit is not a board on a desk. It is a <b>region of cyberspace</b>: an infinite schema where each card is a <b>record</b> (a node with an id, a type, a token count and a status), links are <b>live traces</b> with data packets running along them, and the ground is circuitry at every scale. You can zoom out past the circuit into its cartridge, rack and cache, and in past a node until the words dissolve into their <b>code points</b>.</p>
+  <h2>The design team (two passes)</h2>
+  <p><b>Convened:</b> a sci-fi game UI designer (diegetic HUDs), a motion / VFX designer (glitch, signal), a data-visualisation architect (graphs, level of detail), with the house Experts (cognitive scientist, Deleuzean philosopher) and Architects (frontend, interaction).</p>
+  <p><b>Pass 1 — proposals.</b> (1) A node graph on circuitry with semantic zoom. (2) Stacked 3D strata (see Mockup B). (3) A literal Matrix code-rain wall with cards inside it. (4) A "terminal" board where cards are lines of code in a file.</p>
+  <p><b>Pass 2 — critique and trim.</b> The terminal board (4) loses spatial memory: the writer cannot find "the card top-right". Cut. The full code-rain wall (3) is ambient, not stimulating, and fights the text for attention; it is kept only as a <i>substrate</i> made of the writer's own words (Mockup B). The cognitive scientist set the motion budget: stimulation lives in the connectors and the zoom, the glitch stays under 3 Hz and <b>damps while you drag, zoom or type</b> (canon §6). The architect held the line that every view is a <b>projection of the same card data</b>: no new fields.</p>
+  <p><b>Recommendation.</b> Build two contrasting directions: <b>A (this file): a flat infinite schema</b> — precise, readable, closest to today's interactions; <b>B: strata</b> — the spectacle direction, layers in depth.</p>
+  <h2>Guiding concepts, as built here</h2>
+  <ul>
+    <li><b>Conceptual space over physical space</b> — no surface, no edge, no weight. Position means relation; scale means level of abstraction (node → circuit → cartridge → rack → cache → unindexed).</li>
+    <li><b>Visual stimulation over ambient feeling</b> — packets on every link, traces that carry current, Signal-Loss glitch events (tear lines, shear, macroblocks, backlight dips) on the ground, never on the text.</li>
+    <li><b>Language as code</b> — each node shows its id, type and token count; zoom in far enough and every letter becomes a cell with its Unicode code point.</li>
+    <li><b>Humanity as a bug</b> — every human-written node carries <b>STATUS: UNRESOLVED // HUMAN</b>; hover one and the system attempts an autocorrect, scrambles the text toward code, and is <b>rejected</b>. It is theatre: <b>the stored words are never touched</b>.</li>
+  </ul>
+  <h2>Familiar, not lost (the switch)</h2>
+  <ul>
+    <li>Every node sits at the card's own x / y, at the card's own size: the shape of your board is the shape of your circuit. Spatial memory survives the switch.</li>
+    <li><b>Orange is you</b>: the last node you touched carries the thin orange bar, and <b>Locate last node</b> flies the camera to it from any zoom level.</li>
+    <li>Press <b>Jack out</b>: the same nodes become Arbor cards in place, camera unchanged. Press again to jack back in.</li>
+    <li>Views map one to one: Live = Open, Sequence = Storyboard (lanes by act, in reading order). Outline / Walk would follow.</li>
+  </ul>
+  <h2>What this mockup does not decide (would go to Fable)</h2>
+  <ul>
+    <li>Remembering the camera (zoom / position) per board would be a new saved field — not assumed here; the camera lives in memory only.</li>
+    <li>Building it means a Flux-only renderer for the board stage (level of detail, canvas layers): an architecture pass, not a cosmetic one.</li>
+    <li>The cartridge / rack / cache levels read today's real membership (board → project → drawer → shelf); sibling contents are drawn as placeholders here.</li>
+  </ul>
+</div>
+
+<script>
+'use strict';
+// ============================================================================
+// THE DATA — the same shape the app stores for a board (types/index.ts Box):
+// id, kind ('text' | 'ink' | 'page-pin'), x, y, w, h, groupId, text, lit, and
+// connections between ids. Nothing below adds a field; every view projects it.
+// ============================================================================
+const CARDS = [
+  { id:'c1', kind:'text', x:80,   y:60,  w:250, h:150, groupId:'act1', lit:true,  text:'HOOK\nMara misses the last ferry on purpose. She wants the island to think she drowned.' },
+  { id:'c2', kind:'text', x:430,  y:40,  w:250, h:150, groupId:'act1', lit:true,  text:'INCITING INCIDENT\nA stranger on the dock is wearing her coat — the one she left folded on the rail.' },
+  { id:'c3', kind:'text', x:250,  y:330, w:250, h:150, groupId:'act1', lit:false, text:'THE ISLAND\nNo cars. One bell. A lighthouse that has been dark since 1987.' },
+  { id:'c4', kind:'text', x:800,  y:120, w:250, h:150, groupId:'act2', lit:false, text:'MIDPOINT\nThe stranger is her sister, declared dead the winter the light went out.' },
+  { id:'c5', kind:'text', x:700,  y:420, w:250, h:150, groupId:'act2', lit:false, text:'RISING ACTION\nThe ferryman keeps two logbooks. Only one of them is for the harbour master.' },
+  { id:'c6', kind:'page-pin', x:1050, y:400, w:260, h:130, groupId:'act2', lit:false, text:'Chapter 3 — The Two Logbooks\nHe wrote the crossings in pencil and the weather in ink, as if one could be rubbed out.' },
+  { id:'c7', kind:'ink',  x:20,   y:560, w:220, h:150, groupId:null,  lit:false, text:'MAP OF THE HARBOUR' },
+  { id:'c8', kind:'text', x:1200, y:90,  w:250, h:150, groupId:'act3', lit:false, text:'CRISIS\nThe bell rings at 2 a.m. Nobody pulled the rope.' },
+  { id:'c9', kind:'text', x:1420, y:330, w:250, h:150, groupId:'act3', lit:false, text:'CLIMAX\nMara climbs the dead lighthouse and lights it by hand.' },
+  { id:'c10',kind:'text', x:430,  y:640, w:230, h:110, groupId:null,  lit:false, text:'salt in the hinges\n(not sure where this goes)' },
+];
+const LINKS = [['c1','c2'],['c2','c4'],['c3','c5'],['c4','c8'],['c5','c6'],['c8','c9'],['c3','c9'],['c7','c3'],['c10','c5'],['c4','c5']];
+const GROUPS = { act1:'ACT I', act2:'ACT II', act3:'ACT III' };
+let lastTouched = 'c5';
+const byId = Object.fromEntries(CARDS.map(c => [c.id, c]));
+const hex = (id) => '0x' + (Array.from(id).reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7) & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+const title = (c) => c.text.split('\n')[0];
+const body = (c) => c.text.split('\n').slice(1).join('\n');
+const tokens = (c) => (c.text.match(/\S+/g) || []).length;
+
+// ============================================================================
+// THE CAMERA — position in world units + scale. Scale is unbounded (1e-7 .. 1e4).
+// ============================================================================
+const cam = { x: 760, y: 380, s: 0.8 };
+let W = innerWidth, H = innerHeight, DPR = Math.min(2, devicePixelRatio || 1);
+const toScreen = (x, y) => [(x - cam.x) * cam.s + W / 2, (y - cam.y) * cam.s + H / 2];
+const toWorld = (sx, sy) => [(sx - W / 2) / cam.s + cam.x, (sy - H / 2) / cam.s + cam.y];
+const reduced = () => document.getElementById('rm').checked || matchMedia('(prefers-reduced-motion: reduce)').matches;
+let glitch = 60;                 // 0..100, the canon's Ambiance dial
+let busyUntil = 0;               // damping: dragging / zooming / typing
+const busy = () => performance.now() < busyUntil || !!document.querySelector('.body[contenteditable="true"]');
+const touch = (ms = 700) => { busyUntil = performance.now() + ms; };
+
+// Level of detail, by scale
+function lod(s) {
+  if (s >= 3.2) return 'GLYPH';
+  if (s >= 0.55) return 'NODE';
+  if (s >= 0.18) return 'SUBNET';
+  if (s >= 0.02) return 'CIRCUIT';
+  if (s >= 0.0016) return 'CARTRIDGE';
+  if (s >= 0.00012) return 'RACK';
+  if (s >= 0.00001) return 'CACHE';
+  return 'UNINDEXED';
+}
+
+// ============================================================================
+// CANVASES
+// ============================================================================
+const bg = document.getElementById('bg'), bgx = bg.getContext('2d');
+const lk = document.getElementById('links'), lkx = lk.getContext('2d');
+const fx = document.getElementById('fx'), fxx = fx.getContext('2d');
+const mini = document.getElementById('mini'), mx = mini.getContext('2d');
+function resize() {
+  W = innerWidth; H = innerHeight; DPR = Math.min(2, devicePixelRatio || 1);
+  for (const c of [bg, lk, fx]) { c.width = W * DPR; c.height = H * DPR; c.getContext('2d').setTransform(DPR, 0, 0, DPR, 0, 0); }
+  mini.width = 260 * DPR; mini.height = 150 * DPR; mx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+addEventListener('resize', resize); resize();
+
+// deterministic hash → [0,1)
+function rnd(a, b, c) { let h = (a * 374761393 + b * 668265263 + c * 2147483647) | 0; h = (h ^ (h >>> 13)) * 1274126177 | 0; h ^= h >>> 16; return ((h >>> 0) % 100000) / 100000; }
+
+// ---- the ground: an infinite multi-scale grid with circuit traces at every scale ----
+const G = 40;  // world units of the finest grid
+function drawGround(t) {
+  const damp = busy() ? .2 : 1, still = reduced();
+  bgx.clearRect(0, 0, W, H);
+  bgx.fillStyle = '#010811'; bgx.fillRect(0, 0, W, H);
+  // radial pool behind the focus (canon §8 glow, teal-blue family)
+  const g = bgx.createRadialGradient(W * .5, H * .48, 0, W * .5, H * .48, Math.max(W, H) * .7);
+  g.addColorStop(0, 'rgba(8,40,72,.55)'); g.addColorStop(1, 'rgba(1,8,17,0)'); bgx.fillStyle = g; bgx.fillRect(0, 0, W, H);
+  const k = Math.ceil(Math.log(14 / (G * cam.s)) / Math.log(8));
+  for (let lvl = k; lvl <= k + 2; lvl++) {
+    const step = G * Math.pow(8, lvl), px = step * cam.s;
+    if (px < 6) continue;
+    const a = Math.min(1, (px - 6) / 90);
+    // grid
+    bgx.strokeStyle = `rgba(25,53,86,${(.35 * a).toFixed(3)})`; bgx.lineWidth = 1;
+    const [wx0, wy0] = toWorld(0, 0), [wx1, wy1] = toWorld(W, H);
+    bgx.beginPath();
+    for (let x = Math.floor(wx0 / step) * step; x <= wx1; x += step) { const sx = Math.round(toScreen(x, 0)[0]) + .5; bgx.moveTo(sx, 0); bgx.lineTo(sx, H); }
+    for (let y = Math.floor(wy0 / step) * step; y <= wy1; y += step) { const sy = Math.round(toScreen(0, y)[1]) + .5; bgx.moveTo(0, sy); bgx.lineTo(W, sy); }
+    bgx.stroke();
+    // circuit traces, one cell = 4 grid steps, deterministic per (cell, level)
+    const cell = step * 4, cpx = cell * cam.s;
+    if (cpx < 110 || cpx > 2600) continue;
+    const ta = Math.min(1, (cpx - 110) / 160) * Math.min(1, (2600 - cpx) / 900);
+    for (let cx = Math.floor(wx0 / cell); cx <= Math.floor(wx1 / cell); cx++) {
+      for (let cy = Math.floor(wy0 / cell); cy <= Math.floor(wy1 / cell); cy++) {
+        const n = 1 + Math.floor(rnd(cx, cy, lvl) * 3);
+        for (let i = 0; i < n; i++) {
+          const pts = trace(cx, cy, lvl, i, cell);
+          const sp = pts.map(p => toScreen(p[0], p[1]));
+          bgx.strokeStyle = `rgba(36,77,124,${(.55 * ta).toFixed(3)})`; bgx.lineWidth = Math.max(1, Math.min(2.5, cpx / 400));
+          bgx.beginPath(); sp.forEach((p, j) => j ? bgx.lineTo(p[0], p[1]) : bgx.moveTo(p[0], p[1])); bgx.stroke();
+          // vias
+          bgx.fillStyle = `rgba(87,208,245,${(.35 * ta).toFixed(3)})`;
+          for (const p of [sp[0], sp[sp.length - 1]]) bgx.fillRect(p[0] - 2, p[1] - 2, 4, 4);
+          // current running along one in three traces (visual stimulation; frozen when reduced)
+          if (!still && rnd(cx, cy, lvl * 7 + i) < .34) {
+            const ph = ((t / 1000) * (.18 + rnd(cy, cx, i) * .25) + rnd(cx, i, lvl)) % 1;
+            const q = along(sp, ph);
+            const lime = rnd(i, cx, cy) < .35;
+            bgx.fillStyle = lime ? `rgba(166,255,61,${(.75 * ta * damp).toFixed(3)})` : `rgba(0,194,255,${(.85 * ta * damp).toFixed(3)})`;
+            bgx.fillRect(q[0] - 2, q[1] - 2, 4, 4);
+          }
+        }
+      }
+    }
+  }
+}
+function trace(cx, cy, lvl, i, cell) {
+  const r = (n) => rnd(cx * 13 + n, cy * 7 + i, lvl);
+  const x0 = (cx + r(1)) * cell, y0 = (cy + Math.round(r(2) * 4) / 4) * cell;
+  const x1 = (cx + r(3)) * cell, y1 = (cy + Math.round(r(4) * 4) / 4) * cell;
+  const mxw = (cx + Math.round(r(5) * 4) / 4) * cell;
+  return r(6) < .5 ? [[x0, y0], [mxw, y0], [mxw, y1], [x1, y1]] : [[x0, y0], [x0, (y0 + y1) / 2], [x1, (y0 + y1) / 2], [x1, y1]];
+}
+function along(pts, f) {
+  let L = 0; const seg = [];
+  for (let i = 1; i < pts.length; i++) { const d = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); seg.push(d); L += d; }
+  let d = f * L;
+  for (let i = 0; i < seg.length; i++) { if (d <= seg[i]) { const u = seg[i] ? d / seg[i] : 0; return [pts[i][0] + (pts[i + 1][0] - pts[i][0]) * u, pts[i][1] + (pts[i + 1][1] - pts[i][1]) * u]; } d -= seg[i]; }
+  return pts[pts.length - 1];
+}
+
+// ---- the levels above the circuit: cartridge, rack, cache (placeholder siblings) ----
+const BOUNDS = (() => { const xs = CARDS.flatMap(c => [c.x, c.x + c.w]), ys = CARDS.flatMap(c => [c.y, c.y + c.h]); return { x0: Math.min(...xs) - 60, y0: Math.min(...ys) - 60, x1: Math.max(...xs) + 60, y1: Math.max(...ys) + 60 }; })();
+const CX = (BOUNDS.x0 + BOUNDS.x1) / 2, CY = (BOUNDS.y0 + BOUNDS.y1) / 2, BW = BOUNDS.x1 - BOUNDS.x0, BH = BOUNDS.y1 - BOUNDS.y0;
+const LEVELS = [
+  { name: 'CIRCUIT', label: 'PLOT', k: 1, sibs: ['CAST', 'HARBOUR TOWN', 'RESEARCH', 'ENDINGS', 'TIMELINE'] },
+  { name: 'CARTRIDGE', label: 'THE LATE FERRY', k: 14, sibs: ['SALT HOUSE', 'NORTH SOUND', 'UNTITLED 3', 'LETTERS'] },
+  { name: 'RACK', label: 'NOVELS', k: 14 * 13, sibs: ['SHORT STORIES', 'ESSAYS', 'POEMS'] },
+  { name: 'CACHE', label: 'CACHE', k: 14 * 13 * 12, sibs: [] },
+];
+function drawLevels() {
+  // each level: a bracketed frame around its content, siblings on a ring around it
+  for (let li = 0; li < LEVELS.length; li++) {
+    const L = LEVELS[li], w = BW * L.k * (li ? 3.2 : 1), h = BH * L.k * (li ? 3.2 : 1);
+    const pw = w * cam.s; if (pw < 30 || pw > W * 9) continue;
+    const a = Math.min(1, (pw - 30) / 120) * Math.min(1, (W * 9 - pw) / (W * 4));
+    frame(CX - w / 2, CY - h / 2, w, h, `${L.name} // ${L.label}`, a, li === 0 ? 'rgba(0,194,255,' : 'rgba(87,208,245,');
+    const R = Math.max(w, h) * 1.25;
+    L.sibs.forEach((nm, i) => {
+      const ang = -Math.PI / 2 + (i + .5) * (2 * Math.PI / L.sibs.length);
+      const sx = CX + Math.cos(ang) * R, sy = CY + Math.sin(ang) * R;
+      frame(sx - w / 2, sy - h / 2, w, h, `${L.name} // ${nm}`, a * .7, 'rgba(36,77,124,');
+      // placeholder contents: a scatter of nodes
+      for (let j = 0; j < 14; j++) {
+        const [px, py] = toScreen(sx - w / 2 + rnd(i, j, li) * w, sy - h / 2 + rnd(j, i, li + 9) * h);
+        lkx.fillStyle = `rgba(87,208,245,${(.5 * a).toFixed(3)})`; lkx.fillRect(px - 1.5, py - 1.5, 3, 3);
+      }
+    });
+  }
+}
+function frame(x, y, w, h, label, a, col) {
+  const [sx, sy] = toScreen(x, y), sw = w * cam.s, sh = h * cam.s, c = Math.min(18, sw / 6);
+  lkx.strokeStyle = col + (.55 * a).toFixed(3) + ')'; lkx.lineWidth = 1; lkx.strokeRect(sx + .5, sy + .5, sw, sh);
+  lkx.strokeStyle = col + (.95 * a).toFixed(3) + ')'; lkx.lineWidth = 2;
+  lkx.beginPath();
+  lkx.moveTo(sx, sy + c); lkx.lineTo(sx, sy); lkx.lineTo(sx + c, sy);
+  lkx.moveTo(sx + sw - c, sy + sh); lkx.lineTo(sx + sw, sy + sh); lkx.lineTo(sx + sw, sy + sh - c);
+  lkx.stroke();
+  lkx.fillStyle = col + (.9 * a).toFixed(3) + ')'; lkx.font = '600 12px Rajdhani, sans-serif';
+  lkx.fillText(label.toUpperCase().split('').join('\u200A'), sx + 6, sy - 6);
+}
+
+// ---- links: orthogonal traces with packets ----
+let linkFlash = null; // { a, b, until } - the writer's own act, orange for a moment
+function route(a, b) {
+  const A = byId[a], B = byId[b];
+  const ax = A.x + A.w, ay = A.y + Math.min(A.h, 60) / 2 + 20, bx = B.x, by = B.y + Math.min(B.h, 60) / 2 + 20;
+  if (bx >= ax + 30) { const m = (ax + bx) / 2; return [[ax, ay], [m, ay], [m, by], [bx, by]]; }
+  const ax2 = A.x + A.w / 2, ay2 = A.y + A.h, bx2 = B.x + B.w / 2, by2 = B.y;
+  if (by2 >= ay2 + 30) { const m = (ay2 + by2) / 2; return [[ax2, ay2], [ax2, m], [bx2, m], [bx2, by2]]; }
+  const ux = Math.min(A.x, B.x) - 40; return [[A.x, ay], [ux, ay], [ux, by], [B.x, by]];
+}
+function drawLinks(t) {
+  lkx.clearRect(0, 0, W, H);
+  const level = lod(cam.s);
+  if (document.body.classList.contains('arbor')) {          // Arbor draws the same links as thin brass lines, no packets, no frames
+    lkx.strokeStyle = 'rgba(201,162,74,.8)'; lkx.lineWidth = 1;
+    for (const [a, b] of LINKS) { const A = byId[a], B = byId[b], [ax, ay] = toScreen(A.x + A.w / 2, A.y + A.h / 2), [bx, by] = toScreen(B.x + B.w / 2, B.y + B.h / 2); lkx.beginPath(); lkx.moveTo(ax, ay); lkx.lineTo(bx, by); lkx.stroke(); }
+    return;
+  }
+  drawLevels();
+  if (level === 'CARTRIDGE' || level === 'RACK' || level === 'CACHE' || level === 'UNINDEXED') { drawDots(); return; }
+  if (level === 'SUBNET' || level === 'CIRCUIT') drawSubnets();
+  const sel = selected;
+  for (const [a, b] of LINKS) {
+    const pts = route(a, b).map(p => toScreen(p[0], p[1]));
+    const hot = sel && (a === sel || b === sel);
+    const flash = linkFlash && linkFlash.until > t && ((linkFlash.a === a && linkFlash.b === b));
+    lkx.lineWidth = Math.max(1, Math.min(3, cam.s * (hot ? 2.4 : 1.4)));
+    lkx.strokeStyle = flash ? 'rgba(255,152,0,.95)' : hot ? 'rgba(0,194,255,.95)' : 'rgba(0,194,255,.38)';
+    lkx.setLineDash(level === 'CIRCUIT' ? [] : [6, 5]);
+    lkx.lineDashOffset = reduced() ? 0 : -(t / 40) % 11;
+    lkx.beginPath(); pts.forEach((p, j) => j ? lkx.lineTo(p[0], p[1]) : lkx.moveTo(p[0], p[1])); lkx.stroke();
+    lkx.setLineDash([]);
+    // packets
+    if (!reduced()) {
+      const n = hot ? 3 : 2, sp = hot ? .5 : .22;
+      for (let i = 0; i < n; i++) {
+        const q = along(pts, ((t / 1000) * sp + i / n + (a.charCodeAt(1) * .13)) % 1);
+        const s = Math.max(3, Math.min(7, cam.s * 6));
+        lkx.fillStyle = flash ? '#FF9800' : hot ? '#E8F6FA' : 'rgba(87,208,245,.95)';
+        lkx.fillRect(q[0] - s / 2, q[1] - s / 2, s, s);
+      }
+    }
+  }
+  if (dragLink) {
+    const A = byId[dragLink.from], [ax, ay] = toScreen(A.x + A.w, A.y + 50);
+    lkx.strokeStyle = 'rgba(255,152,0,.9)'; lkx.lineWidth = 2; lkx.setLineDash([4, 4]);
+    lkx.beginPath(); lkx.moveTo(ax, ay); lkx.lineTo(dragLink.x, ay); lkx.lineTo(dragLink.x, dragLink.y); lkx.stroke(); lkx.setLineDash([]);
+  }
+}
+function drawSubnets() {
+  for (const [g, name] of Object.entries(GROUPS)) {
+    const cs = CARDS.filter(c => c.groupId === g); if (!cs.length) continue;
+    const x0 = Math.min(...cs.map(c => c.x)) - 30, y0 = Math.min(...cs.map(c => c.y)) - 40, x1 = Math.max(...cs.map(c => c.x + c.w)) + 30, y1 = Math.max(...cs.map(c => c.y + c.h)) + 30;
+    frame(x0, y0, x1 - x0, y1 - y0, 'SUBNET // ' + name, 1, 'rgba(166,255,61,');
+  }
+  const orphans = CARDS.filter(c => !c.groupId);
+  for (const c of orphans) { const [sx, sy] = toScreen(c.x, c.y); lkx.fillStyle = 'rgba(126,180,196,.8)'; lkx.font = '600 11px Rajdhani'; lkx.fillText('ORPHAN PROCESS', sx, sy - 8); }
+}
+function drawDots() {
+  for (const c of CARDS) {
+    const [sx, sy] = toScreen(c.x + c.w / 2, c.y + c.h / 2);
+    lkx.fillStyle = c.id === lastTouched ? '#FF9800' : c.lit ? '#A6FF3D' : '#57D0F5';
+    lkx.fillRect(sx - 2, sy - 2, 4, 4);
+  }
+}
+
+// ---- texture: the Signal-Loss dialect (canon §7), rates scaled by the dial, damped while busy ----
+const events = [];
+const sched = { tear: 0, shear: 0, block: 0, dip: 0, jump: 0, fix: 0 };
+function spawnTexture(t) {
+  if (reduced() || glitch === 0) return;
+  const k = 60 / Math.max(1, glitch);            // dial 60 = canon rates; higher = more often
+  const due = (name, lo, hi) => { if (t < sched[name]) return false; sched[name] = t + (lo + Math.random() * (hi - lo)) * 1000 * k; return !busy(); };
+  if (due('tear', 7, 12)) { const n = 3 + Math.floor(Math.random() * 3); for (let i = 0; i < n; i++) events.push({ type: 'tear', at: t + i * 45, dur: 150, y: Math.random() * H, lime: Math.random() < .35 }); }
+  if (due('shear', 9, 15)) events.push({ type: 'shear', at: t, dur: 160, y: Math.random() * (H - 26), dx: 10 + Math.random() * 18 });
+  if (due('block', 2.6, 4.8)) { const n = 5 + Math.floor(Math.random() * 5), x = Math.random() * W, y = Math.random() * H; for (let i = 0; i < n; i++) events.push({ type: 'block', at: t, dur: 80 + Math.random() * 130, x: x + (Math.random() - .5) * 160, y: y + (Math.random() - .5) * 90, s: 10 + Math.random() * 20, lime: Math.random() < .35 }); }
+  if (due('dip', 10, 17)) { dip(); if (Math.random() < .5) setTimeout(dip, 520); }
+  if (due('jump', 9, 15)) { jump(); if (Math.random() < .4) setTimeout(jump, 160); }
+  if (due('fix', 5, 9)) attemptCorrection(CARDS[Math.floor(Math.random() * CARDS.length)].id);
+}
+function dip() { const d = document.getElementById('dip'); d.style.opacity = '.13'; setTimeout(() => d.style.opacity = '0', 400); }
+function jump() { bg.style.transform = `translate(${(Math.random() < .5 ? -1 : 1) * 4}px,0)`; setTimeout(() => bg.style.transform = '', 80); }
+function drawTexture(t) {
+  fxx.clearRect(0, 0, W, H);
+  const damp = busy() ? .13 : 1;
+  for (let i = events.length - 1; i >= 0; i--) {
+    const e = events[i];
+    if (t > e.at + e.dur) { events.splice(i, 1); continue; }
+    if (t < e.at) continue;
+    if (e.type === 'tear') { fxx.fillStyle = e.lime ? `rgba(166,255,61,${.5 * damp})` : `rgba(0,194,255,${.55 * damp})`; fxx.fillRect(0, e.y, W, 1); }
+    if (e.type === 'block') { fxx.fillStyle = e.lime ? `rgba(166,255,61,${.22 * damp})` : `rgba(0,194,255,${.25 * damp})`; fxx.fillRect(e.x, e.y, e.s, e.s * .6); }
+    if (e.type === 'shear') { try { fxx.globalAlpha = .8 * damp; fxx.drawImage(bg, 0, e.y * DPR, W * DPR, 26 * DPR, e.dx, e.y, W, 26); fxx.globalAlpha = 1; } catch (_) {} }
+  }
+}
+
+// ---- humanity as a bug: the system tries to correct a human node, and is rejected ----
+const CODE = '01<>{}[]/\\=+*#$%&_:;ABCDEF0123456789';
+const lastFix = {};
+function attemptCorrection(id) {
+  if (reduced() || busy()) return;
+  const t = performance.now(); if (lastFix[id] && t - lastFix[id] < 6000) return; lastFix[id] = t;
+  const el = els[id]; if (!el || el.classList.contains('chip')) return;
+  const b = el.querySelector('.body'), st = el.querySelector('.st'); if (!b || b.isContentEditable) return;
+  const orig = body(byId[id]); const steps = 7; let i = 0;
+  el.classList.add('correcting'); st.textContent = 'AUTOCORRECT…';
+  const iv = setInterval(() => {         // 7 frames at 60ms in, 7 back out: ~0.84 s, no flash above 3 Hz (text, not light)
+    i++;
+    const k = i <= steps ? i / steps : (2 * steps - i) / steps;
+    b.textContent = orig.replace(/\S/g, (ch) => Math.random() < k * .8 ? CODE[(Math.random() * CODE.length) | 0] : ch);
+    if (i >= 2 * steps) { clearInterval(iv); b.textContent = orig; st.textContent = 'REJECTED // HUMAN'; setTimeout(() => { el.classList.remove('correcting'); st.textContent = status(byId[id]); }, 1400); }
+  }, 60);
+}
+const status = (c) => c.kind === 'ink' ? 'STATUS: RASTER // HUMAN' : 'STATUS: UNRESOLVED // HUMAN';
+
+// ============================================================================
+// NODES (DOM) — positioned in screen space every frame; content by level of detail
+// ============================================================================
+const host = document.getElementById('nodes');
+const els = {};
+let selected = null;
+function inkSvg() {
+  return '<svg width="200" height="96" viewBox="0 0 200 96" fill="none" stroke="#57D0F5" stroke-width="1.6" stroke-linecap="round"><path d="M8 70 C40 40 70 80 100 52 S160 30 192 58"/><path d="M60 20 l10 10 l-10 10"/><circle cx="140" cy="30" r="9"/><path d="M20 86 h60 M110 86 h70" stroke-dasharray="3 5"/></svg>';
+}
+function buildNode(c) {
+  const el = document.createElement('div'); el.className = 'node ' + c.kind.replace('page-', ''); el.dataset.id = c.id;
+  el.style.width = c.w + 'px';
+  const typ = c.kind === 'page-pin' ? 'DOC LINK' : c.kind === 'ink' ? 'INK' : 'TEXT';
+  el.innerHTML = `<div class="hd"><span class="id">NODE ${hex(c.id)}</span><span>${typ}</span></div>
+    <div class="ttl"></div>${c.kind === 'ink' ? inkSvg() : '<div class="body"></div>'}
+    <div class="ft"><span class="st"></span><span class="${c.lit ? 'ok' : 'bug'}">${c.lit ? 'CHECKSUM OK' : tokens(c) + ' TOKENS'}</span></div><div class="port" title="Drag to another node to link"></div>`;
+  host.appendChild(el); els[c.id] = el; fill(c);
+  el.addEventListener('pointerdown', (e) => nodeDown(e, c));
+  el.addEventListener('dblclick', (e) => edit(e, c));
+  el.addEventListener('mouseenter', () => { if (Math.random() < .5) attemptCorrection(c.id); });
+}
+function fill(c) {
+  const el = els[c.id];
+  el.querySelector('.ttl').textContent = c.kind === 'ink' ? 'MAP OF THE HARBOUR' : title(c);
+  const b = el.querySelector('.body'); if (b && !b.isContentEditable) b.textContent = body(c);
+  el.querySelector('.st').textContent = status(c);
+  el.classList.toggle('lit', !!c.lit);
+}
+CARDS.forEach(buildNode);
+let glyphFor = null;
+function placeNodes() {
+  const level = lod(cam.s);
+  const show = level === 'GLYPH' || level === 'NODE' || level === 'SUBNET';
+  for (const c of CARDS) {
+    const el = els[c.id];
+    if (!show) { el.style.display = 'none'; continue; }
+    const [sx, sy] = toScreen(c.x, c.y);
+    // cull
+    if (sx > W + 50 || sy > H + 50 || sx + c.w * cam.s < -50 || sy + c.h * cam.s * 3 < -50) { el.style.display = 'none'; continue; }
+    el.style.display = '';
+    el.style.transform = `translate(${sx.toFixed(2)}px,${sy.toFixed(2)}px) scale(${cam.s.toFixed(5)})`;
+    el.classList.toggle('chip', level === 'SUBNET');
+    el.classList.toggle('sel', selected === c.id);
+    el.classList.toggle('last', lastTouched === c.id);
+    const wantGlyph = level === 'GLYPH' && c.kind !== 'ink';
+    const has = !!el.querySelector('.glyphs');
+    if (wantGlyph && !has) {
+      const b = el.querySelector('.body'); if (b) b.style.display = 'none';
+      const g = document.createElement('div'); g.className = 'glyphs';
+      for (const ch of body(c) || title(c)) {
+        const cp = ch.codePointAt(0).toString(16).toUpperCase().padStart(4, '0');
+        const d = document.createElement('div'); d.className = 'glyph' + (ch === ' ' ? ' sp' : '');
+        d.innerHTML = `<b></b><i>U+${cp}</i>`; d.firstChild.textContent = ch === '\n' ? '↵' : ch; g.appendChild(d);
+      }
+      el.insertBefore(g, el.querySelector('.ft'));
+    } else if (!wantGlyph && has) {
+      el.querySelector('.glyphs').remove(); const b = el.querySelector('.body'); if (b) b.style.display = '';
+    }
+  }
+}
+
+// ============================================================================
+// INPUT — pan, zoom (wheel + pinch), drag nodes, link from port, edit text
+// ============================================================================
+let pan = null, drag = null, dragLink = null; const pointers = new Map(); let pinch = null;
+function zoomAt(sx, sy, f) {
+  const [wx, wy] = toWorld(sx, sy);
+  cam.s = Math.max(1e-7, Math.min(1e4, cam.s * f));
+  cam.x = wx - (sx - W / 2) / cam.s; cam.y = wy - (sy - H / 2) / cam.s;
+  touch();
+}
+addEventListener('wheel', (e) => { e.preventDefault(); zoomAt(e.clientX, e.clientY, Math.exp(-e.deltaY * (e.ctrlKey ? .01 : .0016))); }, { passive: false });
+bg.addEventListener('pointerdown', (e) => {
+  pointers.set(e.pointerId, [e.clientX, e.clientY]); bg.setPointerCapture(e.pointerId);
+  if (pointers.size === 2) { const [p, q] = [...pointers.values()]; pinch = { d: Math.hypot(p[0] - q[0], p[1] - q[1]) }; pan = null; return; }
+  pan = { x: e.clientX, y: e.clientY, cx: cam.x, cy: cam.y }; selected = null; stopEdit();
+});
+bg.addEventListener('pointermove', (e) => {
+  if (pointers.has(e.pointerId)) pointers.set(e.pointerId, [e.clientX, e.clientY]);
+  if (pinch && pointers.size === 2) { const [p, q] = [...pointers.values()]; const d = Math.hypot(p[0] - q[0], p[1] - q[1]); zoomAt((p[0] + q[0]) / 2, (p[1] + q[1]) / 2, d / pinch.d); pinch.d = d; return; }
+  if (pan) { cam.x = pan.cx - (e.clientX - pan.x) / cam.s; cam.y = pan.cy - (e.clientY - pan.y) / cam.s; touch(); }
+});
+const up = (e) => { pointers.delete(e.pointerId); if (pointers.size < 2) pinch = null; pan = null; };
+bg.addEventListener('pointerup', up); bg.addEventListener('pointercancel', up);
+
+function nodeDown(e, c) {
+  if (e.target.isContentEditable) return;
+  e.stopPropagation();
+  selected = c.id; lastTouched = c.id;
+  if (e.target.classList.contains('port')) { dragLink = { from: c.id, x: e.clientX, y: e.clientY }; }
+  else drag = { id: c.id, x: e.clientX, y: e.clientY, ox: c.x, oy: c.y };
+  addEventListener('pointermove', nodeMove); addEventListener('pointerup', nodeUp, { once: true });
+}
+function nodeMove(e) {
+  touch();
+  if (drag) { const c = byId[drag.id]; c.x = drag.ox + (e.clientX - drag.x) / cam.s; c.y = drag.oy + (e.clientY - drag.y) / cam.s; }
+  if (dragLink) { dragLink.x = e.clientX; dragLink.y = e.clientY; }
+}
+function nodeUp(e) {
+  removeEventListener('pointermove', nodeMove);
+  if (dragLink) {
+    const hit = document.elementsFromPoint(e.clientX, e.clientY).map(n => n.closest && n.closest('.node')).find(Boolean);
+    const to = hit && hit.dataset.id;
+    if (to && to !== dragLink.from && !LINKS.some(([a, b]) => (a === dragLink.from && b === to) || (a === to && b === dragLink.from))) {
+      LINKS.push([dragLink.from, to]); linkFlash = { a: dragLink.from, b: to, until: performance.now() + 1200 };
+    }
+  }
+  drag = null; dragLink = null;
+}
+function edit(e, c) {
+  const b = els[c.id].querySelector('.body'); if (!b || lod(cam.s) !== 'NODE') return;
+  e.stopPropagation(); lastTouched = c.id; selected = c.id;
+  b.contentEditable = 'true'; b.focus();
+  b.addEventListener('input', () => touch(1500));
+  b.addEventListener('blur', () => { c.text = title(c) + '\n' + b.textContent; b.contentEditable = 'false'; fill(c); }, { once: true });
+}
+function stopEdit() { const b = document.querySelector('.body[contenteditable="true"]'); if (b) b.blur(); }
+
+// ---- camera flights ----
+let flight = null;
+function flyTo(x, y, s, ms = 900) { flight = { from: { ...cam }, to: { x, y, s }, t0: performance.now(), ms: reduced() ? 1 : ms }; }
+function stepFlight(t) {
+  if (!flight) return;
+  const u = Math.min(1, (t - flight.t0) / flight.ms), e = u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+  const ls = Math.log(flight.from.s) + (Math.log(flight.to.s) - Math.log(flight.from.s)) * e;   // zoom in log space: infinite zoom stays smooth
+  cam.s = Math.exp(ls); cam.x = flight.from.x + (flight.to.x - flight.from.x) * e; cam.y = flight.from.y + (flight.to.y - flight.from.y) * e;
+  touch(200); if (u >= 1) flight = null;
+}
+const locate = () => { const c = byId[lastTouched]; selected = c.id; flyTo(c.x + c.w / 2, c.y + c.h / 2, 1.15, 1300); };
+const fit = () => flyTo(CX, CY, Math.min(W / (BW + 200), (H - 120) / (BH + 200)));
+document.getElementById('locate').onclick = locate;
+document.getElementById('fit').onclick = fit;
+
+// ---- views: Live (stored x/y) and Sequence (lanes by act) - projections, the stored positions never change ----
+const home = Object.fromEntries(CARDS.map(c => [c.id, { x: c.x, y: c.y }]));
+let morph = null;
+function setView(v) {
+  document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === v)));
+  const target = {};
+  if (v === 'live') for (const c of CARDS) target[c.id] = home[c.id];
+  else {
+    for (const c of CARDS) home[c.id] = home[c.id] || { x: c.x, y: c.y };
+    const lanes = ['act1', 'act2', 'act3', null];
+    lanes.forEach((g, li) => CARDS.filter(c => c.groupId === g).sort((a, b) => home[a.id].x - home[b.id].x).forEach((c, i) => target[c.id] = { x: 80 + i * 300, y: 40 + li * 230 }));
+  }
+  if (v === 'sequence') for (const c of CARDS) if (!morph || morph.view === 'live') home[c.id] = { x: c.x, y: c.y };
+  morph = { view: v, from: Object.fromEntries(CARDS.map(c => [c.id, { x: c.x, y: c.y }])), to: target, t0: performance.now(), ms: reduced() ? 1 : 700 };
+}
+document.querySelectorAll('.tab').forEach(b => b.onclick = () => setView(b.dataset.view));
+function stepMorph(t) {
+  if (!morph || morph.done) return;
+  const u = Math.min(1, (t - morph.t0) / morph.ms), e = 1 - Math.pow(1 - u, 3);
+  for (const c of CARDS) { const f = morph.from[c.id], g = morph.to[c.id]; c.x = f.x + (g.x - f.x) * e; c.y = f.y + (g.y - f.y) * e; }
+  touch(100); if (u >= 1) morph.done = true;
+}
+
+// ---- jack out: the same nodes, drawn by Arbor, in place ----
+document.getElementById('jack').onclick = () => {
+  const s = document.getElementById('swap'); s.classList.remove('go'); void s.offsetWidth; s.classList.add('go');
+  setTimeout(() => { document.body.classList.toggle('arbor'); document.getElementById('jack').firstChild.textContent = document.body.classList.contains('arbor') ? 'Jack in → back to Flux ' : 'Jack out → see it in Arbor '; }, 320);
+};
+
+// ---- dial, notes, keys ----
+const dialr = document.getElementById('dialr');
+dialr.oninput = () => { glitch = +dialr.value; document.getElementById('dialv').textContent = glitch; };
+document.getElementById('notesBtn').onclick = () => document.getElementById('notes').classList.toggle('open');
+document.getElementById('notesX').onclick = () => document.getElementById('notes').classList.remove('open');
+addEventListener('keydown', (e) => {
+  if (e.target.isContentEditable) return;
+  if (e.key === 'l' || e.key === 'L') locate();
+  if (e.key === '0') fit();
+  if (e.key === 'j' || e.key === 'J') document.getElementById('jack').click();
+  if (e.key === '+' || e.key === '=') zoomAt(W / 2, H / 2, 1.4);
+  if (e.key === '-') zoomAt(W / 2, H / 2, 1 / 1.4);
+});
+
+// ---- telemetry + minimap ----
+const tele = document.getElementById('tele');
+function drawTele() {
+  const e = Math.floor(Math.log10(cam.s)), m = cam.s / Math.pow(10, e);
+  const c = byId[lastTouched];
+  tele.innerHTML = `LEVEL <span class="lvl">${lod(cam.s)}</span><br>ZOOM <b>${m.toFixed(2)}×10<sup>${e}</sup></b><br>
+    COORD <b>X ${Math.round(cam.x).toString(16).toUpperCase()}</b> · <b>Y ${Math.round(cam.y).toString(16).toUpperCase()}</b><br>
+    NODES <b>${CARDS.length}</b> · LINKS <b>${LINKS.length}</b> · LIT <b style="color:var(--lime)">${CARDS.filter(c => c.lit).length}</b><br>
+    LAST <b style="color:var(--orange)">${title(c).slice(0, 18)} ${hex(c.id)}</b>`;
+}
+function drawMini() {
+  mx.clearRect(0, 0, 260, 150);
+  const sc = Math.min(240 / BW, 130 / BH), ox = 10 - BOUNDS.x0 * sc + (240 - BW * sc) / 2, oy = 10 - BOUNDS.y0 * sc;
+  mx.strokeStyle = 'rgba(0,194,255,.35)'; mx.lineWidth = 1;
+  for (const [a, b] of LINKS) { const A = byId[a], B = byId[b]; mx.beginPath(); mx.moveTo(ox + (A.x + A.w / 2) * sc, oy + (A.y + A.h / 2) * sc); mx.lineTo(ox + (B.x + B.w / 2) * sc, oy + (B.y + B.h / 2) * sc); mx.stroke(); }
+  for (const c of CARDS) { mx.fillStyle = c.id === lastTouched ? '#FF9800' : c.lit ? '#A6FF3D' : '#57D0F5'; mx.fillRect(ox + c.x * sc, oy + c.y * sc, c.w * sc, Math.max(2, c.h * sc)); }
+  const [x0, y0] = toWorld(0, 0), [x1, y1] = toWorld(W, H);
+  mx.strokeStyle = '#E8F6FA'; mx.strokeRect(ox + x0 * sc, oy + y0 * sc, (x1 - x0) * sc, (y1 - y0) * sc);
+}
+
+// ============================================================================
+function frameLoop(t) {
+  stepFlight(t); stepMorph(t);
+  if (!document.body.classList.contains('arbor')) { drawGround(t); spawnTexture(t); drawTexture(t); } else { fxx.clearRect(0, 0, W, H); }
+  drawLinks(t); placeNodes(); drawTele(); drawMini();
+  requestAnimationFrame(frameLoop);
+}
+// jack in: start from a point and zoom to the circuit (the arrival)
+cam.s = 0.004; flyTo(CX, CY, Math.min(W / (BW + 200), (H - 120) / (BH + 200)), 1800);
+requestAnimationFrame(frameLoop);
+</script>
+</body>
+</html>

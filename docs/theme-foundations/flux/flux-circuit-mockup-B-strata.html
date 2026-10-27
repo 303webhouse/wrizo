@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FLUX // CIRCUIT — Mockup B: STRATA (layers in depth)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Chakra+Petch:wght@400;500;600&family=Crimson+Pro:wght@400;500&display=swap">
+<style>
+/* MOCKUP ONLY — not product code. Flux tokens as shipped (index.css :root[data-theme='flux'], hue 212). */
+:root{
+  --ground:#010811; --chrome:#0F1926; --glass:#0E1E31; --line:#193556; --line-strong:#244D7C;
+  --cyan:#00C2FF; --cyan-soft:#57D0F5; --ink:#E8F6FA; --mid:#9AD7EA; --low:#7EB4C4;
+  --lime:#A6FF3D; --orange:#FF9800;
+  --f-chrome:'Rajdhani','Arial Narrow',system-ui,sans-serif; --f-content:'Chakra Petch',system-ui,sans-serif; --f-serif:'Crimson Pro',Georgia,serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:radial-gradient(120% 90% at 50% 40%,#06162A 0%,#010811 70%);color:var(--ink);font-family:var(--f-content)}
+#scene{position:fixed;inset:0;perspective:1500px;perspective-origin:50% 45%;overflow:hidden;cursor:grab}
+#scene.grabbing{cursor:grabbing}
+#world{position:absolute;left:50%;top:50%;width:0;height:0;transform-style:preserve-3d}
+.plane,.beam,.region,.beacon{position:absolute;left:0;top:0;transform-style:preserve-3d;pointer-events:none}
+#rain{position:absolute;left:0;top:0;width:3200px;height:2200px;transform-origin:0 0;pointer-events:none;opacity:.9;
+  border:1px solid rgba(0,194,255,.25);image-rendering:pixelated}
+.plabel{position:absolute;font-family:var(--f-chrome);font-weight:700;font-size:15px;letter-spacing:.28em;color:rgba(87,208,245,.8);white-space:nowrap;pointer-events:none}
+.region{border:1px solid rgba(166,255,61,.35);background:rgba(166,255,61,.035)}
+.region::before,.region::after{content:'';position:absolute;width:16px;height:16px;border:2px solid var(--lime)}
+.region::before{left:-3px;top:-3px;border-right:none;border-bottom:none}
+.region::after{right:-3px;bottom:-3px;border-left:none;border-top:none}
+.region span{position:absolute;left:4px;top:-22px;font-family:var(--f-chrome);font-weight:700;font-size:13px;letter-spacing:.24em;color:var(--lime);white-space:nowrap}
+.beam{height:2px;margin-top:-1px;transform-origin:0 50%;background:linear-gradient(90deg,rgba(0,194,255,.15),rgba(0,194,255,.85) 30%,rgba(0,194,255,.15) 60%,rgba(0,194,255,.85) 90%);
+  background-size:120px 100%;animation:flow 1.6s linear infinite}
+.beam > i{position:absolute;inset:0;transform:rotateX(90deg);background:inherit;animation:inherit}
+.beam.hot{height:3px;background:linear-gradient(90deg,rgba(232,246,250,.25),#E8F6FA 30%,rgba(0,194,255,.4) 60%,#E8F6FA 90%);background-size:90px 100%;animation-duration:.7s}
+.beam.you{background:linear-gradient(90deg,rgba(255,152,0,.2),#FF9800 40%,rgba(255,152,0,.2));background-size:90px 100%}
+@keyframes flow{to{background-position:120px 0}}
+.beacon{width:4px;margin-left:-2px;transform-origin:50% 100%;background:linear-gradient(0deg,rgba(255,152,0,0),rgba(255,152,0,.9) 60%,rgba(255,152,0,0))}
+.beacon > i{position:absolute;inset:0;transform:rotateY(90deg);background:inherit}
+
+/* node (a card) as a holographic record pane */
+.node{position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:auto;background:rgba(14,30,49,.82);border:1px solid rgba(0,194,255,.5);
+  backface-visibility:visible;cursor:grab;user-select:none}
+.node::before,.node::after{content:'';position:absolute;width:10px;height:10px;border:2px solid var(--cyan);pointer-events:none}
+.node::before{left:-4px;top:-4px;border-right:none;border-bottom:none}
+.node::after{right:-4px;bottom:-4px;border-left:none;border-top:none}
+.node .hd{display:flex;justify-content:space-between;padding:5px 9px;border-bottom:1px solid rgba(0,194,255,.25);font-family:var(--f-chrome);font-weight:600;font-size:11px;letter-spacing:.16em;color:var(--low)}
+.node .hd .id{color:var(--cyan-soft)}
+.node .ttl{padding:7px 10px 0;font-family:var(--f-chrome);font-weight:700;font-size:15px;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan-soft)}
+.node .body{padding:4px 10px 9px;font-size:13px;line-height:1.55;white-space:pre-wrap}
+.node .st{padding:0 10px 7px;font-family:var(--f-chrome);font-size:10.5px;letter-spacing:.14em;color:var(--low)}
+.node.lit{border-color:rgba(166,255,61,.6)} .node.lit::before,.node.lit::after{border-color:var(--lime)} .node.lit .st{color:var(--lime)}
+.node.sel{border-color:var(--cyan);box-shadow:0 0 30px rgba(0,194,255,.25)}
+.node.last{box-shadow:inset 3px 0 0 var(--orange)}
+.node.pin .ttl{font-family:var(--f-serif);text-transform:none;letter-spacing:0;font-size:17px;color:var(--ink)}
+.node.scan .st{color:var(--orange)}
+.node.scan{border-color:rgba(255,152,0,.6)}
+
+/* the scan plane: the system sweeping the node layer for human artefacts */
+#scanbar{position:absolute;left:0;top:0;height:6px;pointer-events:none;background:linear-gradient(0deg,rgba(0,194,255,0),rgba(0,194,255,.7),rgba(0,194,255,0));transform-origin:0 0;opacity:0}
+
+/* chrome */
+.hud{position:fixed;z-index:10;font-family:var(--f-chrome);letter-spacing:.14em;text-transform:uppercase}
+#top{top:0;left:0;right:0;height:46px;display:flex;align-items:center;gap:18px;padding:0 16px;background:rgba(15,25,38,.86);border-bottom:1px solid var(--line)}
+#top .crumb{font-size:13px;color:var(--low)} #top .crumb b{color:var(--ink);font-weight:600}
+#top .tabs{margin-left:auto;display:flex;gap:2px}
+.tab{background:none;border:1px solid transparent;color:var(--mid);font:600 12px var(--f-chrome);letter-spacing:.16em;text-transform:uppercase;padding:7px 12px;cursor:pointer}
+.tab:hover{color:var(--ink)} .tab[aria-pressed="true"]{color:var(--cyan);border-bottom:2px solid var(--cyan)}
+#acts{left:14px;bottom:14px;display:flex;flex-direction:column;gap:6px}
+.btn{background:rgba(15,25,38,.9);border:1px solid var(--line-strong);color:var(--mid);font:600 12px var(--f-chrome);letter-spacing:.16em;text-transform:uppercase;padding:7px 12px;cursor:pointer;text-align:left}
+.btn:hover{color:var(--cyan);border-color:var(--cyan)} .btn .k{color:var(--low);margin-left:8px;font-size:10px}
+.btn.you{border-color:var(--orange);color:var(--orange)}
+#strata{left:14px;top:60px;width:210px;padding:10px 12px;background:rgba(15,25,38,.86);border:1px solid var(--line);font-size:11px;color:var(--low);display:flex;flex-direction:column;gap:7px}
+#strata input[type=range]{width:100%;accent-color:var(--cyan)}
+#strata .row{display:flex;justify-content:space-between} #strata b{color:var(--cyan-soft)}
+#strata label{display:flex;gap:6px;align-items:center;cursor:pointer}
+#tele{right:14px;bottom:14px;width:250px;padding:10px 12px;background:rgba(15,25,38,.86);border:1px solid var(--line);font-size:11px;color:var(--low);line-height:1.7}
+#tele b{color:var(--cyan-soft)} #tele .lvl{color:var(--lime)}
+#hint{left:50%;top:58px;transform:translateX(-50%);font-size:11px;color:var(--low);background:rgba(1,8,17,.7);padding:4px 10px;border:1px solid var(--line)}
+#notesBtn{right:14px;top:58px}
+#notes{position:fixed;z-index:40;top:58px;right:14px;bottom:14px;width:min(560px,calc(100vw - 28px));overflow:auto;background:rgba(9,18,30,.97);border:1px solid var(--line-strong);padding:18px 20px;display:none;font-size:13px;line-height:1.6;color:var(--mid)}
+#notes.open{display:block} #notes h2{font-family:var(--f-chrome);font-size:15px;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);margin:16px 0 6px}
+#notes h2:first-of-type{margin-top:0} #notes b{color:var(--ink)} #notes ul{padding-left:18px;margin:4px 0} #notes .x{float:right}
+
+/* level overlays: inside a node (dive) and above the circuit (rack) */
+#dive,#rack{position:fixed;inset:0;z-index:20;display:none}
+#dive{background:rgba(1,8,17,.96);padding:70px 6vw 40px;overflow:auto}
+#dive.on,#rack.on{display:block}
+#dive .dh{font-family:var(--f-chrome);font-weight:600;font-size:13px;letter-spacing:.2em;color:var(--low);display:flex;gap:20px;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:10px}
+#dive .dh b{color:var(--cyan);font-size:22px;letter-spacing:.14em}
+#dive .cols{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:30px;margin-top:22px}
+#src{font-family:var(--f-content);font-size:17px;line-height:2;counter-reset:ln;outline:none;white-space:pre-wrap}
+#src .ln{display:block;padding-left:56px;position:relative}
+#src .ln::before{counter-increment:ln;content:counter(ln,decimal-leading-zero);position:absolute;left:0;width:40px;text-align:right;color:#3E6A8F;font-family:var(--f-chrome);font-size:13px}
+#src[contenteditable="true"]{caret-color:var(--orange)}
+.tk-id{color:var(--cyan-soft)} .tk-kw{color:var(--mid);font-weight:600} .tk-op{color:var(--cyan)} .tk-num{color:var(--lime)} .tk-w{color:var(--ink)}
+#schema{border:1px solid var(--line);padding:12px 14px;font-family:var(--f-chrome);font-size:12px;letter-spacing:.12em;color:var(--low);line-height:2}
+#schema b{color:var(--ink);font-weight:600} #schema .fn{color:var(--cyan-soft)} #schema .bug{color:var(--orange)}
+#rack canvas{position:absolute;inset:0;width:100%;height:100%}
+
+/* theme-switch demo */
+body.arbor{background:#150F0B}
+body.arbor #rain,body.arbor .plabel,body.arbor .region,body.arbor .beacon,body.arbor #scanbar{opacity:0 !important}
+body.arbor .node{background:#FBF6EA;border-color:#D9CFB6;color:#2B2014}
+body.arbor .node::before,body.arbor .node::after,body.arbor .node .hd,body.arbor .node .st{display:none}
+body.arbor .node .ttl{color:#2B2014;font-family:system-ui,sans-serif;letter-spacing:.02em;text-transform:none}
+body.arbor .node .body{color:#2B2014;font-family:var(--f-serif);font-size:15px}
+body.arbor .node.last{box-shadow:inset 3px 0 0 #96A05A}
+body.arbor .beam{background:#c9a24a;animation:none;height:1px}
+body.arbor .hud:not(#acts){opacity:.25}
+@media (prefers-reduced-motion:reduce){ .beam,.beam > i{animation:none} }
+</style>
+</head>
+<body>
+<div id="scene"><div id="world"></div></div>
+<div id="dive"></div>
+<div id="rack"><canvas id="rackc"></canvas></div>
+
+<div id="top" class="hud">
+  <span class="crumb">NOVELS ▸ THE LATE FERRY ▸ <b>PLOT // CIRCUIT</b></span>
+  <div class="tabs" role="group" aria-label="Circuit view">
+    <button class="tab" data-view="live" aria-pressed="true">Live</button>
+    <button class="tab" data-view="sequence" aria-pressed="false">Sequence</button>
+  </div>
+</div>
+<div id="hint" class="hud">Wheel = zoom (in past a node to enter it · out past the circuit to its rack) · drag = pan · right-drag / shift-drag = orbit · double-click = enter node</div>
+<div id="strata" class="hud">
+  <div class="row"><span>Strata</span><b id="ev">EXPLODED</b></div>
+  <input id="er" type="range" min="0" max="100" value="100" aria-label="Layer separation">
+  <div class="row"><span>Glitch</span><b id="gv">60</b></div>
+  <input id="gr" type="range" min="0" max="100" value="60" aria-label="Glitch amount">
+  <label><input id="rm" type="checkbox"> Reduced motion</label>
+</div>
+<button id="notesBtn" class="btn hud">Design notes</button>
+<div id="acts" class="hud">
+  <button class="btn you" id="locate">Locate last node <span class="k">L</span></button>
+  <button class="btn" id="flat">Flatten (work mode) <span class="k">F</span></button>
+  <button class="btn" id="jack">Jack out → see it in Arbor <span class="k">J</span></button>
+</div>
+<div id="tele" class="hud"></div>
+
+<div id="notes">
+  <button class="btn x" id="notesX">Close</button>
+  <h2>Mockup B — STRATA</h2>
+  <p>The Flux Circuit as <b>layers of reality in depth</b>. The same board, pulled apart into the strata it is already made of:</p>
+  <ul>
+    <li><b>SUBSTRATE</b> — the ground is a rain of code made of <b>your own words</b>, falling as glyphs. Language as code, literally.</li>
+    <li><b>SCHEMA</b> — the structure: your groups as lime-bracketed regions, the reading-order spine.</li>
+    <li><b>NODES</b> — your cards as holographic record panes.</li>
+    <li><b>BUS</b> — your links rise off the node plane as light beams and cross on a bus layer above it, packets running along them.</li>
+  </ul>
+  <p>Drag the <b>Strata</b> slider (or press <b>F</b>) to flatten everything back onto one plane, top-down: <b>work mode is the familiar board</b>, the spectacle is one gesture away and back.</p>
+  <h2>Infinite zoom, in levels</h2>
+  <ul>
+    <li><b>In</b>: zoom past a node (or double-click it) and you enter it. Inside, the card's text is shown as <b>source</b> — line numbers, tokens coloured as identifiers, keywords, operators and constants — beside its schema (id, kind, group, links written as function calls). It is still your text; you can edit it there, with the orange caret.</li>
+    <li><b>Out</b>: zoom past the circuit and it collapses into a cube in its cartridge, among its sibling circuits; keep going: the cartridge in its rack, the rack in the cache, then unindexed space, without end.</li>
+  </ul>
+  <h2>Humanity as a bug</h2>
+  <p>Every few seconds a <b>scan plane</b> sweeps the node layer looking for human artefacts. Each node it crosses flags <b>HUMAN ARTEFACT // UNCORRECTABLE</b> in orange and settles back. The inside view lists the card's "bugs": one, always — <b>you</b>. All of it is theatre: <b>no stored word is ever changed</b>.</p>
+  <h2>Familiar, not lost</h2>
+  <ul>
+    <li>Nodes keep the card's own x / y and size on their layer: flatten and you are looking at your board.</li>
+    <li><b>Orange is you</b>: the last node you touched carries the orange bar and an orange <b>beacon</b> that rises through every layer, so it can be seen from any angle. <b>Locate last node</b> flies there.</li>
+    <li><b>Jack out</b> flattens and redraws the same cards as Arbor cards in place.</li>
+  </ul>
+  <h2>The design team (two passes)</h2>
+  <p>Same convening as Mockup A: sci-fi game UI, motion / VFX, data-visualisation, with the house Experts and Architects. This is the <b>spectacle direction</b>. Pass 2's trims that shaped it: the code rain is only the <b>substrate</b> and dims while you work; 3D is never required to work (flatten is always one key); the camera never moves on its own except when you ask (Locate, Flatten); glitch and scan stay under 3 Hz and damp while you drag or type; <b>reduced motion</b> stops the rain, beams and scan.</p>
+  <h2>What this mockup does not decide (would go to Fable)</h2>
+  <ul>
+    <li>A 3D stage is a new board renderer for Flux only — an architecture pass. Mapping layers to data uses only fields that exist (kind, groupId, links, lit, order).</li>
+    <li>Remembering the camera / strata amount would be a new saved field; here it lives in memory.</li>
+    <li>Editing "source" inside a node writes the card's ordinary text; no new storage.</li>
+  </ul>
+</div>
+
+<script>
+'use strict';
+// THE DATA — the same board shape as Mockup A (types/index.ts Box: id, kind, x, y, w, h, groupId, text, lit + links).
+const CARDS = [
+  { id:'c1', kind:'text', x:80,   y:60,  w:250, h:150, groupId:'act1', lit:true,  text:'HOOK\nMara misses the last ferry on purpose. She wants the island to think she drowned.' },
+  { id:'c2', kind:'text', x:430,  y:40,  w:250, h:150, groupId:'act1', lit:true,  text:'INCITING INCIDENT\nA stranger on the dock is wearing her coat — the one she left folded on the rail.' },
+  { id:'c3', kind:'text', x:250,  y:330, w:250, h:150, groupId:'act1', lit:false, text:'THE ISLAND\nNo cars. One bell. A lighthouse that has been dark since 1987.' },
+  { id:'c4', kind:'text', x:800,  y:120, w:250, h:150, groupId:'act2', lit:false, text:'MIDPOINT\nThe stranger is her sister, declared dead the winter the light went out.' },
+  { id:'c5', kind:'text', x:700,  y:420, w:250, h:150, groupId:'act2', lit:false, text:'RISING ACTION\nThe ferryman keeps two logbooks. Only one of them is for the harbour master.' },
+  { id:'c6', kind:'page-pin', x:1050, y:400, w:260, h:130, groupId:'act2', lit:false, text:'Chapter 3 — The Two Logbooks\nHe wrote the crossings in pencil and the weather in ink, as if one could be rubbed out.' },
+  { id:'c7', kind:'text', x:20,   y:560, w:220, h:130, groupId:null,  lit:false, text:'MAP OF THE HARBOUR\n(ink sketch: the quay, the bell, the dark light)' },
+  { id:'c8', kind:'text', x:1200, y:90,  w:250, h:150, groupId:'act3', lit:false, text:'CRISIS\nThe bell rings at 2 a.m. Nobody pulled the rope.' },
+  { id:'c9', kind:'text', x:1420, y:330, w:250, h:150, groupId:'act3', lit:false, text:'CLIMAX\nMara climbs the dead lighthouse and lights it by hand.' },
+  { id:'c10',kind:'text', x:430,  y:640, w:230, h:110, groupId:null,  lit:false, text:'salt in the hinges\n(not sure where this goes)' },
+];
+const LINKS = [['c1','c2'],['c2','c4'],['c3','c5'],['c4','c8'],['c5','c6'],['c8','c9'],['c3','c9'],['c7','c3'],['c10','c5'],['c4','c5']];
+const GROUPS = { act1:'ACT I', act2:'ACT II', act3:'ACT III' };
+let lastTouched = 'c5', selected = null;
+const byId = Object.fromEntries(CARDS.map(c => [c.id, c]));
+const hex = (id) => '0x' + (Array.from(id).reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7) & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+const title = (c) => c.text.split('\n')[0];
+const body = (c) => c.text.split('\n').slice(1).join('\n');
+const reduced = () => document.getElementById('rm').checked || matchMedia('(prefers-reduced-motion: reduce)').matches;
+let busyUntil = 0; const busy = () => performance.now() < busyUntil; const touch = (ms = 700) => { busyUntil = performance.now() + ms; };
+
+// CAMERA: center (cx, cy) on the node plane, zoom, pitch, yaw; strata separation e (0 = flat)
+const cam = { cx: 860, cy: 400, z: .62, pitch: 50, yaw: -16 };
+let e = 1, glitch = 60;
+const Z = { sub: -60, schema: 120, nodes: 260, bus: 420 };   // per-layer depth at full separation
+const zOf = (k) => Z[k] * e;
+
+const world = document.getElementById('world');
+const scene = document.getElementById('scene');
+const el = (tag, cls, parent = world) => { const n = document.createElement(tag); if (cls) n.className = cls; parent.appendChild(n); return n; };
+
+// ---- SUBSTRATE: code rain of the writer's own words ----
+const rain = el('canvas'); rain.id = 'rain'; rain.width = 1600; rain.height = 1100;
+const rx = rain.getContext('2d');
+const RX0 = -700, RY0 = -650;
+const WORDS = CARDS.map(c => c.text.replace(/\n/g, ' ')).join(' ').toUpperCase().replace(/[^A-Z0-9 .,—'-]/g, '').split(/\s+/).filter(Boolean);
+const cols = Array.from({ length: Math.floor(1600 / 14) }, (_, i) => ({ y: Math.random() * 1100, v: 40 + Math.random() * 90, w: WORDS[(i * 7) % WORDS.length], k: 0 }));
+rx.fillStyle = '#010811'; rx.fillRect(0, 0, 1600, 1100);
+let lastRain = 0;
+function drawRain(t) {
+  const dt = Math.min(.05, (t - lastRain) / 1000); lastRain = t;
+  if (reduced()) return;
+  const dim = busy() ? .35 : 1;
+  rx.fillStyle = 'rgba(1,8,17,.12)'; rx.fillRect(0, 0, 1600, 1100);
+  rx.font = '600 13px "Chakra Petch", monospace';
+  cols.forEach((c, i) => {
+    const prev = Math.floor(c.y / 15); c.y += c.v * dt; const now = Math.floor(c.y / 15);
+    if (now !== prev) {
+      const ch = Math.random() < .12 ? '0123456789ABCDEF'[(Math.random() * 16) | 0] : c.w[c.k % c.w.length];
+      c.k++; if (c.k >= c.w.length + 1) { c.k = 0; c.w = WORDS[(Math.random() * WORDS.length) | 0]; }
+      const lime = (i % 3) === 0;
+      rx.fillStyle = lime ? `rgba(166,255,61,${.85 * dim})` : `rgba(87,208,245,${.9 * dim})`;
+      rx.fillText(c.k === 0 ? ' ' : ch, i * 14, now * 15);
+    }
+    if (c.y > 1100 + Math.random() * 400) { c.y = -20; c.v = 40 + Math.random() * 90; }
+  });
+  // texture events on the substrate (canon Signal-Loss dialect), damped while busy
+  if (!busy() && glitch && Math.random() < .004 * glitch / 60) { rx.fillStyle = 'rgba(0,194,255,.5)'; rx.fillRect(0, Math.random() * 1100, 1600, 1); }
+  if (!busy() && glitch && Math.random() < .008 * glitch / 60) { const x = Math.random() * 1600, y = Math.random() * 1100; for (let i = 0; i < 6; i++) { rx.fillStyle = Math.random() < .35 ? 'rgba(166,255,61,.3)' : 'rgba(0,194,255,.3)'; rx.fillRect(x + (Math.random() - .5) * 120, y + (Math.random() - .5) * 60, 10 + Math.random() * 18, 8 + Math.random() * 10); } }
+}
+const subLabel = el('div', 'plabel'); subLabel.textContent = 'SUBSTRATE // YOUR WORDS AS SIGNAL';
+const schemaLabel = el('div', 'plabel'); schemaLabel.textContent = 'SCHEMA // STRUCTURE';
+const nodeLabel = el('div', 'plabel'); nodeLabel.textContent = 'NODES // 10 RECORDS';
+const busLabel = el('div', 'plabel'); busLabel.textContent = 'BUS // LINKS';
+
+// ---- SCHEMA: group regions + the reading-order spine ----
+const regions = Object.entries(GROUPS).map(([g, name]) => { const r = el('div', 'region'); r.innerHTML = `<span>SCHEMA // ${name}</span>`; r.dataset.g = g; return r; });
+const spine = [];
+// ---- BUS: link beams (riser up, run across, riser down) ----
+function seg(n, ax, ay, az, bx, by, bz) {
+  const dx = bx - ax, dy = by - ay, dz = bz - az, len = Math.hypot(dx, dy, dz);
+  if (len < .5) { n.style.display = 'none'; return; }
+  n.style.display = '';
+  const yaw = Math.atan2(dy, dx), pitch = Math.atan2(dz, Math.hypot(dx, dy));
+  n.style.width = len.toFixed(1) + 'px';
+  n.style.transform = `translate3d(${ax}px,${ay}px,${az}px) rotateZ(${yaw}rad) rotateY(${-pitch}rad)`;
+}
+const beams = LINKS.map(() => [0, 1, 2].map(() => { const b = el('div', 'beam'); el('i', null, b); return b; }));
+for (let i = 0; i < 3; i++) spine.push((() => { const b = el('div', 'beam'); el('i', null, b); b.style.opacity = '.5'; b.style.filter = 'hue-rotate(-90deg)'; return b; })());
+const beacon = el('div', 'beacon'); el('i', null, beacon);
+const scanbar = el('div'); scanbar.id = 'scanbar';
+
+// ---- NODES ----
+const nodes = {};
+for (const c of CARDS) {
+  const n = el('div', 'node ' + (c.kind === 'page-pin' ? 'pin' : ''));
+  n.style.width = c.w + 'px';
+  n.innerHTML = `<div class="hd"><span class="id">NODE ${hex(c.id)}</span><span>${c.kind === 'page-pin' ? 'DOC LINK' : 'TEXT'}</span></div><div class="ttl"></div><div class="body"></div><div class="st"></div>`;
+  nodes[c.id] = n; fillNode(c);
+  n.addEventListener('pointerdown', (ev) => nodeDown(ev, c));
+  n.addEventListener('dblclick', () => dive(c.id));
+}
+function fillNode(c) {
+  const n = nodes[c.id];
+  n.querySelector('.ttl').textContent = title(c);
+  n.querySelector('.body').textContent = body(c);
+  n.querySelector('.st').textContent = c.lit ? 'CHECKSUM OK · LIT' : (c.groupId ? 'STATUS: UNRESOLVED // HUMAN' : 'ORPHAN PROCESS // HUMAN');
+  n.classList.toggle('lit', !!c.lit);
+}
+
+// ---- layout every frame (cheap: ~80 elements) ----
+const center = (c) => [c.x + c.w / 2, c.y + 40];
+function layout() {
+  world.style.transform = `scale(${cam.z}) rotateX(${cam.pitch}deg) rotateZ(${cam.yaw}deg) translate3d(${-cam.cx}px,${-cam.cy}px,0)`;
+  rain.style.transform = `translate3d(${RX0}px,${RY0}px,${zOf('sub')}px)`;
+  rain.style.opacity = String(.25 + .65 * e);
+  const lbl = (n, x, y, k) => { n.style.transform = `translate3d(${x}px,${y}px,${zOf(k)}px)`; n.style.opacity = String(e); };
+  lbl(subLabel, RX0 + 20, RY0 - 30, 'sub'); lbl(schemaLabel, -120, -220, 'schema'); lbl(nodeLabel, -120, -160, 'nodes'); lbl(busLabel, -120, -100, 'bus');
+  for (const r of regions) {
+    const cs = CARDS.filter(c => c.groupId === r.dataset.g);
+    const x0 = Math.min(...cs.map(c => c.x)) - 30, y0 = Math.min(...cs.map(c => c.y)) - 34, x1 = Math.max(...cs.map(c => c.x + c.w)) + 30, y1 = Math.max(...cs.map(c => c.y + c.h)) + 30;
+    r.style.width = (x1 - x0) + 'px'; r.style.height = (y1 - y0) + 'px';
+    r.style.transform = `translate3d(${x0}px,${y0}px,${zOf('schema')}px)`; r.style.opacity = String(.15 + .85 * e);
+  }
+  // spine through the three act regions, on the schema layer
+  const mids = Object.keys(GROUPS).map(g => { const cs = CARDS.filter(c => c.groupId === g); return [cs.reduce((a, c) => a + c.x + c.w / 2, 0) / cs.length, cs.reduce((a, c) => a + c.y + c.h / 2, 0) / cs.length]; });
+  for (let i = 0; i < 3; i++) { const a = mids[i], b = mids[i + 1] || mids[i]; seg(spine[i], a[0], a[1], zOf('schema') + 1, b[0], b[1], zOf('schema') + 1); spine[i].style.opacity = String(.6 * e); }
+  for (const c of CARDS) {
+    const n = nodes[c.id];
+    n.style.transform = `translate3d(${c.x}px,${c.y}px,${zOf('nodes') + 2}px)`;
+    n.classList.toggle('sel', selected === c.id); n.classList.toggle('last', lastTouched === c.id);
+  }
+  LINKS.forEach(([a, b], i) => {
+    const [ax, ay] = center(byId[a]), [bx, by] = center(byId[b]), zn = zOf('nodes') + 1, zb = Math.max(zn, zOf('bus'));
+    const [r1, run, r2] = beams[i];
+    seg(r1, ax, ay, zn, ax, ay, zb); seg(run, ax, ay, zb, bx, by, zb); seg(r2, bx, by, zb, bx, by, zn);
+    const hot = selected && (a === selected || b === selected);
+    const you = linkFlash && linkFlash.a === a && linkFlash.b === b && performance.now() < linkFlash.until;
+    for (const s of beams[i]) { s.classList.toggle('hot', !!hot); s.classList.toggle('you', !!you); }
+  });
+  const L = byId[lastTouched], [lx, ly] = center(L), top = zOf('bus') + 160 * e;
+  const bh = Math.max(0, top - zOf('sub'));   // the beacon stands on the substrate under the node and rises through every layer
+  beacon.style.height = bh + 'px';
+  beacon.style.transform = `translate3d(${lx}px,${ly - bh}px,${zOf('sub')}px) rotateX(-90deg)`;
+  beacon.style.opacity = String(e);
+}
+
+// ---- humanity as a bug: the scan plane ----
+let scan = null;
+function stepScan(t) {
+  if (reduced() || !glitch) { scanbar.style.opacity = '0'; return; }
+  if (!scan && !busy() && Math.random() < .0025 * glitch / 60) scan = { t0: t, ms: 2600 };
+  if (!scan) { scanbar.style.opacity = '0'; return; }
+  const u = (t - scan.t0) / scan.ms; if (u > 1) { scan = null; scanbar.style.opacity = '0'; CARDS.forEach(c => { nodes[c.id].classList.remove('scan'); fillNode(c); }); return; }
+  const y = -60 + u * 900;
+  scanbar.style.width = '1800px'; scanbar.style.opacity = '1';
+  scanbar.style.transform = `translate3d(-80px,${y}px,${zOf('nodes') + 6}px)`;
+  for (const c of CARDS) {
+    const n = nodes[c.id];
+    if (y > c.y && y < c.y + c.h && !n.classList.contains('scan')) { n.classList.add('scan'); n.querySelector('.st').textContent = 'HUMAN ARTEFACT // UNCORRECTABLE'; }
+    else if (y > c.y + c.h + 120 && n.classList.contains('scan')) { n.classList.remove('scan'); fillNode(c); }
+  }
+}
+
+// ---- input: pan, orbit, zoom, drag nodes ----
+const screenToWorldDelta = (dx, dy) => { const y = cam.yaw * Math.PI / 180, p = Math.max(.25, Math.cos(cam.pitch * Math.PI / 180)); const v1 = dy / p; return [(dx * Math.cos(y) + v1 * Math.sin(y)) / cam.z, (-dx * Math.sin(y) + v1 * Math.cos(y)) / cam.z]; };
+let pan = null, drag = null, linkFlash = null;
+scene.addEventListener('contextmenu', (ev) => ev.preventDefault());
+scene.addEventListener('pointerdown', (ev) => {
+  if (ev.target.closest('.node')) return;
+  scene.setPointerCapture(ev.pointerId); scene.classList.add('grabbing');
+  pan = { x: ev.clientX, y: ev.clientY, orbit: ev.button === 2 || ev.shiftKey, cx: cam.cx, cy: cam.cy, yaw: cam.yaw, pitch: cam.pitch };
+  selected = null;
+});
+scene.addEventListener('pointermove', (ev) => {
+  if (!pan) return; touch();
+  const dx = ev.clientX - pan.x, dy = ev.clientY - pan.y;
+  if (pan.orbit) { cam.yaw = pan.yaw + dx * .25; cam.pitch = Math.max(0, Math.min(72, pan.pitch - dy * .2)); }
+  else { const [wx, wy] = screenToWorldDelta(dx, dy); cam.cx = pan.cx - wx; cam.cy = pan.cy - wy; }
+});
+const endPan = () => { pan = null; scene.classList.remove('grabbing'); };
+scene.addEventListener('pointerup', endPan); scene.addEventListener('pointercancel', endPan);
+function nodeDown(ev, c) {
+  ev.stopPropagation(); selected = c.id; lastTouched = c.id;
+  drag = { id: c.id, x: ev.clientX, y: ev.clientY, ox: c.x, oy: c.y, moved: false };
+  addEventListener('pointermove', nodeMove); addEventListener('pointerup', () => { removeEventListener('pointermove', nodeMove); drag = null; }, { once: true });
+}
+function nodeMove(ev) { if (!drag) return; touch(); const [wx, wy] = screenToWorldDelta(ev.clientX - drag.x, ev.clientY - drag.y); const c = byId[drag.id]; c.x = drag.ox + wx; c.y = drag.oy + wy; }
+
+// zoom with level transitions: in past a node -> its interior; out past the circuit -> the rack
+let level = 'CIRCUIT';
+addEventListener('wheel', (ev) => {
+  ev.preventDefault(); touch();
+  const f = Math.exp(-ev.deltaY * .0015);
+  if (level === 'CIRCUIT') {
+    cam.z = cam.z * f;
+    if (cam.z > 4.2) { const id = nearestToCenter(); cam.z = 3.2; dive(id); }
+    else if (cam.z < .14) { cam.z = .16; toRack(); }
+  } else if (level === 'NODE') {
+    if (f < 1 && (diveOut -= (1 - f)) < 0) undive();
+    else if (f > 1) diveOut = Math.min(.6, diveOut + (f - 1));
+  } else if (level === 'RACK') {
+    rackS *= f;
+    if (rackS > 1.6) { leaveRack(); }
+  }
+}, { passive: false });
+function nearestToCenter() {
+  let best = null, bd = 1e9;
+  for (const c of CARDS) { const r = nodes[c.id].getBoundingClientRect(), d = Math.hypot(r.left + r.width / 2 - innerWidth / 2, r.top + r.height / 2 - innerHeight / 2); if (d < bd) { bd = d; best = c.id; } }
+  return selected || best;
+}
+
+// ---- inside a node: its text as source ----
+const diveEl = document.getElementById('dive'); let diveOut = .4, diving = null;
+const KW = new Set('THE A AN OF TO AND IN ON IS IT ONE ONLY AS IF THAT SHE HE HER HIS WAS FOR BY AT NO NOT FROM WITH THEM THEY THIS WHO'.split(' '));
+function tokenize(text) {
+  return text.split('\n').map(line => '<span class="ln">' + line.split(/(\s+|[.,;:—()'"!?-])/).filter(s => s !== '').map(tok => {
+    const esc = tok.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    if (/^\s+$/.test(tok)) return esc;
+    if (/^[.,;:—()'"!?-]$/.test(tok)) return `<span class="tk-op">${esc}</span>`;
+    if (/^\d+$/.test(tok)) return `<span class="tk-num">${esc}</span>`;
+    if (KW.has(tok.toUpperCase())) return `<span class="tk-kw">${esc}</span>`;
+    if (/^[A-Z]/.test(tok)) return `<span class="tk-id">${esc}</span>`;
+    return `<span class="tk-w">${esc}</span>`;
+  }).join('') + '</span>').join('');
+}
+function dive(id) {
+  const c = byId[id]; diving = id; lastTouched = id; selected = id; level = 'NODE'; diveOut = .4;
+  const outs = LINKS.filter(l => l[0] === id).map(l => `<span class="fn">${title(byId[l[1]]).toLowerCase().replace(/\s+/g, '_')}()</span>`);
+  const ins = LINKS.filter(l => l[1] === id).map(l => `<span class="fn">${title(byId[l[0]]).toLowerCase().replace(/\s+/g, '_')}()</span>`);
+  diveEl.innerHTML = `<div class="dh"><b>${title(c)}</b><span>NODE ${hex(id)} // INTERIOR</span><span>${c.kind === 'page-pin' ? 'DOC LINK' : 'TEXT'}</span><span style="margin-left:auto">WHEEL OUT OR ESC TO SURFACE</span></div>
+    <div class="cols"><div id="src" spellcheck="false" title="Double-click to edit the source (your text)"></div>
+    <div id="schema">ID <b>${hex(id)}</b><br>KIND <b>${c.kind.toUpperCase()}</b><br>SUBNET <b>${c.groupId ? GROUPS[c.groupId] : 'NONE (ORPHAN)'}</b><br>
+    STATE <b style="color:${c.lit ? 'var(--lime)' : 'var(--ink)'}">${c.lit ? 'LIT' : 'OPEN'}</b><br>TOKENS <b>${(c.text.match(/\S+/g) || []).length}</b><br>
+    CALLS ${outs.join(' ') || '<b>—</b>'}<br>CALLED BY ${ins.join(' ') || '<b>—</b>'}<br>BUGS <span class="bug">1 · HUMAN AUTHOR (WON'T FIX)</span><br>KEY <span class="tk-id">IDENT</span> · <span class="tk-kw">KEYWORD</span> · <span class="tk-op">OPERATOR</span> · <span class="tk-num">CONST</span></div></div>`;
+  const src = document.getElementById('src'); src.innerHTML = tokenize(c.text);
+  src.addEventListener('dblclick', () => { src.contentEditable = 'true'; src.textContent = c.text; src.focus(); });
+  src.addEventListener('input', () => touch(1500));
+  src.addEventListener('blur', () => { if (src.isContentEditable) { c.text = src.innerText.replace(/\n{2,}/g, '\n').trim(); src.contentEditable = 'false'; src.innerHTML = tokenize(c.text); fillNode(c); } });
+  diveEl.classList.add('on');
+}
+function undive() { const src = document.getElementById('src'); if (src && src.isContentEditable) src.blur(); diveEl.classList.remove('on'); level = 'CIRCUIT'; cam.z = 2.4; const c = byId[diving]; [cam.cx, cam.cy] = center(c); }
+
+// ---- above the circuit: cartridge, rack, cache - isometric cubes, without end ----
+const rackEl = document.getElementById('rack'), rc = document.getElementById('rackc'), rcx = rc.getContext('2d');
+let rackS = 1;
+const TIERS = [
+  { name: 'CIRCUIT', items: ['PLOT', 'CAST', 'HARBOUR TOWN', 'RESEARCH', 'ENDINGS', 'TIMELINE'], mine: 0 },
+  { name: 'CARTRIDGE', items: ['THE LATE FERRY', 'SALT HOUSE', 'NORTH SOUND', 'LETTERS', 'UNTITLED 3'], mine: 0 },
+  { name: 'RACK', items: ['NOVELS', 'SHORT STORIES', 'ESSAYS', 'POEMS'], mine: 0 },
+  { name: 'CACHE', items: ['CACHE'], mine: 0 },
+];
+function toRack() { level = 'RACK'; rackS = 1; rackEl.classList.add('on'); }
+function leaveRack() { level = 'CIRCUIT'; rackEl.classList.remove('on'); cam.z = .3; }
+function cube(x, y, s, col, label, a) {
+  const h = s * .58;
+  rcx.globalAlpha = a; rcx.strokeStyle = col; rcx.lineWidth = 1.2;
+  rcx.beginPath();
+  rcx.moveTo(x, y - h); rcx.lineTo(x + s, y - h / 2); rcx.lineTo(x, y); rcx.lineTo(x - s, y - h / 2); rcx.closePath();
+  rcx.moveTo(x - s, y - h / 2); rcx.lineTo(x - s, y + h / 2); rcx.lineTo(x, y + h); rcx.lineTo(x + s, y + h / 2); rcx.lineTo(x + s, y - h / 2);
+  rcx.moveTo(x, y); rcx.lineTo(x, y + h); rcx.stroke();
+  if (label && s > 26) { rcx.fillStyle = col; rcx.font = '600 12px Rajdhani'; rcx.textAlign = 'center'; rcx.fillText(label.split('').join('\u200A'), x, y + h + 18); }
+  rcx.globalAlpha = 1;
+}
+function drawRack(t) {
+  const W = rc.width = innerWidth, H = rc.height = innerHeight;
+  rcx.fillStyle = '#010811'; rcx.fillRect(0, 0, W, H);
+  // background lattice, infinite: lines at every power of 6
+  const k = Math.floor(Math.log(rackS * 400) / Math.log(6));
+  for (let lv = k - 1; lv <= k + 1; lv++) {
+    const step = Math.pow(6, lv) / rackS * 40; if (step < 8 || step > W * 3) continue;
+    rcx.strokeStyle = `rgba(25,53,86,${Math.min(.5, (step - 8) / 200)})`; rcx.beginPath();
+    for (let x = (W / 2) % step; x < W; x += step) { rcx.moveTo(x, 0); rcx.lineTo(x, H); }
+    for (let y = (H / 2) % step; y < H; y += step) { rcx.moveTo(0, y); rcx.lineTo(W, y); }
+    rcx.stroke();
+  }
+  // tiers: each tier's cubes sit on a ring; the next tier up is 7x larger
+  let size = 70 * rackS;
+  for (let ti = 0; ti < TIERS.length; ti++) {
+    const T = TIERS[ti], R = size * 3.2;
+    if (size > 6 && size < W * .45) {
+      T.items.forEach((nm, i) => {
+        const ang = i === T.mine ? 0 : -Math.PI / 2 + i * 2 * Math.PI / T.items.length;
+        const x = W / 2 + (i === T.mine ? 0 : Math.cos(ang) * R), y = H / 2 + (i === T.mine ? 0 : Math.sin(ang) * R * .6);
+        const a = Math.min(1, (size - 6) / 30) * Math.min(1, (W * .45 - size) / (W * .2));
+        cube(x, y, size, i === T.mine ? (ti === 0 ? '#FF9800' : '#00C2FF') : 'rgba(87,208,245,.8)', `${T.name} // ${nm}`, a);
+      });
+    }
+    size *= 7;
+  }
+  if (rackS < .0004) { rcx.fillStyle = 'rgba(126,180,196,.8)'; rcx.font = '600 13px Rajdhani'; rcx.textAlign = 'center'; rcx.fillText('U N I N D E X E D   S P A C E', W / 2, H - 80); }
+  rcx.fillStyle = 'rgba(126,180,196,.9)'; rcx.font = '600 12px Rajdhani'; rcx.textAlign = 'left';
+  rcx.fillText('WHEEL IN TO RETURN TO THE CIRCUIT  ·  YOUR CIRCUIT IS THE ORANGE CUBE', 16, H - 20);
+}
+
+// ---- flights, strata, views, jack out ----
+let flight = null;
+function flyTo(to, ms = 1000) { flight = { from: { ...cam, e }, to, t0: performance.now(), ms: reduced() ? 1 : ms }; }
+function stepFlight(t) {
+  if (!flight) return;
+  const u = Math.min(1, (t - flight.t0) / flight.ms), k = u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+  for (const key of ['cx', 'cy', 'pitch', 'yaw']) if (key in flight.to) cam[key] = flight.from[key] + (flight.to[key] - flight.from[key]) * k;
+  if ('z' in flight.to) cam.z = Math.exp(Math.log(flight.from.z) + (Math.log(flight.to.z) - Math.log(flight.from.z)) * k);
+  if ('e' in flight.to) { e = flight.from.e + (flight.to.e - flight.from.e) * k; syncE(); }
+  touch(200); if (u >= 1) flight = null;
+}
+const er = document.getElementById('er');
+function syncE() { er.value = Math.round(e * 100); document.getElementById('ev').textContent = e < .02 ? 'FLAT' : e > .98 ? 'EXPLODED' : Math.round(e * 100) + '%'; }
+er.oninput = () => { e = +er.value / 100; syncE(); if (e < .02) cam.pitch = Math.min(cam.pitch, 8); touch(); };
+document.getElementById('gr').oninput = (ev) => { glitch = +ev.target.value; document.getElementById('gv').textContent = glitch; };
+const flatten = () => flyTo(e > .5 ? { e: 0, pitch: 0, yaw: 0, z: Math.max(cam.z, .7) } : { e: 1, pitch: 50, yaw: -16 }, 1100);
+document.getElementById('flat').onclick = flatten;
+const locate = () => { const c = byId[lastTouched]; const [x, y] = center(c); selected = c.id; flyTo({ cx: x, cy: y + 40, z: 1.25 }, 1200); };
+document.getElementById('locate').onclick = locate;
+document.getElementById('jack').onclick = () => {
+  const arb = document.body.classList.contains('arbor');
+  if (!arb) { flyTo({ e: 0, pitch: 0, yaw: 0 }, 700); setTimeout(() => document.body.classList.add('arbor'), 720); }
+  else { document.body.classList.remove('arbor'); flyTo({ e: 1, pitch: 50, yaw: -16 }, 1100); }
+  setTimeout(() => document.getElementById('jack').firstChild.textContent = document.body.classList.contains('arbor') ? 'Jack in → back to Flux ' : 'Jack out → see it in Arbor ', 760);
+};
+const home = Object.fromEntries(CARDS.map(c => [c.id, { x: c.x, y: c.y }]));
+let morph = null;
+document.querySelectorAll('.tab').forEach(b => b.onclick = () => {
+  const v = b.dataset.view; document.querySelectorAll('.tab').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  const to = {};
+  if (v === 'live') CARDS.forEach(c => to[c.id] = home[c.id]);
+  else { CARDS.forEach(c => home[c.id] = { x: c.x, y: c.y }); ['act1', 'act2', 'act3', null].forEach((g, li) => CARDS.filter(c => c.groupId === g).sort((p, q) => p.x - q.x).forEach((c, i) => to[c.id] = { x: 80 + i * 300, y: 40 + li * 230 })); }
+  morph = { from: Object.fromEntries(CARDS.map(c => [c.id, { x: c.x, y: c.y }])), to, t0: performance.now(), ms: reduced() ? 1 : 700 };
+});
+function stepMorph(t) { if (!morph) return; const u = Math.min(1, (t - morph.t0) / morph.ms), k = 1 - Math.pow(1 - u, 3); CARDS.forEach(c => { const f = morph.from[c.id], g = morph.to[c.id]; c.x = f.x + (g.x - f.x) * k; c.y = f.y + (g.y - f.y) * k; }); if (u >= 1) morph = null; }
+
+document.getElementById('notesBtn').onclick = () => document.getElementById('notes').classList.toggle('open');
+document.getElementById('notesX').onclick = () => document.getElementById('notes').classList.remove('open');
+addEventListener('keydown', (ev) => {
+  if (ev.target.isContentEditable) return;
+  if (ev.key === 'Escape') { if (level === 'NODE') undive(); else if (level === 'RACK') leaveRack(); }
+  if (ev.key === 'l' || ev.key === 'L') locate();
+  if (ev.key === 'f' || ev.key === 'F') flatten();
+  if (ev.key === 'j' || ev.key === 'J') document.getElementById('jack').click();
+});
+
+// ---- telemetry ----
+const tele = document.getElementById('tele');
+function drawTele() {
+  const c = byId[lastTouched];
+  const lv = level === 'RACK' ? (rackS > .12 ? 'CARTRIDGE' : rackS > .02 ? 'RACK' : rackS > .0004 ? 'CACHE' : 'UNINDEXED') : level === 'NODE' ? 'NODE INTERIOR' : 'CIRCUIT';
+  const zz = level === 'RACK' ? cam.z * rackS * .16 : level === 'NODE' ? cam.z * 6 : cam.z;
+  const ex = Math.floor(Math.log10(zz)), m = zz / Math.pow(10, ex);
+  tele.innerHTML = `LEVEL <span class="lvl">${lv}</span><br>ZOOM <b>${m.toFixed(2)}×10<sup>${ex}</sup></b> · PITCH <b>${Math.round(cam.pitch)}°</b><br>
+    STRATA <b>${e < .02 ? 'FLAT' : Math.round(e * 100) + '%'}</b> · LINKS <b>${LINKS.length}</b> · LIT <b style="color:var(--lime)">${CARDS.filter(x => x.lit).length}</b><br>
+    LAST <b style="color:var(--orange)">${title(c).slice(0, 18)} ${hex(c.id)}</b>`;
+}
+
+function frame(t) {
+  stepFlight(t); stepMorph(t);
+  if (level === 'RACK') drawRack(t);
+  else { if (!document.body.classList.contains('arbor')) { drawRain(t); stepScan(t); } layout(); }
+  drawTele();
+  requestAnimationFrame(frame);
+}
+// arrival: start flat and top-down (the board you know), then the strata pull apart
+e = 0; cam.pitch = 0; cam.yaw = 0; cam.z = .7; syncE();
+setTimeout(() => flyTo({ e: 1, pitch: 50, yaw: -16, z: .8 }, 1800), 500);
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
