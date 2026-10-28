@@ -356,7 +356,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     const id = setTimeout(() => { if (linkDockRoom()) { setOpen(true); setDocked(true); } }, 0);
     return () => clearTimeout(id);
   }, [linkDock]);
-  const closeLinkDock = () => { setLinkDock(entry.id, null); setDocked(false); setOpen(false); };
+  // Undock: the reader goes and the docked panel's own content (the Grafts list) returns; the panel stays docked and open
+  const closeLinkDock = () => { setLinkDock(entry.id, null); };
   // tutor-drawer-arrow (Nick's live bug report, confirmed by tutor-drawer-
   // probe.mjs, ledger 57) — "anchor the grip to the drawer's board/page-
   // facing edge, just outside the tab row, the exact mirror of the Tools

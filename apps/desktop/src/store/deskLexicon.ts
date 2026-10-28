@@ -153,7 +153,7 @@ export type DeskTermId =
   | 'linksSelectCard' | 'linksRemoveTitle' | 'linksRemoveAria' | 'linksKindPage' | 'linksKindBoard' | 'linksKindCard'
   // BIG PROJECTS STEP 3 - Grafts across places and the graft doors (docs/plans/big-projects.md step 3; mockup cursor/graft-doors-mockup @ c4f34eb0)
   | 'graftAdd' | 'graftSearch' | 'graftConnectedTo' | 'graftGroupCards' | 'graftGroupSources' | 'graftGroupBoards' | 'graftGroupPages' | 'graftSharedTags'
-  | 'graftPlanBoard' | 'graftPlanCardsOne' | 'graftPlanCardsMany' | 'graftHideAria' | 'graftHiddenLine' | 'graftRemovedLine' | 'graftUndo' | 'graftCameFrom' | 'graftDock' | 'graftDockAria' | 'linkDockCloseAria' | 'linkDockGone'
+  | 'graftPlanBoard' | 'graftPlanCardsOne' | 'graftPlanCardsMany' | 'graftHideAria' | 'graftHiddenLine' | 'graftRemovedLine' | 'graftUndo' | 'graftCameFrom' | 'graftDock' | 'graftDockAria' | 'linkDockCloseAria' | 'linkDockUndock' | 'linkDockGone'
   | 'graftKnobTip' | 'graftPairedPage'
   // TU1 S2/S3/S4/S5 — the Tutor (components/Tutor.tsx), the sliver's own
   // mirror on the paper's right edge. One seam, all of the Tutor's static
@@ -1127,7 +1127,8 @@ const CANONICAL: Record<DeskTermId, string> = {
   graftUndo: 'Undo',
   graftDock: 'Dock',                                    // POLISH #10 item 24: dock a linked card or page beside the page
   graftDockAria: 'Dock beside the page',
-  linkDockCloseAria: 'Close the docked reader',
+  linkDockCloseAria: 'Undock the reader and return to the list',
+  linkDockUndock: 'Undock',
   linkDockGone: 'Nothing here now',
   graftCameFrom: 'Came from',
   graftKnobTip: 'Drag to graft',
@@ -2040,6 +2041,7 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     toastBoardTrashed: 'Circuit moved to Trash',
     linksKindPage: 'Doc',
     linksKindBoard: 'Circuit',
+    linksKindCard: 'Node',   // POLISH #10 item 24: the theme's own card word (themeLexicon: Flux box = Node)
     // Round 2: the card footer's own connecting phrase ("— grafted to: <label>"
     // Arbor, composed at BoardEditor.tsx's call site as "— {prefix}: {label}").
     // ITEM arbor-quiet-brass / Flux fix 5 — the Progress-style option reads
@@ -2278,6 +2280,8 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     graftPairedPage: 'Doc',
   },
   machina: {
+    linksKindPage: 'File',   // POLISH #10 item 24: the theme's own page / card words (themeLexicon: Machina page = File, box = Block)
+    linksKindCard: 'Block',
     // W4 - Intake: Machina's plain, square panel of Help me choose (no mockup yet).
     helpDoor: 'Intake',
     // MACHINA FORMS (m7 / m8): the deck library is the Forms panel; its seven group kickers are Machina's own labels for the registry's rooms.
