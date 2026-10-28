@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { wordCount } from '../store/wordCount';
 
 // HB1 S3 — the veil + the gate. Three small, composable pieces, wired
 // together by PageEditorView on the ONE page a first-run Write click can
@@ -20,10 +21,6 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 // since Nick's hundred and F1's hundred are the same hundred, and a second
 // reading of the same number would have been the real defect.
 
-function wordCount(text: string): number {
-  const t = text.trim();
-  return t ? t.split(/\s+/).length : 0;
-}
 
 // F1 — "monotone under forward lock." The clean derived text forward lock
 // reports can transiently SHRINK while a trailing run is struck (it drops
