@@ -57,9 +57,9 @@ const bundle = async (srcStore, names, tag) => {
   } catch (e) { return { err: String((e && (e.stderr || e.message)) || e).split('\n').slice(0, 3).join(' | ').slice(0, 300) }; }
   finally { rmSync(tmp, { recursive: true, force: true }); }
 };
-const NOW = await bundle(join(DESKTOP, 'src', 'store'), [['mr', 'markRuns'], ['df', 'draftFormat'], ['hm', 'hiddenMarks'], ['api', 'api'], ['tc', 'tutorConsistency'], ['cf', 'clipboardFormat'], ['px', 'pageExport'], ['le', 'lineEquivalents'], ['tl', 'tutorLenses']], 'now');
+const NOW = await bundle(join(DESKTOP, 'src', 'store'), [['mr', 'markRuns'], ['df', 'draftFormat'], ['hm', 'hiddenMarks'], ['api', 'api'], ['tc', 'tutorConsistency'], ['cf', 'clipboardFormat'], ['px', 'pageExport'], ['le', 'lineEquivalents'], ['tl', 'tutorLenses'], ['wc', 'wordCount']], 'now');
 ok('fixture: the real modules bundle', !NOW.err, NOW.err || '');
-const { mr = {}, df = {}, hm = {}, api = {}, tc = {}, cf = {}, px = {}, le = {}, tl = {} } = NOW;
+const { mr = {}, df = {}, hm = {}, api = {}, tc = {}, cf = {}, px = {}, le = {}, tl = {}, wc = {} } = NOW;
 const has = (o, k) => typeof o[k] === 'function';
 const call = (f, ...a) => { try { return f(...a); } catch (e) { return { threw: String(e && e.message || e) }; } };
 const spans = (line) => (has(mr, 'readMarks') ? mr.readMarks(line).filter((r) => r.kind === 'font') : []);
@@ -91,7 +91,14 @@ ok('PICK: a size pick wraps the highlight and keeps it highlighted', !!p1 && p1.
 const p2 = has(df, 'applySizePick') ? call(df.applySizePick, base, 4, 5, 18) : null;
 ok('PICK: ONE character takes a size alone', !!p2 && p2.text === 'The [f]{.size-18}erry was late and the harbour was cold' && sel(p2) === 'f', J(p2));
 const p3 = p1 && has(df, 'applySizePick') ? call(df.applySizePick, p1.text, p1.text.indexOf(' was late'), p1.text.indexOf(' was late') + ' was late'.length, 14) : null;
-ok('PICK: neighbours of one size MERGE into one span', !!p3 && p3.text === 'The [ferry was late]{.size-14} and the harbour was cold', J(p3));
+// PARKED VERBATIM (Fable, Oct 28: a pick must not size a space the writer never selected - the gap between two same-size words keeps two spans). Kept as written, no longer run:
+// ok('PICK: neighbours of one size MERGE into one span', !!p3 && p3.text === 'The [ferry was late]{.size-14} and the harbour was cold', J(p3));
+const parkMerge = { was: !!p3 && p3.text === 'The [ferry was late]{.size-14} and the harbour was cold', text: p3 && p3.text };
+// its successor: touching neighbours merge; a whitespace gap keeps two spans
+ok('PICK (successor of "neighbours MERGE"): a whitespace gap keeps two spans - the space the writer never selected is not sized', !!p3 && p3.text === 'The [ferry]{.size-14} [was late]{.size-14} and the harbour was cold', J(p3));
+const t1 = has(df, 'applySizePick') ? call(df.applySizePick, 'The ferryman was late', 4, 9, 14) : null;
+const t2 = t1 && has(df, 'applySizePick') ? call(df.applySizePick, t1.text, t1.text.indexOf('man'), t1.text.indexOf('man') + 3, 14) : null;
+ok('PICK (successor of "neighbours MERGE"): TOUCHING neighbours of one size merge into one span', !!t2 && t2.text === 'The [ferryman]{.size-14} was late', J({ t1, t2 }));
 const p4 = p3 && has(df, 'applySizePick') ? call(df.applySizePick, p3.text, p3.text.indexOf('was'), p3.text.indexOf('was') + 3, 20) : null;
 ok('PICK: a partial re-pick SPLITS the span - never two sizes stacked', !!p4 && p4.text === 'The [ferry]{.size-14} [was]{.size-20} [late]{.size-14} and the harbour was cold' && noCrossing(p4.text), J(p4));
 const p5 = p1 && has(df, 'applySizePick') ? call(df.applySizePick, p1.text, p1.start, p1.end, null) : null;
@@ -141,8 +148,8 @@ ok('WHOLE: the whole-document FACE pick removes every face and keeps every size'
   const mixed = '# A heading\n- one [**two**]{.size-14} three\nplain [words]{.font-arial .size-12} here';
   ok('READERS: withoutFontMarks removes the size marks too - headings, bullets, bold kept', has(mr, 'withoutFontMarks') && mr.withoutFontMarks(mixed) === '# A heading\n- one **two** three\nplain words here', has(mr, 'withoutFontMarks') ? J(mr.withoutFontMarks(mixed)) : '');
   const counted = [mixed, p4 && p4.text, p6 && p6.text, p7 && p7.text].filter((t) => typeof t === 'string');
-  ok('READERS: the house word count is unchanged by size marks (the marks hold no whitespace)', counted.length >= 3 && has(mr, 'withoutFontMarks') && counted.every((t) => words(t) === words(mr.withoutFontMarks(t))),
-    J(counted.map((t) => [words(t), has(mr, 'withoutFontMarks') ? words(mr.withoutFontMarks(t)) : null])));
+  ok('READERS: the house word count (store/wordCount.ts) is unchanged by size marks - the inner space of a face+size span is not a word', counted.length >= 3 && has(mr, 'withoutFontMarks') && has(wc, 'wordCount') && counted.every((t) => wc.wordCount(t) === words(mr.withoutFontMarks(t))),
+    J(counted.map((t) => [has(wc, 'wordCount') ? wc.wordCount(t) : null, has(mr, 'withoutFontMarks') ? words(mr.withoutFontMarks(t)) : null])));
   ok('READERS: the .txt / Copy My Words reading strips a size span to its words', has(df, 'stripMarkdownConventions') && df.stripMarkdownConventions('- the [two **words**]{.font-lora .size-14} here') === 'the two words here', has(df, 'stripMarkdownConventions') ? J(df.stripMarkdownConventions('- the [two **words**]{.font-lora .size-14} here')) : '');
   ok('READERS: line-equivalents are not inflated by span marks', has(le, 'countLineEquivalents') && le.countLineEquivalents('x'.repeat(58) + ' [y]{.font-lora .size-14}') === le.countLineEquivalents('x'.repeat(58) + ' y'),
     has(le, 'countLineEquivalents') ? J([le.countLineEquivalents('x'.repeat(58) + ' [y]{.font-lora .size-14}'), le.countLineEquivalents('x'.repeat(58) + ' y')]) : '');
@@ -226,7 +233,11 @@ if (has(cf, 'copyPayload')) {
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail && !c.pass ? `  [${String(c.detail).slice(0, 400)}]` : ''}`);
-if (process.env.HARNESS_PARKED === '1') console.log('\nPOLISH10-SIZE-CORE PARKED: PASS (0 records) - a new file; it parks nothing of its own');
+if (process.env.HARNESS_PARKED === '1') {
+  const rec = [{ name: 'PARKED (was "PICK: neighbours of one size MERGE into one span") - Fable Oct 28: a whitespace gap keeps two spans', pass: parkMerge.was === false, detail: J(parkMerge) }];
+  for (const r of rec) console.log(`${r.pass ? 'PASS' : 'FAIL'}  ${r.name}  [${String(r.detail).slice(0, 300)}]`);
+  console.log(String.fromCharCode(10) + 'POLISH10-SIZE-CORE PARKED: PASS (1 record) - the verbatim merge-across-a-gap no longer holds, by ruling');
+}
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nPOLISH10-SIZE-CORE VERIFY: PASS (${checks.length} checks)` : `\nPOLISH10-SIZE-CORE VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
 process.exit(passed === checks.length ? 0 : 1);
