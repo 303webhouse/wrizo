@@ -4,6 +4,7 @@ import { useSyncExternalStore } from 'react';
 import { getJournalEntry, subscribe } from '../store/persistence';
 import { plainLines } from '../store/entryText';
 import { useDeskLexicon } from '../store/deskLexicon';
+import { recordShadow } from '../store/voiceWall';
 import type { LinkDockRef } from '../store/linkDock';
 
 export function LinkDockReader({ dock, onClose }: { dock: LinkDockRef; onClose: () => void }) {
@@ -19,10 +20,12 @@ export function LinkDockReader({ dock, onClose }: { dock: LinkDockRef; onClose: 
   const title = lines[0] ?? t('linkDockGone');
   const body = lines.length > 1 ? lines.slice(1) : lines;
   return (
-    <div className="wz-link-dock" data-link-dock-entry={dock.entryId} {...(dock.boxId ? { 'data-link-dock-box': dock.boxId } : {})}>
+    // text copied from the reader is the writer's own, like a page copy: it passes the Voice Wall when pasted (Fable, Oct 28; no other wall exception)
+    <div className="wz-link-dock" onCopy={() => { const sel = String(document.getSelection() || ''); if (sel) recordShadow(sel); }} data-link-dock-entry={dock.entryId} {...(dock.boxId ? { 'data-link-dock-box': dock.boxId } : {})}>
+      {/* the header carries the item's kind word, its name, and Undock - which returns the Grafts list (one item at a time: to swap, Undock, then Dock) */}
       <div className="wz-link-dock-head">
         <span className="wz-link-dock-kind">{dock.boxId ? t('linksKindCard') : t('linksKindPage')}</span>
-        <button type="button" className="wz-link-dock-close" aria-label={t('linkDockCloseAria')} onClick={onClose}>×</button>
+        <button type="button" className="wz-link-dock-close" aria-label={t('linkDockCloseAria')} onClick={onClose}>{t('linkDockUndock')}</button>
       </div>
       <div className="wz-link-dock-title">{title}</div>
       <div className="wz-link-dock-text">{body.map((l, i) => <p key={i}>{l}</p>)}</div>
