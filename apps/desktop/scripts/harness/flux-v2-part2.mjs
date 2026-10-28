@@ -214,7 +214,10 @@ export async function part2({ ok, sleepMs }) {
       // ---- F14: the rail's place block reads RACK ▸ <name> and WRAPS - never truncated -----------------------------------------------------------------------------------------------------
       await open('fx-m2');
       const pbk = await q(`(() => { const e = document.querySelector('.wz-place-block .wz-place-name'); if (!e) return null; const cs = getComputedStyle(e); return { text: e.textContent, ws: cs.whiteSpace, overflow: cs.textOverflow, clipped: e.scrollWidth > e.clientWidth + 1, h: Math.round(e.getBoundingClientRect().height) }; })()`);
-      ok('F14 the place block reads "RACK ▸ The Late Ferry", wraps (white-space normal, no ellipsis) and nothing is clipped', !!pbk && pbk.text === 'RACK ▸ The Late Ferry' && pbk.ws === 'normal' && pbk.overflow !== 'ellipsis' && !pbk.clipped, JSON.stringify(pbk));
+      // ---- PARKED - SUPERSEDED by POLISH #10 item 14 (Nick/Fable, Oct 25: the rail's place label stays on ONE line with an ellipsis; the full name on hover/focus). Kept VERBATIM and no longer run; its successor follows.
+      // ok('F14 the place block reads "RACK ▸ The Late Ferry", wraps (white-space normal, no ellipsis) and nothing is clipped', !!pbk && pbk.text === 'RACK ▸ The Late Ferry' && pbk.ws === 'normal' && pbk.overflow !== 'ellipsis' && !pbk.clipped, JSON.stringify(pbk));
+      const pbTitle = await q("document.querySelector('.wz-place-block')?.getAttribute('title')");
+      ok('F14 [polish-10 item 14 successor]: the place block still reads "RACK ▸ The Late Ferry" in full in the DOM, on ONE line (white-space nowrap, text-overflow ellipsis, one line tall), and the button carries the full text as its title', !!pbk && pbk.text === 'RACK ▸ The Late Ferry' && pbk.ws === 'nowrap' && pbk.overflow === 'ellipsis' && pbk.h <= 20 && pbTitle === 'RACK ▸ The Late Ferry', JSON.stringify({ pbk, pbTitle }));
 
 
       // ---- F15: the block caret is slim (about a third of its old width) ----------------------------------------------------------------------------------------------------------------------
