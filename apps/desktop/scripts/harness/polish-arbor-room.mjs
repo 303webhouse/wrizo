@@ -100,6 +100,7 @@ const MEASURE = `(() => {
   const pr = paper.getBoundingClientRect(), nr = nav.getBoundingClientRect();
   const room = rgb(cs(aside).backgroundColor);
   const line = rgb(probe(tok('--arbor-line') || 'rgb(0,0,0)')), letter = rgb(probe(tok('--arbor-letter') || 'rgb(0,0,0)'));
+  const low = rgb(probe(tok('--text-low') || 'rgb(0,0,0)')), r950 = rgb(probe(tok('--ink-950')));
   return {
     i950: probe(tok('--ink-950')).replace(/^rgba\\(/, 'rgb(').replace(/, 1\\)$/, ')'), i900: cs(aside).backgroundColor, i800: probe(tok('--ink-800')), border: probe(tok('--ink-border')), strong: probe(tok('--ink-border-strong')),
     htmlBg: cs(document.documentElement).backgroundColor,
@@ -107,6 +108,7 @@ const MEASURE = `(() => {
     bracket: (document.querySelector('.wz-strip-section--bracketed') ? cs(document.querySelector('.wz-strip-section--bracketed')).borderLeftColor : null),
     tokens: { line: tok('--arbor-line'), letter: tok('--arbor-letter'), lineRgb: line, letterRgb: letter },
     ratios: room && line && letter ? { letter: ratio(letter, room), line: ratio(line, room) } : null,
+    low: room && low && r950 ? { token: tok('--text-low'), room: ratio(low, room), i950: ratio(low, r950) } : null,
     paper: { x: +pr.x.toFixed(1), y: +pr.y.toFixed(1), w: +pr.width.toFixed(1), h: +pr.height.toFixed(1), bg: cs(paper).backgroundColor },
     navH: +nr.height.toFixed(1),
     glyphs: { place: place.map((g) => num(cs(g).fontSize)), foot: foot.map((g) => num(cs(g).fontSize)) },
@@ -134,6 +136,9 @@ await withHarness(async (app) => {
   ok('R2: ...and they are the espresso lines (--ink-border) - quiet, as they were', m.rail === ESPRESSO.border && m.navRule === ESPRESSO.border, JSON.stringify({ rail: m.rail, nav: m.navRule }));
   ok('R4: the two replacement colours exist as tokens - --arbor-line and --arbor-letter - and clear their floors on the room (lettering >= 4.5:1, lines >= 3:1)',
     !!m.tokens.line && !!m.tokens.letter && !!m.ratios && m.ratios.letter >= 4.5 && m.ratios.line >= 3, JSON.stringify({ tokens: m.tokens, ratios: m.ratios }));
+  // R7 (Fable, Oct 28 - enforces Nick's labels >= 4.5:1 floor): --text-low, the quietest text tier, measured 4.27:1 on the espresso room (#80766A on #150F0B). Lifted in Arbor only, just enough; measured live here.
+  ok('R7: --text-low (the quietest text) clears the 4.5:1 label floor on the espresso room (--ink-900) AND on the ground / rail (--ink-950), measured on the live tokens',
+    !!m.low && m.low.room >= 4.5 && m.low.i950 >= 4.5, JSON.stringify(m.low));
   ok('R5: the page is the very rect main paints (the room changed; the page did not)', near(m.paper.x, PAPER_ON_MAIN.x, 0.6) && near(m.paper.y, PAPER_ON_MAIN.y, 0.6) && near(m.paper.w, PAPER_ON_MAIN.w, 0.6) && near(m.paper.h, PAPER_ON_MAIN.h, 0.6), JSON.stringify(m.paper));
   ok('R6: the menus keep what was asked before - places 24.48 px, the foot as big (24.48), the top bar still 51 px',
     m.glyphs.place.length > 0 && m.glyphs.place.every((v) => near(v, 24.48)) && m.glyphs.foot.length === 3 && m.glyphs.foot.every((v) => near(v, 24.48)) && Math.abs(m.navH - 51) <= 0.5, JSON.stringify({ glyphs: m.glyphs, navH: m.navH }));
@@ -162,6 +167,9 @@ await withHarness(async (app) => {
     await freshWritingPage(app, theme);
     const f = await app.evalJs(MEASURE);
     ok(`R5 ${theme}: keeps its own room (not the espresso) and its own menu sizes`, f.i900 !== ESPRESSO.i900 && f.i950 !== ESPRESSO.i950 && f.glyphs.foot.every((v) => near(v, 13.668)), JSON.stringify({ i900: f.i900, i950: f.i950, foot: f.glyphs.foot }));
+    // R7 scope: the lift is Arbor's alone - Flux and Machina (cool cast) keep the --text-low they had.
+    const lowBefore = { flux: '#7eb4c4', machina: '#7a8290' }[theme];
+    ok(`R7 ${theme}: --text-low is byte-equal to before (the lift is Arbor-only)`, !!f.low && f.low.token.toLowerCase() === lowBefore, JSON.stringify(f.low));
     await snap(app, `${theme}-write`);
   }
   return checks;
