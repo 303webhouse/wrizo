@@ -34,9 +34,11 @@ const SOURCE = 'Smith, J. (2020). The Well Under the Harbour. Harbour Press.';
 const PAGE = 'The rope was already there, and the well took the bucket back colder still.';
 const stored = (app, id) => app.evalJs(`(JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(x => x.id === ${J(id)})||null)`);
 const EFF = (sel) => `(() => { const el = document.querySelector(${J(sel)}); if (!el) return null; let o = 1; for (let n = el; n && n.nodeType === 1; n = n.parentElement) { const cs = getComputedStyle(n); if (cs.visibility === 'hidden' || cs.display === 'none') return 0; o *= parseFloat(cs.opacity); } return Math.round(o * 1000) / 1000; })()`;
+// the page's own progress strip and word count sit under the page (a thin full-width bar near its bottom edge): the reader must clear their right edge too
+const STRIP_RIGHT = `(p) => { let m = null; for (const e of document.querySelectorAll('.desk-frame-stage *')) { const q = e.getBoundingClientRect(); if (q.height > 0 && q.height <= 10 && q.width >= p.width * 0.8 && q.top >= p.bottom - 4 && q.top <= p.bottom + 40 && !e.closest('.wz-link-dock, .wz-tutor-panel')) m = Math.max(m ?? 0, q.right); } return m; }`;
 const READER = `(() => { const d = document.querySelector('.wz-link-dock'); if (!d) return null; const r = d.getBoundingClientRect(); const p = document.querySelector('.desk-frame-stage--prose .mode-page').getBoundingClientRect();
   return { count: document.querySelectorAll('.wz-link-dock').length, title: (d.querySelector('.wz-link-dock-title') || {}).textContent || null, text: (d.querySelector('.wz-link-dock-text') || {}).textContent || null,
-    editable: d.isContentEditable || !!d.querySelector('[contenteditable="true"]'), left: r.left, right: r.right, pageLeft: p.left, pageRight: p.right, docked: document.querySelector('.wz-tutor-panel')?.getAttribute('data-docked') }; })()`;
+    editable: d.isContentEditable || !!d.querySelector('[contenteditable="true"]'), left: r.left, right: r.right, pageLeft: p.left, pageRight: p.right, stripRight: (${STRIP_RIGHT})(p), wcRight: (document.querySelector('.mode-wordcount') || {getBoundingClientRect: () => ({right: null})}).getBoundingClientRect().right, docked: document.querySelector('.wz-tutor-panel')?.getAttribute('data-docked') }; })()`;
 
 await withHarness(async (app) => {
   await app.emulateDpr(1, 1366, 768);
@@ -84,7 +86,7 @@ await withHarness(async (app) => {
     await app.typeKeys(' She knew the map.'); await sleep(3500);
     const writing = await app.evalJs("document.querySelector('.desk-frame')?.getAttribute('data-writing')");
     const r2 = await app.evalJs(READER); const o2 = await app.evalJs(EFF('.wz-link-dock'));
-    ok(`${tag} K2: visible while writing - the writer types and the reader stays at full strength (${o2}), beside the page, never over it`, writing === 'true' && o2 >= 0.99 && !!r2 && r2.left >= r2.pageRight - 1, J({ writing, o2, r2 }));
+    ok(`${tag} K2: visible while writing - the writer types and the reader stays at full strength (${o2}), beside the page, never over it or its progress strip`, writing === 'true' && o2 >= 0.99 && !!r2 && r2.left >= r2.pageRight - 1 && (r2.stripRight == null || r2.left >= r2.stripRight - 1) && (r2.wcRight == null || r2.left >= r2.wcRight - 1), J({ writing, o2, r2 }));
     await shot(app, `${th.id}-card-docked-while-writing`);
     if (th.id === 'plateau') {
       await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'p10d-mk2'; s.textContent = \".desk-frame[data-writing='true'] .wz-link-dock{ opacity:0 !important; }\"; document.head.appendChild(s); return true; })()"); await sleep(200);
