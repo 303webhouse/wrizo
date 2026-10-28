@@ -197,6 +197,12 @@ function assembleBible(facts: Fact[]): string | null {
 // affordance's own floor gate (DOCK_FLOOR_PX, Tutor.tsx's own call site)
 // vacuously always-true on Board — a real correctness gap the geometry
 // retrofit's own "Presence on Boards" clause would otherwise leave open.
+// POLISH #10 item 24 (K2): the TRUE margin beside the painted page (no +frame-gap), and whether the link reader fits there - the page is never covered
+function linkDockRoom(): boolean {
+  const stage = document.querySelector('.desk-frame-stage');
+  const paper = document.querySelector('.desk-frame-stage--prose .mode-page') ?? document.querySelector('.mode-pagecol, .entry-full, .board-canvas-wrap');
+  return !!stage && !!paper && stage.getBoundingClientRect().right - paper.getBoundingClientRect().right >= DRAWER_MIN;
+}
 function availableTutorMargin(): number {
   if (typeof document === 'undefined') return Infinity;
   const stage = document.querySelector('.desk-frame-stage');
@@ -337,7 +343,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // it, so it stays while the writer writes. Docking it from the Grafts list opens and docks the panel; a dock found on mount (a reload) docks again.
   const linkDock = useLinkDock(pageKind === 'board' ? null : entry.id);
   useEffect(() => {
-    const onOpen = () => { setOpen(true); if (availableTutorMargin() >= DOCK_FLOOR_PX) setDocked(true); };
+    // K2: the reader stands beside the page or not at all - with no room for it (a drawer's narrowest, beside the page's edge), the page keeps the stage
+    const onOpen = () => { if (linkDockRoom()) { setOpen(true); setDocked(true); } };
     document.addEventListener('wz-link-dock-open', onOpen);
     return () => document.removeEventListener('wz-link-dock-open', onOpen);
   }, []);
@@ -345,7 +352,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   useEffect(() => {
     if (dockedOnMount.current || !linkDock) return;
     dockedOnMount.current = true;
-    const id = setTimeout(() => { setOpen(true); if (availableTutorMargin() >= DOCK_FLOOR_PX) setDocked(true); }, 0);
+    const id = setTimeout(() => { if (linkDockRoom()) { setOpen(true); setDocked(true); } }, 0);
     return () => clearTimeout(id);
   }, [linkDock]);
   const closeLinkDock = () => { setLinkDock(entry.id, null); setDocked(false); setOpen(false); };
@@ -571,7 +578,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // positioned, never pushes it — fx10's "paper rect byte-identical" invariant), so one read on
   // open + a resize listener suffices.
   useLayoutEffect(() => {
-    if (!open || docked || pageKind === 'board') { setPanelWidthPx(null); setPanelOffsetPx(0); return; }
+    // K2: a docked LINK READER is measured like the open drawer (flush to the page's edge past its tab), never by the docked CSS clamp, whose margin adds --frame-gap
+    if (!open || (docked && !linkDock) || pageKind === 'board') { setPanelWidthPx(null); setPanelOffsetPx(0); return; }
     const measure = () => {
       const stage = document.querySelector('.desk-frame-stage');
       // PAGE-SIZE - the prose page is PAINTED larger than its column by a transform, so the margin is measured from the painted page itself
@@ -599,7 +607,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     window.addEventListener('resize', measure);
     document.addEventListener('wz-zoom-changed', measure);   // PAGE-SIZE - the painted page's edge moves when the zoom toggles
     return () => { window.removeEventListener('resize', measure); document.removeEventListener('wz-zoom-changed', measure); };
-  }, [open, docked, pageKind]);
+  }, [open, docked, pageKind, linkDock]);
 
   // tutor-drawer-arrow — the grip's own open-state position, measured from
   // the panel's ACTUAL rendered rect (see gripLeftPx's own header comment
