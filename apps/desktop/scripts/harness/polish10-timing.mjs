@@ -5,7 +5,7 @@
 // panel's opacity, its sliding layer's travel (.wz-drawer-slide's translateX) and the panel's box, until all of them hold still. A drawer's OPEN (or
 // CLOSE) takes from the click to the last frame that still moved. Arbor, a Draft page, 1920x1080 (both hands fit beside the page), two scenarios:
 // at rest, and AFTER TYPING (the dissolve engine writes --fade-dur, which both panels' fades read).
-//   T1  OPEN:  the Tutor's open settles within 3 frames (50ms) of the Tools drawer's, and starts moving on the same frame (within 34ms)
+//   T1  OPEN:  the Tutor's open runs on the Tools drawer's COMPUTED durations and delays (panel fade, sliding layer, --fade-dur, --drawer-dur) - no stopwatch (Fable, Oct 28)
 //   T2  CLOSE: the same for the close
 // Each reading carries both timelines' summaries and the panels' computed transitions and --fade-dur, so a red run is also the diagnosis.
 // Mutant (at rest): MT2 the Tutor's close forced to 50ms above every rule - T2 fails.
@@ -19,15 +19,14 @@ const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts
 const J = (v) => JSON.stringify(v);
 const TEXT = 'The rope was already there, and the well took the bucket back colder still.\nWhatever is worth carrying is already with you, and the rest the wind can have.';
 const HANDS = { tools: { grip: '.wz-sliver-grip', panel: '.wz-sliver-panel', name: 'Tools' }, tutor: { grip: '.wz-tutor-grip', panel: '.wz-tutor-panel', name: 'Tutor' } };
-const FRAMES_END = 50;    // 3 frames
-const FRAME_START = 34;   // 2 frames
 
 // arm a per-frame sampler on one panel; it starts timing at the grip's own pointerdown (the trusted click) and runs 1.6s past it
 const ARM = (h) => `(() => { const panel = document.querySelector('${h.panel}'); const grip = document.querySelector('${h.grip}'); if (!panel || !grip) return false;
   const slide = () => panel.querySelector('.wz-drawer-slide');
   const read = () => { const cs = getComputedStyle(panel); const s = slide(); let x = null; if (s) { const tf = getComputedStyle(s).transform; x = tf && tf !== 'none' ? Math.round(new DOMMatrix(tf).m41 * 10) / 10 : 0; }
     const r = panel.getBoundingClientRect(); return { o: Math.round(parseFloat(cs.opacity) * 1000) / 1000, x, l: Math.round(r.left * 10) / 10, w: Math.round(r.width * 10) / 10, vis: cs.visibility }; };
-  const style = () => { const cs = getComputedStyle(panel); const s = slide(); return { transition: cs.transition, fadeDur: cs.getPropertyValue('--fade-dur').trim() || null, drawerDur: cs.getPropertyValue('--drawer-dur').trim() || null, slideTransition: s ? getComputedStyle(s).transition : null, open: panel.getAttribute('data-open') }; };
+  const style = () => { const cs = getComputedStyle(panel); const s = slide(); return { transition: cs.transition, fadeDur: cs.getPropertyValue('--fade-dur').trim() || null, drawerDur: cs.getPropertyValue('--drawer-dur').trim() || null, slideTransition: s ? getComputedStyle(s).transition : null, open: panel.getAttribute('data-open'),
+    panelT: { prop: cs.transitionProperty, dur: cs.transitionDuration, delay: cs.transitionDelay }, slideT: s ? { prop: getComputedStyle(s).transitionProperty, dur: getComputedStyle(s).transitionDuration, delay: getComputedStyle(s).transitionDelay, anim: getComputedStyle(s).animationDuration } : null }; };
   const before = style(); const samples = [{ t: -1, ...read() }]; let t0 = null;
   window.__p10tDone = new Promise((res) => {
     grip.addEventListener('pointerdown', () => { t0 = performance.now(); }, { capture: true, once: true });
@@ -96,10 +95,14 @@ await withHarness(async (app) => {
     if (!prem) continue;
     for (const [phase, label] of [['open', 'T1 OPEN'], ['close', 'T2 CLOSE']]) {
       const a = r.tools[phase]; const b = r.tutor[phase];
-      ok(`${scenario} ${label}: the Tutor's ${phase} takes as long as the Tools drawer's (Tools ${a.end}ms, Tutor ${b.end}ms; start ${a.start}ms / ${b.start}ms; half-faded ${a.oHalf}ms / ${b.oHalf}ms)`,
-        a.end != null && b.end != null && Math.abs(a.end - b.end) <= FRAMES_END && a.start != null && b.start != null && Math.abs(a.start - b.start) <= FRAME_START
-          && a.oHalf != null && b.oHalf != null && Math.abs(a.oHalf - b.oHalf) <= FRAMES_END,
-        J({ tools: a, tutor: b }));
+      // the drawers are timed by the same TOKENS, not by a stopwatch: the panel's fade and the sliding layer's travel carry the same computed durations and
+      // delays, open and close, and read the same --fade-dur / --drawer-dur. The line names the first field that differs.
+      const fa = a.after; const fb = b.after;
+      const fields = fa && fb ? [['--fade-dur', fa.fadeDur, fb.fadeDur], ['--drawer-dur', fa.drawerDur, fb.drawerDur], ['panel transition-property', fa.panelT.prop, fb.panelT.prop], ['panel transition-duration', fa.panelT.dur, fb.panelT.dur], ['panel transition-delay', fa.panelT.delay, fb.panelT.delay],
+        ['slide transition-duration', fa.slideT && fa.slideT.dur, fb.slideT && fb.slideT.dur], ['slide transition-delay', fa.slideT && fa.slideT.delay, fb.slideT && fb.slideT.delay], ['slide animation-duration', fa.slideT && fa.slideT.anim, fb.slideT && fb.slideT.anim]] : [];
+      const diff = fields.find(([, x, y]) => x !== y);
+      ok(`${scenario} ${label}: the Tutor's ${phase} runs on the Tools drawer's durations - ${diff ? `DIFFERS at ${diff[0]}: Tools ${diff[1]} vs Tutor ${diff[2]}` : 'every computed duration and delay is equal'}`,
+        fields.length > 0 && !diff, J({ tools: { panel: fa && fa.panelT, slide: fa && fa.slideT, fade: fa && fa.fadeDur, drawer: fa && fa.drawerDur }, tutor: { panel: fb && fb.panelT, slide: fb && fb.slideT, fade: fb && fb.fadeDur, drawer: fb && fb.drawerDur }, wall: { tools: a.end, tutor: b.end } }));
     }
     if (scenario === 'at rest') {
       // MT2: the Tutor's close forced to 50ms, above every rule - T2 must fail
@@ -109,7 +112,7 @@ await withHarness(async (app) => {
       await app.evalJs("document.getElementById('p10t-mt2')?.remove()");
       const a = r.tools.close;
       ok(`MT2 (mutant): with the Tutor's close forced to 50ms (LANDED: ${m && m.after && m.after.transition}; it took ${m && m.end}ms), T2 fails`,
-        !!m && !!m.after && /0\.05s/.test(m.after.transition || '') && !(m.end != null && Math.abs(a.end - m.end) <= FRAMES_END && m.oHalf != null && Math.abs(a.oHalf - m.oHalf) <= FRAMES_END), J(m));
+        !!m && !!m.after && /0\.05s/.test(m.after.transition || '') && !!a.after && m.after.panelT.dur !== a.after.panelT.dur, J({ mutant: m && m.after && m.after.panelT, tools: a.after && a.after.panelT }));
       await sleep(600);
     }
   }
