@@ -188,6 +188,9 @@ await withHarness(async (app) => {
   // ------------------------------------------------------------------
   ok('LABEL [item-10 successor]: on a page that never chose, the BRASS row is the Default row, it reads "Default (<the face that ACTUALLY renders>)", and it is set in that face',
     !!brassNow && brassNow.label === `Default (${brassNow.rendered})` && brassNow.rowFamily === brassNow.rendered, JSON.stringify(brassNow));
+  // Fable's ruling 1 (Oct 28): the label must NAME a face - never "Default ()". The line above builds its expectation from the DOM read, so a blank read would pass it; this pins the per-theme table (THEME_DEFAULT_FACE).
+  ok('LABEL [Oct 28 ruling 1]: the Default row is never empty - it names EB Garamond / Titillium Web / Source Sans 3 (serif voice, by theme) or Figtree / Chakra Petch / Atkinson Hyperlegible (sans voice)',
+    !!brassNow && /^Default \((EB Garamond|Titillium Web|Source Sans 3|Figtree|Chakra Petch|Atkinson Hyperlegible)\)$/.test(brassNow.label || ''), JSON.stringify(brassNow));
   ok('LABEL [parked record]: the ORIGINAL (the brass row\'s text IS the face name) now fails ONLY because the brass row is "Default (<face>)"', !!brassNow && brassNow.label !== brassNow.rendered && brassNow.label === `Default (${brassNow.rendered})`, JSON.stringify(brassNow));
   // ---- PARKED - SUPERSEDED by page-size (Fable's ruling a, Oct 23: the page's number is REAL POINTS IN PAGE UNITS - 12 = 16px at page scale 1, a NEW
   // page defaults to 12, and the page LAYS OUT at scale 1 and is PAINTED at its scale by a transform, so the editor's computed size is n x 4/3 px at
