@@ -58,6 +58,7 @@ import { openSync, closeSync, readFileSync, statSync, mkdirSync, writeFileSync, 
 import path from 'node:path';
 import os from 'node:os';
 import { clockPair, gapSince } from './sleep-detect.mjs';
+import { isVerdictLine, isFailedVerdict } from './verdict-shapes.mjs';
 import { fileURLToPath } from 'node:url';
 // ITEM 99 — the canonical dead-owner sweep. Imported, never re-implemented: the
 // runner used to carry its own copy of the enumerator, which is exactly the
@@ -328,8 +329,8 @@ function runOne(file) {
       // That is precisely the "a tool that reds on known-benign" disease this
       // ticket is fixing in the audit (S4), reproduced in this runner; a suite
       // driver that cries wolf teaches lanes to discount it.
-      const verdicts = text.split('\n').filter((l) => /\bVERIFY\b[^\n]*:|\bPARKED\b[^\n]*:/.test(l)).map((l) => l.trim());
-      const failed = verdicts.filter((v) => /\bFAIL\b/.test(v));
+      const verdicts = text.split('\n').filter((l) => isVerdictLine(l) || /\bPARKED\b[^\n]*:/.test(l)).map((l) => l.trim());
+      const failed = verdicts.filter(isFailedVerdict);
       resolve({ file, code, timedOut, sweptBrowsers, verdicts, failed, outFile, childPid: child.pid });
     });
   });
@@ -371,7 +372,7 @@ for (let i = 0; i < files.length; i++) {
   // HOUSE LAW: a stalled report is a report that does not exist. A file that
   // produced no VERIFY line did not test anything, whatever its exit code —
   // it is a MISSING verdict, never a passing one.
-  const noVerdict = !r.verdicts.some((v) => /\bVERIFY\b[^\n]*:/.test(v));
+  const noVerdict = !r.verdicts.some(isVerdictLine);
   // ITEM 135 — SLEPT OUTRANKS EVERY OTHER STATUS, including a pass. A file the
   // machine slept through was not measured: its timing assertions ran against a
   // clock that jumped, so a green is as meaningless as a red and calling it OK
