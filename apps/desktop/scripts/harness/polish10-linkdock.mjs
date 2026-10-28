@@ -109,13 +109,16 @@ await withHarness(async (app) => {
     ok(`${tag} K3: read-only - a press in the reader and a keystroke change nothing (the reader's words, the card)`, !!r3 && !r3.editable && !/ZZ/.test(r3.text || '') && J(cardBefore) === J(cardAfter), J({ editable: r3 && r3.editable, text: r3 && r3.text }));
     // K4: copy a stretch from the reader, paste it into the page
     const copied = await app.evalJs(`(() => { const t = document.querySelector('.wz-link-dock-text'); if (!t) return null; const w = document.createTreeWalker(t, NodeFilter.SHOW_TEXT); let n; const want = 'Cartographer of the Well';
-      while ((n = w.nextNode())) { const i = n.data.indexOf(want); if (i >= 0) { const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + want.length); const s = getSelection(); s.removeAllRanges(); s.addRange(r); const out = String(s); t.dispatchEvent(new ClipboardEvent('copy', { bubbles: true, cancelable: true })); return out; } } return null; })()`);   // the copy event is what routes the words through the Voice Wall's shadow
+      while ((n = w.nextNode())) { const i = n.data.indexOf(want); if (i >= 0) { const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + want.length); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return String(s); } } return null; })()`);
+    // the browser's own copy and paste (a trusted keyDown carrying `commands`, as in-app-copy-format.mjs): the copy event is what routes the words through the Voice Wall's shadow
+    const command = (k, code, vk, cmd) => app.cdp('Input.dispatchKeyEvent', { type: 'keyDown', key: k, code, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk, modifiers: 2, commands: [cmd] });
+    await command('c', 'KeyC', 67, 'copy'); await sleep(200);
     await app.evalJs("(() => { const e = document.querySelector('.forward-only-editor'); e.focus(); const r = document.createRange(); r.selectNodeContents(e); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()");
-    await app.evalJs(`(() => { const dt = new DataTransfer(); dt.setData('text/plain', ${J(' ')} + ${J('')} + (${J(copied)} || '')); document.querySelector('.forward-only-editor').dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true })); return true; })()`);
+    await command('v', 'KeyV', 86, 'paste');
     await sleep(1500);
     const pageNow = await stored(app, P);
     ok(`${tag} K4: copyable into the page - the reader's stretch copies as its plain words ("${copied}") and pasted into the page it lands as those words`,
-      copied === 'Cartographer of the Well' && !!pageNow && pageNow.text.endsWith(' Cartographer of the Well'), J({ copied, page: pageNow && pageNow.text.slice(-60) }));
+      copied === 'Cartographer of the Well' && !!pageNow && pageNow.text.trimEnd().endsWith('Cartographer of the Well'), J({ copied, page: pageNow && pageNow.text.slice(-60) }));
     // K5: one at a time. PARKED VERBATIM (Fable, Oct 28): docking the source REPLACES the card - the reader replaces the Grafts list, so a second Dock control never stands
     // beside it; the rule is one item at a time, and a swap is Undock, then Dock. The check below is kept as written and no longer run; its successor follows.
     //   const srcBtn = await pointOf(app, dockBtn(null, S));
@@ -142,7 +145,7 @@ await withHarness(async (app) => {
     await shot(app, `${th.id}-source-docked`);
     // K7: Undock removes the reader and returns the Grafts list
     const cl = await pointOf(app, "document.querySelector('.wz-link-dock-close')"); if (cl) { await click(app, cl.x, cl.y); await sleep(600); }
-    ok(`${tag} K7: the reader's Undock removes it and returns the Grafts list`, !!cl && (await app.evalJs("!document.querySelector('.wz-link-dock') && !!document.querySelector('.wz-graft-row')")), '');
+    ok(`${tag} K7: the reader's Undock removes it and returns the Grafts list`, !!cl && (await app.evalJs("!document.querySelector('.wz-link-dock') && !!document.querySelector('.wz-graft-row')")), J({ cl, now: await app.evalJs("({ dock: !!document.querySelector('.wz-link-dock'), close: !!document.querySelector('.wz-link-dock-close'), rows: document.querySelectorAll('.wz-graft-row').length, panel: !!document.querySelector('.wz-tutor-panel[data-open=\'true\']') })") }));
   }
 });
 
