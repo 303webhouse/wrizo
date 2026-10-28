@@ -30,6 +30,7 @@ import { DrawerActions } from './DrawerActions';
 import { TypewriterModeIcon, ProgressModeIcon } from './DrawerIcons';
 import type { PageActions } from '../store/pageActions';
 import type { StrokeInk, StrokeNib, StrokeTip } from '../types';
+import { wordCount } from '../store/wordCount';
 
 // ITEM 114 (item 83 errata E4) — the rosters and their lexicon keys, in one
 // place each, so the buttons cannot drift from the type or from the words. The
@@ -1038,10 +1039,6 @@ const POPOUT_FADE_WORDS = 15;
 // The house word count, the same shape PageEditor/JournalEntry/ScriptEditor/
 // QuickSprint/HomeFlow/FirstRunGate each keep privately (six copies already —
 // this reads like its neighbours rather than inventing a seventh home for it).
-function wordCount(text: string): number {
-  const t = text.trim();
-  return t ? t.split(/\s+/).length : 0;
-}
 
 // "A period entered" is measured as a period the document did not have when the
 // tray opened. Counting occurrences rather than watching keystrokes is what
