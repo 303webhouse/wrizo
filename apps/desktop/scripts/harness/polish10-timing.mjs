@@ -21,7 +21,7 @@ const TEXT = 'The rope was already there, and the well took the bucket back cold
 const HANDS = { tools: { grip: '.wz-sliver-grip', panel: '.wz-sliver-panel', name: 'Tools' }, tutor: { grip: '.wz-tutor-grip', panel: '.wz-tutor-panel', name: 'Tutor' } };
 
 // arm a per-frame sampler on one panel; it starts timing at the grip's own pointerdown (the trusted click) and runs 1.6s past it
-const ARM = (h) => `(() => { const panel = document.querySelector('${h.panel}'); const grip = document.querySelector('${h.grip}'); if (!panel || !grip) return false;
+const ARM = (h, key) => `(() => { const panel = document.querySelector('${h.panel}'); const grip = document.querySelector('${h.grip}'); if (!panel || !grip) return false;
   const slide = () => panel.querySelector('.wz-drawer-slide');
   const read = () => { const cs = getComputedStyle(panel); const s = slide(); let x = null; if (s) { const tf = getComputedStyle(s).transform; x = tf && tf !== 'none' ? Math.round(new DOMMatrix(tf).m41 * 10) / 10 : 0; }
     const r = panel.getBoundingClientRect(); return { o: Math.round(parseFloat(cs.opacity) * 1000) / 1000, x, l: Math.round(r.left * 10) / 10, w: Math.round(r.width * 10) / 10, vis: cs.visibility }; };
@@ -29,7 +29,7 @@ const ARM = (h) => `(() => { const panel = document.querySelector('${h.panel}');
     panelT: { prop: cs.transitionProperty, dur: cs.transitionDuration, delay: cs.transitionDelay }, slideT: s ? { prop: getComputedStyle(s).transitionProperty, dur: getComputedStyle(s).transitionDuration, delay: getComputedStyle(s).transitionDelay, anim: getComputedStyle(s).animationDuration } : null }; };
   const before = style(); const samples = [{ t: -1, ...read() }]; let t0 = null;
   window.__p10tDone = new Promise((res) => {
-    grip.addEventListener('pointerdown', () => { t0 = performance.now(); }, { capture: true, once: true });
+    (${key ? 'document' : 'grip'}).addEventListener('${key ? 'keydown' : 'pointerdown'}', () => { t0 = performance.now(); }, { capture: true, once: true });
     const t1 = performance.now();
     const tick = () => { const now = performance.now(); if (t0 != null) samples.push({ t: Math.round(now - t0), ...read() });
       if ((t0 != null && now - t0 > 1600) || now - t1 > 6000) res({ before, after: style(), clicked: t0 != null, samples }); else requestAnimationFrame(tick); };
@@ -46,11 +46,18 @@ const summarize = (tl) => {
     oHalf: (S.find((s, i) => i > 0 && Math.abs(s.o - z.o) >= Math.abs(f.o - z.o) / 2) || {}).t ?? null, before: tl.before, after: tl.after, clicked: tl.clicked };
 };
 const center = async (app, sel) => app.evalJs(`(() => { const e = document.querySelector('${sel}'); if (!e) return null; const r = e.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()`);
-const toggle = async (app, h) => {
+// `key`: the drawer is closed by a KEYSTROKE on the page, not a click (the Tutor's own vanishing law, A15, closes an undocked Tutor when the writer types -
+// Tutor.tsx's keydown listener); the sampler then starts at that keydown. Fable, Oct 28: report it, don't change it - the sequence works around it.
+const toggle = async (app, h, key = false) => {
   const c = await center(app, h.grip); if (!c) return null;
-  if (!(await app.evalJs(ARM(h)))) return null;
-  await app.mouseMove(c.x, c.y); await sleep(60);
-  await app.mouseDown(c.x, c.y); await app.mouseUp(c.x, c.y);
+  if (!(await app.evalJs(ARM(h, key)))) return null;
+  if (key) {
+    await app.evalJs("(() => { const e = document.querySelector('.forward-only-editor'); e.focus(); return true; })()");
+    await app.typeKeys(' it');
+  } else {
+    await app.mouseMove(c.x, c.y); await sleep(60);
+    await app.mouseDown(c.x, c.y); await app.mouseUp(c.x, c.y);
+  }
   return summarize(await app.evalJs('window.__p10tDone'));
 };
 
@@ -82,11 +89,12 @@ await withHarness(async (app) => {
       }
       r[k] = { open: await toggle(app, h) };
       await sleep(400);
-      if (scenario === 'after typing') {
+      // after typing, the Tutor closes BY the keystroke (A15's vanishing law); the Tools drawer is typed past, then clicked shut
+      if (scenario === 'after typing' && k === 'tools') {
         await app.evalJs("(() => { const e = document.querySelector('.forward-only-editor'); e.focus(); return true; })()");
         await app.typeKeys(' it'); await sleep(1500);
       }
-      r[k].close = await toggle(app, h);
+      r[k].close = await toggle(app, h, scenario === 'after typing' && k === 'tutor');
       await sleep(600);
     }
     const prem = ['tools', 'tutor'].every((k) => r[k].open && r[k].close && r[k].open.clicked && r[k].close.clicked && r[k].open.to.o >= 0.99 && r[k].close.to.o <= 0.01);
