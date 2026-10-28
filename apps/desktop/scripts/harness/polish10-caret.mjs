@@ -35,11 +35,31 @@ const PROBE = `(() => new Promise((res) => requestAnimationFrame(() => requestAn
   const row = ae && (ae.closest('.wz-row') || (ae.matches && ae.matches('.forward-only-editor') ? ae.children[Math.max(0, Math.min(s.anchorOffset, ae.children.length - 1))] : null));
   const R = (el) => { if (!el) return null; const r = el.getBoundingClientRect(); return { top: Math.round(r.top * 10) / 10, bottom: Math.round(r.bottom * 10) / 10, left: Math.round(r.left), height: Math.round(r.height * 10) / 10 }; };
   const rg = document.createRange(); rg.selectNodeContents(ed); const lines = [...rg.getClientRects()].filter((q) => q.height >= 4).map((q) => Math.round(q.top * 10) / 10);
-  res({ block: R(b), row: R(row), rows: ed.querySelectorAll(':scope > .wz-row').length, anchor: a ? { node: a.nodeType === 3 ? 'text' : a.nodeName, offset: s.anchorOffset } : null,
+  res({ block: R(b), row: R(row), rows: ed.children.length,   // a line is a child of the editor (a .wz-row in Draft, a plain line in Free Write)
+    anchor: a ? { node: a.nodeType === 3 ? 'text' : a.nodeName, offset: s.anchorOffset } : null,
     firstLine: lines.length ? Math.min(...lines) : null, caretColor: getComputedStyle(ed).caretColor, zoom: document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null });
 }))))()`;
 const onRow = (g) => !!g && !!g.block && !!g.row && (g.block.top + g.block.height / 2) >= g.row.top - 1 && (g.block.top + g.block.height / 2) <= g.row.bottom + 1;
 
+// the view is set through the writer's own Typewriter control and checked (a Free Write page opens zoomed whatever its key says - the hint review's finding)
+// the writer's own Typewriter control (page-size's press): the Sliver open, the pointer to the button until it is HIT, the press, the Sliver closed
+const rectOf = (app, sel) => app.evalJs(`(() => { const el = document.querySelector(${J(sel)}); if (!el) return null; const r = el.getBoundingClientRect(); return r.width && r.height ? { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) } : null; })()`);
+const attr = (app, sel, a) => app.evalJs(`document.querySelector(${J(sel)})?.getAttribute(${J(a)}) ?? null`);
+const click = async (app, x, y) => { await app.mouseMove(x, y); await app.mouseDown(x, y); await app.mouseUp(x, y); };
+const TOGGLE = '[data-mode-toggle="typewriter"]';
+const zoomedNow = (app) => app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') === 'true'");
+const setView = async (app, zoom) => {
+  if ((await zoomedNow(app)) === zoom) return zoom;
+  if ((await attr(app, '.wz-sliver', 'data-open')) !== 'true') { const g = await rectOf(app, '.wz-sliver-grip'); if (g) { await click(app, g.x, g.y); await sleep(600); } }
+  const probe = () => app.evalJs(`(() => { const b = document.querySelector(${J(TOGGLE)}); if (!b) return null; b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    const r = b.getBoundingClientRect(); const x = r.left + r.width / 2; const y = r.top + r.height / 2; const hit = document.elementFromPoint(x, y);
+    return { x: Math.round(x), y: Math.round(y), hits: !!hit && (hit === b || b.contains(hit)) }; })()`);
+  let at = await probe();
+  for (let i = 0; at && !at.hits && i < 16; i += 1) { await app.mouseMove(at.x, at.y); await sleep(150); at = await probe(); }
+  if (at && at.hits) { await click(app, at.x, at.y); await sleep(1100); }
+  if ((await attr(app, '.wz-sliver', 'data-open')) === 'true') { const g = await rectOf(app, '.wz-sliver-grip'); if (g) { await click(app, g.x, g.y); await sleep(600); } }
+  return zoomedNow(app);
+};
 await withHarness(async (app) => {
   await app.emulateDpr(1, 1366, 768);
   await app.goto('/');
@@ -60,6 +80,7 @@ await withHarness(async (app) => {
     await app.evalJs(`location.hash = '#/page/${id}'`);
     if (!(await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: id, timeout: 10000 }))) { ok(`${tag} fixture: the page opened`, false, ''); continue; }
     await sleep(900);
+    await setView(app, zoom); await sleep(600);
     await app.evalJs("(() => { const e = document.querySelector('.forward-only-editor'); e.focus(); const r = document.createRange(); r.selectNodeContents(e); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()");
     await app.typeKeys(' And'); await sleep(900);
     const g0 = await app.evalJs(PROBE);
