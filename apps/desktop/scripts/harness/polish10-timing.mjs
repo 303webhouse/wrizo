@@ -91,7 +91,8 @@ await withHarness(async (app) => {
       await sleep(600);
     }
     const prem = ['tools', 'tutor'].every((k) => r[k].open && r[k].close && r[k].open.clicked && r[k].close.clicked && r[k].open.to.o >= 0.99 && r[k].close.to.o <= 0.01);
-    ok(`${scenario} (premise): each tab took a trusted click, and its drawer opened (opacity 1) and closed (opacity 0)`, prem, J({ tools: r.tools, tutor: r.tutor }));
+    const brief = (x) => (x ? { clicked: x.clicked, from: x.from && x.from.o, to: x.to && x.to.o, end: x.end, start: x.start } : null);
+    ok(`${scenario} (premise): each tab took a trusted click, and its drawer opened (opacity 1) and closed (opacity 0)`, prem, J(prem ? { tools: r.tools, tutor: r.tutor } : { tools: { open: brief(r.tools.open), close: brief(r.tools.close) }, tutor: { open: brief(r.tutor.open), close: brief(r.tutor.close) } }));
     if (!prem) continue;
     for (const [phase, label] of [['open', 'T1 OPEN'], ['close', 'T2 CLOSE']]) {
       const a = r.tools[phase]; const b = r.tutor[phase];
