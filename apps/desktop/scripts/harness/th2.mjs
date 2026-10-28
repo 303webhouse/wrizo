@@ -426,7 +426,11 @@ await withHarness(async (app) => {
   const beforeRoundTrip = await app.evalJs("({ theme: window.wrizoTheme.get(), prefs: window.wrizoThemePrefs.get(), dial: window.wrizoAmbiance.get() })");
   await app.evalJs("window.wrizoTheme.set('plateau')");
   const midRoundTrip = await app.evalJs("(() => { const cs = getComputedStyle(document.documentElement); return { theme: document.documentElement.getAttribute('data-theme'), brass: cs.getPropertyValue('--brass').trim(), ground: cs.getPropertyValue('--ink-950').trim() }; })()");
-  ok('check 7 (A3): switching back to Plateau mid-session restores Plateau\'s own ground token', midRoundTrip.theme === 'plateau' && midRoundTrip.ground.toLowerCase() === '#110600', JSON.stringify(midRoundTrip));
+  // ---- PARKED - SUPERSEDED by POLISH - ARBOR'S ROOM (Nick chose the deep espresso room, Oct 27; Fable's ruling Oct 28): Plateau's (Arbor's) ground is now #0A0503, no longer #110600.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok('check 7 (A3): switching back to Plateau mid-session restores Plateau\'s own ground token', midRoundTrip.theme === 'plateau' && midRoundTrip.ground.toLowerCase() === '#110600', JSON.stringify(midRoundTrip));
+  ok('check 7 (A3) [polish-arbor-room successor]: switching back to Plateau mid-session restores Plateau\'s own ground token - the espresso #0A0503', midRoundTrip.theme === 'plateau' && midRoundTrip.ground.toLowerCase() === '#0a0503', JSON.stringify(midRoundTrip));
   await app.evalJs("window.wrizoTheme.set('flux')");
   const afterRoundTrip = await app.evalJs("({ theme: window.wrizoTheme.get(), prefs: window.wrizoThemePrefs.get(), dial: window.wrizoAmbiance.get() })");
   ok('check 7 (A3): the Flux<->Plateau round trip is lossless — prefs/dial survive both switches unchanged',
