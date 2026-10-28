@@ -8,6 +8,7 @@ import path from 'node:path';
 const out = process.argv[2] || null;
 if (out) fs.mkdirSync(out, { recursive: true });
 const checks = [];
+const tones = [];   // every frame's page-tone attribute (Fable, Oct 27): frames.json beside the PNGs (top level: the file is written after the scenario ends)
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 process.env.WS_PLACE = '1';
@@ -17,7 +18,6 @@ const NAMES = ['Hook', 'Midpoint Reversal', 'Darkest Point', 'Climax', 'Final Im
 await withHarness(async (app) => {
   const q = (js) => app.evalJs(js);
   const waitSoft = async (expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
-  const tones = [];   // every frame's page-tone attribute (Fable, Oct 27): frames.json beside the PNGs
   const shot = async (name) => { if (out) { fs.writeFileSync(path.join(out, `${name}.png`), Buffer.from(await app.screenshot(), 'base64')); tones.push({ frame: `${name}.png`, dataPage: await q("document.documentElement.getAttribute('data-page')"), dataTheme: await q("document.documentElement.getAttribute('data-theme')") }); } };
   const point = (sel) => q(`(() => { const b = document.querySelector(${JSON.stringify(sel)}); if (!b) return null; const r = b.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()`);
   const click = async (sel) => { const p = await point(sel); if (!p) return false; await app.mouseMove(p.x, p.y); await app.mouseDown(p.x, p.y); await sleep(50); await app.mouseUp(p.x, p.y); await sleep(400); return true; };
