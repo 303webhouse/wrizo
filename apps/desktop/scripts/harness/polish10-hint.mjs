@@ -64,7 +64,10 @@ const settle = async (app) => { const t0 = Date.now(); let last = null; let stil
   return false; };
 // the writer's line - the caret's - inside the stage and the viewport
 const CARET_SEEN = `(() => { const s = getSelection(); if (!s || !s.rangeCount) return null; const r = s.getRangeAt(0).cloneRange(); r.collapse(false);
-  let q = r.getClientRects()[0] || null; if (!q) { const n = s.focusNode && (s.focusNode.nodeType === 1 ? s.focusNode : s.focusNode.parentElement); q = n ? n.getBoundingClientRect() : null; }
+  let q = r.getClientRects()[0] || null;
+  if (!q) { const ed = document.querySelector('.forward-only-editor'); if (ed) { const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let last = null, n; while ((n = w.nextNode())) if (n.data.trim()) last = n;
+    if (last) { const lr = document.createRange(); lr.setStart(last, Math.max(0, last.data.trimEnd().length - 1)); lr.setEnd(last, last.data.trimEnd().length); q = lr.getClientRects()[0] || null; } } }   // a collapsed range at an element edge has no rect: the end of the text is where the writer is
+  if (!q) { const n = s.focusNode && (s.focusNode.nodeType === 1 ? s.focusNode : s.focusNode.parentElement); q = n ? n.getBoundingClientRect() : null; }
   const st = document.querySelector('.desk-frame-stage'); if (!q || !st) return null; const sr = st.getBoundingClientRect();
   return { top: q.top, bottom: q.bottom, seen: q.top >= Math.max(sr.top, 0) - 1 && q.bottom <= Math.min(sr.bottom, innerHeight) + 1 }; })()`;
 // the writer at the end of the text, a word typed, the hold settled with the writer's line on screen, then Backspace past the runway until the hint shows (capped)
