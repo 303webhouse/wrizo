@@ -1,0 +1,31 @@
+BOX TURN: granted to lane "polish" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=22 tree=62d1772b+4dirty bundle=index-Dd2gLSbe.js/927001b out=C:\Users\nickh\AppData\Local\Temp\wrizo-suite-14332
+(node:14332) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[01/22] OK        exit=0   14s ab1.mjs :: ROWS-SHADOW VERIFY: PASS (34 renders checked, shadow == DOM on every one) ;; AB1 VERIFY: PASS (29 checks)
+[02/22] OK        exit=0   36s ab3.mjs :: ROWS-SHADOW VERIFY: PASS (63 renders checked, shadow == DOM on every one) ;; AB3 VERIFY: PASS (24 checks)
+[03/22] OK        exit=0   21s b3.mjs :: B3 VERIFY: PASS (70 checks)
+[04/22] OK        exit=0   38s card-label-contrast.mjs :: CARD-LABEL-CONTRAST VERIFY: PASS (25 checks)
+[05/22] OK        exit=0   17s cd1.mjs :: ROWS-SHADOW VERIFY: PASS (23 renders checked, shadow == DOM on every one) ;; CD1 VERIFY: PASS (25 checks)
+[06/22] OK        exit=0   36s cd2.mjs :: ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one) ;; CD2 VERIFY: PASS (51 checks)
+[07/22] OK        exit=0  123s flux-v2.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FLUX-V2 VERIFY: PASS (156 checks)
+[08/22] OK        exit=0   23s fx1.mjs :: ROWS-SHADOW VERIFY: PASS (10 renders checked, shadow == DOM on every one) ;; FX1 VERIFY: PASS (23 checks)
+[09/22] OK        exit=0   16s fx3.mjs :: FX3 VERIFY: PASS (28 checks)
+[10/22] OK        exit=0   34s fx7.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FX7 VERIFY (partial): PASS (43 checks)
+[11/22] OK        exit=0   22s hb1.mjs :: HB1 VERIFY: PASS (32 checks)
+[12/22] OK        exit=0   32s help-buttons.mjs :: ROWS-SHADOW VERIFY: PASS (5 renders checked, shadow == DOM on every one) ;; HELP-BUTTONS VERIFY: PASS (24 checks)
+[13/22] OK        exit=0    9s item130.mjs :: ITEM130 VERIFY: PASS (16 checks)
+[14/22] OK        exit=0    7s item137.mjs :: ITEM137 VERIFY: PASS (9 checks)
+[15/22] OK        exit=0   32s item83f.mjs :: ROWS-SHADOW VERIFY: PASS (45 renders checked, shadow == DOM on every one) ;; ITEM83F VERIFY: PASS (33 checks)
+[16/22] OK        exit=0  241s page-size.mjs :: ROWS-SHADOW VERIFY: PASS (83 renders checked, shadow == DOM on every one) ;; PAGE-SIZE VERIFY: PASS (335 checks)
+[17/22] OK        exit=0   24s polish-arbor-chrome.mjs :: POLISH-ARBOR-CHROME VERIFY: PASS (31 checks)
+[18/22] OK        exit=0   25s polish-arbor-room.mjs :: POLISH-ARBOR-ROOM VERIFY: PASS (27 checks)
+[19/22] OK        exit=0   65s th-machina.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; TH-MACHINA VERIFY: PASS (41 checks)
+[20/22] OK        exit=0    7s th1.mjs :: TH1 VERIFY: PASS (30 checks)
+[21/22] OK        exit=0   33s th2.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; TH2 VERIFY: PASS (45 checks)
+[22/22] OK        exit=0   53s tu2.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; TU2 VERIFY: PASS (92 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 22/22 of 22 returned a passing verdict
+SUITE RESULT: CLEAN — tree=62d1772b+4dirty bundle=index-Dd2gLSbe.js/927001b
