@@ -41,6 +41,40 @@ await withHarness(async (app) => {
     await js("document.getElementById('holoPlus').click(); true"); await sleep(400); await shot('A2-13-hologram-plus-menu');
     await errCheck('A');
   }
+  if (want('A3')) {                  // Schema circuit v3 (Oct 28)
+    await open('flux-circuit-mockup-A-schema.html'); await sleep(1200);
+    await shot('A3-01-circuit-rail-footer-side-squares');
+    await js("first.selected = 'c5'; first.cam.s = 1.15; first.cam.x = 980; first.cam.y = 430; true"); await sleep(1400); await shot('A3-02-links-square-to-square-electrons-on-selected');
+    // a click on a node's left square: a new node, already linked, on its left
+    await js("(() => { const el = first.els.c3.querySelector('.port.pl'); const r = el.getBoundingClientRect(), o = { bubbles: true, clientX: r.left + 8, clientY: r.top + 8, pointerId: 1 }; el.dispatchEvent(new PointerEvent('pointerdown', o)); dispatchEvent(new PointerEvent('pointerup', o)); first.cam.s = 1; first.cam.x = 200; first.cam.y = 420; return true; })()");
+    await sleep(200); await shot('A3-03-side-square-plus-new-linked-node');
+    await js("fit(first, true); first.selected = null; document.getElementById('tabL').click(); document.getElementById('tabR').click(); true"); await sleep(900); await shot('A3-04-hands-open-as-lines');
+    await js("document.querySelector('#handR .tg[data-k=checksum]').click(); true"); await sleep(400); await shot('A3-05-operator-checksum-open');
+    await js("document.getElementById('tabL').click(); document.getElementById('tabR').click(); first.el.querySelector('.plus').click(); true"); await sleep(900); await shot('A3-06-plus-at-corner-line-down-the-side');
+    await js("closeMenus(); setView(first,'stack'); true"); await sleep(1600); await js("first.stackIdx = 6; true"); await sleep(900); await shot('A3-07-stack-centre-bigger');
+    await js("openHolo(first, 'c4'); true"); await sleep(1200); await shot('A3-08-hologram-bigger-softer-beam');
+    await js("document.getElementById('holoPlus').click(); true"); await sleep(800); await shot('A3-09-hologram-plus');
+    await errCheck('A3');
+  }
+  if (want('P2v2')) {                // Schema doc v2 (Oct 28)
+    await open('flux-page-mockup-2-schema-doc.html'); await sleep(1000);
+    await shot('P2v2-01-schema-doc');
+    await js("lastInput = performance.now() - 8000; gwNext = 0; true"); await sleep(260); await shot('P2v2-02-idle-glitch-on-the-page');
+    await js("document.querySelectorAll('.gw').forEach(o => o.remove()); lastInput = performance.now(); ports[1].click(); true"); await sleep(900); await shot('P2v2-03-link-port-pop-out');
+    await js("closeAll(); document.getElementById('tabL').click(); true"); await sleep(900); await shot('P2v2-04-tools-line-to-box');
+    for (const k of ['schema', 'checksum', 'shards', 'ask']) {
+      await js(`closeAll(); document.getElementById('tabR').click(); true`); await sleep(700);
+      await js(`document.querySelector('.pbox .tg[data-k=${k}]').click(); true`); await sleep(300); await shot(`P2v2-05-operator-${k}-open`);
+    }
+    await js("closeAll(); true"); await sleep(400); await js("document.getElementById('plus').click(); true"); await sleep(900); await shot('P2v2-06-plus-at-corner-line-down-the-side');
+    await js("closeAll(); jackIn(); true"); await sleep(300);
+    const lines = ['The bell rang and nobody pulled the rope and Mara ran', 'down the slipway in her socks because the coat was gone', 'and the light on the point was turning, turning, which it', 'had not done since the winter her sister drowned and did'];
+    for (const l of lines) { for (const ch of l) { await js(`dispatchEvent(new KeyboardEvent('keydown', { key: ${JSON.stringify(ch)}, bubbles: true })); true`); await sleep(18); } await js("dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); true"); }
+    for (const ch of 'not drown, it turns out, because') { await js(`dispatchEvent(new KeyboardEvent('keydown', { key: ${JSON.stringify(ch)}, bubbles: true })); true`); await sleep(18); }
+    await shot('P2v2-07-jacked-in');
+    await js("dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); true"); await sleep(1000); await shot('P2v2-08-jacked-out-burst-decompiled');
+    await errCheck('P2v2');
+  }
   if (want('P1')) {
     await open('flux-page-mockup-1-terminal.html');
     await shot('P1-01-page-terminal');

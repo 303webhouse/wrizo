@@ -18,7 +18,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--ground);color:va
 #bg,#fx{position:fixed;inset:0;width:100%;height:100%;display:block;pointer-events:none}
 #bg{z-index:0} #fx{z-index:6}
 #dip{position:fixed;inset:0;z-index:7;pointer-events:none;background:#000;opacity:0;transition:opacity .2s}
-#stage{position:fixed;left:0;right:0;top:46px;bottom:0;z-index:2}
+#stage{position:fixed;left:216px;right:0;top:46px;bottom:26px;z-index:2}
 
 /* ---- panes (split screen: up to four, one shared ground behind them all) ---- */
 .pane{position:absolute;overflow:hidden}
@@ -29,16 +29,22 @@ body.split .pane.focus{border-color:var(--cyan)}
 .pane-hd{position:absolute;left:10px;top:8px;z-index:3;display:none;font-family:var(--f-chrome);font-weight:600;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--low);background:rgba(1,8,17,.75);padding:3px 8px;border:1px solid var(--line)}
 .pane-hd b{color:var(--ink)} .pane-hd .lnk{color:var(--cyan-soft)}
 body.split .pane-hd{display:block}
-.pclose{position:absolute;right:8px;top:8px;z-index:3;display:none;background:rgba(1,8,17,.8);border:1px solid var(--line-strong);color:var(--mid);font:600 12px var(--f-chrome);letter-spacing:.14em;padding:3px 8px;cursor:pointer}
+.pclose{position:absolute;right:60px;top:12px;z-index:3;display:none;background:rgba(1,8,17,.8);border:1px solid var(--line-strong);color:var(--mid);font:600 12px var(--f-chrome);letter-spacing:.14em;padding:3px 8px;cursor:pointer}
 body.split .pclose{display:block} .pclose:hover{color:var(--cyan);border-color:var(--cyan)}
 
-/* the "+" square, to the right of the surface */
-.plus{position:absolute;right:12px;top:50%;margin-top:-19px;width:38px;height:38px;z-index:4;background:rgba(1,8,17,.85);border:1px solid var(--cyan);color:var(--cyan);cursor:pointer;display:flex;align-items:center;justify-content:center}
+/* the "+" square, at the surface's top corner; its menu draws a line down the surface's side, then opens into a box */
+.plus{position:absolute;right:12px;top:12px;width:38px;height:38px;z-index:6;background:rgba(1,8,17,.85);border:1px solid var(--cyan);color:var(--cyan);cursor:pointer;display:flex;align-items:center;justify-content:center}
 .plus::before,.plus::after{content:'';position:absolute;background:currentColor}
 .plus::before{width:16px;height:2px} .plus::after{width:2px;height:16px}
 .plus:hover,.plus[aria-expanded="true"]{background:var(--cyan);color:var(--ground)}
-.pmenu{position:absolute;right:58px;top:50%;transform:translateY(-50%);z-index:5;min-width:290px;display:none;background:rgba(9,18,30,.97);border:1px solid var(--cyan);padding:6px 0;font-family:var(--f-chrome)}
-.pmenu.open{display:block}
+.pline{position:absolute;right:30px;top:50px;width:2px;height:0;z-index:5;background:var(--cyan);transition:height .22s ease;pointer-events:none}
+.pline.open{height:40px}
+.pline i{position:absolute;left:-2px;width:6px;height:6px;background:#00C2FF;box-shadow:0 0 8px #00C2FF;opacity:0;animation:elecV 1.4s linear infinite}
+.pline.open i{opacity:1}
+@keyframes elecV{from{top:0}to{top:calc(100% - 6px)}}
+.pmenu{position:absolute;right:12px;top:90px;z-index:5;min-width:290px;max-height:calc(100% - 110px);overflow:auto;background:rgba(9,18,30,.97);border:1px solid var(--cyan);padding:6px 0;font-family:var(--f-chrome);
+  clip-path:inset(0 0 100% 0);opacity:0;pointer-events:none;transition:clip-path .3s ease .2s,opacity .05s linear .2s}
+.pmenu.open{clip-path:inset(0 0 0 0);opacity:1;pointer-events:auto}
 .pmenu .mh{padding:6px 14px 4px;font-size:11px;letter-spacing:.22em;color:var(--low);text-transform:uppercase}
 .pmenu button{display:flex;justify-content:space-between;width:100%;background:none;border:0;border-left:2px solid transparent;color:var(--mid);font:600 13px var(--f-chrome);letter-spacing:.14em;text-transform:uppercase;padding:7px 14px;cursor:pointer;text-align:left}
 .pmenu button:hover{color:var(--ink);border-left-color:var(--cyan);background:rgba(0,194,255,.08)}
@@ -67,8 +73,11 @@ body.split .pclose{display:block} .pclose:hover{color:var(--cyan);border-color:v
 .node .ft{display:flex;justify-content:space-between;padding:5px 10px 6px;border-top:1px dashed rgba(0,194,255,.2);
   font-family:var(--f-chrome);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--low)}
 .node .ft .ok{color:var(--lime)}
-.node .port{position:absolute;right:-7px;top:50%;width:12px;height:12px;margin-top:-6px;background:var(--ground);border:1px solid var(--acc);cursor:crosshair}
-.node .port:hover{background:var(--acc)}
+/* the side squares: links attach here; drag from one to link, click its + for a new connected node on that side */
+.node .port{position:absolute;right:-9px;top:50%;width:16px;height:16px;margin-top:-8px;background:var(--ground);border:1px solid var(--acc);cursor:crosshair;display:flex;align-items:center;justify-content:center;
+  font:700 13px/1 var(--f-chrome);color:var(--acc)}
+.node .port.pl{right:auto;left:-9px}
+.node .port:hover{background:var(--acc);color:var(--ground)}
 .node.sel{border-color:var(--acc);box-shadow:0 0 0 1px var(--accs),0 0 24px rgba(0,194,255,.18)}
 .node.last{box-shadow:inset 3px 0 0 var(--orange)}
 .node.sel.last{box-shadow:inset 3px 0 0 var(--orange),0 0 0 1px var(--accs),0 0 24px rgba(0,194,255,.18)}
@@ -116,14 +125,26 @@ body.split .pclose{display:block} .pclose:hover{color:var(--cyan);border-color:v
 #top .tabs{margin-left:auto;display:flex;gap:2px}
 .tab{background:none;border:1px solid transparent;color:var(--mid);font:600 12px var(--f-chrome);letter-spacing:.16em;text-transform:uppercase;padding:7px 12px;cursor:pointer}
 .tab:hover{color:var(--ink)} .tab[aria-pressed="true"]{color:var(--cyan);border-bottom:2px solid var(--cyan)}
-#tele{right:14px;bottom:14px;width:260px;padding:10px 12px;background:rgba(15,25,38,.88);border:1px solid var(--line);font-size:11px;color:var(--low);line-height:1.7}
-#tele b{color:var(--cyan-soft);font-weight:600} #tele .lvl{color:var(--lime)}
-#mini{position:fixed;z-index:10;right:14px;bottom:122px;width:260px;height:130px;background:rgba(1,8,17,.82);border:1px solid var(--line)}
-#acts{left:56px;bottom:14px;display:flex;flex-direction:column;gap:6px}
+/* the footer: the circuit's readouts, right-aligned on one line (the minimap is gone) */
+#tele{left:216px;right:0;bottom:0;height:26px;display:flex;justify-content:flex-end;align-items:center;gap:20px;padding:0 54px 0 16px;background:rgba(15,25,38,.92);border-top:1px solid var(--line);font-size:11px;color:var(--low);white-space:nowrap}
+#tele b{color:var(--cyan-soft);font-weight:600} #tele .lvl{color:var(--lime)} #tele .you{color:var(--orange)}
+#mini{display:none}
+/* the left rail: the board's command boxes, as on the Schema doc */
+#rail{left:0;top:46px;bottom:0;width:216px;padding:14px 12px;display:flex;flex-direction:column;gap:7px;background:rgba(1,8,17,.7);border-right:1px solid var(--line);z-index:12}
+.rb{display:grid;grid-template-columns:1fr auto;gap:0 8px;width:100%;background:rgba(15,25,38,.92);border:1px solid var(--line-strong);color:var(--mid);font:600 13px var(--f-chrome);letter-spacing:.16em;text-transform:uppercase;padding:7px 11px 6px;cursor:pointer;text-align:left;position:relative}
+.rb .k{color:var(--low);font-size:10px;align-self:center}
+.rb small{grid-column:1 / -1;font-size:10px;letter-spacing:.2em;color:#4F7FA6;margin-top:1px}
+.rb:hover{color:var(--cyan);border-color:var(--cyan)}
+.rb::before{content:'';position:absolute;left:-4px;top:-4px;width:7px;height:7px;border:2px solid transparent;border-right:none;border-bottom:none}
+.rb:hover::before,.rb.on::before{border-color:var(--cyan)}
+.rb.on{color:var(--cyan);border-color:var(--cyan)}
+.rb.here,.rb.you{border-color:var(--orange);color:var(--orange)} .rb.here{padding:10px 11px 8px}
+.rb.here::before,.rb.you::before{border-color:var(--orange)} .rb.here small,.rb.you small{color:#B86A00} .rb.you .k{color:var(--orange)}
+.rail-foot{margin-top:auto;display:flex;flex-direction:column;gap:7px}
 .btn{background:rgba(15,25,38,.92);border:1px solid var(--line-strong);color:var(--mid);font:600 12px var(--f-chrome);letter-spacing:.16em;text-transform:uppercase;padding:7px 12px;cursor:pointer;text-align:left}
 .btn:hover{color:var(--cyan);border-color:var(--cyan)} .btn .k{color:var(--low);margin-left:8px;font-size:10px}
 .btn.you{border-color:var(--orange);color:var(--orange)}
-#dial{left:56px;top:56px;padding:8px 10px;background:rgba(15,25,38,.88);border:1px solid var(--line);font-size:11px;color:var(--low);display:flex;flex-direction:column;gap:6px;width:200px}
+#dial{left:272px;bottom:40px;padding:8px 10px;background:rgba(15,25,38,.88);border:1px solid var(--line);font-size:11px;color:var(--low);display:flex;flex-direction:column;gap:6px;width:200px}
 #dial input{accent-color:var(--cyan)} #dial input[type=range]{width:100%}
 #dial label{display:flex;gap:6px;align-items:center;cursor:pointer}
 #hint{left:50%;top:54px;transform:translateX(-50%);font-size:11px;color:var(--low);background:rgba(1,8,17,.7);padding:4px 10px;border:1px solid var(--line);white-space:nowrap}
@@ -142,12 +163,23 @@ body.split .pclose{display:block} .pclose:hover{color:var(--cyan);border-color:v
 .hand-tab span{writing-mode:vertical-rl;transform:rotate(180deg)}
 .hand-tab.r span{transform:none}
 .hand-tab:hover,.hand-tab[aria-expanded="true"]{color:var(--cyan);border-color:var(--cyan)}
-.hand-tab.l{left:0;border-left:none} .hand-tab.r{right:0;border-right:none}
+.hand-tab.l{left:216px;border-left:none} .hand-tab.r{right:0;border-right:none}
 .hand-tab svg{width:26px;height:26px}
-.hand{position:fixed;z-index:29;top:46px;bottom:0;width:320px;background:rgba(9,18,30,.96);border:1px solid var(--line-strong);padding:16px 18px 18px 18px;overflow:auto;
-  transition:transform .22s ease;font-family:var(--f-chrome);text-transform:uppercase;letter-spacing:.14em}
-.hand.l{left:40px;transform:translateX(calc(-100% - 50px));border-left:none} .hand.r{right:40px;transform:translateX(calc(100% + 50px));border-right:none}
-.hand.open{transform:none}
+/* a hand opens by shooting a line from its tab toward the surface; the line opens into the menu box, an electron runs the line while it is open */
+.hand{position:fixed;z-index:29;width:270px;max-height:74vh;background:rgba(9,18,30,.97);border:1px solid var(--cyan);padding:14px 16px 16px;overflow:auto;
+  font-family:var(--f-chrome);text-transform:uppercase;letter-spacing:.14em;clip-path:inset(0 100% 0 0);opacity:0;pointer-events:none;transition:clip-path .3s ease .22s,opacity .05s linear .22s}
+.hand.r{clip-path:inset(0 0 0 100%)}
+.hand.open{clip-path:inset(0 0 0 0);opacity:1;pointer-events:auto}
+.hand-line{position:fixed;z-index:28;height:2px;background:var(--cyan);transform-origin:left center;transform:scaleX(0);transition:transform .22s ease;pointer-events:none}
+.hand-line.r{transform-origin:right center}
+.hand-line.open{transform:scaleX(1)}
+.hand-line i{position:absolute;top:-2px;width:6px;height:6px;background:#00C2FF;box-shadow:0 0 8px #00C2FF;opacity:0;animation:elecH 1.5s linear infinite}
+.hand-line.r i{animation-direction:reverse}
+.hand-line.open i{opacity:1}
+@keyframes elecH{from{left:0}to{left:calc(100% - 6px)}}
+.hand .tg{display:flex;justify-content:space-between;width:100%;background:none;border:0;border-top:1px solid var(--line);color:var(--cyan-soft);font:700 12px var(--f-chrome);letter-spacing:.22em;text-transform:uppercase;padding:9px 2px;cursor:pointer}
+.hand .tg::after{content:'+';color:var(--low)} .hand .tg[aria-expanded="true"]::after{content:'−';color:var(--cyan)}
+.hand .tb{display:none;padding:0 0 8px} .hand .tg[aria-expanded="true"] + .tb{display:block}
 .hand::after{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,194,255,.035) 0 1px,transparent 1px 4px)}
 .hand h3{margin:0 0 4px;font-size:16px;letter-spacing:.24em;color:var(--cyan)}
 .hand .ctx{font-size:11px;color:var(--low);margin-bottom:14px}
@@ -184,15 +216,17 @@ body.split #hint,body.split #dial{display:none}
 .hcard .hl button:hover{border-color:var(--cyan);color:var(--ink)}
 .hcard .media{margin:8px 18px;height:200px} .hcard.ink svg.sk{margin:8px 18px;width:480px;height:220px}
 .hcard.center{cursor:default}
-#holo .emitter{position:absolute;left:50%;bottom:6%;width:560px;margin-left:-280px;height:38%;pointer-events:none;
-  background:linear-gradient(0deg,rgba(0,194,255,.20),rgba(0,194,255,0));clip-path:polygon(44% 100%,56% 100%,100% 0,0 0);opacity:.55}
-#holo .emitter::after{content:'';position:absolute;left:44%;right:44%;bottom:0;height:3px;background:var(--cyan)}
+/* the beam: diffuse, faint, no projector line - a hint of light under the hologram, not a lamp */
+#holo .emitter{position:absolute;left:50%;bottom:0;width:900px;margin-left:-450px;height:62%;pointer-events:none;
+  background:radial-gradient(50% 60% at 50% 100%,rgba(0,194,255,.16),rgba(0,194,255,.05) 55%,rgba(0,194,255,0) 75%);filter:blur(14px);opacity:.5}
 #holo .hbar{position:absolute;left:56px;right:56px;top:12px;display:flex;justify-content:space-between;align-items:center;font-family:var(--f-chrome);letter-spacing:.18em;font-size:12px;color:var(--low);z-index:2}
 #holo .hbar b{color:var(--ink)}
 #holo .count{position:absolute;left:0;right:0;bottom:22px;text-align:center;font-family:var(--f-chrome);letter-spacing:.3em;font-size:12px;color:var(--low)}
 #holo .count b{color:var(--cyan)}
-#holo .plus{right:56px}
-#holo .pmenu{right:102px}
+#holo .plus{right:56px;top:56px}
+#holo .pline{right:74px;top:94px}
+#holo .pmenu{right:56px;top:134px;max-height:calc(100% - 160px)}
+#holo{left:216px}
 
 /* ---- the theme-switch demo ---- */
 body.arbor{background:#150F0B}
@@ -202,7 +236,7 @@ body.arbor .node::before,body.arbor .node::after,body.arbor .node .port,body.arb
 body.arbor .node .ttl{color:#2B2014 !important;font-family:system-ui,sans-serif;letter-spacing:.02em;text-transform:none;font-size:15px}
 body.arbor .node .body{color:#2B2014;font-family:var(--f-serif);font-size:15px}
 body.arbor .node.last{box-shadow:inset 3px 0 0 #96A05A}
-body.arbor .hud:not(#acts),body.arbor #mini,body.arbor .plus,body.arbor .hand-tab{opacity:.25}
+body.arbor .hud:not(#rail),body.arbor .plus,body.arbor .hand-tab{opacity:.25}
 body.arbor .paper{background:#F3EDE1;border-color:#d8c8b4} body.arbor .paper .dbody,body.arbor .paper .dtitle{color:#2B2014}
 #swap{position:fixed;inset:0;z-index:70;pointer-events:none;opacity:0;background:repeating-linear-gradient(0deg,rgba(0,194,255,.10) 0 1px,transparent 1px 3px)}
 #swap.go{animation:swap .9s ease}
@@ -232,28 +266,48 @@ body.arbor .paper{background:#F3EDE1;border-color:#d8c8b4} body.arbor .paper .db
   <label><input id="rm" type="checkbox"> Reduced motion</label>
 </div>
 <button id="notesBtn" class="btn hud">Design notes</button>
-<div id="acts" class="hud">
-  <button class="btn you" id="locate">Locate last node <span class="k">L</span></button>
-  <button class="btn" id="fit">Fit circuit <span class="k">0</span></button>
-  <button class="btn" id="jack">Jack out → see it in Arbor <span class="k">J</span></button>
-</div>
+<nav id="rail" class="hud" aria-label="Wayfinding">
+  <button class="rb here">The Late Ferry <span class="k">▸</span><small>CARTRIDGE · 4 CIRCUITS · 12 DOCS</small></button>
+  <button class="rb">Docs <span class="k">1</span><small>12 · CH 3 LINKED</small></button>
+  <button class="rb on">Circuits <span class="k">2</span><small>4 · PLOT OPEN</small></button>
+  <button class="rb">Logs <span class="k">3</span><small>41 ENTRIES</small></button>
+  <button class="rb you" id="locate">Locate last node <span class="k">L</span><small id="lastSmall">RISING ACTION · PLOT</small></button>
+  <button class="rb" id="fit">Fit circuit <span class="k">0</span><small>THE WHOLE CIRCUIT IN VIEW</small></button>
+  <div class="rail-foot">
+    <button class="rb" id="jack">Jack out <span class="k">J</span><small>MOCKUP: SEE IT IN ARBOR</small></button>
+    <button class="rb">Config <span class="k">,</span><small>GLITCH 60 · FADE ON</small></button>
+    <button class="rb">Skin <span class="k">K</span><small>FLUX</small></button>
+    <button class="rb">Trash <span class="k">⌫</span><small>3 ITEMS</small></button>
+  </div>
+</nav>
 <canvas id="mini"></canvas>
 <div id="tele" class="hud"></div>
 <div id="toast" class="hud"></div>
 
 <button class="hand-tab l" id="tabL" aria-expanded="false" title="Tools"></button>
 <button class="hand-tab r" id="tabR" aria-expanded="false" title="Operator"></button>
+<div class="hand-line l" id="lineL"><i></i></div><div class="hand-line r" id="lineR"><i></i></div>
 <aside class="hand l" id="handL"></aside>
 <aside class="hand r" id="handR"></aside>
 
 <div id="holo"><div class="hbar"><button class="btn" id="holoBack">◂ Back to circuit <span class="k">ESC</span></button><span id="holoWhere"></span></div>
   <div class="emitter"></div><div class="deck" id="deck"></div><div class="count" id="holoCount"></div>
-  <button class="plus" id="holoPlus" aria-expanded="false" title="Add or link"></button><div class="pmenu" id="holoMenu"></div></div>
+  <button class="plus" id="holoPlus" aria-expanded="false" title="Add or link"></button><div class="pline" id="holoLine"><i></i></div><div class="pmenu" id="holoMenu"></div></div>
 
 <div id="notes">
   <button class="btn x" id="notesX">Close</button>
-  <h2>Mockup A — SCHEMA, v2</h2>
-  <p>Nick picked Schema. This version takes his ten notes of Oct 27:</p>
+  <h2>Mockup A — SCHEMA, v3 (Oct 28)</h2>
+  <ul>
+    <li><b>The left rail</b> is here too: the same command boxes as the Schema doc. Locate last node and Fit circuit live in it.</li>
+    <li><b>The hands open as lines.</b> Click TOOLS or OPERATOR: a line shoots from the tab toward the surface, then opens into the menu box; an electron runs the line while it is open. The Operator's four lenses are toggles that open their options.</li>
+    <li><b>The + sits at the surface's top corner</b>; its menu draws a line down the surface's side and opens into a box.</li>
+    <li><b>Links run square to square</b>: every node has a side square left and right; links attach to the facing squares. Click a square's + for a new node already linked on that side; drag from it to link.</li>
+    <li><b>No minimap.</b> The readouts sit right-aligned in a one-line footer.</li>
+    <li><b>Stack and hologram:</b> the centre card is 50% bigger, the rest 25% smaller; the beam is a faint, diffuse light with no projector line.</li>
+    <li><b>The Terminal logo</b> (Nick's pick) is the mark, top left.</li>
+  </ul>
+  <h2>v2 (Oct 27)</h2>
+  <p>Nick picked Schema. v2 took his ten notes of Oct 27:</p>
   <ul>
     <li><b>Electrons only where you are looking.</b> At rest a link is a moving dashed trace with no electrons. Select a node and its links fire electric-blue electrons. Dragging a new link fires nothing; the moment it connects, the trace <b>lights up</b> (the connection is established), then settles.</li>
     <li><b>Slower.</b> Link electrons run slower; the ground's current runs at the same speed on fewer traces.</li>
@@ -410,7 +464,7 @@ function drawPaneBridges(t) {
     const key1 = paneKey(p), key2 = paneKey(q);
     if (!(connections.has(key1 + '|' + key2) || connections.has(key2 + '|' + key1))) continue;
     const a = p.rect, b = q.rect;
-    const ax = a.x + a.w / 2, ay = a.y + a.h / 2 + 46, bx = b.x + b.w / 2, by = b.y + b.h / 2 + 46;
+    const ax = a.x + a.w / 2 + 216, ay = a.y + a.h / 2 + 46, bx = b.x + b.w / 2 + 216, by = b.y + b.h / 2 + 46;
     bgx.strokeStyle = 'rgba(0,194,255,.6)'; bgx.lineWidth = 2; bgx.setLineDash([8, 6]); bgx.lineDashOffset = reduced() ? 0 : -(t / 50) % 14;
     bgx.beginPath(); bgx.moveTo(ax, ay); bgx.lineTo(ax, (ay + by) / 2); bgx.lineTo(bx, (ay + by) / 2); bgx.lineTo(bx, by); bgx.stroke(); bgx.setLineDash([]);
   }
@@ -475,12 +529,12 @@ const jpgSvg = () => `<svg viewBox="0 0 240 86" preserveAspectRatio="none"><path
 function nodeInner(c) {
   const media = c.kind === 'jpg' ? `<div class="media jpg">${jpgSvg()}</div>` : c.kind === 'pdf' ? `<div class="media pdf">${'<i></i>'.repeat(8)}</div>` : c.kind === 'ink' ? inkSvg() : '<div class="body"></div>';
   return `<div class="hd"><span class="id">NODE ${hex(c.id)}</span><span class="typ">${typeLabel(c)}</span></div><div class="ttl"></div>${media}
-    <div class="ft"><span class="st"></span><span class="lc"></span></div><div class="port" title="Drag to another node to link"></div>`;
+    <div class="ft"><span class="st"></span><span class="lc"></span></div><div class="port pl" data-side="l" title="Click: new connected node to the left · drag: link">+</div><div class="port pr" data-side="r" title="Click: new connected node to the right · drag: link">+</div>`;
 }
 function makePane(kind, ref) {
   const p = { uid: ++paneSeq, kind, ref, cam: { x: 760, y: 380, s: .8 }, view: 'live', stackIdx: 0, els: {}, home: null, morph: null, flight: null, linkFlash: null, dragLink: null, selected: null, rect: { x: 0, y: 0, w: 1, h: 1 }, W: 1, H: 1 };
   const el = document.createElement('div'); el.className = 'pane'; p.el = el;
-  el.innerHTML = `<canvas class="lk"></canvas><div class="nodes"></div><div class="pane-hd"></div><button class="pclose">Close ×</button><button class="plus" aria-expanded="false" title="Connect or open"></button><div class="pmenu"></div>`;
+  el.innerHTML = `<canvas class="lk"></canvas><div class="nodes"></div><div class="pane-hd"></div><button class="pclose">Close ×</button><button class="plus" aria-expanded="false" title="Connect or open"></button><div class="pline"><i></i></div><div class="pmenu"></div>`;
   p.lk = el.querySelector('canvas'); p.lkx = p.lk.getContext('2d'); p.host = el.querySelector('.nodes');
   if (kind === 'board') { BOARDS[ref].cards.forEach(c => buildNode(p, c)); }
   else {
@@ -493,7 +547,7 @@ function makePane(kind, ref) {
   }
   el.querySelector('.pclose').onclick = () => closePane(p);
   const plus = el.querySelector('.plus'), menu = el.querySelector('.pmenu');
-  plus.onclick = (e) => { e.stopPropagation(); const open = !menu.classList.contains('open'); closeMenus(); if (open) { fillPlusMenu(p, menu); menu.classList.add('open'); plus.setAttribute('aria-expanded', 'true'); } };
+  plus.onclick = (e) => { e.stopPropagation(); const open = !menu.classList.contains('open'); closeMenus(); if (open) { fillPlusMenu(p, menu); menu.classList.add('open'); el.querySelector('.pline').classList.add('open'); plus.setAttribute('aria-expanded', 'true'); } };
   el.addEventListener('pointerdown', (e) => paneDown(p, e));
   el.addEventListener('wheel', (e) => paneWheel(p, e), { passive: false });
   stage.appendChild(el); panes.push(p); focus(p); layoutPanes();
@@ -507,7 +561,7 @@ function closePane(p) {
 }
 function focus(p) { focused = p; panes.forEach(q => q.el.classList.toggle('focus', q === p)); syncTabs(); handsContext(); }
 function layoutPanes() {
-  const SX = 0, SY = 0, SW = W, SH = H - 46, gap = 10, n = panes.length;
+  const SX = 0, SY = 0, SW = W - 216, SH = H - 46 - 26, gap = 10, n = panes.length;   // the stage sits right of the rail, above the footer
   document.body.classList.toggle('split', n > 1);
   const R = [];
   if (n === 1) R.push([SX, SY, SW, SH]);
@@ -542,8 +596,9 @@ function fill(p, c) {
   lc.textContent = c.lit ? 'CHECKSUM OK · ' + n + (n === 1 ? ' LINK' : ' LINKS') : n + (n === 1 ? ' LINK' : ' LINKS'); lc.className = 'lc' + (c.lit ? ' ok' : '');
 }
 function stackXf(p, i, n, idx) {
-  const o = i - idx, ao = Math.abs(o), cx = p.W / 2, cy = p.H * .46, sc = o === 0 ? Math.min(1.5, p.W / 520) : Math.min(1.05, p.W / 760);
-  const x = cx + Math.sign(o) * (ao === 0 ? 0 : 150 + (ao - 1) * 70) * Math.min(1, p.W / 1100), z = -ao * 160, ry = o === 0 ? 0 : (o < 0 ? 52 : -52);
+  // the centre card 50% bigger than v2, the others 25% smaller
+  const o = i - idx, ao = Math.abs(o), cx = p.W / 2, cy = p.H * .46, sc = o === 0 ? Math.min(2.25, p.W / 350) : Math.min(.79, p.W / 1010);
+  const x = cx + Math.sign(o) * (ao === 0 ? 0 : 300 + (ao - 1) * 55) * Math.min(1, p.W / 1100), z = -ao * 160, ry = o === 0 ? 0 : (o < 0 ? 52 : -52);
   return { t: `translate3d(${(x - 125 * sc).toFixed(1)}px,${(cy - 90 * sc).toFixed(1)}px,${z}px) rotateY(${ry}deg) scale(${sc.toFixed(3)})`, op: ao > 5 ? 0 : 1 - ao * .12, z: 100 - ao };
 }
 function placeNodes(p) {
@@ -575,13 +630,17 @@ function placeNodes(p) {
 }
 
 // ---- links: a moving dashed trace; electrons ONLY on the selected node's links; a new link lights up when it connects ----
-function route(b, a, z) {
+// links run square to square: from the side square that faces the other node, into the other node's facing square
+const nodeH = (p, c) => { const el = p && p.els[c.id]; return el && el.offsetHeight ? el.offsetHeight : c.h; };   // the record's real height (world units)
+const portPt = (p, c, side) => [side === 'r' ? c.x + c.w + 1 : c.x - 1, c.y + nodeH(p, c) / 2];
+function route(b, a, z, p) {
   const A = card(b, a), B = card(b, z);
-  const ax = A.x + A.w, ay = A.y + 46, bx = B.x, by = B.y + 46;
-  if (bx >= ax + 30) { const m = (ax + bx) / 2; return [[ax, ay], [m, ay], [m, by], [bx, by]]; }
-  const ax2 = A.x + A.w / 2, ay2 = A.y + A.h, bx2 = B.x + B.w / 2, by2 = B.y;
-  if (by2 >= ay2 + 30) { const m = (ay2 + by2) / 2; return [[ax2, ay2], [ax2, m], [bx2, m], [bx2, by2]]; }
-  const ux = Math.min(A.x, B.x) - 40; return [[A.x, ay], [ux, ay], [ux, by], [B.x, by]];
+  const right = B.x + B.w / 2 >= A.x + A.w / 2;
+  const [ax, ay] = portPt(p, A, right ? 'r' : 'l'), [bx, by] = portPt(p, B, right ? 'l' : 'r');
+  const out = right ? 26 : -26;
+  if (right ? bx - ax >= 52 : ax - bx >= 52) { const m = (ax + bx) / 2; return [[ax, ay], [m, ay], [m, by], [bx, by]]; }
+  const my = (ay + by) / 2 + (Math.abs(ay - by) < 40 ? 90 : 0);   // nodes side by side and overlapping in x: step out, across, and back in
+  return [[ax, ay], [ax + out, ay], [ax + out, my], [bx - out, my], [bx - out, by], [bx, by]];
 }
 function drawPane(p, t) {
   const x = p.lkx; x.clearRect(0, 0, p.W, p.H);
@@ -595,14 +654,14 @@ function drawPane(p, t) {
   if (p.view === 'stack') {     // the circuit stays faintly behind: each node's empty slot, and its links
     for (const c of B.cards) { const [sx, sy] = ts(p, c.x, c.y); x.strokeStyle = 'rgba(0,194,255,.22)'; x.setLineDash([4, 4]); x.strokeRect(sx, sy, c.w * p.cam.s, c.h * p.cam.s); x.setLineDash([]); }
     x.strokeStyle = 'rgba(0,194,255,.12)';
-    for (const [a, z] of B.links) { const pts = route(p.ref, a, z).map(q => ts(p, q[0], q[1])); x.beginPath(); pts.forEach((q, j) => j ? x.lineTo(q[0], q[1]) : x.moveTo(q[0], q[1])); x.stroke(); }
+    for (const [a, z] of B.links) { const pts = route(p.ref, a, z, p).map(q => ts(p, q[0], q[1])); x.beginPath(); pts.forEach((q, j) => j ? x.lineTo(q[0], q[1]) : x.moveTo(q[0], q[1])); x.stroke(); }
     return;
   }
   drawLevels(p);
   if (!['GLYPH', 'NODE', 'SUBNET', 'CIRCUIT'].includes(level)) { for (const c of B.cards) { const [sx, sy] = ts(p, c.x + c.w / 2, c.y + c.h / 2); x.fillStyle = last.id === c.id && last.board === p.ref ? '#FF9800' : c.kind === 'preset' ? '#A6FF3D' : '#57D0F5'; x.fillRect(sx - 2, sy - 2, 4, 4); } return; }
   if (level === 'SUBNET' || level === 'CIRCUIT') drawSubnets(p);
   for (const [a, z] of B.links) {
-    const pts = route(p.ref, a, z).map(q => ts(p, q[0], q[1]));
+    const pts = route(p.ref, a, z, p).map(q => ts(p, q[0], q[1]));
     const hot = p.selected && (a === p.selected || z === p.selected);
     const lf = p.linkFlash && p.linkFlash.a === a && p.linkFlash.b === z ? Math.max(0, 1 - (t - p.linkFlash.t0) / 1100) : 0;
     x.setLineDash(level === 'CIRCUIT' ? [] : [6, 5]);
@@ -619,8 +678,8 @@ function drawPane(p, t) {
       }
     }
   }
-  if (p.dragLink) {                                                // drawing a new link: a plain orange draft, no electrons until it connects
-    const A = card(p.ref, p.dragLink.from), [ax, ay] = ts(p, A.x + A.w, A.y + 46);
+  if (p.dragLink && p.dragLink.moved) {                            // drawing a new link from a side square: a plain orange draft, no electrons until it connects
+    const A = card(p.ref, p.dragLink.from), pp = portPt(p, A, p.dragLink.side), [ax, ay] = ts(p, pp[0], pp[1]);
     x.strokeStyle = 'rgba(255,152,0,.85)'; x.lineWidth = 2; x.setLineDash([4, 4]);
     x.beginPath(); x.moveTo(ax, ay); x.lineTo(p.dragLink.x, ay); x.lineTo(p.dragLink.x, p.dragLink.y); x.stroke(); x.setLineDash([]);
   }
@@ -708,11 +767,19 @@ function nodeDown(p, e, c) {
   if (p.view === 'stack') { const order = stackOrder(p.ref), i = order.indexOf(c); if (i === p.stackIdx) openHolo(p, c.id); else p.stackIdx = i; return; }
   p.selected = c.id; last = { board: p.ref, id: c.id };
   const r = p.el.getBoundingClientRect();
-  if (e.target.classList.contains('port')) p.dragLink = { from: c.id, x: e.clientX - r.left, y: e.clientY - r.top };
+  if (e.target.classList.contains('port')) p.dragLink = { from: c.id, side: e.target.dataset.side, x: e.clientX - r.left, y: e.clientY - r.top, x0: e.clientX, y0: e.clientY, moved: false };
   else p.drag = { id: c.id, x: e.clientX, y: e.clientY, ox: c.x, oy: c.y };
-  const mv = (ev) => { touch(); if (p.drag) { const k = card(p.ref, p.drag.id); k.x = p.drag.ox + (ev.clientX - p.drag.x) / p.cam.s; k.y = p.drag.oy + (ev.clientY - p.drag.y) / p.cam.s; } if (p.dragLink) { p.dragLink.x = ev.clientX - r.left; p.dragLink.y = ev.clientY - r.top; } };
+  const mv = (ev) => { touch(); if (p.drag) { const k = card(p.ref, p.drag.id); k.x = p.drag.ox + (ev.clientX - p.drag.x) / p.cam.s; k.y = p.drag.oy + (ev.clientY - p.drag.y) / p.cam.s; } if (p.dragLink) { p.dragLink.x = ev.clientX - r.left; p.dragLink.y = ev.clientY - r.top; if (Math.hypot(ev.clientX - p.dragLink.x0, ev.clientY - p.dragLink.y0) > 5) p.dragLink.moved = true; } };
   const up = (ev) => {
     removeEventListener('pointermove', mv);
+    if (p.dragLink && !p.dragLink.moved) {                     // a click on a side square's +: a new node on that side, already linked
+      const side = p.dragLink.side, id = 'n' + Date.now().toString(36);
+      const nc = { id, kind: 'text', x: side === 'l' ? c.x - c.w - 80 : c.x + c.w + 80, y: c.y, w: c.w, h: 140, groupId: c.groupId, text: 'NEW NODE\n' };
+      BOARDS[p.ref].cards.push(nc); BOARDS[p.ref].links.push(side === 'l' ? [id, c.id] : [c.id, id]); buildNode(p, nc);
+      p.linkFlash = side === 'l' ? { a: id, b: c.id, t0: performance.now() } : { a: c.id, b: id, t0: performance.now() };
+      p.selected = id; last = { board: p.ref, id }; BOARDS[p.ref].cards.forEach(k => fill(p, k));
+      p.dragLink = null; return;
+    }
     if (p.dragLink) {
       const hit = document.elementsFromPoint(ev.clientX, ev.clientY).map(n => n.closest && n.closest('.node')).find(n => n && p.host.contains(n));
       const to = hit && hit.dataset.id, from = p.dragLink.from, L = BOARDS[p.ref].links;
@@ -728,7 +795,7 @@ function nodeDown(p, e, c) {
 function stopEdit() { const b = document.querySelector('.node .body[contenteditable="true"]'); if (b) b.blur(); }
 
 // ---- the + menu ----
-function closeMenus() { document.querySelectorAll('.pmenu.open').forEach(m => m.classList.remove('open')); document.querySelectorAll('.plus').forEach(b => b.setAttribute('aria-expanded', 'false')); }
+function closeMenus() { document.querySelectorAll('.pmenu.open,.pline.open').forEach(m => m.classList.remove('open')); document.querySelectorAll('.plus').forEach(b => b.setAttribute('aria-expanded', 'false')); }
 addEventListener('pointerdown', (e) => { if (!e.target.closest('.pmenu,.plus')) closeMenus(); });
 function mi(menu, label, fn, opts = {}) { const b = document.createElement('button'); b.innerHTML = `<span>${label}</span><span class="s">${opts.s || ''}</span>`; if (opts.disabled) b.disabled = true; else b.onclick = (e) => { e.stopPropagation(); closeMenus(); fn(); }; (opts.into || menu).appendChild(b); return b; }
 function mh(menu, label, into) { const d = document.createElement('div'); d.className = 'mh'; d.textContent = label; (into || menu).appendChild(d); }
@@ -824,8 +891,10 @@ function renderHcard(el, c) {
 function placeHolo(frac = 0) {
   holo.els.forEach((el, i) => {
     const o = i - holo.idx - frac, ao = Math.abs(o);
-    const x = Math.sign(o) * (ao < 1 ? ao * 420 : 420 + (ao - 1) * 120), z = -Math.min(ao, 4) * 260, ry = Math.max(-62, Math.min(62, -o * 62));
-    el.style.transform = `translate3d(${x}px,0,${z}px) rotateY(${ry}deg) ${ao < .5 ? 'rotateX(' + (holo.tilt ? holo.tilt.y : 0) + 'deg) rotateY(' + (holo.tilt ? holo.tilt.x : 0) + 'deg)' : ''}`;
+    // the opened card 50% bigger, the rest of the stack 25% smaller
+    const sc = 1.5 - .75 * Math.min(1, ao);
+    const x = Math.sign(o) * (ao < 1 ? ao * 600 : 600 + (ao - 1) * 110), z = -Math.min(ao, 4) * 260, ry = Math.max(-62, Math.min(62, -o * 62));
+    el.style.transform = `translate3d(${x}px,0,${z}px) rotateY(${ry}deg) scale(${sc.toFixed(3)}) ${ao < .5 ? 'rotateX(' + (holo.tilt ? holo.tilt.y : 0) + 'deg) rotateY(' + (holo.tilt ? holo.tilt.x : 0) + 'deg)' : ''}`;
     el.style.opacity = ao > 4 ? '0' : String(Math.max(.15, 1 - ao * .28)); el.style.zIndex = String(100 - Math.round(ao * 10));
     el.classList.toggle('center', Math.round(o) === 0);
   });
@@ -864,7 +933,7 @@ holoPlus.onclick = (e) => {
   mh(holoMenu, 'Unlink'); const s2 = sub(holoMenu);
   if (!linked.length) mi(holoMenu, 'No links', () => {}, { into: s2, disabled: true });
   linked.forEach(l => { const other = l[0] === c.id ? l[1] : l[0]; mi(holoMenu, title(card(p.ref, other)), () => { B.links.splice(B.links.indexOf(l), 1); B.cards.forEach(x => fill(p, x)); renderHcard(holo.els[holo.idx], c); placeHolo(); toast('UNLINKED · NOTHING DELETED'); }, { into: s2 }); });
-  holoMenu.classList.add('open'); holoPlus.setAttribute('aria-expanded', 'true');
+  holoMenu.classList.add('open'); document.getElementById('holoLine').classList.add('open'); holoPlus.setAttribute('aria-expanded', 'true');
 };
 
 // ============================================================================
@@ -874,8 +943,21 @@ const HAND_TOOLS = `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" s
 const HAND_OP = `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M24 30 V17 L27 13 V10 L24 12 V5 H22 V14 M22 4 H20 V14 M20 3 H18 V14 M18 4 H16 V15 L13 12 H11 L16 22 V30"/><circle cx="8" cy="9" r="4"/><circle cx="8" cy="9" r="1.2" fill="currentColor"/><path d="M8 13 V18 H14"/><rect x="21" y="2.5" width="2" height="2" fill="currentColor"/><rect x="17" y="1.5" width="2" height="2" fill="currentColor"/></svg>`;
 const tabL = document.getElementById('tabL'), tabR = document.getElementById('tabR'), handL = document.getElementById('handL'), handR = document.getElementById('handR');
 tabL.innerHTML = HAND_TOOLS + '<span>TOOLS</span>'; tabR.innerHTML = HAND_OP + '<span>OPERATOR</span>';
-tabL.onclick = () => { const o = !handL.classList.contains('open'); handL.classList.toggle('open', o); tabL.setAttribute('aria-expanded', String(o)); };
-tabR.onclick = () => { const o = !handR.classList.contains('open'); handR.classList.toggle('open', o); tabR.setAttribute('aria-expanded', String(o)); };
+// a hand opens as a line shot from its tab toward the surface, which then opens into the box; an electron runs the line
+const lineL = document.getElementById('lineL'), lineR = document.getElementById('lineR');
+function placeHands() {
+  const tl = tabL.getBoundingClientRect(), tr = tabR.getBoundingClientRect(), y = tl.top + tl.height / 2, GAP = 64;
+  const lx = tl.right + GAP, rx = tr.left - GAP - 270;
+  Object.assign(lineL.style, { left: tl.right + 'px', top: y + 'px', width: GAP + 'px' });
+  Object.assign(lineR.style, { left: (tr.left - GAP) + 'px', top: y + 'px', width: GAP + 'px' });
+  const top = (h) => Math.max(56, Math.min(innerHeight - 40 - h, y - 60)) + 'px';
+  Object.assign(handL.style, { left: lx + 'px', top: top(handL.offsetHeight) });
+  Object.assign(handR.style, { left: rx + 'px', top: top(handR.offsetHeight) });
+}
+function toggleHand(tab, hand, line) { const o = !hand.classList.contains('open'); placeHands(); hand.classList.toggle('open', o); line.classList.toggle('open', o); tab.setAttribute('aria-expanded', String(o)); }
+tabL.onclick = () => toggleHand(tabL, handL, lineL);
+tabR.onclick = () => toggleHand(tabR, handR, lineR);
+addEventListener('resize', placeHands);
 function handsContext() {
   const p = focused; const where = holo ? 'NODE · ' + title(holo.list[holo.idx]) : p ? (p.kind === 'board' ? 'CIRCUIT · ' + BOARDS[p.ref].name : 'DOC · ' + DOCS[p.ref].name.toUpperCase()) : '';
   const it = (l, k) => `<button class="it"><span>${l}</span><span class="k">${k || ''}</span></button>`;
@@ -885,11 +967,15 @@ function handsContext() {
   const B = p && p.kind === 'board' ? BOARDS[p.ref] : holo ? BOARDS[holo.p.ref] : null;
   const counts = B ? Object.entries(GROUPS).map(([g, n]) => `${n} ${B.cards.filter(c => c.groupId === g).length}`).join(' · ') : '';
   const orphans = B ? B.cards.filter(c => !c.groupId).length : 0;
+  // the Operator: four lenses, each a toggle that opens its options (the open set survives a context change)
+  const was = new Set([...handR.querySelectorAll('.tg[aria-expanded="true"]')].map(b => b.dataset.k));
+  const tg = (k, label, inner) => `<button class="tg" data-k="${k}" aria-expanded="${was.has(k)}">${label}</button><div class="tb">${inner}</div>`;
   handR.innerHTML = `<h3>OPERATOR</h3><div class="ctx">${where} · NEVER WRITES FOR YOU</div>
-    <div class="lens"><b>Schema</b>${B ? counts + '. ' + orphans + ' orphan process' + (orphans === 1 ? '' : 'es') + ' not in any act.' : 'One doc, 3 paragraphs, no headings yet.'}</div>
-    <div class="lens"><b>Checksum</b>${B ? 'The lighthouse is “dark since 1987” in THE ISLAND and “the winter the light went out” in MIDPOINT. Same winter?' : '“Second logbook” — named twice, described once.'}</div>
-    <div class="lens"><b>Shards</b>${B ? '“salt in the hinges” has 1 link and no act. Where does it belong?' : 'Two loose sentences in the cache mention the ferryman.'}</div>
-    <div class="grp">ASK THE OPERATOR</div><input placeholder="A question about your work…" aria-label="Ask the operator">`;
+    ${tg('schema', 'Schema', `<div class="lens">${B ? counts + '. ' + orphans + ' orphan process' + (orphans === 1 ? '' : 'es') + ' not in any act.' : 'One doc, 3 blocks, no headings yet.'}</div>${it('Show acts as subnets', '')}${it('List orphans', orphans)}`)}
+    ${tg('checksum', 'Checksum', `<div class="lens">${B ? 'The lighthouse is “dark since 1987” in THE ISLAND and “the winter the light went out” in MIDPOINT. Same winter?' : '“Second logbook” — named twice, described once.'}</div>${it('Show both nodes', '▸')}${it('Dismiss', '')}`)}
+    ${tg('shards', 'Shards', `<div class="lens">${B ? '“salt in the hinges” has 1 link and no act. Where does it belong?' : 'Two loose sentences in the cache mention the ferryman.'}</div>${it('Show the shard', '▸')}${it('Leave it loose', '')}`)}
+    ${tg('ask', 'Ask the operator', `<input placeholder="A question about your work…" aria-label="Ask the operator">`)}`;
+  handR.querySelectorAll('.tg').forEach(b => b.onclick = () => { b.setAttribute('aria-expanded', String(b.getAttribute('aria-expanded') !== 'true')); placeHands(); });
 }
 
 // ============================================================================
@@ -898,10 +984,10 @@ function handsContext() {
 const tele = document.getElementById('tele'), crumb = document.getElementById('crumb');
 function drawTele() {
   const p = focused; if (!p) return;
-  if (p.kind === 'doc') { const d = DOCS[p.ref]; tele.innerHTML = `SURFACE <span class="lvl">DOC</span><br>WORDS <b>${(d.text.match(/\S+/g) || []).length}</b> / ${d.goal}<br>PANES <b>${panes.length}</b> / 4<br>LAST <b style="color:var(--orange)">${title(card(last.board, last.id)).slice(0, 18)}</b>`; crumb.innerHTML = `NOVELS ▸ THE LATE FERRY ▸ <b>DOC // ${d.name.toUpperCase()}</b>`; return; }
+  const lastC = card(last.board, last.id); document.getElementById('lastSmall').textContent = title(lastC) + ' · ' + BOARDS[last.board].name;
+  if (p.kind === 'doc') { const d = DOCS[p.ref]; tele.innerHTML = `<span>SURFACE <span class="lvl">DOC</span></span><span>WORDS <b>${(d.text.match(/\S+/g) || []).length}</b> / ${d.goal}</span><span>PANES <b>${panes.length}</b>/4</span><span>LAST <span class="you">${title(lastC)}</span></span>`; crumb.innerHTML = `NOVELS ▸ THE LATE FERRY ▸ <b>DOC // ${d.name.toUpperCase()}</b>`; return; }
   const ex = Math.floor(Math.log10(p.cam.s)), m = p.cam.s / Math.pow(10, ex), B = BOARDS[p.ref];
-  tele.innerHTML = `LEVEL <span class="lvl">${p.view === 'stack' ? 'STACK' : lod(p.cam.s)}</span><br>ZOOM <b>${m.toFixed(2)}×10<sup>${ex}</sup></b><br>
-    NODES <b>${B.cards.length}</b> · LINKS <b>${B.links.length}</b> · PANES <b>${panes.length}</b>/4<br>LAST <b style="color:var(--orange)">${title(card(last.board, last.id)).slice(0, 18)} ${hex(last.id)}</b>`;
+  tele.innerHTML = `<span>LEVEL <span class="lvl">${p.view === 'stack' ? 'STACK' : lod(p.cam.s)}</span></span><span>ZOOM <b>${m.toFixed(2)}×10<sup>${ex}</sup></b></span><span>NODES <b>${B.cards.length}</b></span><span>LINKS <b>${B.links.length}</b></span><span>PANES <b>${panes.length}</b>/4</span><span>LAST <span class="you">${title(lastC)} ${hex(last.id)}</span></span>`;
   crumb.innerHTML = `NOVELS ▸ THE LATE FERRY ▸ <b>${B.name} // CIRCUIT</b>`;
   panes.forEach(q => { const me = paneKey(q), n = [...connections].filter(k => k.split('|').includes(me)).length; q.el.querySelector('.pane-hd').innerHTML = q.kind === 'board' ? `CIRCUIT // <b>${BOARDS[q.ref].name}</b>${n ? ` · <span class="lnk">↔ ${n} LINKED</span>` : ''}` : `DOC // <b>${DOCS[q.ref].name.toUpperCase()}</b>${n ? ` · <span class="lnk">↔ ${n} LINKED</span>` : ''}`; });
 }
@@ -936,7 +1022,7 @@ function frameLoop(t) {
   panes.forEach(p => { stepFlight(p, t); if (p.kind === 'board') stepMorph(p, t); });
   if (!document.body.classList.contains('arbor')) { drawGround(t, cam); spawnTexture(t); drawTexture(t); } else { bgx.clearRect(0, 0, W, H); fxx.clearRect(0, 0, W, H); }
   panes.forEach(p => { drawPane(p, t); if (p.kind === 'board') placeNodes(p); else stepDoc(p, t); });
-  drawTele(); drawMini();
+  drawTele();
   requestAnimationFrame(frameLoop);
 }
 addEventListener('resize', resize);

@@ -27,7 +27,8 @@
   const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
 
   const qp = new URLSearchParams(location.search).get('logo');
-  let choice = qp === 'hand' || qp === 'terminal' ? qp : (() => { try { return localStorage.getItem(KEY) || 'terminal'; } catch (_) { return 'terminal'; } })();
+  // Oct 28: Nick picked TERMINAL. It is the mark; the switch is gone (?logo=hand still shows the runner-up, for reference).
+  let choice = qp === 'hand' ? 'hand' : 'terminal';
   const img = new Image(); img.src = PNG;
   const ready = new Promise((r) => { img.onload = r; img.onerror = r; });
 
@@ -58,7 +59,7 @@
   // the top-bar mark + the switch
   const top = document.getElementById('top');
   const wrap = document.createElement('div'); wrap.className = 'logo-wrap';
-  wrap.innerHTML = '<span class="logo" id="logoMark" aria-label="Wrizo"></span><span class="logo-sw" role="group" aria-label="Logo option"><button data-l="terminal">Terminal</button><button data-l="hand">Hand-drawn</button></span>';
+  wrap.innerHTML = '<span class="logo" id="logoMark" aria-label="Wrizo"></span>';
   top.insertBefore(wrap, top.firstChild);
   const mark = wrap.querySelector('#logoMark');
   function sync() {
