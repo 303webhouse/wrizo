@@ -48,18 +48,33 @@ export function titleOf(e: JournalEntry): string {
   return line ? line.slice(0, 60) : 'Untitled';
 }
 
+const textKey = (e: JournalEntry): string => (e.text ?? '').trim().replace(/\s+/g, ' ');
+
 export function computeFragmentItems(entry: JournalEntry): FragmentItem[] {
   // getJournalEntries() — every non-deleted entry, newest (createdAt) first.
   const all = getJournalEntries();
   const items: FragmentItem[] = [];
   const seen = new Set<string>([entry.id]);
+  // POLISH #10 item 15 — the list shows only a title, and two different entries with the SAME words (a capture kept twice) read as one fragment twice. An entry whose whole text equals one already listed, or the open
+  // page's own, is not listed again: the newest stands. Empty text (a photo, a voice note) is never merged. Display only - no entry is touched.
+  const shown = new Set<string>([textKey(entry)]);
+  const repeats = (e: JournalEntry): boolean => {
+    const k = textKey(e);
+    if (!k) return false;
+    if (shown.has(k)) return true;
+    shown.add(k);
+    return false;
+  };
 
   // Recent captures: the writer's own captures (source !== 'page' — an
   // authored page is not a "capture"), most recent first.
   const captures = all.filter(e => e.source !== 'page');
-  for (const c of captures.slice(0, RECENT_CAPTURE_LIMIT)) {
-    if (seen.has(c.id)) continue;
+  let recent = 0;
+  for (const c of captures) {
+    if (recent >= RECENT_CAPTURE_LIMIT) break;
+    if (seen.has(c.id) || repeats(c)) continue;
     seen.add(c.id);
+    recent += 1;
     items.push({ id: c.id, title: titleOf(c), reason: 'recent-capture' });
   }
 
@@ -69,7 +84,7 @@ export function computeFragmentItems(entry: JournalEntry): FragmentItem[] {
     for (const s of all) {
       if (!s.starred) continue;
       if (!(s.tags ?? []).some(t => myTags.has(t))) continue;
-      if (seen.has(s.id)) continue;
+      if (seen.has(s.id) || repeats(s)) continue;
       seen.add(s.id);
       items.push({ id: s.id, title: titleOf(s), reason: 'starred-tag' });
     }
