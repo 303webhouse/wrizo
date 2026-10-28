@@ -4,6 +4,7 @@ import { requireAuth } from './auth';
 import { asyncHandler } from './asyncHandler';
 import { logError } from './logSafe';
 import { getServerBuild } from './build';
+import { wordCount } from './wordCount';
 
 // Record-level last-write-wins sync. All queries are scoped to the session
 // user_id; a pushed record only overwrites a stored row when its updated_at is
@@ -18,12 +19,8 @@ function iso(value: unknown): string | null {
 }
 
 // THEME-UNLOCK-COUNT (Fable, Oct 21; Nick's schema word "B") - the exact count the client's own
-// first-line-invite style logic already uses (`((text||'').trim().match(/\S+/g)||[]).length`):
-// whitespace-run tokens after trimming, so an all-blank string counts zero, not one empty token.
-function wordCount(text: unknown): number {
-  const m = (typeof text === 'string' ? text : '').trim().match(/\S+/g);
-  return m ? m.length : 0;
-}
+// first-line-invite style logic already uses: whitespace-run tokens after trimming, so an all-blank string counts zero, not one empty token.
+// ./wordCount.ts (a style span's marks are not words - POLISH #10 item 4).
 
 // THEME-UNLOCK-COUNT (Fable's review ruling, Oct 21) - a theme is open once ANY of: its
 // words_written threshold is met, it's already in themes_opened, or it's the theme in use right
