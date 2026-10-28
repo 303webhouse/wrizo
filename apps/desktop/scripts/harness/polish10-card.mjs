@@ -110,7 +110,7 @@ await withHarness(async (app) => {
         if (!afterEsc.popup) await openCard(app, bid(th.id));
         await setDock(app, true);
         const base = await app.evalJs(GEO);
-        await style(app, 'p10c-mc1', ".board-popup:has(.board-popup-dock) .board-popup-dock-grip{ right:calc(100% + 34px) !important; }"); await sleep(200);
+        await style(app, 'p10c-mc1', ".board-popup:has(.board-popup-dock) .board-popup-dock-grip{ right:calc(100% + 33px) !important; }"); await sleep(200);
         const m1 = await app.evalJs(GEO); await style(app, 'p10c-mc1', null);
         ok(`MC1 (mutant): with the grip pushed 32px left while the dock is open (LANDED: moved ${m1.grip && base.grip ? Math.round(base.grip.left - m1.grip.left) : null}px), C1 fails`, !!m1.grip && !!base.grip && Math.round(base.grip.left - m1.grip.left) === 32 && !sameRect(base.grip, m1.grip), J({ base: base.grip, m1: m1.grip }));
         await style(app, 'p10c-mc2', ".board-popup-dock{ right:calc(100% + 62px) !important; }"); await sleep(200);
