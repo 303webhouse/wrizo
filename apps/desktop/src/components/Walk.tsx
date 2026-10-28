@@ -248,7 +248,7 @@ export function Walk(p: WalkProps) {
           )}
           <button type="button" className="walk-nav" data-dir="prev" data-recede={navHidden ? 'true' : 'false'} aria-label={t('walkPrev')} aria-disabled={cur === 0} onClick={() => go(-1)}><ChevronIcon dir="prev" /></button>
           <button type="button" className="walk-nav" data-dir="next" data-recede={navHidden ? 'true' : 'false'} aria-label={t('walkNext')} aria-disabled={cur >= order.length - 1} onClick={() => go(1)}><ChevronIcon dir="next" /></button>
-          {sub && <div className="walk-readout" data-walk-readout="true">{t('kidReadout').replace('{parent}', sub.parentTitle).replace('{word}', t(`kidTitle_${subWord}` as DeskTermId)).replace('{n}', String(sub.n)).replace('{m}', String(sub.m))}</div>}
+          {sub && <div className="walk-sub-readout" data-walk-readout="true">{t('kidReadout').replace('{parent}', sub.parentTitle).replace('{word}', t(`kidTitle_${subWord}` as DeskTermId)).replace('{n}', String(sub.n)).replace('{m}', String(sub.m))}</div>}
           <div className="walk-window">
             {leaving && (
               <div className="walk-card walk-card-leaving" data-out={leaving.plan.outgoing} aria-hidden="true" style={{ minHeight: box.height }}>

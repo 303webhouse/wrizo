@@ -1,6 +1,6 @@
 // "ADD SCENES..." PART 2 - THE LIVE APP (a box turn). PART 1 (guided-add-scenes.mjs) holds the contract and the pure model; this proves what only a browser can: the door and its popover, nothing created on Esc, Add 2,
 // the Walk landing on the first child with the caret in the card, the readout / edge / hanging rail, the parent kindled by a child, Outline and Storyboard, the page never moving, Arbor + Flux, dark + light.
-// DOM: .walk-door[data-door=scenes] ; .scenes-pop > .scenes-kicker .scenes-q .scenes-chip[data-n][aria-pressed] .scenes-add .scenes-note ; .walk-card[data-sub] ; .walk-readout ; .walk-mark-group > .walk-subrail > .walk-mark[data-sub] ;
+// DOM: .walk-door[data-door=scenes] ; .scenes-pop > .scenes-kicker .scenes-q .scenes-chip[data-n][aria-pressed] .scenes-add .scenes-note ; .walk-card[data-sub] ; .walk-sub-readout ; .walk-mark-group > .walk-subrail > .walk-mark[data-sub] ;
 //   .board-scenes-door (Outline / Storyboard) ; .board-outline-children .
 // Run: node scripts/harness/guided-add-scenes-part2.mjs [outDir]   (a box turn; with outDir it also writes the frames Fable clears).
 import fs from 'node:fs';
@@ -92,7 +92,7 @@ await withHarness(async (app) => {
         const landed = await curId();
         const caret = await q("(() => { const a = document.activeElement; return !!(a && a.closest && a.closest('.walk-card')); })()");
         ok(`[${T}] the Walk lands on the first new child with the caret in the card`, landed === kids[0]?.id && caret, JSON.stringify({ landed, caret }));
-        const sub = await q(`(() => { const c = document.querySelector('.walk-card'); const r = document.querySelector('.walk-readout'); const cs = getComputedStyle(c); return { sub: c.getAttribute('data-sub'), edge: cs.borderLeftColor, edgeW: cs.borderLeftWidth, readout: r ? r.textContent : null, upper: r ? getComputedStyle(r).textTransform : null, trk: document.querySelector('.walk-trk')?.textContent || null, ph: (c.querySelector('.board-popup-editor')?.textContent || '').trim() }; })()`);
+        const sub = await q(`(() => { const c = document.querySelector('.walk-card'); const r = document.querySelector('.walk-sub-readout'); const cs = getComputedStyle(c); return { sub: c.getAttribute('data-sub'), edge: cs.borderLeftColor, edgeW: cs.borderLeftWidth, readout: r ? r.textContent : null, upper: r ? getComputedStyle(r).textTransform : null, trk: document.querySelector('.walk-trk')?.textContent || null, ph: (c.querySelector('.board-popup-editor')?.textContent || '').trim() }; })()`);
         ok(`[${T}] the readout above the card says ${flux ? 'MIDPOINT REVERSAL > SCENE 1/2' : 'MIDPOINT REVERSAL > SCENE 1 OF 2'}`, sub.sub === 'true' && sub.readout === (flux ? 'Midpoint Reversal \u203a Scene 1/2' : 'Midpoint Reversal \u203a Scene 1 of 2') && sub.upper === 'uppercase', JSON.stringify(sub));
         if (!flux) ok(`[${T}] Arbor: a 3 px bronze #8f7a4c edge says "inside a step"`, sub.edgeW === '3px' && sub.edge === 'rgb(143, 122, 76)', JSON.stringify(sub));
         else ok(`[${T}] Flux: TRK reads 2.1/5 (a position) and the orange bar is the current card's, as today`, sub.trk === 'TRK 2.1/5' && sub.edge === 'rgb(255, 152, 0)', JSON.stringify(sub));

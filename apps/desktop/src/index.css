@@ -7401,8 +7401,8 @@ body[data-link-drag='true'], body[data-link-drag='true'] *{ cursor:grabbing !imp
 [data-theme='flux'] .scenes-kicker, [data-theme='flux'] .scenes-add{ font-family:var(--font-chromeLabel); letter-spacing:.1em; text-transform:uppercase; }
 
 /* the Walk's readout above a sub-step's card: PARENT > SCENE 2 OF 3 (Flux 2/3) */
-.walk-readout{ position:absolute; top:-30px; left:44px; right:44px; text-align:center; font-family:var(--font-ui); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-mid); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none; }
-[data-theme='flux'] .walk-readout{ font-family:var(--font-chromeLabel); }
+.walk-sub-readout{ position:absolute; top:-30px; left:44px; right:44px; text-align:center; font-family:var(--font-ui); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-mid); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none; }
+[data-theme='flux'] .walk-sub-readout{ font-family:var(--font-chromeLabel); }
 
 /* the sub-step card's own edge: 3 px bronze (Flux keeps the orange bar for the current card, as today) */
 .walk-card[data-sub='true']{ border-left:3px solid #8f7a4c; }
