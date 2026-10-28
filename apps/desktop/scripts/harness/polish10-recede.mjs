@@ -107,7 +107,7 @@ await withHarness(async (app) => {
     ok(`${tag} R3: the two tab arrows stay - Tools ${gs}, Tutor ${gt}`, gs >= 0.9 && gt >= 0.9, J({ gs, gt }));
     if (th.id === 'plateau') {
       // MR1m (successor to MR1, Oct 26): the wordmark forced to full strength ABOVE the fix's own rule - R1 fails and names it
-      await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'p10r-mr1m'; s.textContent = \"html[data-wz-writing] body .brand-mark{ opacity: 1 !important; }\"; document.head.appendChild(s); return true; })()"); await sleep(200);
+      await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'p10r-mr1m'; s.textContent = \"html[data-wz-writing] body .brand-mark{ opacity: 1 !important; transition: none !important; }\"; document.head.appendChild(s); return true; })()"); await sleep(200);
       const landed = await app.evalJs("(() => { const b = document.querySelector('.brand-mark'); return b ? getComputedStyle(b).opacity : null; })()");
       const lmm = await app.evalJs(CENSUS);
       await app.evalJs("document.getElementById('p10r-mr1m')?.remove()");
