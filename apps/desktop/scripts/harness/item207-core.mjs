@@ -343,8 +343,11 @@ if (process.env.HARNESS_PARKED === '1') {
     pass: !!f && f.freeWriteSmall && f.draftFullScoped && f.reviseFullUnscoped, detail: JSON.stringify(f) }); }
   // FONT-SPAN (2026-10-15) - a SECOND park: MINIMAL's three buttons, superseded by the scope pair. Record frozen; it re-verifies the new
   // truth from the default leg's observation (coreParks.minimal).
-  { const m = coreParks.minimal; parkedChecks.push({ name: 'PARKED (was "MINIMAL (his law): the control is exactly a face button and a `-` `+` pair (3 buttons) plus ONE number input, and that input exists only in the full form") - font-span: 5 buttons in source, the scope pair only under `scope`; live successor: MINIMAL [font-span successor]',
-    // TOOLS #10 (items 9 + 11): the record is FROZEN and re-verifies the NEWEST truth - the scoped form gained its face button and the add-font form: 8 buttons, 2 inputs (the NUMBER input still only in the full form). Its claim (the scope pair, one guarded number input) never broke; only the counts moved. Its record on the default leg is MINIMAL [item-9 successor].
+  // ---- PARKED VERBATIM - SUPERSEDED by TOOLS #10 items 9 + 11 (the scoped form gained its face button and the add-font form: 8 buttons, 2 inputs). The old record (5 buttons / 1 input) is kept below, no longer run; the successor follows. ----
+  // { const m = coreParks.minimal; parkedChecks.push({ name: 'PARKED (was "MINIMAL (his law): the control is exactly a face button and a `-` `+` pair (3 buttons) plus ONE number input, and that input exists only in the full form") - font-span: 5 buttons in source, the scope pair only under `scope`; live successor: MINIMAL [font-span successor]',
+  // pass: !!m && m.buttons === 5 && m.scopeOnly && m.inputs === 1 && m.inputGuardedByFullForm, detail: JSON.stringify(m) }); }
+  // ------------------------------------------------------------------
+  { const m = coreParks.minimal; parkedChecks.push({ name: 'PARKED [item-9/11 successor] (was "MINIMAL (his law): the control is exactly a face button and a `-` `+` pair (3 buttons) plus ONE number input, and that input exists only in the full form") - font-span: 5 buttons in source, the scope pair only under `scope`; live successor: MINIMAL [font-span successor]',
     pass: !!m && m.buttons === 8 && m.scopeOnly && m.inputs === 2 && m.inputGuardedByFullForm, detail: JSON.stringify(m) }); }
   // PAGE-SIZE (Oct 23, Fable's ruling a) - a FIFTH and SIXTH park: "11 = TODAY"'s explicit 11 and SIZE's 17px x n/11 formula. Records frozen;
   // each re-verifies the new truth from the default leg's observation (pageSizePark).
