@@ -20,6 +20,9 @@ const CARDS = [
   { id: 'g3', x: 0.68, y: 0.04, w: 0.26, h: 0.14, text: 'Darkest Point\n' },
   { id: 'g4', x: 0.04, y: 0.26, w: 0.26, h: 0.14, text: 'Climax\nAll of it at once, the whole house, every light.' },
   { id: 'g5', x: 0.36, y: 0.26, w: 0.26, h: 0.14, text: 'Final Image\nShe leaves the porch light on and walks down the long road toward the water without once looking back at the house she grew up in.' },
+  // The skin-dependent wrap case: a long FIRST line (Flux sets the first line in letter-spaced capitals, so it can wrap where Arbor's does not) over a short body.
+  { id: 'g6', x: 0.68, y: 0.26, w: 0.26, h: 0.14, text: 'The Long Walk Home Before The Rain Comes\nShe stops.' },
+  { id: 'g7', x: 0.04, y: 0.5, w: 0.26, h: 0.14, text: 'Everything She Left Behind At The Old Porch\nShe stops. She turns back once more to look at the light.' },
 ];
 
 const measured = {};   // `${skin} ${tone}` -> { wrap, canvas, cards: { id: rect } }
