@@ -700,7 +700,7 @@ await withHarness(async (app) => {
   await clickCategory(app, 'journal'); // Journal
   await sleep(150);
   await app.evalJs("document.querySelector('.wz-cascade-link').click()"); // "All pages →"
-  await sleep(200);
+  await sleep(450);   // TOOLS #10 item 8: the survey's entry slide (--drawer-dur, 200 ms) has SETTLED before its slot is measured (it was read mid-slide: 0.46 px off against the 1 px tolerance)
   const beforeDock = await app.evalJs(`({
     panelLeft: document.querySelector('.wz-cascade-panel').getBoundingClientRect().left,
     surveyLeft: document.querySelector('.wz-cascade-survey').getBoundingClientRect().left,
@@ -774,13 +774,27 @@ await withHarness(async (app) => {
   await sleep(200);
   await app.evalJs("document.querySelector('.wz-cascade-survey .wz-cascade-dock-btn').click()"); // explicit dismiss
   await sleep(200);
+  // ---- PARKED - SUPERSEDED by TOOLS #10 item 8 (the rail pop-outs use the Tools strip's slide-and-fade): a pop-out that closes STAYS DRAWN, inert (data-leaving), for the strip's --drawer-dur (200 ms), so "gone" is true after the exit, not 200 ms after the press.
+  // Kept VERBATIM below and no longer run; the successor follows, and the original is run as a PARKED RECORD (it holds once the exit has played).
+  // const dismissedDocked = await app.evalJs(`({
+  // surveyGone: !document.querySelector('.wz-cascade-survey'),
+  // panelGone: !document.querySelector('.wz-cascade-panel'),
+  // categoryActive: document.querySelector('.wz-strip-item[data-category=journal]').classList.contains('active'),
+  // })`);
+  // ok('T5: a docked survey\'s own explicit close button dismisses it entirely (category no longer olive)',
+  // dismissedDocked.surveyGone && dismissedDocked.panelGone && !dismissedDocked.categoryActive, JSON.stringify(dismissedDocked));
+  // ------------------------------------------------------------------
   const dismissedDocked = await app.evalJs(`({
     surveyGone: !document.querySelector('.wz-cascade-survey'),
     panelGone: !document.querySelector('.wz-cascade-panel'),
+    leaving: !!document.querySelector('.wz-cascade-panel[data-leaving="true"]'),
     categoryActive: document.querySelector('.wz-strip-item[data-category=journal]').classList.contains('active'),
   })`);
-  ok('T5: a docked survey\'s own explicit close button dismisses it entirely (category no longer olive)',
-    dismissedDocked.surveyGone && dismissedDocked.panelGone && !dismissedDocked.categoryActive, JSON.stringify(dismissedDocked));
+  await sleep(450);
+  const dismissedAfterExit = await app.evalJs(`({ surveyGone: !document.querySelector('.wz-cascade-survey'), panelGone: !document.querySelector('.wz-cascade-panel') })`);
+  ok('T5 [item-8 successor]: a docked survey\'s own explicit close button dismisses it entirely - the layers EXIT (still drawn, data-leaving, inert, at 200 ms) and are gone after the exit; the category is no longer olive',
+    ((dismissedDocked.surveyGone && dismissedDocked.panelGone) || dismissedDocked.leaving) && dismissedAfterExit.surveyGone && dismissedAfterExit.panelGone && !dismissedDocked.categoryActive, JSON.stringify({ dismissedDocked, dismissedAfterExit }));
+  ok('T5 [parked record]: the ORIGINAL (both layers gone 200 ms after the press) fails ONLY because the exit lasts --drawer-dur; it holds once the exit has played', dismissedAfterExit.surveyGone && dismissedAfterExit.panelGone && !dismissedDocked.categoryActive, JSON.stringify(dismissedAfterExit));
 
   // ==========================================================================
   // S2 — reduced motion: the dock/undock transition honors prefers-reduced-
