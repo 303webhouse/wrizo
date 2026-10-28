@@ -9,10 +9,10 @@
 //   C2  flush: the open dock's page-side edge is the card's edge - grip.right on card.left (within 1px), dock.right on grip.left (within 1px)
 //   C3  both-or-one: n/a - a card has no second drawer (stated, not tested)
 //   C4  the card's rect is unchanged through every open and close
-//   C5  Esc, pressed with focus on a control INSIDE the dock, closes the dock and returns focus to the grip; the card stays open
+//   C5  PARKED VERBATIM (Fable, Oct 28: Esc closes the whole card - ruled): Esc inside the dock closes the dock, focus to the grip. Successor C5s states the ruling: Esc closes the card
 //   C7  reduced motion: the dock arrives with no travel - on the first read after the press it is at its final rect and no transform animates
 // Mutants (Arbor, 1366), each asserted to have LANDED: MC1 the grip pushed 32px left while the dock is open - C1 fails; MC2 the dock pushed 40px off the
-// grip - C2 fails; MC4 the card nudged 24px while the dock is open - C4 fails; MC5 Escape swallowed before the app sees it - C5 fails.
+// grip - C2 fails; MC4 the card nudged 24px while the dock is open - C4 fails; MC5 Escape swallowed before the app sees it - C5s fails.
 // Seeding goes through the app's seams. Needs a box turn. Run: WS_BOX_TURN=<token> node scripts/harness/polish10-card.mjs (apps/desktop, dist-web built)
 import { withHarness } from '../runtime-verify.mjs';
 
@@ -27,6 +27,7 @@ const escape = async (app) => {
   const p = { key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27, nativeVirtualKeyCode: 27 };
   await app.cdp('Input.dispatchKeyEvent', { type: 'rawKeyDown', ...p }); await app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', ...p });
 };
+const c5Park = [];   // the park record: each skin x size's C5 observation
 const THEMES = [{ id: 'plateau', name: 'Arbor' }, { id: 'flux', name: 'Flux' }, { id: 'machina', name: 'Machina' }];
 const SIZES = [[1366, 768], [1920, 1080]];
 const TOL = 1;
@@ -91,14 +92,18 @@ await withHarness(async (app) => {
       ok(`${tag} C2: flush - the grip meets the card's edge (gap ${gapGrip}px) and the open dock meets the grip (gap ${gapDock}px)`,
         !!open.dock && gapGrip != null && gapGrip >= -TOL && gapGrip <= TOL && near(open.dock.right, open.grip.left), J({ card: open.card, grip: open.grip, dock: open.dock, gapShut }));
       ok(`${tag} C4: the card's rect is unchanged through the dock's open and close`, sameRect(shut.card, open.card) && sameRect(shut.card, shut2.card), J({ shut: shut.card, open: open.card, shut2: shut2.card }));
-      // C5: focus on a control inside the dock, then Esc
+      // C5: PARKED VERBATIM (Fable, Oct 28): Esc closes the whole card - that is ruled (fx4 S5: Esc and the backdrop close the pop-up), so the card's dock does not take
+      // the Esc first. Kept as written and no longer run; its successor follows (C5s: the ruled behaviour, stated).
+      //   focus on a control inside the dock, then Esc:
+      //   ok(`${tag} C5: Esc inside the dock closes the dock, focus returns to the grip, the card stays open (...)`, inside.focus === 'dock' && afterEsc.popup && afterEsc.open === false && afterEsc.focus === 'grip', ...);
       await setDock(app, true);
       await app.evalJs("(() => { document.querySelector('.board-popup-dock .board-popup-tool')?.focus(); return true; })()");
       const inside = await app.evalJs(GEO);
       await escape(app); await sleep(500);
       const afterEsc = await app.evalJs(GEO);
-      ok(`${tag} C5: Esc inside the dock closes the dock, focus returns to the grip, the card stays open (focus before: ${inside.focus}; after: dock ${afterEsc.open === false ? 'closed' : afterEsc.open}, card ${afterEsc.popup ? 'open' : 'GONE'}, focus ${afterEsc.focus})`,
-        inside.focus === 'dock' && afterEsc.popup && afterEsc.open === false && afterEsc.focus === 'grip', J({ inside: inside.focus, afterEsc }));
+      c5Park.push({ tag, popup: afterEsc.popup });
+      ok(`${tag} C5s (successor): Esc pressed with focus inside the dock closes the whole card, as ruled (focus before: ${inside.focus}; after: card ${afterEsc.popup ? 'STILL OPEN' : 'closed'})`,
+        inside.focus === 'dock' && afterEsc.popup === false, J({ inside: inside.focus, afterEsc }));
 
       if (th.id === 'plateau' && w === 1366) {
         // the mutants, each asserted to have landed, on the open dock
@@ -118,7 +123,7 @@ await withHarness(async (app) => {
         await escape(app); await sleep(500);
         const m5 = await app.evalJs(GEO);
         await app.evalJs("window.removeEventListener('keydown', window.__p10cSwallow, true); true");
-        ok(`MC5 (mutant): with Escape swallowed before the app sees it (LANDED: dock still ${m5.open ? 'open' : 'closed'}), C5 fails`, m5.popup && m5.open === true, J(m5));
+        ok(`MC5 (mutant): with Escape swallowed before the app sees it (LANDED: card still ${m5.popup ? 'open' : 'closed'}), C5s fails`, m5.popup && m5.open === true, J(m5));
       }
     }
   }
@@ -143,6 +148,12 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 1200)}]` : ''}`);
+if (process.env.HARNESS_PARKED === '1') {
+  // C5, parked (Fable, Oct 28): one record per skin and size, under its original name; each re-verifies the ruled truth - Esc closes the whole card
+  const rec = c5Park.map((o) => ({ name: `PARKED (was "${o.tag} C5: Esc inside the dock closes the dock, focus returns to the grip, the card stays open") - Fable's ruling (Oct 28): Esc closes the whole card`, pass: o.popup === false, detail: J(o) }));
+  for (const c of rec) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}  [${c.detail}]`);
+  console.log(rec.length && rec.every((c) => c.pass) ? `\nPOLISH10-CARD PARKED: PASS (${rec.length} records) - this FILE parks 1 (C5, one record per skin x size)` : `\nPOLISH10-CARD PARKED: FAIL - ${rec.filter((c) => !c.pass).length}/${rec.length} (${rec.length} records)`);
+}
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nPOLISH10-CARD VERIFY: PASS (${checks.length} checks)` : `\nPOLISH10-CARD VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
 process.exit(passed === checks.length ? 0 : 1);
