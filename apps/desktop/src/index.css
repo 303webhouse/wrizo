@@ -809,7 +809,8 @@
 
 [data-theme='flux'] .board-canvas{ --card-stock:#0E1E31; --card-hairline:rgba(0, 194, 255, .55); --ink-on-card:#E8F6FA; --ink-on-card-low:#57D0F5; --ink-on-card-meta:#8FD6EE; --badge-on-card:#57D0F5; }
 [data-theme='flux'] .board-text, [data-theme='flux'] .board-ink-canvas{ border:1px solid var(--card-hairline); box-shadow:0 0 0 1px rgba(0, 194, 255, .08), 0 6px 18px rgba(0, 0, 0, .45); }
-[data-theme='flux'] .board-text::first-line{ color:var(--text-accent); text-transform:uppercase; letter-spacing:.12em; font-family:var(--font-chromeLabel); font-weight:600; }
+/* POLISH #10 item 12: Flux marks a card's first line by COLOUR only. Capitals, letter-spacing, the chrome font and weight made that line wider than Arbor's, so a long first line wrapped and the auto-grow made the Flux card taller (measured: +15.6 px). A skin changes only the skin: the same text breaks in the same places in every skin. */
+[data-theme='flux'] .board-text::first-line{ color:var(--text-accent); }
 [data-theme='flux'] .board-canvas-blur-wrap{ position:relative; }
 .flux-board-frame .flux-frame{ padding:12px; }
 
