@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactElement, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { useTheme } from '../store/theme';
@@ -22,6 +22,8 @@ export interface HelpMeChooseProps {
   onClose: () => void;
   /** The door that opened this panel: focus returns to it on close (a click that did not focus the button - a script, assistive tech - leaves document.activeElement empty at mount). */
   returnFocusTo?: HTMLElement | null;
+  /** Machina only: Intake REPLACES the content of the panel it is mounted in (the Forms dialog) instead of stacking over it as its own modal - no portal, no backdrop. The host restores focus; Back / Esc / ALL FORMS return to Forms. */
+  embedded?: boolean;
 }
 
 type Variant = 'librarian' | 'diagnostic' | 'intake' | 'plain';
@@ -69,7 +71,7 @@ function Scratch() {
   );
 }
 
-export function HelpMeChoose({ onBegin, onBrowse, onClose, returnFocusTo }: HelpMeChooseProps) {
+export function HelpMeChoose({ onBegin, onBrowse, onClose, returnFocusTo, embedded = false }: HelpMeChooseProps) {
   const { t } = useDeskLexicon();
   const theme = useTheme();
   const dial = useAmbianceDial();
@@ -86,7 +88,7 @@ export function HelpMeChoose({ onBegin, onBrowse, onClose, returnFocusTo }: Help
   // focus: remember what opened this, give it back on close; Esc closes (and nothing else hears it)
   useEffect(() => {
     openerRef.current = returnFocusTo ?? (document.activeElement as HTMLElement | null) ?? null;
-    return () => { const el = openerRef.current; if (el && el.isConnected) el.focus(); };
+    return () => { if (embedded) return; const el = openerRef.current; if (el && el.isConnected) el.focus(); };   // embedded: the opener is unmounted while Intake shows - the host puts focus back
   }, []);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); onClose(); } };
@@ -311,15 +313,18 @@ export function HelpMeChoose({ onBegin, onBrowse, onClose, returnFocusTo }: Help
     );
   }
 
-  return createPortal(
-    <div className="help-backdrop" role="presentation" onClick={onClose}>
-      <div ref={rootRef} className={`help-panel help-${variant}`} role="dialog" aria-modal="true" aria-label={t('helpDialogLabel')} data-help-theme={variant} onClick={(e) => e.stopPropagation()}>
+  // Machina embedded: the same panel, in place - no portal, no backdrop (its wrapper is display:contents), so it takes the host dialog's content instead of stacking over it
+  const embeddedNow = embedded && variant === 'intake';
+  const shell = (node: ReactElement, host: Element) => (embeddedNow ? node : createPortal(node, host));
+  return shell(
+    <div className={embeddedNow ? 'help-embedded-shell' : 'help-backdrop'} role="presentation" onClick={embeddedNow ? undefined : onClose}>
+      <div ref={rootRef} className={`help-panel help-${variant}${embeddedNow ? ' help-embedded' : ''}`} role={embeddedNow ? 'region' : 'dialog'} aria-modal={embeddedNow ? undefined : true} aria-label={t('helpDialogLabel')} data-help-theme={variant} onClick={(e) => e.stopPropagation()}>
         {variant === 'diagnostic' && <><i className="help-br a" /><i className="help-br b" /><i className="help-br c" /><i className="help-br d" /></>}
         {body}
         {variant === 'intake' ? (
           <div className="help-foot help-foot-intake">
             <button type="button" className="help-browse help-browse-foot" data-help-browse onClick={onBrowse}>{t('helpBrowse')} →</button>
-            {step === 3 && <button type="button" className="help-back" onClick={intakeBack}>{t('helpBack')}</button>}
+            {step === 3 ? <button type="button" className="help-back" onClick={intakeBack}>{t('helpBack')}</button> : embedded && <button type="button" className="help-back" data-help-to-forms onClick={onClose}>{t('helpBack')}</button>}
             <span className="help-esc">{t('helpClose')}</span>
           </div>
         ) : (

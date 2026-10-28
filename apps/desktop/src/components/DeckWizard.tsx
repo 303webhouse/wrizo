@@ -74,6 +74,12 @@ export function DeckWizard({ decks, onDeal, onClose, onLanding, startDeckId, sta
     : { kind: 'library' }));
   const [helpOpen, setHelpOpen] = useState(false);
   const helpDoorRef = useRef<HTMLButtonElement>(null);
+  // MACHINA: Intake replaces the Forms list while open, so the Intake row is unmounted; when Intake closes, focus goes back to its row on the Forms list that returns.
+  const helpWas = useRef(false);
+  useEffect(() => {
+    if (helpWas.current && !helpOpen) helpDoorRef.current?.focus();
+    helpWas.current = helpOpen;
+  }, [helpOpen]);
   const dealtAtOnce = useRef(false);
   useEffect(() => {
     if (startDeck && (startDeck.questions.length === 0 || firstOpen(startDeck, seeded) < 0) && !dealtAtOnce.current) { dealtAtOnce.current = true; onDeal(startDeck, startDeck.questions.length === 0 ? {} : seeded); onClose(); }
@@ -155,7 +161,12 @@ export function DeckWizard({ decks, onDeal, onClose, onLanding, startDeckId, sta
         aria-label={t('deckWizardChooseTitle')}
         onClick={e => e.stopPropagation()}
       >
-        {step.kind === 'library' && machina && (
+        {step.kind === 'library' && machina && helpOpen && (
+          // MACHINA: Intake REPLACES the Forms content inside this same dialog (no second layer); Back / Esc / ALL FORMS return to Forms
+          <HelpMeChoose embedded onBegin={(choice, landing) => beginChoice(choice, landing)} onBrowse={() => setHelpOpen(false)} onClose={() => setHelpOpen(false)} />
+        )}
+
+        {step.kind === 'library' && machina && !helpOpen && (
           <>
             <div className="deck-wizard-strip">
               <span className="eyebrow deck-wizard-eyebrow">{t('deckWizardChooseTitle')}</span>
@@ -300,7 +311,7 @@ export function DeckWizard({ decks, onDeal, onClose, onLanding, startDeckId, sta
           );
         })()}
       </div>
-      {helpOpen && <HelpMeChoose onBegin={(choice, landing) => beginChoice(choice, landing)} onBrowse={() => setHelpOpen(false)} onClose={() => setHelpOpen(false)} returnFocusTo={helpDoorRef.current} />}
+      {helpOpen && !machina && <HelpMeChoose onBegin={(choice, landing) => beginChoice(choice, landing)} onBrowse={() => setHelpOpen(false)} onClose={() => setHelpOpen(false)} returnFocusTo={helpDoorRef.current} />}
     </div>,
     document.body,
   );
