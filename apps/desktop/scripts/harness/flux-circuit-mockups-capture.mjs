@@ -75,6 +75,17 @@ await withHarness(async (app) => {
     await js("dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); true"); await sleep(1000); await shot('P2v2-08-jacked-out-burst-decompiled');
     await errCheck('P2v2');
   }
+  if (want('REV')) {                 // the reverse animation: closing folds the box first, then retracts the line
+    await open('flux-circuit-mockup-A-schema.html'); await sleep(800);
+    await js("document.getElementById('tabL').click(); true"); await sleep(800);
+    await js("document.getElementById('tabL').click(); true"); await sleep(130); await shot('REV-1-board-closing-box-folds-first');
+    await sleep(270); await shot('REV-2-board-closing-line-retracts-after');
+    await open('flux-page-mockup-2-schema-doc.html'); await sleep(800);
+    await js("ports[1].click(); true"); await sleep(800);
+    await js("ports[1].click(); true"); await sleep(130); await shot('REV-3-page-closing-box-folds-first');
+    await sleep(270); await shot('REV-4-page-closing-line-retracts-after');
+    await errCheck('REV');
+  }
   if (want('P1')) {
     await open('flux-page-mockup-1-terminal.html');
     await shot('P1-01-page-terminal');

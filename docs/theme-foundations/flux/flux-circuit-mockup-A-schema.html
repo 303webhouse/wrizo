@@ -37,14 +37,15 @@ body.split .pclose{display:block} .pclose:hover{color:var(--cyan);border-color:v
 .plus::before,.plus::after{content:'';position:absolute;background:currentColor}
 .plus::before{width:16px;height:2px} .plus::after{width:2px;height:16px}
 .plus:hover,.plus[aria-expanded="true"]{background:var(--cyan);color:var(--ground)}
-.pline{position:absolute;right:30px;top:50px;width:2px;height:0;z-index:5;background:var(--cyan);transition:height .22s ease;pointer-events:none}
-.pline.open{height:40px}
+/* opening: the line draws, then the box opens; closing runs it in reverse: the box folds shut, then the line retracts */
+.pline{position:absolute;right:30px;top:50px;width:2px;height:0;z-index:5;background:var(--cyan);transition:height .2s ease .26s;pointer-events:none}
+.pline.open{height:40px;transition:height .22s ease}
 .pline i{position:absolute;left:-2px;width:6px;height:6px;background:#00C2FF;box-shadow:0 0 8px #00C2FF;opacity:0;animation:elecV 1.4s linear infinite}
 .pline.open i{opacity:1}
 @keyframes elecV{from{top:0}to{top:calc(100% - 6px)}}
 .pmenu{position:absolute;right:12px;top:90px;z-index:5;min-width:290px;max-height:calc(100% - 110px);overflow:auto;background:rgba(9,18,30,.97);border:1px solid var(--cyan);padding:6px 0;font-family:var(--f-chrome);
-  clip-path:inset(0 0 100% 0);opacity:0;pointer-events:none;transition:clip-path .3s ease .2s,opacity .05s linear .2s}
-.pmenu.open{clip-path:inset(0 0 0 0);opacity:1;pointer-events:auto}
+  clip-path:inset(0 0 100% 0);opacity:0;pointer-events:none;transition:clip-path .25s ease,opacity .05s linear .25s}
+.pmenu.open{clip-path:inset(0 0 0 0);opacity:1;pointer-events:auto;transition:clip-path .3s ease .2s,opacity .05s linear .2s}
 .pmenu .mh{padding:6px 14px 4px;font-size:11px;letter-spacing:.22em;color:var(--low);text-transform:uppercase}
 .pmenu button{display:flex;justify-content:space-between;width:100%;background:none;border:0;border-left:2px solid transparent;color:var(--mid);font:600 13px var(--f-chrome);letter-spacing:.14em;text-transform:uppercase;padding:7px 14px;cursor:pointer;text-align:left}
 .pmenu button:hover{color:var(--ink);border-left-color:var(--cyan);background:rgba(0,194,255,.08)}
@@ -167,12 +168,13 @@ body.split .pclose{display:block} .pclose:hover{color:var(--cyan);border-color:v
 .hand-tab svg{width:26px;height:26px}
 /* a hand opens by shooting a line from its tab toward the surface; the line opens into the menu box, an electron runs the line while it is open */
 .hand{position:fixed;z-index:29;width:270px;max-height:74vh;background:rgba(9,18,30,.97);border:1px solid var(--cyan);padding:14px 16px 16px;overflow:auto;
-  font-family:var(--f-chrome);text-transform:uppercase;letter-spacing:.14em;clip-path:inset(0 100% 0 0);opacity:0;pointer-events:none;transition:clip-path .3s ease .22s,opacity .05s linear .22s}
+  font-family:var(--f-chrome);text-transform:uppercase;letter-spacing:.14em;clip-path:inset(0 100% 0 0);opacity:0;pointer-events:none;transition:clip-path .25s ease,opacity .05s linear .25s}
 .hand.r{clip-path:inset(0 0 0 100%)}
-.hand.open{clip-path:inset(0 0 0 0);opacity:1;pointer-events:auto}
-.hand-line{position:fixed;z-index:28;height:2px;background:var(--cyan);transform-origin:left center;transform:scaleX(0);transition:transform .22s ease;pointer-events:none}
+.hand.open{clip-path:inset(0 0 0 0);opacity:1;pointer-events:auto;transition:clip-path .3s ease .22s,opacity .05s linear .22s}
+/* closing reverses opening: the box folds back toward the line first, then the line retracts into its tab */
+.hand-line{position:fixed;z-index:28;height:2px;background:var(--cyan);transform-origin:left center;transform:scaleX(0);transition:transform .2s ease .26s;pointer-events:none}
 .hand-line.r{transform-origin:right center}
-.hand-line.open{transform:scaleX(1)}
+.hand-line.open{transform:scaleX(1);transition:transform .22s ease}
 .hand-line i{position:absolute;top:-2px;width:6px;height:6px;background:#00C2FF;box-shadow:0 0 8px #00C2FF;opacity:0;animation:elecH 1.5s linear infinite}
 .hand-line.r i{animation-direction:reverse}
 .hand-line.open i{opacity:1}

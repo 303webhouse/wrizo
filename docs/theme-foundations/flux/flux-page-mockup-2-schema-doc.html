@@ -62,9 +62,10 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--ground);color:va
 .port:hover,.port[aria-expanded="true"]{background:var(--cyan);color:var(--ground)}
 .port.preset{border-color:var(--lime);color:var(--lime)} .port.preset:hover,.port.preset[aria-expanded="true"]{background:var(--lime);color:var(--ground)}
 /* pop-outs: a line from the port, then a box; an electron runs the line */
-.pline{position:fixed;z-index:6;height:2px;background:var(--cyan);transform-origin:left center;transform:scaleX(0);transition:transform .22s ease;pointer-events:none}
+/* opening: the line draws, then the box opens; closing runs it in reverse: the box folds shut, then the line retracts to its port, tab or + */
+.pline{position:fixed;z-index:6;height:2px;background:var(--cyan);transform-origin:left center;transform:scaleX(0);transition:transform .2s ease .26s;pointer-events:none}
 .pline.v{width:2px;height:auto;transform-origin:center top;transform:scaleY(0)}
-.pline.open{transform:none}
+.pline.open{transform:none;transition:transform .22s ease}
 .pline i{position:absolute;top:-2px;width:6px;height:6px;background:#00C2FF;box-shadow:0 0 8px #00C2FF;opacity:0;animation:elecH 1.5s linear infinite}
 .pline.v i{left:-2px;top:auto;animation-name:elecV}
 .pline.r i{animation-direction:reverse}
@@ -72,9 +73,9 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--ground);color:va
 @keyframes elecH{from{left:0}to{left:calc(100% - 6px)}}
 @keyframes elecV{from{top:0}to{top:calc(100% - 6px)}}
 .pbox{position:fixed;z-index:7;width:270px;max-height:72vh;overflow:auto;background:rgba(9,18,30,.97);border:1px solid var(--cyan);font-family:var(--f-chrome);text-transform:uppercase;letter-spacing:.14em;padding:12px 14px 14px;
-  clip-path:inset(0 100% 0 0);opacity:0;pointer-events:none;transition:clip-path .3s ease .22s,opacity .05s linear .22s}
+  clip-path:inset(0 100% 0 0);opacity:0;pointer-events:none;transition:clip-path .25s ease,opacity .05s linear .25s}
 .pbox.fromR{clip-path:inset(0 0 0 100%)} .pbox.fromT{clip-path:inset(0 0 100% 0)}
-.pbox.open{clip-path:inset(0 0 0 0);opacity:1;pointer-events:auto}
+.pbox.open{clip-path:inset(0 0 0 0);opacity:1;pointer-events:auto;transition:clip-path .3s ease .22s,opacity .05s linear .22s}
 .pbox::after{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,194,255,.035) 0 1px,transparent 1px 4px)}
 .pbox h3{margin:0 0 3px;font-size:15px;letter-spacing:.22em;color:var(--cyan);display:flex;justify-content:space-between}
 .pbox h3 .x{background:none;border:0;color:var(--low);font:700 14px var(--f-chrome);cursor:pointer}
@@ -317,7 +318,7 @@ function drawGutter() {
 // ---- pop-outs: line, then box (one open at a time on each side) ----
 const pops = {};
 function closeAll(except) { for (const k of Object.keys(pops)) if (k !== except) closePop(k); }
-function closePop(k) { const p = pops[k]; if (!p) return; p.line.classList.remove('open'); p.box.classList.remove('open'); if (p.btn) p.btn.setAttribute('aria-expanded', 'false'); setTimeout(() => { p.line.remove(); p.box.remove(); }, 350); delete pops[k]; }
+function closePop(k) { const p = pops[k]; if (!p) return; p.line.classList.remove('open'); p.box.classList.remove('open'); if (p.btn) p.btn.setAttribute('aria-expanded', 'false'); setTimeout(() => { p.line.remove(); p.box.remove(); }, 520); delete pops[k]; }   // after the reverse: box shut (.25 s), then line back (.2 s)
 function openPop(k, { btn, from, to, vertical, boxX, boxY, dir, html }) {
   closeAll(k);
   if (pops[k]) { const same = pops[k].btn === btn; closePop(k); if (same) return; }   // the same control toggles it shut; another control on that side replaces it
