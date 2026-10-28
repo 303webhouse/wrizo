@@ -5,6 +5,7 @@ import { isDeck } from './boardKind';
 import { walkOrder } from './walk';
 import { graftTo, isGrafted, placeLabelOf, stepLabel, type GraftMade, type GraftRow } from './grafts';
 import { unbornHref } from './unbornPage';
+import { withoutFontMarks } from './markRuns';
 
 // W2 - "WRITE THIS" / "PLACE A PAGE..." / "PLACE THIS..." (brief docs/guided-paths/w2-write-place-brief.md; frames 02 / 05). The model behind the Walk's two doors and the page's own "Place this...". SCHEMA CHANGE: NONE - a
 // placement is the page <-> card graft that already exists (a page_links record: store/grafts.ts graftTo), and the address that carries a door's meaning to an unborn page is the URL (store/unbornPage.ts).
@@ -15,7 +16,7 @@ import { unbornHref } from './unbornPage';
 //  - PLACE THIS (on a page): the steps of the Decks, each a "Deck · Step" row (`searchSteps`); a press places the page on that step (`placeThis`).
 // NOTHING IS PLACED WITHOUT THE WRITER'S PRESS: no suggestion, no auto-place (the Tutor's "Where does this fit?" is W7).
 
-const titleOfText = (text: string | undefined): string => ((text ?? '').trim().split('\n')[0] ?? '').trim().slice(0, 60) || 'Untitled';
+const titleOfText = (text: string | undefined): string => (withoutFontMarks(text ?? '').trim().split('\n')[0] ?? '').trim().slice(0, 60) || 'Untitled';   // POLISH #10 item 4: the words, never a span's marks
 const isShell = (e: JournalEntry): boolean => !!(e as { purgedAt?: string }).purgedAt;
 
 export interface WriteBoard { boardId: string; boardTitle: string; /** the Deck's own set (project id), if it has one */ setId: string | null; origin?: 'journal' | 'loose' | null }

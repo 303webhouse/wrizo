@@ -72,6 +72,7 @@ import { countLineEquivalents } from '../store/lineEquivalents';
 
 import { registerFlush } from '../store/flushRegistry';
 import { celebrateReturnChip } from '../store/deckRewards';
+import { wordCount } from '../store/wordCount';
 
 /** W5 - the glow for a page born from a step: a STABLE ref callback (one function for the module), so a re-render never re-fires it; celebrateReturnChip itself is once-per-element. */
 const glowStepChip = (el: HTMLElement | null): void => { if (el) celebrateReturnChip(el); };
@@ -92,10 +93,6 @@ const FIRST_RUN_WORD_TARGET = 100;
 
 const AUTOSAVE_MS = 2000;
 
-function wordCount(text: string): number {
-  const t = text.trim();
-  return t ? t.split(/\s+/).length : 0;
-}
 
 // ITEM 104 (THIRD) — a stable stand-in for a page that is not there.
 //
