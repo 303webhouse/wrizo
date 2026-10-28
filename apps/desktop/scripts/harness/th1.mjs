@@ -238,8 +238,33 @@ await withHarness(async (app) => {
 
   // -- check 6: Plateau default-theme regression — byte-equal to pre-TH1 values --
   const finalVals = await rootVals(Object.keys(PRE_TH1));
-  const regressionOk = Object.keys(PRE_TH1).every((k) => finalVals[k] === PRE_TH1[k]);
-  ok('check 6: Plateau default token values are byte-equal to pre-TH1 main', regressionOk, JSON.stringify({ expected: PRE_TH1, actual: finalVals }));
+  // ---- PARKED - SUPERSEDED by POLISH - ARBOR'S ROOM (Nick chose the deep espresso room, Oct 27; Fable's ruling Oct 28): Arbor's --ink-950 ground is now #0A0503, no longer the pre-TH1 #110600.
+  // Kept VERBATIM below and no longer run; the live successor follows. (PRE_TH1 above is history and stays as it was.)
+  //
+  // const regressionOk = Object.keys(PRE_TH1).every((k) => finalVals[k] === PRE_TH1[k]);
+  // ok('check 6: Plateau default token values are byte-equal to pre-TH1 main', regressionOk, JSON.stringify({ expected: PRE_TH1, actual: finalVals }));
+  const ARBOR_NOW = { ...PRE_TH1, '--ink-950': '#0A0503' };
+  const arborRoom = { '--ink-900': '#150F0B', '--ink-800': '#1F1711', '--ink-border': '#2A2018', '--ink-border-strong': '#3A2D22', '--arbor-line': '#9C8A6E', '--arbor-letter': '#E8DCC2', '--text-low': '#8A8074' };
+  const arborVals = await rootVals(Object.keys(ARBOR_NOW).concat(Object.keys(arborRoom)));
+  const sameHex = (a, b) => String(a).toLowerCase() === String(b).toLowerCase();
+  const arborOk = Object.keys(ARBOR_NOW).every((k) => sameHex(arborVals[k], ARBOR_NOW[k])) && Object.keys(arborRoom).every((k) => sameHex(arborVals[k], arborRoom[k]));
+  ok('check 6 [polish-arbor-room successor]: Arbor\'s tokens are the pre-TH1 values (brass, paper, fonts) with the espresso room (--ink-950 #0A0503, --ink-900/800, the two lines, --arbor-line/-letter, the lifted --text-low)', arborOk, JSON.stringify({ expected: { ...ARBOR_NOW, ...arborRoom }, actual: arborVals }));
+
+  // Flux and Machina keep their rooms byte-for-byte (the espresso is scoped to :root[data-theme='plateau'] alone).
+  const OTHER_ROOMS = {
+    flux:             { '--ink-950': '#010811', '--ink-900': '#0F1926', '--ink-800': '#122336', '--ink-border': '#193556', '--ink-border-strong': '#244D7C', '--text-low': '#7EB4C4' },
+    'machina cool':   { '--ink-950': '#0A0B0E', '--ink-900': '#12141A', '--ink-800': '#1A1D25', '--ink-border': '#252933', '--ink-border-strong': '#343A46', '--text-low': '#7A8290' },
+    'machina neutral': { '--ink-950': '#0A0A0A', '--ink-900': '#121212', '--ink-800': '#1B1B1B', '--ink-border': '#242424', '--ink-border-strong': '#333333', '--text-low': '#7D7D7D' },
+  };
+  for (const [room, want] of Object.entries(OTHER_ROOMS)) {
+    await app.evalJs(`window.wrizoTheme.set('${room.startsWith('flux') ? 'flux' : 'machina'}')`);
+    if (room === 'machina neutral') await app.evalJs("document.documentElement.setAttribute('data-cast', 'neutral')");
+    else await app.evalJs("document.documentElement.removeAttribute('data-cast')");
+    await sleep(150);
+    const got = await rootVals(Object.keys(want));
+    ok(`check 6 [polish-arbor-room successor]: ${room} room tokens are byte-equal to before (the espresso is Arbor-only)`, Object.keys(want).every((k) => sameHex(got[k], want[k])), JSON.stringify({ expected: want, actual: got }));
+  }
+  await app.evalJs("document.documentElement.removeAttribute('data-cast'); window.wrizoTheme.set('plateau')");
 
   return checks;
 });

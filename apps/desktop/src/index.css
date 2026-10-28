@@ -947,6 +947,7 @@
   --ink-950:#0A0503; --ink-900:#150F0B; --ink-800:#1F1711; --ink-border:#2A2018; --ink-border-strong:#3A2D22;
   --lamp-glow: radial-gradient(135% 95% at 50% -8%, #2A1A0C 0%, #1C1209 38%, #110B07 70%, #0B0704 100%);
   --arbor-line:#9C8A6E; --arbor-letter:#E8DCC2;
+  --text-low:#8A8074;   /* the quietest text: #80766A measured 4.27:1 on the espresso room (--ink-900), under the 4.5:1 label floor; this clears it on 800/900/950 (4.56 / 4.91 / 5.23). Arbor only: Flux and Machina carry their own. */
 }
 [data-theme='plateau'] .dz-toggle:hover{ color:var(--arbor-letter); }       /* was #fff */
 [data-theme='plateau'] .wz-page-setup-range{ background-color:transparent; } /* the slider's own box painted white; its track is the browser's, tinted olive */
