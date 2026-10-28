@@ -6768,7 +6768,7 @@ body:has(.walk)::after{ z-index:-1; }
    pair; it names the Card pop-up AND its Styling dock as an exception. The
    overlap being fixed here is dock-against-CARD, a different pair of rects. */
 .board-popup-dock-grip{
-  position:absolute; right:calc(100% + 2px); top:50%; transform:translateY(-50%); z-index:2;
+  position:absolute; right:calc(100% + 1px); top:50%; transform:translateY(-50%); z-index:2;   /* POLISH #10 item 16: FLUSH - 1px is the card's own border, so the grip's edge IS the card's edge (it was 2px: one px off) */
   width:18px; box-sizing:border-box; padding:10px 0; text-align:center; line-height:1;
   background:var(--desk-ground); border:1px solid var(--ink-border);
   border-radius:var(--radius-md) 0 0 var(--radius-md);
@@ -6776,7 +6776,7 @@ body:has(.walk)::after{ z-index:-1; }
 .board-popup-dock-grip:hover, .board-popup-dock-grip[aria-expanded='true']{ color:var(--text-hi); }
 .board-popup-dock-grip:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:1px; }
 .board-popup-dock{
-  position:absolute; right:calc(100% + 22px); top:50%; transform:translateY(-50%);
+  position:absolute; right:calc(100% + 19px); top:50%; transform:translateY(-50%);   /* item 16: the dock meets the grip (18px wide), no gap */
   display:flex; flex-direction:column; align-items:stretch; gap:4px;
   padding:8px 6px;
   background:var(--desk-ground); border:1px solid var(--ink-border);
