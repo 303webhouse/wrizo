@@ -60,6 +60,7 @@ await withHarness(async (app) => {
       const label = `${cast}/${page}`;
       await boot(app, { cast, page });
       const before = await store(app);
+      const formsRect = await app.evalJs("(() => { const r = document.querySelector('.deck-wizard-dialog').getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)]; })()");
       await press(app, '.forms-intake'); await sleep(450);
       const s0 = await state(app);
       ok(`I1 [${label}]: all three fields are present at once (DOCUMENT, CARRIED BY, BRIEFING); the later two wait for the earlier (disabled), and the first list is open`, !!s0 && s0.fields.map((f) => f.f).join() === 'document,carried,briefing' && s0.fields[0].open === 'true' && s0.fields[1].disabled && s0.fields[2].disabled && !s0.readout && /3 FIELDS · NOTHING STORED/i.test(s0.head || ''), JSON.stringify(s0 && { fields: s0.fields, head: s0.head }));
@@ -77,7 +78,14 @@ await withHarness(async (app) => {
         !!s3 && /Research Paper/.test(s3.text) && /5 blocks/i.test(s3.text) && /Create Agenda/.test(s3.text) && /or Thesis/.test(s3.text) && /RECOMMENDED FORM/i.test(s3.text) && /DOCUMENT\s+a research paper/i.test(s3.text) && /CARRIED BY\s+a question and a method/i.test(s3.text) && /BRIEFING\s+the shape/i.test(s3.text) && /all forms →\s*back\s*esc to close/i.test(s3.foot.replace(/\s+/g, ' ')), JSON.stringify(s3 && { text: s3.text.slice(0, 260), foot: s3.foot }));
       ok(`R2 [${label}]: the header reads 3 / 3 once begun`, !!s3 && /^3 \/ 3$/.test((s3.head || '').trim()), s3 && s3.head);
       const m = await app.evalJs(SCAN);
-      ok(`P1 [${label}]: square, a 1px hairline, no shadow, 520 wide at most (${m ? m.w : '?'})`, !!m && parseFloat(m.radius) === 0 && m.shadow === 'none' && m.border === '1px 1px' && m.w <= 520, JSON.stringify(m && { radius: m.radius, shadow: m.shadow, border: m.border, w: m.w }));
+      // ---- PARKED VERBATIM - SUPERSEDED by Fable's ruling (Oct 28): Intake REPLACES the Forms content inside the Forms dialog, so it has no border of its own and is the dialog's width (<= 600), not 520. Successor follows; the original is not run.
+      // ok(`P1 [${label}]: square, a 1px hairline, no shadow, 520 wide at most (${m ? m.w : '?'})`, !!m && parseFloat(m.radius) === 0 && m.shadow === 'none' && m.border === '1px 1px' && m.w <= 520, JSON.stringify(m && { radius: m.radius, shadow: m.shadow, border: m.border, w: m.w }));
+      // ------------------------------------------------------------------
+      ok(`P1 [${label}] [Oct 28 successor]: square, no shadow, NO border of its own (it fills the Forms dialog), at most the dialog's 600 wide (${m ? m.w : '?'})`, !!m && parseFloat(m.radius) === 0 && m.shadow === 'none' && m.border === '0px 0px' && m.w <= 600, JSON.stringify(m && { radius: m.radius, shadow: m.shadow, border: m.border, w: m.w }));
+      // E1 (Oct 28): Intake REPLACES the Forms content - one dialog, no second layer, the Forms list gone while it is open, the dialog's rect unchanged
+      const swap = await app.evalJs("(() => { const d = document.querySelector('.deck-wizard-dialog'); const r = d ? d.getBoundingClientRect() : null; return { dialogs: document.querySelectorAll('.deck-wizard-dialog').length, backdrops: document.querySelectorAll('.help-backdrop').length, inside: !!(d && d.querySelector('.help-intake')), formsList: !!document.querySelector('.forms-body'), formsRows: document.querySelectorAll('.forms-row').length, rect: r && [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)] }; })()");
+      ok(`E1 [${label}]: Intake REPLACES the Forms content - it is INSIDE the one Forms dialog, no second layer (no help-backdrop), and the Forms list is gone while it shows`, swap.dialogs === 1 && swap.backdrops === 0 && swap.inside && !swap.formsList && swap.formsRows === 0, JSON.stringify(swap));
+      if (cast === 'cool' && page === 'dark') ok(`E2 [${label}]: the dialog keeps the rect it had on the Forms list (Intake does not resize it)`, !!swap.rect && !!formsRect && swap.rect.join() === formsRect.join(), JSON.stringify({ forms: formsRect, intake: swap.rect }));
       ok(`K1 [${label}]: no text is in the carrier colour at rest (fields state and result)`, !!m && !!mid && m.carrierText === 0 && mid.carrierText === 0, JSON.stringify({ result: m && m.carrierText, fields: mid && mid.carrierText, choice: m && m.choice }));
       ok(`M1 [${label}]: nothing transitions or animates (computed 0s)`, !!m && !!mid && m.maxMotion === 0 && mid.maxMotion === 0, JSON.stringify({ result: m && m.maxMotion, fields: mid && mid.maxMotion }));
       ok(`C1 [${label}]: names >= 7:1 (min ${m ? Math.min(m.minName, mid ? mid.minName : 99) : '?'}) and labels >= 4.5:1 (min ${m ? Math.min(m.minLabel, mid ? mid.minLabel : 99) : '?'}) - fields state + result, ${m ? m.names.length + m.labels.length : 0} + ${mid ? mid.names.length + mid.labels.length : 0} texts`,
@@ -96,6 +104,15 @@ await withHarness(async (app) => {
         await key(app, 'Escape'); await sleep(400);
         const esc = await app.evalJs("({ panel: !!document.querySelector('.help-panel'), forms: !!document.querySelector('.deck-wizard-dialog'), focus: document.activeElement ? (document.activeElement.dataset.preset || document.activeElement.className) : null })");
         ok(`L2 [${label}]: Esc closes Intake (the Forms panel stays) and focus returns to the Intake row`, !esc.panel && esc.forms && esc.focus === 'help-me-choose', JSON.stringify(esc));
+        // E3 (Oct 28): Back / ALL FORMS return to Forms - the list returns, Intake is gone, focus is on the Intake row
+        await press(app, '.forms-intake'); await sleep(450);
+        await press(app, '.help-intake [data-help-to-forms]'); await sleep(400);
+        const bk = await app.evalJs("({ intake: !!document.querySelector('.help-intake'), forms: !!document.querySelector('.forms-body'), rows: document.querySelectorAll('.forms-row').length, focus: document.activeElement ? document.activeElement.dataset.preset : null })");
+        ok(`E3 [${label}]: BACK on Intake returns to Forms - the list is back, Intake is gone, focus is on the Intake row`, !bk.intake && bk.forms && bk.rows > 0 && bk.focus === 'help-me-choose', JSON.stringify(bk));
+        await press(app, '.forms-intake'); await sleep(450);
+        await press(app, '.help-intake [data-help-browse]'); await sleep(400);
+        const all = await app.evalJs("({ intake: !!document.querySelector('.help-intake'), forms: !!document.querySelector('.forms-body') })");
+        ok(`E4 [${label}]: ALL FORMS → returns to Forms the same way`, !all.intake && all.forms, JSON.stringify(all));
         if (cast === 'cool') {
           // B1 - Create Agenda deals the pick, and Q3's landing is honoured: the shape -> the Walk
           await press(app, '.forms-intake'); await sleep(450);

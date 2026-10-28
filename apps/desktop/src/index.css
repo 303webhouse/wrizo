@@ -7281,6 +7281,9 @@ body[data-link-drag='true'], body[data-link-drag='true'] *{ cursor:grabbing !imp
 .help-intake .help-alt-plain{ font-size:13px; line-height:1.4; color:var(--text-mid); text-align:left; } .help-intake .help-alt-plain:hover, .help-intake .help-alt-plain:focus-visible{ color:var(--text-hi); }
 .help-intake .help-alt-plain:focus-visible{ outline:1px solid var(--choice); outline-offset:2px; }
 .help-intake .help-foot-intake{ margin-top:18px; justify-content:flex-start; gap:18px; font-family:var(--font-chromeLabel); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-low); }
+/* Fable Oct 28: Intake REPLACES the Forms content - it fills the Forms dialog (no second layer, no own border or width) and scrolls inside it */
+.help-embedded-shell{ display:contents; }
+.help-intake.help-embedded{ width:auto; max-height:none; flex:1 1 auto; min-height:0; overflow-y:auto; border:0; box-sizing:border-box; padding:18px 22px 14px; }
 .help-intake .help-foot-intake .help-browse, .help-intake .help-foot-intake .help-back{ font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-mid); } .help-intake .help-foot-intake .help-browse:hover, .help-intake .help-foot-intake .help-back:hover{ color:var(--text-hi); }
 .help-intake .help-foot-intake .help-browse:focus-visible, .help-intake .help-foot-intake .help-back:focus-visible{ outline:1px solid var(--choice); outline-offset:2px; }
 
