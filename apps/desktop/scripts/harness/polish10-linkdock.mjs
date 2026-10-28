@@ -8,9 +8,12 @@
 //   K2 visible while writing: the writer types on the page and the reader stays (full strength), standing beside the page, never over it
 //   K3 read-only: the reader is not editable - a press in it and a keystroke change nothing, on the page or on the card
 //   K4 copyable into the page: a stretch selected in the reader copies as its plain words (no marks), and pasted into the page it lands as those words
-//   K5 one at a time: docking the source page replaces the card - one reader, the source's words
+//   K5 one at a time (Fable, Oct 28): the reader's header carries the item's name and Undock, which returns the Grafts list; to swap, Undock and then Dock
+//      the source - one reader, the source's words. PARKED VERBATIM below: "docking the source replaces the card" (the reader replaces the list, so no second Dock control stands)
+//   K8 the reader's kicker is the theme's own card / page word from the lexicon (Arbor Card/Page, Flux Node/Doc, Machina Block/File), never a hard-coded one
 //   K6 device-local: a reload keeps the dock (this device's own setting), and NOTHING saved changed - the page's stored row is byte-identical
-//   K7 the reader's own close undocks it
+//   K7 the reader's Undock removes the reader and returns the Grafts list
+//   K4 (Fable, Oct 28): text copied from the reader is the writer's own, so it goes through the Voice Wall's shadow like a page copy - no other wall exception
 // Mutant (Arbor): MK2 the reader hidden while writing - K2 fails.
 // Frames for Nick (Arbor + Flux), WS_P10D_SHOTS=<dir>: the docked card beside the page while writing.
 // Seeding goes through the app's seams. Needs a box turn. Run: WS_BOX_TURN=<token> node scripts/harness/polish10-linkdock.mjs (apps/desktop, dist-web built)
@@ -24,11 +27,12 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
 const J = (v) => JSON.stringify(v);
 const SHOTS = process.env.WS_P10D_SHOTS || null;
-const shot = async (app, name) => { if (!SHOTS) return; mkdirSync(SHOTS, { recursive: true }); const r = await app.cdp('Page.captureScreenshot', { format: 'jpeg', quality: 80 }); writeFileSync(join(SHOTS, `${name}.jpg`), Buffer.from(r.data, 'base64')); };
+const shot = async (app, name) => { if (!SHOTS || /^machina-/.test(name)) return; mkdirSync(SHOTS, { recursive: true }); const r = await app.cdp('Page.captureScreenshot', { format: 'jpeg', quality: 80 }); writeFileSync(join(SHOTS, `${name}.jpg`), Buffer.from(r.data, 'base64')); };
 const mouse = (app, type, x, y) => app.cdp('Input.dispatchMouseEvent', { type, x, y, button: 'left', buttons: type === 'mouseReleased' ? 0 : 1, clickCount: 1, pointerType: 'mouse' });
 const click = async (app, x, y) => { await app.mouseMove(x, y); await mouse(app, 'mousePressed', x, y); await mouse(app, 'mouseReleased', x, y); };
 const pointOf = (app, expr) => app.evalJs(`(() => { const el = ${expr}; if (!el) return null; const r = el.getBoundingClientRect(); return r.width ? { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) } : null; })()`);
-const THEMES = [{ id: 'plateau', name: 'Arbor' }, { id: 'flux', name: 'Flux' }];
+const k5Park = [];   // the park record: each skin's K5 observation
+const THEMES = [{ id: 'plateau', name: 'Arbor', card: 'Card', page: 'Page' }, { id: 'flux', name: 'Flux', card: 'Node', page: 'Doc' }, { id: 'machina', name: 'Machina', card: 'Block', page: 'File' }];   // the theme's own card / page words (themeLexicon)
 const CARD = 'Ada Lovelace\nCartographer of the Well. Fears deep water, keeps the map.';
 const SOURCE = 'Smith, J. (2020). The Well Under the Harbour. Harbour Press.';
 const PAGE = 'The rope was already there, and the well took the bucket back colder still.';
@@ -80,6 +84,9 @@ await withHarness(async (app) => {
     await click(app, cardBtn.x, cardBtn.y); await sleep(800);
     const r1 = await app.evalJs(READER);
     ok(`${tag} K1: docking the card shows a READER beside the page - the card's title and its words`, !!r1 && r1.count === 1 && r1.title === 'Ada Lovelace' && /Cartographer of the Well\. Fears deep water, keeps the map\./.test(r1.text || '') && r1.docked === 'true', J(r1));
+    const kick = (a2) => a2.evalJs("(document.querySelector('.wz-link-dock-kind')?.textContent || '').trim()");
+    const k8c = await kick(app);
+    ok(`${tag} K8 (card): the reader's kicker is the theme's own card word - "${th.card}" (read: "${k8c}")`, k8c.toLowerCase() === th.card.toLowerCase(), k8c);
     // K2: write on the page
     await app.evalJs("(() => { const e = document.querySelector('.forward-only-editor'); e.focus(); const r = document.createRange(); r.selectNodeContents(e); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()");
     await app.mouseMove(683, 400);
@@ -102,18 +109,29 @@ await withHarness(async (app) => {
     ok(`${tag} K3: read-only - a press in the reader and a keystroke change nothing (the reader's words, the card)`, !!r3 && !r3.editable && !/ZZ/.test(r3.text || '') && J(cardBefore) === J(cardAfter), J({ editable: r3 && r3.editable, text: r3 && r3.text }));
     // K4: copy a stretch from the reader, paste it into the page
     const copied = await app.evalJs(`(() => { const t = document.querySelector('.wz-link-dock-text'); if (!t) return null; const w = document.createTreeWalker(t, NodeFilter.SHOW_TEXT); let n; const want = 'Cartographer of the Well';
-      while ((n = w.nextNode())) { const i = n.data.indexOf(want); if (i >= 0) { const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + want.length); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return String(s); } } return null; })()`);
+      while ((n = w.nextNode())) { const i = n.data.indexOf(want); if (i >= 0) { const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + want.length); const s = getSelection(); s.removeAllRanges(); s.addRange(r); const out = String(s); t.dispatchEvent(new ClipboardEvent('copy', { bubbles: true, cancelable: true })); return out; } } return null; })()`);   // the copy event is what routes the words through the Voice Wall's shadow
     await app.evalJs("(() => { const e = document.querySelector('.forward-only-editor'); e.focus(); const r = document.createRange(); r.selectNodeContents(e); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()");
     await app.evalJs(`(() => { const dt = new DataTransfer(); dt.setData('text/plain', ${J(' ')} + ${J('')} + (${J(copied)} || '')); document.querySelector('.forward-only-editor').dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true })); return true; })()`);
     await sleep(1500);
     const pageNow = await stored(app, P);
     ok(`${tag} K4: copyable into the page - the reader's stretch copies as its plain words ("${copied}") and pasted into the page it lands as those words`,
       copied === 'Cartographer of the Well' && !!pageNow && pageNow.text.endsWith(' Cartographer of the Well'), J({ copied, page: pageNow && pageNow.text.slice(-60) }));
-    // K5: one at a time
+    // K5: one at a time. PARKED VERBATIM (Fable, Oct 28): docking the source REPLACES the card - the reader replaces the Grafts list, so a second Dock control never stands
+    // beside it; the rule is one item at a time, and a swap is Undock, then Dock. The check below is kept as written and no longer run; its successor follows.
+    //   const srcBtn = await pointOf(app, dockBtn(null, S));
+    //   if (srcBtn) { await click(app, srcBtn.x, srcBtn.y); await sleep(800); }
+    //   const r5 = await app.evalJs(READER);
+    //   ok(`${tag} K5: one at a time - docking the source replaces the card: one reader, the source's words`, !!srcBtn && !!r5 && r5.count === 1 && /Smith, J\. \(2020\)/.test(r5.text || '') && !/Cartographer/.test(r5.text || ''), J(r5));
+    const undock0 = await pointOf(app, "document.querySelector('.wz-link-dock-close')");
+    if (undock0) { await click(app, undock0.x, undock0.y); await sleep(700); }
+    const listBack = await app.evalJs("!document.querySelector('.wz-link-dock') && !!document.querySelector('.wz-graft-row')");
     const srcBtn = await pointOf(app, dockBtn(null, S));
     if (srcBtn) { await click(app, srcBtn.x, srcBtn.y); await sleep(800); }
     const r5 = await app.evalJs(READER);
-    ok(`${tag} K5: one at a time - docking the source replaces the card: one reader, the source's words`, !!srcBtn && !!r5 && r5.count === 1 && /Smith, J\. \(2020\)/.test(r5.text || '') && !/Cartographer/.test(r5.text || ''), J(r5));
+    k5Park.push({ tag, count: r5 && r5.count });
+    ok(`${tag} K5 (successor): one at a time - Undock returns the Grafts list (${listBack ? 'it did' : 'it did NOT'}), then Dock on the source: one reader, the source's words`, !!undock0 && listBack && !!srcBtn && !!r5 && r5.count === 1 && /Smith, J\. \(2020\)/.test(r5.text || '') && !/Cartographer/.test(r5.text || ''), J(r5));
+    const k8p = await kick(app);
+    ok(`${tag} K8 (page): the reader's kicker is the theme's own page word - "${th.page}" (read: "${k8p}")`, k8p.toLowerCase() === th.page.toLowerCase(), k8p);
     // K6: device-local - a reload keeps it; nothing saved changed (the page row's own keys and the link list)
     await app.reload(); await app.waitFor("typeof window.wrizoCreateJournalPage === 'function'", { label: 'the seams' });
     await app.evalJs(`location.hash = '#/page/${P}'`); await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { timeout: 10000 }); await sleep(1500);
@@ -122,14 +140,19 @@ await withHarness(async (app) => {
     ok(`${tag} K6: device-local - a reload keeps the dock, and nothing saved changed (the page's stored row has the same fields and the same links)`, !!r6 && /Smith/.test(r6.text || '') && sameShape,
       J({ reader: !!r6, keysBefore: rowBefore && Object.keys(rowBefore).sort(), keysAfter: rowAfter && Object.keys(rowAfter).sort() }));
     await shot(app, `${th.id}-source-docked`);
-    // K7: the reader's close undocks it
+    // K7: Undock removes the reader and returns the Grafts list
     const cl = await pointOf(app, "document.querySelector('.wz-link-dock-close')"); if (cl) { await click(app, cl.x, cl.y); await sleep(600); }
-    ok(`${tag} K7: the reader's own close undocks it`, !!cl && (await app.evalJs("!document.querySelector('.wz-link-dock')")), '');
+    ok(`${tag} K7: the reader's Undock removes it and returns the Grafts list`, !!cl && (await app.evalJs("!document.querySelector('.wz-link-dock') && !!document.querySelector('.wz-graft-row')")), '');
   }
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 600)}]` : ''}`);
-if (process.env.HARNESS_PARKED === '1') console.log('\nPOLISH10-LINKDOCK PARKED: PASS (0 records) - a new file; it parks nothing of its own');
+if (process.env.HARNESS_PARKED === '1') {
+  // K5, parked (Fable, Oct 28): one record per skin, under its original name; each re-verifies the new truth - one reader after Undock then Dock
+  const rec = k5Park.map((o) => ({ name: `PARKED (was "${o.tag} K5: one at a time - docking the source replaces the card: one reader, the source's words") - Fable's ruling (Oct 28): one item at a time; to swap, Undock, then Dock`, pass: o.count === 1, detail: J(o) }));
+  for (const c of rec) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}  [${c.detail}]`);
+  console.log(rec.length && rec.every((c) => c.pass) ? `\nPOLISH10-LINKDOCK PARKED: PASS (${rec.length} records) - this FILE parks 1 (K5, one record per skin)` : `\nPOLISH10-LINKDOCK PARKED: FAIL - ${rec.filter((c) => !c.pass).length}/${rec.length} (${rec.length} records)`);
+}
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nPOLISH10-LINKDOCK VERIFY: PASS (${checks.length} checks)` : `\nPOLISH10-LINKDOCK VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
 process.exit(passed === checks.length ? 0 : 1);
