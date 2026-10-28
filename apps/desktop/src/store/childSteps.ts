@@ -43,11 +43,12 @@ const asCount = (n: number): number => Math.min(CHILD_MAX, Math.max(1, Math.floo
 
 /** ADD N CHILDREN under a step. Returns the new boxes and the new ids in order; a card that may not take children (a sub-step, a plain card, an unknown id) returns the SAME array and no ids. N is clamped to 1..5.
  *  Each child: kind text, parentId = the step, the step's laneId (no key when it has none), seq after the step's last child, title "<Word> n" CONTINUING (never repeating a title still on the board), `prompt` = the question,
- *  a place in Open beside the step. Pure: the input is untouched and every other card comes back as the same object. */
-export function addChildren(boxes: Box[], parentId: string, n: number, o: { title: string; question: string; newId: () => string }): { boxes: Box[]; ids: string[] } {
+ *  a place in Open beside the step. Pure: the input is untouched and every other card comes back as the same object. `added` is the new cards ALONE: the board appends THOSE to its latest state (a functional setBoxes), never replaces
+ *  its list with `boxes` - the same guarded shape as a deck deal (box-tombstones T11), so a card deleted a moment ago can never be put back by a snapshot. */
+export function addChildren(boxes: Box[], parentId: string, n: number, o: { title: string; question: string; newId: () => string }): { boxes: Box[]; ids: string[]; added: Box[] } {
   const live = liveBoxes(boxes);
   const parent = live.find((b) => b.id === parentId);
-  if (!parent || parent.kind !== 'text' || parent.parentId || !parent.deckStep || parent.sourceEntryId) return { boxes, ids: [] };
+  if (!parent || parent.kind !== 'text' || parent.parentId || !parent.deckStep || parent.sourceEntryId) return { boxes, ids: [], added: [] };
   const count = asCount(n);
   const kids = live.filter((b) => b.parentId === parent.id && b.kind === 'text');
   const key = (b: Box): number => (b.seq != null ? b.seq : boxes.indexOf(b));
@@ -67,7 +68,7 @@ export function addChildren(boxes: Box[], parentId: string, n: number, o: { titl
       seq: base + i,
     });
   }
-  return { boxes: [...boxes, ...made], ids: made.map((b) => b.id) };
+  return { boxes: [...boxes, ...made], ids: made.map((b) => b.id), added: made };
 }
 
 export interface SubStepInfo { parentId: string; parentTitle: string; n: number; m: number; mainN: number; mainM: number }

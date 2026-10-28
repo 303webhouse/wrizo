@@ -227,6 +227,7 @@ const RAW_BASELINE = {
   'pages/CreateProject.tsx': 1,      // a deck result's boxes
   'store/boardKind.ts': 1,           // W1: withHomeView's spread of the caller's own list when it adds the board-meta (a WRITE path: it must carry every tombstone it was handed; its kind / home-view reads go through liveBoxes)
   'store/boardStructure.ts': 1,      // a spread of the caller's own list
+  'store/childSteps.ts': 1,          // Add scenes: addChildren's `[...boxes, ...made]` - a pure spread of the caller's own list (it reads no stored entry); the board appends only `added`, never this whole list
   'store/pageExport.ts': 1,          // the board-meta lookup (lane titles) - the cards themselves go through liveBoxes
   'store/unbornPage.ts': 3,          // building a NEW page's boxes (writes)
 };
@@ -265,6 +266,12 @@ for (const [name, file, fn, expectRed] of MUT) {
   const withNew = rawReads(SRC, { 'store/pageExport.ts': (t) => `${t}\nexport const sneaky = (e: { boxes?: unknown[] }) => e.boxes;\n` });
   const drift2 = Object.keys(withNew).filter((k) => (withNew[k] || 0) !== (RAW_BASELINE[k] || 0));
   ok('T11 (mutant): a NEW raw reader of `.boxes` added to a file turns the guard RED (the mutation landed)', drift2.includes('store/pageExport.ts'), JSON.stringify(drift2));
+  // Add scenes: the board's Add writes through a functional append of the NEW cards; putting the raw whole-list write back (`setBoxes(made.boxes)`, what Chat 1 found) must turn the guard RED
+  const addFn = 'setBoxes(prev => [...prev, ...kids]);';
+  const beSrc = noCR(fs.readFileSync(path.join(SRC, 'components/BoardEditor.tsx'), 'utf8'));
+  const withRaw = rawReads(SRC, { 'components/BoardEditor.tsx': (t) => t.replace(addFn, 'setBoxes(made.boxes);') });
+  const drift3 = Object.keys(withRaw).filter((k) => (withRaw[k] || 0) !== (RAW_BASELINE[k] || 0));
+  ok('T11 (mutant): Add scenes writing the card list raw again (`setBoxes(made.boxes)`) turns the guard RED (the mutation landed)', beSrc.includes(addFn) && drift3.includes('components/BoardEditor.tsx'), JSON.stringify({ hasSite: beSrc.includes(addFn), drift3 }));
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : `  [${c.detail}]`}`);

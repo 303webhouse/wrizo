@@ -3472,7 +3472,8 @@ export function BoardEditor({ id }: { id: string }) {
     const made = addChildren(boxesRef.current, parent.id, n, { title, question, newId: generateId });
     if (made.ids.length === 0) return;
     if (framed) boardDissolve.noteWrite();
-    setBoxes(made.boxes);
+    const kids = made.added;   // the new cards ALONE, appended to the LATEST list (a deck deal's shape); never the snapshot `made` was cut from
+    setBoxes(prev => [...prev, ...kids]);
     if (boardMode === 'walk') setWalkJumpId(made.ids[0]);
   };
   // W1 - THE WALK (components/Walk.tsx): one card at a time on the board's own order, writing in the card with the ordinary card engine (the card editor, mounted INLINE). Esc leaves for the board's last shown view.
