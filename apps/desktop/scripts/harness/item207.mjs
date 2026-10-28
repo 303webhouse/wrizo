@@ -49,7 +49,8 @@ const typeInto = async (app, value) => {
 const pickFace = async (app, name) => {
   // FONT-SPAN (2026-10-15): in Draft and a card the roster is SHOWN (the approved font-choices mockup), so there is no face button to
   // open first; where one exists (Free Write, Revise) it is pressed as before. A driver change only - every assertion stands.
-  if (await app.evalJs("!!document.querySelector('.wz-type-face') && !document.querySelector('.wz-type-list')")) {
+  // TOOLS #10 item 9: in the scoped form the list is always mounted but COLLAPSED (hidden) until the face button is pressed - so "open" means no VISIBLE list. Driver change only.
+  if (await app.evalJs("!!document.querySelector('.wz-type-face') && ![...document.querySelectorAll('.wz-type-list')].some((u) => !u.hidden && u.getBoundingClientRect().height > 0)")) {
     await press(app, "document.querySelector('.wz-type-face')", `the face button (open, for ${name})`);
   }
   await sleep(120);
@@ -180,8 +181,14 @@ await withHarness(async (app) => {
     return { label: r.textContent, rendered: first, rowFamily: getComputedStyle(r).fontFamily.split(',')[0].trim().replace(/^["']|["']$/g, '').replace(/ Variable$/, ''), color: getComputedStyle(r).color,
       brass: getComputedStyle(document.documentElement).getPropertyValue('--brass').trim() }; })()`);
   i207Parks.label = brassNow;
-  ok('LABEL [font-span successor]: on a page that never chose, the BRASS row of the roster names the face that ACTUALLY renders and is set in it',
-    !!brassNow && brassNow.label === brassNow.rendered && brassNow.rowFamily === brassNow.rendered, JSON.stringify(brassNow));
+  // ---- PARKED - SUPERSEDED by TOOLS #10 item 10 (Nick, Oct 24: the list's first row is "Default (<face>)"): on a page that never chose, the brass row is now the DEFAULT row, not a roster row.
+  // Kept VERBATIM below and no longer run; the successor follows, and the original is run as a PARKED RECORD (it must now fail, for exactly that reason).
+  // ok('LABEL [font-span successor]: on a page that never chose, the BRASS row of the roster names the face that ACTUALLY renders and is set in it',
+  // !!brassNow && brassNow.label === brassNow.rendered && brassNow.rowFamily === brassNow.rendered, JSON.stringify(brassNow));
+  // ------------------------------------------------------------------
+  ok('LABEL [item-10 successor]: on a page that never chose, the BRASS row is the Default row, it reads "Default (<the face that ACTUALLY renders>)", and it is set in that face',
+    !!brassNow && brassNow.label === `Default (${brassNow.rendered})` && brassNow.rowFamily === brassNow.rendered, JSON.stringify(brassNow));
+  ok('LABEL [parked record]: the ORIGINAL (the brass row\'s text IS the face name) now fails ONLY because the brass row is "Default (<face>)"', !!brassNow && brassNow.label !== brassNow.rendered && brassNow.label === `Default (${brassNow.rendered})`, JSON.stringify(brassNow));
   // ---- PARKED - SUPERSEDED by page-size (Fable's ruling a, Oct 23: the page's number is REAL POINTS IN PAGE UNITS - 12 = 16px at page scale 1, a NEW
   // page defaults to 12, and the page LAYS OUT at scale 1 and is PAINTED at its scale by a transform, so the editor's computed size is n x 4/3 px at
   // every screen). The field opens at 12; `+` goes to 13, drawn 13 x 4/3 px; 13 is written. Kept VERBATIM and no longer run; record in this file's parked section, successor below.
@@ -342,8 +349,9 @@ if (process.env.HARNESS_PARKED === '1') {
   // (the two records below follow the NEWEST truth - TOOLS #10 items 9 + 10: the scoped form has a face button over a COLLAPSED list of Default + eleven faces = 5 buttons, 12 rows)
   pk('PARKED (was "DRAFT: the Type control is mounted, full form — a face button, `-` `+` (3 buttons) and ONE number field") - font-span: the scoped form, no face button; live successor: DRAFT [font-span successor]',
     !!d && d.buttons === 5 && d.inputs === 1 && d.faceButton && d.rows === 12, JSON.stringify(d));
+  // (the LABEL record below follows the NEWEST truth - TOOLS #10 item 10: the brass row of a never-chose page is "Default (<face>)")
   pk('PARKED (was "LABEL: on a page that never chose, the face button names the face that ACTUALLY renders (the first family the editor computes) and is set in it") - font-span: the brass roster row does; live successor: LABEL [font-span successor]',
-    !!l && l.label === l.rendered && l.rowFamily === l.rendered, JSON.stringify(l));
+    !!l && l.label === `Default (${l.rendered})` && l.rowFamily === l.rendered, JSON.stringify(l));
   pk('PARKED (was "CARD: the styling dock carries the smallest form — a face button and `-` `+` (3 buttons), no number field") - font-span: the scoped small form; live successor: CARD [font-span successor]',
     !!c && c.buttons === 5 && c.inputs === 0 && c.faceButton && c.rows === 12, JSON.stringify(c));
   // PAGE-SIZE (Oct 23, Fable's ruling a) - SIX more parks, each frozen with its original name, re-verifying the NEW truth from the default leg's

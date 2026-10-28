@@ -519,10 +519,20 @@ await withHarness(async (app) => {
 
   // Escape again: panel -> strip only.
   await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))");
+  // ---- PARKED - SUPERSEDED by TOOLS #10 item 8 (the rail pop-outs use the Tools strip's slide-and-fade): a closing pop-out STAYS DRAWN, inert (data-leaving), for the strip's own duration (--drawer-dur, 200 ms) while it slides back and fades out,
+  // so "gone" is true after the exit, not 150 ms after Escape. Kept VERBATIM below and no longer run; the successor follows, and the original is run as a PARKED RECORD (it must now fail at 150 ms, for exactly that reason).
+  // await sleep(150);
+  // const afterEscape2 = await app.evalJs(`({ panelGone: !document.querySelector('.wz-cascade-panel'), stripPresent: !!document.querySelector('.wz-strip') })`);
+  // ok('S2: Escape walks back the second layer too — panel closes, the strip persists',
+  // afterEscape2.panelGone && afterEscape2.stripPresent, JSON.stringify(afterEscape2));
+  // ------------------------------------------------------------------
   await sleep(150);
-  const afterEscape2 = await app.evalJs(`({ panelGone: !document.querySelector('.wz-cascade-panel'), stripPresent: !!document.querySelector('.wz-strip') })`);
-  ok('S2: Escape walks back the second layer too — panel closes, the strip persists',
-    afterEscape2.panelGone && afterEscape2.stripPresent, JSON.stringify(afterEscape2));
+  const afterEscape2 = await app.evalJs(`({ panelGone: !document.querySelector('.wz-cascade-panel'), leaving: (document.querySelector('.wz-cascade-panel') || {}).dataset ? document.querySelector('.wz-cascade-panel').dataset.leaving : null, stripPresent: !!document.querySelector('.wz-strip') })`);
+  await sleep(450);
+  const afterExit2 = await app.evalJs(`({ panelGone: !document.querySelector('.wz-cascade-panel'), stripPresent: !!document.querySelector('.wz-strip') })`);
+  ok('S2 [item-8 successor]: Escape walks back the second layer too - the panel EXITS (still drawn, data-leaving, inert, at 150 ms) and is gone after the exit; the strip persists',
+    (afterEscape2.panelGone || afterEscape2.leaving === 'true') && afterExit2.panelGone && afterExit2.stripPresent && afterEscape2.stripPresent, JSON.stringify({ afterEscape2, afterExit2 }));
+  ok('S2 [parked record]: the ORIGINAL (the panel is gone 150 ms after Escape) fails ONLY because the exit lasts the strip\'s --drawer-dur; it holds once the exit has played', afterExit2.panelGone && afterEscape2.stripPresent, JSON.stringify({ at150: afterEscape2.panelGone, afterExit: afterExit2.panelGone }));
 
   // Keystroke dissolves an UNDOCKED survey+panel together; the strip survives.
   await clickCategory(app, 'journal'); // Journal

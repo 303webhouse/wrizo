@@ -21,6 +21,8 @@ const ok = (name, pass, detail = '') => { checks.push({ name, pass: !!pass }); c
 const css = read('index.css');
 const rules = (() => { const a = css.indexOf('/* TOOLS #10 item 8 - the rail pop-outs'); const b = css.indexOf('.wz-cascade-panel-head{', a); return a >= 0 && b > a ? css.slice(a, b) : ''; })();
 const cascade = strip(read('components/Cascade.tsx'));
+const escExit = strip(read('store/escapeExit.ts'));
+const menusDrawers = strip(read('store/menusDrawers.ts'));
 
 const motionOk = (c) => /\.wz-cascade-panel, \.wz-cascade-survey\{ animation:wz-cascade-in var\(--drawer-dur\) var\(--drawer-ease\) backwards; \}/.test(c)
   && /\[data-leaving='true'\][^{]*\{ animation:wz-cascade-out var\(--drawer-dur\) var\(--drawer-ease\) forwards; pointer-events:none; \}/.test(c)
@@ -32,6 +34,10 @@ const exitOk = (t) => /const lastOpen = useRef<CascadeState \| null>\(null\);/.t
   && /if \(cascadeOccupiesBand\) requestOpen\('cascade'\);/.test(t);   // the announcements still read the real state
 const overlayOk = (c) => !/(width|height|margin|padding|top|left)\s*:/.test(c.replace(/animation[^;{}]*;/g, '').replace(/@keyframes[^{]*\{[\s\S]*?\}\s*\}/g, '')) && !/(forwards|both)[^}]*wz-cascade-in/.test(c) && /wz-cascade-in var\(--drawer-dur\) var\(--drawer-ease\) backwards/.test(c);
 
+// L - an EXITING pop-out is not an open one: the Esc-exit (store/escapeExit.ts waits to see whether the popup closed on the Esc) and the two-drawer band measure (store/menusDrawers.ts) must not count it. Found by escexit.mjs S3, which went red:
+//     the panel was still drawn 60 ms after Esc, the Esc was read as "not the popup's", and it also left the writing surface.
+const leavingOk = (e, m) => /'\.wz-cascade-panel:not\(\[data-leaving\]\)'/.test(e) && /measuredWidth\('\.wz-cascade-panel\[data-visible="true"\]:not\(\[data-leaving\]\)'/.test(m);
+ok('L: an EXITING pop-out is not an open one - the Esc-exit popup list and the two-drawer band measure both skip [data-leaving] (escexit S3 found the Esc leaving the page when they did not)', leavingOk(escExit, menusDrawers), '');
 ok('M: the pop-outs and their surveys slide out from the rail AND fade in on the Tools strip\'s own tokens (--drawer-dur / --drawer-ease), slide back and fade out on close, and take only the short fade under reduced motion', motionOk(rules), `${rules.length} chars`);
 ok('X: closing is an exit - the layers stay drawn (data-leaving, inert) for the token\'s own length, read from --drawer-dur / --drawer-dur-reduced, while `state` (the two-drawer announcements, Escape) is untouched', exitOk(cascade), '');
 ok('S: overlay only - no layout property is declared in the new rules, and the entry fills backwards (the dock\'s own collapse rule governs after it)', overlayOk(rules), '');
@@ -44,6 +50,8 @@ const muts = [
   ['the announcements move off the real state', cascade, (t) => t.replace("if (cascadeOccupiesBand) requestOpen('cascade');", "if (view_ok) requestOpen('cascade');"), exitOk],
   ['the entry fills forwards (it would pin the opacity over the dock collapse)', rules, (t) => t.replace('wz-cascade-in var(--drawer-dur) var(--drawer-ease) backwards', 'wz-cascade-in var(--drawer-dur) var(--drawer-ease) forwards'), overlayOk],
   ['the slide animates the width', rules, (t) => t.replace('.wz-cascade-panel[data-leaving=\'true\'], .wz-cascade-panel[data-leaving=\'true\'] ~ .wz-cascade-survey{ animation:wz-cascade-out', '.wz-cascade-panel{ width:10px; } .wz-cascade-panel[data-leaving=\'true\'], .wz-cascade-panel[data-leaving=\'true\'] ~ .wz-cascade-survey{ animation:wz-cascade-out'), overlayOk],
+  ['the Esc-exit counts the exiting panel again', escExit, (t) => t.replace("'.wz-cascade-panel:not([data-leaving])'", "'.wz-cascade-panel'"), (t) => leavingOk(t, menusDrawers)],
+  ['the band measure counts the exiting panel again', menusDrawers, (t) => t.replace(':not([data-leaving])', ''), (t) => leavingOk(escExit, t)],
 ];
 for (const [name, text, mutate, pred] of muts) {
   const next = mutate(text);
