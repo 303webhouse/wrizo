@@ -58,6 +58,18 @@ await withHarness(async (app) => {
     await sleep(900); await js("document.getElementById('tabR').click(); true"); await sleep(500); await shot('P2-03-operator-hand');
     await errCheck('P2');
   }
+  if (want('LOGO')) {                // the two finalist logos in the mockups (flux-logo-switch.js): the splash, then the top bar, each logo on each surface
+    const openQ = async (file, q) => { await app.cdp('Page.navigate', { url: 'file:///' + path.join(MOCK, file).replace(/\\/g, '/') + q }); await sleep(500); await app.evalJs("window.__errs = []; addEventListener('error', (e) => window.__errs.push(String(e.message))); true"); };
+    const hold = "document.querySelectorAll('.logo-cur').forEach(e => { e.style.animation = 'none'; e.style.opacity = '1'; }); true";
+    for (const [file, tag] of [['flux-circuit-mockup-A-schema.html', 'schema'], ['flux-page-mockup-1-terminal.html', 'page1'], ['flux-page-mockup-2-schema-doc.html', 'page2']]) {
+      for (const logo of ['terminal', 'hand']) {
+        await openQ(file, '?logo=' + logo); await sleep(400); await js(hold);
+        if (tag === 'schema') await shot(`LOGO-${tag}-${logo}-0-splash`);
+        await sleep(2600); await js(hold); await shot(`LOGO-${tag}-${logo}`);
+      }
+      await errCheck('LOGO ' + tag);
+    }
+  }
   if (want('L')) {
     await app.emulateDpr(1, 1600, 1500);
     await open('flux-logo-mockups.html'); await sleep(600);
