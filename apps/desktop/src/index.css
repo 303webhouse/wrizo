@@ -4499,6 +4499,8 @@ a:focus-visible,
 .wz-type-list{ flex:1 0 100%; list-style:none; margin:0; padding:2px 0; border:1px solid var(--ink-border); }
 .wz-type-row{ padding:4px 8px; font-size:14px; cursor:pointer; color:var(--text-hi); }
 .wz-type-row:hover{ background:var(--ink-800, rgba(0,0,0,.06)); }
+/* the "Default (<face>)" row stays on ONE line in the narrow drawer: an ellipsis, the full name in its title (hover) and aria-label (focus) */
+.wz-type-row[data-default='true']{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .wz-type-row[data-current='true']{ color:var(--accent-rest); }
 /* FONT-SPAN (cursor/font-choices @ 6cc5f529, Nick approved Oct 15) - the scoped Typeface section, where words can be highlighted
    (Draft, a card): the two scopes over the roster SHOWN as a list. Brass marks the current choice - the scope in force and the face

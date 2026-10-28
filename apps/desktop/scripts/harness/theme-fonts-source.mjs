@@ -56,6 +56,10 @@ ok('R: the roster gained Source Sans 3 and Titillium Web; none of the three them
 ok('D: the list\'s first row is "Default (<face>)" - the face that really renders - an unchosen surface marks IT (never a roster row), and choosing it clears (whole pick: undefined; a selection: its span is removed)', defaultOk(ctl, lex), '');
 ok('H: the hosts clear - the Page drops its `face` key (no write when it never had one), the card drops `fontFace` - and NO new stored field exists (the roster stored form is unchanged: name / generic / source / fallback)', hostsOk(page, board) && /name: face\.name, generic: face\.generic, source: face\.source, fallback: face\.fallback/.test(roster) && !/defaultFace|isDefault|themeFace/.test(page + board + roster), '');
 
+// O - Fable, Oct 28: the Default row stays on ONE line in the narrow drawer: nowrap + ellipsis in CSS, the full label in its title and aria-label
+ok('O: the "Default (<face>)" row is one line (white-space nowrap, ellipsis) and carries its full label in title + aria-label',
+  /\.wz-type-row\[data-default='true'\]\{[^}]*white-space:nowrap;[^}]*text-overflow:ellipsis;[^}]*\}/.test(css) && /const defaultLabel = t\('typeFaceDefault'\)\.replace\('\{face\}', defaultName\);/.test(read('components/TypeControl.tsx')) && /title=\{defaultLabel\} aria-label=\{defaultLabel\}/.test(read('components/TypeControl.tsx')), '');
+
 // N - the names: the table in fontRoster.ts vs the first family of each theme's tokens in index.css
 const firstFamily = (decl) => { const m = /'([^']+?)(?: Variable)?'/.exec(decl || ''); return m ? m[1] : null; };
 const tokenOf = (blk, name) => { const m = new RegExp(`${name}:\\s+([^;]+);`).exec(blk); return m ? m[1] : null; };

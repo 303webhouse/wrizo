@@ -107,9 +107,10 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
   const brassName = brassKey === DEFAULT_KEY ? currentName : brassKey;
   // Default = clear. A whole pick clears the surface's stored face; a pick on a selection removes its span (the words fall back to the surface's own face).
   const pickDefault = () => { if (!scope || whole) onPickFace(undefined); else scope.onPickSelection(null); };
+  const defaultLabel = t('typeFaceDefault').replace('{face}', defaultName);
   const defaultRow = (current: boolean, onPick: () => void) => (
-    <li key="__default" role="option" aria-selected={current} data-current={current ? 'true' : 'false'} data-default="true" className="wz-type-row" style={{ fontFamily: 'var(--font-prose)' }} onClick={onPick}>
-      {t('typeFaceDefault').replace('{face}', defaultName)}
+    <li key="__default" role="option" aria-selected={current} data-current={current ? 'true' : 'false'} data-default="true" className="wz-type-row" style={{ fontFamily: 'var(--font-prose)' }} title={defaultLabel} aria-label={defaultLabel} onClick={onPick}>
+      {defaultLabel}
     </li>
   );
   const pickRow = (name: string) => {
