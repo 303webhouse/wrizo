@@ -6565,13 +6565,15 @@ body:has(.walk)::after{ z-index:-1; }
   letter-spacing:.02em; margin:2px 0 0; user-select:none; }
 
 .board-projection{ padding:8px 2px; }
+/* POLISH #10 item 13b - the stage's left chevron tab (the Sliver's grip, 16 px wide, flush on the stage's left edge) used to sit over the Outline's first column (the row numbers): the Outline starts clear of it. */
+.board-outline{ padding-left:16px; }
 .board-projection-empty{ color:var(--text-low); font-family:var(--font-contentLabel); font-size:13px; }
 .board-lanes{ display:flex; gap:16px; align-items:flex-start; overflow-x:auto; }
-.board-lane{ flex:0 0 240px; min-width:220px; border:1px solid var(--ink-border); border-radius:6px; padding:8px; }
+.board-lane{ flex:0 0 240px; min-width:220px; border:1px solid var(--ink-border); border-radius:0; padding:8px; }   /* POLISH #10 item 13c: square (was 6px) */
 .board-lane-title{ font-family:var(--font-contentLabel); font-size:12px; text-transform:uppercase;
   letter-spacing:.06em; color:var(--text-mid); margin-bottom:6px; }
 .board-sb-card{ display:flex; align-items:center; justify-content:space-between; gap:6px;
-  border:1px solid var(--ink-border); border-radius:4px; padding:6px 8px; margin-bottom:6px; }
+  border:1px solid var(--ink-border); border-radius:0; padding:6px 8px; margin-bottom:6px; }
 .board-sb-card-label{ font-size:13px; color:var(--text-hi); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .board-sb-card-ctl{ display:flex; align-items:center; gap:2px; flex:0 0 auto; }
 .board-sb-card-ctl button, .board-outline-ctl button{ padding:1px 5px; font-size:12px; }
@@ -6588,6 +6590,7 @@ body:has(.walk)::after{ z-index:-1; }
   color:var(--text-hi); font-family:var(--font-contentLabel); font-size:14px; padding:2px 0; }
 .board-outline-text:focus{ outline:none; border-bottom:1px solid var(--accent-rest); }
 .board-outline-readonly{ color:var(--text-mid); }
+.board-outline-body{ margin-left:8px; }   /* POLISH #10 item 13a: the text keeps a gap of its own from the title input, whatever the title's width */
 /* the card's text beside its title: one quiet line, an ellipsis, never a wrapped block under the outline (the full text is its title attribute) */
 .board-outline-body{ flex:1 1 120px; min-width:0; color:var(--text-low); font-family:var(--font-contentLabel); font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .board-outline-ctl{ display:flex; gap:2px; flex:0 0 auto; }
