@@ -845,7 +845,7 @@
 .wz-hero .wz-flux-wordmark{ font-size:clamp(34px, 7vw, 66px); }
 .wz-mark.wz-flux-wordmark{ position:absolute; top:1.3rem; left:1.6rem; font-size:14px; opacity:0; transition:opacity 1s ease .3s; z-index:6; pointer-events:none; }
 .wz-mark.wz-flux-wordmark.show{ opacity:1; }
-[data-theme='flux'] .wz-place-block .wz-place-name{ overflow:visible; text-overflow:clip; white-space:normal; overflow-wrap:anywhere; text-align:center; line-height:1.2; }
+[data-theme='flux'] .wz-place-block .wz-place-name{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:center; line-height:1.2; }   /* POLISH #10 item 14: ONE line with an ellipsis (FX V2 had it wrap); the full name is the button's title */
 
 /* Slice 4 — the effects compositor scaffold (canon §6, ThemeEffectsLayer.tsx).
    One layer, absolutely positioned behind everything painted, pointer-events
