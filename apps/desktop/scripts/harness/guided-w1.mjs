@@ -344,8 +344,8 @@ const MUT = [
   { name: 'the Walk stops asking for the caret', file: 'components/BoardEditor.tsx', find: /key=\{box\.id\}\n          inline\n          autoFocus\n/, to: 'key={box.id}\n          inline\n', red: ['Y6'] },
   { name: 'an empty card turns the arrows away when the editor has taken them', file: 'components/Walk.tsx', find: /\(e\.defaultPrevented && !\(arrow && emptyHere\)\) \|\| e\.isComposing/, to: 'e.defaultPrevented || e.isComposing', red: ['Y7'] },
   { name: 'the Walk question stays a line below the caret', file: 'index.css', find: /margin-top:calc\(2px - 1\.6 \* 17px \* var\(--card-type-k, 1\)\);/, to: 'margin-top:2px;', red: ['D12'] },
-  { name: 'the width measure runs only once, at mount', file: 'components/BoardEditor.tsx', find: /ro\.observe\(el\);\n    return \(\) => ro\.disconnect\(\);\n  \}, \[boardMode === 'open'\]\);/, to: "ro.observe(el);\n    return () => ro.disconnect();\n  }, []);", red: ['S11'] },
-  { name: 'the room measure runs only once, at mount', file: 'components/BoardEditor.tsx', find: /removeEventListener\('resize', schedule\); \};\n  \}, \[boardMode === 'open'\]\);/, to: "removeEventListener('resize', schedule); };\n  }, []);", red: ['S11'] },
+  { name: 'the width measure runs only once, at mount', file: 'components/BoardEditor.tsx', find: /ro\.observe\(el\);\n    return \(\) => ro\.disconnect\(\);\n  \}, \[boardMode === 'open'\]\);/, to: "ro.observe(el);\n    return () => ro.disconnect();\n  }, []);", red: ['S11 [board-r successor]'] },
+  { name: 'the room measure runs only once, at mount', file: 'components/BoardEditor.tsx', find: /removeEventListener\('resize', schedule\); \};\n  \}, \[boardMode === 'open'\]\);/, to: "removeEventListener('resize', schedule); };\n  }, []);", red: ['S11 [board-r successor]'] },
   { name: 'the vignette stays over the Walk card', file: 'index.css', find: /body:has\(\.walk\)::after\s*\{\s*z-index:\s*-1;\s*\}/, to: 'body:has(.walk)::after{ z-index:2; }', red: ['D11'] },
   { name: 'the Show-as words lose Trace', file: 'store/deskLexicon.ts', find: /boardModeWalk: 'Trace'/, to: "boardModeWalk: 'Walk'", red: ['L1'] },
 ];
