@@ -182,3 +182,44 @@
   :root[data-arbor2][data-theme='plateau'] .wz-cascade-panel[data-leaving='true'] ~ .wz-cascade-survey{ animation:arbor2-pull-out 180ms cubic-bezier(.4,0,.8,.4) forwards; pointer-events:none; }
   :root[data-arbor2][data-theme='plateau'] .wz-cascade-panel[data-leaving='true'] > *{ animation:none; }
 }
+
+/* ==========================================================================================================================================
+   §14 ITEM 6 - THE DAY ROOM'S LIGHT: pergola slats and leaf shadows, the afternoon, the flutter (src/arbor2/sun.ts builds the layer and
+   its per-session seed; it stores nothing). The layer sits at z-index -1 in body's own stacking context: over the sun pool, under the
+   vignette and every surface, so it shades the ROOM only. The page is opaque: the shadows reach the prose column only through the page's
+   own top and bottom fade, never over its text.
+   THE AFTERNOON (--arbor2-afternoon, t in [0,1], set on <html> by sun.ts): shadow strength .10 -> .22, slats lengthen (scaleY to 1.35),
+   the whitewash shades toward #E3D4B6.
+   CONTRAST UNDER THE DEEPEST SHADE (22% of rgb(74,58,30) over the late whitewash = #C1B295), for the one label that sits on the bare room
+   (the count row under the page): the day --text-low and --arbor-guide go a step darker so they hold there too -
+     --text-low #3F3E2A: 7.43 on the late ground, 5.21 under the deepest shadow (#4F4E36 was 4.07 there: fail)
+     --arbor-guide #33491E: 6.80 / 4.77 (#3F5A26 was 3.73: fail)
+     --text-mid #3E4A2A holds at 4.54; names sit on surfaces (rail, bar), never on the shaded room.
+   Motion: drift is one 48 s transform loop; a flutter is one cluster for 300-600 ms, >= 6 s apart (<= 1 event/s). Reduced motion: still.
+   ========================================================================================================================================== */
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day']{
+  --text-low:#3F3E2A; --arbor-guide:#33491E;
+  --ink-950:var(--arbor2-day-ground, #EFE6D2);   /* sun.ts mixes #EFE6D2 -> #E3D4B6 by the afternoon and writes the hex (a plain colour every reader can parse) */
+}
+.arbor2-sun{ display:none; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .arbor2-sun{
+  display:block; position:fixed; inset:-80px; z-index:-1; pointer-events:none; overflow:hidden;
+  opacity:calc(.10 + .12 * var(--arbor2-afternoon, 0));
+  animation:arbor2-sun-drift 48s ease-in-out infinite alternate;
+}
+.arbor2-sun-slats{ position:absolute; inset:0; transform-origin:50% 0;
+  background:repeating-linear-gradient(var(--sun-angle, 24deg), rgb(74,58,30) 0 var(--sun-slat, 24px), transparent var(--sun-slat, 24px) var(--sun-gap, 120px));
+  filter:blur(7px); transform:scaleY(calc(1 + .35 * var(--arbor2-afternoon, 0))); }
+.arbor2-sun-leaf{ position:absolute; width:var(--leaf-size, 160px); height:calc(var(--leaf-size, 160px) * .72); transform:rotate(var(--leaf-rot, 0deg));
+  background:
+    radial-gradient(closest-side at 30% 40%, rgb(64,60,28) 55%, transparent 100%),
+    radial-gradient(closest-side at 62% 34%, rgb(64,60,28) 50%, transparent 100%),
+    radial-gradient(closest-side at 48% 70%, rgb(64,60,28) 45%, transparent 100%);
+  background-size:55% 55%, 48% 48%, 42% 42%; background-repeat:no-repeat;
+  background-position:10% 20%, 70% 10%, 45% 90%;
+  filter:blur(5px); }
+.arbor2-sun-leaf[data-flutter='true']{ animation:arbor2-flutter var(--flutter-ms, 450ms) ease-in-out; }
+@keyframes arbor2-sun-drift{ from{ transform:translate(0, 0); } to{ transform:translate(var(--sun-drift-x, 12px), var(--sun-drift-y, 6px)); } }
+@keyframes arbor2-flutter{ 0%,100%{ opacity:1; transform:rotate(var(--leaf-rot, 0deg)) translate(0, 0); } 35%{ opacity:.55; transform:rotate(var(--leaf-rot, 0deg)) translate(3px, -2px); } 70%{ opacity:.8; transform:rotate(var(--leaf-rot, 0deg)) translate(-2px, 1px); } }
+.arbor2-sun[data-still='true'], .arbor2-sun[data-still='true'] .arbor2-sun-leaf{ animation:none !important; }
+@media (prefers-reduced-motion: reduce){ .arbor2-sun, .arbor2-sun-leaf{ animation:none !important; } }
