@@ -65,6 +65,7 @@ await withHarness(async (app) => {
       const tag = `${th.name} ${w}x${h}`;
       await app.emulateDpr(1, w, h);
       const id = `p10a-${th.id}-${w}`;
+      await app.evalJs('window.__wzTwTrace = []');   // the engine reads this once, at mount: its own account of every step, for a failing A3
       await app.evalJs(`window.wrizoCreateJournalPage(${J({ id, text: 'One line to start.', createdAt: new Date().toISOString(), origin: null, source: 'page' })})`);
       await app.evalJs(`localStorage.setItem('wrizo-mode-page-${id}', 'drafting'); localStorage.setItem('wrizo-typewriter-page-${id}', 'on')`);
       await app.evalJs('window.wrizoFlushNow()'); await sleep(300);
@@ -85,9 +86,10 @@ await withHarness(async (app) => {
       const g2 = { ...(await app.evalJs(PROBE)), settle };
       ok(`${tag} A2: writing on, the writing line is held at the middle (its top at ${g2 && g2.caret != null ? (g2.caret * 100).toFixed(1) : '?'}%, want 50% within one line)`,
         !!g2 && g2.settle.settled && g2.caret != null && Math.abs(g2.caret - 0.5) <= g2.lh / g2.colH + 0.005, J(g2));
+      const twTrace = await app.evalJs("(window.__wzTwTrace || []).filter((t) => t.d !== 'resync' && t.d !== 'fresh' && t.d !== 'wait').map((t) => t.d + (t.from != null ? ':' + t.from + '>' + t.to + '/' + t.maxTop + '@' + t.advance : t.top != null ? ':' + t.top : t.owed != null ? ':' + t.from + '>' + t.target + 'at' + t.at + 'owed' + t.owed : '')).join(' ').slice(0, 1500)");
       const dbgA3 = await app.evalJs("(() => { const sc = document.querySelector('.mode-scroll'); const ed = document.querySelector('.forward-only-editor'); const col = document.querySelector('.mode-pagecol'); return sc ? { scrollTop: Math.round(sc.scrollTop), scrollHeight: sc.scrollHeight, clientHeight: sc.clientHeight, maxTop: sc.scrollHeight - sc.clientHeight, edH: ed ? Math.round(ed.getBoundingClientRect().height) : null, colPad: col ? getComputedStyle(col).paddingBottom : null, edPad: ed ? getComputedStyle(ed).paddingBottom : null } : null; })()");
       ok(`${tag} A3: the band is drawn against the same middle - the writing line at FULL strength (${g2 && g2.alphaAtCaret}), the top fade ending just above it`,
-        !!g2 && g2.alphaAtCaret >= 0.99 && g2.fullFrom != null && g2.fullFrom <= g2.caretRel && g2.caretRel - g2.fullFrom <= 2 * g2.lh / g2.colH, J({ anchor: g2 && g2.anchor, fullFrom: g2 && g2.fullFrom, caret: g2 && g2.caretRel, alpha: g2 && g2.alphaAtCaret, dbgA3 }));
+        !!g2 && g2.alphaAtCaret >= 0.99 && g2.fullFrom != null && g2.fullFrom <= g2.caretRel && g2.caretRel - g2.fullFrom <= 2 * g2.lh / g2.colH, J({ anchor: g2 && g2.anchor, fullFrom: g2 && g2.fullFrom, caret: g2 && g2.caretRel, alpha: g2 && g2.alphaAtCaret, dbgA3, twTrace }));
       if (th.id === 'plateau' && w === 1366) {
         await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'p10a-ma3'; s.textContent = \".mode-pagecol[data-zoom='true']{ --tw-anchor: 70% !important; }\"; document.head.appendChild(s); return true; })()");
         await sleep(300);
