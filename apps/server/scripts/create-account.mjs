@@ -5,9 +5,10 @@
 // never re-implemented). It is the sibling of set-password.mjs (which only changes an existing account) and create-smoke-account.mjs
 // (which draws its own random credentials - this one never does: the OWNER types them).
 //
-// RUN (repo root; build the server first so the hash function exists):
+// RUN (build the server first so the hash function exists; then run FROM THE writer-studio FOLDER - the Railway CLI takes its project from the folder you are
+// in, and a worktree folder resolves to a different product's project):
 //   pnpm --filter @writer-studio/server build
-//   railway run --service Postgres node apps/server/scripts/create-account.mjs [--name "Display name"] [--record-as sample]
+//   cd C:\Users\nickh\writer-studio ; railway run --service Postgres node <path to this file> [--name "Display name"] [--record-as sample]
 // `--service Postgres` hands the script that service's DATABASE_PUBLIC_URL (see set-password.mjs).
 //
 // WHAT IT DOES: asks for the account's email (shown as you type it), then the password TWICE with the typing hidden; refuses a password
@@ -48,6 +49,27 @@ export function recordSampleId(file, id) {
   writeFileSync(file, JSON.stringify({ userId: id, recordedAt: new Date().toISOString() }, null, 2), { flag: 'wx' });
 }
 
+// THE PRE-CHECK, run BEFORE the email is asked (Oct 29: the first live run reached another product's database - 42P01, no users table). The Railway CLI
+// resolves its project from the FOLDER it is run in; a worktree not in its link map walks up to a folder linked to a different product. So: say where we
+// are (project, environment - names only; the database NAME; the host never) and refuse unless the app's users table is there and, when the CLI names
+// the project, it is this app's. Takes any object with .query and an env. Returns { ok, code, lines }; nothing here prints or throws.
+export const EXPECTED_PROJECT = 'writer-studio';
+export async function preflight(db, env = process.env) {
+  const lines = [];
+  const project = env.RAILWAY_PROJECT_NAME || '';
+  if (project) lines.push(`Railway project: ${project} / environment: ${env.RAILWAY_ENVIRONMENT_NAME || '?'}`);
+  if (project && project !== EXPECTED_PROJECT) return { ok: false, code: 'WRONG-PROJECT', lines };
+  let dbName = '?'; let hasUsers = false;
+  try {
+    const { rows } = await db.query(`select current_database() as db, to_regclass('public.users') is not null as has_users`);
+    dbName = String(rows[0].db); hasUsers = !!rows[0].has_users;
+  } catch (err) {
+    return { ok: false, code: `CHECK-FAILED-${err && err.code ? err.code : 'error'}`, lines };
+  }
+  lines.push(`Database: ${dbName} (host hidden) - users table: ${hasUsers ? 'found' : 'MISSING'}`);
+  return { ok: hasUsers, code: hasUsers ? 'OK' : 'NO-USERS-TABLE', lines };
+}
+
 function distHash() {
   const p = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist', 'passwordHash.js');
   if (!existsSync(p)) { console.error('Build the server first: pnpm --filter @writer-studio/server build'); process.exit(2); }
@@ -66,19 +88,24 @@ async function main() {
   const name = (argAfter('--name') || (recordAs === 'sample' ? 'Sample' : '')).trim();
 
   const { hashPassword, MIN_PASSWORD_LENGTH } = distHash();
-  const email = normalizeEmail(await readLine('Account email: ', { hidden: false }));
-  if (!email) { console.error('No email entered.'); process.exit(2); }
-  const pw1 = await readLine('Password (typing is hidden): ', { hidden: true });
-  if (typeof pw1 !== 'string' || pw1.length < MIN_PASSWORD_LENGTH) { console.error(`The password must be at least ${MIN_PASSWORD_LENGTH} characters.`); process.exit(2); }
-  const pw2 = await readLine('Type it again to confirm: ', { hidden: true });
-  if (pw1 !== pw2) { console.error('The two entries did not match. Nothing was changed.'); process.exit(2); }
-  const passHash = await hashPassword(pw1);
-
   const { Pool } = require('pg');
   let loopback = false;
   try { const h = new URL(url).hostname; loopback = h === '127.0.0.1' || h === 'localhost'; } catch { /* leave TLS on */ }
   const pool = new Pool({ connectionString: url, ssl: loopback ? false : { rejectUnauthorized: false }, max: 1 });
   try {
+    // WHERE ARE WE - before a single question is asked
+    const pre = await preflight(pool);
+    for (const line of pre.lines) console.log(line);
+    if (!pre.ok) { console.error(`Stopped (${pre.code}): this is not the app's database. Nothing was changed. Run it from the writer-studio folder (see the RUN note at the top of this file).`); process.exitCode = 1; return; }
+
+    const email = normalizeEmail(await readLine('Account email: ', { hidden: false }));
+    if (!email) { console.error('No email entered.'); process.exit(2); }
+    const pw1 = await readLine('Password (typing is hidden): ', { hidden: true });
+    if (typeof pw1 !== 'string' || pw1.length < MIN_PASSWORD_LENGTH) { console.error(`The password must be at least ${MIN_PASSWORD_LENGTH} characters.`); process.exit(2); }
+    const pw2 = await readLine('Type it again to confirm: ', { hidden: true });
+    if (pw1 !== pw2) { console.error('The two entries did not match. Nothing was changed.'); process.exit(2); }
+    const passHash = await hashPassword(pw1);
+
     const out = await insertAccount(pool, { email, passHash, name: name || null });
     if (out.status === 'created' && recordAs === 'sample') recordSampleId(sampleAccountFile(), out.id);
     console.log(out.status);

@@ -7,6 +7,7 @@
 //       a plain-http non-local address -> refused before a byte is sent
 //   S5  create-account: a new email -> created (+ the id); a taken email (unique violation) -> exists, nothing changed; any other failure is rethrown
 //   S6  the sample id file: written once with the user id ONLY (no email, no password), and a second write is refused
+//   S7  the pre-check (before any question): right project + users table -> OK; no users table / another product's project / a failing check -> refused, no query for the wrong project
 // Mutants (each asserted to have LANDED, through the proof seams): MS1 Everything.md emptied while the pull holds pages - EVERYTHING-EMPTY; MS1b the export throws -
 //   EXPORT-FAILED and no folder; MS2 account-pull.json truncated after the write - READBACK-MISMATCH.
 // Run: node apps/server/scripts/harness/account-tools.mjs   (needs the desktop's node_modules; nothing else)
@@ -105,6 +106,17 @@ try {
   let second = null; try { acct.recordSampleId(idFile, 'u-999'); } catch (e) { second = e.code; }
   ok(`S6 the sample id file holds the user id only (keys: ${Object.keys(rec).sort().join(', ')}), and a second write is refused (${second}) with the first id intact (${JSON.parse(readFileSync(idFile, 'utf8')).userId})`,
     rec.userId === 'u-123' && J(Object.keys(rec).sort()) === J(['recordedAt', 'userId']) && second === 'EEXIST' && JSON.parse(readFileSync(idFile, 'utf8')).userId === 'u-123' && !readFileSync(idFile, 'utf8').includes('@'), '');
+
+  // S7 the pre-check (Oct 29: the first live run reached another product's database)
+  const stubDb = (row, err) => { const calls = []; return { calls, query: async (sql) => { calls.push(sql); if (err) { const e = new Error('x'); e.code = err; throw e; } return { rows: [row] }; } }; };
+  const good = await acct.preflight(stubDb({ db: 'railway', has_users: true }), { RAILWAY_PROJECT_NAME: 'writer-studio', RAILWAY_ENVIRONMENT_NAME: 'production' });
+  const noUsers = await acct.preflight(stubDb({ db: 'railway', has_users: false }), { RAILWAY_PROJECT_NAME: 'writer-studio' });
+  const wrongDb = stubDb({ db: 'railway', has_users: true });
+  const wrong = await acct.preflight(wrongDb, { RAILWAY_PROJECT_NAME: 'fabulous-essence', RAILWAY_ENVIRONMENT_NAME: 'production' });
+  const down = await acct.preflight(stubDb(null, '42501'), {});
+  const bare = await acct.preflight(stubDb({ db: 'wz_test', has_users: true }), {});
+  ok(`S7 pre-check: the app's project + a users table -> ${good.code}, naming the project and the database (${good.lines.join(' | ')}); no users table -> ${noUsers.code}; a different product's project -> ${wrong.code} with NO query sent (${wrongDb.calls.length}); a failing check -> ${down.code}; with no Railway names (the proof's own database) it checks the table alone -> ${bare.code}; no line carries a host`,
+    good.ok && good.code === 'OK' && /writer-studio/.test(good.lines[0]) && /Database: railway \(host hidden\)/.test(good.lines[1]) && !noUsers.ok && noUsers.code === 'NO-USERS-TABLE' && !wrong.ok && wrong.code === 'WRONG-PROJECT' && wrongDb.calls.length === 0 && !down.ok && down.code === 'CHECK-FAILED-42501' && bare.ok && ![...good.lines, ...noUsers.lines, ...wrong.lines].some((l) => /@|:\/\/|\.internal|\.proxy/.test(l)), J({ good: good.lines, wrong: wrong.lines }));
 
   // mutants
   // MS1: the Everything export comes back EMPTY while the pull holds pages - the copy must refuse
