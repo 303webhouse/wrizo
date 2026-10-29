@@ -43,7 +43,7 @@ const READ = `(() => {
     page: rect(document.querySelector('.mode-page')),
     gripL: rect(document.querySelector('.wz-sliver-grip')), gripR: rect(document.querySelector('.wz-tutor-grip')),
     gripLbg: cs('.wz-sliver-grip')?.backgroundColor, gripLcolor: cs('.wz-sliver-grip')?.color, gripRbg: cs('.wz-tutor-grip')?.backgroundColor,
-    tabs: { text: tab('wz-sliver-tab-text'), ink: tab('wz-sliver-tab-ink'), tutor: tab('wz-tutor-tab-tutor'), links: tab('wz-tutor-tab-links') },
+    tabs: { text: tab('wz-sliver-tab-text'), type: tab('wz-sliver-tab-type'), ink: tab('wz-sliver-tab-ink'), tutor: tab('wz-tutor-tab-tutor'), links: tab('wz-tutor-tab-links'), board: tab('wz-tutor-tab-board') },
     dur: rs.getPropertyValue('--drawer-dur').trim(), ease: rs.getPropertyValue('--drawer-ease').trim(),
     pop: pop ? { anim: pop.animationName, shadow: pop.boxShadow } : null, slideShadow: slide ? slide.boxShadow : null,
     popCount: document.querySelectorAll('.wz-cascade-panel').length,
@@ -97,7 +97,11 @@ await withHarness(async (app) => {
     ok(`P1 [${room}] Tools drawer open: the page rect is identical`, sameRect(l.page, off.page), JSON.stringify({ on: l.page, off: off.page }));
     ok(`K2 [${room}] Tools drawer open: the left tab is where it is flag-off`, sameRect(l.gripL, offL.gripL), JSON.stringify({ on: l.gripL, off: offL.gripL }));
     ok(`M2 [${room}] the Tools drawer's leading edge is a 2 px inset --arbor-line rule`, /inset/.test(String(l.slideShadow)) && /2px/.test(String(l.slideShadow)), String(l.slideShadow));
-    if (l.tabs.text) ok(`K1 [${room}] Tools' tabs are cloth: TEXT walnut, INK sea`, l.tabs.text.bg === WALNUT && l.tabs.ink?.bg === SEA, JSON.stringify(l.tabs));
+    // PARKED 2026-10-29 (SUPERSEDED by items 2-3's structural half, Fable's ruling 3: under the flag the Tools tabs are Font · Format · Presets · Ink,
+    // so there is no TEXT tab - and this line's own `if` would have skipped it SILENTLY, a check that can never fail). Original, verbatim:
+    //     if (l.tabs.text) ok(`K1 [${room}] Tools' tabs are cloth: TEXT walnut, INK sea`, l.tabs.text.bg === WALNUT && l.tabs.ink?.bg === SEA, JSON.stringify(l.tabs));
+    // SUCCESSOR K1b: unconditional - on Free Write the Tools tabs are FONT (walnut) and INK (sea), and there is no TEXT tab.
+    ok(`K1b [${room}] Tools' tabs are cloth on Free Write: FONT walnut, INK sea, no TEXT tab`, !l.tabs.text && l.tabs.type?.bg === WALNUT && l.tabs.ink?.bg === SEA, JSON.stringify(l.tabs));
     await snap(app, `item2-${room}-tools-open`);
     await clickSel(app, '.wz-sliver-grip'); await sleep(500);
 
@@ -107,6 +111,7 @@ await withHarness(async (app) => {
     ok(`P1 [${room}] Tutor drawer open: the page rect is identical`, sameRect(r.page, off.page), JSON.stringify(r.page));
     ok(`K2 [${room}] Tutor drawer open: the right tab is where it is flag-off`, sameRect(r.gripR, offR.gripR), JSON.stringify({ on: r.gripR, off: offR.gripR }));
     ok(`K1 [${room}] the Tutor drawer's tabs are cloth: TUTOR sea, GRAFTS oxblood`, r.tabs.tutor?.bg === SEA && r.tabs.links?.bg === OXBLOOD, JSON.stringify(r.tabs));
+    ok(`K1c [${room}] the Tutor drawer's BOARD tab is iron cloth (items 2-3)`, r.tabs.board?.bg === 'rgb(57, 65, 74)', JSON.stringify(r.tabs.board));
     await snap(app, `item3-${room}-tutor-open`);
     await clickSel(app, '.wz-tutor-grip'); await sleep(500);
 
