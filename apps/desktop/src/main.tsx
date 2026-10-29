@@ -34,12 +34,15 @@ import './store/themeFontFaces';
 import './store/fluxThemeFx';
 // DELETE FOR GOOD: window.wrizoDelete + window.wrizoDestructive (store/deleteSeams.ts), registered once at start like the other seams
 import './store/deleteSeams';
+import { isArbor2 } from './arbor2/flag';
 
 // TH1 — apply the theme + preference attributes to <html> before the first
 // render so there is never a themeless/wrong-voice flash.
 initTheme();
 initThemePrefs();
 initThemeCast();
+// ARBOR v2 working mockup: its CSS and switches load ONLY under ?arbor2=1 (src/arbor2/flag.ts). Without the flag nothing is fetched.
+if (isArbor2()) void import('./arbor2/mount');
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
