@@ -16,6 +16,9 @@
 //       --arbor-guide) >= 4.5:1 on --ink-950 / 900 / 800
 //   L1  night: the lamp layer breathes (arbor2-breath, 9 s) and drifts (arbor2-drift, 40 s); reduced motion: no animation (a still frame)
 //   L2  day: the room is the whitewash (--ink-950 #EFE6D2) and the page keeps its paper (#F3EDE1)
+//   L3  (Nick, Oct 29: "I can't see that the lamplight is doing anything") the pool is ON SCREEN: at a margin point beside the page's
+//       top edge, and inside the page's top fade, nothing between the viewer and body paints an opaque ground; the bar and rail keep theirs
+//   N1  (Nick, Oct 29: "Let's keep that in dark mode") night's progress defaults to the hidden rhizome after a fresh load
 //   H1  night + LAMP: the rhizome field is never visible, not even at the goal
 //   H2  night + HIDDEN RHIZOME: invisible while growing; at the goal visible AND brass; after the fade invisible again;
 //       flash budget: data-flash changes <= 3 per second
@@ -110,6 +113,7 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.arbor2-bar')", { label: 'flagged page + bar' });
   const on = await state(app);
   ok('F2 flag ON: data-arbor2 set, the bar is drawn, a room is chosen', on.flag === 'true' && on.bar && (on.room === 'night' || on.room === 'day'), JSON.stringify({ flag: on.flag, bar: on.bar, room: on.room }));
+  ok('N1 night progress defaults to the hidden rhizome after a fresh load (Nick, Oct 29)', on.prog === 'hidden-rhizome', String(on.prog));
 
   // ---- T1: the room follows the existing Page tone
   await app.evalJs("document.documentElement.setAttribute('data-page', 'dark')"); await sleep(100);
@@ -149,7 +153,15 @@ await withHarness(async (app) => {
     }
     if (room === 'night') {
       ok('L1 night: the lamp breathes (arbor2-breath) and drifts (arbor2-drift)', /arbor2-breath/.test(s.lampAnim) && /arbor2-drift/.test(s.lampAnim), s.lampAnim);
-      await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]); await sleep(150);
+      const cover = await app.evalJs(`(() => {
+        const p = document.querySelector('.mode-page').getBoundingClientRect();
+        const opaque = (el) => { const c = getComputedStyle(el).backgroundColor; const a = (c.match(/[\\d.]+/g) || []).map(Number); return (a.length === 3 || (a.length === 4 && a[3] > 0.02)) || getComputedStyle(el).backgroundImage !== 'none'; };
+        const blockers = (x, y) => { const out = []; let el = document.elementFromPoint(x, y); while (el && el !== document.body && el !== document.documentElement) { if (opaque(el)) out.push(String(el.className).slice(0, 50)); el = el.parentElement; } return out; };
+        const bar = document.querySelector('.sprint-nav');
+        return { margin: blockers(Math.max(2, p.left - 60), p.top + 30), bar: bar ? getComputedStyle(bar).backgroundColor : null };
+      })()`);
+      ok('L3 night: the lamp is on screen - nothing opaque covers body beside the page top (the desk host is see-through); the bar keeps its own ground',
+        cover.margin.length === 0 && cover.bar === 'rgb(21, 15, 11)', JSON.stringify(cover));      await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]); await sleep(150);
       const rm = await state(app);
       ok('L1 night, reduced motion: the lamp is a still frame (no animation)', rm.lampAnim === 'none', rm.lampAnim);
       await snap(app, 'item1-night-reduced-motion');
@@ -200,9 +212,9 @@ await withHarness(async (app) => {
   const perSec = Math.max(0, ...log.map(([t]) => log.filter(([u]) => u >= t && u < t + 1000).length - 1));
   ok('H2 flash budget: the web changes state <= 3 times in any second (true -> fading -> false)', perSec <= 3 && log.map((x) => x[1]).join('>').includes('true>fading>false'), JSON.stringify(log));
 
-  // H1: night + lamp
+  // H1: night + lamp (driver fix, assertion unchanged: since Nick's Oct 29 ruling Lamp is no longer the default, so it is picked)
   await seedTo(7);
-  await pickBar(app, 'Night'); await sleep(200);
+  await pickBar(app, 'Night'); await pickBar(app, 'Lamp'); await sleep(200);
   const h1rest = await state(app);
   await crossGoal();
   const h1flash = await state(app);
