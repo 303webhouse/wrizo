@@ -62,6 +62,13 @@ const run = async (over = {}) => {
 };
 const q = async (sql, args = []) => (await pool.query(sql, args)).rows;
 const snapshot = async (uid) => JSON.stringify(await q(`select id, text, deleted_at, purged_at from journal_entries where user_id = $1 order by id`, [uid]));
+const clearOf = (bx) => {
+  const tops = bx.filter((x) => x.kind === 'text' && !x.parentId); const ch = bx.filter((x) => x.parentId);
+  const bottom = Math.max(...tops.map((x) => x.y + x.h));
+  const xs = new Set(tops.map((x) => x.x));
+  const apart = ch.every((c, i) => ch.every((d, j) => i === j || c.x + c.w <= d.x + 1e-9 || d.x + d.w <= c.x + 1e-9 || c.y + c.h <= d.y + 1e-9 || d.y + d.h <= c.y + 1e-9));
+  return ch.every((c) => c.y > bottom && xs.has(c.x)) && apart;
+};
 const wordCount = (t) => { const m = String(t ?? '').trim().match(/\S+/g); return m ? m.length : 0; };
 
 try {
@@ -125,6 +132,19 @@ try {
   ok(`S4f two Screenplay pages (${scripts_.map((s) => (s.script?.scenes || []).length).join(' + ')} scenes), each with its text shadow; templates: ${['title', 'outline', 'bibliography'].map((t) => `${t} ${pages.filter((p) => p.page_settings?.template === t).length}`).join(', ')}`,
     scripts_.length === 2 && scripts_.every((s) => (s.script?.scenes || []).length > 0 && s.text.length > 200)
     && pages.filter((p) => p.page_settings?.template === 'title').length === 2 && pages.filter((p) => p.page_settings?.template === 'outline').length === 2 && pages.filter((p) => p.page_settings?.template === 'bibliography').length === 1);
+  ok('S4m child cards sit in clear space: every child is BELOW every top-level card of its board (stored rects), on the deck\'s own columns, and no two children overlap',
+    kids.length === 7 && boards.every((b) => clearOf(b.boxes || [])));
+  {
+    // M4 (mutant): the old addChildren stacking (a child just under and right of its parent) is NOT clear space - the predicate must reject it
+    const three = JSON.parse(JSON.stringify((byTitle('Three-Act') || { boxes: [] }).boxes));
+    const parent = three.find((x) => x.deckStep?.step === 'midpoint');
+    const child = three.find((x) => x.parentId === parent?.id);
+    if (child) { child.x = parent.x + 0.03; child.y = parent.y + parent.h + 0.02; }
+    ok('M4 (mutant) the old stacking of a child under its parent is rejected by the clear-space check (LANDED: the child was moved back onto its parent\'s neighbours)', !!child && child.y < parent.y + 0.2 && !clearOf(three));
+  }
+  const lowWater = scripts_.map((s) => ({ first: s.script.scenes[0]?.heading?.text || '', title: s.text.split('\n')[0], opensOnScene: s.script.scenes[0]?.heading?.t === 'scene', fade: s.text.includes('FADE IN') }));
+  ok(`S4n the Screenplay pages open on their first scene heading (${lowWater.map((l) => JSON.stringify(l.first.slice(0, 22))).join(', ')}), carry no "FADE IN:", and are titled by their first line (${lowWater.map((l) => JSON.stringify(l.title)).join(', ')})`,
+    lowWater.length === 2 && lowWater.every((l) => /^(INT|EXT)\./.test(l.first) && l.opensOnScene && !l.fade) && lowWater.map((l) => l.title).sort().join('|') === 'LOW WATER|LOW WATER — sequence two');
   const research = pages.filter((p) => p.page_settings?.kind === 'research');
   ok(`S4g Research-kind pages ${research.length}; Chicago style guide on ${research.filter((p) => p.page_settings?.styleGuide === 'chicago').length}; imported stamps ${pages.filter((p) => p.imported_at).length}; starred ${pages.filter((p) => p.starred).length}`,
     research.length >= 7 && research.filter((p) => p.page_settings?.styleGuide === 'chicago').length === 4 && pages.filter((p) => p.imported_at).length === 2 && pages.filter((p) => p.starred).length === 1);

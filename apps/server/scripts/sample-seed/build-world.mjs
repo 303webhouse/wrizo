@@ -148,6 +148,14 @@ export async function buildWorld(md, opts = {}) {
         const q = word ? app.deskTerm(`kidQ_${word}`) : '';
         const made = app.addChildren(boxes, parent.id, childTable.rows.length, { title: word || 'Scene', question: q, newId });
         boxes = made.boxes;
+        // CLEAR SPACE (Fable, Oct 29): addChildren stacks the children over the parent's neighbours; a card must never cover another. They go in a row BELOW the whole grid, one column per
+        // child, on the deck's own column x-positions. The clearance (0.17 of the page width) is generous because a card draws taller than its stored height once it carries a graft chip.
+        {
+          const tops = boxes.filter((b) => b.kind === 'text' && !b.parentId);
+          const xs = [...new Set(tops.map((b) => b.x))].sort((a, b) => a - b);
+          const bottom = Math.max(...tops.map((b) => b.y + b.h));
+          made.added.forEach((c, i) => { c.x = xs[i % xs.length]; c.y = bottom + 0.17 + Math.floor(i / xs.length) * (parent.h + 0.02); });
+        }
         made.added.forEach((c, i) => { const r = childTable.rows[i]; c.text = `${r.title}\n${r.text}`; world.cards.set(`${boardTitle}::${norm(r.title)}`, { boardKey: boardTitle, boxId: c.id }); });
         report.rows.childCards = (report.rows.childCards ?? 0) + made.added.length;
       }
@@ -239,6 +247,8 @@ export async function buildWorld(md, opts = {}) {
     while (i < L.length) {
       const l = L[i];
       if (!l.trim()) { i++; continue; }
+      // the opening "FADE IN:" is dropped (Fable, Oct 29): a script opens on its first scene heading, so the app does not have to make an empty one above a leading transition
+      if (els.length === 0 && /^FADE IN:?$/.test(l.trim())) { i++; continue; }
       if (isScene(l)) { els.push(app.newElement('scene', l)); i++; continue; }
       if (isTrans(l)) { els.push(app.newElement('transition', l)); i++; continue; }
       if (isCue(l) && i + 1 < L.length && L[i + 1].trim()) {
@@ -259,6 +269,9 @@ export async function buildWorld(md, opts = {}) {
     const doc = scriptDoc(body);
     const e = mkPage({ key, title, text: '', set: set2, pageType: 'script', createdAt: day(`2026-10-${String(2 + k).padStart(2, '0')}`, 9) });
     app.saveScriptDoc(e.id, doc);
+    // the page is TITLED by its text's first line, and a script's text is the shadow of its scenes: the title goes in front of the shadow (the page still opens on the first scene heading)
+    const saved = app.getJournalEntryIncludingDeleted(e.id);
+    app.saveJournalEntry({ ...saved, text: `${title}\n\n${saved.text}` });
     return { e, doc };
   };
   const mkTitlePage = (key, set, body, createdAt, fields) => {
