@@ -30,7 +30,11 @@ import { useLocation } from 'react-router-dom';
 type Undo = { line: string; run: () => void } | null;
 const titleOf = (text: string | undefined): string => (withoutFontMarks(text ?? '').trim().split('\n')[0] ?? '').trim().slice(0, 60) || 'Untitled';
 
-export function ConnectionsDrawerPanel() {
+// ARBOR v2 MOCKUP (?arbor2=1, Arbor only): `only` shows ONE VIEW of this pane under the Tutor drawer's cloth tabs. 'board' = the board parts
+// (Place this..., the paired page, the plan board, the Boards group); 'grafts' = the rest (Cards, Sources, Pages, shared tags). Both keep
+// "+ Graft..." (the same picker). Undefined (every caller off the flag) = the whole pane, byte-for-byte today's. A filter on what is drawn:
+// no new behaviour, no new state.
+export function ConnectionsDrawerPanel({ only }: { only?: 'board' | 'grafts' } = {}) {
   const { t } = useDeskLexicon();
   const snap = useBoardSnapshot();
   const location = useLocation();
@@ -116,13 +120,13 @@ export function ConnectionsDrawerPanel() {
         onClick={() => { setPlaceOpen(false); setPickerOpen((o) => !o); }}>
         <span aria-hidden="true">+</span> {t('graftAdd')}
       </button>
-      {canPlace && (
+      {canPlace && only !== 'grafts' && (
         <button ref={placeRef} type="button" className="wz-graft-add" data-graft-place-this="" aria-expanded={placeOpen ? 'true' : 'false'}
           onClick={() => { setPickerOpen(false); setPlaceOpen((o) => !o); }}>
           {t('graftPlaceThis')}
         </button>
       )}
-      {paired && (
+      {paired && only !== 'grafts' && (
         <div className="wz-graft-paired" data-graft-paired="" data-graft-entry={paired.entryId}>
           <span className="wz-links-thumb wz-links-thumb--page" aria-hidden="true" />
           <span className="wz-graft-from">{t('graftPairedPage')}</span>
@@ -132,7 +136,7 @@ export function ConnectionsDrawerPanel() {
       {hasConnected && (
         <div className="wz-graft-connected" data-graft-connected="">{t('graftConnectedTo')} <b>{subjectTitle}</b></div>
       )}
-      {plan && (
+      {plan && only !== 'grafts' && (
         <div className="wz-graft-plan-group">
           <button type="button" className="wz-graft-plan" data-graft-plan="" aria-expanded={planOpen ? 'true' : 'false'} onClick={() => setPlanOpen((o) => !o)}>
             <span className="wz-graft-chev" aria-hidden="true" />
@@ -152,7 +156,7 @@ export function ConnectionsDrawerPanel() {
           )}
         </div>
       )}
-      {g && groups.map(([key, label]) => g[key].length > 0 && (
+      {g && groups.map(([key, label]) => g[key].length > 0 && (only == null || (only === 'board') === (key === 'Boards')) && (
         <div key={key} className="wz-graft-group" data-graft-group={key}>
           <div className="wz-graft-gh">{label}</div>
           <ul className="wz-links-list" data-links-list="">
@@ -173,7 +177,7 @@ export function ConnectionsDrawerPanel() {
           </ul>
         </div>
       ))}
-      {g && g.sharedTags.length > 0 && (
+      {g && only !== 'board' && g.sharedTags.length > 0 && (
         <div className="wz-graft-group" data-graft-group="SharedTags">
           <div className="wz-graft-gh">{t('graftSharedTags')}</div>
           <ul className="wz-links-list">
