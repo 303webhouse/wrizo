@@ -1,0 +1,45 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=35 tree=ace052b6 bundle=index-Cxvl7CYX.js/943093b out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/95b8fdee-36bf-4020-8d56-59646ce8944f/scratchpad/pair10b-default
+(node:53256) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[01/35] OK        exit=0   37s ab3.mjs :: ROWS-SHADOW VERIFY: PASS (63 renders checked, shadow == DOM on every one) ;; AB3 VERIFY: PASS (24 checks)
+[02/35] OK        exit=0   22s b3.mjs :: B3 VERIFY: PASS (70 checks)
+[03/35] OK        exit=0    1s box-tombstones.mjs :: BOX-TOMBSTONES VERIFY: PASS (32 checks)
+[04/35] OK        exit=0    0s cascade-motion-source.mjs :: CASCADE-MOTION-SOURCE VERIFY: PASS (13 checks)
+[05/35] OK        exit=0   17s cascade-motion.mjs :: CASCADE-MOTION VERIFY: PASS (15 checks)
+[06/35] OK        exit=0   39s cd2.mjs :: ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one) ;; CD2 VERIFY: PASS (53 checks)
+[07/35] OK        exit=0  121s flux-v2.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FLUX-V2 VERIFY: PASS (156 checks)
+[08/35] OK        exit=0   75s font-span.mjs :: ROWS-SHADOW VERIFY: PASS (32 renders checked, shadow == DOM on every one) ;; FONT-SPAN VERIFY: PASS (38 checks)
+[09/35] OK        exit=0   35s fx7.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FX7 VERIFY (partial): PASS (43 checks)
+[10/35] OK        exit=0   72s guided-add-scenes-part2.mjs :: GUIDED-ADD-SCENES PART 2 VERIFY: PASS (78 checks)
+[11/35] OK        exit=0    2s guided-add-scenes.mjs :: GUIDED-ADD-SCENES VERIFY: PASS (74 checks)
+[12/35] OK        exit=0   14s guided-w1.mjs :: PARKED (never run, original kept verbatim in the source): Y3 - SUPERSEDED Oct 25 (Nick): the caret lands in the card on opening / stepping; successors Y4 Y5 Y6 | D3 - SUPERSEDED Oct 26 (Nick, W5 Lit): a lit mark is brass at rest (the writer's own act); successor D14 ;; GUIDED-W1 VERIFY: PASS (115 checks)
+[13/35] OK        exit=0   33s help-buttons.mjs :: ROWS-SHADOW VERIFY: PASS (7 renders checked, shadow == DOM on every one) ;; HELP-BUTTONS VERIFY: PASS (24 checks)
+[14/35] OK        exit=0   10s installed-fonts-dom.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; INSTALLED-FONTS-DOM VERIFY: PASS (5 checks)
+[15/35] OK        exit=0    1s installed-fonts.mjs :: INSTALLED-FONTS VERIFY: PASS (27 checks)
+[16/35] OK        exit=0   41s item121.mjs :: ROWS-SHADOW VERIFY: PASS (8 renders checked, shadow == DOM on every one) ;; ITEM121 VERIFY: PASS (44 checks)
+[17/35] OK        exit=0  102s item126.mjs :: ROWS-SHADOW VERIFY: PASS (94 renders checked, shadow == DOM on every one) ;; ITEM126 VERIFY: PASS (42 checks)
+[18/35] OK        exit=0    4s item207-core.mjs :: ITEM207-CORE VERIFY: PASS (58 checks)
+[19/35] OK        exit=0   47s item207.mjs :: ROWS-SHADOW VERIFY: PASS (8 renders checked, shadow == DOM on every one) ;; ITEM207 VERIFY: PASS (47 checks)
+[20/35] OK        exit=0  219s item211.mjs :: ROWS-SHADOW VERIFY: PASS (104 renders checked, shadow == DOM on every one) ;; ITEM211 VERIFY: PASS (78 checks)
+[21/35] OK        exit=0   29s machina-step.mjs :: MACHINA-STEP VERIFY: PASS (56 checks)
+[22/35] OK        exit=0  240s page-size.mjs :: ROWS-SHADOW VERIFY: PASS (83 renders checked, shadow == DOM on every one) ;; PAGE-SIZE VERIFY: PASS (335 checks)
+[23/35] OK        exit=0   60s polish10-ground.mjs :: ROWS-SHADOW VERIFY: PASS (12 renders checked, shadow == DOM on every one) ;; POLISH10-GROUND VERIFY: PASS (18 checks)
+[24/35] OK        exit=0   55s polish10-hint.mjs :: POLISH10-HINT VERIFY: PASS (26 checks)
+[25/35] OK        exit=0  102s polish10-recede.mjs :: ROWS-SHADOW VERIFY: PASS (107 renders checked, shadow == DOM on every one) ;; POLISH10-RECEDE VERIFY: PASS (29 checks)
+[26/35] OK        exit=0   25s polish10-scrollbar.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; POLISH10-SCROLLBAR VERIFY: PASS (25 checks)
+[27/35] FAIL      exit=1   28s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: FAIL - 2/14 failed
+[28/35] OK        exit=0    1s th-machina-source.mjs :: TH-MACHINA-SOURCE VERIFY: PASS (94 checks)
+[29/35] OK        exit=0   65s th-machina.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; TH-MACHINA VERIFY: PASS (42 checks)
+[30/35] OK        exit=0    6s th1.mjs :: TH1 VERIFY: PASS (27 checks)
+[31/35] OK        exit=0   34s th2.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; TH2 VERIFY: PASS (46 checks)
+[32/35] OK        exit=0    0s theme-fonts-source.mjs :: THEME-FONTS-SOURCE VERIFY: PASS (19 checks)
+[33/35] OK        exit=0   54s tu2.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; TU2 VERIFY: PASS (92 checks)
+[34/35] OK        exit=0   40s tu5.mjs :: TU5 VERIFY: PASS (84 checks)
+[35/35] OK        exit=0   28s typing-latency-scroll.mjs :: ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one) ;; TYPING-LATENCY-SCROLL VERIFY: PASS (10 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 34/35 of 35 returned a passing verdict
+  FAIL: rhizome-latency.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\95b8fdee-36bf-4020-8d56-59646ce8944f\scratchpad\pair10b-default\rhizome-latency.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=ace052b6 bundle=index-Cxvl7CYX.js/943093b

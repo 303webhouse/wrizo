@@ -1,0 +1,9 @@
+bisect start 22:21:02Z
+p1 8f62c7d5 start 22:21:22Z tree=8f62c7d5
+p1 exit=0 22:36:29Z
+p2 2a5928cf start 22:36:44Z tree=2a5928cf
+p2 exit=1 22:58:41Z
+p3 50d392af start 22:58:56Z tree=50d392af
+p3 exit=1 23:20:55Z
+released
+released 23:20:55Z

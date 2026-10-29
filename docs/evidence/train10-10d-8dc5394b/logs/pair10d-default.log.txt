@@ -1,0 +1,15 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=5 tree=8dc5394b bundle=index-Cxvl7CYX.js/943093b out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/95b8fdee-36bf-4020-8d56-59646ce8944f/scratchpad/pair10d-default
+(node:9724) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[01/5] OK        exit=0   36s ab3.mjs :: ROWS-SHADOW VERIFY: PASS (63 renders checked, shadow == DOM on every one) ;; AB3 VERIFY: PASS (24 checks)
+[02/5] OK        exit=0   36s cd2.mjs :: ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one) ;; CD2 VERIFY: PASS (53 checks)
+[03/5] OK        exit=0  219s item211.mjs :: ROWS-SHADOW VERIFY: PASS (104 renders checked, shadow == DOM on every one) ;; ITEM211 VERIFY: PASS (78 checks)
+[04/5] OK        exit=0  102s polish10-recede.mjs :: ROWS-SHADOW VERIFY: PASS (107 renders checked, shadow == DOM on every one) ;; POLISH10-RECEDE VERIFY: PASS (29 checks)
+[05/5] FAIL      exit=1   34s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: FAIL - 2/14 failed
+
+SUITE DONE HARNESS_PARKED=unset — 4/5 of 5 returned a passing verdict
+  FAIL: rhizome-latency.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\95b8fdee-36bf-4020-8d56-59646ce8944f\scratchpad\pair10d-default\rhizome-latency.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=8dc5394b bundle=index-Cxvl7CYX.js/943093b

@@ -1,0 +1,6 @@
+default start 18:02:33Z
+default exit=1 19:59:55Z
+parked start 19:59:55Z
+parked exit=1 21:59:45Z
+released
+released 21:59:45Z

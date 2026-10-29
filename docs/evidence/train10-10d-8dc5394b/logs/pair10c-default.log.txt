@@ -1,0 +1,13 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=4 tree=5f51e97f bundle=index-Cxvl7CYX.js/943093b out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/95b8fdee-36bf-4020-8d56-59646ce8944f/scratchpad/pair10c-default
+(node:20812) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[01/4] OK        exit=0   37s ab3.mjs :: ROWS-SHADOW VERIFY: PASS (63 renders checked, shadow == DOM on every one) ;; AB3 VERIFY: PASS (24 checks)
+[02/4] OK        exit=0  220s item211.mjs :: ROWS-SHADOW VERIFY: PASS (104 renders checked, shadow == DOM on every one) ;; ITEM211 VERIFY: PASS (78 checks)
+[03/4] OK        exit=0  102s polish10-recede.mjs :: ROWS-SHADOW VERIFY: PASS (107 renders checked, shadow == DOM on every one) ;; POLISH10-RECEDE VERIFY: PASS (29 checks)
+[04/4] OK        exit=0   34s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (14 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 4/4 of 4 returned a passing verdict
+SUITE RESULT: CLEAN — tree=5f51e97f bundle=index-Cxvl7CYX.js/943093b

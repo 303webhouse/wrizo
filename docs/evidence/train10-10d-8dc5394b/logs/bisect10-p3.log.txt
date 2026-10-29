@@ -1,0 +1,46 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=21 tree=50d392af bundle=index-COpcv8PH.js/940940b out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/95b8fdee-36bf-4020-8d56-59646ce8944f/scratchpad/bisect10-p3
+(node:37852) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[01/21] OK        exit=0   36s ab3.mjs :: ROWS-SHADOW VERIFY: PASS (63 renders checked, shadow == DOM on every one) ;; AB3 VERIFY: PASS (24 checks)
+[02/21] NOVERDICT exit=1   12s b3.mjs :: (no verdict — see C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\95b8fdee-36bf-4020-8d56-59646ce8944f\scratchpad\bisect10-p3\b3.mjs.default.txt)
+[03/21] FAIL      exit=1   36s cd2.mjs :: ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one) ;; CD2 VERIFY: FAIL — 1/52 failed
+[04/21] FAIL      exit=1   15s guided-w1.mjs :: PARKED (never run, original kept verbatim in the source): Y3 - SUPERSEDED Oct 25 (Nick): the caret lands in the card on opening / stepping; successors Y4 Y5 Y6 | D3 - SUPERSEDED Oct 26 (Nick, W5 Lit): a lit mark is brass at rest (the writer's own act); successor D14 ;; GUIDED-W1 VERIFY: FAIL - 1/115 failed
+[05/21] OK        exit=0   42s item121.mjs :: ROWS-SHADOW VERIFY: PASS (8 renders checked, shadow == DOM on every one) ;; ITEM121 VERIFY: PASS (44 checks)
+[06/21] FAIL      exit=1  103s item126.mjs :: ROWS-SHADOW VERIFY: PASS (94 renders checked, shadow == DOM on every one) ;; ITEM126 VERIFY: FAIL — 6/42 failed
+[07/21] OK        exit=0    4s item207-core.mjs :: ITEM207-CORE VERIFY: PASS (58 checks)
+[08/21] FAIL      exit=1  218s item211.mjs :: ROWS-SHADOW VERIFY: PASS (104 renders checked, shadow == DOM on every one) ;; ITEM211 VERIFY: FAIL — 1/78 failed
+[09/21] OK        exit=0   29s machina-step.mjs :: MACHINA-STEP VERIFY: PASS (56 checks)
+[10/21] OK        exit=0  241s page-size.mjs :: ROWS-SHADOW VERIFY: PASS (83 renders checked, shadow == DOM on every one) ;; PAGE-SIZE VERIFY: PASS (335 checks)
+[11/21] FAIL      exit=1   60s polish10-anchor.mjs :: ROWS-SHADOW VERIFY: PASS (3168 renders checked, shadow == DOM on every one) ;; POLISH10-ANCHOR VERIFY: FAIL - 2/14 failed
+[12/21] FAIL      exit=1   22s polish10-caret.mjs :: ROWS-SHADOW VERIFY: PASS (15 renders checked, shadow == DOM on every one) ;; POLISH10-CARET VERIFY: FAIL - 5/22 failed
+[13/21] FAIL      exit=1   59s polish10-ground.mjs :: ROWS-SHADOW VERIFY: PASS (12 renders checked, shadow == DOM on every one) ;; POLISH10-GROUND VERIFY: FAIL - 3/18 failed
+[14/21] FAIL      exit=1   50s polish10-hint.mjs :: POLISH10-HINT VERIFY: FAIL - 9/26 failed
+[15/21] FAIL      exit=1   39s polish10-page.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; POLISH10-PAGE VERIFY: FAIL - 5/20 failed
+[16/21] FAIL      exit=1  102s polish10-recede.mjs :: ROWS-SHADOW VERIFY: PASS (107 renders checked, shadow == DOM on every one) ;; POLISH10-RECEDE VERIFY: FAIL - 1/29 failed
+[17/21] FAIL      exit=1    4s polish10-size-core.mjs :: POLISH10-SIZE-CORE VERIFY: FAIL - 3/49 failed
+[18/21] FAIL      exit=1  102s polish10-size.mjs :: ROWS-SHADOW VERIFY: PASS (18 renders checked, shadow == DOM on every one) ;; POLISH10-SIZE VERIFY: FAIL - 6/31 failed
+[19/21] FAIL      exit=1   34s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: FAIL - 1/14 failed
+[20/21] FAIL      exit=1   53s tu2.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; TU2 VERIFY: FAIL — 1/92 failed
+[21/21] FAIL      exit=1   39s tu5.mjs :: TU5 VERIFY: FAIL — 1/84 failed
+
+SUITE DONE HARNESS_PARKED=unset — 5/21 of 21 returned a passing verdict
+  NOVERDICT: b3.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\95b8fdee-36bf-4020-8d56-59646ce8944f\scratchpad\bisect10-p3\b3.mjs.default.txt
+  FAIL: cd2.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\95b8fdee-36bf-4020-8d56-59646ce8944f\scratchpad\bisect10-p3\cd2.mjs.default.txt
+  FAIL: guided-w1.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\95b8fdee-36bf-4020-8d56-59646ce8944f\scratchpad\bisect10-p3\guided-w1.mjs.default.txt
+  FAIL: item126.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\95b8fdee-36bf-4020-8d56-59646ce8944f\scratchpad\bisect10-p3\item126.mjs.default.txt
+  FAIL: item211.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\95b8fdee-36bf-4020-8d56-59646ce8944f\scratchpad\bisect10-p3\item211.mjs.default.txt
+  FAIL: polish10-anchor.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\95b8fdee-36bf-4020-8d56-59646ce8944f\scratchpad\bisect10-p3\polish10-anchor.mjs.default.txt
+  FAIL: polish10-caret.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\95b8fdee-36bf-4020-8d56-59646ce8944f\scratchpad\bisect10-p3\polish10-caret.mjs.default.txt
+  FAIL: polish10-ground.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\95b8fdee-36bf-4020-8d56-59646ce8944f\scratchpad\bisect10-p3\polish10-ground.mjs.default.txt
+  FAIL: polish10-hint.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\95b8fdee-36bf-4020-8d56-59646ce8944f\scratchpad\bisect10-p3\polish10-hint.mjs.default.txt
+  FAIL: polish10-page.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\95b8fdee-36bf-4020-8d56-59646ce8944f\scratchpad\bisect10-p3\polish10-page.mjs.default.txt
+  FAIL: polish10-recede.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\95b8fdee-36bf-4020-8d56-59646ce8944f\scratchpad\bisect10-p3\polish10-recede.mjs.default.txt
+  FAIL: polish10-size-core.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\95b8fdee-36bf-4020-8d56-59646ce8944f\scratchpad\bisect10-p3\polish10-size-core.mjs.default.txt
+  FAIL: polish10-size.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\95b8fdee-36bf-4020-8d56-59646ce8944f\scratchpad\bisect10-p3\polish10-size.mjs.default.txt
+  FAIL: rhizome-latency.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\95b8fdee-36bf-4020-8d56-59646ce8944f\scratchpad\bisect10-p3\rhizome-latency.mjs.default.txt
+  FAIL: tu2.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\95b8fdee-36bf-4020-8d56-59646ce8944f\scratchpad\bisect10-p3\tu2.mjs.default.txt
+  FAIL: tu5.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\95b8fdee-36bf-4020-8d56-59646ce8944f\scratchpad\bisect10-p3\tu5.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=50d392af bundle=index-COpcv8PH.js/940940b

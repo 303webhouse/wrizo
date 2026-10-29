@@ -1,0 +1,12 @@
+start 01:40:53Z
+ab3 parked on main db8dcc00: RED 01:42:35Z
+rhizome-latency main run 1: RED 01:43:15Z
+rhizome-latency 10b run 1: RED 01:43:56Z
+rhizome-latency main run 2: RED 01:44:36Z
+rhizome-latency 10b run 2: RED 01:45:11Z
+rhizome-latency main run 3: RED 01:45:52Z
+rhizome-latency 10b run 3: RED 01:46:33Z
+rhizome-latency green: main 0/3, 10b 0/3 01:46:33Z
+not a real regression by the rule (known flake, ticket 150) 01:46:33Z
+released
+released 01:46:33Z

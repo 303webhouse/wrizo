@@ -1,0 +1,27 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: LIVE RUN PRESENT — BOX IS THEIRS. 1 foreign run(s); NOTHING is reaped, whatever any owner or age reads.
+  live pid=33348 "C:\Program Files\nodejs\node.exe" scripts/harness/item207-core.mjs
+  This is the gate in front of both licences: a pathological file keeps its suite alive, so
+  its browsers are never reapable however old they look. It is the box-free test every
+  lane already runs by hand before taking the box, made canonical inside the runner.
+REAPER: survivors=0 (untouched) in 1682ms
+SUITE START HARNESS_PARKED=unset files=13 tree=8f62c7d5 bundle=index-rF7j6nOF.js/926927b out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/95b8fdee-36bf-4020-8d56-59646ce8944f/scratchpad/bisect10-p1
+(node:42840) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[01/13] OK        exit=0   39s ab3.mjs :: ROWS-SHADOW VERIFY: PASS (63 renders checked, shadow == DOM on every one) ;; AB3 VERIFY: PASS (24 checks)
+[02/13] OK        exit=0   23s b3.mjs :: B3 VERIFY: PASS (70 checks)
+[03/13] OK        exit=0   38s cd2.mjs :: ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one) ;; CD2 VERIFY: PASS (51 checks)
+[04/13] OK        exit=0   16s guided-w1.mjs :: PARKED (never run, original kept verbatim in the source): Y3 - SUPERSEDED Oct 25 (Nick): the caret lands in the card on opening / stepping; successors Y4 Y5 Y6 | D3 - SUPERSEDED Oct 26 (Nick, W5 Lit): a lit mark is brass at rest (the writer's own act); successor D14 ;; GUIDED-W1 VERIFY: PASS (115 checks)
+[05/13] OK        exit=0   44s item121.mjs :: ROWS-SHADOW VERIFY: PASS (8 renders checked, shadow == DOM on every one) ;; ITEM121 VERIFY: PASS (44 checks)
+[06/13] OK        exit=0  103s item126.mjs :: ROWS-SHADOW VERIFY: PASS (94 renders checked, shadow == DOM on every one) ;; ITEM126 VERIFY: PASS (42 checks)
+[07/13] OK        exit=0    5s item207-core.mjs :: ITEM207-CORE VERIFY: PASS (48 checks)
+[08/13] OK        exit=0  219s item211.mjs :: ROWS-SHADOW VERIFY: PASS (104 renders checked, shadow == DOM on every one) ;; ITEM211 VERIFY: PASS (78 checks)
+[09/13] OK        exit=0   29s machina-step.mjs :: MACHINA-STEP VERIFY: PASS (56 checks)
+[10/13] OK        exit=0  245s page-size.mjs :: ROWS-SHADOW VERIFY: PASS (83 renders checked, shadow == DOM on every one) ;; PAGE-SIZE VERIFY: PASS (335 checks)
+[11/13] OK        exit=0   35s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (14 checks)
+[12/13] OK        exit=0   54s tu2.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; TU2 VERIFY: PASS (92 checks)
+[13/13] OK        exit=0   39s tu5.mjs :: TU5 VERIFY: PASS (84 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 13/13 of 13 returned a passing verdict
+SUITE RESULT: CLEAN — tree=8f62c7d5 bundle=index-rF7j6nOF.js/926927b

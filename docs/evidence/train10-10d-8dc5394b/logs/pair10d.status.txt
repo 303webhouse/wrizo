@@ -1,0 +1,5 @@
+taken 03:01:02Z
+default exit=1 03:08:18Z
+parked exit=0 03:16:03Z
+released
+released 03:16:03Z
