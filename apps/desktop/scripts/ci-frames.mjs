@@ -92,11 +92,13 @@ if (WIDTHS.some((w) => !HEIGHT[w])) { console.error(`CI-FRAMES: widths must be 1
 const freshDesk = async (app, theme, tone, w) => {
   await app.emulateDpr(1, w, HEIGHT[w]);
   await app.goto('/');
-  await app.evalJs(`localStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1');
+  await app.evalJs(`localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-splash-hold','50'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4');
     localStorage.setItem('wrizo-theme-prefs', ${JSON.stringify(JSON.stringify({ voice: 'serif', page: tone, fade: 'on' }))});
     localStorage.setItem('wrizo-theme', ${JSON.stringify(theme)});`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
+  // the opening splash plays on every load; the 50 ms hold override above is the harness's test speed, and a frame is only taken once it is GONE
+  await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 });
 };
 
 const rows = [];
@@ -110,6 +112,8 @@ await withHarness(async (app) => {
     try {
       await freshDesk(app, theme, tone, w);
       await ALL[name](app, { theme, tone, width: w });
+      // a frame of the opening splash is not a frame of the screen: refuse it rather than ship it
+      if (await app.evalJs("!!document.querySelector('.wz-splash')")) throw new Error('the opening splash is still on screen');
       writeFileSync(path.join(OUT, file), Buffer.from(await app.screenshot(), 'base64'));
       row.status = 'ok';
       row.md5 = md5(path.join(OUT, file));
