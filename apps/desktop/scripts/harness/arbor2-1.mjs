@@ -50,7 +50,7 @@ const setFlag = async (app, on) => {
   await app.reload();
   await sleep(250);
   // read while the splash is still up (it holds for seconds after a reload): the splash's own ground and the room it sits in
-  const splash = await app.evalJs("(() => { const s = document.querySelector('.wz-splash'); return s ? { bg: getComputedStyle(s).backgroundColor, room: document.documentElement.getAttribute('data-arbor2-room') } : null; })()");
+  const splash = await app.evalJs("(() => { const s = document.querySelector('.wz-splash'); const v = document.querySelector('.wz-splash-veil'); return s ? { bg: getComputedStyle(s).backgroundColor, veilBg: v ? getComputedStyle(v).backgroundColor : null, room: document.documentElement.getAttribute('data-arbor2-room') } : null; })()");
   await splashGone(app);
   await sleep(300);
   return splash;
@@ -120,10 +120,21 @@ await withHarness(async (app) => {
   // a missing bar is a FAILED CHECK (F2), never a crash: on main the flag does nothing and the run must still report every check red
   await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.arbor2-bar')", { label: 'flagged page + bar' }).catch(() => {});
   const on = await state(app);
-  ok('SP1 the splash is untouched in the day room: its ground stays the night espresso (rgb 10,5,3), not the whitewash',
-    !!splashOn && splashOn.room === 'day' && splashOn.bg === 'rgb(10, 5, 3)', JSON.stringify(splashOn));
+  // PARKED 2026-10-29 (SUPERSEDED, the instrument read the wrong layer): .wz-splash itself is transparent (measured rgba(0,0,0,0) on the
+  // green build); its ground is painted by its child .wz-splash-veil (index.css: background:var(--ink-950)). Original, verbatim:
+  // ok('SP1 the splash is untouched in the day room: its ground stays the night espresso (rgb 10,5,3), not the whitewash',
+  //   !!splashOn && splashOn.room === 'day' && splashOn.bg === 'rgb(10, 5, 3)', JSON.stringify(splashOn));
+  // SUCCESSOR SP1b: the same claim, read from the layer that paints it.
+  ok('SP1b the splash is untouched in the day room: its veil (the layer that paints its ground) stays the night espresso (rgb 10,5,3)',
+    !!splashOn && splashOn.room === 'day' && splashOn.veilBg === 'rgb(10, 5, 3)', JSON.stringify(splashOn));
   ok('F2 flag ON: data-arbor2 set, the bar is drawn, a room is chosen', on.flag === 'true' && on.bar && (on.room === 'night' || on.room === 'day'), JSON.stringify({ flag: on.flag, bar: on.bar, room: on.room }));
-  ok('N1 night progress defaults to the hidden rhizome after a fresh load (Nick, Oct 29)', on.prog === 'hidden-rhizome', String(on.prog));
+  // PARKED 2026-10-29 (SUPERSEDED by Fable's ruling the same day: "One 'Rhizome' style, no new setting" - the mockup's night-progress
+  // switch and its data-arbor2-night-prog attribute are gone, so there is no default to read). Original, verbatim:
+  // ok('N1 night progress defaults to the hidden rhizome after a fresh load (Nick, Oct 29)', on.prog === 'hidden-rhizome', String(on.prog));
+  // SUCCESSOR N1b: there is no progress switch at all (no Lamp / Hidden rhizome option, no attribute); the hidden behaviour is the room's.
+  const progOpts = await app.evalJs("[...document.querySelectorAll('.arbor2-bar-opt')].map((b) => b.textContent.trim())");
+  ok('N1b one Rhizome style, no progress switch: the bar offers only the room, and no night-progress attribute exists (Fable, Oct 29)',
+    on.prog == null && Array.isArray(progOpts) && progOpts.length === 2 && !progOpts.includes('Lamp') && !progOpts.includes('Hidden rhizome'), JSON.stringify({ prog: on.prog, progOpts }));
 
   // ---- T1: the room follows the existing Page tone
   await app.evalJs("document.documentElement.setAttribute('data-page', 'dark')"); await sleep(100);
@@ -212,6 +223,18 @@ await withHarness(async (app) => {
   await crossGoal();
   const h2flash = await state(app);
   ok('H2 at the goal: the whole web shows, in brass', h2flash.field && h2flash.field.vis === 'visible' && h2flash.field.flash === 'true' && nearBrass(h2flash.field.stroke), JSON.stringify(h2flash.field));
+  // H5 (Fable, Oct 29: "keep it off the prose column"): at the flash, the field's paint clip has a hole covering the whole page rect
+  const h5 = await app.evalJs(`(() => {
+    const f = document.querySelector('.wz-rhizome-field'), p = document.querySelector('.mode-page');
+    if (!f || !p) return null;
+    const sr = f.getBoundingClientRect(), pr = p.getBoundingClientRect();
+    const page = { l: pr.left - sr.left, t: pr.top - sr.top, r: pr.right - sr.left, b: pr.bottom - sr.top };
+    const clip = String(f.style.clipPath || '');
+    const holes = [...clip.matchAll(/M(-?[\\d.]+) (-?[\\d.]+)H(-?[\\d.]+)V(-?[\\d.]+)H/g)].slice(1).map((m) => ({ l: +m[1], t: +m[2], r: +m[3], b: +m[4] }));
+    const covered = holes.some((h) => h.l <= page.l + 1 && h.t <= page.t + 1 && h.r >= page.r - 1 && h.b >= Math.min(page.b, sr.height) - 1);
+    return { evenodd: clip.includes('evenodd'), holes: holes.length, covered, page };
+  })()`);
+  ok('H5 off the prose column: at the flash the web\'s paint clip cuts out the whole page (an evenodd hole >= the page rect)', !!h5 && h5.evenodd && h5.covered, JSON.stringify(h5));
   await snap(app, 'item1-night-hidden-rhizome-flash');
   await sleep(1500);
   await snap(app, 'item1-night-hidden-rhizome-fading');
@@ -223,14 +246,34 @@ await withHarness(async (app) => {
   const perSec = Math.max(0, ...log.map(([t]) => log.filter(([u]) => u >= t && u < t + 1000).length - 1));
   ok('H2 flash budget: the web changes state <= 3 times in any second (true -> fading -> false)', perSec <= 3 && log.map((x) => x[1]).join('>').includes('true>fading>false'), JSON.stringify(log));
 
-  // H1: night + lamp (driver fix, assertion unchanged: since Nick's Oct 29 ruling Lamp is no longer the default, so it is picked)
+  // PARKED 2026-10-29 (SUPERSEDED by Fable's ruling: "the lamp is ambience only" - Lamp-as-progress no longer exists, so there is no
+  // lamp mode in which to hide the rhizome). Original, verbatim (driver and assertion):
+  // // H1: night + lamp (driver fix, assertion unchanged: since Nick's Oct 29 ruling Lamp is no longer the default, so it is picked)
+  // await seedTo(7);
+  // await pickBar(app, 'Night'); await pickBar(app, 'Lamp'); await sleep(200);
+  // const h1rest = await state(app);
+  // await crossGoal();
+  // const h1flash = await state(app);
+  // ok('H1 night + lamp: the rhizome is never visible, not even at the goal', h1rest.field?.vis === 'hidden' && h1flash.field?.vis === 'hidden', JSON.stringify({ rest: h1rest.field, flash: h1flash.field }));
+  // await app.waitFor("document.querySelector('.wz-rhizome-field')?.dataset.flash === 'false'", { label: 'flash over', timeout: 6000 }).catch(() => {});
+  // SUCCESSOR H1b (the lamp is ambience only): reaching the goal does not touch the lamp - its animation is the same before and after.
+  // H4 (Fable: "give it a still frame under reduced motion"): under reduced motion the web shows still - no pop animation, no fade:
+  // data-flash goes true -> false, never 'fading' - and it still shows, in brass.
   await seedTo(7);
-  await pickBar(app, 'Night'); await pickBar(app, 'Lamp'); await sleep(200);
-  const h1rest = await state(app);
+  await pickBar(app, 'Night'); await sleep(200);
+  const h1before = await state(app);
+  await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]); await sleep(150);
   await crossGoal();
-  const h1flash = await state(app);
-  ok('H1 night + lamp: the rhizome is never visible, not even at the goal', h1rest.field?.vis === 'hidden' && h1flash.field?.vis === 'hidden', JSON.stringify({ rest: h1rest.field, flash: h1flash.field }));
-  await app.waitFor("document.querySelector('.wz-rhizome-field')?.dataset.flash === 'false'", { label: 'flash over', timeout: 6000 }).catch(() => {});
+  const h4 = await app.evalJs("(() => { const f = document.querySelector('.wz-rhizome-field'); const seg = f && f.querySelector('.wz-rhizome-seg'); return f ? { flash: f.dataset.flash, vis: getComputedStyle(f).visibility, anim: getComputedStyle(f).animationName, stroke: seg ? getComputedStyle(seg).stroke : null } : null; })()");
+  await snap(app, 'item1-night-hidden-rhizome-reduced-motion');
+  await app.waitFor("document.querySelector('.wz-rhizome-field')?.dataset.flash === 'false'", { label: 'flash over (reduced)', timeout: 6000 }).catch(() => {});
+  const log4 = await app.evalJs('window.__fl');
+  await app.emulateMedia([]); await sleep(150);
+  const h1at = await state(app);
+  ok('H1b the lamp is ambience only: reaching the goal leaves the lamp\'s own animation as it was', h1before.lampAnim === h1at.lampAnim && /arbor2-breath/.test(h1at.lampAnim), JSON.stringify({ before: h1before.lampAnim, after: h1at.lampAnim }));
+  ok('H4 reduced motion: a still frame - the web shows in brass with no animation, then cuts (true -> false, never fading)',
+    !!h4 && h4.flash === 'true' && h4.vis === 'visible' && h4.anim === 'none' && nearBrass(h4.stroke) && Array.isArray(log4) && !log4.some((x) => x[1] === 'fading') && log4.map((x) => x[1]).join('>').includes('true>false'),
+    JSON.stringify({ h4, log4 }));
 
   // H3: day
   await seedTo(7);
