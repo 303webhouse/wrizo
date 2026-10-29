@@ -1582,6 +1582,15 @@ a:focus-visible,
   -webkit-user-select: none;
   user-select: none;
 }
+/* POLISH #10 item 2 (Nick, Oct 25) - the hint in each theme's OWN type: Arbor keeps its italic prose serif; Flux and Machina wear their own content face,
+   upright (it was Arbor's italic serif under every theme). And on the framed prose page it stands ON THE PAGE, clear of the text (ForwardOnlyEditor.tsx). */
+:root { --fo-nudge-font: var(--font-prose); --fo-nudge-style: italic; }
+[data-theme='flux'], [data-theme='machina'] { --fo-nudge-font: var(--font-contentLabel); --fo-nudge-style: normal; }
+.fo-nudge { font-family: var(--fo-nudge-font); font-style: var(--fo-nudge-style) !important; }
+.fo-nudge--page {
+  position: absolute; z-index: 3; font-size: 13px; line-height: 20px;
+  color: var(--ink-on-paper-low); pointer-events: none; -webkit-user-select: none; user-select: none;
+}
 
 /* Chrome-fade / Middle Door (CW1). While writing, the surrounding chrome
    recedes; the editor, caret, and ambient warmth never carry this class. The
