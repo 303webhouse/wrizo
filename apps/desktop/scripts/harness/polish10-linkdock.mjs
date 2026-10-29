@@ -118,7 +118,7 @@ await withHarness(async (app) => {
     await sleep(1500);
     const pageNow = await stored(app, P);
     ok(`${tag} K4: copyable into the page - the reader's stretch copies as its plain words ("${copied}") and pasted into the page it lands as those words`,
-      copied === 'Cartographer of the Well' && !!pageNow && pageNow.text.trimEnd().endsWith('Cartographer of the Well'), J({ copied, page: pageNow && pageNow.text.slice(-60) }));
+      copied === 'Cartographer of the Well' && !!pageNow && pageNow.text.trimEnd().endsWith('Cartographer of the Well'), J({ copied, page: pageNow && pageNow.text.slice(-60), whisper: await app.evalJs("(() => { const w = document.querySelector('.vw-whisper'); return w ? [w.textContent, w.getAttribute('data-shown')] : null; })()"), edTail: await app.evalJs("(document.querySelector('.forward-only-editor')?.innerText || '').slice(-50)") }));
     // K5: one at a time. PARKED VERBATIM (Fable, Oct 28): docking the source REPLACES the card - the reader replaces the Grafts list, so a second Dock control never stands
     // beside it; the rule is one item at a time, and a swap is Undock, then Dock. The check below is kept as written and no longer run; its successor follows.
     //   const srcBtn = await pointOf(app, dockBtn(null, S));
@@ -145,6 +145,7 @@ await withHarness(async (app) => {
     await shot(app, `${th.id}-source-docked`);
     // K7: Undock removes the reader and returns the Grafts list
     const cl = await pointOf(app, "document.querySelector('.wz-link-dock-close')"); if (cl) { await click(app, cl.x, cl.y); await sleep(600); }
+    { const lt7 = await pointOf(app, "document.querySelector('#wz-tutor-tab-links')"); if (lt7 && !(await app.evalJs("!!document.querySelector('.wz-graft-row')"))) { await click(app, lt7.x, lt7.y); await sleep(500); } }   // a reload (K6) resets the panel to its Tutor tab: the Grafts list is on its own tab again
     ok(`${tag} K7: the reader's Undock removes it and returns the Grafts list`, !!cl && (await app.evalJs("!document.querySelector('.wz-link-dock') && !!document.querySelector('.wz-graft-row')")), J({ cl, now: await app.evalJs("({ dock: !!document.querySelector('.wz-link-dock'), close: !!document.querySelector('.wz-link-dock-close'), rows: document.querySelectorAll('.wz-graft-row').length })") }));
   }
 });
