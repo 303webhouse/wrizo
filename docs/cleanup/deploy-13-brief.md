@@ -20,7 +20,16 @@ run red-capable: it must be able to fail, and that is shown, before it is used t
 
    **Process:** harness first; the recede rule.
 6. **Freeze window:** accepted.
-7. **The dormant list:** Nick's answers are still to come. Step 12 waits for them. Everything else proceeds without them.
+7. **The dormant list (Nick, Oct 29, relayed by Fable):**
+   - **DELETE:**
+     1. the old project screens (ProjectHome, Structure Wizard, Beat Wizard, Structure Board, Quick Sprint), with their routes and doors;
+     2. the homepage "testament";
+     3. the Tutor nudges;
+     4. the narrow rail's Library slot.
+   - **Fragments:** delete the code, and leave the stored data and the column untouched.
+   - **KEEP** the custom dictionary, hidden.
+
+   **Every harness that reads a deleted file is parked BEFORE the delete** (step 12).
 
 ## The common contract (every step)
 - **Branch** `c13-<n>-<slug>` off the current `origin/main`, pinned by SHA in the report. Own worktree.
@@ -147,7 +156,9 @@ The **pen-ink duplicate** (`ModeStage` `PEN_INKS` vs `store/ink.ts`) is **not** 
 - **What:**
   - delete `pages/JournalEntry.tsx`, `store/rhizomeEngine.ts`, `pages/Desk.tsx` (+ `store/resumeVocab.ts`), `components/HomeFlow.tsx` and `components/Wordmark.tsx`;
   - delete the 20 dead exports, the `WALK_SHIPPED` false branch, the 65 unmatched CSS classes (84 rules), and the ~92 unused lexicon keys;
-  - the 166 deck/help keys are deleted **only** if a runtime key-use probe proves them unused.
+  - the 166 deck/help keys are deleted **only** if a runtime key-use probe proves them unused;
+  - **not here:** the lexicon keys and CSS that belong to step 12's deletions (nudges, the old screens, the Library slot) go with those branches.
+    The custom dictionary's exports and `modeWorkshop` are **kept** (12e).
 - **Before any delete:** each harness that reads a deleted file is parked verbatim with a successor or a retirement record (Fable rules which):
   - `hide-workshop-source` T3, `hooks-order`, `hooks-order-ast`, `revspell`, `th-machina-source`;
   - `m2`, `m3`, `m4`, `rhizome-goal`, `rhizome-goal-core`;
@@ -160,17 +171,86 @@ The **pen-ink duplicate** (`ModeStage` `PEN_INKS` vs `store/ink.ts`) is **not** 
 - **Gate:** full pair (global CSS).
 - **Size:** M (≈4,000 lines out).
 
-**Step 12 · `c13-12-dormant` · Nick's answers (waiting)**
-- **What:** one sub-branch per answer, `c13-12a` and so on:
-  - the old project screens and their two doors (⚠ "Something else" needs a new destination, which Fable picks);
-  - the fragments model (⚠ data: Fable confirms that nothing reads `fragments` on load or sync);
-  - the custom dictionary;
-  - the testament;
-  - the Tutor nudges;
-  - the Library rail slot;
-  - the Workshop words (already ruled: keep).
-- **Proof:** per answer. A removal follows step 11's proof. A "keep" gets a one-line entry in the area README saying it is dormant on purpose.
-- **Gate:** Nick's answers. A removal that changes what a door does needs Fable's ruling on the new behaviour, and a harness written first, red, before the change.
+**Step 12 · `c13-12<x>-*` · Nick's dormant answers (Oct 29): one branch per answer**
+
+These rules apply to every 12x branch:
+- **Commit 1 is the parks:** every harness check that reads, drives or greps a file this branch deletes is parked verbatim, with a successor or a
+  retirement record (Fable rules which), and the suite runs green on that commit **before** the delete commit exists.
+- **The census comes first, and it is the starting point, not the answer.** POLISH's grep found **26 candidate harness files** in all (list below).
+  Each branch re-runs the census at its own branch point and audits **each site** (memory: "a syntactic census is candidates only"). It counts
+  what the deletion *does*, not the strings it contains. `/project/new` (CreateProject) **stays**, so harnesses that only drive it are not in scope.
+- **Proof** for every branch:
+  - `tsc` clean;
+  - both legs green;
+  - the step 5 selector report shows no deleted selector matched anything;
+  - the step 5 snapshot is identical on every screen the deletion does not touch.
+
+**12a · `c13-12a-legacy-screens` · DELETE the old project screens, their routes and doors** ⚠ behaviour
+- **Files out:** `pages/{ProjectHome,StructureWizard,BeatWizard,StructureBoard,QuickSprint}.tsx` (1,581 lines) and `store/ambient.ts` (used only by QuickSprint).
+- **Routes out** (`App.tsx`): `/project/:id`, `/project/:id/sprint`, `/project/:id/wizard`, `/project/:id/beat`, `/project/:id/board`, and `/sprint`.
+- **Route kept:** `/project/:id/import` is ImportDraft's and stays.
+- **Doors** (⚠ Fable rules where each goes now; Nick ruled the doors deleted, so the default is *removed*, not repointed):
+  1. **New project → "Something else"** (`CreateProject.tsx:79`, the `other` kind in `store/kindLabels.ts`). Default: the option is removed from the picker.
+  2. **A project row in the `/drawers` list** (`DrawersTree.tsx:66`, `navigate('/project/' + id)`). The row still exists for binders, so Fable says
+     what a click does: open the binder's first page, or nothing.
+  3. **`wayBack.ts`**: the two `/sprint` patterns (lines 65–66) go.
+  4. Any **return chip or resume target** that can point at a deleted route must resolve to a live surface. `resume.ts` imports `frameworks`, so audit it.
+- **Code that follows the screens out:**
+  - `persistence.ts` exports whose only callers were these pages or `JournalEntry`. Candidates: `createQuickSprintProject`, `setProjectSprintText`,
+    `stampBeatActivity` and the story-plan beat setters. Check each, because `CascadePanels` and `forwardOnly` also call into the sprint-text helpers.
+  - `store/frameworks.ts` **stays**: `AddToSheet`, `milestones` and `resume` use it. Trim only the functions the deleted pages alone called.
+  - `packages/modules-writing`'s JSON stays while `frameworks.ts` reads it.
+  - **No stored data is touched:** projects, story plans and `sprintText` all stay as stored.
+- **Harness candidates:**
+  - legacy routes and files: `ab3`, `b2-1`, `cd1`, `cd4`, `drawer-toggles`, `e1`, `fx7`, `hide-workshop-source` (T2's QuickSprint actions list),
+    `item112a`, `j4`, `j5`, `j6`, `logout-flush`, `m1`, `resume-on-open`, `s1`, `th1`, `th2`, `w2`;
+  - "Something else": `b2-1`, `b3`, `guided-w3`;
+  - captures: `arrival-signin-capture`.
+- **Proof, beyond the common proof:**
+  - a new harness, `c13-12a-doors.mjs`, written first and **red on main**: every deleted route lands on a live surface rather than a blank screen, and none of the doors offers the deleted screens any more;
+  - existing projects still open their pages from every remaining door;
+  - a seeded project with `sprintText`, story plans and beat state is byte-identical in storage before and after a boot on the new build.
+- **Gate:** full pair (`App.tsx` routes, `CreateProject`, `DrawersTree`, and the persistence exports).
+- **Size:** M.
+
+**12b · `c13-12b-testament-nudges` · DELETE the homepage testament and the Tutor nudges**
+- **Files out:** `store/testament.ts` (138 lines; nothing imports it) and `store/tutorNudges.ts` (41 lines; nothing imports it).
+- **Also out:** the `tutorNudgesTitle` / `tutorNudgesEmpty` lexicon keys, and any `wz-tutor-nudge*` CSS the step 5 report shows as unmatched.
+- **Harness candidates:** `tu1` S4 (the nudge checks: a stale starred page and an empty board) is parked or retired. The A14 "the grip carries no badge, count or dot"
+  check is a law, not a nudge feature, so its successor keeps asserting it.
+- **Proof:** the common proof; `tu1`/`tu2` green with the parks.
+- **Gate:** default leg (no product path imports either file).
+- **Size:** S.
+
+**12c · `c13-12c-library-slot` · DELETE the narrow rail's Library slot**
+- **What:** remove the `library` item from `DeskRail.tsx` (line 29, `live: false`, `to: '/library'`; no such route exists), plus its comment lines 17 and 24 and any CSS for the greyed slot.
+- **Not in scope:** `decks/library/` (the deck library) is a different thing and stays. Most `library` grep hits in the harness (`b3`, `big-projects-2`,
+  `guided-add-scenes`, `guided-w3`, `help-choose-census`, `machina-forms-logic`) are probably the deck library. Audit each; park only the ones that read the rail slot.
+- **Proof:** the common proof. At < 1100 px the rail shows Journal and Drawers only. The page rect is unchanged when the rail is open (law 1).
+- **Gate:** default leg.
+- **Size:** S.
+
+**12d · `c13-12d-fragments-code` · DELETE the fragments code; the stored data and the column stay untouched** ⚠ data
+- **Code out** (`persistence.ts`): `getFragments`, `appendText`, `toggleStruck`, `reorderSpine`, `linkFragments`, `setFragmentRole`,
+  and their private helpers (`migrateFragments`, `nextSpineOrder`, `projectIdOfFragment`, `commitFragments`) once nothing else calls them.
+- **What stays, by Nick's ruling:**
+  - the `fragments` field on stored projects;
+  - its type in `types/index.ts`, marked `// stored legacy data: no code reads or writes it (Nick, Oct 29)`;
+  - the server column, and anything sync carries.
+- **The real risk is not the delete but a silent drop:** no code path may rebuild a project record from a field list that omits `fragments`.
+- **Proof, beyond the common proof:** a harness that is **red on a planted mutant that strips the field**. It seeds a project carrying a `fragments` array through the seam, then edits the project, saves it, reloads, and runs a sync push and pull round trip. It asserts that the `fragments` array is **byte-identical** in local storage and in the server row afterwards.
+- **Census:** no harness calls the fragments API (0 hits). Re-check at the branch point.
+- **Gate:** full pair (save/sync).
+- **Size:** S.
+
+**12e · KEEP the custom dictionary, hidden: no branch of its own**
+- `store/proofing.ts` stays as it is.
+- Step 2's `store` README records it: "the custom dictionary (personal word list + dialect, item 204): built, hidden on purpose (Nick, Oct 29); only `clearProofingLocal` is wired".
+- Step 11 must **not** delete its unused exports (`getProofing`, `addProofingWord`, `removeProofingWord`, `setProofingDialect`, `syncProofing`, `subscribeProofing`, `setProofingIgnored`).
+- The same goes for the `modeWorkshop` lexicon words (Nick, Oct 23).
+
+**Order inside step 12:** 12b, then 12c (small, default leg), then 12d (full pair), then 12a (the biggest and the only one that changes a door).
+**12d must not ride in the same train pair as 12a:** both touch `persistence.ts`, and a red must point at one cause.
 
 ### Phase E: the harness
 
@@ -206,7 +286,7 @@ The **pen-ink duplicate** (`ModeStage` `PEN_INKS` vs `store/ink.ts`) is **not** 
 | A ground | 1–4 | ~2 days | none | 0 |
 | B CSS | 5–8 | ~3 days | ~4 turns | 3 (6, 7, 8) |
 | C TS | 9–10 | ~4–5 days | ~8 turns | 6 (10e–10j) |
-| D removal | 11–12 | ~2 days + Nick | ~3 turns | 1–2 |
+| D removal | 11, 12a–12d | ~3–4 days | ~5 turns | 3 (11, 12a, 12d) |
 | E harness | 13–14 | ~2 days | ~2 turns | 0 |
 | train | 15 | Chat 1 | 1 pair | 1 |
 
@@ -223,5 +303,6 @@ scripts and the archived parked text.
 | INK | 10g |
 | FIX | 10f, 10h, 10i, 10j, 11 |
 | Chat 1 | 1, 3, 15 |
-| any lane, after Nick | 12 |
+| FIX | 12a, 12d (doors, routes, persistence) |
+| TOOLS | 12b, 12c (Tutor and rail) |
 | any lane, after Fable | 14 |
