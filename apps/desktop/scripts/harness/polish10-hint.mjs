@@ -76,6 +76,10 @@ const raiseHint = async (app, pre) => {
   await app.typeKeys(' and on'); await sleep(300);
   pre.settled = await settle(app);
   pre.caret = await app.evalJs(CARET_SEEN);
+  if (pre.caret && !pre.caret.seen) {   // the premise is the writer's line ON SCREEN: in the normal view nothing scrolls a page seeded long to its end, so the fixture does what the writer's own scrolling does
+    await app.evalJs("(() => { const ed = document.querySelector('.forward-only-editor'); const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let last = null, n; while ((n = w.nextNode())) if (n.data.trim()) last = n; if (last && last.parentElement) last.parentElement.scrollIntoView({ block: 'center' }); return true; })()");
+    await sleep(300); pre.settled = (await settle(app)) && pre.settled; pre.caret = await app.evalJs(CARET_SEEN);
+  }
   for (let i = 0; i < 60; i += 1) {
     await app.key('Backspace'); await sleep(40);
     if (await app.evalJs("!!document.querySelector('.fo-nudge')")) { await sleep(400); return i + 1; }
