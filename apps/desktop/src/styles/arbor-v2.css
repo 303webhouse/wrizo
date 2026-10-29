@@ -30,7 +30,7 @@
   --arbor-guide:#9FB07A;
   --accent-rest:#6F7A4A;
   --arbor-lamp-rgb:212,162,78;
-  --arbor2-pool-a:.17; --arbor2-pool-b:.07;
+  --arbor2-pool-a:.26; --arbor2-pool-b:.10;
 }
 
 /* ---------- DAY: the shed ---------- */
@@ -46,27 +46,36 @@
   /* the page sits on the boards with a hairline, never a cast shadow (no drop shadows) */
   --paper-glow: 0 0 0 1px var(--paper-border);
   --arbor-lamp-rgb:255,236,190;
-  --arbor2-pool-a:.55; --arbor2-pool-b:.18;
+  --arbor2-pool-a:.7; --arbor2-pool-b:.25;
 }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .mode-page.focused{ box-shadow:0 0 0 1px var(--paper-border); }
 
 /* ---------- THE LAMP (night) / THE SUN (day): one pool above the page ----------
    body becomes its own stacking context (isolation only: no containing block, nothing fixed moves) so the pool can sit at z-index -1:
-   above the room's ground, beneath everything else. By night it breathes (opacity, 9 s) and its centre drifts (transform, +-8 px over
-   40 s): transform/opacity only, no flash (the slowest change is 6% over 4.5 s). By day the sun is still until the shadows come (item 6).
-   Reduced motion: still. */
+   above the room's ground, beneath everything else.
+   NICK (Oct 29, on the first preview): "I can't see that the lamplight is doing anything." Two causes, both fixed here:
+     (1) the desk's own host (.desk-frame-host) paints the ground opaque OVER body, so the pool was never on screen in the app. Under the
+         flag the host's ground is see-through; the room's ground is body's own lamp gradient again, with the pool on it. Background only:
+         no box property changes, so no rect moves.
+     (2) the pool was too faint (.17 at the window's very top, under the top bar). It now centres on the page's top edge, where the
+         page's own top fade lets it show, at .26, and spills into the margins.
+   Labels are safe: the top bar (.sprint-nav) and the rail paint their own measured grounds; the count row under the page sits where the
+   pool has already gone to 0 (the last stop ends ~0.63 of the window's height down).
+   By night it breathes (opacity 1 -> .78 -> 1 over 9 s) and its centre drifts (transform, +-8 px over 40 s): transform/opacity only, no
+   flash (the fastest change is 22% over 4.5 s). By day the sun is still until the shadows come (item 6). Reduced motion: still. */
 :root[data-arbor2][data-theme='plateau'] body{ isolation:isolate; }
+:root[data-arbor2][data-theme='plateau'] .desk-frame-host{ background:transparent; }
 :root[data-arbor2][data-theme='plateau'] body::before{
   content:''; position:fixed; inset:-16px; z-index:-1; pointer-events:none;
-  background:radial-gradient(62% 58% at 50% 0%,
+  background:radial-gradient(58% 62% at 50% 15%,
     rgba(var(--arbor-lamp-rgb), var(--arbor2-pool-a)) 0%,
-    rgba(var(--arbor-lamp-rgb), var(--arbor2-pool-b)) 42%,
-    rgba(var(--arbor-lamp-rgb), 0) 74%);
+    rgba(var(--arbor-lamp-rgb), var(--arbor2-pool-b)) 45%,
+    rgba(var(--arbor-lamp-rgb), 0) 78%);
 }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] body::before{
   animation:arbor2-breath 9s ease-in-out infinite, arbor2-drift 40s ease-in-out infinite;
 }
-@keyframes arbor2-breath{ 0%,100%{ opacity:1; } 50%{ opacity:.94; } }
+@keyframes arbor2-breath{ 0%,100%{ opacity:1; } 50%{ opacity:.78; } }
 @keyframes arbor2-drift{ 0%,100%{ transform:translate(0,0); } 25%{ transform:translate(8px,3px); } 50%{ transform:translate(0,6px); } 75%{ transform:translate(-8px,2px); } }
 @media (prefers-reduced-motion: reduce){
   :root[data-arbor2][data-theme='plateau'] body::before{ animation:none !important; }
