@@ -132,8 +132,8 @@
    §14 ITEMS 2-3 (VISUAL HALF) - THE CLOTH TABS. Colour only, on the existing tabs: no size, position, border width or padding changes, so
    every tab's rect is today's (the Oct 7 menu-tab law: they never move; only the arrow flips).
      The two hands' edge tabs: left (Tools) = WALNUT on a cream edge, right (Tutor | Grafts) = SEA.
-     Inside the drawers each tab is its own cloth, kept per place (a colour means a place): Tools TEXT = walnut, INK = sea;
-     Tutor TUTOR = sea, GRAFTS = oxblood. (Splitting TEXT into Type / Format / Presets, and the Board tab, need drawer code: FIX's seam, next.)
+     Inside the drawers each tab is its own cloth, kept per place (a colour means a place): Tools FONT = walnut, FORMAT = iron, PRESETS = oxblood, INK = sea;
+     Tutor TUTOR = sea, GRAFTS = oxblood, BOARD = iron. The tabs: src/arbor2/drawerTabs.ts + Sliver/Tutor/ConnectionsDrawerPanel, flag-only (FIX reviews).
    Lettering on every cloth is cream (#E8DCC2): walnut 13.63 · iron 7.61 · oxblood 8.40 · sea 7.73 :1.
    The edge: night --arbor-line #9C8A6E (6.06:1 on the room, 5.54 on walnut); day #6E5C3C (5.19:1 on the whitewash).
    Open = the quiet olive underline, drawn just BELOW the cloth on the drawer's own surface (night 4.13:1, day 5.06:1; ON the sea cloth olive
@@ -147,7 +147,10 @@
 :root[data-arbor2][data-theme='plateau'] .wz-tutor-grip:hover{ color:#F1E8D4; }
 
 :root[data-arbor2][data-theme='plateau'] .wz-drawer-tab{ color:#E8DCC2; border-color:transparent; }
-:root[data-arbor2][data-theme='plateau'] #wz-sliver-tab-text{ background:var(--ink-walnut); border-color:var(--arbor-line); }
+:root[data-arbor2][data-theme='plateau'] #wz-sliver-tab-type{ background:var(--ink-walnut); border-color:var(--arbor-line); } /* the cream edge keeps it apart from the walnut edge tab */
+:root[data-arbor2][data-theme='plateau'] #wz-sliver-tab-format{ background:var(--ink-iron); }
+:root[data-arbor2][data-theme='plateau'] #wz-sliver-tab-presets{ background:var(--ink-oxblood); }
+:root[data-arbor2][data-theme='plateau'] #wz-tutor-tab-board{ background:var(--ink-iron); }
 :root[data-arbor2][data-theme='plateau'] #wz-sliver-tab-ink{ background:var(--ink-sea); }
 :root[data-arbor2][data-theme='plateau'] #wz-tutor-tab-tutor{ background:var(--ink-sea); }
 :root[data-arbor2][data-theme='plateau'] #wz-tutor-tab-links{ background:var(--ink-oxblood); }
