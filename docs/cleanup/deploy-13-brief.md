@@ -249,6 +249,14 @@ These rules apply to every 12x branch:
 - Step 11 must **not** delete its unused exports (`getProofing`, `addProofingWord`, `removeProofingWord`, `setProofingDialect`, `syncProofing`, `subscribeProofing`, `setProofingIgnored`).
 - The same goes for the `modeWorkshop` lexicon words (Nick, Oct 23).
 
+**Fable's rulings on 12a and step 9 (Oct 29, brief accepted):**
+- **"Something else"** is dropped from New project.
+- **A project row in `/drawers`** opens the project's first page. If the project has no pages, it opens its Drawer's Pages pop-out.
+- **A return chip or resume target that points at a deleted route** falls back to a live surface: the Drawer's last page, else home. Never a blank screen.
+  `c13-12a-doors.mjs` asserts all three, red on main first.
+- **Step 9:** the default leg only, provided the JS bundle is byte-identical and the source-reading checks pass. No full pair.
+- **Lanes:** as proposed, to be confirmed at the start of #13.
+
 **Order inside step 12:** 12b, then 12c (small, default leg), then 12d (full pair), then 12a (the biggest and the only one that changes a door).
 **12d must not ride in the same train pair as 12a:** both touch `persistence.ts`, and a red must point at one cause.
 
