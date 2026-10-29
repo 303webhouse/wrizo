@@ -1,0 +1,145 @@
+# Live harness on GitHub-hosted runners (docs/deploy.md "Harness on GitHub Actions"). Advisory, like browserless.yml: it never deploys and
+# never stands in for a stamped pair on the Windows box until the parity table says a file is trusted here.
+#
+# SECURITY (the repo is PUBLIC, so every log line is public):
+#   - no secrets are referenced anywhere in this file; no `pull_request_target`; no fork trigger; `permissions: contents: read`.
+#   - the harness needs no database and never talks to a real server: runtime-verify.mjs serves dist-web itself with an in-process
+#     auth/sync double, and the three files that mention DATABASE_URL set it to a placeholder. Nothing here can reach production.
+#   - workflow inputs are validated and passed through env, never interpolated into a shell line.
+#   - third-party actions are pinned to full commit SHAs.
+name: Harness (live)
+
+on:
+  workflow_dispatch:
+    inputs:
+      files:
+        description: 'Comma-separated harness file names (e.g. machina-intake.mjs,tu2.mjs), or "pair" for every file not on the box-only list'
+        required: true
+        default: 'machina-intake.mjs'
+      leg:
+        description: 'Which leg: default, parked, or both'
+        required: true
+        default: 'both'
+        type: choice
+        options: [default, parked, both]
+  push:
+    branches: [ci/actions-harness]
+    paths:
+      - '.github/workflows/harness.yml'
+      - 'apps/desktop/scripts/ci-box-only.txt'
+
+concurrency:
+  group: harness-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Pinned to match the box (parity): Node 24.13.0; Chrome 156 (the box's Edge is major 156); US Mountain time; en-US.
+  NODE_VERSION: '24.13.0'
+  CHROME_VERSION: '156.0.8078.73'
+  TZ: America/Denver
+  LANG: en_US.UTF-8
+  LANGUAGE: en_US:en
+  WS_CI_RUNNER: '1'
+
+jobs:
+  plan:
+    name: Which legs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    outputs:
+      legs: ${{ steps.legs.outputs.legs }}
+    steps:
+      - id: legs
+        env:
+          LEG_INPUT: ${{ inputs.leg }}
+        run: |
+          set -eu
+          case "${LEG_INPUT:-both}" in
+            default) echo 'legs=["default"]' >> "$GITHUB_OUTPUT" ;;
+            parked)  echo 'legs=["parked"]' >> "$GITHUB_OUTPUT" ;;
+            both)    echo 'legs=["default","parked"]' >> "$GITHUB_OUTPUT" ;;
+            *) echo "::error::leg must be default, parked or both"; exit 2 ;;
+          esac
+
+  harness:
+    name: ${{ matrix.leg }} leg
+    needs: plan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    # Two legs = two jobs (a push runs both).
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        leg: ${{ fromJSON(needs.plan.outputs.legs) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install from the lockfile
+        run: pnpm install --frozen-lockfile
+
+      - name: Pinned Chrome for Testing
+        run: |
+          set -eu
+          npx --yes @puppeteer/browsers@3.2.6 install "chrome@${CHROME_VERSION}" --path "$RUNNER_TEMP/browsers" > "$RUNNER_TEMP/chrome-install.txt"
+          bin="$(find "$RUNNER_TEMP/browsers" -type f -name chrome -perm -u+x | head -n 1)"
+          test -x "$bin"
+          echo "CLAUDE_VERIFY_BROWSER=$bin" >> "$GITHUB_ENV"
+          "$bin" --version
+
+      - name: Choose the files
+        id: pick
+        working-directory: apps/desktop
+        env:
+          FILES_INPUT: ${{ inputs.files }}
+        run: |
+          set -eu
+          want="${FILES_INPUT:-machina-intake.mjs}"
+          if [ "$want" = "pair" ]; then
+            # every harness file that is not box-only (the sharded pair arrives in step 3)
+            list="$(ls scripts/harness/*.mjs | xargs -n1 basename | grep -vxFf <(grep -vE '^(#|$)' scripts/ci-box-only.txt) | paste -sd, -)"
+          else
+            printf '%s' "$want" | grep -Eq '^[A-Za-z0-9_.-]+\.mjs(,[A-Za-z0-9_.-]+\.mjs)*$' || { echo "::error::files must be comma-separated *.mjs names, or pair"; exit 2; }
+            list="$want"
+            for f in $(printf '%s' "$list" | tr ',' ' '); do
+              if grep -qxF "$f" <(grep -vE '^(#|$)' scripts/ci-box-only.txt); then echo "::error::$f is on the box-only list (scripts/ci-box-only.txt): run it on the Windows box"; exit 2; fi
+              test -f "scripts/harness/$f" || { echo "::error::no such harness file: $f"; exit 2; }
+            done
+          fi
+          echo "list=$list" >> "$GITHUB_OUTPUT"
+          echo "Files: $list"
+
+      - name: Run the suite (${{ matrix.leg }} leg)
+        working-directory: apps/desktop
+        env:
+          LEG: ${{ matrix.leg }}
+          FILE_LIST: ${{ steps.pick.outputs.list }}
+        run: |
+          set -u
+          out="$RUNNER_TEMP/suite-$LEG"
+          flag=""; [ "$LEG" = "parked" ] && flag="--parked"
+          node scripts/run-suite.mjs --only "$FILE_LIST" $flag --out "$out"
+          rc=$?
+          echo "SUITE_OUT=$out" >> "$GITHUB_ENV"
+          exit $rc
+
+      - name: Keep the suite logs (14 days)
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: suite-${{ matrix.leg }}
+          path: ${{ runner.temp }}/suite-${{ matrix.leg }}
+          retention-days: 14
+          if-no-files-found: warn

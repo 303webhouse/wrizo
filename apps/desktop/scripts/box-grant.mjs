@@ -289,5 +289,13 @@ export function checkGrantAt(grantPath, token, opts = {}) {
 // the real check at the real grant — `checkGrantAt` is exported for the tests
 // that must drive it against temporary files, and for nothing else.
 export function checkGrant(token) {
+  if (isGithubHostedRunner()) return { ok: true, lane: 'github-actions' };
   return checkGrantAt(GRANT_PATH, token);
+}
+
+// CI (docs/deploy.md "Harness on GitHub Actions"): the box grant allocates ONE shared machine between lanes. A GitHub-hosted job IS its own
+// throwaway machine - nothing to share and no grant file - so it needs no turn. This is deliberately impossible on the box: it is Windows, and a
+// hosted runner is Linux with RUNNER_ENVIRONMENT=github-hosted set by GitHub itself. All three plus the workflow's own WS_CI_RUNNER=1 must hold.
+export function isGithubHostedRunner(env = process.env, platform = process.platform) {
+  return platform === 'linux' && env.GITHUB_ACTIONS === 'true' && env.RUNNER_ENVIRONMENT === 'github-hosted' && env.WS_CI_RUNNER === '1';
 }
