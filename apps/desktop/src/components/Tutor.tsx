@@ -17,6 +17,8 @@ import { useMonotonicWordCount } from './FirstRunGate';
 import { capTutorHistory } from '../store/tutorHistory';
 import { drawerArrow, setDrawerInert } from '../store/drawerShell';
 import { SideDrawer, type DrawerTabsConfig } from './SideDrawer';
+import { isArbor2 } from '../arbor2/flag';
+import { useTheme } from '../store/theme';
 import { DrawerNote } from './DrawerNote';
 import { HelpButton } from './HelpButton';
 import { ConnectionsDrawerPanel } from './ConnectionsDrawerPanel';
@@ -311,6 +313,12 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   const [open, setOpen] = useState(false);
   // PHASE 1 (S3) - the right drawer's tab: the Tutor (today's contents, untouched) or the theme's links word (empty for now).
   const [rightTab, setRightTab] = useState<RightTab>('tutor');
+  // ARBOR v2 MOCKUP (?arbor2=1, Arbor only; spec §9, Fable's ruling 3): a third cloth tab, BOARD - "connect this page to a board". It is a
+  // VIEW of the Grafts pane (rightTab stays 'links'), showing only its board parts and the same "+ Graft..." picker: no new behaviour, no
+  // new state beyond this in-session flag. Off the flag the drawer is byte-for-byte today's.
+  const tutorTheme = useTheme();
+  const arbor2 = isArbor2() && tutorTheme === 'plateau';
+  const [arborBoard, setArborBoard] = useState(false);
   const [docked, setDocked] = useState(false);
   // PHASE 1 (Fable, Oct 12) - one drawer at a time: opening the Tutor closes the Tools drawer (and the reverse), at every width. Announced from an effect keyed on `open`
   // so EVERY path that opens it announces (the grip, a shortcut, anything added later) - the same structural rule the Tools drawer follows.
@@ -1038,6 +1046,13 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // gap (Arbor had an explainer, Flux's own was the empty string, so the "?"
   // simply never rendered there). drawerLinksNote/-NoteLabel retired; their
   // content is byte-near-identical to helpGrafts's own Arbor sentence.
+  const arborRightTabs: DrawerTabsConfig<RightTab | 'board'> | undefined = arbor2 ? {
+    items: [{ id: RIGHT_TABS[0], label: t('tutorTabTutor') }, { id: RIGHT_TABS[1], label: t('drawerLinks') }, { id: 'board', label: t('railBoard') }],
+    notes: { links: <HelpButton helpKey="helpGrafts" subjectLabel={t('drawerLinks')} /> },
+    value: rightTab === 'links' && arborBoard ? 'board' : rightTab,
+    onChange: (v: RightTab | 'board') => { setArborBoard(v === 'board'); setRightTab(v === 'board' ? 'links' : v); },
+    label: t('drawerRightTabsLabel'),
+  } : undefined;
   const rightTabs: DrawerTabsConfig<RightTab> = {
     items: [{ id: RIGHT_TABS[0], label: t('tutorTabTutor') }, { id: RIGHT_TABS[1], label: t('drawerLinks') }],
     notes: { links: <HelpButton helpKey="helpGrafts" subjectLabel={t('drawerLinks')} /> },
@@ -1070,7 +1085,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
         <div className="wz-tutor-panel" ref={(el) => setDrawerInert(el, !open)} aria-hidden={!open} data-open={open ? 'true' : 'false'} data-docked={docked ? 'true' : 'false'} style={panelWidthPx != null ? { width: `${panelWidthPx}px`, maxWidth: `${panelWidthPx}px`, marginRight: `${panelOffsetPx}px` } : undefined}>
           {/* PHASE 1 - the sliding layer: the panel above is the clip and the scroller; <SideDrawer> is what slides in from behind the tab.
               No tab row yet (S3 adds TUTOR | the theme's links word). */}
-          <SideDrawer side="right" idPrefix="wz-tutor" tabs={rightTabs}>
+          <SideDrawer side="right" idPrefix="wz-tutor" tabs={(arborRightTabs ?? rightTabs) as DrawerTabsConfig<string>}>
           {/* A11Y AUDIT A8 — the reply announcement, visually hidden. Lives at
               the panel's own top level (not inside the `{open && …}` content
               body below), so closing/reopening the Tutor never remounts it and
@@ -1396,7 +1411,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
             )}
             </div>
           )}
-          {rightTab === 'links' && <ConnectionsDrawerPanel />}
+          {rightTab === 'links' && <ConnectionsDrawerPanel only={arbor2 ? (arborBoard ? 'board' : 'grafts') : undefined} />}
           </SideDrawer>
         </div>
       </div>

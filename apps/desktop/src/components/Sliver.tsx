@@ -25,7 +25,9 @@ import type { InkPen } from './InkStratum';
 import { INKS, NIBS, TIPS } from '../store/ink';
 import { drawerArrow, setDrawerInert } from '../store/drawerShell';
 import { leftTabsFor, sectionAllowed, type DrawerKind, type LeftTab } from '../store/drawerSet';
-import { SideDrawer } from './SideDrawer';
+import { SideDrawer, type DrawerTabsConfig } from './SideDrawer';
+import { isArbor2 } from '../arbor2/flag';
+import { arborToolTabs, arborSectionAllowed, type ArborToolTab } from '../arbor2/drawerTabs';
 import { DrawerActions } from './DrawerActions';
 import { TypewriterModeIcon, ProgressModeIcon } from './DrawerIcons';
 import type { PageActions } from '../store/pageActions';
@@ -221,6 +223,11 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
   const target = useWritingGoal();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  // ARBOR v2 MOCKUP (?arbor2=1, Arbor only): the Tools drawer's cloth tabs (src/arbor2/drawerTabs.ts). In-session state; off the flag
+  // or on another theme this is unused and the drawer is byte-for-byte today's.
+  const sliverTheme = useTheme();
+  const arbor2 = isArbor2() && sliverTheme === 'plateau';
+  const [arborPick, setArborPick] = useState<ArborToolTab>('type');
 
   // item 83 M1 (R9/R11) — the two-drawer law. Opening announces itself; the
   // store answers whether the cascade must yield, and does the measuring (see
@@ -327,6 +334,26 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
         label: t('inkInstrument'),
       }
     : undefined;
+  // ARBOR v2 MOCKUP - Font · Format · Presets · Ink. The ink tab IS the instrument (picking it, or leaving it, calls the host's own
+  // instrument switch exactly as TEXT | INK does), so the page's mode and the tab can never disagree.
+  const arborKind = content.kind as DrawerKind;
+  const arborInstrument = content.kind === 'freewrite' ? content.instrument : undefined;
+  const arborList = arbor2 ? arborToolTabs(arborKind, !!arborInstrument) : [];
+  const arborTab: ArborToolTab | undefined = !arbor2 ? undefined
+    : arborInstrument?.value === 'ink' ? 'ink'
+    : arborList.includes(arborPick) && arborPick !== 'ink' ? arborPick : (arborList.find((x) => x !== 'ink') ?? 'type');
+  const ARBOR_WORD: Record<ArborToolTab, DeskTermId> = { type: 'railTypeface', format: 'railFormat', presets: 'sectionsPresets', ink: 'inkModeInk' };
+  const arborTabs: DrawerTabsConfig<ArborToolTab> | undefined = arbor2 && arborList.length > 1 && arborTab
+    ? {
+        items: arborList.map((id) => ({ id, label: t(ARBOR_WORD[id]) })),
+        value: arborTab,
+        onChange: (v: ArborToolTab) => {
+          setArborPick(v);
+          if (arborInstrument) arborInstrument.onChange(v === 'ink' ? 'ink' : 'text');
+        },
+        label: t('inkInstrument'),
+      }
+    : undefined;
 
   return (
     // item 83 M1 — the wave's own contract markers. scripts/menus-probe.mjs
@@ -372,7 +399,7 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
       <div className="wz-sliver-panel chrome-fade desk-dissolve" ref={(el) => setDrawerInert(el, !open)} aria-hidden={!open} data-open={open ? 'true' : 'false'} data-popout-hold={popoutHold ? 'true' : 'false'}>
         {/* PHASE 1 - the sliding layer: the panel above is the clip and the scroller; <SideDrawer> is what slides in from behind the tab,
             with the TEXT | INK tab row when this surface has an instrument. The goal foot and the instruments row ride every tab. */}
-        <SideDrawer side="left" idPrefix="wz-sliver" tabs={sideTabs} foot={(<>
+        <SideDrawer side="left" idPrefix="wz-sliver" tabs={(arborTabs ?? sideTabs) as DrawerTabsConfig<string> | undefined} foot={(<>
         <SliverGoalFoot target={target} done={done} fraction={fraction} timerOn={settings.timer} firstWriteAt={firstWriteAt} />
         {/* FX3 S5 — the foot's new instruments row, beneath the goal block.
             Nested inside THIS panel (which already carries chrome-fade
@@ -417,7 +444,7 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
           onPopoutHold={setPopoutHold}
         />
         </>)}>
-        <SliverToolsBody content={content} />
+        <SliverToolsBody content={content} arborTab={arborTab} />
         </SideDrawer>
       </div>
     </div>
@@ -648,7 +675,7 @@ const TEMPLATE_HELP_KEYS: Record<TemplateKey, DeskTermId> = {
   bibliography: 'helpTemplateBibliography',
 };
 
-function SliverToolsBody({ content }: { content: SliverContent }) {
+function SliverToolsBody({ content, arborTab }: { content: SliverContent; arborTab?: ArborToolTab }) {
   const { t } = useDeskLexicon();
   const theme = useTheme();
   // PHASE 1 (S4) - while Typewriter is on the whole Format group is greyed and unusable (Nick). Read here, above the early return, so the hook order holds.
@@ -663,7 +690,7 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
   // PHASE 1 - store/drawerSet.ts is the one statement of what each surface and tab may show. The host still decides whether a section
   // has data (a screenplay passes no type member); this decides whether it may appear here at all.
   const tab: LeftTab = content.kind === 'freewrite' && content.instrument ? content.instrument.value : 'text';
-  const allowed = (section: Parameters<typeof sectionAllowed>[2]): boolean => sectionAllowed(content.kind as DrawerKind, tab, section);
+  const allowed = (section: Parameters<typeof sectionAllowed>[2]): boolean => (arborTab ? arborSectionAllowed(content.kind as DrawerKind, arborTab, section) : sectionAllowed(content.kind as DrawerKind, tab, section));
 
   return (
     <div className="wz-sliver-body">
