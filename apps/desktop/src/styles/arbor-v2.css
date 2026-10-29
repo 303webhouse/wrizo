@@ -87,21 +87,31 @@
   :root[data-arbor2][data-theme='plateau'] body::before{ animation:none !important; }
 }
 
-/* ---------- NIGHT PROGRESS ----------
-   LAMP (Fable's default): the night rhizome is the lamp itself, so the root drawing is not shown at night. (The lamp growing with
-   progress and the goal flicker are item 5.)
-   HIDDEN RHIZOME (Nick, Oct 29): invisible while it grows; at the goal the EXISTING flash (RhizomeField data-flash='true') shows the
-   whole web in brass, and the EXISTING fade (data-flash='fading', 2200 ms) takes it back to nothing. The seed root, which normally
-   stays on through the fade, fades with the rest here. CSS only, on the field's own attribute: no new behaviour, nothing stored.
-   One flash per goal, far inside the 3/s budget; reduced motion keeps the existing hold-then-clear (no fade). */
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'][data-arbor2-night-prog='lamp'] .wz-rhizome-field{ visibility:hidden; }
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'][data-arbor2-night-prog='hidden-rhizome'] .wz-rhizome-field[data-flash='false']{ visibility:hidden; }
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'][data-arbor2-night-prog='hidden-rhizome'] .wz-rhizome-field[data-flash='fading'] .wz-rhizome-seg[data-seed='true']{
+/* ---------- NIGHT PROGRESS: THE HIDDEN RHIZOME ----------
+   Nick (Oct 29) chose it; Fable approved it the same day: "the night progress picture is a hidden network that flashes brass at the goal,
+   and the lamp is ambience only. One 'Rhizome' style, no new setting." So by night the one Rhizome style is drawn hidden: invisible while
+   it grows; at the goal the EXISTING flash (RhizomeField data-flash='true') shows the whole web in brass, and the EXISTING fade
+   (data-flash='fading', 2200 ms) takes it back to nothing. The seed root, which normally stays on through the fade, fades with the rest.
+   CSS only, on the field's own attribute: no new behaviour, nothing stored. (The Lamp-as-progress option is gone: the lamp is ambience.)
+   FLASH BUDGET: one brass event per goal; the field changes state at most 3 times in ~3.4 s (false -> true -> fading -> false), measured
+   by arbor2-1 H2. REDUCED MOTION: a still frame - the existing hold with no pop and no fade, then a cut (arbor2-1 H4).
+   OFF THE PROSE COLUMN: the field's own clip and mask already cut the page out of the paint (RhizomeField holes); arbor2-1 H5 checks the
+   clip at the moment of the flash. */
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .wz-rhizome-field[data-flash='false']{ visibility:hidden; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .wz-rhizome-field[data-flash='fading'] .wz-rhizome-seg[data-seed='true']{
   stroke:var(--brass); opacity:0; stroke-width:2.1px; transition:opacity 2200ms ease-out;
 }
 @media (prefers-reduced-motion: reduce){
-  :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'][data-arbor2-night-prog='hidden-rhizome'] .wz-rhizome-field[data-flash='fading'] .wz-rhizome-seg[data-seed='true']{ transition:none; }
+  :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .wz-rhizome-field[data-flash='fading'] .wz-rhizome-seg[data-seed='true']{ transition:none; }
 }
+
+/* ---------- THE ROOM'S VIGNETTE BY DAY ----------
+   index.css's body::after vignette (inset rgba(0,0,0,.55), "it shades the room, never the page") used to sit under the desk host's opaque
+   ground; with the host see-through for the lamp it is on the room again. By night that is the dark the lamp pulls focus from. By day it
+   painted the shed GREY (the corners, and the page's top and bottom fades, which show the room through them: the first day frames). By day
+   it is a faint warm shade instead (the boards darkening toward the walls); text on the whitewash keeps its floors (low #4F4E36 under the
+   strongest corner stays > 6:1). */
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] body::after{ box-shadow:inset 0 0 170px 55px rgba(110, 86, 50, .12); }
 
 /* ---------- THE MOCKUP'S OWN SWITCHES (not product: the bar exists only under the flag) ----------
    Square, flat, no shadow. Bottom-right, overlaying, never displacing. Recedes with everything else while she types. */
