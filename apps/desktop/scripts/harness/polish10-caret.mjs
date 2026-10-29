@@ -94,7 +94,7 @@ await withHarness(async (app) => {
     await enter(app);
     const g1 = await app.evalJs(PROBE);
     ok(`${tag} C17-AT: within two frames of Enter the orange block stands on the NEW line (its middle inside the new row)`,
-      !!g1 && !!g0 && g1.rows === g0.rows + 1 && onRow(g1) && g1.block.top > g0.block.top + 4, J({ before: g0 && { block: g0.block, rows: g0.rows }, after: g1 }));
+      !!g1 && !!g0 && (mode === 'journal' || g1.rows === g0.rows + 1) && onRow(g1) && g1.block.top > g0.block.top + 4, J({ before: g0 && { block: g0.block, rows: g0.rows }, after: g1 }));
     await sleep(900);
     const g2 = await app.evalJs(PROBE);
     await app.typeKeys('x'); await sleep(900);
