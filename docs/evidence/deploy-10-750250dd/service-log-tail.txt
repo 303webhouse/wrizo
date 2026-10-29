@@ -1,0 +1,2 @@
+Starting Container
+Writer Studio server listening on :8080
