@@ -49,6 +49,12 @@
   --arbor2-pool-a:.7; --arbor2-pool-b:.25;
 }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .mode-page.focused{ box-shadow:0 0 0 1px var(--paper-border); }
+/* THE SPLASH IS UNTOUCHED (spec §14 item 10). Nick's sketch is drawn in cream for a dark ground; on the whitewash it vanished (seen in the
+   first day frames). Under the day room the splash keeps the night room's values, so it is byte-for-byte the splash it was. */
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .wz-splash{
+  --ink-950:#0A0503; --ink-900:#150F0B; --ink-800:#1F1711; --ink-border:#2A2018; --ink-border-strong:#3A2D22;
+  --arbor-line:#9C8A6E; --arbor-letter:#E8DCC2; --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#8A8074;
+}
 
 /* ---------- THE LAMP (night) / THE SUN (day): one pool above the page ----------
    body becomes its own stacking context (isolation only: no containing block, nothing fixed moves) so the pool can sit at z-index -1:
@@ -111,3 +117,55 @@
 .arbor2-bar-opt:hover{ background:var(--ink-800); }
 .arbor2-bar-opt[aria-pressed='true']{ border-color:var(--brass); }
 .arbor2-bar-note{ margin:0; font-size:11px; color:var(--text-low); }
+
+/* ==========================================================================================================================================
+   §14 ITEMS 2-3 (VISUAL HALF) - THE CLOTH TABS. Colour only, on the existing tabs: no size, position, border width or padding changes, so
+   every tab's rect is today's (the Oct 7 menu-tab law: they never move; only the arrow flips).
+     The two hands' edge tabs: left (Tools) = WALNUT on a cream edge, right (Tutor | Grafts) = SEA.
+     Inside the drawers each tab is its own cloth, kept per place (a colour means a place): Tools TEXT = walnut, INK = sea;
+     Tutor TUTOR = sea, GRAFTS = oxblood. (Splitting TEXT into Type / Format / Presets, and the Board tab, need drawer code: FIX's seam, next.)
+   Lettering on every cloth is cream (#E8DCC2): walnut 13.63 · iron 7.61 · oxblood 8.40 · sea 7.73 :1.
+   The edge: night --arbor-line #9C8A6E (6.06:1 on the room, 5.54 on walnut); day #6E5C3C (5.19:1 on the whitewash).
+   Open = the quiet olive underline, drawn just BELOW the cloth on the drawer's own surface (night 4.13:1, day 5.06:1; ON the sea cloth olive
+   is 2.28, under the 3:1 non-text floor). Never brass. Night dims the cloths until lit: that is §6.2's dim-the-room, a later item.
+   ========================================================================================================================================== */
+:root[data-arbor2][data-theme='plateau'] .wz-sliver-grip,
+:root[data-arbor2][data-theme='plateau'] .wz-sliver[data-open='true'] .wz-sliver-grip{ background:var(--ink-walnut); border-color:var(--arbor-line); color:#E8DCC2; }
+:root[data-arbor2][data-theme='plateau'] .wz-tutor-grip,
+:root[data-arbor2][data-theme='plateau'] .wz-tutor-grip[data-docked='true']{ background:var(--ink-sea); border-color:var(--arbor-line); color:#E8DCC2; }
+:root[data-arbor2][data-theme='plateau'] .wz-sliver-grip:hover,
+:root[data-arbor2][data-theme='plateau'] .wz-tutor-grip:hover{ color:#F1E8D4; }
+
+:root[data-arbor2][data-theme='plateau'] .wz-drawer-tab{ color:#E8DCC2; border-color:transparent; }
+:root[data-arbor2][data-theme='plateau'] #wz-sliver-tab-text{ background:var(--ink-walnut); border-color:var(--arbor-line); }
+:root[data-arbor2][data-theme='plateau'] #wz-sliver-tab-ink{ background:var(--ink-sea); }
+:root[data-arbor2][data-theme='plateau'] #wz-tutor-tab-tutor{ background:var(--ink-sea); }
+:root[data-arbor2][data-theme='plateau'] #wz-tutor-tab-links{ background:var(--ink-oxblood); }
+:root[data-arbor2][data-theme='plateau'] .wz-drawer-tab:hover{ color:#F1E8D4; }
+:root[data-arbor2][data-theme='plateau'] .wz-drawer-tab[data-on='true']{ color:#F1E8D4; box-shadow:0 3px 0 -1px var(--accent-rest); }
+
+/* ==========================================================================================================================================
+   §14 ITEM 4 - THE DRAWER PULL (spec §10; Fable's ruling 4: dress the SHARED motion seam, no new JS animation path).
+   The shared tokens get Arbor's values: 240 ms, a quick start and a soft stop (cubic-bezier(.2,.8,.2,1)). They drive the hands' drawers
+   (.wz-drawer-slide's transform) and the rail pop-outs (wz-cascade-in/out), and Cascade.tsx reads --drawer-dur for how long a closing
+   pop-out stays drawn, so the exit timer follows by itself. Reduced motion keeps --drawer-dur-reduced: the short fade, unchanged.
+   The pop-out pull, Arbor only: it slides a real distance out from the rail (64 px), the face's FRONT EDGE is a 2 px --arbor-line rule
+   (an inset rule: no box size changes), and the contents settle 60 ms behind the face with a second 6 px translate. It closes faster
+   (180 ms) and fills forwards, so it is gone before Cascade removes it. Transform/opacity only, one monotonic reveal, <= 300 ms, overlay
+   only: the page never moves. NOT YET: the lamp/sun glint sweeping the front edge (needs a positioned panel - see the report).
+   ========================================================================================================================================== */
+:root[data-arbor2][data-theme='plateau']{ --drawer-dur:240ms; --drawer-ease:cubic-bezier(.2,.8,.2,1); }
+:root[data-arbor2][data-theme='plateau'] .wz-cascade-panel{ box-shadow:inset -2px 0 0 var(--arbor-line); }
+:root[data-arbor2][data-theme='plateau'] .wz-drawer-slide--left{ box-shadow:inset 2px 0 0 var(--arbor-line); }
+:root[data-arbor2][data-theme='plateau'] .wz-drawer-slide--right{ box-shadow:inset -2px 0 0 var(--arbor-line); }
+@keyframes arbor2-pull-in{ from{ opacity:0; transform:translateX(-64px); } 40%{ opacity:1; } to{ opacity:1; transform:none; } }
+@keyframes arbor2-pull-out{ from{ opacity:1; transform:none; } to{ opacity:0; transform:translateX(-64px); } }
+@keyframes arbor2-settle{ from{ transform:translateX(-6px); } to{ transform:none; } }
+@media (prefers-reduced-motion: no-preference){
+  :root[data-arbor2][data-theme='plateau'] .wz-cascade-panel,
+  :root[data-arbor2][data-theme='plateau'] .wz-cascade-survey{ animation:arbor2-pull-in var(--drawer-dur) var(--drawer-ease) backwards; }
+  :root[data-arbor2][data-theme='plateau'] .wz-cascade-panel > *{ animation:arbor2-settle var(--drawer-dur) var(--drawer-ease) 60ms backwards; }
+  :root[data-arbor2][data-theme='plateau'] .wz-cascade-panel[data-leaving='true'],
+  :root[data-arbor2][data-theme='plateau'] .wz-cascade-panel[data-leaving='true'] ~ .wz-cascade-survey{ animation:arbor2-pull-out 180ms cubic-bezier(.4,0,.8,.4) forwards; pointer-events:none; }
+  :root[data-arbor2][data-theme='plateau'] .wz-cascade-panel[data-leaving='true'] > *{ animation:none; }
+}
