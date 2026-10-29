@@ -30,17 +30,22 @@ const COLLECTIONS = [
   { key: 'storyPlans', table: 'story_plans', label: 'plans' },
 ];
 const PUSH_CHUNK = 60;
+// The app's built-in places (the Journal, the Shelf, the Trash: a board whose meta box carries systemKind) are not the writer's content: the in-app delete skips them
+// (deleteSeams.ts softAll: `!getSystemKind(e)`), the client mints them itself, and they are neither counted as live nor purged here.
+const SYS = `(page_type = 'board' and jsonb_typeof(boxes) = 'array' and exists (select 1 from jsonb_array_elements(boxes) b where jsonb_typeof(b) = 'object' and b ? 'systemKind'))`;
 
 const iso = (v) => (v ? new Date(v).toISOString() : undefined);
 
 export async function readState(db, userId) {
   const out = { collections: {}, user: null, sessions: 0, drafts: 0 };
   for (const c of COLLECTIONS) {
+    const sys = c.table === 'journal_entries' ? SYS : 'false';
     const { rows } = await db.query(
       `select count(*)::int as total,
-              count(*) filter (where purged_at is null and deleted_at is null)::int as live,
-              count(*) filter (where purged_at is null and deleted_at is not null)::int as trashed,
-              count(*) filter (where purged_at is not null)::int as purged
+              count(*) filter (where purged_at is null and deleted_at is null and not ${sys})::int as live,
+              count(*) filter (where purged_at is null and deleted_at is not null and not ${sys})::int as trashed,
+              count(*) filter (where purged_at is not null)::int as purged,
+              count(*) filter (where purged_at is null and ${sys})::int as builtin
          from ${c.table} where user_id = $1`, [userId]);
     out.collections[c.key] = rows[0];
   }
@@ -54,7 +59,7 @@ export async function readState(db, userId) {
 export const isEmpty = (st) => Object.values(st.collections).every((c) => c.live === 0 && c.trashed === 0);
 
 export function describe(role, when, st) {
-  const parts = COLLECTIONS.map((c) => { const x = st.collections[c.key]; return `${c.label} ${x.total} (live ${x.live}, Trash ${x.trashed}, purged ${x.purged})`; });
+  const parts = COLLECTIONS.map((c) => { const x = st.collections[c.key]; return `${c.label} ${x.total} (live ${x.live}, Trash ${x.trashed}, purged ${x.purged}${x.builtin ? `, built-in ${x.builtin}` : ''})`; });
   return `${role} ${when}: ${parts.join('; ')}; sessions ${st.sessions}; drafts ${st.drafts}; lifetime words ${st.user.wordsWritten}; themes opened ${st.user.themesOpened}`;
 }
 
@@ -63,7 +68,7 @@ export async function purgeRecords(db, userId) {
   const now = new Date().toISOString();
   const recs = { journalEntries: [], projects: [], drawers: [], storyPlans: [] };
   const rec = (r, extra = {}) => ({ id: r.id, createdAt: iso(r.created_at), updatedAt: iso(r.updated_at), deletedAt: iso(r.deleted_at), purgedAt: now, ...extra });
-  for (const r of (await db.query(`select id, created_at, updated_at, deleted_at from journal_entries where user_id = $1 and purged_at is null`, [userId])).rows) recs.journalEntries.push(rec(r));
+  for (const r of (await db.query(`select id, created_at, updated_at, deleted_at from journal_entries where user_id = $1 and purged_at is null and not ${SYS}`, [userId])).rows) recs.journalEntries.push(rec(r));
   for (const r of (await db.query(`select id, created_at, updated_at, deleted_at, type from projects where user_id = $1 and purged_at is null`, [userId])).rows) recs.projects.push(rec(r, { type: r.type }));
   for (const r of (await db.query(`select id, created_at, updated_at, deleted_at from drawers where user_id = $1 and purged_at is null`, [userId])).rows) recs.drawers.push(rec(r));
   for (const r of (await db.query(`select id, created_at, updated_at, deleted_at, project_id, framework_id from story_plans where user_id = $1 and purged_at is null`, [userId])).rows) recs.storyPlans.push(rec(r, { projectId: r.project_id, frameworkId: r.framework_id }));

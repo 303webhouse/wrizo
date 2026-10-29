@@ -1,6 +1,7 @@
 // ACCOUNT-STATE (apps/server/scripts/account-state.mjs) - the counts and the server-side wipe, proven against a REAL throwaway Postgres with the REAL schema
 // (dist/migrate.js) and the REAL sync router (dist/sync.js): the wipe is an ordinary purge push, so the proof is the server's own rules, not a copy of them.
 //   D1  --counts: before the wipe the target holds live / Trash / already-purged rows in all four collections, and the counts say so (no write)
+//   (a built-in system board - the Journal - is not content: counted apart, skipped by the wipe, as the in-app delete skips it)
 //   D2  --wipe (through the script, as a child process): live 0 and Trash 0 in all four collections; every row is a purged shell (purged_at set, text ''
 //       and the page's boxes/ink/links null) - none deleted, none left readable
 //   D3  words_written and themes_opened are exactly what they were; the sessions log keeps its rows
@@ -52,6 +53,7 @@ const seed = async (uid, tag) => {
   const e = (id, text, extra = {}) => pool.query(`insert into journal_entries (id, user_id, text, boxes, created_at, updated_at, deleted_at, purged_at) values ($1,$2,$3,$4::jsonb,$5,$5,$6,$7)`,
     [`${tag}-${id}`, uid, text, extra.purged ? null : JSON.stringify([{ id: 'b1', text: 'a card' }]), T, extra.deleted ?? null, extra.purged ?? null]);   // an already-purged row is a real shell (boxes null)
   await e('p1', 'a live page'); await e('p2', 'another live page'); await e('board1', 'a board'); await e('t1', 'in the Trash', { deleted: T }); await e('x1', '', { deleted: T, purged: T });
+  await pool.query(`insert into journal_entries (id, user_id, text, page_type, origin, boxes, created_at, updated_at) values ($1,$2,'Journal','board','system',$3::jsonb,$4,$4)`, [`${tag}-sys`, uid, JSON.stringify([{ id: 'm', kind: 'board-meta', systemKind: 'journal' }]), T]);
   await pool.query(`insert into projects (id, user_id, title, type, created_at, updated_at) values ($1,$2,'a binder','creative',$3,$3)`, [`${tag}-proj`, uid, T]);
   await pool.query(`insert into drafts (id, user_id, text, updated_at) values ($1,$2,'scratch words',$3)`, [`${tag}-proj`, uid, T]);
   await pool.query(`insert into drawers (id, user_id, name, "order", created_at, updated_at) values ($1,$2,'a drawer',0,$3,$3)`, [`${tag}-dr`, uid, T]);
@@ -81,10 +83,10 @@ try {
   const w = run(['--role', 'main', '--wipe', '--expect-id', String(A)]);
   const after = await acct.readState(pool, A);
   const rows = (await pool.query(`select id, text, boxes, deleted_at, purged_at from journal_entries where user_id = $1`, [A])).rows;
-  const shells = rows.every((r) => r.purged_at && r.text === '' && r.boxes === null);
+  const shells = rows.filter((r) => r.id !== 'a-sys').every((r) => r.purged_at && r.text === '' && r.boxes === null);
   const c = after.collections;
-  ok(`D2 the wipe (exit ${w.status}) empties the account through the sync route: live 0 and Trash 0 in all four collections; ${rows.length} page rows are all purged shells (text '', boxes null)`,
-    w.status === 0 && acct.isEmpty(after) && c.journalEntries.purged === 5 && c.projects.purged === 1 && c.drawers.purged === 1 && c.storyPlans.purged === 1 && shells && /records sent, 0 rejected, 0 failed/.test(w.stdout), w.stdout.trim().split('\n').slice(-3).join(' | '));
+  ok(`D2 the wipe (exit ${w.status}) empties the account through the sync route: live 0 and Trash 0 in all four collections; the ${rows.length - 1} content rows are purged shells (text '', boxes null) and the built-in Journal board is left alone`,
+    w.status === 0 && acct.isEmpty(after) && c.journalEntries.purged === 5 && c.journalEntries.builtin === 1 && c.projects.purged === 1 && c.drawers.purged === 1 && c.storyPlans.purged === 1 && shells && /records sent, 0 rejected, 0 failed/.test(w.stdout), w.stdout.trim().split('\n').slice(-3).join(' | '));
   const drafts = (await pool.query(`select text from drafts where user_id = $1`, [A])).rows.map((r) => r.text);
   ok(`D3 words_written (${after.user.wordsWritten}) and opened themes (${after.user.themesOpened}) are exactly what they were (31000 / 2); the binder's scratch draft is cleared by the server's own shell (${J(drafts)})`,
     after.user.wordsWritten === 31000 && after.user.themesOpened === 2 && drafts.every((t) => t === ''));
