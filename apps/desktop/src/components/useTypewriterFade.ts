@@ -121,7 +121,9 @@ export function caretRow(sel: Selection | null, within: Element | null): HTMLEle
   const row = ae.closest('.wz-row');
   if (row && within.contains(row)) return row as HTMLElement;
   if (ae === within || ae.matches?.('.forward-only-editor')) {
-    const kids = [...ae.children].filter((c) => c.classList.contains('wz-row'));
+    // Draft's lines are `.wz-row` spans; Free Write's are plain line elements - the caret's row is the child at the anchor either way
+    const rowKids = [...ae.children].filter((c) => c.classList.contains('wz-row'));
+    const kids = rowKids.length ? rowKids : [...ae.children].filter((c) => c.getBoundingClientRect().height > 0);
     if (!kids.length) return null;
     return kids[Math.max(0, Math.min(sel.anchorOffset, kids.length - 1))] as HTMLElement;
   }
