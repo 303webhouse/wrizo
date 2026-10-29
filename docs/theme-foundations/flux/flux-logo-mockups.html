@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FLUX // WRIZO — three logo mockups (the O is the cursor)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Chakra+Petch:wght@500;600;700&display=swap">
+<style>
+/* MOCKUP ONLY. Three Wrizo marks in Flux's style; in each the final O is the writer's orange cursor (the Flux block caret, blink 1.05 s, canon §13). */
+:root{ --ground:#010811; --glass:#0E1E31; --line:#193556; --line-strong:#244D7C; --cyan:#00C2FF; --cyan-soft:#57D0F5; --ink:#E8F6FA; --low:#7EB4C4; --lime:#A6FF3D; --orange:#FF9800;
+  --f-chrome:'Rajdhani','Arial Narrow',system-ui,sans-serif; --f-content:'Chakra Petch',system-ui,sans-serif; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--f-content);padding:34px 40px 60px;
+  background-image:linear-gradient(rgba(25,53,86,.28) 1px,transparent 1px),linear-gradient(90deg,rgba(25,53,86,.28) 1px,transparent 1px);background-size:40px 40px}
+h1{font-family:var(--f-chrome);font-weight:700;font-size:26px;letter-spacing:.3em;margin:0 0 6px;color:var(--cyan)}
+.lead{color:var(--low);font-size:14px;max-width:80ch;margin:0 0 26px;line-height:1.6}
+.v{border:1px solid var(--line-strong);background:rgba(9,18,30,.8);margin:0 0 26px;position:relative}
+.v::before,.v::after{content:'';position:absolute;width:14px;height:14px;border:2px solid var(--cyan)}
+.v::before{left:-4px;top:-4px;border-right:none;border-bottom:none} .v::after{right:-4px;bottom:-4px;border-left:none;border-top:none}
+.vh{display:flex;justify-content:space-between;align-items:baseline;padding:10px 16px;border-bottom:1px solid var(--line);font-family:var(--f-chrome);font-weight:600;letter-spacing:.22em;font-size:13px;color:var(--low)}
+.vh b{color:var(--ink);font-size:16px}
+.vb{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) auto;gap:0}
+.stage{display:flex;align-items:center;justify-content:center;min-height:220px;padding:30px}
+.dark{background:radial-gradient(70% 80% at 50% 50%,rgba(8,40,72,.6),transparent 70%)}
+.light{background:#F4F7F8;border-left:1px solid var(--line)}
+.sizes{display:flex;flex-direction:column;gap:18px;align-items:center;justify-content:center;padding:20px 26px;border-left:1px solid var(--line);font-family:var(--f-chrome);font-size:10px;letter-spacing:.2em;color:var(--low)}
+.why{padding:10px 16px 14px;border-top:1px solid var(--line);font-size:13px;line-height:1.6;color:#9AD7EA}
+.why b{color:var(--ink)}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+.cur{animation:blink 1.05s steps(1,end) infinite}
+@media (prefers-reduced-motion:reduce){ .cur{animation:none} }
+
+/* ---- V1 · TERMINAL: the shipped Flux wordmark face, the O a solid block cursor ---- */
+.m1{display:inline-flex;align-items:flex-end;font-family:var(--f-chrome);font-weight:700;letter-spacing:.32em;line-height:1;color:var(--ink);text-shadow:.04em 0 0 rgba(0,194,255,.45)}
+.m1 .c{display:inline-block;width:.62em;height:.74em;background:var(--orange);margin-left:.02em;margin-bottom:.02em}
+.light .m1{color:#042632;text-shadow:.04em 0 0 rgba(0,150,200,.35)}
+
+/* ---- V2 · PIXEL: built on the 16 px grid of Flux's pixel icons; the O a pixel block that blinks ---- */
+.m2 svg{display:block}
+
+/* ---- V3 · HAND-DRAWN, JACKED IN: the founding hand-drawn mark, rendered as signal; the scribbled o becomes the cursor ---- */
+.m3{position:relative;display:inline-flex;align-items:flex-start;height:var(--h)}
+.m3 canvas{display:block;height:var(--h)}
+.m3 .c{display:inline-block;margin-left:calc(var(--h) * .03);margin-top:calc(var(--h) * .31);width:calc(var(--h) * .17);height:calc(var(--h) * .25);background:var(--orange)}
+.m3 .scan{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(1,8,17,.45) 0 1px,transparent 1px 3px)}
+
+/* app icon tile */
+.tile{width:64px;height:64px;background:var(--ground);border:1px solid var(--line-strong);display:flex;align-items:center;justify-content:center;position:relative}
+.tile::before{content:'';position:absolute;left:-3px;top:-3px;width:9px;height:9px;border:2px solid var(--cyan);border-right:none;border-bottom:none}
+.fav{width:16px;height:16px;image-rendering:pixelated}
+</style>
+</head>
+<body>
+<h1>WRIZO // FLUX MARK</h1>
+<p class="lead">Three Wrizo logos in Flux's style. In each, the last letter is not drawn: the <b style="color:var(--orange)">O is the writer's cursor</b> — orange, the one colour Flux keeps for you, blinking at the Flux caret's own rate (1.05 s, well under 3 Hz; still under reduced motion). Each is shown large on the Flux ground, on the light page, as an app icon and at 16 px.</p>
+
+<!-- V1 -->
+<section class="v">
+  <div class="vh"><b>01 · TERMINAL <span style="color:var(--orange)">· CHOSEN (NICK, OCT 28)</span></b><span>RAJDHANI 700 · TRACKED .32 EM · BLOCK CURSOR</span></div>
+  <div class="vb">
+    <div class="stage dark"><span class="m1" style="font-size:96px">WRIZ<span class="c cur"></span></span></div>
+    <div class="stage light"><span class="m1" style="font-size:54px">WRIZ<span class="c cur"></span></span></div>
+    <div class="sizes"><div class="tile"><span class="m1" style="font-size:26px;letter-spacing:.1em">W<span class="c cur"></span></span></div>APP ICON
+      <svg class="fav" viewBox="0 0 16 16"><rect width="16" height="16" fill="#010811"/><path d="M1 3h2v8h1V6h2v5h1V3h2v10H1z" fill="#E8F6FA"/><rect x="11" y="6" width="4" height="7" fill="#FF9800"/></svg>16 PX</div>
+  </div>
+  <div class="why"><b>Why it works:</b> it is the WRIZO wordmark Flux already shows (Rajdhani, tracked, top-left of every screen), with its O replaced by the block caret the Flux page already draws. Nothing new to learn: the logo is the moment before you type. The faint cyan offset on the letters is the canon's chromatic hairline, never red.</div>
+</section>
+
+<!-- V2 -->
+<section class="v">
+  <div class="vh"><b>02 · PIXEL</b><span>16 PX GRID · THE FLUX ICON SET'S OWN PIXELS · PIXEL CURSOR</span></div>
+  <div class="vb">
+    <div class="stage dark m2" id="v2a"></div>
+    <div class="stage light m2" id="v2b"></div>
+    <div class="sizes"><div class="tile m2" id="v2c"></div>APP ICON<div id="v2d"></div>16 PX</div>
+  </div>
+  <div class="why"><b>Why it works:</b> it is drawn on the same pixel grid as Flux's own icons (the docs, circuits and log glyphs in the rail), so the mark and the interface are one family. The cursor is a block of pixels in the O's place; at 16 px it survives as "W" plus an orange block. Pixels never smooth (crisp edges at every size).</div>
+</section>
+
+<!-- V3 -->
+<section class="v">
+  <div class="vh"><b>03 · HAND-DRAWN, JACKED IN</b><span>THE FOUNDING HAND-DRAWN MARK AS SIGNAL · SCRIBBLED O → CURSOR</span></div>
+  <div class="vb">
+    <div class="stage dark"><span class="m3" style="--h:150px"><canvas class="ink"></canvas><span class="c cur"></span><span class="scan"></span></span></div>
+    <div class="stage light"><span class="m3" style="--h:90px"><canvas class="ink"></canvas><span class="c cur"></span></span></div>
+    <div class="sizes"><div class="tile"><span class="m3" style="--h:24px"><canvas class="ink"></canvas><span class="c cur"></span></span></div>APP ICON
+      <svg class="fav" viewBox="0 0 16 16"><rect width="16" height="16" fill="#010811"/><path d="M1 5 L3 11 L5 6 L7 11 L9 5" fill="none" stroke="#00C2FF" stroke-width="1.6"/><rect x="11" y="6" width="4" height="6" fill="#FF9800"/></svg>16 PX</div>
+  </div>
+  <div class="why"><b>Why it works:</b> it keeps Wrizo's founding story — the logo drawn by hand, in the app — and runs it through Flux: the same strokes, rendered as cyan signal with a lime offset and scanlines, and the hand-scribbled orange o replaced by the cursor. Arbor keeps the hand-drawn original; Flux shows the same hand, jacked in.</div>
+</section>
+
+<script>
+// V2: a 5x7 pixel face for W R I Z on the 16 px icon grid, plus the pixel cursor
+const F = {
+  W: ['10001','10001','10001','10101','10101','11011','10001'],
+  R: ['11110','10001','10001','11110','10100','10010','10001'],
+  I: ['111','010','010','010','010','010','111'],
+  Z: ['11111','00001','00010','00100','01000','10000','11111'],
+};
+function pixel(px, fg, word = 'WRIZ', cursor = true) {
+  let x = 0, rects = '';
+  for (const ch of word) { const g = F[ch]; g.forEach((row, y) => [...row].forEach((b, i) => { if (b === '1') rects += `<rect x="${x + i}" y="${y}" width="1" height="1" fill="${fg}"/>`; })); x += g[0].length + 1; }
+  if (cursor) rects += `<g class="cur"><rect x="${x}" y="1" width="4" height="6" fill="#FF9800"/></g>`, x += 4;
+  return `<svg width="${x * px}" height="${7 * px}" viewBox="0 0 ${x} 7" shape-rendering="crispEdges">${rects}</svg>`;
+}
+document.getElementById('v2a').innerHTML = pixel(12, '#E8F6FA');
+document.getElementById('v2b').innerHTML = pixel(7, '#042632');
+document.getElementById('v2c').innerHTML = pixel(4, '#E8F6FA', 'W');
+document.getElementById('v2d').innerHTML = pixel(1.6, '#E8F6FA', 'W');
+// V3: the founding hand-drawn mark, recoloured as signal through a canvas (works from a local file); the scribbled orange o is left out and the cursor takes its place
+const img = new Image(); img.src = '../../../apps/desktop/public/brand/wrizo-logo.png';
+img.onload = () => document.querySelectorAll('.m3').forEach((m) => {
+  const h = parseFloat(getComputedStyle(m).getPropertyValue('--h')), cv = m.querySelector('canvas'), light = !!m.closest('.light');
+  const keep = 0.77, sw = img.naturalWidth * keep, sh = img.naturalHeight, k = 2, w = Math.round(h * sw / sh);
+  cv.width = w * k; cv.height = h * k; cv.style.width = w + 'px'; cv.style.height = h + 'px';
+  const x = cv.getContext('2d');
+  const pass = (color, dx) => { const o = document.createElement('canvas'); o.width = cv.width; o.height = cv.height; const ox = o.getContext('2d'); ox.drawImage(img, 0, 0, sw, sh, 0, 0, o.width, o.height); ox.globalCompositeOperation = 'source-in'; ox.fillStyle = color; ox.fillRect(0, 0, o.width, o.height); x.drawImage(o, dx * k, 0); };
+  if (!light) pass('rgba(166,255,61,.45)', Math.max(1, h / 90));
+  pass(light ? '#0B5F7E' : '#00C2FF', 0);
+});
+</script>
+</body>
+</html>
