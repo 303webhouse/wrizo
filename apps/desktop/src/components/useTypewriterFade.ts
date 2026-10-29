@@ -340,7 +340,12 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         if (trace) trace.push({ d: 'lost', from: Math.round(glideFrom), target: Math.round(glideTarget), at: Math.round(box.scrollTop), owed: Math.round(owed) });
         glideTarget = null; glideFrom = null;
       }
-      const advance = docCaretBottom - (prevDocCaretBottom as number);
+      // PAGE-SIZE (anchor A3) - zoomed, what is owed can never exceed what is geometrically LEFT: the writing line's real distance below the hold. While typing
+      // outruns the glides (each one is cancelled by the next keystroke: step 0>27, lost, again) the owed advance stacks up (51, 106, 133 ... 296 on the
+      // 1366 trace), and once the glides finally land the stack pays one line too many - the scroll runs to its bottom stop with the line a line ABOVE the
+      // anchor (43.7%, the band's top fade over it, A3). The line's measured excess below the hold is the cap; a line already at or above it owes nothing.
+      const owedAdvance = docCaretBottom - (prevDocCaretBottom as number);
+      const advance = holdEl ? Math.min(owedAdvance, within - thresholdPx) : owedAdvance;
       if (advance > 1) {
         // Never more than one line-height per call, however large the raw
         // advance is (a deep first-engage on a long page, or a multi-line
