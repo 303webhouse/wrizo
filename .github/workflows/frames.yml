@@ -1,0 +1,151 @@
+# Frames on GitHub-hosted runners (docs/deploy.md "Harness on GitHub Actions"): build ANY branch, serve it, capture NAMED screens in both page
+# tones at 1366 and 1920, and keep them as a downloadable artifact. For design lanes that need pictures while the Windows box is busy.
+# Advisory: it never deploys, never touches the box, never writes to the repo.
+#
+# HOW A LANE RUNS IT (plain words): gh workflow run frames.yml --ref ci/actions-harness -f ref=<your-branch> [-f screens=blank-page,journal] [-f themes=plateau,flux]
+#   The workflow file and the capture tooling come from the branch you dispatch with (--ref); the app that is photographed comes from `ref`.
+#   So your branch does not need this file. When it reaches main, drop the --ref and dispatch from main.
+#
+# SECURITY (the repo is PUBLIC, so every log line is public):
+#   - no secrets are referenced anywhere in this file; no `pull_request_target`; no fork trigger; `permissions: contents: read`.
+#   - the photographed branch is only BUILT (pnpm install + vite build, no secrets in the job); the capture script runs from the trusted tooling
+#     checkout, never from the branch (the one exception, `screens_file`, is a file the dispatcher names inside the built branch).
+#   - the app is served by an in-process static server with an auth/sync double: it cannot reach production or any database.
+#   - every input is validated and passed through env, never interpolated into a shell line.
+#   - third-party actions are pinned to full commit SHAs. Only the frames and manifest are uploaded (14 days); never docs/evidence.
+name: Frames
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch (or commit SHA) of this repo to build and photograph'
+        required: true
+      screens:
+        description: 'Comma-separated screen names, or "all" (front-door, blank-page, blank-page-draft, page-with-words, page-drawer, journal)'
+        required: true
+        default: 'all'
+      themes:
+        description: 'Comma-separated themes: plateau (shown as Arbor), flux, machina'
+        required: true
+        default: 'plateau'
+      tones:
+        description: 'Page tones'
+        required: true
+        default: 'light,dark'
+      widths:
+        description: 'Viewport widths: 1366 (x768) and/or 1920 (x1080)'
+        required: true
+        default: '1366,1920'
+      screens_file:
+        description: 'Optional: path inside the built branch to a .mjs that default-exports extra screens (e.g. apps/desktop/scripts/frames/arbor.mjs)'
+        required: false
+        default: ''
+
+concurrency:
+  group: frames-${{ github.ref }}-${{ inputs.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '24.13.0'
+  CHROME_VERSION: '156.0.8078.73'
+  TZ: America/Denver
+  LANG: en_US.UTF-8
+  LANGUAGE: en_US:en
+  WS_CI_RUNNER: '1'
+
+jobs:
+  frames:
+    name: Capture frames
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check the inputs
+        env:
+          I_REF: ${{ inputs.ref }}
+          I_SCREENS: ${{ inputs.screens }}
+          I_THEMES: ${{ inputs.themes }}
+          I_TONES: ${{ inputs.tones }}
+          I_WIDTHS: ${{ inputs.widths }}
+          I_FILE: ${{ inputs.screens_file }}
+        run: |
+          set -eu
+          printf '%s' "$I_REF" | grep -Eq '^[A-Za-z0-9._/-]{1,200}$' || { echo "::error::ref may only hold letters, digits and . _ / -"; exit 2; }
+          printf '%s' "$I_SCREENS" | grep -Eq '^(all|[a-z0-9-]+(,[a-z0-9-]+)*)$' || { echo "::error::screens: 'all' or comma-separated lowercase names"; exit 2; }
+          printf '%s' "$I_THEMES" | grep -Eq '^(plateau|flux|machina)(,(plateau|flux|machina))*$' || { echo "::error::themes: plateau, flux, machina"; exit 2; }
+          printf '%s' "$I_TONES" | grep -Eq '^(light|dark)(,(light|dark))?$' || { echo "::error::tones: light and/or dark"; exit 2; }
+          printf '%s' "$I_WIDTHS" | grep -Eq '^(1366|1920)(,(1366|1920))?$' || { echo "::error::widths: 1366 and/or 1920"; exit 2; }
+          if [ -n "$I_FILE" ]; then
+            printf '%s' "$I_FILE" | grep -Eq '^[A-Za-z0-9_./-]{1,200}\.mjs$' || { echo "::error::screens_file must be a .mjs path"; exit 2; }
+            case "$I_FILE" in *..*|/*) echo "::error::screens_file must stay inside the branch"; exit 2 ;; esac
+          fi
+
+      # the capture tooling: the ref this workflow was dispatched from (a trusted checkout)
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: tools
+          persist-credentials: false
+
+      # the app to photograph: built, never run as code beyond its own build
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          path: build
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          package_json_file: build/package.json
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: build/pnpm-lock.yaml
+
+      - name: Build the branch
+        working-directory: build
+        run: |
+          set -eu
+          pnpm install --frozen-lockfile
+          pnpm --filter @writer-studio/desktop run build:web
+          echo "BUILT_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Pinned Chrome for Testing
+        run: |
+          set -eu
+          npx --yes @puppeteer/browsers@3.2.6 install "chrome@${CHROME_VERSION}" --path "$RUNNER_TEMP/browsers" > "$RUNNER_TEMP/chrome-install.txt"
+          bin="$(find "$RUNNER_TEMP/browsers" -type f -name chrome -perm -u+x | head -n 1)"
+          test -x "$bin"
+          echo "CLAUDE_VERIFY_BROWSER=$bin" >> "$GITHUB_ENV"
+          "$bin" --version
+
+      - name: Capture
+        working-directory: tools/apps/desktop
+        env:
+          I_SCREENS: ${{ inputs.screens }}
+          I_THEMES: ${{ inputs.themes }}
+          I_TONES: ${{ inputs.tones }}
+          I_WIDTHS: ${{ inputs.widths }}
+          I_FILE: ${{ inputs.screens_file }}
+        run: |
+          set -eu
+          extra=""
+          if [ -n "$I_FILE" ]; then
+            test -f "$GITHUB_WORKSPACE/build/$I_FILE" || { echo "::error::no such file in the built branch: $I_FILE"; exit 2; }
+            extra="--screens-file $GITHUB_WORKSPACE/build/$I_FILE"
+          fi
+          node scripts/ci-frames.mjs --dist "$GITHUB_WORKSPACE/build/apps/desktop/dist-web" --out "$GITHUB_WORKSPACE/frames-out" \
+            --screens "$I_SCREENS" --themes "$I_THEMES" --tones "$I_TONES" --widths "$I_WIDTHS" $extra
+
+      - name: Keep the frames (14 days)
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: frames
+          path: frames-out
+          retention-days: 14
+          if-no-files-found: warn
