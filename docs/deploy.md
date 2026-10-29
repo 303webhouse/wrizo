@@ -96,6 +96,12 @@ always Nick's separate word ("DEPLOY WHEN READY" is standing for the P-waves).
    rotation) needs a `railway redeploy` to take effect and gets its own append-only stamp
    annotation (same git SHA, new railway id).
 
+6. **The upload leaves out what does not belong in it** — the root `.railwayignore` lists
+   `docs/evidence/` (hundreds of MB of captures) and Nick's untracked
+   `docs/theme-foundations/flux/Flux Word Picker.html`; `railway up` honours it (together
+   with `.gitignore`). Nothing is moved aside or restored around a deploy any more (until
+   deploy #9 the evidence folder and that file were moved out by hand).
+
 ### Shipping during a RED-suite state — pre-ruled house law (Fable, 2026-07-31)
 
 A green full suite is the normal gate (step 1). When clean `main`'s suite is standing RED
