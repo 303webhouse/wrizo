@@ -126,7 +126,7 @@ export function canCoexist(): boolean {
   if (band <= 0) return false;
 
   const tools = measuredWidth('.wz-sliver[data-open="true"]', CLOSED_TOOLS_W);
-  const cascade = measuredWidth('.wz-cascade-panel[data-visible="true"]', CLOSED_CASCADE_W);
+  const cascade = measuredWidth('.wz-cascade-panel[data-visible="true"]:not([data-leaving])', CLOSED_CASCADE_W)   // TOOLS #10 item 8: a pop-out that is EXITING (data-leaving) no longer occupies the band;
   return band >= tools + cascade;
 }
 

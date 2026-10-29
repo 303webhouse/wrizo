@@ -49,7 +49,8 @@ const typeInto = async (app, value) => {
 const pickFace = async (app, name) => {
   // FONT-SPAN (2026-10-15): in Draft and a card the roster is SHOWN (the approved font-choices mockup), so there is no face button to
   // open first; where one exists (Free Write, Revise) it is pressed as before. A driver change only - every assertion stands.
-  if (await app.evalJs("!!document.querySelector('.wz-type-face') && !document.querySelector('.wz-type-list')")) {
+  // TOOLS #10 item 9: in the scoped form the list is always mounted but COLLAPSED (hidden) until the face button is pressed - so "open" means no VISIBLE list. Driver change only.
+  if (await app.evalJs("!!document.querySelector('.wz-type-face') && ![...document.querySelectorAll('.wz-type-list')].some((u) => !u.hidden && u.getBoundingClientRect().height > 0)")) {
     await press(app, "document.querySelector('.wz-type-face')", `the face button (open, for ${name})`);
   }
   await sleep(120);
@@ -96,9 +97,16 @@ await withHarness(async (app) => {
     await press(app, "document.querySelector('.wz-type-face')", 'the face button (Free Write roster)');
     await sleep(150);
     const open = await typeShape(app);
-    ok('FREE WRITE: the roster lists the nine faces, in order, and has NO "Add a font…" row (his Q2)', open && JSON.stringify(open.rows) === JSON.stringify(NINE) && !/add a font/i.test(open.text), JSON.stringify(open && open.rows));
+// ---- PARKED - SUPERSEDED by TOOLS #10 item 10 (Nick, Oct 24: the font list's first row is "Default (<face>)", and Source Sans 3 + Titillium Web join the roster). Kept VERBATIM below, no longer run; successor follows. ----
+    // ok('FREE WRITE: the roster lists the nine faces, in order, and has NO "Add a font…" row (his Q2)', open && JSON.stringify(open.rows) === JSON.stringify(NINE) && !/add a font/i.test(open.text), JSON.stringify(open && open.rows));
+    // ------------------------------------------------------------------
+    const ELEVEN = ['Crimson Pro', 'Lora', 'EB Garamond', 'Source Serif 4', 'Times New Roman', 'Figtree', 'Source Sans 3', 'Titillium Web', 'Atkinson Hyperlegible', 'Arial', 'Courier Prime'];
+    ok('FREE WRITE [item-10 successor]: the list opens on "Default (<face>)", then the eleven faces in order, and has NO "Add a font..." row (his Q2)', open && /^Default \(.+\)$/.test(open.rows[0] || '') && JSON.stringify(open.rows.slice(1)) === JSON.stringify(ELEVEN) && !/add a font/i.test(open.text), JSON.stringify(open && open.rows));
     const rowFonts = await app.evalJs(`[...document.querySelectorAll('.wz-type-row')].map(r => [r.textContent, getComputedStyle(r).fontFamily])`);
-    ok('FREE WRITE: each roster row is SET IN ITS OWN FACE', Array.isArray(rowFonts) && rowFonts.length === 9 && rowFonts.every(([n, f]) => f.replace(/["']/g, '').includes(n === 'Crimson Pro' ? 'Crimson Pro' : n === 'Lora' ? 'Lora' : n === 'EB Garamond' ? 'EB Garamond' : n === 'Source Serif 4' ? 'Source Serif 4' : n)), JSON.stringify(rowFonts));
+// ---- PARKED - SUPERSEDED by TOOLS #10 item 10 (Nick, Oct 24: the font list's first row is "Default (<face>)", and Source Sans 3 + Titillium Web join the roster). Kept VERBATIM below, no longer run; successor follows. ----
+    // ok('FREE WRITE: each roster row is SET IN ITS OWN FACE', Array.isArray(rowFonts) && rowFonts.length === 9 && rowFonts.every(([n, f]) => f.replace(/["']/g, '').includes(n === 'Crimson Pro' ? 'Crimson Pro' : n === 'Lora' ? 'Lora' : n === 'EB Garamond' ? 'EB Garamond' : n === 'Source Serif 4' ? 'Source Serif 4' : n)), JSON.stringify(rowFonts));
+    // ------------------------------------------------------------------
+    ok('FREE WRITE [item-10 successor]: each roster row is SET IN ITS OWN FACE (the Default row in the theme\'s own prose face)', Array.isArray(rowFonts) && rowFonts.length === 12 && rowFonts.slice(1).every(([n, f]) => f.replace(/["']/g, '').includes(n)) && /Garamond|Crimson|Titillium|Source Sans/.test(rowFonts[0][1].replace(/["']/g, '')), JSON.stringify(rowFonts));
     await app.key('Escape');
     await sleep(100);
   }
@@ -114,8 +122,20 @@ await withHarness(async (app) => {
   const drScoped = await app.evalJs(`(() => { const t = document.querySelector('.wz-sliver .wz-type'); if (!t) return null; return { buttons: t.querySelectorAll('button').length, inputs: t.querySelectorAll('input').length,
     faceButton: !!t.querySelector('.wz-type-face'), scopes: [...t.querySelectorAll('.wz-type-scope')].map(b => b.textContent), rows: t.querySelectorAll('.wz-type-list-inline .wz-type-row').length }; })()`);
   i207Parks.draftForm = drScoped;
-  ok('DRAFT [font-span successor]: the Typeface control is the scoped form - "Selection" / "Whole document" over the nine faces shown as a list, `-` `+` and ONE number field, no face button',
-    !!drScoped && drScoped.buttons === 4 && drScoped.inputs === 1 && !drScoped.faceButton && JSON.stringify(drScoped.scopes) === JSON.stringify(['Selection', 'Whole document']) && drScoped.rows === 9, JSON.stringify(drScoped));
+  // ---- PARKED - SUPERSEDED by TOOLS #10 item 9 (the font list is collapsed by default): the scoped form now has a face button that opens the list. Kept VERBATIM, no longer run:
+  // ok('DRAFT [font-span successor]: the Typeface control is the scoped form - "Selection" / "Whole document" over the nine faces shown as a list, `-` `+` and ONE number field, no face button',
+  //   !!drScoped && drScoped.buttons === 4 && drScoped.inputs === 1 && !drScoped.faceButton && JSON.stringify(drScoped.scopes) === JSON.stringify(['Selection', 'Whole document']) && drScoped.rows === 9, JSON.stringify(drScoped));
+  // ------------------------------------------------------------------
+  ok('DRAFT [item-9 successor]: the Typeface control is the scoped form - "Selection" / "Whole document", a face button, Default + the eleven faces as a list COLLAPSED by default, `-` `+` and ONE number field',
+    !!drScoped && drScoped.buttons === 5 && drScoped.inputs === 1 && drScoped.faceButton && JSON.stringify(drScoped.scopes) === JSON.stringify(['Selection', 'Whole document']) && drScoped.rows === 12, JSON.stringify(drScoped));
+  const collapsed = await app.evalJs(`(() => { const t = document.querySelector('.wz-sliver .wz-type'); const ul = t.querySelector('.wz-type-list-inline'); const b = t.querySelector('.wz-type-face'); return { shown: !!ul && ul.getBoundingClientRect().height > 0, hidden: ul && ul.hidden, expanded: b && b.getAttribute('aria-expanded') }; })()`);
+  ok('DRAFT [item 9]: the face list is COLLAPSED by default - hidden, no height, the face button aria-expanded=false', !!collapsed && !collapsed.shown && collapsed.hidden === true && collapsed.expanded === 'false', JSON.stringify(collapsed));
+  await app.evalJs("document.querySelector('.wz-sliver .wz-type-face').click()"); await sleep(250);
+  const expanded = await app.evalJs(`(() => { const t = document.querySelector('.wz-sliver .wz-type'); const ul = t.querySelector('.wz-type-list-inline'); const rows = [...ul.querySelectorAll('.wz-type-row')]; return { shown: ul.getBoundingClientRect().height > 0, rows: rows.filter((r) => r.getBoundingClientRect().height > 0).length, expanded: t.querySelector('.wz-type-face').getAttribute('aria-expanded') }; })()`);
+  ok('DRAFT [item 9]: pressing the face button opens the list (the twelve rows - Default + eleven - have height, aria-expanded=true)', !!expanded && expanded.shown && expanded.rows === 12 && expanded.expanded === 'true', JSON.stringify(expanded));
+  await app.key('Escape'); await sleep(250);
+  const closedAgain = await app.evalJs("(() => { const ul = document.querySelector('.wz-sliver .wz-type .wz-type-list-inline'); return { hidden: ul.hidden, h: Math.round(ul.getBoundingClientRect().height) }; })()");
+  ok('DRAFT [item 9]: Esc closes it again', !!closedAgain && closedAgain.hidden === true && closedAgain.h === 0, JSON.stringify(closedAgain));
 
   await openPage(app, { id: 'i207-rv', mode: 'revise' });
   await openDrawer(app);
@@ -161,8 +181,20 @@ await withHarness(async (app) => {
     return { label: r.textContent, rendered: first, rowFamily: getComputedStyle(r).fontFamily.split(',')[0].trim().replace(/^["']|["']$/g, '').replace(/ Variable$/, ''), color: getComputedStyle(r).color,
       brass: getComputedStyle(document.documentElement).getPropertyValue('--brass').trim() }; })()`);
   i207Parks.label = brassNow;
-  ok('LABEL [font-span successor]: on a page that never chose, the BRASS row of the roster names the face that ACTUALLY renders and is set in it',
-    !!brassNow && brassNow.label === brassNow.rendered && brassNow.rowFamily === brassNow.rendered, JSON.stringify(brassNow));
+  // ---- PARKED - SUPERSEDED by TOOLS #10 item 10 (Nick, Oct 24: the list's first row is "Default (<face>)"): on a page that never chose, the brass row is now the DEFAULT row, not a roster row.
+  // Kept VERBATIM below and no longer run; the successor follows, and the original is run as a PARKED RECORD (it must now fail, for exactly that reason).
+  // ok('LABEL [font-span successor]: on a page that never chose, the BRASS row of the roster names the face that ACTUALLY renders and is set in it',
+  // !!brassNow && brassNow.label === brassNow.rendered && brassNow.rowFamily === brassNow.rendered, JSON.stringify(brassNow));
+  // ------------------------------------------------------------------
+  ok('LABEL [item-10 successor]: on a page that never chose, the BRASS row is the Default row, it reads "Default (<the face that ACTUALLY renders>)", and it is set in that face',
+    !!brassNow && brassNow.label === `Default (${brassNow.rendered})` && brassNow.rowFamily === brassNow.rendered, JSON.stringify(brassNow));
+  // Fable's ruling 1 (Oct 28): the label must NAME a face - never "Default ()". The line above builds its expectation from the DOM read, so a blank read would pass it; this pins the per-theme table (THEME_DEFAULT_FACE).
+  ok('LABEL [Oct 28 ruling 1]: the Default row is never empty - it names EB Garamond / Titillium Web / Source Sans 3 (serif voice, by theme) or Figtree / Chakra Petch / Atkinson Hyperlegible (sans voice)',
+    !!brassNow && /^Default \((EB Garamond|Titillium Web|Source Sans 3|Figtree|Chakra Petch|Atkinson Hyperlegible)\)$/.test(brassNow.label || ''), JSON.stringify(brassNow));
+  const oneLine = await app.evalJs(`(() => { const r = document.querySelector('.wz-type-row[data-default="true"]'); if (!r) return null; const cs = getComputedStyle(r); return { ws: cs.whiteSpace, to: cs.textOverflow, title: r.getAttribute('title'), aria: r.getAttribute('aria-label'), text: r.textContent, h: r.getBoundingClientRect().height, lh: parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.3 }; })()`);
+  ok('LABEL [Oct 28 one line]: the Default row never wraps (nowrap, ellipsis, one line tall) and its full label is in title + aria-label',
+    !!oneLine && oneLine.ws === 'nowrap' && oneLine.to === 'ellipsis' && oneLine.title === oneLine.text && oneLine.aria === oneLine.text && oneLine.h < oneLine.lh * 2 + 8 - 1, JSON.stringify(oneLine));
+  ok('LABEL [parked record]: the ORIGINAL (the brass row\'s text IS the face name) now fails ONLY because the brass row is "Default (<face>)"', !!brassNow && brassNow.label !== brassNow.rendered && brassNow.label === `Default (${brassNow.rendered})`, JSON.stringify(brassNow));
   // ---- PARKED - SUPERSEDED by page-size (Fable's ruling a, Oct 23: the page's number is REAL POINTS IN PAGE UNITS - 12 = 16px at page scale 1, a NEW
   // page defaults to 12, and the page LAYS OUT at scale 1 and is PAINTED at its scale by a transform, so the editor's computed size is n x 4/3 px at
   // every screen). The field opens at 12; `+` goes to 13, drawn 13 x 4/3 px; 13 is written. Kept VERBATIM and no longer run; record in this file's parked section, successor below.
@@ -290,8 +322,12 @@ await withHarness(async (app) => {
     const csScoped = await app.evalJs(`(() => { const t = document.querySelector('.board-popup-dock .wz-type'); if (!t) return null; return { buttons: t.querySelectorAll('button').length, inputs: t.querySelectorAll('input').length,
     faceButton: !!t.querySelector('.wz-type-face'), scopes: [...t.querySelectorAll('.wz-type-scope')].map(b => b.textContent), rows: t.querySelectorAll('.wz-type-list-inline .wz-type-row').length }; })()`);
     i207Parks.cardForm = csScoped;
-    ok('CARD [font-span successor]: the dock carries the scoped small form - "Selection" / "Whole card" over the nine faces, `-` `+`, no number field, no face button',
-      !!csScoped && csScoped.buttons === 4 && csScoped.inputs === 0 && !csScoped.faceButton && JSON.stringify(csScoped.scopes) === JSON.stringify(['Selection', 'Whole card']) && csScoped.rows === 9, JSON.stringify(csScoped));
+    // ---- PARKED - SUPERSEDED by TOOLS #10 item 9 (the list is collapsed by default; the scoped form has a face button). Kept VERBATIM, no longer run:
+    // ok('CARD [font-span successor]: the dock carries the scoped small form - "Selection" / "Whole card" over the nine faces, `-` `+`, no number field, no face button',
+    //   !!csScoped && csScoped.buttons === 4 && csScoped.inputs === 0 && !csScoped.faceButton && JSON.stringify(csScoped.scopes) === JSON.stringify(['Selection', 'Whole card']) && csScoped.rows === 9, JSON.stringify(csScoped));
+    // ------------------------------------------------------------------
+    ok('CARD [item-9 successor]: the dock carries the scoped small form - "Selection" / "Whole card", a face button (Default + the eleven faces COLLAPSED behind it), `-` `+`, no number field',
+      !!csScoped && csScoped.buttons === 5 && csScoped.inputs === 0 && csScoped.faceButton && JSON.stringify(csScoped.scopes) === JSON.stringify(['Selection', 'Whole card']) && csScoped.rows === 12, JSON.stringify(csScoped));
     await press(app, "document.querySelectorAll('.board-popup-dock .wz-type-step')[1]", "the card's `+`");
     await sleep(300);
     await pickFace(app, 'Atkinson Hyperlegible');
@@ -316,12 +352,14 @@ if (process.env.HARNESS_PARKED === '1') {
   // section's own observations (i207Parks). The line just below said this file parks nothing; it is kept as it was.
   const pk = (name, pass, detail) => parkedChecks.push({ name, pass, detail });
   const d = i207Parks.draftForm, l = i207Parks.label, c = i207Parks.cardForm;
+  // (the two records below follow the NEWEST truth - TOOLS #10 items 9 + 10: the scoped form has a face button over a COLLAPSED list of Default + eleven faces = 5 buttons, 12 rows)
   pk('PARKED (was "DRAFT: the Type control is mounted, full form — a face button, `-` `+` (3 buttons) and ONE number field") - font-span: the scoped form, no face button; live successor: DRAFT [font-span successor]',
-    !!d && d.buttons === 4 && d.inputs === 1 && !d.faceButton && d.rows === 9, JSON.stringify(d));
+    !!d && d.buttons === 5 && d.inputs === 1 && d.faceButton && d.rows === 12, JSON.stringify(d));
+  // (the LABEL record below follows the NEWEST truth - TOOLS #10 item 10: the brass row of a never-chose page is "Default (<face>)")
   pk('PARKED (was "LABEL: on a page that never chose, the face button names the face that ACTUALLY renders (the first family the editor computes) and is set in it") - font-span: the brass roster row does; live successor: LABEL [font-span successor]',
-    !!l && l.label === l.rendered && l.rowFamily === l.rendered, JSON.stringify(l));
+    !!l && l.label === `Default (${l.rendered})` && l.rowFamily === l.rendered, JSON.stringify(l));
   pk('PARKED (was "CARD: the styling dock carries the smallest form — a face button and `-` `+` (3 buttons), no number field") - font-span: the scoped small form; live successor: CARD [font-span successor]',
-    !!c && c.buttons === 4 && c.inputs === 0 && !c.faceButton && c.rows === 9, JSON.stringify(c));
+    !!c && c.buttons === 5 && c.inputs === 0 && c.faceButton && c.rows === 12, JSON.stringify(c));
   // PAGE-SIZE (Oct 23, Fable's ruling a) - SIX more parks, each frozen with its original name, re-verifying the NEW truth from the default leg's
   // observations (i207Parks.untouched / .size / .modes).
   const u = i207Parks.untouched, s = i207Parks.size, m = i207Parks.modes;

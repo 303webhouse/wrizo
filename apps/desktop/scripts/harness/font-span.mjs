@@ -52,6 +52,8 @@ const scopeState = (app, root) => app.evalJs(`(() => { const t = document.queryS
 // mismatches logged so far (the harness arms window.__wzVerifyRows; store/lineRows.ts verifyRows counts them)
 const rowsState = (app) => app.evalJs(`(() => { const ed = document.querySelector('${ED}'); if (!ed) return null;
   return { rows: ed.querySelectorAll(':scope > .wz-row').length, mismatches: (window.__wzRowsMismatches || []).length, armed: !!window.__wzVerifyRows }; })()`);
+// TOOLS #10 item 9: the scoped face list is COLLAPSED until its face button is pressed - a driver step before a row press, nothing asserted differently.
+const openFaceList = async (app, root) => { await app.evalJs(`(() => { const t = document.querySelector('${root} .wz-type'); const ul = t && t.querySelector('.wz-type-list-inline'); const b = t && t.querySelector('.wz-type-face'); if (ul && ul.hidden && b) b.click(); })()`); await new Promise((r) => setTimeout(r, 250)); };
 const rowExpr = (root, name) => `[...document.querySelectorAll('${root} .wz-type-row')].find(r => r.textContent === ${JSON.stringify(name)})`;
 const spanState = (app, sel) => app.evalJs(`(() => { const s = document.querySelector('${sel} .md-font'); if (!s) return null;
   const marks = [...s.querySelectorAll(':scope > .md-mark-hidden')].map(m => getComputedStyle(m).fontSize);
@@ -90,7 +92,7 @@ await withHarness(async (app) => {
     await sleep(300);
     const s1 = await scopeState(app, '.wz-sliver');
     ok(`${T} PAGE: words highlighted - the scope follows to "Selection"`, hl && !!s1 && s1.scopes[0].on === 'true' && s1.scopes[0].dead === 'false' && s1.scopes[1].on === 'false', JSON.stringify({ hl, s1 }));
-    await press(app, rowExpr('.wz-sliver', 'Atkinson Hyperlegible'), 'the Atkinson Hyperlegible row');
+    await openFaceList(app, '.wz-sliver'); await press(app, rowExpr('.wz-sliver', 'Atkinson Hyperlegible'), 'the Atkinson Hyperlegible row');
     await sleep(600);
     const sp = await spanState(app, ED);
     const s2 = await scopeState(app, '.wz-sliver');
@@ -114,11 +116,11 @@ await withHarness(async (app) => {
     // a span again, then the whole-document pick over it
     await highlight(app, ED, 'Ada');
     await sleep(250);
-    await press(app, rowExpr('.wz-sliver', 'Courier Prime'), 'the Courier Prime row');
+    await openFaceList(app, '.wz-sliver'); await press(app, rowExpr('.wz-sliver', 'Courier Prime'), 'the Courier Prime row');
     await sleep(500);
     await press(app, "document.querySelector('.wz-sliver .wz-type-scope[data-scope=\"whole\"]')", 'the "Whole document" scope');
     await sleep(250);
-    await press(app, rowExpr('.wz-sliver', 'EB Garamond'), 'the EB Garamond row');
+    await openFaceList(app, '.wz-sliver'); await press(app, rowExpr('.wz-sliver', 'EB Garamond'), 'the EB Garamond row');
     await sleep(700);
     const e3 = await settledBy(() => stored(app, id));
     const fam = await app.evalJs(`getComputedStyle(document.querySelector('${ED}')).fontFamily`);
@@ -163,7 +165,7 @@ await withHarness(async (app) => {
       !!c0 && c0.scopes.length === 2 && c0.scopes[0].text === 'Selection' && c0.scopes[1].text === 'Whole card' && c0.scopes[0].on === 'true', JSON.stringify(c0));
     ok(`${T} CARD: both scope labels FIT at the dock's width - neither is clipped, and both sit inside the Typeface section`,
       !!c0 && c0.scopes.length === 2 && c0.scopes.every((b) => !b.clipped && b.inside), JSON.stringify(c0 && c0.scopes));
-    await press(app, rowExpr('.board-popup-dock', 'Courier Prime'), "the card's Courier Prime row");
+    await openFaceList(app, '.board-popup-dock'); await press(app, rowExpr('.board-popup-dock', 'Courier Prime'), "the card's Courier Prime row");
     await sleep(600);
     const csp = await spanState(app, CE);
     ok(`${T} CARD: ONLY the highlighted words take the face in the card, painted, marks hidden, still highlighted`,

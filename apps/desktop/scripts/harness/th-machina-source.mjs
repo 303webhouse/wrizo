@@ -226,8 +226,20 @@ const tf = src('store/themeFonts.ts');
 const tff = src('store/themeFontFaces.ts');
 const stripC = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
 // (the probe follows the code: the faces' literal imports moved to store/themeFontFaces.ts on Oct 24 - see M11's strict-bundle checks below; the CLAIM is unchanged: Machina's nine faces, Machina only)
-ok("M11: Machina loads the four slots' faces (Plex Mono 500; Plex Sans 400/500/600; Plex Serif 400/500 + italic 400; Atkinson 400/700) only for 'machina' - ensureThemeFonts gates on the theme, the registered loader names the nine",
-  /theme !== 'machina'/.test(tf) && /registerThemeFonts\('machina'/.test(tff) && ['ibm-plex-mono/500', 'ibm-plex-sans/400', 'ibm-plex-sans/500', 'ibm-plex-sans/600', 'ibm-plex-serif/400.css', 'ibm-plex-serif/500', 'ibm-plex-serif/400-italic', 'atkinson-hyperlegible/400', 'atkinson-hyperlegible/700'].every((f) => tff.includes(f)), '');
+// ---- PARKED - SUPERSEDED by TOOLS #10 item 10 (Nick, Oct 24: Flux's default writing face is Titillium Web, Machina's is Source Sans 3) ----
+// The ORIGINAL pinned the loader to Machina alone (`theme !== 'machina'` in ensureThemeFonts) and to the nine Machina faces. Flux now registers a face set too, so the gate is gone (a theme that registered nothing is a no-op) and Machina's
+// set gains Source Sans 3. Kept VERBATIM below, no longer run; the successor follows, and the original is run as a PARKED RECORD (it must now fail, for exactly that reason).
+// ok("M11: Machina loads the four slots' faces (Plex Mono 500; Plex Sans 400/500/600; Plex Serif 400/500 + italic 400; Atkinson 400/700) only for 'machina' - ensureThemeFonts gates on the theme, the registered loader names the nine",
+//   /theme !== 'machina'/.test(tf) && /registerThemeFonts\('machina'/.test(tff) && ['ibm-plex-mono/500', 'ibm-plex-sans/400', 'ibm-plex-sans/500', 'ibm-plex-sans/600', 'ibm-plex-serif/400.css', 'ibm-plex-serif/500', 'ibm-plex-serif/400-italic', 'atkinson-hyperlegible/400', 'atkinson-hyperlegible/700'].every((f) => tff.includes(f)), '');
+// ------------------------------------------------------------------
+const m11Machina = ['ibm-plex-mono/500', 'ibm-plex-sans/400', 'ibm-plex-sans/500', 'ibm-plex-sans/600', 'ibm-plex-serif/400.css', 'ibm-plex-serif/500', 'ibm-plex-serif/400-italic', 'atkinson-hyperlegible/400', 'atkinson-hyperlegible/700', 'source-sans-3/wght.css', 'source-sans-3/wght-italic.css'];
+const m11Succ = (tfCode, tffCode) => !/theme !== 'machina'/.test(tfCode) && /wanted\.add\(theme\)/.test(tfCode) && /registerThemeFonts\('machina'/.test(tffCode) && m11Machina.every((x) => tffCode.includes(x)) && /registerThemeFonts\('flux'/.test(tffCode) && ['titillium-web/400.css', 'titillium-web/400-italic', 'titillium-web/700.css', 'titillium-web/700-italic'].every((x) => tffCode.includes(x));
+ok("M11 [item-10 successor]: each theme loads ITS OWN faces with the theme - Machina's four slots + its default Source Sans 3, Flux's default Titillium Web - ensureThemeFonts has no Machina gate (a theme that registered none is a no-op), and the registered loaders name them", m11Succ(tf, tff), '');
+ok('M11 [parked record]: the ORIGINAL (the Machina-only gate) now fails ONLY because the gate went when Flux registered its face', !/theme !== 'machina'/.test(tf), '');
+{ const gate = m11Succ(tf + "\nif (theme !== 'machina') return;\n", tff); const noFlux = m11Succ(tf, tff.replace("registerThemeFonts('flux'", "registerThemeFonts('fluxx'")); const noSS = m11Succ(tf, tff.replace('source-sans-3/wght.css', 'source-sans-3/x.css'));
+  ok('MUTANT: the Machina-only gate comes back - the M11 successor must go RED (the mutation LANDED: the real source passes)', m11Succ(tf, tff) && !gate, '');
+  ok('MUTANT: Flux stops registering its face - the M11 successor must go RED (the mutation LANDED)', m11Succ(tf, tff) && !noFlux, '');
+  ok('MUTANT: Machina loses Source Sans 3 - the M11 successor must go RED (the mutation LANDED)', m11Succ(tf, tff) && !noSS, ''); }
 // the Oct 24 train-#6 fix: nothing the harnesses' store loaders bundle may name a font package (esbuild resolves the css and dies on its .woff2); the literals live in themeFontFaces.ts, which only main.tsx imports
 // (comments are stripped from EVERY file before matching: themeFonts.ts's own explanatory comments name "@fontsource" and "store/themeFontFaces.ts" in prose - only CODE counts)
 const tsFiles = readdirSync(SRC, { recursive: true }).map(String).filter((f) => /\.(ts|tsx)$/.test(f)).map((f) => [f, stripC(readFileSync(join(SRC, f), 'utf8'))]);

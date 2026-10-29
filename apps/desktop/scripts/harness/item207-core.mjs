@@ -96,8 +96,15 @@ let pageSizePark = null;   // page-size: the default leg's observation, for the 
 // ---------------------------------------------------------------------------
 // THE ROSTER AND THE RESOLVER
 // ---------------------------------------------------------------------------
+// ---- PARKED - SUPERSEDED by TOOLS #10 item 10 (Nick, Oct 24: Titillium Web + Source Sans 3 join the roster as the Flux / Machina defaults) ----
+// The roster was nine faces; it is eleven now. Kept VERBATIM below and no longer run; the successor follows, and the original is run as a PARKED RECORD (it must now fail, for exactly that reason).
+// const NINE = ['Crimson Pro', 'Lora', 'EB Garamond', 'Source Serif 4', 'Times New Roman', 'Figtree', 'Atkinson Hyperlegible', 'Arial', 'Courier Prime'];
+// ok('ROSTER: exactly the nine approved faces, by name', JSON.stringify(M.ROSTER.map((f) => f.name)) === JSON.stringify(NINE), JSON.stringify(M.ROSTER.map((f) => f.name)));
+// ------------------------------------------------------------------
 const NINE = ['Crimson Pro', 'Lora', 'EB Garamond', 'Source Serif 4', 'Times New Roman', 'Figtree', 'Atkinson Hyperlegible', 'Arial', 'Courier Prime'];
-ok('ROSTER: exactly the nine approved faces, by name', JSON.stringify(M.ROSTER.map((f) => f.name)) === JSON.stringify(NINE), JSON.stringify(M.ROSTER.map((f) => f.name)));
+const ELEVEN = ['Crimson Pro', 'Lora', 'EB Garamond', 'Source Serif 4', 'Times New Roman', 'Figtree', 'Source Sans 3', 'Titillium Web', 'Atkinson Hyperlegible', 'Arial', 'Courier Prime'];
+ok('ROSTER [item-10 successor]: the nine approved faces plus the two theme defaults (Source Sans 3, Titillium Web), by name, in this order', JSON.stringify(M.ROSTER.map((f) => f.name)) === JSON.stringify(ELEVEN), JSON.stringify(M.ROSTER.map((f) => f.name)));
+ok('ROSTER [parked record]: the ORIGINAL (exactly nine) now fails ONLY because two faces joined (the nine are all still there, in order)', JSON.stringify(M.ROSTER.map((f) => f.name)) !== JSON.stringify(NINE) && JSON.stringify(M.ROSTER.map((f) => f.name).filter((n) => NINE.includes(n))) === JSON.stringify(NINE), '');
 const TNR = M.rosterFace('Times New Roman'); const ARIAL = M.rosterFace('Arial');
 ok('ROSTER: Times New Roman and Arial are NAMED (source "named"), installed-first, with Tinos / Arimo as the metric-compatible fallback in the stack',
   TNR.source === 'named' && TNR.fallback === 'Tinos' && /^'Times New Roman', 'Tinos'/.test(TNR.stack) && ARIAL.source === 'named' && ARIAL.fallback === 'Arimo' && /^'Arial', 'Arimo'/.test(ARIAL.stack),
@@ -105,9 +112,19 @@ ok('ROSTER: Times New Roman and Arial are NAMED (source "named"), installed-firs
 ok('ROSTER: the stored form of a named face carries its fallback; a bundled one does not', JSON.stringify(M.storedFaceFor(TNR)) === JSON.stringify({ name: 'Times New Roman', generic: 'serif', source: 'named', fallback: 'Tinos' }) && !('fallback' in M.storedFaceFor(M.rosterFace('Lora'))), JSON.stringify(M.storedFaceFor(TNR)));
 ok('SIZE-ADJUST (Fable\'s ruling): every face carries sizeAdjust and every one is 1 — the number is literal printed points; the field is the seam', M.ROSTER.every((f) => f.sizeAdjust === 1), '');
 ok('RESOLVER: a known face resolves to its stack; an absent face resolves to nothing (the theme/voice face stands)', M.faceStack(M.storedFaceFor(M.rosterFace('Lora'))) === "'Lora Variable', Georgia, serif" && M.faceStack(undefined) === undefined, '');
-ok('FALLBACK IN KIND: a face this build does not know still renders — its own name, then its generic class (a serif falls back to a serif, a monospace to a monospace, never a sans)',
-  /'Some Device Font', Georgia, serif$/.test(M.faceStack({ name: 'Some Device Font', generic: 'serif', source: 'device' })) && /monospace$/.test(M.faceStack({ name: 'X', generic: 'monospace', source: 'device' })) && /sans-serif$/.test(M.faceStack({ name: 'Y', generic: 'sans-serif', source: 'file' })),
+// ---- PARKED - SUPERSEDED by TOOLS #10 item 11 (Fable: GO, Oct 27: the writer's own installed fonts - device-local list, StoredFace source 'device') ----
+// A face whose source is 'device' no longer falls back to a generic class of its own - it falls back to the THEME'S DEFAULT (--font-prose). The in-kind rule still holds for every other unknown face (source 'named' / 'file'). Kept VERBATIM below and no longer run; the successor follows, and the original is run as a PARKED RECORD (it must now fail, for exactly that reason).
+// ok('FALLBACK IN KIND: a face this build does not know still renders — its own name, then its generic class (a serif falls back to a serif, a monospace to a monospace, never a sans)',
+//   /'Some Device Font', Georgia, serif$/.test(M.faceStack({ name: 'Some Device Font', generic: 'serif', source: 'device' })) && /monospace$/.test(M.faceStack({ name: 'X', generic: 'monospace', source: 'device' })) && /sans-serif$/.test(M.faceStack({ name: 'Y', generic: 'sans-serif', source: 'file' })),
+//   M.faceStack({ name: 'Some Device Font', generic: 'serif', source: 'device' }));
+// ------------------------------------------------------------------
+ok('FALLBACK IN KIND [item-11 successor]: a face this build does not know (source named / file) still renders its own name, then its generic class (a serif to a serif, a monospace to a monospace, never a sans)',
+  /'Some Named Font', Georgia, serif$/.test(M.faceStack({ name: 'Some Named Font', generic: 'serif', source: 'named' })) && /monospace$/.test(M.faceStack({ name: 'X', generic: 'monospace', source: 'file' })) && /sans-serif$/.test(M.faceStack({ name: 'Y', generic: 'sans-serif', source: 'named' })),
+  M.faceStack({ name: 'Some Named Font', generic: 'serif', source: 'named' }));
+ok('FALLBACK [item-11]: a face from THIS device (source "device") falls back to the theme\'s default - its own name, then var(--font-prose) - never to a generic class, whatever generic it carries',
+  M.faceStack({ name: 'Some Device Font', generic: 'serif', source: 'device' }) === "'Some Device Font', var(--font-prose)" && M.faceStack({ name: 'X', generic: 'monospace', source: 'device' }) === "'X', var(--font-prose)" && M.faceStack({ name: 'Y', generic: 'sans-serif', source: 'device' }) === "'Y', var(--font-prose)",
   M.faceStack({ name: 'Some Device Font', generic: 'serif', source: 'device' }));
+ok('FALLBACK IN KIND [parked record]: the ORIGINAL (a device face falls to Georgia, serif) now fails ONLY because a device face falls to the theme default', !/'Some Device Font', Georgia, serif$/.test(M.faceStack({ name: 'Some Device Font', generic: 'serif', source: 'device' })), '');
 ok('RESOLVER: a hostile name cannot break out of the font-family value (quotes and backslashes are stripped)', !/[\\]/.test(M.faceStack({ name: "A'; } body { x:", generic: 'serif', source: 'device' })) && (M.faceStack({ name: "A'; } body { x:", generic: 'serif', source: 'device' }).match(/'/g) || []).length === 2, M.faceStack({ name: "A'; } body { x:", generic: 'serif', source: 'device' }));
 
 // ---------------------------------------------------------------------------
@@ -117,6 +134,7 @@ const mainSrc = readFileSync(join(SRC, 'main.tsx'), 'utf8');
 const eagerImports = [...mainSrc.matchAll(/^import '(@fontsource[^']*)';/gm)].map((m) => m[1]);
 const NEW_SIX = ['lora', 'eb-garamond', 'source-serif-4', 'atkinson-hyperlegible', 'tinos', 'arimo'];
 ok('LOAD-ON-CHOOSE: main.tsx imports NONE of the six new families eagerly (the eager list did not grow)', NEW_SIX.every((n) => !eagerImports.some((i) => i.includes(`/${n}`))), JSON.stringify(eagerImports));
+ok('LOAD-ON-CHOOSE [item 10]: main.tsx imports neither Source Sans 3 nor Titillium Web eagerly (the two new roster faces; the eager list did not grow)', ['source-sans-3', 'titillium-web'].every((n) => !eagerImports.some((i) => i.includes(`/${n}`))), JSON.stringify(eagerImports));
 ok('LOAD-ON-CHOOSE: the roster\'s eager faces are exactly the ones main.tsx imports (Crimson Pro, Figtree, Courier Prime), and every other face has a real loader',
   JSON.stringify(M.ROSTER.filter((f) => f.eager).map((f) => f.name).sort()) === JSON.stringify(['Courier Prime', 'Crimson Pro', 'Figtree'])
   && ['crimson-pro', 'figtree', 'courier-prime'].every((n) => eagerImports.some((i) => i.includes(`/${n}`)))
@@ -138,6 +156,8 @@ ok('LOAD-ON-CHOOSE (the build): the eagerly-loaded CSS carries @font-face for th
 const cssFiles = files.filter((f) => f.rel.endsWith('.css'));
 const lazyFamilies = NEW_SIX.filter((n) => cssFiles.some((f) => !eagerCss.includes(f.rel) && new RegExp(`font-family:\\s*['"]?${n.replace(/-/g, '[ -]')}`, 'i').test(readFileSync(f.p, 'utf8'))));
 ok('LOAD-ON-CHOOSE (the build): each of the six new families is in a SEPARATE lazily-fetched CSS chunk, so choosing fetches it and opening the app does not', lazyFamilies.length === 6, JSON.stringify(lazyFamilies));
+const NEW_TWO = ['source-sans-3', 'titillium-web'];   // TOOLS #10 item 10: the Flux / Machina default faces - they load WITH their theme (store/themeFontFaces.ts) or on choose, never eagerly
+ok('LOAD-ON-CHOOSE (the build) [item 10]: Source Sans 3 and Titillium Web are in SEPARATE lazily-fetched CSS chunks and NOT in the eager CSS (each theme\'s default loads with its theme; Arbor\'s EB Garamond too - it is one of the six above)', NEW_TWO.every((n) => !new RegExp(`font-family:\\s*['"]?${n.replace(/-/g, '[ -]')}`, 'i').test(eagerCssText)) && NEW_TWO.every((n) => cssFiles.some((f) => !eagerCss.includes(f.rel) && new RegExp(`font-family:\\s*['"]?${n.replace(/-/g, '[ -]')}`, 'i').test(readFileSync(f.p, 'utf8')))), '');
 const eagerBytes = files.filter((f) => eagerCss.includes(f.rel) || /assets\/index-[^/]*\.js$/.test(f.rel)).reduce((n, f) => n + f.size, 0);
 ok('REPORT: eager entry bytes (the entry JS + eager CSS) — recorded so the next change can be compared, not judged', true, `${Math.round(eagerBytes / 1024)} KB across ${eagerCss.length + 1} files; lazy font CSS ${cssFiles.length - eagerCss.length} chunk(s)`);
 
@@ -169,10 +189,33 @@ const coreParks = {};   // FONT-SPAN: the default leg's observations, for the pa
 const scopeOnly = /\{scope && \(\s*<>\s*<div className="wz-type-scopes"[\s\S]*?<button[\s\S]*?<button[\s\S]*?<\/div>/.test(noComments(src('components/TypeControl.tsx')))
   && /\{!scope && <button/.test(noComments(src('components/TypeControl.tsx')));
 coreParks.minimal = { ...shape, scopeOnly };
-ok('MINIMAL [font-span successor]: the control is a face button (unscoped hosts) OR the two scope buttons (scoped hosts), plus the `-` `+` pair - 5 buttons in source, the scope pair only under `scope`, the face button only without it - and ONE number input, only in the full form',
-  shape.buttons === 5 && scopeOnly && shape.inputs === 1 && shape.inputGuardedByFullForm, JSON.stringify(coreParks.minimal));
+// ---- PARKED - SUPERSEDED by TOOLS #10 item 9 (Fable, Oct 27: "the font list is collapsed by default in the Draft Tools drawer") ----
+// Kept VERBATIM and no longer run. The scoped form now carries its own face button (the disclosure that opens the collapsed list) between the scope pair and the list, so it is 6 buttons in source and the face
+// button is no longer "only without scope". Successor below; the original is run as a PARKED RECORD (it must now fail, for exactly that reason).
+// ok('MINIMAL [font-span successor]: the control is a face button (unscoped hosts) OR the two scope buttons (scoped hosts), plus the `-` `+` pair - 5 buttons in source, the scope pair only under `scope`, the face button only without it - and ONE number input, only in the full form',
+//   shape.buttons === 5 && scopeOnly && shape.inputs === 1 && shape.inputGuardedByFullForm, JSON.stringify(coreParks.minimal));
+// ------------------------------------------------------------------
+const tcSrc = noComments(src('components/TypeControl.tsx'));
+const scopeFaceBtn = /\{scope && \(\s*<>\s*<div className="wz-type-scopes"[\s\S]*?<\/div>\s*<button\s+type="button"\s+className="wz-type-face"[\s\S]*?aria-expanded=\{listOpen\}[\s\S]*?onClick=\{\(\) => setListOpen\(\(o\) => !o\)\}[\s\S]*?<ul className="wz-type-list wz-type-list-inline"[^>]*hidden=\{!listOpen\}/.test(tcSrc);
+ok('MINIMAL [item-9 successor]: the control is a face button (unscoped hosts) OR the two scope buttons + a face button that opens the COLLAPSED list (scoped hosts), plus the `-` `+` pair and the add-font form (its Add / Find buttons and name input) - 8 buttons and 2 inputs in source, the NUMBER input only in the full form',
+  shape.buttons === 8 && scopeFaceBtn && /\{!scope && <button/.test(tcSrc) && shape.inputs === 2 && shape.inputGuardedByFullForm, JSON.stringify({ ...coreParks.minimal, scopeFaceBtn }));
+ok('MINIMAL [parked record]: the ORIGINAL (5 buttons) now fails ONLY because the scoped form gained its face button and the add-font form (8)', !(shape.buttons === 5 && scopeOnly && shape.inputs === 1 && shape.inputGuardedByFullForm) && shape.buttons === 8, JSON.stringify({ buttons: shape.buttons }));
+ok('COLLAPSED (item 9): the scoped list is HIDDEN until the face button is pressed - hidden={!listOpen}, listOpen starts false, and Esc / an outside press close it', /const \[listOpen, setListOpen\] = useState\(false\)/.test(tcSrc) && /hidden=\{!listOpen\}/.test(tcSrc) && /if \(!open && !listOpen\) return undefined;/.test(tcSrc) && /if \(e\.key === 'Escape'\) close\(\)/.test(tcSrc), '');
+{
+  const sut = tcSrc.replace('hidden={!listOpen}', '');
+  const sut2 = tcSrc.replace('useState(false);\n  const rootRef', 'useState(true);\n  const rootRef').replace('const [listOpen, setListOpen] = useState(false)', 'const [listOpen, setListOpen] = useState(true)');
+  ok('MUTANT: the scoped list loses its `hidden` (it would always show) - COLLAPSED must go RED (the mutation LANDED)', sut !== tcSrc && !/hidden=\{!listOpen\}/.test(sut), '');
+  ok('MUTANT: the scoped list starts OPEN - COLLAPSED must go RED (the mutation LANDED)', sut2 !== tcSrc && !/const \[listOpen, setListOpen\] = useState\(false\)/.test(sut2), '');
+}
 ok('MINIMAL: no caption or heading of any kind in the control (no label, legend or heading element, no eyebrow class) — a control\'s name lives in its aria-label', !shape.caption, JSON.stringify(shape));
-ok('NO ADD DOOR (207a): the control carries no "Add a font…" row — it arrives with Route A (207b), and Free Write never gets it (his Q2)', !shape.addDoor, '');
+// ---- PARKED - SUPERSEDED by TOOLS #10 item 11 (Fable: GO, Oct 27: the writer's own installed fonts - device-local list, StoredFace source 'device') ----
+// The control now carries an "Add a font..." row - in the SCOPED form only (Draft's drawer, a card's dock). Free Write and Revise still never get it (Nick's Q2). Kept VERBATIM below and no longer run; the successor follows, and the original is run as a PARKED RECORD (it must now fail, for exactly that reason).
+// ok('NO ADD DOOR (207a): the control carries no "Add a font…" row — it arrives with Route A (207b), and Free Write never gets it (his Q2)', !shape.addDoor, '');
+// ------------------------------------------------------------------
+const tcAdd = noComments(src('components/TypeControl.tsx'));
+const addRowScoped = /\{addRow\(\)\}\s*<\/ul>\s*<\/>/.test(tcAdd) && (tcAdd.match(/\{addRow\(\)\}/g) || []).length === 1;   // the one call sits inside the scoped list, never the unscoped popup
+ok('ADD DOOR [item-11 successor]: the control carries "Add a font..." in the SCOPED form only - one addRow() call, inside the scoped list, and none in the unscoped (Free Write / Revise) list (his Q2)', addRowScoped && /typeAddFont/.test(tcAdd), '');
+ok('NO ADD DOOR [parked record]: the ORIGINAL (no Add row anywhere in the control) now fails ONLY because the scoped form has one', shape.addDoor && addRowScoped, '');
 const LBL = M.faceNameFromStack;
 ok('LABEL: the unchosen face is named from what ACTUALLY renders — the first family of the resolved --font-prose, quotes and " Variable" removed (Crimson Pro, Figtree, and under the Flux voice Chakra Petch — never the voice dial\'s own word)',
   LBL("'Crimson Pro Variable', Georgia, serif") === 'Crimson Pro' && LBL("'Figtree Variable', system-ui, sans-serif") === 'Figtree' && LBL("'Chakra Petch', sans-serif") === 'Chakra Petch' && LBL('Georgia, serif') === 'Georgia' && LBL('') === null && LBL(null) === null && LBL('  ') === null,
@@ -300,8 +343,12 @@ if (process.env.HARNESS_PARKED === '1') {
     pass: !!f && f.freeWriteSmall && f.draftFullScoped && f.reviseFullUnscoped, detail: JSON.stringify(f) }); }
   // FONT-SPAN (2026-10-15) - a SECOND park: MINIMAL's three buttons, superseded by the scope pair. Record frozen; it re-verifies the new
   // truth from the default leg's observation (coreParks.minimal).
-  { const m = coreParks.minimal; parkedChecks.push({ name: 'PARKED (was "MINIMAL (his law): the control is exactly a face button and a `-` `+` pair (3 buttons) plus ONE number input, and that input exists only in the full form") - font-span: 5 buttons in source, the scope pair only under `scope`; live successor: MINIMAL [font-span successor]',
-    pass: !!m && m.buttons === 5 && m.scopeOnly && m.inputs === 1 && m.inputGuardedByFullForm, detail: JSON.stringify(m) }); }
+  // ---- PARKED VERBATIM - SUPERSEDED by TOOLS #10 items 9 + 11 (the scoped form gained its face button and the add-font form: 8 buttons, 2 inputs). The old record (5 buttons / 1 input) is kept below, no longer run; the successor follows. ----
+  // { const m = coreParks.minimal; parkedChecks.push({ name: 'PARKED (was "MINIMAL (his law): the control is exactly a face button and a `-` `+` pair (3 buttons) plus ONE number input, and that input exists only in the full form") - font-span: 5 buttons in source, the scope pair only under `scope`; live successor: MINIMAL [font-span successor]',
+  // pass: !!m && m.buttons === 5 && m.scopeOnly && m.inputs === 1 && m.inputGuardedByFullForm, detail: JSON.stringify(m) }); }
+  // ------------------------------------------------------------------
+  { const m = coreParks.minimal; parkedChecks.push({ name: 'PARKED [item-9/11 successor] (was "MINIMAL (his law): the control is exactly a face button and a `-` `+` pair (3 buttons) plus ONE number input, and that input exists only in the full form") - font-span: 5 buttons in source, the scope pair only under `scope`; live successor: MINIMAL [font-span successor]',
+    pass: !!m && m.buttons === 8 && m.scopeOnly && m.inputs === 2 && m.inputGuardedByFullForm, detail: JSON.stringify(m) }); }
   // PAGE-SIZE (Oct 23, Fable's ruling a) - a FIFTH and SIXTH park: "11 = TODAY"'s explicit 11 and SIZE's 17px x n/11 formula. Records frozen;
   // each re-verifies the new truth from the default leg's observation (pageSizePark).
   { const p = pageSizePark; parkedChecks.push({ name: 'PARKED (was "11 = TODAY: an explicit 11 yields no font-size either (the default is the absence of a rule)") - page-size ruling a: 12 is the page default; 11 is a real smaller size', pass: !!p && p.defaultOk, detail: JSON.stringify(p) }); }

@@ -377,7 +377,7 @@ await withHarness(async (app) => {
   for (const w of [FLOOR_W, LAPTOP_W, WIDE_W]) {
     await freshProsePage(app, w, 900);
     await openPageCategory(app);
-    await sleep(150);
+    await sleep(450);   // DRIVER (TOOLS #10 item 8): the rail pop-outs now slide in over --drawer-dur (200 ms); the flush / no-overlap law is a REST-state law, so it is measured after the entry has settled (was 150 ms, mid-slide)
     const [strip, panel] = await Promise.all([rectOf(app, '.desk-frame-strip'), rectOf(app, '.wz-cascade-panel')]);
     const frameGap = await app.evalJs("parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--frame-gap'))");
     const gap = panel.left - strip.right;
@@ -415,7 +415,7 @@ await withHarness(async (app) => {
   await sleep(150);
   await app.evalJs("document.querySelector('.wz-strip-item[data-category=plan]').click()"); // open Plan
   await app.waitFor("!!document.querySelector('.wz-cascade-panel')", { label: 'Plan panel open (S3 survey check)' });
-  await sleep(150);
+  await sleep(450);   // DRIVER (TOOLS #10 item 8): the rail pop-outs now slide in over --drawer-dur (200 ms); the flush / no-overlap law is a REST-state law, so it is measured after the entry has settled (was 150 ms, mid-slide)
   const [stripForSurvey, planPanel] = await Promise.all([rectOf(app, '.desk-frame-strip'), rectOf(app, '.wz-cascade-panel')]);
   const frameGapNow = await app.evalJs("parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--frame-gap'))");
   // ---- PARKED — SUPERSEDED by item 83 M1 (R10.i), 2026-08-04 ----------

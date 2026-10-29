@@ -18,7 +18,10 @@
 // Buttons preventDefault on mousedown so pressing one never steals the caret from a writing surface.
 import { useEffect, useRef, useState } from 'react';
 import { useDeskLexicon } from '../store/deskLexicon';
-import { ROSTER, faceStack, faceNameFromStack, storedFaceFor, ensureFaceLoaded, faceForSlug, fontSlug, DEFAULT_FACE_NAME, type StoredFace } from '../store/fontRoster';
+import { useTheme } from '../store/theme';
+import { useThemePrefs } from '../store/themePrefs';
+import { useInstalledFonts, addInstalledFont, queryLocalFamilies, fontIsAvailable } from '../store/installedFonts';
+import { ROSTER, faceStack, faceNameFromStack, themeDefaultFaceName, deviceFace, storedFaceFor, ensureFaceLoaded, faceForSlug, fontSlug, DEFAULT_FACE_NAME, type StoredFace } from '../store/fontRoster';
 import { stepUp, stepDown, normalizeTypedSize, formatSize } from '../store/fontSize';
 
 export interface TypeControlProps {
@@ -27,7 +30,8 @@ export interface TypeControlProps {
   face: StoredFace | undefined;
   /** The size in points in effect (11 when never chosen). */
   size: number;
-  onPickFace: (face: StoredFace) => void;
+  /** A roster face, or `undefined` for "Default" (TOOLS #10 item 10): the host CLEARS its stored face - no stored face = the theme's default, which is the rule that already existed. */
+  onPickFace: (face: StoredFace | undefined) => void;
   onSize: (points: number) => void;
   /** FONT-SPAN (Nick approved the font-choices mockup, cursor/font-choices @ 6cc5f529): where words can be highlighted and given their
    *  own face (Draft, a card), the Typeface section carries the two scopes - "Selection" and "Whole document" ("Whole card") - over the
@@ -46,29 +50,40 @@ export interface TypeScope {
   onPickSelection: (slug: string | null) => void;
 }
 
+const DEFAULT_KEY = '\u0000default';   // the "Default (<face>)" row's key: not a face name
+
 /** The face that ACTUALLY renders when nothing is chosen: the first family of the resolved `--font-prose` (voice dial and
  *  theme already applied), never the dial's own label - under the Chakra Petch voice this says Chakra Petch. */
-function everydayFaceName(): string {
+function everydayFaceName(theme?: string, voice?: string): string {
+  // TOOLS #10 item 10: the theme's own default first (a table that is checked against the CSS tokens) - "Default (<face>)" must always NAME the face; the DOM read is the fallback for a theme the table does not know.
+  const themed = themeDefaultFaceName(theme, voice);
+  if (themed) return themed;
   try { return faceNameFromStack(getComputedStyle(document.documentElement).getPropertyValue('--font-prose')) ?? DEFAULT_FACE_NAME; } catch { return DEFAULT_FACE_NAME; }
 }
 
 export function TypeControl({ form, face, size, onPickFace, onSize, scope }: TypeControlProps) {
   const { t } = useDeskLexicon();
   const [open, setOpen] = useState(false);
+  // TOOLS #10 item 9: in the scoped form (Draft's drawer, a card's dock) the face list is COLLAPSED until the face button is pressed. The list stays mounted (hidden), so it is the same list either way.
+  const [listOpen, setListOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const currentName = face?.name ?? everydayFaceName();
+  const theme = useTheme();
+  const { voice } = useThemePrefs();   // the voice dial, from its store (never read off the document)
+  const defaultName = everydayFaceName(theme, voice);
+  const currentName = face?.name ?? defaultName;
   // Unchosen: the button wears whatever the page really wears (`--font-prose`), roster face or not.
   const currentStack = faceStack(face) ?? 'var(--font-prose)';
   const [draft, setDraft] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!open) return undefined;
-    const onDown = (e: MouseEvent) => { if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false); };
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    if (!open && !listOpen) return undefined;
+    const close = () => { setOpen(false); setListOpen(false); };
+    const onDown = (e: MouseEvent) => { if (rootRef.current && !rootRef.current.contains(e.target as Node)) close(); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
     document.addEventListener('mousedown', onDown);
     document.addEventListener('keydown', onKey);
     return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
-  }, [open]);
+  }, [open, listOpen]);
 
   const keepFocus = (e: React.MouseEvent) => e.preventDefault();
   // FONT-SPAN: the scope. It FOLLOWS the highlight - a fresh highlight returns the choice to Selection - unless the writer tapped
@@ -82,11 +97,22 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
   }, [scope?.has]);
   const whole = !scope || !scope.has || wholeByHand;
   // the face in brass: the surface's own face for a whole pick; the highlight's face for a selection (none when it is mixed)
-  const brassName = !scope ? currentName
-    : whole ? currentName
-      : scope.face === 'mixed' ? null
-        : scope.face === null ? currentName
-          : faceForSlug(scope.face).name;
+  // TOOLS #10 item 10: an UNCHOSEN surface marks the "Default (<face>)" row, never a roster row - the writer has not picked that face, the theme has. `brassKey` is the row in force: DEFAULT_KEY, a roster face's
+  // name, or null (a mixed highlight); `brassName` is only the face button's label (the default's real name when nothing is chosen).
+  const ownKey = face ? face.name : DEFAULT_KEY;
+  const brassKey: string | null = !scope || whole ? ownKey
+    : scope.face === 'mixed' ? null
+      : scope.face === null ? ownKey
+        : faceForSlug(scope.face).name;
+  const brassName = brassKey === DEFAULT_KEY ? currentName : brassKey;
+  // Default = clear. A whole pick clears the surface's stored face; a pick on a selection removes its span (the words fall back to the surface's own face).
+  const pickDefault = () => { if (!scope || whole) onPickFace(undefined); else scope.onPickSelection(null); };
+  const defaultLabel = t('typeFaceDefault').replace('{face}', defaultName);
+  const defaultRow = (current: boolean, onPick: () => void) => (
+    <li key="__default" role="option" aria-selected={current} data-current={current ? 'true' : 'false'} data-default="true" className="wz-type-row" style={{ fontFamily: 'var(--font-prose)' }} title={defaultLabel} aria-label={defaultLabel} onClick={onPick}>
+      {defaultLabel}
+    </li>
+  );
   const pickRow = (name: string) => {
     const f = ROSTER.find((x) => x.name === name);
     if (!f) return;
@@ -94,6 +120,44 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
     if (!scope || whole) { onPickFace(storedFaceFor(f)); return; }
     scope.onPickSelection(f.name === currentName ? null : fontSlug(f.name));
   };
+  // TOOLS #10 item 11 - the writer's own installed fonts. The device-local list (store/installedFonts.ts) follows the roster in BOTH lists; the face this surface already wears from another device joins it, so it can be seen and
+  // re-picked. A face not installed HERE shows a quiet note and renders as the theme's default (faceStack). "Add a font..." exists only in the scoped form (Draft, a card) - Free Write and Revise never get it (Nick's Q2).
+  const installed = useInstalledFonts();
+  const deviceNames = [...installed, ...(face?.source === 'device' && !installed.some((n) => n.toLowerCase() === face.name.toLowerCase()) ? [face.name] : [])];
+  const [adding, setAdding] = useState(false);
+  const [draftName, setDraftName] = useState('');
+  const [lookup, setLookup] = useState<string[]>([]);
+  const canLookup = typeof window !== 'undefined' && typeof (window as unknown as { queryLocalFonts?: unknown }).queryLocalFonts === 'function';
+  const pickDevice = (name: string) => {
+    if (!scope || whole) { onPickFace(deviceFace(name)); return; }
+    scope.onPickSelection(name === currentName ? null : fontSlug(name));
+  };
+  const submitAdd = () => {
+    const n = addInstalledFont(draftName);
+    if (!n) return;
+    setDraftName(''); setAdding(false);
+    pickDevice(n);
+  };
+  const deviceRows = (isCurrent: (name: string) => boolean, onPick: (name: string) => void) => deviceNames.map((name) => {
+    const missing = !fontIsAvailable(name);
+    return (
+      <li key={`device:${name}`} role="option" aria-selected={isCurrent(name)} data-current={isCurrent(name) ? 'true' : 'false'} data-device="true" data-missing={missing ? 'true' : undefined}
+        className="wz-type-row" style={{ fontFamily: faceStack(deviceFace(name)) }} onClick={() => onPick(name)}>
+        {name}{missing && <span className="wz-type-note">{t('typeFaceMissing')}</span>}
+      </li>
+    );
+  });
+  const addRow = () => (adding ? (
+    <li key="__add" className="wz-type-addform" onMouseDown={(e) => e.stopPropagation()}>
+      <input className="wz-type-addinput" type="text" list="wz-type-local-fonts" placeholder={t('typeAddFontName')} aria-label={t('typeAddFontName')} autoFocus value={draftName}
+        onChange={(e) => setDraftName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitAdd(); } else if (e.key === 'Escape') { e.stopPropagation(); setAdding(false); } }} />
+      <datalist id="wz-type-local-fonts">{lookup.map((n) => <option key={n} value={n} />)}</datalist>
+      <button type="button" className="wz-type-addgo" onClick={submitAdd}>{t('typeAddFontAdd')}</button>
+      {canLookup && <button type="button" className="wz-type-addlookup" onClick={() => { void queryLocalFamilies().then((names) => { if (names) setLookup(names); }); }}>{t('typeAddFontLookup')}</button>}
+    </li>
+  ) : (
+    <li key="__add" role="option" aria-selected={false} className="wz-type-add" data-add-font="true" onClick={() => setAdding(true)}>{t('typeAddFont')}</li>
+  ));
   const up = stepUp(size); const down = stepDown(size);
   const commitDraft = () => {
     if (draft === null) return;
@@ -112,18 +176,31 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
             <button type="button" className="wz-type-scope" data-scope="whole" data-on={whole ? 'true' : 'false'} aria-pressed={whole}
               onMouseDown={keepFocus} onClick={() => setWholeByHand(true)}>{scope.wholeLabel}</button>
           </div>
-          <ul className="wz-type-list wz-type-list-inline" role="listbox" aria-label={t('typeFace')} onMouseDown={keepFocus}>
+          <button
+            type="button"
+            className="wz-type-face"
+            aria-haspopup="listbox"
+            aria-expanded={listOpen}
+            aria-label={`${t('typeFace')}: ${brassName ?? currentName}`}
+            style={{ fontFamily: brassName ? (ROSTER.find((x) => x.name === brassName)?.stack ?? currentStack) : currentStack }}
+            onMouseDown={keepFocus}
+            onClick={() => setListOpen((o) => !o)}
+          >{brassName ?? currentName}</button>
+          <ul className="wz-type-list wz-type-list-inline" role="listbox" aria-label={t('typeFace')} hidden={!listOpen} onMouseDown={keepFocus}>
+            {defaultRow(brassKey === DEFAULT_KEY, pickDefault)}
             {ROSTER.map((f) => (
               <li
                 key={f.name}
                 role="option"
-                aria-selected={f.name === brassName}
-                data-current={f.name === brassName ? 'true' : 'false'}
+                aria-selected={f.name === brassKey}
+                data-current={f.name === brassKey ? 'true' : 'false'}
                 className="wz-type-row"
                 style={{ fontFamily: f.stack }}
                 onClick={() => pickRow(f.name)}
               >{f.name}</li>
             ))}
+            {deviceRows((n) => n === brassKey, pickDevice)}
+            {addRow()}
           </ul>
         </>
       )}
@@ -139,17 +216,19 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
       >{currentName}</button>}
       {!scope && open && (
         <ul className="wz-type-list" role="listbox" aria-label={t('typeFace')} onMouseDown={keepFocus}>
+          {defaultRow(!face, () => { onPickFace(undefined); setOpen(false); })}
           {ROSTER.map((f) => (
             <li
               key={f.name}
               role="option"
-              aria-selected={f.name === currentName}
-              data-current={f.name === currentName ? 'true' : 'false'}
+              aria-selected={f.name === face?.name}
+              data-current={f.name === face?.name ? 'true' : 'false'}
               className="wz-type-row"
               style={{ fontFamily: f.stack }}
               onClick={() => { void ensureFaceLoaded(f.name); onPickFace(storedFaceFor(f)); setOpen(false); }}
             >{f.name}</li>
           ))}
+          {deviceRows((n) => face?.source === 'device' && face.name === n, (n) => { onPickFace(deviceFace(n)); setOpen(false); })}
         </ul>
       )}
       <div className="wz-type-size">
