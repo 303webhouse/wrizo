@@ -8,12 +8,10 @@ import '../styles/arbor-v2.css';
 //   data-arbor2              the flag is on (every rule in styles/arbor-v2.css is scoped under it and under Arbor's theme)
 //   data-arbor2-room         night | day. Follows the theme's existing Page tone (data-page: dark = night, light = day)
 //                            until the mockup's own Room switch overrides it for this session.
-//   data-arbor2-night-prog   lamp | hidden-rhizome. Night's progress picture. Lamp is Fable's default; "hidden rhizome"
-//                            is Nick's option (Oct 29): the rhizome is invisible while it grows and only shows at the goal,
-//                            when the existing brass flash lights the whole web and its existing fade returns it to nothing.
+//   Night's progress is the hidden rhizome (Nick's idea, Fable approved Oct 29: one Rhizome style, no new setting, the lamp is
+//   ambience only), so there is no progress switch here: styles/arbor-v2.css draws it from the room alone.
 
 type Room = 'night' | 'day';
-type NightProg = 'lamp' | 'hidden-rhizome';
 
 const root = document.documentElement;
 let roomOverride: Room | null = null;
@@ -22,7 +20,6 @@ const toneRoom = (): Room => (root.getAttribute('data-page') === 'dark' ? 'night
 const applyRoom = () => root.setAttribute('data-arbor2-room', roomOverride ?? toneRoom());
 
 root.setAttribute('data-arbor2', 'true');
-root.setAttribute('data-arbor2-night-prog', 'hidden-rhizome'); // Nick, Oct 29: "Let's keep that in dark mode" - the hidden rhizome is night's progress; Lamp stays as the alternative to compare
 applyRoom();
 new MutationObserver(applyRoom).observe(root, { attributes: true, attributeFilter: ['data-page'] });
 
@@ -39,7 +36,6 @@ function Seg<T extends string>({ label, value, opts, onPick }: { label: string; 
 
 function MockupBar() {
   const [room, setRoom] = useState<Room>(() => (root.getAttribute('data-arbor2-room') as Room) ?? 'day');
-  const [prog, setProg] = useState<NightProg>('hidden-rhizome');
   const [open, setOpen] = useState(true);
   useEffect(() => {
     const mo = new MutationObserver(() => setRoom((root.getAttribute('data-arbor2-room') as Room) ?? 'day'));
@@ -47,15 +43,13 @@ function MockupBar() {
     return () => mo.disconnect();
   }, []);
   const pickRoom = (r: Room) => { roomOverride = r; applyRoom(); };
-  const pickProg = (p: NightProg) => { setProg(p); root.setAttribute('data-arbor2-night-prog', p); };
   return (
     <div className="arbor2-bar" data-open={open ? 'true' : 'false'}>
       <button type="button" className="arbor2-bar-head" aria-expanded={open} onClick={() => setOpen(o => !o)}>Arbor mockup</button>
       {open && (
         <>
           <Seg label="Room" value={room} opts={[['night', 'Night'], ['day', 'Day']]} onPick={pickRoom} />
-          <Seg label="Night progress" value={prog} opts={[['hidden-rhizome', 'Hidden rhizome'], ['lamp', 'Lamp']]} onPick={pickProg} />
-          <p className="arbor2-bar-note">Hidden rhizome needs Progress set to Rhizome and a word goal.</p>
+          <p className="arbor2-bar-note">By night the rhizome is hidden until the goal (Progress: Rhizome, with a word goal).</p>
         </>
       )}
     </div>
