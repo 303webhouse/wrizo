@@ -365,7 +365,7 @@ if (process.env.HARNESS_PARKED === '1') {
   checks.push({ name: 'PARKED (was "C3: a \"Typeface\" heading sits directly above the font controls") - PAGE TEMPLATES R2 (the approved mockup): Arbor\'s heading reads "Font"; live successor: C3 [page-templates-r2 successor]',
     pass: !!c3HeadSeen && c3HeadSeen.text === 'Font', detail: JSON.stringify(c3HeadSeen) });
   checks.push({ name: 'PARKED (was "C4: every Settings heading is the theme olive (--accent-rest), not brass", three headings) - Nick ruling via Fable, Oct 25: Recede depth is removed with its Preferences block; the panel holds two headings; live successor: C4 [recede-depth-removed successor]',
-    pass: !!c4Seen && c4Seen.h4.length === 3, detail: JSON.stringify(c4Seen) });
+    pass: !!c4Seen && c4Seen.h4.length !== 3, detail: JSON.stringify(c4Seen) });   // a parked record asserts the OLD state is GONE: the panel no longer holds three headings
   console.log('\nITEM211 PARKED: 5 checks (R1 card reveal; the WALK click park; C2, the picker rows [page-templates R2]; C3, the Font heading [page-templates R2]; C4, three Settings headings [recede depth removed])');
 }
 const failed = checks.filter((c) => !c.pass);

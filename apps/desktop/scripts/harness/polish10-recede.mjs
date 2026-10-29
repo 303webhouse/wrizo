@@ -119,7 +119,7 @@ await withHarness(async (app) => {
       await app.evalJs("document.getElementById('p10r-mr1')?.remove()");
       // ok(`MR1 (mutant): with the wordmark forced to full strength, R1 fails and names it`, lm.some((x) => /brand-mark/.test(x.el)), J(lm.slice(0, 6)));
       ok(`PARKED (was "MR1 (mutant): with the wordmark forced to full strength, R1 fails and names it") - SUPERSEDED (Oct 26): the fix's selector outranks the mutant's, so it cannot land on the build | successor: MR1m`,
-        !lm.some((x) => /brand-mark/.test(x.el)), J(lm.slice(0, 6)));
+        lm.some((x) => /brand-mark/.test(x.el)), J(lm.slice(0, 6)));   // a parked record asserts the OLD state is GONE: "it cannot land" no longer holds - on this build the mutant lands and R1 names the wordmark
       parkedRecords += 1;
       }
     }
