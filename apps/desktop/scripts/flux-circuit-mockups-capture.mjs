@@ -2,15 +2,15 @@
 // A capture, not a verdict check: it opens each file in the harness browser, drives it to named states, photographs them, and reports any page error
 // (so a broken mockup cannot hide behind a pretty first frame).
 //
-// Run: WS_BOX_TURN=<token> node scripts/harness/flux-circuit-mockups-capture.mjs   (from apps/desktop)
+// Run: WS_BOX_TURN=<token> node scripts/flux-circuit-mockups-capture.mjs   (from apps/desktop)
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { withHarness } from '../runtime-verify.mjs';
+import { withHarness } from './runtime-verify.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const MOCK = path.resolve(here, '..', '..', '..', '..', 'docs', 'theme-foundations', 'flux');
-const OUT = path.resolve(here, '..', '..', '..', '..', 'docs', 'evidence', 'flux-circuit-mockups');
+const MOCK = path.resolve(here, '..', '..', '..', 'docs', 'theme-foundations', 'flux');
+const OUT = path.resolve(here, '..', '..', '..', 'docs', 'evidence', 'flux-circuit-mockups');
 fs.mkdirSync(OUT, { recursive: true });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const errors = [];
