@@ -191,9 +191,11 @@ await withHarness(async (app) => {
         JSON.stringify(sliverShape));
     }
 
+    console.log('B3 STATE before the wizard @' + width + ': ' + JSON.stringify(await app.evalJs(`(() => { const st = document.querySelector('.desk-frame-stage'); return { vars: st ? ['--board-l','--board-r','--board-strip'].map((k) => st.style.getPropertyValue(k)) : null, tools: document.querySelector('.wz-sliver-panel')?.getAttribute('data-open'), tutor: document.querySelector('.wz-tutor-panel')?.getAttribute('data-open'), area: (() => { const a = document.querySelector('.board-area'); return a ? [a.style.marginLeft, a.style.width] : null; })(), card: document.querySelector('[data-box-id="b3-preexisting"]')?.getBoundingClientRect().left }; })()`)));
     await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].find(b => b.textContent.trim() === 'From a deck…').click()");
     await app.waitFor("!!document.querySelector('.deck-wizard-backdrop')", { label: `deck wizard open @${width}px` });
     await sleep(400); // clear the .28s blur/dim transition fully, same discipline fx4.mjs's own S5 section uses
+    console.log('B3 STATE with the wizard open @' + width + ': ' + JSON.stringify(await app.evalJs(`(() => { const st = document.querySelector('.desk-frame-stage'); return { vars: st ? ['--board-l','--board-r','--board-strip'].map((k) => st.style.getPropertyValue(k)) : null, tools: document.querySelector('.wz-sliver-panel')?.getAttribute('data-open'), tutor: document.querySelector('.wz-tutor-panel')?.getAttribute('data-open'), area: (() => { const a = document.querySelector('.board-area'); return a ? [a.style.marginLeft, a.style.width] : null; })(), card: document.querySelector('[data-box-id="b3-preexisting"]')?.getBoundingClientRect().left }; })()`)));
 
     // Board geometry byte-identical beneath the pop-out — PROVEN, not assumed.
     const geomWhileOpen = await app.evalJs(`(() => {
