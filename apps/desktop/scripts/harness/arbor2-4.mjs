@@ -81,7 +81,12 @@ await withHarness(async (app) => {
     const shut = await read(app);
     ok(`K2 [${room}] the edge tabs never move: both tab rects equal flag-off, drawers shut`, sameRect(shut.gripL, off.gripL) && sameRect(shut.gripR, off.gripR), JSON.stringify({ on: [shut.gripL, shut.gripR], off: [off.gripL, off.gripR] }));
     ok(`K1 [${room}] the hands' tabs are cloth: left walnut, right sea, cream lettering`, shut.gripLbg === WALNUT && shut.gripRbg === SEA && shut.gripLcolor === CREAM, JSON.stringify({ l: shut.gripLbg, r: shut.gripRbg, c: shut.gripLcolor }));
-    ok(`M1 [${room}] the shared motion tokens carry Arbor's pull (240ms, cubic-bezier(.2,.8,.2,1))`, shut.dur === '240ms' && /cubic-bezier\(\s*\.2,\s*\.8,\s*\.2,\s*1\s*\)/.test(shut.ease), JSON.stringify({ dur: shut.dur, ease: shut.ease }));
+    // PARKED 2026-10-29 (SUPERSEDED, the matcher read the spelling, not the sense): the built bundle's minifier rewrites 240ms as .24s
+    // (measured on the green build: dur ".24s"), the same duration. Original, verbatim:
+    // ok(`M1 [${room}] the shared motion tokens carry Arbor's pull (240ms, cubic-bezier(.2,.8,.2,1))`, shut.dur === '240ms' && /cubic-bezier\(\s*\.2,\s*\.8,\s*\.2,\s*1\s*\)/.test(shut.ease), JSON.stringify({ dur: shut.dur, ease: shut.ease }));
+    // SUCCESSOR M1b: the duration in milliseconds, whatever its spelling.
+    const durMs = /ms$/.test(shut.dur) ? parseFloat(shut.dur) : parseFloat(shut.dur) * 1000;
+    ok(`M1b [${room}] the shared motion tokens carry Arbor's pull (240 ms in any spelling, cubic-bezier(.2,.8,.2,1))`, Math.abs(durMs - 240) < 0.5 && /cubic-bezier\(\s*0?\.2,\s*0?\.8,\s*0?\.2,\s*1\s*\)/.test(shut.ease), JSON.stringify({ dur: shut.dur, durMs, ease: shut.ease }));
     await snap(app, `item2-${room}-tabs-shut`);
 
     // Tools drawer
