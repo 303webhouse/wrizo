@@ -17,3 +17,8 @@ export function outlineTitleEdit(text: string | undefined, typedTitle: string): 
   const nl = (text ?? '').indexOf('\n');
   return nl < 0 ? clean : clean + '\n' + body;
 }
+
+/** The Outline number of a row from its path in the tree (zero-based indices): [4] -> "5", [4, 0] -> "5.1". A Deck's Outline shows these (the mockup: 5 Midpoint Reversal, 5.1 / 5.2 / 5.3 its scenes); a plain Board keeps its bullets. */
+export function outlineNumber(path: readonly number[]): string {
+  return path.map((i) => i + 1).join('.');
+}

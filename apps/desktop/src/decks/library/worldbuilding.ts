@@ -27,6 +27,7 @@ const COL_B: { title: string; step: string }[] = [
 export const worldbuildingDeck: DeckDefinition = {
   id: 'worldbuilding',
   room: 'speculative',
+  childWord: 'entry',   // W-scenes: the word its "Add ...…" door and its child cards use (store/childSteps.ts)
   nameTerm: 'deckNameWorldbuilding',
   questions: [
     {

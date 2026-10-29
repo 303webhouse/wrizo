@@ -67,6 +67,7 @@ import { DeckGaps } from './DeckGaps';
 import { useDeckRewards } from './useDeckRewards';
 import { KindleMark, LitMark } from './Walk';
 import { GoalCelebration } from './WritingIncentives';
+import { addChildren, sceneDoorFor, childTitleOf, childQuestionOf } from '../store/childSteps';
 import { graftTo } from '../store/grafts';
 import { usePlace } from '../store/usePlace';
 import { materializeDeck } from '../decks/engine';
@@ -3466,6 +3467,21 @@ export function BoardEditor({ id }: { id: string }) {
   // STORYBOARD/OUTLINE render the ONE structure description (store/
   // boardStructure.ts). Order is single-sourced (seq on the shared boxes), so a
   // reorder in one projection is the board's truth in all three.
+  // ADD SCENES - a top-level step of a Deck takes children (store/childSteps.ts): the door says which word, Add makes N ordinary text cards under the step (`parentId`, the step's lane, ordered right after it), and the Walk lands on the
+  // first new child (the caret goes in the card: the Walk's own rule). Nothing is created until Add; the Deck's cards and every other board see none of this.
+  const sceneWordOf = (box: Box) => sceneDoorFor(box, deckBoard);
+  const addScenes = (parent: Box, n: number) => {
+    const deckId = parent.deckStep?.deck;
+    const title = deckId ? childTitleOf(deckId) : null;
+    const question = deckId ? childQuestionOf(deckId) : null;
+    if (!title || !question) return;
+    const made = addChildren(boxesRef.current, parent.id, n, { title, question, newId: generateId });
+    if (made.ids.length === 0) return;
+    if (framed) boardDissolve.noteWrite();
+    const kids = made.added;   // the new cards ALONE, appended to the LATEST list (a deck deal's shape); never the snapshot `made` was cut from
+    setBoxes(prev => [...prev, ...kids]);
+    if (boardMode === 'walk') setWalkJumpId(made.ids[0]);
+  };
   // W1 - THE WALK (components/Walk.tsx): one card at a time on the board's own order, writing in the card with the ordinary card engine (the card editor, mounted INLINE). Esc leaves for the board's last shown view.
   // TOOLS #9 - Machina's Step readout row: "AGENDA · <the Deck's name>" for a Deck (a board whose cards carry a deck step), else "PLAN · <the board's name>". Words only; read from what is already on the board.
   const machinaReadout = (() => {
@@ -3487,6 +3503,7 @@ export function BoardEditor({ id }: { id: string }) {
       kindlingIds={deckBoard ? deckRewards.kindling : undefined}
       onToggleLit={deckBoard ? toggleLit : undefined}
       onCurrent={setWalkCurId}
+      scenes={deckBoard ? { word: sceneWordOf, onAdd: addScenes } : undefined}
       startHereId={startHereCardId}
       helpCardId={walkHelpId}
       onHelpShown={() => setWalkHelpId(null)}
@@ -3532,9 +3549,11 @@ export function BoardEditor({ id }: { id: string }) {
     : boardMode === 'thumbnails' ? thumbsContent
     : boardMode === 'storyboard'
       ? <StoryboardProjection boxes={boxes} setBoxes={setBoxes} labelFor={boxLabel} onEditText={commitText}
+          sceneWord={deckBoard ? sceneWordOf : undefined} onAddScenes={addScenes}
           onAddLane={onAddLane}
           beginnings={<BeginningsRow surface="projection" doors={beginningDoors} />} />
       : <OutlineProjection boxes={boxes} setBoxes={setBoxes} labelFor={boxLabel} onEditText={commitText}
+          sceneWord={deckBoard ? sceneWordOf : undefined} onAddScenes={addScenes}
           beginnings={<BeginningsRow surface="projection" doors={beginningDoors} />} />;
 
   const sliverContent: SliverContent = isSystemBoard

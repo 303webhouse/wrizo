@@ -6,7 +6,9 @@ import {
 } from '../store/boardStructure';
 import type { Box } from '../types';
 import { generateId } from '../store/persistence';
-import { splitOutlineText, outlineTitleEdit } from '../store/outlineRow';
+import { splitOutlineText, outlineTitleEdit, outlineNumber } from '../store/outlineRow';
+import { ScenesDoor } from './ScenesPopover';
+import type { ChildWord } from '../decks/types';
 
 // BM1 S6/S7 — the STORYBOARD and OUTLINE projections. Both are renderers of the
 // ONE structure description (store/boardStructure.ts) derived from the board's
@@ -34,6 +36,9 @@ interface ProjectionProps {
   // to OPEN and add cards there, which is exactly the dead end this ticket
   // removes. Absent (undefined) on a system board, where no row renders at all.
   beginnings?: ReactNode;
+  // ADD SCENES - the board says which top-level steps take children (`sceneWord`: null = no door) and creates them (`onAddScenes`); absent on a plain Board, so nothing new shows there.
+  sceneWord?: (b: Box) => ChildWord | null;
+  onAddScenes?: (b: Box, n: number) => void;
 }
 
 const byId = (boxes: Box[]) => new Map(boxes.map((b) => [b.id, b]));
@@ -65,10 +70,10 @@ function move(boxes: Box[], laneId: string, cardId: string, dir: -1 | 1): Box[] 
 
 // --- STORYBOARD ------------------------------------------------------------
 
-function LaneColumn({ lane, boxes, setBoxes, labelFor, laneOptions, readOnly }: {
+function LaneColumn({ lane, boxes, setBoxes, labelFor, laneOptions, readOnly, sceneWord, onAddScenes }: {
   lane: StructureLane; boxes: Box[]; setBoxes: BoardMutator; labelFor: (b: Box) => string;
   laneOptions: { id: string; title: string }[]; readOnly?: boolean;
-}) {
+} & Pick<ProjectionProps, 'sceneWord' | 'onAddScenes'>) {
   const { t } = useDeskLexicon();
   const map = byId(boxes);
   const flat = flattenLane(lane); // one ordered column; nesting is OUTLINE's concern
@@ -94,6 +99,7 @@ function LaneColumn({ lane, boxes, setBoxes, labelFor, laneOptions, readOnly }: 
                     {laneOptions.map((l) => <option key={l.id} value={l.id}>{l.title}</option>)}
                   </select>
                 )}
+                {sceneWord?.(b) && onAddScenes && <ScenesDoor box={b} word={sceneWord(b)!} onAdd={onAddScenes} />}
               </span>
             )}
           </div>
@@ -104,7 +110,7 @@ function LaneColumn({ lane, boxes, setBoxes, labelFor, laneOptions, readOnly }: 
   );
 }
 
-export function StoryboardProjection({ boxes, setBoxes, labelFor, readOnly, beginnings, onAddLane }: ProjectionProps & { onAddLane?: () => void }) {
+export function StoryboardProjection({ boxes, setBoxes, labelFor, readOnly, beginnings, onAddLane, sceneWord, onAddScenes }: ProjectionProps & { onAddLane?: () => void }) {
   const { t } = useDeskLexicon();
   const struct = boardStructure(boxes);
   const hasCards = struct.lanes.some((l) => l.items.length > 0);
@@ -134,7 +140,7 @@ export function StoryboardProjection({ boxes, setBoxes, labelFor, readOnly, begi
       <div className="board-lanes">
         {struct.lanes.map((lane) => (
           <LaneColumn key={lane.id || '__default'} lane={lane} boxes={boxes} setBoxes={setBoxes}
-            labelFor={labelFor} laneOptions={laneOptions} readOnly={readOnly} />
+            labelFor={labelFor} laneOptions={laneOptions} readOnly={readOnly} sceneWord={sceneWord} onAddScenes={onAddScenes} />
         ))}
       </div>
       {!readOnly && (
@@ -146,11 +152,13 @@ export function StoryboardProjection({ boxes, setBoxes, labelFor, readOnly, begi
 
 // --- OUTLINE (the nesting floor — render AND edit genuine nesting) ----------
 
-function OutlineRow({ node, laneId, boxes, setBoxes, labelFor, onEditText, depth, siblings, index, readOnly }: {
+function OutlineRow({ node, laneId, boxes, setBoxes, labelFor, onEditText, depth, siblings, index, readOnly, sceneWord, onAddScenes, path, numbered }: {
   node: OutlineNode; laneId: string; boxes: Box[]; setBoxes: BoardMutator;
   labelFor: (b: Box) => string; onEditText: (boxId: string, text: string) => void;
   depth: number; siblings: string[]; index: number; readOnly?: boolean;
-}) {
+  path: number[];      // this row's place in the tree (zero-based indices): its Outline number
+  numbered?: boolean;  // a Deck's Outline shows 1 / 5.1 numbers in place of bullets
+} & Pick<ProjectionProps, 'sceneWord' | 'onAddScenes'>) {
   const map = byId(boxes);
   const b = map.get(node.boxId);
   if (!b) return null;
@@ -174,7 +182,9 @@ function OutlineRow({ node, laneId, boxes, setBoxes, labelFor, onEditText, depth
 
   return (
     <li className="board-outline-row" data-outline-row={node.boxId} style={{ marginLeft: depth * 20 }}>
-      <span className="board-outline-bullet" aria-hidden="true">•</span>
+      {numbered
+        ? <span className="board-outline-bullet board-outline-num" data-outline-num={outlineNumber(path)} aria-hidden="true">{outlineNumber(path)}</span>
+        : <span className="board-outline-bullet" aria-hidden="true">•</span>}
       {editable ? (
         <>
           <input
@@ -200,6 +210,7 @@ function OutlineRow({ node, laneId, boxes, setBoxes, labelFor, onEditText, depth
             onClick={indent}>→</button>
           <button type="button" className="btn-quiet board-ol-outdent" aria-label="Outdent" disabled={!b.parentId}
             onClick={outdent}>←</button>
+          {sceneWord?.(b) && onAddScenes && <ScenesDoor box={b} word={sceneWord(b)!} onAdd={onAddScenes} />}
         </span>
       )}
       {node.children.length > 0 && (
@@ -207,7 +218,7 @@ function OutlineRow({ node, laneId, boxes, setBoxes, labelFor, onEditText, depth
           {node.children.map((child, i) => (
             <OutlineRow key={child.boxId} node={child} laneId={laneId} boxes={boxes} setBoxes={setBoxes}
               labelFor={labelFor} onEditText={onEditText} depth={depth + 1}
-              siblings={node.children.map((c) => c.boxId)} index={i} readOnly={readOnly} />
+              siblings={node.children.map((c) => c.boxId)} index={i} readOnly={readOnly} sceneWord={sceneWord} onAddScenes={onAddScenes} path={[...path, i]} numbered={numbered} />
           ))}
         </ul>
       )}
@@ -215,7 +226,7 @@ function OutlineRow({ node, laneId, boxes, setBoxes, labelFor, onEditText, depth
   );
 }
 
-export function OutlineProjection({ boxes, setBoxes, labelFor, onEditText, readOnly, beginnings }: ProjectionProps) {
+export function OutlineProjection({ boxes, setBoxes, labelFor, onEditText, readOnly, beginnings, sceneWord, onAddScenes }: ProjectionProps) {
   const { t } = useDeskLexicon();
   const struct = boardStructure(boxes);
   const hasCards = struct.lanes.some((l) => l.items.length > 0);
@@ -234,7 +245,7 @@ export function OutlineProjection({ boxes, setBoxes, labelFor, onEditText, readO
             {lane.items.map((node, i) => (
               <OutlineRow key={node.boxId} node={node} laneId={lane.id} boxes={boxes} setBoxes={setBoxes}
                 labelFor={labelFor} onEditText={onEditText} depth={0}
-                siblings={lane.items.map((n) => n.boxId)} index={i} readOnly={readOnly} />
+                siblings={lane.items.map((n) => n.boxId)} index={i} readOnly={readOnly} sceneWord={sceneWord} onAddScenes={onAddScenes} path={[i]} numbered={!!sceneWord} />
             ))}
           </ul>
         </section>

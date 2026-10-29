@@ -83,9 +83,13 @@ export interface DealtCardSpec {
   threadTo?: string[];
 }
 
+/** The word a deck's "Add ..." door and its child cards use ("Add scenes…", "Add beats…"). The words themselves live in the lexicon (kidDoor_<word> and its siblings); the deck only names which. A deck with none has no door. */
+export type ChildWord = 'scene' | 'beat' | 'moment' | 'entry' | 'subsection' | 'section' | 'point' | 'part';
+
 export interface DeckDefinition {
   id: string;
   room: DeckRoom;
+  childWord?: ChildWord;
   nameTerm: DeskTermId;
   questions: DeckQuestion[];
   deal: (answers: DeckAnswers) => DealtCardSpec[];
