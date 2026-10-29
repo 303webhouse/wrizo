@@ -682,9 +682,19 @@ if (process.env.HARNESS_PARKED === '1') {
     await app.evalJs("document.querySelector('.forward-only-editor').focus()"); // FX14 S2 re-point: was .entry-edit (parked block now mounts on THE Page via the re-pointed freshJournalPage helper)
     await app.typeKeys('z');
     await sleep(150);
-    const panelGoneAfterTypeNow = await app.evalJs("!document.querySelector('.wz-cascade-panel')");
-    pok('PARKED (was "S6: a keystroke dissolves the open place face back to the tools room...", then CD1 S3-superseded to "...the page room...") — CD2 S1/S5: a keystroke now closes the cascade\'s open category outright (successor: cd2.mjs\'s own keystroke-dissolve section)',
-      panelGoneAfterTypeNow === true, String(panelGoneAfterTypeNow));
+    // ---- PARKED VERBATIM - SUPERSEDED by TOOLS #10 item 8 (Fable, Oct 28): the cascade's close is the Tools strip's slide-and-fade EXIT (~200 ms, --drawer-dur), so "gone" is true once the exit has played, not 150 ms after the keystroke.
+    // The record below is kept verbatim and no longer run; the successor follows, and the original is run as a PARKED RECORD (it holds once the exit has played).
+    // const panelGoneAfterTypeNow = await app.evalJs("!document.querySelector('.wz-cascade-panel')");
+    // pok('PARKED (was "S6: a keystroke dissolves the open place face back to the tools room...", then CD1 S3-superseded to "...the page room...") — CD2 S1/S5: a keystroke now closes the cascade\'s open category outright (successor: cd2.mjs\'s own keystroke-dissolve section)',
+    // panelGoneAfterTypeNow === true, String(panelGoneAfterTypeNow));
+    // ------------------------------------------------------------------
+    const panelExitStarted = await app.evalJs("(() => { const p = document.querySelector('.wz-cascade-panel'); return !p || p.dataset.leaving === 'true'; })()");
+    // wait on the exit itself (the panel leaving the DOM), not a fixed time: up to 2 s, polled
+    let panelGoneAfterExit = false;
+    for (let w = 0; w < 40 && !panelGoneAfterExit; w += 1) { panelGoneAfterExit = await app.evalJs("!document.querySelector('.wz-cascade-panel')"); if (!panelGoneAfterExit) await sleep(50); }
+    pok('PARKED [item-8 successor] (was "S6: a keystroke dissolves the open place face back to the tools room...", then CD1 S3-superseded to "...the page room...") — CD2 S1/S5: a keystroke closes the cascade\'s open category - the panel STARTS EXITING on the keystroke (gone, or still drawn with data-leaving) and is GONE once the exit ends (successor: cd2.mjs\'s own keystroke-dissolve section)',
+      panelExitStarted === true && panelGoneAfterExit === true, JSON.stringify({ panelExitStarted, panelGoneAfterExit }));
+    pok('PARKED [parked record] CD2 S1/S5: the ORIGINAL (panel gone 150 ms after the keystroke) fails ONLY because the exit lasts --drawer-dur; it holds once the exit has played', panelGoneAfterExit === true, String(panelGoneAfterExit));
 
     // ORIGINAL (this file's own live section, pre-CD2): ok('S1: the whole
     // drawer carries the vanishing law (the SAME .desk-frame[data-writing]
