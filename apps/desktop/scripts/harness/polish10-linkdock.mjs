@@ -145,7 +145,7 @@ await withHarness(async (app) => {
     await shot(app, `${th.id}-source-docked`);
     // K7: Undock removes the reader and returns the Grafts list
     const cl = await pointOf(app, "document.querySelector('.wz-link-dock-close')"); if (cl) { await click(app, cl.x, cl.y); await sleep(600); }
-    ok(`${tag} K7: the reader's Undock removes it and returns the Grafts list`, !!cl && (await app.evalJs("!document.querySelector('.wz-link-dock') && !!document.querySelector('.wz-graft-row')")), J({ cl, now: await app.evalJs("({ dock: !!document.querySelector('.wz-link-dock'), close: !!document.querySelector('.wz-link-dock-close'), rows: document.querySelectorAll('.wz-graft-row').length, panel: !!document.querySelector('.wz-tutor-panel[data-open=\'true\']') })") }));
+    ok(`${tag} K7: the reader's Undock removes it and returns the Grafts list`, !!cl && (await app.evalJs("!document.querySelector('.wz-link-dock') && !!document.querySelector('.wz-graft-row')")), J({ cl, now: await app.evalJs("({ dock: !!document.querySelector('.wz-link-dock'), close: !!document.querySelector('.wz-link-dock-close'), rows: document.querySelectorAll('.wz-graft-row').length })") }));
   }
 });
 
