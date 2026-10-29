@@ -43,10 +43,17 @@ const snap = async (app, name) => {
 };
 // app.goto() navigates to base/#..., which DROPS the query; under the flag every move is a hash change instead.
 const hashTo = async (app, hash) => { await app.evalJs(`location.hash = ${JSON.stringify(hash)}`); await sleep(250); };
+// Every reload brings the splash back over the page; frames and visual reads wait it out (the first run's frames were all splash).
+const splashGone = (app) => app.waitFor("!document.querySelector('.wz-splash')", { timeout: 20000, label: 'splash gone' }).catch(() => {});
 const setFlag = async (app, on) => {
   await app.evalJs(`history.replaceState(null, '', ${JSON.stringify(on ? '/?arbor2=1' : '/')} + location.hash)`);
   await app.reload();
-  await sleep(500);
+  await sleep(250);
+  // read while the splash is still up (it holds for seconds after a reload): the splash's own ground and the room it sits in
+  const splash = await app.evalJs("(() => { const s = document.querySelector('.wz-splash'); return s ? { bg: getComputedStyle(s).backgroundColor, room: document.documentElement.getAttribute('data-arbor2-room') } : null; })()");
+  await splashGone(app);
+  await sleep(300);
+  return splash;
 };
 const pickBar = (app, label) => app.evalJs(`(() => { const b = [...document.querySelectorAll('.arbor2-bar-opt')].find((x) => x.textContent.trim() === ${JSON.stringify(label)}); if (b) b.click(); return !!b; })()`);
 
@@ -109,9 +116,12 @@ await withHarness(async (app) => {
   await snap(app, 'item1-flag-off-1366');
 
   // ---- F2: flag on
-  await setFlag(app, true);
-  await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.arbor2-bar')", { label: 'flagged page + bar' });
+  const splashOn = await setFlag(app, true);
+  // a missing bar is a FAILED CHECK (F2), never a crash: on main the flag does nothing and the run must still report every check red
+  await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.arbor2-bar')", { label: 'flagged page + bar' }).catch(() => {});
   const on = await state(app);
+  ok('SP1 the splash is untouched in the day room: its ground stays the night espresso (rgb 10,5,3), not the whitewash',
+    !!splashOn && splashOn.room === 'day' && splashOn.bg === 'rgb(10, 5, 3)', JSON.stringify(splashOn));
   ok('F2 flag ON: data-arbor2 set, the bar is drawn, a room is chosen', on.flag === 'true' && on.bar && (on.room === 'night' || on.room === 'day'), JSON.stringify({ flag: on.flag, bar: on.bar, room: on.room }));
   ok('N1 night progress defaults to the hidden rhizome after a fresh load (Nick, Oct 29)', on.prog === 'hidden-rhizome', String(on.prog));
 
@@ -182,6 +192,7 @@ await withHarness(async (app) => {
     await app.reload();
     await hashTo(app, '#/page/' + pageId);
     await app.waitFor("!!document.querySelector('.wz-rhizome-field') && !!document.querySelector('.arbor2-bar')", { label: 'rhizome field + bar after seed' });
+    await splashGone(app);
     await sleep(900);
   };
   const crossGoal = async () => {
@@ -231,7 +242,8 @@ await withHarness(async (app) => {
   // R1: recede while typing
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys(' and on');
-  await sleep(700);
+  // the recede runs on its own curve (first run read 0.59 mid-fade at 700 ms): wait for it to settle, up to 3 s, then read
+  await app.waitFor("getComputedStyle(document.querySelector('.arbor2-bar')).opacity === '0'", { timeout: 3000, label: 'bar receded' }).catch(() => {});
   const r1 = await state(app);
   ok('R1 while she types the mockup bar is at opacity 0', r1.barOpacity === '0', String(r1.barOpacity));
 
