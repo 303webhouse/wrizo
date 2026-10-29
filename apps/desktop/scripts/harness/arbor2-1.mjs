@@ -188,7 +188,12 @@ await withHarness(async (app) => {
       await snap(app, 'item1-night-reduced-motion');
       await app.emulateMedia([]); await sleep(100);
     } else {
-      ok('L2 day: the room is the whitewash and the page keeps its paper', t.i950.toLowerCase() === '#efe6d2' && s.paperBg === 'rgb(243, 237, 225)', JSON.stringify({ i950: t.i950, paper: s.paperBg }));
+      // PARKED 2026-10-29 (SUPERSEDED by item 6, ruling 2's afternoon: the whitewash now shades with the session and the clock, #EFE6D2 at
+      // noon -> #E3D4B6 at dusk, so it equals #EFE6D2 only before noon on a fresh session). Original, verbatim:
+      // ok('L2 day: the room is the whitewash and the page keeps its paper', t.i950.toLowerCase() === '#efe6d2' && s.paperBg === 'rgb(243, 237, 225)', JSON.stringify({ i950: t.i950, paper: s.paperBg }));
+      // SUCCESSOR L2b: the room is the whitewash as the afternoon has shaded it - on the line from #EFE6D2 to #E3D4B6 - and the page keeps its paper.
+      const g = rgb(t.i950), onLine = g.length === 3 && g[0] >= 0xE3 && g[0] <= 0xEF && g[1] >= 0xD4 && g[1] <= 0xE6 && g[2] >= 0xB6 && g[2] <= 0xD2;
+      ok('L2b day: the room is the whitewash, shaded by the afternoon (#EFE6D2 -> #E3D4B6), and the page keeps its paper', onLine && s.paperBg === 'rgb(243, 237, 225)', JSON.stringify({ i950: t.i950, paper: s.paperBg }));
     }
   }
 
