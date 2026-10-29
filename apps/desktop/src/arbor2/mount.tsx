@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import '../styles/arbor-v2.css';
+import { mountSun } from './sun';
 
 // ARBOR v2 WORKING MOCKUP - loaded only under ?arbor2=1 (main.tsx). Everything here is IN-SESSION: it writes attributes on
 // <html> and React state, never storage (Fable's rulings 6 and "the flag", Oct 29).
@@ -21,6 +22,7 @@ const applyRoom = () => root.setAttribute('data-arbor2-room', roomOverride ?? to
 
 root.setAttribute('data-arbor2', 'true');
 applyRoom();
+mountSun(root);   // item 6: the day room's pergola light (drawn only in the day room by styles/arbor-v2.css; in memory, stores nothing)
 new MutationObserver(applyRoom).observe(root, { attributes: true, attributeFilter: ['data-page'] });
 
 function Seg<T extends string>({ label, value, opts, onPick }: { label: string; value: T; opts: [T, string][]; onPick: (v: T) => void }) {
