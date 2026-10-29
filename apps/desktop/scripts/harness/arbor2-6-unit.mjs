@@ -11,6 +11,8 @@ const near = (a, b) => Math.abs(a - b) < 1e-6;
 
 ok('A1 11:00, fresh session: t = 0', near(afternoonT(at(11), at(11).getTime()), 0), String(afternoonT(at(11), at(11).getTime())));
 ok('A1 11:00, 90 min in: t = 1/3', near(afternoonT(at(11), at(9, 30).getTime()), 1 / 3), String(afternoonT(at(11), at(9, 30).getTime())));
+// A1b (added after a mutant survived: the endpoints alone could not tell a 60-minute ramp from the 90 the spec names)
+ok('A1b 11:00, 45 min in: t = 1/6 (the ramp is 90 minutes, linear)', near(afternoonT(at(11), at(10, 15).getTime()), 1 / 6), String(afternoonT(at(11), at(10, 15).getTime())));
 ok('A1 11:00, 5 hours in: still 1/3 (the session part is capped)', near(afternoonT(at(11), at(6).getTime()), 1 / 3), '');
 ok('A2 15:00, fresh session: t = 1/3', near(afternoonT(at(15), at(15).getTime()), 1 / 3), String(afternoonT(at(15), at(15).getTime())));
 ok('A2 18:00 and 23:00, fresh session: t = 2/3', near(afternoonT(at(18), at(18).getTime()), 2 / 3) && near(afternoonT(at(23), at(23).getTime()), 2 / 3), '');
