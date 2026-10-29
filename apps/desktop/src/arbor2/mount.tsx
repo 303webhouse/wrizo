@@ -22,7 +22,7 @@ const toneRoom = (): Room => (root.getAttribute('data-page') === 'dark' ? 'night
 const applyRoom = () => root.setAttribute('data-arbor2-room', roomOverride ?? toneRoom());
 
 root.setAttribute('data-arbor2', 'true');
-root.setAttribute('data-arbor2-night-prog', 'lamp');
+root.setAttribute('data-arbor2-night-prog', 'hidden-rhizome'); // Nick, Oct 29: "Let's keep that in dark mode" - the hidden rhizome is night's progress; Lamp stays as the alternative to compare
 applyRoom();
 new MutationObserver(applyRoom).observe(root, { attributes: true, attributeFilter: ['data-page'] });
 
@@ -39,7 +39,7 @@ function Seg<T extends string>({ label, value, opts, onPick }: { label: string; 
 
 function MockupBar() {
   const [room, setRoom] = useState<Room>(() => (root.getAttribute('data-arbor2-room') as Room) ?? 'day');
-  const [prog, setProg] = useState<NightProg>('lamp');
+  const [prog, setProg] = useState<NightProg>('hidden-rhizome');
   const [open, setOpen] = useState(true);
   useEffect(() => {
     const mo = new MutationObserver(() => setRoom((root.getAttribute('data-arbor2-room') as Room) ?? 'day'));
@@ -54,7 +54,7 @@ function MockupBar() {
       {open && (
         <>
           <Seg label="Room" value={room} opts={[['night', 'Night'], ['day', 'Day']]} onPick={pickRoom} />
-          <Seg label="Night progress" value={prog} opts={[['lamp', 'Lamp'], ['hidden-rhizome', 'Hidden rhizome']]} onPick={pickProg} />
+          <Seg label="Night progress" value={prog} opts={[['hidden-rhizome', 'Hidden rhizome'], ['lamp', 'Lamp']]} onPick={pickProg} />
           <p className="arbor2-bar-note">Hidden rhizome needs Progress set to Rhizome and a word goal.</p>
         </>
       )}
