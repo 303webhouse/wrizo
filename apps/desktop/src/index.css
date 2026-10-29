@@ -2779,7 +2779,7 @@ a:focus-visible,
    --fade-dur is swapped live by useChromeDissolve (fast out, very slow in);
    --fade-min is the faint floor (8% partial / 0 full); --m drives the glow.
    ============================================================================ */
-.mode-stage{ position:relative; --fade-min:.08; --fade-dur:1.2s; }
+.mode-stage{ position:relative; --fade-min:0; --fade-dur:1.2s; }   /* Nick's ruling (via Fable, Oct 25): "Recede depth" is REMOVED - the narrow layout follows the full recede (was .08, the "partial" floor) */
 .mode-stage[data-fade='full']{ --fade-min:0; }
 
 /* Dissolve-on-write: rails, bars, gear, word-count recede to the faint floor.
@@ -4156,6 +4156,17 @@ a:focus-visible,
    inherited from an ancestor the host's useChromeDissolve already writes to
    (see components/DeskFrame.tsx's header comment). */
 .desk-dissolve{ transition:opacity var(--fade-dur,1.2s) ease; }
+/* POLISH #10 item 23 (Nick, Oct 25) - WHILE TYPING, EVERYTHING OFF THE PAGE GOES TO 0. The desk's own chrome read --fade-min, which is defined only on
+   .mode-stage - never an ancestor of it - so it always fell back to .08 (the rail "ghosting"). On the framed desk the floor is 0 (whatever the Recede
+   setting says; it still governs the narrow, unframed layout). And the chrome that lives outside the desk's dissolve classes - the wordmark, the ember
+   dot, the progress lane (the rhizome, the bar, Machina's run strip), Flux's glitch meter - recedes with it while the desk writes (ModeStage writes
+   data-wz-writing on the root). Only the page and the drawers' tab arrows stay. It returns as today (the engine's own curve, --fade-dur). */
+.desk-frame{ --fade-min:0; }
+.brand-mark, .chrome-handle{ transition:opacity var(--fade-dur,1.2s) ease; }
+/* Nick's rulings (via Fable, Oct 25): PROGRESS STRIPS STAY visible and live while typing when they are on (the rhizome, the bar, Machina's run strip,
+   Flux's glitch meter), and so do DOCKED panels (they never carried the dissolve). The recede's exceptions: the page, the tab arrows, progress, docks. */
+html[data-wz-writing='true'] .brand-mark{ opacity:0 !important; pointer-events:none; }
+html[data-wz-writing='true'] .chrome-handle{ opacity:0 !important; }   /* still takes the pointer: reaching it is one way back */
 .desk-frame[data-writing='true'] .desk-dissolve{ opacity:var(--fade-min,.08); pointer-events:none; }
 @media (prefers-reduced-motion:reduce){ .desk-dissolve{ transition:none; } }
 
