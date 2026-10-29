@@ -134,6 +134,7 @@ await withHarness(async (app) => {
     await app.waitFor("typeof window.wrizoCreateJournalPage === 'function'", { label: 'the seams' });
     const tag = `${th.name} 1366x768 zoom, INK`;
     if (!(await openPage(app, fid))) { ok(`${tag} P5 fixture: the page opened`, false, ''); continue; }
+    await setView(app, true); await sleep(400);   // the zoom is entered through the writer's own control (a stored key alone does not hold across the skins)
     await app.evalJs("document.querySelector('#wz-sliver-tab-ink')?.click()"); await sleep(300);
     await setOpen(app, 'tools', false); await sleep(300);
     const g = await app.evalJs(P5PROBE);
