@@ -155,11 +155,16 @@ export async function part2({ ok, sleepMs }) {
         const placeName = () => q("(() => { const e = document.querySelector('.wz-place-block .wz-place-name'); return e ? e.textContent : null; })()");
         const storedName = () => q("(JSON.parse(localStorage.getItem('writer-studio-drawers') || '[]').find((d) => /^top-drawer-/.test(d.id)) || {}).name ?? null");
         const rootName = await placeName();
-        ok('F8 the default (flagged) top drawer is shown as Root, render-time only: its stored name is untouched', rootName === 'RACK ▸ Root' && (await storedName()) === 'Top Drawer', `${rootName} / stored ${await storedName()}`);
+        const placeTitle = () => q("document.querySelector('.wz-place-block')?.getAttribute('title') ?? null");
+        // ---- PARKED - SUPERSEDED by POLISH #10 item 14 (Nick, Oct 28: the narrow rail shows ONLY the place name; "RACK ▸ <name>" is the button's title). Kept VERBATIM and no longer run; its successor follows.
+        // ok('F8 the default (flagged) top drawer is shown as Root, render-time only: its stored name is untouched', rootName === 'RACK ▸ Root' && (await storedName()) === 'Top Drawer', `${rootName} / stored ${await storedName()}`);
+        ok('F8 [polish-10 item 14 successor]: the default (flagged) top drawer is shown as Root on the rail (the name alone; "RACK ▸ Root" is its title), render-time only: its stored name is untouched', rootName === 'Root' && (await placeTitle()) === 'RACK ▸ Root' && (await storedName()) === 'Top Drawer', `${rootName} / title ${await placeTitle()} / stored ${await storedName()}`);
         await q(`window.wrizoRenameDrawer(${JSON.stringify(topIds.drawer)}, 'My Novel'); window.wrizoFlushNow()`);
         await sleep(700);
         const renamed = await placeName();
-        ok('F8 a top drawer the writer RENAMED keeps its own name (not Root)', renamed === 'RACK ▸ My Novel' && (await storedName()) === 'My Novel', `${renamed} / stored ${await storedName()}`);
+        // ---- PARKED - SUPERSEDED by POLISH #10 item 14 (same ruling). Kept VERBATIM and no longer run; its successor follows.
+        // ok('F8 a top drawer the writer RENAMED keeps its own name (not Root)', renamed === 'RACK ▸ My Novel' && (await storedName()) === 'My Novel', `${renamed} / stored ${await storedName()}`);
+        ok('F8 [polish-10 item 14 successor]: a top drawer the writer RENAMED keeps its own name (not Root) - the name alone on the rail, "RACK ▸ My Novel" as its title', renamed === 'My Novel' && (await placeTitle()) === 'RACK ▸ My Novel' && (await storedName()) === 'My Novel', `${renamed} / title ${await placeTitle()} / stored ${await storedName()}`);
         await q(`window.wrizoRenameDrawer(${JSON.stringify(topIds.drawer)}, 'Top Drawer'); window.wrizoFlushNow()`);
       }
 
@@ -217,7 +222,9 @@ export async function part2({ ok, sleepMs }) {
       // ---- PARKED - SUPERSEDED by POLISH #10 item 14 (Nick/Fable, Oct 25: the rail's place label stays on ONE line with an ellipsis; the full name on hover/focus). Kept VERBATIM and no longer run; its successor follows.
       // ok('F14 the place block reads "RACK ▸ The Late Ferry", wraps (white-space normal, no ellipsis) and nothing is clipped', !!pbk && pbk.text === 'RACK ▸ The Late Ferry' && pbk.ws === 'normal' && pbk.overflow !== 'ellipsis' && !pbk.clipped, JSON.stringify(pbk));
       const pbTitle = await q("document.querySelector('.wz-place-block')?.getAttribute('title')");
-      ok('F14 [polish-10 item 14 successor]: the place block still reads "RACK ▸ The Late Ferry" in full in the DOM, on ONE line (white-space nowrap, text-overflow ellipsis, one line tall), and the button carries the full text as its title', !!pbk && pbk.text === 'RACK ▸ The Late Ferry' && pbk.ws === 'nowrap' && pbk.overflow === 'ellipsis' && pbk.h <= 20 && pbTitle === 'RACK ▸ The Late Ferry', JSON.stringify({ pbk, pbTitle }));
+      // ---- PARKED - SUPERSEDED by POLISH #10 item 14 (Nick, Oct 28: the rail shows ONLY the place name; the full path is the title). Kept VERBATIM and no longer run; its successor follows.
+      // ok('F14 [polish-10 item 14 successor]: the place block still reads "RACK ▸ The Late Ferry" in full in the DOM, on ONE line (white-space nowrap, text-overflow ellipsis, one line tall), and the button carries the full text as its title', !!pbk && pbk.text === 'RACK ▸ The Late Ferry' && pbk.ws === 'nowrap' && pbk.overflow === 'ellipsis' && pbk.h <= 20 && pbTitle === 'RACK ▸ The Late Ferry', JSON.stringify({ pbk, pbTitle }));
+      ok('F14 [polish-10 item 14 successor 2]: the rail\'s place block reads "The Late Ferry" alone, on ONE line (white-space nowrap, text-overflow ellipsis, one line tall), and the button carries "RACK ▸ The Late Ferry" as its title', !!pbk && pbk.text === 'The Late Ferry' && pbk.ws === 'nowrap' && pbk.overflow === 'ellipsis' && pbk.h <= 20 && pbTitle === 'RACK ▸ The Late Ferry', JSON.stringify({ pbk, pbTitle }));
 
 
       // ---- F15: the block caret is slim (about a third of its old width) ----------------------------------------------------------------------------------------------------------------------

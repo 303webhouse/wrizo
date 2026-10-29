@@ -30,7 +30,9 @@ function suite(css, pb) {
   chk('P1', () => { const w = last(css, FLUX, 'white-space'); return [w === 'nowrap', `Flux: the place name does not wrap (white-space ${w})`]; });
   chk('P2', () => { const t = last(css, FLUX, 'text-overflow'); const o = last(css, FLUX, 'overflow'); return [t === 'ellipsis' && o === 'hidden', `Flux: it ends in an ellipsis (text-overflow ${t}, overflow ${o})`]; });
   chk('P3', () => { const w = last(css, FLUX, 'overflow-wrap'); return [w === null || w === 'normal', `Flux: no break-anywhere rule left to defeat the one line (overflow-wrap ${w})`]; });
-  chk('P4', () => [/<button[^>]*className=\{`wz-strip-item wz-place-block[^>]*title=\{label\}/s.test(pb), 'the full name is on the button as its title (hover); aria-label keeps the plain name for a reader']);
+  chk('P4', () => [/<button[^>]*className=\{`wz-strip-item wz-place-block[^>]*title=\{fullPath\}/s.test(pb) && /const fullPath = theme === 'flux' && drawer \? rackReadout\(name\) : name;/.test(pb), 'the full path (RACK > name in Flux) is on the button as its title (hover); aria-label keeps the plain name for a reader']);
+  // Nick, Oct 28: the narrow rail shows ONLY the place name - the RACK prefix lives in the title, never in the visible label.
+  chk('P5', () => [/<span className="wz-strip-label wz-place-name">\{name\}<\/span>/.test(pb) && !/wz-place-name">\{(label|fullPath)\}/.test(pb), 'the visible rail label is the place name alone (no RACK prefix)']);
   return R;
 }
 
@@ -38,7 +40,8 @@ const MUT = [
   { name: 'the Flux place name wraps again', file: 'css', find: /(\[data-theme='flux'\] \.wz-place-block \.wz-place-name\{[^}]*?)white-space:nowrap;/, to: '$1white-space:normal;', red: ['P1'] },
   { name: 'the ellipsis is gone', file: 'css', find: /(\[data-theme='flux'\] \.wz-place-block \.wz-place-name\{[^}]*?)text-overflow:ellipsis;/, to: '$1text-overflow:clip;', red: ['P2'] },
   { name: 'break-anywhere comes back', file: 'css', find: /(\[data-theme='flux'\] \.wz-place-block \.wz-place-name\{[^}]*?)text-align:center;/, to: '$1text-align:center; overflow-wrap:anywhere;', red: ['P3'] },
-  { name: 'the title is dropped', file: 'pb', find: / title=\{label\}/, to: '', red: ['P4'] },
+  { name: 'the title is dropped', file: 'pb', find: / title=\{fullPath\}/, to: '', red: ['P4'] },
+  { name: 'the rail label shows the full RACK path again', file: 'pb', find: /wz-place-name">\{name\}<\/span>/, to: 'wz-place-name">{fullPath}</span>', red: ['P5'] },
 ];
 
 const css0 = readRaw('index.css'), pb0 = readRaw('components/PlaceBlock.tsx');
