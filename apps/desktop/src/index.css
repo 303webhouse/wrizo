@@ -706,11 +706,11 @@
 :root[data-theme='machina'][data-cast='neutral'][data-page='dark'] .mode-scroll ::selection { background: rgba(255, 152, 0, .22); }
 :root[data-theme='machina'][data-cast='neutral'][data-page='light'] .mode-scroll ::selection { background: rgba(255, 152, 0, .28); }
 /* THE MARK (Fable's ruling, Oct 23: "ship the approved mockup's WRIZ▢ wordmark - the mockup wins over the plan prose"): the corporate wordmark, top left like Flux's - WRIZ in the content-label face
-   (Plex Sans 600, 13px, .08em) and the orange OUTLINED SQUARE (the O). Arbor's hand-drawn PNG mask is switched off exactly as Flux's is. Orange is one of its few homes. */
+   (Plex Sans 600, 13px, .08em) and the OUTLINED SQUARE (the O) in the active carrier (Fable, Oct 29: steel in COOL, orange in NEUTRAL - --line-active). Arbor's hand-drawn PNG mask is switched off exactly as Flux's is. Orange is one of its few homes. */
 [data-theme='machina'] .brand-mark{ top:10px; left:14px; bottom:auto; right:auto; width:auto; aspect-ratio:auto; opacity:1; -webkit-mask:none; mask:none; background:none; filter:none;
   color:var(--text-hi); font-family:var(--font-contentLabel); font-weight:600; font-size:13px; letter-spacing:.08em; line-height:1; }
 [data-theme='machina'] .brand-mark::before{ content:'WRIZ'; }
-[data-theme='machina'] .brand-mark::after{ content:''; display:inline-block; width:.7em; height:.7em; border:1.5px solid var(--orange); margin-left:1px; vertical-align:-1px; }
+[data-theme='machina'] .brand-mark::after{ content:''; display:inline-block; width:.7em; height:.7em; border:1.5px solid var(--line-active); margin-left:1px; vertical-align:-1px; }
 /* ORANGE IS SCARCE (the first Phase B screens): Arbor's warm lights are NOT Machina's. The paper's resting and focused halos, the goal's glow and the celebration flare are all Arbor ember; under
    Machina the page sits in a plain dark shadow, the goal glow is dialled down (the token's own contract: themes dial the cap, never remove it) and recoloured to the live gray, and the flare is not
    drawn at all - the ONE celebration is the Run strip closing orange (components/RunStrip.tsx). */
