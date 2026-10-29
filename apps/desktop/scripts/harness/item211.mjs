@@ -23,7 +23,7 @@ let r1CardShown = null;   // R1's card readings, kept for its parked record
 let clickPast = null;   // the WALK click reading, kept for its parked record
 const checks = [];
 let c2RowsSeen = null;   // C2's picker rows (PAGE TEMPLATES R2), kept for its parked record
-let c3HeadSeen = null;   // C3's heading text (PAGE TEMPLATES R2), kept for its parked record
+let c3HeadSeen = null; let c4Seen = null;   // C3's heading text (PAGE TEMPLATES R2), kept for its parked record
 let c2Seen = null;   // C2's reading of the placeholders, kept for its parked record (PAGE-TEMPLATES-MOVE)
 const ok = (name, pass, detail = '') => { checks.push({ name, pass: !!pass, detail }); console.log(`${pass ? 'PASS' : 'FAIL'}  ${name}${detail ? `  [${detail}]` : ''}`); };
 
@@ -270,7 +270,11 @@ await withHarness(async (app) => {
       const brass = document.createElement('span'); brass.style.color = 'var(--brass-press)'; panel.appendChild(brass);
       const out = { olive: getComputedStyle(probe).color, brass: getComputedStyle(brass).color, h4: [...panel.querySelectorAll('h4')].map(h => getComputedStyle(h).color) };
       probe.remove(); brass.remove(); return out; })()`);
-    ok('C4: every Settings heading is the theme\'s olive (--accent-rest), not brass', heads.h4.length === 3 && heads.h4.every((c) => c === heads.olive) && heads.olive !== heads.brass, JSON.stringify(heads));
+    // ---- PARKED - SUPERSEDED by NICK'S RULING (via Fable, Oct 25): "Recede depth" is REMOVED, and with it the Preferences block (its only row): the Settings panel holds TWO headings, not three. Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
+    //
+    //     ok('C4: every Settings heading is the theme\'s olive (--accent-rest), not brass', heads.h4.length === 3 && heads.h4.every((c) => c === heads.olive) && heads.olive !== heads.brass, JSON.stringify(heads));
+    c4Seen = heads;
+    ok("C4 [recede-depth-removed successor]: every Settings heading (two, since the Preferences block went) is the theme's olive (--accent-rest), not brass", heads.h4.length === 2 && heads.h4.every((c) => c === heads.olive) && heads.olive !== heads.brass, JSON.stringify(heads));
   }
 
   // ---- FABLE'S REVIEW (2026-10-03) ----
@@ -360,7 +364,9 @@ if (process.env.HARNESS_PARKED === '1') {
     pass: !!c2RowsSeen && c2RowsSeen.map((b) => b.name).join(',') === 'Blank,Screenplay,Outline,Title Page,Bibliography', detail: JSON.stringify(c2RowsSeen) });
   checks.push({ name: 'PARKED (was "C3: a \"Typeface\" heading sits directly above the font controls") - PAGE TEMPLATES R2 (the approved mockup): Arbor\'s heading reads "Font"; live successor: C3 [page-templates-r2 successor]',
     pass: !!c3HeadSeen && c3HeadSeen.text === 'Font', detail: JSON.stringify(c3HeadSeen) });
-  console.log('\nITEM211 PARKED: 4 checks (R1 card reveal; the WALK click park; C2, the picker rows [page-templates R2]; C3, the Font heading [page-templates R2])');
+  checks.push({ name: 'PARKED (was "C4: every Settings heading is the theme olive (--accent-rest), not brass", three headings) - Nick ruling via Fable, Oct 25: Recede depth is removed with its Preferences block; the panel holds two headings; live successor: C4 [recede-depth-removed successor]',
+    pass: !!c4Seen && c4Seen.h4.length === 3, detail: JSON.stringify(c4Seen) });
+  console.log('\nITEM211 PARKED: 5 checks (R1 card reveal; the WALK click park; C2, the picker rows [page-templates R2]; C3, the Font heading [page-templates R2]; C4, three Settings headings [recede depth removed])');
 }
 const failed = checks.filter((c) => !c.pass);
 console.log(`\nITEM211 VERIFY: ${failed.length ? `FAIL — ${failed.length}/${checks.length} failed` : `PASS (${checks.length} checks)`}`);
