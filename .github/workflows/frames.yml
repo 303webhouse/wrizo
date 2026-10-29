@@ -41,9 +41,16 @@ on:
         description: 'Optional: path inside the built branch to a .mjs that default-exports extra screens (e.g. apps/desktop/scripts/frames/arbor.mjs)'
         required: false
         default: ''
+  # A push to the tooling branch photographs that branch itself with the defaults. It is also what REGISTERS this file with GitHub, so
+  # `gh workflow run frames.yml --ref ci/actions-harness` works afterwards (a workflow that has never run cannot be dispatched by name).
+  push:
+    branches: [ci/actions-harness]
+    paths:
+      - '.github/workflows/frames.yml'
+      - 'apps/desktop/scripts/ci-frames.mjs'
 
 concurrency:
-  group: frames-${{ github.ref }}-${{ inputs.ref }}
+  group: frames-${{ github.ref }}-${{ inputs.ref || github.ref_name }}
   cancel-in-progress: true
 
 permissions:
@@ -65,11 +72,11 @@ jobs:
     steps:
       - name: Check the inputs
         env:
-          I_REF: ${{ inputs.ref }}
-          I_SCREENS: ${{ inputs.screens }}
-          I_THEMES: ${{ inputs.themes }}
-          I_TONES: ${{ inputs.tones }}
-          I_WIDTHS: ${{ inputs.widths }}
+          I_REF: ${{ inputs.ref || github.ref_name }}
+          I_SCREENS: ${{ inputs.screens || 'all' }}
+          I_THEMES: ${{ inputs.themes || 'plateau' }}
+          I_TONES: ${{ inputs.tones || 'light,dark' }}
+          I_WIDTHS: ${{ inputs.widths || '1366,1920' }}
           I_FILE: ${{ inputs.screens_file }}
         run: |
           set -eu
@@ -92,7 +99,7 @@ jobs:
       # the app to photograph: built, never run as code beyond its own build
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ inputs.ref }}
+          ref: ${{ inputs.ref || github.ref_name }}
           path: build
           persist-credentials: false
 
@@ -126,10 +133,10 @@ jobs:
       - name: Capture
         working-directory: tools/apps/desktop
         env:
-          I_SCREENS: ${{ inputs.screens }}
-          I_THEMES: ${{ inputs.themes }}
-          I_TONES: ${{ inputs.tones }}
-          I_WIDTHS: ${{ inputs.widths }}
+          I_SCREENS: ${{ inputs.screens || 'all' }}
+          I_THEMES: ${{ inputs.themes || 'plateau' }}
+          I_TONES: ${{ inputs.tones || 'light,dark' }}
+          I_WIDTHS: ${{ inputs.widths || '1366,1920' }}
           I_FILE: ${{ inputs.screens_file }}
         run: |
           set -eu
