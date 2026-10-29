@@ -1,0 +1,7 @@
+# Harness files that stay on the Windows box (docs/deploy.md "Harness on GitHub Actions").
+# One file name per line; the workflow REFUSES to run a listed file on Actions. A file leaves this list only after a parity run
+# (box verdict == Actions verdict, check by check, repeated) shows its timing budget holds on a GitHub-hosted runner.
+# Timing-sensitive: a millisecond budget a shared cloud VM cannot honestly promise.
+glitch-meter.mjs
+rhizome-latency.mjs
+typing-latency-scroll.mjs
