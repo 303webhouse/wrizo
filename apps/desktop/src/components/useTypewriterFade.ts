@@ -257,7 +257,11 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         const row = caretRow(sel, ed);
         if (row) {
           const rr = row.getBoundingClientRect();
-          if (rr.height && (caretBottom === null || caretBottom < rr.top + 1 || caretBottom > rr.bottom + 1)) caretBottom = rr.bottom;
+          // ...but only a row with nothing in it (the fresh line after Enter) or a rect that lies OFF the row: a row WITH words has spacing below its last
+          // line, so its box bottom reads that much lower than the caret (fx1 C2: a short page's first row scrolled 24px and faded) - those fall through
+          // to the last-character walk below, as before.
+          const emptyRow = (row.textContent || '').replace(/[\u200b\ufeff]/g, '').length === 0;
+          if (rr.height && ((caretBottom === null && emptyRow) || (caretBottom !== null && (caretBottom < rr.top + 1 || caretBottom > rr.bottom + 1)))) caretBottom = rr.bottom;
         }
       }
       // FX4 S1 — a genuinely COLLAPSED range's own getClientRects() is
