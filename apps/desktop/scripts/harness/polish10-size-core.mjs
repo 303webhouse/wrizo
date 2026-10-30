@@ -126,6 +126,7 @@ ok('AT: fontFaceAt is not fooled by a size (a sized word with no face reads null
 // ---- WHOLE
 const both = 'a [b]{.font-lora .size-14} c [d]{.size-12} e [f]{.font-arial} g';
 ok('WHOLE: the whole-document SIZE pick removes every size and keeps every face', has(df, 'clearSizeSpans') && df.clearSizeSpans(both) === 'a [b]{.font-lora} c d e [f]{.font-arial} g', has(df, 'clearSizeSpans') ? J(df.clearSizeSpans(both)) : 'no clearSizeSpans');
+ok('WHOLE (combined span): a span carrying BOTH classes loses its size and keeps its face - the guard reads `.size-` anywhere in the braces, not only right after `{` (live: polish10-size Z6)', has(df, 'clearSizeSpans') && df.clearSizeSpans('a [b]{.font-courier-prime .size-14} c') === 'a [b]{.font-courier-prime} c' && df.clearFontSpans('a [b]{.font-courier-prime .size-14} c') === 'a [b]{.size-14} c', has(df, 'clearSizeSpans') ? J([df.clearSizeSpans('a [b]{.font-courier-prime .size-14} c'), df.clearFontSpans('a [b]{.font-courier-prime .size-14} c')]) : 'no clearSizeSpans');
 ok('WHOLE: the whole-document FACE pick removes every face and keeps every size', has(df, 'clearFontSpans') && df.clearFontSpans(both) === 'a [b]{.size-14} c [d]{.size-12} e f g', has(df, 'clearFontSpans') ? J(df.clearFontSpans(both)) : '');
 
 // ---- EDIT (the house rules, through the same run model: hiddenMarks)
