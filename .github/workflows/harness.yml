@@ -170,12 +170,13 @@ jobs:
           LEG: ${{ matrix.leg }}
           FILE_LIST: ${{ matrix.files }}
         run: |
+          # GitHub runs steps as bash -e: a red suite must not skip the copy below, so the exit code is captured, not fatal
           set -u
           out="$RUNNER_TEMP/suite"
+          rc=0
           flag=""; [ "$LEG" = "parked" ] && flag="--parked"
           # output goes to a FILE, never a pipe (a harness child holding a pipe open hangs the runner)
-          node scripts/run-suite.mjs --only "$FILE_LIST" $flag --out "$out" > "$RUNNER_TEMP/run.log" 2>&1
-          rc=$?
+          node scripts/run-suite.mjs --only "$FILE_LIST" $flag --out "$out" > "$RUNNER_TEMP/run.log" 2>&1 || rc=$?
           mkdir -p "$out"; cp "$RUNNER_TEMP/run.log" "$out/run.log"
           cat "$RUNNER_TEMP/run.log"
           exit $rc
@@ -215,11 +216,11 @@ jobs:
           I_BOX_P: ${{ inputs.box_parked }}
         run: |
           set -u
+          rc=0
           extra=""
           [ -n "$I_BOX_D" ] && [ -f "$I_BOX_D" ] && extra="$extra --box-default $I_BOX_D"
           [ -n "$I_BOX_P" ] && [ -f "$I_BOX_P" ] && extra="$extra --box-parked $I_BOX_P"
-          node apps/desktop/scripts/ci-merge.mjs --in suites --out merged $extra > "$RUNNER_TEMP/merge.txt" 2>&1
-          rc=$?
+          node apps/desktop/scripts/ci-merge.mjs --in suites --out merged $extra > "$RUNNER_TEMP/merge.txt" 2>&1 || rc=$?
           cat "$RUNNER_TEMP/merge.txt"
           [ -f merged/summary.md ] && cat merged/summary.md >> "$GITHUB_STEP_SUMMARY"
           exit $rc
