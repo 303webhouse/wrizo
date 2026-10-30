@@ -70,6 +70,7 @@ const DOCK_FLOOR_PX = 120;
 // narrow-screen degradation (the measure-effect below sets the panel's inline width to
 // natural open-w there). Distinct from DOCK_FLOOR_PX above: that gates whether the DOCK
 // affordance is offered; this gates whether an open panel occupies the margin or overlays.
+const BOARD_TAB_RIDES_EDGE = true;   // POLISH #10 item 1 - see the retired grip-move effect
 const TUTOR_TAB_PX = 16;   // .wz-tutor-grip{ width:16px } - the drawer mirror counts the tab in the drawer's width, as the Tools drawer does
 const USABLE_PANEL_FLOOR_PX = 280;   // SUPERSEDED by page-size (Fable's 1366 rule, Oct 23): the measure-effect's floor is DRAWER_MIN (200); kept as the record
 void USABLE_PANEL_FLOOR_PX;
@@ -552,7 +553,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // positioned, never pushes it — fx10's "paper rect byte-identical" invariant), so one read on
   // open + a resize listener suffices.
   useLayoutEffect(() => {
-    if (!open || docked || pageKind === 'board') { setPanelWidthPx(null); setPanelOffsetPx(0); return; }
+    // POLISH #10 item 1: the Board joins the mirror - its board narrows to the drawer's full width, so the panel stands flush against its tab there too
+    if (!open || docked) { setPanelWidthPx(null); setPanelOffsetPx(0); return; }
     const measure = () => {
       const stage = document.querySelector('.desk-frame-stage');
       // PAGE-SIZE - the prose page is PAINTED larger than its column by a transform, so the margin is measured from the painted page itself
@@ -579,7 +581,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     measure();
     window.addEventListener('resize', measure);
     document.addEventListener('wz-zoom-changed', measure);   // PAGE-SIZE - the painted page's edge moves when the zoom toggles
-    return () => { window.removeEventListener('resize', measure); document.removeEventListener('wz-zoom-changed', measure); };
+    document.addEventListener('wz-board-moved', measure);    // POLISH #10 item 1 - the board narrows after the drawer opens
+    return () => { window.removeEventListener('resize', measure); document.removeEventListener('wz-zoom-changed', measure); document.removeEventListener('wz-board-moved', measure); };
   }, [open, docked, pageKind]);
 
   // tutor-drawer-arrow — the grip's own open-state position, measured from
@@ -603,8 +606,10 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // overrides the OPEN position.
   // DRAWER MIRROR (Nick, via Fable, Oct 24): on a writing surface the tab NEVER moves - opening or closing a drawer only flips its arrow; it rides the
   // painted page's edge (the CSS formula above). The move below stays for the Board alone, whose panel overlays the canvas from the stage's edge.
+  // POLISH #10 item 1 (Oct 25): RETIRED for the Board too - the board narrows beside the open drawer now, so nothing overlays it and its tab rides its
+  // edge (index.css --board-r). The effect is kept, inert, as the record of the move it made.
   useEffect(() => {
-    if (!open || pageKind !== 'board') { setGripLeftPx(null); return; }
+    if (!open || pageKind !== 'board' || BOARD_TAB_RIDES_EDGE) { setGripLeftPx(null); return; }
     const GRIP_GUTTER_PX = 16;
     const GRIP_WIDTH_PX = 16; // .wz-tutor-grip{ width:16px }
     const measure = () => {

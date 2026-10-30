@@ -3855,6 +3855,13 @@ a:focus-visible,
   --sliver-paper-half: min(50%, 550px);
   --sliver-paper-pad: 0px;
 }
+/* POLISH #10 item 1 (Nick, Oct 25) - the board narrows beside an open drawer (BoardEditor writes --board-l / --board-r on the stage: the board's offsets
+   from the stage's edges, and --board-strip, how far the strip stands over the stage). The anchors read the board's REAL edges, so the Tools drawer's
+   tab sits on the board's left edge with its panel beside it, and the drawer has exactly the room the board left it. */
+.desk-frame-stage--board .desk-frame-sliver-anchor--board{
+  --sliver-paper-half: calc(50% - var(--board-l, 0px));
+  --sliver-margin: max(0px, calc(var(--board-l, 0px) - var(--board-strip, 0px)));
+}
 
 /* TU1 S2 — the Tutor's TWO anchors. Empirically verified (not just read off
    the CSS — this project's own standing discipline): a single Sliver-shaped
@@ -3996,6 +4003,9 @@ a:focus-visible,
   --tutor-paper-half: min(50%, 550px);
   --tutor-paper-pad: 0px;
 }
+/* POLISH #10 item 1 - the Tutor's tab rides the board's right edge (its panel stands against it: Tutor.tsx's measure, the board in the mirror regime) */
+.desk-frame-stage--board .desk-frame-tutor-anchor--board{ --tutor-paper-half: calc(50% - var(--board-r, 0px)); }
+.desk-frame-stage--board .desk-frame-tutor-panel-anchor--board{ --tutor-panel-paper-half: calc(50% - var(--board-r, 0px)); }
 .desk-frame-tutor-panel-anchor{
   /* ITEM tutor-drawer-mirror (Nick, review fix) — raised with the grip
      anchor above (same comment there); one below it, same relationship. */

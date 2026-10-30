@@ -208,6 +208,11 @@ const lastTutorBody = async (app) =>
 // routed check.
 const lex = (app, term) => app.evalJs(`window.wrizoDeskLexicon.t(${JSON.stringify(term)})`);
 
+// POLISH #10 items 1 + 16 (Nick, Oct 25): THE BOARD NARROWS beside an open drawer - [board][tab][panel]: the board's left, top and bottom never move,
+// its right edge meets the tab's left edge, and the panel starts AT the tab's right edge.
+const tu2Board = [];
+const boardBesideOk = (closed, now, grip, panelLeft) => !!closed && !!now && !!grip && now.left === closed.left && now.top === closed.top
+  && now.bottom === closed.bottom && now.width < closed.width - 1 && Math.abs(now.right - grip.left) < 1.5 && (panelLeft == null || Math.abs(panelLeft - grip.right) < 1.5);
 await withHarness(async (app) => {
   // ==========================================================================
   // CURSOR — legacy-no-cursor first read: a page with existing text and NO
@@ -464,8 +469,17 @@ await withHarness(async (app) => {
       await openTutor(app);
       const panelOpen = await rectOf(app, '.wz-tutor-panel');
       const paperOpen = await rectOf(app, paperSel);
+      // ---- PARKED FOR THE BOARD SURFACE - SUPERSEDED there by POLISH #10 item 1 (Nick, Oct 25: the board narrows beside open drawers, which sit flush
+      // to it): kept VERBATIM; it runs unchanged on the page; on the board its successor runs instead. Records in the parked section.
+      const gripOpenTu2 = await rectOf(app, '.wz-tutor-grip');
+      if (surface === 'page') {
       ok(`Geometry @${width}px/${surface}: paper rect BYTE-IDENTICAL, closed -> open`,
         JSON.stringify(paperClosed) === JSON.stringify(paperOpen), JSON.stringify({ paperClosed, paperOpen }));
+      } else {
+        tu2Board.push({ width, paperClosed, paperOpen, gripOpen: gripOpenTu2, panelLeft: panelOpen && panelOpen.left });
+        ok(`Geometry @${width}px/board: the board NARROWS beside the open drawer [polish #10 item 1 successor] — its left, top and bottom unchanged, its right edge on the tab, the panel starting at the tab`,
+          boardBesideOk(paperClosed, paperOpen, gripOpenTu2, panelOpen && panelOpen.left), JSON.stringify({ paperClosed, paperOpen, gripOpen: gripOpenTu2, panelLeft: panelOpen && panelOpen.left }));
+      }
       // FX10 S1/A4 — the "EXACTLY 2x --strip-width" assertion that lived
       // here is PARKED below (HARNESS_PARKED gate, quoted verbatim) — Fable's
       // own corrected width ruling (docs/wrizo-alpha/fx10-rooms-edges-brief.md)
@@ -479,8 +493,19 @@ await withHarness(async (app) => {
       await sleep(250);
       const paperAfterDock = await rectOf(app, paperSel);
       const dockedState = await app.evalJs("document.querySelector('.wz-tutor-panel')?.dataset.docked");
+      // ---- PARKED FOR THE BOARD SURFACE - SUPERSEDED there by POLISH #10 item 1 (as above): kept VERBATIM; it runs unchanged on the page.
+      if (surface === 'page') {
       ok(`Geometry @${width}px/${surface}: paper rect BYTE-IDENTICAL after invoking the dock control (whether it genuinely docks or, below the floor, falls back to closing — either way the paper never moves)`,
         JSON.stringify(paperClosed) === JSON.stringify(paperAfterDock), JSON.stringify({ paperClosed, paperAfterDock, dockedState }));
+      } else {
+        const gripDocked = await rectOf(app, '.wz-tutor-grip');
+        const panelDocked = await rectOf(app, '.wz-tutor-panel');
+        const ob = tu2Board[tu2Board.length - 1];
+        if (ob && ob.width === width) Object.assign(ob, { paperAfterDock, gripDocked, panelDockedLeft: panelDocked && panelDocked.left, dockedState });
+        ok(`Geometry @${width}px/board: after the dock control the board stands BESIDE the docked drawer, or - if it fell back to closing - is whole again [polish #10 item 1 successor]`,
+          dockedState === 'true' ? boardBesideOk(paperClosed, paperAfterDock, gripDocked, panelDocked && panelDocked.left) : JSON.stringify(paperClosed) === JSON.stringify(paperAfterDock),
+          JSON.stringify({ paperClosed, paperAfterDock, gripDocked, panelDockedLeft: panelDocked && panelDocked.left, dockedState }));
+      }
     }
   }
 
@@ -757,12 +782,21 @@ if (process.env.HARNESS_PARKED === '1') {
     true,
     "superseded by ITEM 84 disclosure v4");
 
+  // POLISH #10 item 1 (Oct 26) - SIX parks: the paper rect's two BYTE-IDENTICAL checks on the BOARD surface at the three reference widths. Each record
+  // re-verifies the new truth (the board beside the drawer) from the default leg's own reads.
+  for (const o of tu2Board) {
+    pok(`PARKED for the board surface (was "Geometry @${o.width}px/board: paper rect BYTE-IDENTICAL, closed -> open") — polish #10 item 1: the board narrows beside open drawers; live successor: [polish #10 item 1 successor]`,
+      boardBesideOk(o.paperClosed, o.paperOpen, o.gripOpen, o.panelLeft), JSON.stringify(o));
+    pok(`PARKED for the board surface (was "Geometry @${o.width}px/board: paper rect BYTE-IDENTICAL after invoking the dock control (whether it genuinely docks or, below the floor, falls back to closing — either way the paper never moves)") — polish #10 item 1; live successor: [polish #10 item 1 successor]`,
+      o.dockedState === 'true' ? boardBesideOk(o.paperClosed, o.paperAfterDock, o.gripDocked, o.panelDockedLeft) : JSON.stringify(o.paperClosed) === JSON.stringify(o.paperAfterDock), JSON.stringify(o));
+  }
+
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nTU2 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed: six FX10-superseded width checks (successors in fx10.mjs) + three TU5-superseded disclosure-v2 checks (successors in tu5.mjs) + one ITEM-84-superseded disclosure-v3 version check (successor in item84b.mjs)`
+    ? `\nTU2 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed: six FX10-superseded width checks (successors in fx10.mjs) + three TU5-superseded disclosure-v2 checks (successors in tu5.mjs) + one ITEM-84-superseded disclosure-v3 version check (successor in item84b.mjs) + six polish #10 item 1 board paper-rect checks (successors in place)`
     : `\nTU2 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 

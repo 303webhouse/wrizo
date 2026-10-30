@@ -135,7 +135,7 @@ await withHarness(async (app) => {
     await app.evalJs(POINTER_HELPER); // re-inject — reload() wipes the page's own JS context
 
     const canvasBefore = await app.evalJs(`(() => { const el = document.querySelector('.board-canvas'); return { w: el.style.width, h: el.style.height }; })()`);
-    const preBoxBefore = await app.evalJs(`document.querySelector('[data-box-id="b3-preexisting"]').getBoundingClientRect().toJSON()`);
+    let preBoxBefore = await app.evalJs(`document.querySelector('[data-box-id="b3-preexisting"]').getBoundingClientRect().toJSON()`);
 
     await openSliver(app);
     const fromDeckPresent = await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].some(b => b.textContent.trim() === 'From a deck…')");
@@ -191,9 +191,13 @@ await withHarness(async (app) => {
         JSON.stringify(sliverShape));
     }
 
+    // the baseline is the card with the drawers as they stand when the wizard is pressed: the Tools drawer was opened above (the board narrows beside a drawer - polish #10 item 1), and that is the drawer's doing, not the wizard's
+    preBoxBefore = await app.evalJs(`document.querySelector('[data-box-id="b3-preexisting"]').getBoundingClientRect().toJSON()`);
+    console.log('B3 STATE before the wizard @' + width + ': ' + JSON.stringify(await app.evalJs(`(() => { const st = document.querySelector('.desk-frame-stage'); return { vars: st ? ['--board-l','--board-r','--board-strip'].map((k) => st.style.getPropertyValue(k)) : null, tools: document.querySelector('.wz-sliver-panel')?.getAttribute('data-open'), tutor: document.querySelector('.wz-tutor-panel')?.getAttribute('data-open'), area: (() => { const a = document.querySelector('.board-area'); return a ? [a.style.marginLeft, a.style.width] : null; })(), card: document.querySelector('[data-box-id="b3-preexisting"]')?.getBoundingClientRect().left }; })()`)));
     await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].find(b => b.textContent.trim() === 'From a deck…').click()");
     await app.waitFor("!!document.querySelector('.deck-wizard-backdrop')", { label: `deck wizard open @${width}px` });
     await sleep(400); // clear the .28s blur/dim transition fully, same discipline fx4.mjs's own S5 section uses
+    console.log('B3 STATE with the wizard open @' + width + ': ' + JSON.stringify(await app.evalJs(`(() => { const st = document.querySelector('.desk-frame-stage'); return { vars: st ? ['--board-l','--board-r','--board-strip'].map((k) => st.style.getPropertyValue(k)) : null, tools: document.querySelector('.wz-sliver-panel')?.getAttribute('data-open'), tutor: document.querySelector('.wz-tutor-panel')?.getAttribute('data-open'), area: (() => { const a = document.querySelector('.board-area'); return a ? [a.style.marginLeft, a.style.width] : null; })(), card: document.querySelector('[data-box-id="b3-preexisting"]')?.getBoundingClientRect().left }; })()`)));
 
     // Board geometry byte-identical beneath the pop-out — PROVEN, not assumed.
     const geomWhileOpen = await app.evalJs(`(() => {
@@ -289,7 +293,8 @@ await withHarness(async (app) => {
     // section) — a coordinate-less synthetic dblclick defaults to (0,0),
     // which elementFromPoint no longer forgives; supply the card's own real
     // on-screen center.
-    await app.evalJs(`(() => { const el = document.querySelector('[data-box-id="${climaxBox.id}"]'); const r = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); })()`);
+    const dbg292 = await app.evalJs(`(() => { const el = document.querySelector('[data-box-id="${climaxBox.id}"]'); el.scrollIntoView({ block: 'center', inline: 'center' }); const r = el.getBoundingClientRect(); const cx = r.left + r.width / 2, cy = r.top + r.height / 2; const hit = document.elementFromPoint(cx, cy); el.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, clientX: cx, clientY: cy })); return { card: { l: Math.round(r.left), t: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) }, vw: innerWidth, hit: hit ? (hit.className || hit.tagName) + (el.contains(hit) ? ' (inside the card)' : ' (NOT the card)') : null }; })()`);
+    console.log('B3 dblclick @' + width + ': ' + JSON.stringify(dbg292));
     await app.waitFor("!!document.querySelector('.board-popup-editor')", { label: `card popup open @${width}px` });
     await app.evalJs("document.querySelector('.board-popup-editor').focus()");
     await app.typeKeys(' Rewritten by the writer.');
@@ -304,7 +309,7 @@ await withHarness(async (app) => {
     // Edit yet ANOTHER dealt card — proves the hint never returns.
     const resolutionBox = dealtTextBoxes.find(b => (b.text || '').startsWith('Resolution\n'));
     // FX7 S5 — same coordinate-carrying fix (see above).
-    await app.evalJs(`(() => { const el = document.querySelector('[data-box-id="${resolutionBox.id}"]'); const r = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); })()`);
+    await app.evalJs(`(() => { const el = document.querySelector('[data-box-id="${resolutionBox.id}"]'); el.scrollIntoView({ block: 'center', inline: 'center' }); const r = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); })()`);
     await app.waitFor("!!document.querySelector('.board-popup-editor')", { label: `second card popup open @${width}px` });
     await app.evalJs("document.querySelector('.board-popup-editor').focus()");
     await app.typeKeys(' A second edit.');
