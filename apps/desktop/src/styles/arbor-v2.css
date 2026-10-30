@@ -101,6 +101,14 @@
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .wz-rhizome-field[data-flash='fading'] .wz-rhizome-seg[data-seed='true']{
   stroke:var(--brass); opacity:0; stroke-width:2.1px; transition:opacity 2200ms ease-out;
 }
+/* ---------- §14 ITEM 7 - THE RHIZOME VARIATION (spec §7.3, the rhizome by day) ----------
+   Real sage shoots: each stem one width, 1 / 1.5 / 2 / 2.5 px (data-w 0-3, src/arbor2/shoots.ts), each lap with its own character - a
+   'fine' lap sends thin shoots early, a 'bold' lap thick ones later. Presentation only (the lap rule and the growth model are unchanged).
+   By day only, and not during the brass flash (index.css draws that). The Mood menu's "Rhizome variation" switch (item 8) turns it off. */
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day']:not([data-arbor2-off~='variation']) .wz-rhizome-field[data-flash='false'] .wz-rhizome-seg[data-w='0']{ stroke-width:1px; opacity:.6; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day']:not([data-arbor2-off~='variation']) .wz-rhizome-field[data-flash='false'] .wz-rhizome-seg[data-w='1']{ stroke-width:1.5px; opacity:.7; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day']:not([data-arbor2-off~='variation']) .wz-rhizome-field[data-flash='false'] .wz-rhizome-seg[data-w='2']{ stroke-width:2px; opacity:.75; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day']:not([data-arbor2-off~='variation']) .wz-rhizome-field[data-flash='false'] .wz-rhizome-seg[data-w='3']{ stroke-width:2.5px; opacity:.8; }
 @media (prefers-reduced-motion: reduce){
   :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .wz-rhizome-field[data-flash='fading'] .wz-rhizome-seg[data-seed='true']{ transition:none; }
 }
