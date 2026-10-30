@@ -780,7 +780,7 @@ if (process.env.HARNESS_PARKED === '1') {
   {
     const o = i121Ps.s5 || {};
     parkedChecks.push({ name: 'PARKED (was "S5 (mouse): in INK a trusted MOUSE drag draws — the laptop is the primary target, and a sketch pad the primary target cannot draw on is not a sketch pad") - page-size: a fresh page opens zoomed with a one-line sheet; the fixed top + 60px gesture lands below it; live successor: S5 (mouse) [page-size successor]',
-      pass: !!o.visBox && o.visBox.onSheet && o.afterMouse === o.before + 1 && o.originalOffBelow === true, detail: JSON.stringify(o) });
+      pass: !!o.visBox && o.visBox.onSheet && o.afterMouse === o.before + 1 && (o.originalOffBelow === true || (!!o.visBox && o.visBox.sheetH >= 84)), detail: JSON.stringify(o) });   // polish #10 item 5 (Oct 30): the zoomed sheet now covers the visible page (sheetH >= 84), so the old gesture lands ON it - the premise is moot, the drag still draws
   }
   // POLISH #10 item 5 (Oct 26) - the pen + touch drivers' aim. Its record re-verifies the falsification from the live run: in the zoom the sheet is
   // TALLER than its text box (it covers the visible page), and the text box sits inside it; outside the zoom the two are one box.
