@@ -73,7 +73,7 @@ export async function applyPasswordChange(client, email, passHash) {
 }
 
 // Reads one line from the keyboard. hidden=true shows nothing while typing. Needs a real terminal (raw mode).
-function readLine(prompt, { hidden }) {
+export function readLine(prompt, { hidden }) {
   return new Promise((resolve, reject) => {
     const stdin = process.stdin;
     process.stdout.write(prompt);
