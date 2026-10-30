@@ -112,6 +112,8 @@
    it is a faint warm shade instead (the boards darkening toward the walls); text on the whitewash keeps its floors (low #4F4E36 under the
    strongest corner stays > 6:1). */
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] body::after{ box-shadow:inset 0 0 170px 55px rgba(110, 86, 50, .12); }
+/* "never the page", now true on the zoomed page too: paper.ts writes the visible page as an evenodd hole (Oct 29) */
+:root[data-arbor2][data-theme='plateau'] body::after{ clip-path:var(--arbor2-page-hole, none); }
 
 /* ---------- THE MOCKUP'S OWN SWITCHES (not product: the bar exists only under the flag) ----------
    Square, flat, no shadow. Bottom-right, overlaying, never displacing. Recedes with everything else while she types. */
