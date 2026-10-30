@@ -131,6 +131,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     // position in scroll-INDEPENDENT "document space" (see band() below).
     let engaged = false;
     let prevDocCaretBottom: number | null = null;
+    let lastDocCaretBottom: number | null = null;   // the caret's document position at the last pass (scroll-invariant): what a manual scroll-up forfeits back to
     // PAGE-SIZE G DIAGNOSTICS (Fable, Oct 24 - approved with conditions): the engine's decisions, in MEMORY only - an array the harness puts on
     // window before the page mounts. Read ONCE here, at mount; when it is absent (every real session) nothing below is ever written. No DOM
     // attribute, no DOM write, nothing on the keystroke path but one branch. page-size.mjs's source check pins this gate.
@@ -320,6 +321,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       // the writer just produce" from "where did the viewport happen to be
       // sitting" — the two concerns S1 asks to be decoupled.
       const docCaretBottom = within + box.scrollTop;
+      lastDocCaretBottom = docCaretBottom;
       // PAGE-SIZE - zoomed, the hold is the writing line's TOP at `anchor` of the hold element (the page column, the box the band mask is drawn
       // in), as Cursor's mockup places it - so the caret's BOTTOM sits one line below that, inside the mask's full-strength band.
       const holdEl = zoom?.holdRef.current ?? null;
@@ -408,6 +410,21 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     container.addEventListener('input', schedule);
     const scrollListenTarget: Window | HTMLElement = useWindowScroll ? window : container;
     scrollListenTarget.addEventListener('scroll', setScrolled, { passive: true });
+    // PAGE LAW (fx5 S1 c, train-11 bisect): a manual scroll UP is the writer's own position and nothing may move it afterwards. The engine pays a burst one line per
+    // glide, so the writer who scrolls up mid-staircase left the unpaid lines owed - and the next keystroke paid all of them on top of where they had put the page
+    // (501 -> 636 for one typed line). The engine only ever scrolls DOWN the document, so a scrollTop that went back up is the writer's: what was owed before it is
+    // forfeit (back to the caret's position at the last pass), and only lines typed after it are owed.
+    let lastTop = readBox(!!useWindowScroll, container).scrollTop;
+    const onManualScroll = () => {
+      const top = readBox(!!useWindowScroll, container).scrollTop;
+      if (engaged && top < lastTop - 1 && lastDocCaretBottom != null) {
+        prevDocCaretBottom = lastDocCaretBottom;
+        glideTarget = null; glideFrom = null;
+        if (trace) trace.push({ d: 'forfeit', top: Math.round(top) });
+      }
+      lastTop = top;
+    };
+    scrollListenTarget.addEventListener('scroll', onManualScroll, { passive: true });
     window.addEventListener('resize', measure);
     measure();
     setScrolled();
@@ -417,6 +434,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       mo.disconnect();
       container.removeEventListener('input', schedule);
       scrollListenTarget.removeEventListener('scroll', setScrolled);
+      scrollListenTarget.removeEventListener('scroll', onManualScroll);
       window.removeEventListener('resize', measure);
       cancelAnimationFrame(raf);
       if (verifyTimer) clearTimeout(verifyTimer);
