@@ -61,6 +61,9 @@ await withHarness(async (app) => {
         await q("location.hash = '#/page/p12-board'");
         await waitSoft("!!document.querySelector('.board-box')", { label: 'board', timeout: 8000 });
         await sleep(1200);
+        // the theme's writing face loads lazily: measure only once it is IN (a slower machine measured the fallback face, which wraps differently)
+        await waitSoft("document.fonts.status === 'loaded' && document.fonts.check('15px ' + getComputedStyle(document.querySelector('.board-text')).fontFamily)", { label: 'card font loaded', timeout: 10000 });
+        await sleep(400);
         measured[`${skin} ${tone}`] = await q(`(() => { const R = (e) => { if (!e) return null; const r = e.getBoundingClientRect(); return { l: r.left, t: r.top, w: r.width, h: r.height }; };
           const cards = {}; document.querySelectorAll('.board-box').forEach((e) => { cards[e.getAttribute('data-box-id')] = R(e); });
           return { wrap: R(document.querySelector('.board-canvas-wrap')), canvas: R(document.querySelector('.board-canvas')), cards }; })()`);
