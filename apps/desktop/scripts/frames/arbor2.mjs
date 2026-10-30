@@ -479,12 +479,14 @@ export default {
   'arbor-logo': async (app) => { await logoAt(app, 'brass'); },
   // ...and with the bar's Logo row on "Sage" (the o recoloured too: Nick's call)
   'arbor-logo-sage': async (app) => { await logoAt(app, 'all'); },
+  // PARKED 2026-10-29 (SUPERSEDED by arbor-dim below, after run 41010542648: it counted the LIT Tools panel among the dimmed hooks - so
+  // 'everything else at .52' could never hold - and held the lit panel's own labels to the dimmed floor. Original, verbatim, renamed:
   // §6.2 "Dim the room" (Fable, Oct 29: opacity on the recede hooks, labels >= 4.5:1 dimmed). By night: the hooks at rest sit at .6, every
   // dimmed label's EFFECTIVE contrast (its colour and its ground, both drawn through the opacity onto the room) clears 4.5:1; a drawer open
   // lights its panel and tab and takes the rest to .52; the Mood switch takes that step away; the keyboard reaching a hook lights it; and the
   // writing recede still takes every hook to 0. By day nothing is dimmed. Transitions are held off while measuring (each read is the final
   // value), then given back; the frame is the night room with the Tools drawer open.
-  'arbor-dim': async (app) => {
+  'arbor-dim-v1': async (app) => {
     await page(app, 'arbor-words', WORDS);
     await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'arbor2-proof-still'; s.textContent = '*, *::before, *::after { transition: none !important; }'; document.head.appendChild(s); if (document.activeElement) document.activeElement.blur(); })()");
     await sleep(300);
@@ -537,6 +539,95 @@ export default {
     await sleep(200);
     const noStep = await app.evalJs(MEASURE);
     v.moodOff = night ? others(noStep).every((r) => near(r.op, 0.6)) : true;
+    await app.evalJs(`document.querySelector('.arbor2-mood-switch[data-mood="dim"]')?.click()`);
+    await clickText(app, '.arbor2-bar-head', 'Mood ▾');
+    await clickSel(app, '.wz-sliver-grip');
+    await sleep(400);
+    // the keyboard reaches the rail: it is lit
+    await app.evalJs("(() => { const b = document.querySelector('.desk-rail a, .desk-rail button, .desk-frame-strip a, .desk-frame-strip button'); if (b) b.focus(); return !!b; })()");
+    await sleep(200);
+    const reach = await app.evalJs(`(() => { const a = document.activeElement; const h = a && a.closest('.chrome-fade, .desk-dissolve'); return h ? parseFloat(getComputedStyle(h).opacity) : null; })()`);
+    v.reach = night ? reach === 1 : true;
+    // writing: every hook goes to 0 (the recede, untouched)
+    await app.evalJs(`document.querySelector('${ED}').focus()`);
+    await app.typeKeys(' and the light moved');
+    await sleep(200);
+    const w = await app.evalJs(MEASURE);
+    v.writing = w.writing === 'true' && w.rows.filter((r) => r.cls.indexOf('grip') < 0).every((r) => r.op === 0);
+    // the frame: the night room with the Tools drawer open (transitions back on)
+    await app.evalJs("document.getElementById('arbor2-proof-still')?.remove(); document.activeElement && document.activeElement.blur()");
+    await sleep(2500);
+    await clickSel(app, '.wz-sliver-grip');
+    await sleep(900);
+    const ok = Object.values(v).every(Boolean);
+    if (!ok) {
+      const bad = Object.keys(v).filter((k) => !v[k]);
+      const pick = { rest, drawer: open, moodOff: noStep, writing: w };
+      throw new Error('DIM PROOF FAILED ' + JSON.stringify({ bad, reach, rows: bad.filter((k) => pick[k]).map((k) => pick[k].rows.map((r) => [r.cls, r.op, r.minCr, r.worst])) }).slice(0, 280));
+    }
+  },
+  // §6.2 "Dim the room" (Fable, Oct 29: opacity on the recede hooks, labels >= 4.5:1 dimmed). By night: the hooks at rest sit at .6, every
+  // dimmed label's EFFECTIVE contrast (its colour and its ground, both drawn through the opacity onto the room) clears 4.5:1; a drawer open
+  // lights its panel and tab and takes the rest to .52; the Mood switch takes that step away; the keyboard reaching a hook lights it; and the
+  // writing recede still takes every hook to 0. By day nothing is dimmed. Transitions are held off while measuring (each read is the final
+  // value), then given back; the frame is the night room with the Tools drawer open.
+  'arbor-dim': async (app) => {
+    await page(app, 'arbor-words', WORDS);
+    await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'arbor2-proof-still'; s.textContent = '*, *::before, *::after { transition: none !important; }'; document.head.appendChild(s); if (document.activeElement) document.activeElement.blur(); })()");
+    await sleep(300);
+    const MEASURE = `(() => {
+      const room = document.documentElement.getAttribute('data-arbor2-room');
+      const rgb = (s) => { const i = String(s).indexOf('('); if (i < 0) return null; const n = String(s).slice(i + 1, String(s).indexOf(')')).split(',').map((x) => parseFloat(x)); return n.length >= 3 ? n : null; };
+      const probe = document.createElement('i'); probe.style.color = getComputedStyle(document.documentElement).getPropertyValue('--ink-950').trim(); document.body.appendChild(probe);
+      const G = rgb(getComputedStyle(probe).color); probe.remove();
+      const lin = (c) => { c = c / 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+      const L = (c) => 0.2126 * lin(c[0]) + 0.7152 * lin(c[1]) + 0.0722 * lin(c[2]);
+      const cr = (a, b) => { const x = L(a), y = L(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+      const mix = (c, a) => [0, 1, 2].map((i) => a * c[i] + (1 - a) * G[i]);
+      const shown = (el) => { const r = el.getBoundingClientRect(); const cs = getComputedStyle(el); return r.width > 0 && r.height > 0 && cs.visibility !== 'hidden' && cs.display !== 'none'; };
+      const HOOK = '.chrome-fade, .desk-dissolve, .mode-dissolve, .wz-sliver-grip, .wz-tutor-grip';
+      const hooks = [...document.querySelectorAll(HOOK)].filter((h) => shown(h) && !h.parentElement.closest('.chrome-fade, .desk-dissolve, .mode-dissolve'));
+      const row = (h) => {
+        const op = parseFloat(getComputedStyle(h).opacity);
+        let minCr = null, worst = null;
+        for (const el of [h, ...h.querySelectorAll('*')]) {
+          if (!shown(el) || ![...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) continue;
+          let a = 1; for (let e = el; e; e = e.parentElement) a *= parseFloat(getComputedStyle(e).opacity);
+          const fg = rgb(getComputedStyle(el).color);
+          let B = null; for (let e = el; e && !B; e = e === h ? null : e.parentElement) { const b = rgb(getComputedStyle(e).backgroundColor); if (b && (b.length < 4 || b[3] === 1)) B = b; }
+          const fa = fg.length > 3 ? fg[3] : 1;
+          const bgE = B ? mix(B, a) : G, fgE = [0, 1, 2].map((i) => fa * a * fg[i] + (1 - fa * a) * bgE[i]);
+          const c = cr(fgE, bgE);
+          if (minCr === null || c < minCr) { minCr = c; worst = (el.textContent || '').trim().slice(0, 16); }
+        }
+        return { cls: String(h.className).split(' ').slice(0, 2).join('.'), op, minCr: minCr === null ? null : +minCr.toFixed(2), worst };
+      };
+      return { room, writing: document.documentElement.getAttribute('data-wz-writing'), rows: hooks.map(row),
+        panel: (() => { const p = document.querySelector('.wz-sliver-panel'); return p ? parseFloat(getComputedStyle(p).opacity) : null; })(),
+        grip: (() => { const g = document.querySelector('.wz-sliver-grip'); return g ? parseFloat(getComputedStyle(g).opacity) : null; })(),
+        rect: (() => { const p = document.querySelector('.mode-page'); return p ? JSON.stringify(p.getBoundingClientRect()) : null; })() };
+    })()`;
+    const near = (x, y) => Math.abs(x - y) <= 0.011;
+    const rest = await app.evalJs(MEASURE);
+    const night = rest.room === 'night';
+    // the lit drawer (its panel and its tab) is never dimmed; the two drawer tabs hold at .6 (Arbor's tab rule); the rest takes the step
+    const lit = (r) => r.cls.indexOf('wz-sliver-grip') >= 0 || r.cls.indexOf('wz-sliver-panel') >= 0;
+    const others = (m) => m.rows.filter((r) => !lit(r) && r.cls.indexOf('grip') < 0);
+    const tabs = (m) => m.rows.filter((r) => !lit(r) && r.cls.indexOf('grip') >= 0);
+    // the floor is for DIMMED labels: a lit or reached hook draws in its own colours
+    const labelsOk = (m) => m.rows.filter((r) => r.op < 1).every((r) => r.minCr === null || r.minCr >= 4.5);
+    const v = {};
+    v.rest = night ? rest.rows.length > 0 && rest.rows.every((r) => near(r.op, 0.6)) && labelsOk(rest) : rest.rows.every((r) => r.op === 1);
+    await clickSel(app, '.wz-sliver-grip');
+    await sleep(500);
+    const open = await app.evalJs(MEASURE);
+    v.drawer = night ? open.panel === 1 && open.grip === 1 && others(open).length > 0 && others(open).every((r) => near(r.op, 0.52)) && tabs(open).every((r) => near(r.op, 0.6)) && labelsOk(open) && open.rect === rest.rect : true;
+    await clickText(app, '.arbor2-bar-head', 'Mood ▸');
+    await sleep(150);
+    await app.evalJs(`document.querySelector('.arbor2-mood-switch[data-mood="dim"]')?.click()`);
+    await sleep(200);
+    const noStep = await app.evalJs(MEASURE);
+    v.moodOff = night ? others(noStep).length > 0 && others(noStep).every((r) => near(r.op, 0.6)) : true;
     await app.evalJs(`document.querySelector('.arbor2-mood-switch[data-mood="dim"]')?.click()`);
     await clickText(app, '.arbor2-bar-head', 'Mood ▾');
     await clickSel(app, '.wz-sliver-grip');
