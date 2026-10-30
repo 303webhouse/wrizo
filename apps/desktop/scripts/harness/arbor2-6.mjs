@@ -63,7 +63,14 @@ await withHarness(async (app) => {
   // which is not zoomed). Original, verbatim:
   // ok('L2 never over the prose column: fixed, z-index -1, a child of body (behind every surface), and the paper is opaque', !!day.sun && day.sun.z === '-1' && day.sun.pos === 'fixed' && day.sun.parent === 'BODY' && day.paper === 'rgb(243, 237, 225)', JSON.stringify({ sun: day.sun, paper: day.paper }));
   // SUCCESSOR: L2's own layer facts stay here as L2a; the prose-column claim is L2b, measured on the zoomed Free Write page below.
-  ok('L2a the light layer is fixed, z-index -1, a child of body (behind every surface), and the paper is opaque', !!day.sun && day.sun.z === '-1' && day.sun.pos === 'fixed' && day.sun.parent === 'BODY' && day.paper === 'rgb(243, 237, 225)', JSON.stringify({ sun: day.sun, paper: day.paper }));
+  // PARKED 2026-10-30 (SUPERSEDED, first run on INK's shards, run 41014396358: this leg's page IS the zoomed Free Write page there, and under
+  // Fable's unframed ruling that page lets go of its own background - the opaque sheet behind it (paper.ts) is the paper). Original, verbatim:
+  // ok('L2a the light layer is fixed, z-index -1, a child of body (behind every surface), and the paper is opaque', !!day.sun && day.sun.z === '-1' && day.sun.pos === 'fixed' && day.sun.parent === 'BODY' && day.paper === 'rgb(243, 237, 225)', JSON.stringify({ sun: day.sun, paper: day.paper }));
+  // SUCCESSOR L2e: the same layer facts, and the paper is opaque wherever it is drawn - the page's own, or (zoomed) the sheet standing in.
+  const sh = await app.evalJs(`(() => { const p = document.querySelector('.mode-page'), k = document.querySelector('.arbor2-paper'); const kc = k ? getComputedStyle(k) : null;
+    return { sheetOn: document.documentElement.getAttribute('data-arbor2-sheet'), sheetBg: kc && kc.display !== 'none' ? kc.backgroundColor : null, pageBg: p ? getComputedStyle(p).backgroundColor : null }; })()`);
+  const paperThere = !!sh && (sh.pageBg === 'rgb(243, 237, 225)' || (sh.sheetOn === 'on' && sh.sheetBg === 'rgb(243, 237, 225)' && sh.pageBg === 'rgba(0, 0, 0, 0)'));
+  ok('L2e the light layer is fixed, z-index -1, a child of body (behind every surface), and the paper is opaque (the page\'s own, or the zoomed page\'s sheet)', !!day.sun && day.sun.z === '-1' && day.sun.pos === 'fixed' && day.sun.parent === 'BODY' && paperThere, JSON.stringify({ sun: day.sun, ...sh }));
   ok('L1c with motion: the drift runs on the inner sheet and the layer itself holds still', !!day.sun && day.sun.driftAnim === 'arbor2-sun-drift' && day.sun.anim === 'none', JSON.stringify(day.sun));
   await snap(app, 'item6-day-shadows-1366');
 
