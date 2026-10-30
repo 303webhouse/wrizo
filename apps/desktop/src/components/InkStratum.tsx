@@ -105,6 +105,17 @@ function syncCanvas(canvas: HTMLCanvasElement, w: number, h: number): CanvasRend
   return ctx;
 }
 
+/** POLISH #10 item 5 (Nick, Oct 25) - where the sheet's TEXT starts, in painted px below the sheet's top: 0 wherever the sheet has no top padding (the
+ *  normal view - every stroke already saved was measured from there, so none moves). In the zoom the sheet reaches up over the scroller's start offset
+ *  with a matching padding (index.css), so the whole visible page takes the pen; strokes are still measured from the text, and one drawn above the
+ *  first line simply has a negative y. */
+export function inkOriginY(sheet: HTMLElement, rect?: DOMRect): number {
+  const pt = parseFloat(getComputedStyle(sheet).paddingTop) || 0;
+  if (!pt) return 0;
+  const r = rect ?? sheet.getBoundingClientRect();
+  return pt * (sheet.offsetWidth > 0 ? r.width / sheet.offsetWidth : 1);
+}
+
 // Paint all committed strokes. Denormalizes by the sheet's current width, so a
 // page drawn at one width keeps its ink in place when the text reflows at
 // another. Called on mount, on every stroke-set change, and from the
@@ -116,7 +127,9 @@ export function paintCommitted(canvas: HTMLCanvasElement | null, sheet: HTMLElem
   if (!ctx) return;
   ctx.clearRect(0, 0, rect.width, rect.height);
   const color = inkColor();
+  ctx.save(); ctx.translate(0, inkOriginY(sheet, rect));   // POLISH #10 item 5 - measured from the text
   for (const s of strokes) renderStroke(ctx, s, rect.width, color);
+  ctx.restore();
 }
 
 export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, eraserArmed }: Props) {
@@ -222,7 +235,7 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
       const w = rect.width || 1;
       // Normalized by WIDTH on both axes (J8) — the same scale, so a circle
       // stays a circle. y may exceed 1.0 on a page taller than it is wide.
-      const point: StrokePoint = { x: (e.clientX - rect.left) / w, y: (e.clientY - rect.top) / w };
+      const point: StrokePoint = { x: (e.clientX - rect.left) / w, y: (e.clientY - rect.top - inkOriginY(sheet, rect)) / w };   // POLISH #10 item 5
       // Pressure is captured, as it always has been, and deliberately NOT read
       // by the renderer this wave (item 121 I5 ships pressure-blind; pressure
       // rides a later slice). Capturing it now means that slice has data.
@@ -255,9 +268,10 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
       const stroke = activeStrokeRef.current;
       const rect = captureRectRef.current;
       if (!stroke || !rect) return;
+      const oy = inkOriginY(sheet, rect);   // POLISH #10 item 5 - measured from the text
       if (stroke.eraser) {
         const ctx = committedRef.current?.getContext('2d');
-        if (ctx) renderStroke(ctx, stroke, rect.width, inkColor());
+        if (ctx) { ctx.save(); ctx.translate(0, oy); renderStroke(ctx, stroke, rect.width, inkColor()); ctx.restore(); }
         return;
       }
       const canvas = activeRef.current;
@@ -269,7 +283,7 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
       // canvas, so the crossing darkens on commit rather than mid-stroke. The
       // Journal's two-canvas split is what buys the flicker-free preview, and
       // that tradeoff is worth one frame of a marker looking slightly light.
-      renderStroke(ctx, stroke, rect.width, inkColor());
+      ctx.save(); ctx.translate(0, oy); renderStroke(ctx, stroke, rect.width, inkColor()); ctx.restore();
     };
     const clearActive = () => {
       const canvas = activeRef.current;
@@ -472,7 +486,7 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
       // BOTH axes over WIDTH — J8's rule. Converting y by height here is the
       // mistake that already cost this lane a check that passed for the wrong
       // reason; it would also make every hit test miss by a factor of ~2.
-      return { x: (e.clientX - rect.left) / w, y: (e.clientY - rect.top) / w, w, h: rect.height };
+      return { x: (e.clientX - rect.left) / w, y: (e.clientY - rect.top - inkOriginY(sheet, rect)) / w, w, h: rect.height };   // POLISH #10 item 5
     };
 
     // Repaint with the live drag applied to the armed group only.
@@ -500,7 +514,7 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
       ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent-rest').trim() || '#96a05a';
       ctx.lineWidth = 1;
       ctx.setLineDash([4, 3]);
-      ctx.strokeRect(box.x0 * w - pad, box.y0 * w - pad,
+      ctx.strokeRect(box.x0 * w - pad, box.y0 * w + inkOriginY(sheet, rect) - pad,   // POLISH #10 item 5 - measured from the text
                      (box.x1 - box.x0) * w + pad * 2, (box.y1 - box.y0) * w + pad * 2);
       ctx.restore();
     };
