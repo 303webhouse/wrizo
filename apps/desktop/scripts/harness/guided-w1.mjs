@@ -358,7 +358,8 @@ try {
   const M0 = base.M || {};
   const res0 = await suite(M0, rd({}));
   for (const [k, v] of Object.entries(res0)) ok(k, v.pass, v.detail);
-  ok('the suite ran every check it names', Object.keys(res0).length === 65, `${Object.keys(res0).length} checks (54 + Y4 Y5 Y6 Y7 D11 D12 S11 K12 S12 S13 D13 = 65; Y3 and D3 parked; D14, D3's successor, is one of the 65)`);
+  const named = Object.keys(res0).filter((k) => !k.startsWith('PARKED'));   // the parked leg adds its records to res0 (chk('PARKED (was S11) ...')): they are not checks the suite names
+  ok('the suite ran every check it names', named.length === 65, `${named.length} checks (54 + Y4 Y5 Y6 Y7 D11 D12 S11 K12 S12 S13 D13 = 65; Y3 and D3 parked; D14, D3's successor, is one of the 65; the parked leg's own PARKED records - ${Object.keys(res0).length - named.length} here - are records, not checks the suite names)`);
   ok('the park count is exactly 2 (Y3 with its mutant; D3 with its successor D14)', PARKED.length === 2 && PARKED.map((x) => x.id).sort().join() === 'D3,Y3' && PARKED.every((x) => typeof x.original === 'function'), `${PARKED.length} parked`);
 
   let landed = 0, killed = 0, notLanded = 0;
