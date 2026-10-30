@@ -224,7 +224,7 @@
   display:block; position:fixed; inset:-80px; z-index:-1; pointer-events:none; overflow:hidden;
   opacity:calc(.10 + .12 * var(--arbor2-afternoon, 0));
 }
-/* the drift moves the inner sheet only: the layer itself holds still, so paper.ts's clip (a hole over the page) never drifts onto the page */
+/* the drift moves the inner sheet only: the layer itself holds still, so paper.ts's mask (a soft hole over the page) never drifts onto the page */
 :root[data-arbor2][data-theme='plateau'] .arbor2-sun-drift{ position:absolute; inset:0; animation:arbor2-sun-drift 48s ease-in-out infinite alternate; }
 /* the zoomed page's whole sheet (paper.ts): opaque paper behind the column's band mask, so the words fade into paper, never the paper into
    the room. Geometry, colour and its feathered mask come from paper.ts (inline); it takes no pointer and sits under every surface.
