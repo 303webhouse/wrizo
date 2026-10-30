@@ -250,7 +250,12 @@ const CSS_MUT = [
   { name: 'the vignette goes back over the page (the base rule)', edit: (c) => c.replace(/(body::after \{[^}]*?)z-index:\s*-1;/, '$1z-index: 2;'), red: ['VG1b'] },
   { name: 'an Arbor brown surface returns to the Flux root', edit: (c) => c.replace('--ink-800: #122336;', '--ink-800: #2A241E;'), red: ['TK4'] },
   { name: 'Arbor\'s PNG mark paints again under Flux', edit: (c) => { const at = c.indexOf("[data-theme='flux'] .brand-mark{"); const cut = '-webkit-mask:none; mask:none; background:none;'; const i = at < 0 ? -1 : c.indexOf(cut, at); return i < 0 ? c : c.slice(0, i) + 'background:var(--brass);' + c.slice(i + cut.length); }, red: ['BR1'] },   // anchored on the FLUX rule: Machina's identical [data-theme='machina'] .brand-mark rule comes first in the file, and a bare first-match replace landed there (44/45 killed)
-  { name: 'a board card goes back to cream stock', edit: (c) => c.replace('--card-stock:#0E1E31; --card-hairline:rgba(0, 194, 255, .55);', '--card-stock:#FBF6EA; --card-hairline:rgba(0, 194, 255, .55);'), red: ['BD1'] },
+  // ---- PARKED - SUPERSEDED by polish #10 item 12 (INK, Oct 29): BD1 is parked (its first-line half expected capitals), so this mutant's red set moves to the
+  // successor BD1b. Kept VERBATIM and no longer run:
+  // { name: 'a board card goes back to cream stock', edit: (c) => c.replace('--card-stock:#0E1E31; --card-hairline:rgba(0, 194, 255, .55);', '--card-stock:#FBF6EA; --card-hairline:rgba(0, 194, 255, .55);'), red: ['BD1'] },
+  { name: 'a board card goes back to cream stock [item-12 successor]', edit: (c) => c.replace('--card-stock:#0E1E31; --card-hairline:rgba(0, 194, 255, .55);', '--card-stock:#FBF6EA; --card-hairline:rgba(0, 194, 255, .55);'), red: ['BD1b'] },
+  { name: 'a Flux card first line gets its capitals back', edit: (c) => c.replace("[data-theme='flux'] .board-text::first-line{ color:var(--text-accent); }", "[data-theme='flux'] .board-text::first-line{ color:var(--text-accent); text-transform:uppercase; }"), red: ['BD1b'] },
+  { name: 'a Flux card first line loses its cyan', edit: (c) => c.replace("[data-theme='flux'] .board-text::first-line{ color:var(--text-accent); }", "[data-theme='flux'] .board-text::first-line{ }"), red: ['BD1b'] },
   { name: 'the acquire loses its still state under reduced motion', edit: (c) => c.replace(/@media \(prefers-reduced-motion:\s*reduce\)\s*\{\s*\.flux-brackets[^}]*\}\s*\}?/, ''), red: ['RC2'] },
 ];
 const SRC_MUT = [
@@ -365,8 +370,14 @@ function cssChecks(css) {
   const nodeStock = nodeTok && /--card-stock:\s*(#[0-9a-f]{6})/i.exec(nodeTok.body);
   const nodeInk = nodeTok && /--ink-on-card:\s*(#[0-9a-f]{6})/i.exec(nodeTok.body);
   const firstLine = rules(css).find((x) => x.sel === "[data-theme='flux'] .board-text::first-line");
-  keep('BD1', !!nodeStock && lum(hex(nodeStock[1])) < 0.05 && !!nodeInk && ratio(hex(nodeInk[1]), hex(nodeStock[1])) >= 7 && /--card-hairline:\s*rgba\(0,\s*194,\s*255/.test(nodeTok.body)
-    && !!firstLine && /text-transform:\s*uppercase/.test(firstLine.body) && /color:\s*var\(--text-accent\)/.test(firstLine.body), nodeTok ? nodeTok.body.slice(0, 120) : 'no Flux board-canvas token rule');
+  // ---- PARKED - SUPERSEDED by polish #10 item 12 (INK, Nick accepted it via Fable, Oct 29): a Flux card marks its first line by COLOUR ONLY - the capitals + letter-spacing + chrome font made the line wider, it wrapped, and the auto-grow made the Flux card taller than the Arbor one. BD1 is kept VERBATIM below and no longer run; successor BD1b.
+  //
+  // keep('BD1', !!nodeStock && lum(hex(nodeStock[1])) < 0.05 && !!nodeInk && ratio(hex(nodeInk[1]), hex(nodeStock[1])) >= 7 && /--card-hairline:\s*rgba\(0,\s*194,\s*255/.test(nodeTok.body)
+  // && !!firstLine && /text-transform:\s*uppercase/.test(firstLine.body) && /color:\s*var\(--text-accent\)/.test(firstLine.body), nodeTok ? nodeTok.body.slice(0, 120) : 'no Flux board-canvas token rule');
+  //
+  // BD1b - a board card is a dark-glass node: dark stock, a cyan edge, light ink, and a first line marked by the cyan COLOUR ONLY (no capitals, no letter-spacing, no font change: nothing that makes the line wider)
+  keep('BD1b', !!nodeStock && lum(hex(nodeStock[1])) < 0.05 && !!nodeInk && ratio(hex(nodeInk[1]), hex(nodeStock[1])) >= 7 && /--card-hairline:\s*rgba\(0,\s*194,\s*255/.test(nodeTok.body)
+    && !!firstLine && /color:\s*var\(--text-accent\)/.test(firstLine.body) && !/text-transform|letter-spacing|font-family|font-size|font-weight|font-style/.test(firstLine.body), firstLine ? firstLine.body : 'no Flux board-text::first-line rule');
   // CD1 - a card, its pop-up and the deck wizard are dark glass in BOTH tones (the Flux root carries the card tokens; the dark tone no longer overrides a cream-card ink)
   const cs = T('card-stock'), ci = T('ink-on-card'), cm = T('ink-on-card-meta');
   keep('CD1', /^#[0-9a-f]{6}$/i.test(cs || '') && lum(hex(cs)) < 0.05 && /^#[0-9a-f]{6}$/i.test(ci || '') && ratio(hex(ci), hex(cs)) >= 7 && /^#[0-9a-f]{6}$/i.test(cm || '') && ratio(hex(cm), hex(cs)) >= 4.5 && !greenish(T('badge-on-card')) && !/--ink-on-card:/.test(B.dark),

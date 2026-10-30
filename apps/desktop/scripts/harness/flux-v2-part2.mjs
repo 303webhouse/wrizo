@@ -191,9 +191,12 @@ export async function part2({ ok, sleepMs }) {
       const boardUp = await waitSoft("!!document.querySelector('.board-canvas .board-text')", { label: 'board cards', timeout: 9000 }); await sleep(800);
       const nd = boardUp ? await q(`(() => { const c = document.querySelector('.board-canvas .board-text'); const cs = getComputedStyle(c); const fl = getComputedStyle(c, '::first-line'); const f = document.querySelector('.flux-board-frame');
         const m = /rgba?\\(([^)]+)\\)/.exec(cs.backgroundColor); const p = m ? m[1].split(',').map((x) => parseFloat(x)) : [255, 255, 255];
-        return { bg: cs.backgroundColor, lum: (0.2126 * p[0] + 0.7152 * p[1] + 0.0722 * p[2]) / 255, border: cs.borderTopColor, color: cs.color, titleColor: fl.color, titleCase: fl.textTransform,
+        return { bg: cs.backgroundColor, lum: (0.2126 * p[0] + 0.7152 * p[1] + 0.0722 * p[2]) / 255, border: cs.borderTopColor, color: cs.color, titleColor: fl.color, titleCase: fl.textTransform, titleLetterSpacing: fl.letterSpacing,
           frame: !!f, grid: !!(f && f.querySelector('.flux-frame')), brackets: !!(f && f.querySelector('.flux-brackets')), frameClick: f ? getComputedStyle(f).pointerEvents : null }; })()`) : null;
-      ok('F13 a board card is a dark-glass node: dark fill (not Arbor cream), a thin cyan edge, light ink, and a cyan UPPERCASE first line', !!nd && nd.lum < 0.15 && /0,\s*194,\s*255/.test(nd.border) && nd.titleColor === 'rgb(87, 208, 245)' && nd.titleCase === 'uppercase', JSON.stringify(nd));
+      // ---- PARKED - SUPERSEDED by polish #10 item 12 (INK, Nick accepted it via Fable, Oct 29): a Flux card marks its first line by COLOUR ONLY - the capitals + letter-spacing + chrome font made the line wider, it wrapped, and the auto-grow made the Flux card taller than the Arbor one. F13 is kept VERBATIM below and no longer run; successor next.
+      //
+      // ok('F13 a board card is a dark-glass node: dark fill (not Arbor cream), a thin cyan edge, light ink, and a cyan UPPERCASE first line', !!nd && nd.lum < 0.15 && /0,\s*194,\s*255/.test(nd.border) && nd.titleColor === 'rgb(87, 208, 245)' && nd.titleCase === 'uppercase', JSON.stringify(nd));
+      ok('F13 [item-12 successor] a board card is a dark-glass node: dark fill (not Arbor cream), a thin cyan edge, light ink, and a cyan first line set by colour only (no capitals)', !!nd && nd.lum < 0.15 && /0,\s*194,\s*255/.test(nd.border) && nd.titleColor === 'rgb(87, 208, 245)' && nd.titleCase === 'none' && nd.titleLetterSpacing === 'normal', JSON.stringify(nd));
       ok('F13 the board wears the frame: the grid ring and the corner brackets, click-through', !!nd && nd.frame && nd.grid && nd.brackets && nd.frameClick === 'none', JSON.stringify(nd));
 
       // ---- F18: the Inputs work on the board: the knob wears the INPUT glyph (through ThemeIcon), a node shows its true X / Y, the board shows its one hint, the Inputs panel is Flux glass --------------------
