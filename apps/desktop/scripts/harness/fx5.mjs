@@ -91,6 +91,7 @@ const freshProsePage = async (app, width = 1400, height = 900) => {
   await app.goto('/project/new');
   await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject picker (book)' });
   await app.evalJs("document.querySelector('[data-kind=\"book\"]').click()");
+  await app.evalJs('window.__wzTwTrace = []');   // the engine reads it once, at mount: S1 (c) prints its own account of the move when it fails
   await app.click('Start writing');
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted, framed' });
   await sleep(250);
@@ -323,6 +324,7 @@ await withHarness(async (app) => {
     // page-size: the editor's VISUAL line count around the typed line (a wrap is one line of honest advance)
     const visualLines = () => app.evalJs("(() => { const ed = document.querySelector('.forward-only-editor'); const r = document.createRange(); r.selectNodeContents(ed); const tops = []; for (const q of r.getClientRects()) { if (q.height < 4) continue; const t = Math.round(q.top); if (!tops.some((x) => Math.abs(x - t) < 4)) tops.push(t); } return tops.length; })()");
     const linesBeforeType = await visualLines();
+    const trace0 = await app.evalJs('(window.__wzTwTrace || []).length');
     await app.typeKeys('one more line after scrolling up manually, the writer now owns this position\n');
     await sleep(350);
     const afterTypeScrollTop = await app.evalJs("document.querySelector('.mode-scroll').scrollTop");
@@ -337,7 +339,8 @@ await withHarness(async (app) => {
     //   JSON.stringify({ settled, manualTarget, afterManualScroll, afterTypeScrollTop, lineHeightPx }));
     // ------------------------------------------------------------------
     const linesAdded = (await visualLines()) - linesBeforeType;
-    fx5FreeSeen = { settled, afterManualScroll, afterTypeScrollTop, lineHeightPx, linesAdded };
+    const twTrace = await app.evalJs(`(window.__wzTwTrace || []).slice(${trace0}).filter((t) => t.d !== 'wait').map((t) => t.d + (t.from != null ? ':' + t.from + '>' + t.to + '/' + t.maxTop + '@' + t.advance : t.top != null ? ':' + t.top : '')).join(' ').slice(0, 900)`);
+    fx5FreeSeen = { settled, afterManualScroll, afterTypeScrollTop, lineHeightPx, linesAdded, twTrace };
     ok('S1 (c) [page-size successor]: typing after a manual scroll-up does NOT snap the page back to the band — the box moves by no more than the writer\'s OWN new lines (each visual line the typing added, + 0.6 of a line), and stays well short of the pre-scroll settled value',
       linesAdded >= 1 && afterTypeScrollTop - afterManualScroll <= lineHeightPx * (linesAdded + 0.6) && afterTypeScrollTop >= afterManualScroll - 1 && afterTypeScrollTop < settled - 40,
       JSON.stringify(fx5FreeSeen));
