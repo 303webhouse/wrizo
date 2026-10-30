@@ -112,8 +112,9 @@
    it is a faint warm shade instead (the boards darkening toward the walls); text on the whitewash keeps its floors (low #4F4E36 under the
    strongest corner stays > 6:1). */
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] body::after{ box-shadow:inset 0 0 170px 55px rgba(110, 86, 50, .12); }
-/* "never the page", now true on the zoomed page too: paper.ts writes the visible page as an evenodd hole (Oct 29) */
-:root[data-arbor2][data-theme='plateau'] body::after{ clip-path:var(--arbor2-page-hole, none); }
+/* "never the page", now true on the zoomed page too: paper.ts writes a hole over the visible page as a MASK - hard on a framed page, and on
+   the zoomed page the sheet's exact complement over its feathered rim, so the room darkens just where the paper thins (no line; Oct 29) */
+:root[data-arbor2][data-theme='plateau'] body::after{ mask-image:var(--arbor2-vignette-mask, none); mask-composite:add; }
 
 /* ---------- THE MOCKUP'S OWN SWITCHES (not product: the bar exists only under the flag) ----------
    Square, flat, no shadow. Bottom-right, overlaying, never displacing. Recedes with everything else while she types. */
@@ -211,9 +212,13 @@
 /* the drift moves the inner sheet only: the layer itself holds still, so paper.ts's clip (a hole over the page) never drifts onto the page */
 :root[data-arbor2][data-theme='plateau'] .arbor2-sun-drift{ position:absolute; inset:0; animation:arbor2-sun-drift 48s ease-in-out infinite alternate; }
 /* the zoomed page's whole sheet (paper.ts): opaque paper behind the column's band mask, so the words fade into paper, never the paper into
-   the room. Geometry and colour come from the page (inline); it takes no pointer and sits under every surface. */
+   the room. Geometry, colour and its feathered mask come from paper.ts (inline); it takes no pointer and sits under every surface.
+   UNFRAMED (Fable, Oct 29: "the zoomed page is unframed, so give the opaque night sheet no visible edge"): no glow, and while it stands in
+   the page lets go of its own paper, shadow and border (focused too - by day the focused page drew a 1px ring), so nothing draws an edge. */
 .arbor2-paper{ display:none; }
-:root[data-arbor2][data-theme='plateau'] .arbor2-paper[data-on='true']{ display:block; position:fixed; z-index:-1; pointer-events:none; box-shadow:var(--paper-glow); }
+:root[data-arbor2][data-theme='plateau'] .arbor2-paper[data-on='true']{ display:block; position:fixed; z-index:-1; pointer-events:none; box-shadow:none; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-sheet='on'] .mode-pagecol[data-zoom='true'] .mode-page,
+:root[data-arbor2][data-theme='plateau'][data-arbor2-sheet='on'] .mode-pagecol[data-zoom='true'] .mode-page.focused{ background:transparent; box-shadow:none; border-color:transparent; }
 .arbor2-sun-slats{ position:absolute; inset:0; transform-origin:50% 0;
   background:repeating-linear-gradient(var(--sun-angle, 24deg), rgb(74,58,30) 0 var(--sun-slat, 24px), transparent var(--sun-slat, 24px) var(--sun-gap, 120px));
   filter:blur(7px); transform:scaleY(calc(1 + .35 * var(--arbor2-afternoon, 0))); }
