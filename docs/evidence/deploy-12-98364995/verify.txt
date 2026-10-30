@@ -1,0 +1,13 @@
+healthz: {"ok":true,"build":"index-CwYswyvf"}
+auth/me: 401
+signup-status: {"open":false}
+served: assets/index-CwYswyvf.js
+bytes 946238 md5 8af892dd3f15b6fcfe74a8ab34ccee8e
+tested build (train-12 dist-web) md5 8af892dd3f15b6fcfe74a8ab34ccee8e bytes 946238
+ok   POST /auth/login  -> 200 (expected 200)
+ok   GET  /auth/me  -> 200 (expected 200)
+ok   POST /api/sync (pull only)  -> 200 (expected 200)
+ok   POST /auth/logout  -> 204 (expected 204)
+ok   GET  /auth/me (after logout, jar)  -> 401 (expected 401)
+ok   GET  /auth/me (pre-logout cookie replayed)  -> 401 (expected 401)
+SMOKE: PASS (6/6)
