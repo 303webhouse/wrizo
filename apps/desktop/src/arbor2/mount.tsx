@@ -38,9 +38,50 @@ function Seg<T extends string>({ label, value, opts, onPick }: { label: string; 
   );
 }
 
+// §14 item 8 - THE MOOD MENU (spec §13): one switch per Arbor feature, IN-SESSION ONLY. The switched-off set is a space list on <html>
+// (data-arbor2-off) that styles/arbor-v2.css and src/arbor2/shoots.ts read; nothing is stored. No default is ruled (Fable's call, with
+// device-or-account): the mockup opens with everything on. Two of the spec's nine cannot switch anything here, and say why.
+const MOOD: { key: string; label: string; why?: string }[] = [
+  { key: 'breath', label: 'Lamp breath' },
+  { key: 'lamp-progress', label: 'Lamp as progress', why: 'retired: the lamp is ambience (Fable)' },
+  { key: 'shadows', label: 'Day shadows' },
+  { key: 'afternoon', label: 'Afternoon lengthening' },
+  { key: 'flutter', label: 'Leaf flutter' },
+  { key: 'variation', label: 'Rhizome variation' },
+  { key: 'pull', label: 'Drawer pull motion' },
+  { key: 'tabs', label: 'Coloured tabs' },
+  { key: 'dim', label: 'Dim room with drawer open', why: 'not built: §6.2 waits on a ruling' },
+];
+
+function MoodMenu({ off, flip }: { off: string[]; flip: (k: string) => void }) {
+  return (
+    <ul className="arbor2-mood" aria-label="Mood">
+      {MOOD.map(({ key, label, why }) => (
+        <li key={key} className="arbor2-mood-row">
+          <span className="arbor2-mood-label">{label}</span>
+          {why ? <span className="arbor2-mood-why">{why}</span> : (
+            <button type="button" role="switch" className="arbor2-bar-opt arbor2-mood-switch" data-mood={key}
+              aria-checked={!off.includes(key)} aria-label={label} onClick={() => flip(key)}>
+              {off.includes(key) ? 'Off' : 'On'}
+            </button>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function MockupBar() {
   const [room, setRoom] = useState<Room>(() => (root.getAttribute('data-arbor2-room') as Room) ?? 'day');
   const [open, setOpen] = useState(true);
+  const [mood, setMood] = useState(false);
+  // the switched-off set lives here (the bar never unmounts), so folding the bar or the list keeps every switch where she left it
+  const [off, setOff] = useState<string[]>([]);
+  useEffect(() => {
+    if (off.length) root.setAttribute('data-arbor2-off', off.join(' '));
+    else root.removeAttribute('data-arbor2-off');
+  }, [off]);
+  const flip = (k: string) => setOff((o) => (o.includes(k) ? o.filter((x) => x !== k) : [...o, k]));
   useEffect(() => {
     const mo = new MutationObserver(() => setRoom((root.getAttribute('data-arbor2-room') as Room) ?? 'day'));
     mo.observe(root, { attributes: true, attributeFilter: ['data-arbor2-room'] });
@@ -54,6 +95,8 @@ function MockupBar() {
         <>
           <Seg label="Room" value={room} opts={[['night', 'Night'], ['day', 'Day']]} onPick={pickRoom} />
           <p className="arbor2-bar-note">By night the rhizome is hidden until the goal (Progress: Rhizome, with a word goal).</p>
+          <button type="button" className="arbor2-bar-head" aria-expanded={mood} onClick={() => setMood(m => !m)}>Mood {mood ? '▾' : '▸'}</button>
+          {mood && <MoodMenu off={off} flip={flip} />}
         </>
       )}
     </div>
