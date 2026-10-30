@@ -2,8 +2,8 @@
 // The browser half is the frames screen `arbor-mood` (and `arbor-rhizome-variation` for the variation switch), which flips each switch and
 // measures what it changed.
 //   M1  the menu lists the spec's nine (§13), in its order
-//   M2  no switch is decorative: every switch that can be flipped has a rule that reads it (CSS `data-arbor2-off~='<key>'`, or shoots.ts)
-//   M3  a row that cannot switch says why, and has no switch
+//   M2  (parked -> M2b) no switch is decorative: every switch that can be flipped has a rule that reads it (CSS `data-arbor2-off~='<key>'`, or shoots.ts)
+//   M3  (parked -> M3b) a row that cannot switch says why, and has no switch
 //   M4  in-session only: mount.tsx never touches storage
 import fs from 'node:fs';
 
@@ -17,8 +17,14 @@ const rows = [...block.matchAll(/\{ key: '([a-z-]+)', label: '([^']+)'(?:, why: 
 ok('M1 the nine switches of spec §13, in order', rows.map((r) => r.key).join() === 'breath,lamp-progress,shadows,afternoon,flutter,variation,pull,tabs,dim', JSON.stringify(rows.map((r) => r.key)));
 const live = rows.filter((r) => !r.why);
 const readers = live.map((r) => ({ key: r.key, css: css.includes(`data-arbor2-off~='${r.key}'`), js: r.key === 'variation' && /includes\('variation'\)/.test(shoots) }));
-ok('M2 every live switch has a rule that reads it', live.length === 7 && readers.every((r) => r.css || r.js), JSON.stringify(readers));
-ok('M3 the two that cannot switch say why (and get no switch)', rows.filter((r) => r.why).map((r) => r.key).join() === 'lamp-progress,dim'
+// PARKED 2026-10-29 (SUPERSEDED: Fable ruled "Build 'Dim the room' (§6.2)", so the dim switch is live - eight switch, one says why).
+// Original, verbatim:
+// ok('M2 every live switch has a rule that reads it', live.length === 7 && readers.every((r) => r.css || r.js), JSON.stringify(readers));
+// ok('M3 the two that cannot switch say why (and get no switch)', rows.filter((r) => r.why).map((r) => r.key).join() === 'lamp-progress,dim'
+//   && /\{why \? <span className="arbor2-mood-why">\{why\}<\/span> : \(/.test(mount), '');
+// SUCCESSORS M2b / M3b: the same, with dim live.
+ok('M2b every live switch (eight) has a rule that reads it', live.length === 8 && readers.every((r) => r.css || r.js), JSON.stringify(readers));
+ok('M3b the one that cannot switch (lamp as progress) says why, and gets no switch', rows.filter((r) => r.why).map((r) => r.key).join() === 'lamp-progress'
   && /\{why \? <span className="arbor2-mood-why">\{why\}<\/span> : \(/.test(mount), '');
 ok('M4 nothing stored: no storage call in mount.tsx', !/localStorage|sessionStorage|indexedDB/.test(mount.replace(/\/\/.*$/gm, '')), '');
 
