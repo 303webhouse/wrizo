@@ -95,13 +95,24 @@ await withHarness(async (app) => {
   //     zoomed && !!z && z.pass && z.paper === true && z.vignette === true && (room === 'Day' ? z.hole === true : z.hole === null), JSON.stringify({ zoomed, z }));
   //   await snap(app, `item6-${room.toLowerCase()}-zoomed-freewrite`);
   // }
-  // SUCCESSOR L2c: the same page, night and day - a whole sheet with no visible edge (it fades out at every side, the page draws none of its
-  // own, the vignette is its exact complement), and by day the sun's hole still covers it.
+  // PARKED 2026-10-29 (SUPERSEDED, never run: Fable ruled "Feather the pergola's page hole with a ~24 px soft edge (§7.1), never over the
+  // prose column" - the sun's hard clip is gone, and zoomProof reports sunEdge in place of hole). Original, verbatim:
+  // // SUCCESSOR L2c: the same page, night and day - a whole sheet with no visible edge (it fades out at every side, the page draws none of its
+  // // own, the vignette is its exact complement), and by day the sun's hole still covers it.
+  // for (const room of ['Night', 'Day']) {
+  //   await pickBar(app, room); await sleep(500);
+  //   const z = await app.evalJs(`(${zoomProof.toString()})(${holeOf.toString()}, ${stopsOf.toString()})`);
+  //   ok(`L2c [${room.toLowerCase()}] zoomed Free Write: a whole paper sheet with no visible edge behind the visible page (above the progress row)${room === 'Day' ? ', and the sun layer has a hole over it' : ''}`,
+  //     zoomed && !!z && z.pass && z.sheet && z.bare && z.edgeless && z.whole && z.seamless && (room === 'Day' ? z.hole === true : z.hole === null), JSON.stringify({ zoomed, z }));
+  //   await snap(app, `item6-${room.toLowerCase()}-zoomed-freewrite`);
+  // }
+  // SUCCESSOR L2d: the same page, night and day - the unframed sheet as L2c, and by day the pergola's light reaches the page's edge and fades
+  // out within 24 px, never over the prose column.
   for (const room of ['Night', 'Day']) {
     await pickBar(app, room); await sleep(500);
     const z = await app.evalJs(`(${zoomProof.toString()})(${holeOf.toString()}, ${stopsOf.toString()})`);
-    ok(`L2c [${room.toLowerCase()}] zoomed Free Write: a whole paper sheet with no visible edge behind the visible page (above the progress row)${room === 'Day' ? ', and the sun layer has a hole over it' : ''}`,
-      zoomed && !!z && z.pass && z.sheet && z.bare && z.edgeless && z.whole && z.seamless && (room === 'Day' ? z.hole === true : z.hole === null), JSON.stringify({ zoomed, z }));
+    ok(`L2d [${room.toLowerCase()}] zoomed Free Write: a whole paper sheet with no visible edge behind the visible page (above the progress row)${room === 'Day' ? ', and the light has a 24 px soft edge, never over the prose' : ''}`,
+      zoomed && !!z && z.pass && z.sheet && z.bare && z.edgeless && z.whole && z.seamless && (room === 'Day' ? z.sunEdge === true && z.proseMax === 0 : z.sunEdge === null), JSON.stringify({ zoomed, z }));
     await snap(app, `item6-${room.toLowerCase()}-zoomed-freewrite`);
   }
 
