@@ -205,8 +205,13 @@
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .arbor2-sun{
   display:block; position:fixed; inset:-80px; z-index:-1; pointer-events:none; overflow:hidden;
   opacity:calc(.10 + .12 * var(--arbor2-afternoon, 0));
-  animation:arbor2-sun-drift 48s ease-in-out infinite alternate;
 }
+/* the drift moves the inner sheet only: the layer itself holds still, so paper.ts's clip (a hole over the page) never drifts onto the page */
+:root[data-arbor2][data-theme='plateau'] .arbor2-sun-drift{ position:absolute; inset:0; animation:arbor2-sun-drift 48s ease-in-out infinite alternate; }
+/* the zoomed page's whole sheet (paper.ts): opaque paper behind the column's band mask, so the words fade into paper, never the paper into
+   the room. Geometry and colour come from the page (inline); it takes no pointer and sits under every surface. */
+.arbor2-paper{ display:none; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-paper[data-on='true']{ display:block; position:fixed; z-index:-1; pointer-events:none; box-shadow:var(--paper-glow); }
 .arbor2-sun-slats{ position:absolute; inset:0; transform-origin:50% 0;
   background:repeating-linear-gradient(var(--sun-angle, 24deg), rgb(74,58,30) 0 var(--sun-slat, 24px), transparent var(--sun-slat, 24px) var(--sun-gap, 120px));
   filter:blur(7px); transform:scaleY(calc(1 + .35 * var(--arbor2-afternoon, 0))); }
@@ -221,5 +226,5 @@
 .arbor2-sun-leaf[data-flutter='true']{ animation:arbor2-flutter var(--flutter-ms, 450ms) ease-in-out; }
 @keyframes arbor2-sun-drift{ from{ transform:translate(0, 0); } to{ transform:translate(var(--sun-drift-x, 12px), var(--sun-drift-y, 6px)); } }
 @keyframes arbor2-flutter{ 0%,100%{ opacity:1; transform:rotate(var(--leaf-rot, 0deg)) translate(0, 0); } 35%{ opacity:.55; transform:rotate(var(--leaf-rot, 0deg)) translate(3px, -2px); } 70%{ opacity:.8; transform:rotate(var(--leaf-rot, 0deg)) translate(-2px, 1px); } }
-.arbor2-sun[data-still='true'], .arbor2-sun[data-still='true'] .arbor2-sun-leaf{ animation:none !important; }
-@media (prefers-reduced-motion: reduce){ .arbor2-sun, .arbor2-sun-leaf{ animation:none !important; } }
+.arbor2-sun[data-still='true'], .arbor2-sun[data-still='true'] .arbor2-sun-drift, .arbor2-sun[data-still='true'] .arbor2-sun-leaf{ animation:none !important; }
+@media (prefers-reduced-motion: reduce){ .arbor2-sun, .arbor2-sun-drift, .arbor2-sun-leaf{ animation:none !important; } }

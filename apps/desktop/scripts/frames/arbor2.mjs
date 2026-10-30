@@ -40,7 +40,7 @@ const rhizomeAt = async (app, words) => {
 //   PAPER  an opaque sheet (.arbor2-paper) lies behind the visible page (page box cut to the column), in the page's own paper colour
 //   HOLE   by day, the sun layer's clip-path is evenodd with a hole that covers that whole visible page
 // A screen that fails it throws, so the frames job reports the row FAILED with the measurements instead of shipping a picture.
-function zoomProof() {
+export function zoomProof() {
   const col = document.querySelector('.mode-pagecol[data-zoom="true"]'), p = col && col.querySelector('.mode-page');
   if (!p) return { pass: false, why: 'no zoomed page' };
   const a = p.getBoundingClientRect(), c = col.getBoundingClientRect();
