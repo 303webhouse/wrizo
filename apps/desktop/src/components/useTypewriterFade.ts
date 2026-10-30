@@ -111,6 +111,26 @@ interface Options {
   zoom?: { holdRef: React.RefObject<HTMLElement>; anchor: number };
 }
 
+
+/** POLISH #10 item 17: the row the collapsed caret sits in (the row model's `.wz-row`), or null - a fresh line after Enter is an EMPTY row, where the
+ *  range gives no rect, or the previous line's. */
+export function caretRow(sel: Selection | null, within: Element | null): HTMLElement | null {
+  if (!sel || !sel.rangeCount || !within || !sel.anchorNode || !within.contains(sel.anchorNode)) return null;
+  const a = sel.anchorNode;
+  const ae = a.nodeType === 1 ? (a as Element) : a.parentElement;
+  if (!ae) return null;
+  const row = ae.closest('.wz-row');
+  if (row && within.contains(row)) return row as HTMLElement;
+  if (ae === within || ae.matches?.('.forward-only-editor')) {
+    // Draft's lines are `.wz-row` spans; Free Write's are plain line elements - the caret's row is the child at the anchor either way
+    const rowKids = [...ae.children].filter((c) => c.classList.contains('wz-row'));
+    const kids = rowKids.length ? rowKids : [...ae.children].filter((c) => c.getBoundingClientRect().height > 0);
+    if (!kids.length) return null;
+    return kids[Math.max(0, Math.min(sel.anchorOffset, kids.length - 1))] as HTMLElement;
+  }
+  return null;
+}
+
 export function useTypewriterFade({ enabled, containerRef, editorSelector, useWindowScroll, scrolledTarget, holdBand, zoom: zoomOpt }: Options): void {
   // the effect keys on the zoom's PARTS (a caller builds a new options object every render; keyed on that, the engine would restart - and lose
   // its engaged state - on every keystroke)
@@ -235,6 +255,14 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         const rects = liveRange.getClientRects();
         const r = rects[rects.length - 1];
         if (r && r.height) caretBottom = r.bottom;
+        // POLISH #10 item 17 (Nick, Oct 25): on the row model the caret's ROW is the truth. Right after Enter the new line is an empty row: the range
+        // gives no rect, or the previous line's - and the walk below measures the previous line's last character - so Enter's line was never paid
+        // until the next keystroke, and then the page jumped. The row the caret sits in is measured instead whenever the range's rect is not on it.
+        const row = caretRow(sel, ed);
+        if (row) {
+          const rr = row.getBoundingClientRect();
+          if (rr.height && (caretBottom === null || caretBottom < rr.top + 1 || caretBottom > rr.bottom + 1)) caretBottom = rr.bottom;
+        }
       }
       // FX4 S1 — a genuinely COLLAPSED range's own getClientRects() is
       // frequently EMPTY in Chromium right at a text-node boundary (a

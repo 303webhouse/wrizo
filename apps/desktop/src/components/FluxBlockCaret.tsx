@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTheme } from '../store/theme';
 import { caretWidth } from '../store/fluxReadouts';
+import { caretRow } from './useTypewriterFade';
 
 // TH2 Slice 5 — the orange block caret (canon §13); FLUX V2 slimmed it to a third of its old width (store/fluxReadouts.ts caretWidth). One global mount
 // point (the VoiceWallWhisper pattern: a single document-level
@@ -49,6 +50,19 @@ export function FluxBlockCaret() {
 
       const range = sel.getRangeAt(0).cloneRange();
       let r = range.getClientRects()[0];
+      // POLISH #10 item 17: the row the caret sits in is the truth where the range gives no rect (a fresh empty line) or a rect off the row; the block stands
+      // at that row's start, one line tall - on a scroll or glide too, so it follows the hold instead of keeping its last place.
+      const row = caretRow(sel, surface);
+      const atRowStart = (): DOMRect | null => {
+        if (!row) return null;
+        const rr = row.getBoundingClientRect();
+        if (!rr.height) return null;
+        const cs = getComputedStyle(row);
+        const lh = parseFloat(cs.lineHeight) || rr.height;
+        const sc = row.offsetHeight > 0 ? rr.height / row.offsetHeight : 1;   // the page may be painted at a scale
+        return new DOMRect(rr.left + (parseFloat(cs.paddingLeft) || 0) * sc + (parseFloat(cs.textIndent) || 0) * sc, rr.top, 0, Math.min(rr.height, lh * sc));
+      };
+      if (!r) { const fromRow = atRowStart(); if (fromRow) r = fromRow; }
       if (!r && !probe) return;   // keep the drawn caret; the next selectionchange resolves an empty line
       if (!r) {
         // Collapsed at an empty position (e.g. an empty line) — a
@@ -66,6 +80,12 @@ export function FluxBlockCaret() {
         }
       }
       if (!r || (!r.height && !r.top)) { clearActive(); return; }
+      // (Nick, Oct 25) the block follows Enter AT ONCE: a rect that is not on the caret's row is the previous line's end - the row's start is used instead.
+      if (row) {
+        const rr = row.getBoundingClientRect();
+        const mid = r.top + (r.height || 0) / 2;
+        if (rr.height && (mid < rr.top - 1 || mid > rr.bottom + 1)) { const fromRow = atRowStart(); if (fromRow) r = fromRow; }
+      }
 
       if (activeElRef.current && activeElRef.current !== surface) activeElRef.current.removeAttribute('data-flux-caret-active');
       activeElRef.current = surface;
