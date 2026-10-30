@@ -320,7 +320,11 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       // against its own PREVIOUS reading isolates "how much new content did
       // the writer just produce" from "where did the viewport happen to be
       // sitting" — the two concerns S1 asks to be decoupled.
-      const docCaretBottom = within + box.scrollTop;
+      // PAGE LAW (fx5 S1 c, train-11): the document position is measured from the TEXT's top, not the scroller's. The scroller's start-offset padding is rewritten
+      // whenever the paint scale moves (measure(): startPx is the screen distance over the scale), and a position that includes it shifts by the change - the carried
+      // position was then 110px off and one typed line paid 140px (501 -> 636) with the page law broken. The text does not move when its padding does.
+      const padTop = parseFloat(getComputedStyle(container).paddingTop) || 0;
+      const docCaretBottom = within + box.scrollTop - padTop;
       lastDocCaretBottom = docCaretBottom;
       // PAGE-SIZE - zoomed, the hold is the writing line's TOP at `anchor` of the hold element (the page column, the box the band mask is drawn
       // in), as Cursor's mockup places it - so the caret's BOTTOM sits one line below that, inside the mask's full-strength band.
