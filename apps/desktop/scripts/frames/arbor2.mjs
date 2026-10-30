@@ -100,12 +100,11 @@ export function zoomProofV2(holeOf) {
     backing: kr ? { l: kr.left, t: kr.top, r: kr.right, b: kr.bottom, bg: kcs.backgroundColor } : null, pageBg: getComputedStyle(p).backgroundColor,
     sClip: sClip && sClip.slice(0, 90), vClip: vClip && vClip.slice(0, 90) };
 }
-// Run in the page as `(${zoomProof})(${holeOf})`.
-//   VISIBLE the page's box cut to its column, to the viewport, and to the top of the stage's progress row
-//   PAPER   an opaque sheet in the page's paper colour exactly over VISIBLE (so it covers the whole page, and never the progress row)
-//   VIGNETTE the room's vignette (body::after) has an evenodd hole covering VISIBLE (it greyed the night paper's ends)
-//   HOLE    by day, the sun layer's evenodd clip has a hole covering VISIBLE
-export function zoomProof(holeOf) {
+// PARKED 2026-10-29 (SUPERSEDED by zoomProof below, after Fable's ruling on run 40987833965: "The Typewriter rule stands: the zoomed page is
+// unframed, so give the opaque night sheet no visible edge". This proof asked for a HARD sheet (an exact rect, the page's bg, the paper glow) and
+// a HARD vignette hole - it certified the very edge the ruling removes. The successor asks for a sheet that fades to nothing at every side, a page
+// that draws no edge of its own, and a vignette that is exactly the paper's complement). Original, verbatim:
+export function zoomProofV3(holeOf) {
   const col = document.querySelector('.mode-pagecol[data-zoom="true"]'), p = col && col.querySelector('.mode-page');
   if (!p) return { pass: false, why: 'no zoomed page' };
   const a = p.getBoundingClientRect(), c = col.getBoundingClientRect();
@@ -141,6 +140,98 @@ export function zoomProof(holeOf) {
     backing: kr ? { l: kr.left, t: kr.top, r: kr.right, b: kr.bottom, bg: kcs.backgroundColor } : null, pageBg: getComputedStyle(p).backgroundColor,
     sClip: sClip && sClip.slice(0, 90), vClip: vClip && vClip.slice(0, 90) };
 }
+// Reads a computed mask-image: each linear-gradient's axis ('x' for `to right`, else 'y', CSS's default) and its stops as { a, px } (alpha at
+// an offset in px). Colours in either serialization (rgb(0, 0, 0) / rgba(0, 0, 0, 0) / rgb(0 0 0 / 0) / transparent / #000).
+export function stopsOf(mask) {
+  const s = String(mask || '');
+  if (!s.includes('linear-gradient(')) return [];
+  return s.split('linear-gradient(').slice(1).map((g) => {
+    const axis = /^\s*to right\b/.test(g) ? 'x' : 'y';
+    const stops = [...g.matchAll(/(rgba?\(([^)]*)\)|transparent|#[0-9a-fA-F]{3,8})\s+(-?\d+(?:\.\d+)?)px/g)].map((m) => {
+      const parts = m[2] !== undefined ? m[2].split(/[\s,/]+/).filter(Boolean) : [];
+      const a = m[1] === 'transparent' ? 0 : parts.length === 4 ? parseFloat(parts[3]) : 1;
+      return { a, px: parseFloat(m[3]) };
+    });
+    return { axis, stops };
+  });
+}
+// Run in the page as `(${zoomProof})(${holeOf}, ${stopsOf})`. Fable, Oct 29: "the zoomed page is unframed, so give the opaque night sheet no
+// visible edge" - on top of the two fixes it accepted (a whole sheet, never a band; no shadow across the prose column):
+//   VISIBLE  the page's box cut to its column, to the viewport, and to the top of the stage's progress row (the foot, found apart from paper.ts)
+//   SHEET    .arbor2-paper lies exactly over VISIBLE, opaque, in the page's paper colour (--paper), with no shadow
+//   BARE     the page itself draws no edge: no background, no shadow, no visible border (the sheet is the only paper)
+//   EDGELESS the sheet's own mask is 0 at the middle of each of its four sides
+//   WHOLE    ...and 1 over all of VISIBLE but a rim of at most 64px: a whole sheet, not a band
+//   SEAMLESS the room's vignette (body::after) is the sheet's exact complement inside VISIBLE (vignette + paper = 1 at every point of a 13 x 13
+//            grid) and whole just outside it - the room darkens where the paper thins, so no line is drawn where the paper ends
+//   HOLE     by day, the sun layer's evenodd clip has a hole covering VISIBLE (no slat across the prose column)
+// The masks are read from computed style and evaluated here (stopsOf + linear interpolation), never taken from paper.ts.
+export function zoomProof(holeOf, stopsOf) {
+  const col = document.querySelector('.mode-pagecol[data-zoom="true"]'), p = col && col.querySelector('.mode-page');
+  if (!p) return { pass: false, why: 'no zoomed page' };
+  const a = p.getBoundingClientRect(), c = col.getBoundingClientRect();
+  let foot = Infinity, footSeen = false;
+  for (const el of document.querySelectorAll('body *')) {
+    const own = [...el.childNodes].some((n) => n.nodeType === 3 && /^\s*\d+\s+words?\s*$/i.test(n.textContent));
+    if (!own && !el.closest('.mode-progress')) continue;
+    const r = el.getBoundingClientRect();
+    if (r.width > 0 && r.height > 0 && r.top > a.top + 40 && r.left < a.right && r.right > a.left) { foot = Math.min(foot, r.top); footSeen = true; }
+  }
+  const rowOnScreen = [...document.querySelectorAll('.mode-progress *')].some((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; });
+  const vis = { l: Math.max(a.left, c.left), t: Math.max(a.top, c.top), r: Math.min(a.right, c.right), b: Math.min(a.bottom, c.bottom, innerHeight, foot) };
+  const room = document.documentElement.getAttribute('data-arbor2-room');
+  const k = document.querySelector('.arbor2-paper'), kr = k ? k.getBoundingClientRect() : null, kcs = k ? getComputedStyle(k) : null;
+  const near = (x, y) => Math.abs(x - y) <= 1;
+  const pcs = getComputedStyle(p);
+  const probe = document.createElement('i');
+  probe.style.color = pcs.getPropertyValue('--paper').trim();
+  document.body.appendChild(probe);
+  const paperRgb = getComputedStyle(probe).color;
+  probe.remove();
+  const sheet = !!kr && kcs.display !== 'none' && kcs.visibility !== 'hidden' && +kcs.opacity === 1 && kcs.boxShadow === 'none'
+    && near(kr.left, vis.l) && near(kr.top, vis.t) && near(kr.right, vis.r) && near(kr.bottom, vis.b) && kcs.backgroundColor === paperRgb;
+  const clear = (col) => col === 'transparent' || /^rgba\(.*,\s*0\)$/.test(col) || /\/\s*0\)$/.test(col);
+  const bare = clear(pcs.backgroundColor) && pcs.boxShadow === 'none'
+    && ['Top', 'Right', 'Bottom', 'Left'].every((s) => parseFloat(pcs[`border${s}Width`]) === 0 || clear(pcs[`border${s}Color`]));
+  // a stop list's alpha at v (CSS: flat before the first stop and after the last, linear between)
+  const at = (st, v) => {
+    if (!st.length) return 1;
+    if (v <= st[0].px) return st[0].a;
+    for (let i = 1; i < st.length; i++) if (v <= st[i].px) return st[i].px === st[i - 1].px ? st[i].a : st[i - 1].a + (st[i].a - st[i - 1].a) * (v - st[i - 1].px) / (st[i].px - st[i - 1].px);
+    return st[st.length - 1].a;
+  };
+  const vcs = getComputedStyle(document.body, '::after');
+  const sm = kcs ? kcs.maskImage : '', vm = vcs.maskImage;
+  const sg = stopsOf(sm), vg = stopsOf(vm);
+  const every = (v, want) => String(v || '').split(',').every((x) => x.trim() === want);
+  // the sheet's layers INTERSECT (alpha multiplies); the vignette's layers ADD (source-over: 1 - the product of what each leaves out)
+  const sOk = sg.length === 2 && every(kcs.maskComposite, 'intersect'), vOk = vg.length === 2 && every(vcs.maskComposite, 'add');
+  const sA = (x, y) => (sOk ? sg.reduce((m, g) => m * at(g.stops, g.axis === 'x' ? x - kr.left : y - kr.top), 1) : 1);
+  const vA = (x, y) => (vOk ? 1 - vg.reduce((m, g) => m * (1 - at(g.stops, g.axis === 'x' ? x : y)), 1) : 1);
+  const cx = (vis.l + vis.r) / 2, cy = (vis.t + vis.b) / 2;
+  const edgeless = sOk && !!kr && [sA(kr.left + .5, cy), sA(kr.right - .5, cy), sA(cx, kr.top + .5), sA(cx, kr.bottom - .5)].every((v) => v <= .05);
+  const R = 64;
+  const whole = sOk && [[vis.l + R, vis.t + R], [vis.r - R, vis.t + R], [vis.l + R, vis.b - R], [vis.r - R, vis.b - R], [cx, cy]].every(([x, y]) => sA(x, y) === 1);
+  let worst = { d: 0 };
+  for (let i = 0; i <= 12; i++) for (let j = 0; j <= 12; j++) {
+    const x = vis.l + .5 + (vis.r - vis.l - 1) * i / 12, y = vis.t + .5 + (vis.b - vis.t - 1) * j / 12;
+    const d = Math.abs(sA(x, y) + vA(x, y) - 1);
+    if (d > worst.d) worst = { d: +d.toFixed(3), x: Math.round(x), y: Math.round(y), s: +sA(x, y).toFixed(3), v: +vA(x, y).toFixed(3) };
+  }
+  const ring = [[vis.l - 3, cy], [vis.r + 3, cy], [cx, vis.t - 3], [cx, vis.b + 3], [vis.l - 3, vis.t - 3], [vis.r + 3, vis.b + 3]];
+  const seamless = sOk && vOk && worst.d <= .03 && ring.every(([x, y]) => vA(x, y) >= .97);
+  const covers = (h, ox, oy) => !!h && h.l + ox <= vis.l + 1 && h.t + oy <= vis.t + 1 && h.r + ox >= vis.r - 1 && h.b + oy >= vis.b - 1;
+  let hole = null, sClip = null;
+  if (room === 'day') {
+    const s = document.querySelector('.arbor2-sun'), sr = s ? s.getBoundingClientRect() : null;
+    sClip = s ? getComputedStyle(s).clipPath : null;
+    hole = !!sr && covers(holeOf(sClip), sr.left, sr.top);
+  }
+  const footOk = !rowOnScreen || footSeen;
+  return { pass: sheet && bare && edgeless && whole && seamless && hole !== false && footOk, room, sheet, bare, edgeless, whole, seamless, hole, footOk,
+    worst, vis, foot: foot === Infinity ? null : foot, paperRgb, sheetBg: kcs && kcs.backgroundColor, sheetShadow: kcs && kcs.boxShadow,
+    pageBg: pcs.backgroundColor, pageShadow: pcs.boxShadow, sMask: String(sm).slice(0, 120), vMask: String(vm).slice(0, 120), sClip: sClip && sClip.slice(0, 90) };
+}
 
 export default {
   // the proof above, on a zoomed Free Write page with words (the picture is the same as arbor-page; the row FAILS if the proof does)
@@ -148,9 +239,9 @@ export default {
     await page(app, 'arbor-words', WORDS);
     await waitSoft(app, "!!document.querySelector('.mode-pagecol[data-zoom=\"true\"]')", { label: 'typewriter zoom', timeout: 4000 });
     await sleep(600);
-    const r = await app.evalJs(`(${zoomProof.toString()})(${holeOf.toString()})`);
+    const r = await app.evalJs(`(${zoomProof.toString()})(${holeOf.toString()}, ${stopsOf.toString()})`);
     // the job keeps 300 characters of an error: the verdicts and the clips it read come first
-    if (!r || !r.pass) throw new Error('ZOOM PROOF FAILED ' + JSON.stringify(r && { paper: r.paper, vignette: r.vignette, hole: r.hole, footOk: r.footOk, foot: r.foot, room: r.room, sClip: r.sClip, vClip: r.vClip, vis: r.vis, why: r.why }));
+    if (!r || !r.pass) throw new Error('ZOOM PROOF FAILED ' + JSON.stringify(r && { sheet: r.sheet, bare: r.bare, edgeless: r.edgeless, whole: r.whole, seamless: r.seamless, hole: r.hole, footOk: r.footOk, room: r.room, worst: r.worst, why: r.why, sheetShadow: r.sheetShadow, pageBg: r.pageBg, vMask: r.vMask }));
   },
   // item 1: the room and the page (night = dark tone, day = light tone; day adds item 6's pergola light)
   'arbor-page': async (app) => { await page(app, 'arbor-words', WORDS); },
