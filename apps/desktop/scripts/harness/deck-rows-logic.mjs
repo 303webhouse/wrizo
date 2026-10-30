@@ -57,7 +57,9 @@ const grow = (bs, id, h) => bs.map((b) => (b.id === id ? { ...b, h } : b));
   ok('R6b: a card in another column, not under the grown one, is not carried', near(byId(out, 'r').y, byId(before, 'r').y));
 }
 const src = fs.readFileSync(path.join(SRC, 'components', 'BoardEditor.tsx'), 'utf8').replace(/\r\n/g, '\n');
-ok('R9: BoardEditor imports fitDealtRows and the reflow effect hands it the before and the grown boxes', /import \{ fitDealtRows \} from '\.\.\/decks\/rowFit';/.test(src) && /if \(changed\) setBoxes\(fitDealtRows\(boxes, next\)\);/.test(src));
+// PARKED (Fable, Oct 30, #12b): R9 as first written - SUPERSEDED: a pass on a plain OPEN no longer hands the boxes to rowFit (opening saves nothing); successor R9b. Kept verbatim:
+// ok('R9: BoardEditor imports fitDealtRows and the reflow effect hands it the before and the grown boxes', /import \{ fitDealtRows \} from '\.\.\/decks\/rowFit';/.test(src) && /if \(changed\) setBoxes\(fitDealtRows\(boxes, next\)\);/.test(src));
+ok('R9b: BoardEditor imports fitDealtRows and hands it the before and the grown boxes only when a change by the writer is waiting (boxes !== the saved mark); a plain open is corrected on screen with no rowFit', /import \{ fitDealtRows \} from '\.\.\/decks\/rowFit';/.test(src) && /else setBoxes\(fitDealtRows\(boxes, next\)\);/.test(src) && /if \(boxes === lastSavedRef\.current\) \{\s*lastSavedRef\.current = next;\s*setBoxes\(next\);/.test(src));
 {
   // the mutant: without the carry (the rule's second half), R2 must go RED - the check can see the bug
   const mutated = fs.readFileSync(path.join(SRC, 'decks', 'rowFit.ts'), 'utf8').replace('carry = Math.max(carry, (rowShift.get(rowKey(A)) ?? 0) + growth(A));', 'carry = carry;');
