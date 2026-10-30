@@ -3,7 +3,7 @@
 //   P2  the path is evenodd, outer rect first, and the frames proof's OWN regex (scripts/frames/arbor2.mjs zoomProof) reads the hole back
 //       exactly - so the browser check and the clip it measures cannot drift apart in format
 import { holePath } from '../../src/arbor2/paper.ts';
-import { zoomProof, holeOf } from '../frames/arbor2.mjs';
+import { zoomProof, holeOf, stopsOf } from '../frames/arbor2.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
@@ -28,8 +28,19 @@ ok('P2 evenodd', clip.startsWith('path(evenodd,'), clip);
 const spaced = clip.replace(/([MHVZ])/g, ' $1 ').replace(/\s+/g, ' ').replace('" ', '"').replace(' "', '"');
 const h1 = holeOf(clip), h2 = holeOf(spaced);
 ok('P2b holeOf reads the hole back exactly, as written and re-spaced', !!h1 && !!h2 && [h1.l, h1.t, h1.r, h1.b].join() === '267,188,1259.5,735' && [h2.l, h2.t, h2.r, h2.b].join() === '267,188,1259.5,735', JSON.stringify({ spaced, h1, h2 }));
-ok('P2b zoomProof reads clips only through the holeOf it is handed', /^function zoomProof\(holeOf\)/.test(zoomProof.toString()) && !/matchAll/.test(zoomProof.toString()) && (zoomProof.toString().match(/holeOf\(/g) || []).length >= 2, '');
+// PARKED 2026-10-29 (SUPERSEDED: Fable's "no visible edge" moved the vignette from a clip to a mask, so zoomProof now reads ONE clip (the
+// sun's) through holeOf and the masks through stopsOf; its signature and its holeOf count changed by design). Original, verbatim:
+// ok('P2b zoomProof reads clips only through the holeOf it is handed', /^function zoomProof\(holeOf\)/.test(zoomProof.toString()) && !/matchAll/.test(zoomProof.toString()) && (zoomProof.toString().match(/holeOf\(/g) || []).length >= 2, '');
+// SUCCESSOR P2c: zoomProof reads the sun's clip only through the holeOf it is handed, and masks only through the stopsOf it is handed.
+const zp = zoomProof.toString();
+ok('P2c zoomProof reads clips through holeOf and masks through stopsOf, with no parser of its own', /^function zoomProof\(holeOf, stopsOf\)/.test(zp) && !/matchAll/.test(zp) && (zp.match(/holeOf\(/g) || []).length === 1 && (zp.match(/stopsOf\(/g) || []).length === 2, '');
 ok('P2b holeOf refuses a clip with no hole', holeOf('path(evenodd, "M0 0H10V10H0Z")') === null && holeOf('') === null && holeOf('none') === null, '');
+// P3 stopsOf reads a computed gradient in each colour spelling Chrome may hand back, and the axis CSS defaults to
+const g3 = stopsOf('linear-gradient(to right, rgb(0, 0, 0) 187px, rgba(0, 0, 0, 0) 235px, rgba(0, 0, 0, 0) 1131.5px, rgb(0, 0, 0) 1179.5px), linear-gradient(rgb(0 0 0 / 0) 0px, rgb(0 0 0) 48px, transparent 60px, #000 70px)');
+ok('P3 stopsOf: two layers, x then the default y, every stop and alpha', g3.length === 2 && g3[0].axis === 'x' && g3[1].axis === 'y'
+  && JSON.stringify(g3[0].stops) === JSON.stringify([{ a: 1, px: 187 }, { a: 0, px: 235 }, { a: 0, px: 1131.5 }, { a: 1, px: 1179.5 }])
+  && JSON.stringify(g3[1].stops) === JSON.stringify([{ a: 0, px: 0 }, { a: 1, px: 48 }, { a: 0, px: 60 }, { a: 1, px: 70 }]), JSON.stringify(g3));
+ok('P3 stopsOf reads no mask as no layers', stopsOf('none').length === 0 && stopsOf('').length === 0 && stopsOf(undefined).length === 0, '');
 
 for (const c of checks) console.log(`${c.pass ? 'ok  ' : 'FAIL'} ${c.name}${c.pass ? '' : '  ' + c.detail}`);
 const pass = checks.every((c) => c.pass);
