@@ -285,6 +285,7 @@ await withHarness(async (app) => {
       };
     })()
   `);
+  console.log('S1DIAG', await app.evalJs(`(() => { const a = document.querySelector('.script-el-active'); const p = document.querySelector('.script-autocomplete'); const R = (e) => { const r = e.getBoundingClientRect(); return [r.top, r.height, r.bottom]; }; const cs = getComputedStyle(a); return JSON.stringify({ a: R(a), p: R(p), aOff: [a.offsetTop, a.offsetHeight], pOff: p.offsetTop, fs: cs.fontSize, lh: cs.lineHeight, ff: cs.fontFamily, par: a.offsetParent && a.offsetParent.className, ppar: p.offsetParent && p.offsetParent.className, pos: getComputedStyle(p).position, top: getComputedStyle(p).top }); })()`));
   ok('R1: the popover sits within one line-height of the ACTIVE element (not the sheet\'s bottom)', r1Geometry.gap >= 0 && r1Geometry.gap < 40, JSON.stringify(r1Geometry));
   ok('R1: many elements still follow it — the popover is nowhere near the sheet\'s bottom', r1Geometry.distFromSheetBottom > 100, JSON.stringify(r1Geometry));
   // Restore element 0 and return to the tail, so the rest of the scenario
