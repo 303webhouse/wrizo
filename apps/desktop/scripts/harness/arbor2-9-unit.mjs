@@ -45,7 +45,7 @@ const NIGHT = '#0A0503', DAY = '#EFE6D2', LATE = '#E3D4B6', BRASS_O = '#FF9900';
 const lumOf = (h) => hex(h).reduce((s, v) => s + v, 0);
 const n = { sageNight: contrast(SAGE, NIGHT), oliveDay: contrast(OLIVE, DAY), oliveLate: contrast(OLIVE, LATE), brassDay: contrast(BRASS_O, DAY), sageDay: contrast(SAGE, DAY) };
 ok('G4 polarity: night sage lighter than the night room, day olive darker than the day room', lumOf(SAGE) > lumOf(NIGHT) && lumOf(OLIVE) < lumOf(DAY) && lumOf(OLIVE) < lumOf(LATE), '');
-ok('G4 the wired copies clear 3:1 on their rooms (night sage; day olive, early and late afternoon)', n.sageNight >= 3 && n.oliveDay >= 3 && n.oliveLate >= 3, JSON.stringify(n));
+ok('G4 each copy clears 3:1 on the ground it is made for (sage on the night room; olive on the whitewash, early and late)', n.sageNight >= 3 && n.oliveDay >= 3 && n.oliveLate >= 3, JSON.stringify(n));
 console.log('     contrast:', Object.entries(n).map(([k, v]) => `${k} ${v.toFixed(2)}:1`).join(' · '));
 
 const regen = copies.every(([name, col, oc]) => encodePng(tint(src, col, oc)).equals(fs.readFileSync(new URL(`arbor2/${name}`, brand))));
