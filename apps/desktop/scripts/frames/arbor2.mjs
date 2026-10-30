@@ -34,7 +34,42 @@ const rhizomeAt = async (app, words) => {
   await waitSoft(app, "!!document.querySelector('.wz-rhizome-field')", { label: 'rhizome field', timeout: 4000 });
 };
 
+// THE ZOOMED PAGE PROOF (Fable, Oct 29: "the pergola shadows must NEVER cross the prose column, including through the page's see-through
+// fades; the night fade must not turn the paper into a band"). Runs IN the page. On Free Write's Typewriter zoom the column's band mask makes
+// the page see-through at its top and bottom, so:
+//   PAPER  an opaque sheet (.arbor2-paper) lies behind the visible page (page box cut to the column), in the page's own paper colour
+//   HOLE   by day, the sun layer's clip-path is evenodd with a hole that covers that whole visible page
+// A screen that fails it throws, so the frames job reports the row FAILED with the measurements instead of shipping a picture.
+function zoomProof() {
+  const col = document.querySelector('.mode-pagecol[data-zoom="true"]'), p = col && col.querySelector('.mode-page');
+  if (!p) return { pass: false, why: 'no zoomed page' };
+  const a = p.getBoundingClientRect(), c = col.getBoundingClientRect();
+  const vis = { l: Math.max(a.left, c.left), t: Math.max(a.top, c.top), r: Math.min(a.right, c.right), b: Math.min(a.bottom, c.bottom, innerHeight) };
+  const room = document.documentElement.getAttribute('data-arbor2-room');
+  const k = document.querySelector('.arbor2-paper'), kr = k ? k.getBoundingClientRect() : null, kcs = k ? getComputedStyle(k) : null;
+  const near = (x, y) => Math.abs(x - y) <= 1;
+  const paper = !!kr && kcs.display !== 'none' && kcs.visibility !== 'hidden' && +kcs.opacity === 1
+    && near(kr.left, vis.l) && near(kr.top, vis.t) && near(kr.right, vis.r) && near(kr.bottom, vis.b)
+    && kcs.backgroundColor === getComputedStyle(p).backgroundColor;
+  let hole = null;
+  if (room === 'day') {
+    const s = document.querySelector('.arbor2-sun'), sr = s ? s.getBoundingClientRect() : null, clip = s ? String(s.style.clipPath || '') : '';
+    const m = [...clip.matchAll(/M(-?[\d.]+) (-?[\d.]+)H(-?[\d.]+)V(-?[\d.]+)H/g)];
+    const h = m[1] && sr ? { l: +m[1][1] + sr.left, t: +m[1][2] + sr.top, r: +m[1][3] + sr.left, b: +m[1][4] + sr.top } : null;
+    hole = !!h && clip.includes('evenodd') && h.l <= vis.l + 1 && h.t <= vis.t + 1 && h.r >= vis.r - 1 && h.b >= vis.b - 1;
+  }
+  return { pass: paper && hole !== false, room, paper, hole, vis, backing: kr ? { l: kr.left, t: kr.top, r: kr.right, b: kr.bottom, bg: kcs.backgroundColor } : null, pageBg: getComputedStyle(p).backgroundColor };
+}
+
 export default {
+  // the proof above, on a zoomed Free Write page with words (the picture is the same as arbor-page; the row FAILS if the proof does)
+  'arbor-proof-zoom': async (app) => {
+    await page(app, 'arbor-words', WORDS);
+    await waitSoft(app, "!!document.querySelector('.mode-pagecol[data-zoom=\"true\"]')", { label: 'typewriter zoom', timeout: 4000 });
+    await sleep(600);
+    const r = await app.evalJs(`(${zoomProof.toString()})()`);
+    if (!r || !r.pass) throw new Error('ZOOM PROOF FAILED ' + JSON.stringify(r));
+  },
   // item 1: the room and the page (night = dark tone, day = light tone; day adds item 6's pergola light)
   'arbor-page': async (app) => { await page(app, 'arbor-words', WORDS); },
   'arbor-blank': async (app) => {
