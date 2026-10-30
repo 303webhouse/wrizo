@@ -2105,6 +2105,20 @@ a:focus-visible,
   background:var(--card-stock); border:1px solid var(--ink-border-strong); border-radius:0;
   color:var(--ink-on-card-meta); font-size:10px; cursor:pointer;
 }
+/* BUG 32d - FIT TO TEXT (Nick, Oct 30): a small square icon on a HAND-SIZED card (sizedByHand), beside the resize grip on the card's bottom edge. Quiet: it shows only while the card is hovered or holds focus (it is a real button, so Tab
+   reaches it and :focus-within shows it), and goes with the rest of the chrome in the recede. GUIDANCE colour at rest (--badge-on-card: olive in Arbor, cyan in Flux, the steel / grey of the machine's cards), the HUMAN-ACTION colour
+   (--choice) only while it is pressed. Square edges, flat 1 px, no shadow. Its words come from the lexicon (boardFitToText, per theme). */
+.board-fit{
+  position:absolute; right:8px; bottom:-8px; width:16px; height:16px; z-index:6; padding:0; box-sizing:border-box;
+  display:flex; align-items:center; justify-content:center; border-radius:0; box-shadow:none;
+  background:var(--card-stock); border:1px solid var(--badge-on-card); color:var(--badge-on-card);
+  cursor:pointer; opacity:0; pointer-events:none; transition:opacity .15s ease;
+}
+.board-box:hover .board-fit, .board-box:focus-within .board-fit, .board-fit:focus-visible{ opacity:1; pointer-events:auto; }
+.board-fit:active{ border-color:var(--choice); color:var(--choice); }
+.board-fit:focus-visible{ outline:1px solid var(--badge-on-card); outline-offset:1px; }
+[data-chrome-receded='true'] .board-box .board-fit{ opacity:0; pointer-events:none; visibility:hidden; }
+@media (prefers-reduced-motion: reduce){ .board-fit{ transition:none; } }
 /* FX5 S5 — the connections footer: one quiet line per thread, an overlay
    strip pinned to the card's own bottom edge (never grows the card's own
    height — a hard-capped max-height with overflow hidden instead, so a
