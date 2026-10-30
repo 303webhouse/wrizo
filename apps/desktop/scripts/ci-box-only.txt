@@ -15,3 +15,8 @@ item139.mjs
 item140.mjs
 # Layout parity not yet shown: one check (R1, the screenplay popover's gap to the active line) is off by 1px on Linux (font metrics suspected).
 s1.mjs
+# Animation/timing-sensitive: green on the box, but red on a hosted runner in at least one leg of the 8-shard pair (typewriter-fade also flipped
+# between two runs of the SAME tree). The brief's rule: they stay on the box until a repeated parity run shows they hold.
+rhizome-goal.mjs
+splash.mjs
+typewriter-fade.mjs

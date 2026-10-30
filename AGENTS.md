@@ -169,6 +169,9 @@ Changes to CC's own permissions, harness configuration, or session settings
 are proposed in a report and made only on Nick's explicit word — never shipped
 inside a build. (First stated in docs/j-arc-runbook.md.)
 
+### Running the harness on GitHub Actions (INK, Oct 29)
+Any lane may run a harness file, a short list, or a full pair on a hosted runner while the box is busy: `gh workflow run harness.yml --ref ci/actions-harness -f ref=<your-branch> -f files=a.mjs,b.mjs` (or `-f files=pair -f shards=8`); screenshots of named screens in both page tones at 1366 and 1920: `gh workflow run frames.yml --ref ci/actions-harness -f ref=<your-branch>`. It is **advisory**: it is not a stamped pair, never clears a build for deploy, and the box stays the reference. It needs no box turn (a hosted job is its own machine) and never touches production. The files that still need the box are listed in `apps/desktop/scripts/ci-box-only.txt`; the full how-to, the security posture and how Chat 1 reads a pair are in docs/deploy.md "Harness on GitHub Actions".
+
 ## Commands you must run before saying done
 - pnpm install
 - pnpm dev
