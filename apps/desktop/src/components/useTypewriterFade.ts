@@ -372,7 +372,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         const maxTop = useWindowScroll ? Infinity : Math.max(0, container.scrollHeight - container.clientHeight);
         const to = Math.min(box.scrollTop + step, maxTop);
         box.setScrollTop(to, !reduce);
-        if (trace) trace.push({ d: 'step', from: Math.round(box.scrollTop), to: Math.round(to), maxTop: Math.round(maxTop), advance: Math.round(advance) });
+        if (trace) trace.push({ d: 'step', from: Math.round(box.scrollTop), to: Math.round(to), maxTop: Math.round(maxTop), advance: Math.round(advance), doc: Math.round(docCaretBottom), within: Math.round(within) });
         glideFrom = box.scrollTop; glideTarget = to; glideAt = performance.now();
         if (verifyTimer) clearTimeout(verifyTimer);
         verifyTimer = setTimeout(() => { verifyTimer = null; schedule(); }, GLIDE_MS + 50);   // did it land? (see glideFrom's comment)
@@ -400,7 +400,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         // shrank the document) — resync without scrolling; no advance is
         // "owed" backward.
         prevDocCaretBottom = docCaretBottom;
-        if (trace) trace.push({ d: 'resync', advance: Math.round(advance) });
+        if (trace) trace.push({ d: 'resync', advance: Math.round(advance), doc: Math.round(docCaretBottom), within: Math.round(within), top: Math.round(box.scrollTop) });
       }
       setScrolled();
     };

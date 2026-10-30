@@ -339,7 +339,7 @@ await withHarness(async (app) => {
     //   JSON.stringify({ settled, manualTarget, afterManualScroll, afterTypeScrollTop, lineHeightPx }));
     // ------------------------------------------------------------------
     const linesAdded = (await visualLines()) - linesBeforeType;
-    const twTrace = await app.evalJs(`(window.__wzTwTrace || []).slice(Math.max(0, ${trace0} - 40)).filter((t) => t.d !== 'wait').map((t) => t.d + (t.from != null ? ':' + t.from + '>' + t.to + '/' + t.maxTop + '@' + t.advance : t.top != null ? ':' + t.top : '')).join(' ').slice(0, 900)`);
+    const twTrace = await app.evalJs(`(window.__wzTwTrace || []).slice(Math.max(0, ${trace0} - 12)).filter((t) => t.d !== 'wait').map((t) => t.d + (t.from != null ? ':' + t.from + '>' + t.to + '/' + t.maxTop + '@' + t.advance + (t.doc != null ? 'd' + t.doc + 'w' + t.within : '') : t.doc != null ? '#d' + t.doc + 'w' + t.within + 't' + t.top : t.top != null ? ':' + t.top : '')).join(' ').slice(0, 900)`);
     fx5FreeSeen = { settled, afterManualScroll, afterTypeScrollTop, lineHeightPx, linesAdded, twTrace };
     ok('S1 (c) [page-size successor]: typing after a manual scroll-up does NOT snap the page back to the band — the box moves by no more than the writer\'s OWN new lines (each visual line the typing added, + 0.6 of a line), and stays well short of the pre-scroll settled value',
       linesAdded >= 1 && afterTypeScrollTop - afterManualScroll <= lineHeightPx * (linesAdded + 0.6) && afterTypeScrollTop >= afterManualScroll - 1 && afterTypeScrollTop < settled - 40,
