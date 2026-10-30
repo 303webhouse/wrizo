@@ -118,7 +118,7 @@ targeted-green + red-set-invariance + the founder's named exception.
 
 ## Harness on GitHub Actions (INK, Oct 29)
 
-The live harness and a screenshot job run on GitHub-hosted runners, so any lane can run any harness file (or a full pair) in parallel while the Windows box is busy. **The box stays the reference machine**: an Actions run is advisory (like `browserless.yml`), never a stamped pair, and never clears a build for deploy.
+The live harness and a screenshot job run on GitHub-hosted runners, so any lane can run any harness file (or a full pair) in parallel while the Windows box is busy. **The box stays the reference machine**, and an Actions run is never a stamped pair. **What clears a deploy (Fable's ruling, Oct 29):** an Actions full pair (both legs, every file not on the box-only list) **together with** the box-only list run on the box clear a deploy. Actions alone is advisory and clears nothing.
 
 **Security (the repo is PUBLIC, so every log line is public).** Both workflows are `workflow_dispatch` only: no push, no `pull_request`, no `pull_request_target`, no fork trigger. `permissions: contents: read`. No secret is referenced anywhere. The harness needs no database: `runtime-verify.mjs` serves `dist-web` itself with an in-process auth/sync double, so nothing in a job can reach production (this replaces the brief's throwaway Postgres: there is nothing for it to serve). Inputs are validated and passed through env, never put into a shell line. Third-party actions are pinned to full SHAs. Only suite logs, merged logs and frames are uploaded (14 days), never `docs/evidence`.
 
