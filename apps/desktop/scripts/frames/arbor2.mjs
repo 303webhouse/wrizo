@@ -71,12 +71,10 @@ export function holeOf(clip) {
   const n = (s.match(/-?\d+(?:\.\d+)?/g) || []).map(Number);
   return s.includes('evenodd') && n.length >= 10 ? { l: n[5], t: n[6], r: n[7], b: n[8] } : null;
 }
-// Run in the page as `(${zoomProof})(${holeOf})`.
-//   VISIBLE the page's box cut to its column, to the viewport, and to the top of the stage's progress row
-//   PAPER   an opaque sheet in the page's paper colour exactly over VISIBLE (so it covers the whole page, and never the progress row)
-//   VIGNETTE the room's vignette (body::after) has an evenodd hole covering VISIBLE (it greyed the night paper's ends)
-//   HOLE    by day, the sun layer's evenodd clip has a hole covering VISIBLE
-export function zoomProof(holeOf) {
+// PARKED 2026-10-29 (SUPERSEDED by zoomProof below, after run 40987236296: it PASSED on frames that showed the paper still under "31 words".
+// Its foot came from the same `.mode-progress` box paper.ts read - a 0-tall box - so code and check were blind together. The successor finds
+// the foot apart from paper.ts and fails if a progress row is on screen but no foot was found). Original, verbatim:
+export function zoomProofV2(holeOf) {
   const col = document.querySelector('.mode-pagecol[data-zoom="true"]'), p = col && col.querySelector('.mode-page');
   if (!p) return { pass: false, why: 'no zoomed page' };
   const a = p.getBoundingClientRect(), c = col.getBoundingClientRect();
@@ -102,6 +100,47 @@ export function zoomProof(holeOf) {
     backing: kr ? { l: kr.left, t: kr.top, r: kr.right, b: kr.bottom, bg: kcs.backgroundColor } : null, pageBg: getComputedStyle(p).backgroundColor,
     sClip: sClip && sClip.slice(0, 90), vClip: vClip && vClip.slice(0, 90) };
 }
+// Run in the page as `(${zoomProof})(${holeOf})`.
+//   VISIBLE the page's box cut to its column, to the viewport, and to the top of the stage's progress row
+//   PAPER   an opaque sheet in the page's paper colour exactly over VISIBLE (so it covers the whole page, and never the progress row)
+//   VIGNETTE the room's vignette (body::after) has an evenodd hole covering VISIBLE (it greyed the night paper's ends)
+//   HOLE    by day, the sun layer's evenodd clip has a hole covering VISIBLE
+export function zoomProof(holeOf) {
+  const col = document.querySelector('.mode-pagecol[data-zoom="true"]'), p = col && col.querySelector('.mode-page');
+  if (!p) return { pass: false, why: 'no zoomed page' };
+  const a = p.getBoundingClientRect(), c = col.getBoundingClientRect();
+  // THE FOOT, found apart from paper.ts's own lookup (run 40987236296: both read `.mode-progress`'s 0-tall box, the sheet ran under the word
+  // count, and the proof passed with it): every visible line of text reading "N words" and every visible piece of the progress row,
+  // document-wide, below the page's top and across it. If such a row is on screen, the foot MUST be found (footSeen).
+  let foot = Infinity, footSeen = false;
+  for (const el of document.querySelectorAll('body *')) {
+    const own = [...el.childNodes].some((n) => n.nodeType === 3 && /^\s*\d+\s+words?\s*$/i.test(n.textContent));
+    if (!own && !el.closest('.mode-progress')) continue;
+    const r = el.getBoundingClientRect();
+    if (r.width > 0 && r.height > 0 && r.top > a.top + 40 && r.left < a.right && r.right > a.left) { foot = Math.min(foot, r.top); footSeen = true; }
+  }
+  const rowOnScreen = [...document.querySelectorAll('.mode-progress *')].some((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; });
+  const vis = { l: Math.max(a.left, c.left), t: Math.max(a.top, c.top), r: Math.min(a.right, c.right), b: Math.min(a.bottom, c.bottom, innerHeight, foot) };
+  const room = document.documentElement.getAttribute('data-arbor2-room');
+  const k = document.querySelector('.arbor2-paper'), kr = k ? k.getBoundingClientRect() : null, kcs = k ? getComputedStyle(k) : null;
+  const near = (x, y) => Math.abs(x - y) <= 1;
+  const paper = !!kr && kcs.display !== 'none' && kcs.visibility !== 'hidden' && +kcs.opacity === 1
+    && near(kr.left, vis.l) && near(kr.top, vis.t) && near(kr.right, vis.r) && near(kr.bottom, vis.b)
+    && kcs.backgroundColor === getComputedStyle(p).backgroundColor;
+  const covers = (h, ox, oy) => !!h && h.l + ox <= vis.l + 1 && h.t + oy <= vis.t + 1 && h.r + ox >= vis.r - 1 && h.b + oy >= vis.b - 1;
+  const vClip = getComputedStyle(document.body, '::after').clipPath;
+  const vignette = covers(holeOf(vClip), 0, 0);
+  let hole = null, sClip = null;
+  if (room === 'day') {
+    const s = document.querySelector('.arbor2-sun'), sr = s ? s.getBoundingClientRect() : null;
+    sClip = s ? getComputedStyle(s).clipPath : null;
+    hole = !!sr && covers(holeOf(sClip), sr.left, sr.top);
+  }
+  const footOk = !rowOnScreen || footSeen;
+  return { pass: paper && vignette && hole !== false && footOk, room, paper, vignette, hole, footOk, vis, foot: foot === Infinity ? null : foot,
+    backing: kr ? { l: kr.left, t: kr.top, r: kr.right, b: kr.bottom, bg: kcs.backgroundColor } : null, pageBg: getComputedStyle(p).backgroundColor,
+    sClip: sClip && sClip.slice(0, 90), vClip: vClip && vClip.slice(0, 90) };
+}
 
 export default {
   // the proof above, on a zoomed Free Write page with words (the picture is the same as arbor-page; the row FAILS if the proof does)
@@ -111,7 +150,7 @@ export default {
     await sleep(600);
     const r = await app.evalJs(`(${zoomProof.toString()})(${holeOf.toString()})`);
     // the job keeps 300 characters of an error: the verdicts and the clips it read come first
-    if (!r || !r.pass) throw new Error('ZOOM PROOF FAILED ' + JSON.stringify(r && { paper: r.paper, vignette: r.vignette, hole: r.hole, room: r.room, sClip: r.sClip, vClip: r.vClip, vis: r.vis, why: r.why }));
+    if (!r || !r.pass) throw new Error('ZOOM PROOF FAILED ' + JSON.stringify(r && { paper: r.paper, vignette: r.vignette, hole: r.hole, footOk: r.footOk, foot: r.foot, room: r.room, sClip: r.sClip, vClip: r.vClip, vis: r.vis, why: r.why }));
   },
   // item 1: the room and the page (night = dark tone, day = light tone; day adds item 6's pergola light)
   'arbor-page': async (app) => { await page(app, 'arbor-words', WORDS); },
