@@ -645,9 +645,11 @@ export default {
     v.writing = w.writing === 'true' && w.rows.filter((r) => r.cls.indexOf('grip') < 0).every((r) => r.op === 0);
     // the frame: the night room with the Tools drawer open (transitions back on)
     await app.evalJs("document.getElementById('arbor2-proof-still')?.remove(); document.activeElement && document.activeElement.blur()");
-    await sleep(2500);
+    // (run 41010878304's frame caught the writing recede still on after 2.5 s: wait for writing to END, then for the room to come back)
+    await waitSoft(app, "document.documentElement.getAttribute('data-wz-writing') !== 'true'", { label: 'writing over', timeout: 15000 });
+    await sleep(2000);
     await clickSel(app, '.wz-sliver-grip');
-    await sleep(900);
+    await sleep(1200);
     const ok = Object.values(v).every(Boolean);
     if (!ok) {
       const bad = Object.keys(v).filter((k) => !v[k]);
