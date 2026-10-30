@@ -33,7 +33,11 @@ ok('P2b holeOf reads the hole back exactly, as written and re-spaced', !!h1 && !
 // ok('P2b zoomProof reads clips only through the holeOf it is handed', /^function zoomProof\(holeOf\)/.test(zoomProof.toString()) && !/matchAll/.test(zoomProof.toString()) && (zoomProof.toString().match(/holeOf\(/g) || []).length >= 2, '');
 // SUCCESSOR P2c: zoomProof reads the sun's clip only through the holeOf it is handed, and masks only through the stopsOf it is handed.
 const zp = zoomProof.toString();
-ok('P2c zoomProof reads clips through holeOf and masks through stopsOf, with no parser of its own', /^function zoomProof\(holeOf, stopsOf\)/.test(zp) && !/matchAll/.test(zp) && (zp.match(/holeOf\(/g) || []).length === 1 && (zp.match(/stopsOf\(/g) || []).length === 2, '');
+// PARKED 2026-10-29 (SUPERSEDED: Fable's "feather the pergola's page hole with a ~24 px soft edge" moved the sun from a clip to a mask, so
+// zoomProof reads no clip at all and three masks through stopsOf). Original, verbatim:
+// ok('P2c zoomProof reads clips through holeOf and masks through stopsOf, with no parser of its own', /^function zoomProof\(holeOf, stopsOf\)/.test(zp) && !/matchAll/.test(zp) && (zp.match(/holeOf\(/g) || []).length === 1 && (zp.match(/stopsOf\(/g) || []).length === 2, '');
+// SUCCESSOR P2d: zoomProof reads every mask (sheet, vignette, sun) through the stopsOf it is handed, no clip, and no parser of its own.
+ok('P2d zoomProof reads its three masks through stopsOf, no clip, no parser of its own', /^function zoomProof\(holeOf, stopsOf\)/.test(zp) && !/matchAll/.test(zp) && (zp.match(/holeOf\(/g) || []).length === 0 && (zp.match(/stopsOf\(/g) || []).length === 3, '');
 ok('P2b holeOf refuses a clip with no hole', holeOf('path(evenodd, "M0 0H10V10H0Z")') === null && holeOf('') === null && holeOf('none') === null, '');
 // P3 stopsOf reads a computed gradient in each colour spelling Chrome may hand back, and the axis CSS defaults to
 const g3 = stopsOf('linear-gradient(to right, rgb(0, 0, 0) 187px, rgba(0, 0, 0, 0) 235px, rgba(0, 0, 0, 0) 1131.5px, rgb(0, 0, 0) 1179.5px), linear-gradient(rgb(0 0 0 / 0) 0px, rgb(0 0 0) 48px, transparent 60px, #000 70px)');
