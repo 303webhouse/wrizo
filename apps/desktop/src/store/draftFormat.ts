@@ -841,15 +841,18 @@ export function fontSizeAt(text: string, selStart: number, selEnd: number): numb
   return seen.size === 1 ? [...seen][0] : 'mixed';
 }
 
+/** A size class anywhere in a span's braces: `{.size-14}` AND the combined `{.font-lora .size-14}`, whose `.size-` follows a space (a bare `{.size-` test missed it). */
+const HAS_SIZE_SPAN = /\{[^}\n]*\.size-\d/;
+
 /** The whole-document (whole-card) pick, as the mockup has it: every font span on the text is removed - the new face is the page's.
  *  POLISH #10 item 4: only the FACES go - a span's size stays (its span keeps only the size class). */
 export function clearFontSpans(text: string): string {
-  if (!text.includes('{.size-')) return withoutFontMarks(text);
+  if (!HAS_SIZE_SPAN.test(text)) return withoutFontMarks(text);
   return applyStylePick(text, 0, text.length, (st) => ({ face: null, points: st.points })).text;
 }
 
 /** POLISH #10 item 4: the whole-document (whole-card) SIZE pick - every span's size goes (the new size is the page's); the faces stay. */
 export function clearSizeSpans(text: string): string {
-  if (!text.includes('{.size-')) return text;
+  if (!HAS_SIZE_SPAN.test(text)) return text;
   return applyStylePick(text, 0, text.length, (st) => ({ face: st.face, points: null })).text;
 }

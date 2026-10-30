@@ -113,6 +113,7 @@ await withHarness(async (app) => {
     await highlight(app, ED, 'counted gulls'); await sleep(300);
     await press(app, PLUS('.wz-sliver'), 'the size + (again)'); await sleep(500);
     await highlight(app, ED, 'counted gulls'); await sleep(300);
+    await press(app, "document.querySelector('.wz-sliver .wz-type .wz-type-face')", 'the face button (the inline list is hidden until it is pressed)'); await sleep(400);
     await press(app, rowExpr('.wz-sliver', 'Courier Prime'), 'the Courier Prime row'); await sleep(600);
     const s5 = await spanState(app, ED, 'counted gulls');
     const e5 = await settledBy(() => stored(app, id));
