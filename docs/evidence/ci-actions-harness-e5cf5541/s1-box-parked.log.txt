@@ -1,0 +1,7 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=1 files=1 tree=e5cf5541 bundle=index-BAzt_2ne.js/943809b out=C:/Users/nickh/cimerge-box/s1p
+[01/1] OK        exit=0   21s s1.mjs :: "name": "PARKED (was \"DoD5: the Desk's mirror surfaces the SCRIPT tag unprompted\") — DORMANT, no unprompted successor: the resume pointer still resolves to this SCRIPT page, now reachable via Open (F2) rather than an unprompted glance", ;; S1 PARKED: PASS (1 checks) — HARNESS_PARKED=1 armed ;; S1 VERIFY: PASS (88 checks)
+
+SUITE DONE HARNESS_PARKED=1 — 1/1 of 1 returned a passing verdict
+SUITE RESULT: CLEAN — tree=e5cf5541 bundle=index-BAzt_2ne.js/943809b

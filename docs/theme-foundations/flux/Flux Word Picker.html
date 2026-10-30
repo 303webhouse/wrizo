@@ -1,0 +1,226 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Flux Word Picker</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Figtree:wght@400;500;600&display=swap">
+<style>
+/* Layout: one reading column; each label is a row of choice chips grouped by where it appears in the app. */
+:root{
+  --bg:#F4F1EA; --surface:#FFFFFF; --ink:#1E2A2C; --muted:#5E6E70; --line:#D8DEDC;
+  --teal:#1F6F7A; --brass:#B86A00; --brass-soft:rgba(184,106,0,.08);
+  --font-display:'Rajdhani', 'Arial Narrow', system-ui, sans-serif;
+  --font-body:'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#04141A; --surface:#091E24; --ink:#E3F1EC; --muted:#8FB4AC; --line:#1D4A52;
+  --teal:#57D0F5; --brass:#FF9800; --brass-soft:rgba(255,152,0,.08); color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#04141A; --surface:#091E24; --ink:#E3F1EC; --muted:#8FB4AC; --line:#1D4A52;
+  --teal:#57D0F5; --brass:#FF9800; --brass-soft:rgba(255,152,0,.08); color-scheme:dark; }
+*{box-sizing:border-box}
+body{background:var(--bg); color:var(--ink); font-family:var(--font-body); font-size:15px; line-height:1.5; margin:0; padding-inline:16px; padding-block:28px 64px}
+.wrap{max-width:860px; margin:0 auto; display:flex; flex-direction:column; gap:28px}
+header{display:flex; flex-direction:column; gap:10px}
+h1{font-family:var(--font-display); font-weight:700; font-size:34px; letter-spacing:.04em; text-transform:uppercase; margin:0; text-wrap:balance}
+h1 span{color:var(--teal)}
+.lead{color:var(--muted); max-width:62ch; margin:0}
+.status{display:flex; flex-wrap:wrap; gap:8px 18px; font-size:13px; color:var(--muted)}
+.status b{color:var(--ink); font-variant-numeric:tabular-nums}
+.saved{color:var(--teal)}
+.warn{border:1px solid var(--brass); color:var(--ink); padding:10px 12px; font-size:14px}
+section{display:flex; flex-direction:column; gap:0; border-top:1px solid var(--line)}
+h2{font-family:var(--font-display); font-weight:600; font-size:15px; letter-spacing:.18em; text-transform:uppercase; color:var(--teal); margin:14px 0 4px}
+.row{display:grid; grid-template-columns:minmax(0,170px) minmax(0,1fr); gap:6px 18px; padding:12px 0; border-bottom:1px solid var(--line)}
+.arb{display:flex; flex-direction:column; gap:2px; min-width:0}
+.arb .word{font-weight:600}
+.arb .tag{font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
+.opts{display:flex; flex-wrap:wrap; gap:6px; align-items:center; min-width:0}
+.chip{font-family:var(--font-display); font-weight:600; font-size:16px; letter-spacing:.03em; background:none; color:var(--ink);
+  border:1px solid var(--line); padding:3px 10px; cursor:pointer; display:inline-flex; align-items:center; gap:6px}
+.chip:hover{border-color:var(--muted)}
+.chip[aria-pressed="true"]{border-color:var(--brass); color:var(--brass)}
+.chip .fab{font-family:var(--font-body); font-weight:500; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+.chip[aria-pressed="true"] .fab{color:var(--brass)}
+.chip:focus-visible, .own:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+.own{font-family:var(--font-display); font-size:16px; font-weight:600; background:var(--surface); color:var(--ink); border:1px solid var(--line); padding:3px 8px; width:130px}
+.own.on{border-color:var(--brass); color:var(--brass)}
+.note{grid-column:2; font-size:13px; color:var(--muted); margin:0}
+.fixed .opts{font-family:var(--font-display); font-weight:600; font-size:16px}
+.fixed .q{font-size:13px; color:var(--muted); font-family:var(--font-body); font-weight:400}
+footer{color:var(--muted); font-size:14px}
+@media (max-width:560px){ .row{grid-template-columns:1fr} .note{grid-column:1} }
+@media (prefers-reduced-motion:reduce){ *{transition:none!important} }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Flux <span>Word Picker</span></h1>
+    <p class="lead">Every label below still reads the same in Arbor and Flux today. Fable's pick is preselected for each one. Tap another option, or type your own word, and it saves on its own. Leave anything you're happy with.</p>
+    <div class="status"><span><b id="changed">0</b> changed from Fable's pick</span><span><b id="total">0</b> labels</span><span id="saveState"></span></div>
+    <div class="warn" id="offline" hidden>Your choices can't be saved from this view (sign in to claude.ai to save). You can still look through the list.</div>
+  </header>
+  <div id="groups"></div>
+  <section class="fixed" aria-labelledby="fixedH">
+    <h2 id="fixedH">Already different (for reference)</h2>
+    <div id="fixed"></div>
+  </section>
+  <footer>When you're done, tell Fable "words picked". Fable reads your choices from this page and briefs the build.</footer>
+</div>
+
+<script>
+const GROUPS = [
+  { name: 'Mode strip (top of the page)', rows: [
+    ['modeFreeWrite','Free Write','Overclock',['Burn'],'Matches Flux’s existing word for free writes.'],
+    ['modeDraft','Draft','Build',['Compile','Cut']],
+    ['modeRevise','Revise','Patch',['Diff','Debug']],
+    ['modeWorkshop','Workshop','Relay',['Bay','Bench'],'Workshop is where work goes to other people; Relay says "passed along".'],
+  ]},
+  { name: 'Left rail', rows: [
+    ['railDesk','Desk','Station',['Terminal','Pit']],
+  ]},
+  { name: 'Left drawer', rows: [
+    ['railTypeface','Typeface','Font',['Face','Spec']],
+    ['railFormat','Format','Markup',['Glyph']],
+    ['actions','Actions','Ops',['Commands']],
+    ['actionTags','Tags','Flags',['Marks']],
+    ['actionCopy','Copy','Clone',['Fork']],
+    ['actionDelete','Delete','Purge',['Wipe'],'It still asks before deleting, so a stronger word is safe here.'],
+    ['actionHF','Header/Footer','Frame',['Bezel']],
+    ['railTemplates','Templates','Presets',['Plates','Dies']],
+    ['templateOutline','Outline','Spine',['Nest','Tree']],
+    ['templateBibliography','Bibliography','Sources',['Cite','Index']],
+    ['templateTitlePage','Title page','Cover',['Mast']],
+    ['templateCustom','Custom','User',['Local']],
+    ['railPageKind','Page Kind','Doc Type',['Class']],
+    ['kindNormal','Normal','Plain',['Base','Standard']],
+    ['kindScreenplay','Screenplay','Script',['Slate']],
+    ['kindResearch','Research','Dossier',['Brief','Intel']],
+  ]},
+  { name: 'The "…" menu', rows: [
+    ['footMenuTypewriter','Typewriter Mode','Terminal Mode',['Feed','Carriage']],
+    ['twForwardLock','Forward Lock','One-way',['Clamp']],
+    ['twLineFade','Line Fade','Decay',['Dim']],
+    ['twPageScroll','Page Scroll','Advance',['Feed']],
+    ['footMenuProgress','Progress Tracking','Telemetry',['Meter','Quota']],
+    ['sliverInstrumentsUnit','Unit','Scale',['Tick']],
+    ['goalLabel','Goal','Quota',['Target']],
+    ['progressMetric','Progress','Load',['Meter']],
+    ['timer','Timer','Clock',['Countdown']],
+    ['footMenuPreferences','Preferences','Config',['Setup']],
+    ['recedeDepth','Recede depth','Dissolve',['Fade-out']],
+    ['recedePartial','Partial','Soft',['Half']],
+    ['recedeFull','Full','Void',['Blackout']],
+  ]},
+  { name: 'Right drawer (Tutor)', rows: [
+    ['tutorTitle','Tutor','Operator',['Console'],'An Operator is a person on the line, which suits a tutor that never writes for you.'],
+    ['tutorLensConsistency','Consistency','Checksum',['Match']],
+    ['tutorLensStructure','Structure','Schema',['Blueprint']],
+    ['tutorLensFragments','Fragments','Shards',['Debris']],
+  ]},
+  { name: 'Board', rows: [
+    ['boardModeOpen','Open','Live',['Clear']],
+    ['boardModeStoryboard','Storyboard','Sequence',['Strip']],
+    ['boardModeOutline','Outline','Spine',['Nest'],'Same word as the Outline template, so the two always match.'],
+    ['boardAddCard','Add card','Add node',['Add tile'],'Cards are already called Nodes in Flux.'],
+    ['boardPortedBadge','From a page','From a doc',['Ported'],'Pages are already called Docs in Flux.'],
+    ['boardThreadUntitled','Untitled','Unnamed',['Blank']],
+  ]},
+];
+const FIXED = [
+  ['Pages','Docs','The pieces you write.'],
+  ['Boards','Circuits','Where cards are arranged.'],
+  ['Plan','Schematic','The structure around your work.'],
+  ['Journal','Log','Daily capture.'],
+  ['Publish','Uplink','Sending finished work out.'],
+  ['Grafts','LINKS','Joins between pages, cards and boards.'],
+  ['Rhizome','Glitch','The progress animation.'],
+];
+
+const picks = {};          // id -> chosen word (only ids the viewer changed or saved)
+const byId = {};
+GROUPS.forEach(g => g.rows.forEach(r => { byId[r[0]] = { arbor:r[1], fable:r[2], alts:r[3], note:r[4] }; }));
+document.getElementById('total').textContent = Object.keys(byId).length;
+
+let db = null;
+const saveState = document.getElementById('saveState');
+
+function current(id){ return picks[id] ?? byId[id].fable; }
+
+function render(){
+  const root = document.getElementById('groups');
+  root.textContent = '';
+  for (const g of GROUPS){
+    const sec = document.createElement('section');
+    const h = document.createElement('h2'); h.textContent = g.name; sec.append(h);
+    for (const [id] of g.rows){
+      const d = byId[id], cur = current(id);
+      const row = document.createElement('div'); row.className = 'row';
+      const arb = document.createElement('div'); arb.className = 'arb';
+      const t = document.createElement('span'); t.className = 'tag'; t.textContent = 'Arbor';
+      const w = document.createElement('span'); w.className = 'word'; w.textContent = d.arbor;
+      arb.append(t, w);
+      const opts = document.createElement('div'); opts.className = 'opts'; opts.setAttribute('role','group'); opts.setAttribute('aria-label', 'Flux word for ' + d.arbor);
+      const words = [d.fable, ...d.alts];
+      for (const word of words){
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'chip';
+        b.setAttribute('aria-pressed', String(cur === word));
+        b.append(document.createTextNode(word));
+        if (word === d.fable){ const f = document.createElement('span'); f.className = 'fab'; f.textContent = 'Fable'; b.append(f); }
+        b.addEventListener('click', () => choose(id, word));
+        opts.append(b);
+      }
+      const own = document.createElement('input'); own.className = 'own'; own.id = 'own-' + id;
+      own.placeholder = 'your own'; own.setAttribute('aria-label', 'Your own Flux word for ' + d.arbor);
+      const isOwn = !words.includes(cur);
+      if (isOwn){ own.value = cur; own.classList.add('on'); }
+      own.addEventListener('change', () => { const v = own.value.trim(); choose(id, v || d.fable); });
+      opts.append(own);
+      row.append(arb, opts);
+      if (d.note){ const n = document.createElement('p'); n.className = 'note'; n.textContent = d.note; row.append(n); }
+      sec.append(row);
+    }
+    root.append(sec);
+  }
+  const changed = Object.keys(byId).filter(id => current(id) !== byId[id].fable).length;
+  document.getElementById('changed').textContent = changed;
+}
+
+function renderFixed(){
+  const root = document.getElementById('fixed');
+  for (const [a, f, q] of FIXED){
+    const row = document.createElement('div'); row.className = 'row';
+    const arb = document.createElement('div'); arb.className = 'arb';
+    const t = document.createElement('span'); t.className = 'tag'; t.textContent = 'Arbor';
+    const w = document.createElement('span'); w.className = 'word'; w.textContent = a;
+    arb.append(t, w);
+    const opts = document.createElement('div'); opts.className = 'opts';
+    opts.append(document.createTextNode(f + ' '));
+    const s = document.createElement('span'); s.className = 'q'; s.textContent = '· ' + q; opts.append(s);
+    row.append(arb, opts); root.append(row);
+  }
+}
+
+async function choose(id, word){
+  picks[id] = word;
+  render();
+  if (!db){ return; }
+  saveState.textContent = 'Saving…'; saveState.className = '';
+  try {
+    await db.collection('picks').doc(id).set({ arbor: byId[id].arbor, fable: byId[id].fable, choice: word });
+    saveState.textContent = 'Saved'; saveState.className = 'saved';
+  } catch (e) {
+    saveState.textContent = 'Not saved (' + ((e && e.code) || 'error') + ')'; saveState.className = '';
+  }
+}
+
+render(); renderFixed();
+
+(async () => {
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db){ document.getElementById('offline').hidden = false; return; }
+  db.collection('picks').onSnapshot(snap => {
+    for (const doc of snap.docs){ const v = doc.data(); if (v && typeof v.choice === 'string' && byId[doc.id]) picks[doc.id] = v.choice; }
+    render();
+  }, () => { saveState.textContent = 'Live sync paused'; });
+})();
+</script>
+
+</body></html>
