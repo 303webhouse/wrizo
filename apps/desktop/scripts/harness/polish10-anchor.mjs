@@ -85,8 +85,9 @@ await withHarness(async (app) => {
       const g2 = { ...(await app.evalJs(PROBE)), settle };
       ok(`${tag} A2: writing on, the writing line is held at the middle (its top at ${g2 && g2.caret != null ? (g2.caret * 100).toFixed(1) : '?'}%, want 50% within one line)`,
         !!g2 && g2.settle.settled && g2.caret != null && Math.abs(g2.caret - 0.5) <= g2.lh / g2.colH + 0.005, J(g2));
+      const dbgA3 = await app.evalJs("(() => { const sc = document.querySelector('.mode-scroll'); const ed = document.querySelector('.forward-only-editor'); const col = document.querySelector('.mode-pagecol'); return sc ? { scrollTop: Math.round(sc.scrollTop), scrollHeight: sc.scrollHeight, clientHeight: sc.clientHeight, maxTop: sc.scrollHeight - sc.clientHeight, edH: ed ? Math.round(ed.getBoundingClientRect().height) : null, colPad: col ? getComputedStyle(col).paddingBottom : null, edPad: ed ? getComputedStyle(ed).paddingBottom : null } : null; })()");
       ok(`${tag} A3: the band is drawn against the same middle - the writing line at FULL strength (${g2 && g2.alphaAtCaret}), the top fade ending just above it`,
-        !!g2 && g2.alphaAtCaret >= 0.99 && g2.fullFrom != null && g2.fullFrom <= g2.caretRel && g2.caretRel - g2.fullFrom <= 2 * g2.lh / g2.colH, J({ anchor: g2 && g2.anchor, fullFrom: g2 && g2.fullFrom, caret: g2 && g2.caretRel, alpha: g2 && g2.alphaAtCaret }));
+        !!g2 && g2.alphaAtCaret >= 0.99 && g2.fullFrom != null && g2.fullFrom <= g2.caretRel && g2.caretRel - g2.fullFrom <= 2 * g2.lh / g2.colH, J({ anchor: g2 && g2.anchor, fullFrom: g2 && g2.fullFrom, caret: g2 && g2.caretRel, alpha: g2 && g2.alphaAtCaret, dbgA3 }));
       if (th.id === 'plateau' && w === 1366) {
         await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'p10a-ma3'; s.textContent = \".mode-pagecol[data-zoom='true']{ --tw-anchor: 70% !important; }\"; document.head.appendChild(s); return true; })()");
         await sleep(300);
