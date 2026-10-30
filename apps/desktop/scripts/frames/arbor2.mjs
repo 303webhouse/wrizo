@@ -647,8 +647,13 @@ export default {
     await app.evalJs("document.getElementById('arbor2-proof-still')?.remove(); document.activeElement && document.activeElement.blur()");
     // (run 41010878304's frame caught the writing recede still on after 2.5 s: wait for writing to END, then for the room to come back)
     await waitSoft(app, "document.documentElement.getAttribute('data-wz-writing') !== 'true'", { label: 'writing over', timeout: 15000 });
-    await sleep(2000);
-    await clickSel(app, '.wz-sliver-grip');
+    // (run 41011207779: still receded - the chrome returns on pointer INTENT, not on a timer; so the pointer moves, as hers would)
+    for (const [x, y] of [[600, 300], [300, 400], [60, 300]]) { await app.cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y }); await sleep(150); }
+    await sleep(1800);
+    await app.cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 700, y: 720 });   // off the rail, so the frame shows it dimmed, not reached
+    await sleep(300);
+    const gripOpen = await app.evalJs("document.querySelector('.wz-sliver')?.getAttribute('data-open')");
+    if (gripOpen !== 'true') await clickSel(app, '.wz-sliver-grip');
     await sleep(1200);
     const ok = Object.values(v).every(Boolean);
     if (!ok) {
