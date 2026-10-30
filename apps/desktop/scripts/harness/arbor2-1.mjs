@@ -35,7 +35,15 @@ if (SHOTS) fs.mkdirSync(SHOTS, { recursive: true });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
-const sameRect = (a, b) => !!a && !!b && ['x', 'y', 'w', 'h'].every((k) => Math.abs(a[k] - b[k]) <= 0.5);
+// the page's paper, wherever it is drawn: the page's own background, or - on the zoomed Free Write page, under Fable's unframed ruling - the
+// opaque sheet (src/arbor2/paper.ts) that stands in for it while the page's own background is transparent
+const SHEET = `(() => { const p = document.querySelector('.mode-page'), k = document.querySelector('.arbor2-paper');
+  const kc = k ? getComputedStyle(k) : null;
+  return { sheetOn: document.documentElement.getAttribute('data-arbor2-sheet'), sheetBg: kc && kc.display !== 'none' ? kc.backgroundColor : null,
+    pageBg: p ? getComputedStyle(p).backgroundColor : null }; })()`;
+const PAPER_RGB = 'rgb(243, 237, 225)';
+const paperThere = (sh) => !!sh && (sh.pageBg === PAPER_RGB || (sh.sheetOn === 'on' && sh.sheetBg === PAPER_RGB && sh.pageBg === 'rgba(0, 0, 0, 0)'));
+const sameRect =(a, b) => !!a && !!b && ['x', 'y', 'w', 'h'].every((k) => Math.abs(a[k] - b[k]) <= 0.5);
 
 const snap = async (app, name) => {
   if (!SHOTS) return;
@@ -133,8 +141,14 @@ await withHarness(async (app) => {
   // ok('N1 night progress defaults to the hidden rhizome after a fresh load (Nick, Oct 29)', on.prog === 'hidden-rhizome', String(on.prog));
   // SUCCESSOR N1b: there is no progress switch at all (no Lamp / Hidden rhizome option, no attribute); the hidden behaviour is the room's.
   const progOpts = await app.evalJs("[...document.querySelectorAll('.arbor2-bar-opt')].map((b) => b.textContent.trim())");
-  ok('N1b one Rhizome style, no progress switch: the bar offers only the room, and no night-progress attribute exists (Fable, Oct 29)',
-    on.prog == null && Array.isArray(progOpts) && progOpts.length === 2 && !progOpts.includes('Lamp') && !progOpts.includes('Hidden rhizome'), JSON.stringify({ prog: on.prog, progOpts }));
+  // PARKED 2026-10-30 (SUPERSEDED, first run on INK's shards, run 41014396358: item 9 added the bar's Logo row - Brass / Sage, Nick's call on
+  // the logo's o - so "the bar offers only the room" is false by design; the claim that matters, no progress switch, stands). Original, verbatim:
+  // ok('N1b one Rhizome style, no progress switch: the bar offers only the room, and no night-progress attribute exists (Fable, Oct 29)',
+  //   on.prog == null && Array.isArray(progOpts) && progOpts.length === 2 && !progOpts.includes('Lamp') && !progOpts.includes('Hidden rhizome'), JSON.stringify({ prog: on.prog, progOpts }));
+  // SUCCESSOR N1c: the bar's choices (the Mood list folded, as on a fresh load) are exactly the room and the logo's o - no progress option of
+  // any name - and no night-progress attribute exists.
+  ok('N1c one Rhizome style, no progress switch: the bar offers the room (Night/Day) and the logo\'s o (Brass/Sage) only, and no night-progress attribute exists',
+    on.prog == null && Array.isArray(progOpts) && progOpts.join() === 'Night,Day,Brass,Sage', JSON.stringify({ prog: on.prog, progOpts }));
 
   // ---- T1: the room follows the existing Page tone
   await app.evalJs("document.documentElement.setAttribute('data-page', 'dark')"); await sleep(100);
@@ -193,7 +207,13 @@ await withHarness(async (app) => {
       // ok('L2 day: the room is the whitewash and the page keeps its paper', t.i950.toLowerCase() === '#efe6d2' && s.paperBg === 'rgb(243, 237, 225)', JSON.stringify({ i950: t.i950, paper: s.paperBg }));
       // SUCCESSOR L2b: the room is the whitewash as the afternoon has shaded it - on the line from #EFE6D2 to #E3D4B6 - and the page keeps its paper.
       const g = rgb(t.i950), onLine = g.length === 3 && g[0] >= 0xE3 && g[0] <= 0xEF && g[1] >= 0xD4 && g[1] <= 0xE6 && g[2] >= 0xB6 && g[2] <= 0xD2;
-      ok('L2b day: the room is the whitewash, shaded by the afternoon (#EFE6D2 -> #E3D4B6), and the page keeps its paper', onLine && s.paperBg === 'rgb(243, 237, 225)', JSON.stringify({ i950: t.i950, paper: s.paperBg }));
+      // PARKED 2026-10-30 (SUPERSEDED, first run on INK's shards, run 41014396358: under Fable's unframed ruling the ZOOMED page lets go of its
+      // own background - the opaque sheet behind it (paper.ts) is the paper - so the page's own background reads transparent by design).
+      // Original, verbatim:
+      // ok('L2b day: the room is the whitewash, shaded by the afternoon (#EFE6D2 -> #E3D4B6), and the page keeps its paper', onLine && s.paperBg === 'rgb(243, 237, 225)', JSON.stringify({ i950: t.i950, paper: s.paperBg }));
+      // SUCCESSOR L2c: the same room, and the paper is there: the page's own, or - while the sheet stands in - the sheet's, in the paper colour.
+      const sh = await app.evalJs(SHEET);
+      ok('L2c day: the room is the whitewash, shaded by the afternoon (#EFE6D2 -> #E3D4B6), and the page has its paper (its own, or the zoomed page\'s sheet)', onLine && paperThere(sh), JSON.stringify({ i950: t.i950, ...sh }));
     }
   }
 
@@ -239,7 +259,26 @@ await withHarness(async (app) => {
     const covered = holes.some((h) => h.l <= page.l + 1 && h.t <= page.t + 1 && h.r >= page.r - 1 && h.b >= Math.min(page.b, sr.height) - 1);
     return { evenodd: clip.includes('evenodd'), holes: holes.length, covered, page };
   })()`);
-  ok('H5 off the prose column: at the flash the web\'s paint clip cuts out the whole page (an evenodd hole >= the page rect)', !!h5 && h5.evenodd && h5.covered, JSON.stringify(h5));
+  // PARKED 2026-10-30 (SUPERSEDED, first run on INK's shards, run 41014396358: BLIND, not red - its reader matched the clip only in the
+  // unspaced spelling RhizomeField writes ("M187 107H..."), and Chrome reads a clip back spaced ("M 187 107 H ..."), so it found 0 holes on any
+  // clip. The same trap as the frames proof's V1, Oct 29). Original, verbatim:
+  // ok('H5 off the prose column: at the flash the web\'s paint clip cuts out the whole page (an evenodd hole >= the page rect)', !!h5 && h5.evenodd && h5.covered, JSON.stringify(h5));
+  // SUCCESSOR H5b: the same claim, read by NUMBERS (each subpath is 5 numbers: x y, then H r, V b, H l - whatever the spacing), the first
+  // subpath being the whole field; and the reader must find at least one hole, or the check is blind and fails.
+  const h5b = await app.evalJs(`(() => {
+    const f = document.querySelector('.wz-rhizome-field'), p = document.querySelector('.mode-page');
+    if (!f || !p) return null;
+    const sr = f.getBoundingClientRect(), pr = p.getBoundingClientRect();
+    const page = { l: pr.left - sr.left, t: pr.top - sr.top, r: pr.right - sr.left, b: pr.bottom - sr.top };
+    const clip = String(f.style.clipPath || '');
+    const d = clip.slice(clip.indexOf('"') + 1, clip.lastIndexOf('"'));
+    const n = (d.match(/-?\\d+(?:\\.\\d+)?/g) || []).map(Number);
+    const holes = [];
+    for (let i = 5; i + 4 < n.length; i += 5) holes.push({ l: n[i], t: n[i + 1], r: n[i + 2], b: n[i + 3] });
+    const covered = holes.some((h) => h.l <= page.l + 1 && h.t <= page.t + 1 && h.r >= page.r - 1 && h.b >= Math.min(page.b, sr.height) - 1);
+    return { evenodd: clip.includes('evenodd'), nums: n.length, holes: holes.length, covered, page, clip: clip.slice(0, 80) };
+  })()`);
+  ok('H5b off the prose column: at the flash the web\'s paint clip cuts out the whole page (an evenodd hole >= the page rect), read whatever the spelling', !!h5b && h5b.evenodd && h5b.holes > 0 && h5b.covered, JSON.stringify(h5b));
   await snap(app, 'item1-night-hidden-rhizome-flash');
   await sleep(1500);
   await snap(app, 'item1-night-hidden-rhizome-fading');
