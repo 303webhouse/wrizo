@@ -80,7 +80,24 @@ await withHarness(async (app) => {
     await pickBar(app, room === 'night' ? 'Night' : 'Day'); await sleep(300);
     const shut = await read(app);
     ok(`K2 [${room}] the edge tabs never move: both tab rects equal flag-off, drawers shut`, sameRect(shut.gripL, off.gripL) && sameRect(shut.gripR, off.gripR), JSON.stringify({ on: [shut.gripL, shut.gripR], off: [off.gripL, off.gripR] }));
-    ok(`K1 [${room}] the hands' tabs are cloth: left walnut, right sea, cream lettering`, shut.gripLbg === WALNUT && shut.gripRbg === SEA && shut.gripLcolor === CREAM, JSON.stringify({ l: shut.gripLbg, r: shut.gripRbg, c: shut.gripLcolor }));
+    // PARKED 2026-10-30 (SUPERSEDED, first run on INK's shards, run 41014396358, night only: §6.2 Dim the room (Fable, Oct 29) dims an
+    // unreached tab by night and letters it in --text-hi - "switching dimmed labels to the top text colour is the right fix" - so at rest the
+    // night tab is not cream by design). Original, verbatim:
+    // ok(`K1 [${room}] the hands' tabs are cloth: left walnut, right sea, cream lettering`, shut.gripLbg === WALNUT && shut.gripRbg === SEA && shut.gripLcolor === CREAM, JSON.stringify({ l: shut.gripLbg, r: shut.gripRbg, c: shut.gripLcolor }));
+    // SUCCESSOR K1e: the tabs are cloth (left walnut, right sea) in both rooms; by day the lettering is cream; by night an unreached tab is
+    // dimmed (.6) and lettered in --text-hi, and the moment the keyboard reaches it, it is cream at full strength.
+    // (each read waits out the tab's own `transition:.15s` - a read straight after focus() sees the colour it is leaving)
+    const AT = `(() => { const g = document.querySelector('.wz-sliver-grip'); return g ? { c: getComputedStyle(g).color, o: getComputedStyle(g).opacity } : null; })()`;
+    const restL = await app.evalJs(AT);
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.focus()"); await sleep(450);
+    const reachedL = await app.evalJs(AT);
+    await app.evalJs("document.activeElement && document.activeElement.blur()"); await sleep(450);
+    const reach = restL && reachedL ? { rest: restL, reached: reachedL } : null;
+    const HI = 'rgb(237, 230, 218)';
+    const lettering = !!reach && (room === 'day'
+      ? reach.rest.c === CREAM
+      : reach.rest.c === HI && Math.abs(parseFloat(reach.rest.o) - 0.6) < 0.011 && reach.reached.c === CREAM && reach.reached.o === '1');
+    ok(`K1e [${room}] the hands' tabs are cloth: left walnut, right sea; lettering cream${room === 'night' ? ' when reached (dimmed at rest: .6, --text-hi)' : ''}`, shut.gripLbg === WALNUT && shut.gripRbg === SEA && lettering, JSON.stringify({ l: shut.gripLbg, r: shut.gripRbg, reach }));
     // PARKED 2026-10-29 (SUPERSEDED, the matcher read the spelling, not the sense): the built bundle's minifier rewrites 240ms as .24s
     // (measured on the green build: dur ".24s"), the same duration. Original, verbatim:
     // ok(`M1 [${room}] the shared motion tokens carry Arbor's pull (240ms, cubic-bezier(.2,.8,.2,1))`, shut.dur === '240ms' && /cubic-bezier\(\s*\.2,\s*\.8,\s*\.2,\s*1\s*\)/.test(shut.ease), JSON.stringify({ dur: shut.dur, ease: shut.ease }));
