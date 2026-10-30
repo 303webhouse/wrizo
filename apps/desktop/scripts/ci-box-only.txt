@@ -1,0 +1,22 @@
+# Harness files that stay on the Windows box (docs/deploy.md "Harness on GitHub Actions").
+# One file name per line; the workflow REFUSES to run a listed file on Actions. A file leaves this list only after a parity run
+# (box verdict == Actions verdict, check by check, repeated) shows its timing budget holds on a GitHub-hosted runner.
+# Timing-sensitive: a millisecond budget a shared cloud VM cannot honestly promise.
+glitch-meter.mjs
+rhizome-latency.mjs
+typing-latency-scroll.mjs
+# Windows-bound: these test the box's own tooling (PowerShell/WMI process table, taskkill, C:\ and USERPROFILE paths). They have no Linux meaning.
+box-holder.mjs
+box-token-hash.mjs
+item99.mjs
+item139.mjs
+# A box-guard test that runs run-suite INSIDE itself: on a hosted runner the guard is bypassed by design (so the unmatched-token refusal it
+# asserts cannot happen) and its nested suite leaves browsers that VOID the shard it sits in.
+item140.mjs
+# Animation/timing-sensitive: green on the box, but red on a hosted runner in at least one leg of the 8-shard pair (typewriter-fade also flipped
+# between two runs of the SAME tree). The brief's rule: they stay on the box until a repeated parity run shows they hold.
+rhizome-goal.mjs
+splash.mjs
+typewriter-fade.mjs
+# Text-wrap parity not yet shown: the item-12 wrap cards sit ON a wrap threshold on purpose; on the runner Titillium Web needs 279.8px for card g4 body line vs 265px of room, so Flux and Machina wrap it (4 of 21 checks). Green on the box, cause on the box side not yet measured.
+polish10-12-part2.mjs
