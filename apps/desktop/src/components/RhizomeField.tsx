@@ -3,6 +3,7 @@ import { useWritingSettings } from '../store/writingSettings';
 import { useWritingGoal, goalCount } from '../store/writingGoal';
 import { useTheme } from '../store/theme';
 import { lapPlan, segmentsFor, geometryKey, pickSurvivor, hashSeed, type GrowthGeometry, type GrowthSegment, type Rect } from '../store/rhizomeGrowth';
+import { variationOn, pacedFrac, shootClass } from '../arbor2/shoots';   // ARBOR v2 mockup, item 7: drawn only under ?arbor2=1
 
 // THE GOAL RHIZOME (rewritten by Fable, 2026-10-08; growth model in store/rhizomeGrowth.ts).
 //
@@ -205,7 +206,9 @@ export function RhizomeField({ text, seedKey, paperRef }: {
   const shownLap = flashLap ?? lap;
   const shownVisit = Math.max(0, shownLap - opened.current.lap);
   const plan = useMemo(() => (m ? lapPlan(m.geo, pageSeed, shownVisit) : null), [m, pageSeed, shownVisit]);
-  const k = plan ? (flashLap != null ? plan.segments.length : segmentsFor(plan, frac)) : 0;
+  // ARBOR v2 mockup (item 7): under the flag each lap keeps its own pace and shoot widths (src/arbor2/shoots.ts). Off the flag: unchanged.
+  const variation = variationOn();
+  const k = plan ? (flashLap != null ? plan.segments.length : segmentsFor(plan, variation ? pacedFrac(pageSeed, shownLap, frac) : frac)) : 0;
 
   // Which segments are still GROWING. A segment that appears gets its own start time (staggered within its burst) and stays
   // a separate <line> until its draw-on has finished, so typing the next word never cuts the last word's growth short.
@@ -272,14 +275,22 @@ export function RhizomeField({ text, seedKey, paperRef }: {
         </>
       )}
       <g clipPath={m ? 'url(#wz-rhizome-ground)' : undefined} mask={m ? 'url(#wz-rhizome-mask)' : undefined}>
-        <path className="wz-rhizome-seg" d={pathOf(fadingSettled, false)} />
-        <path className="wz-rhizome-seg" data-thick="true" d={pathOf(fadingSettled, true)} />
+        {variation ? ([0, 1, 2, 3] as const).flatMap((c) => [false, true].map((thick) => (
+          <path key={`${c}${thick}`} className="wz-rhizome-seg" data-thick={thick ? 'true' : undefined} data-w={c}
+            d={pathOf(fadingSettled.filter((s) => shootClass(pageSeed, shownLap, s) === c), thick)} />
+        ))) : (
+          <>
+            <path className="wz-rhizome-seg" d={pathOf(fadingSettled, false)} />
+            <path className="wz-rhizome-seg" data-thick="true" d={pathOf(fadingSettled, true)} />
+          </>
+        )}
         {seedSettled.length > 0 && <path className="wz-rhizome-seg" data-thick="true" data-seed="true" d={pathOf(seedSettled, true)} />}
         {animated.map(s => (
           <line
             key={`${drawKey}:${s.id}`}
             className="wz-rhizome-seg wz-rhizome-new"
             data-thick={s.thick ? 'true' : undefined}
+            data-w={variation ? shootClass(pageSeed, shownLap, s) : undefined}
             pathLength={1}
             style={{ animationDelay: `${born.get(s.id)!.delay}ms` }}
             x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2}
