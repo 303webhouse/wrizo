@@ -4,6 +4,7 @@
 //   O  OPEN      a board opened 5 times with the network (so the fonts) delayed: the stored x / y / h of every card are EXACTLY what was seeded - an open corrects the layout on screen at most, and saves nothing
 //   F  FONTS     the on-screen height of a card is the same whether the fonts arrived at once or late (measured once the fonts are ready, and again on loadingdone), and its words are fully visible
 //   W  WRITER    a writer's act (an edit) DOES save: the grown height and the row fit reach storage then (so "no save on open" is not "no save"), and the check can see a write
+//   R  ROWS      rowFit applies on screen on a plain open too (an old board does not sit overlapping): the card under a grown one is carried clear of it, and none of it is saved
 //   N  NO FIELD  the stored cards carry no key the seed did not
 // Run (repo root or apps/desktop; needs a box turn):  node scripts/harness/reflow-open.mjs
 const checks = [];
@@ -52,7 +53,7 @@ await withHarness(async (app) => {
   for (const [theme, name, cast] of SKINS) {
     if (first) { await q(`window.wrizoTheme.set('${theme}')`); first = false; } else await q(`window.wrizoTheme.set('${theme}'); ${cast ? `window.wrizoCast && window.wrizoCast.set('${cast}')` : ''}`);
     const opens = theme === 'plateau' ? 5 : 2;
-    let grewOnScreen = 0, storedSame = 0, noKeys = 0, shown = [];
+    let grewOnScreen = 0, storedSame = 0, noKeys = 0, fitOnScreen = 0, shown = [];
     for (let i = 0; i < opens; i += 1) {
       await open(i % 2 === 0 ? 1500 : 0);   // alternate late and prompt fonts
       const stored = await q(STORED);
@@ -61,10 +62,13 @@ await withHarness(async (app) => {
       if (same) storedSame += 1;
       if (stored && stored.every((o) => o.keys === Object.keys(SEED.find((s) => s.id === o.id)).sort().join())) noKeys += 1;
       if (live.some((l) => l.h > 0.05 + 0.005)) grewOnScreen += 1;
+      const l1 = live.find((l) => l.id === 'ro-1'), l2 = live.find((l) => l.id === 'ro-2');
+      if (l1 && l2 && l2.y > 0.13 + 0.005 && l2.y >= l1.y + l1.h - 1e-6) fitOnScreen += 1;   // rowFit shows on screen on an open too: the card under the grown one has moved clear of it
       shown.push(live.map((l) => `${l.id}:${l.h.toFixed(4)}`).join(' '));
       ok(`O [${name} open ${i + 1}]: the stored x / y / h are exactly the seed's`, same, JSON.stringify(stored));
     }
     ok(`O [${name}]: the open really corrected the layout on screen (the check is not vacuous - a card grew past its seeded h)`, grewOnScreen === opens, `grew on ${grewOnScreen}/${opens} opens: ${shown.join(' | ')}`);
+    ok(`R [${name}]: on a plain open the row under a grown card is carried clear of it ON SCREEN (rowFit applies on open, never saved)`, fitOnScreen === opens, `${fitOnScreen}/${opens}`);
     ok(`N [${name}]: no stored card gained a key`, noKeys === opens);
     ok(`O [${name}]: ${opens}/${opens} opens left storage unchanged`, storedSame === opens, `${storedSame}/${opens}`);
 
