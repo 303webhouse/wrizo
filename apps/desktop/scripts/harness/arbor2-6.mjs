@@ -12,10 +12,12 @@
 //       clip has a hole covering it (scripts/frames/arbor2.mjs zoomProof)
 //   L1c with motion, the drift runs on the inner sheet and the layer itself holds still (so the hole never drifts onto the page)
 //   L5b reduced motion: the drift sheet is still too
+//   L2c (Fable, Oct 29: "the zoomed page is unframed, so give the opaque night sheet no visible edge") replaces L2b: the sheet fades out at
+//       every side, the page draws no edge of its own, the vignette is the sheet's exact complement; by day the sun's hole still covers it
 import fs from 'node:fs';
 import path from 'node:path';
 import { withHarness } from '../runtime-verify.mjs';
-import { zoomProof, holeOf } from '../frames/arbor2.mjs';
+import { zoomProof, holeOf, stopsOf } from '../frames/arbor2.mjs';
 
 const SHOTS = process.env.ARBOR_SHOTS || null;
 if (SHOTS) fs.mkdirSync(SHOTS, { recursive: true });
@@ -83,11 +85,23 @@ await withHarness(async (app) => {
   await app.evalJs("location.hash = '#/page/arbor6-zoom'");
   const zoomed = await app.waitFor("!!document.querySelector('.mode-pagecol[data-zoom=\"true\"]')", { label: 'typewriter zoom', timeout: 6000 }).then(() => true, () => false);
   await sleep(700);
+  // PARKED 2026-10-29 (SUPERSEDED, never run: Fable ruled the zoomed page unframed - "give the opaque night sheet no visible edge" - so the
+  // hard sheet and the vignette's hard hole it certified are gone; zoomProof now takes (holeOf, stopsOf) and reports sheet/bare/edgeless/
+  // whole/seamless). Original, verbatim:
+  // for (const room of ['Night', 'Day']) {
+  //   await pickBar(app, room); await sleep(500);
+  //   const z = await app.evalJs(`(${zoomProof.toString()})(${holeOf.toString()})`);
+  //   ok(`L2b [${room.toLowerCase()}] zoomed Free Write: an opaque paper sheet behind the whole visible page (above the progress row), the vignette cut over it${room === 'Day' ? ', and the sun layer has a hole over it' : ''}`,
+  //     zoomed && !!z && z.pass && z.paper === true && z.vignette === true && (room === 'Day' ? z.hole === true : z.hole === null), JSON.stringify({ zoomed, z }));
+  //   await snap(app, `item6-${room.toLowerCase()}-zoomed-freewrite`);
+  // }
+  // SUCCESSOR L2c: the same page, night and day - a whole sheet with no visible edge (it fades out at every side, the page draws none of its
+  // own, the vignette is its exact complement), and by day the sun's hole still covers it.
   for (const room of ['Night', 'Day']) {
     await pickBar(app, room); await sleep(500);
-    const z = await app.evalJs(`(${zoomProof.toString()})(${holeOf.toString()})`);
-    ok(`L2b [${room.toLowerCase()}] zoomed Free Write: an opaque paper sheet behind the whole visible page (above the progress row), the vignette cut over it${room === 'Day' ? ', and the sun layer has a hole over it' : ''}`,
-      zoomed && !!z && z.pass && z.paper === true && z.vignette === true && (room === 'Day' ? z.hole === true : z.hole === null), JSON.stringify({ zoomed, z }));
+    const z = await app.evalJs(`(${zoomProof.toString()})(${holeOf.toString()}, ${stopsOf.toString()})`);
+    ok(`L2c [${room.toLowerCase()}] zoomed Free Write: a whole paper sheet with no visible edge behind the visible page (above the progress row)${room === 'Day' ? ', and the sun layer has a hole over it' : ''}`,
+      zoomed && !!z && z.pass && z.sheet && z.bare && z.edgeless && z.whole && z.seamless && (room === 'Day' ? z.hole === true : z.hole === null), JSON.stringify({ zoomed, z }));
     await snap(app, `item6-${room.toLowerCase()}-zoomed-freewrite`);
   }
 
