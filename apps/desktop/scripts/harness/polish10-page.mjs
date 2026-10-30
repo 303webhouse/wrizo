@@ -9,14 +9,17 @@
 //   P3 (Arbor, Draft, normal view, 1366x768 + 1920x1080): each open drawer's panel ends at or above the page's own bottom edge
 //   P5 (Arbor / Flux / Machina, a fresh Free Write page in the zoom, INK, 1366x768): a mouse drag ABOVE the writing line, ON it and BELOW it - each inside
 //      the page and the stage - adds one stroke each
-//   P5-ALIGN (Arbor): the stroke drawn above the line keeps its place relative to the text when the zoom is left: its ink's top, measured from the first
-//      line's top in the page's own units, is the same in the zoom and in the normal view (within 2px)
+//   P5-ALIGN (Arbor, ruled (a) by Fable Oct 30): the strokes ON and BELOW the first line keep their place relative to the text in both views (their ink's top, from the first
+//      line's top in the page's own units, within 2px, zoom vs normal); a stroke ABOVE the first line is stored, is zoom-only (the normal view shows 2 strokes of the 3),
+//      and is back in place when the zoom is re-entered (within 2px). The first form of this check (the above stroke, both views) is PARKED verbatim below: the zoom's blank
+//      lead-in above the line (~227 page units) is not paper - the normal paper has ~41 above the line and its scroller clips y<0 - so no coordinates could satisfy it.
 // Mutants (Arbor): MP3 the drawers forced back to the stage's full height - P3 fails; MP5 the sheet's reach undone - the drag above the line draws
 // nothing - P5 fails.
 // Seeding goes through the app's seams. Needs a box turn. Run: WS_BOX_TURN=<token> node scripts/harness/polish10-page.mjs (apps/desktop, dist-web built)
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
+let parkAlign = null;   // the parked P5-ALIGN's old state, read live (HARNESS_PARKED=1 asserts it is gone)
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
@@ -82,6 +85,13 @@ const P5PROBE = `(() => { const ed = document.querySelector('.forward-only-edito
 const INKBOX = `(() => { const c = document.querySelector('.wz-ink-sheet .ink-committed'); if (!c || !c.width) return null; const g = c.getContext('2d'); const d = g.getImageData(0, 0, c.width, c.height).data;
   let y0 = -1, y1 = -1; for (let y = 0; y < c.height; y += 1) { let any = false; for (let x = 0; x < c.width; x += 1) if (d[(y * c.width + x) * 4 + 3] > 40) { any = true; break; } if (any) { if (y0 < 0) y0 = y; y1 = y; } }
   if (y0 < 0) return null; const r = c.getBoundingClientRect(); const k = r.height / c.height; return { top: r.top + y0 * k, bottom: r.top + (y1 + 1) * k }; })()`;
+// the committed canvas's ink as bands, one per stroke - runs of rows with any alpha, rows 1px apart still one band - each a viewport-px {top,bottom}
+const INKBANDS = `(() => { const c = document.querySelector('.wz-ink-sheet .ink-committed'); if (!c || !c.width) return null; const g = c.getContext('2d'); const d = g.getImageData(0, 0, c.width, c.height).data;
+  const r = c.getBoundingClientRect(); const k = r.height / c.height; const out = []; let y0 = -1; let last = -1;
+  for (let y = 0; y < c.height; y += 1) { let any = false; for (let x = 0; x < c.width; x += 1) if (d[(y * c.width + x) * 4 + 3] > 40) { any = true; break; }
+    if (any) { if (y0 < 0) y0 = y; last = y; } else if (y0 >= 0 && y - last > 2) { out.push({ top: r.top + y0 * k, bottom: r.top + (last + 1) * k }); y0 = -1; } }
+  if (y0 >= 0) out.push({ top: r.top + y0 * k, bottom: r.top + (last + 1) * k });
+  return out; })()`;
 
 await withHarness(async (app) => {
   await app.emulateDpr(1, 1366, 768);
@@ -152,17 +162,39 @@ await withHarness(async (app) => {
       ok(`${tag} P5 (${where} the writing line, y=${ys[where]}): a drag on the visible page draws one stroke`, ys[where] > top - 1 && ys[where] < bottom + 1 && counts[where] === 1, J({ ys, counts, top, bottom }));
     }
     if (th.id !== 'plateau') continue;
-    // P5-ALIGN: the stroke above the line keeps its place relative to the text when the zoom is left (the three strokes are on the canvas; the first row
-    // of ink is the top of the 'above' stroke)
-    const zInk = await app.evalJs(INKBOX); const zg = await app.evalJs(P5PROBE);
+    // PARKED verbatim (P5-ALIGN, first form; Fable ruled (a), Oct 30 - the premise is geometric and false, see the header):
+    // | // P5-ALIGN: the stroke above the line keeps its place relative to the text when the zoom is left (the three strokes are on the canvas; the first row
+    // | // of ink is the top of the 'above' stroke)
+    // | const zInk = await app.evalJs(INKBOX); const zg = await app.evalJs(P5PROBE);
+    // | await app.evalJs("location.hash = '#/'"); await sleep(300);
+    // | await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${fid}', 'off')`);
+    // | let nInk = null; let ng = null;
+    // | let viewNormal = null;
+    // | if (await openPage(app, fid)) { viewNormal = (await setView(app, false)) === false; await app.evalJs("document.querySelector('#wz-sliver-tab-ink')?.click()"); await sleep(400); nInk = await app.evalJs(INKBOX); ng = await app.evalJs(P5PROBE); }
+    // | const dz = zInk && zg ? (zInk.top - zg.lineTop) / zg.scale : null; const dn = nInk && ng ? (nInk.top - ng.lineTop) / ng.scale : null;
+    // | ok(`${tag} P5-ALIGN: the stroke drawn above the line keeps its place relative to the text in both views - its ink's top, from the first line's top in page units, zoom ${dz && dz.toFixed(1)} vs normal ${dn && dn.toFixed(1)} (within 2px)`,
+    // |   dz != null && dn != null && dz < -20 && Math.abs(dz - dn) <= 2 && !!ng && ng.zoom !== 'true', J({ zInk, zg, nInk, ng, viewNormal }));
+    // P5-ALIGN (ruled (a), Fable Oct 30). The three strokes are on the canvas. Read the ink's bands (one per stroke) in the zoom, leave it (the writer's own control), read again, return, read again.
+    const zBands = await app.evalJs(INKBANDS); const zg = await app.evalJs(P5PROBE);
     await app.evalJs("location.hash = '#/'"); await sleep(300);
     await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${fid}', 'off')`);
-    let nInk = null; let ng = null;
-    let viewNormal = null;
-    if (await openPage(app, fid)) { viewNormal = (await setView(app, false)) === false; await app.evalJs("document.querySelector('#wz-sliver-tab-ink')?.click()"); await sleep(400); nInk = await app.evalJs(INKBOX); ng = await app.evalJs(P5PROBE); }
-    const dz = zInk && zg ? (zInk.top - zg.lineTop) / zg.scale : null; const dn = nInk && ng ? (nInk.top - ng.lineTop) / ng.scale : null;
-    ok(`${tag} P5-ALIGN: the stroke drawn above the line keeps its place relative to the text in both views - its ink's top, from the first line's top in page units, zoom ${dz && dz.toFixed(1)} vs normal ${dn && dn.toFixed(1)} (within 2px)`,
-      dz != null && dn != null && dz < -20 && Math.abs(dz - dn) <= 2 && !!ng && ng.zoom !== 'true', J({ zInk, zg, nInk, ng, viewNormal }));
+    let nBands = null; let ng = null; let viewNormal = null;
+    if (await openPage(app, fid)) { viewNormal = (await setView(app, false)) === false; await app.evalJs("document.querySelector('#wz-sliver-tab-ink')?.click()"); await sleep(400); nBands = await app.evalJs(INKBANDS); ng = await app.evalJs(P5PROBE); }
+    await app.evalJs("location.hash = '#/'"); await sleep(300);
+    await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${fid}', 'on')`);
+    let rBands = null; let rg = null; let viewZoom = null;
+    if (await openPage(app, fid)) { viewZoom = (await setView(app, true)) === true; await app.evalJs("document.querySelector('#wz-sliver-tab-ink')?.click()"); await sleep(500); rBands = await app.evalJs(INKBANDS); rg = await app.evalJs(P5PROBE); }
+    const rel = (bands, g) => (bands && g ? bands.map((b) => (b.top - g.lineTop) / g.scale) : null);
+    const dz = rel(zBands, zg); const dn = rel(nBands, ng); const dr = rel(rBands, rg);
+    const fmt = (a) => (a ? a.map((x) => x.toFixed(1)).join(', ') : 'none');
+    ok(`${tag} P5-ALIGN (premise): the zoom holds three strokes (the first above the line) and the normal view shows two - the stroke above the first line is zoom-only (zoom [${fmt(dz)}], normal [${fmt(dn)}])`,
+      !!dz && dz.length === 3 && dz[0] < -20 && !!dn && dn.length === 2 && !!ng && ng.zoom !== 'true', J({ zBands, nBands, viewNormal }));
+    ok(`${tag} P5-ALIGN: the strokes ON and BELOW the first line keep their place relative to the text in both views - ink tops from the line's top in page units, zoom [${fmt(dz && dz.slice(-2))}] vs normal [${fmt(dn)}] (within 2px each)`,
+      !!dz && !!dn && dz.length === 3 && dn.length === 2 && Math.abs(dz[1] - dn[0]) <= 2 && Math.abs(dz[2] - dn[1]) <= 2, J({ zg, ng, zBands, nBands }));
+    ok(`${tag} P5-ALIGN (return): entering the zoom again, all three strokes are back where they were - [${fmt(dr)}] vs [${fmt(dz)}] (within 2px each)`,
+      !!dz && !!dr && viewZoom === true && dr.length === 3 && dr.every((d, k) => Math.abs(d - dz[k]) <= 2), J({ rg, rBands, viewZoom }));
+    // the parked form's old state, recorded for HARNESS_PARKED=1: the above stroke's top in the normal view equals the zoom's (within 2px) - gone: the normal view's first ink is the ON stroke
+    parkAlign = { oldStateHolds: !!dz && !!dn && dn.length >= 1 && dz[0] < -20 && Math.abs(dz[0] - dn[0]) <= 2, dz, dn };
     // MP5: the sheet's reach undone (a fresh page, zoomed again) - the drag above the line draws nothing
     await app.evalJs("location.hash = '#/'"); await sleep(300);
     const mid = `p10p-ink-mut`;
@@ -181,7 +213,11 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 600)}]` : ''}`);
-if (process.env.HARNESS_PARKED === '1') console.log('\nPOLISH10-PAGE PARKED: PASS (0 records) - a new file; it parks nothing of its own');
+if (process.env.HARNESS_PARKED === '1') {
+  const rec = [{ name: 'PARKED (was "P5-ALIGN: the stroke drawn above the line keeps its place relative to the text in both views") - Fable Oct 30 (a): the zoom\'s lead-in is not paper; that stroke is zoom-only', pass: !!parkAlign && parkAlign.oldStateHolds === false, detail: J(parkAlign) }];
+  for (const r of rec) console.log(`${r.pass ? 'PASS' : 'FAIL'}  ${r.name}  [${String(r.detail).slice(0, 300)}]`);
+  console.log(String.fromCharCode(10) + `POLISH10-PAGE PARKED: ${rec.every((r) => r.pass) ? 'PASS' : 'FAIL'} (1 record) - this FILE parks 1 (P5-ALIGN, first form: the above-the-line stroke in both views); successors above`);
+}
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nPOLISH10-PAGE VERIFY: PASS (${checks.length} checks)` : `\nPOLISH10-PAGE VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
 process.exit(passed === checks.length ? 0 : 1);
