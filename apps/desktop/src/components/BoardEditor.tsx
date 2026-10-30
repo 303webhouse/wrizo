@@ -1508,13 +1508,12 @@ export function BoardEditor({ id }: { id: string }) {
     if (!changed) return;
     // BUG 32b - reading scrollHeight above forced layout, which is what STARTS a lazy font's load: if any font is still loading this pass measured the fallback face, so it is discarded (loadingdone re-runs it)
     if (typeof document !== 'undefined' && document.fonts && document.fonts.status === 'loading') return;
-    // BUG 32b - OPENING A BOARD SAVES NOTHING: `boxes === lastSavedRef.current` means no writer's change is waiting, so this pass is a correction of the saved layout and is shown on screen only (the saved
+    // BUG 32b - OPENING A BOARD SAVES NOTHING: `boxes === lastSavedRef.current` means no writer's change is waiting, so this pass is a correction of the saved layout and is shown on SCREEN only (the saved
     // mark moves with it, so the autosave and the hide/logout flushes see nothing to write); the next writer act - an edit, a move, a deal - saves the board as it then is. rowFit (BUG 32: a dealt deck's rows
-    // fit their cards, decks/rowFit.ts) runs only for a writer's change, a deal or a text edit, never on a plain open.
-    if (boxes === lastSavedRef.current) {
-      lastSavedRef.current = next;
-      setBoxes(next);
-    } else setBoxes(fitDealtRows(boxes, next));
+    // fit their cards, decks/rowFit.ts) applies on a plain open too, so an old board does not sit overlapping - on screen, never saved on its own.
+    const fitted = fitDealtRows(boxes, next);
+    if (boxes === lastSavedRef.current) lastSavedRef.current = fitted;
+    setBoxes(fitted);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes, pageWidthPx, popupBoxId, fontTick]);
 
