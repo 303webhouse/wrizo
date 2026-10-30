@@ -8,17 +8,21 @@
 //   PAPER  .arbor2-paper, an opaque sheet in the page's own paper colour behind the column. The band mask still fades the WORDS, but they
 //          now fade into paper, not into the room. It sits at z-index -1 in body (behind every surface; the page, drawers and tabs paint over
 //          it), takes no pointer, and never moves or resizes the page (it follows the page's rect; it does not set it).
-//   HOLE   the sun layer (sun.ts) gets an evenodd clip-path with a hole over the visible page of ANY mounted prose page, zoomed or not, so no
-//          slat or leaf is drawn there by any route. The room's vignette (body::after) gets a hole there too (--arbor2-vignette-mask).
+//   HOLE   the sun layer (sun.ts) gets a mask with a hole over the visible page of ANY mounted prose page, zoomed or not, so no
+//          slat or leaf is drawn there past its soft outer rim (below). The room's vignette (body::after) gets a hole there too (--arbor2-vignette-mask).
 //   The visible page stops at the stage's progress row, which keeps the room behind it.
 // UNFRAMED (Fable, Oct 29: "The Typewriter rule stands: the zoomed page is unframed, so give the opaque night sheet no visible edge"). The
 // sheet is the only paper while zoomed: the page's own background, shadow and border stand down (data-arbor2-sheet on <html>, CSS), the
 // sheet carries no glow, and its mask fades it to nothing over FEATHER px at every side. The vignette's hole is a mask too, the sheet's exact
 // complement (vignette = 1 - paper at every point), so the room darkens just as the paper thins and no line is drawn where the paper ends.
 // A page that is not zoomed keeps its own opaque paper and a hard hole (feather 0), exactly as before.
+// THE PERGOLA'S SOFT EDGE (Fable, Oct 29: "Feather the pergola's page hole with a ~24 px soft edge (§7.1), never over the prose column"):
+// the sun layer's hard clip is replaced by a mask - the light is whole at the page's edge and fades to nothing SUN_EDGE px inside it, the
+// spec's "the page's outer 24 px may catch a soft edge". The prose sits ~100 px or more inside the page, so it never catches any.
 // Measuring is two getBoundingClientRect reads, on resize, on the zoom's own event, on route change and every 300 ms (never on a keystroke).
 // Nothing is stored.
 export const FEATHER = 48;
+export const SUN_EDGE = 24;
 const BLACK = 'rgb(0,0,0)', CLEAR = 'rgba(0,0,0,0)';
 const px = (n: number) => `${Math.round(n * 10) / 10}px`;
 type Box = { l: number; t: number; r: number; b: number };
@@ -98,10 +102,13 @@ export function mountPaper(): void {
     }
     if (sun) {
       if (v) {
+        // in the layer's own box (it sits at inset -80px): whole at the page's edge, nothing SUN_EDGE px in (the hard clip drew a line there)
         const s = sun.getBoundingClientRect();
-        sun.style.clipPath = holePath(s.width, s.height, s.left, s.top, v.box);
+        const b = { l: v.box.l - s.left, t: v.box.t - s.top, r: v.box.r - s.left, b: v.box.b - s.top };
+        sun.style.maskImage = vignetteMask(b, SUN_EDGE);
+        sun.style.maskComposite = 'add';
       } else {
-        sun.style.clipPath = '';
+        sun.style.maskImage = '';
       }
     }
     // the room's vignette (index.css body::after, fixed inset 0) paints AFTER the sheet in body's stacking context, so where the zoomed page
