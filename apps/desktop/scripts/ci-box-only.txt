@@ -18,5 +18,5 @@ item140.mjs
 rhizome-goal.mjs
 splash.mjs
 typewriter-fade.mjs
-# Text-wrap parity not yet shown: the item-12 wrap cards sit ON a wrap threshold on purpose; on the runner Titillium Web needs 279.8px for card g4 body line vs 265px of room, so Flux and Machina wrap it (4 of 21 checks). Green on the box, cause on the box side not yet measured.
+# Card-height parity not yet explained: the item-12 wrap cards read 4 of 21 red on the runner and 21/21 on the box. Both machines wrap card g4 the same; the runner's board grows the card (the reflow effect only ever grows h, so a transient overflow during load sticks), the box's does not. Green on the box.
 polish10-12-part2.mjs
