@@ -279,4 +279,73 @@ export default {
     await waitSoft(app, "document.querySelector('.wz-rhizome-field')?.dataset.flash === 'true'", { label: 'flash at goal', timeout: 4000 });
     await sleep(250);
   },
+  // item 7: the rhizome variation by day - a page partway into its lap, shoots in their width classes (the proof: data-w paths with ink)
+  'arbor-rhizome-variation': async (app) => {
+    await rhizomeAt(app, 5);
+    await sleep(400);
+    const r = await app.evalJs(`(() => {
+      const f = document.querySelector('.wz-rhizome-field');
+      const room = document.documentElement.getAttribute('data-arbor2-room');
+      const drawn = [...document.querySelectorAll('.wz-rhizome-field .wz-rhizome-seg[data-w]')].filter((p) => (p.getAttribute('d') || '').length > 0);
+      const widths = [...new Set(drawn.map((p) => getComputedStyle(p).strokeWidth))].sort();
+      return { field: !!f, room, classes: [...new Set(drawn.map((p) => p.getAttribute('data-w')))].sort(), widths };
+    })()`);
+    // by day the classes are drawn at 1-2.5 px; by night the field is hidden until the goal (the classes are still there)
+    const okW = r.room !== 'day' || (r.widths.length > 0 && r.widths.every((w) => parseFloat(w) >= 1 && parseFloat(w) <= 2.5));
+    await clickText(app, '.arbor2-bar-head', 'Mood ▸');
+    await sleep(150);
+    await app.evalJs(`document.querySelector('.arbor2-mood-switch[data-mood="variation"]')?.click()`);
+    await sleep(150);
+    const offW = await app.evalJs(`[...new Set([...document.querySelectorAll('.wz-rhizome-field .wz-rhizome-seg[data-w]')].filter((p) => (p.getAttribute('d') || '').length > 0).map((p) => getComputedStyle(p).strokeWidth))]`);
+    const okOff = r.room !== 'day' || (offW.length > 0 && offW.every((w) => parseFloat(w) <= 0.8));
+    await app.evalJs(`document.querySelector('.arbor2-mood-switch[data-mood="variation"]')?.click()`);
+    if (!r.field || !r.classes.length || !okW || !okOff) throw new Error('VARIATION PROOF FAILED ' + JSON.stringify({ ...r, offW }));
+  },
+  // item 8: the Mood menu open, every switch flipped off and back on - each one changes its own measured thing, the page never moves,
+  // and nothing reaches storage (the screen THROWS with the measurements otherwise; the picture is the menu with three switches off)
+  'arbor-mood': async (app) => {
+    await page(app, 'arbor-words', WORDS);
+    const opened = await clickText(app, '.arbor2-bar-head', 'Mood ▸');
+    await sleep(200);
+    const M = `(() => {
+      const root = document.documentElement, cs = getComputedStyle(root), sun = document.querySelector('.arbor2-sun');
+      const grip = document.querySelector('.wz-sliver-grip, .wz-tutor-grip'), p = document.querySelector('.mode-page');
+      const leaf = document.querySelector('.arbor2-sun-leaf');
+      if (leaf) leaf.setAttribute('data-flutter', 'true');
+      const out = {
+        breath: getComputedStyle(document.body, '::before').animationName,
+        shadows: sun ? getComputedStyle(sun).display : null,
+        afternoon: cs.getPropertyValue('--arbor2-afternoon').trim(),
+        flutter: leaf ? getComputedStyle(leaf).animationName : null,
+        pull: cs.getPropertyValue('--drawer-dur').trim(),
+        tabs: grip ? getComputedStyle(grip).backgroundColor : null,
+        rect: p ? JSON.stringify(p.getBoundingClientRect()) : null,
+        store: Object.fromEntries(Object.keys(localStorage).map((k) => [k, localStorage.getItem(k)])),
+        room: root.getAttribute('data-arbor2-room'),
+      };
+      if (leaf) leaf.removeAttribute('data-flutter');
+      return out;
+    })()`;
+    const before = await app.evalJs(M);
+    const keys = ['breath', 'shadows', 'afternoon', 'flutter', 'pull', 'tabs'];   // variation: measured by its widths in arbor-rhizome-variation
+    // storage: the app may write its own keys meanwhile; a switch must never put anything that names Arbor or the Mood into it
+    const leaks = (a, b) => Object.keys(b).filter((k) => a[k] !== b[k] && /arbor|mood/i.test(k + ' ' + b[k]));
+    const changed = {};
+    for (const k of keys) {
+      await app.evalJs(`document.querySelector('.arbor2-mood-switch[data-mood="${k}"]')?.click()`);
+      await sleep(120);
+      const off = await app.evalJs(M);
+      await app.evalJs(`document.querySelector('.arbor2-mood-switch[data-mood="${k}"]')?.click()`);
+      await sleep(120);
+      const back = await app.evalJs(M);
+      // what each switch must change: breath and shadows only exist in their own room (night / day); the rest in both
+      const own = (k === 'breath' && before.room !== 'night') || (k === 'shadows' && before.room !== 'day') ? null : k;
+      changed[k] = { moved: own ? off[own] !== before[own] : 'n/a', back: back[k] === before[k], rect: off.rect === before.rect && back.rect === before.rect, store: leaks(before.store, off.store).concat(leaks(before.store, back.store)) };
+    }
+    const ok = opened && Object.values(changed).every((c) => c.moved !== false && c.back && c.rect && c.store.length === 0);
+    // the picture: three switches off (left off for the frame only; the next screen starts on a fresh Desk)
+    for (const k of ['flutter', 'pull', 'tabs']) await app.evalJs(`document.querySelector('.arbor2-mood-switch[data-mood="${k}"]')?.click()`);
+    await sleep(200);
+    if (!ok) throw new Error('MOOD PROOF FAILED ' + JSON.stringify({ opened, changed, before: { ...before, store: undefined, rect: undefined } }));
+  },
 };

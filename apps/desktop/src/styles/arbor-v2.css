@@ -138,6 +138,13 @@
 .arbor2-bar-opt:hover{ background:var(--ink-800); }
 .arbor2-bar-opt[aria-pressed='true']{ border-color:var(--brass); }
 .arbor2-bar-note{ margin:0; font-size:11px; color:var(--text-low); }
+/* item 8's Mood list: one row per switch; a row that cannot switch says why in place of the switch */
+.arbor2-mood{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:4px; }
+.arbor2-mood-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.arbor2-mood-label{ color:var(--text-mid); }
+.arbor2-mood-why{ font-size:11px; color:var(--text-low); text-align:right; }
+.arbor2-mood-switch{ min-width:28px; text-align:center; }
+.arbor2-mood-switch[aria-checked='true']{ border-color:var(--brass); }
 
 /* ==========================================================================================================================================
    §14 ITEMS 2-3 (VISUAL HALF) - THE CLOTH TABS. Colour only, on the existing tabs: no size, position, border width or padding changes, so
@@ -150,23 +157,23 @@
    Open = the quiet olive underline, drawn just BELOW the cloth on the drawer's own surface (night 4.13:1, day 5.06:1; ON the sea cloth olive
    is 2.28, under the 3:1 non-text floor). Never brass. Night dims the cloths until lit: that is §6.2's dim-the-room, a later item.
    ========================================================================================================================================== */
-:root[data-arbor2][data-theme='plateau'] .wz-sliver-grip,
-:root[data-arbor2][data-theme='plateau'] .wz-sliver[data-open='true'] .wz-sliver-grip{ background:var(--ink-walnut); border-color:var(--arbor-line); color:#E8DCC2; }
-:root[data-arbor2][data-theme='plateau'] .wz-tutor-grip,
-:root[data-arbor2][data-theme='plateau'] .wz-tutor-grip[data-docked='true']{ background:var(--ink-sea); border-color:var(--arbor-line); color:#E8DCC2; }
-:root[data-arbor2][data-theme='plateau'] .wz-sliver-grip:hover,
-:root[data-arbor2][data-theme='plateau'] .wz-tutor-grip:hover{ color:#F1E8D4; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-sliver-grip,
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-sliver[data-open='true'] .wz-sliver-grip{ background:var(--ink-walnut); border-color:var(--arbor-line); color:#E8DCC2; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-tutor-grip,
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-tutor-grip[data-docked='true']{ background:var(--ink-sea); border-color:var(--arbor-line); color:#E8DCC2; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-sliver-grip:hover,
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-tutor-grip:hover{ color:#F1E8D4; }
 
-:root[data-arbor2][data-theme='plateau'] .wz-drawer-tab{ color:#E8DCC2; border-color:transparent; }
-:root[data-arbor2][data-theme='plateau'] #wz-sliver-tab-type{ background:var(--ink-walnut); border-color:var(--arbor-line); } /* the cream edge keeps it apart from the walnut edge tab */
-:root[data-arbor2][data-theme='plateau'] #wz-sliver-tab-format{ background:var(--ink-iron); }
-:root[data-arbor2][data-theme='plateau'] #wz-sliver-tab-presets{ background:var(--ink-oxblood); }
-:root[data-arbor2][data-theme='plateau'] #wz-tutor-tab-board{ background:var(--ink-iron); }
-:root[data-arbor2][data-theme='plateau'] #wz-sliver-tab-ink{ background:var(--ink-sea); }
-:root[data-arbor2][data-theme='plateau'] #wz-tutor-tab-tutor{ background:var(--ink-sea); }
-:root[data-arbor2][data-theme='plateau'] #wz-tutor-tab-links{ background:var(--ink-oxblood); }
-:root[data-arbor2][data-theme='plateau'] .wz-drawer-tab:hover{ color:#F1E8D4; }
-:root[data-arbor2][data-theme='plateau'] .wz-drawer-tab[data-on='true']{ color:#F1E8D4; box-shadow:0 3px 0 -1px var(--accent-rest); }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-drawer-tab{ color:#E8DCC2; border-color:transparent; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) #wz-sliver-tab-type{ background:var(--ink-walnut); border-color:var(--arbor-line); } /* the cream edge keeps it apart from the walnut edge tab */
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) #wz-sliver-tab-format{ background:var(--ink-iron); }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) #wz-sliver-tab-presets{ background:var(--ink-oxblood); }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) #wz-tutor-tab-board{ background:var(--ink-iron); }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) #wz-sliver-tab-ink{ background:var(--ink-sea); }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) #wz-tutor-tab-tutor{ background:var(--ink-sea); }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) #wz-tutor-tab-links{ background:var(--ink-oxblood); }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-drawer-tab:hover{ color:#F1E8D4; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-drawer-tab[data-on='true']{ color:#F1E8D4; box-shadow:0 3px 0 -1px var(--accent-rest); }
 
 /* ==========================================================================================================================================
    §14 ITEM 4 - THE DRAWER PULL (spec §10; Fable's ruling 4: dress the SHARED motion seam, no new JS animation path).
@@ -178,7 +185,7 @@
    (180 ms) and fills forwards, so it is gone before Cascade removes it. Transform/opacity only, one monotonic reveal, <= 300 ms, overlay
    only: the page never moves. NOT YET: the lamp/sun glint sweeping the front edge (needs a positioned panel - see the report).
    ========================================================================================================================================== */
-:root[data-arbor2][data-theme='plateau']{ --drawer-dur:240ms; --drawer-ease:cubic-bezier(.2,.8,.2,1); }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='pull']){ --drawer-dur:240ms; --drawer-ease:cubic-bezier(.2,.8,.2,1); }
 :root[data-arbor2][data-theme='plateau'] .wz-cascade-panel{ box-shadow:inset -2px 0 0 var(--arbor-line); }
 :root[data-arbor2][data-theme='plateau'] .wz-drawer-slide--left{ box-shadow:inset 2px 0 0 var(--arbor-line); }
 :root[data-arbor2][data-theme='plateau'] .wz-drawer-slide--right{ box-shadow:inset -2px 0 0 var(--arbor-line); }
@@ -186,12 +193,12 @@
 @keyframes arbor2-pull-out{ from{ opacity:1; transform:none; } to{ opacity:0; transform:translateX(-64px); } }
 @keyframes arbor2-settle{ from{ transform:translateX(-6px); } to{ transform:none; } }
 @media (prefers-reduced-motion: no-preference){
-  :root[data-arbor2][data-theme='plateau'] .wz-cascade-panel,
-  :root[data-arbor2][data-theme='plateau'] .wz-cascade-survey{ animation:arbor2-pull-in var(--drawer-dur) var(--drawer-ease) backwards; }
-  :root[data-arbor2][data-theme='plateau'] .wz-cascade-panel > *{ animation:arbor2-settle var(--drawer-dur) var(--drawer-ease) 60ms backwards; }
-  :root[data-arbor2][data-theme='plateau'] .wz-cascade-panel[data-leaving='true'],
-  :root[data-arbor2][data-theme='plateau'] .wz-cascade-panel[data-leaving='true'] ~ .wz-cascade-survey{ animation:arbor2-pull-out 180ms cubic-bezier(.4,0,.8,.4) forwards; pointer-events:none; }
-  :root[data-arbor2][data-theme='plateau'] .wz-cascade-panel[data-leaving='true'] > *{ animation:none; }
+  :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='pull']) .wz-cascade-panel,
+  :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='pull']) .wz-cascade-survey{ animation:arbor2-pull-in var(--drawer-dur) var(--drawer-ease) backwards; }
+  :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='pull']) .wz-cascade-panel > *{ animation:arbor2-settle var(--drawer-dur) var(--drawer-ease) 60ms backwards; }
+  :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='pull']) .wz-cascade-panel[data-leaving='true'],
+  :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='pull']) .wz-cascade-panel[data-leaving='true'] ~ .wz-cascade-survey{ animation:arbor2-pull-out 180ms cubic-bezier(.4,0,.8,.4) forwards; pointer-events:none; }
+  :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='pull']) .wz-cascade-panel[data-leaving='true'] > *{ animation:none; }
 }
 
 /* ==========================================================================================================================================
@@ -243,3 +250,18 @@
 @keyframes arbor2-flutter{ 0%,100%{ opacity:1; transform:rotate(var(--leaf-rot, 0deg)) translate(0, 0); } 35%{ opacity:.55; transform:rotate(var(--leaf-rot, 0deg)) translate(3px, -2px); } 70%{ opacity:.8; transform:rotate(var(--leaf-rot, 0deg)) translate(-2px, 1px); } }
 .arbor2-sun[data-still='true'], .arbor2-sun[data-still='true'] .arbor2-sun-drift, .arbor2-sun[data-still='true'] .arbor2-sun-leaf{ animation:none !important; }
 @media (prefers-reduced-motion: reduce){ .arbor2-sun, .arbor2-sun-drift, .arbor2-sun-leaf{ animation:none !important; } }
+
+/* ==========================================================================================================================================
+   §14 ITEM 8 - THE MOOD MENU'S SWITCHES (spec §13), IN-SESSION ONLY: the mockup bar writes the switched-off set as a space list on <html>
+   (data-arbor2-off), never storage. No default is ruled: the mockup opens with everything on. Reduced motion and Ambiance 0 still override
+   all of them (their own rules above stand). Switches with rules elsewhere: tabs and pull (scoped with :not() in their blocks), variation
+   (item 7's widths, and RhizomeField's pace via src/arbor2/shoots.ts variationOn).
+   ========================================================================================================================================== */
+/* Lamp breath: the pool stops breathing; its slow drift (ambience, spec §6.3) stays */
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'][data-arbor2-off~='breath'] body::before{ animation:arbor2-drift 40s ease-in-out infinite; }
+/* Day shadows: no pergola light at all */
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'][data-arbor2-off~='shadows'] .arbor2-sun{ display:none; }
+/* Shadows that lengthen with the afternoon: held at the early afternoon (sun.ts keeps writing the inline values; these outrank them) */
+:root[data-arbor2][data-theme='plateau'][data-arbor2-off~='afternoon']{ --arbor2-afternoon:0 !important; --arbor2-day-ground:#EFE6D2 !important; }
+/* Leaf flutter: a flutter draws nothing */
+:root[data-arbor2][data-arbor2-off~='flutter'] .arbor2-sun-leaf[data-flutter='true']{ animation:none; }
