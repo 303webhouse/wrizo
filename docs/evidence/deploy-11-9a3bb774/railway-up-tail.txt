@@ -1,0 +1,12 @@
+[stage-0 10/11] RUN printf '\nPATH=/app/node_modules/.bin:$PATH' >> /root/.profile
+[stage-0 10/11] RUN printf '\nPATH=/app/node_modules/.bin:$PATH' >> /root/.profile
+[stage-0 11/11] COPY . /app
+[stage-0 11/11] COPY . /app
+exporting to docker image format
+exporting to docker image format
+containerimage.descriptor: eyJtZWRpYVR5cGUiOiJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLm1hbmlmZXN0LnYxK2pzb24iLCJkaWdlc3QiOiJzaGEyNTY6NGM2MmUyYTg0MWRhMTFmZmU2MTdjYzQ2M2I5MzQwZmJiMjNiMDBiMTJiN2Y5ZjYwZDAzZGIzM
+containerimage.config.digest: sha256:8d9d027132b2352cdae4bf2a6e931fba1a5dfc92a7a2713f6c27789870ea7547
+containerimage.digest: sha256:4c62e2a841da11ffe617cc463b9340fbb23b00b12b7f9f60d03db33456d09edb
+image push
+image push
+Deploy complete
