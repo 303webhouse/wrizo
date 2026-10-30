@@ -223,7 +223,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         // and room BELOW the last line, so the last line can rise to the anchor at all: zoomed, the scroller's box reaches far below the stage,
         // and 30vh of end padding let the scroll bottom out with the writing line still 1-3 lines under the band (W/T on 64e5b7f9). Its own
         // height (layout px) is always enough - the sheet "bleeds a full stage height below" in Cursor's mockup for the same reason.
-        scrolledEl.style.setProperty('--tw-end-pad', `${Math.round(h.height / sc)}px`);   // the column's own height in layout px (never the scroller's clientHeight: the padding counts in it, so it fed itself - A3 saw 463,400px)
+        scrolledEl.style.setProperty('--tw-end-pad', `${Math.round(container.clientHeight)}px`);
       }
     };
     const band = () => {
