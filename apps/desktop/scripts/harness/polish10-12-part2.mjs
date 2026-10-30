@@ -66,7 +66,8 @@ await withHarness(async (app) => {
         await sleep(400);
         measured[`${skin} ${tone}`] = await q(`(() => { const R = (e) => { if (!e) return null; const r = e.getBoundingClientRect(); return { l: r.left, t: r.top, w: r.width, h: r.height }; };
           const cards = {}; document.querySelectorAll('.board-box').forEach((e) => { cards[e.getAttribute('data-box-id')] = R(e); });
-          return { wrap: R(document.querySelector('.board-canvas-wrap')), canvas: R(document.querySelector('.board-canvas')), cards }; })()`);
+          const tx = document.querySelector('.board-text'); const fam = tx ? getComputedStyle(tx).fontFamily : ''; const loaded = [...document.fonts].filter((f) => f.status === 'loaded').map((f) => f.family.replace(/"/g, '')).filter((v, i, arr) => arr.indexOf(v) === i).join(','); const g4 = document.querySelector('[data-box-id="g4"] .board-text'); const diag = { fam, loaded, g4sh: g4 ? g4.scrollHeight : null, g4cw: g4 ? g4.clientWidth : null };
+          return { wrap: R(document.querySelector('.board-canvas-wrap')), canvas: R(document.querySelector('.board-canvas')), cards, diag }; })()`);
         if (out) fs.writeFileSync(path.join(out, `p12-${skin.toLowerCase()}-${tone}.png`), Buffer.from(await app.screenshot(), 'base64'));
       });
     }
@@ -82,7 +83,7 @@ else {
     if (key === 'Arbor dark') continue;
     if (!m || !m.cards) { ok(`[${key}] measured`, false, 'no measurement'); continue; }
     const cardDiffs = CARDS.map((c) => { const a = base.cards[c.id], b = m.cards[c.id]; return !a || !b ? `${c.id}: missing` : (near(a.w, b.w) && near(a.h, b.h)) ? null : `${c.id}: ${a.w.toFixed(1)}x${a.h.toFixed(1)} -> ${b.w.toFixed(1)}x${b.h.toFixed(1)}`; }).filter(Boolean);
-    ok(`[${key}] every card's width and height equals Arbor's (+-${TOL} px)`, cardDiffs.length === 0, cardDiffs.join(' | '));
+    ok(`[${key}] every card's width and height equals Arbor's (+-${TOL} px)`, cardDiffs.length === 0, cardDiffs.join(' | ') + (cardDiffs.length ? ` || font ${JSON.stringify(m.diag)}` : ''));
     const gap = (mm, a, b) => mm.cards[b].l - (mm.cards[a].l + mm.cards[a].w);
     const gapRow = (mm) => mm.cards.g1 && mm.cards.g2 ? gap(mm, 'g1', 'g2') : NaN;
     const gapCol = (mm) => mm.cards.g1 && mm.cards.g4 ? mm.cards.g4.t - (mm.cards.g1.t + mm.cards.g1.h) : NaN;
