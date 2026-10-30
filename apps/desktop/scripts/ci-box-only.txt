@@ -5,3 +5,8 @@
 glitch-meter.mjs
 rhizome-latency.mjs
 typing-latency-scroll.mjs
+# Windows-bound: these test the box's own tooling (PowerShell/WMI process table, taskkill, C:\ and USERPROFILE paths). They have no Linux meaning.
+box-holder.mjs
+box-token-hash.mjs
+item99.mjs
+item139.mjs
