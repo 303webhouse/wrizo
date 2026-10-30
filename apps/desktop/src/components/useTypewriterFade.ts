@@ -230,12 +230,13 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       measure();
       const ed = container.querySelector(editorSelector) as HTMLElement | null;
       let caretBottom: number | null = null;
+      let caretSrc = 'none';
       const sel = window.getSelection();
       if (sel && sel.rangeCount && ed && sel.anchorNode && ed.contains(sel.anchorNode)) {
         const liveRange = sel.getRangeAt(0);
         const rects = liveRange.getClientRects();
         const r = rects[rects.length - 1];
-        if (r && r.height) caretBottom = r.bottom;
+        if (r && r.height) { caretBottom = r.bottom; caretSrc = 'range'; }
       }
       // FX4 S1 — a genuinely COLLAPSED range's own getClientRects() is
       // frequently EMPTY in Chromium right at a text-node boundary (a
@@ -276,7 +277,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
           charRange.setEnd(lastNonEmpty, lastNonEmpty.data.length);
           const rects = charRange.getClientRects();
           const r = rects[rects.length - 1];
-          if (r && r.height) caretBottom = r.bottom;
+          if (r && r.height) { caretBottom = r.bottom; caretSrc = 'walk'; }
         }
       }
       // FX4 S1 — a genuinely EMPTY editor (nothing typed yet — no element
@@ -297,6 +298,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       if (caretBottom === null && ed) {
         const last = ed.lastElementChild as HTMLElement | null;
         caretBottom = last ? last.getBoundingClientRect().bottom : ed.getBoundingClientRect().top;
+        caretSrc = 'lastEl';
       }
       if (caretBottom === null) { if (trace) trace.push({ d: 'no-caret' }); return; }
       const box = readBox(!!useWindowScroll, container);
@@ -400,7 +402,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         // shrank the document) — resync without scrolling; no advance is
         // "owed" backward.
         prevDocCaretBottom = docCaretBottom;
-        if (trace) trace.push({ d: 'resync', advance: Math.round(advance), doc: Math.round(docCaretBottom), within: Math.round(within), top: Math.round(box.scrollTop) });
+        if (trace) trace.push({ d: 'resync', advance: Math.round(advance), doc: Math.round(docCaretBottom), within: Math.round(within), top: Math.round(box.scrollTop), cb: Math.round(caretBottom as number), bt: Math.round(box.top), sc: +sc.toFixed(3), src: caretSrc });
       }
       setScrolled();
     };
