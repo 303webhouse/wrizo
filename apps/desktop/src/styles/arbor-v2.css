@@ -268,17 +268,15 @@
 
 /* ==========================================================================================================================================
    §14 ITEM 9 - THE SAGE LOGO (spec §12). Nick's hand-drawn WRIZO, recoloured from the source PNG by scripts/arbor2-logo.mjs (POLISH's rule:
-   the stroke multiplied by the colour, alpha untouched; checked pixel by pixel by scripts/harness/arbor2-9-unit.mjs): night SAGE #B7BC9A
-   (10.30:1 on the room), day the deep OLIVE #3E4A2A (7.63:1 early, 6.47:1 late). Sage by day would be 1.59:1, so it is not wired. The
-   orange o and dot stay brass (1.72:1 on the whitewash - Nick's call) unless the mockup bar's Logo row picks "Sage o" (data-arbor2-logo='all',
-   in-session). WrizoMark's <img> keeps its markup: `content` swaps the picture (Chromium draws an <img>'s content image). The corner
-   .brand-mark is brass by canon (one of brass's homes) and stays as it is. The cream copy POLISH made stays until Nick approves this one.
+   the stroke multiplied by the colour, alpha untouched; checked pixel by pixel by scripts/harness/arbor2-9-unit.mjs): SAGE #B7BC9A for a
+   dark ground (10.30:1 on the night room), the deep OLIVE #3E4A2A for a light one (7.63:1 early, 6.47:1 late on the whitewash).
+   The mark follows its GROUND, not the room: its two homes (the front door, Arrival + HomeFlow) keep their own dark ground in BOTH rooms, so
+   it is sage there by night and by day (run 41009240945 drew olive by day on that dark ground - the mark all but vanished). The olive copies
+   wait for a mark on a day-room surface. The orange o and dot stay brass unless the mockup bar's Logo row picks "Sage" (data-arbor2-logo='all',
+   in-session; Nick's call). WrizoMark's <img> keeps its markup: `content` swaps the picture (Chromium draws an <img>'s content image). The
+   corner .brand-mark is brass by canon (one of brass's homes) and stays. The cream copy POLISH made stays until Nick approves this one.
    ========================================================================================================================================== */
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] img.wz-logo,
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] img.wz-mark{ content:url('/brand/arbor2/wrizo-logo-sage.png'); }
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] img.wz-logo,
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] img.wz-mark{ content:url('/brand/arbor2/wrizo-logo-olive.png'); }
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'][data-arbor2-logo='all'] img.wz-logo,
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'][data-arbor2-logo='all'] img.wz-mark{ content:url('/brand/arbor2/wrizo-logo-sage-all.png'); }
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'][data-arbor2-logo='all'] img.wz-logo,
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'][data-arbor2-logo='all'] img.wz-mark{ content:url('/brand/arbor2/wrizo-logo-olive-all.png'); }
+:root[data-arbor2][data-theme='plateau'] img.wz-logo,
+:root[data-arbor2][data-theme='plateau'] img.wz-mark{ content:url('/brand/arbor2/wrizo-logo-sage.png'); }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-logo='all'] img.wz-logo,
+:root[data-arbor2][data-theme='plateau'][data-arbor2-logo='all'] img.wz-mark{ content:url('/brand/arbor2/wrizo-logo-sage-all.png'); }
