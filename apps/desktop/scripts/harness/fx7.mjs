@@ -639,9 +639,15 @@ await withHarness(async (app) => {
   // minimum floor still applies (verified below: an aggressive narrow+tiny-
   // height drag still correctly grows back to fit on release, content never
   // clipped), it just no longer fights every intermediate frame.
-  await dealtBoard(app, LAPTOP_W, 900);
+  // ---- BUG 32 (TOOLS #12, Fable Oct 30): a dealt deck's rows now FIT their cards, so the Character Study's first row (its prompts need 0.111, not 0.105) carries the rows under it 0.006 lower. The drag below upsizes
+  // the FIRST card by 0.19 of the board, which reaches into the row under it; its resize handle then lands over that row's card and the pointer grabs THAT card instead (the handle is not on top). Not a defect of the
+  // resize (a card dragged over its neighbours has always been under their z-order): the fixture's choice of card sat on a coincidence of the old lattice (the handle just cleared the row at 0.165).
+  // The original two lines are kept VERBATIM below and no longer run; the successor takes the BOTTOM card - nothing under it - on a taller viewport, and every claim S7 makes about the resize is unchanged.
+  // await dealtBoard(app, LAPTOP_W, 900);
+  // const el = document.querySelector('.board-box[data-kind="text"]');
+  await dealtBoard(app, LAPTOP_W, 1500);
   const resizeBox = await app.evalJs(`(() => {
-    const el = document.querySelector('.board-box[data-kind="text"]');
+    const el = [...document.querySelectorAll('.board-box[data-kind="text"]')].pop();   // BUG 32 successor: the bottom card
     const r = el.getBoundingClientRect();
     return { id: el.dataset.boxId, x: Math.round(r.x + r.width / 2), y: Math.round(r.y + 20) };
   })()`);

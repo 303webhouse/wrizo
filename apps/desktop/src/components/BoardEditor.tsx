@@ -64,6 +64,8 @@ import { addPlacement, viewsFor, walkOrder, setWalkPos } from '../store/walk';
 import { useTheme } from '../store/theme';
 import { getNotebookPages } from '../store/persistence';
 import { promptToShow, bodyIsEmpty, pagesOfPlace, kindled, isLit, withLit } from '../store/guided';
+import { fitDealtRows } from '../decks/rowFit';
+import { CARD_H } from '../decks/layout';
 import { DeckGaps } from './DeckGaps';
 import { useDeckRewards } from './useDeckRewards';
 import { KindleMark, LitMark } from './Walk';
@@ -126,6 +128,8 @@ const MIN_TEXT_H = 0.045;
 const MIN_PIN_W = 0.15;
 const MIN_PIN_H = 0.06;
 const MEASURE_TOLERANCE_PX = 2;
+// BUG 32c - a card's CONTENT height: the card with its height let go to auto (box-sizing is border-box, so this is the text + padding + border), read back and put back in the same synchronous pass - nothing paints between.
+function naturalPx(el: HTMLElement): number { const keep = el.style.height; el.style.height = 'auto'; const px = el.offsetHeight; el.style.height = keep; return px; }
 const VIEWPORT_MIN_PX = 560;
 // FX4 S4 — the board canvas's own both-axis resize floors: "minimums =
 // content extents" (the brief's own words) — the canvas can never be
@@ -1193,6 +1197,8 @@ export function BoardEditor({ id }: { id: string }) {
   // just reconciled ONCE, cleanly, the instant the drag ends, rather than
   // fighting every intermediate frame.
   const activeResizeIdRef = useRef<string | null>(null);
+  // BUG 32c - the text cards the writer has acted on in THIS visit (an edit that changed the words, or a resize). Only these - and the dealt row they sit in - are ever fitted DOWN to their content; a card the writer has not acted on keeps its size, so a plain open shrinks nothing. Never stored.
+  const touchedRef = useRef<Set<string>>(new Set());
   // CARD-RESIZE-RELOCK (Nick, 2026-10-13: "after a card resize, an immediate second resize or a click on the corner does nothing").
   // When the last resize or move ENDED (performance.now()), so the canvas's double-click can tell a gesture's own second click from
   // a request to edit - see onDoubleClick below.
@@ -1500,39 +1506,79 @@ export function BoardEditor({ id }: { id: string }) {
   // clientHeight — so this only ever fires (and only ever GROWS `h`) when
   // content genuinely overflows what's currently allotted; a manually
   // enlarged card's own extra whitespace is never clawed back.
+  // BUG 32b - a card is measured once the page's FONTS are in, never on the fallback face a lazy font leaves while it loads: the reflow below re-runs on `loadingdone` (and once `fonts.ready` settles),
+  // so a card's height does not depend on load timing. (fontTick only re-triggers the effect.)
+  const [fontTick, setFontTick] = useState(0);
+  useEffect(() => {
+    const f = typeof document !== 'undefined' ? document.fonts : undefined;
+    if (!f) return;
+    let live = true;
+    const bump = () => { if (live) setFontTick(t => t + 1); };
+    f.addEventListener('loadingdone', bump);
+    f.ready.then(bump).catch(() => {});
+    return () => { live = false; f.removeEventListener('loadingdone', bump); };
+  }, []);
+
   useLayoutEffect(() => {
     if (pageWidthPx <= 0) return;
-    let changed = false;
+    // BUG 32c - sizedByHand: which cards are fitted to their content (grown AND shrunk) in this pass. A card is, when it is AUTO (no `sizedByHand`), not a ported notecard, and the writer has acted on it in this
+    // visit (touchedRef) - or it is a dealt card in a row with such a card, so the row stays one band. Every other card keeps the floor-only rule below: it grows to fit its words and is never shrunk, and a plain open
+    // (nothing touched yet) shrinks nothing. A card the writer sized by hand keeps its size whatever its words do (it still grows when its words would be clipped).
+    const touched = touchedRef.current;
+    const rowOf = (b: Box) => Math.round(b.y * 1e4);
+    const touchedRows = new Set(boxes.filter(b => b.deckStep && touched.has(b.id)).map(rowOf));
     const next = boxes.map(b => {
       if (b.kind !== 'text') return b;
-      // FX7 S7 — skip whichever box is ACTIVELY being resized right now
-      // (activeResizeIdRef, above) — see that ref's own header comment for
-      // the full root-cause writeup (a diagonal drag narrows width while
-      // shrinking height, which can force an extra text-wrap line that
-      // this effect would otherwise measure and grow `h` back from, mid-
-      // drag, fighting the writer's own pointer in real time). The floor
-      // still applies — this box gets ONE final reconciliation pass the
-      // instant `activeResizeIdRef` clears (finish(), below), since `boxes`
-      // itself changes then too and re-triggers this same effect.
+      // FX7 S7 - skip whichever box is ACTIVELY being resized right now (activeResizeIdRef, above): a diagonal drag narrows width while shrinking height, which can force an extra text-wrap line that this effect
+      // would measure and grow `h` back from, mid-drag, fighting the writer's own pointer. This box gets ONE final reconciliation pass the instant `activeResizeIdRef` clears (finish(), below).
       if (b.id === activeResizeIdRef.current) return b;
       const el = measureEls.current.get(b.id);
       if (!el) return b;
-      const measuredPx = el.scrollHeight;
       const storedPx = b.h * pageWidthPx;
+      if (!b.sizedByHand && !b.sourceEntryId && (touched.has(b.id) || (!!b.deckStep && touchedRows.has(rowOf(b))))) {
+        const targetPx = Math.max(naturalPx(el), (b.deckStep ? CARD_H : MIN_TEXT_H) * pageWidthPx);   // content height, never below the deal's own card height (a dealt card) or the least a text card can be
+        if (Math.abs(targetPx - storedPx) <= MEASURE_TOLERANCE_PX) return b;
+        return { ...b, h: targetPx / pageWidthPx };
+      }
+      const measuredPx = el.scrollHeight;
       if (measuredPx - storedPx <= MEASURE_TOLERANCE_PX) return b;
-      changed = true;
       return { ...b, h: measuredPx / pageWidthPx };
     });
-    if (changed) setBoxes(next);
+    // BUG 32 - a dealt deck's rows FIT their cards (decks/rowFit.ts: dealt cards only, on a pass where a dealt card's height changed). It applies on a plain open too, so an old board does not sit overlapping.
+    const fitted = fitDealtRows(boxes, next);
+    if (!fitted.some((b, i) => b.h !== boxes[i].h || b.y !== boxes[i].y)) return;   // nothing to correct (also what ends the pass: the fitted layout is its own fixed point)
+    // BUG 32b - reading the heights above forced layout, which is what STARTS a lazy font's load: if any font is still loading this pass measured the fallback face, so it is discarded (loadingdone re-runs it)
+    if (typeof document !== 'undefined' && document.fonts && document.fonts.status === 'loading') return;
+    // BUG 32b - OPENING A BOARD SAVES NOTHING: `boxes === lastSavedRef.current` means no writer's change is waiting, so this pass is a correction of the saved layout and is shown on SCREEN only (the saved
+    // mark moves with it, so the autosave and the hide/logout flushes see nothing to write); the next writer act - an edit, a move, a deal - saves the board as it then is.
+    if (boxes === lastSavedRef.current) lastSavedRef.current = fitted;
+    setBoxes(fitted);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [boxes, pageWidthPx, popupBoxId]);
+  }, [boxes, pageWidthPx, popupBoxId, fontTick]);
 
   const measureRef = (boxId: string, el: HTMLDivElement | null) => {
     if (el) measureEls.current.set(boxId, el);
     else measureEls.current.delete(boxId);
   };
 
+  // BUG 32d - FIT TO TEXT (Nick, Oct 30): the small icon on a hand-sized card. A click removes sizedByHand and fits the card to its content (the same floors as the reflow: a dealt card never below the deal's own
+  // card height, a freeform card never below MIN_TEXT_H); a dealt deck's rows follow it (rowFit), and the card is the writer's acted-on card from here, so it stays fitted as its words change.
+  const fitCard = (boxId: string) => {
+    const el = measureEls.current.get(boxId);
+    if (!el || pageWidthPx <= 0) return;
+    touchedRef.current.add(boxId);
+    setBoxes(prev => {
+      const next = prev.map(b => {
+        if (b.id !== boxId || b.kind !== 'text') return b;
+        const { sizedByHand: _s, ...rest } = b; void _s;
+        return { ...rest, h: Math.max(naturalPx(el), (b.deckStep ? CARD_H : MIN_TEXT_H) * pageWidthPx) / pageWidthPx };
+      });
+      return fitDealtRows(prev, next);
+    });
+  };
+
   const commitText = (boxId: string, text: string) => {
+    if (boxesRef.current.some(b => b.id === boxId && b.text !== text)) touchedRef.current.add(boxId);   // BUG 32c: an edit that changed the words - the card is now fitted to them
     if (framed) boardDissolve.noteWrite(); // AB1 S3 — see the hook's mount comment above
     setBoxes(prev => prev.map(b => (b.id === boxId ? { ...b, text } : b)));
     // B3 S1 — "vanishes the FIRST time the writer edits ANY dealt card's
@@ -2338,6 +2384,7 @@ export function BoardEditor({ id }: { id: string }) {
       // re-evaluates this box (now that activeResizeIdRef no longer skips
       // it) on the very next render.
       const wasResizing = phase === 'resizing';
+      const resizedId = resizingId;
       if (phase === 'resizing' || phase === 'dragging') { lastGestureEndRef.current = performance.now(); clearBoardSelection(); }
       phase = 'idle';
       delete canvas.dataset.resizing;
@@ -2345,7 +2392,18 @@ export function BoardEditor({ id }: { id: string }) {
       resizingId = null;
       resizeStart = null;
       activeResizeIdRef.current = null;
-      if (wasResizing) setBoxes(prev => prev.slice());
+      if (wasResizing) {
+        // BUG 32c - the resize is the writer acting on this card: it is fitted from now on if it is auto. A resize that lands back on the card's content height CLEARS sizedByHand (the key is removed: one way to be auto).
+        let clear = false;
+        if (commit && resizedId) {
+          const cur = boxesRef.current.find(b => b.id === resizedId);
+          const el = measureEls.current.get(resizedId);
+          if (cur && cur.sizedByHand) touchedRef.current.add(resizedId);   // only a resize that really moved the card (its first frame set the mark) counts as acting on it - a press on the handle that went nowhere touches nothing
+          if (cur && cur.sizedByHand && el) clear = Math.abs(cur.h * pageWidthPx - Math.max(naturalPx(el), (cur.deckStep ? CARD_H : MIN_TEXT_H) * pageWidthPx)) <= MEASURE_TOLERANCE_PX;
+        }
+        if (clear) setBoxes(prev => prev.map(b => { if (b.id !== resizedId) return b; const { sizedByHand: _s, ...rest } = b; void _s; return rest; }));
+        else setBoxes(prev => prev.slice());
+      }
     };
 
     const onDown = (e: PointerEvent) => {
@@ -2373,7 +2431,7 @@ export function BoardEditor({ id }: { id: string }) {
       // for "a control inside a card needs its own untouched click, not
       // the canvas's own select/drag machinery") — stand down whole, let
       // the click proceed natively to the button's own onClick.
-      if (target.closest('.board-layer-toggle, .board-step-help')) return;   // W3: the step "?" inside a card needs its own untouched click, like the layer toggle
+      if (target.closest('.board-layer-toggle, .board-step-help, .board-fit')) return;   // W3: the step "?" inside a card needs its own untouched click, like the layer toggle
 
       // THE GREEN TACK IS RETIRED (connector-a): there is no pin to press. A card is connected from its corner square (below).
       const handleEl = target.closest('.board-handle') as HTMLElement | null;
@@ -2604,7 +2662,7 @@ export function BoardEditor({ id }: { id: string }) {
           const dy = (e.clientY - startY) / pageWidthPx;
           const minH = b.kind === 'text' ? MIN_TEXT_H : MIN_PIN_H;
           const newH = Math.max(minH, resizeStart!.h + dy);
-          return { ...b, w: newW, h: newH };
+          return { ...b, w: newW, h: newH, ...(b.kind === 'text' ? { sizedByHand: true as const } : {}) };   // BUG 32c: a text card the writer resizes by hand is theirs to size
         }));
       }
     };
@@ -3099,7 +3157,7 @@ export function BoardEditor({ id }: { id: string }) {
             // (The browser fires dblclick straight after its own second mouseup, so a gesture's own double-click arrives within
             // milliseconds of the gesture's end; 100ms catches it, and a writer's REAL double-click a moment after a drag - fx8 S3's
             // ~220ms, say - still opens the card.)
-            if (hitEl?.closest('.board-handle, .board-step-help, .board-step-pop')) return;   // W3: a double-click on the step "?" (or in its popover) opens nothing
+            if (hitEl?.closest('.board-handle, .board-step-help, .board-step-pop, .board-fit')) return;   // W3: a double-click on the step "?" (or in its popover) opens nothing
             if (performance.now() - lastGestureEndRef.current < 100) return;
             const boxEl = hitEl?.closest('.board-box') as HTMLElement | null;
             const boxId = boxEl?.dataset.boxId;
@@ -3282,6 +3340,20 @@ export function BoardEditor({ id }: { id: string }) {
                   data-solid={handleSolid ? 'true' : 'false'}
                   aria-hidden="true"
                 />
+              )}
+              {/* BUG 32d - FIT TO TEXT: only on a card the writer sized by hand, beside the resize grip, shown on card hover / focus (a real button, so Tab reaches it and :focus-within shows it), hidden in the recede. */}
+              {box.kind === 'text' && box.sizedByHand && !box.groupId && !isSystemBoard && (
+                <button
+                  type="button"
+                  className="board-fit"
+                  data-fit-to-text="true"
+                  title={t('boardFitToText')}
+                  aria-label={t('boardFitToText')}
+                  onMouseDown={e => e.stopPropagation()}
+                  onClick={e => { e.stopPropagation(); fitCard(box.id); }}
+                >
+                  <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" focusable="false"><path d="M2 1.5h8M2 10.5h8M4.2 3.2L6 5l1.8-1.8M4.2 8.8L6 7l1.8 1.8" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="square" /></svg>
+                </button>
               )}
               {/* BIG PROJECTS STEP 3 (3a) - the brass graft knob: on the SELECTED card's right edge at mid-height, apart from the resize corner; a
                   press-drag from it is connection mode from a second door (the pointerdown handler above). Not on a built-in place's derived cards. */}

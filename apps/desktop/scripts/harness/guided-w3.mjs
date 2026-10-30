@@ -275,7 +275,9 @@ function suite(M, read, doc) {
     'Esc closes in the capture phase and returns focus to the glyph; opening focuses "more"');
   const moreFn = (/const more = \(\) => \{[\s\S]*?\};/.exec(sh) || [''])[0];
   keep('SH3', /stageTutorAsk\(t\('deckStepHelpAsk'\)/.test(moreFn) && !/fetch|apiTutor|send\(/.test(sh) && !/from '\.\.\/store\/api|tutorMeter|apiTutorChat/.test(sh), 'more only stages: no fetch, no api import, no send');
-  keep('SH4', /target\.closest\('\.board-layer-toggle, \.board-step-help'\)\) return;/.test(be) && /hitEl\?\.closest\('\.board-handle, \.board-step-help, \.board-step-pop'\)\) return;/.test(be), 'the pointer machine stands down for the glyph; a double-click on it opens nothing');
+  // PARKED (Fable, Oct 30, #12b / bug 32d): SH4 as written - SUPERSEDED: the two stand-down lists grew by the Fit-to-text icon (.board-fit, Nick approved); successor SH4b. Kept verbatim:
+  // keep('SH4', /target\.closest\('\.board-layer-toggle, \.board-step-help'\)\) return;/.test(be) && /hitEl\?\.closest\('\.board-handle, \.board-step-help, \.board-step-pop'\)\) return;/.test(be), 'the pointer machine stands down for the glyph; a double-click on it opens nothing');
+  keep('SH4b', /target\.closest\('\.board-layer-toggle, \.board-step-help, \.board-fit'\)\) return;/.test(be) && /hitEl\?\.closest\('\.board-handle, \.board-step-help, \.board-step-pop, \.board-fit'\)\) return;/.test(be), 'the pointer machine stands down for the glyph (and for the Fit-to-text icon); a double-click on it opens nothing');
   keep('SH5', /box\.kind === 'text' && box\.deckStep && !box\.sourceEntryId && <StepHelp box=\{box\} \/>/.test(be), 'the glyph shows on a dealt text card only, never a ported mirror');
 
   // ST - staging
@@ -428,7 +430,9 @@ const MUT = [
   { name: 'the popover loses its portal', file: 'components/StepHelp.tsx', find: 'createPortal(', to: '(', red: ['SH1'] },
   { name: 'Esc stops returning focus', file: 'components/StepHelp.tsx', find: 'close(true);\n    };\n    const onDown', to: 'close(false);\n    };\n    const onDown', red: ['SH2'] },
   { name: 'more sends', file: 'components/StepHelp.tsx', find: "stageTutorAsk(t('deckStepHelpAsk').replace('{step}', title || step.step));", to: "stageTutorAsk(t('deckStepHelpAsk').replace('{step}', title || step.step)); void fetch('/api/tutor');", red: ['SH3'] },
-  { name: 'the pointer machine stops standing down for the glyph', file: 'components/BoardEditor.tsx', find: "target.closest('.board-layer-toggle, .board-step-help')) return;", to: "target.closest('.board-layer-toggle')) return;", red: ['SH4'] },
+  // PARKED (Fable, Oct 30, #12b / bug 32d): this mutant as written - SUPERSEDED with SH4 (the guard list grew by .board-fit); successor below. Kept verbatim:
+  // { name: 'the pointer machine stops standing down for the glyph', file: 'components/BoardEditor.tsx', find: "target.closest('.board-layer-toggle, .board-step-help')) return;", to: "target.closest('.board-layer-toggle')) return;", red: ['SH4'] },
+  { name: 'the pointer machine stops standing down for the glyph', file: 'components/BoardEditor.tsx', find: "target.closest('.board-layer-toggle, .board-step-help, .board-fit')) return;", to: "target.closest('.board-layer-toggle, .board-fit')) return;", red: ['SH4b'] },
   { name: 'the glyph shows on a ported mirror', file: 'components/BoardEditor.tsx', find: "box.kind === 'text' && box.deckStep && !box.sourceEntryId && <StepHelp", to: "box.kind === 'text' && box.deckStep && <StepHelp", red: ['SH5'] },
   { name: 'staging stops carrying the ask', file: 'store/tutorStage.ts', find: 'new CustomEvent(TUTOR_STAGE_EVENT, { detail: { text } })', to: 'new CustomEvent(TUTOR_STAGE_EVENT, { detail: {} })', red: ['ST1'] },
   { name: 'the Tutor sends what was staged', file: 'components/Tutor.tsx', find: '      setComposerText(text);\n      setStageTick((n) => n + 1);\n    };\n    window.addEventListener(TUTOR_STAGE_EVENT', to: '      setComposerText(text);\n      void send();\n      setStageTick((n) => n + 1);\n    };\n    window.addEventListener(TUTOR_STAGE_EVENT', red: ['ST2'] },
