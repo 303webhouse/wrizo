@@ -82,6 +82,12 @@ function MockupBar() {
     else root.removeAttribute('data-arbor2-off');
   }, [off]);
   const flip = (k: string) => setOff((o) => (o.includes(k) ? o.filter((x) => x !== k) : [...o, k]));
+  // item 9: the logo's orange o and dot - kept brass, or sage with the rest (Nick's call, spec §12); in-session, an attribute on <html>
+  const [logo, setLogo] = useState<'brass' | 'all'>('brass');
+  useEffect(() => {
+    if (logo === 'all') root.setAttribute('data-arbor2-logo', 'all');
+    else root.removeAttribute('data-arbor2-logo');
+  }, [logo]);
   useEffect(() => {
     const mo = new MutationObserver(() => setRoom((root.getAttribute('data-arbor2-room') as Room) ?? 'day'));
     mo.observe(root, { attributes: true, attributeFilter: ['data-arbor2-room'] });
@@ -95,6 +101,7 @@ function MockupBar() {
         <>
           <Seg label="Room" value={room} opts={[['night', 'Night'], ['day', 'Day']]} onPick={pickRoom} />
           <p className="arbor2-bar-note">By night the rhizome is hidden until the goal (Progress: Rhizome, with a word goal).</p>
+          <Seg<'brass' | 'all'> label="Logo o" value={logo} opts={[['brass', 'Brass'], ['all', 'Sage']]} onPick={setLogo} />
           <button type="button" className="arbor2-bar-head" aria-expanded={mood} onClick={() => setMood(m => !m)}>Mood {mood ? '▾' : '▸'}</button>
           {mood && <MoodMenu off={off} flip={flip} />}
         </>
