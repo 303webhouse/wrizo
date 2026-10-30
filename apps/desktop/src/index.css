@@ -4827,6 +4827,11 @@ html[data-wz-writing='true'] .chrome-handle{ opacity:0 !important; }   /* still 
   visibility:hidden;
   transition:opacity var(--fade-dur,.2s) ease, visibility 0s linear max(var(--fade-dur,.2s), var(--drawer-dur));
 }
+/* POLISH #10 item 21 (Fable, Oct 28): THE TUTOR MIRRORS TOOLS ON EVERY PATH, THE KEYSTROKE CLOSE INCLUDED. A drawer's CLOSE fades on the drawer's own duration - the writing
+   dissolve's slow --fade-dur (2.8s on a write) belongs to the open chrome, not to a drawer that is leaving: a keystroke closes the Tutor (A15) in the middle of a write, and
+   without this it faded 2.8s against the Tools drawer's 0.2s. The rule above still reads --fade-dur; a closed panel just carries the drawer token as its value. */
+.wz-sliver-panel:not([data-open='true']),
+.wz-tutor-panel:not([data-open='true']){ --fade-dur:var(--drawer-dur); }
 .desk-frame[data-writing='true'] .wz-sliver-panel:not([data-open='true']),
 [data-chrome-receded='true'] .wz-sliver-panel:not([data-open='true']),
 .desk-frame[data-writing='true'] .wz-tutor-panel:not([data-open='true']),
