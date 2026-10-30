@@ -289,7 +289,7 @@
      --arbor2-dim (.6) until the pointer or the keyboard reaches them (:hover, :focus-within). A hook inside another hook is left to its
      parent (opacity would compound).
      A DRAWER OPEN (the Tools drawer, the Tutor drawer, a rail pop-out) lights it - its panel and its tab are never dimmed - and the rest of
-     the room goes a further step, to .52. The Mood menu's "Dim room with drawer open" switch takes that step away (data-arbor2-off~='dim').
+     the room goes a further step, to .52 (the other drawer's tab holds at .6: see below). The Mood menu's "Dim room with drawer open" switch takes that step away (data-arbor2-off~='dim').
    LABELS >= 4.5:1 DIMMED. Opacity alone cannot hold the floor (measured on the night grounds #0A0503 / #150F0B / #1F1711): at .6 --text-mid
    falls to 3.6:1, brass to 3.7:1, and --text-low cannot dim at all (4.6-5.2:1 at full). Only --text-hi survives: 6.0:1 at .6, 5.0:1 at .52,
    4.5:1 at .51. So a DIMMED hook letters in --text-hi (the opacity then draws it at about --text-mid's brightness) - every dimmed label
@@ -301,6 +301,10 @@
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night']:not([data-wz-writing='true']) :is(.chrome-fade, .desk-dissolve, .mode-dissolve, .wz-sliver-grip, .wz-tutor-grip):not(:is(.chrome-fade, .desk-dissolve, .mode-dissolve) *):not(.wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel):not(.wz-sliver[data-open='true'] .wz-sliver-grip, .wz-tutor-grip[data-open='true']):not([data-chrome-receded='true'], [data-chrome-receded='true'] *, [data-writing='true'] *):not(:hover, :focus-within){
   opacity:var(--arbor2-dim);
 }
+/* the two drawer TABS hold at .6 through the further step: on its sea cloth the Tutor tab's arrow measured 4.44:1 at .52 (run 41010542648),
+   under the label floor; at .6 it clears it. A tab is the way into a drawer, so it stays findable while another drawer is lit. */
+/* (the level is set ON the tabs, so it outranks the root's step by inheritance, whatever the selectors' weights) */
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] :is(.wz-sliver-grip, .wz-tutor-grip){ --arbor2-dim:.6; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night']:not([data-wz-writing='true']) :is(.chrome-fade, .desk-dissolve, .mode-dissolve, .wz-sliver-grip, .wz-tutor-grip):not(:is(.chrome-fade, .desk-dissolve, .mode-dissolve) *):not(.wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel):not(.wz-sliver[data-open='true'] .wz-sliver-grip, .wz-tutor-grip[data-open='true']):not([data-chrome-receded='true'], [data-chrome-receded='true'] *, [data-writing='true'] *):not(:hover, :focus-within),
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night']:not([data-wz-writing='true']) :is(.chrome-fade, .desk-dissolve, .mode-dissolve, .wz-sliver-grip, .wz-tutor-grip):not(:is(.chrome-fade, .desk-dissolve, .mode-dissolve) *):not(.wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel):not(.wz-sliver[data-open='true'] .wz-sliver-grip, .wz-tutor-grip[data-open='true']):not([data-chrome-receded='true'], [data-chrome-receded='true'] *, [data-writing='true'] *):not(:hover, :focus-within) *{
   color:var(--text-hi) !important;
