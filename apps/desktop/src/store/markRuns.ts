@@ -23,6 +23,10 @@ export const MARK_OF: Record<MarkKind, string> = { bold: '**', italic: '*', unde
 // the bracketed span Pandoc reads, the slug being the roster face's name lower-cased with hyphens for spaces. Its two marks DIFFER
 // (`[` opens, `]{.font-<slug>}` closes), so a run carries its closing mark when it is not its opening one; every reader that measures
 // a closing mark reads `closeMark(r)`, never `r.mark`. The marks hold no whitespace, so no word counter ever counts one.
+// POLISH #10 item 4 (Nick ruled A, Oct 25): a SIZE on highlighted words is the same kind of span - `[the words]{.size-N}` (N in points, whole or
+// half: `10.5`) - and where a face and a size meet on the same words they are ONE span with both classes, `[the words]{.font-<slug> .size-N}`, so
+// two spans never cross. It stays kind 'font' (a STYLE span): every reader that already handles a font span - hiding, the caret, Backspace and Enter,
+// the strippers, the word counts, the clipboard - handles a size span the same way. A run carries `face` and/or `points`.
 export type RunKind = MarkKind | 'font';
 
 export interface MarkRun {
@@ -36,6 +40,8 @@ export interface MarkRun {
   cmark?: string;
   /** a font span's face, as its slug (store/fontRoster.ts faceForSlug turns it back into a face) */
   face?: string;
+  /** POLISH #10 item 4: a span's size in points (a size span, or a face+size span) */
+  points?: number;
 }
 
 /** A run's closing marker: `mark` for emphasis, the `]{.font-<slug>}` for a font span. */
@@ -43,7 +49,27 @@ export const closeMark = (r: { mark: string; cmark?: string }): string => r.cmar
 
 /** A font span's closing marker for a face slug. */
 export const fontCloseMark = (slug: string): string => `]{.font-${slug}}`;
-const FONT_CLOSE = /^\]\{\.font-([a-z0-9]+(?:-[a-z0-9]+)*)\}/;
+/** POLISH #10 item 4: a style span's closing marker - the face's class first, the size's second (`]{.font-lora .size-14}`, `]{.size-10.5}`). */
+export const spanCloseMark = (st: { face?: string | null; points?: number | null }): string =>
+  `]{${[st.face ? `.font-${st.face}` : '', st.points != null ? `.size-${st.points}` : ''].filter(Boolean).join(' ')}}`;
+const SPAN_CLOSE = /^\]\{([^}\n]{1,80})\}/;
+const FONT_CLASS = /^\.font-([a-z0-9]+(?:-[a-z0-9]+)*)$/;
+const SIZE_CLASS = /^\.size-(\d{1,3}(?:\.5)?)$/;
+// a closing marker's classes: one face and/or one size, nothing else (anything else is a plain `]` and stays text)
+function readSpanClose(s: string): { mark: string; face?: string; points?: number } | null {
+  const m = SPAN_CLOSE.exec(s);
+  if (!m) return null;
+  let face: string | undefined; let points: number | undefined;
+  for (const c of m[1].split(' ')) {
+    const f = FONT_CLASS.exec(c);
+    if (f) { if (face !== undefined) return null; face = f[1]; continue; }
+    const z = SIZE_CLASS.exec(c);
+    if (z) { if (points !== undefined) return null; points = Number(z[1]); if (!(points > 0)) return null; continue; }
+    return null;
+  }
+  if (face === undefined && points === undefined) return null;
+  return { mark: m[0], face, points };
+}
 
 // The font spans on one line. A `[` opens; `]{.font-<slug>}` closes the nearest open `[`. A PLAIN `]` closes the nearest `[` too, as a
 // literal pair - so a writer's own `[sic]` inside a span keeps the brackets balanced and stays text. An unclosed `[`, and a closing
@@ -59,8 +85,14 @@ function fontRuns(line: string): MarkRun[] {
     if (c === '[') { stack.push(i); continue; }
     if (c !== ']') continue;
     const o = stack.pop();
-    const m = FONT_CLOSE.exec(line.slice(i, i + 64));
-    if (m && o !== undefined) { out.push({ kind: 'font', mark: '[', open: o, close: i, cmark: m[0], face: m[1] }); i += m[0].length - 1; }
+    const m = readSpanClose(line.slice(i, i + 96));   // POLISH #10 item 4: a face and/or a size
+    if (m && o !== undefined) {
+      const run: MarkRun = { kind: 'font', mark: '[', open: o, close: i, cmark: m.mark };
+      if (m.face !== undefined) run.face = m.face;
+      if (m.points !== undefined) run.points = m.points;
+      out.push(run);
+      i += m.mark.length - 1;
+    }
   }
   return out;
 }
@@ -241,7 +273,7 @@ export function unescapeTyped(text: string): string {
 /** FONT-SPAN (Fable's addition 1, Oct 15): the text with every font span's two marks taken out and EVERYTHING else kept exactly - the
  *  emphasis, the structure tokens, the words. What the Tutor's prompts, Consistency and any reader of the words are given. */
 export function withoutFontMarks(text: string): string {
-  if (!text.includes('{.font-')) return text;
+  if (!text.includes('{.font-') && !text.includes('{.size-')) return text;   // POLISH #10 item 4: a size span is a style span too
   return text.split('\n').map((line) => {
     const lead = readLead(line).length;
     const rest = line.slice(lead);

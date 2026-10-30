@@ -44,6 +44,7 @@ import { DeskInstrument } from '../components/DeskInstrument';
 import { useCascade } from '../components/Cascade';
 import type { PageFaceSubject } from '../components/PageFace';
 import type { JournalEntry as JournalEntryType, Stroke, StrokePoint } from '../types';
+import { wordCount } from '../store/wordCount';
 
 // J4 — the entry read view: full text, read-only, on a lit paper page.
 // J2 — fills the reserved slot with pull-based routing (branch-copy: the entry's
@@ -73,10 +74,6 @@ function routedTitle(text: string): string {
   return firstLine(text).slice(0, 80);
 }
 
-function wordCount(text: string): number {
-  const t = text.trim();
-  return t ? t.split(/\s+/).length : 0;
-}
 
 // --- ink layer (J9) -------------------------------------------------------
 // Size a canvas's backing store to its CSS box scaled by devicePixelRatio so
@@ -207,7 +204,7 @@ function JournalEntryView() {
   // merely viewed stays out of the funnel). firstKeystroke rides onInput below.
   const noteSessionKeystroke = useSessionLog('journal', {
     projectId: () => (id ? getJournalEntry(id)?.projectId ?? null : null),
-    words: () => { const t = pageTextRef.current.trim(); return t ? t.split(/\s+/).length : 0; },
+    words: () => wordCount(pageTextRef.current),
     enabled: () => authoredRef.current,
   });
   const sessionKsRef = useRef<() => void>(() => {});
