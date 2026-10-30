@@ -40,7 +40,7 @@ function Seg<T extends string>({ label, value, opts, onPick }: { label: string; 
 
 // §14 item 8 - THE MOOD MENU (spec §13): one switch per Arbor feature, IN-SESSION ONLY. The switched-off set is a space list on <html>
 // (data-arbor2-off) that styles/arbor-v2.css and src/arbor2/shoots.ts read; nothing is stored. No default is ruled (Fable's call, with
-// device-or-account): the mockup opens with everything on. Two of the spec's nine cannot switch anything here, and say why.
+// device-or-account): the mockup opens with everything on. One of the spec's nine cannot switch anything here, and says why.
 const MOOD: { key: string; label: string; why?: string }[] = [
   { key: 'breath', label: 'Lamp breath' },
   { key: 'lamp-progress', label: 'Lamp as progress', why: 'retired: the lamp is ambience (Fable)' },
@@ -50,7 +50,7 @@ const MOOD: { key: string; label: string; why?: string }[] = [
   { key: 'variation', label: 'Rhizome variation' },
   { key: 'pull', label: 'Drawer pull motion' },
   { key: 'tabs', label: 'Coloured tabs' },
-  { key: 'dim', label: 'Dim room with drawer open', why: 'not built: §6.2 waits on a ruling' },
+  { key: 'dim', label: 'Dim room with drawer open' },   // §6.2 (Fable, Oct 29): the further step while a drawer is open; the rest dim stays
 ];
 
 function MoodMenu({ off, flip }: { off: string[]; flip: (k: string) => void }) {
