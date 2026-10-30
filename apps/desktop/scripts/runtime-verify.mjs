@@ -334,8 +334,8 @@ function launchBrowser(browser, udd, url, { headful = process.env.WS_HEADFUL ===
     ...(headful ? [] : ['--headless=new']),
     '--disable-gpu', '--no-first-run', '--no-default-browser-check',
     '--disable-extensions', '--disable-background-networking',
-    // GitHub-hosted Linux runners (WS_CI_RUNNER=1, set only by .github/workflows/harness.yml): the sandbox needs user namespaces the runner image denies, and /dev/shm is small. Never on the box. --font-render-hinting=none: Linux Chrome hints glyph advances to whole pixels, Windows (the box) lays text out with fractional advances; none makes the runner lay text out the box's way.
-    ...(process.env.WS_CI_RUNNER === '1' && process.platform === 'linux' ? ['--no-sandbox', '--disable-dev-shm-usage', '--font-render-hinting=none'] : []),
+    // GitHub-hosted Linux runners (WS_CI_RUNNER=1, set only by .github/workflows/harness.yml): the sandbox needs user namespaces the runner image denies, and /dev/shm is small. Never on the box.
+    ...(process.env.WS_CI_RUNNER === '1' && process.platform === 'linux' ? ['--no-sandbox', '--disable-dev-shm-usage'] : []),
     `--user-data-dir=${udd}`, '--remote-debugging-port=0', url,
   ], { stdio: 'ignore' });
   return proc;

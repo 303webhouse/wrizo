@@ -17,15 +17,15 @@ index 62d60de8..78e28d91 100644
 +  return platform === 'linux' && env.GITHUB_ACTIONS === 'true' && env.RUNNER_ENVIRONMENT === 'github-hosted' && env.WS_CI_RUNNER === '1';
 +}
 diff --git a/apps/desktop/scripts/runtime-verify.mjs b/apps/desktop/scripts/runtime-verify.mjs
-index af9e24dd..373f58d0 100644
+index af9e24dd..51c31aab 100644
 --- a/apps/desktop/scripts/runtime-verify.mjs
 +++ b/apps/desktop/scripts/runtime-verify.mjs
 @@ -334,6 +334,8 @@ function launchBrowser(browser, udd, url, { headful = process.env.WS_HEADFUL ===
      ...(headful ? [] : ['--headless=new']),
      '--disable-gpu', '--no-first-run', '--no-default-browser-check',
      '--disable-extensions', '--disable-background-networking',
-+    // GitHub-hosted Linux runners (WS_CI_RUNNER=1, set only by .github/workflows/harness.yml): the sandbox needs user namespaces the runner image denies, and /dev/shm is small. Never on the box. --font-render-hinting=none: Linux Chrome hints glyph advances to whole pixels, Windows (the box) lays text out with fractional advances; none makes the runner lay text out the box's way.
-+    ...(process.env.WS_CI_RUNNER === '1' && process.platform === 'linux' ? ['--no-sandbox', '--disable-dev-shm-usage', '--font-render-hinting=none'] : []),
++    // GitHub-hosted Linux runners (WS_CI_RUNNER=1, set only by .github/workflows/harness.yml): the sandbox needs user namespaces the runner image denies, and /dev/shm is small. Never on the box.
++    ...(process.env.WS_CI_RUNNER === '1' && process.platform === 'linux' ? ['--no-sandbox', '--disable-dev-shm-usage'] : []),
      `--user-data-dir=${udd}`, '--remote-debugging-port=0', url,
    ], { stdio: 'ignore' });
    return proc;
