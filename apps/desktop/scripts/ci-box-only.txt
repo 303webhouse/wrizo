@@ -21,3 +21,5 @@ splash.mjs
 typewriter-fade.mjs
 # Text-wrap parity not yet shown: the item-12 wrap cards sit ON a wrap threshold on purpose, and on Linux Titillium Web / Source Sans lay a line a
 # little wider than on the box, so Flux and Machina cards gain a line (4 of 21 checks, identical in every run, fonts confirmed loaded). Green on the box.
+# Text-wrap parity not yet shown: the item-12 wrap cards sit ON a wrap threshold on purpose; on the runner Titillium Web needs 279.8px for card g4 body line vs 265px of room, so Flux and Machina wrap it (4 of 21 checks). Green on the box, cause on the box side not yet measured.
+polish10-12-part2.mjs
