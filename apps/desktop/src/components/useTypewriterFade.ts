@@ -131,6 +131,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     // position in scroll-INDEPENDENT "document space" (see band() below).
     let engaged = false;
     let prevDocCaretBottom: number | null = null;
+    let lastScale: number | null = null;   // the paint scale at the last pass: the document coordinates below only compare across passes at one scale
     let lastDocCaretBottom: number | null = null;   // the caret's document position at the last pass (scroll-invariant): what a manual scroll-up forfeits back to
     // PAGE-SIZE G DIAGNOSTICS (Fable, Oct 24 - approved with conditions): the engine's decisions, in MEMORY only - an array the harness puts on
     // window before the page mounts. Read ONCE here, at mount; when it is absent (every real session) nothing below is ever written. No DOM
@@ -322,6 +323,15 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       // sitting" — the two concerns S1 asks to be decoupled.
       const docCaretBottom = within + box.scrollTop;
       lastDocCaretBottom = docCaretBottom;
+      // PAGE LAW (fx5 S1 c, train-11): the document coordinates are layout pixels at the paint scale of the moment. When the scale changes between passes (the zoom
+      // arriving late, a stage resize, a drawer changing the stage's width) the carried position is in the OLD coordinates: the next pass read the caret 110px
+      // "earlier" and then paid 140px of new lines when one was typed (501 -> 636). A coordinate change is not owed lines: the baseline is taken again.
+      if (lastScale != null && Math.abs(sc - lastScale) > 0.02 && prevDocCaretBottom != null) {
+        prevDocCaretBottom = docCaretBottom;
+        glideTarget = null; glideFrom = null;
+        if (trace) trace.push({ d: 'rescale', from: +lastScale.toFixed(3), to: +sc.toFixed(3) });
+      }
+      lastScale = sc;
       // PAGE-SIZE - zoomed, the hold is the writing line's TOP at `anchor` of the hold element (the page column, the box the band mask is drawn
       // in), as Cursor's mockup places it - so the caret's BOTTOM sits one line below that, inside the mask's full-strength band.
       const holdEl = zoom?.holdRef.current ?? null;
