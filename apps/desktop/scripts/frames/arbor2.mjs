@@ -46,11 +46,28 @@ const logoAt = async (app, which) => {
     const url = content && content.startsWith('url(') ? content.slice(4, content.lastIndexOf(')')).split('"').join('') : null;
     let status = null, type = null, w = 0;
     if (url) { const res = await fetch(url); status = res.status; type = res.headers.get('content-type'); const b = new Uint8Array(await res.arrayBuffer()); w = b.length > 24 ? (b[16] << 24 | b[17] << 16 | b[18] << 8 | b[19]) : 0; }
-    return { room, url, status, type, w, rect: img ? img.getBoundingClientRect().width : 0 };
+    // THE GROUND behind the mark, found apart from the CSS that picks the copy: the first thing under the mark's centre that paints a colour
+    // (a background colour, or the first colour of a background gradient). Run 41009240945 drew the DAY copy (olive) on the front door's
+    // dark ground, and nothing measured the ground.
+    const rgbOf = (s) => { const i = s.indexOf('rgb'); if (i < 0) return null; const n = s.slice(s.indexOf('(', i) + 1, s.indexOf(')', i)).split(',').map(Number); return n.length >= 3 && (n.length < 4 || n[3] > 0) ? n.slice(0, 3) : null; };
+    let ground = null, groundBy = null;
+    if (img) {
+      const r0 = img.getBoundingClientRect();
+      for (const el of document.elementsFromPoint(r0.left + r0.width / 2, r0.top + r0.height / 2)) {
+        if (el === img) continue;
+        const cs = getComputedStyle(el);
+        ground = rgbOf(cs.backgroundColor) || rgbOf(cs.backgroundImage);
+        if (ground) { groundBy = el.className || el.tagName; break; }
+      }
+    }
+    return { room, url, status, type, w, rect: img ? img.getBoundingClientRect().width : 0, ground, groundBy: String(groundBy).slice(0, 40) };
   })()`);
-  const want = (r.room === 'night' ? 'wrizo-logo-sage' : 'wrizo-logo-olive') + (which === 'all' ? '-all' : '') + '.png';
-  if (!r.url || !r.url.endsWith('/brand/arbor2/' + want) || r.status !== 200 || !/png/.test(r.type || '') || r.w !== 900 || !(r.rect > 0))
-    throw new Error('LOGO PROOF FAILED ' + JSON.stringify({ want, ...r }));
+  // the front door keeps a dark ground in both rooms, so its mark is the SAGE copy in both (the olive copies are for a light ground)
+  const want = 'wrizo-logo-sage' + (which === 'all' ? '-all' : '') + '.png';
+  const gAvg = r.ground ? (r.ground[0] + r.ground[1] + r.ground[2]) / 3 : null;
+  const polarity = gAvg !== null && gAvg < 175 - 60;   // the sage stroke averages 175: the ground must be clearly darker
+  if (!r.url || !r.url.endsWith('/brand/arbor2/' + want) || r.status !== 200 || !/png/.test(r.type || '') || r.w !== 900 || !(r.rect > 0) || !polarity)
+    throw new Error('LOGO PROOF FAILED ' + JSON.stringify({ want, polarity, gAvg, ...r }));
 };
 
 // THE ZOOMED PAGE PROOF (Fable, Oct 29: "the pergola shadows must NEVER cross the prose column, including through the page's see-through
