@@ -285,7 +285,15 @@ await withHarness(async (app) => {
       };
     })()
   `);
-  ok('R1: the popover sits within one line-height of the ACTIVE element (not the sheet\'s bottom)', r1Geometry.gap >= 0 && r1Geometry.gap < 40, JSON.stringify(r1Geometry));
+  // ---- PARKED - SUPERSEDED (INK, Oct 30, the harness on Actions): the gap was read from INTEGER offsets (offsetTop / offsetHeight each round on their own), so a
+  // sheet whose scale lands on a fraction (a Linux scrollbar is 15px, Windows' is 17px, so the sheet's width and its type scale differ) reads -1 when the popover
+  // sits EXACTLY on the element's bottom edge (measured on a hosted runner: element bottom 178.109375, popover top 178.109375, offsets 76+14=90 vs 89). The
+  // behaviour it guards is unchanged. Kept VERBATIM and no longer run; successor R1 [rect] reads the real rects, with a self-check that the measure can go red.
+  //
+  // ok('R1: the popover sits within one line-height of the ACTIVE element (not the sheet\'s bottom)', r1Geometry.gap >= 0 && r1Geometry.gap < 40, JSON.stringify(r1Geometry));
+  const r1Rect = await app.evalJs(`(() => { const a = document.querySelector('.script-el-active'), p = document.querySelector('.script-autocomplete'); const g = () => p.getBoundingClientRect().top - a.getBoundingClientRect().bottom; const gap = g(); p.style.marginTop = '300px'; const moved = g(); p.style.marginTop = ''; return { gap, moved }; })()`);
+  ok('R1 [rect successor]: the popover sits within one line-height of the ACTIVE element (not the sheet\'s bottom), read from the real rects', r1Rect.gap >= -0.5 && r1Rect.gap < 40, JSON.stringify(r1Rect));
+  ok('R1 [rect successor] self-check: the same measure goes red when the popover is moved 300px off the element', r1Rect.moved >= 40, JSON.stringify(r1Rect));
   ok('R1: many elements still follow it — the popover is nowhere near the sheet\'s bottom', r1Geometry.distFromSheetBottom > 100, JSON.stringify(r1Geometry));
   // Restore element 0 and return to the tail, so the rest of the scenario
   // (which assumes a fresh empty ACTIVE element) is undisturbed.
