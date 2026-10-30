@@ -24,9 +24,13 @@ export function visiblePage(): { box: Box; zoomed: boolean; paper: string } | nu
   const c = col ? col.getBoundingClientRect() : a;
   // the zoomed page reaches past the stage's progress row (the column's box does too): the sheet stops at that row, so the goal line and the
   // word count keep the room behind them (on cream they lost their contrast - the first green frames, run 40986639311)
-  const prog = p.closest('.mode-stage')?.querySelector('.mode-progress') as HTMLElement | null;
-  const pr = prog ? prog.getBoundingClientRect() : null;
-  const foot = pr && pr.height > 0 && pr.top > a.top ? pr.top : Infinity;
+  // (the row's own box can be 0 tall - its pieces carry the height - so the top of its first VISIBLE piece is the foot; run 40987236296
+  // read the row's box alone and the sheet still ran under "31 words")
+  let foot = Infinity;
+  document.querySelectorAll('.mode-progress, .mode-progress *').forEach((el) => {
+    const r = el.getBoundingClientRect();
+    if (r.width > 0 && r.height > 0 && r.top > a.top + 40 && r.left < a.right && r.right > a.left) foot = Math.min(foot, r.top);
+  });
   const box = { l: Math.max(a.left, c.left), t: Math.max(a.top, c.top), r: Math.min(a.right, c.right), b: Math.min(a.bottom, c.bottom, innerHeight, foot) };
   if (box.r - box.l < 2 || box.b - box.t < 2) return null;
   return { box, zoomed: col?.getAttribute('data-zoom') === 'true', paper: getComputedStyle(p).backgroundColor };
