@@ -140,7 +140,8 @@ jobs:
           set -eu
           # the box runs core.autocrlf=true: index LF, working tree CRLF. Some checks read source text, so give the runner the same bytes.
           git config core.autocrlf true
-          git checkout-index --all --force
+          git ls-files -z | xargs -0 rm -f
+          git checkout -- .
           git ls-files --eol apps/server/src/sync.ts apps/desktop/src/index.css
 
       - name: Make the tree CI-capable (only if it lacks the runner guard)
