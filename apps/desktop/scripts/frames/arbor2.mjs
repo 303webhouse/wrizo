@@ -350,12 +350,14 @@ export default {
     // storage: the app may write its own keys meanwhile; a switch must never put anything that names Arbor or the Mood into it
     const leaks = (a, b) => Object.keys(b).filter((k) => a[k] !== b[k] && /arbor|mood/i.test(k + ' ' + b[k]));
     const changed = {};
+    // each read waits out the slowest colour change a switch starts: the grip's own `transition:.15s` (index.css) - run 41009240945 read it
+    // at 120 ms, mid-fade, and the day tab "came back" as a colour between the two (night's two colours are close enough to hide it)
     for (const k of keys) {
       await app.evalJs(`document.querySelector('.arbor2-mood-switch[data-mood="${k}"]')?.click()`);
-      await sleep(120);
+      await sleep(450);
       const off = await app.evalJs(M);
       await app.evalJs(`document.querySelector('.arbor2-mood-switch[data-mood="${k}"]')?.click()`);
-      await sleep(120);
+      await sleep(450);
       const back = await app.evalJs(M);
       // what each switch must change: breath and shadows only exist in their own room (night / day); the rest in both
       const own = (k === 'breath' && before.room !== 'night') || (k === 'shadows' && before.room !== 'day') ? null : k;
