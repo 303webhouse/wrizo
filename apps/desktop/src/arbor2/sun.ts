@@ -1,8 +1,9 @@
 // ARBOR v2 MOCKUP - §14 item 6: the day room's light (spec §7.1-7.2, §7.4; Fable's ruling 2).
 //
 // Sun through a pergola: slat shadows and leaf shadows on the ROOM, drawn as one fixed layer BEHIND everything (body is its own stacking
-// context under the flag, so the layer sits above the sun pool and under the vignette and every surface). The page is opaque, so the
-// shadows never cross the prose column; they show in the margins and through the page's own top and bottom fade.
+// context under the flag, so the layer sits above the sun pool and under the vignette and every surface). NEVER ACROSS THE PROSE COLUMN
+// (spec §7.1, Fable Oct 29): an opaque page was not enough - Free Write's Typewriter zoom masks the page see-through at its top and bottom,
+// and the frames showed the slats through it. paper.ts cuts a hole in this layer over the visible page, so the shadows show in the margins only.
 //
 //   - RANDOMISED PER SESSION: a fresh seed each time the app opens (slat angle and spacing, leaf clusters, drift direction). In memory only.
 //   - DRIFT: transform only, one 48 s loop (>= 12 s).
@@ -43,9 +44,13 @@ export function mountSun(root: HTMLElement): void {
   const layer = document.createElement('div');
   layer.className = 'arbor2-sun';
   layer.setAttribute('aria-hidden', 'true');
+  // the drift moves this inner sheet, never the layer: the layer holds still so its clip (paper.ts: a hole over the page) stays on the page
+  const drift = document.createElement('div');
+  drift.className = 'arbor2-sun-drift';
+  layer.appendChild(drift);
   const slats = document.createElement('div');
   slats.className = 'arbor2-sun-slats';
-  layer.appendChild(slats);
+  drift.appendChild(slats);
   const angle = 14 + r() * 22;            // slat angle, degrees
   const gap = 90 + r() * 70;              // slat spacing, px
   const width = 18 + r() * 16;            // slat shadow width, px
@@ -65,7 +70,7 @@ export function mountSun(root: HTMLElement): void {
     leaf.style.top = `${(r() * 85).toFixed(1)}%`;
     leaf.style.setProperty('--leaf-size', `${(120 + r() * 160).toFixed(0)}px`);
     leaf.style.setProperty('--leaf-rot', `${(r() * 360).toFixed(0)}deg`);
-    layer.appendChild(leaf);
+    drift.appendChild(leaf);
     leaves.push(leaf);
   }
   document.body.appendChild(layer);
