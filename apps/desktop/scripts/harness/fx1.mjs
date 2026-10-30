@@ -18,6 +18,7 @@
 // S3 section.
 import { withHarness } from '../runtime-verify.mjs';
 
+let fx1C2Seen = null;   // S1 (C2)'s reading, kept for its parked record
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -199,8 +200,18 @@ await withHarness(async (app) => {
   ok('S1: the fade is active once scrolled — the first rendered line\'s effective (mask-ramp) opacity is < 0.5',
     lastRow.scrolled === true && lastRow.firstOpacity !== null && lastRow.firstOpacity < 0.5,
     JSON.stringify(lastRow));
-  ok('S1 (C2): a fresh/short page never fades before it has actually scrolled',
-    rows[0].scrolled === false && rows[0].firstOpacity === 1, JSON.stringify(rows[0]));
+  // ---- PARKED - SUPERSEDED by POLISH #10 item 17 (Nick, Oct 25: the typewriter pays Enter's line AT Enter, not at the next keystroke): the page opens
+  // zoomed with its first line AT the hold, so the empty row Enter makes is one line past it and is paid at once - row 0 has scrolled one line
+  // (24px on the train-11 bisect) and `scrolled` is true. What C2 guards - nothing fades before the writer has written past the hold - is unchanged:
+  // the first line is still at full strength (firstOpacity 1) and the move is the ONE line Enter owes. Kept VERBATIM and no longer run; record in the
+  // parked section (it re-reads this row from the live run).
+  //
+  // ok('S1 (C2): a fresh/short page never fades before it has actually scrolled',
+  //   rows[0].scrolled === false && rows[0].firstOpacity === 1, JSON.stringify(rows[0]));
+  // ------------------------------------------------------------------
+  fx1C2Seen = { row: rows[0], lineHeight };
+  ok('S1 (C2) [item 17 successor]: a fresh/short page never FADES its first line before the writer has written past the hold - at the first Enter it has moved no more than the one line Enter owes',
+    rows[0].firstOpacity === 1 && rows[0].scrollTop <= lineHeight * 1.25 + 0.5, JSON.stringify(fx1C2Seen));
 
   // -- Same fixture, once on a script page. ----------------------------------
   // SC1 S3, AMENDED 2026-07-24 (Nick's word, via Fable) — the screenplay
@@ -750,6 +761,9 @@ if (process.env.HARNESS_PARKED === '1') {
   });
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
+  // POLISH #10 item 17 - S1 (C2)'s original premise (row 0 not yet scrolled) is parked; this record re-verifies the new truth from the live run.
+  parkedChecks.push({ name: 'PARKED (was "S1 (C2): a fresh/short page never fades before it has actually scrolled") - polish #10 item 17: the line Enter makes is paid at Enter, so row 0 has moved one line; the first line is still unfaded; live successor: S1 (C2) [item 17 successor]',
+    pass: !!fx1C2Seen && fx1C2Seen.row.scrolled === true && fx1C2Seen.row.firstOpacity === 1 && fx1C2Seen.row.scrollTop > 0 && fx1C2Seen.row.scrollTop <= fx1C2Seen.lineHeight * 1.25 + 0.5, detail: JSON.stringify(fx1C2Seen) });
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
