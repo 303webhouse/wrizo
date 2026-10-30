@@ -14,7 +14,6 @@ item139.mjs
 # asserts cannot happen) and its nested suite leaves browsers that VOID the shard it sits in.
 item140.mjs
 # Layout parity not yet shown: one check (R1, the screenplay popover's gap to the active line) is off by 1px on Linux (font metrics suspected).
-s1.mjs
 # Animation/timing-sensitive: green on the box, but red on a hosted runner in at least one leg of the 8-shard pair (typewriter-fade also flipped
 # between two runs of the SAME tree). The brief's rule: they stay on the box until a repeated parity run shows they hold.
 rhizome-goal.mjs
@@ -22,4 +21,3 @@ splash.mjs
 typewriter-fade.mjs
 # Text-wrap parity not yet shown: the item-12 wrap cards sit ON a wrap threshold on purpose, and on Linux Titillium Web / Source Sans lay a line a
 # little wider than on the box, so Flux and Machina cards gain a line (4 of 21 checks, identical in every run, fonts confirmed loaded). Green on the box.
-polish10-12-part2.mjs
