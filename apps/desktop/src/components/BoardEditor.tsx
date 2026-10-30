@@ -65,6 +65,7 @@ import { useTheme } from '../store/theme';
 import { getNotebookPages } from '../store/persistence';
 import { promptToShow, bodyIsEmpty, pagesOfPlace, kindled, isLit, withLit } from '../store/guided';
 import { fitDealtRows } from '../decks/rowFit';
+import { CARD_H } from '../decks/layout';
 import { DeckGaps } from './DeckGaps';
 import { useDeckRewards } from './useDeckRewards';
 import { KindleMark, LitMark } from './Walk';
@@ -127,6 +128,8 @@ const MIN_TEXT_H = 0.045;
 const MIN_PIN_W = 0.15;
 const MIN_PIN_H = 0.06;
 const MEASURE_TOLERANCE_PX = 2;
+// BUG 32c - a card's CONTENT height: the card with its height let go to auto (box-sizing is border-box, so this is the text + padding + border), read back and put back in the same synchronous pass - nothing paints between.
+function naturalPx(el: HTMLElement): number { const keep = el.style.height; el.style.height = 'auto'; const px = el.offsetHeight; el.style.height = keep; return px; }
 const VIEWPORT_MIN_PX = 560;
 // FX4 S4 — the board canvas's own both-axis resize floors: "minimums =
 // content extents" (the brief's own words) — the canvas can never be
@@ -1162,6 +1165,8 @@ export function BoardEditor({ id }: { id: string }) {
   // just reconciled ONCE, cleanly, the instant the drag ends, rather than
   // fighting every intermediate frame.
   const activeResizeIdRef = useRef<string | null>(null);
+  // BUG 32c - the text cards the writer has acted on in THIS visit (an edit that changed the words, or a resize). Only these - and the dealt row they sit in - are ever fitted DOWN to their content; a card the writer has not acted on keeps its size, so a plain open shrinks nothing. Never stored.
+  const touchedRef = useRef<Set<string>>(new Set());
   // CARD-RESIZE-RELOCK (Nick, 2026-10-13: "after a card resize, an immediate second resize or a click on the corner does nothing").
   // When the last resize or move ENDED (performance.now()), so the canvas's double-click can tell a gesture's own second click from
   // a request to edit - see onDoubleClick below.
@@ -1484,34 +1489,36 @@ export function BoardEditor({ id }: { id: string }) {
 
   useLayoutEffect(() => {
     if (pageWidthPx <= 0) return;
-    let changed = false;
+    // BUG 32c - sizedByHand: which cards are fitted to their content (grown AND shrunk) in this pass. A card is, when it is AUTO (no `sizedByHand`), not a ported notecard, and the writer has acted on it in this
+    // visit (touchedRef) - or it is a dealt card in a row with such a card, so the row stays one band. Every other card keeps the floor-only rule below: it grows to fit its words and is never shrunk, and a plain open
+    // (nothing touched yet) shrinks nothing. A card the writer sized by hand keeps its size whatever its words do (it still grows when its words would be clipped).
+    const touched = touchedRef.current;
+    const rowOf = (b: Box) => Math.round(b.y * 1e4);
+    const touchedRows = new Set(boxes.filter(b => b.deckStep && touched.has(b.id)).map(rowOf));
     const next = boxes.map(b => {
       if (b.kind !== 'text') return b;
-      // FX7 S7 — skip whichever box is ACTIVELY being resized right now
-      // (activeResizeIdRef, above) — see that ref's own header comment for
-      // the full root-cause writeup (a diagonal drag narrows width while
-      // shrinking height, which can force an extra text-wrap line that
-      // this effect would otherwise measure and grow `h` back from, mid-
-      // drag, fighting the writer's own pointer in real time). The floor
-      // still applies — this box gets ONE final reconciliation pass the
-      // instant `activeResizeIdRef` clears (finish(), below), since `boxes`
-      // itself changes then too and re-triggers this same effect.
+      // FX7 S7 - skip whichever box is ACTIVELY being resized right now (activeResizeIdRef, above): a diagonal drag narrows width while shrinking height, which can force an extra text-wrap line that this effect
+      // would measure and grow `h` back from, mid-drag, fighting the writer's own pointer. This box gets ONE final reconciliation pass the instant `activeResizeIdRef` clears (finish(), below).
       if (b.id === activeResizeIdRef.current) return b;
       const el = measureEls.current.get(b.id);
       if (!el) return b;
-      const measuredPx = el.scrollHeight;
       const storedPx = b.h * pageWidthPx;
+      if (!b.sizedByHand && !b.sourceEntryId && (touched.has(b.id) || (!!b.deckStep && touchedRows.has(rowOf(b))))) {
+        const targetPx = Math.max(naturalPx(el), (b.deckStep ? CARD_H : MIN_TEXT_H) * pageWidthPx);   // content height, never below the deal's own card height (a dealt card) or the least a text card can be
+        if (Math.abs(targetPx - storedPx) <= MEASURE_TOLERANCE_PX) return b;
+        return { ...b, h: targetPx / pageWidthPx };
+      }
+      const measuredPx = el.scrollHeight;
       if (measuredPx - storedPx <= MEASURE_TOLERANCE_PX) return b;
-      changed = true;
       return { ...b, h: measuredPx / pageWidthPx };
     });
-    if (!changed) return;
-    // BUG 32b - reading scrollHeight above forced layout, which is what STARTS a lazy font's load: if any font is still loading this pass measured the fallback face, so it is discarded (loadingdone re-runs it)
+    // BUG 32 - a dealt deck's rows FIT their cards (decks/rowFit.ts: dealt cards only, on a pass where a dealt card's height changed). It applies on a plain open too, so an old board does not sit overlapping.
+    const fitted = fitDealtRows(boxes, next);
+    if (!fitted.some((b, i) => b.h !== boxes[i].h || b.y !== boxes[i].y)) return;   // nothing to correct (also what ends the pass: the fitted layout is its own fixed point)
+    // BUG 32b - reading the heights above forced layout, which is what STARTS a lazy font's load: if any font is still loading this pass measured the fallback face, so it is discarded (loadingdone re-runs it)
     if (typeof document !== 'undefined' && document.fonts && document.fonts.status === 'loading') return;
     // BUG 32b - OPENING A BOARD SAVES NOTHING: `boxes === lastSavedRef.current` means no writer's change is waiting, so this pass is a correction of the saved layout and is shown on SCREEN only (the saved
-    // mark moves with it, so the autosave and the hide/logout flushes see nothing to write); the next writer act - an edit, a move, a deal - saves the board as it then is. rowFit (BUG 32: a dealt deck's rows
-    // fit their cards, decks/rowFit.ts) applies on a plain open too, so an old board does not sit overlapping - on screen, never saved on its own.
-    const fitted = fitDealtRows(boxes, next);
+    // mark moves with it, so the autosave and the hide/logout flushes see nothing to write); the next writer act - an edit, a move, a deal - saves the board as it then is.
     if (boxes === lastSavedRef.current) lastSavedRef.current = fitted;
     setBoxes(fitted);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1523,6 +1530,7 @@ export function BoardEditor({ id }: { id: string }) {
   };
 
   const commitText = (boxId: string, text: string) => {
+    if (boxesRef.current.some(b => b.id === boxId && b.text !== text)) touchedRef.current.add(boxId);   // BUG 32c: an edit that changed the words - the card is now fitted to them
     if (framed) boardDissolve.noteWrite(); // AB1 S3 — see the hook's mount comment above
     setBoxes(prev => prev.map(b => (b.id === boxId ? { ...b, text } : b)));
     // B3 S1 — "vanishes the FIRST time the writer edits ANY dealt card's
@@ -2326,6 +2334,7 @@ export function BoardEditor({ id }: { id: string }) {
       // re-evaluates this box (now that activeResizeIdRef no longer skips
       // it) on the very next render.
       const wasResizing = phase === 'resizing';
+      const resizedId = resizingId;
       if (phase === 'resizing' || phase === 'dragging') { lastGestureEndRef.current = performance.now(); clearBoardSelection(); }
       phase = 'idle';
       delete canvas.dataset.resizing;
@@ -2333,7 +2342,18 @@ export function BoardEditor({ id }: { id: string }) {
       resizingId = null;
       resizeStart = null;
       activeResizeIdRef.current = null;
-      if (wasResizing) setBoxes(prev => prev.slice());
+      if (wasResizing) {
+        // BUG 32c - the resize is the writer acting on this card: it is fitted from now on if it is auto. A resize that lands back on the card's content height CLEARS sizedByHand (the key is removed: one way to be auto).
+        let clear = false;
+        if (commit && resizedId) {
+          const cur = boxesRef.current.find(b => b.id === resizedId);
+          const el = measureEls.current.get(resizedId);
+          if (cur && cur.sizedByHand) touchedRef.current.add(resizedId);   // only a resize that really moved the card (its first frame set the mark) counts as acting on it - a press on the handle that went nowhere touches nothing
+          if (cur && cur.sizedByHand && el) clear = Math.abs(cur.h * pageWidthPx - Math.max(naturalPx(el), (cur.deckStep ? CARD_H : MIN_TEXT_H) * pageWidthPx)) <= MEASURE_TOLERANCE_PX;
+        }
+        if (clear) setBoxes(prev => prev.map(b => { if (b.id !== resizedId) return b; const { sizedByHand: _s, ...rest } = b; void _s; return rest; }));
+        else setBoxes(prev => prev.slice());
+      }
     };
 
     const onDown = (e: PointerEvent) => {
@@ -2592,7 +2612,7 @@ export function BoardEditor({ id }: { id: string }) {
           const dy = (e.clientY - startY) / pageWidthPx;
           const minH = b.kind === 'text' ? MIN_TEXT_H : MIN_PIN_H;
           const newH = Math.max(minH, resizeStart!.h + dy);
-          return { ...b, w: newW, h: newH };
+          return { ...b, w: newW, h: newH, ...(b.kind === 'text' ? { sizedByHand: true as const } : {}) };   // BUG 32c: a text card the writer resizes by hand is theirs to size
         }));
       }
     };
