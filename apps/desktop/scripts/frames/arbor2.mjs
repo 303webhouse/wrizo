@@ -34,6 +34,25 @@ const rhizomeAt = async (app, words) => {
   await waitSoft(app, "!!document.querySelector('.wz-rhizome-field')", { label: 'rhizome field', timeout: 4000 });
 };
 
+// item 9: open the Desk under the flag, optionally pick the bar's Logo "Sage", and prove the drawn mark is the room's copy and loads
+const logoAt = async (app, which) => {
+  await flagTo(app, '#/');
+  await waitSoft(app, "!!document.querySelector('img.wz-logo')", { label: 'logo', timeout: 6000 });
+  if (which === 'all') await clickText(app, '.arbor2-bar-opt', 'Sage');
+  await sleep(500);
+  const r = await app.evalJs(`(async () => {
+    const img = document.querySelector('img.wz-logo'), room = document.documentElement.getAttribute('data-arbor2-room');
+    const content = img ? getComputedStyle(img).content : null;
+    const url = content && content.startsWith('url(') ? content.slice(4, content.lastIndexOf(')')).split('"').join('') : null;
+    let status = null, type = null, w = 0;
+    if (url) { const res = await fetch(url); status = res.status; type = res.headers.get('content-type'); const b = new Uint8Array(await res.arrayBuffer()); w = b.length > 24 ? (b[16] << 24 | b[17] << 16 | b[18] << 8 | b[19]) : 0; }
+    return { room, url, status, type, w, rect: img ? img.getBoundingClientRect().width : 0 };
+  })()`);
+  const want = (r.room === 'night' ? 'wrizo-logo-sage' : 'wrizo-logo-olive') + (which === 'all' ? '-all' : '') + '.png';
+  if (!r.url || !r.url.endsWith('/brand/arbor2/' + want) || r.status !== 200 || !/png/.test(r.type || '') || r.w !== 900 || !(r.rect > 0))
+    throw new Error('LOGO PROOF FAILED ' + JSON.stringify({ want, ...r }));
+};
+
 // THE ZOOMED PAGE PROOF (Fable, Oct 29: "the pergola shadows must NEVER cross the prose column, including through the page's see-through
 // fades; the night fade must not turn the paper into a band"). Runs IN the page. On Free Write's Typewriter zoom the column's band mask makes
 // the page see-through at its top and bottom, so:
@@ -340,12 +359,19 @@ export default {
       const back = await app.evalJs(M);
       // what each switch must change: breath and shadows only exist in their own room (night / day); the rest in both
       const own = (k === 'breath' && before.room !== 'night') || (k === 'shadows' && before.room !== 'day') ? null : k;
-      changed[k] = { moved: own ? off[own] !== before[own] : 'n/a', back: back[k] === before[k], rect: off.rect === before.rect && back.rect === before.rect, store: leaks(before.store, off.store).concat(leaks(before.store, back.store)) };
+      changed[k] = { off: off[k], moved: own ? off[own] !== before[own] : 'n/a', back: back[k] === before[k], rect: off.rect === before.rect && back.rect === before.rect, store: leaks(before.store, off.store).concat(leaks(before.store, back.store)) };
     }
     const ok = opened && Object.values(changed).every((c) => c.moved !== false && c.back && c.rect && c.store.length === 0);
     // the picture: three switches off (left off for the frame only; the next screen starts on a fresh Desk)
     for (const k of ['flutter', 'pull', 'tabs']) await app.evalJs(`document.querySelector('.arbor2-mood-switch[data-mood="${k}"]')?.click()`);
     await sleep(200);
-    if (!ok) throw new Error('MOOD PROOF FAILED ' + JSON.stringify({ opened, changed, before: { ...before, store: undefined, rect: undefined } }));
+    // the job keeps 300 characters of an error: only the failing switches, with what they measured off and back
+    const bad = Object.fromEntries(Object.entries(changed).filter(([, c]) => !(c.moved !== false && c.back && c.rect && c.store.length === 0)));
+    if (!ok) throw new Error('MOOD PROOF FAILED ' + JSON.stringify({ opened, bad, room: before.room, was: Object.fromEntries(Object.keys(bad).map((k) => [k, before[k]])) }));
   },
+  // item 9: the sage logo on the Desk (night sage / day olive, the o kept brass) - the proof: the drawn picture is the room's copy, and it
+  // loads (a real PNG, not a broken image)
+  'arbor-logo': async (app) => { await logoAt(app, 'brass'); },
+  // ...and with the bar's Logo row on "Sage" (the o recoloured too: Nick's call)
+  'arbor-logo-sage': async (app) => { await logoAt(app, 'all'); },
 };
