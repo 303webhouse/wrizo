@@ -1469,6 +1469,19 @@ export function BoardEditor({ id }: { id: string }) {
   // clientHeight — so this only ever fires (and only ever GROWS `h`) when
   // content genuinely overflows what's currently allotted; a manually
   // enlarged card's own extra whitespace is never clawed back.
+  // BUG 32b - a card is measured once the page's FONTS are in, never on the fallback face a lazy font leaves while it loads: the reflow below re-runs on `loadingdone` (and once `fonts.ready` settles),
+  // so a card's height does not depend on load timing. (fontTick only re-triggers the effect.)
+  const [fontTick, setFontTick] = useState(0);
+  useEffect(() => {
+    const f = typeof document !== 'undefined' ? document.fonts : undefined;
+    if (!f) return;
+    let live = true;
+    const bump = () => { if (live) setFontTick(t => t + 1); };
+    f.addEventListener('loadingdone', bump);
+    f.ready.then(bump).catch(() => {});
+    return () => { live = false; f.removeEventListener('loadingdone', bump); };
+  }, []);
+
   useLayoutEffect(() => {
     if (pageWidthPx <= 0) return;
     let changed = false;
@@ -1492,10 +1505,18 @@ export function BoardEditor({ id }: { id: string }) {
       changed = true;
       return { ...b, h: measuredPx / pageWidthPx };
     });
-    // BUG 32 - a dealt deck's rows FIT their cards: a card that grew carries the rows under it down with it (decks/rowFit.ts; dealt cards only, growth only)
-    if (changed) setBoxes(fitDealtRows(boxes, next));
+    if (!changed) return;
+    // BUG 32b - reading scrollHeight above forced layout, which is what STARTS a lazy font's load: if any font is still loading this pass measured the fallback face, so it is discarded (loadingdone re-runs it)
+    if (typeof document !== 'undefined' && document.fonts && document.fonts.status === 'loading') return;
+    // BUG 32b - OPENING A BOARD SAVES NOTHING: `boxes === lastSavedRef.current` means no writer's change is waiting, so this pass is a correction of the saved layout and is shown on screen only (the saved
+    // mark moves with it, so the autosave and the hide/logout flushes see nothing to write); the next writer act - an edit, a move, a deal - saves the board as it then is. rowFit (BUG 32: a dealt deck's rows
+    // fit their cards, decks/rowFit.ts) runs only for a writer's change, a deal or a text edit, never on a plain open.
+    if (boxes === lastSavedRef.current) {
+      lastSavedRef.current = next;
+      setBoxes(next);
+    } else setBoxes(fitDealtRows(boxes, next));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [boxes, pageWidthPx, popupBoxId]);
+  }, [boxes, pageWidthPx, popupBoxId, fontTick]);
 
   const measureRef = (boxId: string, el: HTMLDivElement | null) => {
     if (el) measureEls.current.set(boxId, el);
