@@ -1,0 +1,18 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=5 tree=838bc75b bundle=index-fRafXDL-.js/946069b out=C:/Users/nickh/t11-bisect/p11-anchor4/default
+(node:35484) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[01/5] FAIL      exit=1  121s flux-v2.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FLUX-V2 VERIFY: FAIL - 2/156 failed
+[02/5] FAIL      exit=1   20s fx1.mjs :: ROWS-SHADOW VERIFY: PASS (10 renders checked, shadow == DOM on every one) ;; FX1 VERIFY: FAIL — 1/23 failed
+[03/5] FAIL      exit=1   80s fx5.mjs :: ROWS-SHADOW VERIFY: PASS (131 renders checked, shadow == DOM on every one) ;; FX5 VERIFY: FAIL — 1/57 failed
+[04/5] OK        exit=0   14s guided-w1.mjs :: PARKED (never run, original kept verbatim in the source): Y3 - SUPERSEDED Oct 25 (Nick): the caret lands in the card on opening / stepping; successors Y4 Y5 Y6 | D3 - SUPERSEDED Oct 26 (Nick, W5 Lit): a lit mark is brass at rest (the writer's own act); successor D14 ;; GUIDED-W1 VERIFY: PASS (115 checks)
+[05/5] FAIL      exit=1   42s polish10-ground.mjs :: ROWS-SHADOW VERIFY: PASS (12 renders checked, shadow == DOM on every one) ;; POLISH10-GROUND VERIFY: FAIL - 3/18 failed
+
+SUITE DONE HARNESS_PARKED=unset — 1/5 of 5 returned a passing verdict
+  FAIL: flux-v2.mjs — full output at C:\Users\nickh\t11-bisect\p11-anchor4\default\flux-v2.mjs.default.txt
+  FAIL: fx1.mjs — full output at C:\Users\nickh\t11-bisect\p11-anchor4\default\fx1.mjs.default.txt
+  FAIL: fx5.mjs — full output at C:\Users\nickh\t11-bisect\p11-anchor4\default\fx5.mjs.default.txt
+  FAIL: polish10-ground.mjs — full output at C:\Users\nickh\t11-bisect\p11-anchor4\default\polish10-ground.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=838bc75b bundle=index-fRafXDL-.js/946069b

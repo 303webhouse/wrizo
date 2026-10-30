@@ -1,0 +1,10 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=1 files=1 tree=bc6cf256 bundle=index-Cxvl7CYX.js/943093b out=C:/Users/nickh/t11-bisect/p00-main/parked
+(node:34608) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[01/1] OK        exit=0   14s guided-w1.mjs :: PARKED (never run, original kept verbatim in the source): Y3 - SUPERSEDED Oct 25 (Nick): the caret lands in the card on opening / stepping; successors Y4 Y5 Y6 | D3 - SUPERSEDED Oct 26 (Nick, W5 Lit): a lit mark is brass at rest (the writer's own act); successor D14 ;; GUIDED-W1 VERIFY: PASS (115 checks)
+
+SUITE DONE HARNESS_PARKED=1 — 1/1 of 1 returned a passing verdict
+SUITE RESULT: CLEAN — tree=bc6cf256 bundle=index-Cxvl7CYX.js/943093b
