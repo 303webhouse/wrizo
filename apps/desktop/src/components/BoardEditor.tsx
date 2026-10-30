@@ -63,6 +63,7 @@ import { addPlacement, viewsFor, walkOrder, setWalkPos } from '../store/walk';
 import { useTheme } from '../store/theme';
 import { getNotebookPages } from '../store/persistence';
 import { promptToShow, bodyIsEmpty, pagesOfPlace, kindled, isLit, withLit } from '../store/guided';
+import { fitDealtRows } from '../decks/rowFit';
 import { DeckGaps } from './DeckGaps';
 import { useDeckRewards } from './useDeckRewards';
 import { KindleMark, LitMark } from './Walk';
@@ -1450,7 +1451,8 @@ export function BoardEditor({ id }: { id: string }) {
       changed = true;
       return { ...b, h: measuredPx / pageWidthPx };
     });
-    if (changed) setBoxes(next);
+    // BUG 32 - a dealt deck's rows FIT their cards: a card that grew carries the rows under it down with it (decks/rowFit.ts; dealt cards only, growth only)
+    if (changed) setBoxes(fitDealtRows(boxes, next));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes, pageWidthPx, popupBoxId]);
 
