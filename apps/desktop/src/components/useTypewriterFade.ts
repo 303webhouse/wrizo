@@ -38,6 +38,7 @@ const FADE_LINES = 3;         // the fade band's depth, in line-heights (S1)
 // verified empirically via the same harness technique FX3's own S3 used
 // (fx4.mjs's own S1 section), not just derived on paper.
 const START_FRACTION = 0.25;
+const TOP_STOP_MIN = 56;      // the zoomed band's .12 stop is never nearer the column's top than this (screen px), so the top rows end in the theme's ground (polish10-ground G1)
 // FX3 S3 — "the first scroll engaged late." TYPEWRITER_BAND alone governs
 // how soon the hold-scroll triggers, and it's a SHARED constant read by
 // every useTypewriterFade caller. CONTAINER_HOLD_BAND is threaded into the
@@ -213,6 +214,9 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         const h = zoom.holdRef.current.getBoundingClientRect();
         zoom.holdRef.current.style.setProperty('--tw-lh', `${(lineHeight() * sc).toFixed(2)}px`);
         zoom.holdRef.current.style.setProperty('--tw-anchor', `${zoom.anchor * 100}%`);   // the ONE anchor: the hold below and the mask read it
+        // the band's first (.12) stop is 6.6 lines above the anchor: at a 50% anchor on a short column that is within a few px of the top, and the top rows
+        // then keep a sliver of the page instead of ending in the theme's ground (polish10-ground G1 at 1366). The stop never sits nearer than TOP_STOP_MIN.
+        zoom.holdRef.current.style.setProperty('--tw-lead', `${Math.max(0, TOP_STOP_MIN - (h.height * zoom.anchor - 6.6 * lineHeight() * sc)).toFixed(1)}px`);
         const startPx = (h.top + h.height * zoom.anchor - container.getBoundingClientRect().top) / sc;
         scrolledEl.style.setProperty('--tw-start-offset', `${Math.max(0, Math.round(startPx))}px`);
         // and room BELOW the last line, so the last line can rise to the anchor at all: zoomed, the scroller's box reaches far below the stage,
