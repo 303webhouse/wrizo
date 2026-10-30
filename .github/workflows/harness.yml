@@ -130,7 +130,17 @@ jobs:
         with:
           ref: ${{ inputs.ref || github.sha }}
           path: build
+          # the box checks out with FULL history (files run git show / merge-base diffs); a shallow clone fails them
+          fetch-depth: 0
           persist-credentials: false
+
+      - name: Match the box checkout (CRLF working tree)
+        working-directory: build
+        run: |
+          set -eu
+          # the box runs core.autocrlf=true: index LF, working tree CRLF. Some checks read source text, so give the runner the same bytes.
+          git config core.autocrlf true
+          git checkout-index --all --force
 
       - name: Make the tree CI-capable (only if it lacks the runner guard)
         working-directory: build
