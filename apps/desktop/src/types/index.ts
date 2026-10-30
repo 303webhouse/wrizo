@@ -556,6 +556,10 @@ export interface Box {
   // change - sync stores the blob whole, like seq / onCanvas / deckStep). `true` = lit; ABSENT = not lit (unmarking REMOVES the key, so there is one way to be unlit). The writer can unmark it from the same door.
   // It is a statement of the writer's, never a measurement: it never counts toward coverage (kindled() ignores it), never completes a Deck and never celebrates (store/guided.ts withLit, store/deckRewards.ts).
   lit?: boolean;
+  // BUG 32c (Nick APPROVED, Oct 30: new saved data) - THE WRITER SIZED THIS CARD BY HAND. One additive optional field inside the board's own `boxes` jsonb (zero schema: no column, no migration, no server change -
+  // sync stores the blob whole, like lit / seq / deckStep). `true` = hand-sized, the card KEEPS its size; ABSENT = auto, the card fits its content (grows and, once the writer has acted on it, shrinks). Set ONLY by a
+  // resize the writer performs on a text card; resizing it back to its content height CLEARS it (the key is removed, so there is one way to be auto). Never set by a deal, a move, an edit or the reflow.
+  sizedByHand?: true;
   strokes?: Stroke[];  // kind 'ink' (incl. erases) — re-normalized to the box on port
   sourceEntryId?: string;
   portedAt?: string;
