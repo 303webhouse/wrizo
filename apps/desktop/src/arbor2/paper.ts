@@ -9,7 +9,8 @@
 //          now fade into paper, not into the room. It sits at z-index -1 in body (behind every surface; the page, drawers and tabs paint over
 //          it), takes no pointer, and never moves or resizes the page (it follows the page's rect; it does not set it).
 //   HOLE   the sun layer (sun.ts) gets an evenodd clip-path with a hole over the visible page of ANY mounted prose page, zoomed or not, so no
-//          slat or leaf is drawn there by any route.
+//          slat or leaf is drawn there by any route. The room's vignette (body::after) gets the same hole through --arbor2-page-hole.
+//   The visible page stops at the stage's progress row, which keeps the room behind it.
 // Measuring is two getBoundingClientRect reads, on resize, on the zoom's own event, on route change and every 300 ms (never on a keystroke).
 // Nothing is stored.
 type Box = { l: number; t: number; r: number; b: number };
@@ -21,7 +22,12 @@ export function visiblePage(): { box: Box; zoomed: boolean; paper: string } | nu
   if (a.width < 2 || a.height < 2) return null;
   const col = p.closest('.mode-pagecol') as HTMLElement | null;
   const c = col ? col.getBoundingClientRect() : a;
-  const box = { l: Math.max(a.left, c.left), t: Math.max(a.top, c.top), r: Math.min(a.right, c.right), b: Math.min(a.bottom, c.bottom, innerHeight) };
+  // the zoomed page reaches past the stage's progress row (the column's box does too): the sheet stops at that row, so the goal line and the
+  // word count keep the room behind them (on cream they lost their contrast - the first green frames, run 40986639311)
+  const prog = p.closest('.mode-stage')?.querySelector('.mode-progress') as HTMLElement | null;
+  const pr = prog ? prog.getBoundingClientRect() : null;
+  const foot = pr && pr.height > 0 && pr.top > a.top ? pr.top : Infinity;
+  const box = { l: Math.max(a.left, c.left), t: Math.max(a.top, c.top), r: Math.min(a.right, c.right), b: Math.min(a.bottom, c.bottom, innerHeight, foot) };
   if (box.r - box.l < 2 || box.b - box.t < 2) return null;
   return { box, zoomed: col?.getAttribute('data-zoom') === 'true', paper: getComputedStyle(p).backgroundColor };
 }
@@ -62,6 +68,10 @@ export function mountPaper(): void {
         sun.style.clipPath = '';
       }
     }
+    // the room's vignette (index.css body::after, fixed inset 0) paints AFTER the sheet in body's stacking context, so where the zoomed page
+    // is see-through it greyed the paper's top and bottom (night's band, still there in run 40986639311): it gets the same hole
+    if (v) document.documentElement.style.setProperty('--arbor2-page-hole', holePath(innerWidth, innerHeight, 0, 0, v.box));
+    else document.documentElement.style.removeProperty('--arbor2-page-hole');
   };
   update();
   addEventListener('resize', update);
