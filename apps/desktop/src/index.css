@@ -3573,7 +3573,8 @@ a:focus-visible,
    1.6 capped to what fits the stage's width) - scale, never reflow: the page's own layout box, its width and every line break stay exactly as in
    the normal view. The column widens to the stage so the band mask (drawn in ITS box) spans the zoomed page; the page keeps its own width.
    THE BAND: Cursor's final stops, in line-heights (--tw-lh, the real line height x the zoom, written by the typewriter engine) from the anchor
-   (50% of the column since polish #10 item 19, 60% before - the engine holds the writing line's top there): 0 at the top, .12 / .40 / .72 at 6.6 / 4.2 / 2.2 lines above, full from
+   (50% of the column since polish #10 item 19, 60% before - the engine holds the writing line's top there; --tw-lead keeps the .12 stop 56px or more from the
+   top, so the top rows stay in the theme's ground at 1366, where 6.6 lines above a 50% anchor is 13px - polish10-ground G1): 0 at the top, .12 / .40 / .72 at 6.6 / 4.2 / 2.2 lines above, full from
    0.15 above to 1.45 below (the writing line alone), .40 at 2.8 below, 0 from 4.4 below. Text AND paper fade into the desk together - the paper
    is never framed by an edge or a shadow while zoomed. The old top-of-scroller mask (a .15 floor) stands down: this band replaces it. */
 /* PAGE-SIZE - while zoomed the drawers' anchors follow the ZOOMED edge, which leaves the Sliver only the zoom's gutter of desk: opened there, it
@@ -3588,12 +3589,12 @@ a:focus-visible,
   width:100%;
   --tw-anchor: 50%;   /* polish #10 item 19: the middle (the engine writes the same value from ZOOM_ANCHOR) */
   -webkit-mask-image:linear-gradient(to bottom, transparent 0,
-    rgba(0,0,0,.12) calc(var(--tw-anchor) - 6.6 * var(--tw-lh, 43.52px)), rgba(0,0,0,.4) calc(var(--tw-anchor) - 4.2 * var(--tw-lh, 43.52px)),
+    rgba(0,0,0,.12) calc(var(--tw-anchor) - 6.6 * var(--tw-lh, 43.52px) + var(--tw-lead, 0px)), rgba(0,0,0,.4) calc(var(--tw-anchor) - 4.2 * var(--tw-lh, 43.52px)),
     rgba(0,0,0,.72) calc(var(--tw-anchor) - 2.2 * var(--tw-lh, 43.52px)), #000 calc(var(--tw-anchor) - .15 * var(--tw-lh, 43.52px)),
     #000 calc(var(--tw-anchor) + 1.45 * var(--tw-lh, 43.52px)), rgba(0,0,0,.4) calc(var(--tw-anchor) + 2.8 * var(--tw-lh, 43.52px)),
     transparent calc(var(--tw-anchor) + 4.4 * var(--tw-lh, 43.52px)), transparent 100%);
           mask-image:linear-gradient(to bottom, transparent 0,
-    rgba(0,0,0,.12) calc(var(--tw-anchor) - 6.6 * var(--tw-lh, 43.52px)), rgba(0,0,0,.4) calc(var(--tw-anchor) - 4.2 * var(--tw-lh, 43.52px)),
+    rgba(0,0,0,.12) calc(var(--tw-anchor) - 6.6 * var(--tw-lh, 43.52px) + var(--tw-lead, 0px)), rgba(0,0,0,.4) calc(var(--tw-anchor) - 4.2 * var(--tw-lh, 43.52px)),
     rgba(0,0,0,.72) calc(var(--tw-anchor) - 2.2 * var(--tw-lh, 43.52px)), #000 calc(var(--tw-anchor) - .15 * var(--tw-lh, 43.52px)),
     #000 calc(var(--tw-anchor) + 1.45 * var(--tw-lh, 43.52px)), rgba(0,0,0,.4) calc(var(--tw-anchor) + 2.8 * var(--tw-lh, 43.52px)),
     transparent calc(var(--tw-anchor) + 4.4 * var(--tw-lh, 43.52px)), transparent 100%);
