@@ -2,7 +2,7 @@
 //   P1  the hole lands where the page is: viewport pixels minus the layer's own offset (the layer sits at inset -80px)
 //   P2  the path is evenodd, outer rect first, and the frames proof's OWN regex (scripts/frames/arbor2.mjs zoomProof) reads the hole back
 //       exactly - so the browser check and the clip it measures cannot drift apart in format
-import { holePath, sheetMask, vignetteMask, featherFor, FEATHER } from '../../src/arbor2/paper.ts';
+import { holePath, sheetMask, vignetteMask, featherFor, FEATHER, SUN_EDGE } from '../../src/arbor2/paper.ts';
 import { zoomProof, holeOf, stopsOf } from '../frames/arbor2.mjs';
 
 const checks = [];
@@ -67,6 +67,14 @@ ok('P4 the vignette is whole just outside the page', [[box.l - 1, 400], [box.r +
 const hg = stopsOf(vignetteMask(box, 0));
 const hA = (x, y) => 1 - hg.reduce((m, g) => m * (1 - at(g.stops, g.axis === 'x' ? x : y)), 1);
 ok('P4 feather 0 (a framed, unzoomed page) is the old hard hole: 0 just inside, 1 just outside', hA(box.l + .5, 400) === 0 && hA(box.r - .5, box.b - .5) === 0 && hA(box.l - .5, 400) === 1 && hA(700, box.b + .5) === 1, '');
+// P5 THE PERGOLA'S SOFT EDGE (Fable, Oct 29): the sun's mask in the layer's own box (inset -80px): whole at the page's edge, half 12 px in,
+// nothing from 24 px in - so a prose column 100 px inside the page never catches the light
+const lb = { l: box.l + 80, t: box.t + 80, r: box.r + 80, b: box.b + 80 }, ug = stopsOf(vignetteMask(lb, SUN_EDGE));
+const uA = (x, y) => 1 - ug.reduce((m, g) => m * (1 - at(g.stops, g.axis === 'x' ? x + 80 : y + 80)), 1);   // viewport (x, y) -> layer box
+ok('P5 the sun is whole at the page edge, half at 12 px, nothing from 24 px in', SUN_EDGE === 24 && uA(box.l, 400) === 1 && Math.abs(uA(box.l + 12, 400) - .5) < 1e-9 && uA(box.l + 24, 400) === 0 && uA(box.r - 24, box.b - 24) === 0, String(uA(box.l + 12, 400)));
+let prose = 0;
+for (let x = box.l + 100; x <= box.r - 100; x += 7) for (let y = box.t + 100; y <= box.b - 100; y += 7) prose = Math.max(prose, uA(x, y));
+ok('P5 nothing on a prose column 100 px inside the page', prose === 0, String(prose));
 
 for (const c of checks) console.log(`${c.pass ? 'ok  ' : 'FAIL'} ${c.name}${c.pass ? '' : '  ' + c.detail}`);
 const pass = checks.every((c) => c.pass);
