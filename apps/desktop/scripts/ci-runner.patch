@@ -1,0 +1,31 @@
+diff --git a/apps/desktop/scripts/box-grant.mjs b/apps/desktop/scripts/box-grant.mjs
+index 62d60de8..78e28d91 100644
+--- a/apps/desktop/scripts/box-grant.mjs
++++ b/apps/desktop/scripts/box-grant.mjs
+@@ -289,5 +289,13 @@ export function checkGrantAt(grantPath, token, opts = {}) {
+ // the real check at the real grant — `checkGrantAt` is exported for the tests
+ // that must drive it against temporary files, and for nothing else.
+ export function checkGrant(token) {
++  if (isGithubHostedRunner()) return { ok: true, lane: 'github-actions' };
+   return checkGrantAt(GRANT_PATH, token);
+ }
++
++// CI (docs/deploy.md "Harness on GitHub Actions"): the box grant allocates ONE shared machine between lanes. A GitHub-hosted job IS its own
++// throwaway machine - nothing to share and no grant file - so it needs no turn. This is deliberately impossible on the box: it is Windows, and a
++// hosted runner is Linux with RUNNER_ENVIRONMENT=github-hosted set by GitHub itself. All three plus the workflow's own WS_CI_RUNNER=1 must hold.
++export function isGithubHostedRunner(env = process.env, platform = process.platform) {
++  return platform === 'linux' && env.GITHUB_ACTIONS === 'true' && env.RUNNER_ENVIRONMENT === 'github-hosted' && env.WS_CI_RUNNER === '1';
++}
+diff --git a/apps/desktop/scripts/runtime-verify.mjs b/apps/desktop/scripts/runtime-verify.mjs
+index af9e24dd..51c31aab 100644
+--- a/apps/desktop/scripts/runtime-verify.mjs
++++ b/apps/desktop/scripts/runtime-verify.mjs
+@@ -334,6 +334,8 @@ function launchBrowser(browser, udd, url, { headful = process.env.WS_HEADFUL ===
+     ...(headful ? [] : ['--headless=new']),
+     '--disable-gpu', '--no-first-run', '--no-default-browser-check',
+     '--disable-extensions', '--disable-background-networking',
++    // GitHub-hosted Linux runners (WS_CI_RUNNER=1, set only by .github/workflows/harness.yml): the sandbox needs user namespaces the runner image denies, and /dev/shm is small. Never on the box.
++    ...(process.env.WS_CI_RUNNER === '1' && process.platform === 'linux' ? ['--no-sandbox', '--disable-dev-shm-usage'] : []),
+     `--user-data-dir=${udd}`, '--remote-debugging-port=0', url,
+   ], { stdio: 'ignore' });
+   return proc;

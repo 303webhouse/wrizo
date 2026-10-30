@@ -41,13 +41,6 @@ on:
         description: 'Optional: path inside the built branch to a .mjs that default-exports extra screens (e.g. apps/desktop/scripts/frames/arbor.mjs)'
         required: false
         default: ''
-  # A push to the tooling branch photographs that branch itself with the defaults. It is also what REGISTERS this file with GitHub, so
-  # `gh workflow run frames.yml --ref ci/actions-harness` works afterwards (a workflow that has never run cannot be dispatched by name).
-  push:
-    branches: [ci/actions-harness]
-    paths:
-      - '.github/workflows/frames.yml'
-      - 'apps/desktop/scripts/ci-frames.mjs'
 
 concurrency:
   group: frames-${{ github.ref }}-${{ inputs.ref || github.ref_name }}
