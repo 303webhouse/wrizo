@@ -2319,6 +2319,7 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     // (step 3), and this explicit override is what keeps Machina's tab reading "Plan" - an override sitting on top of a renamed canonical, not an absence of one.
     pagePlanDoor: 'Plan',
     boardPageDoor: 'Files',
+    boardPairWithPage: 'Start Files',   // Fable, Oct 29: the board's pair-with-a-new-page button names a Page 'File' here, like boardPageDoor beside it
     drawerPage: 'Files',
     stripPlan: 'Plans',
     drawerPlaceJournal: 'Notebook',
