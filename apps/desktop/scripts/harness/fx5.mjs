@@ -91,6 +91,7 @@ const freshProsePage = async (app, width = 1400, height = 900) => {
   await app.goto('/project/new');
   await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject picker (book)' });
   await app.evalJs("document.querySelector('[data-kind=\"book\"]').click()");
+  await app.evalJs('window.__wzTwTrace = []');   // the engine reads it once, at mount: S1 (c) prints its own account of the move when it fails
   await app.click('Start writing');
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted, framed' });
   await sleep(250);
@@ -323,6 +324,7 @@ await withHarness(async (app) => {
     // page-size: the editor's VISUAL line count around the typed line (a wrap is one line of honest advance)
     const visualLines = () => app.evalJs("(() => { const ed = document.querySelector('.forward-only-editor'); const r = document.createRange(); r.selectNodeContents(ed); const tops = []; for (const q of r.getClientRects()) { if (q.height < 4) continue; const t = Math.round(q.top); if (!tops.some((x) => Math.abs(x - t) < 4)) tops.push(t); } return tops.length; })()");
     const linesBeforeType = await visualLines();
+    const trace0 = await app.evalJs('(window.__wzTwTrace || []).length');
     await app.typeKeys('one more line after scrolling up manually, the writer now owns this position\n');
     await sleep(350);
     const afterTypeScrollTop = await app.evalJs("document.querySelector('.mode-scroll').scrollTop");
@@ -337,7 +339,8 @@ await withHarness(async (app) => {
     //   JSON.stringify({ settled, manualTarget, afterManualScroll, afterTypeScrollTop, lineHeightPx }));
     // ------------------------------------------------------------------
     const linesAdded = (await visualLines()) - linesBeforeType;
-    fx5FreeSeen = { settled, afterManualScroll, afterTypeScrollTop, lineHeightPx, linesAdded };
+    const twTrace = await app.evalJs(`(window.__wzTwTrace || []).slice(Math.max(0, ${trace0} - 40)).filter((t) => t.d !== 'wait').map((t) => t.d + (t.from != null ? ':' + t.from + '>' + t.to + '/' + t.maxTop + '@' + t.advance : t.top != null ? ':' + t.top : '')).join(' ').slice(0, 900)`);
+    fx5FreeSeen = { settled, afterManualScroll, afterTypeScrollTop, lineHeightPx, linesAdded, twTrace };
     ok('S1 (c) [page-size successor]: typing after a manual scroll-up does NOT snap the page back to the band — the box moves by no more than the writer\'s OWN new lines (each visual line the typing added, + 0.6 of a line), and stays well short of the pre-scroll settled value',
       linesAdded >= 1 && afterTypeScrollTop - afterManualScroll <= lineHeightPx * (linesAdded + 0.6) && afterTypeScrollTop >= afterManualScroll - 1 && afterTypeScrollTop < settled - 40,
       JSON.stringify(fx5FreeSeen));
@@ -371,8 +374,13 @@ await withHarness(async (app) => {
     // ------------------------------------------------------------------
     const startZoom = await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null");
     fx5StartSeen = { ...proseInfo, zoom: startZoom };
-    ok('S1 (d) [page-size successor]: a fresh prose page opens in the Typewriter zoom and its first line starts at the band\'s anchor - 60% of the column (within 5%)',
-      startZoom === 'true' && Math.abs(proseInfo.fraction - 0.6) <= 0.05, JSON.stringify(fx5StartSeen));
+    // ---- PARKED - SUPERSEDED by POLISH #10 item 19 (Nick, Oct 25: "seems too low on the screen to start"): the writing line - and a fresh page's first line - is held at the MIDDLE of the visible page, 50% of the column (pageScale.ts ZOOM_ANCHOR), not 60%. Kept VERBATIM and no longer run; record in the parked section; successor follows.
+    //
+    // ok('S1 (d) [page-size successor]: a fresh prose page opens in the Typewriter zoom and its first line starts at the band\'s anchor - 60% of the column (within 5%)',
+    //   startZoom === 'true' && Math.abs(proseInfo.fraction - 0.6) <= 0.05, JSON.stringify(fx5StartSeen));
+    // ------------------------------------------------------------------
+    ok('S1 (d) [polish #10 item 19 successor]: a fresh prose page opens in the Typewriter zoom and its first line starts at the band\'s anchor - the MIDDLE, 50% of the column (within 5%)',
+      startZoom === 'true' && Math.abs(proseInfo.fraction - 0.5) <= 0.05, JSON.stringify(fx5StartSeen));
   }
 
   // --- S1 STOP-clause ink-coordinate re-proof [PARKED WHOLE — FX14 S2] ------
@@ -1358,8 +1366,15 @@ if (process.env.HARNESS_PARKED === '1') {
       o.linesAdded >= 1 && o.afterTypeScrollTop - o.afterManualScroll <= o.lineHeightPx * (o.linesAdded + 0.6) && o.afterTypeScrollTop < o.settled - 40, JSON.stringify(o));
   }
   // PAGE-SIZE'S PARK AUDIT (Oct 24) - S1 (d)'s quarter start. Its record re-verifies the new truth from the live run: zoomed, the start is the anchor.
-  pok('PARKED (was "S1 (d): the start offset (25%) is unchanged — the visual start still reads as \"about a quarter\"") - page-size: a fresh Arbor page opens zoomed; the first line starts at the band\'s anchor (60%); live successor: S1 (d) [page-size successor]',
-    !!fx5StartSeen && fx5StartSeen.zoom === 'true' && Math.abs(fx5StartSeen.fraction - 0.6) <= 0.05, JSON.stringify(fx5StartSeen));
+  // ---- RE-PARKED, generation 2: POLISH #10 item 19 (Nick, Oct 25: "seems too low on the screen to start"): the writing line - and a fresh page's first line - is held at the MIDDLE of the visible page, 50% of the column (pageScale.ts ZOOM_ANCHOR), not 60%. The record, VERBATIM, no longer runs; its successor record and the successor's own park follow.
+  //
+  // pok('PARKED (was "S1 (d): the start offset (25%) is unchanged — the visual start still reads as \"about a quarter\"") - page-size: a fresh Arbor page opens zoomed; the first line starts at the band\'s anchor (60%); live successor: S1 (d) [page-size successor]',
+  //   !!fx5StartSeen && fx5StartSeen.zoom === 'true' && Math.abs(fx5StartSeen.fraction - 0.6) <= 0.05, JSON.stringify(fx5StartSeen));
+  // ------------------------------------------------------------------
+  pok('PARKED, generation 2 (was "S1 (d): the start offset (25%) is unchanged ...", re-parked by page-size at 60%) - polish #10 item 19: the first line starts at the middle, 50%; live successor: S1 (d) [polish #10 item 19 successor]',
+    !!fx5StartSeen && fx5StartSeen.zoom === 'true' && Math.abs(fx5StartSeen.fraction - 0.5) <= 0.05, JSON.stringify(fx5StartSeen));
+  pok('PARKED (was "S1 (d) [page-size successor]: a fresh prose page opens in the Typewriter zoom and its first line starts at the band\'s anchor - 60% of the column (within 5%)") - polish #10 item 19: the middle, 50%; live successor: S1 (d) [polish #10 item 19 successor]',
+    !!fx5StartSeen && fx5StartSeen.zoom === 'true' && Math.abs(fx5StartSeen.fraction - 0.5) <= 0.05, JSON.stringify(fx5StartSeen));
   // TYPED-LITERAL (2026-10-16) - S6's typed-marks reading. Its record asserts the new truth from the live run: the hidden marks are a Ctrl+B run's.
   pok('PARKED (was "S6 [PR #7 successor]: Draft mode hides its marks too - its .md-mark spans carry .md-mark-hidden (item 211 applies to every writing surface)") - typed-literal: typed `**` is literal now; live successor: S6 [typed-literal successor] (Ctrl+B)',
     !!fx5DraftBold && fx5DraftBold.bold >= 1 && fx5DraftBold.marks >= 2 && fx5DraftBold.allHidden, JSON.stringify(fx5DraftBold));

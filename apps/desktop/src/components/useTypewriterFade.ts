@@ -38,6 +38,7 @@ const FADE_LINES = 3;         // the fade band's depth, in line-heights (S1)
 // verified empirically via the same harness technique FX3's own S3 used
 // (fx4.mjs's own S1 section), not just derived on paper.
 const START_FRACTION = 0.25;
+const TOP_STOP_MIN = 56;      // the zoomed band's .12 stop is never nearer the column's top than this (screen px), so the top rows end in the theme's ground (polish10-ground G1)
 // FX3 S3 — "the first scroll engaged late." TYPEWRITER_BAND alone governs
 // how soon the hold-scroll triggers, and it's a SHARED constant read by
 // every useTypewriterFade caller. CONTAINER_HOLD_BAND is threaded into the
@@ -213,12 +214,15 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         const h = zoom.holdRef.current.getBoundingClientRect();
         zoom.holdRef.current.style.setProperty('--tw-lh', `${(lineHeight() * sc).toFixed(2)}px`);
         zoom.holdRef.current.style.setProperty('--tw-anchor', `${zoom.anchor * 100}%`);   // the ONE anchor: the hold below and the mask read it
+        // the band's first (.12) stop is 6.6 lines above the anchor: at a 50% anchor on a short column that is within a few px of the top, and the top rows
+        // then keep a sliver of the page instead of ending in the theme's ground (polish10-ground G1 at 1366). The stop never sits nearer than TOP_STOP_MIN.
+        zoom.holdRef.current.style.setProperty('--tw-lead', `${Math.max(0, TOP_STOP_MIN - (h.height * zoom.anchor - 6.6 * lineHeight() * sc)).toFixed(1)}px`);
         const startPx = (h.top + h.height * zoom.anchor - container.getBoundingClientRect().top) / sc;
         scrolledEl.style.setProperty('--tw-start-offset', `${Math.max(0, Math.round(startPx))}px`);
         // and room BELOW the last line, so the last line can rise to the anchor at all: zoomed, the scroller's box reaches far below the stage,
         // and 30vh of end padding let the scroll bottom out with the writing line still 1-3 lines under the band (W/T on 64e5b7f9). Its own
         // height (layout px) is always enough - the sheet "bleeds a full stage height below" in Cursor's mockup for the same reason.
-        scrolledEl.style.setProperty('--tw-end-pad', `${Math.round(container.clientHeight)}px`);
+        scrolledEl.style.setProperty('--tw-end-pad', `${Math.round(h.height / sc)}px`);   // the column's own height in layout px (never the scroller's clientHeight: the padding counts in it, so it fed itself - A3 saw 463,400px)
       }
     };
     const band = () => {
@@ -315,7 +319,11 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       // against its own PREVIOUS reading isolates "how much new content did
       // the writer just produce" from "where did the viewport happen to be
       // sitting" — the two concerns S1 asks to be decoupled.
-      const docCaretBottom = within + box.scrollTop;
+      // PAGE LAW (fx5 S1 c, train-11): the document position is measured from the TEXT's top, not the scroller's. The scroller's start-offset padding is rewritten
+      // whenever the paint scale moves (measure(): startPx is the screen distance over the scale), and a position that includes it shifts by the change - the carried
+      // position was then 110px off and one typed line paid 140px (501 -> 636) with the page law broken. The text does not move when its padding does.
+      const padTop = parseFloat(getComputedStyle(container).paddingTop) || 0;
+      const docCaretBottom = within + box.scrollTop - padTop;
       // PAGE-SIZE - zoomed, the hold is the writing line's TOP at `anchor` of the hold element (the page column, the box the band mask is drawn
       // in), as Cursor's mockup places it - so the caret's BOTTOM sits one line below that, inside the mask's full-strength band.
       const holdEl = zoom?.holdRef.current ?? null;
@@ -340,7 +348,12 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         if (trace) trace.push({ d: 'lost', from: Math.round(glideFrom), target: Math.round(glideTarget), at: Math.round(box.scrollTop), owed: Math.round(owed) });
         glideTarget = null; glideFrom = null;
       }
-      const advance = docCaretBottom - (prevDocCaretBottom as number);
+      // PAGE-SIZE (anchor A3) - zoomed, what is owed can never exceed what is geometrically LEFT: the writing line's real distance below the hold. While typing
+      // outruns the glides (each one is cancelled by the next keystroke: step 0>27, lost, again) the owed advance stacks up (51, 106, 133 ... 296 on the
+      // 1366 trace), and once the glides finally land the stack pays one line too many - the scroll runs to its bottom stop with the line a line ABOVE the
+      // anchor (43.7%, the band's top fade over it, A3). The line's measured excess below the hold is the cap; a line already at or above it owes nothing.
+      const owedAdvance = docCaretBottom - (prevDocCaretBottom as number);
+      const advance = holdEl ? Math.min(owedAdvance, within - thresholdPx) : owedAdvance;
       if (advance > 1) {
         // Never more than one line-height per call, however large the raw
         // advance is (a deep first-engage on a long page, or a multi-line

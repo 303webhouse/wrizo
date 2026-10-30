@@ -180,7 +180,7 @@ const IDENT_PROBE = `(() => { const p = document.querySelector('.mode-page'); co
     fontPx: parseFloat(getComputedStyle(e).fontSize), colW: e.offsetWidth, transform: ps.transform, zoom: col.getAttribute('data-zoom'), anchor: cs.getPropertyValue('--tw-anchor').trim(),
     lh: parseFloat(cs.getPropertyValue('--tw-lh')) || null, mask: String(cs.webkitMaskImage || cs.maskImage || 'none') }; })()`;
 const ident = {};
-const psParks = { C: [] };   // the park audit (Oct 24): the default leg's observations, for the parked records
+const psParks = { C: [], MW: [], WT: [] };   // the park audit (Oct 24): the default leg's observations, for the parked records
 const IDENT_TOL = 1;   // Nick's law, ±1px
 
 // strip every MASK the stage can paint, so a line's UNFADED ink can be read (layout is untouched: a mask never moves a line). MASKS ONLY - the red run (143)
@@ -412,8 +412,26 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
   const seen = (l) => !!l && l.top >= visTop + 1 && l.bottom <= visBottom;
   // Cursor's FINAL mask (e3c4e462, 07:49): only the writing line is at full strength; older lines fade steadily as they rise (~.88, .75,
   // .59, .43, .31 for 1-5 lines above) and the paper fades into the desk with them. So T reads lines 1, 3 and 5 above the writing line.
-  const premise = wi >= 5 && [0, 1, 3, 5].every((k) => seen(lines[wi - k]));
-  ok(`${tag} W/T (premise): the writing line is found at the caret, and it and the lines 1, 3 and 5 above it are on screen`, premise, J({ wi, lines: lines && lines.length, caret, visTop, visBottom }));
+  // ---- PARKED - SUPERSEDED by POLISH #10 item 19 (Nick, Oct 25: the writing line held at the MIDDLE, 50%): with the line a tenth of the column higher,
+  // Machina's zoomed leading at 1366x768 puts line 5 above it ABOVE this instrument's visTop (208.8 - the max of the page's, the stage's and the
+  // scroller's tops) although the writer SEES it: the zoomed paper is painted from the column's top (~108 at 1366; frame
+  // docs/evidence/page-size-final/02-arbor-dark-1366-zoom.jpg shows lines at y~150 and ~195). Deterministic on both legs of FIX's turn (Oct 26):
+  // caret top 416.9, visTop 208.8. Kept VERBATIM and no longer gating; its reading is recorded per run in the parked section.
+  //
+  // const premise = wi >= 5 && [0, 1, 3, 5].every((k) => seen(lines[wi - k]));
+  // ok(`${tag} W/T (premise): the writing line is found at the caret, and it and the lines 1, 3 and 5 above it are on screen`, premise, J({ wi, lines: lines && lines.length, caret, visTop, visBottom }));
+  // ------------------------------------------------------------------
+  const premiseWas = wi >= 5 && [0, 1, 3, 5].every((k) => seen(lines[wi - k]));
+  // SUCCESSOR: "on screen" is the paper the writer sees in the zoom - the page COLUMN's box (the box the band mask is drawn in), clipped to the
+  // viewport and the stage; the bottom edge is unchanged. The same four lines (the writing line, 1, 3 and 5 above).
+  const colTop = await app.evalJs("(() => { const c = document.querySelector('.mode-pagecol'); return c ? c.getBoundingClientRect().top : null; })()");
+  const visTopCol = g2 && colTop != null ? Math.max(colTop, g2.stage ? g2.stage.top : 0, 0) : null;
+  const seenCol = (l) => !!l && visTopCol != null && l.top >= visTopCol + 1 && l.bottom <= visBottom;
+  const premise = wi >= 5 && [0, 1, 3, 5].every((k) => seenCol(lines[wi - k]));
+  psParks.WT.push({ tag, was: premiseWas, now: premise, wi, visTop: visTop && Math.round(visTop * 10) / 10, visTopCol: visTopCol && Math.round(visTopCol * 10) / 10,
+    l5: wi >= 5 && lines[wi - 5] ? Math.round(lines[wi - 5].top * 10) / 10 : null });
+  ok(`${tag} W/T (premise) [polish #10 item 19 successor]: the writing line is found at the caret, and it and the lines 1, 3 and 5 above it are on the paper the writer sees (the page column, clipped to the stage and the viewport)`,
+    premise, J({ wi, lines: lines && lines.length, caret, visTopCol, visBottom, colTop }));
   if (premise) {
     const want = [lines[wi], lines[wi - 1], lines[wi - 3], lines[wi - 5]];
     const st = await strengths(app, want);
@@ -428,7 +446,12 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
       const landedW = await app.evalJs("(() => { const cs = getComputedStyle(document.querySelector('.mode-pagecol')); return cs.getPropertyValue('--tw-anchor').trim(); })()");
       const sw = await strengths(app, [lines[wi]]);
       await app.evalJs("window.__psStyle('ps-mw', null)");
-      ok(`${tag} MW (mutant): with the band's anchor moved up to 25% while the line is held at 60% (LANDED: --tw-anchor ${landedW}), W fails`, landedW === '25%' && !(sw[0].s >= FULL), J(sw[0]));
+      // ---- PARKED - SUPERSEDED by POLISH #10 item 19 (Nick, Oct 25: "seems too low on the screen to start"): the writing line - and a fresh page's first line - is held at the MIDDLE of the visible page, 50% of the column (pageScale.ts ZOOM_ANCHOR), not 60%: the name says the line is held at 60%. Kept VERBATIM and no longer run; record in the parked section.
+      //
+      // ok(`${tag} MW (mutant): with the band's anchor moved up to 25% while the line is held at 60% (LANDED: --tw-anchor ${landedW}), W fails`, landedW === '25%' && !(sw[0].s >= FULL), J(sw[0]));
+      // ------------------------------------------------------------------
+      psParks.MW.push({ tag, landedW, s: sw[0] && sw[0].s });
+      ok(`${tag} MW (mutant) [polish #10 item 19 successor]: with the band's anchor moved up to 25% while the line is held at the middle, 50% (LANDED: --tw-anchor ${landedW}), W fails`, landedW === '25%' && !(sw[0].s >= FULL), J(sw[0]));
       // MT: every mask in the stage removed - T must fail
       const before = await app.evalJs('window.__psMasks()');
       await app.evalJs(`window.__psStyle('ps-strip-mut', ${J(STRIP_CSS)})`); const after = await app.evalJs('window.__psMasks()'); await app.evalJs("window.__psStyle('ps-strip-mut', null)");
@@ -743,8 +766,15 @@ if (process.env.HARNESS_PARKED === '1') {
   // the face's measure was MEASURED (and recorded here), on the column I holds identical across skins.
   const rec = psParks.C.map((o) => ({ name: `PARKED (was "${o.skin} ${o.w}x${o.h} C: at the default, the median full line holds ${CPL_MIN}-${CPL_MAX} characters (~75)") - Fable's C ruling (Oct 24): the measure is the FACE's; the column is I's`,
     pass: o.lines >= 10 && o.median > 0, detail: J(o) }));
+  // POLISH #10 item 19 - W/T's premise: one record per run. It passes when the old premise held, or failed ONLY because line 5 above sat between the
+  // column's top and the old visTop - the exact falsification - and the successor saw all four lines.
+  for (const o of psParks.WT) rec.push({ name: `PARKED (was "${o.tag} W/T (premise): the writing line is found at the caret, and it and the lines 1, 3 and 5 above it are on screen") - polish #10 item 19: the line is held at 50%; on screen is the page column the writer sees`,
+    pass: o.was || (o.now && o.l5 != null && o.visTopCol != null && o.l5 >= o.visTopCol + 1 && o.l5 < o.visTop + 1), detail: J(o) });
+  // POLISH #10 item 19 - MW's name (the line held at 60%): one record per run of it, re-verifying the mutant still bites with the line at 50%
+  for (const o of psParks.MW) rec.push({ name: `PARKED (was "${o.tag} MW (mutant): with the band's anchor moved up to 25% while the line is held at 60% (LANDED: --tw-anchor ${o.landedW}), W fails") - polish #10 item 19: the line is held at 50%`,
+    pass: o.landedW === '25%' && !(o.s >= FULL), detail: J(o) });
   for (const c of rec) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}  [${c.detail}]`);
-  console.log(rec.length && rec.every((c) => c.pass) ? `\nPAGE-SIZE PARKED: PASS (${rec.length} records) - this FILE parks 1 (C, one record per skin x size)` : `\nPAGE-SIZE PARKED: FAIL - ${rec.filter((c) => !c.pass).length}/${rec.length} (${rec.length} records)`);
+  console.log(rec.length && rec.every((c) => c.pass) ? `\nPAGE-SIZE PARKED: PASS (${rec.length} records) - this FILE parks 3 (C, one record per skin x size; MW's 60% name and W/T's on-screen premise, polish #10 item 19)` : `\nPAGE-SIZE PARKED: FAIL - ${rec.filter((c) => !c.pass).length}/${rec.length} (${rec.length} records)`);
 }
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nPAGE-SIZE VERIFY: PASS (${checks.length} checks)` : `\nPAGE-SIZE VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
