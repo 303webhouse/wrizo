@@ -114,7 +114,9 @@ const uses = be.split('\n').map((l, i) => ({ l, i: i + 1 })).filter(({ l }) => /
 const setLines = uses.filter(({ l }) => /sizedByHand: true/.test(l));
 const clearLines = uses.filter(({ l }) => /const \{ sizedByHand: _s, \.\.\.rest \} = b/.test(l));
 ok('S4: BoardEditor SETS the mark in exactly one place - the resize branch, for a text card only', setLines.length === 1 && /b\.kind === 'text'/.test(setLines[0].l) && /newW/.test(setLines[0].l), JSON.stringify(setLines));
-ok('S4b: ... and CLEARS it in exactly one - the resize finish that landed on the content height', clearLines.length === 1);
+// PARKED (Fable, Oct 30, #12b / bug 32d): S4b as written - SUPERSEDED: Nick approved the Fit-to-text icon, a second place that clears the mark; successor S4d. Kept verbatim:
+// ok('S4b: ... and CLEARS it in exactly one - the resize finish that landed on the content height', clearLines.length === 1);
+ok('S4d: ... and CLEARS it in exactly two - the resize finish that landed on the content height, and the Fit-to-text icon (fitCard), nowhere else', clearLines.length === 2 && /const fitCard = \(boxId: string\) => \{/.test(be) && /onClick=\{e => \{ e\.stopPropagation\(\); fitCard\(box\.id\); \}\}/.test(be));
 ok('S4c: the reflow never writes the mark (no spread in it adds sizedByHand)', !/\.\.\.b, h: (targetPx|measuredPx) \/ pageWidthPx, sizedByHand/.test(be));
 const types = norm(path.join(SRC, 'types', 'index.ts'));
 ok('S5: the Box type declares it optional (`sizedByHand?: true`) and nothing else about boxes changed shape', /sizedByHand\?: true;/.test(types));

@@ -1529,6 +1529,22 @@ export function BoardEditor({ id }: { id: string }) {
     else measureEls.current.delete(boxId);
   };
 
+  // BUG 32d - FIT TO TEXT (Nick, Oct 30): the small icon on a hand-sized card. A click removes sizedByHand and fits the card to its content (the same floors as the reflow: a dealt card never below the deal's own
+  // card height, a freeform card never below MIN_TEXT_H); a dealt deck's rows follow it (rowFit), and the card is the writer's acted-on card from here, so it stays fitted as its words change.
+  const fitCard = (boxId: string) => {
+    const el = measureEls.current.get(boxId);
+    if (!el || pageWidthPx <= 0) return;
+    touchedRef.current.add(boxId);
+    setBoxes(prev => {
+      const next = prev.map(b => {
+        if (b.id !== boxId || b.kind !== 'text') return b;
+        const { sizedByHand: _s, ...rest } = b; void _s;
+        return { ...rest, h: Math.max(naturalPx(el), (b.deckStep ? CARD_H : MIN_TEXT_H) * pageWidthPx) / pageWidthPx };
+      });
+      return fitDealtRows(prev, next);
+    });
+  };
+
   const commitText = (boxId: string, text: string) => {
     if (boxesRef.current.some(b => b.id === boxId && b.text !== text)) touchedRef.current.add(boxId);   // BUG 32c: an edit that changed the words - the card is now fitted to them
     if (framed) boardDissolve.noteWrite(); // AB1 S3 — see the hook's mount comment above
@@ -2381,7 +2397,7 @@ export function BoardEditor({ id }: { id: string }) {
       // for "a control inside a card needs its own untouched click, not
       // the canvas's own select/drag machinery") — stand down whole, let
       // the click proceed natively to the button's own onClick.
-      if (target.closest('.board-layer-toggle, .board-step-help')) return;   // W3: the step "?" inside a card needs its own untouched click, like the layer toggle
+      if (target.closest('.board-layer-toggle, .board-step-help, .board-fit')) return;   // W3: the step "?" inside a card needs its own untouched click, like the layer toggle
 
       // THE GREEN TACK IS RETIRED (connector-a): there is no pin to press. A card is connected from its corner square (below).
       const handleEl = target.closest('.board-handle') as HTMLElement | null;
@@ -3107,7 +3123,7 @@ export function BoardEditor({ id }: { id: string }) {
             // (The browser fires dblclick straight after its own second mouseup, so a gesture's own double-click arrives within
             // milliseconds of the gesture's end; 100ms catches it, and a writer's REAL double-click a moment after a drag - fx8 S3's
             // ~220ms, say - still opens the card.)
-            if (hitEl?.closest('.board-handle, .board-step-help, .board-step-pop')) return;   // W3: a double-click on the step "?" (or in its popover) opens nothing
+            if (hitEl?.closest('.board-handle, .board-step-help, .board-step-pop, .board-fit')) return;   // W3: a double-click on the step "?" (or in its popover) opens nothing
             if (performance.now() - lastGestureEndRef.current < 100) return;
             const boxEl = hitEl?.closest('.board-box') as HTMLElement | null;
             const boxId = boxEl?.dataset.boxId;
@@ -3290,6 +3306,20 @@ export function BoardEditor({ id }: { id: string }) {
                   data-solid={handleSolid ? 'true' : 'false'}
                   aria-hidden="true"
                 />
+              )}
+              {/* BUG 32d - FIT TO TEXT: only on a card the writer sized by hand, beside the resize grip, shown on card hover / focus (a real button, so Tab reaches it and :focus-within shows it), hidden in the recede. */}
+              {box.kind === 'text' && box.sizedByHand && !box.groupId && !isSystemBoard && (
+                <button
+                  type="button"
+                  className="board-fit"
+                  data-fit-to-text="true"
+                  title={t('boardFitToText')}
+                  aria-label={t('boardFitToText')}
+                  onMouseDown={e => e.stopPropagation()}
+                  onClick={e => { e.stopPropagation(); fitCard(box.id); }}
+                >
+                  <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" focusable="false"><path d="M2 1.5h8M2 10.5h8M4.2 3.2L6 5l1.8-1.8M4.2 8.8L6 7l1.8 1.8" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="square" /></svg>
+                </button>
               )}
               {/* BIG PROJECTS STEP 3 (3a) - the brass graft knob: on the SELECTED card's right edge at mid-height, apart from the resize corner; a
                   press-drag from it is connection mode from a second door (the pointerdown handler above). Not on a built-in place's derived cards. */}

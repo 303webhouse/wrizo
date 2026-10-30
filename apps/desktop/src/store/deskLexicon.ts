@@ -139,6 +139,8 @@ export type DeskTermId =
   // FX5 S4 — the quiet layer-order icon (existing z field; front/back),
   // appearing only on a selected card that's genuinely overlapping another.
   | 'boardLayerBringFront' | 'boardLayerSendBack'
+  // BUG 32d (Nick, Oct 30) - the small Fit-to-text icon on a hand-sized card (beside the resize grip): its tooltip and accessible name, per theme.
+  | 'boardFitToText'
   // FX5 S5 — the olive pin (the connection grab, replacing the dead
   // handle-double-click gesture whole) + the footer line/toggle threads
   // render as.
@@ -1070,6 +1072,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   // ITEM word-diet.
   boardPortedBadge: 'From Pages',
   boardEditCopy: 'Edit copy',
+  boardFitToText: 'Fit to text',
   boardLayerBringFront: 'Bring to front',
   boardLayerSendBack: 'Send to back',
   boardThreadGrab: 'Drag to graft',
@@ -2267,6 +2270,7 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     graftHiddenLine: '{title} hidden from this doc.',
     graftRemovedLine: 'Input to {title} removed.',
     graftKnobTip: 'Drag to connect',
+    boardFitToText: 'Auto-fit',
     graftPairedPage: 'Doc',
   },
   machina: {
@@ -2346,6 +2350,7 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     cascadePlanNoProject: 'Add this file to a project first to plan around it.',
     // The knob: the mockup draws "Drag to asset".
     graftKnobTip: 'Drag to asset',
+    boardFitToText: 'Fit to content',
     boardThreadGrab: 'Drag to asset',
     // PROPOSED - Nick has not locked Machina's verb for a board connection (the words pass names the noun, "Assets"). "attached" keeps Arbor's "grafted" from leaking into
     // Machina; it is a one-word swap away from whatever Nick rules. Hand-up item in the build report.
