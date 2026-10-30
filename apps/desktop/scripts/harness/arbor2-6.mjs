@@ -8,13 +8,14 @@
 //   (Oct 29, after INK's CI frames showed the slats through Free Write's zoomed page - Fable: "NEVER cross the prose column, including
 //   through the page's see-through fades; the night fade must not turn the paper into a band". L2 and L5 are parked below with successors.)
 //   L2b on the ZOOMED Free Write page (Typewriter, the see-through band mask), night and day: an opaque sheet in the page's paper colour lies
-//       behind the whole visible page; by day the sun layer's evenodd clip has a hole covering it (scripts/frames/arbor2.mjs zoomProof)
+//       behind the whole visible page (stopping at the progress row); the room's vignette has a hole over it; by day the sun layer's evenodd
+//       clip has a hole covering it (scripts/frames/arbor2.mjs zoomProof)
 //   L1c with motion, the drift runs on the inner sheet and the layer itself holds still (so the hole never drifts onto the page)
 //   L5b reduced motion: the drift sheet is still too
 import fs from 'node:fs';
 import path from 'node:path';
 import { withHarness } from '../runtime-verify.mjs';
-import { zoomProof } from '../frames/arbor2.mjs';
+import { zoomProof, holeOf } from '../frames/arbor2.mjs';
 
 const SHOTS = process.env.ARBOR_SHOTS || null;
 if (SHOTS) fs.mkdirSync(SHOTS, { recursive: true });
@@ -84,9 +85,9 @@ await withHarness(async (app) => {
   await sleep(700);
   for (const room of ['Night', 'Day']) {
     await pickBar(app, room); await sleep(500);
-    const z = await app.evalJs(`(${zoomProof.toString()})()`);
-    ok(`L2b [${room.toLowerCase()}] zoomed Free Write: an opaque paper sheet behind the whole visible page${room === 'Day' ? ', and the sun layer has a hole over it' : ''}`,
-      zoomed && !!z && z.pass && z.paper === true && (room === 'Day' ? z.hole === true : z.hole === null), JSON.stringify({ zoomed, z }));
+    const z = await app.evalJs(`(${zoomProof.toString()})(${holeOf.toString()})`);
+    ok(`L2b [${room.toLowerCase()}] zoomed Free Write: an opaque paper sheet behind the whole visible page (above the progress row), the vignette cut over it${room === 'Day' ? ', and the sun layer has a hole over it' : ''}`,
+      zoomed && !!z && z.pass && z.paper === true && z.vignette === true && (room === 'Day' ? z.hole === true : z.hole === null), JSON.stringify({ zoomed, z }));
     await snap(app, `item6-${room.toLowerCase()}-zoomed-freewrite`);
   }
 
