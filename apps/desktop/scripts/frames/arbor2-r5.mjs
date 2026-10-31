@@ -11,7 +11,7 @@ const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts
 const clickSel = (app, sel) => app.evalJs(`(() => { const b = document.querySelector(${JSON.stringify(sel)}); if (b) b.click(); return !!b; })()`);
 const clickText = (app, sel, text) => app.evalJs(`(() => { const b = [...document.querySelectorAll(${JSON.stringify(sel)})].find((x) => (x.textContent || '').trim().toLowerCase() === ${JSON.stringify(text.toLowerCase())}); if (b) b.click(); return !!b; })()`);
 const say = (name, data) => console.log(`ARBOR-R5 ${name} ${JSON.stringify(data)}`);
-const fail = (name, data) => { throw new Error(`${name} FAILED ${JSON.stringify(data)}`.slice(0, 1200)); };
+const fail = (name, data) => { console.log(`ARBOR-R5-FAIL ${name} ${JSON.stringify(data)}`); throw new Error(`${name} FAILED ${JSON.stringify(data)}`.slice(0, 1200)); };
 
 // the flag lives in the URL only (?arbor2=1 before the hash); `on` false loads the same route with the flag OFF
 const load = async (app, hash, on = true) => {
@@ -98,7 +98,11 @@ export default {
   //   the room: day plaster/honey/olive tokens; no honey-wood sill at the foot of the room.
   'r5-contrast': async (app) => {
     await page(app, 'arbor-r5-contrast', WORDS);
-    await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'arbor2-r5-lit'; s.textContent = '*{ --arbor2-dim:1 !important; transition:none !important; }'; document.head.appendChild(s); })()");
+    // PARKED 2026-10-31 (SUPERSEDED, frames run 41241222600: the night read saw every resting label in the dim lettering's --text-hi, so it never measured the
+    // bar's own pairs - its "/" at 1.64:1 and olive "?" at 3.93:1 passed blind by night). Original, verbatim:
+    // await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'arbor2-r5-lit'; s.textContent = '*{ --arbor2-dim:1 !important; transition:none !important; }'; document.head.appendChild(s); })()");
+    // SUCCESSOR: lit, AND each label in its own colours - data-arbor2-lit on <html> stands the dim lettering down for the read.
+    await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'arbor2-r5-lit'; s.textContent = '*{ --arbor2-dim:1 !important; transition:none !important; }'; document.head.appendChild(s); document.documentElement.setAttribute('data-arbor2-lit', ''); })()");
     const READ = (stage) => `(() => { ${COLOUR}
       const out = { stage: ${JSON.stringify(stage)}, room: document.documentElement.getAttribute('data-arbor2-room'), pairs: [], bad: [] };
       const add = (where, el, floor) => { if (!el || !shown(el)) return; const p = pair(el); const row = { where, text: (el.textContent || '').trim().slice(0, 18), ...p, floor }; out.pairs.push(row); if (p.ratio < floor) out.bad.push(row); };
@@ -160,7 +164,11 @@ export default {
     // day ground: the plaster #F1EAD8, warming with the afternoon but never to a tan (the retired tans run R <= 0xE4; plaster keeps R >= 0xEC, B >= 0xC4)
     const rgbOf = (h) => { const n = parseInt(String(h).replace('#', ''), 16); return [n >> 16, (n >> 8) & 255, n & 255]; };
     const plaster = (h) => { const [R, , B] = rgbOf(h); return /^#[0-9A-F]{6}$/i.test(h) && R >= 0xEC && B >= 0xC4; };
-    const tokOk = day ? (plaster(t.g) && t.s.toUpperCase() === '#E8DFC8' && t.r.toUpperCase() === '#C9A46B')
+    // PARKED 2026-10-31 (SUPERSEDED: arbor2-1 C1 on the r5 build, run 41240761804 - honey wood under text fails the floors; raised is #F6F1E4).
+    // Original, verbatim:
+    // const tokOk = day ? (plaster(t.g) && t.s.toUpperCase() === '#E8DFC8' && t.r.toUpperCase() === '#C9A46B')
+    // SUCCESSOR: day raised is the lifted cream #F6F1E4 and the quiet text #56623A.
+    const tokOk = day ? (plaster(t.g) && t.s.toUpperCase() === '#E8DFC8' && t.r.toUpperCase() === '#F6F1E4' && t.low.toUpperCase() === '#56623A')
       : (t.g.toUpperCase() === '#120A06' && t.s.toUpperCase() === '#1B120C' && t.r.toUpperCase() === '#261A12');
     if (!tokOk) problems.push({ tokens: t });
     const all = reads.flatMap((r) => r.pairs);
@@ -203,9 +211,15 @@ export default {
     const log = await app.evalJs('window.__r5flash');
     const perSecond = Math.max(0, ...log.map(([t]) => log.filter(([u]) => u >= t && u < t + 1000).length));
     // in-session persistence: away to the Desk and back - the history is still there
-    await load(app, '#/');
-    await sleep(800);
-    await load(app, '#/page/arbor-r5-rz');
+    // PARKED 2026-10-31 (SUPERSEDED, frames run 41241222600: the check left the page with a RELOAD, which ends the session it was testing - in-session memory is
+    // gone after a reload by design). Original, verbatim:
+    // await load(app, '#/');
+    // await sleep(800);
+    // await load(app, '#/page/arbor-r5-rz');
+    // await waitSoft(app, "!!document.querySelector('.wz-rhizome-field')", { label: 'rhizome field again', timeout: 4000 }); await sleep(900);
+    // SUCCESSOR: away to the Desk and back by route only (the same session, no reload).
+    await app.evalJs("location.hash = '#/'"); await sleep(900);
+    await app.evalJs("location.hash = '#/page/arbor-r5-rz'");
     await waitSoft(app, "!!document.querySelector('.wz-rhizome-field')", { label: 'rhizome field again', timeout: 4000 }); await sleep(900);
     const back = await app.evalJs(S);
     // Clear Rhizome + Undo (the Mood menu)
@@ -280,7 +294,11 @@ export default {
       cross: r.cross.length >= 1 && r.cross.length <= 2 && r.cross.every((c) => c.w >= 14 && c.w <= 20) && r.square,
       low: r.low >= 0.75 && r.fromBL,
       leaves: r.leaves.length > 0 && r.leaves.every((s) => s >= 10 && s <= 18),
-      soft: r.beams.every((b) => { const m = /blur\\(([\\d.]+)px\\)/.exec(b.blur); return !!m && +m[1] >= 6 && +m[1] <= 10; }),
+      // PARKED 2026-10-31 (SUPERSEDED, frames run 41241222600: BLIND - the matcher was escaped for a template string but sits in plain code, so it never matched
+      // "blur(8px)"). Original, verbatim:
+      // soft: r.beams.every((b) => { const m = /blur\\(([\\d.]+)px\\)/.exec(b.blur); return !!m && +m[1] >= 6 && +m[1] <= 10; }),
+      // SUCCESSOR: the same rule, read with a matcher that can match.
+      soft: r.beams.length > 0 && r.beams.every((b) => { const m = /blur\(([\d.]+)px\)/.exec(b.blur); return !!m && +m[1] >= 6 && +m[1] <= 10; }),
       tint: r.opacity >= 0.18 - 1e-6 && r.opacity <= 0.26 + 1e-6,
       drift: r.driftS >= 16,
       hole: /gradient/.test(r.mask),

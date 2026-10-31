@@ -43,7 +43,7 @@ const READ = `(() => {
     page: rect(document.querySelector('.mode-page')),
     gripL: rect(document.querySelector('.wz-sliver-grip')), gripR: rect(document.querySelector('.wz-tutor-grip')),
     gripLbg: cs('.wz-sliver-grip')?.backgroundColor, gripLcolor: cs('.wz-sliver-grip')?.color, gripRbg: cs('.wz-tutor-grip')?.backgroundColor,
-    tabs: { text: tab('wz-sliver-tab-text'), type: tab('wz-sliver-tab-type'), ink: tab('wz-sliver-tab-ink'), tutor: tab('wz-tutor-tab-tutor'), links: tab('wz-tutor-tab-links'), board: tab('wz-tutor-tab-board') },
+    tabs: { text: tab('wz-sliver-tab-text'), type: tab('wz-sliver-tab-type'), format: tab('wz-sliver-tab-format'), presets: tab('wz-sliver-tab-presets'), ink: tab('wz-sliver-tab-ink'), tutor: tab('wz-tutor-tab-tutor'), links: tab('wz-tutor-tab-links'), board: tab('wz-tutor-tab-board') },
     dur: rs.getPropertyValue('--drawer-dur').trim(), ease: rs.getPropertyValue('--drawer-ease').trim(),
     pop: pop ? { anim: pop.animationName, shadow: pop.boxShadow } : null, slideShadow: slide ? slide.boxShadow : null,
     popCount: document.querySelectorAll('.wz-cascade-panel').length,
@@ -51,6 +51,8 @@ const READ = `(() => {
 })()`;
 const read = (app) => app.evalJs(READ);
 const WALNUT = 'rgb(26, 18, 6)', SEA = 'rgb(23, 69, 78)', OXBLOOD = 'rgb(107, 31, 28)', CREAM = 'rgb(232, 220, 194)';
+// r5 (spec §9c): the openers olive / brass, the cloths olive (a measured deeper step), cold blue, madder; cream and walnut lettering
+const OLIVE = 'rgb(107, 122, 58)', BRASS = 'rgb(255, 152, 0)', OLIVE_CLOTH = 'rgb(86, 99, 46)', BLUE = 'rgb(127, 160, 188)', MADDER = 'rgb(168, 57, 47)', CREAM5 = 'rgb(239, 228, 203)', WALNUT5 = 'rgb(43, 29, 18)';
 
 await withHarness(async (app) => {
   await app.goto('/');
@@ -97,7 +99,12 @@ await withHarness(async (app) => {
     const lettering = !!reach && (room === 'day'
       ? reach.rest.c === CREAM
       : reach.rest.c === HI && Math.abs(parseFloat(reach.rest.o) - 0.6) < 0.011 && reach.reached.c === CREAM && reach.reached.o === '1');
-    ok(`K1e [${room}] the hands' tabs are cloth: left walnut, right sea; lettering cream${room === 'night' ? ' when reached (dimmed at rest: .6, --text-hi)' : ''}`, shut.gripLbg === WALNUT && shut.gripRbg === SEA && lettering, JSON.stringify({ l: shut.gripLbg, r: shut.gripRbg, reach }));
+    // PARKED 2026-10-31 (SUPERSEDED, r5, run 41240761804: spec §9c - one opener per side, OLIVE closed and BRASS open, and the openers are not dimmed by
+    // night (olive at .6 drew its arrow at 2.7:1)). Original, verbatim:
+    // ok(`K1e [${room}] the hands' tabs are cloth: left walnut, right sea; lettering cream${room === 'night' ? ' when reached (dimmed at rest: .6, --text-hi)' : ''}`, shut.gripLbg === WALNUT && shut.gripRbg === SEA && lettering, JSON.stringify({ l: shut.gripLbg, r: shut.gripRbg, reach }));
+    // SUCCESSOR K1f: both openers olive when closed, cream arrows, full strength at rest and when reached, in both rooms.
+    const lit5 = !!reach && reach.rest.c === CREAM5 && reach.rest.o === '1' && reach.reached.c === CREAM5 && reach.reached.o === '1';
+    ok(`K1f [${room}] the openers are olive when closed, cream arrows, never dimmed (rest and reached)`, shut.gripLbg === OLIVE && shut.gripRbg === OLIVE && lit5, JSON.stringify({ l: shut.gripLbg, r: shut.gripRbg, reach }));
     // PARKED 2026-10-29 (SUPERSEDED, the matcher read the spelling, not the sense): the built bundle's minifier rewrites 240ms as .24s
     // (measured on the green build: dur ".24s"), the same duration. Original, verbatim:
     // ok(`M1 [${room}] the shared motion tokens carry Arbor's pull (240ms, cubic-bezier(.2,.8,.2,1))`, shut.dur === '240ms' && /cubic-bezier\(\s*\.2,\s*\.8,\s*\.2,\s*1\s*\)/.test(shut.ease), JSON.stringify({ dur: shut.dur, ease: shut.ease }));
@@ -118,7 +125,11 @@ await withHarness(async (app) => {
     // so there is no TEXT tab - and this line's own `if` would have skipped it SILENTLY, a check that can never fail). Original, verbatim:
     //     if (l.tabs.text) ok(`K1 [${room}] Tools' tabs are cloth: TEXT walnut, INK sea`, l.tabs.text.bg === WALNUT && l.tabs.ink?.bg === SEA, JSON.stringify(l.tabs));
     // SUCCESSOR K1b: unconditional - on Free Write the Tools tabs are FONT (walnut) and INK (sea), and there is no TEXT tab.
-    ok(`K1b [${room}] Tools' tabs are cloth on Free Write: FONT walnut, INK sea, no TEXT tab`, !l.tabs.text && l.tabs.type?.bg === WALNUT && l.tabs.ink?.bg === SEA, JSON.stringify(l.tabs));
+    // PARKED 2026-10-31 (SUPERSEDED, r5, run 41240761804: spec §9c - Free Write's cloths are FORMAT (olive) and INK (madder); no Font tab). Original, verbatim:
+    // ok(`K1b [${room}] Tools' tabs are cloth on Free Write: FONT walnut, INK sea, no TEXT tab`, !l.tabs.text && l.tabs.type?.bg === WALNUT && l.tabs.ink?.bg === SEA, JSON.stringify(l.tabs));
+    // SUCCESSOR K1g: FORMAT olive cloth and INK madder, both lettered cream; no TEXT and no FONT tab; and the open drawer's opener is brass.
+    ok(`K1g [${room}] Tools' cloths on Free Write: FORMAT olive, INK madder (cream lettering), no TEXT or FONT tab; the open opener is brass`,
+      !l.tabs.text && !l.tabs.type && l.tabs.format?.bg === OLIVE_CLOTH && l.tabs.format?.color === CREAM5 && l.tabs.ink?.bg === MADDER && l.tabs.ink?.color === CREAM5 && l.gripLbg === BRASS, JSON.stringify({ tabs: l.tabs, grip: l.gripLbg }));
     await snap(app, `item2-${room}-tools-open`);
     await clickSel(app, '.wz-sliver-grip'); await sleep(500);
 
@@ -127,8 +138,13 @@ await withHarness(async (app) => {
     const r = await read(app);
     ok(`P1 [${room}] Tutor drawer open: the page rect is identical`, sameRect(r.page, off.page), JSON.stringify(r.page));
     ok(`K2 [${room}] Tutor drawer open: the right tab is where it is flag-off`, sameRect(r.gripR, offR.gripR), JSON.stringify({ on: r.gripR, off: offR.gripR }));
-    ok(`K1 [${room}] the Tutor drawer's tabs are cloth: TUTOR sea, GRAFTS oxblood`, r.tabs.tutor?.bg === SEA && r.tabs.links?.bg === OXBLOOD, JSON.stringify(r.tabs));
-    ok(`K1c [${room}] the Tutor drawer's BOARD tab is iron cloth (items 2-3)`, r.tabs.board?.bg === 'rgb(57, 65, 74)', JSON.stringify(r.tabs.board));
+    // PARKED 2026-10-31 (SUPERSEDED, r5, run 41240761804: spec §9c - Tutor olive (main), Grafts cold blue, Board madder; no walnut, sea, oxblood or iron
+    // cloth). Original, verbatim:
+    // ok(`K1 [${room}] the Tutor drawer's tabs are cloth: TUTOR sea, GRAFTS oxblood`, r.tabs.tutor?.bg === SEA && r.tabs.links?.bg === OXBLOOD, JSON.stringify(r.tabs));
+    // ok(`K1c [${room}] the Tutor drawer's BOARD tab is iron cloth (items 2-3)`, r.tabs.board?.bg === 'rgb(57, 65, 74)', JSON.stringify(r.tabs.board));
+    // SUCCESSORS K1h / K1i: TUTOR olive cloth (cream), GRAFTS cold blue (walnut lettering); BOARD madder (cream).
+    ok(`K1h [${room}] the Tutor drawer's cloths: TUTOR olive (cream), GRAFTS cold blue (walnut)`, r.tabs.tutor?.bg === OLIVE_CLOTH && r.tabs.tutor?.color === CREAM5 && r.tabs.links?.bg === BLUE && r.tabs.links?.color === WALNUT5, JSON.stringify(r.tabs));
+    ok(`K1i [${room}] the Tutor drawer's BOARD cloth is madder (cream)`, r.tabs.board?.bg === MADDER && r.tabs.board?.color === CREAM5, JSON.stringify(r.tabs.board));
     await snap(app, `item3-${room}-tutor-open`);
     await clickSel(app, '.wz-tutor-grip'); await sleep(500);
 
