@@ -20,5 +20,3 @@ splash.mjs
 typewriter-fade.mjs
 # Card-height parity not yet explained: the item-12 wrap cards read 4 of 21 red on the runner and 21/21 on the box. Both machines wrap card g4 the same; the runner's board grows the card (the reflow effect only ever grows h, so a transient overflow during load sticks), the box's does not. Green on the box.
 polish10-12-part2.mjs
-# check F (a card's height with late fonts equals prompt fonts) is flaky on the runner's PARKED leg only (red 2 of 28 in the pair, 1 of 28 solo; the default leg passed both times; the failing values look shifted between decks, a stale read under runner load) and 6/6 PASS 28 checks on the box (3 per leg). No main control exists (the file is new with TOOLS #12). Moved to the box-only list on Fable's ruling (Oct 30).
-reflow-open.mjs
