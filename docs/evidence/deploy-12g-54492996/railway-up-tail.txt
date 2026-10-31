@@ -1,0 +1,12 @@
+
+[stage-0  9/11] RUN --mount=type=cache,id=s/d9a7894f-c7a0-415a-9fb5-48a34624fd18-node_modules/cache,target=/app/node_modules/.cache pnpm install --prod=false && pnpm --filter @writer-studio/desktop bu
+[stage-0 10/11] RUN printf '\nPATH=/app/node_modules/.bin:$PATH' >> /root/.profile
+[stage-0 10/11] RUN printf '\nPATH=/app/node_modules/.bin:$PATH' >> /root/.profile
+[stage-0 11/11] COPY . /app
+[stage-0 11/11] COPY . /app
+exporting to docker image format
+exporting to docker image format
+containerimage.digest: sha256:f2f24ec24db322287b0f21d95b9fd7bbed1cf570ff156f35ae0750edd16881ca
+containerimage.descriptor: eyJtZWRpYVR5cGUiOiJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLm1hbmlmZXN0LnYxK2pzb24iLCJkaWdlc3QiOiJzaGEyNTY6ZjJmMjRlYzI0ZGIzMjIyODdiMGYyMWQ5NWI5ZmQ3YmJlZDFjZjU3MGZmMTU2ZjM1YWUwNzUwZ
+containerimage.config.digest: sha256:30b1643b394583dd857d19a4f93c0c4105301aa5392421d37ef42e932df8e10a
+Deploy complete
