@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom/client';
 import '../styles/arbor-v2.css';
 import { mountSun } from './sun';
 import { mountPaper } from './paper';
+import { mountChrome } from './chrome';
+import { clearRhizome, undoClearRhizome, canUndoClear, hasRhizome, subscribeLife } from './rhizomeLife';
 
 // ARBOR v2 WORKING MOCKUP - loaded only under ?arbor2=1 (main.tsx). Everything here is IN-SESSION: it writes attributes on
 // <html> and React state, never storage (Fable's rulings 6 and "the flag", Oct 29).
@@ -25,6 +27,7 @@ root.setAttribute('data-arbor2', 'true');
 applyRoom();
 mountSun(root);   // item 6: the day room's pergola light (drawn only in the day room by styles/arbor-v2.css; in memory, stores nothing)
 mountPaper();     // the zoomed page stays a whole opaque sheet, and the sun layer has a hole over the page (paper.ts; Fable, Oct 29)
+mountChrome(root);    // r5 §2c.1: the top bar drawn flush to the window's top, the "..." inside it (chrome.ts; the page never moves)
 new MutationObserver(applyRoom).observe(root, { attributes: true, attributeFilter: ['data-page'] });
 
 function Seg<T extends string>({ label, value, opts, onPick }: { label: string; value: T; opts: [T, string][]; onPick: (v: T) => void }) {
@@ -53,6 +56,23 @@ const MOOD: { key: string; label: string; why?: string }[] = [
   { key: 'dim', label: 'Dim room with drawer open' },   // §6.2 (Fable, Oct 29): the further step while a drawer is open; the rest dim stays
 ];
 
+// r5 (spec §2c.4, §8b.6; Fable): CLEAR RHIZOME lives in the Mood menu, plain words, with UNDO; it never touches the writing or the word count.
+// In the mockup it is in-session only (src/arbor2/rhizomeLife.ts): nothing is stored.
+function RhizomeRow() {
+  const [, tick] = useState(0);
+  useEffect(() => subscribeLife(() => tick((x) => x + 1)), []);
+  const on = hasRhizome(), undo = canUndoClear();
+  return (
+    <li className="arbor2-mood-row arbor2-rhizome-row">
+      <span className="arbor2-mood-label">Rhizome</span>
+      <span>
+        <button type="button" className="arbor2-bar-opt arbor2-rhizome-clear" disabled={!on} onClick={() => clearRhizome()}>Clear Rhizome</button>
+        {undo && <button type="button" className="arbor2-bar-opt arbor2-rhizome-undo" onClick={() => undoClearRhizome()}>Undo</button>}
+      </span>
+    </li>
+  );
+}
+
 function MoodMenu({ off, flip }: { off: string[]; flip: (k: string) => void }) {
   return (
     <ul className="arbor2-mood" aria-label="Mood">
@@ -67,6 +87,7 @@ function MoodMenu({ off, flip }: { off: string[]; flip: (k: string) => void }) {
           )}
         </li>
       ))}
+      <RhizomeRow />
     </ul>
   );
 }
@@ -82,10 +103,10 @@ function MockupBar() {
     else root.removeAttribute('data-arbor2-off');
   }, [off]);
   const flip = (k: string) => setOff((o) => (o.includes(k) ? o.filter((x) => x !== k) : [...o, k]));
-  // item 9: the logo's orange o and dot - kept brass, or sage with the rest (Nick's call, spec §12); in-session, an attribute on <html>
-  const [logo, setLogo] = useState<'brass' | 'all'>('brass');
+  // item 9: the logo - r5: ALL SAGE by default (Nick's pick, Oct 31 1:34 pm); the row keeps the brass o to compare. In-session, an attribute on <html>
+  const [logo, setLogo] = useState<'brass' | 'all'>('all');
   useEffect(() => {
-    if (logo === 'all') root.setAttribute('data-arbor2-logo', 'all');
+    if (logo === 'brass') root.setAttribute('data-arbor2-logo', 'brass');
     else root.removeAttribute('data-arbor2-logo');
   }, [logo]);
   useEffect(() => {
@@ -100,8 +121,8 @@ function MockupBar() {
       {open && (
         <>
           <Seg label="Room" value={room} opts={[['night', 'Night'], ['day', 'Day']]} onPick={pickRoom} />
-          <p className="arbor2-bar-note">By night the rhizome is hidden until the goal (Progress: Rhizome, with a word goal).</p>
-          <Seg<'brass' | 'all'> label="Logo o" value={logo} opts={[['brass', 'Brass'], ['all', 'Sage']]} onPick={setLogo} />
+          <p className="arbor2-bar-note">The rhizome (Progress: Rhizome, with a word goal) keeps its finished laps faint by day; by night it shows only at the goal.</p>
+          <Seg<'brass' | 'all'> label="Logo" value={logo} opts={[['all', 'Sage'], ['brass', 'Brass o']]} onPick={setLogo} />
           <button type="button" className="arbor2-bar-head" aria-expanded={mood} onClick={() => setMood(m => !m)}>Mood {mood ? '▾' : '▸'}</button>
           {mood && <MoodMenu off={off} flip={flip} />}
         </>
