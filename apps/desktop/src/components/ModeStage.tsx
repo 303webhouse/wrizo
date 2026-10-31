@@ -18,6 +18,7 @@ import { useAmbianceDial, setAmbianceDial } from '../store/ambianceDial';
 import { FirstRunVeil } from './FirstRunGate';
 import { usePageDress, dressVars } from '../store/pageDress';
 import { setCaretOffset } from '../store/caretOffset';
+import { isArbor2 } from '../arbor2/flag';   // ARBOR v2 mockup r7: the dark page's pen inks (below), only under ?arbor2=1
 import { editorPlainText, rowsFor, rowsOffsetOf } from '../store/lineRows';
 import { tuckDrawers } from '../store/menusDrawers';
 import { ZOOM_ANCHOR } from '../store/pageScale';
@@ -73,6 +74,14 @@ function effectivePenInk(ink: string, theme: ThemeId, pageTone: PageTone): strin
   if (theme === 'machina') {
     if (ink === PEN_DEFAULT_INK) return 'var(--ink-on-paper)';
     return pageTone === 'dark' ? (PEN_INKS_MACHINA_DARK[ink] ?? ink) : ink;
+  }
+  // ARBOR v2 MOCKUP r7 (spec §2d, Fable Oct 31; flag-only): Arbor's dark page (the existing Page: Dark) is #1A1510, where the default walnut
+  // swatch would vanish - the same gap Flux's and Machina's dark pages closed: the default swatch becomes the page's own ink (var(--ink-on-paper),
+  // #EFE4CB, 14.35:1) and red and blue take Machina's lightened pair (8.2 / 8.6:1 on #1A1510). Display-only: the stored swatch is still the hex.
+  // Off the flag, and on Arbor's light page, nothing changes.
+  if (theme === 'plateau' && pageTone === 'dark' && isArbor2()) {
+    if (ink === PEN_DEFAULT_INK) return 'var(--ink-on-paper)';
+    return PEN_INKS_MACHINA_DARK[ink] ?? ink;
   }
   if (theme !== 'flux') return ink;
   if (pageTone === 'dark') return PEN_INKS_FLUX_DARK[ink] ?? ink;

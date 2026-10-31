@@ -60,13 +60,18 @@ export default {
       const other = toneRoom.room === 'night' ? 'Day' : 'Night';
       await clickText(app, '.arbor2-bar-opt', other); await sleep(900);
       const switched = await app.evalJs(READ);
+      toneRoom.mode = mode; switched.mode = mode;
       out[mode] = { off: off.rect, toneRoom, switched };
     }
     const dark = out.freewrite.toneRoom.tone === 'dark';
     const pageOk = (r) => dark
       ? r.paper === '#1A1510' && r.border === '#3A2D22' && r.ink === '#EFE4CB' && r.inkRatio >= 13.9 && r.low === '#B9AA8C' && r.lowRatio >= 4.5 && r.caret === '#FF9800'
         && /underline/.test(r.selLine) && /overline/.test(r.selLine) && r.selColour === '#FF9800'
-      : r.ink === '#241A10' && r.inkRatio >= 13.9;
+      // PARKED 2026-10-31 (SUPERSEDED, red leg run 41246277946: the premise was wrong - Free Write's prose is the writer's PEN ink, Arbor's walnut
+      // #1A0F06 (ModeStage's PEN_INKS, 16.16:1), not --ink-on-paper; #2B2014 is the ink of Draft and Revise). Original, verbatim:
+      // : r.ink === '#241A10' && r.inkRatio >= 13.9;
+      // SUCCESSOR: the light page's ink measures >= 13.9 - Draft letters in #241A10, Free Write in the walnut pen ink #1A0F06.
+      : r.inkRatio >= 13.9 && r.ink === (r.mode === 'draft' ? '#241A10' : '#1A0F06');
     const ok = {};
     for (const [m, v] of Object.entries(out)) {
       ok[m + ' page'] = pageOk(v.toneRoom);
