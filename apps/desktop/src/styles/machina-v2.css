@@ -1,0 +1,164 @@
+/* ==========================================================================================================================================
+   MACHINA v2 - THE WORKING MOCKUP (the Wrizors' machina-redesign-spec draft 4, md5 6aed2bef; Fable's brief, Oct 31). Loaded ONLY under
+   ?machina2=1 (src/machina2/flag.ts -> src/machina2/mount.tsx); every rule is scoped under :root[data-machina2][data-theme='machina'], so
+   Arbor and Flux never read a line of it. Machina-scoped values only: no shared token's base value is touched.
+
+   §2 TOKENS v3 (Nick 3:03 pm: grayscale first, one palette for both tones; 3:11 pm: the menu bars dark in BOTH tones, their temperature by
+   CAST). One grey ramp shared by light and dark, used in opposite emphasis:
+     G0 #F4F5F6 · G1 #E6E8EA · G2 #D2D6DA · G3 #9AA1A8 · G4 #5E666E · G5 #3A4047 · G6 #23272B · G7 #151719
+   THE ROOM FOLLOWS THE EXISTING PAGE TONE (data-page; no new data): a light page = the light room, a dark page = the dark room.
+     LIGHT  room G1, panels G0, hairlines G2, labels G5, quiet G4         (NEUTRAL: the warm ramp - #E9E6E1 / #F5F3EF / #D6D1C9 / #3B3833 / #5F5A53)
+     DARK   room G7, panels G6, hairlines G5, labels G1, quiet G3         (NEUTRAL: #171614 / #242220 / #3B3834 / #E6E2DB / #A09A91)
+     PAGE   light #FBFBFA ink #1C1C1C · dark #1A1B1D ink #E6E6E3 (both casts)
+     BARS   (top bar, rail, the "..."): COOL #1E262E hairline #2E3A46 labels G1 · NEUTRAL #201E1B hairline #332F2A labels #E6E2DB - both tones
+   THE COLOUR MEANINGS: GUIDANCE is the grayish cool blue, sparingly (text #3F6183 light / #8FA3B8 dark; marks #7FA0BC) - only the "?" marks,
+   PLAN -> and the Plans rail item, "-> Part", the Consultant's ask outlines, the matched commands, the Forms/preset doors. BRASS #FF9800 only
+   where the writer acted: the caret, the current tab's underline, a chosen state, the Run notch. CAST is the greys' temperature only
+   (theme-rules §A.1's "steel in COOL, orange in NEUTRAL" retires, Fable ruling 6). No pure white chrome. No motion but the caret and the Run.
+   CONTRAST (WCAG; scripts/harness/machina2-unit.mjs computes every pair, scripts/frames/machina2.mjs measures them on screen).
+   ========================================================================================================================================== */
+
+/* ---------- THE DARK ROOM (COOL; the base) ---------- */
+:root[data-machina2][data-theme='machina']{
+  --ink-950:#151719; --lamp-glow:linear-gradient(#151719, #151719);
+  --chrome-surface:#23272B; --rail-surface:#1E262E; --ink-900:#23272B; --ink-800:#2C3136;
+  --ink-border:#3A4047; --ink-border-strong:#5E666E;
+  --text-hi:#E6E8EA; --text-mid:#9AA1A8; --text-low:#9AA1A8;
+  --paper:#1A1B1D; --paper-dim:#151719; --paper-border:#3A4047; --ink-on-paper:#E6E6E3; --ink-on-paper-low:#9AA1A8;
+  /* guidance: the cool blue */
+  --machina2-guide:#8FA3B8; --machina2-guide-mark:#7FA0BC;
+  --help:#8FA3B8; --help-hi:#B4C3D2; --text-accent:#8FA3B8; --accent-door:#8FA3B8;
+  /* brass: what the writer did - the current tab, a chosen state (one colour in both casts) */
+  --line-active:#FF9800; --choice:#FF9800; --accent-rest:var(--text-hi);
+  --signal-live:#9AA1A8;
+}
+/* ---------- THE LIGHT ROOM (COOL) ---------- */
+:root[data-machina2][data-theme='machina'][data-page='light']{
+  --ink-950:#E6E8EA; --lamp-glow:linear-gradient(#E6E8EA, #E6E8EA);
+  --chrome-surface:#F4F5F6; --ink-900:#F4F5F6; --ink-800:#E6E8EA;
+  --ink-border:#D2D6DA; --ink-border-strong:#9AA1A8;
+  --text-hi:#3A4047; --text-mid:#3A4047; --text-low:#5E666E;
+  --paper:#FBFBFA; --paper-dim:#F4F5F6; --paper-border:#D2D6DA; --ink-on-paper:#1C1C1C; --ink-on-paper-low:#5E666E;
+  --machina2-guide:#3F6183; --help:#3F6183; --help-hi:#2E4A66; --text-accent:#3F6183; --accent-door:#3F6183;
+  --signal-live:#5E666E;
+}
+/* ---------- NEUTRAL: the warm ramp ---------- */
+:root[data-machina2][data-theme='machina'][data-cast='neutral']{
+  --ink-950:#171614; --lamp-glow:linear-gradient(#171614, #171614);
+  --chrome-surface:#242220; --rail-surface:#201E1B; --ink-900:#242220; --ink-800:#2D2A27;
+  --ink-border:#3B3834; --ink-border-strong:#5F5A53;
+  --text-hi:#E6E2DB; --text-mid:#A09A91; --text-low:#A09A91;
+  --line-active:#FF9800; --choice:#FF9800; --accent-rest:var(--text-hi); --text-accent:#8FA3B8; --help:#8FA3B8; --help-hi:#B4C3D2; --accent-door:#8FA3B8;
+  --signal-live:#A09A91;
+}
+:root[data-machina2][data-theme='machina'][data-cast='neutral'][data-page='light']{
+  --ink-950:#E9E6E1; --lamp-glow:linear-gradient(#E9E6E1, #E9E6E1);
+  --chrome-surface:#F5F3EF; --ink-900:#F5F3EF; --ink-800:#E9E6E1;
+  --ink-border:#D6D1C9; --ink-border-strong:#A09A91;
+  --text-hi:#3B3833; --text-mid:#3B3833; --text-low:#5F5A53;
+  --paper:#FBFBFA; --paper-dim:#F5F3EF; --paper-border:#D6D1C9; --ink-on-paper:#1C1C1C; --ink-on-paper-low:#5F5A53;
+  --text-accent:#3F6183; --help:#3F6183; --help-hi:#2E4A66; --accent-door:#3F6183;
+  --signal-live:#5F5A53;
+}
+/* the page in the dark room, both casts (the cast does not touch the page) */
+:root[data-machina2][data-theme='machina'][data-cast='neutral']:not([data-page='light']){
+  --paper:#1A1B1D; --paper-dim:#171614; --paper-border:#3B3834; --ink-on-paper:#E6E6E3; --ink-on-paper-low:#A09A91;
+}
+
+/* ---------- THE MENU BARS: dark in BOTH tones, their temperature by CAST ----------
+   The top bar, the rail and the "..." carry the bar's own tokens, so they letter in the bar's labels on the bar in either room. */
+:root[data-machina2][data-theme='machina'] :is(.chrome-top.sprint-nav, .desk-frame-strip, .desk-rail, .gh-corner-glyph, .gh-corner-menu){
+  --ink-950:#1E262E; --ink-900:#1E262E; --chrome-surface:#1E262E; --rail-surface:#1E262E; --desk-ground:#1E262E; --ink-800:#27313B;
+  --ink-border:#2E3A46; --ink-border-strong:#46525E;
+  --text-hi:#E6E8EA; --text-mid:#E6E8EA; --text-low:#9AA1A8;
+  --help:#8FA3B8; --help-hi:#B4C3D2; --text-accent:#8FA3B8; --accent-door:#8FA3B8; --machina2-guide:#8FA3B8;
+}
+:root[data-machina2][data-theme='machina'][data-cast='neutral'] :is(.chrome-top.sprint-nav, .desk-frame-strip, .desk-rail, .gh-corner-glyph, .gh-corner-menu){
+  --ink-950:#201E1B; --ink-900:#201E1B; --chrome-surface:#201E1B; --rail-surface:#201E1B; --desk-ground:#201E1B; --ink-800:#2A2724;
+  --ink-border:#332F2A; --ink-border-strong:#4A453F;
+  --text-hi:#E6E2DB; --text-mid:#E6E2DB; --text-low:#A09A91;
+}
+:root[data-machina2][data-theme='machina'] :is(.chrome-top.sprint-nav, .desk-frame-strip, .desk-rail){ background-color:var(--ink-900); }
+:root[data-machina2][data-theme='machina'] .gh-corner-glyph{ background-color:var(--ink-900); }
+
+/* ---------- THE PAGE: the near-white page is the bright thing in the light room; a hairline, not a cast shadow ---------- */
+:root[data-machina2][data-theme='machina'][data-page='light'] .mode-page{ box-shadow:0 0 0 1px var(--paper-border); }
+:root[data-machina2][data-theme='machina'][data-page='light'] .mode-page.focused{ box-shadow:0 0 0 1px var(--paper-border); }
+
+/* ---------- GUIDANCE in the cool blue, and nowhere else ---------- */
+:root[data-machina2][data-theme='machina'] .sprint-nav .page-plan-door{ color:var(--machina2-guide); }
+:root[data-machina2][data-theme='machina'] .sprint-nav .page-plan-door:hover{ color:var(--text-hi); }
+
+/* ---------- THE MARK: WRIZ in Plex Mono, the square a hairline in the label grey (it fills brass only at the splash's close) ---------- */
+:root[data-machina2][data-theme='machina'] .brand-mark{ font-family:'IBM Plex Mono', monospace; color:var(--text-hi); }
+:root[data-machina2][data-theme='machina'] .brand-mark::after{ border-color:currentColor; }
+
+/* the bars' own "where you are" text (the token is the label colour, resolved per surface) */
+:root[data-machina2][data-theme='machina'] :is(.chrome-top.sprint-nav, .desk-frame-strip, .desk-rail, .gh-corner-glyph, .gh-corner-menu){ --accent-rest:#E6E8EA; }
+:root[data-machina2][data-theme='machina'][data-cast='neutral'] :is(.chrome-top.sprint-nav, .desk-frame-strip, .desk-rail, .gh-corner-glyph, .gh-corner-menu){ --accent-rest:#E6E2DB; }
+
+/* ---------- BRASS: where the writer acted, as a MARK (an underline, an edge, a notch) - never a resting text colour ----------
+   "where you are" letters in the label colour (--accent-rest = the surface's labels: brass text on the light room is 1.9:1); the current mode
+   tab, the current drawer tab and the rail's current item carry the brass line (§9: "current = brass underline"). */
+:root[data-machina2][data-theme='machina'] .desk-mode-tab.active{ border-bottom-color:var(--brass); }
+:root[data-machina2][data-theme='machina'] .wz-drawer-tab{ background:none; border:0; border-bottom:1px solid var(--ink-border); }
+:root[data-machina2][data-theme='machina'] .wz-drawer-tab[data-on='true']{ color:var(--text-hi); border-bottom:2px solid var(--brass); }
+:root[data-machina2][data-theme='machina'] .wz-strip-item.active{ border-left-color:var(--brass); }
+
+/* ---------- §3 TYPE: chrome Plex Sans 12-13 px; readouts and the command line Plex Mono 11-12 px; headings Plex Sans caps .12 em ---------- */
+:root[data-machina2][data-theme='machina'] :is(.wz-sliver-h, .wz-cascade-panel-title, .wz-drawers-cluster-title){ font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:11px;
+  letter-spacing:.12em; text-transform:uppercase; color:var(--text-mid); }
+
+/* ---------- GUIDANCE: the "?" marks, the Plans rail item, the Consultant's asks, "→ Part", matched commands (the cool blue) ---------- */
+:root[data-machina2][data-theme='machina'] .wz-tutor-draft-ask.machina2-ask{ border:1px solid var(--machina2-guide-mark, #7FA0BC); color:var(--machina2-guide); background:none; }
+:root[data-machina2][data-theme='machina'][data-machina2-off~='asks'] .machina2-ask{ display:none; }
+
+/* ---------- THE READOUT BAR (§8.2): under the page, in place of the Run's count; Plex Mono, quiet grey ---------- */
+:root[data-machina2][data-theme='machina'] .machina2-run{ display:flex; flex-direction:column; align-items:center; gap:3px; }
+:root[data-machina2][data-theme='machina'] .machina2-readout{ font:11px/1.3 'IBM Plex Mono', monospace; color:var(--text-low); white-space:nowrap; letter-spacing:.02em; }
+/* NEUTRAL's sparks retire (ruling 6): nothing of the burst draws under the flag (run.tsx draws none; this is belt and braces) */
+:root[data-machina2][data-theme='machina'] .machina-run-burst{ display:none; }
+
+/* ---------- OUTLINE → PARTS (§8.3; the affordance only) ---------- */
+.machina2-outline-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:4px; }
+.machina2-outline-point{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; font-size:12px; color:var(--text-hi); }
+.machina2-outline-text{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.machina2-outline-part{ all:unset; cursor:pointer; flex:0 0 auto; font:11px/1.4 'IBM Plex Mono', monospace; color:var(--machina2-guide); border-bottom:1px solid var(--machina2-guide-mark, #7FA0BC); }
+.machina2-outline-part:focus-visible{ outline:1px solid var(--machina2-guide); outline-offset:2px; }
+.machina2-outline-tick{ flex:0 0 auto; color:var(--brass); font-size:12px; }
+.machina2-outline-empty, .machina2-outline-note{ margin:0; font-size:11px; color:var(--text-low); }
+
+/* ---------- THE COMMAND LINE (§8.1): a hairline box in the room beside the page; Plex Mono; matches in the cool blue, the chosen one in a
+   brass outline; no shadow, square, no motion ---------- */
+.machina2-cmd{ position:fixed; z-index:2147482000; box-sizing:border-box; padding:8px; background:var(--ink-900); border:1px solid var(--ink-border-strong);
+  font:12px/1.4 'IBM Plex Mono', monospace; color:var(--text-hi); }
+.machina2-cmd-input{ all:unset; box-sizing:border-box; display:block; width:100%; padding:4px 6px; border-bottom:1px solid var(--ink-border); color:var(--text-hi); caret-color:var(--brass); }
+.machina2-cmd-input::placeholder{ color:var(--text-low); }
+.machina2-cmd-list{ list-style:none; margin:6px 0 0; padding:0; display:flex; flex-direction:column; gap:2px; }
+.machina2-cmd-item{ padding:3px 6px; color:var(--machina2-guide); cursor:pointer; border:1px solid transparent; }
+.machina2-cmd-item[data-chosen='true']{ border-color:var(--brass); }
+.machina2-cmd-none{ padding:3px 6px; color:var(--text-low); }
+.machina2-cmd-foot{ margin:6px 0 0; font-size:11px; color:var(--text-low); }
+.machina2-cmd-legend{ list-style:none; margin:6px 0 0; padding:6px 0 0; border-top:1px solid var(--ink-border); display:flex; flex-direction:column; gap:2px; font-size:11px; color:var(--text-low); }
+.machina2-cmd-legend kbd{ font:inherit; color:var(--text-hi); border:1px solid var(--ink-border); padding:0 3px; }
+
+/* ---------- THE BLUE WASH (§6: "the blue wash low"; §11's switch) - a faint cool wash at the light room's foot, never on the page ---------- */
+:root[data-machina2][data-theme='machina'][data-page='light']:not([data-machina2-off~='wash']) body{ background-image:linear-gradient(to top, rgba(127, 160, 188, .10), rgba(127, 160, 188, 0) 38%); background-attachment:fixed; }
+
+/* ---------- THE MOCKUP'S OWN PANEL (not product: exists only under the flag). Square, hairline, no shadow, bottom-right above the corner;
+   overlays, never displaces; recedes while she types. ---------- */
+.machina2-bar{ position:fixed; right:12px; bottom:64px; z-index:2147483000; display:flex; flex-direction:column; gap:6px; padding:8px 10px; max-width:280px;
+  background:var(--ink-900); border:1px solid var(--ink-border-strong); color:var(--text-hi); font:12px/1.3 'IBM Plex Sans', sans-serif; transition:opacity .4s ease; }
+:root[data-wz-writing='true'] .machina2-bar{ opacity:0; }
+.machina2-bar-head{ all:unset; cursor:pointer; font:600 11px/1.3 'IBM Plex Sans', sans-serif; letter-spacing:.12em; text-transform:uppercase; color:var(--text-low); }
+.machina2-bar-row{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
+.machina2-bar-label{ min-width:72px; color:var(--text-low); }
+.machina2-bar-opt{ all:unset; cursor:pointer; padding:2px 8px; border:1px solid var(--ink-border-strong); color:var(--text-hi); }
+.machina2-bar-opt[aria-pressed='true'], .machina2-switch[aria-checked='true']{ border-color:var(--brass); }
+.machina2-bar-opt:focus-visible, .machina2-bar-head:focus-visible{ outline:1px solid var(--brass); outline-offset:2px; }
+.machina2-switches{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:3px; }
+.machina2-switch-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.machina2-bar-note{ margin:0; font-size:11px; color:var(--text-low); }
+
+/* the crumb's "/" was the strong hairline colour (1.61:1 on the bar - the red leg, run 41247848375, on main); it is text, so it letters quiet */
+:root[data-machina2][data-theme='machina'] .crumb-sep{ color:var(--text-low); }
