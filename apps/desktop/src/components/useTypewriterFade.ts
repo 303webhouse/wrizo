@@ -215,6 +215,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     // timer ends it if the frames stop), and a BACKLOG is paid in bigger steps sized so that it is finished within BACKLOG_CAP_MS of becoming owed. An ordinary
     // line (a backlog of one) is still one line per glide; no frame moves more than the lurch law allows (fx5 S1 a: 1.6 lines, 2.5 on first engage).
     const LINE_GLIDE_MS = 160;
+    const VIEW_KEYS = new Set(['Home', 'End', 'PageUp', 'PageDown', 'ArrowUp', 'ArrowDown']);
     const BACKLOG_CAP_MS = 1000;
     const GLIDE_MS = LINE_GLIDE_MS + 60;   // past this a glide that has not landed is lost (its owed remainder is re-issued, below)
     let owedSince: number | null = null;   // when the current backlog first became owed (null: nothing owed)
@@ -226,6 +227,11 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     };
     let userScrolled = false;
     const onUserScroll = () => { userScrolled = true; };
+    // the KEYBOARD's way of moving the view (Ctrl+Home, Home/End, PageUp/PageDown, ArrowUp/Down) is the writer's scroll too. It must be named: the browser
+    // moves the box with no wheel/touch/press, and a key that lands the box at the very top (Ctrl+Home, a PageUp from within a page of it, an arrow run up
+    // to line 1) is exactly the drop to 0 that takenOver() excuses as the editor's re-render clamp - the glide would carry on and drag the writer back down.
+    // Typing is not in the set: a typed key is what the glide is FOR.
+    const onUserKey = (e: KeyboardEvent) => { if (VIEW_KEYS.has(e.key)) userScrolled = true; };
     const glide = (box: ScrollBox, from: number, to: number) => {
       stopGlide();
       userScrolled = false;
@@ -492,6 +498,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     const scrollListenTarget: Window | HTMLElement = useWindowScroll ? window : container;
     scrollListenTarget.addEventListener('scroll', setScrolled, { passive: true });
     for (const ev of ['wheel', 'touchstart', 'pointerdown']) scrollListenTarget.addEventListener(ev, onUserScroll, { passive: true });
+    scrollListenTarget.addEventListener('keydown', onUserKey as EventListener, { passive: true });
     window.addEventListener('resize', measure);
     measure();
     setScrolled();
@@ -502,6 +509,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       container.removeEventListener('input', schedule);
       scrollListenTarget.removeEventListener('scroll', setScrolled);
       for (const ev of ['wheel', 'touchstart', 'pointerdown']) scrollListenTarget.removeEventListener(ev, onUserScroll);
+      scrollListenTarget.removeEventListener('keydown', onUserKey as EventListener);
       window.removeEventListener('resize', measure);
       cancelAnimationFrame(raf);
       stopGlide();
