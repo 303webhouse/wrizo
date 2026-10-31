@@ -1,0 +1,44 @@
+# Contract: one Wrizo account for Write and Read · DRAFT 0
+
+**Status:** draft 0 (Fable, Oct 31, 2026). NOT signed. Read mocks against it; nothing touches production until Nick signs draft 1.
+**Owner:** Fable (Write side). **Consumer:** SOCIAL (Wrizo | Read, `303webhouse/wrizo-read`).
+**Nick's rulings this rests on:** one account for both apps; a writer can sign up from either side (Oct 29); the writer's theme follows them into Read (Oct 31); theme switches are saved to the account so they follow the writer into Read (Oct 31).
+
+## 1. Shape
+- **Write's server is the identity provider.** The flow is a standard OAuth 2.0 authorization-code flow with PKCE, with OpenID Connect-style ID tokens.
+- **Read never sees or stores a Wrizo password.** It only receives tokens. Read holds no Write database credentials and makes no direct database calls.
+- **Signing up from Read** sends the person to Write's own sign-up page and back. There is one sign-up form, and Write owns it. Opening sign-up to the public is Nick's separate call; it is closed today.
+- **Signing in from Read** works the same way: "Continue with Wrizo" goes to Write's sign-in page and returns with a code.
+
+## 2. What Read receives (the claims)
+| Claim | Meaning | Status |
+|---|---|---|
+| `sub` | A stable id for this person, **minted for Read only** (a pairwise id). It is never Write's database id. It never changes. | agreed |
+| `theme.id` | The writer's current Write theme (`plateau`/Arbor, `machina`, `flux`, …). | agreed |
+| `theme.tone` | The theme's light/dark room. | agreed |
+| `theme.page` | Page: Light / Dark (the existing cross-theme pref). | agreed |
+| `theme.cast` | Machina's Cool / Neutral, when the theme is Machina. | agreed |
+| `theme.switches` | The writer's per-theme "wow" switches (`{ themeId: { switchKey: false } }`; only the switches turned off are listed). | agreed (Nick, Oct 31: on the account) |
+| pen name / public name | Who owns it, Write or Read. | **OPEN (Nick, deferred)** |
+| age / class signal | Whether Write collects anything at sign-up and passes it on, or whether Read handles it entirely. | **OPEN (Nick, deferred)** |
+| email | Not sent in draft 0. If Read needs to send account notices, SOCIAL asks and Nick decides. | **OPEN** |
+
+- The claims are **read-only for Read**. Read never writes back to Write's settings.
+- They're fresh at every sign-in, plus a `userinfo` endpoint Read may call to refresh the theme after a writer changes it in Write.
+
+## 3. Sessions and endings
+- Access tokens are short-lived (≤ 1 hour); refresh tokens can be revoked.
+- Signing out of one app does not sign the person out of the other.
+- **Account deletion propagates.** When an account is deleted in Write, Write sends Read a signed "account deleted" event for that `sub`, and Read deletes that person's data under its own retention rules.
+- Read can't delete a Write account. A "delete my account" request in Read sends the person to Write.
+
+## 4. Security
+- The client secret and the signing keys live only in Railway variables. **Never in either repo, a chat, a doc or a log** (both repos are public).
+- Redirect addresses are an exact allowlist. Tokens are never put in URLs after the code exchange.
+- Read's lanes test against a **mock identity provider** with fake users. They are never given real accounts or real tokens.
+
+## 5. Not in this contract (planned)
+- **The notes feed** (Nick, Oct 31: "as a writer, I want to see the comments a piece of mine has received while I'm actively working on it in Wrizo"). This is a third, separate contract, `notes-feed-draft0.md`, after export v1 is signed: Read → Write, read-only. See export-v1-draft0 §6.
+
+## 6. Versioning
+This is draft 0. Draft 1 resolves the OPEN rows and is what Nick signs. After signing, a breaking change needs a new version, and both apps support the old version for one release.
