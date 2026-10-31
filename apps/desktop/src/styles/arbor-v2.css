@@ -9,19 +9,16 @@
    The page is light in both rooms and its rect never changes: nothing here sets a size, margin, padding, border width or position on
    the page or anything that lays it out.
 
-   CONTRAST (WCAG, measured by script, both rooms; floors: names 7:1, labels 4.5:1):
-     NIGHT  on 950 #0A0503 / 900 #150F0B / 800 #1F1711
-       --arbor-letter #E8DCC2   14.91 / 13.98 / 12.99
-       --text-hi      #EDE6DA   16.34 / 15.32 / 14.24
-       --text-mid     #B5A998    8.78 /  8.23 /  7.65
-       --text-low     #A2957F    6.89 /  6.46 /  6.01   (the spec's value; it measures)
-       --arbor-guide  #9FB07A    8.65 /  8.11 /  7.54
-     DAY    on 950 #EFE6D2 / 900 #E4D8BF / 800 #D8C9A9 / the late afternoon's 950 #E3D4B6
-       --arbor-letter #2F3A1E    9.70 /  8.52 /  7.36 / 8.23   (the spec's #3E4A2A is 5.79 on 800: under the 7:1 names floor - it becomes --text-mid)
-       --text-mid     #3E4A2A    7.63 /  6.71 /  5.79 / 6.47
-       --text-low     #4F4E36    6.83 /  6.01 /  5.19 / 5.80   (the spec's #6B6A4E is 3.38 on 800: fails)
-       --arbor-guide  #3F5A26    6.26 /  5.51 /  4.76 / 5.31   (the spec's leaf #5F7A3C is 3.90 on 950, not 4.9: fails as text; kept for the shoots, which are not text)
-   Lines and the olive rest mark are not text (non-text floor 3:1): day --arbor-line #6E5C3C 3.94-5.19.
+   CONTRAST, r5 (spec draft 5 §2b/§9c; WCAG; computed in scripts/harness/arbor2-r5-unit.mjs R3, measured on screen in
+   scripts/frames/arbor2-r5.mjs r5-contrast, both rooms; floors: labels 4.5:1, graphics 3:1):
+     NIGHT  cream #EFE4CB on the room #120A06 15.52 · on the bars #1B120C 14.61 · quiet #B9AA8C 8.58 / 8.07 · sage guide #A7B27E 8.69
+            drawer headings (--text-mid #B5A998) on #1B120C 7.99
+     DAY    olive #33401F on plaster #F1EAD8 9.24 (late #EEE2C8 8.63) · on surfaces #E8DFC8 8.35 · on raised #F6F1E4 9.74
+            quiet #56623A 5.47 / 4.94 on surfaces / 5.83 raised · leaf guide #4F6B2C 5.04 / 4.56 / 5.36
+     BARS   the top bar and the rail are espresso in BOTH rooms: cream on #1B120C 14.61
+     CLOTHS olive #56632E / cream 5.16 · cold blue #7FA0BC / walnut 5.95 · madder #A8392F / cream 5.05 (the spec's olive #6B7A3A with cream is 3.66)
+     OPENERS arrows: cream on olive #6B7A3A 3.72 · walnut on brass 7.57 (graphics)
+   (The r1-r4 table this replaces measured the r4 palette: night #0A0503 rooms, day whitewash #EFE6D2; it is in git history.)
    ========================================================================================================================================== */
 
 /* ---------- NIGHT: the study ----------
@@ -34,7 +31,11 @@
   --arbor-letter:#EFE4CB;
   --text-low:#B9AA8C;
   --arbor-guide:#A7B27E;
-  --accent-rest:#6B7A3A;
+  /* "where you are" as a TEXT colour (the rail's open item, a current row, the Plan door...): the spec's olive #6B7A3A is 3.93:1 on the
+     espresso surfaces (frames run 41241222600), so the token is the same olive lit for the dark, #85914C (5.67 / 5.42 / 4.98 on 950/900/800). The olive
+     itself stays exact where it is a mark, not text: the openers, the olive cloth's family, the underlines (>= 3:1). */
+  --accent-rest:#85914C;
+  --help:#A7B27E; --help-hi:#EFE4CB;   /* the "?" marks take the guide green (spec §4) */
   --arbor-lamp-rgb:212,162,78;
   --arbor2-pool-a:.26; --arbor2-pool-b:.10;
 }
@@ -42,14 +43,20 @@
 /* ---------- DAY: the shed ----------
    r5 (spec §2b): plaster cream #F1EAD8 (never tan: the retired tans #D8C9A9 / #E4D8BF / #C9B08C leave the theme), surfaces #E8DFC8, raised
    honey wood #C9A46B, wood lines #A77F45, deep-olive lettering #33401F, quiet #5E6A3F, leaf guide #4F6B2C, olive #6B7A3A, moss #7D8C55 for
-   the pergola's shade. No honey-wood sill at the foot of the room (dropped, Nick 1:34 pm). */
+   the pergola's shade. No honey-wood sill at the foot of the room (dropped, Nick 1:34 pm).
+   TWO MEASURED DEPARTURES from the spec's table (arbor2-1 C1, run 41240761804 - the floors are the spec's own, names 7:1, labels 4.5:1):
+     RAISED (--ink-800, hover and raised surfaces, under text) is a LIFTED CREAM #F6F1E4, not the honey wood: on #C9A46B the olive names
+       measured 4.76:1, the quiet text 2.50:1 and the leaf guide 2.59:1. The honey wood stays as --arbor2-honey, for wood only (with the sill
+       dropped and the rail in espresso, no surface uses it yet).
+     QUIET TEXT is #56623A, a step darker than the spec's #5E6A3F, which measured 4.38:1 on the spec's own surface #E8DFC8 (now 4.94:1). */
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day']{
-  --ink-950:#F1EAD8; --ink-900:#E8DFC8; --ink-800:#C9A46B; --ink-border:#A77F45; --ink-border-strong:#A77F45;
+  --ink-950:#F1EAD8; --ink-900:#E8DFC8; --ink-800:#F6F1E4; --ink-border:#A77F45; --ink-border-strong:#A77F45; --arbor2-honey:#C9A46B;
   --arbor-line:#A77F45;
   --arbor-letter:#33401F;
-  --text-hi:#33401F; --text-mid:#33401F; --text-low:#5E6A3F;
+  --text-hi:#33401F; --text-mid:#33401F; --text-low:#56623A;
   --arbor-guide:#4F6B2C;
-  --accent-rest:#6B7A3A;
+  --accent-rest:#55612D;   /* olive deepened for text on the plaster (#6B7A3A is 3.9:1 there): 5.57 / 5.03 / 5.87 on 950/900/800 */
+  --help:#4F6B2C; --help-hi:#33401F;
   --rhizome-ink:#4F6B2C;   /* the leaf: the shoots are decoration, not text */
   --arbor2-moss:125,140,85;
   --lamp-glow: radial-gradient(135% 95% at 50% -8%, #F8F3E6 0%, #F5EFE0 38%, var(--ink-950) 70%, var(--ink-950) 100%);
@@ -247,7 +254,7 @@
    Motion: drift is one 48 s transform loop; a flutter is one cluster for 300-600 ms, >= 6 s apart (<= 1 event/s). Reduced motion: still.
    ========================================================================================================================================== */
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day']{
-  /* r5: the day --text-low / --arbor-guide are the spec's own again (#5E6A3F 4.86:1, #4F6B2C 5.03:1 on the plaster): the one label on the bare
+  /* r5: the day --text-low / --arbor-guide are r5's (#56623A 5.47:1, #4F6B2C 5.04:1 on the plaster): the one label on the bare
      room (the count row) now sits in the pergola's and the vignette's hole (paper.ts), so no shadow falls on it */
   --ink-950:var(--arbor2-day-ground, #F1EAD8);   /* sun.ts mixes #F1EAD8 -> #EEE2C8 by the afternoon (warmer plaster, never tan) and writes the hex */
 }
@@ -349,8 +356,8 @@
 }
 /* r5 (§9c): the two openers are no longer dimmed at all (the olive opener at .6 drew its arrow at 2.7:1; olive is already the quiet colour).
    Superseded here: the r4 rule that held them at .6 through the further step (the Tutor tab's sea cloth measured 4.44:1 at .52, run 41010542648). */
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night']:not([data-wz-writing='true']) :is(.chrome-fade, .desk-dissolve, .mode-dissolve):not(:is(.chrome-fade, .desk-dissolve, .mode-dissolve) *):not(.wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel):not(.wz-sliver[data-open='true'] .wz-sliver-grip, .wz-tutor-grip[data-open='true']):not([data-chrome-receded='true'], [data-chrome-receded='true'] *, [data-writing='true'] *):not(:hover, :focus-within),
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night']:not([data-wz-writing='true']) :is(.chrome-fade, .desk-dissolve, .mode-dissolve):not(:is(.chrome-fade, .desk-dissolve, .mode-dissolve) *):not(.wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel):not(.wz-sliver[data-open='true'] .wz-sliver-grip, .wz-tutor-grip[data-open='true']):not([data-chrome-receded='true'], [data-chrome-receded='true'] *, [data-writing='true'] *):not(:hover, :focus-within) *{
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night']:not([data-wz-writing='true']):not([data-arbor2-lit]) :is(.chrome-fade, .desk-dissolve, .mode-dissolve):not(:is(.chrome-fade, .desk-dissolve, .mode-dissolve) *):not(.wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel):not(.wz-sliver[data-open='true'] .wz-sliver-grip, .wz-tutor-grip[data-open='true']):not([data-chrome-receded='true'], [data-chrome-receded='true'] *, [data-writing='true'] *):not(:hover, :focus-within),
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night']:not([data-wz-writing='true']):not([data-arbor2-lit]) :is(.chrome-fade, .desk-dissolve, .mode-dissolve):not(:is(.chrome-fade, .desk-dissolve, .mode-dissolve) *):not(.wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel):not(.wz-sliver[data-open='true'] .wz-sliver-grip, .wz-tutor-grip[data-open='true']):not([data-chrome-receded='true'], [data-chrome-receded='true'] *, [data-writing='true'] *):not(:hover, :focus-within) *{
   color:var(--text-hi) !important;
 }
 
@@ -361,8 +368,11 @@
    ========================================================================================================================================== */
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] :is(.chrome-top.sprint-nav, .desk-frame-strip, .desk-rail, .gh-corner-glyph, .gh-corner-menu){
   --ink-950:#120A06; --ink-900:#1B120C; --ink-800:#261A12; --ink-border:#3A2A1C; --ink-border-strong:#4A3726; --chrome-surface:#1B120C; --desk-ground:#1B120C;
-  --arbor-line:#9C8A6E; --arbor-letter:#EFE4CB; --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#B9AA8C; --arbor-guide:#A7B27E; --accent-rest:#6B7A3A;
+  --arbor-line:#9C8A6E; --arbor-letter:#EFE4CB; --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#B9AA8C; --arbor-guide:#A7B27E; --accent-rest:#85914C;
+  --help:#A7B27E; --help-hi:#EFE4CB;
 }
+/* the crumb's "/" was --ink-border-strong (a hairline colour: 1.64:1 on the espresso bar, frames run 41241222600); it is text, so it letters quiet */
+:root[data-arbor2][data-theme='plateau'] .crumb-sep{ color:var(--text-low); }
 :root[data-arbor2][data-theme='plateau'] :is(.chrome-top.sprint-nav, .gh-corner-glyph){ background-color:#1B120C; }
 :root[data-arbor2][data-theme='plateau'] :is(.desk-frame-strip, .desk-rail){ --desk-ground:#1B120C; background-color:#1B120C; }
 
