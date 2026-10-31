@@ -230,19 +230,29 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       stopGlide();
       userScrolled = false;
       const t0 = performance.now();
+      let lastSet = from;   // where this glide last left the scroll
       const land = () => { stopGlide(); box.setScrollTop(to, false); if (trace) trace.push({ d: 'land', to: Math.round(to), ms: Math.round(performance.now() - t0) }); };
+      // the writer's own scroll took over: honoured, as a native smooth scroll's cancel was. That is a wheel / touch / press on the scrollbar, or the scroll
+      // simply not being where this glide left it (a scrollTo by anything else). EXCEPT a drop to the very top: the editor's re-render of a typed line clamps
+      // scrollTop to 0 (the box, 7 runs of 8, always at the same glide) and a native smooth scroll rides that out to its absolute target - so does this one,
+      // its next frame sets the absolute position again.
+      const takenOver = () => {
+        const cur = readBox(!!useWindowScroll, container).scrollTop;
+        if (!userScrolled && ((cur <= 1 && lastSet > 2) || Math.abs(cur - lastSet) <= 2)) return false;
+        if (trace) trace.push({ d: 'abort', cur: Math.round(cur), lastSet: Math.round(lastSet), to: Math.round(to) });
+        stopGlide(); glideAt = 0;
+        return true;
+      };
       const tick = () => {
         glideRaf = 0;
+        if (takenOver()) return;
         const p = (performance.now() - t0) / LINE_GLIDE_MS;
         if (p >= 1) { land(); return; }
-        // the writer's own scroll (wheel, touch, a press on the scrollbar) took over: honoured, as a native smooth scroll's cancel was. A scrollTop that merely is not
-        // where this glide left it is NOT that: the editor's re-render of a typed line drops it (to 0 on the box, 7 runs of 8) and a native smooth scroll rides
-        // it out to its absolute target - so does this one, its next frame sets the absolute position again.
-        if (userScrolled) { if (trace) trace.push({ d: 'abort', to: Math.round(to) }); stopGlide(); glideAt = 0; return; }
-        box.setScrollTop(from + (to - from) * (0.5 - Math.cos(Math.PI * p) / 2), false);
+        lastSet = from + (to - from) * (0.5 - Math.cos(Math.PI * p) / 2);
+        box.setScrollTop(lastSet, false);
         glideRaf = requestAnimationFrame(tick);
       };
-      glideEnd = setTimeout(() => { glideEnd = null; if (userScrolled) { stopGlide(); glideAt = 0; return; } land(); }, LINE_GLIDE_MS + 40);   // the hard cap: frames or no frames, it has landed by now
+      glideEnd = setTimeout(() => { glideEnd = null; if (!takenOver()) land(); }, LINE_GLIDE_MS + 40);   // the hard cap: frames or no frames, it has landed by now
       glideRaf = requestAnimationFrame(tick);
     };
     // S1 — the fade band (line-height based) and the fresh-page start offset
