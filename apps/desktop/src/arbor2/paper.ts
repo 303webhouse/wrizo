@@ -55,7 +55,10 @@ export function visiblePage(): { box: Box; zoomed: boolean; paper: string; room:
   // the paper colour is the page's own --paper token (its background is see-through while the sheet stands in for it)
   // r5: the ROOM's hole (the pergola's and the vignette's) also takes in the progress row under the page - the count there is the one label on
   // the bare room, so no shadow or vignette ever falls on it (it keeps the plaster's own contrast: quiet #5E6A3F 4.86:1)
-  const room = row.r > row.l ? { l: Math.min(box.l, row.l - 4), t: box.t, r: Math.max(box.r, row.r + 4), b: Math.min(innerHeight, Math.max(box.b, row.b + 4)) } : box;
+  // (the margin clears the pergola's own soft edge: its light fades over SUN_EDGE px INSIDE the hole, so a 4 px margin still lit the count at
+  // .89 - zoomProof V6 on arbor2-6, run 41241802502 - and the hole reaches SUN_EDGE + 4 px past the row)
+  const M = SUN_EDGE + 4;
+  const room = row.r > row.l ? { l: Math.min(box.l, row.l - M), t: box.t, r: Math.max(box.r, row.r + M), b: Math.min(innerHeight, Math.max(box.b, row.b + M)) } : box;
   return { box, zoomed: col?.getAttribute('data-zoom') === 'true', paper: getComputedStyle(p).getPropertyValue('--paper').trim(), room };
 }
 
