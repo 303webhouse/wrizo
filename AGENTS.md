@@ -18,9 +18,11 @@ that design pass. (See docs/north-star.md v0.2 for the as-built architecture.)
 
 ## Repo layout (required)
 - apps/desktop
-- packages/core
+- apps/server
 - packages/modules-writing
 - docs/
+
+**Start at `docs/MAP.md`:** the five laws, the areas and their owners, the full-pair files, and one page per area (`docs/map/`).
 
 ## Hard rules
 - Keep changes minimal. No refactors outside ticket scope.
@@ -93,8 +95,7 @@ and the resulting flush wrote a cache that had never contained the row. A seed
 made through the seam enters the cache, so no flush can erase it — the mechanism
 is removed rather than out-timed. **A real writer is immune** (every product
 write reaches storage through the cache); this is a harness-only hazard, which is
-exactly why it went unnoticed. **A real writer is immune** — every product write
-reaches storage through the cache — which is exactly why this stayed invisible.
+exactly why it went unnoticed.
 
 ### HOW TO SEED A FIXTURE (item 85-C, wave 1 landed 2026-09-11)
 
