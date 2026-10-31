@@ -698,7 +698,11 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     if (!el || freeEdit) return;
     const NAV = new Set(['Home', 'End', 'PageUp', 'PageDown', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
     const onPress = () => { writerMovedRef.current = true; };
-    const onKey = (e: KeyboardEvent) => { if (NAV.has(e.key) || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a')) writerMovedRef.current = true; };
+    const onKey = (e: KeyboardEvent) => {
+      if (NAV.has(e.key) || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a')) writerMovedRef.current = true;
+      // a typed character (or Enter) is the writer back at the tip: the model appends there whatever the caret does
+      else if ((e.key.length === 1 || e.key === 'Enter') && !e.ctrlKey && !e.metaKey && !e.altKey) writerMovedRef.current = false;
+    };
     const onInsert = (e: Event) => { if (((e as InputEvent).inputType || '').startsWith('insert')) writerMovedRef.current = false; };
     el.addEventListener('pointerdown', onPress);
     el.addEventListener('keydown', onKey);
