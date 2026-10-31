@@ -147,8 +147,14 @@ await withHarness(async (app) => {
   //   on.prog == null && Array.isArray(progOpts) && progOpts.length === 2 && !progOpts.includes('Lamp') && !progOpts.includes('Hidden rhizome'), JSON.stringify({ prog: on.prog, progOpts }));
   // SUCCESSOR N1c: the bar's choices (the Mood list folded, as on a fresh load) are exactly the room and the logo's o - no progress option of
   // any name - and no night-progress attribute exists.
-  ok('N1c one Rhizome style, no progress switch: the bar offers the room (Night/Day) and the logo\'s o (Brass/Sage) only, and no night-progress attribute exists',
-    on.prog == null && Array.isArray(progOpts) && progOpts.join() === 'Night,Day,Brass,Sage', JSON.stringify({ prog: on.prog, progOpts }));
+  // PARKED 2026-10-31 (SUPERSEDED, r5 on INK's shards, run 41240761804: Nick picked ALL SAGE (spec §2c.2), so the bar's Logo row opens on Sage and
+  // offers the brass o to compare - "Sage, Brass o"). Original, verbatim:
+  // ok('N1c one Rhizome style, no progress switch: the bar offers the room (Night/Day) and the logo\'s o (Brass/Sage) only, and no night-progress attribute exists',
+  //   on.prog == null && Array.isArray(progOpts) && progOpts.join() === 'Night,Day,Brass,Sage', JSON.stringify({ prog: on.prog, progOpts }));
+  // SUCCESSOR N1d: the bar's choices are exactly the room and the logo (Sage first, the brass o to compare) - no progress option - and no
+  // night-progress attribute exists.
+  ok('N1d one Rhizome style, no progress switch: the bar offers the room (Night/Day) and the logo (Sage / Brass o) only, and no night-progress attribute exists',
+    on.prog == null && Array.isArray(progOpts) && progOpts.join() === 'Night,Day,Sage,Brass o', JSON.stringify({ prog: on.prog, progOpts }));
 
   // ---- T1: the room follows the existing Page tone
   await app.evalJs("document.documentElement.setAttribute('data-page', 'dark')"); await sleep(100);
@@ -195,8 +201,13 @@ await withHarness(async (app) => {
         const bar = document.querySelector('.sprint-nav');
         return { margin: blockers(Math.max(2, p.left - 60), p.top + 30), bar: bar ? getComputedStyle(bar).backgroundColor : null };
       })()`);
-      ok('L3 night: the lamp is on screen - nothing opaque covers body beside the page top (the desk host is see-through); the bar keeps its own ground',
-        cover.margin.length === 0 && cover.bar === 'rgb(21, 15, 11)', JSON.stringify(cover));      await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]); await sleep(150);
+      // PARKED 2026-10-31 (SUPERSEDED, r5, run 41240761804: spec §2b/§9c - the bars are espresso #1B120C in both rooms; r4's night surface was #150F0B).
+      // Original, verbatim:
+      // ok('L3 night: the lamp is on screen - nothing opaque covers body beside the page top (the desk host is see-through); the bar keeps its own ground',
+      //   cover.margin.length === 0 && cover.bar === 'rgb(21, 15, 11)', JSON.stringify(cover));
+      // SUCCESSOR L3b: the same, with the bar on r5's espresso.
+      ok('L3b night: the lamp is on screen - nothing opaque covers body beside the page top (the desk host is see-through); the bar keeps its own espresso ground',
+        cover.margin.length === 0 && cover.bar === 'rgb(27, 18, 12)', JSON.stringify(cover));      await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]); await sleep(150);
       const rm = await state(app);
       ok('L1 night, reduced motion: the lamp is a still frame (no animation)', rm.lampAnim === 'none', rm.lampAnim);
       await snap(app, 'item1-night-reduced-motion');
@@ -213,7 +224,12 @@ await withHarness(async (app) => {
       // ok('L2b day: the room is the whitewash, shaded by the afternoon (#EFE6D2 -> #E3D4B6), and the page keeps its paper', onLine && s.paperBg === 'rgb(243, 237, 225)', JSON.stringify({ i950: t.i950, paper: s.paperBg }));
       // SUCCESSOR L2c: the same room, and the paper is there: the page's own, or - while the sheet stands in - the sheet's, in the paper colour.
       const sh = await app.evalJs(SHEET);
-      ok('L2c day: the room is the whitewash, shaded by the afternoon (#EFE6D2 -> #E3D4B6), and the page has its paper (its own, or the zoomed page\'s sheet)', onLine && paperThere(sh), JSON.stringify({ i950: t.i950, ...sh }));
+      // PARKED 2026-10-31 (SUPERSEDED, r5, run 41240761804: spec §2b - the day room is plaster #F1EAD8, warming toward #EEE2C8 with the afternoon; the
+      // whitewash and its tan dusk left the theme). Original, verbatim:
+      // ok('L2c day: the room is the whitewash, shaded by the afternoon (#EFE6D2 -> #E3D4B6), and the page has its paper (its own, or the zoomed page\'s sheet)', onLine && paperThere(sh), JSON.stringify({ i950: t.i950, ...sh }));
+      // SUCCESSOR L2d: the room is the plaster, on the line from #F1EAD8 to #EEE2C8, and the page has its paper.
+      const onPlaster = g.length === 3 && g[0] >= 0xEE && g[0] <= 0xF1 && g[1] >= 0xE2 && g[1] <= 0xEA && g[2] >= 0xC8 && g[2] <= 0xD8;
+      ok('L2d day: the room is the plaster, warmed by the afternoon (#F1EAD8 -> #EEE2C8), and the page has its paper (its own, or the zoomed page\'s sheet)', onPlaster && paperThere(sh), JSON.stringify({ i950: t.i950, ...sh }));
     }
   }
 
@@ -323,7 +339,10 @@ await withHarness(async (app) => {
   await seedTo(7);
   await pickBar(app, 'Day'); await sleep(300);
   const h3 = await state(app);
-  ok('H3 day: the shoots show at rest, in the leaf (#5F7A3C)', h3.field && h3.field.vis === 'visible' && h3.field.segs > 0 && h3.field.stroke === 'rgb(95, 122, 60)', JSON.stringify(h3.field));
+  // PARKED 2026-10-31 (SUPERSEDED, r5, run 41240761804: spec §2b - the day guide/leaf is #4F6B2C). Original, verbatim:
+  // ok('H3 day: the shoots show at rest, in the leaf (#5F7A3C)', h3.field && h3.field.vis === 'visible' && h3.field.segs > 0 && h3.field.stroke === 'rgb(95, 122, 60)', JSON.stringify(h3.field));
+  // SUCCESSOR H3b: the shoots show at rest, in r5's leaf.
+  ok('H3b day: the shoots show at rest, in the leaf (#4F6B2C)', h3.field && h3.field.vis === 'visible' && h3.field.segs > 0 && h3.field.stroke === 'rgb(79, 107, 44)', JSON.stringify(h3.field));
   await snap(app, 'item1-day-rhizome');
 
   // R1: recede while typing
