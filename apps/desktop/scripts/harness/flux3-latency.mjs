@@ -12,10 +12,11 @@
 // DIMS while busy and keeps drawing every frame - that is the mutant's behaviour below.)
 //
 // THREE ARMS, interleaved in rounds (the order rotates each round; one discarded warm-up), each on the SAME page re-seeded to the same text through
-// the app's seam, at 1920x1080, Page: Dark, the Typewriter off:
+// the app's seam, at 1920x1080, Page: Dark, in Draft with the Typewriter off:
 //   C  the control: Arbor today (theme plateau), no flag, no stand-in.
 //   T  Flux (theme flux) with ?flux3=1 and the stand-in drawing layer, damped.
 //   M  the MUTANT: the same, with the damping skipped (the layer keeps drawing every frame while she types). It must FAIL the probe.
+//   F  information only: Flux with ?flux3=1 and no layer (SPLIT prints C / F / T, so a red L can be split into the theme's share and the layer's).
 // Keys: one character every ~90 ms, the latency of each read IN the page exactly as rhizome-latency reads it (keydown -> the second animation frame
 // after its `beforeinput`; this editor never fires `input` on a key).
 //
@@ -182,6 +183,8 @@ const ARMS = {
   C: { theme: 'plateau', flag: false, load: null },
   T: { theme: 'flux', flag: true, load: { mutant: MUTANT_RUN } },
   M: { theme: 'flux', flag: true, load: { mutant: true } },
+  // F (information only, never a verdict): Flux with the flag and NO drawing layer, so a red L can be split into the theme's share and the layer's
+  F: { theme: 'flux', flag: true, load: null },
 };
 
 try { await withHarness(async (app) => {
@@ -215,7 +218,12 @@ try { await withHarness(async (app) => {
     await app.reload();
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { timeout: 15000, label: 'page after reload' }).catch(() => {});
     await splashGone();
-    await sleep(500);
+    // DRAFT, the ordinary page: Draft reads this page's own Typewriter value (off: the page was made in Flux), where Free Write reads the shared
+    // setting, which is on by default (measured on Actions, run 41247909453: every arm ran Free Write with the Typewriter on). The Typewriter is
+    // its own slice (S4, Jacked In); the Flux motion this probe stands in for runs around the ordinary page.
+    await app.evalJs("document.querySelector('[data-mode-key=\"draft\"]')?.click()");
+    await app.waitFor("document.querySelector('[data-mode-key=\"draft\"]')?.getAttribute('aria-selected') === 'true' && !!document.querySelector('.forward-only-editor')", { timeout: 6000, label: 'Draft' }).catch(() => {});
+    await sleep(1300); // the mode switch's own re-persist lands ~1.1 s after it
     const rectOf = "(() => { const r = document.querySelector('.mode-page')?.getBoundingClientRect(); return r ? [r.x, r.y, r.width, r.height].map((v) => v.toFixed(2)).join(',') : null; })()";
     const rectBefore = await app.evalJs(rectOf);
     if (arm.load) await app.evalJs(`(${standIn.toString()})(${JSON.stringify(arm.load.mutant)}, ${JSON.stringify(LOAD)})`);
@@ -245,7 +253,8 @@ try { await withHarness(async (app) => {
       const lat = window.__lat.slice(), fr = window.__f3i ? window.__f3i.frames.slice() : [];
       const k0 = lat.length ? Math.min(...lat.map((x) => x.key)) : 0, k1 = lat.length ? Math.max(...lat.map((x) => x.at)) : 0;
       const pick = (a, b) => fr.filter((f) => f[0] >= a && f[0] <= b);
-      const sum = (fs) => ({ n: fs.length, drawFrames: fs.filter((f) => f[2] > 0).length, cbMs: fs.map((f) => f[3]), dt: fs.map((f) => f[1]) });
+      const sum = (fs) => ({ n: fs.length, drawFrames: fs.filter((f) => f[2] > 0).length, cbMs: fs.map((f) => f[3]), dt: fs.map((f) => f[1]),
+        drawAt: fs.filter((f) => f[2] > 0).slice(0, 6).map((f) => Math.round(f[0] - (fs.length ? fs[0][0] : 0))) });
       return { lat: lat.map((x) => x.ms), idle: sum(pick(${idle0}, ${idle1})), typing: sum(pick(k0, k1)), standin: window.__f3s ? { drawn: window.__f3s.drawn, held: window.__f3s.held } : null };
     })()`);
     // every typed key reached the stored page (read after the debounced save lands: wait on the STORED value)
@@ -260,13 +269,13 @@ try { await withHarness(async (app) => {
 
   // warm-up (discarded), then the rounds, the arm order rotating each round
   await runArm('C', 0);
-  const order = MUTANT_RUN ? ['C', 'T'] : ['C', 'T', 'M'];
-  const res = { C: [], T: [], M: [] };
+  const order = MUTANT_RUN ? ['C', 'F', 'T'] : ['C', 'F', 'T', 'M'];
+  const res = { C: [], T: [], M: [], F: [] };
   for (let round = 1; round <= ROUNDS; round += 1) {
     const rot = order.slice((round - 1) % order.length).concat(order.slice(0, (round - 1) % order.length));
     for (const name of rot) res[name].push(await runArm(name, round));
   }
-  const all = [...res.C, ...res.T, ...res.M];
+  const all = [...res.C, ...res.F, ...res.T, ...res.M];
 
   // ---- premises
   const placed = all.filter((r) => {
@@ -277,10 +286,18 @@ try { await withHarness(async (app) => {
     placed.length === all.length, JSON.stringify(all.filter((r) => !placed.includes(r)).slice(0, 2).map((r) => ({ arm: r.name, round: r.round, where: r.where }))));
   const modes = new Set(all.map((r) => `${r.where.mode}/${r.where.typewriter}`));
   ok(`P2 the same surface in every arm (mode/typewriter: ${[...modes].join(' ')}), the Typewriter off`, modes.size === 1 && [...modes][0].endsWith('/false'), JSON.stringify([...modes]));
+  ok('P2b that surface is Draft (the ordinary page)', modes.size === 1 && [...modes][0].startsWith('draft/'), JSON.stringify([...modes]));
   const loaded = [...res.T, ...res.M];
-  const animated = loaded.filter((r) => r.idle.n >= 45 && r.idle.drawFrames >= 0.8 * r.idle.n);
-  ok(`P3 the stand-in really animated at rest (>= 45 frames in ${IDLE_MS} ms, >= 80% of them drawing) in every loaded arm-round: ${animated.length}/${loaded.length}`,
-    loaded.length > 0 && animated.length === loaded.length, JSON.stringify(loaded.map((r) => ({ arm: r.name, round: r.round, frames: r.idle.n, drew: r.idle.drawFrames }))));
+  // PARKED 2026-10-31 (SUPERSEDED, first run, Actions 41247909453: the frame floor assumed the display's 60 fps, but an undamped layer at 1920 is
+  // what SLOWS the frames - 35-52 frames in 1.5 s on the runner, every one of them drawing - so the floor measured the layer's cost, not whether it
+  // animated). Original, verbatim:
+  // const animated = loaded.filter((r) => r.idle.n >= 45 && r.idle.drawFrames >= 0.8 * r.idle.n);
+  // ok(`P3 the stand-in really animated at rest (>= 45 frames in ${IDLE_MS} ms, >= 80% of them drawing) in every loaded arm-round: ${animated.length}/${loaded.length}`,
+  //   loaded.length > 0 && animated.length === loaded.length, JSON.stringify(loaded.map((r) => ({ arm: r.name, round: r.round, frames: r.idle.n, drew: r.idle.drawFrames }))));
+  // SUCCESSOR P3b: it animated (>= 80% of the rest frames drew) at any frame rate above 13 fps (>= 20 frames in 1.5 s); its cost is COST's to report.
+  const animatedB = loaded.filter((r) => r.idle.n >= 20 && r.idle.drawFrames >= 0.8 * r.idle.n);
+  ok(`P3b the stand-in really animated at rest (>= 20 frames in ${IDLE_MS} ms, >= 80% of them drawing) in every loaded arm-round: ${animatedB.length}/${loaded.length}`,
+    loaded.length > 0 && animatedB.length === loaded.length, JSON.stringify(loaded.map((r) => ({ arm: r.name, round: r.round, frames: r.idle.n, drew: r.idle.drawFrames }))));
   const unmoved = loaded.filter((r) => r.rectBefore && r.rectBefore === r.where.rect);
   ok(`P4 the stand-in moved no page rect (the .mode-page rect before mounting it = with it drawing): ${unmoved.length}/${loaded.length}`, unmoved.length === loaded.length,
     JSON.stringify(loaded.filter((r) => !unmoved.includes(r)).map((r) => ({ arm: r.name, before: r.rectBefore, after: r.where.rect }))));
@@ -295,7 +312,10 @@ try { await withHarness(async (app) => {
   ok(`L${MUTANT_RUN ? ' (FLUX3_MUTANT=1: T is undamped)' : ''} typing on Flux with every motion on adds no latency beyond the control's own spread: T median ${r1(t.X.median)} <= C ${r1(t.C.median)} + ${r1(t.spreadMed)}, T p95 ${r1(t.X.p95)} <= C ${r1(t.C.p95)} + ${r1(t.spreadP95)}, no T key over ${MAX_MS} ms`,
     t.lat, `C ${show(t.C)} | T ${show(t.X)} | C per round median/p95 ${cRounds}`);
   ok(`D${MUTANT_RUN ? ' (FLUX3_MUTANT=1)' : ''} the drawing layer damps while she types: ${t.xDraws} frame(s) drew while T's keys landed (control ${t.cDraws}; allowed control + ${res.T.length}, one in flight per round)`,
-    t.damp, JSON.stringify(res.T.map((r) => ({ round: r.round, typingFrames: r.typing.n, drew: r.typing.drawFrames, standin: r.standin }))));
+    t.damp, JSON.stringify(res.T.map((r) => ({ round: r.round, typingFrames: r.typing.n, drew: r.typing.drawFrames, drewAtMsFromFirstKey: r.typing.drawAt, standin: r.standin }))));
+  // the theme's share against the layer's (information): F is Flux + the flag with no layer
+  const fS = stat(res.F.flatMap((r) => r.lat)), cS = stat(res.C.flatMap((r) => r.lat)), tS = stat(res.T.flatMap((r) => r.lat));
+  ok(`SPLIT (information) median/p95 ms: C Arbor ${r1(cS.median)}/${r1(cS.p95)} | F Flux, no layer ${r1(fS.median)}/${r1(fS.p95)} | T Flux + layer ${r1(tS.median)}/${r1(tS.p95)}`, true, '');
   if (!MUTANT_RUN) {
     const m = judge(res.C, res.M);
     const mLanded = res.M.length > 0 && res.M.every((r) => r.typing.n > 0 && r.typing.drawFrames >= 0.8 * r.typing.n);
