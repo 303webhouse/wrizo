@@ -26,9 +26,9 @@
 //
 // VERDICTS (judged against the control's OWN spread: the range of its per-round medians and per-round p95s across the rounds):
 //   L  T's pooled median <= C's pooled median + C's median spread, T's pooled p95 <= C's pooled p95 + C's p95 spread, and no T key over 100 ms.
-//   D  T damps while typing: the frames that drew anything while the keys landed are no more than the control's own plus one per round (the
-//      frame already in flight at the first key).
-//   MUT the mutant fails L or D (it says which caught it); its premise is asserted (it really drew through the typing).
+//   D2 T damps while typing: the frames in which the LAYER'S OWN canvas drew while the keys landed are at most one per round (the frame already
+//      in flight at the first key). Any other canvas that drew (ink, cards) is named in OTHER (information). (D, any canvas, is parked.)
+//   MUT-b the mutant fails L or D2 (it says which caught it); its premise is asserted (it really drew through the typing).
 //   COST the drawing layer's per-frame cost, undamped, full motion (information): rAF time per frame and the frame interval, against the control.
 //   Premises: each arm stood where it claims (theme, flag, stand-in present or absent, the same mode and Typewriter state in every arm), the stand-in
 //   actually animated at rest, it moved no page rect, at least 40 keys painted per arm per round, and every typed key reached the stored page.
@@ -82,16 +82,31 @@ console.log(`BUILD: tree=${BUILD.head} bundle=${BUILD.bundle} builtAt=${BUILD.bu
 // ---- the outside instrument (a new-document script: it is in place before the app's first line, on every reload) --------------------------------------
 const INSTRUMENT = `(() => {
   if (window.__f3i) return;
-  const I = window.__f3i = { frames: [], calls: 0, cbMs: 0 };
+  const I = window.__f3i = { frames: [], calls: 0, cbMs: 0, layer: 0, other: {} };
+  // THE LAYER: the stand-in's canvas, or S1's real layer, which carries data-flux3-layer (a behaviour-free contract marker, as data-mode-key is).
+  // Every other canvas (ink, cards) is counted apart and named, never mixed into the layer's verdict.
+  const LAYER = 'canvas.flux3-standin, canvas[data-flux3-layer], [data-flux3-layer] canvas';
+  const label = (cv) => { try { return String(cv.className || (cv.parentElement && cv.parentElement.className) || 'canvas').slice(0, 40); } catch { return 'canvas'; } };
   const P = CanvasRenderingContext2D.prototype;
   for (const m of ['stroke', 'fill', 'fillRect', 'strokeRect', 'clearRect', 'drawImage', 'fillText', 'strokeText', 'putImageData']) {
     const o = P[m]; if (typeof o !== 'function') continue;
-    P[m] = function (...a) { I.calls += 1; return o.apply(this, a); };
+    P[m] = function (...a) {
+      I.calls += 1;
+      const cv = this.canvas;
+      if (cv && cv.matches && cv.matches(LAYER)) I.layer += 1; else { const k = cv ? label(cv) : 'offscreen'; I.other[k] = (I.other[k] || 0) + 1; }
+      return o.apply(this, a);
+    };
   }
   const raf = window.requestAnimationFrame.bind(window);
   window.requestAnimationFrame = (cb) => raf((ts) => { const t0 = performance.now(); try { cb(ts); } finally { I.cbMs += performance.now() - t0; } });
   let last = performance.now();
-  const tick = () => { const now = performance.now(); I.frames.push([now, now - last, I.calls, I.cbMs]); I.calls = 0; I.cbMs = 0; last = now; if (I.frames.length > 40000) I.frames.splice(0, 20000); raf(tick); };
+  const tick = () => {
+    const now = performance.now(), ks = Object.keys(I.other);
+    I.frames.push([now, now - last, I.calls, I.cbMs, I.layer, ks.length ? ks.join('+') : null]);
+    I.calls = 0; I.cbMs = 0; I.layer = 0; I.other = {}; last = now;
+    if (I.frames.length > 40000) I.frames.splice(0, 20000);
+    raf(tick);
+  };
   raf(tick);
 })();`;
 
@@ -174,7 +189,10 @@ function judge(cRounds, xRounds) {
   const lat = enough && X.median <= C.median + spreadMed && X.p95 <= C.p95 + spreadP95 && X.max <= MAX_MS;
   const cDraws = cRounds.reduce((a, r) => a + r.typing.drawFrames, 0), xDraws = xRounds.reduce((a, r) => a + r.typing.drawFrames, 0);
   const damp = xDraws <= cDraws + xRounds.length;
-  return { lat, damp, C, X, spreadMed, spreadP95, cDraws, xDraws, enough };
+  // the layer's own frames only (D2): at most the one already in flight at the first key, per round
+  const xLayer = xRounds.reduce((a, r) => a + r.typing.layerFrames, 0);
+  const layerDamp = xLayer <= xRounds.length;
+  return { lat, damp, layerDamp, xLayer, C, X, spreadMed, spreadP95, cDraws, xDraws, enough };
 }
 
 const SEED = Array.from({ length: 150 }, (_, i) => 'word' + i).join(' ');
@@ -254,7 +272,9 @@ try { await withHarness(async (app) => {
       const k0 = lat.length ? Math.min(...lat.map((x) => x.key)) : 0, k1 = lat.length ? Math.max(...lat.map((x) => x.at)) : 0;
       const pick = (a, b) => fr.filter((f) => f[0] >= a && f[0] <= b);
       const sum = (fs) => ({ n: fs.length, drawFrames: fs.filter((f) => f[2] > 0).length, cbMs: fs.map((f) => f[3]), dt: fs.map((f) => f[1]),
-        drawAt: fs.filter((f) => f[2] > 0).slice(0, 6).map((f) => Math.round(f[0] - (fs.length ? fs[0][0] : 0))) });
+        drawAt: fs.filter((f) => f[2] > 0).slice(0, 6).map((f) => Math.round(f[0] - (fs.length ? fs[0][0] : 0))),
+        layerFrames: fs.filter((f) => f[4] > 0).length,
+        other: fs.filter((f) => f[5]).slice(0, 6).map((f) => ({ at: Math.round(f[0] - fs[0][0]), who: f[5] })) });
       return { lat: lat.map((x) => x.ms), idle: sum(pick(${idle0}, ${idle1})), typing: sum(pick(k0, k1)), standin: window.__f3s ? { drawn: window.__f3s.drawn, held: window.__f3s.held } : null };
     })()`);
     // every typed key reached the stored page (read after the debounced save lands: wait on the STORED value)
@@ -311,8 +331,16 @@ try { await withHarness(async (app) => {
   const t = judge(res.C, res.T);
   ok(`L${MUTANT_RUN ? ' (FLUX3_MUTANT=1: T is undamped)' : ''} typing on Flux with every motion on adds no latency beyond the control's own spread: T median ${r1(t.X.median)} <= C ${r1(t.C.median)} + ${r1(t.spreadMed)}, T p95 ${r1(t.X.p95)} <= C ${r1(t.C.p95)} + ${r1(t.spreadP95)}, no T key over ${MAX_MS} ms`,
     t.lat, `C ${show(t.C)} | T ${show(t.X)} | C per round median/p95 ${cRounds}`);
-  ok(`D${MUTANT_RUN ? ' (FLUX3_MUTANT=1)' : ''} the drawing layer damps while she types: ${t.xDraws} frame(s) drew while T's keys landed (control ${t.cDraws}; allowed control + ${res.T.length}, one in flight per round)`,
-    t.damp, JSON.stringify(res.T.map((r) => ({ round: r.round, typingFrames: r.typing.n, drew: r.typing.drawFrames, drewAtMsFromFirstKey: r.typing.drawAt, standin: r.standin }))));
+  // PARKED 2026-10-31 (SUPERSEDED, box turn 22:32-22:45Z and Actions 41248449604, e67e555a: D counted a draw on ANY canvas as the layer's. Every
+  // T round showed exactly 2 drawing frames: the one in flight at the first key (0 ms) and one ~3.1 s into the typing, in every round on both
+  // machines - not the stand-in, which was holding (90 ms between keys, 600 ms to resume). D could not say whose frame it was). Original, verbatim:
+  // ok(`D${MUTANT_RUN ? ' (FLUX3_MUTANT=1)' : ''} the drawing layer damps while she types: ${t.xDraws} frame(s) drew while T's keys landed (control ${t.cDraws}; allowed control + ${res.T.length}, one in flight per round)`,
+  //   t.damp, JSON.stringify(res.T.map((r) => ({ round: r.round, typingFrames: r.typing.n, drew: r.typing.drawFrames, drewAtMsFromFirstKey: r.typing.drawAt, standin: r.standin }))));
+  // SUCCESSOR D2: the frames in which THE LAYER'S OWN canvas drew while the keys landed, at most the one in flight per round; every other canvas
+  // that drew is named in OTHER below.
+  ok(`D2${MUTANT_RUN ? ' (FLUX3_MUTANT=1)' : ''} the drawing layer damps while she types: its own canvas drew in ${t.xLayer} frame(s) while T's keys landed (allowed ${res.T.length}, the one in flight at the first key, per round)`,
+    t.layerDamp, JSON.stringify(res.T.map((r) => ({ round: r.round, typingFrames: r.typing.n, layerDrew: r.typing.layerFrames, standin: r.standin }))));
+  ok(`OTHER (information) canvases other than the layer that drew while the keys landed: C ${JSON.stringify(res.C.map((r) => r.typing.other))} | T ${JSON.stringify(res.T.map((r) => r.typing.other))}`, true, '');
   // the theme's share against the layer's (information): F is Flux + the flag with no layer
   const fS = stat(res.F.flatMap((r) => r.lat)), cS = stat(res.C.flatMap((r) => r.lat)), tS = stat(res.T.flatMap((r) => r.lat));
   ok(`SPLIT (information) median/p95 ms: C Arbor ${r1(cS.median)}/${r1(cS.p95)} | F Flux, no layer ${r1(fS.median)}/${r1(fS.p95)} | T Flux + layer ${r1(tS.median)}/${r1(tS.p95)}`, true, '');
@@ -321,8 +349,12 @@ try { await withHarness(async (app) => {
     const mLanded = res.M.length > 0 && res.M.every((r) => r.typing.n > 0 && r.typing.drawFrames >= 0.8 * r.typing.n);
     ok(`MUT premise: the mutant landed - with its damping skipped the layer drew through the typing (>= 80% of the frames while the keys landed, every round)`, mLanded,
       JSON.stringify(res.M.map((r) => ({ round: r.round, typingFrames: r.typing.n, drew: r.typing.drawFrames }))));
-    ok(`MUT the no-damping mutant FAILS the probe (caught by L: ${m.lat ? 'no' : 'YES'}; caught by D: ${m.damp ? 'no' : 'YES'}) - M median ${r1(m.X.median)} p95 ${r1(m.X.p95)} max ${r1(m.X.max)}, ${m.xDraws} drawing frame(s) while typing`,
-      mLanded && !(m.lat && m.damp), `C ${show(m.C)} | M ${show(m.X)}`);
+    // PARKED 2026-10-31 (SUPERSEDED with D, whose any-canvas count it reused; see D's park above). Original, verbatim:
+    // ok(`MUT the no-damping mutant FAILS the probe (caught by L: ${m.lat ? 'no' : 'YES'}; caught by D: ${m.damp ? 'no' : 'YES'}) - M median ${r1(m.X.median)} p95 ${r1(m.X.p95)} max ${r1(m.X.max)}, ${m.xDraws} drawing frame(s) while typing`,
+    //   mLanded && !(m.lat && m.damp), `C ${show(m.C)} | M ${show(m.X)}`);
+    // SUCCESSOR MUT-b: the mutant fails L or D2.
+    ok(`MUT-b the no-damping mutant FAILS the probe (caught by L: ${m.lat ? 'no' : 'YES'}; caught by D2: ${m.layerDamp ? 'no' : 'YES'}) - M median ${r1(m.X.median)} p95 ${r1(m.X.p95)} max ${r1(m.X.max)}, its layer drew in ${m.xLayer} frame(s) while typing`,
+      mLanded && !(m.lat && m.layerDamp), `C ${show(m.C)} | M ${show(m.X)}`);
   }
 
   // ---- the per-frame cost (information): the loaded arm undamped at rest, against the control at rest
