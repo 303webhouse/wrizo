@@ -1,0 +1,17 @@
+# #13 step 1 - the live list. Chat 1 owns this file (step 0, the live-branch census).
+# A branch or worktree that matches a line here is never tagged, deleted or removed by c13-1-branches.mjs.
+# Format: `branch <glob>` or `worktree <glob>` (`*` matches anything, `/` included), then `# why`.
+# Anything not listed: merged -> deleted; unmerged -> tagged archive/<name> at its tip, then deleted.
+# A branch pushed or moved after the plan is never touched (apply re-checks every SHA).
+
+branch main                    # the trunk
+branch ci/actions-harness      # MERGED, but `gh workflow run ... --ref ci/actions-harness` dispatches from it (AGENTS.md)
+branch arbor/mockup*           # Fable Oct 31 ruling 1: exempt, rebases onto the split after #13
+branch machina/mockup*         # Fable Oct 31 ruling 1: exempt (none pushed yet)
+branch cleanup/survey-r3       # the #13 brief (40ca83c8)
+branch polish/arbor-ground     # Fable Oct 28: keep pushed and unmerged as reference
+branch c13-*                   # #13's own step branches
+
+# Owner claims (Fable Oct 31 ruling 2): a lane that claims a branch adds its line here before Chat 1 runs `apply`.
+
+worktree C:/Users/nickh/writer-studio   # the primary checkout (Chat 1's deploy source)

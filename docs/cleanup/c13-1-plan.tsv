@@ -1,0 +1,1081 @@
+# c13-1 plan @ origin/main dadb7196 2026-10-31T22:10:09.700Z
+kind	name	sha	merged	date	action
+branch	a1-autosave	1d5a815656f3c6e1b9b414cd090123321432d702	yes	2026-06-12	delete
+branch	a11y-signin	ebc3b6f045d863258792f1d3fead8627fe59778b	yes	2026-09-30	delete
+branch	a11y-tutor-live-region	22e6eaf7e82b5b39a1244a8df38dd76790557871	yes	2026-09-30	delete
+branch	a2-storage-adapter	71887ca4156436fcbbcb0537cb6b53d64146c8ca	yes	2026-06-12	delete
+branch	a9-session-log	8351a99d79dd7c1ff527fbf85b9f951c6ee4fe50	yes	2026-06-13	delete
+branch	account-tools	8b0a0f43d39c073a3429f9db167bf891df197851	no	2026-10-28	archive+delete
+branch	account-tools-r2	76946e49ee03c7c706092426d2b3a32fb12b73e1	no	2026-10-29	archive+delete
+branch	account-tools-r3	d5aa557ba29861a51d65d75d002330aecc25127b	yes	2026-10-29	delete
+branch	account-tools-r4	239ec9fc736f8f8c87ed5550900f1926e3e00c31	yes	2026-10-29	delete
+branch	add-scenes	665fb9da72fffe656f0edceca1af24ff18f95efb	no	2026-10-27	archive+delete
+branch	add-scenes-r	3d15a8a91a0b432a3b0c2bd0814281a9e218f953	yes	2026-10-28	delete
+branch	arbor-quiet-brass	99a91e76564e18cd661323561ead026ba71f5d46	yes	2026-10-11	delete
+branch	arbor/mockup	21cba9df743627a0bace35b7b234442d7316ce00	no	2026-10-29	keep
+branch	arbor/mockup-r2	c611f92918f6920ad9466e6ef3fe89697bb5c0d2	no	2026-10-30	keep
+branch	arbor/mockup-r3	7be6ed4fa40439bc6da2d7d27b48d699f18081f5	no	2026-10-30	keep
+branch	arbor/mockup-r4	0dbac4ecbb996b850684e2f5439d14e342e86a6a	no	2026-10-30	keep
+branch	arbor/mockup-r5	5d2228c62194959878d1285d7df671517da0253d	no	2026-10-31	keep
+branch	arbor/mockup-r6	4799edbb9acd4a45965fa07ac9768ebe9aed99e2	no	2026-10-31	keep
+branch	arbor/mockup-r7	97da486c23a85ed3522964b28f6e35add66d3a38	no	2026-10-31	keep
+branch	arrival-signin-screen	d2b16abd25bd01aeb97c9658b1365ceb7de13b74	yes	2026-10-07	delete
+branch	autism-economy-seed	b710894b5941e2c187788721ca6d65a7227392bc	no	2026-10-18	archive+delete
+branch	autism-economy-seed-r2	fe00fdd365d49ed8b646eb31c777a95f36a953a7	no	2026-10-18	archive+delete
+branch	b-hero-logo	cc32d5bd2ea0ee7ca2d25e4eb36c930b3dd90ca9	yes	2026-06-13	delete
+branch	b1-favicon	296bf276a97477e5a7dd7b220ae6ff1586e531de	yes	2026-06-13	delete
+branch	b1-icons	d1a0a78a8065ce8b79280f0fd120d376c4ae2bbe	yes	2026-06-13	delete
+branch	b1-journal-reborn	0147d8b904841a91c2aebdc413dc623c9d81550c	yes	2026-07-19	delete
+branch	b101-defence	b95b181f222cf3c9d8178a35f1209478a17e141a	yes	2026-10-08	delete
+branch	b2-1-drawer-word-swap	4817ca1ea7aa8cdfde58b5ccd8f4419e478264c9	yes	2026-07-20	delete
+branch	b2-shelf-and-drawers	33351d4759de3e4f04073b6463dbfcdc6bbbb9c3	yes	2026-07-20	delete
+branch	b2-wordmark-swap	46edb1ae196120e105dc01eac8c95a2b078e1cd8	yes	2026-06-13	delete
+branch	b3-atmosphere	3877b94f6af30c118030ad19dae8520b0d0f4230	yes	2026-06-13	delete
+branch	b3-seeded-boards	5f64194bfd0a72367af3d7cc570dd47ad9548acd	yes	2026-07-20	delete
+branch	b4-accent	2cf6bc9ac2998c6c9e8f2b2c52fe4d4ff271b1c9	yes	2026-06-13	delete
+branch	b5-vector	25bc5d30bc2eb9c230aebb20c6aa21c6f042a004	yes	2026-06-13	delete
+branch	batch-eight	b00de9d9ee5d7b7d75495810862819225a8f6e0d	yes	2026-10-01	delete
+branch	batch-nine	694cbbceeb656d619efcc6f62fea8d42f2a07160	yes	2026-10-06	delete
+branch	batch-nine-integ	cb8ed980238e59709de9ccb26d5a0c8de9e5a550	yes	2026-10-05	delete
+branch	batch-nine-r2	9008b880c21eed728191491876a09ea537be5be5	yes	2026-10-06	delete
+branch	batch-nine-r3	78bb7bc17a58b1e2c92aa8433abffe4f2c6f4025	yes	2026-10-06	delete
+branch	batch-ten	8ea75af88baa2d086f9ba67029fc98e319310e7b	yes	2026-10-07	delete
+branch	batch8-parks-fix	e3dc7a64a3d140583b0e6b138ff03bae1c07714b	no	2026-10-01	archive+delete
+branch	bg-starters-park	8fec130d7d8b996e28486a450a4a151bec438486	yes	2026-10-15	delete
+branch	bg1-beginnings	6140d92ab3c3d3bce61577e5d0f127e9c6ee0e5a	yes	2026-07-25	delete
+branch	bg2-beginnings-seen	e6b8e9aa557374a691c4921b8468fc61f17ac896	yes	2026-07-25	delete
+branch	big-projects-1a	5957492e813069f4f5e7888575cc4173a29c0f8e	yes	2026-10-19	delete
+branch	big-projects-2	42cfc2af1a033a56a0d6952fc6dc7f5c9a3756ed	yes	2026-10-21	delete
+branch	big-projects-3	03975791c785e0b151bb10ed2cefe0f095a21ade	no	2026-10-21	archive+delete
+branch	big-projects-3-r2	5a0d1c53b84ed8611e74d27c7d6707e50da5a622	yes	2026-10-22	delete
+branch	big-projects-plan	8b9bab8a8a001fa1f2db6cc0d44996659193bac6	no	2026-10-19	archive+delete
+branch	bm1-board-modes	06d0291fcc829cf7fd204b02dbe538a1f9483bfc	yes	2026-07-22	delete
+branch	board-click-to-create	7ed1963ba8a06d22f4b333c3de69cd145e48ddc5	yes	2026-10-15	delete
+branch	board-context-menu	6f82b466ffdcf6b81449adaece3a9e9281debd69	yes	2026-10-16	delete
+branch	box-launch-guard	fb717541d697cb6c0fcb002f11e461b9bf921460	yes	2026-10-23	delete
+branch	box-token-hash	038f2b2e1bf7824586c3807c988deec364ab1952	yes	2026-10-23	delete
+branch	card-close-x	93b0bb701855a2baa5fc61c749993f4a7f6c27eb	yes	2026-10-13	delete
+branch	card-held-italic	46671897d923c1c103438107665e5ca1153243a2	yes	2026-10-15	delete
+branch	card-label-contrast	a35474656d48877790a52876b2f120dfd959c3c3	yes	2026-10-15	delete
+branch	card-resize-axis	d8fd21ff3365b47e3444244e047130c29b412b25	yes	2026-10-15	delete
+branch	card-resize-relock	1f13bb84883371843bbe887a7270dd6355e04a30	yes	2026-10-13	delete
+branch	cd3-strip-and-chrome	bc2767cc8571b30fe4be3f672d90373138b5abd0	yes	2026-07-22	delete
+branch	ci-browserless-checks	a156304ee01dcd2ab18afc1d2247b681d91c35d5	yes	2026-09-30	delete
+branch	ci-merge	e5cf55418c2cd8aa133d6300e2645983671617b6	yes	2026-10-30	delete
+branch	ci/actions-harness	876ae8429fe98391bb82e44a754928dc27a343bb	yes	2026-10-30	keep
+branch	ci/actions-harness-r	a9d367f955a00d49a91c82a2ebbdf06d244a8c65	no	2026-10-30	archive+delete
+branch	ci/actions-harness-r2	d4e68cda5423e1ccdca339b5b2637c2ad0321de5	no	2026-10-30	archive+delete
+branch	ci/actions-harness-r3	7d773589fabc610f1b2e7a96bb2e596c72e8fb9a	yes	2026-10-30	delete
+branch	ci/actions-harness-r4	72ba5d37f0fe341e3ee7191541c1407b4e6229bc	yes	2026-10-31	delete
+branch	claude/lucid-fermi-3s9hor	859985addc888f29486ce5400470002602f16a19	yes	2026-09-30	delete
+branch	cleanup/survey	73bf2c7fb2f8e84034521593bc1af5d4f7875d6c	no	2026-10-29	archive+delete
+branch	cleanup/survey-r	2a46e0a802eec5a678324618d4ade7c1d26f4130	no	2026-10-30	archive+delete
+branch	cleanup/survey-r2	66de1d6ecd50b0c7991f7f2b6fbcd0eb4d27ac04	no	2026-10-30	archive+delete
+branch	cleanup/survey-r3	40ca83c80b02ea6e5053ddc9614830df0fe400ed	no	2026-10-31	keep
+branch	click-reach	19d28c54e52c44bea6b7328a157ee3a90a529e2e	no	2026-09-24	archive+delete
+branch	cloud-a11y-audit	9c15c8687c9486ff3e5d6f1ed32851e5ef28391a	yes	2026-09-30	delete
+branch	cloud-pub9-probe	a9016f5e6939e295b1de903bb0b2f911222e1df6	yes	2026-09-30	delete
+branch	connector-a	54ac5b60cb26823036b6108ff68a41bca5740981	yes	2026-10-15	delete
+branch	connector-b	49631a01a870064e513e556e3c762f48c3685a74	no	2026-10-14	archive+delete
+branch	connector-b-build	e2a7aaed810c53f32ff8fd00e9980ae4a66f655f	yes	2026-10-17	delete
+branch	csp-enforce	d1291bb4fa1fe8f9e35d91944212f8e386ff1d67	no	2026-10-05	archive+delete
+branch	csp-report-only	d587e609127f36e0f798297d7e84d5c2a10e3442	no	2026-10-01	archive+delete
+branch	cursor/big-projects-mockup	aab45ec058250d9fe9ac310feb25e7607ec81782	no	2026-10-18	archive+delete
+branch	cursor/board-context-menu	0df8bf30321c9e8138d5414359a2a60a669bfe96	no	2026-10-15	archive+delete
+branch	cursor/board-kinds-mockup	b8f4b8fba811b1dd4546c0028407db118b0c7b75	no	2026-10-23	archive+delete
+branch	cursor/board-start	f437938bb2330abfed28eaa3704e204ef837059b	no	2026-10-14	archive+delete
+branch	cursor/card-mockup	48a5a3215509b83cd187c379ea76b7cbd0535ce5	no	2026-10-07	archive+delete
+branch	cursor/cluster-mode-tabs-644d	d8fee5b71eaebd3538eee7466f1098a4c31606a8	yes	2026-10-02	delete
+branch	cursor/connector	3b437b2015a68940449f6b49204bdebbc7f147aa	no	2026-10-15	archive+delete
+branch	cursor/dev-environment-setup-644d	794c206b2f8f9d7b2c558050ca37b664ead6bbe4	yes	2026-09-29	delete
+branch	cursor/drawer-handles	ef714d434324e20c71eda74964d79881a22b56ec	no	2026-10-07	archive+delete
+branch	cursor/empty-line-caret	985588ba7813f48b0ee0863a17647aa851c8de29	yes	2026-10-20	delete
+branch	cursor/flux-flicker-mockup	0eb36a6a503b4f663e147ca575b4abd99f254037	no	2026-10-09	archive+delete
+branch	cursor/flux-glitch-shipped	5f88f549c457e9ecdb3fe306c40bb496af449a4e	no	2026-10-20	archive+delete
+branch	cursor/flux-v2-mockup	7a0207553a16752946656cadafd675c03b2a3f89	no	2026-10-21	archive+delete
+branch	cursor/font-choices	6cc5f5295599547a4b1a457c2da945f5e2ed49fb	no	2026-10-15	archive+delete
+branch	cursor/graft-doors-mockup	c4f34eb0366e8d19523763c6ff80e065308cab80	no	2026-10-18	archive+delete
+branch	cursor/help-buttons	4ad7f3c7024e68493e6bbdce480aa8fe8e4ddf1d	no	2026-10-16	archive+delete
+branch	cursor/hide-format-marks-644d	d9aaeb27db5827889f9a8375a96c8abad2e25085	yes	2026-10-03	delete
+branch	cursor/machina-progress-mockup	c17b455129b87721bb62cabe2283c1cf0e7bb8ba	no	2026-10-21	archive+delete
+branch	cursor/machina-theme-644d	e7d506137015b1855f365e5bafe7bf28b6bf3c6c	no	2026-09-29	archive+delete
+branch	cursor/machina-v1-mockup	360f3db3a7a3712e8f49c13f6d43e8a4eae1fb4a	no	2026-10-21	archive+delete
+branch	cursor/nomad-progress-mockup	6cf291a374dee345aff1967ed84e6b4ba267a9f3	no	2026-10-20	archive+delete
+branch	cursor/nomad-v1-mockup	33752c994ec2a8e1cebb1b5a289d504e445e1064	no	2026-10-22	archive+delete
+branch	cursor/nomad-v2-mockup	939d455cb278de7ca2d17086c6dee0d398a93270	no	2026-10-22	archive+delete
+branch	cursor/page-size-mockup	e3c4e4622795d74b5b64ad76492932c05c5472a7	no	2026-10-23	archive+delete
+branch	cursor/plateau-rhizome-goal-4b92	af7ff4b95c59895b3acd2f7b36cba09febc8fa17	yes	2026-10-09	delete
+branch	cursor/r7-mockup	1eb27733cca59ae733812c32984c2e5382d441e1	no	2026-10-08	archive+delete
+branch	cursor/rail-mockup	514913c02470039a01a4f5464076521cd261c96e	no	2026-10-07	archive+delete
+branch	cursor/rhizome-sprout	0d00e2cecbba1f5f261de8c91d53b40a409e17ad	yes	2026-10-20	delete
+branch	cursor/scrollbar-mockup	c67f1bdb5bf0133a5d151bd94880bcae89b4a06f	no	2026-10-12	archive+delete
+branch	cursor/side-panels-mockup	472ab91688498f860e46d770fab50a7424b54cfe	no	2026-10-18	archive+delete
+branch	cursor/strip-foot-ink-menu-644d	782c64207c77fe8aa12c206a1d4c60e20df2c774	yes	2026-09-30	delete
+branch	cursor/templates	0fc9afef0b1284d89bb913ef72e8592718839a74	no	2026-10-16	archive+delete
+branch	cursor/templates-mockup	2e3420db9c2f5ef4f2a65e600043b793aa037db9	no	2026-10-09	archive+delete
+branch	cursor/theme-picker-mockup	1a057bea7203abde05807ecf66b632f2a79643e5	no	2026-10-21	archive+delete
+branch	cursor/theme-words-mockup	6741565d6f5b45300a7076cb214eff9011e34d4e	no	2026-10-12	archive+delete
+branch	cursor/typewriter-mockup	34d94a94c8a558daf99a960bbabe8849df4072af	no	2026-10-10	archive+delete
+branch	cursor/word-diet-ui	5933454c599df940356672f88952c2ebd5ad7558	no	2026-10-13	archive+delete
+branch	cursor/wrizo-build-rules-644d	b7c1db32c2079b9b5c7013172406134adb43aee0	no	2026-09-30	archive+delete
+branch	cw1-middle-door	250935e0c550f1209cc6e5de470956349d9c64aa	yes	2026-06-25	delete
+branch	cw2-forward-only-writing	3f9cac3f97f04cfc1b4e2dc79020fc01dc9718b7	yes	2026-06-24	delete
+branch	d1-foundations	114adaea27638b85ddae8bc4edc9d8754a668b6d	yes	2026-06-12	delete
+branch	d2-components	60531da18a50aebe2b9488bf1916f9524d02f35b	yes	2026-06-12	delete
+branch	d3-launcher	d548c9e84430d70c508629c46825a3f3169fb46c	yes	2026-06-12	delete
+branch	d4-sprint	b6b9b75ea558fa8448f2ed7ec98476cc83b3129e	yes	2026-06-12	delete
+branch	d5-d6-completion	09c72e72c103530d797c3a6b5d2cd20c0079f51c	yes	2026-06-12	delete
+branch	d7-polish	eb6b1dc8b36b26bb475ea8a489e89bd7324cd64f	yes	2026-06-12	delete
+branch	deckwizard-backdrop	3fb871594e5381bf6c41b797afa8d35ac115e876	yes	2026-10-15	delete
+branch	deckwizard-ink	512e620ede16904acb4b3bc4f5e1bb83740d519f	yes	2026-10-15	delete
+branch	delete-for-good	5b5d79af4d872cda4cc65fe7a24a01c527f650ff	yes	2026-10-19	delete
+branch	delete-for-good-plan	4bdcab47243b7148ba520931ea54ca66036ecfff	yes	2026-10-18	delete
+branch	dep-bumps	1a02b55056e34dbf3c14586e032fd2266f25af31	no	2026-09-30	archive+delete
+branch	df1-1-rider	30fc2ca4d63ee47f7389eab85d6f97ad378f512f	yes	2026-07-29	delete
+branch	df1-deflake	24c61734426e3549fdbc956799b573cee791387d	yes	2026-07-24	delete
+branch	dm1-fragment-substrate	52a0a270d3dca4b3c63d41f62f4b80c772b0d2e0	yes	2026-06-24	delete
+branch	doorway-ship	24896a1603794e372796c45a090729e77338090f	yes	2026-08-20	delete
+branch	drafts-integrity	e4b596c2f6224c994ca3020d5c91eb54c9f3bb93	yes	2026-10-09	delete
+branch	drawer-ghost-fix	443376f17cb8df5445bd32a5c2a26cb737525f42	no	2026-10-12	archive+delete
+branch	e1-1-words-out-fix	1e8617a2192543fcbb4baba2effda495585ab712	yes	2026-07-23	delete
+branch	e1-words-out	30961fc6cd70414a2d3573277b91fb8eb59c90c0	yes	2026-07-21	delete
+branch	e3-park	68353629c5031dcbac80a0582d5e84005db1ec07	yes	2026-10-12	delete
+branch	empty-line-caret	20052831ea52592defe37cf00ae2b10dbd0491f3	yes	2026-10-21	delete
+branch	errata-build	793e80f86992b2c4bb82f13211ef23eb75439dcf	yes	2026-09-03	delete
+branch	exp1-connect-text	914e0b393dce6af625cfb89920700cab0c42e597	no	2026-09-30	archive+delete
+branch	exp1-connect-text-r2	8d824bde4c68051aa3fb3a62e60963d77512ff4b	no	2026-10-09	archive+delete
+branch	exp1-visibletext	a5061f98ac31bad54778048eedbea2c861e6cbf6	no	2026-10-05	archive+delete
+branch	faint-text-sweep	73ddd34406ead79312a796fb0c1d663b431a87e4	yes	2026-10-16	delete
+branch	filed-pages-scope	3fde3cdf13c7a0f7c26ae23d54fbf9dd7c58c513	no	2026-10-15	archive+delete
+branch	fix-ab2-repoint	513f62caa3e0d98d4f46432580377f0fc95b84fc	yes	2026-08-28	delete
+branch	fix-item113	ef068350b77c5f5162f7e5d6362aeccb0d2c3a34	yes	2026-09-06	delete
+branch	fix-item87-structure-selector	bb146b4c927246ec3224351aa811c08de5a16511	yes	2026-08-27	delete
+branch	fix-k10-batch-nine	0360b3060b4e0d76025ee346d4031cd0434b77f4	yes	2026-10-05	delete
+branch	fix-k10-notice-signature	6ff11df06d475c3b454c27e93b46dfa9bf108a83	yes	2026-10-05	delete
+branch	fix-signin-live-double	754b0c5b7c1f45be817d303a45b7ff2f894d52d8	yes	2026-10-06	delete
+branch	fix-storage-full-notice-signature	7d72b2c7eae0905d213a920302d8672e82693953	yes	2026-10-06	delete
+branch	fix-tutor-sr-check	78bb7bc17a58b1e2c92aa8433abffe4f2c6f4025	yes	2026-10-06	delete
+branch	fix-wave-e34-118	17c12742dd5901e665534b469116e498822c48bb	yes	2026-09-02	delete
+branch	fix/blank-page-click	d576a4d7716f6f8abef125eb485a38f3665babff	yes	2026-10-22	delete
+branch	fix/splash-tone	b053fedb9b6fe904cfb275bb18b095048ebd0337	yes	2026-10-16	delete
+branch	flux-card-ink	2f424ceb801d0bc60752a9356fe18e5ae1c3016a	yes	2026-10-15	delete
+branch	flux-inputs	deeabe91e5de5930fd342296f7b3ecdd43e15f0b	yes	2026-10-23	delete
+branch	flux-page-ink	eef860b5f83c10a4fbb44c558bbd2c49300aabd5	yes	2026-10-16	delete
+branch	flux-v2	838c1b9b3272510aeae68e795166dea43122e338	yes	2026-10-22	delete
+branch	flux-words	074f011a9a828621f3219b94806b3c6d6bca1898	no	2026-10-13	archive+delete
+branch	font-span	855af3eb4c7052e5d4c11a690bf73d8612b49dcf	no	2026-10-15	archive+delete
+branch	font-span-plan	58058b29333b0096fed677180ad59e2e37cd767a	no	2026-10-15	archive+delete
+branch	font-span-r2	7b29ab8febd717d3dc4aa9ccdecbc8e0d9562e2e	yes	2026-10-16	delete
+branch	fullscreen-toggle	de4d264e8ab96d8bd474c329ffc0442d95bc321e	yes	2026-06-13	delete
+branch	fw2-boards-and-defaults	fb51c409e980ad70ac15028fbb6cb6bcafbb6ab5	no	2026-08-04	archive+delete
+branch	fw2-offer	641e9461a6c8ef57e630f741f3c0214f03cde916	yes	2026-08-17	delete
+branch	fx10-rooms-edges	82d8917026ccd1c767683efbc468e78b18b9dab2	yes	2026-07-21	delete
+branch	fx10-s4-park	930d6eb46e7daa6c15090eefd4e1d20951cdecf5	yes	2026-10-25	delete
+branch	fx11-boards-hands	fe3ce82f08bd5f2d6853035ff856fd9eab34e781	yes	2026-07-23	delete
+branch	fx13-board-in-the-room	acbabbe27ccb44b08a686031bdb912d006092c3a	yes	2026-07-24	delete
+branch	fx17-boards-floor	ef7429cca46268da09e45fac5e58a79f06656532	yes	2026-07-30	delete
+branch	fx17-s3-fixture	15a7167e0e5f14c466310b7cb113d3fa258e9918	yes	2026-10-15	delete
+branch	fx18-chrome-aligned	0ceb080258c2746b5f7fc38454bd25fc48fe8b6b	yes	2026-07-29	delete
+branch	fx5-felt-verdicts	9c26de5025abc58f35b523ad76d54f2b5e19a452	yes	2026-07-19	delete
+branch	fx6-undo-and-doors	6bdea069bf98ef010a886d6fccda859e20e84438	yes	2026-07-19	delete
+branch	fx7-second-sitting-fixes	90d2ef992c3f369ed700155078797f04514a2472	yes	2026-07-21	delete
+branch	fx8-card-affordances	7411bf085e1721fd913450ed4a7f8eb0e8210df6	yes	2026-07-21	delete
+branch	fx9-folded-lists	2c1e18d6668e22c1ab09f15a83279275002a10b3	yes	2026-07-21	delete
+branch	glitch-g6	8043193485423e4379fc2cce0d97663ea98ad67b	yes	2026-10-21	delete
+branch	glitch-g6-limit3	5d9e3a2bb3313ad0244f36e7a6a3ad15e33796a4	yes	2026-10-21	delete
+branch	glitch-meter	5dcea305ccc0c90091f3db32dc26cb48150b2f07	yes	2026-10-17	delete
+branch	glitch-meter-plan	a1bef99bdfd896a2ea7b1ac4e34b7a873f800199	yes	2026-10-16	delete
+branch	glue-9	7d5e689a940337a5d0f1aa82b2de052b39b5e419	yes	2026-10-27	delete
+branch	guest-client	596d64f502b1efdeccc35e66f7585d799724b856	no	2026-10-06	archive+delete
+branch	guest-client-r2	12601d24ade247588b6caa89faef281d02b96a32	no	2026-10-07	archive+delete
+branch	guest-client-r3	e50456cc634af341916e44815e10c7f74016507c	no	2026-10-07	archive+delete
+branch	guest-client-r4	501264a2490c83b5d367274ec61d24a41a92c116	no	2026-10-08	archive+delete
+branch	guest-login	de1f170c1f802582fb44461357761df5e74ff3a0	no	2026-10-06	archive+delete
+branch	guest-run-evidence	b3c0ded1a640df8f1c17075b7d7343e50d2fe6ec	no	2026-10-07	archive+delete
+branch	guided-w1	32ad69978c14c00c33648b26e4d47e0269dfa567	yes	2026-10-25	delete
+branch	guided-w2-write-place	716794acf5f045f7b61fe047e054aa82c668ce5d	yes	2026-10-26	delete
+branch	guided-w3	295cd5da102bc993f60e24d420586da91679c6e1	yes	2026-10-24	delete
+branch	harness-expired-checks	b3508224b4429ed810cb246d8dfff100306e98d3	yes	2026-10-15	delete
+branch	hb1-threshold	fc43f77e35f8ffeb9a1d009a43dc40f9a5f3c215	yes	2026-07-18	delete
+branch	help-buttons	26d56be51244603909a8c70e700d624eae608112	yes	2026-10-19	delete
+branch	hero-logo	6a57ed0043f470e3b93ff9dffe3c00158062f034	yes	2026-06-13	delete
+branch	hide-workshop	38e38a0c4c15e516b4f0234ca9131605803b6093	yes	2026-10-23	delete
+branch	hotfix-104-hooks	2c36ad0dd8a0c7d81b666ea4f66ab35e793e321b	yes	2026-08-24	delete
+branch	hotfix-104-third	8e75e6088779ef855c85d2040d6e004295f94bab	yes	2026-08-25	delete
+branch	in-app-copy-format	22225575db855ad103053280e1317d280405babf	yes	2026-10-17	delete
+branch	in-app-copy-format-plan	f2a9f956e4f6391e28923716a173ba483174ff8f	no	2026-10-16	archive+delete
+branch	ink-linux-text-probe	df8ae8b6c5a80f8c1f15150dc7b7c493747a2701	no	2026-10-30	archive+delete
+branch	item-click-headings	0215e1e400e60a2e4ae44164911a2c974febd034	yes	2026-10-06	delete
+branch	item-esc-exit	9f295fc66e579c9cb08e597128a27d6f7ea8fa08	no	2026-09-30	archive+delete
+branch	item-esc-exit-main	6862ab83a5cdc01d468d576976573279b35c6b25	yes	2026-10-06	delete
+branch	item-reveal-at-marker	2e2a6b20f5cc699844024a8a8dc602aff0ff715a	yes	2026-10-01	delete
+branch	item-storage-full	c648c56d9563afb13c5ff0e2bf494f3716162dc4	yes	2026-09-30	delete
+branch	item-storage-s2-indexeddb	b9be6b059acebf48c4f026d61b749ee4417b28e6	no	2026-10-05	archive+delete
+branch	item-writing-r1	55d551224e7c06462aefae261071e977e8dad93b	yes	2026-09-24	delete
+branch	item-writing-r2	b69061c9dcf9f648da4daf34804df58ab08c63d0	yes	2026-09-24	delete
+branch	item-writing-r3	366c652833e27cc1904be19b30d550bb7c61e194	yes	2026-09-30	delete
+branch	item-writing-s0	945280d8458f30dbe9d9f2a2c93e70c53dc2d08d	yes	2026-09-24	delete
+branch	item-writing-stack	d4dc32efa77e02598c64582a74b5d91bc4a82f54	yes	2026-09-24	delete
+branch	item112a	609828ad6edb74952447c6bba1a245abd003ba9b	yes	2026-09-05	delete
+branch	item112a-deterministic	ec6d208b02ed6732e2af7f01d657050e62465d2b	yes	2026-10-16	delete
+branch	item121-ink	dfa20f48e702aaa85f8ec037d2e002ae960ad0f2	yes	2026-09-07	delete
+branch	item126-brief	62ba99217c3b035edaac6f452bec9951dcbcfb21	yes	2026-09-09	delete
+branch	item126-ink-across-modes	14ff19869e238316ae20eca3865fb6b0c3ad9765	yes	2026-09-16	delete
+branch	item129-bm1-park	1db5c54a8528967e197b20865b16eb4794216733	no	2026-09-08	archive+delete
+branch	item130-strip-hittest	5156ceb9ba4a0a6491b8049ce4afb3a611b254b6	yes	2026-09-10	delete
+branch	item133-naming	bf9fd605b46d5aedfe001c431d3744977b795783	yes	2026-09-13	delete
+branch	item133b-rename-draft	78201773b4f4d5f6da8cff58f0a8fc956d1dede0	no	2026-09-14	archive+delete
+branch	item135-suspension-void	9ab589ffe5048ca73e37cc470dedeabb4feee5ad	yes	2026-09-12	delete
+branch	item137-trash-foot	84d42bb74d0b269f58a28484401d07fedc7eed6a	yes	2026-09-14	delete
+branch	item138-pin-tall	5318b12f13a3c5182d7645fdfb116992216e2a68	yes	2026-10-01	delete
+branch	item139-runner-guard	c927fef2fb64de5d5d92d46a85fe9c6d37aa0885	yes	2026-09-13	delete
+branch	item140-grant-file	531b2950dbbce4f53f9bc9b0e7eaa08bd3adde6c	yes	2026-09-16	delete
+branch	item141-item97-seam-wait	86a3f0142a6dfcbb5e7eb6cadc8c7e42115fe1ca	yes	2026-09-14	delete
+branch	item141-settle-guard	51766871d67656c539b7c93ca882834f43f0642b	yes	2026-09-16	delete
+branch	item144-board-tabs	60e640e5d3c8028760b2c7f42907bb400806b8cd	no	2026-09-23	archive+delete
+branch	item146-rhizome-seed	ace6f766e6819dc89b19b1f04319701014b17213	no	2026-09-16	archive+delete
+branch	item147-148-guards	12f90f45d4456587958267916fb0d3ecf5c2e89a	no	2026-09-24	archive+delete
+branch	item147-park-count	4bab0ff3cd706057fd6a394b62a1a56458eeb7d4	no	2026-09-16	archive+delete
+branch	item148-seam-durability	41f8b7c202846feba604f1b02cef8828b61c9c89	no	2026-09-16	archive+delete
+branch	item151-silent-acts	afc0556b8f8b4cfbc81a603311e53f415174b5f9	yes	2026-09-18	delete
+branch	item154-instring-acts	921390f1afcf66f636efb6840041d8970ab0b87a	no	2026-09-19	archive+delete
+branch	item157-ink-sheet	fb61ba54f935c4ed592ae8c9020dd0d7a8396c6a	no	2026-09-22	archive+delete
+branch	item158-tab-indent	0a36a7b6a177b2a7205a646c2f402e3c174f6f99	yes	2026-09-22	delete
+branch	item159-card-styling-dock	e31b43aab46da1883dd5688ac23a8057db8ebdb6	yes	2026-09-23	delete
+branch	item159-falsification-evidence	3abc1347d0c195dfa785b8ef986e9a4c02150561	yes	2026-09-23	delete
+branch	item160-remove-off-board	7bb3b2e2db386d1ee87cf6d51b0dd26537a8f4bd	no	2026-09-23	archive+delete
+branch	item161-162-strip-geometry	41584a21dc383fc0d6df0329c1a60dec95b5f7ab	no	2026-09-24	archive+delete
+branch	item163-location-in	71ee4279f02656a11bc28df1bd86ace9148fb2fa	yes	2026-10-01	delete
+branch	item164-verdict	e050ed6e574d893ee3be0cf0406062a551487593	no	2026-09-19	archive+delete
+branch	item170-open-a-page	c1cf8d009f07792ef2b3993aaddcb80980906fd7	yes	2026-09-19	delete
+branch	item171-typewriter-scope	980360c39ecd06e943110cc307800157691d3a4e	no	2026-09-22	archive+delete
+branch	item171b-board-ink	67c8ad5ecd911e7daffa62aff264d14515c0ca4e	no	2026-09-24	archive+delete
+branch	item176-picker-says-board	292f661e271e3989f960811314d97d8b455656de	no	2026-09-22	archive+delete
+branch	item184-retire-convert	11b93b0184f1ffc80e1d489a08592c498a6f2d12	no	2026-09-24	archive+delete
+branch	item190-exp1-rail	da17af889439f5c5480b1534074bc0bf6f3166e5	no	2026-09-24	archive+delete
+branch	item195-sliver-grip	c59fc374b24b1500b77d3b3f6df7b0866dc62cb7	no	2026-09-30	archive+delete
+branch	item196-download-wait	6e61980f59d9f438477f70a92133c81a613daf69	yes	2026-09-23	delete
+branch	item198-db-clock	ad02ff3e29b11950c75ec008c378637feba590f1	yes	2026-09-24	delete
+branch	item198-s0	94ae43f9ee76cfc73b298282329c22ec4bb03da2	yes	2026-09-23	delete
+branch	item198-synced-at	819981aedadda13bfa8904616f27fcc5a3183eba	yes	2026-09-23	delete
+branch	item201-s0	e2e7f601827ac59e7f99fb86e1d935d8a315d0d1	yes	2026-09-24	delete
+branch	item201-tombstone	c375c010f801d0fac2101263ca9b337f30001630	no	2026-09-24	archive+delete
+branch	item203-ceiling	18e96d0512859e9bcbfe5e79f9703168f0b5e274	yes	2026-09-24	delete
+branch	item203-chunked-push	47c082a8d395475493bc9e729809ac93d7185608	yes	2026-09-24	delete
+branch	item203-s0	6fb5923c3801fbe0afe8ab3b860072a49e64d0a8	yes	2026-09-24	delete
+branch	item204-engine	dfb7ce4322aa30b02a55f3c9770978dd1f674323	no	2026-09-30	archive+delete
+branch	item204-part2-brief	365a92293ac6837bf1aebde567fbd50efcba8721	yes	2026-09-24	delete
+branch	item204-part2-s0	5ef55e0afe2b737cf81a45078f1a70c248eaa1cd	yes	2026-09-24	delete
+branch	item204-proofing-storage	13cd4157316020f7788418c9ca52980a41d04d93	yes	2026-09-25	delete
+branch	item207-core-park	1d263f1f2fa9175fa1e2a48c8c48fea7db043e30	yes	2026-10-22	delete
+branch	item207-fonts	5653417301e24d6f197f0f781272b94a0173ffa6	yes	2026-09-25	delete
+branch	item207-fonts-tutor-review	95a1d7511dadbe0db75e4a4536bdf7516620e68e	yes	2026-09-24	delete
+branch	item207b-device-fonts	e2a5a78280bb970d7998d0003f00f676002ca377	no	2026-10-01	archive+delete
+branch	item211-card-port	b354afc48659d3472387636f2db1156f144c8d12	yes	2026-10-12	delete
+branch	item77c-bundle-stamp	a26a810751c05ef91dbc0f01cf2d9649cc269a22	yes	2026-07-31	delete
+branch	item82-fix1-celebration-gate	93f6ee3d5bb2652b2e2b9eb9a3a86e7b4a0c2975	no	2026-08-02	archive+delete
+branch	item82-fixb-j5-seam	33c062f3a3a19ab7334c258c4033b87bd07ecedc	yes	2026-08-17	delete
+branch	item83-menus	2b8e5b4bb3b4d588ecf480cbc7904f5dcc05f839	yes	2026-09-07	delete
+branch	item84-deck-phase	b308ddd05f56df7c26747262e4c7ea87f5d2ef20	yes	2026-08-28	delete
+branch	item84-roster	8685d3fe33c19b8c0111005fa21b87033b112d59	yes	2026-09-02	delete
+branch	item84/tutor-menus	a31af537615b3ccca8f1346281a019e41e4aa057	yes	2026-09-22	delete
+branch	item85b-seed-guard	016d42a6a47e5134d4ba142ee983eb752dc019e4	yes	2026-09-09	delete
+branch	item85c-seed-migration	4198f7fb802e53ea45423b8a055e9c669d136650	yes	2026-09-15	delete
+branch	item89-persist-dirty	3de9f287b89d1edc562163cee665254850daf535	yes	2026-08-03	delete
+branch	item99-age-floor	3b10b2b6b310eb7f146a7f04f86409372831e044	yes	2026-09-08	delete
+branch	item99-orphan-reaper	85949afc43022092ce1236613b8425c70d9a96a6	yes	2026-09-05	delete
+branch	j1-journal-data-layer	73bb53c6f2cd661ae548ec67b8e301b1e065ab5b	yes	2026-06-13	delete
+branch	j10-1-suppress-handwriting	4845032709bfe4eb6965e37bdcb2d5602446bb0c	yes	2026-06-15	delete
+branch	j10-journal-text-authoring	95eb9543d2f3a12d459ec6b09a722d40e8334697	yes	2026-06-15	delete
+branch	j12-ink-browse-read	ee4761d9dd6dfe7c45d200bc871ebcf89ddbd5fb	yes	2026-06-15	delete
+branch	j1a-honor-discard	fcc9e7256ea5217addfe0f50246c30b60c2ab723	yes	2026-06-14	delete
+branch	j1b-journal-sync-stamp	f8ee810fafbb154f7d70c339cd2c424a46b2520f	yes	2026-06-14	delete
+branch	j2-eraser	fad1a4a28f7db858391d94302883db28a311d508	yes	2026-07-09	delete
+branch	j2-s25-fixes	eae41e9b2d4deedee78df9309186d0606b580025	no	2026-07-14	archive+delete
+branch	j2-scrap-routing	8e985a49c56e970f746a9d81ccc8dda8265bf24f	yes	2026-06-14	delete
+branch	j3-homepage-testament	8b07ef7feedecbab7b99d611efe41a2e6f18d927	yes	2026-06-14	delete
+branch	j3-spread-view	8c0ab6f10dff88f6f55bc02da5a3e2cabf3adf7f	yes	2026-07-11	delete
+branch	j4-board	9f213e71f49039c6c4ce89c8ad92a2a6c973c2ef	yes	2026-07-11	delete
+branch	j4-journal-browse	27754b26b98f18133a48fc8b1a5303f766a2c128	yes	2026-06-14	delete
+branch	j5-ambient-feedback	b74e85957cffd516038068e17a3ac5638995e616	yes	2026-06-14	delete
+branch	j5-spread-console	0d1409939eae3ccf43ae54164aa68edd971ec35a	yes	2026-07-11	delete
+branch	j6-entry-metadata	c470b1971a5021825a5ddf2a834c315c279e2d28	yes	2026-06-14	delete
+branch	j6-one-paper	b3b1cfb57ea65cbf7343cf3d253dd902059898e0	yes	2026-07-21	delete
+branch	j7-post-sprint-echo	3bedd63996bb96adfd107f72cae7a130918d6f68	yes	2026-06-14	delete
+branch	j8-journal-stroke-types	7ea2c22beac5476d3fcd97b1f26a6ee37af81cd8	yes	2026-06-14	delete
+branch	j9-journal-ink-layer	acb1bd3192510de5a42336ea50fa7e8c8402e359	yes	2026-06-15	delete
+branch	k10-reanchor	9acc8a711aad7ca579eab53dab2096ee1f27261d	yes	2026-10-07	delete
+branch	latency-baseline	13f09d16c801d23edbff2670c9ba654f6cb20ce5	no	2026-10-15	archive+delete
+branch	latency-profile	fb0597aec185a5571ad31d4dcd9f2610c559e570	no	2026-10-06	archive+delete
+branch	logout-flush	86c5892f7281af416f32c5cef1043f195c9ed25d	yes	2026-10-07	delete
+branch	m0-bootstrap	dd1d2850e9fdc2b1754785a483344a38535bb263	yes	2026-02-01	delete
+branch	m1-creative-flow	d7451ad51608055b8ea8bfc348abada8b482b5ef	yes	2026-07-10	delete
+branch	m1-milestones	44afe2fea12b44dc44189800ede3a6897254ab04	yes	2026-07-13	delete
+branch	m2-rhizome	99893d0c08a4fe0e7c29cba8230e3b7bf19695e3	yes	2026-07-21	delete
+branch	m3-rhizome-roams	ccf643bfdbf7246b6a7169bbddef6ac291ab9e1e	yes	2026-07-24	delete
+branch	m4-root-that-shows	2b47b6763c6060efe655b6a768b4d8ead7502ddc	yes	2026-07-25	delete
+branch	machina-build	50f6caedf3a3a7bd8271d7c833f7e569b4d8fa1e	yes	2026-10-24	delete
+branch	machina-build-plan	45dc82606df205de3ff5fa50d78c813fe05d5955	no	2026-10-23	archive+delete
+branch	machina-deckwizard	1d3f1c510deae8929fc3a073a50bfc40f06e072d	yes	2026-10-24	delete
+branch	machina-fixes-7	8d7a7d611b48a23238964c1009919d2b1c64c66e	yes	2026-10-24	delete
+branch	machina-forms	23cc169fab7d6d8c531e28bef1766cb8484764d7	yes	2026-10-24	delete
+branch	machina-forms-reds	bc33f5dfb835a387f84d72550afd723ccc37fc45	yes	2026-10-25	delete
+branch	main	dadb719653d2d3e9af83bfeb2b20895d002b7c5b	yes	2026-10-31	keep
+branch	main-parks-211	6181660bf08125b3def77f34d4ba245273dd6214	yes	2026-10-05	delete
+branch	menus-build	e01c4825755b9a52cdb23cfcadd21dacf03a0583	yes	2026-08-28	delete
+branch	menus-errata	8444cb872046ddd9c29ca1cd56748516a5d63bc6	yes	2026-08-28	delete
+branch	outline-blur-data	4d21bdfcad83be618da1fd5e2ecddf337b408da6	yes	2026-10-25	delete
+branch	page-readiness-survey	b19d674dd2d563b26bd9dab9521fa96a0742cf3f	no	2026-10-21	archive+delete
+branch	page-scroll-return	7e8a9022a2e80fd5a59caa36e235891b623b7896	yes	2026-10-13	delete
+branch	page-size	8a55fa6c4d43133e7b547e79d39db66c30a71974	no	2026-10-23	archive+delete
+branch	page-size-checks	55cb582c026ff87bf074c592f900447642273ca6	no	2026-10-23	archive+delete
+branch	page-size-checks-r2	5a1991a672132cdd9c3444b55838c5b28cf86d78	no	2026-10-23	archive+delete
+branch	page-size-r2	a1f9141faf21090b4dc894ef982aba8d95c21028	no	2026-10-23	archive+delete
+branch	page-size-r3	243cf8f0169984958065280cdc8d4e7cc908c728	yes	2026-10-25	delete
+branch	page-templates	8e80d606b0d41311fbe5fd5b700eec3431693aaa	yes	2026-10-17	delete
+branch	page-templates-move	a3015941426762add91c08e16c7b93d5b2dc1327	yes	2026-10-08	delete
+branch	page-templates-plan	e618fefd75dcda4606ee78e545b8c95e90a408ed	no	2026-10-16	archive+delete
+branch	park-conform-vw1	cddd343cb830631b5e596d937b5828a6557d1626	yes	2026-09-18	delete
+branch	pb1-born-on-first-word	af475820debadf9bbb92d8750e3409b67f8c4222	yes	2026-07-29	delete
+branch	phase1-drawers	fd51ab84077768780630c4e90f7122bffb09e4bc	yes	2026-10-13	delete
+branch	plan-134-final	e7e919e9779cb822d9c6875015becc6cdefb033b	yes	2026-09-13	delete
+branch	plan-144-amend	cc4819393d091dc04666f0ff36bc1b856ec56812	yes	2026-09-23	delete
+branch	plan-144-amend3	8c213bb38f3ea80a0fb85ae5c02d2072a304cf0f	yes	2026-09-23	delete
+branch	plan-144-exit-control	9fc4e99686f6be18c857fb3ccb458fc65f843f3d	yes	2026-09-20	delete
+branch	plan-144-nest	7888325fbb5c0a51542e30f8ed05cc475efbbbc7	yes	2026-09-23	delete
+branch	plan-144-tab-bar	701135cadb95594d4272a969450240b31b32d565	yes	2026-09-19	delete
+branch	plan-165-116-181	18b4332f285cbbd0fce9e64f72e5d0fcc15e8c5f	yes	2026-09-19	delete
+branch	plan-165-amend	7aa644c66b36d2fb39802ac2999307aafcf9a971	yes	2026-09-24	delete
+branch	plan-166-guideline	3ef089debf753cc77b22a6d2bec57233fad8fc7e	yes	2026-09-23	delete
+branch	plan-168-delete-permanently	87eae9adc5142223a424878cdfa7850491510e7b	yes	2026-09-24	delete
+branch	plan-169-move-hold	fa70f7b5a366780949f9f7b03570d6bd3cb6d9ce	yes	2026-09-20	delete
+branch	plan-171b-design-pass	d04ce54165254c20b735dc5fdfdc3004f2bb6e4f	yes	2026-09-23	delete
+branch	plan-171b-ink-charter	b418599766791a2ccbbfec213439c0ce60e37cfe	yes	2026-09-19	delete
+branch	plan-171b-revise-v2	9873bea6c06983894157bb683d853d3f6d7f6c5c	yes	2026-09-23	delete
+branch	plan-172-board-types	0bff28402af5421c0424b0cef6e88a090d55591e	yes	2026-09-19	delete
+branch	plan-172-consequences	3110f5bcc5f52247eff510970e1f05fcf553ca41	yes	2026-09-19	delete
+branch	plan-177-star	db393d88b03c7c5717f23bb6f87f3b3cd897d257	yes	2026-09-22	delete
+branch	plan-180-carry-pass	9584680b7af5508de0896ba7dbe6237b3147af1f	yes	2026-09-24	delete
+branch	plan-181-file-pass	d073275e4dc044ffe115fe7ad32f6a9826fbc729	yes	2026-09-24	delete
+branch	plan-186-base-menu	e52a265e023a8aad5e65e3fa725109138b845597	yes	2026-09-24	delete
+branch	plan-204-proofing	3f4067780d1ef530429e75e199eb3773166ef33b	yes	2026-09-24	delete
+branch	plan-207-amend	d4415f3c57fdfda2359dde0c1c75cb5c613eae0b	yes	2026-09-24	delete
+branch	plan-207-fonts	3bfb70a3cef9a9d416979ab7aa38f24d8bf36136	yes	2026-09-24	delete
+branch	plan-architecture-pass	47d0331dff8e704e9c39c472607c643d14cde6e9	yes	2026-09-22	delete
+branch	plan-brief-108	22ad29eaa24c042576d075c3921f6e70eaeb881d	yes	2026-09-16	delete
+branch	plan-brief-143	1a9ced87b410a1d6ff2ef7bf7c2462e0b30eae41	yes	2026-09-16	delete
+branch	plan-brief-144	7deaec7c08dc0f7e043f455d85a201fbd7d17cab	yes	2026-09-16	delete
+branch	plan-brief-144-tabs	23effd5a7f71bc7da02107c4f831458a6fe93660	yes	2026-09-19	delete
+branch	plan-brief-145	b11d34ef475d812e8cf8d482ddb286beb261da15	yes	2026-09-16	delete
+branch	plan-brief-165	375f65e6db3d6dc7afc43ad6d3d4f1ef988738bd	yes	2026-09-19	delete
+branch	plan-brief-166	9b6bce55e37dfd4411e6b6f9919fdf705eef0f51	yes	2026-09-19	delete
+branch	plan-brief-167	b2264ea2316ecb36c810f834223591f8540b1754	yes	2026-09-19	delete
+branch	plan-brief-177	3fbefca95c5eca4121a2ddf32c2d2c5ccbdabde8	yes	2026-09-20	delete
+branch	plan-brief-178	d57a7e60da8a579f6c20f53f6ff75e58622e7eef	yes	2026-09-22	delete
+branch	plan-charter-168	6eb3faac398a15f7b0a2e24cde1cbf43508b50c6	yes	2026-09-19	delete
+branch	plan-charter-169	711e6cac15ac40359dd0e9659ab0468db150bffd	yes	2026-09-19	delete
+branch	plan-charter-180	1d90b9dc435801b47e11b7afccc694063874eae2	yes	2026-09-22	delete
+branch	plan-charter-181	d87b7ffb36d6c06c86d1ff5c4534329f449f2d85	yes	2026-09-22	delete
+branch	plan-exp1-amend	b52e1517c7b7b1b65e7fe259010634766e4c920d	yes	2026-09-23	delete
+branch	plan-exp1-connect	a15f8562c1678eb2540110e133893ef9d4968a4e	yes	2026-09-22	delete
+branch	plan-exp1-q1	551dba415814682212b3a0ddc4b63e0d6bde1578	yes	2026-09-23	delete
+branch	plan-guest-login	368423a132a36248c857a846bbafe38b8afdc34f	yes	2026-09-30	delete
+branch	plan-item108-all	ab7f40d7690dd09198036027e5849d2a2a916f72	yes	2026-09-16	delete
+branch	plan-item108-pass	755da1886a2fbf76123419a2c0f99de13b5e0a6a	yes	2026-09-16	delete
+branch	plan-item108-rulings	0b07214ae3bef60b8cfd7f6b300e850e5cf29711	yes	2026-09-16	delete
+branch	plan-item134-views	9e5172291f967afe7183ef2bea6d9e2c33092161	yes	2026-09-11	delete
+branch	plan-library-shelf-journal	e669b847194c8b5e2c3a3c92bab2be4627b81d04	yes	2026-09-30	delete
+branch	plan-menus-rulings	137dc6ea7f7cce21f68c09466ffcafbc656b4042	yes	2026-09-24	delete
+branch	plan-multi-board	641f728401cdda9472c3032d4a1f1678ccb46ce3	yes	2026-09-22	delete
+branch	plan-pw2-copy-provenance	440a6a27fe9a0b1faecd1bce4cf6a05ca1db41bd	yes	2026-09-13	delete
+branch	plan-pw2-drawer-clause	04d250a879759bf197045b8703cfad20fda468e4	yes	2026-09-12	delete
+branch	plan-pw2-target-clause	c30d348c21909fb2ce0f1018b2ca0aa15927ea6d	yes	2026-09-13	delete
+branch	plan-siblings-highlight	a6e52cbb404ebdff383a4ba3db646b28cd732054	yes	2026-09-16	delete
+branch	plan-siblings-thq1	03ca200e544cd739988b8b47665382e385160dc4	yes	2026-09-16	delete
+branch	plan-tag-controls-pass	b32fc82d0021ec9027ab3efdb4e2627896103860	yes	2026-09-16	delete
+branch	plan-tag-olive-foundation	006d86b4eb724e6644f9689e9e7ec9795c8da9e1	yes	2026-09-16	delete
+branch	plan-thumbnail-law	245669395802d290619c0c00f1f8d9b7832824c6	yes	2026-09-13	delete
+branch	plan-thumbnail-law-amend	8de44f77205ee11851807de01795c41c832317a6	yes	2026-09-16	delete
+branch	plan-v2-conservative	c400203b93f814dbf29d4a68db0abe09038911a3	yes	2026-09-22	delete
+branch	plan-vw1-rail-brief	7508d91fc60f250dde7e910573820f57e70c4960	yes	2026-09-13	delete
+branch	plan-vw2-brief	1765da4a5cdfe0369af61760f3faf3135e169826	yes	2026-09-13	delete
+branch	plan-vw2-heading-fix	aa7d6a31b31709eba63808ed9f611c97b29b2fc0	yes	2026-09-16	delete
+branch	plan-vw2-rows	496c20d9e7095df05acc29ce5b9ec3c3dcc03065	yes	2026-09-24	delete
+branch	plan-vw2-thumbnail	cf6d3924b32da52f0fd167e3b09fa9db4d535b56	yes	2026-09-13	delete
+branch	plan-vw3-brief	797ca6eef66e20de7650e79f9242ec98cbcff4e9	yes	2026-09-13	delete
+branch	plan-vw3-tagfilter	307c83a3168ee0b73a1c8f43865002ebdb0428b6	yes	2026-09-16	delete
+branch	plan-vw4-brief	cec46f7cc38a950c27f3c28012a13aa1066d1a57	yes	2026-09-13	delete
+branch	plan/storage-step2-indexeddb	71867d318b25076e210f2ae67bfada4944279a74	no	2026-10-22	archive+delete
+branch	polish-10-ink	b632491e7d464df3886af63b058302cbfc563a2b	no	2026-10-25	archive+delete
+branch	polish/arbor-ground	d5d3d92dff7d1e8fa901bc2c8277af9d7b139f6f	no	2026-10-28	keep
+branch	polish/arbor-menus	554690d34f2dd3bfcff3b716b1221ddfe9484b91	no	2026-10-27	archive+delete
+branch	polish/flux-circuit-mockups	f675401114e201e05f75dfab08ee58f84adcd6d3	yes	2026-10-28	delete
+branch	polish10-12-card-geometry	950ff3c5f2cb63a2f790e3aed67449805ebf0ac0	no	2026-10-28	archive+delete
+branch	polish10-12-card-geometry-r	e1e0fb2ef312dd017f53fb7aedf5a9c02f654802	yes	2026-10-28	delete
+branch	polish10-12-card-geometry-r2	e5a537ab628d6fe15fb53f1e054a36196b2c8f9b	yes	2026-10-29	delete
+branch	polish10-13-outline	ecc2def99b46f42ec304ac3a4a1fb73e529be6eb	no	2026-10-28	archive+delete
+branch	polish10-13-outline-r	1c079a7183d683e1e1521b87d1db37ead0bdcde5	yes	2026-10-28	delete
+branch	polish10-14-rail-label	6adb241d93bee71b659cad22e1e6db81529e3246	no	2026-10-28	archive+delete
+branch	polish10-14-rail-label-r	84619c339cd425e913bd3c5676cc788595d11737	yes	2026-10-28	delete
+branch	polish10-15-fragments	fe493d7a28c7252ff751fe1663ab7f23b56d2e9f	no	2026-10-28	archive+delete
+branch	polish10-15-fragments-r	c46f3ecae7c2a8f87dbd1b552cfac3f1b79e258b	yes	2026-10-28	delete
+branch	polish10-anchor	ea2c8c3dc545dbd4afe38e020afb262c66abca9e	no	2026-10-26	archive+delete
+branch	polish10-anchor-r	7e3951684007015d22b4936bd25ba0efc4ea3317	no	2026-10-27	archive+delete
+branch	polish10-anchor-r2	1ede7c21bcf0622ab7ed20e124937d4f01fa0f59	no	2026-10-29	archive+delete
+branch	polish10-anchor-r3	dde2a2dee009fbf03483610c7f9cea5fb4c59672	no	2026-10-29	archive+delete
+branch	polish10-anchor-r4	fda64ea50f9f882682535bd8553630201033b872	no	2026-10-29	archive+delete
+branch	polish10-anchor-r5	e629130aa2a9a7db019fd9232ed30f46f0e55f05	no	2026-10-30	archive+delete
+branch	polish10-anchor-r6	c44444921c1aa704575598432f9c2985981ee93e	no	2026-10-30	archive+delete
+branch	polish10-anchor-r7	64f0580f0fc993c72fceb8ef9a1374fbacda6d30	yes	2026-10-30	delete
+branch	polish10-board	b66085abba203ecadb2e50c48db8c691267c0b4f	no	2026-10-26	archive+delete
+branch	polish10-board-r	518f6887227d8c08d26f4c1d241c7258b0f0aa2b	no	2026-10-27	archive+delete
+branch	polish10-board-r2	5a9163ab5cdf13d06b375e914b5119d006325218	no	2026-10-28	archive+delete
+branch	polish10-board-r3	d880796ca6c61f336dcdd061938872848c29778d	no	2026-10-29	archive+delete
+branch	polish10-board-r4	0b391d877cd5200c5e64a37d5530f8c2a3dd29ea	no	2026-10-29	archive+delete
+branch	polish10-board-r5	4045888eca1935466c65e9f8cc56a084a0bd75b4	no	2026-10-30	archive+delete
+branch	polish10-board-r6	0437f48a80c9168cf3e4261ca4ffee41c524245b	yes	2026-10-30	delete
+branch	polish10-card	f57b6cf7ac5183b9d75aa0f19dfae8ae91ee2bdc	no	2026-10-28	archive+delete
+branch	polish10-card-r2	9c12ababfd4a4fcc52c3879d870ce2533ef6bd1d	yes	2026-10-29	delete
+branch	polish10-caret	51c8512f5a3cf8ad7ecaf0d7ddd51683669adb41	no	2026-10-26	archive+delete
+branch	polish10-caret-r	53745382656b88bd279ea80450396fb13ca819e9	no	2026-10-27	archive+delete
+branch	polish10-caret-r2	6afc68f2e2fbc7e7d0e0b729353e1c364a604d35	no	2026-10-28	archive+delete
+branch	polish10-caret-r3	60e22a37f02a31ea0af1a60214e9ee34664d519e	no	2026-10-29	archive+delete
+branch	polish10-caret-r4	f80de801c393189f5ea67112da1cdd1fe55ac912	no	2026-10-29	archive+delete
+branch	polish10-caret-r5	3468afdaefa081b3c3380441525e4387474274ea	no	2026-10-29	archive+delete
+branch	polish10-caret-r6	63c11eef37599c02ed876ba4957d27c3ee07ed29	no	2026-10-30	archive+delete
+branch	polish10-caret-r7	212fbc35c4534581fdc2fb33edabf613f6f4d8d0	yes	2026-10-30	delete
+branch	polish10-format	72e28b2796ba8bd46040798c742483e0119006a6	no	2026-10-25	archive+delete
+branch	polish10-format-r	aae867b6b7a389c97b078b0a866c9e653bcac096	no	2026-10-27	archive+delete
+branch	polish10-format-r2	e5d1a72509c877a0dd95788794faa33065f81e2c	no	2026-10-28	archive+delete
+branch	polish10-format-r3	d8ecef6a19b14729b1ca3d7ff1603b621de00221	no	2026-10-29	archive+delete
+branch	polish10-format-r4	934fc8cfbb54b278b813aba33c9760aa554c21cd	no	2026-10-30	archive+delete
+branch	polish10-format-r5	5bb7cfbd28092283f3dde8506cada328278b376e	no	2026-10-30	archive+delete
+branch	polish10-format-r6	066d27fd7b36ff7b7e986f7a4c96de127b935755	no	2026-10-30	archive+delete
+branch	polish10-format-r7	55b9c5e28663a5dabafe8ab1a50fb43db93ad0c1	yes	2026-10-30	delete
+branch	polish10-format-r8	170b48d5cdfb8592123ecbaad8fa248ee9d176b2	yes	2026-10-30	delete
+branch	polish10-format-r9	48bf073e9444b2ab2855060d023645490475213f	yes	2026-10-30	delete
+branch	polish10-ground	b20b8142069534a9400f041ffd1b86dc5eaf2835	no	2026-10-26	archive+delete
+branch	polish10-ground-r	e558afbcd7cdd82d1909bbe60f4c9b85136248bf	yes	2026-10-27	delete
+branch	polish10-hint	1dba223765537c89dcf14a1986cf76bdc3bdc220	no	2026-10-26	archive+delete
+branch	polish10-hint-r	c4f0f78ca96bc81eb3f9c53b556a63a9afb8efc0	yes	2026-10-27	delete
+branch	polish10-hint-r2	3d3b979b35891e03dcc455226b6c505bb4308034	yes	2026-10-28	delete
+branch	polish10-linkdock	1c58075bb63e9024ab132a044eb2c0dc75def1b6	no	2026-10-25	archive+delete
+branch	polish10-linkdock-r	a3ffc09153937b95cc59d2507689460dfb54bc2c	no	2026-10-27	archive+delete
+branch	polish10-linkdock-r10	9e7f037de9386473263e069fed1792a3bee0487d	yes	2026-10-31	delete
+branch	polish10-linkdock-r2	1ef6e4aae2bb58327e1dd88f104af8bce0e44bd9	no	2026-10-28	archive+delete
+branch	polish10-linkdock-r3	30f1a69e88b0d1a747110aff54660fead3d1f68b	no	2026-10-28	archive+delete
+branch	polish10-linkdock-r4	946fe6c3680be641763528457925e3cf94c74319	no	2026-10-29	archive+delete
+branch	polish10-linkdock-r5	98b8163545c48802278970305a6cceb0974aea6b	no	2026-10-30	archive+delete
+branch	polish10-linkdock-r6	6c1d6223e3071507edaff52790676844e0b89e4c	no	2026-10-30	archive+delete
+branch	polish10-linkdock-r8	392dd42e8c6c90a3d29c091f6c4ead1d6d2ae91e	no	2026-10-30	archive+delete
+branch	polish10-linkdock-r9	974cabef4791ee567e375671cd5343fcb41d094b	no	2026-10-30	archive+delete
+branch	polish10-page	fddf5acc3715e6f73778c29d65a555795117f326	no	2026-10-26	archive+delete
+branch	polish10-page-r	22f9e3fe40c56b24f2c0934d032bb310069407ce	no	2026-10-27	archive+delete
+branch	polish10-page-r2	33e8880e1cee4729def83c22cd636321ee5a9f8a	no	2026-10-29	archive+delete
+branch	polish10-page-r3	25eb0ed6817abf2aacbbaa661c7ea296503044b1	no	2026-10-30	archive+delete
+branch	polish10-page-r4	26cdf65de31fbe9b654befab5eafc1b9969aeefe	no	2026-10-30	archive+delete
+branch	polish10-page-r5	9886181d6c6fb1b1ea0f8827b3812404b466a165	no	2026-10-30	archive+delete
+branch	polish10-page-r7	cf0e08985595a757a79f04a9ca4d9e4fead2ea8f	yes	2026-10-30	delete
+branch	polish10-page-r8	86141ae51e4f435043d2efa7a1fdc27c76ac3913	yes	2026-10-30	delete
+branch	polish10-page-r9	fcd99d6ad3b9fca75d4ae23f947100b6daa09482	yes	2026-10-30	delete
+branch	polish10-recede	ac24fdd2341623ff0042a6322eb5d0e49f50cdd1	no	2026-10-26	archive+delete
+branch	polish10-recede-r	280ac25d3d694a0c2bed35c3535471520cce739c	yes	2026-10-27	delete
+branch	polish10-recede-r2	587f7b7769db8a960c4d39ee8815645549479210	yes	2026-10-28	delete
+branch	polish10-recede-r3	b841016f3a0d9fd90a5d26a7468a155d0c437688	yes	2026-10-28	delete
+branch	polish10-scrollbar	12165da3e855509cbdc6224033afc79d321cffe7	no	2026-10-26	archive+delete
+branch	polish10-scrollbar-r	f6a04b07223da05412a845a1ab56ed8e957a8271	yes	2026-10-27	delete
+branch	polish10-timing	37fe899a8200586d29a428712dbbc8e7c24f982c	no	2026-10-26	archive+delete
+branch	polish10-timing-r	a774a2482fde145ee6d72a2e03455c3e8543983e	no	2026-10-28	archive+delete
+branch	polish10-timing-r2	4e9e17ac5f220bdc92ff1caa2e6e9198e0850a66	no	2026-10-28	archive+delete
+branch	polish10-timing-r3	184c7903d77182e33dfddaa6bf5b37eb07d396e9	no	2026-10-28	archive+delete
+branch	polish10-timing-r4	68c931756686f1fc3a32d971705725b71258b843	yes	2026-10-29	delete
+branch	pub0-survey	5ebe73d5280f4f97277aacaba68621344d4ff477	yes	2026-09-30	delete
+branch	pub1-skeleton	b74e172e0e597b753266ecbe7994ae3fb340b170	no	2026-09-30	archive+delete
+branch	pw1-boards-connected	57a0878c75cfde258290c2e5aadab75700ad8039	yes	2026-09-08	delete
+branch	pw1-errata	2426dd083f9d4f80f1339a0fda8bfd8816ea1814	yes	2026-09-11	delete
+branch	pw1-records	826f7efee6f079beb12852d6c9c9ce86fa2e4e5b	yes	2026-09-09	delete
+branch	pw2-nesting-transfer	d226e09a0ec60b093f438cdfd1c4301d16d8aa1d	yes	2026-09-17	delete
+branch	readers-guard-connector-b	447cf042c910da88fb7cdf7394d738c7b6b44d27	yes	2026-10-21	delete
+branch	resume-on-open	0e55de94db891ab59628f642295231f723cd9800	yes	2026-10-16	delete
+branch	resume-on-open-plan	dbb4dc24efe0f845c96f59913d17f29861781491	no	2026-10-16	archive+delete
+branch	reveal-on-click	d24c2c9ab94186b8baa0d38f66e83f070922c125	yes	2026-09-14	delete
+branch	revise-spelling	cbd4dc6df203a4b4de4c3865aec26ae245e907de	yes	2026-09-24	delete
+branch	rhizome-flash-fade	c1be3716bec89cf217f82f425687dd4d4bd2c29f	no	2026-10-12	archive+delete
+branch	rhizome-sprout	9bbd82ef549e445f15c93467ffe5a899b2786844	yes	2026-10-21	delete
+branch	ruled-three	de935d525c8cec54a6b724fc9c1325625343ccd9	yes	2026-09-05	delete
+branch	runner-verdict-shapes	46878e8294c07f4dec31bb492b0ec264940a9b37	yes	2026-10-28	delete
+branch	s1-script-editor	39eda472111bb500f813e30832a0900d5ce343c6	yes	2026-07-11	delete
+branch	sample-seed	657371003632164a7613ce2f2f03cf39e103ef03	yes	2026-10-29	delete
+branch	sc1-true-geometry	22dc1c778e751b9f28480196d033eb2989151502	yes	2026-07-25	delete
+branch	sc2-prerebase-archive	5e2eaa7095114a6eeb026c9d09d78f4956b35fde	no	2026-07-29	archive+delete
+branch	sc2-prerebase-archive-2	950351588ac57d11c6a6800989e3c847bc8babcd	no	2026-07-31	archive+delete
+branch	sc2-prerebase-archive-3	fd6713a2e615110b19f8e0bdce0edeee1febda82	no	2026-08-01	archive+delete
+branch	sc2-records-82-correction	73903f46f12b2c1ee382d763b542a1c768344422	yes	2026-07-31	delete
+branch	sc2-records-82-partial	26be01836fa103590627888e5ffac829305b015c	yes	2026-08-01	delete
+branch	sc2-records-item82	03554d5483d466c6bff88dca80d07d7f8cf0b630	yes	2026-07-31	delete
+branch	sc2-s5-memo	ecd37bf2c0e6c42c6372cf8f2aa5d8cefc9536e3	yes	2026-08-17	delete
+branch	sc2-the-clock	fc92ac133708322085d3c63afad0a86e3be0e94c	no	2026-07-29	archive+delete
+branch	scrollbar-flush	d5cd96c42140e93fa7270ef7a7c62769d6c51a08	yes	2026-10-25	delete
+branch	scrollbar-minimal	33a41c67272a975fb9599fbf365e4fbd48058b46	no	2026-10-15	archive+delete
+branch	server-hardening	b9d3db29d4e28dd1d2eb3f8ed15b24825f225c38	yes	2026-10-01	delete
+branch	set-password-script	a1f452638787692b77087f3af3b8fe8d1dbe8e68	yes	2026-10-06	delete
+branch	smoke-account-tools	61000bfbfdfab76e7314abeae67e2f4d7c57ca09	yes	2026-10-07	delete
+branch	smoke-acl-fix	bc171b941a6a8a9a4bbc44245bd0cecebcc5c178	yes	2026-10-07	delete
+branch	splash-hold	3f7ccffd7d33fc70d370841cc4b51ecfa080036b	yes	2026-10-12	delete
+branch	splash-screen	75c3b5a5107faf50c240151de44563108945d5a2	yes	2026-10-09	delete
+branch	splash-sweep	24a51ddb3e578e1951c2a78089ae4cfffaa5a137	yes	2026-10-18	delete
+branch	sprout-invite-scope	7e4413c02fbe02eeb0dd9e753eab25f0ed09771c	yes	2026-10-22	delete
+branch	sync-integrity	6da0964fe502b1de3bf6dddf65cf59f0c3505b82	yes	2026-10-01	delete
+branch	sync-proof-words	8349fd647ceba1e1ec43667e9e1fb3c452fd905b	no	2026-10-22	archive+delete
+branch	th1-theme-seam	d22c854ec47994920edd5ad7409de9f872c24669	yes	2026-07-14	delete
+branch	th2-flux	6c5b948ced48edfe95a561658e8a9f4d3452a180	yes	2026-07-14	delete
+branch	theme-leftovers	d9022766d9bdcc71216690d5583123ce5c8ac55b	yes	2026-10-17	delete
+branch	theme-picker	0b66c85d2830ee9bc5bf9dc33c3edd7acda77810	yes	2026-10-23	delete
+branch	theme-unlock-count	36e18bad9dbedc79f6ad6bc9db46ec173a25a48d	yes	2026-10-21	delete
+branch	tmp-fix-anchor-bisect-b1	dc80d96114cf0114149b9ac42cc7bc347cdcd631	no	2026-10-29	archive+delete
+branch	tmp-fix-anchor-bisect-b2	34bc25e6342be0af928353a090279e495a0454ac	no	2026-10-29	archive+delete
+branch	tmp-fix-anchor-bisect-b3	fda64ea50f9f882682535bd8553630201033b872	no	2026-10-29	archive+delete
+branch	tmp-fix-anchor-diag	a2bfbaee7601bcfbb38e5642834c4eebb5dc9d3a	no	2026-10-29	archive+delete
+branch	tmp-fix-anchor-diag2	7294c3405c4e7eeb66ec0df0a27526c34356d33d	no	2026-10-29	archive+delete
+branch	tmp-fix-anchor-diag3	8544f3172c241ee534fa9fdc7f153373b15b923d	no	2026-10-30	archive+delete
+branch	tmp-fix-anchor-diag4	3032d96a93b1c0ed290ceb69b3078375abe91e4c	no	2026-10-30	archive+delete
+branch	tools-10-fontlist	bb37edd29c90250efb07e79ff174986f3109b714	no	2026-10-27	archive+delete
+branch	tools-10-rebased	edf566c03904a8cf120436b4092fa40491ac2039	yes	2026-10-28	delete
+branch	tools-11-intake	11003dde5ba6e1c481061fb3d605b64e62c1ea5d	no	2026-10-28	archive+delete
+branch	tools-11-intake-r2	90f8ae194b83784959a14b3f1a71021dd9f0284a	yes	2026-10-28	delete
+branch	tools-11-mark-files	6de8286c548452b8987a5fc470f71d621d62ba59	yes	2026-10-29	delete
+branch	tools-12-deck-rows	55ce44807a8b0fe065beb1c5bf7dbdf96b64084b	no	2026-10-30	archive+delete
+branch	tools-12-deck-rows-r2	bd1c18d1b24652eddcf34f9777c5cf33ae228c40	no	2026-10-30	archive+delete
+branch	tools-12b-reflow-open	d4ad033ff5d690d369ede5ff3fa2ef0a6008e0b1	no	2026-10-30	archive+delete
+branch	tools-12c-r2	b4cd28e4270f3f1c8a369cd6773785ad21d183a1	yes	2026-10-30	delete
+branch	tools-12c-sized-by-hand	ae46362cadd1d079a580cfe9b4be26f21588060b	no	2026-10-30	archive+delete
+branch	tools-12d-fit-icon	27fcd98d738faf69ccde2eb8cfcc103c7becdeca	yes	2026-10-30	delete
+branch	tools-12e-width-gate	d99e42ce75ad4c9e4a601c043b5e6ca9e699f5ee	yes	2026-10-30	delete
+branch	tools-9-clean	7c87899390e5d1ccb5e62418cfe651d71fa3e299	yes	2026-10-26	delete
+branch	tools-9-walk-shipped	1a914de9ee527b8858cdd8b70d4efe11bcfbde7d	no	2026-10-26	archive+delete
+branch	train-11c	2dbb675232727855ba40080118ef886f3946a614	yes	2026-10-29	delete
+branch	train-12	91ac72548cbdaefaf63f7d9bfc60622dff48ee66	yes	2026-10-30	delete
+branch	train-12b	752146270a2d457345e64817c08649ca93a8bcb1	no	2026-10-30	archive+delete
+branch	train-12c	175ab289e70dc8383f866cee161a21ddd36fe622	yes	2026-10-30	delete
+branch	train-12d	ce73d615df9b1001cf18abe2f3f635b888466a89	yes	2026-10-30	delete
+branch	train-12e	3b083fc329a0dece4e075dfa5294501c74854411	no	2026-10-31	archive+delete
+branch	train-12f	6c58aa101c4f23d09e88e577eb378c0d3c7b4e12	yes	2026-10-31	delete
+branch	train-12g	2b06e484dee02e181e56259de3fb8923f0fd35b7	yes	2026-10-31	delete
+branch	tu1-tutor	3b062df161e6fc415dd2f2d97510564063a49250	yes	2026-07-18	delete
+branch	tu2-listener	45ea10e97c79355f8fcd5bf65f667ea88a74535b	yes	2026-07-21	delete
+branch	tu5-bible	ba364b81362c6a87d2a6629b3a11400653ab7907	yes	2026-07-23	delete
+branch	tutor-drawer-arrow	4b8704745f199aafb7be99972d975923e9b87658	no	2026-10-15	archive+delete
+branch	tutor-drawer-mirror	69ceebdf98383d2bfff291de87347e7285b050d6	yes	2026-10-15	delete
+branch	tutor-drawer-v2	e3f2fd4f3b14173e599da42ff2036c00b134464c	yes	2026-10-16	delete
+branch	tutor20-live-defect	3034f9044c61dc910142e4d92d32eb4dab06f037	yes	2026-10-01	delete
+branch	typed-literal	c8524afb3b703493682b0f8c1bed756c750a2eb6	no	2026-10-16	archive+delete
+branch	typed-literal-plan	9c0864d1d8e516c52b5870db804d0e83a47751b8	no	2026-10-16	archive+delete
+branch	typed-literal-r2	75adeef720a5e2438f58eb1917bab014b55cd734	yes	2026-10-16	delete
+branch	typeface-scope-label	c2e2a8232233076f8fa8f2b02a127da15b536942	yes	2026-10-16	delete
+branch	typewriter-fade-order	f51698a46868081f46828fa98073afd86030bc47	yes	2026-10-12	delete
+branch	typewriter-fade-r1	85412cd812ea9ace48375cd963157dcf5a074a39	yes	2026-10-31	delete
+branch	typewriter-fade-r2	318105aba643ec7af6c964a7d73aed8f64d6a6bd	yes	2026-10-31	delete
+branch	typewriter-scope	03dffdcbd957f90905724eeba41117afddb841e2	yes	2026-10-21	delete
+branch	typewriter-scope-parks	44cc41f58a47df2ec152f4eef20e80a1a9440ddb	yes	2026-10-21	delete
+branch	typewriter-scope-plan	1504b84fe17ca66a323ee1ea2abedd2173a8aa67	no	2026-10-21	archive+delete
+branch	typing-latency	6f0199e025e34f73af9eb51e332370fd09c59af0	yes	2026-10-16	delete
+branch	vocab-census	a788a6476a90f866916bdc69fba86a3ea77ab363	yes	2026-10-09	delete
+branch	vw-voice-wall	4cc85dfad8eb714d7c127dd75b8e2c417ed70bea	yes	2026-07-11	delete
+branch	vw1-rail	a5077d1e00c7b00a363d7f81420320d14cd9cb36	yes	2026-09-17	delete
+branch	w1-board-reds	807f99d1f08f29d0021a4d988dcea99fcde8247b	yes	2026-10-26	delete
+branch	w1-server	28e678646dbcf2f8104842a0f71591c3640c41ee	yes	2026-06-12	delete
+branch	w1-writing-surface-polish	a4aa6516dd1adcaa6997fd899bf6ae04a4bbf771	yes	2026-07-12	delete
+branch	w2-sync	f6b1def734a21a9f1de7198c93d9277d234fafe0	yes	2026-06-12	delete
+branch	w2-way-back	1b10d04a6a75cbd8208be0f09667a141a03f04b1	yes	2026-07-13	delete
+branch	w3-railway	10b45bdc43d0316114d66c9fbff8b8c1d43c4827	yes	2026-06-12	delete
+branch	w4-help-me-choose	eb118da7e74647db8b77608fc492960f2f585be7	yes	2026-10-24	delete
+branch	w5-gaps-rewards	70ffd12d49bb6c22f98f72ab7dc39d0a6d8f66ce	yes	2026-10-26	delete
+branch	w5-responsive	e1996c705296389a31066b811cd7fb480abedf6d	yes	2026-06-13	delete
+branch	walk-no-token-text	34f6fc294454fd8438da92d78076b41ad15022d6	no	2026-10-08	archive+delete
+branch	walk-open-select	3c93b2e2f260cd20c1a93e2b91b8db837c7b31fb	no	2026-10-27	archive+delete
+branch	walk-settle	c35da0211288ceae7ada78694fe52b87aba989ae	yes	2026-10-07	delete
+branch	word-diet	e2acbb1ffed4c5e58d89a396156c117597cc910e	yes	2026-10-14	delete
+branch	word-diet-layouts	c1e144c31c24ffe0d54e0ff014563138f7dd0643	yes	2026-10-15	delete
+branch	writing-stack-pair-evidence	8e9979324aad856b5275746424c63068936daa4e	no	2026-09-25	archive+delete
+worktree	C:/Users/nickh/writer-studio	main			keep(live)
+worktree	C:/Users/nickh/arbor-mockup	arbor/mockup-r7			keep(unmerged)
+worktree	C:/Users/nickh/bis-h2				keep(detached)
+worktree	C:/Users/nickh/bis-main				keep(detached)
+worktree	C:/Users/nickh/bis-p1				keep(detached)
+worktree	C:/Users/nickh/bis-p2				keep(detached)
+worktree	C:/Users/nickh/bis-p3				keep(detached)
+worktree	C:/Users/nickh/bis-r2				keep(detached)
+worktree	C:/Users/nickh/ci-merge	ci-merge			keep(active <48h)
+worktree	C:/Users/nickh/machina-mockup	machina/mockup			keep(dirty)
+worktree	C:/Users/nickh/p10-live				keep(detached)
+worktree	C:/Users/nickh/sample-seed	sample-seed			remove
+worktree	C:/Users/nickh/train-10	train-10			keep(unmerged)
+worktree	C:/Users/nickh/train-10b	train-10b			remove
+worktree	C:/Users/nickh/train-10c	train-10c			remove
+worktree	C:/Users/nickh/train-10d	train-10d			remove
+worktree	C:/Users/nickh/train-11	train-11			keep(unmerged)
+worktree	C:/Users/nickh/train-11b	train-11b			keep(unmerged)
+worktree	C:/Users/nickh/train-11bis				keep(detached)
+worktree	C:/Users/nickh/train-11c	train-11c			keep(active <48h)
+worktree	C:/Users/nickh/train-12	train-12			keep(active <48h)
+worktree	C:/Users/nickh/train-12b	train-12b			keep(unmerged)
+worktree	C:/Users/nickh/train-12bis				keep(detached)
+worktree	C:/Users/nickh/train-12c	train-12c			keep(active <48h)
+worktree	C:/Users/nickh/train-12d	train-12d			keep(active <48h)
+worktree	C:/Users/nickh/train-12e	train-12e			keep(unmerged)
+worktree	C:/Users/nickh/train-12f	train-12f			keep(active <48h)
+worktree	C:/Users/nickh/train-12g	train-12g			keep(active <48h)
+worktree	C:/Users/nickh/w2-wt	guided-w2-write-place			remove
+worktree	C:/Users/nickh/writer-studio/.claude/agefloor	item99-age-floor			remove
+worktree	C:/Users/nickh/writer-studio/.claude/arbor-quiet-brass	arbor-quiet-brass			remove
+worktree	C:/Users/nickh/writer-studio/.claude/bp2-check				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/card-label-contrast	card-label-contrast			remove
+worktree	C:/Users/nickh/writer-studio/.claude/clickreach	click-reach			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/errata	errata-build			remove
+worktree	C:/Users/nickh/writer-studio/.claude/faint-text-sweep	faint-text-sweep			remove
+worktree	C:/Users/nickh/writer-studio/.claude/filed-pages-picker	filed-pages-picker			remove
+worktree	C:/Users/nickh/writer-studio/.claude/filed-pages-scope	filed-pages-scope			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/fix-sfull	fix-storage-full-notice-signature			remove
+worktree	C:/Users/nickh/writer-studio/.claude/fix-splash-tone	fix/splash-tone			remove
+worktree	C:/Users/nickh/writer-studio/.claude/flux-card-ink	flux-card-ink			remove
+worktree	C:/Users/nickh/writer-studio/.claude/flux-page-ink	flux-page-ink			remove
+worktree	C:/Users/nickh/writer-studio/.claude/flux-words	flux-words			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/fx10-s4-park	fx10-s4-park			remove
+worktree	C:/Users/nickh/writer-studio/.claude/guard139	item139-runner-guard			remove
+worktree	C:/Users/nickh/writer-studio/.claude/help-buttons	help-buttons			remove
+worktree	C:/Users/nickh/writer-studio/.claude/hide-workshop	hide-workshop			remove
+worktree	C:/Users/nickh/writer-studio/.claude/item-storage-full	item-storage-full			remove
+worktree	C:/Users/nickh/writer-studio/.claude/item-storage-s2	item-storage-s2-indexeddb			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/item144-board-tabs	item144-board-tabs			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/item147-148	item147-148-guards			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/item151-silent-acts	item151-silent-acts			remove
+worktree	C:/Users/nickh/writer-studio/.claude/item154-instring-acts	item154-instring-acts			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/item161-162	item161-162-strip-geometry			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/item190-exp1-rail	item190-exp1-rail			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/item195-sliver-grip	item195-sliver-grip			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/item207	item207-fonts			remove
+worktree	C:/Users/nickh/writer-studio/.claude/item207-core-park	item207-core-park			remove
+worktree	C:/Users/nickh/writer-studio/.claude/item207b	item207b-device-fonts			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/item84-tutor-menus	item207-fonts-tutor-review			remove
+worktree	C:/Users/nickh/writer-studio/.claude/machina-build	machina-build			remove
+worktree	C:/Users/nickh/writer-studio/.claude/machina-build-plan	machina-build-plan			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/machina-deckwizard	machina-deckwizard			remove
+worktree	C:/Users/nickh/writer-studio/.claude/machina-fixes-7	machina-fixes-7			remove
+worktree	C:/Users/nickh/writer-studio/.claude/machina-forms	machina-forms			remove
+worktree	C:/Users/nickh/writer-studio/.claude/machina-forms-reds	machina-forms-reds			remove
+worktree	C:/Users/nickh/writer-studio/.claude/menus	menus-build			remove
+worktree	C:/Users/nickh/writer-studio/.claude/menus-130	item130-strip-hittest			remove
+worktree	C:/Users/nickh/writer-studio/.claude/menus-137	item137-trash-foot			remove
+worktree	C:/Users/nickh/writer-studio/.claude/menus-errata	menus-errata			remove
+worktree	C:/Users/nickh/writer-studio/.claude/menus-ink	item83-menus			remove
+worktree	C:/Users/nickh/writer-studio/.claude/page-readiness-survey	page-readiness-survey			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/park-conform	park-conform-vw1			remove
+worktree	C:/Users/nickh/writer-studio/.claude/polish-10-rail-motion	polish-10-rail-motion			keep(dirty)
+worktree	C:/Users/nickh/writer-studio/.claude/polish-10-type	polish-10-type			keep(dirty)
+worktree	C:/Users/nickh/writer-studio/.claude/reaper	item99-orphan-reaper			remove
+worktree	C:/Users/nickh/writer-studio/.claude/ruled3	ruled-three			remove
+worktree	C:/Users/nickh/writer-studio/.claude/scrollbar-flush	scrollbar-flush			remove
+worktree	C:/Users/nickh/writer-studio/.claude/scrollbar-minimal	scrollbar-minimal			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/seedguard	item85b-seed-guard			remove
+worktree	C:/Users/nickh/writer-studio/.claude/seedmigrate	item146-rhizome-seed			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/splash	splash-screen			remove
+worktree	C:/Users/nickh/writer-studio/.claude/splash-hold	splash-hold			remove
+worktree	C:/Users/nickh/writer-studio/.claude/splash-sweep	splash-sweep			remove
+worktree	C:/Users/nickh/writer-studio/.claude/sprout-invite-scope	sprout-invite-scope			remove
+worktree	C:/Users/nickh/writer-studio/.claude/susp	item135-suspension-void			remove
+worktree	C:/Users/nickh/writer-studio/.claude/theme-leftovers	theme-leftovers			remove
+worktree	C:/Users/nickh/writer-studio/.claude/theme-picker	theme-picker			remove
+worktree	C:/Users/nickh/writer-studio/.claude/theme-unlock-count	theme-unlock-count			remove
+worktree	C:/Users/nickh/writer-studio/.claude/tutor-drawer-arrow	tutor-drawer-arrow			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/tutor-drawer-mirror	tutor-drawer-mirror			remove
+worktree	C:/Users/nickh/writer-studio/.claude/tutor-drawer-v2	tutor-drawer-v2			remove
+worktree	C:/Users/nickh/writer-studio/.claude/typewriter-scope	typewriter-scope			remove
+worktree	C:/Users/nickh/writer-studio/.claude/typewriter-scope-parks	typewriter-scope-parks			remove
+worktree	C:/Users/nickh/writer-studio/.claude/typewriter-scope-plan	typewriter-scope-plan			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/vocab-census	vocab-census			remove
+worktree	C:/Users/nickh/writer-studio/.claude/vw1-rail	vw1-rail			remove
+worktree	C:/Users/nickh/writer-studio/.claude/w4-help-me-choose	w4-help-me-choose			remove
+worktree	C:/Users/nickh/writer-studio/.claude/word-diet	word-diet			remove
+worktree	C:/Users/nickh/writer-studio/.claude/word-diet-layouts	word-diet-layouts			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/a11y-signin	a11y-signin			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/a11y-tutor-live-region	a11y-tutor-live-region			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/abq-pair	abq-pair			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/abq-pair2	abq-pair2			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/add-scenes	polish10-14-rail-label-r			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/arrival-signin	arrival-signin-screen			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/b10				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/b101-pair	b101-pair			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/b11				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/b11-pair	b11-pair			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/b12				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/b13				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/b14				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/b15				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/b16				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/b17	walk-open-select			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/b18				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/b5				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/b6				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/b7				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/b8				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/b9				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/batch-nine-integ	batch-nine-integ			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/batch-pair				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bc-alone				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bc-ship				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bc-ship2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bc-ship3				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bcm				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bcm2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/behb				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bg	box-token-hash			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bg-starters-park	bg-starters-park			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bg1-beginnings	bg1-beginnings			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bg2-beginnings-seen	bg2-beginnings-seen			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bgp				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/big-projects-1a	big-projects-1a			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/big-projects-2	big-projects-2			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/big-projects-plan	big-projects-plan			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bis				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bis-ghost				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bis-rhz				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bis-tfo				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bisect-pre-fx10-2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/board-click-to-create	board-click-to-create			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/board-context-menu	board-context-menu			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bp1a				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bp2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bp2b				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bp3				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bp3b				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bp3c				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bp3d				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bpc				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bpc2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bpd				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bpm				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/bship				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/ca-ship				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/ca2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/card-pair				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/card-resize-axis	card-resize-axis			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/cb2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/cb4				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/cbb				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/cbf				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/cbg				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/cbp				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/cf-ship				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/cfo				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/cfpt				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/cfs				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/ci-actions	ci/actions-harness-r4			keep(active <48h)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/clc				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/clca				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/connector-a	connector-a			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/connector-b	connector-b			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/connector-b-build	connector-b-build			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/cp-fix				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/cp-ship				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/csp-enforce	csp-enforce			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/csp-report-only	csp-report-only			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/cx-green				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/cx-red				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/cx2-green				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/cx2-red				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/dep-bumps	dep-bumps			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/df1-deflake	df1-deflake			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/dfg				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/dfm				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/dfo				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/dg-base				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/dgf				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/dm				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/dm2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/dmp				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/dp-main				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/drafts-pair	drafts-pair			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/drawer-ghost-fix	drawer-ghost-fix			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/dwi				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/dws				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/e3-park	e3-park			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/e3p				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/elc				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/elc2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/empty-line-caret	empty-line-caret			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/exp1-amend	plan-exp1-amend			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/exp1-connect	exp1-connect-text			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/exp1-q1	plan-exp1-q1			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/exp1-r2	exp1-connect-text-r2			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/exp1-vt	exp1-visibletext			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/fci				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/fix-rz				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/fix-signin-live	fix-signin-live-double			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/fix-tutor-sr-check	fix-tutor-sr-check			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/fix-tw				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/fix-tw2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/fix-tw3				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/fix-tw4				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/fl3				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/flux-inputs	flux-inputs			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/flux-v2	flux-v2			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/fp				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/fsp				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/fts				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/fv				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/fv2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/fv3				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/fv4				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/fx11-boards-hands	fx11-boards-hands			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/fx13-board-in-the-room	fx13-board-in-the-room			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/fx17-s3-fixture	fx17-s3-fixture			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/fxt1				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/fxt2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/fxt3				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/gg				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/gg2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/glue-9	glue-9			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/gm2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/gm3				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/gmf				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/guest-client	guest-client			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/guest-client-r2	guest-client-r2			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/guest-client-r3	guest-client-r3			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/guest-client-r4	drafts-integrity			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/guest-login	guest-login			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/guest-run	guest-run-local			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/guided-w1	guided-w1			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/guided-w3	guided-w3			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/harness-expired-checks	harness-expired-checks			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/hb				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/hb2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/hb3				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/hbf				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/hbh				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/hbm				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/hbn				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/hbo				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/hbq				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/hec				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/hs				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/i112d				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/i84-control				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/icp				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/item138-pin	item138-pin-tall			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/item157-ink-sheet	item157-ink-sheet			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/item163-in	item163-location-in			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/item171-typewriter-scope	item171-typewriter-scope			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/item171b-board-ink	item171b-board-ink			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/item176-picker	item176-picker-says-board			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/item196-download-wait	item196-download-wait			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/item204-storage	item204-proofing-storage			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/item82-fixb-j5-seam	item82-fixb-j5-seam			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/item84-roster	item84-roster			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/k10-reanchor	k10-reanchor			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/lane3				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/lbs				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/ledger-desk				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/logout-flush	logout-flush			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/lookb				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/m3-rhizome-roams	m3-rhizome-roams			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/main-ctl				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/main-fcs				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/obd-red				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/outline-blur-data	outline-blur-data			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/p1-b7				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/p1-fd				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/p1-pair				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/p12-r2	ink-linux-text-probe			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/page-scroll-return	page-scroll-return			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/page-templates	page-templates			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/pb1-born-on-first-word	pb1-born-on-first-word			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/phase1-drawers	phase1-drawers			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/plan-144-amend	plan-144-amend			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/plan-144-amend3	plan-144-amend3			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/plan-144-nest	plan-144-nest			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/plan-165-amend	plan-165-amend			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/plan-166-guideline	plan-166-guideline			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/plan-168-perm	plan-168-delete-permanently			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/plan-171b-pass	plan-171b-design-pass			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/plan-171b-revise	plan-171b-revise-v2			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/plan-180-pass	plan-180-carry-pass			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/plan-181-pass	plan-181-file-pass			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/plan-186-menu	plan-186-base-menu			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/plan-204-proofing	plan-204-proofing			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/plan-207-amend	plan-207-amend			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/plan-207-fonts	plan-207-fonts			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/plan-guest-login	plan-guest-login			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/plan-library-shelf-journal	plan-library-shelf-journal			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/plan-menus-rulings	plan-menus-rulings			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/plan-vw2-rows	plan-vw2-rows			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/polish-10-ink	polish-10-ink			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/polish10	polish10-ink			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/ps-green				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/ps-main				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/ps-ship				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/psr				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/psr-c				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/psr-m				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/ptf				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/ptg				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/pto				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/pub0-survey	pub0-survey			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/pub1-skeleton	pub1-skeleton			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/pw1-boards-connected	pw1-boards-connected			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/pw1-errata	pw1-errata			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/pw1-records	pw1-records			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/pw2-nesting-transfer	pw2-nesting-transfer			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/rd				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/resume-on-open	resume-on-open			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/resume-plan	resume-on-open-plan			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/revise-spelling	revise-spelling			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/rgb				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/rgm				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/rhizome-sprout	rhizome-sprout			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/rhz-pair	rhz-pair			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/rhz-pair2	rhz-pair2			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/rhz-pair3				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/ri				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/ro				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/ro2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/rr-green				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/rr-red				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/rr2-green				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/rr2-red				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/run-drawers				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/run-drawers2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/run-exp1				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/run-splash	run-splash			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/run-splash2	run-splash2			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/rv	revert-tutor-drawer-mirror			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/rz				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/rz2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/sb-min				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/sb-min2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/sb-min3				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/sb-min4				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/sb5				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/sb6				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/sb7				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/sb8				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/sbf				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/sc2-the-clock	sc2-s5-memo			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/scenes-old				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/server-hardening	server-hardening			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/sh-pair				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/sh-r6				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/sh-tip				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/shipx				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/shp				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/si				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/si2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/si3				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/si4				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/splash-pair	splash-pair			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/spt				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/ss				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/ss2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/ss3				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/ssf				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/sync-integrity	sync-integrity			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/sync-proof-words	sync-proof-words			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/ta2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tb				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tb2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tc2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tdp				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/templates-plan	page-templates-plan			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tf-ctl				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tfo-pair				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tfo-ship				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tl-e				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tl-e2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tl-f				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tl-g				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tl-prof				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tl9				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tl92				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tlf				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tlg				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tlm				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tlp				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tmpl-pair	tmpl-pair			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tp				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tp2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tp3				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tp4				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tp5				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tsl				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tsp				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tu				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tu2-listener	tu2-listener			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tu5-bible	tu5-bible			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tutor20-live-defect	tutor20-live-defect			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tw				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/tw2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/vw1-rail-brief	plan-vw1-rail-brief			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/w1-board-reds	w1-board-reds			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/w1-red				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/w5-gaps-rewards	w5-gaps-rewards			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/walk-settle	walk-settle			remove
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/wd2				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/wd3				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/wd4				keep(detached)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/wf_5666b1ab-1d7-2	bm1-board-modes			keep(dirty)
+worktree	C:/Users/nickh/writer-studio/.claude/worktrees/wf_ae92f9fa-728-1	e1-words-out			keep(dirty)
+worktree	C:/Users/nickh/writer-studio-acct	account-tools			remove
+worktree	C:/Users/nickh/writer-studio-bctx	cursor/board-context-menu			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-bigproj	cursor/big-projects-mockup			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-board-start	cursor/board-start			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-boardkinds	cursor/board-kinds-mockup			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-cardport	in-app-copy-format			remove
+worktree	C:/Users/nickh/writer-studio-caret	cursor/empty-line-caret			remove
+worktree	C:/Users/nickh/writer-studio-connector	cursor/connector			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-cursor	cursor/rail-mockup			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-d82				keep(detached)
+worktree	C:/Users/nickh/writer-studio-df11	df1-1-rider			remove
+worktree	C:/Users/nickh/writer-studio-drawer-handles	cursor/drawer-handles			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-flux-flicker	cursor/flux-flicker-mockup			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-flux-glitch	cursor/flux-glitch-shipped			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-fluxv2	cursor/flux-v2-mockup			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-fonts	cursor/font-choices			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-fx17	page-size-r3			remove
+worktree	C:/Users/nickh/writer-studio-fx18	fx18-chrome-aligned			remove
+worktree	C:/Users/nickh/writer-studio-graftdoors	cursor/graft-doors-mockup			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-hb2	hb2-lite-landing			remove
+worktree	C:/Users/nickh/writer-studio-help	cursor/help-buttons			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-machina	cursor/machina-progress-mockup			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-machinav1	cursor/machina-v1-mockup			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-nomad	cursor/nomad-progress-mockup			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-nomadv1	cursor/nomad-v1-mockup			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-nomadv2	cursor/nomad-v2-mockup			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-p10	polish10-board-r6			keep(active <48h)
+worktree	C:/Users/nickh/writer-studio-p10a	polish10-anchor-r7			keep(active <48h)
+worktree	C:/Users/nickh/writer-studio-p10c	polish10-caret-r7			keep(active <48h)
+worktree	C:/Users/nickh/writer-studio-p10d	polish10-linkdock-r10			keep(active <48h)
+worktree	C:/Users/nickh/writer-studio-p10f	polish10-format-r9			keep(active <48h)
+worktree	C:/Users/nickh/writer-studio-p10f-red				keep(detached)
+worktree	C:/Users/nickh/writer-studio-p10g	caret-reset-r1			keep(dirty)
+worktree	C:/Users/nickh/writer-studio-p10h	polish10-hint			remove
+worktree	C:/Users/nickh/writer-studio-p10k	polish10-card			keep(active <48h)
+worktree	C:/Users/nickh/writer-studio-p10p	polish10-page-r9			keep(active <48h)
+worktree	C:/Users/nickh/writer-studio-p10r	polish10-recede			remove
+worktree	C:/Users/nickh/writer-studio-p10s	polish10-scrollbar			remove
+worktree	C:/Users/nickh/writer-studio-p10t	polish10-timing			remove
+worktree	C:/Users/nickh/writer-studio-pagesize	cursor/page-size-mockup			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-r7	cursor/r7-mockup			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-rhizome	rhizome-flash-fade			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-rhizome-sprout	cursor/rhizome-sprout			keep(dirty)
+worktree	C:/Users/nickh/writer-studio-scrollbar-mockup	cursor/scrollbar-mockup			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-sidepanels	cursor/side-panels-mockup			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-templates-mockup	cursor/templates-mockup			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-templates2	cursor/templates			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-theme-words-mockup	cursor/theme-words-mockup			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-themepick	cursor/theme-picker-mockup			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-typewriter-mockup	cursor/typewriter-mockup			keep(unmerged)
+worktree	C:/Users/nickh/writer-studio-word-diet-ui	cursor/word-diet-ui			keep(unmerged)
+worktree	C:/Users/nickh/wrizo-hb1	hb1-threshold			remove
+worktree	C:/Users/nickh/ws-c13-1	c13-1-branches			keep(dirty)
+worktree	C:/Users/nickh/ws-cleanup	cleanup/survey-r3			keep(unmerged)
+worktree	C:/Users/nickh/ws-polish	polish/arbor-ground			keep(unmerged)
+worktree	C:/Users/nickh/ws-tools	tools-12g-rerun			keep(active <48h)
