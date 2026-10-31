@@ -53,8 +53,21 @@ ok('V3 the day CSS draws the four classes at 1 / 1.5 / 2 / 2.5 px (spec: 1-2.5)'
 
 ok('V4 no flag (no document): the variation is off', variationOn() === false, '');
 const rf = fs.readFileSync(new URL('../../src/components/RhizomeField.tsx', import.meta.url), 'utf8');
-ok('V4 RhizomeField off the flag: segmentsFor on the plain `frac`, and the original two settled paths',
-  rf.includes('segmentsFor(plan, variation ? pacedFrac(pageSeed, shownLap, frac) : frac)')
+// PARKED 2026-10-31 (SUPERSEDED: r5 §8b, the rhizome's life - the drawn fraction is `drawFrac` now, which IS `frac` whenever the life is off;
+// the check pinned the old spelling of the same call). Original, verbatim:
+// ok('V4 RhizomeField off the flag: segmentsFor on the plain `frac`, and the original two settled paths',
+//   rf.includes('segmentsFor(plan, variation ? pacedFrac(pageSeed, shownLap, frac) : frac)')
+//   && rf.includes('<path className="wz-rhizome-seg" d={pathOf(fadingSettled, false)} />')
+//   && rf.includes('<path className="wz-rhizome-seg" data-thick="true" d={pathOf(fadingSettled, true)} />'), '');
+// SUCCESSOR V4b: off the flag the life is null - so drawFrac is the plain frac, the plan is today's lapPlan, the survivor is today's, and the
+// two settled paths are the original ones.
+ok('V4b RhizomeField off the flag: no life, drawFrac is the plain `frac`, lapPlan + survivor as today, the original two settled paths',
+  rf.includes('const life = active && isArbor2() ? lifeOf(openKey, lap) : null;')
+  && rf.includes('const eff = life ? effective(life, lap, frac) : null;')
+  && rf.includes('const drawFrac = eff ? eff.frac : frac;')
+  && rf.includes('segmentsFor(plan, variation ? pacedFrac(pageSeed, shownLap, drawFrac) : drawFrac)')
+  && rf.includes('(lifeOn ? lifePlan(m.geo, lifeSeed, shownVisit) : lapPlan(m.geo, pageSeed, shownVisit))')
+  && rf.includes('const seedRoot = !lifeOn && flashFading && plan ? pickSurvivor(')
   && rf.includes('<path className="wz-rhizome-seg" d={pathOf(fadingSettled, false)} />')
   && rf.includes('<path className="wz-rhizome-seg" data-thick="true" d={pathOf(fadingSettled, true)} />'), '');
 

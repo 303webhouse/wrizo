@@ -4,6 +4,7 @@
 //       exactly - so the browser check and the clip it measures cannot drift apart in format
 import { holePath, sheetMask, vignetteMask, featherFor, FEATHER, SUN_EDGE } from '../../src/arbor2/paper.ts';
 import { zoomProof, holeOf, stopsOf } from '../frames/arbor2.mjs';
+import fs from 'node:fs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
@@ -57,9 +58,15 @@ const box = { l: 187, t: 107, r: 1179.5, b: 678 }, W = box.r - box.l, H = box.b 
 const sg = stopsOf(sheetMask(W, H, F)), vg = stopsOf(vignetteMask(box, F));
 const sA = (x, y) => sg.reduce((m, g) => m * at(g.stops, g.axis === 'x' ? x - box.l : y - box.t), 1);
 const vA = (x, y) => 1 - vg.reduce((m, g) => m * (1 - at(g.stops, g.axis === 'x' ? x : y)), 1);
-ok('P4 the feather is FEATHER on a full page, and shrinks on a sheet too small to hold two', F === FEATHER && featherFor(100, 60) === 15 && featherFor(4, 4) === 1, JSON.stringify({ F }));
-ok('P4 the sheet is 0 at the middle of each side and 1 in its core', [sA(box.l, 400), sA(box.r, 400), sA(700, box.t), sA(700, box.b)].every((v) => v === 0)
-  && [sA(box.l + F, box.t + F), sA(box.r - F, box.b - F), sA(700, 400)].every((v) => v === 1), '');
+// PARKED 2026-10-31 (SUPERSEDED: spec §10b, Fable Oct 31 - "No diffused or vignetted paper edges on the zoomed page": FEATHER is 0 and the
+// zoomed sheet is a hard rectangle with no mask). Original, verbatim:
+// ok('P4 the feather is FEATHER on a full page, and shrinks on a sheet too small to hold two', F === FEATHER && featherFor(100, 60) === 15 && featherFor(4, 4) === 1, JSON.stringify({ F }));
+// ok('P4 the sheet is 0 at the middle of each side and 1 in its core', [sA(box.l, 400), sA(box.r, 400), sA(700, box.t), sA(700, box.b)].every((v) => v === 0)
+//   && [sA(box.l + F, box.t + F), sA(box.r - F, box.b - F), sA(700, 400)].every((v) => v === 1), '');
+// SUCCESSOR P4b: no feather on any sheet, and paper.ts writes the sheet's mask only when there is a feather (so the r5 sheet carries none).
+const paperSrc = fs.readFileSync(new URL('../../src/arbor2/paper.ts', import.meta.url), 'utf8');
+ok('P4b no feather (FEATHER 0, on a full page and a small one), and a featherless sheet carries no mask', FEATHER === 0 && F === 0 && featherFor(100, 60) === 0 && featherFor(4, 4) === 0
+  && paperSrc.includes("(f > 0 ? `mask-image:${sheetMask(w, h, f)};mask-composite:intersect` : '')"), JSON.stringify({ FEATHER, F }));
 let worst = 0;
 for (let i = 0; i <= 40; i++) for (let j = 0; j <= 40; j++) { const x = box.l + W * i / 40, y = box.t + H * j / 40; worst = Math.max(worst, Math.abs(sA(x, y) + vA(x, y) - 1)); }
 ok('P4 vignette + paper = 1 everywhere on the page (41 x 41), corners included', worst < 1e-9, String(worst));
