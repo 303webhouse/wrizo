@@ -1,0 +1,22 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=12 tree=175ab289 bundle=index-DzynPyN7.js/949495b out=C:/Users/nickh/t12c-box/listd
+(node:29252) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[01/12] OK        exit=0   11s box-holder.mjs :: BOX-HOLDER VERIFY: PASS (19 checks)
+[02/12] OK        exit=0   93s box-token-hash.mjs :: BOX-TOKEN-HASH VERIFY: PASS (12 checks)
+[03/12] OK        exit=0   60s glitch-meter.mjs :: ROWS-SHADOW VERIFY: PASS (27 renders checked, shadow == DOM on every one) ;; GLITCH-METER VERIFY: PASS (28 checks)
+[04/12] OK        exit=0    2s item139.mjs :: ITEM139 VERIFY: PASS (10 checks)
+[05/12] OK        exit=0    0s item140.mjs :: ITEM140 VERIFY: PASS (13 checks)
+[06/12] OK        exit=0    4s item99.mjs :: ITEM99 VERIFY: PASS (41 checks)
+[07/12] OK        exit=0   27s polish10-12-part2.mjs :: POLISH10-12 PART 2 VERIFY: PASS (21 checks)
+[08/12] OK        exit=0   20s rhizome-goal.mjs :: RHIZOME-GOAL-CORE VERIFY: PASS (33 checks) ;; RHIZOME-GOAL VERIFY: PASS (10 checks)
+[09/12] FAIL      exit=1   27s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: FAIL - 1/14 failed
+[10/12] OK        exit=0   47s splash.mjs :: SPLASH VERIFY: PASS (90 checks)
+[11/12] OK        exit=0   12s typewriter-fade.mjs :: TYPEWRITER-FADE VERIFY: PASS (5 checks)
+[12/12] OK        exit=0   27s typing-latency-scroll.mjs :: ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one) ;; TYPING-LATENCY-SCROLL VERIFY: PASS (10 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 11/12 of 12 returned a passing verdict
+  FAIL: rhizome-latency.mjs — full output at C:\Users\nickh\t12c-box\listd\rhizome-latency.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=175ab289 bundle=index-DzynPyN7.js/949495b

@@ -1,0 +1,25 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=9 tree=75214627+1dirty bundle=index-CfrgHszw.js/953356b out=C:/Users/nickh/t12b-reds/p3-tools/default
+(node:1336) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[01/9] OK        exit=0   15s b2-1.mjs :: ROWS-SHADOW VERIFY: PASS (9 renders checked, shadow == DOM on every one) ;; B2-1 VERIFY: PASS (28 checks)
+[02/9] FAIL      exit=1    2s guided-add-scenes.mjs :: GUIDED-ADD-SCENES VERIFY: FAIL - 1/74 failed
+[03/9] NOVERDICT exit=1    1s guided-w1.mjs :: (no verdict — see C:\Users\nickh\t12b-reds\p3-tools\default\guided-w1.mjs.default.txt)
+[04/9] FAIL      exit=1    2s guided-w5.mjs :: GUIDED-W5 VERIFY: FAIL - 1/75 failed
+[05/9] OK        exit=0   40s item121.mjs :: ROWS-SHADOW VERIFY: PASS (8 renders checked, shadow == DOM on every one) ;; ITEM121 VERIFY: PASS (44 checks)
+[06/9] FAIL      exit=1  100s item126.mjs :: ROWS-SHADOW VERIFY: PASS (94 renders checked, shadow == DOM on every one) ;; ITEM126 VERIFY: FAIL — 6/42 failed
+[07/9] NOVERDICT exit=1    1s item224a-sync-integrity.mjs :: (no verdict — see C:\Users\nickh\t12b-reds\p3-tools\default\item224a-sync-integrity.mjs.default.txt)
+[08/9] FAIL      exit=1   51s tu2.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; TU2 VERIFY: FAIL — 1/92 failed
+[09/9] FAIL      exit=1   38s tu5.mjs :: TU5 VERIFY: FAIL — 1/84 failed
+
+SUITE DONE HARNESS_PARKED=unset — 2/9 of 9 returned a passing verdict
+  FAIL: guided-add-scenes.mjs — full output at C:\Users\nickh\t12b-reds\p3-tools\default\guided-add-scenes.mjs.default.txt
+  NOVERDICT: guided-w1.mjs — full output at C:\Users\nickh\t12b-reds\p3-tools\default\guided-w1.mjs.default.txt
+  FAIL: guided-w5.mjs — full output at C:\Users\nickh\t12b-reds\p3-tools\default\guided-w5.mjs.default.txt
+  FAIL: item126.mjs — full output at C:\Users\nickh\t12b-reds\p3-tools\default\item126.mjs.default.txt
+  NOVERDICT: item224a-sync-integrity.mjs — full output at C:\Users\nickh\t12b-reds\p3-tools\default\item224a-sync-integrity.mjs.default.txt
+  FAIL: tu2.mjs — full output at C:\Users\nickh\t12b-reds\p3-tools\default\tu2.mjs.default.txt
+  FAIL: tu5.mjs — full output at C:\Users\nickh\t12b-reds\p3-tools\default\tu5.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=75214627+1dirty bundle=index-CfrgHszw.js/953356b

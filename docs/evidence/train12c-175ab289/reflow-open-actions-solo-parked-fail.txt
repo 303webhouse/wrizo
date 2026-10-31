@@ -1,0 +1,29 @@
+PASS O [Arbor open 1]: the stored x / y / h are exactly the seed's  [{"id":"ro-1","x":0.05,"y":0.05,"h":0.05,"keys":"deckStep,h,id,kind,text,w,x,y,z"},{"id":"ro-2","x":0.05,"y":0.13,"h":0.05,"keys":"deckStep,h,id,kind,text,w,x,y,z"},{"id":"ro-3","x":0.4,"y":0.05,"h":0.05,"keys":"deckStep,h,id,kind,text,w,x,y,z"}]
+PASS O [Arbor open 2]: the stored x / y / h are exactly the seed's  [{"id":"ro-1","x":0.05,"y":0.05,"h":0.05,"keys":"deckStep,h,id,kind,text,w,x,y,z"},{"id":"ro-2","x":0.05,"y":0.13,"h":0.05,"keys":"deckStep,h,id,kind,text,w,x,y,z"},{"id":"ro-3","x":0.4,"y":0.05,"h":0.05,"keys":"deckStep,h,id,kind,text,w,x,y,z"}]
+PASS O [Arbor open 3]: the stored x / y / h are exactly the seed's  [{"id":"ro-1","x":0.05,"y":0.05,"h":0.05,"keys":"deckStep,h,id,kind,text,w,x,y,z"},{"id":"ro-2","x":0.05,"y":0.13,"h":0.05,"keys":"deckStep,h,id,kind,text,w,x,y,z"},{"id":"ro-3","x":0.4,"y":0.05,"h":0.05,"keys":"deckStep,h,id,kind,text,w,x,y,z"}]
+PASS O [Arbor open 4]: the stored x / y / h are exactly the seed's  [{"id":"ro-1","x":0.05,"y":0.05,"h":0.05,"keys":"deckStep,h,id,kind,text,w,x,y,z"},{"id":"ro-2","x":0.05,"y":0.13,"h":0.05,"keys":"deckStep,h,id,kind,text,w,x,y,z"},{"id":"ro-3","x":0.4,"y":0.05,"h":0.05,"keys":"deckStep,h,id,kind,text,w,x,y,z"}]
+PASS O [Arbor open 5]: the stored x / y / h are exactly the seed's  [{"id":"ro-1","x":0.05,"y":0.05,"h":0.05,"keys":"deckStep,h,id,kind,text,w,x,y,z"},{"id":"ro-2","x":0.05,"y":0.13,"h":0.05,"keys":"deckStep,h,id,kind,text,w,x,y,z"},{"id":"ro-3","x":0.4,"y":0.05,"h":0.05,"keys":"deckStep,h,id,kind,text,w,x,y,z"}]
+PASS O [Arbor]: the open really corrected the layout on screen (the check is not vacuous - a card grew past its seeded h)  grew on 5/5 opens: ro-1:0.1434 ro-2:0.0500 ro-3:0.1434 | ro-1:0.3600 ro-2:0.0500 ro-3:0.3600 | ro-1:0.1434 ro-2:0.0500 ro-3:0.1434 | ro-1:0.3600 ro-2:0.0500 ro-3:0.3600 | ro-1:0.3600 ro-2:0.0500 ro-3:0.3600
+PASS R [Arbor]: on a plain open the row under a grown card is carried clear of it ON SCREEN (rowFit applies on open, never saved)  5/5
+PASS N [Arbor]: no stored card gained a key
+PASS O [Arbor]: 5/5 opens left storage unchanged  5/5
+PASS F [Arbor]: a card's on-screen height is the same with late fonts as with prompt ones  late 0.3600,0.0500,0.3600 / prompt 0.3600,0.0500,0.3600
+PASS F [Arbor]: every card shows all of its words  [0,0,0]
+PASS O [Flux open 1]: the stored x / y / h are exactly the seed's  [{"id":"ro-1","x":0.05,"y":0.05,"h":0.05,"keys":"deckStep,h,id,kind,text,w,x,y,z"},{"id":"ro-2","x":0.05,"y":0.13,"h":0.05,"keys":"deckStep,h,id,kind,text,w,x,y,z"},{"id":"ro-3","x":0.4,"y":0.05,"h":0.05,"keys":"deckStep,h,id,kind,text,w,x,y,z"}]
+PASS O [Flux open 2]: the stored x / y / h are exactly the seed's  [{"id":"ro-1","x":0.05,"y":0.05,"h":0.05,"keys":"deckStep,h,id,kind,text,w,x,y,z"},{"id":"ro-2","x":0.05,"y":0.13,"h":0.05,"keys":"deckStep,h,id,kind,text,w,x,y,z"},{"id":"ro-3","x":0.4,"y":0.05,"h":0.05,"keys":"deckStep,h,id,kind,text,w,x,y,z"}]
+PASS O [Flux]: the open really corrected the layout on screen (the check is not vacuous - a card grew past its seeded h)  grew on 2/2 opens: ro-1:0.1434 ro-2:0.0500 ro-3:0.1434 | ro-1:0.1434 ro-2:0.0500 ro-3:0.1434
+PASS R [Flux]: on a plain open the row under a grown card is carried clear of it ON SCREEN (rowFit applies on open, never saved)  2/2
+PASS N [Flux]: no stored card gained a key
+PASS O [Flux]: 2/2 opens left storage unchanged  2/2
+PASS F [Flux]: a card's on-screen height is the same with late fonts as with prompt ones  late 0.1434,0.0500,0.1434 / prompt 0.1434,0.0500,0.1434
+PASS F [Flux]: every card shows all of its words  [2,0,2]
+PASS O [Machina open 1]: the stored x / y / h are exactly the seed's  [{"id":"ro-1","x":0.05,"y":0.05,"h":0.05,"keys":"deckStep,h,id,kind,text,w,x,y,z"},{"id":"ro-2","x":0.05,"y":0.13,"h":0.05,"keys":"deckStep,h,id,kind,text,w,x,y,z"},{"id":"ro-3","x":0.4,"y":0.05,"h":0.05,"keys":"deckStep,h,id,kind,text,w,x,y,z"}]
+PASS O [Machina open 2]: the stored x / y / h are exactly the seed's  [{"id":"ro-1","x":0.05,"y":0.05,"h":0.05,"keys":"deckStep,h,id,kind,text,w,x,y,z"},{"id":"ro-2","x":0.05,"y":0.13,"h":0.05,"keys":"deckStep,h,id,kind,text,w,x,y,z"},{"id":"ro-3","x":0.4,"y":0.05,"h":0.05,"keys":"deckStep,h,id,kind,text,w,x,y,z"}]
+PASS O [Machina]: the open really corrected the layout on screen (the check is not vacuous - a card grew past its seeded h)  grew on 2/2 opens: ro-1:0.4971 ro-2:0.0500 ro-3:0.4971 | ro-1:0.4971 ro-2:0.0500 ro-3:0.4971
+PASS R [Machina]: on a plain open the row under a grown card is carried clear of it ON SCREEN (rowFit applies on open, never saved)  2/2
+PASS N [Machina]: no stored card gained a key
+PASS O [Machina]: 2/2 opens left storage unchanged  2/2
+FAIL F [Machina]: a card's on-screen height is the same with late fonts as with prompt ones  late 0.1434,0.0500,0.1434 / prompt 0.4971,0.0500,0.4971
+PASS F [Machina]: every card shows all of its words  [0,0,0]
+PASS W: after the writer edits a card, the grown card heights ARE stored (the open alone did not save them)  [{"id":"ro-1","x":0.05,"y":0.05,"h":0.36,"keys":"deckStep,h,id,kind,text,w,x,y,z"},{"id":"ro-2","x":0.05,"y":0.44,"h":0.105,"keys":"deckStep,h,id,kind,text,w,x,y,z"},{"id":"ro-3","x":0.4,"y":0.05,"h":0.36,"keys":"deckStep,h,id,kind,text,w,x,y,z"}]
+REFLOW-OPEN VERIFY: FAIL (1 of 28)
