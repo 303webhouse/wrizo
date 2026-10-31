@@ -115,8 +115,8 @@ await withHarness(async (app) => {
     await command('c', 'KeyC', 67, 'copy'); await sleep(200);
     await app.evalJs("(() => { const e = document.querySelector('.forward-only-editor'); e.focus(); const r = document.createRange(); r.selectNodeContents(e); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()");
     await command('v', 'KeyV', 86, 'paste');
-    await sleep(1500);
-    const pageNow = await stored(app, P);
+    // the page autosaves on its own timer (a pasted stretch is in the editor at once, in the stored row a moment later): read the stored row until it holds the words, up to 8s
+    let pageNow = null; for (let i = 0; i < 32; i += 1) { await sleep(250); pageNow = await stored(app, P); if (pageNow && pageNow.text.trimEnd().endsWith('Cartographer of the Well')) break; }
     ok(`${tag} K4: copyable into the page - the reader's stretch copies as its plain words ("${copied}") and pasted into the page it lands as those words`,
       copied === 'Cartographer of the Well' && !!pageNow && pageNow.text.trimEnd().endsWith('Cartographer of the Well'), J({ copied, page: pageNow && pageNow.text.slice(-60), whisper: await app.evalJs("(() => { const w = document.querySelector('.vw-whisper'); return w ? [w.textContent, w.getAttribute('data-shown')] : null; })()"), edTail: await app.evalJs("(document.querySelector('.forward-only-editor')?.innerText || '').slice(-50)") }));
     // K5: one at a time. PARKED VERBATIM (Fable, Oct 28): docking the source REPLACES the card - the reader replaces the Grafts list, so a second Dock control never stands
