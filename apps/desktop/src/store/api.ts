@@ -175,7 +175,14 @@ export async function apiTutorChat(
     // POLISH #10 item 4: and a size span's marks (the same run), and the HALF of a span the delta's tail or the selection's edge cut off - an orphan
     // closing marker, or an opening `[` left without its closer (a typed bracket is stored escaped, so an unescaped `[` here is only ever a span's)
     const orphans = (t: string) => t.replace(/\]\{\.(?:font|size)-[^}\n]{0,80}\}/g, '').replace(/(^|[^\\])\[/g, '$1');
-    const plain = (t: string | undefined) => (t === undefined ? undefined : unescapeTyped(orphans(withoutFontMarks(t))));
+    // The app's own truncation header (`[latest stretch only; ...]` or `[partial: ...]` plus a newline, Tutor.tsx) leads the text it was put on and is NOT the
+    // writer's: orphans() would strip its `[`. A span's `[` is always closed by `]{`, so a first line that is `[...]` and then the newline is the header, never a span.
+    const APP_HEADER = /^\[[^\]\n]*\]\n/;
+    const plain = (t: string | undefined) => {
+      if (t === undefined) return undefined;
+      const head = APP_HEADER.exec(t)?.[0] ?? '';
+      return head + unescapeTyped(orphans(withoutFontMarks(t.slice(head.length))));
+    };
     const res = await postJson('/api/tutor/chat', {
       messages: messages.map((m) => (m.text.includes('{.font-') || m.text.includes('{.size-') ? { ...m, text: withoutFontMarks(m.text) } : m)),
       delta: plain(delta), bible: plain(bible), selection: plain(selection),
