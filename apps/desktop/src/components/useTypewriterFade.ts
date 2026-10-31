@@ -224,22 +224,25 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       cancelAnimationFrame(glideRaf); glideRaf = 0;
       if (glideEnd) { clearTimeout(glideEnd); glideEnd = null; }
     };
+    let userScrolled = false;
+    const onUserScroll = () => { userScrolled = true; };
     const glide = (box: ScrollBox, from: number, to: number) => {
       stopGlide();
+      userScrolled = false;
       const t0 = performance.now();
-      let lastSet = from;
-      const land = () => { stopGlide(); box.setScrollTop(to, false); };
+      const land = () => { stopGlide(); box.setScrollTop(to, false); if (trace) trace.push({ d: 'land', to: Math.round(to), ms: Math.round(performance.now() - t0) }); };
       const tick = () => {
         glideRaf = 0;
         const p = (performance.now() - t0) / LINE_GLIDE_MS;
         if (p >= 1) { land(); return; }
-        // the scroll is not where this glide left it: the writer's own scroll (or the browser's) took over - honoured, as a native smooth scroll's cancel was
-        if (Math.abs(readBox(!!useWindowScroll, container).scrollTop - lastSet) > 2) { stopGlide(); glideAt = 0; return; }
-        lastSet = from + (to - from) * (0.5 - Math.cos(Math.PI * p) / 2);
-        box.setScrollTop(lastSet, false);
+        // the writer's own scroll (wheel, touch, a press on the scrollbar) took over: honoured, as a native smooth scroll's cancel was. A scrollTop that merely is not
+        // where this glide left it is NOT that: the editor's re-render of a typed line drops it (to 0 on the box, 7 runs of 8) and a native smooth scroll rides
+        // it out to its absolute target - so does this one, its next frame sets the absolute position again.
+        if (userScrolled) { if (trace) trace.push({ d: 'abort', to: Math.round(to) }); stopGlide(); glideAt = 0; return; }
+        box.setScrollTop(from + (to - from) * (0.5 - Math.cos(Math.PI * p) / 2), false);
         glideRaf = requestAnimationFrame(tick);
       };
-      glideEnd = setTimeout(() => { glideEnd = null; land(); }, LINE_GLIDE_MS + 40);   // the hard cap: frames or no frames, it has landed by now
+      glideEnd = setTimeout(() => { glideEnd = null; if (userScrolled) { stopGlide(); glideAt = 0; return; } land(); }, LINE_GLIDE_MS + 40);   // the hard cap: frames or no frames, it has landed by now
       glideRaf = requestAnimationFrame(tick);
     };
     // S1 — the fade band (line-height based) and the fresh-page start offset
@@ -478,6 +481,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     container.addEventListener('input', schedule);
     const scrollListenTarget: Window | HTMLElement = useWindowScroll ? window : container;
     scrollListenTarget.addEventListener('scroll', setScrolled, { passive: true });
+    for (const ev of ['wheel', 'touchstart', 'pointerdown']) scrollListenTarget.addEventListener(ev, onUserScroll, { passive: true });
     window.addEventListener('resize', measure);
     measure();
     setScrolled();
@@ -487,6 +491,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       mo.disconnect();
       container.removeEventListener('input', schedule);
       scrollListenTarget.removeEventListener('scroll', setScrolled);
+      for (const ev of ['wheel', 'touchstart', 'pointerdown']) scrollListenTarget.removeEventListener(ev, onUserScroll);
       window.removeEventListener('resize', measure);
       cancelAnimationFrame(raf);
       stopGlide();
