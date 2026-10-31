@@ -1,0 +1,19 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SERIES {"st":870,"caretY":null,"fr":188,"ms":3121,"vis":"visible","focus":true}
+SERIES {"st":995,"caretY":null,"fr":242,"ms":4023,"vis":"visible","focus":true}
+SERIES {"st":995,"caretY":null,"fr":296,"ms":4928,"vis":"visible","focus":true}
+SERIES {"st":995,"caretY":null,"fr":351,"ms":5829,"vis":"visible","focus":true}
+SERIES {"st":995,"caretY":null,"fr":405,"ms":6739,"vis":"visible","focus":true}
+SERIES {"st":995,"caretY":null,"fr":459,"ms":7641,"vis":"visible","focus":true}
+SERIES {"st":995,"caretY":null,"fr":513,"ms":8544,"vis":"visible","focus":true}
+SERIES {"st":995,"caretY":null,"fr":568,"ms":9449,"vis":"visible","focus":true}
+SERIES {"st":995,"caretY":null,"fr":622,"ms":10351,"vis":"visible","focus":true}
+SERIES {"st":995,"caretY":null,"fr":676,"ms":11255,"vis":"visible","focus":true}
+PASS  (premise) [page-size successor] the page is ZOOMED (Typewriter) with the band mask on the page column - its stops resolved - and several lines on screen, the writing line among them  [{"zoom":"true","caret":405,"inEditor":true,"lines":[14,57,101,144,188,231,275,318,362,405],"wi":9,"stops":9}]
+PASS  (premise) [page-size successor] the fade is FULL: at least 3 lines of the history sit inside the band's ramp (strength between .1 and .95), so the order cannot pass on nothing  [{"ramp":[{"y":101,"alpha":0.178,"writing":false},{"y":144,"alpha":0.294,"writing":false},{"y":188,"alpha":0.416,"writing":false},{"y":231,"alpha":0.574,"writing":false},{"y":275,"alpha":0.733,"writing":false},{"y":318,"alpha":0.868,"writing":false}]}]
+PASS  THE ORDER [page-size successor]: going down the history to the writing line, no line is fainter than the older line above it  [{"inversions":[],"lines":[{"y":14,"alpha":0.021,"writing":false},{"y":57,"alpha":0.086,"writing":false},{"y":101,"alpha":0.178,"writing":false},{"y":144,"alpha":0.294,"writing":false},{"y":188,"alpha":0.416,"writing":false},{"y":231,"alpha":0.574,"writing":false},{"y":275,"alpha":0.733,"writing":false},{"y":318,"alpha":0.868,"writing":false},{"y":362,"alpha":1,"writing":false},{"y":405,"alpha":1,"writing":true}]}]
+PASS  THE OLDEST IS THE FAINTEST [page-size successor]: the topmost visible line carries the lowest strength of all, and it is genuinely faded (< 0.5)  [{"top":{"y":14,"alpha":0.021,"writing":false},"zMin":0.021}]
+PASS  THE NEWEST IS WHOLE [page-size successor]: the writing line is fully shown (strength 1)  [{"y":405,"alpha":1,"writing":true}]
+
+TYPEWRITER-FADE VERIFY: PASS (5 checks)

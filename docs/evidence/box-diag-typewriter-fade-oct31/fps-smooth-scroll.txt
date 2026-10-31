@@ -1,0 +1,6 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+FPS {"frames":121,"ms":2006,"fps":60}
+SMOOTH 27px settled in ms: 100
+SMOOTH 136px settled in ms: 207
+SMOOTH 600px settled in ms: 428
