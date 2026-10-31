@@ -1,0 +1,12 @@
+containerimage.digest: sha256:fc3cccdea04203e9f136dfd1ac53bbeb4807d70f68ef7339d587fded98c52a9e
+image push
+
+====================
+Starting Healthcheck
+====================
+
+Path: /healthz
+Retry window: 5m0s
+
+[1/1] Healthcheck succeeded!
+Deploy complete
