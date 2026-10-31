@@ -20,6 +20,7 @@ import { useLexicon } from '../store/themeLexicon';
 import { useDeskLexicon } from '../store/deskLexicon';
 
 import { registerFlush } from '../store/flushRegistry';
+import { wordCount } from '../store/wordCount';
 
 const DRAFT_KEY_PREFIX = 'writer-studio-quick-sprint-draft';
 const AUTOSAVE_MS = 2000;
@@ -27,10 +28,6 @@ const SAVED_STAMP_MS = 2000;
 // Idle nudges (cadence + the canonical v6 pool) live in the shared
 // useIdleNudges hook — the sprint and the HOME gate both mount it.
 
-function wordCount(text: string): number {
-  const trimmed = text.trim();
-  return trimmed ? trimmed.split(/\s+/).length : 0;
-}
 
 function getDraftKey(projectId?: string): string {
   return projectId ? `${DRAFT_KEY_PREFIX}-${projectId}` : DRAFT_KEY_PREFIX;

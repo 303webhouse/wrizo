@@ -1,4 +1,4 @@
-import { closeMark, fontCloseMark, readLead, readMarks, runsOfMark, stripLine, withoutFontMarks, BLOCK_TOKEN } from './markRuns';
+import { closeMark, fontCloseMark, spanCloseMark, readLead, readMarks, runsOfMark, stripLine, withoutFontMarks, BLOCK_TOKEN } from './markRuns';
 
 // AB2 S3 — Draft's tools, operating as markdown conventions directly on
 // `entry.text` (S0's ruling: no separate rich-text state). Pure string
@@ -671,7 +671,13 @@ export function stripMarkdownConventions(text: string): string {
 //      drops one as crossing (a dropped span would leave its marks on the page as text).
 // The selection comes back on the same words (the highlight stays, as the mockup has it). One call is one undo step for the caller.
 
-interface FontLine { lead: number; base: string; faces: (string | null)[]; toBase: number[] }
+// POLISH #10 item 4 (Nick ruled A, Oct 25): the same pick for a SIZE. A character's STYLE is its face and its size; a face pick changes the face and
+// keeps the size, a size pick the other way round, and a stretch of one style is written as ONE span with both classes - so a face span and a size
+// span never cross, and never stack.
+interface Style { face: string | null; points: number | null }
+const NO_STYLE: Style = { face: null, points: null };
+const styleKey = (s: Style): string => `${s.face ?? ''}|${s.points ?? ''}`;
+interface FontLine { lead: number; base: string; faces: (string | null)[]; styles: Style[]; toBase: number[] }
 
 // a line's text with its font marks taken out (`base`), each base character's face, and raw -> base positions
 function readFontLine(line: string): FontLine {
@@ -686,36 +692,37 @@ function readFontLine(line: string): FontLine {
   }
   const toBase: number[] = new Array(rest.length + 1);
   let base = '';
-  const rawFace: (string | null)[] = new Array(rest.length).fill(null);
-  for (const f of fonts) for (let i = f.open + 1; i < f.close; i++) rawFace[i] = f.face ?? null;   // inner spans overwrite outer
-  const faces: (string | null)[] = [];
+  const rawStyle: Style[] = new Array(rest.length).fill(NO_STYLE);
+  // inner spans overwrite outer - each of face and size on its own (a stale tab's face nested inside a size span keeps both)
+  for (const f of fonts) for (let i = f.open + 1; i < f.close; i++) rawStyle[i] = { face: f.face ?? rawStyle[i].face, points: f.points ?? rawStyle[i].points };
+  const styles: Style[] = [];
   for (let i = 0; i < rest.length; i++) {
     toBase[i] = base.length;
     if (isMark[i]) continue;
     base += rest[i];
-    faces.push(rawFace[i]);
+    styles.push(rawStyle[i]);
   }
   toBase[rest.length] = base.length;
-  return { lead, base, faces, toBase };
+  return { lead, base, faces: styles.map((s) => s.face), styles, toBase };
 }
 
-// the stretches of equal non-null face, split so none crosses an emphasis run of `base`
-function fontStretches(base: string, faces: (string | null)[]): Array<{ s: number; e: number; face: string }> {
+// the stretches of equal non-empty style, split so none crosses an emphasis run of `base`
+function fontStretches(base: string, styles: Style[]): Array<{ s: number; e: number; face: Style }> {
   const emph = readMarks(base).filter(r => r.kind !== 'font');
-  const out: Array<{ s: number; e: number; face: string }> = [];
-  const queue: Array<{ s: number; e: number; face: string }> = [];
-  for (let i = 0; i < faces.length;) {
-    const f = faces[i];
+  const out: Array<{ s: number; e: number; face: Style }> = [];
+  const queue: Array<{ s: number; e: number; face: Style }> = [];
+  for (let i = 0; i < styles.length;) {
+    const f = styles[i];
     let j = i + 1;
-    while (j < faces.length && faces[j] === f) j++;
-    if (f) queue.push({ s: i, e: j, face: f });
+    while (j < styles.length && styleKey(styles[j]) === styleKey(f)) j++;
+    if (f.face || f.points != null) queue.push({ s: i, e: j, face: f });
     i = j;
   }
   while (queue.length) {
     const seg = queue.shift()!;
     if (seg.e <= seg.s) continue;
     const cross = emph.find(r => {
-      const ro = r.open, re = r.close + r.mark.length;
+      const ro = r.open, re = r.close + closeMark(r).length;
       return (seg.s < ro && seg.e > ro && seg.e < re) || (seg.s > ro && seg.s < re && seg.e > re);
     });
     if (!cross) {
@@ -727,7 +734,7 @@ function fontStretches(base: string, faces: (string | null)[]): Array<{ s: numbe
       if (/\S/.test(base.slice(s0, e0).replace(/[*_~]/g, ''))) out.push({ s: s0, e: e0, face: seg.face });
       continue;
     }
-    const ro = cross.open, ml = cross.mark.length, rc = cross.close, re = rc + ml;
+    const ro = cross.open, ml = cross.mark.length, rc = cross.close, re = rc + closeMark(cross).length;
     if (seg.s < ro) {                       // starts before the run, ends inside it
       queue.push({ s: seg.s, e: ro, face: seg.face });
       queue.push({ s: ro + ml, e: Math.min(seg.e, rc), face: seg.face });
@@ -740,9 +747,9 @@ function fontStretches(base: string, faces: (string | null)[]): Array<{ s: numbe
 }
 
 // write `base` back with the stretches' marks; `map(p)` gives a base position's place in the result (for the selection)
-function writeFontLine(base: string, stretches: Array<{ s: number; e: number; face: string }>): { rest: string; before: (p: number) => number; atOrBefore: (p: number) => number } {
+function writeFontLine(base: string, stretches: Array<{ s: number; e: number; face: Style }>): { rest: string; before: (p: number) => number; atOrBefore: (p: number) => number } {
   const ins: Array<{ at: number; text: string }> = [];
-  for (const st of stretches) { ins.push({ at: st.s, text: '[' }); ins.push({ at: st.e, text: fontCloseMark(st.face) }); }
+  for (const st of stretches) { ins.push({ at: st.s, text: '[' }); ins.push({ at: st.e, text: spanCloseMark(st.face) }); }
   ins.sort((a, b) => a.at - b.at || (a.text === '[' ? 1 : -1));   // at one position, a closing mark comes before an opening one
   let rest = '';
   let from = 0;
@@ -756,6 +763,17 @@ function writeFontLine(base: string, stretches: Array<{ s: number; e: number; fa
 /** Apply face `slug` (null: the page's or card's own face) to the highlighted text [selStart, selEnd). The selection comes back on the
  *  same words. A collapsed selection changes nothing (the whole-document pick is the host's, not the text's). */
 export function applyFontPick(text: string, selStart: number, selEnd: number, slug: string | null): FormatResult {
+  return applyStylePick(text, selStart, selEnd, (st) => ({ face: slug, points: st.points }));
+}
+
+/** POLISH #10 item 4 (Nick ruled A, Oct 25): apply size `points` (null: the page's or card's own size) to the highlighted text - ONLY to it, even one
+ *  character - keeping each word's face. The selection comes back on the same words; a collapsed selection changes nothing. */
+export function applySizePick(text: string, selStart: number, selEnd: number, points: number | null): FormatResult {
+  return applyStylePick(text, selStart, selEnd, (st) => ({ face: st.face, points }));
+}
+
+// the pick itself: each highlighted character's style changed by `to`, the line written back with one span per stretch of equal style
+function applyStylePick(text: string, selStart: number, selEnd: number, to: (st: Style) => Style): FormatResult {
   const start = Math.min(selStart, selEnd);
   const end = Math.max(selStart, selEnd);
   if (start === end) return { text, start, end };
@@ -772,9 +790,9 @@ export function applyFontPick(text: string, selStart: number, selEnd: number, sl
     const fl = readFontLine(line);
     const a = fl.toBase[sg.a - sg.ls - fl.lead];
     const b = fl.toBase[sg.b - sg.ls - fl.lead];
-    const faces = fl.faces.slice();
-    for (let i = a; i < b; i++) faces[i] = slug;
-    const w = writeFontLine(fl.base, fontStretches(fl.base, faces));
+    const styles = fl.styles.slice();
+    for (let i = a; i < b; i++) styles[i] = to(styles[i]);
+    const w = writeFontLine(fl.base, fontStretches(fl.base, styles));
     out += text.slice(cursor, sg.ls) + line.slice(0, fl.lead) + w.rest;
     const lineStart = out.length - w.rest.length - fl.lead;
     if (newStart < 0) newStart = lineStart + fl.lead + w.atOrBefore(a);
@@ -804,7 +822,37 @@ export function fontFaceAt(text: string, selStart: number, selEnd: number): stri
   return seen.size === 1 ? [...seen][0] : 'mixed';
 }
 
-/** The whole-document (whole-card) pick, as the mockup has it: every font span on the text is removed - the new face is the page's. */
+/** POLISH #10 item 4: the size of the highlighted words - N when every word carries the same span size, null when every word wears the page's (or
+ *  card's) own size, 'mixed' otherwise. A collapsed selection reads null. */
+export function fontSizeAt(text: string, selStart: number, selEnd: number): number | null | 'mixed' {
+  const start = Math.min(selStart, selEnd);
+  const end = Math.max(selStart, selEnd);
+  if (start === end) return null;
+  const seen = new Set<number | null>();
+  for (const sg of selectedSegments(text, start, end)) {
+    let le = text.indexOf('\n', sg.ls);
+    if (le === -1) le = text.length;
+    const fl = readFontLine(text.slice(sg.ls, le));
+    const a = fl.toBase[sg.a - sg.ls - fl.lead];
+    const b = fl.toBase[sg.b - sg.ls - fl.lead];
+    for (let i = a; i < b; i++) if (/[^\s*_~]/.test(fl.base[i])) seen.add(fl.styles[i].points);
+  }
+  if (seen.size === 0) return null;
+  return seen.size === 1 ? [...seen][0] : 'mixed';
+}
+
+/** A size class anywhere in a span's braces: `{.size-14}` AND the combined `{.font-lora .size-14}`, whose `.size-` follows a space (a bare `{.size-` test missed it). */
+const HAS_SIZE_SPAN = /\{[^}\n]*\.size-\d/;
+
+/** The whole-document (whole-card) pick, as the mockup has it: every font span on the text is removed - the new face is the page's.
+ *  POLISH #10 item 4: only the FACES go - a span's size stays (its span keeps only the size class). */
 export function clearFontSpans(text: string): string {
-  return withoutFontMarks(text);
+  if (!HAS_SIZE_SPAN.test(text)) return withoutFontMarks(text);
+  return applyStylePick(text, 0, text.length, (st) => ({ face: null, points: st.points })).text;
+}
+
+/** POLISH #10 item 4: the whole-document (whole-card) SIZE pick - every span's size goes (the new size is the page's); the faces stay. */
+export function clearSizeSpans(text: string): string {
+  if (!HAS_SIZE_SPAN.test(text)) return text;
+  return applyStylePick(text, 0, text.length, (st) => ({ face: st.face, points: null })).text;
 }

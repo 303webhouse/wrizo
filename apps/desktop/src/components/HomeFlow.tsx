@@ -5,6 +5,7 @@ import { apiLogin, apiRegister, type AuthUser } from '../store/api';
 import { generateId, saveJournalEntry } from '../store/persistence';
 import { useIdleNudges } from '../store/idleNudges';
 import type { JournalEntry } from '../types';
+import { wordCount } from '../store/wordCount';
 
 // PARKED — HB1, 2026-07-16 (docs/wrizo-alpha/hb1-threshold-brief.md).
 // App.tsx no longer imports this component; components/Arrival.tsx replaces
@@ -42,10 +43,6 @@ const WORD_GOAL = 50; // lowerable for testing
 
 type Stage = 'landing' | 'writing' | 'reward' | 'account' | 'signin';
 
-function wordCount(text: string): number {
-  const t = text.trim();
-  return t ? t.split(/\s+/).length : 0;
-}
 function firstWords(text: string, n: number): string {
   const w = text.trim().split(/\s+/).filter(Boolean);
   return w.slice(0, n).join(' ') + (w.length > n ? '…' : '');

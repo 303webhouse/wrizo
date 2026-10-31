@@ -38,6 +38,7 @@ import { TEMPLATE_ORDER, type TemplateKey } from './TemplateSketch';
 import { enterPageTypewriter, holdTypewriterPage } from '../store/writingSettings';   // PHASE 1 (S5) / typewriter-scope: per-page typewriter memory
 import type { Scene, ScriptEl, ScriptElType, Project } from '../types';
 import { LocationCrumb } from './LocationCrumb';
+import { wordCount } from '../store/wordCount';
 
 // S1 — the Screenplay Room: a house-native block editor, one styled block per
 // element, ONLY the active element a live contenteditable (the BoardTextBox
@@ -75,10 +76,6 @@ const PLAINTEXT_MODE: 'plaintext-only' | true = (() => {
   }
 })();
 
-function wordCount(text: string): number {
-  const t = text.trim();
-  return t ? t.split(/\s+/).length : 0;
-}
 
 // Shared geometry for both the active and static renders of an element — one
 // function so the two can never drift from each other visually.
