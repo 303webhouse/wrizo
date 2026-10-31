@@ -26,6 +26,9 @@ import { DRAWER_MIN } from '../store/menusDrawers';
 import { getLinkDock, setLinkDock, useLinkDock } from '../store/linkDock';   // POLISH #10 item 24
 import { LinkDockReader } from './LinkDockReader';   // its own line: one-drawer.mjs O6 reads the line above verbatim
 import { TUTOR_STAGE_EVENT } from '../store/tutorStage';
+import { useTheme } from '../store/theme';
+import { isMachina2 } from '../machina2/flag';
+import { isOn as machina2On, subscribeSwitches as machina2Subscribe } from '../machina2/switches';
 
 // TU1 S2/S3/S4/S5 — the Tutor. The sliver, mirrored, on the paper's RIGHT
 // edge — but rendered as TWO separate DeskFrame overlay anchors, not one
@@ -308,6 +311,15 @@ const DRAFT_ASKS: {
   { id: 'stretch', term: 'tutorDraftAskStretch', sendsSelection: true, label: 'tutorDraftAskStretchLabel' },
 ];
 
+// MACHINA v2 MOCKUP (?machina2=1, Machina only; spec §9, Nick's approval of the wording Oct 31 3:22 pm satisfies Fable's ruling 5): the
+// nonfiction asks, after the Draft roster, in the cool-blue outline. Asks only - each press STAGES its words in the composer exactly like the
+// roster's own asks 1-3 (no selection payload); she sends it or not. Off the flag, or with the mockup's "Consultant asks" switch off, absent.
+const MACHINA2_NONFICTION_ASKS = [
+  { id: 'claim', text: 'What is the claim here, and where is the evidence for it?' },
+  { id: 'reader', text: 'Who is the reader, and what do they need first?' },
+  { id: 'term', text: 'Which term is doing two jobs?' },
+] as const;
+
 interface DisplayMessage {
   id: string;
   role: 'writer' | 'tutor';
@@ -499,6 +511,11 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // that is the Counsel hand having content on day one (§4), and it is why only
   // the DESK drawer opens empty.
   const drafting = mode === 'drafting';
+  // MACHINA v2 MOCKUP: the nonfiction asks show under the flag, on Machina, while the mockup's switch is on (in session; re-read on a switch)
+  const tutorTheme = useTheme();
+  const [, setMachina2Tick] = useState(0);
+  useEffect(() => (isMachina2() ? machina2Subscribe(() => setMachina2Tick((x) => x + 1)) : undefined), []);
+  const machina2Asks = isMachina2() && tutorTheme === 'machina' && machina2On('asks');
 
   // THE ARMED SELECTION — the whole of the disclosure's "only then", expressed as
   // a mechanism rather than a rule anyone has to remember. It is FROZEN AT THE
@@ -1275,6 +1292,16 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
                       </button>
                     );
                   })}
+                  {machina2Asks && MACHINA2_NONFICTION_ASKS.map((ask) => (
+                    <button key={ask.id} type="button" className="wz-tutor-draft-ask machina2-ask" data-ask={`nonfiction-${ask.id}`} data-sends-selection="false"
+                      onClick={() => {
+                        if (!drafting) return;
+                        setArmedSelection(null); setSelectionTruncated(false); setSelectionSentWords(0);
+                        setComposerText(ask.text); setStageTick((x) => x + 1);
+                      }}>
+                      {ask.text}
+                    </button>
+                  ))}
                 </div>
               )}
               <div className="wz-tutor-convo-row">
