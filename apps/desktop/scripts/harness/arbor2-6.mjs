@@ -115,11 +115,22 @@ await withHarness(async (app) => {
   // }
   // SUCCESSOR L2d: the same page, night and day - the unframed sheet as L2c, and by day the pergola's light reaches the page's edge and fades
   // out within 24 px, never over the prose column.
+  // PARKED 2026-10-31 (SUPERSEDED, r5, run 41240761804: spec §10b, Fable Oct 31 - "No diffused or vignetted paper edges on the zoomed page"; the sheet is
+  // hard now, and the proof is zoomProof V6 (scripts/frames/arbor2.mjs; V5 kept there as zoomProofV5)). Original, verbatim:
+  // for (const room of ['Night', 'Day']) {
+  //   await pickBar(app, room); await sleep(500);
+  //   const z = await app.evalJs(`(${zoomProof.toString()})(${holeOf.toString()}, ${stopsOf.toString()})`);
+  //   ok(`L2d [${room.toLowerCase()}] zoomed Free Write: a whole paper sheet with no visible edge behind the visible page (above the progress row)${room === 'Day' ? ', and the light has a 24 px soft edge, never over the prose' : ''}`,
+  //     zoomed && !!z && z.pass && z.sheet && z.bare && z.edgeless && z.whole && z.seamless && (room === 'Day' ? z.sunEdge === true && z.proseMax === 0 : z.sunEdge === null), JSON.stringify({ zoomed, z }));
+  //   await snap(app, `item6-${room.toLowerCase()}-zoomed-freewrite`);
+  // }
+  // SUCCESSOR L2f: the same page, night and day - a HARD, unframed sheet exactly over the visible page, the vignette's hole hard over it, and
+  // by day the pergola's 24 px soft edge, never over the prose, and nothing on the count row.
   for (const room of ['Night', 'Day']) {
     await pickBar(app, room); await sleep(500);
     const z = await app.evalJs(`(${zoomProof.toString()})(${holeOf.toString()}, ${stopsOf.toString()})`);
-    ok(`L2d [${room.toLowerCase()}] zoomed Free Write: a whole paper sheet with no visible edge behind the visible page (above the progress row)${room === 'Day' ? ', and the light has a 24 px soft edge, never over the prose' : ''}`,
-      zoomed && !!z && z.pass && z.sheet && z.bare && z.edgeless && z.whole && z.seamless && (room === 'Day' ? z.sunEdge === true && z.proseMax === 0 : z.sunEdge === null), JSON.stringify({ zoomed, z }));
+    ok(`L2f [${room.toLowerCase()}] zoomed Free Write: a hard, unframed paper sheet behind the visible page (above the progress row), the vignette's hole hard${room === 'Day' ? ', and the light has a 24 px soft edge, never over the prose or the count' : ''}`,
+      zoomed && !!z && z.pass && z.sheet && z.bare && z.hard && z.seamless && (room === 'Day' ? z.sunEdge === true && z.proseMax === 0 : z.sunEdge === null), JSON.stringify({ zoomed, z }));
     await snap(app, `item6-${room.toLowerCase()}-zoomed-freewrite`);
   }
 

@@ -60,17 +60,40 @@ const pairs = [
   ['day chrome text (#33401F on plaster #F1EAD8)', '#33401F', '#F1EAD8', 4.5],
   ['day chrome text, late plaster (#33401F on #EEE2C8)', '#33401F', '#EEE2C8', 4.5],
   ['day text on a surface (#33401F on #E8DFC8)', '#33401F', '#E8DFC8', 4.5],
-  ['day text on honey wood (#33401F on #C9A46B)', '#33401F', '#C9A46B', 4.5],
-  ['day quiet (#5E6A3F on plaster)', '#5E6A3F', '#F1EAD8', 4.5],
-  ['day quiet, late plaster (#5E6A3F on #EEE2C8)', '#5E6A3F', '#EEE2C8', 4.5],
+  // PARKED 2026-10-31 (SUPERSEDED: arbor2-1 C1 on the r5 build, run 41240761804 - honey wood is no longer the raised colour under text, and the
+  // quiet text is #56623A; these rows measured the spec's values). Original, verbatim:
+  // ['day text on honey wood (#33401F on #C9A46B)', '#33401F', '#C9A46B', 4.5],
+  // ['day quiet (#5E6A3F on plaster)', '#5E6A3F', '#F1EAD8', 4.5],
+  // ['day quiet, late plaster (#5E6A3F on #EEE2C8)', '#5E6A3F', '#EEE2C8', 4.5],
+  // SUCCESSORS: the names floor (7:1) on every day ground, and r5's quiet text and guide on plaster, late plaster, surfaces and raised.
+  ['day names (#33401F) on raised #F6F1E4, names floor', '#33401F', '#F6F1E4', 7],
+  ['day names (#33401F) on surfaces #E8DFC8, names floor', '#33401F', '#E8DFC8', 7],
+  ['day names (#33401F) on late plaster #EEE2C8, names floor', '#33401F', '#EEE2C8', 7],
+  ['day quiet (#56623A on plaster)', '#56623A', '#F1EAD8', 4.5],
+  ['day quiet, late plaster (#56623A on #EEE2C8)', '#56623A', '#EEE2C8', 4.5],
+  ['day quiet on surfaces (#56623A on #E8DFC8)', '#56623A', '#E8DFC8', 4.5],
+  ['day quiet on raised (#56623A on #F6F1E4)', '#56623A', '#F6F1E4', 4.5],
+  ['day guide on surfaces (#4F6B2C on #E8DFC8)', '#4F6B2C', '#E8DFC8', 4.5],
+  ['day guide on raised (#4F6B2C on #F6F1E4)', '#4F6B2C', '#F6F1E4', 4.5],
   ['day guide (leaf #4F6B2C on plaster)', '#4F6B2C', '#F1EAD8', 4.5],
   ['drawer heading, night (text-mid #B5A998 on #1B120C)', '#B5A998', '#1B120C', 4.5],
   ['drawer heading, day (#33401F on #E8DFC8)', '#33401F', '#E8DFC8', 4.5],
   ['current-cloth mark (walnut rule under brass) on the day surface', '#2B1D12', '#E8DFC8', 3],
+  // 'where you are' as TEXT (--accent-rest): olive lit for the dark, deepened for the plaster (frames run 41241222600: #6B7A3A as text is 3.93 / 3.9)
+  ['night where-you-are text (#85914C on the room #120A06)', '#85914C', '#120A06', 4.5],
+  ['night where-you-are text (#85914C on the bars #1B120C)', '#85914C', '#1B120C', 4.5],
+  ['night where-you-are text (#85914C on raised #261A12)', '#85914C', '#261A12', 4.5],
+  ['day where-you-are text (#55612D on plaster)', '#55612D', '#F1EAD8', 4.5],
+  ['day where-you-are text (#55612D on surfaces #E8DFC8)', '#55612D', '#E8DFC8', 4.5],
+  ['day where-you-are text (#55612D on raised #F6F1E4)', '#55612D', '#F6F1E4', 4.5],
+  ['crumb separator (quiet #B9AA8C on the bar #1B120C)', '#B9AA8C', '#1B120C', 4.5],
+  ['day ? mark (leaf #4F6B2C on plaster)', '#4F6B2C', '#F1EAD8', 4.5],
 ];
 const table = pairs.map(([n, fg, bg, floor]) => ({ n, r: C(fg, bg), floor }));
 for (const p of table) ok(`R3 ${p.n} = ${p.r}:1 (floor ${p.floor})`, p.r >= p.floor, String(p.r));
 ok('R3 (measured, not used) the spec\'s olive cloth #6B7A3A with cream lettering is under 4.5:1 - why the cloth is #56632E', C('#EFE4CB', '#6B7A3A') < 4.5, String(C('#EFE4CB', '#6B7A3A')));
+ok('R3 (measured, not used) honey wood #C9A46B under day text fails (names < 7, quiet < 4.5) - why raised is #F6F1E4', C('#33401F', '#C9A46B') < 7 && C('#5E6A3F', '#C9A46B') < 4.5, JSON.stringify([C('#33401F', '#C9A46B'), C('#5E6A3F', '#C9A46B')]));
+ok('R3 (measured, not used) the spec\'s quiet #5E6A3F on its own surface #E8DFC8 is under 4.5:1 - why quiet is #56623A', C('#5E6A3F', '#E8DFC8') < 4.5, String(C('#5E6A3F', '#E8DFC8')));
 
 // R4
 const css = fs.readFileSync(new URL('../../src/styles/arbor-v2.css', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');

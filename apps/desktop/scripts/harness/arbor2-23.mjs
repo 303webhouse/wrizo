@@ -69,13 +69,21 @@ await withHarness(async (app) => {
   // D1: Free Write - FONT | INK, the ink tab is the instrument
   await clickSel(app, '.wz-sliver-grip'); await sleep(500);
   const fw = await read(app);
-  ok('D1 Free Write: the Tools row is FONT | INK in the theme\'s words', fw.left.map((x) => x.id).join() === 'type,ink' && fw.left[0]?.word.toLowerCase() === 'font', JSON.stringify(fw.left));
+  // PARKED 2026-10-31 (SUPERSEDED, r5, run 41240761804: spec §9c - three cloths per drawer; the Font tab folds into Format, the main tab). Original, verbatim:
+  // ok('D1 Free Write: the Tools row is FONT | INK in the theme\'s words', fw.left.map((x) => x.id).join() === 'type,ink' && fw.left[0]?.word.toLowerCase() === 'font', JSON.stringify(fw.left));
+  // SUCCESSOR D1b: Free Write's Tools row is FORMAT | INK in the theme's words.
+  ok('D1b Free Write: the Tools row is FORMAT | INK in the theme\'s words', fw.left.map((x) => x.id).join() === 'format,ink' && fw.left[0]?.word.toLowerCase() === 'format', JSON.stringify(fw.left));
   await clickSel(app, '#wz-sliver-tab-ink'); await sleep(400);
   const fwInk = await read(app);
   await snap(app, 'item2-night-freewrite-ink-tab');
-  await clickSel(app, '#wz-sliver-tab-type'); await sleep(400);
+  // PARKED 2026-10-31 (SUPERSEDED, r5, run 41240761804: spec §9c - there is no Font tab to return by; Format is). Original, verbatim:
+  // await clickSel(app, '#wz-sliver-tab-type'); await sleep(400);
+  // const fwText = await read(app);
+  // ok('D1 the INK tab IS the instrument: picking it puts the page in ink (pen mark), FONT returns it to text', fwInk.inkMark && !fwText.inkMark && fwInk.left.find((x) => x.id === 'ink')?.on === 'true', JSON.stringify({ ink: fwInk.inkMark, text: fwText.inkMark }));
+  // SUCCESSOR D1c: the INK tab is the instrument; FORMAT returns the page to text.
+  await clickSel(app, '#wz-sliver-tab-format'); await sleep(400);
   const fwText = await read(app);
-  ok('D1 the INK tab IS the instrument: picking it puts the page in ink (pen mark), FONT returns it to text', fwInk.inkMark && !fwText.inkMark && fwInk.left.find((x) => x.id === 'ink')?.on === 'true', JSON.stringify({ ink: fwInk.inkMark, text: fwText.inkMark }));
+  ok('D1c the INK tab IS the instrument: picking it puts the page in ink (pen mark), FORMAT returns it to text', fwInk.inkMark && !fwText.inkMark && fwInk.left.find((x) => x.id === 'ink')?.on === 'true', JSON.stringify({ ink: fwInk.inkMark, text: fwText.inkMark }));
   ok('D1 the page never moves while the tabs change', sameRect(fwInk.page, off.page) && sameRect(fwText.page, off.page), JSON.stringify({ ink: fwInk.page, text: fwText.page, off: off.page }));
   await clickSel(app, '.wz-sliver-grip'); await sleep(400);
 
@@ -83,9 +91,15 @@ await withHarness(async (app) => {
   const toDraft = await clickText(app, '.desk-mode-tab', 'Draft'); await sleep(900);
   await clickSel(app, '.wz-sliver-grip'); await sleep(500);
   const dr = await read(app);
-  ok('D2 Draft: the Tools row is FONT | FORMAT | PRESETS', toDraft && dr.left.map((x) => x.id).join() === 'type,format,presets', JSON.stringify({ toDraft, tabs: dr.left }));
+  // PARKED 2026-10-31 (SUPERSEDED, r5, run 41240761804: spec §9c - Draft's Tools row is FORMAT | PRESETS; the loop below walks those two, so the
+  // per-tab "never move" check runs twice, not three times). Original, verbatim:
+  // ok('D2 Draft: the Tools row is FONT | FORMAT | PRESETS', toDraft && dr.left.map((x) => x.id).join() === 'type,format,presets', JSON.stringify({ toDraft, tabs: dr.left }));
+  // const seen = {};
+  // for (const tab of ['type', 'format', 'presets']) {
+  // SUCCESSOR D2b: Draft's Tools row is FORMAT | PRESETS.
+  ok('D2b Draft: the Tools row is FORMAT | PRESETS', toDraft && dr.left.map((x) => x.id).join() === 'format,presets', JSON.stringify({ toDraft, tabs: dr.left }));
   const seen = {};
-  for (const tab of ['type', 'format', 'presets']) {
+  for (const tab of ['format', 'presets']) {
     await clickSel(app, `#wz-sliver-tab-${tab}`); await sleep(350);
     const s = await read(app);
     seen[tab] = s.heads;
@@ -93,8 +107,13 @@ await withHarness(async (app) => {
     for (const room of ['night', 'day']) { await pickBar(app, room === 'night' ? 'Night' : 'Day'); await sleep(200); await snap(app, `item2-${room}-draft-${tab}-tab`); }
   }
   const has = (tab, word) => seen[tab].some((h) => h.toLowerCase().startsWith(word));
-  ok('D2 each tab shows its own sections: Font has the font only; Format has Format, not Presets; Presets has Presets, not Format',
-    has('type', 'font') && !has('type', 'format') && has('format', 'format') && !has('format', 'templates') && !has('format', 'presets') && (has('presets', 'templates') || has('presets', 'presets')) && !has('presets', 'format'),
+  // PARKED 2026-10-31 (SUPERSEDED, r5, run 41240761804: spec §9c - the font is on the Format tab now). Original, verbatim:
+  // ok('D2 each tab shows its own sections: Font has the font only; Format has Format, not Presets; Presets has Presets, not Format',
+  //   has('type', 'font') && !has('type', 'format') && has('format', 'format') && !has('format', 'templates') && !has('format', 'presets') && (has('presets', 'templates') || has('presets', 'presets')) && !has('presets', 'format'),
+  //   JSON.stringify(seen));
+  // SUCCESSOR D2c: Format has the font AND Format (not Presets); Presets has Presets (not Format, not the font).
+  ok('D2c each tab shows its own sections: Format has the font and Format, not Presets; Presets has Presets, not Format or the font',
+    has('format', 'font') && has('format', 'format') && !has('format', 'templates') && !has('format', 'presets') && (has('presets', 'templates') || has('presets', 'presets')) && !has('presets', 'format') && !has('presets', 'font'),
     JSON.stringify(seen));
   await clickSel(app, '.wz-sliver-grip'); await sleep(400);
 
