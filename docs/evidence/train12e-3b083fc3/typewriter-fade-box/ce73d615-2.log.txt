@@ -1,0 +1,11 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=1 tree=ce73d615 bundle=index-DVBlbeEn.js/953498b out=C:/Users/nickh/t12e-tw/d2
+(node:6292) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[01/1] FAIL      exit=1   10s typewriter-fade.mjs :: TYPEWRITER-FADE VERIFY: FAIL - 3/5 failed
+
+SUITE DONE HARNESS_PARKED=unset — 0/1 of 1 returned a passing verdict
+  FAIL: typewriter-fade.mjs — full output at C:\Users\nickh\t12e-tw\d2\typewriter-fade.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=ce73d615 bundle=index-DVBlbeEn.js/953498b

@@ -1,0 +1,22 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=12 tree=3b083fc3 bundle=index-CkJ0aCfk.js/956254b out=C:/Users/nickh/t12e-box/listd
+(node:9052) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[01/12] OK        exit=0    9s box-holder.mjs :: BOX-HOLDER VERIFY: PASS (19 checks)
+[02/12] OK        exit=0   93s box-token-hash.mjs :: BOX-TOKEN-HASH VERIFY: PASS (12 checks)
+[03/12] OK        exit=0   62s glitch-meter.mjs :: ROWS-SHADOW VERIFY: PASS (27 renders checked, shadow == DOM on every one) ;; GLITCH-METER VERIFY: PASS (28 checks)
+[04/12] OK        exit=0    2s item139.mjs :: ITEM139 VERIFY: PASS (10 checks)
+[05/12] OK        exit=0    0s item140.mjs :: ITEM140 VERIFY: PASS (13 checks)
+[06/12] OK        exit=0    2s item99.mjs :: ITEM99 VERIFY: PASS (41 checks)
+[07/12] OK        exit=0   26s polish10-12-part2.mjs :: POLISH10-12 PART 2 VERIFY: PASS (21 checks)
+[08/12] OK        exit=0   18s rhizome-goal.mjs :: RHIZOME-GOAL-CORE VERIFY: PASS (33 checks) ;; RHIZOME-GOAL VERIFY: PASS (10 checks)
+[09/12] OK        exit=0   26s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (14 checks)
+[10/12] OK        exit=0   45s splash.mjs :: SPLASH VERIFY: PASS (90 checks)
+[11/12] FAIL      exit=1   10s typewriter-fade.mjs :: TYPEWRITER-FADE VERIFY: FAIL - 3/5 failed
+[12/12] OK        exit=0   26s typing-latency-scroll.mjs :: ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one) ;; TYPING-LATENCY-SCROLL VERIFY: PASS (10 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 11/12 of 12 returned a passing verdict
+  FAIL: typewriter-fade.mjs — full output at C:\Users\nickh\t12e-box\listd\typewriter-fade.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=3b083fc3 bundle=index-CkJ0aCfk.js/956254b
