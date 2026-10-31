@@ -230,7 +230,11 @@ export default {
     const afterUndo = await app.evalJs(S);
     // reduced motion: the next goal is a still frame
     await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]); await sleep(200);
-    await app.evalJs(`window.__r5flash = []`);
+    // PARKED 2026-10-31 (SUPERSEDED, frames run 41242683166: BLIND - the revisit mounts a NEW field, so a log kept by the first field's observer
+    // stayed empty and 'never fading' passed on nothing). Original, verbatim:
+    // await app.evalJs(`window.__r5flash = []`);
+    // SUCCESSOR: a fresh observer on the field on screen now.
+    await app.evalJs(`(() => { window.__r5flash = []; const f = document.querySelector('.wz-rhizome-field'); new MutationObserver(() => window.__r5flash.push([Math.round(performance.now()), f.dataset.flash])).observe(f, { attributes: true, attributeFilter: ['data-flash'] }); })()`);
     await goal(' ' + words(8, 'more'));
     await waitSoft(app, "document.querySelector('.wz-rhizome-field')?.dataset.flash === 'true'", { label: 'still flash', timeout: 4000 });
     const stillDuring = await app.evalJs(S);
@@ -252,7 +256,8 @@ export default {
       kept: !!back && (night ? back.vis === 'hidden' : back.pastD > 0),
       clear: cleared && !!afterClear && afterClear.pastD === 0 && afterClear.text === after.text,
       undo: undone && !!afterUndo && afterUndo.pastD === back.pastD,
-      still: !!stillDuring && stillDuring.anim === 'none' && !stillLog.some(([, s]) => s === 'fading') && !!stillAfter && stillAfter.flash === 'false' && (night || stillAfter.segTr === '0s'),
+      // (successor of the blind form: the log must SEE the cut - 'true' then 'false' - before 'never fading' means anything)
+      still: !!stillDuring && stillDuring.anim === 'none' && stillLog.map(([, s]) => s).join() === 'true,false' && !!stillAfter && stillAfter.flash === 'false' && (night || stillAfter.segTr === '0s'),
       stored: storeBefore === storeAfter || !/rhizome|arbor/i.test(storeAfter.replace(storeBefore, '')),
     };
     const data = { night, ok, rest0, during, after, back, afterClear, afterUndo, stillDuring, stillAfter, log, stillLog, perSecond };
