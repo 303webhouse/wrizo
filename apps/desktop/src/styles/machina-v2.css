@@ -162,3 +162,9 @@
 
 /* the crumb's "/" was the strong hairline colour (1.61:1 on the bar - the red leg, run 41247848375, on main); it is text, so it letters quiet */
 :root[data-machina2][data-theme='machina'] .crumb-sep{ color:var(--text-low); }
+
+/* ---------- §6 THE ROOM: "No vignette, no texture, no motion." The shared atmosphere overlays (index.css body::before grain, body::after's black
+   inset vignette) stand down under the flag, in both rooms: in the light room the vignette greyed the edges into a dark band at the window's foot
+   (seen in the r1 frames, run 41249201761; it is on main too). ---------- */
+:root[data-machina2][data-theme='machina'] body::before{ display:none; }
+:root[data-machina2][data-theme='machina'] body::after{ box-shadow:none; }
