@@ -85,9 +85,11 @@ function place(): { left: number; top: number; width: number } {
   const rail = document.querySelector('.desk-frame-strip, .desk-rail')?.getBoundingClientRect();
   if (!p) return { left: Math.max(16, innerWidth / 2 - 160), top: 72, width: 320 };
   const leftRoom = p.left - (rail ? rail.right : 0) - 24, rightRoom = innerWidth - p.right - 24;
-  const want = 320, min = 170;
-  if (rightRoom >= min && rightRoom >= leftRoom) { const w = Math.min(want, rightRoom); return { left: p.right + 12, top: Math.max(64, p.top), width: w }; }
-  if (leftRoom >= min) { const w = Math.min(want, leftRoom); return { left: p.left - 12 - w, top: Math.max(64, p.top), width: w }; }
+  // (min 150 and 20 px clear of the page: the drawer opener sits on the page's edge. At 1366 in Sprint the zoomed page leaves 163 px on the right -
+  // a 170 px minimum sent the box to the strip above the page, where its list fell over the words: frames run 41248833065)
+  const want = 320, min = 150, gap = 20;
+  if (rightRoom >= min && rightRoom >= leftRoom) { const w = Math.min(want, rightRoom - (gap - 12)); return { left: p.right + gap, top: Math.max(64, p.top), width: w }; }
+  if (leftRoom >= min) { const w = Math.min(want, leftRoom - (gap - 12)); return { left: p.left - gap - w, top: Math.max(64, p.top), width: w }; }
   return { left: Math.max(16, p.left), top: Math.max(56, p.top - 44), width: Math.min(want, p.width) };
 }
 
