@@ -61,6 +61,10 @@ const EDITOR = '.forward-only-editor';
 const rectOf = (sel) => `(() => { const el = document.querySelector(${JSON.stringify(sel)});
   if (!el) return null; const r = el.getBoundingClientRect();
   return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height }; })()`;
+// the SHEET's text box as a viewport rect: its top is the first line's top (the sheet less its top padding at the painted scale) - polish #10 item 5: in the zoom the
+// sheet reaches over the scroller's start offset, and every stored y is measured from the text
+const TEXTBOX = `(() => { const el = document.querySelector('${SHEET}'); if (!el) return null; const r = el.getBoundingClientRect(); const k = el.offsetWidth > 0 ? r.width / el.offsetWidth : 1;
+  const pt = (parseFloat(getComputedStyle(el).paddingTop) || 0) * k; return { left: r.left, right: r.right, top: r.top + pt, bottom: r.bottom, width: r.width, height: r.height - pt }; })()`;
 
 const present = (app, sel) => app.evalJs(`!!document.querySelector(${JSON.stringify(sel)})`);
 const where = (app) => app.evalJs(`({ hash: location.hash,
@@ -70,12 +74,33 @@ const where = (app) => app.evalJs(`({ hash: location.hash,
   ink: (document.querySelector('${PAPER}') || {}).getAttribute
        ? document.querySelector('${PAPER}').getAttribute('data-ink') : null })`);
 
+// PARKED verbatim (polish #10 item 5, Oct 25 - page-r): the zoomed sheet now reaches over the scroller's paddings, so a fraction of the WHOLE sheet is no longer
+// a fraction of the text. Kept as written, no longer called; the successor below aims the same fractions at the sheet's TEXT box (as item121 did).
+// const safePen = async (app, sel, points, label) => {
+//   if (!(await present(app, sel))) {
+//     ok(`DRIVER: ${label} — ${sel} ABSENT, no pen stroke dispatched`, false, JSON.stringify(await where(app)));
+//     return false;
+//   }
+//   await app.penStroke(sel, points);
+//   return true;
+// };
+// SUCCESSOR: a pointer-transparent marker laid over the sheet's content box (the sheet less its paddings, at the painted scale); every press still lands on the sheet.
+const i126Aim = [];
+const aimAtText = async (app, sel) => {
+  const box = await app.evalJs(`(() => { const s = document.querySelector(${JSON.stringify(sel)}); if (!s) return null; const r = s.getBoundingClientRect(); const cs = getComputedStyle(s);
+    const k = s.offsetWidth > 0 ? r.width / s.offsetWidth : 1; const pt = (parseFloat(cs.paddingTop) || 0) * k; const pb = (parseFloat(cs.paddingBottom) || 0) * k;
+    let m = document.getElementById('i126-aim'); if (!m) { m = document.createElement('div'); m.id = 'i126-aim'; document.body.appendChild(m); }
+    m.style.cssText = 'position:fixed;pointer-events:none;z-index:2147483647;left:' + r.left + 'px;top:' + (r.top + pt) + 'px;width:' + r.width + 'px;height:' + (r.height - pt - pb) + 'px';
+    return { sheet: { top: Math.round(r.top), h: Math.round(r.height) }, text: { top: Math.round(r.top + pt), h: Math.round(r.height - pt - pb) }, zoom: document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null }; })()`);
+  if (box && i126Aim.length < 12) i126Aim.push(box);
+  return '#i126-aim';
+};
 const safePen = async (app, sel, points, label) => {
   if (!(await present(app, sel))) {
     ok(`DRIVER: ${label} — ${sel} ABSENT, no pen stroke dispatched`, false, JSON.stringify(await where(app)));
     return false;
   }
-  await app.penStroke(sel, points);
+  await app.penStroke(await aimAtText(app, sel), points);
   return true;
 };
 
@@ -133,8 +158,8 @@ const strokesOf = async (app, id) => app.evalJs(
 // renderer's own rule, and the one this lane has already got wrong once.
 const screenOf = (app, np) => app.evalJs(`(() => {
   const el = document.querySelector('${SHEET}'); if (!el) return null;
-  const r = el.getBoundingClientRect();
-  return { x: r.left + ${np.x} * r.width, y: r.top + ${np.y} * r.width }; })()`);
+  const r = el.getBoundingClientRect(); const k = el.offsetWidth > 0 ? r.width / el.offsetWidth : 1; const pt = (parseFloat(getComputedStyle(el).paddingTop) || 0) * k;   // stored y is measured from the text (polish #10 item 5)
+  return { x: r.left + ${np.x} * r.width, y: r.top + pt + ${np.y} * r.width }; })()`);
 
 const midOf = (stroke) => stroke.points[Math.floor(stroke.points.length / 2)];
 const bboxOf = (pts) => ({
@@ -270,7 +295,7 @@ await withHarness(async (app) => {
     const nPen = (await strokesOf(app, id)).length;
     ok(`C4/C5 (${label}): a trusted PEN stroke creates NO stroke — ink is LOCKED here, not editable (Nick: "INK no longer becomes directly editable")`,
       nPen === n0, JSON.stringify({ before: n0, after: nPen }));
-    const box = await app.evalJs(rectOf(SHEET));
+    const box = await app.evalJs(TEXTBOX);
     await app.mouseDown(box.left + box.width * 0.3, box.top + 120);
     for (let i = 1; i <= 6; i++) { await app.mouseMove(box.left + box.width * (0.3 + 0.05 * i), box.top + 120 + i * 2); await sleep(16); }
     await app.mouseUp(box.left + box.width * 0.6, box.top + 132);
@@ -324,7 +349,7 @@ await withHarness(async (app) => {
   const gp = await screenOf(app, midOf(beforeStrokes[0]));
   await app.doubleClick(gp.x, gp.y);
   await sleep(350);
-  const sheetBox = await app.evalJs(rectOf(SHEET));
+  const sheetBox = await app.evalJs(TEXTBOX);
   const DX = Math.round(sheetBox.width * 0.12), DY = 40;
   await app.mouseDown(gp.x, gp.y);
   for (let i = 1; i <= 8; i++) { await app.mouseMove(gp.x + (DX * i) / 8, gp.y + (DY * i) / 8); await sleep(16); }
@@ -389,7 +414,7 @@ await withHarness(async (app) => {
     const ep = await screenOf(app, midOf(inkStroke));
     await app.doubleClick(ep.x, ep.y);
     await sleep(350);
-    const sb = await app.evalJs(rectOf(SHEET));
+    const sb = await app.evalJs(TEXTBOX);
     const edx = Math.round(sb.width * 0.10);
     await app.mouseDown(ep.x, ep.y);
     for (let i = 1; i <= 6; i++) { await app.mouseMove(ep.x + (edx * i) / 6, ep.y + (30 * i) / 6); await sleep(16); }
@@ -415,7 +440,7 @@ await withHarness(async (app) => {
   const cp = await screenOf(app, midOf(cs[0]));
   await app.doubleClick(cp.x, cp.y);
   await sleep(350);
-  const csb = await app.evalJs(rectOf(SHEET));
+  const csb = await app.evalJs(TEXTBOX);
   // Shove hard left and up — far past the sheet's own edge.
   await app.mouseDown(cp.x, cp.y);
   for (let i = 1; i <= 10; i++) { await app.mouseMove(cp.x - (csb.width * i) / 10, cp.y - (400 * i) / 10); await sleep(16); }
@@ -441,7 +466,7 @@ await withHarness(async (app) => {
   const iv = await strokesOf(app, inVpId);
   const ivBefore = bboxOf(iv[0].points);
   const ivp = await screenOf(app, midOf(iv[0]));
-  const ivSheet = await app.evalJs(rectOf(SHEET));
+  const ivSheet = await app.evalJs(TEXTBOX);
   await app.doubleClick(ivp.x, ivp.y);
   await sleep(350);
   // End LEFT of the sheet but well INSIDE the viewport.
@@ -491,7 +516,7 @@ await withHarness(async (app) => {
   // await app.waitFor("!!document.querySelector('.wz-ink-switch')", { label: 'Free Write switch (C14)' });
   await app.waitFor("!!document.querySelector('#wz-sliver-tab-ink')", { label: 'Free Write switch (C14) (drawer tabs)' });
   await setInstrument(app, 'ink');
-  const dSheet = await app.evalJs(rectOf(SHEET));
+  const dSheet = await app.evalJs(TEXTBOX);
   const dBefore = (await strokesOf(app, drawId)).length;
   const dStart = { x: dSheet.left + dSheet.width * 0.5, y: dSheet.top + 90 };
   const dEnd = { x: Math.max(8, dSheet.left - 90), y: dSheet.top + 100 };
@@ -621,11 +646,13 @@ console.log(JSON.stringify(checks, null, 2));
 // green UNPARKED run. The array below is emitted as JSON before the prose line
 // so the count is read by the auditor rather than taken from this comment.
 const parkedChecks = [];
+if (process.env.HARNESS_PARKED === '1') parkedChecks.push({ name: 'PARKED (was the driver safePen: "fractions of the whole .wz-ink-sheet") - polish #10 item 5: in the zoom the sheet reaches over the scroller\'s start offset (its text starts below its top); successor: the same fractions on the sheet\'s text box',
+  pass: i126Aim.length > 0 && i126Aim.some((a) => a.zoom === 'true' && a.text.top > a.sheet.top), detail: JSON.stringify(i126Aim.slice(0, 4)) });
 if (process.env.HARNESS_PARKED === '1') {
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   // eslint-disable-next-line no-console
-  console.log(`\nITEM126 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; item126.mjs parks nothing of its own.`);
+  console.log(`\nITEM126 PARKED: ${parkedChecks.every((c) => c.pass) ? 'PASS' : 'FAIL'} (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; item126.mjs parks ONE of its own (the driver: fractions of the whole sheet, polish #10 item 5).`);
 }
 
 const pass = checks.every((c) => c.pass);

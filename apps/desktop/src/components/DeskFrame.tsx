@@ -244,6 +244,8 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
       stage.style.setProperty('--wz-k', k.toFixed(4));
       stage.style.setProperty('--wz-zoom', zoomFor(s.width, k, inset).toFixed(4));
       stage.style.setProperty('--wz-page-hl', `${pageLayoutHeightFor(s.height, top, k).toFixed(2)}px`);
+      // POLISH #10 item 3 - where the painted page ends, from the stage's top: the page's drawers stop there (index.css), never running past the paper
+      stage.style.setProperty('--wz-page-foot', `${(top + pageLayoutHeightFor(s.height, top, k) * k).toFixed(2)}px`);
     };
     apply();
     const ro = new ResizeObserver(apply);
