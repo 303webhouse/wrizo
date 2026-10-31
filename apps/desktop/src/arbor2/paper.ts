@@ -53,7 +53,7 @@ export function visiblePage(): { box: Box; zoomed: boolean; paper: string; room:
   const box = { l: Math.max(a.left, c.left), t: Math.max(a.top, c.top), r: Math.min(a.right, c.right), b: Math.min(a.bottom, c.bottom, innerHeight, foot) };
   if (box.r - box.l < 2 || box.b - box.t < 2) return null;
   // the paper colour is the page's own --paper token (its background is see-through while the sheet stands in for it)
-  // r5: the ROOM's hole (the pergola's and the vignette's) also takes in the progress row under the page - the count there is the one label on
+  // r5: the PERGOLA's hole also takes in the progress row under the page - the count there is the one label on
   // the bare room, so no shadow or vignette ever falls on it (it keeps the plaster's own contrast: quiet #5E6A3F 4.86:1)
   // (the margin clears the pergola's own soft edge: its light fades over SUN_EDGE px INSIDE the hole, so a 4 px margin still lit the count at
   // .89 - zoomProof V6 on arbor2-6, run 41241802502 - and the hole reaches SUN_EDGE + 4 px past the row)
@@ -127,7 +127,9 @@ export function mountPaper(): void {
     // the room's vignette (index.css body::after, fixed inset 0) paints AFTER the sheet in body's stacking context, so where the zoomed page
     // is see-through it greyed the paper's top and bottom (night's band, still there in run 40986639311): it gets a hole over the page - a
     // MASK, so that over the sheet's feather it is exactly what the paper leaves (the hard clip it replaces drew a line there)
-    if (v) root.style.setProperty('--arbor2-vignette-mask', vignetteMask(v.room, f));
+    // (the vignette's hole is the PAGE itself, hard: widened to the room's hole it left a pale unshaded band around the page that read as a
+    // frame - seen in the r5 day frames at 1920, run 41243059463; only the pergola's hole takes the count row in)
+    if (v) root.style.setProperty('--arbor2-vignette-mask', vignetteMask(v.box, f));
     else root.style.removeProperty('--arbor2-vignette-mask');
   };
   update();
