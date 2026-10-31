@@ -28,6 +28,7 @@ import { withHarness } from '../runtime-verify.mjs';
 const checks = [];
 const paperY = {};   // the CD3 canon (b) paper tops, kept for the parked leg (display pass, aa11f58)
 const cd2Ps = { cd3: {} };   // page-size's park audit (Oct 24): the default leg's painted-page reads, for the parked records
+const cd2S2 = {};   // Oct 31 (ledger 166): S2's keystroke-dissolve reads - the original 150 ms read and the settled one, for the parked record
 // page-size: the PAINTED page (.mode-page through its transform) against the stage, and the stage's own scale numbers
 const PS_PAGE = `(() => { const p = document.querySelector('.desk-frame-stage--prose .mode-page'); const st = document.querySelector('.desk-frame-stage--prose');
   const col = document.querySelector('.mode-pagecol'); const ed = document.querySelector('.forward-only-editor'); if (!p || !st || !col || !ed) return null;
@@ -359,8 +360,20 @@ await withHarness(async (app) => {
   await app.typeKeys('page panel dissolve probe');
   await sleep(150);
   const pagePanelGoneAfterType = await app.evalJs("!document.querySelector('.wz-cascade-panel')");
-  ok('S3 (successor to ab3.mjs\'s own keystroke-dissolve check, Page-panel-specific): typing while the Page panel is open dissolves it too, same engine',
-    pagePanelGoneAfterType, String(pagePanelGoneAfterType));
+  // SUPERSEDED (Fable, Oct 31, ledger 166 - the same settle race as S2's: the panel is still leaving for --drawer-dur at a 150 ms read). Kept verbatim, no longer
+  // asserted; its 150 ms read is the parked record. The successor waits for the panel to be GONE (polled every 25 ms, cap 2 s):
+  // ok('S3 (successor to ab3.mjs\'s own keystroke-dissolve check, Page-panel-specific): typing while the Page panel is open dissolves it too, same engine',
+  //   pagePanelGoneAfterType, String(pagePanelGoneAfterType));
+  cd2S2.s3at150 = pagePanelGoneAfterType;
+  const s3Start = Date.now();
+  let pagePanelSettled = pagePanelGoneAfterType;
+  while (!pagePanelSettled && Date.now() - s3Start < 2000) {
+    await sleep(25);
+    pagePanelSettled = await app.evalJs("!document.querySelector('.wz-cascade-panel')");
+  }
+  cd2S2.s3settled = { gone: pagePanelSettled, waitedMs: Date.now() - s3Start };
+  ok('S3 [settle successor] (successor to ab3.mjs\'s own keystroke-dissolve check, Page-panel-specific): typing while the Page panel is open dissolves it too, same engine - gone within 2 s of the read',
+    pagePanelSettled, JSON.stringify(cd2S2.s3settled));
 
   await freshProsePage(app, LAPTOP_W, 900);
 
@@ -548,9 +561,28 @@ await withHarness(async (app) => {
     stripPresent: !!document.querySelector('.wz-strip'),
     stripOpacity: getComputedStyle(document.querySelector('.wz-strip')).opacity,
   })`);
-  ok('S2: a keystroke dissolves BOTH open layers (2-3) via the one vanishing engine, while the strip survives, fully opaque (never dissolving, S1\'s own law)',
-    afterKeystroke.panelGone && afterKeystroke.surveyGone && afterKeystroke.stripPresent && afterKeystroke.stripOpacity === '1',
-    JSON.stringify(afterKeystroke));
+  // SUPERSEDED (Fable, Oct 31, ledger 166 - the settle-race family: the box, since its 06:29Z reboot, reads this at 150 ms while the layers are still
+  // leaving for --drawer-dur). Kept verbatim, no longer asserted; its 150 ms read is the parked record below. The successor waits for the layers to be GONE
+  // (polled every 25 ms, cap 2 s - the vanishing engine's own exit is --drawer-dur, .2 s) and asserts what the original meant: both layers dissolve, the strip survives opaque.
+  // ok('S2: a keystroke dissolves BOTH open layers (2-3) via the one vanishing engine, while the strip survives, fully opaque (never dissolving, S1\'s own law)',
+  // afterKeystroke.panelGone && afterKeystroke.surveyGone && afterKeystroke.stripPresent && afterKeystroke.stripOpacity === '1',
+  // JSON.stringify(afterKeystroke));
+  cd2S2.at150 = afterKeystroke;
+  const s2Start = Date.now();
+  let afterSettle = afterKeystroke;
+  while (!(afterSettle.panelGone && afterSettle.surveyGone) && Date.now() - s2Start < 2000) {
+    await sleep(25);
+    afterSettle = await app.evalJs(`({
+      panelGone: !document.querySelector('.wz-cascade-panel'),
+      surveyGone: !document.querySelector('.wz-cascade-survey'),
+      stripPresent: !!document.querySelector('.wz-strip'),
+      stripOpacity: getComputedStyle(document.querySelector('.wz-strip')).opacity,
+    })`);
+  }
+  cd2S2.settled = { ...afterSettle, waitedMs: Date.now() - s2Start };
+  ok('S2 [settle successor]: a keystroke dissolves BOTH open layers (2-3) via the one vanishing engine - gone within 2 s of the read - while the strip survives, fully opaque (never dissolving, S1\'s own law)',
+    afterSettle.panelGone && afterSettle.surveyGone && afterSettle.stripPresent && afterSettle.stripOpacity === '1',
+    JSON.stringify(cd2S2.settled));
 
   // ==========================================================================
   // S2 (FX10-superseded) — the strip's own "persists through the room's
@@ -759,9 +791,20 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.entry-edit, .entry-full')?.focus?.() || document.querySelector('[contenteditable=\"true\"]')?.focus?.()");
   await app.typeKeys('y');
   await sleep(200);
-  const undockedDissolves = await app.evalJs(`({ panelGone: !document.querySelector('.wz-cascade-panel'), surveyGone: !document.querySelector('.wz-cascade-survey') })`);
-  ok('T5 (contrast, SAME fixture): an UNDOCKED layer still dissolves on keystroke as before — the rider is genuinely conditional on docked state, not blanket',
-    undockedDissolves.panelGone && undockedDissolves.surveyGone, JSON.stringify(undockedDissolves));
+  const undockedDissolves150 = await app.evalJs(`({ panelGone: !document.querySelector('.wz-cascade-panel'), surveyGone: !document.querySelector('.wz-cascade-survey') })`);
+  // SUPERSEDED (Fable, Oct 31, ledger 166 - the same settle race as S2's: the layers are still leaving for --drawer-dur at a 200 ms read). Kept verbatim, no longer
+  // asserted; its 200 ms read is the parked record. The successor waits for both to be GONE (polled every 25 ms, cap 2 s):
+  // ok('T5 (contrast, SAME fixture): an UNDOCKED layer still dissolves on keystroke as before — the rider is genuinely conditional on docked state, not blanket',
+  //   undockedDissolves.panelGone && undockedDissolves.surveyGone, JSON.stringify(undockedDissolves));
+  const t5Start = Date.now();
+  let undockedDissolves = undockedDissolves150;
+  while (!(undockedDissolves.panelGone && undockedDissolves.surveyGone) && Date.now() - t5Start < 2000) {
+    await sleep(25);
+    undockedDissolves = await app.evalJs(`({ panelGone: !document.querySelector('.wz-cascade-panel'), surveyGone: !document.querySelector('.wz-cascade-survey') })`);
+  }
+  cd2S2.t5 = { at200: undockedDissolves150, settled: { ...undockedDissolves, waitedMs: Date.now() - t5Start } };
+  ok('T5 [settle successor] (contrast, SAME fixture): an UNDOCKED layer still dissolves on keystroke as before - gone within 2 s of the read - the rider is genuinely conditional on docked state, not blanket',
+    undockedDissolves.panelGone && undockedDissolves.surveyGone, JSON.stringify(cd2S2.t5.settled));
 
   // Explicit-close on a DOCKED survey (the canon's own "dismissed only by
   // explicit close, category switch, or Escape" — the docked survey's own
@@ -1130,6 +1173,14 @@ const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
   // MACHINA'S BUILD (Oct 23) - ONE park: S3's two-card claim, superseded when Machina's card joined (the arc's order: Arbor, Machina, Flux).
+  // SETTLE RACE (Oct 31, ledger 166) - ONE park: S2's keystroke-dissolve read at 150 ms, superseded by a wait on the state. Record frozen; it re-verifies the truth
+  // the original meant (the layers ARE gone once the exit has played, strip opaque) from the default leg's settled read.
+  pok('PARKED (was "S2: a keystroke dissolves BOTH open layers (2-3) via the one vanishing engine, while the strip survives, fully opaque" read at 150 ms) - the exit lasts --drawer-dur, so a clock read races it; live successor: S2 [settle successor]',
+    !!cd2S2.settled && cd2S2.settled.panelGone && cd2S2.settled.surveyGone && cd2S2.settled.stripPresent && cd2S2.settled.stripOpacity === '1', JSON.stringify(cd2S2));
+  pok('PARKED (was "T5 (contrast, SAME fixture): an UNDOCKED layer still dissolves on keystroke as before" read at 200 ms) - the same settle race as S2\'s; live successor: T5 [settle successor]',
+    !!cd2S2.t5 && cd2S2.t5.settled.panelGone === true && cd2S2.t5.settled.surveyGone === true, JSON.stringify(cd2S2.t5));
+  pok('PARKED (was "S3 (successor to ab3.mjs\'s own keystroke-dissolve check, Page-panel-specific): typing while the Page panel is open dissolves it too, same engine" read at 150 ms) - the same settle race as S2\'s; live successor: S3 [settle successor]',
+    !!cd2S2.s3settled && cd2S2.s3settled.gone === true, JSON.stringify({ s3at150: cd2S2.s3at150, s3settled: cd2S2.s3settled }));
   pok('PARKED (was "S3 (theme-picker successor): exactly two theme cards render (Arbor, Flux) - absent, not grayed") - Machina\'s build (Oct 23): Machina joined with its own ThemeId and card; live successor: S3 [Machina successor]',
     themeCardNames.names === 'Arbor,Machina,Flux', String(themeCardNames.names));
   // DISPLAY PASS (aa11f58) - TWO parks: the CD3 canon (b) Y-position checks at 1100 and 2200, superseded when the smaller mode tabs

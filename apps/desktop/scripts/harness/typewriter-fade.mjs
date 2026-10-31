@@ -44,7 +44,21 @@ await withHarness(async (app) => {
   // The writer goes on writing: eight new lines, each one a real Enter, so the typewriter scrolls the history up a line at a time.
   for (let i = 1; i <= 8; i += 1) { await app.typeKeys(`\nAnd the writer goes on, line ${i} of the new ones.`); await sleep(120); }
   try { await app.waitFor("document.querySelector('.mode-scroll')?.dataset.scrolled === 'true'", { label: 'the history has scrolled', timeout: 6000 }); } catch { /* reported */ }
-  await sleep(1200);   // past the smooth per-line scroll
+  // ---- SUPERSEDED (Fable, Oct 31, ledger 166: the box, since its 06:29Z reboot, was still gliding at this fixed read - a settle race. The glide is now time-based
+  //      and capped (useTypewriterFade LINE_GLIDE_MS / BACKLOG_CAP_MS), and this waits on the state, not on a clock):
+  //   await sleep(1200);   // past the smooth per-line scroll
+  // SUCCESSOR: the history has SETTLED - scrollTop unchanged for 600 ms - and it did so within the 2 s cap.
+  const settle = { settled: false, ms: 0 };
+  {
+    const t0 = Date.now(); let last = null; let since = t0;
+    while (Date.now() - t0 < 2000) {
+      const st = await app.evalJs("document.querySelector('.mode-scroll') ? document.querySelector('.mode-scroll').scrollTop : null");
+      if (st !== last) { last = st; since = Date.now(); } else if (Date.now() - since >= 600) { settle.settled = true; break; }
+      await sleep(50);
+    }
+    settle.ms = since - t0;
+  }
+  twParks.settle = settle;
   // Then the writer's own scroll (FX5 S1(c): the writer owns the scroll position) settles the OLDEST visible line inside the first
   // line of the box - the strip FX5's lead-in governed - so the fade band is full and the order bug, if present, cannot hide.
   const aligned = await app.evalJs(`(() => {
@@ -61,6 +75,8 @@ await withHarness(async (app) => {
     return { lineHeight: lh, firstCentreBefore: Math.round(first), scrollBefore: Math.round(before), scrollAfter: Math.round(scroll.scrollTop) };
   })()`);
   await sleep(500);
+  ok('(premise) [settle successor] the history glide SETTLED (scrollTop unchanged for 600 ms) within the 2 s cap after the eighth line - the fixed 1.7 s clock it replaces raced it',
+    settle.settled, JSON.stringify(settle));
 
   const m = await app.evalJs(`(() => {
     const scroll = document.querySelector('.mode-scroll');
@@ -204,8 +220,12 @@ if (process.env.HARNESS_PARKED === '1') {
     ['THE OLDEST IS THE FAINTEST: the topmost visible line carries the lowest strength of all, and it is genuinely faded (< 0.5)', !!b.top && b.top.alpha < 0.5],
     ['THE NEWEST IS WHOLE: the last visible line (where the writer is) is fully shown', !!b.writing && b.writing.alpha >= 0.99],
   ].map(([n, p]) => ({ name: `PARKED (was "${n}") - page-size: the zoom's band on the page column replaces .mode-scroll's top-of-box mask; successor reads the band`, pass: !!p, detail: JSON.stringify(b) }));
+  // SETTLE RACE (Oct 31, ledger 166) - ONE park: the read at a fixed 1.7 s (1200 + 500 ms) after the eighth line, superseded by a wait on the state. Record frozen;
+  // it re-verifies what the clock assumed (the glide is over by then) as a measured fact: the history settled, and within the cap.
+  const st = twParks.settle || {};
+  rec.push({ name: 'PARKED (was "await sleep(1200)  // past the smooth per-line scroll", then +500 ms, then the read) - the glide outlasted that clock on the box since its 06:29Z reboot; successor: the settle wait (600 ms still, cap 2 s)', pass: st.settled === true && st.ms <= 2000, detail: JSON.stringify(st) });
   for (const c of rec) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}  [${c.detail}]`);
-  console.log(rec.every((c) => c.pass) ? `\nTYPEWRITER-FADE PARKED: PASS (${rec.length} records) - this FILE parks 5 (page-size, Oct 23)` : `\nTYPEWRITER-FADE PARKED: FAIL - ${rec.filter((c) => !c.pass).length}/${rec.length}`);
+  console.log(rec.every((c) => c.pass) ? `\nTYPEWRITER-FADE PARKED: PASS (${rec.length} records) - this FILE parks 6 (page-size, Oct 23: 5; the settle race, Oct 31: 1)` : `\nTYPEWRITER-FADE PARKED: FAIL - ${rec.filter((c) => !c.pass).length}/${rec.length}`);
 }
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nTYPEWRITER-FADE VERIFY: PASS (${checks.length} checks)` : `\nTYPEWRITER-FADE VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
