@@ -228,7 +228,7 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
   // or on another theme this is unused and the drawer is byte-for-byte today's.
   const sliverTheme = useTheme();
   const arbor2 = isArbor2() && sliverTheme === 'plateau';
-  const [arborPick, setArborPick] = useState<ArborToolTab>('type');
+  const [arborPick, setArborPick] = useState<ArborToolTab>('format');
 
   // item 83 M1 (R9/R11) — the two-drawer law. Opening announces itself; the
   // store answers whether the cascade must yield, and does the measuring (see
@@ -335,15 +335,15 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
         label: t('inkInstrument'),
       }
     : undefined;
-  // ARBOR v2 MOCKUP - Font · Format · Presets · Ink. The ink tab IS the instrument (picking it, or leaving it, calls the host's own
+  // ARBOR v2 MOCKUP - Format · Presets · Ink (r5, spec §9c: the r4 Font tab folds into Format, the main tab). The ink tab IS the instrument (picking it, or leaving it, calls the host's own
   // instrument switch exactly as TEXT | INK does), so the page's mode and the tab can never disagree.
   const arborKind = content.kind as DrawerKind;
   const arborInstrument = content.kind === 'freewrite' ? content.instrument : undefined;
   const arborList = arbor2 ? arborToolTabs(arborKind, !!arborInstrument) : [];
   const arborTab: ArborToolTab | undefined = !arbor2 ? undefined
     : arborInstrument?.value === 'ink' ? 'ink'
-    : arborList.includes(arborPick) && arborPick !== 'ink' ? arborPick : (arborList.find((x) => x !== 'ink') ?? 'type');
-  const ARBOR_WORD: Record<ArborToolTab, DeskTermId> = { type: 'railTypeface', format: 'railFormat', presets: 'sectionsPresets', ink: 'inkModeInk' };
+    : arborList.includes(arborPick) && arborPick !== 'ink' ? arborPick : (arborList.find((x) => x !== 'ink') ?? 'format');
+  const ARBOR_WORD: Record<ArborToolTab, DeskTermId> = { format: 'railFormat', presets: 'sectionsPresets', ink: 'inkModeInk' };
   const arborTabs: DrawerTabsConfig<ArborToolTab> | undefined = arbor2 && arborList.length > 1 && arborTab
     ? {
         items: arborList.map((id) => ({ id, label: t(ARBOR_WORD[id]) })),
