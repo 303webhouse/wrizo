@@ -4,6 +4,8 @@ import { useWritingGoal, goalCount } from '../store/writingGoal';
 import { useTheme } from '../store/theme';
 import { lapPlan, segmentsFor, geometryKey, pickSurvivor, hashSeed, type GrowthGeometry, type GrowthSegment, type Rect } from '../store/rhizomeGrowth';
 import { variationOn, pacedFrac, shootClass } from '../arbor2/shoots';   // ARBOR v2 mockup, item 7: drawn only under ?arbor2=1
+import { isArbor2 } from '../arbor2/flag';
+import { lifeOf, effective, lifePlan, tipOf, segKey, setCurrentRhizome, subscribeLife } from '../arbor2/rhizomeLife';   // ARBOR v2 mockup, r5 §8b: only under ?arbor2=1
 
 // THE GOAL RHIZOME (rewritten by Fable, 2026-10-08; growth model in store/rhizomeGrowth.ts).
 //
@@ -145,6 +147,16 @@ export function RhizomeField({ text, seedKey, paperRef }: {
   const openKey = `${seedKey}|${goalKey}`;
   const opened = useRef<{ key: string; lap: number }>({ key: '', lap: 0 });
   if (opened.current.key !== openKey) opened.current = { key: openKey, lap };
+  // ARBOR v2 mockup (r5, spec §8b - the rhizome's life): under the flag the finished laps STAY (drawn at .4 by day; by night only in the flash),
+  // the next lap grows from the TIP of the last one, and the history is held IN-SESSION per page (src/arbor2/rhizomeLife.ts: nothing stored),
+  // with Clear Rhizome / Undo in the mockup bar. Off the flag: life is null and every line below is today's.
+  const life = active && isArbor2() ? lifeOf(openKey, lap) : null;
+  const [, setLifeTick] = useState(0);
+  useEffect(() => (life ? subscribeLife(() => setLifeTick((x) => x + 1)) : undefined), [life]);
+  useEffect(() => { if (life) setCurrentRhizome(openKey, count, lap, frac); }, [life, openKey, count, lap, frac]);
+  useEffect(() => () => setCurrentRhizome(null), []);
+  const eff = life ? effective(life, lap, frac) : null;
+  const lifeSeed = eff ? `${pageSeed}${eff.suffix}` : pageSeed;
 
   const svgRef = useRef<SVGSVGElement>(null);
   const [m, setM] = useState<Measured | null>(null);
@@ -204,18 +216,38 @@ export function RhizomeField({ text, seedKey, paperRef }: {
 
   // What to draw. During the flash: the finished lap, whole. Otherwise: the current lap up to the goal fraction.
   const shownLap = flashLap ?? lap;
-  const shownVisit = Math.max(0, shownLap - opened.current.lap);
-  const plan = useMemo(() => (m ? lapPlan(m.geo, pageSeed, shownVisit) : null), [m, pageSeed, shownVisit]);
+  const shownVisit = Math.max(0, shownLap - (eff ? eff.baseLap : opened.current.lap));
+  const lifeOn = !!eff;
+  const plan = useMemo(() => (m ? (lifeOn ? lifePlan(m.geo, lifeSeed, shownVisit) : lapPlan(m.geo, pageSeed, shownVisit)) : null), [m, pageSeed, lifeSeed, lifeOn, shownVisit]);
   // ARBOR v2 mockup (item 7): under the flag each lap keeps its own pace and shoot widths (src/arbor2/shoots.ts). Off the flag: unchanged.
   const variation = variationOn();
-  const k = plan ? (flashLap != null ? plan.segments.length : segmentsFor(plan, variation ? pacedFrac(pageSeed, shownLap, frac) : frac)) : 0;
+  const drawFrac = eff ? eff.frac : frac;
+  const k = plan ? (flashLap != null ? plan.segments.length : segmentsFor(plan, variation ? pacedFrac(pageSeed, shownLap, drawFrac) : drawFrac)) : 0;
+  // r5 §8b: the laps before this one (from the base lap), whole - the kept history, and where this lap's first segment came from (the tip)
+  const pastPlans = useMemo(() => (m && lifeOn ? Array.from({ length: shownVisit }, (_, v) => lifePlan(m.geo, lifeSeed, v)) : []), [m, lifeOn, lifeSeed, shownVisit]);
+  const baseLap = eff ? eff.baseLap : 0;
+  const pastPaths = useMemo(() => {
+    const out: { key: string; thick: boolean; w?: number; d: string }[] = [];
+    if (!pastPlans.length) return out;
+    if (variation) {
+      for (const c of [0, 1, 2, 3] as const) for (const thick of [false, true]) {
+        const d = pastPlans.map((pl, v) => pathOf(pl.segments.filter((s) => shootClass(pageSeed, baseLap + v, s) === c), thick)).join('');
+        if (d) out.push({ key: `${c}${thick}`, thick, w: c, d });
+      }
+    } else {
+      for (const thick of [false, true]) { const d = pastPlans.map((pl) => pathOf(pl.segments, thick)).join(''); if (d) out.push({ key: String(thick), thick, d }); }
+    }
+    return out;
+  }, [pastPlans, variation, pageSeed, baseLap]);
+  const tipKey = lifeOn && shownVisit > 0 && pastPlans.length ? segKey(tipOf(pastPlans[pastPlans.length - 1])) : undefined;
+  const startKey = lifeOn && shownVisit > 0 && plan ? segKey(plan.segments[0]) : undefined;
 
   // Which segments are still GROWING. A segment that appears gets its own start time (staggered within its burst) and stays
   // a separate <line> until its draw-on has finished, so typing the next word never cuts the last word's growth short.
   // Anything that changes the drawing as a whole (another page, another lap, a new geometry, the flash) starts a fresh
   // record with nothing growing, so a reload or a resize never replays the growth.
   const growing = useRef<{ key: string; k: number; born: Map<number, { delay: number; until: number }> }>({ key: '', k: 0, born: new Map() });
-  const drawKey = plan && m ? `${pageSeed}#${shownLap}#${geometryKey(m.geo)}#${flashLap != null ? 'flash' : 'grow'}` : '';
+  const drawKey = plan && m ? `${lifeSeed}#${shownLap}#${geometryKey(m.geo)}#${flashLap != null ? 'flash' : 'grow'}` : '';
   const segs = plan ? plan.segments.slice(0, k) : [];
   const now = Date.now();
   const g = growing.current;
@@ -237,7 +269,7 @@ export function RhizomeField({ text, seedKey, paperRef }: {
   const settled = animated.length ? segs.filter(s => !born.has(s.id)) : segs;
   // While the finished plant fades, the one root the next lap will grow from stays put. It is the same segment
   // lapPlan will draw first on the following visit, so the handoff does not cut.
-  const seedRoot = flashFading && plan ? pickSurvivor(plan, hashSeed(`${pageSeed}:survivor:${shownVisit}`)) : null;
+  const seedRoot = !lifeOn && flashFading && plan ? pickSurvivor(plan, hashSeed(`${pageSeed}:survivor:${shownVisit}`)) : null;   // r5: under the flag no survivor - the next lap grows from the tip
   const isSeed = (s: GrowthSegment) => !!seedRoot && seedRoot.some(r => r.x1 === s.x1 && r.y1 === s.y1 && r.x2 === s.x2 && r.y2 === s.y2);
   const fadingSettled = seedRoot ? settled.filter(s => !isSeed(s)) : settled;
   const seedSettled = seedRoot ? settled.filter(isSeed) : [];
@@ -257,6 +289,8 @@ export function RhizomeField({ text, seedKey, paperRef }: {
       data-lap={shownLap}
       data-segments={segs.length}
       data-goal-frac={frac.toFixed(3)}
+      data-tip={tipKey}
+      data-start={startKey}
       viewBox={w > 0 ? `0 0 ${w} ${h}` : undefined}
       preserveAspectRatio="none"
       style={{ pointerEvents: 'none', clipPath: clipD ? `path(evenodd, "${clipD}")` : undefined }}
@@ -275,6 +309,11 @@ export function RhizomeField({ text, seedKey, paperRef }: {
         </>
       )}
       <g clipPath={m ? 'url(#wz-rhizome-ground)' : undefined} mask={m ? 'url(#wz-rhizome-mask)' : undefined}>
+        {pastPaths.length > 0 && (
+          <g className="wz-rhizome-past">
+            {pastPaths.map((p) => <path key={p.key} className="wz-rhizome-old" data-thick={p.thick ? 'true' : undefined} data-w={p.w} d={p.d} />)}
+          </g>
+        )}
         {variation ? ([0, 1, 2, 3] as const).flatMap((c) => [false, true].map((thick) => (
           <path key={`${c}${thick}`} className="wz-rhizome-seg" data-thick={thick ? 'true' : undefined} data-w={c}
             d={pathOf(fadingSettled.filter((s) => shootClass(pageSeed, shownLap, s) === c), thick)} />

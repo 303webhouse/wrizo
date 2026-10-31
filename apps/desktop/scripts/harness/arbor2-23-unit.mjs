@@ -19,19 +19,34 @@ for (const kind of KINDS) {
   const arbor = arborSectionsUnion(kind);
   ok(`U1 [${kind}] the Arbor tabs show exactly today's sections (nothing lost, nothing new)`, same(today, arbor), JSON.stringify({ today, arbor }));
 }
+// PARKED 2026-10-31 (SUPERSEDED: spec §9c, Nick Oct 31 1:19 pm - three cloths per drawer, Format the main tab (Typeface, Ink colour, Page kind,
+// Progress): the r4 Font tab ('type') folds into Format). Original, verbatim:
+// const rows = {
+//   'freewrite+instrument': [arborToolTabs('freewrite', true), ['type', 'ink']],
+//   'freewrite (no instrument)': [arborToolTabs('freewrite', false), ['type']],
+//   draft: [arborToolTabs('draft', false), ['type', 'format', 'presets']],
+//   revise: [arborToolTabs('revise', false), ['type']],
+//   board: [arborToolTabs('board', false), ['type']],
+//   empty: [arborToolTabs('empty', false), []],
+// };
+// for (const [name, [got, want]] of Object.entries(rows)) ok(`U2 [${name}] tabs ${JSON.stringify(want)}`, JSON.stringify(got) === JSON.stringify(want), JSON.stringify(got));
+// SUCCESSOR U2b: Format · Presets · Ink - Free Write with an instrument = Format, Ink; Draft = Format, Presets; the rest one tab or none.
 const rows = {
-  'freewrite+instrument': [arborToolTabs('freewrite', true), ['type', 'ink']],
-  'freewrite (no instrument)': [arborToolTabs('freewrite', false), ['type']],
-  draft: [arborToolTabs('draft', false), ['type', 'format', 'presets']],
-  revise: [arborToolTabs('revise', false), ['type']],
-  board: [arborToolTabs('board', false), ['type']],
+  'freewrite+instrument': [arborToolTabs('freewrite', true), ['format', 'ink']],
+  'freewrite (no instrument)': [arborToolTabs('freewrite', false), ['format']],
+  draft: [arborToolTabs('draft', false), ['format', 'presets']],
+  revise: [arborToolTabs('revise', false), ['format']],
+  board: [arborToolTabs('board', false), ['format']],
   empty: [arborToolTabs('empty', false), []],
 };
-for (const [name, [got, want]] of Object.entries(rows)) ok(`U2 [${name}] tabs ${JSON.stringify(want)}`, JSON.stringify(got) === JSON.stringify(want), JSON.stringify(got));
+for (const [name, [got, want]] of Object.entries(rows)) ok(`U2b [${name}] tabs ${JSON.stringify(want)}`, JSON.stringify(got) === JSON.stringify(want), JSON.stringify(got));
 const all = ['typeface', 'forwardLock', 'capture', 'ink', 'format', 'actions', 'templates', 'pageKind', 'boardTools'];
 const on = (tab) => all.filter((s) => arborSectionAllowed('freewrite', tab, s));
 ok('U3 Free Write: the Ink tab shows exactly the ink instrument\'s sections', same(on('ink'), [...sectionsFor('freewrite', 'ink')]), JSON.stringify(on('ink')));
-ok('U3 Free Write: the Font tab shows exactly the text instrument\'s sections', same(on('type'), [...sectionsFor('freewrite', 'text')]), JSON.stringify(on('type')));
+// PARKED 2026-10-31 (SUPERSEDED: spec §9c - the Font tab is Format now). Original, verbatim:
+// ok('U3 Free Write: the Font tab shows exactly the text instrument\'s sections', same(on('type'), [...sectionsFor('freewrite', 'text')]), JSON.stringify(on('type')));
+// SUCCESSOR U3b: Free Write's Format tab shows exactly the text instrument's sections.
+ok('U3b Free Write: the Format tab shows exactly the text instrument\'s sections', same(on('format'), [...sectionsFor('freewrite', 'text')]), JSON.stringify(on('format')));
 
 for (const c of checks) console.log(`${c.pass ? 'ok  ' : 'FAIL'} ${c.name}${c.pass ? '' : '  ' + c.detail}`);
 const pass = checks.every((c) => c.pass);

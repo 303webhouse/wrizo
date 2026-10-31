@@ -21,13 +21,16 @@
 // spec's "the page's outer 24 px may catch a soft edge". The prose sits ~100 px or more inside the page, so it never catches any.
 // Measuring is two getBoundingClientRect reads, on resize, on the zoom's own event, on route change and every 300 ms (never on a keystroke).
 // Nothing is stored.
-export const FEATHER = 48;
+// r5 (spec §10b, Fable Oct 31: "No diffused or vignetted paper edges on the zoomed page: the zoom and the fading text are the only
+// flourishes"; Arbor-only, still unframed): the sheet's feather is 0 - a hard rectangle with no mask, no border, no shadow, and the
+// vignette's hole over it is hard too. (Oct 29's 48 px feather - "no visible edge" - is superseded.) The pergola keeps its own soft edge.
+export const FEATHER = 0;
 export const SUN_EDGE = 24;
 const BLACK = 'rgb(0,0,0)', CLEAR = 'rgba(0,0,0,0)';
 const px = (n: number) => `${Math.round(n * 10) / 10}px`;
 type Box = { l: number; t: number; r: number; b: number };
 
-export function visiblePage(): { box: Box; zoomed: boolean; paper: string } | null {
+export function visiblePage(): { box: Box; zoomed: boolean; paper: string; room: Box } | null {
   const p = document.querySelector('.mode-page') as HTMLElement | null;
   if (!p) return null;
   const a = p.getBoundingClientRect();
@@ -39,14 +42,21 @@ export function visiblePage(): { box: Box; zoomed: boolean; paper: string } | nu
   // (the row's own box can be 0 tall - its pieces carry the height - so the top of its first VISIBLE piece is the foot; run 40987236296
   // read the row's box alone and the sheet still ran under "31 words")
   let foot = Infinity;
+  const row = { l: Infinity, t: Infinity, r: -Infinity, b: -Infinity };
   document.querySelectorAll('.mode-progress, .mode-progress *').forEach((el) => {
     const r = el.getBoundingClientRect();
-    if (r.width > 0 && r.height > 0 && r.top > a.top + 40 && r.left < a.right && r.right > a.left) foot = Math.min(foot, r.top);
+    if (r.width > 0 && r.height > 0 && r.top > a.top + 40 && r.left < a.right && r.right > a.left) {
+      foot = Math.min(foot, r.top);
+      row.l = Math.min(row.l, r.left); row.t = Math.min(row.t, r.top); row.r = Math.max(row.r, r.right); row.b = Math.max(row.b, r.bottom);
+    }
   });
   const box = { l: Math.max(a.left, c.left), t: Math.max(a.top, c.top), r: Math.min(a.right, c.right), b: Math.min(a.bottom, c.bottom, innerHeight, foot) };
   if (box.r - box.l < 2 || box.b - box.t < 2) return null;
   // the paper colour is the page's own --paper token (its background is see-through while the sheet stands in for it)
-  return { box, zoomed: col?.getAttribute('data-zoom') === 'true', paper: getComputedStyle(p).getPropertyValue('--paper').trim() };
+  // r5: the ROOM's hole (the pergola's and the vignette's) also takes in the progress row under the page - the count there is the one label on
+  // the bare room, so no shadow or vignette ever falls on it (it keeps the plaster's own contrast: quiet #5E6A3F 4.86:1)
+  const room = row.r > row.l ? { l: Math.min(box.l, row.l - 4), t: box.t, r: Math.max(box.r, row.r + 4), b: Math.min(innerHeight, Math.max(box.b, row.b + 4)) } : box;
+  return { box, zoomed: col?.getAttribute('data-zoom') === 'true', paper: getComputedStyle(p).getPropertyValue('--paper').trim(), room };
 }
 
 /** The evenodd clip for a layer at (ox, oy) of size w x h, with one hole at `hole` (viewport pixels). */
@@ -85,7 +95,7 @@ export function mountPaper(): void {
     const sun = document.querySelector('.arbor2-sun') as HTMLElement | null;
     // the room is in the key: by night the sun layer is display:none (a 0x0 box), so its clip is measured again when the day comes back
     const room = document.documentElement.getAttribute('data-arbor2-room');
-    const key = v ? `${v.box.l},${v.box.t},${v.box.r},${v.box.b},${v.zoomed},${v.paper},${innerWidth},${innerHeight},${room}` : `none,${innerWidth},${room}`;
+    const key = v ? `${v.box.l},${v.box.t},${v.box.r},${v.box.b},${v.room.l},${v.room.r},${v.room.b},${v.zoomed},${v.paper},${innerWidth},${innerHeight},${room}` : `none,${innerWidth},${room}`;
     if (key === last) return;
     last = key;
     const root = document.documentElement;
@@ -93,7 +103,7 @@ export function mountPaper(): void {
     if (v && v.zoomed) {
       const w = v.box.r - v.box.l, h = v.box.b - v.box.t;
       sheet.style.cssText = `left:${v.box.l}px;top:${v.box.t}px;width:${w}px;height:${h}px;background:${v.paper};`
-        + `mask-image:${sheetMask(w, h, f)};mask-composite:intersect`;
+        + (f > 0 ? `mask-image:${sheetMask(w, h, f)};mask-composite:intersect` : '');   // r5: f = 0 - a hard sheet, no mask at all
       sheet.setAttribute('data-on', 'true');
       root.setAttribute('data-arbor2-sheet', 'on');   // after the sheet is drawn: the page lets go of its own paper only once this one is there
     } else {
@@ -104,7 +114,7 @@ export function mountPaper(): void {
       if (v) {
         // in the layer's own box (it sits at inset -80px): whole at the page's edge, nothing SUN_EDGE px in (the hard clip drew a line there)
         const s = sun.getBoundingClientRect();
-        const b = { l: v.box.l - s.left, t: v.box.t - s.top, r: v.box.r - s.left, b: v.box.b - s.top };
+        const b = { l: v.room.l - s.left, t: v.room.t - s.top, r: v.room.r - s.left, b: v.room.b - s.top };
         sun.style.maskImage = vignetteMask(b, SUN_EDGE);
         sun.style.maskComposite = 'add';
       } else {
@@ -114,7 +124,7 @@ export function mountPaper(): void {
     // the room's vignette (index.css body::after, fixed inset 0) paints AFTER the sheet in body's stacking context, so where the zoomed page
     // is see-through it greyed the paper's top and bottom (night's band, still there in run 40986639311): it gets a hole over the page - a
     // MASK, so that over the sheet's feather it is exactly what the paper leaves (the hard clip it replaces drew a line there)
-    if (v) root.style.setProperty('--arbor2-vignette-mask', vignetteMask(v.box, f));
+    if (v) root.style.setProperty('--arbor2-vignette-mask', vignetteMask(v.room, f));
     else root.style.removeProperty('--arbor2-vignette-mask');
   };
   update();
