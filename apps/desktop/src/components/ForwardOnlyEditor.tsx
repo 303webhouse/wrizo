@@ -688,6 +688,28 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   // PAGE TEMPLATES - a page's template can change under a mounted editor (the picker): draw or clear the Outline's numbers now.
   useEffect(() => { const h = hostRef.current; if (h) refreshLens(h); }, [lens]);
 
+  // BUG-LIST #33 (ledger 168): the re-anchor below ran after EVERY render, so a caret the writer had just moved (Ctrl+Home, a click, an arrow run) was put
+  // back at the end by the next render - the save round-trip, ~1.5 s after the last keystroke. The writer's own move is noted here (a press in the host, or
+  // a navigation / select-all key) and cleared by the next insert; while it stands, a selection that is still valid inside the host is left where the writer put it.
+  // Typing is unchanged: the model appends at the tip whatever the caret does (every insert is routed through handleTyped), and the render after it re-anchors.
+  const writerMovedRef = useRef(false);
+  useEffect(() => {
+    const el = hostRef.current;
+    if (!el || freeEdit) return;
+    const NAV = new Set(['Home', 'End', 'PageUp', 'PageDown', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
+    const onPress = () => { writerMovedRef.current = true; };
+    const onKey = (e: KeyboardEvent) => { if (NAV.has(e.key) || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a')) writerMovedRef.current = true; };
+    const onInsert = (e: Event) => { if (((e as InputEvent).inputType || '').startsWith('insert')) writerMovedRef.current = false; };
+    el.addEventListener('pointerdown', onPress);
+    el.addEventListener('keydown', onKey);
+    el.addEventListener('beforeinput', onInsert);
+    return () => {
+      el.removeEventListener('pointerdown', onPress);
+      el.removeEventListener('keydown', onKey);
+      el.removeEventListener('beforeinput', onInsert);
+    };
+  }, [freeEdit]);
+
   // Keep the browser's (invisible) caret at the end after every re-render.
   // React replaces the rendered text nodes on each change, which would otherwise
   // invalidate the selection and stop the next keystroke from firing input.
@@ -704,6 +726,8 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     if (contentRef.current.length === 0 && wordRef.current.length === 0) return;
     const sel = window.getSelection();
     if (!sel) return;
+    // #33: the writer moved the caret and it is still a valid one inside the host - leave it
+    if (writerMovedRef.current && sel.rangeCount > 0 && sel.anchorNode && sel.anchorNode.isConnected && el.contains(sel.anchorNode)) return;
     // Collapse to the end of the host (the live insertion point). The only
     // non-flow children (placeholder, nudge) are absolutely positioned and
     // rendered BEFORE the runs, so the last in-flow node is always the editable
