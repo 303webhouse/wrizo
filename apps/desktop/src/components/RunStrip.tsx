@@ -4,6 +4,8 @@ import { useWritingSettings } from '../store/writingSettings';
 import { goalCount, useWritingGoal } from '../store/writingGoal';
 import { prefersReducedMotion, useAmbianceDial } from '../store/ambianceDial';
 import { useGoalProgress } from './WritingIncentives';
+import { isMachina2 } from '../machina2/flag';
+import { MachinaRun2 } from '../machina2/run';   // MACHINA v2 mockup (?machina2=1 only): spec §7 + §8.2
 
 // RUN - Machina's own progress instrument (Nick, Oct 21; cursor/machina-progress-mockup @ c17b4551; the approved mockup cursor/machina-v1-mockup @ 360f3db3; Fable's ruling: "Run is
 // Machina-only" - each theme has its own: Arbor the rhizome, Flux Glitch, Machina Run). It is the REPLACEMENT for the thin sprint bar under Machina, the way GlitchMeter is under Flux:
@@ -33,6 +35,9 @@ export function RunStrip({ text }: { text: string }) {
   const count = goal ? goalCount(text, goal) : 0;
   const { frac, celebrating } = useGoalProgress(count, n);
   const active = theme === 'machina' && settings.instrumentsOn && settings.progress === 'words' && goal != null && n > 0;
+  // MACHINA v2 MOCKUP: under ?machina2=1 the Run and its readout are machina2/run.tsx's (an empty Run with no goal, no sparks, the parts unit,
+  // the readout bar). Every hook above has already run, so the hand-over keeps this component's hooks in their order. Off the flag: today's.
+  if (theme === 'machina' && isMachina2()) return <MachinaRun2 text={text} />;
   if (!active) return null;
 
   const done = celebrating ? UNITS : Math.min(UNITS, Math.floor(frac * UNITS));

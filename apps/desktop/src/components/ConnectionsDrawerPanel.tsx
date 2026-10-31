@@ -11,6 +11,8 @@ import { GraftPicker, type CameFrom } from './GraftPicker';
 import { useUnborn } from './UnbornSurface';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useTheme } from '../store/theme';
+import { isMachina2 } from '../machina2/flag';   // MACHINA v2 mockup (?machina2=1 only): "Open beside" (spec §8.4, Fable ruling 1)
 
 // The right drawer's second pane - the GRAFTS tab (Flux: LINKS). Its name is the theme's word, read from the lexicon, never written here.
 //
@@ -32,6 +34,11 @@ const titleOf = (text: string | undefined): string => (withoutFontMarks(text ?? 
 
 export function ConnectionsDrawerPanel() {
   const { t } = useDeskLexicon();
+  // MACHINA v2 MOCKUP: "Open beside" (Fable ruling 1: a second File or a Plan opens READ-ONLY in the right drawer, never a true side-by-side) IS the
+  // link dock POLISH #10 item 24 shipped - one item at a time, read-only, in the Consultant's own dock - so under the flag its button carries the
+  // spec's words. The act is the existing one; only the label changes.
+  const panelTheme = useTheme();
+  const openBeside = isMachina2() && panelTheme === 'machina';
   const snap = useBoardSnapshot();
   const location = useLocation();
   const [, setTick] = useState(0);
@@ -165,7 +172,7 @@ export function ConnectionsDrawerPanel() {
                 {page && kindOf(r) !== 'board' && (
                   // POLISH #10 item 24: dock this linked card or page beside the page (this device; one at a time) - the Tutor's own dock carries it
                   <button type="button" className="wz-graft-dock" aria-label={`${t('graftDockAria')}: ${r.title}`}
-                    onClick={() => { setLinkDock(page.id, { entryId: r.entryId, ...(r.boxId ? { boxId: r.boxId } : {}) }); document.dispatchEvent(new Event('wz-link-dock-open')); }}>{t('graftDock')}</button>
+                    onClick={() => { setLinkDock(page.id, { entryId: r.entryId, ...(r.boxId ? { boxId: r.boxId } : {}) }); document.dispatchEvent(new Event('wz-link-dock-open')); }}>{openBeside ? 'Open beside ▸' : t('graftDock')}</button>
                 )}
                 <button type="button" className="wz-links-x wz-graft-x" aria-label={`${t('linksRemoveAria')}: ${r.title}`} onClick={() => remove(r)}>×</button>
               </li>

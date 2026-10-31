@@ -31,6 +31,8 @@ import { TypewriterModeIcon, ProgressModeIcon } from './DrawerIcons';
 import type { PageActions } from '../store/pageActions';
 import type { StrokeInk, StrokeNib, StrokeTip } from '../types';
 import { wordCount } from '../store/wordCount';
+import { isMachina2 } from '../machina2/flag';   // MACHINA v2 mockup (?machina2=1 only)
+import { OutlineParts } from '../machina2/outlineParts';
 
 // ITEM 114 (item 83 errata E4) — the rosters and their lexicon keys, in one
 // place each, so the buttons cannot drift from the type or from the words. The
@@ -930,6 +932,8 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           {/* CONNECTOR-A: the "Show grafts" toggle is RETIRED - a card's connection footers are simply on. */}
         </div>
       )}
+      {/* MACHINA v2 MOCKUP (?machina2=1, Machina only; spec §8.3, Fable ruling 4: the affordance only - the behaviour comes with the spine) */}
+      {content.kind === 'draft' && theme === 'machina' && isMachina2() && <OutlineParts pageId={content.pageId} />}
     </div>
   );
 }
