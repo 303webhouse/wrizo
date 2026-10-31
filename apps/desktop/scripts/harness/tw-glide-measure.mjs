@@ -7,8 +7,8 @@ import { withHarness } from '../runtime-verify.mjs';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ED = '.forward-only-editor';
 const LINES = Array.from({ length: 30 }, (_, i) => `Line ${String(i + 1).padStart(2, '0')} of the history that rides up into the page.`).join('\n');
-// the RULED duration (Fable, Oct 31): the glide of a burst's history finishes within this of the last keystroke, whatever the frame pacing or machine load
-const GLIDE_CAP_MS = 2000;
+// the RULED duration (Oct 31; useTypewriterFade BACKLOG_CAP_MS): the glide of a burst's history finishes within this of the last keystroke, whatever the frame pacing or machine load
+const GLIDE_CAP_MS = 1000;
 let line = 'TW-GLIDE: NO RESULT';
 let pass = false;
 

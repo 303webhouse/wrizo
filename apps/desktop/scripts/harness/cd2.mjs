@@ -28,6 +28,7 @@ import { withHarness } from '../runtime-verify.mjs';
 const checks = [];
 const paperY = {};   // the CD3 canon (b) paper tops, kept for the parked leg (display pass, aa11f58)
 const cd2Ps = { cd3: {} };   // page-size's park audit (Oct 24): the default leg's painted-page reads, for the parked records
+const cd2S2 = {};   // Oct 31 (ledger 166): S2's keystroke-dissolve reads - the original 150 ms read and the settled one, for the parked record
 // page-size: the PAINTED page (.mode-page through its transform) against the stage, and the stage's own scale numbers
 const PS_PAGE = `(() => { const p = document.querySelector('.desk-frame-stage--prose .mode-page'); const st = document.querySelector('.desk-frame-stage--prose');
   const col = document.querySelector('.mode-pagecol'); const ed = document.querySelector('.forward-only-editor'); if (!p || !st || !col || !ed) return null;
@@ -548,9 +549,28 @@ await withHarness(async (app) => {
     stripPresent: !!document.querySelector('.wz-strip'),
     stripOpacity: getComputedStyle(document.querySelector('.wz-strip')).opacity,
   })`);
-  ok('S2: a keystroke dissolves BOTH open layers (2-3) via the one vanishing engine, while the strip survives, fully opaque (never dissolving, S1\'s own law)',
-    afterKeystroke.panelGone && afterKeystroke.surveyGone && afterKeystroke.stripPresent && afterKeystroke.stripOpacity === '1',
-    JSON.stringify(afterKeystroke));
+  // SUPERSEDED (Fable, Oct 31, ledger 166 - the settle-race family: the box, since its 06:29Z reboot, reads this at 150 ms while the layers are still
+  // leaving for --drawer-dur). Kept verbatim, no longer asserted; its 150 ms read is the parked record below. The successor waits for the layers to be GONE
+  // (polled every 25 ms, cap 2 s - the vanishing engine's own exit is --drawer-dur, .2 s) and asserts what the original meant: both layers dissolve, the strip survives opaque.
+  // ok('S2: a keystroke dissolves BOTH open layers (2-3) via the one vanishing engine, while the strip survives, fully opaque (never dissolving, S1\'s own law)',
+  // afterKeystroke.panelGone && afterKeystroke.surveyGone && afterKeystroke.stripPresent && afterKeystroke.stripOpacity === '1',
+  // JSON.stringify(afterKeystroke));
+  cd2S2.at150 = afterKeystroke;
+  const s2Start = Date.now();
+  let afterSettle = afterKeystroke;
+  while (!(afterSettle.panelGone && afterSettle.surveyGone) && Date.now() - s2Start < 2000) {
+    await sleep(25);
+    afterSettle = await app.evalJs(`({
+      panelGone: !document.querySelector('.wz-cascade-panel'),
+      surveyGone: !document.querySelector('.wz-cascade-survey'),
+      stripPresent: !!document.querySelector('.wz-strip'),
+      stripOpacity: getComputedStyle(document.querySelector('.wz-strip')).opacity,
+    })`);
+  }
+  cd2S2.settled = { ...afterSettle, waitedMs: Date.now() - s2Start };
+  ok('S2 [settle successor]: a keystroke dissolves BOTH open layers (2-3) via the one vanishing engine - gone within 2 s of the read - while the strip survives, fully opaque (never dissolving, S1\'s own law)',
+    afterSettle.panelGone && afterSettle.surveyGone && afterSettle.stripPresent && afterSettle.stripOpacity === '1',
+    JSON.stringify(cd2S2.settled));
 
   // ==========================================================================
   // S2 (FX10-superseded) — the strip's own "persists through the room's
@@ -1130,6 +1150,10 @@ const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
   // MACHINA'S BUILD (Oct 23) - ONE park: S3's two-card claim, superseded when Machina's card joined (the arc's order: Arbor, Machina, Flux).
+  // SETTLE RACE (Oct 31, ledger 166) - ONE park: S2's keystroke-dissolve read at 150 ms, superseded by a wait on the state. Record frozen; it re-verifies the truth
+  // the original meant (the layers ARE gone once the exit has played, strip opaque) from the default leg's settled read.
+  pok('PARKED (was "S2: a keystroke dissolves BOTH open layers (2-3) via the one vanishing engine, while the strip survives, fully opaque" read at 150 ms) - the exit lasts --drawer-dur, so a clock read races it; live successor: S2 [settle successor]',
+    !!cd2S2.settled && cd2S2.settled.panelGone && cd2S2.settled.surveyGone && cd2S2.settled.stripPresent && cd2S2.settled.stripOpacity === '1', JSON.stringify(cd2S2));
   pok('PARKED (was "S3 (theme-picker successor): exactly two theme cards render (Arbor, Flux) - absent, not grayed") - Machina\'s build (Oct 23): Machina joined with its own ThemeId and card; live successor: S3 [Machina successor]',
     themeCardNames.names === 'Arbor,Machina,Flux', String(themeCardNames.names));
   // DISPLAY PASS (aa11f58) - TWO parks: the CD3 canon (b) Y-position checks at 1100 and 2200, superseded when the smaller mode tabs

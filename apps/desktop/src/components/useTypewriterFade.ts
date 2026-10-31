@@ -209,7 +209,39 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     // as before (FX5 S1 c). A timer re-checks just after each glide's time, so a lost line is recovered even if the writer stops typing.
     let glideFrom: number | null = null;
     let verifyTimer: ReturnType<typeof setTimeout> | null = null;
-    const GLIDE_MS = 600;
+    // TIME-BASED GLIDE (Fable, Oct 31, ledger 166). The browser's native smooth scroll was the engine's clock: a one-line glide took however long the machine
+    // took to land it, and a deep first engage (a long page, the caret at its foot) is paid ONE LINE PER GLIDE - 38 serial landings, ~1.6 s after the last key on
+    // the box and ~9 s on a loaded one. Now each glide is driven by performance.now(), not by frames: it ends at LINE_GLIDE_MS whatever the frame pacing (a
+    // timer ends it if the frames stop), and a BACKLOG is paid in bigger steps sized so that it is finished within BACKLOG_CAP_MS of becoming owed. An ordinary
+    // line (a backlog of one) is still one line per glide; no frame moves more than the lurch law allows (fx5 S1 a: 1.6 lines, 2.5 on first engage).
+    const LINE_GLIDE_MS = 160;
+    const BACKLOG_CAP_MS = 1000;
+    const GLIDE_MS = LINE_GLIDE_MS + 60;   // past this a glide that has not landed is lost (its owed remainder is re-issued, below)
+    let owedSince: number | null = null;   // when the current backlog first became owed (null: nothing owed)
+    let glideRaf = 0;
+    let glideEnd: ReturnType<typeof setTimeout> | null = null;
+    const stopGlide = () => {
+      cancelAnimationFrame(glideRaf); glideRaf = 0;
+      if (glideEnd) { clearTimeout(glideEnd); glideEnd = null; }
+    };
+    const glide = (box: ScrollBox, from: number, to: number) => {
+      stopGlide();
+      const t0 = performance.now();
+      let lastSet = from;
+      const land = () => { stopGlide(); box.setScrollTop(to, false); };
+      const tick = () => {
+        glideRaf = 0;
+        const p = (performance.now() - t0) / LINE_GLIDE_MS;
+        if (p >= 1) { land(); return; }
+        // the scroll is not where this glide left it: the writer's own scroll (or the browser's) took over - honoured, as a native smooth scroll's cancel was
+        if (Math.abs(readBox(!!useWindowScroll, container).scrollTop - lastSet) > 2) { stopGlide(); glideAt = 0; return; }
+        lastSet = from + (to - from) * (0.5 - Math.cos(Math.PI * p) / 2);
+        box.setScrollTop(lastSet, false);
+        glideRaf = requestAnimationFrame(tick);
+      };
+      glideEnd = setTimeout(() => { glideEnd = null; land(); }, LINE_GLIDE_MS + 40);   // the hard cap: frames or no frames, it has landed by now
+      glideRaf = requestAnimationFrame(tick);
+    };
     // S1 — the fade band (line-height based) and the fresh-page start offset
     // (stage-height based) are both STATIC CSS the writing surface reads via
     // custom properties; this just keeps them in step with the actual
@@ -393,7 +425,12 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         // above), so each step composes correctly on top of wherever the
         // writer's own scroll currently sits (S1 c: scroll freedom) — this
         // never fights a manual scroll, it only ever adds to it.
-        const step = Math.min(advance, lineHeight());
+        // TIME-BASED GLIDE - a backlog is paid in steps sized to the glides the cap still has room for (one line each, when only a line is owed)
+        const nowMs = performance.now();
+        if (owedSince == null) owedSince = nowMs;
+        const glidesLeft = reduce ? 1 : Math.max(1, Math.floor((owedSince + BACKLOG_CAP_MS - nowMs) / (LINE_GLIDE_MS + 17)));
+        const linesPerGlide = reduce ? 1 : Math.max(1, Math.ceil(advance / lineHeight() / glidesLeft));
+        const step = Math.min(advance, lineHeight() * linesPerGlide);
         // PAGE-SIZE - one line per glide: while the last glide is still travelling, WAIT for it (the next frame looks again; nothing owed is
         // lost - prevDocCaretBottom has not moved). Reduced motion moves instantly, so it never waits.
         const gliding = !reduce && glideTarget != null && Math.abs(box.scrollTop - glideTarget) > 1 && performance.now() - glideAt < GLIDE_MS;
@@ -401,8 +438,8 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         // the target is clamped to what the box can actually scroll to, so a glide that hits the bottom still counts as landed
         const maxTop = useWindowScroll ? Infinity : Math.max(0, container.scrollHeight - container.clientHeight);
         const to = Math.min(box.scrollTop + step, maxTop);
-        box.setScrollTop(to, !reduce);
-        if (trace) trace.push({ d: 'step', from: Math.round(box.scrollTop), to: Math.round(to), maxTop: Math.round(maxTop), advance: Math.round(advance) });
+        if (reduce) box.setScrollTop(to, false); else glide(box, box.scrollTop, to);
+        if (trace) trace.push({ d: 'step', from: Math.round(box.scrollTop), to: Math.round(to), maxTop: Math.round(maxTop), advance: Math.round(advance), lines: linesPerGlide });
         glideFrom = box.scrollTop; glideTarget = to; glideAt = performance.now();
         if (verifyTimer) clearTimeout(verifyTimer);
         verifyTimer = setTimeout(() => { verifyTimer = null; schedule(); }, GLIDE_MS + 50);   // did it land? (see glideFrom's comment)
@@ -424,8 +461,9 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         // this line runs, `schedule()`'s own last-assigned `raf` has already
         // fired (this IS that callback), so overwriting it with the new
         // chained id is the correct, non-destructive handoff.
-        if (advance - step > 1) raf = requestAnimationFrame(band);
+        if (advance - step > 1) raf = requestAnimationFrame(band); else owedSince = null;
       } else {
+        owedSince = null;
         // Caret moved to earlier content (clicked elsewhere, or a delete
         // shrank the document) — resync without scrolling; no advance is
         // "owed" backward.
@@ -451,6 +489,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       scrollListenTarget.removeEventListener('scroll', setScrolled);
       window.removeEventListener('resize', measure);
       cancelAnimationFrame(raf);
+      stopGlide();
       if (verifyTimer) clearTimeout(verifyTimer);
     };
   }, [enabled, containerRef, editorSelector, useWindowScroll, scrolledTarget, holdBand, zoomOn, zoomHoldRef, zoomAnchor]);
