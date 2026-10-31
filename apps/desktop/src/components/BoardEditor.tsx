@@ -1267,6 +1267,9 @@ export function BoardEditor({ id }: { id: string }) {
   // persisted override instead (below), and the wrap's own `overflow:auto`
   // (unchanged CSS) scrolls to it like any content wider than its box.
   const [containerWidthPx, setContainerWidthPx] = useState(700);
+  // BUG 32e - 700 is only the first render's placeholder: the reflow below waits until the wrap has really been measured (widthMeasured), because a pass at the placeholder width wraps every card in a
+  // narrower page and GROWS its h to match - a height that then sticks (grow-only) once the true width arrives. Whether such a pass ran used to depend on load timing (check F of reflow-open).
+  const [widthMeasured, setWidthMeasured] = useState(false);
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
@@ -1277,6 +1280,7 @@ export function BoardEditor({ id }: { id: string }) {
       const chrome = el.offsetWidth - el.clientWidth;
       const natural = area && stage ? Math.min(stage.clientWidth, 1100) - chrome : el.clientWidth;
       setContainerWidthPx(Math.max(320, area && stage ? Math.max(el.clientWidth, natural) : el.clientWidth));
+      setWidthMeasured(true);
     };
     measure();
     const ro = new ResizeObserver(measure);
@@ -1488,7 +1492,7 @@ export function BoardEditor({ id }: { id: string }) {
   }, []);
 
   useLayoutEffect(() => {
-    if (pageWidthPx <= 0) return;
+    if (pageWidthPx <= 0 || !widthMeasured) return;
     // BUG 32c - sizedByHand: which cards are fitted to their content (grown AND shrunk) in this pass. A card is, when it is AUTO (no `sizedByHand`), not a ported notecard, and the writer has acted on it in this
     // visit (touchedRef) - or it is a dealt card in a row with such a card, so the row stays one band. Every other card keeps the floor-only rule below: it grows to fit its words and is never shrunk, and a plain open
     // (nothing touched yet) shrinks nothing. A card the writer sized by hand keeps its size whatever its words do (it still grows when its words would be clipped).
@@ -1522,7 +1526,7 @@ export function BoardEditor({ id }: { id: string }) {
     if (boxes === lastSavedRef.current) lastSavedRef.current = fitted;
     setBoxes(fitted);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [boxes, pageWidthPx, popupBoxId, fontTick]);
+  }, [boxes, pageWidthPx, popupBoxId, fontTick, widthMeasured]);
 
   const measureRef = (boxId: string, el: HTMLDivElement | null) => {
     if (el) measureEls.current.set(boxId, el);
