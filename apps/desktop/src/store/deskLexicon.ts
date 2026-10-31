@@ -2274,6 +2274,7 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     graftPlanCardsMany: '{n} nodes',
     graftHideAria: 'Hide from this doc',
     graftHiddenLine: '{title} hidden from this doc.',
+    graftDockAria: 'Dock beside the doc',   // POLISH #10 item 24: the theme's own word for the page (flux-v2 LX2)
     graftRemovedLine: 'Input to {title} removed.',
     graftKnobTip: 'Drag to connect',
     boardFitToText: 'Auto-fit',
@@ -2483,6 +2484,7 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     graftPlanCardsMany: '{n} blocks',
     graftHideAria: 'Hide from this file',
     graftHiddenLine: '{title} hidden from this file.',
+    graftDockAria: 'Dock beside the file',   // POLISH #10 item 24: the theme's own word for the page (flux-v2 LX2)
     graftRemovedLine: 'Asset to {title} removed.',
     graftPairedPage: 'File',
   },

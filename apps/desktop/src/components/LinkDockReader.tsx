@@ -5,6 +5,7 @@ import { getJournalEntry, subscribe } from '../store/persistence';
 import { plainLines } from '../store/entryText';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { recordShadow } from '../store/voiceWall';
+import { liveBoxes } from '../store/boxTombstones';   // a reader never sees a tombstoned or purged card (box-tombstones T11)
 import type { LinkDockRef } from '../store/linkDock';
 
 export function LinkDockReader({ dock, onClose }: { dock: LinkDockRef; onClose: () => void }) {
@@ -13,7 +14,7 @@ export function LinkDockReader({ dock, onClose }: { dock: LinkDockRef; onClose: 
   const text = useSyncExternalStore(subscribe, () => {
     const e = getJournalEntry(dock.entryId);
     if (!e) return null;
-    if (dock.boxId) { const b = (e.boxes ?? []).find((x) => x.id === dock.boxId); return b && b.kind === 'text' ? (b.text ?? '') : null; }
+    if (dock.boxId) { const b = liveBoxes(e.boxes).find((x) => x.id === dock.boxId); return b && b.kind === 'text' ? (b.text ?? '') : null; }
     return e.text ?? '';
   });
   const lines = text == null ? [] : plainLines(text);
