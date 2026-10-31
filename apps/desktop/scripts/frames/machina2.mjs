@@ -244,13 +244,15 @@ export default {
     await sleep(1500);
     const S = `(() => { const anims = document.getAnimations().filter((a) => a.playState === 'running').map((a) => (a.animationName || a.transitionProperty || a.constructor.name) + '@' + ((a.effect && a.effect.target && a.effect.target.className) || '').toString().slice(0, 30));
       const m = document.querySelector('.brand-mark'), cs = m ? getComputedStyle(m) : null, after = m ? getComputedStyle(m, '::after') : null;
-      return { anims, mark: m ? { font: cs.fontFamily.split(',')[0], before: getComputedStyle(m, '::before').content, square: after.borderTopWidth + ' ' + after.borderTopStyle } : null }; })()`;
+      const foot = document.elementsFromPoint(innerWidth / 2, innerHeight - 4).slice(0, 4).map((el) => ({ el: el.tagName.toLowerCase() + '.' + String(el.className || '').split(' ').slice(0, 2).join('.'), bg: getComputedStyle(el).backgroundColor, h: Math.round(el.getBoundingClientRect().height), top: Math.round(el.getBoundingClientRect().top) }));
+      const scroll = { sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth, sh: document.documentElement.scrollHeight, ch: document.documentElement.clientHeight };
+      return { foot, scroll, anims, mark: m ? { font: cs.fontFamily.split(',')[0], before: getComputedStyle(m, '::before').content, square: after.borderTopWidth + ' ' + after.borderTopStyle } : null }; })()`;
     const cool = await app.evalJs(S);
     await cast(app, 'neutral'); await sleep(1200);
     const neutral = await app.evalJs(S);
     await cast(app, 'cool');
     const ok = { still: cool.anims.length === 0 && neutral.anims.length === 0, mark: !!cool.mark && /Plex Mono/.test(cool.mark.font) && /WRIZ/.test(cool.mark.before) && /solid/.test(cool.mark.square) };
     if (Object.values(ok).some((x) => !x)) fail('M2-STILL', { ok, cool, neutral });
-    say('m2-still', { ok, cool, neutral: neutral.anims });
+    say('m2-still', { ok, cool, neutral: neutral.anims });   // (cool.foot / cool.scroll: what draws the window's bottom edge - information, not a check)
   },
 };
