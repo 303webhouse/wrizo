@@ -198,6 +198,10 @@ export default {
     await app.evalJs("(() => { const b = [...document.querySelectorAll('.machina2-beside-item')].find((x) => x.getAttribute('data-kind') === 'plan'); if (b) b.click(); })()"); await sleep(800);
     const dock = await app.evalJs("(() => { const h = document.querySelector('.wz-link-dock-head'); const d = document.querySelector('.wz-link-dock'); return { head: h ? h.textContent.replace(/\\s+/g, ' ').trim() : null, text: d ? d.textContent : '', editable: !!d?.querySelector('[contenteditable=\"true\"], textarea, input') }; })()");
     const r1 = await app.evalJs(RECT);
+    // (driver fix after green leg 41299159350: a Project page's Files pop-out lists its DRAWER's sets - this fixture's Project has no drawer, so the
+    // pop-out held no rows. The Files pop-out's rows are met on a loose page, beside the other loose pages: seed one, and read it there)
+    await app.evalJs("window.wrizoCreateJournalPage({ id: 'm2r4-beside-other', text: 'Notes from the call', createdAt: '2026-04-02T00:00:00.000Z', origin: 'loose', source: 'page' })");
+    await page(app, 'm2r4-beside-loose', WORDS);
     await railOpen(app, 'Files');
     // (driver fix after green leg 41296556886: the pop-out lists a Project's Files in sets that may be folded - open them, as the writer would)
     await app.evalJs("document.querySelectorAll(\".wz-cascade-panel .wz-set-head[aria-expanded='false']\").forEach((h) => h.click())"); await sleep(300);
