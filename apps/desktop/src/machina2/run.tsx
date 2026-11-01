@@ -78,8 +78,27 @@ export function MachinaRun2({ text }: { text: string }) {
         </div>
       )}
       {isOn('readout')
-        ? <div className="machina2-readout" aria-label="Readout">{line}{byParts && label ? ` · ${label}` : ''}</div>
+        ? <Readout fields={[...line.split(' · '), ...(byParts && label ? [label] : [])]} />
         : label && <div className="machina-run-count">{label}</div>}
+    </div>
+  );
+}
+
+// r4 - THE READOUT IS AN INSTRUMENT, NOT A COUNT (the Wrizors' door 2, Nov 1): the fields separated by hairline ticks (the Run strip sits at the
+// rule's left end, the rule itself is the run's top hairline in styles/machina-v2.css), and a "?" at the right end whose one line says what the
+// "~" means. Plex Mono 11, quiet grey; nothing moves. The "?" shows its line in place while pressed open (a door, not a tooltip tour).
+const HELP = '~ means an estimate; pages follow the page kind';
+function Readout({ fields }: { fields: string[] }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="machina2-readout" aria-label="Readout">
+      {fields.map((f, i) => (
+        <span key={i} className="machina2-field-wrap">{i > 0 && <span className="machina2-tick" aria-hidden="true" />}<span className="machina2-field">{f}</span></span>
+      ))}
+      <span className="machina2-readout-end">
+        {open && <span className="machina2-readout-line" role="note">{HELP}</span>}
+        <button type="button" className="machina2-readout-help" title={HELP} aria-label={HELP} aria-expanded={open} onClick={() => setOpen((o) => !o)}>?</button>
+      </span>
     </div>
   );
 }
