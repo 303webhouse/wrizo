@@ -462,6 +462,10 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // occupy the margin at min(margin, open-w) where a usable panel fits, else overlay at open-w; the paper rect is stable open or closed, so one read plus a resize listener suffices [Tutor §20]
   useLayoutEffect(() => {
     // the board joins the mirror (it narrows to the drawer); a docked link reader is measured like the open drawer, never by the docked CSS clamp [Tutor §21]
+    // THE DRAWER ALIGNMENT (Nick, via Fable, Nov 1; the theme mockup's flag only - its drawerEdge.ts sets data-wz2-drawer-edge): closing keeps
+    // the open geometry, so the drawer slides back from where it stood and its tab, on its outer edge, travels with it (it snapped to the
+    // pre-open width first: 37 px apart at half the close, run 41336050132). The next open measures again.
+    if (!open && document.documentElement.hasAttribute('data-wz2-drawer-edge')) return;
     if (!open || (docked && !linkDock)) { setPanelWidthPx(null); setPanelOffsetPx(0); return; }
     const measure = () => {
       const stage = document.querySelector('.desk-frame-stage');
