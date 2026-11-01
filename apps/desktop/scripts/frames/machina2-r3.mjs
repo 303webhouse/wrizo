@@ -28,7 +28,8 @@ const page = async (app, id, text, on = true) => {
 };
 const build = async (app) => { await clickText(app, '.desk-mode-tab', 'Build'); await sleep(1200); };
 const clock = (app, s) => app.evalJs(`typeof window.machina2Clock === 'function' ? window.machina2Clock(${JSON.stringify(s)}) : 'NO-SEAM'`);
-const ROWSEL = '.machina2-bar [role="group"][aria-label="Room"]';
+// (r5 driver fix, no assertion changed: the row is named Lighting now - spec draft 9 §2f, §11 - so the selector follows the name)
+const ROWSEL = '.machina2-bar [role="group"][aria-label="Lighting"]';
 const pick = (app, c) => clickSel(app, `${ROWSEL} [data-room-opt="${c}"]`);
 const ROWREAD = `(() => { const g = document.querySelector('${ROWSEL}'); if (!g) return null;
   return { text: g.textContent.replace(/\\s+/g, ' ').trim(), opts: [...g.querySelectorAll('[data-room-opt]')].map((b) => [b.getAttribute('data-room-opt'), b.textContent.trim(), b.getAttribute('aria-pressed')]) }; })()`;
