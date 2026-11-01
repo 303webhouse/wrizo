@@ -7,7 +7,6 @@ import { inkColor, renderStroke, ERASER_WIDTH } from '../store/ink';
 import { useChromeDissolve } from '../components/useChromeDissolve';
 import { useWarmStart } from '../components/useWarmStart';
 import { useSessionLog } from '../components/useSessionLog';
-import { useFirstLineInvite } from '../components/useFirstLineInvite';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { copyText } from '../store/clipboard';
 import { ChromeHandle } from '../components/WritingShell';
@@ -213,9 +212,6 @@ function JournalEntryView() {
   // F6 — the first-line invitation. Truly empty = authored AND no text AND zero ink
   // (DoD 4: an ink-only page is NOT empty — no invitation over ink). A read-only
   // capture reports not-empty (authoredRef false), so nothing renders there.
-  const invite = useFirstLineInvite(() => authoredRef.current && pageTextRef.current.length === 0 && strokesRef.current.length === 0);
-  const inviteDismissRef = useRef<() => void>(() => {});
-  inviteDismissRef.current = invite.dismiss;
 
   // W2 — the way back. Authored pages only (a read-only capture has no
   // writing session to depart from — no-op via the authoredRef guards below,
@@ -607,7 +603,6 @@ function JournalEntryView() {
       noteWriteRef.current(); // recede the chrome on write
       warmReleaseRef.current(); // release the warm-start glow on the first forward keystroke
       sessionKsRef.current(); // stamp TTFK on the first content keystroke (F5)
-      inviteDismissRef.current(); // dismiss the first-line invitation for this page (F6)
       scheduleSave();
     };
     // Hardware-keyboard path: a plain Backspace/Delete fires keydown (and would
@@ -845,7 +840,6 @@ function JournalEntryView() {
         )}
         {/* First-line invitation (F6) — render-only, a sibling outside the editable
             node; never selectable/serialized. Only on a truly empty authored page. */}
-        {invite.node}
         {/* Warm-start glow (F2) — render-only overlay over the last paragraph;
             never inside the editable node. Under the ink canvases (later siblings). */}
         {warm.rect && (
