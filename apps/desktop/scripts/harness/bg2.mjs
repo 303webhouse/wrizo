@@ -36,7 +36,8 @@ import { assertHittable } from '../trusted-point.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
-const bg2Ps = {};   // page-size's park audit (Oct 24): S1/S3's reads, for the parked record
+const bg2Ps = {};
+const bg2f = {};   // #13 12f: the default leg's readings, for the parked records of the page-row checks it retired   // page-size's park audit (Oct 24): S1/S3's reads, for the parked record
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const LAPTOP_W = 1280;
@@ -256,22 +257,29 @@ await withHarness(async (app) => {
   // S2 — the page's row, centered on the sheet, and the DoD RE-PROVEN there.
   // ==========================================================================
   await freshPage(app, 'bg2-page', '', LAPTOP_W, 900);
-  const pagePlace = await app.evalJs(`(() => {
-    const row = document.querySelector('.wz-beginnings');
-    const sheet = document.querySelector('.mode-page');
-    const r = row.getBoundingClientRect(), s = sheet.getBoundingClientRect();
-    return { rowMidX: Math.round(r.left + r.width / 2), sheetMidX: Math.round(s.left + s.width / 2),
-      rowTop: Math.round(r.top), rowBottom: Math.round(r.bottom),
-      sheetTop: Math.round(s.top), sheetBottom: Math.round(s.bottom),
-      pointerEvents: getComputedStyle(row).pointerEvents };
-  })()`);
-  ok('S2 (SV19): the page\'s row is centered on the sheet — it reads as a set of modes, not a footnote under the caret (this SUPERSEDES the committee\'s "furniture beside the cursor" by Nick\'s own word)',
-    Math.abs(pagePlace.rowMidX - pagePlace.sheetMidX) <= 12 &&
-    pagePlace.rowTop > pagePlace.sheetTop && pagePlace.rowBottom < pagePlace.sheetBottom,
-    JSON.stringify(pagePlace));
-
-  ok('S2: the row still never intercepts the surface — pointer-events:none on the container, unchanged by the move',
-    pagePlace.pointerEvents === 'none', pagePlace.pointerEvents);
+  // ---- PARKED - RETIRED by #13 step 12f (Fable, Nov 1): the Sprout door (the page row's only door) and the first-line invite are
+  // deleted, everywhere, forever, so a blank page has no row. Kept VERBATIM and no longer run; its record is in the parked section
+  // (readings in bg2f); the successor follows (in full: c13-12f-sprout-invite.mjs).
+  // const pagePlace = await app.evalJs(`(() => {
+  //   const row = document.querySelector('.wz-beginnings');
+  //   const sheet = document.querySelector('.mode-page');
+  //   const r = row.getBoundingClientRect(), s = sheet.getBoundingClientRect();
+  //   return { rowMidX: Math.round(r.left + r.width / 2), sheetMidX: Math.round(s.left + s.width / 2),
+  //     rowTop: Math.round(r.top), rowBottom: Math.round(r.bottom),
+  //     sheetTop: Math.round(s.top), sheetBottom: Math.round(s.bottom),
+  //     pointerEvents: getComputedStyle(row).pointerEvents };
+  // })()`);
+  // ok('S2 (SV19): the page\'s row is centered on the sheet — it reads as a set of modes, not a footnote under the caret (this SUPERSEDES the committee\'s "furniture beside the cursor" by Nick\'s own word)',
+  //   Math.abs(pagePlace.rowMidX - pagePlace.sheetMidX) <= 12 &&
+  //   pagePlace.rowTop > pagePlace.sheetTop && pagePlace.rowBottom < pagePlace.sheetBottom,
+  //   JSON.stringify(pagePlace));
+  //
+  // ok('S2: the row still never intercepts the surface — pointer-events:none on the container, unchanged by the move',
+  //   pagePlace.pointerEvents === 'none', pagePlace.pointerEvents);
+  // ------------------------------------------------------------------
+  const pagePlace = await app.evalJs("({ row: !!document.querySelector('.wz-beginnings'), sheet: !!document.querySelector('.mode-page') })");
+  bg2f.pagePlace = pagePlace;
+  ok('S2 [12f successor]: a blank page renders no beginnings row on its sheet at all', pagePlace.row === false && pagePlace.sheet === true, JSON.stringify(pagePlace));
 
   // The invariant BG1 expressed as "the row sits below the first line" — now
   // that the row is centered instead, the CLAIM has to be measured where it
@@ -290,7 +298,8 @@ await withHarness(async (app) => {
       return d.left <= caret.x && d.right >= caret.x && d.top <= caret.yBot && d.bottom >= caret.yTop;
     }).map((b) => b.dataset.beginning);
     const atCaret = document.elementFromPoint(caret.x + 1, caret.yTop + 8);
-    const firstDoorLeft = Math.round(document.querySelector('.wz-beginning').getBoundingClientRect().left);
+    const firstDoor = document.querySelector('.wz-beginning');   // #13 12f: none on a blank page now
+    const firstDoorLeft = firstDoor ? Math.round(firstDoor.getBoundingClientRect().left) : null;
     return { covering, atCaret: (atCaret && atCaret.className || '').toString(),
       caretX: Math.round(caret.x), firstDoorLeft };
   })()`);
@@ -298,9 +307,15 @@ await withHarness(async (app) => {
     caretClear.covering.length === 0 && caretClear.atCaret.includes('forward-only-editor'),
     JSON.stringify(caretClear));
 
-  const pageContrast = await app.evalJs(CONTRAST_JS);
-  ok(`S2: the door colour carries on the PAGE too — computed WCAG contrast ${pageContrast.ratio}:1 against the sheet (>=4.5)`,
-    pageContrast.ratio >= 4.5, JSON.stringify(pageContrast));
+  // ---- PARKED - RETIRED by #13 step 12f (Fable, Nov 1): the Sprout door (the page row's only door) and the first-line invite are
+  // deleted, everywhere, forever, so a blank page has no row. Kept VERBATIM and no longer run; its record is in the parked section
+  // (readings in bg2f); the successor follows (in full: c13-12f-sprout-invite.mjs).
+  // const pageContrast = await app.evalJs(CONTRAST_JS);
+  // ok(`S2: the door colour carries on the PAGE too — computed WCAG contrast ${pageContrast.ratio}:1 against the sheet (>=4.5)`,
+  //   pageContrast.ratio >= 4.5, JSON.stringify(pageContrast));
+  // ------------------------------------------------------------------
+  bg2f.pageDoor = await app.evalJs("!!document.querySelector('.wz-beginning')");
+  ok('S2 [12f successor]: there is no door on the page to colour', bg2f.pageDoor === false, String(bg2f.pageDoor));
 
   // THE DoD check, re-proven at the new placement (BG2's brief requires it).
   const caretLive = await app.evalJs(`(() => {
@@ -322,7 +337,7 @@ await withHarness(async (app) => {
   // ==========================================================================
   // S1/S3 — one component still, and the revision reached both surfaces.
   // ==========================================================================
-  const styleOn = `(() => { const cs = getComputedStyle(document.querySelector('.wz-beginning'));
+  const styleOn = `(() => { const d = document.querySelector('.wz-beginning'); if (!d) return null; const cs = getComputedStyle(d);   // #13 12f: null on a blank page
     const g = document.querySelector('.wz-beginning-glyph').getBoundingClientRect();
     return { font: cs.fontFamily, size: cs.fontSize, color: cs.color, dir: cs.flexDirection, glyph: Math.round(g.width) }; })()`;
   await freshPage(app, 'bg2-grammar-page', '', LAPTOP_W, 900);
@@ -346,9 +361,15 @@ await withHarness(async (app) => {
   const boardUnit = await app.evalJs(unitGlyph);
   const sameBut = (a, b) => !!a && !!b && a.font === b.font && a.size === b.size && a.color === b.color && a.dir === b.dir;
   bg2Ps.s13 = { pageStyle, boardStyle, pageUnit, boardUnit };
-  ok('S1/S3 [page-size successor]: the revision was made in ONE place and both surfaces inherited it — identical type, colour and stacking direction, and the glyph the same size in each surface\'s own units (the page\'s painted glyph divided by its paint scale, within 1px)',
-    sameBut(pageStyle, boardStyle) && pageStyle.dir === 'column' && !!pageUnit && !!boardUnit && Math.abs(pageUnit.glyph - boardUnit.glyph) <= 1,
-    JSON.stringify(bg2Ps.s13));
+  // ---- PARKED - RETIRED by #13 step 12f (Fable, Nov 1): the Sprout door (the page row's only door) and the first-line invite are
+  // deleted, everywhere, forever, so a blank page has no row. Kept VERBATIM and no longer run; its record is in the parked section
+  // (readings in bg2f); the successor follows (in full: c13-12f-sprout-invite.mjs).
+  // ok('S1/S3 [page-size successor]: the revision was made in ONE place and both surfaces inherited it — identical type, colour and stacking direction, and the glyph the same size in each surface\'s own units (the page\'s painted glyph divided by its paint scale, within 1px)',
+  //   sameBut(pageStyle, boardStyle) && pageStyle.dir === 'column' && !!pageUnit && !!boardUnit && Math.abs(pageUnit.glyph - boardUnit.glyph) <= 1,
+  //   JSON.stringify(bg2Ps.s13));
+  // ------------------------------------------------------------------
+  ok('S1/S3 [12f successor]: the row lives on the board alone - a blank page renders no door, and the board keeps the stacked door (column) with its glyph',
+    pageStyle === null && pageUnit === null && !!boardStyle && boardStyle.dir === 'column' && !!boardUnit, JSON.stringify(bg2Ps.s13));
 
   // ==========================================================================
   // The token is slotted, not hardcoded: the one theme with DARK paper.
@@ -387,17 +408,24 @@ await withHarness(async (app) => {
     boardLeg.oneLine === true && Math.abs(boardLeg.midY - boardLeg.canvasMidY) <= 2, JSON.stringify(boardLeg));
 
   await freshPage(app, 'bg2-leg-page', '', LEG_W, LEG_H);
-  const pageLeg = await app.evalJs(`(() => {
-    const r = document.querySelector('.wz-beginnings').getBoundingClientRect();
-    const s = document.querySelector('.mode-page').getBoundingClientRect();
-    const tops = [...document.querySelectorAll('.wz-beginning')].map((b) => Math.round(b.getBoundingClientRect().top));
-    return { left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top), bottom: Math.round(r.bottom),
-      oneLine: new Set(tops).size === 1, vw: innerWidth, vh: innerHeight,
-      midX: Math.round(r.left + r.width / 2), sheetMidX: Math.round(s.left + s.width / 2) };
-  })()`);
-  ok('1366x768 leg: the page row fits whole, stays on ONE line (three larger doors, no wrap), and stays centered on the sheet',
-    pageLeg.left >= 0 && pageLeg.right <= pageLeg.vw && pageLeg.top >= 0 && pageLeg.bottom <= pageLeg.vh &&
-    pageLeg.oneLine === true && Math.abs(pageLeg.midX - pageLeg.sheetMidX) <= 12, JSON.stringify(pageLeg));
+  // ---- PARKED - RETIRED by #13 step 12f (Fable, Nov 1): the Sprout door (the page row's only door) and the first-line invite are
+  // deleted, everywhere, forever, so a blank page has no row. Kept VERBATIM and no longer run; its record is in the parked section
+  // (readings in bg2f); the successor follows (in full: c13-12f-sprout-invite.mjs).
+  // const pageLeg = await app.evalJs(`(() => {
+  //   const r = document.querySelector('.wz-beginnings').getBoundingClientRect();
+  //   const s = document.querySelector('.mode-page').getBoundingClientRect();
+  //   const tops = [...document.querySelectorAll('.wz-beginning')].map((b) => Math.round(b.getBoundingClientRect().top));
+  //   return { left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top), bottom: Math.round(r.bottom),
+  //     oneLine: new Set(tops).size === 1, vw: innerWidth, vh: innerHeight,
+  //     midX: Math.round(r.left + r.width / 2), sheetMidX: Math.round(s.left + s.width / 2) };
+  // })()`);
+  // ok('1366x768 leg: the page row fits whole, stays on ONE line (three larger doors, no wrap), and stays centered on the sheet',
+  //   pageLeg.left >= 0 && pageLeg.right <= pageLeg.vw && pageLeg.top >= 0 && pageLeg.bottom <= pageLeg.vh &&
+  //   pageLeg.oneLine === true && Math.abs(pageLeg.midX - pageLeg.sheetMidX) <= 12, JSON.stringify(pageLeg));
+  // ------------------------------------------------------------------
+  const pageLeg = await app.evalJs("({ row: !!document.querySelector('.wz-beginnings'), doors: document.querySelectorAll('.wz-beginning').length })");
+  bg2f.pageLeg = pageLeg;
+  ok('1366x768 leg [12f successor]: a blank page at the small-laptop floor renders no row and no door', pageLeg.row === false && pageLeg.doors === 0, JSON.stringify(pageLeg));
 
   await app.typeKeys('At the leg too');
   await sleep(300);
@@ -420,10 +448,16 @@ if (process.env.HARNESS_PARKED === '1') {
   {
     const s = bg2Ps.s13 || {};
     const a = s.pageStyle; const b = s.boardStyle;
-    parkedChecks.push({ name: 'PARKED (was "S1/S3: the revision was made in ONE place and both surfaces inherited it — identical type, colour, stacking direction and glyph size on page and board") - page-size: the page is painted by a transform (~1.6x zoomed), so its glyph paints larger; in the page\'s own units it is the board\'s; live successor: S1/S3 [page-size successor]',
-      pass: !!a && !!b && a.font === b.font && a.size === b.size && a.color === b.color && a.dir === b.dir && !!s.pageUnit && !!s.boardUnit && Math.abs(s.pageUnit.glyph - s.boardUnit.glyph) <= 1,
+    parkedChecks.push({ name: 'PARKED (was "S1/S3: the revision was made in ONE place and both surfaces inherited it — identical type, colour, stacking direction and glyph size on page and board") - page-size: the page is painted by a transform (~1.6x zoomed), so its glyph paints larger; in the page\'s own units it is the board\'s; live successor: S1/S3 [page-size successor] - #13 12f (Fable, Nov 1): the page row is deleted; the board alone keeps the stacked door',
+      pass: a === null && !!b && b.dir === 'column' && !s.pageUnit && !!s.boardUnit,
       detail: JSON.stringify(s) });
   }
+  // #13 12f (Fable, Nov 1): the page-row checks the default leg retired; each re-asserts the new truth from that run (bg2f)
+  parkedChecks.push({ name: 'PARKED (was "S2 (SV19): the page\'s row is centered on the sheet — it reads as a set of modes, not a footnote under the caret (this SUPERSEDES the committee\'s \"furniture beside the cursor\" by Nick\'s own word)") — #13 12f (Fable, Nov 1): the page row is deleted; re-asserted against the new truth: no row on the sheet', pass: !!bg2f.pagePlace && bg2f.pagePlace.row === false, detail: JSON.stringify(bg2f.pagePlace) });
+  parkedChecks.push({ name: 'PARKED (was "S2: the row still never intercepts the surface — pointer-events:none on the container, unchanged by the move") — #13 12f (Fable, Nov 1): there is no row to intercept anything', pass: !!bg2f.pagePlace && bg2f.pagePlace.row === false, detail: JSON.stringify(bg2f.pagePlace) });
+  parkedChecks.push({ name: 'PARKED (was "S2: the door colour carries on the PAGE too — computed WCAG contrast ${pageContrast.ratio}:1 against the sheet (>=4.5)") — #13 12f (Fable, Nov 1): there is no door on the page', pass: bg2f.pageDoor === false, detail: JSON.stringify(bg2f.pageDoor) });
+  parkedChecks.push({ name: 'PARKED (was "S1/S3 [page-size successor]: the revision was made in ONE place and both surfaces inherited it — identical type, colour and stacking direction, and the glyph the same size in each surface\'s own units (the page\'s painted glyph divided by its paint scale, within 1px)") — #13 12f (Fable, Nov 1): the page row is deleted; the revision lives on the board alone', pass: !!bg2Ps.s13 && bg2Ps.s13.pageStyle === null && !!bg2Ps.s13.boardStyle && bg2Ps.s13.boardStyle.dir === 'column', detail: JSON.stringify(bg2Ps.s13) });
+  parkedChecks.push({ name: 'PARKED (was "1366x768 leg: the page row fits whole, stays on ONE line (three larger doors, no wrap), and stays centered on the sheet") — #13 12f (Fable, Nov 1): there is no page row at the leg', pass: !!bg2f.pageLeg && bg2f.pageLeg.row === false && bg2f.pageLeg.doors === 0, detail: JSON.stringify(bg2f.pageLeg) });
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);

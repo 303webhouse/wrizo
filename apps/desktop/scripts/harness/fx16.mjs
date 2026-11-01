@@ -61,9 +61,13 @@ const inviteState = (app) => app.evalJs(`(() => ({
   invite: !!document.querySelector('.fl-invite'),
   placeholder: document.querySelector('.fo-placeholder')?.textContent ?? null,
   pref: localStorage.getItem(${JSON.stringify(PREF_KEY)}),
-  prefAtKey: localStorage.getItem(window.wrizoFirstLineInvite.prefKey()),
+  prefAtKey: localStorage.getItem(window.wrizoFirstLineInvite ? window.wrizoFirstLineInvite.prefKey() : ${JSON.stringify(PREF_KEY)}),
   marker: localStorage.getItem(${JSON.stringify(MIGRATED_KEY)}),
 }))()`);
+// #13 12f (Fable, Nov 1): the first-line invite is deleted, everywhere, forever, and with it FX16's migration; the stored values
+// stay as data that nothing reads, rewrites or removes (with no seam the effective key is the bare one: every case is signed out).
+// The checks that asserted the migration RAN, or the prompt SHOWING, are kept VERBATIM and no longer run; each has a record on
+// the parked leg and a successor asserting the values stay exactly as seeded. The checks that still hold stay live.
 
 await withHarness(async (app) => {
   // ── Case 1 — THE ESCAPED CASE: legacy 'on' (no marker) → migration → no invite ──
@@ -72,8 +76,12 @@ await withHarness(async (app) => {
     const s = await inviteState(app);
     ok('S3 (the escaped case, the whole ticket): a profile carrying the legacy invite value ("on", no migration marker) renders NO invite after load — the one-time migration retires the stale value so the new silent default governs',
       s.prompt === false && s.invite === false, JSON.stringify(s));
-    ok('S2/S3: the migration retired the stale "on" (pref cleared → default off) AND set the marker so it runs exactly once',
-      s.pref === null && s.marker === '1', JSON.stringify(s));
+    // ok('S2/S3: the migration retired the stale "on" (pref cleared → default off) AND set the marker so it runs exactly once',
+    //   s.pref === null && s.marker === '1', JSON.stringify(s));
+    ok('S2/S3 [12f successor]: nothing migrates any more - the legacy "on" stays as stored and no marker is written', s.pref === 'on' && s.marker === null, JSON.stringify(s));
+    if (process.env.HARNESS_PARKED === '1') {
+      pok('PARKED (was "S2/S3: the migration retired the stale \"on\" (pref cleared → default off) AND set the marker so it runs exactly once") — #13 12f (Fable, Nov 1): the migration is deleted with the invite; re-asserted against the new truth: the value stays as stored, no marker', s.pref === 'on' && s.marker === null, JSON.stringify(s));
+    }
   }
 
   // ── Case 2 — a DELIBERATE opt-in survives: 'on' + marker → prompt shows ─────────
@@ -89,11 +97,13 @@ await withHarness(async (app) => {
     //
     //   ok('S2: a deliberate opt-in made under FX15/FX16 ("on" WITH the migration marker) SURVIVES — the migration is one-time and never a silent overwrite; the prompt still shows and the pref stays "on"',
     //     s.prompt === true && s.pref === 'on' && s.marker === '1', JSON.stringify(s));
-    ok('S2 [successor]: a deliberate opt-in made under FX15/FX16 ("on" WITH the migration marker) SURVIVES — the migration is one-time and never a silent overwrite; the prompt still shows and the pref (at its currently-effective key) stays "on"',
-      s.prompt === true && s.prefAtKey === 'on' && s.marker === '1', JSON.stringify(s));
+    // ok('S2 [successor]: a deliberate opt-in made under FX15/FX16 ("on" WITH the migration marker) SURVIVES — the migration is one-time and never a silent overwrite; the prompt still shows and the pref (at its currently-effective key) stays "on"',
+    //   s.prompt === true && s.prefAtKey === 'on' && s.marker === '1', JSON.stringify(s));
+    ok('S2 [12f successor]: an opt-in stored before 12f ("on" with the marker) shows NO invite, and both values stay as stored', s.prompt === false && s.invite === false && s.pref === 'on' && s.marker === '1', JSON.stringify(s));
     if (process.env.HARNESS_PARKED === '1') {
-      pok('PARKED (was "S2: a deliberate opt-in... pref stays on" via the bare key) - the value ALWAYS survives correctly (prefAtKey is "on"); the bare key is either ALSO "on" (signed out) or consumed to null (signed in - the one-time move took it to that account\'s own scoped key)',
-        s.prompt === true && s.prefAtKey === 'on' && s.marker === '1' && (s.pref === 'on' || s.pref === null), JSON.stringify(s));
+      pok('PARKED (was "S2 [successor]: a deliberate opt-in made under FX15/FX16 (\"on\" WITH the migration marker) SURVIVES — the migration is one-time and never a silent overwrite; the prompt still shows and the pref (at its currently-effective key) stays \"on\"") — #13 12f (Fable, Nov 1): the invite is deleted; re-asserted against the new truth: the values survive as stored and no prompt shows', s.prompt === false && s.prefAtKey === 'on' && s.marker === '1', JSON.stringify(s));
+      pok('PARKED (was "S2: a deliberate opt-in... pref stays on" via the bare key) - the value ALWAYS survives correctly (prefAtKey is "on"); the bare key is either ALSO "on" (signed out) or consumed to null (signed in - the one-time move took it to that account\'s own scoped key) - #13 12f (Fable, Nov 1): nothing moves it any more; the bare key is "on" as stored and no prompt shows',
+        s.prompt === false && s.pref === 'on' && s.marker === '1', JSON.stringify(s));
     }
   }
 
@@ -106,11 +116,13 @@ await withHarness(async (app) => {
     //
     //   ok('S2: an explicit withdrawal ("never") survives the migration untouched — no invite, and the pref stays "never" (the migration marks itself run but never rewrites a deliberate withdrawal)',
     //     s.prompt === false && s.invite === false && s.pref === 'never' && s.marker === '1', JSON.stringify(s));
-    ok('S2 [successor]: an explicit withdrawal ("never") survives the migration untouched — no invite, and the pref (at its currently-effective key) stays "never" (the migration marks itself run but never rewrites a deliberate withdrawal)',
-      s.prompt === false && s.invite === false && s.prefAtKey === 'never' && s.marker === '1', JSON.stringify(s));
+    // ok('S2 [successor]: an explicit withdrawal ("never") survives the migration untouched — no invite, and the pref (at its currently-effective key) stays "never" (the migration marks itself run but never rewrites a deliberate withdrawal)',
+    //   s.prompt === false && s.invite === false && s.prefAtKey === 'never' && s.marker === '1', JSON.stringify(s));
+    ok('S2 [12f successor]: a withdrawal stored before 12f ("never", no marker) shows no invite, and stays as stored with no marker written', s.prompt === false && s.invite === false && s.pref === 'never' && s.marker === null, JSON.stringify(s));
     if (process.env.HARNESS_PARKED === '1') {
-      pok('PARKED (was "S2: an explicit withdrawal... pref stays never" via the bare key) - the value ALWAYS survives correctly (prefAtKey is "never"); the bare key is either ALSO "never" (signed out) or consumed to null (signed in - moved to that account\'s own scoped key)',
-        s.prompt === false && s.invite === false && s.prefAtKey === 'never' && s.marker === '1' && (s.pref === 'never' || s.pref === null), JSON.stringify(s));
+      pok('PARKED (was "S2 [successor]: an explicit withdrawal (\"never\") survives the migration untouched — no invite, and the pref (at its currently-effective key) stays \"never\" (the migration marks itself run but never rewrites a deliberate withdrawal)") — #13 12f (Fable, Nov 1): the migration is deleted; re-asserted against the new truth: no invite, the value as stored, no marker', s.prompt === false && s.invite === false && s.prefAtKey === 'never' && s.marker === null, JSON.stringify(s));
+      pok('PARKED (was "S2: an explicit withdrawal... pref stays never" via the bare key) - the value ALWAYS survives correctly (prefAtKey is "never"); the bare key is either ALSO "never" (signed out) or consumed to null (signed in - moved to that account\'s own scoped key) - #13 12f (Fable, Nov 1): nothing moves it any more; the bare key is "never" as stored',
+        s.prompt === false && s.invite === false && s.pref === 'never', JSON.stringify(s));
     }
   }
 
@@ -118,8 +130,12 @@ await withHarness(async (app) => {
   {
     await openWithInviteState(app, 'fx16-fresh', { pref: null, marker: false });
     const s = await inviteState(app);
-    ok('S1 (regression): a fresh profile (no stored value) stays silent — the migration is a no-op on it (nothing to retire), only marking itself run; FX15 for new users is unchanged',
-      s.prompt === false && s.invite === false && s.pref === null && s.marker === '1', JSON.stringify(s));
+    // ok('S1 (regression): a fresh profile (no stored value) stays silent — the migration is a no-op on it (nothing to retire), only marking itself run; FX15 for new users is unchanged',
+    //   s.prompt === false && s.invite === false && s.pref === null && s.marker === '1', JSON.stringify(s));
+    ok('S1 (regression) [12f successor]: a fresh profile stays silent and nothing is written - no pref, no marker', s.prompt === false && s.invite === false && s.pref === null && s.marker === null, JSON.stringify(s));
+    if (process.env.HARNESS_PARKED === '1') {
+      pok('PARKED (was "S1 (regression): a fresh profile (no stored value) stays silent — the migration is a no-op on it (nothing to retire), only marking itself run; FX15 for new users is unchanged") — #13 12f (Fable, Nov 1): the migration is deleted; re-asserted against the new truth: silent, and no marker is written', s.prompt === false && s.invite === false && s.pref === null && s.marker === null, JSON.stringify(s));
+    }
     ok('SV31: the empty page renders NO placeholder text at all — .fo-placeholder is absent (the "Write…" placeholder is removed; the caret + the beginnings row are sufficient)',
       s.placeholder === null, JSON.stringify(s));
   }
