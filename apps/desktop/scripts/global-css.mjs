@@ -4,15 +4,16 @@
 // (c13-6-css-split.mjs check proves it against the commit before the split).
 //
 //   globalCss(srcDir)                  the joined text (srcDir = apps/desktop/src)
-//   srcText(srcDir, rel)               fs.readFileSync(path.join(srcDir, rel), 'utf8'), except that 'index.css' reads the joined text:
+//   srcText(srcDir, ...rel)            fs.readFileSync(path.join(srcDir, ...rel), 'utf8'), except that 'index.css' reads the joined text:
 //                                      the drop-in for a script's own read helper, so the helper's other handling is unchanged
+//                                      (several parts, as join takes them: a read of join(SRC, 'store', f) keeps its folder)
 //   globalCssFileHolding(srcDir, s)    the path of the ONE file under src/styles/ whose text contains s (throws on none or several):
 //                                      for a mutant that edits a rule in place and restores it after
 import fs from 'node:fs';
 import path from 'node:path';
 
-export function srcText(srcDir, rel) {
-  return path.normalize(rel) === 'index.css' ? globalCss(srcDir) : fs.readFileSync(path.join(srcDir, rel), 'utf8');
+export function srcText(srcDir, ...rel) {
+  return path.join(...rel) === 'index.css' ? globalCss(srcDir) : fs.readFileSync(path.join(srcDir, ...rel), 'utf8');
 }
 
 export const IMPORT_LINE = /^@import '\.\/styles\/([a-z0-9-]+\.css)';(\r?\n|$)/gm;

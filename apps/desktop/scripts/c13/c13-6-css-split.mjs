@@ -15,7 +15,7 @@ import { execFileSync } from 'node:child_process';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import { globalCss, globalCssParts } from '../global-css.mjs';
+import { globalCss, globalCssParts, srcText } from '../global-css.mjs';
 
 const ROOT = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim();
 const SRC = path.join(ROOT, 'apps/desktop/src');
@@ -105,6 +105,12 @@ function check() {
   const now = noCR(parts.map((p) => p.text).join(''));
   const fails = [];
   if (!plant && noCR(globalCss(SRC)) !== now) fails.push('globalCss() does not read the parts in index.css order');
+  // srcText is a drop-in for readFileSync(join(SRC, ...parts)): a read in several parts keeps every part (box turn, Nov 1: a
+  // one-part srcText read th-machina-source's join(SRC, 'store', f) as the store/ folder, EISDIR)
+  for (const parts of [['store', 'theme.ts'], ['components', 'Sliver.tsx'], ['main.tsx']]) {
+    if (srcText(SRC, ...parts) !== fs.readFileSync(path.join(SRC, ...parts), 'utf8')) fails.push(`srcText(SRC, ${parts.join(', ')}) is not that file's text`);
+  }
+  if (srcText(SRC, 'index.css') !== globalCss(SRC)) fails.push("srcText(SRC, 'index.css') is not the joined text");
   if (now !== before) {
     let i = 0; while (i < now.length && now[i] === before[i]) i++;
     fails.push(`the joined source differs from index.css at ${base.slice(0, 8)} from line ${before.slice(0, i).split('\n').length}`);
