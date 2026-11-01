@@ -5,11 +5,13 @@
 //   node apps/desktop/scripts/c13/c13-4c-evidence.mjs manifest   write docs/cleanup/c13-4c-evidence-removed.tsv: every tracked file under
 //        docs/evidence/ at HEAD, its blob, its size, and the last commit that changed it; the header names HEAD, the commit that last held them all
 //   node apps/desktop/scripts/c13/c13-4c-evidence.mjs remove     git rm -r docs/evidence (after `manifest`)
-//   node apps/desktop/scripts/c13/c13-4c-evidence.mjs verify [--plant missing|extra|ignore]
-//        the proof: (1) nothing is tracked under docs/evidence/ now; (2) every manifest row is in the base commit with that blob (recoverable);
+//   node apps/desktop/scripts/c13/c13-4c-evidence.mjs verify [--ref <rev>] [--plant missing|extra|ignore]
+//        the proof: (1) no manifest file is tracked at the ref; (2) every manifest row is in the base commit with that blob (recoverable);
 //        (3) the only files the step deletes are the manifest's, and nothing outside docs/evidence/ is deleted or changed except the step's own
-//        two files; (4) .railwayignore still keeps docs/evidence/ out of the deploy. --plant: the same check on a mutated input: must FAIL.
-//        --at <rev> reads the step at that commit (4c's own tip, 04ad76fb), so a later commit on top does not count as "outside the step".
+//        files; (4) .railwayignore still keeps docs/evidence/ out of the deploy. --plant: the same check on a mutated input: must FAIL.
+//        --ref (default HEAD) reads everything from that commit, so it runs from any tree. A merge commit is checked on what the merge
+//        brought (first parent to the merge), so a merged main is read on 4c alone: evidence other lanes added after the base is
+//        listed, not failed (it is not this step's).
 //   node apps/desktop/scripts/c13/c13-4c-evidence.mjs ignore [--plant nobox|image|yml]
 //        Fable, Nov 1: new evidence is text box logs only. .gitignore keeps docs/evidence/ out of git EXCEPT the .txt files under
 //        docs/evidence/box-logs/, and harness.yml only accepts box-log paths there. The probes run in a scratch repo built from the real
@@ -22,8 +24,13 @@ const ROOT = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: '
 const git = (...a) => execFileSync('git', ['-c', 'core.quotePath=false', ...a], { cwd: ROOT, encoding: 'utf8', maxBuffer: 1 << 30 });
 const DIR = 'docs/evidence';
 const MANIFEST = 'docs/cleanup/c13-4c-evidence-removed.tsv';
-// The step's own files (added), and the MAP's numbers row (modified, never deleted).
-const OWN = new Map([[MANIFEST, 'A'], ['apps/desktop/scripts/c13/c13-4c-evidence.mjs', 'A'], ['docs/MAP.md', 'M']]);
+// The step's own files and the status each may have (never a delete): the manifest and tool, the MAP's numbers row, and the
+// box-logs follow-up (Fable, Nov 1), which may merge after the step itself, so the tool can then read as modified.
+const OWN = new Map([
+  [MANIFEST, 'A'], ['apps/desktop/scripts/c13/c13-4c-evidence.mjs', 'AM'], ['docs/MAP.md', 'M'],
+  ['.gitignore', 'M'], ['.github/workflows/harness.yml', 'M'], ['docs/deploy.md', 'M'],
+  ['apps/desktop/scripts/harness/arrival-signin-capture.mjs', 'M'], ['apps/desktop/scripts/evidence/scrollbar-flush-frames.mjs', 'M'],
+]);
 
 function manifest() {
   const base = git('rev-parse', 'HEAD').trim();
@@ -57,29 +64,36 @@ function remove() {
 
 function verify() {
   const plant = process.argv.includes('--plant') ? process.argv[process.argv.indexOf('--plant') + 1] : null;
-  const text = fs.readFileSync(path.join(ROOT, MANIFEST), 'utf8');
+  const ref = git('rev-parse', '--verify', `${process.argv.includes('--ref') ? process.argv[process.argv.indexOf('--ref') + 1] : 'HEAD'}^{commit}`).trim();
+  const show = (f) => { try { return git('show', `${ref}:${f}`); } catch { return ''; } };
+  const parents = git('rev-list', '--parents', '-n', '1', ref).trim().split(' ').slice(1);
+  const text = show(MANIFEST);
   const base = /^# base\t([0-9a-f]{40})/m.exec(text)[1];
   const rows = text.split(/\r?\n/).filter((l) => l && !l.startsWith('#') && !l.startsWith('file\t')).map((l) => { const [file, blob] = l.split('\t'); return { file, blob }; });
   if (plant === 'missing') rows.push({ file: `${DIR}/never-was.png`, blob: '0'.repeat(40) });
+  const listed = new Set(rows.map((r) => r.file));
   const fails = [];
-  // Tracked now: text box logs are allowed under box-logs/ (Fable, Nov 1); anything else under docs/evidence/ is a failure.
-  const nowTracked = git('ls-files', `${DIR}/`).split('\n').filter((f) => f && !/^docs\/evidence\/box-logs\/.+\.txt$/.test(f));
-  if (nowTracked.length) fails.push(`${nowTracked.length} files still tracked under ${DIR}/`);
+  const tracked = git('ls-tree', '-r', '--name-only', ref, `${DIR}/`).split('\n').filter(Boolean);
+  const stillListed = tracked.filter((f) => listed.has(f));
+  if (stillListed.length) fails.push(`${stillListed.length} manifest files still tracked at ${ref.slice(0, 8)}`);
+  // Text box logs under box-logs/ are allowed (Fable, Nov 1). Anything else was added after the base by another lane; the step's own
+  // diff below fails any addition the step itself makes.
+  const others = tracked.filter((f) => !listed.has(f) && !/^docs\/evidence\/box-logs\/.+\.txt$/.test(f));
   const atBase = new Map(git('ls-tree', '-r', base, `${DIR}/`).split('\n').filter(Boolean).map((l) => { const [meta, file] = l.split('\t'); return [file, meta.split(/\s+/)[2]]; }));
   for (const r of rows) if (atBase.get(r.file) !== r.blob) fails.push(`not recoverable at ${base.slice(0, 8)}: ${r.file}`);
   if (atBase.size !== rows.length - (plant === 'missing' ? 1 : 0)) fails.push(`manifest rows ${rows.length} vs files at base ${atBase.size}`);
-  const at = process.argv.includes('--at') ? process.argv[process.argv.indexOf('--at') + 1] : 'HEAD';
-  let changes = git('diff', '--name-status', '--no-renames', base, at).split('\n').filter(Boolean).map((l) => l.split('\t'));
+  const from = parents.length > 1 ? parents[0] : base;
+  let changes = git('diff', '--name-status', '--no-renames', from, ref).split('\n').filter(Boolean).map((l) => l.split('\t'));
   if (plant === 'extra') changes.push(['D', 'docs/MAP.md']);
-  const listed = new Set(rows.map((r) => r.file));
   for (const [st, f] of changes) {
     if (f.startsWith(`${DIR}/`)) { if (st !== 'D' || !listed.has(f)) fails.push(`${st} ${f}: not a listed deletion`); }
-    else if (OWN.get(f) !== st) fails.push(`${st} ${f}: outside the step`);
+    else if (!(OWN.get(f) ?? '').includes(st)) fails.push(`${st} ${f}: outside the step`);
   }
-  let ignore = fs.existsSync(path.join(ROOT, '.railwayignore')) ? fs.readFileSync(path.join(ROOT, '.railwayignore'), 'utf8') : '';
+  let ignore = show('.railwayignore');
   if (plant === 'ignore') ignore = ignore.replace(/^docs\/evidence\/?\s*$/m, '');
   if (!/^docs\/evidence\/?\s*$/m.test(ignore)) fails.push('.railwayignore no longer keeps docs/evidence/ out of the deploy');
-  console.log(`base ${base.slice(0, 8)}; manifest ${rows.length}; tracked now ${nowTracked.length}; changes ${changes.length}${plant ? `; PLANTED: ${plant}` : ''}`);
+  console.log(`ref ${ref.slice(0, 8)}${parents.length > 1 ? ` (merge; read from its first parent ${from.slice(0, 8)})` : ` (read from base ${base.slice(0, 8)})`}; manifest ${rows.length}; listed still tracked ${stillListed.length}; changes ${changes.length}${plant ? `; PLANTED: ${plant}` : ''}`);
+  if (others.length) console.log(`note: ${others.length} files under ${DIR}/ outside box-logs/ added after the base by other commits (not this step's), e.g. ${others.slice(0, 3).join(', ')}`);
   for (const f of fails.slice(0, 10)) console.log('FAIL', f);
   console.log(fails.length ? `VERIFY: FAIL (${fails.length})` : 'VERIFY: PASS');
   process.exit(fails.length ? 1 : 0);
@@ -125,4 +139,4 @@ function ignore() {
   process.exit(fails.length ? 1 : 0);
 }
 
-({ manifest, remove, verify, ignore }[process.argv[2]] ?? (() => { console.log('usage: manifest | remove | verify [--at rev] [--plant missing|extra|ignore] | ignore [--plant nobox|image|yml]'); process.exit(1); }))();
+({ manifest, remove, verify, ignore }[process.argv[2]] ?? (() => { console.log('usage: manifest | remove | verify [--ref rev] [--plant missing|extra|ignore] | ignore [--plant nobox|image|yml]'); process.exit(1); }))();
