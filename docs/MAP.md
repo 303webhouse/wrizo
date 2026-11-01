@@ -11,6 +11,8 @@ Read this page first, then only the page for the area you touch (`docs/map/`). M
 
 **Process:** harness first; the recede rule.
 
+**The recede rule (this page is its source):** While typing, everything off the page goes to opacity 0, except the page, the drawer tab arrows, progress strips that are on, and docked panels.
+
 The canon behind them: [page primacy](page-primacy-canon.md), [philosophy](PHILOSOPHY.md), [north star](north-star.md), [Flux](flux-theme-canon.md).
 House rules for lanes (branches, the box, `main`): [AGENTS.md](../AGENTS.md).
 
