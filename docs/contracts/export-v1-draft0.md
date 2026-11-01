@@ -1,6 +1,6 @@
 # Contract: the Wrizo export format, v1 · DRAFT 0
 
-**Status:** draft 0 (Fable, Oct 31, 2026). NOT signed. Read mocks against it. **Owner:** Fable. **Consumer:** SOCIAL.
+**Status:** draft 0, rev b (Fable, Oct 31, 2026, 4:05 pm: web links approved). NOT signed. Read mocks against it. **Owner:** Fable. **Consumer:** SOCIAL.
 **The rule it serves (Nick):** one door. Text enters Read only through this format. Read has no editor of its own and never writes back to Write.
 
 ## 1. The envelope
@@ -33,7 +33,7 @@
 - **Line-based, verbatim.** Every line break and every blank line travels exactly as written, and nothing is reflowed. **Verse is verse:** one line per line, a blank line between stanzas. (SOCIAL ask 1: yes.)
 - The marks are the ones Write's page paints today: bold, italic, underline, strike; font spans and size spans on highlighted words; the structure tokens (headings, the `>| ` block, and so on).
 - **There is ONE reader:** Write's `store/markRuns.ts`. Read must use the same reader (see §7), never a second interpretation, or a piece will look different in the two apps.
-- **Links (SOCIAL ask 2):** Write has **no web-link mark today**. Its "links" join pages and cards inside the Drawer. A `link { href }` mark is RESERVED in v1 and is not emitted. Adding web links (for citations) to Write's editor would be a new mark, so it needs Nick's word first. Until then, Read must not make `href` required.
+- **Links (SOCIAL ask 2): web links are APPROVED (Nick, Oct 31, 3:59 pm: "links need to be clickable").** Write gains a `link { href }` mark: the written form is `[words](https://…)` inside a line, painted by the same one reader. Only `https:`, `http:` and `mailto:` addresses are allowed, and anything else stays plain text. v1 EMITS it. Read may rely on `href` wherever a link exists; it's still optional per piece (not every piece has links). Links between Write's own pages and cards are NOT web links and are not exported as `href`.
 
 ## 3. `work` (optional; SOCIAL ask 3: yes)
 `{ "id": "<Write project id>", "title": "<project title>", "position": <the page's place in the project's existing section order> }`. All of it is derived from data Write already has. It's absent for a loose or Journal page.

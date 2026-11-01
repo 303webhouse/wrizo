@@ -1,6 +1,6 @@
 # Contract: one Wrizo account for Write and Read · DRAFT 0
 
-**Status:** draft 0 (Fable, Oct 31, 2026). NOT signed. Read mocks against it; nothing touches production until Nick signs draft 1.
+**Status:** draft 0, rev d (Fable, Nov 1, 2026, 1:45 am: the email claim; `theme.room` replaces `theme.tone`). NOT signed. Read mocks against it; nothing touches production until Nick signs draft 1.
 **Owner:** Fable (Write side). **Consumer:** SOCIAL (Wrizo | Read, `303webhouse/wrizo-read`).
 **Nick's rulings this rests on:** one account for both apps; a writer can sign up from either side (Oct 29); the writer's theme follows them into Read (Oct 31); theme switches are saved to the account so they follow the writer into Read (Oct 31).
 
@@ -15,13 +15,13 @@
 |---|---|---|
 | `sub` | A stable id for this person, **minted for Read only** (a pairwise id). It is never Write's database id. It never changes. | agreed |
 | `theme.id` | The writer's current Write theme (`plateau`/Arbor, `machina`, `flux`, …). | agreed |
-| `theme.tone` | The theme's light/dark room. | agreed |
+| `theme.room` | The writer's **Room** setting: `clock` (follow the clock), `light` (always day) or `dark` (always night). Nick, Nov 1. **Unset = `clock`.** On `clock` the room is day 07:00–19:00 in the viewer's local time and night otherwise; Read applies the same rule on its own clock. Write sets the resolved room as `data-room` (`light`/`dark`) on the root. A theme whose redesign hasn't shipped ignores the room and follows `page`, as today. | agreed (Nick, Nov 1) |
 | `theme.page` | Page: Light / Dark (the existing cross-theme pref). | agreed |
 | `theme.cast` | Machina's Cool / Neutral, when the theme is Machina. | agreed |
 | `theme.switches` | The writer's per-theme "wow" switches (`{ themeId: { switchKey: false } }`; only the switches turned off are listed). | agreed (Nick, Oct 31: on the account) |
 | pen name / public name | Who owns it, Write or Read. | **OPEN (Nick, deferred)** |
 | age / class signal | Whether Write collects anything at sign-up and passes it on, or whether Read handles it entirely. | **OPEN (Nick, deferred)** |
-| email | Not sent in draft 0. If Read needs to send account notices, SOCIAL asks and Nick decides. | **OPEN** |
+| `email` + `email_verified` | The writer's sign-in address, for **account notices only** (Nick's Read ruling D20: stored under Read's retention, deleted with the account, shown to no one). **`email_verified` is `false` for every account today:** Write sends no email yet, so it has never verified an address. It becomes `true` only after Write gains a verification step (planned with the "forgot password" email). Read must not treat an unverified address as proof of anything. | agreed (Nick, D20) |
 
 - The claims are **read-only for Read**. Read never writes back to Write's settings.
 - They're fresh at every sign-in, plus a `userinfo` endpoint Read may call to refresh the theme after a writer changes it in Write.
