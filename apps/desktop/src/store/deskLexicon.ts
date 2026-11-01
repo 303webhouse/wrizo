@@ -655,7 +655,7 @@ export type DeskTermId =
   | 'kidHowMany' | 'kidKicker' | 'kidNote' | 'kidAdd' | 'kidReadout'
   | 'beginNewCard' | 'beginNewPageCard' | 'beginLoadDeck' | 'beginConnectPage'
   | 'beginNewLane'
-  | 'beginScreenplay' | 'beginSprout' | 'beginPlan'
+  | 'beginScreenplay' | 'beginPlan'
   // ITEM 224 — sign-up by invite code, until launch. Arrival.tsx's own
   // fields are placeholder-only (no labels) today; this one matches that
   // existing shape exactly rather than introducing a labelled field alone.
@@ -895,7 +895,6 @@ const CANONICAL: Record<DeskTermId, string> = {
   beginConnectPage: 'Connect Pages',
   beginNewLane: 'New Lane',
   beginScreenplay: 'Screenplay',
-  beginSprout: 'Sprout',
   beginPlan: 'Plan',
   modeFreeWrite: 'Free Write',
   modeDraft: 'Draft',

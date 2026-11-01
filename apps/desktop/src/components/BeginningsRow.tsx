@@ -22,7 +22,7 @@ import { useEffect, type ReactNode } from 'react';
 
 export type BeginningKey =
   | 'newCard' | 'newPageCard' | 'loadDeck' | 'connectPage' | 'newLane'
-  | 'screenplay' | 'sprout' | 'plan';
+  | 'screenplay' | 'plan';
 
 export interface BeginningDoor {
   key: BeginningKey;
@@ -72,18 +72,6 @@ const GLYPH: Record<BeginningKey, ReactNode> = {
   screenplay: (
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round">
       <path d="M2.5 3.5h6M2.5 7h11M5.5 10.5h6M5.5 13h4" />
-    </svg>
-  ),
-  // BG1 / P1 amendment 2 — the Sprout: a node on a lateral runner throwing a
-  // shoot. The rhizome's own figure, as drawn: the runner travels sideways
-  // (it does not begin at a root and it does not end), the node is a swelling
-  // on it, and the shoot is what the node sends up.
-  sprout: (
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M1 12.5h14" />
-      <circle cx="6" cy="12.5" r="1.5" fill="currentColor" stroke="none" />
-      <path d="M6 11C6 8.5 7 6.8 8.8 5.6" />
-      <path d="M8.8 5.6c1-1.5 2.6-2 4-1.7-.2 1.9-1.7 3.2-4 1.7z" />
     </svg>
   ),
   // A board with cards on it — the plan.

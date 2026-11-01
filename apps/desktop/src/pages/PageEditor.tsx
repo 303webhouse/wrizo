@@ -16,9 +16,7 @@ import { InkStratum, type InkPen, type InkPermission } from '../components/InkSt
 import { INK_DEFAULT_PEN } from '../store/ink';
 import { useWarmStart } from '../components/useWarmStart';
 import { useSessionLog } from '../components/useSessionLog';
-import { useFirstLineInvite } from '../components/useFirstLineInvite';
 import { UnbornProvider, useUnborn } from '../components/UnbornSurface';
-import { BeginningsRow, type BeginningDoor } from '../components/BeginningsRow';
 import { unbornHref } from '../store/unbornPage';
 import { TEMPLATE_ORDER, type TemplateKey } from '../components/TemplateSketch';
 import { outlineNextRowPrefix, outlineShift } from '../store/outlineText';
@@ -281,11 +279,6 @@ function PageEditorView({ id }: { id: string }) {
   // AB2 S4 — the Structure picker's one-time confirmation (prose page with
   // words -> screenplay). Switching an empty page is free (no modal).
   const [structureConfirm, setStructureConfirm] = useState(false);
-  // BG1 S2 — the beginnings row's own dismissal (the first keystroke, a door
-  // taken, or Esc). Per mount, never persisted: this is not a preference, it
-  // is "the writer is past it on this page." The zero-words gate is the other
-  // half of the same rule — see `beginningsVisible` below.
-  const [beginningsDismissed, setBeginningsDismissed] = useState(false);
   // AB3 S2 — the Page face's sending verbs. Genuinely new capability here
   // (PageEditor never had Move/Copy or Port-to-Board before this ticket —
   // "everything about a page" now includes typed/filed pages too, not just
@@ -457,9 +450,6 @@ function PageEditorView({ id }: { id: string }) {
     // page has a row and `unbornRef` has nulled itself.
     enabled: () => !unbornRef.current,
   });
-
-  // F6 — the first-line invitation on a truly empty page (entry.text.length === 0).
-  const invite = useFirstLineInvite(() => textRef.current.length === 0);
 
   // FX2 S2 — Draft-open typewriter default, captured once at mount (the
   // same "captured once" idiom as warmRef above, and Sliver.tsx's own
@@ -836,39 +826,6 @@ function PageEditorView({ id }: { id: string }) {
   // impossible either way.
   if (!realEntry) return <Navigate to="/" replace />;
 
-  // BG1 S2 — the page's beginnings, NARROWED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08): the row keeps ONE door,
-  // Sprout, and shows only on a blank FREE WRITE page. Screenplay is the Draft strip's live template (below); Plan stays on
-  // the PLAN → bar only. Everything else about the row is as BG1 built it - furniture beside the cursor, never a gate:
-  //
-  //   • The page is ALREADY live and typeable when this renders. The caret is
-  //     under the row from the first frame (ForwardOnlyEditor autofocuses an
-  //     empty page, below) and the row's container is pointer-events:none, so
-  //     it cannot intercept a click or a keystroke meant for the paper. A
-  //     writer who ignores it entirely never knows it was a decision.
-  //   • It renders only while the page has ZERO words, and it is dismissed by
-  //     the first keystroke (A19 — the same `onForward` seam warm-start, TTFK
-  //     and the F6 invite already share), by the door taken, or by Esc.
-  //
-  // Sprout IS the spark deck, and the spark deck IS the first-line invitation
-  // (P1 amendment 2's addendum: "deck" was overloaded — DeckWizard loads card
-  // decks onto BOARDS; drawing one first line onto a PAGE is this mechanism).
-  // So the door calls FX15's own on-request seam rather than inventing a
-  // page-side deck entry: deck-drawn, never model-drawn, never insertable.
-  // SPROUT-INVITE-SCOPE (page-readiness survey item 1, Oct 21) — the Sprout door offers to
-  // turn the first-line invite ON; once `invite`'s own pref is no longer 'off' (opted in
-  // already, or permanently declined), there is nothing left to offer, so the door stops
-  // showing. This reads the invite's OWN pref state, not a new completion flag on the
-  // beginnings row — BG1's row stays exactly as stateless as Nick's Oct 8 ruling made it;
-  // the row simply renders zero doors (BeginningsRow already returns null for that).
-  const takeBeginning = (open: () => void) => () => { setBeginningsDismissed(true); open(); };
-  const beginningDoors: BeginningDoor[] = invite.canOffer
-    ? [{ key: 'sprout', label: dt('beginSprout'), onOpen: takeBeginning(() => invite.optIn()) }]
-    : [];
-  const beginningsVisible = !beginningsDismissed && !gateActive && mode === 'journal' && wordCount(text) === 0;
-  const beginningsRow = beginningsVisible
-    ? <BeginningsRow surface="page" doors={beginningDoors} onDismiss={() => setBeginningsDismissed(true)} />
-    : null;
-
   // PAGE-TEMPLATES-MOVE (Nick, 2026-10-08: "templates live in the tools menu now") - Screenplay is the Draft strip's LIVE
   // template (Sliver.tsx, Templates; Draft and later strips only, never Free Write). It runs the act its door ran: the
   // Structure path (AB2 S4) - free on an empty page, and it BIRTHS (the ruled amendment to ruling 2).
@@ -929,7 +886,7 @@ function PageEditorView({ id }: { id: string }) {
           text={text}
           autoFocus={initialText.trim() === ''}
           onChange={onTextChange}
-          onForward={() => { noteWrite(); warm.release(); noteSessionKeystroke(); invite.dismiss(); setBeginningsDismissed(true); }}
+          onForward={() => { noteWrite(); warm.release(); noteSessionKeystroke(); }}
           onFocus={() => setFocused(true)}
           onBlur={() => { setFocused(false); flush(); }}
         />
@@ -945,7 +902,7 @@ function PageEditorView({ id }: { id: string }) {
         onFormatKey={mode === 'drafting' ? applyRailFormat : undefined}
         lens={lensActive}
         onLensKey={applyLensKey}
-        onForward={() => { noteWrite(); warm.release(); noteSessionKeystroke(); invite.dismiss(); setBeginningsDismissed(true); }}
+        onForward={() => { noteWrite(); warm.release(); noteSessionKeystroke(); }}
         onFocus={() => setFocused(true)}
         onBlur={() => { setFocused(false); flush(); }}
         placeholder=""
@@ -969,22 +926,9 @@ function PageEditorView({ id }: { id: string }) {
         }}
       />
       )}
-      {/* HB1 S3 — the gate's instruction is the threshold's one sanctioned
-          utterance; the first-line invite (F6) would speak a second one on
-          this exact (empty) page. gateActive is only ever true when framed
-          (F4), so this never touches the legacy branch's behavior. */}
       {/* A1: said to a screen reader, never drawn (1px, clipped) - so it cannot move or resize the page. AFTER the editor, never
           the sheet's first child, so no first-child rule can ever take it for the page. */}
       <span id={ESC_HINT_ID} className="wz-sr-only">{dt('pageEscHint')}</span>
-      {gateActive ? null : invite.node}
-      {/* BG1 S2 — the beginnings row, a sibling ABOVE/OUTSIDE the editable DOM
-          (the same warm-start/F6 placement, for the same reason: never
-          selectable, never serialized — the saved bytes are identical whether
-          it showed or not). Set one line below the caret in CSS so the first
-          line stays clear; `gateActive` suppression is already folded into
-          `beginningsVisible`, matching HB1 S3's "the threshold has one
-          sanctioned utterance." PAGE-TEMPLATES-MOVE: Sprout only, Free Write only. */}
-      {beginningsRow}
       {warm.rect && (
         <div
           aria-hidden="true"
