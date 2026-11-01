@@ -53,7 +53,7 @@ const COLLECT = (sel) => `(() => {
       const c = parse(getComputedStyle(el).color); if (hidden || !c || c.a * op < 0.05) continue; const rg = document.createRange(); rg.selectNodeContents(n);
       const rects = [...rg.getClientRects()].filter((x) => x.width >= 2 && x.height >= 4 && x.left < box.right && x.right > box.left && x.top < box.bottom && x.bottom > box.top && x.top < innerHeight)
         .map((x) => [Math.max(x.left, box.left), Math.max(x.top, box.top), Math.min(x.right, box.right), Math.min(x.bottom, box.bottom, innerHeight)]);
-      if (rects.length) runs.push({ where: root.className.split(' ')[0], text: n.textContent.trim().slice(0, 24), fg: [c.r, c.g, c.b, c.a * op], rects }); } }
+      if (rects.length) runs.push({ where: root.className.split(' ')[0], text: n.textContent.trim().slice(0, 24), fg: [c.r, c.g, c.b, c.a * op], rects, disabled: !!el.closest(':disabled, [aria-disabled="true"]') }); } }
   window.__r13runs = runs; return runs.length; })()`;
 const HIDE = "(() => { const s = document.createElement('style'); s.id = 'r13-hide'; s.textContent = '*, *::before, *::after{ color:transparent !important; -webkit-text-fill-color:transparent !important; text-shadow:none !important; caret-color:transparent !important; }'; document.head.appendChild(s); return new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => r(true)))); })()";
 const SHOW = "(() => { document.getElementById('r13-hide')?.remove(); return true; })()";
@@ -67,7 +67,7 @@ const MEASURE = (b64) => `(async () => {
     for (const [x0, y0, x1, y1] of run.rects) { const sx = Math.max(1, (x1 - x0) / 24), sy = Math.max(1, (y1 - y0) / 8);
       for (let y = y0; y < y1; y += sy) for (let x = x0; x < x1; x += sx) { const i = (Math.floor(y * k) * img.width + Math.floor(x * k)) * 4; const r = data[i], g = data[i + 1], b = data[i + 2];
         const lb = L(r, g, b), lf = L(fr * fa + r * (1 - fa), fg * fa + g * (1 - fa), fb * fa + b * (1 - fa)); ratios.push((Math.max(lb, lf) + 0.05) / (Math.min(lb, lf) + 0.05)); } }
-    ratios.sort((a, b) => a - b); return { where: run.where, text: run.text, p2: ratios.length ? Math.round(ratios[Math.floor(ratios.length * 0.02)] * 100) / 100 : null }; }); })()`;
+    ratios.sort((a, b) => a - b); return { where: run.where, text: run.text, disabled: run.disabled, p2: ratios.length ? Math.round(ratios[Math.floor(ratios.length * 0.02)] * 100) / 100 : null }; }); })()`;
 const pixels = async (app, sel) => { await app.evalJs(COLLECT(sel)); await app.evalJs(HIDE); const shot = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data; await app.evalJs(SHOW); return app.evalJs(MEASURE(shot)); };
 // CIE L* of a CSS colour (for "a visible step", ~ +8 L*)
 const LSTAR = (expr) => `(() => { const m = String(${expr}).match(/\\d+(\\.\\d+)?/g); if (!m) return null; const lin = (v) => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
@@ -133,12 +133,19 @@ export default {
     const g = await app.evalJs(`(() => { const l = document.querySelector('.wz-sliver-panel > .wz-drawer-slide'), r = document.querySelector('.wz-tutor-panel > .wz-drawer-slide'), p = document.querySelector('.desk-frame-stage .mode-page');
       const sc = String(getComputedStyle(document.querySelector('.wz-sliver-panel')).scrollbarColor); return { left: l ? getComputedStyle(l).backgroundColor : null, right: r ? getComputedStyle(r).backgroundColor : null, page: p ? getComputedStyle(p).backgroundColor : null,
         track: sc.slice(Math.max(0, sc.lastIndexOf('rgb'))), tone: document.documentElement.getAttribute('data-page'), room: document.documentElement.getAttribute('data-arbor2-room') }; })()`);
+    // (amendment before any green, after measuring the note's two numbers against each other: #2A1E15 as written is only +5.3 L* off the dark
+    // page #1A1510, and a true +8 (#31231A) takes the olive text to 4.44:1; #2E2118 is the nearest brown at +6.9 L* with olive at 4.57. Original
+    // colour checked: rgb(42, 30, 21).)
     const lD = await app.evalJs(LSTAR(JSON.stringify(g.left))), lP = await app.evalJs(LSTAR(JSON.stringify(g.page)));
     const px = await pixels(app, '.wz-sliver-panel, .wz-tutor-panel');
-    const low = px.filter((x) => x.p2 != null && x.p2 < 4.5);
-    const ok = { night: g.room === 'night', lifted: g.left === 'rgb(42, 30, 21)' && g.right === 'rgb(42, 30, 21)', track: g.track === g.left,
+    // (instrument amendment after red leg 41354444846, before any green: the only runs under 4.5 were the two "Selection" controls, inactive
+    // until there is a selection - WCAG 1.4.3 exempts inactive controls - so runs inside a disabled control are reported, not floored. Original:
+    // const low = px.filter((x) => x.p2 != null && x.p2 < 4.5);)
+    const low = px.filter((x) => x.p2 != null && x.p2 < 4.5 && !x.disabled);
+    const inactive = px.filter((x) => x.disabled).map((x) => [x.text, x.p2]);
+    const ok = { night: g.room === 'night', lifted: g.left === 'rgb(46, 33, 24)' && g.right === 'rgb(46, 33, 24)', track: g.track === g.left,
       stepOffPage: g.tone !== 'dark' || (lD != null && lP != null && lD - lP >= 6), measured: px.length >= 10, floors: low.length === 0 };
-    const brief = { ok, ground: g, lstar: { drawer: lD, page: lP }, runs: px.length, lowest: px.filter((x) => x.p2 != null).sort((a, b) => a.p2 - b.p2).slice(0, 4), low: low.slice(0, 8) };
+    const brief = { ok, ground: g, lstar: { drawer: lD, page: lP }, runs: px.length, lowest: px.filter((x) => x.p2 != null && !x.disabled).sort((a, b) => a.p2 - b.p2).slice(0, 4), low: low.slice(0, 8), inactive };
     if (Object.values(ok).some((x) => !x)) fail('R13-NIGHT-DRAWERS', brief);
     say('r13-night-drawers', brief);
   },
