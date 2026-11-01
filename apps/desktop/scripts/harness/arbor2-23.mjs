@@ -16,6 +16,10 @@ import { withHarness } from '../runtime-verify.mjs';
 const SHOTS = process.env.ARBOR_SHOTS || null;
 if (SHOTS) fs.mkdirSync(SHOTS, { recursive: true });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// r9 DRIVER PIN (not an assertion): unset, the room now follows the CLOCK (Fable, Nov 1: Follow the clock / Always day / Always night) and
+// the runner's clock is UTC. This file's checks were written for the room the page tone gave (dark = night, light = day), so after every
+// flagged reload it chooses that room explicitly (data-room: Always night / Always day). The clock itself is proven in frames/arbor2-r9.mjs.
+const pinRoom = (app) => app.evalJs("(() => { const r = document.documentElement; if (/[?&]arbor2=1/.test(location.search)) r.setAttribute('data-room', r.getAttribute('data-page') === 'dark' ? 'dark' : 'light'); })()");
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
 const sameRect = (a, b) => !!a && !!b && ['x', 'y', 'w', 'h'].every((k) => Math.abs(a[k] - b[k]) <= 0.5);
@@ -23,10 +27,11 @@ const snap = async (app, name) => { if (SHOTS) fs.writeFileSync(path.join(SHOTS,
 const splashGone = (app) => app.waitFor("!document.querySelector('.wz-splash')", { timeout: 20000, label: 'splash gone' }).catch(() => {});
 const setFlag = async (app, on) => {
   await app.evalJs(`history.replaceState(null, '', ${JSON.stringify(on ? '/?arbor2=1' : '/')} + location.hash)`);
-  await app.reload(); await splashGone(app); await sleep(400);
+  await app.reload(); await pinRoom(app); await splashGone(app); await sleep(400);
 };
 // (r8: the Room switch lives in the Mood menu, folded by default - the driver opens Mood first when the label is not on screen; no assertion changed)
-const pickBar = async (app, label) => { await app.evalJs(`(() => { if ([...document.querySelectorAll('.arbor2-bar-opt')].some((x) => x.textContent.trim() === ${JSON.stringify(label)})) return; const m = [...document.querySelectorAll('.arbor2-bar-head')].find((h) => /^Mood/.test(h.textContent.trim()) && h.getAttribute('aria-expanded') !== 'true'); if (m) m.click(); })()`); await new Promise((r) => setTimeout(r, 150)); return app.evalJs(`(() => { const b = [...document.querySelectorAll('.arbor2-bar-opt')].find((x) => x.textContent.trim() === ${JSON.stringify(label)}); if (b) b.click(); return !!b; })()`); };
+// (r9 driver fix, no assertion changed: the Room row's buttons now read "Always day" / "Always night" - Fable, Nov 1 - so the old labels map to them)
+const pickBar = async (app, label0) => { const label = ({ Night: 'Always night', Day: 'Always day' })[label0] ?? label0; await app.evalJs(`(() => { if ([...document.querySelectorAll('.arbor2-bar-opt')].some((x) => x.textContent.trim() === ${JSON.stringify(label)})) return; const m = [...document.querySelectorAll('.arbor2-bar-head')].find((h) => /^Mood/.test(h.textContent.trim()) && h.getAttribute('aria-expanded') !== 'true'); if (m) m.click(); })()`); await new Promise((r) => setTimeout(r, 150)); return app.evalJs(`(() => { const b = [...document.querySelectorAll('.arbor2-bar-opt')].find((x) => x.textContent.trim() === ${JSON.stringify(label)}); if (b) b.click(); return !!b; })()`); };
 const clickSel = (app, sel) => app.evalJs(`(() => { const b = document.querySelector(${JSON.stringify(sel)}); if (b) b.click(); return !!b; })()`);
 const clickText = (app, sel, text) => app.evalJs(`(() => { const b = [...document.querySelectorAll(${JSON.stringify(sel)})].find((x) => (x.textContent || '').trim().toLowerCase() === ${JSON.stringify(text.toLowerCase())}); if (b) b.click(); return !!b; })()`);
 
@@ -50,7 +55,7 @@ const read = (app) => app.evalJs(READ);
 await withHarness(async (app) => {
   await app.goto('/');
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '4');");
-  await app.reload();
+  await app.reload(); await pinRoom(app);
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
   await app.emulateDpr(1, 1366, 768);
   await app.goto('/project/new');

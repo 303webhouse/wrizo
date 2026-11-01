@@ -66,11 +66,14 @@ const RECT = `(() => { const r = (el) => { if (!el) return null; const b = el.ge
 const same = (a, b) => !!a && !!b && ['l', 't', 'w', 'h'].every((k) => Math.abs(a[k] - b[k]) <= 0.5);
 
 export default {
+  // PARKED 2026-11-01 (SUPERSEDED by Fable's ruling, Nov 1: "Room settled: Follow the clock / Always day / Always night (unset = clock,
+  // 07:00-19:00 local)" - unset, the room no longer follows the tone, and the row's buttons are the three choices). Kept verbatim under the
+  // name r8-room-v1 (not in r8's run list any more); SUCCESSOR: r9-room in scripts/frames/arbor2-r9.mjs.
   // ── THE ROOM CONTROL. Unset, the room follows the tone (no data-room; the row says "follows Page"); the Mood menu's FIRST row is "Room" with
   // Day and Night; pressing the other room writes data-room (Day = light, Night = dark) and the room changes while the PAGE keeps the tone's
   // paper; with data-room set a change of tone no longer moves the room, and with it removed the room follows the tone again; no storage key
   // appears; a reload forgets the choice (in session only).
-  'r8-room': async (app) => {
+  'r8-room-v1': async (app) => {
     await page(app, 'arbor-r8-room', WORDS);
     const keys0 = await app.evalJs('Object.keys(localStorage).sort()');
     const paperOf = `(() => { ${COLOUR} return hex(parse(getComputedStyle(document.querySelector('.mode-page')).backgroundColor)); })()`;

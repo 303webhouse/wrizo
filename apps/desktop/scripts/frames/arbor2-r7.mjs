@@ -5,6 +5,10 @@
 // 300 characters of an error). Written red-first: run against r7's base (the r6 build rebased on main) before the r7 CSS.
 // Seeds go through the app's seams (window.wrizo*), never raw collection storage. No imports.
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// r9 DRIVER PIN (not an assertion): unset, the room now follows the CLOCK (Fable, Nov 1: Follow the clock / Always day / Always night) and
+// the runner's clock is UTC. This file's checks were written for the room the page tone gave (dark = night, light = day), so after every
+// flagged reload it chooses that room explicitly (data-room: Always night / Always day). The clock itself is proven in frames/arbor2-r9.mjs.
+const pinRoom = (app) => app.evalJs("(() => { const r = document.documentElement; if (/[?&]arbor2=1/.test(location.search)) r.setAttribute('data-room', r.getAttribute('data-page') === 'dark' ? 'dark' : 'light'); })()");
 const ED = '.forward-only-editor';
 const WORDS = 'The morning light came in low across the table, and she began to write. The kettle ticked as it cooled, and outside a dog asked the street a question nobody answered.';
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
@@ -13,7 +17,7 @@ const say = (name, data) => console.log(`ARBOR-R7 ${name} ${JSON.stringify(data)
 const fail = (name, data) => { console.log(`ARBOR-R7-FAIL ${name} ${JSON.stringify(data)}`); throw new Error(`${name} FAILED ${JSON.stringify(data)}`.slice(0, 1200)); };
 const load = async (app, hash, on = true) => {
   await app.evalJs(`history.replaceState(null, '', ${JSON.stringify(on ? '/?arbor2=1' : '/')} + ${JSON.stringify(hash)})`);
-  await app.reload();
+  await app.reload(); await pinRoom(app);
   await waitSoft(app, `document.documentElement.getAttribute('data-arbor2') ${on ? "=== 'true'" : '== null'}`, { label: 'flag', timeout: 15000 });
   await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 20000 });
 };
@@ -57,7 +61,8 @@ export default {
       const go = async (on) => { await page(app, 'arbor-r7-page', WORDS, on); if (mode === 'draft') { await clickText(app, '.desk-mode-tab', 'Draft'); await sleep(1400); } };
       await go(false); const off = await app.evalJs(READ);
       await go(true); const toneRoom = await app.evalJs(READ);
-      const other = toneRoom.room === 'night' ? 'Day' : 'Night';
+      // (r9 driver fix, no assertion changed: the Room row's buttons now read "Always day" / "Always night" - Fable, Nov 1)
+      const other = toneRoom.room === 'night' ? 'Always day' : 'Always night';
       // (r8 driver fix, no assertion changed: the Room switch now lives in the Mood menu, folded by default - open it first)
       await app.evalJs(`(() => { const m = [...document.querySelectorAll('.arbor2-bar-head')].find((h) => /^Mood/.test(h.textContent.trim()) && h.getAttribute('aria-expanded') !== 'true'); if (m) m.click(); })()`); await sleep(150);
       await clickText(app, '.arbor2-bar-opt', other); await sleep(900);
