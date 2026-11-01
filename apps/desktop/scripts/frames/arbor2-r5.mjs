@@ -323,7 +323,9 @@ export default {
   // (b) the mockup's own bar sat on top of it, bottom-right. Proof: on a page, in both rooms, the corner mark is drawn in SAGE (Nick's pick:
   // all sage, both rooms), visibly (opacity >= .5 while she is not writing), its mask image loads as a real PNG, and nothing of the mockup
   // covers it; the front door's mark is the all-sage copy too.
-  'r5-logo': async (app) => {
+  // PARKED 2026-11-01 (SUPERSEDED by Fable, Nov 1: "retire the Arrival screen in Arbor under the flag" - the front door's logo image (img.wz-logo), which this measured, is not drawn; the splash's finished drawing stands there (r14), green leg g7 run 41362450919). Kept verbatim under the name r5-logo-v1 (not in the run list); SUCCESSOR r5-logo below:
+  // the same corner-mark checks, and the front door's logo check becomes "no logo image, the splash's drawing".
+  'r5-logo-v1': async (app) => {
     await page(app, 'arbor-r5-logo', WORDS);
     await app.mouseMove(40, 300); await sleep(900);
     const r = await app.evalJs(`(async () => { const m = document.querySelector('.brand-mark'); if (!m) return { mark: false };
@@ -337,6 +339,26 @@ export default {
     await waitSoft(app, "!!document.querySelector('img.wz-logo')", { label: 'front door logo', timeout: 6000 });
     const door = await app.evalJs("(() => { const i = document.querySelector('img.wz-logo'); return i ? getComputedStyle(i).content : null; })()");
     const ok = { mark: r.mark, sage: r.bg === 'rgb(183, 188, 154)', seen: r.opacity >= 0.5, png: r.png === true, clear: r.covered === false, door: /wrizo-logo-sage-all\.png/.test(door || '') };
+    if (Object.values(ok).some((v) => !v)) fail('R5-LOGO', { bad: Object.keys(ok).filter((k) => !ok[k]), ...r, door });
+    say('r5-logo', { ok, ...r, door });
+    await page(app, 'arbor-r5-logo', WORDS);
+    await app.mouseMove(40, 300); await sleep(900);
+  },
+  'r5-logo': async (app) => {
+    await page(app, 'arbor-r5-logo', WORDS);
+    await app.mouseMove(40, 300); await sleep(900);
+    const r = await app.evalJs(`(async () => { const m = document.querySelector('.brand-mark'); if (!m) return { mark: false };
+      const cs = getComputedStyle(m), b = m.getBoundingClientRect(), bar = document.querySelector('.arbor2-bar')?.getBoundingClientRect();
+      const url = (cs.webkitMaskImage || cs.maskImage || '').match(/url\\("?([^")]+)"?\\)/)?.[1] || null;
+      let png = null; if (url) { const res = await fetch(url); const u = new Uint8Array(await res.arrayBuffer()); png = res.status === 200 && u[1] === 0x50 && u[2] === 0x4E && u[3] === 0x47; }
+      const hit = bar && !(bar.right <= b.left || bar.left >= b.right || bar.bottom <= b.top || bar.top >= b.bottom);
+      return { mark: true, bg: cs.backgroundColor, opacity: Number(cs.opacity), url, png, covered: !!hit, rect: [Math.round(b.left), Math.round(b.top), Math.round(b.width), Math.round(b.height)],
+        bar: bar ? [Math.round(bar.left), Math.round(bar.top), Math.round(bar.width), Math.round(bar.height)] : null, room: document.documentElement.getAttribute('data-arbor2-room') }; })()`);
+    await load(app, '#/');
+    await waitSoft(app, "!!document.querySelector('.arbor2-front-mark')", { label: 'the splash front door', timeout: 6000 });
+    // SUCCESSOR's door: the front door draws no logo image now (the Arrival screen retired), the splash's drawing stands there
+    const door = await app.evalJs("(() => { const i = document.querySelector('img.wz-logo'); const shown = !!i && i.getBoundingClientRect().width > 0; return { logoImage: shown, drawing: !!document.querySelector('.arbor2-front-mark img, .arbor2-front-mark svg') }; })()");
+    const ok = { mark: r.mark, sage: r.bg === 'rgb(183, 188, 154)', seen: r.opacity >= 0.5, png: r.png === true, clear: r.covered === false, doorRetired: !door.logoImage && door.drawing };
     if (Object.values(ok).some((v) => !v)) fail('R5-LOGO', { bad: Object.keys(ok).filter((k) => !ok[k]), ...r, door });
     say('r5-logo', { ok, ...r, door });
     await page(app, 'arbor-r5-logo', WORDS);
