@@ -540,3 +540,22 @@
 /* ...and the strip reads as the drawer's own: the scrollbar's track is painted in the drawer's ground (--desk-ground, the sliding box's own
    background in every theme), so no sliver of room shows between the drawer and the page (green leg g3: a transparent track did). */
 :root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) :is(.wz-sliver-panel, .wz-tutor-panel){ scrollbar-color:color-mix(in srgb, var(--text-low) 28%, transparent) var(--desk-ground); }
+
+/* ==========================================================================================================================================
+   r13 - THE WRIZORS' THREE FIXES (wrizors-to-ARBOR-nov1d.md, md5 efd6b91b; Fable, Nov 1).
+   1. THE TOOLS DRAWER STOPS AT THE PAGE EDGE AND HOLDS ITS OWN CONTENTS. At 200 px (a 184 px panel) its three cloths and the Pages Kind row
+      ran past the panel and were cut where the page begins ("the INK cloth is hidden, PRESETS is cut, Pages Kind chopped"). It now takes the
+      room between the rail and the page: 280 px with its tab, an 8 px gutter from the rail (drawerEdge.ts measures the room into
+      --arbor2-drawer-room; where the room is less, the drawer is less). The anchor's own left is computed from this same width, so its right
+      edge stays on the page's edge (the page never moves). Typewriter's zoom keeps today's drawers (ruled).
+   2. THE TUTOR CLOTHS START BELOW THE OPENER (spec draft 14 §9c, per the note): the opener's foot is 50 px down the panel (16 + 34), so the
+      cloths (and their notes) start at 63 px, >= 12 px below it; the opener keeps its y.
+   3. BY NIGHT THE OPEN DRAWER IS LIFTED OFF THE DARK PAGE (#1B120C against #1A1510 read as one colour): the drawers' ground is an espresso-brown
+      #2E2118 (the note asks ~#2A1E15 at ~ +8 L*; measured, #2A1E15 is +5.3 off the dark page and a true +8 (#31231A) takes the olive
+      text under 4.5:1, so the nearest brown that keeps every palette letter: +6.9 L*, olive 4.57:1), the scrollbar's track with it (both read --desk-ground). The labels and cloths are measured on it (r13-night-drawers).
+   ========================================================================================================================================== */
+:root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .desk-frame-sliver-anchor:is(.desk-frame-sliver-anchor--prose, .desk-frame-sliver-anchor--screenplay){
+  --sliver-anchor-w: max(0px, min(280px, calc(var(--arbor2-drawer-room, 288px) - 8px + var(--sliver-overflow)))); }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-drawer-slide--right .wz-drawer-tabbar{ top:63px; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-drawer-slide--right .wz-drawer-tabnotes{ top:63px; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] :is(.wz-sliver-panel, .wz-tutor-panel){ --desk-ground:#2E2118; }
