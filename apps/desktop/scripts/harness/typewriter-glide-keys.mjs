@@ -64,7 +64,9 @@ await withHarness(async (app) => {
       return true; })()`);
     // type, a character at a time, until a glide is IN FLIGHT with the view off the top (the last of step/land is a step; scrollTop past 100) - then send the key at once
     let s0 = { gliding: false, top: 0 };
-    const text = `${String.fromCharCode(10)}And the writer goes on, line after line, with the history riding up into the page.`;
+    // two lines of it: the engine's catch-up steps are capped at 2 lines (train-12i), so the view climbs a little slower, and one line was sometimes spent before scrollTop passed 100
+    const sentence = `${String.fromCharCode(10)}And the writer goes on, line after line, with the history riding up into the page.`;
+    const text = sentence + sentence;
     for (const ch of text) {
       await app.typeKeys(ch);
       s0 = await app.evalJs(inflight);
