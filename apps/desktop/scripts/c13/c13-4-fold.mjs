@@ -37,12 +37,13 @@ const relink = (fromFile, repoPath, anchor) => {
   return r + anchor;
 };
 
-function rewrite(text, file, newFile, map) {
+function rewrite(text, file, newFile, map, existed) {
   let out = text.replace(DOCPATH, (p) => map.get(p) ?? p);
   if (!/\.md$/.test(file)) return out;
   return out.replace(LINK, (m, t) => {
     const p = target(file, t);
-    if (!p || !fs.existsSync(path.join(ROOT, p))) return m; // not local, or already broken: left as it is
+    // Existence is read from the tree BEFORE any move: files move during this same pass.
+    if (!p || !(existed.has(p) || fs.existsSync(path.join(ROOT, p)))) return m; // not local, or already broken: left as it is
     const np = map.get(p) ?? p;
     if (np === p && newFile === file) return m;
     return `](${relink(newFile, np, (t.match(/#.*$/) || [''])[0])})`;
@@ -52,7 +53,9 @@ function rewrite(text, file, newFile, map) {
 function apply() {
   const ms = moves();
   const map = new Map(ms.map((m) => [m.from, m.to]));
-  const files = git('ls-files').split('\n').filter((f) => f && TEXT.test(f) && !HISTORY(f));
+  const all = git('ls-files').split('\n').filter(Boolean);
+  const existed = new Set(all);
+  const files = all.filter((f) => TEXT.test(f) && !HISTORY(f));
   // Docs only: a non-markdown file (other than AGENTS.md) that names a moved path stops everything.
   const blockers = files.filter((f) => !/\.md$/.test(f) && ms.some((m) => fs.readFileSync(path.join(ROOT, f), 'utf8').includes(m.from)));
   if (blockers.length) { console.log('STOP: non-doc files name a moved path:', blockers); process.exit(1); }
@@ -61,7 +64,7 @@ function apply() {
   let touched = 0;
   for (const [f, text] of texts) {
     const nf = map.get(f) ?? f;
-    const out = rewrite(text, f, nf, map);
+    const out = rewrite(text, f, nf, map, existed);
     if (nf !== f) { fs.mkdirSync(path.dirname(path.join(ROOT, nf)), { recursive: true }); git('mv', f, nf); }
     if (out !== text) { fs.writeFileSync(path.join(ROOT, nf), out); touched++; }
   }
