@@ -101,6 +101,51 @@ await withHarness(async (app) => {
     const detail = JSON.stringify({ mid, after, tail: text.slice(-24) });
     ok('typeAfter: after a Ctrl+Home, the next typed character still lands at the TIP of the text and the caret returns to the end', !!mid && mid.at === 0 && !!after && after.at === after.of && text.endsWith('goesZ'), detail);
   }
+  // THE OTHER TEXT PATHS (Fable, Oct 31): a navigation key notes the writer's caret; every way text can reach the editor must CLEAR that note, append at the TIP of the text, and bring the caret
+  // back to the end. Each scenario: type, (copy the page own words for the paste ones), Ctrl+Home, check the caret is at the top, then ONE insert by the path under test, and read 700 ms on.
+  //   dictate   Input.insertText with no keydown at all (dictation / a soft keyboard that skips keydown) - a trusted beforeinput insertText
+  //   ime       a trusted IME composition (imeSetComposition per character, then the commit) - beforeinput insertCompositionText, then compositionend
+  //   compEnd   a compositionend with NO beforeinput before it (an IME / keyboard that commits without one) - dispatched by the page
+  //   paste     a trusted Ctrl+V of the page own words - beforeinput insertFromPaste
+  //   pasteEvt  a paste EVENT with no beforeinput (the belt-and-braces path blockPaste serves) - dispatched by the page, own words
+  const HOME = { key: 'Home', code: 'Home', windowsVirtualKeyCode: 36, nativeVirtualKeyCode: 36, modifiers: 2, commands: ['moveToBeginningOfDocument'] };
+  const CMD = (k, code, vk, cmd) => ({ key: k, code, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk, modifiers: 2, commands: [cmd] });
+  const press = async (p) => { await app.cdp('Input.dispatchKeyEvent', { type: 'rawKeyDown', ...p }); await app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', ...p }); };
+  const PATHS = {
+    dictate: { label: 'dictation - Input.insertText, no keydown', tail: 'goesZ', act: async () => { await app.type('Z'); } },
+    ime: { label: 'a trusted IME composition and its commit', tail: 'goesZ', act: async () => { await app.ime('Z'); } },
+    compEnd: { label: 'a compositionend with no beforeinput', tail: 'goesZ', act: async () => {
+      await app.evalJs(`(() => { const ed = document.querySelector('${ED}'); ed.dispatchEvent(new CompositionEvent('compositionstart', { bubbles: true, data: '' }));
+        ed.dispatchEvent(new CompositionEvent('compositionend', { bubbles: true, data: 'Z' })); return true; })()`); } },
+    paste: { label: 'a trusted Ctrl+V of the page own words', own: true, tail: 'and so it goes', act: async () => { await press(CMD('v', 'KeyV', 86, 'paste')); } },
+    pasteEvt: { label: 'a paste event with no beforeinput (own words)', own: true, tail: 'and so it goes', act: async () => {
+      await app.evalJs(`(() => { const ed = document.querySelector('${ED}'); const dt = new DataTransfer(); dt.setData('text/plain', window.__cpPlain);
+        ed.dispatchEvent(new ClipboardEvent('paste', { bubbles: true, cancelable: true, clipboardData: dt })); return true; })()`); } },
+  };
+  for (const [pid, pt] of Object.entries(PATHS).filter(([k]) => !process.env.CR_MOVES || process.env.CR_MOVES.split(',').includes(k))) {
+    await fresh();
+    await app.typeKeys('and so it goes');
+    await sleep(300);
+    if (pt.own) {   // the writer's own words on the clipboard: select all, copy (the page records them as its own ink and the window sees the plain text)
+      await app.evalJs("(() => { window.__cpPlain = ''; if (!window.__cpOn) { window.__cpOn = true; window.addEventListener('copy', (e) => { window.__cpPlain = e.clipboardData ? e.clipboardData.getData('text/plain') : ''; }); } return true; })()");
+      await press(CMD('a', 'KeyA', 65, 'selectAll'));
+      await press(CMD('c', 'KeyC', 67, 'copy'));
+      await sleep(250);
+    }
+    await press(HOME);
+    await sleep(200);
+    const mid = await app.evalJs(offset);
+    const before = await app.evalJs(`document.querySelector('${ED}').innerText.length`);
+    await pt.act();
+    await sleep(700);
+    const after = await app.evalJs(offset);
+    const text = await app.evalJs(`document.querySelector('${ED}').innerText`);
+    const plain = pt.own ? await app.evalJs('window.__cpPlain') : '';
+    const detail = JSON.stringify({ mid, before, after, tail: text.slice(-24), pasted: plain ? plain.length : 0 });
+    ok(`${pid} (premise): the Ctrl+Home took - the caret is at the top before ${pt.label}`, !!mid && mid.at === 0, detail);
+    ok(`${pid}: ${pt.label} CLEARS the writer-moved note - the text lands at the TIP and the caret returns to the end`,
+      !!mid && mid.at === 0 && !!after && after.at === after.of && text.endsWith(pt.tail) && text.length > before && (!pt.own || (plain.length > 0 && text.length === before + plain.length)), detail);
+  }
 });
 
 for (const c of rec) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}  [${c.detail}]`);

@@ -127,6 +127,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   const noopRef = useRef(0);      // consecutive ineffective ("locked") backspaces
   const composingRef = useRef(false); // IME composition in progress (mobile soft keyboards)
   const skipCompEndRef = useRef(false); // ignore the stale compositionend a delete-abort triggers
+  const writerMovedRef = useRef(false); // #33: the writer moved the caret (a press, a navigation key); cleared by the next insert, in handleInput
   const [, force] = useReducer((n: number) => n + 1, 0);
 
   const hostRef = useRef<HTMLDivElement | null>(null);
@@ -155,6 +156,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   };
 
   const handleInput = (data: string) => {
+    writerMovedRef.current = false; // every way text enters (typed, composed, dictated, pasted) is the writer back at the tip: the re-anchor below applies again
     let c = contentRef.current;
     let w = wordRef.current;
     for (const ch of data) {
@@ -690,9 +692,9 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
 
   // BUG-LIST #33 (ledger 168): the re-anchor below ran after EVERY render, so a caret the writer had just moved (Ctrl+Home, a click, an arrow run) was put
   // back at the end by the next render - the save round-trip, ~1.5 s after the last keystroke. The writer's own move is noted here (a press in the host, or
-  // a navigation / select-all key) and cleared by the next insert; while it stands, a selection that is still valid inside the host is left where the writer put it.
-  // Typing is unchanged: the model appends at the tip whatever the caret does (every insert is routed through handleTyped), and the render after it re-anchors.
-  const writerMovedRef = useRef(false);
+  // a navigation / select-all key) and cleared by the next insert (handleInput - the one funnel every text path ends in, so it is cleared BEFORE the render that insert
+  // causes; a listener of its own on beforeinput / paste / compositionend runs after the editor's handler, whose setState has by then re-rendered); while it stands, a
+  // selection that is still valid inside the host is left where the writer put it. Typing is unchanged: the model appends at the tip whatever the caret does.
   useEffect(() => {
     const el = hostRef.current;
     if (!el || freeEdit) return;
@@ -700,17 +702,12 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     const onPress = () => { writerMovedRef.current = true; };
     const onKey = (e: KeyboardEvent) => {
       if (NAV.has(e.key) || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a')) writerMovedRef.current = true;
-      // a typed character (or Enter) is the writer back at the tip: the model appends there whatever the caret does
-      else if ((e.key.length === 1 || e.key === 'Enter') && !e.ctrlKey && !e.metaKey && !e.altKey) writerMovedRef.current = false;
     };
-    const onInsert = (e: Event) => { if (((e as InputEvent).inputType || '').startsWith('insert')) writerMovedRef.current = false; };
     el.addEventListener('pointerdown', onPress);
     el.addEventListener('keydown', onKey);
-    el.addEventListener('beforeinput', onInsert);
     return () => {
       el.removeEventListener('pointerdown', onPress);
       el.removeEventListener('keydown', onKey);
-      el.removeEventListener('beforeinput', onInsert);
     };
   }, [freeEdit]);
 
