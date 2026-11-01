@@ -94,6 +94,32 @@ const sweep = async (app) => {
   return app.evalJs(MEASURE(shot));
 };
 
+// (instrument fix for the successors, r11, after the plate's picture run 41336482332: at 1366 the mockup's own control panel (.arbor2-bar,
+// bottom right; it never ships) lies over the count row's right end, and a run under it is not seen by the writer but was read against the
+// panel. COLLECT2 is COLLECT skipping runs that the panel covers; the panel's own texts are still read. sweep2 / sweepFade2 use it.)
+const COLLECT2 = COLLECT.replace('if (!rects.length) continue;', "if (!rects.length) continue; { const bar = document.querySelector('.arbor2-bar'); if (bar && !el.closest('.arbor2-bar')) { const b = bar.getBoundingClientRect(); if (rects.some(([x0, y0, x1, y1]) => x0 < b.right && x1 > b.left && y0 < b.bottom && y1 > b.top)) continue; } }");
+if (COLLECT2 === COLLECT) throw new Error('COLLECT2 did not take');
+const sweep2 = async (app) => {
+  await app.evalJs(COLLECT2);
+  await app.evalJs(HIDE);
+  const shot = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data;
+  await app.evalJs(SHOW);
+  return app.evalJs(MEASURE(shot));
+};
+const sweepFade2 = async (app, fromSec, toSec) => {
+  const samples = [];
+  const at = async (sec) => { await clock(app, hms(sec)); await sleep(60); const s = await app.evalJs(STATE); samples.push({ sec, at: hms(sec), ...s, runs: await sweep2(app) }); };
+  for (let sec = fromSec; sec <= toSec; sec += 30) await at(sec);
+  const i = samples.findIndex((s, j) => j > 0 && s.room !== samples[j - 1].room);
+  if (i > 0) {
+    let lo = samples[i - 1].sec, hi = samples[i].sec;
+    while (hi - lo > 1) { const mid = Math.floor((lo + hi) / 2); await clock(app, hms(mid)); const s = await app.evalJs(STATE); if (s.room === samples[i - 1].room) lo = mid; else hi = mid; }
+    await at(lo); await at(hi);
+  }
+  samples.sort((a, b) => a.sec - b.sec);
+  return samples;
+};
+
 // one fade, swept: the clock every 30 s across the window, plus the seconds either side of the switch
 const sweepFade = async (app, fromSec, toSec) => {
   const samples = [];
@@ -170,8 +196,8 @@ export default {
   'r10-sweep-freewrite': async (app) => {
     await page(app, 'arbor-r10-sweep'); await lit(app);
     if ((await clock(app, '12:00')) === 'NO-SEAM') fail('R10-SWEEP-FREEWRITE', { seam: false });
-    const m = judge2('R10-SWEEP-FREEWRITE (morning)', await sweepFade(app, ...MORNING));
-    const e = judge2('R10-SWEEP-FREEWRITE (evening)', await sweepFade(app, ...EVENING));
+    const m = judge2('R10-SWEEP-FREEWRITE (morning)', await sweepFade2(app, ...MORNING));
+    const e = judge2('R10-SWEEP-FREEWRITE (evening)', await sweepFade2(app, ...EVENING));
     say('r10-sweep-freewrite', { morning: m, evening: e });
   },
   // ── THE SWEEP, DRAFT (the same, on the Draft surface)
@@ -189,8 +215,8 @@ export default {
     await page(app, 'arbor-r10-sweep');
     await clickText(app, '.desk-mode-tab', 'Draft'); await sleep(1400); await lit(app);
     if ((await clock(app, '12:00')) === 'NO-SEAM') fail('R10-SWEEP-DRAFT', { seam: false });
-    const m = judge2('R10-SWEEP-DRAFT (morning)', await sweepFade(app, ...MORNING));
-    const e = judge2('R10-SWEEP-DRAFT (evening)', await sweepFade(app, ...EVENING));
+    const m = judge2('R10-SWEEP-DRAFT (morning)', await sweepFade2(app, ...MORNING));
+    const e = judge2('R10-SWEEP-DRAFT (evening)', await sweepFade2(app, ...EVENING));
     say('r10-sweep-draft', { morning: m, evening: e });
   },
 
