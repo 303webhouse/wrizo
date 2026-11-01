@@ -90,7 +90,11 @@ export default {
       }
       const okRow = ({ s, px }) => s.arrival && s.front && !s.hero && !s.heroLogo && !s.bootbar && s.drawing && !!s.markCentre && Math.abs(s.markCentre[0] - s.vw / 2) <= 2 && Math.abs(s.markCentre[1] - s.vh / 2) <= 2
         && s.tagline === 'For humans writing' && JSON.stringify(s.doors) === '["Write","Sign in"]' && px.length >= 3 && px.every((x) => x.p2 >= 4.5);
-      const ok = { visitor: rows.every(okRow), sameGround: rows[0].s.ground === rows[1].s.ground };
+      // (amendment before any green, run 41358900562: the splash's own ground is not one colour - #120A06 by night, #0A0503 by day (the day
+      // splash rule) - so the front must match the SPLASH in each room, not match itself across rooms. Original: sameGround: rows[0].s.ground
+      // === rows[1].s.ground)
+      const SPLASH = { night: 'rgb(18, 10, 6)', day: 'rgb(10, 5, 3)' };
+      const ok = { visitor: rows.every(okRow), splashGround: rows.every((r) => r.s.ground === SPLASH[r.room]) };
       const brief = { ok, rows: rows.map((r) => ({ room: r.room, ok: okRow(r), ...r.s, px: r.px })) };
       if (Object.values(ok).some((x) => !x)) fail('R14-FRONT', brief);
       say('r14-front', brief);
