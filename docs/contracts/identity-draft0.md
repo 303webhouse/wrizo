@@ -1,6 +1,6 @@
 # Contract: one Wrizo account for Write and Read · DRAFT 0
 
-**Status:** draft 0, rev d (Fable, Nov 1, 2026, 1:45 am: the email claim; `theme.room` replaces `theme.tone`). NOT signed. Read mocks against it; nothing touches production until Nick signs draft 1.
+**Status:** draft 0, rev e (Fable, Nov 1, 2026, 2:25 am: the email claim; `theme.room`; §5b "at the desk"). NOT signed. Read mocks against it; nothing touches production until Nick signs draft 1.
 **Owner:** Fable (Write side). **Consumer:** SOCIAL (Wrizo | Read, `303webhouse/wrizo-read`).
 **Nick's rulings this rests on:** one account for both apps; a writer can sign up from either side (Oct 29); the writer's theme follows them into Read (Oct 31); theme switches are saved to the account so they follow the writer into Read (Oct 31).
 
@@ -36,6 +36,13 @@
 - The client secret and the signing keys live only in Railway variables. **Never in either repo, a chat, a doc or a log** (both repos are public).
 - Redirect addresses are an exact allowlist. Tokens are never put in URLs after the code exchange.
 - Read's lanes test against a **mock identity provider** with fake users. They are never given real accounts or real tokens.
+
+## 5b. "At the desk" presence (Nick approved, Nov 1, 2026)
+- **Opt-in, off by default.** It's a Write setting, `presenceAtDesk: true`, saved to the account. Only the "on" value is stored.
+- When it's on, Write tells Read **one coarse fact**: `at_desk: true` while a writing surface is open and the writer has typed in the last 10 minutes. Write sends it under the writer's own sign-in, on change and as a refresh at most every 5 minutes.
+- **Read treats it as false** when it hasn't been refreshed for 10 minutes, or when the writer signs out or turns the setting off.
+- **Never sent:** words, counts, titles, which page, keystroke timing, or how long. Read never shows a duration or a number, and shows the state only inside the writer's own guilds.
+- Turning it off stops it at once. Write sends one `at_desk: false` and nothing more.
 
 ## 5. Not in this contract (planned)
 - **The notes feed** (Nick, Oct 31: "as a writer, I want to see the comments a piece of mine has received while I'm actively working on it in Wrizo"). This is a third, separate contract, `notes-feed-draft0.md`, after export v1 is signed: Read → Write, read-only. See export-v1-draft0 §6.
