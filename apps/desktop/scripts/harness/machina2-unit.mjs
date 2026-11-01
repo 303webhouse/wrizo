@@ -9,6 +9,7 @@
 import fs from 'node:fs';
 import { readoutLine, pagesEstimate, readingTime, partsCovered, WORDS_PER_PAGE, WORDS_PER_MINUTE } from '../../src/machina2/readout.ts';
 import * as sw from '../../src/machina2/switches.ts';
+import { roomOf } from '../../src/machina2/room.ts';
 
 const checks = [];
 const ok = (name, pass, detail) => checks.push({ name, pass: !!pass, detail });
@@ -71,6 +72,23 @@ for (const ch of css) {
 }
 ok('U5 every rule in the Machina file is scoped under the flag (or is the mockup\'s own .machina2-* class)', loose.length === 0, JSON.stringify(loose.slice(0, 4)));
 ok('U5 no font CDN, no new face (Plex and Source Sans are the app\'s own)', !/@font-face|googleapis|gstatic|jsdelivr|unpkg/.test(css), '');
+
+// U6 (r2) THE ROOM: data-room when set, else the page tone (Nick's pick via Fable, Oct 31); the room's CSS reads the resolved room, the page's
+// CSS the tone alone; in session only.
+ok('U6 unset, the room follows the page (light -> light, dark -> dark, no tone -> dark, as the base theme reads it)',
+  roomOf(null, 'light') === 'light' && roomOf(null, 'dark') === 'dark' && roomOf(null, null) === 'dark', '');
+ok('U6 set, data-room wins over the page in all four mixes', roomOf('light', 'dark') === 'light' && roomOf('dark', 'light') === 'dark' && roomOf('light', 'light') === 'light' && roomOf('dark', 'dark') === 'dark', '');
+ok('U6 a stray data-room value is ignored (the page decides)', roomOf('day', 'light') === 'light' && roomOf('', 'dark') === 'dark', '');
+const roomSrc = fs.readFileSync(new URL('../../src/machina2/room.ts', import.meta.url), 'utf8');
+ok('U6 nothing in the room touches storage', !/localStorage|sessionStorage|indexedDB/.test(roomSrc), '');
+const roomRules = [...css.matchAll(/([^{}]+)\{([^}]*)\}/g)].map((m) => [m[1].trim(), m[2]]);
+const PAGE_VARS = /--(paper|paper-dim|paper-border|ink-on-paper|ink-on-paper-low)\s*:/;
+const ROOM_VARS = /--(ink-950|chrome-surface|ink-900|ink-border|text-hi|text-mid|text-low|machina2-guide)\s*:/;
+ok('U6 no rule keyed on the light ROOM sets a page value, and no rule keyed on the light PAGE sets a room value (so the four mixes are independent)',
+  roomRules.every(([sel, body]) => !(/data-machina2-room='light'/.test(sel) && PAGE_VARS.test(body)) && !(/data-page='light'/.test(sel) && !/\.board-canvas/.test(sel) && ROOM_VARS.test(body))),
+  JSON.stringify(roomRules.filter(([sel, body]) => (/data-machina2-room='light'/.test(sel) && PAGE_VARS.test(body)) || (/data-page='light'/.test(sel) && ROOM_VARS.test(body))).map(([s]) => s).slice(0, 3)));
+ok('U6 no Machina room rule still reads the page tone for the room (the wash and the light room\'s hairline read the room)',
+  !/data-page='light'\]:not\(\[data-machina2-off~='wash'\]\)/.test(css) && /data-machina2-room='light'\]:not\(\[data-machina2-off~='wash'\]\)/.test(css), '');
 
 for (const c of checks) console.log(`${c.pass ? 'ok  ' : 'FAIL'} ${c.name}${c.pass ? '' : '  ' + c.detail}`);
 const pass = checks.every((c) => c.pass);
