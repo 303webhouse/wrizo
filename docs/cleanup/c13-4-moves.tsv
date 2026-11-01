@@ -1,0 +1,52 @@
+# #13 step 4: the docs fold manifest (old path -> new path). 47 moves.
+# Stay in docs/ (canon and working docs): MAP, PHILOSOPHY, north-star, the four canons, open-threads, deploy, release-checklist, backlog,
+# architecture-decisions, BUILD_PLAN, roadmap-stage2, j-arc-runbook. Held (src or harness comments name them by path; they move with
+# the comment steps 7 and 9): th1-theme-seam-brief, th2-flux-brief, w2-way-back-brief, m1-milestones-brief.
+old	new
+docs/j5-review-fable.md	docs/reviews/j5-review-fable.md
+docs/m1-review-fable.md	docs/reviews/m1-review-fable.md
+docs/s1-review-fable.md	docs/reviews/s1-review-fable.md
+docs/th1-review-fable.md	docs/reviews/th1-review-fable.md
+docs/th2-review-fable.md	docs/reviews/th2-review-fable.md
+docs/w1-review-fable.md	docs/reviews/w1-review-fable.md
+docs/w2-review-fable.md	docs/reviews/w2-review-fable.md
+docs/f1-resume-repair-brief.md	docs/briefs/f/f1-resume-repair-brief.md
+docs/f2-mirror-card-brief.md	docs/briefs/f/f2-mirror-card-brief.md
+docs/f3-catch-brief.md	docs/briefs/f/f3-catch-brief.md
+docs/f4-writing-picker-brief.md	docs/briefs/f/f4-writing-picker-brief.md
+docs/f5-ttfk-brief.md	docs/briefs/f/f5-ttfk-brief.md
+docs/f6-first-line-brief.md	docs/briefs/f/f6-first-line-brief.md
+docs/j1-ordered-pages-brief.md	docs/briefs/j/j1-ordered-pages-brief.md
+docs/j2-eraser-brief.md	docs/briefs/j/j2-eraser-brief.md
+docs/j3-spread-view-brief.md	docs/briefs/j/j3-spread-view-brief.md
+docs/j4-board-brief.md	docs/briefs/j/j4-board-brief.md
+docs/j5-spread-console-brief.md	docs/briefs/j/j5-spread-console-brief.md
+docs/j-arc-design.md	docs/briefs/j/j-arc-design.md
+docs/journal-resync-patch.md	docs/briefs/j/journal-resync-patch.md
+docs/b1-start-a-book-brief.md	docs/briefs/b/b1-start-a-book-brief.md
+docs/b2-freewrite-typewriter-brief.md	docs/briefs/b/b2-freewrite-typewriter-brief.md
+docs/s1-script-editor-brief.md	docs/briefs/s/s1-script-editor-brief.md
+docs/s-arc-screenplay-plan.md	docs/briefs/s/s-arc-screenplay-plan.md
+docs/w1-close-handoff.md	docs/briefs/w/w1-close-handoff.md
+docs/drawers-d1-brief.md	docs/briefs/d/drawers-d1-brief.md
+docs/pages-shelf-d2-brief.md	docs/briefs/d/pages-shelf-d2-brief.md
+docs/i0-pen-discipline-brief.md	docs/briefs/i/i0-pen-discipline-brief.md
+docs/vw-voice-wall-brief.md	docs/briefs/vw/vw-voice-wall-brief.md
+docs/brand-ticket-brief.md	docs/briefs/brand/brand-ticket-brief.md
+docs/branding-ember.md	docs/briefs/brand/branding-ember.md
+docs/handoff-brand-phase.md	docs/briefs/brand/handoff-brand-phase.md
+docs/handoff-brief.md	docs/briefs/handoffs/handoff-brief.md
+docs/handoff-cw1-middle-door.md	docs/briefs/handoffs/handoff-cw1-middle-door.md
+docs/handoff-cw2-forward-only-writing.md	docs/briefs/handoffs/handoff-cw2-forward-only-writing.md
+docs/handoff-cw4-writing-session.md	docs/briefs/handoffs/handoff-cw4-writing-session.md
+docs/handoff-dm1-fragment-substrate.md	docs/briefs/handoffs/handoff-dm1-fragment-substrate.md
+docs/page-primacy-committee-brief.md	docs/briefs/committee/page-primacy-committee-brief.md
+docs/progress-milestones-committee-brief.md	docs/briefs/committee/progress-milestones-committee-brief.md
+docs/ops-canon-refresh-brief.md	docs/briefs/committee/ops-canon-refresh-brief.md
+docs/home-port-brief.md	docs/briefs/early/home-port-brief.md
+docs/mode-aware-editor-brief.md	docs/briefs/early/mode-aware-editor-brief.md
+docs/writing-screen-redesign-brief.md	docs/briefs/early/writing-screen-redesign-brief.md
+docs/structure-spine-plan.md	docs/briefs/early/structure-spine-plan.md
+docs/ui-redesign-spec.md	docs/briefs/early/ui-redesign-spec.md
+docs/demo-script.md	docs/briefs/early/demo-script.md
+docs/state-of-wrizo-2026-07.md	docs/briefs/early/state-of-wrizo-2026-07.md
