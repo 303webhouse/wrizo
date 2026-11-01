@@ -6,6 +6,10 @@
 // Seeds go through the app's seams (window.wrizo*), never raw collection storage (AGENTS.md "HOW TO SEED A FIXTURE").
 // No imports: the job loads this file from the built branch, so it stands alone.
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// r9 DRIVER PIN (not an assertion): unset, the room now follows the CLOCK (Fable, Nov 1: Follow the clock / Always day / Always night) and
+// the runner's clock is UTC. This file's checks were written for the room the page tone gave (dark = night, light = day), so after every
+// flagged reload it chooses that room explicitly (data-room: Always night / Always day). The clock itself is proven in frames/arbor2-r9.mjs.
+const pinRoom = (app) => app.evalJs("(() => { const r = document.documentElement; if (/[?&]arbor2=1/.test(location.search)) r.setAttribute('data-room', r.getAttribute('data-page') === 'dark' ? 'dark' : 'light'); })()");
 const ED = '.forward-only-editor';
 const WORDS = 'The morning light came in low across the table, and she began to write. The kettle ticked as it cooled, and outside a dog asked the street a question nobody answered.';
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
@@ -15,7 +19,7 @@ const clickText = (app, sel, text) => app.evalJs(`(() => { const b = [...documen
 // the flag lives in the URL only: put it before the hash, reload, and wait the splash out
 const flagTo = async (app, hash) => {
   await app.evalJs(`history.replaceState(null, '', '/?arbor2=1' + ${JSON.stringify(hash)})`);
-  await app.reload();
+  await app.reload(); await pinRoom(app);
   await waitSoft(app, "document.documentElement.getAttribute('data-arbor2') === 'true'", { label: 'arbor2 flag on', timeout: 15000 });
   await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 20000 });
 };

@@ -22,12 +22,17 @@ import { zoomProof, holeOf, stopsOf } from '../frames/arbor2.mjs';
 const SHOTS = process.env.ARBOR_SHOTS || null;
 if (SHOTS) fs.mkdirSync(SHOTS, { recursive: true });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// r9 DRIVER PIN (not an assertion): unset, the room now follows the CLOCK (Fable, Nov 1: Follow the clock / Always day / Always night) and
+// the runner's clock is UTC. This file's checks were written for the room the page tone gave (dark = night, light = day), so after every
+// flagged reload it chooses that room explicitly (data-room: Always night / Always day). The clock itself is proven in frames/arbor2-r9.mjs.
+const pinRoom = (app) => app.evalJs("(() => { const r = document.documentElement; if (/[?&]arbor2=1/.test(location.search)) r.setAttribute('data-room', r.getAttribute('data-page') === 'dark' ? 'dark' : 'light'); })()");
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
 const snap = async (app, name) => { if (SHOTS) fs.writeFileSync(path.join(SHOTS, `${name}.png`), Buffer.from((await app.cdp('Page.captureScreenshot', { format: 'png' })).data, 'base64')); };
 const splashGone = (app) => app.waitFor("!document.querySelector('.wz-splash')", { timeout: 20000, label: 'splash gone' }).catch(() => {});
 // (r8: the Room switch lives in the Mood menu, folded by default - the driver opens Mood first when the label is not on screen; no assertion changed)
-const pickBar = async (app, label) => { await app.evalJs(`(() => { if ([...document.querySelectorAll('.arbor2-bar-opt')].some((x) => x.textContent.trim() === ${JSON.stringify(label)})) return; const m = [...document.querySelectorAll('.arbor2-bar-head')].find((h) => /^Mood/.test(h.textContent.trim()) && h.getAttribute('aria-expanded') !== 'true'); if (m) m.click(); })()`); await new Promise((r) => setTimeout(r, 150)); return app.evalJs(`(() => { const b = [...document.querySelectorAll('.arbor2-bar-opt')].find((x) => x.textContent.trim() === ${JSON.stringify(label)}); if (b) b.click(); return !!b; })()`); };
+// (r9 driver fix, no assertion changed: the Room row's buttons now read "Always day" / "Always night" - Fable, Nov 1 - so the old labels map to them)
+const pickBar = async (app, label0) => { const label = ({ Night: 'Always night', Day: 'Always day' })[label0] ?? label0; await app.evalJs(`(() => { if ([...document.querySelectorAll('.arbor2-bar-opt')].some((x) => x.textContent.trim() === ${JSON.stringify(label)})) return; const m = [...document.querySelectorAll('.arbor2-bar-head')].find((h) => /^Mood/.test(h.textContent.trim()) && h.getAttribute('aria-expanded') !== 'true'); if (m) m.click(); })()`); await new Promise((r) => setTimeout(r, 150)); return app.evalJs(`(() => { const b = [...document.querySelectorAll('.arbor2-bar-opt')].find((x) => x.textContent.trim() === ${JSON.stringify(label)}); if (b) b.click(); return !!b; })()`); };
 const READ = `(() => {
   const s = document.querySelector('.arbor2-sun'), p = document.querySelector('.mode-page');
   const cs = s ? getComputedStyle(s) : null, leaf = s && s.querySelector('.arbor2-sun-leaf'), drift = s && s.querySelector('.arbor2-sun-drift');
@@ -49,11 +54,11 @@ const openPage = async (app) => {
 await withHarness(async (app) => {
   await app.goto('/');
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '4');");
-  await app.reload();
+  await app.reload(); await pinRoom(app);
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
   await app.emulateDpr(1, 1366, 768);
   await openPage(app);
-  await app.reload(); await splashGone(app); await sleep(500);
+  await app.reload(); await pinRoom(app); await splashGone(app); await sleep(500);
   await app.waitFor("!!document.querySelector('.arbor2-bar')", { label: 'flagged' }).catch(() => {});
 
   await pickBar(app, 'Day'); await sleep(300);
@@ -143,7 +148,7 @@ await withHarness(async (app) => {
 
   // L5: reduced motion from the load (sun.ts reads it once at mount)
   await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
-  await app.reload(); await splashGone(app); await sleep(500);
+  await app.reload(); await pinRoom(app); await splashGone(app); await sleep(500);
   await pickBar(app, 'Day'); await sleep(300);
   await app.evalJs("window.__f2 = 0; new MutationObserver(() => { window.__f2++; }).observe(document.querySelector('.arbor2-sun'), { subtree: true, attributes: true, attributeFilter: ['data-flutter'] })");
   await sleep(14000);
