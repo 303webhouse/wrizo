@@ -5,7 +5,7 @@ Read this page first, then only the page for the area you touch (`docs/map/`). M
 ## The five laws (Fable, Oct 29)
 1. The page is identical in every skin and never moves when a panel opens (the Typewriter zoom excepted).
 2. Cards and boards keep the same geometry in every skin.
-3. Square edges, no shadows, contrast floors 13.9 / 4.5 / 7.
+3. Imply, never literal. Each theme suggests its place (a study, a garden, a desert, an instrument) without on-the-nose props. Contrast floors: page text ≥ 13.9:1, labels ≥ 4.5:1, names ≥ 7:1.
 4. No new saved field, mark or key without Nick's word.
 5. Theme words only via the lexicon.
 

@@ -18,7 +18,8 @@
 `th1.mjs`, `th2.mjs`, `th-machina.mjs`, `th-machina-source.mjs`, `flux-v2.mjs`, `flux-v2-part2.mjs`, `machina-deckwizard.mjs`, `splash.mjs`.
 
 ## Known traps
-- **Laws 1–3 are checked in every skin:** the page identical, card geometry identical, square edges, no shadows, contrast 13.9 / 4.5 / 7.
+- **Laws 1–3 hold in every skin:** the page identical, card geometry identical, each theme implied rather than literal, contrast ≥ 13.9 / 4.5 / 7 (page text / labels / names).
+- **"Square edges, no shadows" is retired** (Nick, Nov 1). A cross-theme check that still asserts it is parked verbatim with a record. A theme's own look (Machina's square edges) stays checked in that theme.
 - **Arbor's new CSS lives in its own file** (arbor-v2.css, on the unmerged arbor/mockup branches; not on main yet). Cleanup steps never touch it.
 - **Machina has two casts.** Set `data-cast` as well as `data-theme` when you measure it.
 - **Theme words go through the lexicon** (law 5), never through CSS `content` or hard-coded strings ([lexicon](lexicon.md)).
