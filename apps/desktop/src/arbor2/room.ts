@@ -61,16 +61,36 @@ export function formatColour(c: RGBA): string {
 }
 export const mixColour = (a: RGBA, b: RGBA, t: number): RGBA => ({ r: a.r + (b.r - a.r) * t, g: a.g + (b.g - a.g) * t, b: a.b + (b.b - a.b) * t, a: a.a + (b.a - a.a) * t });
 
+// r10 - THE WARM MIDDLE (the Wrizors, Nov 1: "At 07:00 the midpoint reads grey-taupe because the two rooms are mixed in straight RGB. Fade
+// through a warm waypoint instead: ground espresso #120A06 -> amber-plaster #D9C3A2 (the 50% stop) -> plaster #F1EAD8 ... Three stops, eased").
+// Every colour that blends takes the same waypoint: its straight midpoint moved by the ground's own shift (WARM_STOP minus the ground's straight
+// midpoint), so the hairlines and the glow warm with the ground and the ground lands exactly on the stop.
+export const WARM_STOP = '#D9C3A2';
+export type RGB3 = { r: number; g: number; b: number };
+/** The ground's shift at the middle: the warm stop minus the straight midpoint of the two grounds. */
+export function warmDelta(groundNight: RGBA, groundDay: RGBA): RGB3 {
+  const w = parseColour(WARM_STOP) as RGBA;
+  return { r: w.r - (groundNight.r + groundDay.r) / 2, g: w.g - (groundNight.g + groundDay.g) / 2, b: w.b - (groundNight.b + groundDay.b) / 2 };
+}
+const clamp255 = (v: number) => Math.max(0, Math.min(255, v));
+/** A colour along the three stops: night -> (midpoint + delta) at t = .5 -> day. Without a delta, the straight mix. */
+export function mixColour3(a: RGBA, b: RGBA, t: number, delta?: RGB3): RGBA {
+  if (!delta) return mixColour(a, b, t);
+  const mid: RGBA = { r: clamp255((a.r + b.r) / 2 + delta.r), g: clamp255((a.g + b.g) / 2 + delta.g), b: clamp255((a.b + b.b) / 2 + delta.b), a: (a.a + b.a) / 2 };
+  return t <= 0.5 ? mixColour(a, mid, t * 2) : mixColour(mid, b, t * 2 - 1);
+}
+
 /** Blend two computed custom-property values of the same shape (colours, numbers, "r,g,b" triples, gradients whose stops line up).
- *  Returns null when the shapes differ: that token is left to the room's own rule, which changes at the crossover. */
-export function mixValue(a: string, b: string, t: number): string | null {
+ *  Returns null when the shapes differ: that token is left to the room's own rule, which changes at the crossover. Colours take the warm
+ *  waypoint when a delta is given (r10); numbers stay a straight mix. */
+export function mixValue(a: string, b: string, t: number, delta?: RGB3): string | null {
   const ta = a.match(TOKEN) ?? [], tb = b.match(TOKEN) ?? [];
   if (a.replace(TOKEN, '\u0000') !== b.replace(TOKEN, '\u0000') || ta.length !== tb.length) return null;
   let i = 0, bad = false;
   const out = a.replace(TOKEN, (x) => {
     const y = tb[i++];
     const ca = parseColour(x), cb = parseColour(y);
-    if (ca && cb) return formatColour(mixColour(ca, cb, t));
+    if (ca && cb) return formatColour(mixColour3(ca, cb, t, delta));
     if (ca || cb) { bad = true; return x; }
     const v = Number(x) + (Number(y) - Number(x)) * t;
     return String(Math.round(v * 1000) / 1000);
@@ -90,6 +110,14 @@ export function crossover(groundNight: RGBA, groundDay: RGBA, letterNight: RGBA,
   for (let k = 0; k < 40; k++) { const mid = (lo + hi) / 2; if (diff(lo) * diff(mid) <= 0) hi = mid; else lo = mid; }
   return (lo + hi) / 2;
 }
+
+/** r10: THE MIDDLE IS THE SWITCH (the Wrizors: "set the label colour per room (cream by night, deep olive by day) switching at the midpoint").
+ *  crossover() stays as the measure of where the two letterings would read alike on the straight ground; the room now changes at MID. */
+export const MID = 0.5;
+/** r10 - THE LAMP HANDS OVER TO THE SUN (the Wrizors: "the lamp pool fades out as the sun pool fades in (never both at half)"): the lamp's
+ *  strength over the first half (1 -> 0), the sun's over the second (0 -> 1). Never both above 0. */
+export const lampShare = (t: number): number => (t >= MID ? 0 : 1 - t / MID);
+export const sunShare = (t: number): number => (t <= MID ? 0 : (t - MID) / (1 - MID));
 
 /** The lettering set: tokens that SWITCH at the crossover rather than blend (text colours, and the surfaces text sits on). */
 export const LETTERING = ['--arbor-letter', '--text-hi', '--text-mid', '--text-low', '--accent-rest', '--help', '--help-hi', '--arbor-guide', '--ink-900', '--ink-800'];

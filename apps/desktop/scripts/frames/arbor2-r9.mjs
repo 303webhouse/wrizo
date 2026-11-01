@@ -90,7 +90,9 @@ export default {
   // Follow the clock, pressed. Following the clock the room is day at 12:00 and night at 22:00 WHATEVER the page tone; Always night at noon and
   // Always day at 22:00 land at once (dayness 0 / 1, no fade); Follow the clock again gives the clock's room; the page keeps the tone's paper;
   // no storage key appears; a reload forgets the choice.
-  'r9-room': async (app) => {
+  // PARKED 2026-11-01 (SUPERSEDED by the Wrizors' note, Nov 1, spec §2e: "Room ▸ By the clock · Day · Night"). Kept verbatim under the name
+  // r9-room-v1 (not in the run list); SUCCESSOR r9-room below, the same checks with r10's words.
+  'r9-room-v1': async (app) => {
     await page(app, 'arbor-r9-room', WORDS);
     const keys0 = await app.evalJs('[...Object.keys(localStorage), ...Object.keys(sessionStorage)].sort()');
     const paperOf = `(() => { ${COLOUR} const s = document.querySelector('.arbor2-paper[data-on="true"]'); return hex(parse(getComputedStyle(s || document.querySelector('.mode-page')).backgroundColor)); })()`;
@@ -120,6 +122,50 @@ export default {
     const pressed = (r) => (r?.opts || []).filter((o) => o[2] === 'true').map((o) => o[0]).join(',');
     const ok = {
       row: !!row && row.label === 'Room' && JSON.stringify(row.opts.map((o) => o.slice(0, 2))) === '[["clock","Follow the clock"],["day","Always day"],["night","Always night"]]' && pressed(row) === 'clock',
+      unsetIsClock: !s0.dataRoom,
+      seam: seam !== 'NO-SEAM',
+      noon: ['dark', 'light'].every((t) => at[`12:00 ${t}`].room === 'day' && at[`12:00 ${t}`].t === '1'),
+      night: ['dark', 'light'].every((t) => at[`22:00 ${t}`].room === 'night' && at[`22:00 ${t}`].t === '0'),
+      pickNight: okN && pN.dataRoom === 'dark' && pN.room === 'night' && pN.t === '0' && pressed(rowN) === 'night',
+      pickDay: okD && pD.dataRoom === 'light' && pD.room === 'day' && pD.t === '1',
+      backToClock: okC && !pC.dataRoom && pC.room === 'night' && pC.t === '0',
+      pageKept: !!paper0 && paper0 === paperD,
+      noStorage: JSON.stringify(keys0) === JSON.stringify(keys1) && !keys1.some((k) => /room|clock/i.test(k)),
+      session: !s4.dataRoom && pressed(row4) === 'clock',
+    };
+    if (Object.values(ok).some((x) => !x)) fail('R9-ROOM', { ok, s0, row, seam, at, pN, pD, pC, s4, row4, paper0, paperD, newKeys: keys1.filter((k) => !keys0.includes(k)) });
+    say('r9-room', { ok, tone: s0.tone, row: row.opts, noon: at['12:00 dark'].room, night: at['22:00 light'].room });
+  },
+  'r9-room': async (app) => {
+    await page(app, 'arbor-r9-room', WORDS);
+    const keys0 = await app.evalJs('[...Object.keys(localStorage), ...Object.keys(sessionStorage)].sort()');
+    const paperOf = `(() => { ${COLOUR} const s = document.querySelector('.arbor2-paper[data-on="true"]'); return hex(parse(getComputedStyle(s || document.querySelector('.mode-page')).backgroundColor)); })()`;
+    const s0 = await app.evalJs(STATE), paper0 = await app.evalJs(paperOf);
+    await openMood(app); await sleep(200);
+    const row = await app.evalJs(ROWREAD);
+    const seam = await clock(app, '12:00');
+    const at = {};
+    for (const hhmm of ['12:00', '22:00']) {
+      await clock(app, hhmm);
+      for (const tone of ['dark', 'light']) { await app.evalJs(`document.documentElement.setAttribute('data-page', ${JSON.stringify(tone)})`); await sleep(150); at[`${hhmm} ${tone}`] = await app.evalJs(STATE); }
+    }
+    await app.evalJs(`document.documentElement.setAttribute('data-page', ${JSON.stringify(s0.tone)})`); await sleep(150);
+    await clock(app, '12:00');
+    const okN = await clickSel(app, '.arbor2-mood [data-room-opt="night"]'); await sleep(60);
+    const pN = await app.evalJs(STATE), rowN = await app.evalJs(ROWREAD);
+    await clock(app, '22:00');
+    const okD = await clickSel(app, '.arbor2-mood [data-room-opt="day"]'); await sleep(60);
+    const pD = await app.evalJs(STATE), paperD = await app.evalJs(paperOf);
+    const okC = await clickSel(app, '.arbor2-mood [data-room-opt="clock"]'); await sleep(60);
+    const pC = await app.evalJs(STATE);
+    const keys1 = await app.evalJs('[...Object.keys(localStorage), ...Object.keys(sessionStorage)].sort()');
+    await pickRoom(app, 'night', 300);
+    await load(app, '#/page/arbor-r9-room'); await sleep(800);
+    await openMood(app); await sleep(200);
+    const s4 = await app.evalJs(STATE), row4 = await app.evalJs(ROWREAD);
+    const pressed = (r) => (r?.opts || []).filter((o) => o[2] === 'true').map((o) => o[0]).join(',');
+    const ok = {
+      row: !!row && row.label === 'Room' && JSON.stringify(row.opts.map((o) => o.slice(0, 2))) === '[["clock","By the clock"],["day","Day"],["night","Night"]]' && pressed(row) === 'clock',
       unsetIsClock: !s0.dataRoom,
       seam: seam !== 'NO-SEAM',
       noon: ['dark', 'light'].every((t) => at[`12:00 ${t}`].room === 'day' && at[`12:00 ${t}`].t === '1'),
