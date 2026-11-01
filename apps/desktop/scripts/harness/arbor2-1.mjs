@@ -69,8 +69,8 @@ const setFlag = async (app, on) => {
   return splash;
 };
 // (r8: the Room switch lives in the Mood menu, folded by default - the driver opens Mood first when the label is not on screen; no assertion changed)
-// (r9 driver fix, no assertion changed: the Room row's buttons now read "Always day" / "Always night" - Fable, Nov 1 - so the old labels map to them)
-const pickBar = async (app, label0) => { const label = ({ Night: 'Always night', Day: 'Always day' })[label0] ?? label0; await app.evalJs(`(() => { if ([...document.querySelectorAll('.arbor2-bar-opt')].some((x) => x.textContent.trim() === ${JSON.stringify(label)})) return; const m = [...document.querySelectorAll('.arbor2-bar-head')].find((h) => /^Mood/.test(h.textContent.trim()) && h.getAttribute('aria-expanded') !== 'true'); if (m) m.click(); })()`); await new Promise((r) => setTimeout(r, 150)); return app.evalJs(`(() => { const b = [...document.querySelectorAll('.arbor2-bar-opt')].find((x) => x.textContent.trim() === ${JSON.stringify(label)}); if (b) b.click(); return !!b; })()`); };
+// (r10 driver fix, no assertion changed: the Room row's buttons read "Day" / "Night" again - the Wrizors, Nov 1, spec §2e - so r9's mapping retires)
+const pickBar = async (app, label0) => { const label = label0; await app.evalJs(`(() => { if ([...document.querySelectorAll('.arbor2-bar-opt')].some((x) => x.textContent.trim() === ${JSON.stringify(label)})) return; const m = [...document.querySelectorAll('.arbor2-bar-head')].find((h) => /^Mood/.test(h.textContent.trim()) && h.getAttribute('aria-expanded') !== 'true'); if (m) m.click(); })()`); await new Promise((r) => setTimeout(r, 150)); return app.evalJs(`(() => { const b = [...document.querySelectorAll('.arbor2-bar-opt')].find((x) => x.textContent.trim() === ${JSON.stringify(label)}); if (b) b.click(); return !!b; })()`); };
 
 const STATE = `(() => {
   const root = document.documentElement, cs = getComputedStyle(root), tok = (n) => cs.getPropertyValue(n).trim();
