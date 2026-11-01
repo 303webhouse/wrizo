@@ -131,7 +131,8 @@ const clickScreenplayTemplate = async (app) => {
   return pressAt(app, `document.querySelector('.wz-template-live[data-template="screenplay"]')`);
 };
 const clickPlanBar = (app) => pressAt(app, `document.querySelector('.desk-mode-strip [data-page-plan-door]')`);
-let pageDoorsSeen = null;   // S2's reading of the page row, kept for its parked record (PAGE-TEMPLATES-MOVE)
+let pageDoorsSeen = null;
+const bg1f = {};   // #13 12f: the default leg's readings, for the parked records of the page-row checks it retired   // S2's reading of the page row, kept for its parked record (PAGE-TEMPLATES-MOVE)
 
 // BoardEditor's own board writes are DEBOUNCED (AUTOSAVE_MS = 2000) — a door
 // press mutates the live boxes immediately and the row reacts at once, but the
@@ -399,16 +400,34 @@ await withHarness(async (app) => {
   // ok('S2: a zero-word page renders the three start-words — Screenplay · Sprout · Plan (P1 amendment 2; "Sprout" supersedes "Start from a Spark")',
   //   JSON.stringify(pageDoors) === JSON.stringify(['Screenplay', 'Sprout', 'Plan']), JSON.stringify(pageDoors));
   // ------------------------------------------------------------------
-  ok('S2 [page-templates successor]: a zero-word Free Write page renders ONE start-word, Sprout (Screenplay is the Draft strip\'s template, Plan is the PLAN bar\'s door)',
-    JSON.stringify(pageDoors) === JSON.stringify(['Sprout']), JSON.stringify(pageDoors));
+  // ---- PARKED - RETIRED by #13 step 12f (Fable, Nov 1): the Sprout door (the page row's only door) and the first-line invite are
+  // deleted, everywhere, forever, so a blank page has no row. Kept VERBATIM and no longer run; its record is in the HARNESS_PARKED
+  // block below (readings in bg1f); the successor follows (in full: c13-12f-sprout-invite.mjs).
+  // ok('S2 [page-templates successor]: a zero-word Free Write page renders ONE start-word, Sprout (Screenplay is the Draft strip\'s template, Plan is the PLAN bar\'s door)',
+  //   JSON.stringify(pageDoors) === JSON.stringify(['Sprout']), JSON.stringify(pageDoors));
+  // ------------------------------------------------------------------
+  ok('S2 [12f successor]: a zero-word Free Write page renders NO start-word (no row at all)', JSON.stringify(pageDoors) === '[]', JSON.stringify(pageDoors));
 
+  // ---- PARKED - RETIRED by #13 step 12f (Fable, Nov 1): the Sprout door (the page row's only door) and the first-line invite are
+  // deleted, everywhere, forever, so a blank page has no row. Kept VERBATIM and no longer run; its record is in the HARNESS_PARKED
+  // block below (readings in bg1f); the successor follows (in full: c13-12f-sprout-invite.mjs).
+  // const caretLive = await app.evalJs(`(() => {
+  //   const ed = document.querySelector('.forward-only-editor');
+  //   const active = document.activeElement;
+  //   return { focused: !!ed && (ed === active || ed.contains(active)), rowEvents: getComputedStyle(document.querySelector('.wz-beginnings')).pointerEvents };
+  // })()`);
+  // ok('S2: the caret is LIVE under the row from the first frame — the editor already holds focus with nothing clicked, and the row itself is pointer-events:none so it can never intercept it',
+  //   caretLive.focused === true && caretLive.rowEvents === 'none', JSON.stringify(caretLive));
+  // ------------------------------------------------------------------
   const caretLive = await app.evalJs(`(() => {
     const ed = document.querySelector('.forward-only-editor');
     const active = document.activeElement;
-    return { focused: !!ed && (ed === active || ed.contains(active)), rowEvents: getComputedStyle(document.querySelector('.wz-beginnings')).pointerEvents };
+    const row = document.querySelector('.wz-beginnings');
+    return { focused: !!ed && (ed === active || ed.contains(active)), rowEvents: row ? getComputedStyle(row).pointerEvents : null };
   })()`);
-  ok('S2: the caret is LIVE under the row from the first frame — the editor already holds focus with nothing clicked, and the row itself is pointer-events:none so it can never intercept it',
-    caretLive.focused === true && caretLive.rowEvents === 'none', JSON.stringify(caretLive));
+  bg1f.caretLive = caretLive;
+  ok('S2 [12f successor]: the caret is LIVE from the first frame - the editor already holds focus with nothing clicked, and there is no row over it',
+    caretLive.focused === true && caretLive.rowEvents === null, JSON.stringify(caretLive));
 
   // Type immediately, without ever touching the row.
   await app.typeKeys('Straight to the words');
@@ -426,8 +445,14 @@ await withHarness(async (app) => {
     (await rowPresent(app)) === false);
 
   const pageLang = await (async () => { await freshPage(app, 'bg1-lang', '', LAPTOP_W, 900); return rowLanguageClean(app); })();
-  ok('S2/S3: the page row counts nothing and claims no completion either — same grammar, same silence',
-    pageLang.clean, pageLang.text);
+  // ---- PARKED - RETIRED by #13 step 12f (Fable, Nov 1): the Sprout door (the page row's only door) and the first-line invite are
+  // deleted, everywhere, forever, so a blank page has no row. Kept VERBATIM and no longer run; its record is in the HARNESS_PARKED
+  // block below (readings in bg1f); the successor follows (in full: c13-12f-sprout-invite.mjs).
+  // ok('S2/S3: the page row counts nothing and claims no completion either — same grammar, same silence',
+  //   pageLang.clean, pageLang.text);
+  // ------------------------------------------------------------------
+  bg1f.pageLang = pageLang;
+  ok('S2/S3 [12f successor]: the blank page carries no row text at all - nothing counted, nothing claimed', pageLang.text === '', JSON.stringify(pageLang));
 
   // Esc dismisses.
   await app.key('Escape');
@@ -435,45 +460,57 @@ await withHarness(async (app) => {
   ok('S2: Esc dismisses the row (and the page is still a page — the editor is untouched)',
     (await rowPresent(app)) === false && (await app.evalJs("!!document.querySelector('.forward-only-editor')")) === true);
 
-  // ==========================================================================
-  // S2 — Sprout: deck-drawn, never model-drawn; never insertable.
-  // ==========================================================================
+  // ---- PARKED - RETIRED by #13 step 12f (Fable, Nov 1): the Sprout door (the page row's only door) and the first-line invite are
+  // deleted, everywhere, forever, so a blank page has no row. Kept VERBATIM and no longer run; its record is in the HARNESS_PARKED
+  // block below (readings in bg1f); the successor follows (in full: c13-12f-sprout-invite.mjs).
+  // // ==========================================================================
+  // // S2 — Sprout: deck-drawn, never model-drawn; never insertable.
+  // // ==========================================================================
+  // await freshPage(app, 'bg1-sprout', '', LAPTOP_W, 900);
+  // // Count every outbound request from this point on — page load included, since
+  // // the counters are installed before the door is pressed and the page has been
+  // // sitting mounted. The ratified disclosure sentence forbids a send on page
+  // // load; the deck is local (NUDGE_POOL), so a drawn line costs zero requests.
+  // await app.evalJs(`(() => {
+  //   window.__bg1Net = 0;
+  //   const f = window.fetch;
+  //   window.fetch = function (...a) { window.__bg1Net++; return f.apply(this, a); };
+  //   const open = XMLHttpRequest.prototype.open;
+  //   XMLHttpRequest.prototype.open = function (...a) { window.__bg1Net++; return open.apply(this, a); };
+  //   if (window.WebSocket) { const W = window.WebSocket; window.WebSocket = function (...a) { window.__bg1Net++; return new W(...a); }; }
+  // })()`);
+  // await clickDoor(app, 'sprout');
+  // const sprouted = await app.evalJs(`({
+  //   prompt: (document.querySelector('.fl-prompt')?.textContent || '').trim(),
+  //   row: !!document.querySelector('.wz-beginnings'),
+  //   net: window.__bg1Net,
+  //   editorText: (document.querySelector('.forward-only-editor')?.innerText || '').trim(),
+  //   insideEditor: !!document.querySelector('.forward-only-editor .fl-prompt'),
+  //   controls: [...document.querySelectorAll('.fl-invite button')].map(b => b.textContent.trim()),
+  // })`);
+  // ok('S2: Sprout draws a line on request — an invitation appears where nothing was offered unbidden',
+  //   sprouted.prompt.length > 0 && sprouted.row === false, JSON.stringify(sprouted));
+  // ok('S2 (the rail): deck-drawn, never model-drawn — drawing a line makes ZERO outbound requests (fetch/XHR/WebSocket all counted)',
+  //   sprouted.net === 0, String(sprouted.net));
+  // ok('S2 (the rail): the drawn line can never become the writer\'s text — it renders OUTSIDE the editable DOM, the page still holds zero words, and the only control offered is "don\'t offer again" (no accept, no insert, no tab-fill)',
+  //   sprouted.insideEditor === false && sprouted.editorText === '' &&
+  //   JSON.stringify(sprouted.controls) === JSON.stringify(['don’t offer again']), JSON.stringify(sprouted));
+  //
+  // // The writer's ink still wins the space: the first keystroke takes it back.
+  // await app.evalJs("document.querySelector('.forward-only-editor').focus()");
+  // await app.typeKeys('Mine.');
+  // await sleep(300);
+  // ok('S2 (the rail): the first keystroke dismisses the drawn line — the writer\'s ink always wins the space',
+  //   (await app.evalJs("!document.querySelector('.fl-prompt')")) === true);
+  // ------------------------------------------------------------------
   await freshPage(app, 'bg1-sprout', '', LAPTOP_W, 900);
-  // Count every outbound request from this point on — page load included, since
-  // the counters are installed before the door is pressed and the page has been
-  // sitting mounted. The ratified disclosure sentence forbids a send on page
-  // load; the deck is local (NUDGE_POOL), so a drawn line costs zero requests.
-  await app.evalJs(`(() => {
-    window.__bg1Net = 0;
-    const f = window.fetch;
-    window.fetch = function (...a) { window.__bg1Net++; return f.apply(this, a); };
-    const open = XMLHttpRequest.prototype.open;
-    XMLHttpRequest.prototype.open = function (...a) { window.__bg1Net++; return open.apply(this, a); };
-    if (window.WebSocket) { const W = window.WebSocket; window.WebSocket = function (...a) { window.__bg1Net++; return new W(...a); }; }
-  })()`);
-  await clickDoor(app, 'sprout');
-  const sprouted = await app.evalJs(`({
-    prompt: (document.querySelector('.fl-prompt')?.textContent || '').trim(),
-    row: !!document.querySelector('.wz-beginnings'),
-    net: window.__bg1Net,
+  const noSprout = await app.evalJs(`({
+    door: !!document.querySelector('[data-beginning="sprout"]'),
+    prompt: !!document.querySelector('.fl-prompt, .fl-invite'),
     editorText: (document.querySelector('.forward-only-editor')?.innerText || '').trim(),
-    insideEditor: !!document.querySelector('.forward-only-editor .fl-prompt'),
-    controls: [...document.querySelectorAll('.fl-invite button')].map(b => b.textContent.trim()),
   })`);
-  ok('S2: Sprout draws a line on request — an invitation appears where nothing was offered unbidden',
-    sprouted.prompt.length > 0 && sprouted.row === false, JSON.stringify(sprouted));
-  ok('S2 (the rail): deck-drawn, never model-drawn — drawing a line makes ZERO outbound requests (fetch/XHR/WebSocket all counted)',
-    sprouted.net === 0, String(sprouted.net));
-  ok('S2 (the rail): the drawn line can never become the writer\'s text — it renders OUTSIDE the editable DOM, the page still holds zero words, and the only control offered is "don\'t offer again" (no accept, no insert, no tab-fill)',
-    sprouted.insideEditor === false && sprouted.editorText === '' &&
-    JSON.stringify(sprouted.controls) === JSON.stringify(['don’t offer again']), JSON.stringify(sprouted));
-
-  // The writer's ink still wins the space: the first keystroke takes it back.
-  await app.evalJs("document.querySelector('.forward-only-editor').focus()");
-  await app.typeKeys('Mine.');
-  await sleep(300);
-  ok('S2 (the rail): the first keystroke dismisses the drawn line — the writer\'s ink always wins the space',
-    (await app.evalJs("!document.querySelector('.fl-prompt')")) === true);
+  bg1f.noSprout = noSprout;
+  ok('S2 [12f successor]: a blank page has no Sprout door and draws no line - nothing is offered, nothing written', !noSprout.door && !noSprout.prompt && noSprout.editorText === '', JSON.stringify(noSprout));
 
   // ==========================================================================
   // S2 — Screenplay: structure flipped at the moment it is cheapest, free on
@@ -522,7 +559,8 @@ await withHarness(async (app) => {
   // S3 — one grammar: one component, one vanish rule, two surfaces.
   // ==========================================================================
   await freshPage(app, 'bg1-grammar-page', '', LAPTOP_W, 900);
-  const pageStyle = await app.evalJs(`(() => { const cs = getComputedStyle(document.querySelector('.wz-beginning'));
+  // #13 12f: the probe follows reality - a blank page has no door to read (null)
+  const pageStyle = await app.evalJs(`(() => { const d = document.querySelector('.wz-beginning'); if (!d) return null; const cs = getComputedStyle(d);
     return { font: cs.fontFamily, size: cs.fontSize, color: cs.color, opacity: cs.opacity }; })()`);
   await freshBoard(app, 'bg1-grammar-board', [], LAPTOP_W, 900);
   const boardStyle = await app.evalJs(`(() => { const cs = getComputedStyle(document.querySelector('.wz-beginning'));
@@ -533,8 +571,15 @@ await withHarness(async (app) => {
   // ok('S3: the board row and the page row ARE one component — identical computed type, size, color and resting weight on both surfaces',
   //   JSON.stringify(pageStyle) === JSON.stringify(boardStyle), JSON.stringify({ pageStyle, boardStyle }));
   const noOpacity = (s) => ({ font: s.font, size: s.size, color: s.color });
-  ok('S3 [faint-starters successor]: the board row and the page row ARE one component - identical computed type, size and color on both surfaces - and differ in ONE thing only, by ruling: the board starters rest at opacity 0.4, the page row at 1',
-    JSON.stringify(noOpacity(pageStyle)) === JSON.stringify(noOpacity(boardStyle)) && boardStyle.opacity === '0.4' && pageStyle.opacity === '1', JSON.stringify({ pageStyle, boardStyle }));
+  // ---- PARKED - RETIRED by #13 step 12f (Fable, Nov 1): the Sprout door (the page row's only door) and the first-line invite are
+  // deleted, everywhere, forever, so a blank page has no row. Kept VERBATIM and no longer run; its record is in the HARNESS_PARKED
+  // block below (readings in bg1f); the successor follows (in full: c13-12f-sprout-invite.mjs).
+  // ok('S3 [faint-starters successor]: the board row and the page row ARE one component - identical computed type, size and color on both surfaces - and differ in ONE thing only, by ruling: the board starters rest at opacity 0.4, the page row at 1',
+  //   JSON.stringify(noOpacity(pageStyle)) === JSON.stringify(noOpacity(boardStyle)) && boardStyle.opacity === '0.4' && pageStyle.opacity === '1', JSON.stringify({ pageStyle, boardStyle }));
+  // ------------------------------------------------------------------
+  bg1f.grammar = { pageStyle, boardStyle };
+  ok('S3 [12f successor]: the row is the board\'s alone now - a blank page renders no door, and the board starters still rest at opacity 0.4',
+    pageStyle === null && !!boardStyle && boardStyle.opacity === '0.4', JSON.stringify({ pageStyle, boardStyle }));
   {
     const fp = await app.evalJs("(() => { const c = document.querySelector('.board-canvas'); const r = c.getBoundingClientRect(); for (let y = r.top + 60; y < Math.min(r.bottom, innerHeight - 150); y += 30) for (let x = r.left + 60; x < r.right - 60; x += 30) if (document.elementFromPoint(x, y) === c) return { x: Math.round(x), y: Math.round(y) }; return null; })()");
     if (!fp) ok('S3 [faint-starters successor]: a point on the empty board canvas exists to press', false, 'none');
@@ -649,7 +694,7 @@ if (process.env.HARNESS_PARKED === '1') {
     const legNow = await app.evalJs(`(() => {
       const row = document.querySelector('.wz-beginnings');
       const ed = document.querySelector('.forward-only-editor');
-      const r = row.getBoundingClientRect(), e = ed.getBoundingClientRect();
+      const r = row ? row.getBoundingClientRect() : { left: 0, right: 0, top: 0, bottom: 0 }, e = ed.getBoundingClientRect();   // #13 12f: no row is the new truth
       const lineH = parseFloat(getComputedStyle(ed).lineHeight) || 29;
       const caret = { x: e.left + 2, yTop: e.top, yBot: e.top + lineH };
       const covering = [...document.querySelectorAll('.wz-beginning')].filter((b) => {
@@ -659,18 +704,33 @@ if (process.env.HARNESS_PARKED === '1') {
       const atCaret = document.elementFromPoint(caret.x + 1, caret.yTop + 8);
       return { doorsCoveringCaret: covering, atCaret: (atCaret && atCaret.className || '').toString(),
         rowLeft: Math.round(r.left), rowRight: Math.round(r.right), rowTop: Math.round(r.top),
-        rowBottom: Math.round(r.bottom), vw: innerWidth, vh: innerHeight };
+        rowBottom: Math.round(r.bottom), vw: innerWidth, vh: innerHeight, row: !!row };
     })()`);
-    pok('PARKED (was "1366x768 leg: the page row sits BELOW the first line (the caret\'s own line stays clear of furniture) and fits the viewport whole") — BG2 S2 centers the row on the sheet per SV19, so first-line-relative geometry no longer applies; the CLAIM survives measured against the doors and the hit test: no door covers the caret, the caret point still hit-tests to the editor, and the row still fits the viewport whole; live successor: bg2.mjs',
-      legNow.doorsCoveringCaret === 0 && legNow.atCaret.includes('forward-only-editor') &&
-      legNow.rowLeft >= 0 && legNow.rowRight <= legNow.vw &&
-      legNow.rowTop >= 0 && legNow.rowBottom <= legNow.vh,
+    pok('PARKED (was "1366x768 leg: the page row sits BELOW the first line (the caret\'s own line stays clear of furniture) and fits the viewport whole") — BG2 S2 centers the row on the sheet per SV19, so first-line-relative geometry no longer applies; the CLAIM survives measured against the doors and the hit test: no door covers the caret, the caret point still hit-tests to the editor, and the row still fits the viewport whole; live successor: bg2.mjs - #13 12f (Fable, Nov 1): the row is deleted; the caret\'s line is clear because there is no row at all',
+      legNow.row === false && legNow.doorsCoveringCaret === 0 && legNow.atCaret.includes('forward-only-editor'),
       JSON.stringify(legNow));
 
     // PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08) - ONE more park: the three start-words. Its record asserts the new truth
     // where the original measured it (the reading is taken in the live run above).
-    pok('PARKED (was "S2: a zero-word page renders the three start-words — Screenplay · Sprout · Plan (P1 amendment 2; \"Sprout\" supersedes \"Start from a Spark\")") — PAGE-TEMPLATES-MOVE narrows the page row to ONE door, Sprout, on a blank Free Write page (Screenplay is the Draft strip\'s live template; Plan stays on the PLAN bar); live successors: S2 [page-templates successor] above, page-templates.mjs',
-      JSON.stringify(pageDoorsSeen) === JSON.stringify(['Sprout']), JSON.stringify(pageDoorsSeen));
+    pok('PARKED (was "S2: a zero-word page renders the three start-words — Screenplay · Sprout · Plan (P1 amendment 2; \"Sprout\" supersedes \"Start from a Spark\")") — PAGE-TEMPLATES-MOVE narrows the page row to ONE door, Sprout, on a blank Free Write page (Screenplay is the Draft strip\'s live template; Plan stays on the PLAN bar); live successors: S2 [page-templates successor] above, page-templates.mjs - #13 12f (Fable, Nov 1): the Sprout door is deleted too; the row renders no start-word',
+      JSON.stringify(pageDoorsSeen) === '[]', JSON.stringify(pageDoorsSeen));
+    // #13 12f (Fable, Nov 1): the page-row checks the default leg retired; each re-asserts the new truth from that run (bg1f)
+    pok('PARKED (was "S2 [page-templates successor]: a zero-word Free Write page renders ONE start-word, Sprout (Screenplay is the Draft strip\'s template, Plan is the PLAN bar\'s door)") — #13 12f (Fable, Nov 1): the Sprout door is deleted; re-asserted against the new truth: no start-word',
+      JSON.stringify(pageDoorsSeen) === '[]', JSON.stringify(pageDoorsSeen));
+    pok('PARKED (was "S2: the caret is LIVE under the row from the first frame — the editor already holds focus with nothing clicked, and the row itself is pointer-events:none so it can never intercept it") — #13 12f (Fable, Nov 1): there is no row; the caret is live from the first frame with nothing over it',
+      !!bg1f.caretLive && bg1f.caretLive.focused === true && bg1f.caretLive.rowEvents === null, JSON.stringify(bg1f.caretLive));
+    pok('PARKED (was "S2/S3: the page row counts nothing and claims no completion either — same grammar, same silence") — #13 12f (Fable, Nov 1): there is no row text; nothing is counted or claimed',
+      !!bg1f.pageLang && bg1f.pageLang.text === '', JSON.stringify(bg1f.pageLang));
+    pok('PARKED (was "S2: Sprout draws a line on request — an invitation appears where nothing was offered unbidden") — #13 12f (Fable, Nov 1): the door and the invite are deleted; nothing is offered or drawn',
+      !!bg1f.noSprout && !bg1f.noSprout.door && !bg1f.noSprout.prompt, JSON.stringify(bg1f.noSprout));
+    pok('PARKED (was "S2 (the rail): deck-drawn, never model-drawn — drawing a line makes ZERO outbound requests (fetch/XHR/WebSocket all counted)") — #13 12f (Fable, Nov 1): no line is drawn, so nothing is drawn from anywhere',
+      !!bg1f.noSprout && !bg1f.noSprout.prompt, JSON.stringify(bg1f.noSprout));
+    pok('PARKED (was "S2 (the rail): the drawn line can never become the writer\'s text — it renders OUTSIDE the editable DOM, the page still holds zero words, and the only control offered is \"don\'t offer again\" (no accept, no insert, no tab-fill)") — #13 12f (Fable, Nov 1): there is no drawn line and no control; the page holds zero words',
+      !!bg1f.noSprout && !bg1f.noSprout.prompt && bg1f.noSprout.editorText === '', JSON.stringify(bg1f.noSprout));
+    pok('PARKED (was "S2 (the rail): the first keystroke dismisses the drawn line — the writer\'s ink always wins the space") — #13 12f (Fable, Nov 1): there is no drawn line to dismiss',
+      !!bg1f.noSprout && !bg1f.noSprout.prompt, JSON.stringify(bg1f.noSprout));
+    pok('PARKED (was "S3 [faint-starters successor]: the board row and the page row ARE one component - identical computed type, size and color on both surfaces - and differ in ONE thing only, by ruling: the board starters rest at opacity 0.4, the page row at 1") — #13 12f (Fable, Nov 1): the page row is deleted; the board row alone remains, at its 0.4 rest',
+      !!bg1f.grammar && bg1f.grammar.pageStyle === null && !!bg1f.grammar.boardStyle && bg1f.grammar.boardStyle.opacity === '0.4', JSON.stringify(bg1f.grammar));
     return parkedChecks;
   });
   // eslint-disable-next-line no-console

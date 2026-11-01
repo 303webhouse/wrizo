@@ -10,6 +10,9 @@ import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
+// #13 12f (Fable, Nov 1): S4's parks (the empty page's row is gone), run on the parked leg
+const parkedChecks = [];
+const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ED = '.forward-only-editor';
 const TEXT = 'A written line of prose.';
@@ -92,22 +95,41 @@ await withHarness(async (app) => {
   const p2 = await where(app);
   ok('S3 the second Esc leaves the editor for the current mode tab', !p2.inEditor && p2.modeKey === 'draft', JSON.stringify(p2));
 
-  // S4 - the empty page's beginnings row
+  // ---- PARKED - RETIRED by #13 step 12f (Fable, Nov 1): the Sprout door (the empty page's beginnings row's only door) and the
+  // first-line invite are deleted, so an empty page has no row for Esc to close. Kept VERBATIM and no longer run; each check has a
+  // record on the parked leg; the successor follows (the first Esc leaves at once, as S1's).
+  //
+  // // S4 - the empty page's beginnings row
+  // await openPage(app, 'e-empty', '', null);
+  // await sleep(400);
+  // const rowUp = () => app.evalJs("!!document.querySelector('.wz-beginnings') && document.querySelector('.wz-beginnings').getClientRects().length > 0");
+  // const hadRow = await rowUp();
+  // ok('S4 (setup) an empty page shows its beginnings row', hadRow === true);
+  // await focusEditor(app);
+  // await armCloseTimer(app, '.wz-beginnings');
+  // await esc(app);
+  // const tRow = await closeTime(app);
+  // ok(`S4 THE ASSUMPTION, MEASURED: the beginnings row is gone inside the same ${SETTLE_MS} ms window`, tRow !== null && tRow >= 0 && tRow < SETTLE_MS, JSON.stringify({ msToClose: tRow, window: SETTLE_MS }));
+  // const b1 = await where(app);
+  // ok('S4 the first Esc dismisses the beginnings row and focus stays in the editor', (await rowUp()) === false && b1.inEditor === true, JSON.stringify(b1));
+  // await esc(app);
+  // const b2 = await where(app);
+  // ok('S4 the second Esc leaves for the current mode tab', !b2.inEditor && !!b2.modeKey && b2.active === true, JSON.stringify(b2));
+  // ------------------------------------------------------------------
   await openPage(app, 'e-empty', '', null);
   await sleep(400);
   const rowUp = () => app.evalJs("!!document.querySelector('.wz-beginnings') && document.querySelector('.wz-beginnings').getClientRects().length > 0");
   const hadRow = await rowUp();
-  ok('S4 (setup) an empty page shows its beginnings row', hadRow === true);
   await focusEditor(app);
-  await armCloseTimer(app, '.wz-beginnings');
   await esc(app);
-  const tRow = await closeTime(app);
-  ok(`S4 THE ASSUMPTION, MEASURED: the beginnings row is gone inside the same ${SETTLE_MS} ms window`, tRow !== null && tRow >= 0 && tRow < SETTLE_MS, JSON.stringify({ msToClose: tRow, window: SETTLE_MS }));
   const b1 = await where(app);
-  ok('S4 the first Esc dismisses the beginnings row and focus stays in the editor', (await rowUp()) === false && b1.inEditor === true, JSON.stringify(b1));
-  await esc(app);
-  const b2 = await where(app);
-  ok('S4 the second Esc leaves for the current mode tab', !b2.inEditor && !!b2.modeKey && b2.active === true, JSON.stringify(b2));
+  ok('S4 [12f successor]: an empty page has no beginnings row, so the FIRST Esc leaves the editor for the current mode tab', hadRow === false && !b1.inEditor && !!b1.modeKey && b1.active === true, JSON.stringify({ hadRow, b1 }));
+  if (process.env.HARNESS_PARKED === '1') {
+    pok('PARKED (was "S4 (setup) an empty page shows its beginnings row") — #13 12f (Fable, Nov 1): the row\'s only door is deleted; re-asserted against the new truth: no row', hadRow === false, JSON.stringify({ hadRow }));
+    pok('PARKED (was "S4 THE ASSUMPTION, MEASURED: the beginnings row is gone inside the same ${SETTLE_MS} ms window") — #13 12f (Fable, Nov 1): there is no row to close; the first Esc is not spent on one', hadRow === false && !b1.inEditor, JSON.stringify({ hadRow, b1 }));
+    pok('PARKED (was "S4 the first Esc dismisses the beginnings row and focus stays in the editor") — #13 12f (Fable, Nov 1): re-asserted against the new truth: the first Esc leaves the editor', hadRow === false && !b1.inEditor, JSON.stringify({ hadRow, b1 }));
+    pok('PARKED (was "S4 the second Esc leaves for the current mode tab") — #13 12f (Fable, Nov 1): it is the FIRST Esc now, landing on the current mode tab', !b1.inEditor && !!b1.modeKey && b1.active === true, JSON.stringify(b1));
+  }
 
   // S6 - the hint: said to a screen reader, never drawn, and it moves nothing
   await openPage(app, 'e-hint', TEXT, 'Draft');
@@ -162,6 +184,11 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${c.detail}]` : ''}`);
+if (process.env.HARNESS_PARKED === '1') {
+  for (const c of parkedChecks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${c.detail}]` : ''}`);
+  const pp = parkedChecks.filter((c) => c.pass).length;
+  console.log(pp === parkedChecks.length ? `\nESCEXIT PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; S4 retired by #13 12f` : `\nESCEXIT PARKED: FAIL — ${parkedChecks.length - pp}/${parkedChecks.length} failed`);
+}
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nESCEXIT VERIFY: PASS (${checks.length} checks)` : `\nESCEXIT VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
 process.exit(passed === checks.length ? 0 : 1);

@@ -106,145 +106,194 @@ await withHarness(async (app) => {
       typed.includes('Hello'), JSON.stringify({ typed }));
   }
 
-  // ── S2 — the opt-in path renders, and is deck-drawn ─────────────────────────
+  // ---- PARKED - RETIRED by #13 step 12f (Fable, Nov 1): the first-line invite is deleted, everywhere, forever (its stored pref
+  // stays as data). S2 below drove the opted-in invite; it is kept VERBATIM and no longer run. Its successor runs the same
+  // scenarios with the pref seeded "on" and asserts that nothing shows and nothing changes; each check has a record on the
+  // parked leg. The full successor is c13-12f-sprout-invite.mjs. S1 above is unchanged: it still holds and reads nothing deleted.
+  // // ── S2 — the opt-in path renders, and is deck-drawn ─────────────────────────
+  // {
+  //   await openFreshPage(app, 'fx15-optin', 'on');
+  //   const prompt = await app.evalJs("document.querySelector('.fl-prompt')?.textContent ?? null");
+  //   ok('S2: once opted in (pref "on"), the invitation appears — a single quiet .fl-prompt on the empty page',
+  //     typeof prompt === 'string' && prompt.trim().length > 0, JSON.stringify({ prompt }));
+  //
+  //   // Deck-drawn, never model-drawn: the rendered line is a verbatim member of
+  //   // the local NUDGE_POOL deck (exposed via the wrizoFirstLineInvite seam). A
+  //   // model-generated line could not be a member; a synchronous local draw means
+  //   // no send fired on load (the ratified disclosure sentence forbids one).
+  //   const deckDrawn = await app.evalJs(`(() => {
+  //     const pool = (window.wrizoFirstLineInvite && window.wrizoFirstLineInvite.POOL) || null;
+  //     const text = document.querySelector('.fl-prompt')?.textContent ?? null;
+  //     return { poolLen: Array.isArray(pool) ? pool.length : -1, member: !!pool && !!text && pool.includes(text) };
+  //   })()`);
+  //   ok('S2: the prompt is DECK-DRAWN, never model-drawn — the rendered line is a verbatim member of the local NUDGE_POOL deck (no send on page load)',
+  //     deckDrawn.poolLen > 0 && deckDrawn.member === true, JSON.stringify(deckDrawn));
+  //
+  //   // A13 (structural): the prompt lives OUTSIDE the editable surface and is
+  //   // decorative — it is a <span>, aria-hidden, and not a descendant of the
+  //   // contenteditable, so there is no mechanism by which it could become text.
+  //   const a13 = await app.evalJs(`(() => {
+  //     const p = document.querySelector('.fl-prompt');
+  //     const editor = document.querySelector('.forward-only-editor');
+  //     return {
+  //       insideEditor: !!p && !!editor && editor.contains(p),
+  //       tag: p ? p.tagName : null,
+  //       ariaHidden: p ? p.getAttribute('aria-hidden') : null,
+  //     };
+  //   })()`);
+  //   ok('S2 (A13): the prompt is decoration OUTSIDE the editable surface — a <span>, aria-hidden, and NOT a descendant of .forward-only-editor — so it can never become the writer\'s text',
+  //     a13.insideEditor === false && a13.tag === 'SPAN' && a13.ariaHidden === 'true', JSON.stringify(a13));
+  // }
+  //
+  // // ── S2 (A13) — no tab-fill: pressing Tab never accepts the prompt ───────────
+  // {
+  //   await openFreshPage(app, 'fx15-tab', 'on');
+  //   const promptBefore = await app.evalJs("document.querySelector('.fl-prompt')?.textContent ?? ''");
+  //   await focusEditor(app);
+  //   await app.key('Tab');
+  //   await sleep(200);
+  //   const afterTab = await editorText(app);
+  //   ok('S2 (A13): pressing Tab does NOT fill the line — the editor takes no content and the prompt text is never inserted (no accept, no tab-fill)',
+  //     afterTab.replace(/\s/g, '') === '' && !(promptBefore && afterTab.includes(promptBefore)),
+  //     JSON.stringify({ promptBefore, afterTab }));
+  // }
+  //
+  // // ── S2 — vanishes on the first keystroke; only the real char lands ──────────
+  // {
+  //   await openFreshPage(app, 'fx15-vanish', 'on');
+  //   const promptBefore = await app.evalJs("document.querySelector('.fl-prompt')?.textContent ?? ''");
+  //   ok('S2: precondition — the opted-in prompt is showing on the empty page before the keystroke',
+  //     typeof promptBefore === 'string' && promptBefore.length > 0, JSON.stringify({ promptBefore }));
+  //
+  //   await focusEditor(app);
+  //   await app.typeKeys('x');
+  //   await sleep(250);
+  //   const gone = await app.evalJs("!document.querySelector('.fl-prompt') && !document.querySelector('.fl-invite')");
+  //   ok('S2: the invitation VANISHES on the first keystroke — .fl-prompt / .fl-invite are gone the instant the writer types (and so can never overlap typed text)',
+  //     gone === true, String(gone));
+  //
+  //   const after = await editorText(app);
+  //   ok('S2: only the real keystroke lands — the editor holds the typed "x" and NEVER the prompt text (no insertion, no accept)',
+  //     after.includes('x') && !(promptBefore && after.includes(promptBefore)), JSON.stringify({ after }));
+  // }
+  //
+  // // ── S2 — the invite never blocks the writer (pointer-events:none overlay) ───
+  // {
+  //   await openFreshPage(app, 'fx15-overlay', 'on');
+  //   const overlay = await app.evalJs(`(() => {
+  //     const el = document.querySelector('.fl-invite');
+  //     return el ? getComputedStyle(el).pointerEvents : null;
+  //   })()`);
+  //   ok('S2: while shown, the invitation is a pointer-events:none overlay above the paper — it can never intercept a click or block the caret (no collision with typing)',
+  //     overlay === 'none', JSON.stringify({ overlay }));
+  // }
+  //
+  // // ── S2 — "don't offer again" persists across a reload ──────────────────────
+  // {
+  //   await openFreshPage(app, 'fx15-never', 'on');
+  //   await app.waitFor("!!document.querySelector('.fl-never')", { label: '"don\'t offer again" button present' });
+  //   await app.evalJs("document.querySelector('.fl-never').click()");
+  //   await sleep(200);
+  //   const immediate = await app.evalJs(`(() => ({
+  //     prompt: !!document.querySelector('.fl-prompt'),
+  //     pref: localStorage.getItem(${JSON.stringify(PREF_KEY)}),
+  //     prefAtKey: localStorage.getItem(window.wrizoFirstLineInvite.prefKey()),
+  //   }))()`);
+  //   // SPROUT-INVITE-SCOPE (Fable's review, ledger 124) - SUPERSEDED. ORIGINAL, quoted verbatim
+  //   // (now parked at the foot of this file, HARNESS_PARKED=1): `immediate.pref` read the BARE
+  //   // key directly, which is only the EFFECTIVE key while signed out. A signed-in device's
+  //   // "don't offer again" click correctly writes that account's own SCOPED key instead - a
+  //   // real, intentional behavior change this ticket introduced, not a bug - so the bare key
+  //   // alone is no longer a reliable read of "the pref". Successor below reads prefAtKey (the
+  //   // hook's own test seam), the SAME key the write itself targets either way.
+  //   //
+  //   //   ok('S2: "don\'t offer again" withdraws the invitation at once — the prompt disappears and the pref becomes "never"',
+  //   //     immediate.prompt === false && immediate.pref === 'never', JSON.stringify(immediate));
+  //   ok('S2 [successor]: "don\'t offer again" withdraws the invitation at once — the prompt disappears and the pref (at its CURRENTLY-EFFECTIVE key) becomes "never"',
+  //     immediate.prompt === false && immediate.prefAtKey === 'never', JSON.stringify(immediate));
+  //   if (process.env.HARNESS_PARKED === '1') {
+  //     // Fable's review (ledger 124): accept null as "nothing to migrate" - a signed-in session
+  //     // can have the bare key already consumed by migrateToScopedKey() (readPref()'s own
+  //     // subscription-triggered re-run, sometime before this click) before this read even fires.
+  //     // Still narrow: anything other than 'never'/'on'/null stays rejected (matches fx16.mjs's
+  //     // own Case 2/3 parks and sprout-invite-scope.mjs's own fixed E4 park); a genuinely stuck,
+  //     // unmigrated value cannot slip through - proven by sprout-invite-scope-logic.mjs's own S2
+  //     // mutant ("migrateToScopedKey is a complete no-op"), which exercises this exact code path.
+  //     pok('PARKED (was "S2: don\'t offer again withdraws... pref becomes never" via the bare key) - the write ALWAYS lands correctly (prefAtKey is "never"); the bare key itself is either ALSO "never" (signed out - the original claim literally still holds), UNCHANGED from its pre-click seed, "on" (signed in, not yet migrated), or already consumed to null (signed in, migrated already)',
+  //       immediate.prefAtKey === 'never' && (immediate.pref === 'never' || immediate.pref === 'on' || immediate.pref == null), JSON.stringify(immediate));
+  //   }
+  //
+  //   // Reload (NOT freshDesk — the pref must survive) and re-open the same empty
+  //   // page: the withdrawal is permanent. The app RESUMES the last route on reload
+  //   // (so it may land straight on the page, not the Desk); force the page hash
+  //   // either way, then wait for the editor.
+  //   await app.reload();
+  //   await sleep(600);
+  //   await app.evalJs("location.hash = '#/page/fx15-never'");
+  //   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'THE Page after never+reload' });
+  //   await sleep(300);
+  //   const afterReload = await app.evalJs(`(() => ({
+  //     prompt: !!document.querySelector('.fl-prompt'),
+  //     invite: !!document.querySelector('.fl-invite'),
+  //     pref: localStorage.getItem(${JSON.stringify(PREF_KEY)}),
+  //     prefAtKey: localStorage.getItem(window.wrizoFirstLineInvite.prefKey()),
+  //   }))()`);
+  //   // SPROUT-INVITE-SCOPE (Fable's review, ledger 124) - SUPERSEDED, same reasoning as above.
+  //   // ORIGINAL, quoted verbatim (parked at the foot of this file):
+  //   //
+  //   //   ok('S2: the withdrawal PERSISTS — after a reload the empty page still renders no invitation, and the pref is still "never"',
+  //   //     afterReload.prompt === false && afterReload.invite === false && afterReload.pref === 'never', JSON.stringify(afterReload));
+  //   ok('S2 [successor]: the withdrawal PERSISTS — after a reload the empty page still renders no invitation, and the pref (at its CURRENTLY-EFFECTIVE key) is still "never"',
+  //     afterReload.prompt === false && afterReload.invite === false && afterReload.prefAtKey === 'never', JSON.stringify(afterReload));
+  //   if (process.env.HARNESS_PARKED === '1') {
+  //     // Same null-acceptance reasoning as the pok() above.
+  //     pok('PARKED (was "S2: the withdrawal PERSISTS... pref is still never" via the bare key) - the write ALWAYS persists correctly (prefAtKey is "never" after a reload too); the bare key itself is either ALSO "never" (signed out), still UNCHANGED "on" (signed in, not yet migrated), or already consumed to null (signed in, migrated already)',
+  //       afterReload.prefAtKey === 'never' && (afterReload.pref === 'never' || afterReload.pref === 'on' || afterReload.pref == null), JSON.stringify(afterReload));
+  //   }
+  // }
+  // ------------------------------------------------------------------
   {
+    const J = (v) => JSON.stringify(v);
     await openFreshPage(app, 'fx15-optin', 'on');
-    const prompt = await app.evalJs("document.querySelector('.fl-prompt')?.textContent ?? null");
-    ok('S2: once opted in (pref "on"), the invitation appears — a single quiet .fl-prompt on the empty page',
-      typeof prompt === 'string' && prompt.trim().length > 0, JSON.stringify({ prompt }));
-
-    // Deck-drawn, never model-drawn: the rendered line is a verbatim member of
-    // the local NUDGE_POOL deck (exposed via the wrizoFirstLineInvite seam). A
-    // model-generated line could not be a member; a synchronous local draw means
-    // no send fired on load (the ratified disclosure sentence forbids one).
-    const deckDrawn = await app.evalJs(`(() => {
-      const pool = (window.wrizoFirstLineInvite && window.wrizoFirstLineInvite.POOL) || null;
-      const text = document.querySelector('.fl-prompt')?.textContent ?? null;
-      return { poolLen: Array.isArray(pool) ? pool.length : -1, member: !!pool && !!text && pool.includes(text) };
-    })()`);
-    ok('S2: the prompt is DECK-DRAWN, never model-drawn — the rendered line is a verbatim member of the local NUDGE_POOL deck (no send on page load)',
-      deckDrawn.poolLen > 0 && deckDrawn.member === true, JSON.stringify(deckDrawn));
-
-    // A13 (structural): the prompt lives OUTSIDE the editable surface and is
-    // decorative — it is a <span>, aria-hidden, and not a descendant of the
-    // contenteditable, so there is no mechanism by which it could become text.
-    const a13 = await app.evalJs(`(() => {
-      const p = document.querySelector('.fl-prompt');
-      const editor = document.querySelector('.forward-only-editor');
-      return {
-        insideEditor: !!p && !!editor && editor.contains(p),
-        tag: p ? p.tagName : null,
-        ariaHidden: p ? p.getAttribute('aria-hidden') : null,
-      };
-    })()`);
-    ok('S2 (A13): the prompt is decoration OUTSIDE the editable surface — a <span>, aria-hidden, and NOT a descendant of .forward-only-editor — so it can never become the writer\'s text',
-      a13.insideEditor === false && a13.tag === 'SPAN' && a13.ariaHidden === 'true', JSON.stringify(a13));
-  }
-
-  // ── S2 (A13) — no tab-fill: pressing Tab never accepts the prompt ───────────
-  {
-    await openFreshPage(app, 'fx15-tab', 'on');
-    const promptBefore = await app.evalJs("document.querySelector('.fl-prompt')?.textContent ?? ''");
+    const look = () => app.evalJs(`(() => ({
+      prompt: !!document.querySelector('.fl-prompt'), invite: !!document.querySelector('.fl-invite'), never: !!document.querySelector('.fl-never'),
+      seam: typeof window.wrizoFirstLineInvite, pref: localStorage.getItem(${JSON.stringify(PREF_KEY)}),
+    }))()`);
+    const s0 = await look();
+    ok('S2 [12f successor]: with the pref seeded "on" the empty page shows no invitation at all - no .fl-prompt, no .fl-invite, no "don\'t offer again" - and the invite seam is gone',
+      !s0.prompt && !s0.invite && !s0.never && s0.seam === 'undefined', J(s0));
     await focusEditor(app);
     await app.key('Tab');
     await sleep(200);
     const afterTab = await editorText(app);
-    ok('S2 (A13): pressing Tab does NOT fill the line — the editor takes no content and the prompt text is never inserted (no accept, no tab-fill)',
-      afterTab.replace(/\s/g, '') === '' && !(promptBefore && afterTab.includes(promptBefore)),
-      JSON.stringify({ promptBefore, afterTab }));
-  }
-
-  // ── S2 — vanishes on the first keystroke; only the real char lands ──────────
-  {
-    await openFreshPage(app, 'fx15-vanish', 'on');
-    const promptBefore = await app.evalJs("document.querySelector('.fl-prompt')?.textContent ?? ''");
-    ok('S2: precondition — the opted-in prompt is showing on the empty page before the keystroke',
-      typeof promptBefore === 'string' && promptBefore.length > 0, JSON.stringify({ promptBefore }));
-
-    await focusEditor(app);
+    ok('S2 [12f successor]: Tab fills nothing (there is no prompt to accept)', afterTab.replace(/\s/g, '') === '', J({ afterTab }));
     await app.typeKeys('x');
     await sleep(250);
-    const gone = await app.evalJs("!document.querySelector('.fl-prompt') && !document.querySelector('.fl-invite')");
-    ok('S2: the invitation VANISHES on the first keystroke — .fl-prompt / .fl-invite are gone the instant the writer types (and so can never overlap typed text)',
-      gone === true, String(gone));
-
-    const after = await editorText(app);
-    ok('S2: only the real keystroke lands — the editor holds the typed "x" and NEVER the prompt text (no insertion, no accept)',
-      after.includes('x') && !(promptBefore && after.includes(promptBefore)), JSON.stringify({ after }));
-  }
-
-  // ── S2 — the invite never blocks the writer (pointer-events:none overlay) ───
-  {
-    await openFreshPage(app, 'fx15-overlay', 'on');
-    const overlay = await app.evalJs(`(() => {
-      const el = document.querySelector('.fl-invite');
-      return el ? getComputedStyle(el).pointerEvents : null;
-    })()`);
-    ok('S2: while shown, the invitation is a pointer-events:none overlay above the paper — it can never intercept a click or block the caret (no collision with typing)',
-      overlay === 'none', JSON.stringify({ overlay }));
-  }
-
-  // ── S2 — "don't offer again" persists across a reload ──────────────────────
-  {
-    await openFreshPage(app, 'fx15-never', 'on');
-    await app.waitFor("!!document.querySelector('.fl-never')", { label: '"don\'t offer again" button present' });
-    await app.evalJs("document.querySelector('.fl-never').click()");
-    await sleep(200);
-    const immediate = await app.evalJs(`(() => ({
-      prompt: !!document.querySelector('.fl-prompt'),
-      pref: localStorage.getItem(${JSON.stringify(PREF_KEY)}),
-      prefAtKey: localStorage.getItem(window.wrizoFirstLineInvite.prefKey()),
-    }))()`);
-    // SPROUT-INVITE-SCOPE (Fable's review, ledger 124) - SUPERSEDED. ORIGINAL, quoted verbatim
-    // (now parked at the foot of this file, HARNESS_PARKED=1): `immediate.pref` read the BARE
-    // key directly, which is only the EFFECTIVE key while signed out. A signed-in device's
-    // "don't offer again" click correctly writes that account's own SCOPED key instead - a
-    // real, intentional behavior change this ticket introduced, not a bug - so the bare key
-    // alone is no longer a reliable read of "the pref". Successor below reads prefAtKey (the
-    // hook's own test seam), the SAME key the write itself targets either way.
-    //
-    //   ok('S2: "don\'t offer again" withdraws the invitation at once — the prompt disappears and the pref becomes "never"',
-    //     immediate.prompt === false && immediate.pref === 'never', JSON.stringify(immediate));
-    ok('S2 [successor]: "don\'t offer again" withdraws the invitation at once — the prompt disappears and the pref (at its CURRENTLY-EFFECTIVE key) becomes "never"',
-      immediate.prompt === false && immediate.prefAtKey === 'never', JSON.stringify(immediate));
-    if (process.env.HARNESS_PARKED === '1') {
-      // Fable's review (ledger 124): accept null as "nothing to migrate" - a signed-in session
-      // can have the bare key already consumed by migrateToScopedKey() (readPref()'s own
-      // subscription-triggered re-run, sometime before this click) before this read even fires.
-      // Still narrow: anything other than 'never'/'on'/null stays rejected (matches fx16.mjs's
-      // own Case 2/3 parks and sprout-invite-scope.mjs's own fixed E4 park); a genuinely stuck,
-      // unmigrated value cannot slip through - proven by sprout-invite-scope-logic.mjs's own S2
-      // mutant ("migrateToScopedKey is a complete no-op"), which exercises this exact code path.
-      pok('PARKED (was "S2: don\'t offer again withdraws... pref becomes never" via the bare key) - the write ALWAYS lands correctly (prefAtKey is "never"); the bare key itself is either ALSO "never" (signed out - the original claim literally still holds), UNCHANGED from its pre-click seed, "on" (signed in, not yet migrated), or already consumed to null (signed in, migrated already)',
-        immediate.prefAtKey === 'never' && (immediate.pref === 'never' || immediate.pref === 'on' || immediate.pref == null), JSON.stringify(immediate));
-    }
-
-    // Reload (NOT freshDesk — the pref must survive) and re-open the same empty
-    // page: the withdrawal is permanent. The app RESUMES the last route on reload
-    // (so it may land straight on the page, not the Desk); force the page hash
-    // either way, then wait for the editor.
+    const typed = await editorText(app);
+    ok('S2 [12f successor]: the first keystroke lands as itself and nothing else', typed.replace(/\s/g, '') === 'x', J({ typed }));
     await app.reload();
     await sleep(600);
-    await app.evalJs("location.hash = '#/page/fx15-never'");
-    await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'THE Page after never+reload' });
+    await app.evalJs("location.hash = '#/page/fx15-optin'");
+    await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'THE Page after reload (12f)' });
     await sleep(300);
-    const afterReload = await app.evalJs(`(() => ({
-      prompt: !!document.querySelector('.fl-prompt'),
-      invite: !!document.querySelector('.fl-invite'),
-      pref: localStorage.getItem(${JSON.stringify(PREF_KEY)}),
-      prefAtKey: localStorage.getItem(window.wrizoFirstLineInvite.prefKey()),
-    }))()`);
-    // SPROUT-INVITE-SCOPE (Fable's review, ledger 124) - SUPERSEDED, same reasoning as above.
-    // ORIGINAL, quoted verbatim (parked at the foot of this file):
-    //
-    //   ok('S2: the withdrawal PERSISTS — after a reload the empty page still renders no invitation, and the pref is still "never"',
-    //     afterReload.prompt === false && afterReload.invite === false && afterReload.pref === 'never', JSON.stringify(afterReload));
-    ok('S2 [successor]: the withdrawal PERSISTS — after a reload the empty page still renders no invitation, and the pref (at its CURRENTLY-EFFECTIVE key) is still "never"',
-      afterReload.prompt === false && afterReload.invite === false && afterReload.prefAtKey === 'never', JSON.stringify(afterReload));
+    const s = { ...(await look()), typed, afterTab, s0 };
+    ok('S2 [12f successor]: after a reload still nothing shows, and the stored pref is still the seeded "on" (no code reads, writes or removes it)',
+      !s.prompt && !s.invite && s.pref === 'on', J(s));
     if (process.env.HARNESS_PARKED === '1') {
-      // Same null-acceptance reasoning as the pok() above.
-      pok('PARKED (was "S2: the withdrawal PERSISTS... pref is still never" via the bare key) - the write ALWAYS persists correctly (prefAtKey is "never" after a reload too); the bare key itself is either ALSO "never" (signed out), still UNCHANGED "on" (signed in, not yet migrated), or already consumed to null (signed in, migrated already)',
-        afterReload.prefAtKey === 'never' && (afterReload.pref === 'never' || afterReload.pref === 'on' || afterReload.pref == null), JSON.stringify(afterReload));
+      pok('PARKED (was "S2: once opted in (pref \"on\"), the invitation appears — a single quiet .fl-prompt on the empty page") — #13 12f (Fable, Nov 1): the first-line invite is deleted; re-asserted against the new truth: no prompt, even opted in', !s0.prompt, J(s));
+      pok('PARKED (was "S2: the prompt is DECK-DRAWN, never model-drawn — the rendered line is a verbatim member of the local NUDGE_POOL deck (no send on page load)") — #13 12f (Fable, Nov 1): the first-line invite is deleted; there is no prompt and no deck seam to draw from', !s0.prompt && s0.seam === 'undefined', J(s));
+      pok('PARKED (was "S2 (A13): the prompt is decoration OUTSIDE the editable surface — a <span>, aria-hidden, and NOT a descendant of .forward-only-editor — so it can never become the writer\'s text") — #13 12f (Fable, Nov 1): the first-line invite is deleted; there is no prompt to place anywhere', !s0.prompt, J(s));
+      pok('PARKED (was "S2 (A13): pressing Tab does NOT fill the line — the editor takes no content and the prompt text is never inserted (no accept, no tab-fill)") — #13 12f (Fable, Nov 1): the first-line invite is deleted; Tab still fills nothing', afterTab.replace(/\s/g, '') === '', J(s));
+      pok('PARKED (was "S2: precondition — the opted-in prompt is showing on the empty page before the keystroke") — #13 12f (Fable, Nov 1): the first-line invite is deleted; re-asserted against the new truth: no prompt before the keystroke', !s0.prompt, J(s));
+      pok('PARKED (was "S2: the invitation VANISHES on the first keystroke — .fl-prompt / .fl-invite are gone the instant the writer types (and so can never overlap typed text)") — #13 12f (Fable, Nov 1): the first-line invite is deleted; there is nothing to vanish; nothing shows before or after', !s.prompt && !s.invite, J(s));
+      pok('PARKED (was "S2: only the real keystroke lands — the editor holds the typed \"x\" and NEVER the prompt text (no insertion, no accept)") — #13 12f (Fable, Nov 1): the first-line invite is deleted; only the keystroke lands', typed.replace(/\s/g, '') === 'x', J(s));
+      pok('PARKED (was "S2: while shown, the invitation is a pointer-events:none overlay above the paper — it can never intercept a click or block the caret (no collision with typing)") — #13 12f (Fable, Nov 1): the first-line invite is deleted; there is no overlay at all', !s0.invite, J(s));
+      pok('PARKED (was "S2 [successor]: \"don\'t offer again\" withdraws the invitation at once — the prompt disappears and the pref (at its CURRENTLY-EFFECTIVE key) becomes \"never\"") — #13 12f (Fable, Nov 1): the first-line invite is deleted; there is nothing to withdraw; the pref stays as seeded', !s0.never && s.pref === 'on', J(s));
+      pok('PARKED (was "S2 [successor]: the withdrawal PERSISTS — after a reload the empty page still renders no invitation, and the pref (at its CURRENTLY-EFFECTIVE key) is still \"never\"") — #13 12f (Fable, Nov 1): the first-line invite is deleted; after a reload nothing renders and the pref is still as seeded', !s.prompt && !s.invite && s.pref === 'on', J(s));
+      pok('PARKED (was "S2: don\'t offer again withdraws... pref becomes never" via the bare key) - the write ALWAYS lands correctly (prefAtKey is "never"); the bare key itself is either ALSO "never" (signed out - the original claim literally still holds), UNCHANGED from its pre-click seed, "on" (signed in, not yet migrated), or already consumed to null (signed in, migrated already) - #13 12f (Fable, Nov 1): there is no write any more; the bare key is UNCHANGED from its seed, "on"',
+        s.pref === 'on' && !s0.never, J(s));
+      pok('PARKED (was "S2: the withdrawal PERSISTS... pref is still never" via the bare key) - the write ALWAYS persists correctly (prefAtKey is "never" after a reload too); the bare key itself is either ALSO "never" (signed out), still UNCHANGED "on" (signed in, not yet migrated), or already consumed to null (signed in, migrated already) - #13 12f (Fable, Nov 1): there is no write; the bare key is still UNCHANGED "on" after a reload',
+        s.pref === 'on', J(s));
     }
   }
 

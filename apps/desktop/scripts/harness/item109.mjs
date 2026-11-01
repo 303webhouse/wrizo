@@ -140,8 +140,16 @@ await withHarness(async (app) => {
   //   cold.beginnings.length >= 3 && cold.flInvite === false,
   //   JSON.stringify({ beginnings: cold.beginnings, flInvite: cold.flInvite }));
   // ------------------------------------------------------------------
-  ok('S2 [page-templates successor]: THE INVITATION IS DRAWN — the blank Free Write page\'s row offers its ONE door, Sprout (Screenplay is the Draft strip\'s template, Plan the PLAN bar\'s door), and the F6 first-line invite still sleeps',
-    JSON.stringify(cold.beginnings) === JSON.stringify(['Sprout']) && cold.flInvite === false,
+  // ---- PARKED - RETIRED by #13 step 12f (Fable, Nov 1): the Sprout door and the first-line invite are deleted, everywhere,
+  // forever. Kept VERBATIM and no longer run; its record is in the HARNESS_PARKED block below; successor next, and in full
+  // c13-12f-sprout-invite.mjs.
+  //
+  // ok('S2 [page-templates successor]: THE INVITATION IS DRAWN — the blank Free Write page\'s row offers its ONE door, Sprout (Screenplay is the Draft strip\'s template, Plan the PLAN bar\'s door), and the F6 first-line invite still sleeps',
+  //   JSON.stringify(cold.beginnings) === JSON.stringify(['Sprout']) && cold.flInvite === false,
+  //   JSON.stringify({ beginnings: cold.beginnings, flInvite: cold.flInvite }));
+  // ------------------------------------------------------------------
+  ok('S2 [12f successor]: a fresh blank Free Write page offers no door and no invite - the page and its caret are the whole invitation',
+    Array.isArray(cold.beginnings) && cold.beginnings.length === 0 && cold.flInvite === false,
     JSON.stringify({ beginnings: cold.beginnings, flInvite: cold.flInvite }));
 
   ok('S2: the tree is genuinely populated, not a blank or an error page',
@@ -183,12 +191,14 @@ if (process.env.HARNESS_PARKED === '1') {
   // ---- PARKED - SUPERSEDED by the park below (PAGE-TEMPLATES-MOVE, 2026-10-08). Kept VERBATIM: item 109 parked nothing until
   // the page's Beginnings row was narrowed to one door, which falsified its S2 invitation check.
   // console.log('\nITEM109 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; item 109 parks nothing. It adds the gate that was missing rather than superseding one, and the navigation-based files it sits beside are untouched.');
-  parkedChecks.push({ name: 'PARKED (was "S2: THE INVITATION IS DRAWN — the beginnings row offers its doors on the empty page (Sprout / Plan / Screenplay). ...") — PAGE-TEMPLATES-MOVE narrows the page row to ONE door, Sprout, on a blank Free Write page (Nick\'s rulings, 2026-10-08); live successors: S2 [page-templates successor], page-templates.mjs',
-    pass: !!coldSeen && JSON.stringify(coldSeen.beginnings) === JSON.stringify(['Sprout']) && coldSeen.flInvite === false, detail: JSON.stringify(coldSeen) });
+  parkedChecks.push({ name: 'PARKED (was "S2: THE INVITATION IS DRAWN — the beginnings row offers its doors on the empty page (Sprout / Plan / Screenplay). ...") — PAGE-TEMPLATES-MOVE narrows the page row to ONE door, Sprout, on a blank Free Write page (Nick\'s rulings, 2026-10-08); live successors: S2 [page-templates successor], page-templates.mjs - #13 12f (Fable, Nov 1): the Sprout door is deleted too; the row offers no door at all',
+    pass: !!coldSeen && Array.isArray(coldSeen.beginnings) && coldSeen.beginnings.length === 0 && coldSeen.flInvite === false, detail: JSON.stringify(coldSeen) });
+  parkedChecks.push({ name: 'PARKED (was "S2 [page-templates successor]: THE INVITATION IS DRAWN — the blank Free Write page\'s row offers its ONE door, Sprout (Screenplay is the Draft strip\'s template, Plan the PLAN bar\'s door), and the F6 first-line invite still sleeps") — #13 12f (Fable, Nov 1): the Sprout door and the first-line invite are deleted; re-asserted against the new truth: no door, no invite; live successor: S2 [12f successor], c13-12f-sprout-invite.mjs',
+    pass: !!coldSeen && Array.isArray(coldSeen.beginnings) && coldSeen.beginnings.length === 0 && coldSeen.flInvite === false, detail: JSON.stringify(coldSeen) });
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   // eslint-disable-next-line no-console
-  console.log(`\nITEM109 PARKED: ${parkedChecks.every((c) => c.pass) ? 'PASS' : 'FAIL'} (${parkedChecks.length} check) — HARNESS_PARKED=1 armed; item 109 parks ONE: S2's invitation check, the page row narrowed to Sprout by PAGE-TEMPLATES-MOVE.`);
+  console.log(`\nITEM109 PARKED: ${parkedChecks.every((c) => c.pass) ? 'PASS' : 'FAIL'} (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; item 109 parks TWO: S2's invitation check (the page row narrowed to Sprout by PAGE-TEMPLATES-MOVE) and its successor (the door deleted by #13 12f).`);
 }
 
 const all = checks.concat(parkedChecks);
