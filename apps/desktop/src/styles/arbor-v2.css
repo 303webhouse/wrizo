@@ -529,3 +529,11 @@
   :root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver-panel:not([data-open='true']) > .wz-drawer-slide--left{ transform:translateX(calc(100% + var(--arbor2-drawer-gl, 0px))); }
   :root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-panel:not([data-open='true']) > .wz-drawer-slide--right{ transform:translateX(calc(-100% - var(--arbor2-drawer-gr, 0px))); }
 }
+
+/* THE TAB ALWAYS TOUCHES ITS DRAWER (Fable's ruling, Nov 1: "the drawer's scrollbar goes on its inner side, never between the drawer and the
+   tab"). A native scrollbar takes the side of its box's direction, so the left drawer turns ltr (its bar on the right, the page's side) and the
+   right drawer rtl (its bar on the left, the page's side); their contents stay left to right. The sliding box now meets the tab and the strip
+   lies between it and the page; the closed box is still parked a strip further in (above), so box and tab travel the same distance. */
+:root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver-panel{ direction:ltr; }
+:root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-panel{ direction:rtl; }
+:root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-panel > *{ direction:ltr; }

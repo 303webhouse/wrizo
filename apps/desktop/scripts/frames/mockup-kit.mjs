@@ -84,7 +84,10 @@ export async function drawerProof(app, { name, say, fail }) {
   await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]); await sleep(150);
   await app.evalJs(click('.wz-sliver-grip'));
   await app.evalJs(raf2);
-  const rmRun = await app.evalJs("document.getAnimations().filter((a) => a.playState === 'running' && /wz-(sliver|tutor)-grip/.test(String(a.effect?.target?.className || ''))).map((a) => [a.transitionProperty, Number(a.effect.getTiming().duration)])");
+  // (instrument fix after red leg 41343731092: a cut is about TRAVEL - the tab's 0.01 ms colour change (olive to brass as it opens) was caught
+  // mid-frame once; only the properties that move the tab are read now. Original, verbatim:
+  // const rmRun = await app.evalJs("document.getAnimations().filter((a) => a.playState === 'running' && /wz-(sliver|tutor)-grip/.test(String(a.effect?.target?.className || ''))).map((a) => [a.transitionProperty, Number(a.effect.getTiming().duration)])");
+  const rmRun = await app.evalJs("document.getAnimations().filter((a) => a.playState === 'running' && /wz-(sliver|tutor)-grip/.test(String(a.effect?.target?.className || '')) && /^(right|left|transform|translate|inset)/.test(String(a.transitionProperty || ''))).map((a) => [a.transitionProperty, Number(a.effect.getTiming().duration)])");
   const rm = await app.evalJs(RECTS);
   await app.evalJs(FINISH); await app.evalJs(click('.wz-sliver-grip')); await app.evalJs(FINISH);
   await app.emulateMedia([]); await sleep(300);
