@@ -11,29 +11,82 @@ import { clearRhizome, undoClearRhizome, canUndoClear, hasRhizome, subscribeLife
 //
 //   data-arbor2              the flag is on (every rule in styles/arbor-v2.css is scoped under it and under Arbor's theme)
 //   data-arbor2-room         night | day: the room in force, the one styles/arbor-v2.css reads.
-//   data-room                r8 (Nick's pick, via Fable, Oct 31: a separate Room setting): the Mood menu's "Room: Day / Night" writes it,
-//                            light (Day) | dark (Night), in session only. The room reads data-room when it is set, else it follows the
-//                            Page tone (data-page: dark = night, light = day). Saving it to the account comes with the ship brief.
+//   data-room                r9 (Nick's pick, via Fable, Nov 1): the Mood menu's Room row writes it - light = Always day, dark = Always
+//                            night, absent = Follow the clock (day 07:00-19:00 local). In session only; saving it comes with the ship brief.
+//   data-arbor2-dayness      0 (night) .. 1 (day): where the room stands; between the two only while the clock's crossfade runs.
 //   Night's progress is the hidden rhizome (Nick's idea, Fable approved Oct 29: one Rhizome style, no new setting, the lamp is
 //   ambience only), so there is no progress switch here: styles/arbor-v2.css draws it from the room alone.
 
-import { roomOf, type Room } from './room';
+import { choiceOf, dataRoomOf, dayness, mixValue, parseColour, crossover, parseClock, LETTERING, type Choice, type Room } from './room';
 
 const root = document.documentElement;
 
-// the room: data-room when set (light = day, dark = night), else the Page tone (src/arbor2/room.ts)
-const applyRoom = () => {
-  const want = roomOf(root.getAttribute('data-room'), root.getAttribute('data-page'));
-  if (root.getAttribute('data-arbor2-room') !== want) root.setAttribute('data-arbor2-room', want);
+// ---- r9: THE ROOM FOLLOWS THE CLOCK, AND CROSSFADES (src/arbor2/room.ts) ----
+// Following the clock, the room fades over 20 minutes centred on 07:00 and 19:00. The room's own rules (styles/arbor-v2.css, keyed on
+// data-arbor2-room) are two discrete looks, so the fade is drawn like this: every room token whose two values have the same shape (the ground,
+// its glow, the pool's colour and strength, the hairlines, the shoots' ink) is written on <html> as the blend for the moment; the lettering and
+// the surfaces that carry text switch in ONE step, at the crossover (the dayness where the night's lettering and the day's read alike on the
+// fading ground), and data-arbor2-room flips with them. Reduced motion: a cut at the hour. In memory only.
+let clockOverride: number | null = null;   // the harness's clock (window.arbor2Clock), in memory; null = the real local clock
+const nowMinutes = () => { if (clockOverride !== null) return clockOverride; const d = new Date(); return d.getHours() * 60 + d.getMinutes() + d.getSeconds() / 60; };
+const reducedMQ = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : null;
+type Tok = { name: string; night: string; day: string };
+let fadeToks: Tok[] | null = null, fadeCross = 0.5, inlined: string[] = [];
+const clearInline = () => { for (const n of inlined) root.style.removeProperty(n); inlined = []; };
+// the room tokens, read from the stylesheet's two room blocks, and their two values (read by flipping data-arbor2-room in one synchronous
+// pass: no frame is painted between the flips)
+const measureRoom = () => {
+  const names = new Set<string>();
+  for (const sheet of [...document.styleSheets]) {
+    let rules: CSSRuleList; try { rules = sheet.cssRules; } catch { continue; }
+    for (const r of [...rules]) {
+      if (!(r instanceof CSSStyleRule) || !/\[data-arbor2-room='(night|day)'\]$/.test(r.selectorText)) continue;
+      for (const p of [...r.style]) if (p.startsWith('--')) names.add(p);
+    }
+  }
+  clearInline();
+  const was = root.getAttribute('data-arbor2-room');
+  const read = (room: Room) => { root.setAttribute('data-arbor2-room', room); const cs = getComputedStyle(root); return new Map([...names].map((n) => [n, cs.getPropertyValue(n).trim()])); };
+  const n = read('night'), d = read('day');
+  if (was) root.setAttribute('data-arbor2-room', was); else root.removeAttribute('data-arbor2-room');
+  fadeToks = [...names].filter((x) => !LETTERING.includes(x) && n.get(x) !== d.get(x)).map((x) => ({ name: x, night: n.get(x) ?? '', day: d.get(x) ?? '' }));
+  const g0 = parseColour(n.get('--ink-950') ?? ''), g1 = parseColour(d.get('--ink-950') ?? ''), l0 = parseColour(n.get('--arbor-letter') ?? ''), l1 = parseColour(d.get('--arbor-letter') ?? '');
+  fadeCross = g0 && g1 && l0 && l1 ? crossover(g0, g1, l0, l1) : 0.5;
 };
-const setRoom = (r: Room) => { root.setAttribute('data-room', r === 'day' ? 'light' : 'dark'); applyRoom(); };
+const applyRoom = () => {
+  const t = dayness(root.getAttribute('data-room'), nowMinutes(), !!reducedMQ?.matches);
+  const fading = t > 0 && t < 1;
+  if (!fading) { fadeToks = null; clearInline(); }
+  else if (!fadeToks) measureRoom();
+  const want: Room = fading ? (t >= fadeCross ? 'day' : 'night') : t >= 1 ? 'day' : 'night';
+  if (root.getAttribute('data-arbor2-room') !== want) root.setAttribute('data-arbor2-room', want);
+  if (fading && fadeToks) {
+    const next: string[] = [];
+    for (const k of fadeToks) { const v = mixValue(k.night, k.day, t); if (v !== null) { root.style.setProperty(k.name, v); next.push(k.name); } }
+    for (const n of inlined) if (!next.includes(n)) root.style.removeProperty(n);
+    inlined = next;
+  }
+  const dn = String(Math.round(t * 1000) / 1000);
+  if (root.getAttribute('data-arbor2-dayness') !== dn) root.setAttribute('data-arbor2-dayness', dn);
+};
+const setRoom = (c: Choice) => { const v = dataRoomOf(c); if (v) root.setAttribute('data-room', v); else root.removeAttribute('data-room'); applyRoom(); };
+// THE HARNESS'S CLOCK (mockup only, in memory): window.arbor2Clock('07:00') sets the time the room reads; arbor2Clock(null) gives the real
+// clock back. Returns the dayness. A reload forgets it.
+(window as unknown as { arbor2Clock?: (s: string | null) => string | null }).arbor2Clock = (s) => {
+  clockOverride = s === null ? null : parseClock(s);
+  applyRoom();
+  return root.getAttribute('data-arbor2-dayness');
+};
 
 root.setAttribute('data-arbor2', 'true');
 applyRoom();
 mountSun(root);   // item 6: the day room's pergola light (drawn only in the day room by styles/arbor-v2.css; in memory, stores nothing)
 mountPaper();     // the zoomed page stays a whole opaque sheet, and the sun layer has a hole over the page (paper.ts; Fable, Oct 29)
 mountChrome(root);    // r5 §2c.1: the top bar drawn flush to the window's top, the "..." inside it (chrome.ts; the page never moves)
-new MutationObserver(applyRoom).observe(root, { attributes: true, attributeFilter: ['data-page', 'data-room'] });
+new MutationObserver(applyRoom).observe(root, { attributes: true, attributeFilter: ['data-room'] });
+setInterval(applyRoom, 10_000);   // the clock moves the room (a 20-minute fade in 10 s steps: each step is under 1% of the change)
+document.addEventListener('visibilitychange', applyRoom);
+reducedMQ?.addEventListener?.('change', applyRoom);
 
 function Seg<T extends string>({ label, value, opts, onPick }: { label: string; value: T; opts: [T, string][]; onPick: (v: T) => void }) {
   return (
@@ -78,22 +131,21 @@ function RhizomeRow() {
   );
 }
 
-// r8: THE ROOM CONTROL (Nick's pick, via Fable, Oct 31) - the bar's old Room switch, now "Room: Day / Night" at the head of the Mood menu.
-// It writes data-room; until she picks, the room follows the Page tone and the row says so.
+// r9: THE ROOM CONTROL (Nick's pick, via Fable, Nov 1) - three choices at the head of the Mood menu: Follow the clock (the default: no
+// data-room), Always day, Always night. The pressed one is the CHOICE, not the room in force (following the clock, the room moves on its own).
 function RoomRow() {
-  const [room, setR] = useState<Room>(() => (root.getAttribute('data-arbor2-room') as Room) ?? 'day');
-  const [set, setSet] = useState(() => root.hasAttribute('data-room'));
+  const [choice, setC] = useState<Choice>(() => choiceOf(root.getAttribute('data-room')));
   useEffect(() => {
-    const mo = new MutationObserver(() => { setR((root.getAttribute('data-arbor2-room') as Room) ?? 'day'); setSet(root.hasAttribute('data-room')); });
-    mo.observe(root, { attributes: true, attributeFilter: ['data-arbor2-room', 'data-room'] });
+    const mo = new MutationObserver(() => setC(choiceOf(root.getAttribute('data-room'))));
+    mo.observe(root, { attributes: true, attributeFilter: ['data-room'] });
     return () => mo.disconnect();
   }, []);
   return (
     <li className="arbor2-mood-row arbor2-room-row" role="group" aria-label="Room">
-      <span className="arbor2-mood-label">Room{set ? '' : <span className="arbor2-mood-why"> · follows Page</span>}</span>
+      <span className="arbor2-mood-label">Room</span>
       <span>
-        {([['day', 'Day'], ['night', 'Night']] as [Room, string][]).map(([v, text]) => (
-          <button key={v} type="button" className="arbor2-bar-opt" data-room-opt={v} aria-pressed={room === v} onClick={() => setRoom(v)}>{text}</button>
+        {([['clock', 'Follow the clock'], ['day', 'Always day'], ['night', 'Always night']] as [Choice, string][]).map(([v, text]) => (
+          <button key={v} type="button" className="arbor2-bar-opt" data-room-opt={v} aria-pressed={choice === v} onClick={() => setRoom(v)}>{text}</button>
         ))}
       </span>
     </li>
