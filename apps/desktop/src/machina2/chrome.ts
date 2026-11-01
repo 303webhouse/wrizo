@@ -6,6 +6,8 @@
 //   --machina2-dots-right  and inside the bar's right end (the bar's own right padding makes the room, beside its last item)
 //   --machina2-door-right  THE COMMAND-LINE DOOR (the Wrizors' door 1): its right edge, just left of the "..."
 //   data-machina2-dots     'in' while a bar is on screen to hold them (otherwise the "..." keeps its own corner and the door is not drawn)
+//   --machina2-bar-left    r5 (spec draft 9 §13b): the bar's left edge, where the NAMEPLATE goes (16 px in from it; doors.tsx Nameplate)
+//   --machina2-plate-w     r5: the nameplate's own width (the mark and its tick), so the bar's left padding makes room before the crumb
 // Two rect reads, on resize, on route change and every 300 ms (never on a keystroke). Nothing is stored.
 const INSET = 12;   // the "..." sits this far inside the bar's right edge
 const GAP = 8;      // the door sits this far left of the "..."
@@ -26,7 +28,10 @@ export function mountChrome(root: HTMLElement): void {
     const gh = gb?.height || 30, gw = gb?.width || 30;
     const top = Math.max(0, (r.height - gh) / 2);
     const right = Math.max(0, innerWidth - r.right + INSET);
-    const key = `${lift}|${top}|${right}|${gw}`;
+    const plate = document.querySelector<HTMLElement>('.machina2-nameplate');
+    const pw = plate ? Math.round(plate.getBoundingClientRect().width * 10) / 10 : 0;
+    const left = Math.round(r.left * 10) / 10;
+    const key = `${lift}|${top}|${right}|${gw}|${left}|${pw}`;
     if (key === last) return;
     last = key;
     root.style.setProperty('--machina2-bar-lift', `${lift}px`);
@@ -34,6 +39,8 @@ export function mountChrome(root: HTMLElement): void {
     root.style.setProperty('--machina2-dots-right', `${Math.round(right * 10) / 10}px`);
     root.style.setProperty('--machina2-door-right', `${Math.round((right + gw + GAP) * 10) / 10}px`);
     root.style.setProperty('--machina2-bar-h', `${Math.round(r.height * 10) / 10}px`);
+    root.style.setProperty('--machina2-bar-left', `${left}px`);
+    if (pw > 0) root.style.setProperty('--machina2-plate-w', `${pw}px`);
     root.setAttribute('data-machina2-dots', 'in');
   };
   update();
