@@ -1,0 +1,12 @@
+#13 step 6 (c13-6-css-split 2d021e8b) - manifest (Chat 1, Nov 1 2026)
+
+Tree 9816d75c (train-c13-6: main 92918c93 + one --no-ff merge of c13-6-css-split 2d021e8b). The step splits index.css into src/styles/*.css.
+
+PROOFS
+- tsc desktop 0, tsc server 0, seed-guard PASS 36 (both trees).
+- BUILD: the whole dist-web of the step tree is byte-identical to main's (diff -rq clean): index-CE6uLLXE.js 958242 bytes md5 24521cb3369143162c24b65d02ffec6c, index-9tSY3ofi.css 267073 bytes md5 ceb49cab18f79969fa3f7e443484a542.
+- GitHub Actions full pair, run 41362278324 (ref = the full sha, 8 shards per leg): default 229/236, parked 229/236; the 7 non-OK are the capture/probe tools with no verdict line, both legs.
+- Box, 15 files (INK's box-only list + cd2, typewriter-glide-keys, tw-glide-measure), stamp tree=9816d75c bundle=index-CE6uLLXE.js/958242b: default CLEAN 15/15; parked 14/15, the one red rhizome-latency (B and C: typing inside the flash/fade vs rest, 2/14). Per Fable (Nov 1) rhizome-latency does NOT count for step 6: the bundle is byte-identical to main's and main flaps the same way (ticket 150).
+- STYLE PROBE (c13-style-snapshot.mjs), main 92918c93 baseline vs the step, same box turn 23:29Z-23:53Z: "C13-STYLE COMPARE: IDENTICAL"; selectors 2198 / 589 matched / 1609 unmatched / 0 untestable, the same on both.
+
+Files here: pair-*.log.txt and summary.txt (Actions); box-default/parked.log.txt; rhizome-latency.box-parked-RED.txt; probe-main/probe-step.log.txt; probe-compare.txt (the compare file: empty, no difference).
