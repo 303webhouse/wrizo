@@ -245,3 +245,49 @@
    (seen in the r1 frames, run 41249201761; it is on main too). ---------- */
 :root[data-machina2][data-theme='machina'] body::before{ display:none; }
 :root[data-machina2][data-theme='machina'] body::after{ box-shadow:none; }
+
+/* ==========================================================================================================================================
+   THE DRAWER ALIGNMENT (Nick, via Fable, Nov 1; all themes, built here under the flag).
+   CLOSED: the opener tab at the page's edge (today's rect), its arrow pointing out.
+   OPEN: the drawer stands FLUSH against the page (no gap) and the tab rides the drawer's OUTER edge, its arrow pointing back toward the page
+   ("close"). The arrows were already these (store/drawerShell.ts drawerArrow), so only places move.
+   The tab travels with the drawer's own slide, on the drawer's own tokens (--drawer-dur, --drawer-ease); under reduced motion the slide has no
+   travel and the tab cuts (the app's global reduced-motion floor flattens its transition).
+   THE PAGE NEVER MOVES: only each panel's own offset and its tab move, and both are absolute (or relative) boxes outside the page's layout.
+   Left: the panel (calc(100% - 16px) of its anchor) goes from right:16px to right:0, so it meets the page where the tab stood; the tab's right
+   edge rides the sliding layer's left edge (both travel the panel's width, on the same tokens).
+   Right: Tutor.tsx stands the panel's left edge on the tab's right edge; it is drawn 16px back over the tab's old place (position:relative
+   lays nothing out again), and the tab travels the panel's width, which drawerEdge.ts reads into a variable.
+   Typewriter's zoomed page keeps today's drawers (it has its own panel rule) and is left out.
+   ========================================================================================================================================== */
+:root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver-panel{ right:0; }
+:root[data-machina2][data-theme='machina'] .wz-sliver-grip{ transition:color .15s, background-color .15s, border-color .15s, right var(--drawer-dur) var(--drawer-ease); }
+:root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver[data-open='true'] .wz-sliver-grip{ right:calc(100% - 16px); }
+:root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-panel{ position:relative; left:-16px; }
+:root[data-machina2][data-theme='machina'] .wz-tutor-grip{ transition:color .15s, background-color .15s, border-color .15s, left var(--drawer-dur) var(--drawer-ease); }
+:root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-grip:is([data-open='true'], [data-docked='true']){ left:var(--machina2-drawer-r, 0px); }
+
+/* ==========================================================================================================================================
+   r5 - THE NAMEPLATE (the Wrizors, Nov 1, wrizors-to-ARBOR-nov1c.md; spec draft 9 §13b): "WRIZ▢ │ Unfiled / Title…" at the flush bar's left
+   end, 16 px in from its edge. Plex Mono at the mark's size and spacing (13 px, .08em, 600), the bar's label colour (G1 #E6E8EA on COOL #1E262E,
+   #E6E2DB on NEUTRAL #201E1B), the ▢ a hairline square in that colour (never brass in the bar), a hairline tick in the bar's hairline colour
+   (#2E3A46 / #332F2A). The same in both rooms (the bars are dark in both). While a bar is on screen the corner mark is not drawn, so nothing is
+   left in the top-left corner; the bar's left padding makes room before the crumb (padding inside the bar: the bar's height and the page stay).
+   ========================================================================================================================================== */
+.machina2-nameplate{ display:none; }
+:root[data-machina2][data-theme='machina'][data-machina2-dots='in'] .machina2-nameplate{ position:fixed; z-index:1000; top:0; left:calc(var(--machina2-bar-left, 0px) + 16px);
+  height:var(--machina2-bar-h, 46px); display:flex; align-items:center; gap:12px; pointer-events:none; transition:opacity var(--fade-dur, .4s) ease; }
+.machina2-nameplate-mark{ display:inline-flex; align-items:center; font:600 13px/1 'IBM Plex Mono', monospace; letter-spacing:.08em; color:#E6E8EA; }
+.machina2-nameplate-sq{ display:inline-block; box-sizing:border-box; width:.7em; height:.7em; margin-left:1px; border:1px solid currentColor; }
+.machina2-nameplate-tick{ display:inline-block; width:1px; height:14px; background:#2E3A46; }
+:root[data-machina2][data-cast='neutral'] .machina2-nameplate-mark{ color:#E6E2DB; }
+:root[data-machina2][data-cast='neutral'] .machina2-nameplate-tick{ background:#332F2A; }
+:root[data-machina2][data-wz-writing='true'] .machina2-nameplate{ opacity:0; }   /* it recedes with the bar while she types, as the door does */
+:root[data-machina2][data-theme='machina'][data-machina2-dots='in'] .brand-mark{ display:none; }
+:root[data-machina2][data-theme='machina'][data-machina2-dots='in'] .chrome-top.sprint-nav{ padding-left:calc(16px + var(--machina2-plate-w, 62px) + 12px); }
+
+/* r5 - the Lighting row's "?" (spec draft 9 §2f: "a '?' explains it in one line") */
+.machina2-bar-help{ all:unset; cursor:pointer; width:16px; height:16px; line-height:14px; text-align:center; box-sizing:border-box; border:1px solid var(--machina2-guide-mark, #7FA0BC);
+  color:var(--machina2-guide); font:11px/14px 'IBM Plex Mono', monospace; }
+.machina2-bar-help:focus-visible{ outline:1px solid var(--brass); outline-offset:2px; }
+.machina2-bar-help-line{ margin:0; font-size:11px; color:var(--text-low); }

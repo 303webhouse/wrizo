@@ -67,6 +67,9 @@ export function initRoom(): void {
   window.addEventListener('keydown', (e) => { if (!['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) lastKey = performance.now(); }, true);
   window.addEventListener('input', () => { lastKey = performance.now(); }, true);   // dictation and IME composition type without a keydown
   setInterval(() => apply(false), 1000);
+  // r5 (spec draft 9 §2f): a waiting change also lands "at the next File open, whichever comes first" - opening a page is an act of departure,
+  // not typing, so the room in force catches up at once (a page route: #/page/<id>)
+  window.addEventListener('hashchange', () => { if (/^#\/page\//.test(location.hash)) apply(true); });
   document.addEventListener('visibilitychange', () => apply(false));
   // THE HARNESS'S CLOCK (mockup only, in memory): window.machina2Clock('19:00') sets the time the room reads; machina2Clock(null) gives the
   // real clock back. It is the clock moving, not a pick, so it waits for the writer like the real clock does. A reload forgets it.
