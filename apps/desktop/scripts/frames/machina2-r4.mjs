@@ -208,10 +208,10 @@ export default {
     const panelSaw = await app.evalJs("(() => { const p = document.querySelector('.wz-cascade-panel'); return p ? { title: p.querySelector('.wz-cascade-panel-title')?.textContent.trim() ?? null, rows: p.querySelectorAll('.wz-section-row').length, sets: [...p.querySelectorAll('.wz-set-head')].map((h) => h.getAttribute('aria-expanded')), beside: p.querySelectorAll('.machina2-files-beside').length } : null; })()");
     // (hover through the real pointer: CSS :hover answers only to it)
     await app.cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 5, y: 400 }); await sleep(150);
-    const fp0 = await app.evalJs(`(() => { ${R} const rows = [...document.querySelectorAll('.wz-cascade-panel .wz-section-row')].filter(seen); const row = rows[0]; const door = row?.querySelector('.machina2-files-beside');
+    const fp0 = await app.evalJs(`(() => { ${R} const rows = [...document.querySelectorAll('.wz-cascade-panel .wz-section-row')].filter(seen); /* (driver fix after green leg 41300435127: the row of ANOTHER File - the page underfoot rightly has no door) */ const row = rows.find((r) => r.querySelector('.machina2-files-beside')); const door = row?.querySelector('.machina2-files-beside');
       return { rows: rows.length, rest: seen(door), door: !!door, text: door?.textContent.trim() ?? null, at: row ? rr(row) : null }; })()`);
     if (fp0.at) { await app.cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x: Math.round(fp0.at.l + fp0.at.w / 2), y: Math.round(fp0.at.t + fp0.at.h / 2) }); await sleep(250); }
-    const hover = await app.evalJs(`(() => { ${R} const row = [...document.querySelectorAll('.wz-cascade-panel .wz-section-row')].filter(seen)[0]; return seen(row?.querySelector('.machina2-files-beside')); })()`);
+    const hover = await app.evalJs(`(() => { ${R} const row = [...document.querySelectorAll('.wz-cascade-panel .wz-section-row')].filter(seen).find((r) => r.querySelector('.machina2-files-beside')); return seen(row?.querySelector('.machina2-files-beside')); })()`);
     await app.cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 5, y: 400 }); await sleep(150);
     const fp = { ...fp0, hover };
     await app.evalJs("(() => { const d = document.querySelector('.wz-cascade-panel .machina2-files-beside'); d?.focus(); })()"); await sleep(150);
