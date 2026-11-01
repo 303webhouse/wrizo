@@ -230,6 +230,23 @@ These rules apply to every 12x branch:
 - **Gate:** default leg.
 - **Size:** S.
 
+**12f · `c13-12f-sprout-door` · DELETE the Sprout door on the blank Free Write page (Fable, Nov 1)** ⚠ behaviour
+- **What:** Sprout is the page's only beginning (`PageEditor.tsx`, `beginningDoors`), so the page's whole beginnings plumbing goes with it:
+  `beginningDoors`, `takeBeginning`, `beginningsDismissed` and `beginningsRow` in `PageEditor.tsx`, the `sprout` glyph and kind in `BeginningsRow.tsx`,
+  the `beginSprout` lexicon key, and any CSS that the step 5 report shows matching only the page's row.
+- **Stays:** `BeginningsRow.tsx` itself (the board and projection starters use it). The first-line invite (`useFirstLineInvite.tsx`) stays for writers
+  who already turned it on: no stored key is touched or removed (law 4).
+- **The consequence, for Fable to rule:** `invite.optIn()` has one caller, the Sprout door. Once the door is gone a new writer cannot turn the invite on,
+  so the invite becomes dormant for everyone not already opted in. Default: keep it as it is (no data touched). The alternative is a 12x of its own, on Nick's word.
+- **Harness candidates** (grep at `3cc545e6`; audit each site at the branch point): `bg1`, `bg2`, `fx15`, `fx16`, `page-templates`, `pb1`,
+  `sprout-invite-scope`, `sprout-invite-scope-logic`, `item104`, `item109`, `page-size`, `sized-by-hand`; capture `page-templates-frames`.
+  Board-starter hits (`board-click-create`, `big-projects-2`, `deck-rows`, `guided-w3-part2`, `item9192`, `board-start-frames`) are probably the
+  board's row, which stays.
+- **Proof, beyond the common proof:** a blank Free Write page shows no beginnings row and the caret takes the first key exactly as before (TTFK path);
+  the page rect is unchanged (law 1); a seeded invite pref of `on` still shows the invite.
+- **Gate:** full pair (`PageEditor.tsx`), its own train, so a red points at one cause.
+- **Size:** S.
+
 **12d · `c13-12d-fragments-code` · DELETE the fragments code; the stored data and the column stay untouched** ⚠ data
 - **Code out** (`persistence.ts`): `getFragments`, `appendText`, `toggleStruck`, `reorderSpine`, `linkFragments`, `setFragmentRole`,
   and their private helpers (`migrateFragments`, `nextSpineOrder`, `projectIdOfFragment`, `commitFragments`) once nothing else calls them.
@@ -257,7 +274,7 @@ These rules apply to every 12x branch:
 - **Step 9:** the default leg only, provided the JS bundle is byte-identical and the source-reading checks pass. No full pair.
 - **Lanes:** as proposed, to be confirmed at the start of #13.
 
-**Order inside step 12:** 12b, then 12c (small, default leg), then 12d (full pair), then 12a (the biggest and the only one that changes a door).
+**Order inside step 12:** 12b, then 12c (small, default leg), then 12f (full pair), then 12d (full pair), then 12a (the biggest and the only one that changes a door).
 **12d must not ride in the same train pair as 12a:** both touch `persistence.ts`, and a red must point at one cause.
 
 ### Phase E: the harness
