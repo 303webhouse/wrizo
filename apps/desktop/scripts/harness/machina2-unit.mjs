@@ -9,7 +9,8 @@
 import fs from 'node:fs';
 import { readoutLine, pagesEstimate, readingTime, partsCovered, WORDS_PER_PAGE, WORDS_PER_MINUTE } from '../../src/machina2/readout.ts';
 import * as sw from '../../src/machina2/switches.ts';
-import { roomOf } from '../../src/machina2/room.ts';
+// (r3 driver fix: room.ts no longer exports roomOf - the U6 checks that used it are parked below)
+// import { roomOf } from '../../src/machina2/room.ts';
 import * as r3 from '../../src/machina2/room.ts';   // U7 (r3)
 
 const checks = [];
@@ -76,10 +77,13 @@ ok('U5 no font CDN, no new face (Plex and Source Sans are the app\'s own)', !/@f
 
 // U6 (r2) THE ROOM: data-room when set, else the page tone (Nick's pick via Fable, Oct 31); the room's CSS reads the resolved room, the page's
 // CSS the tone alone; in session only.
-ok('U6 unset, the room follows the page (light -> light, dark -> dark, no tone -> dark, as the base theme reads it)',
-  roomOf(null, 'light') === 'light' && roomOf(null, 'dark') === 'dark' && roomOf(null, null) === 'dark', '');
-ok('U6 set, data-room wins over the page in all four mixes', roomOf('light', 'dark') === 'light' && roomOf('dark', 'light') === 'dark' && roomOf('light', 'light') === 'light' && roomOf('dark', 'dark') === 'dark', '');
-ok('U6 a stray data-room value is ignored (the page decides)', roomOf('day', 'light') === 'light' && roomOf('', 'dark') === 'dark', '');
+// PARKED 2026-11-01 (SUPERSEDED by Fable's ruling, Nov 1: "Room settled: Follow the clock / Always day / Always night (unset = clock,
+// 07:00-19:00 local)" - unset, the room follows the clock, not the page). Original, verbatim:
+// ok('U6 unset, the room follows the page (light -> light, dark -> dark, no tone -> dark, as the base theme reads it)',
+//   roomOf(null, 'light') === 'light' && roomOf(null, 'dark') === 'dark' && roomOf(null, null) === 'dark', '');
+// ok('U6 set, data-room wins over the page in all four mixes', roomOf('light', 'dark') === 'light' && roomOf('dark', 'light') === 'dark' && roomOf('light', 'light') === 'light' && roomOf('dark', 'dark') === 'dark', '');
+// ok('U6 a stray data-room value is ignored (the page decides)', roomOf('day', 'light') === 'light' && roomOf('', 'dark') === 'dark', '');
+// SUCCESSOR: U7 below (the choice, the clock, the wait for the writer).
 const roomSrc = fs.readFileSync(new URL('../../src/machina2/room.ts', import.meta.url), 'utf8');
 ok('U6 nothing in the room touches storage', !/localStorage|sessionStorage|indexedDB/.test(roomSrc), '');
 const roomRules = [...css.matchAll(/([^{}]+)\{([^}]*)\}/g)].map((m) => [m[1].trim(), m[2]]);

@@ -12,8 +12,9 @@ import { initRoom, readRoom, setRoom } from './room';
 //   data-machina2        the flag is on (every rule in styles/machina-v2.css is scoped under it and under Machina's theme)
 //   data-machina2-off    the per-feature switches turned off this session (spec §11), a space list
 //   data-machina2-run    the Run's unit this session: words (default) | parts (spec §7, Fable ruling 3)
-//   data-room            r2 (Nick's pick, via Fable, Oct 31): the Room row's choice, light | dark, in session only; unset = the room follows
-//                        the Page tone. data-machina2-room is the room in force, the one the CSS reads (src/machina2/room.ts).
+//   data-room            r3 (Nick's pick, via Fable, Nov 1): the Room row's choice - light = Always day, dark = Always night, absent = Follow
+//                        the clock (day 07:00-19:00 local) - in session only. data-machina2-room is the room in force, the one the CSS reads;
+//                        the clock's change waits until the writer isn't typing (src/machina2/room.ts).
 // The panel's Page and Cast rows are the app's own preferences (setThemePrefs / setCast), the same acts as the Theme pop-out - nothing new
 // is stored.
 const root = document.documentElement;
@@ -32,7 +33,7 @@ function Panel() {
   const sw = getSwitches();
   const prefs = useThemePrefs();
   const cast = useCast();
-  // the Room row redraws when the page tone moves (while data-room is unset the room follows it)
+  // the Room row redraws when the choice or the room in force moves
   useEffect(() => {
     const mo = new MutationObserver(() => tick((x) => x + 1));
     mo.observe(root, { attributes: true, attributeFilter: ['data-machina2-room', 'data-room'] });
@@ -50,8 +51,7 @@ function Panel() {
           </div>
           <div className="machina2-bar-row" role="group" aria-label="Room">
             <span className="machina2-bar-label">Room</span>
-            {(['light', 'dark'] as const).map((r) => <button key={r} type="button" className="machina2-bar-opt" data-room-opt={r} aria-pressed={room.room === r} onClick={() => setRoom(r)}>{r === 'light' ? 'Light' : 'Dark'}</button>)}
-            {!room.set && <span className="machina2-bar-note">follows Page</span>}
+            {([['clock', 'Follow the clock'], ['light', 'Always day'], ['dark', 'Always night']] as const).map(([c, text]) => <button key={c} type="button" className="machina2-bar-opt" data-room-opt={c} aria-pressed={room.choice === c} onClick={() => setRoom(c)}>{text}</button>)}
           </div>
           <div className="machina2-bar-row" role="group" aria-label="Page">
             <span className="machina2-bar-label">Page</span>

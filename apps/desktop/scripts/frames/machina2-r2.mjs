@@ -53,10 +53,13 @@ const PAPER = { light: '#FBFBFA', dark: '#1A1B1D' }, INK = { light: '#1C1C1C', d
 const BAR = { cool: '#1E262E', neutral: '#201E1B' };
 
 export default {
+  // PARKED 2026-11-01 (SUPERSEDED by Fable's ruling, Nov 1: "Room settled: Follow the clock / Always day / Always night (unset = clock,
+  // 07:00-19:00 local)" - unset, the room no longer follows the tone, and the row's buttons are the three choices). Kept verbatim under the
+  // name m2r2-room-v1 (not in r2's run list any more); SUCCESSOR: m2r3-room in scripts/frames/machina2-r3.mjs.
   // ── THE ROOM ROW. Unset, the room follows the tone (no data-room; "follows Page" shown, the tone's room pressed); pressing the other room writes
   // data-room and the room changes while the PAGE keeps the tone's paper; with data-room set a change of tone no longer moves the room; removed,
   // the room follows the tone again; no storage key appears; a reload forgets the choice (in session only).
-  'm2r2-room': async (app) => {
+  'm2r2-room-v1': async (app) => {
     await page(app, 'm2r2-room', WORDS);
     const keys0 = await app.evalJs('Object.keys(localStorage).sort()');
     const paperOf = `(() => { ${COLOUR} return hex(parse(getComputedStyle(document.querySelector('.mode-page')).backgroundColor)); })()`;
