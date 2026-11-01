@@ -99,7 +99,9 @@ const fitCheck = async (app, name, want3 = false) => {
     // (Sliver.tsx arborToolTabs) - so Draft's drawer has two cloths and "three" was not its count. Original:
     // threeCloths: s.cloths.length === 3 && s.cloths.every((c) => c.shown && c.r.l >= s.slide.l - 0.5 && c.r.r <= s.slide.r + 0.5),
     // Successor: every cloth the drawer has is shown whole inside its box (at least two), and on Free Write all three, Ink among them.)
-    cloths: s.cloths.length >= (want3 ? 3 : 2) && s.cloths.every((c) => c.shown && c.r.l >= s.slide.l - 0.5 && c.r.r <= s.slide.r + 0.5)
+    // (second amendment, run 41355446362: Free Write's drawer has Format + Ink, Presets is not offered there - so no page shows three; the
+    // check asks for at least two, all whole inside, and on Free Write the Ink cloth among them. Previous: s.cloths.length >= (want3 ? 3 : 2))
+    cloths: s.cloths.length >= 2 && s.cloths.every((c) => c.shown && c.r.l >= s.slide.l - 0.5 && c.r.r <= s.slide.r + 0.5)
       && (!want3 || s.cloths.some((c) => /^ink$/i.test(c.text))),
     nothingCut: s.cut.length === 0,
     pageStill: !!closedPage && ['l', 'r', 't', 'b'].every((k) => Math.abs(closedPage[k] - s.page[k]) <= 0.5) && await app.evalJs(`document.querySelector('${ED}')?.__r13 === 1`),
