@@ -154,8 +154,14 @@ await withHarness(async (app) => {
   //   on.prog == null && Array.isArray(progOpts) && progOpts.join() === 'Night,Day,Brass,Sage', JSON.stringify({ prog: on.prog, progOpts }));
   // SUCCESSOR N1d: the bar's choices are exactly the room and the logo (Sage first, the brass o to compare) - no progress option - and no
   // night-progress attribute exists.
-  ok('N1d one Rhizome style, no progress switch: the bar offers the room (Night/Day) and the logo (Sage / Brass o) only, and no night-progress attribute exists',
-    on.prog == null && Array.isArray(progOpts) && progOpts.join() === 'Night,Day,Sage,Brass o', JSON.stringify({ prog: on.prog, progOpts }));
+  // PARKED 2026-10-31 (SUPERSEDED, r8 on INK's shards, run 41277516402: Nick picked a separate Room setting and Fable moved the bar's Room switch
+  // into the Mood menu as "Room: Day / Night" - folded on a fresh load - so "the bar offers the room" is false by design). Original, verbatim:
+  // ok('N1d one Rhizome style, no progress switch: the bar offers the room (Night/Day) and the logo (Sage / Brass o) only, and no night-progress attribute exists',
+  //   on.prog == null && Array.isArray(progOpts) && progOpts.join() === 'Night,Day,Sage,Brass o', JSON.stringify({ prog: on.prog, progOpts }));
+  // SUCCESSOR N1e: with the Mood list folded the bar's choices are exactly the logo's (Sage, Brass o) - no progress option, the room now in the
+  // Mood menu (frames r8-room proves the control) - and no night-progress attribute exists.
+  ok('N1e one Rhizome style, no progress switch: the folded bar offers the logo (Sage / Brass o) only - the room lives in the Mood menu - and no night-progress attribute exists',
+    on.prog == null && Array.isArray(progOpts) && progOpts.join() === 'Sage,Brass o', JSON.stringify({ prog: on.prog, progOpts }));
 
   // ---- T1: the room follows the existing Page tone
   await app.evalJs("document.documentElement.setAttribute('data-page', 'dark')"); await sleep(100);
