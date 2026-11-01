@@ -56,6 +56,30 @@ export async function drawerProof(app, { name, say, fail }) {
   const tokR = await app.evalJs(TRANS('.wz-tutor-grip', 'left')), tokRs = await app.evalJs(TRANS('.wz-tutor-panel .wz-drawer-slide', 'transform'));
   await app.evalJs(click('.wz-sliver-grip')); await app.evalJs(FINISH); await sleep(350);
   const shut = await app.evalJs(RECTS);
+  // THE TAB ALWAYS TOUCHES ITS DRAWER (Fable's ruling, Nov 1): a drawer that scrolls keeps its scrollbar on its INNER side (the page's side),
+  // never between the drawer and its tab. So that both drawers scroll at every width, a tall block is put at the end of each drawer's sliding
+  // box for this check only (removed after); then each opens, is stopped at half its slide, and is read at rest: the visible box's outer
+  // edge must meet the tab, and the scrollbar's strip must lie between the box and the page.
+  await app.evalJs("(() => { for (const b of document.querySelectorAll('.wz-sliver-panel > .wz-drawer-slide, .wz-tutor-panel > .wz-drawer-slide')) { const d = document.createElement('div'); d.className = 'kit-tall'; d.style.height = '3000px'; b.appendChild(d); } return true; })()");
+  await sleep(500);
+  await app.evalJs(click('.wz-sliver-grip')); await app.evalJs(raf2);
+  await app.evalJs(HALF); const tMidL = await app.evalJs(RECTS);
+  await app.evalJs(FINISH); await sleep(250);
+  await app.evalJs(click('.wz-tutor-grip')); await app.evalJs(raf2);
+  await app.evalJs(HALF); const tMidR = await app.evalJs(RECTS);
+  await app.evalJs(FINISH); await sleep(250);
+  const tall = await app.evalJs(RECTS);
+  const strips = await app.evalJs("(() => { const s = (q) => { const p = document.querySelector(q); return p ? p.offsetWidth - p.clientWidth : null; }; return { l: s('.wz-sliver-panel'), r: s('.wz-tutor-panel') }; })()");
+  await app.evalJs(click('.wz-tutor-grip')); await app.evalJs(FINISH); await sleep(300);
+  await app.evalJs(click('.wz-sliver-grip')); await app.evalJs(FINISH); await sleep(300);
+  await app.evalJs("(() => { document.querySelectorAll('.kit-tall').forEach((d) => d.remove()); return true; })()"); await sleep(300);
+  const touch = {
+    scrolls: strips.l > 0 && strips.r > 0,
+    stripInner: !!tall.ls && !!tall.rs && near(tall.ls.l, tall.lp.l) && near(tall.lp.r - tall.ls.r, strips.l) && near(tall.rs.r, tall.rp.r) && near(tall.rs.l - tall.rp.l, strips.r),
+    touchAtRest: tall.lo && tall.ro && near(tall.lt.r, tall.ls.l) && near(tall.rt.l, tall.rs.r),
+    touchMoving: tMidL.lo && near(tMidL.lt.r, tMidL.ls.l, 1.5) && tMidR.ro && near(tMidR.rt.l, tMidR.rs.r, 1.5),
+  };
+
   // reduced motion: the tab cuts (no travel, no running transition on it) - the slide has no travel either
   await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]); await sleep(150);
   await app.evalJs(click('.wz-sliver-grip'));
@@ -92,11 +116,13 @@ export async function drawerProof(app, { name, say, fail }) {
     // mirrored: [tab][drawer][page] on the left, [page][drawer][tab] on the right
     mirrored: !both || (o.lt.r <= o.lp.l + 1 && o.lp.r <= o.page.l + 16 && o.rp.l >= o.page.r - 16 && o.rt.l >= o.rp.r - 1),
     reducedCut: rm.lo && rmRun.length === 0 && near(rm.lt.r, oL.lt.r),
+    // the tab always touches its drawer (the checks above, with both drawers scrolling)
+    ...touch,
     // the page never moves and the editor is never replaced
     pageStill: [oL, midL, o, midR, midRc, one, shut, rm].every((x) => samePage(x.page, c.page)) && [oL, o, one, shut, rm].every((x) => x.sameEditor),
   };
   const brief = { ok, w: c.w, both, page: c.page, closed: { lt: c.lt, rt: c.rt }, open: { lt: o.lt, lp: o.lp, rp: o.rp, rt: o.rt }, gapToPaintedPage: { left: Math.round((c.page.l - c.lt.r) * 10) / 10, right: Math.round((c.rt.l - c.page.r) * 10) / 10 },
-    drawerW: { left: o.lp ? Math.round((o.lp.w + 16) * 10) / 10 : null, right: o.rp ? Math.round((o.rp.w + 16) * 10) / 10 : null }, progL: progL != null ? Math.round(progL * 100) / 100 : null, strips: { gl: Math.round(gl * 10) / 10, gr: Math.round(gr * 10) / 10 }, zoom: c.zoom, tokens: { tokL, tokLs, tokR, tokRs }, paused: paused.length, rmRun };
+    drawerW: { left: o.lp ? Math.round((o.lp.w + 16) * 10) / 10 : null, right: o.rp ? Math.round((o.rp.w + 16) * 10) / 10 : null }, progL: progL != null ? Math.round(progL * 100) / 100 : null, strips: { gl: Math.round(gl * 10) / 10, gr: Math.round(gr * 10) / 10 }, zoom: c.zoom, tokens: { tokL, tokLs, tokR, tokRs }, paused: paused.length, rmRun, scrolling: { strips, lt: tall.lt, ls: tall.ls, lp: tall.lp, rt: tall.rt, rs: tall.rs, rp: tall.rp, midL: [tMidL.lt?.r, tMidL.ls?.l], midR: [tMidR.rt?.l, tMidR.rs?.r] } };
   if (Object.values(ok).some((x) => !x)) fail(name, { ...brief, midL: { lt: midL.lt, ls: midL.ls }, midR: { rt: midR.rt, rs: midR.rs }, midRc: { rt: midRc.rt, rs: midRc.rs }, oL: { lt: oL.lt, lp: oL.lp, ls: oL.ls }, one: { lt: one.lt, rt: one.rt, lo: one.lo, ro: one.ro } });
   say(name, brief);
   return brief;
