@@ -93,6 +93,9 @@ export async function drawerProof(app, { name, say, fail }) {
   // mid-frame once; only the properties that move the tab are read now. Original, verbatim:
   // const rmRun = await app.evalJs("document.getAnimations().filter((a) => a.playState === 'running' && /wz-(sliver|tutor)-grip/.test(String(a.effect?.target?.className || ''))).map((a) => [a.transitionProperty, Number(a.effect.getTiming().duration)])");
   const rmRun = await app.evalJs("document.getAnimations().filter((a) => a.playState === 'running' && /wz-(sliver|tutor)-grip/.test(String(a.effect?.target?.className || '')) && /^(right|left|transform|translate|inset)/.test(String(a.transitionProperty || ''))).map((a) => [a.transitionProperty, Number(a.effect.getTiming().duration)])");
+  // (instrument fix after red leg 41347601929: the global reduced-motion floor makes every transition 0.01 ms - that IS the cut - and one was
+  // caught mid-frame; a cut is read as no travel transition longer than 1 ms)
+  rmRun.splice(0, rmRun.length, ...rmRun.filter((x) => x[1] > 1));
   const rm = await app.evalJs(RECTS);
   await app.evalJs(FINISH); await app.evalJs(click('.wz-sliver-grip')); await app.evalJs(FINISH);
   await app.emulateMedia([]); await sleep(300);
