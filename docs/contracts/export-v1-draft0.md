@@ -1,6 +1,6 @@
 # Contract: the Wrizo export format, v1 · DRAFT 0
 
-**Status:** draft 0, rev b (Fable, Oct 31, 2026, 4:05 pm: web links approved). NOT signed. Read mocks against it. **Owner:** Fable. **Consumer:** SOCIAL.
+**Status:** draft 0, rev c (Fable, Nov 1, 2026, 3:00 pm: web links approved; §8b the publish call). NOT signed. Read mocks against it. **Owner:** Fable. **Consumer:** SOCIAL.
 **The rule it serves (Nick):** one door. Text enters Read only through this format. Read has no editor of its own and never writes back to Write.
 
 ## 1. The envelope
@@ -70,6 +70,16 @@ It carries no writing tools. Read's own layers (highlights, comments, reviewers'
 ## 8. How a piece leaves Write
 It leaves by **a writer's action** (a "Publish to Read" step in Write, designed later). The export is sent to Read's import endpoint under the writer's own sign-in. Nothing is ever exported automatically.
 **For mocking:** export files saved as JSON, in this shape.
+
+## 8b. The publish call (agreed with SOCIAL, Nov 1)
+1. Write asks, under the writer's sign-in: `GET /api/v1/me/destinations`. Read answers:
+   `{ destinations: [ { kind: "guild", id, name, reviewMode: "blind"|"named"|"readersChoose", closesOn?, mayPost }, …, { kind: "commons", reviewMode: "blind" } ] }`.
+   - Guilds are listed by name. The commons always comes last and is always offered. A class guild is never listed. Never a count.
+2. **Write shows only the destinations with `mayPost: true`.** It shows no greyed-out rows (Nick's Oct 19 rule: a greyed control reads as broken).
+3. The writer ticks one or more destinations. Write then POSTs to Read's import endpoint: `{ export, destinations: [{ kind, id? }], wordToReaders?, readersNotice?, revisionNote? }`.
+   - The last three are the writer's own optional words. **They're stored only in Read; Write keeps nothing new.**
+4. Read keeps the export whole and verbatim and fingerprints `body.text` (sha256).
+   - Re-exporting the same `piece.id` makes a new revision; the same `revision` again is a no-op.
 
 ## 9. Versioning
 `version` is 1. Fields may be added in v1 (Read ignores what it doesn't know). Removing or changing a field means version 2.
