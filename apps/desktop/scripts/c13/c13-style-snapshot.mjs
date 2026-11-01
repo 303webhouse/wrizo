@@ -280,7 +280,10 @@ function writeRun(dir, { snap, sel }) {
 function compare(a, b) {
   const lines = [];
   const sty = (run, id, refId) => ({ ...run.styles[refId], ...run.styles[id] });
-  const propDiff = (sa, sb) => { const out = []; for (const k of new Set([...Object.keys(sa), ...Object.keys(sb)])) if (sa[k] !== sb[k]) out.push(`${k}: ${J(sa[k] ?? null)} -> ${J(sb[k] ?? null)}`); return out; };
+  // A computed url() carries the harness server's origin, and its port is random per process: two runs in two processes (a
+  // baseline on main, a compare on a step) would differ on every masked logo. The origin is read as one value; the path still counts.
+  const local = (v) => (typeof v === 'string' ? v.replace(/http:\/\/(127\.0\.0\.1|localhost|\[::1\]):\d+\//g, '<origin>/') : v);
+  const propDiff = (sa, sb) => { const out = []; for (const k of new Set([...Object.keys(sa), ...Object.keys(sb)])) if (local(sa[k]) !== local(sb[k])) out.push(`${k}: ${J(sa[k] ?? null)} -> ${J(sb[k] ?? null)}`); return out; };
   const keys = [...new Set([...Object.keys(a.screens), ...Object.keys(b.screens), ...Object.keys(a.failed), ...Object.keys(b.failed)])].sort();
   for (const key of keys) {
     const A = a.screens[key], B = b.screens[key];
