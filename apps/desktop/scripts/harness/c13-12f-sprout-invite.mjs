@@ -48,7 +48,8 @@ const freshDesk = async (app) => {
 const openBlank = async (app, id, keys) => {
   await freshDesk(app);
   await app.evalJs(`window.wrizoCreateJournalPage(${J({ id, text: '', projectId: null, origin: 'loose', source: 'page', createdAt: new Date().toISOString() })})`);
-  if (keys) await app.evalJs(`(() => { const k = ${J(keys)}; for (const [n, v] of Object.entries(k)) localStorage.setItem(n, v); })()`);
+  // literal keys (seed-guard reads each one: none is a collection)
+  if (keys) await app.evalJs("localStorage.setItem('wrizo-first-line-invite', 'on'); localStorage.setItem('wrizo-first-line-invite:c13-12f-writer', 'on'); localStorage.setItem('wrizo-first-line-invite-migrated', '1')");
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after seed' });
   await app.evalJs(`location.hash = '#/page/' + ${J(id)}`);
