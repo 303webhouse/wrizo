@@ -266,6 +266,13 @@
 :root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-panel{ position:relative; left:-16px; }
 :root[data-machina2][data-theme='machina'] .wz-tutor-grip{ transition:color .15s, background-color .15s, border-color .15s, left var(--drawer-dur) var(--drawer-ease); }
 :root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-grip:is([data-open='true'], [data-docked='true']){ left:var(--machina2-drawer-r, 0px); }
+/* (fix after the first green look, runs 41336024311 / 41336050132: when a drawer's content scrolls, its sliding box is inset by the panel's
+   scrollbar strip, on the panel's OUTER side; the tab rides the panel's outer edge, so the closed box is parked a strip further in and both
+   travel the same distance - at half the slide the tab was 2 px off. drawerEdge.ts measures each strip. Reduced motion keeps no travel.) */
+@media (prefers-reduced-motion: no-preference){
+  :root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver-panel:not([data-open='true']) > .wz-drawer-slide--left{ transform:translateX(calc(100% + var(--machina2-drawer-gl, 0px))); }
+  :root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-panel:not([data-open='true']) > .wz-drawer-slide--right{ transform:translateX(calc(-100% - var(--machina2-drawer-gr, 0px))); }
+}
 
 /* ==========================================================================================================================================
    r5 - THE NAMEPLATE (the Wrizors, Nov 1, wrizors-to-ARBOR-nov1c.md; spec draft 9 §13b): "WRIZ▢ │ Unfiled / Title…" at the flush bar's left
