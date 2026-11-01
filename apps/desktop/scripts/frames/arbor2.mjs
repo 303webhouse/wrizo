@@ -568,11 +568,25 @@ export default {
   // so "no choice made = the brass o" is false by design). Original, verbatim, renamed arbor-logo-v1 (not in the dispatched list):
   'arbor-logo-v1': async (app) => { await logoAt(app, 'brass'); },
   // SUCCESSOR: the logo with no choice made is the ALL-SAGE copy (it loads, and its ground is the dark front door)...
-  'arbor-logo': async (app) => { await logoAt(app, 'all-default'); },
+  // PARKED 2026-11-01 (SUPERSEDED by Fable, Nov 1: "retire the Arrival screen in Arbor under the flag" - the front door's logo image (img.wz-logo), which this measured, is not drawn; the splash's finished drawing stands there (r14), green leg g7 run 41362851514). Kept verbatim under the name arbor-logo-v1 (not in the run list); SUCCESSOR arbor-logo-retired below.
+  'arbor-logo-v1': async (app) => { await logoAt(app, 'all-default'); },
   // ...and the bar's "Brass o" draws the sage copy with the brass o
-  'arbor-logo-brass': async (app) => { await logoAt(app, 'brass-o'); },
+  // PARKED 2026-11-01 (SUPERSEDED by Fable, Nov 1: "retire the Arrival screen in Arbor under the flag" - the front door's logo image (img.wz-logo), which this measured, is not drawn; the splash's finished drawing stands there (r14), green leg g7 run 41362851514). Kept verbatim under the name arbor-logo-brass-v1 (not in the run list); SUCCESSOR arbor-logo-retired below.
+  'arbor-logo-brass-v1': async (app) => { await logoAt(app, 'brass-o'); },
   // ...and with the bar's Logo row on "Sage" (the o recoloured too: Nick's call)
-  'arbor-logo-sage': async (app) => { await logoAt(app, 'all'); },
+  // PARKED 2026-11-01 (SUPERSEDED by Fable, Nov 1: "retire the Arrival screen in Arbor under the flag" - the front door's logo image (img.wz-logo), which this measured, is not drawn; the splash's finished drawing stands there (r14), green leg g7 run 41362851514). Kept verbatim under the name arbor-logo-sage-v1 (not in the run list); SUCCESSOR arbor-logo-retired below.
+  'arbor-logo-sage-v1': async (app) => { await logoAt(app, 'all'); },
+  // SUCCESSOR of arbor-logo / -brass / -sage (r14): on the front door, under the flag, no logo image is drawn - not by default, not on the
+  // mockup bar's "Brass o", not on "Sage" - and the splash's finished drawing is there instead.
+  'arbor-logo-retired': async (app) => {
+    await flagTo(app, '#/');
+    await waitSoft(app, "!!document.querySelector('.arbor2-front-mark')", { label: 'the splash front door', timeout: 6000 });
+    const read = () => app.evalJs("(() => { const imgs = [...document.querySelectorAll('img.wz-logo, img.wz-mark')].filter((i) => i.getBoundingClientRect().width > 0); return { logoImages: imgs.length, drawing: !!document.querySelector('.arbor2-front-mark img, .arbor2-front-mark svg') }; })()");
+    const rows = [['default', await read()]];
+    for (const pick of ['Brass o', 'Sage']) { await clickText(app, '.arbor2-bar-opt', pick); await sleep(400); rows.push([pick, await read()]); }
+    if (rows.some(([, r]) => r.logoImages !== 0 || !r.drawing)) throw new Error('LOGO RETIRED FAILED ' + JSON.stringify(rows));
+    console.log('ARBOR-LOGO-RETIRED ' + JSON.stringify(rows));
+  },
   // PARKED 2026-10-29 (SUPERSEDED by arbor-dim below, after run 41010542648: it counted the LIT Tools panel among the dimmed hooks - so
   // 'everything else at .52' could never hold - and held the lit panel's own labels to the dimmed floor. Original, verbatim, renamed:
   // §6.2 "Dim the room" (Fable, Oct 29: opacity on the recede hooks, labels >= 4.5:1 dimmed). By night: the hooks at rest sit at .6, every
