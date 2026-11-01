@@ -12,7 +12,7 @@
 //   keystroke, or at the next File open, whichever comes first".
 // Every check THROWS with its numbers when it fails and prints them when it passes ("MACHINA2-R5 <screen> {...}"). Written red-first: run against
 // r4 (20b340b1) before the r5 build. Seeds go through window.wrizo*.
-import { drawerProof, walkScreens } from './mockup-kit.mjs';
+import { drawerProof, zoomDrawerProof, walkScreens } from './mockup-kit.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ED = '.forward-only-editor';
@@ -83,7 +83,9 @@ const LABEL = { cool: '230,232,234', neutral: '230,226,219' }, HAIR = { cool: '4
 
 export default {
   // ── THE DRAWERS: on the page as it opens (both hands), and in Build
-  'm2r5-drawers': async (app) => { await page(app, 'm2r5-drawers'); await drawerProof(app, { name: 'M2R5-DRAWERS', say, fail }); },
+  // PARKED 2026-11-01 (SUPERSEDED by the build's measured scope, first green look runs 41336024311 / 41336050132: this page opens in Typewriter's zoom, where the drawers overlay the enlarged page and keep today's rule - the alignment applies beside an unzoomed page, which r11-drawers / m2r5-drawers-build check). Kept verbatim under the name m2r5-drawers-v1 (not in the run list); SUCCESSOR m2r5-drawers-zoom below.
+  'm2r5-drawers-v1': async (app) => { await page(app, 'm2r5-drawers'); await drawerProof(app, { name: 'M2R5-DRAWERS', say, fail }); },
+  'm2r5-drawers-zoom': async (app) => { await page(app, 'm2r5-drawers-zoom'); await zoomDrawerProof(app, { name: 'M2R5-DRAWERS-ZOOM', say, fail }); },
   'm2r5-drawers-build': async (app) => { await page(app, 'm2r5-drawers-b', 'Build'); await drawerProof(app, { name: 'M2R5-DRAWERS-BUILD', say, fail }); },
 
   // ── THE NAMEPLATE: in both rooms and both casts, at the bar's left end, 16 px in; Plex Mono 13 px .08em; the bar's label colour, the ▢ a hairline
@@ -157,5 +159,7 @@ export default {
   'm2r5-pic-bar-night': async (app) => { await page(app, 'm2r5-pic'); await setRoom(app, 'night'); await sleep(500); },
 
   // ── THE NICK WALK
-  ...walkScreens('machina-walk', (app) => page(app, 'machina-walk'), setRoom),
+  // (driver fix after the first green look: Machina's default page opens in Typewriter's zoom at 1366, which keeps today's drawers; the walk
+  // shows the alignment on Build, as Arbor's walk does on Draft)
+  ...walkScreens('machina-walk', (app) => page(app, 'machina-walk', 'Build'), setRoom),
 };
