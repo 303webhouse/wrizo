@@ -17,13 +17,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { srcText } from '../global-css.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const SRC = path.resolve(here, '..', '..', 'src');
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
 const noCR = (t) => t.replace(/\r\n?/g, '\n');
-const read = (rel) => noCR(fs.readFileSync(path.join(SRC, rel), 'utf8'));
+const read = (rel) => noCR(srcText(SRC, rel));
 const sleepMs = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // ---- PART 1 ----------------------------------------------------------------------------------------------------------------------------------------------------------------

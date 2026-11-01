@@ -15,6 +15,7 @@ import path from 'node:path';
 import { createRequire } from 'node:module';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { srcText } from '../global-css.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const DESKTOP = path.resolve(here, '..', '..');
@@ -25,7 +26,7 @@ const ts = require('typescript');
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const noCR = (t) => t.replace(/\r\n?/g, '\n');
-const read = (rel) => noCR(fs.readFileSync(path.join(SRC, rel), 'utf8'));
+const read = (rel) => noCR(srcText(SRC, rel));
 const squash = (t) => t.replace(/\s+/g, ' ').trim();
 
 // ---- the real drawerShell.ts, transpiled and imported ------------------------------------------------------------------

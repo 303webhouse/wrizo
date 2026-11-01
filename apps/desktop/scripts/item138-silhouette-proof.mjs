@@ -21,6 +21,7 @@
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { globalCss } from './global-css.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = join(here, '..', '..', '..');
@@ -69,7 +70,7 @@ const PERS_RAW = read('apps/desktop/src/store/persistence.ts');
 const PERS = blankComments(PERS_RAW);
 const BOARD_RAW = read('apps/desktop/src/components/BoardEditor.tsx');
 const BOARD = blankComments(BOARD_RAW);
-const CSS = read('apps/desktop/src/index.css');
+const CSS = globalCss(join(repo, 'apps/desktop/src')).replace(/\r\n/g, '\n');
 
 let failures = 0;
 const fail = (m) => { failures++; console.log('  FAIL ' + m); };

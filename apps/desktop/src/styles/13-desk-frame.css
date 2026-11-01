@@ -1,0 +1,1386 @@
+/* ============================================================================
+   AB1 — DeskFrame (docs/wrizo-alpha/ab1-page-frame-brief.md). One component
+   owning the viewport at >=1100px (components/DeskFrame.tsx's
+   DESKFRAME_MIN_WIDTH — kept in step with this breakpoint by hand, since CSS
+   can't read the JS constant; both currently 1100px). Below the breakpoint
+   every call site renders its exact pre-AB1 markup instead (none of this
+   applies there) — see ab1-shell-inventory.md for why that keeps the
+   existing harness suite green untouched.
+
+   Five zone tracks (S1): the wayfinding rail is DeskRail (.desk-rail),
+   already reserved via .app-main's padding-left — not re-declared here.
+   .desk-frame-grid owns the other four: tool-rail | stage | corkboard, plus
+   the meter as a row under the stage. Fixed grid-template-columns (not
+   flex) is the PAGE IS PRIMARY guarantee: track WIDTHS never move when a
+   track's CONTENT changes (mode switch, corkboard content, gear open).
+   ============================================================================ */
+/* CD1 S5 — the desk-ground texture owns the OUTER field: `.desk-frame-host`
+   stays full-bleed (max-width:none, as AB1 shipped it) and now carries the
+   background itself, while `.desk-frame-grid` (below) caps at --frame-max
+   and centers within it — "a wide desk is more wood, not more furniture." */
+/* FX3 S1 — overflow:hidden added here (was unset/visible). The goal glow
+   (`.wz-goal-glow`, CD1 S6) is `position:absolute; inset:-10% -20%` against
+   its own anchor's box — a fixed PERCENTAGE bleed, unchanged by this
+   ticket. S1 makes that anchor's own height track the stage's (now much
+   taller, filling the viewport instead of a short intrinsic box), so the
+   SAME percentage bleed now reaches proportionally further in absolute
+   pixels — far enough, at some viewport heights, to poke past the
+   viewport's own bottom edge and trigger a vertical scrollbar (confirmed
+   empirically: a 35px document-height overflow at 2200x1000, entirely
+   attributable to the glow, nothing else). Clipping at THIS box (the
+   route's own full-bleed outer container, effectively the whole viewport)
+   only trims the extreme excess that would otherwise leak into the page's
+   scrollable area — the glow's intentional soft bleed beyond the paper's
+   own edges is untouched (this boundary sits far outside where that bleed
+   ever reaches under normal conditions). Every overlay this route renders
+   (`.sprint-modal-backdrop`, `.hb1-gate-banner`, `.hb1-ceremony-backdrop`)
+   is `position:fixed`, not `absolute`, and a bare `overflow:hidden` with no
+   `transform`/`filter`/`will-change` does not create a containing block for
+   `position:fixed` descendants — so none of them are clipped by this. */
+/* FX4 S3 — the strip flushes to the SCREEN's own left edge, not merely the
+   frame's: the host's own left inset (previously `clamp(16px,3vw,40px)`,
+   symmetric with the right) is killed outright (right/top/bottom keep their
+   existing values — only left changes) and the grid itself trades its old
+   `margin:0 auto` CENTERING for a LEFT-anchor (`margin-right:auto` only) —
+   without that second change the grid would still float centered inside
+   the now-wider host box, undoing the point. Two measurable consequences,
+   both intended: (1) near the DESKFRAME_MIN_WIDTH floor, where the grid
+   isn't yet capped by --frame-max, the reclaimed ~16-40px of host padding
+   feeds straight into `minmax(0,1fr)` (the stage track — the only track
+   that isn't a fixed width), literally the "reclaimed width feeds the
+   stage" the brief names; (2) at a wide viewport where the grid IS capped
+   at --frame-max, the leftover space (viewport minus frame-max) now sits
+   entirely on the RIGHT instead of split as symmetric margins — the old
+   cd1.mjs symmetric-margins assert is SUPERSEDED by this deliberate change
+   (parked in cd1.mjs, live successor in fx4.mjs asserting strip x===0 at
+   both reference widths + the 1100 floor instead).
+
+   FX5 S10 (Nick's A1 verdict, generation 2 — cd1.mjs's own parked check
+   gains a note pointing here, the accretion precedent) — the FX4 S3 shape
+   above turned out to be the WRONG asymmetry: flushing the strip also
+   dragged the PAPER off-center at a wide viewport (all the leftover width
+   piling on the right, exactly what cd1.mjs's OLD parked check used to
+   assert as wrong the OTHER way). The composition law now: strip flush at
+   the screen's own left edge STAYS (Nick never asked to lose that), but
+   the paper returns to true viewport-center, with leftover width split
+   symmetrically around IT specifically — not the same symmetric-margins
+   claim restored (that measured the whole GRID's margins), a NEW one
+   (measures the PAPER's own gap on each side, strip's width excluded from
+   the measure per the brief's own words). Two changes make this true at
+   once: (1) `.desk-frame-strip` (below) pulls itself OUT of the grid's own
+   flow (`position:absolute`) — its DOM position inside `.desk-frame-grid`
+   is now irrelevant to layout (grid auto-placement skips out-of-flow
+   items), so `.desk-frame-grid`'s own template drops the strip's track
+   entirely and its content is JUST stage(+corkboard) again; (2) this
+   host's own padding goes back to SYMMETRIC (`--frame-host-pad-x` on both
+   sides) so the grid's restored `margin:0 auto` (below) true-centers
+   within a viewport-centered content box, not a left-biased one. The
+   strip's own negative left offset (below) exactly cancels this padding
+   to land back at x=0 — the two rules share one token, `--frame-host-pad-
+   x` (:root, above), so they can never drift out of step with each other
+   the way two independently-typed `clamp(16px,3vw,40px)` calls could.
+   Verified empirically (not derived on paper alone, this ticket's own
+   standing discipline): with the strip out of the grid's own width
+   budget, the paper's own centering math collapses to the PLAIN "centered
+   directly in the viewport" formula regardless of the stage track's own
+   width (nested centering inside centering is still just centering) —
+   confirmed the strip's own 84px + --frame-gap's 28px (112px total) never
+   overlaps the paper's own natural left margin even at the 1100px floor
+   (measured ~200px of clearance there, the tightest case — see fx5.mjs's
+   own S10 section for the live rect proof at all three reference
+   widths). */
+/* `clip`, not `hidden`: a hidden box is still a scroll container, so a focus or
+   scrollIntoView on a tall drawer's lower controls scrolled the host and moved
+   the paper. A clipped box cannot be scrolled at all. */
+.desk-frame-host{ max-width:none; margin:0; padding:2.5rem var(--frame-host-pad-x) 3rem var(--frame-host-pad-x); background:var(--desk-ground); overflow:clip; }
+/* FX4 S1 — Journal's own host reverts the clip (see JournalEntry.tsx's own
+   comment on `.desk-frame-host--journal` for the full defect writeup): this
+   is the ONE DeskFrame surface whose content is meant to grow past the
+   viewport in ordinary use (window-scroll, ink anchored to the sheet), so
+   the general clip (correct for prose/script's own bounded, internally-
+   scrolling stage) silently ate the bottom of any sufficiently long page
+   here specifically — confirmed live, not guessed. */
+.desk-frame-host--journal{ overflow:visible; }
+.desk-frame{ position:relative; }
+/* FX5 S10 — the strip no longer occupies a grid TRACK (it's position:
+   absolute now, see .desk-frame-strip below) — the template holds only
+   stage(+corkboard), and centering is restored (`margin:0 auto`, was FX4
+   S3's left-anchoring `0 auto 0 0`) now that the strip can't drag it off
+   viewport-center anymore. See .desk-frame-host's own S10 comment above
+   for the full before/after reasoning. */
+.desk-frame-grid{
+  display:grid;
+  grid-template-columns: minmax(0,1fr) 260px;
+  column-gap:var(--frame-gap); align-items:start; justify-content:center;
+  max-width:var(--frame-max); margin:0 auto;
+}
+/* CD1 S5 — the corkboard track's grid COLUMN disappears with its content
+   (FX1 S5's "render only with content" law, reused): DeskFrame.tsx only
+   ever renders the third `<aside>` when it has something to hold, and
+   drops this data attribute to `false` in step — so no CD1 caller (none
+   pass `corkboard` yet) ever pays for a dead 260px column + its gap. */
+.desk-frame-grid[data-corkboard='false']{ grid-template-columns: minmax(0,1fr); }
+/* CD2 S1/S5 — the strip's own track (formerly .desk-frame-toolrail, the
+   Drawer's fixed-width home). Same visual box treatment as the track it
+   replaces (desk-ground fill, 1px border) so the composed frame's overall
+   rhythm doesn't shift; the CONTENT inside is now a narrow icon+label rail
+   (.wz-strip*, below) instead of a 200px-wide content drawer.
+   FX5 S10 — no longer a grid item at all: `position:absolute`, pinned to
+   the SCREEN's own left edge regardless of where the (now true-centered)
+   grid itself sits. Its containing block is `.desk-frame` (already
+   `position:relative`, unpadded, spans host's full content width) — `left:
+   calc(-1 * var(--frame-host-pad-x))` cancels the host's own (now
+   symmetric) left padding exactly, landing back at literal x=0. `top:0`
+   lands it at the SAME vertical start the grid's own `align-items:start`
+   used to give it (the grid is `.desk-frame`'s only child, no margin of
+   its own, so the two top edges always coincided anyway). Taking it out
+   of grid flow this way means its DOM position no longer matters for
+   LAYOUT (an absolutely-positioned grid item is skipped by auto-
+   placement) — left exactly where it was in the markup; only the CSS
+   changed (see .desk-frame-grid's own template above, which no longer
+   reserves a track for it). */
+/* Nick's own call — the strip rides FLUSH up to the top bar's own dividing
+   line: `top:-16px` cancels the 16px spacer between the top bar and the
+   frame (PageEditor/ScriptEditor/JournalEntry all render that same spacer),
+   and the strip drops its own top border + top corner-rounding so it hangs
+   straight off that line instead of drawing a second one just below it. */
+/* ITEM 130 (2026-09-09) — THE STRIP MUST WIN ITS OWN BAND.
+   The strip is absolute and pulled out to x=0; `.desk-frame-stagecol` is the
+   normal-flow sibling that FOLLOWS it in the DOM and begins at the host's own
+   padding-left. Both were `z-index:auto`, so DOM order decided and the stage
+   painted on top: at 1280px `--frame-host-pad-x` resolves to 38.4, the stage
+   covered the strip's 38.4-84 band, and `elementFromPoint` at a strip item's
+   own centre (x~42) returned `.desk-frame-stage` — roughly the right 54% of
+   the strip was unreachable by a REAL pointer. Every harness had reached these
+   controls with `.click()`, which never consults the hit-testing stack, so
+   nothing caught it until pw1.mjs drove real pointer events.
+
+   WHY z-index AND NOT GEOMETRY. Moving the stage clear of the strip would move
+   the PAPER, and paper never reflows for chrome — the probe asserts the dock
+   flush at 0.00px. A geometry fix would trade one law for the other. Raising
+   the strip changes hit-testing without changing layout at all.
+
+   WHY z-index:1 IS SAFE, censused rather than assumed: the cascade panel, the
+   tool sliver and the tutor panel/grip are all absolutely positioned INSIDE
+   `.desk-frame-stage` and sit right of the band (the cascade is anchored flush
+   at the strip's own right edge, x=84), so nothing legitimately overlaps the
+   strip and nothing falls under it. Modals, backdrops and toasts are `fixed`
+   at z-index 80-300, far above this. 1 is the smallest value that beats
+   `auto`, chosen so this rule claims no more of the stack than it needs. */
+/* ITEM 137 (2026-09-13) — THE TRASH REACHES THE FOOT.
+   Founder: "the trash has never been aligned at the bottom of the rail - it's
+   inline with the rest of the menu options." MEASURED, headful, before any
+   change (docs/menus/item137-s0-measurement.md):
+
+     1366x768   gap 8.8px    .wz-strip 544.4px   aside 545.2px
+     1366x1200  gap 303.6px  .wz-strip 544.4px   aside 840.0px
+
+   `.wz-strip` rendered the SAME 544.4px at both viewport heights while this
+   aside tracked 70vh exactly (0.70 x 1200 = 840). Its `height:100%` resolves
+   against this element's HEIGHT, and `min-height` does not make that height
+   definite - so the percentage fell back to auto, the strip went content-tall,
+   and `.wz-strip-foot{margin-top:auto}` had no free space to push against.
+   At 768 the gap is only 8.8px, which is why it reads as "inline" rather than
+   as a broken pin; the taller the window, the further Trash strands.
+
+   THE FIX IS GEOMETRY ONLY AND ADDITIVE: this element becomes a flex column so
+   its child has a definite box to stretch into, and `.wz-strip` takes `flex:1`
+   in place of the percentage (below). Nothing else here moves - ITEM 130's
+   `z-index:1` on this same rule is untouched, and its hit-test coverage runs
+   beside the new pin check in item137.mjs so the two cannot trade places. */
+.desk-frame-strip{ position:fixed; left:0; bottom:0; z-index:1;
+  /* Flush under the top bar. --fx3-chrome-budget is pad + nav + spacer +
+     bottom pad; subtracting the spacer and the bottom pad leaves the nav's
+     own bottom edge, which is where this rail has always started. */
+  top:calc(var(--fx3-chrome-budget) - 16px - 3rem);
+  width:var(--strip-width);
+  display:flex; flex-direction:column;
+  background:var(--desk-ground);
+  border:1px solid var(--ink-border); border-top:none; border-radius:0 0 var(--radius-md) var(--radius-md); overflow:hidden; }
+/* FX3 S1 — the one definite, non-percentage height near the top of the
+   chain (a flex/grid `height:100%` further down needs an explicit height
+   somewhere above it to resolve against — a naive `height:100%` on the
+   paper alone, with nothing above it definite, silently no-ops back to
+   auto/intrinsic, which is exactly the bug this fixes). Anchored to the
+   VIEWPORT via --fx3-chrome-budget's subtraction (the stage's own available
+   height, not the viewport read directly by the paper — the paper never
+   reads vh itself, only this one ancestor does), not to .desk-frame-grid
+   (whose `align-items:start` — see below — means an explicit height set
+   there wouldn't stretch its children anyway; this has to live on the
+   actual column that owns the stage). min-height is a floor for pathological
+   short viewports, never a cap. */
+.desk-frame-stagecol{ display:flex; flex-direction:column; min-width:0;
+  height:calc(100vh - var(--fx3-chrome-budget)); min-height:360px; }
+/* FX3 S1 — flex-grow so this stage actually CONSUMES stagecol's new
+   definite height (a flex child's cross-size stretches by default, but
+   its MAIN-size along a column parent's axis — here, height — still needs
+   flex-grow; stagecol's flex-direction is column, so height is its main
+   axis). min-height:0 overrides the flex default min-height:auto floor,
+   which would otherwise refuse to shrink below the stage's own content
+   size on a short viewport. */
+/* FX4 S2 — `isolation:isolate` gives this box its OWN stacking context.
+   Without it, `position:relative` alone does NOT create one (only
+   `position` + an explicit `z-index` does) — so the goal glow's own
+   `z-index:-1` anchor (`.desk-frame-goalglow-anchor`, below) had no local
+   context to stack negatively WITHIN, and its negative z-index bubbled all
+   the way up to the nearest ancestor that DOES form one (empirically: past
+   `.desk-frame`/`.desk-frame-grid`/`.desk-frame-host`, none of which set
+   one either, all the way to the document root) — painting the glow BEHIND
+   the entire app background, fully invisible regardless of intensity. Root-
+   caused by reading computed z-index/position live on the mounted page
+   (not guessed from the CSS alone) and confirmed with a screenshot showing
+   zero visible warmth at a non-zero `--glow-intensity`. This one property
+   is the fix: it costs nothing structurally (no new element, no layout
+   change — isolation only affects stacking, never geometry) and makes the
+   glow paint exactly where S6's own comment always said it would: behind
+   the in-flow paper (a normal descendant, unaffected) but above whatever
+   sits further out (the desk-ground texture), never behind it. */
+.desk-frame-stage{ position:relative; display:flex; justify-content:center; min-width:0;
+  flex:1 1 auto; min-height:0; isolation:isolate; }
+/* Review fix — the actual flex ITEM of .desk-frame-stage is .mode-stage
+   (ModeStage's own root div; .mode-row/.mode-pagecol are further BLOCK
+   descendants of it, not flex items of the stage themselves). .mode-stage
+   carries no width of its own (index.css's base rule only sets position/
+   fade vars), so its default flex-basis:auto resolved to its content's
+   intrinsic (max-content) width — i.e. whatever .mode-pagecol's forced
+   width demanded — and neither min-width:0 nor max-width on .mode-row/
+   .mode-pagecol below could correct that, because THEIR percentage/shrink
+   math resolves against .mode-stage's box, which was itself already
+   oversized. Constraining the true flex item directly is what actually
+   stops the page column overflowing into the tool-rail/corkboard tracks
+   near the 1100px gate floor (see the .desk-frame-stage--prose/--screenplay
+   comment below for the full failure mode). */
+.desk-frame-stage > .mode-stage{ min-width:0; max-width:100%; }
+/* Stage centers the page: prose min(760px,60ch); screenplay keeps its own
+   courier measure (no forced prose width — the per-element WIDTH_CH values
+   in store/scriptMetrics.ts stay exactly as they are).
+   Review fix — near the DESKFRAME_MIN_WIDTH floor (1100px) the stage's
+   actual available width (viewport minus the fixed 200px tool-rail + 260px
+   corkboard + gaps) can be LESS than 760px/60ch or 900px/70ch. Without the
+   max-width chain above AND below, the page column overflowed its own
+   stage track and visually overlapped the tool-rail/corkboard at viewports
+   as wide as ~1260px — a real breach of "nothing covers the organizers."
+   `min-width:0` undoes the default flex/grid item min-width:auto floor that
+   otherwise blocks shrinking below the page's own intrinsic content size;
+   `max-width:100%` at every link in the chain then lets the desired measure
+   yield to whatever the stage track actually has, instead of forcing it. */
+/* FX1 S2 — Law 1 (the paper's measure is the one inviolable constant): the
+   script page now mounts the SAME `.mode-pagecol` geometry class prose uses,
+   at the SAME width band, rather than forcing its own wider (900px/70ch)
+   measure on the bare stage track. This is the fix for Nick's "collapsed,
+   wrong-dimension box with misaligned text" verdict — the old
+   `.desk-frame-stage--screenplay` rule sized the STAGE, not a paper inside
+   it, and .desk-frame-scroll-cap/.script-sheet had no width of their own to
+   inherit, so the flex item shrank to fit-content instead. Courier's
+   per-element ch measures (store/scriptMetrics.ts) are unaffected — they're
+   relative to the sheet's own font size, not the page's pixel width. */
+/* FX3 S2 — width AND the ch-unit's own reference font-size scale together:
+   `ch` resolves against the font-size of the element it's declared on, so
+   pinning an explicit, --paper-scale-scaled baseline HERE (rather than
+   leaving it at whatever this element inherits by default) is what makes
+   `60ch` itself grow in lockstep with the scale factor — the measure
+   (character count) never changes, only its pixel width does (Law 1). The
+   760px cap is scaled too so it can never clamp the ch-derived width once
+   the scale grows it past the old flat cap. */
+/* PAGE-SIZE (Fable + Nick, Oct 23; docs/plans/page-size.md) - THE PROSE PAGE IS A LETTER PAGE, in PAGE UNITS. The FX3 S2 measure above
+   (`min(760px x scale, 60ch)`) is retired for prose: the page is 8.5 x 11 page-inches, its margins are page-inches (pageDress.ts) and its type is
+   points in page units (12 pt = 16px at scale 1, fontSize.ts). ONE number scales all three - `--wz-letter-in`, one page-inch, written on this stage
+   by DeskFrame's observer from the STAGE's size alone (store/pageScale.ts; ruling c) - so the page grows in SHAPE only and every line breaks where
+   it did. The value here is scale 1, for the first paint. `--wz-page-w`/`--wz-page-half` are what every anchor that used to hand-copy the page's
+   width now reads (the sliver, both Tutor anchors, the glow, the instrument, the cascade). */
+/* AS BUILT (the lane run on fb1e28fb): the page LAYS OUT at scale 1 always - --wz-letter-in is the scale-1 inch - and is PAINTED at the base scale
+   --wz-k by a transform (below), so every line breaks where it does at 1366 at every size. The anchors (sliver, Tutor, glow, instrument, cascade)
+   read the PAINTED width: --wz-anchor-w / --wz-page-half - the zoomed width while the zoom is on. */
+.desk-frame-stage--prose{
+  --wz-letter-in: 72.941px;
+  --wz-pt: calc(var(--wz-letter-in) / 54.70588);
+  --wz-page-w: calc(var(--wz-letter-in) * 8.5);
+  --wz-page-h: calc(var(--wz-letter-in) * 11);
+  --wz-k: 1;
+  --wz-anchor-w: calc(var(--wz-page-w) * var(--wz-k));
+  --wz-page-half: calc(var(--wz-anchor-w) / 2);
+}
+.desk-frame-stage--prose:has(.mode-pagecol[data-zoom='true']){
+  --wz-anchor-w: calc(var(--wz-page-w) * var(--wz-k) * var(--wz-zoom, 1.6));
+}
+.desk-frame-stage--prose .mode-pagecol{
+  width:var(--wz-page-w); max-width:100%; min-width:0;
+  font-size:calc(12 * var(--wz-pt));
+  height:100%;   /* a DEFINITE height, so the letter-tall page below shrinks to the stage (ruling d) instead of growing the column past it */
+}
+/* SC1 S1/S4 — the screenplay column STOPS sharing prose's measure. FX1 S2 put
+   script on `.mode-pagecol` to end a worse defect (the stage sizing itself,
+   with no paper inside it) and that class is still right; what was wrong is
+   the WIDTH it inherited here. `60ch` resolves against THIS element's own
+   font — the UI font, not Courier — so the screenplay column measured ~615px
+   at the 1280px reference (measured, not derived): not the prose measure it
+   was aiming at, and nowhere near a US Letter page. A screenplay page is
+   8.5in wide by law (docs/wrizo-alpha/sc-committee-pass.md), so this column
+   IS the page's width, full stop, and the sheet fills it exactly.
+   `container-type:inline-size` makes this the query container the sheet's
+   own one-number derivation reads (`100cqw / 51` — see `.script-sheet`);
+   `max-width:100%` is what hands the sheet a smaller number to scale by when
+   the stage genuinely has less room than a page needs. */
+.desk-frame-stage--screenplay .mode-pagecol{
+  width:8.5in; max-width:100%; min-width:0;
+  container-type:inline-size;
+}
+
+/* FX3 S1 — the fill-down chain's remaining links, both surfaces (S7's
+   standing "mirror the wiring" convention — prose and screenplay share one
+   fix, not two). `.mode-row` is a normal block child of `.mode-stage` (not
+   itself a flex/grid item with automatic stretch), so it needs the explicit
+   height:100% a percentage needs; `.mode-row`'s own `align-items:stretch`
+   (base rule, above) then carries that height into `.mode-pagecol`
+   automatically. `.mode-pagecol` gets `min-height:100%` (not `height`) so
+   it can share ONE rule with the script path below, where content that
+   overflows still needs to grow the box (see `.script-sheet` below) rather
+   than being clipped — for prose this is a no-op ceiling-equals-floor
+   (grid stretch already made it exactly 100%), for script it's the actual
+   floor that makes a short page fill down while a long one still scrolls. */
+.desk-frame-stage .mode-row{ height:100%; }
+.desk-frame-stage .mode-pagecol{ min-height:100%; }
+/* .mode-page trades its old fixed height:min(60vh,580px) cap for flex-fill
+   within .mode-pagecol's now-definite height — a FIXED box (not min-height):
+   .mode-page's own internal editor already scrolls via .mode-scroll
+   (flex:1; overflow-y:auto), so the outer sheet staying a true fixed size
+   (never growing past the stage) is the same "simulated paper" model this
+   surface already had, just resized to the stage instead of 580px/60vh.
+   margin-bottom is S1's own fence (32-48px) between the paper's bottom edge
+   and the stage's. Padding scales with --paper-scale (S2) so the RENDERED
+   text column's pixel width grows by the exact same ratio as the font —
+   a fixed padding would otherwise eat a shrinking share of a growing box,
+   quietly drifting the actual characters-per-line even though
+   CANONICAL_MEASURE_CH itself never moves. */
+.desk-frame-stage .mode-page{
+  height:auto; flex:1 1 auto; min-height:0;
+  margin-bottom:var(--fx3-paper-fence);
+  /* ITEM 83 M3 (R6) — PAGE SETUP's margin choice rides in as a base measure
+     (--wz-page-pad-x, set inline by ModeStage from store/pageDress.ts) and is
+     scaled HERE, so --paper-scale keeps its single owner. The fallback is the
+     exact 38px this rule carried before M3, so a page with no dress renders
+     byte-identically to today. */
+  /* PAGE-SIZE: the margin choice now arrives as a multiplier (--wz-page-margin-in, pageDress.ts); off the letter page it is today's exact
+     26/38/58px base measure again. */
+  --wz-page-pad-x: calc(38px * var(--wz-page-margin-in, 1));
+  padding:calc(30px * var(--paper-scale)) calc(var(--wz-page-pad-x, 38px) * var(--paper-scale));
+}
+/* PAGE-SIZE - the prose page: letter height, capped to the stage (ruling d - a flex item that may shrink, so on a short screen the sheet stops at
+   the stage's fence and the text scrolls inside it as it always has); margins in page-inches (ruling b: normal 1in, narrow 0.684, wide 1.526);
+   the top and bottom margin 0.85in (Cursor's mockup). `--paper-scale:1` INSIDE the page: page units carry the scale here, so any rule inside
+   the page that still multiplies by --paper-scale (TOOLS' scrollbar-flush cancellation on .mode-scroll among them) multiplies by 1 - correct
+   whichever of the two branches merges first. `--wz-page-pad-x` is the one FINISHED margin length that cancellation reads. */
+.desk-frame-stage--prose .mode-page{
+  --paper-scale: 1;
+  --wz-page-pad-x: calc(var(--wz-letter-in) * var(--wz-page-margin-in, 1));
+  /* an explicit width (not the column's stretch), so the zoom below can widen the COLUMN without ever re-laying a line */
+  width:var(--wz-page-w); max-width:100%; align-self:center;
+  /* the LAYOUT height DeskFrame computes (letter, or what the stage holds once painted at --wz-k - ruling d); the transform paints it at k */
+  height:var(--wz-page-hl, var(--wz-page-h)); flex:0 1 auto; min-height:0;
+  padding:calc(var(--wz-letter-in) * .85) var(--wz-page-pad-x);
+  transform:scale(var(--wz-k, 1)); transform-origin:50% 0;
+}
+/* PAGE-SIZE - a scrollbar arriving or leaving (Typewriter's start offset makes the content taller) narrowed the text column and REFLOWED lines on
+   main (red run 143: Arbor 3840, 34 -> 35 lines). The gutter is reserved always, so no scrollbar can ever move a line break. */
+.desk-frame-stage--prose .mode-scroll{ scrollbar-gutter:stable; }
+/* PAGE-SIZE (spec point 3; Cursor's mockup @ e3c4e462, FINAL) - THE ZOOM. The SAME page, transformed ~1.6x (--wz-zoom, DeskFrame's observer:
+   1.6 capped to what fits the stage's width) - scale, never reflow: the page's own layout box, its width and every line break stay exactly as in
+   the normal view. The column widens to the stage so the band mask (drawn in ITS box) spans the zoomed page; the page keeps its own width.
+   THE BAND: Cursor's final stops, in line-heights (--tw-lh, the real line height x the zoom, written by the typewriter engine) from the anchor
+   (50% of the column since polish #10 item 19, 60% before - the engine holds the writing line's top there; --tw-lead keeps the .12 stop 56px or more from the
+   top, so the top rows stay in the theme's ground at 1366, where 6.6 lines above a 50% anchor is 13px - polish10-ground G1): 0 at the top, .12 / .40 / .72 at 6.6 / 4.2 / 2.2 lines above, full from
+   0.15 above to 1.45 below (the writing line alone), .40 at 2.8 below, 0 from 4.4 below. Text AND paper fade into the desk together - the paper
+   is never framed by an edge or a shadow while zoomed. The old top-of-scroller mask (a .15 floor) stands down: this band replaces it. */
+/* PAGE-SIZE - while zoomed the drawers' anchors follow the ZOOMED edge, which leaves the Sliver only the zoom's gutter of desk: opened there, it
+   was crushed to 48px (2560) / 22px (3840) with its own buttons outside it (screens on 67ebc075). Opened while zoomed it keeps DRAWER_MIN by
+   growing RIGHTWARD from its anchor, OVER the zoomed band (a tool overlays; nothing is displaced). Not leftward: at 1366 that ran it under
+   the strip, which covered its own buttons (c9b8035b). Its grip (z-index 2 within the Sliver) stays on top of it, so it still closes. */
+.desk-frame-stage--prose:has(.mode-pagecol[data-zoom='true']) .wz-sliver-panel{ left:0; right:auto; width:max(calc(100% - 16px), 200px); }
+/* the zoomed column must REALLY be stage-wide: `.mode-stage` is a content-sized flex item of the stage, so a 100% column inside it stayed 620px
+   and the band mask - drawn in the column's box - CUT the enlarged page at its sides (screens on 7ff7b8ea). While zoomed, it fills the stage. */
+.desk-frame-stage--prose:has(.mode-pagecol[data-zoom='true']) > .mode-stage{ flex:1 1 auto; width:100%; }
+.desk-frame-stage--prose .mode-pagecol[data-zoom='true']{
+  width:100%;
+  --tw-anchor: 50%;   /* polish #10 item 19: the middle (the engine writes the same value from ZOOM_ANCHOR) */
+  -webkit-mask-image:linear-gradient(to bottom, transparent 0,
+    rgba(0,0,0,.12) calc(var(--tw-anchor) - 6.6 * var(--tw-lh, 43.52px) + var(--tw-lead, 0px)), rgba(0,0,0,.4) calc(var(--tw-anchor) - 4.2 * var(--tw-lh, 43.52px)),
+    rgba(0,0,0,.72) calc(var(--tw-anchor) - 2.2 * var(--tw-lh, 43.52px)), #000 calc(var(--tw-anchor) - .15 * var(--tw-lh, 43.52px)),
+    #000 calc(var(--tw-anchor) + 1.45 * var(--tw-lh, 43.52px)), rgba(0,0,0,.4) calc(var(--tw-anchor) + 2.8 * var(--tw-lh, 43.52px)),
+    transparent calc(var(--tw-anchor) + 4.4 * var(--tw-lh, 43.52px)), transparent 100%);
+          mask-image:linear-gradient(to bottom, transparent 0,
+    rgba(0,0,0,.12) calc(var(--tw-anchor) - 6.6 * var(--tw-lh, 43.52px) + var(--tw-lead, 0px)), rgba(0,0,0,.4) calc(var(--tw-anchor) - 4.2 * var(--tw-lh, 43.52px)),
+    rgba(0,0,0,.72) calc(var(--tw-anchor) - 2.2 * var(--tw-lh, 43.52px)), #000 calc(var(--tw-anchor) - .15 * var(--tw-lh, 43.52px)),
+    #000 calc(var(--tw-anchor) + 1.45 * var(--tw-lh, 43.52px)), rgba(0,0,0,.4) calc(var(--tw-anchor) + 2.8 * var(--tw-lh, 43.52px)),
+    transparent calc(var(--tw-anchor) + 4.4 * var(--tw-lh, 43.52px)), transparent 100%);
+}
+.desk-frame-stage--prose .mode-pagecol[data-zoom='true'] .mode-page{
+  transform:scale(calc(var(--wz-k, 1) * var(--wz-zoom, 1.6))); transform-origin:50% 0;
+  box-shadow:none; border-color:transparent;
+}
+.desk-frame-stage--prose .mode-pagecol[data-zoom='true'] .mode-scroll{ -webkit-mask-image:none; mask-image:none;
+  padding-bottom:max(30vh, var(--tw-end-pad, 30vh)); }   /* room for the LAST line to rise to the anchor (the engine writes --tw-end-pad) */
+/* The script sheet has no bounded height of its own by design (see
+   .desk-frame-scroll-cap's own comment below — it wraps content that grows
+   with the document); FX3 S1 replaced the SCROLL-CAP's old fixed
+   height:min(64vh,620px) with a stage-fill treatment, and gives
+   .mode-pagecol (script's own copy of the same class) min-height:100% so a
+   short script's sheet still fills down. The sheet ITSELF (the visible
+   paper — background/border) then needs its own flex-grow to actually
+   stretch to that floor, or the extra space would sit empty inside
+   .mode-pagecol below an unstretched sheet. flex-shrink stays at its
+   default (0 via the shorthand's third value) so a long script's sheet is
+   never compressed — .desk-frame-scroll-cap's overflow-y:auto handles that
+   overflow exactly as it already did pre-FX3.
+
+   FX7 S1 — root-caused live (not guessed): FX3's own `flex:1 1 auto` here
+   was NOT actually "the same stage-fill flex-grow prose's stage link gets"
+   as its comment claimed — `.desk-frame-stage > .mode-stage` (prose's own
+   direct flex-item counterpart, immediately above) carries NO flex-grow at
+   all; its height-fill comes for free from `.desk-frame-stage`'s default
+   `align-items:stretch` (a row-flex CROSS-axis behavior, independent of
+   flex-grow), while its WIDTH stays content-sized (`.mode-pagecol`'s own
+   forced measure) so `.desk-frame-stage{ justify-content:center }` — the
+   stage's MAIN-axis property — can actually center it. Giving the
+   scroll-cap `flex-grow:1` instead made IT (not `.mode-pagecol`) the flex
+   item that fills the stage's full MAIN-axis (horizontal) width — so the
+   scroll-cap stretched edge-to-edge across the whole stage, and
+   `.mode-pagecol` (an ordinary block child with no margin:auto of its own)
+   rendered flush against the scroll-cap's own LEFT edge instead of
+   centered within it: exactly Nick's "the page itself is in a different
+   location, way too small, and not centered" verdict, and exactly why the
+   sliver/tutor anchors then "float away from the page" — both anchors'
+   own CSS math (`--sliver-margin`/`--tutor-margin`, above/below) assumes
+   `.mode-pagecol` sits centered at the stage's own 50%, which it hadn't
+   been. This is a genuine FX3-introduced regression (its own comment
+   mis-stated the parity with prose's path), not a TU1 anchor defect — the
+   two-anchor Tutor wiring itself (DeskFrame.tsx/ScriptEditor.tsx) was
+   already correct; confirmed by measuring the mounted page's own rects
+   (scripts/harness/fx7.mjs's own S1 section), not by reasoning on the CSS
+   alone. Fix: drop the main-axis flex-grow (mirrors `.mode-stage`'s own
+   zero-flex-grow default exactly — `flex:0 1 auto`, spelled out here
+   rather than left implicit, so the parity with the rule above is visible
+   in the source) and add the SAME `min-width:0; max-width:100%;` anti-
+   overflow guard `.mode-stage` already carries for the identical near-
+   floor reason (the "Review fix" comment above) — height-fill is
+   untouched (cross-axis stretch never depended on flex-grow). */
+/* SC1 S4 — `scrollbar-gutter:stable both-edges` is the last piece of "the room
+   is seated." A true 11in page is taller than the stage at every ordinary
+   viewport, so this box now carries a PERMANENT vertical scrollbar where
+   before it only sometimes did. A one-sided scrollbar makes the box 10px wider
+   than its own content box, and `.mode-pagecol` (an ordinary block child) sits
+   at the content box's left edge — which put the paper 5px left of the stage's
+   centre at every width (measured). Reserving the gutter on BOTH edges keeps
+   the page centred on the stage, which is what the sliver and Tutor anchors'
+   own math assumes (fx7.mjs S1 asserts it to within 1px). */
+.desk-frame-stage > .desk-frame-scroll-cap{ height:auto; flex:0 1 auto; min-width:0; max-width:100%; min-height:0; scrollbar-gutter:stable both-edges; }
+/* SC1 S1 — the framed sheet fills its column (which IS the page's 8.5in
+   width, above) instead of shrink-wrapping inside it: `width:100%` is the
+   whole fix for "the paper grew 191px when I typed a long slugline."
+   `flex:0 0 auto` replaces FX3's `flex:1 0 auto` — a true page has a true
+   height (11in, `min-height` on the base rule) and must never be stretched
+   to a stage's leftover space, which is what the old flex-grow did. The
+   sheet is now taller than the stage at ordinary viewports, so it scrolls
+   inside `.desk-frame-scroll-cap` exactly as a long script always did.
+   Padding and font-size are NOT restated here — the base `.script-sheet`
+   rule owns every dimension through its one em derivation, and a second
+   `--paper-scale` copy here is precisely the drift that rule exists to
+   prevent. */
+/* SC2 S2b — the flex item under `.mode-pagecol` is now `.script-sequence`, and
+   the sheets are its children. Two consequences, both deliberate:
+   - `--fx3-paper-fence` moves from the sheet to the SEQUENCE. It was always the
+     fence between the LAST paper and the room below it, not a per-sheet margin;
+     leaving it on the sheet would have made the space between two pages
+     "fence + gap", which is two different ideas stacked and neither of them
+     stated. Measured from the column, `col.bottom − lastSheet.bottom` is
+     unchanged — which is what fx3.mjs's own live SC1 successor asserts.
+   - `flex:0 0 auto` and `width:100%` stay exactly as SC1 wrote them, and still
+     mean what they meant: a true page is never stretched to fill leftover room,
+     and it fills the column that IS the page's 8.5in width. */
+.desk-frame-stage .script-sequence{ flex:0 0 auto; margin-bottom:var(--fx3-paper-fence); }
+.desk-frame-stage .script-sheet{
+  flex:0 0 auto; width:100%; margin:0 auto;
+}
+
+/* CD1 S2 — the sliver's anchor: an ABSOLUTELY POSITIONED overlay inside
+   `.desk-frame-stage` (position:relative, above). Being `position:absolute`
+   is the geometry guarantee itself: this box is OUT OF FLOW, so it cannot
+   resize/reposition `.desk-frame-stage`'s in-flow child (the paper)
+   regardless of its own open/closed/dissolved state — S2's hard invariant,
+   structural, not merely visual. Untouched by FX2 S1 below.
+
+   FX2 S1 — the grip clearance law: persistent chrome (the grip) never
+   enters the paper's text measure, at any viewport. Empirically verified
+   at 1100-2200px via the headless harness (not just read off the CSS,
+   per this project's own precedent) before writing this fix — the finding
+   changed the diagnosis from the brief's own working hypothesis:
+     - The GRIP was never actually the problem. `.wz-sliver-grip` sits at
+       `right:0` INSIDE this anchor, and this anchor's own right edge
+       (`left` + `width`, below) is defined so it always lands exactly on
+       the paper's left edge — the same `min(380px,30ch)` half-measure
+       `.mode-pagecol` itself uses, so the two cancel out by construction.
+       Measured flush (to sub-pixel rounding only) at every width from
+       DESKFRAME_MIN_WIDTH (1100px) up — the grip structurally cannot
+       cross into the paper regardless of what the width math below does,
+       because it rides this anchor's right edge, never its left.
+     - The REAL bug: this anchor's WIDTH was a flat, unconditional 200px
+       with no floor on how much room actually exists to its left. At the
+       1100px gate the anchor's LEFT edge landed ~77px INSIDE the Drawer's
+       own track (measured) — and because `.wz-sliver` (this anchor's
+       child, filling it at 100%/100%) carries no `pointer-events:none`,
+       that invisible overlap silently ate hit-testing meant for the
+       Drawer's pull tabs underneath, and the OPEN panel's opaque
+       background visibly painted over part of the Drawer. That's the
+       actual "chrome overlapping chrome" Nick's laptop hit — not the grip
+       touching a word, but the sliver's own footprint outgrowing the
+       margin the Drawer left it.
+   The fix clamps this anchor's WIDTH (not its right edge, which stays
+   pinned to the paper) to whatever margin genuinely exists between the
+   Drawer's own right edge and the paper — expressible in pure CSS, no JS
+   measurement, because the Drawer's own width cancels out of "Drawer's
+   right edge, relative to the stage's left edge" (both scale together
+   with the grid), leaving only the grid's column-gap (`--frame-gap`) as
+   the fixed remainder. Below that margin, per the brief's own allowance,
+   the anchor may dip into the paper's own left PADDING — `.mode-page`'s
+   `padding:30px 38px` (hard-coded here as `--sliver-paper-pad`; CSS can't
+   read a sibling rule's declared value, so this is hand-synced the same
+   way `store/lineEquivalents.ts`'s CANONICAL_MEASURE_CH mirrors this
+   file) — rather than the text itself. The dip is HARD-CAPPED at that
+   38px pad depth (`clamp()`'s own MAX arm), not merely aimed at the
+   160px floor below — this is what keeps "never covers text" a provable
+   guarantee rather than a target an unlucky font metric could blow
+   through. 160px is the brief's own fencepost (`clamp(160px, margin +
+   paper-padding, 200px)`), tuned here to the actually-measured worst
+   case: at the 1100px gate, margin (~123px) + the full pad (38px) lands
+   at ~161px, just clearing the floor with the SAME formula that governs
+   every other width — one clamp rule serving all viewports, per the
+   brief's own "the clamp is one rule" instruction. The panel
+   (`.wz-sliver-panel`, `width:calc(100% - 16px)`) and the grip both ride
+   this anchor's width/position, so neither needs its own separate clamp. */
+.desk-frame-sliver-anchor{
+  /* ITEM tutor-drawer-mirror (Nick, review fix) — raised for the SAME
+     reason as the tutor anchor's own comment (below, .desk-frame-tutor-
+     anchor): a busy board's own cards (BoardEditor.tsx, unbounded box.z)
+     already outrank z-index:5 within this stage's isolated context. One
+     value, not a grip/panel pair — Sliver's own panel is inset 16px, so
+     its grip already sits in an uncovered gutter and needs no separate lift. */
+  position:absolute; top:0; z-index:55; height:100%;
+  /* FX3 S2 — scales in lockstep with .mode-pagecol's own width formula (the
+     SAME font-size pin, the SAME scaled px cap): without this, the anchor's
+     positioning math silently drifts away from the paper's actual (now
+     scaled) left edge at wide viewports, since `ch` resolves against THIS
+     element's own font-size, not a sibling's — empirically confirmed (a
+     61.5px gap at 2200px/scale=1.2) before this fix was added, via the
+     same headless-harness-before-CSS-reasoning discipline FX2 S1's own
+     comment below already established for this exact rule. */
+  font-size:calc(1rem * var(--paper-scale));
+  --sliver-paper-half: var(--wz-page-half, min(calc(380px * var(--paper-scale)), 30ch));   /* PAGE-SIZE: the prose page's own half-width; the old formula elsewhere */
+  --sliver-paper-pad: 38px;   /* .mode-page{ padding:30px 38px } — hand-synced, see comment above */
+  /* FX5 S10 — this formula's own "50%" is relative to `.desk-frame-stage`'s
+     own box, and `+ var(--frame-gap)` alone used to be the whole
+     correction because stage's own 0% USED TO coincide with the strip's
+     own right edge (adjacent grid columns, `--frame-gap` apart — cd1.mjs's
+     own S2 comment above documents this exact cancellation). S10 breaks
+     that coincidence: the strip is `position:absolute` now (pinned to the
+     SCREEN's own x=0, index.css's own .desk-frame-strip rule), and
+     `.desk-frame-stage` (via the grid, strip's column removed) spans
+     essentially `.desk-frame-host`'s own full content width — its 0% now
+     sits at approximately the host's own left padding
+     (`--frame-host-pad-x`), NOT at the strip's own right edge, which is a
+     viewport-INDEPENDENT `--strip-width` px from the true screen edge.
+     Diagnosed live (not guessed): fx2.mjs's own "sliver anchor never
+     overlaps the strip" floor check caught a real ~42px overlap at
+     1100px after S10 landed, exactly this stale assumption. Corrected:
+     `+ var(--frame-host-pad-x) - var(--strip-width)` replaces the old
+     bare `+ var(--frame-gap)` (which stays too, as the SAME breathing-
+     room term it always was) — this slightly UNDER-estimates the true
+     available margin at a wide, `--frame-max`-capped viewport (where the
+     grid centers with room past `--frame-host-pad-x` alone) rather than
+     over-estimating it, the safe direction for a "never overlap" floor:
+     verified empirically the anchor's own left edge clears the strip's
+     own right edge by exactly `--frame-gap` again at the 1100px floor
+     (fx5.mjs's own S10 section re-proves this at all three reference
+     widths, alongside fx2.mjs's own pre-existing floor check). */
+  /* `max(0px, ...)` floors it — found live (fx4.mjs's own board-variant S3
+     check, not guessed): the BOARD variant's own `--sliver-paper-half`
+     (`min(50%, 550px)`, below) is large enough that this formula genuinely
+     goes NEGATIVE at ordinary viewports now (subtracting a fixed --strip-
+     width/--frame-gap that didn't used to apply). A negative custom
+     property is NOT clamped the way a real `width` property is — it feeds
+     UNCLAMPED into `--sliver-anchor-w`'s own calc below, while the actual
+     rendered `width:var(--sliver-anchor-w)` DOES clamp (negative widths
+     are invalid) — the two disagreeing broke the "anchor's right edge
+     always lands exactly on the paper" cancellation the whole formula
+     depends on (measured: a ~22px drift at 1280px). Flooring at 0 keeps
+     every downstream consumer (`--sliver-overflow`, `--sliver-anchor-w`)
+     consistently non-negative, so `width` and the `left` calc that
+     references the SAME custom property never disagree. */
+  --sliver-margin: max(0px, calc(50% - var(--sliver-paper-half) + var(--frame-host-pad-x) - var(--strip-width) - var(--frame-gap)));
+  --sliver-overflow: clamp(0px, calc(160px - var(--sliver-margin)), var(--sliver-paper-pad));
+  --sliver-anchor-w: min(200px, calc(var(--sliver-margin) + var(--sliver-overflow)));
+  width: var(--sliver-anchor-w);
+  left: calc(50% - var(--sliver-paper-half) + var(--sliver-overflow) - var(--sliver-anchor-w));
+}
+/* Prose keeps the base rule's own half-measure (FX1 S2's "both surfaces share
+   `.mode-pagecol`" is still true of the CLASS) — kept as a hook only
+   (DeskFrame.tsx always applies one of these modifier classes alongside the
+   base class). */
+.desk-frame-sliver-anchor--prose{ /* intentionally empty — see comment above */ }
+/* SC1 S4 (SC-V1, "the side menus are floating in space") — root-caused live,
+   and it is NOT an anchor defect: fx7.mjs's own S1 checks are green today and
+   stay green, because they measure this anchor against `.mode-pagecol` and it
+   IS flush against it (measured: 0px, every reference width). What Nick saw
+   is that the PAPER wasn't the column — the sheet shrink-wrapped its content
+   INSIDE the column, so the anchors rode the column's edges while the paper
+   floated 66-115px away inside them (measured at 1100/1280/2200 on plateau;
+   37-45px on Flux, whose stage tracks differ — the same defect, not a
+   Flux-only one). S1's `width:100%` closes that gap by construction, and this
+   rule keeps the anchor's own math honest now that the screenplay column
+   carries a page's width rather than prose's: half of 8.5in, scaled by the
+   same token the column is, floored at the stage's own half so a clamped
+   (max-width:100%) page can't push the anchor off the stage — the same
+   `min(50%, ...)` idiom `--board` uses just below, for the same reason. */
+.desk-frame-sliver-anchor--screenplay{
+  --sliver-paper-half: min(50%, 4.25in);
+}
+/* FX4 S3 — the board anchoring defect, diagnosed live (not guessed): AB4 S5's
+   own comment claimed board needed no divergence here because "BoardEditor's
+   wider canvas lives inside the stage, not the paper measure this anchor is
+   keyed to" — measured on the actual mounted page, that reasoning was
+   backwards. The base rule's `--sliver-paper-half` (~380px/30ch, prose's own
+   half-measure) governs where this anchor's RIGHT edge lands regardless of
+   what pageKind is active; Board's own content wrapper is
+   `width:min(100%, 1100px)` (BoardEditor.tsx), i.e. roughly HALF again as
+   wide as prose at any viewport with room to spare — so the anchor's right
+   edge landed ~242px INSIDE the board's own canvas (measured empirically at
+   1400px, headless), not flush to its left edge at all: the sliver/grip
+   floated over live board content instead of riding its margin. The fix
+   mirrors the board wrapper's own formula exactly (half of `min(100%,
+   1100px)` is `min(50%, 550px)` — halving a min() distributes over both
+   arms) so the anchor's right edge lands exactly where the canvas's own
+   left edge actually renders, at every viewport. `--sliver-paper-pad`
+   drops to 0 too — Board's own wrapper carries no padding of its own to dip
+   into (unlike `.mode-page`'s 30/38px prose padding the base rule borrows),
+   so honestly reflecting that keeps the same clamp formula from silently
+   over-crediting room that isn't there. */
+.desk-frame-sliver-anchor--board{
+  --sliver-paper-half: min(50%, 550px);
+  --sliver-paper-pad: 0px;
+}
+/* POLISH #10 item 1 (Nick, Oct 25) - the board narrows beside an open drawer (BoardEditor writes --board-l / --board-r on the stage: the board's offsets
+   from the stage's edges, and --board-strip, how far the strip stands over the stage). The anchors read the board's REAL edges, so the Tools drawer's
+   tab sits on the board's left edge with its panel beside it, and the drawer has exactly the room the board left it. */
+.desk-frame-stage--board .desk-frame-sliver-anchor--board{
+  --sliver-paper-half: calc(50% - var(--board-l, 0px));
+  --sliver-margin: max(0px, calc(var(--board-l, 0px) - var(--board-strip, 0px)));
+}
+
+/* TU1 S2 — the Tutor's TWO anchors. Empirically verified (not just read off
+   the CSS — this project's own standing discipline): a single Sliver-shaped
+   anchor cannot serve both the grip's clearance law AND a genuinely ~300px
+   open panel at once. Measured live at 1280px: a 300px panel started 16px
+   past a 200px-capped grip anchor overflowed the actual viewport by ~20px
+   and was silently cut off by `.desk-frame-host`'s own overflow:hidden
+   (FX3 S1's rule, added for an unrelated vertical-bleed fix — see that
+   rule's own header comment). The fix mirrors this codebase's own
+   established escape for exactly this class of bug (`.sprint-modal-
+   backdrop`/`.hb1-ceremony-backdrop` etc. are `position:fixed` for the
+   same reason) — but conceptually, not literally `position:fixed` (which
+   would need JS-measured placement); instead the PANEL gets its OWN
+   separate anchor pinned to the STAGE's own right edge (`left:0; right:0`,
+   i.e. spanning the stage's full width, safely inside the host's clip
+   boundary by ordinary layout — a stage can never render past its own
+   host's content box), rather than being nested inside the grip's small
+   clamped box. Two anchors, one job each:
+
+   1. `.desk-frame-tutor-anchor` — the GRIP's own clearance (FX2's law,
+      mirrored: `right:` in place of `left:`, `--tutor-*` in place of
+      `--sliver-*`). Unchanged in spirit from the sliver's own anchor —
+      still capped small, still may dip into the paper's own padding,
+      hard-capped at that depth.
+   2. `.desk-frame-tutor-panel-anchor` — the PANEL's own home. `display:flex;
+      justify-content:flex-end` packs its one child flush against the
+      anchor's OWN right edge, which — because this anchor spans the
+      stage's full width via `left:0; right:0` — is the STAGE's right edge,
+      never the host's. The panel's width (`.wz-tutor-panel`, below) is
+      free to be a genuine ~300px, overlaying the paper at narrow widths
+      exactly as S2's own "at narrow widths the open panel overlays per
+      the CD2 small-screen law" names — because unlike the grip anchor,
+      this one is never itself clipped, so there's nothing stopping the
+      panel from growing into the paper's own space when the margin is
+      thin. Docked, it clamps back down via `--tutor-panel-margin`
+      (declared on THIS anchor, the mirror twin of Cascade's own
+      `--cascade-margin`), floored at 120px — Tutor.tsx's own
+      `availableTutorMargin()` JS measurement (mirroring
+      `availableCascadeMargin()`) is the actual gate on whether the dock
+      affordance is even offered, same division of labor as Cascade.tsx.
+   TU2 S4 — Board joins prose/screenplay (BoardEditor.tsx now mounts this
+   component too; the sentence this comment used to carry — "Board is out
+   of scope... no --board modifier on either anchor" — is superseded by
+   the two `--board` overrides below, mirroring `.desk-frame-sliver-
+   anchor--board`'s own precedent exactly (same `min(50%, 550px)` half-
+   measure, same reasoning: Board's own content wrapper is `width:min(100%,
+   1100px)` — BoardEditor.tsx — genuinely wider than prose's 60ch/760px
+   measure, so the base rule's prose-sized `--tutor-paper-half` would land
+   the grip ~242px inside the board canvas instead of flush to its edge,
+   the identical defect FX4 S3 diagnosed for the sliver). */
+.desk-frame-tutor-anchor{
+  /* FX18 S2 (SV24): the grip anchor rides ABOVE the open panel anchor
+     (z-index:6). The margin clamp keeps the panel in the room but not off its
+     own grip: the docked panel's near edge lands on the paper's right edge —
+     exactly where the grip sits — so the panel buries its own close arrow the
+     instant it opens ("covers its own close arrow", SV24 proper; the clamp
+     alone does NOT cure it, confirmed by fx18.mjs's grip hit-test). Lifting
+     the anchor to z-index:7 restores the grip as the visible left-edge tab
+     (the panel's border-left:none was always drawn to join it). pointer-
+     events:none keeps this lifted anchor click-transparent so ONLY the 16px
+     grip (re-armed :auto below — it is this anchor's sole interactive child,
+     a lone <button>, Tutor.tsx:441) intercepts; the open panel underneath
+     stays fully live. The sliver twin needs no lift: its panel is inset 16px
+     (`.wz-sliver-panel{right:16px}`) so its grip already sits in an uncovered
+     gutter — the tutor panel is a flex-end child, geometrically decoupled
+     from its grip, so it takes the stacking cure instead of the inset one. */
+  /* ITEM tutor-drawer-mirror (Nick, review fix, 2026-10-15) — z-index 6/7
+     only ranked WITHIN this stacking context (.desk-frame-stage's own
+     isolation:isolate), where a board's own cards ALSO rank: box.z climbs
+     with every new card/reorder (BoardEditor.tsx, `z: maxZ + 1`), unbounded,
+     so a busy board's own cards already outrank 6/7 and draw over the open
+     drawer. Raised to the SAME "safely above ordinary board content" tier
+     this stage already establishes elsewhere (.board-create-ghost's own
+     z-index:50) rather than a number picked to beat today's card count —
+     56/55 keeps the grip-above-panel relationship this file's own history
+     already proves out (one more than the panel, not a bare coincidence). */
+  position:absolute; top:0; z-index:56; pointer-events:none; height:100%;
+  font-size:calc(1rem * var(--paper-scale));
+  --tutor-paper-half: var(--wz-page-half, min(calc(380px * var(--paper-scale)), 30ch));   /* PAGE-SIZE */
+  --tutor-paper-pad: 38px;   /* .mode-page{ padding:30px 38px } — hand-synced, mirrors --sliver-paper-pad's own comment */
+  --tutor-margin: calc(50% - var(--tutor-paper-half) + var(--frame-gap));
+  --tutor-overflow: clamp(0px, calc(160px - var(--tutor-margin)), var(--tutor-paper-pad));
+  --tutor-anchor-w: min(200px, calc(var(--tutor-margin) + var(--tutor-overflow)));
+  width: var(--tutor-anchor-w);
+  right: calc(50% - var(--tutor-paper-half) + var(--tutor-overflow) - var(--tutor-anchor-w));
+}
+/* TU2 S4 — the grip-flush audit, worked algebraically (not approximated):
+   this anchor's own physical LEFT edge (the edge nearest the paper — where
+   `.wz-tutor-grip` sits, `left:0` on itself, below) resolves to
+   `paper-right-edge - var(--tutor-overflow)` at every viewport — the
+   `--tutor-anchor-w` term cancels exactly between the `width` and `right`
+   declarations above (both reference the SAME custom property, so they
+   always agree). `--tutor-overflow` is `clamp(0px, ..., --tutor-paper-pad)`
+   — it is NEVER negative, so this anchor's near edge can never sit to the
+   RIGHT of (past) the paper's own edge; a genuine gap is mathematically
+   impossible here. At every one of tu1.mjs's own three reference widths
+   (1100/1280/2200) the natural margin comfortably clears 160px, so
+   `--tutor-overflow` computes to exactly 0px and the grip already sits
+   flush (zero gap) against the paper's right edge today — confirmed with
+   concrete numbers before touching anything, per this file's own "measured,
+   not approximated" discipline. (Below 160px of margin, overflow rises
+   toward its 38px pad ceiling, dipping the grip INTO the paper's own
+   padding — the same FX2 clearance-law allowance the sliver's mirror twin
+   already makes; it never uncovers the text measure itself.) No CSS change
+   was needed to satisfy TU2 S4's "grip flush, no gap" clause — it already
+   held, by construction, since TU1.
+   tutor-drawer-arrow — this algebra governs the CLOSED resting position
+   only. OPEN, this exact flush-to-paper spot is also where the panel's
+   own near edge lands in its most common regime (FX18 S2's "occupy the
+   margin"), putting the grip inside the open panel's own tab row. Fixed
+   in Tutor.tsx: a measure-effect (gripLeftPx, mirroring panelWidthPx's own
+   FX13 pattern) overrides this anchor's `left` with the panel's own
+   measured rect minus a 16px gutter, the exact mirror of `.wz-sliver-
+   panel`'s own static 16px inset — but measured, not re-derived, because
+   the panel's width comes from three different sources (this file's board
+   override, the base clamp below, and the JS writing-surface measurement)
+   and only a direct read of its own rendered rect is correct in all three
+   at once. Closed, `open` is false and the inline override is absent, so
+   this formula is exactly as unchanged as the comment above describes. */
+.desk-frame-tutor-anchor--prose{ /* intentionally empty — mirrors the sliver anchor's own hook */ }
+/* POLISH #10 item 3 (Nick, Oct 25) - A POP-OUT ON THE PAGE NEVER EXTENDS PAST THE PAGE SURFACE: the page's drawers end at its foot (DeskFrame writes
+   --wz-page-foot, the painted page's bottom from the stage's top) and scroll inside; where the page runs past the stage (the zoom), the stage's foot. */
+.desk-frame-stage--prose .desk-frame-sliver-anchor,
+.desk-frame-stage--prose .desk-frame-tutor-anchor,
+.desk-frame-stage--prose .desk-frame-tutor-panel-anchor{ height: min(100%, var(--wz-page-foot, 100%)); }
+/* SC1 S4 — the exact mirror of `.desk-frame-sliver-anchor--screenplay` (see
+   that rule for the full SC-V1 derivation): the screenplay page is 8.5in
+   wide, so the Tutor's grip rides half of that, not prose's half-measure. */
+.desk-frame-tutor-anchor--screenplay{
+  --tutor-paper-half: min(50%, 4.25in);
+}
+/* TU2 S4 — the board variant, the exact mirror of `.desk-frame-sliver-
+   anchor--board` (see that rule's own FX4 S3 comment for the full defect
+   writeup this pattern fixes): Board's content wrapper is `width:min(100%,
+   1100px)` (BoardEditor.tsx), not the prose/screenplay 60ch/760px measure
+   this base rule's `--tutor-paper-half` assumes — halving `min(100%,
+   1100px)` distributes over both arms to `min(50%, 550px)`, landing the
+   grip flush to the board canvas's own right edge instead of ~242px inside
+   it. `--tutor-paper-pad` drops to 0 for the same reason the sliver's own
+   board variant does: Board's wrapper carries no padding of its own to dip
+   into, so the FX2 clearance term above would otherwise credit room that
+   isn't there. */
+.desk-frame-tutor-anchor--board{
+  --tutor-paper-half: min(50%, 550px);
+  --tutor-paper-pad: 0px;
+}
+/* POLISH #10 item 1 - the Tutor's tab rides the board's right edge (its panel stands against it: Tutor.tsx's measure, the board in the mirror regime) */
+.desk-frame-stage--board .desk-frame-tutor-anchor--board{ --tutor-paper-half: calc(50% - var(--board-r, 0px)); }
+.desk-frame-stage--board .desk-frame-tutor-panel-anchor--board{ --tutor-panel-paper-half: calc(50% - var(--board-r, 0px)); }
+.desk-frame-tutor-panel-anchor{
+  /* ITEM tutor-drawer-mirror (Nick, review fix) — raised with the grip
+     anchor above (same comment there); one below it, same relationship. */
+  position:absolute; top:0; left:0; right:0; height:100%; z-index:55;
+  display:flex; align-items:stretch; justify-content:flex-end; pointer-events:none;
+  font-size:calc(1rem * var(--paper-scale));
+  --tutor-panel-paper-half: var(--wz-page-half, min(calc(380px * var(--paper-scale)), 30ch));   /* PAGE-SIZE */
+  --tutor-panel-margin: calc(50% - var(--tutor-panel-paper-half) + var(--frame-gap));
+  /* FX10 S1 — Fable's own corrected ruling, replacing TU2 S4's "exactly 2x
+     --strip-width" spec (~168px — the brief's own acknowledged error, not a
+     build defect: TU2 built that spec faithfully). "A genuine reading
+     measure, not a multiple of the strip": `clamp(320px, 34vw, 460px)`,
+     literally — `vw` is the CSS unit for "% of the viewport," so this needs
+     no JS measurement, unlike --tutor-panel-margin above (a calc()/percent
+     custom property, per Cascade.tsx's own documented getComputedStyle
+     resolution gap). Declared ONCE here so both the open rule and the
+     docked rule's own ceiling (below) read the identical value — never two
+     copies of the formula to drift apart. */
+  --tutor-panel-open-w: clamp(320px, 34vw, 460px);
+}
+.desk-frame-tutor-panel-anchor--prose{ /* intentionally empty — prose uses the base measure */ }
+/* FX18 S2 (SV26): the screenplay page is 8.5in wide, so its panel MARGIN must use the
+   screenplay half-measure (mirroring the grip anchor's own --screenplay override above) —
+   otherwise the new open-panel margin-clamp would mis-measure the screenplay margin and let
+   the panel overrun. */
+.desk-frame-tutor-panel-anchor--screenplay{ --tutor-panel-paper-half: min(50%, 4.25in); }
+/* TU2 S4 — the board variant's other half: this anchor governs the DOCKED
+   panel's own margin clamp (`--tutor-panel-margin`, consumed by
+   `.wz-tutor-panel[data-open='true'][data-docked='true']` below), not the
+   grip — same `min(50%, 550px)` half-measure as the grip anchor's own
+   `--board` override above, for the identical reason. No `-pad` variable
+   exists on this anchor to zero out (docked margin never had a padding
+   term of its own — only the grip anchor's FX2 overflow clamp does). */
+.desk-frame-tutor-panel-anchor--board{
+  --tutor-panel-paper-half: min(50%, 550px);
+}
+
+/* CD1 S6 — the goal glow's anchor: centered BEHIND the paper (negative
+   z-index; the paper itself paints in normal flow above it). Same
+   canonical-width math as the sliver anchor, centered instead of offset. */
+/* FX3 S2 — same scaling fix as the sliver anchor immediately above (font-size
+   pin + scaled px cap), for the same reason: this anchor's own `ch` values
+   resolve against ITS font-size, not `.mode-pagecol`'s, so without this it
+   drifts out of alignment with the (now-scaled) paper at wide viewports. */
+.desk-frame-goalglow-anchor{ position:absolute; top:0; z-index:-1; pointer-events:none;
+  font-size:calc(1rem * var(--paper-scale));
+  width:var(--wz-anchor-w, min(calc(760px * var(--paper-scale)), 60ch)); height:100%;
+  left:calc(50% - var(--wz-page-half, min(calc(380px * var(--paper-scale)), 30ch))); }   /* PAGE-SIZE */
+
+/* CD1 S6 — the goal's glow itself (components/GoalGlow.tsx). Warmth, never
+   brass (the olive/orange lanes hold): a fixed warm gradient whose ONLY
+   variable is opacity (`--glow-intensity`, already pre-multiplied by the
+   hard --goal-glow-cap token in JS — see GoalGlow.tsx) — no color shift at
+   any fraction, easing to rest at the cap when full. */
+.wz-goal-glow{ position:absolute; inset:-10% -20%; pointer-events:none;
+  background:radial-gradient(ellipse at center, rgba(224,113,44,.55) 0%, rgba(224,113,44,.22) 40%, transparent 68%);
+  opacity:var(--glow-intensity,0); transition:opacity 1.4s ease; filter:blur(6px); }
+@media (prefers-reduced-motion:reduce){ .wz-goal-glow{ transition:none; } }
+
+/* M2 S2 — the Rhizome's own anchor: the STAGE's full box (unlike the
+   goalglow anchor above, which is clamped to the paper's own canonical
+   width) — the growth wanders the margin AROUND the paper, not merely
+   behind it. */
+.desk-frame-rhizome-anchor{ position:absolute; inset:0; z-index:-1; pointer-events:none; }
+
+/* M4 S3 (SV15) — THE BAR COMES HOME. The progress instrument renders under
+   the page, in the rhizome's own lane (the anchor above): "bar and rhizome
+   are two styles of one instrument and share one location." The band it
+   occupies is the one the framed stage already reserves — FX3 S1's
+   --fx3-paper-fence, the 40px fence between the paper's bottom edge and the
+   stage's own — so nothing above it moves: this is an absolutely positioned
+   descendant of a stage-spanning overlay anchor, and the paper's rect is
+   structurally immune to it exactly as it is to the growth layer and the
+   goal glow (CD1 S2's hard geometry law, third instance).
+   NOT `.desk-frame-meter`: FX1 S5 killed that always-empty shell on Nick's
+   "the dead bar" verdict and it stays dead (nothing passes DeskFrame's
+   `meter` prop). NOT `.mode-incentive-row` either — that row is still
+   `!framed` in ModeStage.tsx, untouched, so legacy (<1100px) chrome remains
+   byte-identical and the framed desk gains no second progress row.
+   The measure math is the goalglow anchor's own, verbatim (font-size pin +
+   scaled px cap, FX3 S2): the track spans exactly the paper's canonical
+   width at every --paper-scale step instead of drifting out of alignment
+   with it at wide viewports. pointer-events:none is inherited from the
+   anchor and restated here for the same belt-and-suspenders reason the
+   growth layer restates it — an instrument in the writing surface's own
+   ground can never become a control. */
+.desk-frame-instrument{ position:absolute; left:50%; bottom:5px; transform:translateX(-50%);
+  font-size:calc(1rem * var(--paper-scale));
+  width:var(--wz-anchor-w, min(calc(760px * var(--paper-scale)), 60ch)); max-width:100%;   /* PAGE-SIZE */
+  pointer-events:none; }
+
+/* M4 S4 (SV16) — THE COMPLETION MOMENT. Root-caused first (the finding, for
+   the record): crossing the goal was effectively invisible on the framed
+   desk. The bar's own celebrate never mounted there (the row is `!framed`),
+   and `AmbientGlow`'s bloom is `!framed` too — AB1 S2 parked the ambient
+   glow on the framed desk, where GoalGlow owns the warmth behind the paper.
+   Only the rhizome's quiet segment-flash fired, and only for the one style
+   that shipped it. So the flare gets its own home IN the lane, for BOTH
+   styles: an ember bloom rising out of the page's own bottom edge, "humans
+   acting", nothing counted or scored, gone when it's gone.
+   The ember token verbatim (never a new literal), in the same
+   radial-gradient-to-transparent shape `.wz-goal-glow` above already ships —
+   opacity is the only animated property, so the flare's own paint can never
+   shift the hue mid-window. Wider than the track it rides above (190%): it
+   blooms past the paper's measure into the margin the rhizome roams, which
+   is what makes it unmistakable rather than a brighter 6px bar. The upper
+   half falls BEHIND the opaque paper (z-index:-1 on the anchor), so what the
+   writer sees is warmth spilling out from under the page, not a lamp on top
+   of it. 1100ms — CELEBRATE_MS, the celebration grammar's own constant, the
+   same window `.mode-pfill.celebrate` runs; the class is driven by the SAME
+   `celebrating` flag, so the two land together and clear together. */
+.desk-frame-goalflare{ position:absolute; left:50%; bottom:-14px; transform:translateX(-50%);
+  width:min(1100px, 190%); height:190px; pointer-events:none; opacity:0;
+  background:radial-gradient(ellipse at center, var(--ember) 0%, transparent 68%);
+  filter:blur(10px); }
+.desk-frame-goalflare.lit{ animation:wz-goal-flare 1100ms ease; }
+@keyframes wz-goal-flare{
+  0%{ opacity:0; }
+  14%{ opacity:.62; }
+  55%{ opacity:.48; }
+  100%{ opacity:0; }
+}
+@media (prefers-reduced-motion:reduce){
+  /* The same single soft cross-fade the rhizome's own flash falls back to
+     (M2 S4's rule, reused rather than re-invented): no keyframe pulse, one
+     eased opacity change driven by the identical class toggle. */
+  .desk-frame-goalflare{ animation:none; transition:opacity 600ms ease; }
+  .desk-frame-goalflare.lit{ animation:none; opacity:.5; }
+}
+
+/* THE GOAL RHIZOME (Fable, 2026-10-08) — replaces every earlier .wz-rhizome-* rule and @keyframes wz-rhizome-* in index.css.
+   Keep: .desk-frame-rhizome-anchor (z-index:-1 behind the paper) and the --rhizome-ink token (var(--accent-rest)).
+   The field's viewBox equals its measured pixel size, so 1 user unit = 1 CSS px and no vector-effect is needed (and none is
+   used: non-scaling-stroke can break the pathLength-based draw-on in Chromium). */
+.wz-rhizome-field{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+
+/* Settled roots: fine hairlines; main stems and the lap's survivor a little heavier. */
+.wz-rhizome-seg{ stroke:var(--rhizome-ink); stroke-width:0.4px; stroke-linecap:round; stroke-linejoin:round; fill:none; opacity:.45; }
+.wz-rhizome-seg[data-thick='true']{ stroke-width:0.8px; opacity:.75; }
+
+/* A new piece GROWS: it draws itself on along its length (pathLength=1 on the <line>, so a dash of 1 is the whole piece). */
+.wz-rhizome-new{ stroke-dasharray:1; stroke-dashoffset:1; animation:wz-rhizome-draw 360ms ease-out both; }
+@keyframes wz-rhizome-draw{ from{ stroke-dashoffset:1; } to{ stroke-dashoffset:0; } }
+
+/* The reward: at the goal the whole network turns brass (#ff9800, the locked theme orange) and pops — a short
+   bloom, then a heavier brass stroke holds (1200 ms, RhizomeField). The finished plant then fades out over 2200 ms
+   and leaves the seed root, which settles back to the resting ink. */
+.wz-rhizome-field[data-flash='true']{ filter:drop-shadow(0 0 3px var(--brass)); animation:wz-rhizome-pop 420ms ease-out; }
+.wz-rhizome-field[data-flash='true'] .wz-rhizome-seg{ stroke:var(--brass); opacity:1; stroke-width:1.35px; transition:stroke 80ms ease-out, opacity 80ms ease-out, stroke-width 80ms ease-out; }
+.wz-rhizome-field[data-flash='true'] .wz-rhizome-seg[data-thick='true']{ stroke-width:2.1px; }
+.wz-rhizome-field[data-flash='fading'] .wz-rhizome-seg{ stroke:var(--brass); opacity:0; stroke-width:1.35px; transition:opacity 2200ms ease-out; }
+.wz-rhizome-field[data-flash='fading'] .wz-rhizome-seg[data-thick='true']{ stroke-width:2.1px; }
+.wz-rhizome-field[data-flash='fading'] .wz-rhizome-seg[data-seed='true']{ stroke:var(--rhizome-ink); opacity:.75; stroke-width:0.8px; transition:stroke 2200ms ease-out, opacity 2200ms ease-out, stroke-width 2200ms ease-out; }
+@keyframes wz-rhizome-pop{
+  from{ filter:drop-shadow(0 0 12px var(--brass)) drop-shadow(0 0 3px var(--brass)); }
+  to{ filter:drop-shadow(0 0 3px var(--brass)); }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .wz-rhizome-new{ stroke-dasharray:none; stroke-dashoffset:0; animation:wz-rhizome-appear 200ms ease both; }
+  .wz-rhizome-field[data-flash='true']{ animation:none; }
+  .wz-rhizome-field[data-flash='true'] .wz-rhizome-seg{ transition:none; }
+  .wz-rhizome-field[data-flash='fading'] .wz-rhizome-seg{ transition:none; }
+}
+@keyframes wz-rhizome-appear{ from{ opacity:0; } }
+
+.desk-frame-meter{ min-height:44px; margin-top:14px; background:var(--desk-ground);
+  border:1px solid var(--ink-border); border-radius:var(--radius-md); }
+.desk-frame-corkboard{ min-height:70vh; background:var(--desk-ground);
+  border:1px solid var(--ink-border); border-radius:var(--radius-md); padding:18px; }
+
+/* Vanishing law (S3) — same fast-out/slow-in transition mode-dissolve already
+   uses, scoped to .desk-frame's own dissolve flag. --fade-dur/--fade-min are
+   inherited from an ancestor the host's useChromeDissolve already writes to
+   (see components/DeskFrame.tsx's header comment). */
+.desk-dissolve{ transition:opacity var(--fade-dur,1.2s) ease; }
+/* POLISH #10 item 23 (Nick, Oct 25) - WHILE TYPING, EVERYTHING OFF THE PAGE GOES TO 0. The desk's own chrome read --fade-min, which is defined only on
+   .mode-stage - never an ancestor of it - so it always fell back to .08 (the rail "ghosting"). On the framed desk the floor is 0 (whatever the Recede
+   setting says; it still governs the narrow, unframed layout). And the chrome that lives outside the desk's dissolve classes - the wordmark, the ember
+   dot, the progress lane (the rhizome, the bar, Machina's run strip), Flux's glitch meter - recedes with it while the desk writes (ModeStage writes
+   data-wz-writing on the root). Only the page and the drawers' tab arrows stay. It returns as today (the engine's own curve, --fade-dur). */
+.desk-frame{ --fade-min:0; }
+.brand-mark, .chrome-handle{ transition:opacity var(--fade-dur,1.2s) ease; }
+/* Nick's rulings (via Fable, Oct 25): PROGRESS STRIPS STAY visible and live while typing when they are on (the rhizome, the bar, Machina's run strip,
+   Flux's glitch meter), and so do DOCKED panels (they never carried the dissolve). The recede's exceptions: the page, the tab arrows, progress, docks. */
+html[data-wz-writing='true'] .brand-mark{ opacity:0 !important; pointer-events:none; }
+html[data-wz-writing='true'] .chrome-handle{ opacity:0 !important; }   /* still takes the pointer: reaching it is one way back */
+.desk-frame[data-writing='true'] .desk-dissolve{ opacity:var(--fade-min,.08); pointer-events:none; }
+@media (prefers-reduced-motion:reduce){ .desk-dissolve{ transition:none; } }
+
+/* HB1 S3 — the veil (components/FirstRunGate.tsx's FirstRunVeil). `inert`
+   (set imperatively by the component) already removes the wrapped subtree
+   from focus/pointer/AT; this is the visual half — blurred, dimmed, and a
+   belt-and-suspenders pointer-events:none in case a test driver's pointer
+   dispatch doesn't honor `inert`. Never touches the paper/editor itself —
+   only ever wraps chrome (the top row, the Drawer, the Sliver). */
+.hb1-veil[data-veiled='true']{ filter:blur(4px); opacity:.45; pointer-events:none; transition:filter .4s ease, opacity .4s ease; }
+@media (prefers-reduced-motion:reduce){ .hb1-veil[data-veiled='true']{ transition:none; } }
+
+/* HB1 S3 — the gate's one sanctioned instruction + its progress bar. Fixed,
+   top-center, ABOVE the veil (never wrapped by it) — the one thing that
+   stays crisp while everything else recedes. Square corners (FX1 S4 law);
+   quiet — olive at rest, never brass (brass is the ceremony's alone). */
+.hb1-gate-banner{ position:fixed; top:22px; left:50%; transform:translateX(-50%); z-index:60;
+  display:flex; flex-direction:column; align-items:center; gap:8px; pointer-events:none; }
+.hb1-gate-instruction{ font-family:var(--font-ui); font-size:14px; letter-spacing:.02em;
+  color:var(--text-hi); background:var(--ink-900); border:1px solid var(--ink-border);
+  border-radius:0; padding:8px 16px; }
+.hb1-gate-track{ width:min(320px,70vw); height:3px; background:var(--ink-border); overflow:hidden; }
+.hb1-gate-trackfill{ height:100%; background:var(--accent-rest); transition:width .5s ease; }
+@media (prefers-reduced-motion:reduce){ .hb1-gate-trackfill{ transition:none; } }
+
+/* HB1 S4 — the unlock ceremony (components/UnlockCeremony.tsx). A modal,
+   the same backdrop convention as .sprint-modal-backdrop; entrance pop
+   suppressed under reduced motion (the word-echo pattern .wz-bloom already
+   uses — motion is decoration, the content lands regardless). */
+.hb1-ceremony-backdrop{ position:fixed; inset:0; z-index:220; display:flex; align-items:center;
+  justify-content:center; background:rgba(0,0,0,.55); }
+.hb1-ceremony{ width:min(480px,92vw); padding:1.75rem; background:var(--ink-900);
+  border:1px solid var(--ink-border); border-radius:0; text-align:center;
+  display:flex; flex-direction:column; align-items:center; gap:.6rem;
+  opacity:0; transform:scale(.94) translateY(6px); animation:hb1-ceremony-pop .5s cubic-bezier(.2,.8,.2,1) forwards; }
+@keyframes hb1-ceremony-pop{ to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){ .hb1-ceremony{ animation:none; opacity:1; transform:none; } }
+.hb1-ceremony-eyebrow{ font-family:var(--font-ui); font-size:12px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--text-low); }
+.hb1-ceremony-title{ font-family:var(--font-display); font-size:22px; color:var(--text-hi); margin-bottom:.4rem; }
+.hb1-ceremony-offered{ display:flex; gap:.75rem; margin-bottom:.6rem; }
+.hb1-territory{ font-family:var(--font-ui); font-size:14px; padding:.7rem 1.3rem;
+  border-radius:0; cursor:pointer; transition:background .3s ease, color .3s ease, border-color .3s ease; }
+.hb1-territory-offered{ background:none; border:1px solid var(--ink-border); color:var(--text-hi); }
+.hb1-territory-offered:hover:not(:disabled){ border-color:var(--accent-rest); color:var(--accent-rest); }
+/* Orange fires once, here — the instant a human actually chooses (S4's own
+   law). A transient, single-valued flash, never a resting brass button, so
+   this never becomes a second .btn-brass on the same screen. */
+.hb1-territory-offered.chosen{ background:var(--choice); border-color:var(--choice); color:var(--on-brass); }
+.hb1-territory-offered:disabled{ cursor:default; }
+.hb1-ceremony-future-label{ font-family:var(--font-ui); font-size:11px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--text-low); margin-top:.5rem; }
+.hb1-ceremony-future{ display:flex; gap:.6rem; flex-wrap:wrap; justify-content:center; }
+.hb1-territory-future{ font-family:var(--font-ui); font-size:13px; padding:.45rem 1rem;
+  border:1px solid var(--ink-border); color:var(--text-low); opacity:.5; cursor:default; }
+@media (prefers-reduced-motion:reduce){ .hb1-territory{ transition:none; } }
+
+/* A scroll-capped, un-styled containment box (S4 finding 4) — wraps content
+   that has no bounded-height container of its own (the script sheet today).
+   Deliberately NOT reusing .mode-page's paper styling: the wrapped content
+   (e.g. .script-sheet) already carries its own paper look, so this only
+   supplies the missing height cap + internal scroll. */
+/* FX7 S4 — used to hide its own scrollbar entirely (scrollbar-width:none);
+   folded into the systemic visible-but-quiet treatment instead, with its
+   own paper-toned color override living alongside the systemic rule near
+   the top of this file (`.mode-scroll, .desk-frame-scroll-cap,
+   .board-text`) — see that rule's own comment for the full reasoning. */
+.desk-frame-scroll-cap{ height:min(64vh,620px); overflow-y:auto; }
+
+/* The unified mode strip (S2) — five ratified strings, title case. Visually
+   modeled on .mode-tab/.mode-tabs (the strip it supersedes inside the
+   frame), kept as its own class family so ModeSwitcher.tsx's own styling
+   (still used by QuickSprint, unchanged) can't drift underneath it.
+   AB2 S7 (Nick's rulings, 2026-07-14) — the strip quiets: orange leaves it
+   entirely (the active tab's brass fill is gone), replaced by brightened
+   ink + a 1px olive hairline (--accent-rest); the whole strip renders in
+   the engraved register — uppercase, letterspaced — as PRESENTATION only
+   (CSS text-transform). The canonical strings stay exactly the ratified
+   title case in the DOM (ModeStrip.tsx / store/deskLexicon.ts untouched;
+   ab1.mjs's exact-string .textContent assertions untouched) — this is a
+   paint, not a rewrite. */
+/* The mode tabs sit DIRECTLY in the sprint-nav now — no inner box of their
+   own. Their old container border drew a second line just under the tabs,
+   redundant with the sprint-nav's own bottom line (Nick's "redundant
+   separator just underneath the Writing Modes tabs"); dropped here. */
+.desk-mode-strip{ display:flex; align-items:center; gap:1.6px; background:none;
+  border:none; padding:0; }
+/* The writing-mode tabs, Plan included, stay one tight cluster. The framed
+   nav already parks that cluster on the right: the address keeps
+   margin-right:auto, and .desk-frame-host .sprint-nav is flex-end.
+   Do not grow the strip or space the tabs across the bar. */
+.desk-mode-tab{ background:none; border:1px solid transparent; color:var(--text-mid);
+  font-family:var(--font-ui); font-size:10.4px; padding:9px 12.8px; cursor:pointer; transition:.15s;
+  text-transform:uppercase; letter-spacing:.08em; }
+.desk-mode-tab:hover{ color:var(--text-hi); background:var(--ink-800); }
+.desk-mode-tab.active{ background:none; color:var(--text-hi); border-bottom:1px solid var(--accent-rest); }
+.desk-mode-tab.deferred{ color:var(--text-low); cursor:not-allowed; }
+.desk-mode-tab.deferred:hover{ background:none; color:var(--text-low); }
+.desk-mode-soon{ margin-left:10px; font-family:var(--font-ui); font-size:11px; color:var(--text-mid); font-style:italic; }
+/* help-buttons (Nick approved Oct 12) — the "?" sits beside a tab, never
+   inside it (ModeStrip.tsx's own comment says why: a <button> cannot nest
+   another <button>). A plain inline-flex wrapper so the pair reads as one
+   unit without disturbing the strip's own tight gap between every OTHER tab. */
+.desk-mode-tab-wrap{ display:inline-flex; align-items:center; gap:4px; }
+/* PHASE 1 - the band's Free Write hover menu (TEXT | INK) is RETIRED: the same choice is the first tab of the left drawer (DrawerTabs). One control for one state. */
+
+/* CD1 S2/S7 — the sliver (components/Sliver.tsx). ToolRail's retired
+   contents move here VERBATIM (same look — .mode-swatch/.mode-nib/
+   .mode-tbtn — only the class family renames, .desk-toolrail-* ->
+   .wz-sliver-*), now inside an absolutely positioned overlay (see
+   .desk-frame-sliver-anchor below) instead of a grid track. */
+.wz-sliver{ position:relative; width:100%; height:100%; }
+.wz-sliver-grip{ position:absolute; top:16px; right:0; width:16px; height:34px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; z-index:2;
+  background:var(--desk-ground); border:1px solid var(--ink-border); border-right:none;
+  color:var(--text-mid); cursor:pointer; transition:.15s; }
+.wz-sliver-grip:hover{ color:var(--text-hi); }
+/* Plateau foundations — olive marks where you are; the grip wears
+   --accent-rest only while OPEN (a where-you-are-now state), never brass. */
+.wz-sliver[data-open='true'] .wz-sliver-grip{ color:var(--accent-rest); border-color:var(--accent-rest); }
+/* ITEM arbor-quiet-brass, round 2 — the drawer's own arrow tab (Sliver.tsx calls this
+   panel "the drawer" throughout its own comments), same heading/where-you-are-colour
+   law as the headings fix above: Arbor keeps olive, Flux reads its own quiet teal. */
+[data-theme='flux'] .wz-sliver[data-open='true'] .wz-sliver-grip{ color:var(--text-mid); border-color:var(--text-mid); }
+.wz-sliver-grip-glyph{ font-size:13px; line-height:1; }
+/* PHASE 1 - the instrument mark (a tiny pen while the page is in INK). The tab's box is unchanged (16 x 34); the mark rides the tab's own
+   colour - olive when open, never brass: it says what the page IS, it is not a choice the writer makes. */
+.wz-sliver-grip-mark{ display:flex; width:10px; height:10px; opacity:.9; }
+.wz-sliver-grip-mark svg{ width:10px; height:10px; display:block; }
+.wz-sliver-panel{ position:absolute; top:0; right:16px; width:calc(100% - 16px); height:100%;
+  overflow-y:auto; overflow-x:hidden;
+  opacity:0; pointer-events:none; transition:opacity var(--fade-dur,.2s) ease;
+  /* The bar sits on the drawer's left edge. `direction: rtl` is the only
+     way a native scrollbar changes sides; the children below stay left to
+     right. It is overlay-thin and only paints when the content is taller
+     than the drawer — settings open, or a short screen. No reserved gutter. */
+  direction: rtl;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--text-low) 28%, transparent) transparent;
+}
+.wz-sliver-panel > *{ direction: ltr; }
+/* (Its `::-webkit-scrollbar` 4px rules are deleted: dead under Chromium >= 121 because scrollbar-width/color are set above - one mechanism per element.) */
+.wz-sliver-panel[data-open='true']{ opacity:1; pointer-events:auto; }
+/* item 83 errata E1 (2026-09-03) — THE POP-OUT HOLD. Nick's ruling: a foot
+   pop-out fades after FIFTEEN WORDS WRITTEN or A PERIOD ENTERED, never on a
+   clock. Sliver.tsx counts and sets `data-popout-hold`; this rule is the whole
+   of what the flag does.
+
+   IT ADDS NO FADE AND NO CURVE. The transition already declared on
+   `.wz-sliver-panel` above governs both directions, so releasing the hold
+   recedes on the SAME `--fade-dur` the vanish engine writes (2.8s on a write)
+   and the SAME reduced-motion opt-out below kills it. What the rule does is
+   narrower than a fade: while the flag stands it OUT-SPECIFIES the two ambient
+   recede rules that would otherwise hide this panel —
+     `.desk-frame[data-writing='true'] .desk-dissolve`      (0,3,0)
+     `[data-chrome-receded='true'] .chrome-fade`            (0,2,0)
+   — at 0,5,0 and 0,4,0, so neither can win by source order later.
+
+   `[data-open='true']` is load-bearing, not decoration: a CLOSED drawer must
+   stay closed, so the hold can never resurrect one. And with no tray open the
+   flag reads 'false' and this rule does not match at all — every fade on this
+   surface is byte-identical to before. */
+.desk-frame[data-writing='true'] .wz-sliver-panel[data-open='true'][data-popout-hold='true'],
+[data-chrome-receded='true'] .wz-sliver-panel[data-open='true'][data-popout-hold='true']{
+  opacity:1; pointer-events:auto; }
+/* PHASE 1 - THE SLIDING LAYER, shared by both side drawers (Nick, Oct 9: "the menu slides out from behind the tab AND fades in, together;
+   closing slides back AND fades out").
+   The panel (outer) is the CLIP and the scroller: it ends at the tab, so whatever slides is hidden behind it; it also keeps the fade and
+   the dissolve exactly as before (opacity on --fade-dur, whose fallback is this same .2s, so at rest the fade and the slide run together).
+   The visible box - background, border - and the slide live on THIS layer. The slide uses its own tokens, never --fade-dur.
+   Open is read from the panel's data-open; nothing here knows which drawer it is in except the side. */
+.wz-drawer-slide{ min-height:100%; background:var(--desk-ground); border:1px solid var(--ink-border);
+  transition:transform var(--drawer-dur) var(--drawer-ease); }
+.wz-drawer-slide--left{ border-right:none; transform:translateX(100%); }
+.wz-drawer-slide--right{ border-left:none; transform:translateX(-100%); }
+[data-open='true'] > .wz-drawer-slide{ transform:none; }
+/* THE CONTENTS ARE NOT LIVE UNTIL THE SLIDE HAS SETTLED (Fable, Oct 12; measured by scripts/evidence/click-mid-open.mjs: the Screenplay button travels ~184px in ~150ms, so a press
+   aimed at it inside that window lands where it WAS, on a neighbour). For the length of the slide (--drawer-dur; the short fade under reduced motion) the sliding layer takes no pointer
+   input: an early click falls through to the drawer's own (inert) panel and does NOTHING - never the wrong control. It is an animation, not a transition, because pointer-events is a
+   discrete property and a keyframe holds 'none' until the last moments and then hands control back; once it ends the layer inherits the panel's 'auto' again. Keyboard focus is not
+   affected (the closed drawer is already inert, and an open one is reachable by Tab as before). It restarts on every open because it hangs on [data-open='true']. */
+@keyframes wz-drawer-live{ 0%, 99% { pointer-events:none; } 100% { pointer-events:auto; } }
+[data-open='true'] > .wz-drawer-slide{ animation: wz-drawer-live var(--drawer-dur) linear; }
+/* PHASE 1 (S2) - THE TAB ROW. ROUND 2 (tutor-drawer-mirror, Nick's live bug
+   report: "the open tab shows brass — open menu tabs are olive (Oct 9
+   ruling)"; confirmed live by scripts/harness/tutor-drawer-probe.mjs,
+   measured rgb(255,152,0) on the open TUTOR tab). The ORIGINAL Oct 9 ruling
+   quoted below drew a distinction between the drawer's own arrow tab
+   ("where you are", olive) and the chosen tab ("what you chose", brass) -
+   Nick's later Oct 9 ruling supersedes that split: choosing a tab is ALSO
+   "where you are" (which section is showing), the same state the arrow
+   already marks, so both read olive now and brass stays reserved for
+   actual action controls, the lane's own standing law.
+   SUPERSEDED (quoted verbatim): "The chosen tab wears a BRASS OUTLINE and
+   brass text and NOTHING else - no fill (Nick, Oct 9). The drawer's arrow
+   tab is olive (where you are); this is brass (what you chose)." */
+.wz-drawer-tabbar{ position:relative; padding:14px 14px 0; }
+.wz-drawer-tabs{ display:flex; gap:6px; }
+.wz-drawer-tab{ flex:1; height:26px; padding:0; background:none; border:1px solid var(--ink-border); border-radius:0;
+  color:var(--text-mid); font-family:var(--font-ui); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+  cursor:pointer; transition:color .15s ease, border-color .15s ease; }
+.wz-drawer-tab:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+.wz-drawer-tab[data-on='true']{ color:var(--accent-rest); border-color:var(--accent-rest); background:none; }
+.wz-drawer-tab:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
+/* PHASE 1 (S3) - the "?" note beside a tab's word. The overlay shares the tab row's columns, ignores the pointer except on the "?" itself, and
+   sits OUTSIDE the tablist. The note opens below the row as an overlay (it displaces nothing). */
+.wz-drawer-tabnotes{ position:absolute; left:14px; right:14px; top:14px; height:26px; display:grid; gap:6px; pointer-events:none; }
+.wz-drawer-tabnote-cell{ display:flex; align-items:center; justify-content:flex-end; padding-right:3px; min-width:0; }
+/* FIX (Fable, Oct 17, ledger 88-90) — "ignores the pointer except on the '?'
+   itself" (comment above) was true for the OLD .wz-drawer-note wrapper (its
+   own pointer-events:auto, below) but never carried over when helpGrafts
+   moved onto the shared .wz-help (HelpButton.tsx) — a bare button with no
+   such restoration. A real press here hit the row's pointer-events:none and
+   landed on nothing underneath; a page-side .click() never noticed, since it
+   bypasses hit-testing entirely. */
+.wz-drawer-tabnotes .wz-help{ pointer-events:auto; }
+/* .wz-drawer-note/-btn/-pop's own GENERAL rules moved below (merge with
+   word-diet, 2026-10-14) to the single definition every caller now shares;
+   only this row's own stretch-to-the-margins override stays here, scoped
+   by specificity (two classes) rather than by source order, so it wins
+   over the general rule regardless of which is declared first. */
+.wz-drawer-tabnotes .wz-drawer-note-pop{ left:14px; right:14px; width:auto; max-width:none; }
+.wz-links-pane{ display:flex; flex-direction:column; gap:8px; padding:16px 14px; }
+/* PHASE 1 - ACTIONS. Icon buttons in a row; one that is pressed/open wears the brass OUTLINE (no fill). Tags and Delete open a small area
+   inside the drawer. Delete's confirm is in the page: a line, and two plain buttons. */
+.wz-actions{ display:flex; flex-direction:column; gap:8px; }
+.wz-actions-row{ display:flex; gap:6px; }
+.wz-action-btn{ flex:1; height:28px; display:flex; align-items:center; justify-content:center; background:none;
+  border:1px solid var(--ink-border); border-radius:0; color:var(--text-mid); cursor:pointer; transition:color .15s ease, border-color .15s ease; }
+.wz-action-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+.wz-action-btn[aria-pressed='true']{ color:var(--choice); border-color:var(--choice); background:none; }
+.wz-action-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
+.wz-actions-tags{ display:flex; flex-wrap:wrap; gap:4px 6px; align-items:center; }
+.wz-actions-tag{ display:inline-flex; align-items:center; gap:4px; padding:2px 6px; border:1px solid var(--ink-border); color:var(--text-mid); font-size:12px; }
+.wz-actions-tag-remove{ background:none; border:0; color:var(--text-low); cursor:pointer; padding:0 2px; font-size:13px; line-height:1; }
+.wz-actions-tag-remove:hover{ color:var(--text-hi); }
+.wz-actions-tag-input{ flex:1; min-width:80px; background:var(--ink-800); border:1px solid var(--ink-border); color:var(--text-hi);
+  font-family:var(--font-ui); font-size:12px; padding:4px 6px; border-radius:0; }
+.wz-actions-confirm{ display:flex; flex-direction:column; gap:8px; padding:8px; border:1px solid var(--ink-border); }
+.wz-actions-confirm-line{ margin:0; font-size:13px; line-height:1.35; color:var(--text-hi); }
+.wz-actions-confirm-buttons{ display:flex; gap:6px; }
+.wz-actions-keep, .wz-actions-send{ flex:1; height:26px; background:none; border:1px solid var(--ink-border); border-radius:0; color:var(--text-mid);
+  font-family:var(--font-ui); font-size:12px; cursor:pointer; }
+.wz-actions-keep:hover, .wz-actions-send:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+.wz-actions-send{ color:var(--brick, var(--text-mid)); }
+.wz-actions-keep:focus-visible, .wz-actions-send:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
+/* REDUCED MOTION (Nick): fade only, short. No slide at all; the fade runs on its own short token. (This replaces the two old
+   'transition:none' opt-outs: the writer who asked for less motion still sees the drawer arrive, just without travel.)
+   THE APP'S GLOBAL REDUCED-MOTION FLOOR (the universal rule near the top of this file: every transition and animation 0.01ms !important)
+   would flatten this fade to nothing too. Opacity is not motion, and Nick ruled that the drawer still FADES, so the two panels carry their
+   own !important duration: a class selector out-ranks the floor's universal selector at equal importance. The sliding layer is NOT exempt -
+   it has no travel under reduced motion, and the floor keeps it instant. */
+@media (prefers-reduced-motion:reduce){
+  .wz-sliver-panel, .wz-tutor-panel{ transition:opacity var(--drawer-dur-reduced) linear; transition-duration: var(--drawer-dur-reduced) !important; }
+  .wz-drawer-slide, .wz-drawer-slide--left, .wz-drawer-slide--right{ transform:none; transition:none; }
+  /* ...and the global floor (animation-duration 0.01ms !important) would hand the controls back at once; the guard keeps the short fade's length, as the panel does for its fade. */
+  [data-open='true'] > .wz-drawer-slide{ animation-duration: var(--drawer-dur-reduced) !important; }
+}
+.wz-sliver-body{ display:flex; flex-direction:column; gap:20px; padding:16px 14px; }
+.wz-sliver-section{ display:flex; flex-direction:column; gap:8px; }
+/* ITEM 114 (item 83 errata E4) — the Structure zone's SUB-LABELS and the rule
+   between its two halves. This is the visual half of the answer to the
+   Screenplay name collision: one zone now reads as two, so a kind chip named
+   "Screenplay" cannot be mistaken for the conversion door beside it. Quieter
+   than `.wz-sliver-h` on purpose — the eyebrow names the ZONE, these name the
+   two questions inside it, and a second engraved heading would read as a second
+   zone rather than a distinction within one.
+   No accent anywhere here: olive marks where you are and orange marks what you
+   do (R7/FX1 S6), and a sub-label is neither. The chips themselves reuse
+   `.wz-page-setup-chip` verbatim — the same control family, already carrying
+   the olive-at-rest selection law — rather than a second chip that would drift
+   from it. */
+.wz-sliver-sub{ font-family:var(--font-ui); font-size:11px; color:var(--text-low);
+  letter-spacing:.2px; margin-top:2px; }
+.wz-sliver-rule{ height:1px; background:var(--ink-border); margin:4px 0 2px; }
+/* FX1 S6 (Nick's first-sitting verdict, "the orange-at-rest sweep") — the
+   sliver's eyebrow labels (READING/STRUCTURE/CAPTURE/etc.) are
+   informational, not evental: olive marks where you are, orange marks what
+   you do, and an eyebrow label is neither — it's just quiet. */
+/* item 83 M1 (R7, "menus rest olive") — Nick's word: "the accent color on
+   the menus should be the olive green, not brass." The engraved zone heading
+   is the menus' one resting-accent site (Pass 0's G5, as amended by R7 from
+   the ember to the olive register); it was --text-mid, which read as body
+   copy rather than an engraving. */
+.wz-sliver-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--accent-rest); }
+/* ITEM arbor-quiet-brass — same heading-colour law as .mode-rail-h above (olive here is
+   Arbor's own heading colour; Flux's is its own quiet teal, not olive). */
+[data-theme='flux'] .wz-sliver-h{ color:var(--text-mid); }
+.wz-sliver-inks{ display:flex; align-items:center; flex-wrap:wrap; gap:6px; }
+.wz-sliver-item{ font-size:14px; color:var(--text-mid); padding:10px 11px; border:1px solid transparent; }
+/* AB4 S5 — "Add card," the board sliver's one non-toggle tool: a real
+   <button> sharing .wz-sliver-item's own look (this class only resets the
+   button chrome CAPTURE_ITEMS' plain <div>s never needed) + a quiet border/
+   hover, matching every other sliver control's rest state. */
+.wz-sliver-item-btn{ display:block; width:100%; text-align:left; background:none;
+  border:1px solid var(--ink-border); font-family:var(--font-ui); cursor:pointer; transition:.15s; }
+.wz-sliver-item-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+.wz-sliver-format{ display:flex; align-items:center; flex-wrap:wrap; gap:4px; }
+.wz-sliver-format .mode-tbtn{ display:inline-flex; align-items:center; justify-content:center; }
+.wz-sliver-format--letters{ flex-wrap:nowrap; }
+.wz-sliver-format--letters .mode-tbtn{ flex:1 1 0; min-width:0; padding:0 2px; }
+.wz-format-mark{ display:block; }
+.wz-bullet-control{ position:relative; display:inline-flex; align-items:center; }
+.wz-bullet-toggle{ width:16px; min-width:16px; padding:0; font-size:9px; }
+.wz-bullet-menu{ position:absolute; top:100%; left:0; z-index:40; display:flex; flex-direction:column; gap:2px;
+  padding:4px; background:var(--ink-900); border:1px solid var(--ink-border); }
+/* PAGE TEMPLATES (approved mockup cursor/templates @ 0fc9afef) - the picker: one row per template, a tiny page sketch and its word. Brass marks the
+   current choice at rest (the standing rule); the row never changes size, so picking moves nothing. (The disabled .wz-template-btn stand-ins retired.) */
+.wz-template-list{ display:flex; flex-direction:column; gap:2px; }
+/* help-buttons (Fable, Oct 18) — a theme-unique row name's own "?" sits
+   beside its row, never inside it (the row itself stays exactly the
+   rect/hit-target it already was). The wrap is the flex row; .wz-template-row
+   keeps filling it. */
+.wz-template-row-wrap{ display:flex; align-items:center; gap:4px; }
+.wz-template-row-wrap .wz-template-row{ flex:1 1 auto; min-width:0; }
+.wz-template-row{ display:flex; align-items:center; gap:12px; width:100%; min-height:46px; padding:0 12px 0 16px; text-align:left; cursor:pointer;
+  background:none; border:1px solid transparent; color:var(--text-mid); font:inherit; font-size:13px; }
+.wz-template-row:hover{ color:var(--text-hi); background:var(--ink-800); }
+.wz-template-row[aria-pressed='true']{ color:var(--choice); border-color:var(--choice); background:color-mix(in srgb, var(--choice) 8%, transparent); }
+.wz-template-row svg.wz-template-sketch{ flex:0 0 auto; width:24px; height:32px; display:block; }
+.wz-template-sketch-page{ fill:var(--paper); stroke:var(--ink-border-strong); stroke-width:1; }
+.wz-template-row[aria-pressed='true'] .wz-template-sketch-page{ stroke:var(--choice); }
+.wz-template-sketch-line{ fill:var(--text-low); opacity:.85; }
+.wz-template-word{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+/* PAGE-TEMPLATES-MOVE - brass on the press; and, by Nick's standing rule that brass marks a choice the writer has MADE, brass
+   at rest on the template the page already is (a screenplay page's Screenplay template, aria-pressed). */
+.wz-template-live:active, .wz-template-live[aria-pressed='true']{ color:var(--choice); border-color:var(--choice); }
+/* The Beginnings glyphs carry only a viewBox - the row sizes them (.wz-beginning-glyph svg) - so in the strip they are given the
+   strip's own icon size, the TemplateIcon 16px, or they render at zero (the 43839ae frames showed an empty Screenplay slot). */
+.wz-template-live svg{ width:16px; height:16px; display:block; }
+/* ITEM 207 - THE TYPE CONTROL (TypeControl.tsx). As minimal as a strip menu gets: a face button, a `-` `+` pair, and in
+   the full form a number between them. No heading, no caption. The listbox drops in FLOW inside the drawer (never a
+   second floating panel), each row set in its own face, the current one olive (where you are - the sliver's rest law). */
+.wz-type{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
+.wz-type-face{ flex:1 1 auto; min-width:0; text-align:left; padding:4px 8px; background:none; color:var(--text-hi);
+  border:1px solid var(--ink-border); cursor:pointer; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.wz-type-face:hover{ border-color:var(--ink-border-strong); }
+.wz-type-list{ flex:1 0 100%; list-style:none; margin:0; padding:2px 0; border:1px solid var(--ink-border); }
+.wz-type-row{ padding:4px 8px; font-size:14px; cursor:pointer; color:var(--text-hi); }
+.wz-type-row:hover{ background:var(--ink-800, rgba(0,0,0,.06)); }
+/* the "Default (<face>)" row stays on ONE line in the narrow drawer: an ellipsis, the full name in its title (hover) and aria-label (focus) */
+.wz-type-row[data-default='true']{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.wz-type-row[data-current='true']{ color:var(--accent-rest); }
+/* FONT-SPAN (cursor/font-choices @ 6cc5f529, Nick approved Oct 15) - the scoped Typeface section, where words can be highlighted
+   (Draft, a card): the two scopes over the roster SHOWN as a list. Brass marks the current choice - the scope in force and the face
+   that is current for it (none for a mixed highlight); a dead Selection (nothing highlighted) is dimmed and inert. Choosing is the
+   preview, no Apply; nothing here moves the page. */
+/* typeface-scope-label (Fable, Oct 16: "Whole document" clipped to "Whole doc…" on a Page, both themes): a scope label is never cut. Each
+   button is as wide as its label (and grows to share the row); when the two cannot sit side by side at the drawer's width, the second
+   wraps under the first, each then the full width. No ellipsis. */
+.wz-type-scopes{ flex:1 0 100%; display:flex; flex-wrap:wrap; gap:6px; }
+.wz-type-scope{ flex:1 1 auto; padding:6px 4px; font-family:var(--font-label, var(--font-ui)); font-size:12px; color:var(--text-mid);
+  background:none; border:1px solid var(--ink-border-strong); border-radius:0; text-align:center; white-space:nowrap; cursor:pointer; }
+.wz-type-scope:hover{ color:var(--text-hi); }
+.wz-type-scope[data-on='true']{ color:var(--choice); border-color:var(--choice); }
+.wz-type-scope[aria-disabled='true']{ opacity:.4; cursor:default; }
+.wz-type-scope[aria-disabled='true']:hover{ color:var(--text-mid); }
+.wz-type[data-scoped='true'] .wz-type-list-inline{ border:none; padding:0; }
+.wz-type[data-scoped='true'] .wz-type-row[data-current='true']{ color:var(--choice); }
+.wz-type-size{ display:flex; align-items:center; gap:2px; }
+.wz-type-step[aria-disabled='true']{ opacity:.35; cursor:default; }
+.wz-type-num{ width:3.2em; text-align:center; padding:3px 2px; background:none; color:var(--text-hi);
+  border:1px solid var(--ink-border); font:inherit; font-size:13px; }
+/* FX7 S2 — Free Write's own Bold/Italic two-press bracket: the mark is
+   "open" (leading marker inserted, awaiting its close) for exactly the same
+   reason a toggle switch reads "on" — olive marks where-you-are, matching
+   the sliver's own established rest-state law (FX1 S6, above), never brass
+   (brass stays reserved for an evental action, not a held state). */
+.mode-tbtn[data-on='true']{ border-color:var(--accent-rest); color:var(--accent-rest); }
+/* ITEM 121 I6 — `.wz-sliver-ink-tool-toggle` (FX7 S2's disclosed-inert ink
+   placeholder) is REMOVED: M4/G3 had already stopped rendering it, and item
+   121 removes the member itself, so the rule had nothing left to style. Its
+   lexicon keys (railInkTool/railInkToolInert) go with it. */
+.wz-sliver-typewriter{ display:flex; align-items:center; gap:8px; }
+

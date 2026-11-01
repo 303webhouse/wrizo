@@ -26,6 +26,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { srcText } from '../global-css.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const DESKTOP = path.resolve(here, '..', '..');
@@ -42,7 +43,7 @@ const PARKED = [];   // falsified assertions: the original kept verbatim in the 
 const park = (id, why, original) => { if (!PARKED.some((p) => p.id === id)) PARKED.push({ id, why, original }); };
 const noCR = (t) => t.replace(/\r\n?/g, '\n');
 const has = (rel) => fs.existsSync(path.join(SRC, rel));
-const readRaw = (rel) => (has(rel) ? noCR(fs.readFileSync(path.join(SRC, rel), 'utf8')) : '');
+const readRaw = (rel) => (has(rel) ? noCR(srcText(SRC, rel)) : '');
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
 // ---- the real modules (those that exist), bundled against a fake browser ----------------------------------------------------------------------------------------------------------------

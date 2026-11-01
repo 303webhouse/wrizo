@@ -12,6 +12,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { globalCssFileHolding } from './global-css.mjs';
 import { execSync, spawnSync } from 'node:child_process';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -19,9 +20,10 @@ const desktop = join(here, '..');
 const repo = execSync('git rev-parse --show-toplevel', { cwd: here, encoding: 'utf8' }).trim();
 const DRY = process.argv.includes('--dry');
 const OUT = join(repo, 'docs', 'evidence', 'typewriter-fade');
-const CSS = join(desktop, 'src', 'index.css');
 const FIXED = "mask-image:linear-gradient(to bottom, rgba(0,0,0,.15) 0, rgba(0,0,0,.15) var(--tw-fade-start,28px), #000 calc(var(--tw-fade-start,28px) + var(--tw-fade-band,84px)));";
 const UNFIXED = "mask-image:linear-gradient(to bottom, #000 0, #000 var(--tw-fade-start,28px), rgba(0,0,0,.15) var(--tw-fade-start,28px), #000 calc(var(--tw-fade-start,28px) + var(--tw-fade-band,84px)));";
+// #13 step 6: index.css is a list of imports; the fade rule is reversed in the src/styles/ file that holds it
+const CSS = globalCssFileHolding(join(desktop, 'src'), FIXED);
 const lines = [];
 const say = (s) => { lines.push(s); console.log(s); };
 const dirty = () => execSync('git status --porcelain', { cwd: repo, encoding: 'utf8' }).split('\n').filter((l) => l.trim() && !l.includes('docs/evidence/typewriter-fade/')).join('\n');

@@ -13,6 +13,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { srcText } from '../global-css.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const DESKTOP = path.resolve(here, '..', '..');
@@ -22,7 +23,7 @@ const { build } = createRequire(require.resolve('vite'))('esbuild');
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
-const read = (rel) => fs.readFileSync(path.join(SRC, rel), 'utf8').replace(/\r\n?/g, '\n');
+const read = (rel) => srcText(SRC, rel).replace(/\r\n?/g, '\n');
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
 const STUBS = {

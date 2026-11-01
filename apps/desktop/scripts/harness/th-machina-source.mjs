@@ -25,13 +25,14 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, 
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { srcText } from '../global-css.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const DESKTOP = join(here, '..', '..');
 const ROOT = join(DESKTOP, '..', '..');
 const SRC = join(DESKTOP, 'src');
 const SRCP = SRC.replace(/\\/g, '/');
-const src = (rel) => readFileSync(join(SRC, rel), 'utf8').replace(/\r\n/g, '\n');
+const src = (rel) => srcText(SRC, rel).replace(/\r\n/g, '\n');
 
 const checks = [];
 const ok = (name, pass, detail = '') => { checks.push({ name, pass, detail }); console.log((pass ? 'PASS ' : 'FAIL ') + name + (detail ? '  ' + String(detail).slice(0, 220) : '')); };
@@ -242,7 +243,7 @@ ok('M11 [parked record]: the ORIGINAL (the Machina-only gate) now fails ONLY bec
   ok('MUTANT: Machina loses Source Sans 3 - the M11 successor must go RED (the mutation LANDED)', m11Succ(tf, tff) && !noSS, ''); }
 // the Oct 24 train-#6 fix: nothing the harnesses' store loaders bundle may name a font package (esbuild resolves the css and dies on its .woff2); the literals live in themeFontFaces.ts, which only main.tsx imports
 // (comments are stripped from EVERY file before matching: themeFonts.ts's own explanatory comments name "@fontsource" and "store/themeFontFaces.ts" in prose - only CODE counts)
-const tsFiles = readdirSync(SRC, { recursive: true }).map(String).filter((f) => /\.(ts|tsx)$/.test(f)).map((f) => [f, stripC(readFileSync(join(SRC, f), 'utf8'))]);
+const tsFiles = readdirSync(SRC, { recursive: true }).map(String).filter((f) => /\.(ts|tsx)$/.test(f)).map((f) => [f, stripC(srcText(SRC, f))]);
 const IMPORTS_FACES = /(?:\bfrom\s*|\bimport\s*\(?\s*)['"][^'"]*themeFontFaces['"]/;
 // the M11 claim as a predicate over (themeFonts.ts code, every file's code, main.tsx code), so the mutants below re-run the SAME predicate
 const m11Names = (tfCode, files, mainCode) => {
@@ -269,12 +270,12 @@ ok('M11: themeFonts.ts (reached from store/theme.ts, which the harness loaders b
     // inside apps/desktop/node_modules/.cache so the font packages RESOLVE (as they do in the real tree) - the death under test is the .woff2 loader, not a missing package
     mkdirSync(join(DESKTOP, 'node_modules', '.cache'), { recursive: true });
     const tmp = mkdtempSync(join(DESKTOP, 'node_modules', '.cache', 'wz-m11-')); tmps.push(tmp);
-    writeFileSync(join(tmp, 'theme.ts'), readFileSync(join(SRC, 'store', 'theme.ts'), 'utf8'));
+    writeFileSync(join(tmp, 'theme.ts'), srcText(SRC, 'store', 'theme.ts'));
     writeFileSync(join(tmp, 'themeFonts.ts'), themeFontsText);
     try { execFileSync(process.execPath, [bin, join(tmp, 'theme.ts'), '--bundle', '--format=esm', '--platform=node', `--outfile=${join(tmp, 'out.mjs')}`, '--log-level=error', '--external:react'], { stdio: 'pipe', cwd: DESKTOP }); return { ok: true }; }
     catch (e) { return { ok: false, err: String(e.stderr || e.message || e).slice(0, 200) }; }
   };
-  const realText = readFileSync(join(SRC, 'store', 'themeFonts.ts'), 'utf8');
+  const realText = srcText(SRC, 'store', 'themeFonts.ts');
   const real = strict(realText);
   ok("M11: store/theme.ts BUNDLES with no @fontsource externals (the harness store loaders' own condition) - the \"No loader for .woff2\" death is gone", real.ok === true, real.err || '');
   const bad = strict(realText + "\nvoid import('@fontsource/ibm-plex-mono/500.css');\n");

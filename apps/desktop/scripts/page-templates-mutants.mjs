@@ -12,6 +12,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { execSync, spawnSync } from 'node:child_process';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { globalCssFileHolding } from './global-css.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const desktop = join(here, '..');
@@ -73,6 +74,8 @@ if (dirty()) { console.error(`REFUSED: the tree is not clean - commit before mut
 const results = [];
 try {
   for (const m of MUTANTS) {
+    // #13 step 6: index.css is a list of imports; a rule is edited in the src/styles/ file that holds it
+    if (m.file === join(desktop, 'src', 'index.css')) m.file = globalCssFileHolding(join(desktop, 'src'), m.from);
     const orig = readFileSync(m.file, 'utf8');
     const norm = orig.replace(/\r\n/g, '\n');
     const n = norm.split(m.from).length - 1;

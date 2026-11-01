@@ -1,0 +1,652 @@
+/* ===== PW2 S2 — THE BOARD-CARD (item 128) ================================
+   A nested board on its parent's canvas. It rides the SAME `.board-pin` box a
+   page does — the membership is the same relation — so this rule adds only the
+   face.
+
+   SHAPE TEACHES THE KIND, AND SPENDS NO COLOUR. The silhouette is a DOUBLED
+   EDGE: a second border offset behind the card, drawn by `::before` at
+   z-index:-1 (Journey D's `.brdcard`). "A thing that holds things", said in
+   geometry. This is the job Pass 5 routed to item 96 as colour-as-kind-signal
+   — shape does it instead, so a third card kind costs the Plateau ember
+   ceiling nothing and reads the same in every theme.
+
+   `isolation:isolate` is NOT set here on purpose: the pseudo-element must sit
+   BEHIND the card's own background, and a new stacking context would trap it
+   in front. The card already paints an opaque `--panel` ground, so z-index:-1
+   lands it between the card and the canvas rather than under the canvas. */
+.board-boardcard{ position:relative; }
+.board-boardcard::before{
+  content:''; position:absolute; left:4px; right:-4px; top:-4px; bottom:4px;
+  border:1px solid var(--ink-border); z-index:-1; pointer-events:none;
+  border-radius:inherit;
+}
+/* The doubled edge answers hover with the card, so the whole silhouette reads
+   as one object rather than two overlapping ones. */
+.board-box:hover .board-boardcard::before{ border-color:var(--accent-rest); }
+/* Deliberately UNCHANGED by FX8 S3 (still cursor:default, not grab) — a
+   missing-page-pin card (its own referenced entry genuinely gone) has no
+   live source to open, but IS still draggable like any other card via the
+   SAME onDown mechanism; leaving it `default` rather than `grab` reads as
+   "this one's broken," matching its own already-established italic/dim
+   treatment, and needs no code change here — later in source order than
+   `.board-pin` (both share equal 0,1,0 specificity), so it already wins
+   the cascade on a card carrying both classes, exactly as before. */
+/* faint-text-sweep — this was var(--text-low), the dark-chrome tier
+   (tuned for --ink-900-family surfaces), painted straight onto this card's
+   own --card-stock: card-label-contrast's exact bug class, missed in that
+   sweep. 4.13:1 (Plateau) / 3.07:1 (Flux) on --card-stock, both under the
+   4.5:1 floor. --ink-on-card-meta is card-label-contrast's own already-
+   proven-safe cream ink (>=4.5:1 in every theme by construction); the
+   italic stays as the "this one's broken" signal, dim no longer needed. */
+.board-pin-missing{ color:var(--ink-on-card-meta); font-style:italic; cursor:default; }
+/* FX5 S3 — a ported text card's own excerpt face (BoardEditor.tsx's
+   BoardTextBox, the sourceEntryId branch) reuses .board-pin-badge/-title/
+   -excerpt verbatim (the SAME notecard shape). FX8 S3 — cursor:pointer
+   supersedes to cursor:grab, the SAME reasoning as `.board-pin` above
+   (this file's own comment on that rule carries the full explanation, not
+   repeated here); double-click still travels to the source, untouched. */
+.board-ported{ cursor:grab; }
+/* FX5 S5 — the olive pin: the connection grab, at the card's own top-left
+   corner, on every card, always (not selection-gated — see BoardEditor.tsx's
+   own onDown comment for why the two-step arm-then-drag gesture it replaces
+   is gone whole). A genuine circle — Nick's own ruling, quoted in the brief
+   — the one deliberate exception to this file's square-corners law for a
+   small state/grab indicator (matching .status-dot's own existing
+   precedent, above). Olive (--accent-rest) marks it as a STATE/connection
+   affordance, never brass (brass is reserved for actions like the resize
+   handle) — the lane law holds.
+   FX8 S1 — Nick's words: "the green pins on the cards don't really look
+   like pins... Can we make the pins look a bit more like the top of a
+   green sphere instead of a 2D circle?" A flat single-color fill reads as
+   an outlined disc; a domed sphere-top needs the two things a flat fill
+   can never fake — a light source (an off-center highlight, NOT centered,
+   so it reads as reflecting light from one direction) and a rim that
+   darkens as it curves away from that light. `radial-gradient(circle at
+   35% 28%, ...)` puts the highlight upper-left (a conventional top-left
+   light source, matching the card stock's own drop-shadow direction below-
+   right — `.board-text`'s `box-shadow:2px 2px 0...4px 5px 10px...` — so
+   the pin's own implied light and the card's own implied shadow agree),
+   fading through the SAME --accent-rest hue family to a hand-darkened rim
+   tone (this codebase has no color-mix()/filter precedent anywhere in this
+   file for deriving a shade FROM a custom property at runtime — every
+   other gradient here hard-codes its own literal stops, e.g. the wz-bloom/
+   wz-cascade-thumb radial-gradients above — so #D9DEB8/#4F5730 are hand-
+   computed lighter/darker steps off --accent-rest's OWN #96a05a working
+   value, the same "olive hue family" the brief asks for, not a different
+   color). The 1px --ink-950 border stays (unlike the handle's OWN border
+   removal in S2, just above) — it's what keeps the domed gradient reading
+   as a contained sphere rather than a soft blob bleeding into the card
+   behind it. The box-shadow is a small, downward-right offset (1px 2px
+   3px) — the SAME lighting direction as the card's own shadow, "the way a
+   raised sphere would cast one against the card's own shadowed surface"
+   (the brief's own words), not a generic centered glow. Same ~12px size,
+   same border-radius:50% (fx5.mjs's own S5 check still asserts this
+   verbatim — confirmed unbroken, no A4 park needed). */
+/* CONNECTOR-A - the green tack (.board-pin-grab) that lived here is RETIRED: connection mode starts at the corner square (see .board-handle). */
+/* FX8 S3 — Nick's own DoD line: "drags it with one continuous motion" —
+   a `grab`-family cursor throughout would already communicate "you CAN
+   drag this," but the brief explicitly invites (and CC's own build report
+   discloses the choice to take) the extra `grabbing` swap the instant a
+   real move-drag is actually held, the same closed-hand convention this
+   codebase already established for the pin's own thread-drag above (one
+   line up) and for the canvas's own `data-thread-armed` attribute pattern
+   — reused here verbatim, not reinvented: `data-dragging` is a plain
+   canvas-level flag (BoardEditor.tsx's own `isDragging` state, set true
+   only in `beginMove` — the REAL "past the 6px threshold, actually moving"
+   phase, never `pending`/`resizing`/`threadDrag` — and cleared in `finish`
+   on every gesture end) read here the identical way `data-thread-armed`
+   already is. Scoped board-wide rather than per-box: only one drag can
+   ever be in flight at a time (a single pointer), and the dragged card
+   moves WITH the pointer by construction (onMove adds the same delta to
+   both), so the cursor is never wrong about which card it's hovering. */
+.board-canvas[data-dragging='true'] .board-text,
+.board-canvas[data-dragging='true'] .board-ink-canvas{ cursor:grabbing; }
+/* FX5 S4 (c) — the quiet layer-order icon: square (this file's own
+   corners law, unlike the pin above — this is an ACTION button, not a
+   state dot), small, neutral (neither brass nor olive — "minimal,
+   undistracting," the brief's own words; final chrome placement may be
+   revisited by the card committee, per the brief). Sits at the OPPOSITE
+   top corner from the pin so the two never collide. */
+.board-layer-toggle{
+  position:absolute; right:-7px; top:-7px; width:16px; height:16px; z-index:6;
+  display:flex; align-items:center; justify-content:center; padding:0; line-height:1;
+  background:var(--card-stock); border:1px solid var(--ink-border-strong); border-radius:0;
+  color:var(--ink-on-card-meta); font-size:10px; cursor:pointer;
+}
+/* BUG 32d - FIT TO TEXT (Nick, Oct 30): a small square icon on a HAND-SIZED card (sizedByHand), beside the resize grip on the card's bottom edge. Quiet: it shows only while the card is hovered or holds focus (it is a real button, so Tab
+   reaches it and :focus-within shows it), and goes with the rest of the chrome in the recede. GUIDANCE colour at rest (--badge-on-card: olive in Arbor, cyan in Flux, the steel / grey of the machine's cards), the HUMAN-ACTION colour
+   (--choice) only while it is pressed. Square edges, flat 1 px, no shadow. Its words come from the lexicon (boardFitToText, per theme). */
+.board-fit{
+  position:absolute; right:8px; bottom:-8px; width:16px; height:16px; z-index:6; padding:0; box-sizing:border-box;
+  display:flex; align-items:center; justify-content:center; border-radius:0; box-shadow:none;
+  background:var(--card-stock); border:1px solid var(--badge-on-card); color:var(--badge-on-card);
+  cursor:pointer; opacity:0; pointer-events:none; transition:opacity .15s ease;
+}
+.board-box:hover .board-fit, .board-box:focus-within .board-fit, .board-fit:focus-visible{ opacity:1; pointer-events:auto; }
+.board-fit:active{ border-color:var(--choice); color:var(--choice); }
+.board-fit:focus-visible{ outline:1px solid var(--badge-on-card); outline-offset:1px; }
+[data-chrome-receded='true'] .board-box .board-fit{ opacity:0; pointer-events:none; visibility:hidden; }
+@media (prefers-reduced-motion: reduce){ .board-fit{ transition:none; } }
+/* FX5 S5 — the connections footer: one quiet line per thread, an overlay
+   strip pinned to the card's own bottom edge (never grows the card's own
+   height — a hard-capped max-height with overflow hidden instead, so a
+   card with many threads never blows past its own box). */
+.board-card-footer{
+  position:absolute; left:0; right:0; bottom:0; z-index:4; max-height:44%;
+  padding:2px 8px; background:var(--card-stock); overflow:hidden;
+  font-size:10px; line-height:1.35; color:var(--ink-on-card-meta); pointer-events:none;
+}
+.board-card-footer-line{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+/* AB4 S3 — threads: quiet hairlines at rest, a selected hairline goes
+   brass (the same selection treatment .board-box[data-selected] already
+   carries), ready for a confirm-free delete. The wide transparent "hit"
+   line exists purely for a forgiving click target — it never paints.
+   FX4 S6 — olive now marks the THREAD-DRAG armed state (handle-drag,
+   replacing AB4's Connect-toggle-mode); the "nothing orange at rest"
+   law is unchanged. */
+/* CONNECTOR-A - a line is drawn only in connection mode (or for the moment after a link): thin brass, no glow; a selected line is heavier. */
+/* Widths per the approved mockup spec (Fable, Oct 15): lines 1px, the arm 1.25px, a selected line 2px. non-scaling-stroke: the widths stay true if the board's svg is ever scaled. */
+.board-connection-line{ stroke:var(--brass); stroke-width:1; stroke-linecap:round; fill:none; opacity:.9; pointer-events:none; vector-effect:non-scaling-stroke; }
+.board-connection-line[data-selected='true']{ stroke-width:2; opacity:1; }
+.board-connection-hit{ stroke:transparent; stroke-width:10; fill:none; }
+/* FX4 S6 — the live thread-drag preview line: dashed olive, distinct from
+   the solid hairline styles above so it never reads as an already-minted
+   connection. Hidden by default (JS toggles display on drag start/end —
+   BoardEditor.tsx's own updateThreadPreview/hideThreadPreview). */
+.board-connect-arm{ stroke:var(--brass); stroke-width:1.25; stroke-linecap:round; fill:none; pointer-events:none; vector-effect:non-scaling-stroke; }
+.board-connect-tip{ fill:var(--brass); pointer-events:none; }
+/* Thread-drag's own cursor + the origin card's own highlight — dashed
+   olive, distinct from the solid brass selection outline so the two
+   states never read as the same thing. */
+.board-canvas[data-thread-armed='true']{ cursor:crosshair; }
+/* FX4 S4 — the board canvas's own bottom-right resize handle: quiet at
+   rest (the brief's own word), matching the corkboard-adjacent chrome's
+   restrained palette rather than the per-card brass handle (this one
+   resizes the WHOLE canvas, a different, less frequent gesture). */
+.board-canvas-resize-handle{
+  position:absolute; right:-1px; bottom:-1px; width:16px; height:16px;
+  cursor:nwse-resize; border-radius:0;
+  border-right:2px solid var(--ink-border-strong); border-bottom:2px solid var(--ink-border-strong);
+}
+.board-sheet{
+  position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center;
+  background:rgba(0,0,0,.5);
+}
+.board-sheet-inner{
+  width:min(420px,92vw); max-height:80vh; overflow:auto; padding:1.5rem;
+  background:var(--ink-900); border:1px solid var(--ink-border); border-radius:0;
+}
+.board-sheet-title{ font-family:var(--font-display); font-size:18px; color:var(--text-hi); margin-bottom:12px; }
+/* PW2 S3 — the transfer tray's disclosure line. Quiet, but ABOVE the
+   destinations rather than beside them: it states what a copy is before the
+   writer picks where it lands, which is the only position where it can
+   prevent a surprise rather than explain one. */
+.board-sheet-note{ font-size:12px; color:var(--text-mid); line-height:1.5; margin:-6px 0 12px; }
+.board-dest-row{ width:100%; text-align:left; background:none; border:none; cursor:pointer; }
+@media (prefers-reduced-motion:reduce){ .board-box{ transition:none; } }
+
+/* FX4 S5 — the card popup, over a blurred board (board-card-studies.html's
+   own mockup treatment, matched precisely: blur(6px) + dim to .55 opacity
+   on the board itself, reduced-motion honored). Inline contenteditable
+   editing RETIRES whole — this is the only way to edit a text card's
+   words now. */
+.board-canvas-blur-wrap{ transition:filter .28s ease, opacity .28s ease; }
+.board-canvas-blurred{ filter:blur(6px); opacity:.55; pointer-events:none; }
+@media (prefers-reduced-motion:reduce){ .board-canvas-blur-wrap{ transition:none; } }
+.board-popup-backdrop{
+  position:fixed; inset:0; z-index:210; display:flex; align-items:center; justify-content:center;
+  background:rgba(0,0,0,.35);
+}
+.board-popup{
+  width:min(520px,88vw); background:var(--card-stock); color:var(--ink-on-card);
+  border:1px solid var(--card-hairline); border-top:2px solid var(--accent-rest);
+  box-shadow:0 14px 44px rgba(0,0,0,.5); border-radius:0;
+}
+.board-popup-strip{
+  display:flex; align-items:center; gap:4px; padding:10px 14px;
+  border-bottom:1px solid var(--card-hairline);
+}
+.board-popup-eyebrow{ margin-right:auto; color:var(--ink-on-card-low); }
+.board-popup-tool{ width:30px; height:28px; font-family:var(--font-prose); font-size:14px; }
+.board-popup-editor{
+  display:block; width:100%; min-height:170px; padding:18px 22px 6px; box-sizing:border-box;
+  outline:none; font-family:var(--font-prose); font-size:calc(16px * var(--card-type-k, 1)); line-height:1.6;
+  white-space:pre-wrap; color:var(--ink-on-card);
+}
+/* ITEM 207 - the card's Type control inside the styling dock: a column, no wider than the dock needs. */
+.board-popup-dock .wz-type{ flex-direction:column; align-items:stretch; width:9.5rem; }
+.board-popup-dock .wz-type-size{ justify-content:center; }
+/* card-close-x (2026-10-13) - the foot and its "Close" button retired; the editor's bottom padding
+   takes over the room the foot gave the text. The X sits at the strip's right end, the card's
+   top-right corner, in the card's own ink (flux-card-ink: --ink-on-card and its -low, not
+   --ink-on-paper — this X sits on the card's own cream stock, not the page). */
+.board-popup-editor{ padding-bottom:18px; }
+.board-popup-close{
+  width:28px; height:28px; margin:-4px -6px -4px 0; padding:0; display:inline-flex; align-items:center; justify-content:center;
+  background:none; border:none; border-radius:0; cursor:pointer;
+  color:var(--ink-on-card-low); font-size:20px; line-height:1; font-family:var(--font-ui);
+  transition:color var(--t-fast) var(--ease); }
+.board-popup-close:hover{ color:var(--ink-on-card); }
+.board-popup-close:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:1px; }
+
+/* J5 — the lens row: square corners, quiet borders, brass ONLY on the
+   active chip. No transitions (reduced-motion is a non-issue: none used). */
+.spread-lens-chip{
+  font-family:var(--font-ui); font-size:13px; padding:4px 10px;
+  border:1px solid var(--ink-border); border-radius:0; background:none;
+  color:var(--text-mid); cursor:pointer;
+}
+.spread-lens-chip[data-active="true"]{ border-color:var(--choice); color:var(--choice); }
+.spread-lens-note{ color:var(--text-low); font-size:13px; margin:-4px 0 16px; }
+
+/* J5 — Add to… sheet: verb tags (the two-verb law made visible) + the toast. */
+.add-verb-tag{
+  font-family:var(--font-mono); font-size:10px; letter-spacing:.04em;
+  color:var(--text-low); border:1px solid var(--ink-border); border-radius:0;
+  padding:1px 5px; margin-left:8px; white-space:nowrap;
+}
+.add-verb-tag[data-verb="MOVES"]{ color:var(--brass); border-color:var(--brass); }
+.action-toast{
+  position:fixed; left:50%; bottom:32px; transform:translateX(-50%);
+  max-width:min(480px,90vw); padding:.7rem 1.1rem; z-index:300;
+  font-family:var(--font-ui); font-size:14px; color:var(--text-hi);
+  background:var(--ink-900); border:1px solid var(--ink-border); border-radius:0;
+  opacity:0; pointer-events:none; transition:opacity .3s ease;
+}
+.action-toast[data-shown="true"]{ opacity:1; }
+@media (prefers-reduced-motion:reduce){ .action-toast{ transition:none; } }
+
+/* S1 — the Screenplay Room. Anti-Canva in its purest form: no styling
+   toolbar, ever; format is semantic (element type drives width/indent/case),
+   never a writer choice. Square corners, solid borders; accent spent ONLY on
+   the active element's hairline + caret (the caret itself is the browser's
+   native caret, already brass via caret-color below). */
+/* SC1 S1 — the legacy (<1100px) branch's own paper container. The sheet's
+   whole geometry is derived from ONE font-size (see `.script-sheet` below),
+   and that font-size is derived from the room actually available — which
+   means the sheet's PARENT has to be a query container on both branches.
+   This is legacy's; `.desk-frame-stage--screenplay .mode-pagecol` is the
+   framed one. */
+.script-page{ font-family:var(--font-script); container-type:inline-size; }
+/* FX1 S2 — font-family lives on the sheet itself now, not just the legacy
+   `.script-page` wrapper: the framed branch (DeskFrame's `.desk-frame-host`)
+   never carried that class, so the courier convention was silently missing
+   there (part of Nick's "collapsed, wrong-dimension box with misaligned
+   text" verdict — courier's fixed advance width is what the WIDTH_CH/ch
+   measures in store/scriptMetrics.ts assume). Legacy stays byte-identical
+   (still inherits the same value from .script-page either way).
+
+   SC1 S1 (Nick's first screenplay sitting, SC-V2/SC-V3) — the page becomes a
+   PAGE. Root cause, measured before anything was touched (not read off the
+   CSS): this rule set margins in real inches but never set a page, so the
+   sheet had no width of its own — inside `.mode-pagecol` (a flex COLUMN) its
+   `margin:0 auto` turns off cross-axis stretch, and the paper shrink-wrapped
+   its own content. Measured at 1280px: a fresh page's sheet rendered 424px
+   wide, and typing ONE long slugline grew it to 615px — the paper physically
+   changed size as the writer typed (Law 1's own inverse). The 1in/1.5in
+   paddings, being real inches, then ate 240px of those 424px and left a
+   184px text column: ~19 characters per line where the trade's page carries
+   60. That single defect is what Nick saw three ways — "the page is in a
+   weird spot" (SC-V1), "the font is too big" (SC-V2, type that is correct at
+   12pt reading as enormous against a 19-character measure), and "the size of
+   the page is not commiserate to one page of screenwriting" (SC-V3).
+
+   The standard, pinned by the SC committee (docs/wrizo-alpha/
+   sc-committee-pass.md): US Letter 8.5 x 11in; Courier 12pt = 10 characters
+   per inch, 6 lines per inch; margins left 1.5in, right 1in, top 1in,
+   bottom 1in; text measure 6.0in = 60 characters.
+
+   ONE derivation makes all of that fall out, so nothing here can drift:
+   at 12pt, 1em = 16px = 1/6in, so **1in = 6em** exactly, and Courier's 0.6em
+   advance makes **1ch = 0.6em** exactly. Every dimension below is therefore
+   the trade's own inch measure written in em —
+     8.5in page = 51em     11in page = 66em
+     1in margin = 6em      1.5in margin = 9em
+     6.0in measure = 51 - 9 - 6 = 36em = 60ch  (the grid in
+     store/scriptMetrics.ts is stated in ch and lands on it by construction)
+     6 lines/inch = 1em per line = `line-height:1`
+   — so the page, the margins, the measure, the metric and the leading are
+   all one number's consequences. THE SCALING LAW is that number's own
+   definition, below: 1rem (12pt, the page at its true size) until the room is
+   genuinely narrower than a page, and `100cqw / 51` — the container's own
+   inline size divided by the page's width in em — from there down. Because
+   every dimension is em, changing that one number scales the WHOLE sheet as a
+   single object: every inch shrinks by the identical ratio, no inch ever
+   compresses independently, and the grid never reflows.
+   `box-sizing:border-box` (this file's line 4) is load-bearing: `width:51em`
+   is the page INCLUDING its margins, exactly as a sheet of paper is.
+
+   Height WAS `min-height`, not `height` — SC1's lawful interim, disclosed in
+   its own brief: until SC2 derived page breaks, a script that overflowed 11in
+   simply grew taller. SC2 S2b closes it. `height:66em` is now exact and every
+   sheet in the sequence is the same page: a sheet that could grow is a sheet
+   whose height is a function of its content, and then "page 12" is not a page,
+   it is however much text happened to land there. The arithmetic decides what
+   goes on a page; the paper never negotiates. */
+.script-sheet{
+  color:var(--ink-on-paper); background:var(--paper); border:1px solid var(--ink-border);
+  font-family:var(--font-script);
+  /* The scaling law is one-directional, exactly as the SC1 brief states it:
+     the sheet keeps true proportions "below its natural width," and its
+     natural width is a US Letter page at 12pt — 816px — full stop. This is
+     deliberately NOT multiplied by `--paper-scale` the way prose's measure is:
+     prose has no true size, so a wide monitor may lawfully enlarge its paper,
+     but a screenplay page IS a physical reference (the whole point of SC-V3),
+     and 12pt is the trade's own number. Nick's "the font is too big" verdict
+     was recorded at a ~2560px sitting, where `--paper-scale` is 1.2 — type
+     rendering at an effective 14.4pt. Below 816px of room the min() arm takes
+     over and the WHOLE page scales as one object (every inch by the identical
+     ratio, no inch compressing on its own, the grid never reflowing). */
+  font-size:min(1rem, calc(100cqw / 51));
+  line-height:1;                    /* exactly 6 lines/inch at 12pt */
+  width:51em;                       /* 8.5in */
+  height:66em;                      /* 11in — EXACT, SC2 S2b (was min-height) */
+  max-width:100%;
+  padding:6em 6em 6em 9em;          /* 1in top/right/bottom, 1.5in left */
+  margin:0 auto;
+}
+/* SC2 S2b — THE SEQUENCE, AND THE GAP BETWEEN SHEETS.
+   The gap is CHROME, never body. That distinction is the whole design of this
+   rule, and it is load-bearing in three ways:
+
+   1. It is expressed in `rem` — the app's own root unit — and NEVER in the
+      sheet's `em`. `em` on this surface is the PAGE's unit: 1em is one 12pt
+      line box and every dimension of the paper is written in it. A gap in `em`
+      would scale with the paper under SC1's scaling law, as though the space
+      between two sheets were part of a sheet. It is not; it is the desk showing
+      between them.
+   2. For the same reason it is not `var(--script-line)` or any multiple of it.
+      The line unit is what the ledger counts in, and a gap of N line units is a
+      gap a reader — or a later maintainer — can mistake for N blank lines of
+      screenplay. 24px against a 16px line box is 1.5 lines: not a whole number
+      of lines in any state, which is the point.
+   3. Nothing may be rendered INTO it. The sequence owns the gap as flex `gap`,
+      so it is space between flex items and cannot contain a child at all. That
+      is asserted rather than assumed (sc2.mjs: no `.script-el` lies between one
+      sheet's bottom border and the next's top, and no element's rect straddles
+      a sheet boundary).
+
+   `align-items:stretch` (the default) is what lets `.desk-frame-stage
+   .script-sheet{width:100%}` keep filling the column, exactly as it did when
+   the sheet was the column's own child. */
+.script-sequence{ --script-sheet-gap:1.5rem; display:flex; flex-direction:column; gap:var(--script-sheet-gap); }
+/* SC1 S1 — an empty element occupies exactly ONE line of the 6-lpi grid
+   (was 1.2em, a prose-ish floor that put every blank element 20% off the
+   grid the paginator will read in SC2). */
+/* SC2 S1 — the line unit, and the three rules that keep the RENDER wrapping
+   exactly the way store/scriptLedger.ts's arithmetic says it does. The ledger
+   is the truth and this is what is checked against it (sc2.mjs compares an
+   over-measure element's rendered line count against the ledger's), so any
+   divergence here is a defect, not a difference.
+
+   --script-line is ONE LINE BOX. `.script-sheet` sets line-height:1 at 12pt, so
+   a line is exactly 1em of the sheet's own font-size and scales with it under
+   SC1's scaling law. Vertical spacing is expressed in THIS unit and never in px
+   or em, so N blank lines of arithmetic render as exactly N line-heights.
+
+   overflow-wrap:anywhere — a word longer than its measure must break AT the
+   measure (a 70-character URL in an action line occupies ceil(70/60) lines).
+   Without it the word would overflow the measure while claiming one line, and
+   the paginator would place a break the page contradicts.
+
+   hyphens:none — screenplays do not hyphenate, and a browser that decided to
+   would break every count by one, silently. */
+.script-sheet{ --script-line:1em; }
+.script-el{
+  white-space:pre-wrap;      /* trailing spaces hang; internal runs are preserved */
+  overflow-wrap:anywhere;
+  hyphens:none; -webkit-hyphens:none;
+  min-height:1em;            /* an empty element is exactly one line */
+}
+/* SC2 S1 — "the first element of a page contributes no space above it." At
+   document start that is this rule; S2's paginator applies the identical rule
+   at every page top. It lives in the CONSUMER, never in the ledger, which
+   reports each element's INTRINSIC spaceBefore so it stays position-independent
+   (and so elementStyle() stays a pure function of the type, which is what lets
+   S5 freeze one style object per type).
+
+   It is also geometry protection: a first child's margin-top would otherwise
+   push the whole sheet down, re-opening the very defect SC1 closed — SC-V4,
+   "the cursor starts by floating in the middle of the page." The screenplay
+   begins at the top margin, and this is one of the two things keeping it
+   there. */
+/* SC2 S4 — THE SELECTOR FOLLOWS THE DOM SHAPE, and this is the case the S2b
+   handoff flagged to VERIFY rather than assume. The page number is the sheet's
+   first child from page two on, so `*:first-child` would match IT instead of
+   the first script element, and every page but the first would begin one or two
+   blank lines lower than page one. The number is absolutely positioned, so it
+   moves nothing itself — the whole hazard was this selector, and the sibling
+   arm below closes it. It is not left to inspection either: page one has no
+   number and every other page does, so sc2.mjs's standing "page N's first line
+   sits at page one's own offset" check fails immediately if this arm is lost. */
+.script-sheet > *:first-child,
+.script-sheet > .script-page-number + *{ margin-top:0 !important; }
+/* SC2 S4 — the number itself. In the sheet's OWN type (Courier 12pt, inherited)
+   because it is the document's furniture and not the app's chrome — the one
+   place in the house where a number on the page is lawful (R1).
+
+   Absolutely positioned, so it is outside the flow entirely and cannot cost the
+   body a line: `top:3em` is 0.5in below the paper's edge, halfway into the 1in
+   top margin, and `right:6em` resolves against the padding box, putting the
+   number's right edge exactly on the text block's right edge — the 1in right
+   margin, the trade's own position.
+
+   `user-select:none` because it is not the writer's words. Selecting across two
+   pages must hand back a screenplay, not a screenplay with page numbers loose
+   in it. (The copy-out and export paths serialize from the DOCUMENT and never
+   the DOM, so they could not have picked it up regardless — this is the
+   selection a writer makes with their own hand.) */
+.script-page-number{
+  position:absolute; top:3em; right:6em;
+  color:var(--ink-on-paper); -webkit-user-select:none; user-select:none;
+}
+.script-el-active{
+  outline:none; cursor:text; caret-color:var(--brass);
+  border-bottom:1px solid var(--brass);
+}
+.script-el-active:empty::before{
+  content: attr(data-ghost); color:var(--ink-on-paper-low); pointer-events:none;
+}
+.script-autocomplete{
+  position:absolute; z-index:50; min-width:10ch;
+  background:var(--ink-900); border:1px solid var(--ink-border); border-radius:0;
+  font-family:var(--font-ui); font-size:13px;
+}
+.script-autocomplete-opt{ padding:4px 10px; color:var(--text-mid); white-space:nowrap; }
+.script-autocomplete-opt[data-highlighted="true"]{ color:var(--choice); background:var(--ink-800); }
+
+.wz-gate{ position:absolute; inset:0; display:flex; align-items:flex-start; justify-content:center; padding:15vh 8vw 12vh;
+  opacity:0; pointer-events:none; transition:opacity .9s ease; z-index:4; }
+.wz-gate.show{ opacity:1; pointer-events:auto; }
+.wz-writewrap{ width:min(720px,94vw); }
+.wz-eyebrow{ font-family:var(--wz-ui); font-size:.74rem; letter-spacing:.18em; text-transform:uppercase; color:var(--wz-ink-dim); }
+.wz-goalhint{ opacity:0; margin-bottom:1.4rem; transition:opacity 1s ease; }
+.wz-gate.show .wz-goalhint{ opacity:.5; }
+
+/* the mounted ForwardOnlyEditor, dressed for the dark surface (v6 .write) */
+.wz-gate .forward-only-editor{ font-family:var(--wz-text); font-weight:400; font-size:clamp(1.3rem,2.6vw,1.65rem);
+  line-height:1.72; color:var(--wz-ink); caret-color:var(--wz-ink); }
+.wz-gate .forward-only-editor .fo-struck{ color:var(--wz-ink-dim); opacity:.55; text-decoration:line-through;
+  text-decoration-thickness:.07em; text-decoration-color:rgba(140,128,112,.85); }
+.wz-gate .fo-placeholder{ color:var(--wz-whisper); font-style:italic; font-family:var(--wz-text);
+  font-size:clamp(1.3rem,2.6vw,1.65rem); line-height:1.72; }
+
+.wz-track{ margin-top:1.6rem; width:100%; height:3px; background:rgba(140,128,112,.18); overflow:hidden; opacity:0; transition:opacity .7s ease; }
+.wz-gate.show .wz-track{ opacity:1; }
+.wz-trackfill{ height:100%; width:0%; background:var(--wz-ink-dim);
+  transition:width .7s cubic-bezier(.3,.7,.3,1), background .7s ease, box-shadow .7s ease; }
+.wz-trackfill.done{ background:var(--wz-orange); box-shadow:0 0 12px rgba(255,152,0,.6); }
+
+.wz-bloom{ position:absolute; left:50%; top:50%; width:10px; height:10px; transform:translate(-50%,-50%); border-radius:50%;
+  pointer-events:none; opacity:0; z-index:7;
+  background:radial-gradient(circle, rgba(255,152,0,.6), rgba(255,152,0,.18) 40%, rgba(255,152,0,0) 70%); }
+.wz-bloom.go{ animation:wz-bloom 1.6s cubic-bezier(.2,.7,.2,1) forwards; }
+@keyframes wz-bloom{ 0%{opacity:0; width:10px; height:10px;} 16%{opacity:1;} 100%{opacity:0; width:175vmax; height:175vmax;} }
+
+.wz-screen{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:1.5rem; padding:8vh 8vw; text-align:center; opacity:0; pointer-events:none; transition:opacity 1s ease; }
+.wz-screen.show{ opacity:1; pointer-events:auto; }
+.wz-bighead{ font-family:var(--wz-ui); font-weight:700; font-size:clamp(1.9rem,4.6vw,3rem); letter-spacing:-.01em; color:var(--wz-ink); line-height:1.16; }
+.wz-sub{ font-family:var(--wz-text); color:var(--wz-ink-dim); font-size:1.16rem; line-height:1.6; max-width:540px; }
+.wz-sub b{ color:var(--wz-ink); font-weight:600; }
+.wz-error{ font-family:var(--wz-ui); color:var(--clay); font-size:.9rem; }
+
+.wz-fieldcol{ display:flex; flex-direction:column; align-items:center; gap:.5rem; margin-top:.4rem; }
+/* A real <form> around the fields and the submit button: same column and gap as the .wz-screen it sits in,
+   so wrapping changes nothing about the layout. */
+.wz-form{ display:flex; flex-direction:column; align-items:center; gap:1.5rem; margin:0; }
+.wz-field{ font-family:var(--wz-ui); width:min(360px,86vw); background:var(--wz-lift); border:1px solid var(--wz-whisper); border-radius:0;
+  padding:.85rem 1.1rem; color:var(--wz-ink); font-size:1rem; outline:none; text-align:center; transition:border-color .3s; }
+.wz-field:focus{ border-color:var(--wz-orange-line); }
+.wz-field::placeholder{ color:var(--wz-hint); }
+
+.wz-secondary{ display:flex; align-items:center; gap:.7rem; margin-top:.4rem; }
+/* a11y audit A2 — these are now real <button>s (Arrival.tsx), so the browser's
+   own button chrome (background, border, default padding/font) is reset here;
+   everything else — colour, size, hover, cursor — is unchanged from the <span>
+   this replaces. Keyboard focus is the global button:focus-visible brass ring
+   (below in this file) — no new focus style needed. */
+.wz-link{ font-family:var(--wz-ui); color:var(--wz-ink-dim); font-size:.95rem; cursor:pointer; transition:color .25s;
+  background:none; border:none; padding:0; margin:0; }
+.wz-link:hover{ color:var(--wz-ink); }
+/* F3 — Catch: the zero-decision capture. A bordered quiet button (tan, NEVER
+   orange — the orange budget stays on the return card's primary) + a kbd hint. */
+.wz-catch{ font-family:var(--wz-ui); font-weight:600; font-size:.92rem; color:var(--wz-ink-dim);
+  background:transparent; border:1px solid var(--wz-whisper); border-radius:0; padding:.55rem 1rem;
+  cursor:pointer; display:inline-flex; align-items:center; gap:.55rem; transition:color .25s, border-color .25s; }
+.wz-catch:hover{ color:var(--wz-ink); border-color:var(--wz-ink-dim); }
+.wz-catch:focus-visible{ outline:1px solid var(--wz-orange); outline-offset:3px; }
+.wz-kbd{ font-family:var(--wz-ui); font-size:.62rem; letter-spacing:.06em; color:var(--wz-whisper);
+  border:1px solid var(--wz-whisper); border-radius:0; padding:1px 5px; }
+
+.wz-btn{ font-family:var(--wz-ui); font-weight:600; font-size:.98rem; letter-spacing:.02em; padding:.8rem 1.6rem; border-radius:0;
+  border:1px solid var(--wz-orange-line); background:transparent; color:var(--wz-orange); cursor:pointer;
+  transition:background .25s, color .25s, border-color .25s; margin-top:.3rem; }
+/* ITEM arbor-quiet-brass — no solid fill, even on hover: a brighter outline and text instead. */
+.wz-btn:hover{ background:none; color:#ffab33; border-color:#ffab33; }
+.wz-btn:disabled{ opacity:.5; cursor:default; }
+.wz-btn:focus-visible, .wz-field:focus-visible{ outline:1px solid var(--wz-orange); outline-offset:3px; }
+
+@media (max-width:540px){ .wz-mark{ width:60px; } .wz-gate{ padding-top:12vh; } }
+@media (prefers-reduced-motion:reduce){
+  .wz-home *{ animation:none!important; transition:opacity .2s linear!important; }
+  .wz-bloom.go{ opacity:0!important; }   /* bloom suppressed; the word-echo still lands */
+}
+
+/* HB1 — Arrival (components/Arrival.tsx). Composes .wz-home's warm-dark
+   shell + tokens; only the boot bar and the two doors are new here. */
+.wz-arrival-bootbar{ position:relative; width:min(220px,60vw); height:2px; margin-top:1.6rem;
+  background:rgba(140,128,112,.18); overflow:hidden; border-radius:0; }
+.wz-arrival-bootbar-fill{ position:absolute; inset:0; background:var(--wz-orange-line); }
+/* Not ready: an indeterminate sweep (real async work, not a timed flourish —
+   the sweep just says "still waiting," it never claims a duration). Ready:
+   the fill settles to full and fades, handing focus to the doors. */
+.wz-arrival-bootbar[data-ready='false'] .wz-arrival-bootbar-fill{ width:40%; animation:wz-arrival-sweep 1.1s ease-in-out infinite; }
+.wz-arrival-bootbar[data-ready='true'] .wz-arrival-bootbar-fill{ width:100%; opacity:0; transition:opacity .6s ease .15s; }
+@keyframes wz-arrival-sweep{ 0%{ transform:translateX(-100%); } 100%{ transform:translateX(350%); } }
+@media (prefers-reduced-motion:reduce){
+  .wz-arrival-bootbar[data-ready='false'] .wz-arrival-bootbar-fill{ animation:none; opacity:.5; width:40%; }
+}
+.wz-arrival-doors{ display:flex; flex-direction:column; align-items:center; gap:.6rem; margin-top:.8rem;
+  transition:opacity .38s ease; }
+.wz-arrival-write:disabled, .wz-arrival-open:disabled{ opacity:.35; cursor:default; }
+.wz-arrival-open{ background:none; border:none; font-size:.95rem; }
+.wz-arrival-signin{ background:none; border:none; font-size:.95rem; }
+/* Browser autofill paints its own light field. Keep an autofilled field on the screen's own palette:
+   the text colour and the field's background, not the browser's. */
+.wz-field:-webkit-autofill, .wz-field:-webkit-autofill:hover, .wz-field:-webkit-autofill:focus{
+  -webkit-text-fill-color:var(--wz-ink); caret-color:var(--wz-ink);
+  -webkit-box-shadow:0 0 0 1000px var(--wz-lift) inset; box-shadow:0 0 0 1000px var(--wz-lift) inset;
+  transition:background-color 9999s ease-out 0s; }
+
+/* Desk (authed home) — v6 "launch" aesthetic. Reuses .wz-home tokens. A top-left
+   letterhead (name in Crimson over "Writing Desk" in Figtree) + left-aligned
+   actions below. */
+.wz-desk{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center;
+  justify-content:center; text-align:center; gap:1.2rem; padding:clamp(2rem,9vh,5rem) clamp(1.5rem,8vw,5rem); }
+.wz-deskhead{ display:flex; flex-direction:column; line-height:1.04; align-items:center; }
+.wz-deskname{ font-family:var(--wz-text); font-style:italic; font-size:clamp(1.3rem,3vw,1.9rem); color:var(--wz-ink-dim); }
+.wz-desktitle{ font-family:var(--wz-ui); font-weight:700; font-size:clamp(2.2rem,6vw,3.6rem); letter-spacing:-.02em; color:var(--wz-ink); }
+/* Hand-drawn "Writing Desk" title (white-transparent PNG) — replaces the type. */
+.wz-desktitle-img{ display:block; width:clamp(260px,60vw,440px); height:auto; margin-top:.15rem;
+  filter:drop-shadow(0 4px 18px rgba(0,0,0,.45)); }
+.wz-desksub{ font-family:var(--wz-text); color:var(--wz-ink-dim); font-size:1.06rem; margin-bottom:.5rem; }
+.wz-desk .wz-journal-link{ align-self:flex-start; }
+/* ITEM arbor-quiet-brass — default is outline + text, no fill (same law as every other
+   choice state); this IS the screen's one main action every place it renders (Arrival's
+   Write, Desk's Start something / Keep writing, the logout sheet's Stay signed in, the
+   stale-client banner's Reload), so it keeps a heavier weight (bolder border, bolder
+   text) to still read first against the plain .wz-btn beside it. */
+.wz-btn.wz-primary{ background:none; color:var(--wz-orange); border-color:var(--wz-orange); border-width:1.5px;
+  font-weight:700; padding:.92rem 2.2rem; font-size:1.05rem; }
+.wz-btn.wz-primary:hover{ background:none; border-color:#ffab33; color:#ffab33; }
+.wz-dot{ color:var(--wz-whisper); }
+
+.wz-recent{ display:flex; flex-direction:column; gap:0; width:min(420px,90vw); margin-top:1.2rem; }
+.wz-recent-row{ display:flex; justify-content:space-between; align-items:baseline; gap:1rem;
+  padding:.6rem .2rem; background:none; border:none; border-bottom:1px solid var(--wz-whisper);
+  font-family:var(--wz-ui); cursor:pointer; text-align:left; transition:opacity .2s; }
+.wz-recent-row:hover{ opacity:.75; }
+.wz-recent-title{ color:var(--wz-ink); font-size:.95rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.wz-recent-when{ color:var(--wz-ink-dim); font-size:.8rem; flex-shrink:0; }
+.wz-journal-link{ margin-top:.9rem; align-self:center; }
+
+/* Drawers tree on the Desk (Drawers D1) — sits where the recent list was. */
+.wz-drawers{ width:min(560px,92vw); margin-top:1.3rem; display:flex; flex-direction:column; gap:.9rem; }
+.wz-desk-links{ display:flex; align-items:center; gap:.7rem; align-self:center; }
+
+.wz-customize{ margin-top:.7rem; position:relative; display:inline-block; }
+.wz-cust-link{ font-family:var(--wz-ui); color:var(--wz-whisper); font-size:.85rem; cursor:help; opacity:.75; border-bottom:1px dotted var(--wz-whisper); }
+.wz-tip{ font-family:var(--wz-ui); position:absolute; left:50%; bottom:calc(100% + 12px); transform:translateX(-50%) translateY(5px);
+  width:max-content; max-width:270px; background:var(--wz-lift); border:1px solid var(--wz-whisper); color:var(--wz-ink-dim);
+  font-size:.82rem; line-height:1.5; padding:.65rem .85rem; opacity:0; pointer-events:none; transition:opacity .25s, transform .25s;
+  text-align:center; z-index:10; }
+.wz-customize:hover .wz-tip, .wz-customize:focus .wz-tip, .wz-customize:focus-within .wz-tip{ opacity:1; transform:translateX(-50%) translateY(0); }
+.wz-tip b{ color:var(--wz-ink); font-weight:600; }
+
+/* The return card (F2) — the Desk becomes a mirror of the writer's own last
+   sentence. Square corners, panel bg, 1px line border; orange lands ONLY on the
+   action and the tag. Renders purely from the typed resume pointer. */
+.wz-return{ width:min(480px,92vw); text-align:left; background:var(--wz-lift); border:1px solid var(--wz-whisper);
+  padding:1.1rem 1.35rem .95rem; margin-top:.4rem; }
+.wz-return-top{ display:flex; align-items:baseline; justify-content:space-between; gap:1rem; }
+.wz-return-eyebrow{ font-family:var(--wz-ui); font-size:.6rem; letter-spacing:.16em; color:var(--wz-whisper); }
+.wz-return-tag{ font-family:var(--wz-ui); font-size:.6rem; letter-spacing:.11em; color:var(--wz-orange); opacity:.85; text-align:right; }
+.wz-return-crumb{ font-family:var(--wz-ui); font-size:.78rem; color:var(--wz-ink-dim); margin:.55rem 0 .7rem; min-height:1em; }
+.wz-return-crumb b{ color:var(--wz-ink); font-weight:600; }
+.wz-return-sep{ color:var(--wz-whisper); }
+.wz-return-line{ font-family:var(--wz-text); font-style:italic; font-size:1.2rem; line-height:1.5; color:var(--wz-ink);
+  margin-bottom:1rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.wz-return-row{ display:flex; align-items:center; justify-content:space-between; gap:.9rem; }
+.wz-return-when{ font-family:var(--wz-ui); font-size:.72rem; color:var(--wz-whisper); }
+/* ITEM arbor-quiet-brass — same glow removal as the base .wz-primary rule above;
+   this variant had its own separate box-shadow declaration, so it needed its own fix. */
+.wz-btn.wz-primary.wz-return-go{ margin-top:0; padding:.62rem 1.4rem; font-size:.95rem; }
+.wz-return-alt{ margin-top:.75rem; min-height:1em; }
+.wz-return-altlink{ font-family:var(--wz-ui); font-size:.76rem; color:var(--wz-ink-dim); background:none; border:none;
+  cursor:pointer; padding:0; text-decoration:underline; text-underline-offset:3px; transition:color .25s; }
+.wz-return-altlink:hover{ color:var(--wz-ink); }
+.wz-return-note{ font-family:var(--wz-ui); font-size:.76rem; color:var(--wz-whisper); }
+
+/* Warm-start landing glow (F2 Slice 3) — a render-only overlay measured over the
+   last paragraph. NEVER inside the editable DOM. Releases (settles to transparent)
+   on the first forward keystroke or after 6s. */
+.wz-warm{ pointer-events:none; z-index:2; background:rgba(255,152,0,.11); box-shadow:inset 3px 0 0 var(--accent,#ff9800);
+  transition:background 1.3s ease, box-shadow 1.3s ease, opacity 1.3s ease; }
+.wz-warm--settled{ background:transparent; box-shadow:inset 3px 0 0 transparent; opacity:0; }
+@media (prefers-reduced-motion:reduce){ .wz-warm{ transition:none; } }
+
+/* First-line invitation (F6) — render-only, over the empty first line of a page.
+   Faint by design; the container is click-through so the caret always wins the
+   space, only the interactive bits (affordance / "don't offer again") take taps. */
+.fl-invite{ position:absolute; top:0; left:0; right:0; pointer-events:none; z-index:1; }
+.fl-affordance{ font-family:var(--font-ui); font-size:13px; color:var(--ink-on-paper-low); opacity:.55;
+  background:none; border:none; cursor:pointer; padding:0; line-height:1.7; pointer-events:auto; transition:opacity .25s; }
+.fl-affordance:hover{ opacity:.9; text-decoration:underline; text-underline-offset:3px; }
+.fl-prompt{ display:block; font-family:var(--font-prose); font-style:italic; font-size:17px; line-height:1.7;
+  color:var(--ink-on-paper-low); opacity:.75; }
+.fl-never{ font-family:var(--font-ui); font-size:11px; color:var(--ink-on-paper-low); opacity:.65;
+  background:none; border:none; cursor:pointer; padding:0; margin-top:6px; pointer-events:auto; transition:opacity .25s; }
+.fl-never:hover{ opacity:1; text-decoration:underline; text-underline-offset:2px; }
+@media (prefers-reduced-motion:reduce){ .fl-affordance, .fl-never{ transition:none; } }
+

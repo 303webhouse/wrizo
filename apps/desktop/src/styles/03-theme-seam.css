@@ -1,0 +1,39 @@
+/* ============================================================================
+   TH1 — the theme seam (docs/th1-theme-seam-brief.md, docs/flux-theme-canon.md).
+   Slice 0 token audit: Plateau's existing material-named vars mapped to the
+   canon's semantic slots (canon §3). No component reads a slot name directly —
+   material names stay the component-facing layer; a theme pack re-points them
+   under [data-theme='…'] the way --font-* is re-pointed to the font slots
+   above. This table is documentation, not code:
+
+     ground          <- --ink-950
+     chrome surface  <- --chrome-surface (.mode-rail; new slot, TH2)
+     rail surface    <- --rail-surface (.desk-rail; new slot, TH2)
+     line            <- --ink-border
+     line (strong)   <- --ink-border-strong
+     line-active     <- --line-active (new slot, canon §3)
+     signal-live     <- --signal-live (new slot, canon §3)
+     page            <- --paper / --paper-dim
+     ink (on page)   <- --ink-on-paper / --ink-on-paper-low
+     meta            <- --text-low / --ink-on-paper-low (context-dependent)
+     text (hi/mid/lo)<- --text-hi / --text-mid / --text-low
+     accent(invariant)<- --brass (locked — canon §1's single hard invariant)
+
+   `.wz-home` (HOME v6) and `.create-picker` (F4) are each their OWN
+   self-contained visual world with local tokens (already documented at their
+   definitions) — explicitly out of the seam, not part of this map.
+
+   Theme selection: a `data-theme` attribute on <html> (store/theme.ts).
+   Plateau is the bare :root block above — no [data-theme='plateau'] override
+   needed, so it is byte-equivalent to pre-TH1 values by construction. A
+   theme pack (Flux, TH2) adds `:root[data-theme='flux']{ …overrides… }`,
+   strictly additive, zero component edits.
+   ============================================================================ */
+
+/* Slice 3 — Voice preference (serif | sans), canon §11. Default is unset
+   (serif — today's shipped behavior, byte-equivalent). `store/themePrefs.ts`
+   sets data-voice='sans' to opt in; Page (dark|light) and Fade (on|off) are
+   store-level + JS-gated (useChromeDissolve) for Plateau in TH1 — Plateau's
+   dark-paper pair is the canon §11 debt, deliberately not designed here. */
+:root[data-voice='sans'] { --font-prose: var(--font-proseSans); }
+

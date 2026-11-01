@@ -1,0 +1,420 @@
+/* ============================================================================
+   FLUX V2 (Fable's brief, Nick Oct 21) - the new shell. Tokens above; this block is the rules that are not just a token.
+   ORANGE IS SCARCE: the caret (.flux-block-caret, above), the sprint surge (.mode-pfill.celebrate), Uplink, the mark, and the thin LEFT bar on the current list item.
+   Every other "selected" is cyan - and that comes for free, because --brass (the generic selection token) is cyan under Flux.
+   The page frame: a thin cyan edge, a faint grid and four corner brackets on the FRAME only (an overlay ring - never under text), and the readouts, all of which carry chrome-fade
+   and so recede with the chrome while the writer types. Nothing here changes the page's size or position: the readouts sit in the paper's own padding.
+   ========================================================================== */
+[data-theme='flux'] .mode-page{ border-color:var(--paper-edge); box-shadow:0 0 0 1px rgba(0, 194, 255, .08), 0 10px 44px rgba(0, 0, 0, .55); }
+[data-theme='flux'] .mode-page.focused{ box-shadow:0 0 0 1px rgba(0, 194, 255, .14), 0 0 26px rgba(0, 194, 255, .09), 0 10px 44px rgba(0, 0, 0, .55); }
+/* the chromatic offset: a faint cyan hairline beside the page edge, never red */
+[data-theme='flux'] .mode-page::after{ content:''; position:absolute; inset:0; pointer-events:none; box-shadow:inset var(--flux-offset); z-index:0; }
+
+.flux-readouts{ position:absolute; inset:0; z-index:1; pointer-events:none; font-family:var(--font-chromeLabel); }
+.flux-frame{ position:absolute; inset:0; pointer-events:none; box-sizing:border-box; padding:20px;
+  background-image:linear-gradient(rgba(0, 194, 255, .09) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 194, 255, .09) 1px, transparent 1px);
+  background-size:12px 12px;
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+.flux-brackets{ --flux-bracket:var(--line-active); position:absolute; inset:5px; pointer-events:none;
+  background:
+    linear-gradient(var(--flux-bracket), var(--flux-bracket)) top left / 14px 1px no-repeat,
+    linear-gradient(var(--flux-bracket), var(--flux-bracket)) top left / 1px 14px no-repeat,
+    linear-gradient(var(--flux-bracket), var(--flux-bracket)) top right / 14px 1px no-repeat,
+    linear-gradient(var(--flux-bracket), var(--flux-bracket)) top right / 1px 14px no-repeat,
+    linear-gradient(var(--flux-bracket), var(--flux-bracket)) bottom left / 14px 1px no-repeat,
+    linear-gradient(var(--flux-bracket), var(--flux-bracket)) bottom left / 1px 14px no-repeat,
+    linear-gradient(var(--flux-bracket), var(--flux-bracket)) bottom right / 14px 1px no-repeat,
+    linear-gradient(var(--flux-bracket), var(--flux-bracket)) bottom right / 1px 14px no-repeat; }
+:root[data-theme='flux'][data-page='light'] .flux-brackets{ --flux-bracket:var(--ink-on-paper-low); }
+/* the acquire: once per page open, 300 ms, transform and opacity only - and it has a still state (the brackets simply sit there) under reduced motion and at Ambiance 0 */
+.flux-brackets[data-acquire='true']{ animation:flux-acquire 300ms cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes flux-acquire{
+  0%{ opacity:0; transform:scale(1.045); }
+  100%{ opacity:1; transform:none; }
+}
+@media (prefers-reduced-motion: reduce){ .flux-brackets[data-acquire='true']{ animation:none } }
+.flux-readout{ position:absolute; left:16px; right:16px; display:flex; justify-content:space-between; gap:12px; font-size:10.5px; line-height:1; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--ink-on-paper-low); white-space:nowrap; }
+.flux-readout > span{ background:var(--paper); padding:0 6px; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.flux-readout-head{ top:8px; }
+.flux-readout-hint{ bottom:8px; left:50%; right:auto; transform:translateX(-50%); max-width:calc(100% - 32px); justify-content:center; background:var(--paper); padding:0 8px; overflow:hidden; text-overflow:ellipsis; }
+
+/* the pixel icons: 16 x 16, square, never smoothed */
+.theme-icon-pixels{ display:block; image-rendering:pixelated; shape-rendering:crispEdges; }
+/* the rail sizes its stroke icons at 21.6 px (and 14.5 px in the foot): a pixel map is drawn at its own 16 px, one screen pixel per map pixel, in both places */
+[data-theme='flux'] .wz-strip-glyph .theme-icon-pixels{ width:16px; height:16px; }
+[data-theme='flux'] .wz-sections-place{ display:flex; align-items:center; gap:8px; }
+[data-theme='flux'] .wz-set-head .theme-icon{ margin-right:6px; flex:none; }
+
+/* the current list item: a thin orange bar on its LEFT edge, and nothing else orange about it */
+[data-theme='flux'] .wz-section-open[aria-current='page']{ box-shadow:inset 2px 0 0 var(--orange); }
+/* the sprint surge is orange (Flux's selection is cyan, so the surge names its colour) */
+[data-theme='flux'] .mode-pfill-spark:not(.lime){ background:var(--orange); }
+/* (the Flux-only vignette rule that stood here is COLLAPSED into the one base rule - body::after, under the atmosphere overlays below - which puts the vignette
+   behind the page in EVERY theme: page-size, Fable Oct 23. flux-v2.mjs VG1b checks the base rule; flux-v2-part2 F9 still reads Flux's computed -1.) */
+/* the rail's hover and active states are ELECTRIC BLUE (#00C2FF, --line-active): no brown tile, no olive, no brass (Nick, Oct 23) */
+[data-theme='flux'] .wz-strip-item:hover, [data-theme='flux'] .desk-rail-item:hover{ color:var(--line-active); background:rgba(0, 194, 255, .08); }
+[data-theme='flux'] .wz-strip-item:active{ color:var(--line-active); }
+[data-theme='flux'] .wz-strip-item.active, [data-theme='flux'] .desk-rail-item.active{ color:var(--line-active); border-left-color:var(--line-active); background:rgba(0, 194, 255, .10); }
+
+/* ---- FLUX V2 - the screens against the mockup (Fable, Oct 22) ---------------------------------------------------------------------------------------------------------------
+   (1) the Ask box, Add Note, the search fields and every other input read --ink-800 / --ink-900 / --color-surface: Arbor's espresso browns. The Flux root block now carries the Flux glass
+       for both, so no input (dark page or light) can paint Arbor brown.
+   (2) Arbor's hand-drawn watermark is a PNG mask painted brass at the bottom right. Flux shows its own WRIZO mark: orange (one of orange's few homes), top left, set in the chrome label face.
+   (3) A board card is a dark-glass NODE: glass fill, a thin cyan edge, a cyan uppercase first line (its title), and the card tokens re-pointed INSIDE the canvas only (a card's popup and the
+       deck wizard keep their own sheet). The board's frame carries the same grid ring and corner brackets as the page's.
+   (4) The rail's place block wraps ("RACK ▸ The Late Ferry") instead of truncating. */
+[data-theme='flux'] .brand-mark{ top:10px; left:14px; bottom:auto; right:auto; width:auto; aspect-ratio:auto; opacity:1; -webkit-mask:none; mask:none; background:none; filter:none;
+  color:var(--orange); font-family:var(--font-chromeLabel); font-weight:700; font-size:15px; letter-spacing:.32em; line-height:1; }
+[data-theme='flux'] .brand-mark::before{ content:'WRIZO'; }
+
+[data-theme='flux'] .board-canvas{ --card-stock:#0E1E31; --card-hairline:rgba(0, 194, 255, .55); --ink-on-card:#E8F6FA; --ink-on-card-low:#57D0F5; --ink-on-card-meta:#8FD6EE; --badge-on-card:#57D0F5; }
+[data-theme='flux'] .board-text, [data-theme='flux'] .board-ink-canvas{ border:1px solid var(--card-hairline); box-shadow:0 0 0 1px rgba(0, 194, 255, .08), 0 6px 18px rgba(0, 0, 0, .45); }
+/* POLISH #10 item 12: Flux marks a card's first line by COLOUR only. Capitals, letter-spacing, the chrome font and weight made that line wider than Arbor's, so a long first line wrapped and the auto-grow made the Flux card taller (measured: +15.6 px). A skin changes only the skin: the same text breaks in the same places in every skin. */
+[data-theme='flux'] .board-text::first-line{ color:var(--text-accent); }
+[data-theme='flux'] .board-canvas-blur-wrap{ position:relative; }
+.flux-board-frame .flux-frame{ padding:12px; }
+
+/* the Inputs panel (the right drawer's second tab), its picker and the board's knob: glass, cyan edges, the arrow-into-a-socket glyph */
+[data-theme='flux'] .wz-graft-add{ background:var(--chrome-surface); border-color:var(--ink-border-strong); color:var(--text-hi); }
+[data-theme='flux'] .wz-graft-add > span[aria-hidden]{ color:var(--choice); }
+[data-theme='flux'] .wz-graft-add:hover, [data-theme='flux'] .wz-graft-add:focus-visible, [data-theme='flux'] .wz-graft-add[aria-expanded='true']{ border-color:var(--choice); color:var(--choice); }
+[data-theme='flux'] .wz-graft-connected{ color:var(--text-accent); }
+[data-theme='flux'] .wz-graft-gh{ color:var(--text-accent); letter-spacing:.2em; }
+[data-theme='flux'] .wz-graft-picker{ background:var(--chrome-surface); border-color:var(--choice); box-shadow:0 0 0 1px rgba(0, 194, 255, .12), 0 10px 30px rgba(0, 0, 0, .55); }
+[data-theme='flux'] .wz-graft-search{ background:var(--ink-900); border-color:var(--ink-border-strong); }
+[data-theme='flux'] .wz-graft-search:focus{ border-color:var(--choice); }
+[data-theme='flux'] .wz-graft-ck{ color:var(--choice); }
+[data-theme='flux'] .board-graft-knob{ display:flex; align-items:center; justify-content:center; width:22px; height:22px; margin-top:-11px; right:-12px; border-radius:0; background:var(--ink-950); border:1px solid var(--choice); color:var(--choice); }
+[data-theme='flux'] .board-graft-knob[data-active='true']{ background:var(--choice); color:var(--ink-950); border-color:var(--choice); }
+[data-theme='flux'] .board-graft-knob .theme-icon{ display:block; }
+/* the arrival's Write door is the CHOICE colour (cyan), not brass: orange keeps only its fixed homes (the caret, the sprint surge, Uplink, the mark, the current item's bar) - Fable, Oct 23 */
+[data-theme='flux'] .wz-btn.wz-primary{ color:var(--choice); border-color:var(--choice); }
+[data-theme='flux'] .wz-btn:hover, [data-theme='flux'] .wz-btn.wz-primary:hover{ color:var(--text-accent); border-color:var(--text-accent); }
+[data-theme='flux'] .wz-btn:focus-visible, [data-theme='flux'] .wz-field:focus-visible{ outline-color:var(--choice); }
+/* the card's resize / connect corner and the drop-target circle: the CHOICE colour (cyan), never brass - a handle on a selected node is a choice, and orange is scarce (the screens, Oct 23) */
+[data-theme='flux'] .board-handle{ background:var(--choice); }
+[data-theme='flux'] .board-handle[data-circle='true']{ background:var(--ink-950); border-color:var(--choice); }
+[data-theme='flux'] .board-handle[data-circle='true'][data-solid='true']{ background:var(--choice); }
+[data-theme='flux'] .board-tcircle{ border-color:var(--choice); }
+[data-theme='flux'] .board-tcircle[data-solid='true']{ background:var(--choice); }
+/* a node's true position, on the card: X ### · Y ### (the readout module's own string) */
+.flux-card-coord{ position:absolute; left:8px; bottom:4px; z-index:2; pointer-events:none; padding:0 4px; background:var(--card-stock); color:var(--text-accent); font-family:var(--font-chromeLabel); font-size:10px; letter-spacing:.14em; line-height:1.3; }
+/* the board's hint line, in the frame's bottom band: it sits on the board's own paper (a dark fill under a LIGHT board made the dim line unreadable) */
+.flux-board-frame .flux-readout-hint{ background:var(--paper); }
+/* the corner mark on the arrival / home screens: Flux's own wordmark, never Arbor's PNG */
+.wz-flux-wordmark{ display:block; font-family:var(--font-chromeLabel); font-weight:700; letter-spacing:.32em; color:var(--orange); line-height:1; white-space:nowrap; }
+.wz-hero .wz-flux-wordmark{ font-size:clamp(34px, 7vw, 66px); }
+.wz-mark.wz-flux-wordmark{ position:absolute; top:1.3rem; left:1.6rem; font-size:14px; opacity:0; transition:opacity 1s ease .3s; z-index:6; pointer-events:none; }
+.wz-mark.wz-flux-wordmark.show{ opacity:1; }
+[data-theme='flux'] .wz-place-block .wz-place-name{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:center; line-height:1.2; }   /* POLISH #10 item 14: ONE line with an ellipsis (FX V2 had it wrap); the full name is the button's title */
+
+/* Slice 4 — the effects compositor scaffold (canon §6, ThemeEffectsLayer.tsx).
+   One layer, absolutely positioned behind everything painted, pointer-events
+   none, transform/opacity only — zero layout participation (W1's fixed-track
+   .mode-row grid never measures this). Plateau registers no events, so this
+   renders empty; TH2 (Flux, store/fluxThemeFx.ts) populates it via
+   registerThemeFx, appending the .theme-fx-* children styled below. */
+.theme-fx-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -1; /* behind all normal-flow page content; above the body background */
+  pointer-events: none;
+  overflow: hidden;
+  transform: translateY(0); /* the sync-jump's snap target — no transition (an instant displacement, not an ease) */
+}
+.theme-fx-layer.jmp{ transform:translateY(4px); }
+.theme-fx-layer.jmp2{ transform:translateY(-4px); }
+
+/* TH2 Slice 4 — the Signal Loss dialect's six event types (canon §7),
+   ported verbatim from flux-rc2.html's #g4t machinery. All render behind
+   the page (z-index:-1 on the parent .theme-fx-layer) and never enter the
+   prose column. */
+.theme-fx-tear{ position:absolute; left:0; right:0; height:2px; opacity:0; }
+.theme-fx-tear.on{ animation:theme-fx-tear-flash .15s linear; }
+/* GLITCH METER: the peak reads --op when a caller sets one (the meter's intensity); unset, it is Signal Loss's own value, as before */
+@keyframes theme-fx-tear-flash{ 40%{ opacity:var(--op, .75); } }
+
+.theme-fx-shear{ position:absolute; left:-4%; right:-4%; height:26px;
+  background:rgba(0,194,255,.08); transform:skewX(-12deg); opacity:0; }
+.theme-fx-shear.on{ animation:theme-fx-shear-flash .16s linear; }
+@keyframes theme-fx-shear-flash{ 45%{ opacity:var(--op, 1); } }
+
+.theme-fx-noise{ position:absolute; width:130px; height:56px;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.06) 0 1px,transparent 1px 3px),
+              repeating-linear-gradient(0deg,rgba(166,255,61,.06) 0 1px,transparent 1px 2px);
+  opacity:0; }
+.theme-fx-noise.on{ animation:theme-fx-noise-flash .15s linear; }
+@keyframes theme-fx-noise-flash{ 45%{ opacity:var(--op, 1); } }
+
+.theme-fx-macroblock{ position:absolute; }
+
+.theme-fx-backlight{ position:absolute; inset:0; background:#000; opacity:0;
+  transition:opacity .3s; pointer-events:none; }
+
+@media (prefers-reduced-motion:reduce){
+  .theme-fx-tear.on, .theme-fx-shear.on, .theme-fx-noise.on{ animation:none; opacity:0; }
+  .theme-fx-layer.jmp, .theme-fx-layer.jmp2{ transform:translateY(0); }
+  .glitch-meter-layer.jmp, .glitch-meter-layer.jmp2{ transform:translateY(0); }   /* belt: the meter fires nothing under reduced motion */
+  .theme-fx-backlight{ transition:none; opacity:0 !important; }
+}
+
+/* GLITCH METER (brief docs/briefs/flux-flicker-meter-brief.md; components/GlitchMeter.tsx) - Flux's progress animation, OVER the whole
+   screen, page and text included (Nick's ruling: it never runs while typing). Its own layer, portalled to <body>: fixed, pointer-events none,
+   zero layout participation - above the page and the chrome, below the block caret (60); it takes no input, so a modal or a menu under it is
+   still pressed through it. The Signal Loss events inside it are the same .theme-fx-* elements as the ambient texture's, at the meter's
+   intensity (--op). */
+.glitch-meter-layer{ position:fixed; inset:0; z-index:55; pointer-events:none; overflow:hidden; transform:translateY(0); }
+.glitch-meter-layer.jmp{ transform:translateY(4px); }
+.glitch-meter-layer.jmp2{ transform:translateY(-4px); }
+.glitch-meter-layer .theme-fx-backlight{ transition:opacity .28s; }
+/* the still: a faint scan-and-grain overlay, opacity = intensity x 0.42 (set per frame) - no motion at all. Under the OS's reduced motion the
+   global rule below (every transition 0.01 ms) applies to it too, and is honoured (Fable, Oct 17, ledger 90): there it simply APPEARS. The
+   2.4 s ease is for Ambiance 0, Wrizo's own "no motion", where the global rule does not apply. */
+.glitch-meter-still{ position:absolute; inset:0; opacity:0; pointer-events:none; transition:opacity 2.4s ease;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 3px, rgba(0,194,255,.045) 3px 4px),
+    repeating-linear-gradient(90deg, rgba(227,241,236,.03) 0 1px, transparent 1px 3px); }
+
+/* TH2 Slice 5 — the wide orange block caret (canon §13). Positioned via
+   getClientRects() in FluxBlockCaret.tsx (viewport coordinates — position:
+   fixed, not absolute). The native caret hides ONLY on the element the
+   component marks data-flux-caret-active — never a blanket rule, so a
+   writer is never left with no caret at all. */
+.flux-block-caret{
+  position:fixed; z-index:60; pointer-events:none;
+  background:rgba(255,152,0,.82); box-shadow:0 0 8px rgba(255,152,0,.55);
+  animation:flux-block-caret-blink 1.05s steps(2,start) infinite;
+}
+@keyframes flux-block-caret-blink{ 0%{ opacity:1; } 50%{ opacity:0; } }
+/* POLISH #10 item 18 (Nick, Oct 25): ONE caret - !important, because the page's editor carries its pen ink as an INLINE caret colour, which beat this
+   attribute rule and left the native line drawn on top of the orange block. */
+[data-theme='flux'] [data-flux-caret-active='true']{ caret-color:transparent !important; }
+@media (prefers-reduced-motion:reduce){
+  .flux-block-caret{ animation:none; opacity:1; }
+}
+
+html {
+  /* theme-leftovers (Nick approved Oct 16) — was a hardcoded Arbor literal,
+     never themed (the one place --ink-950 existed to prevent exactly this).
+     Themed now, matching .wz-splash-veil's own identical move. */
+  background-color: var(--ink-950);
+}
+
+body {
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* The lamp: a fixed warm pool of light, brightest above the focal point. */
+  background: var(--lamp-glow) fixed;
+  color: var(--text-hi);
+  min-height: 100vh;
+}
+
+/* Atmosphere overlays — fixed, non-interactive, fully static (B3 §5).
+   Grain gives the surface material; the vignette pulls the eye inward. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+
+/* PAGE-SIZE (Fable, Oct 23): the vignette sits BEHIND the content in EVERY theme - it shades the room, never the page.
+   At z-index 2 it was painted over everything, so the paper's foot wore a grey band wherever the page reached the viewport's edge (Arbor's light page,
+   deploy #5's screens; INK fixed the same for Flux alone in flux-inputs). One rule here, not one per theme, so a theme added later cannot bring it back.
+   `isolation:isolate` on body is what keeps it VISIBLE: html carries its own background, so body's lamp background is painted as body's own block - and
+   a bare z-index:-1 in the root stacking context would sit under that lamp too, deleting the vignette everywhere. With body its own stacking context, the
+   vignette paints above the lamp and below everything in #root. Checked by page-size.mjs V/MV (never on the page) and V-room (still on the room), from paint. */
+body { isolation: isolate; }
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  box-shadow: inset 0 0 170px 55px rgba(0, 0, 0, 0.55);
+}
+
+#root {
+  position: relative;
+  min-height: 100vh;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.page-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.75rem;
+  letter-spacing: -0.01em;
+  margin-bottom: 1.5rem;
+  color: var(--text-hi);
+}
+
+.page-subtitle {
+  font-size: 1rem;
+  color: var(--text-mid);
+  margin-bottom: 2rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-ui);
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+  text-decoration: none;
+}
+
+.btn-secondary {
+  background-color: var(--ink-800);
+  color: var(--text-hi);
+  border: 1px solid var(--ink-border);
+}
+
+.btn-secondary:hover {
+  background-color: var(--ink-border);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.card {
+  background-color: var(--ink-900);
+  border: 1px solid var(--ink-border);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  /* glint — light hitting the lip (branding §5.4) */
+  box-shadow: inset 0 1px 0 rgba(255, 228, 190, 0.07);
+}
+
+.card-title {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-hi);
+}
+
+.card-description {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  /* Structure inputs speak in the UI voice (Figtree), not the UA default font.
+     Form controls don't inherit font-family on their own. */
+  font-family: var(--font-ui);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.form-select {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-family: var(--font-ui);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.form-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  min-height: 150px;
+  resize: vertical;
+  font-family: var(--font-ui); /* structure notes = Figtree, never the prose serif */
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.warning-text {
+  color: var(--color-warning);
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+.button-group {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.tag {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  background-color: var(--color-secondary);
+  border-radius: 0; /* FX1 S4 — square over rounded, everywhere */
+  margin-right: 0.5rem;
+}
+
+.status-empty {
+  color: var(--color-text-muted);
+}
+
+.status-started {
+  color: var(--color-warning);
+}
+
+.status-complete {
+  color: var(--color-success);
+}
+

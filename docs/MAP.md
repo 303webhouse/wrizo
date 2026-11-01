@@ -23,13 +23,13 @@ House rules for lanes (branches, the box, `main`): [AGENTS.md](../AGENTS.md).
 | Page / editor | `pages/PageEditor.tsx`, `components/ForwardOnlyEditor.tsx`, `components/ModeStage.tsx`, `components/ScriptEditor.tsx`, `components/Sliver.tsx`, `components/DeskFrame.tsx` | FIX (typing, save), POLISH (look) | [page](map/page.md) |
 | Boards | `components/BoardEditor.tsx`, `components/InkStratum.tsx`, `store/ink.ts`, `store/boxTombstones.ts` | INK (pen, graphics), TOOLS | [boards](map/boards.md) |
 | Drawers / places | `components/CascadePanels.tsx`, `components/DrawersTree.tsx`, `components/PlacesPanel.tsx`, `store/place.ts`, `store/menusDrawers.ts` | TOOLS | [drawers](map/drawers.md) |
-| Themes | `index.css`, `store/theme.ts`, `store/themeCast.ts`, `store/themePrefs.ts`, `store/fontRoster.ts` | POLISH, plus the theme lanes (ARBOR, Machina) | [themes](map/themes.md) |
+| Themes | `index.css` + `styles/`, `store/theme.ts`, `store/themeCast.ts`, `store/themePrefs.ts`, `store/fontRoster.ts` | POLISH, plus the theme lanes (ARBOR, Machina) | [themes](map/themes.md) |
 | Lexicon | `store/deskLexicon.ts`, `store/themeLexicon.ts` | whoever adds a word; POLISH audits | [lexicon](map/lexicon.md) |
 | Tutor | `components/Tutor.tsx`, `store/tutorBible.ts`, `store/tutorMeter.ts`, `apps/server/src/tutor.ts` | TOOLS | [tutor](map/tutor.md) |
 | Sync / server | `store/persistence.ts`, `store/sync.ts`, `apps/server/src/` | FIX; Chat 1 deploys | [sync](map/sync.md) |
 | Harness | `apps/desktop/scripts/harness/`, `scripts/run-suite.mjs`, `scripts/box-take.mjs` | every lane; Chat 1 runs trains | [harness](map/harness.md) |
 
-**Full-pair files** (a change here needs Chat 1's full pair): global CSS (`index.css`), `store/persistence.ts` and anything on save or sync,
+**Full-pair files** (a change here needs Chat 1's full pair): global CSS (`index.css`, `styles/`), `store/persistence.ts` and anything on save or sync,
 `pages/PageEditor.tsx`, `components/ModeStage.tsx`, the typing path (`components/ForwardOnlyEditor.tsx`), and `apps/server/`.
 
 ## Who decides

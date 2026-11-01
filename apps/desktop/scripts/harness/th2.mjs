@@ -20,6 +20,8 @@
 // dist-web freshly built via `pnpm run build:web`).
 import { withHarness } from '../runtime-verify.mjs';
 import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import { globalCss } from '../global-css.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -33,7 +35,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // while its own fill stayed Arbor-brown. A source check, not a runtime one:
 // this is a static CSS cascade fact, provable without mounting the narrow-
 // shell pen bar (rail.tools === 'pen' && !framed) at all.
-const cssSrc = await readFile(new URL('../../src/index.css', import.meta.url), 'utf8');
+const cssSrc = globalCss(fileURLToPath(new URL('../../src', import.meta.url)));
 const fluxModeBarRule = (cssSrc.match(/\[data-theme='flux'\]\s*\.mode-bar\s*\{[^}]*\}/) || [''])[0];
 ok('check 1 (source) [theme-leftovers]: a Flux override for .mode-bar exists',
   !!fluxModeBarRule, fluxModeBarRule || '(no match)');

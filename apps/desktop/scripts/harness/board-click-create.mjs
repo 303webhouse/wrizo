@@ -20,6 +20,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { withHarness } from '../runtime-verify.mjs';
+import { srcText } from '../global-css.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const SRC = path.join(here, '..', '..', 'src');
@@ -31,7 +32,7 @@ const noCR = (t) => t.replace(/\r\n?/g, '\n');
 const BOARD = 'bcc-board';
 
 // ---- S: the source pins ---------------------------------------------------------------------------------------------------------------------------------------------------------------
-const be = noCR(fs.readFileSync(path.join(SRC, 'components/BoardEditor.tsx'), 'utf8'));
+const be = noCR(srcText(SRC, 'components/BoardEditor.tsx'));
 const pins = (text) => ({
   gate: /createAllowedRef\.current = !isSystemBoard && boardMode === 'open';/.test(text),
   press: /if \(!hadSelectedCard && createAllowedRef\.current && target === canvas && \(e\.pointerType !== 'mouse' \|\| e\.button === 0\)\) \{/.test(text),
@@ -55,7 +56,7 @@ const pins = (text) => ({
 
 // ---- S3: the approved look (Nick, Oct 14): the board's starters are a thin SQUARE outline at about 40% opacity, lifted on hover/focus; the ghost is a hairline square outline that never takes the pointer ----
 {
-  const css = noCR(fs.readFileSync(path.join(SRC, 'index.css'), 'utf8'));
+  const css = noCR(srcText(SRC, 'index.css'));
   const look = (c) => ({
     starter: /\.wz-beginnings\[data-beginnings='board'\] \.wz-beginning\{\n\s*border:1px solid currentColor; border-radius:0; opacity:\.4;/.test(c),
     lift: /\.wz-beginnings\[data-beginnings='board'\] \.wz-beginning:focus-visible\{ opacity:\.9; \}/.test(c),

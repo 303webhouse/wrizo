@@ -8,10 +8,11 @@
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { srcText } from '../global-css.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const SRC = join(here, '..', '..', 'src');
-const css = readFileSync(join(SRC, 'index.css'), 'utf8').replace(/\r\n/g, '\n');
+const css = srcText(SRC, 'index.css').replace(/\r\n/g, '\n');
 const checks = [];
 const ok = (name, pass, detail = '') => { checks.push({ name, pass: !!pass, detail }); console.log((pass ? 'PASS ' : 'FAIL ') + name + (detail ? '  ' + String(detail).slice(0, 260) : '')); };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
