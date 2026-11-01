@@ -61,8 +61,8 @@ export default {
       const go = async (on) => { await page(app, 'arbor-r7-page', WORDS, on); if (mode === 'draft') { await clickText(app, '.desk-mode-tab', 'Draft'); await sleep(1400); } };
       await go(false); const off = await app.evalJs(READ);
       await go(true); const toneRoom = await app.evalJs(READ);
-      // (r9 driver fix, no assertion changed: the Room row's buttons now read "Always day" / "Always night" - Fable, Nov 1)
-      const other = toneRoom.room === 'night' ? 'Always day' : 'Always night';
+      // (r10 driver fix, no assertion changed: the Room row's buttons read "Day" / "Night" again - the Wrizors, Nov 1, spec §2e)
+      const other = toneRoom.room === 'night' ? 'Day' : 'Night';
       // (r8 driver fix, no assertion changed: the Room switch now lives in the Mood menu, folded by default - open it first)
       await app.evalJs(`(() => { const m = [...document.querySelectorAll('.arbor2-bar-head')].find((h) => /^Mood/.test(h.textContent.trim()) && h.getAttribute('aria-expanded') !== 'true'); if (m) m.click(); })()`); await sleep(150);
       await clickText(app, '.arbor2-bar-opt', other); await sleep(900);
