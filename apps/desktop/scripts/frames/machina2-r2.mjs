@@ -166,6 +166,18 @@ export default {
       table: [...new Map(all.map((p) => [`${p.where}|${p.fg}|${p.bg}`, `${p.where}: ${p.fg} on ${p.bg} = ${p.ratio}`])).values()] });
   },
 
+  // ── PICTURES FOR THE WRIZORS: each screen leaves the page in one room (COOL), so with the job's two tones the frames show all four mixes. They
+  // assert only that the row was there and the room took.
+  ...Object.fromEntries([['light', 'sprint'], ['light', 'build'], ['dark', 'sprint'], ['dark', 'build']].map(([room, mode]) => [`m2r2-pic-${room}-${mode}`, async (app) => {
+    await page(app, 'm2r2-pic', WORDS);
+    if (mode === 'build') await build(app);
+    const picked = await pickRoom(app, room);
+    await app.evalJs(`document.querySelector('${ED}')?.blur()`); await sleep(600);
+    const s = await app.evalJs(ROOM);
+    if (!picked || s.room !== room) fail('M2R2-PIC', { room, mode, picked, s });
+    say(`m2r2-pic-${room}-${mode}`, s);
+  }])),
+
   // ── THE BOARD'S CARDS FOLLOW THE PAGE, NOT THE ROOM: a dark page's cards are dark (#23272B / #242220) in either room, a light page's white;
   // their ink >= 7:1 on the card; both casts.
   'm2r2-board': async (app) => {
