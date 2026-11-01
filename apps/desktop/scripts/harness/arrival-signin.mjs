@@ -8,6 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { srcText } from '../global-css.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const DESKTOP = path.resolve(here, '..', '..');
@@ -17,7 +18,7 @@ const ts = require('typescript');
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
-const read = (rel) => fs.readFileSync(path.join(SRC, rel), 'utf8');
+const read = (rel) => srcText(SRC, rel);
 
 const tmp = path.join(DESKTOP, '.arrival-signin-harness-scratch');
 fs.rmSync(tmp, { recursive: true, force: true });

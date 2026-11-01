@@ -1,0 +1,518 @@
+/* ==========================================================================
+   BG1 — the Beginnings (docs/wrizo-alpha/p1-wave.md §BG1), as revised by
+   BG2 — the Beginnings, Seen (docs/wrizo-alpha/p2-wave.md §BG2, item 73).
+   ONE row, one grammar, two surfaces: olive icon+label doors, never a grid,
+   nothing counted and no completion state. Olive is the door color per BG1's
+   brief and M4 S2's reservation of the hue — the rhizome's ground deliberately
+   stays OUT of this family so that olive keeps meaning "this is a door."
+   BG2 keeps every one of those laws and changes only what Nick could not see:
+   size, stacking, and the olive's VALUE (see the BG2 S1 block below).
+
+   The container is pointer-events:none — the `.fl-invite` / rhizome
+   precedent, and load-bearing for S2: the page's caret is live UNDER this row
+   from the first frame and the row may never intercept it. Only the doors
+   take the pointer back.
+   ========================================================================== */
+/* BG2 S1 (SV19/SV20) — the grammar revised in ONE place, both surfaces
+   inheriting. Nick's verdict on the shipped row was "much too small" and "can
+   barely see," and that it did not read as a set of MODES. Three changes, all
+   here: icons ABOVE their labels (was inline), everything ~50% larger, and the
+   door olive stepped down in value so it carries against cream (`--accent-door`,
+   slotted per theme at the top of this file).
+   The lane law: DARK OLIVE at rest — brass on hover — orange only on press.
+   The resting opacity is GONE deliberately: a translucent door means the colour
+   the eye sees is not the colour the token declares, which would make BG2's own
+   computed-contrast assertion a lie. The door is quiet because of its value now,
+   not because it is faded. */
+.wz-beginnings{
+  display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:center;
+  gap:8px 30px; pointer-events:none; user-select:none; z-index:1;
+}
+.wz-beginning{
+  display:inline-flex; flex-direction:column; align-items:center; gap:8px;
+  pointer-events:auto; background:none; border:0; padding:10px 12px; cursor:pointer;
+  font-family:var(--font-contentLabel); font-size:19px; letter-spacing:.01em;
+  color:var(--accent-door);
+  transition:color .18s ease;
+}
+.wz-beginning:hover, .wz-beginning:focus-visible{ color:var(--brass); }
+.wz-beginning:active{ color:var(--brass-press); }
+.wz-beginning-glyph{ display:inline-flex; width:24px; height:24px; flex:0 0 24px; }
+.wz-beginning-glyph svg{ width:24px; height:24px; display:block; }
+/* One door, one line of label — "New Page Card" must not wrap into a taller
+   door than its neighbours and break the row's shared baseline. */
+.wz-beginning-label{ white-space:nowrap; }
+
+/* BG2 S2/S3 — ONE placement rule now, which is the truest reading of "one
+   grammar" this row has had. SV20 confirmed the board's centering as correct;
+   SV19 asks for the page's row to be centered on the sheet too, reading as a
+   set of modes rather than a footnote under the caret. So both surfaces take
+   the same centering, and the page's old "beside the cursor" offset (the
+   committee's placement) is SUPERSEDED by Nick's own word.
+   This also strengthens the S2 invariant rather than weakening it: centered on
+   the sheet, the row is further from the caret than it has ever been, so the
+   first line is clearer still. The caret stays live from the first frame, the
+   container stays pointer-events:none, and typing still dismisses.
+
+   Centered by SPANNING the surface (left:0/right:0) and letting flexbox do the
+   centering, NOT by `left:50%` + a translate. At BG1's smaller size the latter
+   happened to fit; at BG2's size it silently wrapped the row into two lines —
+   an absolutely-positioned shrink-to-fit box offered only the space from its
+   left edge to the containing block's right edge, i.e. half the room. The row
+   must never become a grid (BG1's law), so the box gets the whole width and
+   `justify-content:center` places it. */
+.wz-beginnings[data-beginnings='board'],
+.wz-beginnings[data-beginnings='page']{
+  position:absolute; top:50%; left:0; right:0; transform:translateY(-50%);
+}
+/* PAGE-SIZE (FIX's turn 3 on d4a89f48, escexit S4) - IN THE ZOOM the writing line is held at the band's anchor and a fresh page's sheet is that one line
+   tall, so "centred on the sheet" put the row ON the line: a press on the line pressed a door, and the first Esc found nothing open. Zoomed, the row
+   takes BG1's own placement instead - just below the line, inside the band's lower fade - so the line itself stays clear. */
+.mode-pagecol[data-zoom='true'] .wz-beginnings[data-beginnings='page']{ top:calc(100% - max(30vh, var(--tw-end-pad, 30vh)) + 0.75em); transform:none; }   /* polish #10 item 5: less the sheet's reach below */
+/* S1 — the same row inside STORYBOARD/OUTLINE, which are ordinary flow blocks
+   with no positioned ancestor: it simply takes the place their empty line held. */
+.wz-beginnings[data-beginnings='projection']{ padding:22px 0 6px; }
+/* BOARD CLICK-TO-CREATE - the empty board's starters fade out on the first click anywhere on the board. Opacity first, then they stop taking the pointer (visibility flips AFTER the
+   fade), so a door that was itself the thing pressed still completes its click. */
+.wz-beginnings.wz-beginnings--faded{ opacity:0; visibility:hidden; transition:opacity .35s ease, visibility 0s linear .35s; }
+/* BOARD CLICK-TO-CREATE - the ghost that follows the pointer while a card is being sized (functional default; the look follows the mockup). Never takes the pointer. */
+.board-create-ghost{ position:absolute; box-sizing:border-box; border:1px solid var(--accent-door); background:none; opacity:.7; pointer-events:none; z-index:50; border-radius:0; }
+/* BOARD START (Nick approved the mockup, Oct 14): the empty board's starters are a thin SQUARE OUTLINE at about 40% opacity, quiet until reached for (hover and keyboard focus lift them), and they
+   fade out on the first press (the --faded rule above). The board row only: the same row on the page and in STORYBOARD/OUTLINE keeps its look. The canvas is today's light paper - the outline
+   takes the door's own colour (currentColor), so it reads on whatever paper the theme lays. */
+.wz-beginnings[data-beginnings='board'] .wz-beginning{
+  border:1px solid currentColor; border-radius:0; opacity:.4; padding:12px 18px;
+  transition:color .18s ease, opacity .18s ease;
+}
+.wz-beginnings[data-beginnings='board'] .wz-beginning:hover,
+.wz-beginnings[data-beginnings='board'] .wz-beginning:focus-visible{ opacity:.9; }
+
+@media (prefers-reduced-motion:reduce){ .wz-beginning{ transition:none; } }
+
+/* ITEM 83 M3 (R6) — PAGE SETUP, in the cascade's Page drawer.
+   Register per R7/§1.4: engraved heading olive (inherited from
+   .wz-cascade-panel-title), sentence-case rows, square corners, 1px --line,
+   olive marks the chosen chip, brass only on press. No new motion. */
+.wz-page-setup{ display:flex; flex-direction:column; gap:8px; }
+.wz-page-setup-row{ display:flex; align-items:center; gap:8px; }
+.wz-page-setup-label{ flex:1 1 auto; font-size:12px; color:var(--text-mid); }
+.wz-page-setup-value{ font-size:11px; color:var(--text-low);
+  font-variant-numeric:tabular-nums; min-width:2.2em; text-align:right; }
+.wz-page-setup-seg{ display:flex; gap:4px; }
+.wz-page-setup-seg--wrap{ flex-wrap:wrap; padding-bottom:2px; }
+.wz-page-setup-chip{ background:none; border:1px solid var(--ink-border);
+  color:var(--text-mid); font-family:var(--font-ui); font-size:11px;
+  padding:4px 8px; cursor:pointer; border-radius:0; transition:.15s; }
+.wz-page-setup-chip:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+.wz-page-setup-chip:active{ color:var(--brass); border-color:var(--brass); }
+/* SUPERSEDED (item arbor-quiet-brass, Fable's explicit ruling): "brass is the
+   through-line in Flux too: choice outlines in brass" — the chip's chosen value now
+   reads brass, not olive's where-you-are treatment (R7's original reasoning, kept here
+   as the reason this diverges from the tab/segmented-option law elsewhere in this file). */
+.wz-page-setup-chip[aria-checked='true'], .wz-page-setup-chip[aria-pressed='true']{
+  color:var(--choice); border-color:var(--choice); }
+.wz-page-setup-chip:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:1px; }
+.wz-page-setup-range{ flex:1 1 auto; accent-color:var(--accent-rest); }
+.wz-page-setup-text{ width:100%; background:var(--ink-950);
+  border:1px solid var(--ink-border); color:var(--text-hi);
+  font-family:var(--font-ui); font-size:12px; padding:5px 7px; border-radius:0; }
+.wz-page-setup-text:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:1px; }
+.wz-page-setup-note{ font-size:10px; color:var(--text-low); line-height:1.5; margin:2px 0 0; }
+.wz-page-setup-note--ok{ color:var(--accent-rest); }
+
+/* ITEM 83 M4 (R3) — the Typewriter menu's numeric adjustments, disclosed in
+   place inside the one pop-out (G4's depth ceiling holds). Same register as
+   PAGE SETUP: square corners, 1px --line, olive focus. */
+.wz-tw-number{ display:flex; align-items:center; gap:8px; margin:6px 0 2px; }
+.wz-tw-number > span{ flex:1 1 auto; font-size:11px; color:var(--text-mid); }
+.wz-tw-number > .wz-tw-unit{ flex:0 0 auto; }
+.wz-tw-number input{ width:64px; background:var(--ink-950);
+  border:1px solid var(--ink-border); color:var(--text-hi);
+  font-family:var(--font-ui); font-size:12px; padding:3px 6px; border-radius:0; }
+.wz-tw-number input:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:1px; }
+/* The foot's Typewriter instrument marks its ON state in olive, never brass
+   (R7) — the same where-you-are law the drawer's toggles now follow. */
+.wz-sliver-instruments-btn[data-on='true']{ color:var(--accent-rest); }
+
+/* ITEM 83 M6 (R13.ii) — the board's Place-page list. Scrollable but bounded:
+   a limit STOPS, it never relocates, so the list caps its own height rather
+   than pushing the drawer's other zones off. */
+.wz-place-page{ display:flex; flex-direction:column; gap:6px; }
+/* ITEM 170 (re-scoped) — OPEN PAGES SHOWS THREE ROWS AND SCROLLS. Nick's
+   ruling: "the last three pages created or edited, scrollable". Read as a
+   VIEWPORT, not a population cap — a cap of three would put the fourth page out
+   of reach, which is S0's fault 4 in miniature, and a sort over three items
+   says nothing. A row is ~27px, so three rows plus a sliver of the fourth tell
+   the eye there is more below. */
+.wz-place-page-list{ display:flex; flex-direction:column; max-height:88px; overflow-y:auto; }
+.wz-place-page-row{ display:flex; align-items:baseline; gap:8px; width:100%;
+  background:none; border:0; border-bottom:1px solid var(--ink-border);
+  color:var(--text-mid); font-family:var(--font-ui); font-size:12px;
+  padding:6px 2px; cursor:pointer; text-align:left; transition:.15s; }
+.wz-place-page-row:last-child{ border-bottom:none; }
+.wz-place-page-row:hover{ color:var(--text-hi); }
+.wz-place-page-row:active{ color:var(--brass); }
+.wz-place-page-row:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-1px; }
+.wz-place-page-title{ flex:1 1 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.wz-place-page-home{ flex:0 0 auto; font-size:10px; color:var(--text-low); }
+/* ITEM 170 — a row is now TWO acts: the name opens, the ⋯ places. The name
+   button keeps every rule the old row had and gives up only `width:100%`, so
+   the ⋯ has room beside it without the row's look changing. */
+.wz-open-pages-row{ display:flex; align-items:center; position:relative;
+  border-bottom:1px solid var(--ink-border); }
+.wz-open-pages-row:last-child{ border-bottom:none; }
+.wz-open-pages-row .wz-open-pages-open{ flex:1 1 auto; min-width:0; width:auto; border-bottom:0; }
+.wz-open-pages-open[aria-current='page']{ color:var(--text-hi); }
+.wz-open-pages-more{ flex:0 0 auto; background:none; border:0; cursor:pointer;
+  color:var(--text-low); font-size:14px; line-height:1; padding:4px 6px; }
+.wz-open-pages-more:hover, .wz-open-pages-more[aria-expanded='true']{ color:var(--text-hi); }
+.wz-open-pages-more:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-1px; }
+/* THE MENU OPENS INSIDE THE ROW'S OWN HEIGHT, flying left from the ⋯. The
+   first cut hung it BELOW the row (`top:100%`), and on the list's last row the
+   list's own `overflow-y:auto` clipped it clean out of view — the ⋯ lit up as
+   expanded and nothing appeared. The sitting caught it; the harness had not,
+   because its scrollIntoView scrolled the list to the menu, which is exactly
+   the move a writer would not know to make.
+   AND IT IS PINNED TO THE ROW'S TOP AND BOTTOM, NOT CENTRED ON IT. The second
+   cut centred it (top:50% + translateY) and S4 measured a 3px overhang on the
+   last row — the menu (32px) was taller than the row (~27px), so centring
+   pushed its bottom border past the list's edge. Insetting top and bottom makes
+   the menu's height DERIVE from the row's, so it cannot exceed the row whatever
+   the font or padding does. */
+.wz-open-pages-menu{ position:absolute; right:26px; top:1px; bottom:1px; z-index:5;
+  display:flex; align-items:center;
+  background:var(--desk-ground); border:1px solid var(--ink-border);
+  border-radius:var(--radius-md); padding:0 2px; }
+.wz-open-pages-place{ background:none; border:0; cursor:pointer; white-space:nowrap;
+  color:var(--text-mid); font-family:var(--font-ui); font-size:12px; line-height:1; padding:0 8px; }
+.wz-open-pages-place:hover{ color:var(--text-hi); }
+
+/* ITEM 83 M7 (PP2) — THE STATE SPEAKS FIRST. The page's current home wears a
+   1px olive left hairline and hi text, so the Home zone reads as
+   "where it is → where it could go" instead of a menu of doors. Static, no
+   motion; olive at rest, never orange (R7's ceiling holds in cascade chrome). */
+.wz-places-radio[data-current='true']{
+  color:var(--text-hi); box-shadow:inset 1px 0 0 0 var(--accent-rest); }
+
+/* ITEM 83 M9 (R13.v/R14) — the opened card's Tools dock.
+   `right:100%` on a child of `.board-popup` puts the dock's right edge exactly
+   on the card's left edge — the anchor law at card scale, by layout, nothing
+   scripted. R14: centred to the card, and FREE TO EXCEED ITS HEIGHT (no
+   height/max-height tie), because "the dock is the card's companion, not its
+   prisoner". No foot here: page instruments stay on page-writing surfaces. */
+.board-popup{ position:relative; }
+/* ITEM 159 — THE GRIP SITS AT THE CARD'S EDGE AND THE DOCK OPENS BEYOND IT.
+   Nick also reported the STYLING tab "slightly overlapping the card edge": the
+   dock carried `margin-right:-1px`, deliberately pulling it one pixel ONTO the
+   card to share its border seam. With a grip between the two there is no seam
+   to share, so the negative margin goes and neither piece of chrome crosses the
+   card's rect. That is a consequence of the redesign, not a guess at his
+   pixel — the harness MEASURES both rects against the card's.
+   NOTE: item 166's law ("no pop-out overlaps the page") does not govern this
+   pair; it names the Card pop-up AND its Styling dock as an exception. The
+   overlap being fixed here is dock-against-CARD, a different pair of rects. */
+.board-popup-dock-grip{
+  position:absolute; right:calc(100% + 1px); top:50%; transform:translateY(-50%); z-index:2;   /* POLISH #10 item 16: FLUSH - 1px is the card's own border, so the grip's edge IS the card's edge (it was 2px: one px off) */
+  width:18px; box-sizing:border-box; padding:10px 0; text-align:center; line-height:1;
+  background:var(--desk-ground); border:1px solid var(--ink-border);
+  border-radius:var(--radius-md) 0 0 var(--radius-md);
+  color:var(--accent-rest); cursor:pointer; font-size:12px; }
+.board-popup-dock-grip:hover, .board-popup-dock-grip[aria-expanded='true']{ color:var(--text-hi); }
+.board-popup-dock-grip:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:1px; }
+.board-popup-dock{
+  position:absolute; right:calc(100% + 19px); top:50%; transform:translateY(-50%);   /* item 16: the dock meets the grip (18px wide), no gap */
+  display:flex; flex-direction:column; align-items:stretch; gap:4px;
+  padding:8px 6px;
+  background:var(--desk-ground); border:1px solid var(--ink-border);
+  border-radius:var(--radius-md); }
+.board-popup-dock-h{ font-size:9px; letter-spacing:2px; text-transform:uppercase;
+  color:var(--accent-rest); text-align:center; padding-bottom:2px; }
+@media (prefers-reduced-motion:reduce){ .board-popup-dock{ transition:none; } }
+
+/* LOGOUT SAFETY — the refused-sign-out overlay. Fixed over the page: the page stays mounted behind it
+   (an overlay beside the routes, never a route). */
+.wz-logout-sheet { position: fixed; inset: 0; z-index: 70; display: flex; align-items: center; justify-content: center;
+  padding: 16px; background: rgba(17,6,0,.72); }
+.wz-logout-sheet-panel { width: min(440px, 100%); background: var(--wz-lift, #150a04); color: var(--wz-ink, #f0e7d8); border-radius: 10px;
+  padding: 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 10px 40px rgba(0,0,0,.45); }
+.wz-logout-sheet-body { margin: 0; font-size: 1.02rem; line-height: 1.45; }
+.wz-logout-sheet-rejected { margin: 0; font-size: .9rem; opacity: .8; }
+/* The sheet renders beside the routes, OUTSIDE .wz-home, and the shared form classes it uses (.wz-btn, .wz-link, .wz-field,
+   .wz-sub) read the home palette tokens, which are defined only under .wz-home. Outside it they resolve to nothing: a field
+   loses its border and fill, a primary button loses its orange. The same values are set here; a check compares them with
+   .wz-home's own block, so the two cannot drift apart. */
+.wz-logout-sheet {
+  --wz-ground:#110600; --wz-lift:#150a04; --wz-ink:#f0e7d8; --wz-ink-dim:#8c8070;
+  --wz-whisper:#463b2c; --wz-orange:#ff9800; --wz-orange-line:rgba(255,152,0,.5);
+  --wz-hint:#817a70; --wz-ui:var(--font-ui); --wz-text:var(--font-prose);
+}
+
+/* B10.1 - THE STALE-CLIENT BANNER. A fixed overlay in a portal OUTSIDE #root (the root is made inert while it shows), so it displaces
+   nothing and is the one reachable control. Outside .wz-home like the logout sheet, so the palette tokens are set here. */
+.wz-stale-banner {
+  --wz-ground:#110600; --wz-lift:#150a04; --wz-ink:#f0e7d8; --wz-ink-dim:#8c8070;
+  --wz-whisper:#463b2c; --wz-orange:#ff9800; --wz-orange-line:rgba(255,152,0,.5);
+  --wz-hint:#817a70; --wz-ui:var(--font-ui); --wz-text:var(--font-prose);
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9999; display: flex; align-items: center; justify-content: center;
+  gap: 14px; padding: 10px 16px; background: var(--wz-lift); color: var(--wz-ink);
+  border-bottom: 1px solid var(--wz-orange-line); box-shadow: 0 6px 24px rgba(0,0,0,.45); font-family: var(--wz-ui);
+}
+.wz-stale-banner-text { font-size: 1rem; line-height: 1.3; }
+
+/* THE SPLASH (item 187) — Nick's own hand-drawn Wrizo over the live app.
+   "at most 1/5 the size of the screen with the regular app interface blurred
+   out in the background."
+
+   IT CANNOT BLOCK WRITING, BY CONSTRUCTION. `pointer-events:none` on the
+   container and on both children means this overlay is invisible to hit
+   testing: a click during the splash reaches whatever is underneath exactly as
+   if the splash were not mounted. The PASSIVE window listeners in Splash.tsx
+   stay for the same reason (ITEM splash-hold: they no longer dismiss early,
+   below, but input still passes through them untouched), never by this layer
+   catching anything.
+
+   z-index 400 sits above the app's whole existing stack (modals, backdrops
+   and toasts top out at 300) — deliberately, because at boot this is the
+   frontmost thing on the screen and nothing should paint over it.
+
+   The SIZE is not set here: Splash.tsx computes width/height inline off the
+   asset's measured INK bounding box (3077x2458 inside a 3374x2699 canvas) —
+   about a quarter of the screen's area, capped so the dimmed app always
+   shows on all four sides (item 187). */
+/* ITEM splash-hold ROUND 5 (Fable's review): SUPERSEDED the flex-direction:column
+   + gap below — putting the loading line IN the centred flex stack shifted the
+   drawing 14.8px off true centre (the line's own height, halved, pushing the group
+   up). The drawing's centring is load-bearing (S4's whole claim); the loading line
+   is positioned absolutely instead (.wz-splash-loading, below), never a flex
+   participant, so nothing it does can move the mark again. */
+.wz-splash{
+  position:fixed; inset:0; z-index:400; pointer-events:none;
+  display:flex; align-items:center; justify-content:center;
+}
+/* ITEM splash-hold (Nick, live): "the background should be faded out, not
+   blurred" — SUPERSEDED the backdrop-filter blur below (the app no longer
+   reads as blurred-but-present; it reads as dimmed-but-present). The tint is
+   the THEME's own ground colour (--ink-950, already per-theme: Arbor's own
+   warm brown-dark #110600, Flux's own teal-dark #04141A), via color-mix — so
+   Arbor dims brown-dark and Flux dims teal-dark, never one fixed colour
+   painted over both. ROUND 2 (Nick, live frames): 75% let the front door's
+   logo and the Write door ghost through and clash with the sketch — raised
+   to 90%. ROUND 6 (Nick, live): "make it a solid block" — 100% now; nothing
+   of the app shows through at all. 100% of a theme's own ground colour IS
+   that colour, so `color-mix(... 100%, transparent)` and the bare token
+   paint identically — written as the bare token for clarity, not left as a
+   color-mix whose only remaining "mix" is the whole thing. */
+.wz-splash-veil{
+  position:absolute; inset:0; pointer-events:none;
+  background:var(--ink-950);
+  /* splash-sweep (Nick's brief): "a short hold, then a 0.45s fade" — was .38s. */
+  opacity:1; transition:opacity .45s ease;
+}
+/* The emblem is a SIBLING of the veil, not a child, so it paints on top of the
+   blur at full clarity — the interface goes soft, the drawing does not.
+   splash-sweep: now a wrapper around the per-theme SplashMark (ArborMark's
+   layered SVG or FluxMark's schematic), not a single <img> — the class and
+   this rule's own job (position the mark, carry the leaving-fade) unchanged. */
+.wz-splash-mark{
+  position:relative; pointer-events:none; user-select:none;
+  max-width:none; max-height:none;
+  opacity:1; transition:opacity .45s ease;
+}
+/* ITEM splash-hold ROUND 3 — the cycling loading line, in the theme's own UI
+   font and a quiet colour (both already per-theme tokens; no Flux override
+   needed). `key`-remounted on every line change (Splash.tsx) restarts this
+   fade; reduced motion drops the animation below, an instant swap.
+   ROUND 5 — SUPERSEDED being a flex participant (it shifted the drawing off
+   true centre, S4's own claim). Positioned absolutely instead, anchored to
+   `--mark-h` (Splash.tsx's own measured box.height, passed as a CSS custom
+   property on .wz-splash) so it always sits just below the drawing's own
+   rendered edge, whatever that edge currently is. */
+.wz-splash-loading{
+  position:absolute; top:50%; left:50%;
+  transform:translate(-50%, calc(-50% + var(--mark-h, 0px) / 2 + 14px));
+  min-height:1.2em; font-family:var(--font-ui); font-size:13px;
+  color:var(--text-mid); letter-spacing:.01em; opacity:1; transition:opacity .45s ease;
+}
+.wz-splash-loading-text{ display:inline-block; animation:wz-splash-loading-fade .3s ease; }
+@keyframes wz-splash-loading-fade{ from{ opacity:0; } to{ opacity:1; } }
+/* NO ANIMATED ENTRANCE, in either motion mode — the emblem is simply there at
+   first paint. Only the LEAVING is eased, and only when motion is welcome. */
+.wz-splash[data-leaving='true'] .wz-splash-veil,
+.wz-splash[data-leaving='true'] .wz-splash-mark,
+.wz-splash[data-leaving='true'] .wz-splash-loading{ opacity:0; }
+
+@media (prefers-reduced-motion:reduce){
+  .wz-splash-loading-text{ animation:none; }
+  /* A plain appear and disappear, exactly as briefed: the hold is unchanged,
+     the fade is removed. Splash.tsx carries a timer floor as well as the
+     transitionend, precisely because this rule can stop that event ever
+     arriving. */
+  .wz-splash-veil, .wz-splash-mark, .wz-splash-loading{ transition:none; }
+}
+
+/* FLUX SCHEMATIC (splash-sweep, SplashMark.tsx's own FluxMark) — colours
+   moved to Flux's own tokens per docs/briefs/splash-build-kit.md §2's own
+   mapping: #2A6A76 -> --ink-border-strong, #1D4A52 -> --ink-border,
+   #E3F1EC -> --text-hi, #8FB4AC -> --text-mid, #00C2FF -> --line-active,
+   brass -> --brass (FLUX V2: the lit state is the MARK, one of orange's few places, so it names --orange). Static (dim/dot-grid/tree/label) layers use the tokens
+   directly inline on the SVG elements (SplashMark.tsx); these classes are
+   the ones the TIMELINE actually drives (a connector or node's own .lit
+   state) or that need a transition to animate smoothly between states. */
+.fx-dim{ fill:none; stroke:var(--ink-border-strong); stroke-width:3; stroke-linecap:square; stroke-linejoin:miter; }
+.fx-hot{ fill:none; stroke:var(--orange, var(--brass)); stroke-width:4; stroke-linecap:square; stroke-linejoin:miter; }
+.fx-box{ fill:var(--ink-950, #04141A); stroke:var(--ink-border-strong); stroke-width:3; }
+.fx-name{ fill:var(--text-hi); font-family:'Rajdhani','Figtree',sans-serif; font-weight:600; font-size:27px; letter-spacing:.08em; }
+.fx-tag{ fill:var(--line-active); font-family:'Chakra Petch','Figtree',sans-serif; font-size:17px; letter-spacing:.12em; }
+.fx-sub{ fill:var(--text-mid); font-family:'Chakra Petch','Figtree',sans-serif; font-size:19px; letter-spacing:.14em; }
+.fx-tree{ fill:none; stroke:var(--ink-border); stroke-width:2; }
+.fx-grid{ fill:var(--ink-border); }
+.tile rect{ fill:var(--ink-950, #04141A); stroke:var(--text-mid); stroke-width:3; transition:stroke .3s; }
+.tile text{ fill:var(--text-hi); font-family:'Rajdhani','Figtree',sans-serif; font-weight:600; font-size:28px; text-anchor:middle; transition:fill .3s; }
+.tile.lit rect{ stroke:var(--orange, var(--brass)); }
+.fx-node rect, .fx-node circle{ transition:stroke .35s; }
+.fx-node.lit rect, .fx-node.lit circle{ stroke:var(--orange, var(--brass)); }
+
+/* MACHINA SPLASH (SplashMark.tsx's MachinaMark; the approved mockup's wordmark, end labels and Run strip, on Machina's own tokens). The units fill gray one by one, the whole strip closes orange
+   once (the same .35s colour crossfade as the in-app Run strip); the orange square is the mark's one other orange. Reduced motion drops the transitions - the closed strip simply appears. */
+.ma-word{ fill:var(--text-hi); font-family:var(--font-contentLabel); font-weight:600; font-size:55px; letter-spacing:.14em; }
+.ma-square{ fill:none; stroke:var(--orange); stroke-width:3.5; }
+.ma-notch{ fill:var(--orange); }
+.ma-end{ fill:var(--text-mid); font-family:var(--font-chromeLabel); font-size:22px; letter-spacing:.14em; }
+.ma-unit{ fill:var(--ink-border); transition:fill .35s ease; }
+.ma-unit.on{ fill:var(--signal-live); }
+.ma-strip.closed .ma-unit{ fill:var(--orange); }
+@media (prefers-reduced-motion:reduce){ .ma-unit{ transition:none; } }
+
+/* BOARD CONTEXT MENU (Nick, Oct 15; cursor/board-context-menu mockup @ 0df8bf30) - the small themed menu, the "Send to Trash?" dialog, and the Settings switch. All overlays (position:fixed in a portal):
+   page primacy - none of them moves or resizes anything beneath it. Tokens only, so Arbor and Flux both wear them. */
+.wz-ctx{
+  position:fixed; z-index:9000; min-width:150px; padding:4px 0;
+  background:var(--desk-ground); border:1px solid var(--ink-border-strong);
+  box-shadow:0 8px 24px rgba(0,0,0,.4);
+}
+.wz-ctx-sep{ height:1px; margin:4px 0; background:var(--ink-border-strong); }
+.wz-ctx-item{
+  display:block; width:100%; text-align:left; padding:7px 14px; background:none; border:0; border-radius:0; cursor:pointer;
+  font-family:var(--font-ui); font-size:13px; color:var(--text-mid);
+}
+.wz-ctx-item:hover, .wz-ctx-item:focus-visible{ color:var(--text-hi); background:var(--ink-800); outline:none; }
+
+.wz-delete-scrim{ position:fixed; inset:0; z-index:9500; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; }
+.wz-delete-dialog{ background:var(--desk-ground); border:1px solid var(--ink-border-strong); padding:20px 22px 16px; min-width:280px; }
+/* DELETE FOR GOOD - the in-app typed confirmation (components/DestructiveConfirm.tsx), in the delete dialog's own look */
+.wz-destructive{ max-width:520px; }
+.wz-destructive-line{ margin:0 0 8px; color:var(--text-mid); line-height:1.45; }
+.wz-destructive-label{ display:flex; flex-direction:column; gap:6px; margin:10px 0 14px; color:var(--text-hi); }
+.wz-destructive-input{ font:inherit; font-family:ui-monospace, monospace; padding:6px 8px; background:var(--desk-ground); color:var(--text-hi); border:1px solid var(--ink-border-strong); }
+.wz-delete-btn:disabled{ opacity:.45; cursor:default; }
+.wz-ctx-item:disabled{ opacity:.45; cursor:default; }
+.wz-delete-title{ font-family:var(--font-ui); font-size:15px; color:var(--text-hi); margin-bottom:14px; }
+.wz-delete-chk{ display:flex; align-items:center; gap:9px; margin-bottom:18px; cursor:pointer; font-family:var(--font-ui); font-size:12px; color:var(--text-mid); }
+.wz-delete-chk input{ position:absolute; opacity:0; width:1px; height:1px; }
+.wz-delete-box{ width:13px; height:13px; box-sizing:border-box; border:1px solid var(--ink-border-strong); background:none; flex:none; }
+.wz-delete-chk input:checked + .wz-delete-box{ background:var(--choice); border-color:var(--choice); }
+.wz-delete-chk input:focus-visible + .wz-delete-box{ outline:1px solid var(--brass); outline-offset:2px; }
+.wz-delete-btns{ display:flex; justify-content:flex-end; gap:8px; }
+.wz-delete-btn{
+  font-family:var(--font-ui); font-size:12px; padding:5px 14px; background:none; border-radius:0; cursor:pointer;
+  color:var(--text-mid); border:1px solid var(--ink-border-strong);
+}
+.wz-delete-btn:hover, .wz-delete-btn:focus-visible{ color:var(--text-hi); border-color:var(--text-mid); outline:none; }
+.wz-delete-go{ color:var(--brass); border-color:var(--brass); }
+.wz-delete-go:hover, .wz-delete-go:focus-visible{ background:color-mix(in srgb, var(--brass) 14%, transparent); color:var(--brass); border-color:var(--brass); }
+
+/* the Settings row "Ask before deleting" - a small switch (the mockup's .sw) */
+.wz-cascade-switch{
+  display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; padding:6px 0; background:none; border:0; cursor:pointer;
+  font-family:var(--font-ui); font-size:13px; color:var(--text-mid); text-align:left;
+}
+.wz-cascade-switch:hover, .wz-cascade-switch:focus-visible{ color:var(--text-hi); outline:none; }
+.wz-cascade-switch-track{ position:relative; width:30px; height:14px; box-sizing:border-box; border:1px solid var(--ink-border-strong); flex:none; }
+.wz-cascade-switch-track i{ position:absolute; top:2px; left:2px; width:8px; height:8px; background:var(--text-low); transition:left .15s ease, background-color .15s ease; }
+.wz-cascade-switch[aria-checked='true'] .wz-cascade-switch-track{ border-color:var(--choice); }
+.wz-cascade-switch[aria-checked='true'] .wz-cascade-switch-track i{ left:18px; background:var(--choice); }
+@media (prefers-reduced-motion: reduce){ .wz-cascade-switch-track i{ transition:none; } }
+
+/* CONNECTOR-B (Nick's approved connector mockup v6) - the Grafts / Links list in the right drawer; the circles the rail's thumbnails wear while a card is in connection mode; the ghost a thumbnail leaves under the
+   pointer when it is dragged onto a board; and the viewport-level overlay the connector's arm travels in (it must reach the rail, so it cannot live inside the board canvas, which clips). */
+.wz-links-list{ list-style:none; margin:4px 0 0; padding:0; display:flex; flex-direction:column; gap:8px; }
+.wz-links-item{
+  position:relative; display:flex; align-items:center; gap:10px; min-height:44px; padding:0 34px 0 12px;
+  border:1px solid var(--ink-border); color:var(--text-mid); font-family:var(--font-ui); font-size:13px;
+}
+.wz-links-item[data-trashed='true'] .wz-links-label{ opacity:.55; }
+.wz-links-label{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+.wz-links-thumb{ flex:none; display:block; background:var(--ink-800); border:1px solid var(--ink-border-strong); position:relative; }
+.wz-links-thumb--page{ width:22px; height:30px; }
+.wz-links-thumb--card{ width:32px; height:22px; background:var(--card-stock); border-color:var(--card-hairline); }
+.wz-links-thumb--board{ width:32px; height:22px; background:var(--paper); border-color:var(--card-hairline); }
+.wz-links-x{
+  position:absolute; top:4px; right:4px; width:18px; height:18px; padding:0; display:flex; align-items:center; justify-content:center;
+  font-size:13px; line-height:1; color:var(--text-mid); background:none; border:1px solid var(--ink-border-strong); border-radius:0; cursor:pointer;
+}
+.wz-links-x:hover, .wz-links-x:focus-visible{ color:var(--brass); border-color:var(--brass); outline:none; }
+
+/* BIG PROJECTS STEP 3 - Grafts across places and the graft doors (Nick's approved mockup, cursor/graft-doors-mockup @ c4f34eb0). "+ Graft..." on top,
+   the paired page and "Connected to", the plan board's ONE folded row, the groups with a faint place label, Shared tags, the Undo line, the picker (an
+   overlay on body - it displaces nothing), and the brass graft knob on a selected card's right edge (a rect on the card's own edge: no card or board
+   rect changes). The X on a row shows on hover (and on keyboard focus). */
+.wz-graft-add{ display:flex; align-items:center; gap:8px; height:34px; padding:0 10px; border:1px solid var(--ink-border-strong); background:none;
+  color:var(--text-mid); font-family:var(--font-ui); font-size:13px; text-align:left; cursor:pointer; border-radius:0; }
+.wz-graft-add:hover, .wz-graft-add:focus-visible, .wz-graft-add[aria-expanded='true']{ color:var(--text-hi); border-color:var(--text-low); outline:none; }
+.wz-graft-add:disabled{ opacity:.45; cursor:default; }
+.wz-graft-paired{ display:flex; align-items:center; gap:10px; min-height:32px; color:var(--text-hi); font-family:var(--font-ui); font-size:13px; }
+.wz-graft-from{ font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-low); }
+.wz-graft-connected{ margin-top:4px; color:var(--text-mid); font-family:var(--font-ui); font-size:13px; }
+.wz-graft-connected b{ color:var(--text-hi); font-weight:600; }
+.wz-graft-plan{ display:flex; align-items:center; gap:10px; width:100%; padding:6px 0; background:none; border:0; color:var(--text-mid);
+  font-family:var(--font-ui); font-size:13px; text-align:left; cursor:pointer; }
+.wz-graft-plan:hover, .wz-graft-plan:focus-visible{ color:var(--text-hi); outline:none; }
+.wz-graft-chev{ width:6px; height:6px; border-right:1px solid currentColor; border-bottom:1px solid currentColor; transform:rotate(-45deg); opacity:.7; flex:none; }
+.wz-graft-plan[aria-expanded='true'] .wz-graft-chev{ transform:rotate(45deg); }
+.wz-graft-gh{ margin-top:6px; font-family:var(--font-ui); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--text-low); }
+.wz-graft-row{ position:relative; display:flex; align-items:center; gap:10px; min-height:32px; padding:0 30px 0 0; color:var(--text-mid); font-family:var(--font-ui); font-size:13px; }
+.wz-graft-row.wz-links-item{ border:0; padding-left:0; min-height:32px; }
+.wz-graft-title{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+.wz-graft-place{ margin-left:auto; flex:none; font-size:10.5px; color:var(--text-low); opacity:.7; white-space:nowrap; }
+.wz-graft-x{ position:absolute; right:2px; top:50%; transform:translateY(-50%); width:18px; height:18px; padding:0; display:flex; align-items:center;
+  justify-content:center; background:none; border:0; color:var(--text-low); font-size:16px; line-height:1; cursor:pointer; opacity:0; }
+.wz-graft-row:hover .wz-graft-x, .wz-graft-x:focus-visible{ opacity:1; color:var(--text-hi); outline:none; }
+.wz-graft-row .wz-links-x.wz-graft-x{ top:50%; right:2px; border:0; }
+.wz-graft-tagrow{ display:flex; align-items:center; gap:10px; min-height:28px; color:var(--text-mid); font-family:var(--font-ui); font-size:13px; }
+.wz-graft-tagm{ flex:none; font-size:11px; color:var(--text-low); }
+.wz-graft-undo{ display:flex; align-items:center; gap:10px; padding:9px 0; border-top:1px solid var(--ink-border-strong); color:var(--text-mid); font-family:var(--font-ui); font-size:12px; }
+.wz-graft-undo button{ background:none; border:0; padding:0; color:var(--text-hi); text-decoration:underline; text-underline-offset:2px; cursor:pointer; font:inherit; }
+.wz-graft-picker{ position:fixed; z-index:72; width:300px; max-height:min(560px, calc(100vh - 60px)); display:flex; flex-direction:column; background:var(--ink-900);
+  border:1px solid var(--ink-border-strong); box-shadow:0 14px 44px rgba(0,0,0,.55); font-family:var(--font-ui); }
+.wz-graft-picker-h{ padding:12px 14px 8px; font-size:13px; font-weight:600; color:var(--text-hi); }
+.wz-graft-search{ margin:0 14px 8px; height:32px; padding:0 10px; border:1px solid var(--ink-border-strong); background:none; color:var(--text-hi); font:inherit; font-size:13px; border-radius:0; }
+.wz-graft-search:focus{ outline:none; border-color:var(--accent-rest); }
+.wz-graft-picker-body{ overflow-y:auto; padding:0 0 8px; }
+.wz-graft-picker .wz-graft-gh{ padding:0 14px; }
+.wz-graft-came, .wz-graft-pick{ display:flex; align-items:center; gap:9px; width:100%; padding:6px 14px; background:none; border:0; color:var(--text-mid);
+  font:inherit; font-size:13px; text-align:left; cursor:pointer; }
+.wz-graft-came{ padding:9px 14px; color:var(--text-hi); border-bottom:1px solid var(--ink-border); }
+.wz-graft-came .wz-graft-title{ font-weight:600; }
+.wz-graft-came:hover, .wz-graft-pick:hover, .wz-graft-came:focus-visible, .wz-graft-pick:focus-visible{ background:var(--ink-800); outline:none; }
+.wz-graft-pick[aria-checked='true'], .wz-graft-came[aria-checked='true']{ color:var(--text-hi); cursor:default; }
+.wz-graft-pick .wz-graft-title{ flex:1; }
+.wz-graft-ck{ flex:none; width:12px; color:var(--accent-rest); font-size:12px; }
+.board-graft-knob{ position:absolute; right:-7px; top:50%; width:12px; height:12px; margin-top:-6px; border-radius:50%; background:var(--brass);
+  border:1.5px solid color-mix(in srgb, var(--brass) 55%, #7a3a00); box-shadow:0 0 0 2px var(--paper); cursor:grab; z-index:3; box-sizing:border-box; }
+.board-graft-knob[data-active='true']{ background:var(--paper); border-color:var(--brass); cursor:default; }
+
+/* a rail thumbnail that STANDS FOR AN ENTRY (data-link-entry) is a target while a card is in connection mode: its circle is open if the card is not linked to it, solid orange if it is. The state is written onto the element by
+   the board's pointer effect (data-link-target while the arm is over it, data-link-peer for the entries the card is linked to, data-link-flash for the beat after a link/unlink); the circle itself is this ::before. */
+[data-link-entry]{ position:relative; }
+[data-link-entry][data-link-target='true']::before, [data-link-entry][data-link-peer='true']::before, [data-link-entry][data-link-flash]::before{
+  content:''; position:absolute; left:4px; top:50%; width:10px; height:10px; margin-top:-5px; box-sizing:border-box; z-index:6; pointer-events:none;
+  border-radius:50%; background:var(--desk-ground); border:1.5px solid var(--brass);
+}
+[data-link-entry][data-link-solid='true']::before{ background:var(--brass); }
+[data-link-entry][data-link-target='true']{ outline:1px solid var(--brass); outline-offset:-1px; }
+
+.wz-link-ghost{ position:fixed; z-index:9400; pointer-events:none; display:flex; align-items:center; gap:10px; padding:6px 12px; background:var(--desk-ground); border:1px solid var(--brass); color:var(--text-hi); font-family:var(--font-ui); font-size:13px; opacity:.92; }
+body[data-link-drag='true'], body[data-link-drag='true'] *{ cursor:grabbing !important; }
+
+.board-connect-overlay{ position:fixed; inset:0; width:100%; height:100%; z-index:9300; pointer-events:none; overflow:visible; }
+

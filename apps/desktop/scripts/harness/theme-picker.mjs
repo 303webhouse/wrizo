@@ -67,6 +67,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { withHarness } from '../runtime-verify.mjs';
+import { globalCss } from '../global-css.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -75,7 +76,7 @@ const parkReads = {};   // the default leg's own reads, for the parked records b
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const here = dirname(fileURLToPath(import.meta.url));
-const CSS = readFileSync(join(here, '..', '..', 'src', 'index.css'), 'utf8');
+const CSS = globalCss(join(here, '..', '..', 'src'));
 
 const freshDesk = async (app) => {
   await app.emulateDpr(1, 1400, 900);

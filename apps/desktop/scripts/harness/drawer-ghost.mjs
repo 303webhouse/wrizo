@@ -12,6 +12,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { srcText } from '../global-css.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const DESKTOP = path.resolve(here, '..', '..');
@@ -19,7 +20,7 @@ const SRC = path.join(DESKTOP, 'src');
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const noCR = (t) => t.replace(/\r\n?/g, '\n');
-const read = (rel) => noCR(fs.readFileSync(path.join(SRC, rel), 'utf8'));
+const read = (rel) => noCR(srcText(SRC, rel));
 const sh = (cmd) => { try { return execSync(cmd, { cwd: DESKTOP, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }); } catch { return null; } };
 
 // ---- a small cascade: parse -> match -> specificity -> winner ------------------------------------------------------------------

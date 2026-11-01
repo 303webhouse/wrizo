@@ -4,7 +4,7 @@
 **Owner (proposal):** POLISH, plus the theme lanes (ARBOR, Machina). **Back to** [MAP](../MAP.md).
 
 ## Entry files
-- `index.css`: all styling. `:root` tokens first, then the theme blocks, then the component sections. (#13 steps 6–8 split it into a styles folder.)
+- `index.css`: an ordered list of `@import`s of `styles/*.css` (#13 step 6), and the build inlines them in that order: `:root` tokens first (`01-tokens.css`), then the theme blocks, then the component sections. A script reads the global CSS as one text through `scripts/global-css.mjs`, never `index.css` itself.
 - `store/theme.ts` (the theme in force), `store/themeCast.ts` (`data-cast`, Machina's neutral cast), `store/themePrefs.ts`.
 - `store/themeFontFaces.ts`, `store/themeFonts.ts`, `store/fontRoster.ts`, `store/fluxThemeFx.ts`, `components/ThemeEffectsLayer.tsx`.
 
@@ -12,7 +12,7 @@
 `window.wrizoTheme`, `window.wrizoCast`, `window.wrizoThemePrefs`, `window.wrizoThemeFx`, `window.wrizoFluxFx`, `window.wrizoAmbiance`.
 
 ## Full pair
-`index.css` is global CSS: any change to it runs the full pair.
+`index.css` and `styles/` are global CSS: any change to them runs the full pair.
 
 ## Covering harnesses (start here)
 `th1.mjs`, `th2.mjs`, `th-machina.mjs`, `th-machina-source.mjs`, `flux-v2.mjs`, `flux-v2-part2.mjs`, `machina-deckwizard.mjs`, `splash.mjs`.

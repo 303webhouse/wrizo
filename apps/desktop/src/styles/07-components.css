@@ -1,0 +1,503 @@
+/* ============================================================
+   Component layer (D2) — "The Lamplit Desk"
+   Implements ui-redesign-spec §8. Apply per-screen in D3–D7;
+   legacy classes above are unaffected.
+   ============================================================ */
+
+/* Buttons — exactly one .btn-brass per screen. */
+.btn-brass,
+.btn-ghost,
+.btn-quiet,
+.btn-brick {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+
+/* ITEM arbor-quiet-brass — default is outline + text, no fill; "exactly one per screen"
+   (the comment above) already means every instance IS that screen's main action, so it
+   keeps a heavier weight (bolder border, bolder text) rather than a second, separate
+   primary-only modifier. */
+.btn-brass {
+  background: none;
+  color: var(--brass);
+  border: 1.5px solid var(--brass);
+  font-weight: 700;
+  padding: var(--space-3) var(--space-6);
+  /* catches lamplight (branding §5.4) — ambient bloom, not an orange recolor */
+  box-shadow: 0 0 22px rgba(232, 116, 46, 0.22);
+  transition: border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+.btn-brass:hover { border-color: var(--brass-hover); color: var(--brass-hover); }
+.btn-brass:active { border-color: var(--brass-press); color: var(--brass-press); transform: translateY(1px); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-hi);
+  border: 1px solid var(--ink-border);
+  padding: var(--space-3) var(--space-6);
+  transition: border-color var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease);
+}
+.btn-ghost:hover { border-color: var(--ink-border-strong); background: var(--ink-900); }
+
+.btn-quiet {
+  background: none;
+  color: var(--text-mid);
+  border: none;
+  font-weight: 500;
+  padding: var(--space-2) var(--space-3);
+  transition: color var(--t-fast) var(--ease);
+}
+.btn-quiet:hover { color: var(--text-hi); text-decoration: underline; }
+
+/* De-emphasis modifier (brand: translucency = de-emphasis signal only). For a
+   control that should be reachable but never beckon — a tool for someone who
+   needs it, not a treat. Surfaces to full presence on hover/focus. */
+.btn-ghost { opacity: 0.4; transition: opacity var(--t-state) var(--ease), color var(--t-fast) var(--ease); }
+.btn-ghost:hover,
+.btn-ghost:focus-visible { opacity: 1; }
+
+/* Discard only — the single brick control in the whole app. */
+.btn-brick {
+  background: transparent;
+  color: var(--brick);
+  border: 1px solid var(--brick);
+  padding: var(--space-3) var(--space-6);
+  transition: background-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.btn-brick:hover { background: var(--brick); color: var(--text-hi); }
+
+.btn-brass:disabled,
+.btn-ghost:disabled,
+.btn-quiet:disabled,
+.btn-brick:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Ember wordmark lockup (branding §3). Mark + gap + lift scale with font-size;
+   --lockup-lift is the single value to fine-tune the flame's float (v1 = 15px
+   at the 40px reference = 0.375em). */
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28em;
+  line-height: 1;
+}
+.wordmark__mark {
+  height: 1.5em;
+  width: auto;
+  flex-shrink: 0;
+  /* soft ember glow — follows the mark's shape, threshold surfaces only */
+  filter: drop-shadow(0 0 10px rgba(224, 113, 44, 0.55)) drop-shadow(0 0 22px rgba(224, 113, 44, 0.25));
+}
+.wordmark__text {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1em;
+  line-height: 1;
+  letter-spacing: 0.015em;
+  /* ITEM arbor-quiet-brass — the mark is one of brass's four canonical homes
+     (docs/flux-theme-canon.md §2: "prose caret, bar completion surge, Connect, the mark"). */
+  color: var(--brass);
+}
+
+/* Caps label. */
+.eyebrow {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-low);
+}
+
+/* The lit page — prose surfaces only. */
+.paper-page {
+  background: var(--paper);
+  color: var(--ink-on-paper);
+  border-radius: var(--radius-md);
+  box-shadow: var(--paper-glow);
+  padding: var(--space-8);
+  font-family: var(--font-prose);
+  font-size: 17px;
+  line-height: 1.7;
+}
+.paper-page ::placeholder { color: var(--ink-on-paper-low); }
+
+/* Typewriter fade — window-scroll variant (JournalEntry; see useTypewriterFade.ts
+   and ModeStage's mask-image variant for the fixed-viewport case). The Journal
+   sheet grows unbounded with the page (ink strokes anchor to its own height —
+   it can't be clipped into a fixed-height scroll box), so this fades the top
+   via a sticky, viewport-pinned gradient rather than a mask on the sheet
+   itself. Opacity gated by data-scrolled (C2: a fresh/short page's first line
+   must never render faded).
+   FX1 S1 — height/reach now track --tw-fade-band (~3 line-heights, set by
+   useTypewriterFade.ts's measure()), and the gradient itself is a genuine
+   ramp across the whole band (85% paper-opaque at the very top, easing to 0)
+   rather than the old two-stage "solid then clear" cutoff — closer to the
+   1.0->~0.15 text-opacity ramp the container-mode mask achieves directly. */
+/* FX5 S1 (b) — "the fade band starts one line lower": the sticky overlay's
+   own height now spans --tw-fade-start (one line-height, fully transparent
+   — the topmost line reads unfaded) PLUS the existing --tw-fade-band ramp
+   depth, unchanged; the gradient's own stops move down by --tw-fade-start
+   in step (explicit px stops, not percentages, so the two pieces — the
+   flat unfaded lead-in and the ramp — stay independently sized regardless
+   of the box's own total height). */
+.entry-typewriter-fade{ position:sticky; top:0; z-index:2; pointer-events:none;
+  height:calc(var(--tw-fade-start,28px) + var(--tw-fade-band,84px));
+  margin-bottom:calc(-1 * (var(--tw-fade-start,28px) + var(--tw-fade-band,84px)));
+  background:linear-gradient(to bottom,
+    rgba(243,237,225,0) 0, rgba(243,237,225,0) var(--tw-fade-start,28px),
+    rgba(243,237,225,.85) var(--tw-fade-start,28px),
+    rgba(243,237,225,0) calc(var(--tw-fade-start,28px) + var(--tw-fade-band,84px)));
+  opacity:0; transition:opacity .6s ease; }
+/* FX4 S1 — the Journal carve-out retires: this is the ENTIRE mechanism of
+   that carve-out reversing. Before this ticket, `.entry-full` computed and
+   set `--tw-start-offset` (useTypewriterFade.ts's own measure()) but NO
+   selector here ever consumed it on this class — the value existed, inert,
+   read by nobody. This one rule is what makes Journal gain the SAME start-
+   offset behavior `.mode-scroll`/`.desk-frame-scroll-cap` already have,
+   for the first time. Ink-coordinate safety (the brief's own required
+   proof, see fx4.mjs's own seeded-stroke byte-truth check): padding-top on
+   an element never moves that element's OWN border-box position (top/left/
+   width) — only its height grows to contain the extra padding — so
+   `.entry-full`'s own `getBoundingClientRect()` (the ONE rect JournalEntry.
+   tsx's normPoint/paintCommitted and store/ink.ts's renderStroke ALL key
+   off, at both capture time and every re-render) is completely unaffected
+   by its own padding-top value. The ink canvases are absolutely positioned
+   at top:0/left:0/100%/100% against this SAME element's padding box (CSS
+   spec: the containing block for an absolutely-positioned descendant is
+   the nearest positioned ancestor's PADDING edge, which sits right after
+   the border — unaffected by the padding VALUE itself) — so they stay
+   pinned exactly where they always were too. Net effect: existing strokes
+   render in the identical screen position before and after this rule
+   exists; only the TEXT content (a normal, non-absolutely-positioned
+   descendant) shifts down within the now-taller sheet, exactly the "starts
+   a quarter down" effect this ticket wants. */
+/* FX4 S1 — `padding-bottom:30vh` mirrors `.mode-scroll`'s OWN identical
+   bottom buffer (index.css, above) verbatim. Found live while tuning the
+   engage line-count: `.mode-scroll`/`.desk-frame-scroll-cap` are ALWAYS
+   scrollable by at least this much, even on a nearly-empty page, because
+   that fixed padding makes their own scrollHeight exceed their box
+   regardless of content — which is WHY their auto-scroll can engage within
+   a genuine handful of lines. `.entry-full` had no equivalent: its own
+   scrollability came ONLY from real content growth (plus the new start-
+   offset), so the WHOLE DOCUMENT stayed shorter than the viewport — and
+   therefore genuinely un-scrollable, `data-scrolled` structurally unable
+   to ever flip true — until content grew far past what "~10 lines" could
+   plausibly mean (confirmed empirically: un-engaged at 20 typed lines
+   before this rule existed). Adding the SAME fixed buffer prose/script
+   already rely on gives Journal the same "always has room to scroll"
+   property, letting the holdBand's own threshold (JOURNAL_HOLD_BAND,
+   useTypewriterFade.ts) govern engagement timing the way it was designed
+   to, instead of being blocked by document geometry underneath it. */
+.entry-full[data-typewriter='true']{ padding-top:var(--tw-start-offset,0px); padding-bottom:30vh; }
+.entry-full[data-typewriter='true'][data-scrolled='true'] .entry-typewriter-fade{ opacity:1; }
+@media (prefers-reduced-motion:reduce){ .entry-typewriter-fade{ transition:none; } }
+
+/* Glanceable progress — 10px ink-fill dot, always paired with a text label. */
+.status-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+.status-dot--empty { border: 1.5px solid var(--ink-border-strong); }
+.status-dot--started {
+  border: 1.5px solid var(--ink-border-strong);
+  background: linear-gradient(to top, var(--brass) 50%, transparent 50%);
+}
+.status-dot--done { background: var(--sage); }
+/* M1 — the same celebration grammar as the writing-surface circle-bar (one
+   grammar app-wide, per the canon), reusing pfill-celebrate verbatim: a
+   brief brass pulse marks the moment of completion, independent of the
+   dot's own resting color (sage for "done" here). Applied only on a
+   transition to done DURING the session — never on mount (the W1-R1 law). */
+.status-dot.celebrate { animation: pfill-celebrate 1.1s ease; }
+@media (prefers-reduced-motion: reduce) { .status-dot.celebrate { animation: none; } }
+
+/* Brass progress line that draws itself (Beat rail, Project Home). */
+.ink-line {
+  position: relative;
+  height: 2px;
+  width: 100%;
+  background: var(--ink-border);
+  border-radius: 0; /* FX1 S4 — square over rounded, everywhere */
+}
+.ink-line__fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: var(--brass);
+  border-radius: 0; /* FX1 S4 */
+  transition: width var(--t-state) var(--ease);
+}
+
+/* Timer hairline — drains right-to-left, the one continuous element. */
+.hairline-timer {
+  position: relative;
+  height: 2px;
+  width: 100%;
+  background: var(--ink-border);
+  overflow: hidden;
+}
+.hairline-timer__fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: var(--brass);
+  transition: width 1s linear;
+}
+
+/* Quiet saved confirmation (toggled by JS; fades out after ~2s). */
+.saved-stamp {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--sage);
+  opacity: 1;
+  transition: opacity var(--t-fast) var(--ease);
+}
+.saved-stamp--hidden { opacity: 0; }
+
+/* Nudge result, tucked under the page's top edge. Appears on user action. */
+.nudge-slip {
+  background: var(--ink-800);
+  border: 1px solid var(--clay);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+  color: var(--text-hi);
+  /* The nudge speaks in the writing voice — Crimson Pro, italic. */
+  font-family: var(--font-prose);
+  font-style: italic;
+  font-size: 15px;
+  opacity: 1;
+  transition: opacity var(--t-state) var(--ease);
+  animation: nudge-slip-in var(--t-state) var(--ease);
+}
+/* Ephemeral nudges fade back out (reduced-motion → instant via the global reset). */
+.nudge-slip[data-shown='false'] {
+  opacity: 0;
+}
+@keyframes nudge-slip-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* The single permitted celebration — the sprint finish card rises 12px once. */
+@keyframes finish-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Board (D6): secondary card actions reveal on hover/focus, always shown on touch. */
+.board-card__reveal {
+  opacity: 0;
+  transition: opacity var(--t-fast) var(--ease);
+}
+.board-card:hover .board-card__reveal,
+.board-card:focus-within .board-card__reveal {
+  opacity: 1;
+}
+@media (hover: none) {
+  .board-card__reveal { opacity: 1; }
+}
+
+/* NEXT bookmark tab breaking the card's top edge. */
+.next-bookmark {
+  position: absolute;
+  top: -10px;
+  left: 16px;
+  background: var(--brass);
+  color: var(--on-brass);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  padding: 3px 8px;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+
+/* Focus: 2px brass ring on keyboard focus, never removed without replacement.
+   Placed last so it wins over legacy .form-*:focus { outline: none }. */
+button:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible,
+.btn-brass:focus-visible,
+.btn-ghost:focus-visible,
+.btn-quiet:focus-visible,
+.btn-brick:focus-visible,
+.form-input:focus-visible,
+.form-textarea:focus-visible,
+.form-select:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
+}
+
+/* Motion only on user action or completion. Reduce collapses to instant. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Beat rail layout (in CSS, not inline, so W5 can override it on mobile). */
+.beat-rail-dots {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+}
+
+/* W5 — responsive pass. Breakpoint 720px; usable one-handed at 390px. */
+@media (max-width: 720px) {
+  .page {
+    padding: var(--space-4);
+  }
+
+  /* iOS never zooms on focus when inputs are >= 16px. */
+  .form-input,
+  .form-select,
+  .form-textarea {
+    font-size: 16px;
+  }
+
+  /* Comfortable one-handed tap targets. */
+  .btn-brass,
+  .btn-ghost,
+  .btn-brick {
+    min-height: 44px;
+  }
+
+  /* Sprint Save/Finish bar stays reachable above the mobile keyboard. */
+  .sprint-bottombar {
+    position: sticky;
+    bottom: 0;
+    background: var(--ink-950);
+    padding-block: var(--space-2);
+    z-index: 3;
+  }
+
+  /* Beat rail scrolls horizontally with an edge fade when beats overflow. */
+  .beat-rail-dots {
+    justify-content: flex-start;
+    gap: var(--space-4);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
+  }
+  /* (its `::-webkit-scrollbar{display:none}` twin is deleted: redundant with scrollbar-width:none above on Chromium >= 121 - one mechanism per element) */
+}
+
+/* Forward-only editor (CW2). Runs render as DOM spans; the native caret is used
+   and kept at the live insertion point by the component. */
+.forward-only-editor .fo-struck {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+  opacity: 0.5;
+}
+.forward-only-editor-wrap .fo-placeholder {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  color: var(--ink-on-paper-low);
+}
+.forward-only-editor-wrap .fo-nudge {
+  position: absolute;
+  left: 0;
+  bottom: 8px;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--ink-on-paper-low);
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+/* POLISH #10 item 2 (Nick, Oct 25) - the hint in each theme's OWN type: Arbor keeps its italic prose serif; Flux and Machina wear their own content face,
+   upright (it was Arbor's italic serif under every theme). And on the framed prose page it stands ON THE PAGE, clear of the text (ForwardOnlyEditor.tsx). */
+:root { --fo-nudge-font: var(--font-prose); --fo-nudge-style: italic; }
+[data-theme='flux'], [data-theme='machina'] { --fo-nudge-font: var(--font-contentLabel); --fo-nudge-style: normal; }
+.fo-nudge { font-family: var(--fo-nudge-font); font-style: var(--fo-nudge-style) !important; }
+.fo-nudge--page {
+  position: absolute; z-index: 3; font-size: 13px; line-height: 20px;
+  color: var(--ink-on-paper-low); pointer-events: none; -webkit-user-select: none; user-select: none;
+}
+
+/* Chrome-fade / Middle Door (CW1). While writing, the surrounding chrome
+   recedes; the editor, caret, and ambient warmth never carry this class. The
+   parent toggles data-chrome-receded; the fade eases gently and goes
+   non-interactive (intent restores it before a real click lands). */
+.chrome-fade {
+  /* Surfaces on the richer useChromeDissolve engine (JournalEntry, and
+     PageEditor/QuickSprint's top bar via ModeStage's chromeRootRef) write
+     --fade-dur onto an ancestor, so this fades on the SAME context-aware
+     curve as the rest of that surface's chrome (slow recede, very slow idle
+     return, quicker deliberate summon) instead of a flat 220ms. Surfaces
+     still on the simpler useChromeFade engine (DeskRail, GlobalHeader) never
+     set --fade-dur, so they keep the original 220ms via the fallback. */
+  transition: opacity var(--fade-dur, var(--t-state)) var(--ease);
+}
+/* Either a .chrome-fade descendant of a receded container (sprint chrome), or a
+   single element carrying both class + attr (the global App header, CW4). */
+[data-chrome-receded='true'] .chrome-fade,
+.chrome-fade[data-chrome-receded='true'] {
+  opacity: 0;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .chrome-fade { transition: none; }
+}
+
+/* TH2 — the celebrate-summon rule (canon §10). The completion surge
+   overrides ONLY the element carrying this class (the bottom bar) for its
+   ~2.5s window, ignoring the ancestor's receded state; the class is then
+   removed by the caller and normal fade resumes. Cross-theme — lands
+   behind the Fade pref like every other chrome-fade behavior; only Flux's
+   sprint bar visually surges (WritingIncentives.tsx Slice 2), but the
+   dopamine is never delivered to an empty room on any theme. */
+[data-chrome-receded='true'] .chrome-fade.celebrate-summon,
+.chrome-fade.celebrate-summon[data-chrome-receded='true'] {
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 0.25s var(--ease);
+}
+
+/* The ever-present reveal handle — a barely-there ember dot, always visible
+   (never faded), so chrome is discoverable from the receded state. */
+.chrome-handle {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--ember);
+  opacity: 0.22;
+  cursor: pointer;
+  z-index: 40;
+  transition: opacity var(--t-state) var(--ease);
+}
+.chrome-handle:hover,
+.chrome-handle:focus-visible {
+  opacity: 0.7;
+}
+@media (prefers-reduced-motion: reduce) {
+  .chrome-handle { transition: none; }
+}
+

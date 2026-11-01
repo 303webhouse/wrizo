@@ -26,6 +26,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { withHarness } from '../runtime-verify.mjs';
+import { srcText } from '../global-css.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const SRC = path.join(here, '..', '..', 'src');
@@ -38,9 +39,9 @@ const noCR = (t) => t.replace(/\r\n?/g, '\n');
 const live = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"`\\])\/\/[^\n]*/g, '$1');
 
 // ---- S: the source pins ---------------------------------------------------------------------------------------------------------------------------------------------------------------
-const be = noCR(fs.readFileSync(path.join(SRC, 'components/BoardEditor.tsx'), 'utf8'));
-const css = noCR(fs.readFileSync(path.join(SRC, 'index.css'), 'utf8'));
-const sliver = noCR(fs.readFileSync(path.join(SRC, 'components/Sliver.tsx'), 'utf8'));
+const be = noCR(srcText(SRC, 'components/BoardEditor.tsx'));
+const css = noCR(srcText(SRC, 'index.css'));
+const sliver = noCR(srcText(SRC, 'components/Sliver.tsx'));
 const pins = (text) => ({
   noTack: !/board-pin-grab|armThreadDrag|'threadDrag'|data-thread-source/.test(live(text)),
   doubleDoor: /handleClick\.boxId === boxId && now - handleClick\.t < 450 && !handleClick\.moved && Math\.hypot\(e\.clientX - handleClick\.x, e\.clientY - handleClick\.y\) <= 4/.test(text),

@@ -8,11 +8,12 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { srcText } from '../global-css.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(process.env.CM_REPO || join(here, '..', '..', '..', '..'));
 const SRC = join(REPO, 'apps', 'desktop', 'src');
-const read = (f) => (existsSync(join(SRC, f)) ? readFileSync(join(SRC, f), 'utf8').replace(/\r\n/g, '\n') : '');
+const read = (f) => (existsSync(join(SRC, f)) ? srcText(SRC, f).replace(/\r\n/g, '\n') : '');
 const strip = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
 
 const checks = [];

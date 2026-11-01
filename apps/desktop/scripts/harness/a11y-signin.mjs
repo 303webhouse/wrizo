@@ -23,6 +23,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { withHarness } from '../runtime-verify.mjs';
+import { srcText } from '../global-css.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -34,7 +35,7 @@ const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 
 // ---- A2: no unreachable spans remain, and three real buttons exist --------
-const arrivalSrc = fs.readFileSync(path.join(SRC, 'components/Arrival.tsx'), 'utf8');
+const arrivalSrc = srcText(SRC, 'components/Arrival.tsx');
 const oldSpans = [...arrivalSrc.matchAll(/<span className="wz-link"/g)];
 const newButtons = [...arrivalSrc.matchAll(/<button type="button" className="wz-link"/g)];
 ok('A2: no <span className="wz-link"> survives anywhere in Arrival.tsx — the exact unreachable shape the audit measured is gone',
@@ -49,7 +50,7 @@ ok('A2: the exact wording survives unchanged (verbatim house copy, not rewritten
 // (the EXACT other defect this same audit found — the board-name button
 // missing `background:none`, A7's second row — so this is checked by name,
 // not assumed because "I remembered to add it".)
-const cssSrc = fs.readFileSync(path.join(SRC, 'index.css'), 'utf8');
+const cssSrc = srcText(SRC, 'index.css');
 const linkRuleMatch = cssSrc.match(/\.wz-link\{[^}]*\}/);
 ok('A2 CHROME: .wz-link resets background/border/padding/margin — so the new <button> renders IDENTICALLY to the old <span>, never the browser\'s own button face',
   !!linkRuleMatch && /background:\s*none/.test(linkRuleMatch[0]) && /border:\s*none/.test(linkRuleMatch[0]) && /padding:\s*0/.test(linkRuleMatch[0]),

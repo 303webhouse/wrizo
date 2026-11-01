@@ -18,6 +18,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { withHarness } from '../runtime-verify.mjs';
 import { hittablePoint } from '../trusted-point.mjs';
+import { srcText } from '../global-css.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const SRC = path.join(here, '..', '..', 'src');
@@ -26,7 +27,7 @@ const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const noCR = (t) => t.replace(/\r\n?/g, '\n');
 const constOf = (file, name) => {
-  const m = noCR(fs.readFileSync(path.join(SRC, file), 'utf8')).match(new RegExp(`^const ${name} = ([0-9.]+);`, 'm'));
+  const m = noCR(srcText(SRC, file)).match(new RegExp(`^const ${name} = ([0-9.]+);`, 'm'));
   if (!m) throw new Error(`card-resize-axis: could not read ${name} out of ${file}`);
   return Number(m[1]);
 };
@@ -37,8 +38,8 @@ const MIN_PIN_W = constOf('components/BoardEditor.tsx', 'MIN_PIN_W');
 const TOL = 0.03;
 
 // ---- S: the source pins ---------------------------------------------------------------------------------------------------------------------------------------------------------------
-const be = noCR(fs.readFileSync(path.join(SRC, 'components/BoardEditor.tsx'), 'utf8'));
-const css = noCR(fs.readFileSync(path.join(SRC, 'index.css'), 'utf8'));
+const be = noCR(srcText(SRC, 'components/BoardEditor.tsx'));
+const css = noCR(srcText(SRC, 'index.css'));
 const pins = (b, c) => ({
   readsDy: /const dyFrac = \(e\.clientY - startY\) \/ pageWidthPx;\n(?:\s*\/\/[^\n]*\n)*\s*const byX = dx, byY = dyFrac \/ a;\n\s*const toward = resizeStart!\.w \+ \(Math\.abs\(byX\) >= Math\.abs\(byY\) \? byX : byY\);/.test(b),
   floors: /const w = Math\.max\(minW, MIN_PIN_H \/ a, toward\);\n\s*return \{ \.\.\.b, w, h: Math\.max\(MIN_PIN_H, w \* a\) \};/.test(b),
