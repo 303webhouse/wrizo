@@ -230,22 +230,33 @@ These rules apply to every 12x branch:
 - **Gate:** default leg.
 - **Size:** S.
 
-**12f · `c13-12f-sprout-door` · DELETE the Sprout door on the blank Free Write page (Fable, Nov 1)** ⚠ behaviour
-- **What:** Sprout is the page's only beginning (`PageEditor.tsx`, `beginningDoors`), so the page's whole beginnings plumbing goes with it:
-  `beginningDoors`, `takeBeginning`, `beginningsDismissed` and `beginningsRow` in `PageEditor.tsx`, the `sprout` glyph and kind in `BeginningsRow.tsx`,
-  the `beginSprout` lexicon key, and any CSS that the step 5 report shows matching only the page's row.
-- **Stays:** `BeginningsRow.tsx` itself (the board and projection starters use it). The first-line invite (`useFirstLineInvite.tsx`) stays for writers
-  who already turned it on: no stored key is touched or removed (law 4).
-- **The consequence, for Fable to rule:** `invite.optIn()` has one caller, the Sprout door. Once the door is gone a new writer cannot turn the invite on,
-  so the invite becomes dormant for everyone not already opted in. Default: keep it as it is (no data touched). The alternative is a 12x of its own, on Nick's word.
-- **Harness candidates** (grep at `3cc545e6`; audit each site at the branch point): `bg1`, `bg2`, `fx15`, `fx16`, `page-templates`, `pb1`,
-  `sprout-invite-scope`, `sprout-invite-scope-logic`, `item104`, `item109`, `page-size`, `sized-by-hand`; capture `page-templates-frames`.
-  Board-starter hits (`board-click-create`, `big-projects-2`, `deck-rows`, `guided-w3-part2`, `item9192`, `board-start-frames`) are probably the
-  board's row, which stays.
-- **Proof, beyond the common proof:** a blank Free Write page shows no beginnings row and the caret takes the first key exactly as before (TTFK path);
-  the page rect is unchanged (law 1); a seeded invite pref of `on` still shows the invite.
+**12f · `c13-12f-sprout-invite` · DELETE the Sprout door AND the first-line invite it turns on, everywhere, forever (Fable, Nov 1)** ⚠ behaviour
+- **Fable's ruling (Nov 1):** the first-line invite (`useFirstLineInvite`) IS the random blank-page prompt the Sprout door turns on, so it goes too.
+  Its stored opt-in pref stays as data; the code goes; its checks are parked verbatim with records.
+- **Code out:**
+  - `components/useFirstLineInvite.tsx` (the hook, the `.fl-invite` node, the `window.wrizoFirstLineInvite` hook, and the key migration code);
+  - in `PageEditor.tsx`: the `invite` hook, `invite.node`, the two `invite.dismiss()` calls, and the page's beginnings plumbing (Sprout is its only door):
+    `beginningDoors`, `takeBeginning`, `beginningsDismissed`, `beginningsRow`;
+  - the `sprout` glyph and kind in `BeginningsRow.tsx`, the `beginSprout` lexicon key, and the `.fl-invite` CSS (`styles/`, after step 6), plus any CSS
+    that the step 5 report shows matching only the page's row;
+  - `JournalEntry.tsx`'s use goes with that file in step 11 (if 12f lands first, its two invite lines go here).
+  - `store/idleNudges.ts` (the invite's lines) is also used by `HomeFlow.tsx` (step 11) and `QuickSprint.tsx` (12a): it goes with whichever of
+    11, 12a and 12f lands last.
+- **Stays:** `BeginningsRow.tsx` (the board and projection starters use it). **Stored data, untouched (law 4):** `wrizo-first-line-invite` and its
+  per-user scoped keys, and `wrizo-first-line-invite-migrated`. No code reads or writes them, and no code deletes them.
+- **AGENTS.md:** the F-arc line names "F6 first-line invitation"; note that F6 was removed in #13 12f.
+- **Parks, commit 1** (grep at `3cc545e6`; audit each site at the branch point): every check that reads, drives or greps the invite or the door,
+  parked VERBATIM with a record (retirement: the feature is gone): `bg1`, `bg2`, `fx15`, `fx16`, `item109`, `page-templates`,
+  `sprout-invite-scope`, `sprout-invite-scope-logic`; check `pb1`, `item104`, `page-size` and `sized-by-hand` too; capture `page-templates-frames`.
+  `connector-a`, `fx5` and `scripts/orphan-reaper.mjs` matched the invite's identifiers in ledger 130's sweep; audit them. Board-starter hits
+  (`board-click-create`, `big-projects-2`, `deck-rows`, `guided-w3-part2`, `item9192`, `board-start-frames`) are probably the board's row, which stays.
+- **Proof, beyond the common proof:**
+  - a new harness, red on main first: a blank Free Write page shows no beginnings row and no invite, also with the invite pref seeded `on`
+    (signed out, and scoped to a signed-in writer);
+  - the caret takes the first key exactly as before (the TTFK path), and the page rect is unchanged (law 1);
+  - the seeded pref keys are byte-identical in storage before and after a boot on the new build.
 - **Gate:** full pair (`PageEditor.tsx`), its own train, so a red points at one cause.
-- **Size:** S.
+- **Size:** S–M.
 
 **12d · `c13-12d-fragments-code` · DELETE the fragments code; the stored data and the column stay untouched** ⚠ data
 - **Code out** (`persistence.ts`): `getFragments`, `appendText`, `toggleStruck`, `reorderSpine`, `linkFragments`, `setFragmentRole`,
