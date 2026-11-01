@@ -9,6 +9,11 @@
 //        the proof: (1) nothing is tracked under docs/evidence/ now; (2) every manifest row is in the base commit with that blob (recoverable);
 //        (3) the only files the step deletes are the manifest's, and nothing outside docs/evidence/ is deleted or changed except the step's own
 //        two files; (4) .railwayignore still keeps docs/evidence/ out of the deploy. --plant: the same check on a mutated input: must FAIL.
+//        --at <rev> reads the step at that commit (4c's own tip, 04ad76fb), so a later commit on top does not count as "outside the step".
+//   node apps/desktop/scripts/c13/c13-4c-evidence.mjs ignore [--plant nobox|image|yml]
+//        Fable, Nov 1: new evidence is text box logs only. .gitignore keeps docs/evidence/ out of git EXCEPT the .txt files under
+//        docs/evidence/box-logs/, and harness.yml only accepts box-log paths there. The probes run in a scratch repo built from the real
+//        .gitignore (nothing in this tree is touched); --plant mutates that copy (or the yml text) and must FAIL.
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -57,12 +62,14 @@ function verify() {
   const rows = text.split(/\r?\n/).filter((l) => l && !l.startsWith('#') && !l.startsWith('file\t')).map((l) => { const [file, blob] = l.split('\t'); return { file, blob }; });
   if (plant === 'missing') rows.push({ file: `${DIR}/never-was.png`, blob: '0'.repeat(40) });
   const fails = [];
-  const nowTracked = git('ls-files', `${DIR}/`).split('\n').filter(Boolean);
+  // Tracked now: text box logs are allowed under box-logs/ (Fable, Nov 1); anything else under docs/evidence/ is a failure.
+  const nowTracked = git('ls-files', `${DIR}/`).split('\n').filter((f) => f && !/^docs\/evidence\/box-logs\/.+\.txt$/.test(f));
   if (nowTracked.length) fails.push(`${nowTracked.length} files still tracked under ${DIR}/`);
   const atBase = new Map(git('ls-tree', '-r', base, `${DIR}/`).split('\n').filter(Boolean).map((l) => { const [meta, file] = l.split('\t'); return [file, meta.split(/\s+/)[2]]; }));
   for (const r of rows) if (atBase.get(r.file) !== r.blob) fails.push(`not recoverable at ${base.slice(0, 8)}: ${r.file}`);
   if (atBase.size !== rows.length - (plant === 'missing' ? 1 : 0)) fails.push(`manifest rows ${rows.length} vs files at base ${atBase.size}`);
-  let changes = git('diff', '--name-status', '--no-renames', base, 'HEAD').split('\n').filter(Boolean).map((l) => l.split('\t'));
+  const at = process.argv.includes('--at') ? process.argv[process.argv.indexOf('--at') + 1] : 'HEAD';
+  let changes = git('diff', '--name-status', '--no-renames', base, at).split('\n').filter(Boolean).map((l) => l.split('\t'));
   if (plant === 'extra') changes.push(['D', 'docs/MAP.md']);
   const listed = new Set(rows.map((r) => r.file));
   for (const [st, f] of changes) {
@@ -78,4 +85,44 @@ function verify() {
   process.exit(fails.length ? 1 : 0);
 }
 
-({ manifest, remove, verify }[process.argv[2]] ?? (() => { console.log('usage: manifest | remove | verify [--plant missing|extra|ignore]'); process.exit(1); }))();
+function ignore() {
+  const plant = process.argv.includes('--plant') ? process.argv[process.argv.indexOf('--plant') + 1] : null;
+  let gi = fs.readFileSync(path.join(ROOT, '.gitignore'), 'utf8').replace(/\r\n/g, '\n');
+  if (plant === 'nobox') gi = gi.replace(/^!docs\/evidence\/box-logs\/.*$/gm, '');
+  if (plant === 'image') gi = gi.replace(/^docs\/evidence\/box-logs\/\*\*$/m, '');
+  let yml = fs.readFileSync(path.join(ROOT, '.github/workflows/harness.yml'), 'utf8');
+  if (plant === 'yml') yml = yml.replace("'^docs/evidence/box-logs/", "'^docs/evidence/");
+  const tmp = fs.mkdtempSync(path.join(fs.realpathSync(process.env.TEMP || process.env.TMPDIR || '/tmp'), 'c13-4c-ignore-'));
+  const fails = [];
+  try {
+    execFileSync('git', ['init', '-q', tmp]);
+    fs.writeFileSync(path.join(tmp, '.gitignore'), gi);
+    // [path, must be ignored?]
+    const probes = [
+      ['docs/evidence/scrollbar-flush/arbor-dark/01.jpg', true],
+      ['docs/evidence/page-size-final/02.png', true],
+      ['docs/evidence/item210/rerun.log.txt', true],
+      ['docs/evidence/frames.json', true],
+      ['docs/evidence/box-logs/c13-4b-8df3c60b/default.log.txt', false],
+      ['docs/evidence/box-logs/parked.log.txt', false],
+      ['docs/evidence/box-logs/c13-4b-8df3c60b/01.png', true],
+      ['docs/evidence/box-logs/c13-4b-8df3c60b/frames.json', true],
+      ['docs/MAP.md', false],
+    ];
+    for (const [p, want] of probes) {
+      fs.mkdirSync(path.dirname(path.join(tmp, p)), { recursive: true });
+      fs.writeFileSync(path.join(tmp, p), 'x');
+      let ignored = true;
+      try { execFileSync('git', ['-C', tmp, 'check-ignore', '-q', p]); } catch { ignored = false; }
+      if (ignored !== want) fails.push(`${p}: ${ignored ? 'ignored' : 'committable'}, expected ${want ? 'ignored' : 'committable'}`);
+    }
+  } finally { fs.rmSync(tmp, { recursive: true, force: true }); }
+  if (!/grep -Eq '\^docs\/evidence\/box-logs\//.test(yml)) fails.push('harness.yml accepts box-log paths outside docs/evidence/box-logs/');
+  const rw = fs.readFileSync(path.join(ROOT, '.railwayignore'), 'utf8');
+  if (!/^docs\/evidence\/?\s*$/m.test(rw)) fails.push('.railwayignore no longer keeps docs/evidence/ (box logs included) out of the deploy');
+  for (const f of fails) console.log('FAIL', f);
+  console.log(`${fails.length ? `IGNORE: FAIL (${fails.length})` : 'IGNORE: PASS'} (9 path probes, harness.yml, .railwayignore)${plant ? `; PLANTED: ${plant}` : ''}`);
+  process.exit(fails.length ? 1 : 0);
+}
+
+({ manifest, remove, verify, ignore }[process.argv[2]] ?? (() => { console.log('usage: manifest | remove | verify [--at rev] [--plant missing|extra|ignore] | ignore [--plant nobox|image|yml]'); process.exit(1); }))();

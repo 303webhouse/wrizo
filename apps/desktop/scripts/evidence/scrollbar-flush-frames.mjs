@@ -1,7 +1,7 @@
 // SCROLLBAR-FLUSH - THE SCREENS, for Fable's clear (Oct 23): the page scrollbar, Arbor and Flux, margins narrow / normal / wide, and the LIGHT
 // board canvas. Evidence, not a check: scripts/evidence/ (run-suite runs scripts/harness/, and this writes images). Run by hand.
 //   Run: node scripts/evidence/scrollbar-flush-frames.mjs   (from apps/desktop, dist-web built; needs a box turn)
-// Output: docs/evidence/scrollbar-flush/<combo>/<frame>.jpg (JPEG q80, 1400 wide - the evidence commit rule) plus frames.json with, per frame, the
+// Output: docs/evidence/scrollbar-flush/<combo>/<frame>.jpg (JPEG q80, 1400 wide; frames stay local: docs/evidence/ is gitignored except box-logs/) plus frames.json with, per frame, the
 // numbers the picture is meant to show (the gap from the page edge, the bar's width, the resolved colour), so a frame is never the only witness.
 // Each page frame is also scrolled mid-page: a bar at rest and a bar being used are different pictures.
 import { mkdirSync, writeFileSync } from 'node:fs';
