@@ -1,4 +1,5 @@
 import { liveBoxes } from '../store/boxTombstones';
+import { PlansOutline as Machina2PlansOutline } from '../machina2/doors';   // MACHINA v2 mockup (?machina2=1 only)
 import { useAskBeforeDelete, setAskBeforeDelete, requestDelete } from '../store/deleteGate';
 import { openContextMenu } from '../store/contextMenu';
 import { useEffect, useReducer, useRef, useState, type ReactNode } from 'react';
@@ -609,7 +610,11 @@ function PlanPanel({ subject, project, navigate, openSurvey, travelFromCascade }
   // sentence telling a page with no drawer to file itself first. The lexicon keeps those terms; nothing renders them now.
   void project;
   return (
-    <SectionsPopout view="boards" currentId={subject.entry.id} navigate={navigate} journalLabel={t('drawerPlaceJournal')} zone={zone} />
+    <>
+      {/* MACHINA v2 mockup (?machina2=1, Machina only; the Wrizors' door 3): "Outline → Parts" first - draws nothing off the flag */}
+      <Machina2PlansOutline />
+      <SectionsPopout view="boards" currentId={subject.entry.id} navigate={navigate} journalLabel={t('drawerPlaceJournal')} zone={zone} />
+    </>
   );
 }
 

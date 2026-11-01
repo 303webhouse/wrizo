@@ -714,6 +714,10 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           the drawer's tenants. The control itself stays caption-free (his minimal-interface law); the section above it is
           headed "Typeface" like every other drawer zone. Absent, never greyed, wherever the host passes no `type` (a
           screenplay page). */}
+      {/* MACHINA v2 MOCKUP (?machina2=1, Machina only; spec §8.3, Fable ruling 4: the affordance only - the behaviour comes with the spine).
+          r4 (the Wrizors' door 3, Nov 1): its own section, FIRST in the drawer, above Forms - it sat last, below the fold, and Nick could not
+          find it. */}
+      {content.kind === 'draft' && theme === 'machina' && isMachina2() && <OutlineParts pageId={content.pageId} />}
       {(content.kind === 'freewrite' || content.kind === 'draft' || content.kind === 'revise') && content.type && allowed('typeface') && (
         <div className="wz-sliver-section wz-sliver-type"><div className="wz-sliver-h">{t('railTypeface')}</div><TypeControl {...content.type} /></div>
       )}
@@ -933,7 +937,6 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
         </div>
       )}
       {/* MACHINA v2 MOCKUP (?machina2=1, Machina only; spec §8.3, Fable ruling 4: the affordance only - the behaviour comes with the spine) */}
-      {content.kind === 'draft' && theme === 'machina' && isMachina2() && <OutlineParts pageId={content.pageId} />}
     </div>
   );
 }

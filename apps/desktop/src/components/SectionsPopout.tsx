@@ -22,6 +22,8 @@ import { walkOrder } from '../store/walk';
 import { liveBoxes } from '../store/boxTombstones';
 import { kindled } from '../store/guided';
 import type { JournalEntry } from '../types';
+import { isMachina2 } from '../machina2/flag';   // MACHINA v2 mockup (?machina2=1 only): the rows' "beside" door
+import { FilesBeside } from '../machina2/beside';
 
 // BIG PROJECTS 1a (docs/plans/big-projects.md) - THE PAGES POP-OUT. Where you are (a Drawer or a Journal), the sections in it in the writer's
 // own order, set headings once a second set exists, + New set, Presets, and X (out to the Journal, with Undo). It replaces the Open Pages list;
@@ -237,6 +239,8 @@ export function SectionsPopout({ view, currentId, navigate, boardId, journalLabe
           </>
         ) : <span className="wz-place-page-title">{titleOf(e)}</span>}
       </button>
+      {/* MACHINA v2 mockup (?machina2=1, Machina only; the Wrizors' door 4): a small "beside" door on the row's hover and keyboard focus */}
+      {mode === 'pages' && !boardId && theme === 'machina' && isMachina2() && <FilesBeside currentId={currentId} entryId={e.id} />}
       {mode === 'pages' && boardId && (
         <button type="button" className="wz-open-pages-more" aria-label={t('openPagesMore')} aria-haspopup="menu" aria-expanded={menuFor === e.id}
           onClick={() => setMenuFor(menuFor === e.id ? null : e.id)}>{'⋯'}</button>

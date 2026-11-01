@@ -24,8 +24,9 @@ export function OutlineParts({ pageId }: { pageId: string | null | undefined }) 
   const points = outlinePoints(entry?.text || '');
   const done = (pageId && ticked.get(pageId)) || new Set<number>();
   return (
-    <div className="wz-sliver-section machina2-outline" data-points={points.length}>
-      <div className="wz-sliver-h">Outline → Parts</div>
+    <div className="wz-sliver-section machina2-outline" id="machina2-outline" data-points={points.length}>
+      {/* r4 (the Wrizors' door 3): headed OUTLINE (the caps are the drawer headings' own style); "→ Part" shows on every point at rest */}
+      <div className="wz-sliver-h">Outline</div>
       {points.length === 0 && <p className="machina2-outline-empty">No outline points yet: each paragraph you write is one.</p>}
       <ol className="machina2-outline-list">
         {points.map((p, i) => (
