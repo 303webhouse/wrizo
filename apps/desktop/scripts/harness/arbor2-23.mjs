@@ -25,7 +25,8 @@ const setFlag = async (app, on) => {
   await app.evalJs(`history.replaceState(null, '', ${JSON.stringify(on ? '/?arbor2=1' : '/')} + location.hash)`);
   await app.reload(); await splashGone(app); await sleep(400);
 };
-const pickBar = (app, label) => app.evalJs(`(() => { const b = [...document.querySelectorAll('.arbor2-bar-opt')].find((x) => x.textContent.trim() === ${JSON.stringify(label)}); if (b) b.click(); return !!b; })()`);
+// (r8: the Room switch lives in the Mood menu, folded by default - the driver opens Mood first when the label is not on screen; no assertion changed)
+const pickBar = async (app, label) => { await app.evalJs(`(() => { if ([...document.querySelectorAll('.arbor2-bar-opt')].some((x) => x.textContent.trim() === ${JSON.stringify(label)})) return; const m = [...document.querySelectorAll('.arbor2-bar-head')].find((h) => /^Mood/.test(h.textContent.trim()) && h.getAttribute('aria-expanded') !== 'true'); if (m) m.click(); })()`); await new Promise((r) => setTimeout(r, 150)); return app.evalJs(`(() => { const b = [...document.querySelectorAll('.arbor2-bar-opt')].find((x) => x.textContent.trim() === ${JSON.stringify(label)}); if (b) b.click(); return !!b; })()`); };
 const clickSel = (app, sel) => app.evalJs(`(() => { const b = document.querySelector(${JSON.stringify(sel)}); if (b) b.click(); return !!b; })()`);
 const clickText = (app, sel, text) => app.evalJs(`(() => { const b = [...document.querySelectorAll(${JSON.stringify(sel)})].find((x) => (x.textContent || '').trim().toLowerCase() === ${JSON.stringify(text.toLowerCase())}); if (b) b.click(); return !!b; })()`);
 
