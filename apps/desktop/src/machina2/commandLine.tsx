@@ -17,6 +17,12 @@ import { isOn, subscribeSwitches } from './switches';
 // link dock) have no keyboard chord. Two collisions are OUTSIDE the app: ⌘K / Ctrl+K is "insert link" by convention in Docs, Word and Notion -
 // so the day links get a keyboard door it should be a command here ("link…"), not a second chord - and on macOS Ctrl+K is the text system's
 // kill-to-end-of-line, so on a Mac only ⌘K opens the line and Ctrl+K is left to the editor.
+// THE KEYS, RULED (Fable, Oct 31, after the check above): links = Ctrl+K (Windows/Linux) and ⌘K (Mac only); the command line = Ctrl+/ (⌘/ on a
+// Mac), with an "Add link" command inside it. So r2 moves the line to Ctrl/⌘ + / and gives K to the link: Ctrl/⌘K and the "Add link" command run
+// ONE act, the existing one - the right drawer's "+ Graft..." (the Links tab's own button, ConnectionsDrawerPanel, which opens GraftPicker).
+// THE ONE COLLISION THIS MAKES: Ctrl+/ (and ⌘/) already opens the Controls drawer (components/Sliver.tsx). Under the flag, while the command
+// line's switch is on, the line takes the chord first (a capture listener that stops it), and the Controls drawer stays one command away
+// ("Controls drawer"); switch the line off and Ctrl+/ opens the Controls drawer again. Handed to Fable as a conflict, not decided here.
 // THE KEYBOARD LEGEND (§8.4, ruling 1: shortcuts plus a legend drawn from the command registry, not a stored mode): with the switch on, the
 // box lists the commands that already have a chord. In session only; nothing stored.
 type Cmd = { id: string; label: string; words: string; run: () => void; chord?: string };
@@ -29,6 +35,27 @@ const visible = (el: Element | null): el is HTMLElement => {
   return r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden';
 };
 const press = (el: HTMLElement | null) => () => { el?.click(); };
+
+/** Waits up to ~60 frames for a control to be on screen; every frame reads the DOM, so the wait ends on what is there, not on a clock. */
+const until = (find: () => Element | null, frames = 60): Promise<HTMLElement | null> => new Promise((done) => {
+  const step = (n: number) => { const el = find(); if (visible(el)) return done(el); if (n <= 0) return done(null); requestAnimationFrame(() => step(n - 1)); };
+  step(frames);
+});
+
+/** ADD LINK (r2; Fable's key ruling): the existing act - the right drawer opens on its Links tab and "+ Graft..." is pressed, so the picker
+ *  opens as if she had clicked it. A page or a board must be open (the drawer's grip is the sign); otherwise nothing happens. */
+export function canAddLink(): boolean { return visible(document.querySelector('.wz-tutor-grip')); }
+export async function addLink(): Promise<boolean> {
+  if (!canAddLink()) return false;
+  const tab = () => document.querySelector('#wz-tutor-tab-links');
+  if (!visible(tab())) document.querySelector<HTMLElement>('.wz-tutor-grip')?.click();
+  const t = await until(tab); if (!t) return false;
+  if (t.getAttribute('aria-selected') !== 'true') t.click();
+  const add = await until(() => document.querySelector('[data-graft-add]')) as HTMLButtonElement | null;
+  if (!add || add.disabled) return false;
+  if (add.getAttribute('aria-expanded') !== 'true') add.click();
+  return true;
+}
 const words = (s: string) => s.replace(/[→▸▾]/g, ' ').replace(/\s+/g, ' ').trim();
 
 /** The registry, read when the line opens: the controls on screen now, and the app's own preference setters. */
@@ -47,9 +74,10 @@ export function buildRegistry(query: string): Cmd[] {
     out.push({ id: 'open-' + w.toLowerCase(), label: `Open: ${w}`, words: `open go ${w}`, run: press(b) });
   });
   const tools = document.querySelector<HTMLElement>('.wz-sliver-grip');
-  if (visible(tools)) out.push({ id: 'controls', label: 'Controls drawer', words: 'controls tools drawer format font left', run: press(tools), chord: `${MOD}/` });
+  if (visible(tools)) out.push({ id: 'controls', label: 'Controls drawer', words: 'controls tools drawer format font left', run: press(tools) });
   const tutor = document.querySelector<HTMLElement>('.wz-tutor-grip');
   if (visible(tutor)) out.push({ id: 'consultant', label: 'Consultant', words: 'consultant tutor ask assets right drawer', run: press(tutor) });
+  if (canAddLink()) out.push({ id: 'add-link', label: 'Add link', words: 'add link links graft connect attach', run: () => { void addLink(); }, chord: `${MOD}K` });
   const flow = document.querySelector<HTMLElement>('.typewriter-toggle');
   if (visible(flow)) out.push({ id: 'flow', label: 'Flow State', words: 'flow state typewriter zoom focus', run: press(flow) });
   const dots = document.querySelector<HTMLElement>('.gh-corner-glyph');
@@ -110,7 +138,7 @@ export function CommandLine() {
     const onKey = (e: KeyboardEvent) => {
       const k = e.key.toLowerCase();
       const chord = mac ? e.metaKey && !e.ctrlKey : e.ctrlKey && !e.metaKey;
-      if (k === 'k' && chord && !e.altKey && !e.shiftKey && !e.isComposing) {
+      if ((k === '/' || (e.code === 'Slash' && !e.shiftKey)) && chord && !e.altKey && !e.isComposing) {
         e.preventDefault();
         e.stopPropagation();
         setOpen((o) => {
@@ -122,6 +150,21 @@ export function CommandLine() {
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
   }, [enabled]);
+  // Ctrl+K (⌘K on a Mac) = Add link, the links key - whether or not the command line's switch is on (it is the link's key, not the line's)
+  const machina = theme === 'machina';
+  useEffect(() => {
+    if (!machina) return;
+    const onKey = (e: KeyboardEvent) => {
+      const chord = mac ? e.metaKey && !e.ctrlKey : e.ctrlKey && !e.metaKey;
+      if (e.key.toLowerCase() !== 'k' || !chord || e.altKey || e.shiftKey || e.isComposing || !canAddLink()) return;
+      e.preventDefault();
+      e.stopPropagation();
+      setOpen(false);
+      void addLink();
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [machina]);
   useEffect(() => { if (open) requestAnimationFrame(() => input.current?.focus()); }, [open]);
 
   const cmds = useMemo(() => (open ? matchCommands(buildRegistry(q), q) : []), [open, q]);
@@ -149,7 +192,7 @@ export function CommandLine() {
       <p className="machina2-cmd-foot">↵ run · ↑↓ choose · Esc close</p>
       {legend.length > 0 && (
         <ul className="machina2-cmd-legend" aria-label="Keyboard legend">
-          <li><kbd>{MOD}K</kbd> command line</li>
+          <li><kbd>{MOD}/</kbd> command line</li>
           {legend.map((c) => <li key={c.id}><kbd>{c.chord}</kbd> {c.label}</li>)}
           <li><kbd>{MOD}B</kbd> <kbd>{MOD}I</kbd> <kbd>{MOD}U</kbd> bold · italic · underline (Build)</li>
           <li><kbd>{MOD}Z</kbd> undo · <kbd>{mac ? '⇧⌘Z' : 'Ctrl+Y'}</kbd> redo</li>

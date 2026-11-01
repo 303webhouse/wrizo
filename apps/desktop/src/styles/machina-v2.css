@@ -6,7 +6,10 @@
    §2 TOKENS v3 (Nick 3:03 pm: grayscale first, one palette for both tones; 3:11 pm: the menu bars dark in BOTH tones, their temperature by
    CAST). One grey ramp shared by light and dark, used in opposite emphasis:
      G0 #F4F5F6 · G1 #E6E8EA · G2 #D2D6DA · G3 #9AA1A8 · G4 #5E666E · G5 #3A4047 · G6 #23272B · G7 #151719
-   THE ROOM FOLLOWS THE EXISTING PAGE TONE (data-page; no new data): a light page = the light room, a dark page = the dark room.
+   THE ROOM AND THE PAGE ARE TWO SETTINGS (r2; Nick's pick via Fable, Oct 31: a separate Room setting). The room reads data-room when it is set,
+   else it follows the Page tone (data-page) - resolved by src/machina2/room.ts into data-machina2-room (light | dark), which every ROOM rule
+   below reads; the PAGE rules (the paper, its ink, its hairline, the board's cards) read data-page alone. So all four mixes hold: light room
+   with a light or a dark page, dark room with either. In session only; nothing stored.
      LIGHT  room G1, panels G0, hairlines G2, labels G5, quiet G4         (NEUTRAL: the warm ramp - #E9E6E1 / #F5F3EF / #D6D1C9 / #3B3833 / #5F5A53)
      DARK   room G7, panels G6, hairlines G5, labels G1, quiet G3         (NEUTRAL: #171614 / #242220 / #3B3834 / #E6E2DB / #A09A91)
      PAGE   light #FBFBFA ink #1C1C1C · dark #1A1B1D ink #E6E6E3 (both casts)
@@ -33,14 +36,17 @@
   --signal-live:#9AA1A8;
 }
 /* ---------- THE LIGHT ROOM (COOL) ---------- */
-:root[data-machina2][data-theme='machina'][data-page='light']{
+:root[data-machina2][data-theme='machina'][data-machina2-room='light']{
   --ink-950:#E6E8EA; --lamp-glow:linear-gradient(#E6E8EA, #E6E8EA);
   --chrome-surface:#F4F5F6; --ink-900:#F4F5F6; --ink-800:#E6E8EA;
   --ink-border:#D2D6DA; --ink-border-strong:#9AA1A8;
   --text-hi:#3A4047; --text-mid:#3A4047; --text-low:#5E666E;
-  --paper:#FBFBFA; --paper-dim:#F4F5F6; --paper-border:#D2D6DA; --ink-on-paper:#1C1C1C; --ink-on-paper-low:#5E666E;
   --machina2-guide:#3F6183; --help:#3F6183; --help-hi:#2E4A66; --text-accent:#3F6183; --accent-door:#3F6183;
   --signal-live:#5E666E;
+}
+/* the light PAGE (COOL), in either room */
+:root[data-machina2][data-theme='machina'][data-page='light']{
+  --paper:#FBFBFA; --paper-dim:#F4F5F6; --paper-border:#D2D6DA; --ink-on-paper:#1C1C1C; --ink-on-paper-low:#5E666E;
 }
 /* ---------- NEUTRAL: the warm ramp ---------- */
 :root[data-machina2][data-theme='machina'][data-cast='neutral']{
@@ -51,19 +57,28 @@
   --line-active:#FF9800; --choice:#FF9800; --accent-rest:var(--text-hi); --text-accent:#8FA3B8; --help:#8FA3B8; --help-hi:#B4C3D2; --accent-door:#8FA3B8;
   --signal-live:#A09A91;
 }
-:root[data-machina2][data-theme='machina'][data-cast='neutral'][data-page='light']{
+:root[data-machina2][data-theme='machina'][data-cast='neutral'][data-machina2-room='light']{
   --ink-950:#E9E6E1; --lamp-glow:linear-gradient(#E9E6E1, #E9E6E1);
   --chrome-surface:#F5F3EF; --ink-900:#F5F3EF; --ink-800:#E9E6E1;
   --ink-border:#D6D1C9; --ink-border-strong:#A09A91;
   --text-hi:#3B3833; --text-mid:#3B3833; --text-low:#5F5A53;
-  --paper:#FBFBFA; --paper-dim:#F5F3EF; --paper-border:#D6D1C9; --ink-on-paper:#1C1C1C; --ink-on-paper-low:#5F5A53;
   --text-accent:#3F6183; --help:#3F6183; --help-hi:#2E4A66; --accent-door:#3F6183;
   --signal-live:#5F5A53;
 }
-/* the page in the dark room, both casts (the cast does not touch the page) */
+/* THE PAGE by cast, in either room (the page's white and its ink are the same in both casts; its dim, hairline and low ink take the cast) */
+:root[data-machina2][data-theme='machina'][data-cast='neutral'][data-page='light']{
+  --paper:#FBFBFA; --paper-dim:#F5F3EF; --paper-border:#D6D1C9; --ink-on-paper:#1C1C1C; --ink-on-paper-low:#5F5A53;
+}
+/* the dark page, both casts (the cast does not touch the page's own colour) */
 :root[data-machina2][data-theme='machina'][data-cast='neutral']:not([data-page='light']){
   --paper:#1A1B1D; --paper-dim:#171614; --paper-border:#3B3834; --ink-on-paper:#E6E6E3; --ink-on-paper-low:#A09A91;
 }
+/* THE BOARD'S CARDS follow the page, not the room (the base theme drew a dark page's cards in the room's tokens, which a light room would turn
+   light): pinned to the dark ramp - the same values the dark room gave them before r2, so the matched cases do not change. */
+:root[data-machina2][data-theme='machina']:not([data-page='light']) .board-canvas{ --card-stock:#23272B; --card-hairline:#3A4047; --ink-on-card:#E6E8EA; --ink-on-card-low:#9AA1A8; --ink-on-card-meta:#9AA1A8; --badge-on-card:#9AA1A8; }
+:root[data-machina2][data-theme='machina'][data-cast='neutral']:not([data-page='light']) .board-canvas{ --card-stock:#242220; --card-hairline:#3B3834; --ink-on-card:#E6E2DB; --ink-on-card-low:#A09A91; --ink-on-card-meta:#A09A91; --badge-on-card:#A09A91; }
+:root[data-machina2][data-theme='machina'][data-page='light'] .board-canvas{ --card-hairline:#D2D6DA; }
+:root[data-machina2][data-theme='machina'][data-cast='neutral'][data-page='light'] .board-canvas{ --card-hairline:#D6D1C9; }
 
 /* ---------- THE MENU BARS: dark in BOTH tones, their temperature by CAST ----------
    The top bar, the rail and the "..." carry the bar's own tokens, so they letter in the bar's labels on the bar in either room. */
@@ -82,8 +97,9 @@
 :root[data-machina2][data-theme='machina'] .gh-corner-glyph{ background-color:var(--ink-900); }
 
 /* ---------- THE PAGE: the near-white page is the bright thing in the light room; a hairline, not a cast shadow ---------- */
-:root[data-machina2][data-theme='machina'][data-page='light'] .mode-page{ box-shadow:0 0 0 1px var(--paper-border); }
-:root[data-machina2][data-theme='machina'][data-page='light'] .mode-page.focused{ box-shadow:0 0 0 1px var(--paper-border); }
+/* (r2: keyed on the ROOM - a cast shadow is what the light room refuses, whatever the page; in the dark room the base theme's shadow stays) */
+:root[data-machina2][data-theme='machina'][data-machina2-room='light'] .mode-page{ box-shadow:0 0 0 1px var(--paper-border); }
+:root[data-machina2][data-theme='machina'][data-machina2-room='light'] .mode-page.focused{ box-shadow:0 0 0 1px var(--paper-border); }
 
 /* ---------- GUIDANCE in the cool blue, and nowhere else ---------- */
 :root[data-machina2][data-theme='machina'] .sprint-nav .page-plan-door{ color:var(--machina2-guide); }
@@ -143,7 +159,7 @@
 .machina2-cmd-legend kbd{ font:inherit; color:var(--text-hi); border:1px solid var(--ink-border); padding:0 3px; }
 
 /* ---------- THE BLUE WASH (§6: "the blue wash low"; §11's switch) - a faint cool wash at the light room's foot, never on the page ---------- */
-:root[data-machina2][data-theme='machina'][data-page='light']:not([data-machina2-off~='wash']) body{ background-image:linear-gradient(to top, rgba(127, 160, 188, .10), rgba(127, 160, 188, 0) 38%); background-attachment:fixed; }
+:root[data-machina2][data-theme='machina'][data-machina2-room='light']:not([data-machina2-off~='wash']) body{ background-image:linear-gradient(to top, rgba(127, 160, 188, .10), rgba(127, 160, 188, 0) 38%); background-attachment:fixed; }
 
 /* ---------- THE MOCKUP'S OWN PANEL (not product: exists only under the flag). Square, hairline, no shadow, bottom-right above the corner;
    overlays, never displaces; recedes while she types. ---------- */
