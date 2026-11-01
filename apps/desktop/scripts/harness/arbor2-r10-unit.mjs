@@ -24,7 +24,12 @@ ok('W3 the room switches at the middle', MID === 0.5, String(MID));
 ok('W3 the count on its plate holds 4.5:1 on either side of the middle', contrast(P('#EFE4CB'), P('#1B120C')) >= 4.5 && contrast(P('#33401F'), P('#E8DFC8')) >= 4.5,
   `${contrast(P('#EFE4CB'), P('#1B120C')).toFixed(2)} / ${contrast(P('#33401F'), P('#E8DFC8')).toFixed(2)}`);
 const css = fs.readFileSync(new URL('../../src/styles/arbor-v2.css', import.meta.url), 'utf8');
-ok('W3 the plate is the instrument\'s own box on the room\'s surface, its labels in the room\'s letter', /\.desk-frame-instrument\{ background:var\(--ink-900\)/.test(css) && /:is\(\.mode-pmeta, \.mode-pmetric\)\{ color:var\(--arbor-letter\)/.test(css), '');
+// PARKED 2026-11-01 (SUPERSEDED by Fable's ruling, Nov 1, on the Wrizors' answer (spec draft 13 §2e): the count row's plate is the page's paper and its letters the page's low ink, following the Page setting, never the room). Original, verbatim:
+// ok('W3 the plate is the instrument\'s own box on the room\'s surface, its labels in the room\'s letter', /\.desk-frame-instrument\{ background:var\(--ink-900\)/.test(css) && /:is\(\.mode-pmeta, \.mode-pmetric\)\{ color:var\(--arbor-letter\)/.test(css), '');
+// SUCCESSOR W3b: the plate is the instrument's own box on the page's paper, in the page's low ink, and no room token is left on it.
+ok('W3b the plate is the instrument\'s own box on the page\'s paper, its labels in the page\'s low ink', /\.desk-frame-instrument\{ background:var\(--paper\)/.test(css) && /:is\(\.mode-pmeta, \.mode-pmetric\)\{ color:var\(--ink-on-paper-low\)/.test(css) && !/\.desk-frame-instrument\{ background:var\(--ink-900\)/.test(css), '');
+ok('W3b the page\'s low ink holds 4.5:1 on its own paper in both page tones', contrast(P('#6B5F4E'), P('#F3EDE1')) >= 4.5 && contrast(P('#B9AA8C'), P('#1A1510')) >= 4.5,
+  `${contrast(P('#6B5F4E'), P('#F3EDE1')).toFixed(2)} / ${contrast(P('#B9AA8C'), P('#1A1510')).toFixed(2)}`);
 const mount = fs.readFileSync(new URL('../../src/arbor2/mount.tsx', import.meta.url), 'utf8');
 ok('W3 the mount switches at MID and writes the pool from the handoff', /t >= MID \? 'day' : 'night'/.test(mount) && /poolAt\(t\)/.test(mount) && !/fadeCross/.test(mount), '');
 
