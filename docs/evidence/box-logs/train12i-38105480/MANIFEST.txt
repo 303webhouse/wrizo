@@ -1,0 +1,20 @@
+Train #12i - manifest (Chat 1, Nov 1 2026)
+
+Product tree 38105480 (train-12i: main 2f01ea27 + one --no-ff merge; main is fast-forwarded to it, then the cleared #13 merges and these records land on top;
+`git diff 38105480 HEAD -- apps/desktop/src apps/server` is empty). Rollback target: git 51d45fc6 / railway 48f1335f (deploy #12h).
+
+IN: FIX typewriter-stall-cap-r1 619f666b (merge 38105480). The typewriter's catch-up step is capped at 2 lines (MAX_STEP_LINES in useTypewriterFade.ts, +6/-2),
+so a backlog past the 1 s cap is paid in more steps, never a bigger one (fx5 S1 a: 444 px in one frame, 1 run in 24 at 12h). New typewriter-stall.mjs (4 checks, red first);
+typewriter-glide-keys.mjs types two sentences instead of one (the capped engine climbs a little slower). No server, migration or package change.
+
+RUNS
+- tsc desktop 0, tsc server 0, seed-guard PASS 36. Bundle index-CE6uLLXE.js, 958242 bytes.
+- GitHub Actions full pair, run 41343696470 (8 shards per leg, ref = the full sha): default 229/236, parked 229/236; the 7 non-OK are the capture/probe tools with no verdict line, both legs
+  (arrival-signin-capture, flux-screens, flux-v2-part2, polish10-14-frames, splash-sweep-capture, theme-leftovers-capture, tutor-drawer-probe). typewriter-stall PASS 4/4,
+  typewriter-glide-keys PASS 8/8, typewriter-page PASS 22, caret-reset PASS 27/27, fx5 PASS 57 - both legs.
+- Box, 18 files (INK's box-only list + cd2, typewriter-glide-keys, tw-glide-measure + typewriter-stall, typewriter-page, caret-reset). Stamp tree=38105480 bundle=index-CE6uLLXE.js/958242b.
+  Default CLEAN 18/18, parked CLEAN 18/18. typewriter-stall + typewriter-glide-keys two extra rounds per leg: all PASS. fx5 x3 per leg: 6/6 PASS (57 checks).
+  Box turn 19:50Z-20:19Z, released.
+- Clear: Fable, Nov 1 ("train-12i = FIX typewriter-stall-cap-r1 619f666b, CLEARED ... Green -> ship").
+
+Files here: pair-*.log.txt and summary.txt (Actions); box-default/parked.log.txt; stall-glide-{default,parked}-{1,2}.log.txt; fx5-{default,parked}-{1,2,3}.log.txt.

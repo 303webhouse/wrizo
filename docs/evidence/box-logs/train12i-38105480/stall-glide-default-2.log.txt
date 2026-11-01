@@ -1,0 +1,11 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=2 tree=38105480 bundle=index-CE6uLLXE.js/958242b out=C:/Users/nickh/t12i-box/std2
+(node:33780) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[01/2] OK        exit=0   24s typewriter-glide-keys.mjs :: TYPEWRITER-GLIDE-KEYS VERIFY: PASS (8/8)
+[02/2] OK        exit=0   14s typewriter-stall.mjs :: TYPEWRITER-STALL VERIFY: PASS (4/4)
+
+SUITE DONE HARNESS_PARKED=unset — 2/2 of 2 returned a passing verdict
+SUITE RESULT: CLEAN — tree=38105480 bundle=index-CE6uLLXE.js/958242b
