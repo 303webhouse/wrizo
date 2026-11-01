@@ -15,7 +15,7 @@ const RECTS = `(() => { const q = (s) => { const e = document.querySelector(s); 
   return { page: q('.desk-frame-stage .mode-page') || q('.desk-frame-stage .mode-pagecol'), lt: q('.wz-sliver-grip'), rt: q('.wz-tutor-grip'), lp: q('.wz-sliver-panel'), rp: q('.wz-tutor-panel'),
     ls: q('.wz-sliver-panel .wz-drawer-slide'), rs: q('.wz-tutor-panel .wz-drawer-slide'), la: document.querySelector('.wz-sliver-grip-glyph')?.textContent.trim() ?? null, ra: document.querySelector('.wz-tutor-grip-glyph')?.textContent.trim() ?? null,
     lo: document.querySelector('.wz-sliver')?.getAttribute('data-open') === 'true', ro: document.querySelector('.wz-tutor-panel')?.getAttribute('data-open') === 'true',
-    lanchor: q('.desk-frame-sliver-anchor'), ranchor: q('.desk-frame-tutor-anchor'), sameEditor: !!ed && ed.__kitMark === 1, w: innerWidth }; })()`;
+    lanchor: q('.desk-frame-sliver-anchor'), ranchor: q('.desk-frame-tutor-anchor'), sameEditor: !!ed && ed.__kitMark === 1, w: innerWidth, zoom: !!document.querySelector(".mode-pagecol[data-zoom='true']") }; })()`;
 const MARK = `(() => { const ed = document.querySelector('${ED}'); if (ed) ed.__kitMark = 1; document.querySelector('${ED}')?.blur(); getSelection()?.removeAllRanges(); return !!ed; })()`;
 const FINISH = `(() => { document.getAnimations().forEach((a) => { try { a.finish(); } catch {} }); return true; })()`;
 // pause every running animation at half its own duration (the drawer's transitions all start in the same frame, so they stand at one moment)
@@ -66,6 +66,11 @@ export async function drawerProof(app, { name, say, fail }) {
   await app.emulateMedia([]); await sleep(300);
 
   const travelL = c.lt.r - oL.lt.r;                 // how far the left tab went out
+  // (instrument fix after the first green look, runs 41336024311 / 41336050132: when a drawer's content scrolls, its sliding box is inset by the
+  // panel's scrollbar strip on the OUTER side, so the drawer's outer edge is the PANEL's; the strip is measured at rest and the moving box's
+  // edge is read through it. Originals, verbatim: leftRides near(oL.lt.r, oL.ls.l); rightRides near(o.rt.l, o.rs.r); leftMoves
+  // near(midL.lt.r, midL.ls.l, 1.5); rightMoves / rightClosing near(mid.rt.l, mid.rs.r, 1.5).)
+  const gl = oL.ls && oL.lp ? oL.ls.l - oL.lp.l : 0, gr = o.rs && o.rp ? o.rp.r - o.rs.r : 0;
   const progL = travelL ? (c.lt.r - midL.lt.r) / travelL : null;
   const ok = {
     // closed: today's place - each tab on its own anchor's page-side edge, the arrows pointing out
@@ -73,13 +78,13 @@ export async function drawerProof(app, { name, say, fail }) {
     closedRight: near(c.rt.l, c.ranchor?.l) && c.ra === '›',
     // open: the drawer meets the page where the closed tab's inner edge stood (no gap), the tab on its OUTER edge, the arrow back to the page
     leftFlush: oL.lo && near(oL.lp.r, c.lt.r) && near(oL.ls.r, c.lt.r),
-    leftRides: oL.lo && near(oL.lt.r, oL.ls.l) && near(oL.lt.t, c.lt.t) && oL.la === '›',
+    leftRides: oL.lo && near(oL.lt.r, oL.lp.l) && near(oL.lt.t, c.lt.t) && oL.la === '›',
     rightFlush: o.ro && near(o.rp.l, c.rt.l) && near(o.rs.l, c.rt.l),
-    rightRides: o.ro && near(o.rt.l, o.rs.r) && near(o.rt.t, c.rt.t) && o.ra === '‹',
+    rightRides: o.ro && near(o.rt.l, o.rp.r) && near(o.rt.t, c.rt.t) && o.ra === '‹',
     // the tab travels WITH the drawer: at half the slide it is part way and still on the sliding edge
-    leftMoves: midL.lo && progL != null && progL > 0.05 && progL < 0.95 && near(midL.lt.r, midL.ls.l, 1.5),
-    rightMoves: midR.ro && near(midR.rt.l, midR.rs.r, 1.5) && midR.rt.l > c.rt.l + 2 && midR.rt.l < o.rt.l - 2,
-    rightClosing: near(midRc.rt.l, midRc.rs.r, 1.5) && midRc.rt.l > c.rt.l + 2 && midRc.rt.l < o.rt.l - 2,
+    leftMoves: midL.lo && progL != null && progL > 0.05 && progL < 0.95 && near(midL.lt.r, midL.ls.l - gl, 1.5),
+    rightMoves: midR.ro && near(midR.rt.l, midR.rs.r + gr, 1.5) && midR.rt.l > c.rt.l + 2 && midR.rt.l < o.rt.l - 2,
+    rightClosing: near(midRc.rt.l, midRc.rs.r + gr, 1.5) && midRc.rt.l > c.rt.l + 2 && midRc.rt.l < o.rt.l - 2,
     sameTokens: !!tokL && !!tokLs && !!tokR && !!tokRs && tokL[0] === tokLs[0] && tokL[1] === tokLs[1] && tokR[0] === tokRs[0] && tokR[1] === tokRs[1],
     // both-or-one: closing the right leaves the left open where it was; then each tab is back at its closed place
     bothOrOne: !one.ro && one.lo && near(one.lt.r, oL.lt.r) && near(one.rt.l, c.rt.l) && one.ra === '›',
@@ -91,8 +96,31 @@ export async function drawerProof(app, { name, say, fail }) {
     pageStill: [oL, midL, o, midR, midRc, one, shut, rm].every((x) => samePage(x.page, c.page)) && [oL, o, one, shut, rm].every((x) => x.sameEditor),
   };
   const brief = { ok, w: c.w, both, page: c.page, closed: { lt: c.lt, rt: c.rt }, open: { lt: o.lt, lp: o.lp, rp: o.rp, rt: o.rt }, gapToPaintedPage: { left: Math.round((c.page.l - c.lt.r) * 10) / 10, right: Math.round((c.rt.l - c.page.r) * 10) / 10 },
-    drawerW: { left: o.lp ? Math.round((o.lp.w + 16) * 10) / 10 : null, right: o.rp ? Math.round((o.rp.w + 16) * 10) / 10 : null }, progL: progL != null ? Math.round(progL * 100) / 100 : null, tokens: { tokL, tokLs, tokR, tokRs }, paused: paused.length, rmRun };
+    drawerW: { left: o.lp ? Math.round((o.lp.w + 16) * 10) / 10 : null, right: o.rp ? Math.round((o.rp.w + 16) * 10) / 10 : null }, progL: progL != null ? Math.round(progL * 100) / 100 : null, strips: { gl: Math.round(gl * 10) / 10, gr: Math.round(gr * 10) / 10 }, zoom: c.zoom, tokens: { tokL, tokLs, tokR, tokRs }, paused: paused.length, rmRun };
   if (Object.values(ok).some((x) => !x)) fail(name, { ...brief, midL: { lt: midL.lt, ls: midL.ls }, midR: { rt: midR.rt, rs: midR.rs }, midRc: { rt: midRc.rt, rs: midRc.rs }, oL: { lt: oL.lt, lp: oL.lp, ls: oL.ls }, one: { lt: one.lt, rt: one.rt, lo: one.lo, ro: one.ro } });
+  say(name, brief);
+  return brief;
+}
+
+/** TYPEWRITER'S ZOOM keeps today's drawers: the zoomed page is wider than the margins, so a drawer overlays it and cannot stand flush beside
+ *  it; the build leaves the zoom's own drawer rule alone. On the zoomed page: each tab stays at its closed rect while its drawer opens and
+ *  closes (today's rule), the arrows flip, and the page and the editor never move. */
+export async function zoomDrawerProof(app, { name, say, fail }) {
+  await app.evalJs(MARK); await app.evalJs(FINISH); await sleep(200);
+  const c = await app.evalJs(RECTS);
+  if (!c.zoom) fail(name, { zoom: false, note: 'the page did not open in Typewriter zoom' });
+  await app.evalJs(click('.wz-sliver-grip')); await app.evalJs(FINISH); await sleep(300);
+  const l = await app.evalJs(RECTS);
+  await app.evalJs(click('.wz-sliver-grip')); await app.evalJs(FINISH); await sleep(300);
+  await app.evalJs(click('.wz-tutor-grip')); await app.evalJs(FINISH); await sleep(300);
+  const r = await app.evalJs(RECTS);
+  await app.evalJs(click('.wz-tutor-grip')); await app.evalJs(FINISH); await sleep(300);
+  const shut = await app.evalJs(RECTS);
+  const same = (a, b) => !!a && !!b && ['l', 'r', 't', 'b'].every((k) => Math.abs(a[k] - b[k]) <= 1);
+  const ok = { leftTabStays: l.lo && same(l.lt, c.lt) && l.la === '›', rightTabStays: r.ro && same(r.rt, c.rt) && r.ra === '‹', shut: !shut.lo && !shut.ro && same(shut.lt, c.lt) && same(shut.rt, c.rt),
+    pageStill: [l, r, shut].every((x) => samePage(x.page, c.page) && x.sameEditor) };
+  const brief = { ok, w: c.w, page: c.page, closed: { lt: c.lt, rt: c.rt }, leftOpen: { lt: l.lt, lp: l.lp }, rightOpen: { rt: r.rt, rp: r.rp } };
+  if (Object.values(ok).some((x) => !x)) fail(name, brief);
   say(name, brief);
   return brief;
 }
@@ -110,6 +138,8 @@ export function walkScreens(prefix, open, setRoom) {
         await app.evalJs(click('.wz-sliver-grip')); await sleep(80); await app.evalJs(click('.wz-tutor-grip'));
         await app.evalJs(FINISH); await sleep(500); await app.evalJs(FINISH);
       }
+      // the mockups' own control panels (never shipped) are hidden for the pictures: at 1366 they lie over the page's foot and the right drawer
+      await app.evalJs("(() => { const s = document.createElement('style'); s.textContent = '.arbor2-bar, .machina2-bar{ visibility:hidden !important; }'; document.head.appendChild(s); return true; })()");
       await sleep(400);
       const r = await app.evalJs(RECTS);
       console.log(`WALK ${prefix}-${state}-${room}-${size} ${JSON.stringify({ w: r.w, lo: r.lo, ro: r.ro, page: r.page, lt: r.lt, rt: r.rt })}`);
