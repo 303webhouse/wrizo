@@ -58,7 +58,13 @@ await withHarness(async (app) => {
 
   await pickBar(app, 'Day'); await sleep(300);
   const day = await read(app);
-  ok('L1 day: the light layer is drawn, at the afternoon\'s strength (.10-.22)', !!day.sun && day.sun.display === 'block' && day.sun.opacity >= 0.0999 && day.sun.opacity <= 0.2201, JSON.stringify({ sun: day.sun, t: day.t }));
+  // PARKED 2026-10-31 (SUPERSEDED, run 41277516402: r5's §7b set the pergola's strength to 18% -> 26% with the afternoon (styles: .18 + .08 t),
+  // so the old .10-.22 band fails once t passes .5 - it read .233 at t .667; it had passed only because earlier runs met an earlier clock).
+  // Original, verbatim:
+  // ok('L1 day: the light layer is drawn, at the afternoon\'s strength (.10-.22)', !!day.sun && day.sun.display === 'block' && day.sun.opacity >= 0.0999 && day.sun.opacity <= 0.2201, JSON.stringify({ sun: day.sun, t: day.t }));
+  // SUCCESSOR L1b: the strength is the spec's 18%-26%, and it is the one the afternoon number asks for (.18 + .08 t, to half a percent).
+  ok('L1b day: the light layer is drawn, at the afternoon\'s strength (§7b: .18-.26, = .18 + .08 t)', !!day.sun && day.sun.display === 'block' && day.sun.opacity >= 0.1799 && day.sun.opacity <= 0.2601
+    && Math.abs(day.sun.opacity - (0.18 + 0.08 * (parseFloat(day.t) || 0))) <= 0.005, JSON.stringify({ sun: day.sun, t: day.t }));
   // PARKED 2026-10-29 (SUPERSEDED: it passed while INK's CI frames showed the slats THROUGH Free Write's zoomed page - an opaque paper is
   // not "never over the prose column" when Typewriter's band mask makes the page see-through, and this leg only ever opened a Draft chapter,
   // which is not zoomed). Original, verbatim:
