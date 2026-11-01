@@ -58,7 +58,8 @@ const COLOUR = `
   const textEls = (root) => [...root.querySelectorAll('*')].concat([root]).filter((el) => [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()) && shown(el));
 `;
 const openTools = async (app) => { if (!(await app.evalJs(`!!document.querySelector(".wz-sliver[data-open='true']")`))) await clickSel(app, '.wz-sliver-grip'); await waitSoft(app, `!!document.querySelector(".wz-sliver[data-open='true']")`, { label: 'tools', timeout: 3000 }); await sleep(500); };
-const openAssets = async (app) => { if (!(await app.evalJs(`!!document.querySelector('#wz-tutor-tab-links') && document.querySelector('#wz-tutor-tab-links').getBoundingClientRect().width > 0`))) await clickSel(app, '.wz-tutor-grip'); await sleep(700); await clickSel(app, '#wz-tutor-tab-links'); await sleep(400); };
+// (driver fix after green leg 41296556886: the drawer's tab is in the page while the drawer is CLOSED - the grip's data-open is the drawer's state)
+const openAssets = async (app) => { if (!(await app.evalJs("!!document.querySelector(\".wz-tutor-grip[data-open='true']\")"))) await clickSel(app, '.wz-tutor-grip'); await sleep(700); await clickSel(app, '#wz-tutor-tab-links'); await sleep(400); };
 const railOpen = async (app, word) => { await app.evalJs(`(() => { const b = [...document.querySelectorAll('.wz-strip-item')].find((x) => (x.querySelector('.wz-strip-label')?.textContent || x.textContent || '').trim() === ${JSON.stringify(word)}); if (b) b.click(); return !!b; })()`); await sleep(700); };
 const key = (app, k, code) => app.cdp('Input.dispatchKeyEvent', { type: 'keyDown', key: k, code, modifiers: 2, windowsVirtualKeyCode: k === '.' ? 190 : k === '/' ? 191 : k.toUpperCase().charCodeAt(0) }).then(() => app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: k, code, modifiers: 2 }));
 // THE NEW LABELS whose pairs r4 measures (every door, at rest and open)
@@ -198,6 +199,9 @@ export default {
     const dock = await app.evalJs("(() => { const h = document.querySelector('.wz-link-dock-head'); const d = document.querySelector('.wz-link-dock'); return { head: h ? h.textContent.replace(/\\s+/g, ' ').trim() : null, text: d ? d.textContent : '', editable: !!d?.querySelector('[contenteditable=\"true\"], textarea, input') }; })()");
     const r1 = await app.evalJs(RECT);
     await railOpen(app, 'Files');
+    // (driver fix after green leg 41296556886: the pop-out lists a Project's Files in sets that may be folded - open them, as the writer would)
+    await app.evalJs("document.querySelectorAll(\".wz-cascade-panel .wz-set-head[aria-expanded='false']\").forEach((h) => h.click())"); await sleep(300);
+    const panelSaw = await app.evalJs("(() => { const p = document.querySelector('.wz-cascade-panel'); return p ? { title: p.querySelector('.wz-cascade-panel-title')?.textContent.trim() ?? null, rows: p.querySelectorAll('.wz-section-row').length, sets: [...p.querySelectorAll('.wz-set-head')].map((h) => h.getAttribute('aria-expanded')), beside: p.querySelectorAll('.machina2-files-beside').length } : null; })()");
     // (hover through the real pointer: CSS :hover answers only to it)
     await app.cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 5, y: 400 }); await sleep(150);
     const fp0 = await app.evalJs(`(() => { ${R} const rows = [...document.querySelectorAll('.wz-cascade-panel .wz-section-row')].filter(seen); const row = rows[0]; const door = row?.querySelector('.machina2-files-beside');
@@ -215,7 +219,7 @@ export default {
       rect: same(r0.page, r1.page),
       filesDoor: fp.door && !fp.rest && fp.hover && focusShown && fp.text === 'beside',
     };
-    if (Object.values(ok).some((x) => !x)) fail('M2R4-BESIDE', { ok, top, list, dock, fp, focusShown });
+    if (Object.values(ok).some((x) => !x)) fail('M2R4-BESIDE', { ok, top, list, dock, fp, focusShown, panelSaw });
     say('m2r4-beside', { ok, list, head: dock.head });
   },
 
@@ -254,7 +258,9 @@ export default {
   // lettered thing inside the new doors >= 4.5:1, each read in its own colours on the ground it sits on.
   'm2r4-contrast': async (app) => {
     const READ = (stage) => `(() => { ${COLOUR} const out = { stage: ${JSON.stringify(stage)}, pairs: [] };
-      document.querySelectorAll(${JSON.stringify(NEW)}).forEach((root) => { if (!shown(root)) return; textEls(root).forEach((el) => { const p = pair(el); out.pairs.push({ where: root.className.split(' ')[0], text: el.textContent.trim().slice(0, 20), ...p }); }); });
+      // (instrument fix after green leg 41296556886: a group is named by the door class it matched, not its first class)
+      const names = ${JSON.stringify(NEW)}.split(', ').map((x) => x.slice(1));
+      document.querySelectorAll(${JSON.stringify(NEW)}).forEach((root) => { if (!shown(root)) return; const where = names.find((n) => root.classList.contains(n)) || root.className.split(' ')[0]; textEls(root).forEach((el) => { const p = pair(el); out.pairs.push({ where, text: el.textContent.trim().slice(0, 20), ...p }); }); });
       return out; })()`;
     const reads = [];
     for (const c of ['cool', 'neutral']) {
