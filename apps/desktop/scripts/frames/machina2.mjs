@@ -111,11 +111,14 @@ export default {
       table: [...new Map(all.map((p) => [`${p.where}|${p.fg}|${p.bg}`, `${p.where}: ${p.fg} on ${p.bg} = ${p.ratio}`])).values()] });
   },
 
+  // PARKED 2026-10-31 (SUPERSEDED, r2: Fable's key ruling - "links = Ctrl+K (Windows/Linux) and ⌘K (Mac only). The command line = Ctrl/⌘ + /,
+  // with an 'Add link' command inside it." Ctrl+K opening the line is false by design now). Original, verbatim, renamed m2-cmd-v1 (not in the
+  // dispatched list); its successor m2-cmd follows it, and m2-link proves the K key's new act:
   // ── THE COMMAND LINE (§8.1): Ctrl+K (this runner is not a Mac) opens a box in the room BESIDE the page - never over the words; typing lists the
   // matching commands, the first chosen (brass outline), matches in the cool blue; Enter runs it (an existing act: the mode tab); Esc closes and
   // the focus is back in the editor; Ctrl+K never changes the page's text; "goal 250" runs the app's own goal setter; the keyboard legend lists
   // the registry's chords; the switch takes the line away.
-  'm2-cmd': async (app) => {
+  'm2-cmd-v1': async (app) => {
     await page(app, 'm2-cmd', WORDS);
     const before = await app.evalJs(`document.querySelector('${ED}').innerText`);
     await app.evalJs(`document.querySelector('${ED}').focus()`);
@@ -153,6 +156,83 @@ export default {
     say('m2-cmd', { ok, box, first: list[0], legend });
     await page(app, 'm2-cmd', WORDS);
     await app.evalJs(`document.querySelector('${ED}').focus()`); await key('k', true); await sleep(300);
+  },
+  // SUCCESSOR (r2): the same line on Ctrl+/ (the ruling). Every r1 check stands with the chord changed; the legend's line is "Ctrl+/ command line"
+  // and lists "Ctrl+K Add link"; and with the line switched off, Ctrl+/ is the Controls drawer's own key again (Sliver.tsx) - the line never
+  // swallows it then.
+  'm2-cmd': async (app) => {
+    await page(app, 'm2-cmd', WORDS);
+    const before = await app.evalJs(`document.querySelector('${ED}').innerText`);
+    await app.evalJs(`document.querySelector('${ED}').focus()`);
+    const key = (k, ctrl) => app.evalJs(`(() => { const el = document.activeElement || document.body; el.dispatchEvent(new KeyboardEvent('keydown', { key: ${JSON.stringify(k)}, code: ${JSON.stringify(k === '/' ? 'Slash' : k.length === 1 ? 'Key' + k.toUpperCase() : k)}, ctrlKey: ${!!ctrl}, bubbles: true, cancelable: true })); })()`);
+    await key('/', true); await sleep(300);
+    const box = await app.evalJs(`(() => { const b = document.querySelector('.machina2-cmd'); if (!b) return null; const r = b.getBoundingClientRect(), e = document.querySelector('${ED}').getBoundingClientRect();
+      const over = !(r.right <= e.left || r.left >= e.right || r.bottom <= e.top || r.top >= e.bottom);
+      return { rect: [Math.round(r.left), Math.round(r.top), Math.round(r.width)], overWords: over, font: getComputedStyle(b).fontFamily.split(',')[0], focused: document.activeElement?.classList.contains('machina2-cmd-input') }; })()`);
+    const drawerWith = await app.evalJs(`document.querySelector('.wz-sliver')?.getAttribute('data-open')`);
+    await app.typeKeys('build'); await sleep(250);
+    const list = await app.evalJs(`[...document.querySelectorAll('.machina2-cmd-item')].map((li) => ({ id: li.dataset.cmd, chosen: li.dataset.chosen, colour: getComputedStyle(li).color, border: getComputedStyle(li).borderTopColor }))`);
+    await key('Enter'); await sleep(900);
+    const ran = await app.evalJs(`(() => ({ closed: !document.querySelector('.machina2-cmd'), active: [...document.querySelectorAll('.desk-mode-tab.active')].map((b) => b.textContent.trim().toLowerCase()), focus: !!document.activeElement?.closest('${ED}') }))()`);
+    await app.evalJs(`document.querySelector('${ED}')?.focus()`);
+    await key('/', true); await sleep(250); await app.typeKeys('goal 250'); await sleep(200); await key('Enter'); await sleep(600);
+    const goal = await app.evalJs(`(() => { try { const g = JSON.parse(localStorage.getItem('wrizo-writing-goal-lines') || 'null'); return g; } catch { return null; } })()`);
+    await app.evalJs(`document.querySelector('${ED}')?.focus()`);
+    await key('/', true); await sleep(250); await key('Escape'); await sleep(250);
+    const esc = await app.evalJs(`({ closed: !document.querySelector('.machina2-cmd'), focus: !!document.activeElement?.closest('${ED}') })`);
+    await key('/', true); await sleep(250);
+    const legend = await app.evalJs(`[...document.querySelectorAll('.machina2-cmd-legend li')].map((li) => li.textContent.trim())`);
+    await key('Escape'); await sleep(150);
+    await clickSel(app, '.machina2-switch[data-switch="command"]'); await sleep(150);
+    await app.evalJs(`document.querySelector('${ED}')?.focus()`); await key('/', true); await sleep(400);
+    const offOpen = await app.evalJs(`!!document.querySelector('.machina2-cmd')`);
+    const offDrawer = await app.evalJs(`document.querySelector('.wz-sliver')?.getAttribute('data-open')`);
+    await key('/', true); await sleep(300);
+    await clickSel(app, '.machina2-switch[data-switch="command"]'); await sleep(150);
+    const after = await app.evalJs(`document.querySelector('${ED}').innerText`);
+    const ok = {
+      opens: !!box && box.focused && /Plex Mono/.test(box.font || ''), beside: !!box && !box.overWords, drawerStill: drawerWith === 'false',
+      lists: list.length > 0 && list[0].id === 'mode-build' && list[0].chosen === 'true' && /255, 152, 0/.test(list[0].border) && /143, 163, 184|63, 97, 131/.test(list[0].colour),
+      runs: ran.closed && ran.active.includes('build'), goal: !!goal && goal.n === 250 && goal.unit === 'words', esc: esc.closed && esc.focus,
+      legend: /^Ctrl\+\/ command line$/.test(legend[0] || '') && legend.some((l) => /^Ctrl\+K Add link$/.test(l)),
+      off: offOpen === false && offDrawer === 'true', text: before === after,
+    };
+    if (Object.values(ok).some((x) => !x)) fail('M2-CMD', { ok, box, list: list.slice(0, 3), ran, goal, esc, legend, offOpen, offDrawer, drawerWith });
+    say('m2-cmd', { ok, box, first: list[0], legend });
+    await page(app, 'm2-cmd', WORDS);
+    await app.evalJs(`document.querySelector('${ED}').focus()`); await key('/', true); await sleep(300);
+  },
+
+  // ── r2 THE LINKS KEY (Fable's ruling): Ctrl+K (this runner is not a Mac) runs the EXISTING "+ Graft..." act - the right drawer opens on its Links
+  // tab and the picker opens - with the page's rect identical before and after (the drawer overlays, never displaces) and its text unchanged; the
+  // command line stays shut. Inside the line, "add link" lists "Add link" and Enter runs the same act. The K key is the link's, not the line's: with
+  // the line switched off, Ctrl+K still adds a link.
+  'm2-link': async (app) => {
+    const R = `(() => { const b = document.querySelector('.mode-page')?.getBoundingClientRect(); return b ? [b.left, b.top, b.width, b.height].map((v) => Math.round(v * 10) / 10) : null; })()`;
+    const STATE = `(() => ({ tab: document.querySelector('#wz-tutor-tab-links')?.getAttribute('aria-selected') || null, picker: !!document.querySelector('[data-graft-picker]'),
+      add: document.querySelector('[data-graft-add]')?.getAttribute('aria-expanded') || null, line: !!document.querySelector('.machina2-cmd') }))()`;
+    const key = (k, ctrl) => app.evalJs(`(() => { const el = document.activeElement || document.body; el.dispatchEvent(new KeyboardEvent('keydown', { key: ${JSON.stringify(k)}, code: ${JSON.stringify(k === '/' ? 'Slash' : k.length === 1 ? 'Key' + k.toUpperCase() : k)}, ctrlKey: ${!!ctrl}, bubbles: true, cancelable: true })); })()`);
+    const fresh = async () => { await page(app, 'm2-link', WORDS); await app.evalJs(`document.querySelector('${ED}').focus()`); };
+    await fresh();
+    const before = await app.evalJs(`document.querySelector('${ED}').innerText`), r0 = await app.evalJs(R);
+    await key('k', true); await sleep(1200);
+    const byKey = await app.evalJs(STATE), r1 = await app.evalJs(R);
+    const after = await app.evalJs(`document.querySelector('${ED}').innerText`);
+    await fresh();
+    await key('/', true); await sleep(250); await app.typeKeys('add link'); await sleep(250);
+    const listed = await app.evalJs(`[...document.querySelectorAll('.machina2-cmd-item')].map((li) => li.dataset.cmd)`);
+    await key('Enter'); await sleep(1200);
+    const byLine = await app.evalJs(STATE), r2 = await app.evalJs(R);
+    await fresh();
+    await clickSel(app, '.machina2-switch[data-switch="command"]'); await sleep(150);
+    await app.evalJs(`document.querySelector('${ED}').focus()`); await key('k', true); await sleep(1200);
+    const byKeyOff = await app.evalJs(STATE);
+    await clickSel(app, '.machina2-switch[data-switch="command"]'); await sleep(150);
+    const opened = (s) => s.tab === 'true' && s.picker && s.add === 'true' && !s.line;
+    const eq = (a, b) => !!a && !!b && a.every((v, i) => Math.abs(v - b[i]) <= 0.5);
+    const ok = { key: opened(byKey), rect: eq(r0, r1) && eq(r0, r2), text: before === after, listed: listed[0] === 'add-link', line: opened(byLine), off: opened(byKeyOff) };
+    if (Object.values(ok).some((x) => !x)) fail('M2-LINK', { ok, byKey, byLine, byKeyOff, listed, rects: [r0, r1, r2] });
+    say('m2-link', { ok, byKey, rect: r0, listed: listed.slice(0, 3) });
   },
 
   // ── THE READOUT BAR AND THE RUN (§7, §8.2): with no goal an EMPTY Run, first unit notched, and "no goal set"; every figure a fact
