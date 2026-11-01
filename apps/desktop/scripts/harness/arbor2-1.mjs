@@ -10,7 +10,8 @@
 //   F1  flag OFF: nothing of the mockup exists (no data-arbor2, no bar, no arbor2 rule in any stylesheet)
 //   F2  flag ON: data-arbor2 on <html>, the bar is drawn, the room attribute is set
 //   P1  THE PAGE NEVER MOVES: the .mode-page rect is identical flag-off / night / day, at 1366x768 and 1920x1080
-//   T1  the room follows the existing Page tone (data-page dark -> night, light -> day)
+//   T1  (parked Nov 1) the room follows the existing Page tone (data-page dark -> night, light -> day)
+//   T1b unset, the room follows the clock (day 07:00-19:00), not the Page tone (Fable, Nov 1)
 //   T2  the Room switch overrides it in-session, and NOTHING is stored (localStorage byte-equal before/after every switch)
 //   C1  contrast, both rooms, measured from the live tokens: names (--arbor-letter, --text-hi) >= 7:1, labels (--text-mid, --text-low,
 //       --arbor-guide) >= 4.5:1 on --ink-950 / 900 / 800
@@ -33,6 +34,10 @@ const SHOTS = process.env.ARBOR_SHOTS || null; // e.g. C:\Users\nickh\Downloads\
 if (SHOTS) fs.mkdirSync(SHOTS, { recursive: true });
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// r9 DRIVER PIN (not an assertion): unset, the room now follows the CLOCK (Fable, Nov 1: Follow the clock / Always day / Always night) and
+// the runner's clock is UTC. This file's checks were written for the room the page tone gave (dark = night, light = day), so after every
+// flagged reload it chooses that room explicitly (data-room: Always night / Always day). The clock itself is proven in frames/arbor2-r9.mjs.
+const pinRoom = (app) => app.evalJs("(() => { const r = document.documentElement; if (/[?&]arbor2=1/.test(location.search)) r.setAttribute('data-room', r.getAttribute('data-page') === 'dark' ? 'dark' : 'light'); })()");
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
 // the page's paper, wherever it is drawn: the page's own background, or - on the zoomed Free Write page, under Fable's unframed ruling - the
@@ -55,7 +60,7 @@ const hashTo = async (app, hash) => { await app.evalJs(`location.hash = ${JSON.s
 const splashGone = (app) => app.waitFor("!document.querySelector('.wz-splash')", { timeout: 20000, label: 'splash gone' }).catch(() => {});
 const setFlag = async (app, on) => {
   await app.evalJs(`history.replaceState(null, '', ${JSON.stringify(on ? '/?arbor2=1' : '/')} + location.hash)`);
-  await app.reload();
+  await app.reload(); await pinRoom(app);
   await sleep(250);
   // read while the splash is still up (it holds for seconds after a reload): the splash's own ground and the room it sits in
   const splash = await app.evalJs("(() => { const s = document.querySelector('.wz-splash'); const v = document.querySelector('.wz-splash-veil'); return s ? { bg: getComputedStyle(s).backgroundColor, veilBg: v ? getComputedStyle(v).backgroundColor : null, room: document.documentElement.getAttribute('data-arbor2-room') } : null; })()");
@@ -64,7 +69,8 @@ const setFlag = async (app, on) => {
   return splash;
 };
 // (r8: the Room switch lives in the Mood menu, folded by default - the driver opens Mood first when the label is not on screen; no assertion changed)
-const pickBar = async (app, label) => { await app.evalJs(`(() => { if ([...document.querySelectorAll('.arbor2-bar-opt')].some((x) => x.textContent.trim() === ${JSON.stringify(label)})) return; const m = [...document.querySelectorAll('.arbor2-bar-head')].find((h) => /^Mood/.test(h.textContent.trim()) && h.getAttribute('aria-expanded') !== 'true'); if (m) m.click(); })()`); await new Promise((r) => setTimeout(r, 150)); return app.evalJs(`(() => { const b = [...document.querySelectorAll('.arbor2-bar-opt')].find((x) => x.textContent.trim() === ${JSON.stringify(label)}); if (b) b.click(); return !!b; })()`); };
+// (r9 driver fix, no assertion changed: the Room row's buttons now read "Always day" / "Always night" - Fable, Nov 1 - so the old labels map to them)
+const pickBar = async (app, label0) => { const label = ({ Night: 'Always night', Day: 'Always day' })[label0] ?? label0; await app.evalJs(`(() => { if ([...document.querySelectorAll('.arbor2-bar-opt')].some((x) => x.textContent.trim() === ${JSON.stringify(label)})) return; const m = [...document.querySelectorAll('.arbor2-bar-head')].find((h) => /^Mood/.test(h.textContent.trim()) && h.getAttribute('aria-expanded') !== 'true'); if (m) m.click(); })()`); await new Promise((r) => setTimeout(r, 150)); return app.evalJs(`(() => { const b = [...document.querySelectorAll('.arbor2-bar-opt')].find((x) => x.textContent.trim() === ${JSON.stringify(label)}); if (b) b.click(); return !!b; })()`); };
 
 const STATE = `(() => {
   const root = document.documentElement, cs = getComputedStyle(root), tok = (n) => cs.getPropertyValue(n).trim();
@@ -97,7 +103,7 @@ const freshDesk = async (app, theme) => {
   await app.goto('/');
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '4');"
     + (theme ? ` localStorage.setItem('wrizo-theme', '${theme}');` : ''));
-  await app.reload();
+  await app.reload(); await pinRoom(app);
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
 };
 const newPage = async (app) => {
@@ -163,12 +169,25 @@ await withHarness(async (app) => {
   ok('N1e one Rhizome style, no progress switch: the folded bar offers the logo (Sage / Brass o) only - the room lives in the Mood menu - and no night-progress attribute exists',
     on.prog == null && Array.isArray(progOpts) && progOpts.join() === 'Sage,Brass o', JSON.stringify({ prog: on.prog, progOpts }));
 
-  // ---- T1: the room follows the existing Page tone
-  await app.evalJs("document.documentElement.setAttribute('data-page', 'dark')"); await sleep(100);
-  const t1n = await state(app);
-  await app.evalJs("document.documentElement.setAttribute('data-page', 'light')"); await sleep(100);
-  const t1d = await state(app);
-  ok('T1 the room follows the Page tone: dark -> night, light -> day', t1n.room === 'night' && t1d.room === 'day', JSON.stringify({ dark: t1n.room, light: t1d.room }));
+  // PARKED 2026-11-01 (SUPERSEDED by Fable's ruling, Nov 1: "Room settled: Follow the clock / Always day / Always night (unset = clock,
+  // 07:00-19:00 local)" - the room no longer follows the Page tone, unset or set). Original, verbatim:
+  // // ---- T1: the room follows the existing Page tone
+  // await app.evalJs("document.documentElement.setAttribute('data-page', 'dark')"); await sleep(100);
+  // const t1n = await state(app);
+  // await app.evalJs("document.documentElement.setAttribute('data-page', 'light')"); await sleep(100);
+  // const t1d = await state(app);
+  // ok('T1 the room follows the Page tone: dark -> night, light -> day', t1n.room === 'night' && t1d.room === 'day', JSON.stringify({ dark: t1n.room, light: t1d.room }));
+  // SUCCESSOR T1b: unset (no data-room), the room follows the clock and the Page tone does not move it: day at 12:00 and night at 22:00 in
+  // both tones (the mockup's clock seam, window.arbor2Clock). Then the real clock and this file's pin come back for the checks below.
+  await app.evalJs("document.documentElement.removeAttribute('data-room')"); await sleep(100);
+  const t1b = {};
+  for (const hhmm of ['12:00', '22:00']) for (const tone of ['dark', 'light']) {
+    await app.evalJs(`typeof window.arbor2Clock === 'function' && window.arbor2Clock(${JSON.stringify(hhmm)})`);
+    await app.evalJs(`document.documentElement.setAttribute('data-page', ${JSON.stringify(tone)})`); await sleep(100);
+    t1b[`${hhmm} ${tone}`] = (await state(app)).room;
+  }
+  await app.evalJs("typeof window.arbor2Clock === 'function' && window.arbor2Clock(null)"); await pinRoom(app); await sleep(100);
+  ok('T1b unset, the room follows the clock, not the Page tone: day at 12:00 and night at 22:00 in both tones', t1b['12:00 dark'] === 'day' && t1b['12:00 light'] === 'day' && t1b['22:00 dark'] === 'night' && t1b['22:00 light'] === 'night', JSON.stringify(t1b));
 
   // ---- T2: the switch overrides in-session, stores nothing
   const lsBefore = (await state(app)).ls;
@@ -248,7 +267,7 @@ await withHarness(async (app) => {
     await hashTo(app, '#/');
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before seed' });
     await app.evalJs(`(() => { window.wrizoSetWritingGoal({ n: 8, unit: 'words' }); window.wrizoPatchEntry(${JSON.stringify(pageId)}, { text: Array.from({ length: ${words} }, (_, i) => 'word' + i).join(' ') }); })()`);
-    await app.reload();
+    await app.reload(); await pinRoom(app);
     await hashTo(app, '#/page/' + pageId);
     await app.waitFor("!!document.querySelector('.wz-rhizome-field') && !!document.querySelector('.arbor2-bar')", { label: 'rhizome field + bar after seed' });
     await splashGone(app);

@@ -4,14 +4,18 @@
 //   R2  in session only: nothing in the room or the mount touches storage
 //   R3  the room's CSS reads data-arbor2-room and the page's CSS reads data-page - no rule keyed on the page sets a ROOM token
 import fs from 'node:fs';
-import { roomOf } from '../../src/arbor2/room.ts';
+// (r9 driver fix: room.ts no longer exports roomOf - the R1 checks that used it are parked below)
+// import { roomOf } from '../../src/arbor2/room.ts';
 
 const checks = [];
 const ok = (name, pass, detail) => checks.push({ name, pass: !!pass, detail });
 
-ok('R1 unset, the room follows the page (dark -> night, light -> day, no tone -> day)', roomOf(null, 'dark') === 'night' && roomOf(null, 'light') === 'day' && roomOf(null, null) === 'day', '');
-ok('R1 set, data-room wins in all four mixes', roomOf('light', 'dark') === 'day' && roomOf('dark', 'light') === 'night' && roomOf('light', 'light') === 'day' && roomOf('dark', 'dark') === 'night', '');
-ok('R1 a stray value is ignored (the page decides)', roomOf('day', 'dark') === 'night' && roomOf('', 'light') === 'day', '');
+// PARKED 2026-11-01 (SUPERSEDED by Fable's ruling, Nov 1: "Room settled: Follow the clock / Always day / Always night (unset = clock,
+// 07:00-19:00 local)" - unset, the room follows the clock, not the page). Original, verbatim:
+// ok('R1 unset, the room follows the page (dark -> night, light -> day, no tone -> day)', roomOf(null, 'dark') === 'night' && roomOf(null, 'light') === 'day' && roomOf(null, null) === 'day', '');
+// ok('R1 set, data-room wins in all four mixes', roomOf('light', 'dark') === 'day' && roomOf('dark', 'light') === 'night' && roomOf('light', 'light') === 'day' && roomOf('dark', 'dark') === 'night', '');
+// ok('R1 a stray value is ignored (the page decides)', roomOf('day', 'dark') === 'night' && roomOf('', 'light') === 'day', '');
+// SUCCESSOR: scripts/harness/arbor2-r9-unit.mjs C1-C3 (the choice, the clock, a pick lands at once).
 const src = ['../../src/arbor2/room.ts', '../../src/arbor2/mount.tsx'].map((p) => fs.readFileSync(new URL(p, import.meta.url), 'utf8')).join('\n');
 ok('R2 nothing in the room or the mount touches storage', !/localStorage|sessionStorage|indexedDB/.test(src), '');
 ok('R2 the Room control writes data-room, and the old bar switch is gone (the control sits in the Mood menu)', /setAttribute\('data-room'/.test(src) && /function RoomRow/.test(src) && /<RoomRow \/>/.test(src) && !/<Seg label="Room"/.test(src), '');
