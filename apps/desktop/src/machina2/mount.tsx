@@ -7,7 +7,8 @@ import { useThemePrefs, setThemePrefs } from '../store/themePrefs';
 import { useCast, setCast } from '../store/themeCast';
 import { initRoom, readRoom, setRoom } from './room';
 import { mountChrome } from './chrome';
-import { CommandDoor } from './doors';
+import { CommandDoor, Nameplate } from './doors';
+import { mountDrawerEdge } from './drawerEdge';
 
 // MACHINA v2 WORKING MOCKUP - loaded only under ?machina2=1 (main.tsx). Everything here is IN-SESSION: attributes on <html> and React state,
 // never storage (Fable's rulings, Oct 31: "a URL flag, all CSS in its own file, switches in-session, no new data").
@@ -24,6 +25,7 @@ root.setAttribute('data-machina2', 'true');
 initSwitches();
 initRoom();
 mountChrome(root);   // r4 (Fable, Nov 1): the top bar flush to the window's top, the "..." and the command-line door inside it (chrome.ts)
+mountDrawerEdge(root, '--machina2-drawer-r');   // r5 (Nick, via Fable, Nov 1): open, a drawer is flush to the page and its tab rides its outer edge
 
 const LABEL: Record<SwitchKey, string> = {
   command: 'Command line', readout: 'Readout bar', run: 'Run strip', asks: 'Consultant asks', legend: 'Keyboard legend',
@@ -31,6 +33,7 @@ const LABEL: Record<SwitchKey, string> = {
 
 function Panel() {
   const [open, setOpen] = useState(true);
+  const [help, setHelp] = useState(false);
   const [, tick] = useState(0);
   useEffect(() => subscribeSwitches(() => tick((x) => x + 1)), []);
   const sw = getSwitches();
@@ -52,11 +55,14 @@ function Panel() {
             <span className="machina2-bar-label">Cast</span>
             {(['cool', 'neutral'] as const).map((c) => <button key={c} type="button" className="machina2-bar-opt" aria-pressed={cast === c} onClick={() => setCast(c)}>{c === 'cool' ? 'Cool' : 'Neutral'}</button>)}
           </div>
-          <div className="machina2-bar-row" role="group" aria-label="Room">
-            <span className="machina2-bar-label">Room</span>
+          <div className="machina2-bar-row" role="group" aria-label="Lighting">
+            {/* r5 (spec draft 9 §2f, §11): the row is "Lighting ▸ Automatic · Day · Night", and a "?" explains Automatic in one line */}
+            <span className="machina2-bar-label">Lighting</span>
             {/* r4 (Fable, Nov 1): the words are Automatic · Day · Night */}
             {([['clock', 'Automatic'], ['light', 'Day'], ['dark', 'Night']] as const).map(([c, text]) => <button key={c} type="button" className="machina2-bar-opt" data-room-opt={c} aria-pressed={room.choice === c} onClick={() => setRoom(c)}>{text}</button>)}
+            <button type="button" className="machina2-bar-help" aria-label="What Automatic means" aria-expanded={help} onClick={() => setHelp((h) => !h)}>?</button>
           </div>
+          {help && <p className="machina2-bar-help-line">Automatic follows the clock: Day from 07:00 to 19:00, Night after. It changes only while you aren't typing.</p>}
           <div className="machina2-bar-row" role="group" aria-label="Page">
             <span className="machina2-bar-label">Page</span>
             {(['light', 'dark'] as const).map((p) => <button key={p} type="button" className="machina2-bar-opt" aria-pressed={prefs.page === p} onClick={() => setThemePrefs({ page: p })}>{p === 'light' ? 'Light' : 'Dark'}</button>)}
@@ -83,7 +89,7 @@ function Panel() {
 
 // (the readout bar is drawn by RunStrip itself, under the page - components/RunStrip.tsx, flag-gated)
 function Mockup() {
-  return (<><Panel /><CommandLine /><CommandDoor /></>);
+  return (<><Panel /><CommandLine /><CommandDoor /><Nameplate /></>);
 }
 
 const host = document.createElement('div');
