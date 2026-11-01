@@ -248,7 +248,8 @@ export default {
   // ── THE PANEL: the Room row reads Automatic · Day · Night (Fable, Nov 1); no Blue wash switch, and no wash in the light room.
   'm2r4-panel': async (app) => {
     await page(app, 'm2r4-panel', WORDS);
-    const s = await app.evalJs(`(() => { const g = document.querySelector('.machina2-bar [role="group"][aria-label="Room"]'); const sw = [...document.querySelectorAll('.machina2-switch-row')].map((r) => r.textContent.replace(/On|Off/g, '').trim());
+    // (r5 driver fix, no assertion changed: the row is named Lighting now - spec draft 9 §2f, §11 - so the selector follows the name)
+    const s = await app.evalJs(`(() => { const g = document.querySelector('.machina2-bar [role="group"][aria-label="Lighting"]'); const sw = [...document.querySelectorAll('.machina2-switch-row')].map((r) => r.textContent.replace(/On|Off/g, '').trim());
       return { opts: g ? [...g.querySelectorAll('[data-room-opt]')].map((b) => [b.getAttribute('data-room-opt'), b.textContent.trim()]) : null, sw, note: (document.querySelector('.machina2-bar > p.machina2-bar-note')?.textContent || '').trim() }; })()`);
     await app.evalJs("window.machina2Clock?.('12:00')"); await sleep(1300);
     const wash = await app.evalJs("getComputedStyle(document.body).backgroundImage");
