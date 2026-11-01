@@ -107,7 +107,9 @@ await withHarness(async (app) => {
     const pressed = await styleOf('.board-fit');
     await app.mouseMove(4, 4); await app.mouseUp(4, 4); await sleep(300);   // pressed and left: no click
     ok(`I4 [${name}]: the HUMAN-ACTION colour (--choice) only while pressed`, pressed.color === choice && pressed.border === choice && choice !== badge, JSON.stringify({ pressed, choice, badge }));
-    ok(`I5 [${name}]: square, a flat 1 px edge, no shadow`, atRest.radius === '0px' && atRest.shadow === 'none' && parseFloat(atRest.bw) >= 1, JSON.stringify(atRest));
+    // PARKED (#13 step 4b): square and no shadow in EVERY skin is law 3, retired by Nick, Nov 1. Kept VERBATIM, never run; the successor keeps the 1 px edge everywhere and Machina's own square, flat look (theme-scoped, it stays).
+    // ok(`I5 [${name}]: square, a flat 1 px edge, no shadow`, atRest.radius === '0px' && atRest.shadow === 'none' && parseFloat(atRest.bw) >= 1, JSON.stringify(atRest));
+    ok(`I5 [${name}] [law-3 successor]: a 1 px edge${theme === 'machina' ? '; square, no shadow (Machina\'s own look)' : ''}`, parseFloat(atRest.bw) >= 1 && (theme !== 'machina' || (atRest.radius === '0px' && atRest.shadow === 'none')), JSON.stringify(atRest));
     const lab = await q("(() => { const b = document.querySelector('.board-fit'); return { aria: b.getAttribute('aria-label'), title: b.getAttribute('title') }; })()");
     ok(`I6 [${name}]: the tooltip and accessible name come from the lexicon: "${word}"`, lab.aria === word && lab.title === word, JSON.stringify(lab));
     if (FRAMES) {

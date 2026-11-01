@@ -39,8 +39,9 @@ function padLeft(css, selector) {
 function suite(css) {
   const R = {};
   const chk = (id, fn) => { try { const [pass, detail] = fn(); R[id] = { pass: !!pass, detail }; } catch (e) { R[id] = { pass: false, detail: String(e.message || e) }; } };
-  chk('C1', () => { const r = last(css, '.board-lane', 'border-radius'); return [px(r) === 0, `the Storyboard lane box has square corners (border-radius ${r})`]; });
-  chk('C2', () => { const r = last(css, '.board-sb-card', 'border-radius'); return [px(r) === 0, `the Storyboard cards inside it too (border-radius ${r})`]; });
+  // PARKED (#13 step 4b): C1 and C2 asserted only square corners (13c, "square, Nick's rule") - law retired by Nick, Nov 1; no successor needed (a retired law, not a falsified check); design is covered by the Wrizors' imply-never-literal review. Kept VERBATIM below, never run; their two mutants are parked with them.
+  // chk('C1', () => { const r = last(css, '.board-lane', 'border-radius'); return [px(r) === 0, `the Storyboard lane box has square corners (border-radius ${r})`]; });
+  // chk('C2', () => { const r = last(css, '.board-sb-card', 'border-radius'); return [px(r) === 0, `the Storyboard cards inside it too (border-radius ${r})`]; });
   chk('B1', () => { const p = padLeft(css, '.board-outline'); return [p !== null && p >= 16, `the Outline starts at least the grip's 16 px from the stage's left edge (padding-left ${p}); the live half measures the clear gap`]; });
   chk('A1', () => { const m = last(css, '.board-outline-body', 'margin-left'); return [px(m) !== null && px(m) >= 8, `the row's text keeps its own gap from the title (margin-left ${m})`]; });
   chk('S1', () => { const g = last(css, '.wz-sliver-grip', 'width'); return [px(g) === 16, `the premise: the grip B1 clears is 16 px wide (${g}) - if it grows, B1's number grows with it`]; });
@@ -48,8 +49,8 @@ function suite(css) {
 }
 
 const MUT = [
-  { name: 'the lane box is rounded again', find: /(\.board-lane\{[^}]*?)border-radius:0;?/, to: '$1border-radius:6px;', red: ['C1'] },
-  { name: 'the Storyboard cards are rounded again', find: /(\.board-sb-card\{[^}]*?)border-radius:0;?/, to: '$1border-radius:4px;', red: ['C2'] },
+  // PARKED with C1/C2 (#13 step 4b, law 3 retired; never run, kept verbatim): { name: 'the lane box is rounded again', find: /(\.board-lane\{[^}]*?)border-radius:0;?/, to: '$1border-radius:6px;', red: ['C1'] },
+  // PARKED with C1/C2 (#13 step 4b, law 3 retired; never run, kept verbatim): { name: 'the Storyboard cards are rounded again', find: /(\.board-sb-card\{[^}]*?)border-radius:0;?/, to: '$1border-radius:4px;', red: ['C2'] },
   { name: 'the Outline loses its clear of the grip', find: /\.board-outline\{ padding-left:\d+px; \}/, to: '', red: ['B1'] },
   { name: 'the row text loses its gap', find: /\.board-outline-body\{ margin-left:\d+px; \}/, to: '', red: ['A1'] },
 ];

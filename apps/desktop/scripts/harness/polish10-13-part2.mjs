@@ -65,7 +65,9 @@ await withHarness(async (app) => {
         await showAs('storyboard');
         await waitSoft("!!document.querySelector('[data-board-projection=\"storyboard\"] .board-lane')", { label: 'storyboard lane', timeout: 6000 });
         const s = await q(`(() => { const rad = (sel) => { const e = document.querySelector(sel); return e ? getComputedStyle(e).borderRadius : null; }; return { lane: rad('.board-lane'), card: rad('.board-sb-card') }; })()`);
-        ok(`[${T}] 13c the Storyboard lane box and its cards are square`, s.lane === '0px' && s.card === '0px', JSON.stringify(s));
+        // PARKED (#13 step 4b): square in EVERY skin is law 3, retired by Nick, Nov 1. Kept VERBATIM, never run; the successor keeps Machina's own square look (theme-scoped, it stays).
+        // ok(`[${T}] 13c the Storyboard lane box and its cards are square`, s.lane === '0px' && s.card === '0px', JSON.stringify(s));
+        ok(`[${T}] [law-3 successor] 13c the Storyboard lane box and its cards are drawn${theme === 'machina' ? ', square (Machina\'s own look)' : ''}`, s.lane !== null && s.card !== null && (theme !== 'machina' || (s.lane === '0px' && s.card === '0px')), JSON.stringify(s));
       });
     }
   }
