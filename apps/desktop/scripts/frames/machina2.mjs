@@ -255,7 +255,9 @@ export default {
   // tab and the picker opens - with the page's rect identical before and after (the drawer overlays, never displaces) and its text unchanged; the
   // command line stays shut. Inside the line, "add link" lists "Add link" and Enter runs the same act. The K key is the link's, not the line's: with
   // the line switched off, Ctrl+K still adds a link.
-  'm2-link': async (app) => {
+  // PARKED 2026-11-01 (SUPERSEDED by Fable, Nov 1, Machina r4: the command line is Ctrl+. - this screen opened it with Ctrl+/ to run "add link"). Kept
+  // verbatim under the name m2-link-v1 (not in the run list); SUCCESSOR m2-link below, the same checks with the line opened on Ctrl+.
+  'm2-link-v1': async (app) => {
     const R = `(() => { const b = document.querySelector('.mode-page')?.getBoundingClientRect(); return b ? [b.left, b.top, b.width, b.height].map((v) => Math.round(v * 10) / 10) : null; })()`;
     const STATE = `(() => ({ tab: document.querySelector('#wz-tutor-tab-links')?.getAttribute('aria-selected') || null, picker: !!document.querySelector('[data-graft-picker]'),
       add: document.querySelector('[data-graft-add]')?.getAttribute('aria-expanded') || null, line: !!document.querySelector('.machina2-cmd') }))()`;
@@ -268,6 +270,33 @@ export default {
     const after = await app.evalJs(`document.querySelector('${ED}').innerText`);
     await fresh();
     await key('/', true); await sleep(250); await app.typeKeys('add link'); await sleep(250);
+    const listed = await app.evalJs(`[...document.querySelectorAll('.machina2-cmd-item')].map((li) => li.dataset.cmd)`);
+    await key('Enter'); await sleep(1200);
+    const byLine = await app.evalJs(STATE), r2 = await app.evalJs(R);
+    await fresh();
+    await clickSel(app, '.machina2-switch[data-switch="command"]'); await sleep(150);
+    await app.evalJs(`document.querySelector('${ED}').focus()`); await key('k', true); await sleep(1200);
+    const byKeyOff = await app.evalJs(STATE);
+    await clickSel(app, '.machina2-switch[data-switch="command"]'); await sleep(150);
+    const opened = (s) => s.tab === 'true' && s.picker && s.add === 'true' && !s.line;
+    const eq = (a, b) => !!a && !!b && a.every((v, i) => Math.abs(v - b[i]) <= 0.5);
+    const ok = { key: opened(byKey), rect: eq(r0, r1) && eq(r0, r2), text: before === after, listed: listed[0] === 'add-link', line: opened(byLine), off: opened(byKeyOff) };
+    if (Object.values(ok).some((x) => !x)) fail('M2-LINK', { ok, byKey, byLine, byKeyOff, listed, rects: [r0, r1, r2] });
+    say('m2-link', { ok, byKey, rect: r0, listed: listed.slice(0, 3) });
+  },
+  'm2-link': async (app) => {
+    const R = `(() => { const b = document.querySelector('.mode-page')?.getBoundingClientRect(); return b ? [b.left, b.top, b.width, b.height].map((v) => Math.round(v * 10) / 10) : null; })()`;
+    const STATE = `(() => ({ tab: document.querySelector('#wz-tutor-tab-links')?.getAttribute('aria-selected') || null, picker: !!document.querySelector('[data-graft-picker]'),
+      add: document.querySelector('[data-graft-add]')?.getAttribute('aria-expanded') || null, line: !!document.querySelector('.machina2-cmd') }))()`;
+    const key = (k, ctrl) => app.evalJs(`(() => { const el = document.activeElement || document.body; el.dispatchEvent(new KeyboardEvent('keydown', { key: ${JSON.stringify(k)}, code: ${JSON.stringify(k === '/' ? 'Slash' : k.length === 1 ? 'Key' + k.toUpperCase() : k)}, ctrlKey: ${!!ctrl}, bubbles: true, cancelable: true })); })()`);
+    const fresh = async () => { await page(app, 'm2-link', WORDS); await app.evalJs(`document.querySelector('${ED}').focus()`); };
+    await fresh();
+    const before = await app.evalJs(`document.querySelector('${ED}').innerText`), r0 = await app.evalJs(R);
+    await key('k', true); await sleep(1200);
+    const byKey = await app.evalJs(STATE), r1 = await app.evalJs(R);
+    const after = await app.evalJs(`document.querySelector('${ED}').innerText`);
+    await fresh();
+    await key('.', true); await sleep(250); await app.typeKeys('add link'); await sleep(250);
     const listed = await app.evalJs(`[...document.querySelectorAll('.machina2-cmd-item')].map((li) => li.dataset.cmd)`);
     await key('Enter'); await sleep(1200);
     const byLine = await app.evalJs(STATE), r2 = await app.evalJs(R);
