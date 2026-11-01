@@ -590,6 +590,10 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   useLayoutEffect(() => {
     // POLISH #10 item 1: the Board joins the mirror - its board narrows to the drawer's full width, so the panel stands flush against its tab there too
     // K2: a docked LINK READER is measured like the open drawer (flush to the page's edge past its tab), never by the docked CSS clamp, whose margin adds --frame-gap
+    // THE DRAWER ALIGNMENT (Nick, via Fable, Nov 1; the theme mockup's flag only - its drawerEdge.ts sets data-wz2-drawer-edge): closing keeps
+    // the open geometry, so the drawer slides back from where it stood and its tab, on its outer edge, travels with it (it snapped to the
+    // pre-open width first: 37 px apart at half the close, run 41336050132). The next open measures again.
+    if (!open && document.documentElement.hasAttribute('data-wz2-drawer-edge')) return;
     if (!open || (docked && !linkDock)) { setPanelWidthPx(null); setPanelOffsetPx(0); return; }
     const measure = () => {
       const stage = document.querySelector('.desk-frame-stage');
