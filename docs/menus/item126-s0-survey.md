@@ -26,12 +26,12 @@ text today would mean building against a stale question. **S0 is committed now
 
 `InkStratum` has **exactly one mount in the entire app**:
 
-- [PageEditor.tsx:684](apps/desktop/src/pages/PageEditor.tsx#L684) —
+- [PageEditor.tsx:684](../../apps/desktop/src/pages/PageEditor.tsx#L684) —
   `{framed && mode === 'journal' && (` … `<InkStratum` at :685.
 
 Every other occurrence is an import or a comment
-([Sliver.tsx:21](apps/desktop/src/components/Sliver.tsx#L21) imports the `InkPen`
-*type* only; [PageEditor.tsx:12](apps/desktop/src/pages/PageEditor.tsx#L12) the
+([Sliver.tsx:21](../../apps/desktop/src/components/Sliver.tsx#L21) imports the `InkPen`
+*type* only; [PageEditor.tsx:12](../../apps/desktop/src/pages/PageEditor.tsx#L12) the
 import; :619 a comment). **Nothing else decides the stratum's presence**, so B1
 is one condition and there is no second gate hiding behind it.
 
@@ -50,15 +50,15 @@ which would hand Draft an instrument switch it must not have.
 
 ## §2 · THE SHEET IS ALREADY UNIVERSAL — confirmed, and it is what shrinks the ticket
 
-- `editorBody` at [PageEditor.tsx:610](apps/desktop/src/pages/PageEditor.tsx#L610);
+- `editorBody` at [PageEditor.tsx:610](../../apps/desktop/src/pages/PageEditor.tsx#L610);
   **the very first element it returns** is the sheet —
-  `className="wz-ink-sheet"` at [:622](apps/desktop/src/pages/PageEditor.tsx#L622),
+  `className="wz-ink-sheet"` at [:622](../../apps/desktop/src/pages/PageEditor.tsx#L622),
   `position:relative; width:100%; minHeight:100%` — **with no mode condition
   anywhere between the function head and that div.**
 - `editorBody` is handed to **one** `ModeStage`, which takes `mode={mode}` as a
   plain prop and renders the children regardless:
-  [:1153](apps/desktop/src/pages/PageEditor.tsx#L1153) (framed) and
-  [:1221](apps/desktop/src/pages/PageEditor.tsx#L1221) (legacy).
+  [:1153](../../apps/desktop/src/pages/PageEditor.tsx#L1153) (framed) and
+  [:1221](../../apps/desktop/src/pages/PageEditor.tsx#L1221) (legacy).
 
 **So the box the canvas anchors to ALREADY EXISTS in Draft and in Revise.** B1
 extends a mount into a surface that is already laid out for it; it does not
@@ -67,7 +67,7 @@ have a real second box to measure in all three modes on day one.
 
 ## §3 · THE EDITOR SPLIT — confirmed
 
-[ForwardOnlyEditor.tsx:102](apps/desktop/src/components/ForwardOnlyEditor.tsx#L102)
+[ForwardOnlyEditor.tsx:102](../../apps/desktop/src/components/ForwardOnlyEditor.tsx#L102)
 — `const freeEdit = mode === 'drafting' || mode === 'revise';`
 
 Draft and Revise share one editor path. **This is exactly why B6 must assert
@@ -78,12 +78,12 @@ suite that tested only Draft would call that green.
 
 - **Screenplay is a page KIND, not a mode.** `ScriptEditor` is dispatched on
   `entry?.pageType === 'script'` at
-  [PageEditor.tsx:1244](apps/desktop/src/pages/PageEditor.tsx#L1244) (and :1309),
+  [PageEditor.tsx:1244](../../apps/desktop/src/pages/PageEditor.tsx#L1244) (and :1309),
   and it mounts **neither** `.wz-ink-sheet` **nor** `InkStratum` — grep count
   **0**. Out of scope, and not by oversight.
 - **Board ink is box-local.** `BoardEditor` imports `renderStroke` and paints
   `box.strokes` per box
-  ([BoardEditor.tsx:160](apps/desktop/src/components/BoardEditor.tsx#L160)),
+  ([BoardEditor.tsx:160](../../apps/desktop/src/components/BoardEditor.tsx#L160)),
   against the box's own width. A different owner, a different field. Out of scope.
 
 ## §5 · THE DOUBLE-CLICK CENSUS — the collision is NOT the one the brief feared
@@ -93,8 +93,8 @@ suite that tested only Draft would call that green.
 and zero `'dblclick'` listeners. The only bindings in the app are on **other
 surfaces**:
 
-- [BoardEditor.tsx:2043](apps/desktop/src/components/BoardEditor.tsx#L2043) — the board card's own (text edit / page-pin travel).
-- [CascadePanels.tsx:577](apps/desktop/src/components/CascadePanels.tsx#L577) — `onDoubleClick={onTravel}`.
+- [BoardEditor.tsx:2043](../../apps/desktop/src/components/BoardEditor.tsx#L2043) — the board card's own (text edit / page-pin travel).
+- [CascadePanels.tsx:577](../../apps/desktop/src/components/CascadePanels.tsx#L577) — `onDoubleClick={onTravel}`.
 
 **So the brief's worry about item 128's nested-board double-click is real as a
 GRAMMAR question and empty as a COLLISION one** — different surfaces, no shared
@@ -106,13 +106,13 @@ cursor"). B3's miss-path is therefore not politeness; it is the feature.
 ## §6 · THE PARK SURFACE — ZERO PARKS OWED by the mount extension (statically)
 
 - `item121.mjs` **S10** asserts *"the TEXT|INK switch does NOT mount on Draft"*
-  ([item121.mjs:614](apps/desktop/scripts/harness/item121.mjs#L614)). **Still
+  ([item121.mjs:614](../../apps/desktop/scripts/harness/item121.mjs#L614)). **Still
   true after 121-B** — Draft gains no drawing and therefore no instrument
   switch. Not a park; it becomes *more* load-bearing, because it is what stops
   B1 being over-applied (see §1's table).
 - **No harness anywhere asserts the stratum's ABSENCE**, in any mode. The only
   artifact is a **comment**, not an assertion:
-  [item121.mjs:88](apps/desktop/scripts/harness/item121.mjs#L88) — *"the switch
+  [item121.mjs:88](../../apps/desktop/scripts/harness/item121.mjs#L88) — *"the switch
   and the stratum are correctly absent a moment ago: they are Free Write's."*
   **That sentence becomes false at B1 and must be corrected in the same commit**
   — no park (nothing is falsified that was ever checked), but "sweep behaviours,
@@ -143,11 +143,11 @@ when granted, will be spent on the suite and not on discovery.**
 
 1. **⚠ THE "PEN" RENAME LANDED NEXT DOOR, AND THERE ARE NOW TWO PENS.** Item 130
    added `modeBarPen: 'Pen'` to the desk lexicon
-   ([deskLexicon.ts:590](apps/desktop/src/store/deskLexicon.ts#L590)) — it names
+   ([deskLexicon.ts:590](../../apps/desktop/src/store/deskLexicon.ts#L590)) — it names
    **ModeStage's UNFRAMED (below-1100) pen bar**, which is the **TEXT-COLOUR**
    control item 121 §6.2 deliberately left alone, *not* the ink pen. The ink
    tip's own string is `inkTipPen: 'Pen'`
-   ([deskLexicon.ts:597](apps/desktop/src/store/deskLexicon.ts#L597)).
+   ([deskLexicon.ts:597](../../apps/desktop/src/store/deskLexicon.ts#L597)).
    **Two lexicon keys, the same rendered word, different meanings, one file
    apart. They must not be merged, and 121-B must not "tidy" one into the
    other.** Recorded here because the next hand to see a duplicate string will be
