@@ -975,8 +975,8 @@ whichever lane owns the Journal and the Library.
   - `item207-fonts-amendment-nicks-rulings.md`, `item108-tags-as-sorting-pass.md`
   - `item203-sync-body-limit-s0.md`, `b181-file-object-design-pass.md`,
     `architecture-double-pass.md`
-- Other docs: `docs/flux-theme-canon.md`, `docs/s-arc-screenplay-plan.md`,
-  `docs/writing-screen-redesign-brief.md`, `docs/f1-resume-repair-brief.md`
+- Other docs: `docs/flux-theme-canon.md`, `docs/briefs/s/s-arc-screenplay-plan.md`,
+  `docs/briefs/early/writing-screen-redesign-brief.md`, `docs/briefs/f/f1-resume-repair-brief.md`
 - The code named inline.
 - `store/markRuns.ts` on `origin/item-writing-r3`.
 - `wrizo-read/docs/foundations/foundations.md` and `wrizo-read/packages/contracts/src/bridge.ts`.

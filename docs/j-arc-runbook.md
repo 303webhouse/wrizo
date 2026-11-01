@@ -24,8 +24,8 @@ code review via Nick, and merges only on Nick's subsequent word.
 - Launch Claude Code from the repo root (`writer-studio`) so
   `.claude/settings.local.json` governs the session.
 - Nick will drop three files into the working tree; commit them to `main`:
-  `docs/j4-board-brief.md`, `docs/j5-spread-console-brief.md`, this runbook.
-- Read `AGENTS.md`, `docs/backlog.md`, `docs/j-arc-design.md` before touching
+  `docs/briefs/j/j4-board-brief.md`, `docs/briefs/j/j5-spread-console-brief.md`, this runbook.
+- Read `AGENTS.md`, `docs/backlog.md`, `docs/briefs/j/j-arc-design.md` before touching
   code. House law: propose, never ship, changes to your own permissions or
   harness config.
 
@@ -65,7 +65,7 @@ existing checks before merging.
    deploy is also what unblocks his consolidated S25 gate session
    (J2 eraser feel + J3 drag/scroll probes + the formal stack word).
 
-## Step 3 — build J4 per `docs/j4-board-brief.md`
+## Step 3 — build J4 per `docs/briefs/j/j4-board-brief.md`
 - Branch `j4-board` off post-merge `main`. Follow the brief exactly; its
   Slice-1 grep now includes `boxes` alongside `order_index` + `imported_at`.
 - May proceed in parallel with Nick's S25 session (the reframed gate:
@@ -74,7 +74,7 @@ existing checks before merging.
   review returns and Nick relays the word.
 
 ## Step 4 — J5
-- Re-run the prerequisite gate in `docs/j5-spread-console-brief.md` (it now
+- Re-run the prerequisite gate in `docs/briefs/j/j5-spread-console-brief.md` (it now
   passes if Steps 2–3 landed and J4 merged on Nick's word).
 - Build per the brief. Same ship discipline: push, report, hold for review.
 
