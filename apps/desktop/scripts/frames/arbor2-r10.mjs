@@ -130,23 +130,67 @@ const judge = (name, samples) => {
   return brief;
 };
 const MORNING = [6 * 3600 + 49 * 60, 7 * 3600 + 11 * 60], EVENING = [18 * 3600 + 49 * 60, 19 * 3600 + 11 * 60];
+// SUCCESSOR of judge (r11, SUPERSEDED by Fable's ruling, Nov 1, on the Wrizors' answer (spec draft 13 §2e): the count row's plate is the page's paper and its letters the page's low ink, following the Page setting, never the room): judge's bareSeen required the count among the bare room's texts; the
+// count now sits on the page's paper, so bareSeen asks only for bare-room texts, and countOnPage asks that the count's ground hold still (a
+// median ground-luminance spread of <= 0.02 across every sample) while the floors are kept at every sample exactly as judge keeps them.
+const judge2 = (name, samples) => {
+  const ts = samples.map((s) => s.t);
+  const gaps = samples.slice(1).map((s, j) => Math.abs(s.t - samples[j].t));
+  const maxGap = Math.max(...gaps);
+  const first = samples[0], last = samples[samples.length - 1];
+  const g0 = new Map(first.runs.map((r) => [r.key, r.gmed])), g1 = new Map(last.runs.map((r) => [r.key, r.gmed]));
+  const bareKeys = [...g0.keys()].filter((k) => g1.has(k) && Math.abs(g0.get(k) - g1.get(k)) > 0.2);
+  const bare = bareKeys.map((k) => { const all = samples.map((s) => s.runs.find((r) => r.key === k)).filter(Boolean); const worst = all.reduce((a, r) => (r.p2 < a.p2 ? r : a), all[0]); return { key: k, worstP2: worst.p2, worstMin: Math.min(...all.map((r) => r.min)) }; });
+  const bad = samples.flatMap((s) => s.runs.filter((r) => r.p2 < r.floor).map((r) => ({ at: s.at, t: s.t, text: r.text, where: r.where, floor: r.floor, p2: r.p2, min: r.min })));
+  const countKey = [...g0.keys()].find((k) => /\|\d+\s*words?\b/i.test(k));
+  const countG = countKey ? samples.map((s) => s.runs.find((r) => r.key === countKey)?.gmed) : [];
+  const ok = {
+    covered: ts[0] === 0 && ts[ts.length - 1] === 1 || (ts[0] === 1 && ts[ts.length - 1] === 0),
+    every5pct: maxGap <= 0.05 + 1e-9,
+    bareSeen: bare.length > 0,
+    countOnPage: !!countKey && countG.every((g) => typeof g === 'number') && Math.max(...countG) - Math.min(...countG) <= 0.02,
+    floors: bad.length === 0,
+  };
+  const brief = { ok, samples: samples.length, maxGap: Math.round(maxGap * 1000) / 1000, bare, bad: bad.slice(0, 10), runsPerSample: first.runs.length, count: countKey ? { key: countKey, ground: [Math.min(...countG), Math.max(...countG)] } : null };
+  if (Object.values(ok).some((x) => !x)) fail(name, brief);
+  return brief;
+};
 
 export default {
   // ── THE SWEEP, FREE WRITE: morning and evening fades, every text against the pixels behind it, at least every 5%; floors 4.5:1 throughout.
-  'r10-sweep-freewrite': async (app) => {
+  // PARKED 2026-11-01 (SUPERSEDED by Fable's ruling, Nov 1, on the Wrizors' answer (spec draft 13 §2e): the count row's plate is the page's paper and its letters the page's low ink, following the Page setting, never the room; judge's bareSeen required the count on the bare room). Kept verbatim under the name
+  // r10-sweep-freewrite-v1 (not in the run list); SUCCESSOR r10-sweep-freewrite below, the same sweep through judge2.
+  'r10-sweep-freewrite-v1': async (app) => {
     await page(app, 'arbor-r10-sweep'); await lit(app);
     if ((await clock(app, '12:00')) === 'NO-SEAM') fail('R10-SWEEP-FREEWRITE', { seam: false });
     const m = judge('R10-SWEEP-FREEWRITE (morning)', await sweepFade(app, ...MORNING));
     const e = judge('R10-SWEEP-FREEWRITE (evening)', await sweepFade(app, ...EVENING));
     say('r10-sweep-freewrite', { morning: m, evening: e });
   },
+  'r10-sweep-freewrite': async (app) => {
+    await page(app, 'arbor-r10-sweep'); await lit(app);
+    if ((await clock(app, '12:00')) === 'NO-SEAM') fail('R10-SWEEP-FREEWRITE', { seam: false });
+    const m = judge2('R10-SWEEP-FREEWRITE (morning)', await sweepFade(app, ...MORNING));
+    const e = judge2('R10-SWEEP-FREEWRITE (evening)', await sweepFade(app, ...EVENING));
+    say('r10-sweep-freewrite', { morning: m, evening: e });
+  },
   // ── THE SWEEP, DRAFT (the same, on the Draft surface)
-  'r10-sweep-draft': async (app) => {
+  // PARKED 2026-11-01 (SUPERSEDED by Fable's ruling, Nov 1, on the Wrizors' answer (spec draft 13 §2e): the count row's plate is the page's paper and its letters the page's low ink, following the Page setting, never the room; judge's bareSeen required the count on the bare room). Kept verbatim under the name
+  // r10-sweep-draft-v1 (not in the run list); SUCCESSOR r10-sweep-draft below, the same sweep through judge2.
+  'r10-sweep-draft-v1': async (app) => {
     await page(app, 'arbor-r10-sweep');
     await clickText(app, '.desk-mode-tab', 'Draft'); await sleep(1400); await lit(app);
     if ((await clock(app, '12:00')) === 'NO-SEAM') fail('R10-SWEEP-DRAFT', { seam: false });
     const m = judge('R10-SWEEP-DRAFT (morning)', await sweepFade(app, ...MORNING));
     const e = judge('R10-SWEEP-DRAFT (evening)', await sweepFade(app, ...EVENING));
+    say('r10-sweep-draft', { morning: m, evening: e });
+  },
+  'r10-sweep-draft': async (app) => {
+    await page(app, 'arbor-r10-sweep');
+    await clickText(app, '.desk-mode-tab', 'Draft'); await sleep(1400); await lit(app);
+    if ((await clock(app, '12:00')) === 'NO-SEAM') fail('R10-SWEEP-DRAFT', { seam: false });
+    const m = judge2('R10-SWEEP-DRAFT (morning)', await sweepFade(app, ...MORNING));
+    const e = judge2('R10-SWEEP-DRAFT (evening)', await sweepFade(app, ...EVENING));
     say('r10-sweep-draft', { morning: m, evening: e });
   },
 
@@ -198,7 +242,9 @@ export default {
 
   // ── THE COUNT'S PLATE (Wrizors 1): through the whole fade the word count sits on its own plate - the count's text inside the plate's rect at
   // every step; the label is cream by night and deep olive by day, switching once, at the middle.
-  'r10-plate': async (app) => {
+  // PARKED 2026-11-01 (SUPERSEDED by Fable's ruling, Nov 1, on the Wrizors' answer (spec draft 13 §2e): the count row's plate is the page's paper and its letters the page's low ink, following the Page setting, never the room; "Retire your midpoint cut"). Kept verbatim under the name r10-plate-v1 (not in the run list);
+  // SUCCESSOR r11-plate (scripts/frames/arbor2-r11.mjs): the plate is the page's paper and low ink at every moment, measured in both page tones.
+  'r10-plate-v1': async (app) => {
     await page(app, 'arbor-r10-plate'); await lit(app);
     const READ = `(() => { const plate = document.querySelector('.arbor2-count-plate, .desk-frame-instrument');   /* (driver: the plate is the count row's own box, the instrument) */ const cnt = [...document.querySelectorAll('*')].find((e) => [...e.childNodes].some((n) => n.nodeType === 3 && /^\\d+\\s*words?$/i.test(n.textContent.trim())));
       const p = plate?.getBoundingClientRect(), c = cnt?.getBoundingClientRect(); const cs = plate ? getComputedStyle(plate) : null;
