@@ -108,7 +108,8 @@ function check() {
   // srcText is a drop-in for readFileSync(join(SRC, ...parts)): a read in several parts keeps every part (box turn, Nov 1: a
   // one-part srcText read th-machina-source's join(SRC, 'store', f) as the store/ folder, EISDIR)
   for (const parts of [['store', 'theme.ts'], ['components', 'Sliver.tsx'], ['main.tsx']]) {
-    if (srcText(SRC, ...parts) !== fs.readFileSync(path.join(SRC, ...parts), 'utf8')) fails.push(`srcText(SRC, ${parts.join(', ')}) is not that file's text`);
+    let got; try { got = srcText(SRC, ...parts); } catch (e) { got = `(threw ${e.code || e.message})`; }
+    if (got !== fs.readFileSync(path.join(SRC, ...parts), 'utf8')) fails.push(`srcText(SRC, ${parts.join(', ')}) is not that file's text${got.startsWith('(threw') ? ` ${got}` : ''}`);
   }
   if (srcText(SRC, 'index.css') !== globalCss(SRC)) fails.push("srcText(SRC, 'index.css') is not the joined text");
   if (now !== before) {
