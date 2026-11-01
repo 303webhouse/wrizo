@@ -58,6 +58,8 @@ export default {
       await go(false); const off = await app.evalJs(READ);
       await go(true); const toneRoom = await app.evalJs(READ);
       const other = toneRoom.room === 'night' ? 'Day' : 'Night';
+      // (r8 driver fix, no assertion changed: the Room switch now lives in the Mood menu, folded by default - open it first)
+      await app.evalJs(`(() => { const m = [...document.querySelectorAll('.arbor2-bar-head')].find((h) => /^Mood/.test(h.textContent.trim()) && h.getAttribute('aria-expanded') !== 'true'); if (m) m.click(); })()`); await sleep(150);
       await clickText(app, '.arbor2-bar-opt', other); await sleep(900);
       const switched = await app.evalJs(READ);
       toneRoom.mode = mode; switched.mode = mode;
