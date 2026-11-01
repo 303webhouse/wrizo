@@ -10,6 +10,7 @@ import fs from 'node:fs';
 import { readoutLine, pagesEstimate, readingTime, partsCovered, WORDS_PER_PAGE, WORDS_PER_MINUTE } from '../../src/machina2/readout.ts';
 import * as sw from '../../src/machina2/switches.ts';
 import { roomOf } from '../../src/machina2/room.ts';
+import * as r3 from '../../src/machina2/room.ts';   // U7 (r3)
 
 const checks = [];
 const ok = (name, pass, detail) => checks.push({ name, pass: !!pass, detail });
@@ -89,6 +90,21 @@ ok('U6 no rule keyed on the light ROOM sets a page value, and no rule keyed on t
   JSON.stringify(roomRules.filter(([sel, body]) => (/data-machina2-room='light'/.test(sel) && PAGE_VARS.test(body)) || (/data-page='light'/.test(sel) && ROOM_VARS.test(body))).map(([s]) => s).slice(0, 3)));
 ok('U6 no Machina room rule still reads the page tone for the room (the wash and the light room\'s hairline read the room)',
   !/data-page='light'\]:not\(\[data-machina2-off~='wash'\]\)/.test(css) && /data-machina2-room='light'\]:not\(\[data-machina2-off~='wash'\]\)/.test(css), '');
+
+// U7 (r3) THE ROOM FOLLOWS THE CLOCK (Fable, Nov 1: "Follow the clock / Always day / Always night (unset = clock, 07:00-19:00 local) ...
+// Machina switches only while the writer isn't typing"). The browser half is scripts/frames/machina2-r3.mjs.
+const hm = (s) => r3.parseClock(s);
+ok('U7 the choice from data-room: light = Always day, dark = Always night, anything else = Follow the clock',
+  r3.choiceOf('light') === 'light' && r3.choiceOf('dark') === 'dark' && r3.choiceOf(null) === 'clock' && r3.choiceOf('day') === 'clock' && r3.choiceOf('') === 'clock', '');
+ok('U7 the clock: light from 07:00 until 19:00 local, dark otherwise (the edges exact)',
+  r3.clockRoom(hm('06:59:59')) === 'dark' && r3.clockRoom(hm('07:00')) === 'light' && r3.clockRoom(hm('12:00')) === 'light' && r3.clockRoom(hm('18:59:59')) === 'light' && r3.clockRoom(hm('19:00')) === 'dark' && r3.clockRoom(hm('00:00')) === 'dark', '');
+ok('U7 a choice beats the clock; Follow the clock reads it', r3.wantRoom('light', hm('23:00')) === 'light' && r3.wantRoom('dark', hm('12:00')) === 'dark' && r3.wantRoom(null, hm('12:00')) === 'light' && r3.wantRoom(null, hm('23:00')) === 'dark', '');
+ok('U7 the clock waits while the writer is typing (a key within IDLE_MS) and lands once they stop',
+  r3.IDLE_MS === 5000 && r3.nextRoom('light', 'dark', false, 0) === 'light' && r3.nextRoom('light', 'dark', false, 4999) === 'light' && r3.nextRoom('light', 'dark', false, 5000) === 'dark' && r3.nextRoom('light', 'dark', false, Infinity) === 'dark', '');
+ok('U7 a pick, and the first resolve, land at once even mid-typing', r3.nextRoom('light', 'dark', true, 0) === 'dark' && r3.nextRoom(null, 'dark', false, 0) === 'dark' && r3.nextRoom('dark', 'dark', false, 0) === 'dark', '');
+const r3Src = fs.readFileSync(new URL('../../src/machina2/room.ts', import.meta.url), 'utf8') + fs.readFileSync(new URL('../../src/machina2/mount.tsx', import.meta.url), 'utf8');
+ok('U7 in session only, and the panel offers exactly Follow the clock / Always day / Always night', !/localStorage|sessionStorage|indexedDB/.test(r3Src) && /\[\['clock', 'Follow the clock'\], \['light', 'Always day'\], \['dark', 'Always night'\]\]/.test(r3Src) && !/follows Page/.test(r3Src), '');
+ok('U7 the room no longer reads the page tone', !/getAttribute\('data-page'\)/.test(fs.readFileSync(new URL('../../src/machina2/room.ts', import.meta.url), 'utf8')), '');
 
 for (const c of checks) console.log(`${c.pass ? 'ok  ' : 'FAIL'} ${c.name}${c.pass ? '' : '  ' + c.detail}`);
 const pass = checks.every((c) => c.pass);
