@@ -18,6 +18,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { withHarness } from '../runtime-verify.mjs';
+import { srcText } from '../global-css.mjs';
 
 // The path constants were never defined in this file (the static checks read
 // SRC before any browser section ran) — same two lines the sign-in harness uses.
@@ -30,8 +31,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 
-const tutorSrc = fs.readFileSync(path.join(SRC, 'components/Tutor.tsx'), 'utf8');
-const cssSrc = fs.readFileSync(path.join(SRC, 'index.css'), 'utf8');
+const tutorSrc = srcText(SRC, 'components/Tutor.tsx');
+const cssSrc = srcText(SRC, 'index.css');
 
 // ---- the live region exists, correctly shaped ------------------------------
 ok('A8: a dedicated polite live region is rendered (role="status" aria-live="polite", the sr-only class)',

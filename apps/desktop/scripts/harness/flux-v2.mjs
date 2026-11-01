@@ -28,6 +28,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { srcText } from '../global-css.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const DESKTOP = path.resolve(here, '..', '..');
@@ -38,7 +39,7 @@ const { build } = createRequire(require.resolve('vite'))('esbuild');
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
 const noCR = (t) => t.replace(/\r\n?/g, '\n');
-const readSrc = (rel) => noCR(fs.readFileSync(path.join(SRC, rel), 'utf8'));
+const readSrc = (rel) => noCR(srcText(SRC, rel));
 const has = (rel) => fs.existsSync(path.join(SRC, rel));
 const rd = (rel) => (has(rel) ? readSrc(rel) : '');
 const sleepMs = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -280,8 +281,7 @@ const SRC_MUT = [
 ];
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-const cssPath = path.join(SRC, 'index.css');
-const cssNow = noCR(fs.readFileSync(cssPath, 'utf8'));
+const cssNow = noCR(srcText(SRC, 'index.css'));
 const ORANGE_RE = /#ff9800|rgba\(\s*255\s*,\s*152\s*,\s*0|var\(--orange\)|var\(--brass-orange\)/i;
 const ORANGE_OK = [/flux-block-caret/, /mode-pfill/, /publish|uplink/i, /wz-logo|wz-mark|splash-mark|flux-mark|brand/i, /\[aria-current[^\]]*\]/, /flux-current-bar/];
 function cssChecks(css) {

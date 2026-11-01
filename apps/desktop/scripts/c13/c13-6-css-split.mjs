@@ -4,7 +4,7 @@
 //
 //   node apps/desktop/scripts/c13/c13-6-css-split.mjs split
 //        cut index.css at the PARTS banners below; every cut must sit on its banner line at brace depth 0, outside a comment
-//   node apps/desktop/scripts/c13/c13-6-css-split.mjs check --base <rev> [--plant swap|drop|edit]
+//   node apps/desktop/scripts/c13/c13-6-css-split.mjs check --base <rev> [--plant swap|drop|edit|raw|helper]
 //        (1) the joined source (scripts/global-css.mjs, what every source-reading script now reads) equals index.css at <rev>, byte for byte
 //        (line endings aside); (2) no script under apps/desktop/scripts still reads src/index.css as a text, except the reads of an old
 //        commit through git; --plant: the same check on a mutated input (two imports swapped, one dropped, one byte changed): must FAIL
@@ -111,18 +111,29 @@ function check() {
   }
   // No script may read the split index.css as text: it now holds import lines only. A read of an OLD commit's index.css through
   // `git show <rev>:...` is history and stays.
+  // A READER is a script whose code names index.css as a path (a quoted literal ending in index.css, outside a comment and outside a
+  // `git show` of an old commit). Every reader must import scripts/global-css.mjs, must not readFileSync/readFile a line that names
+  // index.css, and must not keep a raw readFileSync(join(SRC, ...)) helper, which would hand a caller the import list.
   const scripts = execFileSync('git', ['ls-files', 'apps/desktop/scripts'], { cwd: ROOT, encoding: 'utf8' }).split('\n').filter((f) => /\.mjs$/.test(f));
-  const raw = [];
-  for (const f of scripts) {
-    if (f.endsWith('c13/c13-6-css-split.mjs') || f.endsWith('scripts/global-css.mjs')) continue;
-    const lines = fs.readFileSync(path.join(ROOT, f), 'utf8').split(/\r?\n/);
-    lines.forEach((l, k) => {
-      if (/^\s*(\/\/|\*)/.test(l) || !/index\.css/.test(l)) return;
-      if (/git show|`\$\{[A-Z_]+\}:apps\/desktop\/src\/index\.css/.test(l)) return;
-      if (/(read|Read|rd|src|join|URL|readRaw)\s*\(.*['"`]index\.css['"`]|\[\s*['"]index\.css['"]\s*\]|['"]src['"],\s*['"]index\.css['"]|src\/index\.css/.test(l)) raw.push(`${f}:${k + 1}`);
-    });
+  const texts = new Map(scripts.filter((f) => !f.endsWith('c13/c13-6-css-split.mjs') && !f.endsWith('scripts/global-css.mjs'))
+    .map((f) => [f, fs.readFileSync(path.join(ROOT, f), 'utf8')]));
+  if (plant === 'raw') texts.set('apps/desktop/scripts/harness/planted.mjs', "import fs from 'node:fs';\nconst css = fs.readFileSync(path.join(SRC, 'index.css'), 'utf8');\n");
+  if (plant === 'helper') {
+    const f = 'apps/desktop/scripts/harness/drawer-toggles.mjs';
+    texts.set(f, texts.get(f).replace('srcText(SRC, rel)', "fs.readFileSync(path.join(SRC, rel), 'utf8')"));
   }
-  if (raw.length) fails.push(`${raw.length} script lines still read src/index.css as text: ${raw.slice(0, 6).join(', ')}`);
+  const PATH_LIT = /['"`](?:[^'"`\n]*\/)?index\.css['"`]/;
+  const readers = [], bad = [];
+  for (const [f, s] of texts) {
+    const code = s.split(/\r?\n/).filter((l) => !/^\s*(\/\/|\*)/.test(l) && !/git show/.test(l));
+    if (!code.some((l) => PATH_LIT.test(l))) continue;
+    readers.push(f);
+    if (!/from '\.{1,2}\/global-css\.mjs'/.test(s)) bad.push(`${f}: names index.css but does not use global-css.mjs`);
+    for (const l of code) if (/readFile(Sync)?\(/.test(l) && PATH_LIT.test(l)) bad.push(`${f}: reads index.css raw: ${l.trim().slice(0, 90)}`);
+    if (/readFileSync\(\s*(path\.)?join\(\s*SRC\s*,/.test(s)) bad.push(`${f}: a raw readFileSync(join(SRC, ...)) read is left`);
+  }
+  if (bad.length) fails.push(`${bad.length} reader problems: ${bad.slice(0, 4).join(' | ')}`);
+  console.log(`readers of index.css: ${readers.length}`);
   console.log(`parts ${parts.length}; joined ${now.length} chars vs ${before.length} at ${base.slice(0, 8)}; scripts scanned ${scripts.length}${plant ? `; PLANTED: ${plant}` : ''}`);
   for (const f of fails) console.log('FAIL', f);
   console.log(fails.length ? `SPLIT: FAIL (${fails.length})` : 'SPLIT: PASS (the joined source is index.css as it was; no script reads the import list as CSS)');
@@ -160,4 +171,4 @@ function dist() {
   process.exit(fails.length ? 1 : 0);
 }
 
-({ split, check, dist }[process.argv[2]] ?? (() => { console.log('usage: split | check --base <rev> [--plant swap|drop|edit] | dist <a> <b> [--plant swap]'); process.exit(1); }))();
+({ split, check, dist }[process.argv[2]] ?? (() => { console.log('usage: split | check --base <rev> [--plant swap|drop|edit|raw|helper] | dist <a> <b> [--plant swap]'); process.exit(1); }))();

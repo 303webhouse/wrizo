@@ -1,0 +1,301 @@
+/* ============================================================================================================================================================
+   W4 - HELP ME CHOOSE (components/HelpMeChoose.tsx; decks/helpMeChoose.ts is the logic). Three dresses, ONE structure: Arbor's OLIVE alcove (the final frames 08 - the brown ALT frames are not built), Flux's RUN DIAGNOSTIC terminal
+   (frame 09), and a plain, square, theme-tokened panel for every other theme (Machina's Intake; Nomad / Volant until they have mockups). Square edges everywhere, NO drop shadows, no literal wood or desk. Hover / choice = brass
+   (Arbor) or the line colour (Flux). Motion: an answer advances with a short slide (<= 300 ms); reduced motion and Ambiance 0 (data-still) are cuts.
+   ============================================================================================================================================================ */
+.help-backdrop{ position:fixed; inset:0; z-index:230; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.45); }
+.help-panel{ position:relative; box-sizing:border-box; max-height:92vh; overflow:auto; border-radius:0; box-shadow:none; }
+.help-step{ animation:help-slide .26s cubic-bezier(.2,.8,.2,1); }
+.help-step[data-still='true']{ animation:none; }
+@keyframes help-slide{ from{ opacity:0; transform:translateX(24px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){ .help-step{ animation:none; } }
+.help-panel button{ font:inherit; color:inherit; background:none; border:0; border-radius:0; cursor:pointer; padding:0; text-align:inherit; }
+.help-panel button:focus-visible{ outline:2px solid currentColor; outline-offset:2px; }
+.help-foot{ display:flex; align-items:center; justify-content:center; gap:10px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; }
+.help-back{ letter-spacing:.12em; text-transform:uppercase; font-size:11px; }
+.help-scratch{ display:block; margin:10px auto 0; opacity:.55; }
+
+/* ---- ARBOR: the olive alcove ---- */
+.help-librarian{ width:min(1000px, calc(100vw - 48px)); min-height:560px; padding:44px 40px 30px; color:#EFE6D3;
+  background:linear-gradient(170deg,#69733d 0%,#5c6634 60%,#525b2e 100%); box-shadow:0 0 0 1px rgba(60,48,30,.6); font-family:var(--font-prose); display:flex; flex-direction:column; }
+.help-librarian::before{ content:''; position:absolute; inset:14px; border:1px solid rgba(240,230,200,.30); pointer-events:none; }
+.help-librarian .help-kicker{ font-family:var(--font-ui); font-size:11px; letter-spacing:.32em; text-transform:uppercase; color:#fff3dc; text-align:center; }
+.help-librarian .help-dots{ margin-top:12px; display:flex; justify-content:center; gap:10px; }
+.help-librarian .help-dots i{ width:7px; height:7px; border-radius:50%; border:1px solid #f1e6c8; } .help-librarian .help-dots i.f{ background:#f1e6c8; }
+.help-librarian .help-made{ margin-top:14px; font-style:italic; font-size:14px; color:#fff3dc; text-align:center; } .help-librarian .help-made b{ font-style:normal; color:#fff3dc; font-weight:600; }
+.help-librarian .help-q{ margin:10px 0 0; font-family:var(--font-prose); font-weight:600; font-size:40px; color:#fff3dc; text-align:center; line-height:1.15; }
+.help-librarian .help-scratch{ color:#f1e6c8; }
+.help-librarian .help-tiles{ margin-top:34px; display:flex; flex-wrap:wrap; justify-content:center; gap:22px; }
+.help-librarian .help-tile{ width:200px; min-height:220px; box-sizing:border-box; display:flex; flex-direction:column; align-items:center; padding:30px 16px 18px; text-align:center;
+  background:#4b5329; box-shadow:inset 0 0 0 1px rgba(240,230,200,.35); color:#efe6cf; transition:box-shadow .15s ease, color .15s ease; }
+.help-librarian .help-tiles[data-count='10'] .help-tile, .help-librarian .help-tiles[data-count='5'] .help-tile{ width:160px; min-height:130px; padding:22px 12px 16px; }
+.help-librarian .help-tiles[data-count='5'] .help-tile{ min-height:200px; }
+.help-librarian .help-tile:hover, .help-librarian .help-tile:focus-visible{ box-shadow:inset 0 0 0 1.5px var(--brass); color:#fff3dc; outline:none; }
+/* BRASS IS NEVER THE TEXT COLOUR HERE (measured: brass on the tile 3.79:1, on the panel 2.4-2.9:1 - under 4.5): the ring and the line emblem (a graphic, >= 3:1) carry it, the words stay cream */
+.help-librarian .help-tile:hover .help-emblem, .help-librarian .help-tile:focus-visible .help-emblem{ color:var(--brass); }
+.help-librarian .help-emblem{ display:block; height:58px; }
+.help-librarian .help-tile-name{ margin-top:20px; font-weight:600; font-size:19px; color:inherit; }
+.help-librarian .help-tiles[data-count='10'] .help-tile-name, .help-librarian .help-tiles[data-count='5'] .help-tile-name{ margin-top:0; font-size:17px; }
+.help-librarian .help-tile-hint{ margin-top:8px; font-style:italic; font-size:13px; line-height:1.4; color:#e2d8bd; }
+.help-librarian .help-tile:hover .help-tile-hint, .help-librarian .help-tile:focus-visible .help-tile-hint{ color:#fff3dc; }
+.help-librarian .help-foot{ margin-top:auto; padding-top:26px; color:#fff3dc; }
+.help-librarian .help-browse-foot, .help-librarian .help-back{ color:#fff3dc; }
+/* the result: a square bookcloth cover, the "why", Begin, the alternative as a spine, Browse */
+.help-librarian .help-result{ display:flex; gap:56px; align-items:flex-start; margin-top:6px; }
+.help-librarian .help-book{ position:relative; box-sizing:border-box; width:290px; min-height:390px; flex:0 0 auto; display:flex; flex-direction:column; align-items:center; padding:46px 30px; background:#434b24; box-shadow:inset 0 0 0 1px rgba(240,230,200,.30); color:#efe6cf; }
+.help-librarian .help-book::before{ content:''; position:absolute; inset:16px 16px 16px 26px; border:1px solid rgba(240,230,200,.45); }
+.help-librarian .help-book-title{ margin-top:24px; font-weight:600; font-size:30px; line-height:1.15; text-align:center; color:#E8DFC6; }
+.help-librarian .help-book-sub{ margin-top:12px; font-style:italic; font-size:13px; line-height:1.5; text-align:center; color:#e2d8bd; }
+.help-librarian .help-right{ flex:1 1 auto; min-width:0; padding-top:14px; }
+.help-librarian .help-right .help-kicker{ text-align:left; }
+.help-librarian .help-why{ margin:18px 0 0; font-style:italic; font-size:23px; line-height:1.45; color:#fff3dc; }
+.help-librarian .help-right .help-scratch{ margin-left:0; }
+.help-librarian .help-begin{ display:inline-block; margin-top:30px; padding:12px 24px; font-weight:600; font-size:16px; color:#fff3dc; box-shadow:inset 0 0 0 1.5px var(--brass); }
+.help-librarian .help-begin:hover, .help-librarian .help-begin:focus-visible{ box-shadow:inset 0 0 0 2.5px var(--brass); }
+.help-librarian .help-alt{ margin-top:34px; display:flex; align-items:center; gap:16px; color:#fff3dc; font-size:14px; line-height:1.5; text-align:left; }
+.help-librarian .help-spine{ width:44px; height:150px; flex:0 0 auto; display:flex; align-items:center; justify-content:center; background:#434b24; box-shadow:inset 0 0 0 1px rgba(240,230,200,.35); }
+.help-librarian .help-spine span{ writing-mode:vertical-rl; text-orientation:sideways; transform:rotate(180deg); font-weight:600; font-size:14px; color:#efe6cf; }
+.help-librarian .help-alt:hover .help-spine, .help-librarian .help-alt:focus-visible .help-spine{ box-shadow:inset 0 0 0 1.5px var(--brass); }
+.help-librarian .help-alt b{ color:#fff3dc; }
+.help-librarian .help-right .help-browse{ display:block; margin-top:30px; font-family:var(--font-ui); font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:#fff3dc; }
+
+/* ---- FLUX: RUN DIAGNOSTIC ---- */
+.help-diagnostic{ width:min(760px, calc(100vw - 48px)); padding:24px 26px 18px; background:var(--chrome-surface); color:var(--text-mid); font-family:var(--font-chromeLabel); font-size:13px; line-height:1.9;
+  border:1px solid color-mix(in srgb, var(--line-active) 35%, transparent); overflow:visible; }
+.help-diagnostic .help-br{ position:absolute; width:14px; height:14px; border:0 solid var(--line-active); }
+.help-diagnostic .help-br.a{ left:-6px; top:-6px; border-width:1.5px 0 0 1.5px; } .help-diagnostic .help-br.b{ right:-6px; top:-6px; border-width:1.5px 1.5px 0 0; }
+.help-diagnostic .help-br.c{ left:-6px; bottom:-6px; border-width:0 0 1.5px 1.5px; } .help-diagnostic .help-br.d{ right:-6px; bottom:-6px; border-width:0 1.5px 1.5px 0; }
+.help-diagnostic .help-kicker{ color:var(--text-hi); letter-spacing:.2em; margin-bottom:8px; }
+.help-diagnostic .help-line{ display:flex; flex-wrap:wrap; gap:0 12px; align-items:baseline; }
+.help-diagnostic .help-prompt{ color:var(--text-mid); text-transform:uppercase; white-space:nowrap; }
+.help-diagnostic .help-opts{ display:inline-flex; flex-wrap:wrap; gap:0 12px; }
+.help-diagnostic .help-opt{ color:var(--line-active); text-transform:uppercase; padding:0 3px; }
+.help-diagnostic .help-opt:hover, .help-diagnostic .help-opt:focus-visible{ color:var(--chrome-surface); background:var(--line-active); outline:none; }
+.help-diagnostic .help-opt-sel{ color:var(--chrome-surface); background:var(--line-active); }
+.help-diagnostic .help-progress{ display:flex; gap:4px; margin:14px 0 14px; }
+.help-diagnostic .help-progress i{ flex:1; height:5px; background:color-mix(in srgb, var(--sage) 14%, transparent); }
+.help-diagnostic .help-progress i[data-on='true']{ background:var(--sage); }
+.help-diagnostic .help-resultlines{ border-left:2px solid var(--orange); padding-left:12px; }
+.help-diagnostic .help-rline{ display:flex; align-items:baseline; gap:8px; color:var(--text-hi); }
+.help-diagnostic .help-rline-alt{ color:var(--text-mid); }
+.help-diagnostic .help-leader{ flex:1; border-bottom:1px dotted currentColor; opacity:.6; transform:translateY(-4px); }
+.help-diagnostic .help-load{ color:var(--line-active); } .help-diagnostic .help-load:hover, .help-diagnostic .help-load:focus-visible{ color:var(--chrome-surface); background:var(--line-active); outline:none; }
+.help-diagnostic .help-why{ margin:2px 0 4px; color:var(--text-mid); font-size:12px; line-height:1.6; text-transform:none; }
+.help-diagnostic .help-browse{ display:block; margin-top:12px; color:var(--text-mid); text-transform:uppercase; }
+.help-diagnostic .help-browse:hover, .help-diagnostic .help-browse:focus-visible{ color:var(--text-hi); }
+.help-diagnostic .help-foot{ margin-top:16px; justify-content:flex-start; color:var(--text-low); font-size:10px; }
+
+/* ---- PLAIN: Machina's Intake, Nomad's Scout, Volant's one dialog (square, theme tokens only) ---- */
+.help-plain{ width:min(560px, calc(100vw - 48px)); padding:28px 30px 20px; background:var(--chrome-surface); color:var(--text-mid); border:1px solid var(--ink-border-strong); font-family:var(--font-contentLabel); }
+.help-plain .help-kicker{ font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--text-hi); }
+.help-plain .help-stepof{ margin-top:6px; font-family:var(--font-chromeLabel); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-mid); }
+.help-plain .help-made{ margin-top:10px; font-size:13px; color:var(--text-mid); } .help-plain .help-made b{ color:var(--text-hi); font-weight:600; }
+.help-plain .help-q{ margin:10px 0 0; font-size:22px; font-weight:600; color:var(--text-hi); line-height:1.25; }
+.help-plain .help-list{ margin-top:16px; display:flex; flex-direction:column; border-top:1px solid var(--ink-border); }
+.help-plain .help-row{ display:flex; flex-direction:column; gap:2px; padding:10px 6px; border-bottom:1px solid var(--ink-border); text-align:left; }
+.help-plain .help-row:hover, .help-plain .help-row:focus-visible{ background:var(--ink-800); box-shadow:inset 2px 0 0 var(--accent-rest); outline:none; }
+.help-plain .help-row-name{ color:var(--text-hi); font-size:14px; } .help-plain .help-row-hint{ color:var(--text-mid); font-size:12px; }
+.help-plain .help-why{ margin:12px 0 0; color:var(--text-mid); font-size:14px; line-height:1.5; }
+.help-plain .help-begin{ display:inline-block; margin-top:20px; padding:9px 20px; color:var(--text-hi); box-shadow:inset 0 0 0 1px var(--accent-rest); }
+.help-plain .help-begin:hover, .help-plain .help-begin:focus-visible{ background:var(--ink-800); outline:none; }
+.help-plain .help-alt-plain{ display:block; margin-top:18px; color:var(--text-mid); font-size:13px; } .help-plain .help-alt-plain:hover{ color:var(--text-hi); }
+.help-plain .help-browse{ display:block; margin-top:16px; color:var(--text-mid); font-size:12px; letter-spacing:.08em; text-transform:uppercase; } .help-plain .help-browse:hover{ color:var(--text-hi); }
+.help-plain .help-foot{ margin-top:22px; justify-content:flex-start; color:var(--text-low); font-size:10px; }
+
+/* ---- MACHINA INTAKE (TOOLS #9; frames m5 / m6; docs: machina-guided-build-brief.md section 2). ONE form: DOCUMENT / CARRIED BY / BRIEFING on screen at once; the result in place.
+   Square, 1px hairline (--ink-border-strong on the panel and the fields, --ink-border inside), no shadow, no radius, NO MOTION (no transition or animation here). Plex Mono for kickers, labels and readouts,
+   Plex Sans for the answers and the form's name. The carrier (--choice) marks only the open field's border, the chosen answer's bar, keyboard focus and the pressed state - never text at rest. */
+.help-intake{ width:min(520px, calc(100vw - 48px)); padding:22px 26px 16px; background:var(--chrome-surface); color:var(--text-mid); border:1px solid var(--ink-border-strong); font-family:var(--font-contentLabel); transition:none; }
+.help-intake *, .help-intake *::before, .help-intake *::after{ transition:none !important; animation:none !important; }
+.help-intake .help-intake-head{ display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
+.help-intake .help-kicker{ font-family:var(--font-chromeLabel); font-size:10.5px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--text-hi); }
+.help-intake .help-fieldsnote{ font-family:var(--font-chromeLabel); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-low); }
+.help-intake .help-field{ margin-top:14px; }
+.help-intake .help-field-label{ margin-bottom:6px; font-family:var(--font-chromeLabel); font-size:10.5px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--text-mid); }
+.help-intake .help-select{ display:flex; justify-content:space-between; align-items:center; gap:10px; width:100%; box-sizing:border-box; padding:9px 12px; background:var(--chrome-surface); border:1px solid var(--ink-border-strong); font-family:var(--font-contentLabel); font-size:14px; text-align:left; }
+.help-intake .help-select-val{ color:var(--text-hi); } .help-intake .help-select-ph{ color:var(--text-low); }
+.help-intake .help-select-caret{ font-family:var(--font-chromeLabel); color:var(--text-mid); }
+.help-intake .help-select-na{ color:var(--text-low); }
+.help-intake .help-select:disabled{ cursor:default; }
+.help-intake .help-field[data-open='true'] .help-select, .help-intake .help-select:focus-visible{ border-color:var(--choice); outline:none; }
+.help-intake .help-optlist{ border:1px solid var(--ink-border-strong); border-top:0; background:var(--ink-800); }
+.help-intake .help-optrow{ display:block; width:100%; box-sizing:border-box; padding:7px 12px; font-family:var(--font-contentLabel); font-size:13px; color:var(--text-mid); text-align:left; }
+.help-intake .help-optrow[data-chosen='true']{ color:var(--text-hi); padding-left:10px; box-shadow:inset 2px 0 0 var(--choice); }
+.help-intake .help-optrow:hover{ color:var(--text-hi); }
+.help-intake .help-optrow:focus-visible{ color:var(--text-hi); box-shadow:inset 2px 0 0 var(--choice); outline:none; }
+.help-intake .help-readout{ margin-top:14px; display:flex; flex-direction:column; gap:3px; font-family:var(--font-chromeLabel); font-size:12px; }
+.help-intake .help-readout-row{ display:flex; gap:22px; } .help-intake .help-readout-k{ flex:0 0 96px; color:var(--text-mid); text-transform:uppercase; letter-spacing:.08em; font-size:11px; } .help-intake .help-readout-v{ color:var(--text-hi); }
+.help-intake .help-rule{ margin:16px 0 14px; border-top:1px solid var(--ink-border); }
+.help-intake .help-stepof{ font-family:var(--font-chromeLabel); font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--text-low); }
+.help-intake .help-pickline{ display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin-top:6px; }
+.help-intake .help-q{ margin:0; font-size:22px; font-weight:600; line-height:1.25; color:var(--text-hi); }
+.help-intake .help-blocks{ font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-mid); white-space:nowrap; }
+.help-intake .help-why{ margin:8px 0 0; font-size:14px; line-height:1.5; color:var(--text-mid); }
+.help-intake .help-actions{ display:flex; align-items:center; gap:16px; margin-top:16px; }
+.help-intake .help-begin{ flex:0 0 auto; padding:8px 14px; font-size:13px; color:var(--text-hi); border:1px solid var(--ink-border-strong); }
+.help-intake .help-begin:hover, .help-intake .help-begin:focus-visible{ border-color:var(--choice); outline:none; }
+.help-intake .help-alt-plain{ font-size:13px; line-height:1.4; color:var(--text-mid); text-align:left; } .help-intake .help-alt-plain:hover, .help-intake .help-alt-plain:focus-visible{ color:var(--text-hi); }
+.help-intake .help-alt-plain:focus-visible{ outline:1px solid var(--choice); outline-offset:2px; }
+.help-intake .help-foot-intake{ margin-top:18px; justify-content:flex-start; gap:18px; font-family:var(--font-chromeLabel); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-low); }
+/* Fable Oct 28: Intake REPLACES the Forms content - it fills the Forms dialog (no second layer, no own border or width) and scrolls inside it */
+.help-embedded-shell{ display:contents; }
+.help-intake.help-embedded{ width:auto; max-height:none; flex:1 1 auto; min-height:0; overflow-y:auto; border:0; box-sizing:border-box; padding:18px 22px 14px; }
+.help-intake .help-foot-intake .help-browse, .help-intake .help-foot-intake .help-back{ font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-mid); } .help-intake .help-foot-intake .help-browse:hover, .help-intake .help-foot-intake .help-back:hover{ color:var(--text-hi); }
+.help-intake .help-foot-intake .help-browse:focus-visible, .help-intake .help-foot-intake .help-back:focus-visible{ outline:1px solid var(--choice); outline-offset:2px; }
+
+/* ---- MACHINA STEP (TOOLS #9; frames m1-m4; brief section 3): W1's Walk in Machina's dress. DRESS ONLY - INK owns the Walk's behaviour (geometry, keys, rail states, the recede). The chrome stays dark on both page tones: the Block
+   is the chrome surface, never the paper. Square, 1px hairlines (--ink-border-strong on the Block and the doors, --ink-border-strong on the rail), no shadow, NO MOTION (the step is a cut: no swipe, no transition). Plex Mono for the
+   readout, the Block's title, the rail's numbers and the keys hint; Plex Sans for the question and the writer's words. The carrier (--choice) marks only the current notch, the open "?", focus and the pressed state. */
+[data-theme='machina'] .walk{ --card-stock:var(--chrome-surface); --card-hairline:var(--ink-border-strong); --ink-on-card:var(--text-hi); --ink-on-card-low:var(--text-low); --ink-on-card-meta:var(--text-mid); --badge-on-card:var(--text-low); }
+[data-theme='machina'] .walk-card, [data-theme='machina'] .walk-card-leaving, [data-theme='machina'] .walk-card[data-in]{ animation:none !important; }
+[data-theme='machina'] .walk-card{ padding:26px 30px; background:var(--chrome-surface); border:1px solid var(--ink-border-strong); }
+[data-theme='machina'] .walk-card .board-popup-editor, [data-theme='machina'] .walk-card .walk-static{ font-family:var(--font-contentLabel); font-size:16px; line-height:1.6; color:var(--text-hi); }
+[data-theme='machina'] .walk-card .board-popup-editor::first-line{ font-family:var(--font-chromeLabel); font-size:.875em; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--text-hi); }
+[data-theme='machina'] .walk-card .board-popup-editor[data-prompt][data-body-empty='true']::after{ margin-top:calc(2px - 1.6 * 16px * var(--card-type-k, 1)); font-family:var(--font-contentLabel); font-size:17px; font-style:normal; color:var(--text-low); }
+[data-theme='machina'] .walk-fade{ transition:none; }
+[data-theme='machina'] .walk-readout{ display:flex; justify-content:space-between; align-items:center; box-sizing:border-box; height:22px; margin-bottom:6px; padding:0 32px; font-family:var(--font-chromeLabel); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-mid); }
+[data-theme='machina'] .walk-nav{ top:0; width:22px; height:22px; border:1px solid var(--ink-border-strong); color:var(--text-mid); opacity:1; transition:none; }
+[data-theme='machina'] .walk-nav svg{ width:12px; height:12px; }
+[data-theme='machina'] .walk-nav:hover, [data-theme='machina'] .walk-nav:focus-visible{ border-color:var(--choice); color:var(--text-hi); }
+[data-theme='machina'] .walk-nav[data-recede='true']{ opacity:0; pointer-events:none; }
+[data-theme='machina'] .walk-doors{ justify-content:flex-start; align-items:center; gap:8px; margin-top:18px; }
+[data-theme='machina'] .walk-door{ padding:8px 14px; font-family:var(--font-contentLabel); font-size:13px; letter-spacing:0; color:var(--text-hi); border-color:var(--ink-border-strong); transition:none; }
+[data-theme='machina'] .walk-door:hover, [data-theme='machina'] .walk-door:focus-visible{ border-color:var(--choice); color:var(--text-hi); }
+[data-theme='machina'] .walk-keys{ margin-left:auto; font-family:var(--font-chromeLabel); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-low); }
+[data-theme='machina'] .walk-rail{ position:relative; display:flex; flex-wrap:nowrap; justify-content:space-between; align-items:flex-start; gap:0; width:min(100%, 520px); height:19px; margin-top:64px; margin-bottom:34px; counter-reset:notch; }
+[data-theme='machina'] .walk-rail::before{ content:''; position:absolute; left:0; right:0; top:9px; height:1px; background:var(--ink-border-strong); }
+[data-theme='machina'] .walk-mark{ position:relative; flex:0 0 auto; width:1px; height:19px; padding:0; border:0; border-radius:0; background:none; color:transparent; opacity:1; overflow:visible; }
+[data-theme='machina'] .walk-mark svg{ display:none; }
+[data-theme='machina'] .walk-mark::before{ content:''; position:absolute; left:0; top:5px; width:1px; height:9px; background:var(--ink-border-strong); }
+[data-theme='machina'] .walk-mark[data-kindled='true']::before{ left:-4px; top:5px; width:9px; height:9px; background:var(--signal-live); }
+[data-theme='machina'] .walk-mark[data-state='current']::before, [data-theme='machina'] .walk-mark[aria-current='step']::before{ left:-1px; top:0; width:3px; height:19px; background:var(--choice); }
+[data-theme='machina'] .walk-mark::after{ counter-increment:notch; content:counter(notch, decimal-leading-zero); position:absolute; top:24px; left:-16px; width:33px; padding:4px 0; text-align:center; font-family:var(--font-chromeLabel); font-size:10.5px; letter-spacing:.08em; color:var(--text-mid); }
+[data-theme='machina'] .walk-mark:focus-visible{ outline:1px solid var(--choice); outline-offset:6px; }
+[data-theme='machina'] .board-step-help{ border-radius:0; border:1px solid var(--ink-border-strong); color:var(--text-mid); font-family:var(--font-chromeLabel); font-weight:400; transition:none; }
+[data-theme='machina'] .board-step-help:hover, [data-theme='machina'] .board-step-help[data-open='true'], [data-theme='machina'] .board-step-help:focus-visible{ border-color:var(--choice); color:var(--choice); }
+[data-theme='machina'] .board-step-pop{ background:var(--ink-800); color:var(--text-hi); border:1px solid var(--ink-border-strong); box-shadow:none; font-family:var(--font-contentLabel); }
+[data-theme='machina'] .board-step-pop::before{ display:none; }
+[data-theme='machina'] .board-step-pop-k{ font-size:10px; color:var(--text-mid); }
+[data-theme='machina'] .board-step-pop-e{ color:var(--text-hi); }
+[data-theme='machina'] .board-step-pop-x{ font-family:var(--font-contentLabel); font-style:normal; color:var(--text-mid); }
+[data-theme='machina'] .board-step-pop-eg{ margin-right:12px; font-family:var(--font-chromeLabel); font-size:10px; letter-spacing:.14em; color:var(--text-mid); }
+[data-theme='machina'] .board-step-pop-more{ font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--choice); }
+/* the Plans pop-out's Agenda row (m5): the stacked hairline thumbnail - three 16 x 11 rectangles offset 2px - and "Agenda · 2 of 5 filled" under the name */
+[data-theme='machina'] .wz-thumb[data-thumb='deck']{ box-sizing:border-box; width:16px; height:11px; margin:4px 16px 0 0; background:var(--chrome-surface); border:1px solid var(--text-mid); box-shadow:none; }
+[data-theme='machina'] .wz-thumb[data-thumb='deck']::before, [data-theme='machina'] .wz-thumb[data-thumb='deck']::after{ content:''; position:absolute; box-sizing:border-box; width:16px; height:11px; background:var(--chrome-surface); border:1px solid var(--text-mid); }
+[data-theme='machina'] .wz-thumb[data-thumb='deck']::before{ left:1px; top:-3px; }
+[data-theme='machina'] .wz-thumb[data-thumb='deck']::after{ left:3px; top:-5px; }
+[data-theme='machina'] .wz-thumb-fact{ font-family:var(--font-chromeLabel); font-size:10.5px; letter-spacing:.06em; color:var(--text-mid); }
+
+/* the door: the ONE row at the top of the Presets list (SectionsPopout) and of the deck library (DeckWizard) */
+.wz-help-door{ display:flex; align-items:center; gap:8px; width:100%; background:none; border:0; border-bottom:1px solid var(--ink-border); padding:4px 2px 8px; margin-bottom:4px; cursor:pointer; color:var(--accent-rest); font:inherit; font-size:13px; text-align:left; }
+.wz-help-door:hover, .wz-help-door:focus-visible{ color:var(--text-hi); }
+.wz-help-door-glyph{ display:inline-block; width:16px; text-align:center; opacity:.9; }
+.deck-wizard-help-door{ color:var(--ink-on-card); border-bottom-color:var(--card-hairline); padding:10px 4px; font-size:14px; }
+
+/* W5-BEGIN  GAPS, COVERAGE REWARDS AND LIT (guided paths; brief w5-gaps-rewards; Nick's rulings Oct 26). Everything W5 draws sits in this zone: the Deck header's gaps line, the kindle moment (the rail's seed becomes a leaf with ONE brass
+   pulse ring; the card's bronze root line / Flux's lime-then-cyan edge), the Lit marks, and the stage's completion track. ONE celebration grammar: every moment lasts at most 1.1 s (CELEBRATE_MS), plays once, never loops, and nothing flashes
+   above 3/s. REDUCED MOTION / AMBIANCE 0 = THE STILL END STATE: the animations are off, the root line, the leaf and the cyan edge simply stay. Square edges, no shadows (a ring is an outline, never a glow), circles only for marks.
+   Arbor: brown/cream surfaces, OLIVE for guidance (the names), BRASS only for the human act (the pulse ring, the completion surge, Lit), muted BRONZE for the decorative root line. Flux: lime = progress, cyan = the choice, the orange bar only on current / Lit. */
+
+/* ---- the gaps line: ONE line that never wraps and never changes the header's height (so the page below never moves) ---- */
+.deck-gaps{ display:block; flex:0 1 auto; min-width:0; margin-left:8px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; font-family:var(--font-ui); font-size:12px; color:var(--text-mid); }
+[data-theme='plateau'] .deck-gaps{ --accent-door:var(--accent-door-on-dark); }
+:root[data-theme='flux'][data-page='light'] .deck-gaps{ --accent-door:#57D0F5; }
+.deck-gaps > *{ display:inline; }
+.deck-gaps-lead{ margin-right:6px; }
+.deck-gap{ background:none; border:0; border-radius:0; box-shadow:none; padding:0; margin:0; font:inherit; letter-spacing:inherit; text-transform:inherit; color:var(--accent-door); cursor:pointer; }
+.deck-gap:hover, .deck-gap:focus-visible{ color:var(--choice); outline:none; text-decoration:underline; }
+.deck-gaps-sep, .deck-gaps-more{ margin:0 5px; color:var(--text-mid); }
+[data-theme='flux'] .deck-gaps{ font-family:var(--font-chromeLabel); letter-spacing:.1em; text-transform:uppercase; }
+.deck-stack{ margin-right:16px; color:var(--text-hi); }
+
+/* ---- the kindled card's quiet mark (an overlay with no layout of its own) ---- */
+.walk-card, .board-box{ position:relative; }
+.board-box{ position:absolute; }
+.kindle-mark{ position:absolute; left:0; bottom:0; width:48px; height:16px; pointer-events:none; }
+.kindle-root{ display:block; stroke:#8f7a4c; }
+.kindle-root path{ stroke-dasharray:80; stroke-dashoffset:0; }
+[data-fx='kindle'] > .kindle-mark .kindle-root path{ animation:w5-root 900ms ease-out both; }
+[data-theme='flux'] .kindle-mark{ left:0; top:0; right:0; bottom:0; width:auto; height:auto; box-sizing:border-box; border:1px solid var(--choice); border-radius:0; }
+[data-theme='flux'] .kindle-mark .kindle-root{ display:none; }
+[data-theme='flux'] [data-fx='kindle'] > .kindle-mark{ border-color:var(--signal-live); animation:w5-edge 1000ms ease-out both; }
+
+/* ---- the rail: seed -> leaf (Arbor), hollow -> lime (Flux) ---- */
+.walk-mark{ position:relative; }
+.walk-mark[data-fx='kindle'] svg{ transform-origin:50% 100%; animation:w5-unfurl 600ms ease-out both; }
+.walk-mark[data-fx='kindle']::after{ content:''; position:absolute; top:-2px; right:-2px; bottom:-2px; left:-2px; border:1px solid var(--brass); border-radius:50%; pointer-events:none; animation:w5-pulse 1000ms ease-out both; }
+[data-theme='flux'] .walk-mark[data-fx='kindle']{ background:var(--signal-live); border-color:var(--signal-live); }
+[data-theme='flux'] .walk-mark[data-fx='kindle']::after{ border-color:var(--signal-live); border-radius:0; }
+.walk-trk[data-fx='kindle']{ animation:w5-blink 700ms ease-in-out 1 both; }
+
+/* ---- Lit: the writer's own mark (a human act: brass in Arbor; Flux the tick filled cyan with the orange left bar) ---- */
+.walk-mark[data-lit='true']{ color:var(--brass); opacity:1; }
+.lit-mark{ position:absolute; right:30px; bottom:6px; width:14px; height:14px; color:var(--brass); pointer-events:none; }
+.board-box > .lit-mark{ right:6px; bottom:4px; }
+.lit-mark svg{ display:block; }
+[data-theme='flux'] .walk-mark[data-lit='true']{ background:var(--choice); border-color:var(--choice); border-left:3px solid var(--orange); }
+[data-theme='flux'] [data-lit='true'] > .lit-mark{ width:10px; height:10px; background:var(--choice); border-left:3px solid var(--orange); box-sizing:border-box; }
+[data-theme='flux'] .lit-mark svg{ display:none; }
+
+/* ---- the Deck completes: the theme's existing goal celebration (components/WritingIncentives.tsx GoalCelebration), an overlay on the stage's top edge ---- */
+.deck-celebration{ position:absolute; left:0; right:0; top:-10px; z-index:3; pointer-events:none; }
+.deck-celebration .mode-pmeta{ display:none; }
+
+/* ---- a page born from a step (FIX's W2 calls celebrateReturnChip): ONE glow on the return chip as the page opens ---- */
+.return-chip-glow{ animation:w5-chip 1000ms ease-out both; }
+
+@keyframes w5-root{ from{ stroke-dashoffset:80; } to{ stroke-dashoffset:0; } }
+@keyframes w5-unfurl{ from{ transform:scale(.45); opacity:.5; } to{ transform:scale(1); opacity:1; } }
+@keyframes w5-pulse{ from{ opacity:.9; transform:scale(.85); } to{ opacity:0; transform:scale(1.8); } }
+@keyframes w5-edge{ from{ border-color:var(--signal-live); } to{ border-color:var(--choice); } }
+@keyframes w5-blink{ 0%{ opacity:1; } 45%{ opacity:.2; } 100%{ opacity:1; } }
+@keyframes w5-chip{ from{ outline:2px solid var(--brass); outline-offset:2px; } to{ outline:2px solid transparent; outline-offset:7px; } }
+
+@media (prefers-reduced-motion: reduce){
+  [data-fx='kindle'] > .kindle-mark .kindle-root path, .walk-mark[data-fx='kindle'] svg, .walk-trk[data-fx='kindle'], .return-chip-glow, [data-theme='flux'] [data-fx='kindle'] > .kindle-mark{ animation:none; }
+  .walk-mark[data-fx='kindle']::after{ animation:none; opacity:0; }
+}
+/* W5-END */
+/* SCENES-BEGIN  "ADD SCENES..." - child cards under a step (brief add-scenes; mockups s1-s5; Nick approved). The door's "How many?" popover, the sub-step's readout above the Walk card, its 3 px bronze edge, and the small marks that hang
+   from the parent's mark on a hairline. Square edges, no shadow, circles only for the small marks, NO MOTION at all (the popover simply appears: reduced motion is the same still state). Arbor: olive guidance (kicker, chips at rest),
+   brass for the human act (the chosen chip, Add), muted BRONZE #8f7a4c for decorative lines (the edge, the hairline). Flux: the choice colour (cyan) for chosen, the line colour for the hairline; the orange bar stays "current only", as today. */
+.walk-doors-wrap{ position:relative; }
+.scenes-door-wrap{ position:relative; display:inline-block; }
+.scenes-pop{ position:fixed; z-index:6; width:272px; box-sizing:border-box; padding:12px 14px 14px; text-align:left; background:var(--ink-900); border:1px solid var(--accent-door); border-radius:0; box-shadow:none; color:var(--text-hi); font-family:var(--font-ui); }
+[data-theme='plateau'] .scenes-pop{ --accent-door:var(--accent-door-on-dark); }
+:root[data-theme='flux'][data-page='light'] .scenes-pop{ --accent-door:#57D0F5; }
+.scenes-kicker{ font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent-door); }
+.scenes-q{ margin-top:6px; font-size:15px; color:var(--text-hi); }
+.scenes-chips{ display:flex; gap:6px; margin-top:10px; }
+.scenes-chip{ width:28px; height:28px; padding:0; background:none; border:1px solid var(--accent-door); border-radius:0; box-shadow:none; color:var(--accent-door); font:inherit; font-size:13px; cursor:pointer; }
+.scenes-chip:hover, .scenes-chip:focus-visible{ color:var(--choice); border-color:var(--choice); outline:none; }
+.scenes-chip[aria-pressed='true']{ color:var(--text-hi); border-color:var(--choice); }
+.scenes-foot{ display:flex; align-items:center; gap:10px; margin-top:12px; }
+.scenes-add{ padding:5px 14px; background:none; border:1px solid var(--choice); border-radius:0; box-shadow:none; color:var(--text-hi); font:inherit; font-size:12px; cursor:pointer; }
+.scenes-add:hover, .scenes-add:focus-visible{ color:var(--choice); outline:none; }
+.scenes-note{ font-size:11px; color:var(--text-mid); line-height:1.35; }
+[data-theme='flux'] .scenes-kicker, [data-theme='flux'] .scenes-add{ font-family:var(--font-chromeLabel); letter-spacing:.1em; text-transform:uppercase; }
+
+/* the Walk's readout above a sub-step's card: PARENT > SCENE 2 OF 3 (Flux 2/3) */
+.walk-sub-readout{ position:absolute; top:-30px; left:44px; right:44px; text-align:center; font-family:var(--font-ui); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-mid); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none; }
+[data-theme='flux'] .walk-sub-readout{ font-family:var(--font-chromeLabel); }
+
+/* the sub-step card's own edge: 3 px bronze (Flux keeps the orange bar for the current card, as today) */
+.walk-card[data-sub='true']{ border-left:3px solid #8f7a4c; }
+
+/* the rail: small marks hang from the parent's mark on a hairline; same states, smaller */
+.walk-mark-group{ display:inline-flex; flex-direction:column; align-items:center; }
+.walk-subrail{ position:relative; display:flex; gap:6px; margin-top:6px; padding-top:5px; border-top:1px solid #8f7a4c; }
+.walk-subrail::before{ content:''; position:absolute; top:-6px; left:50%; height:6px; border-left:1px solid #8f7a4c; }
+.walk-mark[data-sub='true']{ width:10px; height:10px; }
+.walk-mark[data-sub='true'] svg{ width:9px; height:9px; }
+[data-theme='flux'] .walk-subrail{ border-top-color:var(--line-active); }
+[data-theme='flux'] .walk-subrail::before{ border-left-color:var(--line-active); }
+[data-theme='flux'] .walk-mark[data-sub='true']{ width:8px; height:8px; }
+/* the Outline (Fable, Oct 27): a nested list takes its OWN line under its row - the row is a wrapping flex, and the list used to sit BESIDE the parent in a 2nd column (the same on main for any nested card). A Deck's rows carry their Outline
+   number (1, 5, 5.1) in place of the bullet. Flux: ONE rule for the title's case - every title reads uppercase by style, whatever was typed (an edited title is stored uppercase by the Flux editor, an untouched one is not). */
+.board-outline-children{ flex:0 0 100%; }
+.board-outline-num{ min-width:2.4em; font-family:var(--font-ui); font-size:11px; color:var(--text-low); }
+[data-theme='flux'] .board-outline-text{ text-transform:uppercase; }
+/* SCENES-END */

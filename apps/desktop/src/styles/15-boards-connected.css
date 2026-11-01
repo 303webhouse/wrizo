@@ -1,0 +1,415 @@
+/* ===== PW1 — BOARDS CONNECTED (the Page/Plan workflow, phase 1) ===========
+   S1: the Plan panel's connections zone. The heading reuses the engraved
+   register `.wz-cascade-panel-title` already establishes (10px/2px/uppercase/
+   olive) — the LEXICON carries Nick's sentence case ("Boards connected"), the
+   REGISTER carries the voice. One accent site per menu, and this zone is it
+   (G5). No new motion anywhere in this block: the panel's own 180ms collapse
+   and the survey's slide are the built engine, and this arc adds none. */
+.wz-cascade-plan-zone{ display:flex; flex-direction:column; gap:2px; }
+.wz-cascade-plan-title{ padding:0 0 4px; }
+/* PW2 S2 — the zone's caption on a board ("in Novel"). Quiet, one step
+   below the engraved heading: it states where this board lives, and it is
+   deliberately NOT a control (G3 — a drawer has no surface of its own yet).
+   `cursor:default` so nothing about it invites a press. */
+.wz-cascade-plan-caption{ font-size:11px; color:var(--text-low); padding:0 0 6px; cursor:default; }
+.wz-cascade-plan-rule{ height:1px; background:var(--ink-border); margin:8px 0 2px; }
+/* A board row: title over its relation/drawer line. `.wz-cascade-list-item`'s
+   own hover/rhythm, with a second line the list rows never needed. */
+.wz-cascade-boardrow{ position:relative; display:flex; align-items:flex-start; justify-content:space-between;
+  gap:6px; padding:6px 8px; border-radius:var(--radius-sm); }
+.wz-cascade-boardrow:hover{ background:var(--ink-800); }
+.wz-cascade-boardrow-open{ background:none; border:0; padding:0; cursor:pointer; text-align:left;
+  flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; font-family:var(--font-ui); }
+.wz-cascade-boardrow-title{ font-size:13px; color:var(--text-mid); overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap; }
+.wz-cascade-boardrow-open:hover .wz-cascade-boardrow-title{ color:var(--text-hi); }
+/* The second line NAMES THE RELATION OR THE DRAWER, never a count (PW10;
+   A14/A18; BD4's "listed, never counted"). Quiet by construction — text-low,
+   smaller — so it reads as provenance, not as a metric competing for the eye. */
+.wz-cascade-boardrow-relation{ font-size:11px; color:var(--text-low); overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap; }
+.wz-cascade-boardrow-menu-btn{ flex:0 0 auto; }
+/* S2 — the two sections (Cards; Pages linked to this board). Same engraved
+   register as every other heading in this chrome, one step quieter than the
+   panel's own so the survey does not compete with the panel it came from. */
+.wz-cascade-survey-section{ font-size:10px; letter-spacing:2px; text-transform:uppercase;
+  color:var(--text-low); padding:8px 2px 2px; }
+.wz-cascade-survey-section:first-child{ padding-top:0; }
+/* PW2 S2 AMENDMENT (Nick) — THE TWO THUMBNAIL SHAPES, and the sections that
+   hold them. "Section off Boards from Pages clearly and use a different
+   thumbnail (horizontal rectangles for Boards, vertical rectangles for
+   Pages)."
+
+   The shape is carried by an ASPECT RATIO on a leading swatch rather than by
+   the row's own box, so a long title can still wrap without turning a board
+   into a page. Geometry is the signal; no colour is spent, and no badge is
+   needed to read the row. Same law the canvas board-card obeys — a board is
+   wider than tall wherever it appears. */
+.wz-cascade-thumb{ position:relative; }
+.wz-thumb-page::before, .wz-thumb-board::before{
+  content:''; display:block; border:1px solid var(--ink-border); margin-bottom:6px;
+}
+.wz-thumb-page::before{ width:22px; height:30px; }   /* vertical — a page */
+.wz-thumb-board::before{ width:34px; height:20px; }  /* horizontal — a board */
+/* The separation between sections is VISIBLE, not merely semantic: a rule and
+   real space, so "clearly" is something the eye does rather than something the
+   DOM knows. */
+.wz-cascade-survey-section{ border-top:1px solid var(--ink-border); margin-top:10px; }
+.wz-cascade-survey-section:first-child{ border-top:0; margin-top:0; }
+
+/* S3 — the membership row's own state line. Deliberately NOT the excerpt's
+   class: content and provenance stay distinguishable to a reader and to a
+   harness alike. */
+.wz-cascade-thumb-note{ font-size:11px; color:var(--text-low); margin-top:2px; }
+/* S6 — the address line, in the shape the Board already proved. The framed
+   host right-aligns its nav row (`.desk-frame-host .sprint-nav`), so the crumb
+   claims the left with `margin-right:auto` exactly as BoardEditor's own framed
+   crumb does inline. One rule, three surfaces — reuse, never copy. */
+.desk-frame-host .sprint-crumb{ margin-right:auto; }
+/* The home label standing in for an absent chain ("Loose — belongs nowhere
+   yet"): the chain never renders empty, and what fills it reads as a state
+   rather than as a place-name it is not. */
+/* PW1 ERRATUM 3 — the location PHRASE never elides. `white-space:nowrap` with
+   no max-width and no shrink: a clipped phrase stays grammatical and so reads
+   as a different (false) sentence rather than as a truncation. Overflow is the
+   TITLE's to absorb — see `.crumb-here`. */
+.wz-crumb-home{ font-style:italic; color:var(--text-low); white-space:nowrap; flex:0 0 auto; }
+
+/* Destructive color lives ONLY inside the confirm (T4's own ruling —
+   "Destructive color appears only inside the confirm, never at rest") —
+   the Delete disclosure item itself stays --text-mid like its Move
+   sibling; only .wz-cascade-confirm-danger (below) wears --brick. */
+.wz-cascade-confirm{ margin-top:6px; padding:8px; background:var(--ink-800); border-radius:var(--radius-sm); }
+.wz-cascade-confirm-q{ font-size:12px; color:var(--text-hi); margin-bottom:8px; }
+.wz-cascade-confirm-row{ display:flex; gap:8px; }
+.wz-cascade-confirm-danger{ background:var(--brick); color:var(--text-hi); border:0;
+  font-family:var(--font-ui); font-size:12px; padding:6px 10px; cursor:pointer; border-radius:var(--radius-sm); }
+.wz-cascade-confirm-cancel{ background:none; border:1px solid var(--ink-border); color:var(--text-mid);
+  font-family:var(--font-ui); font-size:12px; padding:6px 10px; cursor:pointer; border-radius:var(--radius-sm); }
+
+/* B2 S7 — the Drawers panel (A17's chrome): large, quiet tiles. Square
+   corners (--radius-md resolves to 0 under Plateau, same token every other
+   cascade surface already uses — this file's own standing "square corners
+   everywhere" law, held by the SAME variable, not a hardcoded override).
+   No counts/badges/timestamps anywhere — title + the abstract kind mark
+   only. */
+.wz-drawers-tiles{ display:flex; flex-direction:column; gap:6px; }
+.wz-drawers-tile{ display:flex; align-items:center; gap:8px; text-align:left; cursor:pointer;
+  background:var(--ink-900); border:1px solid var(--ink-border); border-radius:var(--radius-md);
+  padding:10px 12px; color:var(--text-mid); font-family:var(--font-ui); font-size:13px; transition:.15s; }
+.wz-drawers-tile:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+/* The anchor slot (last-opened) reads olive, never brass — the SAME
+   "current item olive" law the survey's own thumbnails already carry. */
+.wz-drawers-tile-anchor{ border-color:var(--accent-rest); color:var(--text-hi); }
+.wz-drawers-tile-title{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+/* An abstract, non-literal mark (square = board, round = doc) — a plain
+   shape, not a synthesized preview (genuine miniature previews are a named
+   future refinement, not built here). aria-label carries the real word. */
+.wz-drawers-tile-kind{ flex:none; width:9px; height:9px; border:1.4px solid var(--text-low); }
+.wz-drawers-tile-kind[data-kind='doc']{ border-radius:50%; }
+.wz-drawers-cluster{ display:flex; flex-direction:column; gap:6px; margin-top:4px; }
+.wz-drawers-cluster-title{ font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-low); padding:0 2px; }
+
+/* FX9 S1 — the fold: a header disclosure toggle shared by every
+   list-bearing section this ticket touches (CascadePanels.tsx's own
+   FoldSection — DrawersPanel's per-project clusters + its "Loose" documents
+   group, both reusing `.wz-drawers-cluster`/`.wz-drawers-cluster-title`
+   above unchanged for their inner content/title typography; JournalPanel's
+   "Recent" list via the `--journal` variant below).
+   The WHOLE header is a real, full-width <button> — the hit target is the
+   entire row, never the chevron alone (S1's own ruling). The chevron reads
+   quiet olive (--accent-rest) at rest AND on hover — "a persistent door,"
+   never brass/orange at either state. Keyboard FOCUS still wears the
+   site-wide brass ring (button:focus-visible, above) — that law is about
+   RESTING/HOVERED chrome specifically ("nothing brass... at rest or on
+   hover"), and focus is this app's own established EVENTAL state, not a
+   where-you-are marker (see this file's own "olive marks where you are,
+   orange marks what you do" comments elsewhere) — so it is deliberately
+   left alone here, not overridden to olive. */
+.wz-fold{ display:flex; flex-direction:column; }
+.wz-fold-header{ display:flex; align-items:center; justify-content:space-between; gap:6px;
+  width:100%; background:none; border:0; margin:0; padding:0; font-family:var(--font-ui);
+  cursor:pointer; text-align:left; }
+.wz-fold-header:hover{ color:var(--text-hi); }
+.wz-fold-header:hover .wz-drawers-cluster-title{ color:var(--text-hi); }
+/* The journal variant carries `.wz-cascade-panel-title`'s own typography
+   verbatim (font-size/letter-spacing/uppercase/color) plus the "Recent"
+   heading's own old inline padding — applied directly to the button rather
+   than reusing that class name outright, so `.wz-cascade-panel-title` stays
+   a query that unambiguously means "the cascade panel's OWN category
+   title" (Cascade.tsx's layer-2 heading), never this nested sub-heading. */
+.wz-fold-header--journal{ font-size:10px; letter-spacing:2px; text-transform:uppercase;
+  color:var(--text-mid); padding:2px 0 6px; }
+/* The drawers variant carries no typography of its own — the inner
+   `.wz-drawers-cluster-title` SPAN (not the button) keeps that class, so a
+   fold header's OWN textContent stays exactly the title text (no chevron
+   glyph folded in) for every pre-existing harness query that reads it. */
+.wz-fold-chevron{ flex:none; display:inline-block; font-size:11px; line-height:1;
+  color:var(--accent-rest); text-transform:none; letter-spacing:normal;
+  transition:transform .18s ease; }
+.wz-fold-header[aria-expanded='true'] .wz-fold-chevron{ transform:rotate(90deg); }
+@media (prefers-reduced-motion:reduce){ .wz-fold-chevron{ transition:none; } }
+/* The body's own height animates via the grid 0fr/1fr technique — a smooth
+   transition to/from the content's own real natural height, no JS
+   measurement and no approximated max-height guess. `overflow:hidden` on
+   the inner wrapper is what makes the 0fr row genuinely clip to zero rather
+   than just squash its content. ~180ms, the house timing (S1); reduced
+   motion drops straight to the open/closed edge, no animated frame. */
+.wz-fold-body-wrap{ display:grid; grid-template-rows:0fr; transition:grid-template-rows .18s ease; }
+.wz-fold-body-wrap[data-open='true']{ grid-template-rows:1fr; }
+.wz-fold-body-inner{ overflow:hidden; min-height:0; }
+@media (prefers-reduced-motion:reduce){ .wz-fold-body-wrap{ transition:none; } }
+
+/* B2 S4 — the Places panel (components/PlacesPanel.tsx): a Home zone
+   (single-select radios) + a Boards zone (true checkboxes), inside the
+   Page category's own panel body. Plain form controls, square corners,
+   no invented widget language. */
+.wz-places{ display:flex; flex-direction:column; gap:10px; padding:4px 14px 14px; }
+.wz-places-title{ padding:2px 0 2px !important; }
+.wz-places-home, .wz-places-boards{ display:flex; flex-direction:column; gap:6px; }
+.wz-places-radio, .wz-places-checkbox{ display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-mid); cursor:pointer; }
+.wz-places-newdrawer-btn{ align-self:flex-start; background:none; border:1px solid var(--ink-border); color:var(--text-mid);
+  font-family:var(--font-ui); font-size:12px; padding:6px 9px; cursor:pointer; border-radius:var(--radius-sm); }
+.wz-places-newdrawer-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+.wz-places-newdrawer{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.wz-places-newdrawer-input{ background:var(--ink-900); border:1px solid var(--ink-border); color:var(--text-hi);
+  font-family:var(--font-ui); font-size:12px; padding:6px 8px; border-radius:var(--radius-sm); }
+
+/* AB3 S2 — the Page face (components/PageFace.tsx). Plain, quiet metadata —
+   no orange at rest (the star only wears --brass while ACTUALLY starred, an
+   evental toggle, matching the pre-AB3 .entry-star convention verbatim). */
+.wz-pageface{ display:flex; flex-direction:column; gap:14px; padding:16px 14px; }
+.wz-pageface-title{ font-family:var(--font-display); font-weight:500; font-size:16px; color:var(--text-hi); }
+.wz-pageface-star{ align-self:flex-start; background:none; border:none; color:var(--text-low); font-family:var(--font-ui); font-size:13px; cursor:pointer; padding:0; }
+.wz-pageface-star[data-starred='true']{ color:var(--brass); }
+.wz-pageface-home{ display:flex; flex-direction:column; gap:2px; font-size:13px; }
+.wz-pageface-home-label{ color:var(--text-hi); }
+.wz-pageface-membership{ color:var(--text-mid); }
+.wz-pageface-tags{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+.wz-pageface-tag{ display:inline-flex; align-items:center; gap:5px; padding:2px 8px; border-radius:var(--radius-sm); border:1px solid var(--ink-border); color:var(--text-mid); font-size:12px; }
+.wz-pageface-tag-remove{ background:none; border:none; color:var(--text-low); cursor:pointer; padding:0; }
+.wz-pageface-tag-input{ padding:3px 7px; border-radius:var(--radius-sm); border:1px solid var(--ink-border); background:var(--ink-800); color:var(--text-hi); font-family:var(--font-ui); font-size:12px; width:88px; }
+.wz-pageface-tag-add{ background:none; border:none; color:var(--text-low); font-size:12px; cursor:pointer; }
+.wz-pageface-verbs{ display:flex; flex-direction:column; gap:6px; }
+.wz-pageface-verb{ text-align:left; background:none; border:1px solid var(--ink-border); color:var(--text-mid); font-family:var(--font-ui); font-size:12px; padding:7px 9px; cursor:pointer; border-radius:var(--radius-sm); transition:.15s; }
+.wz-pageface-verb:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+.wz-pageface-footer{ color:var(--text-low); font-size:12px; line-height:1.5; }
+
+/* AB3 S6 — the Places faces (components/PlaceFace.tsx). One flat list, one
+   level deep; no counts, no badges, no orange at rest (anti-solicitation). */
+.wz-placeface{ display:flex; flex-direction:column; height:100%; }
+.wz-placeface-list{ flex:1; overflow-y:auto; padding:10px 10px 0; display:flex; flex-direction:column; gap:2px; }
+.wz-placeface-empty{ color:var(--text-low); font-size:13px; padding:8px 4px; }
+.wz-placeface-item{ display:flex; flex-direction:column; gap:4px; padding:8px 6px; border-bottom:1px solid var(--ink-border); }
+.wz-placeface-item-title{ color:var(--text-hi); font-size:13px; }
+.wz-placeface-item-verbs{ display:flex; gap:4px; }
+.wz-placeface-verb{ background:none; border:1px solid var(--ink-border); color:var(--text-mid); font-family:var(--font-ui); font-size:11px; padding:3px 7px; cursor:pointer; border-radius:var(--radius-sm); }
+.wz-placeface-verb:hover{ color:var(--text-hi); }
+/* Peek (AB4 stub) — "disabled-quiet with no greyed ceremony": same visual
+   weight as its siblings, not a faded/greyed native-disabled control. */
+.wz-placeface-verb-peek{ cursor:default; }
+.wz-placeface-room{ margin:10px; background:none; border:1px solid var(--ink-border); color:var(--text-mid); font-family:var(--font-ui); font-size:12px; padding:8px; cursor:pointer; border-radius:var(--radius-sm); }
+.wz-placeface-room:hover{ color:var(--text-hi); }
+
+/* The interim Journal capture tab, relocated into the corkboard track (S2). */
+.desk-corkboard-journal{ display:flex; flex-direction:column; gap:2px; }
+.desk-corkboard-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--brass-press); margin-bottom:12px; }
+/* ITEM arbor-quiet-brass — same heading-colour law as .mode-rail-h above. */
+[data-theme='flux'] .desk-corkboard-h{ color:var(--text-mid); }
+.desk-corkboard-item{ font-size:14px; color:var(--text-mid); padding:10px 11px; border:1px solid transparent; }
+
+/* AB2 S0/S3 — the iA register (draftDecoration.ts): syntax visible, dimmed;
+   effect live. The marks show their work — honest text, no hidden state. */
+.md-mark{ opacity:.38; }
+/* FX5 S6 — the card-surface register only (draftDecoration.ts's own
+   decorateMarkdownForCard, BoardCardPopup.tsx). NEVER display:none or
+   visibility:hidden (both are excluded from Element.innerText by spec,
+   which this popup's own onInput reads to derive the stored plain text —
+   hiding markers that way would silently strip them from storage; see
+   draftDecoration.ts's own header comment on decorateInlineForCard for the
+   full reasoning). font-size:0 collapses the marker to zero visual width
+   while it stays a REAL rendered character innerText still reports
+   faithfully — combined with opacity:0 as a belt-and-suspenders visual
+   safety net (harmless once font-size is already 0). This class is only
+   ever EMITTED by decorateMarkdownForCard — Draft mode's own plain
+   `.md-mark` rule above is completely untouched. */
+.md-mark-hidden{ font-size:0; opacity:0; }
+.md-bold{ font-weight:700; }
+.md-italic{ font-style:italic; }
+/* ITEM 79 FAMILY — underline's own mark. The engine emitted no underline
+   case and this rule did not exist, so a U press on either surface wrote
+   __word__ into the writer's text and rendered it as literal underscores.
+   text-decoration (never a border) so it inherits the run's own colour and
+   rides descenders the way the typeface intends. */
+.md-underline{ text-decoration:underline; text-underline-offset:2px; }
+/* ITEM 122 — strikethrough's own mark. text-decoration again, never a
+   border or a gradient: it inherits the run's colour and rides the
+   typeface's own metrics, and it composes with underline when a writer
+   wraps a run in both. */
+.md-strike{ text-decoration:line-through; }
+
+/* ITEM 133 (A) — the page's name is reachable, and looks it. Inherits the
+   title's own type so the name does not become a control wearing a
+   button's clothes: it is the same words in the same place, that happen
+   to answer when reached. The underline appears only on hover/focus —
+   at rest the writer sees a title, which is what it is. */
+.wz-pageface-title-reach{ display:block; width:100%; text-align:inherit;
+  font:inherit; color:inherit; background:none; border:0; padding:0;
+  cursor:text; }
+.wz-pageface-title-reach:hover, .wz-pageface-title-reach:focus-visible{
+  text-decoration:underline; text-underline-offset:3px; }
+.md-underline.md-strike, .md-strike .md-underline{ text-decoration:underline line-through; }
+
+/* ITEM 122 — THE SELECTION IS BRASS, on Nick's ruling: orange is for humans
+   ACTING, and selecting is the writer acting. Painted from the THEME TOKEN,
+   never a literal, so a theme pack re-points it with everything else; and
+   `--on-brass` is the paired foreground that already exists for exactly this
+   job, so selected text stays legible instead of inheriting whatever ink it
+   happened to have. Both rules are needed: Firefox honours only ::selection,
+   Chromium honours both, and ::-moz-selection is inert elsewhere. */
+::selection{ background:var(--brass); color:var(--on-brass); }
+::-moz-selection{ background:var(--brass); color:var(--on-brass); }
+
+/* A1 - text for a screen reader only: in the accessibility tree, never painted, and out of flow so it moves nothing. */
+.wz-sr-only{ position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap; border:0; }
+
+/* HEADINGS, six levels (Nick, 2026-10-06), one-to-one with HTML h1-h6: each a distinct size, h1 largest and h6 just above body.
+   text-transform is set to none on purpose - a heading is never forced into capitals (Nick: "headings should not default to ALL CAPS"). */
+.md-h1{ font-size:1.6em; font-weight:600; }
+.md-h2{ font-size:1.4em; font-weight:600; }
+.md-h3{ font-size:1.25em; font-weight:600; }
+.md-h4{ font-size:1.15em; font-weight:600; }
+.md-h5{ font-size:1.08em; font-weight:600; }
+.md-h6{ font-size:1.03em; font-weight:600; }
+.md-h1, .md-h2, .md-h3, .md-h4, .md-h5, .md-h6{ text-transform:none; }
+/* The floating +/- beside a selected heading: an overlay (position:fixed), so it moves nothing; placed by PageEditor where it covers no word. */
+.wz-heading-pop{ position:fixed; z-index:30; display:flex; gap:2px; padding:2px; background:var(--ink-900); border:1px solid var(--ink-border); border-radius:var(--radius-sm); }
+.wz-heading-pop-btn{ width:24px; height:20px; padding:0; font:600 13px/1 var(--font-ui); color:var(--text-mid); background:none; border:0; border-radius:var(--radius-sm); cursor:pointer; }
+.wz-heading-pop-btn:hover{ background:var(--ink-border); }
+
+/* WRITING-SURFACE S0 STEP 1 - the line directives (draftDecoration.ts decorateLineForCard). `.md-line` is an INLINE-BLOCK on
+   purpose: the '\n' between lines is a real text character, and a display:block wrapper would make it draw a blank line. Width
+   is the full column so text-align has a box to align within. Nothing here reads a theme: the rule colour is derived from the
+   run's own ink, so it follows every theme and page tone. */
+.md-line{ display:inline-block; width:100%; box-sizing:border-box; vertical-align:top; }
+/* TYPING-LATENCY (row shape F, ruled 2026-10-14) - the page's free-edit surface is one ROW per line (store/lineRows.ts), the
+   newline between two rows left as text, exactly where it always was: `.md-line`'s own inline-block shape, so textContent,
+   innerText and copied text stay byte-identical (measured, docs/evidence/latency-profile-eb27ea7c), with `contain: layout style`
+   so a row's own layout stays inside it. Nothing inside a row is positioned, so a row becoming a containing block moves nothing. */
+.forward-only-editor .wz-row{ display:inline-block; width:100%; box-sizing:border-box; vertical-align:top; contain:layout style; }
+/* TYPING-LATENCY - content-visibility WAS HERE, and is REMOVED (Fable's ruling, Oct 16; chat 1's ledger 67). It cut the keystroke a
+   great deal, but a skipped row carries no text for innerText (the editor's innerText read 7,430 of 121,262 characters at 20k), Ctrl+End
+   left the caret off screen, and a page -> Plan -> back return restored the scroll over re-estimated rows and showed other text. The
+   original note is kept below for the record; the rule itself is gone.
+   WAS: TYPING-LATENCY (Fable, Oct 14: content-visibility "justified to try on F rows ... if it measurably cuts the cost"; the profile's G1:
+   one-character layout 7.1 / 16 ms at 20k / 50k against containment alone's 40 / 110). A row off screen is skipped by layout; its height
+   until first rendered is the per-row estimate store/lineRows.ts writes inline (contain-intrinsic-block-size: auto <est>px), after
+   which the browser remembers its real size. What a skipped row implies is all inside the row's own box: size containment while
+   skipped (the estimate stands in), paint containment always (nothing in a row draws outside it - bullets and quote borders are inside
+   its padding). The real editor's innerText and select-all text are checked against its text at 50k by the profile, every run.
+   .forward-only-editor .wz-row{ content-visibility:auto; }   <- the removed rule */
+/* PAGE TEMPLATES - THE LENS, on the rows (store/lineRows.ts applyOutlineLens; docs/plans/page-templates.md section 1). It is drawn through the editor's data-template
+   and, for the Outline, two data attributes on the ROW element itself (never in the row's markup, so the kept-row compare and the shadow lines are untouched, and never as
+   text: ::before content is in no innerText, no selection and no copy). OUTLINE: the row leaves a gutter on its left; the derived number sits in it at the row's level, and
+   the leading tabs (the writer's own indent, 2em a step) carry the text to the same level - so number and text step in together, as in the approved mockup. Top-level
+   headings are a touch heavier. BIBLIOGRAPHY: a hanging indent per entry - the first line at the margin, wrapped lines under it - with a gap between entries. Both are
+   decoration on the page's own rows: nothing here moves the sheet. */
+.forward-only-editor[data-template='outline'] .wz-row{ position:relative; padding-left:2.8em; }
+.forward-only-editor[data-template='outline'] .wz-row[data-ol]::before{ content:attr(data-ol); position:absolute; left:0; top:0; text-indent:0; white-space:nowrap; color:color-mix(in srgb, currentColor 55%, transparent); font-variant-numeric:tabular-nums; }
+.forward-only-editor[data-template='outline'] .wz-row[data-lvl='1']::before{ left:2em; }
+.forward-only-editor[data-template='outline'] .wz-row[data-lvl='2']::before{ left:4em; }
+.forward-only-editor[data-template='outline'] .wz-row[data-lvl='0']{ font-weight:500; }
+.forward-only-editor[data-template='bibliography'] .wz-row{ padding-left:2.4em; text-indent:-2.4em; margin-bottom:.6em; }
+/* PAGE TEMPLATES, S5 - THE TITLE PAGE (components/TitlePageSheet.tsx): the standard manuscript sheet, five fields. Contact top-left, the word line top-right, the title, the
+   fixed word "by" and the author centred lower (the approved mockup). The fields have no chrome of their own - they take the page's type and ink - so the sheet reads as a page,
+   not a form. The title's capitals are drawn here, never stored. Nothing here moves the sheet: it fills the editor's own track. */
+/* The sheet owns a TOP MARGIN (--ts-top): the contact block and the word line sit that far below the sheet's top edge, so the first row is never cut by the page's own edge or by a scroll of the sheet
+   (ledger 92, frame 04: "Ada Marsh" and "About 62,000 words" were clipped mid-glyph in both themes). The fields are positioned from this margin; the centred block stays at 40% of the sheet. */
+.wz-title-sheet{ --ts-top:1.6em; position:relative; width:100%; min-height:560px; font:inherit; color:inherit; }
+.wz-title-sheet input, .wz-title-sheet textarea{ font:inherit; color:inherit; background:transparent; border:0; outline:none; padding:0; margin:0; resize:none; caret-color:var(--brass); width:100%; }
+.wz-title-sheet input::placeholder, .wz-title-sheet textarea::placeholder{ color:color-mix(in srgb, currentColor 40%, transparent); }
+.wz-ts-contact{ position:absolute; top:var(--ts-top); left:0; width:28ch !important; max-width:50%; white-space:pre-wrap; line-height:1.5; }
+.wz-ts-words{ position:absolute; top:var(--ts-top); right:0; width:40% !important; text-align:right; }
+.wz-ts-mid{ position:absolute; top:40%; left:0; right:0; text-align:center; }
+.wz-ts-title{ text-align:center; text-transform:uppercase; letter-spacing:.12em; }
+.wz-ts-by{ margin:1.1em 0; }
+.wz-ts-author{ text-align:center; }
+/* STEP 3 - THE INDENT LOOK (Nick's ruling): a leading tab is a FIRST-LINE indent - the first visual line moves in one step per
+   tab and wrapped lines return to the margin - so a tab must be one fixed step wide. `tab-size` makes it 2em (the browser default,
+   8 characters, varies with the typeface). The WHOLE-PARAGRAPH indent is the separate `>| ` block token below. */
+.forward-only-editor, .board-popup-editor{ tab-size:2em; }
+/* one `>| ` = one block level: the paragraph's lines (wrapped ones too) sit 2em further in. Levels stack, each a wrapper. */
+.md-block{ padding-left:2em; }
+.md-align-center{ text-align:center; }
+.md-align-right{ text-align:right; }
+.md-quote{ padding-left:.9em; border-left:3px solid color-mix(in srgb, currentColor 38%, transparent); font-style:italic; }
+/* the bullet: a hanging glyph in a 1.4em gutter, so a wrapped line returns to the text, not under the bullet. The stored `- `
+   stays a real (collapsed) character; while the caret is at it (`.md-revealed`) the literal hyphen shows instead of the glyph. */
+.md-bullet{ padding-left:1.4em; text-indent:-1.4em; }
+.md-bullet::before{ content:'\2022'; display:inline-block; width:1.4em; text-indent:0; }
+.md-bullet-circle::before{ content:'\25E6'; }
+.md-bullet-square::before{ content:''; height:1em; vertical-align:middle; background:linear-gradient(currentColor, currentColor) center / 0.42em 0.42em no-repeat; }
+.md-bullet.md-revealed::before{ content:none; background:none; }
+
+/* AB2 S2 DoD — the typewriter's hold-band on the SCRIPT surface, container-
+   mode (the sheet lives inside the bounded .desk-frame-scroll-cap — finding
+   4's containment fix — not the window), same fade recipe as .mode-scroll's
+   own fixed-viewport variant just above. FX1 S1 — same rewrite: the start
+   offset centers a fresh page's first line, and the band/ramp track
+   --tw-fade-band/15%-floor instead of a fixed fraction + hard cutoff. */
+/* AB2 S2 DoD gave the SCRIPT surface the typewriter's hold-band in
+   container mode (the sheet lives inside the bounded .desk-frame-scroll-cap
+   — AB1 finding 4's containment fix — not the window), with the same fade
+   recipe .mode-scroll's fixed-viewport variant above uses, and FX1 S1's start
+   offset centring a fresh page's first line.
+
+   SC1 S3, AMENDED 2026-07-24 (Nick's word, via Fable) — BOTH rules retire
+   from this surface, because **the screenplay surface no longer runs the
+   typewriter at all**, interim, pending his own revision of typewriter mode
+   in a separate build.
+
+   The start-offset rule was the measured root of SC-V4 ("the cursor starts by
+   floating in the middle of the page"): a static `padding-top` of
+   `--tw-start-offset` — 25% of the stage, 183px at the 1280px reference —
+   applied unconditionally the moment a script page mounted, pushing the whole
+   sheet down the scroll box before a single keystroke, and landing a
+   brand-new page's caret at 38.2% of the visible box. Reproduced before it
+   was touched; notably the typewriter HOOK was innocent (band()'s C2 guard
+   correctly refuses to scroll fresh content, and the first element already
+   rendered 1px below the sheet's own top margin) — this declaration was the
+   whole defect. The fade mask goes with it: it is the typewriter's own
+   visual, and with the engine unwired `data-typewriter` is never 'true' here,
+   so leaving a rule keyed on it would be dead CSS that silently reanimates if
+   the attribute ever returns.
+
+   `.mode-scroll` (prose) and `.entry-full` (Journal) are UNTOUCHED and keep
+   the FX4-tuned quarter-down start and their fades exactly as shipped —
+   `--tw-start-offset` is still measured and published by useTypewriterFade.ts
+   for them. The scroll cap itself also stays exactly as it is: its bounded
+   height and internal scroll are AB1's containment fix, which never had
+   anything to do with the typewriter. SC3 owns the option's return. */
+
+/* The corner-glyph collapse (S4 chrome purge) — App.tsx's GlobalHeader
+   folds Fullscreen/Sync/Sign out behind one glyph while a DeskFrame is
+   mounted (store/deskFrameActive.ts). */
+.gh-corner-glyph{ background:none; border:1px solid var(--ink-border); color:var(--text-mid);
+  width:30px; height:30px; display:flex; align-items:center; justify-content:center;
+  font-size:15px; cursor:pointer; transition:.15s; }
+.gh-corner-glyph:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+/* ITEM arbor-quiet-brass — same brown-leak fix as .mode-settings above. */
+.gh-corner-menu{ position:absolute; top:38px; right:0; min-width:180px; background:var(--chrome-surface);
+  border:1px solid var(--ink-border); padding:8px; display:flex; flex-direction:column; gap:2px;
+  z-index:6; box-shadow:0 12px 40px rgba(0,0,0,.5); }
+.gh-corner-menu button{ text-align:left; background:none; border:0; color:var(--text-mid);
+  font-family:var(--font-ui); font-size:12px; padding:8px 9px; cursor:pointer; }
+.gh-corner-menu button:hover{ color:var(--text-hi); background:var(--ink-800); }
+
+@media (max-width:1099px){
+  /* Below the DeskFrame gate, none of the above ever mounts — this rule is
+     a documentation no-op (kept for a reviewer scanning the cascade), since
+     .desk-frame's call sites themselves branch in JS at the same width. */
+  .desk-frame{ display:none; }
+}
+
+
+

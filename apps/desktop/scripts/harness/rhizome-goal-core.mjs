@@ -7,6 +7,7 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { srcText } from '../global-css.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const desktop = join(here, '..', '..');
@@ -232,8 +233,8 @@ for (const o of origins) {
 }
 ok('Engine: growTo without connected still roots more than one origin', rooted >= 2 && origins.length === 7, JSON.stringify({ rooted, origins: origins.length, segs: roam.segments.length }));
 
-const css = readFileSync(join(SRC, 'index.css'), 'utf8');
-const fieldSrc = readFileSync(join(SRC, 'components/RhizomeField.tsx'), 'utf8');
+const css = srcText(SRC, 'index.css');
+const fieldSrc = srcText(SRC, 'components/RhizomeField.tsx');
 ok('Engine: a new segment draws on over 250–400ms and the line carries pathLength 1',
   drawOn(css) && fieldSrc.includes('pathLength={1}'), String(drawOn(css)));
 // PARKED 2026-10-08, rhizome-growth.mjs R4. Reduced motion now fades a new

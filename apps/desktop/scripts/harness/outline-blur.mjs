@@ -10,6 +10,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { srcText } from '../global-css.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const SRC = path.resolve(here, '..', '..', 'src');
@@ -19,7 +20,7 @@ const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
 const noCR = (t) => t.replace(/\r\n?/g, '\n');
 const has = (rel) => fs.existsSync(path.join(SRC, rel));
-const readRaw = (rel) => (has(rel) ? noCR(fs.readFileSync(path.join(SRC, rel), 'utf8')) : '');
+const readRaw = (rel) => (has(rel) ? noCR(srcText(SRC, rel)) : '');
 
 async function loadModule(text) {
   if (!text) return null;

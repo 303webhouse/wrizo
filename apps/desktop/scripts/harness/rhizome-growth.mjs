@@ -8,6 +8,7 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { srcText } from '../global-css.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const desktop = join(here, '..', '..');
@@ -127,8 +128,8 @@ function inBand(cov, f) {
   return cov >= f - 0.08 && cov <= f + 0.08;
 }
 
-const fieldSrc = readFileSync(join(SRC, 'components/RhizomeField.tsx'), 'utf8');
-const css = readFileSync(join(SRC, 'index.css'), 'utf8');
+const fieldSrc = srcText(SRC, 'components/RhizomeField.tsx');
+const css = srcText(SRC, 'index.css');
 const E = await load();
 const geo = deskGeo();
 const seed0 = E.hashSeed('page:sess:24:lines:0');
