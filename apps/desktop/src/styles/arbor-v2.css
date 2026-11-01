@@ -559,3 +559,19 @@
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-drawer-slide--right .wz-drawer-tabbar{ top:63px; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-drawer-slide--right .wz-drawer-tabnotes{ top:63px; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] :is(.wz-sliver-panel, .wz-tutor-panel){ --desk-ground:#2E2118; }
+
+/* ==========================================================================================================================================
+   r14 - THE ARRIVAL SCREEN RETIRES; THE SPLASH IS THE FRONT DOOR (Fable, Nov 1). Arrival.tsx draws, under the flag, the splash's finished
+   frame in place of the threshold's hero: the splash's own ground (its --ink-950, which keeps the night room's value in the day room, as the
+   splash does above), Nick's drawing at the splash's own size, centred where the splash centres it (so the hand-off from the splash moves
+   nothing), and beneath it the tagline and the doors. While the splash holds, the drawing is hidden like the threshold's own content (the
+   tagline and the doors already are: index.css [data-splash-hold]). The sign-in and sign-up stages draw over it, unchanged.
+   ========================================================================================================================================== */
+:root[data-arbor2][data-theme='plateau'] .arbor2-front{ position:absolute; inset:0; z-index:2; background:var(--ink-950); transition:opacity .3s ease; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .arbor2-front{ --ink-950:#0A0503; --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#8A8074; --arbor-letter:#E8DCC2; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-front.gone{ opacity:0; pointer-events:none; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-front-mark{ position:absolute; left:50%; top:50%; transform:translate(-50%, -50%); pointer-events:none; user-select:none; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-front-foot{ position:absolute; left:0; right:0; display:flex; flex-direction:column; align-items:center; gap:14px; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-front-foot .wz-tagline{ color:var(--text-mid); margin:0; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-front-foot .wz-arrival-doors{ display:flex; align-items:center; gap:18px; margin:0; }
+:root[data-arbor2][data-theme='plateau'][data-splash-hold='true'] .arbor2-front-mark{ opacity:0; }
