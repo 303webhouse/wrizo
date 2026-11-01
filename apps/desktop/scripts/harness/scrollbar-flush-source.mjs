@@ -126,8 +126,11 @@ ok('T5 [r2 successor]: the bar is 10px / the APPLIED scale rounded to the neares
 const PAIR = /padding-right:\s*calc\(var\(--wz-page-pad-x, 38px\) \* var\(--paper-scale, 1\) \+ 10px - var\(--wz-sb-w\)\)/;
 ok('T5 [r2.1 successor]: the PAIRING - .mode-scroll takes padding-right: calc(<the margin cancellation it already carries: pad-x x paper-scale> + 10px - var(--wz-sb-w)), so bar + the extra is 10 layout px and the text column is one width at every scale and zoom',
   !!resetRule && PAIR.test(resetRule[1]), JSON.stringify(resetRule));
-ok('T5 [successor]: the thumb is a SQUARE (border-radius 0) in the paper-toned --ink-on-paper-low, the track clear',
-  !!thumbRule && /background:\s*var\(--ink-on-paper-low\)/.test(thumbRule[1]) && /border-radius:\s*0/.test(thumbRule[1]) && exceptionRules.some(([s, b]) => s === EXC + '::-webkit-scrollbar-track' && /background:\s*transparent/.test(b)), JSON.stringify(thumbRule));
+// PARKED (#13 step 4b): this check's SQUARE half is law 3, retired by Nick, Nov 1. Kept VERBATIM below, never run; the live successor follows and keeps the rest (the paper-toned thumb, the clear track).
+// ok('T5 [successor]: the thumb is a SQUARE (border-radius 0) in the paper-toned --ink-on-paper-low, the track clear',
+//   !!thumbRule && /background:\s*var\(--ink-on-paper-low\)/.test(thumbRule[1]) && /border-radius:\s*0/.test(thumbRule[1]) && exceptionRules.some(([s, b]) => s === EXC + '::-webkit-scrollbar-track' && /background:\s*transparent/.test(b)), JSON.stringify(thumbRule));
+ok('T5 [law-3 successor]: the thumb is the paper-toned --ink-on-paper-low, the track clear',
+  !!thumbRule && /background:\s*var\(--ink-on-paper-low\)/.test(thumbRule[1]) && exceptionRules.some(([s, b]) => s === EXC + '::-webkit-scrollbar-track' && /background:\s*transparent/.test(b)), JSON.stringify(thumbRule));
 ok('T5: ...and the standard mechanism IS present: the systemic `*` rule sets scrollbar-width:thin and a theme-token scrollbar-color',
   /\*\{\s*scrollbar-width: thin;\s*scrollbar-color: var\(--ink-border-strong\) transparent;\s*\}/.test(css), '');
 ok('T5: ...and the paper-toned group (.mode-scroll, .desk-frame-scroll-cap, .board-canvas-wrap) and the card text keep their scrollbar-color',

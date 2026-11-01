@@ -64,10 +64,25 @@ const pins = (text) => ({
     boardOnly: !/\n\.wz-beginning\{[^}]*opacity:\.4/.test(c),
   });
   const l = look(css);
-  ok('S3: the board\'s starters are a thin square outline at about 40% opacity (lifted on hover and keyboard focus), they fade away with opacity first and visibility after, the ghost is a square hairline outline that never takes the pointer - and the look is scoped to the BOARD row (the page row and STORYBOARD/OUTLINE keep theirs)',
-    Object.values(l).every(Boolean), JSON.stringify(l));
-  const mut = css.replace('border:1px solid currentColor; border-radius:0; opacity:.4;', 'border:1px solid currentColor; border-radius:6px; opacity:.4;');
-  ok('S3 (mutant): a rounded starter turns the pin RED (the mutation landed)', mut !== css && !look(mut).starter, '');
+  // PARKED (#13 step 4b): S3's SQUARE half (border-radius:0 in the starter and ghost pins, and its rounding mutant) is law 3, retired by Nick, Nov 1.
+  // Kept VERBATIM, never run (the `look` pins above stay as written, read only by the parked lines); the successor below keeps the rest.
+  // ok('S3: the board\'s starters are a thin square outline at about 40% opacity (lifted on hover and keyboard focus), they fade away with opacity first and visibility after, the ghost is a square hairline outline that never takes the pointer - and the look is scoped to the BOARD row (the page row and STORYBOARD/OUTLINE keep theirs)',
+  //   Object.values(l).every(Boolean), JSON.stringify(l));
+  // const mut = css.replace('border:1px solid currentColor; border-radius:0; opacity:.4;', 'border:1px solid currentColor; border-radius:6px; opacity:.4;');
+  // ok('S3 (mutant): a rounded starter turns the pin RED (the mutation landed)', mut !== css && !look(mut).starter, '');
+  void l;
+  const look3 = (c) => ({
+    starter: /\.wz-beginnings\[data-beginnings='board'\] \.wz-beginning\{\n\s*border:1px solid currentColor;[^}]*?opacity:\.4;/.test(c),
+    lift: /\.wz-beginnings\[data-beginnings='board'\] \.wz-beginning:focus-visible\{ opacity:\.9; \}/.test(c),
+    faded: /\.wz-beginnings\.wz-beginnings--faded\{ opacity:0; visibility:hidden; transition:opacity \.35s ease, visibility 0s linear \.35s; \}/.test(c),
+    ghost: /\.board-create-ghost\{[^}]*border:1px solid[^}]*background:none;[^}]*pointer-events:none;/.test(c),
+    boardOnly: !/\n\.wz-beginning\{[^}]*opacity:\.4/.test(c),
+  });
+  const l3 = look3(css);
+  ok('S3 [law-3 successor]: the board\'s starters are a thin outline at about 40% opacity (lifted on hover and keyboard focus), they fade away with opacity first and visibility after, the ghost is a hairline outline that never takes the pointer - and the look is scoped to the BOARD row',
+    Object.values(l3).every(Boolean), JSON.stringify(l3));
+  const mut3 = css.replace(/(\.wz-beginnings\[data-beginnings='board'\] \.wz-beginning\{\n\s*border:1px solid currentColor;[^}]*?)opacity:\.4;/, '$1opacity:1;');
+  ok('S3 [law-3 successor] (mutant): a full-opacity starter turns the pin RED (the mutation landed)', mut3 !== css && !look3(mut3).starter, '');
 }
 
 // every element that has any area above the canvas's top edge (the header strip and whatever overlays it), as a sorted descriptor list - selecting a card must not add to it

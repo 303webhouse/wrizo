@@ -353,11 +353,13 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.wz-strip-item[data-category=journal]').click()"); // Journal
   await sleep(220);
   const stripItemRadius = await app.evalJs("getComputedStyle(document.querySelector('.wz-strip-item')).borderRadius");
-  ok('S4 (successor to "...border-radius is 0px on a drawer pull"): computed border-radius is 0px on a strip item', stripItemRadius === '0px', stripItemRadius);
+  // PARKED (#13 step 4b): the three S4 radius checks below asserted only square corners - law retired by Nick, Nov 1; no successor needed
+  // (a retired law, not a falsified check); design is covered by the Wrizors' imply-never-literal review. Kept VERBATIM, never run; the reads stay (the fixture walk is unchanged).
+  // ok('S4 (successor to "...border-radius is 0px on a drawer pull"): computed border-radius is 0px on a strip item', stripItemRadius === '0px', stripItemRadius);
 
   const cascadeActionRadius = await app.evalJs("getComputedStyle(document.querySelector('.wz-cascade-action')).borderRadius");
-  ok('S4 (successor to "...border-radius is 0px on a place-face verb"): computed border-radius is 0px on a category panel\'s action button',
-    cascadeActionRadius === '0px', cascadeActionRadius);
+  // ok('S4 (successor to "...border-radius is 0px on a place-face verb"): computed border-radius is 0px on a category panel\'s action button',
+  //   cascadeActionRadius === '0px', cascadeActionRadius);
 
   // B2 S4 — plain doorway swap (fx2.mjs's own "same claim, renamed/moved
   // doorway, no park" precedent, cited verbatim by ab3.mjs's own header
@@ -370,7 +372,7 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.wz-pageface-verb-pin').click()");
   await app.waitFor("!!document.querySelector('.board-sheet')", { label: 'Pin sheet' });
   const addToSheetRadius = await app.evalJs("getComputedStyle(document.querySelector('.board-sheet-inner')).borderRadius");
-  ok('S4: computed border-radius is 0px on a board sheet (Pin to a Board…)', addToSheetRadius === '0px', addToSheetRadius);
+  // PARKED (#13 step 4b, the third S4 radius check; record above): ok('S4: computed border-radius is 0px on a board sheet (Pin to a Board…)', addToSheetRadius === '0px', addToSheetRadius);
 
   // ==========================================================================
   // S5 — the dead bar dies: the meter track's host doesn't mount while

@@ -604,11 +604,19 @@ await withHarness(async (app) => {
     };
     return { text: read('.board-text'), ink: read('.board-ink-canvas') };
   })()`);
-  ok('S7: the text card carries the Stacked treatment — square corners, a two-layer box-shadow (the 2px offset hard edge + the soft shadow)',
-    stackedCss.text.borderRadius === '0px' && countShadowLayers(stackedCss.text.boxShadow) === 2 && stackedCss.text.boxShadow !== 'none',
+  // PARKED (#13 step 4b): the three S7 Stacked checks' SQUARE-CORNER half is law 3, retired by Nick, Nov 1. Originals kept VERBATIM, never run;
+  // each live successor keeps the rest (the two-layer shadow, the same on text, ink and pin cards).
+  // ok('S7: the text card carries the Stacked treatment — square corners, a two-layer box-shadow (the 2px offset hard edge + the soft shadow)',
+  //   stackedCss.text.borderRadius === '0px' && countShadowLayers(stackedCss.text.boxShadow) === 2 && stackedCss.text.boxShadow !== 'none',
+  //   JSON.stringify(stackedCss.text));
+  // ok('S7: ink cards wear the SAME Stacked treatment identically (square corners, the same two-layer shadow)',
+  //   stackedCss.ink.borderRadius === '0px' && countShadowLayers(stackedCss.ink.boxShadow) === 2 && stackedCss.ink.boxShadow !== 'none',
+  //   JSON.stringify(stackedCss.ink));
+  ok('S7 [law-3 successor]: the text card carries the Stacked treatment — a two-layer box-shadow (the 2px offset hard edge + the soft shadow)',
+    countShadowLayers(stackedCss.text.boxShadow) === 2 && stackedCss.text.boxShadow !== 'none',
     JSON.stringify(stackedCss.text));
-  ok('S7: ink cards wear the SAME Stacked treatment identically (square corners, the same two-layer shadow)',
-    stackedCss.ink.borderRadius === '0px' && countShadowLayers(stackedCss.ink.boxShadow) === 2 && stackedCss.ink.boxShadow !== 'none',
+  ok('S7 [law-3 successor]: ink cards wear the SAME Stacked treatment identically (the same two-layer shadow, the same corners as the text card)',
+    countShadowLayers(stackedCss.ink.boxShadow) === 2 && stackedCss.ink.boxShadow !== 'none' && stackedCss.ink.borderRadius === stackedCss.text.borderRadius,
     JSON.stringify(stackedCss.ink));
   ok('S7: the text card\'s stock is genuinely a DIFFERENT (lighter) color than the board\'s own paper background',
     stackedCss.text.background !== (await app.evalJs("getComputedStyle(document.querySelector('.board-canvas')).backgroundColor")),
@@ -620,8 +628,10 @@ await withHarness(async (app) => {
     const cs = getComputedStyle(el);
     return { boxShadow: cs.boxShadow, borderRadius: cs.borderRadius };
   })()`);
-  ok('S7: page-pin cards wear the Stacked treatment identically too',
-    pinCss.borderRadius === '0px' && countShadowLayers(pinCss.boxShadow) === 2, JSON.stringify(pinCss));
+  // PARKED (#13 step 4b, the third S7 check; record above): ok('S7: page-pin cards wear the Stacked treatment identically too',
+  //   pinCss.borderRadius === '0px' && countShadowLayers(pinCss.boxShadow) === 2, JSON.stringify(pinCss));
+  ok('S7 [law-3 successor]: page-pin cards wear the Stacked treatment identically too (the two-layer shadow, the text card\'s corners)',
+    countShadowLayers(pinCss.boxShadow) === 2 && pinCss.borderRadius === stackedCss.text.borderRadius, JSON.stringify(pinCss));
 
   // Selection/lane colors unchanged: brass on selection, olive only while
   // thread-armed — no new resting-orange anywhere.
