@@ -46,5 +46,5 @@ Contracts between Wrizo and its siblings live in `docs/contracts/`. The cleanup 
 | `apps/desktop/scripts/harness` | 246 files, 83,454 lines |
 | `apps/server/src` | 14 files, 1,933 lines |
 | The ledger | 27,249 lines |
-| `docs/` | 3,365 tracked files; `docs/evidence` 264 MB |
+| `docs/` | 549 tracked files; the evidence folder (2,832 files, 257 MB) lives in git history since #13 step 4c ([the list](cleanup/c13-4c-evidence-removed.tsv)) |
 | `window.wrizo*` hooks | 67, in 32 files (33 in `store/persistence.ts`) |
