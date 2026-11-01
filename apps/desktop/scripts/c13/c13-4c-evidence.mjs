@@ -17,7 +17,8 @@ const ROOT = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: '
 const git = (...a) => execFileSync('git', ['-c', 'core.quotePath=false', ...a], { cwd: ROOT, encoding: 'utf8', maxBuffer: 1 << 30 });
 const DIR = 'docs/evidence';
 const MANIFEST = 'docs/cleanup/c13-4c-evidence-removed.tsv';
-const OWN = new Set([MANIFEST, 'apps/desktop/scripts/c13/c13-4c-evidence.mjs']);
+// The step's own files (added), and the MAP's numbers row (modified, never deleted).
+const OWN = new Map([[MANIFEST, 'A'], ['apps/desktop/scripts/c13/c13-4c-evidence.mjs', 'A'], ['docs/MAP.md', 'M']]);
 
 function manifest() {
   const base = git('rev-parse', 'HEAD').trim();
@@ -66,7 +67,7 @@ function verify() {
   const listed = new Set(rows.map((r) => r.file));
   for (const [st, f] of changes) {
     if (f.startsWith(`${DIR}/`)) { if (st !== 'D' || !listed.has(f)) fails.push(`${st} ${f}: not a listed deletion`); }
-    else if (!OWN.has(f)) fails.push(`${st} ${f}: outside the step`);
+    else if (OWN.get(f) !== st) fails.push(`${st} ${f}: outside the step`);
   }
   let ignore = fs.existsSync(path.join(ROOT, '.railwayignore')) ? fs.readFileSync(path.join(ROOT, '.railwayignore'), 'utf8') : '';
   if (plant === 'ignore') ignore = ignore.replace(/^docs\/evidence\/?\s*$/m, '');
