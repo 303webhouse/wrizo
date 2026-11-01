@@ -88,6 +88,10 @@ export async function drawerProof(app, { name, say, fail }) {
   // reduced motion: the tab cuts (no travel, no running transition on it) - the slide has no travel either
   await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]); await sleep(150);
   await app.evalJs(click('.wz-sliver-grip'));
+  // (driver fix after green leg g5, runs 41348481835 / 41348508284 / 41352272894: the read came in the very frame the drawer turned open - the
+  // reading showed it open, its arrow flipped, its tab still at the closed place and nothing running - so the cut had not been drawn yet. The
+  // read now waits for the drawer to report open, then lets two frames pass; a cut is drawn by then, travel would still be on its way.)
+  await app.evalJs(`new Promise((done) => { const t0 = performance.now(); const f = () => (document.querySelector(".wz-sliver[data-open='true']") || performance.now() - t0 > 1000) ? done(true) : requestAnimationFrame(f); f(); })`);
   await app.evalJs(raf2);
   // (instrument fix after red leg 41343731092: a cut is about TRAVEL - the tab's 0.01 ms colour change (olive to brass as it opens) was caught
   // mid-frame once; only the properties that move the tab are read now. Original, verbatim:
