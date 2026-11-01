@@ -5,7 +5,7 @@
 ratification). **Sequenced:** after W2's review/merge cycle; designed with
 B4 via tokens — `pfill-celebrate` is the interim calibration reference until
 B4 ratifies the ember grammar. (Fable's amendment under Nick's
-progress-over-perfection directive, `docs/w1-close-handoff.md` — supersedes
+progress-over-perfection directive, `docs/briefs/w/w1-close-handoff.md` — supersedes
 the canon's original "after the consolidated hardware session" sequencing.)
 
 ## Why

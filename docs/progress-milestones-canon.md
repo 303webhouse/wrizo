@@ -3,8 +3,8 @@
 **Status: RULED — 2026-07-12, on Nick's delegated word via Fable** ("I'll
 defer to you on the other options for now, but I want to prioritize
 progress over perfection... as long as the architecture isn't fundamentally
-broken." — see `docs/w1-close-handoff.md`).
-**Answers:** `docs/progress-milestones-committee-brief.md`. Convened per
+broken." — see `docs/briefs/w/w1-close-handoff.md`).
+**Answers:** `docs/briefs/committee/progress-milestones-committee-brief.md`. Convened per
 `AGENTS.md`: the Experts + the Architects, double-pass; Marketing ran real
 opposition here (reward mechanics are brand-load-bearing).
 **Place at:** `docs/progress-milestones-canon.md`.

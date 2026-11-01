@@ -16,7 +16,7 @@
 
 > **NAMING — for anyone writing in this arc.** Files keep the **numbered `vwN-` prefix**; prose
 > says **"the views arc"**. **Bare "VW" on this tree means the VOICE WALL**
-> (`docs/vw-voice-wall-brief.md`) — TOOLS nearly walked into the collision.
+> (`docs/briefs/vw/vw-voice-wall-brief.md`) — TOOLS nearly walked into the collision.
 **GATE:** brief 1 (the rail) need not have landed — these are different files. **When THIS brief
 is final, Fable opens the hard-delete persistence item** (brief 4's other half).
 

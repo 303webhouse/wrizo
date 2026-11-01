@@ -1,7 +1,7 @@
 # Fragments under Pages — the substrate canon
 
 **Place at:** `docs/fragments-under-pages-canon.md` · 2026-07-11 · **Status: RULED** (convened on Nick's word — "let's get it built" — with the sequencing pull-forward he approved; in force for S1 unless Nick objects). Closes open-threads item 6.
-**Citizens examined:** `Box` (J4, shipped and living), `ScriptDoc` (S-arc plan v1.1, designed), the spine's links-on-the-child rule (`docs/structure-spine-plan.md`, ratified). Compact pass — the heavy deliberation already happened in those three documents; this ruling names the pattern they share so no future module reinvents it.
+**Citizens examined:** `Box` (J4, shipped and living), `ScriptDoc` (S-arc plan v1.1, designed), the spine's links-on-the-child rule (`docs/briefs/early/structure-spine-plan.md`, ratified). Compact pass — the heavy deliberation already happened in those three documents; this ruling names the pattern they share so no future module reinvents it.
 
 ## 1 · What a fragment-under-a-Page is
 
