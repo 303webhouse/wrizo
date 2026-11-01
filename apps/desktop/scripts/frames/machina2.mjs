@@ -5,6 +5,10 @@
 // {...}"; a failure also prints "MACHINA2-FAIL ..." in full - the job keeps only 300 characters of an error). Written red-first: run against
 // main (no mockup) before the build. Seeds go through the app's seams (window.wrizo*), never raw collection storage. No imports.
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// r3 DRIVER PIN (not an assertion): unset, the room now follows the CLOCK (Fable, Nov 1: Follow the clock / Always day / Always night) and
+// the runner's clock is UTC. This file's checks were written for the room the page tone gave (light = the light room, anything else = the
+// dark room), so after every flagged reload it chooses that room explicitly (data-room). The clock itself is proven in frames/machina2-r3.mjs.
+const pinRoom = (app) => app.evalJs("(() => { const r = document.documentElement; if (/[?&]machina2=1/.test(location.search)) r.setAttribute('data-room', r.getAttribute('data-page') === 'light' ? 'light' : 'dark'); })()");
 const ED = '.forward-only-editor';
 const WORDS = 'The quarterly figures show a steady rise in exports. The tariff change explains part of it, but not all.\nThe second paragraph names the evidence: shipping records for March and April.\nA third paragraph asks who the reader is.';
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
@@ -14,7 +18,7 @@ const say = (name, data) => console.log(`MACHINA2 ${name} ${JSON.stringify(data)
 const fail = (name, data) => { console.log(`MACHINA2-FAIL ${name} ${JSON.stringify(data)}`); throw new Error(`${name} FAILED ${JSON.stringify(data)}`.slice(0, 1200)); };
 const load = async (app, hash, on = true) => {
   await app.evalJs(`history.replaceState(null, '', ${JSON.stringify(on ? '/?machina2=1' : '/')} + ${JSON.stringify(hash)})`);
-  await app.reload();
+  await app.reload(); await pinRoom(app);
   await waitSoft(app, `document.documentElement.getAttribute('data-machina2') ${on ? "=== 'true'" : '== null'}`, { label: 'flag', timeout: 15000 });
   await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 20000 });
 };
