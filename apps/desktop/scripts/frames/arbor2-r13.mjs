@@ -22,13 +22,13 @@ const load = async (app, hash) => {
   await waitSoft(app, "document.documentElement.getAttribute('data-arbor2') === 'true'", { label: 'flag', timeout: 15000 });
   await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 20000 });
 };
-const page = async (app, id) => {
+const page = async (app, id, mode = 'Draft') => {
   await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id, text: WORDS, createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page' })})`);
   await sleep(300);
   await load(app, '#/page/' + id);
   await waitSoft(app, `!!document.querySelector('${ED}')`, { label: 'page' });
   await sleep(1200);
-  await clickText(app, '.desk-mode-tab', 'Draft'); await sleep(1200);
+  if (mode) { await clickText(app, '.desk-mode-tab', mode); await sleep(1200); }
   // the mockup's own control panel (never shipped) is hidden: at 1366 it lies over the page's foot and the right drawer
   await app.evalJs("(() => { const s = document.createElement('style'); s.textContent = '.arbor2-bar{ visibility:hidden !important; }'; document.head.appendChild(s); document.querySelector('.forward-only-editor')?.blur(); return true; })()");
 };
@@ -83,7 +83,7 @@ const FIT = `(() => { ${R}
     .filter(({ r }) => r.width > 0 && r.top < innerHeight && r.right > S.r + 0.5).map(({ e, r }) => ({ cls: String(e.className).split(' ')[0] || e.tagName, text: (e.textContent || '').trim().slice(0, 16), right: Math.round(r.right * 10) / 10 }));
   const cloths = [...slide.querySelectorAll('.wz-drawer-tab')].map((e) => ({ text: e.textContent.trim(), r: q(e), shown: shown(e) }));
   return { rail, page, tab, panel: P, slide: S, cut, cloths, zoom: !!document.querySelector(".mode-pagecol[data-zoom='true']"), w: innerWidth }; })()`;
-const fitCheck = async (app, name) => {
+const fitCheck = async (app, name, want3 = false) => {
   await app.evalJs(`document.querySelector('${ED}')?.__r13 || (document.querySelector('${ED}').__r13 = 1)`);
   const closedPage = await app.evalJs(`(() => { ${R} return q(document.querySelector('.desk-frame-stage .mode-page')); })()`);
   await openSide(app, 'left');
@@ -95,7 +95,12 @@ const fitCheck = async (app, name) => {
     atEdge: Math.abs(s.panel.r - s.page.l) <= 1,
     width: Math.abs(drawer - Math.min(280, room - 8)) <= 1,
     gutter: s.tab.l - s.rail.r >= 8 - 0.5,
-    threeCloths: s.cloths.length === 3 && s.cloths.every((c) => c.shown && c.r.l >= s.slide.l - 0.5 && c.r.r <= s.slide.r + 0.5),
+    // (amendment before any green, after green look 41354772471: the Ink cloth exists only where the page can take ink - Free Write
+    // (Sliver.tsx arborToolTabs) - so Draft's drawer has two cloths and "three" was not its count. Original:
+    // threeCloths: s.cloths.length === 3 && s.cloths.every((c) => c.shown && c.r.l >= s.slide.l - 0.5 && c.r.r <= s.slide.r + 0.5),
+    // Successor: every cloth the drawer has is shown whole inside its box (at least two), and on Free Write all three, Ink among them.)
+    cloths: s.cloths.length >= (want3 ? 3 : 2) && s.cloths.every((c) => c.shown && c.r.l >= s.slide.l - 0.5 && c.r.r <= s.slide.r + 0.5)
+      && (!want3 || s.cloths.some((c) => /^ink$/i.test(c.text))),
     nothingCut: s.cut.length === 0,
     pageStill: !!closedPage && ['l', 'r', 't', 'b'].every((k) => Math.abs(closedPage[k] - s.page[k]) <= 0.5) && await app.evalJs(`document.querySelector('${ED}')?.__r13 === 1`),
   };
@@ -107,6 +112,16 @@ const fitCheck = async (app, name) => {
 export default {
   'r13-tools-fit': async (app) => { await page(app, 'arbor-r13-fit'); await fitCheck(app, 'R13-TOOLS-FIT'); },
   'r13-tools-fit-2000': async (app) => { await app.emulateDpr(1, 2000, 1125); await page(app, 'arbor-r13-fit2'); await fitCheck(app, 'R13-TOOLS-FIT-2000'); },
+  // Free Write, where the drawer has its three cloths (Ink among them): Free Write opens in Typewriter's zoom, which keeps today's drawers
+  // (ruled), so the writer's own Typewriter switch in the drawer is turned off first, as she would
+  'r13-tools-fit-freewrite': async (app) => {
+    await page(app, 'arbor-r13-fit-fw', null);
+    await openSide(app, 'left');
+    if (await app.evalJs("document.querySelector('[data-mode-toggle=\"typewriter\"]')?.getAttribute('aria-pressed') === 'true'")) await app.evalJs("document.querySelector('[data-mode-toggle=\"typewriter\"]').click()");
+    await waitSoft(app, "!document.querySelector(\".mode-pagecol[data-zoom='true']\")", { label: 'typewriter off', timeout: 3000 });
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await app.evalJs(FINISH); await sleep(600);
+    await fitCheck(app, 'R13-TOOLS-FIT-FREEWRITE', true);
+  },
 
   // ---- 2. THE TUTOR CLOTHS START BELOW THE OPENER: TUTOR's top >= the opener's bottom + 12 px; the opener keeps its y (open and closed)
   'r13-tutor-cloths': async (app) => {
