@@ -138,6 +138,21 @@ const SCREENS = {
 // ---------------------------------------------------------------------------------------------------------------------------------------
 // In the page. Plain functions, sent as source (no escaping).
 function inPageSnapshot() {
+  // Flux's Signal Loss pulses are random by design (store/signalLossEvents.ts) and each lasts at most ~1s. Every one asks the flash budget, which
+  // calls window.__wzOnFlashGrant; the caller stamps the time. Refuse to read within 1.2s of a grant (this function is synchronous, so none can
+  // land while it reads); the caller waits and asks again.
+  if (performance.now() - (window.__c13Flash || -1e9) < 1200) return { busy: true };
+  // Settle every CSS animation and transition: a looping one is paused at its start, a finite one jumps to its end. Without this a run reads
+  // a glow or a pulse wherever it happens to be (two runs of one build differed only by these).
+  for (const an of document.getAnimations()) {
+    try { const t = an.effect && an.effect.getComputedTiming(); if (t && t.endTime === Infinity) { an.pause(); an.currentTime = 0; } else an.finish(); } catch { /* an animation that cannot settle is read as it is */ }
+  }
+  // Inside the FX layer the pulses leave random positions and classes behind (shear and noise move their own element; sync adds jmp). Those
+  // properties and the x/y of the rect are not recorded there; the throwaway children (macroblocks, tear lines) are skipped. All else is.
+  const FX = '.theme-fx-layer, .theme-fx-shear, .theme-fx-noise, .theme-fx-backlight';
+  const TRANSIENT = /(^|\s)theme-fx-(macroblock|tear)(\s|$)/;
+  const VOLATILE = /^(top|left|right|bottom|opacity|transform|translate|--op|animation(-.*)?)$/;
+  const PULSE_CLASS = /(^|\s)(on|jmp|jmp2)(?=\s|$)/g;
   const ref = document.createElement('div');
   ref.setAttribute('style', 'all: initial');
   document.documentElement.appendChild(ref);
@@ -146,9 +161,9 @@ function inPageSnapshot() {
   const refVals = {}; for (const n of names) refVals[n] = rcs.getPropertyValue(n);
   ref.remove();
   const styles = []; const index = new Map();
-  const intern = (cs) => {
+  const intern = (cs, fx = false) => {
     const o = {};
-    for (const n of names) { const v = cs.getPropertyValue(n); if (v !== refVals[n]) o[n] = v; }
+    for (const n of names) { if (fx && VOLATILE.test(n)) continue; const v = cs.getPropertyValue(n); if (v !== refVals[n]) o[n] = v; }
     const k = JSON.stringify(o); let id = index.get(k);
     if (id === undefined) { id = styles.length; styles.push(o); index.set(k, id); }
     return id;
@@ -159,20 +174,30 @@ function inPageSnapshot() {
     if (cs.display === 'none') return;
     if (el.getClientRects().length) {
       const r = el.getBoundingClientRect();
-      const c = typeof el.className === 'string' ? el.className : (el.className && el.className.baseVal) || '';
-      const e = { p, t: el.tagName.toLowerCase(), c, r: [r.left, r.top, r.width, r.height].map((x) => Math.round(x * 100) / 100), s: intern(cs) };
+      const fx = !!el.closest(FX);
+      let c = typeof el.className === 'string' ? el.className : (el.className && el.className.baseVal) || '';
+      if (fx) c = c.replace(PULSE_CLASS, '$1').replace(/\s+/g, ' ').trim();
+      const rect = [r.left, r.top, r.width, r.height].map((x) => Math.round(x * 100) / 100);
+      const e = { p, t: el.tagName.toLowerCase(), c, r: fx ? [null, null, rect[2], rect[3]] : rect, s: intern(cs, fx) };
       for (const [pe, key] of [['::before', 'b'], ['::after', 'a']]) {
         const pcs = getComputedStyle(el, pe); const ct = pcs.getPropertyValue('content');
-        if (ct && ct !== 'none' && ct !== 'normal') e[key] = intern(pcs);
+        if (ct && ct !== 'none' && ct !== 'normal') e[key] = intern(pcs, fx);
       }
       els.push(e);
     }
     let i = 0;
-    for (const ch of el.children) { i += 1; const t = ch.tagName.toLowerCase(); if (t === 'script' || t === 'style' || t === 'link' || t === 'meta') continue; walk(ch, `${p}>${t}:${i}`); }
+    for (const ch of el.children) {
+      const t = ch.tagName.toLowerCase();
+      if (TRANSIENT.test(typeof ch.className === 'string' ? ch.className : '')) continue; // not counted, so a stable sibling keeps its index
+      i += 1;
+      if (t === 'script' || t === 'style' || t === 'link' || t === 'meta') continue;
+      walk(ch, `${p}>${t}:${i}`);
+    }
   };
   walk(document.body, 'body');
   const de = document.documentElement;
-  const meta = { hash: location.hash, theme: de.getAttribute('data-theme'), page: de.getAttribute('data-page'), cast: de.getAttribute('data-cast'), voice: de.getAttribute('data-voice'),
+  // a page the wizard makes has a fresh random id each run; a fixture's id (c13s-*) is kept
+  const meta = { hash: location.hash.replace(/^#\/page\/(?!c13s-)[^/?]+/, '#/page/<made>'), theme: de.getAttribute('data-theme'), page: de.getAttribute('data-page'), cast: de.getAttribute('data-cast'), voice: de.getAttribute('data-voice'),
     zoom: document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null, vw: innerWidth, vh: innerHeight };
   return { meta, ref: refVals, styles, els };
 }
@@ -215,12 +240,20 @@ async function runOnce(app, { skins, screens, plant, label }) {
     const key = `${skin}/${screen}`;
     try {
       await freshDesk(app, skin);
+      // the flash budget's own harness hook (store/flashBudget.ts): stamp each granted pulse, so the snapshot can wait one out
+      await app.evalJs('window.__c13Flash = -1e9; window.__wzOnFlashGrant = () => { window.__c13Flash = performance.now(); };');
       await SCREENS[screen](app);
       if (plant) {
         await app.evalJs(`(() => { const s = document.createElement('style'); s.id = 'c13-plant'; s.textContent = ${J(PLANTS[plant])}; document.head.appendChild(s); })()`);
         await sleep(300);
       }
-      const snap = await app.evalJs(`(${inPageSnapshot.toString()})()`);
+      let snap = null;
+      for (let tries = 0; tries < 40; tries += 1) {
+        snap = await app.evalJs(`(${inPageSnapshot.toString()})()`);
+        if (!snap || !snap.busy) break;
+        await sleep(250);
+      }
+      if (snap && snap.busy) throw new Error('a Signal Loss pulse every 1.2s for 10s: no quiet moment to read');
       if (!snap || !snap.els) throw new Error('the snapshot returned nothing');
       const ref = glob(snap.ref);
       out.screens[key] = { meta: snap.meta, ref, els: snap.els.map((e) => ({ ...e, s: glob(snap.styles[e.s]), ...(e.b !== undefined ? { b: glob(snap.styles[e.b]) } : {}), ...(e.a !== undefined ? { a: glob(snap.styles[e.a]) } : {}) })) };
