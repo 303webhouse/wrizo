@@ -40,7 +40,8 @@ const measureRoom = () => {
   for (const sheet of [...document.styleSheets]) {
     let rules: CSSRuleList; try { rules = sheet.cssRules; } catch { continue; }
     for (const r of [...rules]) {
-      if (!(r instanceof CSSStyleRule) || !/\[data-arbor2-room='(night|day)'\]$/.test(r.selectorText)) continue;
+      // (the browser serialises the selector with DOUBLE quotes, whatever the source wrote: r9's first green leg read no tokens at all)
+      if (!(r instanceof CSSStyleRule) || !/\[data-arbor2-room=["']?(night|day)["']?\]$/.test(r.selectorText)) continue;
       for (const p of [...r.style]) if (p.startsWith('--')) names.add(p);
     }
   }
