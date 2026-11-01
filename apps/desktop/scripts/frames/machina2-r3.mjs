@@ -43,7 +43,9 @@ export default {
   // ── THE ROOM ROW. Exactly Follow the clock / Always day / Always night; unset (no data-room) it is Follow the clock, pressed. Following the
   // clock (nobody typing) the room is light at 12:00 and dark at 22:00 WHATEVER the page tone; Always night at noon and Always day at 22:00 land
   // at once; Follow the clock again gives the clock's room at once; the page keeps the tone's paper; no storage key; a reload forgets the choice.
-  'm2r3-room': async (app) => {
+  // PARKED 2026-11-01 (SUPERSEDED by Fable, Nov 1, Machina r4: "the Room row = Automatic · Day · Night"). Kept verbatim under the name
+  // m2r3-room-v1 (not in the run list); SUCCESSOR m2r3-room below, the same checks with r4's words.
+  'm2r3-room-v1': async (app) => {
     await page(app, 'm2r3-room', WORDS);
     const keys0 = await app.evalJs('[...Object.keys(localStorage), ...Object.keys(sessionStorage)].sort()');
     const s0 = await app.evalJs(STATE), row = await app.evalJs(ROWREAD), paper0 = await app.evalJs(paperOf);
@@ -68,6 +70,45 @@ export default {
     const s4 = await app.evalJs(STATE), row4 = await app.evalJs(ROWREAD);
     const ok = {
       row: !!row && JSON.stringify(row.opts.map((o) => o.slice(0, 2))) === '[["clock","Follow the clock"],["light","Always day"],["dark","Always night"]]' && pressed(row) === 'clock' && !/follows Page/.test(row.text),
+      unsetIsClock: !s0.dataRoom,
+      seam: seam !== 'NO-SEAM',
+      noon: ['dark', 'light'].every((t) => at[`12:00 ${t}`].room === 'light' && !at[`12:00 ${t}`].due),
+      night: ['dark', 'light'].every((t) => at[`22:00 ${t}`].room === 'dark' && !at[`22:00 ${t}`].due),
+      pickNight: okN && pN.dataRoom === 'dark' && pN.room === 'dark' && pressed(rowN) === 'dark',
+      pickDay: okD && pD.dataRoom === 'light' && pD.room === 'light',
+      backToClock: okC && !pC.dataRoom && pC.room === 'dark',
+      pageKept: !!paper0 && paper0 === paperD,
+      noStorage: JSON.stringify(keys0) === JSON.stringify(keys1) && !keys1.some((k) => /room|clock/i.test(k)),
+      session: !s4.dataRoom && pressed(row4) === 'clock',
+    };
+    if (Object.values(ok).some((x) => !x)) fail('M2R3-ROOM', { ok, s0, row, seam, at, pN, pD, pC, s4, row4, paper0, paperD, newKeys: keys1.filter((k) => !keys0.includes(k)) });
+    say('m2r3-room', { ok, tone: s0.tone, row: row.opts });
+  },
+  'm2r3-room': async (app) => {
+    await page(app, 'm2r3-room', WORDS);
+    const keys0 = await app.evalJs('[...Object.keys(localStorage), ...Object.keys(sessionStorage)].sort()');
+    const s0 = await app.evalJs(STATE), row = await app.evalJs(ROWREAD), paper0 = await app.evalJs(paperOf);
+    const seam = await clock(app, '12:00');
+    const at = {};
+    for (const hhmm of ['12:00', '22:00']) {
+      await clock(app, hhmm);
+      for (const tone of ['dark', 'light']) { await app.evalJs(`document.documentElement.setAttribute('data-page', ${JSON.stringify(tone)})`); await sleep(1300); at[`${hhmm} ${tone}`] = await app.evalJs(STATE); }
+    }
+    await app.evalJs(`document.documentElement.setAttribute('data-page', ${JSON.stringify(s0.tone)})`); await sleep(150);
+    await clock(app, '12:00'); await sleep(1300);
+    const okN = await pick(app, 'dark'); await sleep(60);
+    const pN = await app.evalJs(STATE), rowN = await app.evalJs(ROWREAD);
+    await clock(app, '22:00');
+    const okD = await pick(app, 'light'); await sleep(60);
+    const pD = await app.evalJs(STATE), paperD = await app.evalJs(paperOf);
+    const okC = await pick(app, 'clock'); await sleep(60);
+    const pC = await app.evalJs(STATE);
+    const keys1 = await app.evalJs('[...Object.keys(localStorage), ...Object.keys(sessionStorage)].sort()');
+    await pick(app, 'dark'); await sleep(200);
+    await load(app, '#/page/m2r3-room'); await sleep(800);
+    const s4 = await app.evalJs(STATE), row4 = await app.evalJs(ROWREAD);
+    const ok = {
+      row: !!row && JSON.stringify(row.opts.map((o) => o.slice(0, 2))) === '[["clock","Automatic"],["light","Day"],["dark","Night"]]' && pressed(row) === 'clock' && !/follows Page/.test(row.text),
       unsetIsClock: !s0.dataRoom,
       seam: seam !== 'NO-SEAM',
       noon: ['dark', 'light'].every((t) => at[`12:00 ${t}`].room === 'light' && !at[`12:00 ${t}`].due),

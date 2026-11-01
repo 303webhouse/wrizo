@@ -23,6 +23,13 @@ import { isOn, subscribeSwitches } from './switches';
 // THE ONE COLLISION THIS MAKES: Ctrl+/ (and ⌘/) already opens the Controls drawer (components/Sliver.tsx). Under the flag, while the command
 // line's switch is on, the line takes the chord first (a capture listener that stops it), and the Controls drawer stays one command away
 // ("Controls drawer"); switch the line off and Ctrl+/ opens the Controls drawer again. Handed to Fable as a conflict, not decided here.
+// r4, RULED (Fable, Nov 1): "Ctrl+/ stays the Controls drawer, so the command line takes the free key". THE FREE KEY (the lane's check, Nov 1):
+// the app binds Ctrl/⌘ with Z, Y, B, I, U, /, 1-8 (the script editor) and K (links, this mockup); Electron binds no menu or accelerator; Chrome
+// and Edge bind nothing on Ctrl+. on Windows. So the line opens on Ctrl+. (⌘. on a Mac) and the line no longer touches Ctrl+/ at all. Two
+// collisions outside the app, named not solved: the Microsoft Pinyin IME toggles full/half-width punctuation on Ctrl+. while it is active, and
+// Safari (the web build on a Mac) stops a loading page on ⌘. - the line's door in the top bar (the Wrizors' door 1) is the way in there.
+// THE DOOR (the Wrizors, Nov 1): a click on the top bar's ">" box opens the line too - the box sends 'machina2-cmd-open'; the line never opens
+// by itself.
 // THE KEYBOARD LEGEND (§8.4, ruling 1: shortcuts plus a legend drawn from the command registry, not a stored mode): with the switch on, the
 // box lists the commands that already have a chord. In session only; nothing stored.
 type Cmd = { id: string; label: string; words: string; run: () => void; chord?: string };
@@ -74,7 +81,7 @@ export function buildRegistry(query: string): Cmd[] {
     out.push({ id: 'open-' + w.toLowerCase(), label: `Open: ${w}`, words: `open go ${w}`, run: press(b) });
   });
   const tools = document.querySelector<HTMLElement>('.wz-sliver-grip');
-  if (visible(tools)) out.push({ id: 'controls', label: 'Controls drawer', words: 'controls tools drawer format font left', run: press(tools) });
+  if (visible(tools)) out.push({ id: 'controls', label: 'Controls drawer', words: 'controls tools drawer format font left', run: press(tools), chord: `${MOD}/` });
   const tutor = document.querySelector<HTMLElement>('.wz-tutor-grip');
   if (visible(tutor)) out.push({ id: 'consultant', label: 'Consultant', words: 'consultant tutor ask assets right drawer', run: press(tutor) });
   if (canAddLink()) out.push({ id: 'add-link', label: 'Add link', words: 'add link links graft connect attach', run: () => { void addLink(); }, chord: `${MOD}K` });
@@ -135,20 +142,24 @@ export function CommandLine() {
 
   useEffect(() => {
     if (!enabled) { setOpen(false); return; }
+    const toggle = (force?: boolean) => setOpen((o) => {
+      const next = force ?? !o;
+      if (next && !o) { back.current = document.activeElement as HTMLElement | null; setQ(''); setSel(0); setPos(place()); }
+      return next;
+    });
+    // r4: Ctrl+. (⌘. on a Mac) - Ctrl+/ is the Controls drawer's again (components/Sliver.tsx), untouched here
     const onKey = (e: KeyboardEvent) => {
-      const k = e.key.toLowerCase();
       const chord = mac ? e.metaKey && !e.ctrlKey : e.ctrlKey && !e.metaKey;
-      if ((k === '/' || (e.code === 'Slash' && !e.shiftKey)) && chord && !e.altKey && !e.isComposing) {
+      if ((e.key === '.' || (e.code === 'Period' && !e.shiftKey)) && chord && !e.altKey && !e.isComposing) {
         e.preventDefault();
         e.stopPropagation();
-        setOpen((o) => {
-          if (!o) { back.current = document.activeElement as HTMLElement | null; setQ(''); setSel(0); setPos(place()); }
-          return !o;
-        });
+        toggle();
       }
     };
+    const onDoor = () => toggle(true);
     window.addEventListener('keydown', onKey, true);
-    return () => window.removeEventListener('keydown', onKey, true);
+    document.addEventListener('machina2-cmd-open', onDoor);
+    return () => { window.removeEventListener('keydown', onKey, true); document.removeEventListener('machina2-cmd-open', onDoor); };
   }, [enabled]);
   // Ctrl+K (⌘K on a Mac) = Add link, the links key - whether or not the command line's switch is on (it is the link's key, not the line's)
   const machina = theme === 'machina';
@@ -192,7 +203,7 @@ export function CommandLine() {
       <p className="machina2-cmd-foot">↵ run · ↑↓ choose · Esc close</p>
       {legend.length > 0 && (
         <ul className="machina2-cmd-legend" aria-label="Keyboard legend">
-          <li><kbd>{MOD}/</kbd> command line</li>
+          <li><kbd>{MOD}.</kbd> command line</li>
           {legend.map((c) => <li key={c.id}><kbd>{c.chord}</kbd> {c.label}</li>)}
           <li><kbd>{MOD}B</kbd> <kbd>{MOD}I</kbd> <kbd>{MOD}U</kbd> bold · italic · underline (Build)</li>
           <li><kbd>{MOD}Z</kbd> undo · <kbd>{mac ? '⇧⌘Z' : 'Ctrl+Y'}</kbd> redo</li>

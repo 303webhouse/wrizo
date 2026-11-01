@@ -13,6 +13,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTheme } from '../store/theme';
 import { isMachina2 } from '../machina2/flag';   // MACHINA v2 mockup (?machina2=1 only): "Open beside" (spec §8.4, Fable ruling 1)
+import { BesideOpen } from '../machina2/beside';
 
 // The right drawer's second pane - the GRAFTS tab (Flux: LINKS). Its name is the theme's word, read from the lexicon, never written here.
 //
@@ -119,6 +120,8 @@ export function ConnectionsDrawerPanel() {
 
   return (
     <div className="wz-links-pane" data-links-pane="">
+      {/* MACHINA v2 mockup (the Wrizors' door 4, r4): "Open beside ▸" at the top of the tab, at rest - lists Files and Plans, the chosen one docks read-only */}
+      {openBeside && <BesideOpen pageId={page?.id ?? null} />}
       <button ref={addRef} type="button" className="wz-graft-add" data-graft-add="" disabled={!subject} aria-expanded={pickerOpen ? 'true' : 'false'}
         onClick={() => { setPlaceOpen(false); setPickerOpen((o) => !o); }}>
         <span aria-hidden="true">+</span> {t('graftAdd')}

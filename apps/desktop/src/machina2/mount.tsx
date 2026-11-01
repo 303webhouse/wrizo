@@ -6,6 +6,8 @@ import { getSwitches, setSwitch, subscribeSwitches, initSwitches, type SwitchKey
 import { useThemePrefs, setThemePrefs } from '../store/themePrefs';
 import { useCast, setCast } from '../store/themeCast';
 import { initRoom, readRoom, setRoom } from './room';
+import { mountChrome } from './chrome';
+import { CommandDoor } from './doors';
 
 // MACHINA v2 WORKING MOCKUP - loaded only under ?machina2=1 (main.tsx). Everything here is IN-SESSION: attributes on <html> and React state,
 // never storage (Fable's rulings, Oct 31: "a URL flag, all CSS in its own file, switches in-session, no new data").
@@ -21,9 +23,10 @@ const root = document.documentElement;
 root.setAttribute('data-machina2', 'true');
 initSwitches();
 initRoom();
+mountChrome(root);   // r4 (Fable, Nov 1): the top bar flush to the window's top, the "..." and the command-line door inside it (chrome.ts)
 
 const LABEL: Record<SwitchKey, string> = {
-  command: 'Command line', readout: 'Readout bar', run: 'Run strip', asks: 'Consultant asks', legend: 'Keyboard legend', wash: 'Blue wash',
+  command: 'Command line', readout: 'Readout bar', run: 'Run strip', asks: 'Consultant asks', legend: 'Keyboard legend',
 };
 
 function Panel() {
@@ -51,7 +54,8 @@ function Panel() {
           </div>
           <div className="machina2-bar-row" role="group" aria-label="Room">
             <span className="machina2-bar-label">Room</span>
-            {([['clock', 'Follow the clock'], ['light', 'Always day'], ['dark', 'Always night']] as const).map(([c, text]) => <button key={c} type="button" className="machina2-bar-opt" data-room-opt={c} aria-pressed={room.choice === c} onClick={() => setRoom(c)}>{text}</button>)}
+            {/* r4 (Fable, Nov 1): the words are Automatic · Day · Night */}
+            {([['clock', 'Automatic'], ['light', 'Day'], ['dark', 'Night']] as const).map(([c, text]) => <button key={c} type="button" className="machina2-bar-opt" data-room-opt={c} aria-pressed={room.choice === c} onClick={() => setRoom(c)}>{text}</button>)}
           </div>
           <div className="machina2-bar-row" role="group" aria-label="Page">
             <span className="machina2-bar-label">Page</span>
@@ -70,7 +74,7 @@ function Panel() {
               </li>
             ))}
           </ul>
-          <p className="machina2-bar-note">{navigator.platform.toLowerCase().includes('mac') ? '⌘/ opens the command line · ⌘K adds a link.' : 'Ctrl+/ opens the command line · Ctrl+K adds a link.'}</p>
+          <p className="machina2-bar-note">{navigator.platform.toLowerCase().includes('mac') ? '⌘. opens the command line · ⌘K adds a link · ⌘/ the Controls drawer.' : 'Ctrl+. opens the command line · Ctrl+K adds a link · Ctrl+/ the Controls drawer.'}</p>
         </>
       )}
     </div>
@@ -79,7 +83,7 @@ function Panel() {
 
 // (the readout bar is drawn by RunStrip itself, under the page - components/RunStrip.tsx, flag-gated)
 function Mockup() {
-  return (<><Panel /><CommandLine /></>);
+  return (<><Panel /><CommandLine /><CommandDoor /></>);
 }
 
 const host = document.createElement('div');

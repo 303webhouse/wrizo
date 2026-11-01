@@ -11,6 +11,7 @@ import type { JournalEntry, Project } from '../types';
 import { routeForEntry } from '../store/routeForEntry';
 import { firstLine } from '../store/entryText';
 import { stageCascadeHandoff, takeCascadeHandoff } from '../store/planTrail';
+import { Legend as Machina2Legend } from '../machina2/doors';   // MACHINA v2 mockup (?machina2=1 only): the rail's keyboard legend (draws nothing off the flag)
 
 // PW1 S4(ii) — the surface actually LEFT, named. A board carries its title; a
 // page carries its first line; neither is ever allowed to be blank, because the
@@ -295,6 +296,8 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
       {/* Settings, Themes and Trash pin to the window corner. The
           separator travels with them so the space above the group is empty. */}
       <div className="wz-strip-foot">
+        {/* MACHINA v2 mockup (?machina2=1, Machina only; the Wrizors' door 5): the keyboard legend at rest, above the footer group */}
+        <Machina2Legend />
         <div className="wz-strip-sep" role="separator" aria-orientation="horizontal" />
         {renderSection(SECTION_D, state, toggleCategory, t)}
         {/* the thin line just above the Trash at the very foot */}
