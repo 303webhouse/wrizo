@@ -16,6 +16,9 @@ const RECTS = `(() => { const q = (s) => { const e = document.querySelector(s); 
     ls: q('.wz-sliver-panel .wz-drawer-slide'), rs: q('.wz-tutor-panel .wz-drawer-slide'), la: document.querySelector('.wz-sliver-grip-glyph')?.textContent.trim() ?? null, ra: document.querySelector('.wz-tutor-grip-glyph')?.textContent.trim() ?? null,
     lo: document.querySelector('.wz-sliver')?.getAttribute('data-open') === 'true', ro: document.querySelector('.wz-tutor-panel')?.getAttribute('data-open') === 'true',
     lanchor: q('.desk-frame-sliver-anchor'), ranchor: q('.desk-frame-tutor-anchor'), sameEditor: !!ed && ed.__kitMark === 1, w: innerWidth, zoom: !!document.querySelector(".mode-pagecol[data-zoom='true']") }; })()`;
+const STRIPS = `(() => { const one = (p, b) => { const pe = document.querySelector(p), be = document.querySelector(b); if (!pe || !be) return null; const sc = String(getComputedStyle(pe).scrollbarColor); const at = sc.lastIndexOf('rgb'); const m = at >= 0 ? [null, sc.slice(at)] : null;
+  return { strip: pe.offsetWidth - pe.clientWidth, track: m ? m[1] : sc, ground: getComputedStyle(be).backgroundColor }; };
+  return { l: one('.wz-sliver-panel', '.wz-sliver-panel > .wz-drawer-slide'), r: one('.wz-tutor-panel', '.wz-tutor-panel > .wz-drawer-slide') }; })()`;
 const MARK = `(() => { const ed = document.querySelector('${ED}'); if (ed) ed.__kitMark = 1; document.querySelector('${ED}')?.blur(); getSelection()?.removeAllRanges(); return !!ed; })()`;
 const FINISH = `(() => { document.getAnimations().forEach((a) => { try { a.finish(); } catch {} }); return true; })()`;
 // pause every running animation at half its own duration (the drawer's transitions all start in the same frame, so they stand at one moment)
@@ -41,11 +44,13 @@ export async function drawerProof(app, { name, say, fail }) {
   const paused = await app.evalJs(HALF); const midL = await app.evalJs(RECTS);
   await app.evalJs(FINISH); await sleep(250);
   const oL = await app.evalJs(RECTS);
+  const sL = await app.evalJs(STRIPS);
   // the right drawer opens beside it
   await app.evalJs(click('.wz-tutor-grip')); await app.evalJs(raf2);
   await app.evalJs(HALF); const midR = await app.evalJs(RECTS);
   await app.evalJs(FINISH); await sleep(250);
   const o = await app.evalJs(RECTS);
+  const sO = await app.evalJs(STRIPS);
   const both = o.lo && o.ro;
   // closing: the right one, stopped at half, then finished (both-or-one: the left stays as it was)
   await app.evalJs(click('.wz-tutor-grip')); await app.evalJs(raf2);
@@ -92,6 +97,9 @@ export async function drawerProof(app, { name, say, fail }) {
   await app.evalJs(FINISH); await app.evalJs(click('.wz-sliver-grip')); await app.evalJs(FINISH);
   await app.emulateMedia([]); await sleep(300);
 
+  const rgbOf = (x) => (String(x).match(/d+(.d+)?/g) || []).slice(0, 3).map((v) => Math.round(Number(v))).join(',');
+  // a strip between the box and the page is only allowed as the drawer's own scrollbar, its track in the drawer's own ground
+  const stripOk = (gap, st) => near(gap, 0) || (!!st && near(gap, st.strip) && rgbOf(st.track) === rgbOf(st.ground));
   const travelL = c.lt.r - oL.lt.r;                 // how far the left tab went out
   // (instrument fix after the first green look, runs 41336024311 / 41336050132: when a drawer's content scrolls, its sliding box is inset by the
   // panel's scrollbar strip on the OUTER side, so the drawer's outer edge is the PANEL's; the strip is measured at rest and the moving box's
@@ -104,9 +112,16 @@ export async function drawerProof(app, { name, say, fail }) {
     closedLeft: near(c.lt.r, c.lanchor?.r) && c.la === '‹',
     closedRight: near(c.rt.l, c.ranchor?.l) && c.ra === '›',
     // open: the drawer meets the page where the closed tab's inner edge stood (no gap), the tab on its OUTER edge, the arrow back to the page
-    leftFlush: oL.lo && near(oL.lp.r, c.lt.r) && near(oL.ls.r, c.lt.r),
+    // PARKED 2026-11-01 (SUPERSEDED by Fable's ruling, Nov 1: "the drawer's scrollbar goes on its inner side" - a scrolling drawer's box now
+    // stands a scrollbar's strip off the page by design; green leg g3, runs 41344014235 / 41344039911). Original, verbatim:
+    // leftFlush: oL.lo && near(oL.lp.r, c.lt.r) && near(oL.ls.r, c.lt.r),
+    // SUCCESSOR leftFlushB: the panel meets the page; between the box and the page only the drawer's own scrollbar, in the drawer's ground.
+    leftFlushB: oL.lo && near(oL.lp.r, c.lt.r) && stripOk(oL.lp.r - oL.ls.r, sL.l),
     leftRides: oL.lo && near(oL.lt.r, oL.lp.l) && near(oL.lt.t, c.lt.t) && oL.la === '›',
-    rightFlush: o.ro && near(o.rp.l, c.rt.l) && near(o.rs.l, c.rt.l),
+    // PARKED 2026-11-01 (the same ruling and runs). Original, verbatim:
+    // rightFlush: o.ro && near(o.rp.l, c.rt.l) && near(o.rs.l, c.rt.l),
+    // SUCCESSOR rightFlushB: the same on the right.
+    rightFlushB: o.ro && near(o.rp.l, c.rt.l) && stripOk(o.rs.l - o.rp.l, sO.r),
     rightRides: o.ro && near(o.rt.l, o.rp.r) && near(o.rt.t, c.rt.t) && o.ra === '‹',
     // the tab travels WITH the drawer: at half the slide it is part way and still on the sliding edge
     leftMoves: midL.lo && progL != null && progL > 0.05 && progL < 0.95 && near(midL.lt.r, midL.ls.l - gl, 1.5),
@@ -125,7 +140,7 @@ export async function drawerProof(app, { name, say, fail }) {
     pageStill: [oL, midL, o, midR, midRc, one, shut, rm].every((x) => samePage(x.page, c.page)) && [oL, o, one, shut, rm].every((x) => x.sameEditor),
   };
   const brief = { ok, w: c.w, both, page: c.page, closed: { lt: c.lt, rt: c.rt }, open: { lt: o.lt, lp: o.lp, rp: o.rp, rt: o.rt }, gapToPaintedPage: { left: Math.round((c.page.l - c.lt.r) * 10) / 10, right: Math.round((c.rt.l - c.page.r) * 10) / 10 },
-    drawerW: { left: o.lp ? Math.round((o.lp.w + 16) * 10) / 10 : null, right: o.rp ? Math.round((o.rp.w + 16) * 10) / 10 : null }, progL: progL != null ? Math.round(progL * 100) / 100 : null, strips: { gl: Math.round(gl * 10) / 10, gr: Math.round(gr * 10) / 10 }, zoom: c.zoom, tokens: { tokL, tokLs, tokR, tokRs }, paused: paused.length, rmRun, scrolling: { strips, lt: tall.lt, ls: tall.ls, lp: tall.lp, rt: tall.rt, rs: tall.rs, rp: tall.rp, midL: [tMidL.lt?.r, tMidL.ls?.l], midR: [tMidR.rt?.l, tMidR.rs?.r] } };
+    drawerW: { left: o.lp ? Math.round((o.lp.w + 16) * 10) / 10 : null, right: o.rp ? Math.round((o.rp.w + 16) * 10) / 10 : null }, progL: progL != null ? Math.round(progL * 100) / 100 : null, strips: { gl: Math.round(gl * 10) / 10, gr: Math.round(gr * 10) / 10 }, zoom: c.zoom, tokens: { tokL, tokLs, tokR, tokRs }, paused: paused.length, rmRun, strips: { sL, sO }, scrolling: { strips, lt: tall.lt, ls: tall.ls, lp: tall.lp, rt: tall.rt, rs: tall.rs, rp: tall.rp, midL: [tMidL.lt?.r, tMidL.ls?.l], midR: [tMidR.rt?.l, tMidR.rs?.r] } };
   if (Object.values(ok).some((x) => !x)) fail(name, { ...brief, midL: { lt: midL.lt, ls: midL.ls }, midR: { rt: midR.rt, rs: midR.rs }, midRc: { rt: midRc.rt, rs: midRc.rs }, oL: { lt: oL.lt, lp: oL.lp, ls: oL.ls }, one: { lt: one.lt, rt: one.rt, lo: one.lo, ro: one.ro } });
   say(name, brief);
   return brief;
