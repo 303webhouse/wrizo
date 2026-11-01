@@ -53,13 +53,15 @@ const COLLECT = `(() => {
     let op = 1, hidden = false;
     for (let e = el; e; e = e.parentElement) { const cs = getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden') { hidden = true; break; } op *= Number(cs.opacity); }
     if (hidden || op < 0.05) continue;
-    const c = parse(getComputedStyle(el).color); if (!c) continue;
+    const c = parse(getComputedStyle(el).color); if (!c || c.a * op < 0.05) continue;   // (r10 fix after the red leg: ink with no alpha draws nothing)
     const rg = document.createRange(); rg.selectNodeContents(n);
     const rects = [...rg.getClientRects()].filter((r) => r.width >= 2 && r.height >= 4 && r.right > 0 && r.bottom > 0 && r.left < W && r.top < H).slice(0, 6)
       .map((r) => [Math.max(0, r.left), Math.max(0, r.top), Math.min(W, r.right), Math.min(H, r.bottom)]);
     if (!rects.length) continue;
     const where = el.closest('.chrome-top.sprint-nav') ? 'bar' : el.closest('.desk-frame-strip, .desk-rail') ? 'rail' : el.closest('.arbor2-bar') ? 'mockup' : el.closest('.wz-sliver, .wz-tutor') ? 'drawer' : el.closest('${ED}') ? 'prose' : el.closest('.mode-page') ? 'page' : 'room';
-    runs.push({ text: n.textContent.trim().slice(0, 24), where, fg: [c.r, c.g, c.b, c.a * op], rects, key: where + '|' + n.textContent.trim().slice(0, 24) + '|' + Math.round(rects[0][0]) + ',' + Math.round(rects[0][1]) });
+    // (r10 fix after the red leg: the drawer openers' arrows are GRAPHICS - r5's table measures them at the 3:1 floor - not labels)
+    const floor = /^[‹›]$/.test(n.textContent.trim()) && el.closest('.wz-sliver-grip, .wz-tutor-grip') ? 3 : 4.5;
+    runs.push({ text: n.textContent.trim().slice(0, 24), where, floor, fg: [c.r, c.g, c.b, c.a * op], rects, key: where + '|' + n.textContent.trim().slice(0, 24) + '|' + Math.round(rects[0][0]) + ',' + Math.round(rects[0][1]) });
   }
   window.__r10runs = runs; return runs.length; })()`;
 const HIDE = `(() => { const s = document.createElement('style'); s.id = 'arbor2-r10-hide'; s.textContent = '*, *::before, *::after{ color:transparent !important; -webkit-text-fill-color:transparent !important; text-shadow:none !important; caret-color:transparent !important; text-decoration-color:transparent !important; }'; document.head.appendChild(s); return new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => r(true)))); })()`;
@@ -82,7 +84,7 @@ const MEASURE = (b64) => `(async () => {
     }
     ratios.sort((a, b) => a - b); gl.sort((a, b) => a - b);
     const q = (arr, p) => arr.length ? arr[Math.min(arr.length - 1, Math.floor(arr.length * p))] : null;
-    return { key: run.key, text: run.text, where: run.where, p2: Math.round(q(ratios, 0.02) * 100) / 100, min: Math.round((ratios[0] ?? 0) * 100) / 100, gmed: Math.round(q(gl, 0.5) * 1000) / 1000, n: ratios.length };
+    return { key: run.key, text: run.text, where: run.where, floor: run.floor, p2: Math.round(q(ratios, 0.02) * 100) / 100, min: Math.round((ratios[0] ?? 0) * 100) / 100, gmed: Math.round(q(gl, 0.5) * 1000) / 1000, n: ratios.length };
   }); })()`;
 const sweep = async (app) => {
   await app.evalJs(COLLECT);
@@ -116,7 +118,7 @@ const judge = (name, samples) => {
   // a run's identity across the fade: the same text in the same place (keys are where|text|x,y)
   const bareKeys = [...g0.keys()].filter((k) => g1.has(k) && Math.abs(g0.get(k) - g1.get(k)) > 0.2);
   const bare = bareKeys.map((k) => { const all = samples.map((s) => s.runs.find((r) => r.key === k)).filter(Boolean); const worst = all.reduce((a, r) => (r.p2 < a.p2 ? r : a), all[0]); return { key: k, worstP2: worst.p2, worstMin: Math.min(...all.map((r) => r.min)) }; });
-  const bad = samples.flatMap((s) => s.runs.filter((r) => r.p2 < 4.5).map((r) => ({ at: s.at, t: s.t, text: r.text, where: r.where, p2: r.p2, min: r.min })));
+  const bad = samples.flatMap((s) => s.runs.filter((r) => r.p2 < r.floor).map((r) => ({ at: s.at, t: s.t, text: r.text, where: r.where, floor: r.floor, p2: r.p2, min: r.min })));
   const ok = {
     covered: ts[0] === 0 && ts[ts.length - 1] === 1 || (ts[0] === 1 && ts[ts.length - 1] === 0),
     every5pct: maxGap <= 0.05 + 1e-9,
@@ -198,7 +200,7 @@ export default {
   // every step; the label is cream by night and deep olive by day, switching once, at the middle.
   'r10-plate': async (app) => {
     await page(app, 'arbor-r10-plate'); await lit(app);
-    const READ = `(() => { const plate = document.querySelector('.arbor2-count-plate'); const cnt = [...document.querySelectorAll('*')].find((e) => [...e.childNodes].some((n) => n.nodeType === 3 && /^\\d+\\s*words?$/i.test(n.textContent.trim())));
+    const READ = `(() => { const plate = document.querySelector('.arbor2-count-plate, .desk-frame-instrument');   /* (driver: the plate is the count row's own box, the instrument) */ const cnt = [...document.querySelectorAll('*')].find((e) => [...e.childNodes].some((n) => n.nodeType === 3 && /^\\d+\\s*words?$/i.test(n.textContent.trim())));
       const p = plate?.getBoundingClientRect(), c = cnt?.getBoundingClientRect(); const cs = plate ? getComputedStyle(plate) : null;
       return { t: Number(document.documentElement.getAttribute('data-arbor2-dayness')), plate: !!p && p.width > 0 && cs.display !== 'none' && Number(cs.opacity) > 0.5, holds: !!p && !!c && c.left >= p.left - 0.5 && c.right <= p.right + 0.5 && c.top >= p.top - 0.5 && c.bottom <= p.bottom + 0.5,
         ink: cnt ? getComputedStyle(cnt).color : null }; })()`;

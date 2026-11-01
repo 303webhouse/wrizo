@@ -161,6 +161,13 @@
 .arbor2-mood-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
 .arbor2-mood-label{ color:var(--text-mid); }
 .arbor2-mood-why{ font-size:11px; color:var(--text-low); text-align:right; }
+/* r10: the Room row on ONE line (By the clock · Day · Night and its "?"); the "?" opens its one line beneath, in place */
+.arbor2-room-row{ flex-wrap:wrap; }
+.arbor2-room-opts{ display:inline-flex; align-items:center; gap:4px; white-space:nowrap; }
+.arbor2-room-opts .arbor2-bar-opt{ padding:3px 6px; }
+.arbor2-room-help{ all:unset; cursor:pointer; box-sizing:border-box; width:16px; height:16px; margin-left:4px; text-align:center; line-height:14px; font-size:11px; border:1px solid var(--help); color:var(--help); }
+.arbor2-room-help:focus-visible{ outline:1px solid var(--brass); outline-offset:2px; }
+.arbor2-room-help-line{ flex-basis:100%; font-size:11px; color:var(--text-low); }
 .arbor2-mood-switch{ min-width:28px; text-align:center; }
 .arbor2-mood-switch[aria-checked='true']{ border-color:var(--brass); }
 
@@ -261,7 +268,8 @@
 .arbor2-sun{ display:none; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .arbor2-sun{
   display:block; position:fixed; inset:-80px; z-index:-1; pointer-events:none; overflow:hidden;
-  opacity:calc(.18 + .08 * var(--arbor2-afternoon, 0));   /* r5 (§7b): moss-tinted at 18% -> 26% with the afternoon */
+  opacity:calc((.18 + .08 * var(--arbor2-afternoon, 0)) * var(--arbor2-sun-in, 1));   /* r5 (§7b): moss-tinted at 18% -> 26% with the afternoon;
+     r10: times the sun's share of the morning handoff (mount.tsx writes --arbor2-sun-in only while the fade runs; at rest it is 1) */
 }
 /* the drift moves the inner sheet only: the layer itself holds still, so paper.ts's mask (a soft hole over the page) never drifts onto the page */
 :root[data-arbor2][data-theme='plateau'] .arbor2-sun-drift{ position:absolute; inset:0; animation:arbor2-sun-drift 48s ease-in-out infinite alternate; }
@@ -478,3 +486,14 @@
    #241A10 (14.64:1). Light page only (any tone that is not dark), both rooms; the cards follow (their ink rides --ink-on-paper).
    ========================================================================================================================================== */
 :root[data-arbor2][data-theme='plateau']:not([data-page='dark']){ --ink-on-paper:#241A10; }
+
+/* ==========================================================================================================================================
+   r10 - THE COUNT'S PLATE (the Wrizors, Nov 1, wrizors-to-ARBOR-nov1b.md: "give the row (count · WORDS) a quiet plate in the room's surface
+   colour ... and set the label colour per room (cream by night, deep olive by day) switching at the midpoint"). The count row is the one label
+   on the bare room; through the fade its ground runs from espresso through amber to plaster, and no palette letter holds 4.5:1 across the
+   whole of that run (cream needs a ground darker than luminance .134, olive one lighter than .378). On its plate it always reads on the room's
+   SURFACE (--ink-900), which changes with the lettering at the middle (mount.tsx's MID), so the pair is always cream on espresso surface or
+   olive on plaster surface. The plate is the instrument's own box (absolute in the page's lane): its background and inner padding move nothing.
+   ========================================================================================================================================== */
+:root[data-arbor2][data-theme='plateau'] .desk-frame-instrument{ background:var(--ink-900); padding:4px 10px; box-sizing:border-box; }
+:root[data-arbor2][data-theme='plateau'] .desk-frame-instrument :is(.mode-pmeta, .mode-pmetric){ color:var(--arbor-letter); }
