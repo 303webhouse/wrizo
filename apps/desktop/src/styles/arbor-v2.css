@@ -495,5 +495,30 @@
    SURFACE (--ink-900), which changes with the lettering at the middle (mount.tsx's MID), so the pair is always cream on espresso surface or
    olive on plaster surface. The plate is the instrument's own box (absolute in the page's lane): its background and inner padding move nothing.
    ========================================================================================================================================== */
-:root[data-arbor2][data-theme='plateau'] .desk-frame-instrument{ background:var(--ink-900); padding:4px 10px; box-sizing:border-box; }
-:root[data-arbor2][data-theme='plateau'] .desk-frame-instrument :is(.mode-pmeta, .mode-pmetric){ color:var(--arbor-letter); }
+/* r11 - THE PLATE IS THE PAGE'S (RULED by Fable, Nov 1, on the Wrizors' answer, spec draft 13 §2e): "the count row belongs to the page, not the room."
+   The plate is the page's paper and its letters the page's low ink, both set by the Page setting alone (light: #6B5F4E on #F3EDE1; dark: #B9AA8C on
+   #1A1510), so through a 20-minute crossfade nothing on it moves: no fade and no cut. r10's room-surface plate, which cut to the other surface at
+   the middle, is retired. The sheet simply carries on under the count row; the box is still the instrument's own (absolute), so nothing moves. */
+:root[data-arbor2][data-theme='plateau'] .desk-frame-instrument{ background:var(--paper); padding:4px 10px; box-sizing:border-box; }
+:root[data-arbor2][data-theme='plateau'] .desk-frame-instrument :is(.mode-pmeta, .mode-pmetric){ color:var(--ink-on-paper-low); }
+
+/* ==========================================================================================================================================
+   THE DRAWER ALIGNMENT (Nick, via Fable, Nov 1; all themes, built here under the flag).
+   CLOSED: the opener tab at the page's edge (today's rect), its arrow pointing out.
+   OPEN: the drawer stands FLUSH against the page (no gap) and the tab rides the drawer's OUTER edge, its arrow pointing back toward the page
+   ("close"). The arrows were already these (store/drawerShell.ts drawerArrow), so only places move.
+   The tab travels with the drawer's own slide, on the drawer's own tokens (--drawer-dur, --drawer-ease); under reduced motion the slide has no
+   travel and the tab cuts (the app's global reduced-motion floor flattens its transition).
+   THE PAGE NEVER MOVES: only each panel's own offset and its tab move, and both are absolute (or relative) boxes outside the page's layout.
+   Left: the panel (calc(100% - 16px) of its anchor) goes from right:16px to right:0, so it meets the page where the tab stood; the tab's right
+   edge rides the sliding layer's left edge (both travel the panel's width, on the same tokens).
+   Right: Tutor.tsx stands the panel's left edge on the tab's right edge; it is drawn 16px back over the tab's old place (position:relative
+   lays nothing out again), and the tab travels the panel's width, which drawerEdge.ts reads into a variable.
+   Typewriter's zoomed page keeps today's drawers (it has its own panel rule) and is left out.
+   ========================================================================================================================================== */
+:root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver-panel{ right:0; }
+:root[data-arbor2][data-theme='plateau'] .wz-sliver-grip{ transition:color .15s, background-color .15s, border-color .15s, right var(--drawer-dur) var(--drawer-ease); }
+:root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver[data-open='true'] .wz-sliver-grip{ right:calc(100% - 16px); }
+:root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-panel{ position:relative; left:-16px; }
+:root[data-arbor2][data-theme='plateau'] .wz-tutor-grip{ transition:color .15s, background-color .15s, border-color .15s, left var(--drawer-dur) var(--drawer-ease); }
+:root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-grip:is([data-open='true'], [data-docked='true']){ left:var(--arbor2-drawer-r, 0px); }
