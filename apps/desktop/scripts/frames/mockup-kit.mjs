@@ -97,7 +97,10 @@ export async function drawerProof(app, { name, say, fail }) {
   await app.evalJs(FINISH); await app.evalJs(click('.wz-sliver-grip')); await app.evalJs(FINISH);
   await app.emulateMedia([]); await sleep(300);
 
-  const rgbOf = (x) => (String(x).match(/d+(.d+)?/g) || []).slice(0, 3).map((v) => Math.round(Number(v))).join(',');
+  const rgbOf = (x) => (String(x).match(/\d+(\.\d+)?/g) || []).slice(0, 3).map((v) => Math.round(Number(v))).join(',');
+  // (instrument fix after red leg 41347631930: rgbOf was written without its backslashes, read every colour as '' and so passed blind; this
+  // liveness check refuses to run on a reader that cannot tell two colours apart)
+  if (rgbOf('rgb(1, 2, 3)') !== '1,2,3' || rgbOf('rgba(0, 0, 0, 0)') === rgbOf('rgb(244, 245, 246)')) fail(name, { instrument: 'rgbOf is blind' });
   // a strip between the box and the page is only allowed as the drawer's own scrollbar, its track in the drawer's own ground
   const stripOk = (gap, st) => near(gap, 0) || (!!st && near(gap, st.strip) && rgbOf(st.track) === rgbOf(st.ground));
   const travelL = c.lt.r - oL.lt.r;                 // how far the left tab went out
