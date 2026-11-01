@@ -10,25 +10,30 @@ import { clearRhizome, undoClearRhizome, canUndoClear, hasRhizome, subscribeLife
 // <html> and React state, never storage (Fable's rulings 6 and "the flag", Oct 29).
 //
 //   data-arbor2              the flag is on (every rule in styles/arbor-v2.css is scoped under it and under Arbor's theme)
-//   data-arbor2-room         night | day. Follows the theme's existing Page tone (data-page: dark = night, light = day)
-//                            until the mockup's own Room switch overrides it for this session.
+//   data-arbor2-room         night | day: the room in force, the one styles/arbor-v2.css reads.
+//   data-room                r8 (Nick's pick, via Fable, Oct 31: a separate Room setting): the Mood menu's "Room: Day / Night" writes it,
+//                            light (Day) | dark (Night), in session only. The room reads data-room when it is set, else it follows the
+//                            Page tone (data-page: dark = night, light = day). Saving it to the account comes with the ship brief.
 //   Night's progress is the hidden rhizome (Nick's idea, Fable approved Oct 29: one Rhizome style, no new setting, the lamp is
 //   ambience only), so there is no progress switch here: styles/arbor-v2.css draws it from the room alone.
 
-type Room = 'night' | 'day';
+import { roomOf, type Room } from './room';
 
 const root = document.documentElement;
-let roomOverride: Room | null = null;
 
-const toneRoom = (): Room => (root.getAttribute('data-page') === 'dark' ? 'night' : 'day');
-const applyRoom = () => root.setAttribute('data-arbor2-room', roomOverride ?? toneRoom());
+// the room: data-room when set (light = day, dark = night), else the Page tone (src/arbor2/room.ts)
+const applyRoom = () => {
+  const want = roomOf(root.getAttribute('data-room'), root.getAttribute('data-page'));
+  if (root.getAttribute('data-arbor2-room') !== want) root.setAttribute('data-arbor2-room', want);
+};
+const setRoom = (r: Room) => { root.setAttribute('data-room', r === 'day' ? 'light' : 'dark'); applyRoom(); };
 
 root.setAttribute('data-arbor2', 'true');
 applyRoom();
 mountSun(root);   // item 6: the day room's pergola light (drawn only in the day room by styles/arbor-v2.css; in memory, stores nothing)
 mountPaper();     // the zoomed page stays a whole opaque sheet, and the sun layer has a hole over the page (paper.ts; Fable, Oct 29)
 mountChrome(root);    // r5 §2c.1: the top bar drawn flush to the window's top, the "..." inside it (chrome.ts; the page never moves)
-new MutationObserver(applyRoom).observe(root, { attributes: true, attributeFilter: ['data-page'] });
+new MutationObserver(applyRoom).observe(root, { attributes: true, attributeFilter: ['data-page', 'data-room'] });
 
 function Seg<T extends string>({ label, value, opts, onPick }: { label: string; value: T; opts: [T, string][]; onPick: (v: T) => void }) {
   return (
@@ -73,9 +78,32 @@ function RhizomeRow() {
   );
 }
 
+// r8: THE ROOM CONTROL (Nick's pick, via Fable, Oct 31) - the bar's old Room switch, now "Room: Day / Night" at the head of the Mood menu.
+// It writes data-room; until she picks, the room follows the Page tone and the row says so.
+function RoomRow() {
+  const [room, setR] = useState<Room>(() => (root.getAttribute('data-arbor2-room') as Room) ?? 'day');
+  const [set, setSet] = useState(() => root.hasAttribute('data-room'));
+  useEffect(() => {
+    const mo = new MutationObserver(() => { setR((root.getAttribute('data-arbor2-room') as Room) ?? 'day'); setSet(root.hasAttribute('data-room')); });
+    mo.observe(root, { attributes: true, attributeFilter: ['data-arbor2-room', 'data-room'] });
+    return () => mo.disconnect();
+  }, []);
+  return (
+    <li className="arbor2-mood-row arbor2-room-row" role="group" aria-label="Room">
+      <span className="arbor2-mood-label">Room{set ? '' : <span className="arbor2-mood-why"> · follows Page</span>}</span>
+      <span>
+        {([['day', 'Day'], ['night', 'Night']] as [Room, string][]).map(([v, text]) => (
+          <button key={v} type="button" className="arbor2-bar-opt" data-room-opt={v} aria-pressed={room === v} onClick={() => setRoom(v)}>{text}</button>
+        ))}
+      </span>
+    </li>
+  );
+}
+
 function MoodMenu({ off, flip }: { off: string[]; flip: (k: string) => void }) {
   return (
     <ul className="arbor2-mood" aria-label="Mood">
+      <RoomRow />
       {MOOD.map(({ key, label, why }) => (
         <li key={key} className="arbor2-mood-row">
           <span className="arbor2-mood-label">{label}</span>
@@ -93,7 +121,6 @@ function MoodMenu({ off, flip }: { off: string[]; flip: (k: string) => void }) {
 }
 
 function MockupBar() {
-  const [room, setRoom] = useState<Room>(() => (root.getAttribute('data-arbor2-room') as Room) ?? 'day');
   const [open, setOpen] = useState(true);
   const [mood, setMood] = useState(false);
   // the switched-off set lives here (the bar never unmounts), so folding the bar or the list keeps every switch where she left it
@@ -109,18 +136,11 @@ function MockupBar() {
     if (logo === 'brass') root.setAttribute('data-arbor2-logo', 'brass');
     else root.removeAttribute('data-arbor2-logo');
   }, [logo]);
-  useEffect(() => {
-    const mo = new MutationObserver(() => setRoom((root.getAttribute('data-arbor2-room') as Room) ?? 'day'));
-    mo.observe(root, { attributes: true, attributeFilter: ['data-arbor2-room'] });
-    return () => mo.disconnect();
-  }, []);
-  const pickRoom = (r: Room) => { roomOverride = r; applyRoom(); };
   return (
     <div className="arbor2-bar" data-open={open ? 'true' : 'false'}>
       <button type="button" className="arbor2-bar-head" aria-expanded={open} onClick={() => setOpen(o => !o)}>Arbor mockup</button>
       {open && (
         <>
-          <Seg label="Room" value={room} opts={[['night', 'Night'], ['day', 'Day']]} onPick={pickRoom} />
           <p className="arbor2-bar-note">The rhizome (Progress: Rhizome, with a word goal) keeps its finished laps faint by day; by night it shows only at the goal.</p>
           <Seg<'brass' | 'all'> label="Logo" value={logo} opts={[['all', 'Sage'], ['brass', 'Brass o']]} onPick={setLogo} />
           <button type="button" className="arbor2-bar-head" aria-expanded={mood} onClick={() => setMood(m => !m)}>Mood {mood ? '▾' : '▸'}</button>
