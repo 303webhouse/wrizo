@@ -194,6 +194,19 @@ export default {
       table: [...new Map(all.map((p) => [`${p.where}|${p.fg}|${p.bg}`, `${p.where}: ${p.fg} on ${p.bg} = ${p.ratio}`])).values()] });
   },
 
+  // ── PICTURES FOR THE WRIZORS: each screen leaves the page in one room (the Mood menu folded again), so with the job's two tones the frames show
+  // all four mixes. They assert only that the control was there and the room took.
+  ...Object.fromEntries([['day', 'freewrite'], ['day', 'draft'], ['night', 'freewrite'], ['night', 'draft']].map(([room, mode]) => [`r8-pic-${room}-${mode}`, async (app) => {
+    await page(app, 'arbor-r8-pic', WORDS);
+    if (mode === 'draft') { await clickText(app, '.desk-mode-tab', 'Draft'); await sleep(1400); }
+    const picked = await pickRoom(app, room);
+    await app.evalJs(`(() => { const m = [...document.querySelectorAll('.arbor2-bar-head')].find((h) => /^Mood/.test(h.textContent.trim()) && h.getAttribute('aria-expanded') === 'true'); if (m) m.click(); })()`);
+    await app.evalJs(`document.querySelector('${ED}')?.blur()`); await sleep(900);
+    const s = await app.evalJs(ROOM);
+    if (!picked || s.room !== room) fail('R8-PIC', { room, mode, picked, s });
+    say(`r8-pic-${room}-${mode}`, s);
+  }])),
+
   // ── PAGE ONLY, IN BOTH ROOMS: the board keeps its cream stock and its cards their cream card and dark ink (>= 7:1), by Day and by Night.
   'r8-board': async (app) => {
     await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: 'arbor-r8-board', text: 'R8 board', pageType: 'board', boxes: [{ id: 'arbor-r8-box', kind: 'text', x: 0.08, y: 0.1, w: 0.3, h: 0.14, z: 1, text: 'A card on the board' }], createdAt: '2026-04-01T00:00:00.000Z', source: null, origin: null })})`);
