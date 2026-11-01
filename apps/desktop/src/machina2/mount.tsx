@@ -25,7 +25,7 @@ root.setAttribute('data-machina2', 'true');
 initSwitches();
 initRoom();
 mountChrome(root);   // r4 (Fable, Nov 1): the top bar flush to the window's top, the "..." and the command-line door inside it (chrome.ts)
-mountDrawerEdge(root, '--machina2-drawer-r');   // r5 (Nick, via Fable, Nov 1): open, a drawer is flush to the page and its tab rides its outer edge
+mountDrawerEdge(root, '--machina2-drawer');   // r5 (Nick, via Fable, Nov 1): open, a drawer is flush to the page and its tab rides its outer edge
 
 const LABEL: Record<SwitchKey, string> = {
   command: 'Command line', readout: 'Readout bar', run: 'Run strip', asks: 'Consultant asks', legend: 'Keyboard legend',
