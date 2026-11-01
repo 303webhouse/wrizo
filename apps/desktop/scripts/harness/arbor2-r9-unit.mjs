@@ -39,7 +39,10 @@ ok('C5 the crossover lies inside the fade, where the two letterings read alike',
 ok('C5 the lettering and the surfaces it sits on switch rather than blend', ['--arbor-letter', '--text-low', '--ink-900', '--ink-800'].every((n) => LETTERING.includes(n)) && !LETTERING.includes('--ink-950'), '');
 const src = ['../../src/arbor2/room.ts', '../../src/arbor2/mount.tsx'].map((p) => fs.readFileSync(new URL(p, import.meta.url), 'utf8')).join('\n');
 ok('C6 nothing in the room or the mount touches storage', !/localStorage|sessionStorage|indexedDB/.test(src), '');
-ok('C6 the Room row offers exactly Follow the clock / Always day / Always night, in the Mood menu', /\[\['clock', 'Follow the clock'\], \['day', 'Always day'\], \['night', 'Always night'\]\]/.test(src) && /<RoomRow \/>/.test(src) && !/follows Page/.test(src), '');
+// PARKED 2026-11-01 (SUPERSEDED by the Wrizors' note, Nov 1, spec §2e: "Room ▸ By the clock · Day · Night" - the shorter words). Original, verbatim:
+// ok('C6 the Room row offers exactly Follow the clock / Always day / Always night, in the Mood menu', /\[\['clock', 'Follow the clock'\], \['day', 'Always day'\], \['night', 'Always night'\]\]/.test(src) && /<RoomRow \/>/.test(src) && !/follows Page/.test(src), '');
+// SUCCESSOR C6b: the same, with r10's words.
+ok('C6b the Room row offers exactly By the clock / Day / Night, in the Mood menu', /\[\['clock', 'By the clock'\], \['day', 'Day'\], \['night', 'Night'\]\]/.test(src) && /<RoomRow \/>/.test(src) && !/follows Page/.test(src), '');
 ok('C6 the room no longer reads the page tone', !/getAttribute\('data-page'\)/.test(src.split('function RoomRow')[0]), '');
 ok('C2 the clock moves the room on its own, and reduced motion is read live', /setInterval\(applyRoom/.test(src) && /prefers-reduced-motion: reduce/.test(src) && /addEventListener\?\.\('change', applyRoom\)/.test(src), '');
 
