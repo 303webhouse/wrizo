@@ -58,7 +58,11 @@ const COLLECT = (sel) => `(() => {
     for (let n = tw.nextNode(); n; n = tw.nextNode()) { if (!n.textContent.trim()) continue; const el = n.parentElement; let op = 1, hidden = false;
       for (let e = el; e; e = e.parentElement) { const cs = getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden') { hidden = true; break; } op *= Number(cs.opacity); }
       const c = parse(getComputedStyle(el).color); if (hidden || !c || c.a * op < 0.05) continue; const rg = document.createRange(); rg.selectNodeContents(n);
-      const rects = [...rg.getClientRects()].filter((x) => x.width >= 2 && x.height >= 4).map((x) => [x.left, x.top, x.right, x.bottom]); if (rects.length) runs.push({ text: n.textContent.trim().slice(0, 24), fg: [c.r, c.g, c.b, c.a * op], rects }); } }
+      const rects = [...rg.getClientRects()].filter((x) => x.width >= 2 && x.height >= 4).map((x) => [x.left, x.top, x.right, x.bottom]);
+      // (instrument fix after green look 41358900562: at 1366 the Sign in door lay below the window and was still "measured" - pixels read off
+      // the picture's end came back empty and slipped through. A word outside the window is now a failed run, never a sampled one.)
+      const out = rects.some(([x0, y0, x1, y1]) => x0 < 0 || y0 < 0 || x1 > innerWidth || y1 > innerHeight);
+      if (rects.length) runs.push({ text: n.textContent.trim().slice(0, 24), fg: [c.r, c.g, c.b, c.a * op], rects, out }); } }
   window.__r14runs = runs; return runs.length; })()`;
 const HIDE = "(() => { const s = document.createElement('style'); s.id = 'r14-hide'; s.textContent = '*, *::before, *::after{ color:transparent !important; -webkit-text-fill-color:transparent !important; text-shadow:none !important; }'; document.head.appendChild(s); return new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => r(true)))); })()";
 const SHOW = "(() => { document.getElementById('r14-hide')?.remove(); return true; })()";
@@ -72,6 +76,7 @@ const MEASURE = (b64) => `(async () => {
     for (const [x0, y0, x1, y1] of run.rects) { const sx = Math.max(1, (x1 - x0) / 24), sy = Math.max(1, (y1 - y0) / 8);
       for (let y = y0; y < y1; y += sy) for (let x = x0; x < x1; x += sx) { const i = (Math.floor(y * k) * img.width + Math.floor(x * k)) * 4; const r = data[i], g = data[i + 1], b = data[i + 2];
         const lb = L(r, g, b), lf = L(fr * fa + r * (1 - fa), fg * fa + g * (1 - fa), fb * fa + b * (1 - fa)); ratios.push((Math.max(lb, lf) + 0.05) / (Math.min(lb, lf) + 0.05)); } }
+    if (run.out || ratios.some((v) => !Number.isFinite(v))) return { text: run.text, p2: null, out: true };
     ratios.sort((a, b) => a - b); return { text: run.text, p2: ratios.length ? Math.round(ratios[Math.floor(ratios.length * 0.02)] * 100) / 100 : null }; }); })()`;
 const pixels = async (app, sel) => { await app.evalJs(COLLECT(sel)); await app.evalJs(HIDE); const shot = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data; await app.evalJs(SHOW); return app.evalJs(MEASURE(shot)); };
 
@@ -89,7 +94,7 @@ export default {
         rows.push({ room, s, px });
       }
       const okRow = ({ s, px }) => s.arrival && s.front && !s.hero && !s.heroLogo && !s.bootbar && s.drawing && !!s.markCentre && Math.abs(s.markCentre[0] - s.vw / 2) <= 2 && Math.abs(s.markCentre[1] - s.vh / 2) <= 2
-        && s.tagline === 'For humans writing' && JSON.stringify(s.doors) === '["Write","Sign in"]' && px.length >= 3 && px.every((x) => x.p2 >= 4.5);
+        && s.tagline === 'For humans writing' && JSON.stringify(s.doors) === '["Write","Sign in"]' && px.length >= 3 && px.every((x) => x.p2 != null && x.p2 >= 4.5);
       // (amendment before any green, run 41358900562: the splash's own ground is not one colour - #120A06 by night, #0A0503 by day (the day
       // splash rule) - so the front must match the SPLASH in each room, not match itself across rooms. Original: sameGround: rows[0].s.ground
       // === rows[1].s.ground)
