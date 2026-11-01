@@ -92,8 +92,13 @@ const ROOM_VARS = /--(ink-950|chrome-surface|ink-900|ink-border|text-hi|text-mid
 ok('U6 no rule keyed on the light ROOM sets a page value, and no rule keyed on the light PAGE sets a room value (so the four mixes are independent)',
   roomRules.every(([sel, body]) => !(/data-machina2-room='light'/.test(sel) && PAGE_VARS.test(body)) && !(/data-page='light'/.test(sel) && !/\.board-canvas/.test(sel) && ROOM_VARS.test(body))),
   JSON.stringify(roomRules.filter(([sel, body]) => (/data-machina2-room='light'/.test(sel) && PAGE_VARS.test(body)) || (/data-page='light'/.test(sel) && ROOM_VARS.test(body))).map(([s]) => s).slice(0, 3)));
-ok('U6 no Machina room rule still reads the page tone for the room (the wash and the light room\'s hairline read the room)',
-  !/data-page='light'\]:not\(\[data-machina2-off~='wash'\]\)/.test(css) && /data-machina2-room='light'\]:not\(\[data-machina2-off~='wash'\]\)/.test(css), '');
+// PARKED 2026-11-01 (SUPERSEDED by the Wrizors' note and Fable, Nov 1: "Drop Blue wash" - the wash rule this read is gone). Original, verbatim:
+// ok('U6 no Machina room rule still reads the page tone for the room (the wash and the light room\'s hairline read the room)',
+//   !/data-page='light'\]:not\(\[data-machina2-off~='wash'\]\)/.test(css) && /data-machina2-room='light'\]:not\(\[data-machina2-off~='wash'\]\)/.test(css), '');
+// SUCCESSOR U6b: no rule reads the page tone for the ROOM's hairline (it reads the room), and no wash rule or wash switch remains.
+ok('U6b the light room\'s hairline reads the room, and the blue wash is gone (no rule, no switch)',
+  /data-machina2-room='light'\] \.mode-page\{ box-shadow/.test(css) && !/data-machina2-off~='wash'/.test(css) && !/rgba\(127, 160, 188/.test(css)
+  && !/'wash'/.test(fs.readFileSync(new URL('../../src/machina2/switches.ts', import.meta.url), 'utf8')), '');
 
 // U7 (r3) THE ROOM FOLLOWS THE CLOCK (Fable, Nov 1: "Follow the clock / Always day / Always night (unset = clock, 07:00-19:00 local) ...
 // Machina switches only while the writer isn't typing"). The browser half is scripts/frames/machina2-r3.mjs.
@@ -107,7 +112,19 @@ ok('U7 the clock waits while the writer is typing (a key within IDLE_MS) and lan
   r3.IDLE_MS === 5000 && r3.nextRoom('light', 'dark', false, 0) === 'light' && r3.nextRoom('light', 'dark', false, 4999) === 'light' && r3.nextRoom('light', 'dark', false, 5000) === 'dark' && r3.nextRoom('light', 'dark', false, Infinity) === 'dark', '');
 ok('U7 a pick, and the first resolve, land at once even mid-typing', r3.nextRoom('light', 'dark', true, 0) === 'dark' && r3.nextRoom(null, 'dark', false, 0) === 'dark' && r3.nextRoom('dark', 'dark', false, 0) === 'dark', '');
 const r3Src = fs.readFileSync(new URL('../../src/machina2/room.ts', import.meta.url), 'utf8') + fs.readFileSync(new URL('../../src/machina2/mount.tsx', import.meta.url), 'utf8');
-ok('U7 in session only, and the panel offers exactly Follow the clock / Always day / Always night', !/localStorage|sessionStorage|indexedDB/.test(r3Src) && /\[\['clock', 'Follow the clock'\], \['light', 'Always day'\], \['dark', 'Always night'\]\]/.test(r3Src) && !/follows Page/.test(r3Src), '');
+// PARKED 2026-11-01 (SUPERSEDED by Fable, Nov 1, Machina r4: "the Room row = Automatic · Day · Night"). Original, verbatim:
+// ok('U7 in session only, and the panel offers exactly Follow the clock / Always day / Always night', !/localStorage|sessionStorage|indexedDB/.test(r3Src) && /\[\['clock', 'Follow the clock'\], \['light', 'Always day'\], \['dark', 'Always night'\]\]/.test(r3Src) && !/follows Page/.test(r3Src), '');
+// SUCCESSOR U7b: the same, with r4's words.
+ok('U7b in session only, and the panel offers exactly Automatic / Day / Night', !/localStorage|sessionStorage|indexedDB/.test(r3Src) && /\[\['clock', 'Automatic'\], \['light', 'Day'\], \['dark', 'Night'\]\]/.test(r3Src) && !/follows Page/.test(r3Src), '');
+
+// U8 (r4) THE KEYS AND THE DOORS (Fable, Nov 1: "Ctrl+/ stays the Controls drawer, so the command line takes the free key"; the Wrizors' doors).
+const cmdSrc = fs.readFileSync(new URL('../../src/machina2/commandLine.tsx', import.meta.url), 'utf8');
+const doorSrc = fs.readFileSync(new URL('../../src/machina2/doors.tsx', import.meta.url), 'utf8');
+ok('U8 the command line opens on Ctrl/⌘ + . and no longer listens for / (the Controls drawer keeps Ctrl+/)',
+  /e\.key === '\.'/.test(cmdSrc) && /e\.code === 'Period'/.test(cmdSrc) && !/k === '\/'/.test(cmdSrc) && !/e\.code === 'Slash'/.test(cmdSrc), '');
+ok('U8 the legend names the chords that exist: the line (.), the link (K), the Controls drawer (/)',
+  /\{MOD\}\.<\/kbd> line/.test(doorSrc) && /\{MOD\}K<\/kbd> link/.test(doorSrc) && /\{MOD\}\/<\/kbd> tools/.test(doorSrc) && /chord: `\$\{MOD\}\/`/.test(cmdSrc), '');
+ok('U8 the doors press existing acts and store nothing', !/localStorage|sessionStorage|indexedDB/.test(doorSrc + fs.readFileSync(new URL('../../src/machina2/beside.tsx', import.meta.url), 'utf8') + fs.readFileSync(new URL('../../src/machina2/chrome.ts', import.meta.url), 'utf8')), '');
 ok('U7 the room no longer reads the page tone', !/getAttribute\('data-page'\)/.test(fs.readFileSync(new URL('../../src/machina2/room.ts', import.meta.url), 'utf8')), '');
 
 for (const c of checks) console.log(`${c.pass ? 'ok  ' : 'FAIL'} ${c.name}${c.pass ? '' : '  ' + c.detail}`);

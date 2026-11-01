@@ -187,6 +187,7 @@ export default {
   'm2r4-beside': async (app) => {
     await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: 'm2r4-plan', text: 'Launch plan', pageType: 'board', boxes: [{ id: 'm2r4-box', kind: 'text', x: 0.1, y: 0.1, w: 0.3, h: 0.14, z: 1, text: 'Ship the report by Friday' }], createdAt: '2026-04-01T00:00:00.000Z', source: null, origin: null })})`);
     await page(app, 'm2r4-beside', WORDS, { project: true });
+    await build(app);   // (driver: the dock opens only where the page leaves room beside it - never over the page; Sprint's zoom leaves none at 1366)
     const r0 = await app.evalJs(RECT);
     await openAssets(app);
     const top = await app.evalJs(`(() => { ${R} const pane = document.querySelector('.wz-graft-pane, [data-links-pane], #wz-tutor-panel-links') || document.querySelector('#wz-tutor-tab-links')?.closest('.wz-tutor-panel'); const b = document.querySelector('.machina2-beside-open');
@@ -243,7 +244,8 @@ export default {
       return { opts: g ? [...g.querySelectorAll('[data-room-opt]')].map((b) => [b.getAttribute('data-room-opt'), b.textContent.trim()]) : null, sw, note: (document.querySelector('.machina2-bar > p.machina2-bar-note')?.textContent || '').trim() }; })()`);
     await app.evalJs("window.machina2Clock?.('12:00')"); await sleep(1300);
     const wash = await app.evalJs("getComputedStyle(document.body).backgroundImage");
-    const ok = { room: JSON.stringify(s.opts) === '[["clock","Automatic"],["light","Day"],["dark","Night"]]', noWash: !s.sw.includes('Blue wash') && !/gradient/.test(wash), note: /Ctrl\+\. opens the command line/.test(s.note) };
+    // (noWash reads the wash's own blue: the room's ground is itself a flat gradient, so "no gradient" would be the wrong question)
+    const ok = { room: JSON.stringify(s.opts) === '[["clock","Automatic"],["light","Day"],["dark","Night"]]', noWash: !s.sw.includes('Blue wash') && !/127,\s*160,\s*188/.test(wash), note: /Ctrl\+\. opens the command line/.test(s.note) };
     if (Object.values(ok).some((x) => !x)) fail('M2R4-PANEL', { ok, s, wash });
     say('m2r4-panel', { ok, s });
   },
@@ -288,9 +290,9 @@ export default {
       const ok = await app.evalJs("!!document.querySelector('.machina2-cmd')"); if (!ok) fail('M2R4-PIC', { c, stage: 'line' }); say(`m2r4-pic-line-${c}`, { ok }); }],
     [`m2r4-pic-tools-${c}`, async (app) => { await page(app, 'm2r4-pic', WORDS, { project: true }); await cast(app, c); await build(app); await openTools(app); await clickSel(app, '.machina2-readout-help'); await sleep(300);
       const ok = await app.evalJs("!!document.querySelector('.machina2-outline')"); if (!ok) fail('M2R4-PIC', { c, stage: 'tools' }); say(`m2r4-pic-tools-${c}`, { ok }); }],
-    [`m2r4-pic-beside-${c}`, async (app) => { await page(app, 'm2r4-pic', WORDS, { project: true }); await cast(app, c); await openAssets(app); await clickSel(app, '.machina2-beside-open'); await sleep(400);
+    [`m2r4-pic-beside-${c}`, async (app) => { await page(app, 'm2r4-pic', WORDS, { project: true }); await cast(app, c); await build(app); await openAssets(app); await clickSel(app, '.machina2-beside-open'); await sleep(400);
       const ok = await app.evalJs("document.querySelectorAll('.machina2-beside-item').length > 0"); if (!ok) fail('M2R4-PIC', { c, stage: 'beside list' }); say(`m2r4-pic-beside-${c}`, { ok }); }],
-    [`m2r4-pic-docked-${c}`, async (app) => { await page(app, 'm2r4-pic', WORDS, { project: true }); await cast(app, c); await openAssets(app); await clickSel(app, '.machina2-beside-open'); await sleep(300); await clickSel(app, '.machina2-beside-item'); await sleep(800);
+    [`m2r4-pic-docked-${c}`, async (app) => { await page(app, 'm2r4-pic', WORDS, { project: true }); await cast(app, c); await build(app); await openAssets(app); await clickSel(app, '.machina2-beside-open'); await sleep(300); await clickSel(app, '.machina2-beside-item'); await sleep(800);
       const ok = await app.evalJs("/read-only/.test(document.querySelector('.wz-link-dock-head')?.textContent || '')"); if (!ok) fail('M2R4-PIC', { c, stage: 'docked' }); say(`m2r4-pic-docked-${c}`, { ok }); }],
     [`m2r4-pic-plans-${c}`, async (app) => { await page(app, 'm2r4-pic', WORDS, { project: true }); await cast(app, c); await railOpen(app, 'Plans');
       const ok = await app.evalJs("!!document.querySelector('.machina2-plans-outline')"); if (!ok) fail('M2R4-PIC', { c, stage: 'plans' }); say(`m2r4-pic-plans-${c}`, { ok }); }],

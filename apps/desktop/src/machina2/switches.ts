@@ -1,9 +1,9 @@
 // MACHINA v2 MOCKUP - the theme's per-feature switches (spec §11) and the Run's unit (spec §7), IN-SESSION ONLY (Fable ruling 7: storage is
 // Nick's call, as Arbor's). Held in this module and mirrored onto <html> as attributes (data-machina2-off, data-machina2-run) for the CSS and
-// for the components that read them; nothing reaches storage. No default is ruled: the mockup opens with every switch on, the Run in words,
-// and the blue wash on (spec §6: "the blue wash low") - the switch takes it away (§2: "no blue wash in the room" if Nick prefers it off).
+// for the components that read them; nothing reaches storage. No default is ruled: the mockup opens with every switch on and the Run in words.
+// r4: the blue wash and its switch are gone (the Wrizors and Fable, Nov 1: "Drop Blue wash").
 // No imports, so the browserless unit (scripts/harness/machina2-unit.mjs) loads it as is.
-export type SwitchKey = 'command' | 'readout' | 'run' | 'asks' | 'legend' | 'wash';
+export type SwitchKey = 'command' | 'readout' | 'run' | 'asks' | 'legend';
 export type RunUnit = 'words' | 'parts';
 
 let off: SwitchKey[] = [];

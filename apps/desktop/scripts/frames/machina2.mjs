@@ -164,7 +164,10 @@ export default {
   // SUCCESSOR (r2): the same line on Ctrl+/ (the ruling). Every r1 check stands with the chord changed; the legend's line is "Ctrl+/ command line"
   // and lists "Ctrl+K Add link"; and with the line switched off, Ctrl+/ is the Controls drawer's own key again (Sliver.tsx) - the line never
   // swallows it then.
-  'm2-cmd': async (app) => {
+  // PARKED 2026-11-01 (SUPERSEDED by Fable, Nov 1, Machina r4: "Ctrl+/ stays the Controls drawer, so the command line takes the free key" - the
+  // line is Ctrl+. now; with its switch off Ctrl+. opens nothing, and Ctrl+/ is the Controls drawer's whatever the switch: frames/machina2-r4.mjs
+  // m2r4-door). Kept verbatim under the name m2-cmd-v2 (not in the run list); SUCCESSOR m2-cmd below, the same checks on Ctrl+.
+  'm2-cmd-v2': async (app) => {
     await page(app, 'm2-cmd', WORDS);
     const before = await app.evalJs(`document.querySelector('${ED}').innerText`);
     await app.evalJs(`document.querySelector('${ED}').focus()`);
@@ -205,6 +208,47 @@ export default {
     say('m2-cmd', { ok, box, first: list[0], legend });
     await page(app, 'm2-cmd', WORDS);
     await app.evalJs(`document.querySelector('${ED}').focus()`); await key('/', true); await sleep(300);
+  },
+  'm2-cmd': async (app) => {
+    await page(app, 'm2-cmd', WORDS);
+    const before = await app.evalJs(`document.querySelector('${ED}').innerText`);
+    await app.evalJs(`document.querySelector('${ED}').focus()`);
+    const key = (k, ctrl) => app.evalJs(`(() => { const el = document.activeElement || document.body; el.dispatchEvent(new KeyboardEvent('keydown', { key: ${JSON.stringify(k)}, code: ${JSON.stringify(k === '/' ? 'Slash' : k.length === 1 ? 'Key' + k.toUpperCase() : k)}, ctrlKey: ${!!ctrl}, bubbles: true, cancelable: true })); })()`);
+    await key('.', true); await sleep(300);
+    const box = await app.evalJs(`(() => { const b = document.querySelector('.machina2-cmd'); if (!b) return null; const r = b.getBoundingClientRect(), e = document.querySelector('${ED}').getBoundingClientRect();
+      const over = !(r.right <= e.left || r.left >= e.right || r.bottom <= e.top || r.top >= e.bottom);
+      return { rect: [Math.round(r.left), Math.round(r.top), Math.round(r.width)], overWords: over, font: getComputedStyle(b).fontFamily.split(',')[0], focused: document.activeElement?.classList.contains('machina2-cmd-input') }; })()`);
+    const drawerWith = await app.evalJs(`document.querySelector('.wz-sliver')?.getAttribute('data-open')`);
+    await app.typeKeys('build'); await sleep(250);
+    const list = await app.evalJs(`[...document.querySelectorAll('.machina2-cmd-item')].map((li) => ({ id: li.dataset.cmd, chosen: li.dataset.chosen, colour: getComputedStyle(li).color, border: getComputedStyle(li).borderTopColor }))`);
+    await key('Enter'); await sleep(900);
+    const ran = await app.evalJs(`(() => ({ closed: !document.querySelector('.machina2-cmd'), active: [...document.querySelectorAll('.desk-mode-tab.active')].map((b) => b.textContent.trim().toLowerCase()), focus: !!document.activeElement?.closest('${ED}') }))()`);
+    await app.evalJs(`document.querySelector('${ED}')?.focus()`);
+    await key('.', true); await sleep(250); await app.typeKeys('goal 250'); await sleep(200); await key('Enter'); await sleep(600);
+    const goal = await app.evalJs(`(() => { try { const g = JSON.parse(localStorage.getItem('wrizo-writing-goal-lines') || 'null'); return g; } catch { return null; } })()`);
+    await app.evalJs(`document.querySelector('${ED}')?.focus()`);
+    await key('.', true); await sleep(250); await key('Escape'); await sleep(250);
+    const esc = await app.evalJs(`({ closed: !document.querySelector('.machina2-cmd'), focus: !!document.activeElement?.closest('${ED}') })`);
+    await key('.', true); await sleep(250);
+    const legend = await app.evalJs(`[...document.querySelectorAll('.machina2-cmd-legend li')].map((li) => li.textContent.trim())`);
+    await key('Escape'); await sleep(150);
+    await clickSel(app, '.machina2-switch[data-switch="command"]'); await sleep(150);
+    await app.evalJs(`document.querySelector('${ED}')?.focus()`); await key('.', true); await sleep(400);
+    const offOpen = await app.evalJs(`!!document.querySelector('.machina2-cmd')`);
+    const offDrawer = await app.evalJs(`document.querySelector('.wz-sliver')?.getAttribute('data-open')`);
+    await clickSel(app, '.machina2-switch[data-switch="command"]'); await sleep(150);
+    const after = await app.evalJs(`document.querySelector('${ED}').innerText`);
+    const ok = {
+      opens: !!box && box.focused && /Plex Mono/.test(box.font || ''), beside: !!box && !box.overWords, drawerStill: drawerWith === 'false',
+      lists: list.length > 0 && list[0].id === 'mode-build' && list[0].chosen === 'true' && /255, 152, 0/.test(list[0].border) && /143, 163, 184|63, 97, 131/.test(list[0].colour),
+      runs: ran.closed && ran.active.includes('build'), goal: !!goal && goal.n === 250 && goal.unit === 'words', esc: esc.closed && esc.focus,
+      legend: /^Ctrl\+\. command line$/.test(legend[0] || '') && legend.some((l) => /^Ctrl\+\/ Controls drawer$/.test(l)) && legend.some((l) => /^Ctrl\+K Add link$/.test(l)),
+      off: offOpen === false && offDrawer === 'false', text: before === after,
+    };
+    if (Object.values(ok).some((x) => !x)) fail('M2-CMD', { ok, box, list: list.slice(0, 3), ran, goal, esc, legend, offOpen, offDrawer, drawerWith });
+    say('m2-cmd', { ok, box, first: list[0], legend });
+    await page(app, 'm2-cmd', WORDS);
+    await app.evalJs(`document.querySelector('${ED}').focus()`); await key('.', true); await sleep(300);
   },
 
   // ── r2 THE LINKS KEY (Fable's ruling): Ctrl+K (this runner is not a Mac) runs the EXISTING "+ Graft..." act - the right drawer opens on its Links
@@ -252,7 +296,9 @@ export default {
     await load(app, '#/page/m2-part-2');
     await waitSoft(app, `!!document.querySelector('${ED}')`, { label: 'part page' }); await sleep(1400);
     const R = `(() => { const run = document.querySelector('.machina2-run'); if (!run) return null; const units = [...run.querySelectorAll('.machina-run-strip > i')];
-      return { line: run.querySelector('.machina2-readout')?.textContent || null, on: units.filter((u) => u.classList.contains('on')).length, here: units.findIndex((u) => u.classList.contains('here')),
+      // (r4 driver fix, no assertion changed: the Wrizors' door 2 draws hairline ticks between the fields instead of ' · ' - the line is the fields, joined as before)
+      const fields = [...run.querySelectorAll('.machina2-field')].map((f) => f.textContent.trim());
+      return { line: fields.length ? fields.join(' · ') : (run.querySelector('.machina2-readout')?.textContent || null), on: units.filter((u) => u.classList.contains('on')).length, here: units.findIndex((u) => u.classList.contains('here')),
         units: units.length, unit: run.dataset.unit, goal: run.dataset.goal, burst: !!run.querySelector('.machina-run-burst'), count: run.querySelector('.machina-run-count')?.textContent || null }; })()`;
     const noGoal = await app.evalJs(R);
     await clickText(app, '.machina2-bar-opt', 'Parts'); await sleep(400);
