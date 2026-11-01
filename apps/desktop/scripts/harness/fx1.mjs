@@ -746,6 +746,8 @@ if (process.env.HARNESS_PARKED === '1') {
     // CD2 S1/S5 — .wz-drawer-pull is gone; the strip's own item is the new
     // square-corner surface. Live successor re-asserted fresh in this
     // file's own live S4 section above (.wz-strip-item).
+    // ADDENDUM, Nov 1 2026 (#13 step 4b, Fable): the record below stays verbatim. The radius half of its
+    // successor (S4's strip-item radius check) is now itself PARKED under law 3 (square / flat retired by Nick, Nov 1).
     await freshJournalPage(app, 'FX1PARKEDRADIUS');
     const drawerPullGoneNow = await app.evalJs("!document.querySelector('.wz-drawer-pull')");
     pok('PARKED (was "S4: computed border-radius is 0px on a drawer pull") — CD2 S1/S5: .wz-drawer-pull is gone entirely; the strip\'s own item carries the square-corner law now (successor live in this file\'s own S4 section)',
@@ -760,6 +762,8 @@ if (process.env.HARNESS_PARKED === '1') {
     // survives to re-derive a radius from. Live successor (a category
     // panel's own action button) re-asserted fresh in this file's own live
     // S4 section above (.wz-cascade-action).
+    // ADDENDUM, Nov 1 2026 (#13 step 4b, Fable): the record below stays verbatim. The radius half of its
+    // successor (S4's cascade-action radius check) is now itself PARKED under law 3 (square / flat retired by Nick, Nov 1).
     const placeFaceGoneNow = await app.evalJs("!document.querySelector('.wz-placeface-item') && !document.querySelector('.wz-placeface-verb-open')");
     pok('PARKED (was "S4: computed border-radius is 0px on a place-face verb") — CD2 S1/S5: PlaceFace\'s own per-item-verb design is gone entirely (not just renamed); a category panel\'s action button carries the square-corner law now (successor live in this file\'s own S4 section)',
       placeFaceGoneNow === true, String(placeFaceGoneNow));
