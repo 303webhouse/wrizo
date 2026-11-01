@@ -4,6 +4,7 @@ import '../styles/arbor-v2.css';
 import { mountSun } from './sun';
 import { mountPaper } from './paper';
 import { mountChrome } from './chrome';
+import { mountDrawerEdge } from './drawerEdge';
 import { clearRhizome, undoClearRhizome, canUndoClear, hasRhizome, subscribeLife } from './rhizomeLife';
 
 // ARBOR v2 WORKING MOCKUP - loaded only under ?arbor2=1 (main.tsx). Everything here is IN-SESSION: it writes attributes on
@@ -96,6 +97,7 @@ applyRoom();
 mountSun(root);   // item 6: the day room's pergola light (drawn only in the day room by styles/arbor-v2.css; in memory, stores nothing)
 mountPaper();     // the zoomed page stays a whole opaque sheet, and the sun layer has a hole over the page (paper.ts; Fable, Oct 29)
 mountChrome(root);    // r5 §2c.1: the top bar drawn flush to the window's top, the "..." inside it (chrome.ts; the page never moves)
+mountDrawerEdge(root, '--arbor2-drawer-r');   // r11 (Nick, via Fable, Nov 1): open, a drawer is flush to the page and its tab rides its outer edge
 new MutationObserver(applyRoom).observe(root, { attributes: true, attributeFilter: ['data-room'] });
 setInterval(applyRoom, 10_000);   // the clock moves the room (a 20-minute fade in 10 s steps: each step is under 1% of the change)
 document.addEventListener('visibilitychange', applyRoom);
