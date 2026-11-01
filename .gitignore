@@ -28,3 +28,11 @@ build/
 
 # HOME port v6 reference prototype (heavy, not app code)
 apps/desktop/scratch/
+
+# Evidence (Fable, Nov 1; #13 step 4c): docs/evidence/ lives in git history only. Frames and images stay local or in the
+# frames workflow's artifacts; the one thing committed is the small text box logs the Actions compare reads.
+docs/evidence/*
+!docs/evidence/box-logs/
+docs/evidence/box-logs/**
+!docs/evidence/box-logs/**/
+!docs/evidence/box-logs/**/*.txt

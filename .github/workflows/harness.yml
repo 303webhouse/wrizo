@@ -40,7 +40,7 @@ on:
         required: false
         default: ''
       box_default:
-        description: 'Optional: repo path of a box default-leg log to compare against (docs/evidence/.../x.log.txt)'
+        description: 'Optional: repo path of a box default-leg log to compare against (docs/evidence/box-logs/.../x.log.txt)'
         required: false
         default: ''
       box_parked:
@@ -82,7 +82,7 @@ jobs:
           if [ -n "$I_REF" ]; then printf '%s' "$I_REF" | grep -Eq '^[A-Za-z0-9._/-]{1,200}$' || { echo "::error::ref may only hold letters, digits and . _ / -"; exit 2; }; fi
           for p in "$I_BOX_D" "$I_BOX_P"; do
             [ -z "$p" ] && continue
-            printf '%s' "$p" | grep -Eq '^docs/evidence/[A-Za-z0-9_./-]{1,200}$' || { echo "::error::box log paths must sit under docs/evidence/"; exit 2; }
+            printf '%s' "$p" | grep -Eq '^docs/evidence/box-logs/[A-Za-z0-9_./-]{1,200}$' || { echo "::error::box log paths must sit under docs/evidence/box-logs/"; exit 2; }
             case "$p" in *..*) echo "::error::box log paths must not climb"; exit 2 ;; esac
           done
 

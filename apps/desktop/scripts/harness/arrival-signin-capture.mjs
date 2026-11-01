@@ -23,7 +23,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { withHarness } from '../runtime-verify.mjs';
 
-// The PNGs are evidence and are committed: docs/evidence/arrival-signin/ in the repo. The manifest beside them is a
+// The PNGs are evidence and stay local: docs/evidence/ is gitignored except box-logs/ (Fable, Nov 1). The manifest beside them is a
 // .log.txt (a *.log file is gitignored) recording, for every frame, the settled state and the email check.
 const here = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.resolve(here, '..', '..', '..', '..', 'docs', 'evidence', 'arrival-signin');
