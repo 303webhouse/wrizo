@@ -217,6 +217,10 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     const LINE_GLIDE_MS = 160;
     const VIEW_KEYS = new Set(['Home', 'End', 'PageUp', 'PageDown', 'ArrowUp', 'ArrowDown']);
     const BACKLOG_CAP_MS = 1000;
+    // THE STEP CAP (Fable, Nov 1, train-12i). The cap above sizes a backlog's steps to finish in time - but once the owed advance has stood past it (typing outran the
+    // glides, or a frame stall held them) there is no time left and the sizing paid the WHOLE backlog in one step: 444 px in one frame (fx5 S1 a, 1 run in 24 of train-12h).
+    // No single catch-up step is more than this many lines, whatever is owed or however late it is; a deep backlog is paid in more steps, never a bigger one.
+    const MAX_STEP_LINES = 2;
     const GLIDE_MS = LINE_GLIDE_MS + 60;   // past this a glide that has not landed is lost (its owed remainder is re-issued, below)
     let owedSince: number | null = null;   // when the current backlog first became owed (null: nothing owed)
     let glideRaf = 0;
@@ -448,7 +452,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         const nowMs = performance.now();
         if (owedSince == null) owedSince = nowMs;
         const glidesLeft = reduce ? 1 : Math.max(1, Math.floor((owedSince + BACKLOG_CAP_MS - nowMs) / (LINE_GLIDE_MS + 17)));
-        const linesPerGlide = reduce ? 1 : Math.max(1, Math.ceil(advance / lineHeight() / glidesLeft));
+        const linesPerGlide = reduce ? 1 : Math.min(MAX_STEP_LINES, Math.max(1, Math.ceil(advance / lineHeight() / glidesLeft)));
         const step = Math.min(advance, lineHeight() * linesPerGlide);
         // PAGE-SIZE - one line per glide: while the last glide is still travelling, WAIT for it (the next frame looks again; nothing owed is
         // lost - prevDocCaretBottom has not moved). Reduced motion moves instantly, so it never waits.
