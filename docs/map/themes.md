@@ -4,7 +4,7 @@
 **Owner (proposal):** POLISH, plus the theme lanes (ARBOR, Machina). **Back to** [MAP](../MAP.md).
 
 ## Entry files
-- `index.css`: an ordered list of `@import`s of `styles/*.css` (#13 step 6), and the build inlines them in that order: `:root` tokens first (`01-tokens.css`), then the theme blocks, then the component sections. A script reads the global CSS as one text through `scripts/global-css.mjs`, never `index.css` itself.
+- `index.css`: an ordered list of `@import`s of `styles/*.css` (#13 step 6), and the build inlines them in that order: `:root` tokens first ([`styles/01-tokens.css`](../../apps/desktop/src/styles/01-tokens.css)), then the theme blocks, then the component sections. A script reads the global CSS as one text through `scripts/global-css.mjs`, never `index.css` itself.
 - `store/theme.ts` (the theme in force), `store/themeCast.ts` (`data-cast`, Machina's neutral cast), `store/themePrefs.ts`.
 - `store/themeFontFaces.ts`, `store/themeFonts.ts`, `store/fontRoster.ts`, `store/fluxThemeFx.ts`, `components/ThemeEffectsLayer.tsx`.
 
