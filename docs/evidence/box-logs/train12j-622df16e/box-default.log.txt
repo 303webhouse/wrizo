@@ -1,0 +1,29 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=20 tree=622df16e bundle=index-CzG0YU_r.js/955927b out=C:/Users/nickh/t12j-box/listd
+(node:46352) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[01/20] OK        exit=0   56s blank-page-click.mjs :: ROWS-SHADOW VERIFY: PASS (35 renders checked, shadow == DOM on every one) ;; BLANK-PAGE-CLICK VERIFY: PASS (26 checks)
+[02/20] OK        exit=0   10s box-holder.mjs :: BOX-HOLDER VERIFY: PASS (19 checks)
+[03/20] OK        exit=0   93s box-token-hash.mjs :: BOX-TOKEN-HASH VERIFY: PASS (12 checks)
+[04/20] OK        exit=0  115s caret-reset.mjs :: CARET-RESET VERIFY: PASS (27/27)
+[05/20] OK        exit=0   33s cd2.mjs :: ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one) ;; CD2 VERIFY: PASS (53 checks)
+[06/20] OK        exit=0   11s empty-line-caret.mjs :: ROWS-SHADOW VERIFY: PASS (7 renders checked, shadow == DOM on every one) ;; EMPTY-LINE-CARET VERIFY: PASS (20 checks)
+[07/20] OK        exit=0   64s glitch-meter.mjs :: ROWS-SHADOW VERIFY: PASS (27 renders checked, shadow == DOM on every one) ;; GLITCH-METER VERIFY: PASS (28 checks)
+[08/20] OK        exit=0    2s item139.mjs :: ITEM139 VERIFY: PASS (10 checks)
+[09/20] OK        exit=0    0s item140.mjs :: ITEM140 VERIFY: PASS (13 checks)
+[10/20] OK        exit=0    3s item99.mjs :: ITEM99 VERIFY: PASS (41 checks)
+[11/20] OK        exit=0   26s polish10-12-part2.mjs :: POLISH10-12 PART 2 VERIFY: PASS (21 checks)
+[12/20] OK        exit=0   18s rhizome-goal.mjs :: RHIZOME-GOAL-CORE VERIFY: PASS (33 checks) ;; RHIZOME-GOAL VERIFY: PASS (10 checks)
+[13/20] OK        exit=0   26s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (14 checks)
+[14/20] OK        exit=0   45s splash.mjs :: SPLASH VERIFY: PASS (90 checks)
+[15/20] OK        exit=0   23s tw-glide-measure.mjs :: TW-GLIDE VERIFY: PASS
+[16/20] OK        exit=0   10s typewriter-fade.mjs :: TYPEWRITER-FADE VERIFY: PASS (6 checks)
+[17/20] OK        exit=0   24s typewriter-glide-keys.mjs :: TYPEWRITER-GLIDE-KEYS VERIFY: PASS (8/8)
+[18/20] OK        exit=0    1s typewriter-page.mjs :: TYPEWRITER-PAGE VERIFY: PASS (22 checks)
+[19/20] OK        exit=0   14s typewriter-stall.mjs :: TYPEWRITER-STALL VERIFY: PASS (4/4)
+[20/20] OK        exit=0   27s typing-latency-scroll.mjs :: ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one) ;; TYPING-LATENCY-SCROLL VERIFY: PASS (10 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 20/20 of 20 returned a passing verdict
+SUITE RESULT: CLEAN — tree=622df16e bundle=index-CzG0YU_r.js/955927b

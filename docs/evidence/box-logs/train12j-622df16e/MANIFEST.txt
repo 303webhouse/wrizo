@@ -1,0 +1,14 @@
+Train #12j - manifest (Chat 1, Nov 2 2026)
+
+Product tree 622df16e (train-12j: main b3442837 + one --no-ff merge; main is fast-forwarded to it, then these records land on top; `git diff 622df16e HEAD -- apps/desktop/src apps/server` is empty at every records commit after it). Rollback target: git 38105480 / railway 832823d7 (deploy #12i).
+
+IN: POLISH c13-12f-sprout-invite-r 8e45c060 (merge 622df16e). The Sprout code goes: useFirstLineInvite.tsx deleted, PageEditor/JournalEntry/BeginningsRow/deskLexicon and two CSS files trimmed; sprout-invite-scope harness rewritten, c13-12f-sprout-invite.mjs added. Bundle changes: index-CzG0YU_r.js 955927 bytes (was index-CE6uLLXE.js 958242), index-BISqmGRK.css 266008.
+
+RUNS
+- tsc desktop 0, tsc server 0, seed-guard PASS 36.
+- GitHub Actions full pair, run 41409246019 (8 shards per leg, ref = the full sha): default 230/237, parked 230/237; the 7 non-OK are the capture/probe tools with no verdict line, both legs. c13-12f-sprout-invite PASS 10, sprout-invite-scope PASS 6, sprout-invite-scope-logic PASS 2, fx16 PASS 6, item109 PASS 9, page-size PASS, page-templates PASS - both legs.
+- Box, 20 files (INK's box-only list + cd2, typewriter-glide-keys, tw-glide-measure, typewriter-stall, typewriter-page, caret-reset, blank-page-click, empty-line-caret). Stamp tree=622df16e bundle=index-CzG0YU_r.js/955927b. Default CLEAN 20/20. Parked 19/20: the one red rhizome-latency check B (flash median 25.7 vs rest 20.6 ms, budget 5 ms), 1/14.
+- Attribution by control for that red (same file, train vs main's build = c13-main, tree 92918c93, same product code as main b3442837): rhizome-latency parked alone x6 on each tree: 12/12 PASS (14 checks). The whole 20-file parked list x2 on each tree, same turn: 4/4 CLEAN. In-list parked over this and step 6's turn: the train tree 1 red of 3; main's bundle 1 red of 3 (step 6, byte-identical to main, B and C). It is the ticket-150 flapper (Fable, Nov 1), not attributable to 12f. Box turns 07:54Z-09:04Z, released.
+- Clear: Fable, Nov 2 ("12f = c13-12f-sprout-invite-r 8e45c060 ... Clean -> merge and ship as #12j").
+
+Files here: pair-*.log.txt and summary.txt (Actions); box-default/parked.log.txt; rhizome-latency.box-parked-RED.txt; controls/ (the x6 alone runs and the x2 list runs).
