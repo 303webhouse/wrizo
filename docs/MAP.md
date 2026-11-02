@@ -34,7 +34,7 @@ House rules for lanes (branches, the box, `main`): [AGENTS.md](../AGENTS.md).
 
 ## Who decides
 Nick (product, data) → Fable (architecture, rulings, reviews) → Chat 1 (merges, deploys, the ledger `docs/open-threads.md`).
-Contracts between Wrizo and its siblings live in `docs/contracts/`. The cleanup in progress: [the map](cleanup/cleanup-map.md), [the #13 brief](cleanup/deploy-13-brief.md).
+Contracts between Wrizo and its siblings live in `docs/contracts/`; ruling histories moved out of the code live in [docs/rulings](rulings/README.md). The cleanup in progress: [the map](cleanup/cleanup-map.md), [the #13 brief](cleanup/deploy-13-brief.md).
 
 ## The shape, in numbers (dadb7196)
 
