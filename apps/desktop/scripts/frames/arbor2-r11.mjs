@@ -128,5 +128,6 @@ export default {
   }])),
 
   // ── THE NICK WALK
-  ...walkScreens('arbor-walk', (app) => page(app, 'arbor-walk', 'Draft'), setRoom),
+  // (r15: the walk's reduced-motion repeat gets its liveness probe on Free Write's zoomed page - Fable, Nov 1)
+  ...walkScreens('arbor-walk', (app) => page(app, 'arbor-walk', 'Draft'), setRoom, (app) => page(app, 'arbor-walk-z', null)),
 };
