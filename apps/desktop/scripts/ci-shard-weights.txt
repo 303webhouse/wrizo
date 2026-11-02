@@ -182,7 +182,8 @@ revspell.mjs 8
 rhizome-goal-core.mjs 1
 rhizome-goal.mjs 21
 rhizome-growth.mjs 0
-rhizome-latency.mjs 35
+rhizome-latency.mjs 160
+rhizome-latency-mutant.mjs 700
 s1.mjs 15
 sc1.mjs 45
 sc2.mjs 51
