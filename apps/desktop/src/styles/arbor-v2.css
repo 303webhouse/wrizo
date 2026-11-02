@@ -575,3 +575,56 @@
 :root[data-arbor2][data-theme='plateau'] .arbor2-front-foot .wz-tagline{ color:var(--text-mid); margin:0; }
 :root[data-arbor2][data-theme='plateau'] .arbor2-front-foot .wz-arrival-doors{ display:flex; flex-direction:row; align-items:center; gap:22px; margin:0; }   /* side by side: stacked, Sign in fell below a 768 px window (run 41359236021) */
 :root[data-arbor2][data-theme='plateau'][data-splash-hold='true'] .arbor2-front-mark{ opacity:0; }
+
+/* ==========================================================================================================================================
+   r16 - THE FRONT DOOR'S FIXES (the Wrizors, wrizors-to-ARBOR-nov2.md md5 11058930, via Fable) AND THE LOGO THAT FOLLOWS THE ROOM (Nick,
+   Nov 2, 4:34 pm, via Fable).
+   THE LOGO. Nick's WRIZO in the app's corner rect (bottom-right, 88 px, at .7) on every surface, the front door included. It follows the ROOM:
+   by night (and on the splash and the front door, whose ground is the splash's dark in both rooms) the night copy - Arbor's cream lettering
+   #EFE4CB with the o and the i's dot in brass #FF9800, recoloured from Nick's source (scripts/arbor2-logo-r16.mjs); by day the all-sage
+   copy. Through the room's 20-minute fade the two copies cross-fade on the room's own dayness (--arbor2-t, written by mount.tsx beside
+   data-arbor2-dayness). The corner mark is no longer a CSS mask painted one colour: it is two layers of Nick's own picture (::before night,
+   ::after day), so the brass stays brass. It still fades to nothing while she writes (index.css, html[data-wz-writing]).
+   ========================================================================================================================================== */
+:root[data-arbor2][data-theme='plateau'] .brand-mark{ -webkit-mask:none; mask:none; background:none; opacity:.7; filter:none; }
+:root[data-arbor2][data-theme='plateau'] .brand-mark::before,
+:root[data-arbor2][data-theme='plateau'] .brand-mark::after{ content:''; position:absolute; inset:0; background-position:center; background-size:contain; background-repeat:no-repeat; pointer-events:none; }
+:root[data-arbor2][data-theme='plateau'] .brand-mark::before{ background-image:url('/brand/arbor2/wrizo-logo-night.png'); opacity:calc(1 - var(--arbor2-t, 0)); }
+:root[data-arbor2][data-theme='plateau'] .brand-mark::after{ background-image:url('/brand/arbor2/wrizo-logo-sage-all.png'); opacity:var(--arbor2-t, 0); }
+/* the front door and the splash: the night copy in both rooms (their ground is the splash's dark) */
+:root[data-arbor2][data-theme='plateau'] .brand-mark.arbor2-logo-corner::before{ opacity:1; }
+:root[data-arbor2][data-theme='plateau'] .brand-mark.arbor2-logo-corner::after{ opacity:0; }
+
+/* THE LOGO WRITTEN OUT ON THE SPLASH (src/arbor2/logoWrite.tsx): the mask's strokes draw on (stroke-dashoffset, inside the mask only), then at
+   2.0 s the still layer (the same ::before as the corner mark under it) takes over and the drawing layer goes - the last frame is the still
+   logo. Reduced motion renders the still logo at once (data-writing='still': no strokes, no animation). The splash's own fade leaves it be,
+   so the hand-off to the identical corner mark beneath moves nothing. */
+:root[data-arbor2][data-theme='plateau'] .arbor2-splash-logo{ z-index:2; }
+.arbor2-splash-logo-svg{ position:absolute; inset:0; width:100%; height:100%; display:block; overflow:visible; }
+:root[data-arbor2][data-theme='plateau'] .brand-mark.arbor2-splash-logo[data-writing='true']::before{ opacity:0; animation:arbor2-logo-still .01s linear 2s forwards; }
+.arbor2-splash-logo[data-writing='true'] .arbor2-splash-logo-svg{ animation:arbor2-logo-svg-off .01s linear 2s forwards; }
+.arbor2-logo-stroke{ stroke-dasharray:1 2; stroke-dashoffset:1.05; animation-name:arbor2-logo-write; animation-timing-function:cubic-bezier(.45, .05, .55, .95); animation-fill-mode:both; }
+@keyframes arbor2-logo-write{ from{ stroke-dashoffset:1.05; } to{ stroke-dashoffset:0; } }
+@keyframes arbor2-logo-still{ from{ opacity:0; } to{ opacity:1; } }
+@keyframes arbor2-logo-svg-off{ from{ opacity:1; } to{ opacity:0; } }
+
+/* THE DEV PANEL leaves the logo's corner (the Wrizors: "Move the dev panel out of that corner, not the mark"): bottom-left, beside the rail */
+:root[data-arbor2] .arbor2-bar{ right:auto; left:96px; bottom:12px; }
+
+/* THE TAGLINE AND THE DOOR WORDS in Arbor's chrome face, Alegreya Sans (the Wrizors; no handwriting font) */
+:root[data-arbor2][data-theme='plateau'] .arbor2-front-foot :is(.wz-tagline, .wz-arrival-doors button){ font-family:var(--arbor2-chrome-face); }
+
+/* A "?" IS GUIDANCE (the Wrizors: "one '?' per row it explains, aligned on that row, guide green (never brass)"). The Ask box's own note
+   ("What travels when you ask") turned brass when open and sat at the top of the Send row: it is the help green at rest and open, centred on
+   its row. */
+:root[data-arbor2][data-theme='plateau'] .wz-drawer-note-btn,
+:root[data-arbor2][data-theme='plateau'] .wz-drawer-note-btn[aria-expanded='true']{ color:var(--help); border-color:color-mix(in srgb, var(--help) 55%, transparent); background:none; }
+:root[data-arbor2][data-theme='plateau'] .wz-drawer-note-btn:hover{ color:var(--help-hi); border-color:var(--help); }
+:root[data-arbor2][data-theme='plateau'] .wz-tutor-convo-row{ align-items:center; }
+
+/* THE TOOLS FOOTER: the "..." row takes the panel's inner padding, so its first button is not cut by the panel's edge line */
+:root[data-arbor2][data-theme='plateau'] .wz-sliver-instruments{ padding-left:14px; padding-right:14px; }
+
+/* THE FORMS' QUIET TEXT (the Wrizors: "New here? Create an account" and the sign-up subtitle measured ~4.4-4.5:1 at the glow's brightest; the
+   floor is law): the threshold's quiet ink one step lighter, #8C8070 -> #A09482 */
+:root[data-arbor2][data-theme='plateau'] .wz-home{ --wz-ink-dim:#A09482; }
