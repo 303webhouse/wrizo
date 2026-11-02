@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { useTheme } from '../store/theme';
 import { SplashMark, prefersReducedMotion } from './SplashMark';
+import { isArbor2 } from '../arbor2/flag';
+import { ArborSplashLogo } from '../arbor2/logoWrite';
 
 // the splash: pointer-events:none so it never eats a keystroke; sized by the ink's bounding box to about a quarter of the screen's area (capped at 60% height, 70% width); per-theme animation; holds until its animation ends and the app is ready; once per app load [Splash §1]
 
@@ -196,6 +198,8 @@ export function Splash({ ready }: { ready: boolean }) {
       >
         <SplashMark theme={theme} reduced={reduced} width={box.width} height={box.height} onFloorReached={onFloorReached} />
       </div>
+      {/* ARBOR v2 MOCKUP r16 (Nick, Nov 2): the logo written out in the corner mark's own rect (src/arbor2/logoWrite.tsx) */}
+      {isArbor2() && theme === 'plateau' && <ArborSplashLogo reduced={reduced} />}
       {/* role=status: announced politely; `key` remounts each line to restart the fade, which reduced motion drops [Splash §7] */}
       {t(LOADING_LINE_KEYS[lineIndex]) !== '' && (
         <div className="wz-splash-loading" role="status">

@@ -186,7 +186,7 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
             <SplashMark theme="plateau" reduced width={frontBox.width} height={frontBox.height} onFloorReached={() => {}} />
           </div>
           <div className="arbor2-front-foot" style={{ top: `calc(50% + ${Math.round(frontBox.height / 2)}px + 8px)` }}>
-            <div className="wz-tagline">For humans writing</div>
+            <div className="wz-tagline">For humans who write.</div>
             {stage === 'doors' && (
               <div className="wz-arrival-doors">
                 <button type="button" className="wz-btn wz-primary wz-arrival-write" disabled={!ready || landing} onClick={() => { void handleWrite(); }}>

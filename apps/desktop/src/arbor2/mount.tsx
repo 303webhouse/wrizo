@@ -82,6 +82,7 @@ const applyRoom = () => {
   }
   const dn = String(Math.round(t * 1000) / 1000);
   if (root.getAttribute('data-arbor2-dayness') !== dn) root.setAttribute('data-arbor2-dayness', dn);
+  root.style.setProperty('--arbor2-t', dn);   // r16: the corner logo cross-fades on the room's own dayness (styles/arbor-v2.css)
 };
 const setRoom = (c: Choice) => { const v = dataRoomOf(c); if (v) root.setAttribute('data-room', v); else root.removeAttribute('data-room'); applyRoom(); };
 // THE HARNESS'S CLOCK (mockup only, in memory): window.arbor2Clock('07:00') sets the time the room reads; arbor2Clock(null) gives the real
