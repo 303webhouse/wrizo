@@ -532,7 +532,7 @@
  {
   "key": "13-desk-frame.css#105",
   "hash": "bd3249f6b2",
-  "why": "THE SLIDING LAYER, shared by both side drawers: the menu slides out from behind its tab and fades in together. The panel is the clip and the scroller and keeps the fade; the visible box and the slide live on this layer, on their own tokens, never --fade-dur"
+  "why": "PHASE 1 - THE SLIDING LAYER, shared by both side drawers: the menu slides out from behind its tab and fades in together. The panel is the clip and the scroller and keeps the fade; the visible box and the slide live on this layer, on their own tokens, never --fade-dur"
  },
  {
   "key": "13-desk-frame.css#106",
@@ -847,12 +847,12 @@
  {
   "key": "18-desk-rail.css#34",
   "hash": "7d365ad509",
-  "why": "guided paths: a dealt step's question is the card's placeholder, painted from data-prompt by a pseudo-element, so it is never text (not selected, copied or counted); it shows only while the card has no body. Olive is guidance, so Arbor's question is olive italic in --badge-on-card (7.1:1 on cream); the \"?\" turns --choice on hover or open; Flux shows its dim readout prompt line"
+  "why": "W3 / W11a - guided paths: a dealt step's question is the card's placeholder, painted from data-prompt by a pseudo-element, so it is never text (not selected, copied or counted); it shows only while the card has no body. Olive is guidance, so Arbor's question is olive italic in --badge-on-card (7.1:1 on cream); the \"?\" turns --choice on hover or open; Flux shows its dim readout prompt line"
  },
  {
   "key": "18-desk-rail.css#37",
   "hash": "c1450684e9",
-  "why": "flat 1px edge, no blur"
+  "why": "flat 1 px edge, no blur"
  },
  {
   "key": "18-desk-rail.css#38",

@@ -102,7 +102,7 @@ From `apps/desktop/src/styles/18-desk-rail.css`, line 311 at `25112784` (the com
 
 ## desk-rail §8
 
-From `apps/desktop/src/styles/18-desk-rail.css`, line 350 at `25112784` (the comment that stays: "guided paths: a dealt step's question is the card's placeholder, painted from data-prompt by a pseudo-element, so it is never text (not selected, copied or counted); it shows only while the card has no body. Olive is guidance, so Arbor's question is olive italic in --badge-on-card (7.1:1 on cream); the "?" turns --choice on hover or open; Flux shows its dim readout prompt line").
+From `apps/desktop/src/styles/18-desk-rail.css`, line 350 at `25112784` (the comment that stays: "W3 / W11a - guided paths: a dealt step's question is the card's placeholder, painted from data-prompt by a pseudo-element, so it is never text (not selected, copied or counted); it shows only while the card has no body. Olive is guidance, so Arbor's question is olive italic in --badge-on-card (7.1:1 on cream); the "?" turns --choice on hover or open; Flux shows its dim readout prompt line").
 
 ```css
 /* ── W3 / W11a - guided paths: a dealt step's QUESTION and its "?" (Wrizors' game plan wave 1; Fable's frames 06 / 08 / 09 of board-kinds-final) ───────────────────────────────────────
@@ -114,7 +114,7 @@ From `apps/desktop/src/styles/18-desk-rail.css`, line 350 at `25112784` (the com
 
 ## desk-rail §9
 
-From `apps/desktop/src/styles/18-desk-rail.css`, line 386 at `25112784` (the comment that stays: "flat 1px edge, no blur").
+From `apps/desktop/src/styles/18-desk-rail.css`, line 386 at `25112784` (the comment that stays: "flat 1 px edge, no blur").
 
 ```css
 /* flat 1 px edge, no blur (Nick's standing dress rule for new work) */

@@ -846,7 +846,7 @@ html[data-wz-writing='true'] .chrome-handle{ opacity:0 !important; }   /* still 
 .desk-frame[data-writing='true'] .wz-sliver-panel[data-open='true'][data-popout-hold='true'],
 [data-chrome-receded='true'] .wz-sliver-panel[data-open='true'][data-popout-hold='true']{
   opacity:1; pointer-events:auto; }
-/* THE SLIDING LAYER, shared by both side drawers: the menu slides out from behind its tab and fades in together. The panel is the clip and the scroller and keeps the fade; the visible box and the slide live on this layer, on their own tokens, never --fade-dur [desk-frame §33] */
+/* PHASE 1 - THE SLIDING LAYER, shared by both side drawers: the menu slides out from behind its tab and fades in together. The panel is the clip and the scroller and keeps the fade; the visible box and the slide live on this layer, on their own tokens, never --fade-dur [desk-frame §33] */
 .wz-drawer-slide{ min-height:100%; background:var(--desk-ground); border:1px solid var(--ink-border);
   transition:transform var(--drawer-dur) var(--drawer-ease); }
 .wz-drawer-slide--left{ border-right:none; transform:translateX(100%); }

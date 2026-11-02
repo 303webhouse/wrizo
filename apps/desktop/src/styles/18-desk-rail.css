@@ -306,7 +306,7 @@
   padding:1px 7px; pointer-events:none;
 }
 
-/* guided paths: a dealt step's question is the card's placeholder, painted from data-prompt by a pseudo-element, so it is never text (not selected, copied or counted); it shows only while the card has no body. Olive is guidance, so Arbor's question is olive italic in --badge-on-card (7.1:1 on cream); the "?" turns --choice on hover or open; Flux shows its dim readout prompt line [desk-rail §8] */
+/* W3 / W11a - guided paths: a dealt step's question is the card's placeholder, painted from data-prompt by a pseudo-element, so it is never text (not selected, copied or counted); it shows only while the card has no body. Olive is guidance, so Arbor's question is olive italic in --badge-on-card (7.1:1 on cream); the "?" turns --choice on hover or open; Flux shows its dim readout prompt line [desk-rail §8] */
 .board-text[data-prompt]::after,
 .board-popup-editor[data-prompt][data-body-empty='true']::after{
   content:attr(data-prompt); display:block; margin-top:2px;
@@ -338,7 +338,7 @@
 .board-step-pop{
   position:fixed; z-index:420; box-sizing:border-box; padding:14px 16px; border-radius:0;
   background:var(--card-stock); color:var(--ink-on-card);
-  box-shadow:0 0 0 1px var(--badge-on-card);   /* flat 1px edge, no blur [desk-rail §9] */
+  box-shadow:0 0 0 1px var(--badge-on-card);   /* flat 1 px edge, no blur [desk-rail §9] */
   font-family:var(--font-prose); font-size:13px; line-height:1.5;
 }
 .board-step-pop::before{
