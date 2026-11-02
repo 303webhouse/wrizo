@@ -84,12 +84,10 @@
 .mode-tab--action{ color:var(--text-mid); border-left:1px solid var(--ink-border); }
 .mode-tab--action.deferred{ color:var(--text-low); cursor:not-allowed; opacity:.6; }
 .mode-tab--action.deferred:hover{ background:none; color:var(--text-low); }
-/* Vertical seam splitting the strip into writing | delivery groups (a middle "workshop" group returns when Workshop is built - hidden until then, Oct 23). */
+/* the vertical seam splitting the strip into writing and delivery groups [create-picker §1] */
 .mode-tab-sep{ width:1px; height:26px; background:#3a2613; margin:0 9px; align-self:center; flex:0 0 auto; }
 .mode-tab:hover{ color:var(--text-hi); background:var(--ink-800); }
-/* ITEM arbor-quiet-brass — a selected mode tab is a WHERE-YOU-ARE state, not an act (the
-   same law item 83's R7 already gave the sliver's ON toggle, line ~3721 above): olive
-   marks state, brass stays evental. No fill, no brass. */
+/* a selected mode tab is where-you-are, not an act: olive marks state, brass stays for events; no fill, no brass [create-picker §2] */
 .mode-tab.active{ color:var(--text-hi); background:none; border-color:var(--accent-rest); }
 .mode-tab.active .mode-tab__sub{ opacity:.85; }
 .mode-tab.deferred{ color:var(--text-low); cursor:not-allowed; opacity:.6; }

@@ -1,10 +1,4 @@
-/* ===== PW1 — BOARDS CONNECTED (the Page/Plan workflow, phase 1) ===========
-   S1: the Plan panel's connections zone. The heading reuses the engraved
-   register `.wz-cascade-panel-title` already establishes (10px/2px/uppercase/
-   olive) — the LEXICON carries Nick's sentence case ("Boards connected"), the
-   REGISTER carries the voice. One accent site per menu, and this zone is it
-   (G5). No new motion anywhere in this block: the panel's own 180ms collapse
-   and the survey's slide are the built engine, and this arc adds none. */
+/* BOARDS CONNECTED (PW1): the Plan panel's connections zone. Its heading reuses the engraved register of .wz-cascade-panel-title; the lexicon carries the words, the register the voice. One accent site per menu, and this is it; no new motion [boards-connected §1] */
 .wz-cascade-plan-zone{ display:flex; flex-direction:column; gap:2px; }
 .wz-cascade-plan-title{ padding:0 0 4px; }
 /* PW2 S2 — the zone's caption on a board ("in Novel"). Quiet, one step
@@ -35,16 +29,7 @@
 .wz-cascade-survey-section{ font-size:10px; letter-spacing:2px; text-transform:uppercase;
   color:var(--text-low); padding:8px 2px 2px; }
 .wz-cascade-survey-section:first-child{ padding-top:0; }
-/* PW2 S2 AMENDMENT (Nick) — THE TWO THUMBNAIL SHAPES, and the sections that
-   hold them. "Section off Boards from Pages clearly and use a different
-   thumbnail (horizontal rectangles for Boards, vertical rectangles for
-   Pages)."
-
-   The shape is carried by an ASPECT RATIO on a leading swatch rather than by
-   the row's own box, so a long title can still wrap without turning a board
-   into a page. Geometry is the signal; no colour is spent, and no badge is
-   needed to read the row. Same law the canvas board-card obeys — a board is
-   wider than tall wherever it appears. */
+/* the two thumbnail shapes: wide for boards, tall for pages, carried by the aspect ratio of a leading swatch (never the row's box), so a long title can wrap without turning a board into a page; no colour, no badge [boards-connected §2] */
 .wz-cascade-thumb{ position:relative; }
 .wz-thumb-page::before, .wz-thumb-board::before{
   content:''; display:block; border:1px solid var(--ink-border); margin-bottom:6px;
@@ -75,10 +60,7 @@
    TITLE's to absorb — see `.crumb-here`. */
 .wz-crumb-home{ font-style:italic; color:var(--text-low); white-space:nowrap; flex:0 0 auto; }
 
-/* Destructive color lives ONLY inside the confirm (T4's own ruling —
-   "Destructive color appears only inside the confirm, never at rest") —
-   the Delete disclosure item itself stays --text-mid like its Move
-   sibling; only .wz-cascade-confirm-danger (below) wears --brick. */
+/* destructive colour lives only inside the confirm: Delete stays --text-mid like Move; only .wz-cascade-confirm-danger wears --brick [boards-connected §3] */
 .wz-cascade-confirm{ margin-top:6px; padding:8px; background:var(--ink-800); border-radius:var(--radius-sm); }
 .wz-cascade-confirm-q{ font-size:12px; color:var(--text-hi); margin-bottom:8px; }
 .wz-cascade-confirm-row{ display:flex; gap:8px; }
@@ -110,22 +92,7 @@
 .wz-drawers-cluster{ display:flex; flex-direction:column; gap:6px; margin-top:4px; }
 .wz-drawers-cluster-title{ font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-low); padding:0 2px; }
 
-/* FX9 S1 — the fold: a header disclosure toggle shared by every
-   list-bearing section this ticket touches (CascadePanels.tsx's own
-   FoldSection — DrawersPanel's per-project clusters + its "Loose" documents
-   group, both reusing `.wz-drawers-cluster`/`.wz-drawers-cluster-title`
-   above unchanged for their inner content/title typography; JournalPanel's
-   "Recent" list via the `--journal` variant below).
-   The WHOLE header is a real, full-width <button> — the hit target is the
-   entire row, never the chevron alone (S1's own ruling). The chevron reads
-   quiet olive (--accent-rest) at rest AND on hover — "a persistent door,"
-   never brass/orange at either state. Keyboard FOCUS still wears the
-   site-wide brass ring (button:focus-visible, above) — that law is about
-   RESTING/HOVERED chrome specifically ("nothing brass... at rest or on
-   hover"), and focus is this app's own established EVENTAL state, not a
-   where-you-are marker (see this file's own "olive marks where you are,
-   orange marks what you do" comments elsewhere) — so it is deliberately
-   left alone here, not overridden to olive. */
+/* the fold: a header disclosure shared by every list-bearing section (CascadePanels.tsx FoldSection). The whole header is a real full-width button; the chevron is quiet olive at rest and on hover, never brass; keyboard focus keeps the site-wide brass ring, since focus is an event [boards-connected §4] */
 .wz-fold{ display:flex; flex-direction:column; }
 .wz-fold-header{ display:flex; align-items:center; justify-content:space-between; gap:6px;
   width:100%; background:none; border:0; margin:0; padding:0; font-family:var(--font-ui);
@@ -260,21 +227,14 @@
   text-decoration:underline; text-underline-offset:3px; }
 .md-underline.md-strike, .md-strike .md-underline{ text-decoration:underline line-through; }
 
-/* ITEM 122 — THE SELECTION IS BRASS, on Nick's ruling: orange is for humans
-   ACTING, and selecting is the writer acting. Painted from the THEME TOKEN,
-   never a literal, so a theme pack re-points it with everything else; and
-   `--on-brass` is the paired foreground that already exists for exactly this
-   job, so selected text stays legible instead of inheriting whatever ink it
-   happened to have. Both rules are needed: Firefox honours only ::selection,
-   Chromium honours both, and ::-moz-selection is inert elsewhere. */
+/* the text selection is brass from the theme token (selecting is the writer acting), with --on-brass so selected text stays legible; both rules, because Firefox honours only ::selection [boards-connected §5] */
 ::selection{ background:var(--brass); color:var(--on-brass); }
 ::-moz-selection{ background:var(--brass); color:var(--on-brass); }
 
 /* A1 - text for a screen reader only: in the accessibility tree, never painted, and out of flow so it moves nothing. */
 .wz-sr-only{ position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap; border:0; }
 
-/* HEADINGS, six levels (Nick, 2026-10-06), one-to-one with HTML h1-h6: each a distinct size, h1 largest and h6 just above body.
-   text-transform is set to none on purpose - a heading is never forced into capitals (Nick: "headings should not default to ALL CAPS"). */
+/* six heading levels, one-to-one with h1-h6, each a distinct size, h1 largest and h6 just above body; text-transform:none, so a heading is never forced into capitals [boards-connected §6] */
 .md-h1{ font-size:1.6em; font-weight:600; }
 .md-h2{ font-size:1.4em; font-weight:600; }
 .md-h3{ font-size:1.25em; font-weight:600; }
@@ -292,22 +252,9 @@
    is the full column so text-align has a box to align within. Nothing here reads a theme: the rule colour is derived from the
    run's own ink, so it follows every theme and page tone. */
 .md-line{ display:inline-block; width:100%; box-sizing:border-box; vertical-align:top; }
-/* TYPING-LATENCY (row shape F, ruled 2026-10-14) - the page's free-edit surface is one ROW per line (store/lineRows.ts), the
-   newline between two rows left as text, exactly where it always was: `.md-line`'s own inline-block shape, so textContent,
-   innerText and copied text stay byte-identical (measured, docs/evidence/latency-profile-eb27ea7c), with `contain: layout style`
-   so a row's own layout stays inside it. Nothing inside a row is positioned, so a row becoming a containing block moves nothing. */
+/* the free-edit surface is one row per line (store/lineRows.ts) with the newline left as text between rows: inline-block, so textContent, innerText and copied text stay identical; contain:layout style keeps a row's layout inside it, and nothing in a row is positioned [boards-connected §7] */
 .forward-only-editor .wz-row{ display:inline-block; width:100%; box-sizing:border-box; vertical-align:top; contain:layout style; }
-/* TYPING-LATENCY - content-visibility WAS HERE, and is REMOVED (Fable's ruling, Oct 16; chat 1's ledger 67). It cut the keystroke a
-   great deal, but a skipped row carries no text for innerText (the editor's innerText read 7,430 of 121,262 characters at 20k), Ctrl+End
-   left the caret off screen, and a page -> Plan -> back return restored the scroll over re-estimated rows and showed other text. The
-   original note is kept below for the record; the rule itself is gone.
-   WAS: TYPING-LATENCY (Fable, Oct 14: content-visibility "justified to try on F rows ... if it measurably cuts the cost"; the profile's G1:
-   one-character layout 7.1 / 16 ms at 20k / 50k against containment alone's 40 / 110). A row off screen is skipped by layout; its height
-   until first rendered is the per-row estimate store/lineRows.ts writes inline (contain-intrinsic-block-size: auto <est>px), after
-   which the browser remembers its real size. What a skipped row implies is all inside the row's own box: size containment while
-   skipped (the estimate stands in), paint containment always (nothing in a row draws outside it - bullets and quote borders are inside
-   its padding). The real editor's innerText and select-all text are checked against its text at 50k by the profile, every run.
-   .forward-only-editor .wz-row{ content-visibility:auto; }   <- the removed rule */
+/* no content-visibility on the rows: a skipped row carries no text for innerText, and caret and scroll restores land on estimated rows [boards-connected §8] */
 /* PAGE TEMPLATES - THE LENS, on the rows (store/lineRows.ts applyOutlineLens; docs/plans/page-templates.md section 1). It is drawn through the editor's data-template
    and, for the Outline, two data attributes on the ROW element itself (never in the row's markup, so the kept-row compare and the shadow lines are untouched, and never as
    text: ::before content is in no innerText, no selection and no copy). OUTLINE: the row leaves a gutter on its left; the derived number sits in it at the row's level, and
@@ -323,8 +270,7 @@
 /* PAGE TEMPLATES, S5 - THE TITLE PAGE (components/TitlePageSheet.tsx): the standard manuscript sheet, five fields. Contact top-left, the word line top-right, the title, the
    fixed word "by" and the author centred lower (the approved mockup). The fields have no chrome of their own - they take the page's type and ink - so the sheet reads as a page,
    not a form. The title's capitals are drawn here, never stored. Nothing here moves the sheet: it fills the editor's own track. */
-/* The sheet owns a TOP MARGIN (--ts-top): the contact block and the word line sit that far below the sheet's top edge, so the first row is never cut by the page's own edge or by a scroll of the sheet
-   (ledger 92, frame 04: "Ada Marsh" and "About 62,000 words" were clipped mid-glyph in both themes). The fields are positioned from this margin; the centred block stays at 40% of the sheet. */
+/* the sheet owns a top margin (--ts-top), so the first row is never cut by the page's edge or a scroll; the fields are placed from it and the centred block stays at 40% of the sheet [boards-connected §9] */
 .wz-title-sheet{ --ts-top:1.6em; position:relative; width:100%; min-height:560px; font:inherit; color:inherit; }
 .wz-title-sheet input, .wz-title-sheet textarea{ font:inherit; color:inherit; background:transparent; border:0; outline:none; padding:0; margin:0; resize:none; caret-color:var(--brass); width:100%; }
 .wz-title-sheet input::placeholder, .wz-title-sheet textarea::placeholder{ color:color-mix(in srgb, currentColor 40%, transparent); }
@@ -334,9 +280,7 @@
 .wz-ts-title{ text-align:center; text-transform:uppercase; letter-spacing:.12em; }
 .wz-ts-by{ margin:1.1em 0; }
 .wz-ts-author{ text-align:center; }
-/* STEP 3 - THE INDENT LOOK (Nick's ruling): a leading tab is a FIRST-LINE indent - the first visual line moves in one step per
-   tab and wrapped lines return to the margin - so a tab must be one fixed step wide. `tab-size` makes it 2em (the browser default,
-   8 characters, varies with the typeface). The WHOLE-PARAGRAPH indent is the separate `>| ` block token below. */
+/* a leading tab is a first-line indent, one fixed step: tab-size 2em (the default of 8 characters varies with the face); the whole-paragraph indent is the separate block token below [boards-connected §10] */
 .forward-only-editor, .board-popup-editor{ tab-size:2em; }
 /* one `>| ` = one block level: the paragraph's lines (wrapped ones too) sit 2em further in. Levels stack, each a wrapper. */
 .md-block{ padding-left:2em; }
@@ -357,37 +301,7 @@
    own fixed-viewport variant just above. FX1 S1 — same rewrite: the start
    offset centers a fresh page's first line, and the band/ramp track
    --tw-fade-band/15%-floor instead of a fixed fraction + hard cutoff. */
-/* AB2 S2 DoD gave the SCRIPT surface the typewriter's hold-band in
-   container mode (the sheet lives inside the bounded .desk-frame-scroll-cap
-   — AB1 finding 4's containment fix — not the window), with the same fade
-   recipe .mode-scroll's fixed-viewport variant above uses, and FX1 S1's start
-   offset centring a fresh page's first line.
-
-   SC1 S3, AMENDED 2026-07-24 (Nick's word, via Fable) — BOTH rules retire
-   from this surface, because **the screenplay surface no longer runs the
-   typewriter at all**, interim, pending his own revision of typewriter mode
-   in a separate build.
-
-   The start-offset rule was the measured root of SC-V4 ("the cursor starts by
-   floating in the middle of the page"): a static `padding-top` of
-   `--tw-start-offset` — 25% of the stage, 183px at the 1280px reference —
-   applied unconditionally the moment a script page mounted, pushing the whole
-   sheet down the scroll box before a single keystroke, and landing a
-   brand-new page's caret at 38.2% of the visible box. Reproduced before it
-   was touched; notably the typewriter HOOK was innocent (band()'s C2 guard
-   correctly refuses to scroll fresh content, and the first element already
-   rendered 1px below the sheet's own top margin) — this declaration was the
-   whole defect. The fade mask goes with it: it is the typewriter's own
-   visual, and with the engine unwired `data-typewriter` is never 'true' here,
-   so leaving a rule keyed on it would be dead CSS that silently reanimates if
-   the attribute ever returns.
-
-   `.mode-scroll` (prose) and `.entry-full` (Journal) are UNTOUCHED and keep
-   the FX4-tuned quarter-down start and their fades exactly as shipped —
-   `--tw-start-offset` is still measured and published by useTypewriterFade.ts
-   for them. The scroll cap itself also stays exactly as it is: its bounded
-   height and internal scroll are AB1's containment fix, which never had
-   anything to do with the typewriter. SC3 owns the option's return. */
+/* the screenplay surface runs no typewriter: no start offset (it would float a fresh page's caret mid-page) and no fade mask (it would be dead CSS that reanimates if the attribute returned). .mode-scroll and .entry-full keep theirs; the scroll cap's bounded height is the containment fix and stays [boards-connected §11] */
 
 /* The corner-glyph collapse (S4 chrome purge) — App.tsx's GlobalHeader
    folds Fullscreen/Sync/Sign out behind one glyph while a DeskFrame is
