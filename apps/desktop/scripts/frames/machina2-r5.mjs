@@ -161,5 +161,6 @@ export default {
   // ── THE NICK WALK
   // (driver fix after the first green look: Machina's default page opens in Typewriter's zoom at 1366, which keeps today's drawers; the walk
   // shows the alignment on Build, as Arbor's walk does on Draft)
-  ...walkScreens('machina-walk', (app) => page(app, 'machina-walk', 'Build'), setRoom),
+  // (r7: the walk's reduced-motion repeat gets its liveness probe on the default page, which opens in Typewriter's zoom - Fable, Nov 1)
+  ...walkScreens('machina-walk', (app) => page(app, 'machina-walk', 'Build'), setRoom, (app) => page(app, 'machina-walk-z')),
 };
