@@ -1,0 +1,992 @@
+[
+ {
+  "key": "01-tokens.css#7",
+  "hash": "555e74c666",
+  "why": "the faint text tier is dark enough to clear 4.5:1 on the paper and on the card stock"
+ },
+ {
+  "key": "01-tokens.css#9",
+  "hash": "c19fc7ed6b",
+  "why": "the four desk inks: a stroke stores the ink NAME, and --ink-walnut equals --ink-stroke so a stroke with no ink paints the same; Flux inherits the four"
+ },
+ {
+  "key": "01-tokens.css#15",
+  "hash": "120d86be3c",
+  "why": "a card-scoped ink pair: the card stock stays cream in every theme, so card text cannot follow --ink-on-paper, which flips light on a dark page"
+ },
+ {
+  "key": "01-tokens.css#16",
+  "hash": "546619dc8e",
+  "why": "card footer, badge and excerpt inks: one value each, readable on the cream card stock in every theme"
+ },
+ {
+  "key": "01-tokens.css#18",
+  "hash": "ce95aa8edb",
+  "why": "--choice colours a chosen, pressed or selected state: brass in Arbor, cyan in Flux"
+ },
+ {
+  "key": "01-tokens.css#23",
+  "hash": "4dfcfa2014",
+  "why": "the active mode tab: brightened ink and a 1px olive hairline, no brass fill; a token, so the hue can change without touching a component"
+ },
+ {
+  "key": "01-tokens.css#24",
+  "hash": "a3d8f3837f",
+  "why": "the help \"?\" colour, never brass (brass means the current choice); Arbor aliases --accent-rest, Flux sets its own"
+ },
+ {
+  "key": "01-tokens.css#25",
+  "hash": "20c019c75f",
+  "why": "the door olive: --accent-rest is too faint on the paper, so doors use a darker step of the same olive, set per theme with the paper they sit on"
+ },
+ {
+  "key": "01-tokens.css#30",
+  "hash": "2a33f918ff",
+  "why": "one token for the frame's side gutter, read by the host's padding and by the strip's negative offset, so the two cannot drift apart"
+ },
+ {
+  "key": "01-tokens.css#33",
+  "hash": "505543e966",
+  "why": "the paper fills the stage height: the chrome budget is the host's fixed chrome above and below the grid (40 + 63 + 16 + 48 px, hand-synced; fx3.mjs measures it), the fence is the gap under the paper"
+ },
+ {
+  "key": "01-tokens.css#38",
+  "hash": "598c05973a",
+  "why": "the rhizome's rest colour: one step above the desk ground, barely visible; a token, so a theme reskins it in one place"
+ },
+ {
+  "key": "01-tokens.css#39",
+  "hash": "f8de69a777",
+  "why": "the roots are the house olive, stepped down to --accent-door on the cream page so they still read behind the words"
+ },
+ {
+  "key": "01-tokens.css#41",
+  "hash": "11582787fd",
+  "why": "each theme's default writing face; the face list reads this token, so its label cannot drift from what renders"
+ },
+ {
+  "key": "01-tokens.css#45",
+  "hash": "c9d7acab20",
+  "why": "square corners everywhere: the radius slots are 0"
+ },
+ {
+  "key": "02-scrollbars.css#0",
+  "hash": "967634bd2e",
+  "why": "Scrollbars, app-wide: thin, quiet, square and theme-toned. Declared on every element, not only :root, because scrollbar-width does not reliably inherit in Chromium"
+ },
+ {
+  "key": "02-scrollbars.css#1",
+  "hash": "a2131656d6",
+  "why": "the standard properties are the one scrollbar mechanism: Chromium 121+ ignores ::-webkit-scrollbar wherever they are set; the width is native thin (10px or less)"
+ },
+ {
+  "key": "02-scrollbars.css#2",
+  "hash": "b1a073a069",
+  "why": "paper and card scroll regions take the paper family's subdued pair; the board canvas sits on the paper, so it joins the paper pair"
+ },
+ {
+  "key": "02-scrollbars.css#3",
+  "hash": "9f6b3eeadd",
+  "why": "the one exception: .mode-scroll sits inside the scaled page, so its bar is the webkit mechanism at 10px divided by the applied scale, painted back to 10px; @supports keeps Firefox on thin"
+ },
+ {
+  "key": "02-scrollbars.css#4",
+  "hash": "b34903c431",
+  "why": "the padding keeps the text column one width at every scale: the margin cancellation plus 10px less the bar, with the bar capped at 10 layout px"
+ },
+ {
+  "key": "04-flux.css#1",
+  "hash": "e61c773ddb",
+  "why": "ground"
+ },
+ {
+  "key": "04-flux.css#2",
+  "hash": "3a2dea40fc",
+  "why": "the teal twin of --lamp-glow, so the backdrop is not Arbor brown under Flux"
+ },
+ {
+  "key": "04-flux.css#3",
+  "hash": "5c9b10d482",
+  "why": "the room reads blue: every dark surface sits near hue 212; the warmth overlay grows with typing"
+ },
+ {
+  "key": "04-flux.css#12",
+  "hash": "f0ab0d6351",
+  "why": "a card is dark glass, and so are its pop-up and the deck wizard, in both page tones"
+ },
+ {
+  "key": "04-flux.css#16",
+  "hash": "985e0d09ea",
+  "why": "Flux's \"?\" colour: teal, never brass or olive"
+ },
+ {
+  "key": "04-flux.css#20",
+  "hash": "833d3c8f6f",
+  "why": "Flux's default writing face is Titillium Web"
+ },
+ {
+  "key": "04-flux.css#24",
+  "hash": "2c1ca02d69",
+  "why": "the door colour follows the ground: on Flux's dark glass it is the palette's text accent, never olive"
+ },
+ {
+  "key": "04-flux.css#29",
+  "hash": "6ed37b1698",
+  "why": "the faint text tier is darkened one step down the teal ramp to clear 4.5:1 on the paper and on the card stock"
+ },
+ {
+  "key": "05-machina.css#0",
+  "hash": "3daa2fd1a5",
+  "why": "MACHINA - the third theme, strictly additive under [data-theme='machina'] (docs/theme-foundations/machina/machina-foundations.md, docs/plans/machina-build.md). Two casts: COOL is the base block, NEUTRAL lists only what changes. The page pref flips only the paper and card tokens; the chrome stays dark. Orange is scarce in both casts. --text-low is lifted above the mockup's muted value to clear the 4.5:1 text floor"
+ },
+ {
+  "key": "05-machina.css#13",
+  "hash": "9338d3469c",
+  "why": "Machina's default writing face"
+ },
+ {
+  "key": "05-machina.css#29",
+  "hash": "3b0f8e21f0",
+  "why": "Finalize and the Plan door are plain: quiet at rest, --text-hi on hover; the carrier colour only where it means current. Orange is for the notch, the closed strip and a chosen state, never a resting label"
+ },
+ {
+  "key": "05-machina.css#31",
+  "hash": "4ce0bc801d",
+  "why": "the mark: WRIZ in the content-label face and the outlined square in the active carrier (steel in COOL, orange in NEUTRAL); Arbor's PNG mask is switched off as Flux's is"
+ },
+ {
+  "key": "05-machina.css#33",
+  "hash": "b6b0fff514",
+  "why": "the vignette sits behind the content: it shades the room, never the page"
+ },
+ {
+  "key": "05-machina.css#34",
+  "hash": "e7334e0bbe",
+  "why": ""
+ },
+ {
+  "key": "06-flux-v2.css#0",
+  "hash": "d9ec2aa6f4",
+  "why": "FLUX V2 - the shell: the rules that are not just a token. Orange is scarce (the caret, the sprint surge, Uplink, the mark, the current item's left bar); every other selected state is cyan, because --brass is cyan under Flux. The frame's edge, grid, brackets and readouts are an overlay ring that recedes with the chrome; nothing here changes the page's size or position"
+ },
+ {
+  "key": "06-flux-v2.css#7",
+  "hash": "d7384e31ee",
+  "why": ""
+ },
+ {
+  "key": "06-flux-v2.css#8",
+  "hash": "de8f46892e",
+  "why": "the rail's hover and active states are electric blue (--line-active): no brown tile, no olive, no brass"
+ },
+ {
+  "key": "06-flux-v2.css#9",
+  "hash": "24ea3317cc",
+  "why": "FLUX V2 - the screens: every input reads the Flux glass (never Arbor brown); Flux shows its own orange WRIZO mark top left; a board card is a dark-glass node, its tokens re-pointed inside the canvas only; the rail's place block wraps"
+ },
+ {
+  "key": "06-flux-v2.css#10",
+  "hash": "cbc9a44216",
+  "why": "Flux marks a card's first line by colour only: capitals, spacing or another face would widen the line and make the card taller; a skin changes only the skin"
+ },
+ {
+  "key": "06-flux-v2.css#12",
+  "hash": "0d2bdacc9f",
+  "why": "the arrival's Write door is the choice colour (cyan), not brass: orange keeps only its fixed homes"
+ },
+ {
+  "key": "06-flux-v2.css#13",
+  "hash": "e461ab399a",
+  "why": "the card's resize and connect corner and the drop target are the choice colour (cyan): a handle on a selected node is a choice, and orange is scarce"
+ },
+ {
+  "key": "06-flux-v2.css#17",
+  "hash": "092569f2a8",
+  "why": "one line with an ellipsis; the full name is the button's title"
+ },
+ {
+  "key": "06-flux-v2.css#24",
+  "hash": "da0e80a21b",
+  "why": "GLITCH METER (docs/briefs/flux-flicker-meter-brief.md; components/GlitchMeter.tsx): Flux's progress animation over the whole screen, never while typing. Its own layer portalled to body: fixed, no pointer events, no layout; above the page and chrome, below the block caret (60). Its Signal Loss events are the ambient texture's .theme-fx-* elements at the meter's intensity (--op)"
+ },
+ {
+  "key": "06-flux-v2.css#25",
+  "hash": "d4e3dec885",
+  "why": "the still: a faint scan-and-grain overlay, opacity = intensity x 0.42, no motion; under reduced motion the global rule makes it simply appear; the 2.4s ease is for Ambiance 0, where that rule does not apply"
+ },
+ {
+  "key": "06-flux-v2.css#27",
+  "hash": "afece606b3",
+  "why": "one caret: !important, because the editor sets its pen ink as an inline caret colour, which would leave the native line drawn over the orange block"
+ },
+ {
+  "key": "06-flux-v2.css#28",
+  "hash": "7cc88f4c81",
+  "why": "themed, never an Arbor literal (the same move as .wz-splash-veil)"
+ },
+ {
+  "key": "06-flux-v2.css#31",
+  "hash": "d3931af33d",
+  "why": "the vignette sits behind the content in every theme, so it shades the room, never the page; one rule, so a theme added later cannot bring the band back. isolation:isolate on body keeps it visible above the lamp background (page-size.mjs V, MV and V-room check it from paint)"
+ },
+ {
+  "key": "07-components.css#38",
+  "hash": "cd8da25cd6",
+  "why": "the hint in each theme's own type: Arbor's italic prose serif, Flux and Machina their upright content face; on the framed prose page it stands on the page, clear of the text"
+ },
+ {
+  "key": "08-home.css#4",
+  "hash": "fc44c0785e",
+  "why": "the front door's wordmark, tagline and doors stay hidden while the splash holds (Splash.tsx sets the attribute) and fade in as it leaves; transition:none makes the hide instant, the base rule's transition still governs the reveal"
+ },
+ {
+  "key": "08-home.css#5",
+  "hash": "9d178870b5",
+  "why": "pointer-events:none so a hidden door cannot be pressed (opacity never gates hit-testing); focus and keys are unaffected"
+ },
+ {
+  "key": "08-home.css#12",
+  "hash": "928f109871",
+  "why": "the board: square corners, brass only on selection. A card is stacked stock: lighter than the board, a 1px hairline, a 2px hard edge and a soft shadow"
+ },
+ {
+  "key": "08-home.css#13",
+  "hash": "8bc227e46f",
+  "why": "the board canvas joins the paper-toned scrollbar group: it sits on --paper, a light surface, so the dark default would not suit it"
+ },
+ {
+  "key": "08-home.css#15",
+  "hash": "9a858266eb",
+  "why": "the wrap paints the board surface (--paper), so the bars in its gutter and below it sit on the surface their paper-toned thumb was chosen for; background only, no geometry moves"
+ },
+ {
+  "key": "08-home.css#17",
+  "hash": "d3e750a2b2",
+  "why": "the move cursor over a card: pure affordance, the drag itself is BoardEditor.tsx's; the pin, handle and layer toggle are siblings, so the browser resolves their own cursors and no exclusion is needed"
+ },
+ {
+  "key": "08-home.css#20",
+  "hash": "b34c44f828",
+  "why": "the resize handle: a 10px solid brass square with no border, centred on the card's corner (-5px); a diagonal cursor, since it resizes freely on both axes and shows only on the selected box"
+ },
+ {
+  "key": "08-home.css#22",
+  "hash": "3c1111879e",
+  "why": "while a card's corner is held the whole canvas wears the diagonal resize arrow, so a pointer that lags the corner never flips to the I-beam"
+ },
+ {
+  "key": "09-board-card.css#0",
+  "hash": "aee4343a99",
+  "why": "THE BOARD-CARD (PW2 S2): a nested board on its parent's canvas, riding the same .board-pin box a page does. Its kind is told by shape, never colour: a doubled edge drawn by ::before at z-index -1. No isolation here on purpose: a new stacking context would trap the pseudo-element in front of the card"
+ },
+ {
+  "key": "09-board-card.css#5",
+  "hash": "ac239fdec2",
+  "why": "the olive pin, the connection grab at the card's top-left on every card: a circle (the one exception to square corners, as .status-dot), olive because it is a connection, never brass. A domed sphere-top: an off-centre highlight lit from the top left, as the card's shadow is, darkening to a hand-computed olive rim; the 1px border keeps the dome contained (fx5.mjs S5 asserts the radius)"
+ },
+ {
+  "key": "09-board-card.css#7",
+  "hash": "4f2326b1e7",
+  "why": "the grabbing cursor while a move-drag is held: a canvas-level data-dragging flag, read as data-thread-armed is; board-wide, since only one drag is ever in flight"
+ },
+ {
+  "key": "09-board-card.css#9",
+  "hash": "26367089ed",
+  "why": "fit to text: a small square icon on a hand-sized card beside the resize grip; shown on hover or focus (a real button, so Tab reaches it), receding with the chrome; guidance colour at rest, --choice only while pressed; square, flat, no shadow; its words from the lexicon"
+ },
+ {
+  "key": "09-board-card.css#13",
+  "hash": "bcab9d3230",
+  "why": "line widths: lines 1px, the arm 1.25px, a selected line 2px; non-scaling-stroke keeps them true if the board's svg is scaled"
+ },
+ {
+  "key": "09-board-card.css#20",
+  "hash": "cc44ceab1d",
+  "why": "the close X sits at the strip's right end, the card's top-right corner, in the card's own ink (it sits on the cream stock, not the page); the editor's bottom padding takes the room a foot used to give"
+ },
+ {
+  "key": "09-board-card.css#25",
+  "hash": "46fead3d95",
+  "why": "the screenplay sheet is a page of its own: US Letter at 12pt, where 1in = 6em and Courier's 1ch = 0.6em, so the page (51em by 66em), the margins (9em left, 6em right, top and bottom), the 60ch measure and the 1em line all follow from one number. Every dimension is em, so changing that number scales the whole sheet as one object and the grid never reflows. box-sizing:border-box makes width:51em the page including its margins; height is exact, so every sheet in the sequence is the same page"
+ },
+ {
+  "key": "09-board-card.css#26",
+  "hash": "84fbf0ff0e",
+  "why": "the scaling is one-directional: true size (816px, 12pt) is the most a page ever is, never multiplied by --paper-scale (a screenplay page is a physical reference); below 816px of room the min() arm scales the whole page as one object"
+ },
+ {
+  "key": "09-board-card.css#31",
+  "hash": "80deee6d24",
+  "why": "THE SEQUENCE, and the gap between sheets: the gap is chrome, never body. In rem, never the sheet's em, so it does not scale with the paper; not a multiple of --script-line (1.5 lines at 24px), so no one can mistake it for blank lines; and flex gap, so nothing can render into it (sc2.mjs asserts none does). align-items:stretch keeps each sheet filling the column"
+ },
+ {
+  "key": "09-board-card.css#33",
+  "hash": "b00cc1c81e",
+  "why": "the line unit, and the rules that keep the render wrapping as store/scriptLedger.ts counts (sc2.mjs compares the two): --script-line is one line box, so N blank lines render as N line-heights; overflow-wrap:anywhere breaks an over-long word at the measure; hyphens:none, because a hyphenating browser would break every count"
+ },
+ {
+  "key": "09-board-card.css#36",
+  "hash": "301632d6c4",
+  "why": "the first element of a page contributes no space above it: here at document start, and the paginator applies the same rule at every page top (store/scriptLedger.ts reports intrinsic spacing, so it stays position-independent); it also keeps the sheet from being pushed down by a first child's margin"
+ },
+ {
+  "key": "11-create-picker.css#7",
+  "hash": "f3f0d660da",
+  "why": "the vertical seam splitting the strip into writing and delivery groups"
+ },
+ {
+  "key": "11-create-picker.css#8",
+  "hash": "daae7e340e",
+  "why": "a selected mode tab is where-you-are, not an act: olive marks state, brass stays for events; no fill, no brass"
+ },
+ {
+  "key": "12-studio-chrome.css#1",
+  "hash": "f2f5555b5e",
+  "why": "the narrow layout follows the full recede"
+ },
+ {
+  "key": "12-studio-chrome.css#11",
+  "hash": "e1b1aaa26e",
+  "why": "the bar's fill is --chrome-surface, the chrome token every theme overrides (--ink-900 is Arbor's raw surface and would leave this strip half-themed)"
+ },
+ {
+  "key": "12-studio-chrome.css#14",
+  "hash": "902c03cf46",
+  "why": ""
+ },
+ {
+  "key": "12-studio-chrome.css#17",
+  "hash": "49a6685f1e",
+  "why": "the scrollbar is flush with the paper's outer right edge: a scrollbar renders at its element's border box, so .mode-scroll extends its box across the page's right padding with a negative margin and puts the same amount back as its own padding (the text stays where it was). Both read --wz-page-pad-x, the page's own margin setting, so the cancellation is exact at every margin"
+ },
+ {
+  "key": "12-studio-chrome.css#21",
+  "hash": "b58c4a9d7d",
+  "why": "the typewriter fade is monotonic: the topmost line sits at the floor through --tw-fade-start, then the ramp climbs to fully shown over --tw-fade-band, so no newer line is ever fainter than an older one (typewriter-fade.mjs)"
+ },
+ {
+  "key": "12-studio-chrome.css#25",
+  "hash": "36d427e3d2",
+  "why": "three selectors (an attribute and two classes), so the celebrate fill wins over the lime base rule whatever the source order"
+ },
+ {
+  "key": "13-desk-frame.css#3",
+  "hash": "763685da96",
+  "why": "the strip is flush at the screen's left edge while the paper stays centred in the viewport: the strip is out of the grid's flow (position:absolute), the host's padding is symmetric (--frame-host-pad-x) and the strip's negative offset cancels it with the same token, so the two cannot drift; leftover width splits evenly around the paper (fx5.mjs S10)"
+ },
+ {
+  "key": "13-desk-frame.css#9",
+  "hash": "06895807ba",
+  "why": "the strip hangs flush off the top bar's dividing line: top:-16px cancels the spacer the editors render under the bar, and the strip drops its own top border and corner rounding"
+ },
+ {
+  "key": "13-desk-frame.css#10",
+  "hash": "0bb2231ad9",
+  "why": "the strip must win its own band: z-index:1, so the stage that follows it in the DOM cannot cover it for a real pointer. Geometry would move the paper, which never reflows for chrome; 1 is the smallest value that beats auto, and nothing else legitimately overlaps the strip"
+ },
+ {
+  "key": "13-desk-frame.css#11",
+  "hash": "e811e99012",
+  "why": "Trash reaches the foot: min-height does not make a height definite, so the strip's height:100% fell back to auto; this element is a flex column and the strip takes flex:1, so its foot's margin-top:auto has room to push against (item137.mjs)"
+ },
+ {
+  "key": "13-desk-frame.css#18",
+  "hash": "30f4980d36",
+  "why": "the script page mounts the same .mode-pagecol geometry prose uses, at the same width band, so the paper's measure is the one constant; Courier's ch measures are relative to the sheet's own font size"
+ },
+ {
+  "key": "13-desk-frame.css#20",
+  "hash": "4ef3246a7f",
+  "why": "THE PROSE PAGE IS A LETTER PAGE, in page units (docs/plans/page-size.md): 8.5 x 11 page-inches, margins in page-inches (pageDress.ts), type in points (fontSize.ts). One number, --wz-letter-in, written on this stage from its size (store/pageScale.ts), scales all three, so the page grows in shape only and every line breaks where it did; the value here is scale 1, for the first paint. Every anchor reads --wz-page-w / --wz-page-half"
+ },
+ {
+  "key": "13-desk-frame.css#21",
+  "hash": "3111caa381",
+  "why": "the page lays out at scale 1 always and is painted at --wz-k by a transform (below), so every line breaks where it does at 1366; the anchors read the painted width (--wz-anchor-w, --wz-page-half), the zoomed width while zoomed"
+ },
+ {
+  "key": "13-desk-frame.css#22",
+  "hash": "8e922595ba",
+  "why": "a definite height, so the letter-tall page shrinks to the stage instead of growing the column past it"
+ },
+ {
+  "key": "13-desk-frame.css#28",
+  "hash": "b332ade2f7",
+  "why": "the prose page: letter height capped to the stage (a flex item that may shrink; the text scrolls inside it); margins in page-inches (normal 1in, narrow 0.684, wide 1.526), top and bottom 0.85in. --paper-scale:1 inside the page, because page units carry the scale here; --wz-page-pad-x is the finished margin the scrollbar cancellation reads"
+ },
+ {
+  "key": "13-desk-frame.css#30",
+  "hash": "833f06c635",
+  "why": "the layout height DeskFrame computes (letter, or what the stage holds once painted at --wz-k); the transform paints it at k"
+ },
+ {
+  "key": "13-desk-frame.css#32",
+  "hash": "0aaa93e4a2",
+  "why": "THE ZOOM: the same page transformed by --wz-zoom (1.6, capped to the stage's width), scale never reflow, so its layout box and every line break stay as in the normal view. The column widens to the stage so the band mask spans the zoomed page. THE BAND, in line-heights (--tw-lh) from the anchor at 50% of the column (--tw-lead keeps the .12 stop 56px or more from the top): 0 at the top, .12 / .40 / .72 at 6.6 / 4.2 / 2.2 lines above, full from 0.15 above to 1.45 below, .40 at 2.8 below, 0 from 4.4 below. Text and paper fade into the desk together; this band replaces the scroller's top mask"
+ },
+ {
+  "key": "13-desk-frame.css#33",
+  "hash": "77121bf204",
+  "why": "while zoomed the Sliver keeps DRAWER_MIN by growing rightward from its anchor, over the zoomed band (a tool overlays, nothing is displaced); never leftward, under the strip; its grip stays on top, so it still closes"
+ },
+ {
+  "key": "13-desk-frame.css#34",
+  "hash": "b3f752a3e1",
+  "why": "while zoomed the column fills the stage: .mode-stage is a content-sized flex item, so a 100% column inside it would stay narrow and the band mask would cut the enlarged page at its sides"
+ },
+ {
+  "key": "13-desk-frame.css#35",
+  "hash": "905edd68cd",
+  "why": "the middle (the engine writes the same value from ZOOM_ANCHOR)"
+ },
+ {
+  "key": "13-desk-frame.css#37",
+  "hash": "1812d0ba8f",
+  "why": "the script sheet grows to fill a short script's column (flex-grow on the sheet, flex-shrink 0 so a long script is never compressed; the scroll-cap scrolls it). The scroll-cap itself takes no main-axis flex-grow, mirroring .mode-stage: its width stays content-sized so the stage can centre the page, and the height fill comes from cross-axis stretch; min-width:0 and max-width:100% guard overflow near the floor (fx7.mjs S1)"
+ },
+ {
+  "key": "13-desk-frame.css#41",
+  "hash": "2cc7ec6885",
+  "why": "the sliver's anchor is absolutely positioned inside the stage, so it can never move the paper in any state. Its right edge lands on the paper's left edge, so the grip never enters the text measure; its width is clamped to the margin between the Drawer's right edge and the paper (--frame-gap is the fixed remainder), dipping at most --sliver-paper-pad (38px, hand-synced with .mode-page's padding) into the paper's padding, never the text: clamp(160px, margin + padding, 200px)"
+ },
+ {
+  "key": "13-desk-frame.css#42",
+  "hash": "ef6f0e5f6c",
+  "why": "raised above a busy board's cards, which outrank z-index 5 within this stage's context; the panel is inset 16px, so its grip needs no separate lift"
+ },
+ {
+  "key": "13-desk-frame.css#50",
+  "hash": "55c9154e50",
+  "why": "the screenplay anchors ride the page itself: half of 8.5in scaled by the column's own token, floored at the stage's half (the min(50%, ...) idiom --board uses) so a clamped page cannot push the anchor off the stage"
+ },
+ {
+  "key": "13-desk-frame.css#52",
+  "hash": "d575b0ac94",
+  "why": "the board narrows beside an open drawer: BoardEditor writes --board-l, --board-r and --board-strip on the stage, and the anchors read the board's real edges, so the Tools tab sits on the board's left edge with the room the board left it"
+ },
+ {
+  "key": "13-desk-frame.css#55",
+  "hash": "52c5563bc9",
+  "why": "z-index 56 over 55: within the stage's isolated context a board's cards rank too, and box.z climbs unbounded, so the drawer sits in the stage's safely-above-content tier (.board-create-ghost's 50), the grip one above its panel"
+ },
+ {
+  "key": "13-desk-frame.css#60",
+  "hash": "0e8f33dd36",
+  "why": "a pop-out on the page never extends past the page surface: the page's drawers end at its foot (--wz-page-foot, written by DeskFrame) and scroll inside; where the page runs past the stage (the zoom), at the stage's foot"
+ },
+ {
+  "key": "13-desk-frame.css#63",
+  "hash": "0c20ec4e3c",
+  "why": "the Tutor's tab rides the board's right edge, its panel standing against it"
+ },
+ {
+  "key": "13-desk-frame.css#64",
+  "hash": "a2175e76f6",
+  "why": "raised with the grip anchor above, one below it"
+ },
+ {
+  "key": "13-desk-frame.css#66",
+  "hash": "8e189e5e1d",
+  "why": "the Tutor panel's width is a reading measure, clamp(320px, 34vw, 460px), declared once so the open rule and the docked rule's ceiling read the same value"
+ },
+ {
+  "key": "13-desk-frame.css#75",
+  "hash": "18a1987736",
+  "why": "THE BAR COMES HOME: the progress instrument renders under the page in the rhizome's lane, inside the 40px fence the stage already reserves (--fx3-paper-fence), as an absolutely positioned descendant of an overlay anchor, so the paper's rect is immune to it. The track spans the paper's width at every scale (the goal-glow anchor's measure math); pointer-events:none, so an instrument can never become a control"
+ },
+ {
+  "key": "13-desk-frame.css#79",
+  "hash": "e4d0cbd699",
+  "why": "THE GOAL RHIZOME: the anchor sits behind the paper (z-index -1), the roots in --rhizome-ink. The field's viewBox equals its pixel size, so 1 user unit is 1 CSS px; no vector-effect, since non-scaling-stroke can break the pathLength draw-on in Chromium"
+ },
+ {
+  "key": "13-desk-frame.css#84",
+  "hash": "c5c96db96f",
+  "why": "while typing, everything off the page goes to 0: on the framed desk the floor is 0 (--fade-min lives only on .mode-stage, never an ancestor here), and the chrome outside the dissolve classes (the wordmark, the ember dot, the progress lane, the glitch meter) recedes with it, keyed on data-wz-writing; it returns on the engine's curve (--fade-dur)"
+ },
+ {
+  "key": "13-desk-frame.css#85",
+  "hash": "0560824a06",
+  "why": "the recede's exceptions: the page, the drawer tab arrows, progress strips that are on, and docked panels"
+ },
+ {
+  "key": "13-desk-frame.css#93",
+  "hash": "d5c3210f94",
+  "why": "the unified mode strip: its own class family so ModeSwitcher.tsx cannot drift under it; no brass, the active tab is brightened ink and a 1px olive hairline; uppercase and letterspacing are presentation only (text-transform), the DOM keeps the title-case strings"
+ },
+ {
+  "key": "13-desk-frame.css#94",
+  "hash": "d3773e3d4e",
+  "why": "the mode tabs sit directly in the sprint-nav with no box of their own, so no second line is drawn under its bottom line"
+ },
+ {
+  "key": "13-desk-frame.css#96",
+  "hash": "7346943adc",
+  "why": "the \"?\" sits beside a tab, never inside it (a button cannot nest a button): an inline-flex wrapper reads the pair as one unit without changing the strip's gap"
+ },
+ {
+  "key": "13-desk-frame.css#104",
+  "hash": "727b921bb4",
+  "why": "THE POP-OUT HOLD: a foot pop-out fades after fifteen words written or a period entered, never on a clock (Sliver.tsx sets data-popout-hold). It adds no fade: while the flag stands it out-specifies the two recede rules (0,5,0 and 0,4,0 over 0,3,0 and 0,2,0), and [data-open='true'] keeps a closed drawer closed"
+ },
+ {
+  "key": "13-desk-frame.css#105",
+  "hash": "bd3249f6b2",
+  "why": "THE SLIDING LAYER, shared by both side drawers: the menu slides out from behind its tab and fades in together. The panel is the clip and the scroller and keeps the fade; the visible box and the slide live on this layer, on their own tokens, never --fade-dur"
+ },
+ {
+  "key": "13-desk-frame.css#106",
+  "hash": "84cd1768f8",
+  "why": "the contents are not live until the slide settles: for --drawer-dur the sliding layer takes no pointer input, so an early press does nothing rather than hit a neighbour (scripts/evidence/click-mid-open.mjs); an animation, because pointer-events is discrete; focus is unaffected"
+ },
+ {
+  "key": "13-desk-frame.css#107",
+  "hash": "d9385ee1bf",
+  "why": "THE TAB ROW: the chosen tab and the drawer's arrow tab both mark where you are, so both are olive; brass stays for action controls"
+ },
+ {
+  "key": "13-desk-frame.css#109",
+  "hash": "29bc01d9e7",
+  "why": "pointer events back on the \"?\" itself, because the row is pointer-events:none and a real press would otherwise land on nothing"
+ },
+ {
+  "key": "13-desk-frame.css#110",
+  "hash": "05a53ae044",
+  "why": "this row's stretch-to-the-margins override, scoped by specificity (two classes) so it wins over the shared .wz-drawer-note rules whatever the order"
+ },
+ {
+  "key": "13-desk-frame.css#112",
+  "hash": "a463288477",
+  "why": "REDUCED MOTION: fade only, short, no slide. The two panels carry their own !important duration, because the global floor (every transition 0.01ms !important) would flatten the fade, and opacity is not motion; a class selector out-ranks the floor's universal selector. The sliding layer is not exempt: it stays instant"
+ },
+ {
+  "key": "13-desk-frame.css#114",
+  "hash": "09044208fd",
+  "why": "the Structure zone's sub-labels and the rule between its halves: one zone reads as two, so a kind chip named Screenplay is never mistaken for the conversion door. Quieter than .wz-sliver-h; no accent (a sub-label is neither a state nor an act); the chips reuse .wz-page-setup-chip"
+ },
+ {
+  "key": "13-desk-frame.css#115",
+  "hash": "d144ef03f9",
+  "why": "the sliver's eyebrow labels are information, not events: quiet, neither olive nor orange"
+ },
+ {
+  "key": "13-desk-frame.css#116",
+  "hash": "346d50ecc5",
+  "why": "the engraved zone heading is the menus' one resting accent: olive"
+ },
+ {
+  "key": "13-desk-frame.css#120",
+  "hash": "80ee19cb81",
+  "why": "a row name's \"?\" sits beside its row, never inside it: the wrap is the flex row, and .wz-template-row keeps filling it"
+ },
+ {
+  "key": "13-desk-frame.css#121",
+  "hash": "55e2bbcac9",
+  "why": "brass on the press, and brass at rest on the template the page already is (aria-pressed): brass marks a choice made"
+ },
+ {
+  "key": "13-desk-frame.css#125",
+  "hash": "1ab7c268d9",
+  "why": "the scoped Typeface section: two scopes over the roster as a list; brass marks the scope in force and its current face (none for a mixed highlight); a dead Selection is dimmed and inert; choosing is the preview, no Apply; nothing moves the page"
+ },
+ {
+  "key": "13-desk-frame.css#126",
+  "hash": "a3698fbc2d",
+  "why": "a scope label is never cut: each button is as wide as its label and grows to share the row; when the two cannot sit side by side, the second wraps under the first. No ellipsis"
+ },
+ {
+  "key": "14-ink-options.css#6",
+  "hash": "e8728add86",
+  "why": "an ON toggle is a where-you-are state, so it rests olive (brass stays for the :active flash); the knob is --ink-950 for contrast on olive"
+ },
+ {
+  "key": "14-ink-options.css#7",
+  "hash": "c271422b88",
+  "why": ""
+ },
+ {
+  "key": "14-ink-options.css#9",
+  "hash": "41810a59b9",
+  "why": "the progress bar's line is shared with Full screen: one flex row with align-items:center puts the hairline and the toggle on one line by layout, never by nudged margins (the probe checks the centres within 0.6px); the hairline flexes, the toggle does not; min-width:0 lets it shrink"
+ },
+ {
+  "key": "14-ink-options.css#16",
+  "hash": "8ad4423c71",
+  "why": ""
+ },
+ {
+  "key": "14-ink-options.css#21",
+  "hash": "fc6eabe266",
+  "why": "the Tutor panel moves exactly as the tool pop-out (.wz-sliver-panel): the same opacity and transform transition on --fade-dur (.2s fallback, ease), only the nudge mirrored; its width is static (the clamp, a custom property), never part of the transition; closed, it is invisible and inert whatever its footprint"
+ },
+ {
+  "key": "14-ink-options.css#22",
+  "hash": "6d67e8146e",
+  "why": "min-height:0, because as a real flex item its default min-height:auto could grow it past its box with a long lens section, scrolling the document instead of the panel (the same escape .desk-frame-stage uses)"
+ },
+ {
+  "key": "14-ink-options.css#23",
+  "hash": "7fbcfec531",
+  "why": "three regimes, set by Tutor.tsx's measure-effect from the true margin (stage right minus paper right): on a writing surface with 280px or more it occupies the margin at min(margin, open-w), flush to the paper; with less it overlays at open-w; on a board it keeps open-w and may overlay. The clamp here is only the fallback before the effect runs"
+ },
+ {
+  "key": "14-ink-options.css#24",
+  "hash": "711aba247c",
+  "why": "the link dock's reader (a linked card or page, read-only, beside the page): square, no shadow, the theme's own words and tokens; its words select and copy as plain text"
+ },
+ {
+  "key": "14-ink-options.css#25",
+  "hash": "bd8f89abc7",
+  "why": "the board regime: the board is an arrangement surface, not paper, so its Tutor panel keeps open-w and may overlay the canvas; Tutor.tsx leaves the width to this rule on a board"
+ },
+ {
+  "key": "14-ink-options.css#27",
+  "hash": "c907e6464a",
+  "why": "a closed drawer is hidden whatever the dissolve says: visibility:hidden (no opacity can bring it back; it leaves the tab order), plus opacity 0 at a higher specificity in both dissolve contexts. The close still fades and slides: visibility flips after the longer of --fade-dur and --drawer-dur; opening shows at once"
+ },
+ {
+  "key": "14-ink-options.css#28",
+  "hash": "565523e0ec",
+  "why": "a closing drawer fades on the drawer's own duration, not the writing dissolve's slow --fade-dur, so a keystroke-closed Tutor fades as fast as the Tools drawer"
+ },
+ {
+  "key": "14-ink-options.css#29",
+  "hash": "c824e8ccbf",
+  "why": "under reduced motion the closed panel fades on --drawer-dur-reduced and is hidden when that is done; the delay holds the hide back"
+ },
+ {
+  "key": "14-ink-options.css#30",
+  "hash": "b6f591fba7",
+  "why": "the dock toggle: a small quiet icon-only corner control, sized like the drawer note's \"?\""
+ },
+ {
+  "key": "14-ink-options.css#31",
+  "hash": "5b7f511d21",
+  "why": "DrawerNote.tsx's CSS, the one definition every caller shares; the tab row's override lives beside .wz-drawer-tabnotes, scoped by specificity"
+ },
+ {
+  "key": "14-ink-options.css#32",
+  "hash": "df496db13f",
+  "why": "a note beside an uppercase heading would inherit its transform; a note's words are never a heading, so it is reset here once"
+ },
+ {
+  "key": "14-ink-options.css#33",
+  "hash": "33b828ceb4",
+  "why": "near the right edge the pop opens leftward from the button's right edge (DrawerNote.tsx measures at open time), so it stays inside the viewport"
+ },
+ {
+  "key": "14-ink-options.css#34",
+  "hash": "dce19194ff",
+  "why": "HELP BUTTONS (store/help.ts, HelpButton/HelpPop; docs/mockups/help-buttons/index.html): one shared overlay, position:fixed in a body portal, so it can never move or resize the page it sits over. --help (never brass) means more words available"
+ },
+ {
+  "key": "14-ink-options.css#37",
+  "hash": "21699a0a15",
+  "why": "the conversation renders under the head and has no scrollbox of its own: the panel scrolls as one column, a bubble grows to its content, and no second scrollbar exists in this subtree (fx10.mjs S1 asserts it)"
+ },
+ {
+  "key": "14-ink-options.css#39",
+  "hash": "71f1e38b85",
+  "why": "the Free Write roster and its one standing draw, only in Free Write (absent elsewhere). Zero resting orange: presets rest olive, brass on hover, --brass-press on press. Figtree, since these label presets and never become the writer's words. No overflow of any kind (the panel scrolls as one column; fx10.mjs checks); it wraps"
+ },
+ {
+  "key": "14-ink-options.css#40",
+  "hash": "cff3dcb09d",
+  "why": "the spent ask is styled by data-spent, never :disabled: it must answer a fourth press with a note, so it stays pressable and quiet until the hundred words arrive"
+ },
+ {
+  "key": "14-ink-options.css#53",
+  "hash": "c4f536f89e",
+  "why": "the strip rests bright (--text-hi) and lights brass on hover; the open-category marker (olive) still wins on an active item"
+ },
+ {
+  "key": "14-ink-options.css#54",
+  "hash": "25c4ff7679",
+  "why": "hover is not an act: it lifts to --text-hi, and brass moves to :active, the press"
+ },
+ {
+  "key": "14-ink-options.css#56",
+  "hash": "67ec22319e",
+  "why": "icons and labels 20% larger: 17 to 20.4, 18 to 21.6, 9 to 10.8"
+ },
+ {
+  "key": "14-ink-options.css#59",
+  "hash": "4b0f733b93",
+  "why": "the cascade's overlay anchor: absolutely positioned inside the stage (it cannot move the paper), anchored from the strip's right edge because layers grow rightward from the strip; display:flex so docking is ordinary flex reflow. Its left cancels both the host padding and the grid's own centring margin (--fx7-cascade-grid-margin reproduces max(0px, (100vw - 2 x pad - frame-max) / 2)), so it sits on the strip's edge at every viewport (fx7.mjs S3 checks 1100, both reference widths and 2200)"
+ },
+ {
+  "key": "14-ink-options.css#60",
+  "hash": "9c4198ae39",
+  "why": "z-index 60: above the drawers (55, 56) in the same isolated stage, so a real press on a cascade row never lands on the Sliver's wrapper; below the dialogs (200 and up)"
+ },
+ {
+  "key": "14-ink-options.css#62",
+  "hash": "0dba813bfe",
+  "why": "the drawer sits flush on the rail: no --frame-gap term, pure layout math over the same tokens the strip uses, so it cannot drift from the strip it targets"
+ },
+ {
+  "key": "14-ink-options.css#66",
+  "hash": "a155b81c48",
+  "why": "flush on the rail, the seam is the rail's own border-right: no border-left here (it would read as a hairline gap) and square left corners (a radius at a flush seam is a notch)"
+ },
+ {
+  "key": "14-ink-options.css#68",
+  "hash": "b16019e847",
+  "why": "the rail pop-outs slide and fade as the Tools strip does, on its tokens (--drawer-dur, --drawer-ease; the short fade alone under reduced motion); backwards fill on the way in; leaving layers take no input; overlay only, nothing moves the page"
+ },
+ {
+  "key": "14-ink-options.css#69",
+  "hash": "951eb78e8f",
+  "why": "the cascade drawer's engraved heading: one olive accent per menu, at rest"
+ },
+ {
+  "key": "14-ink-options.css#72",
+  "hash": "2836923a31",
+  "why": "THEME PICKER (theme-menu-brief.md, theme-rules.md section C): brand cards, not a button list. The card art is never scoped by [data-theme]: a card shows its own theme's look whatever theme is active, so --tp-cyan and --tp-lime are local constants; --brass, theme-invariant, marks the current card"
+ },
+ {
+  "key": "14-ink-options.css#78",
+  "hash": "bbb2aa34dd",
+  "why": "the hover glitch is a flash within the global flash budget: ThemePicker.tsx's controller (store/fluxCardGlitch.ts) asks the budget first and runs this class for one iteration, never an infinite hover loop, and never stacks a second"
+ },
+ {
+  "key": "14-ink-options.css#80",
+  "hash": "019492f44f",
+  "why": "the theme choice is a choice, not a where-you-are state: a brass outline, theme-invariant"
+ },
+ {
+  "key": "15-boards-connected.css#0",
+  "hash": "bfbc67a990",
+  "why": "BOARDS CONNECTED (PW1): the Plan panel's connections zone. Its heading reuses the engraved register of .wz-cascade-panel-title; the lexicon carries the words, the register the voice. One accent site per menu, and this is it; no new motion"
+ },
+ {
+  "key": "15-boards-connected.css#5",
+  "hash": "7cc5381867",
+  "why": "the two thumbnail shapes: wide for boards, tall for pages, carried by the aspect ratio of a leading swatch (never the row's box), so a long title can wrap without turning a board into a page; no colour, no badge"
+ },
+ {
+  "key": "15-boards-connected.css#13",
+  "hash": "f6918c68f8",
+  "why": "destructive colour lives only inside the confirm: Delete stays --text-mid like Move; only .wz-cascade-confirm-danger wears --brick"
+ },
+ {
+  "key": "15-boards-connected.css#17",
+  "hash": "014f06e369",
+  "why": "the fold: a header disclosure shared by every list-bearing section (CascadePanels.tsx FoldSection). The whole header is a real full-width button; the chevron is quiet olive at rest and on hover, never brass; keyboard focus keeps the site-wide brass ring, since focus is an event"
+ },
+ {
+  "key": "15-boards-connected.css#32",
+  "hash": "0d009c665b",
+  "why": "the text selection is brass from the theme token (selecting is the writer acting), with --on-brass so selected text stays legible; both rules, because Firefox honours only ::selection"
+ },
+ {
+  "key": "15-boards-connected.css#34",
+  "hash": "4273055894",
+  "why": "six heading levels, one-to-one with h1-h6, each a distinct size, h1 largest and h6 just above body; text-transform:none, so a heading is never forced into capitals"
+ },
+ {
+  "key": "15-boards-connected.css#37",
+  "hash": "4106142f60",
+  "why": "the free-edit surface is one row per line (store/lineRows.ts) with the newline left as text between rows: inline-block, so textContent, innerText and copied text stay identical; contain:layout style keeps a row's layout inside it, and nothing in a row is positioned"
+ },
+ {
+  "key": "15-boards-connected.css#38",
+  "hash": "2a3589db26",
+  "why": "no content-visibility on the rows: a skipped row carries no text for innerText, and caret and scroll restores land on estimated rows"
+ },
+ {
+  "key": "15-boards-connected.css#41",
+  "hash": "8d5e81b1b3",
+  "why": "the sheet owns a top margin (--ts-top), so the first row is never cut by the page's edge or a scroll; the fields are placed from it and the centred block stays at 40% of the sheet"
+ },
+ {
+  "key": "15-boards-connected.css#42",
+  "hash": "c32ca5fce0",
+  "why": "a leading tab is a first-line indent, one fixed step: tab-size 2em (the default of 8 characters varies with the face); the whole-paragraph indent is the separate block token below"
+ },
+ {
+  "key": "15-boards-connected.css#46",
+  "hash": "81a33ecd9f",
+  "why": "the screenplay surface runs no typewriter: no start offset (it would float a fresh page's caret mid-page) and no fade mask (it would be dead CSS that reanimates if the attribute returned). .mode-scroll and .entry-full keep theirs; the scroll cap's bounded height is the containment fix and stays"
+ },
+ {
+  "key": "18-desk-rail.css#12",
+  "hash": "943fbccd37",
+  "why": "the board's name is a button (the rename control) that reads as plain crumb text (the family, size, colour and weight of .crumb-here) with a text cursor, the cue that clicking edits it"
+ },
+ {
+  "key": "18-desk-rail.css#17",
+  "hash": "b01f737d8f",
+  "why": "in the zoom the ink sheet covers the visible page: it reaches over the scroller's start and end paddings with matching negative margins and paddings, so its text stays put; ink is measured from where the text starts (InkStratum.tsx inkOriginY), so strokes keep their place in both views"
+ },
+ {
+  "key": "18-desk-rail.css#18",
+  "hash": "a02a3b4a88",
+  "why": "the modes move toward the right and Done stays rightmost with a fixed gap, on the framed host only (the legacy sprint-nav layout is untouched); a trial value: delete this block to revert"
+ },
+ {
+  "key": "18-desk-rail.css#27",
+  "hash": "c8379ac037",
+  "why": "the deck engine's pop-out (components/DeckWizard.tsx): the same shape as .board-popup-backdrop and .board-popup, so it reads as the pop-out the writer already knows; on a board it reuses .board-canvas-blurred, and CreateProject.tsx, with no board under it, uses the .deck-wizard-blur pair (identical values)"
+ },
+ {
+  "key": "18-desk-rail.css#28",
+  "hash": "e2979f9760",
+  "why": "the sheet is cream card stock, so its text takes the card's ink (--ink-on-card, 4.5:1 or more in every tone; flux-card-ink.mjs C5), never --ink-on-paper, which a dark page flips light. Labels stand apart by mono caps, a picked option by an olive border, a hovered row by an olive underline"
+ },
+ {
+  "key": "18-desk-rail.css#30",
+  "hash": "10b1ec8c50",
+  "why": "Machina's deck wizard is portalled to body, so it reads :root tokens, where Machina's card family is not set; it wears Machina's own dress on the theme's tokens: the chrome surface, a 1px hairline, square, no shadow, Plex. Names --text-hi (7:1 or more), labels --text-mid or better (4.5:1); hover and pick carried by --accent-rest as a bar or border, never text colour"
+ },
+ {
+  "key": "18-desk-rail.css#31",
+  "hash": "a1abbc8cd4",
+  "why": "MACHINA FORMS: the deck library as a 600-wide panel inside the stage, never past its foot, the list scrolling inside; name, cover line and a mono block count per row; hover and focus are a 2px --choice left bar and the --ink-800 fill, never text colour. Square, a hairline, no shadow, no motion; a clear backdrop, so the rail stays in view"
+ },
+ {
+  "key": "18-desk-rail.css#34",
+  "hash": "7d365ad509",
+  "why": "guided paths: a dealt step's question is the card's placeholder, painted from data-prompt by a pseudo-element, so it is never text (not selected, copied or counted); it shows only while the card has no body. Olive is guidance, so Arbor's question is olive italic in --badge-on-card (7.1:1 on cream); the \"?\" turns --choice on hover or open; Flux shows its dim readout prompt line"
+ },
+ {
+  "key": "18-desk-rail.css#37",
+  "hash": "c1450684e9",
+  "why": "flat 1px edge, no blur"
+ },
+ {
+  "key": "18-desk-rail.css#38",
+  "hash": "aa30292f31",
+  "why": "Flux's own type (Chakra Petch), not Arbor's italic serif"
+ },
+ {
+  "key": "18-desk-rail.css#39",
+  "hash": "6a492194a6",
+  "why": "THE WALK, SHOW AS, the Journal as a Book, thumbnails by kind (docs/guided-paths/w1-walk-brief.md). Square edges, flat 1px edges, no shadows; circles only for marks. Arbor: brown and cream surfaces, olive for options and guidance, brass for the human act only; decorative lines muted. The swipe is a pure slide (transform only, both cards opaque, 280ms, a soft edge mask); reduced motion cuts"
+ },
+ {
+  "key": "18-desk-rail.css#41",
+  "hash": "70afb89ee9",
+  "why": "the caret stands on the body's empty first line, so the dealt question is pulled up onto that line (one editor line: 1.6 x 17px x the card type scale) and reads as where the writer begins"
+ },
+ {
+  "key": "18-desk-rail.css#56",
+  "hash": "d7942b8507",
+  "why": "the Outline starts clear of the Sliver's grip, the 16px chevron tab on the stage's left edge"
+ },
+ {
+  "key": "18-desk-rail.css#57",
+  "hash": "6e93098164",
+  "why": "square"
+ },
+ {
+  "key": "18-desk-rail.css#58",
+  "hash": "4213fd1601",
+  "why": "the text keeps a gap of its own from the title input, whatever the title's width"
+ },
+ {
+  "key": "19-beginnings.css#0",
+  "hash": "d73cb26082",
+  "why": "BG1 and BG2, the Beginnings (docs/wrizo-alpha/p1-wave.md, p2-wave.md): one row, one grammar, two surfaces; olive icon-and-label doors, never a grid, nothing counted, no completion state (the rhizome stays out of the olive family, so olive means a door). The container is pointer-events:none, so the caret is live under the row from the first frame; only the doors take the pointer"
+ },
+ {
+  "key": "19-beginnings.css#1",
+  "hash": "83ed4160c7",
+  "why": "the grammar in one place, both surfaces inheriting: icons above labels, about 50% larger, in the door olive (--accent-door). Dark olive at rest, brass on hover, orange only on press; no resting opacity, so the colour the eye sees is the token's (bg2.mjs computes the contrast)"
+ },
+ {
+  "key": "19-beginnings.css#3",
+  "hash": "875809321c",
+  "why": "one placement rule: both surfaces centre the row, spanning the surface (left 0, right 0) with justify-content:center, never left:50% and a translate, which would offer the row only half the room and wrap it into two lines"
+ },
+ {
+  "key": "19-beginnings.css#9",
+  "hash": "3c282f25a9",
+  "why": "the empty board's starters: a thin square outline at about 40% opacity, lifted by hover and focus, fading on the first press (--faded); the board row only; the outline takes currentColor, so it reads on whatever paper the theme lays"
+ },
+ {
+  "key": "19-beginnings.css#11",
+  "hash": "e6dc74e5a4",
+  "why": "a chip's chosen value reads brass: a choice outline, diverging on purpose from the where-you-are olive of tabs"
+ },
+ {
+  "key": "19-beginnings.css#15",
+  "hash": "4a38e221b8",
+  "why": "Open Pages shows three rows and scrolls: a viewport, not a cap, so the fourth page stays reachable; three rows of about 27px plus a sliver of the fourth tell the eye there is more"
+ },
+ {
+  "key": "19-beginnings.css#20",
+  "hash": "d172f8c3f4",
+  "why": "the grip sits at the card's edge and the dock opens beyond it: no negative margin, so neither piece of chrome crosses the card's rect (the harness measures both against the card)"
+ },
+ {
+  "key": "19-beginnings.css#21",
+  "hash": "75f5d1809c",
+  "why": "flush: 1px is the card's own border, so the grip's edge is the card's edge"
+ },
+ {
+  "key": "19-beginnings.css#22",
+  "hash": "a72b742d21",
+  "why": "the dock meets the grip (18px wide), no gap"
+ },
+ {
+  "key": "19-beginnings.css#26",
+  "hash": "0d9d692415",
+  "why": "THE SPLASH: the hand-drawn Wrizo over the live app. It cannot block writing: pointer-events:none on the container and both children, so input reaches whatever is underneath. z-index 400, above the whole stack (modals top out at 300). Its size is set inline by Splash.tsx from the asset's measured ink box, about a quarter of the screen"
+ },
+ {
+  "key": "19-beginnings.css#27",
+  "hash": "73e0990819",
+  "why": "the drawing stays truly centred: the loading line is positioned absolutely, never a flex participant, so it cannot move the mark"
+ },
+ {
+  "key": "19-beginnings.css#28",
+  "hash": "0a1f4c1f6e",
+  "why": "the background is a solid block of the theme's own ground (--ink-950), dimmed, never blurred: nothing of the app shows through"
+ },
+ {
+  "key": "19-beginnings.css#29",
+  "hash": "1cf4dce0b4",
+  "why": "a short hold, then a 0.45s fade"
+ },
+ {
+  "key": "19-beginnings.css#31",
+  "hash": "3373dda5a6",
+  "why": "the cycling loading line, in the theme's UI font and a quiet colour; key-remounted per line (Splash.tsx) so the fade restarts; positioned absolutely from --mark-h (the drawing's measured height), so it sits just below the drawing and never moves it"
+ },
+ {
+  "key": "19-beginnings.css#36",
+  "hash": "9cbc51b3ec",
+  "why": "BOARD CONTEXT MENU: the small themed menu, the Send to Trash dialog and the Settings switch; all overlays (position:fixed in a portal), so none moves anything beneath it; tokens only"
+ },
+ {
+  "key": "19-beginnings.css#39",
+  "hash": "94eaf302e0",
+  "why": "CONNECTOR-B: the Grafts and Links list in the right drawer, the rail thumbnails' circles in connection mode, the drag ghost, and the viewport-level overlay the arm travels in (it must reach the rail, so it cannot live in the board canvas, which clips)"
+ },
+ {
+  "key": "19-beginnings.css#40",
+  "hash": "6bc24f9d93",
+  "why": "Grafts across places and the graft doors: + Graft on top, the paired page, the plan board's one folded row, the groups, Shared tags, the Undo line, the picker (an overlay on body, displacing nothing) and the brass graft knob on a selected card's right edge (no card or board rect changes). A row's X shows on hover and focus"
+ },
+ {
+  "key": "21-help-me-choose.css#7",
+  "hash": "e00fa3ab69",
+  "why": "Intake replaces the Forms content: it fills the Forms dialog (no second layer, no border or width of its own) and scrolls inside it"
+ },
+ {
+  "key": "21-help-me-choose.css#11",
+  "hash": "30caff9437",
+  "why": "W5-BEGIN gaps, coverage rewards and Lit (brief w5-gaps-rewards). One celebration grammar: every moment at most 1.1s (CELEBRATE_MS), once, never looping, nothing above 3 flashes a second; reduced motion and Ambiance 0 show the still end state. Square, no shadows (a ring is an outline), circles only for marks. Arbor: olive for guidance, brass for the human act only, muted bronze for the root line. Flux: lime is progress, cyan the choice, the orange bar only on current or Lit"
+ },
+ {
+  "key": "21-help-me-choose.css#19",
+  "hash": "c25baff539",
+  "why": "SCENES-BEGIN Add scenes: child cards under a step (brief add-scenes): the How many popover, the sub-step's readout, its 3px bronze edge and the small marks on a hairline. Square, no shadow, circles only for the marks, no motion. Arbor: olive guidance, brass for the human act, muted bronze for decorative lines. Flux: cyan for chosen, the orange bar for current only"
+ },
+ {
+  "key": "21-help-me-choose.css#23",
+  "hash": "0471f8b8dd",
+  "why": "a nested list takes its own line under its row (the row is a wrapping flex); a Deck's rows carry their Outline number in place of the bullet; Flux reads every title uppercase by style, whatever was typed"
+ }
+]
