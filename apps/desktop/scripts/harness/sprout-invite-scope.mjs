@@ -72,36 +72,58 @@ const openWithPref = async (app, id, pref, { clear = true } = {}) => {
 // it is that account's own scoped key, which the migration this ticket's own fix now actually
 // RUNS (see useFirstLineInvite.tsx's currentUser subscription) can consume the bare key into -
 // so "pref" alone can no longer be trusted once an account is signed in.
+// #13 12f (Fable, Nov 1): the invite's test seam (window.wrizoFirstLineInvite) went with the invite, so with no seam the
+// effective key is the bare one (signed out, as every scenario here is) - the probe follows current reality.
 const doorState = (app) => app.evalJs(`(() => ({
   sproutDoor: !!document.querySelector('[data-beginning="sprout"]'),
   invitePrompt: !!document.querySelector('.fl-prompt'),
   pref: localStorage.getItem(${JSON.stringify(PREF_KEY)}),
-  prefAtKey: localStorage.getItem(window.wrizoFirstLineInvite.prefKey()),
+  prefAtKey: localStorage.getItem(window.wrizoFirstLineInvite ? window.wrizoFirstLineInvite.prefKey() : ${JSON.stringify(PREF_KEY)}),
 }))()`);
 
+// ---- PARKED - RETIRED by #13 step 12f (Fable, Nov 1): the Sprout door AND the first-line invite are deleted, everywhere,
+// forever; the stored pref stays as data. Every check below is kept VERBATIM and no longer run; its record re-asserts the new
+// truth on the parked leg, and its live successor (same scenario, same seeded pref) asserts that NOTHING shows and the pref is
+// left as seeded. The full successor is c13-12f-sprout-invite.mjs.
+const retired = (s) => s.sproutDoor === false && s.invitePrompt === false;
 await withHarness(async (app) => {
   // ── E1 — 'off' (default): Sprout shows, the live prompt does not ───────────────────────
   {
     await openWithPref(app, 'sprout-off', 'off');
     const s = await doorState(app);
-    ok('E1: pref "off" — the Sprout door IS present (nothing decided yet)', s.sproutDoor === true, JSON.stringify(s));
-    ok('E1: pref "off" — the live invite prompt is NOT showing', s.invitePrompt === false, JSON.stringify(s));
+    // ok('E1: pref "off" — the Sprout door IS present (nothing decided yet)', s.sproutDoor === true, JSON.stringify(s));
+    // ok('E1: pref "off" — the live invite prompt is NOT showing', s.invitePrompt === false, JSON.stringify(s));
+    ok('E1 [12f successor]: pref "off" — no Sprout door and no invite prompt, and the pref is left as seeded', retired(s) && s.pref === 'off', JSON.stringify(s));
+    if (process.env.HARNESS_PARKED === '1') {
+      pok('PARKED (was "E1: pref \"off\" — the Sprout door IS present (nothing decided yet)") — #13 12f (Fable, Nov 1): the door is deleted; re-asserted against the new truth: no door', s.sproutDoor === false, JSON.stringify(s));
+      pok('PARKED (was "E1: pref \"off\" — the live invite prompt is NOT showing") — #13 12f (Fable, Nov 1): the invite is deleted; still no prompt, now on every pref', s.invitePrompt === false, JSON.stringify(s));
+    }
   }
 
   // ── E2 — 'on' (opted in): Sprout is gone, the live prompt shows — THE BUG THIS CLOSES ──
   {
     await openWithPref(app, 'sprout-on', 'on');
     const s = await doorState(app);
-    ok('E2 (the whole ticket): pref "on" — the Sprout door is ABSENT (stops offering what is already on)', s.sproutDoor === false, JSON.stringify(s));
-    ok('E2: pref "on" — the live invite prompt IS showing (the invite itself is unaffected by this fix)', s.invitePrompt === true, JSON.stringify(s));
+    // ok('E2 (the whole ticket): pref "on" — the Sprout door is ABSENT (stops offering what is already on)', s.sproutDoor === false, JSON.stringify(s));
+    // ok('E2: pref "on" — the live invite prompt IS showing (the invite itself is unaffected by this fix)', s.invitePrompt === true, JSON.stringify(s));
+    ok('E2 [12f successor]: pref "on" — no Sprout door and no invite prompt (an opt-in stored before 12f shows nothing), and the pref is left as seeded', retired(s) && s.pref === 'on', JSON.stringify(s));
+    if (process.env.HARNESS_PARKED === '1') {
+      pok('PARKED (was "E2 (the whole ticket): pref \"on\" — the Sprout door is ABSENT (stops offering what is already on)") — #13 12f (Fable, Nov 1): the door is deleted; still absent, now on every pref', s.sproutDoor === false, JSON.stringify(s));
+      pok('PARKED (was "E2: pref \"on\" — the live invite prompt IS showing (the invite itself is unaffected by this fix)") — #13 12f (Fable, Nov 1): the invite is deleted; re-asserted against the new truth: no prompt, even opted in', s.invitePrompt === false, JSON.stringify(s));
+    }
   }
 
   // ── E3 — 'never' (declined): Sprout is gone, nothing shows ──────────────────────────────
   {
     await openWithPref(app, 'sprout-never', 'never');
     const s = await doorState(app);
-    ok('E3: pref "never" — the Sprout door is ABSENT (withdrawn, not re-offered)', s.sproutDoor === false, JSON.stringify(s));
-    ok('E3: pref "never" — the live invite prompt is NOT showing', s.invitePrompt === false, JSON.stringify(s));
+    // ok('E3: pref "never" — the Sprout door is ABSENT (withdrawn, not re-offered)', s.sproutDoor === false, JSON.stringify(s));
+    // ok('E3: pref "never" — the live invite prompt is NOT showing', s.invitePrompt === false, JSON.stringify(s));
+    ok('E3 [12f successor]: pref "never" — no Sprout door and no invite prompt, and the pref is left as seeded', retired(s) && s.pref === 'never', JSON.stringify(s));
+    if (process.env.HARNESS_PARKED === '1') {
+      pok('PARKED (was "E3: pref \"never\" — the Sprout door is ABSENT (withdrawn, not re-offered)") — #13 12f (Fable, Nov 1): the door is deleted; still absent, now on every pref', s.sproutDoor === false, JSON.stringify(s));
+      pok('PARKED (was "E3: pref \"never\" — the live invite prompt is NOT showing") — #13 12f (Fable, Nov 1): the invite is deleted; still no prompt, now on every pref', s.invitePrompt === false, JSON.stringify(s));
+    }
   }
 
   // ── E4 — the real user path: click Sprout, then a second fresh page never offers it again ─
@@ -118,18 +140,25 @@ await withHarness(async (app) => {
     await openWithPref(app, 'sprout-click', 'off');
     const before = await doorState(app);
     // ORIGINAL: ok('E4: starts with Sprout present, pref "off"', before.sproutDoor === true && before.pref === 'off', JSON.stringify(before));
-    ok('E4 [successor]: starts with Sprout present, pref "off" (at its currently-effective key)', before.sproutDoor === true && before.prefAtKey === 'off', JSON.stringify(before));
+    // ok('E4 [successor]: starts with Sprout present, pref "off" (at its currently-effective key)', before.sproutDoor === true && before.prefAtKey === 'off', JSON.stringify(before));
+    ok('E4 [12f successor]: a fresh blank page shows no Sprout door and no invite, pref "off" left as seeded', retired(before) && before.pref === 'off', JSON.stringify(before));
     if (process.env.HARNESS_PARKED === '1') {
-      pok('PARKED (was "E4: starts with Sprout present, pref off" via the bare key) - the bare key is either ALSO "off" (signed out) or absent/unmigrated yet (signed in, nothing has written there yet)',
-        before.sproutDoor === true && (before.pref === 'off' || before.pref == null), JSON.stringify(before));
+      pok('PARKED (was "E4 [successor]: starts with Sprout present, pref \"off\" (at its currently-effective key)") — #13 12f (Fable, Nov 1): the door is deleted; re-asserted against the new truth: no door, the pref untouched', before.sproutDoor === false && before.prefAtKey === 'off', JSON.stringify(before));
+      pok('PARKED (was "E4: starts with Sprout present, pref off" via the bare key) - the bare key is either ALSO "off" (signed out) or absent/unmigrated yet (signed in, nothing has written there yet) - #13 12f (Fable, Nov 1): the door is deleted; the bare key is "off" as seeded and no door shows',
+        before.sproutDoor === false && before.pref === 'off', JSON.stringify(before));
     }
 
-    await app.evalJs(`document.querySelector('[data-beginning="sprout"]').click()`);
+    // #13 12f: there is no door to press any more; the press is made only if one exists, so a door that came back fails below
+    await app.evalJs(`document.querySelector('[data-beginning="sprout"]')?.click()`);
     await sleep(200);
     const afterClick = await doorState(app);
     // ORIGINAL: ok('E4: clicking Sprout shows the live prompt immediately and persists "on"', afterClick.invitePrompt === true && afterClick.pref === 'on', JSON.stringify(afterClick));
-    ok('E4 [successor]: clicking Sprout shows the live prompt immediately and persists "on" (at its currently-effective key)',
-      afterClick.invitePrompt === true && afterClick.prefAtKey === 'on', JSON.stringify(afterClick));
+    // ok('E4 [successor]: clicking Sprout shows the live prompt immediately and persists "on" (at its currently-effective key)',
+    //   afterClick.invitePrompt === true && afterClick.prefAtKey === 'on', JSON.stringify(afterClick));
+    ok('E4 [12f successor]: nothing to press and nothing changes - no invite prompt, and the pref is still "off"', retired(afterClick) && afterClick.pref === 'off', JSON.stringify(afterClick));
+    if (process.env.HARNESS_PARKED === '1') {
+      pok('PARKED (was "E4 [successor]: clicking Sprout shows the live prompt immediately and persists \"on\" (at its currently-effective key)") — #13 12f (Fable, Nov 1): the door and the invite are deleted; re-asserted against the new truth: no prompt, nothing persisted', afterClick.invitePrompt === false && afterClick.prefAtKey === 'off', JSON.stringify(afterClick));
+    }
     if (process.env.HARNESS_PARKED === '1') {
       // Fable's review (ledger 124): "accept null as 'nothing to migrate'" - a signed-in
       // session can have the bare key already consumed by migrateToScopedKey (readPref()'s own
@@ -137,18 +166,20 @@ await withHarness(async (app) => {
       // same reasoning as pok #1 above. Still narrow: 'never'/anything else stays rejected, so a
       // genuinely stuck, unmigrated-but-present value cannot slip through (proven by a mutant,
       // not just asserted - see sprout-invite-scope-logic.mjs's own S9).
-      pok('PARKED (was "E4: clicking Sprout... persists on" via the bare key) - the write ALWAYS lands correctly (prefAtKey is "on"); the bare key is either ALSO "on" (signed out), still its PRE-click "off" (signed in, not yet migrated), or already consumed to null (signed in, migrated already)',
-        afterClick.invitePrompt === true && afterClick.prefAtKey === 'on' && (afterClick.pref === 'on' || afterClick.pref === 'off' || afterClick.pref == null), JSON.stringify(afterClick));
+      pok('PARKED (was "E4: clicking Sprout... persists on" via the bare key) - the write ALWAYS lands correctly (prefAtKey is "on"); the bare key is either ALSO "on" (signed out), still its PRE-click "off" (signed in, not yet migrated), or already consumed to null (signed in, migrated already) - #13 12f (Fable, Nov 1): there is no write any more; the bare key is still its seeded "off"',
+        afterClick.invitePrompt === false && afterClick.pref === 'off', JSON.stringify(afterClick));
     }
 
     await openWithPref(app, 'sprout-click-2', undefined, { clear: false }); // a SECOND blank page, SAME device, no wipe — pref left exactly as E4's click set it
     const second = await doorState(app);
     // ORIGINAL: ok('E4: a second fresh blank page after the click shows NO Sprout door (decided) and the live prompt instead', second.sproutDoor === false && second.invitePrompt === true && second.pref === 'on', JSON.stringify(second));
-    ok('E4 [successor]: a second fresh blank page after the click shows NO Sprout door (decided) and the live prompt instead (at its currently-effective key)',
-      second.sproutDoor === false && second.invitePrompt === true && second.prefAtKey === 'on', JSON.stringify(second));
+    // ok('E4 [successor]: a second fresh blank page after the click shows NO Sprout door (decided) and the live prompt instead (at its currently-effective key)',
+    //   second.sproutDoor === false && second.invitePrompt === true && second.prefAtKey === 'on', JSON.stringify(second));
+    ok('E4 [12f successor]: a second fresh blank page on the same device shows no Sprout door and no invite, and the pref is still "off"', retired(second) && second.pref === 'off', JSON.stringify(second));
     if (process.env.HARNESS_PARKED === '1') {
-      pok('PARKED (was "E4: a second fresh page... pref on" via the bare key) - the decision ALWAYS persists correctly (prefAtKey is "on") and the door/prompt state agree; the bare key itself no longer governs this once signed in, so it is not re-asserted here',
-        second.sproutDoor === false && second.invitePrompt === true && second.prefAtKey === 'on', JSON.stringify(second));
+      pok('PARKED (was "E4 [successor]: a second fresh blank page after the click shows NO Sprout door (decided) and the live prompt instead (at its currently-effective key)") — #13 12f (Fable, Nov 1): the invite is deleted; re-asserted against the new truth: no door and no prompt', second.sproutDoor === false && second.invitePrompt === false, JSON.stringify(second));
+      pok('PARKED (was "E4: a second fresh page... pref on" via the bare key) - the decision ALWAYS persists correctly (prefAtKey is "on") and the door/prompt state agree; the bare key itself no longer governs this once signed in, so it is not re-asserted here - #13 12f (Fable, Nov 1): there is no decision any more; no door, no prompt, the pref "off" as seeded',
+        second.sproutDoor === false && second.invitePrompt === false && second.prefAtKey === 'off', JSON.stringify(second));
     }
   }
 

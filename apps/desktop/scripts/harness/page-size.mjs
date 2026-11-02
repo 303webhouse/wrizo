@@ -725,29 +725,37 @@ await withHarness(async (app) => {
       if ((await attr(app, '.mode-pagecol', 'data-zoom')) !== 'true') { await pressTypewriter(app); await sleep(600); }
       const brProbe = `(() => { const row = document.querySelector('.wz-beginnings[data-beginnings="page"]'); const ed = document.querySelector('.forward-only-editor'); if (!row || !ed) return { row: !!row };
         const a = row.getBoundingClientRect(); const b = ed.getBoundingClientRect(); return { row: true, zoom: document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null, rowTop: Math.round(a.top), rowBottom: Math.round(a.bottom), lineTop: Math.round(b.top), lineBottom: Math.round(b.bottom), vh: innerHeight }; })()`;
-      const br = await app.evalJs(brProbe);
-      ok('BR (Arbor 1366x768, an empty page, zoomed): the beginnings row sits wholly BELOW the writing line, and on screen - a press on the line can never land on a door',
-        !!br && br.row && br.zoom === 'true' && br.rowTop >= br.lineBottom - 0.5 && br.rowBottom <= br.vh, J(br));
-      await app.evalJs("window.__psStyle('ps-mbr', \".wz-beginnings[data-beginnings='page']{ top:50% !important; transform:translateY(-50%) !important; }\")"); await sleep(250);
-      const mbr = await app.evalJs(brProbe);
-      await app.evalJs("window.__psStyle('ps-mbr', null)");
-      // ---- PARKED - SUPERSEDED by POLISH #10 item 5 (Nick, Oct 25: in the zoom the ink sheet covers the visible page): "the sheet's centre" was the writing
-      // line only while the zoomed sheet was one line tall; it now lies below the line (FIX's turn on e2ebe51d: LANDED 530 -> 777, the line 467-510), so
-      // the mutant no longer covers it. Kept VERBATIM and no longer gating; its reading is recorded per run in the parked section.
-      //
-      // ok(`MBR (mutant): with the row put back on the sheet's centre (LANDED: its top ${br && br.rowTop} -> ${mbr && mbr.rowTop}), it covers the line - BR fails`,
-      //   !!mbr && !!br && mbr.rowTop !== br.rowTop && !(mbr.rowTop >= mbr.lineBottom - 0.5), J({ now: br, mutated: mbr }));
+      // ---- PARKED - RETIRED by #13 step 12f (Fable, Nov 1): the Sprout door (the empty page's beginnings row's only door) and the
+      // first-line invite are deleted, so an empty zoomed page has no row to place. BR and its MBR mutant are kept VERBATIM and no
+      // longer run; their records are in the parked section; the successor follows.
+      // const br = await app.evalJs(brProbe);
+      // ok('BR (Arbor 1366x768, an empty page, zoomed): the beginnings row sits wholly BELOW the writing line, and on screen - a press on the line can never land on a door',
+      //   !!br && br.row && br.zoom === 'true' && br.rowTop >= br.lineBottom - 0.5 && br.rowBottom <= br.vh, J(br));
+      // await app.evalJs("window.__psStyle('ps-mbr', \".wz-beginnings[data-beginnings='page']{ top:50% !important; transform:translateY(-50%) !important; }\")"); await sleep(250);
+      // const mbr = await app.evalJs(brProbe);
+      // await app.evalJs("window.__psStyle('ps-mbr', null)");
+      // // ---- PARKED - SUPERSEDED by POLISH #10 item 5 (Nick, Oct 25: in the zoom the ink sheet covers the visible page): "the sheet's centre" was the writing
+      // // line only while the zoomed sheet was one line tall; it now lies below the line (FIX's turn on e2ebe51d: LANDED 530 -> 777, the line 467-510), so
+      // // the mutant no longer covers it. Kept VERBATIM and no longer gating; its reading is recorded per run in the parked section.
+      // //
+      // // ok(`MBR (mutant): with the row put back on the sheet's centre (LANDED: its top ${br && br.rowTop} -> ${mbr && mbr.rowTop}), it covers the line - BR fails`,
+      // //   !!mbr && !!br && mbr.rowTop !== br.rowTop && !(mbr.rowTop >= mbr.lineBottom - 0.5), J({ now: br, mutated: mbr }));
+      // // ------------------------------------------------------------------
+      // psParks.MBR = { now: br, mutated: mbr };
+      // // SUCCESSOR: the row moved ONTO the writing line itself (its top to the line's top, in the row's own layout px at the painted scale) - BR must fail
+      // const mv = br && br.row ? await app.evalJs(`(() => { const row = document.querySelector('.wz-beginnings[data-beginnings="page"]'); if (!row) return null; const p = row.closest('.mode-page');
+      //   const k = p && p.offsetWidth ? p.getBoundingClientRect().width / p.offsetWidth : 1; return (${br.lineTop} - row.getBoundingClientRect().top) / k; })()`) : null;
+      // if (mv != null) await app.evalJs(`window.__psStyle('ps-mbr2', ".wz-beginnings[data-beginnings='page']{ translate: 0 ${mv}px !important; }")`);
+      // await sleep(250);
+      // const mbr2 = await app.evalJs(brProbe);
+      // await app.evalJs("window.__psStyle('ps-mbr2', null)");
+      // ok(`MBR (mutant) [polish #10 item 5 successor]: with the row moved onto the writing line (LANDED: its top ${br && br.rowTop} -> ${mbr2 && mbr2.rowTop}, the line ${br && br.lineTop}-${br && br.lineBottom}), it covers the line - BR fails`,
+      //   !!mbr2 && !!br && Math.abs(mbr2.rowTop - br.lineTop) <= 2 && !(mbr2.rowTop >= mbr2.lineBottom - 0.5), J({ now: br, mutated: mbr2, moveLayoutPx: mv }));
       // ------------------------------------------------------------------
-      psParks.MBR = { now: br, mutated: mbr };
-      // SUCCESSOR: the row moved ONTO the writing line itself (its top to the line's top, in the row's own layout px at the painted scale) - BR must fail
-      const mv = br && br.row ? await app.evalJs(`(() => { const row = document.querySelector('.wz-beginnings[data-beginnings="page"]'); if (!row) return null; const p = row.closest('.mode-page');
-        const k = p && p.offsetWidth ? p.getBoundingClientRect().width / p.offsetWidth : 1; return (${br.lineTop} - row.getBoundingClientRect().top) / k; })()`) : null;
-      if (mv != null) await app.evalJs(`window.__psStyle('ps-mbr2', ".wz-beginnings[data-beginnings='page']{ translate: 0 ${mv}px !important; }")`);
-      await sleep(250);
-      const mbr2 = await app.evalJs(brProbe);
-      await app.evalJs("window.__psStyle('ps-mbr2', null)");
-      ok(`MBR (mutant) [polish #10 item 5 successor]: with the row moved onto the writing line (LANDED: its top ${br && br.rowTop} -> ${mbr2 && mbr2.rowTop}, the line ${br && br.lineTop}-${br && br.lineBottom}), it covers the line - BR fails`,
-        !!mbr2 && !!br && Math.abs(mbr2.rowTop - br.lineTop) <= 2 && !(mbr2.rowTop >= mbr2.lineBottom - 0.5), J({ now: br, mutated: mbr2, moveLayoutPx: mv }));
+      const br = await app.evalJs(brProbe);
+      const zoom = await attr(app, '.mode-pagecol', 'data-zoom');
+      ok('BR [12f successor] (Arbor 1366x768, an empty page, zoomed): there is no beginnings row at all - nothing sits on or below the writing line', !!br && br.row === false && zoom === 'true', J({ br, zoom }));
+      psParks.MBR = { retired: true, now: br, zoom };
     } else ok('BR fixture: the empty page opened', false, '');
   }
 
@@ -791,7 +799,13 @@ if (process.env.HARNESS_PARKED === '1') {
   // POLISH #10 item 5 - MBR: one record per run. It passes when the old mutant still covered the line, or when it missed it ONLY because the sheet's
   // centre now lies below the line (the exact falsification: the row moved, and wholly below the line).
   if (psParks.MBR) { const o = psParks.MBR; rec.push({ name: `PARKED (was "MBR (mutant): with the row put back on the sheet's centre (LANDED: its top ${o.now && o.now.rowTop} -> ${o.mutated && o.mutated.rowTop}), it covers the line - BR fails") - polish #10 item 5: the zoomed sheet covers the visible page, so its centre lies below the line`,
-    pass: !!o.now && !!o.mutated && o.mutated.rowTop !== o.now.rowTop && (!(o.mutated.rowTop >= o.mutated.lineBottom - 0.5) || o.mutated.rowTop > o.mutated.lineBottom), detail: J(o) }); }
+    pass: o.retired ? !!o.now && o.now.row === false : !!o.now && !!o.mutated && o.mutated.rowTop !== o.now.rowTop && (!(o.mutated.rowTop >= o.mutated.lineBottom - 0.5) || o.mutated.rowTop > o.mutated.lineBottom), detail: J(o) });
+    // #13 12f (Fable, Nov 1): BR and its polish #10 item 5 successor mutant, retired with the row; re-asserted against the new truth: no row
+    if (o.retired) {
+      rec.push({ name: 'PARKED (was "BR (Arbor 1366x768, an empty page, zoomed): the beginnings row sits wholly BELOW the writing line, and on screen - a press on the line can never land on a door") — #13 12f (Fable, Nov 1): the row is deleted; there is no door to land on', pass: !!o.now && o.now.row === false && o.zoom === 'true', detail: J(o) });
+      rec.push({ name: 'PARKED (was "MBR (mutant) [polish #10 item 5 successor]: with the row moved onto the writing line (LANDED: its top ${br && br.rowTop} -> ${mbr2 && mbr2.rowTop}, the line ${br && br.lineTop}-${br && br.lineBottom}), it covers the line - BR fails") — #13 12f (Fable, Nov 1): there is no row to move; BR is retired', pass: !!o.now && o.now.row === false, detail: J(o) });
+    }
+  }
   for (const c of rec) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}  [${c.detail}]`);
   console.log(rec.length && rec.every((c) => c.pass) ? `\nPAGE-SIZE PARKED: PASS (${rec.length} records) - this FILE parks 4 (C, one record per skin x size; MW's 60% name and W/T's on-screen premise, polish #10 item 19; MBR's sheet centre, polish #10 item 5)` : `\nPAGE-SIZE PARKED: FAIL - ${rec.filter((c) => !c.pass).length}/${rec.length} (${rec.length} records)`);
 }

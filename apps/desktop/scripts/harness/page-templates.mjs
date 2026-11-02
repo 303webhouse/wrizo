@@ -85,6 +85,10 @@ const seeded = async (app, id) => {
   await app.click('Draft'); await sleep(700);
 };
 
+// #13 12f (Fable, Nov 1): the first records this file keeps, on the parked leg
+const parkedChecks = [];
+const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+
 await withHarness(async (app) => {
   // ===== T1 - a blank page in FREE WRITE: the row carries ONE door, Sprout; the strip carries NO templates =====
   await freshDesk(app);
@@ -92,7 +96,10 @@ await withHarness(async (app) => {
   const fwMode = await activeMode(app);
   const fwDoors = await pageDoors(app);
   ok('T1 [Free Write, blank page]: the page opens in Free Write (the premise of the next checks)', fwMode === 'freewrite', String(fwMode));
-  ok('T1 [Free Write, blank page]: the beginnings row offers ONE door, Sprout - no Screenplay door, no Plan door', JSON.stringify(fwDoors) === JSON.stringify(['sprout']), JSON.stringify(fwDoors));
+  // ---- PARKED - RETIRED by #13 step 12f (Fable, Nov 1): the Sprout door and the first-line invite are deleted, everywhere, forever. Kept VERBATIM and no longer run; its record is on the parked leg; its successor follows (in full: c13-12f-sprout-invite.mjs).
+  // ok('T1 [Free Write, blank page]: the beginnings row offers ONE door, Sprout - no Screenplay door, no Plan door', JSON.stringify(fwDoors) === JSON.stringify(['sprout']), JSON.stringify(fwDoors));
+  ok('T1 [Free Write, blank page] [12f successor]: the blank Free Write page offers NO door at all - no Sprout, no Screenplay, no Plan', JSON.stringify(fwDoors) === '[]', JSON.stringify(fwDoors));
+  if (process.env.HARNESS_PARKED === '1') pok('PARKED (was "T1 [Free Write, blank page]: the beginnings row offers ONE door, Sprout - no Screenplay door, no Plan door") — #13 12f (Fable, Nov 1): the Sprout door is deleted; re-asserted against the new truth: no door', JSON.stringify(fwDoors) === '[]', JSON.stringify(fwDoors));
   const fwOpen = await openStrip(app);
   const fwStrip = await app.evalJs("({ body: !!document.querySelector(\".wz-sliver[data-open='true'] .wz-sliver-body\"), templates: !!document.querySelector('.wz-sliver-templates'), live: document.querySelectorAll('.wz-template-live').length })");
   ok('T1 [Free Write]: the strip is OPEN (so the next check can see) and carries NO Templates section and no template button at all',
@@ -176,18 +183,30 @@ await withHarness(async (app) => {
   await freshDesk(app);
   await blank(app);
   const h0 = await hash(app);
+  // ---- PARKED - RETIRED by #13 step 12f (Fable, Nov 1): the Sprout door and the first-line invite are deleted, everywhere, forever. Kept VERBATIM and no longer run; its record is on the parked leg; its successor follows (in full: c13-12f-sprout-invite.mjs).
+  // const sprout = await press(app, '.wz-beginning[data-beginning="sprout"]');
+  // await sleep(600);
+  // const sprouted = await app.evalJs("({ invite: !!document.querySelector('.fl-invite'), row: !!document.querySelector('.wz-beginnings') })");
+  // ok('T3 [Sprout, blank Free Write page]: the door draws the first-line invitation on THIS page, the row goes, and nothing is written',
+  //   sprout.pressed && sprouted.invite && !sprouted.row && (await hash(app)) === h0 && (await rows(app)).length === 0, JSON.stringify({ sprouted, h0, now: await hash(app), rows: await rows(app) }));
   const sprout = await press(app, '.wz-beginning[data-beginning="sprout"]');
   await sleep(600);
   const sprouted = await app.evalJs("({ invite: !!document.querySelector('.fl-invite'), row: !!document.querySelector('.wz-beginnings') })");
-  ok('T3 [Sprout, blank Free Write page]: the door draws the first-line invitation on THIS page, the row goes, and nothing is written',
-    sprout.pressed && sprouted.invite && !sprouted.row && (await hash(app)) === h0 && (await rows(app)).length === 0, JSON.stringify({ sprouted, h0, now: await hash(app), rows: await rows(app) }));
+  const t3 = { sprout, sprouted, h0, now: await hash(app), rows: await rows(app) };
+  ok('T3 [Sprout, blank Free Write page] [12f successor]: there is no door to press, no invitation appears, no row, and nothing is written',
+    !sprout.pressed && !sprouted.invite && !sprouted.row && t3.now === h0 && t3.rows.length === 0, JSON.stringify(t3));
+  if (process.env.HARNESS_PARKED === '1') pok('PARKED (was "T3 [Sprout, blank Free Write page]: the door draws the first-line invitation on THIS page, the row goes, and nothing is written") — #13 12f (Fable, Nov 1): the door and the invite are deleted; re-asserted against the new truth: nothing to press, nothing drawn, nothing written', !sprout.pressed && !sprouted.invite && t3.rows.length === 0, JSON.stringify(t3));
   await freshDesk(app);
   await blank(app);
   const rowBefore = JSON.stringify(await pageDoors(app));
   await app.evalJs(`document.querySelector('${ED}')?.focus()`);
   await app.typeKeys('First words.');
   await sleep(400);
-  ok('T3 [vanish rule]: the first keystroke on a blank Free Write page takes the row away', rowBefore === '["sprout"]' && JSON.stringify(await pageDoors(app)) === '[]', JSON.stringify({ rowBefore, after: await pageDoors(app) }));
+  // ---- PARKED - RETIRED by #13 step 12f (Fable, Nov 1): the Sprout door and the first-line invite are deleted, everywhere, forever. Kept VERBATIM and no longer run; its record is on the parked leg; its successor follows (in full: c13-12f-sprout-invite.mjs).
+  // ok('T3 [vanish rule]: the first keystroke on a blank Free Write page takes the row away', rowBefore === '["sprout"]' && JSON.stringify(await pageDoors(app)) === '[]', JSON.stringify({ rowBefore, after: await pageDoors(app) }));
+  const rowAfter = JSON.stringify(await pageDoors(app));
+  ok('T3 [vanish rule] [12f successor]: a blank Free Write page has no row before the first keystroke or after it', rowBefore === '[]' && rowAfter === '[]', JSON.stringify({ rowBefore, rowAfter }));
+  if (process.env.HARNESS_PARKED === '1') pok('PARKED (was "T3 [vanish rule]: the first keystroke on a blank Free Write page takes the row away") — #13 12f (Fable, Nov 1): there is no row to take away; re-asserted against the new truth: no row before or after', rowBefore === '[]' && rowAfter === '[]', JSON.stringify({ rowBefore, rowAfter }));
   await waitSoft(app, `JSON.parse(localStorage.getItem(${JSON.stringify(ROWS_KEY)}) || '[]').some(e => (e.text || '').includes('First words.'))`, { label: 'birth on the first word', timeout: 4000 });
   const born = (await rows(app)).filter((e) => (e.text || '').includes('First words.'));
   ok('T3 [typing path untouched]: the page births on the first word and saves exactly what was typed', born.length === 1 && born[0].text === 'First words.', JSON.stringify(born));
@@ -242,6 +261,11 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${c.detail}]` : ''}`);
+if (process.env.HARNESS_PARKED === '1') {
+  for (const c of parkedChecks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${c.detail}]` : ''}`);
+  const pp = parkedChecks.filter((c) => c.pass).length;
+  console.log(pp === parkedChecks.length ? `\nPAGE-TEMPLATES PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; the Sprout door retired by #13 12f` : `\nPAGE-TEMPLATES PARKED: FAIL — ${parkedChecks.length - pp}/${parkedChecks.length} failed`);
+}
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nPAGE-TEMPLATES VERIFY: PASS (${checks.length} checks)` : `\nPAGE-TEMPLATES VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
 process.exit(passed === checks.length ? 0 : 1);
