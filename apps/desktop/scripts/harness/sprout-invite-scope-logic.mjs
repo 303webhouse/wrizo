@@ -296,10 +296,11 @@ async function loadFresh() {
 const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)]));
 const srcFiles = walk(SRC).filter((p) => /\.(ts|tsx)$/.test(p));
 const moduleGone = !existsSync(join(SRC, 'components', 'useFirstLineInvite.tsx'));
-const importers = srcFiles.filter((p) => /useFirstLineInvite/.test(readFileSync(p, 'utf8')));
-const keyReaders = srcFiles.filter((p) => /wrizo-first-line-invite/.test(readFileSync(p, 'utf8')));
+// code, not prose: an import of the module, and the key as a string literal (a comment that still names either is history)
+const importers = srcFiles.filter((p) => /(from|import\()\s*['"][^'"]*useFirstLineInvite['"]/.test(readFileSync(p, 'utf8')));
+const keyReaders = srcFiles.filter((p) => /['"`]wrizo-first-line-invite/.test(readFileSync(p, 'utf8')));
 const newTruth = moduleGone && importers.length === 0 && keyReaders.length === 0;
-ok('R1 [12f successor]: the first-line invite module is gone and no source file names it', moduleGone && importers.length === 0, JSON.stringify({ moduleGone, importers }));
+ok('R1 [12f successor]: the first-line invite module is gone and nothing imports it', moduleGone && importers.length === 0, JSON.stringify({ moduleGone, importers }));
 ok('R2 [12f successor]: no source file names the invite\'s stored keys (wrizo-first-line-invite*) - no code reads, migrates or deletes them; the data stays as stored', keyReaders.length === 0, JSON.stringify({ keyReaders }));
 if (process.env.HARNESS_PARKED === '1') {
   const parked = [];
