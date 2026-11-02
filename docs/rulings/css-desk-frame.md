@@ -589,7 +589,7 @@ From `apps/desktop/src/styles/13-desk-frame.css`, line 1155 at `25112784` (the c
 
 ## desk-frame §33
 
-From `apps/desktop/src/styles/13-desk-frame.css`, line 1177 at `25112784` (the comment that stays: "THE SLIDING LAYER, shared by both side drawers: the menu slides out from behind its tab and fades in together. The panel is the clip and the scroller and keeps the fade; the visible box and the slide live on this layer, on their own tokens, never --fade-dur").
+From `apps/desktop/src/styles/13-desk-frame.css`, line 1177 at `25112784` (the comment that stays: "PHASE 1 - THE SLIDING LAYER, shared by both side drawers: the menu slides out from behind its tab and fades in together. The panel is the clip and the scroller and keeps the fade; the visible box and the slide live on this layer, on their own tokens, never --fade-dur").
 
 ```css
 /* PHASE 1 - THE SLIDING LAYER, shared by both side drawers (Nick, Oct 9: "the menu slides out from behind the tab AND fades in, together;

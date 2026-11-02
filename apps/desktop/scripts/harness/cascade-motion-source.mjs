@@ -20,7 +20,11 @@ const checks = [];
 const ok = (name, pass, detail = '') => { checks.push({ name, pass: !!pass }); console.log((pass ? 'PASS ' : 'FAIL ') + name + (detail ? '  ' + String(detail).slice(0, 200) : '')); };
 
 const css = read('index.css');
-const rules = (() => { const a = css.indexOf('/* TOOLS #10 item 8 - the rail pop-outs'); const b = css.indexOf('.wz-cascade-panel-head{', a); return a >= 0 && b > a ? css.slice(a, b) : ''; })();
+// #13 step 7 (Fable's comment ruling): the zone's opening comment moved to docs/rulings/css-ink-options.md (ink-options §28); the
+// CSS keeps its why-line, which this probe now reads from. The probe follows current reality; every check below is unchanged.
+// The probe as it was, kept VERBATIM:
+// const rules = (() => { const a = css.indexOf('/* TOOLS #10 item 8 - the rail pop-outs'); const b = css.indexOf('.wz-cascade-panel-head{', a); return a >= 0 && b > a ? css.slice(a, b) : ''; })();
+const rules = (() => { const a = css.indexOf('/* the rail pop-outs slide and fade'); const b = css.indexOf('.wz-cascade-panel-head{', a); return a >= 0 && b > a ? css.slice(a, b) : ''; })();
 const cascade = strip(read('components/Cascade.tsx'));
 const escExit = strip(read('store/escapeExit.ts'));
 const menusDrawers = strip(read('store/menusDrawers.ts'));
