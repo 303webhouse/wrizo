@@ -99,8 +99,15 @@ export async function drawerProof(app, { name, say, fail }) {
   const rmRun = await app.evalJs("document.getAnimations().filter((a) => a.playState === 'running' && /wz-(sliver|tutor)-grip/.test(String(a.effect?.target?.className || '')) && /^(right|left|transform|translate|inset)/.test(String(a.transitionProperty || ''))).map((a) => [a.transitionProperty, Number(a.effect.getTiming().duration)])");
   // (instrument fix after red leg 41347601929: the global reduced-motion floor makes every transition 0.01 ms - that IS the cut - and one was
   // caught mid-frame; a cut is read as no travel transition longer than 1 ms)
+  // (diagnostics only, after green leg g7 run 41360046032 - the tab still at its closed place, the drawer open, nothing running: every
+  // animation on the grip as it stands, the grip's computed right, and the same reading 300 ms later. No check reads these.)
+  const rmAll = await app.evalJs("document.getAnimations().filter((a) => /wz-(sliver|tutor)-grip/.test(String(a.effect?.target?.className || ''))).map((a) => [a.transitionProperty || a.animationName, a.playState, Math.round(Number(a.currentTime) * 100) / 100, Number(a.effect.getTiming().duration), Number(a.effect.getTiming().delay)])");
+  const rmRight = await app.evalJs("(() => { const g = document.querySelector('.wz-sliver-grip'); return g ? [getComputedStyle(g).right, getComputedStyle(g).transitionDuration, getComputedStyle(g).transitionProperty] : null; })()");
   rmRun.splice(0, rmRun.length, ...rmRun.filter((x) => x[1] > 1));
   const rm = await app.evalJs(RECTS);
+  await sleep(300);
+  const rmLater = await app.evalJs(RECTS);
+  const rmDiag = { rmAll, rmRight, later: rmLater.lt };
   await app.evalJs(FINISH); await app.evalJs(click('.wz-sliver-grip')); await app.evalJs(FINISH);
   await app.emulateMedia([]); await sleep(300);
 
@@ -151,7 +158,7 @@ export async function drawerProof(app, { name, say, fail }) {
   };
   const brief = { ok, w: c.w, both, page: c.page, closed: { lt: c.lt, rt: c.rt }, open: { lt: o.lt, lp: o.lp, rp: o.rp, rt: o.rt }, gapToPaintedPage: { left: Math.round((c.page.l - c.lt.r) * 10) / 10, right: Math.round((c.rt.l - c.page.r) * 10) / 10 },
     drawerW: { left: o.lp ? Math.round((o.lp.w + 16) * 10) / 10 : null, right: o.rp ? Math.round((o.rp.w + 16) * 10) / 10 : null }, progL: progL != null ? Math.round(progL * 100) / 100 : null, strips: { gl: Math.round(gl * 10) / 10, gr: Math.round(gr * 10) / 10 }, zoom: c.zoom, tokens: { tokL, tokLs, tokR, tokRs }, paused: paused.length, rmRun, strips: { sL, sO }, scrolling: { strips, lt: tall.lt, ls: tall.ls, lp: tall.lp, rt: tall.rt, rs: tall.rs, rp: tall.rp, midL: [tMidL.lt?.r, tMidL.ls?.l], midR: [tMidR.rt?.l, tMidR.rs?.r] } };
-  if (Object.values(ok).some((x) => !x)) fail(name, { ...brief, rm: { lo: rm.lo, lt: rm.lt, la: rm.la, rmRun }, midL: { lt: midL.lt, ls: midL.ls }, midR: { rt: midR.rt, rs: midR.rs }, midRc: { rt: midRc.rt, rs: midRc.rs }, oL: { lt: oL.lt, lp: oL.lp, ls: oL.ls }, one: { lt: one.lt, rt: one.rt, lo: one.lo, ro: one.ro } });
+  if (Object.values(ok).some((x) => !x)) fail(name, { ...brief, rm: { lo: rm.lo, lt: rm.lt, la: rm.la, rmRun, ...rmDiag }, midL: { lt: midL.lt, ls: midL.ls }, midR: { rt: midR.rt, rs: midR.rs }, midRc: { rt: midRc.rt, rs: midRc.rs }, oL: { lt: oL.lt, lp: oL.lp, ls: oL.ls }, one: { lt: one.lt, rt: one.rt, lo: one.lo, ro: one.ro } });
   say(name, brief);
   return brief;
 }
@@ -180,7 +187,7 @@ export async function zoomDrawerProof(app, { name, say, fail }) {
 }
 
 /** THE NICK WALK: closed and open (both drawers) x each room x 2000 and 1366; the job's tones give the page. open(app) = the caller's page. */
-export function walkScreens(prefix, open, setRoom) {
+export function walkScreens(prefix, open, setRoom, openZoom = null) {
   const screens = {};
   for (const size of [2000, 1366]) for (const room of ['day', 'night']) for (const state of ['closed', 'open']) {
     screens[`${prefix}-${state}-${room}-${size}`] = async (app) => {
@@ -199,5 +206,65 @@ export function walkScreens(prefix, open, setRoom) {
       console.log(`WALK ${prefix}-${state}-${room}-${size} ${JSON.stringify({ w: r.w, lo: r.lo, ro: r.ro, page: r.page, lt: r.lt, rt: r.rt })}`);
     };
   }
+  // EVERY WALK REPEATS THE REDUCED-MOTION OPEN (Fable, Nov 1: ">= 20x per drawer per room. One more miss = a real bug"): see reducedRepeat
+  screens[`${prefix}-reduced-repeat`] = async (app) => { await open(app); await reducedRepeat(app, { name: `${prefix.toUpperCase()}-REDUCED-REPEAT`, setRoom }); };
+  // ...and its liveness: on Typewriter's zoomed page the tab never travels (today's drawers, ruled), so the same reading must call every open
+  // there a miss. The screen passes only if the repeat FAILS there with stuck tabs - a reader that cannot fail is not run.
+  if (openZoom) screens[`${prefix}-reduced-repeat-liveness`] = async (app) => {
+    await openZoom(app);
+    if (!(await app.evalJs("!!document.querySelector(\".mode-pagecol[data-zoom='true']\")"))) throw new Error(`${prefix.toUpperCase()}-REDUCED-LIVENESS FAILED {"zoom":false}`);
+    let caught = null;
+    try { await reducedRepeat(app, { name: `${prefix.toUpperCase()}-REDUCED-LIVENESS-PROBE`, setRoom, n: 2 }); } catch (e) { caught = String(e.message || e); }
+    const ok = !!caught && /"misses":8\b/.test(caught) && /"stuck":true/.test(caught);
+    if (!ok) throw new Error(`${prefix.toUpperCase()}-REDUCED-LIVENESS FAILED ${JSON.stringify({ caught: caught ? caught.slice(0, 300) : null })}`);
+    console.log(`${prefix.toUpperCase()}-REDUCED-LIVENESS {"ok":true,"probe":"8 of 8 opens on the zoom page called stuck"}`);
+  };
   return screens;
+}
+
+/** THE REDUCED-MOTION OPEN, REPEATED (Fable, Nov 1, after one miss in 92 readings: "every walk repeats the reduced-motion open >= 20x per
+ *  drawer per room. One more miss = a real bug; chase it with your fuller readings"). Under reduced motion, each drawer is opened n times in
+ *  each room: the read waits for the drawer to report open, lets two frames pass, and asks that the tab already stands where it settles (read
+ *  again 300 ms later) with no travel transition longer than 1 ms running - a cut. Each miss carries the fuller readings: every animation on the
+ *  grip, its computed position and transition, the rects at the read and settled, and how many frames it took to arrive. Throws on any miss. */
+export async function reducedRepeat(app, { name, setRoom, n = 20 }) {
+  const misses = [], counts = {};
+  await app.evalJs(MARK);
+  await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]); await sleep(200);
+  try {
+    for (const room of ['day', 'night']) {
+      await setRoom(app, room);
+      for (const side of ['left', 'right']) {
+        const grip = side === 'left' ? '.wz-sliver-grip' : '.wz-tutor-grip';
+        const openSel = side === 'left' ? ".wz-sliver[data-open='true']" : ".wz-tutor-panel[data-open='true']";
+        const prop = side === 'left' ? 'right' : 'left';
+        const key = `${room}-${side}`; counts[key] = 0;
+        for (let i = 0; i < n; i++) {
+          // where the tab stands shut: an open tab that never left it is the worst miss (a tab stuck shut would also "settle" there)
+          const shutX = await app.evalJs(`(() => { const g = document.querySelector(${JSON.stringify(grip)}); if (!g) return null; const r = g.getBoundingClientRect(); return Math.round((${JSON.stringify(side)} === 'left' ? r.right : r.left) * 10) / 10; })()`);
+          await app.evalJs(click(grip));
+          await app.evalJs(`new Promise((done) => { const t0 = performance.now(); const f = () => (document.querySelector(${JSON.stringify(openSel)}) || performance.now() - t0 > 1000) ? done(true) : requestAnimationFrame(f); f(); })`);
+          await app.evalJs(raf2);
+          const at = await app.evalJs(`(() => { const g = document.querySelector(${JSON.stringify(grip)}); if (!g) return null; const r = g.getBoundingClientRect(), cs = getComputedStyle(g);
+            const anims = document.getAnimations().filter((a) => a.effect?.target === g).map((a) => [a.transitionProperty || a.animationName, a.playState, Math.round(Number(a.currentTime) * 100) / 100, Number(a.effect.getTiming().duration), Number(a.effect.getTiming().delay)]);
+            return { open: !!document.querySelector(${JSON.stringify(openSel)}), x: Math.round((${JSON.stringify(side)} === 'left' ? r.right : r.left) * 10) / 10, pos: cs[${JSON.stringify(prop)}], dur: cs.transitionDuration, props: cs.transitionProperty, anims }; })()`);
+          // how many more frames until the tab stands where it settles (0 = it was already there)
+          const settle = await app.evalJs(`new Promise((done) => { const g = document.querySelector(${JSON.stringify(grip)}); const first = Math.round((${JSON.stringify(side)} === 'left' ? g.getBoundingClientRect().right : g.getBoundingClientRect().left) * 10) / 10; let k = 0, last = first;
+            const f = () => { const x = Math.round((${JSON.stringify(side)} === 'left' ? g.getBoundingClientRect().right : g.getBoundingClientRect().left) * 10) / 10; if (x !== last) { last = x; } if (++k >= 18) return done({ settled: last }); requestAnimationFrame(f); }; f(); })`);
+          const travel = (at?.anims || []).filter((a) => a[1] === 'running' && /^(right|left|transform|translate|inset)/.test(String(a[0])) && a[3] > 1);
+          const stuck = shutX == null || Math.abs(settle.settled - shutX) <= 1;
+          const miss = !at || !at.open || stuck || Math.abs(at.x - settle.settled) > 1 || travel.length > 0;
+          if (miss) misses.push({ room, side, i, shutX, at, settled: settle.settled, stuck, travel });
+          else counts[key]++;
+          await app.evalJs(click(grip));
+          await app.evalJs(`new Promise((done) => { const t0 = performance.now(); const f = () => (!document.querySelector(${JSON.stringify(openSel)}) || performance.now() - t0 > 1000) ? done(true) : requestAnimationFrame(f); f(); })`);
+          await app.evalJs(FINISH); await sleep(120);
+        }
+      }
+    }
+  } finally { await app.emulateMedia([]); }
+  const brief = { n, counts, misses: misses.length, total: Object.values(counts).reduce((a, b) => a + b, 0) + misses.length };
+  if (misses.length) { console.log(`${name}-FAIL ${JSON.stringify({ ...brief, detail: misses.slice(0, 6) })}`); throw new Error(`${name} FAILED ${JSON.stringify({ ...brief, detail: misses.slice(0, 3) })}`.slice(0, 1200)); }
+  console.log(`${name} ${JSON.stringify(brief)}`);
+  return brief;
 }
