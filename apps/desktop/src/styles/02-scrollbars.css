@@ -1,100 +1,17 @@
-/* ============================================================================
-   FX7 S4 — the systemic scrollbar restyle, app-wide. Nick's own second-
-   sitting verdict: "all scroll bars need to be restyled to be much more
-   minimal and consistent with the colors and mood of each unique theme.
-   Right now, they are bulky and most white, which makes them dominate
-   visually." Born as a one-off tuned to `.board-canvas-wrap` alone
-   (FX5 S3(a)); promoted HERE to a single systemic default reaching every
-   scrollable region app-wide at once (the notebook/spread grid, the
-   Drawers panel, cascade panels, the sliver/Tutor panels, page/script
-   editor content areas, board cards, dialog sheets — anywhere native
-   scroll can appear, including any future one, with no separate opt-in
-   required) — thin, low-contrast, square (no border-radius — the anti-
-   Canva "square corners everywhere" law extends to chrome), no OS chrome.
-   `scrollbar-width`/`scrollbar-color` are genuinely INHERITED CSS
-   properties (unlike most), so ONE declaration on `:root` reaches every
-   scrollable descendant in Firefox; `::-webkit-scrollbar` (no selector
-   prefix) is Chromium/Safari's own "every element's own scrollbar" reach
-   — together the SAME two-part convention `.board-canvas-wrap` already
-   established, just promoted from one class to the whole app. Both tokens
-   (`--ink-border-strong`/`--text-low`) are already theme-scoped (Plateau's
-   own `:root` values above; Flux's own `:root[data-theme='flux']`
-   override, TH2) — so this single rule is automatically "consistent with
-   the colors and mood of each unique theme," Nick's own words, with zero
-   theme-specific duplication needed, now or for any future theme pack.
-   Declared on `*` (every element), not merely `:root` — found live (not
-   assumed): `scrollbar-width` did NOT actually resolve as "thin" on a
-   descendant when only declared on `:root` in this project's own
-   Chromium build (getComputedStyle reported "auto" on `.mode-scroll`/
-   `.wz-cascade-panel` despite a `:root`-only rule, even though
-   `scrollbar-color` DID correctly inherit down the same way) — `*` is the
-   robust fix regardless of that inheritance quirk, and costs nothing
-   beyond a one-time style-rule match (not a per-frame cost).
-   ============================================================================ */
-/* SCROLLBAR-FLUSH, ONE MECHANISM (Fable Oct 23): the STANDARD properties below are the app's only scrollbar
-   mechanism. Since Chromium 121 (Electron 31 = Chromium 126) `::-webkit-scrollbar` is IGNORED on any element whose
-   `scrollbar-width` or `scrollbar-color` is not `auto` - and this `*` rule sets both on every element - so the 8px
-   `::-webkit-scrollbar{width:8px}` rule and its thumb/track/hover siblings that used to follow were dead code from the day
-   the app moved to Electron 31 (the harness measured the native thin bar, 10px, not 8). They are deleted, not kept as a
-   second source of truth: never both on one element. What a standard-properties thumb cannot do is a hover darken - the
-   honest cost of "barely noticeable", and the rule is Nick's (thin, flush on the page edge, tone-aware). The width is
-   whatever native `thin` renders (<=10px), so the harness asserts the RULE (thin, <=10px, flush), never a guessed number. */
+/* Scrollbars, app-wide: thin, quiet, square and theme-toned. Declared on every element, not only :root, because scrollbar-width does not reliably inherit in Chromium [scrollbars §1] */
+/* the standard properties are the one scrollbar mechanism: Chromium 121+ ignores ::-webkit-scrollbar wherever they are set; the width is native thin (10px or less) [scrollbars §2] */
 *{
   scrollbar-width: thin;
   scrollbar-color: var(--ink-border-strong) transparent;
 }
-/* FX7 S4 — the systemic default's dark-chrome tokens read poorly against
-   the LIGHT paper (a scrollbar tuned for `--ink-950`-family surfaces,
-   painted over `--paper`'s cream tone, would sit closer to invisible than
-   quiet). The three paper/card-toned scroll regions get the paper family's
-   own "subdued but legible" pair instead (--ink-on-paper-low/--paper-
-   border — the exact tokens .mode-page's own italic title / border
-   already use, so the scrollbar reads as the SAME surface's own chrome,
-   not a borrowed dark one) — genuinely "consistent with the colors and
-   mood" of the surface it actually scrolls, matching Nick's own words,
-   for BOTH Plateau's single paper and Flux's own light/dark paper variants
-   (--ink-on-paper-low/--paper-border are already theme-scoped, TH2).
-   `.mode-scroll`/`.desk-frame-scroll-cap` are prose/script's own page
-   content areas (used to hide their scrollbar entirely — see each rule's
-   own updated comment); `.board-text` is a card's own overflowing body
-   text (`--card-stock`, the SAME light-paper family, one shade lighter).
-   flux-card-ink — `.board-text` split off this shared rule: this comment's
-   own "one shade lighter" assumption held for Arbor and Flux light, where
-   --card-stock and --paper are both light and --ink-on-paper-low tracks
-   both fine, but --card-stock stays cream in Flux DARK while --ink-on-paper
-   flips light to suit the dark --paper around it — the identical bug this
-   ticket fixes on `.board-text`'s own colour, just painted on its
-   scrollbar thumb instead of its text. --ink-on-card-low carries the same
-   "theme-scoped, subdued but legible" property this comment asks for,
-   just measured against the card's own stock rather than the page's.
-   SCROLLBAR-FLUSH (Fable Oct 23, Nick: INK's light board shows a thick
-   dark thumb at the bottom): `.board-canvas-wrap` (the board's own
-   pannable canvas, BoardEditor.tsx) was never added to this group — its
-   own CSS comment (now corrected, see the FX5 S3(a)/FX7 S4 note near
-   `.board-canvas-wrap{ scrollbar-gutter:stable; }` below) wrongly
-   claimed the plain dark-chrome systemic default was fine for it. It
-   isn't: `.board-canvas`'s own background is `var(--paper)` (BoardEditor.
-   tsx's own inline style), the SAME paper surface `.mode-scroll` sits on
-   — not the card family `.board-text` uses — so it joins the PAPER pair,
-   not the card pair, tracking `--paper`'s own light/dark flip correctly
-   in both themes with zero new tokens. */
+/* paper and card scroll regions take the paper family's subdued pair; the board canvas sits on the paper, so it joins the paper pair [scrollbars §3] */
 .mode-scroll, .desk-frame-scroll-cap, .board-canvas-wrap{
   scrollbar-color: var(--ink-on-paper-low) transparent;
 }
 .board-text{ scrollbar-color: var(--ink-on-card-low) transparent; }
-/* THE ONE EXCEPTION (Fable Oct 23, reading A; "at 3840 the page scrollbar scales up with the page"): page-size paints the prose page with
-   `transform: scale(--wz-k)` (and k x --wz-zoom while zoomed), and `.mode-scroll` sits INSIDE that transformed `.mode-page`, so its native `thin` bar -
-   a fixed 10px of layout - paints at 10 x the applied scale (24px+ at 3840). The standard properties cannot name a thickness, so on THIS one element the
-   bar is the webkit mechanism: its layout width is 10px / the applied scale, which the transform paints back to exactly 10px at every size. It must also
-   reset scrollbar-width/color to auto - the pseudo rules are IGNORED (Chromium >= 121) wherever either is set, which is the dead-code trap the one-mechanism
-   note above records. Everything else keeps the standard properties. Wrapped in @supports so a browser without the webkit pseudo (Firefox) keeps `thin`.
-   The thumb is a square in the paper-toned --ink-on-paper-low, 6px of the 10px bar, hard against the page's edge (the transparent 4px sits inboard);
-   the track is clear. The applied scale is --wz-k, times --wz-zoom while the column is zoomed - the SAME expressions page-size's own transform rules use. */
+/* the one exception: .mode-scroll sits inside the scaled page, so its bar is the webkit mechanism at 10px divided by the applied scale, painted back to 10px; @supports keeps Firefox on thin [scrollbars §4] */
 @supports selector(::-webkit-scrollbar){
-  /* THE TEXT COLUMN IS ONE WIDTH AT EVERY SCALE (Fable Oct 25, FIX's diagnosis of the line-break reds): the bar's layout width (--wz-sb-w) changes with the scale and, left alone, takes a different bite out of the
-     column each time - reflowing the lines. The padding is the margin cancellation the plain `.mode-scroll` rule already carries (the page's own pad-x, offsetting its negative right margin) PLUS (10px - the bar),
-     so bar + that extra is exactly 10 layout px at every scale and zoom and the column is the same width everywhere. (The first form of this rule REPLACED the cancellation - the text column grew by one page margin.) The bar is capped at 10
-     layout px (a page painted BELOW scale 1 would otherwise need a negative padding), so there it paints 10 x k - under 10px, by under a pixel at the narrowest window. */
+  /* the padding keeps the text column one width at every scale: the margin cancellation plus 10px less the bar, with the bar capped at 10 layout px [scrollbars §5] */
   .desk-frame-stage--prose .mode-scroll{ --wz-sb-k: var(--wz-k, 1); --wz-sb-w: min(10px, round(nearest, calc(10px / var(--wz-sb-k)), 1px)); padding-right:calc(var(--wz-page-pad-x, 38px) * var(--paper-scale, 1) + 10px - var(--wz-sb-w)); scrollbar-width:auto; scrollbar-color:auto; }
   .desk-frame-stage--prose .mode-pagecol[data-zoom='true'] .mode-scroll{ --wz-sb-k: calc(var(--wz-k, 1) * var(--wz-zoom, 1.6)); }
   .desk-frame-stage--prose .mode-scroll::-webkit-scrollbar{ width:var(--wz-sb-w); }

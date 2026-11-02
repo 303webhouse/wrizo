@@ -81,8 +81,7 @@
    different sentence. */
 .crumb-here{ color:var(--text-mid); font-weight:600; min-width:0; overflow:hidden;
   text-overflow:ellipsis; white-space:nowrap; }
-/* The board's name is a <button> (Item 133: the name is the rename control) and had NO rule of its own, so it wore the browser's grey button face (Fable, Oct 15). It reads as the plain crumb
-   text now - same family, size, colour and weight as .crumb-here - with a text cursor, the cue that clicking edits it. */
+/* the board's name is a button (the rename control) that reads as plain crumb text (the family, size, colour and weight of .crumb-here) with a text cursor, the cue that clicking edits it [desk-rail §1] */
 .crumb-rename-btn{ background:none; border:0; padding:0; margin:0; border-radius:0; box-shadow:none; appearance:none; -webkit-appearance:none;
   font-family:inherit; font-size:inherit; line-height:inherit; letter-spacing:inherit; text-align:left; cursor:text; }
 .sprint-actions{ margin-left:auto; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
@@ -112,27 +111,12 @@
    (InkStratum.tsx's header). Stated in CSS too so a later hand that reaches
    for `pointer-events:auto` here meets the reason first. */
 .wz-ink-sheet > .ink-canvas{ pointer-events:none; }
-/* POLISH #10 item 5 (Nick, Oct 25) - IN THE ZOOM THE INK SHEET COVERS THE VISIBLE PAGE. The scroller's huge paddings (the start offset above, the end
-   room below) left the sheet - and so the pen - only as tall as the text: a fresh page's one line. The sheet reaches over both with matching negative
-   margins and paddings, so its text stays exactly where it was; ink is measured from where the text starts (InkStratum.tsx inkOriginY), so a stroke
-   keeps its place against the words in both views. */
+/* in the zoom the ink sheet covers the visible page: it reaches over the scroller's start and end paddings with matching negative margins and paddings, so its text stays put; ink is measured from where the text starts (InkStratum.tsx inkOriginY), so strokes keep their place in both views [desk-rail §2] */
 .desk-frame-stage--prose .mode-pagecol[data-zoom='true'] .wz-ink-sheet{
   margin-top: calc(-1 * var(--tw-start-offset, 0px)); padding-top: var(--tw-start-offset, 0px);
   margin-bottom: calc(-1 * max(30vh, var(--tw-end-pad, 30vh))); padding-bottom: max(30vh, var(--tw-end-pad, 30vh));
 }
-/* FX3 S4 — TRIAL (Nick's own working-value experiment; not settled law).
-   The modes move toward the right instead of sitting flush left; Done
-   stays the rightmost element with a fixed gap (not auto-margin) keeping
-   it clearly separated from the modes rather than glued to them. Scoped to
-   `.desk-frame-host` (framed, >=1100px, only) — `.sprint-nav`/
-   `.sprint-actions` are the SAME shared classes the legacy (<1100px)
-   3-child layout (crumb + ModeSwitcher + actions, PageEditor.tsx's/
-   ScriptEditor.tsx's non-framed branch) still relies on its own
-   `margin-left:auto` to push Done past the other two — `.desk-frame-host`
-   never renders there, so that layout is untouched by this block.
-   REVERT (one line each): delete this whole block — the base
-   `.sprint-nav`/`.sprint-actions` rules above already reproduce the
-   pre-FX3 (flush-left strip, right-pinned actions) layout on their own. */
+/* the modes move toward the right and Done stays rightmost with a fixed gap, on the framed host only (the legacy sprint-nav layout is untouched); a trial value: delete this block to revert [desk-rail §3] */
 .desk-frame-host .sprint-nav{ justify-content:flex-end; }
 .desk-frame-host .sprint-actions{ margin-left:28px; }
 .sprint-nav .btn-quiet{ font-family:var(--font-ui); font-size:13px; }
@@ -217,19 +201,7 @@
   .mode-pmetric{ font-size:10px; }
 }
 
-/* B3 S1 — the deck engine's own pop-out (components/DeckWizard.tsx). R6's
-   own ruling, verbatim: "as a pop-out with a faded background like the
-   Card pop-outs now" — the backdrop/dialog pair below is DELIBERATELY the
-   SAME shape as .board-popup-backdrop/.board-popup (FX4 S5) rather than
-   .board-sheet's plain solid-black overlay (Pin/Port/Existing-page's own
-   dialog): same centered-fixed-overlay geometry, same card-stock dialog
-   with the accent top rule, so the wizard reads as "the same kind of
-   pop-out" the writer has already seen on this board. On BoardEditor.tsx,
-   the underlying board reuses .board-canvas-blurred VERBATIM (the
-   pre-existing card-popup blur) rather than a second copy of the same
-   rule; CreateProject.tsx (which has no board underneath it at all) uses
-   the .deck-wizard-blur-wrap/.deck-wizard-blurred pair below instead —
-   identical values, a fresh name since it's a different, non-board host. */
+/* the deck engine's pop-out (components/DeckWizard.tsx): the same shape as .board-popup-backdrop and .board-popup, so it reads as the pop-out the writer already knows; on a board it reuses .board-canvas-blurred, and CreateProject.tsx, with no board under it, uses the .deck-wizard-blur pair (identical values) [desk-rail §4] */
 .deck-wizard-backdrop{
   position:fixed; inset:0; z-index:220; display:flex; align-items:center; justify-content:center;
   background:rgba(0,0,0,.35);
@@ -244,14 +216,7 @@
   display:flex; align-items:center; gap:4px; padding:10px 14px;
   border-bottom:1px solid var(--card-hairline);
 }
-/* deckwizard-ink (Chat 1 ledger 53; Fable, Oct 15) - the sheet is the same un-themed cream as a card (--card-stock), so its text
-   takes the CARD's ink, never --ink-on-paper, which Flux's dark page flips light (1.08:1 on cream - the illegible deck titles).
-   Every text here is --ink-on-card, >= 4.5:1 in every tone (flux-card-ink.mjs C5 measures each): the -low tier was not used on
-   this sheet when this was written, because it then measured under 4.5:1 on cream in Plateau and Flux light (3.77 / 4.43 -
-   card-label-contrast's subject). faint-text-sweep has since darkened --ink-on-paper-low/--ink-on-card-low itself (both now
-   >=4.5:1 on every stock this app ships), so that reason no longer holds - this dialog simply never needed the dimmer tier
-   at all (every string here is a real label or title, not a meta/hint line), and stays on --ink-on-card unchanged.
-   The small labels stay apart by their type (mono caps), a picked option by its olive border, a hovered row by an olive underline. */
+/* the sheet is cream card stock, so its text takes the card's ink (--ink-on-card, 4.5:1 or more in every tone; flux-card-ink.mjs C5), never --ink-on-paper, which a dark page flips light. Labels stand apart by mono caps, a picked option by an olive border, a hovered row by an olive underline [desk-rail §5] */
 .deck-wizard-eyebrow{ margin-right:auto; color:var(--ink-on-card); }
 .deck-wizard-dialog .btn-quiet, .deck-wizard-dialog .btn-quiet:hover{ color:var(--ink-on-card); }
 .deck-wizard-close{ font-size:18px; line-height:1; padding:2px 8px; }
@@ -286,11 +251,7 @@
 .deck-wizard-note p{ color:var(--ink-on-card); font-size:14px; margin-bottom:10px; }
 .deck-wizard-foot{ display:flex; justify-content:space-between; padding:12px 16px 18px; }
 
-/* MACHINA'S DECK WIZARD (Nick, Oct 24: Board -> Presets -> "CHOOSE A DECK" was a tall cream panel with near-invisible pale text). ROOT CAUSE: the wizard is portalled to <body>, so it reads :root tokens - and Machina sets the card family
-   (--card-stock, --ink-on-card ...) only inside `.board-canvas` (where cards live), so at :root they fall through to Arbor's cream stock while --ink-on-paper is the dark page's PALE ink. Pale on cream. The fix is Machina's own dress,
-   on the theme's tokens only: the chrome surface, a 1px hairline, square, NO shadow, Plex (mono for the small labels, sans for the names); COOL and NEUTRAL follow their tokens, and the chrome is dark on both page tones. Names
-   (deck titles, the question, the options) are --text-hi (>= 7:1); labels (the eyebrow, the room headings, the buttons, the note) are --text-mid or better (>= 4.5:1). A hovered row / a picked option is carried by --accent-rest
-   (steel under COOL, orange under NEUTRAL) as a left bar or a border - never as text colour. Its fuller form (Forms + Intake) comes later from the mockups. */
+/* Machina's deck wizard is portalled to body, so it reads :root tokens, where Machina's card family is not set; it wears Machina's own dress on the theme's tokens: the chrome surface, a 1px hairline, square, no shadow, Plex. Names --text-hi (7:1 or more), labels --text-mid or better (4.5:1); hover and pick carried by --accent-rest as a bar or border, never text colour [desk-rail §6] */
 [data-theme='machina'] .deck-wizard-dialog{ background:var(--chrome-surface); color:var(--text-hi); border:1px solid var(--ink-border-strong); box-shadow:none; border-radius:0; font-family:var(--font-contentLabel); }
 [data-theme='machina'] .deck-wizard-strip{ border-bottom:1px solid var(--ink-border); }
 [data-theme='machina'] .deck-wizard-eyebrow{ font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--text-hi); }
@@ -308,9 +269,7 @@
 [data-theme='machina'] .deck-wizard-dialog .btn-brass{ background:none; color:var(--text-hi); border:1px solid var(--accent-rest); border-radius:0; box-shadow:none; font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.1em; text-transform:uppercase; }
 [data-theme='machina'] .deck-wizard-dialog .btn-brass:hover{ background:var(--ink-800); color:var(--text-hi); border-color:var(--accent-rest); }
 
-/* MACHINA FORMS (m7 / m8; Fable's brief Oct 24 §1): the deck library as a panel 600 wide inside the stage - never past its bottom, the list scrolling inside - a FORMS header, the Intake row boxed in a hairline, seven mono kickers,
-   rows of name (Plex Sans 14, --text-hi) - cover line (--text-mid) - the block count right-aligned in mono. Hover / focus = a 2 px left bar in --choice (steel COOL / orange NEUTRAL) + the --ink-800 fill; the carrier is never text at
-   rest. Square, a hairline, no shadow, and NO MOTION (cuts only): nothing in the panel transitions. The backdrop is clear - Forms is a tool over the stage, the rail beside it stays in view. */
+/* MACHINA FORMS: the deck library as a 600-wide panel inside the stage, never past its foot, the list scrolling inside; name, cover line and a mono block count per row; hover and focus are a 2px --choice left bar and the --ink-800 fill, never text colour. Square, a hairline, no shadow, no motion; a clear backdrop, so the rail stays in view [desk-rail §7] */
 [data-theme='machina'] .deck-wizard-backdrop{ align-items:flex-start; justify-content:center; padding:118px 0 10px 84px; background:transparent; }
 [data-theme='machina'] .deck-wizard-dialog{ width:min(600px, calc(100vw - 108px)); max-height:calc(100vh - 128px); }
 [data-theme='machina'] .deck-wizard-dialog *{ transition:none !important; animation:none !important; }
@@ -347,11 +306,7 @@
   padding:1px 7px; pointer-events:none;
 }
 
-/* ── W3 / W11a - guided paths: a dealt step's QUESTION and its "?" (Wrizors' game plan wave 1; Fable's frames 06 / 08 / 09 of board-kinds-final) ───────────────────────────────────────
-   THE QUESTION is the card's placeholder, painted from data-prompt by a pseudo-element: it is never a text node, so it cannot be selected, copied or counted, and textContent stays the
-   stored text. It shows only while the card has no body (store/guided.ts promptToShow; in the pop-up, data-body-empty) and the first keystroke into the body hides it.
-   Colours follow Nick's Oct 23 rule: GREEN (olive) = options, books, guidance - so Arbor's question is olive italic (the card's own --badge-on-card: #4F5730, 7.1:1 on cream, never the lighter
-   #8f9a58 of the frame, which is 2.9:1); BRASS = human action only - the "?" turns --choice on hover/open. Flux: the dim readout prompt line  > question ▮ . Any other theme: its muted card text. */
+/* W3 / W11a - guided paths: a dealt step's question is the card's placeholder, painted from data-prompt by a pseudo-element, so it is never text (not selected, copied or counted); it shows only while the card has no body. Olive is guidance, so Arbor's question is olive italic in --badge-on-card (7.1:1 on cream); the "?" turns --choice on hover or open; Flux shows its dim readout prompt line [desk-rail §8] */
 .board-text[data-prompt]::after,
 .board-popup-editor[data-prompt][data-body-empty='true']::after{
   content:attr(data-prompt); display:block; margin-top:2px;
@@ -383,7 +338,7 @@
 .board-step-pop{
   position:fixed; z-index:420; box-sizing:border-box; padding:14px 16px; border-radius:0;
   background:var(--card-stock); color:var(--ink-on-card);
-  box-shadow:0 0 0 1px var(--badge-on-card);   /* flat 1 px edge, no blur (Nick's standing dress rule for new work) */
+  box-shadow:0 0 0 1px var(--badge-on-card);   /* flat 1 px edge, no blur [desk-rail §9] */
   font-family:var(--font-prose); font-size:13px; line-height:1.5;
 }
 .board-step-pop::before{
@@ -400,13 +355,10 @@
 [data-theme='flux'] .board-step-pop::before{ box-shadow:-1px -1px 0 0 var(--card-hairline); }
 [data-theme='flux'] .board-step-pop[data-flip='true']::before{ box-shadow:1px 1px 0 0 var(--card-hairline); }
 [data-theme='flux'] .board-step-pop-k{ color:var(--ink-on-card-meta); }
-[data-theme='flux'] .board-step-pop-x{ font-family:var(--font-proseSans); font-style:normal; }   /* Flux's own type (Chakra Petch), not Arbor's italic serif - Fable, Oct 23 */
+[data-theme='flux'] .board-step-pop-x{ font-family:var(--font-proseSans); font-style:normal; }   /* Flux's own type (Chakra Petch), not Arbor's italic serif [desk-rail §10] */
 [data-theme='flux'] .board-step-pop-more{ text-transform:uppercase; letter-spacing:.12em; }
 
-/* ── W1 - THE WALK, "SHOW AS", the Journal as a Book, thumbnails by kind (brief docs/guided-paths/w1-walk-brief.md; Fable's board-kinds-final frames 01 / 02 / 04 / 07 / 10 + 02-trace) ──────────────────────────────────────────────
-   DRESS (Nick's standing rules for new work): SQUARE edges on every box, FLAT 1 px edges, NO drop shadows; circles only for MARKS (the "?" badge, the rail). Arbor colour rule: brown / cream = surfaces; OLIVE = options and guidance
-   (doors, the Show-as icons, rail marks at rest); BRASS = human action only (the current / chosen view, hover, press). Decorative lines are muted, never brass. Flux: brackets, TRK n/m, pixel ticks (hollow, lime, cyan with a thin
-   ORANGE LEFT bar for the current one), [NOTE]. The swipe is a PURE SLIDE: its keyframes move TRANSFORM only (both cards stay opaque - never a cross-fade), 280 ms, a soft edge mask on the window; reduced motion = a cut. */
+/* THE WALK, SHOW AS, the Journal as a Book, thumbnails by kind (docs/guided-paths/w1-walk-brief.md). Square edges, flat 1px edges, no shadows; circles only for marks. Arbor: brown and cream surfaces, olive for options and guidance, brass for the human act only; decorative lines muted. The swipe is a pure slide (transform only, both cards opaque, 280ms, a soft edge mask); reduced motion cuts [desk-rail §11] */
 .show-as{ display:flex; align-items:center; gap:2px; }
 .show-as .show-as-btn{ display:flex; align-items:center; gap:6px; padding:6px 8px; background:none; border:1px solid transparent; border-radius:0; box-shadow:none; color:var(--accent-door); font:inherit; font-size:12px; text-transform:none; letter-spacing:0; cursor:pointer; }
 .show-as .show-as-word{ display:none; }
@@ -436,7 +388,7 @@ body:has(.walk)::after{ z-index:-1; }
   font-family:var(--font-prose); font-size:calc(17px * var(--card-type-k, 1)); line-height:1.6; white-space:pre-wrap; color:var(--ink-on-card); overflow:visible;
 }
 .walk-card .board-popup-editor::first-line{ font-size:1.75em; font-weight:600; }
-/* the caret lands in the card (Nick, Oct 25): it stands on the body's empty first line, so the dealt question - the placeholder - is pulled up onto THAT line, one editor line (1.6 x 17px x the card type scale) back, and the question reads as where the writer begins */
+/* the caret stands on the body's empty first line, so the dealt question is pulled up onto that line (one editor line: 1.6 x 17px x the card type scale) and reads as where the writer begins [desk-rail §12] */
 .walk-card .board-popup-editor[data-prompt][data-body-empty='true']::after{ margin-top:calc(2px - 1.6 * 17px * var(--card-type-k, 1)); }
 [data-theme='flux'] .walk-card .board-popup-editor::first-line{ color:var(--text-accent); text-transform:uppercase; letter-spacing:.12em; font-family:var(--font-chromeLabel); font-size:1.35em; }
 .walk-card-leaving{ position:absolute; top:0; left:80px; right:80px; width:auto; pointer-events:none; overflow:hidden; }
@@ -576,11 +528,11 @@ body:has(.walk)::after{ z-index:-1; }
   letter-spacing:.02em; margin:2px 0 0; user-select:none; }
 
 .board-projection{ padding:8px 2px; }
-/* POLISH #10 item 13b - the stage's left chevron tab (the Sliver's grip, 16 px wide, flush on the stage's left edge) used to sit over the Outline's first column (the row numbers): the Outline starts clear of it. */
+/* the Outline starts clear of the Sliver's grip, the 16px chevron tab on the stage's left edge [desk-rail §13] */
 .board-outline{ padding-left:16px; }
 .board-projection-empty{ color:var(--text-low); font-family:var(--font-contentLabel); font-size:13px; }
 .board-lanes{ display:flex; gap:16px; align-items:flex-start; overflow-x:auto; }
-.board-lane{ flex:0 0 240px; min-width:220px; border:1px solid var(--ink-border); border-radius:0; padding:8px; }   /* POLISH #10 item 13c: square (was 6px) */
+.board-lane{ flex:0 0 240px; min-width:220px; border:1px solid var(--ink-border); border-radius:0; padding:8px; }   /* square [desk-rail §14] */
 .board-lane-title{ font-family:var(--font-contentLabel); font-size:12px; text-transform:uppercase;
   letter-spacing:.06em; color:var(--text-mid); margin-bottom:6px; }
 .board-sb-card{ display:flex; align-items:center; justify-content:space-between; gap:6px;
@@ -601,7 +553,7 @@ body:has(.walk)::after{ z-index:-1; }
   color:var(--text-hi); font-family:var(--font-contentLabel); font-size:14px; padding:2px 0; }
 .board-outline-text:focus{ outline:none; border-bottom:1px solid var(--accent-rest); }
 .board-outline-readonly{ color:var(--text-mid); }
-.board-outline-body{ margin-left:8px; }   /* POLISH #10 item 13a: the text keeps a gap of its own from the title input, whatever the title's width */
+.board-outline-body{ margin-left:8px; }   /* the text keeps a gap of its own from the title input, whatever the title's width [desk-rail §15] */
 /* the card's text beside its title: one quiet line, an ellipsis, never a wrapped block under the outline (the full text is its title attribute) */
 .board-outline-body{ flex:1 1 120px; min-width:0; color:var(--text-low); font-family:var(--font-contentLabel); font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .board-outline-ctl{ display:flex; gap:2px; flex:0 0 auto; }
