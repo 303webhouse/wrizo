@@ -11,6 +11,8 @@ export type Choice = 'clock' | 'day' | 'night';
 export const DAY_START = 7 * 60;    // 07:00, minutes after midnight
 export const DAY_END = 19 * 60;     // 19:00
 export const FADE_MIN = 20;
+/** the Room row's "?" (the Mood menu's in r10-r16; the Themes menu's from r18) */
+export const ROOM_HELP = 'By the clock: day 07:00–19:00';
 
 /** The Room row's choice from data-room: light = Always day, dark = Always night, anything else = Follow the clock. */
 export const choiceOf = (dataRoom: string | null): Choice => (dataRoom === 'light' ? 'day' : dataRoom === 'dark' ? 'night' : 'clock');

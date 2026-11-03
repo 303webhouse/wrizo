@@ -697,3 +697,52 @@
    by side, or ran off the panel's left edge. Under the flag the rows stack, each full width (label left, choices right), words on one line. */
 :root[data-arbor2][data-theme='plateau'] .wz-theme-picker-field{ flex-direction:column; align-items:stretch; }
 :root[data-arbor2][data-theme='plateau'] .wz-theme-picker-field .mode-seg button{ white-space:nowrap; }
+
+/* ==========================================================================================================================================
+   r18 - NICK'S SPLASH CHANGES (Fable, Nov 2-3; src/arbor2/frontLayer.tsx). Nick's drawing without its top line "WRIZO (in abstract)"
+   (only that line erased); the hand-drawn logo there, written out on the splash and still on the front door, with "For humans who write."
+   under it (stand-in type until Nick's lettering); the doors as hand-drawn brass boxes on the drawing's empty ground, coming in LAST. No
+   click for 5 s: the outline brightens once (.72 -> 1 -> .72 over 1.6 s, never a flash), then every 30 s, until the writer acts. Reduced
+   motion: everything there at once, the outline at full strength, nothing moving. The corner mark leaves the front door (App.tsx).
+   ========================================================================================================================================== */
+:root[data-arbor2][data-theme='plateau'] .arbor2-top{ position:absolute; inset:0; pointer-events:none; z-index:1; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-top-logo{ position:absolute; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-top-logo::before{ content:''; position:absolute; inset:0; background:url('/brand/arbor2/wrizo-logo-night.png') center / contain no-repeat; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-top-logo[data-writing='true']::before{ opacity:0; animation:arbor2-logo-still .01s linear 2s forwards; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-top-logo[data-writing='true'] .arbor2-splash-logo-svg{ animation:arbor2-logo-svg-off .01s linear 2s forwards; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-top-tagline{ position:absolute; transform:translateX(-50%); white-space:nowrap; line-height:1; letter-spacing:.01em; color:#B5A998;
+  font-family:var(--arbor2-chrome-face); font-size:max(13px, calc(var(--arbor2-u) * 60)); }
+/* the tagline arrives while the brass o and the dot are written (1.6 - 2.0 s), so it is whole when the logo is */
+:root[data-arbor2][data-theme='plateau'] .arbor2-top-tagline[data-writing='true']{ opacity:0; animation:arbor2-tagline-in .4s ease-out 1.6s forwards; }
+@keyframes arbor2-tagline-in{ from{ opacity:0; } to{ opacity:1; } }
+
+/* THE DOORS: boxes in the drawing's own box (the same size and place as the mark), each at its rect of the drawing */
+:root[data-arbor2][data-theme='plateau'] .arbor2-front-doors{ position:absolute; left:50%; top:50%; transform:translate(-50%, -50%); pointer-events:none; z-index:1; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-door{ all:unset; position:absolute; box-sizing:border-box; display:flex; align-items:center; justify-content:center; pointer-events:auto; cursor:pointer;
+  color:#EFE4CB; font-family:var(--arbor2-chrome-face); font-size:max(15px, calc(var(--arbor2-u) * 84)); line-height:1; letter-spacing:.02em; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-door:focus-visible{ outline:2px solid var(--brass); outline-offset:4px; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-door:disabled{ cursor:default; opacity:.5; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-door-sketch{ position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-door-sketch path{ fill:none; stroke:var(--brass); stroke-width:2.5px; stroke-opacity:.72; stroke-linecap:round; stroke-linejoin:round; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-door-word{ position:relative; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-front-doors[data-phase='wait'] .arbor2-door{ visibility:hidden; }
+/* coming in: each outline draws itself (Write first), then its word */
+:root[data-arbor2][data-theme='plateau'] .arbor2-front-doors[data-phase='in'] .arbor2-door-sketch path{ stroke-dasharray:1 1; stroke-dashoffset:1;
+  animation:arbor2-door-draw .6s cubic-bezier(.45, .05, .55, .95) calc(var(--arbor2-door-i) * .15s) forwards; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-front-doors[data-phase='in'] .arbor2-door-word{ opacity:0; animation:arbor2-door-word .25s ease-out calc(.3s + var(--arbor2-door-i) * .15s) forwards; }
+@keyframes arbor2-door-draw{ from{ stroke-dashoffset:1; } to{ stroke-dashoffset:0; } }
+@keyframes arbor2-door-word{ from{ opacity:0; } to{ opacity:1; } }
+/* the re-emphasis: one gentle brightening per pulse (the svg is remounted per pulse, so it plays once each time) */
+:root[data-arbor2][data-theme='plateau'] .arbor2-front-doors[data-phase='shown']:not([data-pulse='0']) .arbor2-door-sketch path{ animation:arbor2-door-glow 1.6s ease-in-out 1; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-front-doors[data-phase='shown']:not([data-pulse='0']) .arbor2-door-sketch{ animation:arbor2-door-halo 1.6s ease-in-out 1; }
+@keyframes arbor2-door-glow{ 0%{ stroke-opacity:.72; } 50%{ stroke-opacity:1; } 100%{ stroke-opacity:.72; } }
+@keyframes arbor2-door-halo{ 0%, 100%{ filter:drop-shadow(0 0 0 rgba(255, 152, 0, 0)); } 50%{ filter:drop-shadow(0 0 3px rgba(255, 152, 0, .45)); } }
+@media (prefers-reduced-motion: reduce){
+  :root[data-arbor2][data-theme='plateau'] .arbor2-door-sketch path{ stroke-opacity:1; animation:none !important; }
+  :root[data-arbor2][data-theme='plateau'] .arbor2-door-sketch, :root[data-arbor2][data-theme='plateau'] .arbor2-door-word{ animation:none !important; }
+  :root[data-arbor2][data-theme='plateau'] .arbor2-top-tagline{ animation:none !important; opacity:1; }
+}
+
+/* the Room "?" on the Themes row (after the choices), its note under the row */
+:root[data-arbor2][data-theme='plateau'] .arbor2-theme-room-right{ display:flex; align-items:center; gap:2px; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-theme-room-note{ margin:-2px 0 6px; text-align:right; }

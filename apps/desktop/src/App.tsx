@@ -226,7 +226,9 @@ function BrandMark() {
   // nothing moves when the splash fades into the page - as the night copy (its ground is the splash's dark in both rooms; styles/arbor-v2.css)
   const arborFront = isArbor2() && theme === 'plateau' && pathname === '/';
   if (pathname === '/' && !arborFront) return null;
-  if (arborFront) return <div className="brand-mark arbor2-logo-corner" aria-hidden="true" />;
+  // r18 (Nick, via Fable, Nov 3): on the front door the logo moved into the drawing, at its top (src/arbor2/frontLayer.tsx); the corner mark
+  // stays everywhere else, unchanged
+  if (arborFront) return null;
   // ITEM arbor-quiet-brass — a div, not an <img>: a CSS mask (index.css's own
   // .brand-mark rule) recolors the PNG brass by painting the mask shape with a
   // background color, which only works when the element has no image content
