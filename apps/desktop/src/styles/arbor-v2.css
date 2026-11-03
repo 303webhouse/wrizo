@@ -522,6 +522,14 @@
 :root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-panel{ position:relative; left:-16px; }
 :root[data-arbor2][data-theme='plateau'] .wz-tutor-grip{ transition:color .15s, background-color .15s, border-color .15s, left var(--drawer-dur) var(--drawer-ease); }
 :root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-grip:is([data-open='true'], [data-docked='true']){ left:var(--arbor2-drawer-r, 0px); }
+/* REDUCED MOTION: the openers cut, they never travel (fix after runs 41588188108 / 41588256216 - the reduced-motion repeat's second miss, a real
+   bug: main's floor makes every transition 0.01 ms, which still STARTS one, and its first frame shows the shut position; the read caught that
+   frame). The position leaves the transition list, so the tab stands where it settles in the frame the drawer opens. */
+@media (prefers-reduced-motion: reduce){
+  :root[data-arbor2][data-theme='plateau'] .wz-sliver-grip, :root[data-arbor2][data-theme='plateau'] .wz-tutor-grip{ transition-property:color, background-color, border-color; }
+  /* the folder tabs travel with their drawer's opener: no motion of their own either (the Wrizors' note: "Reduced motion: no motion of their own") */
+  :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2{ transition-property:opacity, visibility; }
+}
 /* (fix after the first green look, runs 41336024311 / 41336050132: when a drawer's content scrolls, its sliding box is inset by the panel's
    scrollbar strip, on the panel's OUTER side; the tab rides the panel's outer edge, so the closed box is parked a strip further in and both
    travel the same distance - at half the slide the tab was 2 px off. drawerEdge.ts measures each strip. Reduced motion keeps no travel.) */
