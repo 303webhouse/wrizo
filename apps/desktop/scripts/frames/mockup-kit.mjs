@@ -208,6 +208,8 @@ export function walkScreens(prefix, open, setRoom, openZoom = null) {
   }
   // EVERY WALK REPEATS THE REDUCED-MOTION OPEN (Fable, Nov 1: ">= 20x per drawer per room. One more miss = a real bug"): see reducedRepeat
   screens[`${prefix}-reduced-repeat`] = async (app) => { await open(app); await reducedRepeat(app, { name: `${prefix.toUpperCase()}-REDUCED-REPEAT`, setRoom }); };
+  // ...and the open read at its very moment (after the repeat's second miss, Nov 2): see reducedCutCheck
+  screens[`${prefix}-reduced-cut`] = async (app) => { await open(app); await reducedCutCheck(app, { name: `${prefix.toUpperCase()}-REDUCED-CUT`, setRoom }); };
   // ...and its liveness: on Typewriter's zoomed page the tab never travels (today's drawers, ruled), so the same reading must call every open
   // there a miss. The screen passes only if the repeat FAILS there with stuck tabs - a reader that cannot fail is not run.
   if (openZoom) screens[`${prefix}-reduced-repeat-liveness`] = async (app) => {
@@ -408,4 +410,45 @@ export function guarded(screens, { verdict, picture = isPicture }) {
     };
   }
   return out;
+}
+
+/** THE REDUCED-MOTION CUT, read at the moment of opening (after the repeat's second miss, runs 41588188108 / 41588256216 - Fable, Nov 1: "One
+ *  more miss = a real bug; chase it"). The repeat samples two frames after the open and missed 1 in 80: the opener was still at its shut x with
+ *  a `right` transition at currentTime 0 - main's reduced-motion floor (0.01 ms) still STARTS a transition, and its first frame shows the old
+ *  place. This reads the instant the drawer reports open (a MutationObserver on data-open, the style forced at once), so it sees that transition
+ *  every time it exists: under reduced motion, at the open, no transition may run on an opener's position and the opener must already stand
+ *  where it opens (its computed position changed). Each drawer, each room. Throws with its rows on any open that is not a cut. */
+export async function reducedCutCheck(app, { name, setRoom }) {
+  const rows = [];
+  await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]); await sleep(200);
+  try {
+    for (const room of ['day', 'night']) {
+      await setRoom(app, room);
+      for (const side of ['left', 'right']) {
+        const grip = side === 'left' ? '.wz-sliver-grip' : '.wz-tutor-grip';
+        const openSel = side === 'left' ? ".wz-sliver[data-open='true']" : ".wz-tutor-panel[data-open='true']";
+        const prop = side === 'left' ? 'right' : 'left';
+        for (let i = 0; i < 3; i++) {
+          const r = await app.evalJs(`new Promise((done) => { const g = document.querySelector(${JSON.stringify(grip)}); if (!g) return done({ grip: false }); const before = getComputedStyle(g)[${JSON.stringify(prop)}];
+            let t = 0; const mo = new MutationObserver(() => { if (!document.querySelector(${JSON.stringify(openSel)})) return; mo.disconnect(); clearTimeout(t);
+              const after = getComputedStyle(g)[${JSON.stringify(prop)}];
+              const anims = document.getAnimations().filter((a) => a.effect && a.effect.target === g && /^(left|right|inset|transform|translate)/.test(String(a.transitionProperty || a.animationName || ''))).map((a) => [a.transitionProperty || a.animationName, a.playState, Number(a.effect.getTiming().duration)]);
+              done({ grip: true, before, after, anims }); });
+            mo.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['data-open'] });
+            t = setTimeout(() => { mo.disconnect(); done({ grip: true, before, after: null, anims: null, timeout: true }); }, 1500);
+            g.click(); })`);
+          rows.push({ room, side, i, ...r });
+          await app.evalJs(click(grip));
+          await app.evalJs(`new Promise((done) => { const t0 = performance.now(); const f = () => (!document.querySelector(${JSON.stringify(openSel)}) || performance.now() - t0 > 1000) ? done(true) : requestAnimationFrame(f); f(); })`);
+          await app.evalJs(FINISH); await sleep(150);
+        }
+      }
+    }
+  } finally { await app.emulateMedia([]); }
+  const bad = rows.filter((r) => !r.grip || r.timeout || !Array.isArray(r.anims) || r.anims.length > 0 || r.after === r.before);
+  const brief = { opens: rows.length, cuts: rows.length - bad.length, misses: bad.length };
+  if (rows.length !== 12) { console.log(`${name}-FAIL ${JSON.stringify({ ...brief, why: 'expected 12 opens' })}`); throw new Error(`${name} FAILED expected 12 opens, got ${rows.length}`); }
+  if (bad.length) { console.log(`${name}-FAIL ${JSON.stringify({ ...brief, detail: bad.slice(0, 6) })}`); throw new Error(`${name} FAILED ${JSON.stringify({ ...brief, detail: bad.slice(0, 3) })}`.slice(0, 1200)); }
+  console.log(`${name} ${JSON.stringify({ ...brief, sample: rows.slice(0, 4).map((r) => [r.room, r.side, r.before, '->', r.after]) })}`);
+  return brief;
 }
