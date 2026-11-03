@@ -53,7 +53,7 @@ const MARK = `(() => { const m = document.querySelector('.brand-mark'); if (!m) 
     night: { img: b.backgroundImage, op: Number(b.opacity) }, day: { img: a.backgroundImage, op: Number(a.opacity) }, t: getComputedStyle(document.documentElement).getPropertyValue('--arbor2-t').trim(),
     bar: bar ? [Math.round(bar.left), Math.round(bar.top), Math.round(bar.width), Math.round(bar.height)] : null, room: document.documentElement.getAttribute('data-arbor2-room') }; })()`;
 // reads the pixels of a rect from a full screenshot (decoded in the page); keeps them in window.__r16px[key] for a later comparison
-const PIX = (b64, rect, key) => `(async () => {
+const PIX = (b64, rect, key, S = 0.7) => `(async () => {
   const img = new Image(); img.src = 'data:image/png;base64,${b64}'; await img.decode();
   const cv = document.createElement('canvas'); cv.width = img.width; cv.height = img.height; const cx = cv.getContext('2d', { willReadFrequently: true }); cx.drawImage(img, 0, 0);
   const k = img.width / innerWidth; const [x, y, w, h] = ${JSON.stringify(rect)}.map((v) => Math.round(v * k));
@@ -66,7 +66,7 @@ const PIX = (b64, rect, key) => `(async () => {
   let lum = 0, inked = 0, brassPx = 0; const ink = new Map();
   for (let i = 0; i < d.length; i += 4) { const p = [d[i], d[i + 1], d[i + 2]]; lum += 0.2126 * lin(p[0]) + 0.7152 * lin(p[1]) + 0.0722 * lin(p[2]);
     if (Math.max(...p.map((v, c) => Math.abs(v - g[c]))) < 24) continue; inked++;
-    const u = p.map((v, c) => Math.max(0, Math.min(255, Math.round((v - 0.3 * g[c]) / 0.7))));   // the ink at full strength (the mark is drawn at .7)
+    const u = p.map((v, c) => Math.max(0, Math.min(255, Math.round((v - (1 - ${S}) * g[c]) / ${S}))));   // the ink at full strength (the corner mark is drawn at .7; r18's logo at 1)
     const mx = Math.max(...u), mn = Math.min(...u); if (mx > 150 && (mx - mn) > 0.6 * mx && u[0] === mx) brassPx++;
     const q = u.map((v) => Math.round(v / 6) * 6).join(','); ink.set(q, (ink.get(q) || 0) + 1); }
   const top = [...ink.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([c, n]) => [c.split(',').map(Number), n]);
@@ -137,8 +137,10 @@ export default {
       const rows = [];
       for (const room of ['night', 'day']) {
         await load(app, '#/'); await setRoom(app, room); await sleep(500);
-        const m = await app.evalJs("(() => { const L = document.querySelector('.arbor2-front-mark .arbor2-top-logo'); if (!L) return null; const r = L.getBoundingClientRect(), b = getComputedStyle(L, '::before'); return { rect: [r.left, r.top, r.width, r.height].map((v) => Math.round(v * 10) / 10), pic: b.backgroundImage, op: Number(b.opacity), corner: document.querySelectorAll('.brand-mark').length }; })()");
-        const px = m ? await app.evalJs(PIX(await shot(app), m.rect, 'front-' + room)) : null;
+        // (amendment before any green, run 41672316457: the still logo is an SVG image drawn at full strength. Original: pic = the ::before's
+        // background, op = its opacity, PIX at the corner's .7)
+        const m = await app.evalJs("(() => { const L = document.querySelector('.arbor2-front-mark .arbor2-top-logo'); if (!L) return null; const r = L.getBoundingClientRect(), im = L.querySelector('image.arbor2-top-still'); return { rect: [r.left, r.top, r.width, r.height].map((v) => Math.round(v * 10) / 10), pic: im ? im.getAttribute('href') : '', op: Number(getComputedStyle(L).opacity), corner: document.querySelectorAll('.brand-mark').length }; })()");
+        const px = m ? await app.evalJs(PIX(await shot(app), m.rect, 'front-' + room, 1)) : null;
         rows.push({ room, m, px });
       }
       const okRow = (r) => !!r.m && /wrizo-logo-night\.png/.test(r.m.pic) && r.m.op === 1 && r.m.corner === 0 && has(r.px.top, CORNER.night.letters) && r.px.brassPx >= 40;
