@@ -175,10 +175,34 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
   // through sizeTo, the very road - and + take, so it follows Selection / Whole document exactly as they do. The default is the store's 11.
   const mockBox = isMachina2() && theme === 'machina';
   const strictSize = (raw: string): number | null => { const t = raw.trim(); if (!/^\d{1,2}$/.test(t)) return null; const n = Number(t); return n >= 6 && n <= 72 ? n : null; };
+  // (fix after the green look, runs 41572170258 / 41572201080: with words highlighted, pressing into the box moved the page's selection into
+  // the box, so the highlighted-words road found no range and did nothing - the existing Draft box has the same gap. Under the flag the box
+  // keeps the highlight it was opened on and gives it back before sizing, so it sizes those words, as - and + do.)
+  const heldRange = useRef<Range | null>(null);
+  // the last highlight made outside this control (a Tab into the box, or a focus that lands after the selection moved, finds it here)
+  const lastHighlight = useRef<Range | null>(null);
+  useEffect(() => {
+    if (!mockBox) return undefined;
+    const onSel = () => { const sel = window.getSelection(); if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return; const r = sel.getRangeAt(0); if (rootRef.current && rootRef.current.contains(r.commonAncestorContainer)) return; lastHighlight.current = r.cloneRange(); };
+    document.addEventListener('selectionchange', onSel);
+    return () => document.removeEventListener('selectionchange', onSel);
+  }, [mockBox]);
+  const holdHighlight = () => {
+    if (!mockBox || selSize === null) { heldRange.current = null; return; }
+    const sel = window.getSelection();
+    const live = sel && sel.rangeCount > 0 && !sel.isCollapsed && !(rootRef.current && rootRef.current.contains(sel.getRangeAt(0).commonAncestorContainer)) ? sel.getRangeAt(0).cloneRange() : null;
+    heldRange.current = live ?? lastHighlight.current;
+  };
   const commitDraft = () => {
     if (draft === null) return;
     const n = mockBox ? strictSize(draft) : normalizeTypedSize(draft);
     setDraft(null);                          // a refused entry snaps back to the previous value
+    const held = heldRange.current; heldRange.current = null;
+    if (n !== null && mockBox && held && scope?.onSizeSelection) {
+      const sel = window.getSelection(); sel?.removeAllRanges(); sel?.addRange(held);   // the highlight back where it was, then only those words
+      scope.onSizeSelection(n);
+      return;
+    }
     if (n !== null && n !== shownSize) sizeTo(n);
   };
 
@@ -256,6 +280,8 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
             inputMode="decimal"
             aria-label={t('typeSize')}
             value={draft ?? formatSize(shownSize)}
+            onMouseDown={holdHighlight}
+            onFocus={holdHighlight}
             onChange={(e) => setDraft(e.target.value)}
             onBlur={commitDraft}
             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commitDraft(); (e.target as HTMLInputElement).blur(); } else if (e.key === 'Escape') setDraft(null); }}
