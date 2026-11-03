@@ -356,7 +356,9 @@ export async function sizeBoxCheck(app, { name, say, fail, selection = false }) 
     // (amendment before any green, run 41572970938: the first text node's parent was a wrong witness - the size is a span around the sized
     // words, and a partial sizing left 'T' outside it, which read as "nothing changed". The highlighted word itself is read now: exactly the
     // words highlighted ('The') carry the typed size, and the last word keeps its size. Original: b1[0] > b0[0] + 0.5 && |b1[1] - b0[1]| < 0.01)
-    const sized = await app.evalJs(`(() => { const ed = document.querySelector('${ED}'); return [...ed.querySelectorAll('[data-size]')].map((e) => [e.getAttribute('data-size'), (e.innerText || '').trim()]); })()`);
+    // (instrument fix, run 41574392177: the page keeps its format marks as hidden text ('[', ']{.size-30}') inside the span; the words are read
+    // with those marks left out)
+    const sized = await app.evalJs(`(() => { const ed = document.querySelector('${ED}'); return [...ed.querySelectorAll('[data-size]')].map((e) => { const c = e.cloneNode(true); c.querySelectorAll('.md-mark').forEach((m) => m.remove()); return [e.getAttribute('data-size'), (c.textContent || '').trim()]; }); })()`);
     sel = { scope, before: b0, after: b1, sized, d0, d1 };
     ok.sameScope = scope === 'true' && sized.some(([sz, txt]) => sz === '30' && txt === 'The') && !sized.some(([sz, txt]) => sz === '30' && txt !== 'The') && Math.abs(b1[1] - b0[1]) < 0.01;
   }
