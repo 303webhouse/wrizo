@@ -4,7 +4,7 @@
 // (whole numbers 6-72; Enter or blur applies; a bad value reverts; default 11; the same scope as -/+); 4. the tabs unchanged. The checks live in
 // mockup-kit.mjs (shared with the Arbor mockup). Each THROWS with its numbers when it fails ("MACHINA2-R8 <screen> {...}"). Written red-first:
 // run against r7 rebased (94ff94d7) before the r8 build. Seeds go through window.wrizo*.
-import { themeRoomCheck, sizeBoxCheck } from './mockup-kit.mjs';
+import { themeRoomCheck, sizeBoxCheck, guarded } from './mockup-kit.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ED = '.forward-only-editor';
@@ -52,7 +52,8 @@ const newPageCheck = async (app, name) => {
   say(name.toLowerCase(), { ok, old, fresh });
 };
 
-export default {
+// (Fable, Nov 2, all lanes: a check that throws, crashes or prints no verdict is RED - the kit's verdict guard wraps every screen here)
+export default guarded({
   'm2r8-new-page': async (app) => { await newPageCheck(app, 'M2R8-NEW-PAGE'); },
   // ── LIGHTING BESIDE PAGE in the Themes menu: Machina's words, Day / Night / Automatic move the room at once, the panel's row agrees
   'm2r8-theme-lighting': async (app) => {
@@ -66,4 +67,4 @@ export default {
   // ── PICTURES for the Wrizors
   'm2r8-pic-themes': async (app) => { await page(app, 'm2r8-pic'); await app.evalJs("document.querySelector(\".wz-strip-item[data-category='theme']\")?.click()"); await sleep(800); },
   'm2r8-pic-size-build': async (app) => { await page(app, 'm2r8-pic-b', 'Build'); await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(900); },
-};
+}, { verdict: ["MACHINA2-R8"] });
