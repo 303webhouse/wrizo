@@ -11,6 +11,7 @@ import { isStaleClient } from './staleClient';
 import { getCurrentUser, subscribeCurrentUser } from './currentUser';
 import { liveBoxes, carryHiddenOnSave, tombstone, restoreBox, purgeMarker, mergeBoxLists, isTombstoned, isHiddenSelf } from './boxTombstones';
 import { withoutFontMarks } from './markRuns';   // page-link labels read the words [persistence §1]
+import { newPageSize } from '../arbor2/newPageSize';   // ARBOR v2 MOCKUP r17 (kept on r20's rebase: main's TOOLS #14 covers the unborn page; these two birth paths keep the mockup's rule)
 
 // ---------------------------------------------------------------------------
 // Storage adapter (A2)
@@ -961,6 +962,7 @@ export function createJournalPage(seed?: JournalPageSeed): JournalEntry {
   // the wall clock unconditionally, so whatever was assigned here never
   // survived the very next line. A fixture needing rows in a recency order
   // touches them through `wrizoTouchInOrder`, which makes the order real.
+  newPageSize(entry);   // ARBOR v2 MOCKUP r17: a page born under the flag starts at 11 pt (../arbor2/newPageSize.ts)
   saveJournalEntry(entry);
   return entry;
 }
@@ -2116,6 +2118,7 @@ export function createLooseHomePage(): JournalEntry {
     createdAt: now,
     updatedAt: now,
   };
+  newPageSize(entry);   // ARBOR v2 MOCKUP r17: a page born under the flag starts at 11 pt (../arbor2/newPageSize.ts)
   saveJournalEntry(entry);
   return entry;
 }
