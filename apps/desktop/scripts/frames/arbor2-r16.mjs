@@ -228,7 +228,8 @@ export default {
 
   // ── 6. A "?" IS GUIDANCE: every "?" in the drawers is the help green - at rest and open - never brass; one per row: the Ask box's own on the
   // Send row's middle, the Grafts cloth's on the Grafts cloth; none stacked on another
-  'r16-help': async (app) => {
+  // PARKED 2026-11-02 (SUPERSEDED by Nick's C2 folder tabs, Nov 2 (spec draft 23 §9c; the Wrizors' note md5 a17aae25, gated by Fable): the tabs stand OFF the drawer - the Tools tabs up from its top edge, the Tutor tabs off its right edge - so they are no longer inside it). Kept verbatim under the name r16-help-v1 (not in the run list); SUCCESSOR r16-help below.
+  'r16-help-v1': async (app) => {
     await page(app, 'arbor-r16-help');
     await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(250); await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()");
     await app.evalJs(FINISH); await sleep(600); await app.evalJs(FINISH);
@@ -236,6 +237,35 @@ export default {
       const qs = [...document.querySelectorAll('.wz-tutor-panel button, .wz-sliver-panel button')].filter((b) => b.textContent.trim() === '?' && b.getBoundingClientRect().width > 0);
       const R = (e) => { const r = e.getBoundingClientRect(); return { t: r.top, b: r.bottom, cy: (r.top + r.bottom) / 2, l: r.left, r: r.right }; };
       const row = document.querySelector('.wz-tutor-convo-row'); const grafts = [...document.querySelectorAll('.wz-tutor-panel .wz-drawer-tab')].find((t) => /grafts/i.test(t.textContent));
+      return { help, marks: qs.map((b) => ({ cls: b.className, label: b.getAttribute('aria-label'), color: getComputedStyle(b).color, border: getComputedStyle(b).borderTopColor, ...R(b), inRow: !!b.closest('.wz-tutor-convo-row'), note: !!b.closest('.wz-drawer-tabnotes') })),
+        row: row ? R(row) : null, grafts: grafts ? R(grafts) : null }; })()`;
+    const rest = await app.evalJs(READ);
+    // open the Ask box's own note: it stays green
+    await app.evalJs("document.querySelector('.wz-tutor-convo-row .wz-drawer-note-btn')?.click()"); await sleep(250);
+    const opened = await app.evalJs(READ);
+    await app.evalJs("document.querySelector('.wz-tutor-convo-row .wz-drawer-note-btn')?.click()");
+    const brass = (c) => /255,\s*152,\s*0/.test(c);
+    const ask = rest.marks.find((m) => m.inRow), note = rest.marks.find((m) => m.note);
+    const pairs = rest.marks.flatMap((a, i) => rest.marks.slice(i + 1).map((b) => ({ dy: Math.abs(a.cy - b.cy), dx: Math.abs((a.l + a.r) / 2 - (b.l + b.r) / 2) })));
+    const ok = {
+      green: rest.marks.length >= 2 && rest.marks.every((m) => m.color === rest.help && !brass(m.color) && !brass(m.border)),
+      greenOpen: opened.marks.every((m) => !brass(m.color) && !brass(m.border) && m.color === opened.help),
+      askOnRow: !!ask && !!rest.row && Math.abs(ask.cy - rest.row.cy) <= 2,
+      noteOnCloth: !!note && !!rest.grafts && note.cy >= rest.grafts.t && note.cy <= rest.grafts.b,
+      notStacked: pairs.every((p) => p.dy >= 20 || p.dx >= 40),
+    };
+    const brief = { ok, help: rest.help, marks: rest.marks.map((m) => [m.cls, m.label, m.color, Math.round(m.cy), Math.round(m.l)]), row: rest.row && Math.round(rest.row.cy), grafts: rest.grafts && [Math.round(rest.grafts.t), Math.round(rest.grafts.b)] };
+    if (Object.values(ok).some((x) => !x)) fail('R16-HELP', brief);
+    say('r16-help', brief);
+  },
+  'r16-help': async (app) => {
+    await page(app, 'arbor-r16-help');
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(250); await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()");
+    await app.evalJs(FINISH); await sleep(600); await app.evalJs(FINISH);
+    const READ = `(() => { const help = (() => { const p = document.createElement('div'); p.style.cssText = 'position:fixed;left:-9px;top:-9px;width:1px;height:1px;color:var(--help)'; document.querySelector('.wz-tutor-panel').appendChild(p); const c = getComputedStyle(p).color; p.remove(); return c; })();
+      const qs = [...document.querySelectorAll('.wz-tutor-panel button, .wz-sliver-panel button, .arbor2-c2 button')].filter((b) => b.textContent.trim() === '?' && b.getBoundingClientRect().width > 0);
+      const R = (e) => { const r = e.getBoundingClientRect(); return { t: r.top, b: r.bottom, cy: (r.top + r.bottom) / 2, l: r.left, r: r.right }; };
+      const row = document.querySelector('.wz-tutor-convo-row'); const grafts = [...document.querySelectorAll('.arbor2-c2--right .wz-drawer-tab')].find((t) => /grafts/i.test(t.textContent));
       return { help, marks: qs.map((b) => ({ cls: b.className, label: b.getAttribute('aria-label'), color: getComputedStyle(b).color, border: getComputedStyle(b).borderTopColor, ...R(b), inRow: !!b.closest('.wz-tutor-convo-row'), note: !!b.closest('.wz-drawer-tabnotes') })),
         row: row ? R(row) : null, grafts: grafts ? R(grafts) : null }; })()`;
     const rest = await app.evalJs(READ);

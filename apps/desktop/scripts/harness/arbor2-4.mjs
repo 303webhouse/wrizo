@@ -34,7 +34,16 @@ const setFlag = async (app, on) => {
 };
 // (r8: the Room switch lives in the Mood menu, folded by default - the driver opens Mood first when the label is not on screen; no assertion changed)
 // (r10 driver fix, no assertion changed: the Room row's buttons read "Day" / "Night" again - the Wrizors, Nov 1, spec §2e - so r9's mapping retires)
-const pickBar = async (app, label0) => { const label = label0; await app.evalJs(`(() => { if ([...document.querySelectorAll('.arbor2-bar-opt')].some((x) => x.textContent.trim() === ${JSON.stringify(label)})) return; const m = [...document.querySelectorAll('.arbor2-bar-head')].find((h) => /^Mood/.test(h.textContent.trim()) && h.getAttribute('aria-expanded') !== 'true'); if (m) m.click(); })()`); await new Promise((r) => setTimeout(r, 150)); return app.evalJs(`(() => { const b = [...document.querySelectorAll('.arbor2-bar-opt')].find((x) => x.textContent.trim() === ${JSON.stringify(label)}); if (b) b.click(); return !!b; })()`); };
+// (r17 driver: the Room row left the Mood menu for the Themes menu, under Page - the Wrizors' note, Nov 2 - with the words Light · Dark · By the clock.
+// It opens the Themes pop-out, presses the word and closes the pop-out again, as a writer would. No assertion changed.)
+const ROOM_WORD = { day: 'Light', night: 'Dark', clock: 'By the clock', Day: 'Light', Night: 'Dark', 'By the clock': 'By the clock' };
+const pickThemesRoom = (app, which) => app.evalJs(`(async () => { const text = ${JSON.stringify(ROOM_WORD[which] ?? which)}; const strip = document.querySelector(".wz-strip-item[data-category='theme']"); if (!strip) return false;
+  const was = strip.getAttribute('aria-pressed') === 'true'; if (!was) strip.click(); const t0 = performance.now();
+  while (!document.querySelector('.wz-theme-picker') && performance.now() - t0 < 2000) await new Promise((r) => requestAnimationFrame(r));
+  const row = [...document.querySelectorAll('.wz-theme-picker .mode-crow')].find((r) => r.querySelector(':scope > span')?.textContent.trim() === 'Room');
+  const b = row && [...row.querySelectorAll('.mode-seg button')].find((x) => x.textContent.trim() === text); if (b) b.click(); if (!was) strip.click(); return !!b; })()`);
+const pickBarMood = async (app, label0) => { const label = label0; await app.evalJs(`(() => { if ([...document.querySelectorAll('.arbor2-bar-opt')].some((x) => x.textContent.trim() === ${JSON.stringify(label)})) return; const m = [...document.querySelectorAll('.arbor2-bar-head')].find((h) => /^Mood/.test(h.textContent.trim()) && h.getAttribute('aria-expanded') !== 'true'); if (m) m.click(); })()`); await new Promise((r) => setTimeout(r, 150)); return app.evalJs(`(() => { const b = [...document.querySelectorAll('.arbor2-bar-opt')].find((x) => x.textContent.trim() === ${JSON.stringify(label)}); if (b) b.click(); return !!b; })()`); };
+const pickBar = (app, label) => (['Day', 'Night', 'By the clock'].includes(label) ? pickThemesRoom(app, label) : pickBarMood(app, label));
 const clickSel = (app, sel) => app.evalJs(`(() => { const b = document.querySelector(${JSON.stringify(sel)}); if (b) b.click(); return !!b; })()`);
 const openRail = (app, label) => app.evalJs(`(() => { const b = [...document.querySelectorAll('.wz-strip-item')].find((x) => (x.textContent || '').trim().toLowerCase() === ${JSON.stringify(label.toLowerCase())}); if (b) b.click(); return !!b; })()`);
 

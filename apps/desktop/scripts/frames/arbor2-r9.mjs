@@ -32,7 +32,16 @@ const clock = (app, s) => app.evalJs(`typeof window.arbor2Clock === 'function' ?
 const openMood = (app) => app.evalJs(`(() => { const m = [...document.querySelectorAll('.arbor2-bar-head')].find((h) => /^Mood/.test(h.textContent.trim()) && h.getAttribute('aria-expanded') !== 'true'); if (m) m.click(); })()`);
 const closeMood = (app) => app.evalJs(`(() => { const m = [...document.querySelectorAll('.arbor2-bar-head')].find((h) => /^Mood/.test(h.textContent.trim()) && h.getAttribute('aria-expanded') === 'true'); if (m) m.click(); })()`);
 // THE ROOM CONTROL: open the Mood menu and press clock | day | night. Returns false when the choice is not there.
-const pickRoom = async (app, choice, settle = 900) => { await openMood(app); await sleep(150); const ok = await clickSel(app, `.arbor2-mood [data-room-opt="${choice}"]`); await sleep(settle); return ok; };
+// (r17 driver: the Room row left the Mood menu for the Themes menu, under Page - the Wrizors' note, Nov 2 - with the words Light · Dark · By the clock.
+// It opens the Themes pop-out, presses the word and closes the pop-out again, as a writer would. No assertion changed.)
+const ROOM_WORD = { day: 'Light', night: 'Dark', clock: 'By the clock', Day: 'Light', Night: 'Dark', 'By the clock': 'By the clock' };
+const pickThemesRoom = (app, which) => app.evalJs(`(async () => { const text = ${JSON.stringify(ROOM_WORD[which] ?? which)}; const strip = document.querySelector(".wz-strip-item[data-category='theme']"); if (!strip) return false;
+  const was = strip.getAttribute('aria-pressed') === 'true'; if (!was) strip.click(); const t0 = performance.now();
+  while (!document.querySelector('.wz-theme-picker') && performance.now() - t0 < 2000) await new Promise((r) => requestAnimationFrame(r));
+  const row = [...document.querySelectorAll('.wz-theme-picker .mode-crow')].find((r) => r.querySelector(':scope > span')?.textContent.trim() === 'Room');
+  const b = row && [...row.querySelectorAll('.mode-seg button')].find((x) => x.textContent.trim() === text); if (b) b.click(); if (!was) strip.click(); return !!b; })()`);
+// (r17 driver fix, no assertion changed: pickRoom presses the Themes menu's Room row)
+const pickRoom = async (app, choice, settle = 900) => { const ok = await pickThemesRoom(app, choice); await sleep(settle); return ok; };
 const ROWREAD = `(() => { const first = document.querySelector('.arbor2-mood > li'); if (!first) return null;
   return { label: first.getAttribute('aria-label'), text: first.textContent.replace(/\\s+/g, ' ').trim(), opts: [...first.querySelectorAll('[data-room-opt]')].map((b) => [b.getAttribute('data-room-opt'), b.textContent.trim(), b.getAttribute('aria-pressed')]) }; })()`;
 const STATE = `(() => { const r = document.documentElement, cs = getComputedStyle(r);
@@ -85,6 +94,12 @@ const STEP = `(() => { ${COLOUR}
   out.gLum = hexLum(cs.getPropertyValue('--ink-950').trim());
   return out; })()`;
 
+// the Themes menu's Room row, read: [value, word, pressed] in its own order, and whether the Mood menu still holds a Room row (r9-room's successor)
+const THEMES_ROWREAD = `(async () => { const VAL = { Light: 'day', Dark: 'night', 'By the clock': 'clock' }; const strip = document.querySelector(".wz-strip-item[data-category='theme']"); if (!strip) return null;
+  const was = strip.getAttribute('aria-pressed') === 'true'; if (!was) strip.click(); const t0 = performance.now(); while (!document.querySelector('.wz-theme-picker') && performance.now() - t0 < 2000) await new Promise((r) => requestAnimationFrame(r));
+  const row = [...document.querySelectorAll('.wz-theme-picker .mode-crow')].find((r) => r.querySelector(':scope > span')?.textContent.trim() === 'Room');
+  const out = row ? { label: 'Room', opts: [...row.querySelectorAll('.mode-seg button')].map((b) => [VAL[b.textContent.trim()] ?? b.textContent.trim(), b.textContent.trim(), b.classList.contains('on') ? 'true' : 'false']), notInMood: !document.querySelector('.arbor2-mood [data-room-opt], .arbor2-room-row') } : null;
+  if (!was) strip.click(); return out; })()`;
 export default {
   // ── THE ROOM CONTROL. The Mood menu's FIRST row is "Room" with exactly Follow the clock / Always day / Always night; unset (no data-room) it is
   // Follow the clock, pressed. Following the clock the room is day at 12:00 and night at 22:00 WHATEVER the page tone; Always night at noon and
@@ -136,7 +151,8 @@ export default {
     if (Object.values(ok).some((x) => !x)) fail('R9-ROOM', { ok, s0, row, seam, at, pN, pD, pC, s4, row4, paper0, paperD, newKeys: keys1.filter((k) => !keys0.includes(k)) });
     say('r9-room', { ok, tone: s0.tone, row: row.opts, noon: at['12:00 dark'].room, night: at['22:00 light'].room });
   },
-  'r9-room': async (app) => {
+  // PARKED 2026-11-02 (SUPERSEDED by the Wrizors' note, Nov 2 (wrizors-to-ARBOR-nov2c.md md5 a17aae25), gated by Fable: "Room in the Themes menu, directly under Page: Room: Light · Dark · By the clock; it leaves the Mood menu"). Kept verbatim under the name r9-room-v2 (not in the run list); SUCCESSOR r9-room below.
+  'r9-room-v2': async (app) => {
     await page(app, 'arbor-r9-room', WORDS);
     const keys0 = await app.evalJs('[...Object.keys(localStorage), ...Object.keys(sessionStorage)].sort()');
     const paperOf = `(() => { ${COLOUR} const s = document.querySelector('.arbor2-paper[data-on="true"]'); return hex(parse(getComputedStyle(s || document.querySelector('.mode-page')).backgroundColor)); })()`;
@@ -166,6 +182,48 @@ export default {
     const pressed = (r) => (r?.opts || []).filter((o) => o[2] === 'true').map((o) => o[0]).join(',');
     const ok = {
       row: !!row && row.label === 'Room' && JSON.stringify(row.opts.map((o) => o.slice(0, 2))) === '[["clock","By the clock"],["day","Day"],["night","Night"]]' && pressed(row) === 'clock',
+      unsetIsClock: !s0.dataRoom,
+      seam: seam !== 'NO-SEAM',
+      noon: ['dark', 'light'].every((t) => at[`12:00 ${t}`].room === 'day' && at[`12:00 ${t}`].t === '1'),
+      night: ['dark', 'light'].every((t) => at[`22:00 ${t}`].room === 'night' && at[`22:00 ${t}`].t === '0'),
+      pickNight: okN && pN.dataRoom === 'dark' && pN.room === 'night' && pN.t === '0' && pressed(rowN) === 'night',
+      pickDay: okD && pD.dataRoom === 'light' && pD.room === 'day' && pD.t === '1',
+      backToClock: okC && !pC.dataRoom && pC.room === 'night' && pC.t === '0',
+      pageKept: !!paper0 && paper0 === paperD,
+      noStorage: JSON.stringify(keys0) === JSON.stringify(keys1) && !keys1.some((k) => /room|clock/i.test(k)),
+      session: !s4.dataRoom && pressed(row4) === 'clock',
+    };
+    if (Object.values(ok).some((x) => !x)) fail('R9-ROOM', { ok, s0, row, seam, at, pN, pD, pC, s4, row4, paper0, paperD, newKeys: keys1.filter((k) => !keys0.includes(k)) });
+    say('r9-room', { ok, tone: s0.tone, row: row.opts, noon: at['12:00 dark'].room, night: at['22:00 light'].room });
+  },
+  'r9-room': async (app) => {
+    await page(app, 'arbor-r9-room', WORDS);
+    const keys0 = await app.evalJs('[...Object.keys(localStorage), ...Object.keys(sessionStorage)].sort()');
+    const paperOf = `(() => { ${COLOUR} const s = document.querySelector('.arbor2-paper[data-on="true"]'); return hex(parse(getComputedStyle(s || document.querySelector('.mode-page')).backgroundColor)); })()`;
+    const s0 = await app.evalJs(STATE), paper0 = await app.evalJs(paperOf);
+    const row = await app.evalJs(THEMES_ROWREAD);
+    const seam = await clock(app, '12:00');
+    const at = {};
+    for (const hhmm of ['12:00', '22:00']) {
+      await clock(app, hhmm);
+      for (const tone of ['dark', 'light']) { await app.evalJs(`document.documentElement.setAttribute('data-page', ${JSON.stringify(tone)})`); await sleep(150); at[`${hhmm} ${tone}`] = await app.evalJs(STATE); }
+    }
+    await app.evalJs(`document.documentElement.setAttribute('data-page', ${JSON.stringify(s0.tone)})`); await sleep(150);
+    await clock(app, '12:00');
+    const okN = await pickThemesRoom(app, 'night'); await sleep(60);
+    const pN = await app.evalJs(STATE), rowN = await app.evalJs(THEMES_ROWREAD);
+    await clock(app, '22:00');
+    const okD = await pickThemesRoom(app, 'day'); await sleep(60);
+    const pD = await app.evalJs(STATE), paperD = await app.evalJs(paperOf);
+    const okC = await pickThemesRoom(app, 'clock'); await sleep(60);
+    const pC = await app.evalJs(STATE);
+    const keys1 = await app.evalJs('[...Object.keys(localStorage), ...Object.keys(sessionStorage)].sort()');
+    await pickRoom(app, 'night', 300);
+    await load(app, '#/page/arbor-r9-room'); await sleep(800);
+    const s4 = await app.evalJs(STATE), row4 = await app.evalJs(THEMES_ROWREAD);
+    const pressed = (r) => (r?.opts || []).filter((o) => o[2] === 'true').map((o) => o[0]).join(',');
+    const ok = {
+      row: !!row && row.label === 'Room' && JSON.stringify(row.opts.map((o) => o.slice(0, 2))) === '[["day","Light"],["night","Dark"],["clock","By the clock"]]' && row.notInMood && pressed(row) === 'clock',
       unsetIsClock: !s0.dataRoom,
       seam: seam !== 'NO-SEAM',
       noon: ['dark', 'light'].every((t) => at[`12:00 ${t}`].room === 'day' && at[`12:00 ${t}`].t === '1'),
