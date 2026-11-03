@@ -96,7 +96,8 @@ const SCREENS = {
   },
   // ── 2. THE LOGO AT THE TOP, where the line stood, the night copy, still on the front door; the tagline under it, above the PAGE heading;
   // no corner mark on the front door (the logo moved; in the app it stays)
-  'r18-top': async (app) => {
+  // PARKED 2026-11-03 (SUPERSEDED by the hand-over fix after t16 (run 41672316457): the still logo is an SVG image in the same <svg> as the writing - a CSS background rasterised differently at the swap - so its picture is the image's href, not the ::before's background). Kept verbatim under the name r18-top-v1 (not in the run list); SUCCESSOR r18-top below.
+  'r18-top-v1': async (app) => {
     const done = await anon(app);
     try {
       await load(app); await doorsShown(app);
@@ -112,6 +113,27 @@ const SCREENS = {
         noCorner: s.corner === 0,
       };
       const brief = { ok, mark: m, logo: s.logo, tag: s.tag, lineBand, pageInk, corner: s.corner };
+      if (Object.values(ok).some((x) => !x)) fail('R18-TOP', brief);
+      say('r18-top', brief);
+    } finally { await done(); }
+  },
+  'r18-top': async (app) => {
+    const done = await anon(app);
+    try {
+      await load(app); await doorsShown(app);
+      const s = await app.evalJs(FRONT);
+      const still = await app.evalJs("document.querySelector('.arbor2-front-mark .arbor2-top-logo image.arbor2-top-still')?.getAttribute('href') ?? null");
+      const m = s.mark;
+      const lineBand = m && onScreen(m, 1670 - 300, 0, 1030 + 600, 300);
+      const pageInk = m && (m.t + (338 / CH) * m.h);   // the PAGE heading's first ink row under the tagline's span (measured on the drawing)
+      const ok = {
+        logo: s.logoShown && still === '/brand/arbor2/wrizo-logo-night.png',
+        logoWhereTheLineStood: inside(s.logo, lineBand, 1),
+        tagline: !!s.tag && s.tag.shown && s.tag.text === 'For humans who write.',
+        taglineUnder: !!s.tag && !!s.logo && s.tag.r.t >= s.logo.b - 1 && s.tag.r.b <= pageInk + 0.5 && inside(s.tag.r, m, 0.5),
+        noCorner: s.corner === 0,
+      };
+      const brief = { ok, mark: m, logo: s.logo, still, tag: s.tag, lineBand, pageInk, corner: s.corner };
       if (Object.values(ok).some((x) => !x)) fail('R18-TOP', brief);
       say('r18-top', brief);
     } finally { await done(); }
@@ -258,7 +280,10 @@ const SCREENS = {
       const s = await app.evalJs(FRONT); const seam = needSeam('R18-REDUCED', await app.evalJs(SEAM), { splashLogo });
       const anims = await app.evalJs("document.getAnimations().filter((a) => document.querySelector('.arbor2-front-doors')?.contains(a.effect?.target) || document.querySelector('.arbor2-front-mark .arbor2-top-logo')?.contains(a.effect?.target)).map((a) => a.animationName || a.transitionProperty)");
       const all = analyse(so, 0, 8000);
-      const ok = { logoStill: !!splashLogo && splashLogo.writing === 'still' && splashLogo.anims === 0, fullStrength: s.doors.length === 2 && s.doors.every((d) => d.so === 1 && d.shown), still: all.n > 20 && all.min === 1 && all.max === 1, nothingAnimates: anims.length === 0, noPulse: (seam.pulses || []).length === 0 };
+      // (amendment before any green, run 41670142886: a 0.01 ms `color` transition - the room's colours, a cut - was counted as the logo animating;
+      // as r16-splash-reduced's instrument: CSS animations are counted, transitions reported. Original: splashLogo.anims === 0)
+      const logoAnims = (splashLogo?.what || []).filter(([kind]) => kind !== 'CSSTransition').length;
+      const ok = { logoStill: !!splashLogo && splashLogo.writing === 'still' && logoAnims === 0, fullStrength: s.doors.length === 2 && s.doors.every((d) => d.so === 1 && d.shown), still: all.n > 20 && all.min === 1 && all.max === 1, nothingAnimates: anims.length === 0, noPulse: (seam.pulses || []).length === 0 };
       const brief = { ok, splashLogo, doors: s.doors.map((d) => [d.word, d.so]), all, anims, pulses: seam.pulses };
       if (Object.values(ok).some((x) => !x)) fail('R18-REDUCED', brief);
       say('r18-reduced', brief);
