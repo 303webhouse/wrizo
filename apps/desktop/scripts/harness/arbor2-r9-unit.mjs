@@ -42,7 +42,10 @@ ok('C6 nothing in the room or the mount touches storage', !/localStorage|session
 // PARKED 2026-11-01 (SUPERSEDED by the Wrizors' note, Nov 1, spec §2e: "Room ▸ By the clock · Day · Night" - the shorter words). Original, verbatim:
 // ok('C6 the Room row offers exactly Follow the clock / Always day / Always night, in the Mood menu', /\[\['clock', 'Follow the clock'\], \['day', 'Always day'\], \['night', 'Always night'\]\]/.test(src) && /<RoomRow \/>/.test(src) && !/follows Page/.test(src), '');
 // SUCCESSOR C6b: the same, with r10's words.
-ok('C6b the Room row offers exactly By the clock / Day / Night, in the Mood menu', /\[\['clock', 'By the clock'\], \['day', 'Day'\], \['night', 'Night'\]\]/.test(src) && /<RoomRow \/>/.test(src) && !/follows Page/.test(src), '');
+// PARKED 2026-11-02 (SUPERSEDED by the Wrizors' note, Nov 2 (wrizors-to-ARBOR-nov2c.md md5 a17aae25), gated by Fable: the row leaves the Mood menu for the Themes menu, "Room: Light · Dark · By the clock"). Original, verbatim:
+// ok('C6b the Room row offers exactly By the clock / Day / Night, in the Mood menu', /\[\['clock', 'By the clock'\], \['day', 'Day'\], \['night', 'Night'\]\]/.test(src) && /<RoomRow \/>/.test(src) && !/follows Page/.test(src), '');
+// SUCCESSOR C6c: the Themes menu's Room row (arbor2/themeRoom.tsx) offers exactly Light / Dark / By the clock, and the Mood menu no longer draws a Room row.
+ok('C6c the Room row offers exactly Light / Dark / By the clock in the Themes menu, not in the Mood menu', /opts=\{\[\['day', 'Light'\], \['night', 'Dark'\], \['clock', 'By the clock'\]\]\}/.test(fs.readFileSync(new URL('../../src/arbor2/themeRoom.tsx', import.meta.url), 'utf8')) && !/<RoomRow \/>/.test(src), '');
 ok('C6 the room no longer reads the page tone', !/getAttribute\('data-page'\)/.test(src.split('function RoomRow')[0]), '');
 ok('C2 the clock moves the room on its own, and reduced motion is read live', /setInterval\(applyRoom/.test(src) && /prefers-reduced-motion: reduce/.test(src) && /addEventListener\?\.\('change', applyRoom\)/.test(src), '');
 

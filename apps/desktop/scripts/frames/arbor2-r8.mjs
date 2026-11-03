@@ -27,11 +27,20 @@ const page = async (app, id, text, on = true) => {
   await waitSoft(app, `!!document.querySelector('${ED}')`, { label: 'page' });
   await sleep(1400);
 };
+// (r17 driver: the Room row left the Mood menu for the Themes menu, under Page - the Wrizors' note, Nov 2 - with the words Light · Dark · By the clock.
+// It opens the Themes pop-out, presses the word and closes the pop-out again, as a writer would. No assertion changed.)
+const ROOM_WORD = { day: 'Light', night: 'Dark', clock: 'By the clock', Day: 'Light', Night: 'Dark', 'By the clock': 'By the clock' };
+const pickThemesRoom = (app, which) => app.evalJs(`(async () => { const text = ${JSON.stringify(ROOM_WORD[which] ?? which)}; const strip = document.querySelector(".wz-strip-item[data-category='theme']"); if (!strip) return false;
+  const was = strip.getAttribute('aria-pressed') === 'true'; if (!was) strip.click(); const t0 = performance.now();
+  while (!document.querySelector('.wz-theme-picker') && performance.now() - t0 < 2000) await new Promise((r) => requestAnimationFrame(r));
+  const row = [...document.querySelectorAll('.wz-theme-picker .mode-crow')].find((r) => r.querySelector(':scope > span')?.textContent.trim() === 'Room');
+  const b = row && [...row.querySelectorAll('.mode-seg button')].find((x) => x.textContent.trim() === text); if (b) b.click(); if (!was) strip.click(); return !!b; })()`);
 // THE ROOM CONTROL: open the Mood menu (folded by default) and press Day or Night. Returns false when the control is not there (the red leg).
 const pickRoom = async (app, room) => {
   await app.evalJs(`(() => { const m = [...document.querySelectorAll('.arbor2-bar-head')].find((h) => /^Mood/.test(h.textContent.trim()) && h.getAttribute('aria-expanded') !== 'true'); if (m) m.click(); })()`);
   await sleep(150);
-  const ok = await clickSel(app, `.arbor2-mood [data-room-opt="${room}"]`);
+  // (r17 driver fix, no assertion changed: the Room row left the Mood menu for the Themes menu - pickThemesRoom, above)
+  const ok = await pickThemesRoom(app, room);
   await sleep(900);   // index.css transitions run up to .8 s
   return ok;
 };
