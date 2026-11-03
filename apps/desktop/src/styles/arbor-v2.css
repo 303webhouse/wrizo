@@ -691,3 +691,9 @@
 /* the Tutor drawer's body no longer keeps clear of cloths inside it (they stand outside now); it keeps clear of its 5 px band */
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-drawer-slide--right .wz-drawer-body{ margin-right:5px; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-sliver-panel .wz-drawer-slide--left > .wz-drawer-body:first-child{ padding-top:5px; }
+
+/* r17 / r8 - THE THEMES FIELD STACKS: Page, then the room's row on its own line under it, both inside the panel (the Wrizors' note: "Room
+   in the Themes menu, directly under Page"). Main's field is a right-aligned flex row built for the one Page row: with two rows they sat side
+   by side, or ran off the panel's left edge. Under the flag the rows stack, each full width (label left, choices right), words on one line. */
+:root[data-arbor2][data-theme='plateau'] .wz-theme-picker-field{ flex-direction:column; align-items:stretch; }
+:root[data-arbor2][data-theme='plateau'] .wz-theme-picker-field .mode-seg button{ white-space:nowrap; }
