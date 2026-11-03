@@ -51,6 +51,14 @@ const READ = `(() => { ${COLOUR}
     rect: { l: Math.round(b.left * 10) / 10, t: Math.round(b.top * 10) / 10, w: Math.round(b.width * 10) / 10, h: Math.round(b.height * 10) / 10 } }; })()`;
 const same = (a, b) => !!a && !!b && ['l', 't', 'w', 'h'].every((k) => Math.abs(a[k] - b[k]) <= 0.5);
 
+// (r17 driver: the Room row left the Mood menu for the Themes menu, under Page - the Wrizors' note, Nov 2 - with the words Light · Dark · By the clock.
+// It opens the Themes pop-out, presses the word and closes the pop-out again, as a writer would. No assertion changed.)
+const ROOM_WORD = { day: 'Light', night: 'Dark', clock: 'By the clock', Day: 'Light', Night: 'Dark', 'By the clock': 'By the clock' };
+const pickThemesRoom = (app, which) => app.evalJs(`(async () => { const text = ${JSON.stringify(ROOM_WORD[which] ?? which)}; const strip = document.querySelector(".wz-strip-item[data-category='theme']"); if (!strip) return false;
+  const was = strip.getAttribute('aria-pressed') === 'true'; if (!was) strip.click(); const t0 = performance.now();
+  while (!document.querySelector('.wz-theme-picker') && performance.now() - t0 < 2000) await new Promise((r) => requestAnimationFrame(r));
+  const row = [...document.querySelectorAll('.wz-theme-picker .mode-crow')].find((r) => r.querySelector(':scope > span')?.textContent.trim() === 'Room');
+  const b = row && [...row.querySelectorAll('.mode-seg button')].find((x) => x.textContent.trim() === text); if (b) b.click(); if (!was) strip.click(); return !!b; })()`);
 export default {
   // ── THE PAGE IN BOTH TONES AND BOTH ROOMS, AND ITS RECT. Dark tone: paper #1A1510, border #3A2D22, ink #EFE4CB (>= 13.9:1), low ink #B9AA8C
   // (>= 4.5:1), caret brass, selection brass rules over and under (no fill that hides the ink); the same in the DAY room (the bar's Room switch).
@@ -64,8 +72,8 @@ export default {
       // (r10 driver fix, no assertion changed: the Room row's buttons read "Day" / "Night" again - the Wrizors, Nov 1, spec §2e)
       const other = toneRoom.room === 'night' ? 'Day' : 'Night';
       // (r8 driver fix, no assertion changed: the Room switch now lives in the Mood menu, folded by default - open it first)
-      await app.evalJs(`(() => { const m = [...document.querySelectorAll('.arbor2-bar-head')].find((h) => /^Mood/.test(h.textContent.trim()) && h.getAttribute('aria-expanded') !== 'true'); if (m) m.click(); })()`); await sleep(150);
-      await clickText(app, '.arbor2-bar-opt', other); await sleep(900);
+      // (r17 driver fix, no assertion changed: the Room row left the Mood menu for the Themes menu - pickThemesRoom, above)
+      await pickThemesRoom(app, other); await sleep(900);
       const switched = await app.evalJs(READ);
       toneRoom.mode = mode; switched.mode = mode;
       out[mode] = { off: off.rect, toneRoom, switched };
