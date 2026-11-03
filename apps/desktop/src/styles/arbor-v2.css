@@ -653,7 +653,9 @@
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2 .wz-drawer-tabs{ display:flex; gap:0; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2 .wz-drawer-tab{ position:relative; z-index:1; flex:0 0 auto; box-sizing:border-box; margin:0; padding:0; border:0; border-radius:0; box-shadow:none; transform:none;
   display:flex; align-items:center; justify-content:center; font:600 10px/1 var(--arbor2-chrome-face); letter-spacing:.16em; text-transform:uppercase; cursor:pointer; }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2 .wz-drawer-tab[data-on='true']{ z-index:3; box-shadow:none; text-decoration-line:underline; text-decoration-color:var(--brass); text-decoration-thickness:2px; text-underline-offset:3px; }
+/* the OPEN tab turns brass (Nick, Nov 1; the Wrizors' note corrected Nov 2, 11:10 pm): filled #FF9800, its word walnut #2B1D12 (7.57:1), no
+   underline. The ids repeat the cloths' own selector so the fill outranks the cloth colour. */
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2 :is(#wz-sliver-tab-format, #wz-sliver-tab-presets, #wz-sliver-tab-ink, #wz-tutor-tab-tutor, #wz-tutor-tab-links, #wz-tutor-tab-board)[data-on='true']{ z-index:3; box-shadow:none; background:var(--brass); color:#2B1D12; text-decoration-line:none; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2 .wz-drawer-tab:focus-visible{ outline:2px solid var(--brass); outline-offset:-3px; }
 /* Tools: on the drawer's top edge, from its inner padding (the drawer's left is 16 px into its anchor: the opener's width) */
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left{ bottom:100%; left:calc(100% + 14px); }
@@ -675,13 +677,9 @@
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tabnotes{ position:absolute; left:34px; top:0; width:16px; height:auto; display:flex; flex-direction:column; gap:0; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tabnote-cell{ height:98px; margin:-10px 0 0; padding:0; display:flex; align-items:center; justify-content:center; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tabnote-cell:first-child{ margin-top:0; }
-/* the open tab's band: 5 px of its own cloth across the Tools drawer's top edge, down the Tutor drawer's right edge */
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-sliver-anchor:has(#wz-sliver-tab-format[data-on='true']) .wz-drawer-slide--left{ box-shadow:inset 2px 0 0 var(--arbor-line), inset 0 5px 0 #56632E; }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-sliver-anchor:has(#wz-sliver-tab-presets[data-on='true']) .wz-drawer-slide--left{ box-shadow:inset 2px 0 0 var(--arbor-line), inset 0 5px 0 #7FA0BC; }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-sliver-anchor:has(#wz-sliver-tab-ink[data-on='true']) .wz-drawer-slide--left{ box-shadow:inset 2px 0 0 var(--arbor-line), inset 0 5px 0 #A8392F; }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-stage:has(#wz-tutor-tab-tutor[data-on='true']) .wz-tutor-panel .wz-drawer-slide--right{ box-shadow:inset -2px 0 0 var(--arbor-line), inset -5px 0 0 #56632E; }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-stage:has(#wz-tutor-tab-links[data-on='true']) .wz-tutor-panel .wz-drawer-slide--right{ box-shadow:inset -2px 0 0 var(--arbor-line), inset -5px 0 0 #7FA0BC; }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-stage:has(#wz-tutor-tab-board[data-on='true']) .wz-tutor-panel .wz-drawer-slide--right{ box-shadow:inset -2px 0 0 var(--arbor-line), inset -5px 0 0 #A8392F; }
+/* the open tab's band: 3 px of brass across the Tools drawer's top edge, down the Tutor drawer's right edge, joining the brass tab */
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-sliver-anchor:has(:is(#wz-sliver-tab-format, #wz-sliver-tab-presets, #wz-sliver-tab-ink)[data-on='true']) .wz-drawer-slide--left{ box-shadow:inset 2px 0 0 var(--arbor-line), inset 0 3px 0 var(--brass); }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-stage:has(:is(#wz-tutor-tab-tutor, #wz-tutor-tab-links, #wz-tutor-tab-board)[data-on='true']) .wz-tutor-panel .wz-drawer-slide--right{ box-shadow:inset -2px 0 0 var(--arbor-line), inset -3px 0 0 var(--brass); }
 /* the Tutor drawer's body no longer keeps clear of cloths inside it (they stand outside now); it keeps clear of its 5 px band */
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-drawer-slide--right .wz-drawer-body{ margin-right:5px; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-sliver-panel .wz-drawer-slide--left > .wz-drawer-body:first-child{ padding-top:5px; }
