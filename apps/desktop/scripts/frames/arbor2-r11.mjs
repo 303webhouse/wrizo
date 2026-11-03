@@ -8,7 +8,7 @@
 //   the Page setting, never the room, with no fade or cut. Retire your midpoint cut. Measure the plate in both page tones."
 // Every check THROWS with its numbers when it fails and prints them when it passes ("ARBOR-R11 <screen> {...}"). Written red-first: run against
 // r10 (b3be043e) before the r11 build. Seeds go through window.wrizo*.
-import { drawerProof, zoomDrawerProof, walkScreens } from './mockup-kit.mjs';
+import { drawerProof, zoomDrawerProof, walkScreens, guarded } from './mockup-kit.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ED = '.forward-only-editor';
@@ -81,7 +81,8 @@ const plateAt = async (app) => {
   return { ...s, ...(await app.evalJs(MEASURE(shot))) };
 };
 
-export default {
+// (Fable, Nov 2, all lanes: a check that throws, crashes or prints no verdict is RED - the kit's verdict guard wraps every screen here)
+export default guarded({
   // ── THE DRAWERS (Draft: both hands on the page), and the same on Free Write
   'r11-drawers': async (app) => { await page(app, 'arbor-r11-drawers', 'Draft'); await drawerProof(app, { name: 'R11-DRAWERS', say, fail }); },
   // PARKED 2026-11-01 (SUPERSEDED by the build's measured scope, first green look runs 41336024311 / 41336050132: this page opens in Typewriter's zoom, where the drawers overlay the enlarged page and keep today's rule - the alignment applies beside an unzoomed page, which r11-drawers / m2r5-drawers-build check). Kept verbatim under the name r11-drawers-freewrite-v1 (not in the run list); SUCCESSOR r11-drawers-zoom below.
@@ -130,4 +131,4 @@ export default {
   // ── THE NICK WALK
   // (r15: the walk's reduced-motion repeat gets its liveness probe on Free Write's zoomed page - Fable, Nov 1)
   ...walkScreens('arbor-walk', (app) => page(app, 'arbor-walk', 'Draft'), setRoom, (app) => page(app, 'arbor-walk-z', null)),
-};
+}, { verdict: ["ARBOR-R11","ARBOR-WALK-REDUCED-REPEAT","ARBOR-WALK-REDUCED-LIVENESS"] });
