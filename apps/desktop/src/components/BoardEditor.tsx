@@ -789,11 +789,16 @@ export function BoardCardPopup({
     setFontSel({ has: true, face: fontFaceAt(result.text, result.start, result.end), size: fontSizeAt(result.text, result.start, result.end) });
   };
   // POLISH #10 item 4 (Nick ruled A, Oct 25): a size for the HIGHLIGHTED words of this card only - the face's own road
+  // TOOLS #14-r2: the dock's size box holds the highlight while it has focus (a text field takes the card's selection), so a typed size reaches the words that were highlighted
+  const heldSelRef = useRef<{ start: number; end: number } | null>(null);
+  const holdSizeSelection = (): boolean => { const el = elRef.current; const s = el ? getSelectionOffsets(el) : null; if (!s || s.start === s.end) return false; heldSelRef.current = s; return true; };
   const applyBoardSize = (points: number) => {
     const el = elRef.current;
     if (!el) return;
+    // the held highlight is read BEFORE the editor takes focus back: that focus blurs the size box, and its blur lets the held range go
+    const held = heldSelRef.current;
     el.focus();
-    const sel = getSelectionOffsets(el);
+    const sel = held ?? getSelectionOffsets(el);
     if (!sel || sel.start === sel.end) return;
     const cur = textRef.current;
     const result = applySizePick(cur, Math.min(sel.start, cur.length), Math.min(sel.end, cur.length), points);
@@ -897,7 +902,7 @@ export function BoardCardPopup({
           <span className="board-popup-dock-grip-glyph" aria-hidden="true">{dockOpen ? '\u203a' : '\u2039'}</span>
         </button>
         {dockOpen && (
-        <div className="board-popup-dock" onMouseDown={e => e.preventDefault()}>
+        <div className="board-popup-dock" onMouseDown={e => { if (!(e.target instanceof Element && e.target.closest('input'))) e.preventDefault(); }}>   {/* TOOLS #14-r2: a press on the size box must reach it (it was swallowed here, so the box could never take focus); every other press keeps the card's caret */}
           <div className="board-popup-dock-h">{dt('stylingHeading')}</div>
           <button type="button" className="mode-tbtn board-popup-tool" title={dt('stylingBold')} onClick={() => applyBoardFormat('bold')}><b>B</b></button>
           <button type="button" className="mode-tbtn board-popup-tool" title={dt('stylingItalic')} onClick={() => applyBoardFormat('italic')}><i>I</i></button>
@@ -905,7 +910,7 @@ export function BoardCardPopup({
           {/* ITEM 207 - the card's face and size: the smallest form (-/+, no number, no heading). FONT-SPAN: the face is chosen through
               the two scopes - Selection / Whole card - over the roster as a list (the approved mockup's card scene). */}
           <TypeControl form="small" face={fontFace} size={fontSize ?? SIZE_DEFAULT} onPickFace={pickWholeCardFace} onSize={pickWholeCardSize}
-            scope={{ has: fontSel.has, face: fontSel.face, wholeLabel: dt('typeScopeWholeCard'), onPickSelection: applyBoardFont, size: fontSel.size, onSizeSelection: applyBoardSize }} />
+            scope={{ has: fontSel.has, face: fontSel.face, wholeLabel: dt('typeScopeWholeCard'), onPickSelection: applyBoardFont, size: fontSel.size, onSizeSelection: applyBoardSize, holdSelection: holdSizeSelection, releaseSelection: () => { heldSelRef.current = null; } }} />
         </div>
         )}
         <div className="board-popup-strip">
