@@ -109,7 +109,8 @@ export default {
 
   // ── 2. THE FRONT DOOR'S LOGO: in the app's own corner rect at .7, both rooms, the night copy (its ground is the splash's dark), the dev panel
   // out of that corner
-  'r16-logo-front': async (app) => {
+  // PARKED 2026-11-03 (SUPERSEDED by r18, Nick's splash changes (Fable, Nov 2-3): the logo moved from the corner into the drawing, at its top, where the erased "WRIZO (in abstract)" line stood, with the tagline under it; the doors became hand-drawn boxes INSIDE the drawing, Write and Log in (signed in: Write and Open); the corner mark left the front door). Kept verbatim under the name r16-logo-front-v1 (not in the run list); SUCCESSOR r16-logo-front below.
+  'r16-logo-front-v1': async (app) => {
     await page(app, 'arbor-r16-front-ref');
     const appRect = (await app.evalJs(MARK))?.rect;
     const done = await anon(app);
@@ -130,10 +131,28 @@ export default {
       say('r16-logo-front', brief);
     } finally { await done(); }
   },
+  'r16-logo-front': async (app) => {
+    const done = await anon(app);
+    try {
+      const rows = [];
+      for (const room of ['night', 'day']) {
+        await load(app, '#/'); await setRoom(app, room); await sleep(500);
+        const m = await app.evalJs("(() => { const L = document.querySelector('.arbor2-front-mark .arbor2-top-logo'); if (!L) return null; const r = L.getBoundingClientRect(), b = getComputedStyle(L, '::before'); return { rect: [r.left, r.top, r.width, r.height].map((v) => Math.round(v * 10) / 10), pic: b.backgroundImage, op: Number(b.opacity), corner: document.querySelectorAll('.brand-mark').length }; })()");
+        const px = m ? await app.evalJs(PIX(await shot(app), m.rect, 'front-' + room)) : null;
+        rows.push({ room, m, px });
+      }
+      const okRow = (r) => !!r.m && /wrizo-logo-night\.png/.test(r.m.pic) && r.m.op === 1 && r.m.corner === 0 && has(r.px.top, CORNER.night.letters) && r.px.brassPx >= 40;
+      const ok = { both: rows.every(okRow) };
+      const brief = { ok, rows: rows.map((r) => ({ room: r.room, ok: okRow(r), rect: r.m?.rect, op: r.m?.op, corner: r.m?.corner, inks: r.px?.top.slice(0, 3), brassPx: r.px?.brassPx })) };
+      if (Object.values(ok).some((x) => !x)) fail('R16-LOGO-FRONT', brief);
+      say('r16-logo-front', brief);
+    } finally { await done(); }
+  },
 
   // ── 3. THE LOGO WRITTEN OUT ON THE SPLASH: in the corner rect; mask/opacity only; the letters in writing order, the brass o and dot last; ~2 s;
   // nothing flashes (the mark's luminance only rises, step by step); its last frame = the still logo on the front door, pixel for pixel.
-  'r16-splash-write': async (app) => {
+  // PARKED 2026-11-03 (SUPERSEDED by r18, Nick's splash changes (Fable, Nov 2-3): the logo moved from the corner into the drawing, at its top, where the erased "WRIZO (in abstract)" line stood, with the tagline under it; the doors became hand-drawn boxes INSIDE the drawing, Write and Log in (signed in: Write and Open); the corner mark left the front door). Kept verbatim under the name r16-splash-write-v1 (not in the run list); SUCCESSOR r16-splash-write below.
+  'r16-splash-write-v1': async (app) => {
     const done = await anon(app);
     try {
       await load(app, '#/');
@@ -187,9 +206,65 @@ export default {
       say('r16-splash-write', brief);
     } finally { await app.evalJs("localStorage.setItem('wrizo-splash-hold', '50'); localStorage.removeItem('wrizo-splash-force-not-ready')").catch(() => {}); await done(); }
   },
+  'r16-splash-write': async (app) => {
+    const done = await anon(app);
+    try {
+      await load(app, '#/');
+      // (successor: the rect is the front door's logo, at the top of the drawing)
+      const appRect = await app.evalJs("(() => { const L = document.querySelector('.arbor2-front-mark .arbor2-top-logo'); if (!L) return null; const r = L.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map((v) => Math.round(v * 10) / 10); })()");
+      await app.evalJs("localStorage.setItem('wrizo-splash-hold', '9000'); localStorage.setItem('wrizo-splash-force-not-ready', '1')");   // the harness's own hold override and the splash's own test seam (ready reads false: the splash holds to its 10 s ceiling; driver fix after run 41550544353)
+      await app.evalJs("history.replaceState(null, '', '/?arbor2=1#/')"); await app.reload();
+      const there = await waitSoft(app, "!!document.querySelector('.wz-splash .arbor2-top-logo')", { label: 'the splash logo', timeout: 8000 });
+      if (!there) fail('R16-SPLASH-WRITE', { splashLogo: false });
+      // the plan, from the animations themselves: what animates, and when each stroke starts and ends
+      const plan = await app.evalJs(`(() => { const L = document.querySelector('.wz-splash .arbor2-top-logo'); const r = L.getBoundingClientRect();
+        const anims = document.getAnimations().filter((a) => L.contains(a.effect?.target) || a.effect?.target === L);
+        anims.forEach((a) => a.pause());
+        const kf = (a) => [...new Set(a.effect.getKeyframes().flatMap((f) => Object.keys(f).filter((k) => !['offset', 'computedOffset', 'easing', 'composite'].includes(k))))];
+        return { rect: [Math.round(r.left * 10) / 10, Math.round(r.top * 10) / 10, Math.round(r.width * 10) / 10, Math.round(r.height * 10) / 10],
+          anims: anims.map((a) => ({ name: a.animationName, stroke: a.effect.target.getAttribute?.('data-stroke') || null, layer: a.effect.target.closest?.('mask')?.id || null, props: kf(a),
+            start: Number(a.effect.getTiming().delay) / 1000, end: (Number(a.effect.getTiming().delay) + Number(a.effect.getTiming().duration)) / 1000 })) }; })()`);
+      // step through the writing: every 0.25 s, the rect's pixels
+      const steps = [];
+      for (const T of [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 1.95, 2.05]) {
+        await app.evalJs(`(() => { const L = document.querySelector('.wz-splash .arbor2-top-logo'); document.getAnimations().filter((a) => L.contains(a.effect?.target) || a.effect?.target === L).forEach((a) => { a.pause(); a.currentTime = ${T * 1000}; }); return new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => r(true)))); })()`);
+        const px = await app.evalJs(PIX(await shot(app), plan.rect, 'splash-' + T));
+        steps.push({ T, lum: px.lum, inked: px.inked, brassPx: px.brassPx });
+      }
+      // the last frame, kept: then the splash ends and the front door's still logo is read in the same rect
+      await app.evalJs("(() => { const L = document.querySelector('.wz-splash .arbor2-top-logo'); document.getAnimations().filter((a) => L.contains(a.effect?.target) || a.effect?.target === L).forEach((a) => a.finish()); return true; })()");
+      await sleep(200);
+      // (report only, after green look 41548909263: what is showing at the last frame)
+      const endState = await app.evalJs("(() => { const L = document.querySelector('.wz-splash .arbor2-top-logo'); const svg = L.querySelector('svg'); return { writing: L.getAttribute('data-writing'), before: getComputedStyle(L, '::before').opacity, beforeImg: getComputedStyle(L, '::before').backgroundImage.slice(-40), svg: svg ? getComputedStyle(svg).opacity : null, op: getComputedStyle(L).opacity, anims: document.getAnimations().filter((a) => L.contains(a.effect?.target) || a.effect?.target === L).map((a) => [a.animationName, a.playState, a.effect.pseudoElement || '']).slice(0, 12) }; })()");
+      await app.evalJs(PIX(await shot(app), plan.rect, 'splash-last'));
+      await app.evalJs("localStorage.setItem('wrizo-splash-hold', '50'); localStorage.removeItem('wrizo-splash-force-not-ready')");
+      await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 });
+      await sleep(600);
+      const still = await app.evalJs(PIX(await shot(app), plan.rect, 'front-still'));
+      const diff = await app.evalJs("(() => { const a = window.__r16px['splash-last'], b = window.__r16px['front-still']; if (!a || !b || a.length !== b.length) return { n: -1 }; let n = 0, max = 0; for (let i = 0; i < a.length; i++) { if (i % 4 === 3) continue; const d = Math.abs(a[i] - b[i]); if (d > 0) n++; if (d > max) max = d; } return { n, max, of: a.length / 4 * 3 }; })()");
+      const letters = plan.anims.filter((a) => /letters/.test(a.layer || '')), brass = plan.anims.filter((a) => /brass/.test(a.layer || ''));
+      const lastLetter = Math.max(...letters.map((a) => a.end)), firstBrass = Math.min(...brass.map((a) => a.start));
+      const order = ['w', 'r', 'i', 'z', 'loop'].map((id) => letters.find((a) => a.stroke === id)?.start);
+      const lumSteps = steps.map((s) => s.lum);
+      const ok = {
+        atTheTop: JSON.stringify(plan.rect) === JSON.stringify(appRect),
+        maskOnly: plan.anims.length > 0 && plan.anims.every((a) => a.props.every((p) => ['strokeDashoffset', 'opacity'].includes(p))) && plan.anims.every((a) => a.stroke ? !!a.layer : true),
+        writingOrder: order.every((v, i) => typeof v === 'number' && (i === 0 || v >= order[i - 1])),
+        brassLast: brass.length >= 2 && firstBrass >= lastLetter - 1e-6 && brass.some((a) => a.stroke === 'dot' && a.end === Math.max(...brass.map((b) => b.end))),
+        twoSeconds: Math.max(...plan.anims.map((a) => a.end)) <= 2.1 && Math.max(...plan.anims.map((a) => a.end)) >= 1.8,
+        noBrassEarly: steps.filter((s) => s.T < firstBrass).every((s) => s.brassPx === 0) && steps.some((s) => s.brassPx > 0),
+        noFlash: lumSteps.every((v, i) => i === 0 || v >= lumSteps[i - 1] - 0.0005),
+        lastIsStill: diff.n === 0,
+      };
+      const brief = { ok, rect: plan.rect, appRect, order, lastLetter, firstBrass, end: Math.max(...plan.anims.map((a) => a.end)), props: [...new Set(plan.anims.flatMap((a) => a.props))], steps, diff, stillInked: still.inked, endState };
+      if (Object.values(ok).some((x) => !x)) fail('R16-SPLASH-WRITE', brief);
+      say('r16-splash-write', brief);
+    } finally { await app.evalJs("localStorage.setItem('wrizo-splash-hold', '50'); localStorage.removeItem('wrizo-splash-force-not-ready')").catch(() => {}); await done(); }
+  },
 
   // ── 4. REDUCED MOTION: the splash shows the finished logo at once, still (nothing animates in it), and it is the front door's logo exactly
-  'r16-splash-reduced': async (app) => {
+  // PARKED 2026-11-03 (SUPERSEDED by r18, Nick's splash changes (Fable, Nov 2-3): the logo moved from the corner into the drawing, at its top, where the erased "WRIZO (in abstract)" line stood, with the tagline under it; the doors became hand-drawn boxes INSIDE the drawing, Write and Log in (signed in: Write and Open); the corner mark left the front door). Kept verbatim under the name r16-splash-reduced-v1 (not in the run list); SUCCESSOR r16-splash-reduced below.
+  'r16-splash-reduced-v1': async (app) => {
     const done = await anon(app);
     try {
       await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
@@ -212,13 +287,48 @@ export default {
       say('r16-splash-reduced', { ok, s, diff });
     } finally { await app.emulateMedia([]); await app.evalJs("localStorage.setItem('wrizo-splash-hold', '50'); localStorage.removeItem('wrizo-splash-force-not-ready')").catch(() => {}); await done(); }
   },
+  'r16-splash-reduced': async (app) => {
+    const done = await anon(app);
+    try {
+      await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+      await app.evalJs("localStorage.setItem('wrizo-splash-hold', '6000'); localStorage.setItem('wrizo-splash-force-not-ready', '1')");   // (driver fix after run 41550544353: under reduced motion the splash ends as soon as the app is ready - the seam holds it to its ceiling)
+      await app.evalJs("history.replaceState(null, '', '/?arbor2=1#/')"); await app.reload();
+      const seen = await waitSoft(app, "!!document.querySelector('.wz-splash .arbor2-top-logo')", { label: 'the splash logo', timeout: 8000 });
+      // (driver fix after run 41549881533: probe before reading - a missing logo is a failed check with its numbers, never a crash)
+      const probe = await app.evalJs("({ splash: !!document.querySelector('.wz-splash'), logo: !!document.querySelector('.wz-splash .arbor2-top-logo'), hold: localStorage.getItem('wrizo-splash-hold'), reduced: matchMedia('(prefers-reduced-motion: reduce)').matches, theme: document.documentElement.getAttribute('data-theme'), flag: document.documentElement.getAttribute('data-arbor2') })");
+      if (!seen || !probe.logo) fail('R16-SPLASH-REDUCED', { seen, probe });
+      const s = await app.evalJs("(() => { const L = document.querySelector('.wz-splash .arbor2-top-logo'); const r = L.getBoundingClientRect(); return { writing: L.getAttribute('data-writing'), svg: !!L.querySelector('svg'), anims: document.getAnimations().filter((a) => (L.contains(a.effect?.target) || a.effect?.target === L) && a.animationName).length, transitions: document.getAnimations().filter((a) => (L.contains(a.effect?.target) || a.effect?.target === L) && !a.animationName).map((a) => [a.transitionProperty, Number(a.effect.getTiming().duration)]), rect: [Math.round(r.left * 10) / 10, Math.round(r.top * 10) / 10, Math.round(r.width * 10) / 10, Math.round(r.height * 10) / 10] }; })()");
+      await app.evalJs(PIX(await shot(app), s.rect, 'reduced-splash'));
+      await app.evalJs("localStorage.setItem('wrizo-splash-hold', '50'); localStorage.removeItem('wrizo-splash-force-not-ready')");
+      await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 }); await sleep(600);
+      await app.evalJs(PIX(await shot(app), s.rect, 'reduced-front'));
+      const diff = await app.evalJs("(() => { const a = window.__r16px['reduced-splash'], b = window.__r16px['reduced-front']; if (!a || !b || a.length !== b.length) return { n: -1 }; let n = 0; for (let i = 0; i < a.length; i++) if (i % 4 !== 3 && a[i] !== b[i]) n++; return { n }; })()");
+      // (instrument fix after run 41550544353: 'anims' counts the writing's own CSS animations; a transition is reported, not counted - under
+      // reduced motion the app's floor makes the mark's opacity transition a 0.01 ms cut, and one was caught)
+      const ok = { still: s.writing === 'still' && !s.svg && s.anims === 0, sameAsFront: diff.n === 0 };
+      if (Object.values(ok).some((x) => !x)) fail('R16-SPLASH-REDUCED', { ok, s, diff });
+      say('r16-splash-reduced', { ok, s, diff });
+    } finally { await app.emulateMedia([]); await app.evalJs("localStorage.setItem('wrizo-splash-hold', '50'); localStorage.removeItem('wrizo-splash-force-not-ready')").catch(() => {}); await done(); }
+  },
 
   // ── 5. THE TAGLINE AND THE DOOR WORDS: "For humans who write." exactly; tagline, Write and Sign in in Alegreya Sans (loaded), each >= 4.5:1
-  'r16-tagline': async (app) => {
+  // PARKED 2026-11-03 (SUPERSEDED by r18, Nick's splash changes (Fable, Nov 2-3): the logo moved from the corner into the drawing, at its top, where the erased "WRIZO (in abstract)" line stood, with the tagline under it; the doors became hand-drawn boxes INSIDE the drawing, Write and Log in (signed in: Write and Open); the corner mark left the front door). Kept verbatim under the name r16-tagline-v1 (not in the run list); SUCCESSOR r16-tagline below.
+  'r16-tagline-v1': async (app) => {
     const done = await anon(app);
     try {
       await load(app, '#/'); await sleep(400);
       const s = await app.evalJs(`(() => { const t = document.querySelector('.arbor2-front .wz-tagline'); const doors = [...document.querySelectorAll('.arbor2-front .wz-arrival-doors button')];
+        const face = (e) => getComputedStyle(e).fontFamily; return { text: t?.textContent ?? null, faces: [t, ...doors].filter(Boolean).map((e) => [e.textContent.trim(), face(e)]), loaded: document.fonts.check('16px "Alegreya Sans"') }; })()`);
+      const ok = { words: s.text === 'For humans who write.', face: s.faces.length === 3 && s.faces.every(([, f]) => /^"?Alegreya Sans"?/.test(f)), loaded: s.loaded };
+      if (Object.values(ok).some((x) => !x)) fail('R16-TAGLINE', { ok, s });
+      say('r16-tagline', { ok, s });
+    } finally { await done(); }
+  },
+  'r16-tagline': async (app) => {
+    const done = await anon(app);
+    try {
+      await load(app, '#/'); await sleep(400);
+      const s = await app.evalJs(`(() => { const t = document.querySelector('.arbor2-front .arbor2-top-tagline'); const doors = [...document.querySelectorAll('.arbor2-front .arbor2-front-doors .arbor2-door')];
         const face = (e) => getComputedStyle(e).fontFamily; return { text: t?.textContent ?? null, faces: [t, ...doors].filter(Boolean).map((e) => [e.textContent.trim(), face(e)]), loaded: document.fonts.check('16px "Alegreya Sans"') }; })()`);
       const ok = { words: s.text === 'For humans who write.', face: s.faces.length === 3 && s.faces.every(([, f]) => /^"?Alegreya Sans"?/.test(f)), loaded: s.loaded };
       if (Object.values(ok).some((x) => !x)) fail('R16-TAGLINE', { ok, s });
@@ -306,7 +416,8 @@ export default {
       await load(app, '#/'); await sleep(300);
       const rows = [];
       for (const step of ['signin', 'account']) {
-        if (step === 'signin') await clickText(app, 'button', 'Sign in'); else await clickText(app, 'button', 'New here? Create an account');
+        // (driver fix after run 41659053011, no assertion changed: r18 names the door to the sign-in form "Log in")
+        if (step === 'signin') await clickText(app, 'button', 'Log in'); else await clickText(app, 'button', 'New here? Create an account');
         await waitSoft(app, step === 'signin' ? "!!document.querySelector('input[autocomplete=\"current-password\"]')" : "!!document.querySelector('input[autocomplete=\"new-password\"]')", { label: step, timeout: 5000 });
         await sleep(500);
         rows.push({ step, px: await pixelsOf(app, '.wz-screen'), ph: await app.evalJs(PLACEHOLDERS) });
@@ -327,7 +438,9 @@ export default {
   'r16-pic-corner-day': async (app) => { await page(app, 'arbor-r16-pic-c'); await setRoom(app, 'day'); },
   'r16-pic-corner-night': async (app) => { await page(app, 'arbor-r16-pic-c'); await setRoom(app, 'night'); },
   // THE RECORDING, frame by frame: the splash stopped at each 0.2 s of the writing (the lane stitches these into a short animated PNG)
-  ...Object.fromEntries([0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.1].map((T) => [`r16-rec-${String(Math.round(T * 100)).padStart(3, '0')}`, async (app) => {
+  // PARKED 2026-11-03 (SUPERSEDED by r18, Nick's splash changes (Fable, Nov 2-3): the logo moved from the corner into the drawing, at its top, where the erased "WRIZO (in abstract)" line stood, with the tagline under it; the doors became hand-drawn boxes INSIDE the drawing, Write and Log in (signed in: Write and Open); the corner mark left the front door): r16's recording of the corner write-out, retired under the names r16-rec-v1-* (not in the run list); r18's
+  // recording (arbor2-r18.mjs r18-pic-rec-*) shows the logo written out at the top of the drawing.
+  ...Object.fromEntries([0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.1].map((T) => [`r16-rec-v1-${String(Math.round(T * 100)).padStart(3, '0')}`, async (app) => {
     const done = await anon(app);
     try {
       await load(app, '#/');
