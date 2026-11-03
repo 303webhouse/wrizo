@@ -188,7 +188,8 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
   // half point, 5, 73, a word - snaps back to the size in effect. It applies through sizeTo, the very road - and + take. (r10: rebased onto main's
   // size box - held selection, draftRef - which now draws the box in every form, so the mockup's own form condition retired with it.)
   const mockBox = isMachina2() && theme === 'machina';
-  const strictSize = (raw: string): number | null => { const t = raw.trim(); if (!/^d{1,2}$/.test(t)) return null; const n = Number(t); return n >= 6 && n <= 72 ? n : null; };
+  const strictSize = (raw: string): number | null => { const t = raw.trim(); if (!/^\d{1,2}$/.test(t)) return null; const n = Number(t); return n >= 6 && n <= 72 ? n : null; };
+  // (r10: the r8 fix that kept the highlighted words for this box retired on the rebase - main's size box now holds the selection itself, holdBox)
   const commitDraft = () => {
     const typed = draftRef.current;
     if (typed === null) return;
