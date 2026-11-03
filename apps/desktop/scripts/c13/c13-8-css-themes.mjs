@@ -21,6 +21,9 @@ const postcss = fromVite('postcss');
 const arg = (n) => (process.argv.includes(`--${n}`) ? process.argv[process.argv.indexOf(`--${n}`) + 1] : null);
 
 export const THEME_FILES = new Set(['04-flux.css', '05-machina.css', '06-flux-v2.css']);
+// Fable's ruling (b), Nov 2: these files keep each feature's theme dress inside its named zones (the guided paths, Scenes, W5, the
+// Machina deck wizard and forms), and their harnesses read those zones whole, so a theme rule in them stays with its feature.
+export const FEATURE_FILES = new Set(['18-desk-rail.css', '21-help-me-choose.css']);
 const THEMES = { flux: 'flux', machina: 'machina', plateau: 'arbor' };
 
 // the theme a selector is scoped to: a POSITIVE [data-theme=x] (not inside :not()), else null
@@ -145,6 +148,7 @@ export function census(texts) {
       if (pairs.length) r.rivals.push({ file: q.file, line: q.node.source.start.line, sel: q.sels.join(', ').slice(0, 120), props: [...new Set(props)], pair: pairs[0] });
     }
   }
+  for (const r of cand) { r.feature = FEATURE_FILES.has(r.file); r.moves = !r.rivals.length && !r.feature; }
   return { rules, cand };
 }
 
@@ -152,7 +156,7 @@ function runCensus() {
   const texts = importOrder().map((f) => [f, fs.readFileSync(path.join(SRC, 'styles', f), 'utf8')]);
   const { cand } = census(texts);
   const by = {};
-  for (const r of cand) { const k = THEMES[r.theme]; by[k] ??= { move: 0, stay: 0 }; by[k][r.rivals.length ? 'stay' : 'move']++; }
+  for (const r of cand) { const k = THEMES[r.theme]; by[k] ??= { move: 0, stay: 0 }; by[k][r.moves ? 'move' : 'stay']++; }
   console.log(`candidates ${cand.length}: ${Object.entries(by).map(([k, v]) => `${k} ${v.move + v.stay} (move ${v.move}, stay ${v.stay})`).join('; ')}`);
   for (const r of cand.filter((x) => x.rivals.length)) {
     console.log(`STAY ${r.file}:${r.node.source.start.line} ${r.sels.join(', ').slice(0, 110)}`);
@@ -192,7 +196,7 @@ function runMove() {
   for (const [f, root] of roots) root.walkRules((n) => byLine.set(`${f}:${n.source.start.line}:${n.source.start.column}`, n));
   const out = { flux: [], machina: [], arbor: [] };
   let moved = 0;
-  for (const r of cand.filter((x) => !x.rivals.length)) {
+  for (const r of cand.filter((x) => x.moves)) {
     const n = byLine.get(`${r.file}:${r.node.source.start.line}:${r.node.source.start.column}`);
     if (!n) throw new Error(`lost ${r.file}:${r.node.source.start.line}`);
     const { text, lead } = wrap(n);
@@ -209,10 +213,13 @@ function runMove() {
   }
   fs.mkdirSync(path.join(SRC, 'styles', 'themes'), { recursive: true });
   const eol = texts[0][1].includes('\r\n') ? '\r\n' : '\n';
-  for (const [k, list] of Object.entries(out)) fs.writeFileSync(path.join(SRC, 'styles', THEME_OUT[k]), (HEAD[k] + '\n' + list.join('\n\n') + '\n').replace(/\r?\n/g, eol));
+  // only a theme with rules to move gets a file (and an import)
+  const written = Object.entries(out).filter(([, list]) => list.length);
+  for (const [k, list] of written) fs.writeFileSync(path.join(SRC, 'styles', THEME_OUT[k]), (HEAD[k] + '\n' + list.join('\n\n') + '\n').replace(/\r?\n/g, eol));
   const index = fs.readFileSync(path.join(SRC, 'index.css'), 'utf8');
-  fs.writeFileSync(path.join(SRC, 'index.css'), index + Object.values(THEME_OUT).map((f) => `@import './styles/${f}';${eol}`).join(''));
+  fs.writeFileSync(path.join(SRC, 'index.css'), index + written.map(([k]) => `@import './styles/${THEME_OUT[k]}';${eol}`).join(''));
   const stays = cand.filter((x) => x.rivals.length);
+  const kept = cand.filter((x) => !x.rivals.length && x.feature);
   fs.writeFileSync(path.join(ROOT, STAYS), [
     '# #13 step 8: the theme rules that stay where they are',
     '',
@@ -224,8 +231,15 @@ function runMove() {
     '|---|---|---|---|',
     ...stays.flatMap((r) => r.rivals.map((q) => `| ${THEMES[r.theme]} | \`${r.sels.join(', ').replace(/\|/g, '\\|')}\` (${r.file}:${r.node.source.start.line}) | \`${q.sel.replace(/\|/g, '\\|')}\` (${q.file}:${q.line}) | ${q.props.join(', ')} |`)),
     '',
+    '## Kept with their feature (Fable, ruling (b), Nov 2)',
+    '',
+    `${kept.length} more theme rules have no rival but stay where they are: \`18-desk-rail.css\` and \`21-help-me-choose.css\` keep each feature\'s`,
+    'theme dress inside its named zones (the guided paths, Scenes, W5, the Machina deck wizard and forms), which their harnesses read whole.',
+    '',
+    ...[...new Set(kept.map((r) => r.file))].map((file) => `- \`${file}\`: ${kept.filter((r) => r.file === file).length} rules`),
+    '',
   ].join('\n'));
-  console.log(`moved ${moved} rules (flux ${out.flux.length}, machina ${out.machina.length}, arbor ${out.arbor.length}); ${stays.length} stay (${STAYS})`);
+  console.log(`moved ${moved} rules (flux ${out.flux.length}, machina ${out.machina.length}, arbor ${out.arbor.length}); ${stays.length} stay for a rival, ${kept.length} stay with their feature (${STAYS})`);
 }
 
 // The proof, against the commit before the move: (1) every style rule (its at-rule context and its text) and every comment is
@@ -243,7 +257,7 @@ function runCheck() {
   const { rules: baseRules, cand } = census(baseTexts);
   const nowOrder = importOrder();
   const nowTexts = nowOrder.map((f) => [f, fs.readFileSync(path.join(SRC, 'styles', f), 'utf8')]);
-  if (plant === 'swap') { const t = nowTexts.find(([f]) => f === 'themes/machina.css'); const r = rulesOf([t]); const [a, b] = [r[3].node, r[4].node]; const ta = a.toString(), tb = b.toString(); t[1] = t[1].replace(ta, '\u0000').replace(tb, ta).replace('\u0000', tb); }
+  if (plant === 'swap') { const t = nowTexts.find(([f]) => f === 'themes/flux.css'); const r = rulesOf([t]); const [a, b] = [r[3].node, r[4].node]; const ta = a.toString(), tb = b.toString(); t[1] = t[1].replace(ta, '\u0000').replace(tb, ta).replace('\u0000', tb); }
   if (plant === 'stay') { const s = cand.find((r) => r.rivals.length); const t = nowTexts.find(([f]) => f === `themes/${THEMES[s.theme]}.css`); t[1] += `\n${s.node.toString()}\n`; const c = nowTexts.find(([f]) => f === s.file); c[1] = c[1].replace(s.node.toString(), ''); }
   if (plant === 'edit') { const t = nowTexts.find(([f]) => f === 'themes/flux.css'); t[1] = t[1].replace(/:\s*([^;{}]+);/, (all, v) => `: ${v} ;`).replace(/(color:\s*)([^;]+);/, '$1red;'); }
   const nowRules = rulesOf(nowTexts);
@@ -257,16 +271,18 @@ function runCheck() {
   const headless = (list) => list.filter((c) => !/^(Flux|Machina|Arbor)'s rules that sat among the component rules/.test(c));
   diff(count(headless(comments(baseTexts))), count(headless(comments(nowTexts))), 'a comment');
   // (2)-(4)
-  const movable = new Set(cand.filter((r) => !r.rivals.length).map(key));
+  const movable = new Set(cand.filter((r) => r.moves).map(key));
   const stayedBase = baseRules.filter((r) => !movable.has(key(r))).map(key);
   const stayedNow = nowRules.filter((r) => !r.file.startsWith('themes/')).map(key);
   if (stayedBase.join('\n') !== stayedNow.join('\n')) fails.push('the rules that stayed are not in their base order');
   for (const t of ['flux', 'machina', 'arbor']) {
-    const want = cand.filter((r) => !r.rivals.length && THEMES[r.theme] === t).map(key);
+    const want = cand.filter((r) => r.moves && THEMES[r.theme] === t).map(key);
+    if (!want.length) { if (nowOrder.includes(`themes/${t}.css`)) fails.push(`themes/${t}.css exists with nothing to hold`); continue; }
     const got = nowRules.filter((r) => r.file === `themes/${t}.css`).map(key);
     if (want.join('\n') !== got.join('\n')) fails.push(`themes/${t}.css is not the base's movable ${t} rules in the base's order (${got.length} vs ${want.length})`);
   }
-  if (nowOrder.slice(-3).join() !== 'themes/flux.css,themes/machina.css,themes/arbor.css') fails.push('the theme files are not imported last');
+  const themeImports = nowOrder.filter((x) => x.startsWith('themes/'));
+  if (!themeImports.length || nowOrder.slice(-themeImports.length).join() !== themeImports.join()) fails.push('the theme files are not imported last');
   console.log(`base ${base.slice(0, 8)}: ${baseRules.length} rules, ${cand.length} theme candidates, ${movable.size} movable, ${cand.length - movable.size} stay; now ${nowRules.length} rules${plant ? `; PLANTED: ${plant}` : ''}`);
   for (const f of fails.slice(0, 10)) console.log('FAIL', f);
   console.log(fails.length ? `THEMES: FAIL (${fails.length})` : 'THEMES: PASS (every rule and comment kept; the stayers in order; each theme file is its movable rules in order; no hazard moved)');

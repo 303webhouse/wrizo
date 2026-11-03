@@ -18,3 +18,11 @@ into `src/styles/themes/` (imported last) would flip it. Raising a rule's specif
 | machina | `[data-theme='machina'] .walk-mark` (21-help-me-choose.css:167) | `.walk-mark[data-sub='true']` (21-help-me-choose.css:286) | width, height |
 | machina | `[data-theme='machina'] .walk-mark::after` (21-help-me-choose.css:172) | `.walk-mark[data-fx='kindle']::after` (21-help-me-choose.css:224) | content, position, top, left |
 | flux | `[data-theme='flux'] [data-fx='kindle'] > .kindle-mark` (21-help-me-choose.css:219) | `[data-fx='kindle'] > .kindle-mark .kindle-root path, .walk-mark[data-fx='kindle'] svg, .walk-trk[data-fx='kindle'], .ret` (21-help-me-choose.css:253) | animation |
+
+## Kept with their feature (Fable, ruling (b), Nov 2)
+
+111 more theme rules have no rival but stay where they are: `18-desk-rail.css` and `21-help-me-choose.css` keep each feature's
+theme dress inside its named zones (the guided paths, Scenes, W5, the Machina deck wizard and forms), which their harnesses read whole.
+
+- `18-desk-rail.css`: 58 rules
+- `21-help-me-choose.css`: 53 rules
