@@ -164,4 +164,4 @@ export default guarded({
   // shows the alignment on Build, as Arbor's walk does on Draft)
   // (r7: the walk's reduced-motion repeat gets its liveness probe on the default page, which opens in Typewriter's zoom - Fable, Nov 1)
   ...walkScreens('machina-walk', (app) => page(app, 'machina-walk', 'Build'), setRoom, (app) => page(app, 'machina-walk-z')),
-}, { verdict: ["MACHINA2-R5","MACHINA-WALK-REDUCED-REPEAT","MACHINA-WALK-REDUCED-LIVENESS"] });
+}, { verdict: ["MACHINA2-R5","MACHINA-WALK-REDUCED-REPEAT","MACHINA-WALK-REDUCED-LIVENESS","MACHINA-WALK-REDUCED-CUT"] });
