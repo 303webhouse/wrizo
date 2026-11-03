@@ -176,7 +176,7 @@ function RoomRow() {
 function MoodMenu({ off, flip }: { off: string[]; flip: (k: string) => void }) {
   return (
     <ul className="arbor2-mood" aria-label="Mood">
-      <RoomRow />
+      {/* r17 (the Wrizors' note, Nov 2): the Room row leaves the Mood menu - it lives in the Themes menu, under Page (themeRoom.tsx) */}
       {MOOD.map(({ key, label, why }) => (
         <li key={key} className="arbor2-mood-row">
           <span className="arbor2-mood-label">{label}</span>
