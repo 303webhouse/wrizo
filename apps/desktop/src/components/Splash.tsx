@@ -3,7 +3,7 @@ import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { useTheme } from '../store/theme';
 import { SplashMark, prefersReducedMotion } from './SplashMark';
 import { isArbor2 } from '../arbor2/flag';
-import { ArborSplashLogo } from '../arbor2/logoWrite';
+import { ArborTopLogo } from '../arbor2/frontLayer';
 
 // THE SPLASH (item 187) — Nick's own hand-drawn Wrizo, over the live app, dimmed behind.
 //
@@ -316,9 +316,10 @@ export function Splash({ ready }: { ready: boolean }) {
         onTransitionEnd={() => { if (leaving) setLive(false); }}
       >
         <SplashMark theme={theme} reduced={reduced} width={box.width} height={box.height} onFloorReached={onFloorReached} />
+        {/* ARBOR v2 MOCKUP r18 (Nick, via Fable, Nov 3): the logo written out where the drawing's top line stood, the tagline under it (src/arbor2/frontLayer.tsx) */}
+        {isArbor2() && theme === 'plateau' && <ArborTopLogo write={!reduced} width={box.width} />}
       </div>
-      {/* ARBOR v2 MOCKUP r16 (Nick, Nov 2): the logo written out in the corner mark's own rect (src/arbor2/logoWrite.tsx) */}
-      {isArbor2() && theme === 'plateau' && <ArborSplashLogo reduced={reduced} />}
+      {/* (r16's logo written out in the corner mark's rect moved into the drawing in r18, above) */}
       {/* role="status" (Nick's ruling): announced politely, never interrupting.
           `key` forces a remount on every line change, restarting the CSS fade —
           reduced motion drops that animation entirely (index.css), an instant swap. */}
