@@ -609,7 +609,7 @@
 @keyframes arbor2-logo-svg-off{ from{ opacity:1; } to{ opacity:0; } }
 
 /* THE DEV PANEL leaves the logo's corner (the Wrizors: "Move the dev panel out of that corner, not the mark"): bottom-left, beside the rail */
-:root[data-arbor2] .arbor2-bar{ right:auto; left:96px; bottom:12px; }
+:root[data-arbor2]:has(.arbor2-front) .arbor2-bar{ right:auto; bottom:auto; left:16px; top:16px; }   /* on the front door: its empty top-left (inside the app it keeps r5's place above the mark, never on it: bottom-left at 1366 lay over the page's count row - green leg g9, r10-sweep) */
 
 /* THE TAGLINE AND THE DOOR WORDS in Arbor's chrome face, Alegreya Sans (the Wrizors; no handwriting font) */
 :root[data-arbor2][data-theme='plateau'] .arbor2-front-foot :is(.wz-tagline, .wz-arrival-doors button){ font-family:var(--arbor2-chrome-face); }
