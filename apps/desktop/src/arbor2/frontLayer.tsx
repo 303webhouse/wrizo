@@ -26,6 +26,7 @@ type FrontTiming = { logoStart: number; logoDone: number; doorsIn: number; shown
 const timing: FrontTiming = { logoStart: 0, logoDone: 0, doorsIn: 0, shownAt: 0, pulses: [], acted: false };
 if (typeof window !== 'undefined') (window as unknown as { wrizoArborFront?: FrontTiming }).wrizoArborFront = timing;
 const LOGO_DONE = 'arbor2-logo-done';
+const LAST_STROKE = LOGO_STROKES.reduce((a, s) => (s.at + s.dur > a.at + a.dur ? s : a)).id;
 const reducedNow = () => typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /** The logo and the tagline at the top of the drawing. `write` = the splash's write-out; otherwise the still logo. */
@@ -36,25 +37,34 @@ export function ArborTopLogo({ write, width }: { write: boolean; width: number }
     else if (!timing.logoStart) { timing.logoDone = performance.now(); }
   }, [write]);
   const done = () => { setWriting(false); timing.logoDone = performance.now(); window.dispatchEvent(new Event(LOGO_DONE)); };
+  // THE HAND-OVER (after the green look g15/t16, runs 41659053011 / 41672316457: a CSS background as the still logo rasterised differently from
+  // the SVG writing - the luminance dipped at the swap at 1366): the still logo is the same kind of element as the writing, an SVG image in the
+  // same viewBox inside the same <svg>, and it replaces the strokes when the LAST stroke (the i's dot) ends - never a blank frame, nothing
+  // animating on the still logo afterwards.
   return (
     <div className="arbor2-top" aria-hidden="true" style={{ ['--arbor2-u' as string]: `${width / CW}px` } as CSSProperties}>
       <div className="arbor2-top-logo" data-writing={writing ? 'true' : 'still'} style={place(TOP_LOGO)}>
-        {writing && (
-          <svg className="arbor2-splash-logo-svg" viewBox="0 0 900 400" preserveAspectRatio="xMidYMid meet" onAnimationEnd={(e) => { if (e.animationName === 'arbor2-logo-svg-off') done(); }}>
-            <defs>
-              {(['letters', 'brass'] as const).map((layer) => (
-                <mask key={layer} id={`arbor2-top-mask-${layer}`} maskUnits="userSpaceOnUse" x="0" y="0" width="900" height="400">
-                  {LOGO_STROKES.filter((s) => s.layer === layer).map((s) => (
-                    <path key={s.id} className="arbor2-logo-stroke" data-stroke={s.id} d={s.d} pathLength={1} fill="none" stroke="#fff" strokeWidth={s.width}
-                      strokeLinecap="round" strokeLinejoin="round" style={{ animationDelay: `${s.at}s`, animationDuration: `${s.dur}s` }} />
-                  ))}
-                </mask>
-              ))}
-            </defs>
-            <image href="/brand/arbor2/wrizo-logo-night-letters.png" x="0" y="0" width="900" height="400" mask="url(#arbor2-top-mask-letters)" />
-            <image href="/brand/arbor2/wrizo-logo-night-brass.png" x="0" y="0" width="900" height="400" mask="url(#arbor2-top-mask-brass)" />
-          </svg>
-        )}
+        <svg className="arbor2-splash-logo-svg arbor2-top-svg" viewBox="0 0 900 400" preserveAspectRatio="xMidYMid meet"
+          onAnimationEnd={(e) => { if (writing && e.animationName === 'arbor2-logo-write' && (e.target as Element).getAttribute('data-stroke') === LAST_STROKE) done(); }}>
+          {writing ? (
+            <>
+              <defs>
+                {(['letters', 'brass'] as const).map((layer) => (
+                  <mask key={layer} id={`arbor2-top-mask-${layer}`} maskUnits="userSpaceOnUse" x="0" y="0" width="900" height="400">
+                    {LOGO_STROKES.filter((s) => s.layer === layer).map((s) => (
+                      <path key={s.id} className="arbor2-logo-stroke" data-stroke={s.id} d={s.d} pathLength={1} fill="none" stroke="#fff" strokeWidth={s.width}
+                        strokeLinecap="round" strokeLinejoin="round" style={{ animationDelay: `${s.at}s`, animationDuration: `${s.dur}s` }} />
+                    ))}
+                  </mask>
+                ))}
+              </defs>
+              <image href="/brand/arbor2/wrizo-logo-night-letters.png" x="0" y="0" width="900" height="400" mask="url(#arbor2-top-mask-letters)" />
+              <image href="/brand/arbor2/wrizo-logo-night-brass.png" x="0" y="0" width="900" height="400" mask="url(#arbor2-top-mask-brass)" />
+            </>
+          ) : (
+            <image className="arbor2-top-still" href="/brand/arbor2/wrizo-logo-night.png" x="0" y="0" width="900" height="400" />
+          )}
+        </svg>
       </div>
       <div className="arbor2-top-tagline" data-writing={writing ? 'true' : 'still'} style={{ left: pct(TAGLINE.cx, CW), top: pct(TAGLINE.top, CH) }}>For humans who write.</div>
     </div>
