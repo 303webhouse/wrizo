@@ -306,8 +306,9 @@ export default {
       await waitSoft(app, "!!document.querySelector('.wz-splash .arbor2-splash-logo')", { label: 'the splash logo', timeout: 8000 });
       await app.evalJs(`(() => { const L = document.querySelector('.wz-splash .arbor2-splash-logo'); document.getAnimations().filter((a) => L.contains(a.effect?.target) || a.effect?.target === L).forEach((a) => { a.pause(); a.currentTime = ${T * 1000}; }); return new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => r(true)))); })()`);
       // the job refuses a frame while an element of class wz-splash is on screen (its guard against photographing the opening by mistake); this
-      // frame IS the splash on purpose, so the overlay keeps its look under its own inline layout and gives up only the class the guard reads
-      await app.evalJs("(() => { const s = document.querySelector('.wz-splash'); if (!s) return false; s.style.cssText += ';position:fixed;inset:0;z-index:400;pointer-events:none;display:flex;align-items:center;justify-content:center;'; s.classList.remove('wz-splash'); s.classList.add('arbor2-rec-splash'); return true; })()");
+      // frame IS the splash on purpose, so the overlay keeps its look under its own inline layout and colours (pinned first: the splash keeps the
+      // night values in the day room through a rule on its class - the first recording, run 41558621656, lost them) and gives up only the class
+      await app.evalJs("(() => { const s = document.querySelector('.wz-splash'); if (!s) return false; const cs = getComputedStyle(s); for (const v of ['--ink-950', '--ink-900', '--ink-800', '--ink-border', '--ink-border-strong', '--arbor-line', '--arbor-letter', '--text-hi', '--text-mid', '--text-low']) s.style.setProperty(v, cs.getPropertyValue(v)); s.style.cssText += ';position:fixed;inset:0;z-index:400;pointer-events:none;display:flex;align-items:center;justify-content:center;'; s.classList.remove('wz-splash'); s.classList.add('arbor2-rec-splash'); return true; })()");
       await sleep(200);
     } finally { await app.evalJs("localStorage.setItem('wrizo-splash-hold', '50'); localStorage.removeItem('wrizo-splash-force-not-ready')").catch(() => {}); await done(); }
   }])),
