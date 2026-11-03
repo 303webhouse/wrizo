@@ -4,7 +4,7 @@
 // blur applies; a bad value reverts; default 11; the same scope as -/+); 4. the tabs unchanged. The checks live in mockup-kit.mjs (shared with
 // the Machina mockup). Each THROWS with its numbers when it fails ("ARBOR-R17 <screen> {...}"). Written red-first: run against r16 rebased
 // (6bbe5c91) before the r17 build. Seeds go through window.wrizo*.
-import { themeRoomCheck, sizeBoxCheck } from './mockup-kit.mjs';
+import { themeRoomCheck, sizeBoxCheck, guarded } from './mockup-kit.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ED = '.forward-only-editor';
@@ -39,6 +39,12 @@ const C2 = `(() => { const q = (e) => { if (!e) return null; const r = e.getBoun
   const ls = document.querySelector('.wz-sliver-panel > .wz-drawer-slide'), rs = document.querySelector('.wz-tutor-panel > .wz-drawer-slide');
   return { left: tabs(L), right: tabs(R), lShown: shown(L), rShown: shown(R), lFilter: L ? getComputedStyle(L).filter : null, rFilter: R ? getComputedStyle(R).filter : null,
     lBand: ls ? getComputedStyle(ls).boxShadow : '', rBand: rs ? getComputedStyle(rs).boxShadow : '', ls: q(ls), rs: q(rs), lt: q(document.querySelector('.wz-sliver-grip')), rt: q(document.querySelector('.wz-tutor-grip')) }; })()`;
+// r17-tabs' successor reads each tab's fill and word colour too (the open tab is filled brass with a walnut word)
+const C2B = C2.replace("wm: cs.writingMode,", "wm: cs.writingMode, bg: cs.backgroundColor, fg: cs.color,");
+if (C2B === C2) throw new Error('C2B did not take');
+const BRASS = 'rgb(255, 152, 0)', WALNUT = 'rgb(43, 29, 18)';
+// the 3 px brass band: across the Tools drawer's top edge, down the Tutor drawer's right edge
+const band3 = (shadow, side) => (side === 'top' ? /rgb\(255, 152, 0\) 0px 3px 0px( 0px)? inset/ : /rgb\(255, 152, 0\) -3px 0px 0px( 0px)? inset/).test(String(shadow || ''));
 // a page written before (seeded while the flag is off: born unflagged, no size) reads 12; a page born now through the Write door reads 11
 const BOXV = "(() => { const i = document.querySelector('.wz-sliver-panel input.wz-type-num'); return i ? i.value : null; })()";
 const newPageCheck = async (app, name) => {
@@ -61,7 +67,8 @@ const newPageCheck = async (app, name) => {
 };
 const openMood = (app) => app.evalJs("(() => { const m = [...document.querySelectorAll('.arbor2-bar-head')].find((h) => /^Mood/.test(h.textContent.trim()) && h.getAttribute('aria-expanded') !== 'true'); if (m) m.click(); return true; })()");
 
-export default {
+// (Fable, Nov 2, all lanes: a check that throws, crashes or prints no verdict is RED - the kit's verdict guard wraps every screen here)
+export default guarded({
   // ── THE ROOM BESIDE PAGE in the Themes menu: Arbor's words, Day / Night / By the clock move the room at once, the Mood menu's row agrees
   // (amendment before any green: the Wrizors' note md5 a17aae25, gated by Fable, sets the words "Room: Light · Dark · By the clock" and takes
   // the row out of the Mood menu. Original: words By the clock / Day / Night, the Mood row agreeing.)
@@ -78,7 +85,8 @@ export default {
   'r17-new-page': async (app) => { await newPageCheck(app, 'R17-NEW-PAGE'); },
   // ── NICK'S C2 FOLDER TABS (spec draft 23 §9c): the measures, the open tab's band and brass word, the gap under the opener, the shadow, Grafts
   // turning the band blue, the tabs gone with a closed drawer, and the openers exactly as built
-  'r17-tabs': async (app) => {
+  // PARKED 2026-11-02 (SUPERSEDED by the Wrizors' note CORRECTED 11:10 pm Nov 2 (md5 fc26efc3) and Fable's relay of Nick's Nov 1 rule, "Just have the tab turn brass when it's active": the open folder tab is FILLED brass #FF9800 with its word in walnut #2B1D12, joined to a 3 px brass band; no underline). Kept verbatim under the name r17-tabs-v1 (not in the run list); SUCCESSOR r17-tabs below.
+  'r17-tabs-v1': async (app) => {
     await page(app, 'arbor-r17-tabs', 'Draft');
     await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(150); await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()");
     await app.evalJs(FINISH); await sleep(700); await app.evalJs(FINISH);
@@ -113,6 +121,45 @@ export default {
     if (Object.values(ok).some((x) => !x)) fail('R17-TABS', brief);
     say('r17-tabs', brief);
   },
+  'r17-tabs': async (app) => {
+    await page(app, 'arbor-r17-tabs', 'Draft');
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(150); await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()");
+    await app.evalJs(FINISH); await sleep(700); await app.evalJs(FINISH);
+    const a = await app.evalJs(C2B);
+    await app.evalJs("document.querySelector('#wz-tutor-tab-links')?.click()"); await sleep(300); await app.evalJs(FINISH);
+    const g = await app.evalJs(C2B);
+    await app.evalJs("document.querySelector('#wz-tutor-tab-tutor')?.click()");
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(150); await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()");
+    await app.evalJs(FINISH); await sleep(700); await app.evalJs(FINISH);
+    const shut = await app.evalJs(C2B);
+    const near = (x, y, t = 1) => x != null && y != null && Math.abs(x - y) <= t;
+    const L = a.left, R = a.right, lo = L.find((t) => t.on), ro = R.find((t) => t.on);
+    const seq = (arr, f) => arr.slice(1).every((t, i) => f(arr[i], t));
+    const shadow = (f) => { const m = String(f || '').match(/drop-shadow\(.*?\)\s*(-?[\d.]+)px\s+(-?[\d.]+)px\s+([\d.]+)px/) || String(f || '').match(/drop-shadow\((-?[\d.]+)px\s+(-?[\d.]+)px\s+([\d.]+)px/); return m ? m.slice(1, 4).map(Number) : null; };
+    const sh = [shadow(a.lFilter), shadow(a.rFilter)];
+    const ok = {
+      toolsShape: L.length >= 2 && !!lo && L.every((t) => near(t.r.w, 96) && near(t.r.h, t.on ? 30 : 25)),
+      toolsOnEdge: L.every((t) => near(t.r.b, a.ls.t)) && seq(L, (p, n) => near(n.r.l, p.r.r - 12)) && L.every((t) => t.r.l >= a.ls.l - 0.5),
+      // (SUCCESSOR, the brass tab: the open tab filled brass with a walnut word, no underline, joined to a 3 px brass band; the others in their cloths)
+      toolsOpenFront: !!lo && L.every((t) => t.on || t.z < lo.z) && lo.bg === BRASS && lo.fg === WALNUT && !/underline/.test(lo.deco) && band3(a.lBand, 'top'),
+      toolsBehindInCloth: L.filter((t) => !t.on).every((t) => t.bg === CLOTH[t.id]),
+      tutorShape: R.length === 3 && !!ro && R.every((t) => near(t.r.w, t.on ? 30 : 25) && near(t.r.h, 98) && /vertical-rl/.test(t.wm)),
+      tutorOffEdge: R.every((t) => near(t.r.l, a.rs.r)) && R[0].r.t >= a.rt.b + 12 - 0.5 && seq(R, (p, n) => near(n.r.t, p.r.b - 10)),
+      tutorOpenFront: !!ro && R.every((t) => t.on || t.z < ro.z) && ro.bg === BRASS && ro.fg === WALNUT && !/underline/.test(ro.deco) && band3(a.rBand, 'right'),
+      tutorBehindInCloth: R.filter((t) => !t.on).every((t) => t.bg === CLOTH[t.id]),
+      clearOfOpeners: L.every((t) => t.r.b <= a.lt.t + 0.5) && R.every((t) => t.r.t >= a.rt.b),
+      shadow: sh.every((s) => !!s && Math.abs(s[0]) <= 2 && Math.abs(s[1]) <= 2 && s[2] <= 3),
+      // GRAFTS open: GRAFTS turns brass, TUTOR back to olive, the band stays brass (the note's frame list)
+      graftsBrass: g.right.find((t) => t.on)?.id === 'wz-tutor-tab-links' && g.right.find((t) => t.on)?.bg === BRASS && g.right.find((t) => t.id === 'wz-tutor-tab-tutor')?.bg === CLOTH['wz-tutor-tab-tutor'] && band3(g.rBand, 'right'),
+      goneWhenShut: !shut.lShown && !shut.rShown,
+      openersAsBuilt: [a.lt, a.rt, shut.lt, shut.rt].every((r) => near(r.w, 16) && near(r.h, 34)),
+    };
+    const brief = { ok, tools: L.map((t) => [t.id.replace('wz-sliver-tab-', ''), t.on, Math.round(t.r.l), Math.round(t.r.w), Math.round(t.r.h), Math.round(t.r.b)]), slideTop: a.ls && Math.round(a.ls.t),
+      tutor: R.map((t) => [t.id.replace('wz-tutor-tab-', ''), t.on, Math.round(t.r.t), Math.round(t.r.w), Math.round(t.r.h), Math.round(t.r.l)]), slideRight: a.rs && Math.round(a.rs.r), openerFoot: a.rt && Math.round(a.rt.b),
+      bands: [a.lBand, a.rBand, g.rBand], shadow: sh, fills: [...L, ...R, ...g.right].map((t) => [t.id.replace(/wz-(sliver|tutor)-tab-/, ''), t.on, t.bg, t.fg, t.deco]) };
+    if (Object.values(ok).some((x) => !x)) fail('R17-TABS', brief);
+    say('r17-tabs', brief);
+  },
   // ── THE SIZE BOX between - and +: on Free Write's strip (it had none) and in Draft's drawer, where highlighted words size alone
   'r17-size-freewrite': async (app) => { await page(app, 'arbor-r17-size-fw', null); await sizeBoxCheck(app, { name: 'R17-SIZE-FREEWRITE', say, fail }); },
   'r17-size-draft': async (app) => { await page(app, 'arbor-r17-size-dr', 'Draft'); await sizeBoxCheck(app, { name: 'R17-SIZE-DRAFT', say, fail, selection: true }); },
@@ -122,4 +169,4 @@ export default {
   'r17-pic-size-draft': async (app) => { await page(app, 'arbor-r17-pic-dr', 'Draft'); await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(900); },
   'r17-pic-tabs': async (app) => { await page(app, 'arbor-r17-pic-t', 'Draft'); await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(150); await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(900); await app.evalJs("(() => { const s = document.createElement('style'); s.textContent = '.arbor2-bar{ visibility:hidden !important; }'; document.head.appendChild(s); })()"); },
   'r17-pic-grafts': async (app) => { await page(app, 'arbor-r17-pic-g', 'Draft'); await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(600); await app.evalJs("document.querySelector('#wz-tutor-tab-links')?.click()"); await sleep(600); await app.evalJs("(() => { const s = document.createElement('style'); s.textContent = '.arbor2-bar{ visibility:hidden !important; }'; document.head.appendChild(s); })()"); },
-};
+}, { verdict: ["ARBOR-R17"] });
