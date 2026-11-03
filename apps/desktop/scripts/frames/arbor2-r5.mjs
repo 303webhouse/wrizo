@@ -100,7 +100,8 @@ export default {
   //   the type: rail labels and the top bar's crumb in Alegreya Sans (bundled: loaded from this origin, never a font CDN), drawer headings
   //     in EB Garamond small caps.
   //   the room: day plaster/honey/olive tokens; no honey-wood sill at the foot of the room.
-  'r5-contrast': async (app) => {
+  // PARKED 2026-11-02 (SUPERSEDED by Nick's C2 folder tabs, Nov 2 (spec draft 23 §9c; the Wrizors' note md5 a17aae25, gated by Fable): the open folder tab carries the brass underline under its word (a text underline), the band being its colour). Kept verbatim under the name r5-contrast-v1 (not in the run list); SUCCESSOR r5-contrast below.
+  'r5-contrast-v1': async (app) => {
     await page(app, 'arbor-r5-contrast', WORDS);
     // PARKED 2026-10-31 (SUPERSEDED, frames run 41241222600: the night read saw every resting label in the dim lettering's --text-hi, so it never measured the
     // bar's own pairs - its "/" at 1.64:1 and olive "?" at 3.93:1 passed blind by night). Original, verbatim:
@@ -120,6 +121,87 @@ export default {
       out.grips = grips.map((g) => ({ cls: g.className.split(' ')[0], open: g.closest('.wz-sliver')?.getAttribute('data-open') === 'true' || g.getAttribute('data-open') === 'true', bg: hex(parse(getComputedStyle(g).backgroundColor)) }));
       grips.forEach((g) => add('grip', g.querySelector('span') || g, 3));
       out.cloths = [...document.querySelectorAll('.wz-drawer-tab')].filter(shown).map((t) => ({ id: t.id, bg: hex(parse(getComputedStyle(t).backgroundColor)), on: t.getAttribute('data-on'), underline: /255, 152, 0/.test(getComputedStyle(t).boxShadow) }));
+      document.querySelectorAll('.wz-drawer-tab').forEach((t) => add('cloth ' + t.id, t, 4.5));
+      out.heads = [...document.querySelectorAll('.wz-sliver-h, .wz-cascade-panel-title')].filter(shown).map((h) => { const cs = getComputedStyle(h); add('head', h, 4.5); return { text: h.textContent.trim().slice(0, 14), font: cs.fontFamily.split(',')[0], caps: cs.fontVariantCaps, size: cs.fontSize }; });
+      const lbl = rail && rail.querySelector('.wz-strip-label'), crumb = document.querySelector('.sprint-crumb');
+      out.type = { rail: lbl ? getComputedStyle(lbl).fontFamily.split(',')[0] + ' ' + getComputedStyle(lbl).fontSize : null, crumb: crumb ? getComputedStyle(crumb).fontFamily.split(',')[0] + ' ' + getComputedStyle(crumb).fontSize : null,
+        loaded: [...document.fonts].some((f) => /Alegreya Sans/.test(f.family) && f.status === 'loaded'),
+        foreign: performance.getEntriesByType('resource').filter((e) => /alegreya/i.test(e.name) && new URL(e.name).origin !== location.origin).map((e) => e.name) };
+      const cs = getComputedStyle(document.documentElement);
+      out.tokens = { g: cs.getPropertyValue('--ink-950').trim(), s: cs.getPropertyValue('--ink-900').trim(), r: cs.getPropertyValue('--ink-800').trim(), letter: cs.getPropertyValue('--arbor-letter').trim(), low: cs.getPropertyValue('--text-low').trim(), guide: cs.getPropertyValue('--arbor-guide').trim() };
+      const foot = [innerWidth * 0.5, innerWidth - 60, 120].flatMap((x) => document.elementsFromPoint(x, innerHeight - 4)).filter((el) => /201, 164, 107/.test(getComputedStyle(el).backgroundColor) && el.getBoundingClientRect().width > innerWidth * 0.5);
+      out.sill = foot.map((el) => el.className || el.tagName);
+      return out;
+    })()`;
+    const reads = [await app.evalJs(READ('closed'))];
+    await clickSel(app, '.wz-sliver-grip');
+    await waitSoft(app, "!!document.querySelector(\".wz-sliver[data-open='true']\")", { label: 'tools open', timeout: 3000 }); await sleep(500);
+    reads.push(await app.evalJs(READ('tools freewrite')));
+    await clickSel(app, '.wz-sliver-grip'); await sleep(400);
+    await clickText(app, '.desk-mode-tab', 'Draft'); await sleep(1000);
+    await clickSel(app, '.wz-sliver-grip');
+    await waitSoft(app, "!!document.querySelector(\".wz-sliver[data-open='true']\")", { label: 'tools open', timeout: 3000 }); await sleep(500);
+    reads.push(await app.evalJs(READ('tools draft')));
+    await clickSel(app, '#wz-sliver-tab-presets'); await sleep(300);
+    reads.push(await app.evalJs(READ('tools draft presets')));
+    await clickSel(app, '.wz-tutor-grip'); await sleep(700);
+    reads.push(await app.evalJs(READ('tutor')));
+    await clickSel(app, '#wz-tutor-tab-links'); await sleep(300);
+    reads.push(await app.evalJs(READ('tutor grafts')));
+    const ESP = '#1B120C', OLIVE = '#6B7A3A', BRASS = '#FF9800', BLUE = '#7FA0BC', MADDER = '#A8392F';
+    const CLOTH = { 'wz-sliver-tab-format': 'olive', 'wz-sliver-tab-presets': BLUE, 'wz-sliver-tab-ink': MADDER, 'wz-tutor-tab-tutor': 'olive', 'wz-tutor-tab-links': BLUE, 'wz-tutor-tab-board': MADDER };
+    const problems = [];
+    for (const r of reads) {
+      if (r.bad.length) problems.push({ stage: r.stage, low: r.bad.slice(0, 4) });
+      if (r.barBg !== ESP || r.railBg !== ESP) problems.push({ stage: r.stage, bars: [r.barBg, r.railBg] });
+      for (const g of r.grips) if (g.bg !== (g.open ? BRASS : OLIVE)) problems.push({ stage: r.stage, grip: g });
+      for (const c of r.cloths) {
+        const want = CLOTH[c.id];
+        // the olive cloth may be a measured darker step of olive (cream on #6B7A3A is 3.66:1); it must still read olive: green above red above blue
+        const isOlive = (h) => { const n = parseInt(h.slice(1), 16), R = n >> 16, G = (n >> 8) & 255, B = n & 255; return G > R && R > B && G - B > 30; };
+        if (!want || (want === 'olive' ? !isOlive(c.bg) : c.bg !== want) || (c.on === 'true') !== c.underline) problems.push({ stage: r.stage, cloth: c });
+      }
+      if (r.heads.some((h) => !/EB Garamond/.test(h.font) || h.caps !== 'small-caps')) problems.push({ stage: r.stage, heads: r.heads.slice(0, 3) });
+      if (!/Alegreya Sans/.test(r.type.rail || '') || !/Alegreya Sans/.test(r.type.crumb || '') || !r.type.loaded || r.type.foreign.length) problems.push({ stage: r.stage, type: r.type });
+      if (r.sill.length) problems.push({ stage: r.stage, sill: r.sill });
+    }
+    const t = reads[0].tokens, day = reads[0].room === 'day';
+    // day ground: the plaster #F1EAD8, warming with the afternoon but never to a tan (the retired tans run R <= 0xE4; plaster keeps R >= 0xEC, B >= 0xC4)
+    const rgbOf = (h) => { const n = parseInt(String(h).replace('#', ''), 16); return [n >> 16, (n >> 8) & 255, n & 255]; };
+    const plaster = (h) => { const [R, , B] = rgbOf(h); return /^#[0-9A-F]{6}$/i.test(h) && R >= 0xEC && B >= 0xC4; };
+    // PARKED 2026-10-31 (SUPERSEDED: arbor2-1 C1 on the r5 build, run 41240761804 - honey wood under text fails the floors; raised is #F6F1E4).
+    // Original, verbatim:
+    // const tokOk = day ? (plaster(t.g) && t.s.toUpperCase() === '#E8DFC8' && t.r.toUpperCase() === '#C9A46B')
+    // SUCCESSOR: day raised is the lifted cream #F6F1E4 and the quiet text #56623A.
+    const tokOk = day ? (plaster(t.g) && t.s.toUpperCase() === '#E8DFC8' && t.r.toUpperCase() === '#F6F1E4' && t.low.toUpperCase() === '#56623A')
+      : (t.g.toUpperCase() === '#120A06' && t.s.toUpperCase() === '#1B120C' && t.r.toUpperCase() === '#261A12');
+    if (!tokOk) problems.push({ tokens: t });
+    const all = reads.flatMap((r) => r.pairs);
+    const summary = { room: reads[0].room, pairs: all.length, min: all.length ? Math.min(...all.map((p) => p.ratio)) : null, tokens: t, type: reads[0].type, cloths: reads.flatMap((r) => r.cloths).filter((c, i, a) => a.findIndex((x) => x.id === c.id) === i) };
+    if (problems.length || reads.some((r) => !r.cloths.length && r.stage !== 'closed')) fail('R5-CONTRAST', { problems: problems.slice(0, 6), room: reads[0].room });
+    // the table for the report: every distinct pair (where, fg on bg, ratio)
+    say('r5-contrast', { ...summary, table: [...new Map(all.map((p) => [`${p.where}|${p.fg}|${p.bg}`, `${p.where}: ${p.fg} on ${p.bg} = ${p.ratio}`])).values()] });
+  },
+  'r5-contrast': async (app) => {
+    await page(app, 'arbor-r5-contrast', WORDS);
+    // PARKED 2026-10-31 (SUPERSEDED, frames run 41241222600: the night read saw every resting label in the dim lettering's --text-hi, so it never measured the
+    // bar's own pairs - its "/" at 1.64:1 and olive "?" at 3.93:1 passed blind by night). Original, verbatim:
+    // await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'arbor2-r5-lit'; s.textContent = '*{ --arbor2-dim:1 !important; transition:none !important; }'; document.head.appendChild(s); })()");
+    // SUCCESSOR: lit, AND each label in its own colours - data-arbor2-lit on <html> stands the dim lettering down for the read.
+    await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'arbor2-r5-lit'; s.textContent = '*{ --arbor2-dim:1 !important; transition:none !important; }'; document.head.appendChild(s); document.documentElement.setAttribute('data-arbor2-lit', ''); })()");
+    const READ = (stage) => `(() => { ${COLOUR}
+      const out = { stage: ${JSON.stringify(stage)}, room: document.documentElement.getAttribute('data-arbor2-room'), pairs: [], bad: [] };
+      const add = (where, el, floor) => { if (!el || !shown(el)) return; const p = pair(el); const row = { where, text: (el.textContent || '').trim().slice(0, 18), ...p, floor }; out.pairs.push(row); if (p.ratio < floor) out.bad.push(row); };
+      const bar = [...document.querySelectorAll('.chrome-top.sprint-nav')].find((x) => x.getBoundingClientRect().height > 0);
+      const rail = document.querySelector('.desk-frame-strip');
+      out.barBg = bar ? hex(ground(bar)) : null; out.railBg = rail ? hex(ground(rail.querySelector('.wz-strip-item') || rail)) : null;
+      if (bar) textEls(bar).forEach((el) => add('bar', el, 4.5));
+      if (rail) textEls(rail).forEach((el) => add('rail', el, 4.5));
+      add('dots', document.querySelector('.gh-corner-glyph'), 3);
+      const grips = [...document.querySelectorAll('.wz-sliver-grip, .wz-tutor-grip')].filter(shown);
+      out.grips = grips.map((g) => ({ cls: g.className.split(' ')[0], open: g.closest('.wz-sliver')?.getAttribute('data-open') === 'true' || g.getAttribute('data-open') === 'true', bg: hex(parse(getComputedStyle(g).backgroundColor)) }));
+      grips.forEach((g) => add('grip', g.querySelector('span') || g, 3));
+      out.cloths = [...document.querySelectorAll('.wz-drawer-tab')].filter(shown).map((t) => ({ id: t.id, bg: hex(parse(getComputedStyle(t).backgroundColor)), on: t.getAttribute('data-on'), underline: /255, 152, 0/.test(getComputedStyle(t).boxShadow) || (/underline/.test(getComputedStyle(t).textDecorationLine) && /255, 152, 0/.test(getComputedStyle(t).textDecorationColor)) }));
       document.querySelectorAll('.wz-drawer-tab').forEach((t) => add('cloth ' + t.id, t, 4.5));
       out.heads = [...document.querySelectorAll('.wz-sliver-h, .wz-cascade-panel-title')].filter(shown).map((h) => { const cs = getComputedStyle(h); add('head', h, 4.5); return { text: h.textContent.trim().slice(0, 14), font: cs.fontFamily.split(',')[0], caps: cs.fontVariantCaps, size: cs.fontSize }; });
       const lbl = rail && rail.querySelector('.wz-strip-label'), crumb = document.querySelector('.sprint-crumb');

@@ -35,11 +35,17 @@ const closeMood = (app) => app.evalJs(`(() => { const m = [...document.querySele
 // (r17 driver: the Room row left the Mood menu for the Themes menu, under Page - the Wrizors' note, Nov 2 - with the words Light · Dark · By the clock.
 // It opens the Themes pop-out, presses the word and closes the pop-out again, as a writer would. No assertion changed.)
 const ROOM_WORD = { day: 'Light', night: 'Dark', clock: 'By the clock', Day: 'Light', Night: 'Dark', 'By the clock': 'By the clock' };
+// (driver fix after run 41575575711, no assertion changed: opening the Themes menu shuts the Tools drawer - main's Cascade band, requestOpen
+// ('cascade') - which the Mood route never did; the picker reopens the Tools drawer when it was open before)
 const pickThemesRoom = (app, which) => app.evalJs(`(async () => { const text = ${JSON.stringify(ROOM_WORD[which] ?? which)}; const strip = document.querySelector(".wz-strip-item[data-category='theme']"); if (!strip) return false;
+  const tools = !!document.querySelector(".wz-sliver[data-open='true']");
   const was = strip.getAttribute('aria-pressed') === 'true'; if (!was) strip.click(); const t0 = performance.now();
   while (!document.querySelector('.wz-theme-picker') && performance.now() - t0 < 2000) await new Promise((r) => requestAnimationFrame(r));
   const row = [...document.querySelectorAll('.wz-theme-picker .mode-crow')].find((r) => r.querySelector(':scope > span')?.textContent.trim() === 'Room');
-  const b = row && [...row.querySelectorAll('.mode-seg button')].find((x) => x.textContent.trim() === text); if (b) b.click(); if (!was) strip.click(); return !!b; })()`);
+  const b = row && [...row.querySelectorAll('.mode-seg button')].find((x) => x.textContent.trim() === text); if (b) b.click(); if (!was) strip.click();
+  for (let i = 0; i < 3; i++) await new Promise((r) => requestAnimationFrame(r));
+  if (tools && !document.querySelector(".wz-sliver[data-open='true']")) { document.querySelector('.wz-sliver-grip')?.click(); for (let i = 0; i < 3; i++) await new Promise((r) => requestAnimationFrame(r)); }
+  return !!b; })()`);
 // (r17 driver fix, no assertion changed: pickRoom presses the Themes menu's Room row)
 const pickRoom = async (app, choice, settle = 900) => { const ok = await pickThemesRoom(app, choice); await sleep(settle); return ok; };
 const ROWREAD = `(() => { const first = document.querySelector('.arbor2-mood > li'); if (!first) return null;
@@ -337,12 +343,21 @@ export default {
     if (seam === 'NO-SEAM' || (want !== null ? s.t !== want : !(Number(s.t) > 0 && Number(s.t) < 1))) fail('R9-PIC', { hhmm, seam, s });
     say(`r9-pic-fade-${hhmm}`, { t: s.t, room: s.room, g: s.g, letter: s.letter });
   }])),
-  'r9-pic-menu': async (app) => {
+  // PARKED 2026-11-02 (SUPERSEDED by r17, Nov 2 (Fable: the Room control right beside Page in the Themes menu; the Wrizors' note md5 a17aae25: it leaves the Mood menu) - the picture of the room's three choices is the Themes menu now). Kept verbatim under the name r9-pic-menu-v1 (not in the run list); SUCCESSOR r9-pic-menu below.
+  'r9-pic-menu-v1': async (app) => {
     await page(app, 'arbor-r9-pic', WORDS);
     const seam = await clock(app, '12:00');
     await openMood(app); await sleep(500);
     const row = await app.evalJs(ROWREAD);
     if (seam === 'NO-SEAM' || !row || row.opts.length !== 3) fail('R9-PIC-MENU', { seam, row });
+    say('r9-pic-menu', row);
+  },
+  'r9-pic-menu': async (app) => {
+    await page(app, 'arbor-r9-pic', WORDS);
+    const seam = await clock(app, '12:00');
+    const row = await app.evalJs(THEMES_ROWREAD);
+    if (seam === 'NO-SEAM' || !row || row.opts.length !== 3) fail('R9-PIC-MENU', { seam, row });
+    await app.evalJs("document.querySelector(\".wz-strip-item[data-category='theme']\")?.click()"); await sleep(700);
     say('r9-pic-menu', row);
   },
 };
