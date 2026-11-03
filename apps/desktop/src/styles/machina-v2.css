@@ -321,3 +321,9 @@
 :root[data-machina2] .wz-type-num-box .wz-type-num{ border:0; width:2.2em; text-align:right; padding-right:3px; }
 :root[data-machina2] .wz-type-num-unit{ font-size:11px; color:var(--text-mid); }
 .wz-type-num-plain{ display:contents; }
+
+/* r17 / r8 - THE THEMES FIELD STACKS: Page, then the room's row on its own line under it, both inside the panel (the Wrizors' note: "Room
+   in the Themes menu, directly under Page"). Main's field is a right-aligned flex row built for the one Page row: with two rows they sat side
+   by side, or ran off the panel's left edge. Under the flag the rows stack, each full width (label left, choices right), words on one line. */
+:root[data-machina2][data-theme='machina'] .wz-theme-picker-field{ flex-direction:column; align-items:stretch; }
+:root[data-machina2][data-theme='machina'] .wz-theme-picker-field .mode-seg button{ white-space:nowrap; }
