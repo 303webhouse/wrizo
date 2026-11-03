@@ -268,3 +268,89 @@ export async function reducedRepeat(app, { name, setRoom, n = 20 }) {
   console.log(`${name} ${JSON.stringify(brief)}`);
   return brief;
 }
+
+/** r17 / r8 (Fable, Nov 2: "Room control: put it right beside Page in the Themes menu (both mockups; it can stay in Mood too). Nick couldn't find
+ *  'light mode'"). In the Themes pop-out the room's row is the row right after Page, with the theme's own words; picking Day, Night and the
+ *  clock there moves the room at once and the mockup's own row (Mood / the panel) agrees. ctx: { name, say, fail, label, words: [[value, text]],
+ *  roomAttr, roomOf: { clock?, day: 'value', night: 'value' }, otherRow: css selector of the mockup's own row group }. */
+export async function themeRoomCheck(app, { name, say, fail, label, words, roomAttr, roomOf, otherRow }) {
+  const open = await app.evalJs("(() => { const b = document.querySelector(\".wz-strip-item[data-category='theme']\"); if (b && b.getAttribute('aria-pressed') !== 'true') b.click(); return !!b; })()");
+  await app.evalJs(`new Promise((done) => { const t0 = performance.now(); const f = () => (document.querySelector('.wz-theme-picker') || performance.now() - t0 > 3000) ? done(true) : requestAnimationFrame(f); f(); })`);
+  const READ = `(() => { const field = document.querySelector('.wz-theme-picker .wz-theme-picker-field'); if (!field) return null;
+    const rows = [...field.querySelectorAll('.mode-crow')].map((r) => ({ label: r.querySelector(':scope > span')?.textContent.trim() ?? null, opts: [...r.querySelectorAll('.mode-seg button')].map((b) => [b.textContent.trim(), b.classList.contains('on') || b.getAttribute('aria-pressed') === 'true']) }));
+    const other = ${JSON.stringify(otherRow)} ? document.querySelector(${JSON.stringify(otherRow)}) : null;
+    return { rows, attr: document.documentElement.getAttribute('data-room'), room: document.documentElement.getAttribute(${JSON.stringify(roomAttr)}), other: other ? [...other.querySelectorAll('button[aria-pressed]')].map((b) => [b.textContent.trim(), b.getAttribute('aria-pressed')]) : null }; })()`;
+  const before = await app.evalJs(READ);
+  if (!before) fail(name, { open, picker: false });
+  const pick = (text) => app.evalJs(`(() => { const r = [...document.querySelectorAll('.wz-theme-picker .wz-theme-picker-field .mode-crow')].find((x) => x.querySelector(':scope > span')?.textContent.trim() === ${JSON.stringify(label)}); const b = r && [...r.querySelectorAll('.mode-seg button')].find((x) => x.textContent.trim() === text); if (b) b.click(); return !!b; })()`);
+  const steps = [];
+  for (const [value, text] of [...words.filter(([v]) => v !== 'clock'), ...words.filter(([v]) => v === 'clock')]) {
+    const pressed = await pick(text); await sleep(500);
+    steps.push({ value, text, pressed, ...(await app.evalJs(READ)) });
+  }
+  const idx = before.rows.findIndex((r) => r.label === 'Page');
+  const row = before.rows[idx + 1];
+  const chosen = (s, text) => !!s.other && s.other.some(([t, p]) => t === text && p === 'true');
+  const ok = {
+    besidePage: idx >= 0 && !!row && row.label === label,
+    words: !!row && JSON.stringify(row.opts.map(([t]) => t)) === JSON.stringify(words.map(([, t]) => t)),
+    moves: steps.every((s) => s.pressed && (s.value === 'clock' ? s.attr === null : s.room === roomOf[s.value])),
+    agrees: !otherRow || steps.every((s) => chosen(s, s.text)),
+    marked: steps.every((s) => { const r = s.rows.find((x) => x.label === label); return !!r && r.opts.some(([t, on]) => t === s.text && on); }),
+  };
+  const brief = { ok, rows: before.rows.map((r) => [r.label, r.opts.map(([t]) => t).join('/')]), steps: steps.map((s) => [s.text, s.attr, s.room, s.other && s.other.filter(([, p]) => p === 'true').map(([t]) => t).join('|')]) };
+  if (Object.values(ok).some((x) => !x)) fail(name, brief);
+  say(name, brief);
+  return brief;
+}
+
+/** r17 / r8 (Fable, Nov 2, Nick: "The font-size box: an editable number box between - and + in both mockups. Whole numbers 6-72; Enter or blur
+ *  applies; a bad value reverts; default 11; the same scope as -/+"). On the caller's page (whose Tools drawer this opens): the box stands between
+ *  - and +, shows the size in effect, and a whole number applies on Enter and on blur; 5, 73, 11.5 and a word revert (the size and the box keep
+ *  the last good value); with words highlighted the box sizes only those words, as - and + do. ctx: { name, say, fail, form: 'small'|'full',
+ *  selection: true to run the highlighted-words part }. */
+export async function sizeBoxCheck(app, { name, say, fail, selection = false }) {
+  await app.evalJs("(() => { if (!document.querySelector(\".wz-sliver[data-open='true']\")) document.querySelector('.wz-sliver-grip')?.click(); return true; })()");
+  await app.evalJs(FINISH); await sleep(600); await app.evalJs(FINISH);
+  const BOX = `(() => { const box = document.querySelector('.wz-sliver-panel .wz-type-size'); if (!box) return null; const kids = [...box.children]; const input = box.querySelector('input.wz-type-num');
+    const steps = [...box.querySelectorAll('.wz-type-step')]; const x = (e) => e ? Math.round(e.getBoundingClientRect().left) : null;
+    const ed = document.querySelector('${ED}'); const p = ed && (ed.querySelector('p, div') || ed);
+    return { order: kids.map((k) => k.tagName === 'INPUT' ? 'box' : k.textContent.trim()), x: [x(steps[0]), x(input), x(steps[1])], value: input ? input.value : null, shown: !!input && input.getBoundingClientRect().width > 0,
+      editorPx: ed ? parseFloat(getComputedStyle(p).fontSize) : null }; })()`;
+  const type = (v, how) => app.evalJs(`(() => { const i = document.querySelector('.wz-sliver-panel input.wz-type-num'); if (!i) return false; i.focus(); const d = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value'); d.set.call(i, ${JSON.stringify(v)}); i.dispatchEvent(new Event('input', { bubbles: true }));
+    ${how === 'enter' ? "i.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));" : 'i.blur();'} return true; })()`);
+  const start = await app.evalJs(BOX);
+  if (!start) fail(name, { box: false });
+  const rows = [];
+  for (const [v, how, want] of [['14', 'enter', 14], ['5', 'enter', null], ['73', 'enter', null], ['11.5', 'enter', null], ['abc', 'blur', null], ['16', 'blur', 16], ['72', 'enter', 72], ['6', 'enter', 6]]) {
+    const prev = await app.evalJs(BOX);
+    await type(v, how); await sleep(450);
+    const s = await app.evalJs(BOX);
+    rows.push({ v, how, want, value: s.value, prevValue: prev.value, px: s.editorPx, prevPx: prev.editorPx });
+  }
+  const applied = (r) => r.value === String(r.want) && r.px !== r.prevPx;
+  const reverted = (r) => r.value === r.prevValue && r.px === r.prevPx;
+  const ok = {
+    between: start.shown && JSON.stringify(start.order) === JSON.stringify(['−', 'box', '+']) && start.x[0] < start.x[1] && start.x[1] < start.x[2],
+    showsSize: /^\d+$/.test(start.value || ''),
+    applies: rows.filter((r) => r.want !== null).every(applied),
+    reverts: rows.filter((r) => r.want === null).every(reverted),
+  };
+  let sel = null;
+  if (selection) {
+    // highlight the first word, then type a size: only the highlighted words change (as - and + do)
+    await app.evalJs(`(() => { const ed = document.querySelector('${ED}'); ed.focus(); const tw = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); const n = tw.nextNode(); const r = document.createRange(); r.setStart(n, 0); r.setEnd(n, 3); const s = getSelection(); s.removeAllRanges(); s.addRange(r); document.dispatchEvent(new Event('selectionchange')); return n.textContent.slice(0, 3); })()`);
+    await sleep(400);
+    const scope = await app.evalJs("(() => { const b = document.querySelector(\".wz-sliver-panel .wz-type-scope[data-scope='selection']\"); return b ? b.getAttribute('data-on') : null; })()");
+    const sizeOf = `(() => { const ed = document.querySelector('${ED}'); const tw = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); const first = tw.nextNode(); let last = first; for (let n = tw.nextNode(); n; n = tw.nextNode()) if (n.textContent.trim()) last = n; return [parseFloat(getComputedStyle(first.parentElement).fontSize), parseFloat(getComputedStyle(last.parentElement).fontSize)]; })()`;
+    const b0 = await app.evalJs(sizeOf);
+    await type('30', 'enter'); await sleep(500);
+    const b1 = await app.evalJs(sizeOf);
+    sel = { scope, before: b0, after: b1 };
+    ok.sameScope = scope === 'true' && b1[0] > b0[0] + 0.5 && Math.abs(b1[1] - b0[1]) < 0.01;
+  }
+  const brief = { ok, start: { order: start.order, value: start.value }, rows: rows.map((r) => [r.v, r.how, r.prevValue, '->', r.value, r.prevPx, '->', r.px]), sel };
+  if (Object.values(ok).some((x) => !x)) fail(name, brief);
+  say(name, brief);
+  return brief;
+}
