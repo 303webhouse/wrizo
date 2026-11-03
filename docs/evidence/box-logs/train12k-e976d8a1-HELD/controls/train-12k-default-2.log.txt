@@ -1,0 +1,11 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=1 tree=e976d8a1 bundle=index-DOEyWNrv.js/956110b out=C:/Users/nickh/t12k-i126/train-12k-d2
+(node:25992) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[01/1] FAIL      exit=1   98s item126.mjs :: ROWS-SHADOW VERIFY: PASS (94 renders checked, shadow == DOM on every one) ;; ITEM126 VERIFY: FAIL — 1/42 failed
+
+SUITE DONE HARNESS_PARKED=unset — 0/1 of 1 returned a passing verdict
+  FAIL: item126.mjs — full output at C:\Users\nickh\t12k-i126\train-12k-d2\item126.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=e976d8a1 bundle=index-DOEyWNrv.js/956110b

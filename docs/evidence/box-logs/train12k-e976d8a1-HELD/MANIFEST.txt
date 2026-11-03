@@ -1,0 +1,13 @@
+Train #12k (TOOLS tools-14-size-box 8d1fe490) - HELD, NOT SHIPPED (Chat 1, Nov 2 2026)
+
+Train tree e976d8a1 = main 5119bdf0 + one --no-ff merge of tools-14-size-box 8d1fe490. Bundle index-DOEyWNrv.js 956110 bytes. tsc x2 0, seed-guard 36.
+
+THE RED (real, attributed by control): item126.mjs "C4/C5 (REVISE): a double-click on BARE TEXT still SELECTS A WORD" fails, 1/42, selected " " (a space).
+- Actions pair run 41587471573: item126 FAIL on BOTH legs (the only non-capture-tool red); size-box PASS 26, item207 PASS 47, item207-core PASS 58.
+- Control on Actions, item126 alone, both legs: main 5119bdf0 (run 41589714606) PASS 42; the train e976d8a1 (run 41589752859) FAIL 1/42.
+- Control on the box, item126 default x2 each: main-equivalent (train-12j, product = main) PASS 2/2; train-12k FAIL 2/2.
+- Reading: the harness double-clicks at a FIXED offset (editor left+30, top+8). A page born at 11 pt (NEW_PAGE_SIZE, this ticket) puts a space under that point; a page at 12 pt put a letter. The product behaviour (double-click selects a word) is probably intact; the check's coordinates assume the old size. Not edited: a falsified check is parked, never edited (original verbatim + SUPERSEDED + successor).
+
+THE REST (green): box list 24 files (INK's box-only list + cd2, glide-keys, tw-glide-measure, stall, typewriter-page, caret-reset, blank-page-click, empty-line-caret, rhizome-latency-mutant, size-box, item207, item207-core), stamp tree=e976d8a1 bundle=index-DOEyWNrv.js/956110b: default CLEAN 24/24, parked CLEAN 24/24. Actions pair otherwise 231/239 per leg (the 7 capture tools; item126 the 8th). flux-screens run WITH an output dir (box, main-equivalent then train): FLUX-SCREENS PASS, 12 surfaces, 14 files each. Box turns 06:04Z-06:39Z and the item126 controls, released.
+
+Files here: pair-*.log.txt, summary.txt (Actions); box-default/parked.log.txt; flux-screens-main/train.log.txt; item126.actions-default-RED.txt (full output); controls/ (the item126 controls).

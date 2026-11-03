@@ -1,0 +1,216 @@
+
+ROWS-SHADOW VERIFY: PASS (94 renders checked, shadow == DOM on every one)
+[
+  {
+    "name": "C1 (Free Write): the stratum is MOUNTED — the ink is the PAGE'S, not Free Write's decoration (item 121 §7A said \"Free Write only\"; this is the inversion this ticket exists for)",
+    "pass": true,
+    "detail": "{\"canvas\":true,\"mode\":\"Free Write\"}"
+  },
+  {
+    "name": "C1 (Free Write): and its canvas box IS the sheet's box on every edge (within 0.6px) — the anchor law holds in a mode that never had a canvas before",
+    "pass": true,
+    "detail": "{\"sheet\":{\"left\":305.3046875,\"right\":1044.6796875,\"top\":207.77499389648438,\"bottom\":1049.2749938964844,\"width\":739.375,\"height\":841.5},\"canvas\":{\"left\":305.3046875,\"right\":1044.6796875,\"top\":207.77499389648438,\"bottom\":1049.2749938964844,\"width\":739.375,\"height\":841.5}}"
+  },
+  {
+    "name": "C1 (Draft): the stratum is MOUNTED — the ink is the PAGE'S, not Free Write's decoration (item 121 §7A said \"Free Write only\"; this is the inversion this ticket exists for)",
+    "pass": true,
+    "detail": "{\"canvas\":true,\"mode\":\"Draft\"}"
+  },
+  {
+    "name": "C1 (Draft): and its canvas box IS the sheet's box on every edge (within 0.6px) — the anchor law holds in a mode that never had a canvas before",
+    "pass": true,
+    "detail": "{\"sheet\":{\"left\":305.3046875,\"right\":1044.6796875,\"top\":207.77499389648438,\"bottom\":1049.2749938964844,\"width\":739.375,\"height\":841.5},\"canvas\":{\"left\":305.3046875,\"right\":1044.6796875,\"top\":207.77499389648438,\"bottom\":1049.2749938964844,\"width\":739.375,\"height\":841.5}}"
+  },
+  {
+    "name": "C1 (Revise): the stratum is MOUNTED — the ink is the PAGE'S, not Free Write's decoration (item 121 §7A said \"Free Write only\"; this is the inversion this ticket exists for)",
+    "pass": true,
+    "detail": "{\"canvas\":true,\"mode\":\"Revise\"}"
+  },
+  {
+    "name": "C1 (Revise): and its canvas box IS the sheet's box on every edge (within 0.6px) — the anchor law holds in a mode that never had a canvas before",
+    "pass": true,
+    "detail": "{\"sheet\":{\"left\":446.9375,\"right\":909.046875,\"top\":169.984375,\"bottom\":374.625,\"width\":462.109375,\"height\":204.640625},\"canvas\":{\"left\":446.9375,\"right\":909.046875,\"top\":169.984375,\"bottom\":374.625,\"width\":462.109375,\"height\":204.640625}}"
+  },
+  {
+    "name": "C2: Free Write / INK reads permission=edit and instrument=ink",
+    "pass": true,
+    "detail": "{\"ink\":\"edit\",\"instrument\":\"ink\"}"
+  },
+  {
+    "name": "C2: Free Write / TEXT reads permission=inert and instrument=text — 121-B §3.1 ruled: the TEXT half stays INERT, R15 stands",
+    "pass": true,
+    "detail": "{\"ink\":\"inert\",\"instrument\":\"text\"}"
+  },
+  {
+    "name": "C2: DRAFT reads permission=movable and carries NO instrument at all — a Draft page is not \"in TEXT\", it is a word processor with ink on it",
+    "pass": true,
+    "detail": "{\"ink\":\"movable\",\"instrument\":null}"
+  },
+  {
+    "name": "C2: REVISE reads permission=movable and carries no instrument either",
+    "pass": true,
+    "detail": "{\"ink\":\"movable\",\"instrument\":null}"
+  },
+  {
+    "name": "C3: in Free Write / TEXT a trusted DOUBLE-CLICK ON INK arms NOTHING — no outline is drawn. This asserts the RULING as a negative, so a listener that armed on \"not drawing\" would be caught here rather than shipping",
+    "pass": true,
+    "detail": "{\"canvas\":true,\"outlinePixels\":0}"
+  },
+  {
+    "name": "C3: and a trusted PEN stroke in Free Write / TEXT still creates NO stroke — item 121's inertness is untouched by this ticket",
+    "pass": true,
+    "detail": "{\"before\":1,\"after\":1}"
+  },
+  {
+    "name": "C3: and the page text is unchanged by both — the I0 seal still holds on this surface",
+    "pass": true,
+    "detail": "{\"same\":true}"
+  },
+  {
+    "name": "C4/C5 (DRAFT): a keystroke types normally — the stratum's arrival costs the mode nothing",
+    "pass": true,
+    "detail": "{\"afterText\":\"typed here\"}"
+  },
+  {
+    "name": "C4/C5 (DRAFT): a trusted PEN stroke creates NO stroke — ink is LOCKED here, not editable (Nick: \"INK no longer becomes directly editable\")",
+    "pass": true,
+    "detail": "{\"before\":1,\"after\":1}"
+  },
+  {
+    "name": "C4/C5 (DRAFT): and a trusted MOUSE drag over bare paper creates no stroke either",
+    "pass": true,
+    "detail": "{\"before\":1,\"after\":1}"
+  },
+  {
+    "name": "C4/C5 (DRAFT): a double-click on BARE TEXT still SELECTS A WORD — Nick's own clause (\"text … only editable by standard in-line word processing led by a cursor\") proven, and the clause an over-eager listener breaks first",
+    "pass": true,
+    "detail": "{\"selected\":\"typed\"}"
+  },
+  {
+    "name": "C4/C5 (DRAFT): a double-click ON INK arms the group — the outline is painted",
+    "pass": true,
+    "detail": "{\"canvas\":true,\"outlinePixels\":1023}"
+  },
+  {
+    "name": "C4/C5 (REVISE): a keystroke types normally — the stratum's arrival costs the mode nothing",
+    "pass": true,
+    "detail": "{\"afterText\":\"typed here\"}"
+  },
+  {
+    "name": "C4/C5 (REVISE): a trusted PEN stroke creates NO stroke — ink is LOCKED here, not editable (Nick: \"INK no longer becomes directly editable\")",
+    "pass": true,
+    "detail": "{\"before\":1,\"after\":1}"
+  },
+  {
+    "name": "C4/C5 (REVISE): and a trusted MOUSE drag over bare paper creates no stroke either",
+    "pass": true,
+    "detail": "{\"before\":1,\"after\":1}"
+  },
+  {
+    "name": "C4/C5 (REVISE): a double-click on BARE TEXT still SELECTS A WORD — Nick's own clause (\"text … only editable by standard in-line word processing led by a cursor\") proven, and the clause an over-eager listener breaks first",
+    "pass": false,
+    "detail": "{\"selected\":\" \"}"
+  },
+  {
+    "name": "C4/C5 (REVISE): a double-click ON INK arms the group — the outline is painted",
+    "pass": true,
+    "detail": "{\"canvas\":true,\"outlinePixels\":334}"
+  },
+  {
+    "name": "C6: a trusted drag MOVES the stroke — the PERSISTED geometry translates by the drag delta on BOTH axes, in normalized-by-width units",
+    "pass": true,
+    "detail": "{\"beforeBox\":{\"x0\":0.2499894336432798,\"x1\":0.6999894336432798,\"y0\":0.01180028780314239,\"y1\":0.014989387615589558},\"afterBox\":{\"x0\":0.3703613693998309,\"x1\":0.8203613693998308,\"y0\":0.0659000342105811,\"y1\":0.06908913402302827},\"expectDx\":0.12037193575655114,\"expectDy\":0.05409974640743871}"
+  },
+  {
+    "name": "C6: the stroke COUNT is unchanged — a move relocates ink, it never adds or drops any",
+    "pass": true,
+    "detail": "{\"before\":1,\"after\":1}"
+  },
+  {
+    "name": "C6: TEXT IS NEVER MOVABLE — the editor's rect is IDENTICAL across the move (Nick: \"Text is not movable\"). The ink slides over the words; the words do not budge",
+    "pass": true,
+    "detail": "{\"edBefore\":{\"left\":305.3046875,\"right\":1044.6796875,\"top\":407.7749938964844,\"bottom\":447.6750183105469,\"width\":739.375,\"height\":39.9000244140625},\"edAfter\":{\"left\":305.3046875,\"right\":1044.6796875,\"top\":407.7749938964844,\"bottom\":447.6750183105469,\"width\":739.375,\"height\":39.9000244140625}}"
+  },
+  {
+    "name": "C6: and the TEXT IS BYTE-IDENTICAL across the arm-and-move. Arming clears the DOM selection, which fires reveal-on-click's selectionchange listener (revealAtCaret); that is a no-op today because it returns at rangeCount 0, and THIS CHECK IS THE GUARD FOR THE DAY IT STOPS BEING ONE",
+    "pass": true,
+    "detail": "{\"equal\":true,\"len\":21}"
+  },
+  {
+    "name": "C9: the undo affordance is offered in a movable mode — there is now a move to reverse",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "C9: undo restores the PRE-MOVE geometry exactly — one level, and it reverses a MOVE (item 121's slice-the-last-stroke undo could not have expressed this, which is why it became a snapshot)",
+    "pass": true,
+    "detail": "{\"beforeBox\":{\"x0\":0.2499894336432798,\"x1\":0.6999894336432798,\"y0\":0.01180028780314239,\"y1\":0.014989387615589558},\"undoneBox\":{\"x0\":0.2499894336432798,\"x1\":0.6999894336432798,\"y0\":0.01180028780314239,\"y1\":0.014989387615589558}}"
+  },
+  {
+    "name": "C7: (precondition) the page carries an ink stroke AND an erase stroke",
+    "pass": true,
+    "detail": "{\"n\":2,\"eraserAt\":1}"
+  },
+  {
+    "name": "C7: THE ERASE TRAVELS WITH ITS GROUP — it shifts by the SAME delta as the ink, on both axes. Left behind, the rubbed-out parts would REAPPEAR at the old position while the ink landed at the new one: the page would grow marks the writer had deliberately removed",
+    "pass": true,
+    "detail": "{\"inkDelta\":{\"x\":0.10008453085376162,\"y\":0.04057480980557904},\"eraseDelta\":{\"x\":0.10008453085376162,\"y\":0.04057480980557904}}"
+  },
+  {
+    "name": "C8: a group shoved past the sheet's edge STOPS at it — x never below 0, y never below 0 — and it still MOVED (FX17's law: a limit stops, it never relocates, and it never freezes the gesture outright)",
+    "pass": true,
+    "detail": "{\"cBefore\":{\"x0\":0.2499894336432798,\"x1\":0.6999894336432798,\"y0\":0.01180028780314239,\"y1\":0.014989387615589558},\"cAfter\":{\"x0\":0,\"x1\":0.45,\"y0\":0,\"y1\":0.0031890998124471676}}"
+  },
+  {
+    "name": "C8b: a drag RELEASED PAST THE SHEET'S EDGE BUT INSIDE THE VIEWPORT is COMMITTED — the group moves left and stops AT the edge. Before the fix this exact gesture lost the move: the release never reached the sheet (measured: capture-got 0, release-on-sheet 0, persisted false)",
+    "pass": true,
+    "detail": "{\"ivEnd\":{\"x\":245.3046875,\"y\":418.9051208496094},\"ivBefore\":{\"x0\":0.2499894336432798,\"x1\":0.6999894336432798,\"y0\":0.01180028780314239,\"y1\":0.014989387615589558},\"ivAfter\":{\"x0\":0,\"x1\":0.45,\"y0\":0.01180028780314239,\"y1\":0.014989387615589558}}"
+  },
+  {
+    "name": "C8b: and the drag is NOT LEFT STUCK — buttonless mouse movement afterwards moves the ink neither in storage nor on the canvas. A lost release used to leave the gesture live, so the ink followed the next movement with no button held",
+    "pass": true,
+    "detail": "{\"storedSame\":true,\"edgeBefore\":0,\"edgeAfter\":0}"
+  },
+  {
+    "name": "C14 (item 121's path — SCOPE EXTENSION): a trusted MOUSE stroke in Free Write / INK that ENDS PAST THE PAPER'S EDGE is COMMITTED, not silently discarded. Before this fix it was lost — the laptop, the primary target, dropping the writer's ink without a word",
+    "pass": true,
+    "detail": "{\"before\":0,\"after\":1}"
+  },
+  {
+    "name": "C14: and the stroke contains points from OUTSIDE the sheet (x below 0) - the direct evidence that moves past the paper's edge were HEARD at all, which is what the window-level listener exists to do. This asserts the MECHANISM, not a storage policy: if clipping is ever ruled, this check is its to supersede",
+    "pass": true,
+    "detail": "{\"minX\":-0.12172442941673711}"
+  },
+  {
+    "name": "C10: the stroke survives DRAFT's own autosave and REVISE's own autosave, carrying its tip/nib/ink — §7A's persistence half, re-measured on this tree rather than trusted from the last one",
+    "pass": true,
+    "detail": "{\"fw\":1,\"draft\":1,\"revise\":1,\"tip\":\"pen\"}"
+  },
+  {
+    "name": "C10: and its normalized geometry is IDENTICAL across all three modes — the ink does not shift when the mode does",
+    "pass": true,
+    "detail": "{\"xFwBox\":{\"x0\":0.2499894336432798,\"x1\":0.6999894336432798,\"y0\":0.01180028780314239,\"y1\":0.014989387615589558},\"xReviseBox\":{\"x0\":0.2499894336432798,\"x1\":0.6999894336432798,\"y0\":0.01180028780314239,\"y1\":0.014989387615589558}}"
+  },
+  {
+    "name": "C10: and it survives a RELOAD — the round trip goes through storage, which is the only thing that proves persistence rather than component state",
+    "pass": true,
+    "detail": "{\"after\":1}"
+  },
+  {
+    "name": "C11: the band's height is the SAME in all three modes — the stratum's arrival in Draft and Revise costs the band nothing, and paper never reflows for chrome",
+    "pass": true,
+    "detail": "{\"freewrite\":51,\"draft\":51,\"revise\":51}"
+  },
+  {
+    "name": "C12: ZERO NETWORK across arming, dragging, committing a move and releasing it — no fetch, no XHR, no beacon. The wave stays local-first, which is why I1 put validation at the read boundary instead of asking a server to reject enums",
+    "pass": true,
+    "detail": "{\"fetch\":0,\"xhr\":0,\"beacon\":0}"
+  },
+  {
+    "name": "C13: shots captured — the page with ink in all three modes, at 1366 and 1680",
+    "pass": true,
+    "detail": "{\"freewrite-1366\":235564,\"draft-1366\":235372,\"revise-1366\":168552,\"freewrite-1680\":303736,\"draft-1680\":303704,\"revise-1680\":227312}"
+  }
+]
+
+ITEM126 VERIFY: FAIL — 1/42 failed

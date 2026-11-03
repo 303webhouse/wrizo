@@ -1,0 +1,3 @@
+MERGED FROM 1 GITHUB-ACTIONS SHARD(S), parked leg, 1 files. ADVISORY: not a box-stamped pair.
+[01/1] OK        exit=0   98s item126.mjs :: ROWS-SHADOW VERIFY: PASS (94 renders checked, shadow == DOM on every one) ;; "name": "PARKED (was the driver safePen: \"fractions of the whole .wz-ink-sheet\") - polish #10 item 5: in the zoom the sheet reaches over the scroller's start offset (its text starts below its top); successor: the same fractions on the sheet's text box", ;; ITEM126 PARKED: PASS (1 checks) — HARNESS_PARKED=1 armed; item126.mjs parks ONE of its own (the driver: fractions of the whole sheet, polish #10 item 5). ;; ITEM126 VERIFY: PASS (42 checks)
+MERGED RESULT (parked): CLEAN - 1/1 OK
