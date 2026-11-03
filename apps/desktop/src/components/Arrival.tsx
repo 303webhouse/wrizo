@@ -199,7 +199,7 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
 
       {arborFront ? (
         <section className={stage === 'doors' ? 'arbor2-front' : 'arbor2-front gone'} aria-label="Wrizo">
-          <div className="arbor2-front-mark" style={{ width: `${frontBox.width}px`, height: `${frontBox.height}px` }} aria-hidden="true">
+          <div className="arbor2-front-mark" style={{ width: `${frontBox.width}px`, height: `${frontBox.height}px`, marginLeft: `${-frontBox.width / 2}px`, marginTop: `${-frontBox.height / 2}px` }} aria-hidden="true">
             <SplashMark theme="plateau" reduced width={frontBox.width} height={frontBox.height} onFloorReached={() => {}} />
             {/* ARBOR v2 MOCKUP r18 (Nick, via Fable, Nov 3): the logo, still, where the drawing's top line stood, the tagline under it - the splash's
                 last frame, in the same rect (src/arbor2/frontLayer.tsx) */}

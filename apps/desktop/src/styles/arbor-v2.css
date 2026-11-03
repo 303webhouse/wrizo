@@ -707,9 +707,7 @@
    ========================================================================================================================================== */
 :root[data-arbor2][data-theme='plateau'] .arbor2-top{ position:absolute; inset:0; pointer-events:none; z-index:1; }
 :root[data-arbor2][data-theme='plateau'] .arbor2-top-logo{ position:absolute; }
-:root[data-arbor2][data-theme='plateau'] .arbor2-top-logo::before{ content:''; position:absolute; inset:0; background:url('/brand/arbor2/wrizo-logo-night.png') center / contain no-repeat; }
-:root[data-arbor2][data-theme='plateau'] .arbor2-top-logo[data-writing='true']::before{ opacity:0; animation:arbor2-logo-still .01s linear 2s forwards; }
-:root[data-arbor2][data-theme='plateau'] .arbor2-top-logo[data-writing='true'] .arbor2-splash-logo-svg{ animation:arbor2-logo-svg-off .01s linear 2s forwards; }
+/* the logo is one <svg>: the masked strokes while it writes, then Nick's still logo as an SVG image in the same viewBox (frontLayer.tsx) */
 :root[data-arbor2][data-theme='plateau'] .arbor2-top-tagline{ position:absolute; transform:translateX(-50%); white-space:nowrap; line-height:1; letter-spacing:.01em; color:#B5A998;
   font-family:var(--arbor2-chrome-face); font-size:max(13px, calc(var(--arbor2-u) * 60)); }
 /* the tagline arrives while the brass o and the dot are written (1.6 - 2.0 s), so it is whole when the logo is */
@@ -718,6 +716,9 @@
 
 /* THE DOORS: boxes in the drawing's own box (the same size and place as the mark), each at its rect of the drawing */
 :root[data-arbor2][data-theme='plateau'] .arbor2-front-doors{ position:absolute; left:50%; top:50%; transform:translate(-50%, -50%); pointer-events:none; z-index:1; }
+/* the front door's drawing box by layout (Arrival.tsx gives its negative margins), as the splash's flex box is - never by a transform, which
+   rasterises the logo at its own half-pixel (the hand-over measured 26% of the channels off) */
+:root[data-arbor2][data-theme='plateau'] .arbor2-front-mark{ transform:none; }
 :root[data-arbor2][data-theme='plateau'] .arbor2-door{ all:unset; position:absolute; box-sizing:border-box; display:flex; align-items:center; justify-content:center; pointer-events:auto; cursor:pointer;
   color:#EFE4CB; font-family:var(--arbor2-chrome-face); font-size:max(15px, calc(var(--arbor2-u) * 84)); line-height:1; letter-spacing:.02em; }
 :root[data-arbor2][data-theme='plateau'] .arbor2-door:focus-visible{ outline:2px solid var(--brass); outline-offset:4px; }
