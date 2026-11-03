@@ -344,9 +344,14 @@ export async function sizeBoxCheck(app, { name, say, fail, selection = false }) 
     const scope = await app.evalJs("(() => { const b = document.querySelector(\".wz-sliver-panel .wz-type-scope[data-scope='selection']\"); return b ? b.getAttribute('data-on') : null; })()");
     const sizeOf = `(() => { const ed = document.querySelector('${ED}'); const tw = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); const first = tw.nextNode(); let last = first; for (let n = tw.nextNode(); n; n = tw.nextNode()) if (n.textContent.trim()) last = n; return [parseFloat(getComputedStyle(first.parentElement).fontSize), parseFloat(getComputedStyle(last.parentElement).fontSize)]; })()`;
     const b0 = await app.evalJs(sizeOf);
+    // (report only, after runs 41572629767 / 41572661391 - typing with words highlighted changed nothing: the selection, the focus and the page's
+    // first markup around the step)
+    const DIAG = `(() => { const s = getSelection(); const ed = document.querySelector('${ED}'); return { sel: s ? s.toString().slice(0, 12) : null, collapsed: s ? s.isCollapsed : null, inEditor: !!(s && s.anchorNode && ed && ed.contains(s.anchorNode)), active: document.activeElement ? (document.activeElement.className || document.activeElement.tagName).toString().slice(0, 30) : null, html: ed ? ed.innerHTML.slice(0, 160) : null, input: document.querySelector('.wz-sliver-panel input.wz-type-num')?.value ?? null }; })()`;
+    const d0 = await app.evalJs(DIAG);
     await type('30', 'enter'); await sleep(500);
+    const d1 = await app.evalJs(DIAG);
     const b1 = await app.evalJs(sizeOf);
-    sel = { scope, before: b0, after: b1 };
+    sel = { scope, before: b0, after: b1, d0, d1 };
     ok.sameScope = scope === 'true' && b1[0] > b0[0] + 0.5 && Math.abs(b1[1] - b0[1]) < 0.01;
   }
   const brief = { ok, start: { order: start.order, value: start.value }, rows: rows.map((r) => [r.v, r.how, r.prevValue, '->', r.value, r.prevPx, '->', r.px]), sel };
