@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { ThemeId } from '../store/theme';
+import { isArbor2 } from '../arbor2/flag';
 
 // per-theme drawn-on-open splash: only connectors and stage outlines turn brass, never the letters; the glow's drop-shadow values are this file's own (the brief says only "a short glow") [SplashMark §1]
 
@@ -157,7 +158,9 @@ function ArborMark({ reduced, width, height, onFloorReached }: MarkProps) {
       </defs>
 
       {/* The whole sketch in cream (TEXT recoloured cream, FINAL DRAFT's own outline cut out — it pops, so it is its own layer below). */}
-      <image href={`${BRAND}/base.png`} x={0} y={0} width={ARBOR_CANVAS.w} height={ARBOR_CANVAS.h} />
+      {/* ARBOR v2 MOCKUP r18 (Nick, via Fable, Nov 3): under the flag, Nick's drawing without its top line "WRIZO (in abstract)" - only that
+          line erased, every other pixel his (scripts/arbor2-splash-r18.mjs; proof: scripts/harness/arbor2-r18-unit.mjs). The logo stands there. */}
+      <image href={isArbor2() ? '/brand/arbor2/splash-base-r18.png' : `${BRAND}/base.png`} x={0} y={0} width={ARBOR_CANVAS.w} height={ARBOR_CANVAS.h} />
       <image href={`${BRAND}/${ARBOR_FINAL_CREAM.file}`} x={ARBOR_FINAL_CREAM.x} y={ARBOR_FINAL_CREAM.y} width={ARBOR_FINAL_CREAM.w} height={ARBOR_FINAL_CREAM.h} />
 
       {/* The six connectors — each masked by its own progressively-drawn path above.

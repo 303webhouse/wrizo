@@ -18,7 +18,7 @@ import { clearRhizome, undoClearRhizome, canUndoClear, hasRhizome, subscribeLife
 //   Night's progress is the hidden rhizome (Nick's idea, Fable approved Oct 29: one Rhizome style, no new setting, the lamp is
 //   ambience only), so there is no progress switch here: styles/arbor-v2.css draws it from the room alone.
 
-import { choiceOf, dataRoomOf, dayness, mixValue, parseColour, parseClock, warmDelta, lampShare, sunShare, MID, LETTERING, type Choice, type Room, type RGB3 } from './room';
+import { choiceOf, dataRoomOf, dayness, mixValue, parseColour, parseClock, warmDelta, lampShare, sunShare, MID, LETTERING, ROOM_HELP, type Choice, type Room, type RGB3 } from './room';
 
 const root = document.documentElement;
 
@@ -149,7 +149,6 @@ function RhizomeRow() {
 
 // r9: THE ROOM CONTROL (Nick's pick, via Fable, Nov 1) - three choices at the head of the Mood menu: Follow the clock (the default: no
 // data-room), Always day, Always night. The pressed one is the CHOICE, not the room in force (following the clock, the room moves on its own).
-const ROOM_HELP = 'By the clock: day 07:00–19:00';
 function RoomRow() {
   const [choice, setC] = useState<Choice>(() => choiceOf(root.getAttribute('data-room')));
   const [help, setHelp] = useState(false);
