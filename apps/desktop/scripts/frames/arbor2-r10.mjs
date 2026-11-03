@@ -287,7 +287,8 @@ export default {
   },
 
   // ── SHORT MOOD WORDS (Wrizors 3, spec §2e): the Room row reads By the clock · Day · Night on ONE line, and its "?" says "By the clock: day 07:00–19:00".
-  'r10-mood': async (app) => {
+  // PARKED 2026-11-02 (SUPERSEDED by the Wrizors' note, Nov 2 (wrizors-to-ARBOR-nov2c.md md5 a17aae25), gated by Fable: the Room row leaves the Mood menu for the Themes menu, its words "Light · Dark · By the clock"). Kept verbatim under the name r10-mood-v1 (not in the run list); SUCCESSOR r10-mood below.
+  'r10-mood-v1': async (app) => {
     await page(app, 'arbor-r10-mood');
     await app.evalJs(`(() => { const m = [...document.querySelectorAll('.arbor2-bar-head')].find((h) => /^Mood/.test(h.textContent.trim()) && h.getAttribute('aria-expanded') !== 'true'); if (m) m.click(); })()`); await sleep(300);
     const s = await app.evalJs(`(() => { const row = document.querySelector('.arbor2-mood > li'); if (!row) return null; const opts = [...row.querySelectorAll('[data-room-opt]')];
@@ -296,6 +297,17 @@ export default {
         help: help ? (help.getAttribute('title') || help.getAttribute('aria-label') || help.textContent).trim() : null }; })()`);
     const ok = { words: !!s && s.label === 'Room' && JSON.stringify(s.opts) === '[["clock","By the clock"],["day","Day"],["night","Night"]]', oneLine: !!s && s.tops.length === 1, help: !!s && /By the clock: day 07:00–19:00/.test(s.help || '') };
     if (Object.values(ok).some((x) => !x)) fail('R10-MOOD', { ok, s });
+    say('r10-mood', { ok, s });
+  },
+  'r10-mood': async (app) => {
+    await page(app, 'arbor-r10-mood');
+    await app.evalJs(`(() => { const m = [...document.querySelectorAll('.arbor2-bar-head')].find((h) => /^Mood/.test(h.textContent.trim()) && h.getAttribute('aria-expanded') !== 'true'); if (m) m.click(); })()`); await sleep(300);
+    const inMood = await app.evalJs("!!document.querySelector('.arbor2-mood [data-room-opt], .arbor2-room-row')");
+    await app.evalJs("document.querySelector(\".wz-strip-item[data-category='theme']\")?.click()"); await sleep(700);
+    const s = await app.evalJs(`(() => { const row = [...document.querySelectorAll('.wz-theme-picker .mode-crow')].find((r) => r.querySelector(':scope > span')?.textContent.trim() === 'Room'); if (!row) return null; const opts = [...row.querySelectorAll('.mode-seg button')];
+      return { opts: opts.map((b) => b.textContent.trim()), tops: [...new Set(opts.map((b) => Math.round(b.getBoundingClientRect().top)))] }; })()`);
+    const ok = { leftMood: !inMood, words: !!s && JSON.stringify(s.opts) === '["Light","Dark","By the clock"]', oneLine: !!s && s.tops.length === 1 };
+    if (Object.values(ok).some((x) => !x)) fail('R10-MOOD', { ok, s, inMood });
     say('r10-mood', { ok, s });
   },
 

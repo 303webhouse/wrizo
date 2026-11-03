@@ -110,13 +110,49 @@ const fitCheck = async (app, name, want3 = false) => {
   if (Object.values(ok).some((x) => !x)) fail(name, brief);
   say(name, brief);
 };
+// r17: FIT with the Tools tabs read where Nick's C2 folder tabs stand (beside the opener, over the drawer's top edge), for fitCheck2
+const FIT2 = FIT.replace("[...slide.querySelectorAll('.wz-drawer-tab')]", "[...document.querySelectorAll('.arbor2-c2--left .wz-drawer-tab')]");
+if (FIT2 === FIT) throw new Error('FIT2 did not take');
+const fitCheck2 = async (app, name, want3 = false) => {
+  await app.evalJs(`document.querySelector('${ED}')?.__r13 || (document.querySelector('${ED}').__r13 = 1)`);
+  const closedPage = await app.evalJs(`(() => { ${R} return q(document.querySelector('.desk-frame-stage .mode-page')); })()`);
+  await openSide(app, 'left');
+  const s = await app.evalJs(FIT2);
+  const room = s.page.l - s.rail.r;   // the room between the rail and the page
+  const drawer = s.panel.w + 16;      // the drawer with its tab
+  const ok = {
+    notZoom: !s.zoom,
+    atEdge: Math.abs(s.panel.r - s.page.l) <= 1,
+    width: Math.abs(drawer - Math.min(280, room - 8)) <= 1,
+    gutter: s.tab.l - s.rail.r >= 8 - 0.5,
+    // (amendment before any green, after green look 41354772471: the Ink cloth exists only where the page can take ink - Free Write
+    // (Sliver.tsx arborToolTabs) - so Draft's drawer has two cloths and "three" was not its count. Original:
+    // threeCloths: s.cloths.length === 3 && s.cloths.every((c) => c.shown && c.r.l >= s.slide.l - 0.5 && c.r.r <= s.slide.r + 0.5),
+    // Successor: every cloth the drawer has is shown whole inside its box (at least two), and on Free Write all three, Ink among them.)
+    // (second amendment, run 41355446362: Free Write's drawer has Format + Ink, Presets is not offered there - so no page shows three; the
+    // check asks for at least two, all whole inside, and on Free Write the Ink cloth among them. Previous: s.cloths.length >= (want3 ? 3 : 2))
+    // (SUCCESSOR's cloths, r17: the folder tabs stand on the drawer's top edge - shown whole, their bottoms on that edge, within the drawer's width)
+    cloths: s.cloths.length >= 2 && s.cloths.every((c) => c.shown && c.r.l >= s.slide.l - 0.5 && c.r.r <= s.slide.r + 0.5 && Math.abs(c.r.b - s.slide.t) <= 1)
+      && (!want3 || s.cloths.some((c) => /^ink$/i.test(c.text))),
+    nothingCut: s.cut.length === 0,
+    pageStill: !!closedPage && ['l', 'r', 't', 'b'].every((k) => Math.abs(closedPage[k] - s.page[k]) <= 0.5) && await app.evalJs(`document.querySelector('${ED}')?.__r13 === 1`),
+  };
+  const brief = { ok, w: s.w, room, drawer, panel: s.panel, slide: s.slide, tab: s.tab, rail: s.rail, page: s.page, cloths: s.cloths.map((c) => [c.text, c.r.l, c.r.r]), cut: s.cut.slice(0, 8) };
+  if (Object.values(ok).some((x) => !x)) fail(name, brief);
+  say(name, brief);
+};
 
 export default {
-  'r13-tools-fit': async (app) => { await page(app, 'arbor-r13-fit'); await fitCheck(app, 'R13-TOOLS-FIT'); },
-  'r13-tools-fit-2000': async (app) => { await app.emulateDpr(1, 2000, 1125); await page(app, 'arbor-r13-fit2'); await fitCheck(app, 'R13-TOOLS-FIT-2000'); },
+  // PARKED 2026-11-02 (SUPERSEDED by Nick's C2 folder tabs, Nov 2 (spec draft 23 §9c; the Wrizors' note md5 a17aae25, gated by Fable): the tabs stand OFF the drawer - the Tools tabs up from its top edge, the Tutor tabs off its right edge - so they are no longer inside it). Kept verbatim under the name r13-tools-fit-v1 (not in the run list); SUCCESSOR r13-tools-fit below (fitCheck2).
+  'r13-tools-fit-v1': async (app) => { await page(app, 'arbor-r13-fit'); await fitCheck(app, 'R13-TOOLS-FIT'); },
+  'r13-tools-fit': async (app) => { await page(app, 'arbor-r13-fit'); await fitCheck2(app, 'R13-TOOLS-FIT'); },
+  // PARKED 2026-11-02 (SUPERSEDED by Nick's C2 folder tabs, Nov 2 (spec draft 23 §9c; the Wrizors' note md5 a17aae25, gated by Fable): the tabs stand OFF the drawer - the Tools tabs up from its top edge, the Tutor tabs off its right edge - so they are no longer inside it). Kept verbatim under the name r13-tools-fit-2000-v1 (not in the run list); SUCCESSOR r13-tools-fit-2000 below (fitCheck2).
+  'r13-tools-fit-2000-v1': async (app) => { await app.emulateDpr(1, 2000, 1125); await page(app, 'arbor-r13-fit2'); await fitCheck(app, 'R13-TOOLS-FIT-2000'); },
+  'r13-tools-fit-2000': async (app) => { await app.emulateDpr(1, 2000, 1125); await page(app, 'arbor-r13-fit2'); await fitCheck2(app, 'R13-TOOLS-FIT-2000'); },
   // Free Write, where the drawer has its three cloths (Ink among them): Free Write opens in Typewriter's zoom, which keeps today's drawers
   // (ruled), so the writer's own Typewriter switch in the drawer is turned off first, as she would
-  'r13-tools-fit-freewrite': async (app) => {
+  // PARKED 2026-11-02 (SUPERSEDED by Nick's C2 folder tabs, Nov 2 (spec draft 23 §9c; the Wrizors' note md5 a17aae25, gated by Fable): the tabs stand OFF the drawer - the Tools tabs up from its top edge, the Tutor tabs off its right edge - so they are no longer inside it). Kept verbatim under the name r13-tools-fit-freewrite-v1 (not in the run list); SUCCESSOR r13-tools-fit-freewrite below.
+  'r13-tools-fit-freewrite-v1': async (app) => {
     await page(app, 'arbor-r13-fit-fw', null);
     await openSide(app, 'left');
     if (await app.evalJs("document.querySelector('[data-mode-toggle=\"typewriter\"]')?.getAttribute('aria-pressed') === 'true'")) await app.evalJs("document.querySelector('[data-mode-toggle=\"typewriter\"]').click()");
@@ -124,14 +160,35 @@ export default {
     await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await app.evalJs(FINISH); await sleep(600);
     await fitCheck(app, 'R13-TOOLS-FIT-FREEWRITE', true);
   },
+  'r13-tools-fit-freewrite': async (app) => {
+    await page(app, 'arbor-r13-fit-fw', null);
+    await openSide(app, 'left');
+    if (await app.evalJs("document.querySelector('[data-mode-toggle=\"typewriter\"]')?.getAttribute('aria-pressed') === 'true'")) await app.evalJs("document.querySelector('[data-mode-toggle=\"typewriter\"]').click()");
+    await waitSoft(app, "!document.querySelector(\".mode-pagecol[data-zoom='true']\")", { label: 'typewriter off', timeout: 3000 });
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await app.evalJs(FINISH); await sleep(600);
+    await fitCheck2(app, 'R13-TOOLS-FIT-FREEWRITE', true);
+  },
 
   // ---- 2. THE TUTOR CLOTHS START BELOW THE OPENER: TUTOR's top >= the opener's bottom + 12 px; the opener keeps its y (open and closed)
-  'r13-tutor-cloths': async (app) => {
+  // PARKED 2026-11-02 (SUPERSEDED by Nick's C2 folder tabs, Nov 2 (spec draft 23 §9c; the Wrizors' note md5 a17aae25, gated by Fable): the tabs stand OFF the drawer - the Tools tabs up from its top edge, the Tutor tabs off its right edge - so they are no longer inside it). Kept verbatim under the name r13-tutor-cloths-v1 (not in the run list); SUCCESSOR r13-tutor-cloths below.
+  'r13-tutor-cloths-v1': async (app) => {
     await page(app, 'arbor-r13-cloths');
     const shut = await app.evalJs(`(() => { ${R} return q(document.querySelector('.wz-tutor-grip')); })()`);
     await openSide(app, 'right');
     const s = await app.evalJs(`(() => { ${R} const g = q(document.querySelector('.wz-tutor-grip')); const cloths = [...document.querySelectorAll('.wz-tutor-panel .wz-drawer-tab')].filter(shown).map((e) => ({ text: e.textContent.trim(), r: q(e) }));
       const notes = [...document.querySelectorAll('.wz-tutor-panel .wz-drawer-tabnote-cell')].filter(shown).map((e) => q(e)); return { g, cloths, notes }; })()`);
+    const first = s.cloths[0];
+    const ok = { cloths: s.cloths.length === 3, below: !!first && first.r.t >= s.g.b + 12 - 0.5, allBelow: s.cloths.every((c) => c.r.t >= s.g.b + 12 - 0.5), notesBelow: s.notes.every((n) => n.t >= s.g.b + 12 - 0.5), openerKeepsY: !!shut && Math.abs(shut.t - s.g.t) <= 0.5 };
+    const brief = { ok, opener: s.g, openerShut: shut, cloths: s.cloths.map((c) => [c.text, c.r.t, c.r.b]), notes: s.notes.map((n) => [n.t, n.b]) };
+    if (Object.values(ok).some((x) => !x)) fail('R13-TUTOR-CLOTHS', brief);
+    say('r13-tutor-cloths', brief);
+  },
+  'r13-tutor-cloths': async (app) => {
+    await page(app, 'arbor-r13-cloths');
+    const shut = await app.evalJs(`(() => { ${R} return q(document.querySelector('.wz-tutor-grip')); })()`);
+    await openSide(app, 'right');
+    const s = await app.evalJs(`(() => { ${R} const g = q(document.querySelector('.wz-tutor-grip')); const cloths = [...document.querySelectorAll('.arbor2-c2--right .wz-drawer-tab')].filter(shown).map((e) => ({ text: e.textContent.trim(), r: q(e) }));
+      const notes = [...document.querySelectorAll('.arbor2-c2--right .wz-drawer-tabnote-cell')].filter(shown).map((e) => q(e)); return { g, cloths, notes }; })()`);
     const first = s.cloths[0];
     const ok = { cloths: s.cloths.length === 3, below: !!first && first.r.t >= s.g.b + 12 - 0.5, allBelow: s.cloths.every((c) => c.r.t >= s.g.b + 12 - 0.5), notesBelow: s.notes.every((n) => n.t >= s.g.b + 12 - 0.5), openerKeepsY: !!shut && Math.abs(shut.t - s.g.t) <= 0.5 };
     const brief = { ok, opener: s.g, openerShut: shut, cloths: s.cloths.map((c) => [c.text, c.r.t, c.r.b]), notes: s.notes.map((n) => [n.t, n.b]) };
