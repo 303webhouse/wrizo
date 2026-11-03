@@ -160,6 +160,8 @@ export default {
       // the last frame, kept: then the splash ends and the front door's still logo is read in the same rect
       await app.evalJs("(() => { const L = document.querySelector('.wz-splash .arbor2-splash-logo'); document.getAnimations().filter((a) => L.contains(a.effect?.target) || a.effect?.target === L).forEach((a) => a.finish()); return true; })()");
       await sleep(200);
+      // (report only, after green look 41548909263: what is showing at the last frame)
+      const endState = await app.evalJs("(() => { const L = document.querySelector('.wz-splash .arbor2-splash-logo'); const svg = L.querySelector('svg'); return { writing: L.getAttribute('data-writing'), before: getComputedStyle(L, '::before').opacity, beforeImg: getComputedStyle(L, '::before').backgroundImage.slice(-40), svg: svg ? getComputedStyle(svg).opacity : null, op: getComputedStyle(L).opacity, anims: document.getAnimations().filter((a) => L.contains(a.effect?.target) || a.effect?.target === L).map((a) => [a.animationName, a.playState, a.effect.pseudoElement || '']).slice(0, 12) }; })()");
       await app.evalJs(PIX(await shot(app), plan.rect, 'splash-last'));
       await app.evalJs("localStorage.setItem('wrizo-splash-hold', '50')");
       await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 });
@@ -180,7 +182,7 @@ export default {
         noFlash: lumSteps.every((v, i) => i === 0 || v >= lumSteps[i - 1] - 0.0005),
         lastIsStill: diff.n === 0,
       };
-      const brief = { ok, rect: plan.rect, appRect, order, lastLetter, firstBrass, end: Math.max(...plan.anims.map((a) => a.end)), props: [...new Set(plan.anims.flatMap((a) => a.props))], steps, diff, stillInked: still.inked };
+      const brief = { ok, rect: plan.rect, appRect, order, lastLetter, firstBrass, end: Math.max(...plan.anims.map((a) => a.end)), props: [...new Set(plan.anims.flatMap((a) => a.props))], steps, diff, stillInked: still.inked, endState };
       if (Object.values(ok).some((x) => !x)) fail('R16-SPLASH-WRITE', brief);
       say('r16-splash-write', brief);
     } finally { await app.evalJs("localStorage.setItem('wrizo-splash-hold', '50')").catch(() => {}); await done(); }
