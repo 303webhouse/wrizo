@@ -6,6 +6,8 @@ import { useAmbianceDial, prefersReducedMotion } from '../store/ambianceDial';
 import { createFluxCardGlitchController, FLUX_CARD_GLITCH_MS } from '../store/fluxCardGlitch';
 import { ensureThemeFonts } from '../store/themeFonts';
 import { Seg } from './ModeStage';
+import { isArbor2 } from '../arbor2/flag';
+import { ArborThemeRoomRow } from '../arbor2/themeRoom';
 
 // the theme picker's body: one card per BUILT theme (absent, never greyed); card art is keyed by the card's own theme, so it shows that theme's look from inside another [ThemePicker §1]
 interface ThemeCardDef {
@@ -114,6 +116,8 @@ export function ThemePicker() {
     <div className="wz-cascade-panel-body wz-theme-picker" data-still={stillFrame ? 'true' : 'false'}>
       <div className="wz-theme-picker-field">
         <Seg label="Page" value={prefs.page} opts={[['light', 'Light'], ['dark', 'Dark']]} onPick={(v) => setThemePrefs({ page: v as 'dark' | 'light' })} />
+        {/* ARBOR v2 MOCKUP r17 (Fable, Nov 2): the room's control right beside Page - Nick couldn't find "light mode" */}
+        {isArbor2() && current === 'plateau' && <ArborThemeRoomRow />}
       </div>
       <div className="wz-theme-cards">
         {THEME_CARDS.map((card) => {
