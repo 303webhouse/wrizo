@@ -628,3 +628,60 @@
 /* THE FORMS' QUIET TEXT (the Wrizors: "New here? Create an account" and the sign-up subtitle measured ~4.4-4.5:1 at the glow's brightest; the
    floor is law): the threshold's quiet ink one step lighter, #8C8070 -> #A09482 */
 :root[data-arbor2][data-theme='plateau'] .wz-home{ --wz-ink-dim:#B0A493; }   /* (#A09482 still measured 4.43:1 under the sign-up subtitle, where the glow is brightest: green look 41548909263) */
+
+/* ARBOR v2 MOCKUP r17 - the size box reads "- [ 11 pt ] +" (the Wrizors' note, Nov 2): the number and its unit share one hairline box */
+:root[data-arbor2] .wz-type-num-box{ display:inline-flex; align-items:center; border:1px solid var(--ink-border); padding-right:5px; }
+:root[data-arbor2] .wz-type-num-box .wz-type-num{ border:0; width:2.2em; text-align:right; padding-right:3px; }
+:root[data-arbor2] .wz-type-num-unit{ font-size:11px; color:var(--text-mid); }
+.wz-type-num-plain{ display:contents; }
+
+/* ==========================================================================================================================================
+   r17 - NICK'S C2 FOLDER TABS (Nick, Nov 2 8:28 pm; spec draft 23 §9c; the Wrizors' note md5 a17aae25, gated by Fable). Reskin only: the drawers'
+   contents, the cloths' colours, names and order, and the OPENERS are untouched (Nick: "don't change ANYTHING about the open/close tabs").
+   The row is drawn beside the opener, in the opener's own layer (arbor2/folderTabs.ts: a drawer clips its own box), and travels as the opener
+   does - the same tokens, a cut under reduced motion (the app's floor) - shown while its drawer is open, gone with it.
+   TOOLS: folder tabs standing up from the drawer's top edge, 96 x 25 (sides slanting in 10 px, top corners rounded 6 px), words horizontal
+   (caps 10 px .16 em), neighbours overlapping 12 px; the open tab 5 px taller, in front, joined to a 5 px band of its own cloth across the
+   drawer's top edge; its word underlined brass. TUTOR: the same turned 90 degrees off the drawer's right (outer) edge, 25 x 98 (the open one
+   30 out), slanted top and bottom 10 px, outer corners rounded 6 px, words reading top to bottom, overlapping 10 px, the open one in front and
+   joined to a 5 px band down the drawer's right edge; the first tab 12 px below the opener's foot (16 + 34 + 12 = 62). A soft shadow:
+   offset 1 px, blur 2 px (<= 2 / <= 3), never lifted.
+   ========================================================================================================================================== */
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2{ position:absolute; z-index:4; pointer-events:auto; filter:drop-shadow(1px 1px 2px rgba(0, 0, 0, .35)); opacity:0; visibility:hidden;
+  transition:left var(--drawer-dur) var(--drawer-ease), opacity var(--drawer-dur) ease, visibility 0s linear var(--drawer-dur); }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2 .wz-drawer-tabbar{ position:relative; inset:auto; padding:0; margin:0; border:0; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2 .wz-drawer-tabs{ display:flex; gap:0; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2 .wz-drawer-tab{ position:relative; z-index:1; flex:0 0 auto; box-sizing:border-box; margin:0; padding:0; border:0; border-radius:0; box-shadow:none; transform:none;
+  display:flex; align-items:center; justify-content:center; font:600 10px/1 var(--arbor2-chrome-face); letter-spacing:.16em; text-transform:uppercase; cursor:pointer; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2 .wz-drawer-tab[data-on='true']{ z-index:3; box-shadow:none; text-decoration-line:underline; text-decoration-color:var(--brass); text-decoration-thickness:2px; text-underline-offset:3px; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2 .wz-drawer-tab:focus-visible{ outline:2px solid var(--brass); outline-offset:-3px; }
+/* Tools: on the drawer's top edge, from its inner padding (the drawer's left is 16 px into its anchor: the opener's width) */
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left{ bottom:100%; left:calc(100% + 14px); }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-sliver-anchor:has(.wz-sliver[data-open='true']) .arbor2-c2--left{ left:30px; opacity:1; visibility:visible;
+  transition:left var(--drawer-dur) var(--drawer-ease), opacity var(--drawer-dur) ease, visibility 0s; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tabs{ flex-direction:row; align-items:flex-end; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tab{ width:96px; height:25px; clip-path:path('M0 25 L8.4 4 Q10 0 14 0 L82 0 Q86 0 87.6 4 L96 25 Z'); }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tab + .wz-drawer-tab{ margin-left:-12px; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tab[data-on='true']{ height:30px; clip-path:path('M0 30 L8.4 4 Q10 0 14 0 L82 0 Q86 0 87.6 4 L96 30 Z'); }
+/* Tutor: off the drawer's right edge, where the opener rides (its left = the drawer's width once open) */
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right{ top:62px; left:0; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-tutor-anchor:has(.wz-tutor-grip:is([data-open='true'], [data-docked='true'])) .arbor2-c2--right{ left:var(--arbor2-drawer-r, 0px); opacity:1; visibility:visible;
+  transition:left var(--drawer-dur) var(--drawer-ease), opacity var(--drawer-dur) ease, visibility 0s; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tabs{ flex-direction:column; align-items:flex-start; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab{ writing-mode:vertical-rl; width:25px; height:98px; clip-path:path('M0 0 L20.6 8.4 Q25 10 25 14 L25 84 Q25 88 20.6 89.6 L0 98 Z'); }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab + .wz-drawer-tab{ margin-top:-10px; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab[data-on='true']{ width:30px; clip-path:path('M0 0 L25.6 8.4 Q30 10 30 14 L30 84 Q30 88 25.6 89.6 L0 98 Z'); }
+/* the "?" beside a cloth (the Grafts note) stands just outside its tab, on the tab's row */
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tabnotes{ position:absolute; left:34px; top:0; width:16px; height:auto; display:flex; flex-direction:column; gap:0; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tabnote-cell{ height:98px; margin:-10px 0 0; padding:0; display:flex; align-items:center; justify-content:center; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tabnote-cell:first-child{ margin-top:0; }
+/* the open tab's band: 5 px of its own cloth across the Tools drawer's top edge, down the Tutor drawer's right edge */
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-sliver-anchor:has(#wz-sliver-tab-format[data-on='true']) .wz-drawer-slide--left{ box-shadow:inset 2px 0 0 var(--arbor-line), inset 0 5px 0 #56632E; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-sliver-anchor:has(#wz-sliver-tab-presets[data-on='true']) .wz-drawer-slide--left{ box-shadow:inset 2px 0 0 var(--arbor-line), inset 0 5px 0 #7FA0BC; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-sliver-anchor:has(#wz-sliver-tab-ink[data-on='true']) .wz-drawer-slide--left{ box-shadow:inset 2px 0 0 var(--arbor-line), inset 0 5px 0 #A8392F; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-stage:has(#wz-tutor-tab-tutor[data-on='true']) .wz-tutor-panel .wz-drawer-slide--right{ box-shadow:inset -2px 0 0 var(--arbor-line), inset -5px 0 0 #56632E; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-stage:has(#wz-tutor-tab-links[data-on='true']) .wz-tutor-panel .wz-drawer-slide--right{ box-shadow:inset -2px 0 0 var(--arbor-line), inset -5px 0 0 #7FA0BC; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-stage:has(#wz-tutor-tab-board[data-on='true']) .wz-tutor-panel .wz-drawer-slide--right{ box-shadow:inset -2px 0 0 var(--arbor-line), inset -5px 0 0 #A8392F; }
+/* the Tutor drawer's body no longer keeps clear of cloths inside it (they stand outside now); it keeps clear of its 5 px band */
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-drawer-slide--right .wz-drawer-body{ margin-right:5px; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-sliver-panel .wz-drawer-slide--left > .wz-drawer-body:first-child{ padding-top:5px; }

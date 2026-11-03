@@ -4,6 +4,7 @@ import { serializeScriptDoc } from './scriptText';
 import { createEmptyScriptDoc } from './scriptDoc';
 import { deskTerm, type DeskTermId } from './deskLexicon';
 import { getUserPageDefaults } from './pageDefaults';
+import { newPageSize } from '../arbor2/newPageSize';
 import { clearProofingLocal } from './proofing';
 import { reportFlushFailed, reportFlushOk, reportStorageUsage } from './storageHealth';
 import { isSignedOutHere } from './signedOutHere';
@@ -1055,6 +1056,7 @@ export function createJournalPage(seed?: JournalPageSeed): JournalEntry {
   // the wall clock unconditionally, so whatever was assigned here never
   // survived the very next line. A fixture needing rows in a recency order
   // touches them through `wrizoTouchInOrder`, which makes the order real.
+  newPageSize(entry);   // ARBOR v2 MOCKUP r17: a page born under the flag starts at 11 pt (../arbor2/newPageSize.ts)
   saveJournalEntry(entry);
   return entry;
 }
@@ -2467,6 +2469,7 @@ export function createLooseHomePage(): JournalEntry {
     createdAt: now,
     updatedAt: now,
   };
+  newPageSize(entry);   // ARBOR v2 MOCKUP r17: a page born under the flag starts at 11 pt (../arbor2/newPageSize.ts)
   saveJournalEntry(entry);
   return entry;
 }
