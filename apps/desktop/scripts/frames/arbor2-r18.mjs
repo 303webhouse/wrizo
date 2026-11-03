@@ -61,6 +61,9 @@ const onScreen = (m, x, y, w, h) => ({ l: m.l + (x / CW) * m.w, t: m.t + (y / CH
 const SAMPLER = `(() => { window.__r18so = []; const p = document.querySelector('.arbor2-front-doors .arbor2-door path'); const t0 = performance.now();
   const f = () => { if (window.__r18stop) return; const q = document.querySelector('.arbor2-front-doors .arbor2-door path'); window.__r18so.push([Math.round(performance.now() - t0), q ? Number(getComputedStyle(q).strokeOpacity) : -1]); requestAnimationFrame(f); }; window.__r18stop = false; f(); return !!p; })()`;
 const SEAM = "(() => { const s = window.wrizoArborFront; return s ? { logoStart: s.logoStart, logoDone: s.logoDone, doorsIn: s.doorsIn, shownAt: s.shownAt, pulses: [...s.pulses], acted: s.acted } : null; })()";
+// (driver fix after the red leg 41654622199, no assertion changed: three checks crashed reading a missing seam - a missing seam is now a failed
+// check with its numbers, never a crash)
+const needSeam = (name, seam, more = {}) => { if (!seam) fail(name, { seam: null, ...more }); return seam; };
 const analyse = (so, from, to) => { const w = so.filter(([t]) => t >= from && t < to).map(([, v]) => v); if (!w.length) return { n: 0 };
   let rev = 0, dir = 0, maxStep = 0; for (let i = 1; i < w.length; i++) { const d = w[i] - w[i - 1]; maxStep = Math.max(maxStep, Math.abs(d)); const s = Math.abs(d) < 1e-4 ? 0 : Math.sign(d); if (s && dir && s !== dir) rev++; if (s) dir = s; }
   return { n: w.length, min: Math.min(...w), max: Math.max(...w), first: w[0], last: w[w.length - 1], rev, maxStep: Math.round(maxStep * 1000) / 1000 }; };
@@ -82,6 +85,9 @@ const SCREENS = {
       await waitSoft(app, "!!document.querySelector('.wz-splash .wz-splash-arbor image')", { label: 'the unflagged splash drawing', timeout: 8000 });
       const off = await app.evalJs("document.querySelector('.wz-splash .wz-splash-arbor image')?.getAttribute('href') ?? null");
       await app.evalJs(UNHOLD);
+      // (driver fix after run 41655171792, no assertion changed: the screen ended on the held unflagged splash and the job refused the frame -
+      // the hold is released and the splash let go before the screen ends)
+      await load(app, { flag: false });
       const ok = { front: on.base === '/brand/arbor2/splash-base-r18.png', splash: splash === '/brand/arbor2/splash-base-r18.png', flagOffUntouched: off === '/brand/splash-arbor/base.png' };
       const brief = { ok, front: on.base, splash, off, offSplashless };
       if (Object.values(ok).some((x) => !x)) fail('R18-LINE-GONE', brief);
@@ -193,7 +199,7 @@ const SCREENS = {
     try {
       await load(app); await doorsShown(app);
       await app.evalJs(SAMPLER);
-      const seam0 = await app.evalJs(SEAM);
+      const seam0 = needSeam('R18-EMPHASIS', await app.evalJs(SEAM));
       const t0 = await app.evalJs('performance.now()');
       const rel = (seam0.doorsIn ?? t0) - t0;   // where the doors came in, on the sampler's clock (negative: before it started)
       await sleep(Math.max(0, 8000 + rel));
@@ -221,7 +227,7 @@ const SCREENS = {
     try {
       await load(app); await doorsShown(app);
       await app.evalJs(SAMPLER);
-      const seam0 = await app.evalJs(SEAM); const t0 = await app.evalJs('performance.now()'); const rel = (seam0.doorsIn ?? t0) - t0;
+      const seam0 = needSeam('R18-ACT-STOPS', await app.evalJs(SEAM)); const t0 = await app.evalJs('performance.now()'); const rel = (seam0.doorsIn ?? t0) - t0;
       await sleep(Math.max(0, 2000 + rel));
       await app.key('Shift');
       await sleep(7000);
@@ -248,7 +254,7 @@ const SCREENS = {
       await doorsShown(app, 6000);
       await app.evalJs(SAMPLER); await sleep(7500);
       const so = await app.evalJs('window.__r18so.slice()'); await app.evalJs('window.__r18stop = true');
-      const s = await app.evalJs(FRONT); const seam = await app.evalJs(SEAM);
+      const s = await app.evalJs(FRONT); const seam = needSeam('R18-REDUCED', await app.evalJs(SEAM), { splashLogo });
       const anims = await app.evalJs("document.getAnimations().filter((a) => document.querySelector('.arbor2-front-doors')?.contains(a.effect?.target) || document.querySelector('.arbor2-front-mark .arbor2-top-logo')?.contains(a.effect?.target)).map((a) => a.animationName || a.transitionProperty)");
       const all = analyse(so, 0, 8000);
       const ok = { logoStill: !!splashLogo && splashLogo.writing === 'still' && splashLogo.anims === 0, fullStrength: s.doors.length === 2 && s.doors.every((d) => d.so === 1 && d.shown), still: all.n > 20 && all.min === 1 && all.max === 1, nothingAnimates: anims.length === 0, noPulse: (seam.pulses || []).length === 0 };
