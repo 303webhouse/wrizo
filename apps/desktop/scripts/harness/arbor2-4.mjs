@@ -149,8 +149,12 @@ await withHarness(async (app) => {
     // PARKED 2026-10-31 (SUPERSEDED, r5, run 41240761804: spec §9c - Free Write's cloths are FORMAT (olive) and INK (madder); no Font tab). Original, verbatim:
     // ok(`K1b [${room}] Tools' tabs are cloth on Free Write: FONT walnut, INK sea, no TEXT tab`, !l.tabs.text && l.tabs.type?.bg === WALNUT && l.tabs.ink?.bg === SEA, JSON.stringify(l.tabs));
     // SUCCESSOR K1g: FORMAT olive cloth and INK madder, both lettered cream; no TEXT and no FONT tab; and the open drawer's opener is brass.
-    ok(`K1g [${room}] Tools' cloths on Free Write: FORMAT olive, INK madder (cream lettering), no TEXT or FONT tab; the open opener is brass`,
-      !l.tabs.text && !l.tabs.type && l.tabs.format?.bg === OLIVE_CLOTH && l.tabs.format?.color === CREAM5 && l.tabs.ink?.bg === MADDER && l.tabs.ink?.color === CREAM5 && l.gripLbg === BRASS, JSON.stringify({ tabs: l.tabs, grip: l.gripLbg }));
+    // PARKED 2026-11-03 (SUPERSEDED, r17, run 41589314214: the open folder tab is FILLED brass #FF9800 with a walnut word (Nick, Nov 1: "Just have the tab turn brass when it's active"; the Wrizors' note corrected Nov 2, 11:10 pm, md5 fc26efc3) - the open FORMAT / TUTOR are brass, not olive). Original, verbatim:
+    // ok(`K1g [${room}] Tools' cloths on Free Write: FORMAT olive, INK madder (cream lettering), no TEXT or FONT tab; the open opener is brass`,
+    //   !l.tabs.text && !l.tabs.type && l.tabs.format?.bg === OLIVE_CLOTH && l.tabs.format?.color === CREAM5 && l.tabs.ink?.bg === MADDER && l.tabs.ink?.color === CREAM5 && l.gripLbg === BRASS, JSON.stringify({ tabs: l.tabs, grip: l.gripLbg }));
+    // SUCCESSOR K1j: FORMAT (the open tab) brass with a walnut word, INK madder (cream); no TEXT or FONT tab; the open opener is brass.
+    ok(`K1j [${room}] Tools' tabs on Free Write: the open FORMAT brass (walnut word), INK madder (cream), no TEXT or FONT tab; the open opener is brass`,
+      !l.tabs.text && !l.tabs.type && l.tabs.format?.bg === BRASS && l.tabs.format?.color === WALNUT5 && l.tabs.ink?.bg === MADDER && l.tabs.ink?.color === CREAM5 && l.gripLbg === BRASS, JSON.stringify({ tabs: l.tabs, grip: l.gripLbg }));
     await snap(app, `item2-${room}-tools-open`);
     await clickSel(app, '.wz-sliver-grip'); await sleep(500);
 
@@ -164,7 +168,10 @@ await withHarness(async (app) => {
     // ok(`K1 [${room}] the Tutor drawer's tabs are cloth: TUTOR sea, GRAFTS oxblood`, r.tabs.tutor?.bg === SEA && r.tabs.links?.bg === OXBLOOD, JSON.stringify(r.tabs));
     // ok(`K1c [${room}] the Tutor drawer's BOARD tab is iron cloth (items 2-3)`, r.tabs.board?.bg === 'rgb(57, 65, 74)', JSON.stringify(r.tabs.board));
     // SUCCESSORS K1h / K1i: TUTOR olive cloth (cream), GRAFTS cold blue (walnut lettering); BOARD madder (cream).
-    ok(`K1h [${room}] the Tutor drawer's cloths: TUTOR olive (cream), GRAFTS cold blue (walnut)`, r.tabs.tutor?.bg === OLIVE_CLOTH && r.tabs.tutor?.color === CREAM5 && r.tabs.links?.bg === BLUE && r.tabs.links?.color === WALNUT5, JSON.stringify(r.tabs));
+    // PARKED 2026-11-03 (SUPERSEDED, r17, run 41589314214: the open folder tab is FILLED brass #FF9800 with a walnut word (Nick, Nov 1: "Just have the tab turn brass when it's active"; the Wrizors' note corrected Nov 2, 11:10 pm, md5 fc26efc3) - the open FORMAT / TUTOR are brass, not olive). Original, verbatim:
+    // ok(`K1h [${room}] the Tutor drawer's cloths: TUTOR olive (cream), GRAFTS cold blue (walnut)`, r.tabs.tutor?.bg === OLIVE_CLOTH && r.tabs.tutor?.color === CREAM5 && r.tabs.links?.bg === BLUE && r.tabs.links?.color === WALNUT5, JSON.stringify(r.tabs));
+    // SUCCESSOR K1k: TUTOR (the open tab) brass with a walnut word, GRAFTS cold blue (walnut).
+    ok(`K1k [${room}] the Tutor drawer's tabs: the open TUTOR brass (walnut word), GRAFTS cold blue (walnut)`, r.tabs.tutor?.bg === BRASS && r.tabs.tutor?.color === WALNUT5 && r.tabs.links?.bg === BLUE && r.tabs.links?.color === WALNUT5, JSON.stringify(r.tabs));
     ok(`K1i [${room}] the Tutor drawer's BOARD cloth is madder (cream)`, r.tabs.board?.bg === MADDER && r.tabs.board?.color === CREAM5, JSON.stringify(r.tabs.board));
     await snap(app, `item3-${room}-tutor-open`);
     await clickSel(app, '.wz-tutor-grip'); await sleep(500);
