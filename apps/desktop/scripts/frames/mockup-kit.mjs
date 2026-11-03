@@ -279,9 +279,12 @@ export async function themeRoomCheck(app, { name, say, fail, label, words, roomA
   const open = await app.evalJs("(() => { const b = document.querySelector(\".wz-strip-item[data-category='theme']\"); if (b && b.getAttribute('aria-pressed') !== 'true') b.click(); return !!b; })()");
   await app.evalJs(`new Promise((done) => { const t0 = performance.now(); const f = () => (document.querySelector('.wz-theme-picker') || performance.now() - t0 > 3000) ? done(true) : requestAnimationFrame(f); f(); })`);
   const READ = `(() => { const field = document.querySelector('.wz-theme-picker .wz-theme-picker-field'); if (!field) return null;
-    const rows = [...field.querySelectorAll('.mode-crow')].map((r) => ({ label: r.querySelector(':scope > span')?.textContent.trim() ?? null, opts: [...r.querySelectorAll('.mode-seg button')].map((b) => [b.textContent.trim(), b.classList.contains('on') || b.getAttribute('aria-pressed') === 'true']) }));
+    const box = (e) => { const q = e.getBoundingClientRect(); return { l: q.left, r: q.right, t: q.top, b: q.bottom }; };
+    const rows = [...field.querySelectorAll('.mode-crow')].map((r) => ({ label: r.querySelector(':scope > span')?.textContent.trim() ?? null, opts: [...r.querySelectorAll('.mode-seg button')].map((b) => [b.textContent.trim(), b.classList.contains('on') || b.getAttribute('aria-pressed') === 'true']),
+      rect: box(r), parts: [r.querySelector(':scope > span'), ...r.querySelectorAll('.mode-seg button')].filter(Boolean).map(box) }));
+    const panel = box(document.querySelector('.wz-theme-picker'));
     const other = ${JSON.stringify(otherRow)} ? document.querySelector(${JSON.stringify(otherRow)}) : null;
-    return { rows, attr: document.documentElement.getAttribute('data-room'), room: document.documentElement.getAttribute(${JSON.stringify(roomAttr)}), other: other ? [...other.querySelectorAll('button[aria-pressed]')].map((b) => [b.textContent.trim(), b.getAttribute('aria-pressed')]) : null }; })()`;
+    return { rows, panel, attr: document.documentElement.getAttribute('data-room'), room: document.documentElement.getAttribute(${JSON.stringify(roomAttr)}), other: other ? [...other.querySelectorAll('button[aria-pressed]')].map((b) => [b.textContent.trim(), b.getAttribute('aria-pressed')]) : null }; })()`;
   const before = await app.evalJs(READ);
   if (!before) fail(name, { open, picker: false });
   // (instrument fix after runs 41574392177 / 41575607366 / 41575638700 - every press read "page eval: Uncaught": the button's word was compared
@@ -299,6 +302,9 @@ export async function themeRoomCheck(app, { name, say, fail, label, words, roomA
   const chosen = (s, text) => !!s.other && s.other.some(([t, p]) => t === text && p === 'true');
   const ok = {
     besidePage: idx >= 0 && !!row && row.label === label,
+    // (added after the g13 pictures: the room's row is its own line UNDER Page, and nothing of either row leaves the Themes panel)
+    underPage: idx >= 0 && !!row && row.rect.t >= before.rows[idx].rect.b - 0.5,
+    inPanel: idx >= 0 && !!row && [before.rows[idx], row].every((r) => r.parts.length > 1 && r.parts.every((p) => p.l >= before.panel.l - 0.5 && p.r <= before.panel.r + 0.5)),
     words: !!row && JSON.stringify(row.opts.map(([t]) => t)) === JSON.stringify(words.map(([, t]) => t)),
     moves: steps.every((s) => s.pressed && (s.value === 'clock' ? s.attr === null : s.room === roomOf[s.value])),
     agrees: !otherRow || steps.every((s) => chosen(s, s.text)),
