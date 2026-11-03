@@ -265,18 +265,23 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
       )}
       <div className="wz-type-size">
         <button type="button" className="mode-tbtn wz-type-step" aria-label={t('typeSmaller')} aria-disabled={down === null} onMouseDown={keepFocus} onClick={() => { if (down !== null) sizeTo(down); }}>{'−'}</button>
-        <input
-          className="wz-type-num"
-          type="text"
-          inputMode="decimal"
-          aria-label={t('typeSize')}
-          value={draft ?? formatSize(shownSize)}
-          onChange={(e) => setDraft(e.target.value)}
-          onMouseDownCapture={() => { holdHighlight(); holdBox(); }}
-          onFocus={() => { holdHighlight(); holdBox(); }}
-          onBlur={() => { commitDraft(); if (held) { setHeld(null); scope?.releaseSelection?.(); } }}
-          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commitDraft(); (e.target as HTMLInputElement).blur(); } else if (e.key === 'Escape') setDraft(null); }}
-        />
+        {/* ARBOR v2 MOCKUP r17 (the Wrizors' note md5 a17aae25: "- [ 11 pt ] +"): under the flag the number and its unit share one hairline box; r10
+            put the wrapper back around main's input after the rebase took main's markup */}
+        <span className={mockBox ? 'wz-type-num-box' : 'wz-type-num-plain'}>
+          <input
+            className="wz-type-num"
+            type="text"
+            inputMode="decimal"
+            aria-label={t('typeSize')}
+            value={draft ?? formatSize(shownSize)}
+            onChange={(e) => setDraft(e.target.value)}
+            onMouseDownCapture={() => { holdHighlight(); holdBox(); }}
+            onFocus={() => { holdHighlight(); holdBox(); }}
+            onBlur={() => { commitDraft(); if (held) { setHeld(null); scope?.releaseSelection?.(); } }}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commitDraft(); (e.target as HTMLInputElement).blur(); } else if (e.key === 'Escape') setDraft(null); }}
+          />
+          {mockBox && <span className="wz-type-num-unit" aria-hidden="true">pt</span>}
+        </span>
         <button type="button" className="mode-tbtn wz-type-step" aria-label={t('typeLarger')} aria-disabled={up === null} onMouseDown={keepFocus} onClick={() => { if (up !== null) sizeTo(up); }}>+</button>
       </div>
     </div>
