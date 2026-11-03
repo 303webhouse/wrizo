@@ -25,6 +25,7 @@ import { useThemePrefs } from '../store/themePrefs';
 import { useInstalledFonts, addInstalledFont, queryLocalFamilies, fontIsAvailable } from '../store/installedFonts';
 import { ROSTER, faceStack, faceNameFromStack, themeDefaultFaceName, deviceFace, storedFaceFor, ensureFaceLoaded, faceForSlug, fontSlug, DEFAULT_FACE_NAME, type StoredFace } from '../store/fontRoster';
 import { stepUp, stepDown, normalizeTypedSize, formatSize } from '../store/fontSize';
+import { isMachina2 } from '../machina2/flag';
 
 export interface TypeControlProps {
   form: 'small' | 'full';
@@ -182,10 +183,16 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
   const sizeTo = (n: number) => { if (selSize !== null && scope?.onSizeSelection) scope.onSizeSelection(n); else onSize(n); };
   const up = stepUp(shownSize); const down = stepDown(shownSize);
   const holdBox = () => { if (held || !scope?.has || !scope.holdSelection) return; if (scope.holdSelection()) setHeld({ size: scope.size }); };
+  // MACHINA v2 MOCKUP r8 (Fable, Nov 2, Nick: "the font-size box: an editable number box between - and + ... Whole numbers 6-72; Enter or blur applies;
+  // a bad value reverts; default 11; the same scope as -/+"). Under the mockup's flag the box takes only a whole number from 6 to 72; anything else - a
+  // half point, 5, 73, a word - snaps back to the size in effect. It applies through sizeTo, the very road - and + take. (r10: rebased onto main's
+  // size box - held selection, draftRef - which now draws the box in every form, so the mockup's own form condition retired with it.)
+  const mockBox = isMachina2() && theme === 'machina';
+  const strictSize = (raw: string): number | null => { const t = raw.trim(); if (!/^d{1,2}$/.test(t)) return null; const n = Number(t); return n >= 6 && n <= 72 ? n : null; };
   const commitDraft = () => {
     const typed = draftRef.current;
     if (typed === null) return;
-    const n = normalizeTypedSize(typed);
+    const n = mockBox ? strictSize(typed) : normalizeTypedSize(typed);
     setDraft(null);                          // a refused entry snaps back to the previous value
     if (n !== null && n !== shownSize) sizeTo(n);
   };
