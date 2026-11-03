@@ -131,4 +131,4 @@ export default guarded({
   // ── THE NICK WALK
   // (r15: the walk's reduced-motion repeat gets its liveness probe on Free Write's zoomed page - Fable, Nov 1)
   ...walkScreens('arbor-walk', (app) => page(app, 'arbor-walk', 'Draft'), setRoom, (app) => page(app, 'arbor-walk-z', null)),
-}, { verdict: ["ARBOR-R11","ARBOR-WALK-REDUCED-REPEAT","ARBOR-WALK-REDUCED-LIVENESS"] });
+}, { verdict: ["ARBOR-R11","ARBOR-WALK-REDUCED-REPEAT","ARBOR-WALK-REDUCED-LIVENESS","ARBOR-WALK-REDUCED-CUT"] });
