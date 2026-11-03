@@ -8,6 +8,8 @@
 // element, class and picture as the corner mark under it), so the last frame IS the still logo, pixel for pixel; the last few edge pixels
 // the strokes miss arrive there. Nothing flashes (no frame changes the luminance of the whole mark). The splash mounts once per load.
 // The box is the corner mark's own rect (.brand-mark: bottom-right, 88 px, at .7), so nothing moves when the splash fades into the page.
+import { useState } from 'react';
+
 type Stroke = { id: string; layer: 'letters' | 'brass'; width: number; at: number; dur: number; d: string };
 
 const poly = (pts: number[][]) => 'M ' + pts.map(([x, y]) => `${x} ${y}`).join(' L ');
@@ -28,10 +30,14 @@ export const LOGO_STROKES: Stroke[] = [
 export const LOGO_WRITE_S = 2.0;
 
 export function ArborSplashLogo({ reduced }: { reduced: boolean }) {
+  // When the drawing has handed over (its own last animation ends - the writing's own clock, so a paused or stepped animation waits), the
+  // drawing layer is removed and the element is the still logo exactly: no animated layer left on it (an element that has just animated can
+  // be drawn through its own layer, which resamples the picture - the first green look saw up to 29 levels of difference at the edges).
+  const [writing, setWriting] = useState(!reduced);
   return (
-    <div className="brand-mark arbor2-logo-corner arbor2-splash-logo" data-writing={reduced ? 'still' : 'true'} aria-hidden="true">
-      {!reduced && (
-        <svg className="arbor2-splash-logo-svg" viewBox="0 0 900 400" preserveAspectRatio="xMidYMid meet">
+    <div className="brand-mark arbor2-logo-corner arbor2-splash-logo" data-writing={writing ? 'true' : 'still'} aria-hidden="true">
+      {writing && (
+        <svg className="arbor2-splash-logo-svg" viewBox="0 0 900 400" preserveAspectRatio="xMidYMid meet" onAnimationEnd={(e) => { if (e.animationName === 'arbor2-logo-svg-off') setWriting(false); }}>
           <defs>
             {(['letters', 'brass'] as const).map((layer) => (
               <mask key={layer} id={`arbor2-logo-mask-${layer}`} maskUnits="userSpaceOnUse" x="0" y="0" width="900" height="400">

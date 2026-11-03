@@ -557,7 +557,7 @@
 :root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .desk-frame-sliver-anchor:is(.desk-frame-sliver-anchor--prose, .desk-frame-sliver-anchor--screenplay){
   --sliver-anchor-w: max(0px, min(280px, calc(var(--arbor2-drawer-room, 288px) - 8px + var(--sliver-overflow)))); }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-drawer-slide--right .wz-drawer-tabbar{ top:63px; }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-drawer-slide--right .wz-drawer-tabnotes{ top:63px; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-drawer-slide--right .wz-drawer-tabnotes{ top:0; }   /* r16: the notes column sits INSIDE the cloths' box (DrawerTabs.tsx), so it already starts where they do; r13's 63 px counted twice and hung the Grafts '?' beside Send (r16-help) */
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] :is(.wz-sliver-panel, .wz-tutor-panel){ --desk-ground:#2E2118; }
 
 /* ==========================================================================================================================================
@@ -627,4 +627,4 @@
 
 /* THE FORMS' QUIET TEXT (the Wrizors: "New here? Create an account" and the sign-up subtitle measured ~4.4-4.5:1 at the glow's brightest; the
    floor is law): the threshold's quiet ink one step lighter, #8C8070 -> #A09482 */
-:root[data-arbor2][data-theme='plateau'] .wz-home{ --wz-ink-dim:#A09482; }
+:root[data-arbor2][data-theme='plateau'] .wz-home{ --wz-ink-dim:#B0A493; }   /* (#A09482 still measured 4.43:1 under the sign-up subtitle, where the glow is brightest: green look 41548909263) */
