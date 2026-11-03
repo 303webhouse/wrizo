@@ -23,6 +23,7 @@ import { useThemePrefs } from '../store/themePrefs';
 import { useInstalledFonts, addInstalledFont, queryLocalFamilies, fontIsAvailable } from '../store/installedFonts';
 import { ROSTER, faceStack, faceNameFromStack, themeDefaultFaceName, deviceFace, storedFaceFor, ensureFaceLoaded, faceForSlug, fontSlug, DEFAULT_FACE_NAME, type StoredFace } from '../store/fontRoster';
 import { stepUp, stepDown, normalizeTypedSize, formatSize } from '../store/fontSize';
+import { isMachina2 } from '../machina2/flag';
 
 export interface TypeControlProps {
   form: 'small' | 'full';
@@ -168,9 +169,15 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
   const shownSize = selSize ?? size;
   const sizeTo = (n: number) => { if (selSize !== null && scope?.onSizeSelection) scope.onSizeSelection(n); else onSize(n); };
   const up = stepUp(shownSize); const down = stepDown(shownSize);
+  // MACHINA v2 MOCKUP r8 (Fable, Nov 2, Nick: "the font-size box: an editable number box between - and + ... Whole numbers 6-72; Enter or blur applies;
+  // a bad value reverts; default 11; the same scope as -/+"). Under the mockup's flag the box is drawn in every form (Free Write's strip had
+  // none) and takes only a whole number from 6 to 72; anything else - a half point, 5, 73, a word - snaps back to the size in effect. It applies
+  // through sizeTo, the very road - and + take, so it follows Selection / Whole document exactly as they do. The default is the store's 11.
+  const mockBox = isMachina2() && theme === 'machina';
+  const strictSize = (raw: string): number | null => { const t = raw.trim(); if (!/^\d{1,2}$/.test(t)) return null; const n = Number(t); return n >= 6 && n <= 72 ? n : null; };
   const commitDraft = () => {
     if (draft === null) return;
-    const n = normalizeTypedSize(draft);
+    const n = mockBox ? strictSize(draft) : normalizeTypedSize(draft);
     setDraft(null);                          // a refused entry snaps back to the previous value
     if (n !== null && n !== shownSize) sizeTo(n);
   };
@@ -242,7 +249,7 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
       )}
       <div className="wz-type-size">
         <button type="button" className="mode-tbtn wz-type-step" aria-label={t('typeSmaller')} aria-disabled={down === null} onMouseDown={keepFocus} onClick={() => { if (down !== null) sizeTo(down); }}>{'−'}</button>
-        {form === 'full' && (
+        {(form === 'full' || mockBox) && (
           <input
             className="wz-type-num"
             type="text"
