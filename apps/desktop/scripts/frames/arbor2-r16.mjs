@@ -138,7 +138,7 @@ export default {
     try {
       await load(app, '#/');
       const appRect = (await app.evalJs(MARK))?.rect;
-      await app.evalJs("localStorage.setItem('wrizo-splash-hold', '9000')");   // the harness's own hold override (its 50 ms would end the splash first)
+      await app.evalJs("localStorage.setItem('wrizo-splash-hold', '9000'); localStorage.setItem('wrizo-splash-force-not-ready', '1')");   // the harness's own hold override and the splash's own test seam (ready reads false: the splash holds to its 10 s ceiling; driver fix after run 41550544353)
       await app.evalJs("history.replaceState(null, '', '/?arbor2=1#/')"); await app.reload();
       const there = await waitSoft(app, "!!document.querySelector('.wz-splash .arbor2-splash-logo')", { label: 'the splash logo', timeout: 8000 });
       if (!there) fail('R16-SPLASH-WRITE', { splashLogo: false });
@@ -163,7 +163,7 @@ export default {
       // (report only, after green look 41548909263: what is showing at the last frame)
       const endState = await app.evalJs("(() => { const L = document.querySelector('.wz-splash .arbor2-splash-logo'); const svg = L.querySelector('svg'); return { writing: L.getAttribute('data-writing'), before: getComputedStyle(L, '::before').opacity, beforeImg: getComputedStyle(L, '::before').backgroundImage.slice(-40), svg: svg ? getComputedStyle(svg).opacity : null, op: getComputedStyle(L).opacity, anims: document.getAnimations().filter((a) => L.contains(a.effect?.target) || a.effect?.target === L).map((a) => [a.animationName, a.playState, a.effect.pseudoElement || '']).slice(0, 12) }; })()");
       await app.evalJs(PIX(await shot(app), plan.rect, 'splash-last'));
-      await app.evalJs("localStorage.setItem('wrizo-splash-hold', '50')");
+      await app.evalJs("localStorage.setItem('wrizo-splash-hold', '50'); localStorage.removeItem('wrizo-splash-force-not-ready')");
       await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 });
       await sleep(600);
       const still = await app.evalJs(PIX(await shot(app), plan.rect, 'front-still'));
@@ -185,7 +185,7 @@ export default {
       const brief = { ok, rect: plan.rect, appRect, order, lastLetter, firstBrass, end: Math.max(...plan.anims.map((a) => a.end)), props: [...new Set(plan.anims.flatMap((a) => a.props))], steps, diff, stillInked: still.inked, endState };
       if (Object.values(ok).some((x) => !x)) fail('R16-SPLASH-WRITE', brief);
       say('r16-splash-write', brief);
-    } finally { await app.evalJs("localStorage.setItem('wrizo-splash-hold', '50')").catch(() => {}); await done(); }
+    } finally { await app.evalJs("localStorage.setItem('wrizo-splash-hold', '50'); localStorage.removeItem('wrizo-splash-force-not-ready')").catch(() => {}); await done(); }
   },
 
   // ── 4. REDUCED MOTION: the splash shows the finished logo at once, still (nothing animates in it), and it is the front door's logo exactly
@@ -193,22 +193,24 @@ export default {
     const done = await anon(app);
     try {
       await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
-      await app.evalJs("localStorage.setItem('wrizo-splash-hold', '6000')");
+      await app.evalJs("localStorage.setItem('wrizo-splash-hold', '6000'); localStorage.setItem('wrizo-splash-force-not-ready', '1')");   // (driver fix after run 41550544353: under reduced motion the splash ends as soon as the app is ready - the seam holds it to its ceiling)
       await app.evalJs("history.replaceState(null, '', '/?arbor2=1#/')"); await app.reload();
       const seen = await waitSoft(app, "!!document.querySelector('.wz-splash .arbor2-splash-logo')", { label: 'the splash logo', timeout: 8000 });
       // (driver fix after run 41549881533: probe before reading - a missing logo is a failed check with its numbers, never a crash)
       const probe = await app.evalJs("({ splash: !!document.querySelector('.wz-splash'), logo: !!document.querySelector('.wz-splash .arbor2-splash-logo'), hold: localStorage.getItem('wrizo-splash-hold'), reduced: matchMedia('(prefers-reduced-motion: reduce)').matches, theme: document.documentElement.getAttribute('data-theme'), flag: document.documentElement.getAttribute('data-arbor2') })");
       if (!seen || !probe.logo) fail('R16-SPLASH-REDUCED', { seen, probe });
-      const s = await app.evalJs("(() => { const L = document.querySelector('.wz-splash .arbor2-splash-logo'); const r = L.getBoundingClientRect(); return { writing: L.getAttribute('data-writing'), svg: !!L.querySelector('svg'), anims: document.getAnimations().filter((a) => L.contains(a.effect?.target) || a.effect?.target === L).length, rect: [Math.round(r.left * 10) / 10, Math.round(r.top * 10) / 10, Math.round(r.width * 10) / 10, Math.round(r.height * 10) / 10] }; })()");
+      const s = await app.evalJs("(() => { const L = document.querySelector('.wz-splash .arbor2-splash-logo'); const r = L.getBoundingClientRect(); return { writing: L.getAttribute('data-writing'), svg: !!L.querySelector('svg'), anims: document.getAnimations().filter((a) => (L.contains(a.effect?.target) || a.effect?.target === L) && a.animationName).length, transitions: document.getAnimations().filter((a) => (L.contains(a.effect?.target) || a.effect?.target === L) && !a.animationName).map((a) => [a.transitionProperty, Number(a.effect.getTiming().duration)]), rect: [Math.round(r.left * 10) / 10, Math.round(r.top * 10) / 10, Math.round(r.width * 10) / 10, Math.round(r.height * 10) / 10] }; })()");
       await app.evalJs(PIX(await shot(app), s.rect, 'reduced-splash'));
-      await app.evalJs("localStorage.setItem('wrizo-splash-hold', '50')");
+      await app.evalJs("localStorage.setItem('wrizo-splash-hold', '50'); localStorage.removeItem('wrizo-splash-force-not-ready')");
       await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 }); await sleep(600);
       await app.evalJs(PIX(await shot(app), s.rect, 'reduced-front'));
       const diff = await app.evalJs("(() => { const a = window.__r16px['reduced-splash'], b = window.__r16px['reduced-front']; if (!a || !b || a.length !== b.length) return { n: -1 }; let n = 0; for (let i = 0; i < a.length; i++) if (i % 4 !== 3 && a[i] !== b[i]) n++; return { n }; })()");
+      // (instrument fix after run 41550544353: 'anims' counts the writing's own CSS animations; a transition is reported, not counted - under
+      // reduced motion the app's floor makes the mark's opacity transition a 0.01 ms cut, and one was caught)
       const ok = { still: s.writing === 'still' && !s.svg && s.anims === 0, sameAsFront: diff.n === 0 };
       if (Object.values(ok).some((x) => !x)) fail('R16-SPLASH-REDUCED', { ok, s, diff });
       say('r16-splash-reduced', { ok, s, diff });
-    } finally { await app.emulateMedia([]); await app.evalJs("localStorage.setItem('wrizo-splash-hold', '50')").catch(() => {}); await done(); }
+    } finally { await app.emulateMedia([]); await app.evalJs("localStorage.setItem('wrizo-splash-hold', '50'); localStorage.removeItem('wrizo-splash-force-not-ready')").catch(() => {}); await done(); }
   },
 
   // ── 5. THE TAGLINE AND THE DOOR WORDS: "For humans who write." exactly; tagline, Write and Sign in in Alegreya Sans (loaded), each >= 4.5:1
@@ -299,7 +301,7 @@ export default {
     const done = await anon(app);
     try {
       await load(app, '#/');
-      await app.evalJs("localStorage.setItem('wrizo-splash-hold', '9000')");
+      await app.evalJs("localStorage.setItem('wrizo-splash-hold', '9000'); localStorage.setItem('wrizo-splash-force-not-ready', '1')");
       await app.evalJs("history.replaceState(null, '', '/?arbor2=1#/')"); await app.reload();
       await waitSoft(app, "!!document.querySelector('.wz-splash .arbor2-splash-logo')", { label: 'the splash logo', timeout: 8000 });
       await app.evalJs(`(() => { const L = document.querySelector('.wz-splash .arbor2-splash-logo'); document.getAnimations().filter((a) => L.contains(a.effect?.target) || a.effect?.target === L).forEach((a) => { a.pause(); a.currentTime = ${T * 1000}; }); return new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => r(true)))); })()`);
@@ -307,7 +309,7 @@ export default {
       // frame IS the splash on purpose, so the overlay keeps its look under its own inline layout and gives up only the class the guard reads
       await app.evalJs("(() => { const s = document.querySelector('.wz-splash'); if (!s) return false; s.style.cssText += ';position:fixed;inset:0;z-index:400;pointer-events:none;display:flex;align-items:center;justify-content:center;'; s.classList.remove('wz-splash'); s.classList.add('arbor2-rec-splash'); return true; })()");
       await sleep(200);
-    } finally { await app.evalJs("localStorage.setItem('wrizo-splash-hold', '50')").catch(() => {}); await done(); }
+    } finally { await app.evalJs("localStorage.setItem('wrizo-splash-hold', '50'); localStorage.removeItem('wrizo-splash-force-not-ready')").catch(() => {}); await done(); }
   }])),
 };
 
