@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import type { PageSettings } from '../types';
+import { PAGE_SETTINGS_FALLBACK } from '../types';
 
 // ITEM 83 M2/M3 (R6) — THE WRITER'S DEFAULT PAGE DRESS.
 //
@@ -82,6 +83,14 @@ function dressOnly(v: PageSettings | null): PageSettings | null {
   const { kind, styleGuide, template, hiddenPlanCards, ...dress } = v as PageSettings & Record<string, unknown>;
   void kind; void styleGuide; void template; void hiddenPlanCards;
   return dress as PageSettings;
+}
+
+/** TOOLS #14 (Nick, Nov 2) - a page BORN now is born at 11 pt; a page that already exists keeps reading PAGE_SIZE_DEFAULT (12) through its absent size, so nothing is rewritten and no field is new
+ *  (`size` is the page's existing setting). The writer's own default dress comes first, with its own size if it set one; without defaults the app's floor (PAGE_SETTINGS_FALLBACK, the values it renders today). */
+export const NEW_PAGE_SIZE = 11;
+export function bornPageSettings(): PageSettings {
+  const d = defaults;
+  return { ...(d ?? PAGE_SETTINGS_FALLBACK), size: d?.size ?? NEW_PAGE_SIZE };
 }
 
 /** Synchronous read, for the birth path. Null when the writer has never

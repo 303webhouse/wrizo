@@ -3,7 +3,7 @@ import { graftTo } from './grafts';
 import { liveBoxes } from './boxTombstones';
 import type { Box, JournalEntry, PageTemplate } from '../types';
 import { PAGE_SETTINGS_FALLBACK } from '../types';
-import { getUserPageDefaults } from './pageDefaults';
+import { getUserPageDefaults, bornPageSettings, NEW_PAGE_SIZE } from './pageDefaults';
 import { landingToken, landingFromToken, type HelpLanding } from '../decks/helpMeChoose';
 
 // PB1 — Born on the First Word (docs/wrizo-alpha/p1-wave.md §PB1, item 71;
@@ -152,7 +152,9 @@ export function unbornEntry(id: string, d: UnbornDescriptor, createdAt: string):
   }
   // PAGE TEMPLATES - the lens is a page setting, so the unborn slot carries it (the lens can draw before the first word) and birth() keeps it
   // (it spreads this entry). A page with no settings starts from the writer's defaults or the app's floor, as patchPageSettings does.
-  if (d.template) base.pageSettings = { ...(getUserPageDefaults() ?? PAGE_SETTINGS_FALLBACK), template: d.template };
+  if (d.template) base.pageSettings = { ...(getUserPageDefaults() ?? PAGE_SETTINGS_FALLBACK), size: getUserPageDefaults()?.size ?? NEW_PAGE_SIZE, template: d.template };
+  // TOOLS #14 (Nick, Nov 2) - a page is born at 11 pt: the unborn slot already carries it, so the page draws at 11 before the first word and birth() writes it with that word. A board has no page size.
+  else if (d.kind === 'prose') base.pageSettings = bornPageSettings();
   return base;
 }
 

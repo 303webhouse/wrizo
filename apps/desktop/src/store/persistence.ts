@@ -3,7 +3,7 @@ import { sortNotebook, notebookKey, midpoint, gapExhausted, respread } from './p
 import { serializeScriptDoc } from './scriptText';
 import { createEmptyScriptDoc } from './scriptDoc';
 import { deskTerm, type DeskTermId } from './deskLexicon';
-import { getUserPageDefaults } from './pageDefaults';
+import { getUserPageDefaults, bornPageSettings } from './pageDefaults';
 import { clearProofingLocal } from './proofing';
 import { reportFlushFailed, reportFlushOk, reportStorageUsage } from './storageHealth';
 import { isSignedOutHere } from './signedOutHere';
@@ -1014,7 +1014,8 @@ export function createJournalPage(seed?: JournalPageSeed): JournalEntry {
     // `createdAt`, so a seeded page can be born with a supplied time. That
     // naming is taken verbatim below; birth-from-defaults is orthogonal to
     // it and rides unchanged. Neither side lost anything.
-    pageSettings: getUserPageDefaults() ?? undefined,
+    // TOOLS #14 - a page the app itself births (no seed) is born at 11 pt; a SEEDED call (the harness seam, a fixture) is born as it asks - the writer's defaults or nothing - so a fixture is untouched.
+    pageSettings: seed ? (getUserPageDefaults() ?? undefined) : bornPageSettings(),
     createdAt,
     updatedAt: createdAt,
   };
@@ -1130,6 +1131,7 @@ export function createBinderPage(binderId: string, pageType: NonNullable<Journal
     // AB3 S4 — a project door: this page homes in the project; the Journal
     // never sees it (no journal listing, no journal count).
     origin: 'project',
+    pageSettings: bornPageSettings(),   // TOOLS #14: born at 11 pt
     createdAt: now,
     updatedAt: now,
   };
