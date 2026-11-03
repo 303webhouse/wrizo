@@ -195,8 +195,10 @@ export default {
       await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
       await app.evalJs("localStorage.setItem('wrizo-splash-hold', '6000')");
       await app.evalJs("history.replaceState(null, '', '/?arbor2=1#/')"); await app.reload();
-      await waitSoft(app, "!!document.querySelector('.wz-splash .arbor2-splash-logo')", { label: 'the splash logo', timeout: 8000 });
-      await sleep(300);
+      const seen = await waitSoft(app, "!!document.querySelector('.wz-splash .arbor2-splash-logo')", { label: 'the splash logo', timeout: 8000 });
+      // (driver fix after run 41549881533: probe before reading - a missing logo is a failed check with its numbers, never a crash)
+      const probe = await app.evalJs("({ splash: !!document.querySelector('.wz-splash'), logo: !!document.querySelector('.wz-splash .arbor2-splash-logo'), hold: localStorage.getItem('wrizo-splash-hold'), reduced: matchMedia('(prefers-reduced-motion: reduce)').matches, theme: document.documentElement.getAttribute('data-theme'), flag: document.documentElement.getAttribute('data-arbor2') })");
+      if (!seen || !probe.logo) fail('R16-SPLASH-REDUCED', { seen, probe });
       const s = await app.evalJs("(() => { const L = document.querySelector('.wz-splash .arbor2-splash-logo'); const r = L.getBoundingClientRect(); return { writing: L.getAttribute('data-writing'), svg: !!L.querySelector('svg'), anims: document.getAnimations().filter((a) => L.contains(a.effect?.target) || a.effect?.target === L).length, rect: [Math.round(r.left * 10) / 10, Math.round(r.top * 10) / 10, Math.round(r.width * 10) / 10, Math.round(r.height * 10) / 10] }; })()");
       await app.evalJs(PIX(await shot(app), s.rect, 'reduced-splash'));
       await app.evalJs("localStorage.setItem('wrizo-splash-hold', '50')");
