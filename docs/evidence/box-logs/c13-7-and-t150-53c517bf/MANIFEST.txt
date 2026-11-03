@@ -1,0 +1,15 @@
+Step 7 + ticket 150 - manifest (Chat 1, Nov 2 2026)
+
+Tree 53c517bf (train-c13-7: main 047345a1 + two --no-ff merges; main is fast-forwarded to it). No deploy: the whole dist-web of this tree is byte-identical to the live #12j build (diff -rq clean; index-CzG0YU_r.js 955927 bytes, index-BISqmGRK.css 266008). Production stays git 622df16e / railway 4fe238f5.
+
+IN
+- POLISH c13-7-css-comments-r b32c673e (merge 0f5edc0d): #13 step 7, CSS comments moved to docs/rulings/css-*.md (CSS-only; the build output is unchanged).
+- FIX rhizome-latency-stable-r1 01c3ae52 (merge 53c517bf): ticket 150; rhizome-latency holds the flash against a same-state, same-pace control; new box-only rhizome-latency-mutant.mjs; CI lists updated (ci-box-only.txt, ci-shard-weights.txt). Harness and CI lists only.
+
+RUNS
+- tsc desktop 0, tsc server 0, seed-guard PASS 36.
+- GitHub Actions full pair, run 41546718460 (8 shards per leg, ref = the full sha): default 231/238, parked 231/238; the 7 non-OK are the capture/probe tools with no verdict line, both legs.
+- Box, 21 files (INK's box-only list + cd2, typewriter-glide-keys, tw-glide-measure, typewriter-stall, typewriter-page, caret-reset, blank-page-click, empty-line-caret + rhizome-latency-mutant). Stamp tree=53c517bf bundle=index-CzG0YU_r.js/955927b. Default CLEAN 21/21, parked CLEAN 21/21. rhizome-latency PASS (15 checks, the new guard) on both legs; rhizome-latency-mutant PASS (6 checks) on both legs. Box turn 23:37Z-00:08Z, released.
+- Clear: Fable, Nov 2 ("ONE full pair on both ... Clean -> merge both, no deploy").
+
+Files here: pair-*.log.txt and summary.txt (Actions); box-default/parked.log.txt.
