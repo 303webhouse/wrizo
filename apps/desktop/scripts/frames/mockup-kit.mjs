@@ -371,3 +371,41 @@ export async function sizeBoxCheck(app, { name, say, fail, selection = false }) 
   say(name, brief);
   return brief;
 }
+
+/** THE VERDICT GUARD (Fable, Nov 2, all lanes: "a check that throws, crashes or prints no verdict is RED, never green"). Wrap a screens file's
+ *  default export: export default guarded({ ...screens }, { verdict: ['ARBOR-R17'] }). Every screen is red when:
+ *    - it throws (the job already marks a throw failed; the guard keeps the throw as it is);
+ *    - the PAGE throws an uncaught error while it runs (Runtime.exceptionThrown, read through app.tap; Runtime.evaluate's own errors are not
+ *      events, they already throw in evalJs);
+ *    - it prints a "<PREFIX>-FAIL " line and still returns (a swallowed failure);
+ *    - it is a CHECK and prints no "<PREFIX> " verdict line. A PICTURE (a name with "-pic-", or a walk's open / closed frame) owes no verdict,
+ *      but is red on a throw or a page error like any other screen.
+ *  A guard that cannot watch the page is red too (no app.tap = blind, never a quiet pass). Self-tests: scripts/frames/mockup-kit-selftest.mjs
+ *  (the frames job; planted throws must come out failed) and scripts/harness/mockup-kit-guard-unit.mjs (browserless). */
+export const isPicture = (name) => /-pic-/.test(name) || /-walk-(open|closed)-/.test(name);
+export function guarded(screens, { verdict, picture = isPicture }) {
+  if (!Array.isArray(verdict) || !verdict.length) throw new Error('guarded: name the verdict prefixes');
+  const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const PASS = new RegExp(`^(?:${verdict.map(esc).join('|')}) `), FAILED = new RegExp(`^(?:${verdict.map(esc).join('|')})-FAIL `);
+  const out = {};
+  for (const [name, fn] of Object.entries(screens)) {
+    out[name] = async (app, ctx) => {
+      if (!app || typeof app.tap !== 'function') throw new Error(`KIT-GUARD ${name}: BLIND - the app has no tap, so page errors cannot be watched`);
+      const pageErrors = [];
+      let passLines = 0, failLines = 0;
+      const untap = app.tap((method, params) => {
+        if (method !== 'Runtime.exceptionThrown') return;
+        const d = (params && params.exceptionDetails) || {};
+        pageErrors.push(String((d.exception && (d.exception.description || d.exception.value)) || d.text || 'uncaught').slice(0, 300));
+      });
+      const log = console.log;
+      console.log = (...a) => { const s = typeof a[0] === 'string' ? a[0] : ''; if (FAILED.test(s)) failLines++; else if (PASS.test(s)) passLines++; return log.apply(console, a); };
+      try { await fn(app, ctx); }
+      finally { console.log = log; if (typeof untap === 'function') untap(); }
+      if (pageErrors.length) throw new Error(`KIT-GUARD ${name}: UNCAUGHT PAGE ERROR x${pageErrors.length}: ${pageErrors.slice(0, 2).join(' | ')}`.slice(0, 900));
+      if (failLines) throw new Error(`KIT-GUARD ${name}: SWALLOWED FAIL - ${failLines} fail line(s) printed and the screen still returned`);
+      if (!picture(name) && !passLines) throw new Error(`KIT-GUARD ${name}: NO VERDICT - the check printed no pass line (${verdict.join(' / ')})`);
+    };
+  }
+  return out;
+}

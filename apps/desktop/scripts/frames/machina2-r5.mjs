@@ -12,7 +12,7 @@
 //   keystroke, or at the next File open, whichever comes first".
 // Every check THROWS with its numbers when it fails and prints them when it passes ("MACHINA2-R5 <screen> {...}"). Written red-first: run against
 // r4 (20b340b1) before the r5 build. Seeds go through window.wrizo*.
-import { drawerProof, zoomDrawerProof, walkScreens } from './mockup-kit.mjs';
+import { drawerProof, zoomDrawerProof, walkScreens, guarded } from './mockup-kit.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ED = '.forward-only-editor';
@@ -81,7 +81,8 @@ const PLATE = `(() => { const q = (e) => { if (!e) return null; const r = e.getB
 const rgb = (s) => (String(s).match(/\d+(\.\d+)?/g) || []).slice(0, 3).map((v) => Math.round(Number(v))).join(',');
 const LABEL = { cool: '230,232,234', neutral: '230,226,219' }, HAIR = { cool: '46,58,70', neutral: '51,47,42' }, BAR = { cool: '30,38,46', neutral: '32,30,27' };
 
-export default {
+// (Fable, Nov 2, all lanes: a check that throws, crashes or prints no verdict is RED - the kit's verdict guard wraps every screen here)
+export default guarded({
   // ── THE DRAWERS: on the page as it opens (both hands), and in Build
   // PARKED 2026-11-01 (SUPERSEDED by the build's measured scope, first green look runs 41336024311 / 41336050132: this page opens in Typewriter's zoom, where the drawers overlay the enlarged page and keep today's rule - the alignment applies beside an unzoomed page, which r11-drawers / m2r5-drawers-build check). Kept verbatim under the name m2r5-drawers-v1 (not in the run list); SUCCESSOR m2r5-drawers-zoom below.
   'm2r5-drawers-v1': async (app) => { await page(app, 'm2r5-drawers'); await drawerProof(app, { name: 'M2R5-DRAWERS', say, fail }); },
@@ -163,4 +164,4 @@ export default {
   // shows the alignment on Build, as Arbor's walk does on Draft)
   // (r7: the walk's reduced-motion repeat gets its liveness probe on the default page, which opens in Typewriter's zoom - Fable, Nov 1)
   ...walkScreens('machina-walk', (app) => page(app, 'machina-walk', 'Build'), setRoom, (app) => page(app, 'machina-walk-z')),
-};
+}, { verdict: ["MACHINA2-R5","MACHINA-WALK-REDUCED-REPEAT","MACHINA-WALK-REDUCED-LIVENESS"] });
