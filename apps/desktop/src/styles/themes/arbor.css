@@ -1,0 +1,14 @@
+/* Arbor's rules that sat among the component rules, in their old order, imported after every component rule. */
+
+/* The Walk's chrome (chevrons, doors, rail) sits on the room's dark ground in every theme and tone, so it takes the theme's ON-DARK door colour: the --accent-door token is the on-PAPER door (Arbor #4F5730 is 2.4:1 on the dark brown; Flux light's teal and Machina light's blue are darker still) */
+[data-theme='plateau'] :is(.walk-nav, .walk-doors, .walk-rail, .show-as){ --accent-door:var(--accent-door-on-dark); }
+
+/* the pop-out is the room's dark ground: the thumbnails' olive edge is the on-dark olive (the --accent-door token is the on-paper one, 2.4:1 here). A Deck is a short stack of THREE sheets: two flat, hard-edged
+   offset shadows behind the top sheet (no blur - a stack, not a drop shadow); pseudo-elements at a negative z-index painted over the sheet, so they could not draw it. */
+[data-theme='plateau'] .wz-thumb{ --accent-door:var(--accent-door-on-dark); }
+
+[data-theme='plateau'] .wz-thumb[data-thumb='deck']{ background:#2a1f16; box-shadow:3px -3px 0 0 #2a1f16, 3px -3px 0 1px var(--accent-door), 6px -6px 0 0 #2a1f16, 6px -6px 0 1px var(--accent-door); }
+
+[data-theme='plateau'] .deck-gaps{ --accent-door:var(--accent-door-on-dark); }
+
+[data-theme='plateau'] .scenes-pop{ --accent-door:var(--accent-door-on-dark); }

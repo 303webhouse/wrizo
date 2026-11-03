@@ -181,8 +181,6 @@
 /* The interim Journal capture tab, relocated into the corkboard track (S2). */
 .desk-corkboard-journal{ display:flex; flex-direction:column; gap:2px; }
 .desk-corkboard-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--brass-press); margin-bottom:12px; }
-/* ITEM arbor-quiet-brass — same heading-colour law as .mode-rail-h above. */
-[data-theme='flux'] .desk-corkboard-h{ color:var(--text-mid); }
 .desk-corkboard-item{ font-size:14px; color:var(--text-mid); padding:10px 11px; border:1px solid transparent; }
 
 /* AB2 S0/S3 — the iA register (draftDecoration.ts): syntax visible, dimmed;
