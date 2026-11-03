@@ -199,7 +199,11 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
     setDraft(null);                          // a refused entry snaps back to the previous value
     const held = heldRange.current; heldRange.current = null;
     if (n !== null && mockBox && held && scope?.onSizeSelection) {
-      const sel = window.getSelection(); sel?.removeAllRanges(); sel?.addRange(held);   // the highlight back where it was, then only those words
+      // the page first takes the focus back, THEN the highlight is put back (set while the box still had the focus, the page's own refocus moved
+      // it a character: run 41572970938 sized 'he' for a highlighted 'The'), then only those words are sized
+      const startEl = held.startContainer.nodeType === 1 ? (held.startContainer as Element) : held.startContainer.parentElement;
+      (startEl?.closest('[contenteditable="true"]') as HTMLElement | null)?.focus({ preventScroll: true });
+      const sel = window.getSelection(); sel?.removeAllRanges(); sel?.addRange(held);
       scope.onSizeSelection(n);
       return;
     }
@@ -273,7 +277,7 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
       )}
       <div className="wz-type-size">
         <button type="button" className="mode-tbtn wz-type-step" aria-label={t('typeSmaller')} aria-disabled={down === null} onMouseDown={keepFocus} onClick={() => { if (down !== null) sizeTo(down); }}>{'−'}</button>
-        {(form === 'full' || mockBox) && (
+        {(form === 'full' || mockBox) && (<span className={mockBox ? 'wz-type-num-box' : 'wz-type-num-plain'}>
           <input
             className="wz-type-num"
             type="text"
@@ -286,7 +290,8 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
             onBlur={commitDraft}
             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commitDraft(); (e.target as HTMLInputElement).blur(); } else if (e.key === 'Escape') setDraft(null); }}
           />
-        )}
+          {mockBox && <span className="wz-type-num-unit" aria-hidden="true">pt</span>}
+        </span>)}
         <button type="button" className="mode-tbtn wz-type-step" aria-label={t('typeLarger')} aria-disabled={up === null} onMouseDown={keepFocus} onClick={() => { if (up !== null) sizeTo(up); }}>+</button>
       </div>
     </div>

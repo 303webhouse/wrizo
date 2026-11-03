@@ -4,6 +4,7 @@ import { liveBoxes } from './boxTombstones';
 import type { Box, JournalEntry, PageTemplate } from '../types';
 import { PAGE_SETTINGS_FALLBACK } from '../types';
 import { getUserPageDefaults } from './pageDefaults';
+import { newPageSize } from '../machina2/newPageSize';
 import { landingToken, landingFromToken, type HelpLanding } from '../decks/helpMeChoose';
 
 // PB1 — Born on the First Word (docs/wrizo-alpha/p1-wave.md §PB1, item 71;
@@ -153,7 +154,7 @@ export function unbornEntry(id: string, d: UnbornDescriptor, createdAt: string):
   // PAGE TEMPLATES - the lens is a page setting, so the unborn slot carries it (the lens can draw before the first word) and birth() keeps it
   // (it spreads this entry). A page with no settings starts from the writer's defaults or the app's floor, as patchPageSettings does.
   if (d.template) base.pageSettings = { ...(getUserPageDefaults() ?? PAGE_SETTINGS_FALLBACK), template: d.template };
-  return base;
+  return newPageSize(base);   // MACHINA v2 MOCKUP r8: a page born under the flag starts at 11 pt
 }
 
 // BIRTH — one synchronous call, and the only place an unborn surface becomes a
