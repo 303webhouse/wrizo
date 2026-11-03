@@ -48,6 +48,11 @@ const FRONT = `(() => { const q = (s) => document.querySelector(s); const shown 
     invite: shown([...document.querySelectorAll('input.wz-field')].find((i) => /invite/i.test(i.placeholder))), ground: getComputedStyle(q('.arbor2-front') || document.body).backgroundColor }; })()`;
 const fill = (sel, value) => `(() => { const el = document.querySelector(${JSON.stringify(sel)}); if (!el) return false; const d = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value'); d.set.call(el, ${JSON.stringify(value)}); el.dispatchEvent(new Event('input', { bubbles: true })); return true; })()`;
 const clickDoor = (text) => `(() => { const b = [...document.querySelectorAll('button')].find((x) => (x.textContent || '').trim() === ${JSON.stringify(text)} && x.getBoundingClientRect().width > 0); if (b) b.click(); return !!b; })()`;
+// r18: FRONT with the tagline and the doors read where they stand now (the tagline under the logo in the drawing; the doors as its boxes), and
+// front2 = front, then the doors' own entrance done (they come last, after the logo)
+const FRONT2 = FRONT.split("q('.arbor2-front .wz-tagline')").join("q('.arbor2-front .arbor2-top-tagline')").split('.wz-arrival-doors button').join('.arbor2-front-doors .arbor2-door');
+if (FRONT2 === FRONT || FRONT2.includes('.wz-arrival-doors') || FRONT2.includes("'.arbor2-front .wz-tagline'")) throw new Error('FRONT2 did not take');
+const front2 = async (app, room) => { await front(app, room); await waitSoft(app, "document.querySelector('.arbor2-front-doors')?.getAttribute('data-phase') === 'shown'", { label: 'the doors in', timeout: 9000 }); };
 const leftFront = "!document.querySelector('.wz-arrival') && /#\\/(page|project)\\//.test(location.hash)";
 
 // ---- a pixel instrument for the front's words (tagline and doors) against what is painted behind them ----
@@ -107,7 +112,8 @@ export default {
       say('r14-front', brief);
     } finally { await a.done(); }
   },
-  'r14-front': async (app) => {
+  // PARKED 2026-11-03 (SUPERSEDED by r18, Nick's splash changes (Fable, Nov 2-3): the logo moved from the corner into the drawing, at its top, where the erased "WRIZO (in abstract)" line stood, with the tagline under it; the doors became hand-drawn boxes INSIDE the drawing, Write and Log in (signed in: Write and Open); the corner mark left the front door). Kept verbatim under the name r14-front-v2 (not in the run list); SUCCESSOR r14-front below.
+  'r14-front-v2': async (app) => {
     const a = await anon(app);
     try {
       const rows = [];
@@ -129,10 +135,33 @@ export default {
       say('r14-front', brief);
     } finally { await a.done(); }
   },
+  'r14-front': async (app) => {
+    const a = await anon(app);
+    try {
+      const rows = [];
+      for (const room of ['night', 'day']) {
+        await front2(app, room);
+        const s = await app.evalJs(FRONT2);
+        const px = s.front ? await pixels(app, '.arbor2-front-doors, .arbor2-front-mark .arbor2-top-tagline') : [];
+        rows.push({ room, s, px });
+      }
+      const okRow = ({ s, px }) => s.arrival && s.front && !s.hero && !s.heroLogo && !s.bootbar && s.drawing && !!s.markCentre && Math.abs(s.markCentre[0] - s.vw / 2) <= 2 && Math.abs(s.markCentre[1] - s.vh / 2) <= 2
+        && s.tagline === 'For humans who write.' && JSON.stringify(s.doors) === '["Write","Log in"]' && px.length >= 3 && px.every((x) => x.p2 != null && x.p2 >= 4.5);
+      // (amendment before any green, run 41358900562: the splash's own ground is not one colour - #120A06 by night, #0A0503 by day (the day
+      // splash rule) - so the front must match the SPLASH in each room, not match itself across rooms. Original: sameGround: rows[0].s.ground
+      // === rows[1].s.ground)
+      const SPLASH = { night: 'rgb(18, 10, 6)', day: 'rgb(10, 5, 3)' };
+      const ok = { visitor: rows.every(okRow), splashGround: rows.every((r) => r.s.ground === SPLASH[r.room]) };
+      const brief = { ok, rows: rows.map((r) => ({ room: r.room, ok: okRow(r), ...r.s, px: r.px })) };
+      if (Object.values(ok).some((x) => !x)) fail('R14-FRONT', brief);
+      say('r14-front', brief);
+    } finally { await a.done(); }
+  },
 
   // ── SIGN IN WORKS FROM THE SPLASH: the Sign in door opens the existing sign-in form; filled and sent, /auth/login gets the email and the app
   // leaves the front door for the writing.
-  'r14-signin': async (app) => {
+  // PARKED 2026-11-03 (SUPERSEDED by r18, Nick's splash changes (Fable, Nov 2-3): the logo moved from the corner into the drawing, at its top, where the erased "WRIZO (in abstract)" line stood, with the tagline under it; the doors became hand-drawn boxes INSIDE the drawing, Write and Log in (signed in: Write and Open); the corner mark left the front door). Kept verbatim under the name r14-signin-v1 (not in the run list); SUCCESSOR r14-signin below.
+  'r14-signin-v1': async (app) => {
     const a = await anon(app);
     try {
       await front(app, null);
@@ -150,10 +179,29 @@ export default {
       say('r14-signin', brief);
     } finally { await a.done(); }
   },
+  'r14-signin': async (app) => {
+    const a = await anon(app);
+    try {
+      await front2(app, null);
+      const atDoor = await app.evalJs(FRONT2);
+      const pressed = await app.evalJs(clickDoor('Log in')); await sleep(400);
+      const form = await app.evalJs(FRONT2);
+      await app.evalJs(fill('input[autocomplete="email"]', 'r14-reader@example.com'));
+      await app.evalJs(fill('input[autocomplete="current-password"]', 'a-long-password'));
+      await app.evalJs("document.querySelector('input[autocomplete=\"current-password\"]')?.closest('form')?.requestSubmit()");
+      const left = await waitSoft(app, leftFront, { label: 'left the front door', timeout: 8000 });
+      const login = a.seen.find((x) => x.path === '/auth/login');
+      const ok = { door: JSON.stringify(atDoor.doors) === '["Write","Log in"]', pressed, form: form.signinForm && !form.front, sent: !!login && login.body?.email === 'r14-reader@example.com', left };
+      const brief = { ok, form: { signinForm: form.signinForm, front: form.front }, login, route: await app.evalJs('location.hash') };
+      if (Object.values(ok).some((x) => !x)) fail('R14-SIGNIN', brief);
+      say('r14-signin', brief);
+    } finally { await a.done(); }
+  },
 
   // ── SIGN UP WORKS FROM THE SPLASH: Sign in, then "New here? Create an account", opens the existing sign-up form WITH the invite-code field;
   // filled and sent, /auth/register gets the name, the email and the code, and the app leaves the front door for the writing.
-  'r14-signup': async (app) => {
+  // PARKED 2026-11-03 (SUPERSEDED by r18, Nick's splash changes (Fable, Nov 2-3): the logo moved from the corner into the drawing, at its top, where the erased "WRIZO (in abstract)" line stood, with the tagline under it; the doors became hand-drawn boxes INSIDE the drawing, Write and Log in (signed in: Write and Open); the corner mark left the front door). Kept verbatim under the name r14-signup-v1 (not in the run list); SUCCESSOR r14-signup below.
+  'r14-signup-v1': async (app) => {
     const a = await anon(app);
     try {
       await front(app, null);
@@ -174,11 +222,43 @@ export default {
       say('r14-signup', brief);
     } finally { await a.done(); }
   },
+  'r14-signup': async (app) => {
+    const a = await anon(app);
+    try {
+      await front2(app, null);
+      await app.evalJs(clickDoor('Log in')); await sleep(400);
+      const toAccount = await app.evalJs(clickDoor('New here? Create an account'));
+      await waitSoft(app, "!!document.querySelector('input[autocomplete=\"new-password\"]')", { label: 'the sign-up form', timeout: 5000 });
+      const form = await app.evalJs(FRONT2);
+      await app.evalJs(fill('input[autocomplete="given-name"]', 'R14 Writer'));
+      await app.evalJs(fill('input[autocomplete="email"]', 'r14-writer@example.com'));
+      await app.evalJs(fill('input[autocomplete="new-password"]', 'a-longer-password'));
+      await app.evalJs("(() => { const el = [...document.querySelectorAll('input.wz-field')].find((i) => /invite/i.test(i.placeholder)); if (!el) return false; const d = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value'); d.set.call(el, 'R14-CODE'); el.dispatchEvent(new Event('input', { bubbles: true })); return true; })()");
+      await app.evalJs("document.querySelector('input[autocomplete=\"new-password\"]')?.closest('form')?.requestSubmit()");
+      const left = await waitSoft(app, leftFront, { label: 'left the front door', timeout: 8000 });
+      const reg = a.seen.find((x) => x.path === '/auth/register');
+      const ok = { toAccount, form: form.accountForm && form.invite, sent: !!reg && reg.body?.email === 'r14-writer@example.com' && reg.body?.name === 'R14 Writer' && reg.body?.code === 'R14-CODE', left };
+      const brief = { ok, form: { accountForm: form.accountForm, invite: form.invite }, register: reg, route: await app.evalJs('location.hash') };
+      if (Object.values(ok).some((x) => !x)) fail('R14-SIGNUP', brief);
+      say('r14-signup', brief);
+    } finally { await a.done(); }
+  },
 
   // ── A SIGNED-IN WRITER on the front door (the double signs her in): Write and Open, no Sign in; and Write opens a page
-  'r14-front-authed': async (app) => {
+  // PARKED 2026-11-03 (SUPERSEDED by r18, Nick's splash changes (Fable, Nov 2-3): the logo moved from the corner into the drawing, at its top, where the erased "WRIZO (in abstract)" line stood, with the tagline under it; the doors became hand-drawn boxes INSIDE the drawing, Write and Log in (signed in: Write and Open); the corner mark left the front door). Kept verbatim under the name r14-front-authed-v1 (not in the run list); SUCCESSOR r14-front-authed below.
+  'r14-front-authed-v1': async (app) => {
     await front(app, null);
     const s = await app.evalJs(FRONT);
+    const pressed = await app.evalJs(clickDoor('Write'));
+    const left = await waitSoft(app, leftFront, { label: 'Write opened a page', timeout: 8000 });
+    const ok = { front: s.front && !s.hero, doors: JSON.stringify(s.doors) === '["Write","Open"]', write: pressed && left };
+    const brief = { ok, doors: s.doors, front: s.front, hero: s.hero, route: await app.evalJs('location.hash') };
+    if (Object.values(ok).some((x) => !x)) fail('R14-FRONT-AUTHED', brief);
+    say('r14-front-authed', brief);
+  },
+  'r14-front-authed': async (app) => {
+    await front2(app, null);
+    const s = await app.evalJs(FRONT2);
     const pressed = await app.evalJs(clickDoor('Write'));
     const left = await waitSoft(app, leftFront, { label: 'Write opened a page', timeout: 8000 });
     const ok = { front: s.front && !s.hero, doors: JSON.stringify(s.doors) === '["Write","Open"]', write: pressed && left };
