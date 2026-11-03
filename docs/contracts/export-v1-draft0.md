@@ -1,6 +1,6 @@
 # Contract: the Wrizo export format, v1 · DRAFT 0
 
-**Status:** draft 0, rev c (Fable, Nov 1, 2026, 3:00 pm: web links approved; §8b the publish call). NOT signed. Read mocks against it. **Owner:** Fable. **Consumer:** SOCIAL.
+**Status:** draft 0, rev d (Fable, Nov 2, 2026, 4:50 pm: web links approved; §8b the publish call + the field shapes). NOT signed. Read mocks against it. **Owner:** Fable. **Consumer:** SOCIAL.
 **The rule it serves (Nick):** one door. Text enters Read only through this format. Read has no editor of its own and never writes back to Write.
 
 ## 1. The envelope
@@ -78,6 +78,8 @@ It leaves by **a writer's action** (a "Publish to Read" step in Write, designed 
 2. **Write shows only the destinations with `mayPost: true`.** It shows no greyed-out rows (Nick's Oct 19 rule: a greyed control reads as broken).
 3. The writer ticks one or more destinations. Write then POSTs to Read's import endpoint: `{ export, destinations: [{ kind, id? }], wordToReaders?, readersNotice?, revisionNote? }`.
    - The last three are the writer's own optional words. **They're stored only in Read; Write keeps nothing new.**
+   - Their shapes: `readersNotice` = `{ key: "grief" | "violence" | "sexual" | "selfHarm" | "other", text? }` (`text` ≤ 40 characters, and only with `"other"`); `wordToReaders` ≤ 500 characters; `revisionNote` ≤ 500 characters.
+   - Write's Publish step offers these as plain optional fields. It never suggests their content: the words are the writer's own.
 4. Read keeps the export whole and verbatim and fingerprints `body.text` (sha256).
    - Re-exporting the same `piece.id` makes a new revision; the same `revision` again is a no-op.
 
