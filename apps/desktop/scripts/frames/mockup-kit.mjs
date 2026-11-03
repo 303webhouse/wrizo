@@ -315,7 +315,9 @@ export async function sizeBoxCheck(app, { name, say, fail, selection = false }) 
   const BOX = `(() => { const box = document.querySelector('.wz-sliver-panel .wz-type-size'); if (!box) return null; const kids = [...box.children]; const input = box.querySelector('input.wz-type-num');
     const steps = [...box.querySelectorAll('.wz-type-step')]; const x = (e) => e ? Math.round(e.getBoundingClientRect().left) : null;
     const ed = document.querySelector('${ED}'); const p = ed && (ed.querySelector('p, div') || ed);
-    return { order: kids.map((k) => k.tagName === 'INPUT' ? 'box' : k.textContent.trim()), x: [x(steps[0]), x(input), x(steps[1])], value: input ? input.value : null, shown: !!input && input.getBoundingClientRect().width > 0,
+    // (amendment before any green, the Wrizors' note md5 a17aae25: the box reads "- [ 11 pt ] +", so the number sits in a frame with its unit - a
+    // child that holds the input is the box. Original: kids.map((k) => k.tagName === 'INPUT' ? 'box' : k.textContent.trim()))
+    return { order: kids.map((k) => (k.tagName === 'INPUT' || k.querySelector('input')) ? 'box' : k.textContent.trim()), unit: (box.querySelector('.wz-type-num-unit')?.textContent || '').trim(), x: [x(steps[0]), x(input), x(steps[1])], value: input ? input.value : null, shown: !!input && input.getBoundingClientRect().width > 0,
       editorPx: ed ? parseFloat(getComputedStyle(p).fontSize) : null }; })()`;
   const type = (v, how) => app.evalJs(`(() => { const i = document.querySelector('.wz-sliver-panel input.wz-type-num'); if (!i) return false; i.focus(); const d = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value'); d.set.call(i, ${JSON.stringify(v)}); i.dispatchEvent(new Event('input', { bubbles: true }));
     ${how === 'enter' ? "i.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));" : 'i.blur();'} return true; })()`);
@@ -332,7 +334,7 @@ export async function sizeBoxCheck(app, { name, say, fail, selection = false }) 
   const reverted = (r) => r.value === r.prevValue && r.px === r.prevPx;
   const ok = {
     between: start.shown && JSON.stringify(start.order) === JSON.stringify(['−', 'box', '+']) && start.x[0] < start.x[1] && start.x[1] < start.x[2],
-    showsSize: /^\d+$/.test(start.value || ''),
+    showsSize: /^\d+$/.test(start.value || '') && start.unit === 'pt',
     applies: rows.filter((r) => r.want !== null).every(applied),
     reverts: rows.filter((r) => r.want === null).every(reverted),
   };
@@ -344,12 +346,21 @@ export async function sizeBoxCheck(app, { name, say, fail, selection = false }) 
     const scope = await app.evalJs("(() => { const b = document.querySelector(\".wz-sliver-panel .wz-type-scope[data-scope='selection']\"); return b ? b.getAttribute('data-on') : null; })()");
     const sizeOf = `(() => { const ed = document.querySelector('${ED}'); const tw = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); const first = tw.nextNode(); let last = first; for (let n = tw.nextNode(); n; n = tw.nextNode()) if (n.textContent.trim()) last = n; return [parseFloat(getComputedStyle(first.parentElement).fontSize), parseFloat(getComputedStyle(last.parentElement).fontSize)]; })()`;
     const b0 = await app.evalJs(sizeOf);
+    // (report only, after runs 41572629767 / 41572661391 - typing with words highlighted changed nothing: the selection, the focus and the page's
+    // first markup around the step)
+    const DIAG = `(() => { const s = getSelection(); const ed = document.querySelector('${ED}'); return { sel: s ? s.toString().slice(0, 12) : null, collapsed: s ? s.isCollapsed : null, inEditor: !!(s && s.anchorNode && ed && ed.contains(s.anchorNode)), active: document.activeElement ? (document.activeElement.className || document.activeElement.tagName).toString().slice(0, 30) : null, html: ed ? ed.innerHTML.slice(0, 160) : null, input: document.querySelector('.wz-sliver-panel input.wz-type-num')?.value ?? null }; })()`;
+    const d0 = await app.evalJs(DIAG);
     await type('30', 'enter'); await sleep(500);
+    const d1 = await app.evalJs(DIAG);
     const b1 = await app.evalJs(sizeOf);
-    sel = { scope, before: b0, after: b1 };
-    ok.sameScope = scope === 'true' && b1[0] > b0[0] + 0.5 && Math.abs(b1[1] - b0[1]) < 0.01;
+    // (amendment before any green, run 41572970938: the first text node's parent was a wrong witness - the size is a span around the sized
+    // words, and a partial sizing left 'T' outside it, which read as "nothing changed". The highlighted word itself is read now: exactly the
+    // words highlighted ('The') carry the typed size, and the last word keeps its size. Original: b1[0] > b0[0] + 0.5 && |b1[1] - b0[1]| < 0.01)
+    const sized = await app.evalJs(`(() => { const ed = document.querySelector('${ED}'); return [...ed.querySelectorAll('[data-size]')].map((e) => [e.getAttribute('data-size'), (e.innerText || '').trim()]); })()`);
+    sel = { scope, before: b0, after: b1, sized, d0, d1 };
+    ok.sameScope = scope === 'true' && sized.some(([sz, txt]) => sz === '30' && txt === 'The') && !sized.some(([sz, txt]) => sz === '30' && txt !== 'The') && Math.abs(b1[1] - b0[1]) < 0.01;
   }
-  const brief = { ok, start: { order: start.order, value: start.value }, rows: rows.map((r) => [r.v, r.how, r.prevValue, '->', r.value, r.prevPx, '->', r.px]), sel };
+  const brief = { ok, start: { order: start.order, value: start.value, unit: start.unit }, rows: rows.map((r) => [r.v, r.how, r.prevValue, '->', r.value, r.prevPx, '->', r.px]), sel };
   if (Object.values(ok).some((x) => !x)) fail(name, brief);
   say(name, brief);
   return brief;
