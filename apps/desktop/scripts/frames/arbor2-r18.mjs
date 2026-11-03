@@ -248,7 +248,8 @@ const SCREENS = {
       await app.evalJs("localStorage.setItem('wrizo-splash-hold', '6000'); localStorage.setItem('wrizo-splash-force-not-ready', '1')");
       await app.evalJs("history.replaceState(null, '', '/?arbor2=1#/')"); await app.reload();
       await waitSoft(app, "!!document.querySelector('.wz-splash .arbor2-top-logo')", { label: 'the splash logo', timeout: 8000 });
-      const splashLogo = await app.evalJs("(() => { const L = document.querySelector('.wz-splash .arbor2-top-logo'); return L ? { writing: L.getAttribute('data-writing'), anims: document.getAnimations().filter((a) => L.contains(a.effect?.target) || a.effect?.target === L).length } : null; })()");
+      // (report only, after run 41656043419: 1 frame in 4 counted one animation on the still logo - 'what' names it)
+      const splashLogo = await app.evalJs("(() => { const L = document.querySelector('.wz-splash .arbor2-top-logo'); return L ? { writing: L.getAttribute('data-writing'), anims: document.getAnimations().filter((a) => L.contains(a.effect?.target) || a.effect?.target === L).length, what: document.getAnimations().filter((a) => L.contains(a.effect?.target) || a.effect?.target === L).map((a) => [a.constructor.name, a.animationName || a.transitionProperty || null, a.effect?.pseudoElement || null, Number(a.effect?.getTiming().duration), a.playState]) } : null; })()");
       await app.evalJs(UNHOLD);
       await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 });
       await doorsShown(app, 6000);
@@ -321,6 +322,9 @@ const SCREENS = {
       await app.evalJs(HOLD); await app.evalJs("history.replaceState(null, '', '/?arbor2=1#/')"); await app.reload();
       await waitSoft(app, "!!document.querySelector('.wz-splash .arbor2-top-logo')", { label: 'the splash logo', timeout: 8000 });
       await app.evalJs(`(() => { const L = document.querySelector('.wz-splash .arbor2-top-logo'); document.getAnimations().filter((a) => L.contains(a.effect?.target) || a.effect?.target === L || L.parentElement.contains(a.effect?.target)).forEach((a) => { a.pause(); a.currentTime = ${T * 1000}; }); return true; })()`);
+      // (driver fix after run 41657288226: the job refuses a frame while an element of class wz-splash is on screen; this frame IS the splash on
+      // purpose - r16's overlay: its look pinned inline, only the class given up)
+      await app.evalJs("(() => { const s = document.querySelector('.wz-splash'); if (!s) return false; const cs = getComputedStyle(s); for (const v of ['--ink-950', '--ink-900', '--ink-800', '--ink-border', '--ink-border-strong', '--arbor-line', '--arbor-letter', '--text-hi', '--text-mid', '--text-low']) s.style.setProperty(v, cs.getPropertyValue(v)); s.style.cssText += ';position:fixed;inset:0;z-index:400;pointer-events:none;display:flex;align-items:center;justify-content:center;'; s.classList.remove('wz-splash'); s.classList.add('arbor2-rec-splash'); return true; })()");
       await sleep(250);
     } finally { await done(); }
   }])),
