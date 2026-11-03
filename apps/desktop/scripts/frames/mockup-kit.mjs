@@ -282,10 +282,14 @@ export async function themeRoomCheck(app, { name, say, fail, label, words, roomA
     return { rows, attr: document.documentElement.getAttribute('data-room'), room: document.documentElement.getAttribute(${JSON.stringify(roomAttr)}), other: other ? [...other.querySelectorAll('button[aria-pressed]')].map((b) => [b.textContent.trim(), b.getAttribute('aria-pressed')]) : null }; })()`;
   const before = await app.evalJs(READ);
   if (!before) fail(name, { open, picker: false });
-  const pick = (text) => app.evalJs(`(() => { const r = [...document.querySelectorAll('.wz-theme-picker .wz-theme-picker-field .mode-crow')].find((x) => x.querySelector(':scope > span')?.textContent.trim() === ${JSON.stringify(label)}); const b = r && [...r.querySelectorAll('.mode-seg button')].find((x) => x.textContent.trim() === text); if (b) b.click(); return !!b; })()`);
+  // (instrument fix after runs 41574392177 / 41575607366 / 41575638700 - every press read "page eval: Uncaught": the button's word was compared
+  // to a bare `text` evaluated in the PAGE, where no such name exists (a ReferenceError at the word's column). The word is passed in now, and the
+  // press is guarded so a page error comes back as its text; pressed stays exactly true. Original: `=== text` inside the page string, no guard)
+  const pick = (text) => app.evalJs(`(() => { try { const r = [...document.querySelectorAll('.wz-theme-picker .wz-theme-picker-field .mode-crow')].find((x) => x.querySelector(':scope > span')?.textContent.trim() === ${JSON.stringify(label)}); const b = r && [...r.querySelectorAll('.mode-seg button')].find((x) => x.textContent.trim() === ${JSON.stringify(text)}); if (b) b.click(); return !!b; } catch (e) { return 'ERR ' + String((e && (e.stack || e.message)) || e).slice(0, 400); } })()`);
   const steps = [];
   for (const [value, text] of [...words.filter(([v]) => v !== 'clock'), ...words.filter(([v]) => v === 'clock')]) {
-    const pressed = await pick(text); await sleep(500);
+    const res = await pick(text); await sleep(500);
+    const pressed = res === true; if (typeof res === 'string') fail(name, { text, pageError: res });
     steps.push({ value, text, pressed, ...(await app.evalJs(READ)) });
   }
   const idx = before.rows.findIndex((r) => r.label === 'Page');

@@ -54,11 +54,17 @@ const same = (a, b) => !!a && !!b && ['l', 't', 'w', 'h'].every((k) => Math.abs(
 // (r17 driver: the Room row left the Mood menu for the Themes menu, under Page - the Wrizors' note, Nov 2 - with the words Light · Dark · By the clock.
 // It opens the Themes pop-out, presses the word and closes the pop-out again, as a writer would. No assertion changed.)
 const ROOM_WORD = { day: 'Light', night: 'Dark', clock: 'By the clock', Day: 'Light', Night: 'Dark', 'By the clock': 'By the clock' };
+// (driver fix after run 41575575711, no assertion changed: opening the Themes menu shuts the Tools drawer - main's Cascade band, requestOpen
+// ('cascade') - which the Mood route never did; the picker reopens the Tools drawer when it was open before)
 const pickThemesRoom = (app, which) => app.evalJs(`(async () => { const text = ${JSON.stringify(ROOM_WORD[which] ?? which)}; const strip = document.querySelector(".wz-strip-item[data-category='theme']"); if (!strip) return false;
+  const tools = !!document.querySelector(".wz-sliver[data-open='true']");
   const was = strip.getAttribute('aria-pressed') === 'true'; if (!was) strip.click(); const t0 = performance.now();
   while (!document.querySelector('.wz-theme-picker') && performance.now() - t0 < 2000) await new Promise((r) => requestAnimationFrame(r));
   const row = [...document.querySelectorAll('.wz-theme-picker .mode-crow')].find((r) => r.querySelector(':scope > span')?.textContent.trim() === 'Room');
-  const b = row && [...row.querySelectorAll('.mode-seg button')].find((x) => x.textContent.trim() === text); if (b) b.click(); if (!was) strip.click(); return !!b; })()`);
+  const b = row && [...row.querySelectorAll('.mode-seg button')].find((x) => x.textContent.trim() === text); if (b) b.click(); if (!was) strip.click();
+  for (let i = 0; i < 3; i++) await new Promise((r) => requestAnimationFrame(r));
+  if (tools && !document.querySelector(".wz-sliver[data-open='true']")) { document.querySelector('.wz-sliver-grip')?.click(); for (let i = 0; i < 3; i++) await new Promise((r) => requestAnimationFrame(r)); }
+  return !!b; })()`);
 export default {
   // ── THE PAGE IN BOTH TONES AND BOTH ROOMS, AND ITS RECT. Dark tone: paper #1A1510, border #3A2D22, ink #EFE4CB (>= 13.9:1), low ink #B9AA8C
   // (>= 4.5:1), caret brass, selection brass rules over and under (no fill that hides the ink); the same in the DAY room (the bar's Room switch).
