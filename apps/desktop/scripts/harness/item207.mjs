@@ -92,7 +92,10 @@ await withHarness(async (app) => {
   const fw = await typeShape(app);
   ok('FREE WRITE: the Type control is mounted', !!fw, JSON.stringify(fw));
   if (fw) {
-    ok('FREE WRITE: EXACTLY the smallest form — a face button and a `-` `+` pair (3 buttons), NO number field', fw.buttons === 3 && fw.inputs === 0, JSON.stringify({ buttons: fw.buttons, inputs: fw.inputs }));
+    // ---- PARKED VERBATIM - SUPERSEDED by TOOLS #14 (Fable, Nov 2: the size box sits between `-` and `+` in EVERY form, small included). Kept below, no longer run; the successor follows. ----
+    // ok('FREE WRITE: EXACTLY the smallest form — a face button and a `-` `+` pair (3 buttons), NO number field', fw.buttons === 3 && fw.inputs === 0, JSON.stringify({ buttons: fw.buttons, inputs: fw.inputs }));
+    // ------------------------------------------------------------------
+    ok('FREE WRITE [size-box successor]: the smallest form with the number between - and + (TOOLS #14) - a face button, a `-` `+` pair (3 buttons) and ONE number field', fw.buttons === 3 && fw.inputs === 1, JSON.stringify({ buttons: fw.buttons, inputs: fw.inputs }));
     ok('FREE WRITE: no visible caption or helper text — the control\'s text is the face name and the two step glyphs, nothing else', /^[A-Za-z0-9 ]+−\+$/.test(fw.text.replace(/\s+/g, ' ').trim().replace(/ (?=−)/, '')) || fw.text.length < 40, JSON.stringify(fw.text));
     await press(app, "document.querySelector('.wz-type-face')", 'the face button (Free Write roster)');
     await sleep(150);
@@ -326,8 +329,12 @@ await withHarness(async (app) => {
     // ok('CARD [font-span successor]: the dock carries the scoped small form - "Selection" / "Whole card" over the nine faces, `-` `+`, no number field, no face button',
     //   !!csScoped && csScoped.buttons === 4 && csScoped.inputs === 0 && !csScoped.faceButton && JSON.stringify(csScoped.scopes) === JSON.stringify(['Selection', 'Whole card']) && csScoped.rows === 9, JSON.stringify(csScoped));
     // ------------------------------------------------------------------
-    ok('CARD [item-9 successor]: the dock carries the scoped small form - "Selection" / "Whole card", a face button (Default + the eleven faces COLLAPSED behind it), `-` `+`, no number field',
-      !!csScoped && csScoped.buttons === 5 && csScoped.inputs === 0 && csScoped.faceButton && JSON.stringify(csScoped.scopes) === JSON.stringify(['Selection', 'Whole card']) && csScoped.rows === 12, JSON.stringify(csScoped));
+    // ---- PARKED VERBATIM - SUPERSEDED by TOOLS #14 (Fable, Nov 2: the size box sits between `-` and `+` in EVERY form, small included). Kept below, no longer run; the successor follows. ----
+    // ok('CARD [item-9 successor]: the dock carries the scoped small form - "Selection" / "Whole card", a face button (Default + the eleven faces COLLAPSED behind it), `-` `+`, no number field',
+    //   !!csScoped && csScoped.buttons === 5 && csScoped.inputs === 0 && csScoped.faceButton && JSON.stringify(csScoped.scopes) === JSON.stringify(['Selection', 'Whole card']) && csScoped.rows === 12, JSON.stringify(csScoped));
+    // ------------------------------------------------------------------
+    ok('CARD [size-box successor]: the dock carries the scoped small form - "Selection" / "Whole card", a face button (Default + the eleven faces COLLAPSED behind it), `-` [number] `+` (TOOLS #14)',
+      !!csScoped && csScoped.buttons === 5 && csScoped.inputs === 1 && csScoped.faceButton && JSON.stringify(csScoped.scopes) === JSON.stringify(['Selection', 'Whole card']) && csScoped.rows === 12, JSON.stringify(csScoped));
     await press(app, "document.querySelectorAll('.board-popup-dock .wz-type-step')[1]", "the card's `+`");
     await sleep(300);
     await pickFace(app, 'Atkinson Hyperlegible');
@@ -358,8 +365,12 @@ if (process.env.HARNESS_PARKED === '1') {
   // (the LABEL record below follows the NEWEST truth - TOOLS #10 item 10: the brass row of a never-chose page is "Default (<face>)")
   pk('PARKED (was "LABEL: on a page that never chose, the face button names the face that ACTUALLY renders (the first family the editor computes) and is set in it") - font-span: the brass roster row does; live successor: LABEL [font-span successor]',
     !!l && l.label === `Default (${l.rendered})` && l.rowFamily === l.rendered, JSON.stringify(l));
-  pk('PARKED (was "CARD: the styling dock carries the smallest form — a face button and `-` `+` (3 buttons), no number field") - font-span: the scoped small form; live successor: CARD [font-span successor]',
-    !!c && c.buttons === 5 && c.inputs === 0 && c.faceButton && c.rows === 12, JSON.stringify(c));
+  // ---- PARKED VERBATIM - SUPERSEDED by TOOLS #14 (Fable, Nov 2: the size box sits between `-` and `+` in EVERY form, small included). Kept below, no longer run; the successor follows. ----
+  // pk('PARKED (was "CARD: the styling dock carries the smallest form — a face button and `-` `+` (3 buttons), no number field") - font-span: the scoped small form; live successor: CARD [font-span successor]',
+  //   !!c && c.buttons === 5 && c.inputs === 0 && c.faceButton && c.rows === 12, JSON.stringify(c));
+  // ------------------------------------------------------------------
+  pk('PARKED (was "CARD: the styling dock carries the smallest form - a face button and `-` `+` (3 buttons), no number field") - font-span, then TOOLS #14: the scoped small form, now with the number between - and +; live successor: CARD [size-box successor]',
+    !!c && c.buttons === 5 && c.inputs === 1 && c.faceButton && c.rows === 12, JSON.stringify(c));
   // PAGE-SIZE (Oct 23, Fable's ruling a) - SIX more parks, each frozen with its original name, re-verifying the NEW truth from the default leg's
   // observations (i207Parks.untouched / .size / .modes).
   const u = i207Parks.untouched, s = i207Parks.size, m = i207Parks.modes;

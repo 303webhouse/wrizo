@@ -4,8 +4,10 @@
 // Made concrete here, and assertable (item207.mjs counts these): a strip menu carries the fewest controls that do the
 // act, each with the fewest marks; no captions, no helper text, no second row - a control's name lives in its
 // aria-label. So:
-//   form 'small'  (Free Write's strip, a card's strip)   ONE face button + a `-` `+` pair. NO number.
+//   form 'small'  (Free Write's strip, a card's strip)   ONE face button + `-` [ number ] `+`.
 //   form 'full'   (Draft and Revise's drawer)            the face button + `-` [ number ] `+`, the number typeable.
+// TOOLS #14 (Fable, Nov 2): the number now sits between `-` and `+` wherever they appear, in every form and skin. It was 'full' only ("NO number" in the small form); that
+// check is parked verbatim in item207.mjs with its successor.
 // No "Add a font..." row exists in this component: it arrives with Route A (207b), and an offered door with nothing
 // behind it is a mute grey. Free Write never gets it either (Nick's Q2).
 //
@@ -242,18 +244,16 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
       )}
       <div className="wz-type-size">
         <button type="button" className="mode-tbtn wz-type-step" aria-label={t('typeSmaller')} aria-disabled={down === null} onMouseDown={keepFocus} onClick={() => { if (down !== null) sizeTo(down); }}>{'−'}</button>
-        {form === 'full' && (
-          <input
-            className="wz-type-num"
-            type="text"
-            inputMode="decimal"
-            aria-label={t('typeSize')}
-            value={draft ?? formatSize(shownSize)}
-            onChange={(e) => setDraft(e.target.value)}
-            onBlur={commitDraft}
-            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commitDraft(); (e.target as HTMLInputElement).blur(); } else if (e.key === 'Escape') setDraft(null); }}
-          />
-        )}
+        <input
+          className="wz-type-num"
+          type="text"
+          inputMode="decimal"
+          aria-label={t('typeSize')}
+          value={draft ?? formatSize(shownSize)}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commitDraft}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commitDraft(); (e.target as HTMLInputElement).blur(); } else if (e.key === 'Escape') setDraft(null); }}
+        />
         <button type="button" className="mode-tbtn wz-type-step" aria-label={t('typeLarger')} aria-disabled={up === null} onMouseDown={keepFocus} onClick={() => { if (up !== null) sizeTo(up); }}>+</button>
       </div>
     </div>
