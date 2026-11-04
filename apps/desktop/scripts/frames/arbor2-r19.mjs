@@ -609,8 +609,10 @@ Object.assign(screens, {
     const done = await anon(app);
     await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
     try {
-      if (!(await freshSplash(app))) fail('R19-FRONT-REDUCED', { splash: false });
-      await sleep(300);
+      // (instrument fix after the red leg 41910564659: under reduced motion the splash's floor comes at once, so it can leave before the read -
+      // the finished frame is read on whichever stands, the splash or the front door, as soon as either shows it)
+      await freshSplash(app);
+      await waitSoft(app, "!!document.querySelector('.wz-splash .arbor2-top-logo, .arbor2-front-mark .arbor2-top-logo')", { label: 'the front layer', timeout: 8000 });
       const early = await app.evalJs(FR);
       await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 12000 }); await sleep(400);
       const f = await app.evalJs(FR);

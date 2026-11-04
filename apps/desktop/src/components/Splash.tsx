@@ -3,7 +3,7 @@ import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { useTheme } from '../store/theme';
 import { SplashMark, prefersReducedMotion } from './SplashMark';
 import { isArbor2 } from '../arbor2/flag';
-import { ArborTopLogo } from '../arbor2/frontLayer';
+import { ArborFront, startArborFront, finishArborFront } from '../arbor2/frontLayer';
 
 // the splash: pointer-events:none so it never eats a keystroke; sized by the ink's bounding box to about a quarter of the screen's area (capped at 60% height, 70% width); per-theme animation; holds until its animation ends and the app is ready; once per app load [Splash §1]
 
@@ -105,6 +105,10 @@ export function Splash({ ready }: { ready: boolean }) {
     floorPassedRef.current = true;
     tryEndRef.current?.();
   }, []);
+  // ARBOR v2 MOCKUP r19 (spec draft 38 §12c; Fable, Nov 4): in Arbor the sketch's end starts the front door's order (the logo, the typed tagline,
+  // the doors: src/arbor2/frontLayer.tsx), and the hold's floor ends when the doors are in (~7.8 s at 1366, inside the 10 s ceiling).
+  const arborFront = isArbor2() && theme === 'plateau';
+  const arborFloor = useCallback(() => startArborFront(onFloorReached), [onFloorReached]);
 
   useEffect(() => {
     if (!live) return undefined;
@@ -131,6 +135,19 @@ export function Splash({ ready }: { ready: boolean }) {
     // live (S2/S3's own claim). They observe and leave; they never dismiss
     // anything now, never `preventDefault`, never capture, never consume.
     const noop = () => {};
+    // ARBOR v2 MOCKUP r19 - THE SPLASH IS ALWAYS SKIPPABLE (Fable, Nov 4): any click, Esc or key jumps to the finished frame with the doors -
+    // the splash goes at once, ready or not (the front door's own boot state takes over); Enter = Write at any moment. Arbor only.
+    const skip = (e: Event) => {
+      if (!arborFront || goneRef.current) return;
+      const enter = e.type === 'keydown' && (e as KeyboardEvent).key === 'Enter';
+      if (e.type === 'keydown') e.preventDefault();
+      e.stopImmediatePropagation();
+      finishArborFront({ write: enter });
+      goneRef.current = true;
+      delete document.documentElement.dataset.splashHold;
+      setLive(false);
+    };
+    if (arborFront) { window.addEventListener('pointerdown', skip, true); window.addEventListener('keydown', skip, true); }
     const opts: AddEventListenerOptions = { passive: true, capture: false };
     const events = ['pointerdown', 'keydown', 'wheel', 'touchstart'] as const;
     events.forEach((e) => window.addEventListener(e, noop, opts));
@@ -141,6 +158,7 @@ export function Splash({ ready }: { ready: boolean }) {
       window.clearTimeout(ceiling);
       window.clearInterval(lineCycle);
       events.forEach((e) => window.removeEventListener(e, noop, opts));
+      window.removeEventListener('pointerdown', skip, true); window.removeEventListener('keydown', skip, true);
       window.removeEventListener('resize', resize);
       tryEndRef.current = null;
       // Defensive, not the normal path (tryEnd already clears this when leaving
@@ -196,9 +214,9 @@ export function Splash({ ready }: { ready: boolean }) {
         style={{ width: `${box.width}px`, height: `${box.height}px` }}
         onTransitionEnd={() => { if (leaving) setLive(false); }}
       >
-        <SplashMark theme={theme} reduced={reduced} width={box.width} height={box.height} onFloorReached={onFloorReached} />
+        <SplashMark theme={theme} reduced={reduced} width={box.width} height={box.height} onFloorReached={arborFront ? arborFloor : onFloorReached} />
         {/* ARBOR v2 MOCKUP r18 (Nick, via Fable, Nov 3): the logo written out where the drawing's top line stood, the tagline under it (src/arbor2/frontLayer.tsx) */}
-        {isArbor2() && theme === 'plateau' && <ArborTopLogo write={!reduced} width={box.width} />}
+        {arborFront && <ArborFront mode="splash" width={box.width} />}
       </div>
       {/* (r16's logo written out in the corner mark's rect moved into the drawing in r18, above) */}
       {/* role=status: announced politely; `key` remounts each line to restart the fade, which reduced motion drops [Splash §7] */}
