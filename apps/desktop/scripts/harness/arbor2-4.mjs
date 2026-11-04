@@ -71,6 +71,15 @@ const READ = `(() => {
   };
 })()`;
 const read = (app) => app.evalJs(READ);
+// r19 (spec draft 35 §18.3): READ plus each tab's chosen state and underline, and the Tutor panel's rect - for the successors of M2, K1j, K1k and K2 (Tutor)
+const READ19 = READ.replace("const tab = (id) => { const c = cs('#' + id); return c ? { bg: c.backgroundColor, color: c.color } : null; };",
+  "const tab = (id) => { const c = cs('#' + id); return c ? { bg: c.backgroundColor, color: c.color, on: document.getElementById(id).getAttribute('data-on') === 'true', deco: c.textDecorationLine } : null; };")
+  .replace("panelL: rect(document.querySelector('.wz-sliver-panel')),", "panelL: rect(document.querySelector('.wz-sliver-panel')), panelR: rect(document.querySelector('.wz-tutor-panel')),");
+if (READ19 === READ || !READ19.includes('panelR') || !READ19.includes("getAttribute('data-on')")) throw new Error('READ19 did not take');
+const read19 = (app) => app.evalJs(READ19);
+// a drawer's border (r19): exactly three 3 px insets of one colour - top, the outer side (Tools +3 x, Tutor -3 x), bottom - none on the page side
+const shadowParts = (s) => String(s || '').split(/,(?![^()]*\))/).map((p) => p.trim()).filter(Boolean).map((p) => { const m = p.match(/^(rgba?\([^)]*\))\s+(-?[\d.]+)px\s+(-?[\d.]+)px\s+([\d.]+)px(?:\s+(-?[\d.]+)px)?\s+inset$/); return m ? { c: m[1], x: +m[2], y: +m[3], blur: +m[4] } : { raw: p }; });
+const border3 = (s, rgb, outerX) => { const ps = shadowParts(s); return !!rgb && ps.length === 3 && [[0, 3], [outerX, 0], [0, -3]].every(([x, y]) => ps.some((p) => p.c === rgb && p.x === x && p.y === y && p.blur === 0)); };
 const WALNUT = 'rgb(26, 18, 6)', SEA = 'rgb(23, 69, 78)', OXBLOOD = 'rgb(107, 31, 28)', CREAM = 'rgb(232, 220, 194)';
 // r5 (spec §9c): the openers olive / brass, the cloths olive (a measured deeper step), cold blue, madder; cream and walnut lettering
 const OLIVE = 'rgb(107, 122, 58)', BRASS = 'rgb(255, 152, 0)', OLIVE_CLOTH = 'rgb(86, 99, 46)', BLUE = 'rgb(127, 160, 188)', MADDER = 'rgb(168, 57, 47)', CREAM5 = 'rgb(239, 228, 203)', WALNUT5 = 'rgb(43, 29, 18)';
@@ -139,6 +148,7 @@ await withHarness(async (app) => {
     await snap(app, `item4-${room}-tools-mid-pull`);
     await sleep(400);
     const l = await read(app);
+    const l19 = await read19(app);   // (r19: the same moment, with the tabs' chosen state, for the successors below)
     ok(`P1 [${room}] Tools drawer open: the page rect is identical`, sameRect(l.page, off.page), JSON.stringify({ on: l.page, off: off.page }));
     // PARKED 2026-11-04 (SUPERSEDED, harness 41849650962, Arbor 7b881a6f: the Wrizors (md5 d1c1dcc2, via Fable, Nov 4) put Free Write's Tools opener on the open drawer's
     // OUTER edge - it sat inside, over "Font" - so open it no longer stands where it does flag-off: on x 96, off x 209). Original, verbatim:
@@ -146,7 +156,13 @@ await withHarness(async (app) => {
     // SUCCESSOR K2c: open, the left tab rides the drawer's outer edge - its right edge on the panel's left edge (within 1 px), at its flag-off height.
     const rides = !!l.gripL && !!l.panelL && !!offL.gripL && Math.abs(l.gripL.x + l.gripL.w - l.panelL.x) <= 1 && Math.abs(l.gripL.y - offL.gripL.y) <= 1 && Math.abs(l.gripL.h - offL.gripL.h) <= 1;
     ok(`K2c [${room}] Tools drawer open on Free Write: the left tab rides the drawer's outer edge, at its flag-off height`, rides, JSON.stringify({ on: l.gripL, panel: l.panelL, off: offL.gripL }));
-    ok(`M2 [${room}] the Tools drawer's leading edge is a 2 px inset --arbor-line rule`, /inset/.test(String(l.slideShadow)) && /2px/.test(String(l.slideShadow)), String(l.slideShadow));
+    // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 35 §18.3 (Nick, Nov 4; handoff-FABLE-arbor-r19.md §1 A), harness run 41904658793, Arbor 8dd766dc: the
+    // drawer's border is its chosen tab's colour - 3 px on the top, the outer side and the bottom, the page side flush; the 2 px --arbor-line
+    // leading-edge rule is gone). Original, verbatim:
+    // ok(`M2 [${room}] the Tools drawer's leading edge is a 2 px inset --arbor-line rule`, /inset/.test(String(l.slideShadow)) && /2px/.test(String(l.slideShadow)), String(l.slideShadow));
+    // SUCCESSOR M2b: the Tools slide's box-shadow is exactly 3 px of the chosen tab's cloth on top, left (outer) and bottom - nothing on the page side.
+    const chosenL = Object.values(l19.tabs).find((t) => t && t.on);
+    ok(`M2b [${room}] the Tools drawer's border is 3 px of the chosen tab's cloth on top, outer side and bottom (the page side flush)`, !!chosenL && border3(l19.slideShadow, chosenL.bg, 3), JSON.stringify({ shadow: l19.slideShadow, chosen: chosenL }));
     // PARKED 2026-10-29 (SUPERSEDED by items 2-3's structural half, Fable's ruling 3: under the flag the Tools tabs are Font · Format · Presets · Ink,
     // so there is no TEXT tab - and this line's own `if` would have skipped it SILENTLY, a check that can never fail). Original, verbatim:
     //     if (l.tabs.text) ok(`K1 [${room}] Tools' tabs are cloth: TEXT walnut, INK sea`, l.tabs.text.bg === WALNUT && l.tabs.ink?.bg === SEA, JSON.stringify(l.tabs));
@@ -158,16 +174,29 @@ await withHarness(async (app) => {
     // ok(`K1g [${room}] Tools' cloths on Free Write: FORMAT olive, INK madder (cream lettering), no TEXT or FONT tab; the open opener is brass`,
     //   !l.tabs.text && !l.tabs.type && l.tabs.format?.bg === OLIVE_CLOTH && l.tabs.format?.color === CREAM5 && l.tabs.ink?.bg === MADDER && l.tabs.ink?.color === CREAM5 && l.gripLbg === BRASS, JSON.stringify({ tabs: l.tabs, grip: l.gripLbg }));
     // SUCCESSOR K1j: FORMAT (the open tab) brass with a walnut word, INK madder (cream); no TEXT or FONT tab; the open opener is brass.
-    ok(`K1j [${room}] Tools' tabs on Free Write: the open FORMAT brass (walnut word), INK madder (cream), no TEXT or FONT tab; the open opener is brass`,
-      !l.tabs.text && !l.tabs.type && l.tabs.format?.bg === BRASS && l.tabs.format?.color === WALNUT5 && l.tabs.ink?.bg === MADDER && l.tabs.ink?.color === CREAM5 && l.gripLbg === BRASS, JSON.stringify({ tabs: l.tabs, grip: l.gripLbg }));
+    // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 35 §18.3 (Nick, Nov 4; handoff-FABLE-arbor-r19.md §1 A), harness run 41904658793, Arbor 8dd766dc: every
+    // tab keeps its own cloth - NO BRASS on any tab; the chosen one only comes forward. The OPENERS are unchanged: the open opener stays brass). Original, verbatim:
+    // ok(`K1j [${room}] Tools' tabs on Free Write: the open FORMAT brass (walnut word), INK madder (cream), no TEXT or FONT tab; the open opener is brass`,
+    //   !l.tabs.text && !l.tabs.type && l.tabs.format?.bg === BRASS && l.tabs.format?.color === WALNUT5 && l.tabs.ink?.bg === MADDER && l.tabs.ink?.color === CREAM5 && l.gripLbg === BRASS, JSON.stringify({ tabs: l.tabs, grip: l.gripLbg }));
+    // SUCCESSOR K1l: FORMAT (the open tab) in its own olive cloth with a cream word, INK madder (cream), no brass and no underline on either
+    // tab; no TEXT or FONT tab; the open OPENER is still brass.
+    ok(`K1l [${room}] Tools' tabs on Free Write: the open FORMAT in its olive cloth (cream word), INK madder (cream), no brass on any tab, no TEXT or FONT tab; the open opener is brass`,
+      !l19.tabs.text && !l19.tabs.type && !!l19.tabs.format?.on && l19.tabs.format?.bg === OLIVE_CLOTH && l19.tabs.format?.color === CREAM5 && l19.tabs.ink?.bg === MADDER && l19.tabs.ink?.color === CREAM5
+        && [l19.tabs.format, l19.tabs.ink].every((t) => !!t && t.bg !== BRASS && t.color !== BRASS && !/underline/.test(String(t.deco))) && l19.gripLbg === BRASS, JSON.stringify({ tabs: l19.tabs, grip: l19.gripLbg }));
     await snap(app, `item2-${room}-tools-open`);
     await clickSel(app, '.wz-sliver-grip'); await sleep(500);
 
     // Tutor drawer
     await clickSel(app, '.wz-tutor-grip'); await sleep(500);
     const r = await read(app);
+    const r19 = await read19(app);   // (r19: the same moment, with the tabs' chosen state and the Tutor panel's rect, for the successors below)
     ok(`P1 [${room}] Tutor drawer open: the page rect is identical`, sameRect(r.page, off.page), JSON.stringify(r.page));
-    ok(`K2 [${room}] Tutor drawer open: the right tab is where it is flag-off`, sameRect(r.gripR, offR.gripR), JSON.stringify({ on: r.gripR, off: offR.gripR }));
+    // PARKED 2026-11-04 (SUPERSEDED, r19, harness run 41904658793, Arbor 8dd766dc: on the zoomed Free Write page the Tutor opener now rides the open Tutor
+    // drawer's OUTER (right) edge, as the Tools opener already does on the left (K2c above) - so open it no longer stands where it does flag-off). Original, verbatim:
+    // ok(`K2 [${room}] Tutor drawer open: the right tab is where it is flag-off`, sameRect(r.gripR, offR.gripR), JSON.stringify({ on: r.gripR, off: offR.gripR }));
+    // SUCCESSOR K2d: open, the right tab rides the drawer's outer edge - its left edge on the Tutor panel's right edge (within 1 px), at its flag-off height.
+    const ridesR = !!r19.gripR && !!r19.panelR && !!offR.gripR && Math.abs(r19.gripR.x - (r19.panelR.x + r19.panelR.w)) <= 1 && Math.abs(r19.gripR.y - offR.gripR.y) <= 1 && Math.abs(r19.gripR.h - offR.gripR.h) <= 1;
+    ok(`K2d [${room}] Tutor drawer open on Free Write: the right tab rides the drawer's outer edge, at its flag-off height`, ridesR, JSON.stringify({ on: r19.gripR, panel: r19.panelR, off: offR.gripR }));
     // PARKED 2026-10-31 (SUPERSEDED, r5, run 41240761804: spec §9c - Tutor olive (main), Grafts cold blue, Board madder; no walnut, sea, oxblood or iron
     // cloth). Original, verbatim:
     // ok(`K1 [${room}] the Tutor drawer's tabs are cloth: TUTOR sea, GRAFTS oxblood`, r.tabs.tutor?.bg === SEA && r.tabs.links?.bg === OXBLOOD, JSON.stringify(r.tabs));
@@ -176,7 +205,14 @@ await withHarness(async (app) => {
     // PARKED 2026-11-03 (SUPERSEDED, r17, run 41589314214: the open folder tab is FILLED brass #FF9800 with a walnut word (Nick, Nov 1: "Just have the tab turn brass when it's active"; the Wrizors' note corrected Nov 2, 11:10 pm, md5 fc26efc3) - the open FORMAT / TUTOR are brass, not olive). Original, verbatim:
     // ok(`K1h [${room}] the Tutor drawer's cloths: TUTOR olive (cream), GRAFTS cold blue (walnut)`, r.tabs.tutor?.bg === OLIVE_CLOTH && r.tabs.tutor?.color === CREAM5 && r.tabs.links?.bg === BLUE && r.tabs.links?.color === WALNUT5, JSON.stringify(r.tabs));
     // SUCCESSOR K1k: TUTOR (the open tab) brass with a walnut word, GRAFTS cold blue (walnut).
-    ok(`K1k [${room}] the Tutor drawer's tabs: the open TUTOR brass (walnut word), GRAFTS cold blue (walnut)`, r.tabs.tutor?.bg === BRASS && r.tabs.tutor?.color === WALNUT5 && r.tabs.links?.bg === BLUE && r.tabs.links?.color === WALNUT5, JSON.stringify(r.tabs));
+    // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 35 §18.3 (Nick, Nov 4; handoff-FABLE-arbor-r19.md §1 A), harness run 41904658793, Arbor 8dd766dc: every
+    // tab keeps its own cloth - NO BRASS on any tab; the chosen one only comes forward). Original, verbatim:
+    // ok(`K1k [${room}] the Tutor drawer's tabs: the open TUTOR brass (walnut word), GRAFTS cold blue (walnut)`, r.tabs.tutor?.bg === BRASS && r.tabs.tutor?.color === WALNUT5 && r.tabs.links?.bg === BLUE && r.tabs.links?.color === WALNUT5, JSON.stringify(r.tabs));
+    // SUCCESSOR K1m: TUTOR (the open tab) in its own olive cloth with a cream word, GRAFTS cold blue (walnut); no brass and no underline on
+    // either tab.
+    ok(`K1m [${room}] the Tutor drawer's tabs: the open TUTOR in its olive cloth (cream word), GRAFTS cold blue (walnut), no brass on any tab`,
+      !!r19.tabs.tutor?.on && r19.tabs.tutor?.bg === OLIVE_CLOTH && r19.tabs.tutor?.color === CREAM5 && r19.tabs.links?.bg === BLUE && r19.tabs.links?.color === WALNUT5
+        && [r19.tabs.tutor, r19.tabs.links].every((t) => !!t && t.bg !== BRASS && t.color !== BRASS && !/underline/.test(String(t.deco))), JSON.stringify(r19.tabs));
     ok(`K1i [${room}] the Tutor drawer's BOARD cloth is madder (cream)`, r.tabs.board?.bg === MADDER && r.tabs.board?.color === CREAM5, JSON.stringify(r.tabs.board));
     await snap(app, `item3-${room}-tutor-open`);
     await clickSel(app, '.wz-tutor-grip'); await sleep(500);

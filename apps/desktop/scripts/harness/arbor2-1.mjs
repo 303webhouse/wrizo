@@ -107,6 +107,18 @@ const STATE = `(() => {
   };
 })()`;
 const state = (app) => app.evalJs(STATE);
+// r19 (spec draft 35 §18.1 F): under the flag the rhizome is drawn as filled vines (path.arbor2-vine in g.arbor2-vines, kept laps in
+// g.arbor2-vines-past), not the stroked .wz-rhizome-seg paths the field read above names - so the successors below read the vines too: how
+// many, their fills (each distinct computed fill), the vines' group opacity, and the field's own opacity (the day room's rest/writing swap).
+const STATE19 = STATE.replace("segVis: seg ? getComputedStyle(seg).visibility : null }",
+  "segVis: seg ? getComputedStyle(seg).visibility : null, vinesAttr: f.getAttribute('data-vines'), op: Number(getComputedStyle(f).opacity), vines: f.querySelectorAll('path.arbor2-vine').length, fills: [...new Set([...f.querySelectorAll('path.arbor2-vine')].map((v) => getComputedStyle(v).fill))], groupOp: f.querySelector('.arbor2-vines') ? Number(getComputedStyle(f.querySelector('.arbor2-vines')).opacity) : null }");
+if (STATE19 === STATE) throw new Error('STATE19 did not take');
+const state19 = (app) => app.evalJs(STATE19);
+// every drawn vine in one fill (and, when given, the vines' group at that opacity): a wait for a room's or the flash's colour change to settle
+const VINES_AT = (fill, op) => `(() => { const f = document.querySelector('.wz-rhizome-field'); const v = f ? [...f.querySelectorAll('path.arbor2-vine')] : []; const g = f && f.querySelector('.arbor2-vines');
+  return v.length > 0 && v.every((p) => getComputedStyle(p).fill === ${JSON.stringify(fill)}) && (${op == null ? 'true' : `!!g && Math.abs(Number(getComputedStyle(g).opacity) - ${op}) <= 0.02`}); })()`;
+const settle = (app, expr, label, timeout = 4000) => app.waitFor(expr, { timeout, label }).catch(() => {});
+const VINE_DAY = 'rgb(79, 107, 44)', VINE_NIGHT = 'rgb(107, 81, 57)';
 
 // WCAG contrast from hex or rgb() strings.
 const rgb = (s) => { s = String(s).trim(); if (s.startsWith('#')) { const h = s.slice(1); return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)); } return (s.match(/[\d.]+/g) || []).slice(0, 3).map(Number); };
@@ -247,8 +259,15 @@ await withHarness(async (app) => {
       // ok('L3 night: the lamp is on screen - nothing opaque covers body beside the page top (the desk host is see-through); the bar keeps its own ground',
       //   cover.margin.length === 0 && cover.bar === 'rgb(21, 15, 11)', JSON.stringify(cover));
       // SUCCESSOR L3b: the same, with the bar on r5's espresso.
-      ok('L3b night: the lamp is on screen - nothing opaque covers body beside the page top (the desk host is see-through); the bar keeps its own espresso ground',
-        cover.margin.length === 0 && cover.bar === 'rgb(27, 18, 12)', JSON.stringify(cover));      await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]); await sleep(150);
+      // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 35 §18.2 (Nick, Nov 4; handoff-FABLE-arbor-r19.md §1 B), harness run 41904658793, Arbor 8dd766dc:
+      // the bars are no longer espresso - by night they are the room's brown #241912, by day olive #3A4322). Original, verbatim (the reduced-motion
+      // driver call that shared its last line is unchanged, now on its own line below):
+      // ok('L3b night: the lamp is on screen - nothing opaque covers body beside the page top (the desk host is see-through); the bar keeps its own espresso ground',
+      //   cover.margin.length === 0 && cover.bar === 'rgb(27, 18, 12)', JSON.stringify(cover));
+      // SUCCESSOR L3c: the same, with the bar on the night room's brown #241912.
+      ok('L3c night: the lamp is on screen - nothing opaque covers body beside the page top (the desk host is see-through); the bar keeps its own ground, the night room\'s brown #241912',
+        cover.margin.length === 0 && cover.bar === 'rgb(36, 25, 18)', JSON.stringify(cover));
+      await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]); await sleep(150);
       const rm = await state(app);
       ok('L1 night, reduced motion: the lamp is a still frame (no animation)', rm.lampAnim === 'none', rm.lampAnim);
       await snap(app, 'item1-night-reduced-motion');
@@ -300,11 +319,31 @@ await withHarness(async (app) => {
   await seedTo(7);
   await pickBar(app, 'Night'); await pickBar(app, 'Hidden rhizome'); await sleep(300);
   const h2rest = await state(app);
-  ok('H2 night + hidden rhizome, growing: the field is invisible (and has grown roots to hide)', h2rest.field && h2rest.field.vis === 'hidden' && h2rest.field.segs > 0, JSON.stringify(h2rest.field));
+  // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 35 §18.1 F (Nick's own change, Nov 4; handoff-FABLE-arbor-r19.md §1 F), harness run 41904658793,
+  // Arbor 8dd766dc: by night the vines are a lighter brown #6B5139 at ~.75 of the day strengths - "barely visible until the flash" replaces "fully
+  // hidden between flashes"; and they are drawn as filled vines, not .wz-rhizome-seg). Original, verbatim:
+  // ok('H2 night + hidden rhizome, growing: the field is invisible (and has grown roots to hide)', h2rest.field && h2rest.field.vis === 'hidden' && h2rest.field.segs > 0, JSON.stringify(h2rest.field));
+  // SUCCESSOR H2b: by night, growing, the field is VISIBLE with its vines barely there - drawn as vines, every one the night brown
+  // rgb(107, 81, 57), the vines' group at .75 (the read waits out the room's own 2.2 s colour change from the pick above).
+  await settle(app, VINES_AT(VINE_NIGHT, 0.75), 'night vines settled');
+  const h2rest19 = await state19(app);
+  const f2r = h2rest19.field;
+  ok('H2b night, growing: the field is visible, its vines barely there (every vine rgb(107, 81, 57), the vines\' group at .75)',
+    !!f2r && f2r.vis !== 'hidden' && f2r.vinesAttr === 'true' && f2r.vines > 0 && f2r.fills.join() === VINE_NIGHT && f2r.groupOp != null && Math.abs(f2r.groupOp - 0.75) <= 0.02, JSON.stringify(f2r));
   await snap(app, 'item1-night-hidden-rhizome-rest');
   await crossGoal();
   const h2flash = await state(app);
-  ok('H2 at the goal: the whole web shows, in brass', h2flash.field && h2flash.field.vis === 'visible' && h2flash.field.flash === 'true' && nearBrass(h2flash.field.stroke), JSON.stringify(h2flash.field));
+  // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 35 §18.1 F, harness run 41904658793, Arbor 8dd766dc: the rhizome is drawn as FILLED vines - there
+  // is no .wz-rhizome-seg stroke to read (stroke null); the flash turns the vines' FILL brass). Original, verbatim:
+  // ok('H2 at the goal: the whole web shows, in brass', h2flash.field && h2flash.field.vis === 'visible' && h2flash.field.flash === 'true' && nearBrass(h2flash.field.stroke), JSON.stringify(h2flash.field));
+  // SUCCESSOR H2c: at the goal the WHOLE rhizome is brass - every vine filled rgb(255, 152, 0) (each distinct fill near brass), the vines'
+  // group at full strength, the field visible, data-flash 'true'. The flash's own fill transition (1.2 s ease-in) ends just as data-flash
+  // leaves 'true', so the read finishes the field's own CSS transitions first and reads where the flash takes the vines.
+  await app.evalJs("document.getAnimations().filter((a) => typeof CSSTransition !== 'undefined' && a instanceof CSSTransition && a.effect && a.effect.target && a.effect.target.closest && a.effect.target.closest('.wz-rhizome-field')).forEach((a) => { try { a.finish(); } catch {} })");
+  const h2flash19 = await state19(app);
+  const f2f = h2flash19.field;
+  ok('H2c at the goal: the whole rhizome shows in brass (every vine filled rgb(255, 152, 0), the vines\' group at 1), the field visible',
+    !!f2f && f2f.vis !== 'hidden' && f2f.flash === 'true' && f2f.vines > 0 && f2f.fills.length > 0 && f2f.fills.every(nearBrass) && f2f.groupOp === 1, JSON.stringify(f2f));
   // H5 (Fable, Oct 29: "keep it off the prose column"): at the flash, the field's paint clip has a hole covering the whole page rect
   const h5 = await app.evalJs(`(() => {
     const f = document.querySelector('.wz-rhizome-field'), p = document.querySelector('.mode-page');
@@ -343,7 +382,16 @@ await withHarness(async (app) => {
   await sleep(200);
   const h2after = await state(app);
   const log = await app.evalJs('window.__fl');
-  ok('H2 after the fade: invisible again', h2after.field && h2after.field.vis === 'hidden', JSON.stringify(h2after.field));
+  // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 35 §18.1 F (Nick's own change, Nov 4), harness run 41904658793, Arbor 8dd766dc: by night the
+  // rhizome is no longer hidden between flashes - after the flash it goes back to its barely-there brown). Original, verbatim:
+  // ok('H2 after the fade: invisible again', h2after.field && h2after.field.vis === 'hidden', JSON.stringify(h2after.field));
+  // SUCCESSOR H2d: after the fade the field is still visible and every vine is back to the night brown rgb(107, 81, 57), the vines' group
+  // at .75 again (the read waits out the fade's 2.2 s colour change).
+  await settle(app, VINES_AT(VINE_NIGHT, 0.75), 'night vines back');
+  const h2after19 = await state19(app);
+  const f2a = h2after19.field;
+  ok('H2d after the fade: the field stays visible, back to brown (every vine rgb(107, 81, 57), the vines\' group at .75)',
+    !!f2a && f2a.vis !== 'hidden' && f2a.flash === 'false' && f2a.vines > 0 && f2a.fills.join() === VINE_NIGHT && f2a.groupOp != null && Math.abs(f2a.groupOp - 0.75) <= 0.02, JSON.stringify(f2a));
   const perSec = Math.max(0, ...log.map(([t]) => log.filter(([u]) => u >= t && u < t + 1000).length - 1));
   ok('H2 flash budget: the web changes state <= 3 times in any second (true -> fading -> false)', perSec <= 3 && log.map((x) => x[1]).join('>').includes('true>fading>false'), JSON.stringify(log));
 
@@ -366,15 +414,23 @@ await withHarness(async (app) => {
   await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]); await sleep(150);
   await crossGoal();
   const h4 = await app.evalJs("(() => { const f = document.querySelector('.wz-rhizome-field'); const seg = f && f.querySelector('.wz-rhizome-seg'); return f ? { flash: f.dataset.flash, vis: getComputedStyle(f).visibility, anim: getComputedStyle(f).animationName, stroke: seg ? getComputedStyle(seg).stroke : null } : null; })()");
+  const h4b = (await state19(app)).field;   // (r19: the vines' fills, at the same moment, for H4's successor)
   await snap(app, 'item1-night-hidden-rhizome-reduced-motion');
   await app.waitFor("document.querySelector('.wz-rhizome-field')?.dataset.flash === 'false'", { label: 'flash over (reduced)', timeout: 6000 }).catch(() => {});
   const log4 = await app.evalJs('window.__fl');
   await app.emulateMedia([]); await sleep(150);
   const h1at = await state(app);
   ok('H1b the lamp is ambience only: reaching the goal leaves the lamp\'s own animation as it was', h1before.lampAnim === h1at.lampAnim && /arbor2-breath/.test(h1at.lampAnim), JSON.stringify({ before: h1before.lampAnim, after: h1at.lampAnim }));
-  ok('H4 reduced motion: a still frame - the web shows in brass with no animation, then cuts (true -> false, never fading)',
-    !!h4 && h4.flash === 'true' && h4.vis === 'visible' && h4.anim === 'none' && nearBrass(h4.stroke) && Array.isArray(log4) && !log4.some((x) => x[1] === 'fading') && log4.map((x) => x[1]).join('>').includes('true>false'),
-    JSON.stringify({ h4, log4 }));
+  // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 35 §18.1 F, harness run 41904658793, Arbor 8dd766dc: the rhizome is drawn as FILLED vines - there
+  // is no .wz-rhizome-seg stroke to read (h4.stroke null); the brass is the vines' fill). Original, verbatim:
+  // ok('H4 reduced motion: a still frame - the web shows in brass with no animation, then cuts (true -> false, never fading)',
+  //   !!h4 && h4.flash === 'true' && h4.vis === 'visible' && h4.anim === 'none' && nearBrass(h4.stroke) && Array.isArray(log4) && !log4.some((x) => x[1] === 'fading') && log4.map((x) => x[1]).join('>').includes('true>false'),
+  //   JSON.stringify({ h4, log4 }));
+  // SUCCESSOR H4b: the same still frame and the same cut, the brass read off the vines' fill (reduced motion runs no transition, so it is
+  // brass at once): every vine filled near rgb(255, 152, 0).
+  ok('H4b reduced motion: a still frame - the whole rhizome shows in brass (every vine\'s fill) with no animation, then cuts (true -> false, never fading)',
+    !!h4 && h4.flash === 'true' && h4.vis === 'visible' && h4.anim === 'none' && !!h4b && h4b.vines > 0 && h4b.fills.length > 0 && h4b.fills.every(nearBrass) && Array.isArray(log4) && !log4.some((x) => x[1] === 'fading') && log4.map((x) => x[1]).join('>').includes('true>false'),
+    JSON.stringify({ h4, h4b, log4 }));
 
   // H3: day
   await seedTo(7);
@@ -383,8 +439,25 @@ await withHarness(async (app) => {
   // PARKED 2026-10-31 (SUPERSEDED, r5, run 41240761804: spec §2b - the day guide/leaf is #4F6B2C). Original, verbatim:
   // ok('H3 day: the shoots show at rest, in the leaf (#5F7A3C)', h3.field && h3.field.vis === 'visible' && h3.field.segs > 0 && h3.field.stroke === 'rgb(95, 122, 60)', JSON.stringify(h3.field));
   // SUCCESSOR H3b: the shoots show at rest, in r5's leaf.
-  ok('H3b day: the shoots show at rest, in the leaf (#4F6B2C)', h3.field && h3.field.vis === 'visible' && h3.field.segs > 0 && h3.field.stroke === 'rgb(79, 107, 44)', JSON.stringify(h3.field));
+  // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 35 §18.1 E/F (Nick, Nov 4; handoff-FABLE-arbor-r19.md §1 E, F), harness run 41904658793, Arbor 8dd766dc:
+  // by day AT REST the rhizome is hidden - the shade and the rhizome swap: the pergola shows at rest, the rhizome fades in when writing starts -
+  // and it is drawn as filled vines, not .wz-rhizome-seg). Original, verbatim:
+  // ok('H3b day: the shoots show at rest, in the leaf (#4F6B2C)', h3.field && h3.field.vis === 'visible' && h3.field.segs > 0 && h3.field.stroke === 'rgb(79, 107, 44)', JSON.stringify(h3.field));
+  // SUCCESSOR H3c: by day at rest the field is hidden (its opacity 0: the rest/writing swap; the read waits out the room's 3 s fade from the
+  // night picked before), its vines drawn beneath; then, writing (one letter, no space: still 7 words of 8, so no flash), <html data-wz-writing>
+  // is set and every vine fills the leaf rgb(79, 107, 44). (The field's own 6 s fade-in is not waited for: the fill is the claim.)
+  await settle(app, "(() => { const f = document.querySelector('.wz-rhizome-field'); return !!f && Number(getComputedStyle(f).opacity) === 0; })()", 'day field at rest', 5000);
+  const h3rest19 = (await state19(app)).field;
   await snap(app, 'item1-day-rhizome');
+  await app.evalJs("document.querySelector('.forward-only-editor').focus()");
+  await app.typeKeys('s');
+  await settle(app, "document.documentElement.getAttribute('data-wz-writing') === 'true'", 'writing');
+  await settle(app, VINES_AT(VINE_DAY, null), 'day vines');
+  const h3w = await app.evalJs("document.documentElement.getAttribute('data-wz-writing')");
+  const h3write19 = (await state19(app)).field;
+  ok('H3c day: at rest the rhizome is hidden (field opacity 0, its vines drawn beneath); while writing every vine is the leaf rgb(79, 107, 44)',
+    !!h3rest19 && h3rest19.op === 0 && h3rest19.vinesAttr === 'true' && h3rest19.vines > 0 && h3w === 'true' && !!h3write19 && h3write19.flash === 'false' && h3write19.vines > 0 && h3write19.fills.join() === VINE_DAY,
+    JSON.stringify({ rest: h3rest19, writing: h3w, write: h3write19 }));
 
   // R1: recede while typing
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");

@@ -148,7 +148,7 @@ export default {
 
   // ── THE CONTRAST FLOORS, IN EVERY MIX. With the room as Day and as Night (the job sets the tone): every lettered thing on the bars, the rail,
   // the stage (the page, its title, the count row), the open drawers and their cloths >= 4.5:1, the opener arrows and the "..." >= 3:1 - each
-  // label lit in its own colours (as r5-contrast reads it). The ROOM is the room's (its ground tokens, the espresso bars); the PAGE is the
+  // label lit in its own colours (as r5-contrast reads it). The ROOM is the room's (its ground tokens, the espresso bars - r19: olive by day, brown by night); the PAGE is the
   // tone's (#1A1510 dark / #F3EDE1 light) with its ink >= 13.9:1 and its low ink >= 4.5:1 in either room. Stages: Free Write closed, the Tools
   // drawer open, Draft closed, the Tutor open on Grafts.
   'r8-contrast': async (app) => {
@@ -190,7 +190,11 @@ export default {
       reads.push(await app.evalJs(READ(room + ' tutor grafts')));
       await clickSel(app, '.wz-tutor-grip'); await sleep(400);
     }
-    const ESP = '#1B120C';
+    // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 35 §18.2 (Nick, Nov 4; handoff-FABLE-arbor-r19.md §1 B), frames run 41915684215, Arbor 8dd766dc:
+    // the top bar and the rail are no longer espresso #1B120C - they are olive #3A4322 by day and brown #241912 by night, room tokens (--arbor2-bar)). Original, verbatim:
+    // const ESP = '#1B120C';
+    // SUCCESSOR (bars by room): the top bar and the rail olive #3A4322 by day, brown #241912 by night.
+    const BAR19 = { day: '#3A4322', night: '#241912' };
     const dark = reads[0].tone === 'dark';
     const PAPER = dark ? '#1A1510' : '#F3EDE1';
     const problems = [];
@@ -198,7 +202,11 @@ export default {
       const want = r.stage.startsWith('day') ? 'day' : 'night';
       if (r.room !== want) problems.push({ stage: r.stage, room: r.room });
       if (r.bad.length) problems.push({ stage: r.stage, low: r.bad.slice(0, 4) });
-      if (r.barBg !== ESP || r.railBg !== ESP) problems.push({ stage: r.stage, bars: [r.barBg, r.railBg] });
+      // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 35 §18.2 (Nick, Nov 4; handoff-FABLE-arbor-r19.md §1 B), frames run 41915684215, Arbor 8dd766dc:
+      // the top bar and the rail are no longer espresso #1B120C - they are olive #3A4322 by day and brown #241912 by night, room tokens (--arbor2-bar)). Original, verbatim:
+      // if (r.barBg !== ESP || r.railBg !== ESP) problems.push({ stage: r.stage, bars: [r.barBg, r.railBg] });
+      // SUCCESSOR: the bars are the room's - olive #3A4322 by day, brown #241912 by night.
+      if (r.barBg !== BAR19[want] || r.railBg !== BAR19[want]) problems.push({ stage: r.stage, bars: [r.barBg, r.railBg], want: BAR19[want] });
       // the room's ground: night #120A06 / raised #1B120C; day the plaster (R >= 0xEC, B >= 0xC4) with raised #E8DFC8
       const n = parseInt(r.tokens.g.replace('#', ''), 16);
       const roomOk = want === 'night' ? r.tokens.g === '#120A06' && r.tokens.s === '#1B120C' : (n >> 16) >= 0xEC && (n & 255) >= 0xC4 && r.tokens.s === '#E8DFC8';

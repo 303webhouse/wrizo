@@ -83,8 +83,21 @@ await withHarness(async (app) => {
   // Original, verbatim:
   // ok('L1 day: the light layer is drawn, at the afternoon\'s strength (.10-.22)', !!day.sun && day.sun.display === 'block' && day.sun.opacity >= 0.0999 && day.sun.opacity <= 0.2201, JSON.stringify({ sun: day.sun, t: day.t }));
   // SUCCESSOR L1b: the strength is the spec's 18%-26%, and it is the one the afternoon number asks for (.18 + .08 t, to half a percent).
-  ok('L1b day: the light layer is drawn, at the afternoon\'s strength (§7b: .18-.26, = .18 + .08 t)', !!day.sun && day.sun.display === 'block' && day.sun.opacity >= 0.1799 && day.sun.opacity <= 0.2601
-    && Math.abs(day.sun.opacity - (0.18 + 0.08 * (parseFloat(day.t) || 0))) <= 0.005, JSON.stringify({ sun: day.sun, t: day.t }));
+  // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 35 §18.1 (Nick, Nov 4; handoff-FABLE-arbor-r19.md §1 D), harness run 41904658793, Arbor 8dd766dc: the
+  // day light is the Wrizors' painted pergola shadow, drawn as .arbor2-pergola (src/arbor2/pergola.ts) - the old .arbor2-sun layer is no longer
+  // drawn (display:none always); the shade's strength is the drawing's own group opacity (#3F4D22 at 20%), not the afternoon's .18-.26). Original, verbatim:
+  // ok('L1b day: the light layer is drawn, at the afternoon\'s strength (§7b: .18-.26, = .18 + .08 t)', !!day.sun && day.sun.display === 'block' && day.sun.opacity >= 0.1799 && day.sun.opacity <= 0.2601
+  //   && Math.abs(day.sun.opacity - (0.18 + 0.08 * (parseFloat(day.t) || 0))) <= 0.005, JSON.stringify({ sun: day.sun, t: day.t }));
+  // SUCCESSOR L1d: by day (at rest) the pergola layer .arbor2-pergola is displayed, fixed, at z-index -1, its opacity the morning handoff's share
+  // var(--arbor2-sun-in, 1) (1 at rest; the read waits out the layer's own 3 s opacity transition), and its drawing's g[filter] carries
+  // opacity="0.2" (the shade at 20%).
+  const PERGOLA = `(() => { const e = document.querySelector('.arbor2-pergola'); if (!e) return null; const cs = getComputedStyle(e), g = e.querySelector('svg g[filter]');
+    const v = getComputedStyle(document.documentElement).getPropertyValue('--arbor2-sun-in').trim();
+    return { display: cs.display, pos: cs.position, z: cs.zIndex, opacity: +cs.opacity, sunIn: v, want: v === '' ? 1 : parseFloat(v), gOpacity: g ? g.getAttribute('opacity') : null, writing: document.documentElement.getAttribute('data-wz-writing') }; })()`;
+  await app.waitFor(`(() => { const p = ${PERGOLA}; return !!p && Math.abs(p.opacity - p.want) <= 0.01; })()`, { timeout: 4000, label: 'pergola settled' }).catch(() => {});
+  const perg = await app.evalJs(PERGOLA);
+  ok('L1d day: the pergola layer is drawn - displayed, fixed, z-index -1, at opacity var(--arbor2-sun-in, 1) (1 at rest), its shade group at opacity 0.2',
+    !!perg && perg.display === 'block' && perg.pos === 'fixed' && perg.z === '-1' && Math.abs(perg.opacity - perg.want) <= 0.01 && perg.gOpacity !== null && Math.abs(parseFloat(perg.gOpacity) - 0.2) < 1e-9, JSON.stringify(perg));
   // PARKED 2026-10-29 (SUPERSEDED: it passed while INK's CI frames showed the slats THROUGH Free Write's zoomed page - an opaque paper is
   // not "never over the prose column" when Typewriter's band mask makes the page see-through, and this leg only ever opened a Draft chapter,
   // which is not zoomed). Original, verbatim:

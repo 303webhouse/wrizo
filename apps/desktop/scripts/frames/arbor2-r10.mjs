@@ -238,7 +238,25 @@ export default {
     const ok = {
       stop: !!mid && mid.t === 0.5 && near(mid.g, '#D9C3A2') && near(eve.g, '#D9C3A2'),
       warm: rows.every((r) => { const [R, , B] = n(r.g); return R - B >= 0x0C; }),   // never cooler than espresso's own warmth (the stop above is what tells the warm path from r9's grey one)
-      bars: rows.every((r) => r.bar === '#1B120C'),
+      // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 35 §18.2 (Nick, Nov 4; handoff-FABLE-arbor-r19.md §1 B), frames run 41913722381, Arbor 8dd766dc:
+      // the bars are no longer espresso - they are room tokens (--arbor2-bar), olive #3A4322 by day and brown #241912 by night, and the Room
+      // crossfade carries them STRAIGHT from one to the other (no warm waypoint)). Original, verbatim:
+      // bars: rows.every((r) => r.bar === '#1B120C'),
+      // SUCCESSOR barsStraight: through the morning fade the bar's ground goes straight from the night brown #241912 to the day olive #3A4322 - it
+      // starts on the brown and ends on the olive (within 2 levels), every sample lies on the straight line between them (each channel between the
+      // two ends; the red and blue where the green's share of the way puts them, within 2 levels), each channel moves one way only across the
+      // samples, and no sample comes near the warm stop #D9C3A2.
+      barsStraight: (() => {
+        const A = n('#241912'), B = n('#3A4322'), W = n('#D9C3A2');
+        const bs = rows.map((r) => (r.bar ? n(r.bar) : null));
+        if (bs.length < 2 || bs.some((b) => !b)) return false;
+        const ends = A.every((v, i) => Math.abs(bs[0][i] - v) <= 2) && B.every((v, i) => Math.abs(bs[bs.length - 1][i] - v) <= 2);
+        const between = bs.every((b) => b.every((v, i) => v >= Math.min(A[i], B[i]) - 1 && v <= Math.max(A[i], B[i]) + 1));
+        const onLine = bs.every((b) => { const s = (b[1] - A[1]) / (B[1] - A[1]); return [0, 2].every((i) => Math.abs(b[i] - (A[i] + s * (B[i] - A[i]))) <= 2); });
+        const oneWay = [0, 1, 2].every((i) => bs.slice(1).every((b, j) => Math.sign(B[i] - A[i]) * (b[i] - bs[j][i]) >= -1));
+        const notWarm = bs.every((b) => !b.every((v, i) => Math.abs(v - W[i]) <= 24));
+        return ends && between && onLine && oneWay && notWarm;
+      })(),
     };
     if (Object.values(ok).some((x) => !x)) fail('R10-WARM', { ok, rows: rows.map((r) => [r.at, r.t, r.g, r.bar]), eve });
     say('r10-warm', { ok, rows: rows.map((r) => [r.at, r.t, r.g]) });
