@@ -5,7 +5,7 @@ source that cites `[theme §n]` points here.
 
 ## theme §1
 
-From `apps/desktop/src/store/theme.ts`, line 16 at `f079d49e` (the comment that stays: "per-theme config: a new page's typewriter default is the theme's call; nomad and volant join the union and this table in the same edit (volant: do not guess)").
+From `apps/desktop/src/store/theme.ts`, line 16 at `f079d49e` (the comment that stays: "per-theme config: a new page's typewriter default is the theme's call; marked slots, not registered (each joins the union and this table in the same edit): nomad: { typewriterDefault: true }, volant: TBD (do not guess)").
 
 ```ts
 // PHASE 1 (S5) - PER-THEME CONFIG. What a NEW page opens with is the theme's call. Today the one field is the typewriter's default for a page that has no

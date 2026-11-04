@@ -285,7 +285,7 @@
 {"key":"store/sync.ts#44","hash":"dc654d991b","why":"when a local write starts failing, push at once (the cache holds the only copy); syncOnce's inFlight guard makes it a no-op if a push is under way"},
 {"key":"store/syncNotice.ts#0","hash":"38be24384d","why":"what the writer reads when sync or local storage cannot do everything: pure, tested as text; each storage state says what is true and the one act that prevents loss, in plain words"},
 {"key":"store/tabChord.ts#0","hash":"80eae0e162","why":"the Tab key as a state machine: Tab is not a modifier, so Tab+1 is a chord only after Tab has been HELD CHORD_HOLD_MS; under it, a pending Tab applies first and the 1 types"},
-{"key":"store/theme.ts#1","hash":"9da5066957","why":"per-theme config: a new page's typewriter default is the theme's call; nomad and volant join the union and this table in the same edit (volant: do not guess)"},
+{"key":"store/theme.ts#1","hash":"9da5066957","why":"per-theme config: a new page's typewriter default is the theme's call; marked slots, not registered (each joins the union and this table in the same edit): nomad: { typewriterDefault: true }, volant: TBD (do not guess)"},
 {"key":"store/themeCast.ts#0","hash":"670d933be3","why":"Machina's cast (cool or neutral) in its own file: themePrefs holds the cross-theme three; the stored value survives a theme switch but is read only under Machina"},
 {"key":"store/themeFontFaces.ts#1","hash":"4f9b372f43","why":"Machina's default writing face loads with the theme"},
 {"key":"store/themeFontFaces.ts#2","hash":"139975dd82","why":"Arbor's default writing face (EB Garamond) loads with the theme, never eagerly; Arbor's theme id is 'plateau'"},

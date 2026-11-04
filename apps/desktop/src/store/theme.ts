@@ -13,7 +13,7 @@ export type ThemeId = 'plateau' | 'flux' | 'machina';
 
 const REGISTERED: readonly ThemeId[] = ['plateau', 'flux', 'machina'];
 
-// per-theme config: a new page's typewriter default is the theme's call; nomad and volant join the union and this table in the same edit (volant: do not guess) [theme §1]
+// per-theme config: a new page's typewriter default is the theme's call; marked slots, not registered (each joins the union and this table in the same edit): nomad: { typewriterDefault: true }, volant: TBD (do not guess) [theme §1]
 export interface ThemeConfig { typewriterDefault: boolean }
 export const THEME_CONFIG: Record<ThemeId, ThemeConfig> = {
   plateau: { typewriterDefault: true },
