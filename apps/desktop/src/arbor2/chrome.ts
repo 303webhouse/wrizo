@@ -5,6 +5,7 @@
 //   --arbor2-dots-top    where App.tsx's fixed "..." control goes: centred in the drawn bar's height,
 //   --arbor2-dots-right  and inside the bar's right end (the bar's own right padding makes the room, beside its last item)
 //   data-arbor2-dots     'in' while a bar is on screen to hold it (otherwise the "..." keeps its own corner)
+//   --arbor2-bar-bottom  r19: the drawn bar's bottom (its height: it is drawn from 0), where the floating rail measures its 40 px from
 // Two rect reads, on resize, on route change and every 300 ms (never on a keystroke). Nothing is stored.
 const INSET = 12;   // the "..." sits this far inside the bar's right edge
 
@@ -13,7 +14,7 @@ export function mountChrome(root: HTMLElement): void {
   const update = () => {
     const bar = [...document.querySelectorAll<HTMLElement>('.chrome-top.sprint-nav')].find((b) => b.getBoundingClientRect().height > 0);
     if (!bar) {
-      if (last !== 'none') { last = 'none'; root.style.removeProperty('--arbor2-bar-lift'); root.removeAttribute('data-arbor2-dots'); }
+      if (last !== 'none') { last = 'none'; root.style.removeProperty('--arbor2-bar-lift'); root.style.removeProperty('--arbor2-bar-bottom'); root.removeAttribute('data-arbor2-dots'); }
       return;
     }
     const lifted = parseFloat(getComputedStyle(root).getPropertyValue('--arbor2-bar-lift')) || 0;
@@ -23,10 +24,12 @@ export function mountChrome(root: HTMLElement): void {
     const gh = glyph ? glyph.getBoundingClientRect().height || 30 : 30;
     const top = Math.max(0, (r.height - gh) / 2);
     const right = Math.max(0, innerWidth - r.right + INSET);
-    const key = `${lift}|${top}|${right}`;
+    const bottom = Math.round(r.height * 10) / 10;
+    const key = `${lift}|${top}|${right}|${bottom}`;
     if (key === last) return;
     last = key;
     root.style.setProperty('--arbor2-bar-lift', `${lift}px`);
+    root.style.setProperty('--arbor2-bar-bottom', `${bottom}px`);
     root.style.setProperty('--arbor2-dots-top', `${Math.round(top * 10) / 10}px`);
     root.style.setProperty('--arbor2-dots-right', `${Math.round(right * 10) / 10}px`);
     root.setAttribute('data-arbor2-dots', 'in');
