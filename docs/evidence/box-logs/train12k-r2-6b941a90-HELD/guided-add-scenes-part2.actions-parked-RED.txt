@@ -1,0 +1,76 @@
+PASS  [Arbor dark] a top-level step of a Deck has the scenes door, the last of its own doors (Mark lit stays last), in the theme's word (Add scenes…)
+PASS  [Arbor dark] the popover asks "How many scenes?": the kicker, chips 1-5 with 3 chosen, Add, and "They go right under Midpoint Reversal."
+PASS  [Arbor dark] Esc closes the popover, creates nothing, and does not leave the Walk
+PASS  [Arbor dark] the page never moves: the card's place is the same with the popover shut, open and shut again
+PASS  [Arbor dark] Add 2 creates exactly two ordinary text cards under the step: parentId, titled Scene 1 / Scene 2, the question stored as the placeholder (never in the text)
+PASS  [Arbor dark] the Walk lands on the first new child with the caret in the card
+PASS  [Arbor dark] the readout above the card says MIDPOINT REVERSAL > SCENE 1 OF 2
+PASS  [Arbor dark] Arbor: a 3 px bronze #8f7a4c edge says "inside a step"
+PASS  [Arbor dark] the rail: small marks hang from the parent's mark, smaller, same states; five main marks stay five
+PASS  [Arbor dark] Arbor: the hanging line is bronze #8f7a4c
+PASS  [Arbor dark] a sub-step has NO scenes door (one level deep)
+PASS  [Arbor dark] a parent counts as kindled when a child has words (the parent's own text is still empty)
+PASS  [Arbor dark] stepping on: the next card is the second scene (the walk order is the parent, then its children)
+PASS  [Arbor dark] in Outline the scenes are ordinary nested cards under their step, and only the five main steps carry the door
+PASS  [Arbor dark] in Outline each scene NESTS under its step: indented (left edge past the step's), its top between the step's and the next step's, its arrows on its own row
+PASS  [Arbor dark] a Deck's Outline numbers its rows: the step 2, its scenes 2.1 and 2.2
+PASS  [Arbor dark] one rule for the title's case in Outline (Arbor: as typed)
+PASS  [Arbor dark] adding from Outline: the same popover, one card "Scene 1" under Darkest Point
+PASS  [Arbor dark] in Storyboard the door shows on the five main steps and not on their scenes
+PASS  [Arbor dark] a Research Paper's step says its own word (Add subsections…)
+PASS  [Arbor dark] a plain Board shows nothing new
+PASS  [Arbor light] a top-level step of a Deck has the scenes door, the last of its own doors (Mark lit stays last), in the theme's word (Add scenes…)
+PASS  [Arbor light] the popover asks "How many scenes?": the kicker, chips 1-5 with 3 chosen, Add, and "They go right under Midpoint Reversal."
+PASS  [Arbor light] Esc closes the popover, creates nothing, and does not leave the Walk
+PASS  [Arbor light] the page never moves: the card's place is the same with the popover shut, open and shut again
+PASS  [Arbor light] Add 2 creates exactly two ordinary text cards under the step: parentId, titled Scene 1 / Scene 2, the question stored as the placeholder (never in the text)
+PASS  [Arbor light] the Walk lands on the first new child with the caret in the card
+PASS  [Arbor light] the readout above the card says MIDPOINT REVERSAL > SCENE 1 OF 2
+PASS  [Arbor light] Arbor: a 3 px bronze #8f7a4c edge says "inside a step"
+PASS  [Arbor light] the rail: small marks hang from the parent's mark, smaller, same states; five main marks stay five
+PASS  [Arbor light] Arbor: the hanging line is bronze #8f7a4c
+PASS  [Arbor light] a sub-step has NO scenes door (one level deep)
+PASS  [Arbor light] a parent counts as kindled when a child has words (the parent's own text is still empty)
+PASS  [Arbor light] in Outline the scenes are ordinary nested cards under their step, and only the five main steps carry the door
+PASS  [Arbor light] in Outline each scene NESTS under its step: indented (left edge past the step's), its top between the step's and the next step's, its arrows on its own row
+PASS  [Arbor light] a Deck's Outline numbers its rows: the step 2, its scenes 2.1 and 2.2
+PASS  [Arbor light] one rule for the title's case in Outline (Arbor: as typed)
+PASS  [Arbor light] adding from Outline: the same popover, one card "Scene 1" under Darkest Point
+PASS  [Flux dark] a top-level step of a Deck has the scenes door, the last of its own doors (Mark lit stays last), in the theme's word ([+ SCENES])
+PASS  [Flux dark] the popover asks "How many scenes?": the kicker, chips 1-5 with 3 chosen, Add, and "They go right under Midpoint Reversal."
+PASS  [Flux dark] Esc closes the popover, creates nothing, and does not leave the Walk
+PASS  [Flux dark] the page never moves: the card's place is the same with the popover shut, open and shut again
+PASS  [Flux dark] Add 2 creates exactly two ordinary text cards under the step: parentId, titled Scene 1 / Scene 2, the question stored as the placeholder (never in the text)
+PASS  [Flux dark] the Walk lands on the first new child with the caret in the card
+PASS  [Flux dark] the readout above the card says MIDPOINT REVERSAL > SCENE 1/2
+PASS  [Flux dark] Flux: TRK reads 2.1/5 (a position) and the orange bar is the current card's, as today
+PASS  [Flux dark] the rail: sub-ticks hang from the parent's mark, smaller, same states; five main marks stay five
+PASS  [Flux dark] a sub-step has NO scenes door (one level deep)
+PASS  [Flux dark] a parent counts as kindled when a child has words (the parent's own text is still empty)
+PASS  [Flux dark] stepping on: the next card is the second scene (the walk order is the parent, then its children)
+PASS  [Flux dark] in Outline the scenes are ordinary nested cards under their step, and only the five main steps carry the door
+PASS  [Flux dark] in Outline each scene NESTS under its step: indented (left edge past the step's), its top between the step's and the next step's, its arrows on its own row
+PASS  [Flux dark] a Deck's Outline numbers its rows: the step 2, its scenes 2.1 and 2.2
+PASS  [Flux dark] one rule for the title's case in Outline (Flux: every title uppercase by style, typed or not)
+PASS  [Flux dark] adding from Outline: the same popover, one card "Scene 1" under Darkest Point
+FAIL  [Flux dark] in Storyboard the door shows on the five main steps and not on their scenes  -- {"doors":0,"cards":0}
+PASS  [Flux dark] a Research Paper's step says its own word ([+ SUBSECTIONS])
+PASS  [Flux dark] a plain Board shows nothing new
+PASS  [Flux light] a top-level step of a Deck has the scenes door, the last of its own doors (Mark lit stays last), in the theme's word ([+ SCENES])
+PASS  [Flux light] the popover asks "How many scenes?": the kicker, chips 1-5 with 3 chosen, Add, and "They go right under Midpoint Reversal."
+PASS  [Flux light] Esc closes the popover, creates nothing, and does not leave the Walk
+PASS  [Flux light] the page never moves: the card's place is the same with the popover shut, open and shut again
+PASS  [Flux light] Add 2 creates exactly two ordinary text cards under the step: parentId, titled Scene 1 / Scene 2, the question stored as the placeholder (never in the text)
+PASS  [Flux light] the Walk lands on the first new child with the caret in the card
+PASS  [Flux light] the readout above the card says MIDPOINT REVERSAL > SCENE 1/2
+PASS  [Flux light] Flux: TRK reads 2.1/5 (a position) and the orange bar is the current card's, as today
+PASS  [Flux light] the rail: sub-ticks hang from the parent's mark, smaller, same states; five main marks stay five
+PASS  [Flux light] a sub-step has NO scenes door (one level deep)
+PASS  [Flux light] a parent counts as kindled when a child has words (the parent's own text is still empty)
+PASS  [Flux light] in Outline the scenes are ordinary nested cards under their step, and only the five main steps carry the door
+PASS  [Flux light] in Outline each scene NESTS under its step: indented (left edge past the step's), its top between the step's and the next step's, its arrows on its own row
+PASS  [Flux light] a Deck's Outline numbers its rows: the step 2, its scenes 2.1 and 2.2
+PASS  [Flux light] one rule for the title's case in Outline (Flux: every title uppercase by style, typed or not)
+PASS  [Flux light] adding from Outline: the same popover, one card "Scene 1" under Darkest Point
+
+GUIDED-ADD-SCENES PART 2 VERIFY: FAIL - 1/74
