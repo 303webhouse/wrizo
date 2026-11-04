@@ -490,7 +490,8 @@ export default {
     await sleep(250);
   },
   // item 7: the rhizome variation by day - a page partway into its lap, shoots in their width classes (the proof: data-w paths with ink)
-  'arbor-rhizome-variation': async (app) => {
+  // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 35 §18.1 F (Nick, Nov 4; handoff-FABLE-arbor-r19.md §1 F), frames run 41917595215, Arbor 8dd766dc: under the flag the rhizome is drawn as filled, tapered vines (path.arbor2-vine, width carried in the shape, each stem's head piece naming its start width in data-w0), not as stroked .wz-rhizome-seg paths in data-w width classes - the proof read classes [] and widths [] in both rooms). Kept verbatim under the name arbor-rhizome-variation-v1 (not in the run list); SUCCESSOR arbor-rhizome-variation below.
+  'arbor-rhizome-variation-v1': async (app) => {
     await rhizomeAt(app, 5);
     await sleep(400);
     const r = await app.evalJs(`(() => {
@@ -511,14 +512,30 @@ export default {
     await app.evalJs(`document.querySelector('.arbor2-mood-switch[data-mood="variation"]')?.click()`);
     if (!r.field || !r.classes.length || !okW || !okOff) throw new Error('VARIATION PROOF FAILED ' + JSON.stringify({ ...r, offW }));
   },
+  // SUCCESSOR arbor-rhizome-variation (r19, §18.1 F): the same page partway into its lap (5 words of 8); the field is drawn as vines and their
+  // widths vary - among the stems' head pieces (path.arbor2-vine[data-w0]) at least 3 distinct start widths (main stems ~9-11 px, each its own;
+  // branches 55-80% of their parent). Both rooms: by night the vines are drawn too (barely there), so the widths are read there as well.
+  'arbor-rhizome-variation': async (app) => {
+    await rhizomeAt(app, 5);
+    await sleep(400);
+    const r = await app.evalJs(`(() => {
+      const f = document.querySelector('.wz-rhizome-field');
+      const room = document.documentElement.getAttribute('data-arbor2-room');
+      const heads = f ? [...f.querySelectorAll('path.arbor2-vine[data-w0]')].filter((p) => (p.getAttribute('d') || '').length > 0) : [];
+      return { field: !!f, vinesAttr: f ? f.getAttribute('data-vines') : null, room, heads: heads.length, w0: [...new Set(heads.map((p) => p.getAttribute('data-w0')))].sort((a, b) => a - b),
+        levels: [...new Set(heads.map((p) => p.getAttribute('data-level')))].sort() };
+    })()`);
+    if (!r.field || r.vinesAttr !== 'true' || r.w0.length < 3) throw new Error('VARIATION PROOF FAILED ' + JSON.stringify(r));
+  },
   // item 8: the Mood menu open, every switch flipped off and back on - each one changes its own measured thing, the page never moves,
   // and nothing reaches storage (the screen THROWS with the measurements otherwise; the picture is the menu with three switches off)
   'arbor-mood': async (app) => {
     await page(app, 'arbor-words', WORDS);
     const opened = await clickText(app, '.arbor2-bar-head', 'Mood ▸');
     await sleep(200);
+    // (instrument fix after run 41917595215: r19 draws the day light as .arbor2-pergola; .arbor2-sun is retired)
     const M = `(() => {
-      const root = document.documentElement, cs = getComputedStyle(root), sun = document.querySelector('.arbor2-sun');
+      const root = document.documentElement, cs = getComputedStyle(root), sun = document.querySelector('.arbor2-pergola');
       const grip = document.querySelector('.wz-sliver-grip, .wz-tutor-grip'), p = document.querySelector('.mode-page');
       const leaf = document.querySelector('.arbor2-sun-leaf');
       if (leaf) leaf.setAttribute('data-flutter', 'true');

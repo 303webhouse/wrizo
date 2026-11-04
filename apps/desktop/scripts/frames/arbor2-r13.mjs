@@ -113,11 +113,16 @@ const fitCheck = async (app, name, want3 = false) => {
 // r17: FIT with the Tools tabs read where Nick's C2 folder tabs stand (beside the opener, over the drawer's top edge), for fitCheck2
 const FIT2 = FIT.replace("[...slide.querySelectorAll('.wz-drawer-tab')]", "[...document.querySelectorAll('.arbor2-c2--left .wz-drawer-tab')]");
 if (FIT2 === FIT) throw new Error('FIT2 did not take');
+// r19: FIT2 with each folder tab's state and colours too (chosen, fill, word, underline), for fitCheck2's successor of cloths (spec draft 35 §18.3)
+const FIT3 = FIT2.replace("({ text: e.textContent.trim(), r: q(e), shown: shown(e) })", "({ text: e.textContent.trim(), r: q(e), shown: shown(e), on: e.getAttribute('data-on') === 'true', bg: getComputedStyle(e).backgroundColor, fg: getComputedStyle(e).color, deco: getComputedStyle(e).textDecorationLine })");
+if (FIT3 === FIT2) throw new Error('FIT3 did not take');
+// r19 (§18.3): each Tools cloth in its own colour with its own word - Format olive, Presets cold blue, Ink madder; cream on olive and madder, walnut on blue
+const CLOTH19 = { format: ['rgb(86, 99, 46)', 'rgb(239, 228, 203)'], presets: ['rgb(127, 160, 188)', 'rgb(43, 29, 18)'], ink: ['rgb(168, 57, 47)', 'rgb(239, 228, 203)'] };
 const fitCheck2 = async (app, name, want3 = false) => {
   await app.evalJs(`document.querySelector('${ED}')?.__r13 || (document.querySelector('${ED}').__r13 = 1)`);
   const closedPage = await app.evalJs(`(() => { ${R} return q(document.querySelector('.desk-frame-stage .mode-page')); })()`);
   await openSide(app, 'left');
-  const s = await app.evalJs(FIT2);
+  const s = await app.evalJs(FIT3);   // (r19 instrument: FIT2 plus each tab's chosen state and colours, for the successor of cloths; every other read is FIT2's)
   const room = s.page.l - s.rail.r;   // the room between the rail and the page
   const drawer = s.panel.w + 16;      // the drawer with its tab
   const ok = {
@@ -132,12 +137,23 @@ const fitCheck2 = async (app, name, want3 = false) => {
     // (second amendment, run 41355446362: Free Write's drawer has Format + Ink, Presets is not offered there - so no page shows three; the
     // check asks for at least two, all whole inside, and on Free Write the Ink cloth among them. Previous: s.cloths.length >= (want3 ? 3 : 2))
     // (SUCCESSOR's cloths, r17: the folder tabs stand on the drawer's top edge - shown whole, their bottoms on that edge, within the drawer's width)
-    cloths: s.cloths.length >= 2 && s.cloths.every((c) => c.shown && c.r.l >= s.slide.l - 0.5 && c.r.r <= s.slide.r + 0.5 && Math.abs(c.r.b - s.slide.t) <= 1)
+    // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 35 §18.3 (Nick, Nov 4; handoff-FABLE-arbor-r19.md §1 A), frames run 41911788199, Arbor 8dd766dc:
+    // the chosen tab comes forward, +8 px out and +8 long, and reaches 3 px INTO the drawer's new 3 px border of its own cloth, so its foot is 3 px
+    // below the drawer's top edge, not on it; and it keeps its own cloth - no brass on any tab). Original, verbatim:
+    // cloths: s.cloths.length >= 2 && s.cloths.every((c) => c.shown && c.r.l >= s.slide.l - 0.5 && c.r.r <= s.slide.r + 0.5 && Math.abs(c.r.b - s.slide.t) <= 1)
+    //   && (!want3 || s.cloths.some((c) => /^ink$/i.test(c.text))),
+    // SUCCESSOR clothsB: every folder tab shown whole within the drawer's width; the unchosen ones' feet on the drawer's top edge, the one chosen
+    // tab's foot 3 px into the border; each in its own cloth with its own word (Format olive, Presets cold blue, Ink madder), no brass and no
+    // underline on any tab; on Free Write the Ink cloth among them.
+    clothsB: s.cloths.length >= 2 && s.cloths.filter((c) => c.on).length === 1
+      && s.cloths.every((c) => c.shown && c.r.l >= s.slide.l - 0.5 && c.r.r <= s.slide.r + 0.5 && Math.abs(c.r.b - (c.on ? s.slide.t + 3 : s.slide.t)) <= 1)
+      && s.cloths.every((c) => { const k = CLOTH19[c.text.trim().toLowerCase()]; return !!k && c.bg === k[0] && c.fg === k[1] && !/underline/.test(String(c.deco)) && c.bg !== 'rgb(255, 152, 0)' && c.fg !== 'rgb(255, 152, 0)'; })
       && (!want3 || s.cloths.some((c) => /^ink$/i.test(c.text))),
     nothingCut: s.cut.length === 0,
     pageStill: !!closedPage && ['l', 'r', 't', 'b'].every((k) => Math.abs(closedPage[k] - s.page[k]) <= 0.5) && await app.evalJs(`document.querySelector('${ED}')?.__r13 === 1`),
   };
   const brief = { ok, w: s.w, room, drawer, panel: s.panel, slide: s.slide, tab: s.tab, rail: s.rail, page: s.page, cloths: s.cloths.map((c) => [c.text, c.r.l, c.r.r]), cut: s.cut.slice(0, 8) };
+  brief.clothsAt = s.cloths.map((c) => [c.text, c.on, c.r.t, c.r.b, c.bg, c.fg, c.deco]);   // (r19: the successor's numbers)
   if (Object.values(ok).some((x) => !x)) fail(name, brief);
   say(name, brief);
 };
