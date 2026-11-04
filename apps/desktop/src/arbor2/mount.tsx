@@ -4,6 +4,7 @@ import '../styles/arbor-v2.css';
 import { mountSun } from './sun';
 import { mountPaper } from './paper';
 import { mountChrome } from './chrome';
+import { mountPergola } from './pergola';
 import { mountDrawerEdge } from './drawerEdge';
 import { clearRhizome, undoClearRhizome, canUndoClear, hasRhizome, subscribeLife } from './rhizomeLife';
 
@@ -75,7 +76,8 @@ const applyRoom = () => {
   if (root.getAttribute('data-arbor2-room') !== want) root.setAttribute('data-arbor2-room', want);
   if (fading && fadeToks) {
     const next: string[] = [];
-    for (const k of fadeToks) { const v = mixValue(k.night, k.day, t, fadeDelta); if (v !== null) { root.style.setProperty(k.name, v); next.push(k.name); } }
+    // (r19: the bars' own tokens mix straight, brown <-> olive: through the warm plaster waypoint they would pass a pale bar under cream letters)
+    for (const k of fadeToks) { const v = mixValue(k.night, k.day, t, k.name.startsWith('--arbor2-bar') ? undefined : fadeDelta); if (v !== null) { root.style.setProperty(k.name, v); next.push(k.name); } }
     for (const [name, v] of poolAt(t)) { root.style.setProperty(name, v); next.push(name); }
     for (const n of inlined) if (!next.includes(n)) root.style.removeProperty(n);
     inlined = next;
@@ -95,7 +97,8 @@ const setRoom = (c: Choice) => { const v = dataRoomOf(c); if (v) root.setAttribu
 
 root.setAttribute('data-arbor2', 'true');
 applyRoom();
-mountSun(root);   // item 6: the day room's pergola light (drawn only in the day room by styles/arbor-v2.css; in memory, stores nothing)
+mountSun(root);   // item 6: the day room's light (r19: its old pergola is no longer drawn - arbor-v2.css; sun.ts still writes the afternoon's ground)
+mountPergola();   // r19 §18.1: the Wrizors' pergola shadow, in the room and at 4% on the page at rest (pergola.ts; stores nothing)
 mountPaper();     // the zoomed page stays a whole opaque sheet, and the sun layer has a hole over the page (paper.ts; Fable, Oct 29)
 mountChrome(root);    // r5 §2c.1: the top bar drawn flush to the window's top, the "..." inside it (chrome.ts; the page never moves)
 mountDrawerEdge(root, '--arbor2-drawer');   // r11 (Nick, via Fable, Nov 1): open, a drawer is flush to the page and its tab rides its outer edge

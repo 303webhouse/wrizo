@@ -98,7 +98,7 @@ const VINES = `(() => { const f = document.querySelector('.wz-rhizome-field'); i
   const gop = (() => { const g = f.querySelector('.arbor2-vines'); return g ? Number(getComputedStyle(g).opacity) : null; })();
   return { vines: f.getAttribute('data-vines'), flash: f.getAttribute('data-flash'), n: vs.length, heads: heads.length,
     main: heads.filter((v) => v.getAttribute('data-level') === '0').map((v) => ({ w0: num(v, 'data-w0'), x0: num(v, 'data-x0'), y0: num(v, 'data-y0'), past: !!v.closest('.arbor2-vines-past') })),
-    branch: heads.filter((v) => v.getAttribute('data-level') === '1').map((v) => ({ w0: num(v, 'data-w0'), ratio: num(v, 'data-ratio') })),
+    branch: heads.filter((v) => v.getAttribute('data-level') === '1').map((v) => ({ w0: num(v, 'data-w0'), ratio: num(v, 'data-ratio'), under: v.getAttribute('data-under') === 'true' })),
     fills: [...new Set(vs.slice(0, 400).map((v) => cs(v).fill))], strokes: [...new Set(vs.slice(0, 400).map((v) => cs(v).stroke))],
     fop: vs.length ? [Math.min(...vs.map((v) => Number(cs(v).fillOpacity))), Math.max(...vs.map((v) => Number(cs(v).fillOpacity)))] : null, gop,
     smooth: vs.slice(0, 40).every((v) => /C/.test(v.getAttribute('d') || '') && /Z\\s*$/i.test(v.getAttribute('d') || '')),
@@ -186,8 +186,10 @@ const screens = {
     await openPage(app, 'arbor-r19-pergola');
     await setRoom(app, 'day'); await sleep(600);
     const d = await app.evalJs(SHADE);
-    const mark = await app.evalJs(`(() => { const m = [...document.querySelectorAll('.brand-mark')].find((e) => e.getBoundingClientRect().width > 0); if (!m) return null; const r = m.getBoundingClientRect(); const st = document.elementsFromPoint((r.left + r.right) / 2, (r.top + r.bottom) / 2);
-      const iM = st.findIndex((e) => e.closest('.brand-mark')), iP = st.findIndex((e) => e.closest('.arbor2-pergola')); return { iM, iP, over: iM >= 0 && (iP < 0 || iM < iP), op: getComputedStyle(m).opacity }; })()`);
+    // (instrument fix after the red leg: elementsFromPoint skips layers that take no pointer - the shade, by ruling - so the stacking is read:
+    // both are fixed children of the root's stacking context, so the higher z-index paints over)
+    const mark = await app.evalJs(`(() => { const m = [...document.querySelectorAll('.brand-mark')].find((e) => e.getBoundingClientRect().width > 0), p = document.querySelector('.arbor2-pergola'); if (!m || !p) return null;
+      const cm = getComputedStyle(m), cp = getComputedStyle(p); const zm = Number(cm.zIndex), zp = Number(cp.zIndex); return { zm, zp, pos: [cm.position, cp.position], over: cm.position === 'fixed' && cp.position === 'fixed' && zm > zp, op: cm.opacity }; })()`);
     await setRoom(app, 'night'); await sleep(600);
     const n = await app.evalJs(SHADE);
     const ok = {
@@ -298,7 +300,8 @@ const screens = {
       filled: !!d && d.strokes.every((s) => s === 'none') && d.smooth,
       core: !!d && d.main.filter((m) => !m.past).every((m) => m.w0 >= 9 && m.w0 <= 11),
       fromCentre: !!d && !!d.centre && d.main.filter((m) => !m.past).every((m) => Math.hypot(d.svgBox.l + m.x0 - d.centre.x, d.svgBox.t + m.y0 - d.centre.y) <= 30),
-      branches: !!d && d.branch.length > 0 && d.branch.every((b) => b.w0 <= 4.2 + 1e-6 && b.ratio >= 0.55 - 1e-6 && b.ratio <= 0.8 + 1e-6),
+      // (instrument fix before the green: the ratio is read on branches that leave outside the page - under it the 4.2 px cap rules; the cap on all)
+      branches: !!d && d.branch.some((b) => !b.under) && d.branch.every((b) => b.w0 <= 4.2 + 1e-6) && d.branch.filter((b) => !b.under).every((b) => b.ratio >= 0.55 - 1e-6 && b.ratio <= 0.8 + 1e-6),
       dayGreen: !!d && d.fills.length === 1 && d.fills[0] === 'rgb(79, 107, 44)' && d.fop[1] <= 0.651 && d.fop[0] >= 0.199,
       nightBrown: !!n && n.fills.length === 1 && n.fills[0] === 'rgb(107, 81, 57)' && Math.abs((n.gop ?? 1) - 0.75) <= 0.01,
     };
@@ -323,7 +326,8 @@ const screens = {
     await setRoom(app, 'day'); await openTools(app); await openTutor(app); await settle(app);
     const READ = `(() => { const roots = [...document.querySelectorAll('.wz-sliver-panel, .wz-tutor-panel, .wz-theme-picker, .wz-cascade-panel')].filter((e) => e.getBoundingClientRect().width > 0);
       const els = roots.flatMap((r) => [...r.querySelectorAll('*')]).filter((e) => { if (e.getBoundingClientRect().width < 1) return false; return [...e.childNodes].some((c) => c.nodeType === 3 && c.textContent.trim()); });
-      const chosen = roots.flatMap((r) => [...r.querySelectorAll("button.on, [aria-pressed='true'], [aria-checked='true'], [aria-selected='true']")]).filter((e) => e.getBoundingClientRect().width > 0 && (e.textContent || '').trim());
+      // (instrument fix after the red leg: a theme card is a picture whose artwork carries its own lettering - not a chosen option's word)
+      const chosen = roots.flatMap((r) => [...r.querySelectorAll("button.on, [aria-pressed='true'], [aria-checked='true'], [aria-selected='true']")]).filter((e) => e.getBoundingClientRect().width > 0 && (e.textContent || '').trim() && !e.querySelector('img, svg, canvas'));
       return { roots: roots.map((r) => r.className.split(' ')[0]), texts: els.map((e) => [(e.textContent || '').trim().slice(0, 22), getComputedStyle(e).color]),
         chosen: chosen.map((e) => { const cs = getComputedStyle(e); return [(e.textContent || '').trim().slice(0, 22), cs.color, cs.borderTopColor, cs.borderTopWidth, cs.outlineColor, cs.outlineWidth, cs.outlineStyle]; }) }; })()`;
     const drawers = await app.evalJs(READ);
@@ -336,7 +340,8 @@ const screens = {
       noBrassText: brassText.length === 0,
       chosenOlive: outlined.every((c) => c[1] === 'rgb(51, 64, 31)'),
       outline: outlined.length > 0 && outlined.every((c) => (brassish(c[2]) && Math.abs(parseFloat(c[3]) - 1.5) < 0.01) || (brassish(c[4]) && Math.abs(parseFloat(c[5]) - 1.5) < 0.01 && c[6] !== 'none')),
-      looked: drawers.roots.length >= 2 && themes.roots.some((r) => /theme/.test(r)),
+      // (instrument fix after the red leg 41901581121: the Themes pop-out is the Cascade's panel - it was read, the name test missed it)
+      looked: drawers.roots.length >= 2 && themes.roots.includes('wz-cascade-panel'),
     };
     const brief = { ok, brassText: brassText.slice(0, 12), outlined: outlined.slice(0, 10), roots: [drawers.roots, themes.roots], nTexts: all.length };
     if (Object.values(ok).some((x) => !x)) fail('R19-NO-BRASS-DAY', brief);

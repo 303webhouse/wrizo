@@ -6,6 +6,7 @@ import { lapPlan, segmentsFor, geometryKey, pickSurvivor, hashSeed, type GrowthG
 import { variationOn, pacedFrac, shootClass } from '../arbor2/shoots';   // ARBOR v2 mockup, item 7: drawn only under ?arbor2=1
 import { isArbor2 } from '../arbor2/flag';
 import { lifeOf, effective, lifePlan, tipOf, segKey, setCurrentRhizome, subscribeLife } from '../arbor2/rhizomeLife';   // ARBOR v2 mockup, r5 §8b: only under ?arbor2=1
+import { ArborVines } from '../arbor2/vines';   // ARBOR v2 mockup r19: the rhizome drawn as vines (Arbor's presentation; the growth is this file's)
 
 // the goal rhizome: shoots grow out of existing stems, flash brass at the goal and leave a seed; drawn behind the page and clipped from the rail, strip, header and open menus; ambient, framed stage only [RhizomeField §1]
 const SESSION_START = Date.now(); // the pattern is session-scoped (M2 S2)
@@ -263,6 +264,9 @@ export function RhizomeField({ text, seedKey, paperRef }: {
   if (!active) return null;
 
   const w = m?.geo.width ?? 0, h = m?.geo.height ?? 0;
+  // ARBOR v2 mockup r19 (spec draft 35 §18.1 F; Fable: Arbor's own presentation behind this seam): under the flag the same plan, the same k and
+  // the same kept laps are drawn as filled, tapered vines (src/arbor2/vines.tsx). Off the flag (lifeOn false) nothing below changes.
+  const vines = lifeOn && !!m;
   const clipD = m ? groundClipPath(w, h, m.holes) : '';
 
   return (
@@ -277,6 +281,7 @@ export function RhizomeField({ text, seedKey, paperRef }: {
       data-goal-frac={frac.toFixed(3)}
       data-tip={tipKey}
       data-start={startKey}
+      data-vines={vines ? 'true' : undefined}
       viewBox={w > 0 ? `0 0 ${w} ${h}` : undefined}
       preserveAspectRatio="none"
       style={{ pointerEvents: 'none', clipPath: clipD ? `path(evenodd, "${clipD}")` : undefined }}
@@ -295,6 +300,7 @@ export function RhizomeField({ text, seedKey, paperRef }: {
         </>
       )}
       <g clipPath={m ? 'url(#wz-rhizome-ground)' : undefined} mask={m ? 'url(#wz-rhizome-mask)' : undefined}>
+        {vines ? <ArborVines plan={plan} past={pastPlans} geo={m!.geo} k={k} fromTip={shownVisit > 0} /> : (<>
         {pastPaths.length > 0 && (
           <g className="wz-rhizome-past">
             {pastPaths.map((p) => <path key={p.key} className="wz-rhizome-old" data-thick={p.thick ? 'true' : undefined} data-w={p.w} d={p.d} />)}
@@ -321,6 +327,7 @@ export function RhizomeField({ text, seedKey, paperRef }: {
             x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2}
           />
         ))}
+        </>)}
       </g>
     </svg>
   );
