@@ -47,32 +47,13 @@ export function AddToSheet({ sourceIds, onClose, onDone }: { sourceIds: string[]
 
   const crumbLabel = (lvl: Level) => (lvl.kind === 'root' ? 'Add to…' : lvl.kind === 'drawer' ? lvl.drawerName : lvl.binderName);
 
-  // B2 S3 (review fix, 2026-07-20) — a genuine truthfulness defect: this
-  // toast used to unconditionally claim "moved; it left the Journal" for
-  // EVERY page sent to the Shelf. Under S7's own pinned law (origin
-  // 'journal' AND projectId null), a journal-origin page can never leave
-  // Journal membership by un-filing alone — T3 also disqualifies it from
-  // the Shelf while it stays journal-homed — so for the ONLY population
-  // this sheet's two live call sites ever reach (Spread's bulk toolbar,
-  // JournalEntry.tsx's legacy `.entry-add`, both drawn from the notebook
-  // grid, which post-S3/S7 is always journal-origin or grandfathered-
-  // journal-homed), this click became a genuine no-op that kept lying
-  // about having moved the page (provable live: the page never actually
-  // left the Spread grid or the Journal Board). The fix reads the ACTUAL
-  // outcome back after the write and phrases the toast honestly either
-  // way, rather than assuming — the same "one truth" discipline every
-  // other B2 surface already follows. (A root-level "＋ New project" isn't
-  // offered without a Drawer to file into first, so this stays the sheet's
-  // only always-available root action; removing it outright would leave a
-  // dead sheet whenever no Drawer yet exists — retiring the CLAIM, not the
-  // control, is the fix that doesn't trade one defect for another.)
+  // the toast reads the ACTUAL outcome back after the write: a journal-origin page sent to the Shelf stays in the Journal, so the sheet never claims a move that did not happen [AddToSheet §1]
   const fileToShelf = () => {
     for (const id of sourceIds) setPageHome(id, 'shelf');
     const stillJournalHomed = sourceIds
       .map(id => getJournalEntry(id))
       .some((e): e is JournalEntry => !!e && inJournalView(e));
-    // ITEM word-diet (Fable, review fix, Oct 13) — never a number directly
-    // before "Pages"; "these Pages" names the selection without one.
+    // never a number directly before "Pages"; "these Pages" names the selection without one [AddToSheet §2]
     const msg = stillJournalHomed
       ? `These ${lexMany('page')} stay in the ${lex('journal')} — a journal-homed page can't be shelved directly; nothing moved.`
       : `Filed these ${lexMany('page')} to the ${lex('shelf')} — moved; it left the ${lex('journal')}.`;
@@ -97,9 +78,7 @@ export function AddToSheet({ sourceIds, onClose, onDone }: { sourceIds: string[]
 
   const doAttachPlan = (binderId: string, beatId: string, beatName: string) => {
     attachToPlanBeat(sourceIds, binderId, beatId);
-    // ITEM word-diet (Fable, review fix, Oct 13) — "these Pages" (capital P,
-    // not a number, not lowercased — the product noun is capitalized like
-    // Journal/Shelf/Drawer).
+    // "these Pages": the product noun is capitalized, with no number before it [AddToSheet §3]
     onDone(`Linked — marked routed to "${beatName}"; these ${lexMany('page')} stay in the ${lex('journal')}.`, 'LINKS');
   };
 
@@ -182,9 +161,7 @@ export function AddToSheet({ sourceIds, onClose, onDone }: { sourceIds: string[]
     const framework = plan ? getFramework(plan.frameworkId) : null;
     body = (
       <>
-        {/* ITEM word-diet (Fable, review fix, Oct 13) — "a new Pages" is
-            banned (drop the article); the product noun is capitalized, not
-            lowercased. */}
+        {/* "a new Pages" drops the article; the product noun is capitalized [AddToSheet §4] */}
         <button type="button" className="dz-more add-dest-row" onClick={() => fileHere(binderId)}>
           File here as new {lex('page')} <VerbTag verb="MOVES" />
         </button>

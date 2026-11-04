@@ -1,5 +1,4 @@
-// POLISH #10 item 24 (Nick, via Fable, Oct 25) - THE LINK DOCK's reader: a linked card or page, read-only, beside the page while the writer writes. It
-// shows the item's WORDS (plain lines - no mark is ever in what a writer selects and copies), live from the store, and its own close undocks it.
+// the link dock's reader: a linked card or page, read-only, beside the page; its words as plain lines, live from the store [LinkDockReader §1]
 import { useSyncExternalStore } from 'react';
 import { getJournalEntry, subscribe } from '../store/persistence';
 import { plainLines } from '../store/entryText';
@@ -21,7 +20,7 @@ export function LinkDockReader({ dock, onClose }: { dock: LinkDockRef; onClose: 
   const title = lines[0] ?? t('linkDockGone');
   const body = lines.length > 1 ? lines.slice(1) : lines;
   return (
-    // text copied from the reader is the writer's own, like a page copy: it passes the Voice Wall when pasted (Fable, Oct 28; no other wall exception)
+    // text copied from the reader is the writer's own, so it passes the Voice Wall when pasted [LinkDockReader §2]
     <div className="wz-link-dock" onCopy={() => { const sel = String(document.getSelection() || ''); if (sel) recordShadow(sel); }} data-link-dock-entry={dock.entryId} {...(dock.boxId ? { 'data-link-dock-box': dock.boxId } : {})}>
       {/* the header carries the item's kind word, its name, and Undock - which returns the Grafts list (one item at a time: to swap, Undock, then Dock) */}
       <div className="wz-link-dock-head">
