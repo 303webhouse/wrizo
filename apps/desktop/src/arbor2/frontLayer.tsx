@@ -40,11 +40,12 @@ export function ArborTopLogo({ write, width }: { write: boolean; width: number }
   // THE HAND-OVER (after the green look g15/t16, runs 41659053011 / 41672316457: a CSS background as the still logo rasterised differently from
   // the SVG writing - the luminance dipped at the swap at 1366): the still logo is the same kind of element as the writing, an SVG image in the
   // same viewBox inside the same <svg>, and it replaces the strokes when the LAST stroke (the i's dot) ends - never a blank frame, nothing
-  // animating on the still logo afterwards.
+  // animating on the still logo afterwards. (After t16 run 41754120497: the still logo gets a FRESH <svg> - keyed - in the same commit: an svg
+  // that has animated is drawn through its own layer and resampled, which left 14-23 channels one level off the front door's still logo.)
   return (
     <div className="arbor2-top" aria-hidden="true" style={{ ['--arbor2-u' as string]: `${width / CW}px` } as CSSProperties}>
       <div className="arbor2-top-logo" data-writing={writing ? 'true' : 'still'} style={place(TOP_LOGO)}>
-        <svg className="arbor2-splash-logo-svg arbor2-top-svg" viewBox="0 0 900 400" preserveAspectRatio="xMidYMid meet"
+        <svg key={writing ? 'writing' : 'still'} className="arbor2-splash-logo-svg arbor2-top-svg" viewBox="0 0 900 400" preserveAspectRatio="xMidYMid meet"
           onAnimationEnd={(e) => { if (writing && e.animationName === 'arbor2-logo-write' && (e.target as Element).getAttribute('data-stroke') === LAST_STROKE) done(); }}>
           {writing ? (
             <>
