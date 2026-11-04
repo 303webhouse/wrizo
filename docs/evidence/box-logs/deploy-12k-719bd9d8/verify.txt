@@ -1,0 +1,10 @@
+healthz: 200 {"ok":true,"build":"index-C_y5ece8"}
+auth/me: 401
+signup-status: {"open":false}
+served js: assets/index-C_y5ece8.js
+served bytes: 956918 md5: abc97e3b78ffbdfd73bdb0c1e1598f31
+tested  bytes: 956918 md5: abc97e3b78ffbdfd73bdb0c1e1598f31
+served css: assets/index-MJl1zfGB.css 266044 md5 17814d7dbf4783d8ce524623ba628030; tested css md5 17814d7dbf4783d8ce524623ba628030
+ok   GET  /auth/me (after logout, jar)  -> 401 (expected 401)
+ok   GET  /auth/me (pre-logout cookie replayed)  -> 401 (expected 401)
+SMOKE: PASS (6/6)
