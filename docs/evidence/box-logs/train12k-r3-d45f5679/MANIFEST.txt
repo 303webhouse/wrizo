@@ -1,0 +1,15 @@
+Train #12k r3 - manifest (Chat 1, Nov 4 2026)
+
+Product tree 3da9e780 (train-12k-r3 d45f5679: main 4d6af3d9 + one --no-ff merge; main is fast-forwarded to it, then these records land on top; `git diff 3da9e780 HEAD -- apps/desktop/src apps/server` is empty at every records commit after it). Rollback target: git 622df16e / railway 4fe238f5 (deploy #12j).
+
+IN: TOOLS tools-14-size-box-r3 982127fb (merge d45f5679). Carries r2's size-box work plus the hoist of heldSelRef/holdSizeSelection above PageEditor's early return (the r2 hooks-order-ast red). Main already carried step 8's CSS (c13-8-css-themes, 36 bytes) and read-home 3b; they ship with this deploy.
+Bundle: index-C_y5ece8.js 956918 bytes (md5 abc97e3b78ffbdfd73bdb0c1e1598f31), index-MJl1zfGB.css 266044 bytes.
+
+RUNS
+- tsc desktop 0, tsc server 0, seed-guard PASS 36; hooks-order-ast PASS 7 (local and in the pair).
+- GitHub Actions full pair, run 41899933336 (8 shards per leg, ref = the full sha): default 233/240, parked 233/240; the 7 non-OK are the capture/probe tools with no verdict line, both legs. No other non-OK (guided-add-scenes-part2 passed on the parked leg this time).
+- Box, 26 files (the r2 list incl. size-box, item207, item207-core, size-words, item126). Stamp tree=d45f5679 bundle=index-C_y5ece8.js/956918b. Default CLEAN 26/26; parked CLEAN 26/26. flux-screens WITH an output dir: PASS (12 surfaces) on main's build (train-c13-8, tree 3bf79d8d) and on the train.
+- Box turn note: a duplicate waiter of my own (a first background launch of the same script) kept polling for the grant; it never took the box, and was killed before the live checks. The suite results are from the single turn that ran.
+- Clear: Fable, Nov 4 ("train-12k = TOOLS tools-14-size-box-r3 @ 982127fb (CLEARED): the same proof list. Green -> ship #12k").
+
+Files here: pair-default/parked.log.txt and summary.txt (Actions); box-default/parked.log.txt; flux-screens-main/train.log.txt.
