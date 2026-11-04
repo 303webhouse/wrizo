@@ -103,7 +103,7 @@ function dragVerdict(d) {
   const B = d.B || {}, C = d.C || {}, E = d.E || {};
   return {
     only, onlyDetail: `press to release: ${d.during} calls - ground ${ground}, drawImage ${images}, motion canvas ${motion} (<= 6: the drag-start redraw), follow canvas ${follow}; ground draws by the layer's count ${d.groundDuring}`,
-    follow: follow1, followDetail: `after 30 moves: ink at the link's new end ${A.inkNew && A.inkNew.ink}/${A.inkNew && A.inkNew.px} px, at its old end ${A.inkOld && A.inkOld.ink} (motion) + ${A.inkOldFollow && A.inkOldFollow.ink} (follow); follow strokes ${strokesA} (>= 10); layer's count: ${A.followFrames} follow frames, ${A.bases} drag-start redraw(s)`,
+    follow: follow1, followDetail: `after 30 moves: ink at the link's new end ${A.inkNew && A.inkNew.ink}/${A.inkNew && A.inkNew.px} px, where n11-n12 left it ${A.inkOld && A.inkOld.ink} (motion) + ${A.inkOldFollow && A.inkOldFollow.ink} (follow); follow strokes ${strokesA} (>= 10); layer's count: ${A.followFrames} follow frames, ${A.bases} drag-start redraw(s)`,
     hold: B.calls === 0 && B.cbs === 0 && B.frames > 30,
     keys: C.keys === 12 && C.movedDuring > 0 && C.calls === 0,
     resume: sum(E.what, (k) => k.startsWith('2:')) > 0,
@@ -460,7 +460,9 @@ try { await withHarness(async (app) => {
       await sleep(SETTLE_MS);
       const p = await headerOf('n11');
       const nx = await ev('window.__fx.nodes[10].x');
-      const oldEnd = await ev(linkEnd('({ ...window.__fx.nodes[10] })'));
+      // "left behind" is read where the moved card's OLD links ran and its new ones never do: the start of the n11 -> n12 link at n11's old
+      // right edge. (The n10 -> n11 link's old path lies under its new first leg - n11 moves right - so ink there is the new link, not a ghost.)
+      const oldEnd = await ev(`(() => { const v = window.__fx.layer.stats().view, n = window.__fx.nodes[10]; return { x: (n.x + n.w) * v.s + v.tx + 16, y: (n.y + n.h / 2) * v.s + v.ty }; })()`);
       const tBefore = await now();
       await sleep(500);
       const before = await layerCallsIn(tBefore, tBefore + 500);
@@ -584,7 +586,7 @@ try { await withHarness(async (app) => {
   const dv = dragVerdict(d);
   ok('DRAG-ONLY during a drag the layer draws only the dragged card\'s links: no ground draw, no electron or current (no drawImage), the motion canvas redrawn only at the drag\'s start',
     dv.only, dv.onlyDetail);
-  ok('FOLLOW the dragged card\'s links follow it, frame by frame: ink where the link meets the card now, none where it met the card before (nothing left behind)',
+  ok('FOLLOW the dragged card\'s links follow it, frame by frame: ink where the n10-n11 link meets the card now, none where the n11-n12 link left it (nothing left behind)',
     dv.follow, dv.followDetail);
   ok('D2-HOLD a pointer held still mid-drag draws nothing and runs no frame loop (no animation)', dv.hold, JSON.stringify(d.B));
   ok('D2-KEYS-IN-DRAG zero draws while keys land stays absolute: keys mid-drag (the card still moving) draw nothing from the first key to the last',
