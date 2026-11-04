@@ -97,6 +97,8 @@ function Readout({ fields }: { fields: string[] }) {
       ))}
       <span className="machina2-readout-end">
         {open && <span className="machina2-readout-line" role="note">{HELP}</span>}
+        {/* r9 (the Wrizors, Nov 4): a hairline tick before the "?", as between the fields */}
+        <span className="machina2-tick" aria-hidden="true" />
         <button type="button" className="machina2-readout-help" title={HELP} aria-label={HELP} aria-expanded={open} onClick={() => setOpen((o) => !o)}>?</button>
       </span>
     </div>
