@@ -568,7 +568,9 @@ Object.assign(screens, {
     const done = await anon(app);
     try {
       if (!(await freshSplash(app))) fail('R19-FRONT-HOVER', { splash: false });
-      await waitSoft(app, "document.querySelector('.arbor2-front-doorbox .arbor2-front-doors')?.getAttribute('data-phase') === 'shown'", { label: 'doors', timeout: 20000 });
+      // (driver fix after the green leg 41914171335: the doors under the splash reach 'shown' while the splash still fades over them, and the
+      // reads took the splash's own - decorative, never pressed - doors; wait for the splash to be gone, as front-order does)
+      await waitSoft(app, "document.querySelector('.arbor2-front-doorbox .arbor2-front-doors')?.getAttribute('data-phase') === 'shown' && !document.querySelector('.wz-splash')", { label: 'doors', timeout: 20000 });
       // (driver fix after the green leg 41913162728: a door is not pressable - nor brass on hover - until the front door is ready; wait for it)
       const t0 = Date.now();
       const wasReady = await waitSoft(app, "!document.querySelector('.arbor2-front-doorbox .arbor2-door')?.disabled", { label: 'ready', timeout: 25000 });
