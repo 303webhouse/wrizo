@@ -145,14 +145,22 @@ export default {
         const px = s.front ? await pixels(app, '.arbor2-front-doors, .arbor2-front-mark .arbor2-top-tagline') : [];
         rows.push({ room, s, px });
       }
-      const okRow = ({ s, px }) => s.arrival && s.front && !s.hero && !s.heroLogo && !s.bootbar && s.drawing && !!s.markCentre && Math.abs(s.markCentre[0] - s.vw / 2) <= 2 && Math.abs(s.markCentre[1] - s.vh / 2) <= 2
-        && s.tagline === 'For humans who write.' && JSON.stringify(s.doors) === '["Write","Log in"]' && px.length >= 3 && px.every((x) => x.p2 != null && x.p2 >= 4.5);
+      // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 38 §12c (Nick, Nov 4; the Wrizors' wrizors-to-ARBOR-nov4c.md md5 13e5db96), frames run 41930092070,
+      // Arbor ed2f8c46: a visitor's doors are "Write" and "Sign in" - the second door no longer reads "Log in"). Original, verbatim:
+      // const okRow = ({ s, px }) => s.arrival && s.front && !s.hero && !s.heroLogo && !s.bootbar && s.drawing && !!s.markCentre && Math.abs(s.markCentre[0] - s.vw / 2) <= 2 && Math.abs(s.markCentre[1] - s.vh / 2) <= 2
+      //   && s.tagline === 'For humans who write.' && JSON.stringify(s.doors) === '["Write","Log in"]' && px.length >= 3 && px.every((x) => x.p2 != null && x.p2 >= 4.5);
+      // SUCCESSOR okRowB (key visitorB): the same front door, its doors Write and Sign in.
+      const okRowB = ({ s, px }) => s.arrival && s.front && !s.hero && !s.heroLogo && !s.bootbar && s.drawing && !!s.markCentre && Math.abs(s.markCentre[0] - s.vw / 2) <= 2 && Math.abs(s.markCentre[1] - s.vh / 2) <= 2
+        && s.tagline === 'For humans who write.' && JSON.stringify(s.doors) === '["Write","Sign in"]' && px.length >= 3 && px.every((x) => x.p2 != null && x.p2 >= 4.5);
       // (amendment before any green, run 41358900562: the splash's own ground is not one colour - #120A06 by night, #0A0503 by day (the day
       // splash rule) - so the front must match the SPLASH in each room, not match itself across rooms. Original: sameGround: rows[0].s.ground
       // === rows[1].s.ground)
       const SPLASH = { night: 'rgb(18, 10, 6)', day: 'rgb(10, 5, 3)' };
-      const ok = { visitor: rows.every(okRow), splashGround: rows.every((r) => r.s.ground === SPLASH[r.room]) };
-      const brief = { ok, rows: rows.map((r) => ({ room: r.room, ok: okRow(r), ...r.s, px: r.px })) };
+      // PARKED 2026-11-04 (SUPERSEDED with okRow above, frames run 41930092070). Original, verbatim:
+      // const ok = { visitor: rows.every(okRow), splashGround: rows.every((r) => r.s.ground === SPLASH[r.room]) };
+      // SUCCESSOR: visitorB reads okRowB (the report's per-row ok reads it too).
+      const ok = { visitorB: rows.every(okRowB), splashGround: rows.every((r) => r.s.ground === SPLASH[r.room]) };
+      const brief = { ok, rows: rows.map((r) => ({ room: r.room, ok: okRowB(r), ...r.s, px: r.px })) };
       if (Object.values(ok).some((x) => !x)) fail('R14-FRONT', brief);
       say('r14-front', brief);
     } finally { await a.done(); }
@@ -184,14 +192,21 @@ export default {
     try {
       await front2(app, null);
       const atDoor = await app.evalJs(FRONT2);
-      const pressed = await app.evalJs(clickDoor('Log in')); await sleep(400);
+      // (driver fix after g19 run 41930092070: the door to the sign-in form reads "Sign in" (spec draft 38 §12c) - pressing "Log in" found no door
+      // and the form was never reached; the press waits for the door to be pressable. Before: const pressed = await app.evalJs(clickDoor('Log in'));)
+      await waitSoft(app, "[...document.querySelectorAll('.arbor2-front-doors .arbor2-door')].some((d) => d.textContent.trim() === 'Sign in' && !d.disabled)", { label: 'Sign in pressable', timeout: 25000 });
+      const pressed = await app.evalJs(clickDoor('Sign in')); await sleep(400);
       const form = await app.evalJs(FRONT2);
       await app.evalJs(fill('input[autocomplete="email"]', 'r14-reader@example.com'));
       await app.evalJs(fill('input[autocomplete="current-password"]', 'a-long-password'));
       await app.evalJs("document.querySelector('input[autocomplete=\"current-password\"]')?.closest('form')?.requestSubmit()");
       const left = await waitSoft(app, leftFront, { label: 'left the front door', timeout: 8000 });
       const login = a.seen.find((x) => x.path === '/auth/login');
-      const ok = { door: JSON.stringify(atDoor.doors) === '["Write","Log in"]', pressed, form: form.signinForm && !form.front, sent: !!login && login.body?.email === 'r14-reader@example.com', left };
+      // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 38 §12c (Nick, Nov 4), frames run 41930092070, Arbor ed2f8c46: a visitor's doors are "Write" and
+      // "Sign in"). Original, verbatim:
+      // const ok = { door: JSON.stringify(atDoor.doors) === '["Write","Log in"]', pressed, form: form.signinForm && !form.front, sent: !!login && login.body?.email === 'r14-reader@example.com', left };
+      // SUCCESSOR doorB: the doors are Write and Sign in; the rest as before.
+      const ok = { doorB: JSON.stringify(atDoor.doors) === '["Write","Sign in"]', pressed, form: form.signinForm && !form.front, sent: !!login && login.body?.email === 'r14-reader@example.com', left };
       const brief = { ok, form: { signinForm: form.signinForm, front: form.front }, login, route: await app.evalJs('location.hash') };
       if (Object.values(ok).some((x) => !x)) fail('R14-SIGNIN', brief);
       say('r14-signin', brief);
@@ -226,7 +241,10 @@ export default {
     const a = await anon(app);
     try {
       await front2(app, null);
-      await app.evalJs(clickDoor('Log in')); await sleep(400);
+      // (driver fix after g19 run 41930092070, assertions unchanged: the door to the sign-in form reads "Sign in" (spec draft 38 §12c); the press waits
+      // for the door to be pressable. Before: await app.evalJs(clickDoor('Log in'));)
+      await waitSoft(app, "[...document.querySelectorAll('.arbor2-front-doors .arbor2-door')].some((d) => d.textContent.trim() === 'Sign in' && !d.disabled)", { label: 'Sign in pressable', timeout: 25000 });
+      await app.evalJs(clickDoor('Sign in')); await sleep(400);
       const toAccount = await app.evalJs(clickDoor('New here? Create an account'));
       await waitSoft(app, "!!document.querySelector('input[autocomplete=\"new-password\"]')", { label: 'the sign-up form', timeout: 5000 });
       const form = await app.evalJs(FRONT2);
@@ -261,7 +279,11 @@ export default {
     const s = await app.evalJs(FRONT2);
     const pressed = await app.evalJs(clickDoor('Write'));
     const left = await waitSoft(app, leftFront, { label: 'Write opened a page', timeout: 8000 });
-    const ok = { front: s.front && !s.hero, doors: JSON.stringify(s.doors) === '["Write","Open"]', write: pressed && left };
+    // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 38 §12c (Nick, Nov 4), frames run 41930092070, Arbor ed2f8c46: a signed-in writer's front door
+    // offers "Write" ONLY - no "Open"; Write goes into her last page). Original, verbatim:
+    // const ok = { front: s.front && !s.hero, doors: JSON.stringify(s.doors) === '["Write","Open"]', write: pressed && left };
+    // SUCCESSOR doorsB: the one door, Write; Write still leaves for a page (into the last page: r19-front-authed proves which).
+    const ok = { front: s.front && !s.hero, doorsB: JSON.stringify(s.doors) === '["Write"]', write: pressed && left };
     const brief = { ok, doors: s.doors, front: s.front, hero: s.hero, route: await app.evalJs('location.hash') };
     if (Object.values(ok).some((x) => !x)) fail('R14-FRONT-AUTHED', brief);
     say('r14-front-authed', brief);
