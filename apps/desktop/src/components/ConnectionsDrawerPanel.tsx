@@ -1,4 +1,5 @@
 import { useDeskLexicon } from '../store/deskLexicon';
+import type { ReactNode } from 'react';
 import { useBoardSnapshot, getBoardActions } from '../store/boardSelection';
 import { getJournalEntry, getUnbornEntry, removePageLink, subscribe } from '../store/persistence';
 import { requestDelete } from '../store/deleteGate';
@@ -34,7 +35,8 @@ const titleOf = (text: string | undefined): string => (withoutFontMarks(text ?? 
 // (Place this..., the paired page, the plan board, the Boards group); 'grafts' = the rest (Cards, Sources, Pages, shared tags). Both keep
 // "+ Graft..." (the same picker). Undefined (every caller off the flag) = the whole pane, byte-for-byte today's. A filter on what is drawn:
 // no new behaviour, no new state.
-export function ConnectionsDrawerPanel({ only }: { only?: 'board' | 'grafts' } = {}) {
+// ARBOR v2 MOCKUP r18 - `help`: a "?" drawn at the end of the "+ Graft..." row (the Arbor mockup's Grafts help, off the folder tab); absent = today's row.
+export function ConnectionsDrawerPanel({ only, help }: { only?: 'board' | 'grafts'; help?: ReactNode } = {}) {
   const { t } = useDeskLexicon();
   const snap = useBoardSnapshot();
   const location = useLocation();
@@ -116,10 +118,12 @@ export function ConnectionsDrawerPanel({ only }: { only?: 'board' | 'grafts' } =
 
   return (
     <div className="wz-links-pane" data-links-pane="">
+      {(() => { const add = (
       <button ref={addRef} type="button" className="wz-graft-add" data-graft-add="" disabled={!subject} aria-expanded={pickerOpen ? 'true' : 'false'}
         onClick={() => { setPlaceOpen(false); setPickerOpen((o) => !o); }}>
         <span aria-hidden="true">+</span> {t('graftAdd')}
       </button>
+      ); return help ? <div className="wz-graft-add-row">{add}{help}</div> : add; })()}
       {canPlace && only !== 'grafts' && (
         <button ref={placeRef} type="button" className="wz-graft-add" data-graft-place-this="" aria-expanded={placeOpen ? 'true' : 'false'}
           onClick={() => { setPickerOpen(false); setPlaceOpen((o) => !o); }}>

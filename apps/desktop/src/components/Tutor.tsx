@@ -1085,7 +1085,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // content is byte-near-identical to helpGrafts's own Arbor sentence.
   const arborRightTabs: DrawerTabsConfig<RightTab | 'board'> | undefined = arbor2 ? {
     items: [{ id: RIGHT_TABS[0], label: t('tutorTabTutor') }, { id: RIGHT_TABS[1], label: t('drawerLinks') }, { id: 'board', label: t('railBoard') }],
-    notes: { links: <HelpButton helpKey="helpGrafts" subjectLabel={t('drawerLinks')} /> },
+    // ARBOR v2 MOCKUP r18 (the Wrizors, Nov 4: a stray "?" stood in the room beside the GRAFTS folder tab): the Grafts "?" is drawn on the Grafts
+    // pane's own first row instead (ConnectionsDrawerPanel's `help`), inside the drawer
     value: rightTab === 'links' && arborBoard ? 'board' : rightTab,
     onChange: (v: RightTab | 'board') => { setArborBoard(v === 'board'); setRightTab(v === 'board' ? 'links' : v); },
     label: t('drawerRightTabsLabel'),
@@ -1450,7 +1451,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
             )}
             </div>
           )}
-          {rightTab === 'links' && <ConnectionsDrawerPanel only={arbor2 ? (arborBoard ? 'board' : 'grafts') : undefined} />}
+          {rightTab === 'links' && <ConnectionsDrawerPanel only={arbor2 ? (arborBoard ? 'board' : 'grafts') : undefined}
+            help={arbor2 && !arborBoard ? <HelpButton helpKey="helpGrafts" subjectLabel={t('drawerLinks')} /> : undefined} />}
           </SideDrawer>
           )}
         </div>
