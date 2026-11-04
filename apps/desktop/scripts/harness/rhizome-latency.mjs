@@ -26,6 +26,9 @@
 //     (3) a measurement whose own control caught a box stall (a control key over REST_NOISE_MS; normal is <= ~35) says nothing about the flash and is void: taken again. And a RED must be
 //         reproduced: a failing measurement is measured again, and the guard fails when two measurements fail (a third settles a split) - a regression on the keystroke path shows in every one
 //         (both mutants below do), a one-off the box threw at the fade (1 of 24 runs: a fade median 6.8 ms over its control, the controls and the hold clean) does not. All logged.
+//   150b - THE FINER MEASURE: B and C read the frame clock, which hides a per-key main-thread cost under about a frame (below). B2 and C2 read the cost itself: per key, BUSY = keydown -> the end of the
+//   task that handled it (a message posted at keydown runs when that task and its React flush are done) plus FRAME = the first rAF after its input -> the end of that frame's rendering (a message posted
+//   from the rAF runs after style/layout/paint). Median within +4 ms of the control (no p95: see COST_MEDIAN_SLACK): the flash against the slow control, the fade against the fast one.
 //   The mutants: RL_MUTANT_MS=<n> adds n ms of main-thread cost to every key while the flash is holding or fading; RL_MUTANT_STALL_MS=<n> adds one n ms stall at the first key of every fade (the filter
 //   drop's suspect). rhizome-latency-mutant.mjs runs both and requires red. MEASURED, and worth knowing: this metric (keydown -> the 2nd frame) HIDES a per-key cost smaller than about a frame - the
 //   key still makes the frame it was going to make. 10 and 20 ms per key leave the medians where they were (20: flash 27.2 vs rest 26.9); 40 ms puts every key at ~43 ms (median +18). That was true of
@@ -134,20 +137,28 @@ async function part2() {
       if (window.__flObs) window.__flObs.disconnect();
       window.__flObs = new MutationObserver(note);
       window.__flObs.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-flash'] });
-      const kd = () => { t0 = performance.now(); };
+      let cur = null;
+      // THE FINE METER (ticket 150b). The latency above is quantised by the frame clock and HIDES a main-thread cost under about a frame. These two are not: BUSY = keydown -> the end of the task that
+      // handled it (a message posted at keydown runs only when the keydown/beforeinput/input task, and the React render it flushes, are done), and FRAME = from the start of the first rAF after the
+      // key's input to the end of that frame's rendering (a message posted from the rAF callback runs after style, layout and paint of that frame). Both are main-thread milliseconds the key cost.
+      const kd = () => { t0 = performance.now(); const k = { busy: null, frame: null }; cur = k; const s0 = t0; const mc = new MessageChannel(); mc.port1.onmessage = () => { k.busy = performance.now() - s0; mc.port1.close(); }; mc.port2.postMessage(0); };
       window.__stalled = false;
       const spin = () => { const f = document.querySelector('.wz-rhizome-field'); const v = f ? f.dataset.flash : null; let m = 0;
         if ((v === 'true' || v === 'fading') && window.__rlMutantMs) m = window.__rlMutantMs;
         if (v === 'fading' && window.__rlMutantStall && !window.__stalled) { window.__stalled = true; m = Math.max(m, window.__rlMutantStall); }
         if (!m) return; const e = performance.now() + m; while (performance.now() < e) { /* the injected cost */ } };
-      const bi = () => { const t = t0; requestAnimationFrame(() => requestAnimationFrame(() => { const f = document.querySelector('.wz-rhizome-field'); const now = performance.now(); window.__lat.push({ ms: now - t, flash: f ? f.dataset.flash : null, key: t, at: now }); })); };
+      const bi = () => { const t = t0, k = cur; requestAnimationFrame(() => {
+        const r = performance.now(); const mc = new MessageChannel(); mc.port1.onmessage = () => { if (k) k.frame = performance.now() - r; mc.port1.close(); }; mc.port2.postMessage(0);
+        requestAnimationFrame(() => { const f = document.querySelector('.wz-rhizome-field'); const now = performance.now(); window.__lat.push({ ms: now - t, k, flash: f ? f.dataset.flash : null, key: t, at: now }); }); }); };
+      // a sample's value by name, read when the round is READ (every message has run by then): ms, busy, frame, or cost = busy + frame (null while either is unanswered)
+      window.__val = (x, f) => (f === 'busy' || f === 'frame') ? (x.k ? x.k[f] : null) : f === 'cost' ? ((x.k && x.k.busy != null && x.k.frame != null) ? x.k.busy + x.k.frame : null) : x[f];
       document.addEventListener('keydown', kd, true); document.addEventListener('beforeinput', spin, true); document.addEventListener('beforeinput', bi, true);
       window.__latOff = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('beforeinput', spin, true); document.removeEventListener('beforeinput', bi, true); };
       window.__rlMutantMs = ${MUTANT_MS}; window.__rlMutantStall = ${MUTANT_STALL_MS};
       return true; })()`);
     const jit = rng(0x7A11);
     const typeSteady = async (n, gap = 90, jitter = true) => { for (let i = 0; i < n; i += 1) { await app.typeKeys('a'); await sleep(jitter ? Math.round(gap * (0.7 + 0.6 * jit())) : gap); } };   // jittered: gap +-30%, seeded
-    const lat = (flash) => app.evalJs(`window.__lat.filter((x) => ${flash === 'any' ? 'true' : `x.flash === ${JSON.stringify(flash)}`}).map((x) => x.ms)`);
+    const lat = (flash, field = 'ms') => app.evalJs(`window.__lat.filter((x) => ${flash === 'any' ? 'true' : `x.flash === ${JSON.stringify(flash)}`}).map((x) => window.__val(x, ${JSON.stringify(field)}))`);
     const stat = (xs) => { const s = (xs || []).slice().sort((a, b) => a - b); const q = (p) => (s.length ? s[Math.min(s.length - 1, Math.floor(p * s.length))] : null); return { n: s.length, median: q(0.5), p95: q(0.95), max: s.length ? s[s.length - 1] : null }; };
     const r1 = (x) => (x === null ? null : Math.round(x * 10) / 10);
     const show = (st) => JSON.stringify({ n: st.n, median: r1(st.median), p95: r1(st.p95), max: r1(st.max) });
@@ -171,12 +182,18 @@ async function part2() {
     // crossing is repeated (the page is re-seeded to 7 words each time) until each phase has MIN_KEYS painted samples - and the CONTROL burst (PRE_KEYS keys on the same page, seconds before the 8th
     // word) has too. A key only counts for the phase its frame was painted in (the flash attribute is read at the frame), so a flash that was over before a key landed certifies nothing. Every round
     // types HOLD_KEYS inside the hold, then FADE_KEYS as fast as the box takes them.
+    // THE FINER BUDGET (ticket 150b): the main-thread cost of a key (busy + frame, ms), the flash against the control at its pace, the fade against the fast control. Measured on main
+    // (29 runs): the cost's median is ~14-15 ms and a run's flash/fade median differs from its control's by -1.6..+1.8 ms (sd 0.7: +4 is ~6 sd). A per-key cost of 10 ms adds +6.5..+14 to the medians,
+    // 15 ms adds +15..+20, 20 ms the same. The MEDIAN is the budget: the cost's p95 is a tail of a bimodal number (sd 3.5-5 ms between runs, -14..+6.5 against the control) and a p95 budget tight enough to
+    // mean something flaked the first measurement in 5 of 24 runs, so there is none here - a regression that only some keys carry is B's and C's (their p95 and 100 ms ceiling, on the frame clock).
+    // (The frame clock's quantisation, which hid 10-20 ms from B and C above, is not in this number.)
+    const COST_MEDIAN_SLACK = 4;
     const HOLD_KEYS = 14, FADE_KEYS = 22, PRE_KEYS = 16, FAST_KEYS = 22, MAX_ROUNDS = 10, MAX_MEASURES = 4, REST_NOISE_MS = 50;
     // The floor is MIN_KEYS (Fable's ruling); the rounds run on to TARGET_KEYS in every set. A median of 40-odd keys that queue behind one another (the fade's are typed 25 ms apart) has a spread of ~1.5 ms
     // - measured over 20 runs - against a 5 ms budget; at 80+ it is ~1.1 ms, and the budget is not near it.
     const TARGET_KEYS = 80;
     const measure = async () => {
-      const M = { holdAll: [], fadeAll: [], slowAll: [], rounds: [], restPre: [], restFast: [], flashPremise: true, filterPremise: true, savedAll: true, lastSaved: '' };
+      const M = { holdAll: [], fadeAll: [], slowAll: [], rounds: [], restPre: [], restFast: [], fine: { hold: { cost: [] }, fade: { cost: [] }, pre: { cost: [] }, fast: { cost: [] } }, flashPremise: true, filterPremise: true, savedAll: true, lastSaved: '' };
       for (let round = 1; round <= MAX_ROUNDS && (M.holdAll.length < TARGET_KEYS || M.fadeAll.length < TARGET_KEYS || M.restPre.length < TARGET_KEYS || M.restFast.length < TARGET_KEYS); round += 1) {
         // the control for the fade: a round of its own - the same page state (7 words, goal 8, the sprout, freshly opened) and the same fast, fixed gap, no crossing. It is NOT typed inside the crossing
         // round: measured, a fast burst earlier in that round leaves the hold's keys a slow tail (p95 60-90 ms) that has nothing to do with the flash.
@@ -185,6 +202,7 @@ async function part2() {
         await typeSteady(FAST_KEYS, 25, false);
         await sleep(200);
         M.restFast.push(...await lat('false'));
+        M.fine.fast.cost.push(...(await lat('false', 'cost')).filter((v) => v !== null));
         await seedAndReopen(pageId, 7, { n: 8, unit: 'words' });
         await arm();
         await typeSteady(PRE_KEYS);   // the control for the hold: its pace, seconds before the 8th word
@@ -201,6 +219,9 @@ async function part2() {
         await sleep(200);   // the last key's second frame
         const h = await lat('true'), f = await lat('fading');
         M.holdAll.push(...h); M.fadeAll.push(...f);
+        M.fine.hold.cost.push(...(await lat('true', 'cost')).filter((v) => v !== null));
+        M.fine.fade.cost.push(...(await lat('fading', 'cost')).filter((v) => v !== null));
+        M.fine.pre.cost.push(...(await app.evalJs(`window.__lat.filter((x) => x.key < ${tailAt} && x.flash === 'false').map((x) => window.__val(x, 'cost'))`)).filter((v) => v !== null));
         M.restPre.push(...await app.evalJs(`window.__lat.filter((x) => x.key < ${tailAt} && x.flash === 'false').map((x) => x.ms)`));
         // WHERE the slow frames fell: a fade key more than 20 ms over that round's fade median (or over 50 ms outright), with its offset from the moment the fade began and from the moment it ended
         const att = await app.evalJs(`(() => {
@@ -227,14 +248,16 @@ async function part2() {
     const judge = (m) => {
       const r = stat(m.restPre), f = stat(m.restFast), h = stat(m.holdAll), d = stat(m.fadeAll);
       const within = (x, rest) => x.n >= MIN_KEYS && rest.n >= MIN_KEYS && x.median <= rest.median + MEDIAN_SLACK && x.p95 <= rest.p95 + P95_SLACK && x.max <= MAX_MS;
-      return { b: within(h, r), c: within(d, f), noisy: r.max > REST_NOISE_MS, control: show(r), controlFast: show(f), flash: show(h), fade: show(d) };
+      const fc = (a) => stat(a || []);
+      const fine = (x, rest) => x.n >= MIN_KEYS && rest.n >= MIN_KEYS && x.median <= rest.median + COST_MEDIAN_SLACK;
+      return { b: within(h, r), c: within(d, f), b2: fine(fc(m.fine.hold.cost), fc(m.fine.pre.cost)), c2: fine(fc(m.fine.fade.cost), fc(m.fine.fast.cost)), noisy: r.max > REST_NOISE_MS, control: show(r), controlFast: show(f), flash: show(h), fade: show(d) };
     };
     const attempts = [];
     let M, passes = 0, fails = 0;
     for (let n = 1; n <= MAX_MEASURES; n += 1) {
       M = await measure();
       const j = judge(M);
-      const good = j.b && j.c && M.flashPremise && M.savedAll;
+      const good = j.b && j.c && j.b2 && j.c2 && M.flashPremise && M.savedAll;
       attempts.push({ n, void: j.noisy, ok: good, control: j.control, controlFast: j.controlFast, flash: j.flash, fade: j.fade });
       if (!M.flashPremise) break;
       if (j.noisy) continue;
@@ -245,7 +268,7 @@ async function part2() {
     const holdSt = stat(holdAll), fadeSt = stat(fadeAll);
     // the baseline: the control bursts, pooled over the rounds of the attempt that stands
     const restSt = stat(restPre), fastSt = stat(restFast);
-    console.log('RL-RAW: ' + JSON.stringify({ mutantMs: MUTANT_MS, mutantStallMs: MUTANT_STALL_MS, attempts, restA, restPre, restFast, hold: holdAll, fade: fadeAll }));
+    console.log('RL-RAW: ' + JSON.stringify({ mutantMs: MUTANT_MS, mutantStallMs: MUTANT_STALL_MS, attempts, restA, restPre, restFast, hold: holdAll, fade: fadeAll, fine: M.fine }));
     ok(`A+ the rest baselines are the control bursts typed on the crossing page seconds before the 8th word: ${restSt.n} keys at the hold's pace and ${fastSt.n} at the fade's, over ${rounds.length} round(s), ${attempts.length} measurement(s) (a slow-control key over ${REST_NOISE_MS} ms = a box stall: the measurement is void and taken again; a failing one is measured again to confirm it)`,
       restSt.n >= MIN_KEYS && fastSt.n >= MIN_KEYS && !(restSt.max > REST_NOISE_MS), `control ${show(restSt)} | control fast ${show(fastSt)} | A block ${show(restASt)} | attempts ${JSON.stringify(attempts)}`);
     ok('B premise: every round crossed the goal and the flash was HOLDING with the drop-shadow actually applied to the full field', flashPremise && filterPremise, JSON.stringify(rounds.slice(-1)));
@@ -253,6 +276,11 @@ async function part2() {
     ok(`B typing inside the flash is as fast as typing at rest: median within ${MEDIAN_SLACK} ms and p95 within ${P95_SLACK} ms of the rest numbers, and no key over ${MAX_MS} ms`,
       holdSt.n >= MIN_KEYS && restSt.n >= MIN_KEYS && holdSt.median <= restSt.median + MEDIAN_SLACK && holdSt.p95 <= restSt.p95 + P95_SLACK && holdSt.max <= MAX_MS, `rest ${show(restSt)} | flash ${show(holdSt)}`);
     ok(`C premise: at least ${MIN_KEYS} keys were painted during the fade (enough that a percentile means something)`, fadeSt.n >= MIN_KEYS, show(fadeSt));
+    const costSt = { pre: stat(M.fine.pre.cost), hold: stat(M.fine.hold.cost), fast: stat(M.fine.fast.cost), fade: stat(M.fine.fade.cost) };
+    ok(`B2 main-thread time per key inside the flash (the key's handler task + the frame that paints it, ms): the median is within ${COST_MEDIAN_SLACK} ms of the same page's control - a cost the frame clock hides`,
+      costSt.hold.n >= MIN_KEYS && costSt.pre.n >= MIN_KEYS && costSt.hold.median <= costSt.pre.median + COST_MEDIAN_SLACK, `control ${show(costSt.pre)} | flash ${show(costSt.hold)}`);
+    ok(`C2 main-thread time per key inside the fade: the median is within ${COST_MEDIAN_SLACK} ms of the fast control's`,
+      costSt.fade.n >= MIN_KEYS && costSt.fast.n >= MIN_KEYS && costSt.fade.median <= costSt.fast.median + COST_MEDIAN_SLACK, `control ${show(costSt.fast)} | fade ${show(costSt.fade)}`);
     ok('C typing inside the fade is as fast as at rest at the same pace (same budgets, against the fast control)', fadeSt.n >= MIN_KEYS && fastSt.n >= MIN_KEYS && fadeSt.median <= fastSt.median + MEDIAN_SLACK && fadeSt.p95 <= fastSt.p95 + P95_SLACK && fadeSt.max <= MAX_MS, `rest ${show(fastSt)} | fade ${show(fadeSt)}`);
     // The slow keys against the fade's start (information, never a verdict). Fable's suspect: the full-field drop-shadow FILTER is dropped at the instant the fade begins, forcing one big repaint.
     // If the slow keys line up here (sinceFadeStart near 0), the filter is the cause.
