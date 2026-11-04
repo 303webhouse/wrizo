@@ -448,7 +448,8 @@ const FR = `(() => { const box = (e) => { if (!e) return null; const r = e.getBo
   const s = window.wrizoArborFront;
   return { splash: !!sp, hold: !!document.documentElement.dataset.splashHold, logo: logo ? { r: box(logo), w: logo.getAttribute('data-writing') } : null,
     tag: tag ? { r: box(tag), typedR: box(typed), state: tag.getAttribute('data-state'), n: Number(tag.getAttribute('data-typed')), text: typed ? typed.textContent : null, font: getComputedStyle(tag).fontFamily, size: parseFloat(getComputedStyle(tag).fontSize), color: getComputedStyle(tag).color } : null,
-    caret: caret ? { r: box(caret), color: getComputedStyle(caret).borderLeftColor, width: getComputedStyle(caret).borderLeftWidth, anims: caret.getAnimations().map((a) => [a.animationName, Number(a.effect.getTiming().duration)]) } : null,
+    // (instrument fix after the green leg 41911916946: the caret is drawn as a 1.5 px bar, its ::before - a 1.5 px border is drawn 1 px at DPR 1)
+    caret: caret ? { r: box(caret), color: getComputedStyle(caret, '::before').backgroundColor, width: getComputedStyle(caret, '::before').width, anims: caret.getAnimations().map((a) => [a.animationName, Number(a.effect.getTiming().duration)]) } : null,
     phase: dl ? dl.getAttribute('data-phase') : null, doors, route: location.hash, vw: innerWidth,
     seq: s ? { sketchDone: s.sketchDone, logoStart: s.logoStart, logoDone: s.logoDone, tagStart: s.tagStart, tagDone: s.tagDone, doorsIn: s.doorsIn, shownAt: s.shownAt, pulses: [...s.pulses], acted: s.acted, skipped: s.skipped, reduced: s.reduced, now: performance.now() } : null }; })()`;
 // a sampler from the splash's first frames: every change of the splash, the logo's state, the tagline's letters and state, the doors' phase
@@ -570,6 +571,9 @@ Object.assign(screens, {
       const w = rest.doors[0].r;
       await mouse(app, 'mouseMoved', (w.l + w.r) / 2, (w.t + w.b) / 2); await sleep(300);
       const hov = await app.evalJs(FR);
+      // (report only, after the green leg 41911916946 - hover did not take: what stands under the pointer, top first)
+      const under = await app.evalJs(`(() => document.elementsFromPoint(${(w.l + w.r) / 2}, ${(w.t + w.b) / 2}).slice(0, 6).map((e) => (e.tagName + '.' + String(e.className && e.className.baseVal != null ? e.className.baseVal : e.className).split(' ').slice(0, 2).join('.')) + ':' + getComputedStyle(e).pointerEvents))()`);
+      const hovered = await app.evalJs("(() => [...document.querySelectorAll(':hover')].map((e) => e.tagName + '.' + String(e.className).split(' ')[0]).slice(-4))()");
       await mouse(app, 'mouseMoved', 20, 20); await sleep(300);
       const off = await app.evalJs(FR);
       let focused = false; for (let i = 0; i < 12 && !focused; i++) { await key(app, 'Tab', 'Tab', 9); await sleep(120); focused = await app.evalJs("!!document.activeElement?.classList.contains('arbor2-door')"); }
@@ -581,7 +585,7 @@ Object.assign(screens, {
         backCream: off.doors[0].stroke === CREAM,
         focusBrass: focused && !!foc && foc.color === BRASS_RGB && foc.stroke === BRASS_RGB,
       };
-      const brief = { ok, rest: rest.doors.map((d) => [d.word, d.color, d.stroke]), hov: hov.doors.map((d) => [d.word, d.color, d.stroke]), off: off.doors[0].stroke, foc };
+      const brief = { ok, rest: rest.doors.map((d) => [d.word, d.color, d.stroke]), hov: hov.doors.map((d) => [d.word, d.color, d.stroke]), off: off.doors[0].stroke, foc, under, hovered };
       if (Object.values(ok).some((x) => !x)) fail('R19-FRONT-HOVER', brief);
       say('r19-front-hover', brief);
     } finally { await unhold(app); await done(); }

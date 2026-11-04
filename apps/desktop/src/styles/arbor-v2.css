@@ -740,7 +740,9 @@
   font-family:'EB Garamond', var(--font-prose), serif; font-size:calc(var(--arbor2-u) * 86); }
 :root[data-arbor2][data-theme='plateau'] .arbor2-top-tagline[data-state='wait']{ visibility:hidden; }
 :root[data-arbor2][data-theme='plateau'] .arbor2-tag-rest{ visibility:hidden; }
-:root[data-arbor2][data-theme='plateau'] .arbor2-tag-caret{ display:inline-block; width:0; height:1.05em; margin-right:-1.5px; vertical-align:-.2em; border-left:1.5px solid #FF9800; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-tag-caret{ position:relative; display:inline-block; width:0; height:1.05em; vertical-align:-.2em; }
+/* the bar itself (a 1.5 px border would be drawn 1 px at DPR 1; a box of 1.5 px is drawn as 1.5) */
+:root[data-arbor2][data-theme='plateau'] .arbor2-tag-caret::before{ content:''; position:absolute; left:0; top:0; bottom:0; width:1.5px; background:#FF9800; }
 :root[data-arbor2][data-theme='plateau'] .arbor2-top-tagline[data-state='done'] .arbor2-tag-caret{ animation:arbor2-caret 1.06s steps(1, end) infinite; }
 @keyframes arbor2-caret{ 0%{ opacity:1; } 50%{ opacity:0; } }
 
