@@ -1,0 +1,12 @@
+Train #12k r2 (TOOLS tools-14-size-box-r2 e4289ad9) - HELD, NOT SHIPPED (Chat 1, Nov 4 2026)
+
+Train tree 6b941a90 = main fd1f9f1b + one --no-ff merge of tools-14-size-box-r2 e4289ad9. Bundle index-C0nBce9r.js 956916 bytes. tsc x2 0, seed-guard 36.
+
+THE RED (real): hooks-order-ast.mjs FAIL 1/7 on the Actions default leg (run 41846184435): src/pages/PageEditor.tsx, component PageEditorView, useRef at line 1052 below the early return at line 827 (`if (!realEntry) return <Navigate/>`). The hook is r2's new heldSelRef (size box holds the highlight). A hook below an early return changes the hook count between renders. Control: the first 12k pair (main + r1, tree e976d8a1) passed hooks-order-ast; r2's PageEditor.tsx diff (+9/-2) is the only change to that file. Fix: move heldSelRef (and holdSizeSelection) above the early return.
+Parked-leg line for hooks-order-ast reads FAIL with "PARKED: PASS (0 checks)": not investigated.
+
+SECOND, UNATTRIBUTED: guided-add-scenes-part2.mjs FAIL 1/74 on the Actions PARKED leg only ("[Flux dark] in Storyboard the door shows on the five main steps and not on their scenes", doors 0, cards 0); PASS 74 on the default leg. Not controlled yet.
+
+GREEN: item126 PASS (the successor) both legs; size-box, size-words, item207, item207-core PASS both legs. Actions pair otherwise 232/240 default, 231/240 parked (the 7 capture tools; hooks-order-ast and, parked, guided-add-scenes-part2 the others). Box (26 files = the 12k list + size-words + item126), stamp tree=6b941a90 bundle=index-C0nBce9r.js/956916b: default CLEAN 26/26, parked CLEAN 26/26. flux-screens WITH an output dir (main-equivalent, then train): FLUX-SCREENS PASS, 12 surfaces each. Box turn 14:19Z-14:59Z, released.
+
+Files here: pair-*.log.txt, summary.txt (Actions); box-default/parked.log.txt; flux-screens-main/train.log.txt; the two RED outputs.

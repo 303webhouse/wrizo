@@ -1,0 +1,57 @@
+{
+  "stats": {
+    "files": 266,
+    "components": 240,
+    "arrowForms": 2,
+    "conciseArrowForms": 7
+  },
+  "violations": [
+    {
+      "file": "src/pages/PageEditor.tsx",
+      "component": "PageEditorView",
+      "form": "function",
+      "hook": "useRef",
+      "hookLine": 1052,
+      "earlyReturnLine": 827
+    }
+  ]
+}
+[
+  {
+    "name": "AST: the whole tree parses — 240 components/hooks across 266 files",
+    "pass": true,
+    "detail": "{\"files\":266,\"components\":240,\"arrowForms\":2,\"conciseArrowForms\":7}"
+  },
+  {
+    "name": "AST self-proof: blind spot 1 — an ARROW-defined component with a hook below an early return — expected 1 violation(s)",
+    "pass": true,
+    "detail": "{\"expected\":1,\"got\":1,\"arrowForms\":1,\"found\":[{\"file\":\"fixture-arrow.tsx\",\"component\":\"Panel\",\"form\":\"arrow/expression\",\"hook\":\"useState\",\"hookLine\":5,\"earlyReturnLine\":4}]}"
+  },
+  {
+    "name": "AST self-proof: blind spot 2 — a MULTI-LINE early return inside an if-block, followed by a hook — expected 1 violation(s)",
+    "pass": true,
+    "detail": "{\"expected\":1,\"got\":1,\"arrowForms\":0,\"found\":[{\"file\":\"fixture-multiline.tsx\",\"component\":\"Surface\",\"form\":\"function\",\"hook\":\"useEffect\",\"hookLine\":7,\"earlyReturnLine\":5}]}"
+  },
+  {
+    "name": "AST self-proof: the control — every hook ABOVE the decision, which is the lawful shape — expected 0 violation(s)",
+    "pass": true,
+    "detail": "{\"expected\":0,\"got\":0,\"arrowForms\":0,\"found\":[]}"
+  },
+  {
+    "name": "AST self-proof: the other control — a hook inside a CALLBACK below a return is NOT this claim, and is not reported here — expected 0 violation(s)",
+    "pass": true,
+    "detail": "{\"expected\":0,\"got\":0,\"arrowForms\":0,\"found\":[]}"
+  },
+  {
+    "name": "AST scope, stated not implied: the tree currently contains ZERO arrow-defined components or hooks (2 block-bodied, 7 concise) — blind spot 1 is closed by CAPABILITY, proven on a fixture, not by having met one in the wild",
+    "pass": true,
+    "detail": "{\"arrowForms\":2,\"conciseArrowForms\":7}"
+  },
+  {
+    "name": "AST: NO hook is called below an early return in any routed component or custom hook — returns matched at ANY nesting depth, not only top-level single-statement ones (blind spot 2, closed)",
+    "pass": false,
+    "detail": "[{\"file\":\"src/pages/PageEditor.tsx\",\"component\":\"PageEditorView\",\"form\":\"function\",\"hook\":\"useRef\",\"hookLine\":1052,\"earlyReturnLine\":827}]"
+  }
+]
+
+HOOKS-ORDER-AST VERIFY: FAIL — 1/7 failed
