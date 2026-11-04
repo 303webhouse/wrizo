@@ -48,13 +48,14 @@ Read's Home is **one page in every theme**: **the Reading Room** (published, vou
 
 | Region (SOCIAL's house word) | **Arbor** | **Machina** | **Flux** (chrome in caps) | **Nomad** | **Volant** |
 |---|---|---|---|---|---|
-| **who's here** | Who's here | Present | ONLINE | house | house |
+| **who's here** (a state she chooses, never a connection) | Who's here | Present | WHO'S HERE (the house word, cased) | house | house |
 | ↳ at the desk · reading · free to talk | at the desk · reading · free to talk | the same (plain) | the same (plain) | house | house |
 | **the Roundtable** | the Roundtable | the Roundtable | THE HUB | house | house |
 | **the guild room** | the guild room | the group room | NET ROOM | house | house |
 | **on your work** | On your work | On your files | INBOUND | house | house |
-| **your table** | Your table | Your desk | YOUR RIG | house | house |
-| **waiting for you** | Waiting for you | Pending | QUEUED | house | house |
+| **your table** (her guild's table: this round's pieces, put up for every member to read, and the day the round closes) | Your table | This round | THIS CYCLE | house | house |
+| ↳ the day the round closes | closes Friday, 7 November (a date in words, never a countdown) | the same, plain | CLOSES FRIDAY, 7 NOVEMBER | house | house |
+| **waiting for you** | Waiting for you | Requests | PINGS | house | house |
 | **mine** | Mine | My files | MY DROPS | house | house |
 | **the three doors** | Join a guild · Enroll in a class · Start your own | Join a group · Enroll in a class · Start your own | JOIN A NET · ENROLL IN A CLASS · START YOUR OWN | house | house |
 | **from writers you follow** | From writers you follow | Following | FOLLOWING | house | house |
@@ -66,7 +67,7 @@ Read's Home is **one page in every theme**: **the Reading Room** (published, vou
 | **the Reading Room** | the Reading Room | the Reading Room | THE BROADCAST | house | house |
 | ↳ its public page | the Reading Room (Read's house look) | the same | the same | the same | the same |
 
-*Notes for SOCIAL.* "Your table", "waiting for you" and "mine" are read here as: what she has taken up to read or review · what others have asked of her · her own pieces; if SOCIAL means otherwise, the Wrizors re-pick those three rows. Machina's "Files" and Flux's "Drops" follow Write's lexicon (Machina calls Pages "Files"; Flux calls a published piece a "Drop"). Flux's words are set in its caps chrome; the plain words in the Flux column (MESSAGES, CLASS, VOUCH, the presence states) are the plain words, only cased. If Nick wants fewer words to learn, the fallback is **house words everywhere except the regions in §2's table** (one line in Read's sheet).
+*Notes for SOCIAL.* **Draft 3b (Nov 4), SOCIAL's three re-picks:** Machina's "Your desk" was already gone in draft 3a ("your table" = **This round**; in Read "your desk" stays the way back to Write); Flux's "QUEUED" (Read's vouch state) → **PINGS**, and Machina's "Pending" → **Requests** for the same reason (a moderation-sounding word must not name a feed); Flux's "ONLINE" (presence in Read is a chosen state, never a connection) → **WHO'S HERE**, the house word in Flux's caps (Flux's lexicon has no word of its own for it, so rule 3 keeps the house word; SOCIAL's PRESENT / HERE were weighed).  **"Your table" (SOCIAL, Nov 2) is her guild's table:** this round's pieces, put up for every member to read, plus the day the round closes; Read has no "taking up" in v1. The close day is shown as a date in words and **never as a countdown** ("3 days left" is urgency bait, and a count). "Waiting for you" and "mine" are still read here as: what others have asked of her · her own pieces; if SOCIAL means otherwise, the Wrizors re-pick those two rows. Machina's "Files" and Flux's "Drops" follow Write's lexicon (Machina calls Pages "Files"; Flux calls a published piece a "Drop"). Flux's words are set in its caps chrome; the plain words in the Flux column (MESSAGES, CLASS, VOUCH, the presence states) are the plain words, only cased. If Nick wants fewer words to learn, the fallback is **house words everywhere except the regions in §2's table** (one line in Read's sheet).
 
 ## 3. For SOCIAL (what to copy, and what to ask)
 - Copy §2's and §2b's rows into Read's sheet keyed by theme id (`plateau` = Arbor, `flux`, `machina`, `nomad`, `volant`); the token values are in §5 (and in each spec's "Read surfaces" section).
@@ -105,4 +106,4 @@ Read's Home is **one page in every theme**: **the Reading Room** (published, vou
 
 ---
 
-*Wrizors lane, Nov 2, 2026. Lives at `claude/wrizors/read-home.md`; this self-contained copy is committed to the Write repo as `docs/read/read-home.md` for SOCIAL. Draft 3 (Nov 2): no reading length on Read; the Reading Room as its own row apart from the commons; §2b the extra regions' words with the three rules; Nomad and Volant on house words until their redesigns; the marks per theme. Draft 2 (Nov 1): Nick's three calls.*
+*Wrizors lane, Nov 2, 2026. Lives at `claude/wrizors/read-home.md`; this self-contained copy is committed to the Write repo as `docs/read/read-home.md` for SOCIAL. Draft 3b (Nov 4): Flux WHO'S HERE (not ONLINE) and PINGS (not QUEUED); Machina Requests (not Pending). Draft 3a (Nov 2, 8 pm): "your table" = her guild's table this round (SOCIAL's correction): Machina "This round", Flux "THIS CYCLE"; the close day as a date, never a countdown. Draft 3 (Nov 2): no reading length on Read; the Reading Room as its own row apart from the commons; §2b the extra regions' words with the three rules; Nomad and Volant on house words until their redesigns; the marks per theme. Draft 2 (Nov 1): Nick's three calls.*
