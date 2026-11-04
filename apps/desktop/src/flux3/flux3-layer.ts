@@ -5,6 +5,10 @@
 //      A view change in that time moves the held frame with a CSS transform (no draw); the real redraw waits until the writer settles.
 //   2. THE FRAME BUDGET IS AN INTERVAL. At rest, the median frame interval stays within 10% of the control's, on the box.
 //   3. The layer carries data-flux3-layer, and it pauses (no frame loop at all) while the window is hidden.
+// RULED Nov 4 (Fable): while a card is dragged, its links FOLLOW it, redrawing only that card's links (no electrons, no ground, no animation):
+// a link left behind reads as broken. ZERO draws while keys land stays absolute, and so does the zoom's held frame. So a drag draws twice over:
+// once at its start (the motion canvas again, without the dragged card's links and with nothing moving) and then, per pointer frame, only the
+// dragged card's links, on a third canvas. A pointer held still draws nothing; keys or a wheel mid-drag stop the following until they settle.
 // Every motion has a still frame: reduced motion, or motion switched off, draws the links once and stops.
 //
 // Not mounted anywhere yet: S1 mounts it on the Schema, behind ?flux3=1, after #13's BoardEditor split (step 10g). Plain DOM and canvas,
@@ -38,6 +42,9 @@ export interface FluxLayerStats {
   state: 'running' | 'held' | 'paused' | 'still' | 'destroyed';
   motionFrames: number;
   groundDraws: number;
+  /** Frames that drew only the dragged card's links, and the drag-start redraws of the rest. */
+  followFrames: number;
+  followBases: number;
   box: { x: number; y: number; w: number; h: number };
   view: FluxView;
 }
@@ -123,8 +130,10 @@ export class FluxLayer {
   private readonly wrap: HTMLDivElement;
   private readonly gcv: HTMLCanvasElement;
   private readonly mcv: HTMLCanvasElement;
+  private readonly fcv: HTMLCanvasElement;
   private readonly g: CanvasRenderingContext2D;
   private readonly m: CanvasRenderingContext2D;
+  private readonly f: CanvasRenderingContext2D;
   private readonly sprite: HTMLCanvasElement;
   private readonly mq: MediaQueryList | null;
   private readonly ro: ResizeObserver | null;
@@ -139,6 +148,13 @@ export class FluxLayer {
   private groundDirty = true;
   private sceneDirty = true;
   private routes: Route[] = [];
+  private laid = new Map<string, FluxNode>();
+  private laidView: FluxView = { tx: 0, ty: 0, s: 1 };
+  private live = new Set<Route>();
+  private followRaf = 0;
+  private followRect: { x: number; y: number; w: number; h: number } | null = null;
+  private followFrames = 0;
+  private followBases = 0;
   private traces: Pt[][] = [];
   private boxTraces: Pt[][] = [];
   private box = { x: 0, y: 0, w: 0, h: 0 };
@@ -154,6 +170,7 @@ export class FluxLayer {
   private settleTimer = 0;
   private held = false;
   private busyUntil = 0;
+  private stillUntil = 0;   // keys and wheels: nothing draws before this, not even a drag's links
   private lastTick = 0;
   private lastDraw = -1e9;
   private clock = 0;
@@ -172,12 +189,16 @@ export class FluxLayer {
     gcv.style.cssText = 'position:absolute;left:0;top:0;';
     const mcv = document.createElement('canvas');
     mcv.style.cssText = 'position:absolute;left:0;top:0;';
-    wrap.append(gcv, mcv);
+    const fcv = document.createElement('canvas');   // the dragged card's links; empty (0x0) except during a drag
+    fcv.width = 0; fcv.height = 0;
+    fcv.style.cssText = 'position:absolute;left:0;top:0;';
+    wrap.append(gcv, mcv, fcv);
     el.append(wrap);
     host.prepend(el);
-    this.el = el; this.wrap = wrap; this.gcv = gcv; this.mcv = mcv;
+    this.el = el; this.wrap = wrap; this.gcv = gcv; this.mcv = mcv; this.fcv = fcv;
     this.g = gcv.getContext('2d') as CanvasRenderingContext2D;
     this.m = mcv.getContext('2d') as CanvasRenderingContext2D;
+    this.f = fcv.getContext('2d') as CanvasRenderingContext2D;
     this.sprite = this.makeSprite();
     this.paintTone();
 
@@ -207,7 +228,7 @@ export class FluxLayer {
   setScene(scene: FluxScene): void {
     this.scene = { nodes: scene.nodes, links: scene.links, selected: scene.selected ?? null };
     this.sceneDirty = true;
-    if (this.damped()) { this.hold(); return; }
+    if (this.damped()) { this.hold(); this.queueFollow(); return; }
     this.refresh();
   }
 
@@ -226,11 +247,15 @@ export class FluxLayer {
   }
 
   stats(): FluxLayerStats {
-    return { state: this.state, motionFrames: this.motionFrames, groundDraws: this.groundDraws, box: { ...this.box }, view: { ...this.drawnView } };
+    return {
+      state: this.state, motionFrames: this.motionFrames, groundDraws: this.groundDraws,
+      followFrames: this.followFrames, followBases: this.followBases, box: { ...this.box }, view: { ...this.drawnView },
+    };
   }
 
   destroy(): void {
     this.stopLoop();
+    this.stopFollow();
     if (this.settleTimer) clearTimeout(this.settleTimer);
     this.settleTimer = 0;
     this.state = 'destroyed';
@@ -252,8 +277,15 @@ export class FluxLayer {
     return this.held || performance.now() < this.busyUntil;
   }
 
+  // ---- the follow gate: a held pointer lets the dragged card's links follow it, never while keys land or the view moves ---------------------------
+  private follows(): boolean {
+    return this.held && performance.now() >= this.stillUntil;
+  }
+
   private onActivity = (): void => {
     this.busyUntil = performance.now() + BUSY_MS;
+    this.stillUntil = this.busyUntil;
+    this.stopFollow();
     this.hold();
   };
   private onPointerDown = (): void => { this.held = true; this.hold(); };
@@ -308,6 +340,7 @@ export class FluxLayer {
   private pause(): void {
     if (this.state === 'destroyed') return;
     this.stopLoop();
+    this.stopFollow();
     if (this.settleTimer) clearTimeout(this.settleTimer);
     this.settleTimer = 0;
     this.state = 'paused';
@@ -320,6 +353,7 @@ export class FluxLayer {
     if (this.damped()) { this.state = 'running'; this.hold(); return; }
     if (this.groundDirty) this.drawGround();
     if (this.sceneDirty) this.layoutMotion();
+    this.endFollow();
     this.wrap.style.transform = '';
     const still = this.still();
     this.drawMotion(performance.now(), still);
@@ -428,6 +462,8 @@ export class FluxLayer {
     this.sceneDirty = false;
     const v = this.view, byId = new Map(this.scene.nodes.map((n) => [n.id, n] as const));
     const sel = this.scene.selected;
+    this.laid = new Map(this.scene.nodes.map((n) => [n.id, { ...n }] as const));
+    this.laidView = { ...v };
     this.routes = [];
     let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
     for (const l of this.scene.links) {
@@ -450,6 +486,107 @@ export class FluxLayer {
     const inBox = (p: Pt) => p[0] >= bx + PAD && p[0] <= bx + bw - PAD && p[1] >= by + PAD && p[1] <= by + bh - PAD;
     this.boxTraces = bw && bh ? this.traces.filter((t) => t.every(inBox)) : [];
     this.pulses = [];
+  }
+
+  // ---- a drag: the dragged card's links follow it (Fable, Nov 4) ------------------------------------------------------------------------------------
+  // At most one follow frame per display frame, and only when the scene changed under a held pointer: a pointer held still draws nothing.
+  private queueFollow(): void {
+    if (this.followRaf || !this.follows() || this.hidden()) return;
+    if (this.state === 'destroyed' || this.state === 'paused') return;
+    this.followRaf = requestAnimationFrame(this.followTick);
+  }
+  private stopFollow(): void {
+    if (this.followRaf) cancelAnimationFrame(this.followRaf);
+    this.followRaf = 0;
+  }
+  private followTick = (): void => {
+    this.followRaf = 0;
+    if (!this.follows() || this.hidden() || this.state === 'destroyed' || this.state === 'paused') return;
+    // which links belong to a card that has moved since the frame was laid out
+    const byId = new Map(this.scene.nodes.map((n) => [n.id, n] as const));
+    const moved = (id: string) => {
+      const a = this.laid.get(id), b = byId.get(id);
+      return !!a && !!b && (a.x !== b.x || a.y !== b.y || a.w !== b.w || a.h !== b.h);
+    };
+    let grew = false;
+    for (const r of this.routes) if (!this.live.has(r) && (moved(r.a) || moved(r.b))) { this.live.add(r); grew = true; }
+    if (!this.live.size) return;
+    if (grew) this.drawFollowBase();
+    this.drawFollow(byId);
+  };
+
+  // the motion canvas once more, without the followed links, nothing moving (the dashes keep their phase; no electrons, no current, no flash)
+  private drawFollowBase(): void {
+    const b = this.box;
+    if (!b.w || !b.h) return;
+    this.followBases += 1;
+    const m = this.m, dpr = this.dpr, T = TONES[this.opts.tone], v = this.laidView;
+    m.setTransform(dpr, 0, 0, dpr, -b.x * dpr, -b.y * dpr);
+    m.clearRect(b.x, b.y, b.w, b.h);
+    m.setLineDash([6, 5]);
+    m.lineDashOffset = this.still() ? 0 : -(this.clock / 60) % 11;
+    for (const hot of [false, true]) {
+      let any = false;
+      m.beginPath();
+      for (const r of this.routes) {
+        if (r.hot !== hot || this.live.has(r)) continue;
+        any = true;
+        r.pts.forEach((p, j) => (j ? m.lineTo(p[0], p[1]) : m.moveTo(p[0], p[1])));
+      }
+      if (!any) continue;
+      m.lineWidth = Math.max(1, Math.min(3, v.s * (hot ? 2 : 1.4)));
+      m.strokeStyle = hot ? T.hot : T.link;
+      m.stroke();
+    }
+    m.setLineDash([]);
+  }
+
+  // only the followed links, routed from where their cards are now, in the laid-out view (a held zoom's transform moves them with the rest)
+  private drawFollow(byId: Map<string, FluxNode>): void {
+    const W = this.W, H = this.H, dpr = this.dpr;
+    if (!W || !H) return;
+    if (this.fcv.width !== Math.round(W * dpr) || this.fcv.height !== Math.round(H * dpr)) {
+      this.fcv.width = Math.round(W * dpr); this.fcv.height = Math.round(H * dpr);
+      this.fcv.style.width = `${W}px`; this.fcv.style.height = `${H}px`;
+      this.followRect = null;
+    }
+    this.followFrames += 1;
+    const f = this.f, T = TONES[this.opts.tone], v = this.laidView;
+    f.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (this.followRect) { const r = this.followRect; f.clearRect(r.x, r.y, r.w, r.h); }
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    f.setLineDash([6, 5]);
+    f.lineDashOffset = this.still() ? 0 : -(this.clock / 60) % 11;
+    for (const hot of [false, true]) {
+      let any = false;
+      f.beginPath();
+      for (const r of this.live) {
+        if (r.hot !== hot) continue;
+        const A = byId.get(r.a), B = byId.get(r.b);
+        if (!A || !B) continue;
+        any = true;
+        route(A, B).forEach((p, j) => {
+          const x = p[0] * v.s + v.tx, y = p[1] * v.s + v.ty;
+          x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y);
+          if (j) f.lineTo(x, y); else f.moveTo(x, y);
+        });
+      }
+      if (!any) continue;
+      f.lineWidth = Math.max(1, Math.min(3, v.s * (hot ? 2 : 1.4)));
+      f.strokeStyle = hot ? T.hot : T.link;
+      f.stroke();
+    }
+    f.setLineDash([]);
+    const pad = 4 + 3;
+    this.followRect = x0 <= x1 ? { x: Math.floor(x0 - pad), y: Math.floor(y0 - pad), w: Math.ceil(x1 - x0 + 2 * pad) + 1, h: Math.ceil(y1 - y0 + 2 * pad) + 1 } : null;
+  }
+
+  // the writer settled: the full frame is back, the follow canvas empties (0x0: it holds no memory between drags)
+  private endFollow(): void {
+    this.stopFollow();
+    this.live.clear();
+    this.followRect = null;
+    if (this.fcv.width || this.fcv.height) { this.fcv.width = 0; this.fcv.height = 0; }
   }
 
   private drawMotion(now: number, still: boolean): void {
