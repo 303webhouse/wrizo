@@ -58,6 +58,13 @@ const PAPER = '.mode-page';
 const BAND = '.desk-frame-host .sprint-nav';
 const EDITOR = '.forward-only-editor';
 
+// [TOOLS #14-r2] a word of the editor found by where it is DRAWN: the first run of 4+ letters whose Range has a rect, whose centre is inside the viewport and is hit-tested on the editor (not covered by anything)
+const WORD_AT = `(() => { const root = document.querySelector('${EDITOR}'); if (!root) return null; const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  for (let n = w.nextNode(); n; n = w.nextNode()) { const re = /[A-Za-z]{4,}/g; let m; while ((m = re.exec(n.data))) { const r = document.createRange(); r.setStart(n, m.index); r.setEnd(n, m.index + m[0].length); const b = r.getBoundingClientRect();
+    if (b.width < 4 || b.height < 4) continue; const x = Math.round(b.left + b.width / 2), y = Math.round(b.top + b.height / 2);
+    if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) continue; const hit = document.elementFromPoint(x, y); if (!hit || !root.contains(hit)) continue;
+    return { word: m[0], x, y, px: parseFloat(getComputedStyle(n.parentElement).fontSize) }; } }
+  return null; })()`;
 const rectOf = (sel) => `(() => { const el = document.querySelector(${JSON.stringify(sel)});
   if (!el) return null; const r = el.getBoundingClientRect();
   return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height }; })()`;
@@ -306,13 +313,33 @@ await withHarness(async (app) => {
 
     // (c) THE CLAUSE NICK STATED HIMSELF: a double-click on BARE TEXT still
     // selects a word. The miss-path is the feature, not politeness.
-    await app.evalJs("try { window.getSelection().removeAllRanges(); } catch (e) {}");
-    const edRect = await app.evalJs(rectOf(EDITOR));
-    await app.doubleClick(edRect.left + 30, edRect.top + 8);
-    await sleep(350);
-    const sel = await app.evalJs("(() => { const s = window.getSelection(); return s ? s.toString() : ''; })()");
-    ok(`C4/C5 (${label}): a double-click on BARE TEXT still SELECTS A WORD — Nick's own clause ("text … only editable by standard in-line word processing led by a cursor") proven, and the clause an over-eager listener breaks first`,
-      typeof sel === 'string' && sel.trim().length > 0, JSON.stringify({ selected: String(sel).slice(0, 30) }));
+    // ---- PARKED VERBATIM - SUPERSEDED by TOOLS #14-r2 (Fable, Nov 3: this double-click lands at a FIXED spot, 30 px in and 8 px down, which at 11 pt (the size a new page is now born at) is a SPACE, so nothing is selected - the product was never wrong, the spot was). Kept below, no longer run; the successor follows. ----
+    // await app.evalJs("try { window.getSelection().removeAllRanges(); } catch (e) {}");
+    // const edRect = await app.evalJs(rectOf(EDITOR));
+    // await app.doubleClick(edRect.left + 30, edRect.top + 8);
+    // await sleep(350);
+    // const sel = await app.evalJs("(() => { const s = window.getSelection(); return s ? s.toString() : ''; })()");
+    // ok(`C4/C5 (${label}): a double-click on BARE TEXT still SELECTS A WORD — Nick's own clause ("text … only editable by standard in-line word processing led by a cursor") proven, and the clause an over-eager listener breaks first`,
+    //   typeof sel === 'string' && sel.trim().length > 0, JSON.stringify({ selected: String(sel).slice(0, 30) }));
+    // ------------------------------------------------------------------
+    // [word-probe successor] a word is found by its MEASURED position (a Range over the word, its rect centre, hit-tested on the editor), then a real double-click must select it - at the size the page was born at
+    // (11 pt) and at 12 pt (below, after the ink check) - and the same probe goes RED when double-click-to-select is broken (a selectstart / mousedown veto), so the check can fail.
+    const wordProbe = async () => {
+      await app.evalJs("try { window.getSelection().removeAllRanges(); } catch (e) {}");
+      const w = await app.evalJs(WORD_AT);
+      if (!w) return { word: null, sel: '', px: null };
+      await app.doubleClick(w.x, w.y);
+      await sleep(350);
+      return { word: w.word, sel: String(await app.evalJs("(() => { const s = window.getSelection(); return s ? s.toString() : ''; })()")).trim(), px: w.px };
+    };
+    const probeAt = await wordProbe();
+    ok(`C4/C5 (${label}) [word-probe successor, as born]: a double-click at the MEASURED position of a word SELECTS THAT WORD - Nick's own clause ("text … only editable by standard in-line word processing led by a cursor") proven, and the clause an over-eager listener breaks first`,
+      !!probeAt.word && probeAt.sel === probeAt.word, JSON.stringify(probeAt));
+    await app.evalJs("(() => { window.__brkSel = (e) => { e.preventDefault(); }; window.__brkDown = (e) => { if (e.detail >= 2) e.preventDefault(); }; document.addEventListener('selectstart', window.__brkSel, true); document.addEventListener('mousedown', window.__brkDown, true); })()");
+    const probeBroken = await wordProbe();
+    await app.evalJs("(() => { document.removeEventListener('selectstart', window.__brkSel, true); document.removeEventListener('mousedown', window.__brkDown, true); })()");
+    ok(`C4/C5 (${label}) [word-probe MUTANT]: with double-click-to-select BROKEN (selection vetoed) the same probe goes RED - it can fail`,
+      !!probeBroken.word && probeBroken.sel !== probeBroken.word, JSON.stringify(probeBroken));
 
     // (d) a double-click on INK arms: the outline appears.
     const st = await strokesOf(app, id);
@@ -328,6 +355,17 @@ await withHarness(async (app) => {
       return { canvas: true, outlinePixels: n }; })()`);
     ok(`C4/C5 (${label}): a double-click ON INK arms the group — the outline is painted`,
       armed.canvas === true && armed.outlinePixels > 0, JSON.stringify(armed));
+
+    // [word-probe successor, 12 pt] the same probe on the same page at 12 pt: the size is set the way a writer's page carries it (pageSettings.size), the page is reopened, the mode re-entered
+    await app.evalJs(`window.wrizoPatchEntry(${JSON.stringify(id)}, { pageSettings: { margins: 'normal', lineSpacing: 1.6, pageNumbers: { on: false, placement: 'bottom-center' }, headers: { on: false, text: '' }, footers: { on: false, text: '' }, size: 12 } })`);
+    await app.reload();
+    await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(id)}`);
+    await app.waitFor(`!!document.querySelector('${EDITOR}')`, { label: 'page mounted (12 pt)' });
+    await sleep(500);
+    await toMode(app, key);
+    const probe12 = await wordProbe();
+    ok(`C4/C5 (${label}) [word-probe successor, 12 pt]: the same probe at 12 pt - a double-click at the measured position of a word SELECTS THAT WORD`,
+      !!probe12.word && probe12.sel === probe12.word && !!probeAt.px && !!probe12.px && probe12.px > probeAt.px, JSON.stringify({ at11: probeAt, at12: probe12 }));
   }
 
   // ==========================================================================

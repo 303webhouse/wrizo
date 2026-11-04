@@ -197,8 +197,12 @@ coreParks.minimal = { ...shape, scopeOnly };
 // ------------------------------------------------------------------
 const tcSrc = noComments(src('components/TypeControl.tsx'));
 const scopeFaceBtn = /\{scope && \(\s*<>\s*<div className="wz-type-scopes"[\s\S]*?<\/div>\s*<button\s+type="button"\s+className="wz-type-face"[\s\S]*?aria-expanded=\{listOpen\}[\s\S]*?onClick=\{\(\) => setListOpen\(\(o\) => !o\)\}[\s\S]*?<ul className="wz-type-list wz-type-list-inline"[^>]*hidden=\{!listOpen\}/.test(tcSrc);
-ok('MINIMAL [item-9 successor]: the control is a face button (unscoped hosts) OR the two scope buttons + a face button that opens the COLLAPSED list (scoped hosts), plus the `-` `+` pair and the add-font form (its Add / Find buttons and name input) - 8 buttons and 2 inputs in source, the NUMBER input only in the full form',
-  shape.buttons === 8 && scopeFaceBtn && /\{!scope && <button/.test(tcSrc) && shape.inputs === 2 && shape.inputGuardedByFullForm, JSON.stringify({ ...coreParks.minimal, scopeFaceBtn }));
+// ---- PARKED VERBATIM - SUPERSEDED by TOOLS #14 (Fable, Nov 2: the size box sits between `-` and `+` in EVERY form, small included). Kept below, no longer run; the successor follows. ----
+// ok('MINIMAL [item-9 successor]: the control is a face button (unscoped hosts) OR the two scope buttons + a face button that opens the COLLAPSED list (scoped hosts), plus the `-` `+` pair and the add-font form (its Add / Find buttons and name input) - 8 buttons and 2 inputs in source, the NUMBER input only in the full form',
+//   shape.buttons === 8 && scopeFaceBtn && /\{!scope && <button/.test(tcSrc) && shape.inputs === 2 && shape.inputGuardedByFullForm, JSON.stringify({ ...coreParks.minimal, scopeFaceBtn }));
+// ------------------------------------------------------------------
+ok('MINIMAL [size-box successor]: the control is a face button (unscoped hosts) OR the two scope buttons + a face button that opens the COLLAPSED list (scoped hosts), plus the `-` `+` pair and the add-font form - 8 buttons and 2 inputs in source, the NUMBER input in EVERY form (TOOLS #14: not guarded to the full form)',
+  shape.buttons === 8 && scopeFaceBtn && /\{!scope && <button/.test(tcSrc) && shape.inputs === 2 && /\n\s*<input\s+className="wz-type-num"/.test(tcSrc) && !shape.inputGuardedByFullForm, JSON.stringify({ ...coreParks.minimal, scopeFaceBtn }));
 ok('MINIMAL [parked record]: the ORIGINAL (5 buttons) now fails ONLY because the scoped form gained its face button and the add-font form (8)', !(shape.buttons === 5 && scopeOnly && shape.inputs === 1 && shape.inputGuardedByFullForm) && shape.buttons === 8, JSON.stringify({ buttons: shape.buttons }));
 ok('COLLAPSED (item 9): the scoped list is HIDDEN until the face button is pressed - hidden={!listOpen}, listOpen starts false, and Esc / an outside press close it', /const \[listOpen, setListOpen\] = useState\(false\)/.test(tcSrc) && /hidden=\{!listOpen\}/.test(tcSrc) && /if \(!open && !listOpen\) return undefined;/.test(tcSrc) && /if \(e\.key === 'Escape'\) close\(\)/.test(tcSrc), '');
 {
@@ -321,8 +325,12 @@ await mutant('M11 the unchosen label keeps the " Variable" suffix (the package\'
   const landed = (mutated) => mutated !== t;
   const extraButton = t.replace('</div>\n  );\n}', '<button type="button">Add a font</button></div>\n  );\n}');
   ok('FALSIFICATION M8 an extra button (an add door) is added to the control — must go RED', landed(extraButton) && (ctlShape(extraButton).buttons !== 3 || ctlShape(extraButton).addDoor), '');
-  const unguarded = t.replace("{form === 'full' && (", '{(');
-  ok('FALSIFICATION M9 the number input is shown in EVERY form (Free Write would gain it) — must go RED', landed(unguarded) && !ctlShape(unguarded).inputGuardedByFullForm, '');
+  // ---- PARKED VERBATIM - SUPERSEDED by TOOLS #14 (Fable, Nov 2: the size box sits between `-` and `+` in EVERY form, small included). Kept below, no longer run; the successor follows. ----
+  // const unguarded = t.replace("{form === 'full' && (", '{(');
+  // ok('FALSIFICATION M9 the number input is shown in EVERY form (Free Write would gain it) — must go RED', landed(unguarded) && !ctlShape(unguarded).inputGuardedByFullForm, '');
+  // ------------------------------------------------------------------
+  const reguarded = t.replace('<input\n          className="wz-type-num"', "{form === 'full' && (<input\n          className=\"wz-type-num\"");
+  ok('FALSIFICATION M9 [size-box successor] the number input is guarded to the FULL form again (Free Write and a card lose it) - must go RED', landed(reguarded) && ctlShape(reguarded).inputGuardedByFullForm, '');
   const captioned = t.replace('<div className="wz-type"', '<div className="wz-sliver-h">Type</div><div className="wz-type"');
   ok('FALSIFICATION M10 a heading is added above the control — must go RED', landed(captioned) && ctlShape(captioned).caption, '');
 }
@@ -347,8 +355,12 @@ if (process.env.HARNESS_PARKED === '1') {
   // { const m = coreParks.minimal; parkedChecks.push({ name: 'PARKED (was "MINIMAL (his law): the control is exactly a face button and a `-` `+` pair (3 buttons) plus ONE number input, and that input exists only in the full form") - font-span: 5 buttons in source, the scope pair only under `scope`; live successor: MINIMAL [font-span successor]',
   // pass: !!m && m.buttons === 5 && m.scopeOnly && m.inputs === 1 && m.inputGuardedByFullForm, detail: JSON.stringify(m) }); }
   // ------------------------------------------------------------------
-  { const m = coreParks.minimal; parkedChecks.push({ name: 'PARKED [item-9/11 successor] (was "MINIMAL (his law): the control is exactly a face button and a `-` `+` pair (3 buttons) plus ONE number input, and that input exists only in the full form") - font-span: 5 buttons in source, the scope pair only under `scope`; live successor: MINIMAL [font-span successor]',
-    pass: !!m && m.buttons === 8 && m.scopeOnly && m.inputs === 2 && m.inputGuardedByFullForm, detail: JSON.stringify(m) }); }
+  // ---- PARKED VERBATIM - SUPERSEDED by TOOLS #14 (Fable, Nov 2: the size box sits between `-` and `+` in EVERY form, small included). Kept below, no longer run; the successor follows. ----
+  // { const m = coreParks.minimal; parkedChecks.push({ name: 'PARKED [item-9/11 successor] (was "MINIMAL (his law): the control is exactly a face button and a `-` `+` pair (3 buttons) plus ONE number input, and that input exists only in the full form") - font-span: 5 buttons in source, the scope pair only under `scope`; live successor: MINIMAL [font-span successor]',
+  //   pass: !!m && m.buttons === 8 && m.scopeOnly && m.inputs === 2 && m.inputGuardedByFullForm, detail: JSON.stringify(m) }); }
+  // ------------------------------------------------------------------
+  { const m = coreParks.minimal; parkedChecks.push({ name: 'PARKED [size-box successor] (was "MINIMAL (his law): the control is exactly a face button and a `-` `+` pair (3 buttons) plus ONE number input, and that input exists only in the full form") - font-span, items 9/11, then TOOLS #14: 8 buttons, 2 inputs, the number in every form',
+    pass: !!m && m.buttons === 8 && m.scopeOnly && m.inputs === 2 && !m.inputGuardedByFullForm, detail: JSON.stringify(m) }); }
   // PAGE-SIZE (Oct 23, Fable's ruling a) - a FIFTH and SIXTH park: "11 = TODAY"'s explicit 11 and SIZE's 17px x n/11 formula. Records frozen;
   // each re-verifies the new truth from the default leg's observation (pageSizePark).
   { const p = pageSizePark; parkedChecks.push({ name: 'PARKED (was "11 = TODAY: an explicit 11 yields no font-size either (the default is the absence of a rule)") - page-size ruling a: 12 is the page default; 11 is a real smaller size', pass: !!p && p.defaultOk, detail: JSON.stringify(p) }); }

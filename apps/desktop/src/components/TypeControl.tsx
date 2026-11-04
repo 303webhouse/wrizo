@@ -4,8 +4,10 @@
 // Made concrete here, and assertable (item207.mjs counts these): a strip menu carries the fewest controls that do the
 // act, each with the fewest marks; no captions, no helper text, no second row - a control's name lives in its
 // aria-label. So:
-//   form 'small'  (Free Write's strip, a card's strip)   ONE face button + a `-` `+` pair. NO number.
+//   form 'small'  (Free Write's strip, a card's strip)   ONE face button + `-` [ number ] `+`.
 //   form 'full'   (Draft and Revise's drawer)            the face button + `-` [ number ] `+`, the number typeable.
+// TOOLS #14 (Fable, Nov 2): the number now sits between `-` and `+` wherever they appear, in every form and skin. It was 'full' only ("NO number" in the small form); that
+// check is parked verbatim in item207.mjs with its successor.
 // No "Add a font..." row exists in this component: it arrives with Route A (207b), and an offered door with nothing
 // behind it is a mute grey. Free Write never gets it either (Nick's Q2).
 //
@@ -52,6 +54,10 @@ export interface TypeScope {
    *  highlighted words - one undo step. With these, the size's `-` [ N ] `+` follow the scope exactly as the face list does. */
   size?: number | null | 'mixed';
   onSizeSelection?: (points: number) => void;
+  /** TOOLS #14-r2: the number box takes the keyboard focus, and focus in a text field moves the page's selection into the field - so the highlight is HELD while the box has focus: `holdSelection` records the
+   *  highlighted offsets (true when there were some), `releaseSelection` lets them go, and `onSizeSelection` sizes the held words. Without these a typed size lost its highlight and sized the whole page. */
+  holdSelection?: () => boolean;
+  releaseSelection?: () => void;
 }
 
 const DEFAULT_KEY = '\u0000default';   // the "Default (<face>)" row's key: not a face name
@@ -77,7 +83,10 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
   const currentName = face?.name ?? defaultName;
   // Unchosen: the button wears whatever the page really wears (`--font-prose`), roster face or not.
   const currentStack = faceStack(face) ?? 'var(--font-prose)';
-  const [draft, setDraft] = useState<string | null>(null);
+  const [draft, setDraftState] = useState<string | null>(null);
+  // TOOLS #14-r2: the draft is also kept in a ref so a commit is ONE-SHOT - Enter commits and then blurs the box, and the blur's own commit ran in the same tick on the stale state, applying the size a second time
+  const draftRef = useRef<string | null>(null);
+  const setDraft = (v: string | null) => { draftRef.current = v; setDraftState(v); };
 
   useEffect(() => {
     if (!open && !listOpen) return undefined;
@@ -99,7 +108,10 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
     if (has && !had.current) setWholeByHand(false);
     had.current = has;
   }, [scope?.has]);
-  const whole = !scope || !scope.has || wholeByHand;
+  // TOOLS #14-r2: while the number box has focus the highlight is HELD (the page's own selection has moved into the field) - the scope, and the size the box shows, stay the highlight's
+  const [held, setHeld] = useState<{ size: number | null | 'mixed' | undefined } | null>(null);
+  const hasNow = !!scope?.has || held !== null;
+  const whole = !scope || !hasNow || wholeByHand;
   // the face in brass: the surface's own face for a whole pick; the highlight's face for a selection (none when it is mixed)
   // TOOLS #10 item 10: an UNCHOSEN surface marks the "Default (<face>)" row, never a roster row - the writer has not picked that face, the theme has. `brassKey` is the row in force: DEFAULT_KEY, a roster face's
   // name, or null (a mixed highlight); `brassName` is only the face button's label (the default's real name when nothing is chosen).
@@ -164,13 +176,16 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
   ));
   // POLISH #10 item 4: under the Selection scope the size is the HIGHLIGHT's (its own, or the surface's where it has none) and a step sizes only the
   // highlighted words; under Whole document (or with nothing highlighted) it is the surface's, as before
-  const selSize = scope && !whole && scope.onSizeSelection ? (typeof scope.size === 'number' ? scope.size : size) : null;
+  const heldSize = held ? held.size : scope?.size;
+  const selSize = scope && !whole && scope.onSizeSelection ? (typeof heldSize === 'number' ? heldSize : size) : null;
   const shownSize = selSize ?? size;
   const sizeTo = (n: number) => { if (selSize !== null && scope?.onSizeSelection) scope.onSizeSelection(n); else onSize(n); };
   const up = stepUp(shownSize); const down = stepDown(shownSize);
+  const holdBox = () => { if (held || !scope?.has || !scope.holdSelection) return; if (scope.holdSelection()) setHeld({ size: scope.size }); };
   const commitDraft = () => {
-    if (draft === null) return;
-    const n = normalizeTypedSize(draft);
+    const typed = draftRef.current;
+    if (typed === null) return;
+    const n = normalizeTypedSize(typed);
     setDraft(null);                          // a refused entry snaps back to the previous value
     if (n !== null && n !== shownSize) sizeTo(n);
   };
@@ -242,18 +257,18 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
       )}
       <div className="wz-type-size">
         <button type="button" className="mode-tbtn wz-type-step" aria-label={t('typeSmaller')} aria-disabled={down === null} onMouseDown={keepFocus} onClick={() => { if (down !== null) sizeTo(down); }}>{'−'}</button>
-        {form === 'full' && (
-          <input
-            className="wz-type-num"
-            type="text"
-            inputMode="decimal"
-            aria-label={t('typeSize')}
-            value={draft ?? formatSize(shownSize)}
-            onChange={(e) => setDraft(e.target.value)}
-            onBlur={commitDraft}
-            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commitDraft(); (e.target as HTMLInputElement).blur(); } else if (e.key === 'Escape') setDraft(null); }}
-          />
-        )}
+        <input
+          className="wz-type-num"
+          type="text"
+          inputMode="decimal"
+          aria-label={t('typeSize')}
+          value={draft ?? formatSize(shownSize)}
+          onChange={(e) => setDraft(e.target.value)}
+          onMouseDownCapture={holdBox}
+          onFocus={holdBox}
+          onBlur={() => { commitDraft(); if (held) { setHeld(null); scope?.releaseSelection?.(); } }}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commitDraft(); (e.target as HTMLInputElement).blur(); } else if (e.key === 'Escape') setDraft(null); }}
+        />
         <button type="button" className="mode-tbtn wz-type-step" aria-label={t('typeLarger')} aria-disabled={up === null} onMouseDown={keepFocus} onClick={() => { if (up !== null) sizeTo(up); }}>+</button>
       </div>
     </div>
