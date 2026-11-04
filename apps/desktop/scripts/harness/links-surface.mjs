@@ -92,6 +92,9 @@ const makeViaField = async (app, trigger, address) => {
   return has;
 };
 
+// THE CONTROLS: every "makes nothing / opens nothing" check below is only meaningful on a build that DOES make or open one, so each carries the flag of its positive twin and cannot pass on a build with no links at all
+let ctrlOpened = false, httpsMade = false, keyMade = false;
+
 await withHarness(async (app) => {
  try {
   // ==== L - the look, in every skin ====
@@ -105,7 +108,7 @@ await withHarness(async (app) => {
         return { line: cs.textDecorationLine, style: cs.textDecorationStyle, deco: cs.textDecorationColor, ink: ec.color, ownInk: cs.color, shown: ed.innerText.includes(${JSON.stringify(HOST)}) }; }
       return null; })()`);
     ok(`L [${name}] LOOK: the link's words are drawn with a DASHED underline`, !!look && /underline/.test(look.line) && look.style === 'dashed', JSON.stringify(look));
-    ok(`L [${name}] LOOK: the underline is in the page's own ink - the same colour as the words around it (no link blue)`, !!look && look.deco === look.ink && look.ownInk === look.ink, JSON.stringify(look));
+    ok(`L [${name}] LOOK: the underline is in the page's own ink - the same colour as the words around it (no link blue)`, !!look && look.style === 'dashed' && look.deco === look.ink && look.ownInk === look.ink, JSON.stringify(look));
     ok(`L [${name}] LOOK: the address is not shown on the page while the caret is elsewhere - the page shows the words`, !!look && look.shown === false, JSON.stringify(look));
   }
 
@@ -123,6 +126,7 @@ await withHarness(async (app) => {
   p = await app.evalJs(CENTRE('docs'));
   await clickAt(app, p.x, p.y, 2);
   o = await opened(app);
+  ctrlOpened = o.length === 1;
   ok('C CTRL: Ctrl+click OPENS the address - once, in a new tab, with no referrer', o.length === 1 && o[0].url.replace(/\/$/, '') === ADDR && newTab(o[0]) && noReferrer(o[0]), JSON.stringify(o));
   await app.evalJs('window.__opened = []');
   p = await app.evalJs(CENTRE('docs'));
@@ -133,7 +137,7 @@ await withHarness(async (app) => {
   p = await app.evalJs(CENTRE('then'));
   await app.evalJs('window.__opened = []');
   await clickAt(app, p.x, p.y, 2);
-  ok('C CTRL: Ctrl+click on words that are NOT a link opens nothing', (await opened(app)).length === 0, JSON.stringify(await opened(app)));
+  ok('C CTRL: Ctrl+click on words that are NOT a link opens nothing', ctrlOpened && (await opened(app)).length === 0, JSON.stringify(await opened(app)));
 
   // ==== P - paste over a selection ====
   await freshDesk(app, 'plateau', null);
@@ -154,8 +158,9 @@ await withHarness(async (app) => {
     await paste(app, clip);
     await sleep(400);
     const t = await stored(app, id);
+    if (key === 'https') httpsMade = t === `Read the [docs](${clip.trim()}) here and go on.`;
     if (makes) ok(`P [${key}] PASTE: ${what} makes a link around the selected words - no text enters`, hl && t === `Read the [docs](${clip.trim()}) here and go on.`, JSON.stringify({ hl, t }));
-    else ok(`P [${key}] PASTE: ${what} makes NO link (it goes to the paste rail, whatever the rail does)`, hl && typeof t === 'string' && !/\]\((https?|mailto|javascript|data):/i.test(t), JSON.stringify({ hl, t }));
+    else ok(`P [${key}] PASTE: ${what} makes NO link (it goes to the paste rail, whatever the rail does)`, httpsMade && hl && typeof t === 'string' && !/\]\((https?|mailto|javascript|data):/i.test(t), JSON.stringify({ hl, t }));
   }
   {
     await openPage(app, 'lk-paste-none', 'Read the docs here and go on.');
@@ -163,7 +168,7 @@ await withHarness(async (app) => {
     await paste(app, 'https://links.example.test/p');
     await sleep(400);
     const t = await stored(app, 'lk-paste-none');
-    ok('P [none] PASTE: a lone address with NO words selected makes no link - there is nothing to be the link\'s words', typeof t === 'string' && !/\]\(https?:/.test(t), JSON.stringify(t));
+    ok('P [none] PASTE: a lone address with NO words selected makes no link - there is nothing to be the link\'s words', httpsMade && typeof t === 'string' && !/\]\(https?:/.test(t), JSON.stringify(t));
   }
 
   // ==== K - Ctrl+K / Cmd+K ====
@@ -174,6 +179,7 @@ await withHarness(async (app) => {
     const hl = await highlight(app, 'docs');
     const had = await makeViaField(app, press, 'https://links.example.test/k');
     const t = await stored(app, id);
+    if (key === 'ctrl') keyMade = t === 'Read the [docs](https://links.example.test/k) here and go on.';
     ok(`K [${label}] KEY: with words selected a field takes the keyboard; an address typed and Enter makes the link`, hl && had && t === 'Read the [docs](https://links.example.test/k) here and go on.', JSON.stringify({ hl, field: had, t }));
   }
   {
@@ -194,7 +200,7 @@ await withHarness(async (app) => {
     await app.keyCombo('k'); await sleep(300);
     const stray = await app.evalJs(FIELD);
     const t3 = await stored(app, 'lk-key-none');
-    ok('K [no words] KEY: with NO words selected, Ctrl+K makes nothing - the page\'s text is untouched', t3 === 'Read the docs here and go on.', JSON.stringify({ stray, t3 }));
+    ok('K [no words] KEY: with NO words selected, Ctrl+K makes nothing - the page\'s text is untouched', keyMade && t3 === 'Read the docs here and go on.', JSON.stringify({ stray, t3 }));
   }
 
   // ==== B - the Link button in Format ====
@@ -235,7 +241,8 @@ await withHarness(async (app) => {
   await clickAt(app, q.x, q.y, 2);
   await sleep(800);
   const net = await app.evalJs(`JSON.stringify({ fetched: window.__fetched, resources: performance.getEntriesByType('resource').map((r) => r.name).filter((n) => n.includes(${JSON.stringify(HOST)}) || n.includes('example.test')) })`).then((s) => JSON.parse(s));
-  ok('N NEVER: the app never fetches a link - no request to the address from the page drawn, hovered, clicked or Ctrl-clicked', net.fetched.filter((u) => u.includes('example.test')).length === 0 && net.resources.length === 0, JSON.stringify(net));
+  const dashed = await app.evalJs(`(() => { const w = document.createTreeWalker(document.querySelector('${ED}'), NodeFilter.SHOW_TEXT); for (let n = w.nextNode(); n; n = w.nextNode()) { if (n.data.indexOf('docs') >= 0) return getComputedStyle(n.parentElement).textDecorationStyle === 'dashed'; } return false; })()`);
+  ok('N NEVER: the app never fetches a link - no request to the address from the page drawn, hovered, clicked or Ctrl-clicked (the link IS drawn, so the check is not vacuous)', dashed && net.fetched.filter((u) => u.includes('example.test')).length === 0 && net.resources.length === 0, JSON.stringify(net));
  } catch (e) { ok('driver ran to a verdict', false, String((e && e.stack) || e)); }
 }).catch((e) => { ok('harness ran to a verdict', false, String((e && e.stack) || e)); });
 
