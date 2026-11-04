@@ -6,6 +6,10 @@ why non-obvious code is as it is and cites its id; the history behind it lives h
 - `css-<file>.md` holds the histories from `apps/desktop/src/styles/<nn>-<file>.css` (step 7). A CSS comment ending in
   `[<file> §n]` points at the heading `## <file> §n` in that file, for example `[desk-frame §12]` in
   [css-desk-frame.md](css-desk-frame.md).
+- `<area>-<Name>.md` holds the histories from a TypeScript file, `apps/desktop/src/<area>/<Name>.tsx` or `.ts` (step 9, one
+  area at a time). A comment ending in `[<Name> §n]` points at the heading `## <Name> §n` in that file, for example
+  `[BoardEditor §1]` in [components-BoardEditor.md](components-BoardEditor.md). Its proof is
+  `node apps/desktop/scripts/c13/c13-9-ts-comments.mjs check --base <rev> <files>`, beside a byte-identical built bundle.
 - Each entry names the line it came from and the commit it was moved from, then quotes the comment block whole.
 - The proof that nothing was lost is `node apps/desktop/scripts/c13/c13-7-css-comments.mjs check --base <rev>`: every comment
   block removed from the CSS is here verbatim, and every citation resolves.
