@@ -62,7 +62,7 @@ const READ = `(() => {
   const slide = cs('.wz-sliver .wz-drawer-slide');
   return {
     page: rect(document.querySelector('.mode-page')),
-    gripL: rect(document.querySelector('.wz-sliver-grip')), gripR: rect(document.querySelector('.wz-tutor-grip')),
+    gripL: rect(document.querySelector('.wz-sliver-grip')), gripR: rect(document.querySelector('.wz-tutor-grip')), panelL: rect(document.querySelector('.wz-sliver-panel')),
     gripLbg: cs('.wz-sliver-grip')?.backgroundColor, gripLcolor: cs('.wz-sliver-grip')?.color, gripRbg: cs('.wz-tutor-grip')?.backgroundColor,
     tabs: { text: tab('wz-sliver-tab-text'), type: tab('wz-sliver-tab-type'), format: tab('wz-sliver-tab-format'), presets: tab('wz-sliver-tab-presets'), ink: tab('wz-sliver-tab-ink'), tutor: tab('wz-tutor-tab-tutor'), links: tab('wz-tutor-tab-links'), board: tab('wz-tutor-tab-board') },
     dur: rs.getPropertyValue('--drawer-dur').trim(), ease: rs.getPropertyValue('--drawer-ease').trim(),
@@ -140,7 +140,12 @@ await withHarness(async (app) => {
     await sleep(400);
     const l = await read(app);
     ok(`P1 [${room}] Tools drawer open: the page rect is identical`, sameRect(l.page, off.page), JSON.stringify({ on: l.page, off: off.page }));
-    ok(`K2 [${room}] Tools drawer open: the left tab is where it is flag-off`, sameRect(l.gripL, offL.gripL), JSON.stringify({ on: l.gripL, off: offL.gripL }));
+    // PARKED 2026-11-04 (SUPERSEDED, harness 41849650962, Arbor 7b881a6f: the Wrizors (md5 d1c1dcc2, via Fable, Nov 4) put Free Write's Tools opener on the open drawer's
+    // OUTER edge - it sat inside, over "Font" - so open it no longer stands where it does flag-off: on x 96, off x 209). Original, verbatim:
+    // ok(`K2 [${room}] Tools drawer open: the left tab is where it is flag-off`, sameRect(l.gripL, offL.gripL), JSON.stringify({ on: l.gripL, off: offL.gripL }));
+    // SUCCESSOR K2c: open, the left tab rides the drawer's outer edge - its right edge on the panel's left edge (within 1 px), at its flag-off height.
+    const rides = !!l.gripL && !!l.panelL && !!offL.gripL && Math.abs(l.gripL.x + l.gripL.w - l.panelL.x) <= 1 && Math.abs(l.gripL.y - offL.gripL.y) <= 1 && Math.abs(l.gripL.h - offL.gripL.h) <= 1;
+    ok(`K2c [${room}] Tools drawer open on Free Write: the left tab rides the drawer's outer edge, at its flag-off height`, rides, JSON.stringify({ on: l.gripL, panel: l.panelL, off: offL.gripL }));
     ok(`M2 [${room}] the Tools drawer's leading edge is a 2 px inset --arbor-line rule`, /inset/.test(String(l.slideShadow)) && /2px/.test(String(l.slideShadow)), String(l.slideShadow));
     // PARKED 2026-10-29 (SUPERSEDED by items 2-3's structural half, Fable's ruling 3: under the flag the Tools tabs are Font · Format · Presets · Ink,
     // so there is no TEXT tab - and this line's own `if` would have skipped it SILENTLY, a check that can never fail). Original, verbatim:
