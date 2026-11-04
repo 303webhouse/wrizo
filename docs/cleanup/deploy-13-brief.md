@@ -150,6 +150,47 @@ Each split keeps the old module path as a **barrel**, so **no import line outsid
 
 The **pen-ink duplicate** (`ModeStage` `PEN_INKS` vs `store/ink.ts`) is **not** in #13. It needs INK's and Fable's ruling on which system is live first.
 
+#### Step 10g in full (INK's; Fable, Nov 4)
+
+Fable gave 10g to INK, to run **in parallel** with POLISH's 10a–10f. The files do not overlap: 10a–10f never touch `BoardEditor.tsx`.
+Line numbers below are measured at `6221e3f0` (`c13-9-ts-comments-board`, step 9's BoardEditor branch).
+
+- **Start:** once `c13-9-ts-comments-board` has merged. That is step 9's only work on `BoardEditor.tsx`, and no later #13 step touches the file.
+  Branch `c13-10g-board` off `origin/main` at that point, and pin the SHA in the report.
+- **The file today:** `components/BoardEditor.tsx`, 3,382 lines.
+  - Constants and pure helpers: lines 106–158 and 182 (`naturalPx`, `groupMembers`, `maxBottom`, `boxesOverlap`, `notecardExcerpt`).
+  - The box renderers `BoardInkBox` / `BoardPinBox` / `BoardTextBox`: lines 160–274.
+  - `BoardCardPopup`: lines 275–779, about 505 lines. It is exported, but it is used only inside this file.
+  - `BoardEditor` itself: line 782 to the end, about 2,600 lines with 18 effects. The pointer/gesture effect, with connection mode inside it, is the largest.
+- **What:** split into `components/board/`:
+  - `geometry.ts`: the constants and the pure helpers.
+  - `BoardBoxes.tsx`: the three box renderers.
+  - `BoardCardPopup.tsx`.
+  - Hooks out of `BoardEditor`. The brief names no list; propose which hooks in the plan, before building.
+- **The barrel:** `components/BoardEditor.tsx` stays the module path and keeps exporting `BoardEditor` and `BoardCardPopup`.
+  - Its one importer, `pages/PageEditor.tsx:31`, does not change, and neither does any other import line.
+  - `git diff --stat` shows edits only to the split files and the harness re-anchors.
+- **Comments:** step 9 left why-lines citing `[BoardEditor §n]`. Each one moves with its code. The id names the rulings file (`docs/rulings/components-BoardEditor.md`), not the source file, so it stays valid in `board/`. Do not renumber it.
+- **Source readers:** 47 harness files name `BoardEditor.tsx`.
+  - **Direct reads (14):**
+    - Harness files: `board-click-create`, `board-context-menu`, `box-tombstones`, `card-resize-axis`, `connector-a`, `deck-rows-logic`, `guided-w1`, `guided-w3`, `item207-core`, `machina-step-source`, `page-scroll-return`, `theme-fonts-source`.
+    - Scripts outside the harness folder: `item138-silhouette-proof`, `item163-drawer-line-proof`.
+  - **Mutant tables** with `file: 'components/BoardEditor.tsx'` (14 entries): `flux-v2` 2, `guided-add-scenes` 1, `guided-w1` 4, `guided-w3` 7.
+  - **Read through a path constant:** `big-projects-1a`, `big-projects-2`, `flux-v2`, `guided-add-scenes`, `guided-w2`, `guided-w5`, `help-choose-census`, `logout-flush`, `page-links`, `sized-by-hand-logic`.
+  - **Three cases:**
+    - **A reader:** step 6's precedent applies (Fable approved a shared reader over parks). Give the board one reader, as `srcText` / `globalCss` served the CSS split: `BoardEditor.tsx` plus `board/*`, in a fixed order.
+    - **A mutant entry:** re-point it to the file that now holds its text. That is a probe following reality, not a park (Fable, step 7).
+    - **A check whose sentence the split makes false:** park it verbatim, with a successor and a record.
+- **Proof:**
+  - tsc.
+  - The step 5 snapshot of the boards in every skin is IDENTICAL; the baseline and the compare run in the same box turn.
+  - The board gesture harnesses are green on both legs: `board-click-create`, `card-resize-axis`, `card-resize-relock`, `connector-a`, `board-context-menu`, `box-tombstones`, `item138`, `sized-by-hand-logic`.
+  - The readers above are green on both legs.
+  - The link check (`c13-4d-links.mjs check`) passes.
+  - A planted mutant shows the proof red before it is shown green.
+- **Gate:** full pair (Chat 1's train). `PageEditor` mounts `BoardEditor` (`pages/PageEditor.tsx:1721`, `:1788`), so page primacy holds: no rect change and no unmount on any writing surface.
+- **Size:** M.
+
 ### Phase D: removal
 
 **Step 11 · `c13-11-dead` · the DEAD list (no Nick decision needed)**
