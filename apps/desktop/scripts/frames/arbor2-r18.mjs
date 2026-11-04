@@ -68,6 +68,28 @@ const analyse = (so, from, to) => { const w = so.filter(([t]) => t >= from && t 
   let rev = 0, dir = 0, maxStep = 0; for (let i = 1; i < w.length; i++) { const d = w[i] - w[i - 1]; maxStep = Math.max(maxStep, Math.abs(d)); const s = Math.abs(d) < 1e-4 ? 0 : Math.sign(d); if (s && dir && s !== dir) rev++; if (s) dir = s; }
   return { n: w.length, min: Math.min(...w), max: Math.max(...w), first: w[0], last: w[w.length - 1], rev, maxStep: Math.round(maxStep * 1000) / 1000 }; };
 
+// ---- for the Wrizors' r17 fixes (Nov 4): a seam-seeded page, both drawers opened, the "?"s on screen ----
+const PAGEW = 'The morning light came in low across the table, and she began to write. The kettle ticked as it cooled, and outside a dog asked the street a question nobody answered.';
+const FINISH = "(() => { document.getAnimations().forEach((a) => { try { a.finish(); } catch {} }); return true; })()";
+const openPage = async (app, id, mode) => {
+  await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id, text: PAGEW, createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page' })})`);
+  await sleep(300);
+  await app.evalJs(`history.replaceState(null, '', '/?arbor2=1#/page/${id}')`); await app.reload();
+  await waitSoft(app, "document.documentElement.getAttribute('data-arbor2') === 'true'", { label: 'flag', timeout: 15000 });
+  await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 20000 });
+  await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'page' }); await sleep(900);
+  if (mode) { await app.evalJs(`(() => { const b = [...document.querySelectorAll('.desk-mode-tab')].find((x) => (x.textContent || '').trim().toLowerCase() === ${JSON.stringify(mode.toLowerCase())}); if (b) b.click(); return !!b; })()`); await sleep(900); }
+  await app.evalJs("document.querySelector('.forward-only-editor')?.blur(); getSelection()?.removeAllRanges()");
+};
+const openBoth = async (app) => {
+  await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(150); await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()");
+  await app.evalJs(FINISH); await sleep(700); await app.evalJs(FINISH);
+};
+const QMARKS = `(() => { const box = (e) => { const r = e.getBoundingClientRect(); return { l: r.left, t: r.top, r: r.right, b: r.bottom }; };
+  const shown = (e) => { const r = e.getBoundingClientRect(); if (r.width < 1 || r.height < 1) return false; for (let n = e; n; n = n.parentElement) { const cs = getComputedStyle(n); if (cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity) < 0.05) return false; } return true; };
+  const slide = document.querySelector('.wz-tutor-panel > .wz-drawer-slide'); const add = document.querySelector('.wz-links-pane .wz-graft-add');
+  return { slide: slide ? box(slide) : null, add: add && shown(add) ? box(add) : null, qs: [...document.querySelectorAll('button')].filter((b) => b.textContent.trim() === '?' && shown(b) && b.getBoundingClientRect().left > innerWidth / 2).map((b) => ({ ...box(b), cls: String(b.className).slice(0, 40) })) }; })()`;
+
 const SCREENS = {
   // ── 1. THE LINE GONE: under the flag the drawing (splash and front door) is the r18 copy; flag off it is Nick's own picture, unchanged
   'r18-line-gone': async (app) => {
@@ -371,6 +393,79 @@ const SCREENS = {
       await sleep(250);
     } finally { await done(); }
   }])),
+  // ══ THE WRIZORS' r17 FIXES (wrizors-to-ARBOR-nov4.md md5 d1c1dcc2, via Fable, Nov 4), folded into r18 ══
+  // ── W1. no stray "?" in the room beside the GRAFTS tab: with the Tutor drawer open (on Tutor, then on Grafts) no "?" stands outside the
+  // drawer; the Grafts "?" is inside, on the Grafts pane's own first row ("+ Graft...")
+  'r18-grafts-help': async (app) => {
+    await openPage(app, 'arbor-r18-gh', 'Draft'); await openBoth(app);
+    const tutor = await app.evalJs(QMARKS);
+    await app.evalJs("document.querySelector('#wz-tutor-tab-links')?.click()"); await sleep(400); await app.evalJs(FINISH);
+    const grafts = await app.evalJs(QMARKS);
+    const out = (s) => s.qs.filter((q) => q.l >= s.slide.r - 0.5);
+    const onRow = grafts.qs.find((q) => q.l >= grafts.slide.l && q.r <= grafts.slide.r + 0.5 && grafts.add && Math.abs((q.t + q.b) / 2 - (grafts.add.t + grafts.add.b) / 2) <= 4 && q.l >= grafts.add.r - 0.5);
+    const ok = { noneOutsideOnTutor: !!tutor.slide && out(tutor).length === 0, noneOutsideOnGrafts: !!grafts.slide && out(grafts).length === 0, onTheGraftRow: !!onRow };
+    const brief = { ok, tutor: { slide: tutor.slide, qs: tutor.qs }, grafts: { slide: grafts.slide, add: grafts.add, qs: grafts.qs } };
+    if (Object.values(ok).some((x) => !x)) fail('R18-GRAFTS-HELP', brief);
+    say('r18-grafts-help', brief);
+  },
+  // ── W2. Free Write (Typewriter's zoom): open, the Tools opener rides the drawer's OUTER edge (its right edge on the drawer's left edge, off the
+  // drawer's contents), as in Draft; shut, it is back at its place
+  'r18-fw-opener': async (app) => {
+    await openPage(app, 'arbor-r18-fw', null);
+    const zoom = await app.evalJs("!!document.querySelector(\".mode-pagecol[data-zoom='true']\")");
+    const shut = await app.evalJs(rect('.wz-sliver-grip'));
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await app.evalJs(FINISH); await sleep(700); await app.evalJs(FINISH);
+    const open = await app.evalJs(rect('.wz-sliver-grip')), panel = await app.evalJs(rect('.wz-sliver-panel'));
+    const font = await app.evalJs("(() => { const h = [...document.querySelectorAll('.wz-sliver-panel .wz-sliver-h')][0]; if (!h) return null; const r = h.getBoundingClientRect(); return { l: r.left, t: r.top, r: r.right, b: r.bottom }; })()");
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await app.evalJs(FINISH); await sleep(700); await app.evalJs(FINISH);
+    const back = await app.evalJs(rect('.wz-sliver-grip'));
+    const ok = {
+      zoom,
+      outerEdge: !!open && !!panel && Math.abs(open.r - panel.l) <= 1,
+      offTheContents: !!open && !!font && (open.r <= font.l + 0.5 || open.b <= font.t || open.t >= font.b),
+      backWhenShut: !!shut && !!back && Math.abs(shut.l - back.l) <= 0.5 && Math.abs(shut.t - back.t) <= 0.5,
+    };
+    const brief = { ok, shut, open, panel, font, back };
+    if (Object.values(ok).some((x) => !x)) fail('R18-FW-OPENER', brief);
+    say('r18-fw-opener', brief);
+  },
+  // ── W3. polish: Send at the question box's height (the "?" beside them stays at the row's middle)
+  'r18-send-height': async (app) => {
+    await openPage(app, 'arbor-r18-send', 'Draft'); await openBoth(app);
+    const input = await app.evalJs(rect('.wz-tutor-convo-input')), send = await app.evalJs(rect('.wz-tutor-convo-send'));
+    const ok = { sameHeight: !!input && !!send && Math.abs(input.h - send.h) <= 1 && Math.abs(input.t - send.t) <= 1 };
+    const brief = { ok, input, send };
+    if (Object.values(ok).some((x) => !x)) fail('R18-SEND-HEIGHT', brief);
+    say('r18-send-height', brief);
+  },
+  // ── W4. polish: Free Write's Forward lock toggle outlined, never filled green - on and off
+  'r18-forward-lock': async (app) => {
+    await openPage(app, 'arbor-r18-lock', null);
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await app.evalJs(FINISH); await sleep(700);
+    const READ = "(() => { const b = document.querySelector('.wz-sliver-forwardlock'); if (!b) return null; const s = b.querySelector('.wz-sliver-toggle-switch'); const cs = getComputedStyle(s); return { on: b.getAttribute('data-on'), bg: cs.backgroundColor, border: cs.borderTopColor, bw: cs.borderTopWidth }; })()";
+    const a = await app.evalJs(READ);
+    await app.evalJs("document.querySelector('.wz-sliver-forwardlock')?.click()"); await sleep(300); await app.evalJs(FINISH);
+    const b = await app.evalJs(READ);
+    const clear = (c) => /rgba\(.*,\s*0\)$/.test(c || '') || c === 'transparent';
+    const outlined = (x) => !!x && clear(x.bg) && !clear(x.border) && parseFloat(x.bw) >= 1;
+    const ok = { both: !!a && !!b && a.on !== b.on, outlinedOn: [a, b].filter((x) => x && x.on === 'true').every(outlined) && [a, b].some((x) => x && x.on === 'true'), outlinedOff: [a, b].filter((x) => x && x.on === 'false').every(outlined) };
+    const brief = { ok, a, b };
+    if (Object.values(ok).some((x) => !x)) fail('R18-FORWARD-LOCK', brief);
+    say('r18-forward-lock', brief);
+  },
+  // ── the frames the Wrizors asked for: Draft and Free Write with both drawers open, and a new page at 11 pt
+  'r18-pic-draft-open': async (app) => { await openPage(app, 'arbor-r18-pd', 'Draft'); await openBoth(app); await app.evalJs("document.querySelector('#wz-tutor-tab-links')?.click()"); await sleep(400); await app.evalJs(FINISH); },
+  'r18-pic-fw-open': async (app) => { await openPage(app, 'arbor-r18-pf', null); await openBoth(app); },
+  'r18-pic-new-page': async (app) => {
+    const done = await anon(app);
+    try {
+      await load(app); await doorsShown(app);
+      await app.evalJs(clickDoor('Write'));
+      await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'the new page', timeout: 8000 }); await sleep(900);
+      await app.evalJs("document.querySelector('.forward-only-editor')?.focus()"); await app.type('A new page, at eleven points.'); await sleep(1200);
+      await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await app.evalJs(FINISH); await sleep(800);
+    } finally { await done(); }
+  },
 };
 
 export default guarded(SCREENS, { verdict: ['ARBOR-R18'] });

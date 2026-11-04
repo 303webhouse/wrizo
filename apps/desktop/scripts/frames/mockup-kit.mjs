@@ -275,7 +275,9 @@ export async function reducedRepeat(app, { name, setRoom, n = 20 }) {
  *  'light mode'"). In the Themes pop-out the room's row is the row right after Page, with the theme's own words; picking Day, Night and the
  *  clock there moves the room at once and the mockup's own row (Mood / the panel) agrees. ctx: { name, say, fail, label, words: [[value, text]],
  *  roomAttr, roomOf: { clock?, day: 'value', night: 'value' }, otherRow: css selector of the mockup's own row group }. */
-export async function themeRoomCheck(app, { name, say, fail, label, words, roomAttr, roomOf, otherRow }) {
+// (r18 / r9, the Wrizors' Nov 4 note: the pop-out's words may differ from the mockup's own row - Machina's Room · Light · Dark · Automatic beside
+// its panel's Lighting · Day · Night - so otherWords names, per value, the word the other row shows; absent, the same words)
+export async function themeRoomCheck(app, { name, say, fail, label, words, roomAttr, roomOf, otherRow, otherWords = null }) {
   const open = await app.evalJs("(() => { const b = document.querySelector(\".wz-strip-item[data-category='theme']\"); if (b && b.getAttribute('aria-pressed') !== 'true') b.click(); return !!b; })()");
   await app.evalJs(`new Promise((done) => { const t0 = performance.now(); const f = () => (document.querySelector('.wz-theme-picker') || performance.now() - t0 > 3000) ? done(true) : requestAnimationFrame(f); f(); })`);
   const READ = `(() => { const field = document.querySelector('.wz-theme-picker .wz-theme-picker-field'); if (!field) return null;
@@ -307,7 +309,7 @@ export async function themeRoomCheck(app, { name, say, fail, label, words, roomA
     inPanel: idx >= 0 && !!row && [before.rows[idx], row].every((r) => r.parts.length > 1 && r.parts.every((p) => p.l >= before.panel.l - 0.5 && p.r <= before.panel.r + 0.5)),
     words: !!row && JSON.stringify(row.opts.map(([t]) => t)) === JSON.stringify(words.map(([, t]) => t)),
     moves: steps.every((s) => s.pressed && (s.value === 'clock' ? s.attr === null : s.room === roomOf[s.value])),
-    agrees: !otherRow || steps.every((s) => chosen(s, s.text)),
+    agrees: !otherRow || steps.every((s) => chosen(s, otherWords ? otherWords[s.value] : s.text)),
     marked: steps.every((s) => { const r = s.rows.find((x) => x.label === label); return !!r && r.opts.some(([t, on]) => t === s.text && on); }),
   };
   const brief = { ok, rows: before.rows.map((r) => [r.label, r.opts.map(([t]) => t).join('/')]), steps: steps.map((s) => [s.text, s.attr, s.room, s.other && s.other.filter(([, p]) => p === 'true').map(([t]) => t).join('|')]) };
