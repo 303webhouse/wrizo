@@ -1048,11 +1048,16 @@ function PageEditorView({ id }: { id: string }) {
   // FONT-SPAN: the Whole document pick, as the mockup has it - every word takes the page's new face, so the spans go (free-edit modes,
   // where the page's text can be rewritten in place; Free Write's forward-only runway is never rewritten by a tool). One undo step.
   // POLISH #10 item 4 (Nick ruled A, Oct 25): a size for the HIGHLIGHTED words only - the face's own road (one atomic undo step, through the rows)
+  // TOOLS #14-r2: the size box holds the highlight while it has focus (a text field takes the page's selection), so a typed size reaches the words that were highlighted
+  const heldSelRef = useRef<{ start: number; end: number } | null>(null);
+  const holdSizeSelection = (): boolean => { const el = editorRef.current; const s = el ? getSelectionOffsets(el) : null; if (!s || s.start === s.end) return false; heldSelRef.current = s; return true; };
   const applySizeAt = (points: number) => {
     const el = editorRef.current;
     if (!el) return;
+    // the held highlight is read BEFORE the editor takes focus back: that focus blurs the size box, and its blur lets the held range go
+    const held = heldSelRef.current;
     el.focus();
-    const sel = getSelectionOffsets(el);
+    const sel = held ?? getSelectionOffsets(el);
     if (!sel || sel.start === sel.end) return;
     const cur = textRef.current;
     const result = applySizePick(cur, Math.min(sel.start, cur.length), Math.min(sel.end, cur.length), points);
@@ -1242,7 +1247,7 @@ function PageEditorView({ id }: { id: string }) {
     // TOOLS #10 item 10: `undefined` is "Default" - the stored face is CLEARED (no stored face = the theme's default; that rule already existed), after the same whole-page span clear a face pick does.
     onPickFace: (face: StoredFace | undefined) => { clearFontSpansOnPage(); if (face) patchPageSettings({ face }); else clearPageFace(); },
     onSize: (size: number) => { clearSizeSpansOnPage(); patchPageSettings({ size }); },   // POLISH #10 item 4: the whole page's size - its spans' sizes go
-    scope: scoped ? { has: fontSel.has, face: fontSel.face, wholeLabel: dt('typeScopeWholeDocument'), onPickSelection: applyFontAt, size: fontSel.size, onSizeSelection: applySizeAt } : undefined,
+    scope: scoped ? { has: fontSel.has, face: fontSel.face, wholeLabel: dt('typeScopeWholeDocument'), onPickSelection: applyFontAt, size: fontSel.size, onSizeSelection: applySizeAt, holdSelection: holdSizeSelection, releaseSelection: () => { heldSelRef.current = null; } } : undefined,
   });
 
   const sliverContent: SliverContent = !framed
