@@ -733,40 +733,46 @@
 :root[data-arbor2][data-theme='plateau'] .arbor2-top{ position:absolute; inset:0; pointer-events:none; z-index:1; }
 :root[data-arbor2][data-theme='plateau'] .arbor2-top-logo{ position:absolute; }
 /* the logo is one <svg>: the masked strokes while it writes, then Nick's still logo as an SVG image in the same viewBox (frontLayer.tsx) */
-:root[data-arbor2][data-theme='plateau'] .arbor2-top-tagline{ position:absolute; transform:translateX(-50%); white-space:nowrap; line-height:1; letter-spacing:.01em; color:#B5A998;
-  font-family:var(--arbor2-chrome-face); font-size:max(13px, calc(var(--arbor2-u) * 60)); }
-/* the tagline arrives while the brass o and the dot are written (1.6 - 2.0 s), so it is whole when the logo is */
-:root[data-arbor2][data-theme='plateau'] .arbor2-top-tagline[data-writing='true']{ opacity:0; animation:arbor2-tagline-in .4s ease-out 1.6s forwards; }
-@keyframes arbor2-tagline-in{ from{ opacity:0; } to{ opacity:1; } }
+/* r19 - THE TAGLINE, TYPED (spec draft 38 §12c): EB Garamond, cream #EFE4CB, 16 px at 1366 (86 of the drawing's px), its last letter ending at
+   the drawing's x 768 (right-anchored, so the line never moves as it types: the rest waits invisibly); the brass page caret (1.5 px, no width
+   of its own) steady while typing, then blinking on a 1.06 s cycle (under one flash a second). Reduced motion: steady. */
+:root[data-arbor2][data-theme='plateau'] .arbor2-top-tagline{ position:absolute; white-space:nowrap; line-height:1; letter-spacing:0; color:#EFE4CB;
+  font-family:'EB Garamond', var(--font-prose), serif; font-size:calc(var(--arbor2-u) * 86); }
+:root[data-arbor2][data-theme='plateau'] .arbor2-top-tagline[data-state='wait']{ visibility:hidden; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-tag-rest{ visibility:hidden; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-tag-caret{ display:inline-block; width:0; height:1.05em; margin-right:-1.5px; vertical-align:-.2em; border-left:1.5px solid #FF9800; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-top-tagline[data-state='done'] .arbor2-tag-caret{ animation:arbor2-caret 1.06s steps(1, end) infinite; }
+@keyframes arbor2-caret{ 0%{ opacity:1; } 50%{ opacity:0; } }
 
-/* THE DOORS: boxes in the drawing's own box (the same size and place as the mark), each at its rect of the drawing */
-:root[data-arbor2][data-theme='plateau'] .arbor2-front-doors{ position:absolute; left:50%; top:50%; transform:translate(-50%, -50%); pointer-events:none; z-index:1; }
-/* the front door's drawing box by layout (Arrival.tsx gives its negative margins), as the splash's flex box is - never by a transform, which
-   rasterises the logo at its own half-pixel (the hand-over measured 26% of the channels off) */
+/* THE DOORS: boxes in the drawing's own box (the same size and place as the mark), each at its rect of the drawing. r19: cream #EFE4CB (the
+   hand-drawn box and the word), brass #FF9800 on mouse-over and keyboard focus (.16 s - the box turning brass is the focus mark); they come in
+   0.35 s after the tagline's full stop, fading in and rising 6 px over .42 s, Sign in .15 s after Write. On the splash they are shown, not pressed. */
+:root[data-arbor2][data-theme='plateau'] .arbor2-front-doors{ position:absolute; inset:0; pointer-events:none; z-index:1; }
 :root[data-arbor2][data-theme='plateau'] .arbor2-front-mark{ transform:none; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-front-doorbox{ position:absolute; left:50%; top:50%; pointer-events:none; }
 :root[data-arbor2][data-theme='plateau'] .arbor2-door{ all:unset; position:absolute; box-sizing:border-box; display:flex; align-items:center; justify-content:center; pointer-events:auto; cursor:pointer;
-  color:#EFE4CB; font-family:var(--arbor2-chrome-face); font-size:max(15px, calc(var(--arbor2-u) * 84)); line-height:1; letter-spacing:.02em; }
-:root[data-arbor2][data-theme='plateau'] .arbor2-door:focus-visible{ outline:2px solid var(--brass); outline-offset:4px; }
+  color:#EFE4CB; font-family:var(--arbor2-chrome-face); font-size:max(15px, calc(var(--arbor2-u) * 84)); line-height:1; letter-spacing:.02em; transition:color .16s ease; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-door:focus-visible{ outline:none; }
 :root[data-arbor2][data-theme='plateau'] .arbor2-door:disabled{ cursor:default; opacity:.5; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-front-doors[data-mode='splash'] .arbor2-door{ pointer-events:none; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-front-doors[data-mode='splash'] .arbor2-door:disabled{ opacity:1; }
 :root[data-arbor2][data-theme='plateau'] .arbor2-door-sketch{ position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; }
-:root[data-arbor2][data-theme='plateau'] .arbor2-door-sketch path{ fill:none; stroke:var(--brass); stroke-width:2.5px; stroke-opacity:.72; stroke-linecap:round; stroke-linejoin:round; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-door-sketch path{ fill:none; stroke:#EFE4CB; stroke-width:2.5px; stroke-linecap:round; stroke-linejoin:round; transition:stroke .16s ease; }
 :root[data-arbor2][data-theme='plateau'] .arbor2-door-word{ position:relative; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-door:not(:disabled):is(:hover, :focus-visible){ color:#FF9800; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-door:not(:disabled):is(:hover, :focus-visible) .arbor2-door-sketch path{ stroke:#FF9800; }
 :root[data-arbor2][data-theme='plateau'] .arbor2-front-doors[data-phase='wait'] .arbor2-door{ visibility:hidden; }
-/* coming in: each outline draws itself (Write first), then its word */
-:root[data-arbor2][data-theme='plateau'] .arbor2-front-doors[data-phase='in'] .arbor2-door-sketch path{ stroke-dasharray:1 1; stroke-dashoffset:1;
-  animation:arbor2-door-draw .6s cubic-bezier(.45, .05, .55, .95) calc(var(--arbor2-door-i) * .15s) forwards; }
-:root[data-arbor2][data-theme='plateau'] .arbor2-front-doors[data-phase='in'] .arbor2-door-word{ opacity:0; animation:arbor2-door-word .25s ease-out calc(.3s + var(--arbor2-door-i) * .15s) forwards; }
-@keyframes arbor2-door-draw{ from{ stroke-dashoffset:1; } to{ stroke-dashoffset:0; } }
-@keyframes arbor2-door-word{ from{ opacity:0; } to{ opacity:1; } }
-/* the re-emphasis: one gentle brightening per pulse (the svg is remounted per pulse, so it plays once each time) */
-:root[data-arbor2][data-theme='plateau'] .arbor2-front-doors[data-phase='shown']:not([data-pulse='0']) .arbor2-door-sketch path{ animation:arbor2-door-glow 1.6s ease-in-out 1; }
-:root[data-arbor2][data-theme='plateau'] .arbor2-front-doors[data-phase='shown']:not([data-pulse='0']) .arbor2-door-sketch{ animation:arbor2-door-halo 1.6s ease-in-out 1; }
-@keyframes arbor2-door-glow{ 0%{ stroke-opacity:.72; } 50%{ stroke-opacity:1; } 100%{ stroke-opacity:.72; } }
-@keyframes arbor2-door-halo{ 0%, 100%{ filter:drop-shadow(0 0 0 rgba(255, 152, 0, 0)); } 50%{ filter:drop-shadow(0 0 3px rgba(255, 152, 0, .45)); } }
+:root[data-arbor2][data-theme='plateau'] .arbor2-front-doors[data-phase='in'] .arbor2-door{ opacity:0; transform:translateY(6px); animation:arbor2-door-rise .42s ease-out calc(var(--arbor2-door-i) * .15s) forwards; }
+@keyframes arbor2-door-rise{ to{ opacity:1; transform:none; } }
+/* THE NUDGE (Nick, kept; Fable Nov 4): 5 s after the doors arrive, then every 30 s, one gentle cream -> brass -> cream brightening of the
+   outline (1.6 s, one rise and one fall: never a flash); any act stops it (frontLayer.tsx). The svg is remounted per pulse, so it plays once. */
+:root[data-arbor2][data-theme='plateau'] .arbor2-front-doors[data-phase='shown']:not([data-pulse='0']) .arbor2-door-sketch path{ animation:arbor2-door-nudge 1.6s ease-in-out 1; }
+@keyframes arbor2-door-nudge{ 0%{ stroke:#EFE4CB; } 50%{ stroke:#FF9800; } 100%{ stroke:#EFE4CB; } }
+/* reduced motion: the finished frame at once (frontLayer.tsx), the caret steady, the doors' outline a static brass, hover instant */
 @media (prefers-reduced-motion: reduce){
-  :root[data-arbor2][data-theme='plateau'] .arbor2-door-sketch path{ stroke-opacity:1; animation:none !important; }
-  :root[data-arbor2][data-theme='plateau'] .arbor2-door-sketch, :root[data-arbor2][data-theme='plateau'] .arbor2-door-word{ animation:none !important; }
-  :root[data-arbor2][data-theme='plateau'] .arbor2-top-tagline{ animation:none !important; opacity:1; }
+  :root[data-arbor2][data-theme='plateau'] .arbor2-door-sketch path{ stroke:#FF9800; animation:none !important; transition:none !important; }
+  :root[data-arbor2][data-theme='plateau'] .arbor2-door, :root[data-arbor2][data-theme='plateau'] .arbor2-door-word, :root[data-arbor2][data-theme='plateau'] .arbor2-tag-caret{ animation:none !important; transition:none !important; }
+  :root[data-arbor2][data-theme='plateau'] .arbor2-front-doors[data-phase='in'] .arbor2-door{ opacity:1; transform:none; }
 }
 
 /* the Room "?" on the Themes row (after the choices), its note under the row */
@@ -860,3 +866,6 @@
 /* r19 §18.2 - the bars' lettering by day (after the first green leg 41902687605): quiet #BDB09A (4.91:1 on the olive) and the sage #A7B27E for
    the olive marks (the PLAN arrow was --accent-rest #85914C, 3.07:1 on the olive). Same specificity as r5's day re-scope above, later. */
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] :is(.chrome-top.sprint-nav, .desk-frame-strip, .desk-rail, .gh-corner-glyph, .gh-corner-menu){ --text-mid:#BDB09A; --accent-rest:#A7B27E; }
+
+/* r19 (the Wrizors' nov4c, polish 6): the Tutor question box's focus ring was the browser's heavy black; Arbor's own ring instead (the room's olive, 1 px) */
+:root[data-arbor2][data-theme='plateau'] .wz-tutor-convo-input:focus, :root[data-arbor2][data-theme='plateau'] .wz-tutor-convo-input:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:1px; box-shadow:none; }
