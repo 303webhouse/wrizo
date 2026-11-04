@@ -1,0 +1,13 @@
+#13 step 8 (c13-8-css-themes 38755d93) - manifest (Chat 1, Nov 4 2026)
+
+Tree 3bf79d8d (train-c13-8 e99e20f9: main f079d49e + one --no-ff merge of c13-8-css-themes 38755d93, the re-cut on Fable's ruling (b)). The step moves theme rules into src/styles/themes/{flux,machina,arbor}.css; theme rules in feature files stay with their feature (19 Flux rules move to themes/flux.css).
+
+PROOFS
+- tsc desktop 0, tsc server 0, seed-guard PASS 36.
+- BUILD vs main's build (train-12j, tree 622df16e, product-identical to main): NOT byte-identical. The JS is identical except the CSS file name it references (index-BzB8MnnC.js vs index-CzG0YU_r.js, both 955927 bytes); the CSS differs: index-MJl1zfGB.css 266044 bytes (main: index-BISqmGRK.css 266008 bytes).
+- GitHub Actions full pair, run 41886039489 (ref = the full sha e99e20f9, 8 shards per leg): default 231/238, parked 231/238; the 7 non-OK are the capture/probe tools with no verdict line, both legs (the usual seven). No other non-OK.
+- Box, 15 files (the step 6 list), stamp tree=e99e20f9 bundle=index-BzB8MnnC.js/955927b: default CLEAN 15/15; parked CLEAN 15/15.
+- STYLE PROBE (c13-style-snapshot.mjs), main (train-12j) baseline vs the step, same box turn 18:40Z-19:05Z: "C13-STYLE COMPARE: IDENTICAL"; selectors 2188 / 589 matched / 1599 unmatched / 0 untestable.
+- Link checks on the merged main: c13-2-links PASS, c13-4d-links check PASS (run on the read-home commit; this step touches no .md outside docs/cleanup).
+
+Files here: pair-default/parked.log.txt and summary.txt (Actions); box-default/parked.log.txt; probe-main.log.txt, probe-step.log.txt (the compare line is the last line of the latter).
