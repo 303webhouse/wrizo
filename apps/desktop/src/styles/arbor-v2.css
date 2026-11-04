@@ -698,6 +698,7 @@
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab + .wz-drawer-tab{ margin-top:-10px; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab[data-on='true']{ width:36px; height:106px; margin:-4px 0 -4px -3px; clip-path:path('M0 0 L31.6 8.4 Q36 10 36 14 L36 92 Q36 96 31.6 97.6 L0 106 Z'); }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab + .wz-drawer-tab[data-on='true']{ margin-top:-14px; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab:first-child[data-on='true']{ margin-top:0; margin-bottom:-8px; }
 /* the "?" beside a cloth (the Grafts note) stands just outside its tab, on the tab's row */
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tabnotes{ position:absolute; left:34px; top:0; width:16px; height:auto; display:flex; flex-direction:column; gap:0; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tabnote-cell{ height:98px; margin:-10px 0 0; padding:0; display:flex; align-items:center; justify-content:center; }
@@ -788,7 +789,7 @@
 
 /* r19 - FREE WRITE'S TUTOR OPENER ON ITS DRAWER'S OUTER EDGE (Fable's yes, Nov 4; the mirror of r18's Tools fix): on the zoomed page the Tutor
    drawer lies over the page and ends on its anchor's right edge, so open, the opener rides there (left:100%), arrow pointing back, as in Draft. */
-:root[data-arbor2][data-theme='plateau'] .desk-frame-stage:has(.mode-pagecol[data-zoom='true']) .wz-tutor-grip:is([data-open='true'], [data-docked='true']){ left:100%; }
+:root[data-arbor2][data-theme='plateau'] .desk-frame-stage:has(.mode-pagecol[data-zoom='true']) .wz-tutor-grip:is([data-open='true'], [data-docked='true']){ left:var(--arbor2-drawer-zx, 100%); }
 
 /* ==========================================================================================================================================
    r19 §18.1 - THE DAY ROOM IS A VINE-COVERED PERGOLA'S SHADOW (Nick, Nov 4; the Wrizors' texture, arbor-pergola-shadow.svg md5 1ae1d048, drawn by
@@ -853,5 +854,9 @@
    brass outline (drawn inside its edge, so nothing moves) and letters in deep olive #33401F. The three choices the red leg found brass (run
    41901581121): the segmented choices (.mode-seg: Page / Room, ...), the type scope (Selection / Whole document) and the page kind (Normal /
    Screenplay / Research); all take --choice (brass) for text and edge. Night is unchanged. */
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] :is(.wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel, .wz-theme-picker) :is(.mode-seg button.on, .wz-type-scope[data-on='true'], .wz-sliver-mode-btn[aria-pressed='true']){
-  color:#33401F; box-shadow:none; border-color:transparent; outline:1.5px solid var(--brass); outline-offset:-1.5px; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] :is(.wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel, .wz-theme-picker) :is(.mode-seg button.on, .wz-type-scope[data-on='true'], .wz-sliver-mode-btn[aria-pressed='true'], .wz-page-setup-chip[aria-checked='true']){
+  color:#33401F; border-color:transparent; outline:none; box-shadow:inset 0 0 0 1.5px var(--brass); }   /* (a 1.5 px border or outline is drawn 1 px at DPR 1: the ring is a shadow) */
+
+/* r19 §18.2 - the bars' lettering by day (after the first green leg 41902687605): quiet #BDB09A (4.91:1 on the olive) and the sage #A7B27E for
+   the olive marks (the PLAN arrow was --accent-rest #85914C, 3.07:1 on the olive). Same specificity as r5's day re-scope above, later. */
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] :is(.chrome-top.sprint-nav, .desk-frame-strip, .desk-rail, .gh-corner-glyph, .gh-corner-menu){ --text-mid:#BDB09A; --accent-rest:#A7B27E; }

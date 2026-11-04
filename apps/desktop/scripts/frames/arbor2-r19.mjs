@@ -90,7 +90,8 @@ const SHADE = `(() => { const box = (e) => { if (!e) return null; const r = e.ge
     ink: document.querySelector('.forward-only-editor') ? getComputedStyle(document.querySelector('.forward-only-editor')).color : null,
     field: field ? { op: op(field), vines: field.getAttribute('data-vines'), flash: field.getAttribute('data-flash') } : null,
     leafAnims: leafAnims.length, leafTiming: leafAnims[0] ? timing(leafAnims[0]) : null, running: allAnims.filter((a) => a.playState === 'running').map(timing).slice(0, 6), runningN: allAnims.filter((a) => a.playState === 'running').length,
-    writing: document.documentElement.getAttribute('data-wz-writing'), room: document.documentElement.getAttribute('data-arbor2-room'), vw: innerWidth, vh: innerHeight }; })()`;
+    // (instrument fix after the green leg 41902687605: this key was `room`, a second one - it overwrote the room layer's read above)
+    writing: document.documentElement.getAttribute('data-wz-writing'), roomName: document.documentElement.getAttribute('data-arbor2-room'), vw: innerWidth, vh: innerHeight }; })()`;
 const VINES = `(() => { const f = document.querySelector('.wz-rhizome-field'); if (!f) return null;
   const vs = [...f.querySelectorAll('.arbor2-vine')]; const heads = vs.filter((v) => v.hasAttribute('data-w0'));
   const num = (v, k) => Number(v.getAttribute(k));
@@ -293,7 +294,8 @@ const screens = {
     await openPage(app, 'arbor-r19-vines', { text: words(40), progress: 'words', style: 'rhizome', goal: { n: 60, unit: 'words' } });
     await setRoom(app, 'day'); await typeKeys(app, ' w'); await sleep(7000); await app.evalJs(FINISH);
     const d = await app.evalJs(VINES);
-    await setRoom(app, 'night'); await sleep(800);
+    // (instrument fix after the green leg: read 800 ms after the room changed, the fill and strength were mid-transition)
+    await setRoom(app, 'night'); await sleep(800); await app.evalJs(FINISH);
     const n = await app.evalJs(VINES);
     const ok = {
       drawn: !!d && d.vines === 'true' && d.n > 0 && d.main.length >= 5,
@@ -312,7 +314,8 @@ const screens = {
   'r19-flash': async (app) => {
     await openPage(app, 'arbor-r19-flash', { text: words(58), progress: 'words', style: 'rhizome', goal: { n: 60, unit: 'words' } });
     await setRoom(app, 'day'); await typeKeys(app, ' w'); await sleep(6500);
-    await typeKeys(app, ' w'); await sleep(1300);
+    // (instrument fix after the green leg: read at +1.3 s the field was already 'fading' - mid-transition. Now: wait for the flash, land its transitions)
+    await typeKeys(app, ' w'); await waitSoft(app, "document.querySelector('.wz-rhizome-field')?.getAttribute('data-flash') === 'true'", { label: 'flash', timeout: 4000 }); await app.evalJs(FINISH);
     const f = await app.evalJs(`(() => { const fld = document.querySelector('.wz-rhizome-field'); if (!fld) return null; const vs = [...fld.querySelectorAll('.arbor2-vine')];
       return { flash: fld.getAttribute('data-flash'), n: vs.length, fills: [...new Set(vs.map((v) => getComputedStyle(v).fill))].slice(0, 4), past: fld.querySelectorAll('.arbor2-vines-past .arbor2-vine').length }; })()`);
     const ok = { flashing: !!f && f.flash !== 'false', wholeBrass: !!f && f.n > 0 && f.fills.length === 1 && f.fills[0] === 'rgb(255, 152, 0)' };
@@ -329,17 +332,19 @@ const screens = {
       // (instrument fix after the red leg: a theme card is a picture whose artwork carries its own lettering - not a chosen option's word)
       const chosen = roots.flatMap((r) => [...r.querySelectorAll("button.on, [aria-pressed='true'], [aria-checked='true'], [aria-selected='true']")]).filter((e) => e.getBoundingClientRect().width > 0 && (e.textContent || '').trim() && !e.querySelector('img, svg, canvas'));
       return { roots: roots.map((r) => r.className.split(' ')[0]), texts: els.map((e) => [(e.textContent || '').trim().slice(0, 22), getComputedStyle(e).color]),
-        chosen: chosen.map((e) => { const cs = getComputedStyle(e); return [(e.textContent || '').trim().slice(0, 22), cs.color, cs.borderTopColor, cs.borderTopWidth, cs.outlineColor, cs.outlineWidth, cs.outlineStyle]; }) }; })()`;
+        chosen: chosen.map((e) => { const cs = getComputedStyle(e); return [(e.textContent || '').trim().slice(0, 22), cs.color, cs.borderTopColor, cs.borderTopWidth, cs.outlineColor, cs.outlineWidth, cs.outlineStyle, cs.boxShadow]; }) }; })()`;
     const drawers = await app.evalJs(READ);
     await app.evalJs("(() => { const b = document.querySelector(\".wz-strip-item[data-category='theme']\"); if (b && b.getAttribute('aria-pressed') !== 'true') b.click(); return !!b; })()"); await sleep(700);
     const themes = await app.evalJs(READ);
     const all = [...drawers.texts, ...themes.texts], chosen = [...drawers.chosen, ...themes.chosen];
     const brassText = all.filter(([, c]) => brassish(c));
-    const outlined = chosen.filter((c) => brassish(c[2]) || brassish(c[4]));
+    // (instrument fix after the green leg: a 1.5 px border or outline is drawn 1 px at DPR 1, so the ring is an inset shadow - read as such)
+    const ring = (c) => /rgb\(255, 152, 0\) 0px 0px 0px 1\.5px inset/.test(c[7] || '');
+    const outlined = chosen.filter((c) => brassish(c[2]) || (brassish(c[4]) && c[6] !== 'none') || ring(c));
     const ok = {
       noBrassText: brassText.length === 0,
       chosenOlive: outlined.every((c) => c[1] === 'rgb(51, 64, 31)'),
-      outline: outlined.length > 0 && outlined.every((c) => (brassish(c[2]) && Math.abs(parseFloat(c[3]) - 1.5) < 0.01) || (brassish(c[4]) && Math.abs(parseFloat(c[5]) - 1.5) < 0.01 && c[6] !== 'none')),
+      outline: outlined.length > 0 && outlined.every((c) => ring(c) || (brassish(c[2]) && Math.abs(parseFloat(c[3]) - 1.5) < 0.01) || (brassish(c[4]) && Math.abs(parseFloat(c[5]) - 1.5) < 0.01 && c[6] !== 'none')),
       // (instrument fix after the red leg 41901581121: the Themes pop-out is the Cascade's panel - it was read, the name test missed it)
       looked: drawers.roots.length >= 2 && themes.roots.includes('wz-cascade-panel'),
     };
