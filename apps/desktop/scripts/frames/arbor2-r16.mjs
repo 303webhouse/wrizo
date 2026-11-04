@@ -299,7 +299,7 @@ export default {
       // (driver fix after run 41549881533: probe before reading - a missing logo is a failed check with its numbers, never a crash)
       const probe = await app.evalJs("({ splash: !!document.querySelector('.wz-splash'), logo: !!document.querySelector('.wz-splash .arbor2-top-logo'), hold: localStorage.getItem('wrizo-splash-hold'), reduced: matchMedia('(prefers-reduced-motion: reduce)').matches, theme: document.documentElement.getAttribute('data-theme'), flag: document.documentElement.getAttribute('data-arbor2') })");
       if (!seen || !probe.logo) fail('R16-SPLASH-REDUCED', { seen, probe });
-      const s = await app.evalJs("(() => { const L = document.querySelector('.wz-splash .arbor2-top-logo'); const r = L.getBoundingClientRect(); return { writing: L.getAttribute('data-writing'), svg: !!L.querySelector('svg'), anims: document.getAnimations().filter((a) => (L.contains(a.effect?.target) || a.effect?.target === L) && a.animationName).length, transitions: document.getAnimations().filter((a) => (L.contains(a.effect?.target) || a.effect?.target === L) && !a.animationName).map((a) => [a.transitionProperty, Number(a.effect.getTiming().duration)]), rect: [Math.round(r.left * 10) / 10, Math.round(r.top * 10) / 10, Math.round(r.width * 10) / 10, Math.round(r.height * 10) / 10] }; })()");
+      const s = await app.evalJs("(() => { const L = document.querySelector('.wz-splash .arbor2-top-logo'); const r = L.getBoundingClientRect(); return { writing: L.getAttribute('data-writing'), svg: !!L.querySelector('svg'), strokes: !!L.querySelector('mask, .arbor2-logo-stroke'), anims: document.getAnimations().filter((a) => (L.contains(a.effect?.target) || a.effect?.target === L) && a.animationName).length, transitions: document.getAnimations().filter((a) => (L.contains(a.effect?.target) || a.effect?.target === L) && !a.animationName).map((a) => [a.transitionProperty, Number(a.effect.getTiming().duration)]), rect: [Math.round(r.left * 10) / 10, Math.round(r.top * 10) / 10, Math.round(r.width * 10) / 10, Math.round(r.height * 10) / 10] }; })()");
       await app.evalJs(PIX(await shot(app), s.rect, 'reduced-splash'));
       await app.evalJs("localStorage.setItem('wrizo-splash-hold', '50'); localStorage.removeItem('wrizo-splash-force-not-ready')");
       await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 }); await sleep(600);
@@ -307,7 +307,9 @@ export default {
       const diff = await app.evalJs("(() => { const a = window.__r16px['reduced-splash'], b = window.__r16px['reduced-front']; if (!a || !b || a.length !== b.length) return { n: -1 }; let n = 0; for (let i = 0; i < a.length; i++) if (i % 4 !== 3 && a[i] !== b[i]) n++; return { n }; })()");
       // (instrument fix after run 41550544353: 'anims' counts the writing's own CSS animations; a transition is reported, not counted - under
       // reduced motion the app's floor makes the mark's opacity transition a 0.01 ms cut, and one was caught)
-      const ok = { still: s.writing === 'still' && !s.svg && s.anims === 0, sameAsFront: diff.n === 0 };
+      // (amendment before any green, run 41754120497: the still logo is itself an SVG image now (the hand-over fix), so "no drawing layer" is no
+      // writing strokes. Original: !s.svg)
+      const ok = { still: s.writing === 'still' && !s.strokes && s.anims === 0, sameAsFront: diff.n === 0 };
       if (Object.values(ok).some((x) => !x)) fail('R16-SPLASH-REDUCED', { ok, s, diff });
       say('r16-splash-reduced', { ok, s, diff });
     } finally { await app.emulateMedia([]); await app.evalJs("localStorage.setItem('wrizo-splash-hold', '50'); localStorage.removeItem('wrizo-splash-force-not-ready')").catch(() => {}); await done(); }
