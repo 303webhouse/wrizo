@@ -153,15 +153,15 @@ The **pen-ink duplicate** (`ModeStage` `PEN_INKS` vs `store/ink.ts`) is **not** 
 #### Step 10g in full (INK's; Fable, Nov 4)
 
 Fable gave 10g to INK, to run **in parallel** with POLISH's 10a–10f. The files do not overlap: 10a–10f never touch `BoardEditor.tsx`.
-Line numbers below are measured at `6221e3f0` (`c13-9-ts-comments-board`, step 9's BoardEditor branch).
+Line numbers below are measured at `6a2cd218` (`c13-9-ts-comments-board`, step 9's BoardEditor branch, after its second commit moved 10 more history blocks).
 
 - **Start:** once `c13-9-ts-comments-board` has merged. That is step 9's only work on `BoardEditor.tsx`, and no later #13 step touches the file.
   Branch `c13-10g-board` off `origin/main` at that point, and pin the SHA in the report.
-- **The file today:** `components/BoardEditor.tsx`, 3,382 lines.
+- **The file today:** `components/BoardEditor.tsx`, 3,324 lines.
   - Constants and pure helpers: lines 106–158 and 182 (`naturalPx`, `groupMembers`, `maxBottom`, `boxesOverlap`, `notecardExcerpt`).
   - The box renderers `BoardInkBox` / `BoardPinBox` / `BoardTextBox`: lines 160–274.
-  - `BoardCardPopup`: lines 275–779, about 505 lines. It is exported, but it is used only inside this file.
-  - `BoardEditor` itself: line 782 to the end, about 2,600 lines with 18 effects. The pointer/gesture effect, with connection mode inside it, is the largest.
+  - `BoardCardPopup`: lines 275–774, about 500 lines. It is exported, but it is used only inside this file.
+  - `BoardEditor` itself: line 778 to the end, about 2,550 lines with 18 effects. The pointer/gesture effect, with connection mode inside it, is the largest.
 - **What:** split into `components/board/`:
   - `geometry.ts`: the constants and the pure helpers.
   - `BoardBoxes.tsx`: the three box renderers.
@@ -188,7 +188,7 @@ Line numbers below are measured at `6221e3f0` (`c13-9-ts-comments-board`, step 9
   - The readers above are green on both legs.
   - The link check (`c13-4d-links.mjs check`) passes.
   - A planted mutant shows the proof red before it is shown green.
-- **Gate:** full pair (Chat 1's train). `PageEditor` mounts `BoardEditor` (`pages/PageEditor.tsx:1721`, `:1788`), so page primacy holds: no rect change and no unmount on any writing surface.
+- **Gate:** full pair (Chat 1's train). `pages/PageEditor.tsx` mounts `BoardEditor` twice: `if (entry?.pageType === 'board')` on the born route and `if (kind === 'board')` on the unborn one. Find them by that code, since step 9's pages branch moves their line numbers. So page primacy applies: the split must change no rect and unmount nothing on any writing surface.
 - **Size:** M.
 
 ### Phase D: removal
