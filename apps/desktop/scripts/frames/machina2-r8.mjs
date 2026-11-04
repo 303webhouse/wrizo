@@ -56,10 +56,16 @@ const newPageCheck = async (app, name) => {
 export default guarded({
   'm2r8-new-page': async (app) => { await newPageCheck(app, 'M2R8-NEW-PAGE'); },
   // ── LIGHTING BESIDE PAGE in the Themes menu: Machina's words, Day / Night / Automatic move the room at once, the panel's row agrees
-  'm2r8-theme-lighting': async (app) => {
+  // PARKED 2026-11-04 (SUPERSEDED by the Wrizors' review of r8 (wrizors-to-ARBOR-nov4.md md5 d1c1dcc2, via Fable, Nov 4): the Theme pop-out's row reads "Room: Light · Dark · Automatic" directly under Page (with a "?": machina2-r9.mjs m2r9-room-help); the mockup panel keeps its Lighting row). Kept verbatim under the name m2r8-theme-lighting-v1 (not in the run list); SUCCESSOR m2r8-theme-lighting below.
+  'm2r8-theme-lighting-v1': async (app) => {
     await page(app, 'm2r8-room');
     await themeRoomCheck(app, { name: 'M2R8-THEME-LIGHTING', say, fail, label: 'Lighting', words: [['clock', 'Automatic'], ['light', 'Day'], ['dark', 'Night']],
       roomAttr: 'data-machina2-room', roomOf: { light: 'light', dark: 'dark' }, otherRow: '.machina2-bar [role="group"][aria-label="Lighting"]' });
+  },
+  'm2r8-theme-lighting': async (app) => {
+    await page(app, 'm2r8-room');
+    await themeRoomCheck(app, { name: 'M2R8-THEME-LIGHTING', say, fail, label: 'Room', words: [['light', 'Light'], ['dark', 'Dark'], ['clock', 'Automatic']],
+      roomAttr: 'data-machina2-room', roomOf: { light: 'light', dark: 'dark' }, otherRow: '.machina2-bar [role="group"][aria-label="Lighting"]', otherWords: { light: 'Day', dark: 'Night', clock: 'Automatic' } });
   },
   // ── THE SIZE BOX between - and +: on the opening page's strip (it had none) and in Build's drawer, where highlighted words size alone
   'm2r8-size-sprint': async (app) => { await page(app, 'm2r8-size-sp', null); await sizeBoxCheck(app, { name: 'M2R8-SIZE-SPRINT', say, fail }); },
