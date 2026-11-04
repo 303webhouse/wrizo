@@ -419,4 +419,257 @@ for (const ms of [0, 1000, 2000, 3000]) {
   screens[`r19-pic-rec-c-return-${String(ms).padStart(4, '0')}`] = pic(async (app) => { await openPage(app, `arbor-r19-rc${ms}`, { text: words(40), progress: 'words', style: 'rhizome', goal: { n: 60, unit: 'words' } }); await setRoom(app, 'day'); await typeKeys(app, ' w'); await sleep(7000); await app.evalJs(FINISH); await summon(app); await sleep(80); await app.evalJs(holdTransitions(ms)); });
 }
 
+// ══ THE FRONT DOOR, IN ORDER (spec draft 38 §12c; the Wrizors' wrizors-to-ARBOR-nov4c.md md5 13e5db96; Fable Nov 4: the splash ALWAYS
+// skippable - any click, Esc or key jumps to the finished frame with the doors; Enter = Write at ANY moment; the 5 s nudge from the doors'
+// arrival (Nick: kept - one gentle cream -> brass -> cream, then every 30 s, stops on any act, reduced motion a static brass outline)) ══
+const anon = async (app) => {
+  await app.cdp('Fetch.enable', { patterns: [{ urlPattern: '*/auth/me*' }] });
+  const off = app.tap((method, p) => {
+    if (method !== 'Fetch.requestPaused') return;
+    if (/\/auth\/me/.test(p.request.url)) app.cdp('Fetch.fulfillRequest', { requestId: p.requestId, responseCode: 401, responseHeaders: [{ name: 'content-type', value: 'application/json' }], body: Buffer.from('{"error":"unauthorized"}').toString('base64') }).catch(() => {});
+    else app.cdp('Fetch.continueRequest', { requestId: p.requestId }).catch(() => {});
+  });
+  return async () => { off(); await app.cdp('Fetch.disable').catch(() => {}); };
+};
+const CREAM = 'rgb(239, 228, 203)', BRASS_RGB = 'rgb(255, 152, 0)';
+// a splash from its first frame: no hold override, nothing forced (the frames job's own short hold is put back after)
+const freshSplash = async (app, { hold = false } = {}) => {
+  await app.evalJs(hold ? "localStorage.setItem('wrizo-splash-hold', '9000'); localStorage.setItem('wrizo-splash-force-not-ready', '1')" : "localStorage.removeItem('wrizo-splash-hold'); localStorage.removeItem('wrizo-splash-force-not-ready')");
+  await app.evalJs("history.replaceState(null, '', '/?arbor2=1#/')"); await app.reload();
+  return waitSoft(app, "!!document.querySelector('.wz-splash')", { label: 'the splash', timeout: 8000 });
+};
+const unhold = (app) => app.evalJs("localStorage.setItem('wrizo-splash-hold', '50'); localStorage.removeItem('wrizo-splash-force-not-ready')").catch(() => {});
+const FR = `(() => { const box = (e) => { if (!e) return null; const r = e.getBoundingClientRect(); return { l: +r.left.toFixed(1), t: +r.top.toFixed(1), r: +r.right.toFixed(1), b: +r.bottom.toFixed(1), w: +r.width.toFixed(1), h: +r.height.toFixed(1) }; };
+  const sp = document.querySelector('.wz-splash'), q = (s) => document.querySelector(s);
+  const logo = sp ? sp.querySelector('.arbor2-top-logo') : q('.arbor2-front-mark .arbor2-top-logo'), tag = sp ? sp.querySelector('.arbor2-top-tagline') : q('.arbor2-front-mark .arbor2-top-tagline');
+  const caret = tag && tag.querySelector('.arbor2-tag-caret'), typed = tag && tag.querySelector('.arbor2-tag-typed');
+  const dl = sp ? sp.querySelector('.arbor2-front-doors') : q('.arbor2-front-doorbox .arbor2-front-doors');
+  const doors = dl ? [...dl.querySelectorAll('.arbor2-door')].map((d) => { const p = d.querySelector('path'), cs = getComputedStyle(d); return { word: d.textContent.trim(), r: box(d), color: cs.color, stroke: p ? getComputedStyle(p).stroke : null, op: cs.opacity, anims: p ? p.getAnimations().map((a) => a.animationName) : [], disabled: d.disabled }; }) : [];
+  const s = window.wrizoArborFront;
+  return { splash: !!sp, hold: !!document.documentElement.dataset.splashHold, logo: logo ? { r: box(logo), w: logo.getAttribute('data-writing') } : null,
+    tag: tag ? { r: box(tag), typedR: box(typed), state: tag.getAttribute('data-state'), n: Number(tag.getAttribute('data-typed')), text: typed ? typed.textContent : null, font: getComputedStyle(tag).fontFamily, size: parseFloat(getComputedStyle(tag).fontSize), color: getComputedStyle(tag).color } : null,
+    caret: caret ? { r: box(caret), color: getComputedStyle(caret).borderLeftColor, width: getComputedStyle(caret).borderLeftWidth, anims: caret.getAnimations().map((a) => [a.animationName, Number(a.effect.getTiming().duration)]) } : null,
+    phase: dl ? dl.getAttribute('data-phase') : null, doors, route: location.hash, vw: innerWidth,
+    seq: s ? { sketchDone: s.sketchDone, logoStart: s.logoStart, logoDone: s.logoDone, tagStart: s.tagStart, tagDone: s.tagDone, doorsIn: s.doorsIn, shownAt: s.shownAt, pulses: [...s.pulses], acted: s.acted, skipped: s.skipped, reduced: s.reduced, now: performance.now() } : null }; })()`;
+// a sampler from the splash's first frames: every change of the splash, the logo's state, the tagline's letters and state, the doors' phase
+const SAMPLE = `(() => { window.__r19s = []; let last = ''; const f = () => { const sp = document.querySelector('.wz-splash'), q = (x) => (sp || document).querySelector(x);
+  const k = [!!sp, q('.arbor2-top-logo')?.getAttribute('data-writing'), q('.arbor2-top-tagline')?.getAttribute('data-state'), q('.arbor2-top-tagline')?.getAttribute('data-typed'), q('.arbor2-front-doors')?.getAttribute('data-phase')].join('|');
+  if (k !== last) { last = k; window.__r19s.push([Math.round(performance.now()), k]); } if (!window.__r19stop) requestAnimationFrame(f); }; f(); return true; })()`;
+const mouse = async (app, type, x, y) => app.cdp('Input.dispatchMouseEvent', { type, x, y, button: type === 'mouseMoved' ? 'none' : 'left', clickCount: type === 'mouseMoved' ? 0 : 1 });
+const clickAt = async (app, x, y) => { await mouse(app, 'mousePressed', x, y); await mouse(app, 'mouseReleased', x, y); };
+const key = async (app, k, code, vk) => { await app.cdp('Input.dispatchKeyEvent', { type: 'keyDown', key: k, code, windowsVirtualKeyCode: vk, text: k.length === 1 ? k : undefined }); await app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: k, code, windowsVirtualKeyCode: vk }); };
+const near = (a, b, t) => typeof a === 'number' && Math.abs(a - b) <= t;
+
+Object.assign(screens, {
+  'r19-front-order': async (app) => {
+    const done = await anon(app);
+    try {
+      if (!(await freshSplash(app))) fail('R19-FRONT-ORDER', { splash: false });
+      await app.evalJs(SAMPLE);
+      await waitSoft(app, "document.querySelector('.arbor2-front-doorbox .arbor2-front-doors')?.getAttribute('data-phase') === 'shown' && !document.querySelector('.wz-splash')", { label: 'the front door', timeout: 20000 });
+      await sleep(600);
+      const f = await app.evalJs(FR);
+      const sm = await app.evalJs('(() => { window.__r19stop = true; return window.__r19s; })()');
+      const s = f.seq || {};
+      const at = (re) => { const x = (sm || []).find(([, k]) => re.test(k)); return x ? x[0] : null; };
+      const firstTyping = at(/\|typing\|/), tagDone = at(/\|done\|21\|/), doorsInS = at(/\|in$/), splashGone = at(/^false\|/);
+      // the letters' times, off the sampler (one change per letter)
+      const typedAt = []; let prev = -1; for (const [t, k] of sm || []) { const n = Number(k.split('|')[3]); if (n > prev && n > 0) { typedAt.push(t); prev = n; } }
+      const gaps = typedAt.slice(1).map((t, i) => t - typedAt[i]);
+      const box = f.vw === 1366;
+      const ok = {
+        logoAfterSketch: near(s.logoStart - s.sketchDone, 200, 40),
+        taglineAfterLogo: near(s.tagStart - s.logoDone, 450, 40) && !!firstTyping && firstTyping >= s.logoDone - 40,
+        doorsAfterStop: near(s.doorsIn - s.tagDone, 350, 40) && !!doorsInS && !!tagDone && doorsInS >= tagDone,
+        signInLater: near(s.shownAt - s.doorsIn, 570, 60),
+        holdToDoors: !!splashGone && splashGone >= s.doorsIn - 20,
+        typing: typedAt.length >= 15 && gaps.length > 0 && Math.min(...gaps) >= 40 && Math.max(...gaps) <= 170 && near(s.tagDone - s.tagStart, 1700, 300),
+        caret: !!f.caret && f.caret.color === BRASS_RGB && f.caret.width === '1.5px' && f.caret.anims.some(([n, d]) => n === 'arbor2-caret' && d === 1060),
+        tagline: !!f.tag && f.tag.text === 'For humans who write.' && /EB Garamond/.test(f.tag.font) && f.tag.color === CREAM && (!box || near(f.tag.size, 16, 0.6)),
+        place: !box || (!!f.logo && near(f.logo.r.l, 470, 8) && near(f.logo.r.t, 232, 8) && !!f.tag && near(f.tag.typedR.r, 512, 10) && near(f.tag.r.t, 257, 10)),
+        doors: f.doors.map((d) => d.word).join('|') === 'Write|Sign in' && f.doors.every((d) => d.color === CREAM && d.stroke === CREAM),
+      };
+      const brief = { ok, seq: { logo: s.logoStart - s.sketchDone, tag: s.tagStart - s.logoDone, doors: s.doorsIn - s.tagDone, shown: s.shownAt - s.doorsIn, typing: s.tagDone - s.tagStart }, firstTyping, tagDone, doorsInS, splashGone, gaps: gaps.slice(0, 22), logo: f.logo, tag: f.tag, caret: f.caret, doors: f.doors.map((d) => [d.word, d.color, d.stroke]) };
+      if (Object.values(ok).some((x) => !x)) fail('R19-FRONT-ORDER', brief);
+      say('r19-front-order', brief);
+    } finally { await unhold(app); await done(); }
+  },
+  'r19-front-skip': async (app) => {
+    const done = await anon(app);
+    const out = {};
+    try {
+      for (const [how, when] of [['click', 1200], ['escape', 1200], ['key', 5500]]) {
+        if (!(await freshSplash(app))) fail('R19-FRONT-SKIP', { how, splash: false });
+        await sleep(when);
+        const before = await app.evalJs(FR);
+        const t0 = Date.now();
+        if (how === 'click') await clickAt(app, 60, 60); else if (how === 'escape') await key(app, 'Escape', 'Escape', 27); else await key(app, 'a', 'KeyA', 65);
+        await sleep(250);
+        const f = await app.evalJs(FR);
+        // the nudge still counts from the doors' arrival: the jump is that arrival
+        await sleep(Math.max(0, 5700 - (Date.now() - t0)));
+        const g = await app.evalJs(FR);
+        out[how] = { before: { splash: before.splash, logo: before.logo?.w, tag: before.tag?.state, phase: before.phase }, after: { splash: f.splash, logo: f.logo?.w, n: f.tag?.n, state: f.tag?.state, phase: f.phase, route: f.route, skipped: f.seq?.skipped }, pulse: g.seq && g.seq.pulses.length ? Math.round(g.seq.pulses[0] - g.seq.doorsIn) : null,
+          ok: { wasRunning: before.splash && before.phase !== 'shown', jumped: !f.splash && f.logo?.w === 'still' && f.tag?.n === 21 && f.tag?.state === 'done' && f.phase === 'shown', stayed: f.route === '#/' || f.route === '', nudgeFromArrival: !!g.seq && g.seq.pulses.length === 1 && near(g.seq.pulses[0] - g.seq.doorsIn, 5000, 200) } };
+      }
+    } finally { await unhold(app); await done(); }
+    if (Object.values(out).some((o) => Object.values(o.ok).some((x) => !x))) fail('R19-FRONT-SKIP', out);
+    say('r19-front-skip', out);
+  },
+  'r19-front-enter': async (app) => {
+    const done = await anon(app);
+    const out = {};
+    try {
+      for (const when of [900, 3600, 6000]) {
+        if (!(await freshSplash(app))) fail('R19-FRONT-ENTER', { when, splash: false });
+        await sleep(when);
+        const before = await app.evalJs(FR);
+        await key(app, 'Enter', 'Enter', 13);
+        const went = await waitSoft(app, "!/^#\\/?$/.test(location.hash) && location.hash !== ''", { label: 'Write', timeout: 6000 });
+        const r = await app.evalJs("({ route: location.hash, editor: !!document.querySelector('.forward-only-editor') })");
+        out[when] = { before: { splash: before.splash, logo: before.logo?.w, tag: before.tag?.state, phase: before.phase }, after: r, ok: { wasSplash: before.splash, wrote: went && /page|unborn|new/.test(r.route) && !/signin|login/.test(r.route) } };
+      }
+    } finally { await unhold(app); await done(); }
+    if (Object.values(out).some((o) => Object.values(o.ok).some((x) => !x))) fail('R19-FRONT-ENTER', out);
+    say('r19-front-enter', out);
+  },
+  'r19-front-nudge': async (app) => {
+    const done = await anon(app);
+    try {
+      if (!(await freshSplash(app))) fail('R19-FRONT-NUDGE', { splash: false });
+      await waitSoft(app, "document.querySelector('.arbor2-front-doorbox .arbor2-front-doors')?.getAttribute('data-phase') === 'shown'", { label: 'doors', timeout: 20000 });
+      const s0 = (await app.evalJs(FR)).seq;
+      const until = async (ms) => { const now = (await app.evalJs('performance.now()')); if (s0.doorsIn + ms > now) await sleep(s0.doorsIn + ms - now); };
+      await until(4600); const pre = await app.evalJs(FR);
+      await until(5800); const one = await app.evalJs(FR);
+      // the brightening's own colours, read at its height (the animation paused there)
+      const mid = await app.evalJs("(() => { const p = document.querySelector('.arbor2-front-doorbox .arbor2-door path'); const a = p && p.getAnimations()[0]; if (!a) return null; const name = a.animationName, dur = Number(a.effect.getTiming().duration); a.pause(); a.currentTime = dur / 2; const midC = getComputedStyle(p).stroke; a.currentTime = 0; const startC = getComputedStyle(p).stroke; a.play(); return { name, dur, midC, startC }; })()");
+      await until(35800); const two = await app.evalJs(FR);
+      await key(app, 'Shift', 'ShiftLeft', 16);   // an act (a key that writes nothing and opens nothing)
+      await until(66000); const after = await app.evalJs(FR);
+      const p = (f) => f.seq.pulses.map((t) => Math.round(t - s0.doorsIn));
+      const ok = {
+        none5: pre.seq.pulses.length === 0,
+        first5s: one.seq.pulses.length === 1 && near(one.seq.pulses[0] - s0.doorsIn, 5000, 200),
+        gentle: !!mid && mid.name === 'arbor2-door-nudge' && mid.dur >= 1200 && mid.startC === CREAM && mid.midC === BRASS_RGB,
+        every30: two.seq.pulses.length === 2 && near(two.seq.pulses[1] - two.seq.pulses[0], 30000, 250),
+        stopsOnAct: after.seq.acted && after.seq.pulses.length === 2,
+        restCream: after.doors.every((d) => d.stroke === CREAM),
+      };
+      const brief = { ok, pulses: { pre: p(pre), one: p(one), two: p(two), after: p(after) }, mid, acted: after.seq.acted };
+      if (Object.values(ok).some((x) => !x)) fail('R19-FRONT-NUDGE', brief);
+      say('r19-front-nudge', brief);
+    } finally { await unhold(app); await done(); }
+  },
+  'r19-front-hover': async (app) => {
+    const done = await anon(app);
+    try {
+      if (!(await freshSplash(app))) fail('R19-FRONT-HOVER', { splash: false });
+      await waitSoft(app, "document.querySelector('.arbor2-front-doorbox .arbor2-front-doors')?.getAttribute('data-phase') === 'shown'", { label: 'doors', timeout: 20000 });
+      const rest = await app.evalJs(FR);
+      const w = rest.doors[0].r;
+      await mouse(app, 'mouseMoved', (w.l + w.r) / 2, (w.t + w.b) / 2); await sleep(300);
+      const hov = await app.evalJs(FR);
+      await mouse(app, 'mouseMoved', 20, 20); await sleep(300);
+      const off = await app.evalJs(FR);
+      let focused = false; for (let i = 0; i < 12 && !focused; i++) { await key(app, 'Tab', 'Tab', 9); await sleep(120); focused = await app.evalJs("!!document.activeElement?.classList.contains('arbor2-door')"); }
+      await sleep(250);
+      const foc = await app.evalJs("(() => { const d = document.activeElement; const p = d && d.querySelector('path'); return d ? { word: d.textContent.trim(), color: getComputedStyle(d).color, stroke: p ? getComputedStyle(p).stroke : null, outline: getComputedStyle(d).outlineStyle } : null; })()");
+      const ok = {
+        restCream: rest.doors.every((d) => d.color === CREAM && d.stroke === CREAM),
+        hoverBrass: hov.doors[0].color === BRASS_RGB && hov.doors[0].stroke === BRASS_RGB && hov.doors[1].stroke === CREAM,
+        backCream: off.doors[0].stroke === CREAM,
+        focusBrass: focused && !!foc && foc.color === BRASS_RGB && foc.stroke === BRASS_RGB,
+      };
+      const brief = { ok, rest: rest.doors.map((d) => [d.word, d.color, d.stroke]), hov: hov.doors.map((d) => [d.word, d.color, d.stroke]), off: off.doors[0].stroke, foc };
+      if (Object.values(ok).some((x) => !x)) fail('R19-FRONT-HOVER', brief);
+      say('r19-front-hover', brief);
+    } finally { await unhold(app); await done(); }
+  },
+  'r19-front-authed': async (app) => {
+    // signed in (the job's own account double): Write only, and Write goes into the last page
+    await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: 'arbor-r19-last', text: PAGEW, createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page' })})`);
+    await sleep(300);
+    await app.evalJs("history.replaceState(null, '', '/?arbor2=1#/page/arbor-r19-last')"); await app.reload();
+    await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'the last page', timeout: 20000 }); await sleep(1200);
+    try {
+      if (!(await freshSplash(app))) fail('R19-FRONT-AUTHED', { splash: false });
+      await waitSoft(app, "document.querySelector('.arbor2-front-doorbox .arbor2-front-doors')?.getAttribute('data-phase') === 'shown' && !document.querySelector('.wz-splash')", { label: 'doors', timeout: 20000 });
+      await waitSoft(app, "!document.querySelector('.arbor2-front-doorbox .arbor2-door')?.disabled", { label: 'ready', timeout: 8000 });
+      const f = await app.evalJs(FR);
+      await app.evalJs("document.querySelector('.arbor2-front-doorbox .arbor2-door')?.click()");
+      await waitSoft(app, "/arbor-r19-last/.test(location.hash)", { label: 'the last page', timeout: 8000 });
+      const r = await app.evalJs('location.hash');
+      const ok = { writeOnly: f.doors.map((d) => d.word).join('|') === 'Write', intoLastPage: /arbor-r19-last/.test(r) };
+      if (Object.values(ok).some((x) => !x)) fail('R19-FRONT-AUTHED', { ok, doors: f.doors.map((d) => d.word), route: r });
+      say('r19-front-authed', { ok, doors: f.doors.map((d) => d.word), route: r });
+    } finally { await unhold(app); }
+  },
+  'r19-front-reduced': async (app) => {
+    const done = await anon(app);
+    await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+    try {
+      if (!(await freshSplash(app))) fail('R19-FRONT-REDUCED', { splash: false });
+      await sleep(300);
+      const early = await app.evalJs(FR);
+      await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 12000 }); await sleep(400);
+      const f = await app.evalJs(FR);
+      const ok = {
+        finishedAtOnce: early.logo?.w === 'still' && early.tag?.n === 21 && early.phase === 'shown',
+        caretSteady: !!f.caret && f.caret.anims.length === 0,
+        staticBrass: f.doors.length === 2 && f.doors.every((d) => d.stroke === BRASS_RGB && d.anims.length === 0),
+        noPulse: (await sleep(5600), (await app.evalJs(FR)).seq.pulses.length === 0),
+      };
+      const brief = { ok, early: { logo: early.logo?.w, n: early.tag?.n, phase: early.phase, seq: early.seq && { reduced: early.seq.reduced, skipped: early.seq.skipped } }, caret: f.caret, doors: f.doors.map((d) => [d.word, d.stroke, d.anims]) };
+      if (Object.values(ok).some((x) => !x)) fail('R19-FRONT-REDUCED', brief);
+      say('r19-front-reduced', brief);
+    } finally { await app.emulateMedia([]); await unhold(app); await done(); }
+  },
+  'r19-tutor-ring': async (app) => {
+    await openPage(app, 'arbor-r19-ring'); await openTutor(app); await settle(app);
+    const r = await app.evalJs("(() => { const i = document.querySelector('.wz-tutor-convo-input'); if (!i) return null; i.focus(); const cs = getComputedStyle(i); return { focused: document.activeElement === i, style: cs.outlineStyle, width: cs.outlineWidth, color: cs.outlineColor, accent: getComputedStyle(i).getPropertyValue('--accent-rest').trim() }; })()");
+    const ok = { focused: !!r && r.focused, arborRing: !!r && r.style === 'solid' && r.width === '1px' && r.color !== 'rgb(0, 0, 0)' && !/auto/.test(r.style) };
+    if (Object.values(ok).some((x) => !x)) fail('R19-TUTOR-RING', { ok, r });
+    say('r19-tutor-ring', { ok, r });
+  },
+});
+
+// ── THE FRONT DOOR'S PICTURES AND ITS RECORDING (the Wrizors: >= 10 fps, plus one mid-write frame at 2x) ──
+// Each frame is its own screen, held exactly: the sketch's animations paused at the frame's moment, the front door's timeline read at it
+// (window.wrizoArborFrontClock), the logo's strokes and the doors' rise paused at their own offsets - then r16's overlay (the job refuses a
+// frame while an element of class wz-splash is on screen; this frame IS the splash on purpose: its look pinned inline, only the class given up).
+const OVERLAY = "(() => { const s = document.querySelector('.wz-splash'); if (!s) return false; const cs = getComputedStyle(s); for (const v of ['--ink-950', '--ink-900', '--ink-800', '--ink-border', '--ink-border-strong', '--arbor-line', '--arbor-letter', '--text-hi', '--text-mid', '--text-low']) s.style.setProperty(v, cs.getPropertyValue(v)); s.style.cssText += ';position:fixed;inset:0;z-index:400;pointer-events:none;display:flex;align-items:center;justify-content:center;'; s.classList.remove('wz-splash'); s.classList.add('arbor2-rec-splash'); return true; })()";
+const holdFrame = (t) => `(async () => { const sp = document.querySelector('.wz-splash'); if (!sp) return { err: 'no splash' };
+  const sk = document.getAnimations().filter((a) => a.effect?.target && sp.contains(a.effect.target) && !a.effect.target.closest('.arbor2-top'));
+  const t0 = Math.min(...sk.map((a) => Number(a.startTime)).filter(Number.isFinite));
+  const s = window.wrizoArborFront; const E = s.sketchDone - t0;
+  if (${t} < E) { window.wrizoArborFrontClock(-1e6); sk.forEach((a) => { a.pause(); a.currentTime = ${t} - (Number(a.startTime) - t0); }); }
+  else window.wrizoArborFrontClock(${t} - E);
+  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+  const v = ${t} - E;
+  const top = sp.querySelector('.arbor2-top');
+  document.getAnimations().filter((a) => a.effect?.target && top && top.contains(a.effect.target)).forEach((a) => {
+    const el = a.effect.target; let off = 0;
+    if (el.closest('.arbor2-top-logo')) off = s.logoStart - s.sketchDone; else if (el.closest('.arbor2-door')) off = s.doorsIn - s.sketchDone; else if (el.closest('.arbor2-top-tagline')) off = s.tagDone - s.sketchDone;
+    try { a.pause(); a.currentTime = Math.max(0, v - off); } catch {} });
+  return { E: Math.round(E), v: Math.round(v) }; })()`;
+const recFrame = (t, dpr = 1) => async (app) => {
+  const done = await anon(app);
+  try {
+    if (dpr !== 1) await app.emulateDpr(dpr, 1366, 768);
+    if (!(await freshSplash(app, { hold: true }))) throw new Error('R19-REC no splash');
+    await waitSoft(app, '!!(window.wrizoArborFront && window.wrizoArborFront.sketchDone)', { label: 'the sketch done', timeout: 9000 });
+    const h = await app.evalJs(holdFrame(t));
+    if (!h || h.err) throw new Error('R19-REC ' + JSON.stringify(h));
+    await app.evalJs(OVERLAY); await sleep(200);
+  } finally { await unhold(app); await done(); }
+};
+for (let t = 0; t <= 8000; t += 100) screens[`r19-pic-rec-front-${String(t).padStart(4, '0')}`] = recFrame(t);
+screens['r19-pic-rec-front-2x-midwrite'] = recFrame(4300, 2);
+Object.assign(screens, {
+  'r19-pic-front-anon': async (app) => { const done = await anon(app); try { await freshSplash(app); await waitSoft(app, "document.querySelector('.arbor2-front-doorbox .arbor2-front-doors')?.getAttribute('data-phase') === 'shown' && !document.querySelector('.wz-splash')", { label: 'doors', timeout: 20000 }); await sleep(500); } finally { await unhold(app); await done(); } },
+  'r19-pic-front-authed': async (app) => { try { await freshSplash(app); await waitSoft(app, "document.querySelector('.arbor2-front-doorbox .arbor2-front-doors')?.getAttribute('data-phase') === 'shown' && !document.querySelector('.wz-splash')", { label: 'doors', timeout: 20000 }); await sleep(500); } finally { await unhold(app); } },
+  'r19-pic-fw-tutor': async (app) => { await openPage(app, 'arbor-r19-pfwt', { mode: null }); await openTutor(app); await settle(app); await hideBar(app); },
+});
+
 export default guarded(screens, { verdict: ['ARBOR-R19'] });
