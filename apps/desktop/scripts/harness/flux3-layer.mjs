@@ -56,7 +56,8 @@ const info = (name, detail) => checks.push({ name, pass: true, detail, info: tru
 // ---- the build this run uses ---------------------------------------------------------------------------------------------------------------------
 const SOURCE = fs.readFileSync(SRC, 'utf8');
 function buildIdentity() {
-  const out = { md5: crypto.createHash('md5').update(SOURCE).digest('hex').slice(0, 12), head: null, fileCommit: null, dirty: null };
+  // the md5 is of the LF text, so the box (CRLF checkout) and a hosted runner (LF) print the same number for the same commit
+  const out = { md5: crypto.createHash('md5').update(SOURCE.replace(/\r\n/g, '\n')).digest('hex').slice(0, 12), head: null, fileCommit: null, dirty: null };
   try {
     const git = (...a) => execFileSync('git', a, { cwd: REPO, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
     out.head = git('rev-parse', '--short=8', 'HEAD');
