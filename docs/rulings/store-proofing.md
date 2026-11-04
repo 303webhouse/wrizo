@@ -56,69 +56,6 @@ From `apps/desktop/src/store/proofing.ts`, line 55 at `f079d49e` (the comment th
 
 ## proofing §3
 
-From `apps/desktop/src/store/proofing.ts`, line 75 at `f079d49e` (the comment that stays: "scalars merge later-wins by stamp, and a stamped winner's value is taken as-is, '' included (a clear is a write); the fallback chain only for an unstamped record; a tie is broken by value, so the merge commutes").
-
-```ts
-  // ⛔ THE SCALARS MERGE LATER-WINS, AND THIS RULE HAS BEEN WRONG TWICE.
-  //
-  // First it said "the incoming value wins when non-empty", which meant the
-  // SERVER'S EXISTING dialect always beat a local change — a writer could never
-  // save one (the round trip's K4 caught it).
-  //
-  // Then it won by stamp but kept a `||` fallback chain, and Fable's byte review
-  // found what that does: A STAMPED EMPTY COULD NOT WIN. Un-ignore the last item
-  // on device A (`ignored: ''`, later stamp) and `'' || a.ignored || b.ignored`
-  // quietly resurrected B's older list on the next merge. A clear is a WRITE, and
-  // a merge that cannot represent one silently undoes it.
-  //
-  // So: the winner is chosen by stamp, and A STAMPED WINNER'S VALUE IS TAKEN
-  // AS-IS, `''` INCLUDED. The fallback chain now applies ONLY when the winner
-  // carries no stamp at all — which is the pre-amendment record, where an empty
-  // value means "never set" rather than "cleared".
-  //
-  // AND A TIE IS BROKEN BY VALUE, NOT BY POSITION (Fable's review, 2). Local-wins
-  // -on-tie made merge(a,b) ≠ merge(b,a) whenever stamps tied and values differed,
-  // so two devices could each keep their own value FOREVER — each merge confirming
-  // its own side. The lexicographically larger value wins instead, which is
-  // arbitrary but SYMMETRIC, and symmetric is the property that makes the set
-  // converge. Position must never decide anything here.
-  //
-  // `ignored` is still never merged PER KEY — it is opaque, whole-value, and the
-  // design's own words are "an ignore is a convenience, never data." A stale blob
-  // is harmless because it matches nothing. `engine` is taken from the SAME side
-  // that won `ignored`, never picked separately: a version must describe the blob
-  // it arrived with, or it describes nothing.
-  // The tiebreak takes a SECOND value, and Fable's review is why: `engine` follows
-  // whichever side won `ignored`, so two records with equal lists AND equal stamps
-  // but different engines were still resolved BY POSITION — the one asymmetry left
-  // after the value tiebreak, and a direct contradiction of this block's own claim
-  // that position decides nothing. A second key closes it: equal stamps, equal
-  // lists, then the larger `engine` wins. Arbitrary, symmetric, total.
-```
-
-## proofing §4
-
-From `apps/desktop/src/store/proofing.ts`, line 140 at `f079d49e` (the comment that stays: "is this actually a proofing record? Shallow: it checks the shape the merge depends on; a bad entry only loses a comparison").
-
-```ts
-/**
- * Is this actually a proofing record? (Fable's review, 3.)
- *
- * The remote arrives from the wire, and the PUT route deliberately does not
- * validate a shape the client owns — so the client is the only place that can.
- * A string, an array, a number, a null, or an object with no `words` map is not a
- * record and must merge as ABSENT rather than be merged: `Object.entries` on the
- * wrong thing either throws or yields nonsense that would then be pushed back over
- * a good record.
- *
- * Deliberately SHALLOW: it checks the shape the merge depends on, not every word
- * entry. A malformed individual entry degrades to "this word has no usable stamp"
- * inside `lastActAt`, which loses a comparison rather than corrupting the set.
- */
-```
-
-## proofing §5
-
 From `apps/desktop/src/store/proofing.ts`, line 166 at `f079d49e` (the comment that stays: "compaction, not a cap: a removedAt older than 180 days is dropped (a cap would lose the oldest words); a device offline longer can bring a removed word back").
 
 ```ts
@@ -137,7 +74,7 @@ From `apps/desktop/src/store/proofing.ts`, line 166 at `f079d49e` (the comment t
  */
 ```
 
-## proofing §6
+## proofing §4
 
 From `apps/desktop/src/store/proofing.ts`, line 239 at `f079d49e` (the comment that stays: "signing out takes the dictionary with it (called from resetLocalData); unpushed words on this device go with it").
 
@@ -154,7 +91,7 @@ From `apps/desktop/src/store/proofing.ts`, line 239 at `f079d49e` (the comment t
  */
 ```
 
-## proofing §7
+## proofing §5
 
 From `apps/desktop/src/store/proofing.ts`, line 303 at `f079d49e` (the comment that stays: "get, merge, put the merged set, in one function so the steps cannot be split or reordered; the merge is commutative and idempotent, so boot pull and push are one operation").
 

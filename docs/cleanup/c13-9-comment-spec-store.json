@@ -246,8 +246,6 @@
 {"key":"store/place.ts#5","hash":"8c37c967a7","why":"is this the account's untouched top drawer? Render-time only: the born-with id AND name, so a renamed drawer keeps its name"},
 {"key":"store/proofing.ts#0","hash":"1791478db9","why":"the proofing store: one nullable jsonb column, users.proofing, per writer; no setFromServer exists - a remote enters only through the commutative mergeRemote, so words added here are never replaced"},
 {"key":"store/proofing.ts#4","hash":"2f27ae45a2","why":"a malformed remote record merges as null: the server does not validate a shape the client owns"},
-{"key":"store/proofing.ts#6","hash":"fc5216063f","why":"scalars merge later-wins by stamp, and a stamped winner's value is taken as-is, '' included (a clear is a write); the fallback chain only for an unstamped record; a tie is broken by value, so the merge commutes"},
-{"key":"store/proofing.ts#8","hash":"cb2f92084c","why":"is this actually a proofing record? Shallow: it checks the shape the merge depends on; a bad entry only loses a comparison"},
 {"key":"store/proofing.ts#9","hash":"1382aaa3ad","why":"compaction, not a cap: a removedAt older than 180 days is dropped (a cap would lose the oldest words); a device offline longer can bring a removed word back"},
 {"key":"store/proofing.ts#14","hash":"f1b8f88c44","why":"signing out takes the dictionary with it (called from resetLocalData); unpushed words on this device go with it"},
 {"key":"store/proofing.ts#23","hash":"7893de19c6","why":"get, merge, put the merged set, in one function so the steps cannot be split or reordered; the merge is commutative and idempotent, so boot pull and push are one operation"},
