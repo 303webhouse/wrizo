@@ -144,7 +144,11 @@ export default {
     const ok = {
       rule: !!s.run && /^1px solid$/.test(s.rule || '') && !!s.page && Math.abs(s.run.l - s.page.l) <= 2 && Math.abs(s.run.w - s.page.w) <= 2,
       stripLeft: !!s.strip && Math.abs(s.strip.l - s.run.l) <= 2,
-      fields: s.fields.length >= 4 && s.ticks === s.fields.length - 1 && /words$/.test(s.fields[0]) && s.fields.some((f) => /^Part 2 of 3$/.test(f)),
+      // PARKED 2026-11-04 (SUPERSEDED, run 41852199660, Machina 66299f2c: the Wrizors (md5 d1c1dcc2, via Fable, Nov 4) asked for a hairline tick before
+      // the readout's "?" as well, so the ticks are one more than the gaps between fields; its place is checked by m2r9-readout-tick). Original, verbatim:
+      // fields: s.fields.length >= 4 && s.ticks === s.fields.length - 1 && /words$/.test(s.fields[0]) && s.fields.some((f) => /^Part 2 of 3$/.test(f)),
+      // SUCCESSOR: a tick between each pair of fields plus the one before the "?".
+      fields: s.fields.length >= 4 && s.ticks === s.fields.length && /words$/.test(s.fields[0]) && s.fields.some((f) => /^Part 2 of 3$/.test(f)),
       help: !!s.q && s.q.r >= s.run.r - 24 && /~ means an estimate; pages follow the page kind/.test(s.qLine || '') && /~ means an estimate; pages follow the page kind/.test(said),
       type: /Plex Mono/.test(s.fam || '') && s.size === 11,
       rect: same(r0.page, r1.page),
