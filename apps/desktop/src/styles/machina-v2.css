@@ -12,7 +12,8 @@
    with a light or a dark page, dark room with either. In session only; nothing stored.
      LIGHT  room G1, panels G0, hairlines G2, labels G5, quiet G4         (NEUTRAL: the warm ramp - #E9E6E1 / #F5F3EF / #D6D1C9 / #3B3833 / #5F5A53)
      DARK   room G7, panels G6, hairlines G5, labels G1, quiet G3         (NEUTRAL: #171614 / #242220 / #3B3834 / #E6E2DB / #A09A91)
-     PAGE   light #FBFBFA ink #1C1C1C · dark #1A1B1D ink #E6E6E3 (both casts)
+     PAGE   light #FBFBFA ink #1C1C1C · dark #1A1B1D ink #E8E8E5 (both casts; r10: was #E6E6E3, 13.78:1 - under the 13.9 floor, measured by
+            m2r10-fade-paper, run 41911861965; #E8E8E5 is 14.04:1)
      BARS   (top bar, rail, the "..."): COOL #1E262E hairline #2E3A46 labels G1 · NEUTRAL #201E1B hairline #332F2A labels #E6E2DB - both tones
    THE COLOUR MEANINGS: GUIDANCE is the grayish cool blue, sparingly (text #3F6183 light / #8FA3B8 dark; marks #7FA0BC) - only the "?" marks,
    PLAN -> and the Plans rail item, "-> Part", the Consultant's ask outlines, the matched commands, the Forms/preset doors. BRASS #FF9800 only
@@ -27,7 +28,7 @@
   --chrome-surface:#23272B; --rail-surface:#1E262E; --ink-900:#23272B; --ink-800:#2C3136;
   --ink-border:#3A4047; --ink-border-strong:#5E666E;
   --text-hi:#E6E8EA; --text-mid:#9AA1A8; --text-low:#9AA1A8;
-  --paper:#1A1B1D; --paper-dim:#151719; --paper-border:#3A4047; --ink-on-paper:#E6E6E3; --ink-on-paper-low:#9AA1A8;
+  --paper:#1A1B1D; --paper-dim:#151719; --paper-border:#3A4047; --ink-on-paper:#E8E8E5; --ink-on-paper-low:#9AA1A8;
   /* guidance: the cool blue */
   --machina2-guide:#8FA3B8; --machina2-guide-mark:#7FA0BC;
   --help:#8FA3B8; --help-hi:#B4C3D2; --text-accent:#8FA3B8; --accent-door:#8FA3B8;
@@ -71,7 +72,7 @@
 }
 /* the dark page, both casts (the cast does not touch the page's own colour) */
 :root[data-machina2][data-theme='machina'][data-cast='neutral']:not([data-page='light']){
-  --paper:#1A1B1D; --paper-dim:#171614; --paper-border:#3B3834; --ink-on-paper:#E6E6E3; --ink-on-paper-low:#A09A91;
+  --paper:#1A1B1D; --paper-dim:#171614; --paper-border:#3B3834; --ink-on-paper:#E8E8E5; --ink-on-paper-low:#A09A91;
 }
 /* THE BOARD'S CARDS follow the page, not the room (the base theme drew a dark page's cards in the room's tokens, which a light room would turn
    light): pinned to the dark ramp - the same values the dark room gave them before r2, so the matched cases do not change. */
