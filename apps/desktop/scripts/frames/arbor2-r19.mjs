@@ -484,7 +484,9 @@ Object.assign(screens, {
         doorsAfterStop: near(s.doorsIn - s.tagDone, 350, 40) && !!doorsInS && !!tagDone && doorsInS >= tagDone,
         signInLater: near(s.shownAt - s.doorsIn, 570, 60),
         holdToDoors: !!splashGone && splashGone >= s.doorsIn - 20,
-        typing: typedAt.length >= 15 && gaps.length > 0 && Math.min(...gaps) >= 40 && Math.max(...gaps) <= 170 && near(s.tagDone - s.tagStart, 1700, 300),
+        // (instrument fix after the green leg 41913162728: the sampler sees frames - one late frame made the next gap 32 ms though every planned
+        // letter is 64-120 ms; the letter time is read as the gaps' median, the whole by the timeline)
+        typing: typedAt.length >= 15 && gaps.length > 0 && (() => { const g = [...gaps].sort((a, b) => a - b); const m = g[Math.floor(g.length / 2)]; return m >= 60 && m <= 95; })() && near(s.tagDone - s.tagStart, 1700, 300),
         caret: !!f.caret && f.caret.color === BRASS_RGB && f.caret.width === '1.5px' && f.caret.anims.some(([n, d]) => n === 'arbor2-caret' && d === 1060),
         tagline: !!f.tag && f.tag.text === 'For humans who write.' && /EB Garamond/.test(f.tag.font) && f.tag.color === CREAM && (!box || near(f.tag.size, 16, 0.6)),
         place: !box || (!!f.logo && near(f.logo.r.l, 470, 8) && near(f.logo.r.t, 232, 8) && !!f.tag && near(f.tag.typedR.r, 512, 10) && near(f.tag.r.t, 257, 10)),
@@ -567,6 +569,8 @@ Object.assign(screens, {
     try {
       if (!(await freshSplash(app))) fail('R19-FRONT-HOVER', { splash: false });
       await waitSoft(app, "document.querySelector('.arbor2-front-doorbox .arbor2-front-doors')?.getAttribute('data-phase') === 'shown'", { label: 'doors', timeout: 20000 });
+      // (driver fix after the green leg 41913162728: a door is not pressable - nor brass on hover - until the front door is ready; wait for it)
+      await waitSoft(app, "!document.querySelector('.arbor2-front-doorbox .arbor2-door')?.disabled", { label: 'ready', timeout: 10000 });
       const rest = await app.evalJs(FR);
       const w = rest.doors[0].r;
       await mouse(app, 'mouseMoved', (w.l + w.r) / 2, (w.t + w.b) / 2); await sleep(300);
@@ -585,7 +589,7 @@ Object.assign(screens, {
         backCream: off.doors[0].stroke === CREAM,
         focusBrass: focused && !!foc && foc.color === BRASS_RGB && foc.stroke === BRASS_RGB,
       };
-      const brief = { ok, rest: rest.doors.map((d) => [d.word, d.color, d.stroke]), hov: hov.doors.map((d) => [d.word, d.color, d.stroke]), off: off.doors[0].stroke, foc, under, hovered };
+      const brief = { ok, rest: rest.doors.map((d) => [d.word, d.color, d.stroke]), hov: hov.doors.map((d) => [d.word, d.color, d.stroke]), off: off.doors[0].stroke, foc, under, hovered, disabled: [rest.doors[0].disabled, hov.doors[0].disabled] };
       if (Object.values(ok).some((x) => !x)) fail('R19-FRONT-HOVER', brief);
       say('r19-front-hover', brief);
     } finally { await unhold(app); await done(); }
