@@ -18,7 +18,7 @@ import { isArbor2 } from '../arbor2/flag';
 import { useTheme } from '../store/theme';
 import { SplashMark } from './SplashMark';
 import { splashSizeFor } from './Splash';
-import { ArborTopLogo, ArborFrontDoors } from '../arbor2/frontLayer';
+import { ArborFront, takeWantWrite, WANT_WRITE } from '../arbor2/frontLayer';
 
 // the Threshold, route '/' for every boot: Write is local-first and never needs an account; Open resumes an authed session or reaches sign-in [Arrival §1]
 export type ArrivalAuthState = 'loading' | 'anon' | 'authed';
@@ -96,7 +96,15 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
     writing.current = true;
     try { await writeDoor(); } finally { writing.current = false; }
   };
-  writeRef.current = () => { if (!landing) void handleWrite(); };
+  writeRef.current = () => { if (landing) return; if (arborFront && authState === 'authed') handleOpen(); else void handleWrite(); };
+  // ARBOR v2 MOCKUP r19: an Enter that skipped the splash asks for Write - taken here once the front door can (ready, its doors up)
+  useEffect(() => {
+    if (!arborFront || stage !== 'doors') return undefined;
+    const take = () => { if (ready && takeWantWrite()) writeRef.current(); };
+    take();
+    window.addEventListener(WANT_WRITE, take);
+    return () => window.removeEventListener(WANT_WRITE, take);
+  }, [arborFront, stage, ready]);
 
   const writeDoor = async () => {
     // B10.1 - derived per account, after the first pull (see store/firstRun.ts). Synchronous in every case but one: a signed-in
@@ -203,13 +211,16 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
             <SplashMark theme="plateau" reduced width={frontBox.width} height={frontBox.height} onFloorReached={() => {}} />
             {/* ARBOR v2 MOCKUP r18 (Nick, via Fable, Nov 3): the logo, still, where the drawing's top line stood, the tagline under it - the splash's
                 last frame, in the same rect (src/arbor2/frontLayer.tsx) */}
-            <ArborTopLogo write={false} width={frontBox.width} />
+            <ArborFront mode="door" part="top" width={frontBox.width} />
           </div>
           {/* r18: the doors are hand-drawn boxes INSIDE the drawing - Write and Log in (signed in: Write and Open); they come last, after the logo.
               Every door keeps its own handler; Log in opens this file's sign-in stage, unchanged (-> the sign-up with the invite code). */}
+          {/* r19 (spec draft 38 §12c): Write and Sign in (signed in: Write only, into the last page), in the drawing's twin box (screen readers see them) */}
           {stage === 'doors' && (
-            <ArborFrontDoors width={frontBox.width} height={frontBox.height} authed={authState === 'authed'} ready={ready} landing={landing}
-              onWrite={() => { void handleWrite(); }} onOpen={handleOpen} onLogin={() => { setError(''); setStage('signin'); }} />
+            <div className="arbor2-front-mark arbor2-front-doorbox" style={{ width: `${frontBox.width}px`, height: `${frontBox.height}px`, marginLeft: `${-frontBox.width / 2}px`, marginTop: `${-frontBox.height / 2}px` }}>
+              <ArborFront mode="door" part="doors" width={frontBox.width} authed={authState === 'authed'} ready={ready} landing={landing}
+                onWrite={() => writeRef.current()} onLogin={() => { setError(''); setStage('signin'); }} />
+            </div>
           )}
           {/* (r14's foot - the tagline and the doors under the drawing - moved into the drawing in r18; the quiet loading line stays under it) */}
           {landing && (

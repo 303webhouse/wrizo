@@ -132,7 +132,9 @@ function ArborMark({ reduced, width, height, onFloorReached }: MarkProps) {
     // Brief: "Ending: a short hold, then a 0.45s fade" — the floor is the
     // moment just before that fade, i.e. the pop's own end plus a short hold.
     const floorAt = finalAt + 260 + 480 + 500;
-    window.setTimeout(onFloorReached, floorAt * SPEED);
+    // ARBOR v2 MOCKUP r19 (spec draft 38 §12c): in the Arbor mockup the sketch's end is the pop's settling (its "run is finished"), where the
+    // front door's order begins (src/arbor2/frontLayer.tsx: the logo 0.2 s later); off the flag the floor is unchanged
+    window.setTimeout(onFloorReached, (isArbor2() ? finalAt + 260 + 480 : floorAt) * SPEED);
   }, [reduced, onFloorReached]);
 
   const finalCx = ARBOR_FINAL_CREAM.x + ARBOR_FINAL_CREAM.w / 2;
