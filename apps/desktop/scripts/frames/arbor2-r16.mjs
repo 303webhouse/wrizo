@@ -57,7 +57,7 @@ const PIX = (b64, rect, key, S = 0.7) => `(async () => {
   const img = new Image(); img.src = 'data:image/png;base64,${b64}'; await img.decode();
   const cv = document.createElement('canvas'); cv.width = img.width; cv.height = img.height; const cx = cv.getContext('2d', { willReadFrequently: true }); cx.drawImage(img, 0, 0);
   const k = img.width / innerWidth; const [x, y, w, h] = ${JSON.stringify(rect)}.map((v) => Math.round(v * k));
-  const d = cx.getImageData(x, y, w, h).data; window.__r16px = window.__r16px || {}; window.__r16px[${JSON.stringify(key)}] = Array.from(d);
+  const d = cx.getImageData(x, y, w, h).data; window.__r16px = window.__r16px || {}; window.__r16px[${JSON.stringify(key)}] = Array.from(d); window.__r16w = window.__r16w || {}; window.__r16w[${JSON.stringify(key)}] = w;
   // the ground: the most common colour on the rect's edge
   const cnt = new Map(); const edge = (i) => { const c = d[i] + ',' + d[i + 1] + ',' + d[i + 2]; cnt.set(c, (cnt.get(c) || 0) + 1); };
   for (let i = 0; i < w; i++) { edge(i * 4); edge(((h - 1) * w + i) * 4); } for (let j = 0; j < h; j++) { edge(j * w * 4); edge((j * w + w - 1) * 4); }
@@ -244,6 +244,8 @@ export default {
       await sleep(600);
       const still = await app.evalJs(PIX(await shot(app), plan.rect, 'front-still'));
       const diff = await app.evalJs("(() => { const a = window.__r16px['splash-last'], b = window.__r16px['front-still']; if (!a || !b || a.length !== b.length) return { n: -1 }; let n = 0, max = 0; for (let i = 0; i < a.length; i++) { if (i % 4 === 3) continue; const d = Math.abs(a[i] - b[i]); if (d > 0) n++; if (d > max) max = d; } return { n, max, of: a.length / 4 * 3 }; })()");
+      // (report only, after run 41849601765: where the last-frame differences are - x, y in the rect, channel, splash, front)
+      const where = await app.evalJs("(() => { const a = window.__r16px['splash-last'], b = window.__r16px['front-still'], w = window.__r16w && window.__r16w['front-still']; if (!a || !b || !w) return null; const out = []; for (let i = 0; i < a.length && out.length < 12; i++) { if (i % 4 === 3 || a[i] === b[i]) continue; const p = Math.floor(i / 4); out.push([p % w, Math.floor(p / w), i % 4, a[i], b[i]]); } return { w, h: a.length / 4 / w, out }; })()");
       const letters = plan.anims.filter((a) => /letters/.test(a.layer || '')), brass = plan.anims.filter((a) => /brass/.test(a.layer || ''));
       const lastLetter = Math.max(...letters.map((a) => a.end)), firstBrass = Math.min(...brass.map((a) => a.start));
       const order = ['w', 'r', 'i', 'z', 'loop'].map((id) => letters.find((a) => a.stroke === id)?.start);
@@ -258,7 +260,7 @@ export default {
         noFlash: lumSteps.every((v, i) => i === 0 || v >= lumSteps[i - 1] - 0.0005),
         lastIsStill: diff.n === 0,
       };
-      const brief = { ok, rect: plan.rect, appRect, order, lastLetter, firstBrass, end: Math.max(...plan.anims.map((a) => a.end)), props: [...new Set(plan.anims.flatMap((a) => a.props))], steps, diff, stillInked: still.inked, endState };
+      const brief = { ok, rect: plan.rect, appRect, order, lastLetter, firstBrass, end: Math.max(...plan.anims.map((a) => a.end)), props: [...new Set(plan.anims.flatMap((a) => a.props))], steps, diff, where, stillInked: still.inked, endState };
       if (Object.values(ok).some((x) => !x)) fail('R16-SPLASH-WRITE', brief);
       say('r16-splash-write', brief);
     } finally { await app.evalJs("localStorage.setItem('wrizo-splash-hold', '50'); localStorage.removeItem('wrizo-splash-force-not-ready')").catch(() => {}); await done(); }
