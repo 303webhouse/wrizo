@@ -166,7 +166,8 @@ export async function drawerProof(app, { name, say, fail }) {
 /** TYPEWRITER'S ZOOM keeps today's drawers: the zoomed page is wider than the margins, so a drawer overlays it and cannot stand flush beside
  *  it; the build leaves the zoom's own drawer rule alone. On the zoomed page: each tab stays at its closed rect while its drawer opens and
  *  closes (today's rule), the arrows flip, and the page and the editor never move. */
-export async function zoomDrawerProof(app, { name, say, fail }) {
+// (leftRides, r18: the Wrizors moved Arbor's zoom Tools opener onto the drawer's OUTER edge - see the parked line below; absent = today's rule)
+export async function zoomDrawerProof(app, { name, say, fail, leftRides = false }) {
   await app.evalJs(MARK); await app.evalJs(FINISH); await sleep(200);
   const c = await app.evalJs(RECTS);
   if (!c.zoom) fail(name, { zoom: false, note: 'the page did not open in Typewriter zoom' });
@@ -178,16 +179,25 @@ export async function zoomDrawerProof(app, { name, say, fail }) {
   await app.evalJs(click('.wz-tutor-grip')); await app.evalJs(FINISH); await sleep(300);
   const shut = await app.evalJs(RECTS);
   const same = (a, b) => !!a && !!b && ['l', 'r', 't', 'b'].every((k) => Math.abs(a[k] - b[k]) <= 1);
-  const ok = { leftTabStays: l.lo && same(l.lt, c.lt) && l.la === '›', rightTabStays: r.ro && same(r.rt, c.rt) && r.ra === '‹', shut: !shut.lo && !shut.ro && same(shut.lt, c.lt) && same(shut.rt, c.rt),
+  // PARKED 2026-11-04 for leftRides callers only (SUPERSEDED, run 41854939791 / harness 41849650962, Arbor 7b881a6f: the Wrizors (md5 d1c1dcc2, via Fable, Nov 4) moved Arbor's zoom Tools opener
+  // onto the open drawer's outer edge, so it no longer stays where it stands shut - leftTabStays false, the tab 113 px left of it). Original, verbatim:
+  //   const ok = { leftTabStays: l.lo && same(l.lt, c.lt) && l.la === '›', rightTabStays: r.ro && same(r.rt, c.rt) && r.ra === '‹', shut: !shut.lo && !shut.ro && same(shut.lt, c.lt) && same(shut.rt, c.rt),
+  //     pageStill: [l, r, shut].every((x) => samePage(x.page, c.page) && x.sameEditor) };
+  // SUCCESSOR (leftRides): leftTabRides - open, the tab's right edge lies on the drawer's left edge (within 1 px), at the height it stands shut,
+  // its arrow the open one; without leftRides, today's leftTabStays, unchanged.
+  const rides = !!l.lo && !!l.lt && !!l.lp && Math.abs(l.lt.r - l.lp.l) <= 1 && Math.abs(l.lt.t - c.lt.t) <= 1 && Math.abs(l.lt.b - c.lt.b) <= 1 && l.la === '›';
+  const ok = { ...(leftRides ? { leftTabRides: rides } : { leftTabStays: l.lo && same(l.lt, c.lt) && l.la === '›' }), rightTabStays: r.ro && same(r.rt, c.rt) && r.ra === '‹', shut: !shut.lo && !shut.ro && same(shut.lt, c.lt) && same(shut.rt, c.rt),
     pageStill: [l, r, shut].every((x) => samePage(x.page, c.page) && x.sameEditor) };
-  const brief = { ok, w: c.w, page: c.page, closed: { lt: c.lt, rt: c.rt }, leftOpen: { lt: l.lt, lp: l.lp }, rightOpen: { rt: r.rt, rp: r.rp } };
+  const brief = { ok, ...(leftRides ? { rides: { lt: l.lt && [l.lt.l, l.lt.r, l.lt.t], lp: l.lp && l.lp.l, shutT: c.lt && c.lt.t, la: l.la } } : {}), w: c.w, page: c.page, closed: { lt: c.lt, rt: c.rt }, leftOpen: { lt: l.lt, lp: l.lp }, rightOpen: { rt: r.rt, rp: r.rp } };
   if (Object.values(ok).some((x) => !x)) fail(name, brief);
   say(name, brief);
   return brief;
 }
 
 /** THE NICK WALK: closed and open (both drawers) x each room x 2000 and 1366; the job's tones give the page. open(app) = the caller's page. */
-export function walkScreens(prefix, open, setRoom, openZoom = null) {
+// (stuckSides, r18: the sides whose zoom tab never travels - Arbor's zoom Tools opener rides the drawer since the Wrizors' Nov 4 note, so Arbor passes
+// ['right']; absent = both, today's probe unchanged)
+export function walkScreens(prefix, open, setRoom, openZoom = null, stuckSides = ['left', 'right']) {
   const screens = {};
   for (const size of [2000, 1366]) for (const room of ['day', 'night']) for (const state of ['closed', 'open']) {
     screens[`${prefix}-${state}-${room}-${size}`] = async (app) => {
@@ -217,9 +227,16 @@ export function walkScreens(prefix, open, setRoom, openZoom = null) {
     if (!(await app.evalJs("!!document.querySelector(\".mode-pagecol[data-zoom='true']\")"))) throw new Error(`${prefix.toUpperCase()}-REDUCED-LIVENESS FAILED {"zoom":false}`);
     let caught = null;
     try { await reducedRepeat(app, { name: `${prefix.toUpperCase()}-REDUCED-LIVENESS-PROBE`, setRoom, n: 2 }); } catch (e) { caught = String(e.message || e); }
-    const ok = !!caught && /"misses":8\b/.test(caught) && /"stuck":true/.test(caught);
+    // PARKED 2026-11-04 for callers naming stuckSides (SUPERSEDED, run 41855525837 / harness 41849650962, Arbor 7b881a6f: on Arbor's zoom page the Tools opener now travels (the Wrizors,
+    // Nov 4), and the cut reader passed it - day-left 2, night-left 2 - so the probe saw 4 misses, all on the right, not 8). Original, verbatim:
+    //     const ok = !!caught && /"misses":8\b/.test(caught) && /"stuck":true/.test(caught);
+    // SUCCESSOR: every open of a stuck side called stuck (n = 2, two rooms each), and every open of a side that travels counted a clean cut
+    // (both sides stuck = the original reading exactly).
+    const free = ['left', 'right'].filter((x) => !stuckSides.includes(x));
+    const ok = !!caught && new RegExp('"misses":' + (4 * stuckSides.length) + '\\b').test(caught) && /"stuck":true/.test(caught)
+      && ['day', 'night'].every((room) => free.every((x) => new RegExp('"' + room + '-' + x + '":2\\b').test(caught)));
     if (!ok) throw new Error(`${prefix.toUpperCase()}-REDUCED-LIVENESS FAILED ${JSON.stringify({ caught: caught ? caught.slice(0, 300) : null })}`);
-    console.log(`${prefix.toUpperCase()}-REDUCED-LIVENESS {"ok":true,"probe":"8 of 8 opens on the zoom page called stuck"}`);
+    console.log(`${prefix.toUpperCase()}-REDUCED-LIVENESS {"ok":true,"probe":"${4 * stuckSides.length} of ${4 * stuckSides.length} opens on the zoom page called stuck (${stuckSides.join('+')})${free.length ? '; ' + free.join('+') + ' cut every time' : ''}"}`);
   };
   return screens;
 }
