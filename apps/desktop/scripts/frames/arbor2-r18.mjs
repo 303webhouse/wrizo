@@ -18,6 +18,10 @@ const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts
 const say = (name, data) => console.log(`ARBOR-R18 ${name} ${JSON.stringify(data)}`);
 const fail = (name, data) => { console.log(`ARBOR-R18-FAIL ${name} ${JSON.stringify(data)}`); throw new Error(`${name} FAILED ${JSON.stringify(data)}`.slice(0, 1200)); };
 const CW = 3374, CH = 2699;
+// r19 (spec draft 38 §12c; src/arbor2/frontLayer.tsx TOP_LOGO / TAGLINE): the logo's box in the sketch's top-left below PAGE, and the typed
+// tagline's right edge and top, in the drawing's own px (1366: the logo at 470, 232, 100.5 x 44.7; the tagline ending at ~x 512, top ~257)
+const TOP_LOGO19 = { x: 543, y: 534, w: 540, h: 240 }, TAGLINE19 = { right: 768, top: 668 };
+const CREAM19 = 'rgb(239, 228, 203)';
 const HOLD = "localStorage.setItem('wrizo-splash-hold', '9000'); localStorage.setItem('wrizo-splash-force-not-ready', '1')";
 const UNHOLD = "localStorage.setItem('wrizo-splash-hold', '50'); localStorage.removeItem('wrizo-splash-force-not-ready')";
 
@@ -61,6 +65,11 @@ const onScreen = (m, x, y, w, h) => ({ l: m.l + (x / CW) * m.w, t: m.t + (y / CH
 const SAMPLER = `(() => { window.__r18so = []; const p = document.querySelector('.arbor2-front-doors .arbor2-door path'); const t0 = performance.now();
   const f = () => { if (window.__r18stop) return; const q = document.querySelector('.arbor2-front-doors .arbor2-door path'); window.__r18so.push([Math.round(performance.now() - t0), q ? Number(getComputedStyle(q).strokeOpacity) : -1]); requestAnimationFrame(f); }; window.__r18stop = false; f(); return !!p; })()`;
 const SEAM = "(() => { const s = window.wrizoArborFront; return s ? { logoStart: s.logoStart, logoDone: s.logoDone, doorsIn: s.doorsIn, shownAt: s.shownAt, pulses: [...s.pulses], acted: s.acted } : null; })()";
+// r19 (r18-emphasis's successor): the outline's COLOUR sampled every frame, as its share of the way from cream #EFE4CB (0) to brass #FF9800 (1) -
+// the mean of the green's and the blue's shares (the two channels that move most) - into window.__r18so, until stopped
+const SAMPLER19 = `(() => { window.__r18so = []; const p = document.querySelector('.arbor2-front-doors .arbor2-door path'); const t0 = performance.now();
+  const share = (c) => { const m = String(c).match(/[\\d.]+/g); if (!m || m.length < 3) return -1; return Math.round((((228 - Number(m[1])) / 76 + (203 - Number(m[2])) / 203) / 2) * 1000) / 1000; };
+  const f = () => { if (window.__r18stop) return; const q = document.querySelector('.arbor2-front-doors .arbor2-door path'); window.__r18so.push([Math.round(performance.now() - t0), q ? share(getComputedStyle(q).stroke) : -1]); requestAnimationFrame(f); }; window.__r18stop = false; f(); return !!p; })()`;
 // (driver fix after the red leg 41654622199, no assertion changed: three checks crashed reading a missing seam - a missing seam is now a failed
 // check with its numbers, never a crash)
 const needSeam = (name, seam, more = {}) => { if (!seam) fail(name, { seam: null, ...more }); return seam; };
@@ -150,9 +159,17 @@ const SCREENS = {
       const pageInk = m && (m.t + (338 / CH) * m.h);   // the PAGE heading's first ink row under the tagline's span (measured on the drawing)
       const ok = {
         logo: s.logoShown && still === '/brand/arbor2/wrizo-logo-night.png',
-        logoWhereTheLineStood: inside(s.logo, lineBand, 1),
+        // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 38 §12c (Nick, Nov 4; the Wrizors' wrizors-to-ARBOR-nov4c.md md5 13e5db96), frames run 41925708869,
+        // Arbor ed2f8c46: the logo left the erased line's place for the sketch's top-left, just below PAGE (1366: 470, 232), and the typed tagline is
+        // tucked under it, right-aligned to end just before the z's loop (~x 512, top ~257) - not under the logo's foot above the PAGE heading). Original, verbatim:
+        // logoWhereTheLineStood: inside(s.logo, lineBand, 1),
+        // SUCCESSOR logoBelowPage: the logo's box is the drawing's TOP_LOGO (543, 534, 540 x 240 of its px) on the screen, to a pixel.
+        logoBelowPage: !!s.logo && !!m && (() => { const L = onScreen(m, TOP_LOGO19.x, TOP_LOGO19.y, TOP_LOGO19.w, TOP_LOGO19.h); return ['l', 't', 'r', 'b'].every((k) => Math.abs(s.logo[k] - L[k]) <= 1); })(),
         tagline: !!s.tag && s.tag.shown && s.tag.text === 'For humans who write.',
-        taglineUnder: !!s.tag && !!s.logo && s.tag.r.t >= s.logo.b - 1 && s.tag.r.b <= pageInk + 0.5 && inside(s.tag.r, m, 0.5),
+        // PARKED 2026-11-04 (SUPERSEDED with logoWhereTheLineStood above, frames run 41925708869). Original, verbatim:
+        // taglineUnder: !!s.tag && !!s.logo && s.tag.r.t >= s.logo.b - 1 && s.tag.r.b <= pageInk + 0.5 && inside(s.tag.r, m, 0.5),
+        // SUCCESSOR taglineTucked: the tagline's right edge at the drawing's x 768 and its top at the drawing's y 668 (to a pixel), inside the drawing.
+        taglineTucked: !!s.tag && !!m && Math.abs(s.tag.r.r - (m.l + (TAGLINE19.right / CW) * m.w)) <= 1 && Math.abs(s.tag.r.t - (m.t + (TAGLINE19.top / CH) * m.h)) <= 1 && inside(s.tag.r, m, 0.5),
         noCorner: s.corner === 0,
       };
       const brief = { ok, mark: m, logo: s.logo, still, tag: s.tag, lineBand, pageInk, corner: s.corner };
@@ -162,7 +179,8 @@ const SCREENS = {
   },
   // ── 3. THE DOORS, a visitor: two hand-drawn boxes INSIDE the drawing, Write then Log in, brass outlines, inside the window; the old foot doors
   // gone. Log in opens the existing sign-in form; "New here? Create an account" its sign-up with the invite code; back returns to the doors
-  'r18-doors-anon': async (app) => {
+  // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 38 §12c (Nick, Nov 4; the Wrizors' wrizors-to-ARBOR-nov4c.md md5 13e5db96), frames run 41925708869, Arbor ed2f8c46: a visitor's doors are "Write" and "Sign in" (was "Log in"), drawn in cream #EFE4CB - box and word - and brass only on hover and focus (was a brass outline); pressing "Log in" found no door, so the sign-in and sign-up forms were never reached (words, brass, loginOpensSignin, signupHasInvite red)). Kept verbatim under the name r18-doors-anon-v1 (not in the run list); SUCCESSOR r18-doors-anon below.
+  'r18-doors-anon-v1': async (app) => {
     const done = await anon(app);
     try {
       await load(app); await doorsShown(app);
@@ -189,8 +207,40 @@ const SCREENS = {
       say('r18-doors-anon', brief);
     } finally { await done(); }
   },
+  // SUCCESSOR r18-doors-anon (r19): the same two boxes inside the drawing and the window, the old foot doors gone - now "Write" and "Sign in",
+  // cream at rest (box and word; brass on hover and focus is r19-front-hover's); "Sign in" (once pressable) opens the existing sign-in form,
+  // "New here? Create an account" its sign-up with the invite code, and back returns to the doors.
+  'r18-doors-anon': async (app) => {
+    const done = await anon(app);
+    try {
+      await load(app); await doorsShown(app);
+      const s = await app.evalJs(FRONT);
+      const win = { l: 0, t: 0, r: s.vw, b: s.vh };
+      await waitSoft(app, "[...document.querySelectorAll('.arbor2-front-doors .arbor2-door')].some((d) => d.textContent.trim() === 'Sign in' && !d.disabled)", { label: 'Sign in pressable', timeout: 25000 });
+      const signinPressed = await app.evalJs(clickDoor('Sign in')); await sleep(500);
+      const si = await app.evalJs(FRONT);
+      await app.evalJs(clickText('New here? Create an account')); await sleep(500);
+      const acc = await app.evalJs(FRONT);
+      await app.evalJs(clickText('← back')); await sleep(300); await app.evalJs(clickText('← back')); await sleep(600);
+      const back = await app.evalJs(FRONT);
+      const ok = {
+        wordsB: JSON.stringify(s.doors.map((d) => d.word)) === JSON.stringify(['Write', 'Sign in']),
+        shown: s.doors.length === 2 && s.doors.every((d) => d.shown),
+        insideDrawing: s.doors.length === 2 && s.doors.every((d) => inside(d.r, s.mark) && inside(d.r, win)),
+        creamAtRest: s.doors.length === 2 && s.doors.every((d) => d.stroke === CREAM19),
+        oldDoorsGone: s.oldDoors.length === 0,
+        signinOpensSignin: signinPressed && si.signin,
+        signupHasInvite: acc.invite,
+        backToDoors: back.doors.length === 2 && back.doors.every((d) => d.shown),
+      };
+      const brief = { ok, doors: s.doors.map((d) => [d.word, Math.round(d.r.l), Math.round(d.r.t), Math.round(d.r.w), Math.round(d.r.h), d.stroke, d.disabled]), mark: s.mark, old: s.oldDoors, signin: si.signin, invite: acc.invite };
+      if (Object.values(ok).some((x) => !x)) fail('R18-DOORS-ANON', brief);
+      say('r18-doors-anon', brief);
+    } finally { await done(); }
+  },
   // ── 3b. a signed-in writer (the double signs everyone in): Write + Open
-  'r18-doors-authed': async (app) => {
+  // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 38 §12c (Nick, Nov 4), frames run 41925708869, Arbor ed2f8c46: a signed-in writer's front door offers "Write" ONLY - no "Open" - and Write goes into her last page (words red; insideDrawing red only because it counted two doors)). Kept verbatim under the name r18-doors-authed-v1 (not in the run list); SUCCESSOR r18-doors-authed below.
+  'r18-doors-authed-v1': async (app) => {
     await load(app); await doorsShown(app);
     const s = await app.evalJs(FRONT);
     const ok = { words: JSON.stringify(s.doors.map((d) => d.word)) === JSON.stringify(['Write', 'Open']), insideDrawing: s.doors.length === 2 && s.doors.every((d) => inside(d.r, s.mark)) };
@@ -198,9 +248,19 @@ const SCREENS = {
     if (Object.values(ok).some((x) => !x)) fail('R18-DOORS-AUTHED', brief);
     say('r18-doors-authed', brief);
   },
+  // SUCCESSOR r18-doors-authed (r19): signed in, the one door "Write", inside the drawing (into the last page: r19-front-authed).
+  'r18-doors-authed': async (app) => {
+    await load(app); await doorsShown(app);
+    const s = await app.evalJs(FRONT);
+    const ok = { writeOnly: JSON.stringify(s.doors.map((d) => d.word)) === JSON.stringify(['Write']), insideDrawing: s.doors.length === 1 && s.doors.every((d) => inside(d.r, s.mark)) };
+    const brief = { ok, doors: s.doors.map((d) => d.word) };
+    if (Object.values(ok).some((x) => !x)) fail('R18-DOORS-AUTHED', brief);
+    say('r18-doors-authed', brief);
+  },
   // ── 4. THE ORDER: on the splash the logo writes out at the top (no door yet); the doors come LAST - after the splash and after the logo -
   // drawing themselves in; the logo's rect on the splash is the front door's (nothing moves at the hand-over)
-  'r18-order': async (app) => {
+  // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 38 §12c (Nick, Nov 4; the Wrizors' wrizors-to-ARBOR-nov4c.md md5 13e5db96), frames run 41925708869, Arbor ed2f8c46: the logo writes itself out 0.2 s after the sketch's run ends (~3.3 s), not at the splash's start (read at 0.6 s it still waited); the doors come in ON the splash - the splash's hold ends when they are in - so they are not after the splash; and they fade in and rise 6 px (arbor2-door-rise), no draw-in (logoWritesOnSplash, doorsAfterSplash, drawIn red)). Kept verbatim under the name r18-order-v1 (not in the run list); SUCCESSOR r18-order below.
+  'r18-order-v1': async (app) => {
     const done = await anon(app);
     try {
       await app.evalJs(HOLD); await app.evalJs("history.replaceState(null, '', '/?arbor2=1#/')"); await app.reload();
@@ -236,9 +296,50 @@ const SCREENS = {
       say('r18-order', brief);
     } finally { await app.evalJs(UNHOLD).catch(() => {}); await done(); }
   },
+  // SUCCESSOR r18-order (r19; r19-front-order proves the whole timeline): on the splash the logo writes out 0.2 s after the sketch's run (read
+  // once it writes), with no door yet; its rect on the splash is the front door's; the doors come after the logo and arrive while the splash
+  // still holds (it leaves only once they are in); they come in by fading and rising (arbor2-door-rise), never drawing themselves in.
+  'r18-order': async (app) => {
+    const done = await anon(app);
+    try {
+      await app.evalJs(HOLD); await app.evalJs("history.replaceState(null, '', '/?arbor2=1#/')"); await app.reload();
+      await waitSoft(app, "!!document.querySelector('.wz-splash .arbor2-top-logo')", { label: 'the splash logo', timeout: 8000 });
+      await waitSoft(app, "document.querySelector('.wz-splash .arbor2-top-logo')?.getAttribute('data-writing') === 'true'", { label: 'the splash logo writing', timeout: 12000 });
+      const during = await app.evalJs(`(() => { const L = document.querySelector('.wz-splash .arbor2-top-logo'); const r = L ? L.getBoundingClientRect() : null;
+        const doors = [...document.querySelectorAll('.arbor2-door')].filter((d) => { const q = d.getBoundingClientRect(); if (q.width < 1) return false; for (let n = d; n; n = n.parentElement) { const cs = getComputedStyle(n); if (cs.visibility === 'hidden' || cs.display === 'none' || Number(cs.opacity) < 0.05) return false; } return true; }).length;
+        const s = window.wrizoArborFront;
+        return { writing: L ? L.getAttribute('data-writing') : null, rect: r ? [r.left, r.top, r.width, r.height].map((v) => Math.round(v * 10) / 10) : null, doors, splash: !!document.querySelector('.wz-splash'), sketchDone: s ? s.sketchDone : null, logoStart: s ? s.logoStart : null }; })()`);
+      // watch the hand-over: when the splash goes and when the doors' phase turns
+      await app.evalJs(`(() => { window.__r18 = { splashGone: null, phases: [] }; const t0 = performance.now();
+        const mo = new MutationObserver(() => { if (!document.querySelector('.wz-splash') && window.__r18.splashGone === null) window.__r18.splashGone = performance.now();
+          const d = document.querySelector('.arbor2-front-doors'); const ph = d ? d.getAttribute('data-phase') : null; const last = window.__r18.phases[window.__r18.phases.length - 1];
+          if (ph && (!last || last[0] !== ph)) window.__r18.phases.push([ph, performance.now(), document.getAnimations().filter((a) => d.contains(a.effect?.target)).map((a) => a.animationName)]); });
+        mo.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-phase'] }); return true; })()`);
+      await app.evalJs(UNHOLD);
+      await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 });
+      await doorsShown(app);
+      const front = await app.evalJs(rect('.arbor2-front-mark .arbor2-top-logo'));
+      const w = await app.evalJs('window.__r18'); const seam = await app.evalJs(SEAM);
+      const inAt = (w.phases.find(([p]) => p === 'in') || [])[1] ?? null;
+      const inAnims = (w.phases.find(([p]) => p === 'in') || [])[2] || [];
+      const logoEnd = seam ? Math.max(seam.logoDone || 0, (seam.logoStart || 0) + 2000) : null;
+      const ok = {
+        logoWritesAfterSketch: during.writing === 'true' && during.splash && typeof during.logoStart === 'number' && typeof during.sketchDone === 'number' && during.sketchDone > 0 && Math.abs(during.logoStart - during.sketchDone - 200) <= 40,
+        noDoorDuringSplash: during.doors === 0,
+        sameRect: !!during.rect && !!front && Math.abs(during.rect[0] - front.l) <= 0.5 && Math.abs(during.rect[1] - front.t) <= 0.5 && Math.abs(during.rect[2] - front.w) <= 0.5,
+        doorsOnTheSplash: !!seam && inAt !== null && w.splashGone !== null && w.splashGone >= seam.doorsIn - 20,
+        doorsAfterLogo: inAt !== null && logoEnd !== null && seam.doorsIn >= logoEnd - 1,
+        riseIn: inAnims.length > 0 && inAnims.every((n) => /arbor2-door-rise/.test(n)) && !inAnims.some((n) => /arbor2-door-draw/.test(n)),
+      };
+      const brief = { ok, during, front, splashGone: w.splashGone, phases: w.phases.map(([p, t, a]) => [p, Math.round(t), a]), seam };
+      if (Object.values(ok).some((x) => !x)) fail('R18-ORDER', brief);
+      say('r18-order', brief);
+    } finally { await app.evalJs(UNHOLD).catch(() => {}); await done(); }
+  },
   // ── 5. THE RE-EMPHASIS: no click for 5 s after the doors are in -> the outline brightens once and settles (smooth: no step over .06 a frame,
   // at most one rise and one fall, i.e. under 3 changes a second), steady before; again 30 s after (the seam's own pulse times, +-0.4 s)
-  'r18-emphasis': async (app) => {
+  // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 38 §12c (Nick, Nov 4: the nudge kept), frames run 41925708869, Arbor ed2f8c46: the nudge is the outline's COLOUR going cream -> brass -> cream (arbor2-door-nudge on the path's stroke), no longer its stroke-opacity brightening - the sampler read stroke-opacity 1 throughout (brightensOnce, againAt35s red; firstAt5s held)). Kept verbatim under the name r18-emphasis-v1 (not in the run list); SUCCESSOR r18-emphasis below.
+  'r18-emphasis-v1': async (app) => {
     const done = await anon(app);
     try {
       await load(app); await doorsShown(app);
@@ -261,6 +362,39 @@ const SCREENS = {
         againAt35s: at.length >= 2 && Math.abs(at[1] - 35000) <= 400 && second.max >= base.max + 0.2,
       };
       const brief = { ok, base, pulse, second, at, rel: Math.round(rel) };
+      if (Object.values(ok).some((x) => !x)) fail('R18-EMPHASIS', brief);
+      say('r18-emphasis', brief);
+    } finally { await app.evalJs('window.__r18stop = true').catch(() => {}); await done(); }
+  },
+  // SUCCESSOR r18-emphasis (r19): the same watch, sampling the outline's COLOUR as its share of the way from cream #EFE4CB (0) to brass #FF9800
+  // (1): steady cream before; 5 s after the doors are in it goes to brass once and back to cream (at most one rise and one fall), gently
+  // (never faster than 4 of the whole way a second - a flash would be one frame); again 30 s later (the seam's own pulse times, +-0.4 s).
+  'r18-emphasis': async (app) => {
+    const done = await anon(app);
+    try {
+      await load(app); await doorsShown(app);
+      await app.evalJs(SAMPLER19);
+      const seam0 = needSeam('R18-EMPHASIS', await app.evalJs(SEAM));
+      const t0 = await app.evalJs('performance.now()');
+      const rel = (seam0.doorsIn ?? t0) - t0;   // where the doors came in, on the sampler's clock (negative: before it started)
+      await sleep(Math.max(0, 8000 + rel));
+      const first = await app.evalJs('window.__r18so.slice()');
+      await sleep(Math.max(0, 30000));
+      const seam = await app.evalJs(SEAM);
+      const all = await app.evalJs('window.__r18so.slice()'); await app.evalJs('window.__r18stop = true');
+      const base = analyse(first, Math.max(0, 1000 + rel), 4800 + rel), pulse = analyse(first, 4800 + rel, 8000 + rel), second = analyse(all, 34800 + rel, 38000 + rel);
+      // the fastest change, in the whole way a second (each pair of samples, over their own time apart)
+      const rate = (so, from, to) => { const w = so.filter(([t]) => t >= from && t < to); let mx = 0; for (let i = 1; i < w.length; i++) { const dt = w[i][0] - w[i - 1][0]; if (dt > 0) mx = Math.max(mx, (Math.abs(w[i][1] - w[i - 1][1]) / dt) * 1000); } return Math.round(mx * 100) / 100; };
+      const pulseRate = rate(first, 4800 + rel, 8000 + rel);
+      const at = (seam.pulses || []).map((p) => Math.round(p - seam.doorsIn));
+      const ok = {
+        steadyBefore: base.n > 20 && base.max - base.min < 0.01 && base.max <= 0.02,
+        brassOnce: pulse.n > 20 && pulse.max >= 0.95 && pulse.last <= 0.03 && pulse.rev <= 1,
+        gentleColour: pulse.n > 20 && pulseRate <= 4,
+        firstAt5s: at.length >= 1 && Math.abs(at[0] - 5000) <= 400,
+        brassAgainAt35s: at.length >= 2 && Math.abs(at[1] - 35000) <= 400 && second.max >= 0.95,
+      };
+      const brief = { ok, base, pulse, pulseRate, second, at, rel: Math.round(rel) };
       if (Object.values(ok).some((x) => !x)) fail('R18-EMPHASIS', brief);
       say('r18-emphasis', brief);
     } finally { await app.evalJs('window.__r18stop = true').catch(() => {}); await done(); }
@@ -354,7 +488,8 @@ const SCREENS = {
     try { if (w) await app.emulateDpr(1, 2000, 1125); await load(app, { room }); await doorsShown(app); await sleep(300); } finally { await done(); }
   }])),
   'r18-pic-front-authed': async (app) => { await load(app); await doorsShown(app); await sleep(300); },
-  'r18-pic-signin': async (app) => { const done = await anon(app); try { await load(app); await doorsShown(app); await app.evalJs(clickDoor('Log in')); await sleep(600); } finally { await done(); } },
+  // (driver fix after g19: the door reads Sign in, spec draft 38 §12c)
+  'r18-pic-signin': async (app) => { const done = await anon(app); try { await load(app); await doorsShown(app); await app.evalJs(clickDoor('Sign in')); await sleep(600); } finally { await done(); } },
   'r18-pic-themes': async (app) => {
     await app.evalJs("window.wrizoCreateJournalPage({ id: 'arbor-r18-pic-t', text: 'The morning light came in low across the table.', createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page' })");
     await sleep(300); await app.evalJs("history.replaceState(null, '', '/?arbor2=1#/page/arbor-r18-pic-t')"); await app.reload();

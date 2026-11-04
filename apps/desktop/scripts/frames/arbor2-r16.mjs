@@ -140,6 +140,11 @@ export default {
       const rows = [];
       for (const room of ['night', 'day']) {
         await load(app, '#/'); await setRoom(app, room); await sleep(500);
+        // (driver fix after g19 run 41929196414, assertion unchanged: the read is already r19's - the logo at its rect below PAGE through
+        // '.arbor2-front-mark .arbor2-top-logo' (it read [470, 232.1, 100.5, 44.7] at 1366) - but r19 writes the logo out on the front door's own
+        // timeline (spec draft 38 §12c: 0.2 s after the sketch's run, ~2 s long), so 1.2 s after the splash it was not yet drawn (no ink in the
+        // rect). The read waits for the still logo, as r18-top waits for the doors.)
+        await waitSoft(app, "document.querySelector('.arbor2-front-mark .arbor2-top-logo')?.getAttribute('data-writing') === 'still'", { label: 'the still logo', timeout: 15000 }); await sleep(300);
         // (amendment before any green, run 41672316457: the still logo is an SVG image drawn at full strength. Original: pic = the ::before's
         // background, op = its opacity, PIX at the corner's .7)
         const m = await app.evalJs("(() => { const L = document.querySelector('.arbor2-front-mark .arbor2-top-logo'); if (!L) return null; const r = L.getBoundingClientRect(), im = L.querySelector('image.arbor2-top-still'); return { rect: [r.left, r.top, r.width, r.height].map((v) => Math.round(v * 10) / 10), pic: im ? im.getAttribute('href') : '', op: Number(getComputedStyle(L).opacity), corner: document.querySelectorAll('.brand-mark').length }; })()");
@@ -279,6 +284,12 @@ export default {
       await app.evalJs("history.replaceState(null, '', '/?arbor2=1#/')"); await app.reload();
       const there = await waitSoft(app, "!!document.querySelector('.wz-splash .arbor2-top-logo')", { label: 'the splash logo', timeout: 8000 });
       if (!there) fail('R16-SPLASH-WRITE', { splashLogo: false });
+      // (driver fix after g19 run 41929196414, assertions unchanged: r19 writes the logo out 0.2 s after the sketch's run ends (window.wrizoArborFront
+      // .logoStart, ~3.3 s in; spec draft 38 §12c), not at the splash's start - the plan below was read while the logo still waited (data-writing
+      // 'wait': no animations, every key red). The sampling is re-based on the write's own start: the plan is read once the splash's logo is
+      // writing (data-writing 'true', i.e. performance.now() >= logoStart), so every T below is a time into the write, as before.)
+      const writingNow = await waitSoft(app, "document.querySelector('.wz-splash .arbor2-top-logo')?.getAttribute('data-writing') === 'true'", { label: 'the logo writing', timeout: 12000 });
+      if (!writingNow) fail('R16-SPLASH-WRITE', { writing: false, seq: await app.evalJs("(() => { const s = window.wrizoArborFront; return s ? { sketchDone: s.sketchDone, logoStart: s.logoStart, now: performance.now() } : null; })()") });
       // the plan, from the animations themselves: what animates, and when each stroke starts and ends
       const plan = await app.evalJs(`(() => { const L = document.querySelector('.wz-splash .arbor2-top-logo'); const r = L.getBoundingClientRect();
         const anims = document.getAnimations().filter((a) => L.contains(a.effect?.target) || a.effect?.target === L);
@@ -370,12 +381,14 @@ export default {
       await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 }); await sleep(600);
       await app.evalJs(PIX(await shot(app), s.rect, 'reduced-front'));
       const diff = await app.evalJs("(() => { const a = window.__r16px['reduced-splash'], b = window.__r16px['reduced-front']; if (!a || !b || a.length !== b.length) return { n: -1 }; let n = 0; for (let i = 0; i < a.length; i++) if (i % 4 !== 3 && a[i] !== b[i]) n++; return { n }; })()");
+      // (report only, after g19 run 41929196414 - 6896 channels apart at 1920 only: where, the first 12 - x, y in the box, channel, splash, front)
+      const where = await app.evalJs("(() => { const a = window.__r16px['reduced-splash'], b = window.__r16px['reduced-front'], w = window.__r16w && window.__r16w['reduced-front']; if (!a || !b || !w) return null; const out = []; for (let i = 0; i < a.length && out.length < 12; i++) { if (i % 4 === 3 || a[i] === b[i]) continue; const p = Math.floor(i / 4); out.push([p % w, Math.floor(p / w), i % 4, a[i], b[i]]); } return { w, h: a.length / 4 / w, out }; })()");
       // (instrument fix after run 41550544353: 'anims' counts the writing's own CSS animations; a transition is reported, not counted - under
       // reduced motion the app's floor makes the mark's opacity transition a 0.01 ms cut, and one was caught)
       // (amendment before any green, run 41754120497: the still logo is itself an SVG image now (the hand-over fix), so "no drawing layer" is no
       // writing strokes. Original: !s.svg)
       const ok = { still: s.writing === 'still' && !s.strokes && s.anims === 0, sameAsFront: diff.n === 0 };
-      if (Object.values(ok).some((x) => !x)) fail('R16-SPLASH-REDUCED', { ok, s, diff });
+      if (Object.values(ok).some((x) => !x)) fail('R16-SPLASH-REDUCED', { ok, diff, where, s });
       say('r16-splash-reduced', { ok, s, diff });
     } finally { await app.emulateMedia([]); await app.evalJs("localStorage.setItem('wrizo-splash-hold', '50'); localStorage.removeItem('wrizo-splash-force-not-ready')").catch(() => {}); await done(); }
   },
@@ -399,7 +412,11 @@ export default {
       await load(app, '#/'); await sleep(400);
       const s = await app.evalJs(`(() => { const t = document.querySelector('.arbor2-front .arbor2-top-tagline'); const doors = [...document.querySelectorAll('.arbor2-front .arbor2-front-doors .arbor2-door')];
         const face = (e) => getComputedStyle(e).fontFamily; return { text: t?.textContent ?? null, faces: [t, ...doors].filter(Boolean).map((e) => [e.textContent.trim(), face(e)]), loaded: document.fonts.check('16px "Alegreya Sans"') }; })()`);
-      const ok = { words: s.text === 'For humans who write.', face: s.faces.length === 3 && s.faces.every(([, f]) => /^"?Alegreya Sans"?/.test(f)), loaded: s.loaded };
+      // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 38 §12c (Nick, Nov 4; the Wrizors' wrizors-to-ARBOR-nov4c.md md5 13e5db96), frames run 41929196414,
+      // Arbor ed2f8c46: the tagline is TYPED in EB Garamond (the page's face), cream - no longer Alegreya Sans; the door words keep Alegreya Sans). Original, verbatim:
+      // const ok = { words: s.text === 'For humans who write.', face: s.faces.length === 3 && s.faces.every(([, f]) => /^"?Alegreya Sans"?/.test(f)), loaded: s.loaded };
+      // SUCCESSOR faceB: the tagline in EB Garamond; Write and Sign in in Alegreya Sans (loaded, as before).
+      const ok = { words: s.text === 'For humans who write.', faceB: s.faces.length === 3 && /^"?EB Garamond"?/.test(s.faces[0][1]) && s.faces.slice(1).every(([, f]) => /^"?Alegreya Sans"?/.test(f)), loaded: s.loaded };
       if (Object.values(ok).some((x) => !x)) fail('R16-TAGLINE', { ok, s });
       say('r16-tagline', { ok, s });
     } finally { await done(); }
@@ -490,7 +507,8 @@ export default {
       const rows = [];
       for (const step of ['signin', 'account']) {
         // (driver fix after run 41659053011, no assertion changed: r18 names the door to the sign-in form "Log in")
-        if (step === 'signin') await clickText(app, 'button', 'Log in'); else await clickText(app, 'button', 'New here? Create an account');
+        // (driver fix after g19 run 41929196414: the door reads Sign in, spec draft 38 §12c; the press waits for that door to be pressable)
+        if (step === 'signin') { await waitSoft(app, "[...document.querySelectorAll('.arbor2-front-doors .arbor2-door')].some((d) => d.textContent.trim() === 'Sign in' && !d.disabled)", { label: 'Sign in pressable', timeout: 25000 }); await clickText(app, 'button', 'Sign in'); } else await clickText(app, 'button', 'New here? Create an account');
         await waitSoft(app, step === 'signin' ? "!!document.querySelector('input[autocomplete=\"current-password\"]')" : "!!document.querySelector('input[autocomplete=\"new-password\"]')", { label: step, timeout: 5000 });
         await sleep(500);
         rows.push({ step, px: await pixelsOf(app, '.wz-screen'), ph: await app.evalJs(PLACEHOLDERS) });

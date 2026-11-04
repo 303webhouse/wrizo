@@ -466,6 +466,10 @@ export default {
     const rest0 = await app.evalJs(V);
     await app.evalJs(`document.querySelector('${ED}').focus()`); await app.typeKeys('s');
     await waitSoft(app, "document.documentElement.getAttribute('data-wz-writing') === 'true'", { label: 'writing', timeout: 4000 }); await sleep(500);
+    // (instrument fix after g19 run 41935369507, assertions unchanged: in the dark tone the night read caught the room's own colour change mid-way -
+    // the vines' fill and the group's opacity ease over 2.2 s from the room just set (read rgb(90, 68, 48), group .79) - so the field's own CSS
+    // transitions are finished before the read, which then sees where they land)
+    await app.evalJs("document.getAnimations().filter((a) => typeof CSSTransition !== 'undefined' && a instanceof CSSTransition && a.effect && a.effect.target && a.effect.target.closest && a.effect.target.closest('.wz-rhizome-field')).forEach((a) => { try { a.finish(); } catch {} })");
     const w = await app.evalJs(V);
     const night = !!w && w.room === 'night';
     const ok = {

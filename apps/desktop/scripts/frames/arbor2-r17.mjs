@@ -57,9 +57,14 @@ const newPageCheck = async (app, name) => {
   await clickText(app, '.desk-mode-tab', 'Draft'); await sleep(900);
   await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await app.evalJs(FINISH); await sleep(700);
   const old = await app.evalJs(BOXV);
-  await load(app, '#/'); await sleep(500);
-  const wrote = await app.evalJs("(() => { const b = document.querySelector('.wz-arrival-write'); if (b) b.click(); return !!b; })()");
+  // (driver fix after g19 run 41928483341, assertion unchanged: r19's signed-in Write goes into the LAST page (spec draft 38 §12c) - pressed here it
+  // opened '#/page/arbor-r17-old', so no new page was ever reached. The new page is reached the way a new page is born now: the unborn route a
+  // visitor's Write opens, '/?arbor2=1#/page/new'; `wrote` = a page is on screen there and it is not the old one. Before, the driver was:
+  //   await load(app, '#/'); await sleep(500);
+  //   const wrote = await app.evalJs("(() => { const b = document.querySelector('.wz-arrival-write'); if (b) b.click(); return !!b; })()");)
+  await load(app, '#/page/new');
   await waitSoft(app, `!!document.querySelector('${ED}')`, { label: 'the new page', timeout: 8000 }); await sleep(900);
+  const wrote = await app.evalJs(`!!document.querySelector('${ED}') && !/arbor-r17-old/.test(location.hash)`);
   await app.evalJs(`document.querySelector('${ED}')?.focus()`); await app.type('A'); await sleep(1200);
   await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await app.evalJs(FINISH); await sleep(700);
   const fresh = await app.evalJs(BOXV);
