@@ -1,0 +1,6 @@
+FIX rhizome-latency-fine-r1 (ticket 150b, ccd3d366) - manifest (Chat 1, Nov 4 2026)
+
+Tree bfbc6357 (train-150b: main 5ea96160 + one --no-ff merge of ccd3d366). Harness only: rhizome-latency.mjs and rhizome-latency-mutant.mjs (2 files, +63/-25). The bundle is byte-identical to production's (index-C_y5ece8.js 956918 bytes), so no deploy.
+Proof: tsc x2 0, seed-guard PASS 36. Box, 26 files (the 12k list, both rhizome files in it), stamp tree=bfbc6357 bundle=index-C_y5ece8.js/956918b: default CLEAN 26/26, parked CLEAN 26/26 (rhizome-latency PASS 17 checks, rhizome-latency-mutant PASS 11 checks, both legs). Box turn 21:05Z-21:50Z, released.
+Clear: Fable, Nov 4 (CLEARED; harness only, box-only; merge on a clean list).
+Files here: box-default.log.txt, box-parked.log.txt.
