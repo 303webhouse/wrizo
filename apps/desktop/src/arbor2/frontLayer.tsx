@@ -91,7 +91,8 @@ const useSeq = () => { const [, bump] = useReducer((x: number) => x + 1, 0); use
 // ---- THE LOGO ----
 const LAST_STROKE = LOGO_STROKES.reduce((a, s) => (s.at + s.dur > a.at + a.dur ? s : a)).id;
 function Logo({ writeOut, now }: { writeOut: boolean; now: number }) {
-  const due = seq.logoStart > 0 && now >= seq.logoStart;
+  // (r19 fix: "planned" is the sketch's end being known - a jump early in a page's life plans times before performance.now()'s origin)
+  const due = seq.sketchDone > 0 && now >= seq.logoStart;
   const finished = due && (now >= seq.logoDone || !writeOut || seq.skipped || seq.reduced);
   const [ended, setEnded] = useState(false);
   if (!due) return <div className="arbor2-top-logo" data-writing="wait" style={place(TOP_LOGO)} />;
@@ -128,12 +129,13 @@ function Logo({ writeOut, now }: { writeOut: boolean; now: number }) {
 // ---- THE TAGLINE, typed ----
 function Tagline({ now }: { now: number }) {
   const [, tick] = useReducer((x: number) => x + 1, 0);
-  const typing = seq.tagStart > 0 && now >= seq.tagStart && now < seq.tagDone;
+  const planned = seq.sketchDone > 0;
+  const typing = planned && now >= seq.tagStart && now < seq.tagDone;
   useEffect(() => { if (!typing) return undefined; const t = window.setInterval(tick, 30); return () => window.clearInterval(t); }, [typing]);
   const t = nowT();
   let n = 0;
-  if (seq.tagStart > 0 && t >= seq.tagStart) { let at = seq.tagStart; while (n < TAGLINE_TEXT.length && at + LETTER_MS[n] <= t) { at += LETTER_MS[n]; n++; } if (t >= seq.tagDone) n = TAGLINE_TEXT.length; }
-  const caret = seq.tagStart > 0 && t >= seq.tagStart - CARET_LEAD;
+  if (planned && t >= seq.tagStart) { let at = seq.tagStart; while (n < TAGLINE_TEXT.length && at + LETTER_MS[n] <= t) { at += LETTER_MS[n]; n++; } if (t >= seq.tagDone) n = TAGLINE_TEXT.length; }
+  const caret = planned && t >= seq.tagStart - CARET_LEAD;
   const state = !caret ? 'wait' : n < TAGLINE_TEXT.length ? 'typing' : 'done';
   return (
     <div className="arbor2-top-tagline" data-state={state} data-typed={n} style={{ right: pct(CW - TAGLINE.right, CW), top: pct(TAGLINE.top, CH) }}>
@@ -151,7 +153,7 @@ type Door = { word: string; cls: string; disabled: boolean; onClick: () => void 
 
 // ---- THE DOORS ----
 function Doors({ mode, now, authed, ready, landing, onWrite, onLogin }: { mode: 'splash' | 'door'; now: number; authed: boolean; ready: boolean; landing: boolean; onWrite: () => void; onLogin: () => void }) {
-  const phase = !seq.doorsIn || now < seq.doorsIn ? 'wait' : now < seq.shownAt ? 'in' : 'shown';
+  const phase = !seq.sketchDone || now < seq.doorsIn ? 'wait' : now < seq.shownAt ? 'in' : 'shown';
   const [pulse, setPulse] = useState(0);
   // THE NUDGE (Nick, kept, via Fable Nov 4): 5 s after the doors arrive, then every 30 s; any act of the writer stops it for good. The front door only.
   const armed = useRef(false);
