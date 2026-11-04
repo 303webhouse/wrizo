@@ -87,7 +87,8 @@ export default guarded({
   'r11-drawers': async (app) => { await page(app, 'arbor-r11-drawers', 'Draft'); await drawerProof(app, { name: 'R11-DRAWERS', say, fail }); },
   // PARKED 2026-11-01 (SUPERSEDED by the build's measured scope, first green look runs 41336024311 / 41336050132: this page opens in Typewriter's zoom, where the drawers overlay the enlarged page and keep today's rule - the alignment applies beside an unzoomed page, which r11-drawers / m2r5-drawers-build check). Kept verbatim under the name r11-drawers-freewrite-v1 (not in the run list); SUCCESSOR r11-drawers-zoom below.
   'r11-drawers-freewrite-v1': async (app) => { await page(app, 'arbor-r11-drawers-fw'); await drawerProof(app, { name: 'R11-DRAWERS-FREEWRITE', say, fail }); },
-  'r11-drawers-zoom': async (app) => { await page(app, 'arbor-r11-drawers-zoom'); await zoomDrawerProof(app, { name: 'R11-DRAWERS-ZOOM', say, fail }); },
+  // (r18: leftRides - the Wrizors (md5 d1c1dcc2, via Fable, Nov 4) put the zoom's Tools opener on the drawer's outer edge; the kit keeps the parked line)
+  'r11-drawers-zoom': async (app) => { await page(app, 'arbor-r11-drawers-zoom'); await zoomDrawerProof(app, { name: 'R11-DRAWERS-ZOOM', say, fail, leftRides: true }); },
 
   // ── THE PLATE (successor of r10-plate): through the morning and the evening fades, every 60 s, the plate is the page's paper and its letters
   // the page's low ink - the SAME pair at every moment (no fade, no cut) - painted as that paper, and every run on it holds 4.5:1 against the
@@ -130,5 +131,6 @@ export default guarded({
 
   // ── THE NICK WALK
   // (r15: the walk's reduced-motion repeat gets its liveness probe on Free Write's zoomed page - Fable, Nov 1)
-  ...walkScreens('arbor-walk', (app) => page(app, 'arbor-walk', 'Draft'), setRoom, (app) => page(app, 'arbor-walk-z', null)),
+  // (r18: stuckSides ['right'] - only the Tutor tab still never travels on the zoom page; the kit keeps the parked probe)
+  ...walkScreens('arbor-walk', (app) => page(app, 'arbor-walk', 'Draft'), setRoom, (app) => page(app, 'arbor-walk-z', null), ['right']),
 }, { verdict: ["ARBOR-R11","ARBOR-WALK-REDUCED-REPEAT","ARBOR-WALK-REDUCED-LIVENESS","ARBOR-WALK-REDUCED-CUT"] });
