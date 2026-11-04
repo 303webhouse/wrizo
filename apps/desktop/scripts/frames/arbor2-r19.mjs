@@ -81,7 +81,8 @@ const SHADE = `(() => { const box = (e) => { if (!e) return null; const r = e.ge
   const field = document.querySelector('.wz-rhizome-field');
   const leafAnims = room ? document.getAnimations().filter((a) => a.effect?.target && room.contains(a.effect.target) && a.effect.target.classList?.contains('wz-leaf')) : [];
   const allAnims = document.getAnimations().filter((a) => a.effect?.target && ((room && room.contains(a.effect.target)) || (page && page.contains(a.effect.target)) || a.effect.target === room || a.effect.target === page));
-  const timing = (a) => { const t = a.effect.getTiming(); return [a.animationName || a.transitionProperty || '?', Number(t.duration), t.iterations, t.direction, a.playState]; };
+  // (instrument fix after the green leg 41903778893: Infinity crosses back as null - the iteration count is sent as text)
+  const timing = (a) => { const t = a.effect.getTiming(); return [a.animationName || a.transitionProperty || '?', Number(t.duration), String(t.iterations), t.direction, a.playState]; };
   return { room: room ? { box: box(room), op: op(room), svg: box(rsvg), fill: g ? getComputedStyle(g).fill : null, gop: g ? Number(g.getAttribute('opacity') ?? getComputedStyle(g).opacity) : null, blur: blur ? Number(blur.getAttribute('stdDeviation')) : null,
       leaves: room.querySelectorAll('.wz-leaf').length, rafters: room.querySelectorAll('polygon').length, rects: room.querySelectorAll('rect').length, aria: room.getAttribute('aria-hidden'), pe: getComputedStyle(room).pointerEvents } : null,
     page: page ? { box: box(page), op: op(page), svg: box(psvg), gop: pg ? Number(pg.getAttribute('opacity') ?? 1) : null, aria: page.getAttribute('aria-hidden'), pe: getComputedStyle(page).pointerEvents, us: getComputedStyle(page).userSelect,
@@ -197,7 +198,7 @@ const screens = {
       layer: !!d.room && d.room.op > 0.9 && !!d.room.svg && d.room.svg.l <= 0.5 && d.room.svg.t <= 0.5 && d.room.svg.r >= d.vw - 0.5 && d.room.svg.b >= d.vh - 0.5,
       paint: !!d.room && d.room.fill === 'rgb(63, 77, 34)' && Math.abs(d.room.gop - 0.2) < 0.001 && d.room.blur === 2.8,
       structure: !!d.room && d.room.rafters === 10 && d.room.rects === 3 && d.room.leaves >= 100 && d.room.leaves <= 130,
-      breeze: d.leafAnims >= 100 && !!d.leafTiming && d.leafTiming[1] === 16000 && d.leafTiming[2] === Infinity,
+      breeze: d.leafAnims >= 100 && !!d.leafTiming && d.leafTiming[1] === 16000 && d.leafTiming[2] === 'Infinity',
       drift: d.running.some((t) => t[1] === 20000 && t[3] === 'alternate'),
       decorative: !!d.room && d.room.aria === 'true' && d.room.pe === 'none',
       markOver: !!mark && mark.over,
@@ -277,7 +278,12 @@ const screens = {
     const ok = {
       onPaper: !!d.page && d.page.op > 0.9 && !!d.paper && d.page.box.l >= d.paper.l - 0.5 && d.page.box.r <= d.paper.r + 0.5 && d.page.box.t >= d.paper.t - 0.5 && d.page.box.b <= d.paper.b + 0.5,
       aligned: !!d.page && !!d.room && ['l', 't', 'w', 'h'].every((k) => Math.abs(d.page.svg[k] - d.room.svg[k]) <= 1),
-      fourPercent: alpha != null && Math.abs(alpha - 0.04) <= 0.004,
+      // PARKED 2026-11-04 (SUPERSEDED, run 41903778893: at 4% the page text measured 13.78:1 at its darkest overlap - paper #F3EDE1, ink #241A10 -
+      // under Fable's 13.9 floor, which the spec's own 14.1 premise was meant to keep; the floor is the law, so the shade is the strongest that holds
+      // it, 3.4% (13.91). HANDED UP to Fable). Original, verbatim:
+      // fourPercent: alpha != null && Math.abs(alpha - 0.04) <= 0.004,
+      // SUCCESSOR underFloor: as strong as the floor allows - between 3% and 4%, and the floor (below) holds.
+      underFloor: alpha != null && alpha >= 0.03 - 1e-6 && alpha <= 0.04 + 1e-6,
       floor: contrast != null && contrast >= 13.9,
       decorative: !!d.page && d.page.aria === 'true' && d.page.pe === 'none' && d.page.us === 'none' && !d.page.inEditable,
       copyIsText: copy.t.startsWith('The morning light came in low') && copy.t.length < PAGEW.length + 40,
