@@ -14,7 +14,9 @@
 // rhizome's, nothing else (arbor-v2.css). Nothing is stored.
 import svgText from './pergola-shadow.svg?raw';
 
-const PAGE_ALPHA = '0.04';   // the shade across the paper (§18.1: 4%; the page's text holds 14.1:1 there)
+// the shade across the paper. §18.1 asks 4% ("the page's text holds 14.1:1"); on this page (paper #F3EDE1, ink #241A10) 4% measured 13.78:1
+// at the darkest overlap (run 41903778893), under Fable's 13.9 floor - 3.4% is the strongest that holds it (13.91). HANDED UP to Fable.
+const PAGE_ALPHA = '0.034';
 
 function makeLayer(cls: string, alpha: string | null): { layer: HTMLDivElement; drift: HTMLDivElement } {
   const layer = document.createElement('div');
