@@ -12,9 +12,7 @@
 //   EXPORT   .txt / Copy My Words give "words (address)"; .md keeps the mark as written; a board's cards the same; a blocked mark is untouched in both
 //   READERS  a word count is the words, never the address; a page's title is the words, never the address
 //   SAVE     the mark survives the save (the cache -> localStorage serialisation) and the sync payload byte for byte
-// NOT HERE, and said so rather than left silent: .docx / PDF "real links" - there is NO .docx or PDF exporter anywhere in the tree to check (grep: nothing under apps/ or packages/), so that
-// line of the spec has nothing to be red against until an exporter exists; it is reported to Fable as a question, not faked. The browser half (click, Ctrl/Cmd+click, paste-over-selection,
-// Ctrl/Cmd+K, the Link button, the look, never fetched) is scripts/harness/links-surface.mjs.
+// NOT HERE: .docx / PDF links (Fable, Nov 4: no such exporter exists; a Word / PDF export is a separate future ticket). The browser half (click, Ctrl/Cmd+click, paste-over-selection, Ctrl/Cmd+K, the Link button, the look, never fetched) is scripts/harness/links-surface.mjs.
 // Run: node scripts/harness/links-core.mjs   (from apps/desktop; browserless, no box turn)
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
@@ -157,7 +155,7 @@ const CONTROL = () => links(`a [words](${ADDR}) b`).length === 1;
   const t = `Read [the docs](${ADDR}) now`;
   ok('READERS: a word count is the words - `Read [the docs](address) now` is 4 words, the address adds none', has(wc, 'wordCount') && call(wc.wordCount, t) === 4, has(wc, 'wordCount') ? J(call(wc.wordCount, t)) : 'no wordCount');
   ok('READERS: a one-word link counts as one word', has(wc, 'wordCount') && call(wc.wordCount, `[one](${ADDR})`) === 1, has(wc, 'wordCount') ? J(call(wc.wordCount, `[one](${ADDR})`)) : 'no wordCount');
-  // a title is read through the same stripLine that gives Copy My Words "words (address)" - so the two readers must NOT be the same one for a link, or every page opening on a link is titled with its address (surfaced to Fable)
+  // RULED (Fable, Nov 4): titles, labels and the plain reading text are the WORDS only; "words (address)" comes from the copy / export path, NOT stripLine
   const title = has(et, 'firstLine') ? call(et.firstLine, `[My chapter](${ADDR}) begins here`) : null;
   ok('READERS: a page\'s title (entryText.firstLine - the page-link label, a search snippet) is the WORDS, never the address - "My chapter begins here"', title === 'My chapter begins here', J(title));
 }
@@ -186,7 +184,6 @@ const CONTROL = () => links(`a [words](${ADDR}) b`).length === 1;
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail && !c.pass ? `  [${String(c.detail).slice(0, 400)}]` : ''}`);
-console.log('NOTE  .docx / PDF real links: no .docx or PDF exporter exists in the tree - nothing to check yet (reported to Fable)');
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nLINKS-CORE VERIFY: PASS (${checks.length} checks)` : `\nLINKS-CORE VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
 process.exit(passed === checks.length ? 0 : 1);
