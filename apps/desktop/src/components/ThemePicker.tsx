@@ -7,7 +7,7 @@ import { createFluxCardGlitchController, FLUX_CARD_GLITCH_MS } from '../store/fl
 import { ensureThemeFonts } from '../store/themeFonts';
 import { Seg } from './ModeStage';
 import { isMachina2 } from '../machina2/flag';
-import { MachinaThemeLightingRow } from '../machina2/themeRoom';
+import { MachinaThemeRoomRow } from '../machina2/themeRoom';
 
 // THEME PICKER (step 2 of the Oct 21 build queue; theme-menu-brief.md / theme-rules.md §C,
 // cursor/theme-picker-mockup @ 1a057bea). Replaces CascadePanels.tsx's own button-list
@@ -134,7 +134,7 @@ export function ThemePicker() {
       <div className="wz-theme-picker-field">
         <Seg label="Page" value={prefs.page} opts={[['light', 'Light'], ['dark', 'Dark']]} onPick={(v) => setThemePrefs({ page: v as 'dark' | 'light' })} />
         {/* MACHINA v2 MOCKUP r8 (Fable, Nov 2): the room's control right beside Page - Nick couldn't find "light mode" */}
-        {isMachina2() && current === 'machina' && <MachinaThemeLightingRow />}
+        {isMachina2() && current === 'machina' && <MachinaThemeRoomRow />}
       </div>
       <div className="wz-theme-cards">
         {THEME_CARDS.map((card) => {

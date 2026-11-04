@@ -327,3 +327,8 @@
    by side, or ran off the panel's left edge. Under the flag the rows stack, each full width (label left, choices right), words on one line. */
 :root[data-machina2][data-theme='machina'] .wz-theme-picker-field{ flex-direction:column; align-items:stretch; }
 :root[data-machina2][data-theme='machina'] .wz-theme-picker-field .mode-seg button{ white-space:nowrap; }
+
+/* r9 - the Theme pop-out's Room row (Light · Dark · Automatic) with its "?" (the readout's guidance mark) after the choices, its line under the row */
+:root[data-machina2][data-theme='machina'] .machina2-theme-room-right{ display:flex; align-items:center; gap:6px; }
+:root[data-machina2][data-theme='machina'] .machina2-room-help-line{ margin:-2px 0 6px; text-align:right; font:10px/1.3 'IBM Plex Mono', monospace; color:var(--text-low); }
+:root[data-machina2][data-theme='machina'] .machina2-readout-end .machina2-tick{ margin:0; }
