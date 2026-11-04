@@ -26,6 +26,9 @@ export function mountDrawerEdge(root: HTMLElement, prefix: string): void {
     const [rp, lp] = els;
     if (rp) { root.style.setProperty(`${prefix}-r`, `${Math.round(rp.offsetWidth)}px`); root.style.setProperty(`${prefix}-gr`, strip(rp)); }
     if (lp) root.style.setProperty(`${prefix}-gl`, strip(lp));
+    // r19: on the zoomed page the Tutor drawer ends on its own anchor's right edge, not the opener's - where the open opener rides (-zx)
+    const ga = document.querySelector<HTMLElement>('.desk-frame-tutor-anchor');
+    if (rp && ga) root.style.setProperty(`${prefix}-zx`, `${Math.round(rp.getBoundingClientRect().right - ga.getBoundingClientRect().left)}px`);
   };
   const ro = new ResizeObserver(write);
   const find = () => {
