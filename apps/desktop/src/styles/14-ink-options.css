@@ -79,8 +79,6 @@
   background:none; border:1px solid var(--ink-border); color:var(--text-low); cursor:pointer; transition:.15s; }
 .wz-sliver-instruments-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
 .wz-sliver-instruments-btn[aria-expanded='true']{ color:var(--accent-rest); border-color:var(--accent-rest); }
-/* ITEM arbor-quiet-brass, round 2 — the drawer's own "…" button, same fix as the grip above. */
-[data-theme='flux'] .wz-sliver-instruments-btn[aria-expanded='true']{ color:var(--text-mid); border-color:var(--text-mid); }
 .wz-sliver-instruments-btn svg{ display:block; }
 /* PHASE 1 (S4) - the head holds the "..." (its own row, unchanged) and the two mode toggles beside it. A toggle is the same 26px quiet square as the "...";
    ON changes ONLY the icon's colour (brass/orange) - the square's border is the same quiet line in both states, and there is no fill. The state is
@@ -113,11 +111,6 @@
 .wz-sliver-instruments-panel{ margin-top:10px; }
 .wz-foot-settings-block + .wz-foot-settings-block{ margin-top:14px; padding-top:10px; border-top:1px solid var(--ink-border); }
 .wz-sliver-instruments .mode-settings h4{ color:var(--accent-rest); }
-/* ITEM arbor-quiet-brass — this scoped override (2 classes, wins over the base
-   `.mode-settings h4` rule's own Flux fix above) repaints the sliver's own
-   TYPEWRITER MODE / PROGRESS TRACKING / PREFERENCES headings olive, so they stayed
-   olive-gold under Flux even after the base rule's Flux fix. Same heading-colour law. */
-[data-theme='flux'] .wz-sliver-instruments .mode-settings h4{ color:var(--text-mid); }
 /* TU1 S2 — the Tutor (components/Tutor.tsx). The sliver's own class family,
    mirrored (`.wz-sliver-*` -> `.wz-tutor-*`), split across the TWO anchors
    above (`.wz-tutor-zone` is the shared marker class both anchor roots
@@ -508,8 +501,6 @@
   padding:12px 14px 10px; border-bottom:1px solid var(--ink-border); }
 /* the cascade drawer's engraved heading: one olive accent per menu, at rest [ink-options §29] */
 .wz-cascade-panel-title{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--accent-rest); }
-/* ITEM arbor-quiet-brass — same heading-colour law as .mode-rail-h above. */
-[data-theme='flux'] .wz-cascade-panel-title{ color:var(--text-mid); }
 /* The dock's own quiet close affordance (S2: "a quiet close affordance") —
    text-scale, never brass (this is chrome, not an evental action). */
 .wz-cascade-dock-btn{ background:none; border:0; color:var(--text-low); font-family:var(--font-ui);

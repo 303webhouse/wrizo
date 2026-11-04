@@ -16,7 +16,8 @@ export function srcText(srcDir, ...rel) {
   return path.join(...rel) === 'index.css' ? globalCss(srcDir) : fs.readFileSync(path.join(srcDir, ...rel), 'utf8');
 }
 
-export const IMPORT_LINE = /^@import '\.\/styles\/([a-z0-9-]+\.css)';(\r?\n|$)/gm;
+// a file under src/styles/, or one folder down (src/styles/themes/, #13 step 8)
+export const IMPORT_LINE = /^@import '\.\/styles\/((?:[a-z0-9-]+\/)?[a-z0-9-]+\.css)';(\r?\n|$)/gm;
 
 export function globalCssParts(srcDir) {
   const index = fs.readFileSync(path.join(srcDir, 'index.css'), 'utf8');

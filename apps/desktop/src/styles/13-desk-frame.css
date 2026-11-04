@@ -819,10 +819,6 @@ html[data-wz-writing='true'] .chrome-handle{ opacity:0 !important; }   /* still 
 /* Plateau foundations — olive marks where you are; the grip wears
    --accent-rest only while OPEN (a where-you-are-now state), never brass. */
 .wz-sliver[data-open='true'] .wz-sliver-grip{ color:var(--accent-rest); border-color:var(--accent-rest); }
-/* ITEM arbor-quiet-brass, round 2 — the drawer's own arrow tab (Sliver.tsx calls this
-   panel "the drawer" throughout its own comments), same heading/where-you-are-colour
-   law as the headings fix above: Arbor keeps olive, Flux reads its own quiet teal. */
-[data-theme='flux'] .wz-sliver[data-open='true'] .wz-sliver-grip{ color:var(--text-mid); border-color:var(--text-mid); }
 .wz-sliver-grip-glyph{ font-size:13px; line-height:1; }
 /* PHASE 1 - the instrument mark (a tiny pen while the page is in INK). The tab's box is unchanged (16 x 34); the mark rides the tab's own
    colour - olive when open, never brass: it says what the page IS, it is not a choice the writer makes. */
@@ -912,9 +908,6 @@ html[data-wz-writing='true'] .chrome-handle{ opacity:0 !important; }   /* still 
 /* the sliver's eyebrow labels are information, not events: quiet, neither olive nor orange [desk-frame §40] */
 /* the engraved zone heading is the menus' one resting accent: olive [desk-frame §41] */
 .wz-sliver-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--accent-rest); }
-/* ITEM arbor-quiet-brass — same heading-colour law as .mode-rail-h above (olive here is
-   Arbor's own heading colour; Flux's is its own quiet teal, not olive). */
-[data-theme='flux'] .wz-sliver-h{ color:var(--text-mid); }
 .wz-sliver-inks{ display:flex; align-items:center; flex-wrap:wrap; gap:6px; }
 .wz-sliver-item{ font-size:14px; color:var(--text-mid); padding:10px 11px; border:1px solid transparent; }
 /* AB4 S5 — "Add card," the board sliver's one non-toggle tool: a real

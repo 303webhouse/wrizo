@@ -1,0 +1,95 @@
+/* Flux's rules that sat among the component rules, in their old order, imported after every component rule. A Flux rule that
+   source order alone let win against an equal-specificity rule after it stays where it was (docs/cleanup/c13-8-theme-stays.md). */
+
+/* ITEM arbor-quiet-brass — this whole v6 palette was a fixed warm-brown world (its own
+   header comment: "a distinct visual world from the app chrome"), so Flux inherited
+   Arbor's brown at the front door and sign-in instead of its own ground. Every token
+   this block sets gets a Flux-aware value here; Arbor's own block above is untouched.
+   Brass (--wz-orange/--wz-orange-line) is deliberately NOT overridden — brass is the
+   through-line in both themes. Contrast measured the same way the a11y audit measured
+   the original --wz-hint: --text-low clears 4.5:1 against both this ground and lift
+   (5.67:1 / 5.19:1), --text-mid clears it easily for the brighter --wz-ink-dim tier
+   (8.30:1 / 7.60:1), --text-hi clears it by a wide margin for --wz-ink (16.12:1). */
+[data-theme='flux'] .wz-home {
+  --wz-ground:#010811; --wz-lift:#0F1926; --wz-ink:#E7F4F1; --wz-ink-dim:#9AD7EA;
+  --wz-whisper:#193556; --wz-hint:#7EB4C4;
+}
+
+/* ITEM arbor-quiet-brass — the front door's ambient glow was warm orange/brown in
+   both themes; Flux's own canon (docs/flux-theme-canon.md §8) calls its glow family
+   "a radial teal-blue pool", so this is Flux's own --line-active (the canon's
+   electric-blue "system" lane) instead, same two-layer shape and opacity. */
+[data-theme='flux'] .wz-ambient{
+  background:
+    radial-gradient(58% 50% at 50% 42%, color-mix(in srgb, var(--line-active) 22%, transparent), transparent 70%),
+    radial-gradient(115% 95% at 50% 70%, color-mix(in srgb, var(--ink-border-strong) 12%, transparent), transparent 80%);
+}
+
+/* ITEM arbor-quiet-brass — every heading uses the THEME's own heading colour (Arbor's
+   warm brass-press above, Flux's own quiet teal here); brass itself stays reserved for
+   choices and the mark, never a resting heading. */
+[data-theme='flux'] .mode-rail-h{ color:var(--text-mid); }
+
+/* the bar's fill is --chrome-surface, the chrome token every theme overrides (--ink-900 is Arbor's raw surface and would leave this strip half-themed) [studio-chrome §2] */
+[data-theme='flux'] .mode-bar{ background:var(--chrome-surface); }
+
+/* ITEM arbor-quiet-brass — same heading-colour law as .mode-rail-h above. */
+[data-theme='flux'] .mode-tlabel{ color:var(--text-mid); }
+
+/* TH2 Slice 2 — Flux restyles the SAME bar (canon §9/§3.7): lime fill,
+   electric-blue caret notch pulsing at 1.8s in flight; the `.celebrate`
+   class (Plateau's own, unchanged trigger/timing) additionally fires an
+   ignition sweep + 14-spark burst, then hands off to brass — one
+   celebration grammar, Flux is simply its fuller expression.
+   Predictable/never-variable: fixed count, fixed angles (component-side),
+   fixed one-shot timing here. */
+[data-theme='flux'] .mode-pfill{ background:var(--signal-live); }
+
+/* three selectors (an attribute and two classes), so the celebrate fill wins over the lime base rule whatever the source order [studio-chrome §6] */
+[data-theme='flux'] .mode-pfill.celebrate{ background:var(--orange); }
+
+[data-theme='flux'] .mode-pfill::after{
+  background:var(--line-active); box-shadow:0 0 4px 1px rgba(0,194,255,.55); }
+
+[data-theme='flux'] .mode-pfill.started::after{ animation:flux-caret-pulse 1.8s ease-in-out infinite; }
+
+[data-theme='flux'] .mode-pfill.celebrate::after{ animation:none; opacity:1; background:#FFAB33; box-shadow:0 0 8px 2px rgba(255,152,0,.7); }
+
+/* Ignition sweep — white-to-orange gradient racing across the fill once, .55s. */
+[data-theme='flux'] .mode-pfill.celebrate::before{
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(90deg, transparent 0%, rgba(255,255,255,.95) 45%, var(--orange) 60%, transparent 100%);
+  background-size:250% 100%; background-position:-100% 0;
+  animation:flux-ignition-sweep .55s ease-out; pointer-events:none; }
+
+@media (prefers-reduced-motion:reduce){
+  [data-theme='flux'] .mode-pfill.started::after{ animation:none; opacity:1; }
+}
+
+@media (prefers-reduced-motion:reduce){
+  [data-theme='flux'] .mode-pfill.celebrate::before{ animation:none; display:none; }
+}
+
+/* ITEM arbor-quiet-brass, round 2 — the drawer's own arrow tab (Sliver.tsx calls this
+   panel "the drawer" throughout its own comments), same heading/where-you-are-colour
+   law as the headings fix above: Arbor keeps olive, Flux reads its own quiet teal. */
+[data-theme='flux'] .wz-sliver[data-open='true'] .wz-sliver-grip{ color:var(--text-mid); border-color:var(--text-mid); }
+
+/* ITEM arbor-quiet-brass — same heading-colour law as .mode-rail-h above (olive here is
+   Arbor's own heading colour; Flux's is its own quiet teal, not olive). */
+[data-theme='flux'] .wz-sliver-h{ color:var(--text-mid); }
+
+/* ITEM arbor-quiet-brass, round 2 — the drawer's own "…" button, same fix as the grip above. */
+[data-theme='flux'] .wz-sliver-instruments-btn[aria-expanded='true']{ color:var(--text-mid); border-color:var(--text-mid); }
+
+/* ITEM arbor-quiet-brass — this scoped override (2 classes, wins over the base
+   `.mode-settings h4` rule's own Flux fix above) repaints the sliver's own
+   TYPEWRITER MODE / PROGRESS TRACKING / PREFERENCES headings olive, so they stayed
+   olive-gold under Flux even after the base rule's Flux fix. Same heading-colour law. */
+[data-theme='flux'] .wz-sliver-instruments .mode-settings h4{ color:var(--text-mid); }
+
+/* ITEM arbor-quiet-brass — same heading-colour law as .mode-rail-h above. */
+[data-theme='flux'] .wz-cascade-panel-title{ color:var(--text-mid); }
+
+/* ITEM arbor-quiet-brass — same heading-colour law as .mode-rail-h above. */
+[data-theme='flux'] .desk-corkboard-h{ color:var(--text-mid); }
