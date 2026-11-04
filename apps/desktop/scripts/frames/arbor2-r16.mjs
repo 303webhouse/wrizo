@@ -81,6 +81,9 @@ export default {
   'r16-logo-rooms': async (app) => {
     await page(app, 'arbor-r16-logo');
     const rows = [];
+    // (driver fix after g18, run 41910286288: r19 draws the corner mark over the day pergola's shade on purpose - darker green where they cross -
+    // so the logo's own inks are read with the shade off, the Mood menu's Day shadows switch; r19-pergola checks the mark over the shade)
+    await app.evalJs("document.documentElement.setAttribute('data-arbor2-off', ((document.documentElement.getAttribute('data-arbor2-off') || '') + ' shadows').trim())");
     for (const room of ['night', 'day']) {
       await setRoom(app, room);
       const m = await app.evalJs(MARK); if (!m) fail('R16-LOGO-ROOMS', { mark: false, room });

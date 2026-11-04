@@ -167,7 +167,8 @@ export async function drawerProof(app, { name, say, fail }) {
  *  it; the build leaves the zoom's own drawer rule alone. On the zoomed page: each tab stays at its closed rect while its drawer opens and
  *  closes (today's rule), the arrows flip, and the page and the editor never move. */
 // (leftRides, r18: the Wrizors moved Arbor's zoom Tools opener onto the drawer's OUTER edge - see the parked line below; absent = today's rule)
-export async function zoomDrawerProof(app, { name, say, fail, leftRides = false }) {
+// (rightRides, r19: the Tutor opener too - Fable's yes, Nov 4; absent = today's rule for that side)
+export async function zoomDrawerProof(app, { name, say, fail, leftRides = false, rightRides = false }) {
   await app.evalJs(MARK); await app.evalJs(FINISH); await sleep(200);
   const c = await app.evalJs(RECTS);
   if (!c.zoom) fail(name, { zoom: false, note: 'the page did not open in Typewriter zoom' });
@@ -186,7 +187,12 @@ export async function zoomDrawerProof(app, { name, say, fail, leftRides = false 
   // SUCCESSOR (leftRides): leftTabRides - open, the tab's right edge lies on the drawer's left edge (within 1 px), at the height it stands shut,
   // its arrow the open one; without leftRides, today's leftTabStays, unchanged.
   const rides = !!l.lo && !!l.lt && !!l.lp && Math.abs(l.lt.r - l.lp.l) <= 1 && Math.abs(l.lt.t - c.lt.t) <= 1 && Math.abs(l.lt.b - c.lt.b) <= 1 && l.la === '›';
-  const ok = { ...(leftRides ? { leftTabRides: rides } : { leftTabStays: l.lo && same(l.lt, c.lt) && l.la === '›' }), rightTabStays: r.ro && same(r.rt, c.rt) && r.ra === '‹', shut: !shut.lo && !shut.ro && same(shut.lt, c.lt) && same(shut.rt, c.rt),
+  // PARKED 2026-11-04 for rightRides callers only (SUPERSEDED, Arbor's full green g18, run 41912228430: r19 put the zoomed Tutor opener on its
+  // open drawer's outer edge (Fable's yes, Nov 4) - it stands at the drawer's right, x 1326, not where it stands shut, x 1179). Original, verbatim:
+  //   rightTabStays: r.ro && same(r.rt, c.rt) && r.ra === '‹',
+  // SUCCESSOR (rightRides): rightTabRides - open, the tab's left edge on the drawer's right edge (within 1 px), at its shut height, arrow back.
+  const ridesR = !!r.ro && !!r.rt && !!r.rp && Math.abs(r.rt.l - r.rp.r) <= 1 && Math.abs(r.rt.t - c.rt.t) <= 1 && Math.abs(r.rt.b - c.rt.b) <= 1 && r.ra === '‹';
+  const ok = { ...(leftRides ? { leftTabRides: rides } : { leftTabStays: l.lo && same(l.lt, c.lt) && l.la === '›' }), ...(rightRides ? { rightTabRides: ridesR } : { rightTabStays: r.ro && same(r.rt, c.rt) && r.ra === '‹' }), shut: !shut.lo && !shut.ro && same(shut.lt, c.lt) && same(shut.rt, c.rt),
     pageStill: [l, r, shut].every((x) => samePage(x.page, c.page) && x.sameEditor) };
   const brief = { ok, ...(leftRides ? { rides: { lt: l.lt && [l.lt.l, l.lt.r, l.lt.t], lp: l.lp && l.lp.l, shutT: c.lt && c.lt.t, la: l.la } } : {}), w: c.w, page: c.page, closed: { lt: c.lt, rt: c.rt }, leftOpen: { lt: l.lt, lp: l.lp }, rightOpen: { rt: r.rt, rp: r.rp } };
   if (Object.values(ok).some((x) => !x)) fail(name, brief);
@@ -226,17 +232,28 @@ export function walkScreens(prefix, open, setRoom, openZoom = null, stuckSides =
     await openZoom(app);
     if (!(await app.evalJs("!!document.querySelector(\".mode-pagecol[data-zoom='true']\")"))) throw new Error(`${prefix.toUpperCase()}-REDUCED-LIVENESS FAILED {"zoom":false}`);
     let caught = null;
+    // (r19: with no stuck side the probe PLANTS the fault it must see - a travel transition on both openers, forced past reduced motion - so the
+    // reader is shown live against a real travel, and the plant is removed after)
+    const plant = stuckSides.length === 0;
+    if (plant) await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'wz-liveness-plant'; s.textContent = '.wz-sliver-grip, .wz-tutor-grip{ transition-property:left, right !important; transition-duration:400ms !important; transition-timing-function:linear !important; transition-delay:0s !important; }'; document.head.appendChild(s); return true; })()");
     try { await reducedRepeat(app, { name: `${prefix.toUpperCase()}-REDUCED-LIVENESS-PROBE`, setRoom, n: 2 }); } catch (e) { caught = String(e.message || e); }
+    finally { if (plant) await app.evalJs("document.getElementById('wz-liveness-plant')?.remove()").catch(() => {}); }
     // PARKED 2026-11-04 for callers naming stuckSides (SUPERSEDED, run 41855525837 / harness 41849650962, Arbor 7b881a6f: on Arbor's zoom page the Tools opener now travels (the Wrizors,
     // Nov 4), and the cut reader passed it - day-left 2, night-left 2 - so the probe saw 4 misses, all on the right, not 8). Original, verbatim:
     //     const ok = !!caught && /"misses":8\b/.test(caught) && /"stuck":true/.test(caught);
     // SUCCESSOR: every open of a stuck side called stuck (n = 2, two rooms each), and every open of a side that travels counted a clean cut
     // (both sides stuck = the original reading exactly).
     const free = ['left', 'right'].filter((x) => !stuckSides.includes(x));
-    const ok = !!caught && new RegExp('"misses":' + (4 * stuckSides.length) + '\\b').test(caught) && /"stuck":true/.test(caught)
-      && ['day', 'night'].every((room) => free.every((x) => new RegExp('"' + room + '-' + x + '":2\\b').test(caught)));
+    // PARKED 2026-11-04 for callers with no stuck side (SUPERSEDED, Arbor's g18, run 41912835349: r19's zoom page has no opener that stays put -
+    // the probe read nothing to miss, caught null). Original, verbatim:
+    //     const ok = !!caught && new RegExp('"misses":' + (4 * stuckSides.length) + '\\b').test(caught) && /"stuck":true/.test(caught)
+    //       && ['day', 'night'].every((room) => free.every((x) => new RegExp('"' + room + '-' + x + '":2\\b').test(caught)));
+    // SUCCESSOR: with stuck sides, exactly that; with none, every one of the 8 opens under the planted travel is called a miss.
+    const ok = plant ? (!!caught && /"misses":8\b/.test(caught))
+      : (!!caught && new RegExp('"misses":' + (4 * stuckSides.length) + '\\b').test(caught) && /"stuck":true/.test(caught)
+        && ['day', 'night'].every((room) => free.every((x) => new RegExp('"' + room + '-' + x + '":2\\b').test(caught))));
     if (!ok) throw new Error(`${prefix.toUpperCase()}-REDUCED-LIVENESS FAILED ${JSON.stringify({ caught: caught ? caught.slice(0, 300) : null })}`);
-    console.log(`${prefix.toUpperCase()}-REDUCED-LIVENESS {"ok":true,"probe":"${4 * stuckSides.length} of ${4 * stuckSides.length} opens on the zoom page called stuck (${stuckSides.join('+')})${free.length ? '; ' + free.join('+') + ' cut every time' : ''}"}`);
+    console.log(`${prefix.toUpperCase()}-REDUCED-LIVENESS {"ok":true,"probe":"${plant ? '8 of 8 opens under a planted travel called misses' : `${4 * stuckSides.length} of ${4 * stuckSides.length} opens on the zoom page called stuck (${stuckSides.join('+')})${free.length ? '; ' + free.join('+') + ' cut every time' : ''}`}"}`);
   };
   return screens;
 }

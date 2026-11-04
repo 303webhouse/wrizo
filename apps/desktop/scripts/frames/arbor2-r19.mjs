@@ -309,7 +309,9 @@ const screens = {
       core: !!d && d.main.filter((m) => !m.past).every((m) => m.w0 >= 9 && m.w0 <= 11),
       fromCentre: !!d && !!d.centre && d.main.filter((m) => !m.past).every((m) => Math.hypot(d.svgBox.l + m.x0 - d.centre.x, d.svgBox.t + m.y0 - d.centre.y) <= 30),
       // (instrument fix before the green: the ratio is read on branches that leave outside the page - under it the 4.2 px cap rules; the cap on all)
-      branches: !!d && d.branch.some((b) => !b.under) && d.branch.every((b) => b.w0 <= 4.2 + 1e-6) && d.branch.filter((b) => !b.under).every((b) => b.ratio >= 0.55 - 1e-6 && b.ratio <= 0.8 + 1e-6),
+      // (instrument fix after g18, run 41904707339: a session's shapes can put every branch under the page, which left the "outside" read with
+      // nothing to read; the spec's rule is read exactly instead - 55-80% of the parent where the 4.2 px cap does not bind, at most 80% where it does)
+      branches: !!d && d.branch.length > 0 && d.branch.every((b) => b.w0 <= 4.2 + 1e-6 && b.ratio <= 0.8 + 1e-6 && (b.w0 >= 4.2 - 1e-6 || b.ratio >= 0.55 - 1e-6)),
       dayGreen: !!d && d.fills.length === 1 && d.fills[0] === 'rgb(79, 107, 44)' && d.fop[1] <= 0.651 && d.fop[0] >= 0.199,
       nightBrown: !!n && n.fills.length === 1 && n.fills[0] === 'rgb(107, 81, 57)' && Math.abs((n.gop ?? 1) - 0.75) <= 0.01,
     };
