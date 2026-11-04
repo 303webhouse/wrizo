@@ -47,9 +47,16 @@ export function mountPergola(): void {
   // the page copy's drawing stands where the room's does on the screen: offset by the page's own position (its padding box)
   const place = () => {
     if (!page || !host) return;
+    // the page may be scaled (its PAGE-SIZE transform, ~1.09x at 1920): place and size the copy in the page's own units, so on the screen it
+    // is the room's drawing to the pixel (after g18, run 41904707339: unscaled, it came out ~9% too large)
     const r = host.getBoundingClientRect();
-    page.drift.style.left = `${-(r.left + host.clientLeft)}px`;
-    page.drift.style.top = `${-(r.top + host.clientTop)}px`;
+    const k = host.offsetWidth > 0 ? r.width / host.offsetWidth : 1;
+    const d = page.drift.style;
+    d.setProperty('--arbor2-pk', String(k));
+    d.left = `${(-r.left - 16) / k - host.clientLeft}px`;
+    d.top = `${(-r.top - 16) / k - host.clientTop}px`;
+    d.width = `${(innerWidth + 32) / k}px`;
+    d.height = `${(innerHeight + 32) / k}px`;
   };
   // the breeze and the drift cross both layers together: the page's animations take the room's start times
   const sync = () => {

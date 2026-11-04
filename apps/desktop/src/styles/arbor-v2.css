@@ -390,7 +390,9 @@
    them off the warm waypoint). Lettering: cream 8.29 / 13.60, quiet #BDB09A 4.91 / 8.05, sage 4.64 / 7.62, brass 4.86 / 7.97 (day / night). */
 :root[data-arbor2][data-theme='plateau'] :is(.chrome-top.sprint-nav, .gh-corner-glyph){ background-color:var(--arbor2-bar); border-color:var(--arbor2-bar-line); }
 :root[data-arbor2][data-theme='plateau'] :is(.desk-frame-strip, .desk-rail){ --desk-ground:var(--arbor2-bar); background-color:var(--arbor2-bar); border-color:var(--arbor2-bar-line); }
-:root[data-arbor2][data-theme='plateau'] :is(.chrome-top.sprint-nav, .desk-frame-strip, .desk-rail, .gh-corner-glyph, .gh-corner-menu){ --ink-900:var(--arbor2-bar); --chrome-surface:var(--arbor2-bar); --ink-border:var(--arbor2-bar-line); --text-mid:#BDB09A; }
+:root[data-arbor2][data-theme='plateau'] :is(.chrome-top.sprint-nav, .desk-frame-strip, .desk-rail, .gh-corner-glyph, .gh-corner-menu){ --ink-900:var(--arbor2-bar); --chrome-surface:var(--arbor2-bar); --ink-border:var(--arbor2-bar-line); --text-mid:#BDB09A; --accent-rest:#A7B27E; }
+/* (after g18, runs 41914807736 / 41913722381: the night olive #85914C on the bars measured 4.32:1 mid-fade, as the bar mixed toward the day olive;
+   the bars' olive marks are the sage #A7B27E in both rooms - 7.62:1 on the brown, 4.64:1 on the olive) */
 
 /* r19 §18.1b - THE RAIL FLOATS LIKE THE TOP BAR (Nick, Nov 4 11:46 am; Fable: Arbor now, every theme at ship): flush left, it stops 40 px below
    the drawn top bar (chrome.ts's --arbor2-bar-bottom) and 40 px above the window's bottom; its bottom group rides up with it. The rail is
@@ -818,12 +820,13 @@
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .mode-page .arbor2-pagesh{ display:block; position:absolute; inset:0; z-index:-1; overflow:hidden; pointer-events:none; user-select:none; -webkit-user-select:none;
   border-radius:inherit; opacity:1; transition:opacity 3s ease; }
 :root[data-arbor2][data-theme='plateau'] .arbor2-pergola .arbor2-pergola-drift{ position:absolute; inset:-16px; }
-:root[data-arbor2][data-theme='plateau'] .arbor2-pagesh .arbor2-pergola-drift{ position:absolute; width:calc(100vw + 32px); height:calc(100vh + 32px); margin:-16px 0 0 -16px; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-pagesh .arbor2-pergola-drift{ position:absolute; }   /* sized and placed in the page's own units by pergola.ts */
 :root[data-arbor2][data-theme='plateau'] :is(.arbor2-pergola, .arbor2-pagesh) .arbor2-pergola-drift{ will-change:transform; animation:arbor2-pergola-drift 20s ease-in-out infinite alternate; }
 :root[data-arbor2][data-theme='plateau'] :is(.arbor2-pergola, .arbor2-pagesh) svg{ display:block; width:100%; height:100%; }
 :root[data-arbor2][data-theme='plateau'] :is(.arbor2-pergola, .arbor2-pagesh) .wz-leaf{ animation:arbor2-breeze 16s ease-in-out infinite; }
 @keyframes arbor2-breeze{ 0%{ transform:rotate(0); } 1.56%{ transform:rotate(8deg); } 3.44%{ transform:rotate(-6deg); } 5.31%{ transform:rotate(3.5deg); } 7.19%{ transform:rotate(-1.5deg); } 8.75%, 100%{ transform:rotate(0); } }
-@keyframes arbor2-pergola-drift{ 0%{ transform:translate(0, 0); } 100%{ transform:translate(12px, -5px); } }
+/* (the page copy drifts in the page's own units: --arbor2-pk is its scale, so 12 px on the screen stays 12 px) */
+@keyframes arbor2-pergola-drift{ 0%{ transform:translate(0, 0); } 100%{ transform:translate(calc(12px / var(--arbor2-pk, 1)), calc(-5px / var(--arbor2-pk, 1))); } }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-off~='shadows'] :is(.arbor2-pergola, .arbor2-pagesh){ display:none; }
 :root[data-arbor2][data-theme='plateau'] .mode-pagecol[data-zoom='true'] .arbor2-pagesh{ display:none; }
 @media print{ .arbor2-pergola, .arbor2-pagesh{ display:none !important; } }
