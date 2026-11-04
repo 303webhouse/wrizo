@@ -316,14 +316,23 @@ export default {
     const problems = [];
     for (const r of reads) {
       if (r.bad.length) problems.push({ stage: r.stage, low: r.bad.slice(0, 4) });
-      if (r.barBg !== ESP || r.railBg !== ESP) problems.push({ stage: r.stage, bars: [r.barBg, r.railBg] });
+      // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 35 §18.2 (Nick, Nov 4; handoff-FABLE-arbor-r19.md §1 B), frames run 41916897391, Arbor 8dd766dc:
+      // the top bar and the rail are no longer espresso #1B120C in both rooms - they are olive #3A4322 by day and brown #241912 by night). Original, verbatim:
+      // if (r.barBg !== ESP || r.railBg !== ESP) problems.push({ stage: r.stage, bars: [r.barBg, r.railBg] });
+      // SUCCESSOR: the bars are the room's - olive #3A4322 by day, brown #241912 by night.
+      const BAR19 = r.room === 'day' ? '#3A4322' : r.room === 'night' ? '#241912' : null;
+      if (!BAR19 || r.barBg !== BAR19 || r.railBg !== BAR19) problems.push({ stage: r.stage, bars: [r.barBg, r.railBg], want: BAR19, room: r.room });
       for (const g of r.grips) if (g.bg !== (g.open ? BRASS : OLIVE)) problems.push({ stage: r.stage, grip: g });
       for (const c of r.cloths) {
         const want = CLOTH[c.id];
         // the olive cloth may be a measured darker step of olive (cream on #6B7A3A is 3.66:1); it must still read olive: green above red above blue
         const isOlive = (h) => { const n = parseInt(h.slice(1), 16), R = n >> 16, G = (n >> 8) & 255, B = n & 255; return G > R && R > B && G - B > 30; };
         // (SUCCESSOR, the brass tab: the current cloth is filled brass with no underline; the others keep their cloth colours, no underline)
-        if (c.on === 'true' ? (c.bg !== BRASS || c.underline) : (!want || (want === 'olive' ? !isOlive(c.bg) : c.bg !== want) || c.underline)) problems.push({ stage: r.stage, cloth: c });
+        // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 35 §18.3 (Nick, Nov 4; handoff-FABLE-arbor-r19.md §1 A), frames run 41916897391, Arbor 8dd766dc:
+        // every tab keeps its own cloth - NO BRASS on any tab; the chosen one only comes forward). Original, verbatim:
+        // if (c.on === 'true' ? (c.bg !== BRASS || c.underline) : (!want || (want === 'olive' ? !isOlive(c.bg) : c.bg !== want) || c.underline)) problems.push({ stage: r.stage, cloth: c });
+        // SUCCESSOR (r19, own cloth): every tab, chosen or not, in its own cloth colour, never brass, with no brass underline.
+        if (!want || (want === 'olive' ? !isOlive(c.bg) : c.bg !== want) || c.bg === BRASS || c.underline) problems.push({ stage: r.stage, cloth: c });
       }
       if (r.heads.some((h) => !/EB Garamond/.test(h.font) || h.caps !== 'small-caps')) problems.push({ stage: r.stage, heads: r.heads.slice(0, 3) });
       if (!/Alegreya Sans/.test(r.type.rail || '') || !/Alegreya Sans/.test(r.type.crumb || '') || !r.type.loaded || r.type.foreign.length) problems.push({ stage: r.stage, type: r.type });
@@ -354,7 +363,8 @@ export default {
   //   reduced motion: a still frame - no pop, no fade, a cut to the rest picture.
   //   in-session only: the history survives leaving the page and coming back; Clear Rhizome (the Mood menu) clears it and Undo brings it back;
   //   the writing and the word count are untouched, and nothing reaches storage.
-  'r5-rhizome': async (app) => {
+  // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 35 §18.1 F (Nick, Nov 4; handoff-FABLE-arbor-r19.md §1 F), frames run 41916897391, Arbor 8dd766dc: under the flag the rhizome is drawn as FILLED, TAPERED VINES (svg.wz-rhizome-field[data-vines='true'] > g.arbor2-vines > path.arbor2-vine; kept laps in g.arbor2-vines-past) - the stroked .wz-rhizome-seg / .wz-rhizome-past growth this screen reads is not drawn (it read segs 0, pastD 0: growing, rest, kept and still red); and by NIGHT the vines stay, barely there (a lighter brown at ~.75), no longer hidden between flashes (Nick's own change, Nov 4: ghost and night rest red). Kept verbatim under the name r5-rhizome-v1 (not in the run list); SUCCESSOR r5-rhizome below.
+  'r5-rhizome-v1': async (app) => {
     await app.evalJs("localStorage.setItem('wrizo-writing-settings', JSON.stringify({ ...JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}'), progress: 'words', progressStyle: 'rhizome' }))");
     await app.evalJs("window.wrizoSetWritingGoal({ n: 8, unit: 'words' })");
     const words = (n, p) => Array.from({ length: n }, (_, i) => p + i).join(' ');
@@ -434,6 +444,40 @@ export default {
     say('r5-rhizome', { night, ok, perSecond, pastOp: after.pastOp, log, stillLog });
     // the picture: by day the faded history with new growth on top, by night the dark (a frame of the still flash is the one above)
     await goal(' ' + words(4, 'grow')); await sleep(800);
+  },
+
+  // SUCCESSOR r5-rhizome (r19, spec draft 35 §18.1 F): the same page, seeds and goal as r5-rhizome-v1 (7 words of a goal of 8); one letter typed
+  // with no space (still 7 words: the goal is not reached, so no flash) puts the page into writing (<html data-wz-writing>). Then, under the
+  // flag: the field is drawn as vines (data-vines='true', at least one path.arbor2-vine, none of the old stroked classes); by DAY while
+  // writing the vines fill leaf green rgb(79, 107, 44); by NIGHT the field stays visible (never visibility:hidden, at rest or writing) with
+  // its vines in the lighter brown rgb(107, 81, 57), the vines' group at ~.75 (barely there, not hidden). The job's tone gives the room.
+  'r5-rhizome': async (app) => {
+    await app.evalJs("localStorage.setItem('wrizo-writing-settings', JSON.stringify({ ...JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}'), progress: 'words', progressStyle: 'rhizome' }))");
+    await app.evalJs("window.wrizoSetWritingGoal({ n: 8, unit: 'words' })");
+    const words = (n, p) => Array.from({ length: n }, (_, i) => p + i).join(' ');
+    await page(app, 'arbor-r5-rz', words(7, 'word'));
+    await waitSoft(app, "!!document.querySelector('.wz-rhizome-field')", { label: 'rhizome field', timeout: 4000 });
+    const V = `(() => { const f = document.querySelector('.wz-rhizome-field'); if (!f) return null; const cs = getComputedStyle(f), g = f.querySelector('.arbor2-vines');
+      const vines = [...f.querySelectorAll('path.arbor2-vine')];
+      return { vinesAttr: f.getAttribute('data-vines'), flash: f.dataset.flash, vis: cs.visibility, display: cs.display, op: Number(cs.opacity), vines: vines.length,
+        fills: [...new Set(vines.map((p) => getComputedStyle(p).fill))], groupOp: g ? Number(getComputedStyle(g).opacity) : null,
+        old: f.querySelectorAll('.wz-rhizome-seg, .wz-rhizome-old, line.wz-rhizome-new').length, writing: document.documentElement.getAttribute('data-wz-writing'),
+        room: document.documentElement.getAttribute('data-arbor2-room'), text: document.querySelector('${ED}')?.innerText.trim().split(/\\s+/).length }; })()`;
+    const rest0 = await app.evalJs(V);
+    await app.evalJs(`document.querySelector('${ED}').focus()`); await app.typeKeys('s');
+    await waitSoft(app, "document.documentElement.getAttribute('data-wz-writing') === 'true'", { label: 'writing', timeout: 4000 }); await sleep(500);
+    const w = await app.evalJs(V);
+    const night = !!w && w.room === 'night';
+    const ok = {
+      field: !!rest0 && !!w,
+      writing: !!w && w.writing === 'true' && w.flash === 'false' && w.text === rest0.text,
+      vines: !!w && w.vinesAttr === 'true' && w.vines >= 1 && w.old === 0,
+      fill: !!w && w.fills.length === 1 && w.fills[0] === (night ? 'rgb(107, 81, 57)' : 'rgb(79, 107, 44)'),
+      // night: barely there, never hidden - the field visible at rest and while writing, the vines' group at ~.75
+      nightVisible: !night || (rest0.vis !== 'hidden' && rest0.display !== 'none' && w.vis !== 'hidden' && w.display !== 'none' && w.groupOp != null && Math.abs(w.groupOp - 0.75) <= 0.02),
+    };
+    if (Object.values(ok).some((v) => !v)) fail('R5-RHIZOME', { bad: Object.keys(ok).filter((k) => !ok[k]), night, rest0, w });
+    say('r5-rhizome', { night, ok, rest0, w });
   },
 
   // ── 4. THE PERGOLA v2 (§7b, day): 3-4 thick beams (36-60 px), one feature from the bottom-left toward the right, LOW (the upper half mostly

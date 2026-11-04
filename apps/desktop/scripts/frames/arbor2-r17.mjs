@@ -43,6 +43,8 @@ const C2 = `(() => { const q = (e) => { if (!e) return null; const r = e.getBoun
 const C2B = C2.replace("wm: cs.writingMode,", "wm: cs.writingMode, bg: cs.backgroundColor, fg: cs.color,");
 if (C2B === C2) throw new Error('C2B did not take');
 const BRASS = 'rgb(255, 152, 0)', WALNUT = 'rgb(43, 29, 18)';
+// r19 (§18.3): the words on the cloths - cream on olive and madder (walnut on the cold blue)
+const CREAM = 'rgb(239, 228, 203)';
 // the 3 px brass band: across the Tools drawer's top edge, down the Tutor drawer's right edge
 const band3 = (shadow, side) => (side === 'top' ? /rgb\(255, 152, 0\) 0px 3px 0px( 0px)? inset/ : /rgb\(255, 152, 0\) -3px 0px 0px( 0px)? inset/).test(String(shadow || ''));
 // a page written before (seeded while the flag is off: born unflagged, no size) reads 12; a page born now through the Write door reads 11
@@ -121,7 +123,8 @@ export default guarded({
     if (Object.values(ok).some((x) => !x)) fail('R17-TABS', brief);
     say('r17-tabs', brief);
   },
-  'r17-tabs': async (app) => {
+  // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 35 §18.3 (Nick, Nov 4; handoff-FABLE-arbor-r19.md §1 A), frames run 41909488956, Arbor 8dd766dc: every folder tab keeps its own cloth - NO BRASS on any tab - and the chosen tab COMES FORWARD in front of its neighbours, +8 px further out and +8 px longer (Tools 104 wide, 33 above the drawer's top edge; Tutor 33 out from its right edge, 106 long), reaching 3 px into a 3 px border of its own colour on the drawer's top, outer side and bottom (GRAFTS chosen = a blue border). Falsified: toolsShape, toolsOnEdge, toolsOpenFront, tutorShape, tutorOffEdge, tutorOpenFront, graftsBrass). Kept verbatim under the name r17-tabs-v2 (not in the run list); SUCCESSOR r17-tabs below.
+  'r17-tabs-v2': async (app) => {
     await page(app, 'arbor-r17-tabs', 'Draft');
     await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(150); await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()");
     await app.evalJs(FINISH); await sleep(700); await app.evalJs(FINISH);
@@ -157,6 +160,70 @@ export default guarded({
     const brief = { ok, tools: L.map((t) => [t.id.replace('wz-sliver-tab-', ''), t.on, Math.round(t.r.l), Math.round(t.r.w), Math.round(t.r.h), Math.round(t.r.b)]), slideTop: a.ls && Math.round(a.ls.t),
       tutor: R.map((t) => [t.id.replace('wz-tutor-tab-', ''), t.on, Math.round(t.r.t), Math.round(t.r.w), Math.round(t.r.h), Math.round(t.r.l)]), slideRight: a.rs && Math.round(a.rs.r), openerFoot: a.rt && Math.round(a.rt.b),
       bands: [a.lBand, a.rBand, g.rBand], shadow: sh, fills: [...L, ...R, ...g.right].map((t) => [t.id.replace(/wz-(sliver|tutor)-tab-/, ''), t.on, t.bg, t.fg, t.deco]) };
+    if (Object.values(ok).some((x) => !x)) fail('R17-TABS', brief);
+    say('r17-tabs', brief);
+  },
+  // SUCCESSOR r17-tabs (r19, spec draft 35 §18.3): every tab in its own cloth with its own word colour (cream on olive and madder, walnut on
+  // blue), no brass and no underline on any tab; the chosen tab in front, +8 out and +8 long (Tools 104 x 36, its top 33 above the drawer's top
+  // edge and its foot 3 px into the border; Tutor 36 x 106, its outer edge 33 out from the drawer's right edge and its inner edge 3 px into the
+  // border), its neighbours where they stand when nothing is chosen (each tab's slot, the chosen one's minus its 4 px overhang each side - 8 at
+  // the foot for a first Tutor tab - keeps the r17 rhythm; BOARD's rect is the same with TUTOR or GRAFTS chosen); the drawer's border 3 px of
+  // the chosen cloth on top, outer side and bottom, the page side flush (GRAFTS chosen = the blue). The still-true keys are kept as they were.
+  'r17-tabs': async (app) => {
+    await page(app, 'arbor-r17-tabs', 'Draft');
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(150); await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()");
+    await app.evalJs(FINISH); await sleep(700); await app.evalJs(FINISH);
+    const a = await app.evalJs(C2B);
+    await app.evalJs("document.querySelector('#wz-tutor-tab-links')?.click()"); await sleep(300); await app.evalJs(FINISH);
+    const g = await app.evalJs(C2B);
+    await app.evalJs("document.querySelector('#wz-tutor-tab-tutor')?.click()");
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(150); await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()");
+    await app.evalJs(FINISH); await sleep(700); await app.evalJs(FINISH);
+    const shut = await app.evalJs(C2B);
+    const near = (x, y, t = 1) => x != null && y != null && Math.abs(x - y) <= t;
+    const L = a.left, R = a.right, lo = L.find((t) => t.on), ro = R.find((t) => t.on);
+    const seq = (arr, f) => arr.slice(1).every((t, i) => f(arr[i], t));
+    const shadow = (f) => { const m = String(f || '').match(/drop-shadow\(.*?\)\s*(-?[\d.]+)px\s+(-?[\d.]+)px\s+([\d.]+)px/) || String(f || '').match(/drop-shadow\((-?[\d.]+)px\s+(-?[\d.]+)px\s+([\d.]+)px/); return m ? m.slice(1, 4).map(Number) : null; };
+    const sh = [shadow(a.lFilter), shadow(a.rFilter)];
+    // each tab's slot: where it stands unchosen (the chosen Tools tab overhangs 4 px each side; the chosen Tutor tab 4 px top and bottom, or 8 at the foot when first)
+    const slotL = (t) => (t.on ? { l: t.r.l + 4, r: t.r.r - 4 } : { l: t.r.l, r: t.r.r });
+    const slotR = (t, i) => (t.on ? (i === 0 ? { t: t.r.t, b: t.r.b - 8 } : { t: t.r.t + 4, b: t.r.b - 4 }) : { t: t.r.t, b: t.r.b });
+    // the drawer's border: exactly three 3 px insets of the chosen cloth - top, the outer side (Tools +3 x, Tutor -3 x), bottom - none on the page side
+    const parts = (s) => String(s || '').split(/,(?![^()]*\))/).map((p) => p.trim()).filter(Boolean).map((p) => { const m = p.match(/^(rgba?\([^)]*\))\s+(-?[\d.]+)px\s+(-?[\d.]+)px\s+([\d.]+)px(?:\s+(-?[\d.]+)px)?\s+inset$/); return m ? { c: m[1], x: +m[2], y: +m[3], blur: +m[4] } : { raw: p }; });
+    const border3 = (s, rgb, outerX) => { const ps = parts(s); return ps.length === 3 && [[0, 3], [outerX, 0], [0, -3]].every(([x, y]) => ps.some((p) => p.c === rgb && p.x === x && p.y === y && p.blur === 0)); };
+    const WORD = { 'wz-sliver-tab-format': CREAM, 'wz-sliver-tab-presets': WALNUT, 'wz-sliver-tab-ink': CREAM, 'wz-tutor-tab-tutor': CREAM, 'wz-tutor-tab-links': WALNUT, 'wz-tutor-tab-board': CREAM };
+    const ownCloth = (t) => t.bg === CLOTH[t.id] && t.fg === WORD[t.id];
+    const noBrass = (t) => t.bg !== BRASS && t.fg !== BRASS && !/underline/.test(t.deco) && !/255,\s*152,\s*0/.test(String(t.decoC));
+    const board = (s) => s.right.find((t) => t.id === 'wz-tutor-tab-board');
+    const ok = {
+      // (SUCCESSOR, r19: unchosen 96 x 25; the chosen one 104 x 36, its top 33 above the drawer's top edge, its foot 3 px into the border)
+      toolsShape: L.length >= 2 && !!lo && L.every((t) => (t.on ? near(t.r.w, 104) && near(t.r.h, 36) : near(t.r.w, 96) && near(t.r.h, 25))),
+      // (SUCCESSOR, r19: the unchosen on the edge; the chosen 33 above it and 3 into the border; the slots keep r17's 12 px overlap, within the drawer)
+      toolsOnEdge: L.every((t) => (t.on ? near(t.r.t, a.ls.t - 33) && near(t.r.b, a.ls.t + 3) : near(t.r.b, a.ls.t))) && seq(L, (p, n) => near(slotL(n).l, slotL(p).r - 12)) && L.every((t) => slotL(t).l >= a.ls.l - 0.5),
+      // (SUCCESSOR, r19: the chosen tab in front, in its own cloth and word, no brass, no underline; the border 3 px of its cloth on top, left and bottom)
+      toolsOpenFront: !!lo && L.every((t) => t.on || t.z < lo.z) && ownCloth(lo) && noBrass(lo) && border3(a.lBand, CLOTH[lo.id], 3),
+      toolsBehindInCloth: L.filter((t) => !t.on).every((t) => t.bg === CLOTH[t.id]),
+      // (SUCCESSOR, r19: unchosen 25 x 98; the chosen 36 x 106; words top to bottom)
+      tutorShape: R.length === 3 && !!ro && R.every((t) => (t.on ? near(t.r.w, 36) && near(t.r.h, 106) : near(t.r.w, 25) && near(t.r.h, 98)) && /vertical-rl/.test(t.wm)),
+      // (SUCCESSOR, r19: the unchosen off the edge; the chosen 3 into the border and 33 out; >= 12 below the opener; the slots keep r17's 10 px overlap)
+      tutorOffEdge: R.every((t) => (t.on ? near(t.r.l, a.rs.r - 3) && near(t.r.r, a.rs.r + 33) : near(t.r.l, a.rs.r))) && R[0].r.t >= a.rt.b + 12 - 0.5 && seq(R.map(slotR), (p, n) => near(n.t, p.b - 10)),
+      // (SUCCESSOR, r19: the chosen tab in front, in its own cloth and word, no brass, no underline; the border 3 px of its cloth on top, right and bottom)
+      tutorOpenFront: !!ro && R.every((t) => t.on || t.z < ro.z) && ownCloth(ro) && noBrass(ro) && border3(a.rBand, CLOTH[ro.id], -3),
+      tutorBehindInCloth: R.filter((t) => !t.on).every((t) => t.bg === CLOTH[t.id]),
+      clearOfOpeners: L.every((t) => t.r.b <= a.lt.t + 0.5) && R.every((t) => t.r.t >= a.rt.b),
+      shadow: sh.every((s) => !!s && Math.abs(s[0]) <= 2 && Math.abs(s[1]) <= 2 && s[2] <= 3),
+      // (SUCCESSOR of graftsBrass, r19: GRAFTS chosen stays its cold blue with a walnut word and comes forward; TUTOR back in its olive; the border
+      // the blue; BOARD has not moved)
+      graftsChosenBlue: g.right.find((t) => t.on)?.id === 'wz-tutor-tab-links' && ownCloth(g.right.find((t) => t.on)) && g.right.find((t) => t.id === 'wz-tutor-tab-tutor')?.bg === CLOTH['wz-tutor-tab-tutor'] && border3(g.rBand, CLOTH['wz-tutor-tab-links'], -3)
+        && !!board(a) && !!board(g) && ['l', 't', 'w', 'h'].every((k) => near(board(a).r[k], board(g).r[k], 0.5)),
+      // (r19: no brass anywhere on the tabs - fill, word, underline - with TUTOR or GRAFTS chosen, nor in either border)
+      noBrassOnTabs: [...L, ...R, ...g.right].every(noBrass) && ![a.lBand, a.rBand, g.rBand].some((s) => /255,\s*152,\s*0/.test(String(s))),
+      goneWhenShut: !shut.lShown && !shut.rShown,
+      openersAsBuilt: [a.lt, a.rt, shut.lt, shut.rt].every((r) => near(r.w, 16) && near(r.h, 34)),
+    };
+    const brief = { ok, tools: L.map((t) => [t.id.replace('wz-sliver-tab-', ''), t.on, Math.round(t.r.l), Math.round(t.r.t), Math.round(t.r.w), Math.round(t.r.h), Math.round(t.r.b), t.z]), slideTop: a.ls && Math.round(a.ls.t), slideLeft: a.ls && Math.round(a.ls.l),
+      tutor: R.map((t) => [t.id.replace('wz-tutor-tab-', ''), t.on, Math.round(t.r.t), Math.round(t.r.l), Math.round(t.r.w), Math.round(t.r.h), Math.round(t.r.r), t.z]), slideRight: a.rs && Math.round(a.rs.r), openerFoot: a.rt && Math.round(a.rt.b),
+      boardRects: [board(a)?.r, board(g)?.r], bands: [a.lBand, a.rBand, g.rBand], shadow: sh, fills: [...L, ...R, ...g.right].map((t) => [t.id.replace(/wz-(sliver|tutor)-tab-/, ''), t.on, t.bg, t.fg, t.deco]) };
     if (Object.values(ok).some((x) => !x)) fail('R17-TABS', brief);
     say('r17-tabs', brief);
   },
