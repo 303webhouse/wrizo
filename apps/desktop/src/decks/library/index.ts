@@ -14,11 +14,7 @@ import { businessProposalDeck } from './businessProposal';
 import { fromMyPagesDeck } from './fromMyPages';
 import type { DeckDefinition, DeckRoom } from '../types';
 
-// B3 S2 — the v1 ship set: the committee's six flagships plus Character
-// Study, promoted on Fable's own call (item 36) as the threads
-// demonstration. Nick ratifies/cuts/re-promotes by a word (this brief's own
-// wording) — this array is the ONE place that decision lives; every door
-// (CreateProject.tsx, BoardEditor.tsx) reads it, never a hand-copied list.
+// the ship set: the six flagships plus Character Study, the threads demonstration. This array is the ONE place the set lives; every door (CreateProject.tsx, BoardEditor.tsx) reads it, never a hand-copied list. [index §1]
 export const DECKS: DeckDefinition[] = [
   threeActDeck,
   worldbuildingDeck,
