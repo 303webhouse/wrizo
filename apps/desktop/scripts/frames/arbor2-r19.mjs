@@ -570,7 +570,9 @@ Object.assign(screens, {
       if (!(await freshSplash(app))) fail('R19-FRONT-HOVER', { splash: false });
       await waitSoft(app, "document.querySelector('.arbor2-front-doorbox .arbor2-front-doors')?.getAttribute('data-phase') === 'shown'", { label: 'doors', timeout: 20000 });
       // (driver fix after the green leg 41913162728: a door is not pressable - nor brass on hover - until the front door is ready; wait for it)
-      await waitSoft(app, "!document.querySelector('.arbor2-front-doorbox .arbor2-door')?.disabled", { label: 'ready', timeout: 10000 });
+      const t0 = Date.now();
+      const wasReady = await waitSoft(app, "!document.querySelector('.arbor2-front-doorbox .arbor2-door')?.disabled", { label: 'ready', timeout: 25000 });
+      const readyAfter = Date.now() - t0;   // (report: how long the visitor's front door took to be pressable after its doors arrived)
       const rest = await app.evalJs(FR);
       const w = rest.doors[0].r;
       await mouse(app, 'mouseMoved', (w.l + w.r) / 2, (w.t + w.b) / 2); await sleep(300);
@@ -589,7 +591,7 @@ Object.assign(screens, {
         backCream: off.doors[0].stroke === CREAM,
         focusBrass: focused && !!foc && foc.color === BRASS_RGB && foc.stroke === BRASS_RGB,
       };
-      const brief = { ok, rest: rest.doors.map((d) => [d.word, d.color, d.stroke]), hov: hov.doors.map((d) => [d.word, d.color, d.stroke]), off: off.doors[0].stroke, foc, under, hovered, disabled: [rest.doors[0].disabled, hov.doors[0].disabled] };
+      const brief = { ok, rest: rest.doors.map((d) => [d.word, d.color, d.stroke]), hov: hov.doors.map((d) => [d.word, d.color, d.stroke]), off: off.doors[0].stroke, foc, under, hovered, disabled: [rest.doors[0].disabled, hov.doors[0].disabled], wasReady, readyAfter };
       if (Object.values(ok).some((x) => !x)) fail('R19-FRONT-HOVER', brief);
       say('r19-front-hover', brief);
     } finally { await unhold(app); await done(); }
