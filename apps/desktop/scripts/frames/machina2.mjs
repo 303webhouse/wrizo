@@ -105,7 +105,10 @@ export default {
       if (r.bad.length) problems.push({ stage: r.stage, low: r.bad.slice(0, 4) });
       if (r.room !== ROOM[`${r.light}-${r.neutral}`]) problems.push({ stage: r.stage, room: r.room });
       if (r.bar !== BAR[r.neutral] || r.rail !== BAR[r.neutral]) problems.push({ stage: r.stage, bars: [r.bar, r.rail] });
-      if (r.paper !== (r.light ? '#FBFBFA' : '#1A1B1D') || !['#1C1C1C', '#E6E6E3'].includes(r.ink)) problems.push({ stage: r.stage, page: [r.paper, r.ink] });
+      // PARKED 2026-11-04 (SUPERSEDED, Machina r10 (gm10, run 41926822675): the dark page's ink #E6E6E3 measured 13.78:1 on #1A1B1D, under the 13.9 floor (m2r10-fade-paper, run 41911861965); r10 lifts it to #E8E8E5 (14.04:1)). Original, verbatim:
+      // if (r.paper !== (r.light ? '#FBFBFA' : '#1A1B1D') || !['#1C1C1C', '#E6E6E3'].includes(r.ink)) problems.push({ stage: r.stage, page: [r.paper, r.ink] });
+      // SUCCESSOR: the same pair, with the dark page's ink #E8E8E5.
+      if (r.paper !== (r.light ? '#FBFBFA' : '#1A1B1D') || !['#1C1C1C', '#E8E8E5'].includes(r.ink)) problems.push({ stage: r.stage, page: [r.paper, r.ink] });
       if (r.plan && r.plan !== '#8FA3B8') problems.push({ stage: r.stage, plan: r.plan });   // the Plan door sits on the dark bar in both rooms
       if (r.white) problems.push({ stage: r.stage, white: r.white });
     }

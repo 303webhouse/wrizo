@@ -49,7 +49,10 @@ const RECT = `(() => { const r = (el) => { if (!el) return null; const b = el.ge
 const same = (a, b) => !!a && !!b && ['l', 't', 'w', 'h'].every((k) => Math.abs(a[k] - b[k]) <= 0.5);
 // the spec's rooms (§2) and pages: ROOM[room][cast], PAPER[tone]
 const ROOMS = { light: { cool: '#E6E8EA', neutral: '#E9E6E1' }, dark: { cool: '#151719', neutral: '#171614' } };
-const PAPER = { light: '#FBFBFA', dark: '#1A1B1D' }, INK = { light: '#1C1C1C', dark: '#E6E6E3' };
+// PARKED 2026-11-04 (SUPERSEDED, Machina r10 (gm10, run 41926067774): the dark page's ink #E6E6E3 measured 13.78:1 on #1A1B1D, under the 13.9 floor (m2r10-fade-paper, run 41911861965); r10 lifts it to #E8E8E5 (14.04:1)). Original, verbatim:
+// const PAPER = { light: '#FBFBFA', dark: '#1A1B1D' }, INK = { light: '#1C1C1C', dark: '#E6E6E3' };
+// SUCCESSOR: the same, with the dark page's ink #E8E8E5.
+const PAPER = { light: '#FBFBFA', dark: '#1A1B1D' }, INK = { light: '#1C1C1C', dark: '#E8E8E5' };
 const BAR = { cool: '#1E262E', neutral: '#201E1B' };
 
 export default {

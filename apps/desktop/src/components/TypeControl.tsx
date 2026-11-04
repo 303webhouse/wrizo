@@ -189,12 +189,40 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
   // size box - held selection, draftRef - which now draws the box in every form, so the mockup's own form condition retired with it.)
   const mockBox = isMachina2() && theme === 'machina';
   const strictSize = (raw: string): number | null => { const t = raw.trim(); if (!/^\d{1,2}$/.test(t)) return null; const n = Number(t); return n >= 6 && n <= 72 ? n : null; };
-  // (r10: the r8 fix that kept the highlighted words for this box retired on the rebase - main's size box now holds the selection itself, holdBox)
+  // (fix after the green look, runs 41572170258 / 41572201080: with words highlighted, pressing into the box moved the page's selection into
+  // the box, so the highlighted-words road found no range and did nothing. Under the flag the box keeps the highlight it was opened on and gives
+  // it back before sizing, so it sizes those words, as - and + do. r10: put back on top of main's own hold after the rebase - main's holdBox alone
+  // did not size them under the flag (gm10, run 41922077883: "The" highlighted, 30 typed in Build, nothing sized).)
+  const keptRange = useRef<Range | null>(null);
+  // the last highlight made outside this control (a Tab into the box, or a focus that lands after the selection moved, finds it here)
+  const lastHighlight = useRef<Range | null>(null);
+  useEffect(() => {
+    if (!mockBox) return undefined;
+    const onSel = () => { const sel = window.getSelection(); if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return; const r = sel.getRangeAt(0); if (rootRef.current && rootRef.current.contains(r.commonAncestorContainer)) return; lastHighlight.current = r.cloneRange(); };
+    document.addEventListener('selectionchange', onSel);
+    return () => document.removeEventListener('selectionchange', onSel);
+  }, [mockBox]);
+  const holdHighlight = () => {
+    if (!mockBox || selSize === null) { keptRange.current = null; return; }
+    const sel = window.getSelection();
+    const live = sel && sel.rangeCount > 0 && !sel.isCollapsed && !(rootRef.current && rootRef.current.contains(sel.getRangeAt(0).commonAncestorContainer)) ? sel.getRangeAt(0).cloneRange() : null;
+    keptRange.current = live ?? lastHighlight.current;
+  };
   const commitDraft = () => {
     const typed = draftRef.current;
     if (typed === null) return;
     const n = mockBox ? strictSize(typed) : normalizeTypedSize(typed);
     setDraft(null);                          // a refused entry snaps back to the previous value
+    const kept = keptRange.current; keptRange.current = null;
+    if (n !== null && mockBox && kept && scope?.onSizeSelection) {
+      // the page first takes the focus back, THEN the highlight is put back (set while the box still had the focus, the page's own refocus moved
+      // it a character: run 41572970938 sized 'he' for a highlighted 'The'), then only those words are sized
+      const startEl = kept.startContainer.nodeType === 1 ? (kept.startContainer as Element) : kept.startContainer.parentElement;
+      (startEl?.closest('[contenteditable="true"]') as HTMLElement | null)?.focus({ preventScroll: true });
+      const sel = window.getSelection(); sel?.removeAllRanges(); sel?.addRange(kept);
+      scope.onSizeSelection(n);
+      return;
+    }
     if (n !== null && n !== shownSize) sizeTo(n);
   };
 
@@ -265,18 +293,23 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
       )}
       <div className="wz-type-size">
         <button type="button" className="mode-tbtn wz-type-step" aria-label={t('typeSmaller')} aria-disabled={down === null} onMouseDown={keepFocus} onClick={() => { if (down !== null) sizeTo(down); }}>{'−'}</button>
-        <input
-          className="wz-type-num"
-          type="text"
-          inputMode="decimal"
-          aria-label={t('typeSize')}
-          value={draft ?? formatSize(shownSize)}
-          onChange={(e) => setDraft(e.target.value)}
-          onMouseDownCapture={holdBox}
-          onFocus={holdBox}
-          onBlur={() => { commitDraft(); if (held) { setHeld(null); scope?.releaseSelection?.(); } }}
-          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commitDraft(); (e.target as HTMLInputElement).blur(); } else if (e.key === 'Escape') setDraft(null); }}
-        />
+        {/* MACHINA v2 MOCKUP r8 (the Wrizors' note md5 a17aae25: "- [ 11 pt ] +"): under the flag the number and its unit share one hairline box; r10
+            put the wrapper back around main's input after the rebase took main's markup */}
+        <span className={mockBox ? 'wz-type-num-box' : 'wz-type-num-plain'}>
+          <input
+            className="wz-type-num"
+            type="text"
+            inputMode="decimal"
+            aria-label={t('typeSize')}
+            value={draft ?? formatSize(shownSize)}
+            onChange={(e) => setDraft(e.target.value)}
+            onMouseDownCapture={() => { holdHighlight(); holdBox(); }}
+            onFocus={() => { holdHighlight(); holdBox(); }}
+            onBlur={() => { commitDraft(); if (held) { setHeld(null); scope?.releaseSelection?.(); } }}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commitDraft(); (e.target as HTMLInputElement).blur(); } else if (e.key === 'Escape') setDraft(null); }}
+          />
+          {mockBox && <span className="wz-type-num-unit" aria-hidden="true">pt</span>}
+        </span>
         <button type="button" className="mode-tbtn wz-type-step" aria-label={t('typeLarger')} aria-disabled={up === null} onMouseDown={keepFocus} onClick={() => { if (up !== null) sizeTo(up); }}>+</button>
       </div>
     </div>
