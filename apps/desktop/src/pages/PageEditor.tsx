@@ -298,6 +298,8 @@ function PageEditorView({ id }: { id: string }) {
   unbornRef.current = unborn;
   const lastSavedRef = useRef(initialText);
   const editorRef = useRef<HTMLDivElement>(null);
+  // TOOLS #14-r3: the size box's HELD highlight (see holdSizeSelection below). A hook, so it lives up here with the others, above the vanished-page early return - r2 put it below that return (hooks-order-ast red)
+  const heldSelRef = useRef<{ start: number; end: number } | null>(null);
   // ITEM 122 — the Draft rail's active state. Read from the DOM caret rather
   // than threaded through a new prop: `editorRef` is already the editor's own
   // host div here (the same one `applyCaret` writes through), and
@@ -1049,7 +1051,6 @@ function PageEditorView({ id }: { id: string }) {
   // where the page's text can be rewritten in place; Free Write's forward-only runway is never rewritten by a tool). One undo step.
   // POLISH #10 item 4 (Nick ruled A, Oct 25): a size for the HIGHLIGHTED words only - the face's own road (one atomic undo step, through the rows)
   // TOOLS #14-r2: the size box holds the highlight while it has focus (a text field takes the page's selection), so a typed size reaches the words that were highlighted
-  const heldSelRef = useRef<{ start: number; end: number } | null>(null);
   const holdSizeSelection = (): boolean => { const el = editorRef.current; const s = el ? getSelectionOffsets(el) : null; if (!s || s.start === s.end) return false; heldSelRef.current = s; return true; };
   const applySizeAt = (points: number) => {
     const el = editorRef.current;
