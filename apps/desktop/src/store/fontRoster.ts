@@ -1,21 +1,4 @@
-// ITEM 207 (phase 1, 207a) — THE FONT ROSTER: nine faces, one data table, one resolver, one loader.
-//
-// THE NINE (Nick approved the list; PLAN desk's amendment §11): Crimson Pro (the default) · Lora · EB Garamond ·
-// Source Serif 4 · Times New Roman · Figtree · Atkinson Hyperlegible · Arial · Courier Prime.
-//
-// TIMES NEW ROMAN AND ARIAL ARE NAMED, NEVER SHIPPED (proprietary). Each stack names the installed font first
-// and falls back to a metric-compatible open face - Tinos for Times New Roman, Arimo for Arial - so a machine that
-// lacks the font breaks the same text at the same places (identical advance widths). What that buys is line-break
-// identity across machines, NOT a match to a style guide's line length (that is a property of the sheet).
-//
-// LOAD ON CHOOSE, DEFAULT EAGER. Crimson Pro, Figtree and Courier Prime are imported eagerly in main.tsx (unchanged
-// - the default face is present at first paint, and Courier is the screenplay face). Every other face is a dynamic
-// import of its CSS, fired when the writer CHOOSES it or when a page that uses it OPENS - never at startup. The
-// eager list does not grow (item207.mjs checks that against main.tsx).
-//
-// SIZE-ADJUST (Fable's ruling, 2026-09-24): every face carries `sizeAdjust`, and every one is 1. The size number is
-// LITERAL printed points - a writer following a style guide types 12 and means 12 - so no face is normalised to
-// another's x-height. The field is the seam: changing a face's apparent size later is one number in this table.
+// the font roster: nine faces, one table, one resolver, one loader; Times New Roman and Arial are named, never shipped (metric-compatible open fallbacks keep line breaks identical); default faces eager, the rest load on choose [fontRoster §1]
 import { SIZE_DEFAULT, PAGE_SIZE_DEFAULT, PAGE_PT_FALLBACK } from './fontSize';
 import type { StoredFace, FaceGeneric, FaceSource } from '../types';
 
@@ -44,7 +27,7 @@ export const ROSTER: readonly RosterFace[] = [
   { name: 'Lora', generic: 'serif', source: 'bundled', group: 'serif', sizeAdjust: 1, eager: false,
     load: both(() => import('@fontsource-variable/lora/wght.css'), () => import('@fontsource-variable/lora/wght-italic.css')),
     stack: "'Lora Variable', Georgia, serif" },
-  // EB Garamond is ARBOR'S DEFAULT writing face (TOOLS #10 item 10): it loads WITH the theme (store/themeFontFaces.ts) or when chosen - never eagerly.
+  // Arbor's default writing face: it loads with the theme (themeFontFaces.ts) or when chosen, never eagerly [fontRoster §2]
   { name: 'EB Garamond', generic: 'serif', source: 'bundled', group: 'serif', sizeAdjust: 1, eager: false,
     load: both(() => import('@fontsource-variable/eb-garamond/wght.css'), () => import('@fontsource-variable/eb-garamond/wght-italic.css')),
     stack: "'EB Garamond Variable', Georgia, serif" },
@@ -56,7 +39,7 @@ export const ROSTER: readonly RosterFace[] = [
     stack: "'Times New Roman', 'Tinos', Times, serif" },
   { name: 'Figtree', generic: 'sans-serif', source: 'bundled', group: 'sans', sizeAdjust: 1, eager: true, load: none,
     stack: "'Figtree Variable', system-ui, sans-serif" },
-  // TOOLS #10 item 10: two new roster faces - the theme defaults Flux (Titillium Web) and Machina (Source Sans 3) wear. Load on choose, or with their theme (store/themeFontFaces.ts); never eager.
+  // the defaults Flux (Titillium Web) and Machina (Source Sans 3) wear: load on choose or with their theme, never eager [fontRoster §3]
   { name: 'Source Sans 3', generic: 'sans-serif', source: 'bundled', group: 'sans', sizeAdjust: 1, eager: false,
     load: both(() => import('@fontsource-variable/source-sans-3/wght.css'), () => import('@fontsource-variable/source-sans-3/wght-italic.css')),
     stack: "'Source Sans 3 Variable', system-ui, sans-serif" },
@@ -75,8 +58,7 @@ export const ROSTER: readonly RosterFace[] = [
 
 export const DEFAULT_FACE_NAME = 'Crimson Pro';
 
-/** TOOLS #10 item 10 - the face each theme's DEFAULT writing face is, by voice (Nick, Oct 24): serif voice = the theme's default, sans voice = its sans. Kept in step with index.css's --font-proseSerif / --font-proseSans per theme
- *  (theme-fonts-source.mjs reads both and fails on drift). It is what "Default (<face>)" names, so the row never depends on a DOM read to say a name. */
+// each theme's default writing face, by voice; kept in step with the CSS tokens (theme-fonts-source.mjs fails on drift), so "Default (<face>)" never needs a DOM read [fontRoster §4]
 export const THEME_DEFAULT_FACE: Readonly<Record<string, { serif: string; sans: string }>> = {
   plateau: { serif: 'EB Garamond', sans: 'Figtree' },
   flux: { serif: 'Titillium Web', sans: 'Chakra Petch' },
@@ -112,7 +94,7 @@ export function faceForSlug(slug: string): StoredFace {
   return { name, generic: 'serif', source: 'named' };
 }
 
-/** The stored form of a face the writer added from this device's own fonts (TOOLS #10 item 11): the record that already existed, `source: 'device'`. */
+// the stored form of a face added from this device's own fonts: the existing record, `source: 'device'` [fontRoster §5]
 export function deviceFace(name: string): StoredFace {
   return { name, generic: 'serif', source: 'device' };
 }
@@ -133,7 +115,7 @@ export function faceStack(stored: StoredFace | undefined): string | undefined {
   if (!stored || typeof stored.name !== 'string' || !stored.name) return undefined;
   const known = rosterFace(stored.name);
   if (known) return known.stack;
-  // TOOLS #10 item 11: a face the writer added from THIS device (store/installedFonts.ts) falls back to the THEME'S DEFAULT when it is not installed (another device) - never to a generic class of its own.
+  // a device face missing here falls back to the theme's default, never to a generic class [fontRoster §6]
   if (stored.source === 'device') return `${quote(stored.name)}, var(--font-prose)`;
   const generic: FaceGeneric = stored.generic === 'sans-serif' || stored.generic === 'monospace' ? stored.generic : 'serif';
   return `${quote(stored.name)}, ${GENERIC_STACK[generic]}`;
@@ -174,9 +156,7 @@ export function cardTypeStyle(face: StoredFace | undefined, size: number | undef
   return Object.keys(out).length ? out : undefined;
 }
 
-/** The inline style a writing surface applies for its page's own face and size; empty when the page never chose (the host then draws
- *  PAGE_SIZE_DEFAULT). `size` is points. PAGE-SIZE (ruling a): real points in page units, `n x --wz-pt`, so the type scales with the page.
- *  (Before page-size: `17px x n/11 x --paper-scale`, with 11 the default - PROSE_BASE_PX / SIZE_DEFAULT, now the card's record only.) */
+// a page's face and size as inline style; size is real points in page units (n x --wz-pt), so the type scales with the page [fontRoster §7]
 export function pageTypeStyle(face: StoredFace | undefined, size: number | undefined): { fontFamily?: string; fontSize?: string } {
   const out: { fontFamily?: string; fontSize?: string } = {};
   const stack = faceStack(face);

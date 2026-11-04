@@ -1,5 +1,4 @@
-// POLISH #10 item 24 (Nick, via Fable, Oct 25) - THE LINK DOCK's slot: which linked card or page stands docked beside a page, ONE per page, on THIS
-// device only. A UI setting (localStorage, as the per-page mode and typewriter keys), never a collection and never synced - nothing saved changes.
+// the link dock's slot: which linked card or page stands docked beside a page, one per page, this device only (localStorage), never synced [linkDock §1]
 import { useSyncExternalStore } from 'react';
 
 export interface LinkDockRef { entryId: string; boxId?: string }

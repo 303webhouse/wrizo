@@ -108,7 +108,7 @@ function boardBody(entry: JournalEntry, plainCards = false): string {
     if (box.kind === 'connection' || box.kind === 'board-meta') continue; // not cards — skipped by name (lane titles ride the header above)
     if (box.kind === 'text') {
       const title = firstLine(box.text ?? '');
-      parts.push(`## ${title}\n\n${plainCards ? stripMarkdownConventions(box.text ?? '') : (box.text ?? '')}`);   // POLISH #10 item 4: the .txt reads the words
+      parts.push(`## ${title}\n\n${plainCards ? stripMarkdownConventions(box.text ?? '') : (box.text ?? '')}`);   // the .txt reads the words [pageExport §1]
     } else if (box.kind === 'ink') {
       parts.push(`## Ink card\n\n${INK_PLACEHOLDER}`);
     } else if (box.kind === 'page-pin') {
@@ -143,7 +143,7 @@ export function pageBodyFormatted(entry: JournalEntry): string {
 // stripped back to honest plain reading text.
 export function pageBodyPlain(entry: JournalEntry): string {
   if (entry.pageType === 'script') return entry.script ? plainScriptWords(entry.script) : (entry.text ?? '');
-  if (entry.pageType === 'board') return boardBody(entry, true); // POLISH #10 item 4: the .txt strips the cards' conventions and style spans to their words
+  if (entry.pageType === 'board') return boardBody(entry, true); // the .txt strips the cards' conventions and style spans to their words [pageExport §2]
   if (entry.pageSettings?.template === 'outline') return outlineBody(entry.text ?? '', 'plain');
   if (entry.pageSettings?.template === 'bibliography') return bibliographyBody(entry.text ?? '', 'plain');
   return stripMarkdownConventions(entry.text ?? '');
@@ -257,15 +257,7 @@ export function exportEverythingDocument(): MultiDocResult {
   const live = getJournalEntries()
     .filter(e => getSystemKind(e) === undefined)
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-  // S3 (E1.1) — the Trash rides along (Nick's word, ratified 2026-07-23).
-  // Every soft-deleted page, rendered by the SAME pageBlock machinery as a
-  // live page, clearly separated AFTER the live pages under an honest
-  // "## From the Trash" marker — never silently vanished from the writer's
-  // vacation insurance, and never RESURRECTED either: getDeletedEntries is a
-  // read-only enumeration (clones only; nothing here clears deletedAt or
-  // mutates a trashed row). System Boards stay excluded from BOTH lists
-  // (derived membership mirrors, zero unique words). Chronological, same as
-  // the live pages.
+  // the Trash rides along: every soft-deleted page, after the live pages under "## From the Trash"; read-only (nothing is resurrected); system boards excluded [pageExport §3]
   const trashed = getDeletedEntries()
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
   const liveBody = live.length ? live.map(pageBlock).join(PAGE_SEPARATOR) : '(Nothing written yet.)';

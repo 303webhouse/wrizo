@@ -14,9 +14,7 @@ export interface Territory {
   themeId?: ThemeId;
 }
 
-// The choice offered at the 100-word unlock. Interim ruling ("for now") —
-// Plateau is the writer's starting theme (never offered, already active);
-// Flux stands in for the spec's Machina pairing until Machina arms.
+// the choice offered at the 100-word unlock: Plateau is already active and never offered [themeTerritories §1]
 export const OFFERED_TERRITORIES: readonly Territory[] = [
   { id: 'plateau', label: 'Arbor', armed: true, themeId: 'plateau' },
   { id: 'flux', label: 'Flux', armed: true, themeId: 'flux' },

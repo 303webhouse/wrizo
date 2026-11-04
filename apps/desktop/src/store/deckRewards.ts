@@ -4,11 +4,7 @@ import { effectiveAmbianceDial } from './ambianceDial';
 
 const CELEBRATE_GLOW_MS = 1100;   // the celebration grammar's own length (components/WritingIncentives.tsx CELEBRATE_MS; not imported here so the store never pulls in a component)
 
-// W5 - GAPS AND THE THREE REWARD MOMENTS (brief Downloads\w5-gaps-rewards-brief.md; Nick's rulings Oct 26). The PURE decisions and the ONE device-local memory live here; components/DeckGaps.tsx draws the line,
-// components/useDeckRewards.ts times the moments, and the stylesheet's W5 zone dresses them. Everything is computed from `kindled()` (store/guided.ts) - the single gate - which this file is handed, never re-derives.
-//
-// THE GUARDRAILS (binding; harness guided-w5 pins them): names, never a count; a moment happens ONCE per step and per Deck, identical every time; rewards only for the writer's words or a graft to a page, never for
-// a click or a view; nothing speaks first (no toast, no reminder, no idle nudge); a writer who never opens a Deck sees nothing new. Lit (the writer's own mark) never celebrates and never counts.
+// gaps and the three reward moments: the pure decisions and the one device-local memory; everything computed from kindled(); names never a count, once per step and per Deck, nothing speaks first [deckRewards §1]
 
 /** The line names at most this many steps, then an ellipsis. */
 export const GAPS_MAX = 3;
