@@ -747,3 +747,17 @@
 /* the Room "?" on the Themes row (after the choices), its note under the row */
 :root[data-arbor2][data-theme='plateau'] .arbor2-theme-room-right{ display:flex; align-items:center; gap:2px; }
 :root[data-arbor2][data-theme='plateau'] .arbor2-theme-room-note{ margin:-2px 0 6px; text-align:right; }
+
+/* r18 - THE WRIZORS' r17 FIXES (wrizors-to-ARBOR-nov4.md md5 d1c1dcc2, via Fable, Nov 4)
+   1. the Grafts "?" on the Grafts pane's first row (Tutor.tsx / ConnectionsDrawerPanel.tsx), never in the room beside the folder tab;
+   2. Free Write (Typewriter's zoom): the drawer lies over the page from its anchor's left edge, so open, the Tools opener rides that OUTER edge
+      (right:100%: its right edge on the drawer's left), arrow pointing back, as in Draft - it no longer sits inside, over "Font" (supersedes,
+      for the zoom's Tools opener only, r11's "the zoom keeps today's drawers");
+   3. Send at the question box's height (the row stays centred for its "?");  4. Free Write's Forward lock outlined, never filled. */
+:root[data-arbor2][data-theme='plateau'] .wz-graft-add-row{ display:flex; align-items:center; gap:6px; }
+:root[data-arbor2][data-theme='plateau'] .wz-graft-add-row .wz-graft-add{ flex:1 1 auto; min-width:0; }
+:root[data-arbor2][data-theme='plateau'] .desk-frame-stage:has(.mode-pagecol[data-zoom='true']) .wz-sliver[data-open='true'] .wz-sliver-grip{ right:100%; }
+:root[data-arbor2][data-theme='plateau'] .wz-tutor-convo-send{ align-self:stretch; }
+:root[data-arbor2][data-theme='plateau'] .wz-sliver-toggle .wz-sliver-toggle-switch, :root[data-arbor2][data-theme='plateau'] .wz-sliver-toggle[data-on='true'] .wz-sliver-toggle-switch{ background:transparent; }
+:root[data-arbor2][data-theme='plateau'] .wz-sliver-toggle[data-on='true'] .wz-sliver-toggle-switch{ border-color:var(--accent-rest); }
+:root[data-arbor2][data-theme='plateau'] .wz-sliver-toggle[data-on='true'] .wz-sliver-toggle-switch::after{ background:var(--accent-rest); }
