@@ -456,7 +456,11 @@ export default {
       green: rest.marks.length >= 2 && rest.marks.every((m) => m.color === rest.help && !brass(m.color) && !brass(m.border)),
       greenOpen: opened.marks.every((m) => !brass(m.color) && !brass(m.border) && m.color === opened.help),
       askOnRow: !!ask && !!rest.row && Math.abs(ask.cy - rest.row.cy) <= 2,
-      noteOnCloth: !!note && !!rest.grafts && note.cy >= rest.grafts.t && note.cy <= rest.grafts.b,
+      // PARKED 2026-11-04 (SUPERSEDED, run 41852913965, Arbor 7b881a6f: the Wrizors (md5 d1c1dcc2, via Fable, Nov 4) called the Grafts "?" standing
+      // beside the GRAFTS folder tab a stray - it now sits at the end of the Grafts pane's "+ Graft..." row, checked by r18-grafts-help). Original, verbatim:
+      // noteOnCloth: !!note && !!rest.grafts && note.cy >= rest.grafts.t && note.cy <= rest.grafts.b,
+      // SUCCESSOR noTabNote: no "?" stands in the folder tabs' notes.
+      noTabNote: !note,
       notStacked: pairs.every((p) => p.dy >= 20 || p.dx >= 40),
     };
     const brief = { ok, help: rest.help, marks: rest.marks.map((m) => [m.cls, m.label, m.color, Math.round(m.cy), Math.round(m.l)]), row: rest.row && Math.round(rest.row.cy), grafts: rest.grafts && [Math.round(rest.grafts.t), Math.round(rest.grafts.b)] };
