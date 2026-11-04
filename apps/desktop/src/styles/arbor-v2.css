@@ -38,6 +38,8 @@
   --help:#A7B27E; --help-hi:#EFE4CB;   /* the "?" marks take the guide green (spec §4) */
   --arbor-lamp-rgb:212,162,78;
   --arbor2-pool-a:.26; --arbor2-pool-b:.10;
+  --arbor2-bar:#241912; --arbor2-bar-line:#35271C;   /* r19 §18.2: the bars a lighter brown by night (Nick, 12:33 pm) */
+  --arbor2-vine:#6B5139; --arbor2-vine-k:.75;        /* r19 §18.1 F: the night vines a lighter brown at ~.75 of the day strengths */
 }
 
 /* ---------- DAY: the shed ----------
@@ -64,6 +66,8 @@
   --paper-glow: 0 0 0 1px var(--paper-border);
   --arbor-lamp-rgb:255,236,190;
   --arbor2-pool-a:.7; --arbor2-pool-b:.25;
+  --arbor2-bar:#3A4322; --arbor2-bar-line:#4E5A30;   /* r19 §18.2: the bars olive by day */
+  --arbor2-vine:#4F6B2C; --arbor2-vine-k:1;          /* r19 §18.1 F: the day vines leaf green */
 }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .mode-page.focused{ box-shadow:0 0 0 1px var(--paper-border); }
 /* THE SPLASH IS UNTOUCHED (spec §14 item 10). Nick's sketch is drawn in cream for a dark ground; on the whitewash it vanished (seen in the
@@ -381,8 +385,17 @@
 }
 /* the crumb's "/" was --ink-border-strong (a hairline colour: 1.64:1 on the espresso bar, frames run 41241222600); it is text, so it letters quiet */
 :root[data-arbor2][data-theme='plateau'] .crumb-sep{ color:var(--text-low); }
-:root[data-arbor2][data-theme='plateau'] :is(.chrome-top.sprint-nav, .gh-corner-glyph){ background-color:#1B120C; }
-:root[data-arbor2][data-theme='plateau'] :is(.desk-frame-strip, .desk-rail){ --desk-ground:#1B120C; background-color:#1B120C; }
+/* r19 §18.2 - THE BARS OLIVE BY DAY, BROWN BY NIGHT (Nick, Nov 4; supersedes r5's espresso): their ground and hairlines are room tokens
+   (--arbor2-bar, --arbor2-bar-line, in the two room blocks), so the Room crossfade carries them, straight from brown to olive (mount.tsx keeps
+   them off the warm waypoint). Lettering: cream 8.29 / 13.60, quiet #BDB09A 4.91 / 8.05, sage 4.64 / 7.62, brass 4.86 / 7.97 (day / night). */
+:root[data-arbor2][data-theme='plateau'] :is(.chrome-top.sprint-nav, .gh-corner-glyph){ background-color:var(--arbor2-bar); border-color:var(--arbor2-bar-line); }
+:root[data-arbor2][data-theme='plateau'] :is(.desk-frame-strip, .desk-rail){ --desk-ground:var(--arbor2-bar); background-color:var(--arbor2-bar); border-color:var(--arbor2-bar-line); }
+:root[data-arbor2][data-theme='plateau'] :is(.chrome-top.sprint-nav, .desk-frame-strip, .desk-rail, .gh-corner-glyph, .gh-corner-menu){ --ink-900:var(--arbor2-bar); --chrome-surface:var(--arbor2-bar); --ink-border:var(--arbor2-bar-line); --text-mid:#BDB09A; }
+
+/* r19 §18.1b - THE RAIL FLOATS LIKE THE TOP BAR (Nick, Nov 4 11:46 am; Fable: Arbor now, every theme at ship): flush left, it stops 40 px below
+   the drawn top bar (chrome.ts's --arbor2-bar-bottom) and 40 px above the window's bottom; its bottom group rides up with it. The rail is
+   position:fixed, out of the grid, so the page never moves. */
+:root[data-arbor2][data-theme='plateau'] .desk-frame-strip{ top:calc(var(--arbor2-bar-bottom, 51px) + 40px); bottom:40px; border-radius:0; }
 
 /* ==========================================================================================================================================
    r5 · §2c.1 - THE TOP BAR FLUSH TO THE WINDOW'S TOP, THE "..." INSIDE IT (Arbor only, under the flag; Fable's ruling takes it to every
@@ -500,6 +513,8 @@
    #1A1510), so through a 20-minute crossfade nothing on it moves: no fade and no cut. r10's room-surface plate, which cut to the other surface at
    the middle, is retired. The sheet simply carries on under the count row; the box is still the instrument's own (absolute), so nothing moves. */
 :root[data-arbor2][data-theme='plateau'] .desk-frame-instrument{ background:var(--paper); padding:4px 10px; box-sizing:border-box; }
+/* r19 (§18.5, Nick's white bar): nothing under the page unless something is in it - an instrument holding no count is no plate at all */
+:root[data-arbor2][data-theme='plateau'] .desk-frame-instrument:not(:has(.mode-progress)){ background:none; padding:0; }
 :root[data-arbor2][data-theme='plateau'] .desk-frame-instrument :is(.mode-pmeta, .mode-pmetric){ color:var(--ink-on-paper-low); }
 
 /* ==========================================================================================================================================
@@ -661,10 +676,10 @@
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2 .wz-drawer-tabs{ display:flex; gap:0; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2 .wz-drawer-tab{ position:relative; z-index:1; flex:0 0 auto; box-sizing:border-box; margin:0; padding:0; border:0; border-radius:0; box-shadow:none; transform:none;
   display:flex; align-items:center; justify-content:center; font:600 10px/1 var(--arbor2-chrome-face); letter-spacing:.16em; text-transform:uppercase; cursor:pointer; }
-/* the OPEN tab turns brass (Nick, Nov 1; the Wrizors' note corrected Nov 2, 11:10 pm): filled #FF9800, its word walnut #2B1D12 (7.57:1), no
-   underline. The ids repeat the cloths' own selector so the fill outranks the cloth colour. */
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2 :is(#wz-sliver-tab-format, #wz-sliver-tab-presets, #wz-sliver-tab-ink, #wz-tutor-tab-tutor, #wz-tutor-tab-links, #wz-tutor-tab-board)[data-on='true']{ z-index:3; box-shadow:none; background:var(--brass); color:#2B1D12; text-decoration-line:none; }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2 .wz-drawer-tab:focus-visible{ outline:2px solid var(--brass); outline-offset:-3px; }
+/* r19 - the chosen tab keeps its own cloth (spec draft 35 §18.3, superseding the Nov 2 brass fill): it only comes forward, below. No brass on
+   any tab: the focus ring is the tab's own word colour. */
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2 :is(#wz-sliver-tab-format, #wz-sliver-tab-presets, #wz-sliver-tab-ink, #wz-tutor-tab-tutor, #wz-tutor-tab-links, #wz-tutor-tab-board)[data-on='true']{ z-index:3; box-shadow:none; text-decoration-line:none; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2 .wz-drawer-tab:focus-visible{ outline:2px solid currentColor; outline-offset:-4px; }
 /* Tools: on the drawer's top edge, from its inner padding (the drawer's left is 16 px into its anchor: the opener's width) */
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left{ bottom:100%; left:calc(100% + 14px); }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-sliver-anchor:has(.wz-sliver[data-open='true']) .arbor2-c2--left{ left:30px; opacity:1; visibility:visible;
@@ -672,7 +687,8 @@
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tabs{ flex-direction:row; align-items:flex-end; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tab{ width:96px; height:25px; clip-path:path('M0 25 L8.4 4 Q10 0 14 0 L82 0 Q86 0 87.6 4 L96 25 Z'); }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tab + .wz-drawer-tab{ margin-left:-12px; }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tab[data-on='true']{ height:30px; clip-path:path('M0 30 L8.4 4 Q10 0 14 0 L82 0 Q86 0 87.6 4 L96 30 Z'); }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tab[data-on='true']{ width:104px; height:36px; margin:0 -4px -3px; clip-path:path('M0 36 L8.4 4 Q10 0 14 0 L90 0 Q94 0 95.6 4 L104 36 Z'); }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tab + .wz-drawer-tab[data-on='true']{ margin-left:-16px; }
 /* Tutor: off the drawer's right edge, where the opener rides (its left = the drawer's width once open) */
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right{ top:62px; left:0; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-tutor-anchor:has(.wz-tutor-grip:is([data-open='true'], [data-docked='true'])) .arbor2-c2--right{ left:var(--arbor2-drawer-r, 0px); opacity:1; visibility:visible;
@@ -680,14 +696,22 @@
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tabs{ flex-direction:column; align-items:flex-start; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab{ writing-mode:vertical-rl; width:25px; height:98px; clip-path:path('M0 0 L20.6 8.4 Q25 10 25 14 L25 84 Q25 88 20.6 89.6 L0 98 Z'); }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab + .wz-drawer-tab{ margin-top:-10px; }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab[data-on='true']{ width:30px; clip-path:path('M0 0 L25.6 8.4 Q30 10 30 14 L30 84 Q30 88 25.6 89.6 L0 98 Z'); }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab[data-on='true']{ width:36px; height:106px; margin:-4px 0 -4px -3px; clip-path:path('M0 0 L31.6 8.4 Q36 10 36 14 L36 92 Q36 96 31.6 97.6 L0 106 Z'); }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab + .wz-drawer-tab[data-on='true']{ margin-top:-14px; }
 /* the "?" beside a cloth (the Grafts note) stands just outside its tab, on the tab's row */
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tabnotes{ position:absolute; left:34px; top:0; width:16px; height:auto; display:flex; flex-direction:column; gap:0; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tabnote-cell{ height:98px; margin:-10px 0 0; padding:0; display:flex; align-items:center; justify-content:center; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tabnote-cell:first-child{ margin-top:0; }
-/* the open tab's band: 3 px of brass across the Tools drawer's top edge, down the Tutor drawer's right edge, joining the brass tab */
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-sliver-anchor:has(:is(#wz-sliver-tab-format, #wz-sliver-tab-presets, #wz-sliver-tab-ink)[data-on='true']) .wz-drawer-slide--left{ box-shadow:inset 2px 0 0 var(--arbor-line), inset 0 3px 0 var(--brass); }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-stage:has(:is(#wz-tutor-tab-tutor, #wz-tutor-tab-links, #wz-tutor-tab-board)[data-on='true']) .wz-tutor-panel .wz-drawer-slide--right{ box-shadow:inset -2px 0 0 var(--arbor-line), inset -3px 0 0 var(--brass); }
+/* r19 - THE DRAWER'S BORDER IS ITS CHOSEN TAB'S COLOUR (§18.3): 3 px on the top, the outer side and the bottom, the page side flush; the chosen
+   tab reaches 3 px into it, so tab and border are one piece of cloth (GRAFTS chosen = a blue border, BOARD = madder). */
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-sliver-anchor:has(#wz-sliver-tab-format[data-on='true']){ --arbor2-chosen-l:#56632E; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-sliver-anchor:has(#wz-sliver-tab-presets[data-on='true']){ --arbor2-chosen-l:#7FA0BC; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-sliver-anchor:has(#wz-sliver-tab-ink[data-on='true']){ --arbor2-chosen-l:#A8392F; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-stage:has(#wz-tutor-tab-tutor[data-on='true']){ --arbor2-chosen-r:#56632E; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-stage:has(#wz-tutor-tab-links[data-on='true']){ --arbor2-chosen-r:#7FA0BC; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-stage:has(#wz-tutor-tab-board[data-on='true']){ --arbor2-chosen-r:#A8392F; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-sliver-anchor:has(:is(#wz-sliver-tab-format, #wz-sliver-tab-presets, #wz-sliver-tab-ink)[data-on='true']) .wz-drawer-slide--left{ box-shadow:inset 0 3px 0 var(--arbor2-chosen-l), inset 3px 0 0 var(--arbor2-chosen-l), inset 0 -3px 0 var(--arbor2-chosen-l); }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-stage:has(:is(#wz-tutor-tab-tutor, #wz-tutor-tab-links, #wz-tutor-tab-board)[data-on='true']) .wz-tutor-panel .wz-drawer-slide--right{ box-shadow:inset 0 3px 0 var(--arbor2-chosen-r), inset -3px 0 0 var(--arbor2-chosen-r), inset 0 -3px 0 var(--arbor2-chosen-r); }
 /* the Tutor drawer's body no longer keeps clear of cloths inside it (they stand outside now); it keeps clear of its 5 px band */
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-drawer-slide--right .wz-drawer-body{ margin-right:5px; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-sliver-panel .wz-drawer-slide--left > .wz-drawer-body:first-child{ padding-top:5px; }
@@ -761,3 +785,73 @@
 :root[data-arbor2][data-theme='plateau'] .wz-sliver-toggle .wz-sliver-toggle-switch, :root[data-arbor2][data-theme='plateau'] .wz-sliver-toggle[data-on='true'] .wz-sliver-toggle-switch{ background:transparent; }
 :root[data-arbor2][data-theme='plateau'] .wz-sliver-toggle[data-on='true'] .wz-sliver-toggle-switch{ border-color:var(--accent-rest); }
 :root[data-arbor2][data-theme='plateau'] .wz-sliver-toggle[data-on='true'] .wz-sliver-toggle-switch::after{ background:var(--accent-rest); }
+
+/* r19 - FREE WRITE'S TUTOR OPENER ON ITS DRAWER'S OUTER EDGE (Fable's yes, Nov 4; the mirror of r18's Tools fix): on the zoomed page the Tutor
+   drawer lies over the page and ends on its anchor's right edge, so open, the opener rides there (left:100%), arrow pointing back, as in Draft. */
+:root[data-arbor2][data-theme='plateau'] .desk-frame-stage:has(.mode-pagecol[data-zoom='true']) .wz-tutor-grip:is([data-open='true'], [data-docked='true']){ left:100%; }
+
+/* ==========================================================================================================================================
+   r19 §18.1 - THE DAY ROOM IS A VINE-COVERED PERGOLA'S SHADOW (Nick, Nov 4; the Wrizors' texture, arbor-pergola-shadow.svg md5 1ae1d048, drawn by
+   src/arbor2/pergola.ts). It replaces r5's slats and leaves (.arbor2-sun is no longer drawn; sun.ts still writes the afternoon's ground).
+   THE ROOM: fixed under every surface (z -1), fitted to the window with 16 px to spare on each side for the drift; the shade is the file's own
+   (#3F4D22 at 20%, one group opacity so overlaps never darken, blur 2.8). By day only, at the sun's share of the morning hand-over.
+   THE PAGE (.arbor2-pagesh, inside .mode-page, beneath the words): the same drawing at the same screen position, its group at 4% (pergola.ts);
+   the page isolates so the layer sits on its paper and under its text. At rest only; never on the zoomed page; never printed (Fable, ruling 3).
+   THE BREEZE: each leaf cluster shivers once every 16 s (8deg -> -6 -> 3.5 -> -1.5 -> still in ~1.4 s, about its root), staggered left to right
+   over ~2.6 s by the file's own delays; THE DRIFT, 12 px over 20 s, on the wrapper outside the blur (composited). Reduced motion: still.
+   The corner mark (.brand-mark, z 110) is drawn over the shade.
+   ========================================================================================================================================== */
+:root[data-arbor2][data-theme='plateau'] .arbor2-sun{ display:none !important; }
+.arbor2-pergola, .arbor2-pagesh{ display:none; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .arbor2-pergola{ display:block; position:fixed; inset:0; z-index:-1; pointer-events:none; overflow:hidden; user-select:none;
+  opacity:var(--arbor2-sun-in, 1); transition:opacity 3s ease; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .mode-page{ isolation:isolate; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .mode-page .arbor2-pagesh{ display:block; position:absolute; inset:0; z-index:-1; overflow:hidden; pointer-events:none; user-select:none; -webkit-user-select:none;
+  border-radius:inherit; opacity:1; transition:opacity 3s ease; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-pergola .arbor2-pergola-drift{ position:absolute; inset:-16px; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-pagesh .arbor2-pergola-drift{ position:absolute; width:calc(100vw + 32px); height:calc(100vh + 32px); margin:-16px 0 0 -16px; }
+:root[data-arbor2][data-theme='plateau'] :is(.arbor2-pergola, .arbor2-pagesh) .arbor2-pergola-drift{ will-change:transform; animation:arbor2-pergola-drift 20s ease-in-out infinite alternate; }
+:root[data-arbor2][data-theme='plateau'] :is(.arbor2-pergola, .arbor2-pagesh) svg{ display:block; width:100%; height:100%; }
+:root[data-arbor2][data-theme='plateau'] :is(.arbor2-pergola, .arbor2-pagesh) .wz-leaf{ animation:arbor2-breeze 16s ease-in-out infinite; }
+@keyframes arbor2-breeze{ 0%{ transform:rotate(0); } 1.56%{ transform:rotate(8deg); } 3.44%{ transform:rotate(-6deg); } 5.31%{ transform:rotate(3.5deg); } 7.19%{ transform:rotate(-1.5deg); } 8.75%, 100%{ transform:rotate(0); } }
+@keyframes arbor2-pergola-drift{ 0%{ transform:translate(0, 0); } 100%{ transform:translate(12px, -5px); } }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-off~='shadows'] :is(.arbor2-pergola, .arbor2-pagesh){ display:none; }
+:root[data-arbor2][data-theme='plateau'] .mode-pagecol[data-zoom='true'] .arbor2-pagesh{ display:none; }
+@media print{ .arbor2-pergola, .arbor2-pagesh{ display:none !important; } }
+
+/* r19 §18.1 - REST <-> WRITING (Fable, ruling 2: the existing recede/return hooks, Arbor-scoped, opacity transitions on two layers, no new JS
+   animation path). <html data-wz-writing> (useChromeDissolve) is the hook: the first keystroke fades the whole shade (room + page) out over ~6 s
+   while the rhizome fades in; the chrome's return fades the rhizome out and the shade back in, together, over ~3 s. By day only: at night
+   there is no pergola and the rhizome stays, barely there. While writing the breeze holds still (nothing in a faded layer repaints), and resumes
+   with the return. Reduced motion: cuts. */
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'][data-wz-writing='true'] :is(.arbor2-pergola, .mode-page .arbor2-pagesh){ opacity:0; transition:opacity 6s ease; }
+:root[data-arbor2][data-theme='plateau'][data-wz-writing='true'] :is(.arbor2-pergola, .arbor2-pagesh) :is(.arbor2-pergola-drift, .wz-leaf){ animation-play-state:paused; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .wz-rhizome-field[data-vines='true']{ opacity:0; transition:opacity 3s ease; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'][data-wz-writing='true'] .wz-rhizome-field[data-vines='true']{ opacity:1; transition:opacity 6s ease; }
+@media (prefers-reduced-motion: reduce){
+  :root[data-arbor2][data-theme='plateau'] :is(.arbor2-pergola, .arbor2-pagesh) :is(.arbor2-pergola-drift, .wz-leaf){ animation:none !important; }
+  :root[data-arbor2][data-theme='plateau'] :is(.arbor2-pergola, .arbor2-pagesh), :root[data-arbor2][data-theme='plateau'] .wz-rhizome-field[data-vines='true']{ transition:none !important; }
+}
+
+/* r19 §18.1 F - THE RHIZOME AS VINES (src/arbor2/vines.tsx draws them; the shapes' own fill-opacity is their strength, .2 -> .65 with width).
+   Day leaf green; night a lighter brown at ~.75 of the day strengths, barely visible until the flash (Nick, Nov 4: replaces "fully hidden").
+   AT EACH GOAL THE WHOLE RHIZOME FLASHES BRASS - this lap and the kept ones - up 1.2 s, fading 2.2 s (RhizomeField's data-flash), once.
+   The day swap (above) fades the field; within it the stems appear in growth order (each piece's --vo, its stem's place in the plan).
+   The kept laps sit at ~40% (§8b, unchanged). */
+:root[data-arbor2][data-theme='plateau'] .wz-rhizome-field[data-vines='true']{ visibility:visible !important; }
+:root[data-arbor2][data-theme='plateau'] .wz-rhizome-field[data-vines='true'] .arbor2-vines{ opacity:var(--arbor2-vine-k, 1); transition:opacity 2.2s ease-out; }
+:root[data-arbor2][data-theme='plateau'] .wz-rhizome-field[data-vines='true'] .arbor2-vines-past{ opacity:.4; }
+:root[data-arbor2][data-theme='plateau'] .wz-rhizome-field[data-vines='true'] .arbor2-vine{ fill:var(--arbor2-vine); stroke:none; transition:fill 2.2s ease-out, opacity 1.5s ease calc(var(--vo, 0) * 4.5s); }
+:root[data-arbor2][data-theme='plateau'] .wz-rhizome-field[data-vines='true'][data-flash='true'] .arbor2-vine{ fill:#FF9800; transition:fill 1.2s ease-in; }
+:root[data-arbor2][data-theme='plateau'] .wz-rhizome-field[data-vines='true'][data-flash='true'] :is(.arbor2-vines, .arbor2-vines-past){ opacity:1; transition:opacity 1.2s ease-in; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day']:not([data-wz-writing='true']) .wz-rhizome-field[data-vines='true'] .arbor2-vine{ opacity:0; transition:fill 2.2s ease-out, opacity 3s ease; }
+@media (prefers-reduced-motion: reduce){
+  :root[data-arbor2][data-theme='plateau'] .wz-rhizome-field[data-vines='true'] :is(.arbor2-vine, .arbor2-vines, .arbor2-vines-past){ transition:none !important; }
+}
+
+/* r19 §18.4 - BY DAY NO BRASS TEXT IN THE POP-OUTS AND DRAWERS (brass text on the day panels measured ~1.9:1): the chosen option keeps a 1.5 px
+   brass outline (drawn inside its edge, so nothing moves) and letters in deep olive #33401F. The three choices the red leg found brass (run
+   41901581121): the segmented choices (.mode-seg: Page / Room, ...), the type scope (Selection / Whole document) and the page kind (Normal /
+   Screenplay / Research); all take --choice (brass) for text and edge. Night is unchanged. */
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] :is(.wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel, .wz-theme-picker) :is(.mode-seg button.on, .wz-type-scope[data-on='true'], .wz-sliver-mode-btn[aria-pressed='true']){
+  color:#33401F; box-shadow:none; border-color:transparent; outline:1.5px solid var(--brass); outline-offset:-1.5px; }
