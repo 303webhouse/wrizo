@@ -456,6 +456,8 @@ const SCREENS = {
   // ── the frames the Wrizors asked for: Draft and Free Write with both drawers open, and a new page at 11 pt
   'r18-pic-draft-open': async (app) => { await openPage(app, 'arbor-r18-pd', 'Draft'); await openBoth(app); await app.evalJs("document.querySelector('#wz-tutor-tab-links')?.click()"); await sleep(400); await app.evalJs(FINISH); },
   'r18-pic-fw-open': async (app) => { await openPage(app, 'arbor-r18-pf', null); await openBoth(app); },
+  // (on the zoomed page one drawer stands open at a time - the picture above shows the Tutor's; this one the Tools drawer and its opener on the outer edge)
+  'r18-pic-fw-tools': async (app) => { await openPage(app, 'arbor-r18-pt', null); await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await app.evalJs(FINISH); await sleep(700); await app.evalJs(FINISH); },
   'r18-pic-new-page': async (app) => {
     const done = await anon(app);
     try {
