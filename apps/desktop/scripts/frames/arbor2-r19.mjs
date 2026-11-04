@@ -90,7 +90,7 @@ const SHADE = `(() => { const box = (e) => { if (!e) return null; const r = e.ge
     ink: document.querySelector('.forward-only-editor') ? getComputedStyle(document.querySelector('.forward-only-editor')).color : null,
     field: field ? { op: op(field), vines: field.getAttribute('data-vines'), flash: field.getAttribute('data-flash') } : null,
     leafAnims: leafAnims.length, leafTiming: leafAnims[0] ? timing(leafAnims[0]) : null, running: allAnims.filter((a) => a.playState === 'running').map(timing).slice(0, 6), runningN: allAnims.filter((a) => a.playState === 'running').length,
-    // (instrument fix after the green leg 41902687605: this key was `room`, a second one - it overwrote the room layer's read above)
+    // (instrument fix after the green leg 41902687605: this key was "room", a second one - it overwrote the room layer's read above)
     writing: document.documentElement.getAttribute('data-wz-writing'), roomName: document.documentElement.getAttribute('data-arbor2-room'), vw: innerWidth, vh: innerHeight }; })()`;
 const VINES = `(() => { const f = document.querySelector('.wz-rhizome-field'); if (!f) return null;
   const vs = [...f.querySelectorAll('.arbor2-vine')]; const heads = vs.filter((v) => v.hasAttribute('data-w0'));
