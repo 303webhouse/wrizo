@@ -9,6 +9,7 @@ import { initRoom, readRoom, setRoom } from './room';
 import { mountChrome } from './chrome';
 import { CommandDoor, Nameplate } from './doors';
 import { mountDrawerEdge } from './drawerEdge';
+import { mountSheet } from './sheet';
 
 // MACHINA v2 WORKING MOCKUP - loaded only under ?machina2=1 (main.tsx). Everything here is IN-SESSION: attributes on <html> and React state,
 // never storage (Fable's rulings, Oct 31: "a URL flag, all CSS in its own file, switches in-session, no new data").
@@ -26,6 +27,7 @@ initSwitches();
 initRoom();
 mountChrome(root);   // r4 (Fable, Nov 1): the top bar flush to the window's top, the "..." and the command-line door inside it (chrome.ts)
 mountDrawerEdge(root, '--machina2-drawer');   // r5 (Nick, via Fable, Nov 1): open, a drawer is flush to the page and its tab rides its outer edge
+mountSheet();   // r10 (the Wrizors' r9 review; Fable, Nov 4): the zoomed page stays paper to its edges - the fade runs into the page's colour, not the room (sheet.ts)
 
 const LABEL: Record<SwitchKey, string> = {
   command: 'Command line', readout: 'Readout bar', run: 'Run strip', asks: 'Consultant asks', legend: 'Keyboard legend',

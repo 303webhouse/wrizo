@@ -332,3 +332,9 @@
 :root[data-machina2][data-theme='machina'] .machina2-theme-room-right{ display:flex; align-items:center; gap:6px; }
 :root[data-machina2][data-theme='machina'] .machina2-room-help-line{ margin:-2px 0 6px; text-align:right; font:10px/1.3 'IBM Plex Mono', monospace; color:var(--text-low); }
 :root[data-machina2][data-theme='machina'] .machina2-readout-end .machina2-tick{ margin:0; }
+
+/* r10 - THE ZOOMED PAGE STAYS PAPER TO ITS EDGES (the Wrizors' r9 review; Fable, Nov 4): the sheet behind the zoomed column (machina2/sheet.ts),
+   in the page's own colour, so the band mask fades the words into paper, never the paper into the room. Fixed, under the column (z 1), no pointer, never printed. */
+:root[data-machina2][data-theme='machina'] .machina2-sheet{ position:fixed; z-index:0; pointer-events:none; }
+.machina2-sheet{ display:none; }
+@media print{ .machina2-sheet{ display:none !important; } }
