@@ -960,3 +960,141 @@ From `apps/desktop/src/components/BoardEditor.tsx`, line 3798 at `fd1f9f1b` (the
                 // Deriving with '' makes namelessness produce emptiness directly:
                 // nothing to compare, nothing to keep in step.
 ```
+
+## BoardEditor §53
+
+From `apps/desktop/src/components/BoardEditor.tsx`, line 301 at `6221e3f0` (the comment that stays: "and its size").
+
+```ts
+// POLISH #10 item 4: and its size
+```
+
+## BoardEditor §54
+
+From `apps/desktop/src/components/BoardEditor.tsx`, line 338 at `6221e3f0` (the comment that stays: "the Walk asks for it (autoFocus): the caret lands in the card on opening and on every step").
+
+```ts
+// the Walk asks for it (autoFocus): the caret lands in the card on opening and on every step (Nick, Oct 25)
+```
+
+## BoardEditor §55
+
+From `apps/desktop/src/components/BoardEditor.tsx`, line 670 at `6221e3f0` (the comment that stays: "undefined = "Default": the card's face is cleared (fontFace absent = the theme's default)").
+
+```ts
+// undefined = "Default" (TOOLS #10 item 10): the card's face is cleared (fontFace absent = the theme's default)
+```
+
+## BoardEditor §56
+
+From `apps/desktop/src/components/BoardEditor.tsx`, line 753 at `6221e3f0` (the comment that stays: "the pop-up closes from an X at the strip's right end; it keeps the old Close button's class, board-popup-done, so every driver still finds it; Esc and the backdrop are unchanged").
+
+```ts
+          {/* card-close-x (Nick's live test, 2026-10-13) - the pop-up closes from an X in its
+              top-right corner (the strip's right end; the eyebrow's margin-right:auto puts it
+              there). It replaces the foot's "Close" button and keeps that button's class,
+              board-popup-done, so every driver that closes a card still finds it. Esc and the
+              backdrop click are unchanged. */}
+```
+
+## BoardEditor §57
+
+From `apps/desktop/src/components/BoardEditor.tsx`, line 2794 at `6221e3f0` (the comment that stays: "on an empty ordinary board the doors themselves stand in the room (gated on the render list, so a lone board-meta or connection box never counts); a system board shows no row").
+
+```ts
+          {/* BG1 S1 — the row REPLACES FX6 S2c's one-line pointer on an ordinary
+              board: that line named two tools and pointed at the sliver; these are
+              the doors themselves, in the room. Same gate (`sorted.length === 0`
+              — the render list, so a lone board-meta/connection box never counts
+              as furniture), same centered placement, same "gone the instant there
+              is furniture." The fx6 check it falsifies is PARKED verbatim in
+              fx6.mjs with its successor named in bg1.mjs (A4).
+              B1 S3/B2 S2 are untouched: a system Board still shows no row at all,
+              and the Shelf still carries its own one quiet fact. */}
+```
+
+## BoardEditor §58
+
+From `apps/desktop/src/components/BoardEditor.tsx`, line 3209 at `6221e3f0` (the comment that stays: "the nav row recedes with the rest of the framed chrome").
+
+```ts
+        {/* ab1.1 R1 (Fable review) — the nav row was the one piece of framed
+            chrome that never recessed with the rest of the room. */}
+```
+
+## BoardEditor §59
+
+From `apps/desktop/src/components/BoardEditor.tsx`, line 3218 at `6221e3f0` (the comment that stays: "the nest chain, outermost first: each ancestor is pressable and travels straight there, so the way out is one press at any depth; boardNestChain's guarded walk keeps a cyclic graph finite").
+
+```ts
+            {/* PW2 S2 (item 128) — THE NEST CHAIN. Once containers hold
+                containers, this line is the only thing that answers "where am
+                I" without opening anything.
+
+                THE PARENT SEGMENT IS THE DOOR OUT, and that is what keeps the
+                recursive container's own test passing: the address stays ONE
+                LINE and the way back stays ONE PRESS at any depth. Each
+                ancestor is pressable and travels to that board directly, so
+                escaping three levels is one press, not three.
+
+                Ordered outermost-first so the line reads the way an address
+                reads. `boardNestChain` walks the SAME guarded walker S1 built
+                (`getBoardsConnecting`, `seen`-terminated), so a graph that
+                arrives already cyclic renders a finite crumb instead of
+                hanging the surface — the read-safety half of S1's law, and the
+                reason the guard had to land first. */}
+```
+
+## BoardEditor §60
+
+From `apps/desktop/src/components/BoardEditor.tsx`, line 3241 at `6221e3f0` (the comment that stays: "ancestors come before the name, and the name itself is the rename control").
+
+```ts
+            {/* MERGE NOTE (PW2 x item 133): the nest chain above and the rename
+                control below are COMPLEMENTARY — ancestors come before the name,
+                and the name itself is now the rename control. PW2's plain title
+                span was superseded by item 133 and is dropped; neither side's
+                intent is altered. */}
+```
+
+## BoardEditor §61
+
+From `apps/desktop/src/components/BoardEditor.tsx`, line 3246 at `6221e3f0` (the comment that stays: "the name is edited where it is displayed: Enter or blur commits, Escape reverts, an empty name reverts; board.text is a pure label, so writing it IS the rename").
+
+```ts
+            {/* ITEM 133 — THE NAME IS EDITED WHERE IT IS DISPLAYED. Nick could not
+                name a board because a board's name was written once at birth and
+                no surface could reach it again. This is that surface: the name in
+                the board's own crumb, clicked.
+                Enter or blur COMMITS, Escape REVERTS, and an empty name reverts to
+                the previous one — a board is never left nameless by a stray click,
+                and "clear it to rename it" is not a thing a writer should have to
+                discover. Zero schema: `board.text` is a pure label, so writing it
+                IS the rename, through the same patchJournalEntry every other edit
+                uses. */}
+```
+
+## BoardEditor §62
+
+From `apps/desktop/src/components/BoardEditor.tsx`, line 3292 at `6221e3f0` (the comment that stays: "the board keeps its Tools sliver: it is the only home of Add card, New page card, Existing page…, From a deck… and the connections-footer toggle, until they have another").
+
+```ts
+        {/* ITEM 83 M11 — R13.iv IS DEFERRED, AND THIS IS WHY.
+            M6 removed the board's Tools sliver on R13.iv ("no Tools sliver on
+            boards"), because R13 moves the board's acts into the cascade's own
+            PAGE and PLAN faces. The Place-page list (R13.ii) was built; the
+            ACTS WERE NOT RE-HOMED. The sliver was the only home for Add card,
+            New page card, Existing page…, From a deck… and the
+            connections-footer toggle, so removing it deleted real capability
+            rather than relocating it — and the suite said so immediately, in
+            ten separate files (fx13, b1, b2, b3, fx4, fx5, fx6, fx7 S9, m2,
+            m4), every one of them reaching for a board tool that no longer
+            existed.
+            Implementing half of a ruling is worse than deferring it: the
+            ruling says the acts MOVE, and until they have somewhere to move
+            to, the sliver is where they live. Restored deliberately, with the
+            harnesses as the evidence. R13.iv should land in one ticket
+            TOGETHER with the Plan face's `＋ New card` and the rest — the
+            absence and the new home in the same commit, so no state of the
+            tree is ever missing a board's own tools. */}
+```

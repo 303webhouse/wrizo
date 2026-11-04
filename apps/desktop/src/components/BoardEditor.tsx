@@ -298,7 +298,7 @@ export function BoardCardPopup({
   // the styling dock starts closed (the Sliver's useState(false) at card scale); declared with the hooks, above any early return [BoardEditor §11]
   const [dockOpen, setDockOpen] = useState(false);
   // FONT-SPAN: whether words are highlighted in the card, and their face - the dock's Typeface scopes and brass read it; declared with the hooks [BoardEditor §12]
-  const [fontSel, setFontSel] = useState<{ has: boolean; face: string | null | 'mixed'; size: number | null | 'mixed' }>({ has: false, face: null, size: null });   // POLISH #10 item 4: and its size
+  const [fontSel, setFontSel] = useState<{ has: boolean; face: string | null | 'mixed'; size: number | null | 'mixed' }>({ has: false, face: null, size: null });   // and its size [BoardEditor §53]
   useEffect(() => {
     const onSel = () => {
       const el = elRef.current;
@@ -335,7 +335,7 @@ export function BoardCardPopup({
     };
     syncPrompt(initialText);
     decorateEditorFor(el, initialText, initialText.length, setCaretOffset, text => decorateMarkdownForCard(text, initialText.length));
-    if (!inline || autoFocus) el.focus();   // the Walk asks for it (autoFocus): the caret lands in the card on opening and on every step (Nick, Oct 25)
+    if (!inline || autoFocus) el.focus();   // the Walk asks for it (autoFocus): the caret lands in the card on opening and on every step [BoardEditor §54]
 
     // I0 pen discipline (park-sweep audit finding — the retired inline
     // BoardTextBox editing branch carried this same guard; the popup's own
@@ -667,7 +667,7 @@ export function BoardCardPopup({
     onType({ fontSize: size });
   };
   // FONT-SPAN: the Whole card pick - every word takes the card's new face, so the card's spans go (one undo step), then the face.
-  const pickWholeCardFace = (face: StoredFace | undefined) => {   // undefined = "Default" (TOOLS #10 item 10): the card's face is cleared (fontFace absent = the theme's default)
+  const pickWholeCardFace = (face: StoredFace | undefined) => {   // undefined = "Default": the card's face is cleared (fontFace absent = the theme's default) [BoardEditor §55]
     const el = elRef.current;
     const cur = textRef.current;
     const next = clearFontSpans(cur);
@@ -750,11 +750,7 @@ export function BoardCardPopup({
         )}
         <div className="board-popup-strip">
           <span className="eyebrow board-popup-eyebrow">Card</span>
-          {/* card-close-x (Nick's live test, 2026-10-13) - the pop-up closes from an X in its
-              top-right corner (the strip's right end; the eyebrow's margin-right:auto puts it
-              there). It replaces the foot's "Close" button and keeps that button's class,
-              board-popup-done, so every driver that closes a card still finds it. Esc and the
-              backdrop click are unchanged. */}
+          {/* the pop-up closes from an X at the strip's right end; it keeps the old Close button's class, board-popup-done, so every driver still finds it; Esc and the backdrop are unchanged [BoardEditor §56] */}
           <button type="button" className="board-popup-close board-popup-done" aria-label={dt('boardPopupClose')} title={dt('boardPopupClose')} onClick={onClose}>
             <span aria-hidden="true">{'\u00d7'}</span>
           </button>
@@ -2791,15 +2787,7 @@ export function BoardEditor({ id }: { id: string }) {
               to "an empty system Board stays quiet": "one quiet fact," per
               S2's own words, not the ordinary board's tool-naming line
               (which would name tools the Shelf structurally never has). */}
-          {/* BG1 S1 — the row REPLACES FX6 S2c's one-line pointer on an ordinary
-              board: that line named two tools and pointed at the sliver; these are
-              the doors themselves, in the room. Same gate (`sorted.length === 0`
-              — the render list, so a lone board-meta/connection box never counts
-              as furniture), same centered placement, same "gone the instant there
-              is furniture." The fx6 check it falsifies is PARKED verbatim in
-              fx6.mjs with its successor named in bg1.mjs (A4).
-              B1 S3/B2 S2 are untouched: a system Board still shows no row at all,
-              and the Shelf still carries its own one quiet fact. */}
+          {/* on an empty ordinary board the doors themselves stand in the room (gated on the render list, so a lone board-meta or connection box never counts); a system board shows no row [BoardEditor §57] */}
           {sorted.length === 0 && !isSystemBoard && <BeginningsRow surface="board" doors={beginningDoors} faded={startersFaded} />}
           {/* BOARD CLICK-TO-CREATE - the ghost outline of the card being made; moved imperatively (no render per pointermove), never takes the pointer */}
           {!isSystemBoard && <div ref={ghostRef} className="board-create-ghost" aria-hidden="true" style={{ display: 'none' }} />}
@@ -3206,8 +3194,7 @@ export function BoardEditor({ id }: { id: string }) {
   if (framed) {
     return (
       <div className="desk-frame-host" data-chrome-receded={boardDissolve.dissolved ? 'true' : 'false'}>
-        {/* ab1.1 R1 (Fable review) — the nav row was the one piece of framed
-            chrome that never recessed with the rest of the room. */}
+        {/* the nav row recedes with the rest of the framed chrome [BoardEditor §58] */}
         {/* FX18 S3 (SV27): the board's top menu parallels the Page's mode strip — right-
             aligned. Crumb stays left (marginRight:auto); the mode bar + actions group right
             (actions' CSS margin-left:auto neutralized below so they stay adjacent). */}
@@ -3215,22 +3202,7 @@ export function BoardEditor({ id }: { id: string }) {
           <div className="sprint-crumb" aria-label="Location" style={{ marginRight: 'auto' }}>
             {drawer && <><span className="crumb-item">{drawer.name}</span><span className="crumb-sep">/</span></>}
             {project && <><span className="crumb-item">{project.title}</span><span className="crumb-sep">/</span></>}
-            {/* PW2 S2 (item 128) — THE NEST CHAIN. Once containers hold
-                containers, this line is the only thing that answers "where am
-                I" without opening anything.
-
-                THE PARENT SEGMENT IS THE DOOR OUT, and that is what keeps the
-                recursive container's own test passing: the address stays ONE
-                LINE and the way back stays ONE PRESS at any depth. Each
-                ancestor is pressable and travels to that board directly, so
-                escaping three levels is one press, not three.
-
-                Ordered outermost-first so the line reads the way an address
-                reads. `boardNestChain` walks the SAME guarded walker S1 built
-                (`getBoardsConnecting`, `seen`-terminated), so a graph that
-                arrives already cyclic renders a finite crumb instead of
-                hanging the surface — the read-safety half of S1's law, and the
-                reason the guard had to land first. */}
+            {/* the nest chain, outermost first: each ancestor is pressable and travels straight there, so the way out is one press at any depth; boardNestChain's guarded walk keeps a cyclic graph finite [BoardEditor §59] */}
             {nestChain.map((a) => (
               <Fragment key={a.id}>
                 <button type="button" className="crumb-item wz-crumb-nest"
@@ -3238,21 +3210,8 @@ export function BoardEditor({ id }: { id: string }) {
                 <span className="crumb-sep">/</span>
               </Fragment>
             ))}
-            {/* MERGE NOTE (PW2 x item 133): the nest chain above and the rename
-                control below are COMPLEMENTARY — ancestors come before the name,
-                and the name itself is now the rename control. PW2's plain title
-                span was superseded by item 133 and is dropped; neither side's
-                intent is altered. */}
-            {/* ITEM 133 — THE NAME IS EDITED WHERE IT IS DISPLAYED. Nick could not
-                name a board because a board's name was written once at birth and
-                no surface could reach it again. This is that surface: the name in
-                the board's own crumb, clicked.
-                Enter or blur COMMITS, Escape REVERTS, and an empty name reverts to
-                the previous one — a board is never left nameless by a stray click,
-                and "clear it to rename it" is not a thing a writer should have to
-                discover. Zero schema: `board.text` is a pure label, so writing it
-                IS the rename, through the same patchJournalEntry every other edit
-                uses. */}
+            {/* ancestors come before the name, and the name itself is the rename control [BoardEditor §60] */}
+            {/* the name is edited where it is displayed: Enter or blur commits, Escape reverts, an empty name reverts; board.text is a pure label, so writing it IS the rename [BoardEditor §61] */}
             {renaming ? (
               <input
                 className="crumb-here crumb-rename"
@@ -3289,24 +3248,7 @@ export function BoardEditor({ id }: { id: string }) {
 
         <div style={{ height: 16 }} />
 
-        {/* ITEM 83 M11 — R13.iv IS DEFERRED, AND THIS IS WHY.
-            M6 removed the board's Tools sliver on R13.iv ("no Tools sliver on
-            boards"), because R13 moves the board's acts into the cascade's own
-            PAGE and PLAN faces. The Place-page list (R13.ii) was built; the
-            ACTS WERE NOT RE-HOMED. The sliver was the only home for Add card,
-            New page card, Existing page…, From a deck… and the
-            connections-footer toggle, so removing it deleted real capability
-            rather than relocating it — and the suite said so immediately, in
-            ten separate files (fx13, b1, b2, b3, fx4, fx5, fx6, fx7 S9, m2,
-            m4), every one of them reaching for a board tool that no longer
-            existed.
-            Implementing half of a ruling is worse than deferring it: the
-            ruling says the acts MOVE, and until they have somewhere to move
-            to, the sliver is where they live. Restored deliberately, with the
-            harnesses as the evidence. R13.iv should land in one ticket
-            TOGETHER with the Plan face's `＋ New card` and the rest — the
-            absence and the new home in the same commit, so no state of the
-            tree is ever missing a board's own tools. */}
+        {/* the board keeps its Tools sliver: it is the only home of Add card, New page card, Existing page…, From a deck… and the connections-footer toggle, until they have another [BoardEditor §62] */}
         <DeskFrame
           pageKind="board"
           strip={cascade.strip}

@@ -64,10 +64,17 @@ function blocks(file, text) {
   for (let i = 0; i < leaves.length; i++) {
     const l = leaves[i];
     if (l.kind === ts.SyntaxKind.JsxText) continue;
-    for (const r of ts.getLeadingCommentRanges(text, l.pos) || []) {
+    // BOTH halves of the trivia: a leading range skips a comment on the same line as the code before it ("code; // x", and the
+    // one-line {/* x */}), which only the trailing range of the token before it holds
+    const p = l.parent;
+    const emptyJsx = p && p.kind === ts.SyntaxKind.JsxExpression && !p.expression
+      && (l.kind === ts.SyntaxKind.OpenBraceToken || l.kind === ts.SyntaxKind.CloseBraceToken);
+    // ...but never when JSX text follows: that is text, and "// x" in it is words, not a comment
+    const next = leaves[i + 1];
+    const trailing = next && next.kind === ts.SyntaxKind.JsxText ? [] : ts.getTrailingCommentRanges(text, l.end) || [];
+    for (const r of [...(ts.getLeadingCommentRanges(text, l.pos) || []), ...trailing]) {
       ranges.set(r.pos, r);
-      const p = l.parent;
-      if (l.kind === ts.SyntaxKind.CloseBraceToken && p && p.kind === ts.SyntaxKind.JsxExpression && !p.expression) jsxOf.set(r.pos, [p.getStart(), p.end]);
+      if (emptyJsx && r.pos >= p.getStart() && r.end <= p.end) jsxOf.set(r.pos, [p.getStart(), p.end]);
     }
   }
   const lineStart = (at) => text.lastIndexOf('\n', at - 1) + 1;
@@ -120,11 +127,13 @@ function apply() {
     const rulingsFile = path.join(ROOT, RULINGS, `${areaOf(f)}-${name}.md`);
     const existing = fs.existsSync(rulingsFile) ? noCR(fs.readFileSync(rulingsFile, 'utf8')) : null;
     let nextId = existing ? Math.max(0, ...[...existing.matchAll(/^## [A-Za-z0-9-]+ §(\d+)$/gm)].map((m) => Number(m[1]))) + 1 : 1;
-    const plan = entries.map((e) => {
+    // a hash is one block, unless the spec says `all` (the same tag repeated verbatim): then every copy moves, each its own entry
+    const seen = new Set();
+    const plan = entries.filter((e) => !seen.has(e.hash) && seen.add(e.hash)).flatMap((e) => {
       const hits = bs.filter((x) => hash(x.text) === e.hash);
-      if (hits.length !== 1) throw new Error(`${e.key}: ${hits.length} blocks in ${f} carry hash ${e.hash}`);
+      if (!hits.length || (hits.length > 1 && !e.all)) throw new Error(`${e.key}: ${hits.length} blocks in ${f} carry hash ${e.hash}${hits.length > 1 ? ' (mark it all:true to move every copy)' : ''}`);
       if (/\*\/|\n/.test(e.why)) throw new Error(`${e.key}: a why-line may not hold "*/" or a newline`);
-      return { ...e, b: hits[0], line: lineOf(t, hits[0].start) };
+      return hits.map((b) => ({ ...e, b, line: lineOf(t, b.start) }));
     }).sort((x, y) => x.b.start - y.b.start).map((p) => ({ ...p, id: nextId++ })).sort((x, y) => y.b.start - x.b.start);
     const md = [];
     for (const p of plan) {
@@ -189,14 +198,17 @@ function check() {
   }
   if (plant === 'drop') { const k = [...moved.keys()][0]; moved.set(k, moved.get(k) - 1); }
   const cited = new Map();
-  let removedTotal = 0, nowBlocks = 0;
+  let removedTotal = 0, nowBlocks = 0, planted = null;
   for (const f of scope) {
     let now = noCR(read(f));
-    if (f === scope[0]) {
+    // a plant lands on the FIRST file it can change, and only there (a plant that lands nowhere is reported, never a quiet pass)
+    if (plant && plant !== 'drop' && !planted) {
+      const before = now;
       if (plant === 'code') now = now.replace(/return null;/, 'return undefined;');
-      if (plant === 'cite') now = now.replace(CITE, '[Nowhere §999]');
+      if (plant === 'cite') now = now.replace(new RegExp(CITE.source), '[Nowhere §999]');
       if (plant === 'edit') { const b = blocks(f, now).find((x) => !HISTORY.test(x.text) && x.text.length > 40); if (b) now = now.slice(0, b.start) + b.text.replace(/(\S) /, '$1  ') + now.slice(b.end); }
       if (plant === 'jsx') now = now.replace(/(\{\/\*[^]*?\*\/\})/, '$1{" "}');
+      if (now !== before) planted = f;
     }
     const was = show(f);
     const ta = tokens(f, was).join('\u0001'), tb = tokens(f, now).join('\u0001');
@@ -225,7 +237,8 @@ function check() {
   for (const [c, f] of cited) if (!heads.has(c)) fails.push(`${f}: cites [${c}], which no rulings file holds`);
   for (const [h, f] of heads) if (!cited.has(h) && !/no comment stays/.test(rulingsTexts.find(([n]) => n === f)[1].split(`## ${h}\n`)[1]?.split('\n## ')[0] || '')) fails.push(`${f}: ${h} is cited by no comment`);
   for (const [k, n] of moved) if (n > 0) fails.push(`a rulings entry holds a block no file lost: ${k.trim().slice(0, 70).replace(/\n/g, ' ')}`);
-  console.log(`files ${scope.length}; comment blocks now ${nowBlocks}; removed or rewritten ${removedTotal}; rulings files ${rulingsTexts.length}, entries ${heads.size}; cited ${cited.size}${plant ? `; PLANTED: ${plant}` : ''}`);
+  if (plant && plant !== 'drop' && !planted) { console.log(`PLANT DID NOT LAND: no file in scope could take --plant ${plant}`); process.exit(2); }
+  console.log(`files ${scope.length}; comment blocks now ${nowBlocks}; removed or rewritten ${removedTotal}; rulings files ${rulingsTexts.length}, entries ${heads.size}; cited ${cited.size}${plant ? `; PLANTED: ${plant}${planted ? ` in ${planted}` : ''}` : ''}`);
   for (const f of fails.slice(0, 12)) console.log('FAIL', f);
   console.log(fails.length ? `TS-COMMENTS: FAIL (${fails.length})` : 'TS-COMMENTS: PASS (the code is the base\'s with comments aside; every removed comment is in docs/rulings verbatim; every citation resolves)');
   process.exit(fails.length ? 1 : 0);

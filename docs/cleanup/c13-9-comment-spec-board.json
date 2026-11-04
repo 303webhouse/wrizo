@@ -50,5 +50,15 @@
 {"key":"components/BoardEditor.tsx#233","hash":"34a971ecf2","why":"an unpaired board's PAGE door opens an unborn page linked back: a pin on a user board, the belonging origin on a system board (Journal, Shelf); Trash keeps the exit"},
 {"key":"components/BoardEditor.tsx#238","hash":"ecb190e788","why":"the mode bar renders on every board, its tabs only on a non-system board (role=tablist only when they are present); nestChain is this board's crumb"},
 {"key":"components/BoardEditor.tsx#240","hash":"09fd8b6a29","why":"the telos line is not rendered (its lexicon entry stays): a board's pairing reads from its visible context"},
-{"key":"components/BoardEditor.tsx#245","hash":"f928b1edd9","why":"the draft derives with an empty fallback, so a nameless board opens a nameless field, with no sentinel string to keep in step"}
+{"key":"components/BoardEditor.tsx#245","hash":"f928b1edd9","why":"the draft derives with an empty fallback, so a nameless board opens a nameless field, with no sentinel string to keep in step"},
+{"key":"components/BoardEditor.tsx#25","hash":"e1e68a3798","why":"and its size"},
+{"key":"components/BoardEditor.tsx#28","hash":"98959687b1","why":"the Walk asks for it (autoFocus): the caret lands in the card on opening and on every step"},
+{"key":"components/BoardEditor.tsx#59","hash":"7419143ec4","why":"undefined = \"Default\": the card's face is cleared (fontFace absent = the theme's default)"},
+{"key":"components/BoardEditor.tsx#64","hash":"fbb3eb1f46","why":"the pop-up closes from an X at the strip's right end; it keeps the old Close button's class, board-popup-done, so every driver still finds it; Esc and the backdrop are unchanged"},
+{"key":"components/BoardEditor.tsx#306","hash":"5d1b34472c","why":"on an empty ordinary board the doors themselves stand in the room (gated on the render list, so a lone board-meta or connection box never counts); a system board shows no row"},
+{"key":"components/BoardEditor.tsx#340","hash":"a8844e4c85","why":"the nav row recedes with the rest of the framed chrome"},
+{"key":"components/BoardEditor.tsx#342","hash":"3e1302c4e5","why":"the nest chain, outermost first: each ancestor is pressable and travels straight there, so the way out is one press at any depth; boardNestChain's guarded walk keeps a cyclic graph finite"},
+{"key":"components/BoardEditor.tsx#343","hash":"e91fca73f5","why":"ancestors come before the name, and the name itself is the rename control"},
+{"key":"components/BoardEditor.tsx#344","hash":"231af1a2a9","why":"the name is edited where it is displayed: Enter or blur commits, Escape reverts, an empty name reverts; board.text is a pure label, so writing it IS the rename"},
+{"key":"components/BoardEditor.tsx#347","hash":"7eaf875a8f","why":"the board keeps its Tools sliver: it is the only home of Add card, New page card, Existing page…, From a deck… and the connections-footer toggle, until they have another"}
 ]
