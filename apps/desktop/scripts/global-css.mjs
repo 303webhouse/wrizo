@@ -43,10 +43,26 @@ export function barrelText(srcDir, rel) {
   return barrelParts(srcDir, rel).map((p) => fs.readFileSync(p, 'utf8')).join('');
 }
 
+// A module that keeps code of its own after a split (step 10g's BoardEditor.tsx) is not a barrel. MODULE_PARTS names, for such a
+// module, the files a reader of the old module reads, in a fixed order, the module ITSELF among them so the entry says where its own
+// text sits: srcText of the module returns them joined (each by its plain path); srcText of any part alone is that part's own text.
+// The split's own branch adds its entry; c13-10-split-check.mjs proves the lines moved, and the branch's readers check runs each
+// reader's own regex on the old file and on the join.
+export const MODULE_PARTS = {};
+
+export function moduleParts(srcDir, rel) {
+  const parts = MODULE_PARTS[rel];
+  if (!parts.includes(rel)) throw new Error(`MODULE_PARTS['${rel}'] does not list the module itself`);
+  if (new Set(parts).size !== parts.length) throw new Error(`MODULE_PARTS['${rel}'] lists a part twice`);
+  for (const p of parts) if (!fs.existsSync(path.join(srcDir, p))) throw new Error(`MODULE_PARTS['${rel}']: no file ${p}`);
+  return parts.map((p) => path.join(srcDir, p));
+}
+
 export function srcText(srcDir, ...rel) {
   const r = path.join(...rel).split(path.sep).join('/');
   if (r === 'index.css') return globalCss(srcDir);
   if (BARRELS.includes(r)) return barrelText(srcDir, r);
+  if (Object.prototype.hasOwnProperty.call(MODULE_PARTS, r)) return moduleParts(srcDir, r).map((p) => fs.readFileSync(p, 'utf8')).join('');
   return fs.readFileSync(path.join(srcDir, ...rel), 'utf8');
 }
 
