@@ -137,7 +137,10 @@ const screens = {
     await waitSoft(app, "!!document.querySelector('.wz-rhizome-field .arbor2-vine')", { label: 'vines again', timeout: 6000 }); await sleep(900);
     await typeKeys(app, ' w'); await sleep(1500); await app.evalJs(FINISH);
     const back = await app.evalJs(VINES);
-    await clickText(app, '.arbor2-bar-head', 'Mood ▸'); await sleep(250);
+    // (instrument fix after g23 runs 41958266141: opening the Mood menu changes the screen's layout and the rhizome re-plans on a layout change, so
+    // Undo is compared with the drawing as it stood with the menu open, just before Clear; back keeps the revisit's own read)
+    await clickText(app, '.arbor2-bar-head', 'Mood ▸'); await sleep(600); await app.evalJs(FINISH);
+    const before = await app.evalJs(VINES);
     const cleared = await clickSel(app, '.arbor2-rhizome-clear'); await sleep(600); await app.evalJs(FINISH);
     const afterClear = await app.evalJs(VINES);
     const undone = await clickSel(app, '.arbor2-rhizome-undo'); await sleep(600); await app.evalJs(FINISH);
@@ -146,9 +149,9 @@ const screens = {
       keptLap: !!kept && kept.pastN > 0 && Math.abs((kept.pastOp ?? 0) - 0.4) < 0.01,
       keptOnRevisit: !!back && back.pastN === kept.pastN,
       clears: cleared && !!afterClear && afterClear.pastN === 0 && afterClear.n <= 2,
-      undoes: undone && !!afterUndo && afterUndo.pastN === kept.pastN && afterUndo.sig === back.sig,
+      undoes: undone && !!afterUndo && !!before && afterUndo.pastN === before.pastN && afterUndo.sig === before.sig && afterUndo.segs === before.segs,
     };
-    const brief = { ok, kept: kept && { n: kept.n, pastN: kept.pastN, pastOp: kept.pastOp, lap: kept.lap }, back: back && { n: back.n, pastN: back.pastN }, afterClear: afterClear && { n: afterClear.n, pastN: afterClear.pastN, segs: afterClear.segs, frac: afterClear.frac }, afterUndo: afterUndo && { n: afterUndo.n, pastN: afterUndo.pastN, segs: afterUndo.segs, frac: afterUndo.frac, start: afterUndo.start }, backSegs: back && [back.segs, back.frac, back.start], cleared, undone };
+    const brief = { ok, kept: kept && { n: kept.n, pastN: kept.pastN, pastOp: kept.pastOp, lap: kept.lap }, back: back && { n: back.n, pastN: back.pastN }, afterClear: afterClear && { n: afterClear.n, pastN: afterClear.pastN, segs: afterClear.segs, frac: afterClear.frac }, afterUndo: afterUndo && { n: afterUndo.n, pastN: afterUndo.pastN, segs: afterUndo.segs, frac: afterUndo.frac, start: afterUndo.start }, backSegs: back && [back.segs, back.frac, back.start], before: before && [before.segs, before.frac, before.start, before.pastN], cleared, undone };
     if (Object.values(ok).some((x) => !x)) fail('R20-RHIZOME-LIFE', brief);
     say('r20-rhizome-life', brief);
   },
