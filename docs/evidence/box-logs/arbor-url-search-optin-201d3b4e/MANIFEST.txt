@@ -1,0 +1,6 @@
+ARBOR harness/url-search-optin fe7380d8 (WS_URL_SEARCH opt-in) - manifest (Chat 1, Nov 4 2026)
+
+Tree 14a00596 (train-arbor-opt 201d3b4e: the step 9 r3 sequence head 2c11b0d7 + one --no-ff merge of fe7380d8). Harness only: runtime-verify.mjs (7 lines) and url-search-optin-unit.mjs (new). Unset = today's URLs exactly. Merged to main afterwards as a --no-ff merge of fe7380d8 on bb001b48 (650f9a74); `git diff 201d3b4e 650f9a74 -- apps` is empty.
+Proof: url-search-optin-unit PASS 6 checks (browserless); tsc x2 0, seed-guard PASS 36; dist-web byte-identical to production's (index-C_y5ece8.js 956918 bytes). Box, 26 files, stamp tree=201d3b4e bundle=index-C_y5ece8.js/956918b: default CLEAN 26/26, parked CLEAN 26/26. Box turn 01:24Z-02:10Z, released.
+Clear: Fable, Nov 4 (box-list run -> merge). ARBOR runs its own vine latency turn through box-take.
+Files here: box-default.log.txt, box-parked.log.txt.
