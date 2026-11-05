@@ -110,7 +110,7 @@ const plain = { id: 'p1', kind: 'text', x: 0.5, y: 0.1, w: 0.3, h: 0.1, z: 2, te
 
 // S4 / S5 - source: where the mark is set and cleared, and that nothing in the store or the server maps a box key by key
 const norm = (p) => fs.readFileSync(p, 'utf8').replace(/\r\n/g, '\n');
-const be = norm(path.join(SRC, 'components', 'BoardEditor.tsx'));
+const be = srcText(SRC, 'components/BoardEditor.tsx').replace(/\r\n/g, '\n');   // #13 step 10g: the module and its parts, joined
 const uses = be.split('\n').map((l, i) => ({ l, i: i + 1 })).filter(({ l }) => /sizedByHand/.test(l) && !/^\s*\/\//.test(l));
 const setLines = uses.filter(({ l }) => /sizedByHand: true/.test(l));
 const clearLines = uses.filter(({ l }) => /const \{ sizedByHand: _s, \.\.\.rest \} = b/.test(l));

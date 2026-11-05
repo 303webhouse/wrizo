@@ -48,7 +48,15 @@ export function barrelText(srcDir, rel) {
 // text sits: srcText of the module returns them joined (each by its plain path); srcText of any part alone is that part's own text.
 // The split's own branch adds its entry; c13-10-split-check.mjs proves the lines moved, and the branch's readers check runs each
 // reader's own regex on the old file and on the join.
-export const MODULE_PARTS = {};
+export const MODULE_PARTS = {
+  // #13 step 10g: the moved declarations first, in the order they stood above the component; then the component; then its hooks in
+  // the order their lines stood in it
+  'components/BoardEditor.tsx': [
+    'components/board/geometry.ts', 'components/board/BoardBoxes.tsx', 'components/board/BoardCardPopup.tsx', 'components/BoardEditor.tsx',
+    'components/board/useBoardMeasure.ts', 'components/board/useBoardBox.ts', 'components/board/useBoardSave.ts', 'components/board/useBoardReflow.ts',
+    'components/board/useRailLinkDrag.ts', 'components/board/useBoardGestures.ts', 'components/board/useBoardKeys.ts',
+  ],
+};
 
 export function moduleParts(srcDir, rel) {
   const parts = MODULE_PARTS[rel];

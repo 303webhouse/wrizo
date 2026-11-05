@@ -17,6 +17,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { withHarness } from '../runtime-verify.mjs';
+import { srcText } from '../global-css.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const SRC = path.join(here, '..', '..', 'src');
@@ -31,7 +32,7 @@ const noCR = (t) => t.replace(/\r\n?/g, '\n');
 
 // ---- R1: the source pin (browserless half) ---------------------------------------------------------------------------------------------------------------------------
 {
-  const be = noCR(fs.readFileSync(path.join(SRC, 'components/BoardEditor.tsx'), 'utf8'));
+  const be = noCR(srcText(SRC, 'components/BoardEditor.tsx'));   // #13 step 10g: the module and its parts, joined
   // PARKED VERBATIM (W2 "Write this", Oct 26 - the Walk's card editor is a writing surface, so BoardEditor's useWayBack call now also hands over the Walk's editor and a caret applier; the paired-board clause and the
   // decided-once useState are UNTOUCHED, only the call's argument list grew). The original assertion, kept here and never run:
   //   const pin = /const \[participatesInWayBack\] = useState\(\(\) => !isSystemBoard && !getPairedPageId\(id\)\);\n\s*useWayBack\(\{ entryId: id, participatesInWayBack \}\);/.test(be);

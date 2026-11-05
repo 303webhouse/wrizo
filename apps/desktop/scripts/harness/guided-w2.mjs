@@ -16,6 +16,7 @@ import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { bundleText } from '../global-css.mjs';
+import { srcText } from '../global-css.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const DESKTOP = path.resolve(here, '..', '..');
@@ -24,7 +25,7 @@ const require = createRequire(path.join(DESKTOP, 'package.json'));
 const { build } = createRequire(require.resolve('vite'))('esbuild');
 const noCR = (t) => t.replace(/\r\n?/g, '\n');
 const has = (rel) => fs.existsSync(path.join(SRC, rel));
-const readRaw = (rel) => (has(rel) ? noCR(fs.readFileSync(path.join(SRC, rel), 'utf8')) : '');
+const readRaw = (rel) => (has(rel) ? noCR(srcText(SRC, rel)) : '');   // #13 step 10g: srcText (BoardEditor.tsx reads as the module and its parts, joined)
 const strip = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '').replace(/\s\/\/ .*$/gm, '');
 
 // ---- the real modules, bundled against a fake browser; `keep` carries localStorage across a "reload" ------------------------------------------------------------------------------------------------
