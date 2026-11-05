@@ -102,6 +102,9 @@ const THEMES = (() => {
 
 const TERMS = ['cascadePlanCaptionIn', 'cascadePlanNoDrawer', 'cascadePlanRelationOwn'];
 
+// SUPERSEDED (Nov 2026, polish turn 9) - by CLAIM 0' below. Parked verbatim, not deleted: it pinned the three terms as THEME-INVARIANT, which stopped being true when
+// the Machina ('Not in a rack', 'its own circuit') and Flux ('Not in a project', 'its own plan') overrides landed (flux-v2 1b43d3b3). Red on main as written; `if (false)` keeps it out of the verdict.
+if (false) {
 console.log('CLAIM 0 — the three terms are THEME-INVARIANT, so deskTerm IS a canonical read');
 for (const t of TERMS) {
   const seen = [...new Set(THEMES.map((th) => lex.deskTerm(t, th)))];
@@ -112,6 +115,32 @@ for (const t of TERMS) {
   } else {
     ok(`${t} is ${JSON.stringify(seen[0])} under all ${THEMES.length} themes (${THEMES.join(', ')})`);
   }
+}
+}
+
+console.log("CLAIM 0' - the three terms are non-empty under every theme, and the REAL reader follows the theme (the successor: deskTerm is no longer one canonical string)");
+for (const t of TERMS) {
+  const empty = THEMES.filter((th) => !lex.deskTerm(t, th));
+  if (empty.length) fail(`${t} reads empty under ${empty.join(', ')} - the term is missing from the lexicon`);
+  else ok(`${t} is non-empty under all ${THEMES.length} themes (${[...new Set(THEMES.map((th) => lex.deskTerm(t, th)))].length} distinct reading(s))`);
+}
+{
+  // the reader resolves its theme from the document (deskLexicon.resolveTheme); give it one per theme and require each theme's own caption / no-drawer form
+  const realDoc = globalThis.document;
+  const bad = [];
+  try {
+    for (const th of THEMES) {
+      globalThis.document = { documentElement: { getAttribute: () => th } };
+      const withName = home.boardDrawerLine({ id: 'b1', projectId: 'd1' });
+      const without = home.boardDrawerLine({ id: 'b3', projectId: null });
+      const inT = lex.deskTerm('cascadePlanCaptionIn', th), noT = lex.deskTerm('cascadePlanNoDrawer', th), ownT = lex.deskTerm('cascadePlanRelationOwn', th);
+      if (withName !== `${inT} TEST BOARD`) bad.push(`${th}: drawer line ${JSON.stringify(withName)}`);
+      if (without !== noT) bad.push(`${th}: no-drawer line ${JSON.stringify(without)}`);
+      if (without.startsWith(inT + ' ') || ownT.startsWith(inT + ' ')) bad.push(`${th}: a no-drawer or own-relation form carries the "in" prefix`);
+    }
+  } finally { if (realDoc === undefined) delete globalThis.document; else globalThis.document = realDoc; }
+  if (bad.length) fail(`the reader does not follow the theme: ${bad.join(' | ')}`);
+  else ok(`under each of the ${THEMES.length} themes the drawer line is that theme's own caption form, the no-drawer line its own form, and neither carries the other's prefix`);
 }
 
 const IN = lex.deskTerm('cascadePlanCaptionIn', 'plateau');
