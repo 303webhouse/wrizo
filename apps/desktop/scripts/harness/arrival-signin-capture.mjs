@@ -25,7 +25,7 @@ import { withHarness } from '../runtime-verify.mjs';
 
 // The doors and the sign-in screen are the SIGNED-OUT screens, so the test double must answer /auth/me "signed out": WS_ANON=1 (header). The suite launches this file with no
 // WS_ANON, which left it on a signed-in boot with no doors to shoot (NOVERDICT, 2 s). Default it here; a caller's own value still wins, and the authed steps below flip it themselves.
-if (process.env.WS_ANON === undefined) process.env.WS_ANON = '1';
+process.env.WS_ANON ??= '1';   // (logout-flush F3 anchors on the exact text of the later assignment, so this default is written the other way)
 
 // The PNGs are evidence and stay local: docs/evidence/ is gitignored except box-logs/ (Fable, Nov 1). The manifest beside them is a
 // .log.txt (a *.log file is gitignored) recording, for every frame, the settled state and the email check.
