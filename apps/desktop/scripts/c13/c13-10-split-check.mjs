@@ -37,6 +37,7 @@ function codeLines(text) {
     const l = raw.replace(/\s+$/, '');
     if (inImport) { if (/from\s+['"][^'"]+['"];?$/.test(l)) inImport = false; continue; }
     if (/^import\s/.test(l)) { if (!/from\s+['"][^'"]+['"];?$/.test(l) && !/^import\s+['"]/.test(l)) inImport = true; continue; }
+    if (/^export\s+(type\s+)?(\*|\{[^}]*\})(\s+as\s+\w+)?\s+from\s+['"][^'"]+['"];?$/.test(l)) continue;   // a barrel's re-export line is wiring, like an import
     if (l.trim() === '') continue;
     out.push(l.replace(/^export (?=(async )?(function|const|let|class|interface|type|enum)\b)/, ''));
   }
@@ -49,8 +50,14 @@ function lineDiff(before, after) {
   for (const [l, n] of b) for (let k = (a.get(l) || 0); k < n; k++) extra.push(l);
   return { missing, extra };
 }
-const exportsOf = (text) => {
+// a module's exported names; `export * from './x'` adds x's own (from the texts under test, else the tree as it is now)
+const exportsOf = (text, file, texts, seen = new Set()) => {
   const s = new Set();
+  for (const m of text.matchAll(/^export\s+\*\s+from\s+['"](\.[^'"]+)['"]/gm)) {
+    const rel = path.posix.join(path.posix.dirname(file), m[1]);
+    const hit = [`${rel}.ts`, `${rel}.tsx`, `${rel}/index.ts`].find((g) => texts.now[g] !== undefined || fs.existsSync(path.join(ROOT, SRC, g)));
+    if (hit && !seen.has(hit)) { seen.add(hit); for (const n of exportsOf(texts.now[hit] ?? now(hit), hit, texts, seen)) s.add(n); }
+  }
   for (const m of text.matchAll(/^export\s+(?:default\s+)?(?:async\s+)?(?:function\*?|const|let|class|interface|type|enum)\s+([A-Za-z_$][\w$]*)/gm)) s.add(m[1]);
   for (const m of text.matchAll(/^export\s+(?:type\s+)?\{([^}]*)\}/gm)) for (const p of m[1].split(',')) { const n = p.trim().split(/\s+as\s+/).pop(); if (n) s.add(n); }
   return s;
@@ -73,7 +80,7 @@ function run({ texts, changed }) {
     show: [...d.missing.slice(0, 5).map((l) => `- ${l.slice(0, 140)}`), ...d.extra.slice(0, 5).map((l) => `+ ${l.slice(0, 140)}`)] });
   const stray = changed.filter((f) => ![from, ...to].includes(f));
   r.push({ name: 'SCOPE', pass: stray.length === 0, detail: `${changed.length} src files differ from ${base}: ${changed.join(', ')}`, show: stray.map((f) => `stray: ${f}`) });
-  const was = exportsOf(texts.base), is = exportsOf(texts.now[from]);
+  const was = exportsOf(texts.base, from, { now: {} }), is = exportsOf(texts.now[from], from, texts);
   const lost = [...was].filter((n) => !is.has(n));
   r.push({ name: 'BARREL', pass: lost.length === 0, detail: `${from} exported ${was.size} names at ${base} and exports ${is.size} now`, show: lost.map((n) => `lost: ${n}`) });
   const cites = [from, ...to].flatMap((f) => [...texts.now[f].matchAll(CITE)].map((m) => ({ f, name: m[1], n: m[2] })));
@@ -101,7 +108,11 @@ const plants = [
   ['a moved line dropped', 'LINES', (x) => { const f = to[0], ls = x.texts.now[f].split('\n'), i = firstCode(f); ls.splice(i, 1); x.texts.now[f] = ls.join('\n'); }],
   ['a src file outside the split changed', 'SCOPE', (x) => { x.changed.push('pages/PageEditor.tsx'); }],
   ['a moved citation points nowhere', 'CITES', (x) => { const f = [...to, from].find((g) => new RegExp(CITE.source).test(x.texts.now[g])); if (f) x.texts.now[f] = x.texts.now[f].replace(/§(\d+)\]/, '§999]'); else x.texts.now[to[0]] += '\n// planted [Nowhere §999]'; }],
-  ['the barrel loses an export', 'BARREL', (x) => { const n = [...exportsOf(x.texts.base)][0]; if (n) x.texts.now[from] = x.texts.now[from].replace(new RegExp(`^export (?=[^\\n]*\\b${n}\\b)`, 'm'), ''); else x.texts.base += '\nexport const __planted = 1;'; }],
+  ['the barrel loses an export', 'BARREL', (x) => {
+    // the name's declaration loses `export`, in whichever file holds it now (the barrel itself, or a part it re-exports)
+    const n = [...exportsOf(x.texts.base, from, { now: {} })][0], re = n && new RegExp(`^export (?=[^\\n]*\\b${n}\\b)`, 'm');
+    const g = re && [from, ...to].find((h) => re.test(x.texts.now[h]));
+    if (g) x.texts.now[g] = x.texts.now[g].replace(re, ''); else x.texts.base += '\nexport const __planted = 1;'; }],
 ];
 const live = plants.map(([what, check, plant]) => { const x = clone(); plant(x); const c = run(x).find((y) => y.name === check); return { what, check, red: !c.pass }; });
 for (const l of live) console.log(`${l.red ? 'PASS' : 'FAIL'}  LIVENESS: ${l.what} turns ${l.check} red`);

@@ -9,11 +9,35 @@
 //                                      (several parts, as join takes them: a read of join(SRC, 'store', f) keeps its folder)
 //   globalCssFileHolding(srcDir, s)    the path of the ONE file under src/styles/ whose text contains s (throws on none or several):
 //                                      for a mutant that edits a rule in place and restores it after
+//
+// The TypeScript barrels (#13 step 10): a module split into parts keeps its path as a barrel of `export * from './<x>';` lines.
+// srcText reads a barrel named in BARRELS as its parts joined in that order, so a reader of the old module still reads every
+// line it read before (the same lines, grouped by part: c13-10-split-check.mjs proves none was added, dropped or edited).
+// Only the barrels named here: a file is never read as a barrel because of its shape.
 import fs from 'node:fs';
 import path from 'node:path';
 
+export const BARRELS = ['types/index.ts'];
+export const REEXPORT_LINE = /^export \* from '\.\/([A-Za-z0-9-]+)';(\r?\n|$)/gm;
+
+export function barrelText(srcDir, rel) {
+  const text = fs.readFileSync(path.join(srcDir, rel), 'utf8');
+  const parts = [];
+  let at = 0;
+  for (const m of text.matchAll(REEXPORT_LINE)) {
+    if (m.index !== at) throw new Error(`${rel}: text other than an export * line at offset ${at}`);
+    parts.push(path.join(srcDir, path.dirname(rel), `${m[1]}.ts`));
+    at = m.index + m[0].length;
+  }
+  if (at !== text.length || parts.length === 0) throw new Error(`${rel}: text other than an export * line at offset ${at}`);
+  return parts.map((p) => fs.readFileSync(p, 'utf8')).join('');
+}
+
 export function srcText(srcDir, ...rel) {
-  return path.join(...rel) === 'index.css' ? globalCss(srcDir) : fs.readFileSync(path.join(srcDir, ...rel), 'utf8');
+  const r = path.join(...rel).split(path.sep).join('/');
+  if (r === 'index.css') return globalCss(srcDir);
+  if (BARRELS.includes(r)) return barrelText(srcDir, r);
+  return fs.readFileSync(path.join(srcDir, ...rel), 'utf8');
 }
 
 // a file under src/styles/, or one folder down (src/styles/themes/, #13 step 8)
