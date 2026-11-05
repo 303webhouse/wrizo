@@ -906,7 +906,14 @@
 /* the recede takes the drawer openers and the page's scrollbar too, on the chrome's own fade, and they return with it (the scrollbar keeps its
    width - only its colour goes - so the text never reflows) */
 :root[data-arbor2][data-theme='plateau'][data-wz-writing='true'] :is(.wz-sliver-grip, .wz-tutor-grip){ opacity:0; pointer-events:none; transition:opacity var(--fade-dur, 2.8s) ease; }
-:root[data-arbor2][data-theme='plateau'] :is(.wz-sliver-grip, .wz-tutor-grip){ transition-property:color, background-color, border-color, opacity; }
+/* (fix after the full run r21g3, frames 42002006649: a transition-property list here without right / left took the tabs' travel away - they
+   jumped while their drawers slid. Each tab keeps r11's travel on the drawer's own tokens; the opacity rides the chrome's --fade-dur.) */
+:root[data-arbor2][data-theme='plateau'] .wz-sliver-grip{ transition:color .15s, background-color .15s, border-color .15s, right var(--drawer-dur) var(--drawer-ease), opacity var(--fade-dur, 2.8s) ease; }
+:root[data-arbor2][data-theme='plateau'] .wz-tutor-grip{ transition:color .15s, background-color .15s, border-color .15s, left var(--drawer-dur) var(--drawer-ease), opacity var(--fade-dur, 2.8s) ease; }
+/* reduced motion: the openers still cut (r17's rule above, restated here because the two rules above come later) */
+@media (prefers-reduced-motion: reduce){
+  :root[data-arbor2][data-theme='plateau'] :is(.wz-sliver-grip, .wz-tutor-grip){ transition:color .15s, background-color .15s, border-color .15s, opacity var(--fade-dur, 2.8s) ease; }
+}
 :root[data-arbor2][data-theme='plateau'][data-wz-writing='true'] .mode-scroll{ scrollbar-color:transparent transparent; }
 /* scrollbars only when something scrolls: every scroller in the room takes auto, never a standing bar */
 :root[data-arbor2][data-theme='plateau'] :is(.mode-scroll, .wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel-body){ scrollbar-gutter:auto; }
