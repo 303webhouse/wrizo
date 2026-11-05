@@ -1,0 +1,7 @@
+FIX rhizome-arbor-premise-r1 5acc11e0 - manifest (Chat 1, Nov 5 2026)
+
+Tree of train-fix-premise b9fe652d (main a453e0f1 + one --no-ff merge of 5acc11e0). Harness only: rhizome-latency.mjs (+13/-3), the flash premise gets an Arbor branch. dist-web byte-identical to production's (index-C_y5ece8.js 956918 bytes); tsc x2 0, seed-guard 36.
+Box, 26 files, stamp tree=b9fe652d bundle=index-C_y5ece8.js/956918b: default CLEAN 26/26, parked CLEAN 26/26 (rhizome-latency PASS 17 checks, rhizome-latency-mutant PASS 11 checks, both legs). Box turn 06:50Z-07:37Z, released.
+ci-box-only.txt on ci/actions-harness (268cdaf1) lists rhizome-latency.mjs and rhizome-latency-mutant.mjs: confirmed (Fable's rule: a box-only clear includes the list Actions reads). Merged to main as a --no-ff merge of 5acc11e0; `git diff b9fe652d <merge> -- apps` is empty.
+Clear: Fable, Nov 4 (box-list run + confirm ci-box-only.txt -> merge).
+Files here: box-default.log.txt, box-parked.log.txt.

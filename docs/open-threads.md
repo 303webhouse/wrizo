@@ -3625,3 +3625,6 @@ Arrival (the separate Write / Open / Sign in screen) retires in each theme's red
 
 ## (189) ARBOR harness/url-search-optin fe7380d8 MERGED — 2026-11-04 (chat 1)
 **Merged (Fable cleared, Nov 4):** `harness/url-search-optin` `fe7380d8` (`WS_URL_SEARCH` opt-in in `runtime-verify.mjs` + `url-search-optin-unit.mjs`) -> `650f9a74`. Box list (26 files) on the opt-in train `201d3b4e` default CLEAN 26/26, parked CLEAN 26/26; unit proof PASS 6; dist-web byte-identical (`docs/evidence/box-logs/arbor-url-search-optin-201d3b4e/`). Not deployed. **Box released** (02:10Z); ARBOR runs its vine latency turn itself through box-take (`WS_URL_SEARCH='?arbor2=1'`, rhizome-latency + the 150b wrapper on its r20 build). Owed by POLISH: attribution of the seven reds.
+
+## (190) FIX rhizome-arbor-premise-r1 5acc11e0 MERGED — 2026-11-05 (chat 1)
+**Merged (Fable cleared, Nov 4):** `rhizome-arbor-premise-r1` `5acc11e0` (harness only: `rhizome-latency.mjs`'s flash premise gets an Arbor branch). Box list (26 files) on its train `b9fe652d` default CLEAN 26/26, parked CLEAN 26/26; bundle identical to production's; `ci-box-only.txt` on `ci/actions-harness` (`268cdaf1`) confirmed to list both rhizome files (`docs/evidence/box-logs/fix-arbor-premise-b9fe652d/`). Not deployed. FIX's open note (B2 +5.7 ms under `?arbor2=1`) is ARBOR's to read.
