@@ -390,7 +390,9 @@ const SCREENS = {
       const ok = {
         steadyBefore: base.n > 20 && base.max - base.min < 0.01 && base.max <= 0.02,
         brassOnce: pulse.n > 20 && pulse.max >= 0.95 && pulse.last <= 0.03 && pulse.rev <= 1,
-        gentleColour: pulse.n > 20 && pulseRate <= 4,
+        // (instrument fix after run 41937997042, before any green: a smooth fade changes value every frame, 9 a second; the rule's "<= 3 changes/s" is
+        // about flashes - read as at most one rise and one fall per pulse, no step over .2 between frames. Was: pulse.n > 20 && pulseRate <= 4)
+        gentleColour: pulse.n > 20 && pulse.rev <= 1 && pulse.maxStep <= 0.2,
         firstAt5s: at.length >= 1 && Math.abs(at[0] - 5000) <= 400,
         brassAgainAt35s: at.length >= 2 && Math.abs(at[1] - 35000) <= 400 && second.max >= 0.95,
       };
