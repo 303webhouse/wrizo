@@ -1,0 +1,13 @@
+#13 step 9, rest (c13-9-ts-comments-rest ef883117) - manifest (Chat 1, Nov 4 2026)
+
+Tree 7b06f233 (train-c13-9 d5d48ecc: main 7f1c6a84 + one --no-ff merge of ef883117). 35 ruling histories in types, decks and App move verbatim to docs/rulings; source comments only.
+Not merged with it (they conflict with main, POLISH rebases): components 8618c18f (TypeControl.tsx), pages e56dcf0a (PageEditor.tsx), board 6a2cd218 (BoardEditor.tsx); store a2c6f7f6 (persistence.ts; not cleared).
+
+PROOFS
+- tsc desktop 0, tsc server 0, seed-guard PASS 36; c13-2-links PASS, c13-4d-links check PASS.
+- BUILD: the whole dist-web is byte-identical to production's build (train-150b, product tree 3da9e780): diff -rq clean (index-C_y5ece8.js 956918 bytes).
+- c13-9-ts-comments.mjs check --base origin/main (11 files): PASS (comment blocks now 190, removed or rewritten 35, rulings files 11, entries 34, cited 34); the five --plant runs (drop, edit, code, cite, jsx) all FAIL as they must. readers triage: readers-triage.txt (94 count moves, none a presence flip that a sourced harness reads).
+- GitHub Actions full pair, run 41934045962 (8 shards per leg, ref = the full sha): default 232/240, parked 232/240; the 7 non-OK NOVERDICT are the usual capture/probe tools, plus ONE real FAIL on both legs: rhizome-latency-mutant.mjs 1/11.
+- CONTROL (same file alone, 1 shard, both legs, Actions): main 7f1c6a84 run 41937551239: default PASS 11, parked FAIL 1/11. Train d5d48ecc run 41937567547: default FAIL 2/11, parked PASS 11. Main fails the same file on Actions, in one leg of two, so it is not attributable to this step (the file arrived with 150b, merged on box-only evidence; it was never on ci-box-only.txt).
+- Clear: Fable, Nov 4 (merge rest if main's control also fails the mutant on Actions; then put the file on the box-only list on ci/actions-harness).
+Files here: pair-*.log.txt, summary.txt (Actions); readers-triage.txt; control-mutant-main.log.txt, control-mutant-train.log.txt (each line is labelled with its leg).

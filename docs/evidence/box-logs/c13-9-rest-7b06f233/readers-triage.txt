@@ -1,0 +1,95 @@
+READER apps/desktop/scripts/harness/arrival-signin.mjs:102 App.tsx: "components/Arrival.tsx" was 1 now 0
+READER apps/desktop/scripts/harness/arrival-signin.mjs:135 App.tsx: "components/Arrival.tsx" was 1 now 0
+READER apps/desktop/scripts/harness/arrival-signin.mjs:261 App.tsx: "components/Arrival.tsx" was 1 now 0
+READER apps/desktop/scripts/harness/arrival-signin.mjs:509 App.tsx: "components/Arrival.tsx" was 1 now 0
+READER apps/desktop/scripts/harness/arrival-signin.mjs:540 App.tsx: "components/Arrival.tsx" was 1 now 0
+READER apps/desktop/scripts/harness/arrival-signin.mjs:562 App.tsx: "components/Arrival.tsx" was 1 now 0
+READER apps/desktop/scripts/harness/b101.mjs:485 App.tsx: "components/Arrival.tsx" was 1 now 0
+READER apps/desktop/scripts/harness/b2-1.mjs:568 App.tsx: /\bProject\b/g was 1 now 0
+READER apps/desktop/scripts/harness/resume-on-open.mjs:204 App.tsx: "components/Arrival.tsx" was 1 now 0
+READER apps/desktop/scripts/c13/c13-8-css-themes.mjs:214 decks/content.ts: "themes" was 1 now 0
+READER apps/desktop/scripts/harness/big-projects-1a.mjs:81 decks/content.ts: "Worldbuilding" was 1 now 0
+READER apps/desktop/scripts/harness/big-projects-1a.mjs:162 decks/content.ts: "Worldbuilding" was 1 now 0
+READER apps/desktop/scripts/harness/big-projects-1a.mjs:167 decks/content.ts: "Worldbuilding" was 1 now 0
+READER apps/desktop/scripts/harness/big-projects-1a.mjs:204 decks/content.ts: "Worldbuilding" was 1 now 0
+READER apps/desktop/scripts/harness/big-projects-2.mjs:80 decks/content.ts: "Worldbuilding" was 1 now 0
+READER apps/desktop/scripts/harness/box-tombstones.mjs:159 decks/content.ts: "shared" was 1 now 0
+READER apps/desktop/scripts/harness/box-tombstones.mjs:160 decks/content.ts: "shared" was 1 now 0
+READER apps/desktop/scripts/harness/connector-b.mjs:297 decks/content.ts: "travel" was 1 now 0
+READER apps/desktop/scripts/harness/flux-v2.mjs:181 decks/content.ts: "Worldbuilding" was 1 now 0
+READER apps/desktop/scripts/harness/guided-w3.mjs:31 decks/content.ts: "w3-deck-content.md" was 1 now 0
+READER apps/desktop/scripts/harness/help-choose-census.mjs:195 decks/content.ts: "deskLexicon.ts" was 1 now 0
+READER apps/desktop/scripts/harness/item139.mjs:85 decks/content.ts: "harness" was 1 now 0
+READER apps/desktop/scripts/harness/logout-flush.mjs:247 decks/content.ts: "harness" was 1 now 0
+READER apps/desktop/scripts/run-suite.mjs:71 decks/content.ts: "harness" was 1 now 0
+READER apps/desktop/scripts/harness/b3.mjs:189 decks/engine.ts: "From a deck…" was 1 now 0
+READER apps/desktop/scripts/harness/b3.mjs:359 decks/engine.ts: "From a deck…" was 1 now 0
+READER apps/desktop/scripts/harness/b3.mjs:406 decks/engine.ts: "deckId" was 1 now 0
+READER apps/desktop/scripts/harness/b3.mjs:445 decks/engine.ts: "deckId" was 1 now 0
+READER apps/desktop/scripts/harness/flux-v2.mjs:182 decks/engine.ts: "project" was 1 now 0
+READER apps/desktop/scripts/harness/flux-v2.mjs:183 decks/engine.ts: "project" was 1 now 0
+READER apps/desktop/scripts/harness/flux-v2.mjs:184 decks/engine.ts: "project" was 1 now 0
+READER apps/desktop/scripts/harness/flux-v2.mjs:286 decks/engine.ts: /wz-logo|wz-mark|splash-mark|flux-mark|brand/gi was 1 now 0
+READER apps/desktop/scripts/harness/guided-w1.mjs:211 decks/engine.ts: "append" was 1 now 0
+READER apps/desktop/scripts/harness/guided-w1.mjs:211 decks/engine.ts: "append" was 1 now 0
+READER apps/desktop/scripts/harness/guided-w1.mjs:211 decks/engine.ts: "append" was 1 now 0
+READER apps/desktop/scripts/harness/guided-w1.mjs:211 decks/engine.ts: "append" was 1 now 0
+READER apps/desktop/scripts/harness/guided-w3.mjs:347 decks/engine.ts: "project" was 1 now 0
+READER apps/desktop/scripts/harness/item-storage-full.mjs:242 decks/engine.ts: "persistence.ts" was 1 now 0
+READER apps/desktop/scripts/harness/help-choose-census.mjs:123 decks/helpMeChoose.ts: "library" was 1 now 0
+READER apps/desktop/scripts/harness/guided-w3.mjs:31 decks/library/fromMyPages.ts: "w3-deck-content.md" was 1 now 0
+READER apps/desktop/scripts/harness/guided-w3.mjs:416 decks/library/fromMyPages.ts: "decks/content.ts" was 1 now 0
+READER apps/desktop/scripts/harness/guided-w3.mjs:417 decks/library/fromMyPages.ts: "decks/content.ts" was 1 now 0
+READER apps/desktop/scripts/harness/guided-w3.mjs:418 decks/library/fromMyPages.ts: "decks/content.ts" was 1 now 0
+READER apps/desktop/scripts/c13/c13-3-ledger.mjs:34 decks/library/index.ts: /\bITEM\s+(\d+[A-Za-z]?)\b/gi was 1 now 0
+READER apps/desktop/scripts/c13/c13-7-css-comments.mjs:31 decks/library/index.ts: /SUPERSEDED|PARKED|\bNick\b|\bFable\b|\bledger\b|\b20\d\d-\d\d-\d\d\b|\b(Jan|Feb was 3 now 0
+READER apps/desktop/scripts/c13/c13-7-css-comments.mjs:32 decks/library/index.ts: /\[([a-z0-9-]+) §(\d+)\]/g was 0 now 1
+READER apps/desktop/scripts/c13/c13-style-snapshot.mjs:155 decks/library/index.ts: /(^|\s)(on|jmp|jmp2)(?=\s|$)/g was 1 now 0
+READER apps/desktop/scripts/harness/drawers-p1.mjs:171 decks/library/index.ts: "index " was 0 now 1
+READER apps/desktop/scripts/harness/drawers-p1.mjs:223 decks/library/index.ts: "index " was 0 now 1
+READER apps/desktop/scripts/harness/drawers-p1.mjs:253 decks/library/index.ts: "index " was 0 now 1
+READER apps/desktop/scripts/harness/guided-w3.mjs:91 decks/library/index.ts: "decision" was 1 now 0
+READER apps/desktop/scripts/harness/bg1.mjs:150 decks/types.ts: "complete" was 1 now 0
+READER apps/desktop/scripts/harness/big-projects-3.mjs:316 decks/types.ts: /more/g was 1 now 0
+READER apps/desktop/scripts/harness/page-templates-r2.mjs:449 decks/types.ts: "Script" was 1 now 0
+READER apps/desktop/scripts/c13/c13-3-ledger.mjs:19 types/index.ts: "ledger" was 2 now 0
+READER apps/desktop/scripts/c13/c13-3-ledger.mjs:22 types/index.ts: /20\d\d-\d\d-\d\d/g was 1 now 0
+READER apps/desktop/scripts/c13/c13-7-css-comments.mjs:31 types/index.ts: /SUPERSEDED|PARKED|\bNick\b|\bFable\b|\bledger\b|\b20\d\d-\d\d-\d\d\b|\b(Jan|Feb was 29 now 0
+READER apps/desktop/scripts/c13/c13-7-css-comments.mjs:32 types/index.ts: /\[([a-z0-9-]+) §(\d+)\]/g was 0 now 17
+READER apps/desktop/scripts/c13/c13-8-css-themes.mjs:55 types/index.ts: /#[\w-]+/g was 2 now 0
+READER apps/desktop/scripts/c13/c13-8-css-themes.mjs:109 types/index.ts: /#([\w-]+)/g was 2 now 0
+READER apps/desktop/scripts/ci-frames.mjs:122 types/index.ts: "failed" was 1 now 0
+READER apps/desktop/scripts/harness/ab1.mjs:112 types/index.ts: "Revise" was 2 now 0
+READER apps/desktop/scripts/harness/ab1.mjs:259 types/index.ts: "Revise" was 2 now 0
+READER apps/desktop/scripts/harness/ab1.mjs:268 types/index.ts: "Revise" was 2 now 0
+READER apps/desktop/scripts/harness/ab1.mjs:849 types/index.ts: "Revise" was 2 now 0
+READER apps/desktop/scripts/harness/ab1.mjs:851 types/index.ts: "Revise" was 2 now 0
+READER apps/desktop/scripts/harness/ab1.mjs:853 types/index.ts: "Revise" was 2 now 0
+READER apps/desktop/scripts/harness/ab3.mjs:523 types/index.ts: "Fragments" was 1 now 0
+READER apps/desktop/scripts/harness/ab3.mjs:864 types/index.ts: "Fragments" was 1 now 0
+READER apps/desktop/scripts/harness/arrival-signin.mjs:413 types/index.ts: "failed" was 1 now 0
+READER apps/desktop/scripts/harness/arrival-signin.mjs:414 types/index.ts: "failed" was 1 now 0
+READER apps/desktop/scripts/harness/b101.mjs:296 types/index.ts: "failed" was 1 now 0
+READER apps/desktop/scripts/harness/b101.mjs:299 types/index.ts: "failed" was 1 now 0
+READER apps/desktop/scripts/harness/b101.mjs:300 types/index.ts: "failed" was 1 now 0
+READER apps/desktop/scripts/harness/b101.mjs:542 types/index.ts: "failed" was 1 now 0
+READER apps/desktop/scripts/harness/big-projects-1a.mjs:166 types/index.ts: "boards" was 0 now 1
+READER apps/desktop/scripts/harness/big-projects-2.mjs:88 types/index.ts: "boards" was 0 now 1
+READER apps/desktop/scripts/harness/big-projects-2.mjs:91 types/index.ts: "boards" was 0 now 1
+READER apps/desktop/scripts/harness/big-projects-2.mjs:94 types/index.ts: "boards" was 0 now 1
+READER apps/desktop/scripts/harness/big-projects-2.mjs:97 types/index.ts: "boards" was 0 now 1
+READER apps/desktop/scripts/harness/big-projects-2.mjs:103 types/index.ts: "boards" was 0 now 1
+READER apps/desktop/scripts/harness/big-projects-2.mjs:104 types/index.ts: "boards" was 0 now 1
+READER apps/desktop/scripts/harness/ci-runner-guard.mjs:58 types/index.ts: /G\d/g was 1 now 0
+READER apps/desktop/scripts/harness/flux-page-ink.mjs:103 types/index.ts: "Revise" was 2 now 0
+READER apps/desktop/scripts/harness/flux-v2.mjs:141 types/index.ts: "Revise" was 2 now 0
+READER apps/desktop/scripts/harness/guided-w3.mjs:85 types/index.ts: "history" was 1 now 0
+READER apps/desktop/scripts/harness/guided-w3.mjs:296 types/index.ts: "The Tutor" was 0 now 1
+READER apps/desktop/scripts/harness/guided-w5.mjs:209 types/index.ts: /streak|score|percent|\bleft\b|remaining/gi was 2 now 0
+READER apps/desktop/scripts/harness/item126.mjs:202 types/index.ts: "Revise" was 2 now 0
+READER apps/desktop/scripts/harness/item84b.mjs:441 types/index.ts: "Revise" was 2 now 0
+READER apps/desktop/scripts/harness/polish10-size.mjs:124 types/index.ts: "Revise" was 2 now 0
+READER apps/desktop/scripts/harness/revealmark.mjs:64 types/index.ts: "Revise" was 2 now 0
+READER apps/desktop/scripts/harness/tu5.mjs:459 types/index.ts: /\b10\b/g was 0 now 1
+READER apps/desktop/scripts/harness/writing-r1.mjs:61 types/index.ts: "Revise" was 2 now 0
+literals 29459 from 328 scripts; readers whose count moved: 94

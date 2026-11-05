@@ -1,0 +1,2 @@
+default [01/1] OK        exit=0  456s rhizome-latency-mutant.mjs :: RHIZOME-LATENCY-MUTANT VERIFY: PASS (11 checks)
+parked  [01/1] FAIL      exit=1  599s rhizome-latency-mutant.mjs :: RHIZOME-LATENCY-MUTANT VERIFY: FAIL - 1/11 failed
