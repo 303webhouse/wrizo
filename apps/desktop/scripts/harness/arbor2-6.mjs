@@ -110,8 +110,39 @@ await withHarness(async (app) => {
   const sh = await app.evalJs(`(() => { const p = document.querySelector('.mode-page'), k = document.querySelector('.arbor2-paper'); const kc = k ? getComputedStyle(k) : null;
     return { sheetOn: document.documentElement.getAttribute('data-arbor2-sheet'), sheetBg: kc && kc.display !== 'none' ? kc.backgroundColor : null, pageBg: p ? getComputedStyle(p).backgroundColor : null }; })()`);
   const paperThere = !!sh && (sh.pageBg === 'rgb(243, 237, 225)' || (sh.sheetOn === 'on' && sh.sheetBg === 'rgb(243, 237, 225)' && sh.pageBg === 'rgba(0, 0, 0, 0)'));
-  ok('L2e the light layer is fixed, z-index -1, a child of body (behind every surface), and the paper is opaque (the page\'s own, or the zoomed page\'s sheet)', !!day.sun && day.sun.z === '-1' && day.sun.pos === 'fixed' && day.sun.parent === 'BODY' && paperThere, JSON.stringify({ sun: day.sun, ...sh }));
-  ok('L1c with motion: the drift runs on the inner sheet and the layer itself holds still', !!day.sun && day.sun.driftAnim === 'arbor2-sun-drift' && day.sun.anim === 'none', JSON.stringify(day.sun));
+  // r19 (Fable's ruling, Nov 4: "park the three checks reading the retired sun layer with successors that see the pergola"): the day light is
+  // .arbor2-pergola (src/arbor2/pergola.ts, appended to body) - its drift on the wrapper .arbor2-pergola-drift, its 115 leaf clusters (.wz-leaf,
+  // the Wrizors' drawing) on the breeze. Read at rest (not writing), with a liveness half: what is read is displayed and has a size.
+  const PERG = `(() => { const e = document.querySelector('.arbor2-pergola'); if (!e) return null; const cs = getComputedStyle(e), r = e.getBoundingClientRect();
+    const d = e.querySelector('.arbor2-pergola-drift'), dcs = d ? getComputedStyle(d) : null, dr = d ? d.getBoundingClientRect() : null;
+    const t = (a) => { const x = a.effect.getTiming(); return { name: a.animationName, dur: Number(x.duration), inf: x.iterations === Infinity, dir: x.direction, delay: Number(x.delay), play: a.playState }; };
+    const dA = d ? d.getAnimations().map(t) : [];
+    const leaves = [...e.querySelectorAll('.wz-leaf')], lA = leaves.map((l) => l.getAnimations().map(t)[0] || null);
+    return { display: cs.display, pos: cs.position, z: cs.zIndex, parent: e.parentElement ? e.parentElement.tagName : null, anim: cs.animationName, w: r.width, h: r.height,
+      drift: dcs ? { display: dcs.display, w: dr.width, h: dr.height, anims: dA } : null,
+      leaves: leaves.length, breeze: lA.filter((a) => !!a && a.name === 'arbor2-breeze' && a.dur === 16000 && a.inf).length,
+      delays: [...new Set(lA.filter(Boolean).map((a) => a.delay))].sort((a, b) => a - b), paused: lA.filter((a) => !!a && a.play === 'paused').length + dA.filter((a) => a.play === 'paused').length,
+      writing: document.documentElement.getAttribute('data-wz-writing') }; })()`;
+  const pg = await app.evalJs(PERG);
+  const pgLive = !!pg && pg.display !== 'none' && pg.w > 0 && pg.h > 0;
+  // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 35 §18.1 (handoff-FABLE-arbor-r19.md §1 D) and Fable's ruling, Nov 4; harness run 41904658793's leg,
+  // Arbor 8dd766dc: it read .arbor2-sun, which r19 never draws (display:none always) - it passed BLIND, the computed position and z-index of a
+  // hidden layer). Original, verbatim:
+  // ok('L2e the light layer is fixed, z-index -1, a child of body (behind every surface), and the paper is opaque (the page\'s own, or the zoomed page\'s sheet)', !!day.sun && day.sun.z === '-1' && day.sun.pos === 'fixed' && day.sun.parent === 'BODY' && paperThere, JSON.stringify({ sun: day.sun, ...sh }));
+  // SUCCESSOR L2f: the pergola layer is displayed with a size (liveness), fixed, z-index -1, a child of body, and the paper is opaque (the same paper read).
+  ok('L2f the pergola layer is drawn (displayed, a non-zero rect), fixed, z-index -1, a child of body (behind every surface), and the paper is opaque (the page\'s own, or the zoomed page\'s sheet)',
+    pgLive && pg.z === '-1' && pg.pos === 'fixed' && pg.parent === 'BODY' && paperThere, JSON.stringify({ pergola: pg && { display: pg.display, w: pg.w, h: pg.h, z: pg.z, pos: pg.pos, parent: pg.parent }, ...sh }));
+  // PARKED 2026-11-04 (SUPERSEDED with L2e above: it read the retired sun layer's drift sheet - arbor2-sun-drift on a hidden layer, passing BLIND).
+  // Original, verbatim:
+  // ok('L1c with motion: the drift runs on the inner sheet and the layer itself holds still', !!day.sun && day.sun.driftAnim === 'arbor2-sun-drift' && day.sun.anim === 'none', JSON.stringify(day.sun));
+  // SUCCESSOR L1e: with motion, the drift runs on the inner wrapper and the layer itself holds still - the wrapper (displayed, a non-zero rect)
+  // runs one arbor2-pergola-drift, 20 s, forever, alternate; and the leaves stir rarely: all 115 clusters on the 16 s arbor2-breeze, forever,
+  // staggered (their own delays, spread over >= 2 s); at rest nothing of it is paused.
+  const dr0 = pg && pg.drift && pg.drift.anims.length === 1 ? pg.drift.anims[0] : null;
+  ok('L1e with motion: the pergola\'s drift runs on its wrapper (arbor2-pergola-drift, 20 s, infinite, alternate) and the layer holds still; 115 leaf clusters on the 16 s breeze, staggered; none paused at rest',
+    pgLive && pg.anim === 'none' && !!pg.drift && pg.drift.display !== 'none' && pg.drift.w > 0 && pg.drift.h > 0 && !!dr0 && dr0.name === 'arbor2-pergola-drift' && dr0.dur === 20000 && dr0.inf && dr0.dir === 'alternate'
+      && pg.leaves === 115 && pg.breeze === 115 && pg.delays.length >= 2 && pg.delays[pg.delays.length - 1] - pg.delays[0] >= 2000 && pg.writing !== 'true' && pg.paused === 0,
+    JSON.stringify(pg && { ...pg, delays: [pg.delays.length, pg.delays[0], pg.delays[pg.delays.length - 1]] }));
   await snap(app, 'item6-day-shadows-1366');
 
   await app.evalJs(`(() => { window.__flut = []; const seen = new Map(); window.__fo && window.__fo.disconnect(); window.__fo = new MutationObserver((ms) => { for (const m of ms) { const el = m.target; const on = el.getAttribute('data-flutter') === 'true'; if (on) seen.set(el, performance.now()); else if (seen.has(el)) { window.__flut.push([Math.round(seen.get(el)), Math.round(performance.now() - seen.get(el)), document.querySelectorAll('.arbor2-sun-leaf[data-flutter="true"]').length]); seen.delete(el); } } }); document.querySelectorAll('.arbor2-sun-leaf').forEach((l) => window.__fo.observe(l, { attributes: true, attributeFilter: ['data-flutter'] })); })()`);

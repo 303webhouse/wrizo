@@ -554,7 +554,14 @@ export default {
       return out;
     })()`;
     const before = await app.evalJs(M);
-    const keys = ['breath', 'shadows', 'afternoon', 'flutter', 'pull', 'tabs'];   // variation: measured by its widths in arbor-rhizome-variation
+    // PARKED 2026-11-04 (SUPERSEDED by r19 and Fable's ruling, Nov 4 ("park the three checks reading the retired sun layer with successors that see
+    // the pergola"), frames run 41917595215's group, Arbor 8dd766dc: the 'flutter' key read .arbor2-sun-leaf, which r19 never draws, so it passed
+    // BLIND. In r19 the Mood menu's "Leaf flutter" switch still sets data-arbor2-off~='flutter', but the only rule it reaches is the retired
+    // .arbor2-sun-leaf (styles/arbor-v2.css: "Leaf flutter: a flutter draws nothing"); NOTHING reaches the pergola's breeze (.arbor2-pergola
+    // .wz-leaf, arbor2-breeze) - the r19 breeze has no off switch yet, a design gap to hand up, not invented here). Original, verbatim:
+    // const keys = ['breath', 'shadows', 'afternoon', 'flutter', 'pull', 'tabs'];   // variation: measured by its widths in arbor-rhizome-variation
+    // SUCCESSOR: the same proof for the other five switches; 'flutter' is proven apart (flutterB, below) for what it honestly does now.
+    const keys = ['breath', 'shadows', 'afternoon', 'pull', 'tabs'];   // variation: measured by its widths in arbor-rhizome-variation
     // storage: the app may write its own keys meanwhile; a switch must never put anything that names Arbor or the Mood into it
     const leaks = (a, b) => Object.keys(b).filter((k) => a[k] !== b[k] && /arbor|mood/i.test(k + ' ' + b[k]));
     const changed = {};
@@ -571,6 +578,20 @@ export default {
       const own = (k === 'breath' && before.room !== 'night') || (k === 'shadows' && before.room !== 'day') ? null : k;
       changed[k] = { off: off[k], moved: own ? off[own] !== before[own] : 'n/a', back: back[k] === before[k], rect: off.rect === before.rect && back.rect === before.rect, store: leaks(before.store, off.store).concat(leaks(before.store, back.store)) };
     }
+    // SUCCESSOR flutterB (r19): the "Leaf flutter" switch is still offered; off, it puts 'flutter' in <html data-arbor2-off>, and on again takes it
+    // out; the page never moves and nothing that names Arbor or the Mood is stored. Reported, not asserted: the pergola's breeze (its first leaf
+    // cluster's animation and play state) before and with the switch off - unchanged today, the design gap named above.
+    const FL = `(() => { const sw = document.querySelector('.arbor2-mood-switch[data-mood="flutter"]'); const offs = (document.documentElement.getAttribute('data-arbor2-off') || '').split(' ').filter(Boolean);
+      const l = document.querySelector('.arbor2-pergola .wz-leaf'), a = l ? l.getAnimations()[0] : null, p = document.querySelector('.mode-page');
+      return { offered: !!sw, aria: sw ? (sw.getAttribute('aria-checked') || sw.getAttribute('aria-pressed')) : null, off: offs.includes('flutter'), breeze: a ? [a.animationName, a.playState] : null,
+        rect: p ? JSON.stringify(p.getBoundingClientRect()) : null, store: Object.fromEntries(Object.keys(localStorage).map((k) => [k, localStorage.getItem(k)])) }; })()`;
+    const fl0 = await app.evalJs(FL);
+    await app.evalJs(`document.querySelector('.arbor2-mood-switch[data-mood="flutter"]')?.click()`); await sleep(450);
+    const fl1 = await app.evalJs(FL);
+    await app.evalJs(`document.querySelector('.arbor2-mood-switch[data-mood="flutter"]')?.click()`); await sleep(450);
+    const fl2 = await app.evalJs(FL);
+    const flutterB = !!fl0 && fl0.offered && !fl0.off && !!fl1 && fl1.off && !!fl2 && !fl2.off && fl1.rect === fl0.rect && fl2.rect === fl0.rect && leaks(fl0.store, fl1.store).concat(leaks(fl0.store, fl2.store)).length === 0;
+    const flBrief = { flutterB, offered: fl0 && fl0.offered, off: [fl0 && fl0.off, fl1 && fl1.off, fl2 && fl2.off], aria: [fl0 && fl0.aria, fl1 && fl1.aria, fl2 && fl2.aria], breeze: [fl0 && fl0.breeze, fl1 && fl1.breeze], room: before.room };
     const ok = opened && Object.values(changed).every((c) => c.moved !== false && c.back && c.rect && c.store.length === 0);
     // the picture: three switches off (left off for the frame only; the next screen starts on a fresh Desk)
     for (const k of ['flutter', 'pull', 'tabs']) await app.evalJs(`document.querySelector('.arbor2-mood-switch[data-mood="${k}"]')?.click()`);
@@ -578,6 +599,7 @@ export default {
     // the job keeps 300 characters of an error: only the failing switches, with what they measured off and back
     const bad = Object.fromEntries(Object.entries(changed).filter(([, c]) => !(c.moved !== false && c.back && c.rect && c.store.length === 0)));
     if (!ok) throw new Error('MOOD PROOF FAILED ' + JSON.stringify({ opened, bad, room: before.room, was: Object.fromEntries(Object.keys(bad).map((k) => [k, before[k]])) }));
+    if (!flutterB) throw new Error('MOOD PROOF FAILED (flutter) ' + JSON.stringify(flBrief));
   },
   // item 9: the sage logo on the Desk (night sage / day olive, the o kept brass) - the proof: the drawn picture is the room's copy, and it
   // loads (a real PNG, not a broken image)
