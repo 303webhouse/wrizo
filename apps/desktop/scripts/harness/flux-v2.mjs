@@ -135,7 +135,15 @@ async function suite(M, mk = () => load()) {
   const wrong = Object.entries(WORDS).filter(([id, w]) => FLUX(id) !== w).map(([id, w]) => `${id}: ${FLUX(id)} (want ${w})`);
   keep('LX1', wrong.length === 0, wrong.slice(0, 6).join(' | '));
   const census = deskIdsFromSource().filter((id) => FORBID.test(FLUX(id) || '') && !KEEP[id]);
-  keep('LX2', census.length === 0, `${census.length} still name an Arbor noun: ${census.slice(0, 8).join(', ')}`);
+  // ---- PARKED - SUPERSEDED by #13 step 10e (Fable, Nov 5, ruling (b)): #13 changes no word on screen, so the Progress row's new key progressDrawer
+  // keeps 'Drawer' under Flux until TOOLS' post-#13 Flux lexicon pass gives it the Flux word; the allowance below is removed then. Kept VERBATIM and no longer run:
+  // keep('LX2', census.length === 0, `${census.length} still name an Arbor noun: ${census.slice(0, 8).join(', ')}`);
+  // successor: the same census allowing EXACTLY progressDrawer, and only while it still names one (a stale allowance goes red, so the
+  // entry leaves with the Flux word); any other Arbor noun still fails - the mutants below plant one on another key
+  const LX2_ALLOW = ['progressDrawer'];
+  const census2 = census.filter((id) => !LX2_ALLOW.includes(id));
+  keep('LX2b', census2.length === 0 && LX2_ALLOW.every((id) => census.includes(id)),
+    `${census2.length} still name an Arbor noun: ${census2.slice(0, 8).join(', ')}; allowed and still Arbor: ${LX2_ALLOW.filter((id) => census.includes(id)).join(', ') || 'none (stale allowance)'}`);
   keep('LX3', M.formsFor('flux', 'plan').one === 'Circuit' && M.formsFor('flux', 'plan').many === 'Circuits' && M.formsFor('flux', 'freewrite').one === 'Wire In' && M.formsFor('flux', 'publish').one === 'Uplink', JSON.stringify(M.formsFor('flux', 'plan')));
   keep('LX4', M.deskTerm('placeRootName', 'flux') === 'Root' && M.deskTerm('placeRootName', 'plateau') === 'Top Drawer', `${M.deskTerm('placeRootName', 'flux')} / ${M.deskTerm('placeRootName', 'plateau')}`);
   keep('LX5', M.deskTerm('tutorTabTutor', 'plateau') === 'Tutor' && M.deskTerm('drawerLinks', 'plateau') === 'Grafts' && M.deskTerm('stripPlan', 'plateau') === 'Boards' && M.deskTerm('modeRevise', 'plateau') === 'Revise' && M.deskTerm('fadeDepthLabel', 'plateau') === 'Recede depth' && M.deskTerm('timerLabel', 'plateau') === 'Timer' && M.deskTerm('railTypeface', 'plateau') === 'Font', 'Arbor is untouched');
@@ -271,13 +279,19 @@ const SRC_MUT = [
   { name: 'a coordinate is not clamped at 999', file: 'store/fluxReadouts.ts', find: /Math\.min\(999, /, to: 'Math.min(9999, ', red: ['RO3'] },
   { name: 'Root replaces a renamed top drawer', file: 'store/place.ts', find: /&& d\.name === DEFAULT_TOP_NAME/, to: '', red: ['RO8'] },
   { name: 'one pixel of the Rack icon flips', file: 'store/themeIcons.ts', find: /\n'\.##############\.',\n'\.#\.\.\.\.\.\.\.\.\.\.\.\.#\.',\n'\.#\.######\.\.##\.#\.',/, to: "\n'.##############.',\n'.#............#.',\n'.#.#######.##.#.',", red: ['IC1'] },
-  { name: 'the Flux word for Settings is lost', file: 'store/deskLexicon.ts', find: /stripSettings: 'Config',/, to: "stripSettings: 'Settings',", red: ['LX1', 'LX2'] },
+  // ---- PARKED - SUPERSEDED by #13 step 10e (Fable, Nov 5): LX2 is parked, so this mutant's red set moves to the successor LX2b. Kept VERBATIM and no longer run:
+  // { name: 'the Flux word for Settings is lost', file: 'store/deskLexicon.ts', find: /stripSettings: 'Config',/, to: "stripSettings: 'Settings',", red: ['LX1', 'LX2'] },
+  { name: 'the Flux word for Settings is lost [10e successor]', file: 'store/deskLexicon.ts', find: /stripSettings: 'Config',/, to: "stripSettings: 'Settings',", red: ['LX1', 'LX2b'] },
+  // 10e: the allowance is EXACTLY progressDrawer - the same Arbor noun on any other key still turns LX2b red
+  { name: 'another key says Drawer under Flux (only progressDrawer is allowed)', file: 'store/deskLexicon.ts', find: /stripSettings: 'Config',/, to: "stripSettings: 'Drawer',", red: ['LX2b'] },
   { name: 'the Clock word is lost', file: 'store/deskLexicon.ts', find: /timerLabel: 'Clock',/, to: '', red: ['LX1'] },
   { name: 'the Flux Draft tab falls back to Draft', file: 'store/deskLexicon.ts', find: /modeDraft: 'Text',/, to: '', red: ['LX1', 'LX6'] },
   { name: 'Flux recedes at Arbor\'s slow pace again', file: 'store/fluxReadouts.ts', find: /return theme === 'flux' \? FADE_OUT_FLUX_S : base;/, to: 'return base;', red: ['RO11'] },
   { name: 'the block caret goes back to its wide width', file: 'store/fluxReadouts.ts', find: /Math\.round\(height \* 0\.16\)/, to: 'Math.round(height * 0.48)', red: ['RO10'] },
   { name: 'Delete turns into Purge', file: 'store/deskLexicon.ts', find: /actionCopy: 'Clone doc text',/, to: "actionCopy: 'Clone doc text', actionDelete: 'Purge doc',", red: ['LX6'] },
-  { name: 'a big-projects string falls back to Arbor', file: 'store/deskLexicon.ts', find: /sectionsEmptyBoards: 'No circuits here yet\.',/, to: '', red: ['LX2'] },
+  // ---- PARKED - SUPERSEDED by #13 step 10e (Fable, Nov 5): LX2 is parked, so this mutant's red set moves to the successor LX2b. Kept VERBATIM and no longer run:
+  // { name: 'a big-projects string falls back to Arbor', file: 'store/deskLexicon.ts', find: /sectionsEmptyBoards: 'No circuits here yet\.',/, to: '', red: ['LX2'] },
+  { name: 'a big-projects string falls back to Arbor [10e successor]', file: 'store/deskLexicon.ts', find: /sectionsEmptyBoards: 'No circuits here yet\.',/, to: '', red: ['LX2b'] },
 ];
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
