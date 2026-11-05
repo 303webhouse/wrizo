@@ -1,0 +1,11 @@
+#13 step 10c (lexicon split) + 10f (check) - manifest (Chat 1, Nov 5 2026)
+
+Tree 3412cd9c (train-c13-10c ed5e5845: main 01ae2fbc + two --no-ff merges): 10c c13-10c-lexicon 375dbc48 (store/deskLexicon.ts -> store/lexicon/{terms, canonical/{chrome,decks,settings,help}, overrides/{flux,machina}}; the 18 added wiring lines are docs/cleanup/c13-10c-allow.txt), then 10f c13-10f-check ab09253f (closed as a check: c13-10f-wordcount.mjs). Merged to main as fe9aadf2 (a --no-ff merge of ed5e5845); `git diff ed5e5845 fe9aadf2 -- apps` is empty.
+Cleared by Fable (Nov 5): 10c on its lane + snapshot, 10f the check.
+- tsc desktop 0, tsc server 0, seed-guard PASS 36.
+- dist-web not byte-identical to main's (module order) -> pair + probe.
+- c13-10c-lexicon --base 01ae2fbc: PASS 8 checks (938 keys x 4 theme readings identical, key order identical, inline read = old file; livenesses). split-check (--allow c13-10c-allow.txt, no --ordered: deskLexicon.ts is not an export-* barrel): PASS 11. c13-10f-wordcount PASS 7; seams check PASS 16; c13-2-links PASS; c13-4d-links check PASS.
+- GitHub Actions full pair, run 41992979180 (8 shards per leg): default 233/240, parked 233/240; the only non-OK are the usual seven capture/probe tools (no verdict line).
+- STYLE PROBE, main's build (train-c13-9, tools head 8f73ae78) baseline vs the train, box turn 08:26Z-08:36Z: "C13-STYLE COMPARE: IDENTICAL"; 2188 selectors / 590 matched / 1598 unmatched / 0 untestable.
+- Re-run on the merged main (rule adopted Nov 5): c13-10c-lexicon --base 01ae2fbc PASS 8; c13-10f-wordcount PASS 7; seams PASS 16; links PASS. (c13-10c-lexicon --base <the merged tree> fails by design: its base must be the pre-split sha 01ae2fbc, a fixed sha, which holds on main.)
+Files here: pair-*.log.txt, summary.txt (Actions); probe-main/step.log.txt.
