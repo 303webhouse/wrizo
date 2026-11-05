@@ -1,0 +1,9 @@
+PASS  THE COUNTER: store/wordCount.ts exports wordCount and reads the text through withoutFontMarks
+PASS  THE COUNTER: the seven surfaces that kept private copies import it (7/7 present)
+PASS  NO PRIVATE COPY: every word-splitting expression in src (6 across 291 files) is on the list
+PASS  NO PRIVATE COPY: every list entry still has its site (the list cannot rot)
+PASS  COVERAGE: the census read the source (files and sites found)
+PASS  LIVENESS: a private counter planted in PageEditor is caught as unlisted
+PASS  LIVENESS: a list entry with no site is caught as stale
+
+C13-10F WORDCOUNT: PASS (7 checks; 10f closed: one counter, 5 named non-counters)

@@ -1,0 +1,11 @@
+PASS  NEW: 'progressDrawer' is new (absent at 01ae2fbc), in the table now, and reads 'Drawer' in all 4 theme readings
+PASS  DUMP: 938 keys x 4 theme readings (none, plateau, flux, machina) = 3752 values, identical at 01ae2fbc and now
+PASS  DUMP: the key list (Object.keys of CANONICAL) is identical IN ORDER
+PASS  DUMP coverage: the dump read the real table (900+ keys, overrides that differ under flux and machina)
+PASS  LIVENESS: one value planted different reads as DIFFERENT
+PASS  LIVENESS: two keys planted out of order read as DIFFERENT
+PASS  INLINE: srcText of deskLexicon.ts is the file at 01ae2fbc exactly, but for its import lines (2218 lines)
+PASS  INLINE premise: a bare read of deskLexicon.ts is NOT the old text (the seam is what carries the readers)
+PASS  LIVENESS: a text planted one character different reads as DIFFERENT
+
+C13-10C LEXICON: PASS (9 checks)

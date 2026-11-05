@@ -1,0 +1,15 @@
+#13 step 10e (c13-10e-settings 583c7930) - manifest (Chat 1, Nov 5 2026)
+
+Tree c2951672 (train-c13-10e2 5865d77d: main 8aae0c76 + one --no-ff merge of c13-10e-settings 583c7930, LX2 parked with successor LX2b whose allow list names exactly progressDrawer). Merged to main as 45a5d93b; `git diff train-c13-10e2 HEAD -- apps` is empty.
+
+PROOFS
+- tsc desktop 0, tsc server 0, seed-guard PASS 36, build:web done.
+- GitHub Actions full pair, run 42011585496 (8 shards per leg): default 232/240, parked 233/240. Beside the usual seven capture/probe NOVERDICT tools, one extra miss: pw1.mjs, default leg only (2/41: S5 and the survey-back target "absent"). pw1 passes alone 8/8 (main x2 legs, train x2 legs, train default x3 more): a driver-timing miss under pair load, #45's family (Fable's call). flux-v2 LX2b passes both legs.
+- Box, rhizome-latency (Fable's rule: 10e AND a main control in the same turn), one turn 14:49Z-15:04Z, box quiet (load 0 after every run), 3 rounds x default+parked on each tree:
+  10e   tree=5865d77d bundle=index-Dpp7CGn6.js/956957b: 6/6 PASS (17 checks each)
+  main  tree=8aae0c76 bundle=index-DotAu9BA.js/956984b: 6/6 PASS (17 checks each)
+  Both green: Fable's rule is met, 10e merges.
+- Merged-tree re-run of the checks 10e touched (rule adopted Nov 5): c13-10c-lexicon --base 01ae2fbc --new progressDrawer=Drawer PASS (9 checks); c13-10f-wordcount PASS (7); c13-4d-links check PASS. drawer-toggles and flux-v2 (the two harness files 10e changed) ran in the pair on the train tree, whose product code is byte-for-byte the merged main's; not re-run separately.
+- Clear: Fable, Nov 5 ("10e = POLISH c13-10e-settings @ 583c7930 ... If both are green, or both red the same way -> merge 10e").
+
+Files here: pair-default/parked.log.txt and summary.txt (Actions, run 42011585496); box-rhizome-latency/ (12 logs); box-turn.status.txt; merged-tree-checks/.
