@@ -11,6 +11,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { srcText } from '../global-css.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(process.env.IF_REPO || join(here, '..', '..', '..', '..'));
@@ -104,7 +105,7 @@ ok('S: no file but store/installedFonts.ts names the key - it is in no sync, per
 
 // ---- U: the UI contract (source) --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 const ctl = strip(read('components/TypeControl.tsx'));
-const lex = read('store/deskLexicon.ts');
+const lex = srcText(SRC, 'store/deskLexicon.ts').replace(/\r\n/g, '\n');   // #13 step 10c: the inline read
 const uiOk = (c) => (c.match(/\{addRow\(\)\}/g) || []).length === 1 && /\{addRow\(\)\}\s*<\/ul>\s*<\/>/.test(c)   // the one Add call: inside the scoped list
   && /\{deviceRows\(\(n\) => n === brassKey, pickDevice\)\}/.test(c) && /\{deviceRows\(\(n\) => face\?\.source === 'device' && face\.name === n,/.test(c)   // the device list follows the roster in BOTH lists
   && /const missing = !fontIsAvailable\(name\);/.test(c) && /data-missing=\{missing \? 'true' : undefined\}/.test(c) && /\{missing && <span className="wz-type-note">\{t\('typeFaceMissing'\)\}<\/span>\}/.test(c)   // the quiet note

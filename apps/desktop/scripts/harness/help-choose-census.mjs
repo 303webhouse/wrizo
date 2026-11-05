@@ -23,6 +23,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { srcText } from '../global-css.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(process.env.W4_REPO || join(here, '..', '..', '..', '..'));
@@ -192,7 +193,7 @@ ok('C1: Q3 is little / shape / everything', !!m && same(m.Q3, Q3), m ? JSON.stri
   const picks = [...new Map(TABLE.map(([, , p]) => [JSON.stringify(norm(p)), norm(p)])).values()];
   const keys = m ? await run(() => picks.map((p) => m.whyKeyFor(p))) : null;
   let lexicon = {};
-  try { const raw = readFileSync(join(SRC, 'store', 'deskLexicon.ts'), 'utf8'); for (const k of (keys && !keys.threw ? keys : [])) { const mm = new RegExp(`^  ${k}:\\s*(['"\`])((?:\\\\.|(?!\\1).)*)\\1,`, 'm').exec(raw); if (mm) lexicon[k] = mm[2]; } } catch { /* the checks record it */ }
+  try { const raw = srcText(SRC, 'store', 'deskLexicon.ts'); for (const k of (keys && !keys.threw ? keys : [])) { const mm = new RegExp(`^  ${k}:\\s*(['"\`])((?:\\\\.|(?!\\1).)*)\\1,`, 'm').exec(raw); if (mm) lexicon[k] = mm[2]; } } catch { /* the checks record it */ }
   const names = keys && !keys.threw ? keys : [];
   ok(`C7: every distinct pick (${picks.length}) has its own helpWhy<Pick> key, none shared`, !!keys && !keys.threw && names.length === picks.length && new Set(names).size === picks.length && names.every((k) => /^helpWhy[A-Z]/.test(k)), JSON.stringify(names).slice(0, 160));
   ok('C7: each key is in the Arbor lexicon as ONE short sentence (a capital, one terminal stop, <= 18 words) - Fable reviews the strings with the screens', names.length === picks.length && names.every((k) => { const s = lexicon[k]; return typeof s === 'string' && /^[A-Z]/.test(s) && /[.]$/.test(s) && (s.match(/[.!?](\s|$)/g) || []).length === 1 && s.split(/\s+/).length <= 18; }), `${Object.keys(lexicon).length}/${picks.length} present`);

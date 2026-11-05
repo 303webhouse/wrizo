@@ -317,7 +317,7 @@ const popout = rd('components/SectionsPopout.tsx');
 const switcher = rd('components/PlaceSwitcher.tsx');
 const block = rd('components/PlaceBlock.tsx');
 const app = rd('App.tsx');
-const lex = rd('store/deskLexicon.ts');
+const lex = noCR(srcText(SRC, 'store/deskLexicon.ts'));   // #13 step 10c: the inline read
 const deskRail = rd('components/DeskRail.tsx');
 const rv = fs.readFileSync(path.join(DESKTOP, 'scripts', 'runtime-verify.mjs'), 'utf8');
 const stripBody = cascade.slice(cascade.indexOf('const strip = ('), cascade.indexOf('const layers ='));

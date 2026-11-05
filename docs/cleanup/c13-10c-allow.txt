@@ -1,0 +1,18 @@
+const CANONICAL_CHROME = {
+const CANONICAL_DECKS = {
+const CANONICAL_SETTINGS = {
+const CANONICAL_HELP = {
+const FLUX_OVERRIDES = {
+const MACHINA_OVERRIDES = {
+} satisfies Partial<Record<DeskTermId, string>>;
+} satisfies Partial<Record<DeskTermId, string>>;
+} satisfies Partial<Record<DeskTermId, string>>;
+} satisfies Partial<Record<DeskTermId, string>>;
+} satisfies Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>>;
+} satisfies Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>>;
+  ...CANONICAL_CHROME,
+  ...CANONICAL_DECKS,
+  ...CANONICAL_SETTINGS,
+  ...CANONICAL_HELP,
+  ...FLUX_OVERRIDES,
+  ...MACHINA_OVERRIDES,

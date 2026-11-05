@@ -15,6 +15,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { bundleText } from '../global-css.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const DESKTOP = path.resolve(here, '..', '..');
@@ -39,7 +40,7 @@ async function load(over = {}, keep = null) {
     bundle: true, write: false, format: 'esm', platform: 'node', logLevel: 'silent', nodePaths: [path.join(DESKTOP, 'node_modules')], external: ['@fontsource/*', '@fontsource-variable/*'],
     plugins: [{ name: 'ov', setup(b) { b.onLoad({ filter: /\.ts$/ }, (args) => {
       const rel = path.relative(SRC, args.path).split('\\').join('/');
-      const text = noCR(fs.readFileSync(args.path, 'utf8'));
+      const text = noCR(bundleText(SRC, rel));
       return { contents: over[rel] ? over[rel](text) : text, loader: 'ts' };
     }); } }],
   });
