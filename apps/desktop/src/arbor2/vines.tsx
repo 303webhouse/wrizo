@@ -10,6 +10,7 @@
 // The curve: the stem's points (its segment ends) through Catmull-Rom, both edges offset by half the width and written as cubic Beziers, closed.
 // Cost: a stem's geometry is computed once per plan; a stem's piece paths are cached by how many of its segments show, so a keystroke redraws
 // only the stems that grew. Colours, the flash and the swap are CSS (styles/arbor-v2.css). Nothing is stored.
+import { memo } from 'react';
 import type { GrowthGeometry, GrowthSegment, LapPlan } from '../store/rhizomeGrowth';
 
 const TAPER = 1.6, TIP_PX = 8, MAX_BRANCH = 4.2, PIECE = 5;
@@ -158,7 +159,7 @@ function piecesOf(s: Stem, vis: number): Piece[] {
   return out;
 }
 
-function Stems({ plan, geo, k, fromTip }: { plan: LapPlan; geo: GrowthGeometry; k: number; fromTip: boolean }) {
+const Stems = memo(function Stems({ plan, geo, k, fromTip }: { plan: LapPlan; geo: GrowthGeometry; k: number; fromTip: boolean }) {
   const stems = stemsOf(plan, geo, fromTip);
   return (
     <>
@@ -173,10 +174,11 @@ function Stems({ plan, geo, k, fromTip }: { plan: LapPlan; geo: GrowthGeometry; 
       })}
     </>
   );
-}
+});
 
-/** The vines: the laps before this one (whole), then this lap up to k segments. */
-export function ArborVines({ plan, past, geo, k, fromTip }: { plan: LapPlan | null; past: LapPlan[]; geo: GrowthGeometry; k: number; fromTip: boolean }) {
+/** The vines: the laps before this one (whole), then this lap up to k segments. r20 (the 150b cost, latency turn 2026-11-05T03:09-03:25Z: +10 ms a key
+ *  in the flash): memoised - a keystroke that changes nothing they draw (every letter between growth steps, the whole flash) re-renders neither copy. */
+export const ArborVines = memo(function ArborVines({ plan, past, geo, k, fromTip }: { plan: LapPlan | null; past: LapPlan[]; geo: GrowthGeometry; k: number; fromTip: boolean }) {
   return (
     <g className="arbor2-vines">
       {past.length > 0 && (
@@ -187,4 +189,4 @@ export function ArborVines({ plan, past, geo, k, fromTip }: { plan: LapPlan | nu
       {plan && <Stems plan={plan} geo={geo} k={k} fromTip={fromTip} />}
     </g>
   );
-}
+});
