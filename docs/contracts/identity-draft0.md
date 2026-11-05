@@ -1,6 +1,6 @@
 # Contract: one Wrizo account for Write and Read · DRAFT 0
 
-**Status:** draft 0, rev f (Fable, Nov 4, 2026, 4:30 pm: the email claim; `theme.room`; §5b "at the desk"; §3b the account-deleted event). NOT signed. Read mocks against it; nothing touches production until Nick signs draft 1.
+**Status:** draft 0, rev g (Fable, Nov 4, 2026, 9:20 pm): the open rows are settled by Nick (pen name → Read; under-18 accounts blocked). Draft 1 follows once the deletion outbox and the sign-up age step are OK'd. NOT signed. Read mocks against it; nothing touches production until Nick signs draft 1.
 **Owner:** Fable (Write side). **Consumer:** SOCIAL (Wrizo | Read, `303webhouse/wrizo-read`).
 **Nick's rulings this rests on:** one account for both apps; a writer can sign up from either side (Oct 29); the writer's theme follows them into Read (Oct 31); theme switches are saved to the account so they follow the writer into Read (Oct 31).
 
@@ -19,8 +19,8 @@
 | `theme.page` | Page: Light / Dark (the existing cross-theme pref). | agreed |
 | `theme.cast` | Machina's Cool / Neutral, when the theme is Machina. | agreed |
 | `theme.switches` | The writer's per-theme "wow" switches (`{ themeId: { switchKey: false } }`; only the switches turned off are listed). | agreed (Nick, Oct 31: on the account) |
-| pen name / public name | Who owns it, Write or Read. | **OPEN (Nick, deferred)** |
-| age / class signal | Whether Write collects anything at sign-up and passes it on, or whether Read handles it entirely. | **OPEN (Nick, deferred)** |
+| pen name / public name | **Read holds it** (Nick, Nov 4). Write sends no public name; the writer sets her pen name in Read. | agreed |
+| `adult` | **Under-18 accounts are blocked for now** (Nick, Nov 4). Write's sign-up requires the person to confirm they're 18 or older and refuses otherwise. Every account is therefore an adult, and Write sends `adult: true` so Read never has to assume. Read's classes are for adult learners only (no school-age classes) until Nick rules otherwise. | agreed |
 | `email` + `email_verified` | The writer's sign-in address, for **account notices only** (Nick's Read ruling D20: stored under Read's retention, deleted with the account, shown to no one). **`email_verified` is `false` for every account today:** Write sends no email yet, so it has never verified an address. It becomes `true` only after Write gains a verification step (planned with the "forgot password" email). Read must not treat an unverified address as proof of anything. | agreed (Nick, D20) |
 
 - The claims are **read-only for Read**. Read never writes back to Write's settings.
