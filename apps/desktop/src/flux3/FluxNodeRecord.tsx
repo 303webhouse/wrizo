@@ -54,7 +54,7 @@ function NodeRecord({ box, connections, peers }: Props) {
   const n = connections.filter((c) => c.connA === box.id || c.connB === box.id).length + (peers?.length ?? 0);
   return (
     <span className="flux3-node" data-node-kind={kind} data-last={last === box.id ? 'true' : undefined} aria-hidden="true">
-      <i className="flux3-node-h" data-addr={`${t('linksKindCard')} 0x${nodeHex(box.id)}`} data-kind-word={kindWord} />
+      <i className="flux3-node-h" data-addr={`${t('linksKindCard').toUpperCase()} 0x${nodeHex(box.id)}`} data-kind-word={kindWord} />
       <i className="flux3-node-f" data-links={`${n} ${n === 1 ? t('flux3LinkOne') : t('flux3LinkMany')}`} data-ok={box.lit ? t('flux3ChecksumOk') : undefined} />
     </span>
   );

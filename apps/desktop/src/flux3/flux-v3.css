@@ -31,7 +31,7 @@
   white-space:nowrap; font-family:var(--font-chromeLabel); font-weight:600; font-size:10px; letter-spacing:.14em; text-transform:uppercase; font-style:normal; }
 :root[data-flux3][data-theme='flux'] .flux3-node-h{ bottom:100%; height:15px; line-height:15px; margin-bottom:3px; }
 :root[data-flux3][data-theme='flux'] .flux3-node-f{ top:100%; height:15px; line-height:15px; margin-top:3px; }
-:root[data-flux3][data-theme='flux'] .flux3-node-h::before{ content:attr(data-addr); color:var(--f3-addr); flex:0 0 auto; }
+:root[data-flux3][data-theme='flux'] .flux3-node-h::before{ content:attr(data-addr); color:var(--f3-addr); flex:0 0 auto; text-transform:none; }   /* capitals set in the word, so the 0x stays lower case */
 :root[data-flux3][data-theme='flux'] .flux3-node-h::after{ content:attr(data-kind-word); color:var(--acc-text); min-width:0; overflow:hidden; text-overflow:ellipsis; }
 :root[data-flux3][data-theme='flux'] .flux3-node-f::before{ content:attr(data-links); color:var(--f3-quiet); flex:0 0 auto; }
 :root[data-flux3][data-theme='flux'] .flux3-node-f::after{ content:attr(data-ok); color:var(--f3-lime); min-width:0; overflow:hidden; text-overflow:ellipsis; }
@@ -43,7 +43,11 @@
 :root[data-flux3][data-theme='flux'] .flux3-tele b{ color:var(--f3-cyan-text); font-weight:600; }
 :root[data-flux3][data-theme='flux'] .flux3-tele sup{ font-size:.7em; line-height:0; }
 :root[data-flux3][data-theme='flux'] .flux3-tele-lvl{ color:var(--f3-lime); }
-:root[data-flux3][data-theme='flux'] .flux3-tele-you{ color:var(--f3-orange-text); text-transform:none; letter-spacing:.04em; }
+:root[data-flux3][data-theme='flux'] .flux3-tele-you{ color:var(--f3-orange-text); text-transform:none; letter-spacing:.04em; display:inline-block; max-width:34ch; overflow:hidden;
+  text-overflow:ellipsis; vertical-align:bottom; }
+/* the board's existing hint (FluxReadouts' board frame) moves to the frame's top edge, as the mockup's hint sits above the Schema: the readouts
+   take the bottom edge, so the hint is never under them (the same element and words, only its edge changes) */
+:root[data-flux3][data-theme='flux'] .flux-board-frame .flux-readout-hint{ bottom:auto; top:8px; }
 
 /* ---- the rail in command-box dress (q9: the existing rail, the same items in the same order and rects; no new item, no new place) ---- */
 :root[data-flux3][data-theme='flux'] .desk-rail{ border-right:1px solid var(--f3-hair); }

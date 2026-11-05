@@ -127,6 +127,8 @@ const INSTRUMENT = `(() => {
       cards: Object.fromEntries(cards.map((c) => [c.dataset.boxId, rr(c.getBoundingClientRect())])),
       texts: Object.fromEntries(cards.map((c) => [c.dataset.boxId, c.textContent])),
       records: document.querySelectorAll('.board-canvas .board-box > .flux3-node').length, nCards: cards.length,
+      teleRect: tele ? rr(tele.getBoundingClientRect()) : null,
+      hintRect: (() => { const h = document.querySelector('.flux-board-frame .flux-readout-hint'); return h && h.textContent ? rr(h.getBoundingClientRect()) : null; })(),
       tele: tele ? [...tele.children].map((s) => s.textContent) : null, chunk: res.filter((n) => /\\/assets\\/boot-/.test(n)).map((n) => n.replace(/^.*\\//, '')),
       served: ([...document.scripts].map((s) => s.getAttribute('src') || '').find((s) => /index-/.test(s)) || '').replace(/^.*\\//, ''),
     };
@@ -274,6 +276,12 @@ try { await withHarness(async (app) => {
       JSON.stringify({ frame: [a.frame, b.frame], moved: moved.map((id) => [id, a.cards[id], b.cards[id]]), retexted }));
   }
   ok(`G coverage: ${cells}/4 cells compared`, cells === 4);
+  // H: the readouts are an overlay on the frame's bottom edge; they must never cover the board's own hint (moved to the top edge under the flag)
+  const meets = (a, b) => !!a && !!b && a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  const hCells = TONES.flatMap((tone) => VIEWS.map(([w]) => [`${tone} ${w}`, reads[`on|${tone}|${w}`]])).filter(([, s]) => s);
+  ok(`H the readouts never cover the board's hint (${hCells.length} cells; the hint is present in each)`,
+    hCells.length === 4 && hCells.every(([, s]) => s.hintRect && s.teleRect && !meets(s.hintRect, s.teleRect)),
+    JSON.stringify(hCells.map(([c, s]) => [c, s.hintRect, s.teleRect])));
   ok('G the board\'s boxes (what it saves) are unchanged by the flag-on visits (nothing new is saved)', !!storedBefore && storedBefore === storedAfterOn,
     `${(storedBefore || '').length} vs ${(storedAfterOn || '').length} chars`);
 
