@@ -16,6 +16,7 @@ import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
+import { srcText } from './global-css.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = join(here, '..', '..', '..');
@@ -54,7 +55,7 @@ if (js === beforeStub || /^import .*\.\.\/types';/m.test(js)) {
 }
 // The constants are read OUT OF THE REAL types file, not restated here — or the
 // 180 this proof checks could drift from the 180 the app ships.
-const TYPES_SRC = readFileSync(join(repo, 'apps/desktop/src/types/index.ts'), 'utf8');
+const TYPES_SRC = srcText(join(repo, 'apps/desktop/src'), 'types/index.ts');   // #13 step 10b: the barrel's parts, joined
 const dialect = TYPES_SRC.match(/PROOFING_DEFAULT_DIALECT: ProofingDialect = '([^']+)'/);
 const days = TYPES_SRC.match(/PROOFING_TOMBSTONE_DAYS = (\d+)/);
 if (!dialect || !days) { console.log('FAIL — could not read the constants from types/index.ts'); process.exit(1); }
