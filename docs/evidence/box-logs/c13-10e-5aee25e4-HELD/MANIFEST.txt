@@ -1,0 +1,5 @@
+#13 step 10e (c13-10e-settings 5962de81) - HELD (Chat 1, Nov 5 2026)
+
+Tree 16e61318 (train-c13-10e 5aee25e4: main 6dd88c7f + one --no-ff merge of 5962de81). tsc x2 0, seed-guard 36, lexicon check with --new progressDrawer=Drawer PASS 9, drawer-toggles PASS 34, wordcount PASS 7, seams PASS 16, links PASS.
+GitHub Actions full pair, run 41997981439: default 232/240, parked 232/240; beside the usual seven NOVERDICT tools, ONE real FAIL on both legs: flux-v2.mjs "LX2 -- 1 still name an Arbor noun: progressDrawer" (FLUX-V2 VERIFY: FAIL - 1/158). Cause: 10e adds the lexicon key progressDrawer, 'Drawer' in every theme with no Flux override (Fable's ruling: a word, not saved data); flux-v2's LX2 requires every Arbor noun in the lexicon to be overridden under Flux. flux-v2 passed on main (the 10c pair, run 41992979180, 233/240). So the red is 10e's, not a flake.
+Not merged. Options for Fable: (a) a Flux override for progressDrawer (a different word in Flux), or (b) flux-v2's LX2 gets the key on its allow list / a park + successor. Files here: summary.txt, pair-*.log.txt, flux-v2.actions-default-RED.txt.

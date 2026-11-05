@@ -26,6 +26,8 @@ import { DRAWER_MIN } from '../store/menusDrawers';
 import { getLinkDock, setLinkDock, useLinkDock } from '../store/linkDock';
 import { LinkDockReader } from './LinkDockReader';   // its own line: one-drawer.mjs O6 reads the line above verbatim
 import { TUTOR_STAGE_EVENT } from '../store/tutorStage';
+import { assembleTutorDelta, capSelection, assembleBible } from './tutor/assemble';
+import { FREE_WRITE_PRESETS, NO_DRAWS, DRAFT_ASKS } from './tutor/presets';
 
 // the Tutor: two DeskFrame anchors (the grip's small safe box; the open panel pinned to the stage's edge), rendered bare; it receives only entry/project/pageText/selectionText - nothing that could write onto a page; no badge, toast or count ever knocks [Tutor §2]
 const DOCK_FLOOR_PX = 120;
@@ -34,28 +36,6 @@ const TUTOR_TAB_PX = 16;   // .wz-tutor-grip{ width:16px } - the drawer mirror c
 const USABLE_PANEL_FLOOR_PX = 280;   // the measure-effect's floor is DRAWER_MIN (200); this constant is kept as the record [Tutor §5]
 void USABLE_PANEL_FLOOR_PX;
 
-// TU2 S2 — the listener's delta assembly. No real tokenizer is available
-// client-side, so the cap is a disclosed, documented character-based
-// approximation: ~4 characters per token, the commonly-cited ballpark for
-// English prose (both Anthropic's and OpenAI's own docs use figures in
-// this neighborhood). 4000 tokens * 4 chars/token = 16000 chars is the
-// hard ceiling on the WRITING itself; the honesty header line below rides
-// on top of that, inside tutor.ts's own separate, more generous
-// MAX_DELTA_CHARS wire cap (see that file's comment for the arithmetic).
-const DELTA_TOKEN_CAP = 4000;
-const CHARS_PER_TOKEN_APPROX = 4;
-const DELTA_CHAR_CAP = DELTA_TOKEN_CAP * CHARS_PER_TOKEN_APPROX;
-
-// ITEM 84, TD4 — the selected stretch's own cap, mirroring the delta's two-tier
-// shape (client cap here, server backstop in tutor.ts). HEAD-BIASED, and that is
-// the one place it deliberately differs from the delta: the delta keeps its TAIL
-// because the newest writing is its whole point, while a selection's point is the
-// stretch the writer started pointing at, so an over-long one keeps its OPENING.
-// The header below is plain data read by the MODEL and is deliberately not a
-// deskLexicon entry — its writer-facing twin is `tutorSelectionTruncated` — the
-// same distinction DELTA_TRUNCATION_HEADER above already draws.
-const SELECTION_CHAR_CAP = DELTA_CHAR_CAP;
-const SELECTION_TRUNCATION_HEADER = 'opening of the selected stretch only; the rest was too long to travel';
 
 // TU2 S5 — the session meter's own timing. Split into a fully-opaque hold
 // plus a separate fade-out span (rather than one flat 4000ms) so the
@@ -70,73 +50,6 @@ const METER_VISIBLE_MS = 3600;
 const METER_FADE_MS = 400;
 const METER_TOTAL_MS = METER_VISIBLE_MS + METER_FADE_MS; // ~4s, the brief's own figure
 
-// Plain data read by the MODEL as part of the delta block's own header —
-// deliberately NOT a deskLexicon entry (deskLexicon is for writer-facing
-// chrome; the writer never sees this exact string — see
-// `tutorDeltaTruncated` in deskLexicon.ts for this same honesty's
-// writer-facing twin, rendered in the panel instead).
-const DELTA_TRUNCATION_HEADER = 'latest stretch only; earlier additions unread';
-
-interface TutorDelta {
-  delta: string | null;
-  truncated: boolean;
-}
-
-// Writer-initiated, send-time only (never a timer, never on mount) — the
-// ONE call site below (send()) is the only place this ever runs, per the
-// brief's own invariant that the delta is assembled at send time, never
-// before. `lastRead` absent covers BOTH grandfather cases the brief names
-// as one: no thread yet (this page's very first-ever Tutor message) and a
-// thread that predates TU2 (no cursor was ever persisted onto it) — both
-// read the WHOLE page from the start, cap still applies, same code path
-// either way. No new writing since the cursor (`newText` empty) returns
-// `delta: null` — the caller sends no delta field at all and renders no
-// "nothing new" UI, true silence per the brief's own words.
-function assembleTutorDelta(pageText: string, lastRead: { at: string; chars: number } | undefined): TutorDelta {
-  const newText = lastRead ? pageText.slice(lastRead.chars) : pageText;
-  if (newText.length === 0) return { delta: null, truncated: false };
-  const truncated = newText.length > DELTA_CHAR_CAP;
-  const kept = truncated ? newText.slice(newText.length - DELTA_CHAR_CAP) : newText; // tail bias: keep the most recent writing
-  const delta = truncated ? `[${DELTA_TRUNCATION_HEADER}]\n${kept}` : kept;
-  return { delta, truncated };
-}
-
-// ITEM 84, TD4 — the stretch, capped. Pure and synchronous, called once at PRESS
-// time and never again: what travels is frozen the moment the writer pressed the
-// button that names it, which is also why this takes the stretch as an argument
-// rather than reading any live selection of its own.
-function capSelection(stretch: string): { text: string; truncated: boolean; wordsSent: number } {
-  if (stretch.length <= SELECTION_CHAR_CAP) return { text: stretch, truncated: false, wordsSent: 0 };
-  const kept = stretch.slice(0, SELECTION_CHAR_CAP);
-  // the count is of the slice actually sent, never the whole stretch [Tutor §6]
-  const wordsSent = kept.trim().split(/\s+/).filter(Boolean).length;
-  return { text: `[${SELECTION_TRUNCATION_HEADER}]\n${kept}`, truncated: true, wordsSent };
-}
-
-// TU5 S4 — the book's Bible's own send-time assembly, mirroring the delta's
-// two-tier cap. The writer's saved facts (of THIS page's project) are joined
-// into ONE block — a fact is a line — assembled ONLY here, at send time, never
-// ambiently. Returns null (a true absent key, never an empty string) when the
-// project has no facts. Client cap 8000 chars of CONTENT (server backstop 9000,
-// tutor.ts's MAX_BIBLE_CHARS), with an honest truncation header line prepended
-// when some facts don't fit; whole facts only — never a fact sliced mid-line
-// (except the pathological case of a single fact somehow over the cap, which
-// the 300-char per-fact store cap makes unreachable in practice).
-const BIBLE_CHAR_CAP = 8000;
-const BIBLE_TRUNCATION_HEADER = 'partial: some saved facts were not included this time';
-
-function assembleBible(facts: Fact[]): string | null {
-  if (facts.length === 0) return null;
-  let body = '';
-  let truncated = false;
-  for (const f of facts) {
-    const next = body ? `${body}\n${f.text}` : f.text;
-    if (next.length > BIBLE_CHAR_CAP) { truncated = true; break; }
-    body = next;
-  }
-  if (!body) { body = facts[0].text.slice(0, BIBLE_CHAR_CAP); truncated = true; }
-  return truncated ? `[${BIBLE_TRUNCATION_HEADER}]\n${body}` : body;
-}
 
 // the margin past the paper's right edge, measured (the mirror of Cascade's availableCascadeMargin); .board-canvas-wrap is a paper too, or a board reads an unlimited margin; linkDockRoom: the true margin, so the page is never covered [Tutor §7]
 function linkDockRoom(): boolean {
@@ -210,36 +123,6 @@ export interface TutorProps {
   selectionText?: string;
 }
 
-// the roster's three presets, in order; `id` keys the local deck, `term` the string of record [Tutor §8]
-const FREE_WRITE_PRESETS: { id: FreeWritePresetId; term: 'tutorFreeWritePrompt' | 'tutorFreeWriteUnblock' | 'tutorFreeWriteTips' }[] = [
-  { id: 'writingPrompt', term: 'tutorFreeWritePrompt' },
-  { id: 'unblock', term: 'tutorFreeWriteUnblock' },
-  { id: 'tips', term: 'tutorFreeWriteTips' },
-];
-
-const NO_DRAWS: Record<FreeWritePresetId, number> = { writingPrompt: 0, unblock: 0, tips: 0 };
-
-// ITEM 84, THE DRAFT ROSTER — the four asks in the lock record's own order, and
-// FIXED in it: no reshuffling between visits, because re-scanning is the tax the
-// cognition bench named. `term` keys the string of record (deskLexicon, which
-// carries the provenance note); `sendsSelection` marks TD4, the one chip that
-// adds a payload. It is a per-ask boolean rather than an id comparison on
-// purpose: the button law is per-press, so each button declares its own wire
-// right here beside the words that name it, and any chip added later has to
-// answer the question rather than inherit an answer.
-type DraftAskId = 'drag' | 'loadBearing' | 'threadSlip' | 'stretch';
-const DRAFT_ASKS: {
-  id: DraftAskId;
-  term: 'tutorDraftAskDrag' | 'tutorDraftAskLoadBearing' | 'tutorDraftAskThreadSlip' | 'tutorDraftAskStretch';
-  sendsSelection: boolean;
-  // `label` overrides only the chip's face; pressAsk still sends `term`, word for word [Tutor §9]
-  label?: 'tutorDraftAskStretchLabel';
-}[] = [
-  { id: 'drag', term: 'tutorDraftAskDrag', sendsSelection: false },
-  { id: 'loadBearing', term: 'tutorDraftAskLoadBearing', sendsSelection: false },
-  { id: 'threadSlip', term: 'tutorDraftAskThreadSlip', sendsSelection: false },
-  { id: 'stretch', term: 'tutorDraftAskStretch', sendsSelection: true, label: 'tutorDraftAskStretchLabel' },
-];
 
 interface DisplayMessage {
   id: string;

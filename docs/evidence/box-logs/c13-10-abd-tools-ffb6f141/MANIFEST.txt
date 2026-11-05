@@ -1,0 +1,13 @@
+#13 step 10 a/b/d + tools - manifest (Chat 1, Nov 5 2026)
+
+Tree ffb6f141 (train-c13-10 8f73ae78: main a453e0f1 + four --no-ff merges in order): 10a c13-10a-tutor bfbfba2a, 10b c13-10b-types 8e02369c, 10d c13-10d-cascade 67566cd5, tools c13-10-tools 19436701 (carries the MAP.md recede-rule commit 19e7b3d7). Splits: Tutor.tsx -> components/tutor/, types/index.ts -> types/{records,board,page,tutor,script}.ts, CascadePanels.tsx -> components/cascade/. Merged to main as adc1ce0a (a --no-ff merge of 8f73ae78 over FIX's 5acc11e0 harness merge); `git diff 8f73ae78 adc1ce0a -- apps/desktop/src apps/server` is empty.
+Cleared by Fable (Nov 5): probe IDENTICAL, split checks + links + tsc + seed-guard pass.
+
+PROOFS
+- verify-sequence.txt: per merge build, dist-web compare, split-check, readers, links. dist-web NOT byte-identical to production's (CSS identical, JS the same size 956918 bytes, bytes differ: module/declaration order) -> full pair + style probe required.
+- split-check: 10a PASS 9, 10d PASS 11 (--ordered); 10b LINES/SCOPE/BARREL/CITES PASS (its parts are not contiguous runs, so --ordered does not apply; c13-10b-readers PASS 7 readers in part order); seams check PASS 16.
+- tsc desktop 0, tsc server 0, seed-guard PASS 36; c13-2-links PASS, c13-4d-links check PASS at each merge.
+- GitHub Actions full pair, run 41979315159 (8 shards per leg): default 231/240, parked 231/240; the 7 NOVERDICT capture/probe tools plus two real FAILs: url-search-optin-unit.mjs U1 (both legs) and b2-1.mjs (parked only).
+- CONTROLS (controls.txt; Actions, same files alone, both legs): url-search-optin-unit FAILS 1/6 on main 6a2603e6 as well as on the train (ARBOR's guard; U1 compares the driver to the merge base, which cannot hold once the opt-in is on main): ARBOR fixes it. b2-1 PASSES alone on main and on the train (default and parked) and in 3 further single-file parked runs; the pair's miss is a page-eval crash in seedProjectWithPlan after all checks passed (b2-1-parked-crash.txt). Fable: a known intermittent (one miss on Nov 1 too), ticket #45 for FIX; it does not hold the merge.
+- STYLE PROBE (c13-style-snapshot.mjs), production-equivalent build (train-150b) baseline vs the sequence tree, same box turn 07:37Z-07:47Z: "C13-STYLE COMPARE: IDENTICAL"; selectors 2188 / 590 matched / 1598 unmatched / 0 untestable.
+Files here: pair-*.log.txt, summary.txt (Actions); verify-sequence.txt; probe-main/step.log.txt; controls.txt; b2-1-parked-crash.txt.

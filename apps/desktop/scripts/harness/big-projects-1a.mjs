@@ -27,6 +27,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { srcText } from '../global-css.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const DESKTOP = path.resolve(here, '..', '..');
@@ -311,12 +312,12 @@ if (!loaded.m) {
 // ---- PART 1b: source pins ---------------------------------------------------------------------------------------------------------------------------------------------
 const rd = (rel) => (exists(rel) ? read(rel) : '');
 const cascade = rd('components/Cascade.tsx');
-const panels = rd('components/CascadePanels.tsx');
+const panels = noCR(srcText(SRC, 'components/CascadePanels.tsx'));   // #13 step 10d: the barrel's parts, joined
 const popout = rd('components/SectionsPopout.tsx');
 const switcher = rd('components/PlaceSwitcher.tsx');
 const block = rd('components/PlaceBlock.tsx');
 const app = rd('App.tsx');
-const lex = rd('store/deskLexicon.ts');
+const lex = noCR(srcText(SRC, 'store/deskLexicon.ts'));   // #13 step 10c: the inline read
 const deskRail = rd('components/DeskRail.tsx');
 const rv = fs.readFileSync(path.join(DESKTOP, 'scripts', 'runtime-verify.mjs'), 'utf8');
 const stripBody = cascade.slice(cascade.indexOf('const strip = ('), cascade.indexOf('const layers ='));

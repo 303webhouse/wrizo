@@ -19,6 +19,7 @@ import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
+import { srcText } from './global-css.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = join(here, '..', '..', '..');
@@ -36,7 +37,7 @@ const fail = (m) => { failures++; console.log('  FAIL ' + m); };
 const ok = (m) => console.log('  ok   ' + m);
 
 // --- the REAL lexicon, with only react/theme stubbed -------------------------
-let lexJs = tr(readFileSync(join(repo, 'apps/desktop/src/store/deskLexicon.ts'), 'utf8'));
+let lexJs = tr(srcText(join(repo, 'apps/desktop/src'), 'store/deskLexicon.ts'));
 const beforeLex = lexJs;
 lexJs = lexJs.replace(/^import \{ useEffect, useState \} from 'react';$/m,
   'const useEffect = () => {}; const useState = () => [0, () => {}];');
@@ -152,7 +153,7 @@ console.log('CLAIM 4 — the OWN-plan-board relation is untouched (scope, half t
   // page's own plan board must still be `cascadePlanRelationOwn`, and the source
   // must still say so. A relation is not a location; prefixing it with "in" would
   // make it a lie.
-  const src = readFileSync(join(repo, 'apps/desktop/src/components/CascadePanels.tsx'), 'utf8');
+  const src = srcText(join(repo, 'apps/desktop/src'), 'components/CascadePanels.tsx');   // #13 step 10d: the barrel's parts, joined
   if (!/relation:\s*deskTerm\('cascadePlanRelationOwn'\)/.test(src)) {
     fail("the own-plan-board row no longer uses cascadePlanRelationOwn by name");
   } else ok(`the own row still reads ${JSON.stringify(OWN)}, by name`);
@@ -196,7 +197,7 @@ console.log('CLAIM 5 — ONE READER: no bare-name spelling survives anywhere');
 
 console.log('CLAIM 6 — and all three call sites call it');
 {
-  const cp = readFileSync(join(repo, 'apps/desktop/src/components/CascadePanels.tsx'), 'utf8');
+  const cp = srcText(join(repo, 'apps/desktop/src'), 'components/CascadePanels.tsx');   // #13 step 10d
   const be = readFileSync(join(repo, 'apps/desktop/src/components/BoardEditor.tsx'), 'utf8');
   const sites = [
     ['CascadePanels: the board ROW', /relation:\s*boardDrawerLine\(board\)/.test(cp)],

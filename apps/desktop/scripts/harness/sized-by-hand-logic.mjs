@@ -12,6 +12,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { srcText } from '../global-css.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const DESKTOP = path.resolve(here, '..', '..');
@@ -118,7 +119,7 @@ ok('S4: BoardEditor SETS the mark in exactly one place - the resize branch, for 
 // ok('S4b: ... and CLEARS it in exactly one - the resize finish that landed on the content height', clearLines.length === 1);
 ok('S4d: ... and CLEARS it in exactly two - the resize finish that landed on the content height, and the Fit-to-text icon (fitCard), nowhere else', clearLines.length === 2 && /const fitCard = \(boxId: string\) => \{/.test(be) && /onClick=\{e => \{ e\.stopPropagation\(\); fitCard\(box\.id\); \}\}/.test(be));
 ok('S4c: the reflow never writes the mark (no spread in it adds sizedByHand)', !/\.\.\.b, h: (targetPx|measuredPx) \/ pageWidthPx, sizedByHand/.test(be));
-const types = norm(path.join(SRC, 'types', 'index.ts'));
+const types = srcText(SRC, 'types', 'index.ts').replace(/\r\n/g, '\n');   // #13 step 10b: the barrel's parts, joined
 ok('S5: the Box type declares it optional (`sizedByHand?: true`) and nothing else about boxes changed shape', /sizedByHand\?: true;/.test(types));
 const persist = norm(path.join(SRC, 'store', 'persistence.ts')), sync = norm(path.join(SRC, 'store', 'sync.ts'));
 ok('S5b: the client clones and pushes a journal record WHOLE (JSON round trip), with no per-key mapping of a box', /function clone<T>\(value: T\): T \{\s*return JSON\.parse\(JSON\.stringify\(value\)\) as T;/.test(persist) && /JSON\.stringify\(rec\)/.test(sync));
