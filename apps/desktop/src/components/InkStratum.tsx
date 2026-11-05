@@ -2,68 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ERASER_WIDTH, clampDelta, groupBox, inkColor, renderStroke, strokeGroupAt, translateGroup } from '../store/ink';
 import type { Stroke, StrokeInk, StrokeNib, StrokePoint, StrokeTip } from '../types';
 
-// ITEM 121 I2 — THE INK STRATUM. The Journal's J-series drawing layer
-// (JournalEntry.tsx's own capture pipeline) ported onto the framed Free Write
-// page, under R15's analog law: the page is a typewriter for text and a
-// journal page / sketch pad for drawing, and this is the second half made
-// real. Everything about HOW a stroke is captured, painted, erased, undone and
-// persisted is the Journal's, unchanged in kind; what is new is that the page
-// has a MODE.
-//
-// ITEM 126 (121-B) — THE STRATUM NOW RENDERS IN EVERY MODE, because the ink is
-// THE PAGE'S, not Free Write's decoration. Item 121's sentence here used to read
-// "this layer is inert unless the page says INK"; that was true of the surface
-// it shipped on and is false now, so it is corrected rather than left to mislead
-// the next reader. What varies by mode is no longer PRESENCE but PERMISSION:
-//   edit    — Free Write / INK: draw, erase, undo (item 121, unchanged).
-//   inert   — Free Write / TEXT: renders, intercepts nothing. RULED (Fable,
-//             2026-09-08): R15 stands, and the asymmetry is the reason, not a
-//             hole — in Free Write the sketch pad is one press away, so a
-//             typewriter does not move ink; a sketch pad does.
-//   movable — Draft and Revise: renders, and a double-click on ink arms a move.
-//             There is no INK to switch to in these modes, which is exactly why
-//             movable exists here and nowhere else.
-// THE LISTENER THAT ARMS A MOVE MUST ATTACH UNDER `movable` ALONE — never
-// "whenever the writer is not drawing", which would quietly extend the gesture
-// into Free Write's TEXT half and reverse the ruling with nobody typing a word.
-//
-// ── THE SHEET, AND WHY IT IS NOT THE PAPER COLUMN ─────────────────────────
-// The build brief said to mount at `inset:0` on the paper column. That was
-// written from the Journal's geometry, where the sheet (`.entry-full`) GROWS
-// with its text and the window scrolls, so `inset:0` genuinely covers the
-// whole sheet forever. Free Write's paper is not shaped that way: `.mode-page`
-// is a FIXED-HEIGHT box (`height:min(60vh,580px)`, `overflow:hidden`) with an
-// inner scroller, `.mode-scroll`. A canvas at `inset:0` on the column or the
-// page would cover only what is on screen — the writer would scroll, the text
-// would move, and the ink would stay nailed to the viewport, so ink drawn
-// beside a sentence on screen two would land on top of screen one's ink. That
-// is not J9's sheet-anchoring tradeoff; it is a different and worse anchoring
-// that no ruling asked for.
-//
-// So the SHEET here is the scroller's own content wrapper (PageEditor's
-// `editorBody` wrap — already `position:relative`, already full-width, already
-// growing with the editor), and this layer mounts as its absolutely positioned
-// children at `inset:0`. The canvas fills the sheet BY LAYOUT, never by
-// script — the anchor law holds, aimed at the right box — and the ink scrolls
-// with the text as one sheet, which is what "a transparent sheet laid on the
-// page" actually means. See docs/menus/item121-s0-survey.md §3.
-//
-// ── THE SHEET-ANCHORING TRADEOFF, PORTED KNOWINGLY (J9's own words) ───────
-// "Ink anchors to the sheet, not to words — text reflows at another width, ink
-// stays where it was drawn." That is inherited deliberately, not overlooked.
-// Points are normalized 0..1 BY THE SHEET'S WIDTH and denormalized by the
-// current width on BOTH axes (a circle stays a circle); `y` is unbounded above
-// 1.0 because a long page is a tall sheet. Word-anchored ink would be a
-// different feature and a different ruling.
-//
-// ── ROUTING LIVES ON THE SHEET, NOT THE CANVAS ────────────────────────────
-// Both canvases are ALWAYS `pointer-events:none`, exactly as in the Journal.
-// "In INK the layer intercepts everything on the paper" is a mode gate inside
-// the sheet's own capture-phase listeners, NOT a `pointer-events` flip: the
-// eraser's rubbing model paints onto the committed canvas mid-stroke and the
-// hover ring reads positions continuously, and both break the moment a canvas
-// starts swallowing events. In TEXT no listener is attached at all, so the
-// surface is byte-identical to the page before this ticket.
+// the ink stratum renders in every mode; mode decides permission (edit in INK, inert in TEXT, movable in Draft and Revise); the sheet is the scroller's content wrapper, so ink scrolls with the text; routing lives on the sheet, never a pointer-events flip [InkStratum §1]
 
 export interface InkPen {
   tip: StrokeTip;
@@ -105,10 +44,7 @@ function syncCanvas(canvas: HTMLCanvasElement, w: number, h: number): CanvasRend
   return ctx;
 }
 
-/** POLISH #10 item 5 (Nick, Oct 25) - where the sheet's TEXT starts, in painted px below the sheet's top: 0 wherever the sheet has no top padding (the
- *  normal view - every stroke already saved was measured from there, so none moves). In the zoom the sheet reaches up over the scroller's start offset
- *  with a matching padding (index.css), so the whole visible page takes the pen; strokes are still measured from the text, and one drawn above the
- *  first line simply has a negative y. */
+// where the sheet's TEXT starts, in painted px below the sheet's top: 0 with no top padding (so no saved stroke moves); in the zoom a stroke above the first line has a negative y [InkStratum §2]
 export function inkOriginY(sheet: HTMLElement, rect?: DOMRect): number {
   const pt = parseFloat(getComputedStyle(sheet).paddingTop) || 0;
   if (!pt) return 0;
@@ -127,7 +63,7 @@ export function paintCommitted(canvas: HTMLCanvasElement | null, sheet: HTMLElem
   if (!ctx) return;
   ctx.clearRect(0, 0, rect.width, rect.height);
   const color = inkColor();
-  ctx.save(); ctx.translate(0, inkOriginY(sheet, rect));   // POLISH #10 item 5 - measured from the text
+  ctx.save(); ctx.translate(0, inkOriginY(sheet, rect));   // measured from the text [InkStratum §3]
   for (const s of strokes) renderStroke(ctx, s, rect.width, color);
   ctx.restore();
 }
@@ -153,12 +89,7 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
   // pointermove and a render per move is exactly the cost J2's ring avoided.
   const dragRef = useRef<{ x: number; y: number; dx: number; dy: number } | null>(null);
 
-  // ITEM 126 B4 — UNDO BECOMES A SNAPSHOT, and that GENERALIZES item 121 rather
-  // than changing it. It used to be `slice(0, -1)` — drop the last stroke — which
-  // cannot express "put that drawing back where it was". One level is unchanged;
-  // what the level holds is now the whole strokes array as it stood before the
-  // last undoable act, so one mechanism reverses a stroke AND a move. For a
-  // stroke-add the observable result is identical to the slice it replaces.
+  // undo is a snapshot of the whole strokes array before the last undoable act, so one mechanism reverses a stroke and a move [InkStratum §4]
   const undoSnapshotRef = useRef<Stroke[] | null>(null);
 
   // Refs the once-per-`active` listener effect reads, so it never needs to
@@ -207,21 +138,7 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
     if ((!eraserArmed || permission !== 'edit') && ringRef.current) ringRef.current.style.display = 'none';
   }, [eraserArmed, permission]);
 
-  // ── CAPTURE ───────────────────────────────────────────────────────────────
-  // Attached ONLY under `edit`. Under `inert` and `movable` this effect returns
-  // before adding anything, so Free Write's TEXT half behaves exactly as it did
-  // before item 121 — including keeping ForwardOnlyEditor's I0 pen seal fully in
-  // force — and Draft and Revise never gain a drawing pointer at all. Item 126
-  // gives those two modes a MOVE gesture, not a pen (B3/B4); nothing here.
-  //
-  // In INK the listeners are capture-phase and non-passive on the SHEET (an
-  // ANCESTOR of the editor). Capture runs root→target, so this fires BEFORE
-  // ForwardOnlyEditor's own capture-phase `neutralizePen`, and stopPropagation
-  // means that seal simply never runs while the page is inking. That is why
-  // opening the seal needed no edit to ForwardOnlyEditor at all: nothing about
-  // its behaviour changes, it just stops being reached on this one surface in
-  // this one mode. R15 is the ruling that narrowed "ink is sealed in the
-  // Journal" — see that file's own I0 comment, amended in place to say so.
+  // capture attaches only under `edit`; capture-phase on the sheet, an ancestor, so it runs before ForwardOnlyEditor's pen seal and stops it only while the page is inking [InkStratum §5]
   useEffect(() => {
     const sheet = sheetRef.current;
     if (permission !== 'edit' || !sheet) return;
@@ -235,10 +152,8 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
       const w = rect.width || 1;
       // Normalized by WIDTH on both axes (J8) — the same scale, so a circle
       // stays a circle. y may exceed 1.0 on a page taller than it is wide.
-      const point: StrokePoint = { x: (e.clientX - rect.left) / w, y: (e.clientY - rect.top - inkOriginY(sheet, rect)) / w };   // POLISH #10 item 5
-      // Pressure is captured, as it always has been, and deliberately NOT read
-      // by the renderer this wave (item 121 I5 ships pressure-blind; pressure
-      // rides a later slice). Capturing it now means that slice has data.
+      const point: StrokePoint = { x: (e.clientX - rect.left) / w, y: (e.clientY - rect.top - inkOriginY(sheet, rect)) / w };
+      // pressure is captured but not yet read by the renderer, so a later pressure slice has data [InkStratum §7]
       if (e.pressure > 0) point.p = Math.round(e.pressure * 1000) / 1000;
       return point;
     };
@@ -268,7 +183,7 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
       const stroke = activeStrokeRef.current;
       const rect = captureRectRef.current;
       if (!stroke || !rect) return;
-      const oy = inkOriginY(sheet, rect);   // POLISH #10 item 5 - measured from the text
+      const oy = inkOriginY(sheet, rect);   // measured from the text [InkStratum §8]
       if (stroke.eraser) {
         const ctx = committedRef.current?.getContext('2d');
         if (ctx) { ctx.save(); ctx.translate(0, oy); renderStroke(ctx, stroke, rect.width, inkColor()); ctx.restore(); }
@@ -319,18 +234,12 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
       if (ac) syncCanvas(ac, captureRectRef.current.width, captureRectRef.current.height);
       drawingRef.current = true;
       activeId = e.pointerId;   // only THIS pointer may drive or end the stroke
-      // J2 — the toggle is the guaranteed path; the hardware eraser tip is a
-      // bonus signal on top of it. Per the Pointer Events spec the eraser end
-      // reports pointerType 'pen' with the eraser-button bit (32) set in
-      // `buttons`. The barrel button is NOT read here: it stays
-      // hardware-reserved by ruling, an open word this wave does not spend.
+      // the toggle is the guaranteed path; the eraser tip (buttons bit 32) is a bonus; the barrel button is left unread [InkStratum §9]
       const hwErase = (e.buttons & 32) !== 0;
       const p = penRef.current;
       const stroke: Stroke = { points: [normPoint(e)] };
       if (eraserArmedRef.current || hwErase) {
-        // An eraser carries no tip, nib or ink — J2's geometry is the whole of
-        // it, and the eraser is tip-agnostic AS BUILT (the pencil-only reading
-        // is an open word for Nick; deliberately not built).
+        // an eraser carries no tip, nib or ink: the geometry is the whole of it [InkStratum §10]
         stroke.eraser = true;
       } else {
         stroke.tip = p.tip;
@@ -338,11 +247,7 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
         stroke.ink = p.ink;
       }
       activeStrokeRef.current = stroke;
-      // BEST-EFFORT, AND NO LONGER LOAD-BEARING (item 126, measured): the
-      // stroke's move and release are heard on WINDOW (below), so this call
-      // failing — or succeeding and then not rerouting the release, which is
-      // what a trusted mouse drag was measured doing — can no longer lose a
-      // stroke. It stays for cursor and hover consistency only.
+      // best effort only: move and release are heard on window, so a capture that fails or does not reroute can no longer lose a stroke [InkStratum §11]
       try { sheet.setPointerCapture(e.pointerId); } catch { /* best effort */ }
       e.preventDefault();
       paintActive();
@@ -463,16 +368,7 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
     };
   }, [permission, sheetRef]);
 
-  // ── ITEM 126 B4 · THE MOVE (permission: movable) ─────────────────────────
-  //
-  // Attached ONLY under `movable`, which is reachable ONLY from Draft and Revise
-  // (PageEditor derives it by falling PAST Free Write). That is the ruling made
-  // structural: a listener armed by "the writer is not drawing" would extend this
-  // gesture into Free Write's TEXT half and reverse R15 with nobody typing a word.
-  //
-  // THE CANVAS STAYS INERT. Everything here listens on the SHEET, as item 121's
-  // routing law requires — and it must, because the text underneath has to keep
-  // receiving every click it would otherwise get.
+  // the move attaches only under `movable` (Draft and Revise), never "whenever not drawing", which would reach Free Write's TEXT half; it listens on the sheet so the text keeps every click [InkStratum §12]
   useEffect(() => {
     const sheet = sheetRef.current;
     if (permission !== 'movable' || !sheet) return;
@@ -486,7 +382,7 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
       // BOTH axes over WIDTH — J8's rule. Converting y by height here is the
       // mistake that already cost this lane a check that passed for the wrong
       // reason; it would also make every hit test miss by a factor of ~2.
-      return { x: (e.clientX - rect.left) / w, y: (e.clientY - rect.top - inkOriginY(sheet, rect)) / w, w, h: rect.height };   // POLISH #10 item 5
+      return { x: (e.clientX - rect.left) / w, y: (e.clientY - rect.top - inkOriginY(sheet, rect)) / w, w, h: rect.height };
     };
 
     // Repaint with the live drag applied to the armed group only.
@@ -514,7 +410,7 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
       ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent-rest').trim() || '#96a05a';
       ctx.lineWidth = 1;
       ctx.setLineDash([4, 3]);
-      ctx.strokeRect(box.x0 * w - pad, box.y0 * w + inkOriginY(sheet, rect) - pad,   // POLISH #10 item 5 - measured from the text
+      ctx.strokeRect(box.x0 * w - pad, box.y0 * w + inkOriginY(sheet, rect) - pad,   // measured from the text [InkStratum §14]
                      (box.x1 - box.x0) * w + pad * 2, (box.y1 - box.y0) * w + pad * 2);
       ctx.restore();
     };
@@ -532,12 +428,7 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
       paintCommitted(committedRef.current, sheet, strokesRef.current);
     };
 
-    // THE GESTURE. A double-click that lands ON INK arms its group; one that
-    // lands on bare text does NOTHING AT ALL — no preventDefault, no
-    // stopPropagation — so the browser's own word-selection happens exactly as
-    // it always has. That miss-path is not politeness: it is Nick's "text is
-    // only editable by standard in-line word processing led by a cursor",
-    // and it is the clause an over-eager listener breaks first.
+    // a double-click on ink arms its group; one on bare text does nothing at all, so the browser's word selection stands [InkStratum §15]
     const onDblClick = (e: MouseEvent) => {
       const { x, y, w } = norm(e);
       const group = strokeGroupAt(strokesRef.current, x, y, w);
@@ -600,7 +491,7 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
       strokesRef.current = next;
       setCanUndo(true);
       repaint();
-      // Merged with live text by the host, exactly as a stroke is (item 121 I2).
+      // merged with live text by the host, exactly as a stroke is [InkStratum §16]
       onCommitRef.current(next);
     };
 
@@ -662,16 +553,7 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
     };
   }, [permission, sheetRef]);
 
-  // ── UNDO ─────────────────────────────────────────────────────────────────
-  // One level, the last STROKE only. The Journal's undo is unified across a
-  // typed run and a stroke because the Journal's own editable records typed
-  // runs; Free Write's does not, and must not — it is FORWARD-ONLY, and the
-  // undo/redo stack ForwardOnlyEditor carries (FX6 S1) is gated to the
-  // free-edit modes (Draft, Revise) by that law. Inventing a typed-run undo
-  // here to satisfy "unified" would breach forward-only permanence, which is a
-  // far older ruling than this wave. So: the pen gets an undo, the typewriter
-  // keeps its permanence, and the affordance lives with the ink — visible in
-  // INK only. Typing does not consume it, because typing is not undoable here.
+  // one level, the last stroke only: Free Write is forward-only, so typing is not undoable and does not consume it [InkStratum §17]
   const undo = () => {
     const next = undoSnapshotRef.current;
     if (!next) return;

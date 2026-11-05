@@ -20,12 +20,7 @@ export interface PageFaceSubject {
   // The saved-silently line — its ONLY appearance anywhere once this ships.
   // Undefined when it doesn't apply (a filed page has its own save story).
   footer?: string;
-  // PB1 (item 71) — OPTIONAL, and absent means the control does not render.
-  // An unborn page (one the writer has opened but not yet written in) has no
-  // row, so `patchJournalEntry` would find nothing to merge into and these
-  // would silently no-op. A star that does not stick is worse than no star, so
-  // the face simply does not offer them until the page has a word. Every born
-  // page passes all three, exactly as before.
+  // optional, and absent means the control does not render: an unborn page has no row to patch, and a star that does not stick is worse than none [PageFace §1]
   onToggleStar?: () => void;
   onAddTag?: (tag: string) => void;
   onRemoveTag?: (tag: string) => void;

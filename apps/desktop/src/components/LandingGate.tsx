@@ -50,7 +50,7 @@ function followOpenPage(p: { kind: PlaceKind; id: string } | null): void {
 }
 
 let bootResolved = false;   // the first non-loading authState has been seen (module-level: once per app load)
-let landed = false;         // the landing has been spent (or ruled out) for this load
+let landed = false;         // the landing has been spent (or found not to apply) for this load [LandingGate §1]
 
 // Test-only: scripts/runtime-verify.mjs serves index.html with this set (its server double signs every boot in, and ~120
 // harnesses start at the front door). Nothing in the product sets it; resume-on-open.mjs is the one scenario that leaves it off.
