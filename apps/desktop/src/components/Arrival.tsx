@@ -17,7 +17,7 @@ import { runAuthCall } from '../store/authSubmit';
 import { isArbor2 } from '../arbor2/flag';
 import { useTheme } from '../store/theme';
 import { SplashMark } from './SplashMark';
-import { splashSizeFor } from './Splash';
+import { splashSizeFor, arborBoxFor } from './Splash';
 import { ArborFront, takeWantWrite, WANT_WRITE } from '../arbor2/frontLayer';
 
 // the Threshold, route '/' for every boot: Write is local-first and never needs an account; Open resumes an authed session or reaches sign-in [Arrival §1]
@@ -64,10 +64,12 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   // keeps its own handler, and Sign in opens this file's existing sign-in and sign-up stages, unchanged (the invite code included).
   const theme = useTheme();
   const arborFront = isArbor2() && theme === 'plateau';
-  const [frontBox, setFrontBox] = useState(() => (typeof window === 'undefined' ? { width: 0, height: 0 } : splashSizeFor(window.innerWidth, window.innerHeight)));
+  // (r20: under the flag in Arbor the drawing's box takes even whole sizes, as the splash's does - the logo lands on the same whole pixel in both)
+  const sizeFor = isArbor2() && theme === 'plateau' ? arborBoxFor : splashSizeFor;
+  const [frontBox, setFrontBox] = useState(() => (typeof window === 'undefined' ? { width: 0, height: 0 } : sizeFor(window.innerWidth, window.innerHeight)));
   useEffect(() => {
     if (!arborFront) return undefined;
-    const resize = () => setFrontBox(splashSizeFor(window.innerWidth, window.innerHeight));
+    const resize = () => setFrontBox(sizeFor(window.innerWidth, window.innerHeight));
     resize(); window.addEventListener('resize', resize);
     return () => window.removeEventListener('resize', resize);
   }, [arborFront]);
