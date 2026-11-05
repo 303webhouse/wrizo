@@ -260,8 +260,9 @@ function suite(M, read, doc) {
   const readers = walk('.').filter((f) => /\.(ts|tsx)$/.test(f) && !ALLOW.has(f)).filter((f) => /\b(?:box|b|card|popupBox|x|c)\??\.prompt\b/.test(read(f)));
   const textHasPrompt = guidedCards.every((b) => !b.text.includes(b.prompt));
   keep('NT1', readers.length === 0 && textHasPrompt, readers.join(', ') || 'no stray reader');
-  // NT2 - a copy carries nothing by default: the copy whitelist (persistence.ts copyCardToBoard) names neither field
-  const copyBody = (/const copy: Box = \{[\s\S]*?copiedFromBoardId: sourceBoardId,\s*\};/.exec(read('store/persistence.ts')) || [''])[0];
+  // NT2 - a copy carries nothing by default: the copy whitelist (copyCardToBoard, in store/persistence/pins.ts since #13 step 10h) names neither field.
+  // NT2 reads the part itself: a read of the joined barrel would not see a mutant keyed to the part.
+  const copyBody = (/const copy: Box = \{[\s\S]*?copiedFromBoardId: sourceBoardId,\s*\};/.exec(read('store/persistence/pins.ts')) || [''])[0];
   keep('NT2', copyBody.length > 100 && !/\bprompt\b/.test(copyBody) && !/\bdeckStep\b/.test(copyBody), copyBody.length ? 'whitelist is clean' : 'copy whitelist not found');
   // NT3 - on the card face the question is an ATTRIBUTE (data-prompt), never a child text node
   const be = read('components/BoardEditor.tsx');
