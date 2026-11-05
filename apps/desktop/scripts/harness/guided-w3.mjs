@@ -260,8 +260,9 @@ function suite(M, read, doc) {
   const readers = walk('.').filter((f) => /\.(ts|tsx)$/.test(f) && !ALLOW.has(f)).filter((f) => /\b(?:box|b|card|popupBox|x|c)\??\.prompt\b/.test(read(f)));
   const textHasPrompt = guidedCards.every((b) => !b.text.includes(b.prompt));
   keep('NT1', readers.length === 0 && textHasPrompt, readers.join(', ') || 'no stray reader');
-  // NT2 - a copy carries nothing by default: the copy whitelist (persistence.ts copyCardToBoard) names neither field
-  const copyBody = (/const copy: Box = \{[\s\S]*?copiedFromBoardId: sourceBoardId,\s*\};/.exec(read('store/persistence.ts')) || [''])[0];
+  // NT2 - a copy carries nothing by default: the copy whitelist (copyCardToBoard, in store/persistence/pins.ts since #13 step 10h) names neither field.
+  // NT2 reads the part itself: a read of the joined barrel would not see a mutant keyed to the part.
+  const copyBody = (/const copy: Box = \{[\s\S]*?copiedFromBoardId: sourceBoardId,\s*\};/.exec(read('store/persistence/pins.ts')) || [''])[0];
   keep('NT2', copyBody.length > 100 && !/\bprompt\b/.test(copyBody) && !/\bdeckStep\b/.test(copyBody), copyBody.length ? 'whitelist is clean' : 'copy whitelist not found');
   // NT3 - on the card face the question is an ATTRIBUTE (data-prompt), never a child text node
   const be = read('components/BoardEditor.tsx');
@@ -429,7 +430,7 @@ const MUT = [
   { name: 'the Story Circle stops closing', file: 'decks/library/storyCircle.ts', find: 'threadTo: [STEPS[(i + 1) % STEPS.length][0]],', to: 'threadTo: i + 1 < STEPS.length ? [STEPS[i + 1][0]] : [],', red: ['LY2'] },
   { name: 'a reader of .prompt appears outside the allow-list', file: 'store/tutorStage.ts', find: 'export function stageTutorAsk(text: string): void {', to: 'export function stageTutorAsk(text: string, box?: { prompt?: string }): void {\n  void (box && box.prompt);', red: ['NT1'] },
   { name: 'the prompt goes into the card text', file: 'decks/engine.ts', find: 'text: `${spec.title}\\n${spec.body}`,', to: 'text: `${spec.title}\\n${spec.body}${spec.prompt ?? \'\'}`,', red: ['NT1', 'DC1'] },
-  { name: 'the copy whitelist carries the prompt', file: 'store/persistence.ts', find: '    copiedFromBoardId: sourceBoardId,\n  };', to: '    ...(box.prompt !== undefined ? { prompt: box.prompt } : {}),\n    copiedFromBoardId: sourceBoardId,\n  };', red: ['NT2'] },
+  { name: 'the copy whitelist carries the prompt', file: 'store/persistence/pins.ts', find: '    copiedFromBoardId: sourceBoardId,\n  };', to: '    ...(box.prompt !== undefined ? { prompt: box.prompt } : {}),\n    copiedFromBoardId: sourceBoardId,\n  };', red: ['NT2'] },
   { name: 'the placeholder becomes a text node', file: 'components/BoardEditor.tsx', find: '      data-prompt={prompt ?? undefined}\n', to: '      data-x={prompt ?? undefined}\n', red: ['NT3'] },
   { name: 'the popover loses its portal', file: 'components/StepHelp.tsx', find: 'createPortal(', to: '(', red: ['SH1'] },
   { name: 'Esc stops returning focus', file: 'components/StepHelp.tsx', find: 'close(true);\n    };\n    const onDown', to: 'close(false);\n    };\n    const onDown', red: ['SH2'] },

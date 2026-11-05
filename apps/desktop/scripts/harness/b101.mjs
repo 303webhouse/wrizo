@@ -16,6 +16,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { srcText } from '../global-css.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const DESKTOP = path.resolve(here, '..', '..');
@@ -416,7 +417,7 @@ const DROP_JOURNAL = swap(`changed = applyCollection('journalEntries', cache.jou
 async function partF(overrides = {}) {
   const out = {};
   const run = async (tag, pullOf, dropFirst) => {
-    const o = { ...overrides, 'store/persistence.ts': (t) => DROP_JOURNAL(overrides['store/persistence.ts'] ? overrides['store/persistence.ts'](t) : t) };
+    const o = { ...overrides, 'store/persistence/syncApply.ts': (t) => DROP_JOURNAL(overrides['store/persistence/syncApply.ts'] ? overrides['store/persistence/syncApply.ts'](t) : t) };
     const { m, net } = await load(o, { scripts: [] });
     m.setCurrentUser(user);
     globalThis.__dropJournalApply = dropFirst === 'always' || dropFirst === 'first';
@@ -465,7 +466,7 @@ async function partF(overrides = {}) {
   const reloadFn = banner.slice(banner.indexOf('const reload = () => {'), banner.indexOf('return createPortal'));
   ok('(G3) Reload runs flushAll(), then flushForReload(), then reloads — in that order',
     reloadFn.indexOf('flushAll()') > 0 && reloadFn.indexOf('flushForReload()') > reloadFn.indexOf('flushAll()') && reloadFn.indexOf('window.location.reload()') > reloadFn.indexOf('flushForReload()'), reloadFn);
-  const pers = read('store/persistence.ts');
+  const pers = srcText(SRC, 'store/persistence.ts').replace(/\r\n?/g, '\n');   // #13 step 10h: the barrel's parts, joined
   // SUPERSEDED (B10.1 review: the Reload must MERGE) - by (G4b) below. Parked, not deleted: it pinned flushForReload lifting the hold and
   // flushing the whole cache (writesForced), which is the clobber the review found. Kept verbatim; `if (false)` keeps it out of the verdict.
   if (false) ok('(G4) persistence holds BOTH its collection flush and its dirty-set write while stale, and only flushForReload lifts the hold',
@@ -523,16 +524,16 @@ await mutant('checkBuild removed from the final-pull path',
   { 'store/sync.ts': swap('      checkBuild(resp);\n      applyRemoteRecords', '      applyRemoteRecords') },
   (o) => partB(o, { dirty: false }), (r) => r.stale === false);
 await mutant('writesHeld() always false (a stale tab keeps writing)',
-  { 'store/persistence.ts': swap('function writesHeld(): boolean { return isStaleClient(); }', 'function writesHeld(): boolean { return false; }') },
+  { 'store/persistence/core.ts': swap('function writesHeld(): boolean { return isStaleClient(); }', 'function writesHeld(): boolean { return false; }') },
   (o) => partB(o), (r) => r.heldWrite === false);
 await mutant('the Reload writes the whole cache over storage (the clobber)',
-  { 'store/persistence.ts': swap('const merged = overlayDirty(readArray(KEYS[name]) as Array<{ id: string; updatedAt: string }>, mine);', 'const merged = cache[name];') },
+  { 'store/persistence/reload.ts': swap('const merged = overlayDirty(readArray(KEYS[name]) as Array<{ id: string; updatedAt: string }>, mine);', 'const merged = cache[name];') },
   (o) => partB(o), (r) => r.liveRowSurvived !== false || r.mineAdded === false ? false : true);
 await mutant('the Reload lets this tab\'s older copy replace a fresher stored one',
-  { 'store/persistence.ts': swap('else if (!out[i].updatedAt || rec.updatedAt > out[i].updatedAt) out[i] = rec;', 'else out[i] = rec;') },
+  { 'store/persistence/reload.ts': swap('else if (!out[i].updatedAt || rec.updatedAt > out[i].updatedAt) out[i] = rec;', 'else out[i] = rec;') },
   (o) => partB(o), (r) => r.freshStoredWins === false);
 await mutant('the Reload replaces the id journal instead of uniting with it',
-  { 'store/persistence.ts': swap("const ids = new Set<string>(Array.isArray(stored?.[name]) ? stored[name] : []);", 'const ids = new Set<string>();') },
+  { 'store/persistence/reload.ts': swap("const ids = new Set<string>(Array.isArray(stored?.[name]) ? stored[name] : []);", 'const ids = new Set<string>();') },
   (o) => partB(o), (r) => r.dirtyUnion === false);
 await mutant('startSync loses its generation check',
   { 'store/sync.ts': swap('  if (gen !== generation) return;\n  if (result', '  if (result') },
@@ -571,7 +572,7 @@ if (false) await mutant('accountHasWork forgets projects',
 //   { 'store/persistence.ts': swap('cache.journalEntries.some(e => !getSystemKind(e) && !e.purgedAt) || cache.projects.some(p => !p.purgedAt)', 'cache.journalEntries.some(e => !getSystemKind(e) && !e.purgedAt)') },
 //   (o) => partD(o), (r) => r.hasProject !== false);
 await mutant('accountHasWork forgets projects [big-projects-1a successor]',
-  { 'store/persistence.ts': swap('cache.journalEntries.some(e => !getSystemKind(e) && !e.purgedAt) || cache.projects.some(p => !p.purgedAt && !isAutoSet(p))', 'cache.journalEntries.some(e => !getSystemKind(e) && !e.purgedAt)') },
+  { 'store/persistence/reload.ts': swap('cache.journalEntries.some(e => !getSystemKind(e) && !e.purgedAt) || cache.projects.some(p => !p.purgedAt && !isAutoSet(p))', 'cache.journalEntries.some(e => !getSystemKind(e) && !e.purgedAt)') },
   (o) => partD(o), (r) => r.hasProject !== false);
 await mutant('the safety net never retries',
   { 'store/sync.ts': swap('    setTimeout(() => { if (gen === generation) void syncOnce(true); }, 0);\n    return;', '    return;') },

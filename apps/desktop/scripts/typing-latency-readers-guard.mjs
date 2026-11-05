@@ -79,7 +79,8 @@ ok('EVERY read of innerText/textContent in apps/desktop/src is classified - none
 ok('EVERY classified read still exists (the list cannot rot into a blanket pass)', stale.length === 0, JSON.stringify(stale.map(([f, s]) => `${f}: ${s}`)));
 // the paths themselves: the save, copy, count, export, sync and Tutor modules read NO DOM text at all
 const PATHS = ['pages/PageEditor.tsx', 'store/clipboard.ts', 'store/pageExport.ts', 'store/persistence.ts', 'store/api.ts', 'components/Tutor.tsx', 'store/tutorConsistency.ts', 'store/writingGoal.ts'];
-const pathReads = found.filter((r) => PATHS.includes(r.file));
+// #13 step 10h: persistence.ts is a barrel; its parts under store/persistence/ are the sync path it was
+const pathReads = found.filter((r) => PATHS.includes(r.file) || r.file.startsWith('store/persistence/'));
 ok('THE PATHS: the page\'s save and counts (PageEditor), copy (clipboard), export (pageExport), sync (persistence, api) and the Tutor (Tutor, tutorConsistency) read no innerText/textContent at all - only the model', pathReads.length === 0, JSON.stringify(pathReads));
 // liveness: a read planted in a copy of a save-path file must be caught
 const planted = readsIn("const words = editorEl.innerText.split(' ');\n").map((r) => ({ file: 'pages/PageEditor.tsx', ...r }));
