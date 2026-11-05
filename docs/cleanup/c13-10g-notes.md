@@ -84,6 +84,16 @@ No `eslint-disable` line was added.
   - `th-machina-source` M11 and `guided-w3` NT1 walk every file through `srcText`. They read the board's lines twice, which is harmless: no board file imports `themeFontFaces`, and no board part reads `.prompt`.
 - **Note for step 11:** `logout-flush` D3's "imports the registry" passes on BoardEditor's kept, unused `registerFlush` import. When step 11 trims that import, D3 needs the hook's import instead.
 
+## The merge of main (Nov 5)
+
+- `origin/main` **8aae0c76** (POLISH's stack plus 10c and 10f) was merged in at 1ebc75f6, with no rebase. The reader commit followed as 6f8b730d.
+- **One conflict:** `guided-w2.mjs`. 10c added `import { bundleText }` (its loader seam) and 10g adds `import { srcText }`. Both lines are kept. `bundleText` inlines only 10c's lexicon parts, and `readRaw` reads plain modules plus BoardEditor, so neither changes the other's reads.
+- **Re-run on 6f8b730d:**
+  - tsc is clean.
+  - The split check passes 11/11: `--base 8aae0c76 --allow docs/cleanup/c13-10g-allow.txt components/BoardEditor.tsx` followed by the ten parts. The module itself is not repeated among them.
+  - The readers check passes 9/9 (`--base d1ede8e9`; BoardEditor is identical there and at 8aae0c76).
+  - Links pass, and seed-guard passes (36).
+
 ## Still to come in this step
 
 - The box turn: the board snapshot (baseline and compare in the same turn), the gesture and reader harnesses on both legs, and the link check.
