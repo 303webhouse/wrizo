@@ -855,12 +855,9 @@
    The day swap (above) fades the field; within it the stems appear in growth order (each piece's --vo, its stem's place in the plan).
    The kept laps sit at ~40% (§8b, unchanged). */
 :root[data-arbor2][data-theme='plateau'] .wz-rhizome-field[data-vines='true']{ visibility:visible !important; }
-:root[data-arbor2][data-theme='plateau'] .wz-rhizome-field[data-vines='true'] .arbor2-vines{ opacity:var(--arbor2-vine-k, 1); transition:opacity 2.2s ease-out; }
+:root[data-arbor2][data-theme='plateau'] .wz-rhizome-field[data-vines='true'] .arbor2-vines{ opacity:var(--arbor2-vine-k, 1); }
 :root[data-arbor2][data-theme='plateau'] .wz-rhizome-field[data-vines='true'] .arbor2-vines-past{ opacity:.4; }
-:root[data-arbor2][data-theme='plateau'] .wz-rhizome-field[data-vines='true'] .arbor2-vine{ fill:var(--arbor2-vine); stroke:none; transition:fill 2.2s ease-out, opacity 1.5s ease calc(var(--vo, 0) * 4.5s); }
-:root[data-arbor2][data-theme='plateau'] .wz-rhizome-field[data-vines='true'][data-flash='true'] .arbor2-vine{ fill:#FF9800; transition:fill 1.2s ease-in; }
-:root[data-arbor2][data-theme='plateau'] .wz-rhizome-field[data-vines='true'][data-flash='true'] :is(.arbor2-vines, .arbor2-vines-past){ opacity:1; transition:opacity 1.2s ease-in; }
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day']:not([data-wz-writing='true']) .wz-rhizome-field[data-vines='true'] .arbor2-vine{ opacity:0; transition:fill 2.2s ease-out, opacity 3s ease; }
+:root[data-arbor2][data-theme='plateau'] .wz-rhizome-field[data-vines='true'] .arbor2-vine{ fill:var(--arbor2-vine); stroke:none; }
 @media (prefers-reduced-motion: reduce){
   :root[data-arbor2][data-theme='plateau'] .wz-rhizome-field[data-vines='true'] :is(.arbor2-vine, .arbor2-vines, .arbor2-vines-past){ transition:none !important; }
 }
@@ -882,3 +879,20 @@
 /* r20 - Mood's Leaf flutter switch reaches the pergola's breeze (the r19 parks found it reached only the retired sun layer): off, the leaf clusters
    hold still; the slow drift stays (ambience, as the lamp's drift stays when its breath is off). */
 :root[data-arbor2][data-theme='plateau'][data-arbor2-off~='flutter'] :is(.arbor2-pergola, .arbor2-pagesh) .wz-leaf{ animation:none; }
+
+/* r20 - THE VINES' CHANGES ON COMPOSITED LAYERS (the latency box turn, 2026-11-05 02:49-03:03Z: typing in the flash 77 ms median against 25 at
+   rest, in the fade 33 - every frame re-filtered and repainted every filled vine). The field takes no filter and no animation while it flashes
+   (the base rule's drop-shadow was sized for thin strokes); it fades in and out as one layer at the swap; THE FLASH is the brass copy above it
+   (RhizomeField's svg.arbor2-vines-flash), rising 1.2 s and fading 2.2 s on opacity alone, the whole rhizome brass, the kept laps too. */
+:root[data-arbor2][data-theme='plateau'] .wz-rhizome-field[data-vines='true']{ will-change:opacity; }
+:root[data-arbor2][data-theme='plateau'] .wz-rhizome-field[data-vines='true']:is([data-flash='true'], [data-flash='fading']){ filter:none; animation:none; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-vines-flash{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; will-change:opacity; opacity:0; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-vines-flash .arbor2-vine{ fill:#FF9800; stroke:none; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-vines-flash[data-flash='true']{ animation:arbor2-flash-up 1.2s ease-out forwards; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-vines-flash[data-flash='fading']{ opacity:1; animation:arbor2-flash-down 2.2s ease-out forwards; }
+@keyframes arbor2-flash-up{ from{ opacity:0; } to{ opacity:1; } }
+@keyframes arbor2-flash-down{ from{ opacity:1; } to{ opacity:0; } }
+@media (prefers-reduced-motion: reduce){
+  :root[data-arbor2][data-theme='plateau'] .arbor2-vines-flash[data-flash='true']{ animation:none; opacity:1; }
+  :root[data-arbor2][data-theme='plateau'] .arbor2-vines-flash[data-flash='fading']{ animation:none; opacity:0; }
+}
