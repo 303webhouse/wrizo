@@ -88,6 +88,9 @@ function syncedAtTablesFrom(migrateText) {
   return new Set([...m[1].matchAll(/'(\w+)'/g)].map((x) => x[1]));
 }
 
+// CONNECTOR-B's old-client guard on journal_entries.page_links (the one SET that is not "col = excluded.col"); the fake models it, it does not skip it.
+const OLD_CLIENT_GUARD = /^case when excluded\.page_links is null or excluded\.page_links = 'null'::jsonb then journal_entries\.page_links else excluded\.page_links end$/i;
+
 function makePool(migrateText) {
   const syncedAt = syncedAtTablesFrom(migrateText);
   const tables = new Map(TABLES.map((t) => [t, new Map()]));
@@ -97,7 +100,7 @@ function makePool(migrateText) {
     async query(sql, params = []) {
       const s = norm(sql);
       const need = (t) => { if (!syncedAt.has(t)) throw new Error(`column "synced_at" of relation "${t}" does not exist`); };
-      let m = /^insert into (\w+) \(([^)]*)\) values \((.*?)\) on conflict \(id\) do update set (.*?) where \1\.user_id = excluded\.user_id and excluded\.updated_at > \1\.updated_at$/i.exec(s);
+      let m = /^insert into (\w+) \(([^)]*)\) values \((.*?)\) on conflict \(id\) do update set (.*?) where \1\.user_id = excluded\.user_id and excluded\.updated_at > \1\.updated_at( and \1\.purged_at is null)?$/i.exec(s);   // drafts-integrity B added the optional purged_at guard
       if (m) {
         const [, t, colsTxt, phsTxt, setTxt] = m;
         if (!tables.has(t)) throw new Error(`fake pool: no model for table ${t}`);
@@ -112,7 +115,7 @@ function makePool(migrateText) {
         cols.forEach((c, i) => { row[c] = /::jsonb$/i.test(phs[i]) ? (params[i] == null ? null : JSON.parse(params[i])) : params[i]; });
         for (const { l, r } of sets) {
           if (l === 'synced_at') need(t);
-          if (!(r === `excluded.${l}` || (l === 'synced_at' && (r === 'now()' || /^excluded\.\w+$/.test(r))))) throw new Error(`fake pool: cannot interpret SET ${l} = ${r}`);
+          if (!(r === `excluded.${l}` || (l === 'synced_at' && (r === 'now()' || /^excluded\.\w+$/.test(r))) || (l === 'page_links' && OLD_CLIENT_GUARD.test(r)))) throw new Error(`fake pool: cannot interpret SET ${l} = ${r}`);
         }
         if (syncedAt.has(t)) row.synced_at = stamp;      // the column DEFAULT now()
         // THE COMMIT: a gated write has taken its stamp but is not yet visible to any other statement.
@@ -124,6 +127,7 @@ function makePool(migrateText) {
         if (ex.user_id === row.user_id && String(row.updated_at) > String(ex.updated_at)) {
           for (const { l, r } of sets) {
             if (r === 'now()') ex[l] = stamp;
+            else if (OLD_CLIENT_GUARD.test(r)) ex[l] = row[l] == null ? ex[l] : row[l];   // CONNECTOR-B: a sender that does not speak page_links (null / jsonb null) keeps what is stored
             else ex[l] = row[r.replace('excluded.', '')];
           }
         }
@@ -139,6 +143,19 @@ function makePool(migrateText) {
         const floor = since == null ? null : Date.parse(since) - (hasOverlap ? Number(overlapMs) : 0);
         const rows = [...tables.get(t).values()].filter((r) => r.user_id === userId && (floor === null || Date.parse(r[col]) > floor));
         return { rows: rows.map((r) => JSON.parse(JSON.stringify(r))) };
+      }
+      // THEME-UNLOCK-COUNT: before each journal upsert the server reads the row's OLD text (to count only the words that are new). The fake answers from its store; no row = no old text.
+      m = /^select text from journal_entries where id = \$1 and user_id = \$2$/i.exec(s);
+      if (m) { const r = tables.get('journal_entries').get(params[0]); return { rows: r && r.user_id === params[1] ? [{ text: r.text }] : [] }; }
+      // drafts-integrity B (560eda8c): the push now asks which of the incoming ids are already PURGED (a purged row refuses any later non-purge write). The fake answers from the rows it holds:
+      // a row is purged when its purged_at is set. This proof pushes no purges, so the answer is empty unless a fixture seeds one - the statement only has to be understood, not to change a claim.
+      m = /^select id from (\w+) where user_id = \$1 and id = any\(\$2::text\[\]\) and purged_at is not null$/i.exec(s);
+      if (m) {
+        const t = m[1];
+        if (!tables.has(t)) return { rows: [] };
+        const [userId, ids] = params;
+        const want = new Set(ids);
+        return { rows: [...tables.get(t).values()].filter((r) => r.user_id === userId && want.has(r.id) && r.purged_at != null).map((r) => ({ id: r.id })) };
       }
       throw new Error(`fake pool: unhandled statement: ${s.slice(0, 110)}`);
     },
@@ -215,13 +232,14 @@ async function makeWorld(router, migrateText) {
     const d = on(n);
     const dirty = d.getDirtyRecords();
     const stamps = new Map();
-    for (const k of ['projects', 'storyPlans', 'sessions', 'drafts', 'journalEntries', 'drawers']) for (const r of dirty[k]) stamps.set(r.id, r.updatedAt);
+    // persistence.markClean now takes {collection, id} items (the dirty set is per collection) - an id alone threw "reading 'delete'" on main. Stamps are keyed `collection:id`; the claims are unchanged.
+    for (const k of ['projects', 'storyPlans', 'sessions', 'drafts', 'journalEntries', 'drawers']) for (const r of dirty[k]) stamps.set(`${k}:${r.id}`, r.updatedAt);
     const resp = await call({ lastSyncAt: fullPull ? null : cursors[n], push: dirty });
     const dd = on(n);                                   // another device may have run while this awaited
     dd.applyRemoteRecords(resp.pull);
     const still = new Map();
-    for (const k of ['projects', 'storyPlans', 'sessions', 'drafts', 'journalEntries', 'drawers']) for (const r of dd.getDirtyRecords()[k]) still.set(r.id, r.updatedAt);
-    dd.markClean([...stamps].filter(([id, ts]) => !still.has(id) || still.get(id) === ts).map(([id]) => id));
+    for (const k of ['projects', 'storyPlans', 'sessions', 'drafts', 'journalEntries', 'drawers']) for (const r of dd.getDirtyRecords()[k]) still.set(`${k}:${r.id}`, r.updatedAt);
+    dd.markClean([...stamps].filter(([key, ts]) => !still.has(key) || still.get(key) === ts).map(([key]) => { const i = key.indexOf(':'); return { collection: key.slice(0, i), id: key.slice(i + 1) }; }));
     cursors[n] = resp.serverTime;
     pool.pullCounts.push({ n, journal: resp.pull.journalEntries.length });
     await sleep(3);                                     // stamps and serverTime must strictly increase
@@ -441,8 +459,12 @@ function census(syncText, migrateText, log) {
 // MUTANTS - each server edit, removed ALONE.
 // ---------------------------------------------------------------------------
 function stmtRange(text, t) {
-  const a = text.search(new RegExp(`insert into ${t}[\\s(]`));
-  const b = text.indexOf(`excluded.updated_at > ${t}.updated_at`, a);
+  // drafts-integrity B added a purge SHELL insert (`writeShell`) BEFORE the ordinary upsert for four tables, so "the first `insert into t`" now lands in the shell and the synced_at
+  // mutants went green without testing anything. The ordinary upsert is the one that ends at the last-writer-wins guard: its start is the last `insert into t` before that guard.
+  const b = text.indexOf(`excluded.updated_at > ${t}.updated_at`);
+  const re = new RegExp(`insert into ${t}[\\s(]`, 'g');
+  let a = -1, hit;
+  while ((hit = re.exec(text)) && hit.index < b) a = hit.index;
   return [a, b];
 }
 function mutants() {

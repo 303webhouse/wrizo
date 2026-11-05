@@ -280,12 +280,19 @@ async function scenarios(run) {
     const two = [...one, { id: 'F2', title: 'Another', bytes: 7e6 }];
     const a = notice('synced', one);
     const b = notice('synced', two);
-    log('CLAIM', 'K10a: one page too large is NAMED in the writer\'s words and told it is safe: \u201CA heavy ink page\u201D is too large to sync \u2014 it is saved on this device', a === '\u201CA heavy ink page\u201D is too large to sync \u2014 it is saved on this device', JSON.stringify(a));
-    log('CLAIM', 'K10b: several are counted, not listed, and the noun is NEUTRAL (what cannot travel may be a project or a drawer, not only a page): "2 items are too large to sync \u2014 they are saved on this device"', b === '2 items are too large to sync \u2014 they are saved on this device', JSON.stringify(b));
+    // ---- SUPERSEDED by the word-diet (37567654), which shortened the too-large sentence (lexicon chrome.ts syncTooLargeOne / syncTooLargeMany): the claim below
+    // asserts the old words and is red on main. Kept verbatim; its successor follows it and asserts the current sentence - same claim, same replacer-literal test.
+    // log('CLAIM', 'K10a: one page too large is NAMED in the writer\'s words and told it is safe: \u201CA heavy ink page\u201D is too large to sync \u2014 it is saved on this device', a === '\u201CA heavy ink page\u201D is too large to sync \u2014 it is saved on this device', JSON.stringify(a));
+    log('CLAIM', 'K10a (word-diet): one page too large is NAMED in the writer\'s words and told it is safe: \u201CA heavy ink page\u201D is too large to sync. Saved on this device.', a === '\u201CA heavy ink page\u201D is too large to sync. Saved on this device.', JSON.stringify(a));
+    // (K10b / K10d likewise)
+    // log('CLAIM', 'K10b: several are counted, not listed, and the noun is NEUTRAL (what cannot travel may be a project or a drawer, not only a page): "2 items are too large to sync \u2014 they are saved on this device"', b === '2 items are too large to sync \u2014 they are saved on this device', JSON.stringify(b));
+    log('CLAIM', 'K10b (word-diet): several are counted, not listed, and the noun is NEUTRAL (what cannot travel may be a project or a drawer, not only a page): "2 items too large to sync. Saved on this device."', b === '2 items too large to sync. Saved on this device.', JSON.stringify(b));
     // The title is whatever the writer typed - including the sequences String.replace treats specially in a replacement STRING.
     const nasty = "Q&A $& $1 $' $$ {n} {title}";
     const c = notice('synced', [{ id: 'X', title: nasty, bytes: 6e6 }]);
-    log('CLAIM', 'K10d: a title containing $&, $1, $\' and $$ (and the template\'s own {n} / {title}) comes out LITERALLY - the notice uses a replacer function, not a replacement string', c === `\u201C${nasty}\u201D is too large to sync \u2014 it is saved on this device`, JSON.stringify(c));
+    // (K10b / K10d likewise)
+    // log('CLAIM', 'K10d: a title containing $&, $1, $\' and $$ (and the template\'s own {n} / {title}) comes out LITERALLY - the notice uses a replacer function, not a replacement string', c === `\u201C${nasty}\u201D is too large to sync \u2014 it is saved on this device`, JSON.stringify(c));
+    log('CLAIM', 'K10d (word-diet): a title containing $&, $1, $\' and $$ (and the template\'s own {n} / {title}) comes out LITERALLY - the notice uses a replacer function, not a replacement string', c === `\u201C${nasty}\u201D is too large to sync. Saved on this device.`, JSON.stringify(c));
     log('CLAIM', 'K10c: it is NOT called offline (the network is fine); and while the network really is down, offline still wins - it is the broader truth', !/offline/i.test(a) && notice('offline', one) === 'Offline \u2014 saved here' && notice('synced', []) === null, JSON.stringify({ tooLarge: a, offline: notice('offline', one), none: notice('synced', []) }));
   });
 
@@ -371,7 +378,9 @@ function mutantList() {
   out.push({ name: 'P5: a lower limit is not learned (the second big page is sent to be refused too)', o: { csync: (t) => must(t, 'if (batch.length === 1 && isTooLarge(batch[0])) { quarantined.push(batch[0]); return; }', '') } });
   out.push({ name: 'P5: a refused lone record is not remembered as too large (it is dropped from the list)', o: { csync: (t) => must(t, "setTooLarge([...big, ...quarantined].map(i => ({ id: i.rec.id, title: titleFor(i), bytes: i.bytes })));", 'setTooLarge(big.map(i => ({ id: i.rec.id, title: titleFor(i), bytes: i.bytes })));') } });
   out.push({ name: 'P5: the notice splices the title with a replacement STRING (a title of "$&" is mangled)', o: { cnotice: (t) => must(t, "() => tooLarge[0].title", "tooLarge[0].title") } });
-  out.push({ name: 'P5: the plural names them "pages" again (a project or drawer is not a page)', o: { lex: (t) => must(t, '{n} items are too large', '{n} pages are too large') } });
+  // word-diet (37567654) shortened the plural to '{n} items too large to sync.'; the old anchor ('{n} items are too large', kept below verbatim) can no longer land.
+  // out.push({ name: 'P5: the plural names them "pages" again (a project or drawer is not a page)', o: { lex: (t) => must(t, '{n} items are too large', '{n} pages are too large') } });
+  out.push({ name: 'P5: the plural names them "pages" again (a project or drawer is not a page)', o: { lex: (t) => must(t, '{n} items too large', '{n} pages too large') } });
   // Re-anchored for item 213, which restructured syncNoticeText (storage states first, then offline, then `if (tooLarge.length > 0)`);
   // the mutant is the same lie: a too-large record reported as "Offline".
   out.push({ name: 'P5: the notice calls a too-large page "Offline" again (the old lie)', o: { cnotice: (t) => must(t, '  if (tooLarge.length > 0) {\n', "  if (tooLarge.length > 0) {\n    return 'Offline \u2014 saved here';\n") } });

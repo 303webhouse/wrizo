@@ -25,6 +25,8 @@ const out = join(tmp, 'engine.mjs');
 await esbuild.build({
   stdin: { contents: "export { applyFormat, marksAt } from './store/draftFormat'; export { decorateMarkdownForCard } from './store/draftDecoration';", resolveDir: desktopSrc, loader: 'ts' },
   bundle: true, platform: 'node', format: 'esm', outfile: out, logLevel: 'silent',
+  // draftDecoration now pulls in the font roster (item 207), which loads its CSS by dynamic import when a face is chosen; the audit never chooses one, so those stay external
+  external: ['@fontsource/*', '@fontsource-variable/*'],
 });
 const { applyFormat, marksAt, decorateMarkdownForCard } = await import(pathToFileURL(out).href);
 
