@@ -10,6 +10,10 @@
 //     file at <base> exactly, but for the import lines: so every reader that cuts the text between `const CANONICAL` and
 //     `const OVERRIDES` cuts what it cut before.
 // (3) LIVENESS: a dump with one value planted different, and a text with one character planted different, each read as DIFFERENT.
+//
+//   --new <key>=<word>[,<key>=<word>...]   (a later step that ADDS keys, e.g. 10e's progressDrawer) every key not named is held to
+//        (1) and (2) as before (the named keys' union member and entry lines are set aside); each named key must be new at <base>, in
+//        the table now, and read <word> in every theme reading.
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -21,6 +25,8 @@ const DESKTOP = path.join(ROOT, 'apps/desktop');
 const bi = process.argv.indexOf('--base');
 const base = bi > 0 ? process.argv[bi + 1] : null;
 if (!base) { console.error('usage: --base <rev>'); process.exit(2); }
+const ni = process.argv.indexOf('--new');
+const NEW = new Map(ni > 0 ? process.argv[ni + 1].split(',').map((p) => { const i = p.indexOf('='); return [p.slice(0, i), p.slice(i + 1)]; }) : []);
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
 
@@ -56,7 +62,11 @@ try {
     return { keys, values: Object.fromEntries(keys.map((k) => [k, THEMES.map((th) => seam.t(k, th))])) };
   };
   const before = await dumpOf(baseSrc, 'base');
-  const now = await dumpOf(path.join(DESKTOP, 'src'), 'now');
+  const nowAll = await dumpOf(path.join(DESKTOP, 'src'), 'now');
+  // the named new keys are checked on their own and set aside; every other key is held to the base exactly
+  for (const [k, word] of NEW) ok(`NEW: '${k}' is new (absent at ${base}), in the table now, and reads '${word}' in all ${THEMES.length} theme readings`,
+    !before.keys.includes(k) && nowAll.keys.includes(k) && nowAll.values[k].every((v) => v === word), JSON.stringify(nowAll.values[k]));
+  const now = { keys: nowAll.keys.filter((k) => !NEW.has(k)), values: nowAll.values };
   const differs = (a, b) => JSON.stringify(a.keys) !== JSON.stringify(b.keys) || a.keys.some((k) => JSON.stringify(a.values[k]) !== JSON.stringify(b.values[k]));
   const valueDiffs = before.keys.filter((k) => JSON.stringify(before.values[k]) !== JSON.stringify(now.values[k]));
   ok(`DUMP: ${before.keys.length} keys x ${THEMES.length} theme readings (none, ${THEMES.slice(1).join(', ')}) = ${before.keys.length * THEMES.length} values, identical at ${base} and now`,
@@ -71,8 +81,11 @@ try {
 
   // (2) the inline read
   const noImports = (t) => t.replace(/\r\n/g, '\n').split('\n').filter((l) => !/^import\s/.test(l)).join('\n');
-  const was = noImports(execFileSync('git', ['show', `${base}:apps/desktop/src/store/deskLexicon.ts`], { cwd: ROOT, encoding: 'utf8' }));
-  const read = noImports(srcText(path.join(DESKTOP, 'src'), 'store/deskLexicon.ts'));
+  // <base> read the way a reader reads it: inline when <base> is already split (its parts exist), else its plain text (the split's parent)
+  const baseSplit = fs.existsSync(path.join(baseSrc, 'store/lexicon/terms.ts'));
+  const was = noImports(baseSplit ? srcText(baseSrc, 'store/deskLexicon.ts') : fs.readFileSync(path.join(baseSrc, 'store/deskLexicon.ts'), 'utf8'));
+  let read = noImports(srcText(path.join(DESKTOP, 'src'), 'store/deskLexicon.ts'));
+  for (const k of NEW.keys()) read = read.replaceAll(` | '${k}'`, '').split('\n').filter((l) => !new RegExp(`^\\s*${k}:`).test(l)).join('\n');
   const bare = noImports(fs.readFileSync(path.join(DESKTOP, 'src/store/deskLexicon.ts'), 'utf8'));
   const firstDiff = [...was].findIndex((c, i) => c !== read[i]);
   ok(`INLINE: srcText of deskLexicon.ts is the file at ${base} exactly, but for its import lines (${was.split('\n').length} lines)`, read === was,

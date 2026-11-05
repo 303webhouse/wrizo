@@ -6,6 +6,7 @@ import { useAmbianceDial, prefersReducedMotion } from '../store/ambianceDial';
 import { createFluxCardGlitchController, FLUX_CARD_GLITCH_MS } from '../store/fluxCardGlitch';
 import { ensureThemeFonts } from '../store/themeFonts';
 import { Seg } from './ModeStage';
+import { PageToneRow } from './settings/rows';
 
 // the theme picker's body: one card per BUILT theme (absent, never greyed); card art is keyed by the card's own theme, so it shows that theme's look from inside another [ThemePicker §1]
 interface ThemeCardDef {
@@ -113,7 +114,7 @@ export function ThemePicker() {
   return (
     <div className="wz-cascade-panel-body wz-theme-picker" data-still={stillFrame ? 'true' : 'false'}>
       <div className="wz-theme-picker-field">
-        <Seg label="Page" value={prefs.page} opts={[['light', 'Light'], ['dark', 'Dark']]} onPick={(v) => setThemePrefs({ page: v as 'dark' | 'light' })} />
+        <PageToneRow page={prefs.page} />
       </div>
       <div className="wz-theme-cards">
         {THEME_CARDS.map((card) => {

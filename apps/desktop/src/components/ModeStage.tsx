@@ -21,6 +21,9 @@ import { setCaretOffset } from '../store/caretOffset';
 import { editorPlainText, rowsFor, rowsOffsetOf } from '../store/lineRows';
 import { tuckDrawers } from '../store/menusDrawers';
 import { ZOOM_ANCHOR } from '../store/pageScale';
+import { Seg } from './settings/Seg';
+import { progressOptions, PageToneRow } from './settings/rows';
+export { Seg } from './settings/Seg';   // Sliver and ThemePicker import it from here
 
 const ASSIST_INTRO_KEY = 'wrizo-assist-introduced';      // first pop-out fired (once)
 const ASSIST_COLLAPSED_KEY = 'wrizo-assist-collapsed';   // persisted panel state
@@ -687,16 +690,7 @@ function AssistIcon() {
 export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvailable = true }: { settings: { progress: ProgressMetric; fadeDepth: FadeDepth; timer: boolean; typewriter: boolean; progressStyle: ProgressStyle }; hasMilestones?: boolean; framed?: boolean; typewriterAvailable?: boolean }) {
   const { t: deskLex } = useDeskLexicon();
   const machina = useTheme() === 'machina';
-  const progressOpts: [string, string][] = [['words', 'Words'], ['time', 'Time'], ['off', 'Off']];
-  // B2.1 S6 — the DISPLAY label only ("Project" -> "Drawer"); the stored
-  // ProgressMetric value itself ('project', the setting persisted via
-  // setWritingSettings) is a storage identifier and stays untouched, same
-  // as every other internal id this fold leaves alone. Hardcoded inline,
-  // not lexicon-routed, matching this exact Seg option family's own
-  // established precedent (deskLexicon.ts's FX3 comment: 'On'/'Off'/
-  // 'Lines'/'Words'/'Time' are deliberately inline here, not per-option
-  // lexicon keys).
-  if (hasMilestones) progressOpts.splice(2, 0, ['project', 'Drawer']);
+  const progressOpts = progressOptions(hasMilestones, deskLex('progressDrawer'));
   // MACHINA has ONE progress instrument (Run), so the style choice is not offered under it.
   const showProgressStyle = !!framed && settings.progress === 'words' && !machina;
   return (
@@ -741,7 +735,7 @@ export function ThemePanel() {
       <h4>theme</h4>
       <Seg label="Theme" value={theme} opts={themeOpts} onPick={v => setTheme(v as ThemeId)} />
       <Seg label="Voice" value={prefs.voice} opts={[['serif', 'Serif'], ['sans', 'Sans']]} onPick={v => setThemePrefs({ voice: v as 'serif' | 'sans' })} />
-      <Seg label="Page" value={prefs.page} opts={[['light', 'Light'], ['dark', 'Dark']]} onPick={v => setThemePrefs({ page: v as 'dark' | 'light' })} />
+      <PageToneRow page={prefs.page} />
       <Seg label="Fade" value={prefs.fade} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setThemePrefs({ fade: v as 'on' | 'off' })} />
       {/* R2 (TH2 review) — a canon-level pref with no UI is a TH1 allowance,
           not a TH2 one, now that Flux actually schedules dial-scaled events. */}
@@ -802,19 +796,3 @@ export function GearIcon() {
 // `soon` lists options shown as stand-ins for unbuilt capability: dimmed, inert, titled `soonTitle`.
 // PHASE 1 (S4): `disabled` greys the whole row and makes it unusable (real disabled buttons: unfocusable, unclickable, announced as unavailable). The row's
 // value is untouched - a greyed row still SHOWS what it will do when its mode is back on.
-// ITEM word-diet — `label` widened from `string` to `ReactNode` so a caller
-// can attach a DrawerNote "?" beside it; every existing caller passes a
-// plain string (still a valid ReactNode).
-export function Seg({ label, value, opts, onPick, soon, soonTitle, disabled }: { label: ReactNode; value: string; opts: [string, string][]; onPick: (v: string) => void; soon?: string[]; soonTitle?: string; disabled?: boolean }) {
-  return (
-    <div className="mode-crow" data-disabled={disabled ? 'true' : undefined}>
-      <span>{label}</span>
-      <div className="mode-seg">
-        {opts.map(([v, txt]) => soon?.includes(v)
-          ? <button key={v} type="button" className="mode-seg-soon" aria-disabled="true" title={soonTitle}>{txt}</button>
-          : <button key={v} type="button" className={value === v ? 'on' : ''} disabled={disabled} onClick={() => onPick(v)}>{txt}</button>
-        )}
-      </div>
-    </div>
-  );
-}

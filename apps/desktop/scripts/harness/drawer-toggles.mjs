@@ -26,7 +26,8 @@ const read = (rel) => noCR(srcText(SRC, rel));
 const sh = (cmd) => { try { return execSync(cmd, { cwd: DESKTOP, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }); } catch { return null; } };
 
 const sliverSrc = read('components/Sliver.tsx');
-const stageSrc = read('components/ModeStage.tsx');
+// #13 step 10e: Seg left the end of ModeStage for components/settings/Seg.tsx; the stage read puts it back where it stood (the read only)
+const stageSrc = read('components/ModeStage.tsx') + read('components/settings/Seg.tsx');
 const lexSrc = read('store/deskLexicon.ts');
 const peSrc = read('pages/PageEditor.tsx');
 const iconsSrc = read('components/DrawerIcons.tsx');
