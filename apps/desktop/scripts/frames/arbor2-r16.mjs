@@ -302,9 +302,11 @@ export default {
       const steps = [];
       for (const T of [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 1.95, 2.05]) {
         await app.evalJs(`(() => { const L = document.querySelector('.wz-splash .arbor2-top-logo'); document.getAnimations().filter((a) => L.contains(a.effect?.target) || a.effect?.target === L).forEach((a) => { a.pause(); a.currentTime = ${T * 1000}; }); return new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => r(true)))); })()`);
-        // (driver fix after run 41939508551: r19's typed tagline is tucked under the logo and lies inside the logo's box - typed on the front door, not yet
+        // (driver fix after runs 41939508551 / 41941833050: r19's typed tagline is tucked under the logo, and at 1920 the sketch's resting brass glow
+      // (GLOW_REST, splash only - the front door's still sketch has none) reaches into the logo's box; both hide for these reads, which compare the logo.
+      // The tagline: typed on the front door, not yet
         // at the write's end - so the hand-over reads hide it; they compare the logo)
-        await app.evalJs("(() => { let s = document.getElementById('r16-hide-tag'); if (!s) { s = document.createElement('style'); s.id = 'r16-hide-tag'; s.textContent = '.arbor2-top-tagline{ visibility:hidden !important; }'; document.head.appendChild(s); } return true; })()");
+        await app.evalJs("(() => { let s = document.getElementById('r16-hide-tag'); if (!s) { s = document.createElement('style'); s.id = 'r16-hide-tag'; s.textContent = '.arbor2-top-tagline, .wz-splash-arbor{ visibility:hidden !important; }'; document.head.appendChild(s); } return true; })()");
         const px = await app.evalJs(PIX(await shot(app), plan.rect, 'splash-' + T));
         steps.push({ T, lum: px.lum, inked: px.inked, brassPx: px.brassPx });
       }
@@ -379,9 +381,11 @@ export default {
       const probe = await app.evalJs("({ splash: !!document.querySelector('.wz-splash'), logo: !!document.querySelector('.wz-splash .arbor2-top-logo'), hold: localStorage.getItem('wrizo-splash-hold'), reduced: matchMedia('(prefers-reduced-motion: reduce)').matches, theme: document.documentElement.getAttribute('data-theme'), flag: document.documentElement.getAttribute('data-arbor2') })");
       if (!seen || !probe.logo) fail('R16-SPLASH-REDUCED', { seen, probe });
       const s = await app.evalJs("(() => { const L = document.querySelector('.wz-splash .arbor2-top-logo'); const r = L.getBoundingClientRect(); return { writing: L.getAttribute('data-writing'), svg: !!L.querySelector('svg'), strokes: !!L.querySelector('mask, .arbor2-logo-stroke'), anims: document.getAnimations().filter((a) => (L.contains(a.effect?.target) || a.effect?.target === L) && a.animationName).length, transitions: document.getAnimations().filter((a) => (L.contains(a.effect?.target) || a.effect?.target === L) && !a.animationName).map((a) => [a.transitionProperty, Number(a.effect.getTiming().duration)]), rect: [Math.round(r.left * 10) / 10, Math.round(r.top * 10) / 10, Math.round(r.width * 10) / 10, Math.round(r.height * 10) / 10] }; })()");
-      // (driver fix after run 41939508551: r19's typed tagline is tucked under the logo and lies inside the logo's box - typed on the front door, not yet
+      // (driver fix after runs 41939508551 / 41941833050: r19's typed tagline is tucked under the logo, and at 1920 the sketch's resting brass glow
+      // (GLOW_REST, splash only - the front door's still sketch has none) reaches into the logo's box; both hide for these reads, which compare the logo.
+      // The tagline: typed on the front door, not yet
       // at the write's end - so the hand-over reads hide it; they compare the logo)
-      await app.evalJs("(() => { let s = document.getElementById('r16-hide-tag'); if (!s) { s = document.createElement('style'); s.id = 'r16-hide-tag'; s.textContent = '.arbor2-top-tagline{ visibility:hidden !important; }'; document.head.appendChild(s); } return true; })()");
+      await app.evalJs("(() => { let s = document.getElementById('r16-hide-tag'); if (!s) { s = document.createElement('style'); s.id = 'r16-hide-tag'; s.textContent = '.arbor2-top-tagline, .wz-splash-arbor{ visibility:hidden !important; }'; document.head.appendChild(s); } return true; })()");
       await app.evalJs(PIX(await shot(app), s.rect, 'reduced-splash'));
       await app.evalJs("localStorage.setItem('wrizo-splash-hold', '50'); localStorage.removeItem('wrizo-splash-force-not-ready')");
       await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 }); await sleep(600);
