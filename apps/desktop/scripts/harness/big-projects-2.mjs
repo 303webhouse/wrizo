@@ -144,7 +144,7 @@ const panels = noCR(srcText(SRC, 'components/CascadePanels.tsx'));   // #13 step
 const editor = rd('components/BoardEditor.tsx');
 const wizard = rd('components/DeckWizard.tsx');
 const unborn = rd('store/unbornPage.ts');
-const lex = rd('store/deskLexicon.ts');
+const lex = noCR(srcText(SRC, 'store/deskLexicon.ts'));   // #13 step 10c: the inline read
 const doors = editor.slice(editor.indexOf('const beginningDoors: BeginningDoor[]'), editor.indexOf('// FX5 S4 (c)'));
 const planBody = panels.slice(panels.indexOf('function PlanPanel('), panels.indexOf('// Per-board quiet disclosure'));
 

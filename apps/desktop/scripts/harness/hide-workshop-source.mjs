@@ -27,6 +27,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { srcText } from '../global-css.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const SRC = join(here, '..', '..', 'src');
@@ -62,7 +63,7 @@ ok('T3: the legacy JournalEntry tab row is Draft / Format / Publish - no Worksho
 const walk = (d) => readdirSync(d).flatMap((f) => { const p = join(d, f); return statSync(p).isDirectory() ? walk(p) : /\.(tsx|ts)$/.test(f) ? [p] : []; });
 const readers = ['components', 'pages'].flatMap((d) => walk(join(SRC, d))).filter((p) => /modeWorkshop/.test(noComments(readFileSync(p, 'utf8'))));
 ok('T4: no component or page reads the modeWorkshop term - every theme\'s word for the tab is unreachable until it is re-added', readers.length === 0, JSON.stringify(readers.map((p) => p.replace(SRC, ''))));
-ok('T4: the lexicon KEEPS the term (canonical + Flux\'s Relay) so un-hiding is a one-line re-add per site', /modeWorkshop: 'Workshop'/.test(src('store/deskLexicon.ts')) && /modeWorkshop: 'Relay'/.test(src('store/deskLexicon.ts')), '');
+ok('T4: the lexicon KEEPS the term (canonical + Flux\'s Relay) so un-hiding is a one-line re-add per site', /modeWorkshop: 'Workshop'/.test(srcText(SRC, 'store/deskLexicon.ts').replace(/\r\n/g, '\n')) && /modeWorkshop: 'Relay'/.test(srcText(SRC, 'store/deskLexicon.ts').replace(/\r\n/g, '\n')), '');
 
 // T5
 const stripCode = noComments(strip);

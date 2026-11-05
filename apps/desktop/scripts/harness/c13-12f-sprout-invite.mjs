@@ -12,7 +12,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { withHarness } from '../runtime-verify.mjs';
-import { globalCss } from '../global-css.mjs';
+import { globalCss, srcText } from '../global-css.mjs';
 
 const SRC = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'src');
 const checks = [];
@@ -32,7 +32,7 @@ const css = globalCss(SRC);
 const flRules = css.match(/(^|\n)[^\n/*]*\.fl-(invite|prompt|affordance|never)\b[^{\n]*\{/g) || [];
 const pageRow = css.match(/[^\n]*\[data-beginnings='page'\][^{\n]*\{/g) || [];
 ok('N4: the global CSS carries no .fl-* rule and no page-row rule ([data-beginnings=\'page\'])', flRules.length === 0 && pageRow.length === 0, J({ flRules, pageRow }));
-const lex = fs.readFileSync(path.join(SRC, 'store', 'deskLexicon.ts'), 'utf8');
+const lex = srcText(SRC, 'store', 'deskLexicon.ts');
 ok('N4: the lexicon has no beginSprout key', !/\bbeginSprout\b/.test(lex));
 
 const freshDesk = async (app) => {
