@@ -129,8 +129,9 @@ await withHarness(async (app) => {
   // Arbor 8dd766dc: it read .arbor2-sun, which r19 never draws (display:none always) - it passed BLIND, the computed position and z-index of a
   // hidden layer). Original, verbatim:
   // ok('L2e the light layer is fixed, z-index -1, a child of body (behind every surface), and the paper is opaque (the page\'s own, or the zoomed page\'s sheet)', !!day.sun && day.sun.z === '-1' && day.sun.pos === 'fixed' && day.sun.parent === 'BODY' && paperThere, JSON.stringify({ sun: day.sun, ...sh }));
-  // SUCCESSOR L2f: the pergola layer is displayed with a size (liveness), fixed, z-index -1, a child of body, and the paper is opaque (the same paper read).
-  ok('L2f the pergola layer is drawn (displayed, a non-zero rect), fixed, z-index -1, a child of body (behind every surface), and the paper is opaque (the page\'s own, or the zoomed page\'s sheet)',
+  // SUCCESSOR L2g: the pergola layer is displayed with a size (liveness), fixed, z-index -1, a child of body, and the paper is opaque (the same paper read).
+  // (renamed L2f -> L2g before any green, r21: "L2f" is already the zoomed-page successor's name below; a name is never reused)
+  ok('L2g the pergola layer is drawn (displayed, a non-zero rect), fixed, z-index -1, a child of body (behind every surface), and the paper is opaque (the page\'s own, or the zoomed page\'s sheet)',
     pgLive && pg.z === '-1' && pg.pos === 'fixed' && pg.parent === 'BODY' && paperThere, JSON.stringify({ pergola: pg && { display: pg.display, w: pg.w, h: pg.h, z: pg.z, pos: pg.pos, parent: pg.parent }, ...sh }));
   // PARKED 2026-11-04 (SUPERSEDED with L2e above: it read the retired sun layer's drift sheet - arbor2-sun-drift on a hidden layer, passing BLIND).
   // Original, verbatim:
@@ -151,12 +152,44 @@ await withHarness(async (app) => {
   const after = await read(app);
   const starts = flut.map((f) => f[0]);
   const gaps = starts.slice(1).map((s, i) => s - starts[i]);
-  ok('L3 flutter budget: each flutter 300-600 ms, one at a time, starts >= 6 s apart', flut.length >= 1 && flut.every((f) => f[1] >= 250 && f[1] <= 700 && f[2] === 0) && gaps.every((g) => g >= 5900), JSON.stringify({ flut, gaps }));
+  // PARKED 2026-11-05 (SUPERSEDED: Fable's ruling, Nov 4 (r21) - the pergola replaced the sun layer in r19 (spec draft 35 §18.1); this counted the
+  // flutters of .arbor2-sun-leaf, which r19 never draws (the hidden layer kept fluttering, so it passed BLIND to anything the writer sees)).
+  // Original, verbatim (its driver above - the observer and the 20 s watch - still runs, for L4):
+  // ok('L3 flutter budget: each flutter 300-600 ms, one at a time, starts >= 6 s apart', flut.length >= 1 && flut.every((f) => f[1] >= 250 && f[1] <= 700 && f[2] === 0) && gaps.every((g) => g >= 5900), JSON.stringify({ flut, gaps }));
+  // SUCCESSOR L3b: the breeze's budget on the pergola, from the animations' own timing and the stylesheet's arbor2-breeze keyframes (no sampling):
+  // every .wz-leaf cluster runs arbor2-breeze, 16 s, forever; its shiver is the keyframes' moving part, 0% -> 8.75% (~1.4 s of the 16 s), the
+  // rest (8.75%-100%) still; the clusters' delays spread over <= 3 s, so one breeze crosses the room and is done well inside each 16 s (one
+  // shiver per cluster per 16 s). Liveness: the layer is displayed with a size.
+  const BREEZE = `(() => { const e = document.querySelector('.arbor2-pergola'); if (!e) return null; const r = e.getBoundingClientRect();
+    const leaves = [...e.querySelectorAll('.wz-leaf')]; const an = leaves.map((l) => l.getAnimations()[0] || null);
+    const t = an.filter(Boolean).map((a) => { const x = a.effect.getTiming(); return { name: a.animationName, dur: Number(x.duration), inf: x.iterations === Infinity, delay: Number(x.delay) }; });
+    let kf = null; for (const ss of document.styleSheets) { let rules; try { rules = ss.cssRules; } catch { continue; } for (const rule of rules) { if (rule.type === 7 && rule.name === 'arbor2-breeze') { kf = rule; break; } } if (kf) break; }
+    const frames = kf ? [...kf.cssRules].flatMap((f) => f.keyText.split(',').map((k) => ({ at: parseFloat(k) / 100, still: /^rotate\\((0|0deg)\\)$/.test(f.style.transform.trim()) }))).sort((a, b) => a.at - b.at) : [];
+    const moving = frames.filter((f) => !f.still), lastMove = moving.length ? Math.max(...moving.map((f) => f.at)) : null;
+    const stillFrom = lastMove == null ? null : Math.min(...frames.filter((f) => f.still && f.at > lastMove).map((f) => f.at));
+    const delays = t.map((x) => x.delay);
+    return { display: getComputedStyle(e).display, w: r.width, h: r.height, leaves: leaves.length, breeze: t.filter((x) => x.name === 'arbor2-breeze' && x.dur === 16000 && x.inf).length,
+      keyframes: !!kf, frames: frames.map((f) => [f.at, f.still]), stillFrom, endsStill: frames.length > 0 && frames[frames.length - 1].at === 1 && frames[frames.length - 1].still,
+      spread: delays.length ? Math.max(...delays) - Math.min(...delays) : null }; })()`;
+  const bz = await app.evalJs(BREEZE);
+  const shiverMs = bz && bz.stillFrom != null ? bz.stillFrom * 16000 : null;
+  ok('L3b the breeze\'s budget: 115 clusters on arbor2-breeze (16 s, infinite); each shiver ~1.4 s (the keyframes move 0% -> 8.75%, then still to 100%); delays spread <= 3 s, so one breeze crosses per 16 s',
+    !!bz && bz.display !== 'none' && bz.w > 0 && bz.h > 0 && bz.leaves === 115 && bz.breeze === 115 && bz.keyframes && Math.abs(bz.stillFrom - 0.0875) < 0.0005 && bz.endsStill
+      && shiverMs >= 1200 && shiverMs <= 1600 && bz.spread != null && bz.spread <= 3000 && bz.spread + shiverMs < 16000,
+    JSON.stringify({ ...bz, shiverMs }));
   ok('L4 nothing stored: localStorage byte-equal across 20 s of the day room', after.ls === day.ls, '');
 
   await pickBar(app, 'Night'); await sleep(250);
   const night = await read(app);
-  ok('L1 night: the light layer is not drawn', !!night.sun && night.sun.display === 'none', JSON.stringify(night.sun));
+  // PARKED 2026-11-05 (SUPERSEDED: Fable's ruling, Nov 4 (r21) - the pergola replaced the sun layer in r19; .arbor2-sun is display:none in BOTH
+  // rooms, so "not drawn at night" passed BLIND). Original, verbatim:
+  // ok('L1 night: the light layer is not drawn', !!night.sun && night.sun.display === 'none', JSON.stringify(night.sun));
+  // SUCCESSOR L1f: the night room draws no pergola - .arbor2-pergola is there but display:none (or at opacity 0) - and in this same run the day
+  // read saw it drawn (L2g's liveness: displayed, a non-zero rect), so the night's absence is not a blind read.
+  const pgN = await app.evalJs(PERG);
+  const nightOp = await app.evalJs("(() => { const e = document.querySelector('.arbor2-pergola'); return e ? Number(getComputedStyle(e).opacity) : null; })()");
+  ok('L1f night: the pergola is not drawn (display none or opacity 0), while the same run\'s day read saw it drawn',
+    pgLive && !!pgN && (pgN.display === 'none' || nightOp === 0), JSON.stringify({ night: pgN && { display: pgN.display, w: pgN.w, h: pgN.h }, nightOp, dayLive: pgLive }));
 
   // L2b: the ZOOMED Free Write page (seeded through the seam; the flag stays, it sits before the hash)
   await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: 'arbor6-zoom', text: 'The morning light came in low across the table, and she began to write. The kettle ticked as it cooled.', createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page' })})`);
@@ -217,7 +250,15 @@ await withHarness(async (app) => {
   // 'none' WITH motion too, so this check went blind to the drift). Original, verbatim:
   // ok('L5 reduced motion: a still frame - no drift, no leaf animation, no flutter in 14 s', !!rm.sun && rm.sun.still === 'true' && rm.sun.anim === 'none' && rm.sun.leafAnim === 'none' && f2 === 0, JSON.stringify({ sun: rm.sun, flutters: f2 }));
   // SUCCESSOR L5b: the same, plus the drift sheet itself is still.
-  ok('L5b reduced motion: a still frame - no drift (layer AND drift sheet), no leaf animation, no flutter in 14 s', !!rm.sun && rm.sun.still === 'true' && rm.sun.anim === 'none' && rm.sun.driftAnim === 'none' && rm.sun.leafAnim === 'none' && f2 === 0, JSON.stringify({ sun: rm.sun, flutters: f2 }));
+  // PARKED 2026-11-05 (SUPERSEDED: Fable's ruling, Nov 4 (r21) - the pergola replaced the sun layer in r19; this read the hidden .arbor2-sun, its
+  // drift sheet and its leaves, so it passed BLIND to the pergola). Original, verbatim (its driver above still runs):
+  // ok('L5b reduced motion: a still frame - no drift (layer AND drift sheet), no leaf animation, no flutter in 14 s', !!rm.sun && rm.sun.still === 'true' && rm.sun.anim === 'none' && rm.sun.driftAnim === 'none' && rm.sun.leafAnim === 'none' && f2 === 0, JSON.stringify({ sun: rm.sun, flutters: f2 }));
+  // SUCCESSOR L5c: under reduced motion no animation runs on the pergola's drift wrapper or any leaf cluster (none in document.getAnimations()
+  // for those targets, in the room or on the page), and the layer is still drawn by day (displayed, a non-zero rect).
+  const rmP = await app.evalJs(PERG);
+  const rmAnims = await app.evalJs("document.getAnimations().filter((a) => { const t = a.effect && a.effect.target; return !!t && !!t.closest && !!t.closest('.arbor2-pergola-drift, .wz-leaf'); }).map((a) => [a.animationName || a.transitionProperty || '', a.playState])");
+  ok('L5c reduced motion: the pergola holds still - no drift and no leaf animation at all - and it is still drawn by day',
+    !!rmP && rmP.display !== 'none' && rmP.w > 0 && rmP.h > 0 && rmP.leaves === 115 && Array.isArray(rmAnims) && rmAnims.length === 0, JSON.stringify({ pergola: rmP && { display: rmP.display, w: rmP.w, h: rmP.h, leaves: rmP.leaves }, anims: rmAnims && rmAnims.slice(0, 6), n: rmAnims && rmAnims.length }));
   await snap(app, 'item6-day-shadows-reduced-motion');
   await app.emulateMedia([]);
   return checks;
