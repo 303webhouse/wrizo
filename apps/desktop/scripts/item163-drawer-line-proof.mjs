@@ -37,7 +37,7 @@ const fail = (m) => { failures++; console.log('  FAIL ' + m); };
 const ok = (m) => console.log('  ok   ' + m);
 
 // --- the REAL lexicon, with only react/theme stubbed -------------------------
-let lexJs = tr(readFileSync(join(repo, 'apps/desktop/src/store/deskLexicon.ts'), 'utf8'));
+let lexJs = tr(srcText(join(repo, 'apps/desktop/src'), 'store/deskLexicon.ts'));
 const beforeLex = lexJs;
 lexJs = lexJs.replace(/^import \{ useEffect, useState \} from 'react';$/m,
   'const useEffect = () => {}; const useState = () => [0, () => {}];');

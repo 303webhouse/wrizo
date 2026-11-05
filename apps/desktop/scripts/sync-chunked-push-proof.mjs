@@ -24,6 +24,7 @@ import { mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { srcText } from './global-css.mjs';
 import { createRequire } from 'node:module';
 
 const RUN_MUTANTS = process.argv.includes('--mutants');
@@ -36,7 +37,7 @@ const SSYNC_TEXT = readFileSync(join(serverSrc, 'sync.ts'), 'utf8').replace(/\r\
 const CSYNC_TEXT = readFileSync(join(desktopSrc, 'store/sync.ts'), 'utf8').replace(/\r\n/g, '\n');
 const NOTICE_TEXT = readFileSync(join(desktopSrc, 'store/syncNotice.ts'), 'utf8').replace(/\r\n/g, '\n');
 let LEX_CUR = null;
-const LEX_TEXT = readFileSync(join(desktopSrc, 'store/deskLexicon.ts'), 'utf8').replace(/\r\n/g, '\n');
+const LEX_TEXT = srcText(desktopSrc, 'store/deskLexicon.ts').replace(/\r\n/g, '\n');
 const MB = 1024 * 1024;
 const LIMIT = 16 * MB;   // /api/sync's body limit since P3 (every other route keeps 5 MiB)
 const FAT = 20 * MB;     // a lone record that cannot fit even in the larger limit

@@ -58,11 +58,62 @@ export function moduleParts(srcDir, rel) {
   return parts.map((p) => path.join(srcDir, p));
 }
 
+// A module whose split leaves a WIRING LINE where each part's text used to stand (step 10c's deskLexicon.ts: a `...CANONICAL_CHROME,`
+// spread for each run of the CANONICAL literal, a re-export for the DeskTermId union) reads with each part's body put back in place
+// of its line: the old text exactly, but for the import lines (c13-10c-lexicon.mjs proves it). A part's body is its text after its
+// import lines and the blank line under them, less its wrapper when it has one (an `export const X = {` first line and a
+// `} satisfies ...;` last line). srcText of a part alone is that part's own text.
+export const INLINE_PARTS = {
+  'store/deskLexicon.ts': [
+    { at: "export type { DeskTermId } from './lexicon/terms';", part: 'store/lexicon/terms.ts' },
+    { at: '  ...CANONICAL_CHROME,', part: 'store/lexicon/canonical/chrome.ts' },
+    { at: '  ...CANONICAL_DECKS,', part: 'store/lexicon/canonical/decks.ts' },
+    { at: '  ...CANONICAL_SETTINGS,', part: 'store/lexicon/canonical/settings.ts' },
+    { at: '  ...CANONICAL_HELP,', part: 'store/lexicon/canonical/help.ts' },
+    { at: '  ...FLUX_OVERRIDES,', part: 'store/lexicon/overrides/flux.ts' },
+    { at: '  ...MACHINA_OVERRIDES,', part: 'store/lexicon/overrides/machina.ts' },
+  ],
+};
+
+export function partBody(text) {
+  const ls = text.split(/\r?\n/);
+  if (ls[ls.length - 1] === '') ls.pop();
+  let i = 0;
+  while (i < ls.length && /^import\s/.test(ls[i])) i++;
+  if (i > 0 && ls[i] === '') i++;
+  let body = ls.slice(i);
+  if (body.length >= 2 && /^export const [A-Za-z_$][\w$]* = \{$/.test(body[0]) && /^\} satisfies .*;$/.test(body[body.length - 1])) body = body.slice(1, -1);
+  return body;
+}
+
+export function inlineText(srcDir, rel) {
+  const text = fs.readFileSync(path.join(srcDir, rel), 'utf8');
+  const EOL = text.includes('\r\n') ? '\r\n' : '\n';
+  const ls = text.split(/\r?\n/);
+  for (const { at, part } of INLINE_PARTS[rel]) {
+    const hits = ls.reduce((n, l) => n + (l === at ? 1 : 0), 0);
+    if (hits !== 1) throw new Error(`INLINE_PARTS['${rel}']: the line "${at}" occurs ${hits} times`);
+    ls.splice(ls.indexOf(at), 1, ...partBody(fs.readFileSync(path.join(srcDir, part), 'utf8')));
+  }
+  return ls.join(EOL);
+}
+
+// For a harness's own esbuild onLoad, which hands each loaded .ts file's text (with any mutant applied) to the bundler: a module in
+// INLINE_PARTS loads as its inline text, so a mutant written against the old module (file: 'store/deskLexicon.ts') still lands in
+// the bundle as well as in the source reads. Its part imports, unused once the bodies are in place, are dropped by esbuild as it drops
+// any unused TypeScript import. Every other file loads as its own text: a barrel or MODULE_PARTS join would declare its parts twice.
+export function bundleText(srcDir, ...rel) {
+  const r = path.join(...rel).split(path.sep).join('/');
+  if (Object.prototype.hasOwnProperty.call(INLINE_PARTS, r)) return inlineText(srcDir, r);
+  return fs.readFileSync(path.join(srcDir, ...rel), 'utf8');
+}
+
 export function srcText(srcDir, ...rel) {
   const r = path.join(...rel).split(path.sep).join('/');
   if (r === 'index.css') return globalCss(srcDir);
   if (BARRELS.includes(r)) return barrelText(srcDir, r);
   if (Object.prototype.hasOwnProperty.call(MODULE_PARTS, r)) return moduleParts(srcDir, r).map((p) => fs.readFileSync(p, 'utf8')).join('');
+  if (Object.prototype.hasOwnProperty.call(INLINE_PARTS, r)) return inlineText(srcDir, r);
   return fs.readFileSync(path.join(srcDir, ...rel), 'utf8');
 }
 
