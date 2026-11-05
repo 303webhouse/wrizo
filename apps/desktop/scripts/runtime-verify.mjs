@@ -435,6 +435,10 @@ window.__setText = (text, sel) => {
 `;
 
 // --- the harness facade given to scenario code ----------------------------
+// WS_URL_SEARCH (opt-in, e.g. '?arbor2=1'): a query string before the hash on every page this driver opens, so a guard can run under a URL
+// flag (ARBOR r19: rhizome-latency + 150b on the Arbor vines). Unset = today's URLs exactly ('/' then the hash).
+const URL_SEARCH = process.env.WS_URL_SEARCH ? `/${process.env.WS_URL_SEARCH.replace(/^\/?/, '')}` : '/';
+
 function makeApp(base, cdp, waitEvent, tap) {
   const evalJs = async (expression) => {
     const r = await cdp('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true });
@@ -692,7 +696,7 @@ function makeApp(base, cdp, waitEvent, tap) {
     },
     /** Navigate to a hash route (same-document; helpers persist). */
     goto: async (hash) => {
-      await cdp('Page.navigate', { url: `${base}/#${hash.replace(/^#/, '')}` });
+      await cdp('Page.navigate', { url: `${base}${URL_SEARCH}#${hash.replace(/^#/, '')}` });
       await sleep(200);
     },
     /**
@@ -703,7 +707,7 @@ function makeApp(base, cdp, waitEvent, tap) {
      * register on the contenteditable.
      */
     freshSprint: async () => {
-      await cdp('Page.navigate', { url: `${base}/#/` });
+      await cdp('Page.navigate', { url: `${base}${URL_SEARCH}#/` });
       await sleep(200);
       // HB1 — seed firstRunComplete alongside every clear: this fixture
       // navigates straight to /sprint by hash (never through Arrival's Write
@@ -891,7 +895,7 @@ export async function withHarness(scenario, opts = {}) {
     // adds. This line stays because a dir this process owns is its own to clear
     // whatever the reaper did or did not find.
     await removeDir(udd);
-    proc = launchBrowser(browserPath, udd, `${base}/#/`, { headful: opts.headful ?? (process.env.WS_HEADFUL === '1') });
+    proc = launchBrowser(browserPath, udd, `${base}${URL_SEARCH}#/`, { headful: opts.headful ?? (process.env.WS_HEADFUL === '1') });
     const cdpPort = await readCdpPort(udd);
     const wsUrl = await pageWsUrl(cdpPort);
     const conn = connect(wsUrl);
