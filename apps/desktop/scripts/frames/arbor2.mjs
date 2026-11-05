@@ -561,7 +561,12 @@ export default {
     // .wz-leaf, arbor2-breeze) - the r19 breeze has no off switch yet, a design gap to hand up, not invented here). Original, verbatim:
     // const keys = ['breath', 'shadows', 'afternoon', 'flutter', 'pull', 'tabs'];   // variation: measured by its widths in arbor-rhizome-variation
     // SUCCESSOR: the same proof for the other five switches; 'flutter' is proven apart (flutterB, below) for what it honestly does now.
-    const keys = ['breath', 'shadows', 'afternoon', 'pull', 'tabs'];   // variation: measured by its widths in arbor-rhizome-variation
+    // PARKED 2026-11-05 (SUPERSEDED by Nick's r20 note "no glow", built at Arbor 27ee9b8f: the lamp's pool retired and its Mood switch with it
+    // (src/arbor2/mount.tsx); the 'breath' click found no switch, frames run 42006577710). Original, verbatim:
+    // const keys = ['breath', 'shadows', 'afternoon', 'pull', 'tabs'];   // variation: measured by its widths in arbor-rhizome-variation
+    // SUCCESSOR: the same proof for the other four; breathGone (below) asserts the breath switch is no longer offered.
+    const keys = ['shadows', 'afternoon', 'pull', 'tabs'];   // variation: measured by its widths in arbor-rhizome-variation
+    const breathGone = await app.evalJs("!document.querySelector('.arbor2-mood-switch[data-mood=\"breath\"]') && !!document.querySelector('.arbor2-mood-switch[data-mood=\"shadows\"]')");
     // storage: the app may write its own keys meanwhile; a switch must never put anything that names Arbor or the Mood into it
     const leaks = (a, b) => Object.keys(b).filter((k) => a[k] !== b[k] && /arbor|mood/i.test(k + ' ' + b[k]));
     const changed = {};
@@ -599,6 +604,7 @@ export default {
     // the job keeps 300 characters of an error: only the failing switches, with what they measured off and back
     const bad = Object.fromEntries(Object.entries(changed).filter(([, c]) => !(c.moved !== false && c.back && c.rect && c.store.length === 0)));
     if (!ok) throw new Error('MOOD PROOF FAILED ' + JSON.stringify({ opened, bad, room: before.room, was: Object.fromEntries(Object.keys(bad).map((k) => [k, before[k]])) }));
+    if (!breathGone) throw new Error('MOOD PROOF FAILED (breathGone: the retired breath switch is still offered, or the menu is not open) ' + JSON.stringify({ opened, room: before.room }));
     if (!flutterB) throw new Error('MOOD PROOF FAILED (flutter) ' + JSON.stringify(flBrief));
   },
   // item 9: the sage logo on the Desk (night sage / day olive, the o kept brass) - the proof: the drawn picture is the room's copy, and it

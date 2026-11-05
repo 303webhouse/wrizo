@@ -16,6 +16,8 @@
 //   C1  contrast, both rooms, measured from the live tokens: names (--arbor-letter, --text-hi) >= 7:1, labels (--text-mid, --text-low,
 //       --arbor-guide) >= 4.5:1 on --ink-950 / 900 / 800
 //   L1  night: the lamp layer breathes (arbor2-breath, 9 s) and drifts (arbor2-drift, 40 s); reduced motion: no animation (a still frame)
+//       PARKED r21 (Nick's r20 note "no glow": the lamp's pool retired, its breath and drift with it). Successor L1g: night draws no pool -
+//       the lamp layer has no background image and no animation. H1b likewise -> H1c.
 //   L2  day: the room is the whitewash (--ink-950 #EFE6D2) and the page keeps its paper (#F3EDE1)
 //   L3  (Nick, Oct 29: "I can't see that the lamplight is doing anything") the pool is ON SCREEN: at a margin point beside the page's
 //       top edge, and inside the page's top fade, nothing between the viewer and body paints an opaque ground; the bar and rail keep theirs
@@ -254,7 +256,12 @@ await withHarness(async (app) => {
         Object.values(table[name]).every((v) => v >= floor), JSON.stringify(table[name]));
     }
     if (room === 'night') {
-      ok('L1 night: the lamp breathes (arbor2-breath) and drifts (arbor2-drift)', /arbor2-breath/.test(s.lampAnim) && /arbor2-drift/.test(s.lampAnim), s.lampAnim);
+      // PARKED 2026-11-05 (SUPERSEDED by Nick's r20 note "no glow", spec §18.6, built at Arbor 27ee9b8f: the night lamp's pool retired, its
+      // breath and drift with it; harness run 41989027621 read 'none'). Original, verbatim:
+      // ok('L1 night: the lamp breathes (arbor2-breath) and drifts (arbor2-drift)', /arbor2-breath/.test(s.lampAnim) && /arbor2-drift/.test(s.lampAnim), s.lampAnim);
+      // SUCCESSOR L1g: night draws no lamp pool - the lamp layer (body::before) has no background image and no animation.
+      const lampBg = await app.evalJs("getComputedStyle(document.body, '::before').backgroundImage");
+      ok('L1g night: no lamp pool (r21 "no glow") - the lamp layer has no background image and no animation', s.lampAnim === 'none' && lampBg === 'none', JSON.stringify({ anim: s.lampAnim, bg: lampBg }));
       const cover = await app.evalJs(`(() => {
         const p = document.querySelector('.mode-page').getBoundingClientRect();
         const opaque = (el) => { const c = getComputedStyle(el).backgroundColor; const a = (c.match(/[\\d.]+/g) || []).map(Number); return (a.length === 3 || (a.length === 4 && a[3] > 0.02)) || getComputedStyle(el).backgroundImage !== 'none'; };
@@ -440,7 +447,11 @@ await withHarness(async (app) => {
   const log4 = await app.evalJs('window.__fl');
   await app.emulateMedia([]); await sleep(150);
   const h1at = await state(app);
-  ok('H1b the lamp is ambience only: reaching the goal leaves the lamp\'s own animation as it was', h1before.lampAnim === h1at.lampAnim && /arbor2-breath/.test(h1at.lampAnim), JSON.stringify({ before: h1before.lampAnim, after: h1at.lampAnim }));
+  // PARKED 2026-11-05 (SUPERSEDED by Nick's r20 note "no glow", built at Arbor 27ee9b8f: there is no breath left to keep; harness run
+  // 41989027621 read none / none). Original, verbatim:
+  // ok('H1b the lamp is ambience only: reaching the goal leaves the lamp\'s own animation as it was', h1before.lampAnim === h1at.lampAnim && /arbor2-breath/.test(h1at.lampAnim), JSON.stringify({ before: h1before.lampAnim, after: h1at.lampAnim }));
+  // SUCCESSOR H1c: the goal starts nothing on the room's lamp layer - its animation is the same before and after, and still none.
+  ok('H1c the goal leaves the retired lamp layer as it was (no animation before or after)', h1before.lampAnim === h1at.lampAnim && h1at.lampAnim === 'none', JSON.stringify({ before: h1before.lampAnim, after: h1at.lampAnim }));
   // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 35 §18.1 F, harness run 41904658793, Arbor 8dd766dc: the rhizome is drawn as FILLED vines - there
   // is no .wz-rhizome-seg stroke to read (h4.stroke null); the brass is the vines' fill). Original, verbatim:
   // ok('H4 reduced motion: a still frame - the web shows in brass with no animation, then cuts (true -> false, never fading)',
