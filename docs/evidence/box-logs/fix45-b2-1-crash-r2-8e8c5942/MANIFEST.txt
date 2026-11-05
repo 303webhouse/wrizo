@@ -1,0 +1,7 @@
+FIX #45 (b2-1-crash-r2 e82bd95f, harness only) - manifest (Chat 1, Nov 5 2026)
+
+Tree = train-fix45 8e8c5942: main 6ea4007f + one --no-ff merge of b2-1-crash-r2 e82bd95f; main is fast-forwarded to it. The change: runtime-verify.mjs registers the page helpers for every new document (addScriptToEvaluateOnNewDocument), plus harness/helpers-survive.mjs (H1 full navigation, H2 cold launches). No product file changes (`git diff 6ea4007f 8e8c5942 --stat` = those two files).
+PROOF
+- GitHub Actions full pair, run 42073202577 (ref = the full sha, 8 shards per leg): default 234/241, parked 234/241; the 7 non-OK are the usual capture/probe NOVERDICT tools, both legs. helpers-survive PASS 4 both legs. The shared driver ran under every browser file in the pair with no new red.
+- FIX's own proof (red-first on main, b2-1 x3, its pair + box list) cleared by Fable Nov 5: "FIX #45 b2-1-crash-r2 @ e82bd95f (harness only): merge. Its one parked FAIL (guided-add-scenes-part2) is a flake, logged as #46."
+Files: pair-default/parked.log.txt, summary.txt.
