@@ -14,6 +14,11 @@
 //     joined barrel (global-css.mjs srcText) meets every line where it met it before.
 // (6) LIVENESS: each check is run again on a planted input (a moved line edited, a moved line dropped, a stray src file, a citation
 //     pointed nowhere, an export lost, and with --ordered two moved lines swapped) and must FAIL; a check that cannot go red proves nothing.
+//
+//   --allow <file>   (step 10g, for a split that must add wiring: a hook's signature, parameters, return and call) the code lines the
+//        split may ADD, one per line, written as LINES reads them (trailing space trimmed, a leading `export ` dropped; indentation
+//        kept). A MULTISET: an entry listed n times allows n added copies, and all n must be used, so a stale entry fails. It covers
+//        added lines only: missing stays 0. Planted red: an added line not on the list, and an entry no added line uses.
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -25,7 +30,10 @@ const bi = args.indexOf('--base');
 if (bi < 0 || !args[bi + 1]) { console.error('usage: --base <rev> <from> <to...>'); process.exit(2); }
 const base = args[bi + 1];
 const ordered = args.includes('--ordered');
-const files = args.filter((a, i) => i !== bi && i !== bi + 1 && a !== '--ordered');
+const ai = args.indexOf('--allow');
+if (ai >= 0 && !args[ai + 1]) { console.error('--allow needs a file'); process.exit(2); }
+const allowFile = ai >= 0 ? args[ai + 1] : null;
+const files = args.filter((a, i) => i !== bi && i !== bi + 1 && i !== ai && (ai < 0 || i !== ai + 1) && a !== '--ordered');
 const [from, ...to] = files;
 if (!from || to.length === 0) { console.error('usage: --base <rev> <from> <to...>'); process.exit(2); }
 
@@ -73,15 +81,19 @@ const CITE = /\[([A-Za-z0-9-]+) §(\d+)\]/g;
 const area = from.split('/')[0].replace(/\.tsx?$/, '');
 const rulings = (name) => { const p = path.join(ROOT, 'docs/rulings', `${area}-${name}.md`); return fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : null; };
 
-function run({ texts, changed }) {
+function run({ texts, changed, allow }) {
   const r = [];
   const before = codeLines(texts.base);
   const after = [from, ...to].flatMap((f) => codeLines(texts.now[f]));
   const d = lineDiff(before, after);
   const moved = to.reduce((n, f) => n + codeLines(texts.now[f]).length, 0);
-  r.push({ name: 'LINES', pass: d.missing.length === 0 && d.extra.length === 0 && moved > 0,
-    detail: `${before.length} code lines before, ${after.length} after, ${moved} now in ${to.join(', ')}; missing ${d.missing.length}, added ${d.extra.length}`,
-    show: [...d.missing.slice(0, 5).map((l) => `- ${l.slice(0, 140)}`), ...d.extra.slice(0, 5).map((l) => `+ ${l.slice(0, 140)}`)] });
+  // the added lines, less the allow list (a multiset each way): what is left over is unlisted; a listed line left unused is stale
+  const al = lineDiff(allow ?? [], d.extra);   // missing = entries no added line used; extra = added lines not on the list
+  const listed = allow ? ` (the allow list: ${allow.length} entries, ${allow.length - al.missing.length} used, ${al.missing.length} unused; ${al.extra.length} added lines not on it)` : '';
+  r.push({ name: 'LINES', pass: d.missing.length === 0 && al.extra.length === 0 && al.missing.length === 0 && moved > 0,
+    detail: `${before.length} code lines before, ${after.length} after, ${moved} now in ${to.join(', ')}; missing ${d.missing.length}, added ${d.extra.length}${listed}`,
+    show: [...d.missing.slice(0, 5).map((l) => `- ${l.slice(0, 140)}`), ...al.extra.slice(0, 5).map((l) => `+ ${l.slice(0, 140)}`),
+      ...al.missing.slice(0, 5).map((l) => `stale allow entry: ${l.slice(0, 120)}`)] });
   const stray = changed.filter((f) => ![from, ...to].includes(f));
   r.push({ name: 'SCOPE', pass: stray.length === 0, detail: `${changed.length} src files differ from ${base}: ${changed.join(', ')}`, show: stray.map((f) => `stray: ${f}`) });
   const was = exportsOf(texts.base, from, { now: {} }), is = exportsOf(texts.now[from], from, texts);
@@ -105,7 +117,8 @@ function run({ texts, changed }) {
 
 const changed = git('diff', '--name-only', base, '--', SRC).split('\n').filter(Boolean).map((f) => f.slice(SRC.length + 1));
 const untracked = git('ls-files', '--others', '--exclude-standard', '--', SRC).split('\n').filter(Boolean).map((f) => f.slice(SRC.length + 1));
-const real = { texts: { base: atBase(from), now: Object.fromEntries([from, ...to].map((f) => [f, now(f)])) }, changed: [...new Set([...changed, ...untracked])].sort() };
+const allow = allowFile ? fs.readFileSync(path.resolve(ROOT, allowFile), 'utf8').split(/\r?\n/).map((l) => l.replace(/\s+$/, '')).filter((l) => l.trim() !== '') : null;
+const real = { texts: { base: atBase(from), now: Object.fromEntries([from, ...to].map((f) => [f, now(f)])) }, changed: [...new Set([...changed, ...untracked])].sort(), allow };
 
 const results = run(real);
 for (const c of results) {
@@ -132,6 +145,10 @@ if (ordered) plants.push(['two moved lines swapped', 'ORDER', (x) => {
   const idx = ls.map((l, i) => [l, i]).filter(([l]) => l.trim() && !/^(import|export \*)\s/.test(l)).map(([, i]) => i);
   const [a, b] = [idx[0], idx.find((i) => ls[i].trim() !== ls[idx[0]].trim())];
   [ls[a], ls[b]] = [ls[b], ls[a]]; x.texts.now[f] = ls.join('\n'); }]);
+if (allow) {
+  plants.push(['an added line not on the allow list', 'LINES', (x) => { x.texts.now[to[0]] += '\nconst __plantedUnlisted = 1;'; }]);
+  plants.push(['an allow entry no added line uses', 'LINES', (x) => { x.allow.push('const __plantedStale = 1;'); }]);
+}
 const live = plants.map(([what, check, plant]) => { const x = clone(); plant(x); const c = run(x).find((y) => y.name === check); return { what, check, red: !c.pass }; });
 for (const l of live) console.log(`${l.red ? 'PASS' : 'FAIL'}  LIVENESS: ${l.what} turns ${l.check} red`);
 
