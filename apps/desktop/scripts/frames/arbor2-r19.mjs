@@ -325,8 +325,16 @@ const screens = {
     // (instrument fix after the green leg: read at +1.3 s the field was already 'fading' - mid-transition. Now: wait for the flash, land its transitions)
     await typeKeys(app, ' w'); await waitSoft(app, "document.querySelector('.wz-rhizome-field')?.getAttribute('data-flash') === 'true'", { label: 'flash', timeout: 4000 }); await app.evalJs(FINISH);
     const f = await app.evalJs(`(() => { const fld = document.querySelector('.wz-rhizome-field'); if (!fld) return null; const vs = [...fld.querySelectorAll('.arbor2-vine')];
-      return { flash: fld.getAttribute('data-flash'), n: vs.length, fills: [...new Set(vs.map((v) => getComputedStyle(v).fill))].slice(0, 4), past: fld.querySelectorAll('.arbor2-vines-past .arbor2-vine').length }; })()`);
-    const ok = { flashing: !!f && f.flash !== 'false', wholeBrass: !!f && f.n > 0 && f.fills.length === 1 && f.fills[0] === 'rgb(255, 152, 0)' };
+      // (r20: the flash is a brass copy in its own layer - its paths, its opacity - and the field's own vines keep their colour)
+      const cp = document.querySelector('svg.arbor2-vines-flash'); const cv = cp ? [...cp.querySelectorAll('.arbor2-vine')] : [];
+      return { flash: fld.getAttribute('data-flash'), n: vs.length, fills: [...new Set(vs.map((v) => getComputedStyle(v).fill))].slice(0, 4), past: fld.querySelectorAll('.arbor2-vines-past .arbor2-vine').length,
+        copy: cp ? { n: cv.length, fills: [...new Set(cv.map((v) => getComputedStyle(v).fill))].slice(0, 4), op: Number(getComputedStyle(cp).opacity), flash: cp.getAttribute('data-flash') } : null }; })()`);
+    // PARKED 2026-11-04 (SUPERSEDED, the r20 latency box turn 2026-11-05T02:49:21Z-03:03:50Z: typing in the flash measured 77 ms median against 25 at
+    // rest under ?arbor2=1 - every frame re-filtered and repainted the brass-turning vines; r20 draws the flash as a brass copy in its own composited
+    // layer, and the field's own vines keep their colour). Original, verbatim:
+    // const ok = { flashing: !!f && f.flash !== 'false', wholeBrass: !!f && f.n > 0 && f.fills.length === 1 && f.fills[0] === 'rgb(255, 152, 0)' };
+    // SUCCESSOR wholeBrassB: the copy is up, as many vines as the field, every one brass, at full strength once risen; the field's own stay green.
+    const ok = { flashing: !!f && f.flash !== 'false', wholeBrassB: !!f && !!f.copy && f.copy.n === f.n && f.n > 0 && f.copy.fills.length === 1 && f.copy.fills[0] === 'rgb(255, 152, 0)' && f.copy.op === 1 && f.fills.every((c) => c === 'rgb(79, 107, 44)') };
     if (Object.values(ok).some((x) => !x)) fail('R19-FLASH', { ok, f });
     say('r19-flash', { ok, f });
   },

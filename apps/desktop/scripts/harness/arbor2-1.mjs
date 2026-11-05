@@ -119,6 +119,14 @@ const VINES_AT = (fill, op) => `(() => { const f = document.querySelector('.wz-r
   return v.length > 0 && v.every((p) => getComputedStyle(p).fill === ${JSON.stringify(fill)}) && (${op == null ? 'true' : `!!g && Math.abs(Number(getComputedStyle(g).opacity) - ${op}) <= 0.02`}); })()`;
 const settle = (app, expr, label, timeout = 4000) => app.waitFor(expr, { timeout, label }).catch(() => {});
 const VINE_DAY = 'rgb(79, 107, 44)', VINE_NIGHT = 'rgb(107, 81, 57)';
+// r20 (after the latency box turn 2026-11-05T02:49:21Z-03:03:50Z): THE FLASH is a brass copy of the vines in its own layer - svg.arbor2-vines-flash,
+// the field's next sibling, present only while data-flash is 'true' | 'fading' (RhizomeField's flashCopy) - its OPACITY rising (arbor2-flash-up,
+// 1.2 s) and falling (arbor2-flash-down, 2.2 s); the field itself never changes. This reads the overlay: its state, its vines' fills, its opacity
+// and its animations; FINISH_FLASH finishes the overlay's own animations (to read where the rise lands).
+const FLASH20 = `(() => { const o = document.querySelector('.arbor2-vines-flash'); if (!o) return null; const ps = [...o.querySelectorAll('path.arbor2-vine')];
+  return { flash: o.getAttribute('data-flash'), sibling: !!o.previousElementSibling && o.previousElementSibling.classList.contains('wz-rhizome-field'), paths: ps.length,
+    fills: [...new Set(ps.map((p) => getComputedStyle(p).fill))], op: Number(getComputedStyle(o).opacity), anims: o.getAnimations().map((a) => [a.animationName, a.playState]) }; })()`;
+const FINISH_FLASH = "(() => { const o = document.querySelector('.arbor2-vines-flash'); if (o) o.getAnimations().forEach((a) => { try { a.finish(); } catch {} }); return !!o; })()";
 
 // WCAG contrast from hex or rgb() strings.
 const rgb = (s) => { s = String(s).trim(); if (s.startsWith('#')) { const h = s.slice(1); return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)); } return (s.match(/[\d.]+/g) || []).slice(0, 3).map(Number); };
@@ -342,8 +350,19 @@ await withHarness(async (app) => {
   await app.evalJs("document.getAnimations().filter((a) => typeof CSSTransition !== 'undefined' && a instanceof CSSTransition && a.effect && a.effect.target && a.effect.target.closest && a.effect.target.closest('.wz-rhizome-field')).forEach((a) => { try { a.finish(); } catch {} })");
   const h2flash19 = await state19(app);
   const f2f = h2flash19.field;
-  ok('H2c at the goal: the whole rhizome shows in brass (every vine filled rgb(255, 152, 0), the vines\' group at 1), the field visible',
-    !!f2f && f2f.vis !== 'hidden' && f2f.flash === 'true' && f2f.vines > 0 && f2f.fills.length > 0 && f2f.fills.every(nearBrass) && f2f.groupOp === 1, JSON.stringify(f2f));
+  // PARKED 2026-11-05 (SUPERSEDED by r20, the r20 latency box turn 2026-11-05T02:49:21Z-03:03:50Z (rhizome-latency B/B2/C/C2 red under ?arbor2=1: typing
+  // in the flash 77 ms median against 25 at rest): the flash no longer changes the field - its vines keep their room colour (night brown, group .75)
+  // and THE FLASH is a brass copy in its own layer, svg.arbor2-vines-flash, rising and fading on opacity alone). Original, verbatim:
+  // ok('H2c at the goal: the whole rhizome shows in brass (every vine filled rgb(255, 152, 0), the vines\' group at 1), the field visible',
+  //   !!f2f && f2f.vis !== 'hidden' && f2f.flash === 'true' && f2f.vines > 0 && f2f.fills.length > 0 && f2f.fills.every(nearBrass) && f2f.groupOp === 1, JSON.stringify(f2f));
+  // SUCCESSOR H2e: while data-flash is 'true' the overlay svg.arbor2-vines-flash stands right after the field, every vine in it brass, and once its
+  // own rise (arbor2-flash-up) is finished its opacity is 1; the FIELD's vines are still the night brown rgb(107, 81, 57), the field visible.
+  const ov0 = await app.evalJs(FLASH20);
+  await app.evalJs(FINISH_FLASH);
+  const ov1 = await app.evalJs(FLASH20);
+  ok('H2e at the goal: the brass copy (svg.arbor2-vines-flash) stands over the field - every vine in it rgb(255, 152, 0), at opacity 1 once its rise is finished - and the field\'s own vines stay brown',
+    !!ov0 && ov0.flash === 'true' && ov0.sibling && ov0.paths > 0 && ov0.fills.length > 0 && ov0.fills.every(nearBrass) && ov0.anims.some(([n]) => n === 'arbor2-flash-up')
+      && !!ov1 && ov1.op === 1 && !!f2f && f2f.vis !== 'hidden' && f2f.flash === 'true' && f2f.vines > 0 && f2f.fills.join() === VINE_NIGHT, JSON.stringify({ overlay: ov0, finished: ov1 && { op: ov1.op, anims: ov1.anims }, field: f2f }));
   // H5 (Fable, Oct 29: "keep it off the prose column"): at the flash, the field's paint clip has a hole covering the whole page rect
   const h5 = await app.evalJs(`(() => {
     const f = document.querySelector('.wz-rhizome-field'), p = document.querySelector('.mode-page');
@@ -415,6 +434,7 @@ await withHarness(async (app) => {
   await crossGoal();
   const h4 = await app.evalJs("(() => { const f = document.querySelector('.wz-rhizome-field'); const seg = f && f.querySelector('.wz-rhizome-seg'); return f ? { flash: f.dataset.flash, vis: getComputedStyle(f).visibility, anim: getComputedStyle(f).animationName, stroke: seg ? getComputedStyle(seg).stroke : null } : null; })()");
   const h4b = (await state19(app)).field;   // (r19: the vines' fills, at the same moment, for H4's successor)
+  const h4c = await app.evalJs(FLASH20);   // (r20: the brass copy, at the same moment, for H4b's successor)
   await snap(app, 'item1-night-hidden-rhizome-reduced-motion');
   await app.waitFor("document.querySelector('.wz-rhizome-field')?.dataset.flash === 'false'", { label: 'flash over (reduced)', timeout: 6000 }).catch(() => {});
   const log4 = await app.evalJs('window.__fl');
@@ -428,9 +448,18 @@ await withHarness(async (app) => {
   //   JSON.stringify({ h4, log4 }));
   // SUCCESSOR H4b: the same still frame and the same cut, the brass read off the vines' fill (reduced motion runs no transition, so it is
   // brass at once): every vine filled near rgb(255, 152, 0).
-  ok('H4b reduced motion: a still frame - the whole rhizome shows in brass (every vine\'s fill) with no animation, then cuts (true -> false, never fading)',
-    !!h4 && h4.flash === 'true' && h4.vis === 'visible' && h4.anim === 'none' && !!h4b && h4b.vines > 0 && h4b.fills.length > 0 && h4b.fills.every(nearBrass) && Array.isArray(log4) && !log4.some((x) => x[1] === 'fading') && log4.map((x) => x[1]).join('>').includes('true>false'),
-    JSON.stringify({ h4, h4b, log4 }));
+  // PARKED 2026-11-05 (SUPERSEDED by r20, the r20 latency box turn 2026-11-05T02:49:21Z-03:03:50Z (rhizome-latency B/B2/C/C2 red under ?arbor2=1): the
+  // field's vines no longer turn brass at the goal - the brass is the copy in svg.arbor2-vines-flash; under reduced motion it stands at opacity 1
+  // in 'true' with no animation, and goes to 0 at once). Original, verbatim:
+  // ok('H4b reduced motion: a still frame - the whole rhizome shows in brass (every vine\'s fill) with no animation, then cuts (true -> false, never fading)',
+  //   !!h4 && h4.flash === 'true' && h4.vis === 'visible' && h4.anim === 'none' && !!h4b && h4b.vines > 0 && h4b.fills.length > 0 && h4b.fills.every(nearBrass) && Array.isArray(log4) && !log4.some((x) => x[1] === 'fading') && log4.map((x) => x[1]).join('>').includes('true>false'),
+  //   JSON.stringify({ h4, h4b, log4 }));
+  // SUCCESSOR H4c: the same still frame and the same cut, the brass read off the copy: while 'true' the overlay is at opacity 1, every vine in it
+  // brass, and none of its animations is running.
+  ok('H4c reduced motion: a still frame - the brass copy stands at opacity 1 (every vine in it brass) with no running animation, then cuts (true -> false, never fading)',
+    !!h4 && h4.flash === 'true' && h4.vis === 'visible' && h4.anim === 'none' && !!h4c && h4c.flash === 'true' && h4c.op === 1 && h4c.paths > 0 && h4c.fills.length > 0 && h4c.fills.every(nearBrass) && !h4c.anims.some(([, st]) => st === 'running')
+      && Array.isArray(log4) && !log4.some((x) => x[1] === 'fading') && log4.map((x) => x[1]).join('>').includes('true>false'),
+    JSON.stringify({ h4, h4c, log4 }));
 
   // H3: day
   await seedTo(7);
