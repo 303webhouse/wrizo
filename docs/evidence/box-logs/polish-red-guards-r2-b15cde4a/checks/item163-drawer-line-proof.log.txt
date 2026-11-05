@@ -1,0 +1,21 @@
+CLAIM 0' - the three terms are non-empty under every theme, and the REAL reader follows the theme (the successor: deskTerm is no longer one canonical string)
+  ok   cascadePlanCaptionIn is non-empty under all 3 themes (1 distinct reading(s))
+  ok   cascadePlanNoDrawer is non-empty under all 3 themes (3 distinct reading(s))
+  ok   cascadePlanRelationOwn is non-empty under all 3 themes (3 distinct reading(s))
+  ok   under each of the 3 themes the drawer line is that theme's own caption form, the no-drawer line its own form, and neither carries the other's prefix
+lexicon: in="in" | noDrawer="Not in a drawer" | own="its own plan board"
+
+CLAIM 1 — a drawer-naming line takes the CAPTION FORM
+  ok   "in TEST BOARD" — the name is no longer a bare subtitle
+CLAIM 2 — an untitled drawer still gets the form, not a bare fallback
+  ok   "in Untitled"
+CLAIM 3 — NO DRAWER keeps its own form, unprefixed (scope, half one)
+  ok   "Not in a drawer" — "in Not in a drawer" would be nonsense, so the swap must not reach here
+CLAIM 4 — the OWN-plan-board relation is untouched (scope, half two), ASSERTED BY NAME
+  ok   the own row still reads "its own plan board", by name
+CLAIM 5 — ONE READER: no bare-name spelling survives anywhere
+  ok   304 files swept; the only bare-title read is the reader's own
+CLAIM 6 — and all three call sites call it
+  ok   row, caption and board-card all read from one definition
+
+ITEM 163 PROOF: CLEAN — the swap holds, and it is scoped

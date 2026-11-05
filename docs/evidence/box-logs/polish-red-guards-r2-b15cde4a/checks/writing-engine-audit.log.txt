@@ -1,0 +1,25 @@
+id   what a writer does                                         | STORED -> VISIBLE  [classes]  {raw marker still visible}
+B1   select a word, press Bold                                  | "**Plain** card words" -> "Plain card words"  [md-bold]
+I1   select a word, press Italic                                | "*Plain* card words" -> "Plain card words"  [md-italic]
+U1   select a word, press Underline                             | "__Plain__ card words" -> "Plain card words"  [md-underline]
+S1   select a word, press Strikethrough                         | "~~Plain~~ card words" -> "Plain card words"  [md-strike]
+B2   select the bolded word, press Bold AGAIN (a writer expects | "Plain card words" -> "Plain card words"  [none]  // toggle?
+I2   press Italic again on the italic word                      | "Plain card words" -> "Plain card words"  [none]  // toggle?
+U2   press Underline again                                      | "Plain card words" -> "Plain card words"  [none]  // toggle?
+BI   bold a word, then italic it (bold italic)                  | "***Plain*** card words" -> "Plain card words"  [md-bold md-italic]
+BU   bold a word, then underline it                             | "**__Plain__** card words" -> "Plain card words"  [md-bold md-underline]
+BML  select two paragraphs, press Bold                          | "**First paragraph here.**\n**Second paragraph here.**" -> "First paragraph here.\nSecond paragraph here."  [md-bold]  // selection crosses a newline
+IML  select two paragraphs, press Italic                        | "*First paragraph here.*\n*Second paragraph here.*" -> "First paragraph here.\nSecond paragraph here."  [md-italic]  // selection crosses a newline
+L1   caret on a line, press Bullet                              | "- Buy milk" -> "Buy milk"  [md-line md-bullet]
+L2   bullet a second line (a list)                              | "- Buy milk\n- Buy eggs" -> "Buy milk\nBuy eggs"  [md-line md-bullet]
+Q1   caret on a line, press Block quote                         | "> To be or not to be" -> "To be or not to be"  [md-line md-quote]
+A1   caret on a line, press Center                              | ">< A Title" -> "A Title"  [md-line md-align-center]
+A2   caret on a line, press Right align                         | ">> Dated today" -> "Dated today"  [md-line md-align-right]
+A3   centered line, press Left align                            | "A Title" -> "A Title"  [none]
+N1   caret in a paragraph, press Indent                         | "\tA paragraph that will be long enough to wrap onto a second line in the editor." -> "\tA paragraph that will be long enough to wrap onto a second line in the editor."  [none]
+N2   indent twice                                               | "\t\tA paragraph" -> "\t\tA paragraph"  [none]
+N3   outdent an indented paragraph                              | "A paragraph" -> "A paragraph"  [none]
+H1   caret on a line, press Heading                             | "## Chapter one" -> "Chapter one"  [md-h2]
+H2   press Heading again (cycle)                                | "Chapter one" -> "Chapter one"  [none]
+AB   bold a title, then center it                               | ">< **A Title**" -> "A Title"  [md-line md-align-center md-bold]
+BQ   bullet a line, then quote it                               | "> - Buy milk" -> "Buy milk"  [md-line md-quote md-bullet]

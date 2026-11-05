@@ -1,0 +1,11 @@
+FIX polish-red-guards-r2 d4bb2af8 (harness only: seven polish reds) - manifest (Chat 1, Nov 5-6 2026)
+
+Tree = train-guards3 b15cde4a: main 8d56e13e (has 10j) + one --no-ff merge of polish-red-guards-r2 d4bb2af8; main is fast-forwarded to it. Files: seven scripts only (`git diff 8d56e13e b15cde4a --stat` = 7 scripts).
+HISTORY (why r2 went through three tips): 1fb52203 broke logout-flush F3 (its text anchor `process.env.WS_ANON = '1';` matched FIX's new top-of-file default; pair 42097701342 showed 1/39 on both legs; FIX 73940e46 wrote it `??=`). Then 10j (54371360) had moved two classified textContent reads out of ScriptEditor.tsx, so the readers guard failed for a new reason on current main; FIX d4bb2af8 parks the two old entries verbatim and adds successors in components/script/{caret.ts,elements.tsx}.
+PROOF
+- Red-first: sync-chunked-push, sync-incremental-pull, writing-engine-audit, writing-format-proof each fail on main 3bc58305 (3 of 32, 12 of 19, exit 1, exit 1); typing-latency-readers-guard and item163 claim 0 fail on main (measured at 1edfc778, Nov 5; the readers guard again for 10j's move at 8d56e13e).
+- On the train, browserless: logout-flush PASS 39, typing-latency-readers-guard PASS 5 (24 reads classified), item163 CLEAN, sync-chunked-push GREEN 32, sync-incremental-pull GREEN 23, writing-engine-audit exit 0, writing-format-proof 143/143 (checks/).
+- Actions full pair, run 42101331712 (ref = the full sha, 8 shards per leg): default 234/241, parked 234/241; only the usual seven NOVERDICT tools (arrival-signin-capture is the seventh guard: a capture with no verdict line; it now gets past boot, 33 s).
+- Originals parked verbatim: item163 CLAIM 0, the readers-guard entries (useRailLinkDrag, the two ScriptEditor reads), word-diet K10a/b/d and the P5 mutant, arrival-signin-capture's sheet regex, writing-format-proof FILES. sync-incremental-pull and writing-engine-audit are real fixes (red-first above).
+- Clear: Fable, Nov 5/6 ("FIX's guards r2 d4bb2af8 -> merge on its pair (it's after 10j, as required)"). The earlier "box-list run on the merged tree" was superseded by that line.
+Files: pair-default/parked.log.txt, summary.txt; checks/ (seven guard logs on the train).
