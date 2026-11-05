@@ -171,16 +171,32 @@ console.log('CLAIM 6 ⛔ CONSTRAIN FORWARD, NEVER SNAP — the lock is in the RE
   if (failures === before) ok('the lock applies where the writer changes shape, and nowhere else');
 }
 
-console.log('CLAIM 7 — the superseded comment is MARKED, not rewritten');
+// PARKED (#13 step 9, Nov 4) - CLAIM 7 as it stood, verbatim:
+// console.log('CLAIM 7 — the superseded comment is MARKED, not rewritten');
+// {
+//   // Park discipline, applied to prose: AB4 S4 said a page-pin has "no aspect
+//   // lock". That was true when written and is now half-false. The sentence stays,
+//   // with the change recorded beside it.
+//   const hasOriginal = /a page-pin card resizes freeform on both axes \(no aspect lock/.test(BOARD_RAW);
+//   const hasMark = /SUPERSEDED IN PART BY ITEM 138/.test(BOARD_RAW);
+//   if (!hasOriginal) fail('AB4 S4\'s original sentence was rewritten instead of marked');
+//   else if (!hasMark) fail('AB4 S4\'s sentence is now false and carries no supersession mark');
+//   else ok('AB4 S4 kept verbatim, with item 138 marked beside it');
+// }
+// SUPERSEDED: Fable's comment ruling (Oct 29; brief docs/cleanup/deploy-13-brief.md, step 9) moves ruling histories out of the
+// source, VERBATIM, to docs/rulings/. AB4 S4's sentence and its item-138 mark did not go away: they moved together, as one block,
+// to docs/rulings/components-BoardEditor.md, and the source keeps a why-line citing that entry. The discipline this claim guarded
+// (kept verbatim, marked, never rewritten) is the ruling's own; only the place the record lives has changed.
+// Successor, CLAIM 7 (rulings): the same two facts, read where they now live, and the citation that points there from the source.
+console.log('CLAIM 7 (rulings) — the superseded comment is MARKED, not rewritten, in docs/rulings/');
 {
-  // Park discipline, applied to prose: AB4 S4 said a page-pin has "no aspect
-  // lock". That was true when written and is now half-false. The sentence stays,
-  // with the change recorded beside it.
-  const hasOriginal = /a page-pin card resizes freeform on both axes \(no aspect lock/.test(BOARD_RAW);
-  const hasMark = /SUPERSEDED IN PART BY ITEM 138/.test(BOARD_RAW);
-  if (!hasOriginal) fail('AB4 S4\'s original sentence was rewritten instead of marked');
-  else if (!hasMark) fail('AB4 S4\'s sentence is now false and carries no supersession mark');
-  else ok('AB4 S4 kept verbatim, with item 138 marked beside it');
+  const RULINGS = read('docs/rulings/components-BoardEditor.md');
+  const entry = RULINGS.split(/\n(?=## )/).find((x) => /a page-pin card resizes freeform on both axes \(no aspect lock/.test(x)) || '';
+  const id = (entry.match(/^## (BoardEditor §\d+)$/m) || [])[1];
+  if (!entry) fail('AB4 S4\'s original sentence is in no docs/rulings entry: it was rewritten or lost, not moved');
+  else if (!/SUPERSEDED IN PART BY ITEM 138/.test(entry)) fail('AB4 S4\'s rulings entry carries no item-138 supersession mark');
+  else if (!id || !BOARD_RAW.includes(`[${id}]`)) fail(`AB4 S4's rulings entry (${id || 'no id'}) is cited by no comment in BoardEditor.tsx`);
+  else ok(`AB4 S4 kept verbatim in docs/rulings (${id}), with item 138 marked beside it, and cited from the source`);
 }
 
 console.log('\nSTATED GAP — owed to the box run, not provable here:');
