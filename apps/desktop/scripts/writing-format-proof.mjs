@@ -17,7 +17,9 @@ import { createRequire } from 'node:module';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const SRC = join(here, '..', 'src');
-const FILES = ['draftFormat.ts', 'markRuns.ts', 'draftDecoration.ts', 'tabChord.ts', 'entryText.ts', 'hiddenMarks.ts'];
+// SUPERSEDED (Nov 2026, polish turn 9) - draftDecoration.ts now imports ./fontRoster (item 207) and that imports ./fontSize, so the scratch copy needs both or the bundle cannot resolve them. Kept verbatim:
+// const FILES = ['draftFormat.ts', 'markRuns.ts', 'draftDecoration.ts', 'tabChord.ts', 'entryText.ts', 'hiddenMarks.ts'];
+const FILES = ['draftFormat.ts', 'markRuns.ts', 'draftDecoration.ts', 'tabChord.ts', 'entryText.ts', 'hiddenMarks.ts', 'fontRoster.ts', 'fontSize.ts'];
 const requireDesktop = createRequire(join(here, '..', 'package.json'));
 const esbuild = createRequire(requireDesktop.resolve('vite'))('esbuild');
 const tmp = join(tmpdir(), 'wrizo-format-proof');
@@ -38,7 +40,8 @@ async function load(tag, mutant) {
   }
   writeFileSync(join(dir, 'entry.ts'), "export * from './draftFormat'; export { readMarks } from './markRuns'; export { decorateMarkdownForCard } from './draftDecoration'; export { readLead, stripLine } from './markRuns'; export { createTabChord, CHORD_HOLD_MS } from './tabChord'; export { firstLine, firstPlainLine, plainLines, boardName, substantialLines } from './entryText'; export { snapCaret, snapCaretAfterClick, wordBackspaceAt, wordDeleteAt } from './hiddenMarks';");
   const outfile = join(dir, 'out.mjs');
-  await esbuild.build({ entryPoints: [join(dir, 'entry.ts')], bundle: true, platform: 'node', format: 'esm', outfile, logLevel: 'silent' });
+  // the font roster loads its CSS by dynamic import when a face is chosen; the proof never chooses one, so those imports stay external (unresolved from the scratch dir, and never run)
+  await esbuild.build({ entryPoints: [join(dir, 'entry.ts')], bundle: true, platform: 'node', format: 'esm', outfile, logLevel: 'silent', external: ['@fontsource/*', '@fontsource-variable/*'] });
   return import(pathToFileURL(outfile).href + `?t=${Date.now()}`);
 }
 
