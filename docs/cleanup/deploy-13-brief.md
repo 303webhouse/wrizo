@@ -153,9 +153,9 @@ The **pen-ink duplicate** (`ModeStage` `PEN_INKS` vs `store/ink.ts`) is **not** 
 #### Step 10g in full (INK's; Fable, Nov 4)
 
 Fable gave 10g to INK, to run **in parallel** with POLISH's 10a–10f. The files do not overlap: 10a–10f never touch `BoardEditor.tsx`.
-Line numbers below are measured at `c9400fda` (`c13-9-ts-comments-board-r2`, step 9's BoardEditor branch cut again from main `7f1c6a84`, which carries TOOLS #14-r2's size box; it replaces `c13-9-ts-comments-board`).
+Line numbers below are measured at `305bed60` (`c13-9-ts-comments-board-r3`, step 9's BoardEditor branch cut again from main `e2898deb`, which carries TOOLS #14-r2's size box; it replaces `c13-9-ts-comments-board` and `-r2`, and its `BoardEditor.tsx` is byte-identical to `-r2`'s).
 
-- **Start:** once `c13-9-ts-comments-board-r2` has merged. That is step 9's only work on `BoardEditor.tsx`, and no later #13 step touches the file.
+- **Start:** once `c13-9-ts-comments-board-r3` has merged. That is step 9's only work on `BoardEditor.tsx`, and no later #13 step touches the file.
   Branch `c13-10g-board` off `origin/main` at that point, and pin the SHA in the report.
 - **The file today:** `components/BoardEditor.tsx`, 3,328 lines.
   - Constants and pure helpers: lines 106–158 and 182 (`naturalPx`, `groupMembers`, `maxBottom`, `boxesOverlap`, `notecardExcerpt`).
