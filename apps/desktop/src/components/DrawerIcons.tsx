@@ -1,6 +1,4 @@
-// PHASE 1 - the drawer's inline icons ("icons over words" for TOOLS and ACTIONS; the tab words stay words, per Nick). Drawn, not typed: an
-// emoji or a font glyph would wear whatever the OS decided today. 16x16, currentColor, stroke-only, so they take the control's own rest and
-// chosen colours. Decorative: the button carries the name (aria-label + title).
+// drawn icons, not glyphs (an emoji or font glyph wears whatever the OS chooses): 16x16, currentColor, stroke-only; decorative, the button carries the name [DrawerIcons §1]
 const base = { viewBox: '0 0 16 16', width: 16, height: 16, fill: 'none', stroke: 'currentColor', strokeWidth: 1.2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true } as const;
 
 export const TagsIcon = () => (

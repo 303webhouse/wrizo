@@ -24,10 +24,7 @@ export function PortToBoardSheet({ sourceIds, onClose }: { sourceIds: string[]; 
     return (
       <div className="board-sheet" role="dialog" aria-label={`Port to a ${lex('board')}`}>
         <div className="board-sheet-inner">
-          {/* ITEM word-diet (Fable, review fix, Oct 13) — "this Pages" is
-              banned, and never a number directly before "Pages"; "these
-              Pages" (capital, not lowercased) replaces both the ternary
-              and the count. */}
+          {/* "these Pages": capitalized, with no number before it [PortToBoardSheet §1] */}
           <div className="board-sheet-title">Port these {lexMany('page')} to a {lex('board')}</div>
           <p style={{ color: 'var(--text-mid)', marginBottom: 16 }}>This selection has ink.</p>
           <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>

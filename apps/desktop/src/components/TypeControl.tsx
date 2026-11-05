@@ -1,23 +1,4 @@
-// ITEM 207 (207a step 4) — THE TYPE CONTROL: face and size. ONE component, in the smallest form that does the act.
-//
-// HIS LAW (Nick, 2026-09-24): "the interface should be as minimal as possible (same goes for all strip menus)."
-// Made concrete here, and assertable (item207.mjs counts these): a strip menu carries the fewest controls that do the
-// act, each with the fewest marks; no captions, no helper text, no second row - a control's name lives in its
-// aria-label. So:
-//   form 'small'  (Free Write's strip, a card's strip)   ONE face button + `-` [ number ] `+`.
-//   form 'full'   (Draft and Revise's drawer)            the face button + `-` [ number ] `+`, the number typeable.
-// TOOLS #14 (Fable, Nov 2): the number now sits between `-` and `+` wherever they appear, in every form and skin. It was 'full' only ("NO number" in the small form); that
-// check is parked verbatim in item207.mjs with its successor.
-// No "Add a font..." row exists in this component: it arrives with Route A (207b), and an offered door with nothing
-// behind it is a mute grey. Free Write never gets it either (Nick's Q2).
-//
-// The face button shows the CURRENT face's name in its own face. It opens the roster as a listbox, each row set in its
-// own face, the current one marked olive (where you are). CHOOSING IS THE PREVIEW (RV4: live on the paper, no Apply,
-// no hover preview); reverting is choosing the previous one. `+`/`-` step the ladder (store/fontSize.ts) and are INERT
-// at the ends - aria-disabled, never removed (a limit, not an unbuilt capability). The number commits on Enter or blur;
-// anything that is not a number is refused and the previous value is kept.
-//
-// Buttons preventDefault on mousedown so pressing one never steals the caret from a writing surface.
+// the type control: the fewest controls that do the act, the name in the aria-label; every form is a face button and - [ number ] +, the number typeable; choosing is the preview; - + are inert at the ends, never removed; mousedown preventDefault keeps the caret [TypeControl §1]
 import { useEffect, useRef, useState } from 'react';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { useTheme } from '../store/theme';
@@ -32,12 +13,10 @@ export interface TypeControlProps {
   face: StoredFace | undefined;
   /** The size in points in effect (11 when never chosen). */
   size: number;
-  /** A roster face, or `undefined` for "Default" (TOOLS #10 item 10): the host CLEARS its stored face - no stored face = the theme's default, which is the rule that already existed. */
+  // a roster face, or `undefined` for Default: the host clears its stored face (no stored face = the theme's default) [TypeControl §2]
   onPickFace: (face: StoredFace | undefined) => void;
   onSize: (points: number) => void;
-  /** FONT-SPAN (Nick approved the font-choices mockup, cursor/font-choices @ 6cc5f529): where words can be highlighted and given their
-   *  own face (Draft, a card), the Typeface section carries the two scopes - "Selection" and "Whole document" ("Whole card") - over the
-   *  roster shown as a list, the current face in brass. Absent (Free Write, Revise): today's face button. */
+  // where words can be highlighted (Draft, a card) the Typeface section carries the two scopes over the roster as a list; absent (Free Write, Revise): the face button [TypeControl §3]
   scope?: TypeScope;
 }
 
@@ -50,8 +29,7 @@ export interface TypeScope {
   wholeLabel: string;
   /** Give the highlighted words a face: a slug, or null for the surface's own face (their spans removed). One undo step. */
   onPickSelection: (slug: string | null) => void;
-  /** POLISH #10 item 4 (Nick ruled A, Oct 25): the highlight's size (N, null for the surface's own, 'mixed'), and the road that sizes ONLY the
-   *  highlighted words - one undo step. With these, the size's `-` [ N ] `+` follow the scope exactly as the face list does. */
+  // the highlight's size and the road that sizes only the highlighted words (one undo step), so - [N] + follow the scope as the face list does [TypeControl §4]
   size?: number | null | 'mixed';
   onSizeSelection?: (points: number) => void;
   /** TOOLS #14-r2: the number box takes the keyboard focus, and focus in a text field moves the page's selection into the field - so the highlight is HELD while the box has focus: `holdSelection` records the
@@ -65,7 +43,7 @@ const DEFAULT_KEY = '\u0000default';   // the "Default (<face>)" row's key: not 
 /** The face that ACTUALLY renders when nothing is chosen: the first family of the resolved `--font-prose` (voice dial and
  *  theme already applied), never the dial's own label - under the Chakra Petch voice this says Chakra Petch. */
 function everydayFaceName(theme?: string, voice?: string): string {
-  // TOOLS #10 item 10: the theme's own default first (a table that is checked against the CSS tokens) - "Default (<face>)" must always NAME the face; the DOM read is the fallback for a theme the table does not know.
+  // the theme's own default first (a table checked against the CSS tokens), so "Default (<face>)" always names the face; the DOM read is the fallback [TypeControl §5]
   const themed = themeDefaultFaceName(theme, voice);
   if (themed) return themed;
   try { return faceNameFromStack(getComputedStyle(document.documentElement).getPropertyValue('--font-prose')) ?? DEFAULT_FACE_NAME; } catch { return DEFAULT_FACE_NAME; }
@@ -74,7 +52,7 @@ function everydayFaceName(theme?: string, voice?: string): string {
 export function TypeControl({ form, face, size, onPickFace, onSize, scope }: TypeControlProps) {
   const { t } = useDeskLexicon();
   const [open, setOpen] = useState(false);
-  // TOOLS #10 item 9: in the scoped form (Draft's drawer, a card's dock) the face list is COLLAPSED until the face button is pressed. The list stays mounted (hidden), so it is the same list either way.
+  // in the scoped form the face list is collapsed until the face button is pressed; it stays mounted (hidden), so it is the same list either way [TypeControl §6]
   const [listOpen, setListOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const theme = useTheme();
@@ -112,9 +90,7 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
   const [held, setHeld] = useState<{ size: number | null | 'mixed' | undefined } | null>(null);
   const hasNow = !!scope?.has || held !== null;
   const whole = !scope || !hasNow || wholeByHand;
-  // the face in brass: the surface's own face for a whole pick; the highlight's face for a selection (none when it is mixed)
-  // TOOLS #10 item 10: an UNCHOSEN surface marks the "Default (<face>)" row, never a roster row - the writer has not picked that face, the theme has. `brassKey` is the row in force: DEFAULT_KEY, a roster face's
-  // name, or null (a mixed highlight); `brassName` is only the face button's label (the default's real name when nothing is chosen).
+  // the face in brass: an unchosen surface marks the "Default (<face>)" row, never a roster row (the theme picked it, not the writer) [TypeControl §7]
   const ownKey = face ? face.name : DEFAULT_KEY;
   const brassKey: string | null = !scope || whole ? ownKey
     : scope.face === 'mixed' ? null
@@ -136,8 +112,7 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
     if (!scope || whole) { onPickFace(storedFaceFor(f)); return; }
     scope.onPickSelection(f.name === currentName ? null : fontSlug(f.name));
   };
-  // TOOLS #10 item 11 - the writer's own installed fonts. The device-local list (store/installedFonts.ts) follows the roster in BOTH lists; the face this surface already wears from another device joins it, so it can be seen and
-  // re-picked. A face not installed HERE shows a quiet note and renders as the theme's default (faceStack). "Add a font..." exists only in the scoped form (Draft, a card) - Free Write and Revise never get it (Nick's Q2).
+  // the writer's installed fonts (device-local) follow the roster in both lists; a face not installed here shows a quiet note and renders as the default; "Add a font..." only in the scoped form [TypeControl §8]
   const installed = useInstalledFonts();
   const deviceNames = [...installed, ...(face?.source === 'device' && !installed.some((n) => n.toLowerCase() === face.name.toLowerCase()) ? [face.name] : [])];
   const [adding, setAdding] = useState(false);
@@ -174,8 +149,7 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
   ) : (
     <li key="__add" role="option" aria-selected={false} className="wz-type-add" data-add-font="true" onClick={() => setAdding(true)}>{t('typeAddFont')}</li>
   ));
-  // POLISH #10 item 4: under the Selection scope the size is the HIGHLIGHT's (its own, or the surface's where it has none) and a step sizes only the
-  // highlighted words; under Whole document (or with nothing highlighted) it is the surface's, as before
+  // under Selection the size is the highlight's and a step sizes only the highlighted words; under Whole document it is the surface's [TypeControl §9]
   const heldSize = held ? held.size : scope?.size;
   const selSize = scope && !whole && scope.onSizeSelection ? (typeof heldSize === 'number' ? heldSize : size) : null;
   const shownSize = selSize ?? size;

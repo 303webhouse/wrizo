@@ -3,12 +3,7 @@ import { createPortal } from 'react-dom';
 import { cancelDestructiveConfirm, submitDestructiveConfirm, usePendingDestructive } from '../store/destructiveGate';
 import { useDeskLexicon } from '../store/deskLexicon';
 
-// DELETE FOR GOOD (Fable's change 1, Oct 18) - the in-app typed confirmation that opens the account-wide destructive paths (store/destructiveGate.ts)
-// for this page session. Mounted once (App.tsx), portalled to <body> like the "Send to Trash?" dialog, in its look.
-//
-// IT UNLOCKS ONLY ON THE WRITER'S OWN INPUT. A page script can fill the field and click the button, but those events carry isTrusted: false. So:
-// the field's value counts as typed only while every input event since it was last empty (or wholly replaced by a trusted keystroke) was trusted,
-// and the press must be trusted too. submitDestructiveConfirm refuses anything less.
+// the typed confirmation that opens the destructive paths: it unlocks only on the writer's own trusted input (every input event since empty, and the press, must be isTrusted) [DestructiveConfirm §1]
 export function DestructiveConfirm() {
   const req = usePendingDestructive();
   const { t } = useDeskLexicon();

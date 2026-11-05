@@ -4,8 +4,7 @@ import { subscribePurgedElsewhere } from '../store/persistence';
 import { useActionToast } from './ActionToast';
 import { useDeskLexicon } from '../store/deskLexicon';
 
-// DELETE FOR GOOD - Q3 (Fable, Oct 18: "yes, one quiet line"). A page or board open here that was deleted for good on another device: the app
-// leaves it for the Desk and says so once, in the quiet action-toast line. Mounted once (App.tsx), inside the router; renders only the line.
+// a page or board deleted for good on another device: the app leaves it for the Desk and says so once, in the quiet toast line [PurgedElsewhereNotice §1]
 export function PurgedElsewhereNotice() {
   const location = useLocation();
   const navigate = useNavigate();

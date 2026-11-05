@@ -19,7 +19,7 @@ export function PlaceBlock({ active, onToggle, drawerIcon, journalIcon }: { acti
   // FLUX V2: the top drawer, while it still carries its born-with name, is shown by the theme's word for it (Flux: Root; Arbor: the same name). Render-time only - the stored name is never touched.
   const drawer = isJournal || place.id === UNSORTED ? null : getDrawer(place.id);
   const name = isJournal ? t('drawerPlaceJournal') : place.id === UNSORTED ? t('switcherUnsorted') : drawer ? (isDefaultRoot(drawer) ? t('placeRootName') : drawer.name) || t('drawerPlaceDrawers') : t('drawerPlaceDrawers');
-  // FLUX V2: a real rack's full path reads "RACK ▸ <name>". POLISH #10 item 14 (Nick, Oct 28): the narrow rail shows ONLY the place name on ONE line with an ellipsis; the full path is the button's title (hover/focus) and stays in the breadcrumb; the aria-label keeps the plain name.
+  // a real rack's full path reads "RACK ▸ <name>"; the narrow rail shows only the place name on one line (ellipsis), the full path in the title and the breadcrumb [PlaceBlock §1]
   const fullPath = theme === 'flux' && drawer ? rackReadout(name) : name;
   return (
     <div className="wz-strip-section wz-place-section">

@@ -2,8 +2,8 @@ import { useDeskLexicon } from '../store/deskLexicon';
 import { useBoardSnapshot, getBoardActions } from '../store/boardSelection';
 import { getJournalEntry, getUnbornEntry, removePageLink, subscribe } from '../store/persistence';
 import { requestDelete } from '../store/deleteGate';
-import { withoutFontMarks } from '../store/markRuns';   // POLISH #10 item 4
-import { setLinkDock } from '../store/linkDock';   // POLISH #10 item 24
+import { withoutFontMarks } from '../store/markRuns';
+import { setLinkDock } from '../store/linkDock';
 import { graftsOf, hidePlanCard, pairedPageRow, planGroupOf, restorePageLink, unhidePlanCard, type GraftRow, type GraftSubject } from '../store/grafts';
 import { searchSteps } from '../store/writePlace';
 import { liveBoxes } from '../store/boxTombstones';
@@ -12,21 +12,7 @@ import { useUnborn } from './UnbornSurface';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
-// The right drawer's second pane - the GRAFTS tab (Flux: LINKS). Its name is the theme's word, read from the lexicon, never written here.
-//
-// CONNECTOR-B (Nick's approved connector mockup v6) built the list: a card's connections - same-board connection boxes and page_links records - each
-// with an X that asks first ("Remove graft?": the one dialog, without the "Don't ask me again" tick - an unlink keeps its own confirm). That stays.
-//
-// BIG PROJECTS STEP 3 ("connected to this page"; Nick's approved graft-doors mockup, cursor/graft-doors-mockup @ c4f34eb0; Fable's build notes):
-//   - THE SUBJECT: the open PAGE; on a board, the SELECTED CARD (or the board itself while no card is selected). Read here, from the route and the
-//     board's published snapshot, so the Tutor's drawer that mounts this pane is untouched.
-//   - "+ Graft..." on top, on pages AND boards: the picker (components/GraftPicker.tsx).
-//   - On a board, its PAIRED PAGE first: a plain row, no X (the plan relation, not a graft).
-//   - "Connected to <subject>", then on a page its PLAN BOARD as ONE folded row, "Plan board · N cards" - the first group; opened, its cards, each
-//     with an X on hover that HIDES the card from this page (pageSettings.hiddenPlanCards; the card stays on its board), with an Undo line.
-//   - Groups Cards, Sources, Boards, Pages, each row with an X (connector-b's confirm, then an Undo line); then Shared tags (a tag mark, no X); a
-//     faint place label on anything from another place.
-//   - NO placeholder text: with nothing grafted, the pane is the "+ Graft..." control alone.
+// the Grafts pane: the subject is the open page, or on a board its selected card (or the board); + Graft first, then the paired page, the plan board folded, and the graft groups; with nothing grafted it is the + Graft control alone [ConnectionsDrawerPanel §3]
 type Undo = { line: string; run: () => void } | null;
 const titleOf = (text: string | undefined): string => (withoutFontMarks(text ?? '').trim().split('\n')[0] ?? '').trim().slice(0, 60) || 'Untitled';
 
@@ -43,11 +29,7 @@ export function ConnectionsDrawerPanel() {
   const addRef = useRef<HTMLButtonElement | null>(null);
   const placeRef = useRef<HTMLButtonElement | null>(null);
 
-  // the subject: a board (its selected card, or the board) when a board is open; otherwise the page on the address.
-  // A BRAND-NEW page (/page/new) has no row yet. RULING (Fable, Oct 21): a pick in "+ Graft..." CREATES it - through the unborn surface's own
-  // birth (birthWith, the act a first word performs: the row, any pin its door asked for, the address) - and typing still follows
-  // born-on-first-word. Birth swaps the address with replaceState, which the router never hears, so the route still reads /page/new after
-  // it: the pane remembers the id it saw unborn and keeps following that page once it has a row.
+  // on a brand-new page a pick in + Graft births the page (birthWith); birth swaps the address with replaceState, which the router never hears, so the pane keeps following the id it saw unborn [ConnectionsDrawerPanel §4]
   const pageMatch = /^\/page\/([^/?#]+)/.exec(location.pathname);
   const isNew = !snap && !!pageMatch && pageMatch[1] === 'new';
   const lastUnbornRef = useRef<string | null>(null);
@@ -163,7 +145,7 @@ export function ConnectionsDrawerPanel() {
                 <span className="wz-links-label wz-graft-title" title={kindWord(kindOf(r))}>{r.title}</span>
                 {r.placeDiffers && r.place && <span className="wz-graft-place">{r.place}</span>}
                 {page && kindOf(r) !== 'board' && (
-                  // POLISH #10 item 24: dock this linked card or page beside the page (this device; one at a time) - the Tutor's own dock carries it
+                  // dock this linked card or page beside the page (this device, one at a time) - the Tutor's dock carries it [ConnectionsDrawerPanel §5]
                   <button type="button" className="wz-graft-dock" aria-label={`${t('graftDockAria')}: ${r.title}`}
                     onClick={() => { setLinkDock(page.id, { entryId: r.entryId, ...(r.boxId ? { boxId: r.boxId } : {}) }); document.dispatchEvent(new Event('wz-link-dock-open')); }}>{t('graftDock')}</button>
                 )}

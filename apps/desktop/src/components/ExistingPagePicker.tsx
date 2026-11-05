@@ -15,7 +15,7 @@ import { firstLine } from '../store/entryText';
 function itemTitle(e: JournalEntry): string {
   const hasInk = (e.strokes?.length ?? 0) > 0;
   if (!e.text.trim()) return hasInk ? 'A sketch' : 'Untitled';
-  return firstLine(e.text).slice(0, 60);   // item 210: plain text, through the one reader
+  return firstLine(e.text).slice(0, 60);   // plain text, through the one reader [ExistingPagePicker §1]
 }
 
 export function ExistingPagePicker({ boardId, onClose }: { boardId: string; onClose: () => void }) {
@@ -36,9 +36,7 @@ export function ExistingPagePicker({ boardId, onClose }: { boardId: string; onCl
     onClose();
   };
 
-  // ITEM word-diet (Fable, review fix, Oct 13) — "an existing Pages" is
-  // banned; drop the article (name, don't narrate). The product noun is
-  // capitalized (not lowercased), like Journal/Shelf/Drawer.
+  // "existing Pages", no article; the product noun is capitalized [ExistingPagePicker §2]
   return (
     <div className="board-sheet" role="dialog" aria-label={`Add existing ${lex('page')}`}>
       <div className="board-sheet-inner">
