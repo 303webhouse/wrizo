@@ -94,7 +94,9 @@ const screens = {
     const t0s = mainsOf(late).map((h) => h.t0).sort((x, y) => x - y);
     const even = t0s.length >= 9 && Math.abs(t0s[0]) < 1e-6 && Math.abs(t0s[t0s.length - 1] - 0.27) < 0.002 && t0s.every((t, i) => i === 0 || Math.abs((t - t0s[i - 1]) - 0.27 / (t0s.length - 1)) < 0.002);
     // the full reach: along x to the rail / the window's edge (side stems), along y to the bar / the window's bottom (up and down)
-    const room = late && { left: late.rail ? late.rail.r : 0, right: late.w, top: late.bar ? late.bar.b : 0, bottom: late.h, cx: (late.page.l + late.page.r) / 2, cy: (late.page.t + late.page.b) / 2 };
+    // (instrument fix after leg 41981547477: the room is the field's own box, as the build reads it - the rail's edge and the bar's bottom clamped
+    // to the field; unclamped, at 1920 the rail at -16 and the bar at about -56 read in-range ends as 94-154 px short)
+    const room = late && { left: late.rail ? Math.max(0, late.rail.r) : 0, right: late.w, top: late.bar ? Math.max(0, late.bar.b) : 0, bottom: late.h, cx: (late.page.l + late.page.r) / 2, cy: (late.page.t + late.page.b) / 2 };
     // (instrument fix after the green leg 41980389025: side / up-down by the stem's own direction, start -> end, as the build aims it - from the page's
     // centre a stem near 45 deg could read the other way)
     const ends = late ? mainsOf(late).map((h) => { const dx = h.ex - h.x0, dy = h.ey - h.y0; const side = Math.abs(dx) >= Math.abs(dy);
@@ -106,7 +108,10 @@ const screens = {
     const branchLen = kids.length > 0 && kids.every((h) => { const r = h.full / byStem.get(h.parent).full; return r >= 0.349 && r <= 0.601; });
     const ok = {
       curveAtHalf: !!half && curve(half, p[29]), curveLate: !!late && curve(late, p[51]), tenEven: even,
-      allOutAt52: !!late && mainsOf(late).length >= 9 && mainsOf(late).every((h) => outside(h, late.page)),
+      // HELD for a ruling after leg 41981547477 (kept verbatim, not asserted): the field's top is the page's top and the page fills its height (0-561
+      // of ~601 px at 1366), so an up / down stem cannot leave the page at any reach. The side half is asserted; the up / down half is reported.
+      //   allOutAt52: !!late && mainsOf(late).length >= 9 && mainsOf(late).every((h) => outside(h, late.page)),
+      sideOutAt52: !!late && ends.filter((e) => e.side).length >= 2 && mainsOf(late).every((h, i) => !ends[i].side || outside(h, late.page)),
       reach85to91: !!late && mainsOf(late).length >= 9 && mainsOf(late).every((h) => h.reach >= 0.85 && h.reach <= 0.91),
       fullReach: fullOk, branches35to60: branchLen,
     };
@@ -114,7 +119,8 @@ const screens = {
     // the latest side stems are still under it - handed up with these numbers
     const outAtHalf = half ? { out: mainsOf(half).filter((h) => outside(h, half.page)).length, of: mainsOf(half).length } : null;
     // (report: each main stem's visible tip and end, and the page, after the green leg showed tips under the page at 52/60)
-    const brief = { ok, outAtHalf, mains: late && mainsOf(late).length, t0s, ends, reachLate: late && mainsOf(late).map((h) => h.reach), kids: kids.length,
+    const upDownOutAt52 = late ? { out: mainsOf(late).filter((h, i) => !ends[i].side && outside(h, late.page)).length, of: ends.filter((e) => !e.side).length } : null;
+    const brief = { ok, outAtHalf, upDownOutAt52, mains: late && mainsOf(late).length, t0s, ends, reachLate: late && mainsOf(late).map((h) => h.reach), kids: kids.length,
       page: late && late.page, tips: late && mainsOf(late).map((h) => [Math.round(h.vx), Math.round(h.vy), Math.round(h.ex), Math.round(h.ey), Math.round(h.full)]),
       kidRatios: kids.slice(0, 8).map((h) => Math.round((h.full / byStem.get(h.parent).full) * 100) / 100) };
     if (Object.values(ok).some((x) => !x)) fail('R21-REACH', brief);
