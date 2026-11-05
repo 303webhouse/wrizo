@@ -158,7 +158,8 @@ const screens = {
     if (Object.values(ok).some((x) => !x)) fail('R21-EDGE-FADE', { ok, r });
     say('r21-edge-fade', { ok, h: r.h, nearEdge: r.nearEdge });
   },
-  'r21-pic-edge-fade': async (app) => { await growTo(app, 'arbor-r21-edge-pic', 51); },
+  'r21-pic-edge-fade': async (app) => { await growTo(app, 'arbor-r21-edge-pic', 51); await hideBar(app); },
+  'r21-pic-reach-30': async (app) => { await growTo(app, 'arbor-r21-p30', 29); await hideBar(app); },
 
   // ── the flash: every stem at ONE strength, in ONE pulse (Nick) ───────────────────────────────────────────────────────────────────────────
   'r21-flash-uniform': async (app) => {
