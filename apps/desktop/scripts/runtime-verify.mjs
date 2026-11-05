@@ -903,6 +903,10 @@ export async function withHarness(scenario, opts = {}) {
     await conn.ready;
     await conn.cdp('Page.enable');
     await conn.cdp('Runtime.enable');
+    // BUG-LIST #45 - the page helpers (__click, __setText, __diag) belong on EVERY document this page ever gets. They used to be injected once, by an evaluate that the launch swallows on failure, with no wait for the first
+    // document: when the initial navigation committed after it, the helpers went to the document that was replaced, and the scenario's first `app.click` threw `__click is not defined` (b2-1's parked leg, intermittently).
+    // A full navigation later (goto to a different URL) lost them the same way. Registered for new documents here; the explicit injections below and in reload() stay, and are idempotent.
+    await conn.cdp('Page.addScriptToEvaluateOnNewDocument', { source: PAGE_HELPERS });
     const app = makeApp(base, conn.cdp, conn.waitEvent, conn.tap);
     // TYPING-LATENCY - THE SHADOW-VS-DOM CHECK UNDER EVERY EDITING HARNESS (Fable, 2026-10-13). The page's row editor
     // (src/store/lineRows.ts) keeps a shadow of its text; in harness mode every render compares it with the DOM, row by row, and a
