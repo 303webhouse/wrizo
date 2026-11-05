@@ -269,7 +269,18 @@ export function RhizomeField({ text, seedKey, paperRef }: {
   const vines = lifeOn && !!m;
   const clipD = m ? groundClipPath(w, h, m.holes) : '';
 
+  // ARBOR v2 mockup r20: the flash as a brass copy of the vines in its own layer (styles/arbor-v2.css: opacity only, composited) - the field
+  // itself never changes while it flashes, so typing in the flash costs what typing at rest does
+  const flashState = flashLap != null ? (flashFading ? 'fading' : 'true') : null;
+  const flashCopy = vines && flashState && m ? (
+    <svg className="arbor2-vines-flash" aria-hidden="true" focusable="false" data-flash={flashState} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none"
+      style={{ clipPath: clipD ? `path(evenodd, "${clipD}")` : undefined }}>
+      <g mask="url(#wz-rhizome-mask)"><ArborVines plan={plan} past={pastPlans} geo={m.geo} k={k} fromTip={shownVisit > 0} /></g>
+    </svg>
+  ) : null;
+
   return (
+    <>
     <svg
       ref={svgRef}
       className="wz-rhizome-field"
@@ -330,5 +341,7 @@ export function RhizomeField({ text, seedKey, paperRef }: {
         </>)}
       </g>
     </svg>
+    {flashCopy}
+    </>
   );
 }
