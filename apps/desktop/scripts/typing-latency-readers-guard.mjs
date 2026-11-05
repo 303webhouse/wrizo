@@ -35,8 +35,12 @@ const CLASSIFIED = [
     'the card pop-up\'s input, and (typed-literal) its composition end - the same read, now `let` so the commit can be escaped'],
   ['components/BoardEditor.tsx', 'const after = readEditorPlainText(el.innerText, getCaretOffset(el));', 'the board card', 'the card pop-up\'s em dash'],
   // connector-b (shipped @ 15dbd991) added this read and the guard was never told - red on main (found Oct 19, Fable Oct 21: fix on its own branch)
-  ['components/BoardEditor.tsx', "entryId: eid, label: (el.textContent ?? '').trim()", 'the rail',
-    'connector-b\'s thumbnail drag: a RAIL TILE\'s own text, read once at the press to label the drag ghost (the tile names a page or a board - not the editor, not a row); never saved, counted, copied, exported or sent'],
+  // ---- SUPERSEDED by polish #10 item 4 (916c976f): the drag ghost's label is read from a CLONE of the tile with its hidden marks dropped (`words`), so the read below matches nothing now.
+  // Kept verbatim; its successor is the next entry.
+  // ['components/BoardEditor.tsx', "entryId: eid, label: (el.textContent ?? '').trim()", 'the rail',
+  //   'connector-b\'s thumbnail drag: a RAIL TILE\'s own text, read once at the press to label the drag ghost (the tile names a page or a board - not the editor, not a row); never saved, counted, copied, exported or sent'],
+  ['components/BoardEditor.tsx', "label: (words.textContent ?? '').trim()", 'the rail',
+    'connector-b\'s thumbnail drag, as polish #10 item 4 reads it: a RAIL TILE\'s words (a clone of the tile with its hidden marks removed), read once at the press to label the drag ghost (the tile names a page or a board - not the editor, not a row); never saved, counted, copied, exported or sent'],
   // ---- SUPERSEDED by typed-literal (Oct 16): the composition end's read became `let { plain, caret } = ...` (its committed text is escaped),
   // so it is the entry above; this one, kept verbatim, would now match nothing and fail the rot check.
   // ['components/BoardEditor.tsx', 'const { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));', 'the board card', 'the card pop-up\'s composition end'],

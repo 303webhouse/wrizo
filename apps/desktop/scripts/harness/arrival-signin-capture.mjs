@@ -23,6 +23,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { withHarness } from '../runtime-verify.mjs';
 
+// The doors and the sign-in screen are the SIGNED-OUT screens, so the test double must answer /auth/me "signed out": WS_ANON=1 (header). The suite launches this file with no
+// WS_ANON, which left it on a signed-in boot with no doors to shoot (NOVERDICT, 2 s). Default it here; a caller's own value still wins, and the authed steps below flip it themselves.
+if (process.env.WS_ANON === undefined) process.env.WS_ANON = '1';
+
 // The PNGs are evidence and stay local: docs/evidence/ is gitignored except box-logs/ (Fable, Nov 1). The manifest beside them is a
 // .log.txt (a *.log file is gitignored) recording, for every frame, the settled state and the email check.
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -72,7 +76,9 @@ const shots = [];
 // the hero's computed opacity as evidence that it is gone.
 async function settle(app, screen) {
   if (screen === 'logout-sheet') {
-    await app.waitFor(`/ha(ven|sn).t saved to your account yet/.test(document.querySelector('.wz-logout-sheet-body')?.textContent || '')`, { timeout: 8000, label: 'logout sheet with its sentence' });
+    // SUPERSEDED by the word diet (the sheet says "changes haven't saved yet", not "...to your account yet" - arrival-signin-walk's W1 successor reads the same). Kept verbatim:
+    // await app.waitFor(`/ha(ven|sn).t saved to your account yet/.test(document.querySelector('.wz-logout-sheet-body')?.textContent || '')`, { timeout: 8000, label: 'logout sheet with its sentence' });
+    await app.waitFor(`/haven.t saved yet|hasn.t saved yet/.test(document.querySelector('.wz-logout-sheet-body')?.textContent || '')`, { timeout: 8000, label: 'logout sheet with its sentence' });
     try {
       await app.waitFor(`document.activeElement?.textContent === 'Stay signed in'`, { timeout: 8000, label: 'focus on "Stay signed in"' });
     } catch (e) {
