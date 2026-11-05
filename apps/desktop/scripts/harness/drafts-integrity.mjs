@@ -15,6 +15,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { srcText } from '../global-css.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const DESKTOP = path.resolve(here, '..', '..');
@@ -230,7 +231,7 @@ async function pa4(overrides = {}) {
 // ---- source: no bare-id key is left in the sync engine's record bookkeeping ------------------------------------------------------------
 {
   const sync = noCR(fs.readFileSync(path.join(SRC, 'store/sync.ts'), 'utf8'));
-  const pers = noCR(fs.readFileSync(path.join(SRC, 'store/persistence.ts'), 'utf8'));
+  const pers = noCR(srcText(SRC, 'store/persistence.ts'));   // #13 step 10h: the barrel's parts, joined
   ok('(S5) markClean takes the collection with every id and clears ONLY that collection\'s dirty set',
     /export function markClean\(items: ReadonlyArray<\{ collection: DirtyCollection; id: string \}>\): void \{\n  for \(const \{ collection, id \} of items\) dirty\[collection\]\.delete\(id\);/.test(pers)
       && !/dirty\.projects\.delete\(id\);\n    dirty\.storyPlans\.delete\(id\)/.test(pers), '');
@@ -247,11 +248,11 @@ async function mutant(name, overrides, run, expectRed) {
   ok(`(M) ${name}: the proof goes RED`, expectRed(res) === true, JSON.stringify(res).slice(0, 220));
 }
 await mutant('markClean clears the id from all six collections again',
-  { 'store/persistence.ts': swap('for (const { collection, id } of items) dirty[collection].delete(id);',
+  { 'store/persistence/core.ts': swap('for (const { collection, id } of items) dirty[collection].delete(id);',
     "for (const { id } of items) { dirty.projects.delete(id); dirty.storyPlans.delete(id); dirty.sessions.delete(id); dirty.drafts.delete(id); dirty.journalEntries.delete(id); dirty.drawers.delete(id); }") },
   s1, (r) => r.after[r.other].includes('P') === false);
 await mutant('markClean clears all collections (the mid-flight re-edit of project P is lost)',
-  { 'store/persistence.ts': swap('for (const { collection, id } of items) dirty[collection].delete(id);',
+  { 'store/persistence/core.ts': swap('for (const { collection, id } of items) dirty[collection].delete(id);',
     "for (const { id } of items) { dirty.projects.delete(id); dirty.storyPlans.delete(id); dirty.sessions.delete(id); dirty.drafts.delete(id); dirty.journalEntries.delete(id); dirty.drawers.delete(id); }") },
   s2, (r) => r.after.projects.includes('P') === false);
 await mutant('the stamp map is keyed by the bare id again (project P stays dirty for ever beside its draft)',
@@ -263,16 +264,16 @@ await mutant('a refusal is matched by the bare id again (refusing draft P also h
 
 // --- mutants for part A
 await mutant('saveDraft stops resolving \'scratch\' to the account\'s key',
-  { 'store/persistence.ts': swap("upsert('drafts', cache.drafts, { id: draftKey(id), text, updatedAt: '' });", "upsert('drafts', cache.drafts, { id, text, updatedAt: '' });") },
+  { 'store/persistence/drafts.ts': swap("upsert('drafts', cache.drafts, { id: draftKey(id), text, updatedAt: '' });", "upsert('drafts', cache.drafts, { id, text, updatedAt: '' });") },
   pa2, (r) => !r.stored.includes('scratch-u1'));
 await mutant('nothing adopts the local \'scratch\' at sign-in',
-  { 'store/persistence.ts': swap('subscribeCurrentUser((user) => { if (user) adoptLegacyScratch(); });', 'subscribeCurrentUser(() => {});') },
+  { 'store/persistence/drafts.ts': swap('subscribeCurrentUser((user) => { if (user) adoptLegacyScratch(); });', 'subscribeCurrentUser(() => {});') },
   pa1, (r) => r.pushed[0] !== 'scratch-u1');
 await mutant('nothing adopts the old server row after a pull',
-  { 'store/persistence.ts': swap("  adoptLegacyScratch();     // the old server row 'scratch' (its owner's) arrives by pull: it belongs under the account's own key\n", '') },
+  { 'store/persistence/syncApply.ts': swap("  adoptLegacyScratch();     // the old server row 'scratch' (its owner's) arrives by pull: it belongs under the account's own key\n", '') },
   pa4, (r) => r.adopted.ids.includes('scratch') === true);
 await mutant('the adoption overwrites a newer draft with the stale server row',
-  { 'store/persistence.ts': swap('if (!existing || existing.updatedAt < legacy.updatedAt) upsert', 'if (true) upsert') },
+  { 'store/persistence/drafts.ts': swap('if (!existing || existing.updatedAt < legacy.updatedAt) upsert', 'if (true) upsert') },
   pa4, (r) => r.afterRepull.read !== 'a newer edit');
 
 let failed = 0;

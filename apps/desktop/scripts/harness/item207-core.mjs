@@ -13,6 +13,7 @@ import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { join, dirname, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { srcText } from '../global-css.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const desktop = join(here, '..', '..');
@@ -296,7 +297,7 @@ ok('SCREENPLAY: absent, not greyed — the screenplay editor passes no `type` to
   !/\btype:\s*(typeMember|\{)/.test(noComments(src('components/ScriptEditor.tsx'))), '');
 const be = src('components/BoardEditor.tsx');
 ok('CARD: the card\'s styling dock mounts the SMALL form (no number), in the popup only', /<TypeControl form="small"/.test(be) && !/<TypeControl form="full"/.test(be), '');
-const per = src('store/persistence.ts');
+const per = srcText(SRC, 'store/persistence.ts').replace(/\r\n/g, '\n');   // #13 step 10h: the barrel's parts, joined
 ok('CARD COPY: copyCardToBoard carries fontFace and fontSize (a copy that came back in the everyday font is not the same card)',
   /fontFace !== undefined \? \{ fontFace: box\.fontFace \}/.test(per) && /fontSize !== undefined \? \{ fontSize: box\.fontSize \}/.test(per), '');
 ok('NO SCHEMA (207a): the server is untouched — no migration or sync.ts mapper mentions face or size',

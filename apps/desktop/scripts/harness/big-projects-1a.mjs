@@ -271,7 +271,7 @@ async function suite(m, mk = () => load()) {
 
 // MUTANTS: each is applied to the source of store/place.ts (or persistence.ts) before bundling; the mutation must LAND and must redden its named checks
 const MUTANTS = [
-  { name: 'Top Drawer ignores soft-deleted / shell rows (counts only live Drawers)', file: 'store/persistence.ts', from: 'export function hasAnyDrawerRow(): boolean { return cache.drawers.length > 0; }', to: 'export function hasAnyDrawerRow(): boolean { return cache.drawers.some(d => !d.deletedAt); }', red: ['B2a', 'B2b'] },
+  { name: 'Top Drawer ignores soft-deleted / shell rows (counts only live Drawers)', file: 'store/persistence/reload.ts', from: 'export function hasAnyDrawerRow(): boolean { return cache.drawers.length > 0; }', to: 'export function hasAnyDrawerRow(): boolean { return cache.drawers.some(d => !d.deletedAt); }', red: ['B2a', 'B2b'] },
   // ---- PARKED - SUPERSEDED by FLUX V2 (the full pair on 21e18ae3, Fable's ruling Oct 22): place.ts builds the id from TOP_DRAWER_PREFIX now (the prefix is shared with isDefaultRoot), so the mutation anchor moved with it.
   // Kept VERBATIM below and no longer run; the live successor follows.
   //

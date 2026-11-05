@@ -211,7 +211,9 @@ function rawReads(srcDir, mutate = {}) {
       // a read of an entry's boxes that does NOT go through liveBoxes( on the same line
       for (const m of l.matchAll(/\.boxes\b/g)) { void m; if (!/liveBoxes\(/.test(l)) n += 1; }
     }
-    if (n) out[rel] = n;
+    // #13 step 10h: the persistence layer is store/persistence/*; its parts count as the module they were (the baseline's sentence)
+    const key = rel.startsWith('store/persistence/') ? 'store/persistence.ts' : rel;
+    if (n) out[key] = (out[key] || 0) + n;
   }
   return out;
 }
@@ -244,9 +246,9 @@ const MUT = [
   ['an explicit Undo does not stamp the restored card', 'store/boxTombstones.ts', (t) => t.replace('return { ...rest, updatedAt: now };', 'return { ...rest };'), ['T4']],
   ['a purge marker is no longer final in a merge', 'store/boxTombstones.ts', (t) => t.replace('if (isPurged(s)) { out.push(s); continue; }', ''), ['T9d']],
   ['the merge ignores the per-box change time', 'store/boxTombstones.ts', (t) => t.replace('out.push(changedAt(s) > changedAt(p) ? s : p);', 'out.push(p);'), ['T9a', 'T9f']],
-  ['the sync pull never merges boxes', 'store/persistence.ts', (t) => t.split('mergeBoxLists(').join('((a) => a)('), ['T9a', 'T9f']],
-  ['the Trash board forgets deleted cards', 'store/persistence.ts', (t) => t.replace("const trashedNow = kind === 'trash' ? getTrashedCards() : [];", 'const trashedNow: ReturnType<typeof getTrashedCards> = [];'), ['T8']],
-  ['getBoardsPinning counts a tombstoned pin', 'store/persistence.ts', (t) => t.replace('liveBoxes(e.boxes).some(b => b.kind === \'page-pin\' && b.entryId === entryId))\n    .map(e => ({ id: e.id, title:', '(e.boxes ?? []).some(b => b.kind === \'page-pin\' && b.entryId === entryId))\n    .map(e => ({ id: e.id, title:'), ['T10']],
+  ['the sync pull never merges boxes', 'store/persistence/syncApply.ts', (t) => t.split('mergeBoxLists(').join('((a) => a)('), ['T9a', 'T9f']],
+  ['the Trash board forgets deleted cards', 'store/persistence/systemBoards.ts', (t) => t.replace("const trashedNow = kind === 'trash' ? getTrashedCards() : [];", 'const trashedNow: ReturnType<typeof getTrashedCards> = [];'), ['T8']],
+  ['getBoardsPinning counts a tombstoned pin', 'store/persistence/pins.ts', (t) => t.replace('liveBoxes(e.boxes).some(b => b.kind === \'page-pin\' && b.entryId === entryId))\n    .map(e => ({ id: e.id, title:', '(e.boxes ?? []).some(b => b.kind === \'page-pin\' && b.entryId === entryId))\n    .map(e => ({ id: e.id, title:'), ['T10']],
 ];
 for (const [name, file, fn, expectRed] of MUT) {
   const orig = noCR(fs.readFileSync(path.join(SRC, file), 'utf8'));

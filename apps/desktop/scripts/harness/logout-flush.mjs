@@ -167,7 +167,7 @@ function makeEditor(m, id) {
 }
 {
   // C4 — THE RESURRECTION, reproduced with BOTH protections removed: no flushAll, no belt.
-  const { mod: m } = await load({ 'store/persistence.ts': swap('  if (isSignedOutHere()) return;\n', '') });
+  const { mod: m } = await load({ 'store/persistence/core.ts': swap('  if (isSignedOutHere()) return;\n', '') });
   const ed = makeEditor(m, 'd1');
   ed.pending = 'typed just before the sign-out';
   m.markSignedOutHere();
@@ -279,7 +279,7 @@ function makeEditor(m, id) {
 // =============================================================================
 {
   // M1: the belt removed from upsert. B3 must go red (the late write lands).
-  const { mod: m } = await load({ 'store/persistence.ts': swap('  if (isSignedOutHere()) return;\n', '') });
+  const { mod: m } = await load({ 'store/persistence/core.ts': swap('  if (isSignedOutHere()) return;\n', '') });
   m.markSignedOutHere();
   m.saveDraft('d-late', 'late');
   ok('(M1) MUTATION KILLED: with the belt removed, B3\'s predicate goes red (the late write lands)', m.getDraft('d-late')?.text === 'late', '');
