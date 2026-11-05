@@ -47,8 +47,10 @@ function codeLines(text) {
   let inImport = false;
   for (const raw of text.replace(/\r\n/g, '\n').split('\n')) {
     const l = raw.replace(/\s+$/, '');
-    if (inImport) { if (/from\s+['"][^'"]+['"];?$/.test(l)) inImport = false; continue; }
-    if (/^import\s/.test(l)) { if (!/from\s+['"][^'"]+['"];?$/.test(l) && !/^import\s+['"]/.test(l)) inImport = true; continue; }
+    // an import's last line may carry a why-comment (persistence.ts's markRuns import does): `from '...';   // ...`
+    const ends = /from\s+['"][^'"]+['"];?(\s*\/\/.*)?$/;
+    if (inImport) { if (ends.test(l)) inImport = false; continue; }
+    if (/^import\s/.test(l)) { if (!ends.test(l) && !/^import\s+['"]/.test(l)) inImport = true; continue; }
     if (/^export\s+(type\s+)?(\*|\{[^}]*\})(\s+as\s+\w+)?\s+from\s+['"][^'"]+['"];?$/.test(l)) continue;   // a barrel's re-export line is wiring, like an import
     if (l.trim() === '') continue;
     out.push(l.replace(/^export (?=(async )?(function|const|let|class|interface|type|enum)\b)/, ''));
