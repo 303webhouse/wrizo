@@ -95,7 +95,9 @@ const screens = {
     const even = t0s.length >= 9 && Math.abs(t0s[0]) < 1e-6 && Math.abs(t0s[t0s.length - 1] - 0.27) < 0.002 && t0s.every((t, i) => i === 0 || Math.abs((t - t0s[i - 1]) - 0.27 / (t0s.length - 1)) < 0.002);
     // the full reach: along x to the rail / the window's edge (side stems), along y to the bar / the window's bottom (up and down)
     const room = late && { left: late.rail ? late.rail.r : 0, right: late.w, top: late.bar ? late.bar.b : 0, bottom: late.h, cx: (late.page.l + late.page.r) / 2, cy: (late.page.t + late.page.b) / 2 };
-    const ends = late ? mainsOf(late).map((h) => { const dx = h.ex - room.cx, dy = h.ey - room.cy; const side = Math.abs(dx) >= Math.abs(dy);
+    // (instrument fix after the green leg 41980389025: side / up-down by the stem's own direction, start -> end, as the build aims it - from the page's
+    // centre a stem near 45 deg could read the other way)
+    const ends = late ? mainsOf(late).map((h) => { const dx = h.ex - h.x0, dy = h.ey - h.y0; const side = Math.abs(dx) >= Math.abs(dy);
       const short = side ? (dx < 0 ? h.ex - room.left : room.right - h.ex) : (dy < 0 ? h.ey - room.top : room.bottom - h.ey);
       return { side, short: Math.round(short) }; }) : [];
     const fullOk = ends.length > 0 && ends.every((e) => e.side ? (e.short >= 59 && e.short <= 151) : (e.short >= 19 && e.short <= 61));
@@ -111,7 +113,10 @@ const screens = {
     // reported, not asserted (§18.6 "every stem has left the page by p = 0.5"): at 1366 x 768 the page fills the height, so the up / down stems and
     // the latest side stems are still under it - handed up with these numbers
     const outAtHalf = half ? { out: mainsOf(half).filter((h) => outside(h, half.page)).length, of: mainsOf(half).length } : null;
-    const brief = { ok, outAtHalf, mains: late && mainsOf(late).length, t0s, ends, reachLate: late && mainsOf(late).map((h) => h.reach), kids: kids.length };
+    // (report: each main stem's visible tip and end, and the page, after the green leg showed tips under the page at 52/60)
+    const brief = { ok, outAtHalf, mains: late && mainsOf(late).length, t0s, ends, reachLate: late && mainsOf(late).map((h) => h.reach), kids: kids.length,
+      page: late && late.page, tips: late && mainsOf(late).map((h) => [Math.round(h.vx), Math.round(h.vy), Math.round(h.ex), Math.round(h.ey), Math.round(h.full)]),
+      kidRatios: kids.slice(0, 8).map((h) => Math.round((h.full / byStem.get(h.parent).full) * 100) / 100) };
     if (Object.values(ok).some((x) => !x)) fail('R21-REACH', brief);
     say('r21-reach', brief);
   },

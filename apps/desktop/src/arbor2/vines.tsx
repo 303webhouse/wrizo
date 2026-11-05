@@ -104,13 +104,14 @@ function drawnOf(plan: LapPlan, geo: GrowthGeometry, room: Room, fromTip: boolea
     const end = s.pts[s.pts.length - 1], dx0 = end.x - o.x, dy0 = end.y - o.y, dist = Math.hypot(dx0, dy0);
     if (fromTip || dist < 1 || s.pts.length <= 3) pts = s.pts.map((p) => ({ x: C.x + (p.x - o.x) * g, y: C.y + (p.y - o.y) * g }));
     else {
-      const ux = dx0 / dist, uy = dy0 / dist;
-      let L: number;
-      if (Math.abs(ux) >= Math.abs(uy)) { const limit = ux < 0 ? C.x - room.left : room.right - C.x; L = (limit - (60 + 90 * s.marginPick)) / Math.abs(ux); }
-      else { const limit = uy < 0 ? C.y - room.top : room.bottom - C.y; L = (limit - (20 + 40 * s.marginPick)) / Math.abs(uy); }
-      // scaled from its own start (just past the hidden centre), so every main stem still radiates from the centre
-      const s0 = s.pts[0], f = Math.max(40, L - Math.hypot(s0.x - o.x, s0.y - o.y)) / Math.max(1, Math.hypot(end.x - s0.x, end.y - s0.y));
-      pts = s.pts.map((p) => ({ x: C.x + (s0.x - o.x) + (p.x - s0.x) * f, y: C.y + (s0.y - o.y) + (p.y - s0.y) * f }));
+      // scaled from its own start (just past the hidden centre, so every main stem still radiates from the centre), by the factor that puts its
+      // end on the target: a side stem's end x at the rail / the window's edge less 60-150 px, an up / down stem's end y at the bar / the bottom less 20-60
+      const s0 = s.pts[0], S = { x: C.x + (s0.x - o.x), y: C.y + (s0.y - o.y) }, dx = end.x - s0.x, dy = end.y - s0.y;
+      let f: number;
+      if (Math.abs(dx) >= Math.abs(dy)) { const tx = dx < 0 ? room.left + 60 + 90 * s.marginPick : room.right - 60 - 90 * s.marginPick; f = (tx - S.x) / (Math.abs(dx) < 1e-6 ? 1e-6 : dx); }
+      else { const ty = dy < 0 ? room.top + 20 + 40 * s.marginPick : room.bottom - 20 - 40 * s.marginPick; f = (ty - S.y) / (Math.abs(dy) < 1e-6 ? 1e-6 : dy); }
+      f = Math.max(40 / Math.max(1, Math.hypot(dx, dy)), f);
+      pts = s.pts.map((p) => ({ x: S.x + (p.x - s0.x) * f, y: S.y + (p.y - s0.y) * f }));
     }
     mk(s, pts, fromTip ? MAX_BRANCH : 9 + 2 * hash01(s.stem), null, 0, t0Of.get(s) ?? 0);
   }
@@ -122,7 +123,8 @@ function drawnOf(plan: LapPlan, geo: GrowthGeometry, room: Room, fromTip: boolea
       const joinU = par.arc[Math.min(par.arc.length - 1, s.joinI ?? 0)] / Math.max(1e-6, par.total);
       const start = pointAt(par, joinU * par.total).p;
       const L = (0.35 + 0.25 * s.lenPick) * par.total;
-      const a0 = s.pts[0], e = s.pts[s.pts.length - 1], dd = Math.max(1, Math.hypot(e.x - a0.x, e.y - a0.y));
+      // scaled by its own PATH length, so its drawn length is the share of its parent's it should be
+      const a0 = s.pts[0], ca = arcOf(s.pts), dd = Math.max(1, ca[ca.length - 1]);
       const f = L / dd;
       const wp = Math.max(widthAt(par, joinU * par.total), widthAt(par, par.total * 0.9));
       const w0 = Math.min(MAX_BRANCH, (0.55 + 0.25 * s.ratioPick) * wp);
