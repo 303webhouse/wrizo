@@ -22,7 +22,7 @@ export const CANONICAL_MEASURE_CH = 60;
 // lines, not 1.02).
 export function countLineEquivalents(text: string, measureCh: number = CANONICAL_MEASURE_CH): number {
   if (!text) return 0;
-  const segments = withoutFontMarks(text).split('\n');   // POLISH #10 item 4: a style span's marks are not lines written
+  const segments = withoutFontMarks(text).split('\n');   // a style span's marks are not lines written [lineEquivalents §1]
   let total = 0;
   for (const seg of segments) {
     total += seg.length === 0 ? 1 : Math.max(1, Math.ceil(seg.length / measureCh));

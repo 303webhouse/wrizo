@@ -12,11 +12,7 @@ export type TermId =
   | 'journal' | 'plan' | 'milestone' | 'freewrite' | 'home' | 'voicewall'
   | 'publish' | 'script';
 
-// Fable's R1 (post-TH1 review) — English pluralization isn't algorithmic from
-// a single canonical string (Drawer/Drawers is fine with +s, but a theme's
-// own noun might not be), so every term carries two number forms rather than
-// one string a caller mechanically pluralizes. A theme overriding a term may
-// supply either form independently; the other falls through per-field.
+// pluralization is not algorithmic: every term carries two forms, and an override may supply either [themeLexicon §1]
 export interface TermForms { one: string; many: string }
 
 // The canonical noun IS Plateau's display string — Plateau is the default
@@ -27,9 +23,7 @@ export interface TermForms { one: string; many: string }
 // the ship report, not "fixed" on either side. 'publish'.many mirrors .one
 // ("Publish") — it's an action label, not a count noun.
 const CANONICAL: Record<TermId, TermForms> = {
-  // ITEM word-diet (Nick, Oct 13, review fix) — "Page" is always
-  // grammatically plural (pages-rename bucket (a)); Flux's own override
-  // below (Doc/Docs) is untouched.
+  // "Page" is grammatically plural here; Flux's override is untouched [themeLexicon §2]
   page: { one: 'Pages', many: 'Pages' },
   shelf: { one: 'Shelf', many: 'Shelves' },
   drawer: { one: 'Drawer', many: 'Drawers' },
@@ -66,22 +60,13 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<TermId, Partial<TermForm
     journal: { one: 'Log', many: 'Logs' },
     plan: { one: 'Circuit', many: 'Circuits' },   // FLUX V2: the mode strip's door reads CIRCUITS (was Schematic)
     milestone: { one: 'Checkpoint', many: 'Checkpoints' },
-    // theme-leftovers (Nick approved Oct 16) — "Overclock" retired for
-    // "Wire In" (plural "Wire-ins"), Fable's own exact forms.
     freewrite: { one: 'Wire In', many: 'Wire-ins' },
     home: { one: 'Safehouse', many: 'Safehouses' },
     voicewall: { one: 'Firewall', many: 'Firewalls' },
-    // ITEM arbor-quiet-brass — renamed from "Connect" (Fable's proposal, pending Nick's
-    // word): the board-connection family (deskLexicon.ts) just took "Link" for Flux, and
-    // this unrelated feature (Publish-to-web) collided with it under the same English
-    // word. "Uplink" keeps Flux's own circuit register without the collision.
+    // "Uplink" keeps Flux's circuit register without colliding with the board-connection word "Link" [themeLexicon §4]
     publish: { one: 'Uplink', many: 'Uplink' }, // a verb/label, mirrors Plateau's own .many=.one shape
   },
-  // MACHINA (Nick's words pass, Oct 21; docs/plans/machina-build.md §1c) - the corporate register. The locked map: Drawer -> Project, Set -> Folder, Pages -> Files,
-  // Boards -> Plans, Box/card -> Block, Journal -> Notebook, Milestone -> Deliverable, Home -> HQ, Voice Wall -> Compliance, Publish -> Finalize, Free Write -> Sprint.
-  // NOT overridden, on purpose: 'plan' (canonical "Plan"/"Plans" already IS Machina's word), 'script' (dual-natured, as for Flux), and 'notebook' - Machina's Notebook is the
-  // JOURNAL word, so the canonical `notebook` term (a different concept) would read identically to `journal` under this theme; it keeps its canonical form until Nick names
-  // a word for it (a hand-up item in the build report, not a guess). 'home' has no locked plural: HQ both ways (like Publish).
+  // Machina's register; not overridden on purpose: 'plan' (already Machina's word), 'script', and 'notebook' (Machina's Notebook is the journal word) [themeLexicon §5]
   machina: {
     page: { one: 'File', many: 'Files' },
     drawer: { one: 'Project', many: 'Projects' },

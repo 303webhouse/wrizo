@@ -335,17 +335,11 @@ export function growMany(state: RhizomeState, rng: () => number, geo: RhizomeGeo
 // drivers, which is why m2.mjs's component-observing checks (mount-empty,
 // origin-at-paper-bottom) are the ones M3's park sweep supersedes.
 
-export const ORIGIN_COUNT = 7;      // M3 S2 — bounded delta (Nick's eye at the sitting)
+export const ORIGIN_COUNT = 7;      // a bounded delta [rhizomeEngine §1]
 export const ORIGIN_CANDIDATES = 10; // best-candidate samples per placed origin
 export const SAT_K = 834;           // M3 S3 — saturation constant: 95% of CAP at ~2500 words (2500/ln 20 ≈ 834.4). Bounded delta — the sitting's one knob.
 
-// Goal-fill (2026-10-07). The live field no longer grows by absolute word
-// count. A lap of the writer's own goal — 100 words or 1000, lines or words —
-// maps onto this many segments, so both goals fill the ground at the same
-// moment: when the lap completes. The cap is the density that used to read
-// as about half a lap — a full goal fills the margins, it does not carpet
-// them. Longer strokes and more shoots than the M2 event-path, so the lap
-// still covers the ground around the sheet.
+// goal-fill: a lap of the writer's goal maps onto this many segments, so any goal fills the ground when the lap completes, without carpeting it [rhizomeEngine §2]
 export const FILL_SEGMENTS = 800;
 export const FILL_SHOOTS = 72;
 // A step at 1400×900. scaledFillLength multiplies by the stage diagonal so a

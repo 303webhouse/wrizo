@@ -46,7 +46,7 @@ export function walkCardBox(contentH: number, stored?: { w?: number; h?: number 
 export type SwipeSide = 'left' | 'right' | 'none';
 export interface SwipePlan { kind: 'slide' | 'cut'; ms: number; crossfade: false; outgoing: SwipeSide; incoming: SwipeSide }
 
-/** The swipe (Nick, 3:25 pm: no flash): a PURE SLIDE - both cards fully opaque (never a cross-fade), the outgoing one leaves one way as the next arrives from the other, about 280 ms; reduced motion is an instant cut. */
+// the swipe: a pure slide (both cards opaque, never a cross-fade), about 280 ms; reduced motion is an instant cut [walk §1]
 export function swipePlan(dir: 1 | -1, reduced: boolean): SwipePlan {
   return reduced ? { kind: 'cut', ms: 0, crossfade: false, outgoing: 'none', incoming: 'none' } : { kind: 'slide', ms: WALK.SWIPE_MS, crossfade: false, outgoing: dir === 1 ? 'left' : 'right', incoming: dir === 1 ? 'right' : 'left' };
 }
@@ -61,8 +61,7 @@ export function walkKey(key: string, ctx: { onDoor: boolean }): WalkKeyAction {
   return null;
 }
 
-/** Nick, Oct 25: the caret lands in the card on opening and on stepping, so the arrows may only step while the card is EMPTY (nothing to move the caret through); with the writer's words in it they move the caret,
- *  and PageUp / PageDown (and the chevrons) always step. Outside the editor (focus on a door, the rail) the arrows step as ever. */
+// the caret lands in the card, so arrows step only while it is empty; PageUp/PageDown and the chevrons always step; outside the editor the arrows step [walk §2]
 export function keyMaySteps(key: string, ctx: { inEditor: boolean; empty: boolean }): boolean {
   if (key === 'PageDown' || key === 'PageUp') return true;
   if (key === 'ArrowRight' || key === 'ArrowLeft') return !ctx.inEditor || ctx.empty;

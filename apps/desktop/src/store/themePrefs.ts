@@ -26,12 +26,7 @@ export interface ThemePrefs {
 const KEY = 'wrizo-theme-prefs';
 const DEFAULTS: ThemePrefs = { voice: 'serif', page: 'light', fade: 'on' };
 
-// Fable's A2 (TH1 review, folded in TH2) — a raw localStorage read is
-// untrusted input (hand-edited, a stale shape from a future version, or
-// simply corrupted); each field is validated against its own enum before
-// use rather than spread in verbatim, so a bad stored value falls through
-// to that field's default instead of ever reaching `applyAttributes` (which
-// would otherwise write a garbage `data-*` value straight onto <html>).
+// a raw localStorage read is untrusted: each field is validated against its enum, so a bad value falls to its default instead of reaching a data-* attribute [themePrefs §1]
 function sanitize(parsed: Partial<Record<keyof ThemePrefs, unknown>>): ThemePrefs {
   const voice: Voice = parsed.voice === 'serif' || parsed.voice === 'sans' ? parsed.voice : DEFAULTS.voice;
   const page: PageTone = parsed.page === 'dark' || parsed.page === 'light' ? parsed.page : DEFAULTS.page;

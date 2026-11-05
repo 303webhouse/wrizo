@@ -45,7 +45,7 @@ const RECENT_CAPTURE_LIMIT = 5;
 // Exported — S4's nudges (tutorNudges.ts) reuse this exact title-reading
 // convention rather than re-deriving it a second way.
 export function titleOf(e: JournalEntry): string {
-  const line = withoutFontMarks(e.text).trim().split('\n')[0]?.trim();   // POLISH #10 item 4: a title reads the words, never a style span's marks
+  const line = withoutFontMarks(e.text).trim().split('\n')[0]?.trim();   // a title reads the words, never a style span's marks [tutorLenses §1]
   return line ? line.slice(0, 60) : 'Untitled';
 }
 
@@ -56,8 +56,7 @@ export function computeFragmentItems(entry: JournalEntry): FragmentItem[] {
   const all = getJournalEntries();
   const items: FragmentItem[] = [];
   const seen = new Set<string>([entry.id]);
-  // POLISH #10 item 15 — the list shows only a title, and two different entries with the SAME words (a capture kept twice) read as one fragment twice. An entry whose whole text equals one already listed, or the open
-  // page's own, is not listed again: the newest stands. Empty text (a photo, a voice note) is never merged. Display only - no entry is touched.
+  // an entry whose whole text equals one already listed (or the open page's) is not listed again; empty text is never merged; display only [tutorLenses §2]
   const shown = new Set<string>([textKey(entry)]);
   const repeats = (e: JournalEntry): boolean => {
     const k = textKey(e);

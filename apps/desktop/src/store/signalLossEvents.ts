@@ -26,8 +26,7 @@ function markPulse(el: Element, kind: string): void {
   if (w && w.__wzVerifyFlashes) (w.__wzDrawLog ??= []).push({ t: performance.now(), kind, seq: pulseSeq });
 }
 
-/** Tear-line storm: 3-5 lines, ~45 ms stagger, ~150 ms each, ~35% lime. One flash. `alive` (optional): asked before each staggered line - a
- *  storm under way when motion is turned off lays no more lines (Fable, Oct 21: cut the leftover lines the moment reduced motion lands). */
+// tear-line storm: one flash; `alive` is asked before each staggered line, so a storm under way when motion turns off lays no more [signalLossEvents §1]
 export function tearStorm(container: HTMLElement, op?: number, alive?: () => boolean): void {
   markPulse(container, 'tear');
   const n = 3 + Math.floor(Math.random() * 3);

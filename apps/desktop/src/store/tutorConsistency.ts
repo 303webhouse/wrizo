@@ -82,9 +82,7 @@ function mostCommonForm(forms: Map<string, number>): string {
 // as read-only lines; this lens computes them fresh every call, storing
 // nothing (S1's own "lens results are derived, never stored" law).
 export function computeConsistencyObservations(rawTexts: string[]): string[] {
-  // FONT-SPAN (Fable's addition 1): Consistency reads the words, never a font span's marks (`]{.font-eb-garamond}` would otherwise
-  // harvest as a word); every other convention is read exactly as before.
-  // TYPED-LITERAL (Oct 16): and a typed character's escape backslash is taken out - after the font marks (an escaped `\[` is text)
+  // Consistency reads the words: style-span marks and typed escapes are taken out (marks first: an escaped `\[` is text) [tutorConsistency §1]
   const texts = rawTexts.map((t) => unescapeTyped(withoutFontMarks(t)));
   const fullText = texts.join('\n');
   const tokens = texts.flatMap(harvestProperNouns);

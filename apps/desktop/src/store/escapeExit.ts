@@ -1,20 +1,9 @@
-// ESC LEAVES THE WRITING SURFACE (accessibility audit A1, cloud-a11y-audit @ 9c15c86: "the writing surface is a keyboard trap").
-//
-// Tab indents on the page by Nick's ruling (item 158, then 209), so Tab cannot also be the way out - and item 158's own comment
-// promised "Escape is what leaves the surface". Nothing did that; the audit measured Esc leaving focus where it was. WCAG 2.1.2 allows
-// a surface to keep Tab only when another key leads out, so Esc is that key: it moves focus to the CURRENT MODE TAB, the nearest
-// chrome, in every mode.
-//
-// A MENU OR POPUP CLOSES FIRST. The page's popups (the rail panels, the Tutor, the beginnings row, sheets, dialogs, menus) already
-// close on Esc through their OWN document/window listeners, which run AFTER the editor's (the event bubbles from the editor up).
-// So the editor does not decide here which popup to close: it counts what is open now, lets the event finish, and looks again.
-// If something closed, that Esc was the popup's. If nothing was open, or nothing closed (a popup with no Esc of its own), focus
-// leaves - the trap is never re-made by a popup that ignores the key.
+// Esc leaves the writing surface (Tab indents, so Esc is the way out): a popup open closes first; if nothing was open or nothing closed, focus goes to the current mode tab [escapeExit §1]
 
 /** The id of the screen-reader-only hint both writing surfaces describe themselves by ("Press Escape to leave the page"). */
 export const ESC_HINT_ID = 'wz-esc-hint';
 
-// DRAWER MIRROR (Oct 24): the Tools drawer closes on Esc too now, so it is counted - else its Esc, having closed it, also took focus off the page.
+// the Tools drawer closes on Esc too, so it is counted [escapeExit §2]
 const OPEN_SELECTOR = [
   '[role="dialog"]', '[role="menu"]', '.wz-cascade-panel:not([data-leaving])', '.wz-tutor-panel[data-open="true"]', '.wz-sliver-panel[data-open="true"]', '.wz-beginnings',
 ].join(', ');

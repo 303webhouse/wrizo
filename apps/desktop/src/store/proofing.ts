@@ -1,37 +1,7 @@
 import type { ProofingRecord, ProofingDialect, ProofingWord } from '../types';
 import { PROOFING_DEFAULT_DIALECT, PROOFING_TOMBSTONE_DAYS } from '../types';
 
-// ITEM 204 PART 2 — THE PROOFING STORE: the writer's personal dictionary, their
-// dialect, and harper's own ignore blob.
-//
-// ONE nullable jsonb column, `users.proofing`, on `users.page_defaults`' recipe —
-// Nick's schema word ("1. Yes"), Fable's shape approval. Per WRITER, not per page,
-// so it is not `pageSettings`; and deliberately NOT smuggled into `page_defaults`,
-// which is the writer's starting DRESS and would be overloaded by a second concept.
-//
-// ⛔ THE ONE THING THIS FILE EXISTS TO GET RIGHT: `page_defaults`' recipe has a
-// DESTRUCTIVE LINE, and it is not copied here.
-//
-//   `pageDefaults.ts:113` — `if (server) { defaults = server; writeLocal(server); }`
-//
-// That REPLACES the local copy on every boot. Correct for a dress written by one
-// deliberate act from one place; catastrophic for a set edited on every device —
-// it would destroy words added here and not yet pushed, every time the server's
-// copy was older. So this store has NO `setFromServer`, and there is no way to
-// spell one: the only way a remote record enters is `mergeRemote`, and the merge
-// is commutative. Fable's ruling: *"the seam makes the destructive form
-// unsayable."*
-//
-// CONVERGENCE (option A, ruled). Per-key merge on BOTH sides of the boundary: the
-// client always GETs, merges, and PUTs the MERGED set; the boot pull merges and
-// never replaces. An LWW-element-set over `words`, keyed lower-cased, stamped.
-//
-// ⚠ THE RESIDUAL, NAMED AND OWED TO THE OFFER: a word can be briefly MISSING on
-// another device until the device that added it syncs again. It is not lost — each
-// device retains its own additions, so the next GET-merge-PUT re-contributes them.
-// It is lost permanently only if that device loses local storage first, which
-// includes signing out (see `clearProofingLocal`, below — ruled: a signed-out
-// device keeps nothing of the writer's).
+// the proofing store: one nullable jsonb column, users.proofing, per writer; no setFromServer exists - a remote enters only through the commutative mergeRemote, so words added here are never replaced [proofing §1]
 
 const KEY = 'writer-studio-proofing';
 
@@ -52,12 +22,7 @@ export function emptyProofing(): ProofingRecord {
  * remove after an add beats the entry — whichever the writer did last.
  */
 export function mergeProofing(aIn: ProofingRecord | null, bIn: ProofingRecord | null): ProofingRecord {
-  // ⛔ A MALFORMED RECORD MERGES AS NULL (Fable's review, 3). The remote arrives
-  // from the wire and the server does not validate a shape the client owns — so a
-  // string, an array, a number or a record missing `words` must be treated as
-  // ABSENT, not merged. Merging one would throw inside `Object.entries` or, worse,
-  // yield a record with no word map at all and overwrite a real one on the next
-  // push. Validated HERE rather than at the caller, so every path is covered.
+  // a malformed remote record merges as null: the server does not validate a shape the client owns [proofing §2]
   const a = isProofingRecord(aIn) ? aIn : null;
   const b = isProofingRecord(bIn) ? bIn : null;
   if (!a) return b ? compactProofing(b) : emptyProofing();
@@ -163,19 +128,7 @@ function lastActAt(w: ProofingWord): string {
   return w.removedAt && w.removedAt > w.addedAt ? w.removedAt : w.addedAt;
 }
 
-/**
- * COMPACTION, NOT A CAP (Fable's ruling). A `removedAt` older than 180 days is
- * dropped entirely.
- *
- * Why compaction rather than a cap: a cap on a SET silently loses the writer's
- * OLDEST WORDS, which are the ones they are least likely to notice going. A
- * tombstone's whole job is to expire, so expiring it is the honest bound.
- *
- * ⚠ THE CONSEQUENCE, NAMED: a device offline longer than 180 days can bring a
- * removed word BACK, because the tombstone that would have suppressed it is gone.
- * Ruled benign — the writer removes it again — and named here rather than
- * discovered.
- */
+// compaction, not a cap: a removedAt older than 180 days is dropped (a cap would lose the oldest words); a device offline longer can bring a removed word back [proofing §3]
 export function compactProofing(rec: ProofingRecord): ProofingRecord {
   const cutoff = Date.now() - PROOFING_TOMBSTONE_DAYS * 24 * 60 * 60 * 1000;
   const words: Record<string, ProofingWord> = {};
@@ -236,16 +189,7 @@ export function mergeRemote(remote: ProofingRecord | null): ProofingRecord {
   return current;
 }
 
-/**
- * Signing out takes the dictionary with it — Fable's ruling: *"a signed-out device
- * keeps nothing of the writer's; it goes out the same way every other writer
- * record does."* Called from `resetLocalData`.
- *
- * ⚠ This is the one place the residual above becomes real loss: words added on
- * this device and never pushed go out with it. That is the ruled trade, and the
- * alternative (one account's dictionary outliving its session on a shared device)
- * was the worse one.
- */
+// signing out takes the dictionary with it (called from resetLocalData); unpushed words on this device go with it [proofing §4]
 export function clearProofingLocal(): void {
   current = emptyProofing();
   try { localStorage.removeItem(KEY); } catch { /* ignore */ }
@@ -300,13 +244,7 @@ export function setProofingIgnored(ignored: string, engine: string): ProofingRec
 
 // --- the boundary -------------------------------------------------------
 
-/**
- * GET, MERGE, PUT THE MERGED SET — the ruled shape, in one function so the three
- * steps cannot be performed separately or in the wrong order.
- *
- * Used for the boot pull AND for pushing a local change: because the merge is
- * commutative and idempotent, there is only one operation here, not two.
- */
+// get, merge, put the merged set, in one function so the steps cannot be split or reordered; the merge is commutative and idempotent, so boot pull and push are one operation [proofing §5]
 export async function syncProofing(): Promise<ProofingRecord> {
   let remote: ProofingRecord | null = null;
   try {

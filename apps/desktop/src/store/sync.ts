@@ -80,7 +80,7 @@ function stampMap(records: DirtyRecords): Map<string, string> {
 // ever arrives for a body the client thought was fine (a lower proxy, a lowered limit), a multi-record chunk is split in
 // half and retried, and a lone record lowers `learnedLimitBytes` to its own size and is listed. The lesson is held in
 // memory only: it is re-learned on the next launch, at the price of at most one refused upload per fat record.
-const REQUEST_LIMIT_BYTES = 16 * 1024 * 1024;  // the server's /api/sync body limit (index.ts SYNC_BODY_LIMIT_BYTES) - was 5 MiB before item 203's P3
+const REQUEST_LIMIT_BYTES = 16 * 1024 * 1024;  // the server's /api/sync body limit (index.ts SYNC_BODY_LIMIT_BYTES) [sync §1]
 const ENVELOPE_BYTES = 1024;                    // {"lastSyncAt":...,"push":{...},"pull":false} and its commas: generous
 const CHUNK_TARGET_BYTES = 1024 * 1024;         // small records ride together up to this
 let learnedLimitBytes = Number.POSITIVE_INFINITY;
@@ -110,15 +110,7 @@ function setTooLarge(next: TooLargeRecord[]): void {
   tooLargeListeners.forEach(l => l(tooLarge));
 }
 
-// ITEM 224(a), SYNC INTEGRITY — like item 203's quarantine (TooLargeRecord,
-// above), but a DIFFERENT population and a different reason: these records
-// were SENT and the server itself refused to store them (malformed, or the
-// insert threw) — not withheld for their size. Unlike a true quarantine,
-// a rejected record is NOT excluded from future sends: its cause may be
-// transient (a DB hiccup) or may clear if the writer edits it again, so it
-// stays dirty and keeps trying on the ordinary cadence. This list is only
-// the WRITER'S OWN NOTICE that something is stuck, named — it never
-// prevents a retry the way `isTooLarge` does.
+// records the server refused to store: unlike a too-large record they stay dirty and keep retrying; this list is only the writer's notice [sync §2]
 export interface RejectedRecord { id: string; title: string }
 let rejectedRecords: readonly RejectedRecord[] = [];
 const rejectedListeners = new Set<(list: readonly RejectedRecord[]) => void>();
@@ -219,30 +211,7 @@ function cleanBatch(batch: PushItem[], rejectedIds: ReadonlySet<string> = EMPTY_
 }
 const EMPTY_SET: ReadonlySet<string> = new Set();
 
-// One-time journal backfill (journal-resync patch). The new server's /sync pull
-// always carries a `journalEntries` key; the old server never did — so that key's
-// presence is the signal that we're talking to the post-D2 server. On the first
-// such response, re-dirty every local journal entry so the pre-D2 backlog (each
-// flagged "synced" locally but never actually stored) pushes once. The
-// localStorage flag makes it fire at most once per device; LWW + stable ids make
-// re-pushing a row the server already has a no-op.
-//
-// KEPT, deliberately, after item 89 persisted the dirty set — the two address
-// DISJOINT populations and neither subsumes the other. Persistent dirty saves
-// rows that ARE dirty across a reload; this backfill saves rows that are
-// wrongly CLEAN, marked synced by a client talking to a server that dropped
-// them. A clean row is invisible to a dirty-set fix by construction, so
-// retiring this guard would permanently strand the exact backlog it was
-// written for on any device that has not yet run it.
-// What item 89 DOES retire is this key's accidental second job: it was the
-// only lever for recovering a freshly-stranded page, and clearing it by hand
-// was the recovery Fable had to run on 2026-08-02. Newly stranded rows now
-// push themselves on the next connection, so no one clears this again.
-// Standing asymmetry, recorded rather than silently fixed: the backfill covers
-// `journalEntries` ONLY. Stranding was never journal-specific — projects,
-// drawers, drafts, sessions and storyPlans stranded the same way with no
-// recovery path at all, manual or otherwise. Persistent dirty is what covers
-// those six; this guard is not, and was never, the general answer.
+// the one-time journal backfill re-dirties every local journal entry on the first post-D2 server response; kept beside the persisted dirty set because the two cover disjoint populations (wrongly clean rows vs dirty ones) [sync §3]
 function maybeBackfillJournal(pull: unknown): void {
   try {
     if (localStorage.getItem(JOURNAL_RESYNC_KEY)) return;
@@ -524,12 +493,5 @@ export function clearLastSyncAt(): void {
   localStorage.removeItem(LAST_SYNC_KEY);
 }
 
-// STORAGE-FULL STEP 1 — "when online, push at once so the edits reach the account" (Fable, 2026-09-30). The moment
-// ANY collection starts failing to write locally, push right away rather than wait for the 20s tick: the cache still
-// holds the edit that could not be written to disk, so a reload or crash before the next periodic sync would lose it
-// twice over instead of once. `syncOnce()`'s own `inFlight` guard makes this call a no-op if a push is already under
-// way, and if the device is actually offline `syncOnce()` fails exactly as it always has (`setStatus('offline')` +
-// backoff) — this adds no new failure mode, only an earlier attempt. Module-level (not gated on `startSync()`/
-// `running`) to match `App.tsx`'s own direct call to `syncOnce()` for its best-effort final push — calling it before
-// a session exists just meets an unauthenticated request that fails quietly, the same as any sync tick would.
+// when a local write starts failing, push at once (the cache holds the only copy); syncOnce's inFlight guard makes it a no-op if a push is under way [sync §4]
 subscribeStorageFailureEvent(() => { void syncOnce(); });
