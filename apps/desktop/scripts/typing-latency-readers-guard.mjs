@@ -44,8 +44,12 @@ const CLASSIFIED = [
   // ---- SUPERSEDED by typed-literal (Oct 16): the composition end's read became `let { plain, caret } = ...` (its committed text is escaped),
   // so it is the entry above; this one, kept verbatim, would now match nothing and fail the rot check.
   // ['components/BoardEditor.tsx', 'const { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));', 'the board card', 'the card pop-up\'s composition end'],
-  ['components/ScriptEditor.tsx', 'textNode.textContent?.length', 'the screenplay', 'a script element\'s caret clamp (no rows)'],
-  ['components/ScriptEditor.tsx', "onInput={() => onInput(nodeRef.current?.textContent ?? '')}", 'the screenplay', 'a script element\'s own input (no rows)'],
+  // ---- SUPERSEDED by polish #10j (the ScriptEditor split, merged @ 54371360): these two reads MOVED, unchanged, out of components/ScriptEditor.tsx into components/script/ (caret.ts, elements.tsx),
+  // so the two entries below match nothing there now. Kept verbatim; the successors follow them, same reads, same classification.
+  // ['components/ScriptEditor.tsx', 'textNode.textContent?.length', 'the screenplay', 'a script element\'s caret clamp (no rows)'],
+  // ['components/ScriptEditor.tsx', "onInput={() => onInput(nodeRef.current?.textContent ?? '')}", 'the screenplay', 'a script element\'s own input (no rows)'],
+  ['components/script/caret.ts', 'textNode.textContent?.length', 'the screenplay', 'a script element\'s caret clamp (no rows) - the same read as before the #10j split, now in script/caret.ts'],
+  ['components/script/elements.tsx', "onInput={() => onInput(nodeRef.current?.textContent ?? '')}", 'the screenplay', 'a script element\'s own input (no rows) - the same read as before the #10j split, now in script/elements.tsx'],
   ['components/ScriptEditor.tsx', 'const text = node?.textContent ?? activeEl?.text', 'the screenplay', 'a script element (no rows)'],
   ['components/ScriptEditor.tsx', 'const domText = activeElRef.current?.textContent;', 'the screenplay', 'a script element (no rows)'],
   ['pages/JournalEntry.tsx', 'pageTextRef.current = el.innerText;', 'the Journal sheet', 'the Journal\'s plaintext sheet (no rows, a different surface)'],
