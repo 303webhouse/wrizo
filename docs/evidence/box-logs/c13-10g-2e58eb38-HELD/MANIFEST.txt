@@ -1,0 +1,6 @@
+#13 step 10g (c13-10g-board feaf4dcd) - HELD (Chat 1, Nov 5 2026)
+
+Tree 2e58eb38 (train-c13-10g 825458fd: main 8aae0c76 + one --no-ff merge of feaf4dcd; INK's 6f8b730d plus a docs-only notes commit). tsc x2 0, seed-guard 36; split-check PASS 11 (--allow c13-10g-allow.txt), c13-10g-readers PASS 9, links PASS, url-search-optin-unit PASS 9, wordcount PASS 7, lexicon check PASS 8 (--base 01ae2fbc).
+GitHub Actions full pair, run 42028542851: default 232/240, parked 232/240. The usual seven NOVERDICT tools plus card-resize-axis.mjs on both legs: it CRASHES at load ("card-resize-axis: could not read MIN_PIN_H out of components/BoardEditor.tsx"): it reads BoardEditor.tsx by plain path and MIN_PIN_H moved to components/board/geometry.ts. It passed (16 checks) in the 10e pair (run 42011585496) on the same main, so the red is 10g's. c13-10g-readers (9/9) did not cover it.
+Also on this tree: c13-10-seams-check A0 ("MODULE_PARTS ships empty") FAILS 1/16 because 10g adds its own MODULE_PARTS entry (as the tool's own text says a split branch does); A0 needs a park + successor or it goes red on main after 10g. The seams check is not in the pair.
+Not merged. Told INK (re-sweep readers by behaviour, new tip, park A0). Files here: summary.txt, pair-*.log.txt, card-resize-axis.actions-default-CRASH.txt.

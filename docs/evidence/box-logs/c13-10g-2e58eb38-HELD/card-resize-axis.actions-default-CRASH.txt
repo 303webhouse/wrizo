@@ -1,0 +1,12 @@
+file:///home/runner/work/wrizo/wrizo/build/apps/desktop/scripts/harness/card-resize-axis.mjs:31
+  if (!m) throw new Error(`card-resize-axis: could not read ${name} out of ${file}`);
+                ^
+
+Error: card-resize-axis: could not read MIN_PIN_H out of components/BoardEditor.tsx
+    at constOf (file:///home/runner/work/wrizo/wrizo/build/apps/desktop/scripts/harness/card-resize-axis.mjs:31:17)
+    at file:///home/runner/work/wrizo/wrizo/build/apps/desktop/scripts/harness/card-resize-axis.mjs:36:19
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.13.0
