@@ -1,6 +1,6 @@
 # Contract: the Wrizo export format, v1 · DRAFT 0
 
-**Status:** draft 0, rev d (Fable, Nov 2, 2026, 4:50 pm: web links approved; §8b the publish call + the field shapes). NOT signed. Read mocks against it. **Owner:** Fable. **Consumer:** SOCIAL.
+**Status:** draft 0, rev e (Fable, Nov 4, 2026, 9:20 pm: `provenance.making` removed by Nick; the reviewer materials planned for v2). NOT signed. Read mocks against it. **Owner:** Fable. **Consumer:** SOCIAL.
 **The rule it serves (Nick):** one door. Text enters Read only through this format. Read has no editor of its own and never writes back to Write.
 
 ## 1. The envelope
@@ -40,7 +40,7 @@
 
 ## 4. `provenance`
 - `imported`: `true` when the page was born through Write's Import door (the existing `importedAt` on the page), otherwise `false`. **It's a label, never a gate** (Nick).
-- `making`: **OPEN (Nick, deferred).** It's absent in v1 until he decides. Read must work with it missing.
+- **`making` is REMOVED** (Nick, Nov 4: no "how it was made" record). Instead, **planned for export v2, after Nick's reorganisation of boards / presets:** the writer may CHOOSE to attach her plan, outline or boards to a piece so reviewers can see them. It's opt-in per piece and never automatic.
 
 ## 5. Never in an export
 - Tutor conversations.
