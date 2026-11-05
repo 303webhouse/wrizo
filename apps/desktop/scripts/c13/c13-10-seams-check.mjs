@@ -30,7 +30,7 @@ const M = 'components/Tutor.tsx', P = ['components/tutor/assemble.ts', M, 'compo
 // ok('A0 MODULE_PARTS ships empty: the split branch adds its own entry', Object.keys(MODULE_PARTS).length === 0, JSON.stringify(Object.keys(MODULE_PARTS)));
 // ------------------------------------------------------------------
 const shipped = Object.keys(MODULE_PARTS);   // read before A2-A8 write their scratch Tutor entry
-const SHIPS = ['components/BoardEditor.tsx'];   // each merged split that adds an entry adds its module here
+const SHIPS = ['components/BoardEditor.tsx', 'pages/PageEditor.tsx'];   // each merged split that adds an entry adds its module here (10i: pages/PageEditor.tsx)
 ok('A0 [10g successor] MODULE_PARTS ships exactly the entries the merged splits added (10g: components/BoardEditor.tsx), and no scratch entry',
   JSON.stringify(shipped) === JSON.stringify(SHIPS) && !shipped.includes(M), JSON.stringify(shipped));
 ok('A1 without an entry the module reads plainly', srcText(SRC, M) === plain(M));
