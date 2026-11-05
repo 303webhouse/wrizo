@@ -15,6 +15,7 @@ import { useWritingGoal, setWritingGoal, goalCount, goalFraction, DEFAULT_GOAL_L
 // repositioning their popover to sit inline in the sliver's own scrolling
 // panel instead of ModeStage's absolute stage-corner placement.
 import { Seg } from './ModeStage';
+import { progressOptions } from './settings/rows';
 import { HelpButton } from './HelpButton';
 import { BEGINNING_GLYPH } from './BeginningsRow';
 import { TemplateSketch, type TemplateKey } from './TemplateSketch';
@@ -976,8 +977,7 @@ function ProgressFields({ target, hasMilestones }: { target: WritingGoal | null;
     setUnit(u);
     if (target != null) commit(u);
   };
-  const progressOpts: [string, string][] = [['words', 'Words'], ['time', 'Time'], ['off', 'Off']];
-  if (hasMilestones) progressOpts.splice(2, 0, ['project', 'Drawer']);
+  const progressOpts = progressOptions(hasMilestones, t('progressDrawer'));
   // PHASE 1 (S4) - the Show row LEFT this menu for the icon toggle beside the "...". Every row that stays is greyed and unusable while Progress
   // Tracking is off; the stored goal, unit and choices are untouched.
   const off = !settings.instrumentsOn;

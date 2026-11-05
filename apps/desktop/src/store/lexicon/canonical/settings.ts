@@ -5,6 +5,7 @@ export const CANONICAL_SETTINGS = {
   progressStyleLabel: 'Progress style',
   progressStyleBar: 'Bar',
   progressStyleRhizome: 'Rhizome',
+  progressDrawer: 'Drawer',   // the Progress row's label for the stored 'project' metric (no theme overrides it yet) [ModeStage §22]
 
   // the Recede-depth explanation lives here, behind the shared "?"; the Settings panel carries no standing text [deskLexicon §57]
   recedeHint: 'Type and the menus fade; pause, reach an edge, or press Esc to bring them back.',
