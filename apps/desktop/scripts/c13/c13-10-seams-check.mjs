@@ -25,7 +25,14 @@ const throws = (f) => { try { f(); return false; } catch { return true; } };
 
 // (A)
 const M = 'components/Tutor.tsx', P = ['components/tutor/assemble.ts', M, 'components/tutor/presets.ts'];
-ok('A0 MODULE_PARTS ships empty: the split branch adds its own entry', Object.keys(MODULE_PARTS).length === 0, JSON.stringify(Object.keys(MODULE_PARTS)));
+// ---- PARKED - SUPERSEDED by #13 step 10g (the BoardEditor split): the split's own branch added its entry, as A0's own sentence said
+// it would, so MODULE_PARTS no longer ships empty. Kept VERBATIM and no longer run; its parked record (end of file) asserts the successor.
+// ok('A0 MODULE_PARTS ships empty: the split branch adds its own entry', Object.keys(MODULE_PARTS).length === 0, JSON.stringify(Object.keys(MODULE_PARTS)));
+// ------------------------------------------------------------------
+const shipped = Object.keys(MODULE_PARTS);   // read before A2-A8 write their scratch Tutor entry
+const SHIPS = ['components/BoardEditor.tsx'];   // each merged split that adds an entry adds its module here
+ok('A0 [10g successor] MODULE_PARTS ships exactly the entries the merged splits added (10g: components/BoardEditor.tsx), and no scratch entry',
+  JSON.stringify(shipped) === JSON.stringify(SHIPS) && !shipped.includes(M), JSON.stringify(shipped));
 ok('A1 without an entry the module reads plainly', srcText(SRC, M) === plain(M));
 MODULE_PARTS[M] = P;
 ok('A2 with an entry the module reads as its parts joined in the order given (the module itself in its place)', srcText(SRC, M) === P.map(plain).join(''));
@@ -73,8 +80,20 @@ try {
   fs.rmSync(tmp, { recursive: true, force: true });
 }
 
+// === PARKED - gated behind HARNESS_PARKED=1, skipped by default. First tenant: A0, superseded by 10g; the record re-asserts the
+// successor's truth from the default leg's own reading.
+const parkedChecks = [];
+if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass: !!pass, detail });
+  pok('PARKED (was "A0 MODULE_PARTS ships empty: the split branch adds its own entry") - SUPERSEDED: 10g\'s branch added components/BoardEditor.tsx; live successor: A0 [10g successor]',
+    JSON.stringify(shipped) === JSON.stringify(SHIPS), JSON.stringify(shipped));
+  for (const c of parkedChecks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : `\n        [${c.detail}]`}`);
+  console.log(parkedChecks.every((c) => c.pass) ? `\nC13-10 SEAMS CHECK PARKED: PASS (${parkedChecks.length} checks) - HARNESS_PARKED=1 armed`
+    : `\nC13-10 SEAMS CHECK PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
+}
+
 // (B)'s detail is the split check's own LINES line, printed on a pass too: the evidence of WHY each run passed or failed
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail && (!c.pass || c.name.startsWith('B')) ? `\n        [${c.detail}]` : ''}`);
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nC13-10 SEAMS CHECK: PASS (${checks.length} checks)` : `\nC13-10 SEAMS CHECK: FAIL - ${checks.length - passed}/${checks.length} failed`);
-process.exit(passed === checks.length ? 0 : 1);
+process.exit(passed === checks.length && parkedChecks.every((c) => c.pass) ? 0 : 1);

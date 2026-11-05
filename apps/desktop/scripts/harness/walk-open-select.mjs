@@ -10,6 +10,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { srcText } from '../global-css.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const SRC = path.resolve(here, '../../src/components/BoardEditor.tsx');
@@ -27,7 +28,7 @@ function pointerEffectDeps(src) {
   return m ? m[1] : null;
 }
 const keyedOnOpen = (src) => { const d = pointerEffectDeps(src); return d !== null && /boardMode\s*===\s*'open'/.test(d); };
-const source = fs.readFileSync(SRC, 'utf8');
+const source = srcText(path.resolve(here, '../../src'), 'components/BoardEditor.tsx');   // #13 step 10g: the module and its parts, joined
 ok('A1 the pointer effect is found in BoardEditor.tsx (its marker comment and its dependency list)', pointerEffectDeps(source) !== null, 'marker or deps not found');
 ok("A2 the pointer effect re-runs when the board is shown Open (its deps name boardMode === 'open'), so a Deck switched from the Walk attaches its listeners to the canvas that just mounted", keyedOnOpen(source), `deps: [${pointerEffectDeps(source)}]`);
 // mutant: the Open key is dropped -> A2's test function must go red on it

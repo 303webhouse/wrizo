@@ -30,12 +30,12 @@ const CLASSIFIED = [
     'revealAtCaret: the card pop-up only - the page calls revealRowsAtCaret whenever rows are attached (ForwardOnlyEditor)'],
   ['components/ForwardOnlyEditor.tsx', 'readEditorPlainText(el.innerText, getPlainOffset(el));', 'a free-edit surface WITHOUT rows',
     'readNative FALLBACK: readNativeEdit returns null only when no rows are attached; the page always has rows'],
-  ['components/BoardEditor.tsx', 'const plainNow = () => readEditorPlainText(el.innerText, null).plain;', 'the board card', 'the card pop-up\'s own editor (small; no rows)'],
-  ['components/BoardEditor.tsx', 'let { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));', 'the board card',
+  ['components/board/BoardCardPopup.tsx', 'const plainNow = () => readEditorPlainText(el.innerText, null).plain;', 'the board card', 'the card pop-up\'s own editor (small; no rows)'],
+  ['components/board/BoardCardPopup.tsx', 'let { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));', 'the board card',
     'the card pop-up\'s input, and (typed-literal) its composition end - the same read, now `let` so the commit can be escaped'],
-  ['components/BoardEditor.tsx', 'const after = readEditorPlainText(el.innerText, getCaretOffset(el));', 'the board card', 'the card pop-up\'s em dash'],
+  ['components/board/BoardCardPopup.tsx', 'const after = readEditorPlainText(el.innerText, getCaretOffset(el));', 'the board card', 'the card pop-up\'s em dash'],
   // connector-b (shipped @ 15dbd991) added this read and the guard was never told - red on main (found Oct 19, Fable Oct 21: fix on its own branch)
-  ['components/BoardEditor.tsx', "entryId: eid, label: (el.textContent ?? '').trim()", 'the rail',
+  ['components/board/useRailLinkDrag.ts', "entryId: eid, label: (el.textContent ?? '').trim()", 'the rail',
     'connector-b\'s thumbnail drag: a RAIL TILE\'s own text, read once at the press to label the drag ghost (the tile names a page or a board - not the editor, not a row); never saved, counted, copied, exported or sent'],
   // ---- SUPERSEDED by typed-literal (Oct 16): the composition end's read became `let { plain, caret } = ...` (its committed text is escaped),
   // so it is the entry above; this one, kept verbatim, would now match nothing and fail the rot check.

@@ -141,7 +141,7 @@ if (!loaded.m) {
 // ---- PART 1b: source pins ---------------------------------------------------------------------------------------------------------------------------------------------
 const popout = rd('components/SectionsPopout.tsx');
 const panels = noCR(srcText(SRC, 'components/CascadePanels.tsx'));   // #13 step 10d: the barrel's parts, joined
-const editor = rd('components/BoardEditor.tsx');
+const editor = noCR(srcText(SRC, 'components/BoardEditor.tsx'));   // #13 step 10g: the module and its parts, joined
 const wizard = rd('components/DeckWizard.tsx');
 const unborn = rd('store/unbornPage.ts');
 const lex = noCR(srcText(SRC, 'store/deskLexicon.ts'));   // #13 step 10c: the inline read

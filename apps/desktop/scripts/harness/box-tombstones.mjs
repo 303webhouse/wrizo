@@ -20,6 +20,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { srcText } from '../global-css.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const DESKTOP = path.resolve(here, '..', '..');
@@ -268,7 +269,7 @@ for (const [name, file, fn, expectRed] of MUT) {
   ok('T11 (mutant): a NEW raw reader of `.boxes` added to a file turns the guard RED (the mutation landed)', drift2.includes('store/pageExport.ts'), JSON.stringify(drift2));
   // Add scenes: the board's Add writes through a functional append of the NEW cards; putting the raw whole-list write back (`setBoxes(made.boxes)`, what Chat 1 found) must turn the guard RED
   const addFn = 'setBoxes(prev => [...prev, ...kids]);';
-  const beSrc = noCR(fs.readFileSync(path.join(SRC, 'components/BoardEditor.tsx'), 'utf8'));
+  const beSrc = noCR(srcText(SRC, 'components/BoardEditor.tsx'));   // #13 step 10g: the module and its parts, joined
   const withRaw = rawReads(SRC, { 'components/BoardEditor.tsx': (t) => t.replace(addFn, 'setBoxes(made.boxes);') });
   const drift3 = Object.keys(withRaw).filter((k) => (withRaw[k] || 0) !== (RAW_BASELINE[k] || 0));
   ok('T11 (mutant): Add scenes writing the card list raw again (`setBoxes(made.boxes)`) turns the guard RED (the mutation landed)', beSrc.includes(addFn) && drift3.includes('components/BoardEditor.tsx'), JSON.stringify({ hasSite: beSrc.includes(addFn), drift3 }));

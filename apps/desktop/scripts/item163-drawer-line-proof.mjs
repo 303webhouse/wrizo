@@ -198,7 +198,7 @@ console.log('CLAIM 5 — ONE READER: no bare-name spelling survives anywhere');
 console.log('CLAIM 6 — and all three call sites call it');
 {
   const cp = srcText(join(repo, 'apps/desktop/src'), 'components/CascadePanels.tsx');   // #13 step 10d
-  const be = readFileSync(join(repo, 'apps/desktop/src/components/BoardEditor.tsx'), 'utf8');
+  const be = srcText(join(repo, 'apps/desktop/src'), 'components/BoardEditor.tsx');   // #13 step 10g: the module and its parts, joined
   const sites = [
     ['CascadePanels: the board ROW', /relation:\s*boardDrawerLine\(board\)/.test(cp)],
     ['CascadePanels: the zone CAPTION', /\{boardDrawerLine\(subject\.entry\)\}/.test(cp)],

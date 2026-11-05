@@ -1,0 +1,97 @@
+function useBoardMeasure({ wrapRef, boardMode }: {
+  wrapRef: MutableRefObject<HTMLDivElement | null>;
+  boardMode: BoardView;
+}) {
+  return { containerWidthPx, widthMeasured, availHeightPx };
+}
+  const { containerWidthPx, widthMeasured, availHeightPx } = useBoardMeasure({ wrapRef, boardMode });
+function useBoardBox({ wrapRef }: {
+  wrapRef: MutableRefObject<HTMLDivElement | null>;
+}) {
+  return { boardBox };
+}
+  const { boardBox } = useBoardBox({ wrapRef });
+function useBoardSave({ systemKind, id, setBoxes, lastSavedRef, boxes, unbornRef, boxesRef, pendingGraftsRef, unborn }: {
+  systemKind: SystemBoardKind;
+  id: string;
+  setBoxes: Dispatch<SetStateAction<Box[]>>;
+  lastSavedRef: MutableRefObject<Box[]>;
+  boxes: Box[];
+  unbornRef: MutableRefObject<UnbornHandle>;
+  boxesRef: MutableRefObject<Box[]>;
+  pendingGraftsRef: MutableRefObject<{ boxId: string; entryId: string }[]>;
+  unborn: UnbornHandle;
+}) {
+}
+  useBoardSave({ systemKind, id, setBoxes, lastSavedRef, boxes, unbornRef, boxesRef, pendingGraftsRef, unborn });
+function useBoardReflow({ pageWidthPx, widthMeasured, touchedRef, boxes, activeResizeIdRef, measureEls, lastSavedRef, setBoxes, popupBoxId }: {
+  pageWidthPx: number;
+  widthMeasured: boolean;
+  touchedRef: MutableRefObject<Set<string>>;
+  boxes: Box[];
+  activeResizeIdRef: MutableRefObject<string | null>;
+  measureEls: MutableRefObject<Map<string, HTMLDivElement>>;
+  lastSavedRef: MutableRefObject<Box[]>;
+  setBoxes: Dispatch<SetStateAction<Box[]>>;
+  popupBoxId: string | null;
+}) {
+}
+  useBoardReflow({ pageWidthPx, widthMeasured, touchedRef, boxes, activeResizeIdRef, measureEls, lastSavedRef, setBoxes, popupBoxId });
+function useRailLinkDrag({ canvasRef, linkedCopyRef, threadArmedFromRef, popupBoxIdRef, id }: {
+  canvasRef: MutableRefObject<HTMLDivElement | null>;
+  linkedCopyRef: MutableRefObject<(entryId: string, x: number, y: number) => void>;
+  threadArmedFromRef: MutableRefObject<string>;
+  popupBoxIdRef: MutableRefObject<string>;
+  id: string;
+}) {
+}
+  useRailLinkDrag({ canvasRef, linkedCopyRef, threadArmedFromRef, popupBoxIdRef, id });
+function useBoardGestures({ canvasRef, previewLineRef, armTipRef, id, boxesRef, threadArmedFromRef, setThreadArmedFrom, setConnectFromKnob, setConnectTarget, setSelectedConnectionId, setConnectFlash, setBoxes, popupBoxIdRef, setSelectedId, ctxActionsRef, pageWidthPx, ghostRef, freshEmptyIdsRef, setPopupBoxId, setIsDragging, activeResizeIdRef, lastActionRef, setCanUndo, lastGestureEndRef, measureEls, touchedRef, setStartersFaded, selectedIdRef, createAllowedRef, connectEndRef, boardMode }: {
+  canvasRef: MutableRefObject<HTMLDivElement | null>;
+  previewLineRef: MutableRefObject<SVGLineElement | null>;
+  armTipRef: MutableRefObject<SVGCircleElement | null>;
+  id: string;
+  boxesRef: MutableRefObject<Box[]>;
+  threadArmedFromRef: MutableRefObject<string>;
+  setThreadArmedFrom: Dispatch<SetStateAction<string | null>>;
+  setConnectFromKnob: Dispatch<SetStateAction<boolean>>;
+  setConnectTarget: Dispatch<SetStateAction<string | null>>;
+  setSelectedConnectionId: Dispatch<SetStateAction<string | null>>;
+  setConnectFlash: Dispatch<SetStateAction<{ a: string; b: string; off: boolean; line: boolean } | null>>;
+  setBoxes: Dispatch<SetStateAction<Box[]>>;
+  popupBoxIdRef: MutableRefObject<string>;
+  setSelectedId: Dispatch<SetStateAction<string | null>>;
+  ctxActionsRef: MutableRefObject<{ card: (x: number, y: number, boxId: string) => void; board: (x: number, y: number) => void }>;
+  pageWidthPx: number;
+  ghostRef: MutableRefObject<HTMLDivElement | null>;
+  freshEmptyIdsRef: MutableRefObject<Set<string>>;
+  setPopupBoxId: Dispatch<SetStateAction<string | null>>;
+  setIsDragging: Dispatch<SetStateAction<boolean>>;
+  activeResizeIdRef: MutableRefObject<string | null>;
+  lastActionRef: MutableRefObject<LastAction>;
+  setCanUndo: Dispatch<SetStateAction<boolean>>;
+  lastGestureEndRef: MutableRefObject<number>;
+  measureEls: MutableRefObject<Map<string, HTMLDivElement>>;
+  touchedRef: MutableRefObject<Set<string>>;
+  setStartersFaded: Dispatch<SetStateAction<boolean>>;
+  selectedIdRef: MutableRefObject<string>;
+  createAllowedRef: MutableRefObject<boolean>;
+  connectEndRef: MutableRefObject<(() => void) | null>;
+  boardMode: BoardView;
+}) {
+}
+  useBoardGestures({ canvasRef, previewLineRef, armTipRef, id, boxesRef, threadArmedFromRef, setThreadArmedFrom, setConnectFromKnob, setConnectTarget, setSelectedConnectionId, setConnectFlash, setBoxes, popupBoxIdRef, setSelectedId, ctxActionsRef, pageWidthPx, ghostRef, freshEmptyIdsRef, setPopupBoxId, setIsDragging, activeResizeIdRef, lastActionRef, setCanUndo, lastGestureEndRef, measureEls, touchedRef, setStartersFaded, selectedIdRef, createAllowedRef, connectEndRef, boardMode });
+function useBoardKeys({ popupBoxIdRef, threadArmedFromRef, connectEndRef, selectedConnectionIdRef, setSelectedConnectionId, selectedIdRef, setSelectedId, removeConnection, undoRef, removeSelectedRef }: {
+  popupBoxIdRef: MutableRefObject<string>;
+  threadArmedFromRef: MutableRefObject<string>;
+  connectEndRef: MutableRefObject<(() => void) | null>;
+  selectedConnectionIdRef: MutableRefObject<string>;
+  setSelectedConnectionId: Dispatch<SetStateAction<string | null>>;
+  selectedIdRef: MutableRefObject<string>;
+  setSelectedId: Dispatch<SetStateAction<string | null>>;
+  removeConnection: (connId: string) => void;
+  undoRef: MutableRefObject<() => void>;
+  removeSelectedRef: MutableRefObject<() => void>;
+}) {
+}
+  useBoardKeys({ popupBoxIdRef, threadArmedFromRef, connectEndRef, selectedConnectionIdRef, setSelectedConnectionId, selectedIdRef, setSelectedId, removeConnection, undoRef, removeSelectedRef });

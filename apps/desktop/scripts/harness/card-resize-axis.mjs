@@ -27,7 +27,9 @@ const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const noCR = (t) => t.replace(/\r\n?/g, '\n');
 const constOf = (file, name) => {
-  const m = noCR(srcText(SRC, file)).match(new RegExp(`^const ${name} = ([0-9.]+);`, 'm'));
+  // #13 step 10g: a top-level constant moved into a part is exported there (`export const MIN_PIN_H = ...` in board/geometry.ts), so
+  // the declaration may carry `export `; the instrument still reads the one top-level declaration of that name
+  const m = noCR(srcText(SRC, file)).match(new RegExp(`^(?:export )?const ${name} = ([0-9.]+);`, 'm'));
   if (!m) throw new Error(`card-resize-axis: could not read ${name} out of ${file}`);
   return Number(m[1]);
 };

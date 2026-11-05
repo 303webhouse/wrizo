@@ -8,6 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { srcText } from '../global-css.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const DESKTOP = path.resolve(here, '..', '..');
@@ -56,7 +57,7 @@ const grow = (bs, id, h) => bs.map((b) => (b.id === id ? { ...b, h } : b));
   const before = [l, r]; const out = fitDealtRows(before, grow(before, 'l', 0.165));
   ok('R6b: a card in another column, not under the grown one, is not carried', near(byId(out, 'r').y, byId(before, 'r').y));
 }
-const src = fs.readFileSync(path.join(SRC, 'components', 'BoardEditor.tsx'), 'utf8').replace(/\r\n/g, '\n');
+const src = srcText(SRC, 'components/BoardEditor.tsx').replace(/\r\n/g, '\n');   // #13 step 10g: the module and its parts, joined
 // PARKED (Fable, Oct 30, #12b): R9 as first written - SUPERSEDED: a pass on a plain OPEN no longer hands the boxes to rowFit (opening saves nothing); successor R9b. Kept verbatim:
 // ok('R9: BoardEditor imports fitDealtRows and the reflow effect hands it the before and the grown boxes', /import \{ fitDealtRows \} from '\.\.\/decks\/rowFit';/.test(src) && /if \(changed\) setBoxes\(fitDealtRows\(boxes, next\)\);/.test(src));
 // PARKED (Fable, Oct 30, #12b): R9b as first written - SUPERSEDED: rowFit now applies on screen on a plain open too (never saved on its own); successor R9c. Kept verbatim:
