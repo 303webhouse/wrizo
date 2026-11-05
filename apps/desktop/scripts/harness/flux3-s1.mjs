@@ -360,14 +360,23 @@ try { await withHarness(async (app) => {
     const made = targets.filter((t) => conns.some(([a, b]) => (a === src && b === t) || (a === t && b === src))).length;
     // the flash strokes: the inner stroke's alpha = 0.5 + 0.5 x lf (lf = what is left of the flash), so its start = t - (1 - lf) x FLASH_MS
     const strokes = await ev(`window.__f3.log.filter((e) => e[0] >= ${t0} && e[2] === 'stroke' && /rgba\\(166, ?240, ?255/.test(e[4])).map((e) => [e[0], e[4]])`);
-    const starts = [];
+    // flashes that start together on different links share a start time, so a start counts as many flashes as the most strokes any ONE frame
+    // drew for it (each lit link is its own inner stroke in a frame)
+    const frames = [];
     for (const [t, s] of strokes) {
       const a = (rgba(s) || [0, 0, 0, 0])[3];
       if (a < 0.5) continue;
       const st = t - (1 - (2 * a - 1)) * FLASH_MS;
-      if (!starts.some((x) => Math.abs(x - st) < 60)) starts.push(st);
+      const f = frames.length && t - frames[frames.length - 1].t < 4 ? frames[frames.length - 1] : (frames.push({ t, st: [] }), frames[frames.length - 1]);
+      f.st.push(st);
     }
-    starts.sort((x, y) => x - y);
+    const clusters = [];   // { st, n }
+    for (const f of frames) {
+      const local = [];
+      for (const st of f.st) { const c = local.find((x) => Math.abs(x.st - st) < 60); if (c) c.n += 1; else local.push({ st, n: 1 }); }
+      for (const l of local) { const c = clusters.find((x) => Math.abs(x.st - l.st) < 60); if (c) c.n = Math.max(c.n, l.n); else clusters.push({ ...l }); }
+    }
+    const starts = clusters.flatMap((c) => Array(c.n).fill(c.st)).sort((x, y) => x - y);
     let maxPerSec = 0; for (let i = 0; i < starts.length; i += 1) maxPerSec = Math.max(maxPerSec, starts.filter((x) => x >= starts[i] && x < starts[i] + 1000).length);
     const gaps = starts.slice(1).map((x, i) => Math.round(x - starts[i]));
     const burst = ups.length >= 2 ? Math.round(ups[ups.length - 1] - ups[0]) : null;
