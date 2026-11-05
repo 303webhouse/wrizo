@@ -56,7 +56,8 @@ const checks = [];
 const ok = (name, pass, detail = '') => { checks.push({ name, pass, detail }); console.log((pass ? 'PASS ' : 'FAIL ') + name + (detail ? '  ' + detail : '')); };
 
 const css = src('index.css');
-const scriptEditor = src('components/ScriptEditor.tsx');
+// #13 step 10j: the script page's block model (element styles, caret, elements) is components/script/*; T4 reads all of it (the read only)
+const scriptEditor = ['components/ScriptEditor.tsx', 'components/script/styles.ts', 'components/script/caret.ts', 'components/script/elements.tsx'].map(src).join('');
 
 const SHARED_VAR = "var(--wz-page-pad-x, 38px)";
 
