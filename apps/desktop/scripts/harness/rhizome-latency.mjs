@@ -209,8 +209,18 @@ async function part2() {
         const tailAt = await app.evalJs('performance.now()');
         await app.typeKeys(' tail');
         const flashOn = await waitSoft("document.querySelector('.wz-rhizome-field')?.dataset.flash === 'true'", { label: 'brass flash on goal', timeout: 4000 });
-        const flashFilter = flashOn ? await app.evalJs("getComputedStyle(document.querySelector('.wz-rhizome-field')).filter") : null;
-        if (!(flashOn && /drop-shadow/.test(String(flashFilter)))) { M.flashPremise = false; M.filterPremise = false; M.rounds.push({ round, flashOn, flashFilter }); break; }
+        // THE FLASH PREMISE (the guard must be measuring a flash that is really on). On main: the full-field drop-shadow filter on `.wz-rhizome-field`. Under Arbor's vines (?arbor2=1, r20 and on) the field takes NO filter
+        // while it flashes; the flash is a brass copy of the vines on its own composited layer (`svg.arbor2-vines-flash`: opacity only, will-change:opacity, the `arbor2-flash-up` animation) - so there the premise is that layer
+        // holding, in its animation. The branch is chosen by what the page IS (the root's data-arbor2 and the field's data-vines), never by a flag this file was handed.
+        // SUPERSEDED (Nov 2026, Fable): the single premise below required a drop-shadow on the field, which an Arbor page can never show. Kept verbatim:
+        // const flashFilter = flashOn ? await app.evalJs("getComputedStyle(document.querySelector('.wz-rhizome-field')).filter") : null;
+        // if (!(flashOn && /drop-shadow/.test(String(flashFilter)))) { M.flashPremise = false; M.filterPremise = false; M.rounds.push({ round, flashOn, flashFilter }); break; }
+        const flashLive = flashOn ? await app.evalJs(`(() => { const f = document.querySelector('.wz-rhizome-field'); const filter = getComputedStyle(f).filter;
+          if (!(document.documentElement.hasAttribute('data-arbor2') && f.dataset.vines === 'true')) return { kind: 'field-filter', filter, ok: /drop-shadow/.test(filter) };
+          const l = document.querySelector('.arbor2-vines-flash'); const cs = l ? getComputedStyle(l) : null;
+          return { kind: 'arbor-layer', filter, layer: !!l, layerFlash: l ? l.dataset.flash : null, animation: cs ? cs.animationName : null, willChange: cs ? cs.willChange : null,
+            ok: !!l && l.dataset.flash === 'true' && /arbor2-flash-up/.test(cs.animationName) && /opacity/.test(cs.willChange) }; })()`) : null;
+        if (!(flashOn && flashLive && flashLive.ok)) { M.flashPremise = false; M.filterPremise = false; M.rounds.push({ round, flashOn, flashLive }); break; }
         await typeSteady(HOLD_KEYS, 85);
         await waitSoft("document.querySelector('.wz-rhizome-field')?.dataset.flash === 'fading'", { label: 'the fade begins', timeout: 3000 });
         await typeSteady(FADE_KEYS, 25, false);
@@ -271,7 +281,7 @@ async function part2() {
     console.log('RL-RAW: ' + JSON.stringify({ mutantMs: MUTANT_MS, mutantStallMs: MUTANT_STALL_MS, attempts, restA, restPre, restFast, hold: holdAll, fade: fadeAll, fine: M.fine }));
     ok(`A+ the rest baselines are the control bursts typed on the crossing page seconds before the 8th word: ${restSt.n} keys at the hold's pace and ${fastSt.n} at the fade's, over ${rounds.length} round(s), ${attempts.length} measurement(s) (a slow-control key over ${REST_NOISE_MS} ms = a box stall: the measurement is void and taken again; a failing one is measured again to confirm it)`,
       restSt.n >= MIN_KEYS && fastSt.n >= MIN_KEYS && !(restSt.max > REST_NOISE_MS), `control ${show(restSt)} | control fast ${show(fastSt)} | A block ${show(restASt)} | attempts ${JSON.stringify(attempts)}`);
-    ok('B premise: every round crossed the goal and the flash was HOLDING with the drop-shadow actually applied to the full field', flashPremise && filterPremise, JSON.stringify(rounds.slice(-1)));
+    ok('B premise: every round crossed the goal and the flash was HOLDING - on main with the drop-shadow actually applied to the full field, under Arbor\'s vines with the brass copy\'s composited layer running its animation', flashPremise && filterPremise, JSON.stringify(rounds.slice(-1)));
     ok(`B premise: at least ${MIN_KEYS} keys were painted while data-flash was true (${rounds.length} round(s); a flash that was over before the keys landed certifies nothing)`, holdSt.n >= MIN_KEYS, show(holdSt));
     ok(`B typing inside the flash is as fast as typing at rest: median within ${MEDIAN_SLACK} ms and p95 within ${P95_SLACK} ms of the rest numbers, and no key over ${MAX_MS} ms`,
       holdSt.n >= MIN_KEYS && restSt.n >= MIN_KEYS && holdSt.median <= restSt.median + MEDIAN_SLACK && holdSt.p95 <= restSt.p95 + P95_SLACK && holdSt.max <= MAX_MS, `rest ${show(restSt)} | flash ${show(holdSt)}`);
