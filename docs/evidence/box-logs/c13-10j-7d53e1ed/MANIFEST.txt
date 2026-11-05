@@ -1,0 +1,10 @@
+#13 step 10j (POLISH c13-10j-script 6b79a824, ScriptEditor block model -> components/script/) - manifest (Chat 1, Nov 5 2026)
+
+Tree ddb731e5 (train-c13-10j-p 7d53e1ed: main 3bc58305 + one --no-ff merge of c13-10j-script 6b79a824). Merged to main with a --no-ff merge (main had one docs-only commit on top, 946f9115); `git diff 7d53e1ed HEAD --stat -- apps` is empty.
+PROOFS
+- tsc desktop 0, tsc server 0, seed-guard PASS 36, build:web done.
+- GitHub Actions full pair, run 42092903087 (ref = the full sha, 8 shards per leg): default 234/241, parked 234/241; the 7 non-OK are the usual capture/probe NOVERDICT tools, both legs.
+- Split check (--base main, ScriptEditor.tsx + components/script/{styles,caret,elements}) PASS 9, on the train and again on the merged main; scrollbar-flush-source (10j changed it) PASS 24 on the merged main.
+- Bundle NOT byte-identical to the control (POLISH's report): same length (956,990 bytes), same characters in the 7,838-character region that differs; module order only (ScriptEditor imports ./script/caret before ./script/elements -> ./script/styles). So Fable's second branch applies: the full pair + the style probe IDENTICAL. The probe is POLISH's, from its turn 21 (box 18:15Z-19:18Z, lane 77 files CLEAN both legs): parent 8aae0c76 vs tip, "C13-STYLE COMPARE: IDENTICAL" (2,188 selectors). I did not re-run the probe myself; its log is in POLISH's lane, not in this directory.
+- Clear: Fable, Nov 5 ("10j: CLEARED in advance on its pair + the split check + (bundle identical, or the full pair + the probe IDENTICAL)").
+Files here: pair-default/parked.log.txt, summary.txt (Actions); checks/ (split on train and merged, scrollbar-flush-source, seed-guard).

@@ -1,0 +1,11 @@
+PASS  LINES: 1007 code lines before, 1007 after, 303 now in components/script/styles.ts, components/script/caret.ts, components/script/elements.tsx; missing 0, added 0
+PASS  SCOPE: 4 src files differ from 946f9115: components/ScriptEditor.tsx, components/script/caret.ts, components/script/elements.tsx, components/script/styles.ts
+PASS  BARREL: components/ScriptEditor.tsx exported 1 names at 946f9115 and exports 1 now
+PASS  CITES: 16 [Name §n] citations in the split's files, each a heading in docs/rulings/components-<Name>.md
+PASS  LIVENESS: a moved line edited turns LINES red
+PASS  LIVENESS: a moved line dropped turns LINES red
+PASS  LIVENESS: a src file outside the split changed turns SCOPE red
+PASS  LIVENESS: a moved citation points nowhere turns CITES red
+PASS  LIVENESS: the barrel loses an export turns BARREL red
+
+C13-10 SPLIT CHECK: PASS (9 checks)
