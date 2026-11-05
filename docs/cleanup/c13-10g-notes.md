@@ -94,6 +94,52 @@ No `eslint-disable` line was added.
   - The readers check passes 9/9 (`--base d1ede8e9`; BoardEditor is identical there and at 8aae0c76).
   - Links pass, and seed-guard passes (36).
 
+## The first pair's red, and the sweep it called for (Nov 5)
+
+**The red.** Chat 1's pair on feaf4dcd (run 42028542851) crashed `card-resize-axis.mjs` on both legs: "could not read MIN_PIN_H out of components/BoardEditor.tsx".
+- Its `constOf` reads the join, as it should. But it matches ``new RegExp(`^const ${name} = `, 'm')``, and in `geometry.ts` the moved constant reads `export const MIN_PIN_H = ...`.
+- The readers check missed it for two reasons:
+  - it counted fixed literals, and this pattern is BUILT at run time from a name;
+  - its EXPLAINED entry for `"MIN_PIN_W"` claimed, untested, that the join holds `^const MIN_PIN_W = ` once. That claim was false.
+
+**The fix.** `constOf` now accepts `export `: `^(?:export )?const ${name} = `.
+- Measured on base 8aae0c76 and on the split, all six of its reads (four from persistence, two from the board):
+  - the old pattern reads NONE for both MIN_PIN names on the split, which reproduces the red;
+  - the new pattern reads the same value as base for all six;
+  - each name has exactly one top-level declaration on both trees.
+- This is an instrument repair, not an assertion edit: the checks that use the values are untouched.
+
+**The readers check now sees built patterns (COMPOSED):**
+- It finds every `new RegExp(` of a non-literal, and every template or `+` text handed to a search, in the 25 readers: 34 sites.
+- Each site is named by exactly one entry, and each entry's site count is exact.
+- Every site that runs on the board is MEASURED, with the names it is called with, at base and now. These are:
+  - `constOf` (MIN_PIN_H and MIN_PIN_W);
+  - `board-context-menu`'s three caller patterns, on `deleteThisBoard`;
+  - `item138-silhouette-proof`'s cite lookup, on all 62 `BoardEditor §n` headings.
+- Liveness:
+  - the pre-fix `constOf` turns COMPOSED-SAME red;
+  - a site no entry names turns COMPOSED-LISTED red.
+
+**The sweep beyond the readers.**
+- Every script that names a moved declaration: only `card-resize-axis` reads one.
+- Every script that names the board without `.tsx`: none reads it.
+- All 65 scripts that walk `src` (any `readdirSync` / walk / `ls-files` that touches src), audited script by script for answers that change because 1 file became 11.
+  - Where a check is mechanical, its own logic was re-implemented outside the repo and run on both trees. Mutant landings and kills were included.
+  - **None answers differently.** Per-file walks find the same files on both trees:
+    - hooks-order and hooks-order-ast: the same one allowed violation;
+    - box-tombstones T11: `.boxes` stays 2 in the module and 0 in every part;
+    - th-machina M11, guided-w3 NT1, glue-9 G4, installed-fonts, hide-workshop T4, sprout-invite and the wordcount walks: the same answers;
+    - board-context-menu's `callers2`: the same one bad site.
+  - What does move is detail text only: file counts (289 to 299), one line number, and hooks-order-ast's first check NAME, which embeds its file and hook counts.
+  - **Found red at main 8aae0c76 too (not 10g's):**
+    - `typing-latency-readers-guard.mjs` fails 2 checks on both trees. One classified entry (`entryId: eid, label: (el.textContent ...`) no longer matches the line, which reads `words.textContent`.
+    - `c13-6-css-split.mjs check` fails on both trees (`c13-8-css-themes.mjs` reads `index.css` raw).
+- **Step 9's proof (`c13-9-ts-comments.mjs check`)** reads one file by plain path. It is historical and not in the suite. Re-run against the split, it needs `--base` at or after the split, with all 11 files listed: the parts carry 34 of the 62 cites.
+
+**`c13-10-seams-check.mjs` A0** ("MODULE_PARTS ships empty") is parked verbatim with a successor:
+- The successor checks that MODULE_PARTS ships exactly 10g's entry. It is red on main 8aae0c76 and green here.
+- The parked record runs behind `HARNESS_PARKED=1`. Both legs PASS (16 checks, plus 1 parked).
+
 ## Still to come in this step
 
 - The box turn: the board snapshot (baseline and compare in the same turn), the gesture and reader harnesses on both legs, and the link check.
