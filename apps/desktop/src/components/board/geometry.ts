@@ -61,3 +61,5 @@ export function notecardExcerpt(text: string): { title: string; excerpt: string 
   const excerpt = lines.slice(1, 4).join(' ').slice(0, 160);
   return { title, excerpt };
 }
+
+export type LastAction = { type: 'move' | 'resize' | 'remove' | 'ungroup'; before: Box[] } | null;
