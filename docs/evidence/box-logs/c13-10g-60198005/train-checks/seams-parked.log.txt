@@ -1,0 +1,26 @@
+PASS  PARKED (was "A0 MODULE_PARTS ships empty: the split branch adds its own entry") - SUPERSEDED: 10g's branch added components/BoardEditor.tsx; live successor: A0 [10g successor]
+
+C13-10 SEAMS CHECK PARKED: PASS (1 checks) - HARNESS_PARKED=1 armed
+PASS  A0 [10g successor] MODULE_PARTS ships exactly the entries the merged splits added (10g: components/BoardEditor.tsx), and no scratch entry
+PASS  A1 without an entry the module reads plainly
+PASS  A2 with an entry the module reads as its parts joined in the order given (the module itself in its place)
+PASS  A3 a part read alone is its own text
+PASS  A4 the same entry spelled as path parts reads the same
+PASS  A5 an entry that leaves out the module itself throws
+PASS  A6 an entry that names a part twice throws
+PASS  A7 an entry that names a missing file throws
+PASS  A8 with the entry gone the read is plain again
+PASS  A9 the barrel types/index.ts still reads as its 5 parts joined
+PASS  A9 the barrel components/CascadePanels.tsx still reads as its 9 parts joined
+PASS  B1 the line added twice, listed twice: PASS (each entry allows one copy, all used)
+        [PASS  LINES: 1037 code lines before, 1039 after, 111 now in components/tutor/assemble.ts, components/tutor/presets.ts; missing 0, added 2 (the allow list: 2 entries, 2 used, 0 unused; 0 added lines not on it) | C13-10 SPLIT CHECK: PASS (11 checks)]
+PASS  B2 listed once: FAIL (one added copy is not on the list)
+        [FAIL  LINES: 1037 code lines before, 1039 after, 111 now in components/tutor/assemble.ts, components/tutor/presets.ts; missing 0, added 2 (the allow list: 1 entries, 1 used, 0 unused; 1 added lines not on it)]
+PASS  B3 listed three times: FAIL (one entry is stale)
+        [FAIL  LINES: 1037 code lines before, 1039 after, 111 now in components/tutor/assemble.ts, components/tutor/presets.ts; missing 0, added 2 (the allow list: 3 entries, 2 used, 1 unused; 0 added lines not on it)]
+PASS  B4 an empty list: FAIL
+        [FAIL  LINES: 1037 code lines before, 1039 after, 111 now in components/tutor/assemble.ts, components/tutor/presets.ts; missing 0, added 2 (the allow list: 0 entries, 0 used, 0 unused; 2 added lines not on it)]
+PASS  B5 no --allow: FAIL (a split adds nothing unless the list says so)
+        [FAIL  LINES: 1037 code lines before, 1039 after, 111 now in components/tutor/assemble.ts, components/tutor/presets.ts; missing 0, added 2]
+
+C13-10 SEAMS CHECK: PASS (16 checks)

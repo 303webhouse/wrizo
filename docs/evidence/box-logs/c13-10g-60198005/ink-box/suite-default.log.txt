@@ -1,0 +1,35 @@
+BUILD: tree=17afbaa5 dirty=no bundle=index-BMo07aLz.js:2cb42f7b7c04 cwd=C:\Users\nickh\c13-10g\apps\desktop
+BOX TURN: granted to lane "ink" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=25 tree=17afbaa5 bundle=index-BMo07aLz.js/958667b out=C:\Users\nickh\AppData\Local\Temp\wrizo-suite-37596
+(node:37596) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[01/25] OK        exit=0   38s big-projects-1a.mjs :: ROWS-SHADOW VERIFY: PASS (36 renders checked, shadow == DOM on every one) ;; BIG-PROJECTS-1A VERIFY: PASS (92 checks)
+[02/25] OK        exit=0   21s big-projects-2.mjs :: BIG-PROJECTS-2 VERIFY: PASS (43 checks)
+[03/25] OK        exit=0   33s board-click-create.mjs :: BOARD-CLICK-CREATE VERIFY: PASS (30 checks)
+[04/25] OK        exit=0   57s board-context-menu.mjs :: BOARD-CONTEXT-MENU VERIFY: PASS (56 checks)
+[05/25] OK        exit=0    1s box-tombstones.mjs :: BOX-TOMBSTONES VERIFY: PASS (32 checks)
+[06/25] OK        exit=0   15s card-resize-axis.mjs :: CARD-RESIZE-AXIS VERIFY: PASS (16 checks)
+[07/25] OK        exit=0   24s card-resize-relock.mjs :: CARD-RESIZE-RELOCK VERIFY: PASS (10 checks)
+[08/25] OK        exit=0   44s connector-a.mjs :: CONNECTOR-A VERIFY: PASS (37 checks)
+[09/25] OK        exit=0    0s deck-rows-logic.mjs :: DECK-ROWS-LOGIC VERIFY: PASS (13 checks)
+[10/25] OK        exit=0   86s flux-v2.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FLUX-V2 VERIFY: PASS (158 checks)
+[11/25] OK        exit=0    2s guided-add-scenes.mjs :: GUIDED-ADD-SCENES VERIFY: PASS (72 checks)
+[12/25] OK        exit=0    8s guided-w1.mjs :: PARKED (never run, original kept verbatim in the source): Y3 - SUPERSEDED Oct 25 (Nick): the caret lands in the card on opening / stepping; successors Y4 Y5 Y6 | D1 - law retired by Nick, Nov 1; no successor needed (a retired law, not a falsified check); design is covered by the Wrizors' imply-never-literal review | D2 - law 3 square half retired by Nick, Nov 1; successor D15 keeps the rail marks as circles | D3 - SUPERSEDED Oct 26 (Nick, W5 Lit): a lit mark is brass at rest (the writer's own act); successor D14 ;; GUIDED-W1 VERIFY: PASS (113 checks)
+[13/25] OK        exit=0    1s guided-w2.mjs :: 42/42 checks green, 14/14 mutants landed
+[14/25] OK        exit=0    6s guided-w3.mjs :: GUIDED-W3 VERIFY: PASS (96 checks)
+[15/25] OK        exit=0    1s guided-w5.mjs :: GUIDED-W5 VERIFY: PASS (74 checks)
+[16/25] OK        exit=0    1s help-choose-census.mjs :: HELP-CHOOSE-CENSUS VERIFY: PASS (64 checks)
+[17/25] OK        exit=0   10s item138.mjs :: ITEM138 VERIFY: PASS (19 checks)
+[18/25] OK        exit=0    4s item207-core.mjs :: ITEM207-CORE VERIFY: PASS (58 checks)
+[19/25] OK        exit=0    0s logout-flush.mjs :: LOGOUT-FLUSH VERIFY: PASS (39 checks) — live walk not run (box turn)
+[20/25] OK        exit=0    0s machina-step-source.mjs :: MACHINA-STEP-SOURCE VERIFY: PASS (13 checks)
+[21/25] OK        exit=0    1s page-links.mjs :: PAGE-LINKS VERIFY: PASS (29 checks)
+[22/25] OK        exit=0   14s page-scroll-return.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; PAGE-SCROLL-RETURN VERIFY: PASS (9 checks)
+[23/25] OK        exit=0    0s sized-by-hand-logic.mjs :: SIZED-BY-HAND-LOGIC VERIFY: PASS (23 checks)
+[24/25] OK        exit=0    0s theme-fonts-source.mjs :: THEME-FONTS-SOURCE VERIFY: PASS (19 checks)
+[25/25] OK        exit=0   28s walk-open-select.mjs :: WALK-OPEN-SELECT VERIFY: PASS (17 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 25/25 of 25 returned a passing verdict
+SUITE RESULT: CLEAN — tree=17afbaa5 bundle=index-BMo07aLz.js/958667b

@@ -1,0 +1,21 @@
+BUILD: tree=17afbaa5 dirty=no bundle=index-BMo07aLz.js:2cb42f7b7c04 cwd=C:\Users\nickh\c13-10g\apps\desktop
+CLAIM 0 — the three terms are THEME-INVARIANT, so deskTerm IS a canonical read
+  ok   cascadePlanCaptionIn is "in" under all 3 themes (plateau, flux, machina)
+  FAIL cascadePlanNoDrawer differs by theme (["Not in a drawer","Not in a rack","Not in a project"]) — an override has landed, so this file may no longer treat deskTerm as a canonical read
+  FAIL cascadePlanRelationOwn differs by theme (["its own plan board","its own circuit","its own plan"]) — an override has landed, so this file may no longer treat deskTerm as a canonical read
+lexicon: in="in" | noDrawer="Not in a drawer" | own="its own plan board"
+
+CLAIM 1 — a drawer-naming line takes the CAPTION FORM
+  ok   "in TEST BOARD" — the name is no longer a bare subtitle
+CLAIM 2 — an untitled drawer still gets the form, not a bare fallback
+  ok   "in Untitled"
+CLAIM 3 — NO DRAWER keeps its own form, unprefixed (scope, half one)
+  ok   "Not in a drawer" — "in Not in a drawer" would be nonsense, so the swap must not reach here
+CLAIM 4 — the OWN-plan-board relation is untouched (scope, half two), ASSERTED BY NAME
+  ok   the own row still reads "its own plan board", by name
+CLAIM 5 — ONE READER: no bare-name spelling survives anywhere
+  ok   299 files swept; the only bare-title read is the reader's own
+CLAIM 6 — and all three call sites call it
+  ok   row, caption and board-card all read from one definition
+
+ITEM 163 PROOF: 2 FAILURE(S)

@@ -1,0 +1,13 @@
+PASS  LINES: 3130 code lines before, 3227 after, 1709 now in components/board/BoardBoxes.tsx, components/board/BoardCardPopup.tsx, components/board/geometry.ts, components/board/useBoardBox.ts, components/board/useBoardGestures.ts, components/board/useBoardKeys.ts, components/board/useBoardMeasure.ts, components/board/useBoardReflow.ts, components/board/useBoardSave.ts, components/board/useRailLinkDrag.ts; missing 0, added 97 (the allow list: 97 entries, 97 used, 0 unused; 0 added lines not on it)
+PASS  SCOPE: 11 src files differ from 1edfc778: components/BoardEditor.tsx, components/board/BoardBoxes.tsx, components/board/BoardCardPopup.tsx, components/board/geometry.ts, components/board/useBoardBox.ts, components/board/useBoardGestures.ts, components/board/useBoardKeys.ts, components/board/useBoardMeasure.ts, components/board/useBoardReflow.ts, components/board/useBoardSave.ts, components/board/useRailLinkDrag.ts
+PASS  BARREL: components/BoardEditor.tsx exported 2 names at 1edfc778 and exports 2 now
+PASS  CITES: 62 [Name §n] citations in the split's files, each a heading in docs/rulings/components-<Name>.md
+PASS  LIVENESS: a moved line edited turns LINES red
+PASS  LIVENESS: a moved line dropped turns LINES red
+PASS  LIVENESS: a src file outside the split changed turns SCOPE red
+PASS  LIVENESS: a moved citation points nowhere turns CITES red
+PASS  LIVENESS: the barrel loses an export turns BARREL red
+PASS  LIVENESS: an added line not on the allow list turns LINES red
+PASS  LIVENESS: an allow entry no added line uses turns LINES red
+
+C13-10 SPLIT CHECK: PASS (11 checks)

@@ -1,0 +1,15 @@
+PASS  JOIN-PARTS: MODULE_PARTS['components/BoardEditor.tsx'] lists the module and 10 parts; components/board/ holds 10
+PASS  JOIN-LINES: the join holds the module's 3130 code lines at d1ede8e9 plus the 97 allowed
+PASS  READERS-LISTED: 31 scripts name components/BoardEditor.tsx in code: 25 read the join, 0 read it bare, 7 read no text of it
+PASS  READERS-SAME: every distinctive literal of the 25 readers counts the same now as at d1ede8e9, except 29 explained
+PASS  EXPLAINED-USED: 29 explained entries, each one used
+PASS  COMPOSED-LISTED: 34 built patterns or texts in the readers, each named by exactly one of COMPOSED's 26 entries, each entry's count exact
+PASS  COMPOSED-SAME: every built pattern that runs on the board reads the same at d1ede8e9 as now
+PASS  LIVENESS: a planted edit inside a part changes a join reader's answer
+PASS  LIVENESS: a planted edit inside the module itself changes a reader's answer
+PASS  LIVENESS: a script that names the file and is in no list fails
+PASS  LIVENESS: card-resize-axis's pre-10g constOf (`^const ${name} = `) fails COMPOSED-SAME on the join
+PASS  LIVENESS: a built pattern that no COMPOSED entry names fails
+PASS  LIVENESS: an explained entry no literal uses fails
+
+C13-10G READERS: PASS (13 checks)

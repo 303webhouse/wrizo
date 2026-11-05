@@ -1,0 +1,27 @@
+BUILD: tree=17afbaa5 dirty=no bundle=index-BMo07aLz.js:2cb42f7b7c04 cwd=C:\Users\nickh\c13-10g\apps\desktop
+read from source: page 0.16×0.22 (aspect 1.375) | board 0.32×0.1 (aspect 0.313)
+
+CLAIM 1 — a PAGE card is born TALLER THAN WIDE
+  ok   0.16×0.22 — vertical, as Nick's thumbnail law requires
+CLAIM 1b — the premise: both axes scale by the canvas WIDTH
+  ok   `box.w * pageWidthPx` and `box.h * pageWidthPx` — one scalar, so aspect is h/w
+CLAIM 2 — a BOARD card stays WIDER THAN TALL (the exclusion clause's product)
+  ok   0.32×0.1 — horizontal, Nick's wide-board ruling intact
+CLAIM 3 — the page card matches the RATIFIED rail thumbnail ratio
+  ok   rail 1.364 vs card 1.375 — the same silhouette in both places
+CLAIM 4 — the reader KEYS ON THE ENTRY, and cannot be handed a Box
+  ok   keyed on the pinned entry, and the signature refuses a Box
+CLAIM 5 — the birth site uses the one reader, with no loose ternaries left
+  ok   one call, one shape
+CLAIM 6 ⛔ CONSTRAIN FORWARD, NEVER SNAP — the lock is in the RESIZE path only
+  ok   the move path writes only x: Math.max(0, b.x + dx), y: Math.max(0, b.y + dy) — a move is not a touch
+  ok   the lock applies where the writer changes shape, and nowhere else
+CLAIM 7 (rulings) — the superseded comment is MARKED, not rewritten, in docs/rulings/
+  ok   AB4 S4 kept verbatim in docs/rulings (BoardEditor §1), with item 138 marked beside it, and cited from the source
+
+STATED GAP — owed to the box run, not provable here:
+  · a real resize of a nested board's card leaves it WIDER THAN TALL (the ratified harness check)
+  · a real resize of a page card takes the vertical silhouette
+  · an untouched existing card opens with its stored geometry unchanged
+
+ITEM 138 PROOF: CLEAN — constants and wiring hold

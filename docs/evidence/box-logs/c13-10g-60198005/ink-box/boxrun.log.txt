@@ -1,0 +1,17 @@
+2026-11-05T15:06:42.413Z waiting for a free, quiet box (pid 42372); split tree=17afbaa5 dirty=no bundle=index-BMo07aLz.js:2cb42f7b7c04; base tree=0762b42e dirty=no bundle=index-DotAu9BA.js:177f59d0bdc0
+2026-11-05T15:15:54.762Z TURN START (lane ink) granted to lane "ink" and bound to the process tree of pid 42372 - name this turn's start and end in your report
+2026-11-05T15:15:54.859Z job snap-base start (tree=0762b42e dirty=no bundle=index-DotAu9BA.js:177f59d0bdc0)
+2026-11-05T15:20:45.484Z job snap-base exit 0
+2026-11-05T15:20:45.581Z job snap-split start (tree=17afbaa5 dirty=no bundle=index-BMo07aLz.js:2cb42f7b7c04)
+2026-11-05T15:25:44.353Z job snap-split exit 0
+2026-11-05T15:25:44.452Z job suite-default start (tree=17afbaa5 dirty=no bundle=index-BMo07aLz.js:2cb42f7b7c04)
+2026-11-05T15:32:33.082Z job suite-default exit 0
+2026-11-05T15:32:33.179Z job suite-parked start (tree=17afbaa5 dirty=no bundle=index-BMo07aLz.js:2cb42f7b7c04)
+2026-11-05T15:39:21.804Z job suite-parked exit 0
+2026-11-05T15:39:21.902Z job item138-silhouette-proof start (tree=17afbaa5 dirty=no bundle=index-BMo07aLz.js:2cb42f7b7c04)
+2026-11-05T15:39:21.979Z job item138-silhouette-proof exit 0
+2026-11-05T15:39:22.080Z job item163-drawer-line-proof start (tree=17afbaa5 dirty=no bundle=index-BMo07aLz.js:2cb42f7b7c04)
+2026-11-05T15:39:22.385Z job item163-drawer-line-proof exit 1
+2026-11-05T15:39:22.482Z job typing-latency-readers-guard start (tree=17afbaa5 dirty=no bundle=index-BMo07aLz.js:2cb42f7b7c04)
+2026-11-05T15:39:22.567Z job typing-latency-readers-guard exit 1
+2026-11-05T15:39:22.612Z TURN END release: released

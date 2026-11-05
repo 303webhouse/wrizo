@@ -1,0 +1,13 @@
+#13 step 10g (INK c13-10g-board 50abca01, the BoardEditor split) - manifest (Chat 1, Nov 5 2026)
+
+Tree 170aa419 (train-c13-10g3 60198005: main 1edfc778 + one --no-ff merge of c13-10g-board 50abca01; main is fast-forwarded to it, then these records land on top; `git diff 60198005 HEAD -- apps` is empty at every records commit after it). INK's own box turn ran on its tip's earlier train (17afbaa5, tree bc6e4204, main parent 0762b42e, before 10e); this train adds 10e underneath, so the pair and checks were re-run on it.
+
+PROOFS
+- tsc desktop 0, tsc server 0, seed-guard PASS 36, build:web done (index-BYV01fuU.js).
+- GitHub Actions full pair, run 42057424875 (ref = the full sha, 8 shards per leg): default 233/240, parked 233/240; the 7 non-OK are the usual capture/probe NOVERDICT tools, both legs. card-resize-axis PASS 16, pw1 PASS 41 (default). (The earlier r2 pair on 17afbaa5, run 42032846988, was also clean at 233/240.)
+- Checks on the train tree: split check (--base 1edfc778 = main, --allow docs/cleanup/c13-10g-allow.txt, BoardEditor + the ten parts) PASS 11; readers check PASS 13 (with --base d1ede8e9 and with --base 1edfc778); seams check PASS 16 (default and parked, incl. A0's successor); c13-4d-links check PASS. (A first split run with --base 8aae0c76 failed SCOPE only because main now carries 10e's files; the base is main.)
+- INK's box turn 15:15:54Z-15:39:22Z (lane ink, box-take, released by token): board snapshot (c13-style-snapshot) baseline 0762b42e vs split 17afbaa5, same turn: "C13-STYLE COMPARE: IDENTICAL" (2188 selectors, 13 screens x 5 skins); the 25-file gesture/reader list CLEAN 25/25 on both legs; item138-silhouette-proof exit 0.
+- Two reds that are NOT 10g's, measured by control (same file on main 1edfc778 vs the 10g tree, browserless): typing-latency-readers-guard FAIL 2/5 on both (the classified `label: (el.textContent` line now reads `words.textContent`; on main the entry and the unclassified read name BoardEditor.tsx, on 10g useRailLinkDrag.ts); item163-drawer-line-proof CLAIM 0 FAIL 2 on both (cascadePlanNoDrawer / cascadePlanRelationOwn differ by theme: lexicon overrides have landed). Both are pre-existing on main; owners to be named by Fable.
+- Clear: Fable, Nov 5 night run ("INK's 10g on its proof (the readers check + the board snapshot IDENTICAL + the full pair) -> merge").
+
+Files here: pair-default/parked.log.txt and summary.txt (Actions, run 42057424875); ink-box/ (INK's turn: boxrun, snapshots, suites, item138/item163/readers-guard); train-checks/ (split, readers x2, seams x2, links, seed-guard).
