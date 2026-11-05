@@ -253,9 +253,10 @@ export const CANONICAL_CHROME = {
   boardThreadPrefix: 'grafted to',
   boardThreadUntitled: 'Untitled',
   boardFooterToggle: 'Show grafts',
-  // FLUX3 S1 - read only under ?flux3=1 in Flux (src/flux3/); shown in capitals by CSS
-  flux3LinkOne: 'link',
-  flux3LinkMany: 'links',
+  // FLUX3 S1 - read only under ?flux3=1 in Flux (src/flux3/); shown in capitals by CSS. The count of a node's links is told in Flux's own
+  // connect register ("connected to", "Drag to connect"): the Flux word pass retired "link" (flux-v2.mjs LX2b); the mockup's "n LINKS" waits for TOOLS' pass
+  flux3LinkOne: 'connection',
+  flux3LinkMany: 'connections',
   flux3ChecksumOk: 'Checksum OK',
   flux3ReadLevel: 'Level',
   flux3ReadZoom: 'Zoom',
