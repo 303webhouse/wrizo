@@ -1,22 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { ThemeId } from './theme';
 
-// THEME PICKER (Fable, Oct 21 — theme-menu-brief.md / theme-rules.md §C / theme-unlock-count's
-// own already-shipped schema). A theme is OPEN if ANY of: its lifetime word-count threshold is
-// met, it's already in `themesOpened` (the grandfather set), or it's the theme currently in
-// use — the third clause is pure client state and needs no server round-trip (Fable's own
-// ruling on the schema ticket: "no new signal needed").
-//
-// SUPERSEDED (Fable's review of this ticket, Oct 21 1:09pm ruling): the first two clauses used
-// to be computed HERE, client-side, from the raw wordsWritten/themesOpened/thresholds the server
-// sent. Openness now DERIVES SERVER-SIDE (apps/server/src/sync.ts's own GET /theme-unlock) - the
-// server returns a precomputed `open` map, and this module only adds the one clause the server
-// cannot know (the current theme). No client write to themes_opened was ever added (confirmed:
-// this file only ever reads).
-//
-// "Once open, always open" still falls out for free: wordsWritten only ever grows and
-// themesOpened is append-only, so the server's own `open` map can never flip back to false once
-// true for a given id.
+// a theme is OPEN if the server's precomputed `open` map says so, or it is the theme in use (the one clause the server cannot know); this file only reads [themeUnlock §1]
 
 export interface ThemeUnlockStatus {
   wordsWritten: number;

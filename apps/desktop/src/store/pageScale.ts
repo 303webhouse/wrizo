@@ -1,16 +1,4 @@
-// PAGE-SIZE (Fable, Oct 23; Nick's ruling c) - THE PAGE SCALE. Pure: no imports, no store, no DOM.
-//
-// The prose page is a US Letter sheet (docs/plans/page-size.md). At scale 1 it is 620 x 803px: Cursor's mockup sized the text column to a
-// 75-character line of 12 pt (16px) type and made that column the letter page's 6.5in between 1in margins, so ONE page-inch is 620 / 8.5 px.
-// Everything on the page - its width and height, its margins, its type - is a multiple of that inch. The page always LAYS OUT at scale 1 and is
-// PAINTED at the scale by a transform, so it grows in SHAPE only and every line breaks exactly where it did at any scale (scaling the layout
-// itself re-broke lines at 2560 and 3840 - the lane run on fb1e28fb: glyph advances do not scale exactly linearly).
-//
-// THE LAW (ruling c): the scale comes from the STAGE's size alone, never from an open panel (paper never reflows for chrome). It is smooth, not
-// stepped: the largest scale at which the whole letter page fits the stage's height with a small margin, never below 1.0. The width term keeps
-// the page between the two drawers at their minimum whether or not they are open - a CONSTANT reserve, never their open state.
-// The ZOOM (Typewriter and its theme names) is the same page ~1.6x from that base, capped to the largest that fits the stage's width with the
-// panels tucked; it is a transform, so it never reflows a line.
+// the page scale, pure: the prose page is a US Letter sheet; it always lays out at scale 1 and is painted by a transform, so lines break the same at any scale; the scale comes from the stage alone, never an open panel [pageScale §1]
 export const LETTER_W_IN = 8.5;
 export const LETTER_H_IN = 11;
 export const PAGE_W_BASE = 620;                              // px at scale 1
@@ -25,12 +13,9 @@ export const ZOOM = 1.6;
 // the zoomed page keeps this much of the stage's width free - 48px a side, the grips' lane: at 48 in all (64e5b7f9) the grips, which follow the
 // painted edge, were pushed onto the strip at 1100 (fx2 S1)
 export const ZOOM_GUTTER = 96;
-// ...and never less than this past anything that already stands over the stage's edge: the strip is position:fixed at the window's left and
-// reaches 51px into the stage at 1100, so 48 a side put the zoomed page 3px UNDER it (the lane run on d80010ae, cd2 S1/S5 + fx2 S1 @ 1100). The
-// page is centred, so the larger intrusion is kept on both sides.
+// never less than this past anything already standing over the stage's edge (the fixed strip reaches into the stage at 1100) [pageScale §2]
 export const ZOOM_CLEAR = 8;
-// POLISH #10 item 19 (Nick, Oct 25): the MIDDLE of the visible page - "seems too low on the screen to start" at Cursor's 0.6. The band's stops are drawn
-// from this same anchor (index.css --tw-anchor), so they move with it.
+// the middle of the visible page; the band's stops are drawn from this same anchor (--tw-anchor) [pageScale §3]
 export const ZOOM_ANCHOR = 0.5;                              // the writing line's hold, as a fraction of the page column's height (Cursor's --anchor)
 
 /** The base page scale for a stage of this size, with the page's top this far below the stage's top. Never below 1. */
@@ -42,8 +27,7 @@ export function pageScaleFor(stageW: number, stageH: number, pageTop: number): n
   return Number.isFinite(k) && k > 1 ? k : 1;
 }
 
-/** The page's LAYOUT height at base scale `k`: the letter height, or less where the stage cannot hold the painted page (ruling d - capped to the
- *  stage, the text scrolls inside). Painted, it is this x k. */
+// the page's LAYOUT height at base scale k: the letter height, or less where the stage cannot hold the painted page (the text scrolls inside) [pageScale §4]
 export function pageLayoutHeightFor(stageH: number, pageTop: number, k: number): number {
   if (!(stageH > 0) || !(k > 0)) return PAGE_H_BASE;
   const room = (stageH - Math.max(0, pageTop) - PAGE_FENCE) / k;

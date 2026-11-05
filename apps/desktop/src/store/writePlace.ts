@@ -16,7 +16,7 @@ import { withoutFontMarks } from './markRuns';
 //  - PLACE THIS (on a page): the steps of the Decks, each a "Deck · Step" row (`searchSteps`); a press places the page on that step (`placeThis`).
 // NOTHING IS PLACED WITHOUT THE WRITER'S PRESS: no suggestion, no auto-place (the Tutor's "Where does this fit?" is W7).
 
-const titleOfText = (text: string | undefined): string => (withoutFontMarks(text ?? '').trim().split('\n')[0] ?? '').trim().slice(0, 60) || 'Untitled';   // POLISH #10 item 4: the words, never a span's marks
+const titleOfText = (text: string | undefined): string => (withoutFontMarks(text ?? '').trim().split('\n')[0] ?? '').trim().slice(0, 60) || 'Untitled';   // the words, never a span's marks [writePlace §1]
 const isShell = (e: JournalEntry): boolean => !!(e as { purgedAt?: string }).purgedAt;
 
 export interface WriteBoard { boardId: string; boardTitle: string; /** the Deck's own set (project id), if it has one */ setId: string | null; origin?: 'journal' | 'loose' | null }

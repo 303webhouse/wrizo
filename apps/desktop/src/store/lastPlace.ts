@@ -1,23 +1,7 @@
 import { getJournalEntries, getProject, getSystemKind } from './persistence';
 import { getResumeTarget } from './resume';
 
-// RESUME ON OPEN (docs/plans/resume-on-open.md, cleared by Fable 2026-10-16).
-// After the splash, a signed-in writer lands on the last Page or board they had
-// OPEN — not the front door. This module is the whole data side: where "last
-// place" is saved, how it is read back, and what a cold open should do with it.
-// Storage-only and pure: it imports nothing from the Splash and no component.
-//
-// WHERE IT LIVES: one localStorage key, per device, no new column and no sync.
-// It is NOT one of the collections, so resetLocalData() and persistence's
-// wholesale flush can neither erase nor resurrect it. The record carries the
-// account id it was written for: another account's pointer is treated as absent,
-// and sign-out clears it besides.
-//
-// THREE RECORD STATES, because "no pointer yet" and "decided: no place" must
-// differ (Fable's ruling 2): an ABSENT record is the one case that seeds itself
-// once from getResumeTarget() (the edited race); a record with id:null means that
-// decision was already made, so a later deleted/Trashed target gets the blank Page
-// and never quietly re-seeds from the edited race.
+// resume on open: one per-device localStorage key, not a collection (a flush can neither erase nor resurrect it), carrying its account id; three states, because "no pointer yet" and "decided: no place" differ [lastPlace §1]
 
 const KEY = 'wz.lastPlace';
 
@@ -86,7 +70,7 @@ function routeFor(kind: PlaceKind, id: string): string {
   return kind === 'project' ? `/project/${id}` : `/page/${id}`;
 }
 
-/** Seed from the edited race, once, for a writer with no record at all (ruling 2). Returns the record written. */
+// seed from the edited race, once, for a writer with no record at all; returns the record written [lastPlace §2]
 function seed(uid: string): LastPlace {
   const t = getResumeTarget();
   const m = t ? /^\/(page|project)\/([^/?#]+)/.exec(t.route) : null;
@@ -97,12 +81,7 @@ function seed(uid: string): LastPlace {
   return rec;
 }
 
-/**
- * The cold-open decision for a signed-in writer. Absent record: seed once, then
- * decide on it. A pointer that no longer resolves (deleted, Trashed, gone) or a
- * "no place" record: a fresh blank Page (ruling 1), and the stale pointer becomes
- * the "decided: none" record so it is not re-seeded.
- */
+// the cold-open decision: absent record - seed once, then decide; a pointer that no longer resolves, or "no place": a fresh blank Page, and the record becomes "decided: none" [lastPlace §3]
 export function resolveLanding(uid: string): Landing {
   let rec = readLastPlace(uid);
   if (!rec) rec = seed(uid);

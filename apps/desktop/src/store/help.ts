@@ -1,13 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import type { DeskTermId } from './deskLexicon';
 
-// HELP BUTTONS (Nick approved Oct 12, cursor/help-buttons @ d4d1c835) — the
-// one plain sentence behind each "?". Deliberately NOT store/contextMenu.ts's
-// own OpenMenu shape reused verbatim — that one carries ITEMS (a menu);
-// this carries the TRIGGERING BUTTON'S OWN RECT (an anchor to position
-// against), which is the one thing HelpPop.tsx actually needs. Same
-// useSyncExternalStore pattern (ContextMenuHost.tsx's own proven mechanism:
-// one shared overlay, Esc/outside-click closes, focus returns on close).
+// the one sentence behind each "?": carries the trigger's own rect (an anchor), not menu items; the useSyncExternalStore one-overlay pattern [help §1]
 
 export interface HelpAnchor { left: number; right: number; top: number; bottom: number }
 export interface OpenHelp { key: DeskTermId; anchor: HelpAnchor }

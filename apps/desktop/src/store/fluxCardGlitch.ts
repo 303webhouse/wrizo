@@ -1,15 +1,6 @@
 import { tryFlash } from './flashBudget';
 
-// THEME PICKER, note (e) (Fable's review, Oct 21): the Flux card's hover Glitch is a FLASH
-// (theme-rules.md §A.8 - "every animation has a still state; the budget is 3/sec, measured at
-// draw time with a 1,100ms window"), not a decorative CSS loop a sustained or repeated hover can
-// run forever. It now asks the SAME global ceiling every other flash in the app asks
-// (store/flashBudget.ts's own tryFlash — GlitchMeter.tsx's precedent), so a card hover can never
-// push the screen's total flash rate over budget.
-//
-// Stacking is a SEPARATE hazard from the budget: a quick hover out/in, inside the pulse's own
-// duration, must not start a SECOND overlapping animation on top of the first — the controller
-// below refuses any request still inside its own last granted pulse's window, budget aside.
+// the Flux card's hover glitch is a FLASH and asks the global budget; a pulse inside the last granted pulse's window is refused, so hovers never stack [fluxCardGlitch §1]
 export const FLUX_CARD_GLITCH_KIND = 'theme-picker-flux';
 // Matches index.css's own wz-theme-glitch keyframes duration (.45s) — the pulse the controller
 // gates is exactly as long as the animation it's gating.

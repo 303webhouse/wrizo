@@ -65,10 +65,7 @@ function allRuns(text: string): AbsRun[] {
 const hid = (li: LineInfo, i: number) => (i >= li.start && i < li.end ? li.hidden[i - li.start] : 0);
 const isEmptyInterior = (li: LineInfo, p: number) => li.runs.some(r => r.close === r.open + r.mark.length && p === r.close);
 
-/** TYPED-LITERAL (Nick's ruling, Oct 16; docs/typed-literal-plan.md): `ins`, text the writer TYPED or PASTED at `at` in `text`, with every
- *  character the reader could read as markup escaped (`\\*`), so typed formatting characters are literal and never become markup.
- *  `\\` `*` `_` `~` anywhere; `#` `-` `>` only where a line's TEXT begins (after nothing but its structure tokens) - a heading, bullet or
- *  quote token can only form there, so a mid-line hyphen stays bare. (`[` joins the first set when font-span's spans are on this branch.) */
+// typed text with every character the reader could read as markup escaped: `\` `*` `_` `~` anywhere, `#` `-` `>` only where a line's text begins [hiddenMarks §1]
 export function escapeTyped(ins: string, text: string, at: number): string {
   const ls = at <= 0 ? 0 : text.lastIndexOf('\n', at - 1) + 1;
   const prefix = text.slice(ls, at);
@@ -103,11 +100,7 @@ export function snapCaret(text: string, p: number): number {
   return q;
 }
 
-/** NICK'S LIVE BUG (2026-10-06): a click in the space right of a line that ENDS in a styled word landed just after that word's hidden
- *  closing marks, and `snapCaret` (the keyboard rule: sit after the nearest VISIBLE character) pulled it back inside the run - so the
- *  strip lit B and the next letter typed bold, though the writer had clicked past the word. A CLICK keeps the side of the closing
- *  marks it landed on: inside or just after a group of closing marks, the caret goes to the group's END. Every other position takes
- *  `snapCaret` as before; the keyboard is unchanged. (An empty pair's interior is not a closing group: a press made it to be typed into.) */
+// a CLICK keeps the side of a word's closing marks it landed on (inside or just after them, the caret goes to the group's end); every other position takes snapCaret, and the keyboard is unchanged [hiddenMarks §2]
 export function snapCaretAfterClick(text: string, p: number): number {
   p = Math.max(0, Math.min(text.length, p));
   const li = lineAt(text, p);
@@ -345,12 +338,7 @@ function deleteAtCore(text: string, p0: number): EditResult | null {
   return { ...r, caret: snapCaret(r.text, p <= r.text.length ? p : r.text.length) };
 }
 
-/** CTRL+BACKSPACE (item 211, owner's queue). The browser's own word deletion treats a hidden `**` as punctuation - a word boundary -
- *  so a native word delete could stop at an invisible boundary or take part of a pair. Here a word is a run of non-space characters
- *  on the line, walked back over the spaces before the caret and then the word (hidden marks are stepped over; given the reader's
- *  flanking rule, a mark never touches a space on its inner side, so this matches what the writer sees), and never past the line's
- *  hidden lead. What makes it safe is the REMOVAL: through replaceRange, which keeps a mark whose partner survives and removes a pair
- *  left empty. With nothing visible before the caret on its line, it is a plain Backspace (joining lines, or removing the token). */
+// Ctrl+Backspace: a word is a run of non-space characters, walking over hidden marks, never past the line's hidden lead; removal goes through replaceRange, which keeps a mark whose partner survives [hiddenMarks §3]
 function wordBackspaceAtCore(text: string, p0: number): EditResult | null {
   const p = snapCaret(text, p0);
   const li = lineAt(text, p);
@@ -447,14 +435,7 @@ function enterAtCore(text: string, s: number, e: number): EditResult {
   return { text: doc.text, caret: snapCaret(doc.text, doc.caret), structural: base.structural || doc.structural || cs.length > 0 };
 }
 
-// ---- THE WINDOW (typing-latency, 2026-10-13) --------------------------------------------------------------------------------------
-// Every rule above reads LINES: readLead and readMarks take one line, lineAt bounds itself at the '\n's around a position, and no run
-// can cross a newline (Enter closes a run before it and reopens it after). allRuns and repair walk the whole text only because they
-// were handed the whole text - and that walk, on every keystroke, was the 211 rules' share of a 50k-word page's keystroke (81 ms).
-// So each rule runs on a WINDOW of whole lines: the lines the edit touches, plus one whole line on each side (Backspace at a line's
-// start joins the line above, Delete at its end joins the line below), and its result is spliced back. Lines outside the window are
-// not read and come back byte-identical, which is what they would have done in the whole-text run: a run there is neither cut nor
-// emptied, so repair finds it where it was and leaves it. A short text skips the window (nothing to save).
+// every rule reads LINES, so each runs on a window of whole lines (the edit's lines plus one on each side) and is spliced back; lines outside come back byte-identical; a short text skips the window [hiddenMarks §4]
 const WINDOW_FROM = 4000;
 
 function windowAround(text: string, s: number, e: number): { ws: number; we: number } {

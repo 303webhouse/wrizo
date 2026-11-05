@@ -1,13 +1,6 @@
 import { useSyncExternalStore } from 'react';
 
-// BOARD CONTEXT MENU - "Ask before deleting" and the one gate every delete goes through (Nick, Oct 15).
-//
-//   Every delete - a card, a Page, a board, from a menu, from the Delete key, from a Drawers row - calls `requestDelete(run)`. If the writer still wants to be asked, the "Send to Trash?" dialog
-//   (components/DeleteDialog.tsx) opens and `run` waits for its Delete; if they ticked "Don't ask me again" on an earlier confirmed Delete, `run` happens at once. ONE setting for every kind of delete,
-//   reversible in Settings ("Ask before deleting"). Exempt (they never come here): an empty new card closing and discarding itself, and unlinks.
-//
-//   The flag is PER DEVICE (localStorage) - Fable's ruling: it would have needed the users.page_defaults jsonb, whose client store strips non-dress keys and replaces the whole object on save, so a flag
-//   there would be wiped by "reset my defaults". Absent = ask (the safe default); only an explicit '0' stops asking.
+// "Ask before deleting": every delete goes through requestDelete; the flag is per device (localStorage) - absent means ask; only an explicit '0' stops asking [deleteGate §1]
 
 const KEY = 'wrizo-ask-before-delete';
 const listeners = new Set<() => void>();

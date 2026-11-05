@@ -16,10 +16,7 @@ import type { Stroke, StrokeInk, StrokeNib, StrokeTip } from '../types';
 export const INK_LINE_WIDTH = 1.4; // thin
 export const ERASER_WIDTH = 22; // S25 pass tunes this
 
-// ITEM 121 I1 — THE READ-SIDE DEFAULTS, and the whole of the migration.
-// A stroke with no tip/nib/ink is `pen · regular · the theme's default ink`,
-// which is byte-for-byte what every stroke drawn before item 121 already
-// renders as. Nothing is ever written to an old stroke to make this true.
+// the read-side defaults ARE the migration: a stroke with no tip/nib/ink renders as pen, regular, the theme's default ink - exactly as before; nothing is written to an old stroke [ink §1]
 export const TIP_DEFAULT: StrokeTip = 'pen';
 export const NIB_DEFAULT: StrokeNib = 'regular';
 export const TIPS: readonly StrokeTip[] = ['pen', 'pencil', 'marker'];
@@ -65,10 +62,7 @@ function token(name: string, fallback: string): string {
 
 const DEFAULT_INK_HEX = '#1A1206';
 
-// The default pen reads the dedicated ink-stroke token — a very dark brown,
-// almost black — falling back to the text ink token, then a hard default.
-// UNCHANGED by item 121, deliberately: every existing stroke paints through
-// this exact path, which is why no old page moves a pixel.
+// the default pen reads the ink-stroke token, then the text ink, then a hard default; unchanged, so no old page moves a pixel [ink §2]
 export function inkColor(): string {
   if (typeof getComputedStyle === 'undefined') return '#1A1206';
   const root = getComputedStyle(document.documentElement);
@@ -91,14 +85,7 @@ export function strokeColor(stroke: Stroke, fallback: string): string {
   return INKS.includes(stroke.ink as StrokeInk) ? inkColorOf(stroke.ink as StrokeInk) : fallback;
 }
 
-// ITEM 121 I5 — TIP RENDER PROFILES, inside the isolation J9 promised.
-//
-// NIB WIDTHS ARE PER TIP, three constants each, because a nib is a property of
-// the instrument: a broad marker and a broad pen are not the same broad. The
-// one number that is NOT free is `pen · regular` — it MUST stay
-// INK_LINE_WIDTH, because that is what every stroke drawn before item 121
-// renders at, and an old page moving even a fraction of a pixel would falsify
-// the no-migration claim this whole wave rests on.
+// nib widths are per tip; `pen · regular` must stay INK_LINE_WIDTH, the width every older stroke renders at [ink §3]
 const NIB_WIDTHS: Record<StrokeTip, Record<StrokeNib, number>> = {
   //                fine   regular             broad
   pen:    { fine: 0.9, regular: INK_LINE_WIDTH, broad: 2.4 },
@@ -306,16 +293,7 @@ export function groupBox(strokes: Stroke[], indices: number[]): { x0: number; y0
   return any ? { x0, y0, x1, y1 } : null;
 }
 
-/**
- * ITEM 126 B4 — translate a group by (dx, dy) in normalized units, returning a
- * NEW strokes array. Pure: the caller owns when this becomes state.
- *
- * A MOVE REWRITES GEOMETRY. It deliberately does NOT add a per-group transform
- * field: that would change the stored shape for no gain and force every renderer
- * — renderStroke, renderThumbnail, the Board's box ink, anything later — to
- * learn about groups it has no other reason to know. Rewriting points keeps the
- * blob exactly as item 121 left it, so a move is zero DDL and zero migration.
- */
+// a move rewrites geometry and returns a new array; no per-group transform field, so the stored shape and every renderer stay unchanged (zero DDL) [ink §4]
 export function translateGroup(strokes: Stroke[], indices: number[], dx: number, dy: number): Stroke[] {
   const set = new Set(indices);
   return strokes.map((st, i) => (set.has(i)
@@ -358,10 +336,7 @@ export function renderStroke(
   const pts = stroke.points;
   if (!pts || pts.length === 0) return;
   ctx.save();
-  // ITEM 121 I1 — the stroke's OWN ink when it named one, else the caller's
-  // default pen. An erase deliberately skips this: J2 paints it
-  // `destination-out`, where only the alpha matters and the hue is irrelevant,
-  // and an eraser has no ink of its own (nor tip, nor nib) by ruling.
+  // the stroke's own ink when it named one; an erase skips this (destination-out: only alpha matters) [ink §5]
   const paint = stroke.eraser ? color : strokeColor(stroke, color);
   const tip = tipOf(stroke);
   if (stroke.eraser) ctx.globalCompositeOperation = 'destination-out';
@@ -369,9 +344,7 @@ export function renderStroke(
   ctx.lineCap = 'round';
   ctx.lineWidth = lineWidth;
   ctx.strokeStyle = paint;
-  // ITEM 121 I5 — the tip's own hand. An ERASE is exempt from every line of
-  // this: it has no tip by ruling, and destination-out with a reduced alpha
-  // would erase only partially, which is a rubber that does not rub.
+  // an erase is exempt: it has no tip, and a reduced alpha would erase only partially [ink §6]
   if (!stroke.eraser) {
     ctx.globalAlpha = TIP_ALPHA[tip];
     if (tip === 'marker') {

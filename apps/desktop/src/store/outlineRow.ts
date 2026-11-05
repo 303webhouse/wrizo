@@ -1,5 +1,4 @@
-// The Outline row's reading of a card's text (BM1 S7, repaired Oct 25 - deploy #8's data bug). A card's text is `Title\nbody`: the Outline row is an <input>, which cannot hold a newline, so it shows the TITLE (the first line)
-// and the text after it sits beside the input, read-only. Pure functions, no imports - the editing rule lives here so it can be proved without a browser.
+// the Outline row's reading of a card's text: an <input> cannot hold a newline, so it shows the title and the rest sits beside it read-only; pure, so the editing rule is proved without a browser [outlineRow §1]
 
 /** The card's title (its first line) and its text (everything after the first newline, verbatim). */
 export function splitOutlineText(text: string | undefined): { title: string; body: string } {
