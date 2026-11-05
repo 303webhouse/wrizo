@@ -422,7 +422,7 @@ function QuickSprintView() {
           </div>
         )}
 
-        {/* Postures + the Publish file action inline in one strip (Workshop tab hidden until built - Nick, Oct 23 11:01 am). */}
+        {/* Postures + the Publish file action inline in one strip (the Workshop tab is hidden until built) [QuickSprint §1] */}
         <ModeSwitcher
           mode={mode}
           onSwitch={switchMode}
@@ -603,16 +603,7 @@ function QuickSprintView() {
   );
 }
 
-// W2 Fable R1 — key by draftId so the surface actually remounts on a route
-// param change, matching PageEditor's `key={id}` and JournalEntry's
-// `key={id ?? 'new'}`. Without this, navigating /project/A/sprint ->
-// /project/B/sprint reused the SAME component instance (React Router sees
-// an unchanged `element`) — useWayBack's capture-on-unmount never fired for
-// A at all, and worse, its liveRef (updated unconditionally every render,
-// not gated by entryId) would already read B's identity by the time A's
-// effect cleanup ran on the entryId-change, mislabeling A's scroll/caret
-// under B's id. Keying forces a real unmount+mount, the same invariant every
-// other writing surface already relies on.
+// key by draftId so the surface remounts on a route param change, as PageEditor's key={id} and JournalEntry's do: otherwise /project/A/sprint to /project/B/sprint reuses the instance, useWayBack's capture-on-unmount never fires for A, and its liveRef would label A's scroll/caret under B's id [QuickSprint §2]
 export function QuickSprint() {
   const { id } = useParams<{ id: string }>();
   // key={id ?? 'scratch'} here is only equivalent to key={draftId} (computed

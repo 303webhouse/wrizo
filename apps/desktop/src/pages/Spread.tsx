@@ -11,21 +11,7 @@ import { useLexicon } from '../store/themeLexicon';
 import { useDeskLexicon } from '../store/deskLexicon';
 import type { JournalEntry, Stroke } from '../types';
 
-// J3 — the spread view: a visual grid of the loose Journal in notebook order
-// (J1's getNotebookPages), carrying each page's ink thumbnail (eraser-aware
-// since J2), a firstLine(40) caption, and its position number. Drag-to-reorder
-// (mouse: drag; touch: long-press ~350ms then drag) persists via
-// setNotebookPosition — the SAME ordering helper createLoosePage uses, so
-// there is exactly one ordering implementation. A selection mode toggles brass
-// borders and a count; it wires NO actions (the Port arrives with J4). Loose
-// pages only — filed/Shelf pages are a logged non-goal.
-//
-// J5 — the console. A quiet lens row (order/content/star/tag) turns the grid
-// into a VIEW, composed on top of the one notebook-order data source; lenses
-// never write orderIndex. "Your order" is the user-facing label for the
-// internal notebook sequence — the vocabulary canon (2026-07-10) keeps
-// "notebook" strictly internal (function/variable names only), never surfaced
-// to the writer, including in accessible names.
+// The spread view: the loose Journal as a grid in notebook order (getNotebookPages), each page with its ink thumbnail, a firstLine(40) caption and its position number. Drag-to-reorder (mouse drag; touch long-press ~350ms) persists via setNotebookPosition, the one ordering helper. Selection mode toggles brass borders and a count. Loose pages only. A lens row (order/content/star/tag) makes the grid a view over the one notebook-order source; lenses never write orderIndex. "Your order" is the writer-facing name; "notebook" stays internal (names only, never surfaced, accessible names included). [Spread §1]
 
 const THUMB_SIZE = 92;
 const LONG_PRESS_MS = 350;
@@ -419,10 +405,7 @@ export function Spread() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 24 }}>
         <div>
           <div className="eyebrow" style={{ marginBottom: 8 }}>THE SPREAD</div>
-          {/* ITEM word-diet (Fable, review fix, Oct 13) — "Every" + a now-
-              always-plural noun doesn't agree ("Every loose Pages"); the
-              product noun is capitalized (not lowercased), like Journal/
-              Shelf/Drawer. */}
+          {/* "Every" + the plural noun does not agree; the product noun is capitalized, like Journal/Shelf/Drawer [Spread §2] */}
           <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 28, letterSpacing: '-0.01em', color: 'var(--text-hi)' }}>
             All loose {lex('page')}, laid out.
           </h1>
@@ -434,10 +417,7 @@ export function Spread() {
             </span>
           )}
           {/* J4 Slice 2 — the Spread's FIRST select-mode action (the J3 dead-button rule lifts here). */}
-          {/* ITEM word-diet (Fable, review fix, Oct 13) — never a number
-              directly before "Pages"; "these Pages" names the selection
-              without one (the selected-count span beside Select already
-              shows the number, so nothing is lost). */}
+          {/* never a number directly before "Pages"; the selected-count beside Select already shows it [Spread §3] */}
           {selectMode && selected.size > 0 && (
             <button type="button" className="btn-quiet spread-port" onClick={() => setPortOpen(true)}>
               Port these {lexMany('page')}…
@@ -472,9 +452,7 @@ export function Spread() {
         </p>
       )}
 
-      {/* ITEM word-diet (Fable, review fix, Oct 13) — rule 4 (empty states:
-          one short line or nothing); the second clause narrated what the
-          Spread already is. */}
+      {/* empty states: one short line or nothing [Spread §4] */}
       {pages.length === 0 ? (
         <p style={{ color: 'var(--text-mid)' }}>No loose {lexMany('page')} yet.</p>
       ) : viewPages.length === 0 ? (
@@ -492,9 +470,7 @@ export function Spread() {
       )}
       {addOpen && (
         <AddToSheet
-          // R3 (Fable review, 2026-07-11): `pages` is already notebook order
-          // (Your order) — sourced that way regardless of click/selection
-          // sequence, matching J4's port precedent. Ratified, not a bug.
+          // `pages` is already in notebook order (Your order), whatever the click or selection sequence, as the port does [Spread §5]
           sourceIds={pages.filter(p => selected.has(p.id)).map(p => p.id)}
           onClose={() => setAddOpen(false)}
           onDone={(message) => { setAddOpen(false); setSelected(new Set()); refreshPages(); toast.show(message); }}
