@@ -11,7 +11,7 @@
 // dragged card's links, on a third canvas. A pointer held still draws nothing; keys or a wheel mid-drag stop the following until they settle.
 // Every motion has a still frame: reduced motion, or motion switched off, draws the links once and stops.
 //
-// Not mounted anywhere yet: S1 mounts it on the Schema, behind ?flux3=1, after #13's BoardEditor split (step 10g). Plain DOM and canvas,
+// Mounted by S1 on the Schema (src/flux3/FluxSchema.tsx), behind ?flux3=1, after #13's BoardEditor split (step 10g). Plain DOM and canvas,
 // no React and no app imports, so the board drives it through four calls: setView, setScene, setOptions, lightLink.
 //
 // WHY IT DRAWS LIGHTER THAN S0'S STAND-IN (which redrew a full-screen ground, 300 dashed traces and 120 blurred electrons every frame and
@@ -210,6 +210,8 @@ export class FluxLayer {
     window.addEventListener('keydown', this.onActivity, true);
     window.addEventListener('beforeinput', this.onActivity, true);
     window.addEventListener('wheel', this.onActivity, { capture: true, passive: true });
+    // S1 (mounted on the Schema): a scroll is a pan, whatever moved it (a scrollbar drag, keys, a fling): it holds the frame like a wheel
+    window.addEventListener('scroll', this.onActivity, { capture: true, passive: true });
     window.addEventListener('pointerdown', this.onPointerDown, true);
     window.addEventListener('pointermove', this.onPointerMove, { capture: true, passive: true });
     window.addEventListener('pointerup', this.onPointerUp, true);
@@ -262,6 +264,7 @@ export class FluxLayer {
     window.removeEventListener('keydown', this.onActivity, true);
     window.removeEventListener('beforeinput', this.onActivity, true);
     window.removeEventListener('wheel', this.onActivity, true);
+    window.removeEventListener('scroll', this.onActivity, true);
     window.removeEventListener('pointerdown', this.onPointerDown, true);
     window.removeEventListener('pointermove', this.onPointerMove, true);
     window.removeEventListener('pointerup', this.onPointerUp, true);

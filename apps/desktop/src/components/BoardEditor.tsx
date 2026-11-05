@@ -94,6 +94,10 @@ import { useRailLinkDrag } from './board/useRailLinkDrag';
 import { useBoardGestures } from './board/useBoardGestures';
 import { useBoardKeys } from './board/useBoardKeys';
 import type { LastAction } from './board/geometry';
+// FLUX3 S1 - the Schema Live view's two mount points (src/flux3/): the layer and readouts in the board frame, a node record on each card; both render only under ?flux3=1 in Flux
+import { FLUX3 } from '../flux3/flag';
+import { FluxSchema } from '../flux3/FluxSchema';
+import { FluxNodeRecord } from '../flux3/FluxNodeRecord';
 
 // J4 — the Board: a canvas of positioned boxes (I2/I3 realized). Boxes only
 // ever arrive via a port (J4 Slice 2) or, AB4 S2/S5, a pin (a membership
@@ -1211,6 +1215,7 @@ export function BoardEditor({ id }: { id: string }) {
               {deckBoard && box.kind === 'text' && deckLit.has(box.id) && <LitMark />}
               {/* CONNECTOR-A - the green tack is RETIRED. The circle below is the card's end of a link: shown only while the card is a target, a peer, or the far end of a link just made. */}
               <span className="board-tcircle" data-solid={circleSolid ? 'true' : 'false'} aria-hidden="true" />
+              {FLUX3 && <FluxNodeRecord box={box} connections={connections} peers={linkPeersByCard.get(box.id)} />}
               {/* B3 S1 — "Start Here" (R6's own hint): quiet, brass, present
                   only on the currently-armed deal's own first card, and
                   only until the writer's first genuine edit to ANY dealt
@@ -1305,6 +1310,7 @@ export function BoardEditor({ id }: { id: string }) {
         onPointerUp={onCanvasHandleUp}
         onPointerCancel={onCanvasHandleUp}
       />
+      {FLUX3 && <FluxSchema wrapRef={wrapRef} canvasRef={canvasRef} nodes={sorted} connections={connections} selectedId={selectedId} pageWidthPx={pageWidthPx} labelFor={boxLabel} />}
     </div>
   );
 
