@@ -433,7 +433,7 @@ export type DeskTermId =
   // SettingsPanel/Sliver.tsx's InstrumentsPanel hardcode their OWN terse
   // option strings inline (the FX3 S5 precedent, left as-is — this ticket
   // adds a new control, it does not retrofit its neighbors).
-  | 'progressStyleLabel' | 'progressStyleBar' | 'progressStyleRhizome' | 'recedeHint'
+  | 'progressStyleLabel' | 'progressStyleBar' | 'progressStyleRhizome' | 'progressDrawer' | 'recedeHint'
   // the Recede-depth and Timer rows' own words, out of inline strings so a theme can name them [deskLexicon §18]
   | 'fadeDepthLabel' | 'fadeDepthPartial' | 'fadeDepthFull' | 'timerLabel'
   // one plain sentence per themed word, behind its own "?" (store/help.ts, HelpButton) [deskLexicon §19]
