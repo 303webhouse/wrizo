@@ -46,7 +46,8 @@ const over = (top, a, base) => ({ r: base.r + (top.r - base.r) * a, g: base.g + 
 const VINES = `(() => { const f = document.querySelector('.wz-rhizome-field'); if (!f) return null; const num = (v, k) => Number(v.getAttribute(k));
   const heads = [...f.querySelectorAll('.arbor2-vines > path.arbor2-vine[data-w0]')].map((v) => ({ level: num(v, 'data-level'), x0: num(v, 'data-x0'), y0: num(v, 'data-y0'), w0: num(v, 'data-w0'), ratio: v.hasAttribute('data-ratio') ? num(v, 'data-ratio') : null, under: v.getAttribute('data-under') === 'true', derived: v.getAttribute('data-derived') === 'true' }));
   const past = f.querySelector('.arbor2-vines-past');
-  return { vines: f.getAttribute('data-vines'), flash: f.getAttribute('data-flash'), lap: f.getAttribute('data-lap'), n: f.querySelectorAll('.arbor2-vines > path.arbor2-vine').length,
+  // (report only, after the green leg 41953956122: Undo restored the kept laps but not this lap's growth - the field's own count and fraction)
+  return { segs: f.getAttribute('data-segments'), frac: f.getAttribute('data-goal-frac'), start: f.getAttribute('data-start'), vines: f.getAttribute('data-vines'), flash: f.getAttribute('data-flash'), lap: f.getAttribute('data-lap'), n: f.querySelectorAll('.arbor2-vines > path.arbor2-vine').length,
     pastN: past ? past.querySelectorAll('path.arbor2-vine').length : 0, pastOp: past ? Number(getComputedStyle(past).opacity) : null, heads,
     sig: heads.map((h) => [h.level, Math.round(h.x0), Math.round(h.y0), Math.round(h.w0 * 100)].join(':')).join('|') }; })()`;
 
@@ -147,7 +148,7 @@ const screens = {
       clears: cleared && !!afterClear && afterClear.pastN === 0 && afterClear.n <= 2,
       undoes: undone && !!afterUndo && afterUndo.pastN === kept.pastN && afterUndo.sig === back.sig,
     };
-    const brief = { ok, kept: kept && { n: kept.n, pastN: kept.pastN, pastOp: kept.pastOp, lap: kept.lap }, back: back && { n: back.n, pastN: back.pastN }, afterClear: afterClear && { n: afterClear.n, pastN: afterClear.pastN }, afterUndo: afterUndo && { n: afterUndo.n, pastN: afterUndo.pastN }, cleared, undone };
+    const brief = { ok, kept: kept && { n: kept.n, pastN: kept.pastN, pastOp: kept.pastOp, lap: kept.lap }, back: back && { n: back.n, pastN: back.pastN }, afterClear: afterClear && { n: afterClear.n, pastN: afterClear.pastN, segs: afterClear.segs, frac: afterClear.frac }, afterUndo: afterUndo && { n: afterUndo.n, pastN: afterUndo.pastN, segs: afterUndo.segs, frac: afterUndo.frac, start: afterUndo.start }, backSegs: back && [back.segs, back.frac, back.start], cleared, undone };
     if (Object.values(ok).some((x) => !x)) fail('R20-RHIZOME-LIFE', brief);
     say('r20-rhizome-life', brief);
   },

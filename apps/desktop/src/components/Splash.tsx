@@ -62,6 +62,9 @@ function forcedNotReady(): boolean {
   }
 }
 
+/** ARBOR v2 MOCKUP r20 (Fable's ruling 3): under the flag the drawing's box takes EVEN whole sizes, so centred (the splash's flex, the front door's
+ *  margins) it starts on a whole pixel in both places and the logo inside lands on the same whole pixel in each. */
+export function arborBoxFor(vw: number, vh: number) { const b = splashSizeFor(vw, vh); return { ...b, width: 2 * Math.round(b.width / 2), height: 2 * Math.round(b.height / 2) }; }
 export function splashSizeFor(vw: number, vh: number) {
   const byArea = Math.sqrt(vw * vh * AREA_FRACTION * ASPECT);
   const inkW = Math.min(byArea, vh * MAX_INK_HEIGHT_FRACTION * ASPECT, vw * MAX_INK_WIDTH_FRACTION);
@@ -113,7 +116,7 @@ export function Splash({ ready }: { ready: boolean }) {
   useEffect(() => {
     if (!live) return undefined;
 
-    const resize = () => setBox(splashSizeFor(window.innerWidth, window.innerHeight));
+    const resize = () => setBox((isArbor2() && theme === 'plateau' ? arborBoxFor : splashSizeFor)(window.innerWidth, window.innerHeight));
     resize();
 
     const tryEnd = () => {
