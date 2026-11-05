@@ -1,6 +1,6 @@
 # Contract: one Wrizo account for Write and Read · DRAFT 1
 
-**Status:** DRAFT 1 (Fable, Nov 4, 2026, 10:30 pm): every open item is settled by Nick. **Ready for Nick's signature.** Once signed, a breaking change needs a new version (§6).
+**Status:** DRAFT 1, **SIGNED by Nick, Nov 4, 2026, 11:12 pm MT.** This is the contract both apps build to. A breaking change needs a new version (§6).
 **Owner:** Fable (Write side). **Consumer:** SOCIAL (Wrizo | Read, `303webhouse/wrizo-read`).
 **Nick's rulings this rests on:** one account for both apps; a writer can sign up from either side (Oct 29); the writer's theme follows them into Read (Oct 31); theme switches are saved to the account so they follow the writer into Read (Oct 31).
 
