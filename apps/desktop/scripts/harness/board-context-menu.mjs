@@ -25,6 +25,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { withHarness } from '../runtime-verify.mjs';
+import { srcText } from '../global-css.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const SRC = path.join(here, '..', '..', 'src');
@@ -98,7 +99,7 @@ const callers2 = (srcDir, mutate = {}) => {
   return bad;
 };
 {
-  const be = noCR(fs.readFileSync(path.join(SRC, 'components/BoardEditor.tsx'), 'utf8'));
+  const be = noCR(srcText(SRC, 'components/BoardEditor.tsx'));   // #13 step 10g: the module and its parts, joined
   const app = noCR(fs.readFileSync(path.join(SRC, 'App.tsx'), 'utf8'));
   const bad = callers2(SRC);
   // ---- PARKED - SUPERSEDED by DELETE FOR GOOD (ledger 107) ----
