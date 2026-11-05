@@ -35,13 +35,21 @@ const CLASSIFIED = [
     'the card pop-up\'s input, and (typed-literal) its composition end - the same read, now `let` so the commit can be escaped'],
   ['components/board/BoardCardPopup.tsx', 'const after = readEditorPlainText(el.innerText, getCaretOffset(el));', 'the board card', 'the card pop-up\'s em dash'],
   // connector-b (shipped @ 15dbd991) added this read and the guard was never told - red on main (found Oct 19, Fable Oct 21: fix on its own branch)
-  ['components/board/useRailLinkDrag.ts', "entryId: eid, label: (el.textContent ?? '').trim()", 'the rail',
-    'connector-b\'s thumbnail drag: a RAIL TILE\'s own text, read once at the press to label the drag ghost (the tile names a page or a board - not the editor, not a row); never saved, counted, copied, exported or sent'],
+  // ---- SUPERSEDED by polish #10 item 4 (916c976f): the drag ghost's label is read from a CLONE of the tile with its hidden marks dropped (`words`), so the read below matches nothing now.
+  // Kept verbatim; its successor is the next entry.
+  // ['components/board/useRailLinkDrag.ts', "entryId: eid, label: (el.textContent ?? '').trim()", 'the rail',
+  //   'connector-b\'s thumbnail drag: a RAIL TILE\'s own text, read once at the press to label the drag ghost (the tile names a page or a board - not the editor, not a row); never saved, counted, copied, exported or sent'],
+  ['components/board/useRailLinkDrag.ts', "label: (words.textContent ?? '').trim()", 'the rail',
+    'connector-b\'s thumbnail drag, as polish #10 item 4 reads it: a RAIL TILE\'s words (a clone of the tile with its hidden marks removed), read once at the press to label the drag ghost (the tile names a page or a board - not the editor, not a row); never saved, counted, copied, exported or sent'],
   // ---- SUPERSEDED by typed-literal (Oct 16): the composition end's read became `let { plain, caret } = ...` (its committed text is escaped),
   // so it is the entry above; this one, kept verbatim, would now match nothing and fail the rot check.
   // ['components/BoardEditor.tsx', 'const { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));', 'the board card', 'the card pop-up\'s composition end'],
-  ['components/ScriptEditor.tsx', 'textNode.textContent?.length', 'the screenplay', 'a script element\'s caret clamp (no rows)'],
-  ['components/ScriptEditor.tsx', "onInput={() => onInput(nodeRef.current?.textContent ?? '')}", 'the screenplay', 'a script element\'s own input (no rows)'],
+  // ---- SUPERSEDED by polish #10j (the ScriptEditor split, merged @ 54371360): these two reads MOVED, unchanged, out of components/ScriptEditor.tsx into components/script/ (caret.ts, elements.tsx),
+  // so the two entries below match nothing there now. Kept verbatim; the successors follow them, same reads, same classification.
+  // ['components/ScriptEditor.tsx', 'textNode.textContent?.length', 'the screenplay', 'a script element\'s caret clamp (no rows)'],
+  // ['components/ScriptEditor.tsx', "onInput={() => onInput(nodeRef.current?.textContent ?? '')}", 'the screenplay', 'a script element\'s own input (no rows)'],
+  ['components/script/caret.ts', 'textNode.textContent?.length', 'the screenplay', 'a script element\'s caret clamp (no rows) - the same read as before the #10j split, now in script/caret.ts'],
+  ['components/script/elements.tsx', "onInput={() => onInput(nodeRef.current?.textContent ?? '')}", 'the screenplay', 'a script element\'s own input (no rows) - the same read as before the #10j split, now in script/elements.tsx'],
   ['components/ScriptEditor.tsx', 'const text = node?.textContent ?? activeEl?.text', 'the screenplay', 'a script element (no rows)'],
   ['components/ScriptEditor.tsx', 'const domText = activeElRef.current?.textContent;', 'the screenplay', 'a script element (no rows)'],
   ['pages/JournalEntry.tsx', 'pageTextRef.current = el.innerText;', 'the Journal sheet', 'the Journal\'s plaintext sheet (no rows, a different surface)'],
