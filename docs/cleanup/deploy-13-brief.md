@@ -153,15 +153,15 @@ The **pen-ink duplicate** (`ModeStage` `PEN_INKS` vs `store/ink.ts`) is **not** 
 #### Step 10g in full (INK's; Fable, Nov 4)
 
 Fable gave 10g to INK, to run **in parallel** with POLISH's 10a–10f. The files do not overlap: 10a–10f never touch `BoardEditor.tsx`.
-Line numbers below are measured at `6a2cd218` (`c13-9-ts-comments-board`, step 9's BoardEditor branch, after its second commit moved 10 more history blocks).
+Line numbers below are measured at `c9400fda` (`c13-9-ts-comments-board-r2`, step 9's BoardEditor branch cut again from main `7f1c6a84`, which carries TOOLS #14-r2's size box; it replaces `c13-9-ts-comments-board`).
 
-- **Start:** once `c13-9-ts-comments-board` has merged. That is step 9's only work on `BoardEditor.tsx`, and no later #13 step touches the file.
+- **Start:** once `c13-9-ts-comments-board-r2` has merged. That is step 9's only work on `BoardEditor.tsx`, and no later #13 step touches the file.
   Branch `c13-10g-board` off `origin/main` at that point, and pin the SHA in the report.
-- **The file today:** `components/BoardEditor.tsx`, 3,324 lines.
+- **The file today:** `components/BoardEditor.tsx`, 3,328 lines.
   - Constants and pure helpers: lines 106–158 and 182 (`naturalPx`, `groupMembers`, `maxBottom`, `boxesOverlap`, `notecardExcerpt`).
   - The box renderers `BoardInkBox` / `BoardPinBox` / `BoardTextBox`: lines 160–274.
-  - `BoardCardPopup`: lines 275–774, about 500 lines. It is exported, but it is used only inside this file.
-  - `BoardEditor` itself: line 778 to the end, about 2,550 lines with 18 effects. The pointer/gesture effect, with connection mode inside it, is the largest.
+  - `BoardCardPopup`: lines 275–778, about 500 lines. It is exported, but it is used only inside this file.
+  - `BoardEditor` itself: line 782 to the end, about 2,550 lines with 18 effects. The pointer/gesture effect, with connection mode inside it, is the largest.
 - **What:** split into `components/board/`:
   - `geometry.ts`: the constants and the pure helpers.
   - `BoardBoxes.tsx`: the three box renderers.
