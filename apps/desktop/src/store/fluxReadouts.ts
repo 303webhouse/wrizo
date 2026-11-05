@@ -4,12 +4,12 @@
 
 const pad = (n: number, width: number): string => String(Math.max(0, Math.trunc(n))).padStart(width, '0');
 
-/** The block caret's width for a line of this height: a third of the old 0.48 ratio (Nick, Oct 23: "a slimmer caret, the block at about 1/3 width"), never under 3 px. */
+// the block caret's width: a third of the old 0.48 ratio, never under 3 px [fluxReadouts §1]
 export function caretWidth(height: number): number {
   return Math.max(3, Math.round(height * 0.16));
 }
 
-/** How long the chrome takes to recede while the writer types. Arbor keeps its slow curve (the engine's own base); FLUX is quicker (Nick, Oct 23: "an open drawer reaches the 0.08 floor about 1 s after the first key"), so a drawer's contents are never caught half-faded. */
+// how long the chrome takes to recede while typing: Arbor keeps the engine's slow curve; Flux is quicker, so a drawer is never caught half-faded [fluxReadouts §2]
 export const FADE_OUT_FLUX_S = 0.8;
 export function fadeOutSeconds(theme: string, base: number): number {
   return theme === 'flux' ? FADE_OUT_FLUX_S : base;
@@ -41,7 +41,6 @@ export function rackReadout(name: string): string {
   return `RACK ▸ ${name}`;
 }
 
-// The hint lines (Fable, Oct 21): the prose surface and Wire In each get one true line; the board's landed with the Inputs work, after step 3.
 export const HINTS = {
   prose: 'TYPE — THE CHROME RECEDES ▪ PASTE MEETS THE FIREWALL',
   wireIn: 'FORWARD ONLY — NO WAY BACK ▪ PASTE MEETS THE FIREWALL',

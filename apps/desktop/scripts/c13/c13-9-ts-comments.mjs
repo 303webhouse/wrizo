@@ -9,11 +9,12 @@
 //   node apps/desktop/scripts/c13/c13-9-ts-comments.mjs apply <spec.json>
 //        spec: [{ key, hash, why }]: each block (found by its hash, unique in its file) moves verbatim to docs/rulings/<area>-<Name>.md
 //        as "## <Name> §<n>"; in the source it becomes "// <why> [<Name> §<n>]" (or the JSX / inline form), or goes when why is ""
-//   node apps/desktop/scripts/c13/c13-9-ts-comments.mjs check --base <rev> <file...> [--plant drop|edit|code|cite|jsx]
+//   node apps/desktop/scripts/c13/c13-9-ts-comments.mjs check --base <rev> <file...> [--plant drop|edit|code|cite|jsx|keep]
 //        the proof, beside the byte-identical bundle: (1) with comments aside, each file's tokens are the base's (no code moved);
 //        (2) every comment block removed or rewritten since the base is in docs/rulings/, verbatim (a block multiset); (3) every
 //        [<Name> §<n>] cited in a file resolves to a heading, and every heading is cited or says no comment stays; (4) no history
-//        marker is left in a comment of the files. --plant: the same check on a mutated input: must FAIL.
+//        marker is left in a comment of the files, except a block docs/cleanup/c13-9-keep.json keeps (by file and hash, naming the
+//        reader that quotes it verbatim; an entry no block matches fails). --plant: the same check on a mutated input: must FAIL.
 //   node apps/desktop/scripts/c13/c13-9-ts-comments.mjs readers --base <rev> <file...>
 //        the triage: every string and regex literal in scripts/**/*.mjs whose match count in a file differs from the base's: a
 //        harness that reads comment text: listed by harness and line when its PRESENCE flips (--counts: when its count moves).
@@ -197,8 +198,13 @@ function check() {
     for (const m of s.matchAll(/^## ([A-Za-z0-9-]+ §\d+)$/gm)) heads.set(m[1], f);
   }
   if (plant === 'drop') { const k = [...moved.keys()][0]; moved.set(k, moved.get(k) - 1); }
+  // a block a dated record quotes verbatim stays in the source, history and all: kept by file and hash, each naming its reader
+  const keepFile = path.join(ROOT, 'docs/cleanup/c13-9-keep.json');
+  const keep = plant === 'keep' || !fs.existsSync(keepFile) ? [] : JSON.parse(fs.readFileSync(keepFile, 'utf8'));
+  for (const k of keep) if (!k.key || !k.hash || !k.reader || !fs.existsSync(path.join(ROOT, k.reader.split(/[: ]/)[0]))) fails.push(`c13-9-keep.json: an entry needs key, hash and a reader that exists: ${JSON.stringify(k)}`);
+  const keptHit = new Set();
   const cited = new Map();
-  let removedTotal = 0, nowBlocks = 0, planted = null;
+  let removedTotal = 0, nowBlocks = 0, planted = plant === 'keep' && fs.existsSync(keepFile) ? 'docs/cleanup/c13-9-keep.json' : null;
   for (const f of scope) {
     let now = noCR(read(f));
     // a plant lands on the FIRST file it can change, and only there (a plant that lands nowhere is reported, never a quiet pass)
@@ -231,14 +237,17 @@ function check() {
     }
     for (const b of nowB) {
       for (const m of b.text.matchAll(CITE)) cited.set(`${m[1]} §${m[2]}`, f);
+      const kept = keep.find((k) => k.key === f && k.hash === hash(b.text));
+      if (kept) { keptHit.add(kept); continue; }
       if (HISTORY.test(b.text)) fails.push(`${f}: a comment still carries history: ${b.text.trim().slice(0, 70).replace(/\n/g, ' ')}`);
     }
   }
+  for (const k of keep) if (scope.includes(k.key) && !keptHit.has(k)) fails.push(`c13-9-keep.json: ${k.key} ${k.hash} is kept but no block of the file carries that hash`);
   for (const [c, f] of cited) if (!heads.has(c)) fails.push(`${f}: cites [${c}], which no rulings file holds`);
   for (const [h, f] of heads) if (!cited.has(h) && !/no comment stays/.test(rulingsTexts.find(([n]) => n === f)[1].split(`## ${h}\n`)[1]?.split('\n## ')[0] || '')) fails.push(`${f}: ${h} is cited by no comment`);
   for (const [k, n] of moved) if (n > 0) fails.push(`a rulings entry holds a block no file lost: ${k.trim().slice(0, 70).replace(/\n/g, ' ')}`);
   if (plant && plant !== 'drop' && !planted) { console.log(`PLANT DID NOT LAND: no file in scope could take --plant ${plant}`); process.exit(2); }
-  console.log(`files ${scope.length}; comment blocks now ${nowBlocks}; removed or rewritten ${removedTotal}; rulings files ${rulingsTexts.length}, entries ${heads.size}; cited ${cited.size}${plant ? `; PLANTED: ${plant}${planted ? ` in ${planted}` : ''}` : ''}`);
+  console.log(`files ${scope.length}; comment blocks now ${nowBlocks}; removed or rewritten ${removedTotal}; rulings files ${rulingsTexts.length}, entries ${heads.size}; cited ${cited.size}; kept ${keptHit.size}${plant ? `; PLANTED: ${plant}${planted ? ` in ${planted}` : ''}` : ''}`);
   for (const f of fails.slice(0, 12)) console.log('FAIL', f);
   console.log(fails.length ? `TS-COMMENTS: FAIL (${fails.length})` : 'TS-COMMENTS: PASS (the code is the base\'s with comments aside; every removed comment is in docs/rulings verbatim; every citation resolves)');
   process.exit(fails.length ? 1 : 0);
@@ -285,4 +294,4 @@ function readers() {
   console.log(`literals ${lits.length} from ${scripts.length} scripts; readers whose count moved: ${hits}`);
 }
 
-({ list, apply, check, readers }[process.argv[2]] ?? (() => { console.log('usage: list <file...> [--all] | apply <spec.json> | check --base <rev> <file...> [--plant drop|edit|code|cite|jsx] | readers --base <rev> <file...>'); process.exit(1); }))();
+({ list, apply, check, readers }[process.argv[2]] ?? (() => { console.log('usage: list <file...> [--all] | apply <spec.json> | check --base <rev> <file...> [--plant drop|edit|code|cite|jsx|keep] | readers --base <rev> <file...>'); process.exit(1); }))();

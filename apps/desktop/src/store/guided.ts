@@ -46,7 +46,7 @@ function begun(boardId: string, box: Pick<Box, 'id' | 'text'>, boxes?: readonly 
   return g.Pages.length + g.Sources.length + g.Boards.length > 0;
 }
 
-/** LIT (W5, Nick Oct 26): the writer has marked this step finished. Her statement, not a measurement - kindled() above never reads it. */
+// Lit: the writer has marked this step finished - her statement, not a measurement (kindled() never reads it) [guided §1]
 export function isLit(box: Pick<Box, 'lit'>): boolean {
   return box.lit === true;
 }
@@ -63,8 +63,7 @@ export function withLit(boxes: readonly Box[], id: string, on: boolean, now: str
   });
 }
 
-/** FROM MY PAGES' picker (Fable, Oct 23): the pages of the writer's CURRENT PLACE - the pages the Pages pop-out lists for it, in the writer's own order: this Drawer's pages (every set in it), or the
- *  Journal's when the writer is in the Journal. Not the board's own set: a NEW board has no pages yet, and the preset that opens it has to work. Boards, system boards and plan faces are never listed. */
+// the pages of the writer's CURRENT PLACE, in the writer's own order - not the board's own set, so a brand-new board's preset still works; boards, system boards and plan faces never listed [guided §2]
 export function pagesOfPlace(place: Pick<Place, 'kind' | 'id'>): { id: string; title: string }[] {
   return sectionsOf(place, 'pages').flatMap(g => g.items).map(e => ({ id: e.id, title: firstLine(e.text) }));
 }

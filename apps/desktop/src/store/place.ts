@@ -4,14 +4,7 @@ import {
   getSystemKind, hasAnyDrawerRow, isPairedPlanBoard, saveDrawer, saveJournalEntry, saveProject, setPageHome, setProjectDrawer,
 } from './persistence';
 
-// BIG PROJECTS, STEP 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18). THE PLACE: "where you are" is always a Drawer or a Journal.
-//
-// SCHEMA CHANGE: NONE. Everything here is rows in collections that already exist (drawers, projects, journal_entries) plus two per-device
-// localStorage keys (the place, the open counts). A SET is a `projects` row with a `drawerId`; the FIRST JOURNAL is not a row at all but a
-// read-time rule over the pages with no live home. Nothing is moved behind the writer's back: the Top Drawer bootstrap only ever ADDS a Drawer
-// and its one set, and only for an account that has never had a Drawer row.
-//
-// Pure data: it imports no component, owns no layout, and every reader below WRITES NOTHING (the views never touch orderIndex).
+// the place: "where you are" is always a Drawer or a Journal; no schema change (a set is a projects row with a drawerId; the first Journal is a read-time rule); the bootstrap only ever ADDS; every reader writes nothing [place §1]
 
 export type PlaceKind = 'drawer' | 'journal';
 
@@ -49,10 +42,7 @@ export function ensureTopDrawer(uid: string): boolean {
   return true;
 }
 
-/**
- * FLUX V2 - is this the account's untouched top drawer? A render-time question only (the Root word, ruled Oct 21): true for the born-with id AND the born-with name, so a drawer the
- * writer renamed keeps its own name. Nothing here ever writes a name.
- */
+// is this the account's untouched top drawer? Render-time only: the born-with id AND name, so a renamed drawer keeps its name [place §2]
 export function isDefaultRoot(d: { id: string; name: string }): boolean {
   return d.id.startsWith(TOP_DRAWER_PREFIX) && d.name === DEFAULT_TOP_NAME;
 }

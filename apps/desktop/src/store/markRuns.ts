@@ -19,14 +19,7 @@ export type MarkKind = 'bold' | 'italic' | 'underline' | 'strike';
 
 export const MARK_OF: Record<MarkKind, string> = { bold: '**', italic: '*', underline: '__', strike: '~~' };
 
-// FONT-SPAN (Nick's ruling, Oct 13; docs/font-span-plan.md): a font on HIGHLIGHTED words is a run too - `[the words]{.font-<slug>}`,
-// the bracketed span Pandoc reads, the slug being the roster face's name lower-cased with hyphens for spaces. Its two marks DIFFER
-// (`[` opens, `]{.font-<slug>}` closes), so a run carries its closing mark when it is not its opening one; every reader that measures
-// a closing mark reads `closeMark(r)`, never `r.mark`. The marks hold no whitespace, so no word counter ever counts one.
-// POLISH #10 item 4 (Nick ruled A, Oct 25): a SIZE on highlighted words is the same kind of span - `[the words]{.size-N}` (N in points, whole or
-// half: `10.5`) - and where a face and a size meet on the same words they are ONE span with both classes, `[the words]{.font-<slug> .size-N}`, so
-// two spans never cross. It stays kind 'font' (a STYLE span): every reader that already handles a font span - hiding, the caret, Backspace and Enter,
-// the strippers, the word counts, the clipboard - handles a size span the same way. A run carries `face` and/or `points`.
+// a font or size on highlighted words is a run too, `[the words]{.font-<slug> .size-N}`; its two marks differ, so every reader of a closing mark reads closeMark(r); marks hold no whitespace, so no word counter counts one [markRuns §1]
 export type RunKind = MarkKind | 'font';
 
 export interface MarkRun {
@@ -40,7 +33,7 @@ export interface MarkRun {
   cmark?: string;
   /** a font span's face, as its slug (store/fontRoster.ts faceForSlug turns it back into a face) */
   face?: string;
-  /** POLISH #10 item 4: a span's size in points (a size span, or a face+size span) */
+  // a span's size in points (a size span, or a face+size span) [markRuns §2]
   points?: number;
 }
 
@@ -49,7 +42,7 @@ export const closeMark = (r: { mark: string; cmark?: string }): string => r.cmar
 
 /** A font span's closing marker for a face slug. */
 export const fontCloseMark = (slug: string): string => `]{.font-${slug}}`;
-/** POLISH #10 item 4: a style span's closing marker - the face's class first, the size's second (`]{.font-lora .size-14}`, `]{.size-10.5}`). */
+// a style span's closing marker: the face's class first, the size's second [markRuns §3]
 export const spanCloseMark = (st: { face?: string | null; points?: number | null }): string =>
   `]{${[st.face ? `.font-${st.face}` : '', st.points != null ? `.size-${st.points}` : ''].filter(Boolean).join(' ')}}`;
 const SPAN_CLOSE = /^\]\{([^}\n]{1,80})\}/;
@@ -85,7 +78,7 @@ function fontRuns(line: string): MarkRun[] {
     if (c === '[') { stack.push(i); continue; }
     if (c !== ']') continue;
     const o = stack.pop();
-    const m = readSpanClose(line.slice(i, i + 96));   // POLISH #10 item 4: a face and/or a size
+    const m = readSpanClose(line.slice(i, i + 96));   // a face and/or a size [markRuns §4]
     if (m && o !== undefined) {
       const run: MarkRun = { kind: 'font', mark: '[', open: o, close: i, cmark: m.mark };
       if (m.face !== undefined) run.face = m.face;
@@ -101,11 +94,7 @@ interface Tok { ch: string; pos: number; len: number; canOpen: boolean; canClose
 
 const isSpace = (c: string | undefined): boolean => c === undefined || /\s/.test(c);
 
-// ---- TYPED-LITERAL (Nick's ruling, Oct 16; docs/typed-literal-plan.md): a formatting character the writer TYPES (or pastes) has no
-// formatting meaning. It is stored with Markdown's own escape - a backslash before it - so it never becomes markup, and a .md export
-// shows the literal character in any Markdown reader. An ESCAPE is a backslash followed by one of these; the backslash is the escape's
-// hidden mark (the page shows the character alone), and the character is plain text. `\\` is an escaped backslash, so in `\\*` the star
-// is real markup again (Markdown's own rule). Saved text from before the ruling holds no escapes and reads exactly as it did.
+// a typed formatting character is stored with Markdown's escape (a backslash before it), so it never becomes markup and a .md export shows it literally; the backslash is a hidden mark; older text holds no escapes [markRuns §5]
 export const ESCAPABLE = new Set(['\\', '*', '_', '~', '#', '-', '>', '[', ']']);
 
 /** The positions of the escape backslashes on one line (each escapes the character right after it). */
@@ -224,8 +213,7 @@ export function readLead(line: string, opts: { headings?: boolean } = {}): { tok
     const d = DIRECTIVES.find(x => line.startsWith(x.text, i));
     if (d) { tokens.push({ kind: d.kind, text: d.text, start: i, end: i + d.text.length }); i += d.text.length; continue; }
     if (headings) {
-      // HEADINGS, six levels (Nick, 2026-10-06: "whatever the standard is for WordPress or other web-based apps"): `#` to `######` and
-      // a space, one-to-one with HTML h1-h6. Seven or more hashes are text, as in Markdown.
+      // six heading levels, `#` to `######` and a space, one-to-one with h1-h6; seven or more hashes are text [markRuns §6]
       const hm = /^(#{1,6}) /.exec(line.slice(i));
       const h = hm ? hm[0] : null;
       if (h) { tokens.push({ kind: 'heading', text: h, start: i, end: i + h.length }); i += h.length; }
@@ -270,10 +258,9 @@ export function unescapeTyped(text: string): string {
   }).join('\n');
 }
 
-/** FONT-SPAN (Fable's addition 1, Oct 15): the text with every font span's two marks taken out and EVERYTHING else kept exactly - the
- *  emphasis, the structure tokens, the words. What the Tutor's prompts, Consistency and any reader of the words are given. */
+// the text with every style span's two marks taken out and everything else kept exactly: what prompts and readers of the words are given [markRuns §7]
 export function withoutFontMarks(text: string): string {
-  if (!text.includes('{.font-') && !text.includes('{.size-')) return text;   // POLISH #10 item 4: a size span is a style span too
+  if (!text.includes('{.font-') && !text.includes('{.size-')) return text;   // a size span is a style span too [markRuns §8]
   return text.split('\n').map((line) => {
     const lead = readLead(line).length;
     const rest = line.slice(lead);

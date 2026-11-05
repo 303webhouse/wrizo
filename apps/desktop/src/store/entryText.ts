@@ -4,12 +4,7 @@
 // reuse firstLine() for routed-scene/project titles. No dependency.
 import { stripLine } from './markRuns';
 
-// ITEM 210 - TITLES AND EXCERPTS ARE PLAIN TEXT. A page's title, a card's excerpt, an echoed line and an exported heading are all
-// DERIVED from `entry.text`, and that text carries the writer's own markup (`**bold**`, `# Heading`, `- bullet`, `>| ` block).
-// Nick's screenshot: the title bar read "**TESTING** THE *DATABASE* SYNC". Every derivation now reads a line through the ONE reader
-// (store/markRuns.ts stripLine: structure tokens out, and only the emphasis markers the page actually paints), so a title is what the
-// page shows, and "2 * 3 * 4" is still "2 * 3 * 4". A line that is nothing but markup (`****`, `>| `) has nothing to read and is
-// skipped, like a blank one.
+// titles and excerpts are plain text: every derivation reads a line through the one reader (markRuns stripLine); a line that is only markup is skipped [entryText §1]
 export function plainLines(text: string): string[] {
   return text.split('\n').map(l => stripLine(l.trimStart()).trim()).filter(Boolean);
 }
@@ -19,7 +14,7 @@ export function firstPlainLine(text: string): string | undefined {
   return plainLines(text)[0];
 }
 
-// The opening non-empty line — entries have no titles, so this derives a label. (Plain text since item 210.)
+// the opening non-empty line: entries have no titles, so this derives a label [entryText §2]
 export function firstLine(text: string): string {
   return firstPlainLine(text) || 'Untitled';
 }
@@ -77,7 +72,7 @@ export function matchesQuery(text: string, query: string): boolean {
 // Lines worth reflecting back (J7) — skip empty / very-short fragments so the
 // post-sprint echo never surfaces an awkward scrap.
 export function substantialLines(text: string, minChars = 24): string[] {
-  return plainLines(text).filter(l => l.length >= minChars);   // item 210: the echoed line is shown to the writer, so it is plain text
+  return plainLines(text).filter(l => l.length >= minChars);   // the echoed line is shown to the writer, so it is plain text [entryText §3]
 }
 
 // Pick one of the writer's own lines to echo at the finish moment, or null when
@@ -91,7 +86,7 @@ export function pickEchoLine(text: string, rand: () => number = Math.random): st
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-// Calm, locale-independent stamp like "Jun 14, 3:42 PM".
+// a calm, locale-independent stamp: short month, day, and time [entryText §4]
 export function formatStamp(iso: string): string {
   const d = new Date(iso);
   const mins = String(d.getMinutes()).padStart(2, '0');

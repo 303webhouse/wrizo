@@ -13,18 +13,18 @@ registerThemeFonts('machina', () => Promise.all([
   import('@fontsource/ibm-plex-serif/400-italic.css'),
   import('@fontsource/atkinson-hyperlegible/400.css'),
   import('@fontsource/atkinson-hyperlegible/700.css'),
-  // TOOLS #10 item 10 - Machina's default writing face (Source Sans 3) loads with the theme.
+  // Machina's default writing face loads with the theme [themeFontFaces §1]
   import('@fontsource-variable/source-sans-3/wght.css'),
   import('@fontsource-variable/source-sans-3/wght-italic.css'),
 ]));
 
-// ARBOR'S default writing face (TOOLS #10 item 10): EB Garamond, loaded with the theme like the others - never eagerly (the eager list does not grow). Arbor's theme id is 'plateau'.
+// Arbor's default writing face (EB Garamond) loads with the theme, never eagerly; Arbor's theme id is 'plateau' [themeFontFaces §2]
 registerThemeFonts('plateau', () => Promise.all([
   import('@fontsource-variable/eb-garamond/wght.css'),
   import('@fontsource-variable/eb-garamond/wght-italic.css'),
 ]));
 
-// FLUX'S default writing face (TOOLS #10 item 10): Titillium Web, loaded with the theme (Flux's chrome faces stay eager in main.tsx). Same lazy shape as Machina's.
+// Flux's default writing face (Titillium Web) loads with the theme [themeFontFaces §3]
 registerThemeFonts('flux', () => Promise.all([
   import('@fontsource/titillium-web/400.css'),
   import('@fontsource/titillium-web/400-italic.css'),

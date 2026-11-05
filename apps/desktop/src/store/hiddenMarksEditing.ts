@@ -72,8 +72,7 @@ export function attachHiddenMarkEditing(host: HiddenMarkHost): HiddenMarkEditing
   let exit: { closeAt: number; closers: string; wsEnd: number } | null = null;
   let pointerDown = false;
   let lastSnap = -1;
-  // A caret a CLICK placed is honoured until the caret moves elsewhere: the selectionchange that follows must not re-snap it with the
-  // keyboard rule and pull it back inside the run the writer clicked past (Nick's live bug, 2026-10-06).
+  // a caret a CLICK placed is honoured until it moves, so the selectionchange after it does not re-snap it inside the run [hiddenMarksEditing §1]
   let clickPlaced = -1;
   // A mark a format press could not store as an empty pair (an empty italic is `**`, which reads as a lone bold marker): wrapped around
   // the next text typed at `at`, then forgotten. Moving the caret away forgets it too, so nothing is ever left on the page.
@@ -120,9 +119,7 @@ export function attachHiddenMarkEditing(host: HiddenMarkHost): HiddenMarkEditing
     const ins = after.slice(P, after.length - S);
     let span = nativeRange(T, P, T.length - S);
     if (span.s === span.e && ins === '') return null;
-    // SYNCHRONOUS SETTLING (Nick's ruling 2, Oct 16): a typed insertion at a collapsed caret lands where the caret SETTLES (rule 1, or
-    // the click's own side), not wherever the browser held it - so whether the asynchronous settle on selectionchange ran before the key
-    // no longer changes the text. The same keys give the same text at any speed.
+    // a typed insertion lands where the caret SETTLES, so whether the async settle ran before the key never changes the text [hiddenMarksEditing §2]
     let settledMove = false;
     if (before.start === before.end && span.s === span.e && P === before.start) {
       const q = before.start === clickPlaced ? before.start : snapCaret(T, before.start);
@@ -149,7 +146,7 @@ export function attachHiddenMarkEditing(host: HiddenMarkHost): HiddenMarkEditing
   const beforeInput = (e: InputEvent) => {
     const it = e.inputType || '';
     beforeEdit = null;
-    // TYPED-LITERAL (Nick, Oct 16: pasted ** is literal too): a paste or drop is captured like typing, so its text is escaped on input
+    // a paste or drop is captured like typing, so its text is escaped on input [hiddenMarksEditing §3]
     if (host.busy() || e.isComposing || it === 'insertCompositionText') return;
     const o = getSelectionOffsets(el);
     if (!o) return;

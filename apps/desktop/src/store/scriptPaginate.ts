@@ -2,22 +2,7 @@ import type { ScriptElType } from '../types';
 import { PAGE_LINES } from './scriptMetrics';
 import type { LedgerEntry } from './scriptLedger';
 
-// SC2 S2 — THE SHEET SEQUENCE, DERIVED AND NEVER STORED.
-//
-// Pages are a PROJECTION of the ledger, recomputed on demand — the same
-// constitutional law that makes decks data and modes projections. Nothing about
-// pagination enters the doc, the store, or the server. The reason is not tidiness:
-// store a page array and the first edit above it makes every subsequent page a
-// lie, and there is then a second copy of the truth free to drift from the first.
-// A projection cannot drift, because there is only ever one truth to read.
-//
-// It is also what makes viewport invariance PROVABLE rather than merely observed.
-// This function takes a ledger and returns pages; no DOM, no width, no font
-// enters it, so the same document cannot paginate differently at 1100px and
-// 2200px — not because three renders were measured and agreed, but because the
-// width was never an input. (sc2.mjs still cross-checks the RENDER against this
-// output at each width: arithmetic proven viewport-invariant is necessary and
-// not sufficient — it cannot catch the render disagreeing with the arithmetic.)
+// pages are a projection of the line count (lineLedger), recomputed, never stored; no width or font enters, so pagination is viewport-invariant by construction [scriptPaginate §1]
 
 export interface BreakRule {
   /** This element may never be the last on a page — it travels whole to the next. */
@@ -34,60 +19,26 @@ export interface BreakRule {
   keepWithPrevious: boolean;
 }
 
-// THE BREAK RULES ARE A TABLE, NOT BRANCHING (Fable, 2026-07-25). Each rule is
-// assertable on its own, and a future ruling changes ONE ROW instead of a
-// control-flow graph. That is not style: SC2.1's (MORE)/(CONT'D) is already
-// scheduled to change `dialogue`'s row. If it is a row, SC2.1 is an edit; if it
-// were a branch, SC2.1 would be a rewrite of the thing SC2 just proved correct.
-//
-// Only the two rules the brief RULES are set. The rest are the trade's open
-// questions and are left at their defaults deliberately rather than guessed —
-// a parenthetical orphaned at a page foot is arguably wrong too, but nobody has
-// ruled it, and inventing a rule here would make it look ruled.
+// the break rules are a table, not branching: each is assertable alone and a change is one row; unruled cases stay at their defaults rather than guessed [scriptPaginate §2]
 export const BREAK_RULES: Record<ScriptElType, BreakRule> = {
   // "A scene heading is never the last line of a page" — it travels whole.
   scene: { neverLast: true, keepWithNext: true, splittable: false, keepWithPrevious: false },
-  // "A character cue is never the last line of a page" — it travels with its
-  // dialogue (the Half-Hour Writer's ruling).
+  // a character cue is never the last line of a page: it travels with its dialogue [scriptPaginate §3]
   character: { neverLast: true, keepWithNext: true, splittable: false, keepWithPrevious: false },
   // The one permitted split: an action block longer than a full page cannot
   // move whole, so it breaks at a line boundary.
   action: { neverLast: false, keepWithNext: false, splittable: true, keepWithPrevious: false },
   // No element splits in SC2. Dialogue's row is what SC2.1 edits.
   dialogue: { neverLast: false, keepWithNext: false, splittable: false, keepWithPrevious: false },
-  // RULED 2026-07-25 (Fable): a parenthetical is a MODIFIER on the line beneath
-  // it — stranded at a page foot it modifies nothing, and in the trade it can
-  // never be the last thing on a page.
+  // a parenthetical modifies the line beneath it, so it is never last on a page [scriptPaginate §4]
   paren: { neverLast: true, keepWithNext: true, splittable: false, keepWithPrevious: false },
-  // TRANSITION — RULED, DEFERRED FROM S2a.1, AND LANDED HERE IN S2b WITH ITS
-  // TERMINATION PROOF (see `applyBreakRules` below).
-  //
-  // The ruling is `keepWithPrevious`: a transition orphaned onto a fresh page,
-  // away from the scene it ends, is the mirror of a stranded heading. The column
-  // was always the easy part. The hard part was that every other rule pulls an
-  // element FORWARD off a page foot, while this one reaches BACKWARD — and
-  // mixing directions in one fix-up pass is where oscillation lives (A pulled
-  // forward by neverLast, pulled back by keepWithPrevious, forever). This
-  // function runs on every keystroke, so an oscillation is not a wrong page
-  // count, it is a frozen editor.
-  //
-  // The resolution is that the rule is EXPRESSED AS THE SAME FORWARD MOVE.
-  // Nothing is ever pulled back: a transition at a page top is repaired by
-  // pushing the PREVIOUS page's last element forward to join it. Both rules
-  // therefore reduce to one action — "pop page p's tail onto page p+1" — and
-  // the pass has a single direction, which is what makes the proof possible.
+  // a transition keeps with the previous element, expressed as the same FORWARD move (the previous page's tail moves to join it), so the pass has one direction and terminates [scriptPaginate §5]
   transition: { neverLast: false, keepWithNext: false, splittable: false, keepWithPrevious: true },
   shot: { neverLast: false, keepWithNext: false, splittable: false, keepWithPrevious: false },
   general: { neverLast: false, keepWithNext: false, splittable: false, keepWithPrevious: false },
 };
 
-// SC2 S2b — the table is consulted through this, never indexed directly.
-// `BREAK_RULES[t].splittable` on a type outside the table THROWS, and a script
-// doc is jsonb that arrives from storage and from other builds (scriptMetrics.ts
-// carries the same reasoning and the live example — sc2.mjs's own frozen S0
-// fixture seeds a type this build has no row for). The default is the most
-// conservative reading of "a block of text with no ruling": it moves whole, it
-// may end a page, it may begin one.
+// the table is consulted through this, never indexed directly: an unknown type gets the most conservative default [scriptPaginate §6]
 const DEFAULT_RULE: BreakRule = { neverLast: false, keepWithNext: false, splittable: false, keepWithPrevious: false };
 export function ruleFor(t: ScriptElType): BreakRule {
   return BREAK_RULES[t] ?? DEFAULT_RULE;
@@ -119,13 +70,7 @@ export interface Page {
   linesUsed: number;
 }
 
-/**
- * Project a ledger into pages. Pure, synchronous, viewport-free.
- *
- * `linesPerPage` defaults to the DERIVED 54 (scriptMetrics.ts: 66 − 6 − 6, an
- * 11in page less two 1in margins at 6 lines/inch). The page NUMBER is chrome —
- * it sits in the top margin, outside the body — so it never costs a body line.
- */
+// project the LedgerEntry list into pages, pure and viewport-free; the page number is chrome and never costs a body line [scriptPaginate §7]
 export function paginate(ledger: LedgerEntry[], linesPerPage: number = PAGE_LINES): Page[] {
   const pages: Placed[][] = [];
   let cur: Placed[] = [];
@@ -134,10 +79,7 @@ export function paginate(ledger: LedgerEntry[], linesPerPage: number = PAGE_LINE
   const flush = () => { if (cur.length) { pages.push(cur); cur = []; used = 0; } };
 
   for (const entry of ledger) {
-    // The consumer's suppression rule, applied here exactly as the renderer
-    // applies it at document start: the first element of a page contributes no
-    // space above it. The ledger stays position-independent; this is where
-    // position is known.
+    // the first element of a page contributes no space above it; the entries stay position-independent, and position is known here [scriptPaginate §8]
     let space = cur.length === 0 ? 0 : entry.spaceBefore;
     let remaining = entry.lines;
 
@@ -250,7 +192,7 @@ function applyBreakRules(pages: Placed[][], linesPerPage: number): Placed[][] {
   return pages.filter((pg) => pg.length > 0);
 }
 
-/** Total pages a ledger projects to. Derived; never stored. */
+// total pages the entries project to; derived, never stored [scriptPaginate §9]
 export function pageCount(ledger: LedgerEntry[], linesPerPage: number = PAGE_LINES): number {
   return paginate(ledger, linesPerPage).length;
 }

@@ -17,18 +17,7 @@ function rand(min: number, max: number): number {
   return min + Math.random() * (max - min);
 }
 
-// Fable's R2 (TH2 review) — the dial used to be a boolean (0 vs >0); every
-// scheduled delay now reads dialIntervalScale(getDial()) LIVE at scheduling
-// time (not once at mount), so a mid-session dial change takes effect on
-// the very next tick. `minMs * FLOOR_FRACTION` is this loop's own
-// structural floor — at dial 100 (the fastest multiplier, ~0.55x) the
-// scaled delay can never breach it, which is what actually protects the
-// ≤3Hz-family spacing canon §7 requires; dialIntervalScale itself only
-// supplies the multiplier, never the safety floor. Exported (not just used
-// internally by loop() below) so the harness can assert the floor
-// mathematically rather than by observing real-timer DOM mutations across
-// six independently-scheduled loops, which coincidentally overlap by
-// chance often enough to make that kind of test flaky.
+// every delay reads dialIntervalScale(getDial()) live at scheduling time; minMs * FLOOR_FRACTION is this loop's structural floor (exported, so the floor is asserted mathematically) [fluxThemeFx §1]
 const FLOOR_FRACTION = 0.4;
 export function clampedIntervalMs(minMs: number, maxMs: number, dial: number): number {
   return Math.max(minMs * FLOOR_FRACTION, rand(minMs, maxMs) * dialIntervalScale(dial));
@@ -73,8 +62,7 @@ function mount(container: HTMLDivElement, getDial: () => number, isBusy: () => b
   }, 250);
   stops.push(() => clearInterval(poll));
 
-  // Fable, Oct 21: the moment reduced motion lands, a tear storm's lines still on screen go (the media query's own change event - not the
-  // 250 ms poll); a storm under way lays no more (tearStorm's `alive`, below). Ambiance 0 stops the loops as before.
+  // when reduced motion lands, a tear storm's lines still on screen go (the media query's change event); a storm under way lays no more [fluxThemeFx §2]
   const clearTears = () => container.querySelectorAll('.theme-fx-tear').forEach((el) => el.remove());
   if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -89,9 +77,7 @@ function mount(container: HTMLDivElement, getDial: () => number, isBusy: () => b
   // 3 in any second across the whole screen, the meter's included); a double jump or dip asks again for its second pulse. A refused flash is
   // skipped, as a busy tick is.
 
-  // Tear-line storm — 7-12s, 3-5 lines, ~45ms stagger, ~150ms each, ~35% lime.
-  // Each event is ONE named fire, asked of the budget: its loop calls it, and so does the harness seam below (ledger 90 - the loops skip
-  // while the session reads busy, so a check that must see this texture pulse beside the meter forces it here, through the same code).
+  // each event is ONE named fire asked of the budget, called by its loop and by the harness seam alike [fluxThemeFx §3]
   const fires: Record<SignalLossKind, () => boolean> = {
     tear: () => { if (!tryFlash('sl-tear')) return false; tearStorm(container, undefined, () => getDial() > 0); return true; },
     shear: () => { if (!tryFlash('sl-shear')) return false; shearBand(shear); return true; },
@@ -146,7 +132,7 @@ if (typeof window !== 'undefined') {
   (window as unknown as { wrizoFluxFx?: unknown }).wrizoFluxFx = {
     clampedIntervalMs,
     macroblockFloorMs: 2600 * FLOOR_FRACTION,
-    // GLITCH METER (ledger 90): one Signal Loss event NOW, through the flash budget like any other (true if it was granted and drawn)
+    // one Signal Loss event now, through the flash budget like any other (true if granted and drawn) [fluxThemeFx §4]
     fire: (kind: SignalLossKind) => (slFire ? slFire(kind) : false),
   };
 }

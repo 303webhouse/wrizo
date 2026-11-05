@@ -1,8 +1,4 @@
-// GLITCH METER (brief docs/briefs/flux-flicker-meter-brief.md; plan docs/plans/glitch-meter.md section 2) - the intensity rule, Nick's:
-//   1. a key pressed in the last 30 s means no flicker at all;
-//   2. from 30 s without a keystroke it slowly intensifies, peaking at 5 minutes (the approved mockup's curve);
-//   3. intensity = idle ramp x (1 - progress through the lap) - calmer near the goal, still at it; crossing the goal resets the lap.
-// Pure, so the browserless check runs the real thing. The meter's live state and its harness seam live here too.
+// the glitch intensity rule: silent within 30s of a key, ramping to a peak at 5 minutes idle, times (1 - lap progress); pure, so the browserless check runs the real thing [glitchMeter §1]
 import { dialIntervalScale } from './ambianceDial';
 
 export const IDLE_GATE_S = 30;

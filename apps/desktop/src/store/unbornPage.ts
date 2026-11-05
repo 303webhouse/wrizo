@@ -6,17 +6,7 @@ import { PAGE_SETTINGS_FALLBACK } from '../types';
 import { getUserPageDefaults, bornPageSettings, NEW_PAGE_SIZE } from './pageDefaults';
 import { landingToken, landingFromToken, type HelpLanding } from '../decks/helpMeChoose';
 
-// PB1 — Born on the First Word (docs/wrizo-alpha/p1-wave.md §PB1, item 71;
-// the specification is docs/wrizo-alpha/pb1-unborn-surface.md).
-//
-// THE DESCRIPTOR LIVES IN THE URL (Fable's ruling 1, 2026-07-26). A door that
-// opens a blank surface no longer creates a row; it navigates to /page/new
-// carrying what the door MEANT as query params. That is reload-safe by
-// construction — reload re-reads the address and the door's meaning survives
-// with no storage, no store row, and no fallback rule to invent. The address
-// describes a door until the writer makes it a room.
-//
-// Nothing here writes anything until `birth`.
+// born on the first word: the door's descriptor lives in the URL (/page/new + params), reload-safe by construction; nothing is written until `birth` [unbornPage §1]
 
 export type UnbornKind = 'prose' | 'board';
 export type UnbornOrigin = 'loose' | 'journal';
@@ -35,22 +25,7 @@ export interface UnbornDescriptor {
   // survives a reload with no storage and no store row — the same property that
   // makes the rest of PB1 reload-safe by construction.
   pinBoardId: string | null;
-  // ITEM 104 — THE DOOR DECLARES THE ROOM'S KIND, not just its posture.
-  //
-  // `mode` (item 87) says which POSTURE a prose page opens in; this says what
-  // KIND of document it is. Nick's verdict, verbatim: "Screenplay mode should be
-  // auto-selected anyway when a user comes from a New Page where the
-  // 'Screenplay' template icon was selected." That is the same seam items 91-92
-  // established for the board pin and item 87 for the mode — the address
-  // carrying what a page IS before it is born — extended one field further.
-  //
-  // Applying it is NOT a new carve-out of PB1. The ruled AMENDMENT to Fable's
-  // ruling 2 already says Screenplay BIRTHS at zero words, "which is also why
-  // there is no unborn script surface to hold" (see `requestScreenplay` in
-  // PageEditor.tsx). A door declaring `structure=screenplay` therefore births on
-  // arrival for exactly the reason the toggle does: choosing Screenplay is a
-  // durable authorial commitment about what the document IS, not a decoration.
-  // Every silent door keeps writing nothing, so PB1's own law is untouched.
+  // the door declares the room's KIND (prose or screenplay); a screenplay door births on arrival, since choosing Screenplay is a commitment about what the document is [unbornPage §2]
   structure: 'prose' | 'screenplay' | null;
   // PAGE TEMPLATES (docs/plans/page-templates.md section 2) - the Outline, Title Page or Bibliography lens this page opens in. Rides the address like
   // every other part of the descriptor (reload-safe, no storage). Unlike Screenplay it does NOT birth the page: a template changes how the text is
@@ -153,34 +128,18 @@ export function unbornEntry(id: string, d: UnbornDescriptor, createdAt: string):
   // PAGE TEMPLATES - the lens is a page setting, so the unborn slot carries it (the lens can draw before the first word) and birth() keeps it
   // (it spreads this entry). A page with no settings starts from the writer's defaults or the app's floor, as patchPageSettings does.
   if (d.template) base.pageSettings = { ...(getUserPageDefaults() ?? PAGE_SETTINGS_FALLBACK), size: getUserPageDefaults()?.size ?? NEW_PAGE_SIZE, template: d.template };
-  // TOOLS #14 (Nick, Nov 2) - a page is born at 11 pt: the unborn slot already carries it, so the page draws at 11 before the first word and birth() writes it with that word. A board has no page size.
+  // a page is born at 11 pt: the unborn slot already carries it, so the page draws at 11 before the first word and birth() writes it with that word; a board has no page size [unbornPage §3]
   else if (d.kind === 'prose') base.pageSettings = bornPageSettings();
   return base;
 }
 
-// BIRTH — one synchronous call, and the only place an unborn surface becomes a
-// row. The content is passed IN and written in the SAME act: never
-// create-empty-then-save, because the window between those two writes is
-// exactly the keystroke of loss this ticket may not introduce. The row goes
-// through the ordinary saveJournalEntry path, so the first word reaches disk
-// under the existing debounced-flush guarantee (persistence.ts's own ~300ms,
-// offline included), identical to every other write in the app.
-//
-// Triggers (Fable's ruling 2): the first word, or an act that creates a durable
-// relationship — pairing, porting, pinning. Plus the ruled AMENDMENT: choosing
-// Screenplay births, because it transforms the document rather than decorating
-// it (see the amendment's own note in PageEditor).
+// birth: one synchronous call, the only place an unborn surface becomes a row, with its content written in the same act (never create-empty-then-save) [unbornPage §4]
 export interface BirthContent {
   text?: string;
   boxes?: Box[];
   pageType?: JournalEntry['pageType'];
   script?: JournalEntry['script'];
-  // ITEM 121 I2 — ink is content, so ink can be a birth trigger. Exactly the
-  // `boxes` shape and for exactly the `boxes` reason: the row is written WITH
-  // the drawing in the same synchronous act, never created empty and filled in
-  // afterwards. F6's DoD 4 already ruled that an ink-only page is NOT empty, so
-  // a first stroke on an unborn Free Write page births it the way a first word
-  // does. Zero schema — `strokes` is an existing column on the row.
+  // ink is content, so a first stroke births the page with its strokes in the same act [unbornPage §5]
   strokes?: JournalEntry['strokes'];
 }
 
@@ -202,17 +161,7 @@ export function birth(
     updatedAt: now,
   };
   saveJournalEntry(born);
-  // Relationships that were part of the SAME act (ruling 2) are applied here,
-  // so the row and its relationship are never observable apart.
-  //
-  // ITEM 91 — the descriptor is now a source for this, not just the explicit
-  // opt. `opts.pinToBoardId` still wins when a caller passes it, but a door that
-  // encoded the board in the ADDRESS no longer has to thread an option through
-  // every intermediate component to be honoured: the four `birthWith` call sites
-  // are untouched by this ticket and all four inherit the behaviour. That also
-  // means the pin survives a reload of the unborn surface, because the address
-  // does — a page opened from a board, left, and returned to is still born
-  // pinned to that board.
+  // relationships of the same act are applied here, so the row and its relationship are never observable apart; the pin can come from the address, so it survives a reload [unbornPage §6]
   const pinTo = opts.pinToBoardId ?? d.pinBoardId;
   // PW1 S3 — BOARD-SIDE: this page was opened FROM a board's own door (the
   // board is in the address), so the card belongs on that board's wall.

@@ -2,15 +2,7 @@ import { getFramework } from './frameworks';
 import { getJournalEntries, getJournalEntry, getStoryPlanByProjectId } from './persistence';
 import type { Beat } from '../types';
 
-// M1 — the milestone projection. A read-only projection of the Plan's beat
-// coverage onto a writing surface (the circle-bar) — never a verdict, per
-// docs/progress-milestones-canon.md. Pure selector: no writes anywhere in
-// this module, confirmed by S0's substrate read (persistence.ts, 2026-07-13):
-// `BeatNote.status` has a genuine terminal value ('complete'), `setBeatStatus`
-// is Plan-side (StructureBoard's "Mark done" + QuickSprint's pre-existing
-// finish-checkbox — both predate this canon and are untouched by it), and
-// `JournalEntry.beatId` (J5's `attachToPlanBeat`) is the only "work attached"
-// signal this module reads.
+// the milestone projection: a read-only projection of the Plan's beat coverage, never a verdict; a pure selector, no writes [milestones §1]
 
 export type MilestoneState = 'empty' | 'kindled' | 'lit';
 
@@ -40,9 +32,7 @@ export interface Milestones {
 
 const CAP = 12;
 
-// Beats in framework-authored order — granularity follows the plan as
-// authored (the pedagogue's ruling); never invent "chapters" the plan
-// doesn't have.
+// beats in framework-authored order: never invent chapters the plan does not have [milestones §2]
 function orderedBeats(beats: Beat[]): Beat[] {
   return [...beats].sort((a, b) => a.order - b.order);
 }

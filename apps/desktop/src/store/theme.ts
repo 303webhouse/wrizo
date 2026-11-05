@@ -13,11 +13,7 @@ export type ThemeId = 'plateau' | 'flux' | 'machina';
 
 const REGISTERED: readonly ThemeId[] = ['plateau', 'flux', 'machina'];
 
-// PHASE 1 (S5) - PER-THEME CONFIG. What a NEW page opens with is the theme's call. Today the one field is the typewriter's default for a page that has no
-// remembered value (store/writingSettings.ts, enterPageTypewriter): plateau (shown as "Arbor") on, flux off.
-//   MARKED SLOTS - these themes are not registered yet (ThemeId above); each joins the union and this table in the same edit:
-//     nomad:   { typewriterDefault: true },
-//     volant:  TBD - Nick has a different mode in mind; do NOT guess a boolean here.
+// per-theme config: a new page's typewriter default is the theme's call; marked slots, not registered (each joins the union and this table in the same edit): nomad: { typewriterDefault: true }, volant: TBD (do not guess) [theme §1]
 export interface ThemeConfig { typewriterDefault: boolean }
 export const THEME_CONFIG: Record<ThemeId, ThemeConfig> = {
   plateau: { typewriterDefault: true },
