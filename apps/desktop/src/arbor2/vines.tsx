@@ -14,6 +14,10 @@
 //     bottom. With enough room it exits top / bottom as drawn.
 //   reach (§18.6): p = this lap's words / its goal; stem i in growth order starts at t0 = 0.27 i/(N-1) and shows full x ease(clamp((p - t0)/(1 - t0)))
 //     of itself, ease(x) = x^0.75 (at 52/60 every stem at ~86-90%).
+//   r21 (Fable Nov 5: "every stem out by half the goal" at 1366 too): what SHOWS is paced so every main stem has left the page by p = 0.5. Its exit
+//     is the share of its length past which it stays off the page, plus 14 px (from the same seed + words and the page's edges); the shown reach
+//     is the larger of the curve above and a pace that reaches the exit at p = 0.5 (eased from t0) and then runs straight to the curve's own
+//     value at 52/60 - so the late reach is the curve's, unchanged, and nothing is stored.
 //   branches (levels 2 and 3 of the spec: here 1 and 2) leave their parent at its join point as the parent's tip passes it, each 35-60% of the
 //     parent's full length, growing as the parent completes: reach = clamp((parent's reach - join) / (1 - join)).
 //   widths: main ~9-11 px at the centre (a lap from an earlier tip: 4.2), w = w0 (1 - t)^1.6 along the stem's full length; a branch 55-80% of its
@@ -31,8 +35,8 @@ export type Room = { cx: number; cy: number; left: number; right: number; top: n
 // a stem as planned (canonical units) and its family
 type Stem = { stem: number; level: 0 | 1 | 2; pts: Pt[]; seg: number[]; order: number; derived?: boolean; parent?: Stem; joinI?: number; ratioPick: number; marginPick: number; lenPick: number };
 // a stem on the screen
-type Drawn = { s: Stem; pts: Pt[]; arc: number[]; total: number; w0: number; ratio: number | null; joinU: number; t0: number; bent?: boolean };
-const BEND_GAP = 60;
+type Drawn = { s: Stem; pts: Pt[]; arc: number[]; total: number; w0: number; ratio: number | null; joinU: number; t0: number; bent?: boolean; exitU?: number };
+const BEND_GAP = 60, HALF = 0.5, LATE = 52 / 60, EXIT_PX = 14;
 
 const hash01 = (n: number) => { let h = (n * 2654435761) >>> 0; h ^= h >>> 15; h = Math.imul(h, 2246822519) >>> 0; h ^= h >>> 13; return (h >>> 0) / 4294967296; };
 const arcOf = (pts: Pt[]) => { const a = [0]; for (let i = 1; i < pts.length; i++) a.push(a[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y)); return a; };
@@ -147,6 +151,13 @@ function drawnOf(plan: LapPlan, geo: GrowthGeometry, room: Room, fromTip: boolea
     }
     mk(s, pts, fromTip ? MAX_BRANCH : 9 + 2 * hash01(s.stem), null, 0, t0Of.get(s) ?? 0);
   }
+  // r21: each main stem's exit - past this share of its length it stays off the page (plus EXIT_PX, so its visible tip is clearly out)
+  for (const d of out.values()) {
+    if (d.s.level !== 0 || d.total <= 0) continue;
+    const N = 240; let lastIn = -1;
+    for (let i = 0; i <= N; i++) { const q = pointAt(d, (d.total * i) / N).p; if (q.x >= room.pl && q.x <= room.pr && q.y >= room.pt && q.y <= room.pb) lastIn = i; }
+    d.exitU = lastIn < 0 ? 0 : Math.min(1, ((d.total * (lastIn + 1)) / N + EXIT_PX) / d.total);
+  }
   // branches, then twigs: each from its parent's drawn point at the join, 35-60% of the parent's full length
   for (const level of [1, 2] as const) {
     for (const s of fam.filter((x) => x.level === level)) {
@@ -238,7 +249,15 @@ const Stems = memo(function Stems({ plan, geo, room, p, fromTip }: { plan: LapPl
   const reachOf = (d: Drawn): number => {
     const got = reach.get(d.s); if (got != null) return got;
     let r: number;
-    if (d.s.level === 0) r = p >= 1 ? 1 : (d.s.pts.length <= 3 ? 1 : ease((p - d.t0) / (1 - d.t0)));
+    if (d.s.level === 0) {
+      if (p >= 1 || d.s.pts.length <= 3) r = 1;
+      else {
+        // the curve, and the pace that has the stem off the page by p = 0.5 (r21, Fable Nov 5)
+        const base = (q: number) => ease((q - d.t0) / (1 - d.t0)), ex = d.exitU ?? 0;
+        const pace = p <= HALF ? ex * ease((p - d.t0) / Math.max(1e-6, HALF - d.t0)) : ex + ((Math.max(base(LATE), ex) - ex) * (p - HALF)) / (LATE - HALF);
+        r = Math.min(1, Math.max(base(p), pace));
+      }
+    }
     else { const par = d.s.parent ? drawn.get(d.s.parent) : undefined; const rp = par ? reachOf(par) : 0; r = Math.max(0, Math.min(1, (rp - d.joinU) / Math.max(1e-6, 1 - d.joinU))); }
     reach.set(d.s, r); return r;
   };
@@ -252,7 +271,7 @@ const Stems = memo(function Stems({ plan, geo, room, p, fromTip }: { plan: LapPl
         return piecesOf(d, len).map((pc, i) => (
           <path key={`${d.s.stem}:${i}`} className="arbor2-vine" d={pc.d} fillOpacity={pc.fo} data-stem={d.s.stem}
             {...(pc.head ? { 'data-level': d.s.level, 'data-w0': Math.round(d.w0 * 100) / 100, 'data-x0': r1(d.pts[0].x), 'data-y0': r1(d.pts[0].y),
-              'data-ratio': d.ratio ?? undefined, 'data-derived': d.s.derived ? 'true' : undefined, 'data-bent': d.bent ? 'true' : undefined, 'data-t0': d.s.level === 0 ? Math.round(d.t0 * 1000) / 1000 : undefined,
+              'data-ratio': d.ratio ?? undefined, 'data-derived': d.s.derived ? 'true' : undefined, 'data-bent': d.bent ? 'true' : undefined, 'data-t0': d.s.level === 0 ? Math.round(d.t0 * 1000) / 1000 : undefined, 'data-exit': d.exitU != null ? Math.round(d.exitU * 1000) / 1000 : undefined,
               'data-reach': Math.round(r * 1000) / 1000, 'data-full': r1(d.total), 'data-ex': r1(end.x), 'data-ey': r1(end.y), 'data-vx': r1(tip.x), 'data-vy': r1(tip.y),
               'data-join': d.s.level > 0 ? Math.round(d.joinU * 1000) / 1000 : undefined, 'data-parent': d.s.parent ? d.s.parent.stem : undefined } : {})} />
         ));

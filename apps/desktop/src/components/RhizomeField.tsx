@@ -321,8 +321,15 @@ export function RhizomeField({ text, seedKey, paperRef }: {
           <clipPath id="wz-rhizome-ground" clipPathUnits="userSpaceOnUse">
             <path clipRule="evenodd" fillRule="evenodd" d={clipD} />
           </clipPath>
+          {/* ARBOR v2 mockup r21 (Fable Nov 5: no hard cut at the field's top / bottom): under the flag the vines fade out over the field's last
+              24 px, top and bottom - the mask they already pass through takes a vertical gradient (no new layer, no layout change) */}
+          {vines && h > 60 && (
+            <linearGradient id="arbor2-edge-fade" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2={h}>
+              <stop offset="0" stopColor="#000" /><stop offset={24 / h} stopColor="#fff" /><stop offset={1 - 24 / h} stopColor="#fff" /><stop offset="1" stopColor="#000" />
+            </linearGradient>
+          )}
           <mask id="wz-rhizome-mask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width={w} height={h}>
-            <rect x="0" y="0" width={w} height={h} fill="#fff" />
+            <rect x="0" y="0" width={w} height={h} fill={vines && h > 60 ? 'url(#arbor2-edge-fade)' : '#fff'} />
             {m.holes.map((r, i) => (
               <rect key={i} x={r.left} y={r.top} width={Math.max(0, r.right - r.left)} height={Math.max(0, r.bottom - r.top)} fill="#000" />
             ))}
