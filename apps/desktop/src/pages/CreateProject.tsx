@@ -110,9 +110,7 @@ export function CreateProject() {
   const note = !selected
     ? 'Pick a form to begin — no title required.'
     : selected === 'other'
-      // ITEM word-diet (Nick, Oct 13): REMOVE — this branch's own
-      // explanatory note is gone whole; createDrawerOpensNote's lexicon
-      // entry is untouched, simply never rendered here now.
+      // the 'other' form carries no note [CreateProject §1]
       ? ''
       : `${KIND_META[selected].label} starts on its first page, in Free write, with the caret waiting.`;
 
