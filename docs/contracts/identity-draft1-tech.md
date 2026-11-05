@@ -15,3 +15,6 @@
 | Other claims | `sub` (pairwise for Read), `adult` (always `true`), `email`, `email_verified` (`false` until Write verifies addresses), plus the standard `iss`, `aud`, `exp`, `iat`, `nonce` |
 | Token lifetimes | ID token ≤ 1 h; access token ≤ 1 h; refresh token revocable |
 | `userinfo` | `<issuer>/oauth/userinfo`; it returns the same claims (Read refreshes the theme there) |
+| The deletion event's `v1` | base64url (no padding) of the raw 64-byte `r‖s` ES256 signature, as in a JWS. Not DER. |
+| Read's client | **Confidential**: a client secret plus PKCE. Token-endpoint auth = **`client_secret_basic`**. Write mints Read's client id + secret **per environment** (staging, production) and gives them to Nick, who types them into Read's Railway variables himself. They're never pasted into a chat, doc, repo or log. |
+| Refresh tokens | **None** (no `offline_access`). Read keeps its own session after sign-in. It refreshes the theme at each sign-in and, at most once a day when Read opens, by a silent re-authorisation (`prompt=none`). A `login_required` answer just keeps the last theme. Fewer long-lived tokens means less to steal. |
