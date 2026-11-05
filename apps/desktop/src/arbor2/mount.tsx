@@ -122,7 +122,7 @@ function Seg<T extends string>({ label, value, opts, onPick }: { label: string; 
 // (data-arbor2-off) that styles/arbor-v2.css and src/arbor2/shoots.ts read; nothing is stored. No default is ruled (Fable's call, with
 // device-or-account): the mockup opens with everything on. One of the spec's nine cannot switch anything here, and says why.
 const MOOD: { key: string; label: string; why?: string }[] = [
-  { key: 'breath', label: 'Lamp breath' },
+  // (r21, spec §18.6: the night lamp's pool retired - its breath with it, so its switch goes)
   { key: 'lamp-progress', label: 'Lamp as progress', why: 'retired: the lamp is ambience (Fable)' },
   { key: 'shadows', label: 'Day shadows' },
   { key: 'afternoon', label: 'Afternoon lengthening' },

@@ -820,8 +820,8 @@
 .arbor2-pergola, .arbor2-pagesh{ display:none; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .arbor2-pergola{ display:block; position:fixed; inset:0; z-index:-1; pointer-events:none; overflow:hidden; user-select:none;
   opacity:var(--arbor2-sun-in, 1); transition:opacity 3s ease; }
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .mode-page{ isolation:isolate; }
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .mode-page .arbor2-pagesh{ display:block; position:absolute; inset:0; z-index:-1; overflow:hidden; pointer-events:none; user-select:none; -webkit-user-select:none;
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] :is(.desk-frame-stage .mode-page, .wz-sliver-panel[data-open='true'] > .wz-drawer-slide, .wz-tutor-panel[data-open='true'] > .wz-drawer-slide, .wz-cascade-panel, .chrome-top.sprint-nav, .desk-frame-strip, .arbor2-bar){ isolation:isolate; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .arbor2-pagesh{ display:block; position:absolute; inset:0; z-index:-1; overflow:hidden; pointer-events:none; user-select:none; -webkit-user-select:none;
   border-radius:inherit; opacity:1; transition:opacity 3s ease; }
 :root[data-arbor2][data-theme='plateau'] .arbor2-pergola .arbor2-pergola-drift{ position:absolute; inset:-16px; }
 :root[data-arbor2][data-theme='plateau'] .arbor2-pagesh .arbor2-pergola-drift{ position:absolute; }   /* sized and placed in the page's own units by pergola.ts */
@@ -840,7 +840,7 @@
    while the rhizome fades in; the chrome's return fades the rhizome out and the shade back in, together, over ~3 s. By day only: at night
    there is no pergola and the rhizome stays, barely there. While writing the breeze holds still (nothing in a faded layer repaints), and resumes
    with the return. Reduced motion: cuts. */
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'][data-wz-writing='true'] :is(.arbor2-pergola, .mode-page .arbor2-pagesh){ opacity:0; transition:opacity 6s ease; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'][data-wz-writing='true'] :is(.arbor2-pergola, .arbor2-pagesh){ opacity:0; transition:opacity 6s ease; }
 :root[data-arbor2][data-theme='plateau'][data-wz-writing='true'] :is(.arbor2-pergola, .arbor2-pagesh) :is(.arbor2-pergola-drift, .wz-leaf){ animation-play-state:paused; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .wz-rhizome-field[data-vines='true']{ opacity:0; transition:opacity 3s ease; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'][data-wz-writing='true'] .wz-rhizome-field[data-vines='true']{ opacity:1; transition:opacity 6s ease; }
@@ -896,3 +896,19 @@
   :root[data-arbor2][data-theme='plateau'] .arbor2-vines-flash[data-flash='true']{ animation:none; opacity:1; }
   :root[data-arbor2][data-theme='plateau'] .arbor2-vines-flash[data-flash='fading']{ animation:none; opacity:0; }
 }
+
+/* r21 - NICK'S r20 NOTES (spec §18.6, Nov 4) */
+/* the flash: every stem, branch and tip at ONE strength - the brass copy draws every piece at full (one layer, one pulse: they peak together) */
+:root[data-arbor2][data-theme='plateau'] .arbor2-vines-flash .arbor2-vine{ fill-opacity:1; }
+/* no glow: the night lamp's warm pool around the page retires (its breath and drift with it); the page is framed by its hairline only, focused too */
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] body::before{ background:none; animation:none; }
+:root[data-arbor2][data-theme='plateau'] :is(.mode-page, .mode-page.focused){ box-shadow:0 0 0 1px var(--paper-border); }
+/* the recede takes the drawer openers and the page's scrollbar too, on the chrome's own fade, and they return with it (the scrollbar keeps its
+   width - only its colour goes - so the text never reflows) */
+:root[data-arbor2][data-theme='plateau'][data-wz-writing='true'] :is(.wz-sliver-grip, .wz-tutor-grip){ opacity:0; pointer-events:none; transition:opacity var(--fade-dur, 2.8s) ease; }
+:root[data-arbor2][data-theme='plateau'] :is(.wz-sliver-grip, .wz-tutor-grip){ transition-property:color, background-color, border-color, opacity; }
+:root[data-arbor2][data-theme='plateau'][data-wz-writing='true'] .mode-scroll{ scrollbar-color:transparent transparent; }
+/* scrollbars only when something scrolls: every scroller in the room takes auto, never a standing bar */
+:root[data-arbor2][data-theme='plateau'] :is(.mode-scroll, .wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel-body){ scrollbar-gutter:auto; }
+/* the "..." menu's full-screen line (an inline muted grey, near-invisible on the bar's ground): the bar's own cream */
+:root[data-arbor2][data-theme='plateau'] :is(.gh-corner-menu, .chrome-fade) button[aria-label$='full screen']{ color:var(--arbor-letter, #EFE4CB) !important; }

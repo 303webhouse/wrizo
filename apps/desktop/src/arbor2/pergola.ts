@@ -41,52 +41,52 @@ export function mountPergola(): void {
   const room = makeLayer('arbor2-pergola', null);
   document.body.appendChild(room.layer);
 
-  let page: { layer: HTMLDivElement; drift: HTMLDivElement } | null = null;
-  let host: HTMLElement | null = null;
-  const ro = new ResizeObserver(() => place());
-  // the page copy's drawing stands where the room's does on the screen: offset by the page's own position (its padding box)
-  const place = () => {
-    if (!page || !host) return;
-    // the page may be scaled (its PAGE-SIZE transform, ~1.09x at 1920): place and size the copy in the page's own units, so on the screen it
-    // is the room's drawing to the pixel (after g18, run 41904707339: unscaled, it came out ~9% too large)
+  // r21 (spec §18.6, Nick: "the pergola shade crosses any overlapping open menu, at the PAGE's subtle strength"): a copy at the page's strength in
+  // every surface that stands over the day room - the page, the open drawers, the rail's pop-outs, the Mood menu, the top bar and the rail -
+  // each beneath its own words, each placed where the room's drawing stands on the screen, so it reads as one shadow over everything.
+  const HOSTS = [".desk-frame-stage .mode-page",".wz-sliver-panel[data-open='true'] > .wz-drawer-slide",".wz-tutor-panel[data-open='true'] > .wz-drawer-slide",".wz-cascade-panel",".chrome-top.sprint-nav",".desk-frame-strip",".arbor2-bar"];
+  const copies = new Map<HTMLElement, { layer: HTMLDivElement; drift: HTMLDivElement }>();
+  const ro = new ResizeObserver(() => placeAll());
+  // a copy's drawing stands where the room's does: offset by its host's own position, in the host's own units (a host may be scaled)
+  const place = (host: HTMLElement, c: { drift: HTMLDivElement }) => {
     const r = host.getBoundingClientRect();
     const k = host.offsetWidth > 0 ? r.width / host.offsetWidth : 1;
-    const d = page.drift.style;
+    const d = c.drift.style;
     d.setProperty('--arbor2-pk', String(k));
     d.left = `${(-r.left - 16) / k - host.clientLeft}px`;
     d.top = `${(-r.top - 16) / k - host.clientTop}px`;
     d.width = `${(innerWidth + 32) / k}px`;
     d.height = `${(innerHeight + 32) / k}px`;
   };
-  // the breeze and the drift cross both layers together: the page's animations take the room's start times
-  const sync = () => {
-    if (!page) return;
-    const of = (root: HTMLElement) => document.getAnimations().filter((a) => {
-      const t = (a.effect as KeyframeEffect | null)?.target as Element | null;
-      return !!t && root.contains(t);
-    });
-    const a = of(room.layer), b = of(page.layer);
+  const placeAll = () => copies.forEach((c, h) => place(h, c));
+  // the breeze and the drift cross every layer together: each copy's animations take the room's start times
+  const sync = (layer: HTMLElement) => {
+    const of = (root: HTMLElement) => document.getAnimations().filter((x) => { const t = (x.effect as KeyframeEffect | null)?.target as Element | null; return !!t && root.contains(t); });
+    const a = of(room.layer), b = of(layer);
     if (a.length !== b.length) return;
     b.forEach((x, i) => { if (a[i].startTime != null) x.startTime = a[i].startTime; });
   };
   const attach = () => {
-    const next = document.querySelector<HTMLElement>('.desk-frame-stage .mode-page');
-    if (next === host && page && next?.contains(page.layer)) return;
-    if (page) { page.layer.remove(); ro.disconnect(); }
-    host = next; page = null;
-    if (!host) return;
-    page = makeLayer('arbor2-pagesh', PAGE_ALPHA);
-    host.appendChild(page.layer);
-    ro.observe(host);
-    place();
-    requestAnimationFrame(() => requestAnimationFrame(sync));
+    const now = new Set<HTMLElement>();
+    for (const sel of HOSTS) document.querySelectorAll<HTMLElement>(sel).forEach((h) => { if (h.getBoundingClientRect().width > 0) now.add(h); });
+    for (const [h, c] of copies) if (!now.has(h) || !h.contains(c.layer)) { c.layer.remove(); ro.unobserve(h); copies.delete(h); }
+    for (const h of now) {
+      if (copies.has(h)) continue;
+      const c = makeLayer('arbor2-pagesh', PAGE_ALPHA);
+      h.appendChild(c.layer); copies.set(h, c); ro.observe(h); place(h, c);
+      requestAnimationFrame(() => requestAnimationFrame(() => sync(c.layer)));
+    }
   };
-  // a page comes and goes with the route; a cheap look on each batch of changes (no reads unless the page element changed)
-  new MutationObserver(attach).observe(document.body, { childList: true, subtree: true });
-  // one placement per frame at most (a scroll while typing never forces extra layout)
+  // surfaces come and go with routes, drawers and menus: one look per frame at most on a batch of changes
+  let looking = false;
+  new MutationObserver(() => { if (looking) return; looking = true; requestAnimationFrame(() => { looking = false; attach(); }); }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-open'] });
+  // one placement per frame at most (a scroll while typing never forces extra layout); a sliding drawer or a lifted bar is followed as it lands
   let queued = false;
-  const later = () => { if (queued) return; queued = true; requestAnimationFrame(() => { queued = false; place(); }); };
+  const later = () => { if (queued) return; queued = true; requestAnimationFrame(() => { queued = false; placeAll(); }); };
   addEventListener('resize', later);
   addEventListener('scroll', later, true);
+  addEventListener('transitionend', later, true);
+  addEventListener('animationend', later, true);
+  window.setInterval(() => { if (copies.size) placeAll(); }, 500);
   attach();
 }

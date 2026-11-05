@@ -6,7 +6,7 @@ import { lapPlan, segmentsFor, geometryKey, pickSurvivor, hashSeed, type GrowthG
 import { variationOn, pacedFrac, shootClass } from '../arbor2/shoots';   // ARBOR v2 mockup, item 7: drawn only under ?arbor2=1
 import { isArbor2 } from '../arbor2/flag';
 import { lifeOf, effective, lifePlan, tipOf, segKey, setCurrentRhizome, subscribeLife } from '../arbor2/rhizomeLife';   // ARBOR v2 mockup, r5 §8b: only under ?arbor2=1
-import { ArborVines } from '../arbor2/vines';   // ARBOR v2 mockup r19: the rhizome drawn as vines (Arbor's presentation; the growth is this file's)
+import { ArborVines, type Room } from '../arbor2/vines';   // ARBOR v2 mockup r19: the rhizome drawn as vines (Arbor's presentation; the growth is this file's)
 
 // the goal rhizome: shoots grow out of existing stems, flash brass at the goal and leave a seed; drawn behind the page and clipped from the rail, strip, header and open menus; ambient, framed stage only [RhizomeField §1]
 const SESSION_START = Date.now(); // the pattern is session-scoped (M2 S2)
@@ -113,6 +113,11 @@ function pathOf(segs: GrowthSegment[], thick: boolean): string {
   return d;
 }
 
+// ARBOR v2 mockup r21 (Fable, Nov 4): under the flag the vines are PLANNED in fixed page-relative units - the page a 620 x 560 band at the centre of
+// a 2000 x 1300 field - so the plan is the seed and the words only: no window, menu, drawer or receding chrome can reshape it (the measured
+// geometry counted the chrome only while it showed, so its recede and return re-planned the drawing). The vines module places it on the screen.
+const CANON: GrowthGeometry = { width: 2000, height: 1300, origin: { x: 1000, y: 650 }, hidden: [{ left: 690, top: 370, right: 1310, bottom: 930 }] };
+
 export function RhizomeField({ text, seedKey, paperRef }: {
   text: string;
   seedKey: string;
@@ -205,13 +210,23 @@ export function RhizomeField({ text, seedKey, paperRef }: {
   const shownLap = flashLap ?? lap;
   const shownVisit = Math.max(0, shownLap - (eff ? eff.baseLap : opened.current.lap));
   const lifeOn = !!eff;
-  const plan = useMemo(() => (m ? (lifeOn ? lifePlan(m.geo, lifeSeed, shownVisit) : lapPlan(m.geo, pageSeed, shownVisit)) : null), [m, pageSeed, lifeSeed, lifeOn, shownVisit]);
+  const plan = useMemo(() => (lifeOn ? lifePlan(CANON, lifeSeed, shownVisit) : m ? lapPlan(m.geo, pageSeed, shownVisit) : null), [m, pageSeed, lifeSeed, lifeOn, shownVisit]);
   // ARBOR v2 mockup (item 7): under the flag each lap keeps its own pace and shoot widths (src/arbor2/shoots.ts). Off the flag: unchanged.
   const variation = variationOn();
   const drawFrac = eff ? eff.frac : frac;
   const k = plan ? (flashLap != null ? plan.segments.length : segmentsFor(plan, variation ? pacedFrac(pageSeed, shownLap, drawFrac) : drawFrac)) : 0;
   // r5 §8b: the laps before this one (from the base lap), whole - the kept history, and where this lap's first segment came from (the tip)
-  const pastPlans = useMemo(() => (m && lifeOn ? Array.from({ length: shownVisit }, (_, v) => lifePlan(m.geo, lifeSeed, v)) : []), [m, lifeOn, lifeSeed, shownVisit]);
+  const pastPlans = useMemo(() => (lifeOn ? Array.from({ length: shownVisit }, (_, v) => lifePlan(CANON, lifeSeed, v)) : []), [lifeOn, lifeSeed, shownVisit]);
+  // r21: the room the vines reach into (svg coordinates): the page's centre, the rail's right edge, the bar's bottom, the field's own size - read
+  // from their rects whatever their opacity (the chrome's recede must not move a stem's end), only when the field is measured again
+  const room = useMemo<Room | null>(() => {
+    const svg = svgRef.current; if (!m || !svg) return null;
+    const st = svg.getBoundingClientRect();
+    const rail = document.querySelector('.desk-frame-strip')?.getBoundingClientRect(), bar = [...document.querySelectorAll('.chrome-top.sprint-nav')].map((b) => b.getBoundingClientRect()).find((r) => r.height > 0);
+    return { cx: m.geo.origin.x, cy: m.geo.origin.y, left: rail && rail.width > 0 ? Math.max(0, rail.right - st.left) : 0, right: m.geo.width, top: bar ? Math.max(0, bar.bottom - st.top) : 0, bottom: m.geo.height };
+  }, [m]);
+  const roomKey = room ? [room.cx, room.cy, room.left, room.right, room.top, room.bottom].map((v) => Math.round(v)).join(',') : '';
+  const roomStable = useMemo(() => room, [roomKey]);   // eslint-disable-line react-hooks/exhaustive-deps
   const baseLap = eff ? eff.baseLap : 0;
   const pastPaths = useMemo(() => {
     const out: { key: string; thick: boolean; w?: number; d: string }[] = [];
@@ -266,7 +281,8 @@ export function RhizomeField({ text, seedKey, paperRef }: {
   const w = m?.geo.width ?? 0, h = m?.geo.height ?? 0;
   // ARBOR v2 mockup r19 (spec draft 35 §18.1 F; Fable: Arbor's own presentation behind this seam): under the flag the same plan, the same k and
   // the same kept laps are drawn as filled, tapered vines (src/arbor2/vines.tsx). Off the flag (lifeOn false) nothing below changes.
-  const vines = lifeOn && !!m;
+  const vines = lifeOn && !!m && !!roomStable;
+  const vineP = flashLap != null ? 1 : Math.max(0, Math.min(1, drawFrac));   // r21 §18.6: this lap's words / its goal (the flash draws it whole)
   const clipD = m ? groundClipPath(w, h, m.holes) : '';
 
   // ARBOR v2 mockup r20: the flash as a brass copy of the vines in its own layer (styles/arbor-v2.css: opacity only, composited) - the field
@@ -275,7 +291,7 @@ export function RhizomeField({ text, seedKey, paperRef }: {
   const flashCopy = vines && flashState && m ? (
     <svg className="arbor2-vines-flash" aria-hidden="true" focusable="false" data-flash={flashState} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none"
       style={{ clipPath: clipD ? `path(evenodd, "${clipD}")` : undefined }}>
-      <g mask="url(#wz-rhizome-mask)"><ArborVines plan={plan} past={pastPlans} geo={m.geo} k={k} fromTip={shownVisit > 0} /></g>
+      <g mask="url(#wz-rhizome-mask)"><ArborVines plan={plan} past={pastPlans} geo={CANON} room={roomStable!} p={vineP} fromTip={shownVisit > 0} /></g>
     </svg>
   ) : null;
 
@@ -311,7 +327,7 @@ export function RhizomeField({ text, seedKey, paperRef }: {
         </>
       )}
       <g clipPath={m ? 'url(#wz-rhizome-ground)' : undefined} mask={m ? 'url(#wz-rhizome-mask)' : undefined}>
-        {vines ? <ArborVines plan={plan} past={pastPlans} geo={m!.geo} k={k} fromTip={shownVisit > 0} /> : (<>
+        {vines ? <ArborVines plan={plan} past={pastPlans} geo={CANON} room={roomStable!} p={vineP} fromTip={shownVisit > 0} /> : (<>
         {pastPaths.length > 0 && (
           <g className="wz-rhizome-past">
             {pastPaths.map((p) => <path key={p.key} className="wz-rhizome-old" data-thick={p.thick ? 'true' : undefined} data-w={p.w} d={p.d} />)}

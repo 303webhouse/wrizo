@@ -89,7 +89,8 @@ const screens = {
     for (const n of [29, 51]) { await growTo(app, `arbor-r21-reach-${n}`, n); at[n] = await app.evalJs(HEADS); }
     const half = at[29], late = at[51];
     const p = { 29: 30 / 60, 51: 52 / 60 };
-    const curve = (v, pp) => mainsOf(v).every((h) => h.t0 != null && Math.abs(h.reach - expectReach(pp, h.t0)) <= 0.012);
+    // (instrument fix after the red leg 41979863811: on a build without reach data the main-stem list was empty and every() passed on nothing)
+    const curve = (v, pp) => mainsOf(v).length >= 9 && mainsOf(v).every((h) => h.t0 != null && Math.abs(h.reach - expectReach(pp, h.t0)) <= 0.012);
     const t0s = mainsOf(late).map((h) => h.t0).sort((x, y) => x - y);
     const even = t0s.length >= 9 && Math.abs(t0s[0]) < 1e-6 && Math.abs(t0s[t0s.length - 1] - 0.27) < 0.002 && t0s.every((t, i) => i === 0 || Math.abs((t - t0s[i - 1]) - 0.27 / (t0s.length - 1)) < 0.002);
     // the full reach: along x to the rail / the window's edge (side stems), along y to the bar / the window's bottom (up and down)
@@ -104,7 +105,7 @@ const screens = {
     const ok = {
       curveAtHalf: !!half && curve(half, p[29]), curveLate: !!late && curve(late, p[51]), tenEven: even,
       allOutAt52: !!late && mainsOf(late).length >= 9 && mainsOf(late).every((h) => outside(h, late.page)),
-      reach85to91: !!late && mainsOf(late).every((h) => h.reach >= 0.85 && h.reach <= 0.91),
+      reach85to91: !!late && mainsOf(late).length >= 9 && mainsOf(late).every((h) => h.reach >= 0.85 && h.reach <= 0.91),
       fullReach: fullOk, branches35to60: branchLen,
     };
     // reported, not asserted (§18.6 "every stem has left the page by p = 0.5"): at 1366 x 768 the page fills the height, so the up / down stems and
@@ -135,13 +136,16 @@ const screens = {
   'r21-no-glow': async (app) => {
     await growTo(app, 'arbor-r21-glow', 57);
     await setRoom(app, 'night'); await sleep(500);
+    // (instrument fix after the red leg: the Mood menu must be open for its switches to be read - a sibling switch proves it is)
+    await clickText(app, '.arbor2-bar-head', 'Mood ▸'); await sleep(300);
+    const moodOpen = await app.evalJs("!!document.querySelector('.arbor2-mood-switch[data-mood=\"dim\"]')");
     await app.evalJs("document.querySelector('.forward-only-editor')?.focus()"); await sleep(300);
     const r = await app.evalJs(`(() => { const b = getComputedStyle(document.body, '::before'); const page = document.querySelector('.mode-page'); const fld = document.querySelector('.wz-rhizome-field');
       const shadows = getComputedStyle(page).boxShadow; const blurs = (shadows.match(/\\d+(?:\\.\\d+)?px/g) || []).map(parseFloat);
       return { pool: b.backgroundImage, poolAnim: b.animationName, shadow: shadows, focused: page.classList.contains('focused'), fieldFilter: fld ? getComputedStyle(fld).filter : null,
         vineFilters: fld ? [...new Set([...fld.querySelectorAll('.arbor2-vine')].slice(0, 80).map((v) => getComputedStyle(v).filter))] : [], breathSwitch: !!document.querySelector('.arbor2-mood-switch[data-mood="breath"]') }; })()`);
     const blurOf = (s) => { const parts = String(s).split(/,(?![^(]*\))/); return parts.map((p) => { const n = (p.match(/-?\d+(?:\.\d+)?px/g) || []).map(parseFloat); return n.length >= 3 ? n[2] : 0; }); };
-    const ok = { noPool: r.pool === 'none' && (r.poolAnim === 'none' || r.poolAnim === ''), noPageGlow: blurOf(r.shadow).every((b) => b === 0), flatVines: r.fieldFilter === 'none' && r.vineFilters.every((x) => x === 'none'), noBreathSwitch: !r.breathSwitch };
+    const ok = { noPool: r.pool === 'none' && (r.poolAnim === 'none' || r.poolAnim === ''), noPageGlow: blurOf(r.shadow).every((b) => b === 0), flatVines: r.fieldFilter === 'none' && r.vineFilters.every((x) => x === 'none'), noBreathSwitch: moodOpen && !r.breathSwitch };
     if (Object.values(ok).some((x) => !x)) fail('R21-NO-GLOW', { ok, r });
     say('r21-no-glow', { ok, r });
   },
