@@ -292,3 +292,18 @@ From `apps/desktop/src/components/ModeStage.tsx`, line 856 at `e2898deb` (the co
   // target — the M1 anti-gamification frame). Two entries make the order
   // moot today, but the law belongs at the site that will enforce it.
 ```
+
+## ModeStage §22
+
+From `apps/desktop/src/components/ModeStage.tsx` (SettingsPanel, beside the Progress options) at `ab09253f`, moved by #13 step 10e when the label began to read the lexicon (`progressDrawer`); the comment that stays, in `components/settings/rows.tsx`: "the stored value stays 'project' (a storage id); only its label is a word". The "hardcoded inline, not lexicon-routed" half no longer holds: Fable's brief (step 10e) routes 'Drawer' through the lexicon, with the same word in every theme.
+
+```ts
+  // B2.1 S6 — the DISPLAY label only ("Project" -> "Drawer"); the stored
+  // ProgressMetric value itself ('project', the setting persisted via
+  // setWritingSettings) is a storage identifier and stays untouched, same
+  // as every other internal id this fold leaves alone. Hardcoded inline,
+  // not lexicon-routed, matching this exact Seg option family's own
+  // established precedent (deskLexicon.ts's FX3 comment: 'On'/'Off'/
+  // 'Lines'/'Words'/'Time' are deliberately inline here, not per-option
+  // lexicon keys).
+```
