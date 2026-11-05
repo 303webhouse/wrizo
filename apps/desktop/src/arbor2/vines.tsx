@@ -39,7 +39,8 @@ function stemsOf(plan: LapPlan, geo: GrowthGeometry, fromTip: boolean): Stem[] {
   for (const s of stems) if (s.level === 0) s.w0 = fromTip ? MAX_BRANCH : 9 + 2 * hash01(s.stem);
   for (const s of stems) if (s.level === 1) {
     const p = at.get(`${s.pts[0].x},${s.pts[0].y}`);
-    const wp = p ? widthAt(p.s, p.arc) : MAX_BRANCH / 0.7;
+    // (r20: a branch from the parent's very tip read width 0 - the taper ends at nothing; it reads the parent just short of its tip)
+    const wp = p ? Math.max(widthAt(p.s, p.arc), widthAt(p.s, p.s.total * 0.9)) : MAX_BRANCH / 0.7;
     const want = (0.55 + 0.25 * hash01(s.stem + 7919)) * wp;
     s.w0 = Math.min(MAX_BRANCH, want);
     s.ratio = wp > 0 ? Math.round((s.w0 / wp) * 1000) / 1000 : null;
