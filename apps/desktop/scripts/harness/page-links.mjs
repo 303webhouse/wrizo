@@ -190,7 +190,7 @@ const pinsOf = (m, s) => ({
 // ---- the surfaces, in source (the browser half is connector-b.mjs)
 {
   const rd = (rel) => noCR(fs.readFileSync(path.join(SRC, rel), 'utf8'));
-  const be = rd('components/BoardEditor.tsx'), panels = noCR(srcText(SRC, 'components/CascadePanels.tsx')), survey = rd('components/CascadeSurvey.tsx'), links = rd('components/ConnectionsDrawerPanel.tsx'), dlg = rd('components/DeleteDialog.tsx');
+  const be = noCR(srcText(SRC, 'components/BoardEditor.tsx')), panels = noCR(srcText(SRC, 'components/CascadePanels.tsx')), survey = rd('components/CascadeSurvey.tsx'), links = rd('components/ConnectionsDrawerPanel.tsx'), dlg = rd('components/DeleteDialog.tsx');
   const ui = (b, p, s, l, d) => ({
     // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): the Drawers panel's three tiles retired; the rail's entries are the rows of the Pages pop-out (and the survey items, and the Plan board row).
     // Kept VERBATIM below and no longer run; the live successor follows.

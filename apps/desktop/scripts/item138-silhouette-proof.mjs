@@ -21,7 +21,7 @@
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { globalCss } from './global-css.mjs';
+import { globalCss, srcText } from './global-css.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = join(here, '..', '..', '..');
@@ -68,7 +68,7 @@ const PERS_RAW = read('apps/desktop/src/store/persistence.ts');
 // Code-only view for the "is it still wired" checks; the raw text is kept for the
 // one claim that is ABOUT a comment (claim 7).
 const PERS = blankComments(PERS_RAW);
-const BOARD_RAW = read('apps/desktop/src/components/BoardEditor.tsx');
+const BOARD_RAW = srcText(join(repo, 'apps/desktop/src'), 'components/BoardEditor.tsx').replace(/\r\n/g, '\n');   // #13 step 10g: the module and its parts, joined
 const BOARD = blankComments(BOARD_RAW);
 const CSS = globalCss(join(repo, 'apps/desktop/src')).replace(/\r\n/g, '\n');
 

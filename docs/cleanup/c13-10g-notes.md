@@ -56,11 +56,35 @@ The repo has no lint, and this step adds no lint dependency. Fable's condition w
 
 No `eslint-disable` line was added.
 
+## The readers (after the merge of POLISH's stack, which brings `MODULE_PARTS` and `--allow`)
+
+- **One reader for the board.** `global-css.mjs` gets `MODULE_PARTS['components/BoardEditor.tsx']`, in this order: `geometry`, `BoardBoxes`, `BoardCardPopup`, the module itself, then the seven hooks in the order their lines stood. `srcText` of the module returns them joined.
+- **Every script that reads the module's text now reads it through `srcText`:** 25 in all.
+  - 19 already did, or needed only their BoardEditor read switched: `deck-rows-logic`, `sized-by-hand-logic`, `walk-open-select`, `item138`, `item163`, `item207-core`, `page-links`, `big-projects-1a`.
+  - 6 read the bare file and were safe, but now read the join too, so the board has one reader: `board-context-menu`, `box-tombstones`, `big-projects-2`, `guided-w2`, `help-choose-census`, `page-scroll-return`.
+  - The change is the read only. No assertion changes.
+- **[`c13-10g-readers.mjs`](../../apps/desktop/scripts/c13/c13-10g-readers.mjs)** proves it:
+  - **The parts:** the entry lists the module and every file in `components/board/`.
+  - **The lines:** the join holds the module's 3,130 code lines plus the 97 allowed ones.
+  - **The answers:** every distinctive string or regex literal of the 25 readers counts the same on the join as on the module at base. The 29 that move are explained one by one: each runs on CSS, on another file, on a loader list, or on a label, never on the board.
+  - **Liveness:** a planted edit inside a part, and one inside the module itself, each turns a reader red. So does an unlisted script, and so does an explained entry that no literal uses.
+- **Checked by hand.** The readers that slice by position:
+  - `guided-w1` K10 and Y6, and `guided-w3` NT3: each slice stays inside one part, and the parts keep their order.
+  - `walk-open-select` A1–A3: its marker and the dependency line after it now sit together in `useBoardGestures.ts`.
+  - `item138` claim 6: its slice starts in `useBoardGestures.ts`.
+  - `sized-by-hand-logic` S4: the set line and the two clear lines are each still found exactly once.
+- **The mutant tables need NO re-point**, contrary to the brief's expectation:
+  - `guided-w1`, `guided-w3`, `guided-add-scenes`, `guided-w2` and `flux-v2` apply a mutant to the text their checks read: `rd(over)` reads `srcText`, which is the join. So an entry naming `components/BoardEditor.tsx` lands on the join.
+  - Re-pointed to a part, it would not land, because the checks read the join, not the part.
+  - Their bundle loader takes `.ts` files only, so it never loads BoardEditor.
+  - All six moved anchors redden source checks: S11, NT3, SH4b and FM2.
+- **One re-point: `typing-latency-readers-guard.mjs`.** It walks every file raw and classifies each DOM-text read by FILE, so its four BoardEditor entries follow their code: three to `board/BoardCardPopup.tsx`, one to `board/useRailLinkDrag.ts`. The text of each entry is unchanged.
+- **Unaffected:**
+  - box-tombstones T11's per-file raw `.boxes` counts are identical on base and split, recomputed on both trees.
+  - `th-machina-source` M11 and `guided-w3` NT1 walk every file through `srcText`. They read the board's lines twice, which is harmless: no board file imports `themeFontFaces`, and no board part reads `.prompt`.
+- **Note for step 11:** `logout-flush` D3's "imports the registry" passes on BoardEditor's kept, unused `registerFlush` import. When step 11 trims that import, D3 needs the hook's import instead.
+
 ## Still to come in this step
 
-- Merge `origin/main`, after POLISH's 10a → 10b → 10d → tools stack.
-- Add one entry: `MODULE_PARTS['components/BoardEditor.tsx']`.
-- The readers check, and the reads switched to `srcText`.
-- Re-point the mutant entries whose anchor moved: `guided-w1` 352 and 353 to `board/useBoardMeasure.ts`; `guided-w3` 433 to `board/BoardBoxes.tsx`, 439 to `board/useBoardGestures.ts`, 451 and 452 to `board/useBoardSave.ts`.
 - The box turn: the board snapshot (baseline and compare in the same turn), the gesture and reader harnesses on both legs, and the link check.
 - The full pair.
