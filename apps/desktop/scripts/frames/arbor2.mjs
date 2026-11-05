@@ -843,7 +843,9 @@ export default {
           const c = cr(fgE, bgE);
           if (minCr === null || c < minCr) { minCr = c; worst = (el.textContent || '').trim().slice(0, 16); }
         }
-        return { cls: String(h.className).split(' ').slice(0, 2).join('.'), op, minCr: minCr === null ? null : +minCr.toFixed(2), worst };
+        // (r20: the night bars keep a solid ground and dim what they hold - read the bar and its contents' opacity)
+        const bar = h.matches('.chrome-top.sprint-nav, .desk-frame-strip');
+        return { cls: String(h.className).split(' ').slice(0, 2).join('.'), op, minCr: minCr === null ? null : +minCr.toFixed(2), worst, bar, kidOp: bar && h.firstElementChild ? parseFloat(getComputedStyle(h.firstElementChild).opacity) : null };
       };
       return { room, writing: document.documentElement.getAttribute('data-wz-writing'), rows: hooks.map(row),
         panel: (() => { const p = document.querySelector('.wz-sliver-panel'); return p ? parseFloat(getComputedStyle(p).opacity) : null; })(),
@@ -861,17 +863,26 @@ export default {
     const labelsOk = (m) => m.rows.filter((r) => r.op < 1).every((r) => r.minCr === null || r.minCr >= 4.5);
     const gripsLit = (m) => { const g = m.rows.filter((r) => r.cls.indexOf('grip') >= 0); return g.length === 2 && g.every((r) => r.op === 1 && r.minCr !== null && r.minCr >= 3); };
     const v = {};
-    v.rest = night ? others(rest).length > 0 && others(rest).every((r) => near(r.op, 0.6)) && labelsOk(rest) && gripsLit(rest) : rest.rows.every((r) => r.op === 1);
+    // PARKED 2026-11-05 (SUPERSEDED, the r20 full green g23 run 41969042301: the Wrizors' r19 review (md5 2f312b28) - the night bars must measure Nick's SOLID #241912, so r20 dims what the bars hold, never their ground). Original, verbatim:
+    // v.rest = night ? others(rest).length > 0 && others(rest).every((r) => near(r.op, 0.6)) && labelsOk(rest) && gripsLit(rest) : rest.rows.every((r) => r.op === 1);
+    // SUCCESSOR restB: the same, with the bars at full strength and their contents taking the step.
+    v.rest = night ? others(rest).length > 0 && others(rest).every((r) => r.bar ? (r.op === 1 && near(r.kidOp, 0.6)) : near(r.op, 0.6)) && labelsOk(rest) && gripsLit(rest) : rest.rows.every((r) => r.op === 1);
     await clickSel(app, '.wz-sliver-grip');
     await sleep(500);
     const open = await app.evalJs(MEASURE);
-    v.drawer = night ? open.panel === 1 && open.grip === 1 && others(open).length > 0 && others(open).every((r) => near(r.op, 0.52)) && gripsLit(open) && labelsOk(open) && open.rect === rest.rect : true;
+    // PARKED 2026-11-05 (SUPERSEDED, the r20 full green g23 run 41969042301: the Wrizors' r19 review (md5 2f312b28) - the night bars must measure Nick's SOLID #241912, so r20 dims what the bars hold, never their ground). Original, verbatim:
+    // v.drawer = night ? open.panel === 1 && open.grip === 1 && others(open).length > 0 && others(open).every((r) => near(r.op, 0.52)) && gripsLit(open) && labelsOk(open) && open.rect === rest.rect : true;
+    // SUCCESSOR drawerB: the same, with the bars at full strength and their contents taking the step.
+    v.drawer = night ? open.panel === 1 && open.grip === 1 && others(open).length > 0 && others(open).every((r) => r.bar ? (r.op === 1 && near(r.kidOp, 0.52)) : near(r.op, 0.52)) && gripsLit(open) && labelsOk(open) && open.rect === rest.rect : true;
     await clickText(app, '.arbor2-bar-head', 'Mood ▸');
     await sleep(150);
     await app.evalJs(`document.querySelector('.arbor2-mood-switch[data-mood="dim"]')?.click()`);
     await sleep(200);
     const noStep = await app.evalJs(MEASURE);
-    v.moodOff = night ? others(noStep).length > 0 && others(noStep).every((r) => near(r.op, 0.6)) : true;
+    // PARKED 2026-11-05 (SUPERSEDED, the r20 full green g23 run 41969042301: the Wrizors' r19 review (md5 2f312b28) - the night bars must measure Nick's SOLID #241912, so r20 dims what the bars hold, never their ground). Original, verbatim:
+    // v.moodOff = night ? others(noStep).length > 0 && others(noStep).every((r) => near(r.op, 0.6)) : true;
+    // SUCCESSOR moodOffB: the same, with the bars at full strength and their contents taking the step.
+    v.moodOff = night ? others(noStep).length > 0 && others(noStep).every((r) => r.bar ? (r.op === 1 && near(r.kidOp, 0.6)) : near(r.op, 0.6)) : true;
     await app.evalJs(`document.querySelector('.arbor2-mood-switch[data-mood="dim"]')?.click()`);
     await clickText(app, '.arbor2-bar-head', 'Mood ▾');
     await clickSel(app, '.wz-sliver-grip');

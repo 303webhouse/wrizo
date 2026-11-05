@@ -230,7 +230,9 @@ const screens = {
   // ── E. REST <-> WRITING ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
   'r19-swap': async (app) => {
     await openPage(app, 'arbor-r19-swap', { progress: 'words', style: 'rhizome', goal: { n: 60, unit: 'words' } });
-    await setRoom(app, 'day'); await sleep(600);
+    // (instrument fix after g23 run 41958508319: on a night-clock runner the field was still fading to the day's rest 600 ms after the switch -
+    // the room's own transitions are landed before the rest is read)
+    await setRoom(app, 'day'); await sleep(600); await app.evalJs(FINISH);
     const rest = await app.evalJs(SHADE);
     await typeKeys(app, ' w');
     await sleep(1500); const mid = await app.evalJs(SHADE);
