@@ -1,6 +1,6 @@
 # Contract: one Wrizo account for Write and Read · DRAFT 0
 
-**Status:** draft 0, rev e (Fable, Nov 1, 2026, 2:25 am: the email claim; `theme.room`; §5b "at the desk"). NOT signed. Read mocks against it; nothing touches production until Nick signs draft 1.
+**Status:** draft 0, rev f (Fable, Nov 4, 2026, 4:30 pm: the email claim; `theme.room`; §5b "at the desk"; §3b the account-deleted event). NOT signed. Read mocks against it; nothing touches production until Nick signs draft 1.
 **Owner:** Fable (Write side). **Consumer:** SOCIAL (Wrizo | Read, `303webhouse/wrizo-read`).
 **Nick's rulings this rests on:** one account for both apps; a writer can sign up from either side (Oct 29); the writer's theme follows them into Read (Oct 31); theme switches are saved to the account so they follow the writer into Read (Oct 31).
 
@@ -31,6 +31,19 @@
 - Signing out of one app does not sign the person out of the other.
 - **Account deletion propagates.** When an account is deleted in Write, Write sends Read a signed "account deleted" event for that `sub`, and Read deletes that person's data under its own retention rules.
 - Read can't delete a Write account. A "delete my account" request in Read sends the person to Write.
+
+## 3b. The account-deleted event (agreed with SOCIAL, Nov 4; Read's text: `wrizo-read/docs/contracts/account-deleted-event-v0.md`)
+- **Address:** `POST /api/v1/events/account-deleted` on Read, with no session.
+- **Body:** `{ "type": "account.deleted", "id": "<event id>", "sub": "<sub>", "deletedAt": "<ISO time>" }`. No email, no name. Read ignores and never stores or logs any other field.
+- **Signature, Fable's ruling (a): ASYMMETRIC, not a shared secret.**
+  - Write signs with the SAME signing keys it uses for ID tokens, and Read verifies with Write's published public keys (the JWKS it already fetches for sign-in).
+  - The header stays in Read's shape, `Wrizo-Signature: t=<unix seconds>,v1=<signature over "<t>.<raw body>">`, with the algorithm as the ID tokens' (e.g. ES256 / Ed25519) and the key id in `kid=`.
+  - Read refuses it if `t` is more than 5 minutes off, and fails closed (503) if it has no keys.
+  - Why: Read never holds anything that could forge a deletion, and there's no extra secret to rotate.
+- **Read's answers:** 200 (done, already done, or an unknown `sub`, so nobody can probe who has an account), 400 (a bad body), 401 (a bad or stale signature), 503 (no keys). **(c) A plain 200 with no body is enough.**
+- **(b) Retries:** Write retries the same `id` with backoff (1 min, doubling, capped at 1 h) for up to **72 hours**, then flags it for Nick. Repeats of an `id` change nothing in Read.
+  - **Holding that retry queue means a small outbox record in Write** (the event id, the `sub`, attempts), deleted once Read answers 200. **That's new saved data, so it needs Nick's OK when it's built.**
+- **(d) Yes:** a deleted account is gone. Signing up again makes a NEW account, so a new `sub`. Account ids are never reused.
 
 ## 4. Security
 - The client secret and the signing keys live only in Railway variables. **Never in either repo, a chat, a doc or a log** (both repos are public).
