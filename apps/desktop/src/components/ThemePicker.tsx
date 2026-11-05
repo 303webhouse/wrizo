@@ -7,22 +7,7 @@ import { createFluxCardGlitchController, FLUX_CARD_GLITCH_MS } from '../store/fl
 import { ensureThemeFonts } from '../store/themeFonts';
 import { Seg } from './ModeStage';
 
-// THEME PICKER (step 2 of the Oct 21 build queue; theme-menu-brief.md / theme-rules.md §C,
-// cursor/theme-picker-mockup @ 1a057bea). Replaces CascadePanels.tsx's own button-list
-// CascadeThemePanel (THEME_OPTS) — this component owns only the panel BODY (the cards + the
-// Dark/Light toggle); the panel's own head (title + close) is Cascade.tsx's, unchanged, and
-// already reads the per-theme "Mood"/"Skin" word (deskLexicon's own cascadeThemeTitle).
-//
-// ABSENT, NOT GRAYED: THEME_CARDS below lists one entry per BUILT theme — today exactly
-// `ThemeId`'s own three members (Machina joined with its build). Nomad/Volant do not appear at all
-// until each gains its own ThemeId and its own entry here; this list is never hand-filtered at render time.
-//
-// EACH CARD IS BRAND ART, NOT A THEME-SCOPED COMPONENT: unlike every other per-theme override
-// in this codebase (a `[data-theme="x"]` CSS block), a card must show FLUX'S look while the
-// writer is sitting IN Arbor — the picker's whole job is letting you see where you'd be going.
-// So card art is keyed by the CARD's own theme (a plain class), never by the ambient active
-// theme; only the picker's own CHROME (the panel itself) follows the ambient theme, via the
-// existing wz-cascade-panel-body it already renders inside.
+// the theme picker's body: one card per BUILT theme (absent, never greyed); card art is keyed by the card's own theme, so it shows that theme's look from inside another [ThemePicker §1]
 interface ThemeCardDef {
   id: ThemeId;
   name: string;
@@ -30,9 +15,7 @@ interface ThemeCardDef {
   wordmarkClass: string;  // the wordmark's own type face (per theme-rules.md B.4)
 }
 
-// Arbor — the rhizome. Base strokes always visible; the "grow" layer reveals on hover/focus
-// (stroke-dashoffset, CSS below), over the word "Arbor" (Nick's own correction: fuller/messier
-// than the existing rhizome mark, ported from the approved mockup's own path data).
+// Arbor's plate: base strokes always visible, the grow layer revealed on hover/focus [ThemePicker §2]
 function ArborPlate() {
   return (
     <>
@@ -94,7 +77,7 @@ function MachinaPlate() {
   );
 }
 
-// ORDER follows theme-arc.md's narrative progression (Arbor -> Machina -> Flux; Fable's A3 ruling on TH2) - not launch order.
+// order follows the theme arc's narrative progression (Arbor -> Machina -> Flux), not launch order [ThemePicker §3]
 const THEME_CARDS: ThemeCardDef[] = [
   { id: 'plateau', name: 'Arbor', cardClass: 'wz-theme-card-arbor', wordmarkClass: 'wz-theme-wm-arbor' },
   { id: 'machina', name: 'Machina', cardClass: 'wz-theme-card-machina', wordmarkClass: 'wz-theme-wm-machina' },

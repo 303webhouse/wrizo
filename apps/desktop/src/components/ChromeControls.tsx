@@ -38,9 +38,7 @@ export function SyncIndicator() {
   useEffect(() => subscribeStorageFailed((names) => setStorageFailed(names.length > 0)), []);
   const [storageNearFull, setStorageNearFull] = useState(false);
   useEffect(() => subscribeStorageNearFull(setStorageNearFull), []);
-  // STORAGE-FULL STEP 1 (Fable's byte review, item 2) - which of the three failed-storage states this is: dirty
-  // records still unpushed (persistence.ts's own generic subscribe(), which markClean() now also fires - see its
-  // own comment), and whether there is an account at all to reach (F2's local-first writing, signed out).
+  // which failed-storage state this is: records still unpushed (persistence's subscribe, which markClean fires too), and whether there is an account to reach [ChromeControls §1]
   const [dirty, setDirty] = useState(() => hasDirtyRecords());
   useEffect(() => subscribePersistence(() => setDirty(hasDirtyRecords())), []);
   const [signedIn, setSignedIn] = useState(false);
