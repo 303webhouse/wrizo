@@ -223,9 +223,12 @@ export function RhizomeField({ text, seedKey, paperRef }: {
     const svg = svgRef.current; if (!m || !svg) return null;
     const st = svg.getBoundingClientRect();
     const rail = document.querySelector('.desk-frame-strip')?.getBoundingClientRect(), bar = [...document.querySelectorAll('.chrome-top.sprint-nav')].map((b) => b.getBoundingClientRect()).find((r) => r.height > 0);
-    return { cx: m.geo.origin.x, cy: m.geo.origin.y, left: rail && rail.width > 0 ? Math.max(0, rail.right - st.left) : 0, right: m.geo.width, top: bar ? Math.max(0, bar.bottom - st.top) : 0, bottom: m.geo.height };
+    // (r21: and the page's own edges - the kept band less its clearance - so a stem knows whether it can leave through the top or the bottom)
+    const pg = m.geo.hidden[0];
+    return { cx: m.geo.origin.x, cy: m.geo.origin.y, left: rail && rail.width > 0 ? Math.max(0, rail.right - st.left) : 0, right: m.geo.width, top: bar ? Math.max(0, bar.bottom - st.top) : 0, bottom: m.geo.height,
+      pl: pg.left + PAGE_CLEAR, pt: pg.top + PAGE_CLEAR, pr: pg.right - PAGE_CLEAR, pb: pg.bottom - PAGE_CLEAR };
   }, [m]);
-  const roomKey = room ? [room.cx, room.cy, room.left, room.right, room.top, room.bottom].map((v) => Math.round(v)).join(',') : '';
+  const roomKey = room ? [room.cx, room.cy, room.left, room.right, room.top, room.bottom, room.pl, room.pt, room.pr, room.pb].map((v) => Math.round(v)).join(',') : '';
   const roomStable = useMemo(() => room, [roomKey]);   // eslint-disable-line react-hooks/exhaustive-deps
   const baseLap = eff ? eff.baseLap : 0;
   const pastPaths = useMemo(() => {

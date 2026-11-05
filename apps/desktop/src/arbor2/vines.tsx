@@ -8,6 +8,10 @@
 //     room's edge: a side stem (within 45 deg of left or right) 60-150 px short of the rail or the window's edge, an up or down stem 20-60 px short
 //     of the top bar or the window's bottom. The room is the rail's right edge, the bar's bottom and the window (RhizomeField's `room`), so the
 //     length scales with the window and never runs under the rail or the bar.
+//   r21 (Fable Nov 4): where less than 60 px of room stands above (below) the page, an up (down) stem would never leave the page - it rises as
+//     drawn and then CURVES out through the page's nearer side (the side it leans to): its own turns carried along a bend from its start, heading
+//     up (down), to an end in the corner beyond the page's side - 60-150 px short of the rail / the window's edge, 20-60 px from the bar / the
+//     bottom. With enough room it exits top / bottom as drawn.
 //   reach (§18.6): p = this lap's words / its goal; stem i in growth order starts at t0 = 0.27 i/(N-1) and shows full x ease(clamp((p - t0)/(1 - t0)))
 //     of itself, ease(x) = x^0.75 (at 52/60 every stem at ~86-90%).
 //   branches (levels 2 and 3 of the spec: here 1 and 2) leave their parent at its join point as the parent's tip passes it, each 35-60% of the
@@ -22,11 +26,13 @@ import type { GrowthGeometry, GrowthSegment, LapPlan } from '../store/rhizomeGro
 
 const TAPER = 1.6, TIP_PX = 8, MAX_BRANCH = 4.2, PIECE = 5, T0_MAX = 0.27, EASE = 0.75, MAIN_TARGET = 10, DEG = Math.PI / 180;
 type Pt = { x: number; y: number };
-export type Room = { cx: number; cy: number; left: number; right: number; top: number; bottom: number };
+// pl / pt / pr / pb: the page's own edges (svg coordinates), so a stem can tell whether it has room to leave through the top or the bottom
+export type Room = { cx: number; cy: number; left: number; right: number; top: number; bottom: number; pl: number; pt: number; pr: number; pb: number };
 // a stem as planned (canonical units) and its family
 type Stem = { stem: number; level: 0 | 1 | 2; pts: Pt[]; seg: number[]; order: number; derived?: boolean; parent?: Stem; joinI?: number; ratioPick: number; marginPick: number; lenPick: number };
 // a stem on the screen
-type Drawn = { s: Stem; pts: Pt[]; arc: number[]; total: number; w0: number; ratio: number | null; joinU: number; t0: number };
+type Drawn = { s: Stem; pts: Pt[]; arc: number[]; total: number; w0: number; ratio: number | null; joinU: number; t0: number; bent?: boolean };
+const BEND_GAP = 60;
 
 const hash01 = (n: number) => { let h = (n * 2654435761) >>> 0; h ^= h >>> 15; h = Math.imul(h, 2246822519) >>> 0; h ^= h >>> 13; return (h >>> 0) / 4294967296; };
 const arcOf = (pts: Pt[]) => { const a = [0]; for (let i = 1; i < pts.length; i++) a.push(a[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y)); return a; };
@@ -38,6 +44,23 @@ const pointAt = (d: Drawn, len: number): { p: Pt; i: number } => {
   const a = d.arc[i - 1], b = d.arc[i], u = b > a ? (L - a) / (b - a) : 0;
   return { p: { x: d.pts[i - 1].x + (d.pts[i].x - d.pts[i - 1].x) * u, y: d.pts[i - 1].y + (d.pts[i].y - d.pts[i - 1].y) * u }, i };
 };
+
+// an up / down stem carried along a bend: from S heading straight up (down), curving out to E beyond the page's side (a quadratic with its control
+// point at (S.x, E.y)). Each planned point keeps its place along the stem (its share of the way from start to end) and its offset across it, scaled
+// as the stem is, so its turns ride the curve; the start lands on S and the end on E exactly.
+function bendOut(src: Pt[], S: Pt, E: Pt): Pt[] {
+  const a = src[0], b = src[src.length - 1], cx = b.x - a.x, cy = b.y - a.y, clen = Math.max(1e-6, Math.hypot(cx, cy));
+  const K = { x: S.x, y: E.y }, N = 48, B: Pt[] = [];
+  for (let i = 0; i <= N; i++) { const t = i / N, u = 1 - t; B.push({ x: u * u * S.x + 2 * u * t * K.x + t * t * E.x, y: u * u * S.y + 2 * u * t * K.y + t * t * E.y }); }
+  const A = arcOf(B), tot = A[N], k = tot / clen;
+  return src.map((p) => {
+    const u = Math.max(0, Math.min(1, ((p.x - a.x) * cx + (p.y - a.y) * cy) / (clen * clen))), d = ((p.x - a.x) * cy - (p.y - a.y) * cx) / clen, L = u * tot;
+    let j = 1; while (j < N && A[j] < L) j++;
+    const w = A[j] > A[j - 1] ? (L - A[j - 1]) / (A[j] - A[j - 1]) : 0, tx = B[j].x - B[j - 1].x, ty = B[j].y - B[j - 1].y, tl = Math.max(1e-6, Math.hypot(tx, ty));
+    const q = { x: B[j - 1].x + tx * w, y: B[j - 1].y + ty * w };
+    return { x: q.x + (d * k * ty) / tl, y: q.y - (d * k * tx) / tl };
+  });
+}
 
 // ---- the family, from the plan (canonical; once per plan) ----
 const familyCache = new WeakMap<LapPlan, Stem[]>();
@@ -87,7 +110,7 @@ function familyOf(plan: LapPlan, geo: GrowthGeometry): Stem[] {
 // ---- on the screen (once per plan and room) ----
 const drawnCache = new WeakMap<LapPlan, Map<string, Map<Stem, Drawn>>>();
 function drawnOf(plan: LapPlan, geo: GrowthGeometry, room: Room, fromTip: boolean): Map<Stem, Drawn> {
-  const key = `${Math.round(room.cx)},${Math.round(room.cy)},${Math.round(room.left)},${Math.round(room.right)},${Math.round(room.top)},${Math.round(room.bottom)},${fromTip ? 1 : 0}`;
+  const key = [room.cx, room.cy, room.left, room.right, room.top, room.bottom, room.pl, room.pt, room.pr, room.pb].map((v) => Math.round(v)).join(',') + (fromTip ? ',1' : ',0');
   let byRoom = drawnCache.get(plan); if (!byRoom) { byRoom = new Map(); drawnCache.set(plan, byRoom); }
   const hit = byRoom.get(key); if (hit) return hit;
   const fam = familyOf(plan, geo), o = geo.origin, C = { x: room.cx, y: room.cy };
@@ -108,6 +131,15 @@ function drawnOf(plan: LapPlan, geo: GrowthGeometry, room: Room, fromTip: boolea
       // end on the target: a side stem's end x at the rail / the window's edge less 60-150 px, an up / down stem's end y at the bar / the bottom less 20-60
       const s0 = s.pts[0], S = { x: C.x + (s0.x - o.x), y: C.y + (s0.y - o.y) }, dx = end.x - s0.x, dy = end.y - s0.y;
       let f: number;
+      const upDown = Math.abs(dy) > Math.abs(dx), gap = upDown ? (dy < 0 ? room.pt - room.top : room.bottom - room.pb) : Infinity;
+      if (upDown && gap < BEND_GAP) {
+        // too little room past the page: out through the side it leans to (r21, Fable Nov 4)
+        const sx = Math.abs(dx) > 1e-6 ? Math.sign(dx) : (hash01(s.stem + 557) < 0.5 ? -1 : 1);
+        const ex = sx < 0 ? Math.min(room.pl - 40, room.left + 60 + 90 * s.marginPick) : Math.max(room.pr + 40, room.right - 60 - 90 * s.marginPick);
+        const ey = dy < 0 ? room.top + 20 + 40 * hash01(s.stem + 563) : room.bottom - 20 - 40 * hash01(s.stem + 563);
+        mk(s, bendOut(s.pts, S, { x: ex, y: ey }), fromTip ? MAX_BRANCH : 9 + 2 * hash01(s.stem), null, 0, t0Of.get(s) ?? 0).bent = true;
+        continue;
+      }
       if (Math.abs(dx) >= Math.abs(dy)) { const tx = dx < 0 ? room.left + 60 + 90 * s.marginPick : room.right - 60 - 90 * s.marginPick; f = (tx - S.x) / (Math.abs(dx) < 1e-6 ? 1e-6 : dx); }
       else { const ty = dy < 0 ? room.top + 20 + 40 * s.marginPick : room.bottom - 20 - 40 * s.marginPick; f = (ty - S.y) / (Math.abs(dy) < 1e-6 ? 1e-6 : dy); }
       f = Math.max(40 / Math.max(1, Math.hypot(dx, dy)), f);
@@ -220,7 +252,7 @@ const Stems = memo(function Stems({ plan, geo, room, p, fromTip }: { plan: LapPl
         return piecesOf(d, len).map((pc, i) => (
           <path key={`${d.s.stem}:${i}`} className="arbor2-vine" d={pc.d} fillOpacity={pc.fo} data-stem={d.s.stem}
             {...(pc.head ? { 'data-level': d.s.level, 'data-w0': Math.round(d.w0 * 100) / 100, 'data-x0': r1(d.pts[0].x), 'data-y0': r1(d.pts[0].y),
-              'data-ratio': d.ratio ?? undefined, 'data-derived': d.s.derived ? 'true' : undefined, 'data-t0': d.s.level === 0 ? Math.round(d.t0 * 1000) / 1000 : undefined,
+              'data-ratio': d.ratio ?? undefined, 'data-derived': d.s.derived ? 'true' : undefined, 'data-bent': d.bent ? 'true' : undefined, 'data-t0': d.s.level === 0 ? Math.round(d.t0 * 1000) / 1000 : undefined,
               'data-reach': Math.round(r * 1000) / 1000, 'data-full': r1(d.total), 'data-ex': r1(end.x), 'data-ey': r1(end.y), 'data-vx': r1(tip.x), 'data-vy': r1(tip.y),
               'data-join': d.s.level > 0 ? Math.round(d.joinU * 1000) / 1000 : undefined, 'data-parent': d.s.parent ? d.s.parent.stem : undefined } : {})} />
         ));

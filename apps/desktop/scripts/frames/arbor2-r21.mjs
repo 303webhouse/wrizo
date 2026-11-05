@@ -54,7 +54,7 @@ const VINES = `(() => { const f = document.querySelector('.wz-rhizome-field'); i
 // the vines' heads with everything r21 writes on them (svg coordinates), and the room they reach into
 const HEADS = `(() => { const f = document.querySelector('.wz-rhizome-field'); if (!f) return null; const num = (v, k) => v.hasAttribute(k) ? Number(v.getAttribute(k)) : null;
   const heads = [...f.querySelectorAll('.arbor2-vines > path.arbor2-vine[data-w0]')].map((v) => ({ stem: num(v, 'data-stem'), level: num(v, 'data-level'), t0: num(v, 'data-t0'), reach: num(v, 'data-reach'), full: num(v, 'data-full'),
-    x0: num(v, 'data-x0'), y0: num(v, 'data-y0'), ex: num(v, 'data-ex'), ey: num(v, 'data-ey'), vx: num(v, 'data-vx'), vy: num(v, 'data-vy'), parent: num(v, 'data-parent'), join: num(v, 'data-join'), w0: num(v, 'data-w0') }));
+    x0: num(v, 'data-x0'), y0: num(v, 'data-y0'), ex: num(v, 'data-ex'), ey: num(v, 'data-ey'), vx: num(v, 'data-vx'), vy: num(v, 'data-vy'), parent: num(v, 'data-parent'), join: num(v, 'data-join'), w0: num(v, 'data-w0'), bent: v.getAttribute('data-bent') === 'true' }));
   const sb = f.getBoundingClientRect(), box = (e) => { if (!e) return null; const r = e.getBoundingClientRect(); return { l: r.left - sb.left, t: r.top - sb.top, r: r.right - sb.left, b: r.bottom - sb.top }; };
   const rail = box(document.querySelector('.desk-frame-strip')), bar = box([...document.querySelectorAll('.chrome-top.sprint-nav')].find((b) => b.getBoundingClientRect().height > 0)), page = box(document.querySelector('.mode-page'));
   return { heads, rail, bar, page, w: sb.width, h: sb.height, start: f.getAttribute('data-start'), flash: f.getAttribute('data-flash'),
@@ -108,10 +108,11 @@ const screens = {
     const branchLen = kids.length > 0 && kids.every((h) => { const r = h.full / byStem.get(h.parent).full; return r >= 0.349 && r <= 0.601; });
     const ok = {
       curveAtHalf: !!half && curve(half, p[29]), curveLate: !!late && curve(late, p[51]), tenEven: even,
-      // HELD for a ruling after leg 41981547477 (kept verbatim, not asserted): the field's top is the page's top and the page fills its height (0-561
-      // of ~601 px at 1366), so an up / down stem cannot leave the page at any reach. The side half is asserted; the up / down half is reported.
-      //   allOutAt52: !!late && mainsOf(late).length >= 9 && mainsOf(late).every((h) => outside(h, late.page)),
-      sideOutAt52: !!late && ends.filter((e) => e.side).length >= 2 && mainsOf(late).every((h, i) => !ends[i].side || outside(h, late.page)),
+      // (restored in full, Fable Nov 4: where the room above / below the page is under ~60 px, the up / down stems bend out through its sides)
+      allOutAt52: !!late && mainsOf(late).length >= 9 && mainsOf(late).every((h) => outside(h, late.page)),
+      // a bent stem's end stands beyond the page's side, and a stem bends only where the room above (below) the page is under 60 px
+      bentRight: !!late && mainsOf(late).filter((h) => h.bent).every((h) => h.ex < late.page.l || h.ex > late.page.r)
+        && mainsOf(late).filter((h) => h.bent).every((h) => (h.ey < (late.page.t + late.page.b) / 2 ? late.page.t - room.top : room.bottom - late.page.b) < 60),
       reach85to91: !!late && mainsOf(late).length >= 9 && mainsOf(late).every((h) => h.reach >= 0.85 && h.reach <= 0.91),
       fullReach: fullOk, branches35to60: branchLen,
     };
@@ -120,7 +121,7 @@ const screens = {
     const outAtHalf = half ? { out: mainsOf(half).filter((h) => outside(h, half.page)).length, of: mainsOf(half).length } : null;
     // (report: each main stem's visible tip and end, and the page, after the green leg showed tips under the page at 52/60)
     const upDownOutAt52 = late ? { out: mainsOf(late).filter((h, i) => !ends[i].side && outside(h, late.page)).length, of: ends.filter((e) => !e.side).length } : null;
-    const brief = { ok, outAtHalf, upDownOutAt52, mains: late && mainsOf(late).length, t0s, ends, reachLate: late && mainsOf(late).map((h) => h.reach), kids: kids.length,
+    const brief = { ok, outAtHalf, upDownOutAt52, bent: late && mainsOf(late).filter((h) => h.bent).length, mains: late && mainsOf(late).length, t0s, ends, reachLate: late && mainsOf(late).map((h) => h.reach), kids: kids.length,
       page: late && late.page, tips: late && mainsOf(late).map((h) => [Math.round(h.vx), Math.round(h.vy), Math.round(h.ex), Math.round(h.ey), Math.round(h.full)]),
       kidRatios: kids.slice(0, 8).map((h) => Math.round((h.full / byStem.get(h.parent).full) * 100) / 100) };
     if (Object.values(ok).some((x) => !x)) fail('R21-REACH', brief);
