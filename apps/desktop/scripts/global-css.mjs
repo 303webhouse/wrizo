@@ -13,24 +13,34 @@
 // The TypeScript barrels (#13 step 10): a module split into parts keeps its path as a barrel of `export * from './<x>';` lines.
 // srcText reads a barrel named in BARRELS as its parts joined in that order, so a reader of the old module still reads every
 // line it read before (the same lines, grouped by part: c13-10-split-check.mjs proves none was added, dropped or edited).
-// Only the barrels named here: a file is never read as a barrel because of its shape.
+// Only the barrels named here: a file is never read as a barrel because of its shape. A part sits beside its barrel or one folder
+// down (components/cascade/, step 10d), as a .ts or .tsx file.
+// A script that WALKS every file reads each by its plain path (fs.readFileSync); through srcText a barrel's lines would be read twice,
+// once joined and once in the parts.
 import fs from 'node:fs';
 import path from 'node:path';
 
-export const BARRELS = ['types/index.ts'];
-export const REEXPORT_LINE = /^export \* from '\.\/([A-Za-z0-9-]+)';(\r?\n|$)/gm;
+export const BARRELS = ['types/index.ts', 'components/CascadePanels.tsx'];
+export const REEXPORT_LINE = /^export \* from '\.\/((?:[A-Za-z0-9-]+\/)?[A-Za-z0-9-]+)';(\r?\n|$)/gm;
 
-export function barrelText(srcDir, rel) {
+export function barrelParts(srcDir, rel) {
   const text = fs.readFileSync(path.join(srcDir, rel), 'utf8');
   const parts = [];
   let at = 0;
   for (const m of text.matchAll(REEXPORT_LINE)) {
     if (m.index !== at) throw new Error(`${rel}: text other than an export * line at offset ${at}`);
-    parts.push(path.join(srcDir, path.dirname(rel), `${m[1]}.ts`));
+    const base = path.join(srcDir, path.dirname(rel), m[1]);
+    const hit = [`${base}.ts`, `${base}.tsx`].find((p) => fs.existsSync(p));
+    if (!hit) throw new Error(`${rel}: no part ${m[1]}.ts or .tsx`);
+    parts.push(hit);
     at = m.index + m[0].length;
   }
   if (at !== text.length || parts.length === 0) throw new Error(`${rel}: text other than an export * line at offset ${at}`);
-  return parts.map((p) => fs.readFileSync(p, 'utf8')).join('');
+  return parts;
+}
+
+export function barrelText(srcDir, rel) {
+  return barrelParts(srcDir, rel).map((p) => fs.readFileSync(p, 'utf8')).join('');
 }
 
 export function srcText(srcDir, ...rel) {

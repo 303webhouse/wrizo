@@ -9,8 +9,11 @@
 // (2) SCOPE: no file under apps/desktop/src other than <from> and <to...> differs from <base>, so no import line outside the split changes.
 // (3) BARREL: every name <from> exported at <base> it still exports.
 // (4) CITES: every step 9 citation [<Name> §n] in <from> + <to...> is a heading of docs/rulings/<area of from>-<Name>.md.
-// (5) LIVENESS: each check is run again on a planted input (a moved line edited, a moved line dropped, a stray src file, a citation
-//     pointed nowhere, an export lost) and must FAIL; a check that cannot go red proves nothing.
+// (5) ORDER (with --ordered, for a split into contiguous runs): <from> is a barrel whose `export *` lines name <to...> in the order
+//     given, and those parts' code lines, read in that order, are <from>'s at <base> in the same sequence, so a reader of the
+//     joined barrel (global-css.mjs srcText) meets every line where it met it before.
+// (6) LIVENESS: each check is run again on a planted input (a moved line edited, a moved line dropped, a stray src file, a citation
+//     pointed nowhere, an export lost, and with --ordered two moved lines swapped) and must FAIL; a check that cannot go red proves nothing.
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -21,7 +24,8 @@ const args = process.argv.slice(2);
 const bi = args.indexOf('--base');
 if (bi < 0 || !args[bi + 1]) { console.error('usage: --base <rev> <from> <to...>'); process.exit(2); }
 const base = args[bi + 1];
-const files = args.filter((_, i) => i !== bi && i !== bi + 1);
+const ordered = args.includes('--ordered');
+const files = args.filter((a, i) => i !== bi && i !== bi + 1 && a !== '--ordered');
 const [from, ...to] = files;
 if (!from || to.length === 0) { console.error('usage: --base <rev> <from> <to...>'); process.exit(2); }
 
@@ -87,6 +91,15 @@ function run({ texts, changed }) {
   const unresolved = cites.filter((c) => !(rulings(c.name) ?? '').split(/\r?\n/).includes(`## ${c.name} §${c.n}`));
   r.push({ name: 'CITES', pass: unresolved.length === 0, detail: `${cites.length} [Name §n] citations in the split's files, each a heading in docs/rulings/${area}-<Name>.md`,
     show: unresolved.map((c) => `${c.f}: [${c.name} §${c.n}] resolves nowhere`) });
+  if (ordered) {
+    const named = [...texts.now[from].matchAll(/^export \* from '\.\/([^']+)';/gm)].map((m) => path.posix.join(path.posix.dirname(from), m[1]));
+    const want = to.map((f) => f.replace(/\.tsx?$/, ''));
+    const seq = to.flatMap((f) => codeLines(texts.now[f]));
+    const firstDiff = before.findIndex((l, i) => l !== seq[i]);
+    const sameOrder = JSON.stringify(named) === JSON.stringify(want) && seq.length === before.length && firstDiff < 0;
+    r.push({ name: 'ORDER', pass: sameOrder, detail: `the barrel names ${named.length} parts in the order given; their ${seq.length} code lines, in that order, against ${before.length} before`,
+      show: [JSON.stringify(named) !== JSON.stringify(want) ? `barrel order: ${named.join(', ')}` : '', firstDiff >= 0 ? `first difference at code line ${firstDiff + 1}: "${before[firstDiff].slice(0, 100)}" vs "${(seq[firstDiff] ?? '').slice(0, 100)}"` : ''].filter(Boolean) });
+  }
   return r;
 }
 
@@ -114,6 +127,11 @@ const plants = [
     const g = re && [from, ...to].find((h) => re.test(x.texts.now[h]));
     if (g) x.texts.now[g] = x.texts.now[g].replace(re, ''); else x.texts.base += '\nexport const __planted = 1;'; }],
 ];
+if (ordered) plants.push(['two moved lines swapped', 'ORDER', (x) => {
+  const f = to.find((g) => codeLines(x.texts.now[g]).length > 2), ls = x.texts.now[f].split('\n');
+  const idx = ls.map((l, i) => [l, i]).filter(([l]) => l.trim() && !/^(import|export \*)\s/.test(l)).map(([, i]) => i);
+  const [a, b] = [idx[0], idx.find((i) => ls[i].trim() !== ls[idx[0]].trim())];
+  [ls[a], ls[b]] = [ls[b], ls[a]]; x.texts.now[f] = ls.join('\n'); }]);
 const live = plants.map(([what, check, plant]) => { const x = clone(); plant(x); const c = run(x).find((y) => y.name === check); return { what, check, red: !c.pass }; });
 for (const l of live) console.log(`${l.red ? 'PASS' : 'FAIL'}  LIVENESS: ${l.what} turns ${l.check} red`);
 
