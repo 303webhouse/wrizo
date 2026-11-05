@@ -14,7 +14,7 @@ import type { GrowthGeometry, GrowthSegment, LapPlan } from '../store/rhizomeGro
 
 const TAPER = 1.6, TIP_PX = 8, MAX_BRANCH = 4.2, PIECE = 5;
 type Pt = { x: number; y: number };
-type Stem = { stem: number; level: 0 | 1; pts: Pt[]; arc: number[]; total: number; seg: number[]; w0: number; ratio: number | null; under: boolean; order: number };
+type Stem = { stem: number; level: 0 | 1 | 2; pts: Pt[]; arc: number[]; total: number; seg: number[]; w0: number; ratio: number | null; under: boolean; order: number; derived?: boolean };
 
 const hash01 = (n: number) => { let h = (n * 2654435761) >>> 0; h ^= h >>> 15; h = Math.imul(h, 2246822519) >>> 0; h ^= h >>> 13; return (h >>> 0) / 4294967296; };
 const under = (geo: GrowthGeometry, p: Pt) => geo.hidden.some((r) => p.x >= r.left && p.x <= r.right && p.y >= r.top && p.y <= r.bottom);
@@ -43,8 +43,57 @@ function stemsOf(plan: LapPlan, geo: GrowthGeometry, fromTip: boolean): Stem[] {
     s.w0 = Math.min(MAX_BRANCH, want);
     s.ratio = wp > 0 ? Math.round((s.w0 / wp) * 1000) / 1000 : null;
   }
+  derive(stems, geo, at);
   stemCache.set(plan, stems);
   return stems;
+}
+
+// r20 - THE FULL GROWTH, DERIVED (Fable's ruling 2; spec draft 35 §18.1 F: ~10 main stems from the page's hidden centre, branching to three
+// levels). The shared plan grows 7 main stems with one level of branches; this drawing adds, from that plan alone (no new randomness - every choice
+// is a hash of a stem id, so the same seed draws the same vines):
+//   more main stems - each a turned copy of a neighbour (and its branches) set into the widest open angle around the centre, until ~10 stand;
+//   a third level   - off each branch long enough, one sub-branch: the branch's own tail from ~45% along, turned 25-60 deg and cut to 60%,
+//                     at 55-80% of the branch's width there (<= 4.2 px).
+// Every derived stem grows with the segments it was copied from (their place in the plan), so it appears as they do; nothing is stored.
+const MAIN_TARGET = 10, DEG = Math.PI / 180;
+const turn = (p: Pt, o: Pt, a: number): Pt => { const c = Math.cos(a), si = Math.sin(a), dx = p.x - o.x, dy = p.y - o.y; return { x: o.x + dx * c - dy * si, y: o.y + dx * si + dy * c }; };
+const arcOf = (pts: Pt[]) => { const a = [0]; for (let i = 1; i < pts.length; i++) a.push(a[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y)); return a; };
+function derive(stems: Stem[], geo: GrowthGeometry, at: Map<string, { s: Stem; arc: number }>): void {
+  const o = geo.origin;
+  const mains = stems.filter((s) => s.level === 0 && s.pts.length > 3);
+  const angle = (s: Stem) => { const p = s.pts[Math.min(s.pts.length - 1, 3)]; return Math.atan2(p.y - o.y, p.x - o.x); };
+  const parentOf = (b: Stem) => at.get(`${b.pts[0].x},${b.pts[0].y}`)?.s;
+  const branches = stems.filter((s) => s.level === 1);
+  let id = 1e6;
+  const placed = mains.map(angle);
+  for (let k = 0; mains.length && placed.length < MAIN_TARGET && k < MAIN_TARGET; k++) {
+    // the widest open angle around the centre
+    const sorted = [...placed].sort((a, b) => a - b);
+    let gap = -1, from = 0;
+    sorted.forEach((a, i) => { const b = i + 1 < sorted.length ? sorted[i + 1] : sorted[0] + 2 * Math.PI; if (b - a > gap) { gap = b - a; from = a; } });
+    const target = from + gap * (0.42 + 0.16 * hash01(k + 31));
+    // the neighbour whose direction is nearest, turned into it
+    const src = mains.reduce((best, m) => { const d = Math.abs(Math.atan2(Math.sin(angle(m) - target), Math.cos(angle(m) - target))); return d < best.d ? { m, d } : best; }, { m: mains[0], d: Infinity }).m;
+    const rot = Math.atan2(Math.sin(target - angle(src)), Math.cos(target - angle(src)));
+    const pts = src.pts.map((p) => turn(p, o, rot));
+    const arc = arcOf(pts);
+    const copy: Stem = { ...src, stem: id++, pts, arc, total: arc[arc.length - 1], w0: src.w0 >= 4.2 + 1e-6 ? 9 + 2 * hash01(id) : src.w0, under: under(geo, pts[0]), derived: true };
+    stems.push(copy); placed.push(target);
+    for (const b of branches) if (parentOf(b) === src) {
+      const bp = b.pts.map((p) => turn(p, o, rot)); const ba = arcOf(bp);
+      stems.push({ ...b, stem: id++, pts: bp, arc: ba, total: ba[ba.length - 1], under: under(geo, bp[0]), derived: true });
+    }
+  }
+  // the third level, off every branch (the plan's and the derived) long enough to carry one
+  for (const b of stems.filter((s) => s.level === 1 && s.pts.length >= 6)) {
+    const i = Math.floor((b.pts.length - 1) * 0.45);
+    const side = hash01(b.stem + 97) < 0.5 ? -1 : 1, a = side * (25 + 35 * hash01(b.stem + 131)) * DEG;
+    const tail = b.pts.slice(i, i + Math.max(3, Math.round((b.pts.length - i) * 0.6)));
+    const pts = tail.map((p) => turn(p, b.pts[i], a)); const arc = arcOf(pts);
+    const wp = widthAt(b, b.arc[i]);
+    const w0 = Math.min(MAX_BRANCH, (0.55 + 0.25 * hash01(b.stem + 173)) * wp);
+    stems.push({ stem: id++, level: 2, pts, arc, total: arc[arc.length - 1], seg: b.seg.slice(i, i + pts.length - 1), w0, ratio: wp > 0 ? Math.round((w0 / wp) * 1000) / 1000 : null, under: under(geo, pts[0]), order: b.order, derived: true });
+  }
 }
 
 // a Catmull-Rom point between p1 and p2 at u, with p0 / p3 as neighbours
@@ -119,7 +168,7 @@ function Stems({ plan, geo, k, fromTip }: { plan: LapPlan; geo: GrowthGeometry; 
         return piecesOf(s, vis).map((pc, i) => (
           <path key={`${s.stem}:${i}`} className="arbor2-vine" d={pc.d} fillOpacity={pc.fo} style={{ ['--vo' as string]: s.order.toFixed(3) }}
             {...(pc.head ? { 'data-level': s.level, 'data-w0': Math.round(s.w0 * 100) / 100, 'data-x0': Math.round(s.pts[0].x * 10) / 10, 'data-y0': Math.round(s.pts[0].y * 10) / 10,
-              'data-ratio': s.ratio ?? undefined, 'data-under': s.under ? 'true' : undefined } : {})} />
+              'data-ratio': s.ratio ?? undefined, 'data-under': s.under ? 'true' : undefined, 'data-derived': s.derived ? 'true' : undefined } : {})} />
         ));
       })}
     </>

@@ -139,9 +139,11 @@ export function Splash({ ready }: { ready: boolean }) {
     // the splash goes at once, ready or not (the front door's own boot state takes over); Enter = Write at any moment. Arbor only.
     const skip = (e: Event) => {
       if (!arborFront || goneRef.current) return;
-      const enter = e.type === 'keydown' && (e as KeyboardEvent).key === 'Enter';
-      if (e.type === 'keydown') e.preventDefault();
-      e.stopImmediatePropagation();
+      // (r20, main's splash law - "a writer who opens Wrizo and immediately types must not have that first character eaten"): the key is the
+      // skip's own only on the front door, where no page waits under the splash; over a page it ends the splash and goes on to the page.
+      const front = /^#?\/?$/.test(location.hash);
+      const enter = front && e.type === 'keydown' && (e as KeyboardEvent).key === 'Enter';
+      if (front) { if (e.type === 'keydown') e.preventDefault(); e.stopImmediatePropagation(); }
       finishArborFront({ write: enter });
       goneRef.current = true;
       delete document.documentElement.dataset.splashHold;

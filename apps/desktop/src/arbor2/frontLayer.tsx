@@ -14,7 +14,7 @@
 // ONE TIMELINE (this module's `seq`) drives both places: the splash shows it (its hold's floor ends when the doors are in), and the front door
 // shows its finished state in the same rects, so the hand-over is the same frame. A SKIP (any click, Esc or key on the splash: Splash.tsx)
 // jumps the timeline to its end; Enter asks for Write too. Nothing is stored; window.wrizoArborFront is the proofs' read-only view.
-import { useEffect, useReducer, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useLayoutEffect, useReducer, useRef, useState, type CSSProperties } from 'react';
 import { LOGO_STROKES, LOGO_WRITE_S } from './logoWrite';
 
 const CW = 3374, CH = 2699;
@@ -90,17 +90,38 @@ const useSeq = () => { const [, bump] = useReducer((x: number) => x + 1, 0); use
 
 // ---- THE LOGO ----
 const LAST_STROKE = LOGO_STROKES.reduce((a, s) => (s.at + s.dur > a.at + a.dur ? s : a)).id;
+// r20 (Fable's ruling 3, after r19's 1920 hand-over): the logo's box is placed on WHOLE pixels on the screen, in both places. Its container may
+// stand on a fraction (the splash's flex centre, the front door's margins - the same fraction in both), so after layout the box's offset is chosen
+// to land it on the same whole pixel in each, and the splash's layer and the front door rasterise it alike. Its size is unchanged.
+function useWholePixels(ref: React.RefObject<HTMLDivElement | null>): CSSProperties | null {
+  const [at, setAt] = useState<{ left: number; top: number } | null>(null);
+  useLayoutEffect(() => {
+    const place = () => {
+      const el = ref.current, box = el?.parentElement; if (!el || !box) return;
+      const b = box.getBoundingClientRect(), u = b.width / CW;
+      const left = Math.round(b.left + TOP_LOGO.x * u) - b.left, top = Math.round(b.top + TOP_LOGO.y * u) - b.top;
+      setAt((p) => (p && Math.abs(p.left - left) < 0.001 && Math.abs(p.top - top) < 0.001 ? p : { left, top }));
+    };
+    place();
+    addEventListener('resize', place);
+    return () => removeEventListener('resize', place);
+  });
+  return at ? { left: `${at.left}px`, top: `${at.top}px` } : null;
+}
 function Logo({ writeOut, now }: { writeOut: boolean; now: number }) {
+  const boxRef = useRef<HTMLDivElement | null>(null);
+  const snapped = useWholePixels(boxRef);
+  const style = { ...place(TOP_LOGO), ...(snapped ?? {}) };
   // (r19 fix: "planned" is the sketch's end being known - a jump early in a page's life plans times before performance.now()'s origin)
   const due = seq.sketchDone > 0 && now >= seq.logoStart;
   const finished = due && (now >= seq.logoDone || !writeOut || seq.skipped || seq.reduced);
   const [ended, setEnded] = useState(false);
-  if (!due) return <div className="arbor2-top-logo" data-writing="wait" style={place(TOP_LOGO)} />;
+  if (!due) return <div ref={boxRef} className="arbor2-top-logo" data-writing="wait" style={style} />;
   const writing = !finished && !ended;
   // THE HAND-OVER (r18, runs 41659053011 / 41672316457 / 41754120497): the still logo is the same kind of element as the writing - an SVG image
   // in the same viewBox, in a FRESH svg (keyed) - and replaces the strokes when the last stroke (the i's dot) ends: never a blank frame.
   return (
-    <div className="arbor2-top-logo" data-writing={writing ? 'true' : 'still'} style={place(TOP_LOGO)}>
+    <div ref={boxRef} className="arbor2-top-logo" data-writing={writing ? 'true' : 'still'} style={style}>
       <svg key={writing ? 'writing' : 'still'} className="arbor2-splash-logo-svg arbor2-top-svg" viewBox="0 0 900 400" preserveAspectRatio="xMidYMid meet"
         onAnimationEnd={(e) => { if (writing && e.animationName === 'arbor2-logo-write' && (e.target as Element).getAttribute('data-stroke') === LAST_STROKE) setEnded(true); }}>
         {writing ? (

@@ -363,9 +363,13 @@
    ========================================================================================================================================== */
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night']{ --arbor2-dim:.6; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night']:not([data-arbor2-off~='dim']):has(.wz-sliver[data-open='true'], .wz-tutor-panel[data-open='true'], .wz-cascade-panel){ --arbor2-dim:.52; }
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night']:not([data-wz-writing='true']) :is(.chrome-fade, .desk-dissolve, .mode-dissolve):not(:is(.chrome-fade, .desk-dissolve, .mode-dissolve) *):not(.wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel):not(.wz-sliver[data-open='true'] .wz-sliver-grip, .wz-tutor-grip[data-open='true']):not([data-chrome-receded='true'], [data-chrome-receded='true'] *, [data-writing='true'] *):not(:hover, :focus-within){
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night']:not([data-wz-writing='true']) :is(.chrome-fade, .desk-dissolve, .mode-dissolve):not(:is(.chrome-fade, .desk-dissolve, .mode-dissolve) *):not(.wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel):not(.chrome-top.sprint-nav, .desk-frame-strip):not(.wz-sliver[data-open='true'] .wz-sliver-grip, .wz-tutor-grip[data-open='true']):not([data-chrome-receded='true'], [data-chrome-receded='true'] *, [data-writing='true'] *):not(:hover, :focus-within){
   opacity:var(--arbor2-dim);
 }
+/* r20 (the Wrizors' r19 review, wrizors-to-ARBOR-nov4d.md md5 2f312b28: the night bars measured #1F150C / #19100A, nearly gone in the night room;
+   Nick's bars are a SOLID #241912): the resting dim moves off the bars' ground onto what they hold - same conditions, same dim, and their
+   labels keep the dim's lettering rule below (--text-hi, so a dimmed label still holds 4.5:1) */
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night']:not([data-wz-writing='true']) :is(.chrome-top.sprint-nav, .desk-frame-strip):not(.wz-sliver[data-open='true'] .wz-sliver-grip, .wz-tutor-grip[data-open='true']):not([data-chrome-receded='true'], [data-chrome-receded='true'] *, [data-writing='true'] *):not(:hover, :focus-within) > *{ opacity:var(--arbor2-dim); }
 /* r5 (§9c): the two openers are no longer dimmed at all (the olive opener at .6 drew its arrow at 2.7:1; olive is already the quiet colour).
    Superseded here: the r4 rule that held them at .6 through the further step (the Tutor tab's sea cloth measured 4.44:1 at .52, run 41010542648). */
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night']:not([data-wz-writing='true']):not([data-arbor2-lit]) :is(.chrome-fade, .desk-dissolve, .mode-dissolve):not(:is(.chrome-fade, .desk-dissolve, .mode-dissolve) *):not(.wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel):not(.wz-sliver[data-open='true'] .wz-sliver-grip, .wz-tutor-grip[data-open='true']):not([data-chrome-receded='true'], [data-chrome-receded='true'] *, [data-writing='true'] *):not(:hover, :focus-within),
@@ -874,3 +878,7 @@
 
 /* r19 (the Wrizors' nov4c, polish 6): the Tutor question box's focus ring was the browser's heavy black; Arbor's own ring instead (the room's olive, 1 px) */
 :root[data-arbor2][data-theme='plateau'] .wz-tutor-convo-input:focus, :root[data-arbor2][data-theme='plateau'] .wz-tutor-convo-input:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:1px; box-shadow:none; }
+
+/* r20 - Mood's Leaf flutter switch reaches the pergola's breeze (the r19 parks found it reached only the retired sun layer): off, the leaf clusters
+   hold still; the slow drift stays (ambience, as the lamp's drift stays when its breath is off). */
+:root[data-arbor2][data-theme='plateau'][data-arbor2-off~='flutter'] :is(.arbor2-pergola, .arbor2-pagesh) .wz-leaf{ animation:none; }
