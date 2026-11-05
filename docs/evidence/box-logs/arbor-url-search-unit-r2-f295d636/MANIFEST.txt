@@ -1,0 +1,6 @@
+ARBOR harness/url-search-optin-unit-r2 f295d636 - manifest (Chat 1, Nov 5 2026)
+
+One file, harness only: url-search-optin-unit.mjs (+47/-10). U1 (compared the driver with the merge base of HEAD and origin/main) was red on main from the opt-in's merge (650f9a74) on: on main the merge base is main itself. U1 is parked verbatim (commented, marked SUPERSEDED); successor U1b anchors on the commit that introduced the opt-in (338f1d79), with U1L liveness (U1b fails a stray use and a changed declaration).
+Red first, then green (ARBOR's hosted runs, advisory, no box turn; shard verdicts are the record): main bb80eb94, run 41991020737: FAIL 1/6; branch f295d636, run 41991053522: PASS 9 checks. Chat 1 reproduced the green locally (PASS 9 checks, incl. U1b(a) 338f1d79: 53540 chars identical, U1L today=true stray=false changed=false). Browserless; no bundle change; not deployed.
+Clear: Fable, Nov 5 ("ARBOR fixes it; clear on red-first"); sent to Chat 1 by ARBOR on Fable's ask.
+Files here: red-main-run41991020737.log.txt, green-branch-run41991053522.log.txt.

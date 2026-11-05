@@ -1,0 +1,7 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=1 tree=f295d636 bundle=index-B5AQwNTx.js/956918b out=/home/runner/work/_temp/suite
+[01/1] OK        exit=0    0s url-search-optin-unit.mjs :: URL-SEARCH-OPTIN VERIFY: PASS (9 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 1/1 of 1 returned a passing verdict
+SUITE RESULT: CLEAN — tree=f295d636 bundle=index-B5AQwNTx.js/956918b
