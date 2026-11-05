@@ -54,7 +54,7 @@ const VINES = `(() => { const f = document.querySelector('.wz-rhizome-field'); i
 // the vines' heads with everything r21 writes on them (svg coordinates), and the room they reach into
 const HEADS = `(() => { const f = document.querySelector('.wz-rhizome-field'); if (!f) return null; const num = (v, k) => v.hasAttribute(k) ? Number(v.getAttribute(k)) : null;
   const heads = [...f.querySelectorAll('.arbor2-vines > path.arbor2-vine[data-w0]')].map((v) => ({ stem: num(v, 'data-stem'), level: num(v, 'data-level'), t0: num(v, 'data-t0'), reach: num(v, 'data-reach'), full: num(v, 'data-full'),
-    x0: num(v, 'data-x0'), y0: num(v, 'data-y0'), ex: num(v, 'data-ex'), ey: num(v, 'data-ey'), vx: num(v, 'data-vx'), vy: num(v, 'data-vy'), parent: num(v, 'data-parent'), join: num(v, 'data-join'), w0: num(v, 'data-w0'), bent: v.getAttribute('data-bent') === 'true' }));
+    x0: num(v, 'data-x0'), y0: num(v, 'data-y0'), ex: num(v, 'data-ex'), ey: num(v, 'data-ey'), vx: num(v, 'data-vx'), vy: num(v, 'data-vy'), parent: num(v, 'data-parent'), join: num(v, 'data-join'), w0: num(v, 'data-w0'), bent: v.getAttribute('data-bent') === 'true', exit: num(v, 'data-exit') }));
   const sb = f.getBoundingClientRect(), box = (e) => { if (!e) return null; const r = e.getBoundingClientRect(); return { l: r.left - sb.left, t: r.top - sb.top, r: r.right - sb.left, b: r.bottom - sb.top }; };
   const rail = box(document.querySelector('.desk-frame-strip')), bar = box([...document.querySelectorAll('.chrome-top.sprint-nav')].find((b) => b.getBoundingClientRect().height > 0)), page = box(document.querySelector('.mode-page'));
   return { heads, rail, bar, page, w: sb.width, h: sb.height, start: f.getAttribute('data-start'), flash: f.getAttribute('data-flash'),
@@ -91,6 +91,8 @@ const screens = {
     const p = { 29: 30 / 60, 51: 52 / 60 };
     // (instrument fix after the red leg 41979863811: on a build without reach data the main-stem list was empty and every() passed on nothing)
     const curve = (v, pp) => mainsOf(v).length >= 9 && mainsOf(v).every((h) => h.t0 != null && Math.abs(h.reach - expectReach(pp, h.t0)) <= 0.012);
+    // (r21, Fable Nov 5) the paced reach at p = 0.5: max(curve, exit), every main stem carrying its exit
+    const pacedAtHalf = (v, pp) => mainsOf(v).length >= 9 && mainsOf(v).every((h) => h.t0 != null && h.exit != null && h.exit > 0 && Math.abs(h.reach - Math.min(1, Math.max(expectReach(pp, h.t0), h.exit))) <= 0.012);
     const t0s = mainsOf(late).map((h) => h.t0).sort((x, y) => x - y);
     const even = t0s.length >= 9 && Math.abs(t0s[0]) < 1e-6 && Math.abs(t0s[t0s.length - 1] - 0.27) < 0.002 && t0s.every((t, i) => i === 0 || Math.abs((t - t0s[i - 1]) - 0.27 / (t0s.length - 1)) < 0.002);
     // the full reach: along x to the rail / the window's edge (side stems), along y to the bar / the window's bottom (up and down)
@@ -107,7 +109,12 @@ const screens = {
     const kids = late ? late.heads.filter((h) => h.level > 0 && byStem.has(h.parent)) : [];
     const branchLen = kids.length > 0 && kids.every((h) => { const r = h.full / byStem.get(h.parent).full; return r >= 0.349 && r <= 0.601; });
     const ok = {
-      curveAtHalf: !!half && curve(half, p[29]), curveLate: !!late && curve(late, p[51]), tenEven: even,
+      // SUPERSEDED (Fable Nov 5: the shown reach is paced so every stem is off the page by p = 0.5 - at 0.5 it is no longer the bare curve):
+      //   curveAtHalf: !!half && curve(half, p[29]), curveLate: !!late && curve(late, p[51]), tenEven: even,
+      // successor: at 0.5 the shown reach is the larger of the curve and the stem's exit; at 52/60 the curve, unchanged
+      curveAtHalfPaced: !!half && pacedAtHalf(half, p[29]), curveLate: !!late && curve(late, p[51]), tenEven: even,
+      // ASSERTED (Fable Nov 5): every main stem off the page by half the goal, at every width
+      allOutAtHalf: !!half && mainsOf(half).length >= 9 && mainsOf(half).every((h) => outside(h, half.page)),
       // (restored in full, Fable Nov 4: where the room above / below the page is under ~60 px, the up / down stems bend out through its sides)
       allOutAt52: !!late && mainsOf(late).length >= 9 && mainsOf(late).every((h) => outside(h, late.page)),
       // a bent stem's end stands beyond the page's side, and a stem bends only where the room above (below) the page is under 60 px
@@ -121,12 +128,37 @@ const screens = {
     const outAtHalf = half ? { out: mainsOf(half).filter((h) => outside(h, half.page)).length, of: mainsOf(half).length } : null;
     // (report: each main stem's visible tip and end, and the page, after the green leg showed tips under the page at 52/60)
     const upDownOutAt52 = late ? { out: mainsOf(late).filter((h, i) => !ends[i].side && outside(h, late.page)).length, of: ends.filter((e) => !e.side).length } : null;
-    const brief = { ok, outAtHalf, upDownOutAt52, bent: late && mainsOf(late).filter((h) => h.bent).length, mains: late && mainsOf(late).length, t0s, ends, reachLate: late && mainsOf(late).map((h) => h.reach), kids: kids.length,
+    const brief = { ok, outAtHalf, halfReach: half && mainsOf(half).map((h) => [h.reach, h.exit]), upDownOutAt52, bent: late && mainsOf(late).filter((h) => h.bent).length, mains: late && mainsOf(late).length, t0s, ends, reachLate: late && mainsOf(late).map((h) => h.reach), kids: kids.length,
       page: late && late.page, tips: late && mainsOf(late).map((h) => [Math.round(h.vx), Math.round(h.vy), Math.round(h.ex), Math.round(h.ey), Math.round(h.full)]),
       kidRatios: kids.slice(0, 8).map((h) => Math.round((h.full / byStem.get(h.parent).full) * 100) / 100) };
     if (Object.values(ok).some((x) => !x)) fail('R21-REACH', brief);
     say('r21-reach', brief);
   },
+
+  // ── no hard cut at the field's top / bottom (Fable Nov 5): the vines fade out over the field's last 24 px ─────────────────────────────────
+  'r21-edge-fade': async (app) => {
+    await growTo(app, 'arbor-r21-edge', 51);
+    const r = await app.evalJs(`(() => { const f = document.querySelector('.wz-rhizome-field'); if (!f) return null; const h = f.getBoundingClientRect().height;
+      const rect = f.querySelector('#wz-rhizome-mask > rect'), g = f.querySelector('#arbor2-edge-fade');
+      const stops = g ? [...g.querySelectorAll('stop')].map((x) => [Number(x.getAttribute('offset')) * h, getComputedStyle(x).stopColor]) : null;
+      const vines = f.querySelector('.arbor2-vines'), masked = !!vines && vines.closest('g[mask]')?.getAttribute('mask') === 'url(#wz-rhizome-mask)';
+      // the vines that reach the field's top or bottom band (svg coordinates): the fade must cover them
+      let nearEdge = 0; for (const p of f.querySelectorAll('.arbor2-vines path.arbor2-vine')) { const b = p.getBBox(); if (b.y < 24 || b.y + b.height > h - 24) nearEdge++; }
+      return { h, fill: rect && rect.getAttribute('fill'), stops, masked, nearEdge }; })()`);
+    const black = (c) => /rgb\(0, 0, 0\)/.test(String(c)), white = (c) => /rgb\(255, 255, 255\)/.test(String(c));
+    const ok = {
+      read: !!r,
+      maskFades: !!r && r.fill === 'url(#arbor2-edge-fade)',
+      stops24: !!r && !!r.stops && r.stops.length === 4 && Math.abs(r.stops[0][0]) < 0.5 && black(r.stops[0][1]) && Math.abs(r.stops[1][0] - 24) < 0.5 && white(r.stops[1][1])
+        && Math.abs(r.stops[2][0] - (r.h - 24)) < 0.5 && white(r.stops[2][1]) && Math.abs(r.stops[3][0] - r.h) < 0.5 && black(r.stops[3][1]),
+      vinesMasked: !!r && r.masked,
+      // liveness: the fade has something to act on (vines do reach the edge bands)
+      vinesReachEdge: !!r && r.nearEdge > 0,
+    };
+    if (Object.values(ok).some((x) => !x)) fail('R21-EDGE-FADE', { ok, r });
+    say('r21-edge-fade', { ok, h: r.h, nearEdge: r.nearEdge });
+  },
+  'r21-pic-edge-fade': async (app) => { await growTo(app, 'arbor-r21-edge-pic', 51); },
 
   // ── the flash: every stem at ONE strength, in ONE pulse (Nick) ───────────────────────────────────────────────────────────────────────────
   'r21-flash-uniform': async (app) => {
