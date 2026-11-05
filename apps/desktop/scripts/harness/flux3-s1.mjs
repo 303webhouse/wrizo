@@ -127,7 +127,7 @@ const INSTRUMENT = `(() => {
       cards: Object.fromEntries(cards.map((c) => [c.dataset.boxId, rr(c.getBoundingClientRect())])),
       texts: Object.fromEntries(cards.map((c) => [c.dataset.boxId, c.textContent])),
       records: document.querySelectorAll('.board-canvas .board-box > .flux3-node').length, nCards: cards.length,
-      tele: tele ? tele.textContent : null, chunk: res.filter((n) => /\\/assets\\/boot-/.test(n)).map((n) => n.replace(/^.*\\//, '')),
+      tele: tele ? [...tele.children].map((s) => s.textContent) : null, chunk: res.filter((n) => /\\/assets\\/boot-/.test(n)).map((n) => n.replace(/^.*\\//, '')),
       served: ([...document.scripts].map((s) => s.getAttribute('src') || '').find((s) => /index-/.test(s)) || '').replace(/^.*\\//, ''),
     };
   };
@@ -256,7 +256,8 @@ try { await withHarness(async (app) => {
   ok('P2 ONE layer, aria-hidden, taking no pointer, hosted by the board frame, and under the cards (card A is what is under its own centre)',
     on0 && on0.layers === 1 && on0.layerAria === 'true' && on0.layerPe === 'none' && on0.hostOk && on0.under === true, JSON.stringify(on0 && { layers: on0.layers, aria: on0.layerAria, pe: on0.layerPe, host: on0.hostOk, under: on0.under }));
   ok(`P3 a node record on every card (${on0 && on0.records}/${on0 && on0.nCards}), and the readouts are true (9 nodes, 3 links)`,
-    on0 && on0.nCards === 9 && on0.records === 9 && /\b9\b/.test(on0.tele || '') && /\b3\b/.test(on0.tele || ''), JSON.stringify(on0 && { records: on0.records, cards: on0.nCards, tele: on0.tele }));
+    on0 && on0.nCards === 9 && on0.records === 9 && Array.isArray(on0.tele) && on0.tele.length === 5 && / 9$/.test(on0.tele[2]) && / 3$/.test(on0.tele[3]),
+    JSON.stringify(on0 && { records: on0.records, cards: on0.nCards, tele: on0.tele }));
   ok('OFF flag off: no layer, no record, no readouts, no root mark, and the flag\'s chunk was never fetched',
     off0 && off0.layers === 0 && off0.records === 0 && off0.tele === null && !off0.rootMark && off0.chunk.length === 0 && off0.theme === 'flux',
     JSON.stringify(off0 && { layers: off0.layers, records: off0.records, tele: off0.tele, mark: off0.rootMark, chunk: off0.chunk }));
@@ -295,7 +296,7 @@ try { await withHarness(async (app) => {
     await ev("(() => { const e = document.querySelector('.board-popup-editor'); if (!e) return; e.focus(); const s = getSelection(); s.selectAllChildren(e); s.collapseToEnd(); })()");
     const before = await rest(1500);
     const k0 = await ev('window.__f3.keys.length');
-    const word = ' the schema holds still while she types';
+    const word = ' the schema holds still while she types on';   // 42 keys
     for (const ch of word) { await app.typeKeys(ch); await sleep(90); }
     const span = await ev(`(() => { const k = window.__f3.keys.slice(${k0}); return { n: k.length, a: k[0], b: k[k.length - 1] }; })()`);
     const during = await ev(`window.__f3.calls(${span.a}, ${span.b})`);
@@ -482,8 +483,9 @@ try { await withHarness(async (app) => {
   ok('MUT-SCROLL (landed) the layer deaf to scroll: D2-SCROLL fails', mS.landed === 1 && !mS.pass, JSON.stringify(mS));
   const mH = await withMutant('hidden', testHidden);
   ok('MUT-HIDDEN (landed) the hidden gate always false: HIDDEN fails', mH.landed === 1 && !mH.pass, JSON.stringify(mH));
-  const mF = await withMutant('flash', () => testFlash('f3-e', ['f3-a', 'f3-b', 'f3-c', 'f3-d']));
-  ok('MUT-FLASH (landed) the flash spacing removed: F fails (more than 3 starts in a second)', mF.landed === 1 && mF.made === 4 && mF.maxPerSec > 3, JSON.stringify(mF));
+  // from B (the top row, so its corner square is in view; F linked A to B, D, F and G, and B-D is seeded): four links B has not got
+  const mF = await withMutant('flash', () => testFlash('f3-b', ['f3-c', 'f3-e', 'f3-f', 'f3-h']));
+  ok('MUT-FLASH (landed) the flash spacing removed: F fails (more than 3 starts in a second)', mF.landed === 1 && mF.made === 4 && mF.burst !== null && mF.burst < 1000 && mF.maxPerSec > 3, JSON.stringify(mF));
 
   // ---- B: the build -------------------------------------------------------------------------------------------------------------------------------
   await open(true, 'dark');
