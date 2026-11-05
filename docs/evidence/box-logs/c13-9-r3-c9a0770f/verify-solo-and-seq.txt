@@ -1,0 +1,33 @@
+solo-components DIST-WEB IDENTICAL
+solo-components files 60; comment blocks now 1209; removed or rewritten 309; rulings files 60, entries 309; cited 292
+solo-components TS-COMMENTS: PASS (the code is the base's with comments aside; every removed comment is in docs/rulings verbatim; every citation resolves)
+solo-components c13-2: VERIFY: PASS
+solo-components c13-4d: LINKS: PASS (no live markdown link points at a missing file)
+solo-pages DIST-WEB IDENTICAL
+solo-pages files 7; comment blocks now 385; removed or rewritten 59; rulings files 7, entries 59; cited 59
+solo-pages TS-COMMENTS: PASS (the code is the base's with comments aside; every removed comment is in docs/rulings verbatim; every citation resolves)
+solo-pages c13-2: VERIFY: PASS
+solo-pages c13-4d: LINKS: PASS (no live markdown link points at a missing file)
+solo-board DIST-WEB IDENTICAL
+solo-board files 1; comment blocks now 354; removed or rewritten 62; rulings files 1, entries 62; cited 62
+solo-board TS-COMMENTS: PASS (the code is the base's with comments aside; every removed comment is in docs/rulings verbatim; every citation resolves)
+solo-board c13-2: VERIFY: PASS
+solo-board c13-4d: LINKS: PASS (no live markdown link points at a missing file)
+solo-store DIST-WEB IDENTICAL
+solo-store files 86; comment blocks now 1682; removed or rewritten 330; rulings files 86, entries 330; cited 323; kept 2
+solo-store TS-COMMENTS: PASS (the code is the base's with comments aside; every removed comment is in docs/rulings verbatim; every citation resolves)
+solo-store c13-2: VERIFY: PASS
+solo-store c13-4d: LINKS: PASS (no live markdown link points at a missing file)
+SEQ components clean -> 75cc99ee
+SEQ pages clean -> 00b3847c
+SEQ board clean -> d51f2fe9
+SEQ store clean -> 2c11b0d7
+seq DIST-WEB IDENTICAL
+seq files 154; comment blocks now 3630; removed or rewritten 760; rulings files 154, entries 760; cited 736; kept 2
+seq TS-COMMENTS: PASS (the code is the base's with comments aside; every removed comment is in docs/rulings verbatim; every citation resolves)
+seq c13-2: VERIFY: PASS
+seq c13-4d: LINKS: PASS (no live markdown link points at a missing file)
+tree c9a0770f head 2c11b0d79abcfd7d43d3866bb438e5df5f5f56b5
+tsc-d 0
+tsc-s 0
+sg 0

@@ -1,0 +1,9 @@
+#13 step 9, the four -r3 branches (closes step 9) - manifest (Chat 1, Nov 4 2026)
+
+Tree c9a0770f (train-c13-9b 2c11b0d7: main c745a65b + four --no-ff merges in order): components-r3 a1e4a0ec, pages-r3 788cf5fb, board-r3 305bed60, store-r3 287caeae (all cut from e2898deb). Source comments only: ruling histories move verbatim to docs/rulings; 154 files, 760 histories moved, 736 cited. rest-r2 dropped (rest ef883117 merged earlier, d5d48ecc).
+Cleared in advance by Fable (Nov 4) on this proof, which I verified:
+- Each branch alone on main c745a65b: dist-web byte-identical to production's build (train-150b, product tree 3da9e780), c13-9-ts-comments check PASS, c13-2-links PASS, c13-4d-links check PASS; clean trial-merge in sequence (components, pages, board, store). verify-solo-and-seq.txt.
+- The sequence tree: dist-web byte-identical; check PASS (154 files); tsc desktop 0, tsc server 0, seed-guard PASS 36.
+- GitHub Actions full pair, run 41948202686 (ref = the full sha 2c11b0d7, 8 shards per leg): default 232/239, parked 232/239; the only non-OK are the usual seven capture/probe tools with no verdict line, both legs. This covers store-r3's reader legs; no red.
+Not deployed (bundle byte-identical; production stays git 3da9e780 / railway 719bd9d8).
+Files here: pair-default/parked.log.txt, summary.txt; verify-solo-and-seq.txt.
