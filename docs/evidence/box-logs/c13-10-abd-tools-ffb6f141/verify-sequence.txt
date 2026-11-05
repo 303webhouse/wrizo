@@ -1,0 +1,96 @@
+== c13-10a-tutor bfbfba2a -> 6c78ebae (base a453e0f1)
+build 0
+c13-10a-tutor DIST-WEB DIFFERS:
+Only in apps/desktop/dist-web/assets: index-BUVGSubt.js
+Only in /c/Users/nickh/train-150b/apps/desktop/dist-web/assets: index-C_y5ece8.js
+Files /c/Users/nickh/train-150b/apps/desktop/dist-web/index.html and apps/desktop/dist-web/index.html differ
+added: components/tutor/assemble.ts components/tutor/presets.ts 
+modified: components/Tutor.tsx 
+split-check: components/Tutor.tsx -> components/tutor/assemble.ts components/tutor/presets.ts 
+  PASS  LINES: 1037 code lines before, 1037 after, 111 now in components/tutor/assemble.ts, components/tutor/presets.ts; missing 0, added 0
+  PASS  SCOPE: 3 src files differ from a453e0f1e599f23fdbaea9a57b1a3c1d22082d16: components/Tutor.tsx, components/tutor/assemble.ts, components/tutor/presets.ts
+  PASS  BARREL: components/Tutor.tsx exported 2 names at a453e0f1e599f23fdbaea9a57b1a3c1d22082d16 and exports 2 now
+  PASS  CITES: 43 [Name §n] citations in the split's files, each a heading in docs/rulings/components-<Name>.md
+  PASS  LIVENESS: a moved line edited turns LINES red
+  PASS  LIVENESS: a moved line dropped turns LINES red
+  PASS  LIVENESS: a src file outside the split changed turns SCOPE red
+  PASS  LIVENESS: a moved citation points nowhere turns CITES red
+  PASS  LIVENESS: the barrel loses an export turns BARREL red
+  
+  C13-10 SPLIT CHECK: PASS (9 checks)
+c13-10a-tutor c13-2: VERIFY: PASS
+c13-10a-tutor c13-4d: LINKS: PASS (no live markdown link points at a missing file)
+== c13-10b-types 8e02369c -> e480e206 (base 6c78ebae)
+build 0
+c13-10b-types DIST-WEB DIFFERS:
+Only in apps/desktop/dist-web/assets: index-BUVGSubt.js
+Only in /c/Users/nickh/train-150b/apps/desktop/dist-web/assets: index-C_y5ece8.js
+Files /c/Users/nickh/train-150b/apps/desktop/dist-web/index.html and apps/desktop/dist-web/index.html differ
+added: types/board.ts types/page.ts types/records.ts types/script.ts types/tutor.ts 
+modified: types/index.ts 
+split-check: types/index.ts -> types/records.ts types/board.ts types/page.ts types/tutor.ts types/script.ts  --ordered
+      at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+    status: 128,
+    signal: null,
+    output: [
+      null,
+      '',
+      "fatal: path 'apps/desktop/src/--ordered' does not exist in '6c78ebae3e41c46556de92c1888756df9272b0e4'\n"
+    ],
+    pid: 14412,
+    stdout: '',
+    stderr: "fatal: path 'apps/desktop/src/--ordered' does not exist in '6c78ebae3e41c46556de92c1888756df9272b0e4'\n"
+  }
+  
+  Node.js v24.13.0
+  r: SAME  page-templates-r2 P1 (PageSettings.template): before true, joined true  (a bare read of the barrel: false)
+  r: SAME  sized-by-hand-logic S5 (sizedByHand?: true): before true, joined true  (a bare read of the barrel: false)
+  r: SAME  guided-w3 NT1 (no .prompt reader): before true, joined true  (a bare read of the barrel: true)
+  r: SAME  item204-proofing-merge-proof (the two constants): before en-US 180, joined en-US 180  (a bare read of the barrel: false)
+  r: SAME  the joined text holds the same lines as the file before (652), in part order
+  r: PASS  LIVENESS: a planted edit in a part changes a reader's answer
+  r: 
+  r: C13-10B READERS: PASS (7 readers, the line set, liveness)
+c13-10b-types c13-2: VERIFY: PASS
+c13-10b-types c13-4d: LINKS: PASS (no live markdown link points at a missing file)
+== c13-10d-cascade 67566cd5 -> d463fbdb (base e480e206)
+build 0
+c13-10d-cascade DIST-WEB DIFFERS:
+Only in apps/desktop/dist-web/assets: index-B5AQwNTx.js
+Only in /c/Users/nickh/train-150b/apps/desktop/dist-web/assets: index-C_y5ece8.js
+Files /c/Users/nickh/train-150b/apps/desktop/dist-web/index.html and apps/desktop/dist-web/index.html differ
+added: components/cascade/DrawersPanel.tsx components/cascade/JournalPanel.tsx components/cascade/PagePanel.tsx components/cascade/PlanPanel.tsx components/cascade/SettingsPanel.tsx components/cascade/TrashPanel.tsx components/cascade/render.tsx components/cascade/shared.tsx components/cascade/survey.tsx 
+modified: components/CascadePanels.tsx 
+split-check: components/CascadePanels.tsx -> components/cascade/shared.tsx components/cascade/JournalPanel.tsx components/cascade/PagePanel.tsx components/cascade/PlanPanel.tsx components/cascade/DrawersPanel.tsx components/cascade/TrashPanel.tsx components/cascade/SettingsPanel.tsx components/cascade/render.tsx components/cascade/survey.tsx  --ordered
+  PASS  LINES: 698 code lines before, 698 after, 698 now in components/cascade/shared.tsx, components/cascade/JournalPanel.tsx, components/cascade/PagePanel.tsx, components/cascade/PlanPanel.tsx, components/cascade/DrawersPanel.tsx, components/cascade/TrashPanel.tsx, components/cascade/SettingsPanel.tsx, components/cascade/render.tsx, components/cascade/survey.tsx; missing 0, added 0
+  PASS  SCOPE: 10 src files differ from e480e2067c347dc444fa3fb07f7f82645064904f: components/CascadePanels.tsx, components/cascade/DrawersPanel.tsx, components/cascade/JournalPanel.tsx, components/cascade/PagePanel.tsx, components/cascade/PlanPanel.tsx, components/cascade/SettingsPanel.tsx, components/cascade/TrashPanel.tsx, components/cascade/render.tsx, components/cascade/shared.tsx, components/cascade/survey.tsx
+  PASS  BARREL: components/CascadePanels.tsx exported 6 names at e480e2067c347dc444fa3fb07f7f82645064904f and exports 19 now
+  PASS  CITES: 26 [Name §n] citations in the split's files, each a heading in docs/rulings/components-<Name>.md
+  PASS  ORDER: the barrel names 9 parts in the order given; their 698 code lines, in that order, against 698 before
+  PASS  LIVENESS: a moved line edited turns LINES red
+  PASS  LIVENESS: a moved line dropped turns LINES red
+  PASS  LIVENESS: a src file outside the split changed turns SCOPE red
+  PASS  LIVENESS: a moved citation points nowhere turns CITES red
+  PASS  LIVENESS: the barrel loses an export turns BARREL red
+  PASS  LIVENESS: two moved lines swapped turns ORDER red
+  
+  C13-10 SPLIT CHECK: PASS (11 checks)
+c13-10d-cascade c13-2: VERIFY: PASS
+c13-10d-cascade c13-4d: LINKS: PASS (no live markdown link points at a missing file)
+== c13-10-tools 19436701 -> 8f73ae78 (base d463fbdb)
+build 0
+c13-10-tools DIST-WEB DIFFERS:
+Only in apps/desktop/dist-web/assets: index-B5AQwNTx.js
+Only in /c/Users/nickh/train-150b/apps/desktop/dist-web/assets: index-C_y5ece8.js
+Files /c/Users/nickh/train-150b/apps/desktop/dist-web/index.html and apps/desktop/dist-web/index.html differ
+added:  
+modified:  
+c13-10-tools c13-2: VERIFY: PASS
+c13-10-tools c13-4d: LINKS: PASS (no live markdown link points at a missing file)
+tree ffb6f141 head 8f73ae786f480efa33bec45505a88865a2f945d3
+        [FAIL  LINES: 1037 code lines before, 1039 after, 111 now in components/tutor/assemble.ts, components/tutor/presets.ts; missing 0, added 2]
+
+C13-10 SEAMS CHECK: PASS (16 checks)
+tsc-d 0
+tsc-s 0
+sg 0

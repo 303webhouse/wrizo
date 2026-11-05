@@ -1,0 +1,156 @@
+
+ROWS-SHADOW VERIFY: PASS (9 renders checked, shadow == DOM on every one)
+[
+  {
+    "name": "S6a: every NEW deskLexicon term this fold introduces resolves to its exact expected value",
+    "pass": true,
+    "detail": "{\"createDrawerEyebrow\":\"NEW DRAWER\",\"createDrawerTitleLabel\":\"Drawer title (optional)\",\"createDrawerOpensNote\":\"Opens the Drawer home — shape it as you go.\",\"drawerHomeTitleLabel\":\"Drawer title\",\"backToDrawer\":\"Back to Drawer\",\"domainLabelCreative\":\"Creative Drawer\",\"domainLabelAcademic\":\"Academic Drawer\",\"domainLabelProfessional\":\"Professional Drawer\",\"journalRouteSendToDrawer\":\"Send to a Drawer\",\"journalRouteEmptyDrawers\":\"No Drawers yet.\",\"journalRoutePromoteDrawer\":\"Promote to a new Drawer\",\"cascadePlanNoProject\":\"File this page to a drawer first to plan around it.\",\"boardHomeLabelJournal\":\"Journal\",\"boardHomeLabelTrash\":\"Trash\",\"boardHomeLabelShelf\":\"Shelf\"}"
+  },
+  {
+    "name": "S6a [word-diet successor]: cascadePlanNoProject (MOCKUP, unchanged) still reads \"drawer\", and boardHomeLabelJournal/Trash/Shelf are now the bare place name",
+    "pass": true,
+    "detail": "{\"createDrawerEyebrow\":\"NEW DRAWER\",\"createDrawerTitleLabel\":\"Drawer title (optional)\",\"createDrawerOpensNote\":\"Opens the Drawer home — shape it as you go.\",\"drawerHomeTitleLabel\":\"Drawer title\",\"backToDrawer\":\"Back to Drawer\",\"domainLabelCreative\":\"Creative Drawer\",\"domainLabelAcademic\":\"Academic Drawer\",\"domainLabelProfessional\":\"Professional Drawer\",\"journalRouteSendToDrawer\":\"Send to a Drawer\",\"journalRouteEmptyDrawers\":\"No Drawers yet.\",\"journalRoutePromoteDrawer\":\"Promote to a new Drawer\",\"cascadePlanNoProject\":\"File this page to a drawer first to plan around it.\",\"boardHomeLabelJournal\":\"Journal\",\"boardHomeLabelTrash\":\"Trash\",\"boardHomeLabelShelf\":\"Shelf\"}"
+  },
+  {
+    "name": "S6b [word-diet successor]: the Journal Board's own Page face now reads the bare place name, \"Journal\"",
+    "pass": true,
+    "detail": "Journal"
+  },
+  {
+    "name": "S6b [word-diet successor]: the Trash Board's own Page face now reads the bare place name, \"Trash\"",
+    "pass": true,
+    "detail": "Trash"
+  },
+  {
+    "name": "S6b [word-diet successor]: the Shelf Board's own Page face now reads the bare place name, \"Shelf\"",
+    "pass": true,
+    "detail": "Shelf"
+  },
+  {
+    "name": "S6c [big-projects-2 successor]: the Boards tab has no no-project lead at all (the file-this-page-to-a-drawer-first line is gone) - and never the word project",
+    "pass": true,
+    "detail": "Journal\nNew Board\nSECTIONS\nOrder\n\nNo boards here yet.\n\nJournal\nPRESETS\nAsk the librarian\nFrom my pages\nThree-Act Structure\nWorldbuilding\nFeature Screenplay\nThes"
+  },
+  {
+    "name": "S6e: CreateProject's own eyebrow reads \"NEW DRAWER\", never \"NEW PROJECT\"",
+    "pass": true,
+    "detail": "{\"eyebrow\":\"NEW DRAWER\",\"titleAria\":\"Drawer title (optional)\"}"
+  },
+  {
+    "name": "S6e: CreateProject's own title input aria-label reads \"Drawer title (optional)\"",
+    "pass": true,
+    "detail": "{\"eyebrow\":\"NEW DRAWER\",\"titleAria\":\"Drawer title (optional)\"}"
+  },
+  {
+    "name": "S6e [word-diet successor]: CreateProject's own \"Something else\" note is empty now (REMOVE)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "S6e: ProjectHome's own domain eyebrow reads \"Creative Drawer\", never \"Creative project\"",
+    "pass": true,
+    "detail": "Creative Drawer"
+  },
+  {
+    "name": "S6e: ProjectHome's own rename input aria-label reads \"Drawer title\", never \"Project title\"",
+    "pass": true,
+    "detail": "Drawer title"
+  },
+  {
+    "name": "S6f: StructureWizard's own back link reads \"Back to Drawer\", never \"Back to project\"",
+    "pass": true,
+    "detail": "← Back to Drawer"
+  },
+  {
+    "name": "S6f: StructureBoard's own back link reads \"Back to Drawer\", never \"Back to project\"",
+    "pass": true,
+    "detail": "← Back to Drawer"
+  },
+  {
+    "name": "S6f: BeatWizard's own back link reads \"Back to Drawer\", never \"Back to project\"",
+    "pass": true,
+    "detail": "← Back to Drawer"
+  },
+  {
+    "name": "S6c/g (Binder-vs-Drawer, concrete): QuickSprint's own breadcrumb shows the stored Drawer's real name (\"Real Stored Drawer\") — the OLDER entity, untouched by this fold",
+    "pass": true,
+    "detail": "{\"crumbDrawerName\":\"Real Stored Drawer\",\"toggleAria\":\"Binder view\"}"
+  },
+  {
+    "name": "S6c/g (Binder-vs-Drawer, concrete): QuickSprint's own Pages/Plan toggle aria-label reads \"Binder view\" — the pre-existing themeLexicon term (predates this fold entirely, out of its scope), coexisting harmlessly beside the breadcrumb's proper-noun drawer name",
+    "pass": true,
+    "detail": "{\"crumbDrawerName\":\"Real Stored Drawer\",\"toggleAria\":\"Binder view\"}"
+  },
+  {
+    "name": "S6g LIVE SUCCESSOR (review fix): QuickSprint's own Save button reads \"Save to Drawer\" — matches its own destination, ProjectHome.tsx, which always reads \"Drawer\" regardless of this project's drawerId; see the PARKED block above",
+    "pass": true,
+    "detail": "Save to Drawer"
+  },
+  {
+    "name": "S6c (Binder-vs-Drawer, concrete): the Pin sheet's own drawer-group eyebrow still shows the stored Drawer's real name (\"Real Stored Drawer\") — untouched, coexisting cleanly with this fold's \"Binder\" wording elsewhere on the same sheet",
+    "pass": true,
+    "detail": "{\"drawerEyebrow\":\"Real Stored Drawer\",\"projectRow\":true}"
+  },
+  {
+    "name": "S6c: PinToBoardSheet's own empty-state reads \"No binders yet — create a binder first...\", never \"project\"",
+    "pass": true,
+    "detail": "No binders yet — create a binder first, then this page can join a board."
+  },
+  {
+    "name": "S6c: PortToBoardSheet's own empty-state reads \"No binders yet — \\\"+ New binder\\\" births one...\", never \"project\"",
+    "pass": true,
+    "detail": "No binders yet — \"＋ New binder\" births one on the spot."
+  },
+  {
+    "name": "S6c: ImportDraft's own empty-binder line reads \"No binders yet — begin a binder first.\", never \"project\"",
+    "pass": true,
+    "detail": "No binders yet — begin a binder first."
+  },
+  {
+    "name": "S6d: DrawersTree's own top-level action still reads \"+ New Drawer\" (the OLDER stored-Drawer entity, B2's own pre-authorized word, untouched)",
+    "pass": true,
+    "detail": "+ New Drawer"
+  },
+  {
+    "name": "S6d: the SAME screen's in-drawer \"Create New\" row reads \"New Binder\" — deliberately NOT \"New Drawer\" (would collide with the top-level action above, creating two different entities under one word)",
+    "pass": true,
+    "detail": "[\"New Pages\",\"New Binder\",\"cancel\"]"
+  },
+  {
+    "name": "S6d follow-through (review fix): clicking DrawersTree's \"New Binder\" lands on CreateProject.tsx reading \"NEW BINDER\" / \"Binder title (optional)\" — matching the button that led here, never \"NEW DRAWER\" (the destination-mismatch gap the original build's harness never exercised)",
+    "pass": true,
+    "detail": "{\"eyebrow\":\"NEW BINDER\",\"titleAria\":\"Binder title (optional)\",\"hash\":\"#/project/new?drawer=mw35lz3fbtg2n2zyt\"}"
+  },
+  {
+    "name": "S6g: the gear's own Progress selector offers \"Drawer\" (once a StoryPlan exists), never \"Project\"",
+    "pass": true,
+    "detail": "[\"Words\",\"Time\",\"Drawer\",\"Off\"]"
+  },
+  {
+    "name": "S6g: clicking \"Drawer\" persists the INTERNAL value 'project' — the storage identifier stays completely untouched, only its display label changed",
+    "pass": true,
+    "detail": "project"
+  },
+  {
+    "name": "S6h (Definition of Done): no bare \"Project\" word (case-sensitive, word-boundary) renders anywhere across every swept surface",
+    "pass": true,
+    "detail": "[{\"route\":\"/project/new\",\"hasBareProject\":false},{\"route\":\"/project/mw35lzleixsrdtvm9\",\"hasBareProject\":false},{\"route\":\"/project/mw35lzleixsrdtvm9/wizard\",\"hasBareProject\":false},{\"route\":\"/drawers\",\"hasBareProject\":false},{\"route\":\"/import\",\"hasBareProject\":false}]"
+  },
+  {
+    "name": "S6i: route paths stay literally \"/project/...\" — deliberately untouched (a bigger structural call than Nick's word commissioned; flagged for a future explicit ruling)",
+    "pass": true,
+    "detail": "#/project/mw35lzleixsrdtvm9"
+  }
+]
+file:///home/runner/work/wrizo/wrizo/build/apps/desktop/scripts/runtime-verify.mjs:445
+    if (r.exceptionDetails) throw new Error('page eval: ' + JSON.stringify(r.exceptionDetails));
+                                  ^
+
+Error: page eval: {"exceptionId":1,"text":"Uncaught","lineNumber":0,"columnNumber":0,"scriptId":"9","stackTrace":{"callFrames":[{"functionName":"","scriptId":"9","url":"","lineNumber":0,"columnNumber":0}]},"exception":{"type":"object","subtype":"error","className":"ReferenceError","description":"ReferenceError: __click is not defined\n    at <anonymous>:1:1","objectId":"6944554385855797666.2.2"}}
+    at evalJs (file:///home/runner/work/wrizo/wrizo/build/apps/desktop/scripts/runtime-verify.mjs:445:35)
+    at async seedProjectWithPlan (file:///home/runner/work/wrizo/wrizo/build/apps/desktop/scripts/harness/b2-1.mjs:113:3)
+    at async file:///home/runner/work/wrizo/wrizo/build/apps/desktop/scripts/harness/b2-1.mjs:613:39
+    at async withHarness (file:///home/runner/work/wrizo/wrizo/build/apps/desktop/scripts/runtime-verify.mjs:928:20)
+    at async file:///home/runner/work/wrizo/wrizo/build/apps/desktop/scripts/harness/b2-1.mjs:612:3
+
+Node.js v24.13.0
