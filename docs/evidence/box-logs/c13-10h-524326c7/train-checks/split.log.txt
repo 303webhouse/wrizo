@@ -1,0 +1,11 @@
+PASS  LINES: 2878 code lines before, 2878 after, 2878 now in store/persistence/boards.ts, store/persistence/core.ts, store/persistence/drafts.ts, store/persistence/drawers.ts, store/persistence/entries.ts, store/persistence/imports.ts, store/persistence/journal.ts, store/persistence/links.ts, store/persistence/pins.ts, store/persistence/planPairing.ts, store/persistence/projects.ts, store/persistence/purge.ts, store/persistence/reload.ts, store/persistence/restore.ts, store/persistence/scriptTutor.ts, store/persistence/seams.ts, store/persistence/storyPlans.ts, store/persistence/syncApply.ts, store/persistence/systemBoards.ts; missing 0, added 0
+PASS  SCOPE: 20 src files differ from 1913849e: store/persistence.ts, store/persistence/boards.ts, store/persistence/core.ts, store/persistence/drafts.ts, store/persistence/drawers.ts, store/persistence/entries.ts, store/persistence/imports.ts, store/persistence/journal.ts, store/persistence/links.ts, store/persistence/pins.ts, store/persistence/planPairing.ts, store/persistence/projects.ts, store/persistence/purge.ts, store/persistence/reload.ts, store/persistence/restore.ts, store/persistence/scriptTutor.ts, store/persistence/seams.ts, store/persistence/storyPlans.ts, store/persistence/syncApply.ts, store/persistence/systemBoards.ts
+PASS  BARREL: store/persistence.ts exported 145 names at 1913849e and exports 145 now
+PASS  CITES: 32 [Name §n] citations in the split's files, each a heading in docs/rulings/store-<Name>.md
+PASS  LIVENESS: a moved line edited turns LINES red
+PASS  LIVENESS: a moved line dropped turns LINES red
+PASS  LIVENESS: a src file outside the split changed turns SCOPE red
+PASS  LIVENESS: a moved citation points nowhere turns CITES red
+PASS  LIVENESS: the barrel loses an export turns BARREL red
+
+C13-10 SPLIT CHECK: PASS (9 checks)
