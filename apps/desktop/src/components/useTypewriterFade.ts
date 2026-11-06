@@ -15,29 +15,6 @@ const TOP_STOP_MIN = 56;      // the zoomed band's .12 stop is never nearer the 
 // not just derived on paper) so the fade/scroll engages within the first
 // few lines of the start band rather than lagging for a dozen lines.
 export const CONTAINER_HOLD_BAND = 0.46;
-// FX4 S1 — Journal's own tuned engage-band, now that the carve-out retires
-// and it gains real start-offset behavior for the first time. Journal is
-// the WINDOW-scroll case (readBox's `useWindowScroll` branch: `box.top=0`,
-// `box.clientHeight=window.innerHeight`), a materially different geometry
-// from CONTAINER_HOLD_BAND's fixed-height framed box — reusing that exact
-// number was never assumed to transfer (the brief's own "measure, don't
-// assume"), and it took THREE separate live-diagnosed defects (documented
-// in full in this ticket's own report; briefly: a caret-rect detection
-// fallback that silently measured the wrong element, a `minHeight` floor
-// masquerading as "the caret" on a still-empty page, and a missing bottom
-// scroll buffer prose/script already had via `.mode-scroll`'s own
-// `padding-bottom:30vh`, mirrored onto `.entry-full` below) before holdBand
-// tuning could mean anything at all here — see index.css's own
-// `.entry-full[data-typewriter='true']` rule and this file's `band()`
-// function for the fixes. Measured empirically (seeded typing line by line,
-// watching `data-scrolled` flip true — the same signal fx3.mjs's own S3
-// checks use for prose) against the brief's own "~10 line-equivalents"
-// target: 0.60 engages at line 11 of ordinary wrapped prose at a 900px-tall
-// viewport, both 1280px and 2200px widths — close enough to call "about
-// ten," and a fresh, untouched page does NOT auto-scroll on mount (also
-// verified — a real risk with the caret-fallback fix above, guarded
-// against explicitly).
-export const JOURNAL_HOLD_BAND = 0.60;
 
 interface ScrollBox {
   top: number;                 // viewport-space top of the clipping box (0 for window)

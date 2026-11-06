@@ -87,23 +87,6 @@
   gap: 0.28em;
   line-height: 1;
 }
-.wordmark__mark {
-  height: 1.5em;
-  width: auto;
-  flex-shrink: 0;
-  /* soft ember glow — follows the mark's shape, threshold surfaces only */
-  filter: drop-shadow(0 0 10px rgba(224, 113, 44, 0.55)) drop-shadow(0 0 22px rgba(224, 113, 44, 0.25));
-}
-.wordmark__text {
-  font-family: var(--font-display);
-  font-weight: 500;
-  font-size: 1em;
-  line-height: 1;
-  letter-spacing: 0.015em;
-  /* ITEM arbor-quiet-brass — the mark is one of brass's four canonical homes
-     (docs/flux-theme-canon.md §2: "prose caret, bar completion surge, Connect, the mark"). */
-  color: var(--brass);
-}
 
 /* Caps label. */
 .eyebrow {
@@ -148,14 +131,6 @@
    in step (explicit px stops, not percentages, so the two pieces — the
    flat unfaded lead-in and the ramp — stay independently sized regardless
    of the box's own total height). */
-.entry-typewriter-fade{ position:sticky; top:0; z-index:2; pointer-events:none;
-  height:calc(var(--tw-fade-start,28px) + var(--tw-fade-band,84px));
-  margin-bottom:calc(-1 * (var(--tw-fade-start,28px) + var(--tw-fade-band,84px)));
-  background:linear-gradient(to bottom,
-    rgba(243,237,225,0) 0, rgba(243,237,225,0) var(--tw-fade-start,28px),
-    rgba(243,237,225,.85) var(--tw-fade-start,28px),
-    rgba(243,237,225,0) calc(var(--tw-fade-start,28px) + var(--tw-fade-band,84px)));
-  opacity:0; transition:opacity .6s ease; }
 /* FX4 S1 — the Journal carve-out retires: this is the ENTIRE mechanism of
    that carve-out reversing. Before this ticket, `.entry-full` computed and
    set `--tw-start-offset` (useTypewriterFade.ts's own measure()) but NO
@@ -197,8 +172,6 @@
    useTypewriterFade.ts) govern engagement timing the way it was designed
    to, instead of being blocked by document geometry underneath it. */
 .entry-full[data-typewriter='true']{ padding-top:var(--tw-start-offset,0px); padding-bottom:30vh; }
-.entry-full[data-typewriter='true'][data-scrolled='true'] .entry-typewriter-fade{ opacity:1; }
-@media (prefers-reduced-motion:reduce){ .entry-typewriter-fade{ transition:none; } }
 
 /* Glanceable progress — 10px ink-fill dot, always paired with a text label. */
 .status-dot {
@@ -241,21 +214,6 @@
 }
 
 /* Timer hairline — drains right-to-left, the one continuous element. */
-.hairline-timer {
-  position: relative;
-  height: 2px;
-  width: 100%;
-  background: var(--ink-border);
-  overflow: hidden;
-}
-.hairline-timer__fill {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  background: var(--brass);
-  transition: width 1s linear;
-}
 
 /* Quiet saved confirmation (toggled by JS; fades out after ~2s). */
 .saved-stamp {
@@ -334,9 +292,7 @@ a:focus-visible,
 .btn-ghost:focus-visible,
 .btn-quiet:focus-visible,
 .btn-brick:focus-visible,
-.form-input:focus-visible,
-.form-textarea:focus-visible,
-.form-select:focus-visible {
+.form-textarea:focus-visible {
   outline: 2px solid var(--brass);
   outline-offset: 2px;
 }
@@ -367,8 +323,6 @@ a:focus-visible,
   }
 
   /* iOS never zooms on focus when inputs are >= 16px. */
-  .form-input,
-  .form-select,
   .form-textarea {
     font-size: 16px;
   }

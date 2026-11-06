@@ -24,9 +24,6 @@
   background:
     radial-gradient(58% 50% at 50% 42%, rgba(255,150,40,0.22), rgba(255,150,40,0) 70%),
     radial-gradient(115% 95% at 50% 70%, rgba(180,94,30,0.12), transparent 80%); }
-.wz-signin{ position:absolute; top:1.5rem; right:1.7rem; font-family:var(--wz-ui); font-size:.8rem; letter-spacing:.04em;
-  color:var(--wz-ink-dim); opacity:.5; cursor:pointer; background:none; border:none; transition:opacity .4s; z-index:9; }
-.wz-signin:hover{ opacity:.85; }
 
 .wz-hero{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
   gap:clamp(1.5rem,4vh,2.6rem); padding:6vh 7vw; text-align:center; cursor:text;
@@ -42,10 +39,7 @@
 [data-splash-hold='true'] .wz-arrival-doors{ opacity:0; transition:none; }
 /* pointer-events:none so a hidden door cannot be pressed (opacity never gates hit-testing); focus and keys are unaffected [home §2] */
 [data-splash-hold='true'] .wz-arrival-doors{ pointer-events:none; }
-.wz-invite{ font-family:var(--wz-ui); font-size:.82rem; letter-spacing:.2em; text-transform:uppercase; color:var(--wz-ink-dim);
-  opacity:0; animation:wz-rise 1.2s ease .6s forwards; }
 @keyframes wz-rise{ from{opacity:0;transform:translateY(10px);} to{opacity:.55;transform:none;} }
-.wz-cursor{ display:inline-block; width:2px; height:1em; background:var(--wz-ink-dim); margin-left:3px; vertical-align:-.1em; animation:wz-blink 1.15s steps(1) infinite; }
 @keyframes wz-blink{ 50%{opacity:0;} }
 
 .wz-mark{ position:absolute; top:1.3rem; left:1.6rem; width:80px; height:auto; opacity:0; transition:opacity 1s ease .3s; z-index:6; pointer-events:none; }
@@ -70,27 +64,10 @@
 
 /* Journal capture strip (B4 #11) — Free Write active, other modes greyed; a
    greyed tab prompts the user to file the entry first. */
-.journal-modes{ margin:6px 0 14px; }
-.journal-tab-prompt{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:10px;
-  border:1px solid var(--clay); border-radius:var(--radius-sm); background:var(--ink-800);
-  padding:10px 12px; color:var(--text-mid); font-size:13px; line-height:1.5; }
-.journal-autosave-note{ margin-top:8px; color:var(--text-low); font-size:12px; font-style:italic; }
 
 /* J1 — notebook navigation (loose Journal pages). Quiet chrome; dissolves with
    everything else. Sits beside the back link in .journal-top (no own margin —
-   the row's own gap/alignment handles spacing there). */
-.journal-nav{ display:flex; align-items:center; gap:.5rem; }
-.journal-top{ min-height:34px; } /* stable row height whether or not .journal-nav renders */
-.journal-nav-btn{ display:inline-flex; align-items:center; justify-content:center; min-width:34px; height:34px;
-  font-size:20px; line-height:1; background:none; border:1px solid var(--ink-border); border-radius:var(--radius-sm);
-  color:var(--text-mid); cursor:pointer; transition:color .2s, border-color .2s; }
-.journal-nav-btn:hover:not(:disabled){ color:var(--text-hi); border-color:var(--text-mid); }
-.journal-nav-btn:disabled{ opacity:.35; cursor:default; }
-.journal-nav-add{ color:var(--brass); border-color:var(--ink-border); }
-.journal-nav-pos{ font-family:var(--font-mono); font-size:.72rem; color:var(--text-low); min-width:3.5em; text-align:center; }
-.journal-nav-insert{ background:none; border:none; color:var(--text-low); font-family:var(--font-ui); font-size:.78rem;
-  cursor:pointer; padding:4px 6px; transition:color .2s; }
-.journal-nav-insert:hover{ color:var(--text-mid); }
+   the row's own gap/alignment handles spacing there). */ /* stable row height whether or not .journal-nav renders */
 
 /* J3 — the spread view. A grid of square paper cells (square corners, solid
    1px border — no decoration on a text-only page, an honest blank square).
@@ -179,7 +156,6 @@
   /* the move cursor over a card: pure affordance, the drag itself is BoardEditor.tsx's; the pin, handle and layer toggle are siblings, so the browser resolves their own cursors and no exclusion is needed [home §6] */
   cursor:grab;
 }
-.board-text-editing{ outline:none; cursor:text; border-color:var(--ink-border-strong); }
 /* Page-pin and ink cards wear the SAME Stacked treatment identically (S7's
    own words) — .board-pin already shares .board-text's class (below);
    .board-ink-canvas gets the identical border/background/shadow directly. */

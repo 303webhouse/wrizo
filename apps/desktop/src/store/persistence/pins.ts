@@ -227,16 +227,6 @@ export function setPinDisplayed(boardEntryId: string, entryId: string, displayed
   return getJournalEntry(boardEntryId);
 }
 
-// PW1 S3 — is this page's membership of this board DISPLAYED on its canvas?
-// The one reader of the flag outside the canvas itself, feeding the survey
-// row's own state line ("member · shown/not shown on the board"). Absence
-// means displayed, in this reader exactly as on the canvas — one law, read
-// the same way everywhere it is read.
-export function isPinDisplayed(boardEntryId: string, entryId: string): boolean {
-  const pin = liveBoxes(getJournalEntry(boardEntryId)?.boxes).find(b => b.kind === 'page-pin' && b.entryId === entryId);
-  return !!pin && pin.onCanvas !== false;
-}
-
 // PW1 S3 — test/inspection seam, the wrizoPinPageToBoard neighbour below's own
 // established shape. The harness must be able to write a pin in the PRE-EXISTING
 // grandfathered shape (no flag at all) to prove absence still means displayed.

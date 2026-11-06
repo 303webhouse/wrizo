@@ -61,14 +61,6 @@ export function snippet(text: string, max = 140): string {
   return flat.length > max ? `${flat.slice(0, max).trimEnd()}…` : flat;
 }
 
-// Local full-text match: case-insensitive substring over the entry's text.
-// Instant, offline, no network. Empty query matches everything.
-export function matchesQuery(text: string, query: string): boolean {
-  const q = query.trim().toLowerCase();
-  if (!q) return true;
-  return text.toLowerCase().includes(q);
-}
-
 // Lines worth reflecting back (J7) — skip empty / very-short fragments so the
 // post-sprint echo never surfaces an awkward scrap.
 export function substantialLines(text: string, minChars = 24): string[] {
@@ -82,15 +74,4 @@ export function pickEchoLine(text: string, rand: () => number = Math.random): st
   const lines = substantialLines(text);
   if (lines.length === 0) return null;
   return lines[Math.floor(rand() * lines.length)] ?? lines[0];
-}
-
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-// a calm, locale-independent stamp: short month, day, and time [entryText §4]
-export function formatStamp(iso: string): string {
-  const d = new Date(iso);
-  const mins = String(d.getMinutes()).padStart(2, '0');
-  const ampm = d.getHours() >= 12 ? 'PM' : 'AM';
-  const hour12 = d.getHours() % 12 || 12;
-  return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${hour12}:${mins} ${ampm}`;
 }

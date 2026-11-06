@@ -22,11 +22,6 @@ export function markStaleClient(): void {
   listeners.forEach(fn => fn(true));
 }
 
-export function subscribeStaleClient(fn: (v: boolean) => void): () => void {
-  listeners.add(fn);
-  return () => { listeners.delete(fn); };
-}
-
 export function useStaleClient(): boolean {
   const [value, setValue] = useState(stale);
   useEffect(() => {
