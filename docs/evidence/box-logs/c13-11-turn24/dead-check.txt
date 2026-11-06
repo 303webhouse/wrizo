@@ -1,0 +1,11 @@
+PASS  D1 FILES: all 6 listed files are in ed251275's src, gone now, and imported by no src file
+PASS  D2 EXPORTS: all 26 listed exports are declared at ed251275, by no src file now, and named by none
+PASS  D3 CSS: all 120 listed classes are styled at ed251275, styled by no selector now, and named in no .ts/.tsx text
+PASS  D4 ONLY THOSE: the CSS now is ed251275's minus exactly the 172 selectors that name a listed class (2185 rule-selectors kept, every body unchanged)
+PASS  D5 premise: the report's own counts agree with its per-selector record (590 matched, 1598 unmatched)
+PASS  D5 THE SCREENS: no selector that matched an element on any of the report's 65 screen readings names a listed class (590 matched, 1598 unmatched)
+PASS  D5 coverage: the report saw every listed class (each named by some selector it tested)
+PASS  D6 LIVENESS: a live class planted in the list ('forward-only-editor') is reported by D5
+PASS  D6 LIVENESS: a live selector planted out of the CSS is reported by D4
+
+C13-11 DEAD CHECK: PASS (9 checks)
