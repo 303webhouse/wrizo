@@ -1,0 +1,16 @@
+# c13-10c-lexicon: the keys a step ADDED after the split (TOOLS, Nov 5; Fable: "declare them so it's green"). One `key=word` per line.
+# Each is held to: absent at the base (01ae2fbc), in the table now, and reading <word> in EVERY theme reading. Its entry line, its token in the
+# union, and the note that introduced it are set aside by the inline read. A key leaves this file in the commit that gives it a theme override.
+# FLUX3 S1 (INK) - the Schema's node records and readouts, behind ?flux3=1
+flux3LinkOne=connection
+flux3LinkMany=connections
+flux3ChecksumOk=Checksum OK
+flux3ReadLevel=Level
+flux3ReadZoom=Zoom
+flux3ReadLast=Last
+flux3KindPreset=Preset
+# FLUX3 S2 (INK) - the Stack button and the hologram's level readout
+flux3ViewStack=Stack
+flux3ViewHologram=Hologram
+# 10e (POLISH) - the Progress row's label for the stored 'project' metric; its Flux word comes with the full pass
+progressDrawer=Drawer
