@@ -34,6 +34,9 @@ import './store/themeFontFaces';
 import './store/fluxThemeFx';
 // DELETE FOR GOOD: window.wrizoDelete + window.wrizoDestructive (store/deleteSeams.ts), registered once at start like the other seams
 import './store/deleteSeams';
+// FLUX3 - the redesign's styles and root mark load only under ?flux3=1 (a separate chunk, never fetched without the flag)
+import { FLUX3 } from './flux3/flag';
+if (FLUX3) void import('./flux3/boot');
 
 // TH1 — apply the theme + preference attributes to <html> before the first
 // render so there is never a themeless/wrong-voice flash.
