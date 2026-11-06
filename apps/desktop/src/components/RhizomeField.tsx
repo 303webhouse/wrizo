@@ -279,6 +279,29 @@ export function RhizomeField({ text, seedKey, paperRef }: {
   const fadingSettled = seedRoot ? settled.filter(s => !isSeed(s)) : settled;
   const seedSettled = seedRoot ? settled.filter(isSeed) : [];
 
+  // ARBOR v2 mockup r21 (Fable, Nov 6: the flash's night B2 - "a pre-rendered bitmap mask; keep the look identical"): the flash copy's mask is the
+  // field's own - its 24 px edge fade and its holes - drawn ONCE per field geometry into a bitmap (device pixels) and applied as a CSS mask on
+  // the flash layer, so the brass copy never re-reads the live field's SVG mask while it pulses. Until it exists the SVG mask stays.
+  // (hooks: above the early return, so their order never changes)
+  const [flashMask, setFlashMask] = useState<string | null>(null);
+  const fw = m?.geo.width ?? 0, fh = m?.geo.height ?? 0;
+  const maskKey = active && lifeOn && !!m && !!roomStable && fh > 60 ? `${fw}x${fh}|${m.holes.map((r) => [r.left, r.top, r.right, r.bottom].map((v) => Math.round(v * 10) / 10).join(',')).join(';')}` : '';
+  useEffect(() => {
+    if (!maskKey || !m) { setFlashMask(null); return; }
+    const k = window.devicePixelRatio || 1, c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(fw * k)); c.height = Math.max(1, Math.round(fh * k));
+    const g = c.getContext('2d'); if (!g) return;
+    g.scale(k, k);
+    // the field mask's white-to-black as alpha: clear at the top and bottom edges, whole between, over the same 24 px
+    const grad = g.createLinearGradient(0, 0, 0, fh);
+    grad.addColorStop(0, 'rgba(0,0,0,0)'); grad.addColorStop(24 / fh, 'rgba(0,0,0,1)'); grad.addColorStop(1 - 24 / fh, 'rgba(0,0,0,1)'); grad.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = grad; g.fillRect(0, 0, fw, fh);
+    for (const r of m.holes) g.clearRect(r.left, r.top, Math.max(0, r.right - r.left), Math.max(0, r.bottom - r.top));
+    let url: string | null = null, gone = false;
+    c.toBlob((b) => { if (!b || gone) return; url = URL.createObjectURL(b); setFlashMask(url); }, 'image/png');
+    return () => { gone = true; if (url) URL.revokeObjectURL(url); };
+  }, [maskKey]);   // eslint-disable-line react-hooks/exhaustive-deps
+
   if (!active) return null;
 
   const w = m?.geo.width ?? 0, h = m?.geo.height ?? 0;
@@ -293,8 +316,10 @@ export function RhizomeField({ text, seedKey, paperRef }: {
   const flashState = flashLap != null ? (flashFading ? 'fading' : 'true') : null;
   const flashCopy = vines && flashState && m ? (
     <svg className="arbor2-vines-flash" aria-hidden="true" focusable="false" data-flash={flashState} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none"
-      style={{ clipPath: clipD ? `path(evenodd, "${clipD}")` : undefined }}>
-      <g mask="url(#wz-rhizome-mask)"><ArborVines plan={plan} past={pastPlans} geo={CANON} room={roomStable!} p={vineP} fromTip={shownVisit > 0} /></g>
+      style={{ clipPath: clipD ? `path(evenodd, "${clipD}")` : undefined,
+        ...(flashMask ? { maskImage: `url("${flashMask}")`, WebkitMaskImage: `url("${flashMask}")`, maskSize: '100% 100%', WebkitMaskSize: '100% 100%', maskRepeat: 'no-repeat', WebkitMaskRepeat: 'no-repeat', maskMode: 'alpha' } : {}) }}
+      data-mask={flashMask ? 'bitmap' : 'svg'}>
+      <g mask={flashMask ? undefined : 'url(#wz-rhizome-mask)'}><ArborVines plan={plan} past={pastPlans} geo={CANON} room={roomStable!} p={vineP} fromTip={shownVisit > 0} /></g>
     </svg>
   ) : null;
 
