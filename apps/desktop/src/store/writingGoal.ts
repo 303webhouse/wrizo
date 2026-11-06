@@ -44,10 +44,6 @@ function load(): WritingGoal | null {
 let current: WritingGoal | null = load();
 const subs = new Set<(v: WritingGoal | null) => void>();
 
-export function getWritingGoal(): WritingGoal | null {
-  return current;
-}
-
 // `next === null` clears the target (the inline edit's "clear" affordance) —
 // stored as an explicit empty string so a cleared goal is distinguishable
 // from "never touched" (which would otherwise both read back as null/absent

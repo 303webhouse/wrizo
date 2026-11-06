@@ -11,10 +11,6 @@ import { getJournalEntry } from './entries';
 // ONE call (canon §2.4) — resume, the mirror card, and future search read
 // the shadow, never the jsonb directly.
 
-export function getScriptDoc(entryId: string): ScriptDoc | null {
-  return getJournalEntry(entryId)?.script ?? null;
-}
-
 export function saveScriptDoc(entryId: string, doc: ScriptDoc): void {
   const latest = getJournalEntry(entryId);
   if (!latest) return;
@@ -29,10 +25,6 @@ export function saveScriptDoc(entryId: string, doc: ScriptDoc): void {
 // `{ messages: [] }` (a subtly different, wrong "grandfathered" state from
 // genuinely absent) — the thread is born on its first real message and not
 // one keystroke sooner. Any page can carry one, independent of pageType.
-
-export function getTutorThread(entryId: string): TutorThread | null {
-  return getJournalEntry(entryId)?.tutor ?? null;
-}
 
 export function appendTutorMessage(entryId: string, message: TutorMessage): TutorThread | null {
   const latest = getJournalEntry(entryId);

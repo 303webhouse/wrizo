@@ -137,10 +137,3 @@ export function getResumeTarget(): ResumeTarget | null {
 if (typeof window !== 'undefined') {
   (window as unknown as { wrizoResume?: unknown }).wrizoResume = getResumeTarget;
 }
-
-// "today" / "yesterday" / "3 days ago" — calm relative time.
-export function relativeDays(daysAgo: number): string {
-  if (daysAgo <= 0) return 'today';
-  if (daysAgo === 1) return 'yesterday';
-  return `${daysAgo} days ago`;
-}

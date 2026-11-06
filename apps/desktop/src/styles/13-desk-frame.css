@@ -42,14 +42,6 @@
    scrollIntoView on a tall drawer's lower controls scrolled the host and moved
    the paper. A clipped box cannot be scrolled at all. */
 .desk-frame-host{ max-width:none; margin:0; padding:2.5rem var(--frame-host-pad-x) 3rem var(--frame-host-pad-x); background:var(--desk-ground); overflow:clip; }
-/* FX4 S1 — Journal's own host reverts the clip (see JournalEntry.tsx's own
-   comment on `.desk-frame-host--journal` for the full defect writeup): this
-   is the ONE DeskFrame surface whose content is meant to grow past the
-   viewport in ordinary use (window-scroll, ink anchored to the sheet), so
-   the general clip (correct for prose/script's own bounded, internally-
-   scrolling stage) silently ate the bottom of any sufficiently long page
-   here specifically — confirmed live, not guessed. */
-.desk-frame-host--journal{ overflow:visible; }
 .desk-frame{ position:relative; }
 /* FX5 S10 — the strip no longer occupies a grid TRACK (it's position:
    absolute now, see .desk-frame-strip below) — the template holds only
@@ -884,14 +876,6 @@ html[data-wz-writing='true'] .chrome-handle{ opacity:0 !important; }   /* still 
 .wz-actions-tag-remove:hover{ color:var(--text-hi); }
 .wz-actions-tag-input{ flex:1; min-width:80px; background:var(--ink-800); border:1px solid var(--ink-border); color:var(--text-hi);
   font-family:var(--font-ui); font-size:12px; padding:4px 6px; border-radius:0; }
-.wz-actions-confirm{ display:flex; flex-direction:column; gap:8px; padding:8px; border:1px solid var(--ink-border); }
-.wz-actions-confirm-line{ margin:0; font-size:13px; line-height:1.35; color:var(--text-hi); }
-.wz-actions-confirm-buttons{ display:flex; gap:6px; }
-.wz-actions-keep, .wz-actions-send{ flex:1; height:26px; background:none; border:1px solid var(--ink-border); border-radius:0; color:var(--text-mid);
-  font-family:var(--font-ui); font-size:12px; cursor:pointer; }
-.wz-actions-keep:hover, .wz-actions-send:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
-.wz-actions-send{ color:var(--brick, var(--text-mid)); }
-.wz-actions-keep:focus-visible, .wz-actions-send:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
 /* REDUCED MOTION: fade only, short, no slide. The two panels carry their own !important duration, because the global floor (every transition 0.01ms !important) would flatten the fade, and opacity is not motion; a class selector out-ranks the floor's universal selector. The sliding layer is not exempt: it stays instant [desk-frame §38] */
 @media (prefers-reduced-motion:reduce){
   .wz-sliver-panel, .wz-tutor-panel{ transition:opacity var(--drawer-dur-reduced) linear; transition-duration: var(--drawer-dur-reduced) !important; }
@@ -904,7 +888,6 @@ html[data-wz-writing='true'] .chrome-handle{ opacity:0 !important; }   /* still 
 /* the Structure zone's sub-labels and the rule between its halves: one zone reads as two, so a kind chip named Screenplay is never mistaken for the conversion door. Quieter than .wz-sliver-h; no accent (a sub-label is neither a state nor an act); the chips reuse .wz-page-setup-chip [desk-frame §39] */
 .wz-sliver-sub{ font-family:var(--font-ui); font-size:11px; color:var(--text-low);
   letter-spacing:.2px; margin-top:2px; }
-.wz-sliver-rule{ height:1px; background:var(--ink-border); margin:4px 0 2px; }
 /* the sliver's eyebrow labels are information, not events: quiet, neither olive nor orange [desk-frame §40] */
 /* the engraved zone heading is the menus' one resting accent: olive [desk-frame §41] */
 .wz-sliver-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--accent-rest); }
@@ -984,5 +967,4 @@ html[data-wz-writing='true'] .chrome-handle{ opacity:0 !important; }   /* still 
    placeholder) is REMOVED: M4/G3 had already stopped rendering it, and item
    121 removes the member itself, so the rule had nothing left to style. Its
    lexicon keys (railInkTool/railInkToolInert) go with it. */
-.wz-sliver-typewriter{ display:flex; align-items:center; gap:8px; }
 

@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { accountHasWork } from './persistence';
 import { firstPullDone, firstPullPending, whenFirstPulled } from './sync';
 import { getCurrentUser } from './currentUser';
@@ -58,15 +57,4 @@ export async function resolveFirstRun(): Promise<boolean> {
   if (!firstPullDone()) return false;
   if (accountHasWork()) { setFirstRunComplete(true); return false; }
   return true;
-}
-
-export function useFirstRunComplete(): boolean {
-  const [value, setValue] = useState(current);
-  useEffect(() => {
-    const fn = (v: boolean) => setValue(v);
-    subs.add(fn);
-    setValue(current);
-    return () => { subs.delete(fn); };
-  }, []);
-  return value;
 }

@@ -32,16 +32,6 @@ export const KIND_META: Record<BinderKind, KindMeta> = {
   other:      { label: 'Something else', tag: '',             domain: 'creative',     desc: 'Start blank and shape it as you go' },
 };
 
-// The mirror-card FORM tag for a binder's kind ('' → the card uses drawer/PROJECT).
-export function kindTag(kind: BinderKind | undefined): string {
-  return kind ? KIND_META[kind].tag : '';
-}
-
-// The human label for a binder's kind (used wherever a form needs naming).
-export function kindLabel(kind: BinderKind | undefined): string {
-  return kind ? KIND_META[kind].label : '';
-}
-
 // The picker's static group order (Creative / Academic / Professional). The
 // first-run SORT HINT that reorders these is deferred to the HOME-verification
 // pass, where first-run flow lives.
