@@ -9,6 +9,8 @@
 // For each mutant: it LANDED (the guard's own raw samples show it), and the verdict is the one above. None is retried away: the guard's reruns are for a control burst that caught a box stall (void) and
 // for a red that does not reproduce; an injected cost is in every measurement.
 // (M4 adds RL_MUTANT_FADE_MS=10: a moderate cost on the fade alone - C or C2 must stay red. Five mutants now, about 30 minutes in all.)
+// RL_REF (the same turn's main control, `node scripts/rhizome-latency-ref.mjs --env <control logs>`) passes through to every guard run below; without it the guard's default reference stands. C and C2 are
+// held to the fade's reference shift (it is ~9 ms behind the fast control's on this box even on main), so M1/M2/M4 must clear THAT, not +5: M4's +10 ms per fade key adds to a ~9 shift and ~3 cost.
 // Each mutant makes the guard measure twice (a red is confirmed by a second measurement) - about 6 minutes a mutant.
 // Run: node scripts/harness/rhizome-latency-mutant.mjs   (from apps/desktop; five mutants, each a live run or two of the guard - a box turn; it inherits WS_BOX_TURN)
 import { spawnSync } from 'node:child_process';
