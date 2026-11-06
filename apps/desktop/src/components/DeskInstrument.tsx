@@ -4,6 +4,12 @@ import { RhizomeField } from './RhizomeField';
 import { GlitchMeter } from './GlitchMeter';
 import { RunStrip } from './RunStrip';
 import { useTheme } from '../store/theme';
+// FLUX3 S3 - mount points only: under ?flux3=1 the idle glitch takes GlitchMeter's place, the Glitch bar the bar style's, and the doc's frame
+// (gutter + ports) stands beside the page (src/flux3/); without the flag every line below renders exactly as before
+import { FLUX3 } from '../flux3/flag';
+import { FluxIdleGlitch } from '../flux3/FluxIdleGlitch';
+import { FluxGlitchBar } from '../flux3/FluxGlitchBar';
+import { FluxDoc } from '../flux3/FluxDoc';
 
 // the progress instrument's framed home: bar and rhizome share the rhizome's lane under the page, and the goal flare fires there on the same `celebrating` transition, for both styles [DeskInstrument §1]
 export function DeskInstrument({ unitCount, text, seedKey, paperRef, glitch = false }: {
@@ -22,8 +28,9 @@ export function DeskInstrument({ unitCount, text, seedKey, paperRef, glitch = fa
   return (
     <>
       <RhizomeField text={text} seedKey={seedKey} paperRef={paperRef} />
-      {glitch && <GlitchMeter text={text} />}
+      {glitch && (FLUX3 ? <FluxIdleGlitch paperRef={paperRef} /> : <GlitchMeter text={text} />)}
       {glitch && <RunStrip text={text} />}
+      {FLUX3 && glitch && <FluxDoc paperRef={paperRef} entryId={seedKey} />}
       <DeskGoalLane unitCount={unitCount} />
     </>
   );
@@ -51,14 +58,14 @@ function DeskGoalLane({ unitCount }: { unitCount: number }) {
           and nothing that outlives its own ~1.1s window. */}
       <div className={`desk-frame-goalflare${celebrating ? ' lit' : ''}`} aria-hidden="true" />
       {/* under Machina the Run strip is the only progress instrument, so the thin bar is not drawn on the framed page (unframed surfaces keep it) [DeskInstrument §3] */}
-      {settings.progressStyle === 'bar' && theme !== 'machina' && (
+      {settings.progressStyle === 'bar' && theme !== 'machina' && (FLUX3 && theme === 'flux' ? <FluxGlitchBar unitCount={unitCount} frac={frac} celebrating={celebrating} /> : (
         <ProgressBar
           frac={frac}
           celebrating={celebrating}
           label={`${unitCount} word${unitCount === 1 ? '' : 's'}`}
           metricLabel="words"
         />
-      )}
+      ))}
     </div>
   );
 }
