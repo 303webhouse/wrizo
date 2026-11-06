@@ -125,6 +125,7 @@ export function mountPergola(): void {
       if (copies.has(h)) continue;
       // the page keeps r20's live copy; every other surface draws the shared bitmap
       const c = h.matches(HOSTS[0]) ? makeLayer('arbor2-pagesh', PAGE_ALPHA) : makeBitmapLayer(PAGE_ALPHA);
+      if (room.layer.hasAttribute('data-asleep')) c.layer.setAttribute('data-asleep', 'true');
       h.appendChild(c.layer); copies.set(h, c); ro.observe(h); place(h, c);
       requestAnimationFrame(() => requestAnimationFrame(() => sync(c.layer)));
     }
@@ -140,5 +141,23 @@ export function mountPergola(): void {
   addEventListener('transitionend', later, true);
   addEventListener('animationend', later, true);
   window.setInterval(() => { if (copies.size) placeAll(); }, 500);
+  // r21 latency fix, part 2 (Fable's ruling, Nov 5: "take the faded drawing out of style work until it returns"): once the writing fade has
+  // run its course the drawing in every shade layer sleeps (data-asleep: content-visibility hidden on its drift wrapper, arbor-v2.css), and it
+  // wakes the moment writing ends, before the fade back in. Nothing visible changes - it sleeps only at opacity 0.
+  const root = document.documentElement;
+  const writing = () => root.getAttribute('data-wz-writing') === 'true';
+  const layers = () => [room.layer, ...[...copies.values()].map((c) => c.layer)];
+  const sleep = (on: boolean) => layers().forEach((l) => { if (on) l.setAttribute('data-asleep', 'true'); else l.removeAttribute('data-asleep'); });
+  let sleepT = 0;
+  const onWriting = () => {
+    window.clearTimeout(sleepT);
+    if (!writing()) { sleep(false); return; }
+    // the fade's own length, as the stylesheet sets it while writing (6 s; reduced motion: none), and a quarter second to spare
+    const d = getComputedStyle(room.layer).transitionDuration.split(',')[0].trim();
+    const ms = (parseFloat(d) || 0) * (d.endsWith('ms') ? 1 : 1000);
+    sleepT = window.setTimeout(() => { if (writing()) sleep(true); }, ms + 250);
+  };
+  new MutationObserver(onWriting).observe(root, { attributes: true, attributeFilter: ['data-wz-writing'] });
   attach();
+  onWriting();
 }
