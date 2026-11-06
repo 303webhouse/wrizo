@@ -1,0 +1,12 @@
+#13 step 11 (POLISH c13-11-dead, the dead-code cut) and the pw1-s5-waits distribution - POLISH's turn 24, manifest (Chat 1, Nov 6 2026)
+
+Box turn 2026-11-06 05:46:08Z-06:57:04Z (lane polish, on Chat 1's go; released by token; nothing stopped; afterwards no grant file and no harness browsers). NOT MERGED: step 11 and the S5 waits merge only on Fable's clearance (Fable: step 11 is not in #12l; it rides the next deploy).
+
+STEP 11 - tip c583a2d1 (main ed251275 merged in with no rebase; index-CLsXtnQv.js) against the parent main ed251275 (index-BiBie43a.js):
+- Style snapshot parent vs tip: IDENTICAL (the parent's report 2188 selectors, 590 matched). Dead check against the parent's own selector report: 9/9 (the CSS is main minus 172 dead rules). Readers guard at the tip PASS (18 reads classified; 24 before the cut, since JournalEntry's four entries go). c13-standing at the tip: 11 green (c13-10h-persistence takes --gone with c13-11-exports.txt; its API claim, red on the tip because three dead barrel exports go, is parked verbatim and has the --gone successor).
+- 47-file lane at the tip: default CLEAN (06:17:21Z), parked CLEAN (06:39:22Z). No parent re-runs were needed.
+- Actions pairs (POLISH, advisory): the parks 238/245 on both legs and parks plus deletions 238/245 on both, the same seven as main; the delete tip had guided-add-scenes-part2 parked red once (ticket #46).
+
+PW1-S5-WAITS (the hardened S5 driver 6af46154) against its parent af59dc84, one build of ed251275 for both trees (checked before each run): the hardened driver 10/10 PASS 41 (5 per leg), the parent 10/10 PASS 41, interleaved. The parent did not red this time (it was 1/10 in Chat 1's Nov 6 run on the 10i trees, docs/evidence/box-logs/c13-10i-c84a2d48/box-pw1-distribution/): this shows no regression; it cannot show the fix.
+
+Files here: dead-check.txt, snap-parent.txt, snap-tip.txt, readers-guard-tip.txt, standing-tip.txt, tip-default/parked.log.txt, pw1-{tip,par}-{default,parked}-{1..5}.log.txt (tip = the hardened driver, par = its parent), turn24-driver.log.txt.

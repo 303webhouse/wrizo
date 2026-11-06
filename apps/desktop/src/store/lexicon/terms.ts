@@ -6,14 +6,14 @@ export type DeskTermId =
   // renamed to 'zoneStrip' here in step with the track's own retirement:
   // DeskFrame's first grid column now holds the cascade's strip, not a
   // tool-rail, and no other file referenced the old id (confirmed by grep).
-  | 'zoneWayfinding' | 'zoneStrip' | 'zoneStage' | 'zoneCorkboard' | 'zoneMeter'
-  | 'corkboardJournalTab' | 'deskMenuGlyph'
+  | 'zoneStrip' | 'zoneCorkboard' | 'zoneMeter'
+  | 'corkboardJournalTab'
   // AB2 — the hand-tools' own labels, born on AB2's ToolRail.tsx (now
   // components/Sliver.tsx, CD1 S2/S7 — ToolRail itself retired, these ids
   // did not). New user-facing strings this ticket introduces land in this
   // seam per the AB1 review's ratified naming, not a second lexicon file.
-  | 'railInk' | 'railControls' | 'railForwardLock' | 'railReading' | 'railTypewriter'
-  | 'railFormat' | 'railStructure' | 'railStructureProse' | 'railStructureScreenplay'
+  | 'railInk' | 'railControls' | 'railForwardLock'
+  | 'railFormat'
   | 'modeBarPen' | 'spreadLensInk'
   | 'inkInstrument' | 'inkModeText' | 'inkModeInk'
   | 'inkTip' | 'inkNib' | 'inkTipPen' | 'inkTipPencil' | 'inkTipMarker'
@@ -23,7 +23,7 @@ export type DeskTermId =
   // sliver's own keyboard shortcut (Ctrl/Cmd+/, SLIVER_SHORTCUT_LABEL in
   // that file) is a chord constant, not user-facing prose, so it does NOT
   // ride this lexicon seam — only its surrounding strings do.
-  | 'goalEdit' | 'goalLabel' | 'goalUnitLines' | 'goalSet' | 'goalClear'
+  | 'goalLabel' | 'goalUnitLines'
   | 'sliverOpen' | 'sliverClose'
   // FX3 S5 — the sliver foot's new instruments row (components/Sliver.tsx's
   // SliverInstrumentRow). Only the row/section-level labels ride this seam,
@@ -32,7 +32,7 @@ export type DeskTermId =
   // 'Time') follow ModeStage.tsx's own SettingsPanel/ThemePanel precedent
   // (already hardcoded inline there, pre-FX3) rather than adding a new key
   // per option.
-  | 'sliverInstruments' | 'sliverInstrumentsShow' | 'sliverInstrumentsUnit'
+  | 'sliverInstrumentsUnit'
   // AB3 — the Drawer's own nav pulls (components/Drawer.tsx, RETIRED whole
   // by CD2 S5 — the left drawer's estate moves to the cascade strip). These
   // four term ids survive their original component: CD2's Strip.tsx reuses
@@ -42,7 +42,7 @@ export type DeskTermId =
   | 'drawerPage' | 'drawerPlaceJournal' | 'drawerPlaceShelf' | 'drawerPlaceDrawers'
   // AB3 S2 — the Page face (components/PageFace.tsx).
   | 'pageFaceStar' | 'pageFaceStarred' | 'pageFaceAddTag' | 'pageFaceAdd'
-  | 'pageFaceMoveCopy' | 'pageFacePortToBoard'
+  | 'pageFacePortToBoard'
   // AB4 S2 — Pin, the fourth sending verb (membership, not capture) + its
   // truthful membership-line prefix ("<prefix> <board>." — the board's own
   // title is interpolated at the call site, store/pageHome.ts).
@@ -57,8 +57,7 @@ export type DeskTermId =
   // the other three ids are orphaned vocabulary, left in place rather than
   // pruned (house precedent: 'zoneWayfinding' similarly outlived
   // DeskRail's own CD1 framed retirement without a lexicon cleanup pass).
-  | 'placeFaceOpen' | 'placeFaceFileSend' | 'placeFacePeek' | 'placeFacePeekSoon'
-  | 'placeFaceGoToRoom' | 'placeFaceEmpty'
+  | 'placeFaceEmpty'
   // CD2 S1 — the strip's own remaining roster labels (A11): Plan joins Page
   // in section B; Settings and Change Theme are the new foot section D.
   | 'stripPlan' | 'stripSettings' | 'stripChangeTheme'
@@ -67,7 +66,6 @@ export type DeskTermId =
   // Shelf -> PlaceFace-style rows) reuse the ids above; these are the NEW
   // strings CD2 itself introduces.
   | 'cascadeJournalOpen' | 'cascadeJournalNewPage' | 'cascadeJournalRecent' | 'cascadeJournalAll'
-  | 'cascadePlanCreateBoard' | 'cascadePlanPlotStory' | 'cascadePlanOpen' | 'cascadePlanEmpty'
   // PW1 S1/S2/S3 — "Boards connected" and what a board row, a section heading
   // and a membership row say. `cascadePlanOpen`/`cascadePlanEmpty` are RETIRED
   // from every render path (PW3: the panel is the list; PW9: absent, never
@@ -80,13 +78,11 @@ export type DeskTermId =
   | 'cascadePlanSectionCards' | 'cascadePlanSectionPages'
   | 'cascadePlanSectionBoards' | 'cascadePlanLinkedHeading'
   | 'cascadePinShown' | 'cascadePinNotShown' | 'cascadePinDisplay' | 'cascadePinHide'
-  | 'cascadePlanNoProject' | 'cascadeBoardMove' | 'cascadeBoardDelete' | 'cascadeBoardDeleteConfirm'
-  | 'cascadeBoardDeleteCancel' | 'cascadeBoardDeleteQuestion'
-  | 'cascadeDrawersChoose' | 'cascadeDrawersEmpty'
-  | 'cascadeShelfBrowse' | 'cascadeSettingsTitle' | 'cascadeSettingsSignOut'
+  | 'cascadeBoardMove' | 'cascadeBoardDelete'
+  | 'cascadeSettingsTitle' | 'cascadeSettingsSignOut'
   | 'cascadeThemeTitle'
   // CD2 S2/S4 — the survey layer + the dock.
-  | 'cascadeSurveyEmpty' | 'cascadeSurveyCurrent' | 'cascadeDockClose' | 'cascadeDockReopen'
+  | 'cascadeSurveyEmpty' | 'cascadeSurveyCurrent' | 'cascadeDockClose'
   // AB4 S1 — the CD2 erratum comes true: picking a board in the Plan survey
   // swaps the column to that board's cards, with a quiet back affordance to
   // the board list (the ONLY new survey-chrome string this ticket adds; the
@@ -107,7 +103,7 @@ export type DeskTermId =
   // FX5 S5 — the olive pin (the connection grab, replacing the dead
   // handle-double-click gesture whole) + the footer line/toggle threads
   // render as.
-  | 'boardThreadGrab' | 'boardThreadPrefix' | 'boardThreadUntitled' | 'boardFooterToggle'
+  | 'boardThreadPrefix' | 'boardThreadUntitled'
   // FLUX3 S1 - the Schema's node records and readouts (src/flux3/, behind ?flux3=1): new words only, no rename; TOOLS' lexicon pass sets their values
   | 'flux3LinkOne' | 'flux3LinkMany' | 'flux3ChecksumOk' | 'flux3ReadLevel' | 'flux3ReadZoom' | 'flux3ReadLast' | 'flux3KindPreset'
   // FLUX3 S2 - the Schema's Stack and hologram (src/flux3/FluxStack.tsx, behind ?flux3=1): the Stack button's word and the level readout's two words
@@ -115,9 +111,9 @@ export type DeskTermId =
   // the right-click menus, the "Send to Trash?" dialog, the Settings row and the toasts [deskLexicon §5]
   | 'ctxDelete' | 'ctxDeleteBoard' | 'ctxUngroup' | 'deleteDialogTitle' | 'deleteDialogPurgeTitle' | 'deleteDialogCancel' | 'deleteDialogConfirm' | 'deleteDialogDontAsk'
   | 'ctxEmptyTrash' | 'emptyTrashQuestionOne' | 'emptyTrashQuestionMany' | 'purgedElsewhere' | 'destructiveTypeToGo' | 'destructiveGo'
-  | 'settingsAskBeforeDelete' | 'toastCardDeleted' | 'toastCardRestored' | 'toastBoardTrashed' | 'trashCardBadge'
+  | 'settingsAskBeforeDelete' | 'toastCardDeleted' | 'toastCardRestored' | 'trashCardBadge'
   // the Grafts / Links tab: the selected card's connections, each with an X that asks first [deskLexicon §6]
-  | 'linksSelectCard' | 'linksRemoveTitle' | 'linksRemoveAria' | 'linksKindPage' | 'linksKindBoard' | 'linksKindCard'
+  | 'linksRemoveTitle' | 'linksRemoveAria' | 'linksKindPage' | 'linksKindBoard' | 'linksKindCard'
   // BIG PROJECTS STEP 3 - Grafts across places and the graft doors (docs/plans/big-projects.md step 3; mockup cursor/graft-doors-mockup @ c4f34eb0)
   | 'graftAdd' | 'graftSearch' | 'graftConnectedTo' | 'graftGroupCards' | 'graftGroupSources' | 'graftGroupBoards' | 'graftGroupPages' | 'graftSharedTags'
   | 'graftPlanBoard' | 'graftPlanCardsOne' | 'graftPlanCardsMany' | 'graftHideAria' | 'graftHiddenLine' | 'graftRemovedLine' | 'graftUndo' | 'graftCameFrom' | 'graftDock' | 'graftDockAria' | 'linkDockCloseAria' | 'linkDockUndock' | 'linkDockGone'
@@ -130,15 +126,15 @@ export type DeskTermId =
   // flat lexicon lookup; only the surrounding labels/disclosures live here.
   | 'tutorOpen' | 'tutorClose' | 'tutorTitle'
   // PHASE 1 (S3) - the right drawer's tab row. 'drawerLinks' is the per-theme word that replaces "Connections" (Arbor: Grafts, Flux: Links).
-  | 'tutorTabTutor' | 'drawerLinks' | 'drawerLinksEmpty' | 'drawerRightTabsLabel'
-  | 'tutorDockClose' | 'tutorDockReopen'
+  | 'tutorTabTutor' | 'drawerLinks' | 'drawerRightTabsLabel'
+  | 'tutorDockClose'
   | 'tutorLensConsistency' | 'tutorLensStructure' | 'tutorLensFragments'
   | 'tutorLensConsistencyEmpty' | 'tutorLensFragmentsEmpty' | 'tutorLensFragmentsNote'
   | 'tutorNudgesTitle' | 'tutorNudgesEmpty'
   // TU5 S3 — the book's Bible (L4): section header, a one-line note, empty
   // state, the add-input placeholder + button, and the per-fact
   // edit/delete/save/cancel affordances. All writer-facing chrome, all here.
-  | 'tutorBibleTitle' | 'tutorBibleNote' | 'tutorBibleEmpty'
+  | 'tutorBibleTitle' | 'tutorBibleEmpty'
   | 'tutorBibleAddPlaceholder' | 'tutorBibleAdd'
   | 'tutorBibleEdit' | 'tutorBibleDelete' | 'tutorBibleSave' | 'tutorBibleCancel'
   | 'tutorConversationTitle' | 'tutorConversationPlaceholder' | 'tutorConversationSend'
@@ -197,7 +193,7 @@ export type DeskTermId =
   // LOGOUT SAFETY — a sign-out refused while records have not reached the account, and its second step.
   | 'logoutBlockedBody' | 'logoutBlockedRejected' | 'logoutStay' | 'logoutAnyway' | 'logoutAnywayConfirm' | 'logoutAnywayBack'
   | 'logoutBlockedBodyOne' | 'logoutAnywayOne' | 'logoutAnywayConfirmOne' | 'logoutSigningOut'
-  | 'cascadePageNewPage' | 'cascadePlanJustAPage' | 'boardNewPageCard' | 'boardCanvasEmpty'
+  | 'cascadePageNewPage' | 'boardNewPageCard'
   // ITEM 83 M3 (R6) — the Page drawer's PAGE SETUP zone: the sheet's own
   // dimension (margins, leading, numbers, headers, footers), as opposed to
   // Revise's face+size, which is the page's VOICE (the F5 split). Every
@@ -216,10 +212,9 @@ export type DeskTermId =
   | 'stylingStrike'
   // card-close-x - the card pop-up's corner X: its accessible name.
   | 'boardPopupClose'
-  | 'twMenuHeading' | 'twForwardLock' | 'twForwardLockWindow'
-  | 'twUnitWords' | 'twUnitSentences' | 'twLineFade' | 'twLineFadeLines'
-  | 'twWritingLine' | 'twLineTop' | 'twLineCenter' | 'twLineBottom'
-  | 'twPageScroll' | 'footProgress' | 'footFullScreen' | 'footTypewriter' | 'footTarget'
+  | 'twForwardLock'
+  | 'twLineFade'
+  | 'twPageScroll'
   // ITEM 83 M5 (R4/DR3) — Draft's grown roster and its conversion verb.
   | 'draftHeading' | 'draftHeadingUp' | 'draftHeadingDown' | 'draftBullet' | 'draftBulletCircle' | 'draftBulletSquare' | 'draftBulletStyles' | 'draftQuote' | 'draftIndent' | 'draftOutdent' | 'draftSpacing'
   | 'railTemplates' | 'templateOutline' | 'templateBibliography' | 'templateTitlePage' | 'templateBlank' | 'templateScreenplay' | 'templateOpenedNewBack'
@@ -227,19 +222,17 @@ export type DeskTermId =
   | 'comingSoon' | 'railTypeface' | 'goalUnitWords' | 'railPageKind'
   // PHASE 1 - the Actions section of the left drawer.
   | 'railActions' | 'actionTags' | 'actionCopy' | 'actionDelete' | 'actionHeaderFooter' | 'actionTagRemove'
-  | 'actionDeleteConfirm' | 'actionDeleteYes' | 'actionDeleteKeep'
-  | 'footSettings' | 'footMenuTypewriter' | 'footMenuProgress' | 'footMenuPreferences' | 'footMenuFlicker'
+  | 'footSettings' | 'footMenuTypewriter' | 'footMenuProgress' | 'footMenuFlicker'
   // PHASE 1 (S4) - the two mode toggles beside the drawer's "..." button. Their names are what a screen reader hears; on/off is aria-pressed.
   | 'modeToggleTypewriter' | 'modeToggleProgress' | 'formatLockedByTypewriter'
   | 'draftAlignment' | 'draftAlignLeft' | 'draftAlignCenter' | 'draftAlignRight'
-  | 'draftConvertToScreenplay' | 'draftConvertToProse'
   // ITEM 207 — the Type control's accessible names. NO visible captions: his law is a strip menu with the fewest marks,
   // so each control's name lives in its aria-label, never as helper text.
   | 'typeGroup' | 'typeFace' | 'typeSmaller' | 'typeLarger' | 'typeSize'
   // FONT-SPAN - the Typeface section's two scopes (the approved font-choices mockup)
   | 'typeScope' | 'typeScopeSelection' | 'typeScopeWholeDocument' | 'typeScopeWholeCard'
   // the page's declared kind and its style guide; the two sub-labels say which control describes the page and which acts on it [deskLexicon §13]
-  | 'structureKindLabel' | 'structureActLabel' | 'structureStyleGuideLabel'
+  | 'structureStyleGuideLabel'
   | 'kindNormal' | 'kindScreenplay' | 'kindResearch'
   | 'styleGuideMla' | 'styleGuideApa' | 'styleGuideChicago' | 'styleGuideAp'
   // ITEM 83 M6 (R13.ii) — the board's Place-page list. The heading is a VERB
@@ -247,19 +240,16 @@ export type DeskTermId =
   // GO-versus-PUT confusion the Places redesign exists to close.
   // ITEM 170 — the list became the way to OPEN a page, so its heading names
   // what the list IS; the put it still offers is named by its own verb.
-  | 'openPagesHeading' | 'openPagesSort' | 'openPagesMore' | 'openPagesPlace'
-  | 'placeSortDate' | 'placeSortDrawer'
+  | 'openPagesSort' | 'openPagesMore' | 'openPagesPlace'
   // BIG PROJECTS 1a - the place block, the switcher and the Pages pop-out (Arbor words; Flux follows in its own words pass).
-  | 'sectionsHeading' | 'sectionsOrder' | 'sectionsRows' | 'sectionsGrid' | 'sectionsNewSet' | 'sectionsNewSetName' | 'sectionsPresets'
+  | 'sectionsHeading' | 'sectionsOrder' | 'sectionsNewSet' | 'sectionsNewSetName' | 'sectionsPresets'
   | 'sectionsNewBoard' | 'sectionsEmptyBoards'
   // FLUX V2 - the top drawer's display word (Arbor: its own name; Flux: Root, only while the name is still the default).
   | 'placeRootName'
   | 'sectionsMoved' | 'sectionsUndo' | 'sectionsTakeOut' | 'sectionsEmpty' | 'sectionsReorder'
   | 'switcherHeading' | 'switcherDrawers' | 'switcherJournals' | 'switcherNewDrawer' | 'switcherNewDrawerName' | 'switcherUnsorted'
-  | 'placeSortAZ' | 'placePageEmpty' | 'planNewCard' | 'planFitToContent'
   // ITEM 83 M7 (PP1) — the Home zone's heading, which until now existed only
   // as an aria-label the eye could not hear.
-  | 'placesHomeHeading'
   // the Trash board's own terms; system boards name their own home (describePageHome knows nothing of them) [deskLexicon §14]
   | 'drawerPlaceTrash' | 'cascadeTrashOpen' | 'boardRestore'
   | 'boardHomeLabelJournal' | 'boardHomeLabelTrash'
@@ -271,7 +261,7 @@ export type DeskTermId =
   // Shelf structurally never has). 'boardPinToBoard' is the Shelf's own
   // selected-card action (reuses PinToBoardSheet verbatim; the label
   // mirrors 'pageFacePin' — same verb, a second doorway to it).
-  | 'boardHomeLabelShelf' | 'shelfBoardEmpty' | 'cascadeShelfOpen'
+  | 'boardHomeLabelShelf' | 'shelfBoardEmpty'
   // B2 S5 gave the Board's Add flow "Existing page…" beside FX6's New page
   // card. (The Page pop-out's own "New Journal Entry" action, added here by
   // B2 S5, was RETIRED by FX15 S3 — dead SV6 vocabulary; see CascadePanels.)
@@ -291,12 +281,10 @@ export type DeskTermId =
   // 'drawersLooseGroup' labels the loose-docs cluster; the Shelf's own
   // first tile and each project's own cluster header both read their OWN
   // title (a proper noun — not lexicon vocabulary).
-  | 'drawersKindBoard' | 'drawersKindDoc' | 'drawersLooseGroup'
   // the Drawer terms: key names stay (internal ids), string values carry the writer's word [deskLexicon §15]
-  | 'createDrawerEyebrow' | 'createDrawerTitleLabel' | 'createDrawerOpensNote'
+  | 'createDrawerEyebrow' | 'createDrawerTitleLabel'
   | 'drawerHomeTitleLabel' | 'backToDrawer'
   | 'domainLabelCreative' | 'domainLabelAcademic' | 'domainLabelProfessional'
-  | 'journalRouteSendToDrawer' | 'journalRouteEmptyDrawers' | 'journalRoutePromoteDrawer'
   | 'sprintSaveToDrawer' | 'sprintSaveAsDrawer'
   // B3 S1 — the deck engine's own chrome (components/DeckWizard.tsx): the
   // two doors' own labels, the library step, the room headings, and the
@@ -437,9 +425,9 @@ export type DeskTermId =
   // SettingsPanel/Sliver.tsx's InstrumentsPanel hardcode their OWN terse
   // option strings inline (the FX3 S5 precedent, left as-is — this ticket
   // adds a new control, it does not retrofit its neighbors).
-  | 'progressStyleLabel' | 'progressStyleBar' | 'progressStyleRhizome' | 'progressDrawer' | 'recedeHint'
+  | 'progressStyleLabel' | 'progressStyleBar' | 'progressStyleRhizome' | 'progressDrawer'
   // the Recede-depth and Timer rows' own words, out of inline strings so a theme can name them [deskLexicon §18]
-  | 'fadeDepthLabel' | 'fadeDepthPartial' | 'fadeDepthFull' | 'timerLabel'
+  | 'timerLabel'
   // one plain sentence per themed word, behind its own "?" (store/help.ts, HelpButton) [deskLexicon §19]
   | 'helpGrafts' | 'helpTemplates' | 'helpFreeWrite' | 'helpPublish'
   | 'tutorConversationRetry' | 'pageHomeLoose' | 'pageHomeJournal' | 'pageHomeProject' | 'pageHomeAlso'
@@ -482,16 +470,15 @@ export type DeskTermId =
   | 'gapsLead' | 'deckStack' | 'walkLit' | 'walkUnlit'
   // TOOLS #9 - MACHINA STEP (m1-m4): the readout row above the Block, the keys hint under it, the Plans row's kind word, the "?" box's example label. Canonical English; only Machina draws them.
   | 'walkReadoutAgenda' | 'walkReadoutPlan' | 'walkBlockOf' | 'walkKeysHint' | 'deckFactKind' | 'deckStepHelpEg'
-  | 'boardPageDoor' | 'pagePlanDoor' | 'pageEscHint' | 'boardTelos'
+  | 'boardPageDoor' | 'pagePlanDoor' | 'pageEscHint'
   | 'boardLaneDefault' | 'boardStoryboardEmpty' | 'boardOutlineEmpty'
   | 'boardPairWithPage'
   | 'boardRenameLabel'
   // the empty board's doors and the empty page's start-words are door NAMES, not tasks; the child-card words per deck [deskLexicon §21]
   | `kidDoor_${ChildWord}` | `kidPlural_${ChildWord}` | `kidTitle_${ChildWord}` | `kidQ_${ChildWord}` | 'kidQ_section_story'
   | 'kidHowMany' | 'kidKicker' | 'kidNote' | 'kidAdd' | 'kidReadout'
-  | 'beginNewCard' | 'beginNewPageCard' | 'beginLoadDeck' | 'beginConnectPage'
+  | 'beginNewCard' | 'beginLoadDeck' | 'beginConnectPage'
   | 'beginNewLane'
-  | 'beginScreenplay' | 'beginPlan'
   // ITEM 224 — sign-up by invite code, until launch. Arrival.tsx's own
   // fields are placeholder-only (no labels) today; this one matches that
   // existing shape exactly rather than introducing a labelled field alone.
@@ -502,7 +489,7 @@ export type DeskTermId =
   // the splash's cycling loading line, four phrases per theme [deskLexicon §22]
   | 'splashLoading1' | 'splashLoading2' | 'splashLoading3' | 'splashLoading4'
   // W4 (Help me choose) - the panel's chrome words and the questions' answers (labels + hints) and the deck cover lines.
-  | 'formsIntakeHint' | 'formsBlocksHead' | 'formsFoot' | 'formsFootBlocks'
+  | 'formsIntakeHint' | 'formsFoot' | 'formsFootBlocks'
   | 'helpDoor'
   | 'helpDialogLabel'
   | 'helpKicker'

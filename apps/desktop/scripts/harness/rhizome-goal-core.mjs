@@ -15,6 +15,35 @@ const SRC = join(desktop, 'src');
 const { build } = createRequire(createRequire(join(desktop, 'package.json')).resolve('vite'))('esbuild');
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
+
+// ==== RETIRED WHOLE by #13 step 11 (Fable, Nov 5) ==========================================================================================
+// This file proves store/rhizomeEngine.ts, the OLD rhizome engine. RhizomeField.tsx draws from store/rhizomeGrowth.ts since Oct 8 (Fable;
+// rhizome-growth.mjs covers it), nothing imports the old engine, and step 11 deletes it as dead code. Its 29 checks below are kept VERBATIM
+// and no longer run. What runs instead is the retirement's own truth, read from source: the engine is reachable from nowhere, and the live
+// field draws from its successor. It holds before the delete (the file unimported) and after it (the file gone).
+{
+  const { readdirSync, statSync, existsSync } = await import('node:fs');
+  const walkSrc = (d) => readdirSync(d).flatMap((f) => { const p = join(d, f); return statSync(p).isDirectory() ? walkSrc(p) : /\.(ts|tsx)$/.test(f) ? [p] : []; });
+  const importers = walkSrc(SRC).filter((p) => /(from\s*|import\s*\(\s*)['"][^'"]*\/rhizomeEngine['"]/.test(readFileSync(p, 'utf8'))).map((p) => relative(SRC, p).split('\\').join('/'));
+  const field = srcText(SRC, 'components/RhizomeField.tsx');
+  const retired = { importers, engineExists: existsSync(join(SRC, 'store/rhizomeEngine.ts')), fieldUsesGrowth: /from '\.\.\/store\/rhizomeGrowth'/.test(field) };
+  ok('RETIRED (#13 step 11): the old engine store/rhizomeEngine.ts is imported by no src file, and RhizomeField draws from store/rhizomeGrowth.ts (rhizome-growth.mjs proves that one)',
+    importers.length === 0 && retired.fieldUsesGrowth, JSON.stringify(retired));
+  const parked = [];
+  if (process.env.HARNESS_PARKED === '1') {
+    parked.push({ name: 'PARKED (was this file\'s 29 checks of the old engine: coverage, stem extension, the thick survivor, the draw-on, the short curved step, and their mutants) - RETIRED WHOLE by #13 step 11: the engine is unreachable and deleted; the live field is rhizome-growth.mjs\'s',
+      pass: importers.length === 0 && retired.fieldUsesGrowth });
+    for (const c of parked) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}`);
+    console.log(parked.every((c) => c.pass) ? `\nRHIZOME-GOAL-CORE PARKED: PASS (${parked.length} record) - HARNESS_PARKED=1 armed; the file is retired whole (#13 step 11)` : '\nRHIZOME-GOAL-CORE PARKED: FAIL');
+  }
+  console.log(JSON.stringify(checks, null, 2));
+  const pass = checks.every((c) => c.pass) && parked.every((c) => c.pass);
+  console.log(pass ? `\nRHIZOME-GOAL-CORE VERIFY: PASS (${checks.length} checks) - retired whole by #13 step 11; the record above is the file's only live check`
+    : `\nRHIZOME-GOAL-CORE VERIFY: FAIL — ${checks.filter((c) => !c.pass).length}/${checks.length} failed`);
+  process.exit(pass ? 0 : 1);
+}
+// ==== the retired body, VERBATIM, below: no longer run ======================================================================================
+
 const swap = (from, to) => (t) => {
   if (!t.includes(from)) throw new Error(`mutation anchor missing: ${from}`);
   return t.replace(from, to);

@@ -87,23 +87,6 @@
   gap: 0.28em;
   line-height: 1;
 }
-.wordmark__mark {
-  height: 1.5em;
-  width: auto;
-  flex-shrink: 0;
-  /* soft ember glow — follows the mark's shape, threshold surfaces only */
-  filter: drop-shadow(0 0 10px rgba(224, 113, 44, 0.55)) drop-shadow(0 0 22px rgba(224, 113, 44, 0.25));
-}
-.wordmark__text {
-  font-family: var(--font-display);
-  font-weight: 500;
-  font-size: 1em;
-  line-height: 1;
-  letter-spacing: 0.015em;
-  /* ITEM arbor-quiet-brass — the mark is one of brass's four canonical homes
-     (docs/flux-theme-canon.md §2: "prose caret, bar completion surge, Connect, the mark"). */
-  color: var(--brass);
-}
 
 /* Caps label. */
 .eyebrow {
@@ -129,33 +112,6 @@
 }
 .paper-page ::placeholder { color: var(--ink-on-paper-low); }
 
-/* Typewriter fade — window-scroll variant (JournalEntry; see useTypewriterFade.ts
-   and ModeStage's mask-image variant for the fixed-viewport case). The Journal
-   sheet grows unbounded with the page (ink strokes anchor to its own height —
-   it can't be clipped into a fixed-height scroll box), so this fades the top
-   via a sticky, viewport-pinned gradient rather than a mask on the sheet
-   itself. Opacity gated by data-scrolled (C2: a fresh/short page's first line
-   must never render faded).
-   FX1 S1 — height/reach now track --tw-fade-band (~3 line-heights, set by
-   useTypewriterFade.ts's measure()), and the gradient itself is a genuine
-   ramp across the whole band (85% paper-opaque at the very top, easing to 0)
-   rather than the old two-stage "solid then clear" cutoff — closer to the
-   1.0->~0.15 text-opacity ramp the container-mode mask achieves directly. */
-/* FX5 S1 (b) — "the fade band starts one line lower": the sticky overlay's
-   own height now spans --tw-fade-start (one line-height, fully transparent
-   — the topmost line reads unfaded) PLUS the existing --tw-fade-band ramp
-   depth, unchanged; the gradient's own stops move down by --tw-fade-start
-   in step (explicit px stops, not percentages, so the two pieces — the
-   flat unfaded lead-in and the ramp — stay independently sized regardless
-   of the box's own total height). */
-.entry-typewriter-fade{ position:sticky; top:0; z-index:2; pointer-events:none;
-  height:calc(var(--tw-fade-start,28px) + var(--tw-fade-band,84px));
-  margin-bottom:calc(-1 * (var(--tw-fade-start,28px) + var(--tw-fade-band,84px)));
-  background:linear-gradient(to bottom,
-    rgba(243,237,225,0) 0, rgba(243,237,225,0) var(--tw-fade-start,28px),
-    rgba(243,237,225,.85) var(--tw-fade-start,28px),
-    rgba(243,237,225,0) calc(var(--tw-fade-start,28px) + var(--tw-fade-band,84px)));
-  opacity:0; transition:opacity .6s ease; }
 /* FX4 S1 — the Journal carve-out retires: this is the ENTIRE mechanism of
    that carve-out reversing. Before this ticket, `.entry-full` computed and
    set `--tw-start-offset` (useTypewriterFade.ts's own measure()) but NO
@@ -197,8 +153,6 @@
    useTypewriterFade.ts) govern engagement timing the way it was designed
    to, instead of being blocked by document geometry underneath it. */
 .entry-full[data-typewriter='true']{ padding-top:var(--tw-start-offset,0px); padding-bottom:30vh; }
-.entry-full[data-typewriter='true'][data-scrolled='true'] .entry-typewriter-fade{ opacity:1; }
-@media (prefers-reduced-motion:reduce){ .entry-typewriter-fade{ transition:none; } }
 
 /* Glanceable progress — 10px ink-fill dot, always paired with a text label. */
 .status-dot {
@@ -238,23 +192,6 @@
   background: var(--brass);
   border-radius: 0; /* FX1 S4 */
   transition: width var(--t-state) var(--ease);
-}
-
-/* Timer hairline — drains right-to-left, the one continuous element. */
-.hairline-timer {
-  position: relative;
-  height: 2px;
-  width: 100%;
-  background: var(--ink-border);
-  overflow: hidden;
-}
-.hairline-timer__fill {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  background: var(--brass);
-  transition: width 1s linear;
 }
 
 /* Quiet saved confirmation (toggled by JS; fades out after ~2s). */
@@ -334,9 +271,7 @@ a:focus-visible,
 .btn-ghost:focus-visible,
 .btn-quiet:focus-visible,
 .btn-brick:focus-visible,
-.form-input:focus-visible,
-.form-textarea:focus-visible,
-.form-select:focus-visible {
+.form-textarea:focus-visible {
   outline: 2px solid var(--brass);
   outline-offset: 2px;
 }
@@ -367,8 +302,6 @@ a:focus-visible,
   }
 
   /* iOS never zooms on focus when inputs are >= 16px. */
-  .form-input,
-  .form-select,
   .form-textarea {
     font-size: 16px;
   }
@@ -499,4 +432,3 @@ a:focus-visible,
 @media (prefers-reduced-motion: reduce) {
   .chrome-handle { transition: none; }
 }
-

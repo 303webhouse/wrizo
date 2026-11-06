@@ -1,0 +1,7 @@
+healthz: {"ok":true,"build":"index-BiBie43a"}  http=200
+auth/me: 401
+signup-status: {"open":false}
+served js: assets/index-BiBie43a.js
+served bytes: 989291 md5: 3b4a5b1e31e9f964aba046dc8dbae963
+tested  bytes: 989291 md5: 3b4a5b1e31e9f964aba046dc8dbae963
+served css: assets/index-MJl1zfGB.css 266044 md5 17814d7dbf4783d8ce524623ba628030; tested css md5 17814d7dbf4783d8ce524623ba628030

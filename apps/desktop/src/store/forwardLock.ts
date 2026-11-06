@@ -25,10 +25,6 @@ function load(): boolean {
 let current: boolean = load();
 const subs = new Set<(v: boolean) => void>();
 
-export function getForwardLock(): boolean {
-  return current;
-}
-
 export function setForwardLock(next: boolean): void {
   current = next;
   try { localStorage.setItem(KEY, next ? '1' : '0'); } catch { /* ignore */ }

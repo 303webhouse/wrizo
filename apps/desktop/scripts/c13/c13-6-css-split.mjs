@@ -11,6 +11,14 @@
 //   node apps/desktop/scripts/c13/c13-6-css-split.mjs dist <a/dist-web> <b/dist-web> [--plant swap]
 //        (3) the two builds are byte-identical: every file, its name (so its content hash) and its bytes; the global CSS asset is named.
 //        --plant swap: b's global CSS asset with two of its rules swapped: must FAIL
+//   node apps/desktop/scripts/c13/c13-6-css-split.mjs standing [--plant raw|helper|exempt|noexempt]
+//        THE STANDING GUARD (for the list of guards run on every main). `check`'s claim (1) is step 6's one-time proof: the CSS was
+//        meant to change after step 6 (steps 7 and 8 changed it), so it stays as it is, for that proof only. `standing` re-runs what
+//        must hold on every main: srcText is a drop-in for a plain read and reads index.css as the joined parts, and claim (2), no
+//        script reads index.css as CSS. ONE exemption, by name: c13-8-css-themes.mjs reads and writes index.css's IMPORT LIST (that is
+//        its job, step 8's theme split), in exactly its two raw reads; a third raw read there still fails. --plant raw / helper: a
+//        planted raw reader: must FAIL; exempt: a third raw read in the exempt tool: must FAIL; noexempt: the exemption withdrawn:
+//        must FAIL (so the exemption is what lets the tool pass, and nothing else does).
 import { execFileSync } from 'node:child_process';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
@@ -178,4 +186,54 @@ function dist() {
   process.exit(fails.length ? 1 : 0);
 }
 
-({ split, check, dist }[process.argv[2]] ?? (() => { console.log('usage: split | check --base <rev> [--plant swap|drop|edit|raw|helper] | dist <a> <b> [--plant swap]'); process.exit(1); }))();
+// the standing guard: see the header. Its reader rule is check()'s claim (2) word for word, with the one named exemption.
+const STANDING_EXEMPT = { file: 'apps/desktop/scripts/c13/c13-8-css-themes.mjs', rawReads: 2, why: 'reads and writes the import list itself (step 8)' };
+function standing() {
+  const plant = arg('plant');
+  const fails = [];
+  for (const parts of [['store', 'theme.ts'], ['components', 'Sliver.tsx'], ['main.tsx']]) {
+    let got; try { got = srcText(SRC, ...parts); } catch (e) { got = `(threw ${e.code || e.message})`; }
+    if (got !== fs.readFileSync(path.join(SRC, ...parts), 'utf8')) fails.push(`srcText(SRC, ${parts.join(', ')}) is not that file's text${got.startsWith('(threw') ? ` ${got}` : ''}`);
+  }
+  if (srcText(SRC, 'index.css') !== globalCss(SRC)) fails.push("srcText(SRC, 'index.css') is not the joined text");
+  const joined = globalCssParts(SRC);
+  if (joined.length < 20) fails.push(`globalCssParts finds only ${joined.length} parts (the split has 20+): the guard would be reading the wrong tree`);
+  const scripts = execFileSync('git', ['ls-files', 'apps/desktop/scripts'], { cwd: ROOT, encoding: 'utf8' }).split('\n').filter((f) => /\.mjs$/.test(f));
+  const texts = new Map(scripts.filter((f) => !f.endsWith('c13/c13-6-css-split.mjs') && !f.endsWith('scripts/global-css.mjs'))
+    .map((f) => [f, fs.readFileSync(path.join(ROOT, f), 'utf8')]));
+  if (plant === 'raw') texts.set('apps/desktop/scripts/harness/planted.mjs', "import fs from 'node:fs';\nconst css = fs.readFileSync(path.join(SRC, 'index.css'), 'utf8');\n");
+  if (plant === 'helper') {
+    const f = 'apps/desktop/scripts/harness/drawer-toggles.mjs';
+    texts.set(f, texts.get(f).replace('srcText(SRC, rel)', "fs.readFileSync(path.join(SRC, rel), 'utf8')"));
+  }
+  if (plant === 'exempt') texts.set(STANDING_EXEMPT.file, `${texts.get(STANDING_EXEMPT.file)}\nconst planted = fs.readFileSync(path.join(SRC, 'index.css'), 'utf8');\n`);
+  const exempt = plant === 'noexempt' ? null : STANDING_EXEMPT;
+  const PATH_LIT = /['"`](?:[^'"`\n]*\/)?index\.css['"`]/;
+  const readers = [], bad = [];
+  let exemptReads = null;
+  for (const [f, s] of texts) {
+    const code = s.split(/\r?\n/).filter((l) => !/^\s*(\/\/|\*)/.test(l) && !/git show/.test(l));
+    if (!code.some((l) => PATH_LIT.test(l))) continue;
+    readers.push(f);
+    if (exempt && f === exempt.file) {
+      // the exempt tool may read index.css raw in exactly its known reads, and nothing else of check()'s rule is relaxed for it
+      const raw = code.filter((l) => /readFile(Sync)?\(/.test(l) && PATH_LIT.test(l));
+      exemptReads = raw.length;
+      if (raw.length !== exempt.rawReads) bad.push(`${f}: ${raw.length} raw reads of index.css (the exemption covers exactly ${exempt.rawReads}: ${exempt.why})`);
+      continue;
+    }
+    if (!/from '\.{1,2}\/global-css\.mjs'/.test(s)) bad.push(`${f}: names index.css but does not use global-css.mjs`);
+    for (const l of code) if (/readFile(Sync)?\(/.test(l) && PATH_LIT.test(l)) bad.push(`${f}: reads index.css raw: ${l.trim().slice(0, 90)}`);
+    if (/readFileSync\(\s*(path\.)?join\(\s*SRC\s*,/.test(s)) bad.push(`${f}: a raw readFileSync(join(SRC, ...)) read is left`);
+  }
+  if (exempt && exemptReads === null) bad.push(`${exempt.file}: the exempt tool no longer names index.css: the exemption is stale, remove it`);
+  if (bad.length) fails.push(`${bad.length} reader problems: ${bad.slice(0, 4).join(' | ')}`);
+  console.log(`readers of index.css: ${readers.length}; exempt: ${exempt ? `${exempt.file} (${exemptReads} raw reads)` : 'none'}; parts ${joined.length}; scripts scanned ${scripts.length}${plant ? `; PLANTED: ${plant}` : ''}`);
+  for (const f of fails) console.log('FAIL', f);
+  console.log(fails.length ? `STANDING: FAIL (${fails.length})` : 'STANDING: PASS (srcText reads every file as itself and index.css as its joined parts; no script but the one named tool reads index.css as text)');
+  process.exit(fails.length ? 1 : 0);
+}
+
+// ---- PARKED - SUPERSEDED by the standing mode (#13, Fable Nov 5): the usage line gains `standing`. Kept VERBATIM and no longer run:
+// ({ split, check, dist }[process.argv[2]] ?? (() => { console.log('usage: split | check --base <rev> [--plant swap|drop|edit|raw|helper] | dist <a> <b> [--plant swap]'); process.exit(1); }))();
+({ split, check, dist, standing }[process.argv[2]] ?? (() => { console.log('usage: split | check --base <rev> [--plant swap|drop|edit|raw|helper] | dist <a> <b> [--plant swap] | standing [--plant raw|helper|exempt|noexempt]'); process.exit(1); }))();

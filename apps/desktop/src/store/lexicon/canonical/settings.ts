@@ -8,10 +8,6 @@ export const CANONICAL_SETTINGS = {
   progressDrawer: 'Drawer',   // the Progress row's label for the stored 'project' metric (no theme overrides it yet) [ModeStage §22]
 
   // the Recede-depth explanation lives here, behind the shared "?"; the Settings panel carries no standing text [deskLexicon §57]
-  recedeHint: 'Type and the menus fade; pause, reach an edge, or press Esc to bring them back.',
-  fadeDepthLabel: 'Recede depth',
-  fadeDepthPartial: 'Partial',
-  fadeDepthFull: 'Full',
   timerLabel: 'Timer',
 
   // one plain sentence per themed word, Arbor's forms; Flux's are in OVERRIDES [deskLexicon §58]

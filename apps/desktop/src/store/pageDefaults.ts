@@ -1,4 +1,3 @@
-import { useSyncExternalStore } from 'react';
 import type { PageSettings } from '../types';
 import { PAGE_SETTINGS_FALLBACK } from '../types';
 
@@ -66,27 +65,4 @@ export function setUserPageDefaults(input: PageSettings | null): void {
     credentials: 'include',
     body: JSON.stringify({ pageDefaults: next }),
   }).catch(() => { /* offline: the local copy stands, boot re-pulls */ });
-}
-
-/** Pull the durable copy on boot. Server wins over the local mirror only when
- *  the server actually has one — a null server value never erases a local
- *  default the writer just set while offline. */
-export async function hydrateUserPageDefaults(): Promise<void> {
-  try {
-    const r = await fetch('/api/page-defaults', { credentials: 'include' });
-    if (!r.ok) return;
-    const body = await r.json();
-    const server = dressOnly((body?.pageDefaults ?? null) as PageSettings | null);
-    if (server) { defaults = server; writeLocal(server); notify(); }
-  } catch { /* offline — the local mirror governs */ }
-}
-
-function subscribe(l: () => void): () => void {
-  listeners.add(l);
-  return () => { listeners.delete(l); };
-}
-const getSnapshot = (): PageSettings | null => defaults;
-
-export function useUserPageDefaults(): PageSettings | null {
-  return useSyncExternalStore(subscribe, getSnapshot);
 }

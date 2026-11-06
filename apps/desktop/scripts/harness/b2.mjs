@@ -1211,10 +1211,26 @@ if (process.env.HARNESS_PARKED === '1') {
     //     && lexiconTermsNow.boardsTitle === 'Also grafted to…',
     //   JSON.stringify(lexiconTermsNow));
     // ------------------------------------------------------------------------
-    pok('PARKED, generation 7 (was generation 6\'s re-assertion with addExisting "Existing page…") — item word-diet: addExisting reads "+ Filed Pages"; the other seven terms are unchanged and still pinned',
+    // ---- PARKED, generation 7 — SUPERSEDED by #13 step 11 (Fable, Nov 5) ----
+    // Quoted VERBATIM. One conjunct goes: cascadeShelfOpen (the retired Shelf
+    // room's "Open the Shelf", named by no source) is deleted from the lexicon.
+    //
+    // pok('PARKED, generation 7 (was generation 6\'s re-assertion with addExisting "Existing page…") — item word-diet: addExisting reads "+ Filed Pages"; the other seven terms are unchanged and still pinned',
+    //   lexiconTermsNow.shelfHome === 'Shelf'
+    //     && lexiconTermsNow.shelfEmpty === 'Nothing waiting.'
+    //     && lexiconTermsNow.shelfOpen === 'Open the Shelf'
+    //     && lexiconTermsNow.addExisting === '+ Filed Pages'
+    //     && lexiconTermsNow.placesTitle === 'Places'
+    //     && lexiconTermsNow.placesLoose === 'Loose'
+    //     && lexiconTermsNow.newDrawer === 'File to a new drawer…'
+    //     && lexiconTermsNow.boardsTitle === 'Also grafted to…',
+    //   JSON.stringify(lexiconTermsNow));
+    // ------------------------------------------------------------------------
+    // shelfOpen reads 'Open the Shelf' while it exists and no word once step 11 deletes it (so this holds before the delete and after it)
+    pok('PARKED, generation 8 (was generation 7\'s re-assertion with shelfOpen "Open the Shelf") — #13 step 11: cascadeShelfOpen is deleted from the lexicon; the other seven terms are unchanged and still pinned',
       lexiconTermsNow.shelfHome === 'Shelf'
         && lexiconTermsNow.shelfEmpty === 'Nothing waiting.'
-        && lexiconTermsNow.shelfOpen === 'Open the Shelf'
+        && (lexiconTermsNow.shelfOpen === 'Open the Shelf' || lexiconTermsNow.shelfOpen === undefined || lexiconTermsNow.shelfOpen === null)
         && lexiconTermsNow.addExisting === '+ Filed Pages'
         && lexiconTermsNow.placesTitle === 'Places'
         && lexiconTermsNow.placesLoose === 'Loose'

@@ -424,13 +424,19 @@ await withHarness(async (app) => {
   await sleep(300);
   if (await openPlan(app)) {
     if (await pressCentre(app, '.wz-cascade-boardrow-open', 'open a board\'s contents to make it the remembered one')) {
-      await sleep(300);
+      // DRIVER (Fable, Nov 5: harden S5's waits) — each step waits on the state the NEXT step needs, not on a fixed time. Under load the
+      // fixed 300 / 150 / 200 ms let an Escape land before the survey had mounted (so no board was ever opened, and nothing remembered),
+      // which read as S5 red on main's own tree too (Chat 1's pw1 distribution, Nov 6: the parent red once, on these same two checks).
+      // A wait that times out records its own DRIVER failure; none of them can make S5 pass, because S5 still reads the reopened panel.
+      await waitOr(app, "!!document.querySelector('.wz-cascade-survey')", 'the board\'s survey is open (the remembered act happened)');
       // Close the whole cascade (Escape twice: survey -> panel -> strip).
       await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))");
-      await sleep(150);
+      await waitOr(app, "!document.querySelector('.wz-cascade-survey')", 'the first Escape closes the survey');
       await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))");
-      await sleep(200);
+      await waitOr(app, "!document.querySelector('.wz-cascade-panel')", 'the second Escape closes the panel (so the reopen below is a real reopen)');
       if (await openPlan(app)) {
+        // the reopened panel mounts its remembered survey in a render or two: wait for it, bounded; S5 below reads what is there either way
+        await settle(app, "!!document.querySelector('.wz-cascade-survey')", 3000);
         const restored = await app.evalJs(`({
           survey: !!document.querySelector('.wz-cascade-survey'),
           title: document.querySelector('.wz-cascade-survey-title')?.textContent,
@@ -438,7 +444,8 @@ await withHarness(async (app) => {
         ok('S5 (Q6): the Plan panel REOPENS on the board whose contents were last open, per page — the machine declining to forget, restoring only what the writer themselves opened',
           restored.survey === true && restored.title === 'Winterfell timeline', JSON.stringify(restored));
         if (await pressCentre(app, '.wz-cascade-survey-back', 'the survey\'s ‹ walks back to the list')) {
-          await sleep(250);
+          // DRIVER (the same hardening): wait, bounded, for the survey to close; the check below reads what is there either way
+          await settle(app, "!document.querySelector('.wz-cascade-survey')", 3000);
           const backToList = await app.evalJs(`({
             survey: !!document.querySelector('.wz-cascade-survey'),
             rows: document.querySelectorAll('.wz-cascade-boardrow').length,

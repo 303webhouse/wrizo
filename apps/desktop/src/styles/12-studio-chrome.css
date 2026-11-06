@@ -274,7 +274,6 @@
    separated segments don't reflow when one becomes selected. */
 .mode-seg button.on{ background:none; color:var(--choice); box-shadow:inset 0 0 0 1px var(--choice); }
 .mode-seg button.mode-seg-soon{ color:var(--text-low); opacity:.45; cursor:default; }
-.mode-settings-hint{ margin-top:9px; font-size:9.5px; color:var(--text-low); line-height:1.5; }
 
 /* Narrow screens (tablet portrait / phone): hide the rails — the page is the
    experience on small surfaces. The dissolve/glow/progress/typewriter remain. */

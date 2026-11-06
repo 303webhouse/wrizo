@@ -578,8 +578,15 @@ function partM(tutor = tutorSrc, tabs = tabsSrc, note = noteSrc, c = css) {
   //
   // ok('(K1 [help-buttons successor]) the right drawer\'s second tab word is the THEME\'S, from the lexicon: Grafts in Arbor (the canonical theme), Links in Flux',
   //   k.arborWord === 'Grafts' && k.fluxWord === 'Links' && inUnionNow, JSON.stringify({ ...k, inUnionNow }));
-  ok('(K1 [flux-v2 successor]) the right drawer\'s second tab word is the THEME\'S, from the lexicon: Grafts in Arbor (the canonical theme), Inputs in Flux',
-    k.arborWord === 'Grafts' && k.fluxWord === 'Inputs' && inUnionNow, JSON.stringify({ ...k, inUnionNow }));
+  // ---- PARKED - SUPERSEDED by #13 step 11 (Fable, Nov 5): drawerLinksEmpty (an empty-pane line nothing renders) is deleted from the lexicon,
+  // so the union line no longer carries it. Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok('(K1 [flux-v2 successor]) the right drawer\'s second tab word is the THEME\'S, from the lexicon: Grafts in Arbor (the canonical theme), Inputs in Flux',
+  //   k.arborWord === 'Grafts' && k.fluxWord === 'Inputs' && inUnionNow, JSON.stringify({ ...k, inUnionNow }));
+  // the union line as it stands before step 11's delete, or after it (drawerLinksEmpty gone): either is the same tab-word claim
+  const inUnion11 = inUnionNow || /'tutorTabTutor' \| 'drawerLinks' \| 'drawerRightTabsLabel'/.test(lexSrc);
+  ok('(K1 [step 11 successor]) the right drawer\'s second tab word is the THEME\'S, from the lexicon: Grafts in Arbor (the canonical theme), Inputs in Flux',
+    k.arborWord === 'Grafts' && k.fluxWord === 'Inputs' && inUnion11, JSON.stringify({ ...k, inUnionNow, inUnion11 }));
 
   // SUPERSEDED WHOLE (help-buttons): drawerLinksNote/-NoteLabel are DELETED
   // (not emptied) - the Arbor-only/Flux-empty explainer model this check
@@ -602,7 +609,12 @@ function partM(tutor = tutorSrc, tabs = tabsSrc, note = noteSrc, c = css) {
   // Kept VERBATIM below and no longer run; the live successor follows.
   //
   // ok('(K3) the empty pane\'s line follows the theme too (grafted / linked)', k.arborEmpty === 'Nothing grafted yet.' && k.fluxEmpty === 'Nothing linked yet.', JSON.stringify(k));
-  ok('(K3 [flux-v2 successor]) the empty pane\'s line follows the theme too (grafted / connected)', k.arborEmpty === 'Nothing grafted yet.' && k.fluxEmpty === 'Nothing connected yet.', JSON.stringify(k));
+  // ---- PARKED - SUPERSEDED by #13 step 11 (Fable, Nov 5): drawerLinksEmpty is named by no source (the pane does not render it) and step 11
+  // deletes it. Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok('(K3 [flux-v2 successor]) the empty pane\'s line follows the theme too (grafted / connected)', k.arborEmpty === 'Nothing grafted yet.' && k.fluxEmpty === 'Nothing connected yet.', JSON.stringify(k));
+  ok('(K3 [step 11 successor]) the empty pane\'s line follows the theme too (grafted / connected) while the term exists; once step 11 deletes it, it is gone from both themes at once (never one theme\'s word left alone)',
+    (k.arborEmpty === 'Nothing grafted yet.' && k.fluxEmpty === 'Nothing connected yet.') || (k.arborEmpty === null && k.fluxEmpty === null), JSON.stringify(k));
   const l = await partL();
   ok('(K4) the right drawer\'s tabs are TUTOR then the links tab, from one constant', JSON.stringify(l.tabs) === JSON.stringify(['tutor', 'links']), JSON.stringify(l));
   const m = partM();

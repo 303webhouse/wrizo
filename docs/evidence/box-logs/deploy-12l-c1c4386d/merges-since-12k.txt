@@ -1,0 +1,21 @@
+ed251275 merge c13-10g-readers-fix-r f1fda590 (POLISH): c13-10g-readers standing mode; the standing list is 11 green, none pending
+2280bb22 merge flux3/s2 76b141f5 (Flux S2: Stack + hologram; Sequence, behind ?flux3=1)
+ccb891de merge c13-10i-pageeditor 9fab1817 (#13 step 10i: PageEditor split, POLISH)
+ab71f1b5 merge Flux S1 (train flux3-s1 010510e5, flux3/s1-mount 2031b238): Schema Live view behind ?flux3=1; pair clean, box 4/4
+82eecdeb train c13-10h r2: merge c13-10h-persistence 524326c7
+b15cde4a train guards r3: merge polish-red-guards-r2 d4bb2af8
+54371360 merge step 10j (train c13-10j-p 7d53e1ed, tree ddb731e5): ScriptEditor block model to components/script/; pair clean, split check passes
+8e8c5942 train fix45: merge b2-1-crash-r2 e82bd95f (#45, runtime-verify helpers on every new document)
+60198005 train c13-10g r3: merge c13-10g-board 50abca01
+45a5d93b merge step 10e (train c13-10e2 5865d77d, tree c2951672): settings lexicon; pair clean, rhizome-latency 12/12 green on 10e and main control
+fe9aadf2 merge step 10c + 10f (train c13-10c ed5e5845, tree 3412cd9c): lexicon split + wordcount check; probe IDENTICAL, pair clean
+4999f59a merge harness/url-search-optin-unit-r2 f295d636 (ARBOR: U1 parked, successor U1b + liveness; red on main bb80eb94, green on the branch)
+adc1ce0a merge step 10a/10b/10d/tools (train c13-10 8f73ae78, tree ffb6f141): split checks, links, tsc, seed-guard pass; probe IDENTICAL
+a5a778b1 merge rhizome-arbor-premise-r1 5acc11e0 (FIX; harness only; box list clean on train-fix-premise b9fe652d)
+650f9a74 merge harness/url-search-optin fe7380d8 (ARBOR WS_URL_SEARCH opt-in; box list clean on train-arbor-opt 201d3b4e)
+2c11b0d7 train c13-9: merge c13-9-ts-comments-store-r3 287caeae
+d51f2fe9 train c13-9: merge c13-9-ts-comments-board-r3 305bed60
+00b3847c train c13-9: merge c13-9-ts-comments-pages-r3 788cf5fb
+75cc99ee train c13-9: merge c13-9-ts-comments-components-r3 a1e4a0ec
+d5d48ecc train c13-9: merge c13-9-ts-comments-rest ef883117
+bfbc6357 train 150b: merge rhizome-latency-fine-r1 ccd3d366

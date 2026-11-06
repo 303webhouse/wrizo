@@ -620,4 +620,3 @@ export function stepQuestion(deck: string, step: string, variant?: string): stri
 }
 export function stepExplain(deck: string, step: string): string { return entry(deck, step)?.e ?? ''; }
 export function stepExample(deck: string, step: string): string { return entry(deck, step)?.x ?? ''; }
-export function hasStepContent(deck: string, step: string): boolean { return !!entry(deck, step); }

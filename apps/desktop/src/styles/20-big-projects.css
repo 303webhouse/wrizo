@@ -25,10 +25,6 @@
 .wz-sections-bar{ display:flex; align-items:center; gap:8px; }
 .wz-sections-heading{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-low); flex:1 1 auto; }
 .wz-sections-sort{ font-size:11px; color:var(--text-mid, var(--text-hi)); border:1px solid var(--ink-border); border-radius:3px; padding:1px 7px; }
-.wz-sections-views{ display:inline-flex; gap:2px; }
-.wz-sections-views button{ background:none; border:1px solid var(--ink-border); color:var(--text-low); font:inherit; font-size:10px; padding:1px 6px; cursor:pointer; border-radius:3px; }
-.wz-sections-views button[aria-pressed='true']{ color:var(--text-hi); border-color:var(--accent-rest); }
-.wz-sections-views button:disabled{ opacity:.45; cursor:default; }
 .wz-set-head{ display:flex; align-items:center; justify-content:space-between; width:100%; background:none; border:0; border-bottom:1px solid var(--ink-border);
   cursor:pointer; color:var(--text-mid, var(--text-hi)); font:inherit; font-size:12px; padding:6px 2px; text-align:left; }
 .wz-set-head:hover{ color:var(--text-hi); }

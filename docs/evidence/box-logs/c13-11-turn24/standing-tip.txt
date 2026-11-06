@@ -1,0 +1,12 @@
+PASS  c13-2-links  ::  VERIFY: PASS
+PASS  c13-4d-links  ::  LINKS: PASS (no live markdown link points at a missing file)
+PASS  c13-6-css-split (standing)  ::  STANDING: PASS (srcText reads every file as itself and index.css as its joined parts; no script but 
+PASS  c13-10-seams-check (default)  ::  C13-10 SEAMS CHECK: PASS (17 checks)
+PASS  c13-10-seams-check (parked)  ::  C13-10 SEAMS CHECK: PASS (17 checks)
+PASS  c13-10b-readers  ::  C13-10B READERS: PASS (7 readers, the line set, liveness)
+PASS  c13-10c-lexicon  ::  C13-10C LEXICON: PASS (19 checks)
+PASS  c13-10f-wordcount  ::  C13-10F WORDCOUNT: PASS (7 checks; 10f closed: one counter, 4 named non-counters)
+PASS  c13-10h-persistence  ::  C13-10H PERSISTENCE: PASS (7 checks)
+PASS  typing-latency-readers-guard  ::  TYPING-LATENCY READERS VERIFY: PASS (6 checks, 18 reads classified)
+PASS  c13-10g-readers (standing)  ::  C13-10G READERS [standing]: PASS (6 checks)
+C13 STANDING: PASS (11 checks green; 0 pending, owned)

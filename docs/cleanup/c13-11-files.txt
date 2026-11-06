@@ -1,0 +1,7 @@
+# #13 step 11: the dead files (POLISH, measured at main 97261feb). Nothing in src imports any of them.
+pages/JournalEntry.tsx
+store/rhizomeEngine.ts
+pages/Desk.tsx
+store/resumeVocab.ts
+components/HomeFlow.tsx
+components/Wordmark.tsx

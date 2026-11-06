@@ -1,0 +1,35 @@
+started on Chat 1's go 2026-11-06T05:46:08Z
+turn start 2026-11-06T05:46:08Z
+BUILD STATE parent: tree ed251275, build rc 0, index-BiBie43a.js sha1 639696b57290
+snapshot baseline at parent: rc=0 :: C13-STYLE SELECTORS: 2188 selectors; 590 matched on some screen; 1598 matched nothing; 0 could not be tested (nested or invalid)
+BUILD STATE tip: tree c583a2d1, build rc 0, index-CLsXtnQv.js sha1 a74447070991
+snapshot at tip compared with the parent's: rc=0 :: C13-STYLE COMPARE: IDENTICAL
+dead check vs the parent's report: rc=0 :: C13-11 DEAD CHECK: PASS (9 checks)
+readers guard at tip: rc=0 :: TYPING-LATENCY READERS VERIFY: PASS (6 checks, 18 reads classified)
+standing list at tip: rc=0 :: C13 STANDING: PASS (11 checks green; 0 pending, owned)
+tip-default on tip c583a2d1, built index-CLsXtnQv.js sha1 a74447070991: rc=0 SUITE RESULT: CLEAN — tree=c583a2d1 bundle=index-CLsXtnQv.js/983931b not OK:  06:17:21
+tip-parked on tip c583a2d1, built index-CLsXtnQv.js sha1 a74447070991: rc=0 SUITE RESULT: CLEAN — tree=c583a2d1 bundle=index-CLsXtnQv.js/983931b not OK:  06:39:22
+step 11 part done 2026-11-06T06:39:23Z
+BUILD STATE pw1base: tree ed251275, build rc 0, index-BiBie43a.js sha1 639696b57290
+pw1 tip default 1 on 6af46154, bundle index-BiBie43a.js sha1 639696b57290: [01/1] OK        exit=0   46s pw1.mjs :: PW1 VERIFY: PASS (41 checks) 06:40:20
+pw1 tip parked 1 on 6af46154, bundle index-BiBie43a.js sha1 639696b57290: [01/1] OK        exit=0   46s pw1.mjs :: PW1 VERIFY: PASS (41 checks) 06:41:12
+pw1 par default 1 on af59dc84, bundle index-BiBie43a.js sha1 639696b57290: [01/1] OK        exit=0   47s pw1.mjs :: PW1 VERIFY: PASS (41 checks) 06:42:05
+pw1 par parked 1 on af59dc84, bundle index-BiBie43a.js sha1 639696b57290: [01/1] OK        exit=0   47s pw1.mjs :: PW1 VERIFY: PASS (41 checks) 06:42:59
+pw1 tip default 2 on 6af46154, bundle index-BiBie43a.js sha1 639696b57290: [01/1] OK        exit=0   46s pw1.mjs :: PW1 VERIFY: PASS (41 checks) 06:43:52
+pw1 tip parked 2 on 6af46154, bundle index-BiBie43a.js sha1 639696b57290: [01/1] OK        exit=0   46s pw1.mjs :: PW1 VERIFY: PASS (41 checks) 06:44:44
+pw1 par default 2 on af59dc84, bundle index-BiBie43a.js sha1 639696b57290: [01/1] OK        exit=0   47s pw1.mjs :: PW1 VERIFY: PASS (41 checks) 06:45:37
+pw1 par parked 2 on af59dc84, bundle index-BiBie43a.js sha1 639696b57290: [01/1] OK        exit=0   47s pw1.mjs :: PW1 VERIFY: PASS (41 checks) 06:46:30
+pw1 tip default 3 on 6af46154, bundle index-BiBie43a.js sha1 639696b57290: [01/1] OK        exit=0   46s pw1.mjs :: PW1 VERIFY: PASS (41 checks) 06:47:22
+pw1 tip parked 3 on 6af46154, bundle index-BiBie43a.js sha1 639696b57290: [01/1] OK        exit=0   46s pw1.mjs :: PW1 VERIFY: PASS (41 checks) 06:48:14
+pw1 par default 3 on af59dc84, bundle index-BiBie43a.js sha1 639696b57290: [01/1] OK        exit=0   47s pw1.mjs :: PW1 VERIFY: PASS (41 checks) 06:49:08
+pw1 par parked 3 on af59dc84, bundle index-BiBie43a.js sha1 639696b57290: [01/1] OK        exit=0   47s pw1.mjs :: PW1 VERIFY: PASS (41 checks) 06:50:01
+pw1 tip default 4 on 6af46154, bundle index-BiBie43a.js sha1 639696b57290: [01/1] OK        exit=0   46s pw1.mjs :: PW1 VERIFY: PASS (41 checks) 06:50:53
+pw1 tip parked 4 on 6af46154, bundle index-BiBie43a.js sha1 639696b57290: [01/1] OK        exit=0   46s pw1.mjs :: PW1 VERIFY: PASS (41 checks) 06:51:45
+pw1 par default 4 on af59dc84, bundle index-BiBie43a.js sha1 639696b57290: [01/1] OK        exit=0   47s pw1.mjs :: PW1 VERIFY: PASS (41 checks) 06:52:39
+pw1 par parked 4 on af59dc84, bundle index-BiBie43a.js sha1 639696b57290: [01/1] OK        exit=0   47s pw1.mjs :: PW1 VERIFY: PASS (41 checks) 06:53:32
+pw1 tip default 5 on 6af46154, bundle index-BiBie43a.js sha1 639696b57290: [01/1] OK        exit=0   46s pw1.mjs :: PW1 VERIFY: PASS (41 checks) 06:54:24
+pw1 tip parked 5 on 6af46154, bundle index-BiBie43a.js sha1 639696b57290: [01/1] OK        exit=0   47s pw1.mjs :: PW1 VERIFY: PASS (41 checks) 06:55:17
+pw1 par default 5 on af59dc84, bundle index-BiBie43a.js sha1 639696b57290: [01/1] OK        exit=0   47s pw1.mjs :: PW1 VERIFY: PASS (41 checks) 06:56:10
+pw1 par parked 5 on af59dc84, bundle index-BiBie43a.js sha1 639696b57290: [01/1] OK        exit=0   47s pw1.mjs :: PW1 VERIFY: PASS (41 checks) 06:57:03
+released
+turn end 2026-11-06T06:57:04Z

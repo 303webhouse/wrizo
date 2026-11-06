@@ -109,6 +109,8 @@ const WORDS = {
   boardPortedBadge: 'From a doc', boardThreadUntitled: 'Unnamed', pageFaceAddTag: 'Add a flag', deskMenuGlyph: 'Terminal menu',
   graftAdd: 'Input…', graftGroupCards: 'Nodes', graftGroupBoards: 'Circuits', graftGroupPages: 'Docs', graftSharedTags: 'Shared flags', graftPlanBoard: 'Circuit', graftRemovedLine: 'Input to {title} removed.', graftKnobTip: 'Drag to connect',
 };
+// #13 step 11 (Fable, Nov 5) deletes these table keys from the lexicon: retired UI that no source reads (LX1b / LX5b hold either way)
+const STEP11_GONE = ['boardThreadGrab', 'beginNewPageCard', 'footProgress', 'footMenuPreferences', 'fadeDepthLabel', 'fadeDepthPartial', 'fadeDepthFull', 'deskMenuGlyph'];
 // strings that are deliberately NOT renamed in Flux, each with its reason (the census treats these as reviewed)
 const KEEP = {
   pageSetupHeading: 'the printed page (Page Setup)', pageSetupNumbers: 'the printed page: page numbers', pageSetupExportNote: 'the printed page: export and print', twPageScroll: 'scrolling the page itself',
@@ -133,7 +135,13 @@ async function suite(M, mk = () => load()) {
 
   // LX - the words
   const wrong = Object.entries(WORDS).filter(([id, w]) => FLUX(id) !== w).map(([id, w]) => `${id}: ${FLUX(id)} (want ${w})`);
-  keep('LX1', wrong.length === 0, wrong.slice(0, 6).join(' | '));
+  // ---- PARKED - SUPERSEDED by #13 step 11 (Fable, Nov 5): eight of the table's keys name retired UI no source reads, and step 11 deletes
+  // them from the lexicon (STEP11_GONE). Kept VERBATIM and no longer run:
+  // keep('LX1', wrong.length === 0, wrong.slice(0, 6).join(' | '));
+  // successor: every word in the table still reads as the table says; a key step 11 deletes reads its word while it exists and no word
+  // in any theme once it is gone (so the successor holds before the delete and after it)
+  const wrong1b = Object.entries(WORDS).filter(([id, w]) => FLUX(id) !== w && !(STEP11_GONE.includes(id) && FLUX(id) === undefined && M.deskTerm(id, 'plateau') === undefined)).map(([id, w]) => `${id}: ${FLUX(id)} (want ${w})`);
+  keep('LX1b', wrong1b.length === 0, wrong1b.slice(0, 6).join(' | '));
   const census = deskIdsFromSource().filter((id) => FORBID.test(FLUX(id) || '') && !KEEP[id]);
   // ---- PARKED - SUPERSEDED by #13 step 10e (Fable, Nov 5, ruling (b)): #13 changes no word on screen, so the Progress row's new key progressDrawer
   // keeps 'Drawer' under Flux until TOOLS' post-#13 Flux lexicon pass gives it the Flux word; the allowance below is removed then. Kept VERBATIM and no longer run:
@@ -146,7 +154,12 @@ async function suite(M, mk = () => load()) {
     `${census2.length} still name an Arbor noun: ${census2.slice(0, 8).join(', ')}; allowed and still Arbor: ${LX2_ALLOW.filter((id) => census.includes(id)).join(', ') || 'none (stale allowance)'}`);
   keep('LX3', M.formsFor('flux', 'plan').one === 'Circuit' && M.formsFor('flux', 'plan').many === 'Circuits' && M.formsFor('flux', 'freewrite').one === 'Wire In' && M.formsFor('flux', 'publish').one === 'Uplink', JSON.stringify(M.formsFor('flux', 'plan')));
   keep('LX4', M.deskTerm('placeRootName', 'flux') === 'Root' && M.deskTerm('placeRootName', 'plateau') === 'Top Drawer', `${M.deskTerm('placeRootName', 'flux')} / ${M.deskTerm('placeRootName', 'plateau')}`);
-  keep('LX5', M.deskTerm('tutorTabTutor', 'plateau') === 'Tutor' && M.deskTerm('drawerLinks', 'plateau') === 'Grafts' && M.deskTerm('stripPlan', 'plateau') === 'Boards' && M.deskTerm('modeRevise', 'plateau') === 'Revise' && M.deskTerm('fadeDepthLabel', 'plateau') === 'Recede depth' && M.deskTerm('timerLabel', 'plateau') === 'Timer' && M.deskTerm('railTypeface', 'plateau') === 'Font', 'Arbor is untouched');
+  // ---- PARKED - SUPERSEDED by #13 step 11 (Fable, Nov 5): fadeDepthLabel (the Recede-depth row, removed in polish #10 item 23) is deleted
+  // from the lexicon. Kept VERBATIM and no longer run:
+  // keep('LX5', M.deskTerm('tutorTabTutor', 'plateau') === 'Tutor' && M.deskTerm('drawerLinks', 'plateau') === 'Grafts' && M.deskTerm('stripPlan', 'plateau') === 'Boards' && M.deskTerm('modeRevise', 'plateau') === 'Revise' && M.deskTerm('fadeDepthLabel', 'plateau') === 'Recede depth' && M.deskTerm('timerLabel', 'plateau') === 'Timer' && M.deskTerm('railTypeface', 'plateau') === 'Font', 'Arbor is untouched');
+  // successor: the same Arbor words, fadeDepthLabel read as 'Recede depth' while it exists and as no word once step 11 deletes it
+  const fd = M.deskTerm('fadeDepthLabel', 'plateau');
+  keep('LX5b', M.deskTerm('tutorTabTutor', 'plateau') === 'Tutor' && M.deskTerm('drawerLinks', 'plateau') === 'Grafts' && M.deskTerm('stripPlan', 'plateau') === 'Boards' && M.deskTerm('modeRevise', 'plateau') === 'Revise' && (fd === 'Recede depth' || fd === undefined) && M.deskTerm('timerLabel', 'plateau') === 'Timer' && M.deskTerm('railTypeface', 'plateau') === 'Font', `Arbor is untouched (fadeDepthLabel: ${fd})`);
   // LX6 - Nick's two answers (Oct 21): Flux's Draft tab reads "Text" (not Compile, not Build - Machina owns Build) and Delete stays plain "Delete" in every theme (no Purge)
   const held = deskIdsFromSource().filter((id) => /(Purge|Compile|Build)/.test(FLUX(id) || ''));
   keep('LX6', FLUX('modeDraft') === 'Text' && M.deskTerm('modeDraft', 'plateau') === 'Draft' && FLUX('actionDelete') === 'Delete doc' && M.deskTerm('actionDelete', 'plateau') === 'Delete page' && held.length === 0, held.join(', ') || 'Flux Draft = Text, Delete plain, no Purge / Compile / Build');
@@ -205,10 +218,17 @@ async function suite(M, mk = () => load()) {
 function pinChecks(rdT) {
   const r = {};
   const keep = (k, pass, detail = '') => { r[k] = { pass: !!pass, detail }; };
-  const arrival = rdT('components/Arrival.tsx'), home = rdT('components/HomeFlow.tsx'), mark = rdT('components/WrizoMark.tsx'), board = rdT('components/BoardEditor.tsx'), frame = rdT('components/FluxReadouts.tsx');
+  // #13 step 11 deletes components/HomeFlow.tsx (parked since HB1; Arrival replaced it): it is read only while it exists
+  const home = has('components/HomeFlow.tsx') ? rdT('components/HomeFlow.tsx') : null;
+  const arrival = rdT('components/Arrival.tsx'), mark = rdT('components/WrizoMark.tsx'), board = rdT('components/BoardEditor.tsx'), frame = rdT('components/FluxReadouts.tsx');
   // WM1 - the arrival and home screens draw the theme's own mark: Flux's WRIZO wordmark, Arbor's PNG only for Arbor - never the PNG under Flux
-  keep('WM1', /<WrizoMark className="wz-logo"/.test(arrival) && /<WrizoMark className="wz-mark/.test(arrival) && /<WrizoMark className="wz-logo"/.test(home) && /<WrizoMark className=\{\x60wz-mark/.test(home)
-    && !/wrizo-logo\.png/.test(arrival) && !/wrizo-logo\.png/.test(home) && /theme === 'flux'/.test(mark) && />WRIZO</.test(mark), 'Arrival / HomeFlow render WrizoMark; the PNG lives only in WrizoMark, behind the theme test');
+  // ---- PARKED - SUPERSEDED by #13 step 11 (Fable, Nov 5): HomeFlow.tsx, the second screen, is deleted as dead code. Kept VERBATIM and no longer run:
+  // keep('WM1', /<WrizoMark className="wz-logo"/.test(arrival) && /<WrizoMark className="wz-mark/.test(arrival) && /<WrizoMark className="wz-logo"/.test(home) && /<WrizoMark className=\{\x60wz-mark/.test(home)
+  //   && !/wrizo-logo\.png/.test(arrival) && !/wrizo-logo\.png/.test(home) && /theme === 'flux'/.test(mark) && />WRIZO</.test(mark), 'Arrival / HomeFlow render WrizoMark; the PNG lives only in WrizoMark, behind the theme test');
+  // successor: the arrival draws the mark as before; HomeFlow is held to the same while it exists, and is gone after step 11
+  const homeOk = home === null || (/<WrizoMark className="wz-logo"/.test(home) && /<WrizoMark className=\{\x60wz-mark/.test(home) && !/wrizo-logo\.png/.test(home));
+  keep('WM1b', /<WrizoMark className="wz-logo"/.test(arrival) && /<WrizoMark className="wz-mark/.test(arrival) && homeOk
+    && !/wrizo-logo\.png/.test(arrival) && /theme === 'flux'/.test(mark) && />WRIZO</.test(mark), `Arrival renders WrizoMark (HomeFlow ${home === null ? 'gone' : 'too'}); the PNG lives only in WrizoMark, behind the theme test`);
   // KN1 - the knob's glyph has ONE theme-generic render site: ThemeIcon id="input" inside the knob (a theme with no INPUT set draws the plain dot)
   keep('KN1', /className="board-graft-knob"[\s\S]{0,700}<ThemeIcon id="input" fallback=\{null\}/.test(board), 'the knob renders <ThemeIcon id="input">');
   // CO1 - a node wears its true X / Y: FluxCardCoord on text / ink / page-pin cards, built from coordReadout; the board's frame carries the board hint
@@ -220,7 +240,9 @@ function pinChecks(rdT) {
 }
 const TXT_MUT = [
   { name: 'the chrome engine ignores the theme again', file: 'components/useChromeDissolve.ts', find: 'setFadeDur(fadeOutSeconds(theme, FADE_OUT_S));', to: 'setFadeDur(FADE_OUT_S);', red: ['FD1'] },
-  { name: 'the arrival draws Arbor\'s PNG under Flux again', file: 'components/Arrival.tsx', find: '<WrizoMark className="wz-logo" alt="Wrizo" />', to: '<img className="wz-logo" src="/brand/wrizo-logo.png" alt="Wrizo" />', red: ['WM1'] },
+  // ---- PARKED - SUPERSEDED by #13 step 11: WM1 is parked, so this mutant's red set moves to the successor WM1b. Kept VERBATIM and no longer run:
+  // { name: 'the arrival draws Arbor\'s PNG under Flux again', file: 'components/Arrival.tsx', find: '<WrizoMark className="wz-logo" alt="Wrizo" />', to: '<img className="wz-logo" src="/brand/wrizo-logo.png" alt="Wrizo" />', red: ['WM1'] },
+  { name: 'the arrival draws Arbor\'s PNG under Flux again [step 11 successor]', file: 'components/Arrival.tsx', find: '<WrizoMark className="wz-logo" alt="Wrizo" />', to: '<img className="wz-logo" src="/brand/wrizo-logo.png" alt="Wrizo" />', red: ['WM1b'] },
   { name: 'the knob loses its INPUT glyph', file: 'components/BoardEditor.tsx', find: '<ThemeIcon id="input" fallback={null} size={16} />', to: '', red: ['KN1'] },
   { name: 'the card loses its X / Y', file: 'components/BoardEditor.tsx', find: '<FluxCardCoord x={box.x} y={box.y} />', to: '', red: ['CO1'] },
 ];
@@ -281,12 +303,16 @@ const SRC_MUT = [
   { name: 'one pixel of the Rack icon flips', file: 'store/themeIcons.ts', find: /\n'\.##############\.',\n'\.#\.\.\.\.\.\.\.\.\.\.\.\.#\.',\n'\.#\.######\.\.##\.#\.',/, to: "\n'.##############.',\n'.#............#.',\n'.#.#######.##.#.',", red: ['IC1'] },
   // ---- PARKED - SUPERSEDED by #13 step 10e (Fable, Nov 5): LX2 is parked, so this mutant's red set moves to the successor LX2b. Kept VERBATIM and no longer run:
   // { name: 'the Flux word for Settings is lost', file: 'store/deskLexicon.ts', find: /stripSettings: 'Config',/, to: "stripSettings: 'Settings',", red: ['LX1', 'LX2'] },
-  { name: 'the Flux word for Settings is lost [10e successor]', file: 'store/deskLexicon.ts', find: /stripSettings: 'Config',/, to: "stripSettings: 'Settings',", red: ['LX1', 'LX2b'] },
+  // ---- PARKED - SUPERSEDED by #13 step 11: LX1 is parked, so this mutant's red set moves to the successor LX1b. Kept VERBATIM and no longer run:
+  // { name: 'the Flux word for Settings is lost [10e successor]', file: 'store/deskLexicon.ts', find: /stripSettings: 'Config',/, to: "stripSettings: 'Settings',", red: ['LX1', 'LX2b'] },
+  { name: 'the Flux word for Settings is lost [step 11 successor]', file: 'store/deskLexicon.ts', find: /stripSettings: 'Config',/, to: "stripSettings: 'Settings',", red: ['LX1b', 'LX2b'] },
   // 10e: the allowance is EXACTLY progressDrawer - the same Arbor noun on any other key still turns LX2b red
   { name: 'another key says Drawer under Flux (only progressDrawer is allowed)', file: 'store/deskLexicon.ts', find: /stripSettings: 'Config',/, to: "stripSettings: 'Drawer',", red: ['LX2b'] },
-  { name: 'the Clock word is lost', file: 'store/deskLexicon.ts', find: /timerLabel: 'Clock',/, to: '', red: ['LX1'] },
-  { name: 'the Flux Draft tab falls back to Draft', file: 'store/deskLexicon.ts', find: /modeDraft: 'Text',/, to: '', red: ['LX1', 'LX6'] },
-  { name: 'Flux recedes at Arbor\'s slow pace again', file: 'store/fluxReadouts.ts', find: /return theme === 'flux' \? FADE_OUT_FLUX_S : base;/, to: 'return base;', red: ['RO11'] },
+  // ---- PARKED - SUPERSEDED by #13 step 11: LX1 is parked, so these two mutants' red sets move to the successor LX1b. Kept VERBATIM and no longer run:
+  // { name: 'the Clock word is lost', file: 'store/deskLexicon.ts', find: /timerLabel: 'Clock',/, to: '', red: ['LX1'] },
+  // { name: 'the Flux Draft tab falls back to Draft', file: 'store/deskLexicon.ts', find: /modeDraft: 'Text',/, to: '', red: ['LX1', 'LX6'] },
+  { name: 'the Clock word is lost [step 11 successor]', file: 'store/deskLexicon.ts', find: /timerLabel: 'Clock',/, to: '', red: ['LX1b'] },
+  { name: 'the Flux Draft tab falls back to Draft [step 11 successor]', file: 'store/deskLexicon.ts', find: /modeDraft: 'Text',/, to: '', red: ['LX1b', 'LX6'] },  { name: 'Flux recedes at Arbor\'s slow pace again', file: 'store/fluxReadouts.ts', find: /return theme === 'flux' \? FADE_OUT_FLUX_S : base;/, to: 'return base;', red: ['RO11'] },
   { name: 'the block caret goes back to its wide width', file: 'store/fluxReadouts.ts', find: /Math\.round\(height \* 0\.16\)/, to: 'Math.round(height * 0.48)', red: ['RO10'] },
   { name: 'Delete turns into Purge', file: 'store/deskLexicon.ts', find: /actionCopy: 'Clone doc text',/, to: "actionCopy: 'Clone doc text', actionDelete: 'Purge doc',", red: ['LX6'] },
   // ---- PARKED - SUPERSEDED by #13 step 10e (Fable, Nov 5): LX2 is parked, so this mutant's red set moves to the successor LX2b. Kept VERBATIM and no longer run:

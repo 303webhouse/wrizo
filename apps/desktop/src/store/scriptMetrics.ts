@@ -36,9 +36,6 @@ export const SPACE_BEFORE: Record<ScriptElType, number> = {
 export function widthChFor(t: ScriptElType): number {
   return WIDTH_CH[t] ?? WIDTH_CH.action;
 }
-export function indentChFor(t: ScriptElType): number {
-  return INDENT_CH[t] ?? 0;
-}
 export function spaceBeforeFor(t: ScriptElType): number {
   return SPACE_BEFORE[t] ?? 0;
 }

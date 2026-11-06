@@ -5,8 +5,8 @@ export { SCRATCH_DRAFT_ID, getDraft, saveDraft, clearDraft, saveSession, getSess
 export { saveJournalEntry, type JournalPageSeed, createJournalPage, createBinderPage } from './persistence/journal';
 export { createBoardPage, saveBoardBoxes, stashDeletedBoxes, restoreDeletedBox, purgeDeletedBox, getTrashedCards } from './persistence/boards';
 export { getPageLinksOf, getPageLinksTo, type LinkPeer, getLinkPeersOfCard, getLinkPeersByCard, addPageLink, removePageLink, toggleEntryLink, livePinFor, isCardLinkedToEntry, getTombstonedBox } from './persistence/links';
-export { portToBoard, appendToBoard, boardAncestors, boardNestChain, wouldNestCycle, type PinSilhouette, pinSilhouetteFor, pinAspectFor, pinPageToBoard, setPinDisplayed, isPinDisplayed, copyCardToBoard, getBoardsPinning, getBoardsConnecting } from './persistence/pins';
-export { getScriptDoc, saveScriptDoc, getTutorThread, appendTutorMessage, advanceTutorCursor, createScriptPage } from './persistence/scriptTutor';
+export { portToBoard, appendToBoard, boardAncestors, boardNestChain, wouldNestCycle, type PinSilhouette, pinSilhouetteFor, pinAspectFor, pinPageToBoard, setPinDisplayed, copyCardToBoard, getBoardsPinning, getBoardsConnecting } from './persistence/pins';
+export { saveScriptDoc, appendTutorMessage, advanceTutorCursor, createScriptPage } from './persistence/scriptTutor';
 export { fileToNewBinder, appendToChapter, attachToPlanBeat, importDraft } from './persistence/imports';
 export { overlayDirty, flushForReload, accountHasWork, isAutoSet, hasAnyDrawerRow } from './persistence/reload';
 export { getJournalEntries, getDeletedEntries, inJournalView, getJournalPages, belongsOnShelf, getShelfEntries, getNotebookPages, getDrawerFiledPages, createLoosePage, createLooseHomePage, patchJournalEntry, setNotebookPosition, getBinderPages, type PageHomeResult, setPageHome, unpinPageFromBoard, getAllUserBoards, setUnbornEntry, getUnbornEntry, isUnborn, getJournalEntry, softDeleteEntry } from './persistence/entries';
