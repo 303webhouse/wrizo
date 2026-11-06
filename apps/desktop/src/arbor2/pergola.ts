@@ -77,7 +77,8 @@ function makeLayer(cls: string, alpha: string | null): { layer: HTMLDivElement; 
   const still = document.createElement('div');
   still.className = 'arbor2-still';
   // the still picture at the layer's own strength: the page copy's 3.4%, the room's own 20% (the file's group opacity)
-  still.style.opacity = alpha ?? ((/<g filter="[^"]*" opacity="([^"]*)"/.exec(svgText) || [])[1] || '0.2');
+  // (Fable's ruling (c), Nov 6: the still picture fades in over 200 ms, so its strength is the stylesheet's target, carried here as a variable)
+  still.style.setProperty('--arbor2-still-a', alpha ?? ((/<g filter="[^"]*" opacity="([^"]*)"/.exec(svgText) || [])[1] || '0.2'));
   withBitmap((u) => { still.style.backgroundImage = `url("${u}")`; });
   drift.appendChild(live); drift.appendChild(still);
   const svg = live.querySelector('svg');
@@ -139,6 +140,7 @@ export function mountPergola(): void {
       // the page keeps r20's live copy; every other surface draws the shared bitmap
       const c = h.matches(HOSTS[0]) ? makeLayer('arbor2-pagesh', PAGE_ALPHA) : makeBitmapLayer(PAGE_ALPHA);
       if (room.layer.hasAttribute('data-asleep')) c.layer.setAttribute('data-asleep', 'true');
+      if (room.layer.hasAttribute('data-live-off')) c.layer.setAttribute('data-live-off', 'true');
       h.appendChild(c.layer); copies.set(h, c); ro.observe(h); place(h, c);
       requestAnimationFrame(() => requestAnimationFrame(() => sync(c.layer)));
     }
@@ -161,10 +163,14 @@ export function mountPergola(): void {
   const writing = () => root.getAttribute('data-wz-writing') === 'true';
   const layers = () => [room.layer, ...[...copies.values()].map((c) => c.layer)];
   const sleep = (on: boolean) => layers().forEach((l) => { if (on) l.setAttribute('data-asleep', 'true'); else l.removeAttribute('data-asleep'); });
-  let sleepT = 0;
+  // Nick's ruling B with Fable's (c): once the 200 ms cross-fade to the still picture has run (and 20 ms to spare), the live drawing leaves style
+  // work (data-live-off: content-visibility hidden on .arbor2-live); it is back the moment writing ends, before the cross-fade home
+  const liveOff = (on: boolean) => layers().forEach((l) => { if (on) l.setAttribute('data-live-off', 'true'); else l.removeAttribute('data-live-off'); });
+  let sleepT = 0, liveT = 0;
   const onWriting = () => {
-    window.clearTimeout(sleepT);
-    if (!writing()) { sleep(false); return; }
+    window.clearTimeout(sleepT); window.clearTimeout(liveT);
+    if (!writing()) { liveOff(false); sleep(false); return; }
+    liveT = window.setTimeout(() => { if (writing()) liveOff(true); }, 220);
     // the fade's own length, as the stylesheet sets it while writing (6 s; reduced motion: none), and a quarter second to spare
     const d = getComputedStyle(room.layer).transitionDuration.split(',')[0].trim();
     const ms = (parseFloat(d) || 0) * (d.endsWith('ms') ? 1 : 1000);

@@ -847,10 +847,16 @@
 /* NICK'S RULING B (via Fable, Nov 6): the leaves shiver only when she is not typing. A live layer holds the live drawing and the still picture in
    its one drift wrapper (pergola.ts); on the chrome's recede (the first key) the still picture shows and the live drawing leaves style and
    paint work; on the chrome's return the live drawing is back. The wrapper - and its drift - never change. Reduced motion: no breeze to lose. */
-:root[data-arbor2][data-theme='plateau'] .arbor2-pergola-drift > :is(.arbor2-live, .arbor2-still){ position:absolute; inset:0; }
-:root[data-arbor2][data-theme='plateau'] .arbor2-pergola-drift > .arbor2-still{ display:none; background-repeat:no-repeat; background-position:center; background-size:cover; }
-:root[data-arbor2][data-theme='plateau'][data-wz-writing='true'] .arbor2-pergola-drift > .arbor2-still{ display:block; }
-:root[data-arbor2][data-theme='plateau'][data-wz-writing='true'] .arbor2-pergola-drift > .arbor2-live{ content-visibility:hidden; }
+/* Fable's ruling (c), Nov 6 (a first key mid-shiver snapped the shivering leaves to rest, up to 21/255): the swap is a 200 ms CROSS-FADE on the
+   compositor - the still picture rises to the layer's own strength (--arbor2-still-a) as the live drawing falls to 0 - and only then does the
+   live drawing leave style work (data-live-off, pergola.ts). The return is the same cross-fade the other way. Reduced motion: a cut. */
+:root[data-arbor2][data-theme='plateau'] .arbor2-pergola-drift > :is(.arbor2-live, .arbor2-still){ position:absolute; inset:0; will-change:opacity; transition:opacity .2s linear; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-pergola-drift > .arbor2-live{ opacity:1; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-pergola-drift > .arbor2-still{ opacity:0; background-repeat:no-repeat; background-position:center; background-size:cover; }
+:root[data-arbor2][data-theme='plateau'][data-wz-writing='true'] .arbor2-pergola-drift > .arbor2-still{ opacity:var(--arbor2-still-a, .2); }
+:root[data-arbor2][data-theme='plateau'][data-wz-writing='true'] .arbor2-pergola-drift > .arbor2-live{ opacity:0; }
+:root[data-arbor2][data-theme='plateau'] :is(.arbor2-pergola, .arbor2-pagesh)[data-live-off='true'] .arbor2-pergola-drift > .arbor2-live{ content-visibility:hidden; }
+@media (prefers-reduced-motion: reduce){ :root[data-arbor2][data-theme='plateau'] .arbor2-pergola-drift > :is(.arbor2-live, .arbor2-still){ transition:none !important; } }
 
 /* r19 §18.1 - REST <-> WRITING (Fable, ruling 2: the existing recede/return hooks, Arbor-scoped, opacity transitions on two layers, no new JS
    animation path). <html data-wz-writing> (useChromeDissolve) is the hook: the first keystroke fades the whole shade (room + page) out over ~6 s

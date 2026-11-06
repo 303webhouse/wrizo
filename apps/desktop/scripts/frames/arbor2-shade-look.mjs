@@ -28,10 +28,13 @@ const setRoom = async (app, room) => {
 // NICK'S RULING B (Nov 6): the swap's look. The SAME moment shot twice - the live drawing, then the still picture (a test-only style in this page
 // shows the still picture exactly as the writing signal would, without writing, so nothing else moves between the two shots). The shiver pair
 // holds every leaf at its shiver's peak (its own delay + 250 ms, paused), the worst moment for a first key to land.
-const SHOW_STILL = "(() => { const s = document.createElement('style'); s.textContent = \".arbor2-pergola-drift > .arbor2-still{ display:block !important; } .arbor2-pergola-drift > .arbor2-live{ content-visibility:hidden !important; }\"; document.head.appendChild(s); return true; })()";
+// (Fable's ruling (c), Nov 6: the swap is a 200 ms cross-fade; the still shot shows its end - the still picture at the layer's strength, the live
+// drawing at 0 - and the MID shot its middle, both at half. No transitions in the shots, so nothing moves between a pair.)
+const SHOW_STILL = "(() => { const s = document.createElement('style'); s.textContent = \".arbor2-pergola-drift > .arbor2-still{ opacity:var(--arbor2-still-a) !important; transition:none !important; } .arbor2-pergola-drift > .arbor2-live{ opacity:0 !important; transition:none !important; }\"; document.head.appendChild(s); return true; })()";
+const SHOW_MID = "(() => { const s = document.createElement('style'); s.textContent = \".arbor2-pergola-drift > .arbor2-still{ opacity:calc(var(--arbor2-still-a) * .5) !important; transition:none !important; } .arbor2-pergola-drift > .arbor2-live{ opacity:.5 !important; transition:none !important; }\"; document.head.appendChild(s); return true; })()";
 const HOLD = (shiver) => `(() => { document.getAnimations().forEach((a) => { const t = a.effect && a.effect.target; if (!t || !t.closest || !t.closest('.arbor2-pergola, .arbor2-pagesh')) return;
   const leaf = t.classList && t.classList.contains('wz-leaf'); a.pause(); a.currentTime = leaf && ${shiver ? 'true' : 'false'} ? (a.effect.getTiming().delay || 0) + 250 : 4000; }); return true; })()`;
-const swapPic = async (app, id, shiver, still) => { await openPage(app, id); await setRoom(app, 'day'); await app.evalJs(HOLD(shiver)); await sleep(300); if (still) { await app.evalJs(SHOW_STILL); await sleep(300); } };
+const swapPic = async (app, id, shiver, still) => { await openPage(app, id); await setRoom(app, 'day'); await app.evalJs(HOLD(shiver)); await sleep(300); if (still) { await app.evalJs(still === 'mid' ? SHOW_MID : SHOW_STILL); await sleep(300); } };
 // the flash at its hold (Fable, Nov 6: the flash copy's mask pre-rendered - the look identical): a page one word short of its goal, the word, every
 // finite animation landed - the brass copy at full
 const flashPic = async (app, id, room) => {
@@ -58,6 +61,7 @@ const screens = {
   'shade-pic-swap-still': async (app) => { await swapPic(app, 'arbor-swap-still', false, true); },
   'shade-pic-swap-live-shiver': async (app) => { await swapPic(app, 'arbor-swap-live-sh', true, false); },
   'shade-pic-swap-still-shiver': async (app) => { await swapPic(app, 'arbor-swap-still-sh', true, true); },
+  'shade-pic-swap-mid-shiver': async (app) => { await swapPic(app, 'arbor-swap-mid-sh', true, 'mid'); },
   'shade-pic-flash-night': async (app) => { await flashPic(app, 'arbor-flash-night', 'night'); },
   'shade-pic-flash-day': async (app) => { await flashPic(app, 'arbor-flash-day', 'day'); },
 };

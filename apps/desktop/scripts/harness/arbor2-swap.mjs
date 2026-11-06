@@ -29,7 +29,9 @@ const r1 = (v) => (v == null ? null : Math.round(v * 10) / 10);
 const READ = `(() => { const root = document.documentElement, room = document.querySelector('.arbor2-pergola'), d = room && room.querySelector('.arbor2-pergola-drift');
   const lay = (l) => { if (!l) return null; const live = l.querySelector('.arbor2-live'), still = l.querySelector('.arbor2-still');
     return { shown: getComputedStyle(l).display !== 'none', live: live ? getComputedStyle(live).contentVisibility : null, still: still ? getComputedStyle(still).display : null,
-      stillBg: still ? /^url\\("blob:/.test(still.style.backgroundImage) : false, stillOp: still ? Number(still.style.opacity) : null }; };
+      stillBg: still ? /^url\\("blob:/.test(still.style.backgroundImage) : false, stillOp: still ? Number(still.style.opacity) : null,
+      liveO: live ? Number(getComputedStyle(live).opacity) : null, stillO: still ? Number(getComputedStyle(still).opacity) : null, stillA: still ? Number(still.style.getPropertyValue('--arbor2-still-a')) : null,
+      wc: [live, still].map((e) => (e ? getComputedStyle(e).willChange : null)), off: l.getAttribute('data-live-off') }; };
   const da = d ? d.getAnimations().find((a) => /arbor2-pergola-drift/.test(a.animationName || '')) : null;
   const anims = room ? document.getAnimations().filter((a) => { const t = a.effect && a.effect.target; return !!t && (room.contains(t)) && a.playState === 'running'; }).length : null;
   return { writing: root.getAttribute('data-wz-writing'), roomName: root.getAttribute('data-arbor2-room'), zoom: document.querySelector('.desk-frame-stage .mode-pagecol')?.getAttribute('data-zoom') === 'true',
@@ -72,19 +74,41 @@ await withHarness(async (app) => {
   await backToRest(app);
   const rest = await app.evalJs(READ);
   const liveOk = (l) => !!l && l.live === 'visible' && l.still === 'none' && l.stillBg === true;
-  ok('W1 at rest: the room shows the live drawing, its still picture drawn and hidden (and the page copy too, where the page is not zoomed)',
-    rest.roomName === 'day' && liveOk(rest.room) && Math.abs(rest.room.stillOp - 0.2) < 0.001 && (rest.zoom || (liveOk(rest.page) && Math.abs(rest.page.stillOp - 0.034) < 0.0005)), JSON.stringify(rest));
+  // PARKED 2026-11-06, never run (SUPERSEDED by Fable's ruling (c): the still picture is never display:none now - it waits at opacity 0 to
+  // cross-fade in - and its strength moved to --arbor2-still-a). Original, verbatim:
+  // ok('W1 at rest: the room shows the live drawing, its still picture drawn and hidden (and the page copy too, where the page is not zoomed)',
+  //   rest.roomName === 'day' && liveOk(rest.room) && Math.abs(rest.room.stillOp - 0.2) < 0.001 && (rest.zoom || (liveOk(rest.page) && Math.abs(rest.page.stillOp - 0.034) < 0.0005)), JSON.stringify(rest));
+  // SUCCESSOR W1c: at rest the live drawing shows at full (in style work), the still picture is drawn and waits at opacity 0 with the layer's
+  // strength as its target (room 0.2, page 0.034), both on the compositor (will-change: opacity).
+  const restC = (l, a) => !!l && l.live === 'visible' && l.liveO === 1 && l.stillO === 0 && l.stillBg === true && Math.abs(l.stillA - a) < 0.0005 && l.wc.every((w) => /opacity/.test(w)) && l.off === null;
+  ok('W1c at rest: the live drawing at full, the still picture drawn and waiting at 0 (target: the layer\'s strength), both will-change: opacity',
+    rest.roomName === 'day' && restC(rest.room, 0.2) && (rest.zoom || restC(rest.page, 0.034)), JSON.stringify(rest));
 
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('w');
   await app.evalJs('new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))');
   const k1 = await app.evalJs(READ);
+  await sleep(320);
+  const k1c = await app.evalJs(READ);
   const stillOk = (l) => !!l && l.live === 'hidden' && l.still === 'block';
-  ok('W2 the first key: the still picture shows and the live drawing has left style work, in the key\'s own frames', k1.writing === 'true' && stillOk(k1.room) && (k1.zoom || stillOk(k1.page)), JSON.stringify(k1));
+  // PARKED 2026-11-06, never run (SUPERSEDED by Fable's ruling (c): the swap is a 200 ms cross-fade, not a cut in the key's own frames).
+  // Original, verbatim:
+  // ok('W2 the first key: the still picture shows and the live drawing has left style work, in the key\'s own frames', k1.writing === 'true' && stillOk(k1.room) && (k1.zoom || stillOk(k1.page)), JSON.stringify(k1));
+  // SUCCESSOR W2c: in the key's own frames the cross-fade has begun (the still picture above 0 and below its strength, the live drawing below 1);
+  // 320 ms later it has landed - the still picture at the layer's strength, the live drawing at 0 and out of style work (data-live-off).
+  const midC = (l) => !!l && l.stillO > 0 && l.stillO < l.stillA && l.liveO < 1;
+  const landC = (l) => !!l && Math.abs(l.stillO - l.stillA) < 0.001 && l.liveO === 0 && l.live === 'hidden' && l.off === 'true';
+  ok('W2c the first key: the cross-fade begins in the key\'s own frames and has landed 320 ms later (still at strength, live at 0 and out of style work)',
+    k1.writing === 'true' && midC(k1.room) && landC(k1c.room) && (k1c.zoom || landC(k1c.page)), JSON.stringify({ key: k1.room, landed: k1c.room, page: k1c.page }));
   ok('W3 the drift runs on through the swap: the room\'s drift is the same animation (start time unchanged), running', !!rest.drift && !!k1.drift && rest.drift.start === k1.drift.start && k1.drift.state === 'running', JSON.stringify({ rest: rest.drift, key: k1.drift }));
   await backToRest(app);
   const back = await app.evalJs(READ);
-  ok('W4 the chrome\'s return: the live drawing is back, the still picture hidden, the drift still the same animation', back.writing !== 'true' && liveOk(back.room) && (back.zoom || liveOk(back.page)) && !!back.drift && back.drift.start === rest.drift.start, JSON.stringify(back));
+  // PARKED 2026-11-06, never run (SUPERSEDED by Fable's ruling (c): on the return the still picture fades out to 0, it is not display:none).
+  // Original, verbatim:
+  // ok('W4 the chrome\'s return: the live drawing is back, the still picture hidden, the drift still the same animation', back.writing !== 'true' && liveOk(back.room) && (back.zoom || liveOk(back.page)) && !!back.drift && back.drift.start === rest.drift.start, JSON.stringify(back));
+  // SUCCESSOR W4c: the return - the live drawing back in style work and at full, the still picture back at 0, the drift the same animation.
+  ok('W4c the chrome\'s return: the live drawing back at full and in style work, the still picture back at 0, the drift still the same animation',
+    back.writing !== 'true' && restC(back.room, 0.2) && (back.zoom || restC(back.page, 0.034)) && !!back.drift && back.drift.start === rest.drift.start, JSON.stringify(back));
 
   // W5: the swap key against the same page's first key with the shade off
   const on = await firstKeys(app, 6);
@@ -106,7 +130,12 @@ await withHarness(async (app) => {
     await app.typeKeys('r');
     await app.evalJs('new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))');
     const rm1 = await app.evalJs(READ);
-    ok('W6 reduced motion: nothing on the shade animates at rest; the first key swaps; nothing animates after it', rm0.running === 0 && stillOk(rm1.room) && rm1.running === 0, JSON.stringify({ rest: { running: rm0.running }, key: { running: rm1.running, room: rm1.room } }));
+    // PARKED 2026-11-06, never run (SUPERSEDED by Fable's ruling (c): the swap reads by opacity now, not display). Original, verbatim:
+    // ok('W6 reduced motion: nothing on the shade animates at rest; the first key swaps; nothing animates after it', rm0.running === 0 && stillOk(rm1.room) && rm1.running === 0, JSON.stringify({ rest: { running: rm0.running }, key: { running: rm1.running, room: rm1.room } }));
+    // SUCCESSOR W6c: under reduced motion nothing on the shade animates at rest; the first key is a CUT (in its own frames the still picture is
+    // at strength and the live drawing at 0, no cross-fade running); nothing animates after it.
+    ok('W6c reduced motion: nothing on the shade animates at rest; the first key is a cut to the still picture; nothing animates after it',
+      rm0.running === 0 && !!rm1.room && Math.abs(rm1.room.stillO - rm1.room.stillA) < 0.001 && rm1.room.liveO === 0 && rm1.running === 0, JSON.stringify({ rest: { running: rm0.running }, key: { running: rm1.running, room: rm1.room } }));
   } finally { await app.emulateMedia([]); }
   // W8: the flash held, two masks, one moment
   const pageId = (await app.evalJs('location.hash')).replace(/^#\/page\//, '');
