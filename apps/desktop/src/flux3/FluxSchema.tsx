@@ -7,6 +7,8 @@
 //     no room, so neither the board's rect nor any card moves (the page-primacy law; flux3-page-rect.mjs and flux3-s1.mjs keep it).
 // Nothing here is saved. The layer's motion follows the existing Ambiance dial (0 = the still frame) and reduced motion; its tone, the existing
 // Page pref.
+// S2: the Stack and the hologram (FluxStack.tsx) are rendered here too, on the same nodes; while the Stack is open the layer holds its still frame
+// and the level readout names the Stack or the hologram.
 import { useEffect, useMemo, useRef, type RefObject } from 'react';
 import type { Box } from '../types/board';
 import { useTheme } from '../store/theme';
@@ -17,10 +19,14 @@ import { useLexicon } from '../store/themeLexicon';
 import { FluxLayer, type FluxScene } from './flux3-layer';
 import { useLastTouched } from './lastTouched';
 import { nodeHex } from './FluxNodeRecord';
+import { FluxStack } from './FluxStack';
+import { useStackView } from './stackView';
 
 interface Props {
   wrapRef: RefObject<HTMLDivElement | null>;
   canvasRef: RefObject<HTMLDivElement | null>;
+  /** All the board's boxes (S2: the Stack reads the board's own order from them). */
+  boxes: Box[];
   /** The cards on the canvas (the board's own render list). */
   nodes: Box[];
   /** The board's same-board links (its 'connection' boxes). */
@@ -35,11 +41,12 @@ export function FluxSchema(props: Props) {
   return theme === 'flux' ? <Schema {...props} /> : null;
 }
 
-function Schema({ wrapRef, canvasRef, nodes, connections, selectedId, pageWidthPx, labelFor }: Props) {
+function Schema({ wrapRef, canvasRef, boxes, nodes, connections, selectedId, pageWidthPx, labelFor }: Props) {
   const layerRef = useRef<FluxLayer | null>(null);
   const { page } = useThemePrefs();
   const dial = useAmbianceDial();
   const last = useLastTouched();
+  const stack = useStackView();
   const { t } = useDeskLexicon();
   const lex = useLexicon();
 
@@ -68,7 +75,8 @@ function Schema({ wrapRef, canvasRef, nodes, connections, selectedId, pageWidthP
     };
   }, [wrapRef, canvasRef]);   // ref objects: stable, so the layer is made once per board frame
 
-  useEffect(() => { layerRef.current?.setOptions({ tone: page, motion: dial > 0 }); }, [page, dial]);
+  // S2: under the Stack the circuit stays faint and STILL behind the nodes (the layer's still frame; it dims in flux-v3.css)
+  useEffect(() => { layerRef.current?.setOptions({ tone: page, motion: dial > 0 && !stack.on }); }, [page, dial, stack.on]);
 
   // the scene in board pixels (a card's x, y, w and h are fractions of the page width on both axes); handed over only when it changed,
   // so a render that moved nothing never makes the layer lay its routes out again
@@ -95,13 +103,18 @@ function Schema({ wrapRef, canvasRef, nodes, connections, selectedId, pageWidthP
   const lastBox = last ? nodes.find((n) => n.id === last) ?? null : null;
   // above every card (each card is its own stacking context at its stored z), as a card brought to the front already stands above the rest
   const topZ = nodes.reduce((m, n) => Math.max(m, n.z), 0) + 1;
+  const level = stack.holo ? t('flux3ViewHologram') : stack.on ? t('flux3ViewStack') : lex.t('board');
   return (
-    <div className="flux3-tele" aria-hidden="true" style={{ zIndex: topZ }}>
-      <span>{t('flux3ReadLevel')} <span className="flux3-tele-lvl">{lex.t('board')}</span></span>
+    <>
+    <FluxStack wrapRef={wrapRef} canvasRef={canvasRef} boxes={boxes} nodes={nodes} startId={last ?? selectedId} zBase={topZ} />
+    {/* above the Stack's nodes too (they stand at topZ + 1 .. topZ + 101) */}
+    <div className="flux3-tele" aria-hidden="true" style={{ zIndex: stack.on ? topZ + 102 : topZ }}>
+      <span>{t('flux3ReadLevel')} <span className="flux3-tele-lvl">{level}</span></span>
       <span>{t('flux3ReadZoom')} <b>1.00×10<sup>0</sup></b></span>
       <span>{lex.tMany('box')} <b>{nodes.length}</b></span>
       <span>{t('flux3LinkMany')} <b>{scene.links.length}</b></span>
       <span>{t('flux3ReadLast')} <span className="flux3-tele-you">{lastBox ? `${labelFor(lastBox)} 0x${nodeHex(lastBox.id)}` : '—'}</span></span>
     </div>
+    </>
   );
 }
