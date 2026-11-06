@@ -12,6 +12,8 @@
 // RL_REF (the same turn's main control, `node scripts/rhizome-latency-ref.mjs --env <control logs>`) passes through to every guard run below; without it the guard's default reference stands. C and C2 are
 // held to the fade's reference shift (it is ~9 ms behind the fast control's on this box even on main), so M1/M2/M4 must clear THAT, not +5: M4's +10 ms per fade key adds to a ~9 shift and ~3 cost.
 // Each mutant makes the guard measure twice (a red is confirmed by a second measurement) - about 6 minutes a mutant.
+// PARKED - SUPERSEDED by the reference-shift check (Fable, Nov 6; coarse-C stabilising). The line(s) that stood, verbatim (the successor is the line below this block):
+// // Run: node scripts/harness/rhizome-latency-mutant.mjs   (from apps/desktop; four live runs of the guard - a box turn; it inherits WS_BOX_TURN)
 // Run: node scripts/harness/rhizome-latency-mutant.mjs   (from apps/desktop; five mutants, each a live run or two of the guard - a box turn; it inherits WS_BOX_TURN)
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
@@ -48,10 +50,16 @@ for (const m of MUTANTS) {
   if (m.id !== 'M0') {
     const landed = m.id === 'M1' ? median(raw.hold) - median(raw.restPre) >= 10 && median(raw.fade) - median(raw.restFast) >= 10
       : m.id === 'M2' ? Math.max(...raw.fade) >= 150
+        // PARKED - SUPERSEDED by the reference-shift check (Fable, Nov 6; coarse-C stabilising). The line(s) that stood, verbatim (the successor is the line below this block):
+//         : cost('hold') - cost('pre') >= 10 && cost('fade') - cost('fast') >= 10;
         : m.id === 'M4' ? cost('fade') - cost('fast') >= 6 && cost('hold') - cost('pre') < 4   // 10 ms on every fade key adds +6.5..+14 to the fade's cost median; the hold is untouched
           : cost('hold') - cost('pre') >= 10 && cost('fade') - cost('fast') >= 10;
     ok(`${m.id} (landed): the injected regression is visible in the guard's own samples`, landed, JSON.stringify(info));
   }
+  // PARKED - SUPERSEDED by the reference-shift check (Fable, Nov 6; coarse-C stabilising). The line(s) that stood, verbatim (the successor is the line below this block):
+//   ok(`${m.id}: the verdict - ${m.red.length ? `${m.red.join(' and ')} RED` : 'all green'}${m.red.length && m.green.length ? ', ' : ''}${m.red.length && m.green.length ? `${m.green.join(' and ')} stay green` : ''}`,
+//     r.status === m.exit && m.red.every((p) => line(p).startsWith('FAIL')) && m.green.every((p) => line(p).startsWith('PASS')),
+//     `exit=${r.status} | ${[...m.red, ...m.green].map((p) => line(p).slice(0, 5) + p).join(' | ')}${m.id === 'M0' ? ' | ' + JSON.stringify(info) : ''}`);
   const redAny = m.redAny || null;   // at least one of these goes red (M4: the coarse C or the finer C2 - which one is not the point, that the fade's cost cannot slip through both is)
   ok(`${m.id}: the verdict - ${redAny ? `${redAny.join(' or ')} RED` : m.red.length ? `${m.red.join(' and ')} RED` : 'all green'}${(m.red.length || redAny) && m.green.length ? ', ' : ''}${(m.red.length || redAny) && m.green.length ? `${m.green.join(' and ')} stay green` : ''}`,
     r.status === m.exit && m.red.every((p) => line(p).startsWith('FAIL')) && (!redAny || redAny.some((p) => line(p).startsWith('FAIL'))) && m.green.every((p) => line(p).startsWith('PASS')),

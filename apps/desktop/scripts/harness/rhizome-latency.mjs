@@ -142,6 +142,8 @@ async function part2() {
     // the in-page meter: a key's latency is keydown -> the SECOND animation frame after its input. The editor handles insertion at `beforeinput` and never fires `input` on a key (measured
     // on the box, ledger 120: keydown 24, beforeinput 24, input 0), so the hook is `beforeinput`: the DOM changes in that same task, the first frame after it paints it, the second starts after.
     // Every sample also carries WHEN it was taken, and the flash's own phase changes are timestamped, so a slow frame can be placed against the fade's start and end.
+    // PARKED - SUPERSEDED by the reference-shift check (Fable, Nov 6; coarse-C stabilising). The line(s) that stood, verbatim (the successor is the line below this block):
+    // window.__rlMutantMs = ${MUTANT_MS}; window.__rlMutantStall = ${MUTANT_STALL_MS};   (parked outside the injected script text below, which is JS source in a template string)
     const arm = () => app.evalJs(`(() => {
       window.__lat = []; window.__fl = []; let t0 = 0, last = null;
       if (window.__latOff) window.__latOff();
@@ -271,8 +273,13 @@ async function part2() {
     // measurement; a one-off the box threw at the fade (measured once in 24: a fade median 6.8 ms over its control with the controls and the hold clean) does not. Every measurement is logged.
     const judge = (m) => {
       const r = stat(m.restPre), f = stat(m.restFast), h = stat(m.holdAll), d = stat(m.fadeAll);
+      // PARKED - SUPERSEDED by the reference-shift check (Fable, Nov 6; coarse-C stabilising). The line(s) that stood, verbatim (the successor is the line below this block):
+//       const within = (x, rest) => x.n >= MIN_KEYS && rest.n >= MIN_KEYS && x.median <= rest.median + MEDIAN_SLACK && x.p95 <= rest.p95 + P95_SLACK && x.max <= MAX_MS;
       const within = (x, rest, ref = { c: 0, p95: 0 }) => x.n >= MIN_KEYS && rest.n >= MIN_KEYS && x.median <= rest.median + ref.c + MEDIAN_SLACK && x.p95 <= rest.p95 + ref.p95 + P95_SLACK && x.max <= MAX_MS;
       const fc = (a) => stat(a || []);
+      // PARKED - SUPERSEDED by the reference-shift check (Fable, Nov 6; coarse-C stabilising). The line(s) that stood, verbatim (the successor is the line below this block):
+//       const fine = (x, rest) => x.n >= MIN_KEYS && rest.n >= MIN_KEYS && x.median <= rest.median + COST_MEDIAN_SLACK;
+//       return { b: within(h, r), c: within(d, f), b2: fine(fc(m.fine.hold.cost), fc(m.fine.pre.cost)), c2: fine(fc(m.fine.fade.cost), fc(m.fine.fast.cost)), noisy: r.max > REST_NOISE_MS, control: show(r), controlFast: show(f), flash: show(h), fade: show(d) };
       const fine = (x, rest, ref = 0) => x.n >= MIN_KEYS && rest.n >= MIN_KEYS && x.median <= rest.median + ref + COST_MEDIAN_SLACK;
       return { b: within(h, r), c: within(d, f, REF), b2: fine(fc(m.fine.hold.cost), fc(m.fine.pre.cost)), c2: fine(fc(m.fine.fade.cost), fc(m.fine.fast.cost), REF.c2), noisy: r.max > REST_NOISE_MS || f.max > REST_NOISE_MS,control: show(r), controlFast: show(f), flash: show(h), fade: show(d) };
     };
@@ -292,8 +299,12 @@ async function part2() {
     const holdSt = stat(holdAll), fadeSt = stat(fadeAll);
     // the baseline: the control bursts, pooled over the rounds of the attempt that stands
     const restSt = stat(restPre), fastSt = stat(restFast);
+    // PARKED - SUPERSEDED by the reference-shift check (Fable, Nov 6; coarse-C stabilising). The line(s) that stood, verbatim (the successor is the line below this block):
+//     console.log('RL-RAW: ' + JSON.stringify({ mutantMs: MUTANT_MS, mutantStallMs: MUTANT_STALL_MS, attempts, restA, restPre, restFast, hold: holdAll, fade: fadeAll, fine: M.fine }));
     console.log('RL-RAW: ' + JSON.stringify({ mutantMs: MUTANT_MS, mutantStallMs: MUTANT_STALL_MS, mutantFadeMs: MUTANT_FADE_MS, attempts, restA, restPre, restFast, hold: holdAll, fade: fadeAll, fine: M.fine }));
     ok(`A+ the rest baselines are the control bursts typed on the crossing page seconds before the 8th word: ${restSt.n} keys at the hold's pace and ${fastSt.n} at the fade's, over ${rounds.length} round(s), ${attempts.length} measurement(s) (a slow-control key over ${REST_NOISE_MS} ms = a box stall: the measurement is void and taken again; a failing one is measured again to confirm it)`,
+      // PARKED - SUPERSEDED by the reference-shift check (Fable, Nov 6; coarse-C stabilising). The line(s) that stood, verbatim (the successor is the line below this block):
+//       restSt.n >= MIN_KEYS && fastSt.n >= MIN_KEYS && !(restSt.max > REST_NOISE_MS), `control ${show(restSt)} | control fast ${show(fastSt)} | A block ${show(restASt)} | attempts ${JSON.stringify(attempts)}`);
       restSt.n >= MIN_KEYS && fastSt.n >= MIN_KEYS && !(restSt.max > REST_NOISE_MS) && !(fastSt.max > REST_NOISE_MS), `control ${show(restSt)} | control fast ${show(fastSt)} | A block ${show(restASt)} | attempts ${JSON.stringify(attempts)}`);
     ok('B premise: every round crossed the goal and the flash was HOLDING - on main with the drop-shadow actually applied to the full field, under Arbor\'s vines with the brass copy\'s composited layer running its animation', flashPremise && filterPremise, JSON.stringify(rounds.slice(-1)));
     ok(`B premise: at least ${MIN_KEYS} keys were painted while data-flash was true (${rounds.length} round(s); a flash that was over before the keys landed certifies nothing)`, holdSt.n >= MIN_KEYS, show(holdSt));
@@ -303,6 +314,10 @@ async function part2() {
     const costSt = { pre: stat(M.fine.pre.cost), hold: stat(M.fine.hold.cost), fast: stat(M.fine.fast.cost), fade: stat(M.fine.fade.cost) };
     ok(`B2 main-thread time per key inside the flash (the key's handler task + the frame that paints it, ms): the median is within ${COST_MEDIAN_SLACK} ms of the same page's control - a cost the frame clock hides`,
       costSt.hold.n >= MIN_KEYS && costSt.pre.n >= MIN_KEYS && costSt.hold.median <= costSt.pre.median + COST_MEDIAN_SLACK, `control ${show(costSt.pre)} | flash ${show(costSt.hold)}`);
+    // PARKED - SUPERSEDED by the reference-shift check (Fable, Nov 6; coarse-C stabilising). The line(s) that stood, verbatim (the successor is the line below this block):
+//     ok(`C2 main-thread time per key inside the fade: the median is within ${COST_MEDIAN_SLACK} ms of the fast control's`,
+//       costSt.fade.n >= MIN_KEYS && costSt.fast.n >= MIN_KEYS && costSt.fade.median <= costSt.fast.median + COST_MEDIAN_SLACK, `control ${show(costSt.fast)} | fade ${show(costSt.fade)}`);
+//     ok('C typing inside the fade is as fast as at rest at the same pace (same budgets, against the fast control)', fadeSt.n >= MIN_KEYS && fastSt.n >= MIN_KEYS && fadeSt.median <= fastSt.median + MEDIAN_SLACK && fadeSt.p95 <= fastSt.p95 + P95_SLACK && fadeSt.max <= MAX_MS, `rest ${show(fastSt)} | fade ${show(fadeSt)}`);
     ok(`C2 main-thread time per key inside the fade: the median is within ${COST_MEDIAN_SLACK} ms of the fast control's PLUS the fade's reference cost (${REF.c2} ms, ${REF_SRC})`,
       costSt.fade.n >= MIN_KEYS && costSt.fast.n >= MIN_KEYS && costSt.fade.median <= costSt.fast.median + REF.c2 + COST_MEDIAN_SLACK, `control ${show(costSt.fast)} | fade ${show(costSt.fade)} | shift ${r1(costSt.fade.median - costSt.fast.median)} vs ref ${REF.c2}`);
     ok(`C typing inside the fade is as fast as at rest at the same pace (the same budgets over the fade's reference shift - median +${REF.c} ms, p95 +${REF.p95} ms, ${REF_SRC} - against the fast control; no key over ${MAX_MS} ms)`, fadeSt.n >= MIN_KEYS && fastSt.n >= MIN_KEYS && fadeSt.median <= fastSt.median + REF.c + MEDIAN_SLACK && fadeSt.p95 <= fastSt.p95 + REF.p95 + P95_SLACK && fadeSt.max <= MAX_MS,
