@@ -1,0 +1,11 @@
+attempt 1 (background shell, 05:57:03Z-05:57:04Z): No linked project found. Run railway link to connect to a project  -> exit 1 in one second, before any upload; no deployment was created (deployment list unchanged: 719bd9d8 SUCCESS newest)
+
+attempt 2 (foreground shell, 05:58:10Z-06:00:08Z), tail:
+exporting to docker image format
+containerimage.descriptor: eyJtZWRpYVR5cGUiOiJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLm1hbmlmZXN0LnYxK2pzb24iLCJkaWdlc3QiOiJza
+containerimage.config.digest: sha256:90f4e4dffef7e72541ee9a85a74e4d388c39e40c81edc0aed2c4f45a31b4d84d
+containerimage.digest: sha256:7e298fe427ea36a96ded2dbb6abf48154aaed2bda82cfa00fed2cf78717eb754
+image push
+Deploy complete
+up exit=0
+06:00:08Z
