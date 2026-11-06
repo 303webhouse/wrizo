@@ -50,8 +50,23 @@ const api = (s) => { const b = barrelOf(s); const extra = [...b.names].filter((n
   return { pass: extra.length === 0 && lost.length === 0 && unloaded.length === 0 && b.parts.includes('seams'), extra, lost, unloaded, n: b.names.size, parts: b.parts.length }; };
 const barrel = texts.get('store/persistence.ts');
 const realApi = api(barrel);
-ok(`THE API: store/persistence.ts exports exactly its ${was.size} names at ${base} (now ${realApi.n}) and loads all ${partFiles.length} parts, the seams included`,
-  realApi.pass, JSON.stringify({ extra: realApi.extra, lost: realApi.lost, unloaded: realApi.unloaded }));
+// ---- PARKED - SUPERSEDED by #13 step 11 (Fable, Nov 5): step 11 deletes three dead exports of the barrel (isPinDisplayed, getScriptDoc,
+// getTutorThread), so "exactly its names at <base>" no longer holds after it. Kept VERBATIM and no longer run; the successor follows.
+// ok(`THE API: store/persistence.ts exports exactly its ${was.size} names at ${base} (now ${realApi.n}) and loads all ${partFiles.length} parts, the seams included`,
+//   realApi.pass, JSON.stringify({ extra: realApi.extra, lost: realApi.lost, unloaded: realApi.unloaded }));
+// successor: --gone <file> (one name per line, # comments) names exports a later step deleted on purpose. The barrel exports exactly its
+// names at <base> minus those (each must have been exported at <base> and be gone now); with no --gone it is the parked claim exactly.
+const gi = process.argv.indexOf('--gone');
+const GONE = gi > 0 ? fs.readFileSync(path.join(ROOT, process.argv[gi + 1]), 'utf8').split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('#')) : [];
+const goneHere = (g) => g.filter((n) => was.has(n));   // the list may name exports of other modules too: only the barrel's count here
+const apiGone = (s, g) => { const r = api(s), want = goneHere(g);
+  const lostNot = r.lost.filter((n) => !want.includes(n)), stillHere = want.filter((n) => !r.lost.includes(n));
+  return { pass: r.extra.length === 0 && lostNot.length === 0 && stillHere.length === 0 && r.unloaded.length === 0 && barrelOf(s).parts.includes('seams'), extra: r.extra, lostNot, stillHere, unloaded: r.unloaded, n: r.n, gone: want }; };
+const realGone = apiGone(barrel, GONE);
+ok(`THE API [step 11 successor]: store/persistence.ts exports exactly its ${was.size} names at ${base}${realGone.gone.length ? ` minus the ${realGone.gone.length} a later step deleted (--gone)` : ''} (now ${realGone.n}) and loads all ${partFiles.length} parts, the seams included`,
+  realGone.pass, JSON.stringify(realGone));
+// its liveness: a name the --gone list claims but the barrel still exports fails (the list cannot excuse what is still there)
+ok('LIVENESS: a --gone name the barrel still exports is caught', !apiGone(barrel, [...GONE, 'createJournalPage']).pass);
 
 // (3) liveness
 const planted = new Map(texts); planted.set(`${PARTS_DIR}boards.ts`, texts.get(`${PARTS_DIR}boards.ts`) + '\nconst cache = { projects: [] };\n');
