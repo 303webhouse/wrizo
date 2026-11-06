@@ -51,6 +51,7 @@ const sleepMs = (ms) => new Promise((r) => setTimeout(r, ms));
 const rng = (seed) => () => { seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 const MUTANT_MS = Number(process.env.RL_MUTANT_MS || 0);   // the injected regressions (0 = none): a cost on every flash/fade key,
 const MUTANT_STALL_MS = Number(process.env.RL_MUTANT_STALL_MS || 0);   // and one stall at the first key of every fade
+const MUTANT_FADE_MS = Number(process.env.RL_MUTANT_FADE_MS || 0);   // and (coarse-C stabilising, Nov 5) a MODERATE cost on the fade's keys alone - the case the 100 ms ceiling cannot see
 
 // ---- PART 1 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 const css = read('index.css');
@@ -145,6 +146,7 @@ async function part2() {
       window.__stalled = false;
       const spin = () => { const f = document.querySelector('.wz-rhizome-field'); const v = f ? f.dataset.flash : null; let m = 0;
         if ((v === 'true' || v === 'fading') && window.__rlMutantMs) m = window.__rlMutantMs;
+        if (v === 'fading' && window.__rlMutantFade) m = Math.max(m, window.__rlMutantFade);   // RL_MUTANT_FADE_MS: a cost on the FADE's keys alone (not the hold's)
         if (v === 'fading' && window.__rlMutantStall && !window.__stalled) { window.__stalled = true; m = Math.max(m, window.__rlMutantStall); }
         if (!m) return; const e = performance.now() + m; while (performance.now() < e) { /* the injected cost */ } };
       const bi = () => { const t = t0, k = cur; requestAnimationFrame(() => {
@@ -154,7 +156,7 @@ async function part2() {
       window.__val = (x, f) => (f === 'busy' || f === 'frame') ? (x.k ? x.k[f] : null) : f === 'cost' ? ((x.k && x.k.busy != null && x.k.frame != null) ? x.k.busy + x.k.frame : null) : x[f];
       document.addEventListener('keydown', kd, true); document.addEventListener('beforeinput', spin, true); document.addEventListener('beforeinput', bi, true);
       window.__latOff = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('beforeinput', spin, true); document.removeEventListener('beforeinput', bi, true); };
-      window.__rlMutantMs = ${MUTANT_MS}; window.__rlMutantStall = ${MUTANT_STALL_MS};
+      window.__rlMutantMs = ${MUTANT_MS}; window.__rlMutantStall = ${MUTANT_STALL_MS}; window.__rlMutantFade = ${MUTANT_FADE_MS};
       return true; })()`);
     const jit = rng(0x7A11);
     const typeSteady = async (n, gap = 90, jitter = true) => { for (let i = 0; i < n; i += 1) { await app.typeKeys('a'); await sleep(jitter ? Math.round(gap * (0.7 + 0.6 * jit())) : gap); } };   // jittered: gap +-30%, seeded
@@ -278,7 +280,7 @@ async function part2() {
     const holdSt = stat(holdAll), fadeSt = stat(fadeAll);
     // the baseline: the control bursts, pooled over the rounds of the attempt that stands
     const restSt = stat(restPre), fastSt = stat(restFast);
-    console.log('RL-RAW: ' + JSON.stringify({ mutantMs: MUTANT_MS, mutantStallMs: MUTANT_STALL_MS, attempts, restA, restPre, restFast, hold: holdAll, fade: fadeAll, fine: M.fine }));
+    console.log('RL-RAW: ' + JSON.stringify({ mutantMs: MUTANT_MS, mutantStallMs: MUTANT_STALL_MS, mutantFadeMs: MUTANT_FADE_MS, attempts, restA, restPre, restFast, hold: holdAll, fade: fadeAll, fine: M.fine }));
     ok(`A+ the rest baselines are the control bursts typed on the crossing page seconds before the 8th word: ${restSt.n} keys at the hold's pace and ${fastSt.n} at the fade's, over ${rounds.length} round(s), ${attempts.length} measurement(s) (a slow-control key over ${REST_NOISE_MS} ms = a box stall: the measurement is void and taken again; a failing one is measured again to confirm it)`,
       restSt.n >= MIN_KEYS && fastSt.n >= MIN_KEYS && !(restSt.max > REST_NOISE_MS), `control ${show(restSt)} | control fast ${show(fastSt)} | A block ${show(restASt)} | attempts ${JSON.stringify(attempts)}`);
     ok('B premise: every round crossed the goal and the flash was HOLDING - on main with the drop-shadow actually applied to the full field, under Arbor\'s vines with the brass copy\'s composited layer running its animation', flashPremise && filterPremise, JSON.stringify(rounds.slice(-1)));
