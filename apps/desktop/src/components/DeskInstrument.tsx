@@ -4,6 +4,12 @@ import { RhizomeField } from './RhizomeField';
 import { GlitchMeter } from './GlitchMeter';
 import { RunStrip } from './RunStrip';
 import { useTheme } from '../store/theme';
+// FLUX3 S3 - mount points only: under ?flux3=1 the idle glitch takes GlitchMeter's place, the Glitch bar the bar style's, and the doc's frame
+// (gutter + ports) stands beside the page (src/flux3/); without the flag every line below renders exactly as before
+import { FLUX3 } from '../flux3/flag';
+import { FluxIdleGlitch } from '../flux3/FluxIdleGlitch';
+import { FluxGlitchBar } from '../flux3/FluxGlitchBar';
+import { FluxDoc } from '../flux3/FluxDoc';
 
 // the progress instrument's framed home: bar and rhizome share the rhizome's lane under the page, and the goal flare fires there on the same `celebrating` transition, for both styles [DeskInstrument §1]
 export function DeskInstrument({ unitCount, text, seedKey, paperRef, glitch = false }: {
@@ -22,8 +28,9 @@ export function DeskInstrument({ unitCount, text, seedKey, paperRef, glitch = fa
   return (
     <>
       <RhizomeField text={text} seedKey={seedKey} paperRef={paperRef} />
-      {glitch && <GlitchMeter text={text} />}
+      {glitch && (FLUX3 ? <FluxIdleGlitch paperRef={paperRef} /> : <GlitchMeter text={text} />)}
       {glitch && <RunStrip text={text} />}
+      {FLUX3 && glitch && <FluxDoc paperRef={paperRef} entryId={seedKey} />}
       <DeskGoalLane unitCount={unitCount} />
     </>
   );
@@ -45,6 +52,16 @@ function DeskGoalLane({ unitCount }: { unitCount: number }) {
   // "one celebration grammar, two consumers", not a second timing engine.
   const { frac, celebrating } = useGoalProgress(unitCount, WORD_GOAL);
   if (settings.progress !== 'words') return null;
+  // FLUX3 S3 - under ?flux3=1 in Flux, the bar style's lane carries the Glitch bar instead of the bar (ruling A); its own return, so the lane
+  // below stays exactly as it is for every other case (th-machina-source M19 reads its gate)
+  if (FLUX3 && theme === 'flux' && settings.progressStyle === 'bar') {
+    return (
+      <div className="desk-frame-instrument" data-style={settings.progressStyle}>
+        <div className={`desk-frame-goalflare${celebrating ? ' lit' : ''}`} aria-hidden="true" />
+        <FluxGlitchBar unitCount={unitCount} frac={frac} celebrating={celebrating} />
+      </div>
+    );
+  }
   return (
     <div className="desk-frame-instrument" data-style={settings.progressStyle}>
       {/* S4 — the flare. Decorative and inert: it carries no text, no number,

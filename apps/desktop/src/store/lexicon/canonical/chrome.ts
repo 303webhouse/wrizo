@@ -228,6 +228,11 @@ export const CANONICAL_CHROME = {
   // FLUX3 S2 - read only under ?flux3=1 in Flux: the Stack button in Show as, and the level readout while the Stack or the hologram is open
   flux3ViewStack: 'Stack',
   flux3ViewHologram: 'Hologram',
+  flux3WordOne: 'word',
+  flux3WordMany: 'words',
+  flux3PortConnectAnother: 'Connect another',
+  flux3PortDisconnect: 'Disconnect',
+  flux3Checkpoint: 'Checkpoint',
   ctxDelete: 'Delete',
   ctxDeleteBoard: 'Delete board',
   ctxUngroup: 'Ungroup',

@@ -98,3 +98,64 @@
 :root[data-flux3][data-theme='flux'] .board-storyboard .board-sb-card::after{ content:''; position:absolute; width:8px; height:8px; border:2px solid var(--f3-seq-cyan); pointer-events:none; }
 :root[data-flux3][data-theme='flux'] .board-storyboard .board-sb-card::before{ left:-3px; top:-3px; border-right:none; border-bottom:none; }
 :root[data-flux3][data-theme='flux'] .board-storyboard .board-sb-card::after{ right:-3px; bottom:-3px; border-left:none; border-top:none; }
+
+/* ==== S3: the doc ================================================================================================================================ */
+/* the gutter and the ports stand on the room beside the page, which stays dark in either Page tone, so they take the room's colours always */
+:root[data-flux3][data-theme='flux']{ --f3-room-text:#E3F1EC; --f3-room-quiet:#7FA8A0; --f3-room-addr:#57D0F5; --f3-room-cyan:#00C2FF; --f3-room-hair:#1D4A52; --f3-room-fill:#071419; }
+
+/* ---- the schema gutter (FluxDoc.tsx): zero-width at its x; each row right-aligned to it, beside its paragraph's first line ---- */
+:root[data-flux3][data-theme='flux'] .flux3-gutter{ position:absolute; width:0; height:0; pointer-events:none; }
+:root[data-flux3][data-theme='flux'] .flux3-gutter-row{ position:absolute; right:0; white-space:nowrap; line-height:16px;
+  font-family:var(--font-chromeLabel); font-weight:600; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--f3-room-quiet); }
+:root[data-flux3][data-theme='flux'] .flux3-gutter-row b{ color:var(--f3-room-addr); font-weight:600; }
+
+/* ---- the per-doc link ports (FluxDoc.tsx): square ports straddling the page's right edge; a press draws the line into its box ---- */
+:root[data-flux3][data-theme='flux'] .flux3-ports{ position:absolute; width:0; height:0; }
+:root[data-flux3][data-theme='flux'] .flux3-port{ position:absolute; left:-7px; width:14px; height:14px; padding:0; margin:0; border-radius:0; box-shadow:none;
+  background:var(--f3-room-fill); border:1.5px solid var(--f3-room-cyan); cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .flux3-port[aria-expanded='true']{ background:var(--f3-room-cyan); }
+:root[data-flux3][data-theme='flux'] .flux3-port:focus-visible{ outline:1px solid var(--f3-room-cyan); outline-offset:2px; }
+:root[data-flux3][data-theme='flux'] .flux3-port-more{ position:absolute; left:-9px; font-family:var(--font-chromeLabel); font-weight:600; font-size:10px; color:var(--f3-room-quiet); }
+:root[data-flux3][data-theme='flux'] .flux3-port-line{ position:absolute; left:7px; width:26px; margin-top:7px; border-top:1px solid var(--f3-room-cyan); pointer-events:none; }
+:root[data-flux3][data-theme='flux'] .flux3-port-box{ position:absolute; left:33px; min-width:180px; max-width:260px; padding:8px 10px; display:flex; flex-direction:column; gap:5px;
+  background:var(--f3-room-fill); border:1px solid var(--f3-room-cyan); border-radius:0; box-shadow:none; }
+:root[data-flux3][data-theme='flux'] .flux3-port-head{ font-family:var(--font-chromeLabel); font-weight:600; font-size:11px; letter-spacing:.06em; color:var(--f3-room-text);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+:root[data-flux3][data-theme='flux'] .flux3-port-kind{ color:var(--f3-room-addr); text-transform:uppercase; letter-spacing:.14em; font-size:10px; }
+:root[data-flux3][data-theme='flux'] .flux3-port-act{ text-align:left; background:none; border:1px solid var(--f3-room-hair); border-radius:0; box-shadow:none; padding:4px 8px;
+  font-family:var(--font-chromeLabel); font-weight:600; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--f3-room-text); cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .flux3-port-act:hover,
+:root[data-flux3][data-theme='flux'] .flux3-port-act:focus-visible,
+:root[data-flux3][data-theme='flux'] .flux3-port-act[aria-expanded='true']{ border-color:var(--f3-room-cyan); outline:none; }
+
+/* ---- the Glitch bar (FluxGlitchBar.tsx), in the goal lane under the page (an absolute lane: the page never moves) ---- */
+:root[data-flux3][data-theme='flux'] .flux3-glitchbar{ display:flex; align-items:center; justify-content:center; gap:14px; pointer-events:none; }
+:root[data-flux3][data-theme='flux'] .flux3-glitchbar-units{ display:flex; gap:3px; }
+:root[data-flux3][data-theme='flux'] .flux3-glitchbar-unit{ width:17px; height:17px; display:inline-flex; align-items:center; justify-content:center; box-sizing:border-box;
+  border:1px solid var(--f3-room-hair); font-family:var(--font-chromeLabel); font-weight:700; font-size:10.5px; line-height:1; color:var(--f3-room-fill); }
+:root[data-flux3][data-theme='flux'] .flux3-glitchbar-unit[data-on='true']{ background:#B7FF3C; border-color:#B7FF3C; }
+:root[data-flux3][data-theme='flux'] .flux3-glitchbar-unit[data-glitch='true']{ font-family:ui-monospace, 'Cascadia Mono', Consolas, monospace; }
+:root[data-flux3][data-theme='flux'] .flux3-glitchbar[data-goal='true'] .flux3-glitchbar-unit{ background:#FF9800; border-color:#FF9800; }   /* the writer finished: her act, orange */
+:root[data-flux3][data-theme='flux'] .flux3-glitchbar-count{ font-family:var(--font-chromeLabel); font-weight:600; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--f3-room-quiet); }
+
+/* ---- the idle glitch (FluxIdleGlitch.tsx): a layer on <body>, over the words it covers; it takes no pointer and can never be selected ---- */
+:root[data-flux3][data-theme='flux'] .flux3-idle-layer{ position:fixed; inset:0; pointer-events:none; user-select:none; z-index:5; }
+:root[data-flux3][data-theme='flux'] .flux3-idle-word{ position:absolute; overflow:hidden; white-space:pre; pointer-events:none; user-select:none; }
+
+/* ---- the hands as lines (piece 5; Nick's rule: the opener tabs keep today's shape, place and arrow flip - colour and line only; FIX reviews
+   before this leaves the flag). The tab in the circuit's cyan; an open hand draws a line out of its tab into the box (a drawing: no rect moves) ---- */
+:root[data-flux3][data-theme='flux'] .wz-sliver-grip,
+:root[data-flux3][data-theme='flux'] .wz-tutor-grip{ color:var(--f3-room-addr); border-color:var(--f3-room-hair); }
+:root[data-flux3][data-theme='flux'] .wz-sliver-grip[aria-expanded='true'],
+:root[data-flux3][data-theme='flux'] .wz-tutor-grip[aria-expanded='true']{ color:var(--f3-room-cyan); border-color:var(--f3-room-cyan); }
+:root[data-flux3][data-theme='flux'] .wz-sliver-grip[aria-expanded='true']::after,
+:root[data-flux3][data-theme='flux'] .wz-tutor-grip[aria-expanded='true']::after{ content:''; position:absolute; top:50%; width:22px; height:5px; margin-top:-2px; pointer-events:none;
+  background:linear-gradient(var(--f3-room-cyan), var(--f3-room-cyan)) 0 50% / 100% 1px no-repeat; }
+/* an open hand's panel stands on the far side of its tab from the page (TOOLS: left of its tab; the right hand: right of its tab), so the line
+   runs out of the tab, away from the page, into the box */
+:root[data-flux3][data-theme='flux'] .wz-sliver-grip[aria-expanded='true']::after{ right:100%; background:linear-gradient(var(--f3-room-cyan), var(--f3-room-cyan)) 0 50% / 100% 1px no-repeat,
+  linear-gradient(var(--f3-room-cyan), var(--f3-room-cyan)) 0 50% / 5px 5px no-repeat; }
+:root[data-flux3][data-theme='flux'] .wz-tutor-grip[aria-expanded='true']::after{ left:100%; background:linear-gradient(var(--f3-room-cyan), var(--f3-room-cyan)) 0 50% / 100% 1px no-repeat,
+  linear-gradient(var(--f3-room-cyan), var(--f3-room-cyan)) 100% 50% / 5px 5px no-repeat; }
+:root[data-flux3][data-theme='flux'] .wz-sliver-panel[data-open='true'],
+:root[data-flux3][data-theme='flux'] .wz-tutor-panel[data-open='true']{ box-shadow:inset 0 0 0 1px var(--f3-room-cyan); }

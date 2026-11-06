@@ -5,10 +5,12 @@
 //     transform, transition, opacity and stacking while the Stack is open, and gives each back exactly (its stored z) when it closes, so no card's
 //     rect, data or text changes (flux3-s2.mjs: the card-rect check). The circuit stays faint and still behind (the layer's still frame).
 //   - The HOLOGRAM: the Stack's centre node opened as the dominant surface: 50% larger, the rest smaller and further, the board dimmed under a
-//     faint, diffuse beam (no projector line, no shadow). A double-click on it is the board's own double-click (the card's editor), so a node opened
-//     as a hologram is written in exactly as on the board.
-// The Stack is a way of LOOKING: while it is open, a press, a drag, a wheel or a key swipes or opens and never reaches the board's own gestures, so
-// nothing is moved, nudged, made or deleted from it. Swipe, drag, wheel or the arrow keys flip; a click on the centre (or Enter) opens the hologram;
+//     faint, diffuse beam (no projector line, no shadow).
+//   - A DOUBLE-CLICK on any node, in the Stack or the hologram, is the board's own double-click (Nick, Nov 6: "double-click does the same thing in
+//     every theme"): today's card editor, so a node is written in exactly as on the board.
+// The Stack is a way of LOOKING: while it is open, a press, a drag, a wheel or a key swipes or opens and never reaches the board's own gestures (the
+// double-click alone is handed to the board), so nothing is moved, nudged, made or deleted from it. A click brings a node to the centre; swipe,
+// drag, wheel or the arrow keys flip; a click on the centre (or Enter) opens the hologram;
 // Esc closes the hologram, then the Stack. The centre moves at most three times a second (the <= 3 flashes/s law, STACK_GAP_MS), and reduced
 // motion or Ambiance 0 places every node at once (the still state). Nothing here is saved (stackView.ts).
 import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from 'react';
@@ -263,6 +265,7 @@ export function FluxStack({ wrapRef, canvasRef, boxes, nodes, startId, zBase }: 
       if (d.moved) go(d.idx - Math.round(dx / (live.current.holo ? 260 : 120)));
     };
     let swiped = false;
+    let tapped: string | null = null;   // the node a double-click's FIRST click landed on (that click may already have flown it to the centre)
     const onUp = () => { swiped = !!R.drag?.moved; R.drag = null; };
     const swallow = (e: Event) => { e.stopPropagation(); e.preventDefault(); };
     // a tap (a click that was not a swipe, and not a double-click's second click): a side node comes to the centre; the centre opens as the
@@ -271,17 +274,28 @@ export function FluxStack({ wrapRef, canvasRef, boxes, nodes, startId, zBase }: 
       swallow(e);
       if (swiped || e.detail > 1 || e.button !== 0) return;
       const L = live.current, card = cardOf(e.target);
+      tapped = card?.dataset.boxId ?? null;
       if (card?.dataset.boxId) {
         const i = L.order.indexOf(card.dataset.boxId);
         if (i < 0) return;
         if (i === R.idx) { if (!L.holo) setStackView({ holo: true }); } else go(i);
       } else if (L.holo) setStackView({ holo: false });
     };
-    // in the hologram the centre node's double-click is the board's own: the card's editor
+    // A DOUBLE-CLICK DOES THE SAME THING IN EVERY THEME (Nick, Nov 6): on ANY node of the Stack (or the hologram) it is the board's own
+    // double-click - today's card editor (or a pin's travel). Its first click may already have flown the node to the centre, so the board's
+    // own hit-test (BoardEditor's onDoubleClick reads the element at the event's point) is handed the node's CURRENT centre: the native
+    // event is held, and the same double-click is dispatched again there, marked so it passes this listener.
     const onDbl = (e: MouseEvent) => {
-      const card = cardOf(e.target);
-      if (live.current.holo && card && card.dataset.flux3Stack === 'centre') return;
+      if ((e as MouseEvent & { f3Stack?: true }).f3Stack) return;
       swallow(e);
+      const cv = canvasRef.current;
+      const id = tapped ?? cardOf(e.target)?.dataset.boxId ?? null;
+      const el = cv && id ? cardEl(cv, id) : null;
+      if (!cv || !el) return;
+      const r = el.getBoundingClientRect();
+      const again = new MouseEvent('dblclick', { bubbles: true, cancelable: true, detail: 2, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 });
+      (again as MouseEvent & { f3Stack?: true }).f3Stack = true;
+      cv.dispatchEvent(again);
     };
     const onWheel = (e: WheelEvent) => {
       swallow(e);

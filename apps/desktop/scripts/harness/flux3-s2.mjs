@@ -21,8 +21,9 @@
 //   RECT   the card-rect check, 1366 + 1920 x dark + light (4 cells): after a full visit (the Stack, three flips, the hologram, two flips, Esc, Esc)
 //          every card's rect AND its style attribute are exactly as before, no Stack mark is left, the stored board is unchanged and no storage key
 //          is new (nothing saved); RESUME: the layer draws again (motion is back).
-//   HELD   the Stack is a way of looking: a drag on a node swipes (the centre changes) and moves no card; Delete and Backspace delete nothing; a
-//          double-click on a side node opens no editor and no hologram.
+//   HELD   the Stack is a way of looking: a drag on a node swipes (the centre changes) and moves no card; Delete and Backspace delete nothing.
+//   STACK-DBL  a double-click on ANY Stack node opens that node's own editor, as in every theme (Nick, Nov 6). The original HELD, whose clause
+//          said a side node's double-click opens no editor, is PARKED (HARNESS_PARKED=1) verbatim with the opposite reasserted.
 //   D2-HOLO  zero draws while keys land: a double-click on the hologram's centre is the board's own (the card's editor); 30 keys typed into it land
 //          with ZERO layer draw calls, and the words are stored in the card.
 //   F      <= 3 flashes a second, measured: arrow keys held for 3 s and 40 wheel notches; the centre changes (each change recorded from the DOM)
@@ -65,6 +66,10 @@ const SETTLE_MS = 1500;   // a flight (550 ms) + the stagger (12 x 34 ms) + the 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
+// PARKED (HARNESS_PARKED=1): retired checks, quoted verbatim with what superseded them, each re-asserting the new truth; the COUNT is held too
+const parkedChecks = [];
+const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass: !!pass, detail });
+const PARKED_EXPECTED = 1;   // HELD's double-click clause (Nick, Nov 6)
 const info = (name, detail) => console.log(`INFO  ${name}  ${detail}`);
 
 // ---- the build this run uses ------------------------------------------------------------------------------------------------------------------------
@@ -408,12 +413,24 @@ try { await withHarness(async (app) => {
     if (dp) await app.doubleClick(dp.x, dp.y);
     await sleep(900);
     const s2h = await st(), b1 = await stored();
+    // whose editor opened: the double-clicked node's own words in it (its first click flew it to the centre)
+    const sideText = sideNow ? await ev(`((window.wrizoBoard() || []).find((b) => b.id === ${JSON.stringify(sideNow)}) || {}).text || ''`) : '';
+    const editorText = await ev("(document.querySelector('.board-popup-editor') || {}).textContent || ''");
     await key('Escape', 500); await key('Escape', SETTLE_MS);
     const parse = (s) => (JSON.parse(s) || []).filter((b) => b.kind !== 'board-meta').map((b) => [b.id, b.x, b.y, b.w, b.h, !!b.deletedAt]);
-    return { swiped: s1h.centre !== s0.centre, popup: s2h.popup, host: s2h.host, same: same(parse(b0), parse(b1)), n: parse(b1).length, side, pass: s1h.centre !== s0.centre && same(parse(b0), parse(b1)) && !s2h.popup && s2h.host === 'stack' };
+    const heldPass = s1h.centre !== s0.centre && same(parse(b0), parse(b1));
+    return { swiped: s1h.centre !== s0.centre, popup: s2h.popup, host: s2h.host, same: same(parse(b0), parse(b1)), n: parse(b1).length, side, sideNow, sideText, editorText,
+      ownEditor: !!sideText && s2h.popup && editorText.includes(sideText), pass: heldPass };
   };
   const H = await testHeld();
-  ok('HELD a drag on a node swipes and moves no card; Delete and Backspace delete nothing; a double-click on a side node opens no editor and no hologram', H.pass, JSON.stringify(H));
+  // the original HELD (its double-click clause falsified by Nick's ruling, Nov 6) is PARKED below, verbatim; these two are its live successors
+  ok('HELD a drag on a node swipes and moves no card; Delete and Backspace delete nothing (the Stack is a way of looking)', H.pass, JSON.stringify(H));
+  ok('STACK-DBL a double-click on ANY Stack node (a side node here) opens that node\'s own editor - today\'s editor, as in every theme (Nick, Nov 6) - and the Stack stays open',
+    H.ownEditor && H.host === 'stack', JSON.stringify(H));
+  if (process.env.HARNESS_PARKED === '1') {
+    pok('PARKED (was "HELD a drag on a node swipes and moves no card; Delete and Backspace delete nothing; a double-click on a side node opens no editor and no hologram") - SUPERSEDED by Nick\'s ruling, Nov 6 ("double-click does the same thing in every theme": it opens today\'s card editor; FluxStack.tsx hands the double-click to the board at the node\'s centre). Opposite reasserted: the side node\'s own editor opens; live successors HELD and STACK-DBL',
+      H.pass && H.ownEditor, JSON.stringify(H));
+  }
 
   // ---- D2-HOLO: zero draws while keys land, in the hologram's editor ----------------------------------------------------------------------------
   await open(true, 'dark');
@@ -585,7 +602,14 @@ try { await withHarness(async (app) => {
     !!BUILD.bundle && served === BUILD.bundle && BUILD.stale === false, JSON.stringify(BUILD));
 }); } catch (err) { ok('the run reached its end', false, String((err && err.stack) || err).split('\n').slice(0, 3).join(' | ')); }
 
-const failed = checks.filter((c) => !c.pass);
+if (process.env.HARNESS_PARKED === '1') {
+  for (const c of parkedChecks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
+  console.log(parkedChecks.every((c) => c.pass) && parkedChecks.length === PARKED_EXPECTED
+    ? `\nFLUX3-S2 PARKED: PASS (${parkedChecks.length} checks) - HARNESS_PARKED=1 armed, every retired check's successor green`
+    : `\nFLUX3-S2 PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed (expected ${PARKED_EXPECTED} parked)`);
+}
+const all = checks.concat(parkedChecks);
+const failed = all.filter((c) => !c.pass) .concat(process.env.HARNESS_PARKED === '1' && parkedChecks.length !== PARKED_EXPECTED ? [{ name: 'parked count' }] : []);
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
-console.log(failed.length ? `\nFLUX3-S2 VERIFY: FAIL - ${failed.length}/${checks.length} failed` : `\nFLUX3-S2 VERIFY: PASS (${checks.length} checks)`);
+console.log(failed.length ? `\nFLUX3-S2 VERIFY: FAIL - ${failed.length}/${all.length} failed` : `\nFLUX3-S2 VERIFY: PASS (${all.length} checks)`);
 process.exit(failed.length ? 1 : 0);
