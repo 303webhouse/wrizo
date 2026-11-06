@@ -121,7 +121,8 @@ ok('S4d: ... and CLEARS it in exactly two - the resize finish that landed on the
 ok('S4c: the reflow never writes the mark (no spread in it adds sizedByHand)', !/\.\.\.b, h: (targetPx|measuredPx) \/ pageWidthPx, sizedByHand/.test(be));
 const types = srcText(SRC, 'types', 'index.ts').replace(/\r\n/g, '\n');   // #13 step 10b: the barrel's parts, joined
 ok('S5: the Box type declares it optional (`sizedByHand?: true`) and nothing else about boxes changed shape', /sizedByHand\?: true;/.test(types));
-const persist = norm(path.join(SRC, 'store', 'persistence.ts')), sync = norm(path.join(SRC, 'store', 'sync.ts'));
+const persist = srcText(SRC, 'store', 'persistence.ts').replace(/\r\n/g, '\n'),   // #13 step 10h: the barrel's parts, joined
+   sync = norm(path.join(SRC, 'store', 'sync.ts'));
 ok('S5b: the client clones and pushes a journal record WHOLE (JSON round trip), with no per-key mapping of a box', /function clone<T>\(value: T\): T \{\s*return JSON\.parse\(JSON\.stringify\(value\)\) as T;/.test(persist) && /JSON\.stringify\(rec\)/.test(sync));
 const serverSync = norm(path.join(DESKTOP, '..', 'server', 'src', 'sync.ts')), migrate = norm(path.join(DESKTOP, '..', 'server', 'src', 'migrate.ts'));
 ok('S5c: the server keeps a board\'s boxes as ONE jsonb column, passed through as-is (migrate: `boxes jsonb`; sync: `boxes: r.boxes`)', /add column if not exists boxes jsonb/.test(migrate) && /boxes: r\.boxes \?\? undefined/.test(serverSync));

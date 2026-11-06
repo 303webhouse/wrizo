@@ -69,7 +69,7 @@ const callers2 = (srcDir, mutate = {}) => {
   const bad = [];
   for (const f of walk(srcDir)) {
     const rel = path.relative(srcDir, f).split('\\').join('/');
-    if (rel === 'store/persistence.ts') continue;
+    if (rel === 'store/persistence.ts' || rel.startsWith('store/persistence/')) continue;   // #13 step 10h: the persistence layer is a folder now
     // a PAGE's delete reaches softDeleteEntry through pageActions.onDelete, which DrawerActions calls ONLY inside requestDelete(...) - S3 pins that
     if (rel === 'store/pageActions.ts') continue;
     const text = live(mutate[rel] ? mutate[rel](noCR(fs.readFileSync(f, 'utf8'))) : noCR(fs.readFileSync(f, 'utf8')));

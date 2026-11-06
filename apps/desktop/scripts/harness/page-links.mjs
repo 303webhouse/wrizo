@@ -146,7 +146,7 @@ const base = await load();
 const res0 = await suite(base);
 for (const [k, v] of Object.entries(res0)) ok(`${k} (baseline)`, v.pass, v.detail);
 
-const P = 'store/persistence.ts';
+const P = 'store/persistence/links.ts';   // #13 step 10h: the page links are store/persistence/links.ts
 const MUT = [
   ['addPageLink forgets to dedupe', P, (t) => t.replace("  const existing = findLinkBetween(ownerEntryId, end.aBoxId, end.bEntryId, end.bBoxId);\n  if (existing) return clone(existing.link);\n", ''), ['P1b', 'P1c']],
   ['a delete is a hard removal (no tombstone)', P, (t) => t.replace("pageLinks: (e.pageLinks ?? []).map(x => (x.id === linkId ? { ...x, deletedAt: now, updatedAt: now } : x)) });", "pageLinks: (e.pageLinks ?? []).filter(x => x.id !== linkId) });"), ['P3a']],

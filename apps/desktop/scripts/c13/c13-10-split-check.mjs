@@ -73,7 +73,7 @@ const exportsOf = (text, file, texts, seen = new Set()) => {
     if (hit && !seen.has(hit)) { seen.add(hit); for (const n of exportsOf(texts.now[hit] ?? now(hit), hit, texts, seen)) s.add(n); }
   }
   for (const m of text.matchAll(/^export\s+(?:default\s+)?(?:async\s+)?(?:function\*?|const|let|class|interface|type|enum)\s+([A-Za-z_$][\w$]*)/gm)) s.add(m[1]);
-  for (const m of text.matchAll(/^export\s+(?:type\s+)?\{([^}]*)\}/gm)) for (const p of m[1].split(',')) { const n = p.trim().split(/\s+as\s+/).pop(); if (n) s.add(n); }
+  for (const m of text.matchAll(/^export\s+(?:type\s+)?\{([^}]*)\}/gm)) for (const p of m[1].split(',')) { const n = p.trim().replace(/^type\s+/, '').split(/\s+as\s+/).pop(); if (n) s.add(n); }
   return s;
 };
 
@@ -106,7 +106,8 @@ function run({ texts, changed, allow }) {
   r.push({ name: 'CITES', pass: unresolved.length === 0, detail: `${cites.length} [Name §n] citations in the split's files, each a heading in docs/rulings/${area}-<Name>.md`,
     show: unresolved.map((c) => `${c.f}: [${c.name} §${c.n}] resolves nowhere`) });
   if (ordered) {
-    const named = [...texts.now[from].matchAll(/^export \* from '\.\/([^']+)';/gm)].map((m) => path.posix.join(path.posix.dirname(from), m[1]));
+    // every barrel line names a part: `export * from`, `export { ... } from` (step 10h) or a bare `import` of a part that exports nothing
+    const named = [...texts.now[from].matchAll(/^(?:export \* from|export (?:type )?\{[^}\n]*\} from|import) '\.\/([^']+)';/gm)].map((m) => path.posix.join(path.posix.dirname(from), m[1]));
     const want = to.map((f) => f.replace(/\.tsx?$/, ''));
     const seq = to.flatMap((f) => codeLines(texts.now[f]));
     const firstDiff = before.findIndex((l, i) => l !== seq[i]);

@@ -64,7 +64,7 @@ const blankComments = (s) => {
   return out;
 };
 
-const PERS_RAW = read('apps/desktop/src/store/persistence.ts');
+const PERS_RAW = srcText(join(repo, 'apps/desktop/src'), 'store/persistence.ts').replace(/\r\n/g, '\n');   // #13 step 10h: the barrel's parts, joined
 // Code-only view for the "is it still wired" checks; the raw text is kept for the
 // one claim that is ABOUT a comment (claim 7).
 const PERS = blankComments(PERS_RAW);
