@@ -66,6 +66,11 @@ export const MODULE_PARTS = {
     'components/board/useBoardMeasure.ts', 'components/board/useBoardBox.ts', 'components/board/useBoardSave.ts', 'components/board/useBoardReflow.ts',
     'components/board/useRailLinkDrag.ts', 'components/board/useBoardGestures.ts', 'components/board/useBoardKeys.ts',
   ],
+  // #13 step 10i: the page editor, then the three hooks lifted out of PageEditorView, in the order their lines stood in it (each part
+  // carries the one module constant only it reads: FIRST_RUN_WORD_TARGET, AUTOSAVE_MS)
+  'pages/PageEditor.tsx': [
+    'pages/PageEditor.tsx', 'pages/pageEditor/useFirstRunGate.ts', 'pages/pageEditor/usePageTypewriter.ts', 'pages/pageEditor/usePageAutosave.ts',
+  ],
 };
 
 export function moduleParts(srcDir, rel) {

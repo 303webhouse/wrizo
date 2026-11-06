@@ -93,6 +93,12 @@ ok('THE PATHS: the page\'s save and counts (PageEditor), copy (clipboard), expor
 // liveness: a read planted in a copy of a save-path file must be caught
 const planted = readsIn("const words = editorEl.innerText.split(' ');\n").map((r) => ({ file: 'pages/PageEditor.tsx', ...r }));
 ok('LIVENESS: a planted innerText read in the save path is caught as unclassified (the guard can go red)', planted.length === 1 && !classify(planted[0]), JSON.stringify(planted));
+// #13 step 10i: the page's save (usePageAutosave) and its gate's count (useFirstRunGate) were lifted out of PageEditorView into
+// pages/pageEditor/. THE PATHS names PageEditor.tsx, so the lifted hooks are held to the same rule here, and the folder must have been read.
+const pageEditorHooks = files.map((f) => relative(SRC, f).replace(/\\/g, '/')).filter((f) => f.startsWith('pages/pageEditor/'));
+const pageEditorHookReads = found.filter((r) => r.file.startsWith('pages/pageEditor/'));
+ok('THE PATHS (10i): the hooks lifted out of PageEditorView (pages/pageEditor/: the save, the gate\'s count, the typewriter) read no innerText/textContent at all - and the sweep read them',
+  pageEditorHooks.includes('pages/pageEditor/usePageAutosave.ts') && pageEditorHookReads.length === 0, JSON.stringify({ read: pageEditorHooks, reads: pageEditorHookReads }));
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail && !c.pass ? `  [${c.detail}]` : ''}`);
 const passed = checks.filter((c) => c.pass).length;
