@@ -1,0 +1,23 @@
+BUILD: tree=b14a74ca dirty=no bundle=index-D66sXPPn.js:3ea9622ef37e cwd=C:\Users\nickh\flux3-mount\apps\desktop
+BUILD: tree=b14a74ca bundle=index-D66sXPPn.js builtAt=2026-11-06T07:17:43.680Z lastSrcCommit=2026-11-06T07:15:11.000Z dirtySrcFiles=0 stale=false
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+
+ROWS-SHADOW VERIFY: PASS (765 renders checked, shadow == DOM on every one)
+PASS  P1 every arm stood where it claims (C: Arbor/plateau, no flag, no stand-in; T and M: Flux, ?flux3=1, the stand-in mounted; Page: Dark; the instrument in place): 16/16
+PASS  P2 the same surface in every arm (mode/typewriter: draft/false), the Typewriter off
+PASS  P2b that surface is Draft (the ordinary page)
+PASS  P3b the stand-in really animated at rest (>= 20 frames in 1500 ms, >= 80% of them drawing) in every loaded arm-round: 8/8
+PASS  P4 the stand-in moved no page rect (the .mode-page rect before mounting it = with it drawing): 8/8
+PASS  P5 at least 40 keys painted in every arm-round (44 typed each)
+PASS  P6 no key was dropped: in every arm-round the stored page holds the seed plus every typed character
+PASS  L typing on Flux with every motion on adds no latency beyond the control's own spread: T median 24.9 <= C 25 + 1.1, T p95 32.6 <= C 32.6 + 1.4, no T key over 100 ms
+PASS  D2 the drawing layer damps while she types: its own canvas drew in 4 frame(s) while T's keys landed (allowed 4, the one in flight at the first key, per round)
+PASS  OTHER (information) canvases other than the layer that drew while the keys landed: C [[],[],[],[]] | T [[],[],[],[]]
+PASS  SPLIT (information) median/p95 ms: C Arbor 25/32.6 | F Flux, no layer 24.9/32.2 | T Flux + layer 24.9/32.6
+PASS  MUT premise: the mutant landed - with its damping skipped the layer drew through the typing (>= 80% of the frames while the keys landed, every round)
+PASS  MUT-b the no-damping mutant FAILS the probe (caught by L: no; caught by D2: YES) - M median 24.9 p95 32.7 max 43.2, its layer drew in 1032 frame(s) while typing
+PASS  COST (information) the drawing layer per frame at 1920x1080, full motion, undamped at rest: rAF time median 0.5 ms, p95 0.7, max 3.2 (control 0 / 0); frame interval median 20.1 ms, p95 23.3 (control 16.6 / 18); 590/590 frames over 18.7 ms
+PASS  B the build: served index-D66sXPPn.js = dist-web's index-D66sXPPn.js, built 2026-11-06T07:17:43.680Z after the last src commit 2026-11-06T07:15:11.000Z (tree b14a74ca, 0 uncommitted src file(s))
+
+FLUX3-LATENCY VERIFY: PASS (15 checks)

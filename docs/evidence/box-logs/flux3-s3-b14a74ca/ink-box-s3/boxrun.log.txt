@@ -1,0 +1,17 @@
+2026-11-06T07:41:45.016Z waiting for a free, quiet box (pid 39644); tree=b14a74ca dirty=no bundle=index-D66sXPPn.js:3ea9622ef37e
+2026-11-06T07:45:52.350Z TURN START (lane ink) granted to lane "ink" and bound to the process tree of pid 39644 - name this turn's start and end in your report
+2026-11-06T07:45:52.463Z job flux3-s3 start (tree=b14a74ca dirty=no bundle=index-D66sXPPn.js:3ea9622ef37e)
+2026-11-06T07:49:22.122Z job flux3-s3 exit 0
+2026-11-06T07:49:22.241Z job flux3-s2 start (tree=b14a74ca dirty=no bundle=index-D66sXPPn.js:3ea9622ef37e)
+2026-11-06T07:53:57.511Z job flux3-s2 exit 0
+2026-11-06T07:53:57.618Z job flux3-s1 start (tree=b14a74ca dirty=no bundle=index-D66sXPPn.js:3ea9622ef37e)
+2026-11-06T07:57:06.749Z job flux3-s1 exit 0
+2026-11-06T07:57:06.927Z job flux3-page-rect start (tree=b14a74ca dirty=no bundle=index-D66sXPPn.js:3ea9622ef37e)
+2026-11-06T07:57:51.667Z job flux3-page-rect exit 0
+2026-11-06T07:57:51.781Z job flux3-layer start (tree=b14a74ca dirty=no bundle=index-D66sXPPn.js:3ea9622ef37e)
+2026-11-06T08:01:48.820Z job flux3-layer exit 0
+2026-11-06T08:01:48.928Z job flux3-latency start (tree=b14a74ca dirty=no bundle=index-D66sXPPn.js:3ea9622ef37e)
+2026-11-06T08:05:58.500Z job flux3-latency exit 0
+2026-11-06T08:05:58.608Z job glitch-meter start (tree=b14a74ca dirty=no bundle=index-D66sXPPn.js:3ea9622ef37e)
+2026-11-06T08:07:04.977Z job glitch-meter exit 0
+2026-11-06T08:07:05.029Z TURN END release: released

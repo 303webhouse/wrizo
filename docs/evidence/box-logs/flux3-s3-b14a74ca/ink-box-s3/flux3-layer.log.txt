@@ -1,0 +1,42 @@
+BUILD: tree=b14a74ca dirty=no bundle=index-D66sXPPn.js:3ea9622ef37e cwd=C:\Users\nickh\flux3-mount\apps\desktop
+BUILD: tree=b14a74ca module=src/flux3/flux3-layer.ts md5=7accde2600ee lastCommit=79de3a1a dirty=false transform=vite.transformWithEsbuild machine=box
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+PASS  P-CONTROL the control drew nothing on any canvas: control layer calls/s 0, other canvases []
+PASS  P-ANIMATES the layer animated at rest (full motion: dashes, the selected node's electrons, the current): 30 drawing frames/s (>= 20; it draws at 30 Hz)
+PASS  INTERVAL rule 2: at rest, the layer's median frame interval is within 10% of the control's (the box): layer median 16.8 p95 18 (n 720) vs control median 16.7 p95 18 (n 723): limit 18.4 ms (control x 1.10)
+PASS  SEE the interval rule can see a heavy layer: S0's stand-in, judged by the same rule, fails it: S0 stand-in median 20.1 p95 23.6 (n 584) vs limit 18.4
+PASS  LIGHTER the layer draws lighter than S0's stand-in: fewer draw calls per second and a median frame interval no worse: draw calls/s layer 352.7 vs stand-in 49786; interval median layer 16.8 vs stand-in 20.1
+PASS  COST (information) per frame at 1920x1080, at rest, full motion: rAF time layer median 0 p95 0.1 (n 720) | stand-in median 0.7 p95 1.3 (n 584); frame interval p95 layer 18 / stand-in 23.6 / control 18
+PASS  P-DRAG-BUDGET every read was a real drag (pressed and released, the card moved), and the layer's links followed in each: layer follow-canvas calls 956 over 4 drags; stand-in undamped layer calls 213807/227106/227106/214830
+PASS  DRAG-BUDGET during a drag, the layer's median frame interval is within 10% of the control's (the box): layer median 16.6 p95 18 (n 956) vs control median 16.8 p95 18 (n 953): limit 18.5 ms (control x 1.10)
+PASS  SEE-DRAG the drag budget can see heavy drawing: S0's stand-in, undamped through the drag, fails it: S0 stand-in undamped median 19.9 p95 21.5 (n 864) vs limit 18.5
+PASS  P-LAYER3 the layer carries data-flux3-layer and aria-hidden, takes no pointer, holds its three canvases (ground, motion, a drag's links), and sits under the nodes: {"marker":true,"aria":"true","pe":"none","canvases":3,"underNodes":true,"state":"running","box":{"x":248,"y":254,"w":1464,"h":612}}
+PASS  P-KEYS the keys reached the node, and the layer was drawing just before the first: {"before":180,"keys":44,"landed":44,"during":0,"after":207}
+PASS  D2-KEYS rule 1: ZERO layer draw calls while the keys land (first key to last): 0 draw call(s) in the window of 44 keys
+PASS  SETTLE-KEYS the layer draws again once she stops: 207 draw call(s) in 600 ms from 1.2 s after the last key
+PASS  P-DRAG the node was dragged (pressed, moved, released), and the layer was drawing just before: {"before":195,"during":92,"moved":360,"after":200,"pressed":true,"released":true,"whatDrag":{"1:clearRect":1,"1:stroke":2,"2:stroke":45,"2:clearRect":44},"A":{"what":{"1:clearRect":1,"1:stroke":2,"2:stroke":30,"2:clearRect":29},"inkNew":{"px":80,"ink":20},"inkOld":{"px":80,"ink":0},"inkOldFollow":{"px":80,"ink":0},"followFrames":45,"bases":1},"B":{"calls":0,"cbs":0,"frames":58},"C":{"keys":12,"calls":0,"movedDuring":60},"E":{"what":{"2:clearRect":15,"2:stroke":15}},"settle":{"after":200,"emptied":true,"inkSettled":{"px":80,"ink":18}},"groundDuring":0}
+PASS  DRAG-ONLY during a drag the layer draws only the dragged card's links: no ground draw, no electron or current (no drawImage), the motion canvas redrawn only at the drag's start: press to release: 92 calls - ground 0, drawImage 0, motion canvas 3 (<= 6: the drag-start redraw), follow canvas 89; ground draws by the layer's count 0
+PASS  FOLLOW the dragged card's links follow it, frame by frame: ink where the n10-n11 link meets the card now, none where the n11-n12 link left it (nothing left behind): after 30 moves: ink at the link's new end 20/80 px, where n11-n12 left it 0 (motion) + 0 (follow); follow strokes 30 (>= 10); layer's count: 45 follow frames, 1 drag-start redraw(s)
+PASS  D2-HOLD a pointer held still mid-drag draws nothing and runs no frame loop (no animation): {"calls":0,"cbs":0,"frames":58}
+PASS  D2-KEYS-IN-DRAG zero draws while keys land stays absolute: keys mid-drag (the card still moving) draw nothing from the first key to the last: {"keys":12,"calls":0,"movedDuring":60}
+PASS  RESUME-DRAG once the keys settle, a drag still under way follows again: {"2:clearRect":15,"2:stroke":15}
+PASS  SETTLE-DRAG the layer redraws after the release (the links meet the moved node): 200 draw call(s) in 600 ms from 1.2 s after the release
+PASS  SETTLE-DRAG-FULL after the release the full frame carries the moved links and the follow canvas empties (0x0): {"after":200,"emptied":true,"inkSettled":{"px":80,"ink":18}}
+PASS  P-ZOOM the view zoomed (20 ctrl+wheel notches), the held frame followed it by a CSS transform, and the layer was drawing just before: {"before":188,"wheels":20,"during":0,"s0":1,"s1":1.252,"followed":20,"after":198,"settled":{"same":true,"wrap":""}}
+PASS  D2-ZOOM rule 1: ZERO layer draw calls while the view zooms (first wheel to last): 0 draw call(s) across 20 wheel notches
+PASS  SETTLE-ZOOM after the zoom the layer redraws at the new view and drops the transform: {"same":true,"wrap":""}
+PASS  HIDDEN rule 3: hidden, the layer makes no draw call and runs no frame loop; shown, it resumes: hidden 2 s: 0 draw calls, 0 rAF callbacks over 120 offered frames; shown again: 375 draw calls in 1 s (headless reports visibilityState 'visible')
+PASS  STILL reduced motion: the layer draws its still frame once, then no draw call and no frame loop; it resumes when the emulation clears: {"drewStill":true,"state":"still","calls":0,"cbs":0,"resumed":330}
+PASS  MUT-DAMP premise: the mutant landed (its anchor found exactly once in the source and replaced): return this.held || performance.now() < this.busyUntil;
+PASS  MUT-HIDDEN premise: the mutant landed (its anchor found exactly once in the source and replaced): return typeof document !== 'undefined' && document.hidden;
+PASS  MUT-STILL premise: the mutant landed (its anchor found exactly once in the source and replaced): return !this.opts.motion || !!this.mq?.matches;
+PASS  MUT-FOLLOW premise: the mutant landed (its anchor found exactly once in the source and replaced): return this.held && performance.now() >= this.stillUntil;
+PASS  MUT-KEYGATE premise: the mutant landed (its anchor found exactly once in the source and replaced): return this.held && performance.now() >= this.stillUntil;
+PASS  MUT-DAMP2 the damping gate held open fails rule 1 three ways: D2-KEYS and D2-ZOOM see its draw calls, DRAG-ONLY sees it draw more than the dragged card's links: caught on: keys 1500; drag (press to release: 1455 calls - ground 0, drawImage 1059, motion canvas 1455 (<= 6: the drag-start redraw), follow canvas 0; ground draws by the layer's count 0); zoom 762
+PASS  MUT-FOLLOW a layer whose links stay behind the dragged card fails FOLLOW: after 30 moves: ink at the link's new end 0/0 px, where n11-n12 left it 16 (motion) + 0 (follow); follow strokes 0 (>= 10); layer's count: 0 follow frames, 0 drag-start redraw(s)
+PASS  MUT-KEYGATE a follow that ignores keys fails D2-KEYS-IN-DRAG: {"keys":12,"calls":22,"movedDuring":60}
+PASS  MUT-HIDDEN a layer that ignores the hidden window fails HIDDEN: {"calls":711,"cbs":120,"frames":120,"resumed":386,"realVisibility":"visible"}
+PASS  MUT-STILL a layer that ignores reduced motion fails STILL: {"drewStill":true,"state":"running","calls":687,"cbs":120,"resumed":360}
+PASS  B the build: the module is committed and clean, and its md5 is printed: tree b14a74ca, module md5 7accde2600ee, last commit 79de3a1a, dirty false
+FLUX3-LAYER VERIFY: PASS (36 checks)
