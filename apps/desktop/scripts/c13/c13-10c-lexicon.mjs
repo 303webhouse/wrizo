@@ -14,6 +14,10 @@
 //   --new <key>=<word>[,<key>=<word>...]   (a later step that ADDS keys, e.g. 10e's progressDrawer) every key not named is held to
 //        (1) and (2) as before (the named keys' union member and entry lines are set aside); each named key must be new at <base>, in
 //        the table now, and read <word> in every theme reading.
+//   --gone <file>   (a later step that DELETES keys, #13 step 11) the file lists one key per line. Each must be in the table at <base>
+//        and absent now (no key, no word in any theme); every other key is held to (1) as before, in order. (2) sets aside the gone
+//        keys from <base>'s text the way the delete makes them go: a union line keeps its indent and loses only the gone members (a
+//        line left with none goes), and each gone key's own entry line goes.
 //   docs/cleanup/c13-10c-new.txt   the STANDING declarations (TOOLS, Nov 5, Fable): one `key=word` per line (# starts a comment), read on every run, so
 //        a key a later step ADDED (FLUX3 S1/S2's words, 10e's progressDrawer) is declared once, in the open, and this tool is green on main
 //        without a flag. A declared key is held to the same rule as a --new key (new at <base>, in the table, <word> in every theme reading). The words
@@ -31,6 +35,20 @@ const base = bi > 0 ? process.argv[bi + 1] : null;
 if (!base) { console.error('usage: --base <rev>'); process.exit(2); }
 const ni = process.argv.indexOf('--new');
 const NEW = new Map(ni > 0 ? process.argv[ni + 1].split(',').map((p) => { const i = p.indexOf('='); return [p.slice(0, i), p.slice(i + 1)]; }) : []);
+const gi = process.argv.indexOf('--gone');
+const GONE = new Set(gi > 0 ? fs.readFileSync(path.resolve(ROOT, process.argv[gi + 1]), 'utf8').split(/\r?\n/).map((s) => s.trim()).filter((s) => s && !s.startsWith('#')) : []);
+// <base>'s text with the gone keys taken out as step 11's delete takes them (see --gone above)
+const withoutGone = (t) => t.split('\n').flatMap((l) => {
+  const m = /^(\s*)((?:\|\s*'[A-Za-z0-9_]+'\s*)+)(;?)\s*$/.exec(l);
+  if (m && !/^\s*\/\//.test(l)) {
+    const members = [...m[2].matchAll(/'([A-Za-z0-9_]+)'/g)].map((x) => x[1]);
+    const keep = members.filter((k) => !GONE.has(k));
+    if (keep.length === members.length) return [l];
+    return keep.length ? [`${m[1]}${keep.map((k) => `| '${k}'`).join(' ')}${m[3]}`] : [];
+  }
+  const e = /^\s*([A-Za-z0-9_]+):/.exec(l);
+  return e && GONE.has(e[1]) ? [] : [l];
+}).join('\n');
 // the standing declarations: docs/cleanup/c13-10c-new.txt (a --new on the command line names the same key again, and wins)
 const DECLARED = path.join(ROOT, 'docs/cleanup/c13-10c-new.txt');
 if (fs.existsSync(DECLARED)) for (const raw of fs.readFileSync(DECLARED, 'utf8').split(/\r?\n/)) {
@@ -73,8 +91,17 @@ try {
     const keys = seam.CANONICAL_TERMS;
     return { keys, values: Object.fromEntries(keys.map((k) => [k, THEMES.map((th) => seam.t(k, th))])) };
   };
-  const before = await dumpOf(baseSrc, 'base');
+  const beforeAll = await dumpOf(baseSrc, 'base');
   const nowAll = await dumpOf(path.join(DESKTOP, 'src'), 'now');
+  // the named gone keys are checked on their own and set aside from <base>; every other key is held to the base exactly
+  if (GONE.size) {
+    const notAtBase = [...GONE].filter((k) => !beforeAll.keys.includes(k));
+    const stillHere = [...GONE].filter((k) => nowAll.keys.includes(k));
+    const stillReads = [...GONE].filter((k) => THEMES.some((th) => { try { return globalThis.wrizoDeskLexicon.t(k, th) !== undefined; } catch { return false; } }));
+    ok(`GONE: all ${GONE.size} listed keys are in the table at ${base}, and none is in it now or reads a word in any theme`,
+      notAtBase.length === 0 && stillHere.length === 0 && stillReads.length === 0, JSON.stringify({ notAtBase, stillHere, stillReads }));
+  }
+  const before = { keys: beforeAll.keys.filter((k) => !GONE.has(k)), values: beforeAll.values };
   // the named new keys are checked on their own and set aside; every other key is held to the base exactly
   for (const [k, word] of NEW) ok(`NEW: '${k}' is new (absent at ${base}), in the table now, and reads '${word}' in all ${THEMES.length} theme readings`,
     !before.keys.includes(k) && nowAll.keys.includes(k) && nowAll.values[k].every((v) => v === word), JSON.stringify(nowAll.values[k]));
@@ -85,7 +112,7 @@ try {
     !differs(before, now), valueDiffs.slice(0, 5).join(', '));
   ok('DUMP: the key list (Object.keys of CANONICAL) is identical IN ORDER', JSON.stringify(before.keys) === JSON.stringify(now.keys), `${before.keys.length} vs ${now.keys.length}`);
   ok('DUMP coverage: the dump read the real table (900+ keys, overrides that differ under flux and machina)',
-    before.keys.length >= 900 && before.keys.some((k) => before.values[k][2] !== before.values[k][1]) && before.keys.some((k) => before.values[k][3] !== before.values[k][1]), String(before.keys.length));
+    beforeAll.keys.length >= 900 && before.keys.some((k) => before.values[k][2] !== before.values[k][1]) && before.keys.some((k) => before.values[k][3] !== before.values[k][1]), String(before.keys.length));
   const planted = JSON.parse(JSON.stringify(now)); planted.values[planted.keys[0]][2] += 'x';
   ok('LIVENESS: one value planted different reads as DIFFERENT', differs(before, planted));
   const swapped = JSON.parse(JSON.stringify(now)); [swapped.keys[0], swapped.keys[1]] = [swapped.keys[1], swapped.keys[0]];
@@ -95,7 +122,7 @@ try {
   const noImports = (t) => t.replace(/\r\n/g, '\n').split('\n').filter((l) => !/^import\s/.test(l)).join('\n');
   // <base> read the way a reader reads it: inline when <base> is already split (its parts exist), else its plain text (the split's parent)
   const baseSplit = fs.existsSync(path.join(baseSrc, 'store/lexicon/terms.ts'));
-  const was = noImports(baseSplit ? srcText(baseSrc, 'store/deskLexicon.ts') : fs.readFileSync(path.join(baseSrc, 'store/deskLexicon.ts'), 'utf8'));
+  const was = withoutGone(noImports(baseSplit ? srcText(baseSrc, 'store/deskLexicon.ts') : fs.readFileSync(path.join(baseSrc, 'store/deskLexicon.ts'), 'utf8')));
   let read = noImports(srcText(path.join(DESKTOP, 'src'), 'store/deskLexicon.ts'));
   // a comment line above a set-aside line is set aside with it only when the old text does not hold it (a note the declared keys brought, never one that was already there)
   const wasLines = new Set(was.split('\n'));

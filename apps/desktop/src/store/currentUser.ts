@@ -24,10 +24,3 @@ export function subscribeCurrentUser(listener: (user: AuthUser | null) => void):
   listener(current);
   return () => { listeners.delete(listener); };
 }
-// First name / display name for the Desk headline, with graceful fallbacks.
-export function deskOwnerName(): string {
-  const n = current?.name?.trim();
-  if (n) return n;
-  const local = (current?.email || '').split('@')[0].trim();
-  return local || 'Your';
-}

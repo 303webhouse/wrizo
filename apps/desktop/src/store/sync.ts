@@ -85,8 +85,6 @@ const ENVELOPE_BYTES = 1024;                    // {"lastSyncAt":...,"push":{...
 const CHUNK_TARGET_BYTES = 1024 * 1024;         // small records ride together up to this
 let learnedLimitBytes = Number.POSITIVE_INFINITY;
 const effectiveLimit = (): number => Math.min(REQUEST_LIMIT_BYTES, learnedLimitBytes);
-/** Forget a learned limit (a new session, or a test). */
-export function resetLearnedLimit(): void { learnedLimitBytes = Number.POSITIVE_INFINITY; }
 
 type CollKey = keyof DirtyRecords;
 const COLLS: CollKey[] = ['projects', 'storyPlans', 'sessions', 'drafts', 'journalEntries', 'drawers'];

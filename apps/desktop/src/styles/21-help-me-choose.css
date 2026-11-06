@@ -190,7 +190,6 @@
 /* the door: the ONE row at the top of the Presets list (SectionsPopout) and of the deck library (DeckWizard) */
 .wz-help-door{ display:flex; align-items:center; gap:8px; width:100%; background:none; border:0; border-bottom:1px solid var(--ink-border); padding:4px 2px 8px; margin-bottom:4px; cursor:pointer; color:var(--accent-rest); font:inherit; font-size:13px; text-align:left; }
 .wz-help-door:hover, .wz-help-door:focus-visible{ color:var(--text-hi); }
-.wz-help-door-glyph{ display:inline-block; width:16px; text-align:center; opacity:.9; }
 .deck-wizard-help-door{ color:var(--ink-on-card); border-bottom-color:var(--card-hairline); padding:10px 4px; font-size:14px; }
 
 /* W5-BEGIN gaps, coverage rewards and Lit (brief w5-gaps-rewards). One celebration grammar: every moment at most 1.1s (CELEBRATE_MS), once, never looping, nothing above 3 flashes a second; reduced motion and Ambiance 0 show the still end state. Square, no shadows (a ring is an outline), circles only for marks. Arbor: olive for guidance, brass for the human act only, muted bronze for the root line. Flux: lime is progress, cyan the choice, the orange bar only on current or Lit [help-me-choose §2] */

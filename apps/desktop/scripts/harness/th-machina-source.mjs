@@ -349,7 +349,13 @@ ok('M18 [page-size successor]: the paper\'s halos are plain dark shadows, the go
 // M19 - Run is the ONLY progress instrument under Machina: the framed page draws no Arbor bar, and the style choice (Bar | Run) is not offered in either settings surface
 const di = src('components/DeskInstrument.tsx');
 const BAR_GATE = /\{settings\.progressStyle === 'bar' && theme !== 'machina' && \(\s*<ProgressBar/;
-ok('M19: the framed page draws Arbor\'s bar only when the theme is not Machina (DeskInstrument) - the legacy surfaces\' bars (ModeStage / JournalEntry) are untouched', BAR_GATE.test(di) && /<ProgressBar/.test(src('pages/JournalEntry.tsx')), '');
+// ---- PARKED - SUPERSEDED by #13 step 11 (Fable, Nov 5): pages/JournalEntry.tsx (unrouted since FX14) is deleted as dead code, so its bar
+// cannot be read. Kept VERBATIM below and no longer run; its record is in the parked block. The successor reads the legacy bar that stays.
+//
+// ok('M19: the framed page draws Arbor\'s bar only when the theme is not Machina (DeskInstrument) - the legacy surfaces\' bars (ModeStage / JournalEntry) are untouched', BAR_GATE.test(di) && /<ProgressBar/.test(src('pages/JournalEntry.tsx')), '');
+// ------------------------------------------------------------------
+const m19v2 = BAR_GATE.test(di) && /<ProgressBar/.test(src('components/ModeStage.tsx'));
+ok('M19 [step 11 successor]: the framed page draws Arbor\'s bar only when the theme is not Machina (DeskInstrument) - the legacy surface\'s bar (ModeStage) is untouched; JournalEntry\'s went with it in #13 step 11', m19v2, '');
 const SEG_GATES = [[/settings\.progress === 'words' && theme !== 'machina' && \(\s*<Seg label=\{t\('progressStyleLabel'\)\}/, src('components/Sliver.tsx')], [/framed && settings\.progress === 'words' && !machina;/, src('components/ModeStage.tsx')]];
 ok('M19: the Progress style choice is not offered under Machina - neither in the Sliver nor in the gear panel (one instrument, nothing to choose between)', SEG_GATES.every(([r, t]) => r.test(t)), JSON.stringify(SEG_GATES.map(([r, t]) => r.test(t))));
 
@@ -467,8 +473,13 @@ if (process.env.HARNESS_PARKED === '1') {
     'MUTANT: the vignette left ABOVE the page under Machina (the body::after rule deleted - the grey bands return) - M18 must go RED (the mutation LANDED)',
     'MUTANT: Arbor\'s celebration flare left drawn under Machina (the display:none rule deleted) - M18 must go RED (the mutation LANDED)',
   ].map((n) => ({ name: `PARKED (was "${n}") - page-size: Machina's vignette line collapsed into the base rule; successors read the base rule`, pass: !!o.ember4 && !!o.vignetteBase, detail: JSON.stringify(o) }));
+  // #13 STEP 11 (Fable, Nov 5) - ONE park: M19 read JournalEntry.tsx's bar; the file is deleted. Its record re-verifies the successor.
+  rec.push({ name: 'PARKED (was "M19: the framed page draws Arbor\'s bar only when the theme is not Machina (DeskInstrument) - the legacy surfaces\' bars (ModeStage / JournalEntry) are untouched") - #13 step 11 deletes JournalEntry.tsx; live successor: M19 [step 11 successor]', pass: m19v2, detail: '' });
   for (const r of rec) console.log(`${r.pass ? 'PASS' : 'FAIL'}  ${r.name}  [${r.detail}]`);
-  console.log(rec.every((r) => r.pass) ? `\nTH-MACHINA-SOURCE PARKED: PASS (${rec.length} records) - this FILE parks 3 (page-size, Oct 23)` : `\nTH-MACHINA-SOURCE PARKED: FAIL - ${rec.filter((r) => !r.pass).length}/${rec.length}`);
+  // ---- PARKED - SUPERSEDED (#13 step 11): the file parks 4 now. Kept VERBATIM.
+  //
+  // console.log(rec.every((r) => r.pass) ? `\nTH-MACHINA-SOURCE PARKED: PASS (${rec.length} records) - this FILE parks 3 (page-size, Oct 23)` : `\nTH-MACHINA-SOURCE PARKED: FAIL - ${rec.filter((r) => !r.pass).length}/${rec.length}`);
+  console.log(rec.every((r) => r.pass) ? `\nTH-MACHINA-SOURCE PARKED: PASS (${rec.length} records) - this FILE parks 4 (page-size Oct 23: 3; #13 step 11: M19)` : `\nTH-MACHINA-SOURCE PARKED: FAIL - ${rec.filter((r) => !r.pass).length}/${rec.length}`);
 }
 const bad = checks.filter((c) => !c.pass).length;
 console.log(bad === 0 ? `\nTH-MACHINA-SOURCE VERIFY: PASS (${checks.length} checks)` : `\nTH-MACHINA-SOURCE VERIFY: FAIL - ${bad}/${checks.length}`);

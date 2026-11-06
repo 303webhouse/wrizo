@@ -52,10 +52,6 @@ const CLASSIFIED = [
   ['components/script/elements.tsx', "onInput={() => onInput(nodeRef.current?.textContent ?? '')}", 'the screenplay', 'a script element\'s own input (no rows) - the same read as before the #10j split, now in script/elements.tsx'],
   ['components/ScriptEditor.tsx', 'const text = node?.textContent ?? activeEl?.text', 'the screenplay', 'a script element (no rows)'],
   ['components/ScriptEditor.tsx', 'const domText = activeElRef.current?.textContent;', 'the screenplay', 'a script element (no rows)'],
-  ['pages/JournalEntry.tsx', 'pageTextRef.current = el.innerText;', 'the Journal sheet', 'the Journal\'s plaintext sheet (no rows, a different surface)'],
-  ['pages/JournalEntry.tsx', 'setWords(wordCount(el.innerText));', 'the Journal sheet', 'the Journal\'s plaintext sheet (no rows)'],
-  ['pages/JournalEntry.tsx', "lastActionRef.current = { type: 'text', before: el.innerText };", 'the Journal sheet', 'the Journal\'s plaintext sheet (no rows)'],
-  ['pages/JournalEntry.tsx', 'setGoalText(el.innerText);', 'the Journal sheet', 'the Journal\'s plaintext sheet (no rows)'],
 ];
 
 const files = [];

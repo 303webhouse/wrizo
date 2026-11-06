@@ -65,26 +65,26 @@ or a width for a stroke. I5 can land wholly inside it.
 
 | piece | line | note |
 |---|---|---|
-| `syncCanvas` (DPR backing store) | [84-91](../../apps/desktop/src/pages/JournalEntry.tsx#L84-L91) | ports verbatim |
-| `paintCommitted` | [98-106](../../apps/desktop/src/pages/JournalEntry.tsx#L98-L106) | denormalizes by `sheet.getBoundingClientRect().width` |
-| `LastAction` union | [120](../../apps/desktop/src/pages/JournalEntry.tsx#L120) | `{type:'text',before} \| {type:'stroke'} \| null` |
-| strokes state, seeded from the entry | [156](../../apps/desktop/src/pages/JournalEntry.tsx#L156) | |
-| `eraserArmed` + its ref mirror | [161-163](../../apps/desktop/src/pages/JournalEntry.tsx#L161-L163) | session-scoped; pen re-arms on open |
-| refs (`ring`, `sheet`, `committed`, `active`, `strokes`, `activeStroke`) | [164-171](../../apps/desktop/src/pages/JournalEntry.tsx#L164-L171) | |
-| repaint on stroke-set change | [279-282](../../apps/desktop/src/pages/JournalEntry.tsx#L279-L282) | |
-| `ResizeObserver` repaint (width AND height) | [286-293](../../apps/desktop/src/pages/JournalEntry.tsx#L286-L293) | |
-| `normPoint` (normalize by width, pressure captured) | [302-307](../../apps/desktop/src/pages/JournalEntry.tsx#L302-L307) | **pressure IS already captured today** — see §1.5 |
-| `paintActive` ("rubbing not stamping") | [316-331](../../apps/desktop/src/pages/JournalEntry.tsx#L316-L331) | an in-progress erase paints straight onto the COMMITTED canvas |
-| `persist` (merges live text) | [340-345](../../apps/desktop/src/pages/JournalEntry.tsx#L340-L345) | `saveJournalEntry({...latest, text: pageTextRef.current, strokes: next})` |
-| `onDown` | [347-388](../../apps/desktop/src/pages/JournalEntry.tsx#L347-L388) | pen-only gate at [348](../../apps/desktop/src/pages/JournalEntry.tsx#L348) |
-| I0 slice-2 hardening (blur + drop `contenteditable`) | [359-361](../../apps/desktop/src/pages/JournalEntry.tsx#L359-L361) | |
-| selection suppression | [365-368](../../apps/desktop/src/pages/JournalEntry.tsx#L365-L368) | |
-| hardware eraser bit (`buttons & 32`) | [380](../../apps/desktop/src/pages/JournalEntry.tsx#L380) | |
-| `onMove` / `onUp` / `onCancel` | [390-437](../../apps/desktop/src/pages/JournalEntry.tsx#L390-L437) | |
-| eraser ring `onHover`/`onLeave` | [445-453](../../apps/desktop/src/pages/JournalEntry.tsx#L445-L453) | bubble-phase, **passive** — never intercepts |
-| **capture-phase registration** | [462-471](../../apps/desktop/src/pages/JournalEntry.tsx#L462-L471) | `{passive:false, capture:true}` on the SHEET, not the canvas |
-| unified one-level `undo` | [755-781](../../apps/desktop/src/pages/JournalEntry.tsx#L755-L781) | |
-| the two canvases + ring + toggle JSX | [847-903](../../apps/desktop/src/pages/JournalEntry.tsx#L847-L903) | both canvases `pointer-events:none` |
+| `syncCanvas` (DPR backing store) | [84-91](https://github.com/303webhouse/wrizo/blob/73680bc286153f4cf3562a4d32b3ec368f31ef69/apps/desktop/src/pages/JournalEntry.tsx#L84-L91) | ports verbatim |
+| `paintCommitted` | [98-106](https://github.com/303webhouse/wrizo/blob/73680bc286153f4cf3562a4d32b3ec368f31ef69/apps/desktop/src/pages/JournalEntry.tsx#L98-L106) | denormalizes by `sheet.getBoundingClientRect().width` |
+| `LastAction` union | [120](https://github.com/303webhouse/wrizo/blob/73680bc286153f4cf3562a4d32b3ec368f31ef69/apps/desktop/src/pages/JournalEntry.tsx#L120) | `{type:'text',before} \| {type:'stroke'} \| null` |
+| strokes state, seeded from the entry | [156](https://github.com/303webhouse/wrizo/blob/73680bc286153f4cf3562a4d32b3ec368f31ef69/apps/desktop/src/pages/JournalEntry.tsx#L156) | |
+| `eraserArmed` + its ref mirror | [161-163](https://github.com/303webhouse/wrizo/blob/73680bc286153f4cf3562a4d32b3ec368f31ef69/apps/desktop/src/pages/JournalEntry.tsx#L161-L163) | session-scoped; pen re-arms on open |
+| refs (`ring`, `sheet`, `committed`, `active`, `strokes`, `activeStroke`) | [164-171](https://github.com/303webhouse/wrizo/blob/73680bc286153f4cf3562a4d32b3ec368f31ef69/apps/desktop/src/pages/JournalEntry.tsx#L164-L171) | |
+| repaint on stroke-set change | [279-282](https://github.com/303webhouse/wrizo/blob/73680bc286153f4cf3562a4d32b3ec368f31ef69/apps/desktop/src/pages/JournalEntry.tsx#L279-L282) | |
+| `ResizeObserver` repaint (width AND height) | [286-293](https://github.com/303webhouse/wrizo/blob/73680bc286153f4cf3562a4d32b3ec368f31ef69/apps/desktop/src/pages/JournalEntry.tsx#L286-L293) | |
+| `normPoint` (normalize by width, pressure captured) | [302-307](https://github.com/303webhouse/wrizo/blob/73680bc286153f4cf3562a4d32b3ec368f31ef69/apps/desktop/src/pages/JournalEntry.tsx#L302-L307) | **pressure IS already captured today** — see §1.5 |
+| `paintActive` ("rubbing not stamping") | [316-331](https://github.com/303webhouse/wrizo/blob/73680bc286153f4cf3562a4d32b3ec368f31ef69/apps/desktop/src/pages/JournalEntry.tsx#L316-L331) | an in-progress erase paints straight onto the COMMITTED canvas |
+| `persist` (merges live text) | [340-345](https://github.com/303webhouse/wrizo/blob/73680bc286153f4cf3562a4d32b3ec368f31ef69/apps/desktop/src/pages/JournalEntry.tsx#L340-L345) | `saveJournalEntry({...latest, text: pageTextRef.current, strokes: next})` |
+| `onDown` | [347-388](https://github.com/303webhouse/wrizo/blob/73680bc286153f4cf3562a4d32b3ec368f31ef69/apps/desktop/src/pages/JournalEntry.tsx#L347-L388) | pen-only gate at [348](https://github.com/303webhouse/wrizo/blob/73680bc286153f4cf3562a4d32b3ec368f31ef69/apps/desktop/src/pages/JournalEntry.tsx#L348) |
+| I0 slice-2 hardening (blur + drop `contenteditable`) | [359-361](https://github.com/303webhouse/wrizo/blob/73680bc286153f4cf3562a4d32b3ec368f31ef69/apps/desktop/src/pages/JournalEntry.tsx#L359-L361) | |
+| selection suppression | [365-368](https://github.com/303webhouse/wrizo/blob/73680bc286153f4cf3562a4d32b3ec368f31ef69/apps/desktop/src/pages/JournalEntry.tsx#L365-L368) | |
+| hardware eraser bit (`buttons & 32`) | [380](https://github.com/303webhouse/wrizo/blob/73680bc286153f4cf3562a4d32b3ec368f31ef69/apps/desktop/src/pages/JournalEntry.tsx#L380) | |
+| `onMove` / `onUp` / `onCancel` | [390-437](https://github.com/303webhouse/wrizo/blob/73680bc286153f4cf3562a4d32b3ec368f31ef69/apps/desktop/src/pages/JournalEntry.tsx#L390-L437) | |
+| eraser ring `onHover`/`onLeave` | [445-453](https://github.com/303webhouse/wrizo/blob/73680bc286153f4cf3562a4d32b3ec368f31ef69/apps/desktop/src/pages/JournalEntry.tsx#L445-L453) | bubble-phase, **passive** — never intercepts |
+| **capture-phase registration** | [462-471](https://github.com/303webhouse/wrizo/blob/73680bc286153f4cf3562a4d32b3ec368f31ef69/apps/desktop/src/pages/JournalEntry.tsx#L462-L471) | `{passive:false, capture:true}` on the SHEET, not the canvas |
+| unified one-level `undo` | [755-781](https://github.com/303webhouse/wrizo/blob/73680bc286153f4cf3562a4d32b3ec368f31ef69/apps/desktop/src/pages/JournalEntry.tsx#L755-L781) | |
+| the two canvases + ring + toggle JSX | [847-903](https://github.com/303webhouse/wrizo/blob/73680bc286153f4cf3562a4d32b3ec368f31ef69/apps/desktop/src/pages/JournalEntry.tsx#L847-L903) | both canvases `pointer-events:none` |
 
 **The load-bearing shape of the port:** listeners live on the **sheet**, and
 the canvases are always `pointer-events:none`. The canvas is a *display
@@ -115,7 +115,7 @@ stratum's mount, which is **not** the Journal's mount (§3).
    "Pressure is not stored and not read in this wave." `StrokePoint.p` exists
    ([types/index.ts:152](../../apps/desktop/src/types/index.ts#L152)) and
    `normPoint` writes it on every point where the device reports it
-   ([JournalEntry.tsx:306](../../apps/desktop/src/pages/JournalEntry.tsx#L306)). What
+   ([JournalEntry.tsx:306](https://github.com/303webhouse/wrizo/blob/73680bc286153f4cf3562a4d32b3ec368f31ef69/apps/desktop/src/pages/JournalEntry.tsx#L306)). What
    is true is that nothing *reads* it — `renderStroke` ignores `p` entirely.
    The brief's intent is preserved exactly by leaving the renderer
    pressure-blind; the wording "not stored" is simply already false and is
@@ -210,7 +210,7 @@ layout."*
 
 That instruction was written from the Journal's geometry, where the sheet
 (`.entry-full`) **grows with its text** (`minHeight:60vh`, no inner
-scroller, [JournalEntry.tsx:804-808](../../apps/desktop/src/pages/JournalEntry.tsx#L804-L808))
+scroller, [JournalEntry.tsx:804-808](https://github.com/303webhouse/wrizo/blob/73680bc286153f4cf3562a4d32b3ec368f31ef69/apps/desktop/src/pages/JournalEntry.tsx#L804-L808))
 and the window scrolls. A canvas at `inset:0` there genuinely covers the
 whole sheet, forever.
 

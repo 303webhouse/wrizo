@@ -35,6 +35,7 @@ const settle = async (app, expr, ms = 4000, step = 100) => {
 
 const FLOOR_W = 1100, LAPTOP_W = 1280, WIDE_W = 2200;
 const TELOS = 'The plan serves the page.';
+const bm1Retired = {};   // #13 step 11: what the main run read of the retired telos word, for its record in the parked block
 
 const freshDesk = async (app, width = 1400, height = 900) => {
   await app.goto('/');
@@ -246,7 +247,10 @@ async function scenario(app) {
     ok(`S3 @${width}px: A4 sweep no-op — board has NO page mode-tabs / .desk-mode-strip (w1/ab1 stay true)`, bar.noPageModeTabs === true);
   }
   const telosLex = await app.evalJs("window.wrizoDeskLexicon.t('boardTelos')");
-  ok('S3 telos is lexicon-sourced (deskLexicon boardTelos)', telosLex === TELOS, `lex=${telosLex}`);
+  // ---- PARKED - RETIRED by #13 step 11 (Fable, Nov 5): the telos line is removed (word-diet, S3 [word-diet successor] above), so its word
+  // is retired UI that no source reads, and step 11 deletes boardTelos from the lexicon. Kept VERBATIM and no longer run; record in the parked block.
+  // ok('S3 telos is lexicon-sourced (deskLexicon boardTelos)', telosLex === TELOS, `lex=${telosLex}`);
+  bm1Retired.telosLex = telosLex === undefined || telosLex === null ? '(gone)' : telosLex;
 
   // ============ S3/S8 — the doors travel under GENUINE trusted pointer ======
   // PLAN → on a prose page: first click births the plan board and flips.
@@ -411,6 +415,7 @@ await withHarness(scenario);
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  if (!('telosLex' in bm1Retired)) pok('PARKED-PREMISE: the main run read the boardTelos word (the step 11 record below has an observation)', false, 'not read');
   // BM1's board bar is ADDITIVE and distinctly-classed; NO historic check is
   // falsified, so the A4 park section is empty by design. The live no-op proof
   // is in the S3 section above ("A4 sweep no-op" at all three widths) — the
@@ -441,6 +446,10 @@ if (process.env.HARNESS_PARKED === '1') {
     pok('PARKED (was "S3 PAGE → (trusted pointer): on an UNPAIRED board travels to the FX10 named return (leaves the board)") — ITEM 91, Nick\'s S11 verdict: an unpaired board\'s PAGE → now opens a New Page auto-linked BACK to the board (the address carries `?pin=<boardId>`), so it no longer leaves the board at all; live successor: this file\'s own S3 section above',
       /\/page\/new/.test(nowRoute) && nowRoute.includes('pin=bm1-unpaired'), nowRoute);
   });
+  // #13 STEP 11 (Fable, Nov 5) - S3's "telos is lexicon-sourced" RETIRES: no board renders the telos (S3 [word-diet successor] holds at every
+  // width), and the word itself goes from the lexicon. The record: the word still read TELOS while it existed, or is gone.
+  pok('PARKED (was "S3 telos is lexicon-sourced (deskLexicon boardTelos)") - RETIRED by #13 step 11: the telos line is not rendered (word-diet) and boardTelos is deleted from the lexicon; live successor of the rendering claim: this file\'s own S3 [word-diet successor]',
+    bm1Retired.telosLex === TELOS || bm1Retired.telosLex === '(gone)', `lex=${bm1Retired.telosLex}`);
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
   console.log(parkedPass ? `\nBM1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, park sweep is a verified no-op` : `\nBM1 PARKED: FAIL`);

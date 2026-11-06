@@ -20,7 +20,6 @@
 /* Evental press across the whole zone — brass on the way down, never at rest
    (the plateau register: olive rests, brass is the press). */
 .wz-ink-tip:active, .wz-ink-nib:active, .wz-ink-eraser:active{ color:var(--brass); border-color:var(--brass); }
-.wz-sliver-typewriter-label{ font-size:13px; color:var(--text-mid); }
 
 /* A labeled on/off switch — the forward-lock control (S2). Deliberately its
    own small component rather than reusing .mode-seg (a 2/3-way segmented
@@ -48,22 +47,9 @@
 .wz-sliver-goal{ display:flex; flex-direction:column; gap:8px; padding:14px; margin-top:auto;
   border-top:1px solid var(--ink-border); }
 .wz-sliver-goal-timer{ font-family:var(--font-mono); font-size:12px; color:var(--text-mid); letter-spacing:.3px; }
-/* the progress bar's line is shared with Full screen: one flex row with align-items:center puts the hairline and the toggle on one line by layout, never by nudged margins (the probe checks the centres within 0.6px); the hairline flexes, the toggle does not; min-width:0 lets it shrink [ink-options §3] */
-.wz-sliver-goal-line{ display:flex; align-items:center; gap:10px; }
-.wz-sliver-goal-line .wz-sliver-goal-hairline{ flex:1 1 auto; min-width:0; }
-.wz-sliver-goal-fullscreen{ display:flex; align-items:center; flex:0 0 auto; }
 .wz-sliver-goal-hairline{ height:2px; background:var(--ink-border); }
 .wz-sliver-goal-hairline-fill{ height:100%; background:var(--accent-rest); transition:width .4s ease; }
 @media (prefers-reduced-motion:reduce){ .wz-sliver-goal-hairline-fill{ transition:none; } }
-.wz-sliver-goal-edit{ align-self:flex-start; background:none; border:0; padding:0;
-  color:var(--text-low); font-family:var(--font-ui); font-size:12px; cursor:pointer; text-decoration:underline; }
-.wz-sliver-goal-edit:hover{ color:var(--text-mid); }
-.wz-sliver-goal-edit-row{ display:flex; align-items:center; gap:6px; }
-.wz-sliver-goal-edit-input{ width:56px; background:var(--ink-800); border:1px solid var(--ink-border); color:var(--text-hi);
-  font-family:var(--font-mono); font-size:12px; padding:3px 6px; }
-.wz-sliver-goal-edit-commit,.wz-sliver-goal-edit-clear{ background:none; border:1px solid var(--ink-border); color:var(--text-mid);
-  font-family:var(--font-ui); font-size:11px; padding:3px 8px; cursor:pointer; }
-.wz-sliver-goal-edit-commit:hover,.wz-sliver-goal-edit-clear:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
 
 /* FX3 S5 — the sliver foot's new instruments row (components/Sliver.tsx's
    SliverInstrumentRow): typewriter (icon only) / gear / instruments, quiet
@@ -236,7 +222,6 @@
 
 .wz-tutor-section{ display:flex; flex-direction:column; gap:6px; }
 .wz-tutor-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-mid); }
-.wz-tutor-note{ font-size:11px; color:var(--text-low); }
 .wz-tutor-obs{ font-size:13px; color:var(--text-mid); line-height:1.4; }
 .wz-tutor-empty{ font-size:12px; color:var(--text-low); }
 .wz-tutor-frag-list{ display:flex; flex-direction:column; gap:2px; }

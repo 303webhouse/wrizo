@@ -75,7 +75,6 @@ export const CANONICAL_CHROME = {
   pagePlanDoor: 'Plan',
   // A1 (accessibility audit): Tab indents on the page, so the way out is said aloud. Screen-reader-only; never drawn.
   pageEscHint: 'Press Escape to leave the page',
-  boardTelos: 'The plan serves the page.',
   boardLaneDefault: 'Cards',
   boardStoryboardEmpty: 'No cards yet. Add cards in Open, then arrange them into order here.',
   boardOutlineEmpty: 'No cards yet. Add cards in Open, then shape them into an outline here.',
@@ -89,32 +88,24 @@ export const CANONICAL_CHROME = {
   // somewhere you go.
   beginNewCard: 'New Card',
   // every "make a new one" button is singular [deskLexicon §26]
-  beginNewPageCard: 'New Page',
   // "Presets" names what the object is, the noun-door convention [deskLexicon §27]
   beginLoadDeck: 'Presets',
   // "Connect Pages": the same sheet as "+ Filed Pages", naming a different act [deskLexicon §28]
   beginConnectPage: 'Connect Pages',
   beginNewLane: 'New Lane',
-  beginScreenplay: 'Screenplay',
-  beginPlan: 'Plan',
   modeFreeWrite: 'Free Write',
   modeDraft: 'Draft',
   modeRevise: 'Revise',
   modeWorkshop: 'Workshop',
   modePublish: 'Publish',
-  zoneWayfinding: 'Wayfinding',
   zoneStrip: 'Strip',
   // "Page" is grammatically plural ("these Pages") in rail, zone and door labels; physical-page rows are unaffected [deskLexicon §29]
-  zoneStage: 'Pages',
   zoneCorkboard: 'Corkboard',
   zoneMeter: 'Meter',
   corkboardJournalTab: 'Journal',
-  deskMenuGlyph: 'Desk menu',
   railInk: 'Ink',
   railControls: 'Controls',
   railForwardLock: 'Forward lock',
-  railReading: 'Reading',
-  railTypewriter: 'Typewriter',
   railFormat: 'Format',
   modeBarPen: 'Pen',
   spreadLensInk: 'Ink',
@@ -134,9 +125,6 @@ export const CANONICAL_CHROME = {
   inkIron: 'Iron',
   inkOxblood: 'Oxblood',
   inkSea: 'Sea',
-  railStructure: 'Structure',
-  railStructureProse: 'Prose',
-  railStructureScreenplay: 'Screenplay',
   drawerPage: 'Pages', // ITEM word-diet, pages-rename bucket (a)
   // describePageHome's words, in the lexicon; pageHomeProject interpolates the place name [deskLexicon §30]
   pageHomeLoose: 'Unfiled',
@@ -150,26 +138,15 @@ export const CANONICAL_CHROME = {
   pageFaceStarred: 'Starred',
   pageFaceAddTag: 'Add a tag',
   pageFaceAdd: 'Add',
-  pageFaceMoveCopy: 'Move to… / Copy to…',
   pageFacePortToBoard: 'Port to a Board…',
   pageFacePin: 'Pin to a Board…',
   // the Page face's prose line uses the one connecting word ("grafted"): it names the membership, not a card that may not be on the canvas [deskLexicon §31]
   pageFacePinnedTo: 'Also grafted to',
-  placeFaceOpen: 'Open',
-  placeFaceFileSend: 'File/Send',
-  placeFacePeek: 'Peek',
-  placeFacePeekSoon: 'Peek — coming soon',
-  placeFaceGoToRoom: 'Go to the Room',
   placeFaceEmpty: 'Nothing here yet.',
-  goalEdit: 'Set a goal',
   goalLabel: 'Goal',
   goalUnitLines: 'lines',
-  goalSet: 'Set',
-  goalClear: 'Clear',
   sliverOpen: 'Open hand tools',
   sliverClose: 'Close hand tools',
-  sliverInstruments: 'Instruments',
-  sliverInstrumentsShow: 'Show',
   sliverInstrumentsUnit: 'Unit',
   stripPlan: 'Boards', // BIG PROJECTS 1a: the rail's Plan item is Boards (the category id stays `plan`)
   stripSettings: 'Settings',
@@ -178,12 +155,8 @@ export const CANONICAL_CHROME = {
   cascadeJournalNewPage: 'New Page', // every "make a new one" button is singular [deskLexicon §32]
   cascadeJournalRecent: 'Recent',
   cascadeJournalAll: 'All pages →',
-  cascadePlanCreateBoard: 'Create a Board',
-  cascadePlanPlotStory: 'Plot a Story',
   // PW1 — RETIRED from every render path (PW3/PW9); values kept so the
   // retirement is legible and no lookup can silently resolve to nothing.
-  cascadePlanOpen: 'Open…',
-  cascadePlanEmpty: 'No boards yet.',
   // the term in sentence case; the zone's uppercase is the CSS register's [deskLexicon §33]
   cascadePlanBoardsConnected: 'Boards grafted',
   // PW10 + the three-space canon: "the Plan-board pairing is a SURFACE OWNING A
@@ -216,16 +189,9 @@ export const CANONICAL_CHROME = {
   // and it deletes the MEMBERSHIP. Two acts a keystroke apart, one ending a
   // relation and one only ending its display, must not share a word.
   cascadePinHide: 'Hide from the board',
-  cascadePlanNoProject: 'File this page to a drawer first to plan around it.',
   cascadeBoardMove: 'Move to… / Copy to…',
   cascadeBoardDelete: 'Delete',
-  cascadeBoardDeleteConfirm: 'Delete',
-  cascadeBoardDeleteCancel: 'Cancel',
   // ITEM word-diet.
-  cascadeBoardDeleteQuestion: 'Delete Permanently?',
-  cascadeDrawersChoose: 'Choose a drawer to see what’s filed inside.',
-  cascadeDrawersEmpty: 'No drawers yet.',
-  cascadeShelfBrowse: 'Browse the Shelf →',
   cascadeSettingsTitle: 'Settings',
   cascadeSettingsSignOut: 'Sign out',
   // THEME PICKER (theme-rules.md B.5/D) - Arbor's own canonical word for the theme menu is
@@ -236,7 +202,6 @@ export const CANONICAL_CHROME = {
   cascadeSurveyEmpty: 'Nothing here yet.',
   cascadeSurveyCurrent: 'Current',
   cascadeDockClose: 'Close, keep browsing',
-  cascadeDockReopen: 'Reopen',
   cascadeSurveyBack: 'Back',
   railBoard: 'Board',
   boardAddCard: 'Add card',
@@ -246,13 +211,11 @@ export const CANONICAL_CHROME = {
   boardFitToText: 'Fit to text',
   boardLayerBringFront: 'Bring to front',
   boardLayerSendBack: 'Send to back',
-  boardThreadGrab: 'Drag to graft',
   // ITEM arbor-quiet-brass — was 'thread' (composed at the call site as "— thread:
   // <label>"); now the full connecting phrase itself, same per-theme family as the rest
   // of the board-connection vocabulary (beginConnectPage etc., in OVERRIDES below).
   boardThreadPrefix: 'grafted to',
   boardThreadUntitled: 'Untitled',
-  boardFooterToggle: 'Show grafts',
   // FLUX3 S1 - read only under ?flux3=1 in Flux (src/flux3/); shown in capitals by CSS. The count of a node's links is told in Flux's own
   // connect register ("connected to", "Drag to connect"): the Flux word pass retired "link" (flux-v2.mjs LX2b); the mockup's "n LINKS" waits for TOOLS' pass
   flux3LinkOne: 'connection',
@@ -284,9 +247,7 @@ export const CANONICAL_CHROME = {
   settingsAskBeforeDelete: 'Ask before deleting',
   toastCardDeleted: 'Card deleted',
   toastCardRestored: 'Card restored',
-  toastBoardTrashed: 'Board moved to Trash',
   trashCardBadge: 'Card',
-  linksSelectCard: 'Select a card',
   linksRemoveTitle: 'Remove graft?',
   linksRemoveAria: 'Remove',
   linksKindPage: 'Page',
@@ -322,10 +283,8 @@ export const CANONICAL_CHROME = {
   // Arbor is canonical, Flux overrides below; the "?" beside this tab reads helpGrafts [deskLexicon §38]
   tutorTabTutor: 'Tutor',
   drawerLinks: 'Grafts',
-  drawerLinksEmpty: 'Nothing grafted yet.',
   drawerRightTabsLabel: 'Tutor and grafts',
   tutorDockClose: 'Close, keep dock',
-  tutorDockReopen: 'Reopen',
   tutorLensConsistency: 'Consistency',
   tutorLensStructure: 'Structure',
   tutorLensFragments: 'Fragments',
@@ -338,7 +297,6 @@ export const CANONICAL_CHROME = {
   tutorNudgesTitle: 'Waiting for you',
   tutorNudgesEmpty: 'Nothing waiting right now.',
   tutorBibleTitle: "The book's Bible",
-  tutorBibleNote: 'Facts you save travel with the book — the Tutor keeps them in mind.',
   tutorBibleEmpty: 'Nothing saved yet.',
   // ITEM word-diet.
   tutorBibleAddPlaceholder: 'Add Note',
@@ -488,24 +446,11 @@ export const CANONICAL_CHROME = {
   // the card pop-up's X: its accessible name (aria-label and title) [deskLexicon §48]
   boardPopupClose: 'Close',
   // the Typewriter menu: "Forward Lock" and "Line Fade" [deskLexicon §49]
-  twMenuHeading: 'Typewriter',
   twForwardLock: 'Forward Lock',
-  twForwardLockWindow: 'Window',
-  twUnitWords: 'Words',
-  twUnitSentences: 'Sentences',
   twLineFade: 'Line Fade',
-  twLineFadeLines: 'Lines shown',
-  twWritingLine: 'Writing line',
-  twLineTop: 'Top',
-  twLineCenter: 'Centre',
-  twLineBottom: 'Bottom',
   twPageScroll: 'Page Scroll',
   // ITEM 83 M4 (R5/R12) — the foot's three instruments, on every
   // page-writing surface. Theme leaves the foot for the rail's own category.
-  footTypewriter: 'Typewriter',
-  footProgress: 'Progress',
-  footFullScreen: 'Full Screen',
-  footTarget: 'Target',
   // ITEM 83 M5 (R4) — Draft's roster. Destination-named verbs (DR3's bench
   // law): never a bare 'Convert'.
   draftHeading: 'Heading',
@@ -522,9 +467,6 @@ export const CANONICAL_CHROME = {
   actionDelete: 'Delete page',
   actionHeaderFooter: 'Header and footer',
   actionTagRemove: 'Remove',
-  actionDeleteConfirm: 'Send this page to Trash?',
-  actionDeleteYes: 'Send to Trash',
-  actionDeleteKeep: 'Keep',
   railPageKind: 'Pages Kind', // ITEM word-diet, pages-rename bucket (a)
   templateOutline: 'Outline',
   templateBibliography: 'Bibliography',
@@ -544,7 +486,6 @@ export const CANONICAL_CHROME = {
   modeToggleTypewriter: 'Typewriter mode',
   modeToggleProgress: 'Progress tracking',
   formatLockedByTypewriter: 'Typewriter Mode is on',
-  footMenuPreferences: 'Preferences',
   footMenuFlicker: 'Flicker',
   draftQuote: 'Block quote',
   draftIndent: 'Indent',
@@ -564,11 +505,7 @@ export const CANONICAL_CHROME = {
   draftAlignLeft: 'Align left',
   draftAlignCenter: 'Align centre',
   draftAlignRight: 'Align right',
-  draftConvertToScreenplay: 'Convert to Screenplay…',
-  draftConvertToProse: 'Convert to Prose…',
   // the two sub-labels are written as the DIFFERENCE between the controls they head: what the page IS, and an act ON it [deskLexicon §52]
-  structureKindLabel: 'This page is',
-  structureActLabel: 'Change the page itself',
   structureStyleGuideLabel: 'Style guide',
   kindNormal: 'Normal',
   kindScreenplay: 'Screenplay',
@@ -577,14 +514,11 @@ export const CANONICAL_CHROME = {
   styleGuideApa: 'APA',
   styleGuideChicago: 'Chicago',
   styleGuideAp: 'AP',
-  openPagesHeading: 'Open Pages',
   openPagesSort: 'Sort Pages',
   openPagesMore: 'More for this Page',
   openPagesPlace: 'Place on this board',
   sectionsHeading: 'Sections',
   sectionsOrder: 'Order',
-  sectionsRows: 'Rows',
-  sectionsGrid: 'Grid',
   sectionsNewSet: '＋ New set',
   sectionsNewSetName: 'Name the set',
   sectionsPresets: 'Presets',
@@ -602,20 +536,11 @@ export const CANONICAL_CHROME = {
   switcherNewDrawer: '＋ New Drawer',
   switcherNewDrawerName: 'Name the Drawer',
   switcherUnsorted: 'Unsorted',
-  placeSortDate: 'Date',
-  placeSortDrawer: 'Drawer',
-  placeSortAZ: 'A–Z',
-  placePageEmpty: 'No pages yet.',
-  planNewCard: '＋ New card',
-  planFitToContent: 'Fit to content',
   // ITEM 83 M7 (PP1) — a VERB PHRASE naming the act, not a noun. The old
   // accessible name was the bare noun 'Home'; promoted to the eye it would
   // have read as a destination, which is the confusion being closed.
-  placesHomeHeading: 'This page lives in…',
-  cascadePlanJustAPage: 'Just need a page? New Page is in the Page section.',
   boardNewPageCard: 'New Page', // every "make a new one" button is singular [deskLexicon §53]
   // no box can be a board today, so "Add Cards or Pages", not three nouns [deskLexicon §54]
-  boardCanvasEmpty: 'Add Cards or Pages',
   drawerPlaceTrash: 'Trash',
   cascadeTrashOpen: 'Open the Trash',
   boardRestore: 'Restore',
@@ -624,7 +549,6 @@ export const CANONICAL_CHROME = {
   boardHomeLabelTrash: 'Trash',
   boardHomeLabelShelf: 'Shelf',
   shelfBoardEmpty: 'Nothing waiting.',
-  cascadeShelfOpen: 'Open the Shelf',
   // opens the same ExistingPagePicker as beginConnectPage: one act, one name [deskLexicon §55]
   boardAddExistingPage: '+ Filed Pages',
   placesTitle: 'Places',
@@ -641,20 +565,13 @@ export const CANONICAL_CHROME = {
   placesBoardsTitle: 'Also grafted to…',
   placesBoardsZoneLabel: 'Boards this page can join',
   placesBoardsEmpty: 'No boards yet.',
-  drawersKindBoard: 'Board',
-  drawersKindDoc: 'Document',
-  drawersLooseGroup: 'Loose',
   createDrawerEyebrow: 'NEW DRAWER',
   createDrawerTitleLabel: 'Drawer title (optional)',
-  createDrawerOpensNote: 'Opens the Drawer home — shape it as you go.',
   drawerHomeTitleLabel: 'Drawer title',
   backToDrawer: 'Back to Drawer',
   domainLabelCreative: 'Creative Drawer',
   domainLabelAcademic: 'Academic Drawer',
   domainLabelProfessional: 'Professional Drawer',
-  journalRouteSendToDrawer: 'Send to a Drawer',
-  journalRouteEmptyDrawers: 'No Drawers yet.',
-  journalRoutePromoteDrawer: 'Promote to a new Drawer',
   sprintSaveToDrawer: 'Save to Drawer',
   sprintSaveAsDrawer: 'Save as Drawer',
 

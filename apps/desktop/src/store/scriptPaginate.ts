@@ -191,8 +191,3 @@ function applyBreakRules(pages: Placed[][], linesPerPage: number): Placed[][] {
   }
   return pages.filter((pg) => pg.length > 0);
 }
-
-// total pages the entries project to; derived, never stored [scriptPaginate §9]
-export function pageCount(ledger: LedgerEntry[], linesPerPage: number = PAGE_LINES): number {
-  return paginate(ledger, linesPerPage).length;
-}

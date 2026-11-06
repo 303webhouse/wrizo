@@ -5,7 +5,6 @@ export const PAGE_PT_FALLBACK = '1.33333px';   // one page point at scale 1, for
 export const SIZE_MIN = 6;
 export const SIZE_STEP_MAX = 118;   // where `+` stops
 export const SIZE_TYPED_MAX = 120;  // where a typed number stops
-export const PROSE_BASE_PX = 17;    // today's prose size at scale 1 == SIZE_DEFAULT points
 
 /** The stops `+`/`-` visit, in ascending order. */
 export function sizeLattice(): number[] {

@@ -24,7 +24,11 @@
 //   MUTANTS (each turns its check RED): re-add Workshop to ModeStrip (T1), to PageEditor's actions (T2), to JournalEntry's row (T3)
 //
 // Run (repo root, no server/grant needed): node apps/desktop/scripts/harness/hide-workshop-source.mjs
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+//
+// #13 STEP 11 (Fable, Nov 5): pages/JournalEntry.tsx is deleted as dead code (unrouted since FX14), so T3 and its mutant RETIRE: the surface
+// they guarded no longer exists. Both are kept verbatim below, no longer run; the parked block's record proves the file is unreachable
+// (no src file imports it) while it exists, and gone after.
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { srcText } from '../global-css.mjs';
@@ -38,7 +42,9 @@ const ok = (name, pass, detail = '') => { checks.push({ name, pass, detail }); c
 const strip = src('components/ModeStrip.tsx');
 const pe = src('pages/PageEditor.tsx');
 const qs = src('pages/QuickSprint.tsx');
-const je = src('pages/JournalEntry.tsx');
+// ---- PARKED - RETIRED by #13 step 11: the read survives only where the file still exists (the retirement record reads it, never a live check).
+// const je = src('pages/JournalEntry.tsx');
+const je = existsSync(join(SRC, 'pages/JournalEntry.tsx')) ? src('pages/JournalEntry.tsx') : null;
 
 const noComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
 const itemsBlock = (s) => { const m = s.match(/const items:[\s\S]*?\n  \];/); return m ? noComments(m[0]) : ''; };
@@ -56,8 +62,12 @@ ok('T2: PageEditor\'s ModeSwitcher actions carry Publish and no Workshop', /lex\
 ok('T2: QuickSprint\'s ModeSwitcher actions carry Publish and no Workshop', /lex\('publish'\)/.test(qsActions) && !/Workshop/i.test(qsActions), qsActions.replace(/\s+/g, ' '));
 
 // T3
-const row = journalRow(je);
-ok('T3: the legacy JournalEntry tab row is Draft / Format / Publish - no Workshop', /'Draft', 'Format', lex\('publish'\)/.test(row) && !/Workshop/i.test(row), row);
+// ---- PARKED - RETIRED by #13 step 11 (Fable, Nov 5): pages/JournalEntry.tsx is deleted, so its tab row is no surface any more. Kept VERBATIM
+// below and no longer run; its record is in the parked block.
+//
+// const row = journalRow(je);
+// ok('T3: the legacy JournalEntry tab row is Draft / Format / Publish - no Workshop', /'Draft', 'Format', lex\('publish'\)/.test(row) && !/Workshop/i.test(row), row);
+// ------------------------------------------------------------------
 
 // T4 - no render site reads the word, so no theme (Workshop / Relay / a future Commune) can show it
 const walk = (d) => readdirSync(d).flatMap((f) => { const p = join(d, f); return statSync(p).isDirectory() ? walk(p) : /\.(tsx|ts)$/.test(f) ? [p] : []; });
@@ -77,10 +87,27 @@ ok('T5: the flash machinery SURVIVES for the other deferred postures (screenplay
   ok('MUTANT: Workshop re-added to ModeStrip - T1 must go RED', m1 !== strip && JSON.stringify(k1) !== JSON.stringify(['freewrite', 'draft', 'revise', 'publish']), JSON.stringify(k1));
   const m2 = pe.replace("            { label: lex('publish')", "            { label: 'Workshop', sub: 'coming soon', deferred: true },\n            { label: lex('publish')");
   ok('MUTANT: Workshop re-added to PageEditor\'s actions - T2 must go RED', m2 !== pe && /Workshop/i.test(actionsBlock(m2)), '');
-  const m3 = je.replace("['Draft', 'Format', lex('publish')]", "['Draft', 'Format', 'Workshop', lex('publish')]");
-  ok('MUTANT: Workshop re-added to JournalEntry\'s row - T3 must go RED', m3 !== je && /Workshop/i.test(journalRow(m3)), journalRow(m3));
+  // ---- PARKED - RETIRED by #13 step 11, with T3 (above): its subject, JournalEntry's row, is deleted. Kept VERBATIM and no longer run.
+  //
+  // const m3 = je.replace("['Draft', 'Format', lex('publish')]", "['Draft', 'Format', 'Workshop', lex('publish')]");
+  // ok('MUTANT: Workshop re-added to JournalEntry\'s row - T3 must go RED', m3 !== je && /Workshop/i.test(journalRow(m3)), journalRow(m3));
+  // ------------------------------------------------------------------
 }
 
-const bad = checks.filter((c) => !c.pass).length;
+// === PARKED - gated behind HARNESS_PARKED=1, skipped by default. #13 step 11 retires T3 and its mutant: the record holds what makes a
+// retirement (not a loss) true - JournalEntry.tsx is imported by no src file, so no writer can reach the row the two checks guarded.
+const parkedChecks = [];
+if (process.env.HARNESS_PARKED === '1') {
+  const importers = walk(SRC).filter((p) => /(from\s*|import\s*\(\s*)['"][^'"]*\/JournalEntry['"]/.test(readFileSync(p, 'utf8'))).map((p) => p.replace(SRC, ''));
+  const rec = { importers, exists: je !== null };
+  for (const n of ['T3: the legacy JournalEntry tab row is Draft / Format / Publish - no Workshop', 'MUTANT: Workshop re-added to JournalEntry\'s row - T3 must go RED']) {
+    parkedChecks.push({ name: `PARKED (was "${n}") - RETIRED by #13 step 11: pages/JournalEntry.tsx is unreachable (imported by no src file) and deleted`, pass: importers.length === 0, detail: JSON.stringify(rec) });
+  }
+  for (const c of parkedChecks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}  ${c.detail}`);
+  console.log(parkedChecks.every((c) => c.pass) ? `\nHIDE-WORKSHOP-SOURCE PARKED: PASS (${parkedChecks.length} records) - HARNESS_PARKED=1 armed; #13 step 11 retires T3 and its mutant`
+    : `\nHIDE-WORKSHOP-SOURCE PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length}`);
+}
+
+const bad = checks.filter((c) => !c.pass).length + parkedChecks.filter((c) => !c.pass).length;
 console.log(bad === 0 ? `\nHIDE-WORKSHOP-SOURCE VERIFY: PASS (${checks.length} checks)` : `\nHIDE-WORKSHOP-SOURCE VERIFY: FAIL - ${bad}/${checks.length}`);
 process.exit(bad === 0 ? 0 : 1);

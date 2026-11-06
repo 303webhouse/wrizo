@@ -237,7 +237,9 @@ if (false) ok('(T3) they flip the SAME values the old rows flipped - typewriter 
   })(), JSON.stringify({ buttons: base.buttons, storeDiff: base.storeDiff }));
 // (T3b) successor: the PERSISTED SHAPE is untouched - the settings key, the field list and the other two stores are exactly main's; only code AFTER the
 // store's own functions changed (the per-page memory), and the toggles still go through setTypewriterExplicit / setWritingSettings.
-ok('(T3b) the toggles flip the SAME values the old rows flipped (typewriter through setTypewriterExplicit, instrumentsOn through setWritingSettings) and the persisted shape is main\'s: forwardLock.ts and writingGoal.ts byte-identical, and writingSettings.ts changes no line of its interface, its DEFAULTS or its storage key',
+// SUPERSEDED (#13 step 11, Fable Nov 5: the unused getters getForwardLock and getWritingGoal are deleted as dead code, so 'forwardLock.ts and
+// writingGoal.ts byte-identical' no longer holds) - by (T3c) below. Parked, not deleted. Kept verbatim; `if (false)` keeps it out of the verdict.
+if (false) ok('(T3b) the toggles flip the SAME values the old rows flipped (typewriter through setTypewriterExplicit, instrumentsOn through setWritingSettings) and the persisted shape is main\'s: forwardLock.ts and writingGoal.ts byte-identical, and writingSettings.ts changes no line of its interface, its DEFAULTS or its storage key',
   // typewriter-scope (Fable Oct 21) - this guard now reads v.buttonsPP (T1's own successor):
   // v.buttons is permanently false post-park (it pins a shape that no longer exists), and this
   // check's own claim ("the toggles still go through the same two store functions") does not
@@ -250,6 +252,22 @@ ok('(T3b) the toggles flip the SAME values the old rows flipped (typewriter thro
     const removedOrKeyTouched = ws === null ? true : ws.split('\n').some((l) => (l.startsWith('-') || l.startsWith('+')) && !l.startsWith('---') && !l.startsWith('+++') && /wrizo-writing-settings|const KEY|^[-+]\s*[a-zA-Z]+\??: /.test(l));
     base.storeDiff = { other, removedOrKeyTouched };
     return other !== null && other.trim() === '' && removedOrKeyTouched === false;
+  })(), JSON.stringify({ buttons: base.buttons, storeDiff: base.storeDiff }));
+// (T3c) successor: T3b's claim with one allowance - forwardLock.ts and writingGoal.ts may lose ONLY the two unused getters #13 step 11 deletes:
+// no line added, and no removed line touches storage, a key or a stored field. It holds before the delete (no diff) and after it.
+const STEP11_GETTERS = ['getForwardLock', 'getWritingGoal'];
+ok('(T3c) the toggles flip the SAME values the old rows flipped (typewriter through setTypewriterExplicit, instrumentsOn through setWritingSettings) and the persisted shape is main\'s: forwardLock.ts and writingGoal.ts add nothing and lose only their unused getters (#13 step 11), and writingSettings.ts changes no line of its interface, its DEFAULTS or its storage key',
+  v.buttonsPP === true && (() => {
+    const baseRef = sh('git merge-base origin/main HEAD')?.trim();
+    const other = baseRef ? sh(`git diff -U0 ${baseRef} -- src/store/forwardLock.ts src/store/writingGoal.ts`) : null;
+    const ws = baseRef ? sh(`git diff -U0 ${baseRef} -- src/store/writingSettings.ts`) : null;
+    const removedOrKeyTouched = ws === null ? true : ws.split('\n').some((l) => (l.startsWith('-') || l.startsWith('+')) && !l.startsWith('---') && !l.startsWith('+++') && /wrizo-writing-settings|const KEY|^[-+]\s*[a-zA-Z]+\??: /.test(l));
+    const body = (other || '').split('\n').filter((l) => /^[-+]/.test(l) && !/^(---|\+\+\+)/.test(l));
+    const added = body.filter((l) => l.startsWith('+'));
+    const storageTouched = body.filter((l) => /localStorage|KEY|setItem|getItem|JSON\.|^[-+]\s*[a-zA-Z]+\??: /.test(l));
+    const exportsGone = body.filter((l) => /^-\s*export /.test(l)).map((l) => (/export\s+(?:async\s+)?function\s+(\w+)/.exec(l) || [, l])[1]);
+    base.storeDiff = { added: added.length, storageTouched, exportsGone, removedOrKeyTouched };
+    return other !== null && added.length === 0 && storageTouched.length === 0 && exportsGone.every((n) => STEP11_GETTERS.includes(n)) && removedOrKeyTouched === false;
   })(), JSON.stringify({ buttons: base.buttons, storeDiff: base.storeDiff }));
 ok('(T4) the Typewriter on/off row and the Progress "Show" row are gone from the "..." menu', v.rowsGone === true, JSON.stringify(base.rowsGone));
 // SUPERSEDED (typewriter-scope, Fable Oct 21) - ORIGINAL, quoted verbatim, parked with `if

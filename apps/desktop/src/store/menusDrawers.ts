@@ -135,11 +135,6 @@ function subscribe(l: () => void): () => void {
   listeners.add(l);
   return () => { listeners.delete(l); };
 }
-const getSnapshot = (): DrawerId | null => openDrawer;
-
-export function useOpenDrawer(): DrawerId | null {
-  return useSyncExternalStore(subscribe, getSnapshot);
-}
 
 // which of the page's two hands stand open (the board narrows beside them); a string snapshot so the store's identity is stable between changes [menusDrawers §10]
 const getHands = (): string => (stands.has('tools') ? 'T' : '') + (stands.has('tutor') ? 'U' : '');
