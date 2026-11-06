@@ -1,0 +1,22 @@
+BUILD: tree=76b141f5 dirty=no bundle=index-C7CY2rGS.js:222874629216 cwd=C:\Users\nickh\flux3-mount\apps\desktop
+BUILD: tree=76b141f5 bundle=index-C7CY2rGS.js builtAt=2026-11-06T03:33:49.633Z lastSrcCommit=2026-11-06T03:33:10.000Z dirtySrcFiles=0 stale=false
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+
+ROWS-SHADOW VERIFY: PASS (8 renders checked, shadow == DOM on every one)
+PASS  P0 a page was opened through the app (CreateProject -> Start writing)
+PASS  P1 every read stood where it claimed (page + editor mounted, splash gone, data-theme flux, the asked tone and surface, the flag exactly when on): 16/16
+PASS  R [dark Free Write 1366x768] the page rect with ?flux3=1 is identical to the rect without it
+PASS  R [dark Free Write 1920x1080] the page rect with ?flux3=1 is identical to the rect without it
+PASS  R [dark Draft 1366x768] the page rect with ?flux3=1 is identical to the rect without it
+PASS  R [dark Draft 1920x1080] the page rect with ?flux3=1 is identical to the rect without it
+PASS  R [light Free Write 1366x768] the page rect with ?flux3=1 is identical to the rect without it
+PASS  R [light Free Write 1920x1080] the page rect with ?flux3=1 is identical to the rect without it
+PASS  R [light Draft 1366x768] the page rect with ?flux3=1 is identical to the rect without it
+PASS  R [light Draft 1920x1080] the page rect with ?flux3=1 is identical to the rect without it
+PASS  R coverage: 8/8 cells compared (1366 + 1920, dark + light, Free Write + Draft)
+PASS  P2 the Typewriter state is the same with the flag on and off in every cell (the ruled zoom exception never decides a pair)
+PASS  M (mutant, landed) a 3px translate on .mode-page under the flag makes R report a difference
+PASS  B the build: served index-C7CY2rGS.js = dist-web's index-C7CY2rGS.js, built 2026-11-06T03:33:49.633Z after the last src commit 2026-11-06T03:33:10.000Z (tree 76b141f5, 0 uncommitted src file(s))
+
+FLUX3-PAGE-RECT VERIFY: PASS (14 checks)

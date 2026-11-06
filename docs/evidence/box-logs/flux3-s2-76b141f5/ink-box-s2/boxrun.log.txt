@@ -1,0 +1,13 @@
+2026-11-06T03:57:40.772Z waiting for a free, quiet box (pid 37236); tree=76b141f5 dirty=no bundle=index-C7CY2rGS.js:222874629216
+2026-11-06T03:59:45.175Z TURN START (lane ink) granted to lane "ink" and bound to the process tree of pid 37236 - name this turn's start and end in your report
+2026-11-06T03:59:45.295Z job flux3-s2 start (tree=76b141f5 dirty=no bundle=index-C7CY2rGS.js:222874629216)
+2026-11-06T04:04:42.033Z job flux3-s2 exit 0
+2026-11-06T04:04:42.149Z job flux3-s1 start (tree=76b141f5 dirty=no bundle=index-C7CY2rGS.js:222874629216)
+2026-11-06T04:07:51.062Z job flux3-s1 exit 1
+2026-11-06T04:07:51.180Z job flux3-page-rect start (tree=76b141f5 dirty=no bundle=index-C7CY2rGS.js:222874629216)
+2026-11-06T04:08:36.413Z job flux3-page-rect exit 0
+2026-11-06T04:08:36.528Z job flux3-layer start (tree=76b141f5 dirty=no bundle=index-C7CY2rGS.js:222874629216)
+2026-11-06T04:12:35.277Z job flux3-layer exit 0
+2026-11-06T04:12:35.395Z job flux3-latency start (tree=76b141f5 dirty=no bundle=index-C7CY2rGS.js:222874629216)
+2026-11-06T04:16:48.224Z job flux3-latency exit 0
+2026-11-06T04:16:48.273Z TURN END release: released

@@ -1,0 +1,9 @@
+The C control (FIX, rhizome-latency check C on three trees) - manifest (Chat 1, Nov 6 2026)
+
+Box turn 05:00:44Z-05:25:49Z (lane FIX, released by token, nothing stopped, no browsers left), on Chat 1's go after Fable's ruling ("give FIX the box for the C control, first in line"). 12 runs, default leg, interleaved A B C x4, harness = 8d56e13e's runtime-verify, the guard file identical on all three trees (hash 4229cf72).
+
+Trees and bundles: 8aae0c76 index-DotAu9BA.js (6/6 green on Nov 5 14:49Z); 6ea4007f index-BYV01fuU.js (ARBOR's ledger-200 bundle); 8d56e13e index-V7dWvJLq.js (FIX's 8/8 red on Nov 6 03:17Z).
+
+Result (C = fade median minus the fast control, ms): 8aae0c76 +11.2, +9.6, +4.9, +7.6 (C red 3/4; C2 red twice, 5.6 and 4.8 against 4); 6ea4007f +9.7, +8.1, +7.0, +8.0 (red 4/4); 8d56e13e +4.8, +9.0, +8.1, +6.1 (red 3/4). Means 8.3 / 8.2 / 7.0: indistinguishable. B green 4/4 on every tree. Fade keys at or above 38 ms: 16-45% on every tree, the fast control 0%. FIX's verdict: box noise, not a commit; the OLD tree reds like the new one, so no bisect. The 14:49Z 6/6 green was a different box state. Fable decides whether C is "attributed" for the deploy gate. Nothing about C was changed.
+
+Files here: r1..r4-<sha>.txt (the 12 run logs), runs.txt (the per-run table), turn-times.txt, build-log.txt (the three builds). (tab.mjs, FIX's table script, stays with FIX.)

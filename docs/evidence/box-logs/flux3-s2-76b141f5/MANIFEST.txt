@@ -1,0 +1,11 @@
+Flux S2 (INK flux3/s2 76b141f5, Stack + hologram; Sequence, behind ?flux3=1) - manifest (Chat 1, Nov 6 2026)
+
+Merged to main as 2280bb22 (train-flux3-s2: main 967fc495 + one --no-ff merge of 76b141f5; clean). Cleared by Fable, Nov 5/6 ("Merge INK's flux3/s2 76b141f5 behind ?flux3=1. It's CLEARED.").
+
+PROOFS
+- Merged tree 2280bb22: tsc desktop 0, tsc server 0, seed-guard PASS 36, build:web index-BiBie43a.js; readers guard PASS (6 checks, 24 reads) default and parked; seams check PASS 17 default and parked; c13-4d-links PASS; wordcount PASS 7; persistence PASS 6. c13-10c-lexicon and c13-10g-readers read red on main WITHOUT S2 as well (same failing checks on the ccb891de apps tree); both were fixed later by their owners (lexicon: f0cfa915, 10g readers: ed251275), not by S2.
+- GitHub Actions full pair on the merged main, run 42166159175: default 239/246, parked 239/246, only the usual seven capture/probe NOVERDICT tools. (pair-main-2280bb22/). INK's own pair on its branch, run 42157255195 (76b141f5): 239/246 both legs, same seven.
+- INK's box turn 03:59:45Z-04:16:48Z (lane ink, released by token), bundle index-C7CY2rGS.js on 76b141f5 (ink-box-s2/): flux3-s2 36/36 (budget control 16.60 ms, Stack 16.65, limit 18.26), flux3-page-rect 14/14, flux3-layer 36/36, flux3-latency 15/15; flux3-s1 FAIL 1/31 on the D2-WHEEL premise (12 wheel notches, the board scrolled 0).
+- The control for that red, INK's follow-up turn 04:22:03Z-04:31:32Z, interleaved S2 / main fcfd30f2 / S2 (ink-box-s1-followup/): S2 31/31 (index-C7CY2rGS.js, byte-identical to the bundle that reddened), main 31/31 (index-BxhzzPDS.js), S2 31/31. Tally for the wheel premise: S2 bundle 1 red in 3 box runs (2 green on Actions, 1 on the merged-main pair); main 0 of 1. Not called a flake and not attributed: one main run is not a distribution; the flake list stays empty. On record.
+
+Files here: pair-main-2280bb22/ (Actions run 42166159175 logs and summary), ink-box-s2/ and ink-box-s1-followup/ (INK's box logs, text).
