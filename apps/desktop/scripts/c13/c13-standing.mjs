@@ -26,10 +26,12 @@ const LIST = [
   { name: 'c13-10f-wordcount', args: ['c13/c13-10f-wordcount.mjs'] },
   { name: 'c13-10h-persistence', args: ['c13/c13-10h-persistence.mjs', '--base', '1913849e'] },
   { name: 'typing-latency-readers-guard', args: ['typing-latency-readers-guard.mjs'] },
+  // moved from PENDING (POLISH, c13-10g-readers-fix-r): its --base mode is 10g's one-time proof (Flux S1's mount moved the board after the
+  // split), so the standing list runs its --standing mode: the join names every part, every namer is listed, every built pattern is named
+  { name: 'c13-10g-readers (standing)', args: ['c13/c13-10g-readers.mjs', '--standing'] },
 ];
 // Red on main, owned: not counted until green (then moved to LIST in the same commit).
 const PENDING = [
-  { name: 'c13-10g-readers', args: ['c13/c13-10g-readers.mjs', '--base', 'd1ede8e9'], owner: 'POLISH' },
 ];
 
 function run(c) {
