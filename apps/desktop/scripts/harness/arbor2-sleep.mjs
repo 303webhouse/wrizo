@@ -17,6 +17,7 @@ const q = process.env.WS_URL_SEARCH || '';
 const READ = `(() => { const root = document.documentElement;
   const ls = [document.querySelector('.arbor2-pergola'), ...document.querySelectorAll('.arbor2-pagesh')].filter(Boolean);
   return { room: root.getAttribute('data-arbor2-room'), writing: root.getAttribute('data-wz-writing'), n: ls.length,
+    zoom: document.querySelector('.desk-frame-stage .mode-pagecol')?.getAttribute('data-zoom') === 'true', pageCopyShown: (() => { const c = document.querySelector('.desk-frame-stage .mode-page > .arbor2-pagesh'); return c ? getComputedStyle(c).display !== 'none' : null; })(),
     layers: ls.map((l) => { const d = l.querySelector('.arbor2-pergola-drift'); const cs = getComputedStyle(l);
       return { cls: l.className, bmp: l.getAttribute('data-bitmap'), asleep: l.getAttribute('data-asleep'), cv: d ? getComputedStyle(d).contentVisibility : null, wc: cs.willChange, op: Number(cs.opacity), shown: cs.display !== 'none' }; }),
     ls: JSON.stringify(Object.keys(localStorage).sort().map((k) => [k, localStorage.getItem(k)])) }; })()`;
@@ -38,8 +39,16 @@ await withHarness(async (app) => {
   const rest = await app.evalJs(READ);
   const shown = (s) => s.layers.filter((l) => l.shown);
   const live = (s) => s.layers.filter((l) => l.shown && !l.bmp);
-  ok('S1 at rest: the room and the page copy carry will-change: opacity; nothing sleeps', rest.room === 'day' && live(rest).length >= 2 && live(rest).every((l) => /opacity/.test(l.wc))
-    && shown(rest).every((l) => l.asleep === null && l.cv === 'visible'), JSON.stringify({ room: rest.room, layers: rest.layers }));
+  // PARKED 2026-11-06 (SUPERSEDED: its premise - the page's live copy shown at rest - was false in the turn of 05:28Z: the copy was
+  // display:none, most likely the page opened ZOOMED, where the stylesheet keeps it off by ruling ("never on the zoomed page", r19 ruling 3).
+  // S1 counted live layers and so failed on a correct page). Original, verbatim:
+  // ok('S1 at rest: the room and the page copy carry will-change: opacity; nothing sleeps', rest.room === 'day' && live(rest).length >= 2 && live(rest).every((l) => /opacity/.test(l.wc))
+  //   && shown(rest).every((l) => l.asleep === null && l.cv === 'visible'), JSON.stringify({ room: rest.room, layers: rest.layers }));
+  // SUCCESSOR S1b: at rest the room is shown and live; the page's copy is shown exactly when the page is NOT zoomed (read, not assumed);
+  // every shown layer carries will-change: opacity and nothing sleeps.
+  ok('S1b at rest: the room shown and live, the page copy shown exactly when the page is not zoomed, every shown layer will-change: opacity, nothing asleep',
+    rest.room === 'day' && live(rest).some((l) => l.cls === 'arbor2-pergola') && rest.pageCopyShown === !rest.zoom && shown(rest).every((l) => /opacity/.test(l.wc) && l.asleep === null && l.cv === 'visible'),
+    JSON.stringify({ room: rest.room, zoom: rest.zoom, pageCopyShown: rest.pageCopyShown, layers: rest.layers }));
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('the room');
   await sleep(1200);

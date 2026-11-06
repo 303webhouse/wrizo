@@ -17,6 +17,9 @@ const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail
 const splashGone = (app) => app.waitFor("!document.querySelector('.wz-splash')", { timeout: 20000, label: 'splash gone' }).catch(() => {});
 const q = process.env.WS_URL_SEARCH || '';
 const want = (/[?&]arbor2room=(day|night)\b/.exec(q) || [])[1] || null;
+// (Nov 6, for the diagnostic trees - default unchanged: RP_MODE=r20 for r20 + the pin, which draws no bitmap copies; RP_MODE=allbmp for the
+// test build whose room and page copy are bitmaps too. P1-P3 are the same in every mode; the by-day reads P4-P6 follow the mode.)
+const MODE = process.env.RP_MODE || 'fix';
 
 const READ = `(() => {
   const root = document.documentElement, room = document.querySelector('.arbor2-pergola'), rd = room && room.querySelector('.arbor2-pergola-drift'), rr = rd && rd.getBoundingClientRect();
@@ -53,7 +56,17 @@ await withHarness(async (app) => {
   ok('P1 the URL carries the flag and a room pin (arbor2room=day|night): a pinned run certifies nothing without one', /[?&]arbor2=1\b/.test(s.search) && !!want && s.search.includes(`arbor2room=${want}`), JSON.stringify({ env: q, search: s.search }));
   ok(`P2 the room in force is the pinned room (${want}) whatever the clock says`, !!want && s.room === want, JSON.stringify({ room: s.room, localHour: s.hour }));
   ok('P3 nothing stored: no localStorage key or value names the pin', s.stored === false, String(s.stored));
-  if (want === 'day') {
+  if (want === 'day' && MODE !== 'fix') {
+    const p = s.pergola, pg = s.page, bar = s.bar, rail = s.rail;
+    if (MODE === 'r20') {
+      ok('P4r the room\'s pergola is the live drawing (r20): shown, its svg, 115 leaf clusters, its drift running', !!p && p.display !== 'none' && p.svg && p.leaves === 115 && p.anim === 'running', JSON.stringify(p));
+      ok('P6r r20 draws no copy on the bar or the rail', (!bar || bar.none === true) && (!rail || rail.none === true), JSON.stringify({ bar, rail }));
+    } else {
+      ok('P4a the room\'s pergola draws the bitmap (allbmp test build): shown, no svg, its drift running', !!p && p.display !== 'none' && p.svg === false && p.anim === 'running', JSON.stringify(p));
+      ok('P6a the page, bar and rail copies draw the bitmap (no svg)', [pg, bar, rail].every((c) => !c || (c.bitmap === 'true' && c.svg === false)), JSON.stringify({ pg, bar, rail }));
+    }
+  }
+  if (want === 'day' && MODE === 'fix') {
     const p = s.pergola, pg = s.page, bar = s.bar, rail = s.rail;
     ok('P4 the room\'s pergola is r20\'s live drawing: shown, its svg, 115 leaf clusters, its drift running', !!p && p.display !== 'none' && p.svg && p.leaves === 115 && p.anim === 'running', JSON.stringify(p));
     ok('P5 the page\'s copy is r20\'s live drawing (svg, g[filter] at 0.034)', !!pg && pg.bitmap === null && pg.svg === true && pg.g != null && Math.abs(pg.g - 0.034) < 0.0005, JSON.stringify(pg));
