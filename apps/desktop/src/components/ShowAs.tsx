@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { viewsFor } from '../store/walk';
 import type { BoardKind, BoardView } from '../store/boardKind';
+// FLUX3 S2 - the Stack's button, a mount point only: it exists under ?flux3=1 in Flux (src/flux3/FluxStack.tsx), and Show as is unchanged without it
+import { FLUX3 } from '../flux3/flag';
+import { FluxStackTab } from '../flux3/FluxStack';
 
 // Show As replaces the view tabs: icons first, words open on mouse hover or keyboard focus only (opening shifts the icons, so a tap must not open them); olive at rest, brass for the chosen view [ShowAs §1]
 
@@ -53,6 +56,7 @@ export function ShowAs({ kind, deck, narrow, current, onPick }: { kind: BoardKin
           <span className="show-as-word">{t(WORD[v])}</span>
         </button>
       ))}
+      {FLUX3 && kind === 'board' && views.includes('open') && <FluxStackTab current={current} onPick={onPick} />}
     </div>
   );
 }
