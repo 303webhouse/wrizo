@@ -307,6 +307,10 @@ export function FluxStack({ wrapRef, canvasRef, boxes, nodes, startId, zBase }: 
       e.stopPropagation();
     };
     const replace = () => place('still');
+    // the observer reports once as soon as it starts watching: only a real change of the frame's size places the nodes again (a 'still' placement
+    // at the opening would cut the opening's flight short)
+    let size = `${wrap.clientWidth}x${wrap.clientHeight}`;
+    const resized = () => { const s = `${wrap.clientWidth}x${wrap.clientHeight}`; if (s === size) return; size = s; replace(); };
     wrap.addEventListener('pointerdown', onDown, true);
     wrap.addEventListener('click', onTap, true);
     wrap.addEventListener('dblclick', onDbl, true);
@@ -318,7 +322,7 @@ export function FluxStack({ wrapRef, canvasRef, boxes, nodes, startId, zBase }: 
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
     window.addEventListener('keydown', onKey, true);
-    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(replace) : null;
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(resized) : null;
     ro?.observe(wrap);
     return () => {
       wrap.removeEventListener('pointerdown', onDown, true);

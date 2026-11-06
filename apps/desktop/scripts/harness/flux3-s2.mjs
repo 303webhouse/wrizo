@@ -29,6 +29,8 @@
 //   STILL  the still state, twice: reduced motion (the app's own floor holds every transition to 0.01 ms, so <= 1 ms) and Ambiance 0 (no floor:
 //          exactly 0 s). The Stack opens with no transition (its computed transform final at once), the veil changes at once, the layer makes no
 //          draw call, and closing gives every node back at once.
+//   FLY    the still state's other half: at the default dial the nodes really fly out (a transition on each; 60 ms in, most are mid-flight) and
+//          fly home on closing (a node still transformed 60 ms after Esc, none after the settle).
 //   SEQ    Sequence (the existing Storyboard view, Flux's "Sequence"): every lane's and card's rect is IDENTICAL with the flag on and off (4 cells), the
 //          dress is applied under the flag (the lane's bracket, the card's brackets) and absent without it.
 //   C      contrast, both tones: the hologram's count (label and value) against the veil, Sequence's lane title against its lane: >= 4.5:1.
@@ -480,6 +482,26 @@ try { await withHarness(async (app) => {
   };
   const S = await testStill('reduced');
   ok('STILL reduced motion = the still state: the Stack opens with no transition (<= 1 ms, its transform final at once), the veil at once, no layer draw, and closing gives every node back at once', S.pass, JSON.stringify(S));
+  // FLY, the still state's other half: at the default dial the nodes really fly (a transition on every node; 60 ms in, the computed transforms are
+  // not yet their ends), and closing flies them home (60 ms after Esc a node is still transformed; after the settle none is)
+  const testFly = async () => {
+    await open(true, 'dark');
+    await pick('[data-flux3-stack-tab]');
+    await sleep(60);
+    const a = await st();
+    await sleep(SETTLE_MS);
+    const b = await st();
+    await key('Escape', 60);
+    const c = await st();
+    await sleep(SETTLE_MS);
+    const d = await st();
+    const durs = Object.values(a.dur);
+    const midway = Object.keys(a.tf).filter((id) => a.tf[id] !== b.tf[id]).length;
+    return { durs: [...new Set(durs)], midway, home: { mid: c.transformed, end: d.transformed, marked: d.marked },
+      pass: durs.every((x) => secs(x.split(',')[0]) > 0.3) && midway >= 5 && c.transformed > 0 && d.transformed === 0 && d.marked === 0 };
+  };
+  const Fl = await testFly();
+  ok(`FLY at the default dial the nodes fly out (${Fl.midway} of 9 still in flight 60 ms in) and fly home on closing`, Fl.pass, JSON.stringify(Fl));
   const S0 = await testStill('dial0');
   ok('STILL Ambiance 0 = the still state: the Stack opens with no transition (0 s exactly, its transform final at once), the veil at once, no layer draw, and closing gives every node back at once', S0.pass, JSON.stringify(S0));
 
