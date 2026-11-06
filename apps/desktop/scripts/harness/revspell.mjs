@@ -122,11 +122,24 @@ const s1MutOther = s1v2([...sites, 'components/SomeNewPanel.tsx:<textarea classN
 const s1MutSameFile = s1v2([...sites, 'components/DestructiveConfirm.tsx:<textarea className="wz-destructive-note" spellCheck={false} />']);
 ok('S1 (mutants): a new spellCheck={false} in another file, or a second one in DestructiveConfirm.tsx on an element that is not the phrase input, turns the successor RED (both inputs really differ from the census)',
   s1Now.pass && s1MutOther.pass === false && s1MutSameFile.pass === false && s1MutOther.stray.length === 1 && s1MutSameFile.stray.length === 1, JSON.stringify({ s1MutOther, s1MutSameFile }));
-ok('S2: the only sites that can turn the checker ON are ForwardOnlyEditor (spellCheck={mode === \'revise\'}, gated) and JournalEntry.tsx (a pre-existing, untouched `spellCheck`; see the report — an unmounted component as far as a source search shows) — a THIRD host that enables it fails this run',
-  truthy.length === 2
-    && truthy.some((s) => s.startsWith('components/ForwardOnlyEditor.tsx:') && s.includes("spellCheck={mode === 'revise'}"))
-    && truthy.some((s) => s.startsWith('pages/JournalEntry.tsx:')),
-  JSON.stringify(truthy));
+// ---- PARKED - SUPERSEDED by #13 step 11 (Fable, Nov 5): pages/JournalEntry.tsx, the unrouted second host, is deleted as dead code, so the
+// count of two no longer holds. Kept VERBATIM below and no longer run; its record is in the parked block, and the successor follows.
+//
+// ok('S2: the only sites that can turn the checker ON are ForwardOnlyEditor (spellCheck={mode === \'revise\'}, gated) and JournalEntry.tsx (a pre-existing, untouched `spellCheck`; see the report — an unmounted component as far as a source search shows) — a THIRD host that enables it fails this run',
+//   truthy.length === 2
+//     && truthy.some((s) => s.startsWith('components/ForwardOnlyEditor.tsx:') && s.includes("spellCheck={mode === 'revise'}"))
+//     && truthy.some((s) => s.startsWith('pages/JournalEntry.tsx:')),
+//   JSON.stringify(truthy));
+// ------------------------------------------------------------------
+// the step 11 successor holds before the delete and after it: a site in a file step 11 deletes (imported by nothing) is set aside
+const STEP11_GONE = ['pages/JournalEntry.tsx'];
+const s2v2 = (list) => {
+  const live = list.filter((s) => !STEP11_GONE.some((g) => s.startsWith(`${g}:`)));
+  return live.length === 1 && live[0].startsWith('components/ForwardOnlyEditor.tsx:') && live[0].includes("spellCheck={mode === 'revise'}");
+};
+const s2Now = s2v2(truthy);
+ok('S2 [step 11 successor]: the ONLY live site that can turn the checker ON is ForwardOnlyEditor (spellCheck={mode === \'revise\'}, gated); JournalEntry.tsx, the one other, goes with step 11 - and a NEW host that enables it fails this run',
+  s2Now && s2v2([...truthy, 'components/SomeNewHost.tsx:<div contentEditable spellCheck={true} />']) === false, JSON.stringify(truthy));
 
 await withHarness(async (app) => {
   await freshProsePage(app, 1366, 768);
@@ -175,9 +188,13 @@ if (process.env.HARNESS_PARKED === '1') {
   const parked = [
     { name: 'PARKED (was "S1: NO editor host hardcodes spellCheck={false} any more") - the Title Page sheet\'s three fields (Oct 17) and the phrase input (Oct 19) are off by ruling; live successor: S1 [delete-for-good successor]', pass: s1Now.pass === true },
     { name: 'PARKED (was "S1 [page-templates successor]: ... the ONLY hardcoded-off sites are the Title Page sheet AUTHOR, CONTACT and WORD LINE fields") - the typed-confirmation phrase input is a fourth, by name; live successor: S1 [delete-for-good successor]', pass: s1Succ === false && s1Now.phrase === 1 },
+    { name: 'PARKED (was "S2: the only sites that can turn the checker ON are ForwardOnlyEditor ... and JournalEntry.tsx") - #13 step 11 deletes JournalEntry.tsx; live successor: S2 [step 11 successor]', pass: s2Now === true },
   ];
   for (const c of parked) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}`);
-  console.log(`\nREVSPELL PARKED: ${parked.every((c) => c.pass) ? 'PASS' : 'FAIL'} (${parked.length} checks) - HARNESS_PARKED=1 armed; TWO parks: S1 (no hardcoded-off site at all) and its page-templates successor (only the Title Page sheet); the live successor is S1 [delete-for-good successor].`);
+  // ---- PARKED - SUPERSEDED (#13 step 11, Fable Nov 5): this file now parks THREE checks - S1, its page-templates successor, and S2. Kept VERBATIM.
+  //
+  // console.log(`\nREVSPELL PARKED: ${parked.every((c) => c.pass) ? 'PASS' : 'FAIL'} (${parked.length} checks) - HARNESS_PARKED=1 armed; TWO parks: S1 (no hardcoded-off site at all) and its page-templates successor (only the Title Page sheet); the live successor is S1 [delete-for-good successor].`);
+  console.log(`\nREVSPELL PARKED: ${parked.every((c) => c.pass) ? 'PASS' : 'FAIL'} (${parked.length} checks) - HARNESS_PARKED=1 armed; THREE parks: S1 (no hardcoded-off site at all), its page-templates successor (only the Title Page sheet), and S2 (JournalEntry.tsx as a second host, deleted in #13 step 11); the live successors are S1 [delete-for-good successor] and S2 [step 11 successor].`);
 }
 const pass = checks.every((c) => c.pass);
 // eslint-disable-next-line no-console

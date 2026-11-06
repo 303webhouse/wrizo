@@ -171,18 +171,37 @@ await withHarness(async (app) => {
       boardHomeLabelShelf: t('boardHomeLabelShelf'),
     };
   })()`);
-  ok('S6a: every NEW deskLexicon term this fold introduces resolves to its exact expected value',
+  // SUPERSEDED (#13 step 11, Fable Nov 5) — createDrawerOpensNote and the
+  // three journalRoute* terms name retired UI no source reads (journalRoute*
+  // only the deleted JournalEntry.tsx), and step 11 deletes them from the
+  // lexicon; see the successor just below. Kept VERBATIM and no longer run.
+  // ok('S6a: every NEW deskLexicon term this fold introduces resolves to its exact expected value',
+  //   lex.createDrawerEyebrow === 'NEW DRAWER'
+  //     && lex.createDrawerTitleLabel === 'Drawer title (optional)'
+  //     && lex.createDrawerOpensNote === 'Opens the Drawer home — shape it as you go.'
+  //     && lex.drawerHomeTitleLabel === 'Drawer title'
+  //     && lex.backToDrawer === 'Back to Drawer'
+  //     && lex.domainLabelCreative === 'Creative Drawer'
+  //     && lex.domainLabelAcademic === 'Academic Drawer'
+  //     && lex.domainLabelProfessional === 'Professional Drawer'
+  //     && lex.journalRouteSendToDrawer === 'Send to a Drawer'
+  //     && lex.journalRouteEmptyDrawers === 'No Drawers yet.'
+  //     && lex.journalRoutePromoteDrawer === 'Promote to a new Drawer',
+  //   JSON.stringify(lex));
+  // a term step 11 deletes reads its value while it exists and no value once it is gone (so this holds before the delete and after it)
+  const s11 = (k, v) => lex[k] === v || lex[k] === undefined;
+  ok('S6a [step 11 successor]: every NEW deskLexicon term this fold introduces that is still in the lexicon resolves to its exact expected value; the four step 11 deletes (createDrawerOpensNote, journalRoute*) read theirs until they go',
     lex.createDrawerEyebrow === 'NEW DRAWER'
       && lex.createDrawerTitleLabel === 'Drawer title (optional)'
-      && lex.createDrawerOpensNote === 'Opens the Drawer home — shape it as you go.'
+      && s11('createDrawerOpensNote', 'Opens the Drawer home — shape it as you go.')
       && lex.drawerHomeTitleLabel === 'Drawer title'
       && lex.backToDrawer === 'Back to Drawer'
       && lex.domainLabelCreative === 'Creative Drawer'
       && lex.domainLabelAcademic === 'Academic Drawer'
       && lex.domainLabelProfessional === 'Professional Drawer'
-      && lex.journalRouteSendToDrawer === 'Send to a Drawer'
-      && lex.journalRouteEmptyDrawers === 'No Drawers yet.'
-      && lex.journalRoutePromoteDrawer === 'Promote to a new Drawer',
+      && s11('journalRouteSendToDrawer', 'Send to a Drawer')
+      && s11('journalRouteEmptyDrawers', 'No Drawers yet.')
+      && s11('journalRoutePromoteDrawer', 'Promote to a new Drawer'),
     JSON.stringify(lex));
   // SUPERSEDED (item word-diet, Nick) — boardHomeLabelJournal/Trash/Shelf
   // shorten to the bare place name ("Journal"/"Trash"/"Shelf"); see the
@@ -195,8 +214,17 @@ await withHarness(async (app) => {
   //     && lex.boardHomeLabelTrash === 'The Trash Board — has no drawer home'
   //     && lex.boardHomeLabelShelf === 'The Shelf Board — has no drawer home',
   //   JSON.stringify(lex));
-  ok('S6a [word-diet successor]: cascadePlanNoProject (MOCKUP, unchanged) still reads "drawer", and boardHomeLabelJournal/Trash/Shelf are now the bare place name',
-    lex.cascadePlanNoProject === 'File this page to a drawer first to plan around it.'
+  // SUPERSEDED (#13 step 11, Fable Nov 5) — cascadePlanNoProject (the old
+  // Plan panel's no-project lead, retired in big projects) is deleted from the
+  // lexicon; see the successor just below. Kept VERBATIM and no longer run.
+  // ok('S6a [word-diet successor]: cascadePlanNoProject (MOCKUP, unchanged) still reads "drawer", and boardHomeLabelJournal/Trash/Shelf are now the bare place name',
+  //   lex.cascadePlanNoProject === 'File this page to a drawer first to plan around it.'
+  //     && lex.boardHomeLabelJournal === 'Journal'
+  //     && lex.boardHomeLabelTrash === 'Trash'
+  //     && lex.boardHomeLabelShelf === 'Shelf',
+  //   JSON.stringify(lex));
+  ok('S6a [step 11 successor]: boardHomeLabelJournal/Trash/Shelf are the bare place name, and cascadePlanNoProject reads "drawer" until step 11 deletes it',
+    s11('cascadePlanNoProject', 'File this page to a drawer first to plan around it.')
       && lex.boardHomeLabelJournal === 'Journal'
       && lex.boardHomeLabelTrash === 'Trash'
       && lex.boardHomeLabelShelf === 'Shelf',
