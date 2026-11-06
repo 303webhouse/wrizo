@@ -56,3 +56,41 @@
 :root[data-flux3][data-theme='flux'] .desk-rail-item.active{ box-shadow:inset 0 0 0 1px var(--f3-cyan); }
 :root[data-flux3][data-theme='flux'] .desk-rail-item.active::before{ content:''; position:absolute; left:2px; top:2px; width:7px; height:7px;
   border:2px solid var(--f3-cyan); border-right:none; border-bottom:none; pointer-events:none; }
+
+/* ==== S2 ======================================================================================================================================== */
+/* ---- the Stack and the hologram (FluxStack.tsx): the nodes fly by their own inline transforms; this file dims what lies behind them ---- */
+:root[data-flux3][data-theme='flux'] [data-flux3-layer]{ transition:opacity .4s; }
+:root[data-flux3][data-theme='flux'] [data-flux3-stack='stack'] > [data-flux3-layer]{ opacity:.3; }   /* the circuit stays faint and still behind */
+:root[data-flux3][data-theme='flux'] [data-flux3-stack='holo'] > [data-flux3-layer]{ opacity:.12; }
+/* the centre node: a cyan outline at its brackets (square, no shadow) */
+:root[data-flux3][data-theme='flux'] .board-box[data-flux3-stack='centre'] > .flux3-node{ outline:1px solid var(--f3-cyan); outline-offset:3px; }
+/* the hologram's veil: over the board frame, under the nodes (its z is the Stack's base); the beam is a faint diffuse light, no projector line */
+:root[data-flux3][data-theme='flux'] .flux3-holo{ position:absolute; inset:0; pointer-events:none; opacity:0; visibility:hidden; transition:opacity .4s, visibility 0s linear .4s;
+  background:radial-gradient(70% 60% at 50% 55%, rgba(8, 40, 72, .82), rgba(1, 8, 17, .96) 70%); }
+:root[data-flux3][data-theme='flux'][data-page='light'] .flux3-holo{ background:radial-gradient(70% 60% at 50% 55%, rgba(232, 244, 249, .9), rgba(250, 252, 253, .97) 70%); }
+:root[data-flux3][data-theme='flux'] .flux3-holo[data-on='true']{ opacity:1; visibility:visible; pointer-events:auto; transition:opacity .4s; }
+:root[data-flux3][data-theme='flux'] .flux3-holo-beam{ position:absolute; left:50%; bottom:0; width:min(900px, 90%); height:62%; transform:translateX(-50%); pointer-events:none;
+  background:radial-gradient(50% 60% at 50% 100%, rgba(0, 194, 255, .16), rgba(0, 194, 255, .05) 55%, rgba(0, 194, 255, 0) 75%); }
+:root[data-flux3][data-theme='flux'][data-page='light'] .flux3-holo-beam{ background:radial-gradient(50% 60% at 50% 100%, rgba(0, 110, 145, .12), rgba(0, 110, 145, .04) 55%, rgba(0, 110, 145, 0) 75%); }
+:root[data-flux3][data-theme='flux'] .flux3-holo-count{ position:absolute; left:0; right:0; bottom:34px; text-align:center; pointer-events:none;
+  font-family:var(--font-chromeLabel); font-weight:600; font-size:11px; letter-spacing:.3em; color:var(--f3-quiet); }
+:root[data-flux3][data-theme='flux'] .flux3-holo-count b{ color:var(--f3-cyan-text); font-weight:600; }
+/* the still state: reduced motion or Ambiance 0 (data-still) - the veil and the layer change at once, as the nodes are placed at once */
+:root[data-flux3][data-theme='flux'] .flux3-holo[data-still='true']{ transition:none; }
+@media (prefers-reduced-motion: reduce){
+  :root[data-flux3][data-theme='flux'] .flux3-holo, :root[data-flux3][data-theme='flux'] [data-flux3-layer]{ transition:none; }
+}
+/* Show as: while the Stack is open it reads as the one chosen view (Live stays pressed for a screen reader: the Stack is a way of looking at Live) */
+:root[data-flux3][data-theme='flux'] .show-as:has([data-flux3-stack-tab][aria-pressed='true']) .show-as-btn[data-view='open'][aria-pressed='true']{ color:var(--text-mid); border-color:transparent; }
+
+/* ---- Sequence (the board's existing Storyboard view, which Flux names Sequence): lanes as buses, cards as nodes. Colour and overlays only: no
+   size, padding, margin, font or letter-spacing changes, so no lane or card moves under the flag (flux3-s2.mjs: SEQ-RECT) ---- */
+:root[data-flux3][data-theme='flux'] .board-storyboard .board-lane{ position:relative; border-color:var(--f3-hair); }
+:root[data-flux3][data-theme='flux'] .board-storyboard .board-lane::before{ content:''; position:absolute; left:-1px; top:-1px; width:10px; height:10px;
+  border:2px solid var(--f3-lime); border-right:none; border-bottom:none; pointer-events:none; }
+:root[data-flux3][data-theme='flux'] .board-storyboard .board-lane-title{ color:var(--f3-lime); }
+:root[data-flux3][data-theme='flux'] .board-storyboard .board-sb-card{ position:relative; border-color:var(--f3-hair); }
+:root[data-flux3][data-theme='flux'] .board-storyboard .board-sb-card::before,
+:root[data-flux3][data-theme='flux'] .board-storyboard .board-sb-card::after{ content:''; position:absolute; width:8px; height:8px; border:2px solid var(--f3-cyan); pointer-events:none; }
+:root[data-flux3][data-theme='flux'] .board-storyboard .board-sb-card::before{ left:-3px; top:-3px; border-right:none; border-bottom:none; }
+:root[data-flux3][data-theme='flux'] .board-storyboard .board-sb-card::after{ right:-3px; bottom:-3px; border-left:none; border-top:none; }

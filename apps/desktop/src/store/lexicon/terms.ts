@@ -110,6 +110,8 @@ export type DeskTermId =
   | 'boardThreadGrab' | 'boardThreadPrefix' | 'boardThreadUntitled' | 'boardFooterToggle'
   // FLUX3 S1 - the Schema's node records and readouts (src/flux3/, behind ?flux3=1): new words only, no rename; TOOLS' lexicon pass sets their values
   | 'flux3LinkOne' | 'flux3LinkMany' | 'flux3ChecksumOk' | 'flux3ReadLevel' | 'flux3ReadZoom' | 'flux3ReadLast' | 'flux3KindPreset'
+  // FLUX3 S2 - the Schema's Stack and hologram (src/flux3/FluxStack.tsx, behind ?flux3=1): the Stack button's word and the level readout's two words
+  | 'flux3ViewStack' | 'flux3ViewHologram'
   // the right-click menus, the "Send to Trash?" dialog, the Settings row and the toasts [deskLexicon §5]
   | 'ctxDelete' | 'ctxDeleteBoard' | 'ctxUngroup' | 'deleteDialogTitle' | 'deleteDialogPurgeTitle' | 'deleteDialogCancel' | 'deleteDialogConfirm' | 'deleteDialogDontAsk'
   | 'ctxEmptyTrash' | 'emptyTrashQuestionOne' | 'emptyTrashQuestionMany' | 'purgedElsewhere' | 'destructiveTypeToGo' | 'destructiveGo'

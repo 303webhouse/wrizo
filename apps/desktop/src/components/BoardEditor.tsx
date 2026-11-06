@@ -1310,7 +1310,7 @@ export function BoardEditor({ id }: { id: string }) {
         onPointerUp={onCanvasHandleUp}
         onPointerCancel={onCanvasHandleUp}
       />
-      {FLUX3 && <FluxSchema wrapRef={wrapRef} canvasRef={canvasRef} nodes={sorted} connections={connections} selectedId={selectedId} pageWidthPx={pageWidthPx} labelFor={boxLabel} />}
+      {FLUX3 && <FluxSchema wrapRef={wrapRef} canvasRef={canvasRef} boxes={boxes} nodes={sorted} connections={connections} selectedId={selectedId} pageWidthPx={pageWidthPx} labelFor={boxLabel} />}
     </div>
   );
 
