@@ -71,7 +71,8 @@ function Doc({ paperRef, entryId }: Props) {
       n += 1;
       const r = row.getBoundingClientRect();
       if (r.bottom <= sr.top || r.top >= sr.bottom) return;   // only what she can see beside it
-      out.push({ n, words: countGoalWords(text), y: Math.round(r.top - hr.top) });
+      // a paragraph whose first line has scrolled above the page's text keeps its row at the text's top edge, beside what is left of it
+      out.push({ n, words: countGoalWords(text), y: Math.round(Math.max(r.top, sr.top) - hr.top) });
     });
     setRows(out);
     setFrame({ left: pr.left - hr.left, right: pr.right - hr.left, top: pr.top - hr.top, height: pr.height, zoomed: host.dataset.zoom === 'true' });

@@ -7,8 +7,10 @@
 //   - ANY activity is not idle (q4): a key, a pointer moving or pressing, the wheel, a scroll, a selection change. It stops the glitch AT ONCE
 //     (every overlay word removed in the same task: whole within 300 ms) and starts the stillness over.
 //   - It pauses while the window is hidden (and coming back counts as activity).
-//   - At most 3 changes a second: a word appears at most once per MIN_GAP_MS and shows for SHOW_MS (>= 300 ms), so appearances and resolutions
-//     together never exceed three in any second; every appearance also asks the global flash budget (store/flashBudget.ts) first.
+//   - At most 3 changes a second: a word appears at most once per MIN_GAP_MS and resolves SHOW_MS later. Four consecutive changes (appear,
+//     resolve, appear, resolve, or resolve, appear, resolve, appear) then span at least min(gap + show, 2 x gap - show) = 1200 ms with these
+//     numbers (and > 1000 ms even with a resolve timer 200 ms late), so no second holds four. Every appearance also asks the global flash budget
+//     (store/flashBudget.ts) first. (700 ms was not enough: Actions measured four in a second.)
 //   - Off under reduced motion, at Ambiance 0, and with Flicker off.
 import { useEffect, type RefObject } from 'react';
 import { useTheme } from '../store/theme';
@@ -18,7 +20,7 @@ import { tryFlash } from '../store/flashBudget';
 
 export const IDLE_GATE_S = 45;
 export const RAMP_S = 180;
-export const MIN_GAP_MS = 700;      // the closest two appearances can come (at the top of the ramp)
+export const MIN_GAP_MS = 900;      // the closest two appearances can come (at the top of the ramp)
 const START_GAP_MS = 2600;          // the first minute: one word now and then
 export const SHOW_MS = 600;         // a word resolves within ~600 ms
 const TICK_MS = 100;

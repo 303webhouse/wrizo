@@ -151,9 +151,11 @@
 :root[data-flux3][data-theme='flux'] .wz-sliver-grip[aria-expanded='true']::after,
 :root[data-flux3][data-theme='flux'] .wz-tutor-grip[aria-expanded='true']::after{ content:''; position:absolute; top:50%; width:22px; height:5px; margin-top:-2px; pointer-events:none;
   background:linear-gradient(var(--f3-room-cyan), var(--f3-room-cyan)) 0 50% / 100% 1px no-repeat; }
-:root[data-flux3][data-theme='flux'] .wz-sliver-grip[aria-expanded='true']::after{ left:100%; background:linear-gradient(var(--f3-room-cyan), var(--f3-room-cyan)) 0 50% / 100% 1px no-repeat,
-  linear-gradient(var(--f3-room-cyan), var(--f3-room-cyan)) 100% 50% / 5px 5px no-repeat; }
-:root[data-flux3][data-theme='flux'] .wz-tutor-grip[aria-expanded='true']::after{ right:100%; background:linear-gradient(var(--f3-room-cyan), var(--f3-room-cyan)) 0 50% / 100% 1px no-repeat,
+/* an open hand's panel stands on the far side of its tab from the page (TOOLS: left of its tab; the right hand: right of its tab), so the line
+   runs out of the tab, away from the page, into the box */
+:root[data-flux3][data-theme='flux'] .wz-sliver-grip[aria-expanded='true']::after{ right:100%; background:linear-gradient(var(--f3-room-cyan), var(--f3-room-cyan)) 0 50% / 100% 1px no-repeat,
   linear-gradient(var(--f3-room-cyan), var(--f3-room-cyan)) 0 50% / 5px 5px no-repeat; }
+:root[data-flux3][data-theme='flux'] .wz-tutor-grip[aria-expanded='true']::after{ left:100%; background:linear-gradient(var(--f3-room-cyan), var(--f3-room-cyan)) 0 50% / 100% 1px no-repeat,
+  linear-gradient(var(--f3-room-cyan), var(--f3-room-cyan)) 100% 50% / 5px 5px no-repeat; }
 :root[data-flux3][data-theme='flux'] .wz-sliver-panel[data-open='true'],
 :root[data-flux3][data-theme='flux'] .wz-tutor-panel[data-open='true']{ box-shadow:inset 0 0 0 1px var(--f3-room-cyan); }

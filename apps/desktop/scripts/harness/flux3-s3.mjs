@@ -14,10 +14,11 @@
 //   GUTTER every paragraph's row: its number, its words (the app's own rule: a token with a letter or digit), beside its first line (+-2 px),
 //          and wholly outside the page's left edge.
 //   PORTS  one per link, named for it, straddling the page's right edge; a press draws the box (the name; Dock; Connect another; Disconnect).
-//   TYPE   the recede rule and zero work while keys land: while she types the gutter and the ports are at 0 and the gutter measures NOTHING
-//          (its count is the same at the first key and the last); the Glitch bar changes no glyph while keys land. On the pause the gutter is back
-//          and measured again (the new words counted), and the unit she filled glitches and resolves, every change granted by the flash budget,
-//          never more than 3 in any second.
+//   TYPE   the recede rule and zero work while keys land: the gutter and the ports go and come back WITH the page's own chrome (the app's rule:
+//          away while she types, back on her intent, a pointer moving), and the gutter measures NOTHING while keys land (its count is the same at
+//          the first key and the last); the Glitch bar changes no glyph while keys land. On the pause the gutter is measured again (the new words
+//          counted), and the unit she filled glitches and resolves, every change granted by the flash budget, never more than 3 in any second.
+//          GUTTER (scrolled): a paragraph whose first line scrolled above the text keeps its row at the text's top edge.
 //   GOAL   crossing the goal: the units hand to orange and read CHECKPOINT.
 //   IDLE   the idle glitch (the idle clock told it has been still for 400 s, so the ramp is full): words are covered and resolved, and the page's
 //          text, selection and word count never change; never a word on the caret's line; at most 3 changes (appearances + resolutions) in
@@ -94,7 +95,12 @@ const INSTRUMENT = `(() => {
     const page = document.querySelector('.mode-page'), ed = document.querySelector('.forward-only-editor');
     const gut = document.querySelector('[data-flux3-gutter]'), ports = document.querySelector('[data-flux3-ports]');
     const gb = document.querySelector('[data-flux3-glitchbar]'), box = document.querySelector('[data-flux3-port-box]');
-    const grip = (sel) => { const g = document.querySelector(sel); return g ? { r: rr(g.getBoundingClientRect()), glyph: g.textContent, open: g.getAttribute('aria-expanded'), after: getComputedStyle(g, '::after').content } : null; };
+    // a tab: its rect, arrow and state; its line's content, which way the line runs (a positioned pseudo's left resolves to px: negative = it
+    // runs left of the tab), and which side of the tab its open panel stands
+    const grip = (sel, panelSel) => { const g = document.querySelector(sel); if (!g) return null; const a = getComputedStyle(g, '::after'), p = document.querySelector(panelSel);
+      const gr = g.getBoundingClientRect(), pr = p ? p.getBoundingClientRect() : null;
+      return { r: rr(gr), glyph: g.textContent, open: g.getAttribute('aria-expanded'), after: a.content, lineDir: parseFloat(a.left) < 0 ? 'left' : 'right',
+        panelSide: pr && pr.width ? (pr.left + pr.width / 2 < gr.left + gr.width / 2 ? 'left' : 'right') : null }; };
     const sel = getSelection();
     return {
       flag: document.documentElement.hasAttribute('data-flux3'), theme: document.documentElement.getAttribute('data-theme'),
@@ -109,7 +115,9 @@ const INSTRUMENT = `(() => {
       progressBar: !!document.querySelector('.desk-frame-instrument .mode-progress'),
       idleLayer: !!document.querySelector('[data-flux3-idle]'), meter: !!document.querySelector('.glitch-meter-layer'),
       idleLive: document.querySelectorAll('[data-flux3-idle] .flux3-idle-word').length,
-      sliver: grip('.wz-sliver-grip'), tutor: grip('.wz-tutor-grip'),
+      sliver: grip('.wz-sliver-grip', '.wz-sliver-panel'), tutor: grip('.wz-tutor-grip', '.wz-tutor-panel'),
+      chrome: (() => { const c = document.querySelector('.mode-page .flux-readouts'); return c ? +getComputedStyle(c).opacity : null; })(),
+      scrollTop: (() => { const s = document.querySelector('.mode-page .mode-scroll'); return s ? +s.getBoundingClientRect().top.toFixed(2) : null; })(),
       sel: sel && sel.rangeCount ? { s: sel.toString(), r: (() => { const x = sel.getRangeAt(0).getClientRects()[0]; return x ? rr(x) : null; })() } : null,
       served: ([...document.scripts].map((s) => s.getAttribute('src') || '').find((s) => /index-/.test(s)) || '').replace(/^.*\\//, ''),
     };
@@ -144,7 +152,7 @@ const INSTRUMENT = `(() => {
 
 const MUTANTS = {
   gutterwork: [/=700,(\w+)=72,(\w+)=26,(\w+)=24/g, '=0,$1=72,$2=26,$3=24'],
-  rate: [/=45,(\w+)=180,(\w+)=700,/g, '=45,$1=180,$2=0,'],
+  rate: [/=45,(\w+)=180,(\w+)=900,/g, '=45,$1=180,$2=0,'],
   stop: [/\(\)=>\{(\w+)=performance\.now\(\),(\w+)\.size&&(\w+)\(\)\}/g, '()=>{$1=performance.now()}'],
   caret: [/(\w+)&&(\w+)\.height\?\[(\w+)\.top-2,(\w+)\.bottom\+2\]:null/g, 'null'],
   pause: [/performance\.now\(\)-(\w+)<(\w+)\)return;(\w+)=(\w+)\.current\.shift\(\)/g, 'performance.now()-$1<0)return;$3=$4.current.shift()'],
@@ -309,8 +317,13 @@ try { await withHarness(async (app) => {
     const after = await st();
     const glitchAfter = await ev(`window.__f3.glitch.filter((t) => t > ${span.b})`);
     const grants = await ev("window.__f3.flashes('f3-glitchbar')");
+    // the page's own chrome comes back on her intent (a pointer moving), not on a timer: summon it, then read the gutter and the ports beside it
+    await app.mouseMove(400, 500); await sleep(120); await app.mouseMove(430, 530);
+    await sleep(2600);
+    const back = await st();
     const r = { keys: span.n, measuresFirst: s0.gutter && s0.gutter.measures, measuresMid: mid && mid.gutter && mid.gutter.measures, measuresLast: last.gutter && last.gutter.measures,
-      measuresAfter: after.gutter && after.gutter.measures, opMid: mid && mid.gutter && [mid.gutter.op, mid.ports && mid.ports.op], opAfter: after.gutter && [after.gutter.op, after.ports && after.ports.op],
+      measuresAfter: after.gutter && after.gutter.measures, opMid: mid && mid.gutter && [mid.gutter.op, mid.ports && mid.ports.op, mid.chrome], opAfter: after.gutter && [after.gutter.op, after.ports && after.ports.op, after.chrome],
+      opBack: back.gutter && [back.gutter.op, back.ports && back.ports.op, back.chrome],
       filled: [s0.glitchbar && s0.glitchbar.filled, after.glitchbar && after.glitchbar.filled], glitchDuring, glitchAfter: glitchAfter.length, grants: grants.length, grantsPerSec: maxIn1s(grants),
       lastRowWords: after.gutter && after.gutter.rows.slice(-1)[0] };
     r.zeroWork = r.measuresFirst === r.measuresLast && r.measuresMid === r.measuresFirst;
@@ -319,14 +332,24 @@ try { await withHarness(async (app) => {
   };
   const Ty = await testType();
   ok(`TYPE zero work while ${Ty.keys} keys land: the gutter measured nothing (first key to last), the Glitch bar changed no glyph`, Ty.pass, JSON.stringify(Ty));
-  ok('TYPE the recede rule: the gutter and the ports at 0 while she types, back on the pause, and measured again (her new words counted)',
-    Ty.opMid && Ty.opMid[0] === 0 && Ty.opMid[1] === 0 && Ty.opAfter && Ty.opAfter[0] === 1 && Ty.opAfter[1] === 1 && Ty.measuresAfter > Ty.measuresLast && Ty.lastRowWords && /\b3[34] words$/.test(Ty.lastRowWords.text.trim()),
+  // the recede rule is the page's own (data-chrome-receded: away while she types, back on her intent): the gutter and the ports move WITH the
+  // page's chrome (its readouts) - at 0 together while she types, still together after the pause, and back together when she reaches
+  const together = (o) => !!o && o[0] === o[2] && o[1] === o[2];
+  ok('TYPE the recede rule: the gutter and the ports go and come back with the page\'s own chrome (0 while she types, back when she reaches), and are measured again on the pause (her new words counted)',
+    together(Ty.opMid) && Ty.opMid[2] === 0 && together(Ty.opAfter) && together(Ty.opBack) && Ty.opBack[2] === 1 && Ty.measuresAfter > Ty.measuresLast && Ty.lastRowWords && /\b3[34] words$/.test(Ty.lastRowWords.text.trim()),
     JSON.stringify(Ty));
   ok('TYPE the unit she filled glitches on the pause and resolves, every change granted by the flash budget, at most 3 in any second',
     Ty.filled[0] === 2 && Ty.filled[1] === 3 && Ty.glitchAfter >= 1 && Ty.grants >= 1 && Ty.grantsPerSec <= 3, JSON.stringify(Ty));
 
   // ---- GOAL ------------------------------------------------------------------------------------------------------------------------------------
   await open(true, 'dark', [1920, 1080], { id: GOALPAGE });
+  // GUTTER-SCROLL: one long paragraph, scrolled so its first line is above the text's top edge: its row stays at that edge, beside what is left
+  const scrolled = await ev("(() => { const s = document.querySelector('.mode-page .mode-scroll'); if (!s || s.scrollHeight <= s.clientHeight + 60) return false; s.scrollTop = 60; return true; })()");
+  await sleep(700);
+  const gs = await st();
+  const row1 = gs.gutter && gs.gutter.rows[0];
+  ok('GUTTER a paragraph scrolled past the top keeps its row at the text\'s top edge (never above the page\'s text)',
+    scrolled && !!row1 && gs.scrollTop !== null && row1.top >= gs.scrollTop - 1 && row1.top <= gs.scrollTop + 4, JSON.stringify({ scrolled, row1, scrollTop: gs.scrollTop }));
   await ev("(() => { const e = document.querySelector('.forward-only-editor'); if (!e) return; e.focus(); const s = getSelection(); s.selectAllChildren(e); s.collapseToEnd(); })()");
   await ev('window.__f3.watchBar()');
   for (const ch of ' done ok') { await app.typeKeys(ch); await sleep(60); }
@@ -413,14 +436,22 @@ try { await withHarness(async (app) => {
     await toggleHand();
     const opened = await st();
     await toggleHand();
-    return { closed: { s: closed.sliver, t: closed.tutor }, opened: { s: opened.sliver } };
+    const tp = await centreOf('.wz-tutor-grip');
+    if (tp) { await click(tp.x, tp.y); await app.mouseMove(8, 8); await sleep(900); }
+    const openedT = await st();
+    if (tp) { const tq = await centreOf('.wz-tutor-grip'); if (tq) { await click(tq.x, tq.y); await app.mouseMove(8, 8); await sleep(700); } }
+    return { closed: { s: closed.sliver, t: closed.tutor }, opened: { s: opened.sliver, t: openedT.tutor } };
   };
   const hOff = await hands(false), hOn = await hands(true);
   const shape = (g) => g && { r: g.r, glyph: g.glyph, open: g.open };
-  ok('HANDS the opener tabs keep today\'s shape, place and arrow (flag off vs on, closed and open); under the flag an open tab draws its line',
+  ok('HANDS the opener tabs keep today\'s shape, place and arrow (flag off vs on, closed and open, both hands); under the flag an open tab draws its line',
     !!hOff.closed.s && same(shape(hOff.closed.s), shape(hOn.closed.s)) && same(shape(hOff.closed.t), shape(hOn.closed.t)) && same(shape(hOff.opened.s), shape(hOn.opened.s))
-      && hOn.opened.s.open === 'true' && hOn.opened.s.after !== 'none' && hOff.opened.s.after === 'none' && hOn.closed.s.after === 'none',
+      && same(shape(hOff.opened.t), shape(hOn.opened.t)) && hOn.opened.s.open === 'true' && hOn.opened.t.open === 'true'
+      && hOn.opened.s.after !== 'none' && hOn.opened.t.after !== 'none' && hOff.opened.s.after === 'none' && hOn.closed.s.after === 'none',
     JSON.stringify({ off: hOff, on: hOn }));
+  ok('HANDS each open tab\'s line runs into its own panel (away from the page), never into the page',
+    hOn.opened.s.panelSide !== null && hOn.opened.s.lineDir === hOn.opened.s.panelSide && hOn.opened.t.panelSide !== null && hOn.opened.t.lineDir === hOn.opened.t.panelSide,
+    JSON.stringify({ tools: hOn.opened.s && [hOn.opened.s.lineDir, hOn.opened.s.panelSide], right: hOn.opened.t && [hOn.opened.t.lineDir, hOn.opened.t.panelSide] }));
 
   // ---- DISCONNECT ------------------------------------------------------------------------------------------------------------------------------
   await open(true, 'dark');
