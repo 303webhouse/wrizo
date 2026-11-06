@@ -80,7 +80,9 @@ function makeLayer(cls: string, alpha: string | null): { layer: HTMLDivElement; 
 
 /** The room's layer, appended to <body>; and the page's, kept inside whichever .mode-page is on screen. */
 export function mountPergola(): void {
-  const room = makeLayer('arbor2-pergola', null);
+  // DIAGNOSTIC TEST BUILD (never shipped): the room draws the bitmap too, at the file's own 20%
+  const room = (() => { const b = makeBitmapLayer('0.2'); b.layer.className = 'arbor2-pergola'; b.layer.removeAttribute('data-bitmap');
+    const d = b.drift.style; d.backgroundRepeat = 'no-repeat'; d.backgroundPosition = 'center'; d.backgroundSize = 'cover'; return b; })();
   document.body.appendChild(room.layer);
 
   // r21 (spec §18.6, Nick: "the pergola shade crosses any overlapping open menu, at the PAGE's subtle strength"): a copy at the page's strength in
@@ -124,7 +126,8 @@ export function mountPergola(): void {
     for (const h of now) {
       if (copies.has(h)) continue;
       // the page keeps r20's live copy; every other surface draws the shared bitmap
-      const c = h.matches(HOSTS[0]) ? makeLayer('arbor2-pagesh', PAGE_ALPHA) : makeBitmapLayer(PAGE_ALPHA);
+      // DIAGNOSTIC TEST BUILD: the page's copy is a bitmap copy too
+      const c = makeBitmapLayer(PAGE_ALPHA);
       if (room.layer.hasAttribute('data-asleep')) c.layer.setAttribute('data-asleep', 'true');
       h.appendChild(c.layer); copies.set(h, c); ro.observe(h); place(h, c);
       requestAnimationFrame(() => requestAnimationFrame(() => sync(c.layer)));
