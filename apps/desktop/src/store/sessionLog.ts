@@ -12,7 +12,6 @@ const STALL_MS = 10_000;
 // Desk→ink funnel (Slice 2): the Desk stamps this on mount; the NEXT session that
 // RECORDS consumes it (one-shot — cleared on consume, never persisted app-side).
 let deskOpenedAt: string | null = null;
-export function markDeskOpened(): void { deskOpenedAt = new Date().toISOString(); }
 export function consumeDeskOpened(): string | null {
   const v = deskOpenedAt;
   deskOpenedAt = null;

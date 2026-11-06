@@ -83,8 +83,3 @@ export function lineLedger(elements: ScriptEl[]): LedgerEntry[] {
     mayBreak: el.t === 'action',
   }));
 }
-
-// total lines, with the first entry contributing no space above it (the paginator applies the same rule at every page top) [scriptLedger §8]
-export function totalLines(ledger: LedgerEntry[]): number {
-  return ledger.reduce((n, e, i) => n + e.lines + (i === 0 ? 0 : e.spaceBefore), 0);
-}

@@ -270,32 +270,10 @@
 .script-autocomplete-opt{ padding:4px 10px; color:var(--text-mid); white-space:nowrap; }
 .script-autocomplete-opt[data-highlighted="true"]{ color:var(--choice); background:var(--ink-800); }
 
-.wz-gate{ position:absolute; inset:0; display:flex; align-items:flex-start; justify-content:center; padding:15vh 8vw 12vh;
-  opacity:0; pointer-events:none; transition:opacity .9s ease; z-index:4; }
-.wz-gate.show{ opacity:1; pointer-events:auto; }
-.wz-writewrap{ width:min(720px,94vw); }
-.wz-eyebrow{ font-family:var(--wz-ui); font-size:.74rem; letter-spacing:.18em; text-transform:uppercase; color:var(--wz-ink-dim); }
-.wz-goalhint{ opacity:0; margin-bottom:1.4rem; transition:opacity 1s ease; }
-.wz-gate.show .wz-goalhint{ opacity:.5; }
 
 /* the mounted ForwardOnlyEditor, dressed for the dark surface (v6 .write) */
-.wz-gate .forward-only-editor{ font-family:var(--wz-text); font-weight:400; font-size:clamp(1.3rem,2.6vw,1.65rem);
-  line-height:1.72; color:var(--wz-ink); caret-color:var(--wz-ink); }
-.wz-gate .forward-only-editor .fo-struck{ color:var(--wz-ink-dim); opacity:.55; text-decoration:line-through;
-  text-decoration-thickness:.07em; text-decoration-color:rgba(140,128,112,.85); }
-.wz-gate .fo-placeholder{ color:var(--wz-whisper); font-style:italic; font-family:var(--wz-text);
-  font-size:clamp(1.3rem,2.6vw,1.65rem); line-height:1.72; }
 
-.wz-track{ margin-top:1.6rem; width:100%; height:3px; background:rgba(140,128,112,.18); overflow:hidden; opacity:0; transition:opacity .7s ease; }
-.wz-gate.show .wz-track{ opacity:1; }
-.wz-trackfill{ height:100%; width:0%; background:var(--wz-ink-dim);
-  transition:width .7s cubic-bezier(.3,.7,.3,1), background .7s ease, box-shadow .7s ease; }
-.wz-trackfill.done{ background:var(--wz-orange); box-shadow:0 0 12px rgba(255,152,0,.6); }
 
-.wz-bloom{ position:absolute; left:50%; top:50%; width:10px; height:10px; transform:translate(-50%,-50%); border-radius:50%;
-  pointer-events:none; opacity:0; z-index:7;
-  background:radial-gradient(circle, rgba(255,152,0,.6), rgba(255,152,0,.18) 40%, rgba(255,152,0,0) 70%); }
-.wz-bloom.go{ animation:wz-bloom 1.6s cubic-bezier(.2,.7,.2,1) forwards; }
 @keyframes wz-bloom{ 0%{opacity:0; width:10px; height:10px;} 16%{opacity:1;} 100%{opacity:0; width:175vmax; height:175vmax;} }
 
 .wz-screen{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -326,13 +304,6 @@
 .wz-link:hover{ color:var(--wz-ink); }
 /* F3 — Catch: the zero-decision capture. A bordered quiet button (tan, NEVER
    orange — the orange budget stays on the return card's primary) + a kbd hint. */
-.wz-catch{ font-family:var(--wz-ui); font-weight:600; font-size:.92rem; color:var(--wz-ink-dim);
-  background:transparent; border:1px solid var(--wz-whisper); border-radius:0; padding:.55rem 1rem;
-  cursor:pointer; display:inline-flex; align-items:center; gap:.55rem; transition:color .25s, border-color .25s; }
-.wz-catch:hover{ color:var(--wz-ink); border-color:var(--wz-ink-dim); }
-.wz-catch:focus-visible{ outline:1px solid var(--wz-orange); outline-offset:3px; }
-.wz-kbd{ font-family:var(--wz-ui); font-size:.62rem; letter-spacing:.06em; color:var(--wz-whisper);
-  border:1px solid var(--wz-whisper); border-radius:0; padding:1px 5px; }
 
 .wz-btn{ font-family:var(--wz-ui); font-weight:600; font-size:.98rem; letter-spacing:.02em; padding:.8rem 1.6rem; border-radius:0;
   border:1px solid var(--wz-orange-line); background:transparent; color:var(--wz-orange); cursor:pointer;
@@ -342,10 +313,9 @@
 .wz-btn:disabled{ opacity:.5; cursor:default; }
 .wz-btn:focus-visible, .wz-field:focus-visible{ outline:1px solid var(--wz-orange); outline-offset:3px; }
 
-@media (max-width:540px){ .wz-mark{ width:60px; } .wz-gate{ padding-top:12vh; } }
+@media (max-width:540px){ .wz-mark{ width:60px; } }
 @media (prefers-reduced-motion:reduce){
-  .wz-home *{ animation:none!important; transition:opacity .2s linear!important; }
-  .wz-bloom.go{ opacity:0!important; }   /* bloom suppressed; the word-echo still lands */
+  .wz-home *{ animation:none!important; transition:opacity .2s linear!important; }   /* bloom suppressed; the word-echo still lands */
 }
 
 /* HB1 — Arrival (components/Arrival.tsx). Composes .wz-home's warm-dark
@@ -377,16 +347,7 @@
 /* Desk (authed home) — v6 "launch" aesthetic. Reuses .wz-home tokens. A top-left
    letterhead (name in Crimson over "Writing Desk" in Figtree) + left-aligned
    actions below. */
-.wz-desk{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center;
-  justify-content:center; text-align:center; gap:1.2rem; padding:clamp(2rem,9vh,5rem) clamp(1.5rem,8vw,5rem); }
-.wz-deskhead{ display:flex; flex-direction:column; line-height:1.04; align-items:center; }
-.wz-deskname{ font-family:var(--wz-text); font-style:italic; font-size:clamp(1.3rem,3vw,1.9rem); color:var(--wz-ink-dim); }
-.wz-desktitle{ font-family:var(--wz-ui); font-weight:700; font-size:clamp(2.2rem,6vw,3.6rem); letter-spacing:-.02em; color:var(--wz-ink); }
 /* Hand-drawn "Writing Desk" title (white-transparent PNG) — replaces the type. */
-.wz-desktitle-img{ display:block; width:clamp(260px,60vw,440px); height:auto; margin-top:.15rem;
-  filter:drop-shadow(0 4px 18px rgba(0,0,0,.45)); }
-.wz-desksub{ font-family:var(--wz-text); color:var(--wz-ink-dim); font-size:1.06rem; margin-bottom:.5rem; }
-.wz-desk .wz-journal-link{ align-self:flex-start; }
 /* ITEM arbor-quiet-brass — default is outline + text, no fill (same law as every other
    choice state); this IS the screen's one main action every place it renders (Arrival's
    Write, Desk's Start something / Keep writing, the logout sheet's Stay signed in, the
@@ -395,53 +356,16 @@
 .wz-btn.wz-primary{ background:none; color:var(--wz-orange); border-color:var(--wz-orange); border-width:1.5px;
   font-weight:700; padding:.92rem 2.2rem; font-size:1.05rem; }
 .wz-btn.wz-primary:hover{ background:none; border-color:#ffab33; color:#ffab33; }
-.wz-dot{ color:var(--wz-whisper); }
 
-.wz-recent{ display:flex; flex-direction:column; gap:0; width:min(420px,90vw); margin-top:1.2rem; }
-.wz-recent-row{ display:flex; justify-content:space-between; align-items:baseline; gap:1rem;
-  padding:.6rem .2rem; background:none; border:none; border-bottom:1px solid var(--wz-whisper);
-  font-family:var(--wz-ui); cursor:pointer; text-align:left; transition:opacity .2s; }
-.wz-recent-row:hover{ opacity:.75; }
-.wz-recent-title{ color:var(--wz-ink); font-size:.95rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.wz-recent-when{ color:var(--wz-ink-dim); font-size:.8rem; flex-shrink:0; }
-.wz-journal-link{ margin-top:.9rem; align-self:center; }
 
 /* Drawers tree on the Desk (Drawers D1) — sits where the recent list was. */
-.wz-drawers{ width:min(560px,92vw); margin-top:1.3rem; display:flex; flex-direction:column; gap:.9rem; }
-.wz-desk-links{ display:flex; align-items:center; gap:.7rem; align-self:center; }
 
-.wz-customize{ margin-top:.7rem; position:relative; display:inline-block; }
-.wz-cust-link{ font-family:var(--wz-ui); color:var(--wz-whisper); font-size:.85rem; cursor:help; opacity:.75; border-bottom:1px dotted var(--wz-whisper); }
-.wz-tip{ font-family:var(--wz-ui); position:absolute; left:50%; bottom:calc(100% + 12px); transform:translateX(-50%) translateY(5px);
-  width:max-content; max-width:270px; background:var(--wz-lift); border:1px solid var(--wz-whisper); color:var(--wz-ink-dim);
-  font-size:.82rem; line-height:1.5; padding:.65rem .85rem; opacity:0; pointer-events:none; transition:opacity .25s, transform .25s;
-  text-align:center; z-index:10; }
-.wz-customize:hover .wz-tip, .wz-customize:focus .wz-tip, .wz-customize:focus-within .wz-tip{ opacity:1; transform:translateX(-50%) translateY(0); }
-.wz-tip b{ color:var(--wz-ink); font-weight:600; }
 
 /* The return card (F2) — the Desk becomes a mirror of the writer's own last
    sentence. Square corners, panel bg, 1px line border; orange lands ONLY on the
    action and the tag. Renders purely from the typed resume pointer. */
-.wz-return{ width:min(480px,92vw); text-align:left; background:var(--wz-lift); border:1px solid var(--wz-whisper);
-  padding:1.1rem 1.35rem .95rem; margin-top:.4rem; }
-.wz-return-top{ display:flex; align-items:baseline; justify-content:space-between; gap:1rem; }
-.wz-return-eyebrow{ font-family:var(--wz-ui); font-size:.6rem; letter-spacing:.16em; color:var(--wz-whisper); }
-.wz-return-tag{ font-family:var(--wz-ui); font-size:.6rem; letter-spacing:.11em; color:var(--wz-orange); opacity:.85; text-align:right; }
-.wz-return-crumb{ font-family:var(--wz-ui); font-size:.78rem; color:var(--wz-ink-dim); margin:.55rem 0 .7rem; min-height:1em; }
-.wz-return-crumb b{ color:var(--wz-ink); font-weight:600; }
-.wz-return-sep{ color:var(--wz-whisper); }
-.wz-return-line{ font-family:var(--wz-text); font-style:italic; font-size:1.2rem; line-height:1.5; color:var(--wz-ink);
-  margin-bottom:1rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-.wz-return-row{ display:flex; align-items:center; justify-content:space-between; gap:.9rem; }
-.wz-return-when{ font-family:var(--wz-ui); font-size:.72rem; color:var(--wz-whisper); }
 /* ITEM arbor-quiet-brass — same glow removal as the base .wz-primary rule above;
    this variant had its own separate box-shadow declaration, so it needed its own fix. */
-.wz-btn.wz-primary.wz-return-go{ margin-top:0; padding:.62rem 1.4rem; font-size:.95rem; }
-.wz-return-alt{ margin-top:.75rem; min-height:1em; }
-.wz-return-altlink{ font-family:var(--wz-ui); font-size:.76rem; color:var(--wz-ink-dim); background:none; border:none;
-  cursor:pointer; padding:0; text-decoration:underline; text-underline-offset:3px; transition:color .25s; }
-.wz-return-altlink:hover{ color:var(--wz-ink); }
-.wz-return-note{ font-family:var(--wz-ui); font-size:.76rem; color:var(--wz-whisper); }
 
 /* Warm-start landing glow (F2 Slice 3) — a render-only overlay measured over the
    last paragraph. NEVER inside the editable DOM. Releases (settles to transparent)

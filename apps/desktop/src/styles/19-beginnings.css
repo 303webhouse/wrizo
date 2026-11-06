@@ -86,7 +86,6 @@
 /* ITEM 83 M6 (R13.ii) — the board's Place-page list. Scrollable but bounded:
    a limit STOPS, it never relocates, so the list caps its own height rather
    than pushing the drawer's other zones off. */
-.wz-place-page{ display:flex; flex-direction:column; gap:6px; }
 /* Open Pages shows three rows and scrolls: a viewport, not a cap, so the fourth page stays reachable; three rows of about 27px plus a sliver of the fourth tell the eye there is more [beginnings §6] */
 .wz-place-page-list{ display:flex; flex-direction:column; max-height:88px; overflow-y:auto; }
 .wz-place-page-row{ display:flex; align-items:baseline; gap:8px; width:100%;
@@ -98,7 +97,6 @@
 .wz-place-page-row:active{ color:var(--brass); }
 .wz-place-page-row:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-1px; }
 .wz-place-page-title{ flex:1 1 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.wz-place-page-home{ flex:0 0 auto; font-size:10px; color:var(--text-low); }
 /* ITEM 170 — a row is now TWO acts: the name opens, the ⋯ places. The name
    button keeps every rule the old row had and gives up only `width:100%`, so
    the ⋯ has room beside it without the row's look changing. */

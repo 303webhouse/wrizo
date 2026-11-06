@@ -66,11 +66,6 @@
 @media (max-width:640px){ .cp-cards{ grid-template-columns:1fr 1fr; } }
 
 /* Gate idle nudge (v6 .nudge) — bottom-center, Crimson italic, ink-dim. */
-.wz-nudge{ position:absolute; left:50%; bottom:12vh; transform:translateX(-50%) translateY(8px);
-  font-family:var(--wz-text); font-style:italic; font-size:1.25rem; color:var(--wz-ink-dim);
-  opacity:0; pointer-events:none; transition:opacity 1.2s ease, transform 1.2s ease; z-index:5;
-  max-width:min(560px,86vw); text-align:center; line-height:1.4; }
-.wz-nudge[data-shown='true']{ opacity:.62; transform:translateX(-50%) translateY(0); }
 
 /* Mode switcher tabs (mode-aware editor) — square, solid borders, brass active. */
 .mode-tabs{ display:flex; align-items:center; position:relative; flex-wrap:wrap; }

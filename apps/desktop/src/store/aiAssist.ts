@@ -25,10 +25,6 @@ export function clearAssistResponse(): void {
   subs.forEach(fn => fn(current));
 }
 
-export function getAssistResponse(): string | null {
-  return current;
-}
-
 // Expose the channel on window — the single public seam an external/future AI
 // integration calls to speak through the frame ("show response / pop out").
 if (typeof window !== 'undefined') {

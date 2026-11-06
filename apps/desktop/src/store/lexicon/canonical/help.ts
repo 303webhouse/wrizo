@@ -24,7 +24,6 @@ export const CANONICAL_HELP = {
   helpDoor: 'Ask the librarian',
   // MACHINA FORMS (m7 / m8): the panel's own words. Canonical English; only Machina draws them (the deck library reads the deck wizard's Arbor / Flux wording elsewhere).
   formsIntakeHint: 'three fields, one recommendation',
-  formsBlocksHead: 'Blocks',
   formsFoot: '↑ ↓ Move · Enter Create Agenda · Esc Close',
   formsFootBlocks: 'Blocks',
   helpDialogLabel: 'Help me choose',

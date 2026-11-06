@@ -156,8 +156,6 @@
   /* Journal page: the sheet is already DOM-first (page-is-primary — see
      JournalEntry.tsx), so no flex-order hack is needed here any more; this
      just gives it more room on a small screen. */
-  .journal-page{ max-width:100%!important; padding-top:.6rem!important; padding-left:12px; padding-right:12px; }
-  .journal-page .entry-full{ min-height:80vh!important; max-width:100%!important; }
 }
 
 /* FX3 S2 — the paper-scale ramp: 1.0 up to 1440px, stepping toward ~1.2 by
@@ -524,8 +522,6 @@ body:has(.walk)::after{ z-index:-1; }
    Scoped to the Board bar (.board-mode-tab + .board-door). The page Plan door
    is capped in the rule above, in olive. DOM textContent stays "Plan". */
 .board-mode-tab, .board-door{ text-transform:uppercase; letter-spacing:.08em; }
-.board-telos{ color:var(--text-low); font-family:var(--font-contentLabel); font-size:12px;
-  letter-spacing:.02em; margin:2px 0 0; user-select:none; }
 
 .board-projection{ padding:8px 2px; }
 /* the Outline starts clear of the Sliver's grip, the 16px chevron tab on the stage's left edge [desk-rail §13] */
