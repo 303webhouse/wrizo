@@ -1,0 +1,11 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=1 tree=3bc58305 bundle=index-BYV01fuU.js/958640b out=C:/Users/nickh/t10h-ctl-box/main-default-3
+(node:25552) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[01/1] FAIL      exit=1  125s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: FAIL - 1/17 failed
+
+SUITE DONE HARNESS_PARKED=unset — 0/1 of 1 returned a passing verdict
+  FAIL: rhizome-latency.mjs — full output at C:\Users\nickh\t10h-ctl-box\main-default-3\rhizome-latency.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=3bc58305 bundle=index-BYV01fuU.js/958640b

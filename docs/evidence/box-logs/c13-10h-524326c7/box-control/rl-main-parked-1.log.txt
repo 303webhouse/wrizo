@@ -1,0 +1,24 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 10 harness browser(s), 1 owner(s) — 4024:alive/45-105s | floor=300s | targets=0
+REAPER: LIVE RUN PRESENT — BOX IS THEIRS. 1 foreign run(s); NOTHING is reaped, whatever any owner or age reads.
+  live pid=4024 "C:\Program Files\nodejs\node.exe" scripts/harness/rhizome-latency.mjs
+  This is the gate in front of both licences: a pathological file keeps its suite alive, so
+  its browsers are never reapable however old they look. It is the box-free test every
+  lane already runs by hand before taking the box, made canonical inside the runner.
+REAPER: survivors=10 (untouched) in 1229ms
+SUITE REFUSED: 10 harness browser process(es) on this machine were not spawned by this runner.
+  browserPid=34552 ownerNodePid=4024
+  browserPid=52808 ownerNodePid=4024
+  browserPid=23804 ownerNodePid=4024
+  browserPid=21560 ownerNodePid=4024
+  browserPid=25840 ownerNodePid=4024
+  browserPid=34092 ownerNodePid=4024
+  browserPid=52568 ownerNodePid=4024
+  browserPid=12988 ownerNodePid=4024
+  browserPid=23192 ownerNodePid=4024
+  browserPid=9832 ownerNodePid=4024
+  Another lane is mid-suite, or a killed run left orphans. Either way this run would be
+  measuring a contended machine: browser starvation presents as "CDP page target never
+  appeared" or a silent hang, which is indistinguishable from a flaky test and is not one.
+  Wait for the quiet window, or pass --ignore-foreign to run anyway (the result is then
+  stamped CONTAMINATED and must not be cited as a clean sweep).

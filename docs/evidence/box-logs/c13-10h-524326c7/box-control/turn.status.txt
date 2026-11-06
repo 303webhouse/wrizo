@@ -1,0 +1,15 @@
+taken 00:04:21Z
+round 1 main default exit=2 00:04:31Z load=0
+round 1 main parked exit=2 00:04:38Z load=0
+round 1 h10 default exit=2 00:04:46Z load=0
+round 1 h10 parked exit=1 00:07:10Z load=0
+round 2 main default exit=0 00:10:02Z load=0
+round 2 main parked exit=0 00:11:15Z load=0
+round 2 h10 default exit=1 00:14:35Z load=0
+round 2 h10 parked exit=0 00:15:48Z load=0
+round 3 main default exit=1 00:17:59Z load=0
+round 3 main parked exit=1 00:20:11Z load=0
+round 3 h10 default exit=0 00:23:21Z load=0
+round 3 h10 parked exit=0 00:24:34Z load=0
+released
+released 00:24:34Z

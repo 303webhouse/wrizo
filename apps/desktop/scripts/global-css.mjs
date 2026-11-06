@@ -17,11 +17,13 @@
 // down (components/cascade/, step 10d), as a .ts or .tsx file.
 // A script that WALKS every file reads each by its plain path (fs.readFileSync); through srcText a barrel's lines would be read twice,
 // once joined and once in the parts.
+// A barrel line may also re-export a part BY NAME (`export { a, type B } from './x';`, step 10h: persistence.ts re-exports exactly
+// the names it exported before, so no internal joins its API) or load a part that exports nothing (`import './x';`, the seams).
 import fs from 'node:fs';
 import path from 'node:path';
 
-export const BARRELS = ['types/index.ts', 'components/CascadePanels.tsx'];
-export const REEXPORT_LINE = /^export \* from '\.\/((?:[A-Za-z0-9-]+\/)?[A-Za-z0-9-]+)';(\r?\n|$)/gm;
+export const BARRELS = ['types/index.ts', 'components/CascadePanels.tsx', 'store/persistence.ts'];
+export const REEXPORT_LINE = /^(?:export \* from|export \{[^}\n]*\} from|import) '\.\/((?:[A-Za-z0-9-]+\/)?[A-Za-z0-9-]+)';(\r?\n|$)/gm;
 
 export function barrelParts(srcDir, rel) {
   const text = fs.readFileSync(path.join(srcDir, rel), 'utf8');
@@ -37,6 +39,14 @@ export function barrelParts(srcDir, rel) {
   }
   if (at !== text.length || parts.length === 0) throw new Error(`${rel}: text other than an export * line at offset ${at}`);
   return parts;
+}
+
+// the ONE part of a barrel whose text holds `needle` (throws on none or several), as a path relative to srcDir: for a mutant written
+// against the old module (a helper that takes its anchor as an argument), so the edit lands in the part that now holds the text
+export function barrelPartHolding(srcDir, rel, needle) {
+  const hits = barrelParts(srcDir, rel).filter((p) => fs.readFileSync(p, 'utf8').replace(/\r\n/g, '\n').includes(needle));
+  if (hits.length !== 1) throw new Error(`barrelPartHolding: ${hits.length} parts of ${rel} hold ${JSON.stringify(needle.slice(0, 80))}`);
+  return path.relative(srcDir, hits[0]).split(path.sep).join('/');
 }
 
 export function barrelText(srcDir, rel) {

@@ -58,6 +58,7 @@
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { srcText } from '../global-css.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -73,7 +74,7 @@ const BACKSLASH = String.fromCharCode(92);
 // is what lets the fixtures drive it. (This is the discriminator law: a check
 // about a failing state must be able to inspect that state, not only its own
 // healthy one.)
-function collectionKeys(src = readFileSync(PERSISTENCE, 'utf8')) {
+function collectionKeys(src = srcText(path.join(DESKTOP, 'src'), 'store/persistence.ts')) {   // #13 step 10h: the barrel's parts, joined
   const block = src.match(/const KEYS = \{([\s\S]*?)\} as const;/);
   if (!block) return null;
   const keys = [...block[1].matchAll(/'([^']+)'/g)].map((m) => m[1]);
@@ -418,7 +419,7 @@ ok('85-B: every DELIBERATE annotation is tracked by the baseline, still describe
 // name (wrizoBoard, wrizoNotebook, wrizoResume and friends inspect, they do not
 // write), and wrizoFlushNow is exempt because it IS the flush.
 {
-  const src = readFileSync(PERSISTENCE, 'utf8');
+  const src = srcText(path.join(DESKTOP, 'src'), 'store/persistence.ts');   // #13 step 10h: the seams sit in several parts now
   const lines = src.split(/\r?\n/);
   const undurable = [];
   let seamCount = 0;

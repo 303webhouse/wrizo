@@ -17,6 +17,7 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { srcText, barrelPartHolding } from '../global-css.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const desktop = join(here, '..', '..');
@@ -239,7 +240,7 @@ function installFakeEnv() {
 // 3 · persistence.ts + storageHealth.ts TOGETHER — the real flush() catching a real throw, per collection
 // ===========================================================================================================
 {
-  const persSrc = deCRLF(readFileSync(join(SRC, 'store', 'persistence.ts'), 'utf8'));
+  const persSrc = deCRLF(srcText(SRC, 'store', 'persistence.ts'));   // #13 step 10h: the barrel's parts, joined
   const { throwFor } = installFakeEnv();
   const P = await load(['persistence', 'storageHealth']);
   const W = globalThis.window;
@@ -283,7 +284,7 @@ function installFakeEnv() {
   const dirtyFailMut = async (name, from, to, probe) => {
     if (!persSrc.includes(from)) { ok(`FALSIFICATION ${name}: the mutation LANDED`, false, 'anchor text not found'); return; }
     const { throwFor: tf } = installFakeEnv();
-    const M = await load(['persistence', 'storageHealth'], { 'store/persistence.ts': swap(from, to) });
+    const M = await load(['persistence', 'storageHealth'], { [barrelPartHolding(SRC, 'store/persistence.ts', from)]: swap(from, to) });
     tf.add('writer-studio-dirty-v1');
     globalThis.window.wrizoCreateJournalPage({ id: 'zz', text: 'y', createdAt: new Date().toISOString(), origin: null });
     ok(`FALSIFICATION ${name} — must go RED`, await probe(M), '');
@@ -323,7 +324,7 @@ function installFakeEnv() {
   const failMut = async (name, from, to, probe) => {
     if (!persSrc.includes(from)) { ok(`FALSIFICATION ${name}: the mutation LANDED`, false, 'anchor text not found'); return; }
     const { throwFor: tf } = installFakeEnv();
-    const M = await load(['persistence', 'storageHealth'], { 'store/persistence.ts': swap(from, to) });
+    const M = await load(['persistence', 'storageHealth'], { [barrelPartHolding(SRC, 'store/persistence.ts', from)]: swap(from, to) });
     tf.add('writer-studio-journal-entries');
     globalThis.window.wrizoCreateJournalPage({ id: 'z', text: 'y', createdAt: new Date().toISOString(), origin: null });
     ok(`FALSIFICATION ${name} — must go RED`, await probe(M), '');

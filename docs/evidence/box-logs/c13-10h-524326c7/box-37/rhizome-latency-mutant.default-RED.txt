@@ -1,0 +1,13 @@
+PASS  M0 (ran): the guard ran to its verdict with nothing (the control) injected  [exit=1 raw=true]
+FAIL  M0: the verdict - all green  [exit=1 | PASS B typing inside the flash | FAIL C typing inside the fade | PASS B2 main-thread time | PASS C2 main-thread time | {"mutantMs":0,"mutantStallMs":0,"controlMedian":24.30000001192093,"flashMedian":25.80000001192093,"fadeMedian":32.60000002384186,"fadeMax":106.5,"costControl":15.500000059604645,"costFlash":14.599999964237213,"costFastControl":15.799999952316284,"costFade":17.30000001192093}]
+PASS  M1 (ran): the guard ran to its verdict with a 40 ms cost on every flash/fade key injected  [exit=1 raw=true]
+PASS  M1 (landed): the injected regression is visible in the guard's own samples  [{"mutantMs":40,"mutantStallMs":0,"controlMedian":25.600000023841858,"flashMedian":43.80000001192093,"fadeMedian":46.200000047683716,"fadeMax":120.30000001192093,"costControl":14.699999988079071,"costFlash":46.299999952316284,"costFastControl":13.799999952316284,"costFade":50.09999996423721}]
+PASS  M1: the verdict - B typing inside the flash and C typing inside the fade and B2 main-thread time and C2 main-thread time RED  [exit=1 | FAIL B typing inside the flash | FAIL C typing inside the fade | FAIL B2 main-thread time | FAIL C2 main-thread time]
+PASS  M2 (ran): the guard ran to its verdict with one 150 ms stall at the first key of every fade injected  [exit=1 raw=true]
+PASS  M2 (landed): the injected regression is visible in the guard's own samples  [{"mutantMs":0,"mutantStallMs":150,"controlMedian":25.69999998807907,"flashMedian":25.5,"fadeMedian":26,"fadeMax":183.9000000357628,"costControl":15.399999976158142,"costFlash":14.399999976158142,"costFastControl":13.800000011920929,"costFade":14.399999976158142}]
+PASS  M2: the verdict - C typing inside the fade RED, B typing inside the flash and B2 main-thread time stay green  [exit=1 | FAIL C typing inside the fade | PASS B typing inside the flash | PASS B2 main-thread time]
+PASS  M3 (ran): the guard ran to its verdict with a 15 ms cost on every flash/fade key injected  [exit=1 raw=true]
+PASS  M3 (landed): the injected regression is visible in the guard's own samples  [{"mutantMs":15,"mutantStallMs":0,"controlMedian":25.19999998807907,"flashMedian":25.400000035762787,"fadeMedian":32.700000047683716,"fadeMax":79.39999997615814,"costControl":14.200000047683716,"costFlash":28.199999928474426,"costFastControl":14.700000047683716,"costFade":37.69999998807907}]
+PASS  M3: the verdict - B2 main-thread time and C2 main-thread time RED  [exit=1 | FAIL B2 main-thread time | FAIL C2 main-thread time]
+
+RHIZOME-LATENCY-MUTANT VERIFY: FAIL - 1/11 failed

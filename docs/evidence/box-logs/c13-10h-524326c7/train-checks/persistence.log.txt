@@ -1,0 +1,8 @@
+PASS  ONE CACHE: one module declares the cache and one defines its hydration, both store/persistence/core.ts; every other part that names the cache imports it from ./core
+PASS  COVERAGE: the parts that read the cache import it (16 of 19 parts)
+PASS  THE API: store/persistence.ts exports exactly its 145 names at 1913849e (now 145) and loads all 19 parts, the seams included
+PASS  LIVENESS: a second `const cache` planted in a part is caught
+PASS  LIVENESS: an internal (cache) planted in the barrel is caught
+PASS  LIVENESS: the seams dropped from the barrel are caught
+
+C13-10H PERSISTENCE: PASS (6 checks)

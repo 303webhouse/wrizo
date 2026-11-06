@@ -63,10 +63,11 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { srcText } from '../global-css.mjs';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PERSISTENCE = join(HERE, '..', '..', 'src', 'store', 'persistence.ts');
 const constOf = (name) => {
-  const src = readFileSync(PERSISTENCE, 'utf8');
+  const src = srcText(join(HERE, '..', '..', 'src'), 'store/persistence.ts');   // #13 step 10h: the barrel's parts, joined (PERSISTENCE names the module)
   const m = src.match(new RegExp(`^const ${name} = ([0-9.]+);`, 'm'));
   if (!m) throw new Error(`item138: could not read ${name} out of persistence.ts`);
   return Number(m[1]);

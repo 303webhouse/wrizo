@@ -255,7 +255,7 @@ console.log('CLAIM 6 — the logout sweep clears the mirror, and persistence cal
     P.clearProofingLocal();
     if (P.proofingWordSet(P.getProofing()).size !== 0) fail('clearProofingLocal left words behind');
   }
-  const PERS = readFileSync(join(repo, 'apps/desktop/src/store/persistence.ts'), 'utf8')
+  const PERS = srcText(join(repo, 'apps/desktop/src'), 'store/persistence.ts')   // #13 step 10h: the barrel's parts, joined
     .replace(/\/\/[^\n]*/g, ' ').replace(/\/\*[\s\S]*?\*\//g, ' ');
   if (!/clearProofingLocal\(\)/.test(PERS)) fail('resetLocalData does not call clearProofingLocal — a signed-out device would keep the dictionary');
   if (failures === before) ok('the mirror clears, and resetLocalData calls it (code, not comments)');
