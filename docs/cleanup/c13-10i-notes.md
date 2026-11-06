@@ -35,6 +35,13 @@ Three files in `pages/pageEditor/`. Each is one contiguous run of `PageEditorVie
   - The raw readers (`hide-workshop-source`, `item207-core`, `glue-9`'s chip reads, `typing-latency-readers-guard`, `c13-10f-wordcount`) look only at lines that stay in the module.
   - `logout-flush` D3 finds `registerFlush(flush)` through the join. Its "imports the registry" check passes on PageEditor's kept import, as with 10g's note, so step 11's trim needs the hook's import there too.
   - `drawers-p1` D1c reports a branch's diff of PageEditor without judging it.
+  - **Missed by my first sweep, found by Chat 1's Actions pair (2/22 on both legs):** `typewriter-page` P9 and P9b read PageEditor by plain path, and the typewriter memory's lines had moved to `usePageTypewriter.ts`. Fix `309987d8`: `pe` reads through `srcText`; the checks and regexes are unchanged.
+  - **The mechanical sweep that replaced my hand grep** covered all 24 scripts naming `PageEditor.tsx`. It counts each regex or string literal on PageEditor at base, on the module alone, and on the join; on the old read it flags P9b (1 against 0).
+    - The 13 scripts it flags all clear: four only mention PageEditor in comments (`ab2`, `fx2`, `fx5`, `flux-page-ink`). The rest read through `srcText` (base equals join), or their moved literal is generic (`/\s+/`, `/.*/`).
+    - The raw reads of `hide-workshop-source` and `item207-core` test only lines that stay in the module.
+- **Merged origin/main `2db62a73`** (10j, and FIX's readers-guard r2) at `28a1a9f0`, with no rebase.
+  - The readers guard's THE PATHS names `pages/PageEditor.tsx` as the page's save path, and the save now lives in `usePageAutosave.ts`.
+  - A new check, THE PATHS (10i), holds `pages/pageEditor/` to the same rule (no innerText or textContent reads), and requires that the sweep read the folder. It is added rather than edited because 10h edits the next line.
 - **`c13-10-seams-check` A0:** its `SHIPS` list gains `pages/PageEditor.tsx`, as its own line says each merged split's entry does. 16/16 on both legs.
 - **`seed-guard`:** 36/36.
 
