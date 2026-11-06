@@ -60,6 +60,32 @@ function makeBitmapLayer(alpha: string): { layer: HTMLDivElement; drift: HTMLDiv
   return { layer, drift };
 }
 
+// THE LAST FRAME (Fable, Nov 6, after the day x3 turn: the 200 ms cross-fade kept the live drawing in style work for ~5 keys of every burst):
+// a live layer's leaves, each with its own breeze delay, and the breeze's 16 s clock - enough to know, with no style read, which leaves are
+// mid-shiver at a given moment and at what angle, and so to draw the still picture AT THE LIVE POSE.
+type LiveParts = { layer: HTMLDivElement; live: HTMLDivElement; still: HTMLDivElement; leaves: number[]; start: number | null; pose: string | null };
+const liveOf = new WeakMap<HTMLElement, LiveParts>();
+const BREEZE = 16000;
+// arbor2-breeze's keyframes (arbor-v2.css): offset, degrees; each step eased ease-in-out
+const KF: [number, number][] = [[0, 0], [0.0156, 8], [0.0344, -6], [0.0531, 3.5], [0.0719, -1.5], [0.0875, 0], [1, 0]];
+const MOVING = KF[5][0] * BREEZE;   // a leaf moves over the first 1.4 s of its cycle
+function easeInOut(x: number): number {   // cubic-bezier(.42, 0, .58, 1), solved for its x by bisection
+  const bx = (t: number) => 3 * (1 - t) * (1 - t) * t * 0.42 + 3 * (1 - t) * t * t * 0.58 + t * t * t, by = (t: number) => 3 * (1 - t) * t * t + t * t * t;
+  let lo = 0, hi = 1; for (let i = 0; i < 24; i++) { const m = (lo + hi) / 2; if (bx(m) < x) lo = m; else hi = m; } return by((lo + hi) / 2);
+}
+function angleAt(ms: number): number {
+  const p = ms / BREEZE;
+  for (let i = 1; i < KF.length; i++) if (p <= KF[i][0]) { const [a, va] = KF[i - 1], [b, vb] = KF[i]; return va + (vb - va) * easeInOut((p - a) / (b - a)); }
+  return 0;
+}
+// the drawing at a pose: the moving leaves (by their order in the file) turned to their angles; full strength, as the shared bitmap is
+function poseUrl(turned: Map<number, number>): string {
+  let k = -1;
+  const src = svgText.replace(/<style>[\s\S]*?<\/style>/, '').replace(/(<g filter="[^"]*") opacity="[^"]*"/, '$1 opacity="1"')
+    .replace(/<g class="wz-leaf" style="/g, (m) => { k += 1; const a = turned.get(k); return a == null ? m : `${m}transform:rotate(${a.toFixed(3)}deg);`; });
+  return URL.createObjectURL(new Blob([src], { type: 'image/svg+xml' }));
+}
+
 // NICK'S RULING B (via Fable, Nov 6: "the leaves shiver only when she's not typing. On the first key the shade swaps to the still picture; it goes
 // live again on the same signal that brings the chrome back. The drift keeps moving throughout"): a live layer (the room, the page's copy)
 // holds the live drawing (.arbor2-live: the blur, the breeze) AND the still picture (.arbor2-still: the shared bitmap at the layer's own
@@ -81,6 +107,8 @@ function makeLayer(cls: string, alpha: string | null): { layer: HTMLDivElement; 
   still.style.setProperty('--arbor2-still-a', alpha ?? ((/<g filter="[^"]*" opacity="([^"]*)"/.exec(svgText) || [])[1] || '0.2'));
   withBitmap((u) => { still.style.backgroundImage = `url("${u}")`; });
   drift.appendChild(live); drift.appendChild(still);
+  liveOf.set(layer, { layer, live, still, start: null, pose: null,
+    leaves: [...live.querySelectorAll('.wz-leaf')].map((g) => (parseFloat((/animation-delay:\s*([\d.]+)s/.exec(g.getAttribute('style') || '') || [])[1] || '0') || 0) * 1000) });
   const svg = live.querySelector('svg');
   if (svg) {
     svg.removeAttribute('width'); svg.removeAttribute('height');
@@ -140,7 +168,7 @@ export function mountPergola(): void {
       // the page keeps r20's live copy; every other surface draws the shared bitmap
       const c = h.matches(HOSTS[0]) ? makeLayer('arbor2-pagesh', PAGE_ALPHA) : makeBitmapLayer(PAGE_ALPHA);
       if (room.layer.hasAttribute('data-asleep')) c.layer.setAttribute('data-asleep', 'true');
-      if (room.layer.hasAttribute('data-live-off')) c.layer.setAttribute('data-live-off', 'true');
+      { const p = liveOf.get(c.layer); if (p) requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(() => { if (writing()) cut(p); else clock(p); }))); else if (room.layer.hasAttribute('data-live-off')) c.layer.setAttribute('data-live-off', 'true'); }
       h.appendChild(c.layer); copies.set(h, c); ro.observe(h); place(h, c);
       requestAnimationFrame(() => requestAnimationFrame(() => sync(c.layer)));
     }
@@ -165,12 +193,33 @@ export function mountPergola(): void {
   const sleep = (on: boolean) => layers().forEach((l) => { if (on) l.setAttribute('data-asleep', 'true'); else l.removeAttribute('data-asleep'); });
   // Nick's ruling B with Fable's (c): once the 200 ms cross-fade to the still picture has run (and 20 ms to spare), the live drawing leaves style
   // work (data-live-off: content-visibility hidden on .arbor2-live); it is back the moment writing ends, before the cross-fade home
-  const liveOff = (on: boolean) => layers().forEach((l) => { if (on) l.setAttribute('data-live-off', 'true'); else l.removeAttribute('data-live-off'); });
-  let sleepT = 0, liveT = 0;
+  // THE LAST FRAME (Fable, Nov 6): the cut. The breeze's clock is read only at rest, in a frame after the return (a read flushes style);
+  // at the key the pose is worked out from that clock, so the key itself reads nothing.
+  const clock = (p: LiveParts) => { const g = p.live.querySelector('.wz-leaf'); const a = g ? g.getAnimations()[0] : null; p.start = a && a.startTime != null && a.playState === 'running' ? Number(a.startTime) : null; };
+  const clockAll = () => layers().forEach((l) => { const p = liveOf.get(l); if (p) clock(p); });
+  const cut = (p: LiveParts) => {
+    if (!bitmap) return;   // no still picture yet: the live drawing stays
+    const now = Number(document.timeline.currentTime ?? 0);
+    const turned = new Map<number, number>();
+    // (a leaf whose delay has not yet run out stands at rest)
+    if (p.start != null) p.leaves.forEach((d, i) => { if (now - p.start! < d) return; const ph = (now - p.start! - d) % BREEZE; if (ph > 0 && ph < MOVING) turned.set(i, angleAt(ph)); });
+    if (!turned.size) { p.still.style.backgroundImage = `url("${bitmap}")`; p.layer.setAttribute('data-live-off', 'true'); return; }
+    const url = poseUrl(turned); p.pose = url;
+    p.still.style.backgroundImage = `url("${url}")`;
+    const img = new Image(); img.src = url;
+    img.decode().catch(() => {}).then(() => { if (writing() && p.pose === url) p.layer.setAttribute('data-live-off', 'true'); });
+  };
+  const uncut = (p: LiveParts) => {
+    p.layer.removeAttribute('data-live-off');
+    if (p.pose) { const u = p.pose; p.pose = null; window.setTimeout(() => URL.revokeObjectURL(u), 1000); }
+    if (bitmap) p.still.style.backgroundImage = `url("${bitmap}")`;
+  };
+  const liveOff = (on: boolean) => layers().forEach((l) => { const p = liveOf.get(l); if (p) { if (on) cut(p); else uncut(p); } else if (on) l.setAttribute('data-live-off', 'true'); else l.removeAttribute('data-live-off'); });
+  let sleepT = 0;
   const onWriting = () => {
-    window.clearTimeout(sleepT); window.clearTimeout(liveT);
-    if (!writing()) { liveOff(false); sleep(false); return; }
-    liveT = window.setTimeout(() => { if (writing()) liveOff(true); }, 220);
+    window.clearTimeout(sleepT);
+    if (!writing()) { liveOff(false); sleep(false); requestAnimationFrame(() => requestAnimationFrame(clockAll)); return; }
+    liveOff(true);
     // the fade's own length, as the stylesheet sets it while writing (6 s; reduced motion: none), and a quarter second to spare
     const d = getComputedStyle(room.layer).transitionDuration.split(',')[0].trim();
     const ms = (parseFloat(d) || 0) * (d.endsWith('ms') ? 1 : 1000);
@@ -179,4 +228,5 @@ export function mountPergola(): void {
   new MutationObserver(onWriting).observe(root, { attributes: true, attributeFilter: ['data-wz-writing'] });
   attach();
   onWriting();
+  requestAnimationFrame(() => requestAnimationFrame(clockAll));
 }

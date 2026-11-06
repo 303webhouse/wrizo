@@ -10,6 +10,10 @@
 //       same page's first key with the shade OFF (Mood's Day shadows, what the switch writes): median within 5 ms, p95 within 25 ms, none over 100
 //   W6  reduced motion: at rest nothing on the shade animates; the first key swaps; nothing animates after it either
 //   W7  nothing stored: localStorage holds no key or value naming the swap
+//   (THE LAST FRAME, Fable Nov 6: the swap is a cut whose still is the live drawing's own last frame - W1c, W2c, W4d parked, successors below)
+//   W9  the last frame, mid-shiver: a key landed while leaves shiver - the still shown (the drawing at that pose) against the live drawing paused
+//       at the same pose (a test-only reveal in this page): over 9 levels on no more than 0.01% of the pixels
+//   W10 the last frame, at rest: the same, for a key with no leaf moving (the shared still)
 //   W8  the flash copy's pre-rendered mask (Fable, Nov 6: "keep the look identical"): on ONE page, the flash held (every finite animation
 //       landed, the rest paused), shot with the bitmap mask and again with the SVG mask it replaces put back (a test-only switch in this page) -
 //       the two shots differ by no more than 9 levels on more than 0.01% of the pixels (the vines' shape is seeded by the session, so two runs'
@@ -84,14 +88,21 @@ await withHarness(async (app) => {
   // SUCCESSOR W1c: at rest the live drawing shows at full (in style work), the still picture is drawn and waits at opacity 0 with the layer's
   // strength as its target (room 0.2, page 0.034), both on the compositor (will-change: opacity).
   const restC = (l, a) => !!l && l.live === 'visible' && l.liveO === 1 && l.stillO === 0 && l.stillBg === true && Math.abs(l.stillA - a) < 0.0005 && l.wc.every((w) => /opacity/.test(w)) && l.off === null;
-  ok('W1c at rest: the live drawing at full, the still picture drawn and waiting at 0 (target: the layer\'s strength), both will-change: opacity',
-    rest.roomName === 'day' && restC(rest.room, 0.2) && (rest.zoom || restC(rest.page, 0.034)), JSON.stringify(rest));
+  // PARKED 2026-11-06 (SUPERSEDED by THE LAST FRAME, Fable Nov 6: the swap is a cut - no cross-fade, so no will-change on the two). Original, verbatim:
+  // ok('W1c at rest: the live drawing at full, the still picture drawn and waiting at 0 (target: the layer\'s strength), both will-change: opacity',
+  //   rest.roomName === 'day' && restC(rest.room, 0.2) && (rest.zoom || restC(rest.page, 0.034)), JSON.stringify(rest));
+  // SUCCESSOR W1d: at rest the live drawing at full and in style work, the still picture drawn and waiting at 0 (its target the layer's strength).
+  const restD = (l, a) => !!l && l.live === 'visible' && l.liveO === 1 && l.stillO === 0 && l.stillBg === true && Math.abs(l.stillA - a) < 0.0005 && l.off === null;
+  ok('W1d at rest: the live drawing at full and in style work, the still picture drawn and waiting at 0 (its target the layer\'s strength)',
+    rest.roomName === 'day' && restD(rest.room, 0.2) && (rest.zoom || restD(rest.page, 0.034)), JSON.stringify(rest));
 
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('w');
   await app.evalJs('new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))');
   const k1 = await app.evalJs(READ);
-  await sleep(320);
+  await sleep(Math.max(0, 100 - 34));
+  const k100 = await app.evalJs(READ);
+  await sleep(220);
   const k1c = await app.evalJs(READ);
   const stillOk = (l) => !!l && l.live === 'hidden' && l.still === 'block';
   // PARKED 2026-11-06, never run (SUPERSEDED by Fable's ruling (c): the swap is a 200 ms cross-fade, not a cut in the key's own frames).
@@ -101,8 +112,14 @@ await withHarness(async (app) => {
   // 320 ms later it has landed - the still picture at the layer's strength, the live drawing at 0 and out of style work (data-live-off).
   const midC = (l) => !!l && l.stillO > 0 && l.stillO < l.stillA && l.liveO < 1;
   const landC = (l) => !!l && Math.abs(l.stillO - l.stillA) < 0.001 && l.liveO === 0 && l.live === 'hidden' && l.off === 'true';
-  ok('W2c the first key: the cross-fade begins in the key\'s own frames and has landed 320 ms later (still at strength, live at 0 and out of style work)',
-    k1.writing === 'true' && midC(k1.room) && landC(k1c.room) && (k1c.zoom || landC(k1c.page)), JSON.stringify({ key: k1.room, landed: k1c.room, page: k1c.page }));
+  // PARKED 2026-11-06 (SUPERSEDED - Fable, Nov 6: "W2c -> its successor 'begins within 100 ms': APPROVED (park the original verbatim)"; turn
+  // 08:50Z: the swap rides the chrome's signal, which lands a frame or two after the key's own frames). Original, verbatim:
+  // ok('W2c the first key: the cross-fade begins in the key\'s own frames and has landed 320 ms later (still at strength, live at 0 and out of style work)',
+  //   k1.writing === 'true' && midC(k1.room) && landC(k1c.room) && (k1c.zoom || landC(k1c.page)), JSON.stringify({ key: k1.room, landed: k1c.room, page: k1c.page }));
+  // SUCCESSOR W2d (approved "begins within 100 ms"; the swap is now THE LAST FRAME's cut): within 100 ms of the key the still picture stands at
+  // the layer's strength and the live drawing is at 0 and out of style work - and still so 320 ms on.
+  ok('W2d the first key: within 100 ms the still stands at the layer\'s strength and the live drawing is at 0 and out of style work (and still so 320 ms on)',
+    k100.writing === 'true' && landC(k100.room) && (k100.zoom || landC(k100.page)) && landC(k1c.room), JSON.stringify({ at100: k100.room, page: k100.page, at320: k1c.room }));
   // PARKED 2026-11-06 (SUPERSEDED by Fable, Nov 6: "My error: Nick's B ruled only the shiver. r19's rule stands (the drift pauses while
   // writing). Fix the check, not the build." - turn 08:08Z read the drift paused at the key, start time null). Original, verbatim:
   // ok('W3 the drift runs on through the swap: the room\'s drift is the same animation (start time unchanged), running', !!rest.drift && !!k1.drift && rest.drift.start === k1.drift.start && k1.drift.state === 'running', JSON.stringify({ rest: rest.drift, key: k1.drift }));
@@ -121,8 +138,13 @@ await withHarness(async (app) => {
   //   back.writing !== 'true' && restC(back.room, 0.2) && (back.zoom || restC(back.page, 0.034)) && !!back.drift && back.drift.start === rest.drift.start, JSON.stringify(back));
   // SUCCESSOR W4d: the return - the live drawing back at full and in style work, the still picture at 0, and the drift RESUMED from where it
   // paused (running again, its time on from the paused time, never back to the start).
-  ok('W4d the chrome\'s return: the live drawing back at full and in style work, the still picture at 0, the drift resumed from where it paused (not restarted)',
-    back.writing !== 'true' && restC(back.room, 0.2) && (back.zoom || restC(back.page, 0.034)) && !!back.drift && back.drift.state === 'running' && back.driftT != null && k1c.driftT != null && back.driftT >= k1c.driftT,
+  // PARKED 2026-11-06 (SUPERSEDED by THE LAST FRAME: its restC asked for will-change, which the cut no longer sets). Original, verbatim:
+  // ok('W4d the chrome\'s return: the live drawing back at full and in style work, the still picture at 0, the drift resumed from where it paused (not restarted)',
+  //   back.writing !== 'true' && restC(back.room, 0.2) && (back.zoom || restC(back.page, 0.034)) && !!back.drift && back.drift.state === 'running' && back.driftT != null && k1c.driftT != null && back.driftT >= k1c.driftT,
+  //   JSON.stringify({ ...back, ls: undefined, pausedT: k1c.driftT }));
+  // SUCCESSOR W4e: the same return, read with W1d's reading.
+  ok('W4e the chrome\'s return: the live drawing back at full and in style work, the still picture at 0, the drift resumed from where it paused (not restarted)',
+    back.writing !== 'true' && restD(back.room, 0.2) && (back.zoom || restD(back.page, 0.034)) && !!back.drift && back.drift.state === 'running' && back.driftT != null && k1c.driftT != null && back.driftT >= k1c.driftT,
     JSON.stringify({ ...back, ls: undefined, pausedT: k1c.driftT }));
 
   // W5: the swap key against the same page's first key with the shade off
@@ -159,6 +181,41 @@ await withHarness(async (app) => {
     ok('W6c reduced motion: nothing on the shade animates at rest; the first key is a cut to the still picture; nothing animates after it',
       rm0.running === 0 && !!rm1.room && Math.abs(rm1.room.stillO - rm1.room.stillA) < 0.001 && rm1.room.liveO === 0 && rm1.running === 0, JSON.stringify({ rest: { running: rm0.running }, key: { running: rm1.running, room: rm1.room } }));
   } finally { await app.emulateMedia([]); }
+  // W9 / W10: THE LAST FRAME, one page, one moment - the cut's still against the live drawing paused at the same pose
+  const shotCmp = (a, b) => app.evalJs(`(async () => { const load = (b64) => new Promise((res) => { const i = new Image(); i.onload = () => res(i); i.src = 'data:image/png;base64,' + b64; });
+    const [x, y] = await Promise.all([load(${JSON.stringify(a)}), load(${JSON.stringify(b)})]); const w = x.naturalWidth, h = x.naturalHeight;
+    const px = (img) => { const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'); g.drawImage(img, 0, 0); return g.getImageData(0, 0, w, h).data; };
+    const A = px(x), B = px(y); let max = 0, over = 0;
+    for (let i = 0; i < A.length; i += 4) { const d = Math.max(Math.abs(A[i] - B[i]), Math.abs(A[i + 1] - B[i + 1]), Math.abs(A[i + 2] - B[i + 2])); if (d > 9) over++; if (d > max) max = d; }
+    return { n: w * h, over, max }; })()`);
+  // how many of the room's leaves are mid-shiver right now (a test-side read: the leaf animations' own times)
+  const MOVINGNOW = "(() => { const r = document.querySelector('.arbor2-pergola'); if (!r) return -1; let n = 0; r.querySelectorAll('.wz-leaf').forEach((g) => { const a = g.getAnimations()[0]; if (!a || a.currentTime == null) return; const d = a.effect.getTiming().delay || 0; const t = Number(a.currentTime) - d; if (t < 0) return; const ph = t % 16000; if (ph > 0 && ph < 1400) n++; }); return n; })()";
+  const lastFrame = async (want) => {
+    await backToRest(app);
+    // wait for the breeze to be where this check wants it: mid-shiver (some leaves moving) or at rest (none), at most 18 s
+    const t0 = Date.now(); let n = await app.evalJs(MOVINGNOW);
+    while (Date.now() - t0 < 18000 && (want === 'shiver' ? n < 8 : n !== 0)) { await sleep(40); n = await app.evalJs(MOVINGNOW); }
+    await app.evalJs("document.querySelector('.forward-only-editor').focus()");
+    await app.typeKeys('s');
+    await app.waitFor("document.querySelector('.arbor2-pergola')?.getAttribute('data-live-off') === 'true'", { label: 'cut', timeout: 2000 }).catch(() => {});
+    // hold the room's fade where it is (the 6 s writing fade would change the picture between the two shots)
+    await app.evalJs("(() => { document.getAnimations().forEach((a) => { const t = a.effect && a.effect.target; if (t && t.closest && t.closest('.arbor2-pergola, .arbor2-pagesh')) a.pause(); }); document.querySelectorAll('.arbor2-pergola, .arbor2-pagesh').forEach((l) => { l.style.transition = 'none'; l.style.opacity = getComputedStyle(l).opacity; }); return true; })()");
+    await sleep(150);
+    const a = await app.screenshot();
+    // the test-only reveal: the live drawing (paused by r19's rule at the pose the key found) in place of the still
+    await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'w9-reveal'; s.textContent = '.arbor2-pergola-drift > .arbor2-live{ opacity:1 !important; content-visibility:visible !important; } .arbor2-pergola-drift > .arbor2-still{ opacity:0 !important; }'; document.head.appendChild(s); return true; })()");
+    await app.evalJs('new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))'); await sleep(150);
+    const b = await app.screenshot();
+    await app.evalJs("(() => { document.getElementById('w9-reveal')?.remove(); document.querySelectorAll('.arbor2-pergola, .arbor2-pagesh').forEach((l) => { l.style.transition = ''; l.style.opacity = ''; }); document.getAnimations().forEach((a) => { const t = a.effect && a.effect.target; if (t && t.closest && t.closest('.arbor2-pergola, .arbor2-pagesh') && a.playState === 'paused' && document.documentElement.getAttribute('data-wz-writing') !== 'true') a.play(); }); return true; })()");
+    if (process.env.ARBOR_SHOTS) { fs.mkdirSync(process.env.ARBOR_SHOTS, { recursive: true }); fs.writeFileSync(path.join(process.env.ARBOR_SHOTS, `lastframe-${want}-still.png`), Buffer.from(a, 'base64')); fs.writeFileSync(path.join(process.env.ARBOR_SHOTS, `lastframe-${want}-live.png`), Buffer.from(b, 'base64')); }
+    return { moving: n, ...(await shotCmp(a, b)) };
+  };
+  const lfS = await lastFrame('shiver');
+  ok('W9 the last frame, mid-shiver: the cut\'s still against the live drawing paused at the same pose - over 9 levels on no more than 0.01% of the pixels',
+    lfS.moving >= 8 && lfS.over <= lfS.n * 0.0001, JSON.stringify({ ...lfS, overPct: Math.round((lfS.over / lfS.n) * 1e6) / 1e4 }));
+  const lfR = await lastFrame('rest');
+  ok('W10 the last frame, at rest: the cut\'s still against the live drawing at rest - over 9 levels on no more than 0.01% of the pixels',
+    lfR.moving === 0 && lfR.over <= lfR.n * 0.0001, JSON.stringify({ ...lfR, overPct: Math.round((lfR.over / lfR.n) * 1e6) / 1e4 }));
   // W8: the flash held, two masks, one moment
   const pageId = (await app.evalJs('location.hash')).replace(/^#\/page\//, '');
   await app.goto('/');
@@ -204,7 +261,7 @@ await withHarness(async (app) => {
 if (!pinned) checks.unshift({ name: 'W0 the run is pinned to the day room (WS_URL_SEARCH carries arbor2=1 and arbor2room=day)', pass: false, detail: q });
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
-const pass = checks.length === 8 && checks.every((c) => c.pass);
+const pass = checks.length === 10 && checks.every((c) => c.pass);
 // eslint-disable-next-line no-console
 console.log(pass ? `\nARBOR2-SWAP VERIFY: PASS (${checks.length} checks)` : `\nARBOR2-SWAP VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed`);
 process.exit(pass ? 0 : 1);
