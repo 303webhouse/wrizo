@@ -17,6 +17,7 @@ import { createPortal } from 'react-dom';
 import { useTheme } from '../store/theme';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { countGoalWords } from '../store/writingGoal';
+import { rowsFor } from '../store/lineRows';
 import { graftsOf, type GraftRow } from '../store/grafts';
 import { removePageLink, subscribe } from '../store/persistence';
 import { requestDelete } from '../store/deleteGate';
@@ -63,16 +64,23 @@ function Doc({ paperRef, entryId }: Props) {
     const hr = host.getBoundingClientRect(), pr = page.getBoundingClientRect();
     const scroller = page.querySelector<HTMLElement>('.mode-scroll');
     const sr = (scroller ?? page).getBoundingClientRect();
+    // the words come from the editor's MODEL (store/lineRows.ts: one line per row), never from the rendered rows' text (the typing-latency
+    // readers law: no count path reads the DOM); a row element is read only for where it stands. A stale map (a composition, a native edit not
+    // yet re-rendered) is skipped: the next pause measures again
+    const ed = page.querySelector<HTMLElement>('.forward-only-editor');
+    const R = ed ? rowsFor(ed) : undefined;
+    if (!R || R.stale) return;
     const out: GutterRow[] = [];
     let n = 0;
-    page.querySelectorAll<HTMLElement>('.wz-row').forEach((row) => {
-      const text = row.textContent ?? '';
-      if (!text.trim()) return;
+    R.lines.forEach((line, i) => {
+      if (!line.trim()) return;
       n += 1;
+      const row = R.rows[i];
+      if (!row) return;
       const r = row.getBoundingClientRect();
       if (r.bottom <= sr.top || r.top >= sr.bottom) return;   // only what she can see beside it
       // a paragraph whose first line has scrolled above the page's text keeps its row at the text's top edge, beside what is left of it
-      out.push({ n, words: countGoalWords(text), y: Math.round(Math.max(r.top, sr.top) - hr.top) });
+      out.push({ n, words: countGoalWords(line), y: Math.round(Math.max(r.top, sr.top) - hr.top) });
     });
     setRows(out);
     setFrame({ left: pr.left - hr.left, right: pr.right - hr.left, top: pr.top - hr.top, height: pr.height, zoomed: host.dataset.zoom === 'true' });

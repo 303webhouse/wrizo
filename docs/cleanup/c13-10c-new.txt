@@ -12,5 +12,11 @@ flux3KindPreset=Preset
 # FLUX3 S2 (INK) - the Stack button and the hologram's level readout
 flux3ViewStack=Stack
 flux3ViewHologram=Hologram
+# FLUX3 S3 (INK) - the doc: the gutter's and the Glitch bar's count word, the port box's two acts, the goal word the Glitch bar spells
+flux3WordOne=word
+flux3WordMany=words
+flux3PortConnectAnother=Connect another
+flux3PortDisconnect=Disconnect
+flux3Checkpoint=Checkpoint
 # 10e (POLISH) - the Progress row's label for the stored 'project' metric; its Flux word comes with the full pass
 progressDrawer=Drawer

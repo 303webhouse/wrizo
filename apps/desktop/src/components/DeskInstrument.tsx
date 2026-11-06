@@ -52,20 +52,30 @@ function DeskGoalLane({ unitCount }: { unitCount: number }) {
   // "one celebration grammar, two consumers", not a second timing engine.
   const { frac, celebrating } = useGoalProgress(unitCount, WORD_GOAL);
   if (settings.progress !== 'words') return null;
+  // FLUX3 S3 - under ?flux3=1 in Flux, the bar style's lane carries the Glitch bar instead of the bar (ruling A); its own return, so the lane
+  // below stays exactly as it is for every other case (th-machina-source M19 reads its gate)
+  if (FLUX3 && theme === 'flux' && settings.progressStyle === 'bar') {
+    return (
+      <div className="desk-frame-instrument" data-style={settings.progressStyle}>
+        <div className={`desk-frame-goalflare${celebrating ? ' lit' : ''}`} aria-hidden="true" />
+        <FluxGlitchBar unitCount={unitCount} frac={frac} celebrating={celebrating} />
+      </div>
+    );
+  }
   return (
     <div className="desk-frame-instrument" data-style={settings.progressStyle}>
       {/* S4 — the flare. Decorative and inert: it carries no text, no number,
           and nothing that outlives its own ~1.1s window. */}
       <div className={`desk-frame-goalflare${celebrating ? ' lit' : ''}`} aria-hidden="true" />
       {/* under Machina the Run strip is the only progress instrument, so the thin bar is not drawn on the framed page (unframed surfaces keep it) [DeskInstrument §3] */}
-      {settings.progressStyle === 'bar' && theme !== 'machina' && (FLUX3 && theme === 'flux' ? <FluxGlitchBar unitCount={unitCount} frac={frac} celebrating={celebrating} /> : (
+      {settings.progressStyle === 'bar' && theme !== 'machina' && (
         <ProgressBar
           frac={frac}
           celebrating={celebrating}
           label={`${unitCount} word${unitCount === 1 ? '' : 's'}`}
           metricLabel="words"
         />
-      ))}
+      )}
     </div>
   );
 }
