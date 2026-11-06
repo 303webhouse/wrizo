@@ -1,0 +1,8 @@
+Flux S3-r2 (INK flux3/s3-r2 ed49c7a0, the Wrizors' 1920 idle-glitch blocker fixed) - manifest (Chat 1, Nov 6 2026)
+
+NOT MERGED: Fable's clearance after the Wrizors re-review the new 1920 frames.
+
+- The fix (INK): each glitched word keeps its own Range and follows it every frame while it lives; a second bug the new check caught (the glitch also took words from the page's chrome) is fixed; only FluxIdleGlitch.tsx and the harness changed since flux3/s3 b14a74ca.
+- Fresh train at ed49c7a0 (Chat 1, browserless): th-machina-source PASS 94, c13-standing 11 green, tsc x2 0, seed-guard PASS 36, build:web index-Dt7qx1Ho.js.
+- INK's box turn 09:55:44Z-09:59:28Z (lane ink, released by token), tree ed49c7a0, bundle index-Dt7qx1Ho.js: flux3-s3 PASS 38/38 (PLACE at 1366/1920/2000: glyph rect = word rect +-1 px as the word appears and after the page moves under it; MUT-FOLLOW landed and caught; every glitched word is one of the writer's own; contrast gutter 6.75, port box 16.08, letters 15.48). The box's own 1920 idle frame shows the glyphs on "juliet", on its line. (ink-box-s3r2/)
+- Full Actions pair, run 42196525993 on ed49c7a0: default 240/247 (the usual seven only); parked 239/247 = the usual seven plus ab3.mjs FAIL (exit 1 after 40 s; its ROWS-SHADOW line says PASS 63, the AB3 verdict line is absent). Control: ab3.mjs alone on Actions, both legs: S3-r2 ed49c7a0 (run 42199711404) PASS 24 + PASS; main 0d86f347 (apps = e174ba6f; run 42199715841) PASS 24 + PASS. Not reproduced on S3-r2 or on main: a single-file miss under shard load, not S3-r2's. (This is the second such Actions miss in the S3 series, after ab4 in ledger 215; both pass alone on both trees; the flake list stays empty by the rule, noted as a pattern for Fable.) (pair-ed49c7a0/, ab3-reruns/)
