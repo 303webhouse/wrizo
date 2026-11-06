@@ -132,7 +132,7 @@ const INSTRUMENT = `(() => {
     if (I.mi) I.mi.disconnect();
     if (!L) return false;
     I.mi = new MutationObserver((ms) => { const t = performance.now(); for (const m of ms) {
-      m.addedNodes.forEach((n) => { const s = n.style; I.idle.push([t, 'add', { x: parseFloat(s.left), y: parseFloat(s.top), w: parseFloat(s.width), h: parseFloat(s.height) }]); });
+      m.addedNodes.forEach((n) => { const s = n.style; I.idle.push([t, 'add', { x: parseFloat(s.left), y: parseFloat(s.top), w: parseFloat(s.width), h: parseFloat(s.height) }, n.dataset.word]); });
       m.removedNodes.forEach(() => I.idle.push([t, 'rm'])); } });
     I.mi.observe(L, { childList: true });
     return true;
@@ -403,10 +403,13 @@ try { await withHarness(async (app) => {
         mo.observe(L, { childList: true }); setTimeout(() => { mo.disconnect(); res(null); }, 8000); })`);
     }
     await ev('window.__f3IdleShift = 0');
-    return { adds: adds.length, onCaret, band, maxPerSec: maxIn1s(changes), textSame: s0.text === s1.text, selSame: same(s0.sel, s1.sel), countSame: s0.glitchbar && s1.glitchbar && s0.glitchbar.count === s1.glitchbar.count, stopMs };
+    const own = new Set(IDLE_TEXT.split(/\s+/));
+    const strays = adds.map((e) => e[3]).filter((w) => !own.has(w));
+    return { adds: adds.length, onCaret, band, maxPerSec: maxIn1s(changes), textSame: s0.text === s1.text, selSame: same(s0.sel, s1.sel), countSame: s0.glitchbar && s1.glitchbar && s0.glitchbar.count === s1.glitchbar.count, stopMs, strays };
   };
   const Id = await testIdle();
   ok(`IDLE words glitch and resolve (${Id.adds} in 8 s) while the page's text, selection and word count never change`, Id.adds >= 4 && Id.textSame && Id.selSame && Id.countSame, JSON.stringify(Id));
+  ok('IDLE every glitched word is one of HER words (the editor\'s text), never the page\'s chrome (its readouts, its hint line)', Id.adds >= 4 && Id.strays.length === 0, JSON.stringify(Id));
   ok('IDLE never a word on the caret\'s line', Id.band && Id.onCaret === 0 && Id.adds >= 4, JSON.stringify(Id));
   ok(`IDLE at most 3 changes in any 1 s (appearances and resolutions: ${Id.maxPerSec})`, Id.maxPerSec <= 3 && Id.adds >= 4, JSON.stringify(Id));
   ok('IDLE a pointer moving makes the page whole within 300 ms', Id.stopMs !== null && Id.stopMs <= 300, JSON.stringify(Id));

@@ -63,10 +63,13 @@ export function FluxIdleGlitch({ paperRef }: { paperRef: RefObject<HTMLElement |
     // a random word the writer can see, off the caret's line
     const pickWord = (page: HTMLElement): { rect: DOMRect; range: Range; text: string; font: CSSStyleDeclaration } | null => {
       const scroller = page.querySelector<HTMLElement>('.mode-scroll') ?? page;
+      // HER words only: the editor's own text, never the page's chrome (its readouts, its hint line), which also stands inside the page
+      const editor = page.querySelector<HTMLElement>('.forward-only-editor');
+      if (!editor) return null;
       const view = scroller.getBoundingClientRect();
       const band = caretBand(page);
       const nodes: Text[] = [];
-      const walk = document.createTreeWalker(scroller, NodeFilter.SHOW_TEXT);
+      const walk = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT);
       for (let n = walk.nextNode(); n; n = walk.nextNode()) if ((n.nodeValue ?? '').trim()) nodes.push(n as Text);
       for (let tries = 0; tries < 24 && nodes.length; tries += 1) {
         const node = nodes[Math.floor(Math.random() * nodes.length)];
