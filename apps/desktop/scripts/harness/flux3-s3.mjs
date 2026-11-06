@@ -317,9 +317,10 @@ try { await withHarness(async (app) => {
     const after = await st();
     const glitchAfter = await ev(`window.__f3.glitch.filter((t) => t > ${span.b})`);
     const grants = await ev("window.__f3.flashes('f3-glitchbar')");
-    // the page's own chrome comes back on her intent (a pointer moving), not on a timer: summon it, then read the gutter and the ports beside it
-    await app.mouseMove(400, 500); await sleep(120); await app.mouseMove(430, 530);
-    await sleep(2600);
+    // the page's own chrome comes back on her intent, not on a timer (useChromeDissolve: a pointer resting 260 ms at a viewport edge or over
+    // faded chrome, a tap off the text, or Esc): she reaches to the edge and rests there; then the gutter and the ports are read beside it
+    await app.mouseMove(400, 500); await app.mouseMove(30, 520); await sleep(700);
+    await sleep(1600);
     const back = await st();
     const r = { keys: span.n, measuresFirst: s0.gutter && s0.gutter.measures, measuresMid: mid && mid.gutter && mid.gutter.measures, measuresLast: last.gutter && last.gutter.measures,
       measuresAfter: after.gutter && after.gutter.measures, opMid: mid && mid.gutter && [mid.gutter.op, mid.ports && mid.ports.op, mid.chrome], opAfter: after.gutter && [after.gutter.op, after.ports && after.ports.op, after.chrome],
@@ -379,16 +380,13 @@ try { await withHarness(async (app) => {
     const changes = log.map((e) => e[0]);
     let stopMs = null;
     if (stop) {
-      await app.waitFor('document.querySelectorAll("[data-flux3-idle] .flux3-idle-word").length > 0', { timeout: 6000, label: 'a word glitching' }).catch(() => {});
-      const live = (await st()).idleLive;
-      const m0 = await ev('window.__f3.moves.length');
-      await ev('window.__f3IdleShift = 0');   // the move starts the stillness over: no word may come back in the read below
-      await app.mouseMove(300, 300);
-      await sleep(400);
-      const mv = await ev(`window.__f3.moves[${m0}]`);
-      const rm = await ev(`window.__f3.idle.filter((e) => e[1] === 'rm' && e[0] >= ${mv || 0}).map((e) => e[0])`);
-      const leftLive = (await st()).idleLive;
-      stopMs = live > 0 && mv ? (leftLive === 0 ? (rm.length ? Math.max(...rm) - mv : 0) : 9999) : null;
+      // the activity lands 40 ms after a word appears (inside the page, so a word that would resolve on its own soon cannot pass for a stop):
+      // the time until no word is left is read in the page; the idle clock is set back first, so no new word can come in the read
+      stopMs = await ev(`new Promise((res) => { const L = document.querySelector('[data-flux3-idle]'); if (!L) { res(null); return; }
+        const mo = new MutationObserver(() => { if (!L.querySelector('.flux3-idle-word')) return; mo.disconnect();
+          setTimeout(() => { window.__f3IdleShift = 0; const t0 = performance.now(); document.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: 300, clientY: 300 }));
+            const check = () => { if (!L.querySelector('.flux3-idle-word')) res(performance.now() - t0); else if (performance.now() - t0 > 1500) res(9999); else setTimeout(check, 5); }; check(); }, 40); });
+        mo.observe(L, { childList: true }); setTimeout(() => { mo.disconnect(); res(null); }, 8000); })`);
     }
     await ev('window.__f3IdleShift = 0');
     return { adds: adds.length, onCaret, band, maxPerSec: maxIn1s(changes), textSame: s0.text === s1.text, selSame: same(s0.sel, s1.sel), countSame: s0.glitchbar && s1.glitchbar && s0.glitchbar.count === s1.glitchbar.count, stopMs };
