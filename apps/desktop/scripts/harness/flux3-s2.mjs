@@ -26,8 +26,9 @@
 //          with ZERO layer draw calls, and the words are stored in the card.
 //   F      <= 3 flashes a second, measured: arrow keys held for 3 s and 40 wheel notches; the centre changes (each change recorded from the DOM)
 //          never more than 3 times in any 1 s; premise: it stepped at least 6 times.
-//   STILL  reduced motion = the still state: the Stack opens with no transition (every node's transition 0 s, its transform final at once), the
-//          veil changes at once, the layer makes no draw call, and closing gives every node back at once.
+//   STILL  the still state, twice: reduced motion (the app's own floor holds every transition to 0.01 ms, so <= 1 ms) and Ambiance 0 (no floor:
+//          exactly 0 s). The Stack opens with no transition (its computed transform final at once), the veil changes at once, the layer makes no
+//          draw call, and closing gives every node back at once.
 //   SEQ    Sequence (the existing Storyboard view, Flux's "Sequence"): every lane's and card's rect is IDENTICAL with the flag on and off (4 cells), the
 //          dress is applied under the flag (the lane's bracket, the card's brackets) and absent without it.
 //   C      contrast, both tones: the hologram's count (label and value) against the veil, Sequence's lane title against its lane: >= 4.5:1.
@@ -35,7 +36,7 @@
 //          board with the flag off. Rounds interleave the arms, one warm-up. A hosted runner prints it as information.
 //   MUT-GATE / MUT-HOLD / MUT-CLEAN / MUT-STILL  red-first, each a LANDED mutant of the served bundle (a pattern matched exactly once in index-*.js,
 //          replaced in flight): the centre's rate gate set to 0 (F fails); the Stack's press handler unbound (HELD fails: the drag moves a card); the
-//          transform left behind on closing (RECT fails); reduced motion ignored (STILL fails).
+//          transform left behind on closing (RECT fails); the still state ignored, the nodes always fly (STILL at Ambiance 0 fails).
 //   B      the build: the bundle served is dist-web's, built after the last commit touching apps/desktop/src.
 //
 // FLUX3_SHOTS=<dir> writes the frames (the Stack and the hologram in both tones at 1366 and 1920; Sequence in both tones). FLUX3_ROUNDS=<n> (4).
@@ -230,8 +231,10 @@ try { await withHarness(async (app) => {
   await ev(`window.wrizoCreateJournalPage(${JSON.stringify({ id: BOARD, text: 'Schema S2', pageType: 'board', boxes, createdAt: at, origin: null, source: null })})`);
   await sleep(500);
 
-  const open = async (flagOn, tone, view = [1920, 1080]) => {
-    await ev(`(() => { const p = JSON.parse(localStorage.getItem('wrizo-theme-prefs') || '{}'); p.page = ${JSON.stringify(tone)}; localStorage.setItem('wrizo-theme-prefs', JSON.stringify(p)); localStorage.setItem('wrizo-theme', 'flux'); })()`);
+  // the Page tone and the Ambiance dial are preferences (not collections): set before the reload, as the app reads them at boot; the dial is 50
+  // (the app's own default) except where a check asks for its still state (0)
+  const open = async (flagOn, tone, view = [1920, 1080], dial = 50) => {
+    await ev(`(() => { const p = JSON.parse(localStorage.getItem('wrizo-theme-prefs') || '{}'); p.page = ${JSON.stringify(tone)}; localStorage.setItem('wrizo-theme-prefs', JSON.stringify(p)); localStorage.setItem('wrizo-theme', 'flux'); localStorage.setItem('wrizo-ambiance-dial', ${JSON.stringify(String(dial))}); })()`);
     await ev(`history.replaceState(null, '', ${JSON.stringify(flagOn ? '/?flux3=1' : '/')} + '#/page/${BOARD}')`);
     await app.emulateDpr(1, view[0], view[1]);
     await app.reload();
@@ -449,10 +452,15 @@ try { await withHarness(async (app) => {
   ok(`F <= 3 flashes a second, measured: the centre changed ${F.changes} times under held keys and 40 wheel notches, at most ${F.maxPerSec} in any 1 s (closest ${F.minGap} ms)`, F.pass, JSON.stringify(F));
 
   // ---- STILL: reduced motion -------------------------------------------------------------------------------------------------------------------
-  const testStill = async () => {
-    await open(true, 'dark');
-    await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+  // two still states: reduced motion (the app's own floor already holds every transition to 0.01 ms, !important, so a duration of at most 1 ms is
+  // still) and Ambiance 0 (no floor: the Stack's own still state alone, so every duration must be exactly 0 s; the mutant is read here)
+  const secs = (d) => (/ms$/.test(d) ? parseFloat(d) / 1000 : parseFloat(d));
+  const testStill = async (mode = 'dial0') => {
+    const reduced = mode === 'reduced';
+    await open(true, 'dark', [1920, 1080], reduced ? 50 : 0);
+    if (reduced) await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
     await sleep(900);
+    const isStill = (d) => (reduced ? secs(d) <= 0.001 : secs(d) === 0);
     await pick('[data-flux3-stack-tab]');
     await sleep(60);
     const a = await st();   // the computed transforms: a flight in progress would read different from its end
@@ -467,11 +475,13 @@ try { await withHarness(async (app) => {
     await app.emulateMedia([]);
     await sleep(600);
     const durs = Object.values(a.dur);
-    return { marked: a.marked, instant: same(a.tf, b.tf), durs: [...new Set(durs)], calls, veil: v.veil, closed: { marked: c.marked, transformed: c.transformed },
-      pass: a.marked === 9 && same(a.tf, b.tf) && durs.every((d) => d === '0s') && calls === 0 && v.veil && v.veil.on === 'true' && v.veil.op === 1 && /^0s/.test(v.veil.dur) && c.marked === 0 && c.transformed === 0 };
+    return { mode, marked: a.marked, instant: same(a.tf, b.tf), durs: [...new Set(durs)], calls, veil: v.veil, closed: { marked: c.marked, transformed: c.transformed },
+      pass: a.marked === 9 && same(a.tf, b.tf) && durs.every(isStill) && calls === 0 && v.veil && v.veil.on === 'true' && v.veil.op === 1 && isStill(v.veil.dur.split(',')[0]) && c.marked === 0 && c.transformed === 0 };
   };
-  const S = await testStill();
-  ok('STILL reduced motion = the still state: the Stack opens with no transition (0 s, its transform final at once), the veil at once, no layer draw, and closing gives every node back at once', S.pass, JSON.stringify(S));
+  const S = await testStill('reduced');
+  ok('STILL reduced motion = the still state: the Stack opens with no transition (<= 1 ms, its transform final at once), the veil at once, no layer draw, and closing gives every node back at once', S.pass, JSON.stringify(S));
+  const S0 = await testStill('dial0');
+  ok('STILL Ambiance 0 = the still state: the Stack opens with no transition (0 s exactly, its transform final at once), the veil at once, no layer draw, and closing gives every node back at once', S0.pass, JSON.stringify(S0));
 
   // ---- C: contrast, both tones -----------------------------------------------------------------------------------------------------------------
   const contrast = async (tone) => {
@@ -538,9 +548,9 @@ try { await withHarness(async (app) => {
   const mC = await withMutant('clean', () => rectCell('dark', [1920, 1080]));
   mC.landed = landed.clean;
   ok('MUT-CLEAN (landed) the transform left behind on closing: RECT fails (a style attribute is not given back)', mC.landed === 1 && mC.restyled.length > 0, JSON.stringify({ landed: mC.landed, restyled: mC.restyled.length }));
-  const mS = await withMutant('still', testStill);
+  const mS = await withMutant('still', () => testStill('dial0'));
   mS.landed = landed.still;
-  ok('MUT-STILL (landed) reduced motion ignored: STILL fails (the nodes fly)', mS.landed === 1 && !mS.pass, JSON.stringify(mS));
+  ok('MUT-STILL (landed) the still state ignored (the nodes always fly): STILL at Ambiance 0 fails', mS.landed === 1 && !mS.pass, JSON.stringify(mS));
 
   // ---- B: the build -------------------------------------------------------------------------------------------------------------------------------
   await open(true, 'dark');
