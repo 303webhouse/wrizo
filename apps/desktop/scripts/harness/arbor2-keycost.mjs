@@ -10,6 +10,10 @@
 // Per pass: per key (keydown to the next keydown) the renderer main thread's time in each top-level event, summed by name (median over the
 // keys), the keys' total, and the count of every dispatched event by type (a transitionend storm shows here) and of inline-style writes
 // on the copies.
+// (extended after its first run, 03:56Z Nov 6 - the bitmap copies cost ~1.4 ms a key, the LIVE pergola ~10 ms, mostly style recalc: each pass
+// now also reports each recalc's element count per key and the top style-invalidation sources (reason, node), from Chrome's own
+// invalidation tracking; and KC_ROOM=light runs a tree without the pin (r20) in the day room through the Room row's own Always day,
+// data-room=light - in session, nothing stored - with its own premise checks K1b/K2b. K1-K3 are unchanged for a pinned run.)
 import { withHarness } from '../runtime-verify.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -17,6 +21,8 @@ const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
 const q = process.env.WS_URL_SEARCH || '';
 const pinned = /[?&]arbor2=1\b/.test(q) && /[?&]arbor2room=day\b/.test(q);
+const viaLight = process.env.KC_ROOM === 'light';
+const INV = ['StyleRecalcInvalidationTracking', 'StyleInvalidatorInvalidationTracking', 'ScheduleStyleInvalidationTracking'];
 const N = 60, GAP = 110, TEXT = 'the quick brown fox jumps over the lazy dog and runs on ';
 const median = (a) => { const s = [...a].sort((x, y) => x - y); return s.length ? (s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2) : null; };
 const r1 = (v) => (v == null ? null : Math.round(v * 10) / 10);
@@ -24,7 +30,7 @@ const r1 = (v) => (v == null ? null : Math.round(v * 10) / 10);
 async function tracePass(app, label) {
   const events = [];
   const off = app.tap((m, p) => { if (m === 'Tracing.dataCollected' && p && p.value) for (const e of p.value) events.push(e); });
-  await app.cdp('Tracing.start', { categories: 'devtools.timeline,disabled-by-default-devtools.timeline', transferMode: 'ReportEvents' });
+  await app.cdp('Tracing.start', { categories: 'devtools.timeline,disabled-by-default-devtools.timeline,disabled-by-default-devtools.timeline.invalidationTracking', transferMode: 'ReportEvents' });
   for (let i = 0; i < N; i += 1) { await app.typeKeys(TEXT[i % TEXT.length]); await sleep(GAP); }
   const done = app.waitEvent('Tracing.tracingComplete', 60000);
   await app.cdp('Tracing.end');
@@ -45,6 +51,14 @@ async function tracePass(app, label) {
   const keyOf = (ts) => { let lo = 0, hi = keys.length - 1; while (lo <= hi) { const m = (lo + hi) >> 1; if (ts < keys[m].t0) hi = m - 1; else if (ts >= keys[m].t1) lo = m + 1; else return keys[m]; } return null; };
   for (const e of top) { const k = keyOf(e.ts); if (k) k.total += e.dur / 1000; }
   for (const e of main) { if (!PH.includes(e.name)) continue; const k = keyOf(e.ts); if (k) k.ph[e.name] += e.dur / 1000; }
+  // each style recalc's element count, summed per key (complete events carry it in args, a begin/end pair in the end's args)
+  const elems = new Map(keys.map((k) => [k, 0]));
+  for (const e of events) { if (e.tid !== tid || e.name !== 'UpdateLayoutTree') continue; const n = (e.args && (e.args.elementCount ?? (e.args.data && e.args.data.elementCount))) ?? null; if (n == null) continue; const k = keyOf(e.ts); if (k) elems.set(k, elems.get(k) + n); }
+  // what invalidated style, by event, reason and node (the page's own nodes, named as the trace names them), over the keys
+  const inv = {}, invNodes = {};
+  for (const e of events) { if (!INV.includes(e.name) || !keyOf(e.ts)) continue; const d = (e.args && e.args.data) || {};
+    const key = `${e.name.replace('InvalidationTracking', '')} | ${d.reason || d.changedAttribute || d.changedClass || d.changedPseudo || d.changedId || '-'} | ${d.nodeName || '-'}`; inv[key] = (inv[key] || 0) + 1;
+    if (d.nodeName) invNodes[d.nodeName] = (invNodes[d.nodeName] || 0) + 1; }
   const types = {};
   for (const e of events) if (e.name === 'EventDispatch' && e.tid === tid && e.args && e.args.data) types[e.args.data.type] = (types[e.args.data.type] || 0) + 1;
   // the top-level events' own names, by total time over the pass (what the main thread was doing, named)
@@ -57,6 +71,9 @@ async function tracePass(app, label) {
     phases: Object.fromEntries(PH.map((p) => [p, r1(median(keys.map((k) => k.ph[p])))])),
     topNamesPerKey: topNames,
     dispatched: Object.fromEntries(Object.entries(types).sort((a, b) => b[1] - a[1]).slice(0, 12)),
+    restyledPerKey: { median: median([...elems.values()]), p95: [...elems.values()].sort((a, b) => a - b)[Math.floor(elems.size * 0.95)] ?? null },
+    invalidations: Object.entries(inv).sort((a, b) => b[1] - a[1]).slice(0, 18),
+    invalidatedNodes: Object.entries(invNodes).sort((a, b) => b[1] - a[1]).slice(0, 12),
   };
 }
 
@@ -91,6 +108,7 @@ await withHarness(async (app) => {
     await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(pageId)}`);
     await app.waitFor("!!document.querySelector('.wz-rhizome-field')", { label: `rhizome field (${label})` }).catch(() => {});
     await app.waitFor("[...document.querySelectorAll(\".arbor2-pagesh[data-bitmap='true'] .arbor2-pergola-drift\")].some((d) => /^url\\(\"blob:/.test(getComputedStyle(d).backgroundImage))", { label: `bitmap drawn (${label})`, timeout: 5000 }).catch(() => {});
+    if (viaLight) { await app.evalJs("document.documentElement.setAttribute('data-room', 'light')"); await app.waitFor("document.documentElement.getAttribute('data-arbor2-room') === 'day'", { label: `day by the Room row (${label})`, timeout: 5000 }).catch(() => {}); await sleep(3200); }
     if (setup) await app.evalJs(setup);
     await sleep(1500);
     const pre = await app.evalJs("({ room: document.documentElement.getAttribute('data-arbor2-room'), off: document.documentElement.getAttribute('data-arbor2-off'), bmpShown: [...document.querySelectorAll(\".arbor2-pagesh[data-bitmap='true']\")].filter((e) => getComputedStyle(e).display !== 'none').length, bmp: document.querySelectorAll(\".arbor2-pagesh[data-bitmap='true']\").length, pageCopy: !!document.querySelector('.mode-page .arbor2-pagesh svg'), roomShown: (() => { const r = document.querySelector('.arbor2-pergola'); return !!r && getComputedStyle(r).display !== 'none'; })() })");
@@ -104,9 +122,16 @@ await withHarness(async (app) => {
   return checks;
 }, { label: 'arbor2-keycost' });
 
-ok('K1 the run is pinned to the day room (WS_URL_SEARCH carries arbor2=1 and arbor2room=day)', pinned, q);
+if (!viaLight) ok('K1 the run is pinned to the day room (WS_URL_SEARCH carries arbor2=1 and arbor2room=day)', pinned, q);
+else ok('K1b the run is flagged, unpinned, and takes the day room from the Room row\'s Always day (KC_ROOM=light)', /[?&]arbor2=1\b/.test(q) && !/arbor2room=/.test(q), q);
 for (const [label] of [['all'], ['nobmp'], ['noshade']]) {
   const r = out[label];
+  if (viaLight) {
+    ok(`K2b ${label}: the room in force was day (Always day), and the pass set up as named`, !!r && r.pre.room === 'day'
+      && (label === 'all' ? r.pre.pageCopy && r.pre.roomShown : label === 'nobmp' ? r.pre.bmpShown === 0 && r.pre.pageCopy && r.pre.roomShown : r.pre.off === 'shadows' && !r.pre.roomShown), JSON.stringify(r && r.pre));
+    ok(`K3 ${label}: the trace caught the keys (>= ${N - 5} keys measured)`, !!r && r.keys >= N - 5, JSON.stringify(r && { keys: r.keys, events: r.events }));
+    continue;
+  }
   ok(`K2 ${label}: the room in force was day, and the pass set up as named`, !!r && r.pre.room === 'day'
     && (label === 'all' ? r.pre.bmpShown > 0 && r.pre.pageCopy && r.pre.roomShown : label === 'nobmp' ? r.pre.bmp > 0 && r.pre.bmpShown === 0 && r.pre.pageCopy && r.pre.roomShown : r.pre.off === 'shadows' && !r.pre.roomShown), JSON.stringify(r && r.pre));
   ok(`K3 ${label}: the trace caught the keys (>= ${N - 5} keys measured)`, !!r && r.keys >= N - 5, JSON.stringify(r && { keys: r.keys, events: r.events }));
