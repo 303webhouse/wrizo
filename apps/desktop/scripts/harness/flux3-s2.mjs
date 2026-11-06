@@ -17,6 +17,7 @@
 //   SCALE  the centre stands larger than its card, every other node smaller than the centre.
 //   HOLO   a click on the centre opens the hologram: the veil is shown, the centre grows again (>= 1.35x), the level says Hologram; the arrow keys
 //          flip; Esc closes the hologram, Esc again the Stack.
+//   HINT   the board's hint names Live's gestures, which the Stack holds: hidden under the Stack and the hologram, visible before and after.
 //   RECT   the card-rect check, 1366 + 1920 x dark + light (4 cells): after a full visit (the Stack, three flips, the hologram, two flips, Esc, Esc)
 //          every card's rect AND its style attribute are exactly as before, no Stack mark is left, the stored board is unchanged and no storage key
 //          is new (nothing saved); RESUME: the layer draws again (motion is back).
@@ -125,6 +126,7 @@ const INSTRUMENT = `(() => {
       level: lvl ? lvl.textContent : null,
       rects: by((c) => rr(c.getBoundingClientRect())), styles: by((c) => c.getAttribute('style')), tf: by((c) => getComputedStyle(c).transform),
       dur: by((c) => getComputedStyle(c).transitionDuration), popup: !!document.querySelector('.board-popup-editor'),
+      hint: (() => { const h = document.querySelector('.flux-board-frame .flux-readout-hint'); return h && h.textContent ? getComputedStyle(h).visibility : null; })(),
       layerOp: (() => { const l = document.querySelector('[data-flux3-layer]'); return l ? +getComputedStyle(l).opacity : null; })(),
     };
   };
@@ -336,6 +338,8 @@ try { await withHarness(async (app) => {
   ok('HOLO the arrow keys flip the hologram; Esc closes it (the Stack again), Esc again closes the Stack',
     h2.host === 'holo' && h2.centre === seqOrder[1] && h3.host === 'stack' && h3.veil.on === 'false' && h4.host === null && h4.tab === 'false' && h4.marked === 0 && h4.level !== 'Stack',
     JSON.stringify({ flip: [h2.host, h2.centre], esc1: [h3.host, h3.veil && h3.veil.on], esc2: [h4.host, h4.tab, h4.marked, h4.level] }));
+  ok('HINT the board\'s hint (Live\'s gestures, which the Stack holds) is hidden under the Stack and the hologram, and back once the Stack closes',
+    pre.hint === 'visible' && s1.hint === 'hidden' && h1.hint === 'hidden' && h4.hint === 'visible', JSON.stringify({ before: pre.hint, stack: s1.hint, holo: h1.hint, after: h4.hint }));
 
   // ---- RECT: the card-rect check, 4 cells ------------------------------------------------------------------------------------------------------
   const visit = async () => {

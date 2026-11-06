@@ -63,7 +63,7 @@
 :root[data-flux3][data-theme='flux'] [data-flux3-stack='stack'] > [data-flux3-layer]{ opacity:.3; }   /* the circuit stays faint and still behind */
 :root[data-flux3][data-theme='flux'] [data-flux3-stack='holo'] > [data-flux3-layer]{ opacity:.12; }
 /* the board's hint names Live's gestures (drag a node, drag to connect), which the Stack holds: it waits while the Stack is open */
-:root[data-flux3][data-theme='flux'] .flux-board-frame:has([data-flux3-stack]) .flux-readout-hint{ visibility:hidden; }
+:root[data-flux3][data-theme='flux'] .board-canvas-blur-wrap:has([data-flux3-stack]) .flux-board-frame .flux-readout-hint{ visibility:hidden; }   /* the frame is the board host's sibling */
 /* the centre node: a cyan outline at its brackets (square, no shadow) */
 :root[data-flux3][data-theme='flux'] .board-box[data-flux3-stack='centre'] > .flux3-node{ outline:1px solid var(--f3-cyan); outline-offset:3px; }
 /* the hologram's veil: over the board frame, under the nodes (its z is the Stack's base); the beam is a faint diffuse light, no projector line */
