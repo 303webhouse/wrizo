@@ -294,22 +294,7 @@ export function RhizomeField({ text, seedKey, paperRef }: {
   const flashCopy = vines && flashState && m ? (
     <svg className="arbor2-vines-flash" aria-hidden="true" focusable="false" data-flash={flashState} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none"
       style={{ clipPath: clipD ? `path(evenodd, "${clipD}")` : undefined }}>
-      {/* r21 latency fix, part 2 (Fable, Nov 5: "keep the LOOK identical; use a static mask for the flash copy"): the flash copy's own mask - the
-          field's holes and its 24 px edge fade, the same numbers - in its own defs, so nothing the live field does can invalidate it */}
-      <defs>
-        {h > 60 && (
-          <linearGradient id="arbor2-flash-fade" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2={h}>
-            <stop offset="0" stopColor="#000" /><stop offset={24 / h} stopColor="#fff" /><stop offset={1 - 24 / h} stopColor="#fff" /><stop offset="1" stopColor="#000" />
-          </linearGradient>
-        )}
-        <mask id="arbor2-flash-mask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width={w} height={h}>
-          <rect x="0" y="0" width={w} height={h} fill={h > 60 ? 'url(#arbor2-flash-fade)' : '#fff'} />
-          {m.holes.map((r, i) => (
-            <rect key={i} x={r.left} y={r.top} width={Math.max(0, r.right - r.left)} height={Math.max(0, r.bottom - r.top)} fill="#000" />
-          ))}
-        </mask>
-      </defs>
-      <g mask="url(#arbor2-flash-mask)"><ArborVines plan={plan} past={pastPlans} geo={CANON} room={roomStable!} p={vineP} fromTip={shownVisit > 0} /></g>
+      <g mask="url(#wz-rhizome-mask)"><ArborVines plan={plan} past={pastPlans} geo={CANON} room={roomStable!} p={vineP} fromTip={shownVisit > 0} /></g>
     </svg>
   ) : null;
 
