@@ -23,7 +23,8 @@ const LIST = [
   { name: 'c13-10-seams-check (parked)', args: ['c13/c13-10-seams-check.mjs'], env: { HARNESS_PARKED: '1' } },
   { name: 'c13-10b-readers', args: ['c13/c13-10b-readers.mjs', '--base', 'd1ede8e9'] },
   { name: 'c13-10f-wordcount', args: ['c13/c13-10f-wordcount.mjs'] },
-  { name: 'c13-10h-persistence', args: ['c13/c13-10h-persistence.mjs', '--base', '1913849e'] },
+  // #13 step 11 deletes three dead exports of the barrel: the API is <base>'s minus exactly those (c13-11-exports.txt)
+  { name: 'c13-10h-persistence', args: ['c13/c13-10h-persistence.mjs', '--base', '1913849e', '--gone', 'docs/cleanup/c13-11-exports.txt'] },
   { name: 'typing-latency-readers-guard', args: ['typing-latency-readers-guard.mjs'] },
 ];
 // Red on main, owned: not counted until green (then moved to LIST in the same commit).
