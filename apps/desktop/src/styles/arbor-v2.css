@@ -844,6 +844,13 @@
    (pergola.ts sets data-asleep once the writing fade has run; nothing visible changes - the layer is at opacity 0) */
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] :is(.arbor2-pergola, .arbor2-pagesh){ will-change:opacity; }
 :root[data-arbor2][data-theme='plateau'] :is(.arbor2-pergola, .arbor2-pagesh)[data-asleep='true'] > .arbor2-pergola-drift{ content-visibility:hidden; }
+/* NICK'S RULING B (via Fable, Nov 6): the leaves shiver only when she is not typing. A live layer holds the live drawing and the still picture in
+   its one drift wrapper (pergola.ts); on the chrome's recede (the first key) the still picture shows and the live drawing leaves style and
+   paint work; on the chrome's return the live drawing is back. The wrapper - and its drift - never change. Reduced motion: no breeze to lose. */
+:root[data-arbor2][data-theme='plateau'] .arbor2-pergola-drift > :is(.arbor2-live, .arbor2-still){ position:absolute; inset:0; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-pergola-drift > .arbor2-still{ display:none; background-repeat:no-repeat; background-position:center; background-size:cover; }
+:root[data-arbor2][data-theme='plateau'][data-wz-writing='true'] .arbor2-pergola-drift > .arbor2-still{ display:block; }
+:root[data-arbor2][data-theme='plateau'][data-wz-writing='true'] .arbor2-pergola-drift > .arbor2-live{ content-visibility:hidden; }
 
 /* r19 §18.1 - REST <-> WRITING (Fable, ruling 2: the existing recede/return hooks, Arbor-scoped, opacity transitions on two layers, no new JS
    animation path). <html data-wz-writing> (useChromeDissolve) is the hook: the first keystroke fades the whole shade (room + page) out over ~6 s

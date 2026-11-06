@@ -60,14 +60,27 @@ function makeBitmapLayer(alpha: string): { layer: HTMLDivElement; drift: HTMLDiv
   return { layer, drift };
 }
 
+// NICK'S RULING B (via Fable, Nov 6: "the leaves shiver only when she's not typing. On the first key the shade swaps to the still picture; it goes
+// live again on the same signal that brings the chrome back. The drift keeps moving throughout"): a live layer (the room, the page's copy)
+// holds the live drawing (.arbor2-live: the blur, the breeze) AND the still picture (.arbor2-still: the shared bitmap at the layer's own
+// strength), side by side inside the one drift wrapper. The swap is the stylesheet's, on <html data-wz-writing> - the chrome's own recede and
+// return - so it lands in the same frame as the recede; the drift wrapper is never touched, so the drift runs on. (arbor-v2.css)
 function makeLayer(cls: string, alpha: string | null): { layer: HTMLDivElement; drift: HTMLDivElement } {
   const layer = document.createElement('div');
   layer.className = cls;
   layer.setAttribute('aria-hidden', 'true');
   const drift = document.createElement('div');
   drift.className = 'arbor2-pergola-drift';
-  drift.innerHTML = svgText.replace(/<style>[\s\S]*?<\/style>/, '');
-  const svg = drift.querySelector('svg');
+  const live = document.createElement('div');
+  live.className = 'arbor2-live';
+  live.innerHTML = svgText.replace(/<style>[\s\S]*?<\/style>/, '');
+  const still = document.createElement('div');
+  still.className = 'arbor2-still';
+  // the still picture at the layer's own strength: the page copy's 3.4%, the room's own 20% (the file's group opacity)
+  still.style.opacity = alpha ?? ((/<g filter="[^"]*" opacity="([^"]*)"/.exec(svgText) || [])[1] || '0.2');
+  withBitmap((u) => { still.style.backgroundImage = `url("${u}")`; });
+  drift.appendChild(live); drift.appendChild(still);
+  const svg = live.querySelector('svg');
   if (svg) {
     svg.removeAttribute('width'); svg.removeAttribute('height');
     svg.setAttribute('preserveAspectRatio', 'xMidYMid slice');

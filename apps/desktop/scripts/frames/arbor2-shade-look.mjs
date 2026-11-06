@@ -25,6 +25,28 @@ const setRoom = async (app, room) => {
   await sleep(3400);
   if (room === 'day') await waitSoft(app, "[...document.querySelectorAll('.arbor2-pergola-drift')].every((d) => !!d.querySelector('svg') || /^url\\(\"blob:/.test(getComputedStyle(d).backgroundImage))", { label: 'shade drawn', timeout: 5000 });
 };
+// NICK'S RULING B (Nov 6): the swap's look. The SAME moment shot twice - the live drawing, then the still picture (a test-only style in this page
+// shows the still picture exactly as the writing signal would, without writing, so nothing else moves between the two shots). The shiver pair
+// holds every leaf at its shiver's peak (its own delay + 250 ms, paused), the worst moment for a first key to land.
+const SHOW_STILL = "(() => { const s = document.createElement('style'); s.textContent = \".arbor2-pergola-drift > .arbor2-still{ display:block !important; } .arbor2-pergola-drift > .arbor2-live{ content-visibility:hidden !important; }\"; document.head.appendChild(s); return true; })()";
+const HOLD = (shiver) => `(() => { document.getAnimations().forEach((a) => { const t = a.effect && a.effect.target; if (!t || !t.closest || !t.closest('.arbor2-pergola, .arbor2-pagesh')) return;
+  const leaf = t.classList && t.classList.contains('wz-leaf'); a.pause(); a.currentTime = leaf && ${shiver ? 'true' : 'false'} ? (a.effect.getTiming().delay || 0) + 250 : 4000; }); return true; })()`;
+const swapPic = async (app, id, shiver, still) => { await openPage(app, id); await setRoom(app, 'day'); await app.evalJs(HOLD(shiver)); await sleep(300); if (still) { await app.evalJs(SHOW_STILL); await sleep(300); } };
+// the flash at its hold (Fable, Nov 6: the flash copy's mask pre-rendered - the look identical): a page one word short of its goal, the word, every
+// finite animation landed - the brass copy at full
+const flashPic = async (app, id, room) => {
+  await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id, text: 'light kettle street table question morning dog', createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page' })})`);
+  await app.evalJs("localStorage.setItem('wrizo-writing-settings', JSON.stringify({ ...JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}'), progress: 'words', progressStyle: 'rhizome' }))");
+  await app.evalJs(`window.wrizoSetWritingGoal(${JSON.stringify({ n: 8, unit: 'words' })})`); await sleep(300);
+  await app.evalJs(`history.replaceState(null, '', '/?arbor2=1#/page/${id}')`); await app.reload();
+  await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 20000 });
+  await waitSoft(app, "!!document.querySelector('.wz-rhizome-field')", { label: 'field' }); await sleep(900);
+  await setRoom(app, room);
+  await app.evalJs("(() => { const e = document.querySelector('.forward-only-editor'); if (!e) return false; e.focus(); const r = document.createRange(); r.selectNodeContents(e); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()");
+  for (const ch of ' word') { await app.cdp('Input.dispatchKeyEvent', { type: 'keyDown', key: ch, text: ch, unmodifiedText: ch }); await app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: ch }); await sleep(40); }
+  await waitSoft(app, "!!document.querySelector('.arbor2-vines-flash')", { label: 'flash', timeout: 3000 }); await sleep(200);
+  await app.evalJs("(() => { document.getAnimations().forEach((a) => { try { if (a.effect && Number.isFinite(a.effect.getComputedTiming().endTime)) a.finish(); else a.pause(); } catch {} }); return true; })()"); await sleep(200);
+};
 const openDrawer = async (app) => { await app.evalJs("(() => { const g = document.querySelector('.wz-tutor-grip'); if (g) g.click(); return !!g; })()"); await sleep(900); };
 
 const screens = {
@@ -32,6 +54,12 @@ const screens = {
   'shade-pic-day-drawer': async (app) => { await openPage(app, 'arbor-shade-drawer'); await setRoom(app, 'day'); await openDrawer(app); },
   'shade-pic-night-rest': async (app) => { await openPage(app, 'arbor-shade-night'); await setRoom(app, 'night'); },
   'shade-pic-night-drawer': async (app) => { await openPage(app, 'arbor-shade-ndrawer'); await setRoom(app, 'night'); await openDrawer(app); },
+  'shade-pic-swap-live': async (app) => { await swapPic(app, 'arbor-swap-live', false, false); },
+  'shade-pic-swap-still': async (app) => { await swapPic(app, 'arbor-swap-still', false, true); },
+  'shade-pic-swap-live-shiver': async (app) => { await swapPic(app, 'arbor-swap-live-sh', true, false); },
+  'shade-pic-swap-still-shiver': async (app) => { await swapPic(app, 'arbor-swap-still-sh', true, true); },
+  'shade-pic-flash-night': async (app) => { await flashPic(app, 'arbor-flash-night', 'night'); },
+  'shade-pic-flash-day': async (app) => { await flashPic(app, 'arbor-flash-day', 'day'); },
 };
 
 export default guarded(screens, { verdict: ['ARBOR-SHADE'] });
