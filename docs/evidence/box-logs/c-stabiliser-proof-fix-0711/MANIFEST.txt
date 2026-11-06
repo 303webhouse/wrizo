@@ -1,0 +1,12 @@
+The C stabiliser proof (FIX, rhizome-c-stable-r1 199a2168, harness only) - manifest (Chat 1, Nov 6 2026)
+
+Box turn 2026-11-06 07:11:32Z-07:40:30Z (lane FIX, on Chat 1's go; released by token; no browser left). NOT MERGED: the branch merges only on Fable's clearance. Harness head guard hash 96a4378c.
+
+Design: check C (median, p95) and C2 (cost) are held to the fade's REFERENCE SHIFT, the same turn's main control (RL_REF, made by rhizome-latency-ref.mjs from at least 3 main control logs, refused below 3) plus the old slacks (+5 / +25 / +4); max <=100 stays (the 150 ms stall is still red); a stalled FAST control voids a measurement; with no RL_REF a default stands and the check says which it used.
+
+Reference: 4 main controls on the shipped bundle index-BiBie43a.js, RL_REF {"c":7.9,"p95":17.3,"c2":3.2} (control shifts 8.8 / 7.9 / 4.3 / 7.6).
+Judged runs with that RL_REF: all 14 PASS 17/17 (main-tip x4, 8aae0c76 / index-DotAu9BA.js x3, 6ea4007f / index-BYV01fuU.js x3, plus the 4 controls judged; one control needed 3 runs: voided, then confirmed, ended green). The OLD fixed +5 would have failed C on 10 of the 14 (shifts 5.1-9.8 ms).
+Mutants (rhizome-latency-mutant.mjs with RL_REF): PASS 14/14, 630 s. M0 all green; M1 (40 ms) B, C, B2, C2 red; M2 (150 ms stall, fade max 164.5) C red, B and B2 green; M3 (15 ms) B2 and C2 red; M4 (+10 ms per fade key) C2 RED while C stays green (the frame clock hides a 10 ms cost, as the guard header already says), B and B2 green.
+Notes from FIX: (1) natural fade max reached 91 and 95 ms against the 100 ms ceiling (ctl1, j2-6ea4007f), close; untouched, Fable's call if headroom is wanted (the stall mutant is at 164). (2) M4 is caught by C2 alone.
+
+Files here: ctl1-4 (the reference controls), j<round>-<tree> (the judged runs), mutant.txt, ref-log.txt, runs.txt (FIX's table), turn-times.txt. (tab.mjs, FIX's table script, stays with FIX.)

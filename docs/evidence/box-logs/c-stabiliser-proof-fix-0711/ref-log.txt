@@ -1,0 +1,4 @@
+C:/Users/nickh/AppData/Local/Temp/claude/8c10afa55c350bf4/f985972d-67a8-49d8-9d9a-0b31cfc5fcd7/scratchpad/c2/ctl1.txt: fade shift median 8.8 p95 22.3 cost 3.2
+C:/Users/nickh/AppData/Local/Temp/claude/8c10afa55c350bf4/f985972d-67a8-49d8-9d9a-0b31cfc5fcd7/scratchpad/c2/ctl2.txt: fade shift median 7.9 p95 17.3 cost 3.3
+C:/Users/nickh/AppData/Local/Temp/claude/8c10afa55c350bf4/f985972d-67a8-49d8-9d9a-0b31cfc5fcd7/scratchpad/c2/ctl3.txt: fade shift median 4.3 p95 12.2 cost 3.1
+C:/Users/nickh/AppData/Local/Temp/claude/8c10afa55c350bf4/f985972d-67a8-49d8-9d9a-0b31cfc5fcd7/scratchpad/c2/ctl4.txt: fade shift median 7.6 p95 14.7 cost 1.8

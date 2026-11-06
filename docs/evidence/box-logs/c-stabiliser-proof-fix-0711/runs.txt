@@ -1,0 +1,18 @@
+harness head=199a2168 guard=96a4378c
+ctl1 dist=maintip bundle=index-BiBie43a.js start=07:11:35Z exit=0 secs=71
+ctl2 dist=maintip bundle=index-BiBie43a.js start=07:12:47Z exit=0 secs=79
+ctl3 dist=maintip bundle=index-BiBie43a.js start=07:14:07Z exit=0 secs=186
+ctl4 dist=maintip bundle=index-BiBie43a.js start=07:17:14Z exit=0 secs=69
+REF={"c":7.9,"p95":17.3,"c2":3.2,"runs":4}
+j1-main dist=maintip bundle=index-BiBie43a.js start=07:18:23Z exit=0 secs=69
+j1-8aae0c76 dist=8aae0c76 bundle=index-DotAu9BA.js start=07:19:35Z exit=0 secs=68
+j1-6ea4007f dist=6ea4007f bundle=index-BYV01fuU.js start=07:20:46Z exit=0 secs=78
+j2-main dist=maintip bundle=index-BiBie43a.js start=07:22:04Z exit=0 secs=59
+j2-8aae0c76 dist=8aae0c76 bundle=index-DotAu9BA.js start=07:23:03Z exit=0 secs=69
+j2-6ea4007f dist=6ea4007f bundle=index-BYV01fuU.js start=07:24:12Z exit=0 secs=69
+j3-main dist=maintip bundle=index-BiBie43a.js start=07:25:22Z exit=0 secs=69
+j3-8aae0c76 dist=8aae0c76 bundle=index-DotAu9BA.js start=07:26:31Z exit=0 secs=69
+j3-6ea4007f dist=6ea4007f bundle=index-BYV01fuU.js start=07:27:41Z exit=0 secs=69
+j4-main dist=maintip bundle=index-BiBie43a.js start=07:28:51Z exit=0 secs=69
+mutant exit=0 secs=630
+finished
