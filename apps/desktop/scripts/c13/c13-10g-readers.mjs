@@ -2,6 +2,7 @@
 // #13 step 10g: every source reader of components/BoardEditor.tsx answers the same after the split. Browserless.
 //
 //   node apps/desktop/scripts/c13/c13-10g-readers.mjs --base <rev>
+//   node apps/desktop/scripts/c13/c13-10g-readers.mjs --standing     (the guard for every main: see STANDING below)
 //
 // (1) THE JOIN: MODULE_PARTS['components/BoardEditor.tsx'] names the module and EVERY file in components/board/, and srcText's join of
 //     them holds every code line the module had at <base> (a multiset; the split's own added wiring is c13-10g-allow.txt).
@@ -23,7 +24,16 @@ const SRC = path.join(DESK, 'src');
 const ts = createRequire(path.join(DESK, 'package.json'))('typescript');
 const bi = process.argv.indexOf('--base');
 const base = bi > 0 ? process.argv[bi + 1] : null;
-if (!base) { console.error('usage: --base <rev>'); process.exit(2); }
+// --standing (Fable, Nov 6): the guard for the list run on every main. `--base` is 10g's one-time proof: its claims compare the board
+// with the module BEFORE the split, and a later product change to the board (Flux S1 at ab71f1b5 added its mount) was always going to
+// move them. Standing runs only what must hold on every main - the join names every part, every script that names the module is in a
+// list, every built pattern is named - and their liveness. The base-relative claims and their liveness are not run; their predicates
+// are unchanged and `--base` runs them exactly as before.
+const STANDING = process.argv.includes('--standing');
+// ---- PARKED - SUPERSEDED by --standing (a base is needed only without it). Kept VERBATIM and no longer run:
+// if (!base) { console.error('usage: --base <rev>'); process.exit(2); }
+if (!base && !STANDING) { console.error('usage: --base <rev> | --standing'); process.exit(2); }
+if (base && STANDING) { console.error('--base and --standing are two different proofs: give one'); process.exit(2); }
 const MOD = 'components/BoardEditor.tsx';
 const LF = (s) => s.replace(/\r\n?/g, '\n');
 
@@ -74,7 +84,7 @@ const EXPLAINED = [
 ];
 
 const parts = MODULE_PARTS[MOD];
-const before = LF(execFileSync('git', ['show', `${base}:apps/desktop/src/${MOD}`], { cwd: ROOT, encoding: 'utf8', maxBuffer: 1 << 26 }));
+const before = STANDING ? null : LF(execFileSync('git', ['show', `${base}:apps/desktop/src/${MOD}`], { cwd: ROOT, encoding: 'utf8', maxBuffer: 1 << 26 }));
 const texts = { join: LF(srcText(SRC, MOD)), bare: LF(fs.readFileSync(path.join(SRC, MOD), 'utf8')) };
 const results = [];
 const res = (name, pass, detail, show = []) => results.push({ name, pass, detail, show });
@@ -88,7 +98,7 @@ res('JOIN-PARTS', !!parts && parts.includes(MOD) && JSON.stringify(listed) === J
 const codeLines = (t) => t.split('\n').map((l) => l.replace(/\s+$/, '')).filter((l) => l.trim() && !/^import\s/.test(l) && !/^export\s+(type\s+)?(\*|\{[^}]*\})\s+from\s/.test(l)).map((l) => l.replace(/^export (?=(async )?(function|const|let|class|interface|type|enum)\b)/, ''));
 const bag = (ls) => { const m = new Map(); for (const l of ls) m.set(l, (m.get(l) || 0) + 1); return m; };
 const allow = fs.readFileSync(path.join(ROOT, 'docs/cleanup/c13-10g-allow.txt'), 'utf8').split(/\r?\n/).map((l) => l.replace(/\s+$/, '')).filter((l) => l.trim());
-{
+if (!STANDING) {   // JOIN-LINES compares with the module before the split: --base only
   // imports may span lines: drop every line of a multi-line import too
   const strip = (t) => { const out = []; let inImp = false; for (const l of t.split('\n')) { if (inImp) { if (/from\s+['"][^'"]+['"];?\s*$/.test(l)) inImp = false; continue; } if (/^import\s/.test(l) && !/from\s+['"][^'"]+['"];?\s*$/.test(l) && !/^import\s+['"]/.test(l)) { inImp = true; continue; } out.push(l); } return out.join('\n'); };
   const want = bag([...codeLines(strip(before)), ...allow]), got = bag(codeLines(strip(texts.join)));
@@ -132,12 +142,14 @@ function readersRun(tx) {
   const unexplained = moved.filter((m) => { const e = EXPLAINED.findIndex(([f, s]) => f === m.f && s === m.src); if (e >= 0) used.add(e); return e < 0; });
   return { moved, unexplained, stale: EXPLAINED.filter((_, i) => !used.has(i)) };
 }
-const real = readersRun(texts);
+const real = STANDING ? null : readersRun(texts);
 const unlisted = namers.filter((f) => ![...JOIN, ...BARE, ...NOT_A_READER].includes(f));
 res('READERS-LISTED', unlisted.length === 0, `${namers.length} scripts name ${MOD} in code: ${JOIN.length} read the join, ${BARE.length} read it bare, ${NOT_A_READER.length} read no text of it`, unlisted.map((f) => `in no list: ${f}`));
+if (!STANDING) {   // the literal counts compare with the module before the split: --base only
 res('READERS-SAME', real.unexplained.length === 0, `every distinctive literal of the ${JOIN.length + BARE.length} readers counts the same now as at ${base}, except ${real.moved.length - real.unexplained.length} explained`,
   real.unexplained.slice(0, 10).map((m) => `${m.f} (${m.mode}): ${m.src.slice(0, 100)}  base ${m.b} now ${m.a}`));
 res('EXPLAINED-USED', real.stale.length === 0, `${EXPLAINED.length} explained entries, each one used`, real.stale.map(([f, s]) => `unused: ${f} ${s.slice(0, 80)}`));
+}
 
 // (2b) COMPOSED READS: a pattern a reader BUILDS (new RegExp of a non-literal, or a template / + join handed to a text search) is
 // invisible to the literal census above - 10g's first pair found one (card-resize-axis constOf, `^const ${name} = `, red on the
@@ -190,6 +202,8 @@ const COMPOSED = [
   ['harness/theme-fonts-source.mjs', '`${name}:', 1, notBoard('tokenOf(): a CSS token, on a CSS block')],
   ['item138-silhouette-proof.mjs', '`const ${name}', 1, notBoard('num(): the board aspect constants, on store/persistence.ts')],
   ['item163-drawer-line-proof.mjs', "IN + ' '", 2, notBoard('the lexicon\'s "in" word against a rendered drawer line')],
+  // the red-guards batch (17524dba, merged at b15cde4a): CLAIM 0's per-theme successor reads each theme's own "in" word
+  ['item163-drawer-line-proof.mjs', "inT + ' '", 2, notBoard('each theme\'s own "in" word against its no-drawer and own-relation forms (CLAIM 0 successor), on the lexicon')],
   ['item163-drawer-line-proof.mjs', "repo.replace(", 1, notBoard('a file path made relative')],
   ['harness/big-projects-1a.mjs', 'block + cascade', 1, notBoard('the searched TEXT: the place block and the cascade panels')],
   ['harness/board-context-menu.mjs', '`/page/${DRAFT}`', 2, notBoard('the location hash, in the browser')],
@@ -203,7 +217,7 @@ function composedRun(tx, table) {
   const unlisted = sites.filter((s, i) => owners[i].length !== 1);   // in no entry, or claimed by two
   const miscount = table.filter((e) => owners.filter((o) => o.length === 1 && o[0] === e).length !== e[2]);
   const differs = [];
-  for (const [f, key, , how] of table) if (typeof how === 'object') {
+  for (const [f, key, , how] of table) if (typeof how === 'object' && before !== null) {   // a measured site reads the base: --base only
     const [read, keys, answer] = how.board;
     for (const k of keys) { const b = answer(before, k), a = answer(tx[read], k); if (b !== a || b === null) differs.push(`${f} ${key.slice(0, 40)} [${k}]: base ${b} now ${a}`); }
   }
@@ -212,12 +226,17 @@ function composedRun(tx, table) {
 const comp = composedRun(texts, COMPOSED);
 res('COMPOSED-LISTED', comp.unlisted.length === 0 && comp.miscount.length === 0, `${comp.sites.length} built patterns or texts in the readers, each named by exactly one of COMPOSED's ${COMPOSED.length} entries, each entry's count exact`,
   [...comp.unlisted.map((s) => `unlisted or claimed twice: ${s.f} ${s.src.slice(0, 110)}`), ...comp.miscount.map(([f, k, n]) => `miscount: ${f} ${k.slice(0, 60)} (wants ${n})`)]);
-res('COMPOSED-SAME', comp.differs.length === 0, `every built pattern that runs on the board reads the same at ${base} as now`, comp.differs);
+if (!STANDING) res('COMPOSED-SAME', comp.differs.length === 0, `every built pattern that runs on the board reads the same at ${base} as now`, comp.differs);
 
 for (const c of results) { console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}: ${c.detail}`); if (!c.pass) for (const s of c.show) console.log(`        ${s}`); }
 
 // (3) liveness
 const live = [];
+if (STANDING) { // standing's own liveness for JOIN-PARTS: a board file the join does not name fails it
+  const planted = [...boardDir, 'components/board/plantedPart.ts'].sort();
+  live.push(['a board file MODULE_PARTS does not name fails JOIN-PARTS', JSON.stringify(listed) !== JSON.stringify(planted)]);
+}
+if (!STANDING) { // the four liveness checks below read the base (the readers' counts, a measured site): --base only
 { // a part loses a line a join reader reads: big-projects-1a P14's [data-link-entry] lives only in the hooks
   const r = readersRun({ join: texts.join.split('[data-link-entry]').join('[data-gone]'), bare: texts.bare });
   live.push(['a planted edit inside a part changes a join reader\'s answer', r.unexplained.some((m) => m.f === 'harness/big-projects-1a.mjs')]);
@@ -226,8 +245,9 @@ const live = [];
   const r = readersRun({ join: texts.join.split('participatesInWayBack').join('gone'), bare: texts.bare });
   live.push(['a planted edit inside the module itself changes a reader\'s answer', r.unexplained.some((m) => m.f === 'harness/page-scroll-return.mjs')]);
 }
+}
 live.push(['a script that names the file and is in no list fails', [...namers, 'harness/planted.mjs'].filter((f) => ![...JOIN, ...BARE, ...NOT_A_READER].includes(f)).length === 1]);
-{ // the read that crashed 10g's first pair: card-resize-axis's constOf as it stood (`^const ${name} = `) must read differently on the join
+if (!STANDING) { // the read that crashed 10g's first pair: card-resize-axis's constOf as it stood (`^const ${name} = `) must read differently on the join
   const old = COMPOSED.map((e) => (e[0] === 'harness/card-resize-axis.mjs'
     ? [e[0], e[1], e[2], { board: ['join', ['MIN_PIN_H', 'MIN_PIN_W'], (t, n) => firstCap(new RegExp(`^const ${n} = ([0-9.]+);`, 'm'), t)] }] : e));
   live.push(["card-resize-axis's pre-10g constOf (`^const ${name} = `) fails COMPOSED-SAME on the join", composedRun(texts, old).differs.some((d) => d.startsWith('harness/card-resize-axis.mjs'))]);
@@ -235,10 +255,11 @@ live.push(['a script that names the file and is in no list fails', [...namers, '
 { // a built pattern no entry names fails COMPOSED-LISTED
   live.push(['a built pattern that no COMPOSED entry names fails', composedRun(texts, COMPOSED.filter((e) => e[1] !== '`binder=${manId}`')).unlisted.length === 1]);
 }
-{ const r = readersRun(texts); live.push(['an explained entry no literal uses fails', EXPLAINED.concat([['harness/flux-v2.mjs', '"planted"', '-']]).length - (EXPLAINED.length - r.stale.length) === 1]); }
+if (!STANDING) { const r = readersRun(texts); live.push(['an explained entry no literal uses fails', EXPLAINED.concat([['harness/flux-v2.mjs', '"planted"', '-']]).length - (EXPLAINED.length - r.stale.length) === 1]); }
 for (const [what, red] of live) console.log(`${red ? 'PASS' : 'FAIL'}  LIVENESS: ${what}`);
 
 const all = [...results.map((c) => c.pass), ...live.map(([, r]) => r)];
 const passed = all.filter(Boolean).length;
-console.log(passed === all.length ? `\nC13-10G READERS: PASS (${all.length} checks)` : `\nC13-10G READERS: FAIL - ${all.length - passed}/${all.length} failed`);
+const mode = STANDING ? ' [standing]' : '';
+console.log(passed === all.length ? `\nC13-10G READERS${mode}: PASS (${all.length} checks)` : `\nC13-10G READERS${mode}: FAIL - ${all.length - passed}/${all.length} failed`);
 process.exit(passed === all.length ? 0 : 1);
