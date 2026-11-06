@@ -248,8 +248,23 @@ const screens = {
           aligned: !!s && !!roomSvg && Math.abs(s.left - roomSvg.left) <= 1.5 && Math.abs(s.top - roomSvg.top) <= 1.5 && Math.abs(s.width - roomSvg.width) <= 2 } : { shade: false }; }
       return out; })()`);
     const ok = {};
-    for (const sel of HOSTS) { const v = r[sel]; ok[sel] = !!v && v.shown === true && v.alpha != null && Math.abs(v.alpha - 0.034) < 0.0005 && v.aria === 'true' && v.pe === 'none' && v.aligned === true; }
-    if (Object.values(ok).some((x) => !x)) fail('R21-SHADE-MENUS', { ok, r });
+    // PARKED 2026-11-06 (SUPERSEDED by Fable's latency ruling, Nov 5: every copy but the page's draws ONE bitmap - no svg, no g[filter] - so the
+    // alpha and the alignment are read off the copy's drift box for those; the page's copy is r20's live drawing). Original, verbatim:
+    // for (const sel of HOSTS) { const v = r[sel]; ok[sel] = !!v && v.shown === true && v.alpha != null && Math.abs(v.alpha - 0.034) < 0.0005 && v.aria === 'true' && v.pe === 'none' && v.aligned === true; }
+    // SUCCESSOR: the page's copy as before (live svg, g[filter] at 0.034, svg on the room's svg); every other host's copy is a bitmap copy - its
+    // drift box at 0.034, its background a blob: bitmap, no svg inside, the box on the room's drift box (+-1.5 px), its drift animation the
+    // literal-pixel one, started at the room drift's own start time.
+    const rb = await app.evalJs(`(() => { const rd = document.querySelector('.arbor2-pergola .arbor2-pergola-drift'), rr = rd && rd.getBoundingClientRect(); const ra = rd && rd.getAnimations()[0]; const out = {};
+      for (const sel of ${JSON.stringify(HOSTS.slice(1))}) { const h = [...document.querySelectorAll(sel)].find((e) => e.getBoundingClientRect().width > 0); if (!h) { out[sel] = null; continue; }
+        const c = [...h.children].find((e) => e.classList.contains('arbor2-pagesh')); if (!c) { out[sel] = { shade: false }; continue; }
+        const d = c.querySelector('.arbor2-pergola-drift'), b = d && d.getBoundingClientRect(), a = d && d.getAnimations()[0], cs = getComputedStyle(c);
+        out[sel] = { bitmap: c.getAttribute('data-bitmap'), svg: !!c.querySelector('svg'), bg: d ? /^url\\("blob:/.test(getComputedStyle(d).backgroundImage) : false, alpha: d ? Number(getComputedStyle(d).opacity) : null,
+          shown: cs.display !== 'none' && Number(cs.opacity) > 0.9, aria: c.getAttribute('aria-hidden'), pe: cs.pointerEvents, anim: a ? a.animationName : null, inStep: !!a && !!ra && a.startTime != null && Math.abs(a.startTime - ra.startTime) < 1,
+          aligned: !!b && !!rr && Math.abs(b.left - rr.left) <= 1.5 && Math.abs(b.top - rr.top) <= 1.5 && Math.abs(b.width - rr.width) <= 2 && Math.abs(b.height - rr.height) <= 2 }; }
+      return out; })()`);
+    { const v = r[HOSTS[0]]; ok[HOSTS[0]] = !!v && v.shown === true && v.alpha != null && Math.abs(v.alpha - 0.034) < 0.0005 && v.aria === 'true' && v.pe === 'none' && v.aligned === true; }
+    for (const sel of HOSTS.slice(1)) { const v = rb[sel]; ok[sel] = !!v && v.bitmap === 'true' && v.svg === false && v.bg === true && v.alpha != null && Math.abs(v.alpha - 0.034) < 0.0005 && v.shown === true && v.aria === 'true' && v.pe === 'none' && v.anim === 'arbor2-pergola-drift-px' && v.inStep === true && v.aligned === true; }
+    if (Object.values(ok).some((x) => !x)) fail('R21-SHADE-MENUS', { ok, r, rb });
     say('r21-shade-menus', { ok });
   },
 

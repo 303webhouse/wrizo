@@ -5,6 +5,7 @@ import { mountSun } from './sun';
 import { mountPaper } from './paper';
 import { mountChrome } from './chrome';
 import { mountPergola } from './pergola';
+import { arbor2RoomPin } from './flag';
 import { mountDrawerEdge } from './drawerEdge';
 import { clearRhizome, undoClearRhizome, canUndoClear, hasRhizome, subscribeLife } from './rhizomeLife';
 
@@ -67,8 +68,10 @@ const poolAt = (t: number): [string, string][] => {
   const scaled = (name: string) => String(Math.round((Number(src.get(name)) || 0) * k * 1000) / 1000);
   return [['--arbor-lamp-rgb', src.get('--arbor-lamp-rgb') ?? ''], ['--arbor2-pool-a', scaled('--arbor2-pool-a')], ['--arbor2-pool-b', scaled('--arbor2-pool-b')], ['--arbor2-sun-in', String(Math.round(sunShare(t) * 1000) / 1000)]];
 };
+// (the test-only room pin, flag.ts: it outranks the clock and the Room row, and is read from the URL only - nothing stored, nothing shown)
+const roomPin = arbor2RoomPin();
 const applyRoom = () => {
-  const t = dayness(root.getAttribute('data-room'), nowMinutes(), !!reducedMQ?.matches);
+  const t = roomPin ? (roomPin === 'day' ? 1 : 0) : dayness(root.getAttribute('data-room'), nowMinutes(), !!reducedMQ?.matches);
   const fading = t > 0 && t < 1;
   if (!fading) { fadeToks = null; clearInline(); }
   else if (!fadeToks) measureRoom();

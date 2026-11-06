@@ -834,6 +834,12 @@
 :root[data-arbor2][data-theme='plateau'][data-arbor2-off~='shadows'] :is(.arbor2-pergola, .arbor2-pagesh){ display:none; }
 :root[data-arbor2][data-theme='plateau'] .mode-pagecol[data-zoom='true'] .arbor2-pagesh{ display:none; }
 @media print{ .arbor2-pergola, .arbor2-pagesh{ display:none !important; } }
+/* r21 latency fix (Fable, Nov 5): the copies on the bar, the rail, the drawers and the menus draw ONE bitmap (pergola.ts), centred and covering their
+   drift box exactly as the room's svg is fitted (xMidYMid slice); in an unscaled host the drift runs on literal pixels, so on the compositor. The
+   page's copy is r20's live drawing. */
+:root[data-arbor2][data-theme='plateau'] .arbor2-pagesh[data-bitmap='true'] .arbor2-pergola-drift{ background-repeat:no-repeat; background-position:center; background-size:cover; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-pagesh[data-bitmap='true'][data-flat='true'] .arbor2-pergola-drift{ animation-name:arbor2-pergola-drift-px; }
+@keyframes arbor2-pergola-drift-px{ 0%{ transform:translate(0, 0); } 100%{ transform:translate(12px, -5px); } }
 
 /* r19 §18.1 - REST <-> WRITING (Fable, ruling 2: the existing recede/return hooks, Arbor-scoped, opacity transitions on two layers, no new JS
    animation path). <html data-wz-writing> (useChromeDissolve) is the hook: the first keystroke fades the whole shade (room + page) out over ~6 s

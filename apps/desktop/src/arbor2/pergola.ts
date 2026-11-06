@@ -14,9 +14,51 @@
 // rhizome's, nothing else (arbor-v2.css). Nothing is stored.
 import svgText from './pergola-shadow.svg?raw';
 
+// r21 LATENCY FIX (Fable's ruling, Nov 5: the attribution turn put the r21 day room's typing at 62 ms a key against r20's 25, and 25 again with the
+// shade off): the copies r21 added - the top bar, the rail, the open drawers, the rail's pop-outs, the Mood menu - each held the whole live drawing
+// (its blur and ~115 animated leaf clusters). They now draw ONE bitmap, rendered once from the same file at full strength and shared: no live blur,
+// breeze or flutter in them (at the page's 3.4% none of it read). Each moves only by the drift's compositor transform, its animation started at
+// the room's own start time, so it stands where the room's drawing stands. THE PAGE'S COPY AND THE ROOM ARE r20's, live, unchanged.
+let bitmap: string | null = null;
+const bitmapWait: ((url: string) => void)[] = [];
+function withBitmap(use: (url: string) => void): void {
+  if (bitmap) { use(bitmap); return; }
+  bitmapWait.push(use);
+  if (bitmapWait.length > 1) return;
+  const vb = /viewBox="0 0 (\d+(?:\.\d+)?) (\d+(?:\.\d+)?)"/.exec(svgText), vw = vb ? Number(vb[1]) : 1400, vh = vb ? Number(vb[2]) : 900;
+  // once, at the size the window's covering fit asks (device pixels; capped): a later, larger window stretches a blurred shade a little
+  const k = Math.min(4096 / vw, Math.max((innerWidth + 32) / vw, (innerHeight + 32) / vh) * (window.devicePixelRatio || 1));
+  const W = Math.max(1, Math.round(vw * k)), H = Math.max(1, Math.round(vh * k));
+  // full strength (the group's own 20% goes; each copy's element carries the page's alpha, so the bitmap keeps its 8-bit precision)
+  const src = svgText.replace(/<style>[\s\S]*?<\/style>/, '').replace(/ width="[^"]*" height="[^"]*"/, ` width="${W}" height="${H}"`).replace(/(<g filter="[^"]*") opacity="[^"]*"/, '$1 opacity="1"');
+  const img = new Image();
+  const url = URL.createObjectURL(new Blob([src], { type: 'image/svg+xml' }));
+  img.onload = () => {
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    c.getContext('2d')?.drawImage(img, 0, 0, W, H);
+    URL.revokeObjectURL(url);
+    c.toBlob((b) => { if (!b) return; bitmap = URL.createObjectURL(b); bitmapWait.splice(0).forEach((f) => f(bitmap!)); }, 'image/png');
+  };
+  img.src = url;
+}
+
 // the shade across the paper. §18.1 asks 4% ("the page's text holds 14.1:1"); on this page (paper #F3EDE1, ink #241A10) 4% measured 13.78:1
 // at the darkest overlap (run 41903778893), under Fable's 13.9 floor - 3.4% is the strongest that holds it (13.91). HANDED UP to Fable.
 const PAGE_ALPHA = '0.034';
+
+/** A copy that draws the shared bitmap: the layer, its drift wrapper (the bitmap covers it, centred - the room's own xMidYMid slice) */
+function makeBitmapLayer(alpha: string): { layer: HTMLDivElement; drift: HTMLDivElement } {
+  const layer = document.createElement('div');
+  layer.className = 'arbor2-pagesh';
+  layer.setAttribute('data-bitmap', 'true');
+  layer.setAttribute('aria-hidden', 'true');
+  const drift = document.createElement('div');
+  drift.className = 'arbor2-pergola-drift';
+  drift.style.opacity = alpha;
+  withBitmap((u) => { drift.style.backgroundImage = `url("${u}")`; });
+  layer.appendChild(drift);
+  return { layer, drift };
+}
 
 function makeLayer(cls: string, alpha: string | null): { layer: HTMLDivElement; drift: HTMLDivElement } {
   const layer = document.createElement('div');
@@ -52,17 +94,26 @@ export function mountPergola(): void {
     const r = host.getBoundingClientRect();
     const k = host.offsetWidth > 0 ? r.width / host.offsetWidth : 1;
     const d = c.drift.style;
-    d.setProperty('--arbor2-pk', String(k));
-    d.left = `${(-r.left - 16) / k - host.clientLeft}px`;
-    d.top = `${(-r.top - 16) / k - host.clientTop}px`;
-    d.width = `${(innerWidth + 32) / k}px`;
-    d.height = `${(innerHeight + 32) / k}px`;
+    const set = (name: string, v: string) => { if (d.getPropertyValue(name) !== v) d.setProperty(name, v); };
+    set('--arbor2-pk', String(k));
+    // (a bitmap copy in an unscaled host drifts on literal pixels - arbor2-pergola-drift-px - so its animation runs on the compositor)
+    if (c.drift.parentElement?.hasAttribute('data-bitmap')) { const flat = Math.abs(k - 1) < 0.005 ? 'true' : 'false'; const L = c.drift.parentElement; if (L.getAttribute('data-flat') !== flat) { L.setAttribute('data-flat', flat); requestAnimationFrame(() => sync(L)); } }
+    set('left', `${(-r.left - 16) / k - host.clientLeft}px`);
+    set('top', `${(-r.top - 16) / k - host.clientTop}px`);
+    set('width', `${(innerWidth + 32) / k}px`);
+    set('height', `${(innerHeight + 32) / k}px`);
   };
   const placeAll = () => copies.forEach((c, h) => place(h, c));
   // the breeze and the drift cross every layer together: each copy's animations take the room's start times
   const sync = (layer: HTMLElement) => {
     const of = (root: HTMLElement) => document.getAnimations().filter((x) => { const t = (x.effect as KeyframeEffect | null)?.target as Element | null; return !!t && root.contains(t); });
     const a = of(room.layer), b = of(layer);
+    // a bitmap copy has one animation, the drift: it takes the start time of the room's drift (its wrapper's own animation)
+    if (layer.hasAttribute('data-bitmap')) {
+      const rd = a.find((x) => ((x.effect as KeyframeEffect | null)?.target as Element | null) === room.drift);
+      b.forEach((x) => { if (rd && rd.startTime != null) x.startTime = rd.startTime; });
+      return;
+    }
     if (a.length !== b.length) return;
     b.forEach((x, i) => { if (a[i].startTime != null) x.startTime = a[i].startTime; });
   };
@@ -72,7 +123,8 @@ export function mountPergola(): void {
     for (const [h, c] of copies) if (!now.has(h) || !h.contains(c.layer)) { c.layer.remove(); ro.unobserve(h); copies.delete(h); }
     for (const h of now) {
       if (copies.has(h)) continue;
-      const c = makeLayer('arbor2-pagesh', PAGE_ALPHA);
+      // the page keeps r20's live copy; every other surface draws the shared bitmap
+      const c = h.matches(HOSTS[0]) ? makeLayer('arbor2-pagesh', PAGE_ALPHA) : makeBitmapLayer(PAGE_ALPHA);
       h.appendChild(c.layer); copies.set(h, c); ro.observe(h); place(h, c);
       requestAnimationFrame(() => requestAnimationFrame(() => sync(c.layer)));
     }
