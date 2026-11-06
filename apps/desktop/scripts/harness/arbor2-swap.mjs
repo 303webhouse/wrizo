@@ -10,6 +10,10 @@
 //       same page's first key with the shade OFF (Mood's Day shadows, what the switch writes): median within 5 ms, p95 within 25 ms, none over 100
 //   W6  reduced motion: at rest nothing on the shade animates; the first key swaps; nothing animates after it either
 //   W7  nothing stored: localStorage holds no key or value naming the swap
+//   W8  the flash copy's pre-rendered mask (Fable, Nov 6: "keep the look identical"): on ONE page, the flash held (every finite animation
+//       landed, the rest paused), shot with the bitmap mask and again with the SVG mask it replaces put back (a test-only switch in this page) -
+//       the two shots differ by no more than 9 levels on more than 0.01% of the pixels (the vines' shape is seeded by the session, so two runs'
+//       pictures cannot be compared; one page can)
 import { withHarness } from '../runtime-verify.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -104,6 +108,35 @@ await withHarness(async (app) => {
     const rm1 = await app.evalJs(READ);
     ok('W6 reduced motion: nothing on the shade animates at rest; the first key swaps; nothing animates after it', rm0.running === 0 && stillOk(rm1.room) && rm1.running === 0, JSON.stringify({ rest: { running: rm0.running }, key: { running: rm1.running, room: rm1.room } }));
   } finally { await app.emulateMedia([]); }
+  // W8: the flash held, two masks, one moment
+  const pageId = (await app.evalJs('location.hash')).replace(/^#\/page\//, '');
+  await app.goto('/');
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before seed' });
+  await app.evalJs("localStorage.setItem('wrizo-writing-settings', JSON.stringify({ ...JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}'), progress: 'words', progressStyle: 'rhizome' }))");
+  await app.evalJs(`(() => { window.wrizoSetWritingGoal(${JSON.stringify({ n: 8, unit: 'words' })}); window.wrizoPatchEntry(${JSON.stringify(pageId)}, { text: 'light kettle street table question morning dog' }); })()`);
+  await app.reload();
+  await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(pageId)}`);
+  await app.waitFor("!!document.querySelector('.wz-rhizome-field')", { label: 'rhizome field', timeout: 10000 }).catch(() => {});
+  await backToRest(app);
+  await app.evalJs("(() => { const e = document.querySelector('.forward-only-editor'); e.focus(); const r = document.createRange(); r.selectNodeContents(e); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()");
+  await app.typeKeys(' word');
+  await app.waitFor("document.querySelector('.arbor2-vines-flash')?.getAttribute('data-mask') === 'bitmap'", { label: 'flash, bitmap mask', timeout: 4000 }).catch(() => {});
+  await sleep(300);
+  await app.evalJs("(() => { document.getAnimations().forEach((a) => { try { if (a.effect && Number.isFinite(a.effect.getComputedTiming().endTime)) a.finish(); else a.pause(); } catch {} }); return true; })()");
+  await sleep(300);
+  const maskWas = await app.evalJs("document.querySelector('.arbor2-vines-flash')?.getAttribute('data-mask') ?? null");
+  const shotA = await app.screenshot();
+  await app.evalJs("(() => { const f = document.querySelector('.arbor2-vines-flash'); if (!f) return false; f.style.maskImage = 'none'; f.style.webkitMaskImage = 'none'; f.querySelector(':scope > g')?.setAttribute('mask', 'url(#wz-rhizome-mask)'); return true; })()");
+  await app.evalJs('new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))'); await sleep(200);
+  const shotB = await app.screenshot();
+  const cmp = await app.evalJs(`(async () => { const load = (b64) => new Promise((res) => { const i = new Image(); i.onload = () => res(i); i.src = 'data:image/png;base64,' + b64; });
+    const [a, b] = await Promise.all([load(${JSON.stringify(shotA)}), load(${JSON.stringify(shotB)})]); const w = a.naturalWidth, h = a.naturalHeight;
+    const px = (img) => { const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'); g.drawImage(img, 0, 0); return g.getImageData(0, 0, w, h).data; };
+    const A = px(a), B = px(b); let max = 0, over = 0, diff = 0;
+    for (let i = 0; i < A.length; i += 4) { const d = Math.max(Math.abs(A[i] - B[i]), Math.abs(A[i + 1] - B[i + 1]), Math.abs(A[i + 2] - B[i + 2])); if (d) diff++; if (d > 9) over++; if (d > max) max = d; }
+    return { w, h, n: w * h, diff, over, max }; })()`);
+  ok('W8 the flash copy\'s pre-rendered mask: the flash held on one page, the bitmap mask against the SVG mask it replaces - over 9 levels on no more than 0.01% of the pixels',
+    maskWas === 'bitmap' && !!cmp && cmp.over <= cmp.n * 0.0001, JSON.stringify({ maskWas, ...cmp, overPct: cmp ? Math.round((cmp.over / cmp.n) * 1e6) / 1e4 : null }));
   const fin = await app.evalJs(READ);
   ok('W7 nothing stored: localStorage holds no key or value naming the swap', !/arbor2-(still|live)|swap/.test(fin.ls), fin.ls.length);
   return checks;
@@ -112,7 +145,7 @@ await withHarness(async (app) => {
 if (!pinned) checks.unshift({ name: 'W0 the run is pinned to the day room (WS_URL_SEARCH carries arbor2=1 and arbor2room=day)', pass: false, detail: q });
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
-const pass = checks.length === 7 && checks.every((c) => c.pass);
+const pass = checks.length === 8 && checks.every((c) => c.pass);
 // eslint-disable-next-line no-console
 console.log(pass ? `\nARBOR2-SWAP VERIFY: PASS (${checks.length} checks)` : `\nARBOR2-SWAP VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed`);
 process.exit(pass ? 0 : 1);
