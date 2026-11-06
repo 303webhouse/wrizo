@@ -14,6 +14,10 @@
 //   --new <key>=<word>[,<key>=<word>...]   (a later step that ADDS keys, e.g. 10e's progressDrawer) every key not named is held to
 //        (1) and (2) as before (the named keys' union member and entry lines are set aside); each named key must be new at <base>, in
 //        the table now, and read <word> in every theme reading.
+//   docs/cleanup/c13-10c-new.txt   the STANDING declarations (TOOLS, Nov 5, Fable): one `key=word` per line (# starts a comment), read on every run, so
+//        a key a later step ADDED (FLUX3 S1/S2's words, 10e's progressDrawer) is declared once, in the open, and this tool is green on main
+//        without a flag. A declared key is held to the same rule as a --new key (new at <base>, in the table, <word> in every theme reading). The words
+//        a key's full-pass rename later gives it (a Flux override) leave this file in the same commit as that rename.
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -27,6 +31,14 @@ const base = bi > 0 ? process.argv[bi + 1] : null;
 if (!base) { console.error('usage: --base <rev>'); process.exit(2); }
 const ni = process.argv.indexOf('--new');
 const NEW = new Map(ni > 0 ? process.argv[ni + 1].split(',').map((p) => { const i = p.indexOf('='); return [p.slice(0, i), p.slice(i + 1)]; }) : []);
+// the standing declarations: docs/cleanup/c13-10c-new.txt (a --new on the command line names the same key again, and wins)
+const DECLARED = path.join(ROOT, 'docs/cleanup/c13-10c-new.txt');
+if (fs.existsSync(DECLARED)) for (const raw of fs.readFileSync(DECLARED, 'utf8').split(/\r?\n/)) {
+  const line = raw.trim();
+  if (!line || line.startsWith('#')) continue;
+  const i = line.indexOf('=');
+  if (i > 0 && !NEW.has(line.slice(0, i))) NEW.set(line.slice(0, i), line.slice(i + 1));
+}
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
 
@@ -85,7 +97,23 @@ try {
   const baseSplit = fs.existsSync(path.join(baseSrc, 'store/lexicon/terms.ts'));
   const was = noImports(baseSplit ? srcText(baseSrc, 'store/deskLexicon.ts') : fs.readFileSync(path.join(baseSrc, 'store/deskLexicon.ts'), 'utf8'));
   let read = noImports(srcText(path.join(DESKTOP, 'src'), 'store/deskLexicon.ts'));
-  for (const k of NEW.keys()) read = read.replaceAll(` | '${k}'`, '').split('\n').filter((l) => !new RegExp(`^\\s*${k}:`).test(l)).join('\n');
+  // a comment line above a set-aside line is set aside with it only when the old text does not hold it (a note the declared keys brought, never one that was already there)
+  const wasLines = new Set(was.split('\n'));
+  const NEW_NOTE = (l) => !wasLines.has(l);
+  // a declared key's lines are set aside: its entry line, its token in a union line (a union line left holding nothing goes), and the comment lines
+  // directly above a line that went - the note that introduced the key (`// FLUX3 S1 - ...`) goes with it
+  {
+    const gone = (l) => NEW.size > 0 && ([...NEW.keys()].some((k) => new RegExp(`^\\s*${k}:`).test(l)));
+    const out = [];
+    for (const l of read.split('\n')) {
+      if (gone(l)) { while (out.length && /^\s*\/\//.test(out[out.length - 1]) && NEW_NOTE(out[out.length - 1])) out.pop(); continue; }
+      let t = l;
+      for (const k of NEW.keys()) t = t.replaceAll(` | '${k}'`, '');
+      if (t !== l && /^\s*(\|\s*)?$/.test(t)) { while (out.length && /^\s*\/\//.test(out[out.length - 1]) && NEW_NOTE(out[out.length - 1])) out.pop(); continue; }
+      out.push(t);
+    }
+    read = out.join('\n');
+  }
   const bare = noImports(fs.readFileSync(path.join(DESKTOP, 'src/store/deskLexicon.ts'), 'utf8'));
   const firstDiff = [...was].findIndex((c, i) => c !== read[i]);
   ok(`INLINE: srcText of deskLexicon.ts is the file at ${base} exactly, but for its import lines (${was.split('\n').length} lines)`, read === was,
