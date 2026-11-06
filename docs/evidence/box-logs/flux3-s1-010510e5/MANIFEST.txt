@@ -1,0 +1,9 @@
+Flux S1 (INK flux3/s1-mount 2031b238, the Schema Live view behind ?flux3=1) - manifest (Chat 1, Nov 6 2026)
+
+Train-flux3-s1 010510e5 = main 1913849e + one --no-ff merge of flux3/s1-mount 2031b238 (S0 38a58ca8 and the cleared layer b4534e83 inside it). Merged into main a5204318 (which had gained 10h in between) with a --no-ff merge; the two touch disjoint files; tsc x2, seed-guard 36, the readers guard 5, the persistence check 6 and links re-run on the combined tree and pass.
+WHAT IT IS (INK): all new code in src/flux3/; BoardEditor.tsx gets two mount points (6 lines); main.tsx a dynamic import gated by the flag; flux-v3.css loads only under ?flux3=1 and never through index.css; 7 new lexicon words, no renames. Without the flag nothing renders and nothing is fetched.
+PROOFS
+- Actions full pair, run 42138518141 (ref = the full sha, 8 shards per leg): default 238/245, parked 238/245; only the usual seven NOVERDICT tools. flux3-s1 PASS 30, flux3-layer PASS 32, flux3-page-rect PASS, flux-v2 PASS (default leg).
+- Box turn (INK, lane ink, via box-take, my "INK go" 00:25Z), 00:27:07Z-00:39:15Z on 2031b238 (clean; bundle index-D5W8W8Xg.js = the served bundle): flux3-s1 PASS 31, flux3-page-rect PASS 14, flux3-layer PASS 36, flux3-latency PASS 15. No run was stopped; no browsers left. I read each job's last line from the committed logs (ink-box/). Frames: INK's Downloads\flux3-frames\s1 (not committed here).
+- Clear: Fable, Nov 5 ("INK S1 (flux3/s1-mount 2031b238): once its box frame-budget turn is clean, merge behind ?flux3=1").
+Files: pair-default/parked.log.txt, summary.txt (Actions); ink-box/ (boxrun + the four job logs).
