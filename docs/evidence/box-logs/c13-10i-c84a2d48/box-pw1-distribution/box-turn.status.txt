@@ -1,0 +1,23 @@
+taken 02:58:38Z
+round 1 tip default exit=0 02:59:32Z
+round 1 tip parked exit=0 03:00:26Z
+round 1 par default exit=0 03:01:19Z
+round 1 par parked exit=0 03:02:13Z
+round 2 tip default exit=0 03:03:06Z
+round 2 tip parked exit=0 03:03:59Z
+round 2 par default exit=0 03:04:52Z
+round 2 par parked exit=1 03:05:44Z
+round 3 tip default exit=0 03:06:38Z
+round 3 tip parked exit=0 03:07:31Z
+round 3 par default exit=0 03:08:25Z
+round 3 par parked exit=0 03:09:18Z
+round 4 tip default exit=0 03:10:12Z
+round 4 tip parked exit=0 03:11:06Z
+round 4 par default exit=0 03:11:59Z
+round 4 par parked exit=0 03:12:54Z
+round 5 tip default exit=0 03:13:47Z
+round 5 tip parked exit=0 03:14:41Z
+round 5 par default exit=0 03:15:34Z
+round 5 par parked exit=0 03:16:28Z
+released
+released 03:16:28Z

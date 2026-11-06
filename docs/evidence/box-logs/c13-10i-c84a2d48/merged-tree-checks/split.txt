@@ -1,0 +1,13 @@
+PASS  LINES: 1301 code lines before, 1330 after, 104 now in pages/pageEditor/useFirstRunGate.ts, pages/pageEditor/usePageTypewriter.ts, pages/pageEditor/usePageAutosave.ts; missing 0, added 29 (the allow list: 29 entries, 29 used, 0 unused; 0 added lines not on it)
+PASS  SCOPE: 4 src files differ from 4c10fe48: pages/PageEditor.tsx, pages/pageEditor/useFirstRunGate.ts, pages/pageEditor/usePageAutosave.ts, pages/pageEditor/usePageTypewriter.ts
+PASS  BARREL: pages/PageEditor.tsx exported 2 names at 4c10fe48 and exports 2 now
+PASS  CITES: 38 [Name §n] citations in the split's files, each a heading in docs/rulings/pages-<Name>.md
+PASS  LIVENESS: a moved line edited turns LINES red
+PASS  LIVENESS: a moved line dropped turns LINES red
+PASS  LIVENESS: a src file outside the split changed turns SCOPE red
+PASS  LIVENESS: a moved citation points nowhere turns CITES red
+PASS  LIVENESS: the barrel loses an export turns BARREL red
+PASS  LIVENESS: an added line not on the allow list turns LINES red
+PASS  LIVENESS: an allow entry no added line uses turns LINES red
+
+C13-10 SPLIT CHECK: PASS (11 checks)

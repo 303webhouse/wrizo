@@ -1,0 +1,17 @@
+waiting for a quiet box 2026-11-05T19:57:05Z
+stopped by hand (Chat 1: wait for 'POLISH go') 2026-11-05T19:57:50Z
+---- go from Chat 1 at 2026-11-06T00:58:01Z
+started on Chat 1's 'POLISH go'; waiting for 2 free minutes in a row 2026-11-06T00:58:16Z
+turn start 2026-11-06T01:00:16Z
+BUILD STATE parent: tree a5204318, build rc 0, index-4BvvMZap.js sha1 01bfa23f43ea
+snapshot baseline at parent: rc=0 :: C13-STYLE SELECTORS: 2188 selectors; 591 matched on some screen; 1597 matched nothing; 0 could not be tested (nested or 
+BUILD STATE tip: tree 9fab1817, build rc 0, index-C3L485ED.js sha1 150ab2412f8f
+snapshot at tip compared with the parent's: rc=0 :: C13-STYLE COMPARE: IDENTICAL
+readers guard at tip 9fab1817: rc=0 :: TYPING-LATENCY READERS VERIFY: PASS (6 checks, 24 reads classified)
+tip-default on tip 9fab1817, built index-C3L485ED.js sha1 150ab2412f8f: rc=1 SUITE RESULT: NOT CLEAN — tree=9fab1817 bundle=index-C3L485ED.js/959228b not OK: polish10-14-frames.mjs,rhizome-latency.mjs 01:59:00
+tip-parked on tip 9fab1817, built index-C3L485ED.js sha1 150ab2412f8f: rc=1 SUITE RESULT: NOT CLEAN — tree=9fab1817 bundle=index-C3L485ED.js/959228b not OK: polish10-14-frames.mjs,pw1.mjs,rhizome-latency.mjs 02:50:59
+BUILD STATE parent2: tree a5204318, build rc 0, index-4BvvMZap.js sha1 01bfa23f43ea
+parent-default on parent a5204318, built index-4BvvMZap.js sha1 01bfa23f43ea: rc=1 SUITE RESULT: NOT CLEAN — tree=a5204318 bundle=index-4BvvMZap.js/958646b not OK: polish10-14-frames.mjs,rhizome-latency.mjs 02:53:17
+parent-parked on parent a5204318, built index-4BvvMZap.js sha1 01bfa23f43ea: rc=1 SUITE RESULT: NOT CLEAN — tree=a5204318 bundle=index-4BvvMZap.js/958646b not OK: polish10-14-frames.mjs,rhizome-latency.mjs 02:56:17
+released
+turn end 2026-11-06T02:56:17Z

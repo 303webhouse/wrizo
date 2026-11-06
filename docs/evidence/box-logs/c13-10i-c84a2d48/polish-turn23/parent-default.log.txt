@@ -1,0 +1,13 @@
+BOX TURN: granted to lane "polish" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=2 tree=a5204318 bundle=index-4BvvMZap.js/958646b out=C:\Users\nickh\AppData\Local\Temp\wrizo-suite-30520
+(node:30520) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[01/2] NOVERDICT exit=2    0s polish10-14-frames.mjs :: (no verdict — see C:\Users\nickh\AppData\Local\Temp\wrizo-suite-30520\polish10-14-frames.mjs.default.txt)
+[02/2] FAIL      exit=1  126s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: FAIL - 1/17 failed
+
+SUITE DONE HARNESS_PARKED=unset — 0/2 of 2 returned a passing verdict
+  NOVERDICT: polish10-14-frames.mjs — full output at C:\Users\nickh\AppData\Local\Temp\wrizo-suite-30520\polish10-14-frames.mjs.default.txt
+  FAIL: rhizome-latency.mjs — full output at C:\Users\nickh\AppData\Local\Temp\wrizo-suite-30520\rhizome-latency.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=a5204318 bundle=index-4BvvMZap.js/958646b
