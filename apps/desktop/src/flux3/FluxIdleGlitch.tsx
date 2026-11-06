@@ -92,6 +92,7 @@ export function FluxIdleGlitch({ paperRef }: { paperRef: RefObject<HTMLElement |
       if (!got || !tryFlash('f3-idle')) return;
       const el = document.createElement('span');
       el.className = 'flux3-idle-word';
+      el.dataset.word = got.text;   // the word it covers (a check measures that word itself and holds the glyphs to its rect)
       el.textContent = [...got.text].map(() => CODE[Math.floor(Math.random() * CODE.length)]).join('');
       const f = got.font, paper = getComputedStyle(page).backgroundColor;
       Object.assign(el.style, {

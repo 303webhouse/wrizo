@@ -56,6 +56,25 @@ export default {
     await waitSoft(app, "document.querySelectorAll('.flux3-idle-word').length > 0", { label: 'a word glitching', timeout: 6000 });
     console.log(`FLUX3-S3-FRAME doc-idle ${JSON.stringify(await stood(app))}`);
   },
+  // a diagnostic screen: every rect involved in placing a glitched word (the word's own range rect, the glyphs' rect, the layer, the page's
+  // painted scale), so a misplacement is measured, not guessed
+  'doc-idle-rects': async (app) => {
+    await seed(app);
+    await app.evalJs('window.__f3IdleShift = 400');
+    await waitSoft(app, "document.querySelectorAll('.flux3-idle-word').length > 0", { label: 'a word glitching', timeout: 6000 });
+    const d = await app.evalJs(`(() => {
+      const rr = (r) => r && { x: +r.x.toFixed(1), y: +r.y.toFixed(1), w: +r.width.toFixed(1), h: +r.height.toFixed(1) };
+      const g = document.querySelector('.flux3-idle-word'); if (!g) return null;
+      const word = g.dataset.word, ed = document.querySelector('.forward-only-editor'); let wr = null;
+      const walk = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT);
+      for (let n = walk.nextNode(); n && !wr; n = walk.nextNode()) { const i = (n.nodeValue || '').indexOf(word); if (i >= 0) { const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + word.length); wr = r.getClientRects()[0]; } }
+      const L = g.parentElement, cs = (e) => e && { transform: getComputedStyle(e).transform, zoom: getComputedStyle(e).zoom, position: getComputedStyle(e).position };
+      return { word, glyph: rr(g.getBoundingClientRect()), wordRect: rr(wr), style: { left: g.style.left, top: g.style.top, height: g.style.height }, layer: rr(L.getBoundingClientRect()), layerParent: L.parentElement && L.parentElement.tagName,
+        html: cs(document.documentElement), body: cs(document.body), page: rr(document.querySelector('.mode-page').getBoundingClientRect()), pageT: getComputedStyle(document.querySelector('.mode-page')).transform,
+        dpr: devicePixelRatio, inner: [innerWidth, innerHeight], scrollY: scrollY, bodyScroll: [document.body.scrollTop, document.documentElement.scrollTop] };
+    })()`);
+    console.log(`FLUX3-S3-FRAME doc-idle-rects ${JSON.stringify(d)}`);
+  },
   'doc-hand': async (app) => {
     await seed(app);
     const g = await point(app, '.wz-sliver-grip');
