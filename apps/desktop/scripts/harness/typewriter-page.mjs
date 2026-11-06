@@ -13,6 +13,7 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { srcText } from '../global-css.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const desktop = join(here, '..', '..');
@@ -174,7 +175,7 @@ ok('(P6) the retired machinery is gone from the store: no seedTypewriterDefault,
 // ---- source claims ------------------------------------------------------------------------------------------------------------------------
 const p7Reads = {};   // the default leg's own P7 reads, for the parked record at the foot (Machina's build)
 {
-  const ws = read('store/writingSettings.ts'), theme = read('store/theme.ts'), pe = read('pages/PageEditor.tsx'), se = read('components/ScriptEditor.tsx');
+  const ws = read('store/writingSettings.ts'), theme = read('store/theme.ts'), pe = noCR(srcText(SRC, 'pages/PageEditor.tsx')), se = read('components/ScriptEditor.tsx');
   // SUPERSEDED (Machina's build, Phase A, Oct 22): P7 used to say "the default is a VALUE in each theme's config (plateau true, flux false), and Machina (off), Nomad (on) and Volant (TBD) are marked slots
   // in comments - not registered, not guessed" - its THEME_CONFIG regex wanted exactly plateau + flux, and its slots check wanted Machina as a comment-only slot. Machina is a registered theme now (typewriterDefault
   // false - the very value the old comment marked); Nomad (on) and Volant (TBD) are still comment-only slots. The original is quoted verbatim in the PARKED record at the foot; the live successor is below.
