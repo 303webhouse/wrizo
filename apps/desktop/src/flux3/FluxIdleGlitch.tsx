@@ -45,7 +45,7 @@ export function FluxIdleGlitch({ paperRef }: { paperRef: RefObject<HTMLElement |
     let lastActive = performance.now();
     let lastShown = -Infinity;
     const live = new Set<HTMLElement>();
-    const clearAll = () => { live.forEach((el) => el.remove()); live.clear(); };
+    const clearAll = () => { live.forEach((el) => el.remove()); live.clear(); words.clear(); cancelAnimationFrame(raf); raf = 0; };
     const active = () => { lastActive = performance.now(); if (live.size) clearAll(); };
     const onVis = () => { if (document.hidden) clearAll(); else active(); };
     const opts = { capture: true, passive: true } as const;
@@ -61,7 +61,7 @@ export function FluxIdleGlitch({ paperRef }: { paperRef: RefObject<HTMLElement |
       return r && r.height ? [r.top - 2, r.bottom + 2] : null;
     };
     // a random word the writer can see, off the caret's line
-    const pickWord = (page: HTMLElement): { rect: DOMRect; text: string; font: CSSStyleDeclaration } | null => {
+    const pickWord = (page: HTMLElement): { rect: DOMRect; range: Range; text: string; font: CSSStyleDeclaration } | null => {
       const scroller = page.querySelector<HTMLElement>('.mode-scroll') ?? page;
       const view = scroller.getBoundingClientRect();
       const band = caretBand(page);
@@ -83,9 +83,30 @@ export function FluxIdleGlitch({ paperRef }: { paperRef: RefObject<HTMLElement |
         if (band && rect.bottom > band[0] && rect.top < band[1]) continue;   // never the caret's line
         const parent = node.parentElement;
         if (!parent) continue;
-        return { rect, text: w[0], font: getComputedStyle(parent) };
+        return { rect, range, text: w[0], font: getComputedStyle(parent) };
       }
       return null;
+    };
+    // A WORD IS FOLLOWED, NOT REMEMBERED (S3-r2, the Wrizors' 1920 frame: the glyphs stood a line below their word). The layer is fixed on
+    // <body>, and the page can move under it with no scroll and no key (its painted scale re-computed, its column re-laid): a rect taken once
+    // goes stale. So each live word keeps its own Range, and every frame while any word lives its glyphs are put back on the word's CURRENT
+    // rect; a word that no longer reads as itself (its text re-rendered or gone) resolves at once.
+    const words = new Map<HTMLElement, { range: Range; text: string }>();
+    let raf = 0;
+    const placeOn = (el: HTMLElement, r: DOMRect) => {
+      Object.assign(el.style, { left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px`, lineHeight: `${r.height}px` });
+    };
+    const drop = (el: HTMLElement) => { el.remove(); live.delete(el); words.delete(el); };
+    const follow = () => {
+      raf = 0;
+      words.forEach(({ range, text }, el) => {
+        const rects = range.getClientRects();
+        if (rects.length !== 1 || range.toString() !== text) { drop(el); return; }
+        const r = rects[0], s = el.style;
+        const off = Math.max(Math.abs(parseFloat(s.left) - r.left), Math.abs(parseFloat(s.top) - r.top), Math.abs(parseFloat(s.width) - r.width), Math.abs(parseFloat(s.height) - r.height));
+        if (off > 0.25) placeOn(el, r);
+      });
+      if (words.size) raf = requestAnimationFrame(follow);
     };
     const show = (page: HTMLElement) => {
       const got = pickWord(page);
@@ -95,14 +116,14 @@ export function FluxIdleGlitch({ paperRef }: { paperRef: RefObject<HTMLElement |
       el.dataset.word = got.text;   // the word it covers (a check measures that word itself and holds the glyphs to its rect)
       el.textContent = [...got.text].map(() => CODE[Math.floor(Math.random() * CODE.length)]).join('');
       const f = got.font, paper = getComputedStyle(page).backgroundColor;
-      Object.assign(el.style, {
-        left: `${got.rect.left}px`, top: `${got.rect.top}px`, width: `${got.rect.width}px`, height: `${got.rect.height}px`, lineHeight: `${got.rect.height}px`,
-        fontFamily: f.fontFamily, fontSize: f.fontSize, fontWeight: f.fontWeight, fontStyle: f.fontStyle, letterSpacing: f.letterSpacing, color: f.color, background: paper,
-      });
+      Object.assign(el.style, { fontFamily: f.fontFamily, fontSize: f.fontSize, fontWeight: f.fontWeight, fontStyle: f.fontStyle, letterSpacing: f.letterSpacing, color: f.color, background: paper });
+      placeOn(el, got.rect);
       layer.appendChild(el);
       live.add(el);
+      words.set(el, { range: got.range, text: got.text });
+      if (!raf) raf = requestAnimationFrame(follow);
       lastShown = performance.now();
-      window.setTimeout(() => { el.remove(); live.delete(el); }, SHOW_MS);
+      window.setTimeout(() => drop(el), SHOW_MS);
     };
     const timer = window.setInterval(() => {
       const page = paperRef.current;

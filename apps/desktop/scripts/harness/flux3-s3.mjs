@@ -23,6 +23,9 @@
 //   IDLE   the idle glitch (the idle clock told it has been still for 400 s, so the ramp is full): words are covered and resolved, and the page's
 //          text, selection and word count never change; never a word on the caret's line; at most 3 changes (appearances + resolutions) in
 //          any 1 s; a pointer moving makes the page whole within 300 ms; hidden, nothing appears; reduced motion, Ambiance 0, Flicker off: none.
+//   PLACE  (S3-r2, the Wrizors' 1920 frame) at 1366, 1920 and 2000: a glitched word's glyphs stand on the word's OWN rect (its Range in the
+//          editor, +-1 px) as it appears, and still after the page moves under it with no scroll and no key (the viewport widened 24 px).
+//          MUT-FOLLOW: the glyphs left where the word first stood - PLACE fails.
 //   HANDS  the opener tabs keep today's shape, place and arrow (flag off vs on, closed and open); under the flag an open tab draws its line.
 //   DISCONNECT  the box's Disconnect, through the app's own confirm, removes that one link (the port goes) and nothing else.
 //   C      contrast, both tones: the gutter, the port box, the Glitch bar's letters and count: >= 4.5:1.
@@ -148,6 +151,16 @@ const INSTRUMENT = `(() => {
     return true;
   };
   I.flashes = (kind) => (window.__wzFlashLog || []).filter((f) => f.kind === kind && f.ok).map((f) => f.t);
+  // the first glitched word's glyphs against the word ITSELF (its own Range in the editor, found by the word it names; the idle page's words
+  // are unique), and the largest edge difference between the two rects
+  I.place = () => {
+    const g = document.querySelector('[data-flux3-idle] .flux3-idle-word'); if (!g) return null;
+    const word = g.dataset.word, ed = document.querySelector('.forward-only-editor'); let wr = null;
+    const walk = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT);
+    for (let n = walk.nextNode(); n && !wr; n = walk.nextNode()) { const re = new RegExp('(^|[^\\\\p{L}\\\\p{N}])' + word + '(?![\\\\p{L}\\\\p{N}])', 'u'); const m = re.exec(n.nodeValue || ''); if (m) { const i = m.index + m[1].length; const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + word.length); wr = r.getClientRects()[0]; } }
+    const gr = g.getBoundingClientRect();
+    return { word, g: rr(gr), w: wr ? rr(wr) : null, off: wr ? +Math.max(Math.abs(gr.left - wr.left), Math.abs(gr.top - wr.top), Math.abs(gr.width - wr.width), Math.abs(gr.height - wr.height)).toFixed(2) : null };
+  };
 })();`;
 
 const MUTANTS = {
@@ -156,6 +169,7 @@ const MUTANTS = {
   stop: [/\(\)=>\{(\w+)=performance\.now\(\),(\w+)\.size&&(\w+)\(\)\}/g, '()=>{$1=performance.now()}'],
   caret: [/(\w+)&&(\w+)\.height\?\[(\w+)\.top-2,(\w+)\.bottom\+2\]:null/g, 'null'],
   pause: [/performance\.now\(\)-(\w+)<(\w+)\)return;(\w+)=(\w+)\.current\.shift\(\)/g, 'performance.now()-$1<0)return;$3=$4.current.shift()'],
+  follow: [/(Math\.abs\(parseFloat\((\w+)\.height\)-(\w+)\.height\)\))>\.25&&/g, '$1>1e9&&'],
 };
 
 const lum = (c) => { const v = c.map((x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
@@ -396,6 +410,29 @@ try { await withHarness(async (app) => {
   ok('IDLE never a word on the caret\'s line', Id.band && Id.onCaret === 0 && Id.adds >= 4, JSON.stringify(Id));
   ok(`IDLE at most 3 changes in any 1 s (appearances and resolutions: ${Id.maxPerSec})`, Id.maxPerSec <= 3 && Id.adds >= 4, JSON.stringify(Id));
   ok('IDLE a pointer moving makes the page whole within 300 ms', Id.stopMs !== null && Id.stopMs <= 300, JSON.stringify(Id));
+  // PLACE (S3-r2, the Wrizors' 1920 frame): the glyphs stand on their word's own rect (+-1 px) when it appears, and STILL do after the page
+  // moves under it with no scroll and no key (the viewport widened 24 px: the page re-centres and re-scales), at 1366, 1920 and 2000
+  const testPlace = async (view) => {
+    await open(true, 'dark', view, { id: IDLEPAGE });
+    await caretOnFirst();
+    await ev('window.__f3IdleShift = 400');
+    const appeared = await ev(`new Promise((res) => { const L = document.querySelector('[data-flux3-idle]'); if (!L) { res(false); return; }
+      const mo = new MutationObserver(() => { if (L.querySelector('.flux3-idle-word')) { mo.disconnect(); res(true); } });
+      mo.observe(L, { childList: true }); setTimeout(() => { mo.disconnect(); res(false); }, 8000); })`);
+    await sleep(40);
+    const p0 = await ev('window.__f3.place()');
+    await app.emulateDpr(1, view[0] + 24, view[1]);
+    await sleep(160);
+    const p1 = await ev('window.__f3.place()');
+    await app.emulateDpr(1, view[0], view[1]);
+    await ev('window.__f3IdleShift = 0');
+    const moved = p0 && p1 && p0.w && p1.w && p0.word === p1.word ? +Math.max(Math.abs(p1.w.x - p0.w.x), Math.abs(p1.w.y - p0.w.y)).toFixed(2) : null;
+    return { view: view[0], appeared, p0, p1, moved, pass: !!p0 && p0.off !== null && p0.off <= 1 && !!p1 && p1.off !== null && p1.off <= 1 && moved !== null && moved > 2 };
+  };
+  for (const view of [[1366, 768], [1920, 1080], [2000, 1125]]) {
+    const Pl = await testPlace(view);
+    ok(`PLACE [${view[0]}] the glitched word's glyphs stand on the word's own rect (+-1 px) as it appears, and after the page moves under it (no scroll, no key)`, Pl.pass, JSON.stringify(Pl));
+  }
   if (SHOTS) {
     await open(true, 'dark', [1920, 1080], { id: IDLEPAGE }); await caretOnFirst(); await ev('window.__f3IdleShift = 400');
     await app.waitFor('document.querySelectorAll("[data-flux3-idle] .flux3-idle-word").length > 0', { timeout: 6000, label: 'a word' }).catch(() => {});
@@ -500,6 +537,8 @@ try { await withHarness(async (app) => {
   ok('MUT-RATE (landed) the idle glitch\'s gap at 0: IDLE fails (more than 3 changes in a second)', mR.landed === 1 && mR.maxPerSec > 3, JSON.stringify(mR));
   const mS = await withMutant('stop', () => testIdle({ watchMs: 2500 }));
   ok('MUT-STOP (landed) activity no longer clearing the glitch: IDLE fails (not whole within 300 ms)', mS.landed === 1 && (mS.stopMs === null || mS.stopMs > 300), JSON.stringify(mS));
+  const mF = await withMutant('follow', () => testPlace([1920, 1080]));
+  ok('MUT-FOLLOW (landed) the glyphs left where the word first stood: PLACE fails (off the word once the page moves)', mF.landed === 1 && !mF.pass && mF.p1 && mF.p1.off > 1, JSON.stringify(mF));
   const mC = await withMutant('caret', () => testIdle({ watchMs: 9000, stop: false }));
   ok('MUT-CARET (landed) the caret\'s line not avoided: IDLE fails (a word on the caret\'s line)', mC.landed === 1 && mC.onCaret > 0, JSON.stringify(mC));
 
