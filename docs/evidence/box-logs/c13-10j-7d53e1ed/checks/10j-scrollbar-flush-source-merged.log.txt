@@ -1,0 +1,45 @@
+PASS T1: .mode-scroll's own margin-right cancellation reads the shared page-margin variable, not a hardcoded 38px literal  
+.mode-scroll{ position:relative; z-index:1; flex:1; min-height:0; overflow-y:auto; padding-bottom:30vh;
+  background:transparent;
+  margin-right:calc(-1 * var(--wz-page-pad-x, 38px) * var(--paper-scale));
+  padding-right:calc(var(--wz-page-pad-x, 38px) * var(--paper-scale)); }
+PASS T1: .mode-scroll's own padding-right re-application reads the SAME shared variable too (both halves of the cancellation, not just one)  
+.mode-scroll{ position:relative; z-index:1; flex:1; min-height:0; overflow-y:auto; padding-bottom:30vh;
+  background:transparent;
+  margin-right:calc(-1 * var(--wz-page-pad-x, 38px) * var(--paper-scale));
+  padding-right:calc(var(--wz-page-pad-x, 38px) * var(--paper-scale)); }
+PASS T2: .desk-frame-stage .mode-page's own padding rule uses the EXACT SAME variable expression (var(--wz-page-pad-x, 38px)) - one shared source, not two independently-maintained numbers  .desk-frame-stage .mode-page{
+  height:auto; flex:1 1 auto; min-height:0;
+  margin-bottom:var(--fx3-paper-fence);
+  /* ITEM 83 M3 (R6) — PAGE SETUP's margin choice rides in as a base measure
+     (--wz-page-pad-x, set inline by ModeStage from store/pageDress.ts) and is
+     scaled HERE, so --paper-scale keeps its single owner. The fallback is the
+     exact 38px this rule carried before M3, so a page with no dress renders
+     byte-identically to today. */
+  /* PAGE-SIZE: the margin choice now arrives as a multiplier (--wz-page-margin-in, pageDress.ts); off the letter page it is today's exact
+     26/38/58px base measure again. */
+  --wz-page-pad-x: calc(38px * var(--wz-page-margin-in, 1));
+  padding:calc(30px * var(--paper-scale)) calc(var(--wz-page-pad-x, 38px) * var(--paper-scale));
+PASS T3: the fallback value is '38px' in both the page's own padding rule and .mode-scroll's cancellation - an undressed page is unaffected by this fix
+PASS T4: ScriptEditor.tsx never reads --wz-page-pad-x/dressVars - PAGE SETUP's margins control does not apply to script pages, so .desk-frame-scroll-cap's own lack of a flush cancellation is a pre-existing, separate scope, untouched by this fix
+PASS T4: .desk-frame-scroll-cap's own rule is unchanged by this ticket (no margin-right/padding-right cancellation added)  .desk-frame-scroll-cap{ height:auto; flex:0 1 auto; min-width:0; max-width:100%; min-height:0; scrollbar-gutter:stable both-edges; }
+PASS T5 [successor]: the webkit mechanism lives in EXACTLY ONE place - inside @supports selector(::-webkit-scrollbar){} (so Firefox keeps `thin`), and every ::-webkit-scrollbar selector there is on `.desk-frame-stage--prose .mode-scroll` - none anywhere else in index.css  {"outside":[],"inside":[".desk-frame-stage--prose .mode-scroll::-webkit-scrollbar",".desk-frame-stage--prose .mode-scroll::-webkit-scrollbar-track",".desk-frame-stage--prose .mode-scroll::-webkit-scrollbar-thumb"]}
+PASS T5 [successor]: the exception RESETS scrollbar-width and scrollbar-color to auto on that element (the pseudo rules are ignored wherever either is set - the dead-code trap this ticket's one-mechanism note records)  [".desk-frame-stage--prose .mode-scroll","--wz-sb-k: var(--wz-k, 1); --wz-sb-w: min(10px, round(nearest, calc(10px / var(--wz-sb-k)), 1px)); padding-right:calc(var(--wz-page-pad-x, 38px) * var(--paper-scale, 1) + 10px - var(--wz-sb-w)); scrollbar-width:auto; scrollbar-color:auto;"]
+PASS T5 [r2 successor]: the bar is 10px / the APPLIED scale rounded to the nearest whole layout pixel, capped at 10 (--wz-sb-w), and the bar rule reads that variable; --wz-sb-k = --wz-k, times --wz-zoom while the column is zoomed  {"barRule":[".desk-frame-stage--prose .mode-scroll::-webkit-scrollbar","width:var(--wz-sb-w);"],"resetRule":[".desk-frame-stage--prose .mode-scroll","--wz-sb-k: var(--wz-k, 1); --wz-sb-w: min(10px, round(nearest, calc(10px / var(--wz-sb-k)), 1px)); padding-right:calc(var(--wz-page-pad-x, 38px) * var(--paper-scale, 1) + 10px - var(--wz-sb-w)); scrollbar-width:auto; scrollbar-color:auto;"],"zoomRule":[".desk-frame-stage--prose .mode-pagecol[data-zoom='true'] .mode-scroll","--wz-sb-k: calc(var(--wz-k, 1) * var(--wz-zoom, 1.6));"]}
+PASS T5 [r2.1 successor]: the PAIRING - .mode-scroll takes padding-right: calc(<the margin cancellation it already carries: pad-x x paper-scale> + 10px - var(--wz-sb-w)), so bar + the extra is 10 layout px and the text column is one width at every scale and zoom  [".desk-frame-stage--prose .mode-scroll","--wz-sb-k: var(--wz-k, 1); --wz-sb-w: min(10px, round(nearest, calc(10px / var(--wz-sb-k)), 1px)); padding-right:calc(var(--wz-page-pad-x, 38px) * var(--paper-scale, 1) + 10px - var(--wz-sb-w)); scrollbar-width:auto; scrollbar-color:auto;"]
+PASS T5 [law-3 successor]: the thumb is the paper-toned --ink-on-paper-low, the track clear  [".desk-frame-stage--prose .mode-scroll::-webkit-scrollbar-thumb","background:var(--ink-on-paper-low); background-clip:padding-box; border-left:calc(4px / var(--wz-sb-k)) solid transparent; border-radius:0;"]
+PASS T5: ...and the standard mechanism IS present: the systemic `*` rule sets scrollbar-width:thin and a theme-token scrollbar-color
+PASS T5: ...and the paper-toned group (.mode-scroll, .desk-frame-scroll-cap, .board-canvas-wrap) and the card text keep their scrollbar-color
+PASS T6: .board-canvas-wrap paints var(--paper) (the canvas's own surface) beside its stable gutter - the paper-toned thumb is not dark-on-dark  found
+PASS MUTANT: the wrap loses its paper background (the dark-gutter, invisible-in-Flux-light state) - T6 must go RED
+PASS MUTANT: a ::-webkit-scrollbar{width:8px} rule is re-added OUTSIDE the exception - T5 [successor] must go RED (the mutation LANDED, and the real source has none outside)
+PASS MUTANT: the auto reset is removed from the exception (the pseudo rules would be dead under Chromium >= 121) - T5 [successor] must go RED (the mutation LANDED)
+PASS MUTANT: the bar is a flat 10px of layout (the scaled-up bar of 3840 returns) - T5 [r2 successor] must go RED (the mutation LANDED)
+PASS MUTANT: the (10px - the bar) extra is dropped from the padding (the text column takes a different bite at every scale again) - the PAIRING check must go RED (the mutation LANDED)
+PASS MUTANT: the padding REPLACES the margin cancellation (the first r2 form: the text column grew by a page margin) - the PAIRING check must go RED (the mutation LANDED)
+PASS MUTANT: the 10px cap is dropped (below scale 1 the padding would have to go negative) - T5 [r2 successor] must go RED (the mutation LANDED)
+PASS MUTANT: the @supports wrapper is dropped (Firefox would lose `thin`) - T5 [successor] must go RED (the mutation LANDED)
+PASS MUTANT: the zoom multiplier is dropped (the bar would scale 1.6x while the page is zoomed) - T5 [successor] must go RED (the mutation LANDED)
+PASS MUTANT: .mode-scroll's cancellation reverts to the old hardcoded 38px literal (the exact ITEM-83-M3 regression) - T1 must go RED  {"landed":true}
+
+SCROLLBAR-FLUSH-SOURCE VERIFY: PASS (24 checks)

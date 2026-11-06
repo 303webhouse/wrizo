@@ -1,0 +1,199 @@
+[
+  {
+    "name": "(A1) flushAll runs every registered flush, in registration order",
+    "pass": true,
+    "detail": "[\"A\",\"B\",\"C\"]"
+  },
+  {
+    "name": "(A2) one flush throwing does not stop the others (C ran after B threw)",
+    "pass": true,
+    "detail": "[\"A\",\"B\",\"C\"]"
+  },
+  {
+    "name": "(A3) an unregistered flush no longer runs",
+    "pass": true,
+    "detail": "[\"A\",\"C\"]"
+  },
+  {
+    "name": "(A4) unregistering twice is harmless",
+    "pass": true,
+    "detail": "2"
+  },
+  {
+    "name": "(A5) the same function registered twice is two independent entries: removing one leaves the other",
+    "pass": true,
+    "detail": "[\"A\",\"C\",\"S\"]"
+  },
+  {
+    "name": "(A6) with nothing registered, flushAll is a no-op",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(B1) CONTROL: with the flag unset, saveDraft writes (the belt is invisible to a normal writer)",
+    "pass": true,
+    "detail": "1"
+  },
+  {
+    "name": "(B2) the flag is set in storage",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(B3) with the flag set, saveDraft is a NO-OP: no row, no new dirty record",
+    "pass": true,
+    "detail": "1"
+  },
+  {
+    "name": "(B4) and so is every other record upsert (a project here)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(B5) the belt does not touch PULLED records — those are the sync generation guard's job, not this one's",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(B6) clearing the flag (a sign-in) lifts the belt: writes work again",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(C1) THE LOSS, reproduced: with no flush first, the unsaved check sees NOTHING and would sign out (the typing is lost)",
+    "pass": true,
+    "detail": "{\"kind\":\"clear\"}"
+  },
+  {
+    "name": "(C2) flush, THEN decide: the pending text is now a dirty record, so the sign-out is BLOCKED with a count of 1",
+    "pass": true,
+    "detail": "{\"kind\":\"blocked\",\"count\":1,\"timedOut\":false}"
+  },
+  {
+    "name": "(C3) after flush, wipe, unmount: the wiped device holds no draft and no dirty record (the unmount had nothing left to write)",
+    "pass": true,
+    "detail": "0"
+  },
+  {
+    "name": "(C4) THE RESURRECTION, reproduced: with neither the flush nor the belt, the unmount recreates the draft in the wiped cache, DIRTY (the next account would push it)",
+    "pass": true,
+    "detail": "1"
+  },
+  {
+    "name": "(C5) THE BELT ALONE (no flush) stops the resurrection: the late unmount write is refused, no row, nothing dirty",
+    "pass": true,
+    "detail": "0"
+  },
+  {
+    "name": "(D1) handleLogout calls flushAll() BEFORE the force check, so it runs on BOTH the normal and the force path",
+    "pass": true,
+    "detail": "{\"flushAt\":365,\"forceIf\":384}"
+  },
+  {
+    "name": "(D2) and before the unsaved decision, the server logout, the flag and the wipe",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(D3-PageEditor) registers its flush, unregisters it in the same effect's cleanup, and imports the registry",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(D3-QuickSprint) registers its flush, unregisters it in the same effect's cleanup, and imports the registry",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(D3-BeatWizard) registers its flush, unregisters it in the same effect's cleanup, and imports the registry",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(D3-BoardEditor) registers its flush, unregisters it in the same effect's cleanup, and imports the registry",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(D4) the belt is the first thing upsert does — before it stamps, replaces, marks dirty or schedules anything",
+    "pass": true,
+    "detail": "{\"upsertAt\":16479,\"beltAt\":17079,\"stampAt\":17113}"
+  },
+  {
+    "name": "(E1) the logout sheet defines every home palette token the shared form classes read",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "(E2) and each has EXACTLY the value .wz-home gives it (they cannot drift apart)",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "(E3) MUTATION KILLED: with one token changed, E2's predicate goes red",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(F1) the capture takes all three: the sheet's first step, its confirm step, and a page with \"Signing out…\"",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(F2) sync is stubbed in the page, failing so a record stays unsaved, and stalling once __stall is set so the push is still waiting",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(F3) the phase boots AUTHED (a session to sign out of) and puts WS_ANON back before the signed-out frame",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(F4) each frame waits for its own settled state before it is shot: focus on \"Stay signed in\"; the confirm element; a disabled \"Signing out…\" button",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(F5) [word-diet successor] the second step is reached by the real button (\"Sign out and lose\"), and the sheet is dismissed with Esc (\"Stay signed in\")",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(F6) the theme is re-applied after the reload, so the light frames are really light",
+    "pass": true,
+    "detail": "2"
+  },
+  {
+    "name": "(F7) every frame, these included, goes through the same settle-then-email-check in save()",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(F8) the capture waits for the page's caret restore to go quiet (no focus() call for 800 ms) BEFORE it writes the unsaved page and presses Sign out",
+    "pass": true,
+    "detail": "11314"
+  },
+  {
+    "name": "(F9) the focus trace that found it is kept: installed before the page loads, and reported (with the last focus() calls and their stacks) when a frame's focus is not where the sheet put it",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(M1) MUTATION KILLED: with the belt removed, B3's predicate goes red (the late write lands)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(M2) MUTATION KILLED: with flushAll made a no-op, C2's predicate goes red (the sign-out would clear past the pending text)",
+    "pass": true,
+    "detail": "{\"kind\":\"clear\"}"
+  },
+  {
+    "name": "(M3) MUTATION KILLED: without the flushAll() call in handleLogout, D1's predicate goes red",
+    "pass": true,
+    "detail": ""
+  }
+]
+
+LOGOUT-FLUSH VERIFY: PASS (39 checks) — live walk not run (box turn)

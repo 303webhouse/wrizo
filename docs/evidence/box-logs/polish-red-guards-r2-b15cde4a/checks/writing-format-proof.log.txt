@@ -1,0 +1,145 @@
+PASS  TOGGLE bold: press once wraps, press again returns the text to exactly what it was
+PASS  TOGGLE bold: the selection is the CONTENT after each press (so the second press reads the run as its own)
+PASS  TOGGLE italic: press once wraps, press again returns the text to exactly what it was
+PASS  TOGGLE italic: the selection is the CONTENT after each press (so the second press reads the run as its own)
+PASS  TOGGLE underline: press once wraps, press again returns the text to exactly what it was
+PASS  TOGGLE underline: the selection is the CONTENT after each press (so the second press reads the run as its own)
+PASS  TOGGLE strike: press once wraps, press again returns the text to exactly what it was
+PASS  TOGGLE strike: the selection is the CONTENT after each press (so the second press reads the run as its own)
+PASS  TOGGLE: Italic on an italic word does NOT make it bold
+PASS  TOGGLE: bold then italic stores bold-italic; Italic again drops ONLY the italic (`**` stays)
+PASS  TOGGLE: bold then italic then Bold drops only the bold (`*` stays)
+PASS  TOGGLE: a bold-italic run `***Plain***` is read as BOTH - Italic on it leaves bold, Bold on it leaves italic, from the word or the whole run
+PASS  TOGGLE: a mixed multi-line selection (one bold line, one plain) becomes bold on BOTH, then clears
+PASS  TOGGLE: a part of a run splits it - `b` of `**abc**` -> `**a**b**c**`
+PASS  TOGGLE: a part touching the run's edge drops the marker instead of leaving an empty pair
+PASS  TOGGLE: a collapsed caret inside a run removes the run's markers
+PASS  TOGGLE: a collapsed caret in plain text inserts an empty pair, and the same press removes it again
+PASS  TOGGLE: selecting the markers too (the whole run) and pressing Bold removes the run
+PASS  TOGGLE: a mixed selection (one bold word, one plain) becomes UNIFORMLY bold, with no run nested in itself
+PASS  TOGGLE: ...and a second press clears it
+PASS  TOGGLE: trailing whitespace is not swept inside the mark
+PASS  ACROSS: select-all then Bold marks EACH line, never one pair across the newline
+PASS  ACROSS: select-all then Bold twice is the identity
+PASS  ACROSS: Italic across lines the same
+PASS  ACROSS: the selection after covers both lines' content (start of line 1, end of line 2)
+PASS  ACROSS: italic then underline on two lines stacks the second mark OUTSIDE (the selection reaches line 1's closing star and line 2's opening star, never their partners)
+PASS  ACROSS: ...and pressing Underline again peels only the underline
+PASS  ACROSS: a list is marked AFTER its "- ", so it stays a list; blank lines get nothing
+PASS  ACROSS: ...and pressing again restores it
+PASS  ACROSS: a quote/heading/indent prefix is left in front of the mark
+PASS  ACROSS: a selection that starts and ends mid-line marks only the selected parts
+PASS  LINES: Bullet with a multi-line selection bullets EVERY line
+PASS  LINES: Bullet again removes it from all of them
+PASS  LINES: Bullet on a partly-bulleted selection completes the list
+PASS  LINES: Quote across lines, and back
+PASS  LINES: Centre across lines; Right then REPLACES it (a line cannot be both)
+PASS  LINES: Left clears alignment on every selected line
+PASS  LINES: Bullet on a centred line stacks outside the alignment (the last applied is outermost), and toggling it off finds it again
+PASS  LINES: Bullet on an indented line goes AFTER the tabs (so Outdent still finds them)
+PASS  BULLET: hollow replaces the round mark instead of stacking, and a second press clears it
+PASS  BULLET: square replaces hollow
+PASS  BULLET: round replaces square
+PASS  LINES: blank lines in a selection are left blank
+PASS  LINES: a single caret still acts on its own line only (unchanged)
+PASS  READER: stars with a space inside are TEXT - "2 * 3 * 4" has no run
+PASS  READER: a plain italic pair and a bold pair are runs, side by side
+PASS  READER: `***x***` is BOTH - bold outside, italic inside
+PASS  READER: marks NEST - `__*x*__` is an underline holding an italic
+PASS  READER: two runs that would CROSS cannot both stand - the later-opening one stays literal
+PASS  READER: an empty pair is a run (what Bold inserts at a bare caret)
+PASS  READER: single underscores and a lone `__` are text
+PASS  DECORATOR: "2 * 3 * 4" shows its stars (no italic, nothing collapsed)
+PASS  DECORATOR: `__*x*__` paints underline AND italic and collapses all four markers
+PASS  DECORATOR: `***x***` paints bold AND italic
+PASS  DECORATOR: every character is emitted exactly once - the stored text is the rendered text, markers included, over a battery of shapes
+PASS  FORMAT: Italic on the 3 of "2 * 3 * 4" wraps ONLY the 3 - the literal stars are not paired with it - and a second press restores it
+PASS  FORMAT: a collapsed caret inside an empty bold pair `**|**` + Italic inserts its OWN pair inside (was: stripped one star from each side)
+PASS  FORMAT: ...and Bold on that same caret removes the empty pair
+PASS  FORMAT: ...and Italic again on `***|***` removes only the italic pair
+PASS  TITLES: Nick's own title - `**TESTING** THE *DATABASE* SYNC` - derives as plain words
+PASS  TITLES: every kind of markup goes - heading mark, block token, bullet, quote, centring, tabs, strike, underline, nested
+PASS  TITLES: a line that is only markup has nothing to read, so the NEXT line is the title (like a blank one)
+PASS  TITLES: and a page that is only markup is "Untitled" - never a stray asterisk
+PASS  TITLES: what the page shows as text stays text - "2 * 3 * 4" and a lone underscore name are NOT mangled
+PASS  TITLES: a board's name is the same derivation
+PASS  EXCERPTS: the lines a card face and a survey read are plain, blank and markup-only lines skipped
+PASS  EXCERPTS: the post-sprint echo line is plain text too
+PASS  REVEAL: over every caret position, including the marker edges, the bold marks stay hidden
+PASS  REVEAL: no caret (a resting card, a selection, Free Write) shows nothing
+PASS  REVEAL: Nick's case - a caret in the middle of "TESTING" shows NO asterisks anywhere on the line
+PASS  REVEAL: a caret at the END of "TESTING", where a click off the word lands, still shows no asterisks
+PASS  REVEAL: nested marks stay hidden - `__*x*__` shows the word at the caret that used to reveal both marks, and at the caret just after it
+PASS  REVEAL: an empty pair `****` stays hidden, including with the caret between the marks
+PASS  BULLET: the token stays hidden even when the caret touches it
+PASS  BULLET: hollow and square marks stay hidden and wear their own glyph class
+PASS  HEADING: `# Chapter` and `## Chapter` hide the hash at every caret and keep the heading size
+PASS  REVEAL: every character is still emitted exactly once at EVERY caret position (the 1:1 count the caret restore depends on)
+PASS  CARD [port successor]: the card is painted as the page is - no mark, bullet token or heading hash shows at ANY caret
+PASS  STRIP: "Copy My Words" removes stacked prefixes in ANY order (bullet inside an indent, quote inside a bullet)
+PASS  TABS: three Tab presses are three first-line levels, in the stored text
+PASS  TABS: Shift+Tab (outdent) takes one level back, floored at zero
+PASS  BLOCK: one press puts one `>| ` on the CARET'S LINE only - a line is a paragraph, so its neighbours are untouched (Nick 2026-09-25)
+PASS  SCOPE: Tab (indent) on the middle of three single-newline paragraphs indents THAT LINE ONLY - it used to indent all three
+PASS  SCOPE: Shift+Tab (outdent) and the block levels have the same scope
+PASS  SCOPE: with a selection, one level per SELECTED line - and no line outside it
+PASS  BLOCK: a second press is a second level; an outdent removes ONE
+PASS  BLOCK: outdent is floored at zero and leaves an un-blocked paragraph alone
+PASS  BLOCK: only the caret's paragraph changes (the blank line ends it)
+PASS  BLOCK: a first-line tab goes INSIDE the block (after its tokens), and Outdent still finds it there
+PASS  BLOCK: the caret keeps the character it was on
+PASS  LEAD: tabs, the block token, a bullet and a heading are read in order, with positions
+PASS  LEAD: hollow and square bullets are their own tokens, not the round hyphen
+PASS  LEAD: ordinary prose never parses as a block token - `>|x`, a mid-line `>| `, a lone `>|`, `|> `
+PASS  STRIP: Copy My Words removes structure in any order, block tokens included
+PASS  STRIP: "2 * 3 * 4" exports as it shows (the regex copy would have paired the stars); a real run is stripped
+PASS  STRIP: heading text is text - only the mark goes
+PASS  DECORATOR: `>| ` paints a block level with its marker collapsed, and two levels are two wrappers
+PASS  DECORATOR: block, tab and marks together still emit every character once
+PASS  TABKEY: three taps are three `indent` acts - each applied on RELEASE, Tab itself never moves focus
+PASS  TABKEY: Shift+Tab is one `outdent` on release
+PASS  TABKEY: a HELD Tab auto-repeating is ONE press, one level (repeats are swallowed)
+PASS  TABKEY: Tab held past 200 ms then 1 is a BLOCK indent, consumes the 1, and the release adds no Tab level
+PASS  TABKEY: one level per press of the 1 while Tab stays held; the 1 auto-repeating adds none
+PASS  TABKEY: auto-repeat does not restart the hold clock - a Tab held from 0, repeating at 190, then a 1 at 250 is a CHORD (250 ms held), not a rollover
+PASS  TABKEY: Shift+Tab held + 1 is one block OUTDENT
+PASS  TABKEY: a fast rollover (Tab then 1 inside the window) applies the Tab FIRST and leaves the 1 to be TYPED
+PASS  TABKEY: the threshold is exact - 199 ms is rollover, 200 ms is a chord
+PASS  TABKEY: any other key after a Tab proves it was a tap - the Tab lands first, the key types
+PASS  TABKEY: where the chord may not act (Free Write on a written line) the held-Tab 1 is just TYPED, after the pending Tab
+PASS  TABKEY: Ctrl/Meta/Alt+Tab and an IME composition are left entirely alone
+PASS  TABKEY: a modifier pressed while Tab is held does not count as "another key"
+PASS  CLICK: a click past the end of a line that ends in a bold word lands AFTER its closing marks (the line's end), not inside the word
+PASS  CLICK: ...and the strip lights NOTHING there
+PASS  CLICK: a click just after "BOLD" mid-line (raw 8, after the hidden `**`) stays after the marks - the strip lights nothing
+PASS  CLICK: a click that lands BETWEEN the two hidden closing stars goes to the group's end, never splitting it
+PASS  CLICK: nested closers are one group - in `__*x*__ y` a click at 4, 5 or 6 (after x: inside or between the closers) lands at 7, after both
+PASS  CLICK: an empty pair a press made keeps its interior stop (typing goes into it)
+PASS  KEYBOARD unchanged: the arrow/typing snap still pulls a caret after the hidden closers back to the last visible letter (the left-character rule)
+PASS  MARKS: a mark lights exactly when the character to the caret's LEFT carries it - inside BOLD and after its last letter, not before its first
+PASS  MARKS: italic and strike the same; a caret in plain text lights nothing
+PASS  MARKS: one reader, per line - a lone `*` or `**` on ANOTHER line can no longer pair with this one (the old indexOf reader paired across lines)
+PASS  MARKS: an empty pair a press just made lights its mark (the next letter is bold)
+PASS  HEADINGS: the one lead reader reads # through ###### plus a space; seven hashes, or none after the space, are text
+PASS  HEADINGS: H on a plain line adds Heading 2 (`## `) - the web editors' default for a new heading
+PASS  HEADINGS: H on ANY heading line removes the heading, whatever its level ("all heading modifications should be undone")
+PASS  HEADINGS: + steps toward h1 and - toward h6, one level a press
+PASS  HEADINGS: + is clamped at h1 and - at h6 (no seventh hash, no zero-hash heading)
+PASS  HEADINGS: + and - do nothing on a line that is not a heading
+PASS  HEADINGS: the token is read where the reader puts it - after a centring token - and H toggles it there
+PASS  HEADINGS: the caret keeps the character it was on through H, + and -
+PASS  HEADINGS: H lights on a heading line, with its level, and not elsewhere
+PASS  HEADINGS: the page paints a distinct class per level, hash hidden
+PASS  HEADINGS: titles and Copy My Words strip every level
+PASS  EMPTY ITALIC: Italic at a bare caret writes NOTHING (an empty italic `**` reads as a lone bold marker and stayed on the page) and holds the mark pending
+PASS  EMPTY ITALIC: the other empty pairs are readable runs and are stored as before - `****`, `____`, `~~~~`
+PASS  EMPTY ITALIC: inside an empty bold pair it IS readable (`***|***`) and is stored
+PASS  WORD BACKSPACE: a whole bold word goes with its marks (no lone `**` left), from the caret after its last letter
+PASS  WORD BACKSPACE: spaces before the caret go with the word before them
+PASS  WORD BACKSPACE: half of a bold word - the marks of the part that stays survive, nothing empty is left
+PASS  WORD BACKSPACE: in the middle of a styled word only its first part goes, and the pair still wraps the rest
+PASS  WORD BACKSPACE: at a line's start it is a plain Backspace (the lines join)
+PASS  WORD DELETE: the word after the caret and its following spaces go; a styled word takes its marks
+PASS  WORD DELETE: at a line's end it is a plain Delete (the lines join)
+
+143/143 checks passed
