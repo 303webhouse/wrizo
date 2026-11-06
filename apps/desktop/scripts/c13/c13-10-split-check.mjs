@@ -134,7 +134,7 @@ const firstCode = (f) => real.texts.now[f].replace(/\r\n/g, '\n').split('\n').fi
 const plants = [
   ['a moved line edited', 'LINES', (x) => { const f = to[0], ls = x.texts.now[f].split('\n'), i = firstCode(f); ls[i] = ls[i].replace(/(\S)(\s*)$/, '$1x$2'); x.texts.now[f] = ls.join('\n'); }],
   ['a moved line dropped', 'LINES', (x) => { const f = to[0], ls = x.texts.now[f].split('\n'), i = firstCode(f); ls.splice(i, 1); x.texts.now[f] = ls.join('\n'); }],
-  ['a src file outside the split changed', 'SCOPE', (x) => { x.changed.push('pages/PageEditor.tsx'); }],
+  ['a src file outside the split changed', 'SCOPE', (x) => { x.changed.push('c13-planted/outside-the-split.ts'); }],   // a name no split lists (10i splits PageEditor itself)
   ['a moved citation points nowhere', 'CITES', (x) => { const f = [...to, from].find((g) => new RegExp(CITE.source).test(x.texts.now[g])); if (f) x.texts.now[f] = x.texts.now[f].replace(/§(\d+)\]/, '§999]'); else x.texts.now[to[0]] += '\n// planted [Nowhere §999]'; }],
   ['the barrel loses an export', 'BARREL', (x) => {
     // the name's declaration loses `export`, in whichever file holds it now (the barrel itself, or a part it re-exports)

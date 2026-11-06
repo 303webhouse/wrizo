@@ -71,12 +71,12 @@ import { countLineEquivalents } from '../store/lineEquivalents';
 import { registerFlush } from '../store/flushRegistry';
 import { celebrateReturnChip } from '../store/deckRewards';
 import { wordCount } from '../store/wordCount';
+import { useFirstRunGate, FIRST_RUN_WORD_TARGET } from './pageEditor/useFirstRunGate';
+import { usePageTypewriter } from './pageEditor/usePageTypewriter';
+import { usePageAutosave } from './pageEditor/usePageAutosave';
 
 /** W5 - the glow for a page born from a step: a STABLE ref callback (one function for the module), so a re-render never re-fires it; celebrateReturnChip itself is once-per-element. */
 const glowStepChip = (el: HTMLElement | null): void => { if (el) celebrateReturnChip(el); };
-
-// HB1 F1 — the gate's fixed instrument: 100 whitespace-delimited words.
-const FIRST_RUN_WORD_TARGET = 100;
 
 // B1 Slice 3 — the manuscript page editor. A binder Page (a JournalEntry with
 // projectId set) opens in the mode-aware editor (Free write / Draft / Format),
@@ -88,8 +88,6 @@ const FIRST_RUN_WORD_TARGET = 100;
 // initialText + reports clean derived text up — so the page just autosaves that
 // to entry.text. Switching modes re-seeds with the current CLEAN text (struck
 // runs excluded), exactly as the sprint surface does.
-
-const AUTOSAVE_MS = 2000;
 
 
 // ITEM 104 (THIRD) — a stable stand-in for a page that is not there.
@@ -381,20 +379,7 @@ function PageEditorView({ id }: { id: string }) {
     };
   }, [mode, text]);
 
-  const gateActive = framed && firstRunGateRequested.current && !gateUnlocked;
-  const gateWords = useMonotonicWordCount(text, gateActive);
-  const gateReached = gateActive && gateWords >= FIRST_RUN_WORD_TARGET;
-
-  useEffect(() => {
-    setFirstRunGateActive(gateActive);
-    return () => setFirstRunGateActive(false);
-  }, [gateActive]);
-
-  const handleChooseTheme = (themeId: ThemeId) => {
-    void themeId; // setTheme already applied by UnlockCeremony itself
-    setFirstRunComplete(true);
-    setGateUnlocked(true);
-  };
+  const { gateActive, gateWords, gateReached, handleChooseTheme } = useFirstRunGate({ framed, firstRunGateRequested, gateUnlocked, text, setGateUnlocked });
 
   // F5 — TTFK session for this chapter/support page. projectId carries the binder;
   // firstKeystroke rides the same onForward seam as the warm release below.
@@ -408,17 +393,7 @@ function PageEditorView({ id }: { id: string }) {
     enabled: () => !unbornRef.current,
   });
 
-  // the Draft-open typewriter is decided once at mount (empty deps freeze `mode` and `initialText`; the component remounts per page, so a mode switch within one mount never re-runs it); an EMPTY page opens with the typewriter OFF, having no lines to follow [PageEditor §9]
-  const typewriterEnteredRef = useRef(false);   // PHASE 1 (S5): has this mount read the page's typewriter memory yet?
-  useEffect(() => {
-    if (mode === 'drafting') { enterPageTypewriter(id, initialText.trim().length === 0); typewriterEnteredRef.current = true; }   // PHASE 1 (S5): read once at mount; replaces the line-count seed
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  useEffect(() => {   // PHASE 1 (S5): a toggle on this Draft page writes ITS memory; a page opened in Free Write reads it the FIRST time it reaches Draft
-    if (mode !== 'drafting') return undefined;
-    if (!typewriterEnteredRef.current) { typewriterEnteredRef.current = true; enterPageTypewriter(id, textRef.current.trim().length === 0); }
-    return holdTypewriterPage(id);
-  }, [mode, id]);
+  usePageTypewriter({ mode, id, initialText, textRef });
 
   // W2 — the way back. Scroll lives on ModeStage's internal .mode-scroll box
   // (surfaceRef is the .mode-page ancestor the host already owns); caret
@@ -446,61 +421,7 @@ function PageEditorView({ id }: { id: string }) {
     localStorage.setItem(modeKey, next);
   };
 
-  // Persist the page text to its JournalEntry (debounced), merging the latest
-  // record so other metadata is never clobbered.
-  // PB1 — an unborn page has no row to merge into, and must not gain one here:
-  // birth is `onTextChange` below, which is SYNCHRONOUS and carries the first
-  // word with it. If this ran on an unborn page it would write an empty row on
-  // the debounce and re-create the litter this ticket removes.
-  const flush = () => {
-    if (unbornRef.current) return;
-    const latest = getJournalEntry(id);
-    if (latest && latest.text !== textRef.current) {
-      saveJournalEntry({ ...latest, text: textRef.current });
-      lastSavedRef.current = textRef.current;
-    }
-  };
-
-  // PB1 — THE FIRST WORD. The birth trigger, and the one place the local-first
-  // invariant is at stake: the row is written WITH this text in the same
-  // synchronous call (store/unbornPage.ts's `birth`), never created empty and
-  // filled in afterwards. So the first keystroke reaches disk on exactly the
-  // path and the schedule every later keystroke does — the existing debounced
-  // flush, offline included — and there is no window in which it exists only in
-  // memory that did not already exist for every other keystroke in the app.
-  //
-  // Fires on the first NON-EMPTY text: a keystroke that leaves the page empty
-  // (typing a space then deleting it, an IME composition that resolves to
-  // nothing) has produced no word, and a page is born when it has a word.
-  const onTextChange = (next: string) => {
-    setText(next);
-    if (unbornRef.current && next.trim()) {
-      lastSavedRef.current = next;
-      unbornRef.current.birthWith({ text: next });
-    }
-  };
-
-  useEffect(() => {
-    if (text === lastSavedRef.current) return;
-    const h = setTimeout(flush, AUTOSAVE_MS);
-    return () => clearTimeout(h);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [text, id]);
-
-  // Flush on tab hide / unmount.
-  useEffect(() => {
-    const onHide = () => { if (document.visibilityState === 'hidden') { flush(); flushNow(); } };
-    document.addEventListener('visibilitychange', onHide);
-    // LOGOUT FLUSH — a sign-out flushes this page's pending text first, so it is counted as unsaved.
-    const unregisterFlush = registerFlush(flush);
-    return () => {
-      unregisterFlush();
-      document.removeEventListener('visibilitychange', onHide);
-      flush();
-      flushNow();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { flush, onTextChange } = usePageAutosave({ unbornRef, id, textRef, lastSavedRef, setText, text });
 
   // This hook sits ABOVE the early return below (the hooks-order guards enforce it); its body reads `applyFormatAt`, defined below, safely, since an effect runs after render, and its deps carry `!!realEntry` so the listener attaches once the editor mounts. Tab indents through draftFormat's own indent (a leading tab), the same formatter as the rail's arrows, so a key and a click cannot drift apart. It is a state machine (store/tabChord.ts): each Tab tap is one more first-line level, Shift+Tab one back, Tab held + 1 one whole-paragraph level per press; a tap applies on release, and a quick Tab-then-1 types its 1. Draft and Revise act everywhere; Free Write is forward-only, so it acts on a BLANK line only and never outdents. Capturing Tab costs a keyboard-only writer Tab-out; Escape leaves the surface (store/escapeExit.ts). While an Outline is in Draft it owns Tab and this machine stands aside (a ref, read at press time). [PageEditor §10]
   const outlineKeysRef = useRef(false);

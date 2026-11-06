@@ -1,0 +1,29 @@
+  const { gateActive, gateWords, gateReached, handleChooseTheme } = useFirstRunGate({ framed, firstRunGateRequested, gateUnlocked, text, setGateUnlocked });
+  usePageTypewriter({ mode, id, initialText, textRef });
+  const { flush, onTextChange } = usePageAutosave({ unbornRef, id, textRef, lastSavedRef, setText, text });
+function useFirstRunGate({ framed, firstRunGateRequested, gateUnlocked, text, setGateUnlocked }: {
+  framed: boolean;
+  firstRunGateRequested: MutableRefObject<boolean>;
+  gateUnlocked: boolean;
+  text: string;
+  setGateUnlocked: Dispatch<SetStateAction<boolean>>;
+}) {
+  return { gateActive, gateWords, gateReached, handleChooseTheme };
+}
+function usePageTypewriter({ mode, id, initialText, textRef }: {
+  mode: EditorMode;
+  id: string;
+  initialText: string;
+  textRef: MutableRefObject<string>;
+}) {
+}
+function usePageAutosave({ unbornRef, id, textRef, lastSavedRef, setText, text }: {
+  unbornRef: MutableRefObject<UnbornHandle | null>;
+  id: string;
+  textRef: MutableRefObject<string>;
+  lastSavedRef: MutableRefObject<string>;
+  setText: Dispatch<SetStateAction<string>>;
+  text: string;
+}) {
+  return { flush, onTextChange };
+}
