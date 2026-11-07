@@ -208,6 +208,14 @@ const INSTRUMENT = `(() => {
     const lum = (c) => { const l = c.map((v) => { const x = v / 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }); return 0.2126 * l[0] + 0.7152 * l[1] + 0.0722 * l[2]; };
     const a = lum(ink), b = lum(page);
     return { caret: getComputedStyle(bc).backgroundColor, page, pageEl: String(under.e.className || under.e.tagName).slice(0, 60), ink: ink.map(Math.round), ratio: +((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)).toFixed(2) }; };
+  // THE ZOOM, frame by frame (r9i: the dark read found the editor at scale 1.0 between two reads at 1.6, data-zoom 'true' throughout): every
+  // change of the editor's rendered scale by more than .05, with the time, data-zoom and data-wz-writing then
+  I.zoomWatch = () => { I.zlog = []; let last = null; const t0 = performance.now(); if (I.zraf) cancelAnimationFrame(I.zraf);
+    const tick = () => { const ed = I.ed(), col = document.querySelector('.mode-pagecol'); const s = ed && ed.offsetWidth ? +(ed.getBoundingClientRect().width / ed.offsetWidth).toFixed(3) : null;
+      if (s !== null && (last === null || Math.abs(s - last) > 0.05)) { I.zlog.push([Math.round(performance.now() - t0), s, col ? col.getAttribute('data-zoom') : null, document.documentElement.getAttribute('data-wz-writing')]); last = s; }
+      I.zraf = requestAnimationFrame(tick); };
+    I.zraf = requestAnimationFrame(tick); return true; };
+  I.zoomStop = () => { if (I.zraf) cancelAnimationFrame(I.zraf); I.zraf = 0; return I.zlog || []; };
   // THE TERMINAL (r9): the page's paper and readouts, the room's ground under it (the stage's column), and the editor's veil
   I.term = () => { const page = document.querySelector('.mode-page'), ro = document.querySelector('.mode-page .flux-readouts'), col = document.querySelector('.desk-frame-stagecol'), ed = I.ed();
     const m = (e) => { if (!e) return null; const c = getComputedStyle(e); return c.webkitMaskImage || c.maskImage || 'none'; };
@@ -711,6 +719,7 @@ try { await withHarness(async (app) => {
   // line box fell off the screen; INFO TERM-WHERE-CONTROL asks whether today's Typewriter does the same, flag off)
   const testTerminal = async (tone) => {
     await open({ tone, view: [1366, 768], dial: 0 });
+    await ev('window.__f4.zoomWatch()');
     const rest = await ev('window.__f4.term()');
     // a burst that wraps: lines rise while keys land, and BEFORE the pause the line two up (it rose during the burst, so no signal covers it yet:
     // the open's own pause compiled only the lines that stood two up then) must show no text
@@ -748,7 +757,9 @@ try { await withHarness(async (app) => {
     await sleep(60);
     try { settled.under2 = await pixOf(await ev('window.__f4.lineBox(2)')); settled.under3 = await pixOf(await ev('window.__f4.lineBox(3)')); }
     finally { await ev("(() => { const L = document.querySelector('[data-flux3-compile]'); if (L) L.style.removeProperty('visibility'); return true; })()"); }
-    return { rest, hidSignal, write, dim, hid, settled, rows: await ev('window.__f4.rows()'), after: await ev('window.__f4.term()') };
+    const zlog = await ev('window.__f4.zoomStop()');
+    console.log(`INFO TERM-ZOOM (${tone}) the editor's scale, each change: ${JSON.stringify(zlog)}`);
+    return { rest, hidSignal, write, dim, hid, settled, zlog, rows: await ev('window.__f4.rows()'), after: await ev('window.__f4.term()') };
   };
   const clear = (bg) => { const m = /rgba?\(([^)]+)\)/.exec(bg || ''); if (!m) return false; const p = m[1].split(/[ ,/]+/).filter(Boolean); return p.length === 4 && +p[3] === 0; };
   const termPaperOk = (x, tone) => !!x && clear(x.pageBg) && x.readouts === 'hidden' && /gradient/.test(x.edMask || '') && !x.looking && (tone === 'light' ? x.groundBg === 'rgb(244, 247, 248)' : clear(x.groundBg));
@@ -775,6 +786,15 @@ try { await withHarness(async (app) => {
     return ev("(() => { const c = window.__f4.caret(), sc = document.querySelector('.mode-page .mode-scroll'), z = document.querySelector('.mode-pagecol')?.getAttribute('data-zoom'); return { zoom: z, caretY: c ? Math.round(c.r.y) : null, caretH: c ? Math.round(c.r.h) : null, top: sc ? sc.scrollTop : null, vh: innerHeight, onScreen: !!c && c.r.y > 0 && c.r.y + c.r.h < innerHeight }; })()");
   };
   const wrOn = await whereReduced(true), wrOff = await whereReduced(false);
+  // INFO: the same burst and wait on the CONTROL (flag off, the Typewriter on, Ambiance 0, dark), its zoom watched the same way
+  const zoomControl = async () => {
+    await open({ flag: false, tone: 'dark', view: [1366, 768], dial: 0, prefs: { typewriter: true } });
+    await ev('window.__f4.zoomWatch()');
+    for (const ch of ' and the line keeps going forward with more plain words now, on and on across the measure of the page until it wraps') { await app.typeKeys(ch); await sleep(70); }
+    await sleep(3000);
+    return ev('window.__f4.zoomStop()');
+  };
+  console.log(`INFO TERM-ZOOM-CONTROL (flag off, the Typewriter on, dark, Ambiance 0) the editor's scale, each change: ${JSON.stringify(await zoomControl())}`);
   console.log(`INFO TERM-WHERE-CONTROL reduced motion, after a burst: Jacked In ${JSON.stringify(wrOn)} / the control (flag off, the Typewriter on) ${JSON.stringify(wrOff)}${!wrOff.onScreen ? ' - the TYPEWRITER\'s own (not S4\'s)' : ''}`);
   for (const [tone, x] of [['light', tmL], ['dark', tmD]]) {
     ok(`TERM-PAPER (${tone}) jacked in, no paper: the page clear (${x.rest && x.rest.pageBg}), its readouts hidden, the veil on the editor; the ground ${tone === 'light' ? 'the white room (the paper\'s colour)' : 'the night glass (nothing laid)'} (${x.rest && x.rest.groundBg})`,
