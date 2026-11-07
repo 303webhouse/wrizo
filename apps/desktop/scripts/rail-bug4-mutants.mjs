@@ -1,16 +1,17 @@
 // TOOLS - RAIL BUG #4, THE MUTANTS. Proves rail-bug4.mjs can fail: each mutant breaks ONE half of the ruling (Fable, Nov 7) in the product source, runs rail-bug4.mjs through the suite (which rebuilds),
+// (Lives in scripts/, NOT scripts/harness/: it edits product source and runs the suite, so the suite must never pick it up as a harness file - the Actions pair did on its first push.)
 // reads the per-check verdicts, and demands the NAMED checks go red - then puts the file back byte for byte, whatever happened. Needs a box turn (it drives rail-bug4). ~4 builds: a few minutes.
 //   M1  the name comes back in the Journal slot          -> "at most once in the rail" and "icon-only door" red
 //   M2  the door is gone in the Journal (slot not drawn) -> "icon-only door" and "still opens the switcher" red
 //   M3  the Journal pin is not marked active              -> "pin is marked active" red
 //   M4  the slot never names a place (Drawers too)        -> "in a Drawer nothing changed" red
-// Run (from apps/desktop, needs a box turn):  node scripts/harness/rail-bug4-mutants.mjs
+// Run (from apps/desktop, needs a box turn):  node scripts/rail-bug4-mutants.mjs
 import fs from 'fs';
 import path from 'path';
 import { spawnSync } from 'child_process';
 import { fileURLToPath } from 'url';
 
-const DESKTOP = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const DESKTOP = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PB = 'src/components/PlaceBlock.tsx';
 const CA = 'src/components/Cascade.tsx';
 const NAME_SPAN = '{isJournal ? null : <span className="wz-strip-label wz-place-name">{name}</span>}';
