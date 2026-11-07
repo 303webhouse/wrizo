@@ -28,7 +28,10 @@
 //   EDGE   (G) the burst edge: a 2 px line on the window's top, holding 1 - the lap (249 of 250 words: 0.004), drawn by a transform with no
 //          transition; at the goal it empties, then fills for the next lap; absent once jacked out and with Progress off.
 //   ESC / REACH (C) while jacked in, Esc does what it does today (the chrome comes back; still jacked in), and an edge dwell summons the chrome:
-//          both identical to the control (flag off, the Typewriter on).
+//          both identical to the control (flag off, the Typewriter on). ESC-LATER (the Wrizors' S4 review, Fable Nov 7): >= 1.2 s after Esc,
+//          the band mask, every opacity down to the lines, the caret, the focus and Flux's block caret are the control's (the signal reported).
+//   COMPILE-WHOLE (same review) every character, punctuation included, is ONE WHOLE block inside its own slot; no text in the layer.
+//          MUT-BLOCK (landed) a block wider than its slot: COMPILE-WHOLE fails.
 //   FL     Forward Lock is today's: Backspace in Jacked In strikes and never deletes, exactly as the control.
 //   L      the Jacked In arm (box only; information on Actions): key -> paint (rhizome-latency's method) against the control (Flux, flag off, the
 //          Typewriter on), interleaved rounds: J median <= C median + C's spread, p95 likewise, no key over 100 ms; no canvas drew more while
@@ -126,7 +129,21 @@ const INSTRUMENT = `(() => {
     return { list, decompile: L.classList.contains('decompile'), aria: L.getAttribute('aria-hidden'), pe: cs.pointerEvents, us: gs ? gs.userSelect : null, inScroll: !!L.parentElement && L.parentElement.classList.contains('mode-scroll') }; };
   I.watchLayer = () => { I.layerMut = []; const L = document.querySelector('[data-flux3-compile]'); if (I.ml) I.ml.disconnect(); if (!L) return false;
     I.ml = new MutationObserver((ms) => { const t = performance.now(); for (const m of ms) I.layerMut.push(t); }); I.ml.observe(L, { childList: true, subtree: true, attributes: true, characterData: true }); return true; };
-  I.flashes = (kind) => (window.__wzFlashLog || []).filter((f) => f.ok && (!kind || f.kind === kind)).map((f) => f.t);
+  // every compiled word's blocks: one per character, each whole inside its own slot (an equal share of the word's rect) and inside the run, no text
+  I.whole = () => { const L = document.querySelector('[data-flux3-compile]'); if (!L) return null;
+    return [...L.querySelectorAll('.flux3-compile-word')].map((g) => { const gr = g.getBoundingClientRect(), bs = [...g.children], n = [...(g.dataset.word || '')].length;
+      const out = bs.filter((b, k) => { const r = b.getBoundingClientRect(), x0 = gr.left + (k * gr.width) / n - 0.5, x1 = gr.left + ((k + 1) * gr.width) / n + 0.5;
+        return !(r.width > 0 && r.height > 0 && r.left >= x0 && r.right <= x1 && r.top >= gr.top - 0.5 && r.bottom <= gr.bottom + 0.5); }).length;
+      return { word: g.dataset.word, chars: n, blocks: bs.length, out, text: g.textContent.length, filled: bs.filter((b) => b.className === 'f').length }; }); };
+  // what dims or hides the page and its caret (ESC-LATER)
+  I.look = () => { const ed = I.ed(), col = document.querySelector('.mode-pagecol'), sc = document.querySelector('.mode-page .mode-scroll'), page = document.querySelector('.mode-page'), bc = document.querySelector('.flux-block-caret');
+    const mask = (e) => { if (!e) return null; const c = getComputedStyle(e); return c.webkitMaskImage || c.maskImage || 'none'; };
+    const op = (e) => (e ? getComputedStyle(e).opacity : null);
+    const bcs = bc && getComputedStyle(bc), bcr = bc && bc.getBoundingClientRect();
+    return { caret: !!I.caret(), focus: !!ed && document.activeElement === ed, block: !!bc && bcr.width > 0 && bcr.height > 0 && bcs.visibility !== 'hidden' && bcs.display !== 'none',   /* not its opacity: it blinks */
+      colMask: mask(col), scMask: mask(sc), op: [op(page), op(col), op(sc), op(ed)], rowOps: ed ? [...new Set([...ed.children].map((r) => getComputedStyle(r).opacity))] : null,
+      compiled: document.querySelectorAll('[data-flux3-compile] .flux3-compile-word').length, writing: document.documentElement.getAttribute('data-wz-writing') }; };
+  I.flashes = (kind) =>(window.__wzFlashLog || []).filter((f) => f.ok && (!kind || f.kind === kind)).map((f) => f.t);
   I.st = () => {
     const root = document.documentElement, page = document.querySelector('.mode-page'), ed = I.ed(), col = document.querySelector('.mode-pagecol'), sc = document.querySelector('.mode-page .mode-scroll');
     const burst = document.querySelector('[data-flux3-burst]'), bi = burst && burst.querySelector('i');
@@ -155,6 +172,7 @@ const MUTANTS = {
   idle: [/\.flicker&&([\w$]+)>0&&![\w$]+;/g, '.flicker&&$1>0;'],
   edge: [/\?0:Math\.max\(0,Math\.min\(1,1-([\w$]+)\)\)/g, '?0:Math.max(0,Math.min(1,$1))'],
   still: [/\.size\|\|([\w$]+)\(\)\|\|!([\w$]+)\("f3-decompile"\)/g, '.size||!1||!$2("f3-decompile")'],
+  block: [/=420,([\w$]+)=\.72([,;])/g, '=420,$1=1.6$2'],
 };
 
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -374,6 +392,7 @@ try { await withHarness(async (app) => {
     await sleep(1500);
     const after = await st();
     const comp = await ev('window.__f4.compiled()');
+    const whole = await ev('window.__f4.whole()');
     const lh = await ev('window.__f4.lh()');
     const caret = after.caret;
     const allWords = await ev('window.__f4.words()');
@@ -390,7 +409,7 @@ try { await withHarness(async (app) => {
     await sleep(120);
     const scrolled = await ev('window.__f4.compiled()');
     const maxOffScrolled = scrolled && scrolled.list.length ? Math.max(...scrolled.list.map((c) => (c.off === null ? 999 : c.off))) : null;
-    return { typed, span, mutDuring, grantsDuring, grantsAfter: (await ev('window.__f4.flashes("f3-compile")')).length - g0, after, comp, lh, lines, lineAbove: lineAbove.length, lineAboveCovered, maxOff, maxOffScrolled, nScrolled: scrolled ? scrolled.list.length : 0 };
+    return { typed, span, mutDuring, grantsDuring, grantsAfter: (await ev('window.__f4.flashes("f3-compile")')).length - g0, after, comp, whole, lh, lines, lineAbove: lineAbove.length, lineAboveCovered, maxOff, maxOffScrolled, nScrolled: scrolled ? scrolled.list.length : 0 };
   };
   const c = await testCompile({ snapName: 's4-dark-1920-compiled' });
   ok(`COMPILE-ZERO while keys land: no layer change and no compile grant (${c.span.n} keys)`, c.span.n >= 50 && c.mutDuring === 0 && c.grantsDuring === 0, JSON.stringify({ keys: c.span.n, mut: c.mutDuring, grants: c.grantsDuring }));
@@ -401,6 +420,13 @@ try { await withHarness(async (app) => {
     c.maxOff !== null && c.maxOff <= 1 && c.maxOffScrolled !== null && c.maxOffScrolled <= 1, JSON.stringify((c.comp && c.comp.list.slice(0, 4)) || null));
   ok('COMPILE-TEXT the text, the caret and the Glitch bar\'s count are unchanged by the compile', c.typed.text === c.after.text && c.typed.caret && c.after.caret && c.typed.caret.before === c.after.caret.before && c.typed.count === c.after.count,
     JSON.stringify({ text: c.typed.text === c.after.text, caret: [c.typed.caret && c.typed.caret.before, c.after.caret && c.after.caret.before], count: [c.typed.count, c.after.count] }));
+  // COMPILE-WHOLE (the Wrizors' S4 review, Fable Nov 7: "every character, punctuation included, compiles to one whole block"). Coverage: words
+  // with punctuation among them ("1.", "page.") and both kinds of block drawn
+  const wholeOf = (w) => { const list = w || []; const punct = list.filter((x) => /[^\p{L}\p{N}]/u.test(x.word || ''));
+    return { n: list.length, punct: punct.length, bad: list.filter((x) => x.blocks !== x.chars || x.out > 0 || x.text > 0), filled: list.reduce((a, x) => a + x.filled, 0), blocks: list.reduce((a, x) => a + x.blocks, 0) }; };
+  const cw = wholeOf(c.whole);
+  ok(`COMPILE-WHOLE every character, punctuation included, is one whole block inside its own slot (${cw.n} words, ${cw.punct} with punctuation, ${cw.blocks} blocks, ${cw.filled} filled; ${cw.bad.length} bad)`,
+    cw.n >= 8 && cw.punct >= 1 && cw.bad.length === 0 && cw.filled > 0 && cw.filled < cw.blocks, JSON.stringify({ bad: cw.bad.slice(0, 4), sample: (c.whole || []).filter((x) => /[^\p{L}\p{N}]/u.test(x.word || '')).slice(0, 3) }));
   ok('COMPILE-A11Y the layer sits in the page\'s own scroller, aria-hidden, no pointer, not selectable', c.comp && c.comp.inScroll && c.comp.aria === 'true' && c.comp.pe === 'none' && c.comp.us === 'none', JSON.stringify(c.comp && { inScroll: c.comp.inScroll, aria: c.comp.aria, pe: c.comp.pe, us: c.comp.us }));
 
   // ---- DECOMPILE + STILL -----------------------------------------------------------------------------------------------------------------------------
@@ -496,15 +522,26 @@ try { await withHarness(async (app) => {
     await app.key('Escape');
     await sleep(500);
     const esc = await st();
+    // ESC-LATER (the Wrizors' S4 review, Fable Nov 7): the page >= 1.2 s after Esc, read the same way on both sides
+    await sleep(700);
+    const later = await ev('window.__f4.look()');
+    await snap(flag ? 's4-esc-later' : 's4-esc-later-control');
     for (const ch of ' and more') { await app.typeKeys(ch); await sleep(60); }
     await sleep(300);
     const typing2 = await st();
     await app.mouseMove(2, 540);
     await sleep(700);
     const reach = await st();
-    return { typing: [typing.zoom, typing.writing], esc: [esc.zoom, esc.writing, esc.jacked], typing2: [typing2.zoom, typing2.writing], reach: [reach.zoom, reach.writing] };
+    return { typing: [typing.zoom, typing.writing], esc: [esc.zoom, esc.writing, esc.jacked], later, typing2: [typing2.zoom, typing2.writing], reach: [reach.zoom, reach.writing] };
   };
   const kOn = await testControls(true), kOff = await testControls(false);
+  // what dims or hides: the band mask on the column and the scroller, the opacity of the page, the column, the scroller, the editor and each of its
+  // lines, the caret (the selection's, the focus, Flux's block caret). The compiled signal is reported apart: still jacked in, it is S4's own layer
+  const dimOf = (l) => l && { colMask: l.colMask, scMask: l.scMask, op: l.op, rowOps: l.rowOps };
+  const eL = { on: kOn.later, off: kOff.later };
+  ok(`ESC-LATER >= 1.2 s after Esc the lines are as lit and the caret as present as the control's (caret ${eL.on && eL.on.caret}/${eL.off && eL.off.caret}, block caret ${eL.on && eL.on.block}/${eL.off && eL.off.block}, focus ${eL.on && eL.on.focus}/${eL.off && eL.off.focus}; signal still on ${eL.on && eL.on.compiled} words)`,
+    !!eL.on && !!eL.off && eL.off.caret && eL.off.block && eL.off.focus && eL.on.caret === eL.off.caret && eL.on.block === eL.off.block && eL.on.focus === eL.off.focus && same(dimOf(eL.on), dimOf(eL.off)),
+    JSON.stringify(eL));
   ok('ESC while jacked in, Esc does what it does today (the chrome comes back, still in the Typewriter), the same as the control', kOn.esc[2] === true && kOn.esc[0] === 'true' && same(kOn.typing, kOff.typing) && same(kOn.esc.slice(0, 2), kOff.esc.slice(0, 2)),
     JSON.stringify({ on: kOn, off: kOff }));
   ok('REACH an edge dwell summons the chrome while jacked in, the same as the control', same(kOn.typing2, kOff.typing2) && same(kOn.reach, kOff.reach), JSON.stringify({ on: [kOn.typing2, kOn.reach], off: [kOff.typing2, kOff.reach] }));
@@ -574,6 +611,9 @@ try { await withHarness(async (app) => {
   ok('MUT-EDGE (landed) the edge filling instead of draining: EDGE fails', mE.landed === 1 && mE.r.a.burst && Math.abs(mE.r.a.burst.left - 0.004) > 0.5, JSON.stringify({ landed: mE.landed, left: mE.r.a.burst && mE.r.a.burst.left }));
   const mS = await withMutant('still', () => testDecompile({ reduced: true }));
   ok('MUT-STILL (landed) the still state ignored: STILL fails (a decompile ran under reduced motion)', mS.landed === 1 && !stillOk(mS.r), JSON.stringify({ landed: mS.landed, r: mS.r }));
+  const mW = await withMutant('block', testCompile);
+  const mWw = wholeOf(mW.r.whole);
+  ok('MUT-BLOCK (landed) a block wider than its slot: COMPILE-WHOLE fails (blocks stand outside their slots)', mW.landed === 1 && mWw.n > 0 && mWw.bad.length > 0, JSON.stringify({ landed: mW.landed, n: mWw.n, bad: mWw.bad.length }));
 
   // ---- B: the build -----------------------------------------------------------------------------------------------------------------------------
   await open();

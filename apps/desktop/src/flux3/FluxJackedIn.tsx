@@ -22,8 +22,11 @@ import { getJackInDefault, setJacked } from './jackIn';
 export const COMPILE_PAUSE_MS = 700;   // the pause the compile waits for (the Glitch bar's and the gutter's own pause)
 export const COMPILE_LINES = 2;        // the caret's line is 0, the line above it 1: from 2 up, the words compile
 export const DECOMPILE_MS = 420;       // the decompile's fade
-const SIGNAL = '▮▯';         // the mockup's signal glyphs (a filled and a hollow block)
-const CODE = '01#%&$@/\\<>=+*';
+// THE SIGNAL: every character, punctuation included, compiles to ONE WHOLE BLOCK (the mockup's filled and hollow blocks). A block is drawn, not
+// typed: each character has an equal slot of its word's own width and its block stands inside that slot, so no font metric can clip one (the
+// Wrizors' S4 review: glyph runs in a font, squeezed by letter-spacing into the word's box, were cut at their ends).
+export const BLOCK_FILL = 0.72;        // a block's share of its slot's width (the rest is the gap between blocks)
+const BLOCK_HEIGHT = 0.62;             // a block's height, in the word's own font size
 
 interface Props {
   on: boolean;                          // the page's Typewriter is running (ModeStage's typewriterOn)
@@ -32,13 +35,12 @@ interface Props {
   refresh: () => void;                  // ModeStage's own re-render, so the default's overlay is read before the page paints
 }
 
-// a word's glyphs are fixed by the word and its place, so a compile that finds the same words draws the same signal (no change to see)
-const glyphsFor = (text: string, seed: number): string => {
+// a word's blocks (true: filled, false: hollow), one per character, fixed by the word and its place, so a compile that finds the same words
+// draws the same signal (no change to see)
+const blocksFor = (chars: string[], seed: number): boolean[] => {
   let h = seed | 0;
-  for (let i = 0; i < text.length; i += 1) h = (Math.imul(h, 31) + text.charCodeAt(i)) | 0;
-  let out = '';
-  for (const ch of text) { h = (Math.imul(h, 1103515245) + 12345) | 0; out += /\s/.test(ch) ? ch : SIGNAL[((h >>> 16) & 7) < 5 ? 0 : 1]; }
-  return out;
+  for (const ch of chars) h = (Math.imul(h, 31) + (ch.codePointAt(0) ?? 0)) | 0;
+  return chars.map(() => { h = (Math.imul(h, 1103515245) + 12345) | 0; return ((h >>> 16) & 7) < 5; });
 };
 const still = () => prefersReducedMotion() || getAmbianceDial() === 0;
 // the editor's lines: its direct children (Draft's are `.wz-row` spans, Free Write's plain line elements: useTypewriterFade's caretRow says the same)
@@ -158,12 +160,17 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
         const el = document.createElement('span');
         el.className = 'flux3-compile-word';
         el.dataset.word = f.text;   // the word it covers (a check holds the glyphs to that word's own rect)
-        // seeded by the word's place in the page's own layout (the layer scrolls with the text, so that place holds while the page scrolls)
-        el.textContent = glyphsFor(f.text, Math.round((f.r.left - L.left) / s) * 7 + Math.round((f.r.top - L.top) / s) * 13);
-        const gfs = f.fs * 0.7;
-        const n = [...f.text].length;
-        const ls = Math.max(0, (f.r.width / s - n * 0.62 * gfs) / n);
-        Object.assign(el.style, { position: 'absolute', overflow: 'hidden', whiteSpace: 'pre', fontSize: `${gfs}px`, letterSpacing: `${ls}px`, background: paper });
+        // one block per character, seeded by the word's place in the page's own layout (the layer scrolls with the text, so that place holds)
+        const chars = [...f.text];
+        const slot = f.r.width / s / chars.length;
+        const bw = slot * BLOCK_FILL, bh = Math.min(f.fs * BLOCK_HEIGHT, f.r.height / s);
+        Object.assign(el.style, { position: 'absolute', display: 'flex', alignItems: 'center', background: paper });
+        blocksFor(chars, Math.round((f.r.left - L.left) / s) * 7 + Math.round((f.r.top - L.top) / s) * 13).forEach((filled) => {
+          const b = document.createElement('i');
+          b.className = filled ? 'f' : 'h';
+          Object.assign(b.style, { display: 'block', flex: 'none', boxSizing: 'border-box', width: `${bw}px`, height: `${bh}px`, margin: `0 ${(slot - bw) / 2}px` });
+          el.appendChild(b);
+        });
         placeOn(el, f.r, L, s);
         layer.appendChild(el);
         words.set(el, { range: f.range, text: f.text });
@@ -187,7 +194,8 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
       // flash) is a cut
       const stays = scroll.isConnected && document.documentElement.getAttribute('data-theme') === 'flux';
       if (!stays || !words.size || still() || !tryFlash('f3-decompile')) { layer.remove(); return; }
-      words.forEach(({ text }, el) => { el.textContent = [...text].map((ch) => (/\s/.test(ch) ? ch : CODE[Math.floor(Math.random() * CODE.length)])).join(''); });
+      // the signal resolves: every block turns over (filled to hollow, hollow to filled), still whole, and fades off its word
+      words.forEach((_, el) => { el.querySelectorAll('i').forEach((b) => { b.className = b.className === 'f' ? 'h' : 'f'; }); });
       const end = performance.now() + DECOMPILE_MS;
       // each glyph run follows its own word while the page settles out of the zoom (its Range is the word; the page's layout box moves under it)
       const follow = () => {

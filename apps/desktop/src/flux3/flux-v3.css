@@ -163,8 +163,11 @@
 /* ---- S4: JACKED IN (the spec's §6; src/flux3/FluxJackedIn.tsx, FluxBurstEdge.tsx). Overlays only: the compile layer sits inside the page's own
    scroller (its position is inline, so it scrolls, scales and fades with the text), and the burst edge is a line on <body>. Nothing here moves
    the page: the Typewriter's own zoom is the only rect change, as everywhere. ---- */
-/* the compiled words: signal glyphs in the chrome's mono on the page's own paper (set inline from the page), in the choice colour, quiet */
-:root[data-flux3][data-theme='flux'] .flux3-compile-word{ font-family:var(--font-mono, ui-monospace, monospace); color:color-mix(in srgb, var(--f3-cyan) 46%, transparent); pointer-events:none; user-select:none; }
+/* the compiled words: one whole block per character (sized inline from the word) on the page's own paper (set inline from the page), in the
+   choice colour, quiet: a filled block, or a hollow one drawn by its 1 px edge */
+:root[data-flux3][data-theme='flux'] .flux3-compile-word{ color:color-mix(in srgb, var(--f3-cyan) 46%, transparent); pointer-events:none; user-select:none; }
+:root[data-flux3][data-theme='flux'] .flux3-compile-word > i.f{ background:currentColor; }
+:root[data-flux3][data-theme='flux'] .flux3-compile-word > i.h{ border:1px solid currentColor; }
 :root[data-flux3][data-theme='flux'][data-page='light'] .flux3-compile-word{ color:color-mix(in srgb, var(--f3-cyan-text) 46%, transparent); }
 /* the decompile: one fade, revealing the words already in the doc (the still state never reaches here: it is a cut) */
 :root[data-flux3][data-theme='flux'] .flux3-compile.decompile{ opacity:0; transition:opacity 420ms ease-out; }
