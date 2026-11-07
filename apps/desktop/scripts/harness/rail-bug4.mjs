@@ -65,7 +65,7 @@ await withHarness(async (app) => {
       ok(`${label}: in the Journal the place slot is still drawn as an icon-only door (no name), its accessible name intact`, !!door && door.kind === 'journal' && door.hasIcon && !door.hasName && String(door.label || '').includes(word), JSON.stringify(door));
       const pin = JSON.parse(await app.evalJs("(() => { const b = document.querySelector('.wz-strip-item[data-category=journal]'); return JSON.stringify(b ? { active: b.classList.contains('active'), current: b.getAttribute('aria-current') } : null); })()"));
       ok(`${label}: in the Journal the Journal pin is marked active (and current), with its panel shut`, !!pin && pin.active === true && pin.current === 'location', JSON.stringify(pin));
-      await app.evalJs("document.querySelector('.wz-place-block').click()");
+      await app.evalJs("document.querySelector('.wz-place-block')?.click()");
       await sleep(600);
       const sw = await app.evalJs("[...document.querySelectorAll('.wz-switcher-item')].map((i) => i.dataset.placeKind || i.dataset.placeId).length");
       ok(`${label}: the icon-only door still opens the switcher (it is the only door to the Drawers)`, sw >= 1, String(sw));
@@ -75,7 +75,7 @@ await withHarness(async (app) => {
       await app.evalJs(`location.hash = '#/page/rb4-${theme}'`);
       await app.waitFor(`!!document.querySelector('${ED}')`, { label: `${label} page again` });
       await sleep(600);
-      await app.evalJs("document.querySelector('.wz-place-block').click()");
+      await app.evalJs("document.querySelector('.wz-place-block')?.click()");
       await sleep(500);
       await app.evalJs("(() => { const it = [...document.querySelectorAll('.wz-switcher-item')].find((i) => i.dataset.placeKind !== 'journal' && /Rb4 Drawer/.test(i.textContent)); if (it) it.click(); })()");
       await sleep(700);
