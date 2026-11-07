@@ -92,8 +92,8 @@ const parkedChecks = [];
 const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass: !!pass, detail });
 // ESC-LATER's premise that the control keeps its caret after Esc (Actions 42359165446, Nov 7); TUN's opaque paper, TUN-CLEAR and MUT-NOHOLE
 // (Nick's terminal, Nov 7, r9: no paper, the words inside the tunnel); r9's own first run (Actions 42410571466): TUN-BEHIND's covers premise
-// and TERM-ROWS' "smaller every row" (light and dark: two records)
-const PARKED_EXPECTED = 7;
+// and TERM-ROWS' "smaller every row" (light and dark: two records); TERM-ROWS [successor]'s "down to the floor" (Actions 42415597899: two records)
+const PARKED_EXPECTED = 9;
 
 function buildIdentity() {
   const out = { bundle: null, builtAt: null, head: null, srcCommitAt: null, dirtySrc: null, stale: null };
@@ -721,6 +721,9 @@ try { await withHarness(async (app) => {
     const d0 = await ev(DIAG);
     const tSeen = Date.now();
     await app.waitFor("(() => { const c = window.__f4.caret(); return !!c && c.r.y > 0 && c.r.y + c.r.h < innerHeight; })()", { timeout: 450, label: 'the writing line on screen' }).catch(() => {});
+    // and settled (r9d's dark read caught a glide: the caret at 605 on its way to 424): two reads 60 ms apart agree, inside the pause
+    let lastY = null;
+    for (let i = 0; i < 6; i += 1) { const y = await ev('(() => { const c = window.__f4.caret(); return c ? Math.round(c.r.y) : null; })()'); if (y !== null && y === lastY) break; lastY = y; await sleep(60); }
     const d1 = { ...(await ev(DIAG)), waited: Date.now() - tSeen };
     console.log(`INFO TERM-WHERE (${tone}) after the burst ${JSON.stringify(d0)} then ${JSON.stringify(d1)}`);
     const hidBox = await ev('window.__f4.lineBox(2)');
@@ -740,6 +743,9 @@ try { await withHarness(async (app) => {
   const termRowsSucc = (x) => { if (!x.rows || x.rows.length < 4 || x.rows[0].share > 0.73) return false; const at = (r) => Math.abs(r.share - FLOOR) <= 0.01;
     const k = x.rows.findIndex(at); if (k < 3) return false;
     return x.rows.slice(1, k).every((r, i) => r.share < x.rows[i].share - 0.02) && x.rows[k].share < x.rows[k - 1].share && x.rows.slice(k).every(at); };
+  // at least three rows; each smaller than the one below it (by > .01), or both at the floor; none below the floor; the first row full
+  const termRowsSucc2 = (x) => { if (!x.rows || x.rows.length < 3 || x.rows[0].share > 0.73 || x.rows[0].share < 0.71) return false; const at = (r) => Math.abs(r.share - FLOOR) <= 0.01;
+    return x.rows.every((r) => r.share >= FLOOR - 0.01) && x.rows.slice(1).every((r, i) => r.share < x.rows[i].share - 0.01 || (at(r) && at(x.rows[i]))); };
   const tmL = await testTerminal('light'), tmD = await testTerminal('dark');
   // INFO (a finding, never a verdict): where the writing line stands after the same burst under REDUCED MOTION, flag on and on the control
   const whereReduced = async (flag) => {
@@ -759,11 +765,18 @@ try { await withHarness(async (app) => {
     // sixth row up) and hold it there, so "smaller every row" was false above the floor. Kept VERBATIM and no longer run; its parked record is in
     // the HARNESS_PARKED block, and its successor follows.
     // ok(`TERM-ROWS (${tone}) on the pause the rows of signal grow smaller toward the top (block share per row ${JSON.stringify(x.rows && x.rows.map((r) => [r.row, r.share]))})`, termRowsOk(x), JSON.stringify(x.rows));
-    ok(`TERM-ROWS [successor] (${tone}) on the pause each row of signal smaller toward the top down to the floor, and every row past it at the floor (block share per row ${JSON.stringify(x.rows && x.rows.slice(0, 8).map((r) => [r.row, r.share]))})`,
-      termRowsSucc(x), JSON.stringify(x.rows));
+    // ---- PARKED - SUPERSEDED by its own first run at Ambiance 0 (Actions 42415597899, Nov 7): only the four nearest rows stand in view there,
+    // so the floor is never reached and "down to the floor" was false. Kept VERBATIM and no longer run; its successor follows.
+    // ok(`TERM-ROWS [successor] (${tone}) on the pause each row of signal smaller toward the top down to the floor, and every row past it at the floor (block share per row ${JSON.stringify(x.rows && x.rows.slice(0, 8).map((r) => [r.row, r.share]))})`,
+    //   termRowsSucc(x), JSON.stringify(x.rows));
+    ok(`TERM-ROWS [successor 2] (${tone}) on the pause each row of signal smaller than the one below it, or both at the floor; never below it (block share per row ${JSON.stringify(x.rows && x.rows.slice(0, 8).map((r) => [r.row, r.share]))})`,
+      termRowsSucc2(x), JSON.stringify(x.rows));
     if (process.env.HARNESS_PARKED === '1') {
-      pok(`PARKED (was "TERM-ROWS (${tone}) on the pause the rows of signal grow smaller toward the top") - SUPERSEDED by its own first run (Actions 42410571466: the rows hold the floor past the sixth). Opposite reasserted: two rows at the floor share a size; live successor TERM-ROWS [successor]`,
-        !termRowsOk(x) && termRowsSucc(x), JSON.stringify(x.rows));
+      // (its re-assertion re-pointed in the same unmerged round: at Ambiance 0 no row reaches the floor, so "two rows at the floor" has no rows)
+      pok(`PARKED (was "TERM-ROWS (${tone}) on the pause the rows of signal grow smaller toward the top") - SUPERSEDED by its own first run (Actions 42410571466: under reduced motion sixteen rows stood in view and held the floor past the sixth). Opposite reasserted: no row is ever below the floor, so a view that reaches it holds rows of one size; live successor TERM-ROWS [successor 2]`,
+        termRowsSucc2(x) && !!x.rows && x.rows.every((r) => r.share >= FLOOR - 0.01), JSON.stringify(x.rows));
+      pok(`PARKED (was "TERM-ROWS [successor] (${tone}) ... down to the floor, and every row past it at the floor") - SUPERSEDED by its own first run at Ambiance 0 (Actions 42415597899: four rows in view, none at the floor). Opposite reasserted: this view holds rows that never reach the floor, every one smaller than the one below; live successor TERM-ROWS [successor 2]`,
+        termRowsSucc2(x) && !!x.rows && !x.rows.some((r) => Math.abs(r.share - FLOOR) <= 0.01), JSON.stringify(x.rows));
     }
   }
   const kCtl = await caretOf({ flag: false, tone: 'light', prefs: { typewriter: true } });
@@ -955,6 +968,7 @@ try { await withHarness(async (app) => {
   const mRo = await withMutant('rows', () => testTerminal('light'));
   ok('MUT-ROWS (landed) the rows not shrinking: TERM-ROWS fails', mRo.landed === 1 && !termRowsOk(mRo.r), JSON.stringify({ landed: mRo.landed, rows: mRo.r.rows }));
   ok('MUT-ROWS [successor] (the same landed mutant) the rows not shrinking: TERM-ROWS [successor] fails', mRo.landed === 1 && !termRowsSucc(mRo.r), JSON.stringify({ rows: mRo.r.rows && mRo.r.rows.slice(0, 4) }));
+  ok('MUT-ROWS [successor 2] (the same landed mutant) the rows not shrinking: TERM-ROWS [successor 2] fails', mRo.landed === 1 && !termRowsSucc2(mRo.r), JSON.stringify({ rows: mRo.r.rows && mRo.r.rows.slice(0, 4) }));
 
   // ---- B: the build -----------------------------------------------------------------------------------------------------------------------------
   await open();
