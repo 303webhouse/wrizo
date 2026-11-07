@@ -406,7 +406,10 @@ try { await withHarness(async (app) => {
   // ---- DECOMPILE + STILL -----------------------------------------------------------------------------------------------------------------------------
   const testDecompile = async ({ reduced = false, dial = 50, snapName = null } = {}) => {
     await open({ reduced, dial });
-    await sleep(600);
+    // wait on the signal itself (Actions 42344491441: a fixed 600 ms read 0 words, and the compile landed while the hand opened); a page that never
+    // compiles fails on `had`, never here
+    await app.waitFor("document.querySelectorAll('[data-flux3-compile] .flux3-compile-word').length > 0", { timeout: 8000, label: 'the signal' }).catch(() => {});
+    await sleep(300);
     const had = await ev('window.__f4.compiled()');
     const g0 = (await ev('window.__f4.flashes("f3-decompile")')).length;
     const text0 = (await st()).text;
