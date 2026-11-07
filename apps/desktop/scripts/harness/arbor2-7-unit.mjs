@@ -61,12 +61,27 @@ const rf = fs.readFileSync(new URL('../../src/components/RhizomeField.tsx', impo
 //   && rf.includes('<path className="wz-rhizome-seg" data-thick="true" d={pathOf(fadingSettled, true)} />'), '');
 // SUCCESSOR V4b: off the flag the life is null - so drawFrac is the plain frac, the plan is today's lapPlan, the survivor is today's, and the
 // two settled paths are the original ones.
-ok('V4b RhizomeField off the flag: no life, drawFrac is the plain `frac`, lapPlan + survivor as today, the original two settled paths',
+// PARKED 2026-11-07 (SUPERSEDED by the r21 build 27ee9b8f, Nick's r20 notes: under the flag the vines are planned page-relative -
+// lifePlan(CANON, ...) - so the plan line was rewritten; off the flag it is still main's own lapPlan line. Red since 27ee9b8f, found by
+// ARBOR's unit run on Nov 7; the commit-by-commit scan is in Chat 1's ledger). Original, verbatim:
+// ok('V4b RhizomeField off the flag: no life, drawFrac is the plain `frac`, lapPlan + survivor as today, the original two settled paths',
+//   rf.includes('const life = active && isArbor2() ? lifeOf(openKey, lap) : null;')
+//   && rf.includes('const eff = life ? effective(life, lap, frac) : null;')
+//   && rf.includes('const drawFrac = eff ? eff.frac : frac;')
+//   && rf.includes('segmentsFor(plan, variation ? pacedFrac(pageSeed, shownLap, drawFrac) : drawFrac)')
+//   && rf.includes('(lifeOn ? lifePlan(m.geo, lifeSeed, shownVisit) : lapPlan(m.geo, pageSeed, shownVisit))')
+//   && rf.includes('const seedRoot = !lifeOn && flashFading && plan ? pickSurvivor(')
+//   && rf.includes('<path className="wz-rhizome-seg" d={pathOf(fadingSettled, false)} />')
+//   && rf.includes('<path className="wz-rhizome-seg" data-thick="true" d={pathOf(fadingSettled, true)} />'), '');
+// SUCCESSOR V4c: the same, with r21's plan line - the life plan only under lifeOn (= a life, which only the flag makes), and off the flag
+// main's own `m ? lapPlan(m.geo, pageSeed, shownVisit) : null`, character for character.
+ok('V4c RhizomeField off the flag: no life, drawFrac is the plain `frac`, main\'s own lapPlan line + survivor as today, the original two settled paths',
   rf.includes('const life = active && isArbor2() ? lifeOf(openKey, lap) : null;')
   && rf.includes('const eff = life ? effective(life, lap, frac) : null;')
+  && rf.includes('const lifeOn = !!eff;')
   && rf.includes('const drawFrac = eff ? eff.frac : frac;')
   && rf.includes('segmentsFor(plan, variation ? pacedFrac(pageSeed, shownLap, drawFrac) : drawFrac)')
-  && rf.includes('(lifeOn ? lifePlan(m.geo, lifeSeed, shownVisit) : lapPlan(m.geo, pageSeed, shownVisit))')
+  && rf.includes('(lifeOn ? lifePlan(CANON, lifeSeed, shownVisit) : m ? lapPlan(m.geo, pageSeed, shownVisit) : null)')
   && rf.includes('const seedRoot = !lifeOn && flashFading && plan ? pickSurvivor(')
   && rf.includes('<path className="wz-rhizome-seg" d={pathOf(fadingSettled, false)} />')
   && rf.includes('<path className="wz-rhizome-seg" data-thick="true" d={pathOf(fadingSettled, true)} />'), '');
