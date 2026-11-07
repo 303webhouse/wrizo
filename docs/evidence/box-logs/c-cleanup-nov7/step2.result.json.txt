@@ -1,0 +1,965 @@
+{
+ "removed": [
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b15",
+   "kb": 436710,
+   "archive": "F:\\wrizo-archive\\b15",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b16",
+   "kb": 436557,
+   "archive": "F:\\wrizo-archive\\b16",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b18",
+   "kb": 436560,
+   "archive": "F:\\wrizo-archive\\b18",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b6",
+   "kb": 417351,
+   "archive": "F:\\wrizo-archive\\b6",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bc-ship",
+   "kb": 345005,
+   "archive": "F:\\wrizo-archive\\bc-ship",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bc-ship2",
+   "kb": 349855,
+   "archive": "F:\\wrizo-archive\\bc-ship2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bc-ship3",
+   "kb": 354641,
+   "archive": "F:\\wrizo-archive\\bc-ship3",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bisect-pre-fx10-2",
+   "kb": 155364,
+   "archive": "F:\\wrizo-archive\\bisect-pre-fx10-2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ca-ship",
+   "kb": 365453,
+   "archive": "F:\\wrizo-archive\\ca-ship",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ca2",
+   "kb": 366586,
+   "archive": "F:\\wrizo-archive\\ca2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cb4",
+   "kb": 412334,
+   "archive": "F:\\wrizo-archive\\cb4",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cbf",
+   "kb": 414854,
+   "archive": "F:\\wrizo-archive\\cbf",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cbp",
+   "kb": 407307,
+   "archive": "F:\\wrizo-archive\\cbp",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\dfo",
+   "kb": 408017,
+   "archive": "F:\\wrizo-archive\\dfo",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fix-rz",
+   "kb": 242057,
+   "archive": "F:\\wrizo-archive\\fix-rz",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fix-tw",
+   "kb": 241832,
+   "archive": "F:\\wrizo-archive\\fix-tw",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fix-tw2",
+   "kb": 252245,
+   "archive": "F:\\wrizo-archive\\fix-tw2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fix-tw3",
+   "kb": 252229,
+   "archive": "F:\\wrizo-archive\\fix-tw3",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fix-tw4",
+   "kb": 252253,
+   "archive": "F:\\wrizo-archive\\fix-tw4",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fxt1",
+   "kb": 413800,
+   "archive": "F:\\wrizo-archive\\fxt1",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fxt2",
+   "kb": 412869,
+   "archive": "F:\\wrizo-archive\\fxt2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\hb",
+   "kb": 404861,
+   "archive": "F:\\wrizo-archive\\hb",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\lane3",
+   "kb": 408727,
+   "archive": "F:\\wrizo-archive\\lane3",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\lbs",
+   "kb": 387039,
+   "archive": "F:\\wrizo-archive\\lbs",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\lookb",
+   "kb": 382816,
+   "archive": "F:\\wrizo-archive\\lookb",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\main-fcs",
+   "kb": 297697,
+   "archive": "F:\\wrizo-archive\\main-fcs",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\p1-b7",
+   "kb": 300730,
+   "archive": "F:\\wrizo-archive\\p1-b7",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\p1-fd",
+   "kb": 300722,
+   "archive": "F:\\wrizo-archive\\p1-fd",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ps-main",
+   "kb": 305453,
+   "archive": "F:\\wrizo-archive\\ps-main",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\psr-c",
+   "kb": 326770,
+   "archive": "F:\\wrizo-archive\\psr-c",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ptf",
+   "kb": 413959,
+   "archive": "F:\\wrizo-archive\\ptf",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ro2",
+   "kb": 404403,
+   "archive": "F:\\wrizo-archive\\ro2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\scenes-old",
+   "kb": 436387,
+   "archive": "F:\\wrizo-archive\\scenes-old",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ss",
+   "kb": 405580,
+   "archive": "F:\\wrizo-archive\\ss",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ss2",
+   "kb": 406954,
+   "archive": "F:\\wrizo-archive\\ss2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ss3",
+   "kb": 408135,
+   "archive": "F:\\wrizo-archive\\ss3",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tl-e",
+   "kb": 254294,
+   "archive": "F:\\wrizo-archive\\tl-e",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tfo-ship",
+   "kb": 271444,
+   "archive": "F:\\wrizo-archive\\tfo-ship",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tl-e2",
+   "kb": 254326,
+   "archive": "F:\\wrizo-archive\\tl-e2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tl-f",
+   "kb": 305497,
+   "archive": "F:\\wrizo-archive\\tl-f",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tl-g",
+   "kb": 305589,
+   "archive": "F:\\wrizo-archive\\tl-g",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tl-prof",
+   "kb": 254130,
+   "archive": "F:\\wrizo-archive\\tl-prof",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tl9",
+   "kb": 387103,
+   "archive": "F:\\wrizo-archive\\tl9",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tl92",
+   "kb": 387135,
+   "archive": "F:\\wrizo-archive\\tl92",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tlp",
+   "kb": 386934,
+   "archive": "F:\\wrizo-archive\\tlp",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wd3",
+   "kb": 326662,
+   "archive": "F:\\wrizo-archive\\wd3",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wf_5666b1ab-1d7-2",
+   "kb": 155780,
+   "archive": "F:\\wrizo-archive\\wf_5666b1ab-1d7-2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wf_ae92f9fa-728-1",
+   "kb": 155168,
+   "archive": "F:\\wrizo-archive\\wf_ae92f9fa-728-1",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-10",
+   "kb": 470231,
+   "archive": "F:\\wrizo-archive\\train-10",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\arbor-latency",
+   "kb": 221672,
+   "archive": "F:\\wrizo-archive\\arbor-latency",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-p10f-red",
+   "kb": 471475,
+   "archive": "F:\\wrizo-archive\\writer-studio-p10f-red",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-12bis",
+   "kb": 472127,
+   "archive": "F:\\wrizo-archive\\train-12bis",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-rhizome-sprout",
+   "kb": 247180,
+   "archive": "F:\\wrizo-archive\\writer-studio-rhizome-sprout"
+  }
+ ],
+ "skipped": [
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\abq-pair",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\abq-pair2",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b10",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b101-pair",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b11",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b11-pair",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b12",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b14",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b5",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b7",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b8",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b9",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\batch-pair",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bcm",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bcm2",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\behb",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bgp",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bis-ghost",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bis-rhz",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bis-tfo",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bp1a",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bp2",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bp2b",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bp3",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bp3b",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bp3c",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bp3d",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bpc",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bpc2",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bpd",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bpm",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bship",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\card-pair",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cb2",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cbb",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cbg",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cfo",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cfpt",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cfs",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\clc",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\clca",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cp-ship",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\dfm",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\dgf",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\drafts-pair",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\dwi",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\dws",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\e3p",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\elc",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fci",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fl3",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fp",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fsp",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fts",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fv",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fv2",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fv3",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fv4",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fxt3",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\gg",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\gg2",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\gm2",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\gm3",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\gmf",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\hb2",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\hb3",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\hbf",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\hbm",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\hbn",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\hbo",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\hbq",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\hec",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\hs",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\i112d",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\icp",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\p1-pair",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\p12-r2",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\polish10",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\psr",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\psr-m",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ptg",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\pto",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\rd",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\rgb",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\rhz-pair",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\rhz-pair2",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\rhz-pair3",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ri",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ro",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\run-drawers2",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\run-splash",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\run-splash2",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\rz",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\rz2",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\sb-min",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\sb-min2",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\sb-min3",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\sb-min4",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\sb5",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\sb6",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\sb7",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\sb8",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\sbf",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\sh-r6",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\sh-tip",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\shipx",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\shp",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\si",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\si2",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\si3",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\si4",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\splash-pair",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\spt",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ssf",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ta2",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tb",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tb2",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tc2",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tdp",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tf-ctl",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tfo-pair",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tlf",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tlg",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tlm",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tmpl-pair",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tp",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tp2",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tp3",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tp4",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tp5",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tsl",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tsp",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tu",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tw",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tw2",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\w1-red",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wd2",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wd4",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\arbor-allbmp",
+   "why": "cwd of a harness launch in the last 48 h"
+  },
+  {
+   "path": "C:\\Users\\nickh\\arbor-cutmeas",
+   "why": "cwd of a harness launch in the last 48 h"
+  },
+  {
+   "path": "C:\\Users\\nickh\\arbor-fixd1",
+   "why": "cwd of a harness launch in the last 48 h"
+  },
+  {
+   "path": "C:\\Users\\nickh\\arbor-fixlat",
+   "why": "cwd of a harness launch in the last 48 h"
+  },
+  {
+   "path": "C:\\Users\\nickh\\arbor-fixlat2",
+   "why": "cwd of a harness launch in the last 48 h"
+  },
+  {
+   "path": "C:\\Users\\nickh\\arbor-latency2",
+   "why": "cwd of a harness launch in the last 48 h"
+  },
+  {
+   "path": "C:\\Users\\nickh\\arbor-noshade",
+   "why": "cwd of a harness launch in the last 48 h"
+  },
+  {
+   "path": "C:\\Users\\nickh\\arbor-r20-day",
+   "why": "cwd of a harness launch in the last 48 h"
+  },
+  {
+   "path": "C:\\Users\\nickh\\arbor-swapmeas",
+   "why": "cwd of a harness launch in the last 48 h"
+  },
+  {
+   "path": "C:\\Users\\nickh\\bis-p1",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\bis-p2",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\bis-p3",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\p10-live",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-11",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-11b",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-11bis",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-12b",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-12e",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-arbor-opt",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-machina",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-machinav1",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\ws-polish",
+   "why": "touched 0 h ago (<48 h)"
+  }
+ ],
+ "freedKB": 18290859,
+ "freedGB": 17.44
+}

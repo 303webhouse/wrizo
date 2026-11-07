@@ -1,0 +1,1160 @@
+{
+ "removed": [
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\abq-pair",
+   "kb": 231374,
+   "archive": "F:\\wrizo-archive\\abq-pair",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\abq-pair2",
+   "kb": 237282,
+   "archive": "F:\\wrizo-archive\\abq-pair2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b101-pair",
+   "kb": 218031,
+   "archive": "F:\\wrizo-archive\\b101-pair",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b10",
+   "kb": 432679,
+   "archive": "F:\\wrizo-archive\\b10",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b11-pair",
+   "kb": 218174,
+   "archive": "F:\\wrizo-archive\\b11-pair",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b11",
+   "kb": 433127,
+   "archive": "F:\\wrizo-archive\\b11",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b12",
+   "kb": 435289,
+   "archive": "F:\\wrizo-archive\\b12",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b14",
+   "kb": 435818,
+   "archive": "F:\\wrizo-archive\\b14",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b5",
+   "kb": 417251,
+   "archive": "F:\\wrizo-archive\\b5",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b8",
+   "kb": 429398,
+   "archive": "F:\\wrizo-archive\\b8",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b7",
+   "kb": 429650,
+   "archive": "F:\\wrizo-archive\\b7",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\batch-pair",
+   "kb": 251391,
+   "archive": "F:\\wrizo-archive\\batch-pair",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b9",
+   "kb": 429686,
+   "archive": "F:\\wrizo-archive\\b9",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bcm",
+   "kb": 399611,
+   "archive": "F:\\wrizo-archive\\bcm",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bcm2",
+   "kb": 400240,
+   "archive": "F:\\wrizo-archive\\bcm2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\behb",
+   "kb": 384217,
+   "archive": "F:\\wrizo-archive\\behb",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bis-ghost",
+   "kb": 251407,
+   "archive": "F:\\wrizo-archive\\bis-ghost",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bgp",
+   "kb": 374119,
+   "archive": "F:\\wrizo-archive\\bgp",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bis-rhz",
+   "kb": 251395,
+   "archive": "F:\\wrizo-archive\\bis-rhz",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bis-tfo",
+   "kb": 251371,
+   "archive": "F:\\wrizo-archive\\bis-tfo",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bp1a",
+   "kb": 410631,
+   "archive": "F:\\wrizo-archive\\bp1a",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bp2",
+   "kb": 410965,
+   "archive": "F:\\wrizo-archive\\bp2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bp2b",
+   "kb": 411367,
+   "archive": "F:\\wrizo-archive\\bp2b",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bp3",
+   "kb": 411609,
+   "archive": "F:\\wrizo-archive\\bp3",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bp3b",
+   "kb": 412187,
+   "archive": "F:\\wrizo-archive\\bp3b",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bp3c",
+   "kb": 412502,
+   "archive": "F:\\wrizo-archive\\bp3c",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bp3d",
+   "kb": 412807,
+   "archive": "F:\\wrizo-archive\\bp3d",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bpc",
+   "kb": 413242,
+   "archive": "F:\\wrizo-archive\\bpc",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bpc2",
+   "kb": 413246,
+   "archive": "F:\\wrizo-archive\\bpc2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bpd",
+   "kb": 413945,
+   "archive": "F:\\wrizo-archive\\bpd",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bpm",
+   "kb": 414883,
+   "archive": "F:\\wrizo-archive\\bpm",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bship",
+   "kb": 392406,
+   "archive": "F:\\wrizo-archive\\bship",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\card-pair",
+   "kb": 253985,
+   "archive": "F:\\wrizo-archive\\card-pair",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cb2",
+   "kb": 404279,
+   "archive": "F:\\wrizo-archive\\cb2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cbb",
+   "kb": 403607,
+   "archive": "F:\\wrizo-archive\\cbb",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cbg",
+   "kb": 409536,
+   "archive": "F:\\wrizo-archive\\cbg",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cfpt",
+   "kb": 405551,
+   "archive": "F:\\wrizo-archive\\cfpt",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cfo",
+   "kb": 405403,
+   "archive": "F:\\wrizo-archive\\cfo",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cfs",
+   "kb": 407142,
+   "archive": "F:\\wrizo-archive\\cfs",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\clc",
+   "kb": 374123,
+   "archive": "F:\\wrizo-archive\\clc",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\clca",
+   "kb": 365462,
+   "archive": "F:\\wrizo-archive\\clca",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cp-ship",
+   "kb": 285661,
+   "archive": "F:\\wrizo-archive\\cp-ship",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\dfm",
+   "kb": 409971,
+   "archive": "F:\\wrizo-archive\\dfm",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\dgf",
+   "kb": 410516,
+   "archive": "F:\\wrizo-archive\\dgf",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\drafts-pair",
+   "kb": 222942,
+   "archive": "F:\\wrizo-archive\\drafts-pair",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\dwi",
+   "kb": 377163,
+   "archive": "F:\\wrizo-archive\\dwi",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\dws",
+   "kb": 376389,
+   "archive": "F:\\wrizo-archive\\dws",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\e3p",
+   "kb": 285311,
+   "archive": "F:\\wrizo-archive\\e3p",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\elc",
+   "kb": 410963,
+   "archive": "F:\\wrizo-archive\\elc",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fci",
+   "kb": 365462,
+   "archive": "F:\\wrizo-archive\\fci",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fp",
+   "kb": 401952,
+   "archive": "F:\\wrizo-archive\\fp",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fl3",
+   "kb": 392450,
+   "archive": "F:\\wrizo-archive\\fl3",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fsp",
+   "kb": 400168,
+   "archive": "F:\\wrizo-archive\\fsp",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fts",
+   "kb": 403034,
+   "archive": "F:\\wrizo-archive\\fts",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fv",
+   "kb": 412180,
+   "archive": "F:\\wrizo-archive\\fv",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fv2",
+   "kb": 412626,
+   "archive": "F:\\wrizo-archive\\fv2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fv4",
+   "kb": 414030,
+   "archive": "F:\\wrizo-archive\\fv4",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fv3",
+   "kb": 413464,
+   "archive": "F:\\wrizo-archive\\fv3",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fxt3",
+   "kb": 406681,
+   "archive": "F:\\wrizo-archive\\fxt3",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\gg",
+   "kb": 411627,
+   "archive": "F:\\wrizo-archive\\gg",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\gg2",
+   "kb": 411643,
+   "archive": "F:\\wrizo-archive\\gg2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\gm2",
+   "kb": 405925,
+   "archive": "F:\\wrizo-archive\\gm2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\gm3",
+   "kb": 407098,
+   "archive": "F:\\wrizo-archive\\gm3",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\gmf",
+   "kb": 407545,
+   "archive": "F:\\wrizo-archive\\gmf",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\hb2",
+   "kb": 405897,
+   "archive": "F:\\wrizo-archive\\hb2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\hb3",
+   "kb": 407074,
+   "archive": "F:\\wrizo-archive\\hb3",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\hbf",
+   "kb": 407659,
+   "archive": "F:\\wrizo-archive\\hbf",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\hbm",
+   "kb": 409871,
+   "archive": "F:\\wrizo-archive\\hbm",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\hbn",
+   "kb": 410668,
+   "archive": "F:\\wrizo-archive\\hbn",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\hbo",
+   "kb": 407699,
+   "archive": "F:\\wrizo-archive\\hbo",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\hbq",
+   "kb": 410579,
+   "archive": "F:\\wrizo-archive\\hbq",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\hec",
+   "kb": 378000,
+   "archive": "F:\\wrizo-archive\\hec",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\hs",
+   "kb": 408539,
+   "archive": "F:\\wrizo-archive\\hs",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\i112d",
+   "kb": 400108,
+   "archive": "F:\\wrizo-archive\\i112d",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\icp",
+   "kb": 413250,
+   "archive": "F:\\wrizo-archive\\icp",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\p1-pair",
+   "kb": 254044,
+   "archive": "F:\\wrizo-archive\\p1-pair",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\p12-r2",
+   "kb": 470379,
+   "archive": "F:\\wrizo-archive\\p12-r2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\polish10",
+   "kb": 427285,
+   "archive": "F:\\wrizo-archive\\polish10",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\psr",
+   "kb": 415154,
+   "archive": "F:\\wrizo-archive\\psr",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\psr-m",
+   "kb": 326754,
+   "archive": "F:\\wrizo-archive\\psr-m",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ptg",
+   "kb": 408968,
+   "archive": "F:\\wrizo-archive\\ptg",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\pto",
+   "kb": 405439,
+   "archive": "F:\\wrizo-archive\\pto",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\rd",
+   "kb": 374992,
+   "archive": "F:\\wrizo-archive\\rd",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\rgb",
+   "kb": 410951,
+   "archive": "F:\\wrizo-archive\\rgb",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\rhz-pair",
+   "kb": 220449,
+   "archive": "F:\\wrizo-archive\\rhz-pair",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\rhz-pair2",
+   "kb": 225378,
+   "archive": "F:\\wrizo-archive\\rhz-pair2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\rhz-pair3",
+   "kb": 244162,
+   "archive": "F:\\wrizo-archive\\rhz-pair3",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ri",
+   "kb": 385511,
+   "archive": "F:\\wrizo-archive\\ri",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ro",
+   "kb": 403930,
+   "archive": "F:\\wrizo-archive\\ro",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\run-drawers2",
+   "kb": 235307,
+   "archive": "F:\\wrizo-archive\\run-drawers2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\run-splash",
+   "kb": 228994,
+   "archive": "F:\\wrizo-archive\\run-splash",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\run-splash2",
+   "kb": 235006,
+   "archive": "F:\\wrizo-archive\\run-splash2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\rz",
+   "kb": 411533,
+   "archive": "F:\\wrizo-archive\\rz",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\rz2",
+   "kb": 412087,
+   "archive": "F:\\wrizo-archive\\rz2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\sb-min",
+   "kb": 251395,
+   "archive": "F:\\wrizo-archive\\sb-min",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\sb-min2",
+   "kb": 256925,
+   "archive": "F:\\wrizo-archive\\sb-min2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\sb-min3",
+   "kb": 267831,
+   "archive": "F:\\wrizo-archive\\sb-min3",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\sb-min4",
+   "kb": 267952,
+   "archive": "F:\\wrizo-archive\\sb-min4",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\sb5",
+   "kb": 273551,
+   "archive": "F:\\wrizo-archive\\sb5",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\sb6",
+   "kb": 326870,
+   "archive": "F:\\wrizo-archive\\sb6",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\sb7",
+   "kb": 360749,
+   "archive": "F:\\wrizo-archive\\sb7",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\sb8",
+   "kb": 365514,
+   "archive": "F:\\wrizo-archive\\sb8",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\sbf",
+   "kb": 415306,
+   "archive": "F:\\wrizo-archive\\sbf",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\sh-tip",
+   "kb": 231398,
+   "archive": "F:\\wrizo-archive\\sh-tip",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\sh-r6",
+   "kb": 273323,
+   "archive": "F:\\wrizo-archive\\sh-r6",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\shipx",
+   "kb": 371576,
+   "archive": "F:\\wrizo-archive\\shipx",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\shp",
+   "kb": 403656,
+   "archive": "F:\\wrizo-archive\\shp",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\si",
+   "kb": 411813,
+   "archive": "F:\\wrizo-archive\\si",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\si2",
+   "kb": 412091,
+   "archive": "F:\\wrizo-archive\\si2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\si3",
+   "kb": 412398,
+   "archive": "F:\\wrizo-archive\\si3",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\si4",
+   "kb": 412533,
+   "archive": "F:\\wrizo-archive\\si4",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\splash-pair",
+   "kb": 228998,
+   "archive": "F:\\wrizo-archive\\splash-pair",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\spt",
+   "kb": 403191,
+   "archive": "F:\\wrizo-archive\\spt",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ssf",
+   "kb": 408471,
+   "archive": "F:\\wrizo-archive\\ssf",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ta2",
+   "kb": 430298,
+   "archive": "F:\\wrizo-archive\\ta2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tb",
+   "kb": 431710,
+   "archive": "F:\\wrizo-archive\\tb",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tb2",
+   "kb": 431278,
+   "archive": "F:\\wrizo-archive\\tb2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tc2",
+   "kb": 431679,
+   "archive": "F:\\wrizo-archive\\tc2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tf-ctl",
+   "kb": 244162,
+   "archive": "F:\\wrizo-archive\\tf-ctl",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tfo-pair",
+   "kb": 244162,
+   "archive": "F:\\wrizo-archive\\tfo-pair",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tdp",
+   "kb": 360701,
+   "archive": "F:\\wrizo-archive\\tdp",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tlf",
+   "kb": 403586,
+   "archive": "F:\\wrizo-archive\\tlf",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tlg",
+   "kb": 404191,
+   "archive": "F:\\wrizo-archive\\tlg",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tlm",
+   "kb": 401611,
+   "archive": "F:\\wrizo-archive\\tlm",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tmpl-pair",
+   "kb": 221088,
+   "archive": "F:\\wrizo-archive\\tmpl-pair",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tp",
+   "kb": 412584,
+   "archive": "F:\\wrizo-archive\\tp",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tp2",
+   "kb": 413147,
+   "archive": "F:\\wrizo-archive\\tp2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tp3",
+   "kb": 414099,
+   "archive": "F:\\wrizo-archive\\tp3",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tp4",
+   "kb": 415041,
+   "archive": "F:\\wrizo-archive\\tp4",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tp5",
+   "kb": 415256,
+   "archive": "F:\\wrizo-archive\\tp5",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tsl",
+   "kb": 402105,
+   "archive": "F:\\wrizo-archive\\tsl",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tsp",
+   "kb": 412370,
+   "archive": "F:\\wrizo-archive\\tsp",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tw",
+   "kb": 411550,
+   "archive": "F:\\wrizo-archive\\tw",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tu",
+   "kb": 404389,
+   "archive": "F:\\wrizo-archive\\tu",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tw2",
+   "kb": 412026,
+   "archive": "F:\\wrizo-archive\\tw2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\w1-red",
+   "kb": 420030,
+   "archive": "F:\\wrizo-archive\\w1-red",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wd2",
+   "kb": 305597,
+   "archive": "F:\\wrizo-archive\\wd2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wd4",
+   "kb": 330072,
+   "archive": "F:\\wrizo-archive\\wd4",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\bis-p1",
+   "kb": 436961,
+   "archive": "F:\\wrizo-archive\\bis-p1",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\bis-p2",
+   "kb": 437229,
+   "archive": "F:\\wrizo-archive\\bis-p2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\bis-p3",
+   "kb": 439049,
+   "archive": "F:\\wrizo-archive\\bis-p3",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\p10-live",
+   "kb": 427963,
+   "archive": "F:\\wrizo-archive\\p10-live",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-11b",
+   "kb": 470731,
+   "archive": "F:\\wrizo-archive\\train-11b",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-11",
+   "kb": 470762,
+   "archive": "F:\\wrizo-archive\\train-11",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-12b",
+   "kb": 472065,
+   "archive": "F:\\wrizo-archive\\train-12b",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-11bis",
+   "kb": 470759,
+   "archive": "F:\\wrizo-archive\\train-11bis",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-12e",
+   "kb": 472733,
+   "archive": "F:\\wrizo-archive\\train-12e",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-arbor-opt",
+   "kb": 209043,
+   "archive": "F:\\wrizo-archive\\train-arbor-opt",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-machina",
+   "kb": 247068,
+   "archive": "F:\\wrizo-archive\\writer-studio-machina"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-machinav1",
+   "kb": 247404,
+   "archive": "F:\\wrizo-archive\\writer-studio-machinav1"
+  },
+  {
+   "path": "C:\\Users\\nickh\\ws-polish",
+   "kb": 446362,
+   "archive": "F:\\wrizo-archive\\ws-polish",
+   "remnant": 1
+  }
+ ],
+ "skipped": [
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b15",
+   "why": "archive not verified: changed/untracked files: 16 (0.8 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\b15\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b15 -T"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b18",
+   "why": "archive not verified: changed/untracked files: 6 (0.2 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\b18\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b18 -T"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b16",
+   "why": "archive not verified: bundle verified | changed/untracked files: 11 (0.1 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\b16\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b16 -T"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b6",
+   "why": "archive not verified: bundle verified | changed/untracked files: 1 (0.0 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\b6\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b6 -T F"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bc-ship",
+   "why": "archive not verified: bundle verified | changed/untracked files: 21 (4.6 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\bc-ship\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bc"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bc-ship2",
+   "why": "archive not verified: bundle verified | changed/untracked files: 21 (4.6 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\bc-ship2\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bc-ship3",
+   "why": "archive not verified: bundle verified | changed/untracked files: 21 (4.6 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\bc-ship3\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bisect-pre-fx10-2",
+   "why": "archive not verified: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\bisect-pre-fx10-2\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\wo"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ca-ship",
+   "why": "archive not verified: bundle verified | changed/untracked files: 21 (4.4 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\ca-ship\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ca"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ca2",
+   "why": "archive not verified: bundle verified | changed/untracked files: 6 (1.0 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\ca2\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ca2 -T"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cb4",
+   "why": "archive not verified: bundle verified | changed/untracked files: 32 (6.7 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\cb4\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cb4 -T"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cbf",
+   "why": "archive not verified: bundle verified | changed/untracked files: 29 (6.9 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\cbf\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cbf -T"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cbp",
+   "why": "archive not verified: bundle verified | changed/untracked files: 9 (1.8 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\cbp\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cbp -T"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\dfo",
+   "why": "archive not verified: changed/untracked files: 21 (0.1 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\dfo\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\dfo -T"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fix-rz",
+   "why": "archive not verified: changed/untracked files: 16 (1.1 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\fix-rz\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fix"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fix-tw",
+   "why": "archive not verified: changed/untracked files: 12 (0.8 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\fix-tw\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fix"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fix-tw2",
+   "why": "archive not verified: changed/untracked files: 13 (0.8 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\fix-tw2\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fi"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fix-tw3",
+   "why": "archive not verified: changed/untracked files: 13 (0.8 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\fix-tw3\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fi"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fix-tw4",
+   "why": "archive not verified: changed/untracked files: 13 (0.8 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\fix-tw4\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fi"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fxt1",
+   "why": "archive not verified: bundle verified | changed/untracked files: 29 (6.9 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\fxt1\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fxt1 "
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fxt2",
+   "why": "archive not verified: bundle verified | changed/untracked files: 21 (6.0 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\fxt2\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fxt2 "
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\hb",
+   "why": "archive not verified: bundle verified | changed/untracked files: 1 (0.0 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\hb\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\hb -T F"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\lbs",
+   "why": "archive not verified: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\lbs\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\lbs -T"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\lane3",
+   "why": "archive not verified: bundle verified | changed/untracked files: 33 (6.8 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\lane3\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\lane"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\main-fcs",
+   "why": "archive not verified: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\main-fcs\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\m"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\lookb",
+   "why": "archive not verified: bundle verified | changed/untracked files: 21 (4.6 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\lookb\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\look"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\p1-b7",
+   "why": "archive not verified: changed/untracked files: 26 (7.5 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\p1-b7\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\p1-b"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\p1-fd",
+   "why": "archive not verified: changed/untracked files: 26 (7.5 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\p1-fd\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\p1-f"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ps-main",
+   "why": "archive not verified: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\ps-main\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ps"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\psr-c",
+   "why": "archive not verified: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\psr-c\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\psr-"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ptf",
+   "why": "archive not verified: bundle verified | changed/untracked files: 21 (6.0 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\ptf\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ptf -T"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ro2",
+   "why": "archive not verified: bundle verified | changed/untracked files: 1 (0.0 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\ro2\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ro2 -T"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\scenes-old",
+   "why": "archive not verified: bundle verified | changed/untracked files: 1 (0.0 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\scenes-old\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ss",
+   "why": "archive not verified: bundle verified | changed/untracked files: 7 (0.2 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\ss\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ss -T F"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ss2",
+   "why": "archive not verified: bundle verified | changed/untracked files: 7 (0.2 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\ss2\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ss2 -T"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ss3",
+   "why": "archive not verified: bundle verified | changed/untracked files: 7 (0.2 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\ss3\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ss3 -T"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tl-e",
+   "why": "archive not verified: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\tl-e\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tl-e "
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tfo-ship",
+   "why": "archive not verified: bundle verified | changed/untracked files: 2 (0.4 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\tfo-ship\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\t"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tl-e2",
+   "why": "archive not verified: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\tl-e2\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tl-e"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tl-f",
+   "why": "archive not verified: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\tl-f\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tl-f "
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tl-g",
+   "why": "archive not verified: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\tl-g\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tl-g "
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tl-prof",
+   "why": "archive not verified: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\tl-prof\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tl"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tl9",
+   "why": "archive not verified: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\tl9\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tl9 -T"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tl92",
+   "why": "archive not verified: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\tl92\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tl92 "
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tlp",
+   "why": "archive not verified: bundle verified | changed/untracked files: 1 (0.0 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\tlp\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tlp -T"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wd3",
+   "why": "archive not verified: bundle verified | changed/untracked files: 21 (5.4 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\wd3\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wd3 -T"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wf_5666b1ab-1d7-2",
+   "why": "archive not verified: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\wf_5666b1ab-1d7-2\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\wo"
+  },
+  {
+   "path": "C:\\Users\\nickh\\arbor-allbmp",
+   "why": "cwd of a harness launch in the last 48 h"
+  },
+  {
+   "path": "C:\\Users\\nickh\\arbor-cutmeas",
+   "why": "cwd of a harness launch in the last 48 h"
+  },
+  {
+   "path": "C:\\Users\\nickh\\arbor-fixd1",
+   "why": "cwd of a harness launch in the last 48 h"
+  },
+  {
+   "path": "C:\\Users\\nickh\\arbor-fixlat",
+   "why": "cwd of a harness launch in the last 48 h"
+  },
+  {
+   "path": "C:\\Users\\nickh\\arbor-fixlat2",
+   "why": "cwd of a harness launch in the last 48 h"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wf_ae92f9fa-728-1",
+   "why": "archive not verified: changed/untracked files: 2 (0.0 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\wf_ae92f9fa-728-1\\changed.zip -C C:\\Users\\nickh\\writer-studio\\.claude\\wo"
+  },
+  {
+   "path": "C:\\Users\\nickh\\arbor-latency2",
+   "why": "cwd of a harness launch in the last 48 h"
+  },
+  {
+   "path": "C:\\Users\\nickh\\arbor-noshade",
+   "why": "cwd of a harness launch in the last 48 h"
+  },
+  {
+   "path": "C:\\Users\\nickh\\arbor-r20-day",
+   "why": "cwd of a harness launch in the last 48 h"
+  },
+  {
+   "path": "C:\\Users\\nickh\\arbor-swapmeas",
+   "why": "cwd of a harness launch in the last 48 h"
+  },
+  {
+   "path": "C:\\Users\\nickh\\arbor-latency",
+   "why": "archive not verified: bundle verified | changed/untracked files: 1 (0.0 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\arbor-latency\\changed.zip -C C:\\Users\\nickh\\arbor-latency -T F:\\wrizo-ar"
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-10",
+   "why": "archive not verified: bundle verified | changed/untracked files: 12 (0.5 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\train-10\\changed.zip -C C:\\Users\\nickh\\train-10 -T F:\\wrizo-archive\\trai"
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-12bis",
+   "why": "archive not verified: bundle verified | changed/untracked files: 7 (0.0 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\train-12bis\\changed.zip -C C:\\Users\\nickh\\train-12bis -T F:\\wrizo-archiv"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-p10f-red",
+   "why": "archive not verified: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\writer-studio-p10f-red\\changed.zip -C C:\\Users\\nickh\\writer-studio-p10f-"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-rhizome-sprout",
+   "why": "archive not verified: changed/untracked files: 3 (0.1 MB); deleted-only: 0 | tar create FAILED: Command failed: tar.exe -a -cf F:\\wrizo-archive\\writer-studio-rhizome-sprout\\changed.zip -C C:\\Users\\nickh\\writer-studio"
+  }
+ ],
+ "freedKB": 56247258,
+ "freedGB": 53.64
+}

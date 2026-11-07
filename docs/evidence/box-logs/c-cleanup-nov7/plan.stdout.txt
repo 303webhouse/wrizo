@@ -1,0 +1,8 @@
+2026-11-07T08:59:45.412Z MODE plan; C: free 17.99 GB
+2026-11-07T08:59:46.400Z git fetch origin: ok
+2026-11-07T08:59:46.903Z stale remote-tracking refs (gone from origin, ignored for "on origin"): 0
+2026-11-07T08:59:46.949Z origin/main = 74e68a5c
+2026-11-07T08:59:57.357Z PLAN SAFE: 237 candidates, 236 would proceed (56.5 GB); skips: {"a live process mentions this path":1}
+2026-11-07T09:00:07.285Z PLAN ASK: 213 candidates, 204 would proceed (73.0 GB); skips: {"cwd of a harness launch in the last N h":9}
+2026-11-07T09:00:07.800Z PLAN NONGIT: 346 candidates, 275 would proceed (4.6 GB); skips: {"touched N h ago (<N h)":71}
+2026-11-07T09:00:08.188Z END plan: removed/moved 0, skipped 0, freed 0 GB; C: free now 17.99 GB

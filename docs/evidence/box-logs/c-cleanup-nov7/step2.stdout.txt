@@ -1,0 +1,220 @@
+2026-11-07T11:57:04.112Z MODE step2; C: free 87.42 GB
+2026-11-07T11:57:05.014Z git fetch origin: ok
+2026-11-07T11:57:05.534Z stale remote-tracking refs (gone from origin, ignored for "on origin"): 0
+2026-11-07T11:57:05.578Z origin/main = 74e68a5c
+2026-11-07T11:57:06.002Z step 2: 213 ASK candidates from census 1
+2026-11-07T11:57:06.004Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\abq-pair :: touched 1 h ago (<48 h)
+2026-11-07T11:57:06.004Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\abq-pair2 :: touched 1 h ago (<48 h)
+2026-11-07T11:57:06.005Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\b10 :: touched 1 h ago (<48 h)
+2026-11-07T11:57:06.006Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\b101-pair :: touched 1 h ago (<48 h)
+2026-11-07T11:57:06.007Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\b11 :: touched 1 h ago (<48 h)
+2026-11-07T11:57:06.007Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\b11-pair :: touched 1 h ago (<48 h)
+2026-11-07T11:57:06.008Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\b12 :: touched 1 h ago (<48 h)
+2026-11-07T11:57:06.008Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\b14 :: touched 1 h ago (<48 h)
+2026-11-07T11:57:53.002Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\b15 (0.42 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\b15 :: changed/untracked files: 16 (0.8 MB); deleted-only: 0 | zip verified: 16 entries
+2026-11-07T11:58:22.240Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\b16 (0.42 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\b16 :: bundle verified | changed/untracked files: 11 (0.1 MB); deleted-only: 0 | zip verified: 11 entries
+2026-11-07T11:58:22.241Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\b5 :: touched 1 h ago (<48 h)
+2026-11-07T11:58:49.915Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\b18 (0.42 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\b18 :: changed/untracked files: 6 (0.2 MB); deleted-only: 0 | zip verified: 6 entries
+2026-11-07T11:58:49.916Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\b7 :: touched 1 h ago (<48 h)
+2026-11-07T11:58:49.916Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\b8 :: touched 1 h ago (<48 h)
+2026-11-07T11:58:49.917Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\b9 :: touched 1 h ago (<48 h)
+2026-11-07T11:58:49.918Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\batch-pair :: touched 1 h ago (<48 h)
+2026-11-07T11:59:15.330Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\b6 (0.40 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\b6 :: bundle verified | changed/untracked files: 1 (0.0 MB); deleted-only: 0 | zip verified: 1 entries
+2026-11-07T11:59:34.201Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\bc-ship (0.33 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\bc-ship :: bundle verified | changed/untracked files: 21 (4.6 MB); deleted-only: 0 | zip verified: 21 entries
+2026-11-07T11:59:52.836Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\bc-ship2 (0.33 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\bc-ship2 :: bundle verified | changed/untracked files: 21 (4.6 MB); deleted-only: 0 | zip verified: 21 entries
+2026-11-07T11:59:52.836Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bcm :: touched 1 h ago (<48 h)
+2026-11-07T11:59:52.837Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bcm2 :: touched 1 h ago (<48 h)
+2026-11-07T11:59:52.838Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\behb :: touched 1 h ago (<48 h)
+2026-11-07T11:59:52.839Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bgp :: touched 1 h ago (<48 h)
+2026-11-07T11:59:52.839Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bis-ghost :: touched 1 h ago (<48 h)
+2026-11-07T11:59:52.840Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bis-rhz :: touched 1 h ago (<48 h)
+2026-11-07T11:59:52.841Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bis-tfo :: touched 1 h ago (<48 h)
+2026-11-07T12:00:11.376Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\bc-ship3 (0.34 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\bc-ship3 :: bundle verified | changed/untracked files: 21 (4.6 MB); deleted-only: 0 | zip verified: 21 entries
+2026-11-07T12:00:11.377Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bp1a :: touched 1 h ago (<48 h)
+2026-11-07T12:00:11.377Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bp2 :: touched 1 h ago (<48 h)
+2026-11-07T12:00:11.378Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bp2b :: touched 1 h ago (<48 h)
+2026-11-07T12:00:11.379Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bp3 :: touched 1 h ago (<48 h)
+2026-11-07T12:00:11.379Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bp3b :: touched 1 h ago (<48 h)
+2026-11-07T12:00:11.380Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bp3c :: touched 1 h ago (<48 h)
+2026-11-07T12:00:11.380Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bp3d :: touched 1 h ago (<48 h)
+2026-11-07T12:00:11.381Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bpc :: touched 1 h ago (<48 h)
+2026-11-07T12:00:11.382Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bpc2 :: touched 1 h ago (<48 h)
+2026-11-07T12:00:11.382Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bpd :: touched 1 h ago (<48 h)
+2026-11-07T12:00:11.383Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bpm :: touched 1 h ago (<48 h)
+2026-11-07T12:00:11.384Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bship :: touched 1 h ago (<48 h)
+2026-11-07T12:00:23.443Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\bisect-pre-fx10-2 (0.15 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\bisect-pre-fx10-2 :: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | zip verified: 1 entries
+2026-11-07T12:00:42.512Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\ca-ship (0.35 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\ca-ship :: bundle verified | changed/untracked files: 21 (4.4 MB); deleted-only: 0 | zip verified: 21 entries
+2026-11-07T12:00:42.513Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\card-pair :: touched 1 h ago (<48 h)
+2026-11-07T12:00:42.514Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\cb2 :: touched 1 h ago (<48 h)
+2026-11-07T12:01:01.462Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\ca2 (0.35 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\ca2 :: bundle verified | changed/untracked files: 6 (1.0 MB); deleted-only: 0 | zip verified: 6 entries
+2026-11-07T12:01:01.462Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\cbb :: touched 1 h ago (<48 h)
+2026-11-07T12:01:23.494Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\cb4 (0.39 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\cb4 :: bundle verified | changed/untracked files: 32 (6.7 MB); deleted-only: 0 | zip verified: 32 entries
+2026-11-07T12:01:23.495Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\cbg :: touched 1 h ago (<48 h)
+2026-11-07T12:01:45.996Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\cbf (0.40 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\cbf :: bundle verified | changed/untracked files: 29 (6.9 MB); deleted-only: 0 | zip verified: 29 entries
+2026-11-07T12:01:45.997Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\cfo :: touched 1 h ago (<48 h)
+2026-11-07T12:01:45.998Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\cfpt :: touched 1 h ago (<48 h)
+2026-11-07T12:01:45.999Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\cfs :: touched 1 h ago (<48 h)
+2026-11-07T12:01:45.999Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\clc :: touched 1 h ago (<48 h)
+2026-11-07T12:01:46.000Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\clca :: touched 1 h ago (<48 h)
+2026-11-07T12:01:46.001Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\cp-ship :: touched 1 h ago (<48 h)
+2026-11-07T12:01:46.001Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\dfm :: touched 1 h ago (<48 h)
+2026-11-07T12:02:07.721Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\cbp (0.39 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\cbp :: bundle verified | changed/untracked files: 9 (1.8 MB); deleted-only: 0 | zip verified: 9 entries
+2026-11-07T12:02:07.722Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\dgf :: touched 1 h ago (<48 h)
+2026-11-07T12:02:07.723Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\drafts-pair :: touched 1 h ago (<48 h)
+2026-11-07T12:02:07.723Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\dwi :: touched 1 h ago (<48 h)
+2026-11-07T12:02:07.723Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\dws :: touched 1 h ago (<48 h)
+2026-11-07T12:02:07.724Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\e3p :: touched 1 h ago (<48 h)
+2026-11-07T12:02:07.725Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\elc :: touched 1 h ago (<48 h)
+2026-11-07T12:02:07.725Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\fci :: touched 1 h ago (<48 h)
+2026-11-07T12:02:30.886Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\dfo (0.39 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\dfo :: changed/untracked files: 21 (0.1 MB); deleted-only: 0 | zip verified: 21 entries
+2026-11-07T12:02:49.294Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\fix-rz (0.23 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\fix-rz :: changed/untracked files: 16 (1.1 MB); deleted-only: 0 | zip verified: 16 entries
+2026-11-07T12:03:05.980Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\fix-tw (0.23 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\fix-tw :: changed/untracked files: 12 (0.8 MB); deleted-only: 0 | zip verified: 12 entries
+2026-11-07T12:03:22.987Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\fix-tw2 (0.24 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\fix-tw2 :: changed/untracked files: 13 (0.8 MB); deleted-only: 0 | zip verified: 13 entries
+2026-11-07T12:03:40.270Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\fix-tw3 (0.24 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\fix-tw3 :: changed/untracked files: 13 (0.8 MB); deleted-only: 0 | zip verified: 13 entries
+2026-11-07T12:03:40.270Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\fl3 :: touched 1 h ago (<48 h)
+2026-11-07T12:03:40.271Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\fp :: touched 1 h ago (<48 h)
+2026-11-07T12:03:40.271Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\fsp :: touched 1 h ago (<48 h)
+2026-11-07T12:03:40.271Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\fts :: touched 1 h ago (<48 h)
+2026-11-07T12:03:40.272Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\fv :: touched 1 h ago (<48 h)
+2026-11-07T12:03:40.272Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\fv2 :: touched 1 h ago (<48 h)
+2026-11-07T12:03:40.273Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\fv3 :: touched 1 h ago (<48 h)
+2026-11-07T12:03:40.273Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\fv4 :: touched 1 h ago (<48 h)
+2026-11-07T12:03:57.211Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\fix-tw4 (0.24 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\fix-tw4 :: changed/untracked files: 13 (0.8 MB); deleted-only: 0 | zip verified: 13 entries
+2026-11-07T12:04:20.254Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\fxt1 (0.39 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\fxt1 :: bundle verified | changed/untracked files: 29 (6.9 MB); deleted-only: 0 | zip verified: 29 entries
+2026-11-07T12:04:20.254Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\fxt3 :: touched 1 h ago (<48 h)
+2026-11-07T12:04:20.255Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\gg :: touched 1 h ago (<48 h)
+2026-11-07T12:04:20.255Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\gg2 :: touched 1 h ago (<48 h)
+2026-11-07T12:04:20.256Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\gm2 :: touched 1 h ago (<48 h)
+2026-11-07T12:04:20.256Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\gm3 :: touched 1 h ago (<48 h)
+2026-11-07T12:04:20.257Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\gmf :: touched 1 h ago (<48 h)
+2026-11-07T12:04:41.612Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\fxt2 (0.39 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\fxt2 :: bundle verified | changed/untracked files: 21 (6.0 MB); deleted-only: 0 | zip verified: 21 entries
+2026-11-07T12:04:41.613Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\hb2 :: touched 1 h ago (<48 h)
+2026-11-07T12:04:41.613Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\hb3 :: touched 1 h ago (<48 h)
+2026-11-07T12:04:41.613Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\hbf :: touched 1 h ago (<48 h)
+2026-11-07T12:04:41.614Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\hbm :: touched 1 h ago (<48 h)
+2026-11-07T12:04:41.614Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\hbn :: touched 1 h ago (<48 h)
+2026-11-07T12:04:41.615Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\hbo :: touched 1 h ago (<48 h)
+2026-11-07T12:04:41.615Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\hbq :: touched 1 h ago (<48 h)
+2026-11-07T12:04:41.615Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\hec :: touched 1 h ago (<48 h)
+2026-11-07T12:04:41.616Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\hs :: touched 1 h ago (<48 h)
+2026-11-07T12:04:41.616Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\i112d :: touched 1 h ago (<48 h)
+2026-11-07T12:04:41.617Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\icp :: touched 1 h ago (<48 h)
+2026-11-07T12:05:03.239Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\hb (0.39 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\hb :: bundle verified | changed/untracked files: 1 (0.0 MB); deleted-only: 0 | zip verified: 1 entries
+2026-11-07T12:05:23.516Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\lane3 (0.39 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\lane3 :: bundle verified | changed/untracked files: 33 (6.8 MB); deleted-only: 0 | zip verified: 33 entries
+2026-11-07T12:05:42.908Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\lbs (0.37 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\lbs :: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | zip verified: 1 entries
+2026-11-07T12:06:02.144Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\lookb (0.37 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\lookb :: bundle verified | changed/untracked files: 21 (4.6 MB); deleted-only: 0 | zip verified: 21 entries
+2026-11-07T12:06:19.518Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\main-fcs (0.28 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\main-fcs :: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | zip verified: 1 entries
+2026-11-07T12:06:37.242Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\p1-b7 (0.29 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\p1-b7 :: changed/untracked files: 26 (7.5 MB); deleted-only: 0 | zip verified: 26 entries
+2026-11-07T12:06:37.242Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\p1-pair :: touched 1 h ago (<48 h)
+2026-11-07T12:06:37.242Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\p12-r2 :: touched 1 h ago (<48 h)
+2026-11-07T12:06:37.243Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\polish10 :: touched 1 h ago (<48 h)
+2026-11-07T12:06:54.854Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\p1-fd (0.29 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\p1-fd :: changed/untracked files: 26 (7.5 MB); deleted-only: 0 | zip verified: 26 entries
+2026-11-07T12:06:54.855Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\psr :: touched 1 h ago (<48 h)
+2026-11-07T12:07:12.580Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\ps-main (0.29 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\ps-main :: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | zip verified: 1 entries
+2026-11-07T12:07:12.581Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\psr-m :: touched 1 h ago (<48 h)
+2026-11-07T12:07:30.389Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\psr-c (0.31 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\psr-c :: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | zip verified: 1 entries
+2026-11-07T12:07:30.390Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\ptg :: touched 1 h ago (<48 h)
+2026-11-07T12:07:30.391Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\pto :: touched 1 h ago (<48 h)
+2026-11-07T12:07:30.391Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\rd :: touched 1 h ago (<48 h)
+2026-11-07T12:07:30.391Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\rgb :: touched 1 h ago (<48 h)
+2026-11-07T12:07:30.392Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\rhz-pair :: touched 1 h ago (<48 h)
+2026-11-07T12:07:30.392Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\rhz-pair2 :: touched 1 h ago (<48 h)
+2026-11-07T12:07:30.393Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\rhz-pair3 :: touched 1 h ago (<48 h)
+2026-11-07T12:07:30.393Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\ri :: touched 1 h ago (<48 h)
+2026-11-07T12:07:30.393Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\ro :: touched 1 h ago (<48 h)
+2026-11-07T12:07:53.100Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\ptf (0.39 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\ptf :: bundle verified | changed/untracked files: 21 (6.0 MB); deleted-only: 0 | zip verified: 21 entries
+2026-11-07T12:07:53.100Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\run-drawers2 :: touched 1 h ago (<48 h)
+2026-11-07T12:07:53.101Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\run-splash :: touched 1 h ago (<48 h)
+2026-11-07T12:07:53.101Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\run-splash2 :: touched 1 h ago (<48 h)
+2026-11-07T12:07:53.101Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\rz :: touched 1 h ago (<48 h)
+2026-11-07T12:07:53.102Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\rz2 :: touched 1 h ago (<48 h)
+2026-11-07T12:07:53.102Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\sb-min :: touched 1 h ago (<48 h)
+2026-11-07T12:07:53.103Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\sb-min2 :: touched 1 h ago (<48 h)
+2026-11-07T12:07:53.103Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\sb-min3 :: touched 1 h ago (<48 h)
+2026-11-07T12:07:53.103Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\sb-min4 :: touched 1 h ago (<48 h)
+2026-11-07T12:07:53.104Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\sb5 :: touched 1 h ago (<48 h)
+2026-11-07T12:07:53.104Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\sb6 :: touched 1 h ago (<48 h)
+2026-11-07T12:07:53.105Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\sb7 :: touched 1 h ago (<48 h)
+2026-11-07T12:07:53.105Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\sb8 :: touched 1 h ago (<48 h)
+2026-11-07T12:07:53.105Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\sbf :: touched 1 h ago (<48 h)
+2026-11-07T12:08:14.168Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\ro2 (0.39 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\ro2 :: bundle verified | changed/untracked files: 1 (0.0 MB); deleted-only: 0 | zip verified: 1 entries
+2026-11-07T12:08:14.169Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\sh-r6 :: touched 1 h ago (<48 h)
+2026-11-07T12:08:14.169Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\sh-tip :: touched 1 h ago (<48 h)
+2026-11-07T12:08:14.169Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\shipx :: touched 1 h ago (<48 h)
+2026-11-07T12:08:14.170Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\shp :: touched 1 h ago (<48 h)
+2026-11-07T12:08:14.170Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\si :: touched 1 h ago (<48 h)
+2026-11-07T12:08:14.171Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\si2 :: touched 1 h ago (<48 h)
+2026-11-07T12:08:14.171Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\si3 :: touched 1 h ago (<48 h)
+2026-11-07T12:08:14.171Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\si4 :: touched 1 h ago (<48 h)
+2026-11-07T12:08:14.172Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\splash-pair :: touched 1 h ago (<48 h)
+2026-11-07T12:08:14.172Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\spt :: touched 1 h ago (<48 h)
+2026-11-07T12:08:42.811Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\scenes-old (0.42 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\scenes-old :: bundle verified | changed/untracked files: 1 (0.0 MB); deleted-only: 0 | zip verified: 1 entries
+2026-11-07T12:09:04.494Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\ss (0.39 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\ss :: bundle verified | changed/untracked files: 7 (0.2 MB); deleted-only: 0 | zip verified: 7 entries
+2026-11-07T12:09:26.450Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\ss2 (0.39 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\ss2 :: bundle verified | changed/untracked files: 7 (0.2 MB); deleted-only: 0 | zip verified: 7 entries
+2026-11-07T12:09:26.451Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\ssf :: touched 0 h ago (<48 h)
+2026-11-07T12:09:26.451Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\ta2 :: touched 0 h ago (<48 h)
+2026-11-07T12:09:26.452Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tb :: touched 0 h ago (<48 h)
+2026-11-07T12:09:26.452Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tb2 :: touched 0 h ago (<48 h)
+2026-11-07T12:09:26.452Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tc2 :: touched 0 h ago (<48 h)
+2026-11-07T12:09:26.453Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tdp :: touched 0 h ago (<48 h)
+2026-11-07T12:09:26.453Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tf-ctl :: touched 0 h ago (<48 h)
+2026-11-07T12:09:26.454Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tfo-pair :: touched 0 h ago (<48 h)
+2026-11-07T12:09:48.048Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\ss3 (0.39 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\ss3 :: bundle verified | changed/untracked files: 7 (0.2 MB); deleted-only: 0 | zip verified: 7 entries
+2026-11-07T12:10:05.372Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\tl-e (0.24 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\tl-e :: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | zip verified: 1 entries
+2026-11-07T12:10:22.545Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\tfo-ship (0.26 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\tfo-ship :: bundle verified | changed/untracked files: 2 (0.4 MB); deleted-only: 0 | zip verified: 2 entries
+2026-11-07T12:10:39.301Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\tl-e2 (0.24 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\tl-e2 :: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | zip verified: 1 entries
+2026-11-07T12:10:56.984Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\tl-f (0.29 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\tl-f :: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | zip verified: 1 entries
+2026-11-07T12:11:14.612Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\tl-g (0.29 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\tl-g :: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | zip verified: 1 entries
+2026-11-07T12:11:31.618Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\tl-prof (0.24 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\tl-prof :: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | zip verified: 1 entries
+2026-11-07T12:11:50.772Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\tl9 (0.37 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\tl9 :: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | zip verified: 1 entries
+2026-11-07T12:11:50.772Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tlf :: touched 0 h ago (<48 h)
+2026-11-07T12:11:50.773Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tlg :: touched 0 h ago (<48 h)
+2026-11-07T12:11:50.773Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tlm :: touched 0 h ago (<48 h)
+2026-11-07T12:12:09.956Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\tl92 (0.37 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\tl92 :: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | zip verified: 1 entries
+2026-11-07T12:12:09.956Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tmpl-pair :: touched 0 h ago (<48 h)
+2026-11-07T12:12:09.957Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tp :: touched 0 h ago (<48 h)
+2026-11-07T12:12:09.957Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tp2 :: touched 0 h ago (<48 h)
+2026-11-07T12:12:09.958Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tp3 :: touched 0 h ago (<48 h)
+2026-11-07T12:12:09.958Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tp4 :: touched 0 h ago (<48 h)
+2026-11-07T12:12:09.958Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tp5 :: touched 0 h ago (<48 h)
+2026-11-07T12:12:09.959Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tsl :: touched 0 h ago (<48 h)
+2026-11-07T12:12:09.959Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tsp :: touched 0 h ago (<48 h)
+2026-11-07T12:12:09.960Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tu :: touched 0 h ago (<48 h)
+2026-11-07T12:12:09.960Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tw :: touched 0 h ago (<48 h)
+2026-11-07T12:12:09.960Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tw2 :: touched 0 h ago (<48 h)
+2026-11-07T12:12:09.961Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\w1-red :: touched 0 h ago (<48 h)
+2026-11-07T12:12:09.961Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wd2 :: touched 0 h ago (<48 h)
+2026-11-07T12:12:29.337Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\tlp (0.37 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\tlp :: bundle verified | changed/untracked files: 1 (0.0 MB); deleted-only: 0 | zip verified: 1 entries
+2026-11-07T12:12:29.337Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wd4 :: touched 0 h ago (<48 h)
+2026-11-07T12:12:47.276Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\wd3 (0.31 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\wd3 :: bundle verified | changed/untracked files: 21 (5.4 MB); deleted-only: 0 | zip verified: 21 entries
+2026-11-07T12:12:58.799Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\wf_5666b1ab-1d7-2 (0.15 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\wf_5666b1ab-1d7-2 :: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | zip verified: 1 entries
+2026-11-07T12:12:58.800Z SKIP C:\Users\nickh\arbor-allbmp :: cwd of a harness launch in the last 48 h
+2026-11-07T12:12:58.800Z SKIP C:\Users\nickh\arbor-cutmeas :: cwd of a harness launch in the last 48 h
+2026-11-07T12:12:58.801Z SKIP C:\Users\nickh\arbor-fixd1 :: cwd of a harness launch in the last 48 h
+2026-11-07T12:12:58.801Z SKIP C:\Users\nickh\arbor-fixlat :: cwd of a harness launch in the last 48 h
+2026-11-07T12:12:58.801Z SKIP C:\Users\nickh\arbor-fixlat2 :: cwd of a harness launch in the last 48 h
+2026-11-07T12:13:09.907Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\wf_ae92f9fa-728-1 (0.15 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\wf_ae92f9fa-728-1 :: changed/untracked files: 2 (0.0 MB); deleted-only: 0 | zip verified: 2 entries
+2026-11-07T12:13:09.908Z SKIP C:\Users\nickh\arbor-latency2 :: cwd of a harness launch in the last 48 h
+2026-11-07T12:13:09.908Z SKIP C:\Users\nickh\arbor-noshade :: cwd of a harness launch in the last 48 h
+2026-11-07T12:13:09.908Z SKIP C:\Users\nickh\arbor-r20-day :: cwd of a harness launch in the last 48 h
+2026-11-07T12:13:09.909Z SKIP C:\Users\nickh\arbor-swapmeas :: cwd of a harness launch in the last 48 h
+2026-11-07T12:13:09.909Z SKIP C:\Users\nickh\bis-p1 :: touched 0 h ago (<48 h)
+2026-11-07T12:13:09.910Z SKIP C:\Users\nickh\bis-p2 :: touched 0 h ago (<48 h)
+2026-11-07T12:13:09.910Z SKIP C:\Users\nickh\bis-p3 :: touched 0 h ago (<48 h)
+2026-11-07T12:13:09.910Z SKIP C:\Users\nickh\p10-live :: touched 0 h ago (<48 h)
+2026-11-07T12:13:39.811Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\train-10 (0.45 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\train-10 :: bundle verified | changed/untracked files: 12 (0.5 MB); deleted-only: 0 | zip verified: 12 entries
+2026-11-07T12:13:39.812Z SKIP C:\Users\nickh\train-11 :: touched 0 h ago (<48 h)
+2026-11-07T12:13:39.812Z SKIP C:\Users\nickh\train-11b :: touched 0 h ago (<48 h)
+2026-11-07T12:13:39.813Z SKIP C:\Users\nickh\train-11bis :: touched 0 h ago (<48 h)
+2026-11-07T12:13:39.814Z SKIP C:\Users\nickh\train-12b :: touched 0 h ago (<48 h)
+2026-11-07T12:14:04.470Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\arbor-latency (0.21 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\arbor-latency :: bundle verified | changed/untracked files: 1 (0.0 MB); deleted-only: 0 | zip verified: 1 entries
+2026-11-07T12:14:04.471Z SKIP C:\Users\nickh\train-12e :: touched 0 h ago (<48 h)
+2026-11-07T12:14:04.471Z SKIP C:\Users\nickh\train-arbor-opt :: touched 0 h ago (<48 h)
+2026-11-07T12:14:04.471Z SKIP C:\Users\nickh\writer-studio-machina :: already gone
+2026-11-07T12:14:04.471Z SKIP C:\Users\nickh\writer-studio-machinav1 :: already gone
+2026-11-07T12:14:33.466Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio-p10f-red (0.45 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\writer-studio-p10f-red :: changed/untracked files: 1 (0.0 MB); deleted-only: 0 | zip verified: 1 entries
+2026-11-07T12:15:01.666Z ARCHIVED+REMOVED-WITH-REMNANT C:\Users\nickh\train-12bis (0.45 GB; 1 locked esbuild.exe link(s) left) -> F:\wrizo-archive\train-12bis :: bundle verified | changed/untracked files: 7 (0.0 MB); deleted-only: 0 | zip verified: 7 entries
+2026-11-07T12:15:01.667Z SKIP C:\Users\nickh\ws-polish :: touched 0 h ago (<48 h)
+2026-11-07T12:15:13.874Z ARCHIVED+REMOVED C:\Users\nickh\writer-studio-rhizome-sprout (0.24 GB) -> F:\wrizo-archive\writer-studio-rhizome-sprout :: changed/untracked files: 3 (0.1 MB); deleted-only: 0 | zip verified: 3 entries
+2026-11-07T12:15:14.061Z git worktree prune done
+2026-11-07T12:15:14.368Z END step2: removed/moved 53, skipped 160, freed 17.44 GB; C: free now 97.6 GB

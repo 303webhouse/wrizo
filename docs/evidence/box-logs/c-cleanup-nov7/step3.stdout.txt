@@ -1,0 +1,352 @@
+2026-11-07T12:15:14.730Z MODE step3; C: free 97.6 GB
+2026-11-07T12:15:15.413Z git fetch origin: ok
+2026-11-07T12:15:15.921Z stale remote-tracking refs (gone from origin, ignored for "on origin"): 0
+2026-11-07T12:15:15.965Z origin/main = 74e68a5c
+2026-11-07T12:15:16.366Z step 3: 346 NON-GIT candidates from census 1
+2026-11-07T12:15:16.368Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\agent-a2b0ac59ec4e2e3a1 :: touched 1 h ago (<48 h)
+2026-11-07T12:15:16.368Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\agent-a2eb44d7a35b18893 :: touched 1 h ago (<48 h)
+2026-11-07T12:15:16.369Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\agent-a426bb3f17653a64a :: touched 1 h ago (<48 h)
+2026-11-07T12:15:16.369Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\agent-a4519352e42c89a66 :: touched 1 h ago (<48 h)
+2026-11-07T12:15:16.370Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\agent-a7c317041e978cb3b :: touched 1 h ago (<48 h)
+2026-11-07T12:15:16.371Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\agent-a88f5a9272c0d668f :: touched 1 h ago (<48 h)
+2026-11-07T12:15:16.371Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\agent-a943e01cd771af5d4 :: touched 1 h ago (<48 h)
+2026-11-07T12:15:16.372Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\agent-acdf459267afe9d99 :: touched 1 h ago (<48 h)
+2026-11-07T12:15:16.373Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\agent-afd07d0d8d7d63eec :: touched 1 h ago (<48 h)
+2026-11-07T12:15:16.374Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\bcm-boxtomb.txt (1901 B) -> F:\wrizo-archive\evidence\claude-worktrees\bcm-boxtomb.txt
+2026-11-07T12:15:16.377Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\bcm-build.txt (33086 B) -> F:\wrizo-archive\evidence\claude-worktrees\bcm-build.txt
+2026-11-07T12:15:16.378Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\bcm-install.txt (1092 B) -> F:\wrizo-archive\evidence\claude-worktrees\bcm-install.txt
+2026-11-07T12:15:16.380Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\bcm2-boxtomb.txt (1945 B) -> F:\wrizo-archive\evidence\claude-worktrees\bcm2-boxtomb.txt
+2026-11-07T12:15:16.382Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\bcm2-build.txt (33087 B) -> F:\wrizo-archive\evidence\claude-worktrees\bcm2-build.txt
+2026-11-07T12:15:16.384Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\bcm2-install.txt (856 B) -> F:\wrizo-archive\evidence\claude-worktrees\bcm2-install.txt
+2026-11-07T12:15:16.385Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\bis-build.txt (33086 B) -> F:\wrizo-archive\evidence\claude-worktrees\bis-build.txt
+2026-11-07T12:15:16.388Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\bis-build0.txt (33086 B) -> F:\wrizo-archive\evidence\claude-worktrees\bis-build0.txt
+2026-11-07T12:15:16.389Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\bis-install.txt (975 B) -> F:\wrizo-archive\evidence\claude-worktrees\bis-install.txt
+2026-11-07T12:15:16.390Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bisect-pre-fx10 :: touched 1 h ago (<48 h)
+2026-11-07T12:15:16.390Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bm1-verify :: touched 1 h ago (<48 h)
+2026-11-07T12:15:16.392Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\cb2-box-tombstones.txt (1945 B) -> F:\wrizo-archive\evidence\claude-worktrees\cb2-box-tombstones.txt
+2026-11-07T12:15:16.393Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\cb2-build.txt (33086 B) -> F:\wrizo-archive\evidence\claude-worktrees\cb2-build.txt
+2026-11-07T12:15:16.395Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\cb2-install.txt (914 B) -> F:\wrizo-archive\evidence\claude-worktrees\cb2-install.txt
+2026-11-07T12:15:16.396Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\cb2-page-links.txt (2062 B) -> F:\wrizo-archive\evidence\claude-worktrees\cb2-page-links.txt
+2026-11-07T12:15:16.398Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\cb2-pagelinksdb.txt (6776 B) -> F:\wrizo-archive\evidence\claude-worktrees\cb2-pagelinksdb.txt
+2026-11-07T12:15:16.399Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\cb2-server-build.txt (270 B) -> F:\wrizo-archive\evidence\claude-worktrees\cb2-server-build.txt
+2026-11-07T12:15:16.402Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\cbb-boxtomb.txt (1945 B) -> F:\wrizo-archive\evidence\claude-worktrees\cbb-boxtomb.txt
+2026-11-07T12:15:16.403Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\cbb-build.txt (33086 B) -> F:\wrizo-archive\evidence\claude-worktrees\cbb-build.txt
+2026-11-07T12:15:16.405Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\cbb-install.txt (915 B) -> F:\wrizo-archive\evidence\claude-worktrees\cbb-install.txt
+2026-11-07T12:15:16.406Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\cbb-pagelinks.txt (2062 B) -> F:\wrizo-archive\evidence\claude-worktrees\cbb-pagelinks.txt
+2026-11-07T12:15:16.408Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\cbb-server-build.txt (270 B) -> F:\wrizo-archive\evidence\claude-worktrees\cbb-server-build.txt
+2026-11-07T12:15:16.409Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\cbp-box-tombstones.txt (1945 B) -> F:\wrizo-archive\evidence\claude-worktrees\cbp-box-tombstones.txt
+2026-11-07T12:15:16.412Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\cbp-build.txt (33086 B) -> F:\wrizo-archive\evidence\claude-worktrees\cbp-build.txt
+2026-11-07T12:15:16.413Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\cbp-install.txt (855 B) -> F:\wrizo-archive\evidence\claude-worktrees\cbp-install.txt
+2026-11-07T12:15:16.415Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\cbp-page-links.txt (2062 B) -> F:\wrizo-archive\evidence\claude-worktrees\cbp-page-links.txt
+2026-11-07T12:15:16.416Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\cbp-pagelinksdb.txt (6778 B) -> F:\wrizo-archive\evidence\claude-worktrees\cbp-pagelinksdb.txt
+2026-11-07T12:15:16.418Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\cbp-server-build.txt (270 B) -> F:\wrizo-archive\evidence\claude-worktrees\cbp-server-build.txt
+2026-11-07T12:15:16.419Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\dm-build.txt (33085 B) -> F:\wrizo-archive\evidence\claude-worktrees\dm-build.txt
+2026-11-07T12:15:16.421Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\dm-install.txt (1033 B) -> F:\wrizo-archive\evidence\claude-worktrees\dm-install.txt
+2026-11-07T12:15:16.421Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\e1-1-harden :: touched 1 h ago (<48 h)
+2026-11-07T12:15:16.423Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\fl3-build.txt (33086 B) -> F:\wrizo-archive\evidence\claude-worktrees\fl3-build.txt
+2026-11-07T12:15:16.424Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\fl3-install.txt (915 B) -> F:\wrizo-archive\evidence\claude-worktrees\fl3-install.txt
+2026-11-07T12:15:16.427Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\fp-build.txt (33085 B) -> F:\wrizo-archive\evidence\claude-worktrees\fp-build.txt
+2026-11-07T12:15:16.428Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\fp-install.txt (915 B) -> F:\wrizo-archive\evidence\claude-worktrees\fp-install.txt
+2026-11-07T12:15:16.430Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\fsp-build.txt (33086 B) -> F:\wrizo-archive\evidence\claude-worktrees\fsp-build.txt
+2026-11-07T12:15:16.433Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\fsp-check.txt (2859 B) -> F:\wrizo-archive\evidence\claude-worktrees\fsp-check.txt
+2026-11-07T12:15:16.435Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\fsp-install.txt (856 B) -> F:\wrizo-archive\evidence\claude-worktrees\fsp-install.txt
+2026-11-07T12:15:16.436Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\fts-build.txt (33086 B) -> F:\wrizo-archive\evidence\claude-worktrees\fts-build.txt
+2026-11-07T12:15:16.438Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\fts-fsc.txt (2859 B) -> F:\wrizo-archive\evidence\claude-worktrees\fts-fsc.txt
+2026-11-07T12:15:16.439Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\fts-install.txt (914 B) -> F:\wrizo-archive\evidence\claude-worktrees\fts-install.txt
+2026-11-07T12:15:16.442Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\hb-build.txt (33085 B) -> F:\wrizo-archive\evidence\claude-worktrees\hb-build.txt
+2026-11-07T12:15:16.443Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\hb-install.txt (855 B) -> F:\wrizo-archive\evidence\claude-worktrees\hb-install.txt
+2026-11-07T12:15:16.445Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\i112d-install.txt (855 B) -> F:\wrizo-archive\evidence\claude-worktrees\i112d-install.txt
+2026-11-07T12:15:16.446Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\item207core-main.txt (7324 B) -> F:\wrizo-archive\evidence\claude-worktrees\item207core-main.txt
+2026-11-07T12:15:16.448Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\lane3-boxtomb.txt (1945 B) -> F:\wrizo-archive\evidence\claude-worktrees\lane3-boxtomb.txt
+2026-11-07T12:15:16.449Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\lane3-build.txt (33088 B) -> F:\wrizo-archive\evidence\claude-worktrees\lane3-build.txt
+2026-11-07T12:15:16.451Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\lane3-fsc.txt (2859 B) -> F:\wrizo-archive\evidence\claude-worktrees\lane3-fsc.txt
+2026-11-07T12:15:16.452Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\lane3-install.txt (974 B) -> F:\wrizo-archive\evidence\claude-worktrees\lane3-install.txt
+2026-11-07T12:15:16.454Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\lbs-install.txt (856 B) -> F:\wrizo-archive\evidence\claude-worktrees\lbs-install.txt
+2026-11-07T12:15:16.454Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\m4-root-that-shows :: already gone
+2026-11-07T12:15:16.456Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\prim-build.txt (33064 B) -> F:\wrizo-archive\evidence\claude-worktrees\prim-build.txt
+2026-11-07T12:15:16.458Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\prim2-build.txt (33064 B) -> F:\wrizo-archive\evidence\claude-worktrees\prim2-build.txt
+2026-11-07T12:15:16.460Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\prim3-build.txt (33064 B) -> F:\wrizo-archive\evidence\claude-worktrees\prim3-build.txt
+2026-11-07T12:15:16.461Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\prim4-build.txt (33064 B) -> F:\wrizo-archive\evidence\claude-worktrees\prim4-build.txt
+2026-11-07T12:15:16.463Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\prim5-build.txt (33064 B) -> F:\wrizo-archive\evidence\claude-worktrees\prim5-build.txt
+2026-11-07T12:15:16.465Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\prim6-build.txt (33064 B) -> F:\wrizo-archive\evidence\claude-worktrees\prim6-build.txt
+2026-11-07T12:15:16.467Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\ro-build.txt (33085 B) -> F:\wrizo-archive\evidence\claude-worktrees\ro-build.txt
+2026-11-07T12:15:16.468Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\ro-install.txt (1273 B) -> F:\wrizo-archive\evidence\claude-worktrees\ro-install.txt
+2026-11-07T12:15:16.470Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\ro2-build.txt (33086 B) -> F:\wrizo-archive\evidence\claude-worktrees\ro2-build.txt
+2026-11-07T12:15:16.471Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\ro2-install.txt (914 B) -> F:\wrizo-archive\evidence\claude-worktrees\ro2-install.txt
+2026-11-07T12:15:16.474Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\ro2-part1.txt (2900 B) -> F:\wrizo-archive\evidence\claude-worktrees\ro2-part1.txt
+2026-11-07T12:15:16.475Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\rv-build.txt (33085 B) -> F:\wrizo-archive\evidence\claude-worktrees\rv-build.txt
+2026-11-07T12:15:16.477Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\rv-install.txt (855 B) -> F:\wrizo-archive\evidence\claude-worktrees\rv-install.txt
+2026-11-07T12:15:16.478Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\shp-build.txt (33086 B) -> F:\wrizo-archive\evidence\claude-worktrees\shp-build.txt
+2026-11-07T12:15:16.480Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\shp-fsc.txt (2859 B) -> F:\wrizo-archive\evidence\claude-worktrees\shp-fsc.txt
+2026-11-07T12:15:16.481Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\shp-install.txt (972 B) -> F:\wrizo-archive\evidence\claude-worktrees\shp-install.txt
+2026-11-07T12:15:16.483Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\spt-build.txt (33086 B) -> F:\wrizo-archive\evidence\claude-worktrees\spt-build.txt
+2026-11-07T12:15:16.484Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\spt-install.txt (1451 B) -> F:\wrizo-archive\evidence\claude-worktrees\spt-install.txt
+2026-11-07T12:15:16.487Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\ss-build.txt (33085 B) -> F:\wrizo-archive\evidence\claude-worktrees\ss-build.txt
+2026-11-07T12:15:16.488Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\ss-install.txt (915 B) -> F:\wrizo-archive\evidence\claude-worktrees\ss-install.txt
+2026-11-07T12:15:16.489Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\ta :: touched 1 h ago (<48 h)
+2026-11-07T12:15:16.490Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\tl9-install.txt (856 B) -> F:\wrizo-archive\evidence\claude-worktrees\tl9-install.txt
+2026-11-07T12:15:16.492Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\tl92-install.txt (914 B) -> F:\wrizo-archive\evidence\claude-worktrees\tl92-install.txt
+2026-11-07T12:15:16.493Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\tl92-readers.txt (3326 B) -> F:\wrizo-archive\evidence\claude-worktrees\tl92-readers.txt
+2026-11-07T12:15:16.495Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\tlf-build.txt (33086 B) -> F:\wrizo-archive\evidence\claude-worktrees\tlf-build.txt
+2026-11-07T12:15:16.496Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\tlf-font-span-check.txt (2859 B) -> F:\wrizo-archive\evidence\claude-worktrees\tlf-font-span-check.txt
+2026-11-07T12:15:16.499Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\tlf-install.txt (855 B) -> F:\wrizo-archive\evidence\claude-worktrees\tlf-install.txt
+2026-11-07T12:15:16.500Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\tlf-typing-latency-readers-guard.txt (3326 B) -> F:\wrizo-archive\evidence\claude-worktrees\tlf-typing-latency-readers-guard.txt
+2026-11-07T12:15:16.502Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\tlf-typing-latency-window-check.txt (344 B) -> F:\wrizo-archive\evidence\claude-worktrees\tlf-typing-latency-window-check.txt
+2026-11-07T12:15:16.503Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\tlg-build.txt (33086 B) -> F:\wrizo-archive\evidence\claude-worktrees\tlg-build.txt
+2026-11-07T12:15:16.505Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\tlg-font-span-check.txt (2859 B) -> F:\wrizo-archive\evidence\claude-worktrees\tlg-font-span-check.txt
+2026-11-07T12:15:16.506Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\tlg-install.txt (1031 B) -> F:\wrizo-archive\evidence\claude-worktrees\tlg-install.txt
+2026-11-07T12:15:16.508Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\tlg-typing-latency-readers-guard.txt (3326 B) -> F:\wrizo-archive\evidence\claude-worktrees\tlg-typing-latency-readers-guard.txt
+2026-11-07T12:15:16.509Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\tlg-typing-latency-window-check.txt (344 B) -> F:\wrizo-archive\evidence\claude-worktrees\tlg-typing-latency-window-check.txt
+2026-11-07T12:15:16.511Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\tlm-build.txt (33086 B) -> F:\wrizo-archive\evidence\claude-worktrees\tlm-build.txt
+2026-11-07T12:15:16.512Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\tlm-install.txt (915 B) -> F:\wrizo-archive\evidence\claude-worktrees\tlm-install.txt
+2026-11-07T12:15:16.515Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\tlm-typing-latency-readers-guard.txt (3326 B) -> F:\wrizo-archive\evidence\claude-worktrees\tlm-typing-latency-readers-guard.txt
+2026-11-07T12:15:16.516Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\tlm-typing-latency-window-check.txt (344 B) -> F:\wrizo-archive\evidence\claude-worktrees\tlm-typing-latency-window-check.txt
+2026-11-07T12:15:16.518Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\tsl-build.txt (33086 B) -> F:\wrizo-archive\evidence\claude-worktrees\tsl-build.txt
+2026-11-07T12:15:16.519Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\tsl-fsc.txt (2859 B) -> F:\wrizo-archive\evidence\claude-worktrees\tsl-fsc.txt
+2026-11-07T12:15:16.521Z MOVED-FILE C:\Users\nickh\writer-studio\.claude\worktrees\tsl-install.txt (913 B) -> F:\wrizo-archive\evidence\claude-worktrees\tsl-install.txt
+2026-11-07T12:15:16.521Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tu5-tutors-memory :: touched 1 h ago (<48 h)
+2026-11-07T12:15:16.522Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wd-ship :: touched 1 h ago (<48 h)
+2026-11-07T12:15:16.522Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_07f35fd0-e6f-1 :: touched 1 h ago (<48 h)
+2026-11-07T12:15:16.523Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_07f35fd0-e6f-2 :: touched 0 h ago (<48 h)
+2026-11-07T12:15:16.523Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_10146d83-a72-1 :: touched 0 h ago (<48 h)
+2026-11-07T12:15:16.524Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_10146d83-a72-2 :: touched 0 h ago (<48 h)
+2026-11-07T12:15:16.524Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_1f99fdf3-f8d-1 :: touched 0 h ago (<48 h)
+2026-11-07T12:15:16.525Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_1f99fdf3-f8d-2 :: touched 0 h ago (<48 h)
+2026-11-07T12:15:16.525Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_2db8efe0-263-1 :: touched 0 h ago (<48 h)
+2026-11-07T12:15:16.525Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_40876f61-fd2-1 :: touched 0 h ago (<48 h)
+2026-11-07T12:15:16.526Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_4130c9c4-95f-1 :: touched 0 h ago (<48 h)
+2026-11-07T12:15:16.526Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_4130c9c4-95f-2 :: touched 0 h ago (<48 h)
+2026-11-07T12:15:16.526Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_46618b45-7ce-1 :: touched 0 h ago (<48 h)
+2026-11-07T12:15:16.527Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_46618b45-7ce-2 :: touched 0 h ago (<48 h)
+2026-11-07T12:15:16.527Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_6aa43071-3a2-1 :: touched 0 h ago (<48 h)
+2026-11-07T12:15:16.528Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_6aa43071-3a2-2 :: touched 0 h ago (<48 h)
+2026-11-07T12:15:16.528Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_8458f3f0-ced-1 :: touched 0 h ago (<48 h)
+2026-11-07T12:15:16.529Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_8ac31cde-cf5-1 :: touched 0 h ago (<48 h)
+2026-11-07T12:15:16.529Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_c399b5ba-23c-1 :: touched 0 h ago (<48 h)
+2026-11-07T12:15:16.530Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_c399b5ba-23c-2 :: touched 0 h ago (<48 h)
+2026-11-07T12:15:16.530Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_d3ffe25b-a7d-1 :: touched 0 h ago (<48 h)
+2026-11-07T12:15:16.531Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_d3ffe25b-a7d-2 :: touched 0 h ago (<48 h)
+2026-11-07T12:15:16.531Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_e11e2f77-c21-1 :: touched 0 h ago (<48 h)
+2026-11-07T12:15:16.532Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_e11e2f77-c21-2 :: touched 0 h ago (<48 h)
+2026-11-07T12:15:16.532Z SKIP C:\Users\nickh\ansel :: KEEP / other-repo
+2026-11-07T12:15:16.532Z SKIP C:\Users\nickh\ar-41991020737 :: already gone
+2026-11-07T12:15:16.532Z SKIP C:\Users\nickh\ar-41991053522 :: already gone
+2026-11-07T12:15:16.533Z SKIP C:\Users\nickh\art-10hm :: touched 36 h ago (<48 h)
+2026-11-07T12:15:16.533Z SKIP C:\Users\nickh\art-10i :: touched 36 h ago (<48 h)
+2026-11-07T12:15:16.534Z SKIP C:\Users\nickh\art-10ifinal :: touched 35 h ago (<48 h)
+2026-11-07T12:15:16.534Z SKIP C:\Users\nickh\art-10iq :: touched 36 h ago (<48 h)
+2026-11-07T12:15:16.535Z SKIP C:\Users\nickh\art-guards3 :: touched 36 h ago (<48 h)
+2026-11-07T12:15:16.536Z SKIP C:\Users\nickh\art-mainS1 :: touched 35 h ago (<48 h)
+2026-11-07T12:15:16.536Z SKIP C:\Users\nickh\art-s1 :: touched 35 h ago (<48 h)
+2026-11-07T12:15:16.536Z SKIP C:\Users\nickh\b21-41988875815 :: already gone
+2026-11-07T12:15:16.537Z SKIP C:\Users\nickh\b21-41988889315 :: already gone
+2026-11-07T12:15:16.537Z SKIP C:\Users\nickh\b21-41988902228 :: already gone
+2026-11-07T12:15:16.537Z SKIP C:\Users\nickh\b21c :: already gone
+2026-11-07T12:15:16.537Z SKIP C:\Users\nickh\c13-10-out-turn13 :: already gone
+2026-11-07T12:15:16.538Z SKIP C:\Users\nickh\c13-10-out-turn14 :: already gone
+2026-11-07T12:15:16.538Z SKIP C:\Users\nickh\c13-10-out-turn15 :: already gone
+2026-11-07T12:15:16.538Z SKIP C:\Users\nickh\c13-10-out-turn16 :: already gone
+2026-11-07T12:15:16.538Z SKIP C:\Users\nickh\c13-10-out-turn17 :: already gone
+2026-11-07T12:15:16.538Z SKIP C:\Users\nickh\c13-10-out-turn18 :: already gone
+2026-11-07T12:15:16.539Z SKIP C:\Users\nickh\c13-10-out-turn19 :: already gone
+2026-11-07T12:15:16.543Z SKIP C:\Users\nickh\c13-10-out-turn20 :: touched 43 h ago (<48 h)
+2026-11-07T12:15:16.543Z SKIP C:\Users\nickh\c13-10-out-turn21 :: touched 41 h ago (<48 h)
+2026-11-07T12:15:16.546Z SKIP C:\Users\nickh\c13-10-out-turn22 :: touched 41 h ago (<48 h)
+2026-11-07T12:15:16.546Z SKIP C:\Users\nickh\c13-10-out-turn23 :: touched 33 h ago (<48 h)
+2026-11-07T12:15:16.546Z SKIP C:\Users\nickh\c13-10a-dist-a :: already gone
+2026-11-07T12:15:16.546Z SKIP C:\Users\nickh\c13-10a-dist-control :: already gone
+2026-11-07T12:15:16.546Z SKIP C:\Users\nickh\c13-10a-dist-main :: already gone
+2026-11-07T12:15:16.547Z SKIP C:\Users\nickh\c13-10b-dist :: already gone
+2026-11-07T12:15:16.547Z SKIP C:\Users\nickh\c13-10d-dist :: already gone
+2026-11-07T12:15:16.548Z SKIP C:\Users\nickh\c13-11-gh :: touched 30 h ago (<48 h)
+2026-11-07T12:15:16.551Z SKIP C:\Users\nickh\c13-11-out-turn24 :: touched 29 h ago (<48 h)
+2026-11-07T12:15:16.551Z SKIP C:\Users\nickh\c13-12f-out :: already gone
+2026-11-07T12:15:16.551Z SKIP C:\Users\nickh\c13-12f-out2 :: already gone
+2026-11-07T12:15:16.552Z SKIP C:\Users\nickh\c13-5-out :: already gone
+2026-11-07T12:15:16.552Z SKIP C:\Users\nickh\c13-5-out-1 :: already gone
+2026-11-07T12:15:16.552Z SKIP C:\Users\nickh\c13-6-dist :: already gone
+2026-11-07T12:15:16.552Z SKIP C:\Users\nickh\c13-6-out :: already gone
+2026-11-07T12:15:16.552Z SKIP C:\Users\nickh\c13-6-out2 :: already gone
+2026-11-07T12:15:16.553Z SKIP C:\Users\nickh\c13-7-dist :: already gone
+2026-11-07T12:15:16.553Z SKIP C:\Users\nickh\c13-7-out :: already gone
+2026-11-07T12:15:16.553Z SKIP C:\Users\nickh\c13-8-out :: already gone
+2026-11-07T12:15:16.553Z SKIP C:\Users\nickh\c13-8-out2 :: already gone
+2026-11-07T12:15:16.553Z SKIP C:\Users\nickh\c13-8-out3 :: already gone
+2026-11-07T12:15:16.554Z SKIP C:\Users\nickh\c13-9-dist-base :: already gone
+2026-11-07T12:15:16.554Z SKIP C:\Users\nickh\c13-9-dist-plant :: already gone
+2026-11-07T12:15:16.554Z SKIP C:\Users\nickh\c13-9-dist-step :: already gone
+2026-11-07T12:15:16.554Z SKIP C:\Users\nickh\c13-9-out-components :: already gone
+2026-11-07T12:15:16.554Z SKIP C:\Users\nickh\c13-9-out-store :: already gone
+2026-11-07T12:15:16.555Z SKIP C:\Users\nickh\c13-9-out-turn10 :: already gone
+2026-11-07T12:15:16.555Z SKIP C:\Users\nickh\c13-9-out-turn11 :: already gone
+2026-11-07T12:15:16.555Z SKIP C:\Users\nickh\c13-9-out-turn12 :: already gone
+2026-11-07T12:15:16.555Z SKIP C:\Users\nickh\c13-9-out-turn5 :: already gone
+2026-11-07T12:15:16.556Z SKIP C:\Users\nickh\c13-9-out-turn6 :: already gone
+2026-11-07T12:15:16.556Z SKIP C:\Users\nickh\c13-9-out-turn7 :: already gone
+2026-11-07T12:15:16.556Z SKIP C:\Users\nickh\c13-9-out-turn8 :: already gone
+2026-11-07T12:15:16.556Z SKIP C:\Users\nickh\c13-9-out-turn9 :: already gone
+2026-11-07T12:15:16.556Z SKIP C:\Users\nickh\c13-9-out1 :: already gone
+2026-11-07T12:15:16.557Z SKIP C:\Users\nickh\c13-9-out2 :: already gone
+2026-11-07T12:15:16.557Z SKIP C:\Users\nickh\c13-9c-dist-base :: already gone
+2026-11-07T12:15:16.557Z SKIP C:\Users\nickh\c13-9c-dist-step :: already gone
+2026-11-07T12:15:16.557Z SKIP C:\Users\nickh\c13-9p-dist-tip :: already gone
+2026-11-07T12:15:16.557Z SKIP C:\Users\nickh\c13-9s-dist-base :: already gone
+2026-11-07T12:15:16.558Z SKIP C:\Users\nickh\c13-9s-dist-step :: already gone
+2026-11-07T12:15:16.558Z SKIP C:\Users\nickh\c13-9t-dist-tip :: already gone
+2026-11-07T12:15:16.558Z SKIP C:\Users\nickh\c136-actions :: already gone
+2026-11-07T12:15:16.558Z SKIP C:\Users\nickh\c136-box :: already gone
+2026-11-07T12:15:16.558Z SKIP C:\Users\nickh\c137-actions :: already gone
+2026-11-07T12:15:16.559Z SKIP C:\Users\nickh\c137-box :: already gone
+2026-11-07T12:15:16.559Z SKIP C:\Users\nickh\c138-box :: already gone
+2026-11-07T12:15:16.559Z SKIP C:\Users\nickh\cimerge-actions :: already gone
+2026-11-07T12:15:16.559Z SKIP C:\Users\nickh\cimerge-box :: already gone
+2026-11-07T12:15:16.559Z SKIP C:\Users\nickh\ctl-41937551239 :: already gone
+2026-11-07T12:15:16.560Z SKIP C:\Users\nickh\ctl-41937567547 :: already gone
+2026-11-07T12:15:16.560Z SKIP C:\Users\nickh\ctl10-main :: already gone
+2026-11-07T12:15:16.561Z SKIP C:\Users\nickh\ctl10-train :: already gone
+2026-11-07T12:15:16.561Z SKIP C:\Users\nickh\d46 :: touched 30 h ago (<48 h)
+2026-11-07T12:15:16.563Z SKIP C:\Users\nickh\e1 :: already gone
+2026-11-07T12:15:16.563Z SKIP C:\Users\nickh\g1 :: touched 47 h ago (<48 h)
+2026-11-07T12:15:16.567Z SKIP C:\Users\nickh\g2 :: touched 47 h ago (<48 h)
+2026-11-07T12:15:16.567Z SKIP C:\Users\nickh\g3 :: touched 47 h ago (<48 h)
+2026-11-07T12:15:16.571Z SKIP C:\Users\nickh\g4 :: touched 47 h ago (<48 h)
+2026-11-07T12:15:16.571Z SKIP C:\Users\nickh\g5 :: touched 47 h ago (<48 h)
+2026-11-07T12:15:16.572Z SKIP C:\Users\nickh\harness-logs :: KEEP / other-repo
+2026-11-07T12:15:16.572Z SKIP C:\Users\nickh\pairs :: touched 26 h ago (<48 h)
+2026-11-07T12:15:16.572Z SKIP C:\Users\nickh\pc-main-default :: already gone
+2026-11-07T12:15:16.573Z SKIP C:\Users\nickh\pc-main-parked :: already gone
+2026-11-07T12:15:16.573Z SKIP C:\Users\nickh\pc-train-default :: already gone
+2026-11-07T12:15:16.573Z SKIP C:\Users\nickh\pc-train-parked :: already gone
+2026-11-07T12:15:16.573Z SKIP C:\Users\nickh\pr1 :: already gone
+2026-11-07T12:15:16.573Z SKIP C:\Users\nickh\pr2 :: already gone
+2026-11-07T12:15:16.577Z SKIP C:\Users\nickh\pr3 :: already gone
+2026-11-07T12:15:16.577Z SKIP C:\Users\nickh\pw1-dist-box :: touched 33 h ago (<48 h)
+2026-11-07T12:15:16.578Z SKIP C:\Users\nickh\pw1s5-gh-42166872695 :: touched 30 h ago (<48 h)
+2026-11-07T12:15:16.578Z SKIP C:\Users\nickh\pw1s5-gh-42166875768 :: touched 30 h ago (<48 h)
+2026-11-07T12:15:16.578Z SKIP C:\Users\nickh\pwdefault1 :: already gone
+2026-11-07T12:15:16.578Z SKIP C:\Users\nickh\pwdefault2 :: already gone
+2026-11-07T12:15:16.579Z SKIP C:\Users\nickh\pwdefault3 :: already gone
+2026-11-07T12:15:16.579Z SKIP C:\Users\nickh\pwdefault4 :: already gone
+2026-11-07T12:15:16.579Z SKIP C:\Users\nickh\pwdefault5 :: already gone
+2026-11-07T12:15:16.579Z SKIP C:\Users\nickh\pwdefault6 :: already gone
+2026-11-07T12:15:16.579Z SKIP C:\Users\nickh\pwdefault7 :: already gone
+2026-11-07T12:15:16.580Z SKIP C:\Users\nickh\pwdefault8 :: already gone
+2026-11-07T12:15:16.580Z SKIP C:\Users\nickh\pwparked1 :: already gone
+2026-11-07T12:15:16.580Z SKIP C:\Users\nickh\pwparked2 :: already gone
+2026-11-07T12:15:16.580Z SKIP C:\Users\nickh\pwparked3 :: already gone
+2026-11-07T12:15:16.580Z SKIP C:\Users\nickh\pwparked4 :: already gone
+2026-11-07T12:15:16.581Z SKIP C:\Users\nickh\pwparked5 :: already gone
+2026-11-07T12:15:16.581Z SKIP C:\Users\nickh\pwparked6 :: already gone
+2026-11-07T12:15:16.581Z SKIP C:\Users\nickh\pwparked7 :: already gone
+2026-11-07T12:15:16.581Z SKIP C:\Users\nickh\pwparked8 :: already gone
+2026-11-07T12:15:16.581Z SKIP C:\Users\nickh\ref-dist-step10 :: already gone
+2026-11-07T12:15:16.582Z SKIP C:\Users\nickh\sp1 :: already gone
+2026-11-07T12:15:16.582Z SKIP C:\Users\nickh\sp2 :: already gone
+2026-11-07T12:15:16.582Z SKIP C:\Users\nickh\sp3 :: already gone
+2026-11-07T12:15:16.582Z SKIP C:\Users\nickh\sp4 :: already gone
+2026-11-07T12:15:16.582Z SKIP C:\Users\nickh\sp5 :: already gone
+2026-11-07T12:15:16.584Z SKIP C:\Users\nickh\sp6 :: already gone
+2026-11-07T12:15:16.584Z SKIP C:\Users\nickh\stand :: touched 31 h ago (<48 h)
+2026-11-07T12:15:16.584Z SKIP C:\Users\nickh\t10-art :: already gone
+2026-11-07T12:15:16.585Z SKIP C:\Users\nickh\t10-probe :: already gone
+2026-11-07T12:15:16.585Z SKIP C:\Users\nickh\t10c-art :: already gone
+2026-11-07T12:15:16.585Z SKIP C:\Users\nickh\t10c-probe :: already gone
+2026-11-07T12:15:16.586Z SKIP C:\Users\nickh\t10e-art :: already gone
+2026-11-07T12:15:16.586Z SKIP C:\Users\nickh\t10e-merged :: touched 45 h ago (<48 h)
+2026-11-07T12:15:16.587Z SKIP C:\Users\nickh\t10e2-art :: already gone
+2026-11-07T12:15:16.587Z SKIP C:\Users\nickh\t10e2-box :: touched 45 h ago (<48 h)
+2026-11-07T12:15:16.588Z SKIP C:\Users\nickh\t10g-art :: touched 47 h ago (<48 h)
+2026-11-07T12:15:16.589Z SKIP C:\Users\nickh\t10g2-art :: touched 47 h ago (<48 h)
+2026-11-07T12:15:16.590Z SKIP C:\Users\nickh\t10g3-art :: touched 44 h ago (<48 h)
+2026-11-07T12:15:16.590Z SKIP C:\Users\nickh\t10g3-checks :: touched 45 h ago (<48 h)
+2026-11-07T12:15:16.591Z SKIP C:\Users\nickh\t10h-art :: touched 40 h ago (<48 h)
+2026-11-07T12:15:16.591Z SKIP C:\Users\nickh\t10h-box :: touched 40 h ago (<48 h)
+2026-11-07T12:15:16.594Z SKIP C:\Users\nickh\t10h-ctl-box :: touched 36 h ago (<48 h)
+2026-11-07T12:15:16.594Z SKIP C:\Users\nickh\t10hj-checks :: touched 40 h ago (<48 h)
+2026-11-07T12:15:16.595Z SKIP C:\Users\nickh\t10j-art :: touched 40 h ago (<48 h)
+2026-11-07T12:15:16.595Z SKIP C:\Users\nickh\t10v :: already gone
+2026-11-07T12:15:16.595Z SKIP C:\Users\nickh\t11-bisect :: already gone
+2026-11-07T12:15:16.595Z SKIP C:\Users\nickh\t11-pair :: already gone
+2026-11-07T12:15:16.595Z SKIP C:\Users\nickh\t11b-reds :: already gone
+2026-11-07T12:15:16.596Z SKIP C:\Users\nickh\t11c-actions :: already gone
+2026-11-07T12:15:16.596Z SKIP C:\Users\nickh\t11c-box :: already gone
+2026-11-07T12:15:16.596Z SKIP C:\Users\nickh\t12-actions :: already gone
+2026-11-07T12:15:16.596Z SKIP C:\Users\nickh\t12-base :: already gone
+2026-11-07T12:15:16.596Z SKIP C:\Users\nickh\t12-box :: already gone
+2026-11-07T12:15:16.597Z SKIP C:\Users\nickh\t12b-actions :: already gone
+2026-11-07T12:15:16.597Z SKIP C:\Users\nickh\t12b-box :: already gone
+2026-11-07T12:15:16.597Z SKIP C:\Users\nickh\t12b-reds :: already gone
+2026-11-07T12:15:16.597Z SKIP C:\Users\nickh\t12c-actions :: already gone
+2026-11-07T12:15:16.597Z SKIP C:\Users\nickh\t12c-box :: already gone
+2026-11-07T12:15:16.598Z SKIP C:\Users\nickh\t12c-ro :: already gone
+2026-11-07T12:15:16.598Z SKIP C:\Users\nickh\t12c-ro-actions :: already gone
+2026-11-07T12:15:16.598Z SKIP C:\Users\nickh\t12d-actions :: already gone
+2026-11-07T12:15:16.598Z SKIP C:\Users\nickh\t12d-box :: already gone
+2026-11-07T12:15:16.598Z SKIP C:\Users\nickh\t12e-actions :: already gone
+2026-11-07T12:15:16.599Z SKIP C:\Users\nickh\t12e-box :: already gone
+2026-11-07T12:15:16.599Z SKIP C:\Users\nickh\t12e-reds :: already gone
+2026-11-07T12:15:16.599Z SKIP C:\Users\nickh\t12e-tw :: already gone
+2026-11-07T12:15:16.599Z SKIP C:\Users\nickh\t12e-tw2 :: already gone
+2026-11-07T12:15:16.600Z SKIP C:\Users\nickh\t12f-actions :: already gone
+2026-11-07T12:15:16.600Z SKIP C:\Users\nickh\t12f-box :: already gone
+2026-11-07T12:15:16.600Z SKIP C:\Users\nickh\t12f-cpu :: already gone
+2026-11-07T12:15:16.600Z SKIP C:\Users\nickh\t12f-diag :: already gone
+2026-11-07T12:15:16.600Z SKIP C:\Users\nickh\t12f-fps :: already gone
+2026-11-07T12:15:16.600Z SKIP C:\Users\nickh\t12f-geo :: already gone
+2026-11-07T12:15:16.601Z SKIP C:\Users\nickh\t12f-pace :: already gone
+2026-11-07T12:15:16.601Z SKIP C:\Users\nickh\t12f-ser :: already gone
+2026-11-07T12:15:16.601Z SKIP C:\Users\nickh\t12f-ser2 :: already gone
+2026-11-07T12:15:16.601Z SKIP C:\Users\nickh\t12f-tz :: already gone
+2026-11-07T12:15:16.602Z SKIP C:\Users\nickh\t12g-actions :: already gone
+2026-11-07T12:15:16.602Z SKIP C:\Users\nickh\t12g-box :: already gone
+2026-11-07T12:15:16.602Z SKIP C:\Users\nickh\t12h-actions :: already gone
+2026-11-07T12:15:16.602Z SKIP C:\Users\nickh\t12h-b21-41294960432 :: already gone
+2026-11-07T12:15:16.602Z SKIP C:\Users\nickh\t12h-b21-41294962335 :: already gone
+2026-11-07T12:15:16.603Z SKIP C:\Users\nickh\t12h-b21-41294964114 :: already gone
+2026-11-07T12:15:16.603Z SKIP C:\Users\nickh\t12h-box :: already gone
+2026-11-07T12:15:16.603Z SKIP C:\Users\nickh\t12h-fx :: already gone
+2026-11-07T12:15:16.603Z SKIP C:\Users\nickh\t12h-fx2 :: already gone
+2026-11-07T12:15:16.603Z SKIP C:\Users\nickh\t12h-gk :: already gone
+2026-11-07T12:15:16.604Z SKIP C:\Users\nickh\t12i-actions :: already gone
+2026-11-07T12:15:16.604Z SKIP C:\Users\nickh\t12i-box :: already gone
+2026-11-07T12:15:16.604Z SKIP C:\Users\nickh\t12j-actions :: already gone
+2026-11-07T12:15:16.604Z SKIP C:\Users\nickh\t12j-box :: already gone
+2026-11-07T12:15:16.604Z SKIP C:\Users\nickh\t12j-ctl :: already gone
+2026-11-07T12:15:16.605Z SKIP C:\Users\nickh\t12j-rl :: already gone
+2026-11-07T12:15:16.605Z SKIP C:\Users\nickh\t12k-actions :: already gone
+2026-11-07T12:15:16.605Z SKIP C:\Users\nickh\t12k-box :: already gone
+2026-11-07T12:15:16.605Z SKIP C:\Users\nickh\t12k-c :: already gone
+2026-11-07T12:15:16.605Z SKIP C:\Users\nickh\t12k-i126 :: already gone
+2026-11-07T12:15:16.606Z SKIP C:\Users\nickh\t12k-sd :: already gone
+2026-11-07T12:15:16.606Z SKIP C:\Users\nickh\t12kr2-actions :: already gone
+2026-11-07T12:15:16.606Z SKIP C:\Users\nickh\t12kr2-box :: already gone
+2026-11-07T12:15:16.606Z SKIP C:\Users\nickh\t12kr2-sd :: already gone
+2026-11-07T12:15:16.607Z SKIP C:\Users\nickh\t12kr3-art :: already gone
+2026-11-07T12:15:16.607Z SKIP C:\Users\nickh\t12kr3-box :: already gone
+2026-11-07T12:15:16.607Z SKIP C:\Users\nickh\t138-art :: already gone
+2026-11-07T12:15:16.607Z SKIP C:\Users\nickh\t139-art :: already gone
+2026-11-07T12:15:16.607Z SKIP C:\Users\nickh\t139b :: already gone
+2026-11-07T12:15:16.608Z SKIP C:\Users\nickh\t139c-art :: already gone
+2026-11-07T12:15:16.608Z SKIP C:\Users\nickh\t150b-box :: already gone
+2026-11-07T12:15:16.608Z SKIP C:\Users\nickh\t45-art :: touched 43 h ago (<48 h)
+2026-11-07T12:15:16.609Z SKIP C:\Users\nickh\tarb-box :: already gone
+2026-11-07T12:15:16.609Z SKIP C:\Users\nickh\tfix-box :: already gone
+2026-11-07T12:15:16.610Z SKIP C:\Users\nickh\tg-art :: touched 40 h ago (<48 h)
+2026-11-07T12:15:16.611Z SKIP C:\Users\nickh\tguards :: touched 40 h ago (<48 h)
+2026-11-07T12:15:16.612Z SKIP C:\Users\nickh\ti-m :: touched 33 h ago (<48 h)
+2026-11-07T12:15:16.612Z SKIP C:\Users\nickh\tools :: KEEP / other-repo
+2026-11-07T12:15:16.612Z SKIP C:\Users\nickh\train-12base :: touched 0 h ago (<48 h)
+2026-11-07T12:15:16.613Z SKIP C:\Users\nickh\train-12k :: touched 0 h ago (<48 h)
+2026-11-07T12:15:16.615Z SKIP C:\Users\nickh\ts11 :: touched 27 h ago (<48 h)
+2026-11-07T12:15:16.615Z SKIP C:\Users\nickh\ts2 :: touched 31 h ago (<48 h)
+2026-11-07T12:15:16.615Z SKIP C:\Users\nickh\ts3r2 :: touched 15 h ago (<48 h)
+2026-11-07T12:15:16.616Z SKIP C:\Users\nickh\tw-act :: already gone
+2026-11-07T12:15:16.616Z SKIP C:\Users\nickh\tw-act2 :: already gone
+2026-11-07T12:15:16.616Z SKIP C:\Users\nickh\tw-act3 :: already gone
+2026-11-07T12:15:16.617Z SKIP C:\Users\nickh\writer-studio-fx17-red :: touched 0 h ago (<48 h)
+2026-11-07T12:15:16.617Z SKIP C:\Users\nickh\wrizo-cd2-review :: touched 0 h ago (<48 h)
+2026-11-07T12:15:16.617Z SKIP C:\Users\nickh\wrizo-fx3-review :: touched 0 h ago (<48 h)
+2026-11-07T12:15:16.618Z SKIP C:\Users\nickh\wrizo-s1check :: touched 0 h ago (<48 h)
+2026-11-07T12:15:16.618Z SKIP C:\Users\nickh\ws-c13-11-trial :: touched 31 h ago (<48 h)
+2026-11-07T12:15:16.619Z SKIP C:\Users\nickh\ws-tools-frames :: already gone
+2026-11-07T12:15:16.913Z END step3: removed/moved 87, skipped 259, freed 0 GB; C: free now 97.61 GB

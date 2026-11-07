@@ -1,0 +1,1577 @@
+{
+ "removed": [
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\a11y-signin",
+   "kb": 0,
+   "remnant": 1,
+   "note": "finished by pass 1"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\a11y-tutor-live-region",
+   "kb": 0,
+   "remnant": 1,
+   "note": "finished by pass 1"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\add-scenes",
+   "kb": 0,
+   "remnant": 1,
+   "note": "finished by pass 1"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\arrival-signin",
+   "kb": 0,
+   "remnant": 1,
+   "note": "finished by pass 1"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b13",
+   "kb": 0,
+   "remnant": 1,
+   "note": "finished by pass 1"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\b17",
+   "kb": 0,
+   "remnant": 1,
+   "note": "finished by pass 1"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\batch-nine-integ",
+   "kb": 206779,
+   "head": "cb8ed980",
+   "branch": "batch-nine-integ",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bg",
+   "kb": 418149,
+   "head": "038f2b2e",
+   "branch": "box-token-hash",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bg-starters-park",
+   "kb": 209034,
+   "head": "8fec130d",
+   "branch": "bg-starters-park"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bg2-beginnings-seen",
+   "kb": 156992,
+   "head": "e6b8e9aa",
+   "branch": "bg2-beginnings-seen",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\big-projects-1a",
+   "kb": 410598,
+   "head": "5957492e",
+   "branch": "big-projects-1a",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bg1-beginnings",
+   "kb": 156804,
+   "head": "6140d92a",
+   "branch": "bg1-beginnings",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\big-projects-plan",
+   "kb": 245571,
+   "head": "8b9bab8a",
+   "branch": "big-projects-plan"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bis",
+   "kb": 386798,
+   "head": "76e1afc0",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\big-projects-2",
+   "kb": 410654,
+   "head": "42cfc2af",
+   "branch": "big-projects-2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\board-context-menu",
+   "kb": 386994,
+   "head": "6f82b466",
+   "branch": "board-context-menu",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\board-click-to-create",
+   "kb": 319776,
+   "head": "7ed1963b",
+   "branch": "board-click-to-create",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\card-resize-axis",
+   "kb": 367013,
+   "head": "d8fd21ff",
+   "branch": "card-resize-axis",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cf-ship",
+   "kb": 326870,
+   "head": "74b82fcc",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ci-actions",
+   "kb": 463669,
+   "head": "72ba5d37",
+   "branch": "ci/actions-harness-r4",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\connector-a",
+   "kb": 353665,
+   "head": "54ac5b60",
+   "branch": "connector-a",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\connector-b",
+   "kb": 167578,
+   "head": "49631a01",
+   "branch": "connector-b"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\connector-b-build",
+   "kb": 402209,
+   "head": "e2a7aaed",
+   "branch": "connector-b-build",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cp-fix",
+   "kb": 254009,
+   "head": "2f906d87",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\csp-enforce",
+   "kb": 194464,
+   "head": "d1291bb4",
+   "branch": "csp-enforce",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\csp-report-only",
+   "kb": 194444,
+   "head": "d587e609",
+   "branch": "csp-report-only",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cx-green",
+   "kb": 297725,
+   "head": "35fe9e34",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cx-red",
+   "kb": 297713,
+   "head": "edbefaa1",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cx2-green",
+   "kb": 297725,
+   "head": "93b0bb70",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cx2-red",
+   "kb": 297729,
+   "head": "0a5611fd",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\dep-bumps",
+   "kb": 196001,
+   "head": "1a02b550",
+   "branch": "dep-bumps",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\df1-deflake",
+   "kb": 156352,
+   "head": "24c61734",
+   "branch": "df1-deflake",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\dfg",
+   "kb": 245993,
+   "head": "6b1ab519",
+   "branch": "HEAD"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\dg-base",
+   "kb": 240886,
+   "head": "d2fcb381",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\dm",
+   "kb": 400609,
+   "head": "cc842512",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\dm2",
+   "kb": 409070,
+   "head": "a68b527f",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\dmp",
+   "kb": 406352,
+   "head": "43df385d",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\dp-main",
+   "kb": 360689,
+   "head": "7c4a5ce8",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\drawer-ghost-fix",
+   "kb": 78757,
+   "head": "443376f1",
+   "branch": "drawer-ghost-fix"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\elc2",
+   "kb": 411473,
+   "head": "7eaf839d",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\e3-park",
+   "kb": 111065,
+   "head": "68353629",
+   "branch": "e3-park"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\empty-line-caret",
+   "kb": 403033,
+   "head": "20052831",
+   "branch": "empty-line-caret",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\exp1-amend",
+   "kb": 16902,
+   "head": "b52e1517",
+   "branch": "plan-exp1-amend"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\exp1-q1",
+   "kb": 16914,
+   "head": "551dba41",
+   "branch": "plan-exp1-q1"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\exp1-connect",
+   "kb": 192418,
+   "head": "914e0b39",
+   "branch": "exp1-connect-text",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\exp1-r2",
+   "kb": 223160,
+   "head": "8d824bde",
+   "branch": "exp1-connect-text-r2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fix-signin-live",
+   "kb": 45492,
+   "head": "754b0c5b",
+   "branch": "fix-signin-live-double"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\exp1-vt",
+   "kb": 207015,
+   "head": "a5061f98",
+   "branch": "exp1-visibletext",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fix-tutor-sr-check",
+   "kb": 45492,
+   "head": "78bb7bc1",
+   "branch": "fix-tutor-sr-check"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\flux-v2",
+   "kb": 413955,
+   "head": "838c1b9b",
+   "branch": "flux-v2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\flux-inputs",
+   "kb": 416761,
+   "head": "deeabe91",
+   "branch": "flux-inputs",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fx13-board-in-the-room",
+   "kb": 156392,
+   "head": "acbabbe2",
+   "branch": "fx13-board-in-the-room",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fx17-s3-fixture",
+   "kb": 224348,
+   "head": "15a7167e",
+   "branch": "fx17-s3-fixture"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fx11-boards-hands",
+   "kb": 156056,
+   "head": "fe3ce82f",
+   "branch": "fx11-boards-hands",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\guest-client",
+   "kb": 206867,
+   "head": "596d64f5",
+   "branch": "guest-client",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\guest-client-r2",
+   "kb": 217745,
+   "head": "12601d24",
+   "branch": "guest-client-r2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\glue-9",
+   "kb": 436097,
+   "head": "7d5e689a",
+   "branch": "glue-9",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\guest-client-r3",
+   "kb": 217861,
+   "head": "e50456cc",
+   "branch": "guest-client-r3",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\guest-login",
+   "kb": 200380,
+   "head": "de1f170c",
+   "branch": "guest-login",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\guest-client-r4",
+   "kb": 211463,
+   "head": "e4b596c2",
+   "branch": "drafts-integrity",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\guided-w1",
+   "kb": 432052,
+   "head": "32ad6997",
+   "branch": "guided-w1",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\guided-w3",
+   "kb": 419940,
+   "head": "295cd5da",
+   "branch": "guided-w3",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\guest-run",
+   "kb": 207322,
+   "head": "b3c0ded1",
+   "branch": "guest-run-local",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\harness-expired-checks",
+   "kb": 211653,
+   "head": "b3508224",
+   "branch": "harness-expired-checks"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\i84-control",
+   "kb": 157144,
+   "head": "23ffadba",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\hbh",
+   "kb": 401918,
+   "head": "c8851735",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\item157-ink-sheet",
+   "kb": 164115,
+   "head": "fb61ba54",
+   "branch": "item157-ink-sheet",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\item163-in",
+   "kb": 192223,
+   "head": "71ee4279",
+   "branch": "item163-location-in",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\item138-pin",
+   "kb": 192231,
+   "head": "5318b12f",
+   "branch": "item138-pin-tall",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\item171b-board-ink",
+   "kb": 17489,
+   "head": "67c8ad5e",
+   "branch": "item171b-board-ink"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\item171-typewriter-scope",
+   "kb": 164299,
+   "head": "980360c3",
+   "branch": "item171-typewriter-scope",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\item176-picker",
+   "kb": 164419,
+   "head": "292f661e",
+   "branch": "item176-picker-says-board",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\item204-storage",
+   "kb": 266394,
+   "head": "13cd4157",
+   "branch": "item204-proofing-storage",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\item196-download-wait",
+   "kb": 166823,
+   "head": "6e61980f",
+   "branch": "item196-download-wait",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\item82-fixb-j5-seam",
+   "kb": 158321,
+   "head": "33c062f3",
+   "branch": "item82-fixb-j5-seam",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\k10-reanchor",
+   "kb": 211299,
+   "head": "9acc8a71",
+   "branch": "k10-reanchor",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ledger-desk",
+   "kb": 262988,
+   "head": "4820d994",
+   "branch": "HEAD"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\item84-roster",
+   "kb": 156980,
+   "head": "8685d3fe",
+   "branch": "item84-roster",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\logout-flush",
+   "kb": 217613,
+   "head": "86c5892f",
+   "branch": "logout-flush",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\main-ctl",
+   "kb": 256893,
+   "head": "c5e20fe4",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\m3-rhizome-roams",
+   "kb": 156148,
+   "head": "ccf643bf",
+   "branch": "m3-rhizome-roams",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\outline-blur-data",
+   "kb": 430828,
+   "head": "4d21bdfc",
+   "branch": "outline-blur-data",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\page-scroll-return",
+   "kb": 290631,
+   "head": "7e8a9022",
+   "branch": "page-scroll-return",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\obd-red",
+   "kb": 421878,
+   "head": "39e3a4ab",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\pb1-born-on-first-word",
+   "kb": 157236,
+   "head": "af475820",
+   "branch": "pb1-born-on-first-word",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\phase1-drawers",
+   "kb": 285639,
+   "head": "fd51ab84",
+   "branch": "phase1-drawers",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\page-templates",
+   "kb": 405305,
+   "head": "8e80d606",
+   "branch": "page-templates",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\plan-144-amend3",
+   "kb": 17106,
+   "head": "8c213bb3",
+   "branch": "plan-144-amend3"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\plan-144-nest",
+   "kb": 17126,
+   "head": "7888325f",
+   "branch": "plan-144-nest"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\plan-144-amend",
+   "kb": 17094,
+   "head": "cc481939",
+   "branch": "plan-144-amend"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\plan-166-guideline",
+   "kb": 17126,
+   "head": "3ef089de",
+   "branch": "plan-166-guideline"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\plan-165-amend",
+   "kb": 17305,
+   "head": "7aa644c6",
+   "branch": "plan-165-amend"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\plan-168-perm",
+   "kb": 17329,
+   "head": "87eae9ad",
+   "branch": "plan-168-delete-permanently"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\plan-171b-revise",
+   "kb": 17062,
+   "head": "9873bea6",
+   "branch": "plan-171b-revise-v2"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\plan-171b-pass",
+   "kb": 17046,
+   "head": "d04ce541",
+   "branch": "plan-171b-design-pass"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\plan-180-pass",
+   "kb": 17369,
+   "head": "9584680b",
+   "branch": "plan-180-carry-pass"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\plan-181-pass",
+   "kb": 17373,
+   "head": "d073275e",
+   "branch": "plan-181-file-pass"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\plan-204-proofing",
+   "kb": 17657,
+   "head": "3f406778",
+   "branch": "plan-204-proofing"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\plan-186-menu",
+   "kb": 17737,
+   "head": "e52a265e",
+   "branch": "plan-186-base-menu"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\plan-207-fonts",
+   "kb": 17593,
+   "head": "3bfb70a3",
+   "branch": "plan-207-fonts"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\plan-207-amend",
+   "kb": 17657,
+   "head": "d4415f3c",
+   "branch": "plan-207-amend"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\plan-guest-login",
+   "kb": 44575,
+   "head": "368423a1",
+   "branch": "plan-guest-login"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\plan-menus-rulings",
+   "kb": 17313,
+   "head": "137dc6ea",
+   "branch": "plan-menus-rulings"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\plan-vw2-rows",
+   "kb": 17353,
+   "head": "496c20d9",
+   "branch": "plan-vw2-rows"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\plan-library-shelf-journal",
+   "kb": 42650,
+   "head": "e669b847",
+   "branch": "plan-library-shelf-journal"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ps-green",
+   "kb": 297713,
+   "head": "7e8a9022",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\polish-10-ink",
+   "kb": 430788,
+   "head": "b632491e",
+   "branch": "polish-10-ink",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ps-ship",
+   "kb": 330024,
+   "head": "fe7ac9f6",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\pub0-survey",
+   "kb": 42638,
+   "head": "5ebe73d5",
+   "branch": "pub0-survey"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\pub1-skeleton",
+   "kb": 192531,
+   "head": "b74e172e",
+   "branch": "pub1-skeleton",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\pw1-boards-connected",
+   "kb": 161851,
+   "head": "57a0878c",
+   "branch": "pw1-boards-connected",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\pw1-errata",
+   "kb": 162015,
+   "head": "2426dd08",
+   "branch": "pw1-errata",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\pw1-records",
+   "kb": 12562,
+   "head": "826f7efe",
+   "branch": "pw1-records"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\pw2-nesting-transfer",
+   "kb": 163883,
+   "head": "d226e09a",
+   "branch": "pw2-nesting-transfer",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\resume-plan",
+   "kb": 239639,
+   "head": "dbb4dc24",
+   "branch": "resume-on-open-plan"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\revise-spelling",
+   "kb": 17569,
+   "head": "cbd4dc6d",
+   "branch": "revise-spelling"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\resume-on-open",
+   "kb": 402682,
+   "head": "0e55de94",
+   "branch": "resume-on-open",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\rhizome-sprout",
+   "kb": 403049,
+   "head": "9bbd82ef",
+   "branch": "rhizome-sprout",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\rr-green",
+   "kb": 297709,
+   "head": "55e61a52",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\rgm",
+   "kb": 403333,
+   "head": "ee189080",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\rr-red",
+   "kb": 297689,
+   "head": "52d29e84",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\rr2-red",
+   "kb": 297709,
+   "head": "b769d4fd",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\rr2-green",
+   "kb": 297689,
+   "head": "1f13bb84",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\run-exp1",
+   "kb": 216800,
+   "head": "8d824bde",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\rv",
+   "kb": 399848,
+   "head": "409d9e3f",
+   "branch": "revert-tutor-drawer-mirror",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\run-drawers",
+   "kb": 240898,
+   "head": "95f5ed70",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\server-hardening",
+   "kb": 192398,
+   "head": "b9d3db29",
+   "branch": "server-hardening",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\sh-pair",
+   "kb": 246054,
+   "head": "771adccb",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\sc2-the-clock",
+   "kb": 158465,
+   "head": "ecd37bf2",
+   "branch": "sc2-s5-memo",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\sync-proof-words",
+   "kb": 405608,
+   "head": "8349fd64",
+   "branch": "sync-proof-words",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\templates-plan",
+   "kb": 240794,
+   "head": "e618fefd",
+   "branch": "page-templates-plan"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\sync-integrity",
+   "kb": 192402,
+   "head": "6da0964f",
+   "branch": "sync-integrity",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tu5-bible",
+   "kb": 155992,
+   "head": "ba364b81",
+   "branch": "tu5-bible",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tutor20-live-defect",
+   "kb": 190365,
+   "head": "3034f904",
+   "branch": "tutor20-live-defect",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tu2-listener",
+   "kb": 154448,
+   "head": "45ea10e9",
+   "branch": "tu2-listener",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\w1-board-reds",
+   "kb": 435507,
+   "head": "807f99d1",
+   "branch": "w1-board-reds",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\w5-gaps-rewards",
+   "kb": 435950,
+   "head": "70ffd12d",
+   "branch": "w5-gaps-rewards",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\vw1-rail-brief",
+   "kb": 12946,
+   "head": "7508d91f",
+   "branch": "plan-vw1-rail-brief"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\walk-settle",
+   "kb": 217777,
+   "head": "c35da021",
+   "branch": "walk-settle",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\bis-h2",
+   "kb": 427995,
+   "head": "3d3b979b",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\bis-main",
+   "kb": 436989,
+   "head": "db8dcc00",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-3",
+   "kb": 299232,
+   "head": "f15c9af4",
+   "branch": "c13-3-ledger-r2"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-main",
+   "kb": 205354,
+   "head": "92918c93",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\bis-r2",
+   "kb": 437013,
+   "head": "587f7b77",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\flux3-s0",
+   "kb": 473680,
+   "head": "38a58ca8",
+   "branch": "flux3/s0",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\flux3-s1",
+   "kb": 207008,
+   "head": "b4534e83",
+   "branch": "flux3/s1-layer",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\ci-merge",
+   "kb": 471248,
+   "head": "e5cf5541",
+   "branch": "ci-merge",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-10b",
+   "kb": 470042,
+   "head": "ace052b6",
+   "branch": "train-10b",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-10c",
+   "kb": 469994,
+   "head": "5f51e97f",
+   "branch": "train-10c",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\sample-seed",
+   "kb": 470649,
+   "head": "65737100",
+   "branch": "sample-seed",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-11c",
+   "kb": 470643,
+   "head": "2dbb6752",
+   "branch": "train-11c",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-12",
+   "kb": 471581,
+   "head": "91ac7254",
+   "branch": "train-12",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-10d",
+   "kb": 470026,
+   "head": "8dc5394b",
+   "branch": "train-10d",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-12c",
+   "kb": 471988,
+   "head": "175ab289",
+   "branch": "train-12c",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-12f",
+   "kb": 472965,
+   "head": "6c58aa10",
+   "branch": "train-12f",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-12d",
+   "kb": 472439,
+   "head": "ce73d615",
+   "branch": "train-12d",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-12h",
+   "kb": 474318,
+   "head": "3a738225",
+   "branch": "train-12h",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-12i",
+   "kb": 205005,
+   "head": "38105480",
+   "branch": "train-12i",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-12g",
+   "kb": 473323,
+   "head": "2b06e484",
+   "branch": "train-12g",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-12k-r2",
+   "kb": 206925,
+   "head": "6b941a90",
+   "branch": "train-12k-r2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-12k-r3",
+   "kb": 207525,
+   "head": "d45f5679",
+   "branch": "train-12k-r3",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-12j",
+   "kb": 205744,
+   "head": "622df16e",
+   "branch": "train-12j",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-c13-7",
+   "kb": 206335,
+   "head": "53c517bf",
+   "branch": "train-c13-7",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-c13-8",
+   "kb": 207209,
+   "head": "e99e20f9",
+   "branch": "train-c13-8",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-c13-6",
+   "kb": 205467,
+   "head": "9816d75c",
+   "branch": "train-c13-6",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\url-search-optin",
+   "kb": 32899,
+   "head": "fe7380d8",
+   "branch": "harness/url-search-optin"
+  },
+  {
+   "path": "C:\\Users\\nickh\\w2-wt",
+   "kb": 263092,
+   "head": "716794ac",
+   "branch": "guided-w2-write-place",
+   "remnant": 0
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-acct",
+   "kb": 459859,
+   "head": "239ec9fc",
+   "branch": "account-tools",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-bctx",
+   "kb": 187379,
+   "head": "0df8bf30",
+   "branch": "cursor/board-context-menu"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-board-start",
+   "kb": 164384,
+   "head": "f437938b",
+   "branch": "cursor/board-start"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-bigproj",
+   "kb": 247593,
+   "head": "aab45ec0",
+   "branch": "cursor/big-projects-mockup"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-cardport",
+   "kb": 402925,
+   "head": "22225575",
+   "branch": "in-app-copy-format",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-caret",
+   "kb": 247056,
+   "head": "985588ba",
+   "branch": "cursor/empty-line-caret"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-boardkinds",
+   "kb": 253004,
+   "head": "b8f4b8fb",
+   "branch": "cursor/board-kinds-mockup"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-cursor",
+   "kb": 45720,
+   "head": "514913c0",
+   "branch": "cursor/rail-mockup"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-d82",
+   "kb": 157297,
+   "head": "9b302739",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-connector",
+   "kb": 167594,
+   "head": "3b437b20",
+   "branch": "cursor/connector"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-drawer-handles",
+   "kb": 207003,
+   "head": "ef714d43",
+   "branch": "cursor/drawer-handles",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-flux-flicker",
+   "kb": 57098,
+   "head": "0eb36a6a",
+   "branch": "cursor/flux-flicker-mockup"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-df11",
+   "kb": 157008,
+   "head": "30fc2ca4",
+   "branch": "df1-1-rider",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-fluxv2",
+   "kb": 247911,
+   "head": "7a020755",
+   "branch": "cursor/flux-v2-mockup"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-fonts",
+   "kb": 211665,
+   "head": "6cc5f529",
+   "branch": "cursor/font-choices"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-flux-glitch",
+   "kb": 247076,
+   "head": "5f88f549",
+   "branch": "cursor/flux-glitch-shipped"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-fx18",
+   "kb": 7439,
+   "head": "0ceb0802",
+   "branch": "fx18-chrome-aligned"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-fx17",
+   "kb": 433444,
+   "head": "243cf8f0",
+   "branch": "page-size-r3",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-graftdoors",
+   "kb": 247213,
+   "head": "c4f34eb0",
+   "branch": "cursor/graft-doors-mockup"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-hb2",
+   "kb": 7227,
+   "head": "9ff65643",
+   "branch": "hb2-lite-landing"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-help",
+   "kb": 240580,
+   "head": "4ad7f3c7",
+   "branch": "cursor/help-buttons"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-nomadv1",
+   "kb": 249016,
+   "head": "33752c99",
+   "branch": "cursor/nomad-v1-mockup"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-nomad",
+   "kb": 247068,
+   "head": "6cf291a3",
+   "branch": "cursor/nomad-progress-mockup"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-nomadv2",
+   "kb": 250600,
+   "head": "939d455c",
+   "branch": "cursor/nomad-v2-mockup"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-p10",
+   "kb": 471554,
+   "head": "0437f48a",
+   "branch": "polish10-board-r6",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-p10d",
+   "kb": 473001,
+   "head": "9e7f037d",
+   "branch": "polish10-linkdock-r10",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-p10c",
+   "kb": 471510,
+   "head": "212fbc35",
+   "branch": "polish10-caret-r7",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-p10h",
+   "kb": 468643,
+   "head": "bc6cf256",
+   "branch": "polish10-hint",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-p10k",
+   "kb": 470375,
+   "head": "9c12abab",
+   "branch": "polish10-card",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-p10f",
+   "kb": 471937,
+   "head": "48bf073e",
+   "branch": "polish10-format-r9",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-p10r",
+   "kb": 468647,
+   "head": "bc6cf256",
+   "branch": "polish10-recede",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-p10s",
+   "kb": 468651,
+   "head": "bc6cf256",
+   "branch": "polish10-scrollbar",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-p10p",
+   "kb": 471872,
+   "head": "fcd99d6a",
+   "branch": "polish10-page-r9",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-pagesize",
+   "kb": 251635,
+   "head": "e3c4e462",
+   "branch": "cursor/page-size-mockup"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-r7",
+   "kb": 46188,
+   "head": "1eb27733",
+   "branch": "cursor/r7-mockup"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-p10t",
+   "kb": 470407,
+   "head": "68c93175",
+   "branch": "polish10-timing",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-rhizome",
+   "kb": 240208,
+   "head": "c1be3716",
+   "branch": "rhizome-flash-fade",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-scrollbar-mockup",
+   "kb": 82013,
+   "head": "c67f1bdb",
+   "branch": "cursor/scrollbar-mockup"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-sidepanels",
+   "kb": 245552,
+   "head": "472ab916",
+   "branch": "cursor/side-panels-mockup"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-templates-mockup",
+   "kb": 61689,
+   "head": "2e3420db",
+   "branch": "cursor/templates-mockup"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-templates2",
+   "kb": 239462,
+   "head": "0fc9afef",
+   "branch": "cursor/templates"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-theme-words-mockup",
+   "kb": 82017,
+   "head": "6741565d",
+   "branch": "cursor/theme-words-mockup"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-themepick",
+   "kb": 247396,
+   "head": "1a057bea",
+   "branch": "cursor/theme-picker-mockup"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-typewriter-mockup",
+   "kb": 78889,
+   "head": "34d94a94",
+   "branch": "cursor/typewriter-mockup"
+  },
+  {
+   "path": "C:\\Users\\nickh\\wrizo-hb1",
+   "kb": 140457,
+   "head": "fc43f77e",
+   "branch": "hb1-threshold",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-word-diet-ui",
+   "kb": 127813,
+   "head": "5933454c",
+   "branch": "cursor/word-diet-ui"
+  },
+  {
+   "path": "C:\\Users\\nickh\\ws-c13-12f",
+   "kb": 205708,
+   "head": "8e45c060",
+   "branch": "c13-12f-sprout-invite-r",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\ws-c13-1",
+   "kb": 299207,
+   "head": "c135a620",
+   "branch": "c13-1-branches"
+  },
+  {
+   "path": "C:\\Users\\nickh\\ws-c13-2",
+   "kb": 299131,
+   "head": "5bfa48c2",
+   "branch": "c13-2-map"
+  },
+  {
+   "path": "C:\\Users\\nickh\\ws-c13-4",
+   "kb": 299200,
+   "head": "2bae8561",
+   "branch": "c13-4-docs-fold"
+  },
+  {
+   "path": "C:\\Users\\nickh\\ws-c13-3",
+   "kb": 299084,
+   "head": "9c14c8dd",
+   "branch": "c13-3-ledger"
+  },
+  {
+   "path": "C:\\Users\\nickh\\ws-c13-4b",
+   "kb": 473706,
+   "head": "13bff96a",
+   "branch": "c13-4b-fx1-addendum",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\ws-c13-4c",
+   "kb": 29836,
+   "head": "4fc41529",
+   "branch": "c13-4c-evidence-ignore"
+  },
+  {
+   "path": "C:\\Users\\nickh\\ws-c13-5",
+   "kb": 206690,
+   "head": "5119bdf0",
+   "branch": "HEAD",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\ws-c13-4d",
+   "kb": 30435,
+   "head": "4e9fc471",
+   "branch": "c13-4d-links-r"
+  },
+  {
+   "path": "C:\\Users\\nickh\\ws-c13-5b",
+   "kb": 30785,
+   "head": "06401428",
+   "branch": "c13-5-probe-origin"
+  },
+  {
+   "path": "C:\\Users\\nickh\\ws-c13-6",
+   "kb": 205454,
+   "head": "2d021e8b",
+   "branch": "c13-6-css-split",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\ws-c13-6-map",
+   "kb": 31098,
+   "head": "e8341b5f",
+   "branch": "c13-6-map-link"
+  },
+  {
+   "path": "C:\\Users\\nickh\\ws-c13-7",
+   "kb": 206338,
+   "head": "b32c673e",
+   "branch": "c13-7-css-comments-r",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\ws-c13-9",
+   "kb": 206960,
+   "head": "6a2cd218",
+   "branch": "c13-9-ts-comments-board",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\ws-c13-8",
+   "kb": 206610,
+   "head": "38755d93",
+   "branch": "c13-8-css-themes",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\ws-c13-9c",
+   "kb": 207533,
+   "head": "8618c18f",
+   "branch": "c13-9-ts-comments-components",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\ws-c13-9r",
+   "kb": 208372,
+   "head": "5d3dc8bf",
+   "branch": "c13-9-ts-comments-store-r2",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\ws-c13-9p",
+   "kb": 207535,
+   "head": "e56dcf0a",
+   "branch": "c13-9-ts-comments-pages",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\ws-c13-9s",
+   "kb": 207713,
+   "head": "a2c6f7f6",
+   "branch": "c13-9-ts-comments-store",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\ws-c13-brief-12f",
+   "kb": 30789,
+   "head": "aa21bfee",
+   "branch": "c13-brief-12f-sprout"
+  },
+  {
+   "path": "C:\\Users\\nickh\\ws-c13-9t",
+   "kb": 207605,
+   "head": "ef883117",
+   "branch": "c13-9-ts-comments-rest",
+   "remnant": 1
+  },
+  {
+   "path": "C:\\Users\\nickh\\ws-cleanup",
+   "kb": 298773,
+   "head": "40ca83c8",
+   "branch": "cleanup/survey-r3"
+  }
+ ],
+ "skipped": [
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bc-alone",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\machina-mockup",
+   "why": "a live process mentions this path"
+  }
+ ],
+ "freedKB": 55508462,
+ "freedGB": 52.94
+}

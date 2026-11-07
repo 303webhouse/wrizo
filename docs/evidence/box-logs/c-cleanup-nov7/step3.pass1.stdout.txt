@@ -1,0 +1,352 @@
+2026-11-07T11:41:10.141Z MODE step3; C: free 86.66 GB
+2026-11-07T11:41:10.844Z git fetch origin: ok
+2026-11-07T11:41:11.350Z stale remote-tracking refs (gone from origin, ignored for "on origin"): 0
+2026-11-07T11:41:11.395Z origin/main = 74e68a5c
+2026-11-07T11:41:11.791Z step 3: 346 NON-GIT candidates from census 1
+2026-11-07T11:41:26.101Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\agent-a2b0ac59ec4e2e3a1 :: copied, source not fully removed
+2026-11-07T11:41:39.638Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\agent-a2eb44d7a35b18893 :: copied, source not fully removed
+2026-11-07T11:41:53.436Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\agent-a426bb3f17653a64a :: copied, source not fully removed
+2026-11-07T11:42:07.254Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\agent-a4519352e42c89a66 :: copied, source not fully removed
+2026-11-07T11:42:21.167Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\agent-a7c317041e978cb3b :: copied, source not fully removed
+2026-11-07T11:42:35.355Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\agent-a88f5a9272c0d668f :: copied, source not fully removed
+2026-11-07T11:42:49.850Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\agent-a943e01cd771af5d4 :: copied, source not fully removed
+2026-11-07T11:43:04.270Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\agent-acdf459267afe9d99 :: copied, source not fully removed
+2026-11-07T11:43:18.819Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\agent-afd07d0d8d7d63eec :: copied, source not fully removed
+2026-11-07T11:43:18.840Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bcm-boxtomb.txt :: robocopy error 16
+2026-11-07T11:43:18.856Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bcm-build.txt :: robocopy error 16
+2026-11-07T11:43:18.870Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bcm-install.txt :: robocopy error 16
+2026-11-07T11:43:18.885Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bcm2-boxtomb.txt :: robocopy error 16
+2026-11-07T11:43:18.899Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bcm2-build.txt :: robocopy error 16
+2026-11-07T11:43:18.915Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bcm2-install.txt :: robocopy error 16
+2026-11-07T11:43:18.929Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bis-build.txt :: robocopy error 16
+2026-11-07T11:43:18.944Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bis-build0.txt :: robocopy error 16
+2026-11-07T11:43:18.957Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bis-install.txt :: robocopy error 16
+2026-11-07T11:43:38.965Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bisect-pre-fx10 :: copied, source not fully removed
+2026-11-07T11:43:54.369Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bm1-verify :: copied, source not fully removed
+2026-11-07T11:43:54.387Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\cb2-box-tombstones.txt :: robocopy error 16
+2026-11-07T11:43:54.401Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\cb2-build.txt :: robocopy error 16
+2026-11-07T11:43:54.417Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\cb2-install.txt :: robocopy error 16
+2026-11-07T11:43:54.431Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\cb2-page-links.txt :: robocopy error 16
+2026-11-07T11:43:54.445Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\cb2-pagelinksdb.txt :: robocopy error 16
+2026-11-07T11:43:54.459Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\cb2-server-build.txt :: robocopy error 16
+2026-11-07T11:43:54.474Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\cbb-boxtomb.txt :: robocopy error 16
+2026-11-07T11:43:54.488Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\cbb-build.txt :: robocopy error 16
+2026-11-07T11:43:54.503Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\cbb-install.txt :: robocopy error 16
+2026-11-07T11:43:54.516Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\cbb-pagelinks.txt :: robocopy error 16
+2026-11-07T11:43:54.532Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\cbb-server-build.txt :: robocopy error 16
+2026-11-07T11:43:54.546Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\cbp-box-tombstones.txt :: robocopy error 16
+2026-11-07T11:43:54.561Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\cbp-build.txt :: robocopy error 16
+2026-11-07T11:43:54.576Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\cbp-install.txt :: robocopy error 16
+2026-11-07T11:43:54.591Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\cbp-page-links.txt :: robocopy error 16
+2026-11-07T11:43:54.605Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\cbp-pagelinksdb.txt :: robocopy error 16
+2026-11-07T11:43:54.620Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\cbp-server-build.txt :: robocopy error 16
+2026-11-07T11:43:54.633Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\dm-build.txt :: robocopy error 16
+2026-11-07T11:43:54.649Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\dm-install.txt :: robocopy error 16
+2026-11-07T11:44:10.257Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\e1-1-harden :: copied, source not fully removed
+2026-11-07T11:44:10.286Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\fl3-build.txt :: robocopy error 16
+2026-11-07T11:44:10.300Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\fl3-install.txt :: robocopy error 16
+2026-11-07T11:44:10.316Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\fp-build.txt :: robocopy error 16
+2026-11-07T11:44:10.329Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\fp-install.txt :: robocopy error 16
+2026-11-07T11:44:10.345Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\fsp-build.txt :: robocopy error 16
+2026-11-07T11:44:10.358Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\fsp-check.txt :: robocopy error 16
+2026-11-07T11:44:10.374Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\fsp-install.txt :: robocopy error 16
+2026-11-07T11:44:10.387Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\fts-build.txt :: robocopy error 16
+2026-11-07T11:44:10.402Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\fts-fsc.txt :: robocopy error 16
+2026-11-07T11:44:10.416Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\fts-install.txt :: robocopy error 16
+2026-11-07T11:44:10.431Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\hb-build.txt :: robocopy error 16
+2026-11-07T11:44:10.445Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\hb-install.txt :: robocopy error 16
+2026-11-07T11:44:10.461Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\i112d-install.txt :: robocopy error 16
+2026-11-07T11:44:10.474Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\item207core-main.txt :: robocopy error 16
+2026-11-07T11:44:10.490Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\lane3-boxtomb.txt :: robocopy error 16
+2026-11-07T11:44:10.504Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\lane3-build.txt :: robocopy error 16
+2026-11-07T11:44:10.520Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\lane3-fsc.txt :: robocopy error 16
+2026-11-07T11:44:10.534Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\lane3-install.txt :: robocopy error 16
+2026-11-07T11:44:10.550Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\lbs-install.txt :: robocopy error 16
+2026-11-07T11:44:10.607Z MOVED C:\Users\nickh\writer-studio\.claude\worktrees\m4-root-that-shows (0.00 GB) -> F:\wrizo-archive\evidence\claude-worktrees\m4-root-that-shows
+2026-11-07T11:44:10.626Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\prim-build.txt :: robocopy error 16
+2026-11-07T11:44:10.640Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\prim2-build.txt :: robocopy error 16
+2026-11-07T11:44:10.656Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\prim3-build.txt :: robocopy error 16
+2026-11-07T11:44:10.670Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\prim4-build.txt :: robocopy error 16
+2026-11-07T11:44:10.684Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\prim5-build.txt :: robocopy error 16
+2026-11-07T11:44:10.698Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\prim6-build.txt :: robocopy error 16
+2026-11-07T11:44:10.713Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\ro-build.txt :: robocopy error 16
+2026-11-07T11:44:10.727Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\ro-install.txt :: robocopy error 16
+2026-11-07T11:44:10.742Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\ro2-build.txt :: robocopy error 16
+2026-11-07T11:44:10.756Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\ro2-install.txt :: robocopy error 16
+2026-11-07T11:44:10.772Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\ro2-part1.txt :: robocopy error 16
+2026-11-07T11:44:10.786Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\rv-build.txt :: robocopy error 16
+2026-11-07T11:44:10.801Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\rv-install.txt :: robocopy error 16
+2026-11-07T11:44:10.814Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\shp-build.txt :: robocopy error 16
+2026-11-07T11:44:10.830Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\shp-fsc.txt :: robocopy error 16
+2026-11-07T11:44:10.844Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\shp-install.txt :: robocopy error 16
+2026-11-07T11:44:10.858Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\spt-build.txt :: robocopy error 16
+2026-11-07T11:44:10.872Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\spt-install.txt :: robocopy error 16
+2026-11-07T11:44:10.888Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\ss-build.txt :: robocopy error 16
+2026-11-07T11:44:10.902Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\ss-install.txt :: robocopy error 16
+2026-11-07T11:44:26.777Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\ta :: copied, source not fully removed
+2026-11-07T11:44:26.795Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tl9-install.txt :: robocopy error 16
+2026-11-07T11:44:26.811Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tl92-install.txt :: robocopy error 16
+2026-11-07T11:44:26.825Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tl92-readers.txt :: robocopy error 16
+2026-11-07T11:44:26.839Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tlf-build.txt :: robocopy error 16
+2026-11-07T11:44:26.853Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tlf-font-span-check.txt :: robocopy error 16
+2026-11-07T11:44:26.868Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tlf-install.txt :: robocopy error 16
+2026-11-07T11:44:26.881Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tlf-typing-latency-readers-guard.txt :: robocopy error 16
+2026-11-07T11:44:26.904Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tlf-typing-latency-window-check.txt :: robocopy error 16
+2026-11-07T11:44:26.918Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tlg-build.txt :: robocopy error 16
+2026-11-07T11:44:26.932Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tlg-font-span-check.txt :: robocopy error 16
+2026-11-07T11:44:26.945Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tlg-install.txt :: robocopy error 16
+2026-11-07T11:44:26.960Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tlg-typing-latency-readers-guard.txt :: robocopy error 16
+2026-11-07T11:44:26.974Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tlg-typing-latency-window-check.txt :: robocopy error 16
+2026-11-07T11:44:26.989Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tlm-build.txt :: robocopy error 16
+2026-11-07T11:44:27.002Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tlm-install.txt :: robocopy error 16
+2026-11-07T11:44:27.017Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tlm-typing-latency-readers-guard.txt :: robocopy error 16
+2026-11-07T11:44:27.031Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tlm-typing-latency-window-check.txt :: robocopy error 16
+2026-11-07T11:44:27.045Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tsl-build.txt :: robocopy error 16
+2026-11-07T11:44:27.059Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tsl-fsc.txt :: robocopy error 16
+2026-11-07T11:44:27.074Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tsl-install.txt :: robocopy error 16
+2026-11-07T11:44:42.200Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\tu5-tutors-memory :: copied, source not fully removed
+2026-11-07T11:44:57.269Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wd-ship :: copied, source not fully removed
+2026-11-07T11:45:11.302Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_07f35fd0-e6f-1 :: copied, source not fully removed
+2026-11-07T11:45:25.342Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_07f35fd0-e6f-2 :: copied, source not fully removed
+2026-11-07T11:45:39.343Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_10146d83-a72-1 :: copied, source not fully removed
+2026-11-07T11:45:53.357Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_10146d83-a72-2 :: copied, source not fully removed
+2026-11-07T11:46:07.199Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_1f99fdf3-f8d-1 :: copied, source not fully removed
+2026-11-07T11:46:21.220Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_1f99fdf3-f8d-2 :: copied, source not fully removed
+2026-11-07T11:46:34.559Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_2db8efe0-263-1 :: copied, source not fully removed
+2026-11-07T11:46:48.379Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_40876f61-fd2-1 :: copied, source not fully removed
+2026-11-07T11:47:02.400Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_4130c9c4-95f-1 :: copied, source not fully removed
+2026-11-07T11:47:16.667Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_4130c9c4-95f-2 :: copied, source not fully removed
+2026-11-07T11:47:30.704Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_46618b45-7ce-1 :: copied, source not fully removed
+2026-11-07T11:47:46.230Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_46618b45-7ce-2 :: copied, source not fully removed
+2026-11-07T11:48:00.028Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_6aa43071-3a2-1 :: copied, source not fully removed
+2026-11-07T11:48:13.699Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_6aa43071-3a2-2 :: copied, source not fully removed
+2026-11-07T11:48:27.252Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_8458f3f0-ced-1 :: copied, source not fully removed
+2026-11-07T11:48:40.377Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_8ac31cde-cf5-1 :: copied, source not fully removed
+2026-11-07T11:48:54.075Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_c399b5ba-23c-1 :: copied, source not fully removed
+2026-11-07T11:49:07.843Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_c399b5ba-23c-2 :: copied, source not fully removed
+2026-11-07T11:49:21.547Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_d3ffe25b-a7d-1 :: copied, source not fully removed
+2026-11-07T11:49:35.379Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_d3ffe25b-a7d-2 :: copied, source not fully removed
+2026-11-07T11:49:48.958Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_e11e2f77-c21-1 :: copied, source not fully removed
+2026-11-07T11:50:02.393Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\wf_e11e2f77-c21-2 :: copied, source not fully removed
+2026-11-07T11:50:02.393Z SKIP C:\Users\nickh\ansel :: KEEP / other-repo
+2026-11-07T11:50:02.473Z MOVED C:\Users\nickh\ar-41991020737 (0.00 GB) -> F:\wrizo-archive\evidence\ar-41991020737
+2026-11-07T11:50:02.545Z MOVED C:\Users\nickh\ar-41991053522 (0.00 GB) -> F:\wrizo-archive\evidence\ar-41991053522
+2026-11-07T11:50:02.547Z SKIP C:\Users\nickh\art-10hm :: touched 35 h ago (<48 h)
+2026-11-07T11:50:02.547Z SKIP C:\Users\nickh\art-10i :: touched 36 h ago (<48 h)
+2026-11-07T11:50:02.549Z SKIP C:\Users\nickh\art-10ifinal :: touched 34 h ago (<48 h)
+2026-11-07T11:50:02.549Z SKIP C:\Users\nickh\art-10iq :: touched 35 h ago (<48 h)
+2026-11-07T11:50:02.551Z SKIP C:\Users\nickh\art-guards3 :: touched 36 h ago (<48 h)
+2026-11-07T11:50:02.551Z SKIP C:\Users\nickh\art-mainS1 :: touched 34 h ago (<48 h)
+2026-11-07T11:50:02.553Z SKIP C:\Users\nickh\art-s1 :: touched 35 h ago (<48 h)
+2026-11-07T11:50:02.608Z MOVED C:\Users\nickh\b21-41988875815 (0.00 GB) -> F:\wrizo-archive\evidence\b21-41988875815
+2026-11-07T11:50:02.661Z MOVED C:\Users\nickh\b21-41988889315 (0.00 GB) -> F:\wrizo-archive\evidence\b21-41988889315
+2026-11-07T11:50:02.717Z MOVED C:\Users\nickh\b21-41988902228 (0.00 GB) -> F:\wrizo-archive\evidence\b21-41988902228
+2026-11-07T11:50:02.794Z MOVED C:\Users\nickh\b21c (0.00 GB) -> F:\wrizo-archive\evidence\b21c
+2026-11-07T11:50:02.872Z MOVED C:\Users\nickh\c13-10-out-turn13 (0.00 GB) -> F:\wrizo-archive\evidence\c13-10-out-turn13
+2026-11-07T11:50:02.963Z MOVED C:\Users\nickh\c13-10-out-turn14 (0.00 GB) -> F:\wrizo-archive\evidence\c13-10-out-turn14
+2026-11-07T11:50:03.102Z MOVED C:\Users\nickh\c13-10-out-turn15 (0.00 GB) -> F:\wrizo-archive\evidence\c13-10-out-turn15
+2026-11-07T11:50:03.288Z MOVED C:\Users\nickh\c13-10-out-turn16 (0.01 GB) -> F:\wrizo-archive\evidence\c13-10-out-turn16
+2026-11-07T11:50:03.447Z MOVED C:\Users\nickh\c13-10-out-turn17 (0.01 GB) -> F:\wrizo-archive\evidence\c13-10-out-turn17
+2026-11-07T11:50:03.614Z MOVED C:\Users\nickh\c13-10-out-turn18 (0.01 GB) -> F:\wrizo-archive\evidence\c13-10-out-turn18
+2026-11-07T11:50:03.698Z MOVED C:\Users\nickh\c13-10-out-turn19 (0.00 GB) -> F:\wrizo-archive\evidence\c13-10-out-turn19
+2026-11-07T11:50:03.708Z SKIP C:\Users\nickh\c13-10-out-turn20 :: touched 43 h ago (<48 h)
+2026-11-07T11:50:03.708Z SKIP C:\Users\nickh\c13-10-out-turn21 :: touched 40 h ago (<48 h)
+2026-11-07T11:50:03.713Z SKIP C:\Users\nickh\c13-10-out-turn22 :: touched 40 h ago (<48 h)
+2026-11-07T11:50:03.714Z SKIP C:\Users\nickh\c13-10-out-turn23 :: touched 33 h ago (<48 h)
+2026-11-07T11:50:05.743Z MOVED C:\Users\nickh\c13-10a-dist-a (0.01 GB) -> F:\wrizo-archive\evidence\c13-10a-dist-a
+2026-11-07T11:50:07.540Z MOVED C:\Users\nickh\c13-10a-dist-control (0.01 GB) -> F:\wrizo-archive\evidence\c13-10a-dist-control
+2026-11-07T11:50:09.346Z MOVED C:\Users\nickh\c13-10a-dist-main (0.01 GB) -> F:\wrizo-archive\evidence\c13-10a-dist-main
+2026-11-07T11:50:11.145Z MOVED C:\Users\nickh\c13-10b-dist (0.01 GB) -> F:\wrizo-archive\evidence\c13-10b-dist
+2026-11-07T11:50:12.923Z MOVED C:\Users\nickh\c13-10d-dist (0.01 GB) -> F:\wrizo-archive\evidence\c13-10d-dist
+2026-11-07T11:50:12.923Z SKIP C:\Users\nickh\c13-11-gh :: touched 30 h ago (<48 h)
+2026-11-07T11:50:12.932Z SKIP C:\Users\nickh\c13-11-out-turn24 :: touched 29 h ago (<48 h)
+2026-11-07T11:50:13.052Z MOVED C:\Users\nickh\c13-12f-out (0.01 GB) -> F:\wrizo-archive\evidence\c13-12f-out
+2026-11-07T11:50:13.120Z MOVED C:\Users\nickh\c13-12f-out2 (0.00 GB) -> F:\wrizo-archive\evidence\c13-12f-out2
+2026-11-07T11:50:13.263Z MOVED C:\Users\nickh\c13-5-out (0.02 GB) -> F:\wrizo-archive\evidence\c13-5-out
+2026-11-07T11:50:13.416Z MOVED C:\Users\nickh\c13-5-out-1 (0.02 GB) -> F:\wrizo-archive\evidence\c13-5-out-1
+2026-11-07T11:50:20.411Z MOVED C:\Users\nickh\c13-6-dist (0.04 GB) -> F:\wrizo-archive\evidence\c13-6-dist
+2026-11-07T11:50:20.556Z MOVED C:\Users\nickh\c13-6-out (0.02 GB) -> F:\wrizo-archive\evidence\c13-6-out
+2026-11-07T11:50:20.647Z MOVED C:\Users\nickh\c13-6-out2 (0.00 GB) -> F:\wrizo-archive\evidence\c13-6-out2
+2026-11-07T11:50:24.281Z MOVED C:\Users\nickh\c13-7-dist (0.02 GB) -> F:\wrizo-archive\evidence\c13-7-dist
+2026-11-07T11:50:24.370Z MOVED C:\Users\nickh\c13-7-out (0.00 GB) -> F:\wrizo-archive\evidence\c13-7-out
+2026-11-07T11:50:24.522Z MOVED C:\Users\nickh\c13-8-out (0.02 GB) -> F:\wrizo-archive\evidence\c13-8-out
+2026-11-07T11:50:24.662Z MOVED C:\Users\nickh\c13-8-out2 (0.02 GB) -> F:\wrizo-archive\evidence\c13-8-out2
+2026-11-07T11:50:24.723Z MOVED C:\Users\nickh\c13-8-out3 (0.00 GB) -> F:\wrizo-archive\evidence\c13-8-out3
+2026-11-07T11:50:26.578Z MOVED C:\Users\nickh\c13-9-dist-base (0.01 GB) -> F:\wrizo-archive\evidence\c13-9-dist-base
+2026-11-07T11:50:28.418Z MOVED C:\Users\nickh\c13-9-dist-plant (0.01 GB) -> F:\wrizo-archive\evidence\c13-9-dist-plant
+2026-11-07T11:50:30.227Z MOVED C:\Users\nickh\c13-9-dist-step (0.01 GB) -> F:\wrizo-archive\evidence\c13-9-dist-step
+2026-11-07T11:50:30.287Z MOVED C:\Users\nickh\c13-9-out-components (0.00 GB) -> F:\wrizo-archive\evidence\c13-9-out-components
+2026-11-07T11:50:30.355Z MOVED C:\Users\nickh\c13-9-out-store (0.00 GB) -> F:\wrizo-archive\evidence\c13-9-out-store
+2026-11-07T11:50:39.270Z MOVED C:\Users\nickh\c13-9-out-turn10 (0.05 GB) -> F:\wrizo-archive\evidence\c13-9-out-turn10
+2026-11-07T11:50:39.393Z MOVED C:\Users\nickh\c13-9-out-turn11 (0.00 GB) -> F:\wrizo-archive\evidence\c13-9-out-turn11
+2026-11-07T11:50:39.469Z MOVED C:\Users\nickh\c13-9-out-turn12 (0.00 GB) -> F:\wrizo-archive\evidence\c13-9-out-turn12
+2026-11-07T11:50:39.646Z MOVED C:\Users\nickh\c13-9-out-turn5 (0.00 GB) -> F:\wrizo-archive\evidence\c13-9-out-turn5
+2026-11-07T11:50:39.725Z MOVED C:\Users\nickh\c13-9-out-turn6 (0.00 GB) -> F:\wrizo-archive\evidence\c13-9-out-turn6
+2026-11-07T11:50:39.813Z MOVED C:\Users\nickh\c13-9-out-turn7 (0.00 GB) -> F:\wrizo-archive\evidence\c13-9-out-turn7
+2026-11-07T11:50:50.327Z MOVED C:\Users\nickh\c13-9-out-turn8 (0.06 GB) -> F:\wrizo-archive\evidence\c13-9-out-turn8
+2026-11-07T11:50:50.530Z MOVED C:\Users\nickh\c13-9-out-turn9 (0.00 GB) -> F:\wrizo-archive\evidence\c13-9-out-turn9
+2026-11-07T11:50:50.617Z MOVED C:\Users\nickh\c13-9-out1 (0.00 GB) -> F:\wrizo-archive\evidence\c13-9-out1
+2026-11-07T11:50:50.689Z MOVED C:\Users\nickh\c13-9-out2 (0.00 GB) -> F:\wrizo-archive\evidence\c13-9-out2
+2026-11-07T11:50:52.489Z MOVED C:\Users\nickh\c13-9c-dist-base (0.01 GB) -> F:\wrizo-archive\evidence\c13-9c-dist-base
+2026-11-07T11:50:54.293Z MOVED C:\Users\nickh\c13-9c-dist-step (0.01 GB) -> F:\wrizo-archive\evidence\c13-9c-dist-step
+2026-11-07T11:50:56.082Z MOVED C:\Users\nickh\c13-9p-dist-tip (0.01 GB) -> F:\wrizo-archive\evidence\c13-9p-dist-tip
+2026-11-07T11:50:57.883Z MOVED C:\Users\nickh\c13-9s-dist-base (0.01 GB) -> F:\wrizo-archive\evidence\c13-9s-dist-base
+2026-11-07T11:50:59.673Z MOVED C:\Users\nickh\c13-9s-dist-step (0.01 GB) -> F:\wrizo-archive\evidence\c13-9s-dist-step
+2026-11-07T11:51:01.455Z MOVED C:\Users\nickh\c13-9t-dist-tip (0.01 GB) -> F:\wrizo-archive\evidence\c13-9t-dist-tip
+2026-11-07T11:51:01.535Z MOVED C:\Users\nickh\c136-actions (0.00 GB) -> F:\wrizo-archive\evidence\c136-actions
+2026-11-07T11:51:01.840Z MOVED C:\Users\nickh\c136-box (0.01 GB) -> F:\wrizo-archive\evidence\c136-box
+2026-11-07T11:51:01.913Z MOVED C:\Users\nickh\c137-actions (0.00 GB) -> F:\wrizo-archive\evidence\c137-actions
+2026-11-07T11:51:02.195Z MOVED C:\Users\nickh\c137-box (0.00 GB) -> F:\wrizo-archive\evidence\c137-box
+2026-11-07T11:51:02.485Z MOVED C:\Users\nickh\c138-box (0.01 GB) -> F:\wrizo-archive\evidence\c138-box
+2026-11-07T11:51:02.553Z MOVED C:\Users\nickh\cimerge-actions (0.00 GB) -> F:\wrizo-archive\evidence\cimerge-actions
+2026-11-07T11:51:02.775Z MOVED C:\Users\nickh\cimerge-box (0.00 GB) -> F:\wrizo-archive\evidence\cimerge-box
+2026-11-07T11:51:02.840Z MOVED C:\Users\nickh\ctl-41937551239 (0.00 GB) -> F:\wrizo-archive\evidence\ctl-41937551239
+2026-11-07T11:51:02.909Z MOVED C:\Users\nickh\ctl-41937567547 (0.00 GB) -> F:\wrizo-archive\evidence\ctl-41937567547
+2026-11-07T11:51:02.973Z MOVED C:\Users\nickh\ctl10-main (0.00 GB) -> F:\wrizo-archive\evidence\ctl10-main
+2026-11-07T11:51:03.038Z MOVED C:\Users\nickh\ctl10-train (0.00 GB) -> F:\wrizo-archive\evidence\ctl10-train
+2026-11-07T11:51:03.038Z SKIP C:\Users\nickh\d46 :: touched 29 h ago (<48 h)
+2026-11-07T11:51:03.271Z MOVED C:\Users\nickh\e1 (0.00 GB) -> F:\wrizo-archive\evidence\e1
+2026-11-07T11:51:03.272Z SKIP C:\Users\nickh\g1 :: touched 47 h ago (<48 h)
+2026-11-07T11:51:03.278Z SKIP C:\Users\nickh\g2 :: touched 47 h ago (<48 h)
+2026-11-07T11:51:03.279Z SKIP C:\Users\nickh\g3 :: touched 47 h ago (<48 h)
+2026-11-07T11:51:03.286Z SKIP C:\Users\nickh\g4 :: touched 47 h ago (<48 h)
+2026-11-07T11:51:03.286Z SKIP C:\Users\nickh\g5 :: touched 47 h ago (<48 h)
+2026-11-07T11:51:03.289Z SKIP C:\Users\nickh\harness-logs :: KEEP / other-repo
+2026-11-07T11:51:03.289Z SKIP C:\Users\nickh\pairs :: touched 26 h ago (<48 h)
+2026-11-07T11:51:03.364Z MOVED C:\Users\nickh\pc-main-default (0.00 GB) -> F:\wrizo-archive\evidence\pc-main-default
+2026-11-07T11:51:03.438Z MOVED C:\Users\nickh\pc-main-parked (0.00 GB) -> F:\wrizo-archive\evidence\pc-main-parked
+2026-11-07T11:51:03.512Z MOVED C:\Users\nickh\pc-train-default (0.00 GB) -> F:\wrizo-archive\evidence\pc-train-default
+2026-11-07T11:51:03.583Z MOVED C:\Users\nickh\pc-train-parked (0.00 GB) -> F:\wrizo-archive\evidence\pc-train-parked
+2026-11-07T11:51:03.650Z MOVED C:\Users\nickh\pr1 (0.00 GB) -> F:\wrizo-archive\evidence\pr1
+2026-11-07T11:51:03.722Z MOVED C:\Users\nickh\pr2 (0.00 GB) -> F:\wrizo-archive\evidence\pr2
+2026-11-07T11:51:03.795Z MOVED C:\Users\nickh\pr3 (0.00 GB) -> F:\wrizo-archive\evidence\pr3
+2026-11-07T11:51:03.795Z SKIP C:\Users\nickh\pw1-dist-box :: touched 32 h ago (<48 h)
+2026-11-07T11:51:03.797Z SKIP C:\Users\nickh\pw1s5-gh-42166872695 :: touched 30 h ago (<48 h)
+2026-11-07T11:51:03.797Z SKIP C:\Users\nickh\pw1s5-gh-42166875768 :: touched 30 h ago (<48 h)
+2026-11-07T11:51:03.968Z MOVED C:\Users\nickh\pwdefault1 (0.00 GB) -> F:\wrizo-archive\evidence\pwdefault1
+2026-11-07T11:51:04.195Z MOVED C:\Users\nickh\pwdefault2 (0.00 GB) -> F:\wrizo-archive\evidence\pwdefault2
+2026-11-07T11:51:04.421Z MOVED C:\Users\nickh\pwdefault3 (0.00 GB) -> F:\wrizo-archive\evidence\pwdefault3
+2026-11-07T11:51:04.647Z MOVED C:\Users\nickh\pwdefault4 (0.00 GB) -> F:\wrizo-archive\evidence\pwdefault4
+2026-11-07T11:51:04.893Z MOVED C:\Users\nickh\pwdefault5 (0.00 GB) -> F:\wrizo-archive\evidence\pwdefault5
+2026-11-07T11:51:05.110Z MOVED C:\Users\nickh\pwdefault6 (0.00 GB) -> F:\wrizo-archive\evidence\pwdefault6
+2026-11-07T11:51:05.340Z MOVED C:\Users\nickh\pwdefault7 (0.00 GB) -> F:\wrizo-archive\evidence\pwdefault7
+2026-11-07T11:51:05.571Z MOVED C:\Users\nickh\pwdefault8 (0.00 GB) -> F:\wrizo-archive\evidence\pwdefault8
+2026-11-07T11:51:05.792Z MOVED C:\Users\nickh\pwparked1 (0.00 GB) -> F:\wrizo-archive\evidence\pwparked1
+2026-11-07T11:51:05.983Z MOVED C:\Users\nickh\pwparked2 (0.00 GB) -> F:\wrizo-archive\evidence\pwparked2
+2026-11-07T11:51:06.182Z MOVED C:\Users\nickh\pwparked3 (0.00 GB) -> F:\wrizo-archive\evidence\pwparked3
+2026-11-07T11:51:06.386Z MOVED C:\Users\nickh\pwparked4 (0.00 GB) -> F:\wrizo-archive\evidence\pwparked4
+2026-11-07T11:51:06.635Z MOVED C:\Users\nickh\pwparked5 (0.00 GB) -> F:\wrizo-archive\evidence\pwparked5
+2026-11-07T11:51:06.848Z MOVED C:\Users\nickh\pwparked6 (0.00 GB) -> F:\wrizo-archive\evidence\pwparked6
+2026-11-07T11:51:07.038Z MOVED C:\Users\nickh\pwparked7 (0.00 GB) -> F:\wrizo-archive\evidence\pwparked7
+2026-11-07T11:51:07.244Z MOVED C:\Users\nickh\pwparked8 (0.00 GB) -> F:\wrizo-archive\evidence\pwparked8
+2026-11-07T11:51:09.075Z MOVED C:\Users\nickh\ref-dist-step10 (0.01 GB) -> F:\wrizo-archive\evidence\ref-dist-step10
+2026-11-07T11:51:09.276Z MOVED C:\Users\nickh\sp1 (0.00 GB) -> F:\wrizo-archive\evidence\sp1
+2026-11-07T11:51:09.445Z MOVED C:\Users\nickh\sp2 (0.00 GB) -> F:\wrizo-archive\evidence\sp2
+2026-11-07T11:51:09.626Z MOVED C:\Users\nickh\sp3 (0.00 GB) -> F:\wrizo-archive\evidence\sp3
+2026-11-07T11:51:09.812Z MOVED C:\Users\nickh\sp4 (0.00 GB) -> F:\wrizo-archive\evidence\sp4
+2026-11-07T11:51:10.057Z MOVED C:\Users\nickh\sp5 (0.00 GB) -> F:\wrizo-archive\evidence\sp5
+2026-11-07T11:51:10.287Z MOVED C:\Users\nickh\sp6 (0.00 GB) -> F:\wrizo-archive\evidence\sp6
+2026-11-07T11:51:10.287Z SKIP C:\Users\nickh\stand :: touched 30 h ago (<48 h)
+2026-11-07T11:51:10.357Z MOVED C:\Users\nickh\t10-art (0.00 GB) -> F:\wrizo-archive\evidence\t10-art
+2026-11-07T11:51:10.451Z MOVED C:\Users\nickh\t10-probe (0.01 GB) -> F:\wrizo-archive\evidence\t10-probe
+2026-11-07T11:51:10.522Z MOVED C:\Users\nickh\t10c-art (0.00 GB) -> F:\wrizo-archive\evidence\t10c-art
+2026-11-07T11:51:10.616Z MOVED C:\Users\nickh\t10c-probe (0.01 GB) -> F:\wrizo-archive\evidence\t10c-probe
+2026-11-07T11:51:10.685Z MOVED C:\Users\nickh\t10e-art (0.00 GB) -> F:\wrizo-archive\evidence\t10e-art
+2026-11-07T11:51:10.685Z SKIP C:\Users\nickh\t10e-merged :: touched 45 h ago (<48 h)
+2026-11-07T11:51:10.757Z MOVED C:\Users\nickh\t10e2-art (0.00 GB) -> F:\wrizo-archive\evidence\t10e2-art
+2026-11-07T11:51:10.757Z SKIP C:\Users\nickh\t10e2-box :: touched 45 h ago (<48 h)
+2026-11-07T11:51:10.759Z SKIP C:\Users\nickh\t10g-art :: touched 47 h ago (<48 h)
+2026-11-07T11:51:10.759Z SKIP C:\Users\nickh\t10g2-art :: touched 46 h ago (<48 h)
+2026-11-07T11:51:10.761Z SKIP C:\Users\nickh\t10g3-art :: touched 44 h ago (<48 h)
+2026-11-07T11:51:10.762Z SKIP C:\Users\nickh\t10g3-checks :: touched 44 h ago (<48 h)
+2026-11-07T11:51:10.763Z SKIP C:\Users\nickh\t10h-art :: touched 40 h ago (<48 h)
+2026-11-07T11:51:10.764Z SKIP C:\Users\nickh\t10h-box :: touched 39 h ago (<48 h)
+2026-11-07T11:51:10.769Z SKIP C:\Users\nickh\t10h-ctl-box :: touched 35 h ago (<48 h)
+2026-11-07T11:51:10.770Z SKIP C:\Users\nickh\t10hj-checks :: touched 40 h ago (<48 h)
+2026-11-07T11:51:10.774Z SKIP C:\Users\nickh\t10j-art :: touched 40 h ago (<48 h)
+2026-11-07T11:51:10.887Z MOVED C:\Users\nickh\t10v (0.00 GB) -> F:\wrizo-archive\evidence\t10v
+2026-11-07T11:51:11.616Z MOVED C:\Users\nickh\t11-bisect (0.00 GB) -> F:\wrizo-archive\evidence\t11-bisect
+2026-11-07T11:51:13.431Z MOVED C:\Users\nickh\t11-pair (0.00 GB) -> F:\wrizo-archive\evidence\t11-pair
+2026-11-07T11:51:13.605Z MOVED C:\Users\nickh\t11b-reds (0.00 GB) -> F:\wrizo-archive\evidence\t11b-reds
+2026-11-07T11:51:13.673Z MOVED C:\Users\nickh\t11c-actions (0.00 GB) -> F:\wrizo-archive\evidence\t11c-actions
+2026-11-07T11:51:13.866Z MOVED C:\Users\nickh\t11c-box (0.00 GB) -> F:\wrizo-archive\evidence\t11c-box
+2026-11-07T11:51:15.799Z MOVED C:\Users\nickh\t12-actions (0.00 GB) -> F:\wrizo-archive\evidence\t12-actions
+2026-11-07T11:51:15.941Z MOVED C:\Users\nickh\t12-base (0.00 GB) -> F:\wrizo-archive\evidence\t12-base
+2026-11-07T11:51:16.196Z MOVED C:\Users\nickh\t12-box (0.00 GB) -> F:\wrizo-archive\evidence\t12-box
+2026-11-07T11:51:18.161Z MOVED C:\Users\nickh\t12b-actions (0.00 GB) -> F:\wrizo-archive\evidence\t12b-actions
+2026-11-07T11:51:18.343Z MOVED C:\Users\nickh\t12b-box (0.00 GB) -> F:\wrizo-archive\evidence\t12b-box
+2026-11-07T11:51:18.764Z MOVED C:\Users\nickh\t12b-reds (0.00 GB) -> F:\wrizo-archive\evidence\t12b-reds
+2026-11-07T11:51:20.742Z MOVED C:\Users\nickh\t12c-actions (0.00 GB) -> F:\wrizo-archive\evidence\t12c-actions
+2026-11-07T11:51:20.922Z MOVED C:\Users\nickh\t12c-box (0.00 GB) -> F:\wrizo-archive\evidence\t12c-box
+2026-11-07T11:51:21.080Z MOVED C:\Users\nickh\t12c-ro (0.00 GB) -> F:\wrizo-archive\evidence\t12c-ro
+2026-11-07T11:51:21.200Z MOVED C:\Users\nickh\t12c-ro-actions (0.00 GB) -> F:\wrizo-archive\evidence\t12c-ro-actions
+2026-11-07T11:51:23.184Z MOVED C:\Users\nickh\t12d-actions (0.00 GB) -> F:\wrizo-archive\evidence\t12d-actions
+2026-11-07T11:51:23.369Z MOVED C:\Users\nickh\t12d-box (0.00 GB) -> F:\wrizo-archive\evidence\t12d-box
+2026-11-07T11:51:25.321Z MOVED C:\Users\nickh\t12e-actions (0.00 GB) -> F:\wrizo-archive\evidence\t12e-actions
+2026-11-07T11:51:25.517Z MOVED C:\Users\nickh\t12e-box (0.00 GB) -> F:\wrizo-archive\evidence\t12e-box
+2026-11-07T11:51:25.687Z MOVED C:\Users\nickh\t12e-reds (0.00 GB) -> F:\wrizo-archive\evidence\t12e-reds
+2026-11-07T11:51:25.850Z MOVED C:\Users\nickh\t12e-tw (0.00 GB) -> F:\wrizo-archive\evidence\t12e-tw
+2026-11-07T11:51:25.973Z MOVED C:\Users\nickh\t12e-tw2 (0.00 GB) -> F:\wrizo-archive\evidence\t12e-tw2
+2026-11-07T11:51:26.047Z MOVED C:\Users\nickh\t12f-actions (0.00 GB) -> F:\wrizo-archive\evidence\t12f-actions
+2026-11-07T11:51:26.267Z MOVED C:\Users\nickh\t12f-box (0.00 GB) -> F:\wrizo-archive\evidence\t12f-box
+2026-11-07T11:51:26.358Z MOVED C:\Users\nickh\t12f-cpu (0.00 GB) -> F:\wrizo-archive\evidence\t12f-cpu
+2026-11-07T11:51:26.483Z MOVED C:\Users\nickh\t12f-diag (0.00 GB) -> F:\wrizo-archive\evidence\t12f-diag
+2026-11-07T11:51:26.550Z MOVED C:\Users\nickh\t12f-fps (0.00 GB) -> F:\wrizo-archive\evidence\t12f-fps
+2026-11-07T11:51:26.616Z MOVED C:\Users\nickh\t12f-geo (0.00 GB) -> F:\wrizo-archive\evidence\t12f-geo
+2026-11-07T11:51:26.703Z MOVED C:\Users\nickh\t12f-pace (0.00 GB) -> F:\wrizo-archive\evidence\t12f-pace
+2026-11-07T11:51:26.768Z MOVED C:\Users\nickh\t12f-ser (0.00 GB) -> F:\wrizo-archive\evidence\t12f-ser
+2026-11-07T11:51:26.833Z MOVED C:\Users\nickh\t12f-ser2 (0.00 GB) -> F:\wrizo-archive\evidence\t12f-ser2
+2026-11-07T11:51:26.891Z MOVED C:\Users\nickh\t12f-tz (0.00 GB) -> F:\wrizo-archive\evidence\t12f-tz
+2026-11-07T11:51:26.962Z MOVED C:\Users\nickh\t12g-actions (0.00 GB) -> F:\wrizo-archive\evidence\t12g-actions
+2026-11-07T11:51:27.326Z MOVED C:\Users\nickh\t12g-box (0.00 GB) -> F:\wrizo-archive\evidence\t12g-box
+2026-11-07T11:51:27.396Z MOVED C:\Users\nickh\t12h-actions (0.00 GB) -> F:\wrizo-archive\evidence\t12h-actions
+2026-11-07T11:51:27.452Z MOVED C:\Users\nickh\t12h-b21-41294960432 (0.00 GB) -> F:\wrizo-archive\evidence\t12h-b21-41294960432
+2026-11-07T11:51:27.562Z MOVED C:\Users\nickh\t12h-b21-41294962335 (0.00 GB) -> F:\wrizo-archive\evidence\t12h-b21-41294962335
+2026-11-07T11:51:27.667Z MOVED C:\Users\nickh\t12h-b21-41294964114 (0.00 GB) -> F:\wrizo-archive\evidence\t12h-b21-41294964114
+2026-11-07T11:51:28.129Z MOVED C:\Users\nickh\t12h-box (0.00 GB) -> F:\wrizo-archive\evidence\t12h-box
+2026-11-07T11:51:28.547Z MOVED C:\Users\nickh\t12h-fx (0.00 GB) -> F:\wrizo-archive\evidence\t12h-fx
+2026-11-07T11:51:28.866Z MOVED C:\Users\nickh\t12h-fx2 (0.00 GB) -> F:\wrizo-archive\evidence\t12h-fx2
+2026-11-07T11:51:29.269Z MOVED C:\Users\nickh\t12h-gk (0.00 GB) -> F:\wrizo-archive\evidence\t12h-gk
+2026-11-07T11:51:29.343Z MOVED C:\Users\nickh\t12i-actions (0.00 GB) -> F:\wrizo-archive\evidence\t12i-actions
+2026-11-07T11:51:29.815Z MOVED C:\Users\nickh\t12i-box (0.00 GB) -> F:\wrizo-archive\evidence\t12i-box
+2026-11-07T11:51:29.885Z MOVED C:\Users\nickh\t12j-actions (0.00 GB) -> F:\wrizo-archive\evidence\t12j-actions
+2026-11-07T11:51:30.146Z MOVED C:\Users\nickh\t12j-box (0.00 GB) -> F:\wrizo-archive\evidence\t12j-box
+2026-11-07T11:51:30.615Z MOVED C:\Users\nickh\t12j-ctl (0.00 GB) -> F:\wrizo-archive\evidence\t12j-ctl
+2026-11-07T11:51:30.912Z MOVED C:\Users\nickh\t12j-rl (0.00 GB) -> F:\wrizo-archive\evidence\t12j-rl
+2026-11-07T11:51:30.989Z MOVED C:\Users\nickh\t12k-actions (0.00 GB) -> F:\wrizo-archive\evidence\t12k-actions
+2026-11-07T11:51:31.329Z MOVED C:\Users\nickh\t12k-box (0.01 GB) -> F:\wrizo-archive\evidence\t12k-box
+2026-11-07T11:51:31.413Z MOVED C:\Users\nickh\t12k-c (0.00 GB) -> F:\wrizo-archive\evidence\t12k-c
+2026-11-07T11:51:31.547Z MOVED C:\Users\nickh\t12k-i126 (0.00 GB) -> F:\wrizo-archive\evidence\t12k-i126
+2026-11-07T11:51:32.575Z MOVED C:\Users\nickh\t12k-sd (0.00 GB) -> F:\wrizo-archive\evidence\t12k-sd
+2026-11-07T11:51:32.645Z MOVED C:\Users\nickh\t12kr2-actions (0.00 GB) -> F:\wrizo-archive\evidence\t12kr2-actions
+2026-11-07T11:51:33.006Z MOVED C:\Users\nickh\t12kr2-box (0.01 GB) -> F:\wrizo-archive\evidence\t12kr2-box
+2026-11-07T11:51:35.069Z MOVED C:\Users\nickh\t12kr2-sd (0.00 GB) -> F:\wrizo-archive\evidence\t12kr2-sd
+2026-11-07T11:51:35.142Z MOVED C:\Users\nickh\t12kr3-art (0.00 GB) -> F:\wrizo-archive\evidence\t12kr3-art
+2026-11-07T11:51:35.497Z MOVED C:\Users\nickh\t12kr3-box (0.01 GB) -> F:\wrizo-archive\evidence\t12kr3-box
+2026-11-07T11:51:35.566Z MOVED C:\Users\nickh\t138-art (0.00 GB) -> F:\wrizo-archive\evidence\t138-art
+2026-11-07T11:51:35.634Z MOVED C:\Users\nickh\t139-art (0.00 GB) -> F:\wrizo-archive\evidence\t139-art
+2026-11-07T11:51:35.733Z MOVED C:\Users\nickh\t139b (0.00 GB) -> F:\wrizo-archive\evidence\t139b
+2026-11-07T11:51:35.804Z MOVED C:\Users\nickh\t139c-art (0.00 GB) -> F:\wrizo-archive\evidence\t139c-art
+2026-11-07T11:51:36.115Z MOVED C:\Users\nickh\t150b-box (0.00 GB) -> F:\wrizo-archive\evidence\t150b-box
+2026-11-07T11:51:36.115Z SKIP C:\Users\nickh\t45-art :: touched 42 h ago (<48 h)
+2026-11-07T11:51:36.413Z MOVED C:\Users\nickh\tarb-box (0.00 GB) -> F:\wrizo-archive\evidence\tarb-box
+2026-11-07T11:51:36.720Z MOVED C:\Users\nickh\tfix-box (0.00 GB) -> F:\wrizo-archive\evidence\tfix-box
+2026-11-07T11:51:36.725Z SKIP C:\Users\nickh\tg-art :: touched 40 h ago (<48 h)
+2026-11-07T11:51:36.725Z SKIP C:\Users\nickh\tguards :: touched 39 h ago (<48 h)
+2026-11-07T11:51:36.728Z SKIP C:\Users\nickh\ti-m :: touched 32 h ago (<48 h)
+2026-11-07T11:51:36.728Z SKIP C:\Users\nickh\tools :: KEEP / other-repo
+2026-11-07T11:51:52.383Z SKIP C:\Users\nickh\train-12base :: copied, source not fully removed
+2026-11-07T11:52:07.429Z SKIP C:\Users\nickh\train-12k :: copied, source not fully removed
+2026-11-07T11:52:07.436Z SKIP C:\Users\nickh\ts11 :: touched 26 h ago (<48 h)
+2026-11-07T11:52:07.436Z SKIP C:\Users\nickh\ts2 :: touched 31 h ago (<48 h)
+2026-11-07T11:52:07.438Z SKIP C:\Users\nickh\ts3r2 :: touched 14 h ago (<48 h)
+2026-11-07T11:52:07.576Z MOVED C:\Users\nickh\tw-act (0.00 GB) -> F:\wrizo-archive\evidence\tw-act
+2026-11-07T11:52:07.844Z MOVED C:\Users\nickh\tw-act2 (0.00 GB) -> F:\wrizo-archive\evidence\tw-act2
+2026-11-07T11:52:07.994Z MOVED C:\Users\nickh\tw-act3 (0.00 GB) -> F:\wrizo-archive\evidence\tw-act3
+2026-11-07T11:52:22.834Z SKIP C:\Users\nickh\writer-studio-fx17-red :: copied, source not fully removed
+2026-11-07T11:52:36.173Z SKIP C:\Users\nickh\wrizo-cd2-review :: copied, source not fully removed
+2026-11-07T11:52:49.722Z SKIP C:\Users\nickh\wrizo-fx3-review :: copied, source not fully removed
+2026-11-07T11:53:03.052Z SKIP C:\Users\nickh\wrizo-s1check :: copied, source not fully removed
+2026-11-07T11:53:03.054Z SKIP C:\Users\nickh\ws-c13-11-trial :: touched 30 h ago (<48 h)
+2026-11-07T11:53:03.151Z MOVED C:\Users\nickh\ws-tools-frames (0.00 GB) -> F:\wrizo-archive\evidence\ws-tools-frames
+2026-11-07T11:53:03.645Z END step3: removed/moved 170, skipped 176, freed 0.59 GB; C: free now 88.14 GB

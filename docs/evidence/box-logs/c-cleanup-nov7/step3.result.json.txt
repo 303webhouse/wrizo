@@ -1,0 +1,1566 @@
+{
+ "removed": [
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bcm-boxtomb.txt",
+   "kb": 2,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\bcm-boxtomb.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bcm-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\bcm-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bcm-install.txt",
+   "kb": 2,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\bcm-install.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bcm2-boxtomb.txt",
+   "kb": 2,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\bcm2-boxtomb.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bcm2-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\bcm2-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bcm2-install.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\bcm2-install.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bis-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\bis-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bis-build0.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\bis-build0.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bis-install.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\bis-install.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cb2-box-tombstones.txt",
+   "kb": 2,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\cb2-box-tombstones.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cb2-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\cb2-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cb2-install.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\cb2-install.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cb2-page-links.txt",
+   "kb": 3,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\cb2-page-links.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cb2-pagelinksdb.txt",
+   "kb": 7,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\cb2-pagelinksdb.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cb2-server-build.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\cb2-server-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cbb-boxtomb.txt",
+   "kb": 2,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\cbb-boxtomb.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cbb-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\cbb-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cbb-install.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\cbb-install.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cbb-pagelinks.txt",
+   "kb": 3,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\cbb-pagelinks.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cbb-server-build.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\cbb-server-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cbp-box-tombstones.txt",
+   "kb": 2,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\cbp-box-tombstones.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cbp-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\cbp-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cbp-install.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\cbp-install.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cbp-page-links.txt",
+   "kb": 3,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\cbp-page-links.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cbp-pagelinksdb.txt",
+   "kb": 7,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\cbp-pagelinksdb.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\cbp-server-build.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\cbp-server-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\dm-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\dm-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\dm-install.txt",
+   "kb": 2,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\dm-install.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fl3-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\fl3-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fl3-install.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\fl3-install.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fp-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\fp-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fp-install.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\fp-install.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fsp-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\fsp-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fsp-check.txt",
+   "kb": 3,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\fsp-check.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fsp-install.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\fsp-install.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fts-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\fts-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fts-fsc.txt",
+   "kb": 3,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\fts-fsc.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\fts-install.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\fts-install.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\hb-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\hb-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\hb-install.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\hb-install.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\i112d-install.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\i112d-install.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\item207core-main.txt",
+   "kb": 8,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\item207core-main.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\lane3-boxtomb.txt",
+   "kb": 2,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\lane3-boxtomb.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\lane3-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\lane3-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\lane3-fsc.txt",
+   "kb": 3,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\lane3-fsc.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\lane3-install.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\lane3-install.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\lbs-install.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\lbs-install.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\prim-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\prim-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\prim2-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\prim2-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\prim3-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\prim3-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\prim4-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\prim4-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\prim5-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\prim5-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\prim6-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\prim6-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ro-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\ro-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ro-install.txt",
+   "kb": 2,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\ro-install.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ro2-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\ro2-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ro2-install.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\ro2-install.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ro2-part1.txt",
+   "kb": 3,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\ro2-part1.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\rv-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\rv-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\rv-install.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\rv-install.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\shp-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\shp-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\shp-fsc.txt",
+   "kb": 3,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\shp-fsc.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\shp-install.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\shp-install.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\spt-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\spt-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\spt-install.txt",
+   "kb": 2,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\spt-install.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ss-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\ss-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ss-install.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\ss-install.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tl9-install.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\tl9-install.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tl92-install.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\tl92-install.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tl92-readers.txt",
+   "kb": 4,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\tl92-readers.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tlf-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\tlf-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tlf-font-span-check.txt",
+   "kb": 3,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\tlf-font-span-check.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tlf-install.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\tlf-install.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tlf-typing-latency-readers-guard.txt",
+   "kb": 4,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\tlf-typing-latency-readers-guard.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tlf-typing-latency-window-check.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\tlf-typing-latency-window-check.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tlg-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\tlg-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tlg-font-span-check.txt",
+   "kb": 3,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\tlg-font-span-check.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tlg-install.txt",
+   "kb": 2,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\tlg-install.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tlg-typing-latency-readers-guard.txt",
+   "kb": 4,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\tlg-typing-latency-readers-guard.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tlg-typing-latency-window-check.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\tlg-typing-latency-window-check.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tlm-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\tlm-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tlm-install.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\tlm-install.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tlm-typing-latency-readers-guard.txt",
+   "kb": 4,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\tlm-typing-latency-readers-guard.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tlm-typing-latency-window-check.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\tlm-typing-latency-window-check.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tsl-build.txt",
+   "kb": 33,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\tsl-build.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tsl-fsc.txt",
+   "kb": 3,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\tsl-fsc.txt",
+   "file": true
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tsl-install.txt",
+   "kb": 1,
+   "archive": "F:\\wrizo-archive\\evidence\\claude-worktrees\\tsl-install.txt",
+   "file": true
+  }
+ ],
+ "skipped": [
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\agent-a2b0ac59ec4e2e3a1",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\agent-a2eb44d7a35b18893",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\agent-a426bb3f17653a64a",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\agent-a4519352e42c89a66",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\agent-a7c317041e978cb3b",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\agent-a88f5a9272c0d668f",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\agent-a943e01cd771af5d4",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\agent-acdf459267afe9d99",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\agent-afd07d0d8d7d63eec",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bisect-pre-fx10",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\bm1-verify",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\e1-1-harden",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\m4-root-that-shows",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\ta",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\tu5-tutors-memory",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wd-ship",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wf_07f35fd0-e6f-1",
+   "why": "touched 1 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wf_07f35fd0-e6f-2",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wf_10146d83-a72-1",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wf_10146d83-a72-2",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wf_1f99fdf3-f8d-1",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wf_1f99fdf3-f8d-2",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wf_2db8efe0-263-1",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wf_40876f61-fd2-1",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wf_4130c9c4-95f-1",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wf_4130c9c4-95f-2",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wf_46618b45-7ce-1",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wf_46618b45-7ce-2",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wf_6aa43071-3a2-1",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wf_6aa43071-3a2-2",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wf_8458f3f0-ced-1",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wf_8ac31cde-cf5-1",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wf_c399b5ba-23c-1",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wf_c399b5ba-23c-2",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wf_d3ffe25b-a7d-1",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wf_d3ffe25b-a7d-2",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wf_e11e2f77-c21-1",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio\\.claude\\worktrees\\wf_e11e2f77-c21-2",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\ansel",
+   "why": "KEEP / other-repo"
+  },
+  {
+   "path": "C:\\Users\\nickh\\ar-41991020737",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\ar-41991053522",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\art-10hm",
+   "why": "touched 36 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\art-10i",
+   "why": "touched 36 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\art-10ifinal",
+   "why": "touched 35 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\art-10iq",
+   "why": "touched 36 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\art-guards3",
+   "why": "touched 36 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\art-mainS1",
+   "why": "touched 35 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\art-s1",
+   "why": "touched 35 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\b21-41988875815",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\b21-41988889315",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\b21-41988902228",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\b21c",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-10-out-turn13",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-10-out-turn14",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-10-out-turn15",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-10-out-turn16",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-10-out-turn17",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-10-out-turn18",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-10-out-turn19",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-10-out-turn20",
+   "why": "touched 43 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-10-out-turn21",
+   "why": "touched 41 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-10-out-turn22",
+   "why": "touched 41 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-10-out-turn23",
+   "why": "touched 33 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-10a-dist-a",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-10a-dist-control",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-10a-dist-main",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-10b-dist",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-10d-dist",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-11-gh",
+   "why": "touched 30 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-11-out-turn24",
+   "why": "touched 29 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-12f-out",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-12f-out2",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-5-out",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-5-out-1",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-6-dist",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-6-out",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-6-out2",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-7-dist",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-7-out",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-8-out",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-8-out2",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-8-out3",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-9-dist-base",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-9-dist-plant",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-9-dist-step",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-9-out-components",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-9-out-store",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-9-out-turn10",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-9-out-turn11",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-9-out-turn12",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-9-out-turn5",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-9-out-turn6",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-9-out-turn7",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-9-out-turn8",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-9-out-turn9",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-9-out1",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-9-out2",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-9c-dist-base",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-9c-dist-step",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-9p-dist-tip",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-9s-dist-base",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-9s-dist-step",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c13-9t-dist-tip",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c136-actions",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c136-box",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c137-actions",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c137-box",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\c138-box",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\cimerge-actions",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\cimerge-box",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\ctl-41937551239",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\ctl-41937567547",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\ctl10-main",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\ctl10-train",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\d46",
+   "why": "touched 30 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\e1",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\g1",
+   "why": "touched 47 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\g2",
+   "why": "touched 47 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\g3",
+   "why": "touched 47 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\g4",
+   "why": "touched 47 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\g5",
+   "why": "touched 47 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\harness-logs",
+   "why": "KEEP / other-repo"
+  },
+  {
+   "path": "C:\\Users\\nickh\\pairs",
+   "why": "touched 26 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\pc-main-default",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\pc-main-parked",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\pc-train-default",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\pc-train-parked",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\pr1",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\pr2",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\pr3",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\pw1-dist-box",
+   "why": "touched 33 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\pw1s5-gh-42166872695",
+   "why": "touched 30 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\pw1s5-gh-42166875768",
+   "why": "touched 30 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\pwdefault1",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\pwdefault2",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\pwdefault3",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\pwdefault4",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\pwdefault5",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\pwdefault6",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\pwdefault7",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\pwdefault8",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\pwparked1",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\pwparked2",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\pwparked3",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\pwparked4",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\pwparked5",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\pwparked6",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\pwparked7",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\pwparked8",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\ref-dist-step10",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\sp1",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\sp2",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\sp3",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\sp4",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\sp5",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\sp6",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\stand",
+   "why": "touched 31 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t10-art",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t10-probe",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t10c-art",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t10c-probe",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t10e-art",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t10e-merged",
+   "why": "touched 45 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t10e2-art",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t10e2-box",
+   "why": "touched 45 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t10g-art",
+   "why": "touched 47 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t10g2-art",
+   "why": "touched 47 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t10g3-art",
+   "why": "touched 44 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t10g3-checks",
+   "why": "touched 45 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t10h-art",
+   "why": "touched 40 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t10h-box",
+   "why": "touched 40 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t10h-ctl-box",
+   "why": "touched 36 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t10hj-checks",
+   "why": "touched 40 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t10j-art",
+   "why": "touched 40 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t10v",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t11-bisect",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t11-pair",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t11b-reds",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t11c-actions",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t11c-box",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12-actions",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12-base",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12-box",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12b-actions",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12b-box",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12b-reds",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12c-actions",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12c-box",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12c-ro",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12c-ro-actions",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12d-actions",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12d-box",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12e-actions",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12e-box",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12e-reds",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12e-tw",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12e-tw2",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12f-actions",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12f-box",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12f-cpu",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12f-diag",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12f-fps",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12f-geo",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12f-pace",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12f-ser",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12f-ser2",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12f-tz",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12g-actions",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12g-box",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12h-actions",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12h-b21-41294960432",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12h-b21-41294962335",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12h-b21-41294964114",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12h-box",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12h-fx",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12h-fx2",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12h-gk",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12i-actions",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12i-box",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12j-actions",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12j-box",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12j-ctl",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12j-rl",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12k-actions",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12k-box",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12k-c",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12k-i126",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12k-sd",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12kr2-actions",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12kr2-box",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12kr2-sd",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12kr3-art",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t12kr3-box",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t138-art",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t139-art",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t139b",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t139c-art",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t150b-box",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\t45-art",
+   "why": "touched 43 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\tarb-box",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\tfix-box",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\tg-art",
+   "why": "touched 40 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\tguards",
+   "why": "touched 40 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\ti-m",
+   "why": "touched 33 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\tools",
+   "why": "KEEP / other-repo"
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-12base",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\train-12k",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\ts11",
+   "why": "touched 27 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\ts2",
+   "why": "touched 31 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\ts3r2",
+   "why": "touched 15 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\tw-act",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\tw-act2",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\tw-act3",
+   "why": "already gone"
+  },
+  {
+   "path": "C:\\Users\\nickh\\writer-studio-fx17-red",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\wrizo-cd2-review",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\wrizo-fx3-review",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\wrizo-s1check",
+   "why": "touched 0 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\ws-c13-11-trial",
+   "why": "touched 31 h ago (<48 h)"
+  },
+  {
+   "path": "C:\\Users\\nickh\\ws-tools-frames",
+   "why": "already gone"
+  }
+ ],
+ "freedKB": 1111,
+ "freedGB": 0
+}

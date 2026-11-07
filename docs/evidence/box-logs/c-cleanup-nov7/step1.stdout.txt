@@ -1,0 +1,255 @@
+2026-11-07T09:07:59.446Z MODE step1; C: free 19.14 GB
+2026-11-07T09:08:00.440Z git fetch origin: ok
+2026-11-07T09:08:00.955Z stale remote-tracking refs (gone from origin, ignored for "on origin"): 0
+2026-11-07T09:08:01.000Z origin/main = 74e68a5c
+2026-11-07T09:08:01.426Z step 1: 237 SAFE candidates from census 1
+2026-11-07T09:08:01.428Z ALREADY-REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\a11y-signin (1 locked esbuild.exe link(s))
+2026-11-07T09:08:01.429Z ALREADY-REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\a11y-tutor-live-region (1 locked esbuild.exe link(s))
+2026-11-07T09:08:01.430Z ALREADY-REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\add-scenes (1 locked esbuild.exe link(s))
+2026-11-07T09:08:01.431Z ALREADY-REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\arrival-signin (1 locked esbuild.exe link(s))
+2026-11-07T09:08:01.432Z ALREADY-REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\b13 (1 locked esbuild.exe link(s))
+2026-11-07T09:08:01.433Z ALREADY-REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\b17 (1 locked esbuild.exe link(s))
+2026-11-07T09:08:01.446Z SKIP C:\Users\nickh\writer-studio\.claude\worktrees\bc-alone :: touched 0 h ago (<48 h)
+2026-11-07T09:08:17.987Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\batch-nine-integ (0.20 GB freed; 1 locked esbuild.exe link(s) left) batch-nine-integ @ cb8ed980
+2026-11-07T09:08:41.935Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\bg (0.40 GB freed; 1 locked esbuild.exe link(s) left) box-token-hash @ 038f2b2e
+2026-11-07T09:08:49.243Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\bg-starters-park (0.20 GB) bg-starters-park @ 8fec130d
+2026-11-07T09:09:01.400Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\bg2-beginnings-seen (0.15 GB freed; 1 locked esbuild.exe link(s) left) bg2-beginnings-seen @ e6b8e9aa
+2026-11-07T09:09:23.047Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\big-projects-1a (0.39 GB freed; 1 locked esbuild.exe link(s) left) big-projects-1a @ 5957492e
+2026-11-07T09:09:34.900Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\bg1-beginnings (0.15 GB freed; 1 locked esbuild.exe link(s) left) bg1-beginnings @ 6140d92a
+2026-11-07T09:09:44.709Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\big-projects-plan (0.23 GB) big-projects-plan @ 8b9bab8a
+2026-11-07T09:10:03.280Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\bis (0.37 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ 76e1afc0
+2026-11-07T09:10:25.312Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\big-projects-2 (0.39 GB freed; 1 locked esbuild.exe link(s) left) big-projects-2 @ 42cfc2af
+2026-11-07T09:10:45.218Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\board-context-menu (0.37 GB freed; 1 locked esbuild.exe link(s) left) board-context-menu @ 6f82b466
+2026-11-07T09:11:02.410Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\board-click-to-create (0.30 GB freed; 1 locked esbuild.exe link(s) left) board-click-to-create @ 7ed1963b
+2026-11-07T09:11:19.885Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\card-resize-axis (0.35 GB freed; 1 locked esbuild.exe link(s) left) card-resize-axis @ d8fd21ff
+2026-11-07T09:11:37.815Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\cf-ship (0.31 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ 74b82fcc
+2026-11-07T09:12:04.492Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\ci-actions (0.44 GB freed; 1 locked esbuild.exe link(s) left) ci/actions-harness-r4 @ 72ba5d37
+2026-11-07T09:12:23.511Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\connector-a (0.34 GB freed; 1 locked esbuild.exe link(s) left) connector-a @ 54ac5b60
+2026-11-07T09:12:30.564Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\connector-b (0.16 GB) connector-b @ 49631a01
+2026-11-07T09:12:52.087Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\connector-b-build (0.38 GB freed; 1 locked esbuild.exe link(s) left) connector-b-build @ e2a7aaed
+2026-11-07T09:13:09.616Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\cp-fix (0.24 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ 2f906d87
+2026-11-07T09:13:25.128Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\csp-enforce (0.19 GB freed; 1 locked esbuild.exe link(s) left) csp-enforce @ d1291bb4
+2026-11-07T09:13:40.425Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\csp-report-only (0.19 GB freed; 1 locked esbuild.exe link(s) left) csp-report-only @ d587e609
+2026-11-07T09:13:40.426Z progress 20/237, freed 5.8 GB
+2026-11-07T09:13:58.194Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\cx-green (0.28 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ 35fe9e34
+2026-11-07T09:14:15.863Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\cx-red (0.28 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ edbefaa1
+2026-11-07T09:14:33.836Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\cx2-green (0.28 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ 93b0bb70
+2026-11-07T09:14:51.624Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\cx2-red (0.28 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ 0a5611fd
+2026-11-07T09:15:08.563Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\dep-bumps (0.19 GB freed; 1 locked esbuild.exe link(s) left) dep-bumps @ 1a02b550
+2026-11-07T09:15:20.227Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\df1-deflake (0.15 GB freed; 1 locked esbuild.exe link(s) left) df1-deflake @ 24c61734
+2026-11-07T09:15:30.190Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\dfg (0.23 GB) HEAD @ 6b1ab519
+2026-11-07T09:15:46.463Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\dg-base (0.23 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ d2fcb381
+2026-11-07T09:16:05.971Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\dm (0.38 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ cc842512
+2026-11-07T09:16:26.865Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\dm2 (0.39 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ a68b527f
+2026-11-07T09:16:47.568Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\dmp (0.39 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ 43df385d
+2026-11-07T09:17:05.930Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\dp-main (0.34 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ 7c4a5ce8
+2026-11-07T09:17:12.269Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\drawer-ghost-fix (0.08 GB) drawer-ghost-fix @ 443376f1
+2026-11-07T09:17:35.890Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\elc2 (0.39 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ 7eaf839d
+2026-11-07T09:17:43.924Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\e3-park (0.11 GB) e3-park @ 68353629
+2026-11-07T09:18:05.174Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\empty-line-caret (0.38 GB freed; 1 locked esbuild.exe link(s) left) empty-line-caret @ 20052831
+2026-11-07T09:18:09.543Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\exp1-amend (0.02 GB) plan-exp1-amend @ b52e1517
+2026-11-07T09:18:13.535Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\exp1-q1 (0.02 GB) plan-exp1-q1 @ 551dba41
+2026-11-07T09:18:27.802Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\exp1-connect (0.18 GB freed; 1 locked esbuild.exe link(s) left) exp1-connect-text @ 914e0b39
+2026-11-07T09:18:44.603Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\exp1-r2 (0.21 GB freed; 1 locked esbuild.exe link(s) left) exp1-connect-text-r2 @ 8d824bde
+2026-11-07T09:18:44.604Z progress 40/237, freed 10.6 GB
+2026-11-07T09:18:49.742Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\fix-signin-live (0.04 GB) fix-signin-live-double @ 754b0c5b
+2026-11-07T09:19:05.889Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\exp1-vt (0.20 GB freed; 1 locked esbuild.exe link(s) left) exp1-visibletext @ a5061f98
+2026-11-07T09:19:11.119Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\fix-tutor-sr-check (0.04 GB) fix-tutor-sr-check @ 78bb7bc1
+2026-11-07T09:19:34.247Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\flux-v2 (0.39 GB freed; 1 locked esbuild.exe link(s) left) flux-v2 @ 838c1b9b
+2026-11-07T09:19:57.604Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\flux-inputs (0.40 GB freed; 1 locked esbuild.exe link(s) left) flux-inputs @ deeabe91
+2026-11-07T09:20:09.535Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\fx13-board-in-the-room (0.15 GB freed; 1 locked esbuild.exe link(s) left) fx13-board-in-the-room @ acbabbe2
+2026-11-07T09:20:17.070Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\fx17-s3-fixture (0.21 GB) fx17-s3-fixture @ 15a7167e
+2026-11-07T09:20:28.483Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\fx11-boards-hands (0.15 GB freed; 1 locked esbuild.exe link(s) left) fx11-boards-hands @ fe3ce82f
+2026-11-07T09:20:44.681Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\guest-client (0.20 GB freed; 1 locked esbuild.exe link(s) left) guest-client @ 596d64f5
+2026-11-07T09:21:00.603Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\guest-client-r2 (0.21 GB freed; 1 locked esbuild.exe link(s) left) guest-client-r2 @ 12601d24
+2026-11-07T09:21:28.721Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\glue-9 (0.42 GB freed; 1 locked esbuild.exe link(s) left) glue-9 @ 7d5e689a
+2026-11-07T09:21:45.973Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\guest-client-r3 (0.21 GB freed; 1 locked esbuild.exe link(s) left) guest-client-r3 @ e50456cc
+2026-11-07T09:22:00.990Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\guest-login (0.19 GB freed; 1 locked esbuild.exe link(s) left) guest-login @ de1f170c
+2026-11-07T09:22:16.052Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\guest-client-r4 (0.20 GB freed; 1 locked esbuild.exe link(s) left) drafts-integrity @ e4b596c2
+2026-11-07T09:22:41.971Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\guided-w1 (0.41 GB freed; 1 locked esbuild.exe link(s) left) guided-w1 @ 32ad6997
+2026-11-07T09:23:08.312Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\guided-w3 (0.40 GB freed; 1 locked esbuild.exe link(s) left) guided-w3 @ 295cd5da
+2026-11-07T09:23:25.795Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\guest-run (0.20 GB freed; 1 locked esbuild.exe link(s) left) guest-run-local @ b3c0ded1
+2026-11-07T09:23:33.342Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\harness-expired-checks (0.20 GB) harness-expired-checks @ b3508224
+2026-11-07T09:23:46.559Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\i84-control (0.15 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ 23ffadba
+2026-11-07T09:24:07.215Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\hbh (0.38 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ c8851735
+2026-11-07T09:24:07.215Z progress 60/237, freed 15.3 GB
+2026-11-07T09:24:21.715Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\item157-ink-sheet (0.16 GB freed; 1 locked esbuild.exe link(s) left) item157-ink-sheet @ fb61ba54
+2026-11-07T09:24:36.788Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\item163-in (0.18 GB freed; 1 locked esbuild.exe link(s) left) item163-location-in @ 71ee4279
+2026-11-07T09:24:52.055Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\item138-pin (0.18 GB freed; 1 locked esbuild.exe link(s) left) item138-pin-tall @ 5318b12f
+2026-11-07T09:24:56.754Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\item171b-board-ink (0.02 GB) item171b-board-ink @ 67c8ad5e
+2026-11-07T09:25:11.608Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\item171-typewriter-scope (0.16 GB freed; 1 locked esbuild.exe link(s) left) item171-typewriter-scope @ 980360c3
+2026-11-07T09:25:27.137Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\item176-picker (0.16 GB freed; 1 locked esbuild.exe link(s) left) item176-picker-says-board @ 292f661e
+2026-11-07T09:25:43.866Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\item204-storage (0.25 GB freed; 1 locked esbuild.exe link(s) left) item204-proofing-storage @ 13cd4157
+2026-11-07T09:25:58.091Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\item196-download-wait (0.16 GB freed; 1 locked esbuild.exe link(s) left) item196-download-wait @ 6e61980f
+2026-11-07T09:26:10.609Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\item82-fixb-j5-seam (0.15 GB freed; 1 locked esbuild.exe link(s) left) item82-fixb-j5-seam @ 33c062f3
+2026-11-07T09:26:25.819Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\k10-reanchor (0.20 GB freed; 1 locked esbuild.exe link(s) left) k10-reanchor @ 9acc8a71
+2026-11-07T09:26:42.417Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\ledger-desk (0.25 GB) HEAD @ 4820d994
+2026-11-07T09:26:54.370Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\item84-roster (0.15 GB freed; 1 locked esbuild.exe link(s) left) item84-roster @ 8685d3fe
+2026-11-07T09:27:10.637Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\logout-flush (0.21 GB freed; 1 locked esbuild.exe link(s) left) logout-flush @ 86c5892f
+2026-11-07T09:27:27.660Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\main-ctl (0.24 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ c5e20fe4
+2026-11-07T09:27:39.421Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\m3-rhizome-roams (0.15 GB freed; 1 locked esbuild.exe link(s) left) m3-rhizome-roams @ ccf643bf
+2026-11-07T09:28:07.308Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\outline-blur-data (0.41 GB freed; 1 locked esbuild.exe link(s) left) outline-blur-data @ 4d21bdfc
+2026-11-07T09:28:24.323Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\page-scroll-return (0.28 GB freed; 1 locked esbuild.exe link(s) left) page-scroll-return @ 7e8a9022
+2026-11-07T09:28:48.009Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\obd-red (0.40 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ 39e3a4ab
+2026-11-07T09:29:02.022Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\pb1-born-on-first-word (0.15 GB freed; 1 locked esbuild.exe link(s) left) pb1-born-on-first-word @ af475820
+2026-11-07T09:29:19.203Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\phase1-drawers (0.27 GB freed; 1 locked esbuild.exe link(s) left) phase1-drawers @ fd51ab84
+2026-11-07T09:29:19.204Z progress 80/237, freed 19.5 GB
+2026-11-07T09:29:41.459Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\page-templates (0.39 GB freed; 1 locked esbuild.exe link(s) left) page-templates @ 8e80d606
+2026-11-07T09:29:45.756Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\plan-144-amend3 (0.02 GB) plan-144-amend3 @ 8c213bb3
+2026-11-07T09:29:49.667Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\plan-144-nest (0.02 GB) plan-144-nest @ 7888325f
+2026-11-07T09:29:53.837Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\plan-144-amend (0.02 GB) plan-144-amend @ cc481939
+2026-11-07T09:29:57.979Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\plan-166-guideline (0.02 GB) plan-166-guideline @ 3ef089de
+2026-11-07T09:30:02.022Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\plan-165-amend (0.02 GB) plan-165-amend @ 7aa644c6
+2026-11-07T09:30:06.145Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\plan-168-perm (0.02 GB) plan-168-delete-permanently @ 87eae9ad
+2026-11-07T09:30:10.513Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\plan-171b-revise (0.02 GB) plan-171b-revise-v2 @ 9873bea6
+2026-11-07T09:30:14.634Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\plan-171b-pass (0.02 GB) plan-171b-design-pass @ d04ce541
+2026-11-07T09:30:18.803Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\plan-180-pass (0.02 GB) plan-180-carry-pass @ 9584680b
+2026-11-07T09:30:23.180Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\plan-181-pass (0.02 GB) plan-181-file-pass @ d073275e
+2026-11-07T09:30:27.455Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\plan-204-proofing (0.02 GB) plan-204-proofing @ 3f406778
+2026-11-07T09:30:31.856Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\plan-186-menu (0.02 GB) plan-186-base-menu @ e52a265e
+2026-11-07T09:30:36.324Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\plan-207-fonts (0.02 GB) plan-207-fonts @ 3bfb70a3
+2026-11-07T09:30:40.632Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\plan-207-amend (0.02 GB) plan-207-amend @ d4415f3c
+2026-11-07T09:30:45.390Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\plan-guest-login (0.04 GB) plan-guest-login @ 368423a1
+2026-11-07T09:30:49.640Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\plan-menus-rulings (0.02 GB) plan-menus-rulings @ 137dc6ea
+2026-11-07T09:30:53.830Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\plan-vw2-rows (0.02 GB) plan-vw2-rows @ 496c20d9
+2026-11-07T09:30:58.343Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\plan-library-shelf-journal (0.04 GB) plan-library-shelf-journal @ e669b847
+2026-11-07T09:31:16.223Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\ps-green (0.28 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ 7e8a9022
+2026-11-07T09:31:16.224Z progress 100/237, freed 20.5 GB
+2026-11-07T09:31:41.512Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\polish-10-ink (0.41 GB freed; 1 locked esbuild.exe link(s) left) polish-10-ink @ b632491e
+2026-11-07T09:31:59.733Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\ps-ship (0.31 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ fe7ac9f6
+2026-11-07T09:32:04.480Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\pub0-survey (0.04 GB) pub0-survey @ 5ebe73d5
+2026-11-07T09:32:19.591Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\pub1-skeleton (0.18 GB freed; 1 locked esbuild.exe link(s) left) pub1-skeleton @ b74e172e
+2026-11-07T09:32:32.775Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\pw1-boards-connected (0.15 GB freed; 1 locked esbuild.exe link(s) left) pw1-boards-connected @ 57a0878c
+2026-11-07T09:32:47.442Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\pw1-errata (0.15 GB freed; 1 locked esbuild.exe link(s) left) pw1-errata @ 2426dd08
+2026-11-07T09:32:50.643Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\pw1-records (0.01 GB) pw1-records @ 826f7efe
+2026-11-07T09:33:03.760Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\pw2-nesting-transfer (0.16 GB freed; 1 locked esbuild.exe link(s) left) pw2-nesting-transfer @ d226e09a
+2026-11-07T09:33:12.331Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\resume-plan (0.23 GB) resume-on-open-plan @ dbb4dc24
+2026-11-07T09:33:16.636Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\revise-spelling (0.02 GB) revise-spelling @ cbd4dc6d
+2026-11-07T09:33:36.050Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\resume-on-open (0.38 GB freed; 1 locked esbuild.exe link(s) left) resume-on-open @ 0e55de94
+2026-11-07T09:33:57.068Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\rhizome-sprout (0.38 GB freed; 1 locked esbuild.exe link(s) left) rhizome-sprout @ 9bbd82ef
+2026-11-07T09:34:14.647Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\rr-green (0.28 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ 55e61a52
+2026-11-07T09:34:35.291Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\rgm (0.38 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ ee189080
+2026-11-07T09:34:52.490Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\rr-red (0.28 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ 52d29e84
+2026-11-07T09:35:09.412Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\rr2-red (0.28 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ b769d4fd
+2026-11-07T09:35:26.316Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\rr2-green (0.28 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ 1f13bb84
+2026-11-07T09:35:41.353Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\run-exp1 (0.21 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ 8d824bde
+2026-11-07T09:36:00.119Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\rv (0.38 GB freed; 1 locked esbuild.exe link(s) left) revert-tutor-drawer-mirror @ 409d9e3f
+2026-11-07T09:36:16.167Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\run-drawers (0.23 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ 95f5ed70
+2026-11-07T09:36:16.168Z progress 120/237, freed 25.3 GB
+2026-11-07T09:36:30.408Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\server-hardening (0.18 GB freed; 1 locked esbuild.exe link(s) left) server-hardening @ b9d3db29
+2026-11-07T09:36:46.353Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\sh-pair (0.23 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ 771adccb
+2026-11-07T09:36:58.860Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\sc2-the-clock (0.15 GB freed; 1 locked esbuild.exe link(s) left) sc2-s5-memo @ ecd37bf2
+2026-11-07T09:37:21.477Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\sync-proof-words (0.39 GB freed; 1 locked esbuild.exe link(s) left) sync-proof-words @ 8349fd64
+2026-11-07T09:37:30.308Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\templates-plan (0.23 GB) page-templates-plan @ e618fefd
+2026-11-07T09:37:44.714Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\sync-integrity (0.18 GB freed; 1 locked esbuild.exe link(s) left) sync-integrity @ 6da0964f
+2026-11-07T09:37:56.442Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\tu5-bible (0.15 GB freed; 1 locked esbuild.exe link(s) left) tu5-bible @ ba364b81
+2026-11-07T09:38:10.632Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\tutor20-live-defect (0.18 GB freed; 1 locked esbuild.exe link(s) left) tutor20-live-defect @ 3034f904
+2026-11-07T09:38:21.979Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\tu2-listener (0.15 GB freed; 1 locked esbuild.exe link(s) left) tu2-listener @ 45ea10e9
+2026-11-07T09:38:47.942Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\w1-board-reds (0.42 GB freed; 1 locked esbuild.exe link(s) left) w1-board-reds @ 807f99d1
+2026-11-07T09:39:13.699Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\w5-gaps-rewards (0.42 GB freed; 1 locked esbuild.exe link(s) left) w5-gaps-rewards @ 70ffd12d
+2026-11-07T09:39:17.309Z REMOVED C:\Users\nickh\writer-studio\.claude\worktrees\vw1-rail-brief (0.01 GB) plan-vw1-rail-brief @ 7508d91f
+2026-11-07T09:39:33.720Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio\.claude\worktrees\walk-settle (0.21 GB freed; 1 locked esbuild.exe link(s) left) walk-settle @ c35da021
+2026-11-07T09:39:58.120Z REMOVED-WITH-REMNANT C:\Users\nickh\bis-h2 (0.41 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ 3d3b979b
+2026-11-07T09:40:23.666Z REMOVED-WITH-REMNANT C:\Users\nickh\bis-main (0.42 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ db8dcc00
+2026-11-07T09:40:39.123Z REMOVED C:\Users\nickh\c13-3 (0.29 GB) c13-3-ledger-r2 @ f15c9af4
+2026-11-07T09:41:03.429Z REMOVED-WITH-REMNANT C:\Users\nickh\c13-main (0.20 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ 92918c93
+2026-11-07T09:41:29.533Z REMOVED-WITH-REMNANT C:\Users\nickh\bis-r2 (0.42 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ 587f7b77
+2026-11-07T09:41:57.230Z REMOVED-WITH-REMNANT C:\Users\nickh\flux3-s0 (0.45 GB freed; 1 locked esbuild.exe link(s) left) flux3/s0 @ 38a58ca8
+2026-11-07T09:41:57.230Z SKIP C:\Users\nickh\machina-mockup :: a live process mentions this path
+2026-11-07T09:42:19.852Z REMOVED-WITH-REMNANT C:\Users\nickh\flux3-s1 (0.20 GB freed; 1 locked esbuild.exe link(s) left) flux3/s1-layer @ b4534e83
+2026-11-07T09:42:19.852Z progress 140/237, freed 30.5 GB
+2026-11-07T09:42:46.192Z REMOVED-WITH-REMNANT C:\Users\nickh\ci-merge (0.45 GB freed; 1 locked esbuild.exe link(s) left) ci-merge @ e5cf5541
+2026-11-07T09:43:13.624Z REMOVED-WITH-REMNANT C:\Users\nickh\train-10b (0.45 GB freed; 1 locked esbuild.exe link(s) left) train-10b @ ace052b6
+2026-11-07T09:43:40.664Z REMOVED-WITH-REMNANT C:\Users\nickh\train-10c (0.45 GB freed; 1 locked esbuild.exe link(s) left) train-10c @ 5f51e97f
+2026-11-07T09:44:07.602Z REMOVED-WITH-REMNANT C:\Users\nickh\sample-seed (0.45 GB freed; 1 locked esbuild.exe link(s) left) sample-seed @ 65737100
+2026-11-07T09:44:34.170Z REMOVED-WITH-REMNANT C:\Users\nickh\train-11c (0.45 GB freed; 1 locked esbuild.exe link(s) left) train-11c @ 2dbb6752
+2026-11-07T09:45:00.843Z REMOVED-WITH-REMNANT C:\Users\nickh\train-12 (0.45 GB freed; 1 locked esbuild.exe link(s) left) train-12 @ 91ac7254
+2026-11-07T09:45:27.967Z REMOVED-WITH-REMNANT C:\Users\nickh\train-10d (0.45 GB freed; 1 locked esbuild.exe link(s) left) train-10d @ 8dc5394b
+2026-11-07T09:45:54.711Z REMOVED-WITH-REMNANT C:\Users\nickh\train-12c (0.45 GB freed; 1 locked esbuild.exe link(s) left) train-12c @ 175ab289
+2026-11-07T09:46:21.853Z REMOVED-WITH-REMNANT C:\Users\nickh\train-12f (0.45 GB freed; 1 locked esbuild.exe link(s) left) train-12f @ 6c58aa10
+2026-11-07T09:46:49.756Z REMOVED-WITH-REMNANT C:\Users\nickh\train-12d (0.45 GB freed; 1 locked esbuild.exe link(s) left) train-12d @ ce73d615
+2026-11-07T09:47:17.422Z REMOVED-WITH-REMNANT C:\Users\nickh\train-12h (0.45 GB freed; 1 locked esbuild.exe link(s) left) train-12h @ 3a738225
+2026-11-07T09:47:38.380Z REMOVED-WITH-REMNANT C:\Users\nickh\train-12i (0.20 GB freed; 1 locked esbuild.exe link(s) left) train-12i @ 38105480
+2026-11-07T09:48:06.046Z REMOVED-WITH-REMNANT C:\Users\nickh\train-12g (0.45 GB freed; 1 locked esbuild.exe link(s) left) train-12g @ 2b06e484
+2026-11-07T09:48:28.708Z REMOVED-WITH-REMNANT C:\Users\nickh\train-12k-r2 (0.20 GB freed; 1 locked esbuild.exe link(s) left) train-12k-r2 @ 6b941a90
+2026-11-07T09:48:51.115Z REMOVED-WITH-REMNANT C:\Users\nickh\train-12k-r3 (0.20 GB freed; 1 locked esbuild.exe link(s) left) train-12k-r3 @ d45f5679
+2026-11-07T09:49:11.470Z REMOVED-WITH-REMNANT C:\Users\nickh\train-12j (0.20 GB freed; 1 locked esbuild.exe link(s) left) train-12j @ 622df16e
+2026-11-07T09:49:32.062Z REMOVED-WITH-REMNANT C:\Users\nickh\train-c13-7 (0.20 GB freed; 1 locked esbuild.exe link(s) left) train-c13-7 @ 53c517bf
+2026-11-07T09:49:52.679Z REMOVED-WITH-REMNANT C:\Users\nickh\train-c13-8 (0.20 GB freed; 1 locked esbuild.exe link(s) left) train-c13-8 @ e99e20f9
+2026-11-07T09:50:12.871Z REMOVED-WITH-REMNANT C:\Users\nickh\train-c13-6 (0.20 GB freed; 1 locked esbuild.exe link(s) left) train-c13-6 @ 9816d75c
+2026-11-07T09:50:21.327Z REMOVED C:\Users\nickh\url-search-optin (0.03 GB) harness/url-search-optin @ fe7380d8
+2026-11-07T09:50:21.327Z progress 160/237, freed 37.3 GB
+2026-11-07T09:50:35.035Z REMOVED-WITH-REMNANT C:\Users\nickh\w2-wt (0.25 GB freed; 0 locked esbuild.exe link(s) left) guided-w2-write-place @ 716794ac
+2026-11-07T09:50:59.542Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio-acct (0.44 GB freed; 1 locked esbuild.exe link(s) left) account-tools @ 239ec9fc
+2026-11-07T09:51:07.002Z REMOVED C:\Users\nickh\writer-studio-bctx (0.18 GB) cursor/board-context-menu @ 0df8bf30
+2026-11-07T09:51:13.097Z REMOVED C:\Users\nickh\writer-studio-board-start (0.16 GB) cursor/board-start @ f437938b
+2026-11-07T09:51:22.290Z REMOVED C:\Users\nickh\writer-studio-bigproj (0.24 GB) cursor/big-projects-mockup @ aab45ec0
+2026-11-07T09:51:42.936Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio-cardport (0.38 GB freed; 1 locked esbuild.exe link(s) left) in-app-copy-format @ 22225575
+2026-11-07T09:51:53.009Z REMOVED C:\Users\nickh\writer-studio-caret (0.24 GB) cursor/empty-line-caret @ 985588ba
+2026-11-07T09:52:04.471Z REMOVED C:\Users\nickh\writer-studio-boardkinds (0.24 GB) cursor/board-kinds-mockup @ b8f4b8fb
+2026-11-07T09:52:09.917Z REMOVED C:\Users\nickh\writer-studio-cursor (0.04 GB) cursor/rail-mockup @ 514913c0
+2026-11-07T09:52:23.111Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio-d82 (0.15 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ 9b302739
+2026-11-07T09:52:29.719Z REMOVED C:\Users\nickh\writer-studio-connector (0.16 GB) cursor/connector @ 3b437b20
+2026-11-07T09:52:46.084Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio-drawer-handles (0.20 GB freed; 1 locked esbuild.exe link(s) left) cursor/drawer-handles @ ef714d43
+2026-11-07T09:52:51.421Z REMOVED C:\Users\nickh\writer-studio-flux-flicker (0.05 GB) cursor/flux-flicker-mockup @ 0eb36a6a
+2026-11-07T09:53:02.553Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio-df11 (0.15 GB freed; 1 locked esbuild.exe link(s) left) df1-1-rider @ 30fc2ca4
+2026-11-07T09:53:12.955Z REMOVED C:\Users\nickh\writer-studio-fluxv2 (0.24 GB) cursor/flux-v2-mockup @ 7a020755
+2026-11-07T09:53:19.945Z REMOVED C:\Users\nickh\writer-studio-fonts (0.20 GB) cursor/font-choices @ 6cc5f529
+2026-11-07T09:53:29.303Z REMOVED C:\Users\nickh\writer-studio-flux-glitch (0.24 GB) cursor/flux-glitch-shipped @ 5f88f549
+2026-11-07T09:53:31.491Z REMOVED C:\Users\nickh\writer-studio-fx18 (0.01 GB) fx18-chrome-aligned @ 0ceb0802
+2026-11-07T09:53:55.174Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio-fx17 (0.41 GB freed; 1 locked esbuild.exe link(s) left) page-size-r3 @ 243cf8f0
+2026-11-07T09:54:04.758Z REMOVED C:\Users\nickh\writer-studio-graftdoors (0.24 GB) cursor/graft-doors-mockup @ c4f34eb0
+2026-11-07T09:54:04.758Z progress 180/237, freed 41.5 GB
+2026-11-07T09:54:06.803Z REMOVED C:\Users\nickh\writer-studio-hb2 (0.01 GB) hb2-lite-landing @ 9ff65643
+2026-11-07T09:54:14.927Z REMOVED C:\Users\nickh\writer-studio-help (0.23 GB) cursor/help-buttons @ 4ad7f3c7
+2026-11-07T09:54:24.653Z REMOVED C:\Users\nickh\writer-studio-nomadv1 (0.24 GB) cursor/nomad-v1-mockup @ 33752c99
+2026-11-07T09:54:34.070Z REMOVED C:\Users\nickh\writer-studio-nomad (0.24 GB) cursor/nomad-progress-mockup @ 6cf291a3
+2026-11-07T09:54:43.857Z REMOVED C:\Users\nickh\writer-studio-nomadv2 (0.24 GB) cursor/nomad-v2-mockup @ 939d455c
+2026-11-07T09:55:09.651Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio-p10 (0.45 GB freed; 1 locked esbuild.exe link(s) left) polish10-board-r6 @ 0437f48a
+2026-11-07T09:55:36.711Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio-p10d (0.45 GB freed; 1 locked esbuild.exe link(s) left) polish10-linkdock-r10 @ 9e7f037d
+2026-11-07T09:56:03.143Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio-p10c (0.45 GB freed; 1 locked esbuild.exe link(s) left) polish10-caret-r7 @ 212fbc35
+2026-11-07T09:56:29.457Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio-p10h (0.45 GB freed; 1 locked esbuild.exe link(s) left) polish10-hint @ bc6cf256
+2026-11-07T09:56:56.200Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio-p10k (0.45 GB freed; 1 locked esbuild.exe link(s) left) polish10-card @ 9c12abab
+2026-11-07T09:57:22.270Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio-p10f (0.45 GB freed; 1 locked esbuild.exe link(s) left) polish10-format-r9 @ 48bf073e
+2026-11-07T09:57:48.073Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio-p10r (0.45 GB freed; 1 locked esbuild.exe link(s) left) polish10-recede @ bc6cf256
+2026-11-07T09:58:13.723Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio-p10s (0.45 GB freed; 1 locked esbuild.exe link(s) left) polish10-scrollbar @ bc6cf256
+2026-11-07T09:58:40.335Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio-p10p (0.45 GB freed; 1 locked esbuild.exe link(s) left) polish10-page-r9 @ fcd99d6a
+2026-11-07T09:58:52.405Z REMOVED C:\Users\nickh\writer-studio-pagesize (0.24 GB) cursor/page-size-mockup @ e3c4e462
+2026-11-07T09:58:57.859Z REMOVED C:\Users\nickh\writer-studio-r7 (0.04 GB) cursor/r7-mockup @ 1eb27733
+2026-11-07T09:59:22.993Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio-p10t (0.45 GB freed; 1 locked esbuild.exe link(s) left) polish10-timing @ 68c93175
+2026-11-07T09:59:39.634Z REMOVED-WITH-REMNANT C:\Users\nickh\writer-studio-rhizome (0.23 GB freed; 1 locked esbuild.exe link(s) left) rhizome-flash-fade @ c1be3716
+2026-11-07T09:59:45.248Z REMOVED C:\Users\nickh\writer-studio-scrollbar-mockup (0.08 GB) cursor/scrollbar-mockup @ c67f1bdb
+2026-11-07T09:59:54.930Z REMOVED C:\Users\nickh\writer-studio-sidepanels (0.23 GB) cursor/side-panels-mockup @ 472ab916
+2026-11-07T09:59:54.931Z progress 200/237, freed 47.8 GB
+2026-11-07T10:00:00.052Z REMOVED C:\Users\nickh\writer-studio-templates-mockup (0.06 GB) cursor/templates-mockup @ 2e3420db
+2026-11-07T10:00:08.079Z REMOVED C:\Users\nickh\writer-studio-templates2 (0.23 GB) cursor/templates @ 0fc9afef
+2026-11-07T10:00:13.616Z REMOVED C:\Users\nickh\writer-studio-theme-words-mockup (0.08 GB) cursor/theme-words-mockup @ 6741565d
+2026-11-07T10:00:23.331Z REMOVED C:\Users\nickh\writer-studio-themepick (0.24 GB) cursor/theme-picker-mockup @ 1a057bea
+2026-11-07T10:00:28.795Z REMOVED C:\Users\nickh\writer-studio-typewriter-mockup (0.08 GB) cursor/typewriter-mockup @ 34d94a94
+2026-11-07T10:00:38.058Z REMOVED-WITH-REMNANT C:\Users\nickh\wrizo-hb1 (0.13 GB freed; 1 locked esbuild.exe link(s) left) hb1-threshold @ fc43f77e
+2026-11-07T10:00:43.880Z REMOVED C:\Users\nickh\writer-studio-word-diet-ui (0.12 GB) cursor/word-diet-ui @ 5933454c
+2026-11-07T10:01:04.633Z REMOVED-WITH-REMNANT C:\Users\nickh\ws-c13-12f (0.20 GB freed; 1 locked esbuild.exe link(s) left) c13-12f-sprout-invite-r @ 8e45c060
+2026-11-07T10:01:18.959Z REMOVED C:\Users\nickh\ws-c13-1 (0.29 GB) c13-1-branches @ c135a620
+2026-11-07T10:01:33.029Z REMOVED C:\Users\nickh\ws-c13-2 (0.29 GB) c13-2-map @ 5bfa48c2
+2026-11-07T10:01:47.383Z REMOVED C:\Users\nickh\ws-c13-4 (0.29 GB) c13-4-docs-fold @ 2bae8561
+2026-11-07T10:02:01.661Z REMOVED C:\Users\nickh\ws-c13-3 (0.29 GB) c13-3-ledger @ 9c14c8dd
+2026-11-07T10:02:27.790Z REMOVED-WITH-REMNANT C:\Users\nickh\ws-c13-4b (0.45 GB freed; 1 locked esbuild.exe link(s) left) c13-4b-fx1-addendum @ 13bff96a
+2026-11-07T10:02:35.491Z REMOVED C:\Users\nickh\ws-c13-4c (0.03 GB) c13-4c-evidence-ignore @ 4fc41529
+2026-11-07T10:02:57.027Z REMOVED-WITH-REMNANT C:\Users\nickh\ws-c13-5 (0.20 GB freed; 1 locked esbuild.exe link(s) left) HEAD @ 5119bdf0
+2026-11-07T10:03:04.715Z REMOVED C:\Users\nickh\ws-c13-4d (0.03 GB) c13-4d-links-r @ 4e9fc471
+2026-11-07T10:03:12.512Z REMOVED C:\Users\nickh\ws-c13-5b (0.03 GB) c13-5-probe-origin @ 06401428
+2026-11-07T10:03:32.452Z REMOVED-WITH-REMNANT C:\Users\nickh\ws-c13-6 (0.20 GB freed; 1 locked esbuild.exe link(s) left) c13-6-css-split @ 2d021e8b
+2026-11-07T10:03:40.537Z REMOVED C:\Users\nickh\ws-c13-6-map (0.03 GB) c13-6-map-link @ e8341b5f
+2026-11-07T10:04:00.852Z REMOVED-WITH-REMNANT C:\Users\nickh\ws-c13-7 (0.20 GB freed; 1 locked esbuild.exe link(s) left) c13-7-css-comments-r @ b32c673e
+2026-11-07T10:04:00.853Z progress 220/237, freed 51.2 GB
+2026-11-07T10:04:22.406Z REMOVED-WITH-REMNANT C:\Users\nickh\ws-c13-9 (0.20 GB freed; 1 locked esbuild.exe link(s) left) c13-9-ts-comments-board @ 6a2cd218
+2026-11-07T10:04:43.132Z REMOVED-WITH-REMNANT C:\Users\nickh\ws-c13-8 (0.20 GB freed; 1 locked esbuild.exe link(s) left) c13-8-css-themes @ 38755d93
+2026-11-07T10:05:04.921Z REMOVED-WITH-REMNANT C:\Users\nickh\ws-c13-9c (0.20 GB freed; 1 locked esbuild.exe link(s) left) c13-9-ts-comments-components @ 8618c18f
+2026-11-07T10:05:29.185Z REMOVED-WITH-REMNANT C:\Users\nickh\ws-c13-9r (0.20 GB freed; 1 locked esbuild.exe link(s) left) c13-9-ts-comments-store-r2 @ 5d3dc8bf
+2026-11-07T10:05:49.814Z REMOVED-WITH-REMNANT C:\Users\nickh\ws-c13-9p (0.20 GB freed; 1 locked esbuild.exe link(s) left) c13-9-ts-comments-pages @ e56dcf0a
+2026-11-07T10:06:11.160Z REMOVED-WITH-REMNANT C:\Users\nickh\ws-c13-9s (0.20 GB freed; 1 locked esbuild.exe link(s) left) c13-9-ts-comments-store @ a2c6f7f6
+2026-11-07T10:06:19.375Z REMOVED C:\Users\nickh\ws-c13-brief-12f (0.03 GB) c13-brief-12f-sprout @ aa21bfee
+2026-11-07T10:06:40.064Z REMOVED-WITH-REMNANT C:\Users\nickh\ws-c13-9t (0.20 GB freed; 1 locked esbuild.exe link(s) left) c13-9-ts-comments-rest @ ef883117
+2026-11-07T10:06:55.827Z REMOVED C:\Users\nickh\ws-cleanup (0.28 GB) cleanup/survey-r3 @ 40ca83c8
+2026-11-07T10:06:56.707Z git worktree prune done
+2026-11-07T10:06:57.249Z END step1: removed/moved 235, skipped 2, freed 52.94 GB; C: free now 52.7 GB
