@@ -1,0 +1,3 @@
+MERGED FROM 1 GITHUB-ACTIONS SHARD(S), parked leg, 1 files. ADVISORY: not a box-stamped pair.
+[01/1] OK        exit=0  242s flux3-latency.mjs :: ROWS-SHADOW VERIFY: PASS (765 renders checked, shadow == DOM on every one) ;; FLUX3-LATENCY VERIFY: PASS (15 checks)
+MERGED RESULT (parked): CLEAN - 1/1 OK

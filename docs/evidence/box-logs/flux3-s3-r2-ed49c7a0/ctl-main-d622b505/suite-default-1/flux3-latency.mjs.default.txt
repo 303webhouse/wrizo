@@ -1,0 +1,20 @@
+BUILD: tree=d622b505 bundle=index-CLsXtnQv.js builtAt=2026-11-07T02:30:47.253Z lastSrcCommit=2026-11-06T05:33:32.000Z dirtySrcFiles=0 stale=false
+
+ROWS-SHADOW VERIFY: PASS (765 renders checked, shadow == DOM on every one)
+PASS  P1 every arm stood where it claims (C: Arbor/plateau, no flag, no stand-in; T and M: Flux, ?flux3=1, the stand-in mounted; Page: Dark; the instrument in place): 16/16
+PASS  P2 the same surface in every arm (mode/typewriter: draft/false), the Typewriter off
+PASS  P2b that surface is Draft (the ordinary page)
+PASS  P3b the stand-in really animated at rest (>= 20 frames in 1500 ms, >= 80% of them drawing) in every loaded arm-round: 8/8
+PASS  P4 the stand-in moved no page rect (the .mode-page rect before mounting it = with it drawing): 8/8
+PASS  P5 at least 40 keys painted in every arm-round (44 typed each)
+PASS  P6 no key was dropped: in every arm-round the stored page holds the seed plus every typed character
+PASS  L typing on Flux with every motion on adds no latency beyond the control's own spread: T median 23.7 <= C 24.9 + 2.9, T p95 32.2 <= C 31.9 + 1, no T key over 100 ms
+PASS  D2 the drawing layer damps while she types: its own canvas drew in 4 frame(s) while T's keys landed (allowed 4, the one in flight at the first key, per round)
+PASS  OTHER (information) canvases other than the layer that drew while the keys landed: C [[],[],[],[]] | T [[],[],[],[]]
+PASS  SPLIT (information) median/p95 ms: C Arbor 24.9/31.9 | F Flux, no layer 26/32.5 | T Flux + layer 23.7/32.2
+PASS  MUT premise: the mutant landed - with its damping skipped the layer drew through the typing (>= 80% of the frames while the keys landed, every round)
+PASS  MUT-b the no-damping mutant FAILS the probe (caught by L: YES; caught by D2: YES) - M median 47.4 p95 54 max 81.7, its layer drew in 659 frame(s) while typing
+PASS  COST (information) the drawing layer per frame at 1920x1080, full motion, undamped at rest: rAF time median 0.8 ms, p95 1.2, max 3.8 (control 0 / 0); frame interval median 40.9 ms, p95 49.1 (control 16.7 / 16.8); 282/286 frames over 18.7 ms
+PASS  B the build: served index-CLsXtnQv.js = dist-web's index-CLsXtnQv.js, built 2026-11-07T02:30:47.253Z after the last src commit 2026-11-06T05:33:32.000Z (tree d622b505, 0 uncommitted src file(s))
+
+FLUX3-LATENCY VERIFY: PASS (15 checks)
