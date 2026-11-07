@@ -43,6 +43,10 @@
 //          TUN-CLEAR (the r5 frames: the tunnel showed through the band mask's fade, behind the text): the page's rect is cut out of the tunnel
 //          (a still mask hole, measured on mount, settle, resize and zoom), at rest and while she types. MUT-NOHOLE (landed): it fails.
 //          INFO SPLIT: L's K arm, Jacked In with the tunnel never mounted (landed), so a red L splits into the tunnel's share.
+//   CARET  (the Wrizors' S4 r7 blocker, Fable Nov 7: the light tone's caret read 1.4:1) CARET-LIGHT Flux's block caret on the light page is
+//          >= 4.5:1 against the page under it (computed colours, its alpha composited), in the orange family; CARET-DARK the dark tone keeps the
+//          shared orange. MUT-CARET (landed, in boot-*.css: flux-v3.css's built file) the shared orange back on the light page: CARET-LIGHT
+//          fails. INFO CARET-CONTROL prints the flag-off light caret (Flux v2: not S4's scope).
 //   FL     Forward Lock is today's: Backspace in Jacked In strikes and never deletes, exactly as the control.
 //   L      the Jacked In arm (box only; information on Actions): key -> paint (rhizome-latency's method) against the control (Flux, flag off, the
 //          Typewriter on), interleaved rounds: J median <= C median + C's spread, p95 likewise, no key over 100 ms; no canvas drew more while
@@ -178,6 +182,16 @@ const INSTRUMENT = `(() => {
     const h = { x: B.left + v('--hx') * s, y: B.top + v('--hy') * s, w: v('--hw') * s, h: v('--hh') * s }, P = page.getBoundingClientRect();
     return { hole: rr(new DOMRect(h.x, h.y, h.w, h.h)), page: rr(P), off: +Math.max(Math.abs(h.x - P.left), Math.abs(h.y - P.top), Math.abs(h.w - P.width), Math.abs(h.h - P.height)).toFixed(2),
       comp: cs.maskComposite || cs.webkitMaskComposite || '', masks: (cs.maskImage || cs.webkitMaskImage || '').split('linear-gradient').length - 1 }; };
+  // THE CARET'S INK (the Wrizors' S4 r7 blocker): Flux's block caret against the page under it, both read from computed colours; the caret's
+  // colour is composited over that page (it may carry alpha), and the page is the first opaque background under the caret's centre
+  I.caretInk = () => { const bc = document.querySelector('.flux-block-caret'); if (!bc) return null; const r = bc.getBoundingClientRect(); if (!r.width || !r.height) return null;
+    const rgba = (s) => { if (!s || !s.startsWith('rgb')) return null; const v = s.replace(/[^0-9.,]/g, '').split(',').map(Number); return v.length >= 3 ? [v[0], v[1], v[2], v.length > 3 ? v[3] : 1] : null; };
+    const under = document.elementsFromPoint(r.left + r.width / 2, r.top + r.height / 2).filter((e) => e !== bc).map((e) => ({ e, c: rgba(getComputedStyle(e).backgroundColor) })).find((x) => x.c && x.c[3] >= 0.99);
+    const cc = rgba(getComputedStyle(bc).backgroundColor); if (!cc || !under) return { caret: getComputedStyle(bc).backgroundColor, page: null, ratio: null };
+    const page = under.c.slice(0, 3), ink = cc.slice(0, 3).map((v, k) => v * cc[3] + page[k] * (1 - cc[3]));
+    const lum = (c) => { const l = c.map((v) => { const x = v / 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }); return 0.2126 * l[0] + 0.7152 * l[1] + 0.0722 * l[2]; };
+    const a = lum(ink), b = lum(page);
+    return { caret: getComputedStyle(bc).backgroundColor, page, pageEl: String(under.e.className || under.e.tagName).slice(0, 60), ink: ink.map(Math.round), ratio: +((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)).toFixed(2) }; };
   I.flashes = (kind) => (window.__wzFlashLog || []).filter((f) => f.ok && (!kind || f.kind === kind)).map((f) => f.t);
   I.st = () => {
     const root = document.documentElement, page = document.querySelector('.mode-page'), ed = I.ed(), col = document.querySelector('.mode-pagecol'), sc = document.querySelector('.mode-page .mode-scroll');
@@ -218,6 +232,8 @@ const MUTANTS = {
   nohole: [/\.setProperty\("--hw",/g, '.setProperty("--hw-unset",'],
   // the L split's K arm (information): Jacked In with the tunnel never mounted
   notunnel: [/if\(!([\w$]+)\)return;const ([\w$]+)=document\.createElement\("div"\);return \2\.className="flux3-tunnel"/g, 'if(!0)return;const $2=document.createElement("div");return $2.className="flux3-tunnel"'],
+  // the light page's block caret back to the shared orange (r7's build), in flux-v3.css's built file (boot-*.css): CARET-LIGHT fails
+  caret: [/background:#a84e00(?=[;}])/gi, 'background:rgba(255,152,0,.82)', 'css'],
 };
 
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -238,13 +254,15 @@ try { await withHarness(async (app) => {
   const landed = {};
   await app.cdp('Network.enable');
   await app.cdp('Network.setCacheDisabled', { cacheDisabled: true });
-  await app.cdp('Fetch.enable', { patterns: [{ urlPattern: '*/assets/index-*.js', requestStage: 'Response' }] });
+  // the bundle, and flux-v3.css's built file (the flag's dynamic import: boot-*.css); a mutant names its file kind (js unless it says css)
+  await app.cdp('Fetch.enable', { patterns: [{ urlPattern: '*/assets/index-*.js', requestStage: 'Response' }, { urlPattern: '*/assets/boot-*.css', requestStage: 'Response' }] });
   app.tap(async (method, p) => {
     if (method !== 'Fetch.requestPaused') return;
     try {
       const body = await app.cdp('Fetch.getResponseBody', { requestId: p.requestId });
       let text = body.base64Encoded ? Buffer.from(body.body, 'base64').toString('utf8') : body.body;
-      if (mutant) {
+      const isCss = /\.css(\?|$)/.test((p.request && p.request.url) || '');
+      if (mutant && ((MUTANTS[mutant][2] || 'js') === 'css') === isCss) {
         const [from, to] = MUTANTS[mutant];
         const n = (text.match(from) || []).length;
         landed[mutant] = n;
@@ -614,6 +632,22 @@ try { await withHarness(async (app) => {
     JSON.stringify({ on: kOn, off: kOff }));
   ok('REACH an edge dwell summons the chrome while jacked in, the same as the control', same(kOn.typing2, kOff.typing2) && same(kOn.reach, kOff.reach), JSON.stringify({ on: [kOn.typing2, kOn.reach], off: [kOff.typing2, kOff.reach] }));
 
+  // ---- CARET: Flux's block caret on its page (the Wrizors' S4 r7 blocker, Fable Nov 7: the light tone's caret read 1.4:1 on its page) -----------------
+  const caretOf = async (o) => {
+    await open({ view: [1366, 768], ...o });
+    await app.waitFor("!!document.querySelector('.flux-block-caret')", { timeout: 4000, label: 'the block caret' }).catch(() => {});
+    return ev('window.__f4.caretInk()');
+  };
+  // the orange family: red over green over blue, its hue between 15 and 45 degrees (the shared orange is 36, the light caret 28)
+  const hueOf = (c) => { if (!c) return null; const [r, g, b] = c, mx = Math.max(r, g, b), mn = Math.min(r, g, b); if (mx === mn) return null; return mx === r ? (60 * (g - b)) / (mx - mn) : null; };
+  const caretLightOk = (k) => !!k && k.ratio !== null && k.ratio >= 4.5 && !!k.ink && hueOf(k.ink) !== null && hueOf(k.ink) >= 15 && hueOf(k.ink) <= 45;
+  const kLight = await caretOf({ tone: 'light' }), kDark = await caretOf({ tone: 'dark' });
+  ok(`CARET-LIGHT the block caret on the light page is >= 4.5:1 against the page under it (${kLight && kLight.ratio}:1), in the orange family (hue ${kLight && r1(hueOf(kLight.ink))})`,
+    caretLightOk(kLight), JSON.stringify(kLight));
+  ok('CARET-DARK the dark tone keeps its caret (the shared orange, rgba(255, 152, 0, 0.82))', !!kDark && kDark.caret === 'rgba(255, 152, 0, 0.82)', JSON.stringify(kDark));
+  const kCtl = await caretOf({ flag: false, tone: 'light', prefs: { typewriter: true } });
+  console.log(`INFO CARET-CONTROL the flag-off light caret (Flux v2, not S4's scope: new CSS only under the flag): ${kCtl && kCtl.ratio}:1 ${JSON.stringify(kCtl)}`);
+
   // ---- FL: Forward Lock is today's -------------------------------------------------------------------------------------------------------------------
   const testFL = async (flag, id) => {
     await open({ flag, id, prefs: flag ? {} : { typewriter: true } });
@@ -753,6 +787,8 @@ try { await withHarness(async (app) => {
   const mW = await withMutant('block', testCompile);
   const mWw = wholeOf(mW.r.whole);
   ok('MUT-BLOCK (landed) a block wider than its slot: COMPILE-WHOLE fails (blocks stand outside their slots)', mW.landed === 1 && mWw.n > 0 && mWw.bad.length > 0, JSON.stringify({ landed: mW.landed, n: mWw.n, bad: mWw.bad.length }));
+  const mCa = await withMutant('caret', () => caretOf({ tone: 'light' }));
+  ok('MUT-CARET (landed, in boot-*.css) the light page\'s caret back to the shared orange: CARET-LIGHT fails', mCa.landed === 1 && !!mCa.r && !caretLightOk(mCa.r), JSON.stringify({ landed: mCa.landed, r: mCa.r }));
 
   // ---- B: the build -----------------------------------------------------------------------------------------------------------------------------
   await open();

@@ -176,6 +176,9 @@
 :root[data-flux3][data-theme='flux'] .flux3-burst{ position:fixed; left:0; right:0; top:0; height:2px; z-index:70; pointer-events:none;
   background:color-mix(in srgb, var(--f3-cyan) 14%, transparent); }
 :root[data-flux3][data-theme='flux'] .flux3-burst > i{ position:absolute; inset:0; background:var(--f3-lime); transform-origin:0 50%; }
+/* the block caret on the light page (the Wrizors' S4 r7 blocker: the shared orange at .82 over the light paper reads under 2:1). A solid, darker
+   orange of the same family: 5.2:1 on the paper #F4F7F8, 4.8:1 even on the dim paper (the floor is 4.5). The dark tone keeps its caret. */
+:root[data-flux3][data-theme='flux'][data-page='light'] .flux-block-caret{ background:#A84E00; box-shadow:0 0 6px rgba(168, 78, 0, .4); }
 /* THE TUNNEL (src/flux3/FluxTunnel.tsx; Nick kept it, Nov 7). Behind the page (first in .mode-stage, under the page column), no pointer. Every
    animation is transform or opacity (the compositor's), and its speed is the animations' playbackRate, re-set at most every 2 s.
    THE RECEDE EXCEPTION (named): nothing here recedes while she types, unless the tunnel carries data-recede (TUNNEL_SWITCHES.recedeWhileTyping)

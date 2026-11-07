@@ -1,5 +1,5 @@
 // FLUX3 S4 - JACKED IN as named screens for the frames job (-f themes=flux -f screens_file=apps/desktop/scripts/frames/flux3-s4.mjs
-// -f screens=jack-frame,jack-compiled,jack-out,jack-edge,jack-switch,jack-esc,jack-esc-control,jack-tunnel,jack-tunnel-fast). The pages flux3-s4.mjs seeds (through the app's seams, never raw storage),
+// -f screens=jack-frame,jack-compiled,jack-out,jack-out-esc,jack-out-esc-control,jack-edge,jack-switch,jack-esc,jack-esc-control,jack-tunnel,jack-tunnel-fast). The pages flux3-s4.mjs seeds (through the app's seams, never raw storage),
 // in Free Write under ?flux3=1, the shared Typewriter field off (so the page is Jacked In by the default alone). jack-frame: jacked in at rest.
 // jack-compiled: after a burst of typing and the pause (the lines two up and beyond compiled). jack-out: mid-decompile, the toggle just pressed.
 // jack-edge: a page one word short of the lap (the burst edge nearly empty). jack-switch: the TOOLS foot open on "Jack In by default".
@@ -32,15 +32,29 @@ const openHand = async (app) => { const g = await point(app, '.wz-sliver-grip');
 const stood = (app) => app.evalJs("({ flag: document.documentElement.hasAttribute('data-flux3'), jacked: document.documentElement.hasAttribute('data-flux3-jacked'), zoom: document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') || null, mode: document.querySelector('[data-mode-key][aria-selected=\"true\"]')?.getAttribute('data-mode-key') || null, compiled: document.querySelectorAll('[data-flux3-compile] .flux3-compile-word').length, decompile: !!document.querySelector('[data-flux3-compile].decompile'), burst: document.querySelector('[data-flux3-burst]')?.dataset.left ?? null, sw: !!document.querySelector('[data-flux3-jackin-switch]') })");
 
 // ESC (the Wrizors' S4 review, Fable Nov 7): type, Esc, and the frame 1.2 s later; jack-esc under the flag, jack-esc-control the flag-off Typewriter
+const pressEsc = async (app) => {
+  await app.cdp('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+  await app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+};
+const lookOf = (app) => app.evalJs("({ caret: (() => { const e = document.querySelector('.forward-only-editor'), s = getSelection(); return !!e && !!s && s.rangeCount > 0 && e.contains(s.anchorNode); })(), focus: document.activeElement === document.querySelector('.forward-only-editor'), block: !!document.querySelector('.flux-block-caret'), hand: document.querySelector('.wz-sliver-grip')?.getAttribute('aria-expanded') || null, writing: document.documentElement.getAttribute('data-wz-writing') })");
 const escLater = async (app, name, opts) => {
   await seed(app, LONG_TEXT, opts);
   await app.typeKeys(' and the line keeps going');
   await sleep(300);
-  await app.cdp('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
-  await app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+  await pressEsc(app);
   await sleep(1200);
-  const look = await app.evalJs("({ caret: (() => { const e = document.querySelector('.forward-only-editor'), s = getSelection(); return !!e && !!s && s.rangeCount > 0 && e.contains(s.anchorNode); })(), focus: document.activeElement === document.querySelector('.forward-only-editor'), block: !!document.querySelector('.flux-block-caret'), writing: document.documentElement.getAttribute('data-wz-writing') })");
-  console.log(`FLUX3-S4-FRAME ${name} ${JSON.stringify({ ...(await stood(app)), ...look })}`);
+  console.log(`FLUX3-S4-FRAME ${name} ${JSON.stringify({ ...(await stood(app)), ...(await lookOf(app)) })}`);
+};
+// JACK OUT, THEN ESC (the Wrizors' S4 r7 review, Fable Nov 7): today's toggle in the TOOLS hand, Esc, and the frame 1.2 s later; jack-out-esc under
+// the flag, jack-out-esc-control the flag-off Typewriter, the same steps (a caret missing on both is the Typewriter's, bug #49, not S4's)
+const outLater = async (app, name, opts) => {
+  await seed(app, LONG_TEXT, opts);
+  await openHand(app);
+  const t = await point(app, '[data-mode-toggle="typewriter"]');
+  if (t) { await click(app, t); await sleep(700); }
+  await pressEsc(app);
+  await sleep(1200);
+  console.log(`FLUX3-S4-FRAME ${name} ${JSON.stringify({ ...(await stood(app)), toggled: !!t, ...(await lookOf(app)) })}`);
 };
 
 const tunnelOf = (app) => app.evalJs("(() => { const t = document.querySelector('[data-flux3-tunnel]'); if (!t) return null; const a = t.getAnimations({ subtree: true }); return { anims: a.length, rates: [...new Set(a.map((x) => x.playbackRate))], fast: t.hasAttribute('data-fast'), still: t.hasAttribute('data-still'), writing: document.documentElement.getAttribute('data-wz-writing') }; })()");
@@ -59,6 +73,8 @@ export default {
   },
   'jack-esc':(app) => escLater(app, 'jack-esc', { flag: true, typewriter: false }),
   'jack-esc-control': (app) => escLater(app, 'jack-esc-control', { flag: false, typewriter: true }),
+  'jack-out-esc': (app) => outLater(app, 'jack-out-esc', { flag: true, typewriter: false }),
+  'jack-out-esc-control': (app) => outLater(app, 'jack-out-esc-control', { flag: false, typewriter: true }),
   'jack-frame': async (app) => {
     await seed(app, LONG_TEXT);
     console.log(`FLUX3-S4-FRAME jack-frame ${JSON.stringify(await stood(app))}`);
