@@ -1,0 +1,3 @@
+ARBOR r21 final turn (shade-cut) - manifest (Chat 1, Nov 7 2026)
+
+Box turn 2026-11-07 03:04:09Z-03:43:19Z (lane arbor, own grant). Tip arbor/r21-shade-cut-main 99df6ef9 vs main be09012a. NOT MERGED. Text logs only; screenshots stay in ARBOR Downloads (evidence rule). See ledger 223.

@@ -1,0 +1,54 @@
+[
+  {
+    "name": "W1d at rest: the live drawing at full and in style work, the still picture drawn and waiting at 0 (its target the layer's strength)",
+    "pass": true,
+    "detail": "{\"driftT\":13132.900999990894,\"writing\":null,\"roomName\":\"day\",\"zoom\":true,\"room\":{\"shown\":true,\"live\":\"visible\",\"still\":\"block\",\"stillBg\":true,\"stillOp\":0,\"liveO\":1,\"stillO\":0,\"stillA\":0.2,\"wc\":[\"auto\",\"auto\"],\"off\":null},\"page\":{\"shown\":false,\"live\":\"visible\",\"still\":\"block\",\"stillBg\":true,\"stillOp\":0,\"liveO\":1,\"stillO\":0,\"stillA\":0.034,\"wc\":[\"auto\",\"auto\"],\"off\":null},\"drift\":{\"name\":\"arbor2-pergola-drift\",\"start\":265.3510000091046,\"state\":\"running\"},\"running\":116,\"ls\":\"[[\\\"writer-studio-dirty-v1\\\",\\\"{\\\\\\\"projects\\\\\\\":[\\\\\\\"mw5tlcze4555uz8g4\\\\\\\"],\\\\\\\"storyPlans\\\\\\\":[],\\\\\\\"sessions\\\\\\\":[],\\\\\\\"drafts\\\\\\\":[],\\\\\\\"journalEntries\\\\\\\":[\\\\\\\"mw5tlczebpd0qt8df\\\\\\\"],\\\\\\\"drawers\\\\\\\":[]}\\\"],[\\\"writer-studio-journal-entries\\\",\\\"[{\\\\\\\"id\\\\\\\":\\\\\\\"mw5tlczebpd0qt8df\\\\\\\",\\\\\\\"text\\\\\\\":\\\\\\\"\\\\\\\",\\\\\\\"projectId\\\\\\\":\\\\\\\"mw5tlcze4555uz8g4\\\\\\\",\\\\\\\"pageType\\\\\\\":\\\\\\\"manuscript\\\\\\\",\\\\\\\"source\\\\\\\":\\\\\\\"page\\\\\\\",\\\\\\\"origin\\\\\\\":\\\\\\\"project\\\\\\\",\\\\\\\"pageSettings\\\\\\\":{\\\\\\\"margins\\\\\\\":\\\\\\\"normal\\\\\\\",\\\\\\\"lineSpacing\\\\\\\":1.6,\\\\\\\"pageNumbers\\\\\\\":{\\\\\\\"on\\\\\\\":false,\\\\\\\"placement\\\\\\\":\\\\\\\"bottom-center\\\\\\\"},\\\\\\\"headers\\\\\\\":{\\\\\\\"on\\\\\\\":false,\\\\\\\"text\\\\\\\":\\\\\\\"\\\\\\\"},\\\\\\\"footers\\\\\\\":{\\\\\\\"on\\\\\\\":false,\\\\\\\"text\\\\\\\":\\\\\\\"\\\\\\\"},\\\\\\\"size\\\\\\\":11},\\\\\\\"createdAt\\\\\\\":\\\\\\\"2026-11-07T03:04:41.210Z\\\\\\\",\\\\\\\"updatedAt\\\\\\\":\\\\\\\"2026-11-07T03:04:41.210Z\\\\\\\"}]\\\"],[\\\"writer-studio-journal-resync-v1\\\",\\\"1\\\"],[\\\"writer-studio-last-sync\\\",\\\"1970-01-01T00:00:00.000Z\\\"],[\\\"writer-studio-projects\\\",\\\"[{\\\\\\\"id\\\\\\\":\\\\\\\"mw5tlcze4555uz8g4\\\\\\\",\\\\\\\"title\\\\\\\":\\\\\\\"Untitled\\\\\\\",\\\\\\\"type\\\\\\\":\\\\\\\"creative\\\\\\\",\\\\\\\"kind\\\\\\\":\\\\\\\"book\\\\\\\",\\\\\\\"storyPlanId\\\\\\\":null,\\\\\\\"createdAt\\\\\\\":\\\\\\\"2026-11-07T03:04:41.210Z\\\\\\\",\\\\\\\"updatedAt\\\\\\\":\\\\\\\"2026-11-07T03:04:41.210Z\\\\\\\",\\\\\\\"lastActivityAt\\\\\\\":\\\\\\\"2026-11-07T03:04:41.210Z\\\\\\\",\\\\\\\"lastActivityType\\\\\\\":\\\\\\\"page\\\\\\\",\\\\\\\"lastActivePageId\\\\\\\":\\\\\\\"mw5tlczebpd0qt8df\\\\\\\"}]\\\"],[\\\"wrizo-first-run-complete\\\",\\\"1\\\"],[\\\"wrizo-tutor-disclosure-seen\\\",\\\"1\\\"],[\\\"wrizo-tutor-disclosure-seen-version\\\",\\\"4\\\"],[\\\"wz.lastPlace\\\",\\\"{\\\\\\\"v\\\\\\\":1,\\\\\\\"uid\\\\\\\":\\\\\\\"test-user\\\\\\\",\\\\\\\"kind\\\\\\\":\\\\\\\"page\\\\\\\",\\\\\\\"id\\\\\\\":\\\\\\\"mw5tlczebpd0qt8df\\\\\\\",\\\\\\\"at\\\\\\\":1794020681227}\\\"],[\\\"wz.opens.test-user\\\",\\\"{\\\\\\\"mw5tlczebpd0qt8df\\\\\\\":1}\\\"],[\\\"wz.place.test-user\\\",\\\"{\\\\\\\"kind\\\\\\\":\\\\\\\"drawer\\\\\\\",\\\\\\\"id\\\\\\\":\\\\\\\"unsorted\\\\\\\",\\\\\\\"setId\\\\\\\":\\\\\\\"mw5tlcze4555uz8g4\\\\\\\"}\\\"]]\"}"
+  },
+  {
+    "name": "W2d the first key: within 100 ms the still stands at the layer's strength and the live drawing is at 0 and out of style work (and still so 320 ms on)",
+    "pass": true,
+    "detail": "{\"at100\":{\"shown\":true,\"live\":\"hidden\",\"still\":\"block\",\"stillBg\":true,\"stillOp\":0,\"liveO\":0,\"stillO\":0.2,\"stillA\":0.2,\"wc\":[\"auto\",\"auto\"],\"off\":\"true\"},\"page\":{\"shown\":false,\"live\":\"hidden\",\"still\":\"block\",\"stillBg\":true,\"stillOp\":0,\"liveO\":0,\"stillO\":0.034,\"stillA\":0.034,\"wc\":[\"auto\",\"auto\"],\"off\":\"true\"},\"at320\":{\"shown\":true,\"live\":\"hidden\",\"still\":\"block\",\"stillBg\":true,\"stillOp\":0,\"liveO\":0,\"stillO\":0.2,\"stillA\":0.2,\"wc\":[\"auto\",\"auto\"],\"off\":\"true\"}}"
+  },
+  {
+    "name": "W3c the drift (r19): running at rest, paused on the first key - the same animation, held where it was",
+    "pass": true,
+    "detail": "{\"rest\":{\"name\":\"arbor2-pergola-drift\",\"start\":265.3510000091046,\"state\":\"running\",\"t\":13132.900999990894},\"key\":{\"name\":\"arbor2-pergola-drift\",\"start\":null,\"state\":\"paused\",\"t\":13182.898999990895}}"
+  },
+  {
+    "name": "W4e the chrome's return: the live drawing back at full and in style work, the still picture at 0, the drift resumed from where it paused (not restarted)",
+    "pass": true,
+    "detail": "{\"driftT\":17316.159999916137,\"writing\":null,\"roomName\":\"day\",\"zoom\":true,\"room\":{\"shown\":true,\"live\":\"visible\",\"still\":\"block\",\"stillBg\":true,\"stillOp\":0,\"liveO\":1,\"stillO\":0,\"stillA\":0.2,\"wc\":[\"auto\",\"auto\"],\"off\":null},\"page\":{\"shown\":false,\"live\":\"visible\",\"still\":\"block\",\"stillBg\":true,\"stillOp\":0,\"liveO\":1,\"stillO\":0,\"stillA\":0.034,\"wc\":[\"auto\",\"auto\"],\"off\":null},\"drift\":{\"name\":\"arbor2-pergola-drift\",\"start\":931.898000083864,\"state\":\"running\"},\"running\":116,\"pausedT\":13182.898999990895}"
+  },
+  {
+    "name": "W5b the swap key within the guard's per-key budget: none of six swap keys over 100 ms (the shade-off first keys reported beside them)",
+    "pass": true,
+    "detail": "{\"on\":[66.8,50.7,56.9,48.4,53.8,51.4],\"off\":[14.8,24.2,15.9,13,17.7,13.1],\"median\":[52.6,15.4],\"p95\":[66.8,24.2]}"
+  },
+  {
+    "name": "W6c reduced motion: nothing on the shade animates at rest; the first key is a cut to the still picture; nothing animates after it",
+    "pass": true,
+    "detail": "{\"rest\":{\"running\":0},\"key\":{\"running\":0,\"room\":{\"shown\":true,\"live\":\"hidden\",\"still\":\"block\",\"stillBg\":true,\"stillOp\":0,\"liveO\":0,\"stillO\":0.2,\"stillA\":0.2,\"wc\":[\"auto\",\"auto\"],\"off\":\"true\"}}}"
+  },
+  {
+    "name": "W9b the last frame, mid-shiver: on an unzoomed page, the cut drew a POSE (the counter agreeing: 8+ leaves moving), and its still against the live drawing paused at that pose - over 9 levels on no more than 0.01% of the pixels (the hold proven: the same frame twice identical; the shade proven in the shot: hidden, 1%+ of the pixels change)",
+    "pass": false,
+    "detail": "{\"want\":\"shiver\",\"moving\":8,\"choice\":\"shared still\",\"zoom\":true,\"off\":\"true\",\"vs\":{\"n\":1260000,\"over\":0,\"max\":0},\"overPct\":0,\"same\":{\"n\":1260000,\"over\":0,\"max\":0},\"samePct\":0,\"shade\":{\"n\":1260000,\"over\":0,\"max\":1},\"shadePct\":0,\"pageChoice\":\"shared still\"}"
+  },
+  {
+    "name": "W10b the last frame, at rest: on an unzoomed page, the cut kept the SHARED still (the counter agreeing: no leaf moving), and it against the live drawing at rest - over 9 levels on no more than 0.01% of the pixels (the same two controls)",
+    "pass": false,
+    "detail": "{\"want\":\"rest\",\"moving\":0,\"choice\":\"shared still\",\"zoom\":true,\"off\":\"true\",\"vs\":{\"n\":1260000,\"over\":0,\"max\":0},\"overPct\":0,\"same\":{\"n\":1260000,\"over\":0,\"max\":0},\"samePct\":0,\"shade\":{\"n\":1260000,\"over\":0,\"max\":1},\"shadePct\":0,\"pageChoice\":\"shared still\"}"
+  },
+  {
+    "name": "W8b the flash copy's pre-rendered mask in use, its difference from the SVG mask within twice the accepted 0.02% (the walk judges the look)",
+    "pass": true,
+    "detail": "{\"maskWas\":\"bitmap\",\"w\":1400,\"h\":900,\"n\":1260000,\"diff\":99,\"over\":64,\"max\":173,\"overPct\":0.0051}"
+  },
+  {
+    "name": "W7 nothing stored: localStorage holds no key or value naming the swap",
+    "pass": true,
+    "detail": 2367
+  }
+]
+
+ARBOR2-SWAP VERIFY: FAIL - 2/10 failed

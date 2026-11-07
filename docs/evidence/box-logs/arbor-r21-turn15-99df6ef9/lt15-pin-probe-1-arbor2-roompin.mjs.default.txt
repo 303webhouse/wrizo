@@ -1,0 +1,34 @@
+[
+  {
+    "name": "P1 the URL carries the flag and a room pin (arbor2room=day|night): a pinned run certifies nothing without one",
+    "pass": true,
+    "detail": "{\"env\":\"?arbor2=1&arbor2room=day\",\"search\":\"?arbor2=1&arbor2room=day\"}"
+  },
+  {
+    "name": "P2 the room in force is the pinned room (day) whatever the clock says",
+    "pass": true,
+    "detail": "{\"room\":\"day\",\"localHour\":20}"
+  },
+  {
+    "name": "P3 nothing stored: no localStorage key or value names the pin",
+    "pass": true,
+    "detail": "false"
+  },
+  {
+    "name": "P4 the room's pergola is r20's live drawing: shown, its svg, 115 leaf clusters, its drift running",
+    "pass": true,
+    "detail": "{\"display\":\"block\",\"svg\":true,\"leaves\":115,\"anim\":\"running\"}"
+  },
+  {
+    "name": "P5 the page's copy is r20's live drawing (svg, g[filter] at 0.034)",
+    "pass": true,
+    "detail": "{\"bitmap\":null,\"svg\":true,\"g\":0.034,\"bg\":\"none\",\"alpha\":1,\"display\":\"none\",\"anim\":null,\"dt\":null,\"box\":[10.6,18.2,-1398,-800]}"
+  },
+  {
+    "name": "P6 the top bar's and the rail's copies draw the one bitmap (no svg, blob: background, 0.034), on the literal-pixel drift in step with the room's, on the room's drift box",
+    "pass": true,
+    "detail": "{\"bar\":{\"bitmap\":\"true\",\"svg\":false,\"g\":null,\"bg\":\"url(\\\"blob:ht\",\"alpha\":0.034,\"display\":\"block\",\"anim\":\"arbor2-pergola-drift-px\",\"dt\":0,\"box\":[0,0,0,0]},\"rail\":{\"bitmap\":\"true\",\"svg\":false,\"g\":null,\"bg\":\"url(\\\"blob:ht\",\"alpha\":0.034,\"display\":\"block\",\"anim\":\"arbor2-pergola-drift-px\",\"dt\":0,\"box\":[0,0,0,0]}}"
+  }
+]
+
+ARBOR2-ROOMPIN VERIFY: PASS (6 checks)
