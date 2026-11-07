@@ -1,7 +1,9 @@
 // TOOLS - RAIL BUG #4, THE DOUBLE JOURNAL (bug-list, Fable Nov 7): on any Journal page the rail shows the place name TWICE (the current-place slot + the Journal pin).
 // The place word per skin: Arbor "Journal", Flux "Log", Machina "Notebook". A committed CDP scenario; needs a box turn and a fresh build. READ-ONLY on the product: it seeds one page through the
 // app's own seam, opens it, and counts the VISIBLE elements whose own text is exactly the place word, outside the page's text (the editor) - on /page/:id, and on /journal for a baseline.
-// Verdict per skin: the place word shows at most ONCE in the chrome of a Journal page. It also prints every match's ancestry so a hit names the component, whichever it is.
+// Verdict per skin: the place word shows at most ONCE in the RAIL (the DeskFrame strip) of a Journal page - the top breadcrumb is a separate thing and is not counted against the rail. It prints every match's ancestry.
+// RULED Nov 7 (Fable): in the Journal the place slot stays as an ICON-ONLY switcher door (no name) and the Journal pin is marked active; elsewhere nothing changes (a Drawer place still shows its name,
+// the pin is not marked). The extra checks hold each half of that ruling, so a fix that only hides the word (door gone, pin unmarked) still fails.
 // The rail may be DeskRail (.desk-rail) or the framed surface's own rail / Drawer places face - the count does not assume which, it counts what a writer sees.
 // Run (from apps/desktop, needs a box turn):  node scripts/harness/rail-bug4.mjs
 import { withHarness } from '../runtime-verify.mjs';
@@ -47,14 +49,38 @@ await withHarness(async (app) => {
       await app.evalJs(`location.hash = '#/page/rb4-${theme}'`);
       await app.waitFor(`!!document.querySelector('${ED}')`, { label: `${label} Journal page` });
       await sleep(800);
-      const onPage = JSON.parse(await app.evalJs(COUNT(word)));
+      const onPageAll = JSON.parse(await app.evalJs(COUNT(word)));
+      const onPage = onPageAll.filter((h) => h.path.includes('desk-frame-strip'));
       const rail = await app.evalJs("(() => { const r = document.querySelector('.desk-rail'); return r ? r.innerText.replace(/\\s+/g, ' ').trim() : null; })()");
-      ok(`${label}: on a Journal page the place word "${word}" shows at most once in the chrome (the double Journal is gone)`, onPage.length <= 1, JSON.stringify({ count: onPage.length, hits: onPage, deskRail: rail }));
+      ok(`${label}: on a Journal page the place word "${word}" shows at most once in the rail (the double Journal is gone)`, onPage.length <= 1, JSON.stringify({ count: onPage.length, hits: onPage, outsideRail: onPageAll.length - onPage.length, deskRail: rail }));
       // a control: the count is not vacuous - the same page, the same word, found somewhere at all, or the rail itself read
       await app.evalJs("location.hash = '#/journal'");
       await sleep(1200);
       const onList = JSON.parse(await app.evalJs(COUNT(word)));
       ok(`${label}: baseline - on the Journal list the word "${word}" is found (the counter can see it), once or more`, onList.length >= 1, JSON.stringify({ count: onList.length, hits: onList }));
+      await app.evalJs(`location.hash = '#/page/rb4-${theme}'`);
+      await app.waitFor(`!!document.querySelector('${ED}')`, { label: `${label} Journal page, again` });
+      await sleep(800);
+      const door = JSON.parse(await app.evalJs("(() => { const b = document.querySelector('.wz-place-block'); return JSON.stringify(b ? { kind: b.dataset.placeKind, hasName: !!b.querySelector('.wz-place-name'), hasIcon: !!b.querySelector('.wz-place-icon'), label: b.getAttribute('aria-label') } : null); })()"));
+      ok(`${label}: in the Journal the place slot is still drawn as an icon-only door (no name), its accessible name intact`, !!door && door.kind === 'journal' && door.hasIcon && !door.hasName && String(door.label || '').includes(word), JSON.stringify(door));
+      const pin = JSON.parse(await app.evalJs("(() => { const b = document.querySelector('.wz-strip-item[data-category=journal]'); return JSON.stringify(b ? { active: b.classList.contains('active'), current: b.getAttribute('aria-current') } : null); })()"));
+      ok(`${label}: in the Journal the Journal pin is marked active (and current), with its panel shut`, !!pin && pin.active === true && pin.current === 'location', JSON.stringify(pin));
+      await app.evalJs("document.querySelector('.wz-place-block').click()");
+      await sleep(600);
+      const sw = await app.evalJs("[...document.querySelectorAll('.wz-switcher-item')].map((i) => i.dataset.placeKind || i.dataset.placeId).length");
+      ok(`${label}: the icon-only door still opens the switcher (it is the only door to the Drawers)`, sw >= 1, String(sw));
+      // elsewhere nothing changes: choose a Drawer through the switcher - the place slot names it again, and the Journal pin is not marked
+      await app.evalJs(`window.wrizoCreateDrawer && window.wrizoCreateDrawer('Rb4 Drawer')`);
+      await app.reload();
+      await app.evalJs(`location.hash = '#/page/rb4-${theme}'`);
+      await app.waitFor(`!!document.querySelector('${ED}')`, { label: `${label} page again` });
+      await sleep(600);
+      await app.evalJs("document.querySelector('.wz-place-block').click()");
+      await sleep(500);
+      await app.evalJs("(() => { const it = [...document.querySelectorAll('.wz-switcher-item')].find((i) => i.dataset.placeKind !== 'journal' && /Rb4 Drawer/.test(i.textContent)); if (it) it.click(); })()");
+      await sleep(700);
+      const elsewhere = JSON.parse(await app.evalJs("(() => { const b = document.querySelector('.wz-place-block'); const pin = document.querySelector('.wz-strip-item[data-category=journal]'); return JSON.stringify({ kind: b && b.dataset.placeKind, name: b && b.querySelector('.wz-place-name') ? b.querySelector('.wz-place-name').textContent : null, pinActive: !!pin && pin.classList.contains('active'), pinCurrent: pin ? pin.getAttribute('aria-current') : null }); })()"));
+      ok(`${label}: in a Drawer nothing changed - the place slot names the Drawer, the Journal pin is not marked`, elsewhere.kind === 'drawer' && elsewhere.name === 'Rb4 Drawer' && elsewhere.pinActive === false && elsewhere.pinCurrent === null, JSON.stringify(elsewhere));
     }
   } catch (e) { ok('driver ran to a verdict', false, String((e && e.stack) || e)); }
 }).catch((e) => { ok('harness ran to a verdict', false, String((e && e.stack) || e)); });
