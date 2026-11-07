@@ -713,6 +713,14 @@ try { await withHarness(async (app) => {
     // the open's own pause compiled only the lines that stood two up then) must show no text
     for (const ch of ' and the line keeps going forward with more plain words now, on and on across the measure of the page until it wraps') { await app.typeKeys(ch); await sleep(25); }
     await sleep(120);
+    // the writing line on screen first (r9b's run read every line box below the window: the diagnostic says where the caret stood, and how long
+    // the line took to come into view, never past 450 ms, inside the 700 ms pause)
+    const DIAG = "(() => { const c = window.__f4.caret(), ed = window.__f4.ed(), sc = document.querySelector('.mode-page .mode-scroll'); return { caret: c && c.r, lh: window.__f4.lh(), ed: ed ? ((r) => [Math.round(r.top), Math.round(r.bottom)])(ed.getBoundingClientRect()) : null, top: sc ? sc.scrollTop : null, vh: innerHeight }; })()";
+    const d0 = await ev(DIAG);
+    const tSeen = Date.now();
+    await app.waitFor("(() => { const c = window.__f4.caret(); return !!c && c.r.y > 0 && c.r.y + c.r.h < innerHeight; })()", { timeout: 450, label: 'the writing line on screen' }).catch(() => {});
+    const d1 = { ...(await ev(DIAG)), waited: Date.now() - tSeen };
+    console.log(`INFO TERM-WHERE (${tone}) after the burst ${JSON.stringify(d0)} then ${JSON.stringify(d1)}`);
     const hidBox = await ev('window.__f4.lineBox(2)');
     const hidSignal = hidBox ? await ev(`(() => { const b = ${JSON.stringify(hidBox)}; return [...document.querySelectorAll('[data-flux3-compile] .flux3-compile-word')].filter((g) => { const r = g.getBoundingClientRect(); return r.right > b.x && r.left < b.x + b.width && r.bottom > b.y && r.top < b.y + b.height; }).length; })()`) : null;
     const write = await pixOf(await ev('window.__f4.lineBox(0)'));
