@@ -1,7 +1,8 @@
 // FLUX3 S4 - THE TUNNEL (the spec's §6: "a tunnel of signal that rushes faster the faster she writes (felt speed, never a score; lime streaks
 // at speed)"; Nick, via Fable Nov 7: KEEP it, built to INK's lean B). Jacked In's ground: square frames rushing out of a vanishing point at the
 // writing line's height (the zoom's anchor, the middle of the stage), a still field of rays, and at speed, lime streaks. It sits BEHIND the page,
-// inside .mode-stage under the page column, aria-hidden and taking no pointer: nothing here moves, covers or reads the page.
+// inside .mode-stage under the page column, aria-hidden and taking no pointer: nothing here moves, covers or reads the page. While jacked in the
+// page has no paper (r9, the terminal), so the frames pass behind the words.
 //   - COMPOSITOR ONLY. CSS animations of transform and opacity, nothing else: no canvas, no per-frame JS, no layout.
 //   - ITS SPEED is re-set at most every TUNNEL.resetMs (2 s) from her trailing rate (the keys of the last 3 s), by the animations' own
 //     playbackRate (updatePlaybackRate keeps every frame where it is: the speed changes, nothing jumps). Between re-sets no JS runs but one
@@ -58,36 +59,8 @@ export function FluxTunnel({ scrollRef }: Props) {
     flag('data-still', still);
   }, [box, still]);
 
-  // THE HOLE: the page's own rect is cut out of the tunnel (a still mask), so nothing of the tunnel ever stands behind her words, whatever the
-  // paper: the Typewriter's band mask fades the page column above and below the writing line, and the r5 frames showed the tunnel through it, behind the text (r6: the paper itself is opaque). Measured when the tunnel
-  // mounts, as the zoom settles, on a resize and on a zoom change; never per frame (the page does not move while jacked in: the scroll is inside it)
-  useEffect(() => {
-    if (!box) return undefined;
-    const stage = box.parentElement;
-    const measure = () => {
-      const page = stage?.querySelector('.mode-page');
-      if (!page) return;
-      const B = box.getBoundingClientRect();
-      const s = box.offsetWidth > 0 ? B.width / box.offsetWidth : 1;
-      const P = page.getBoundingClientRect();
-      box.style.setProperty('--hx', `${((P.left - B.left) / s).toFixed(1)}px`);
-      box.style.setProperty('--hy', `${((P.top - B.top) / s).toFixed(1)}px`);
-      box.style.setProperty('--hw', `${(P.width / s).toFixed(1)}px`);
-      box.style.setProperty('--hh', `${(P.height / s).toFixed(1)}px`);
-    };
-    measure();
-    const settle = window.setTimeout(measure, 700);
-    const onEnd = (e: TransitionEvent) => { if (e.propertyName === 'transform') measure(); };
-    window.addEventListener('resize', measure);
-    document.addEventListener('wz-zoom-changed', measure);
-    stage?.addEventListener('transitionend', onEnd);
-    return () => {
-      window.clearTimeout(settle);
-      window.removeEventListener('resize', measure);
-      document.removeEventListener('wz-zoom-changed', measure);
-      stage?.removeEventListener('transitionend', onEnd);
-    };
-  }, [box]);
+  // NO HOLE (r9, Nick's terminal: the spec's draft 13 §6): the words stand on the room's own ground INSIDE the tunnel's frames, so nothing is cut
+  // out of it. (r7 cut the page's rect out, while there was paper: the band mask's fade showed the tunnel behind the text on a sheet.)
 
   // THE SPEED: one timestamp per key; a re-set at most every 2 s
   useEffect(() => {

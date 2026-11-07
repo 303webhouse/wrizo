@@ -3,7 +3,8 @@
 //   - It writes straight into the doc: there is no buffer, so nothing can be lost. Forward Lock is the existing forward-only rule (forwardLock.ts).
 //   - Its controls are today's Typewriter controls EXACTLY (ruling C): the same toggle jacks in and out, the same Esc, the same reach-to-summon.
 //   - THE COMPILE. Two lines up and beyond, her words compile into signal: on her PAUSE, never per key (ruling F), every word at least two lines
-//     above the caret's line is covered by signal glyphs on the page's own paper. An OVERLAY ONLY, in a layer inside the page's own scroller
+//     above the caret's line is covered by signal blocks (r9, the terminal: no paper; the text there is hidden by the terminal's veil in
+//     flux-v3.css, and the rows grow smaller toward the top). An OVERLAY ONLY, in a layer inside the page's own scroller
 //     (aria-hidden, no pointer, not selectable), so it scrolls, scales and fades with the text and nothing follows it while keys land. The page's
 //     DOM text, selection, copy and word count are never changed; the caret's line and the line just above it are never covered.
 //   - THE DECOMPILE. Jacking out while the page stays (the Typewriter turned off) resolves the signal: each glyph run is put back on its own word
@@ -28,6 +29,10 @@ export const DECOMPILE_MS = 420;       // the decompile's fade
 // Wrizors' S4 review: glyph runs in a font, squeezed by letter-spacing into the word's box, were cut at their ends).
 export const BLOCK_FILL = 0.72;        // a block's share of its slot's width (the rest is the gap between blocks)
 const BLOCK_HEIGHT = 0.62;             // a block's height, in the word's own font size
+// THE ROWS (r9, the terminal: the spec's draft 13 §6): each row of signal a little smaller toward the top, streaming up into the tunnel. A row's
+// blocks shrink INSIDE their own slots (every word's signal stays on its own word's rect, so no block ever stands on another word), by rowShrink
+// per row above the first, never below rowMin. Its fading is the Typewriter's own band on the column.
+export const SIGNAL = { rowShrink: 0.12, rowMin: 0.5 };
 
 interface Props {
   on: boolean;                          // the page's Typewriter is running (ModeStage's typewriterOn)
@@ -117,8 +122,11 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
 
     // ESC READS (the Wrizors' S4 review, Fable Nov 7): Esc brings the chrome back as it does today, and the page then reads as the Typewriter's
     // does: the signal resolves (each block turns over and fades) and nothing compiles again until she types
+    // Looking up also lifts the terminal's veil (flux-v3.css: data-flux3-looking), so the lines above read; writing again lowers it
     let lookingUp = false;
     let fadeTimer = 0;
+    const root = document.documentElement;
+    const look = (on: boolean) => { lookingUp = on; if (on) root.setAttribute('data-flux3-looking', ''); else root.removeAttribute('data-flux3-looking'); };
     const turnOver = (el: Element) => { el.querySelectorAll('i').forEach((b) => { b.className = b.className === 'f' ? 'h' : 'f'; }); };
     const resolve = () => {
       sig = '';
@@ -135,8 +143,8 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
       fadeTimer = window.setTimeout(() => fade.remove(), DECOMPILE_MS + 60);
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { lookingUp = true; if (timer) window.clearTimeout(timer); timer = 0; resolve(); return; }
-      if (e.key.length === 1 || e.key === 'Enter' || e.key === 'Backspace') lookingUp = false;   // she writes again: the next pause compiles
+      if (e.key === 'Escape') { look(true); if (timer) window.clearTimeout(timer); timer = 0; resolve(); return; }
+      if (lookingUp && (e.key.length === 1 || e.key === 'Enter' || e.key === 'Backspace')) look(false);   // she writes again: the next pause compiles
     };
 
     const compile = () => {
@@ -153,7 +161,7 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
       const lh = Number.isFinite(lhLayout) && lhLayout > 0 ? lhLayout * s : caret.height * 1.4;
       const limit = caret.top - (COMPILE_LINES - 0.5) * lh;   // a word whose top is above this sits two lines up or more
       const view = scroll.getBoundingClientRect();
-      const found: { r: DOMRect; range: Range; text: string; fs: number }[] = [];
+      const found: { r: DOMRect; range: Range; text: string; fs: number; row: number }[] = [];
       const rows = rowsOf(ed);
       for (let i = rows.length - 1; i >= 0; i -= 1) {
         const rr = rows[i].getBoundingClientRect();
@@ -171,7 +179,8 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
             const r = rects[0];
             if (r.top >= limit || r.bottom <= view.top || r.top >= view.bottom || r.width <= 0) continue;
             const parent = n.parentElement;
-            found.push({ r, range, text: m[0], fs: parent ? parseFloat(getComputedStyle(parent).fontSize) || 16 : 16 });
+            const row = Math.max(COMPILE_LINES, Math.round((caret.top - r.top) / lh));   // the line above the caret's it stands on
+            found.push({ r, range, text: m[0], fs: parent ? parseFloat(getComputedStyle(parent).fontSize) || 16 : 16, row });
           }
         }
       }
@@ -181,16 +190,18 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
       sig = next;
       layer.replaceChildren();
       words.clear();
-      const paper = getComputedStyle(scroll.closest('.mode-page') ?? scroll).backgroundColor;
       found.forEach((f) => {
         const el = document.createElement('span');
         el.className = 'flux3-compile-word';
         el.dataset.word = f.text;   // the word it covers (a check holds the glyphs to that word's own rect)
-        // one block per character, seeded by the word's place in the page's own layout (the layer scrolls with the text, so that place holds)
+        el.dataset.row = String(f.row);
+        // one block per character, seeded by the word's place in the page's own layout (the layer scrolls with the text, so that place holds);
+        // each row up a little smaller (THE ROWS), still inside its slot
         const chars = [...f.text];
         const slot = f.r.width / s / chars.length;
-        const bw = slot * BLOCK_FILL, bh = Math.min(f.fs * BLOCK_HEIGHT, f.r.height / s);
-        Object.assign(el.style, { position: 'absolute', display: 'flex', alignItems: 'center', background: paper });
+        const k = Math.max(SIGNAL.rowMin, 1 - SIGNAL.rowShrink * (f.row - COMPILE_LINES));
+        const bw = slot * BLOCK_FILL * k, bh = Math.min(f.fs * BLOCK_HEIGHT, f.r.height / s) * k;
+        Object.assign(el.style, { position: 'absolute', display: 'flex', alignItems: 'center' });
         blocksFor(chars, Math.round((f.r.left - L.left) / s) * 7 + Math.round((f.r.top - L.top) / s) * 13).forEach((filled) => {
           const b = document.createElement('i');
           b.className = filled ? 'f' : 'h';
@@ -214,6 +225,7 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
     return () => {
       if (timer) window.clearTimeout(timer);
       if (fadeTimer) window.clearTimeout(fadeTimer);
+      root.removeAttribute('data-flux3-looking');
       document.removeEventListener('keydown', onKey, opts);
       DOC_EVENTS.forEach((ev) => document.removeEventListener(ev, schedule, opts));
       scroll.removeEventListener('scroll', schedule);
