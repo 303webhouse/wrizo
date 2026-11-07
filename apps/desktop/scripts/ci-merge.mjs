@@ -3,7 +3,9 @@
 //   node scripts/ci-merge.mjs --in <dir of suite-<leg>-<n>/run.log> --out <dir> [--box-default <log>] [--box-parked <log>]
 // ADVISORY: a merged log is not a box-stamped pair. It carries no tree/bundle stamp from the box and says so on its first line.
 // Exit 0 when every leg is clean (every file OK) and every shard reported; 1 otherwise.
-import { readFileSync, readdirSync, existsSync, writeFileSync, mkdirSync } from 'node:fs';
+// #47 (Fable, Nov 6): a file that misses under 8-shard load passes alone, and its verdict line alone cannot say why. The FULL output of every non-OK file (run-suite writes it to <shard>/<file>.<leg>.txt) is
+// copied into the merged artifact under failed/<leg>/, and the summary names the path, so a miss can be read from the one `pair-merged` artifact without opening 16 shard artifacts.
+import { readFileSync, readdirSync, existsSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs';
 import path from 'node:path';
 
 const arg = (n, d) => { const i = process.argv.indexOf('--' + n); return i > 0 && process.argv[i + 1] ? process.argv[i + 1] : d; };
@@ -33,11 +35,22 @@ for (const leg of ['default', 'parked']) {
   const rows = new Map(); const missing = [];
   for (const s of shards[leg].sort((a, b) => a.idx - b.idx)) {
     if (!existsSync(s.log)) { missing.push(s.idx); continue; }
-    for (const [f, r] of parse(s.log)) rows.set(f, r);
+    // PARKED - SUPERSEDED by the line below (#47: the row now remembers which shard directory holds its full output). The line that stood, verbatim:
+    // for (const [f, r] of parse(s.log)) rows.set(f, r);
+    for (const [f, r] of parse(s.log)) rows.set(f, { ...r, dir: path.dirname(s.log) });
   }
   const names = [...rows.keys()].sort();
   const bad = names.filter((f) => rows.get(f).st !== 'OK');
   const total = names.reduce((n, f) => n + rows.get(f).s, 0);
+  // the full output of every non-OK file, kept (#47). A file with no output file on disk (its shard died before writing it) is named, not hidden.
+  const kept = new Map();
+  for (const f of bad) {
+    const src = path.join(rows.get(f).dir, `${f}.${leg}.txt`);
+    if (!existsSync(src)) { kept.set(f, null); continue; }
+    mkdirSync(path.join(OUT, 'failed', leg), { recursive: true });
+    copyFileSync(src, path.join(OUT, 'failed', leg, `${f}.${leg}.txt`));
+    kept.set(f, `failed/${leg}/${f}.${leg}.txt`);
+  }
   const ok = !bad.length && !missing.length;
   if (!ok) clean = false;
   const merged = [`MERGED FROM ${shards[leg].length} GITHUB-ACTIONS SHARD(S), ${leg} leg, ${names.length} files. ADVISORY: not a box-stamped pair.`];
@@ -46,7 +59,13 @@ for (const leg of ['default', 'parked']) {
   writeFileSync(path.join(OUT, `pair-${leg}.log.txt`), merged.join('\n') + '\n');
 
   out.push(`### ${leg} leg - ${ok ? 'CLEAN' : 'NOT CLEAN'}`, '', `${names.length - bad.length}/${names.length} files OK; ${shards[leg].length} shards; ${total}s of file time.${missing.length ? ` **Shard(s) with no log: ${missing.join(', ')}**` : ''}`, '');
-  if (bad.length) { out.push('| file | Actions verdict |', '|---|---|'); for (const f of bad) out.push(`| ${f} | ${rows.get(f).st}: ${rows.get(f).v.slice(0, 140)} |`); out.push(''); }
+  // PARKED - SUPERSEDED by the table below (#47: a third column names where the file's FULL output was kept). The line that stood, verbatim:
+  // if (bad.length) { out.push('| file | Actions verdict |', '|---|---|'); for (const f of bad) out.push(`| ${f} | ${rows.get(f).st}: ${rows.get(f).v.slice(0, 140)} |`); out.push(''); }
+  if (bad.length) {
+    out.push('| file | Actions verdict | full output (artifact `pair-merged`) |', '|---|---|---|');
+    for (const f of bad) out.push(`| ${f} | ${rows.get(f).st}: ${rows.get(f).v.slice(0, 140)} | ${kept.get(f) ? '`' + kept.get(f) + '`' : '(no output file in its shard artifact `suite-' + leg + '-*`)'} |`);
+    out.push('');
+  }
   if (box) {
     const same = [], diff = [], onlyHere = [], onlyBox = [...box.keys()].filter((f) => !rows.has(f));
     for (const f of names) {
