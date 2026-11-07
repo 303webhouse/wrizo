@@ -103,11 +103,15 @@ const INSTRUMENT = `(() => {
   raf(tick);
   const rr = (r) => ({ x: +r.x.toFixed(2), y: +r.y.toFixed(2), w: +r.width.toFixed(2), h: +r.height.toFixed(2) });
   I.ed = () => document.querySelector('.forward-only-editor');
-  // the caret: its rect, and how much of the editor's text stands before it
+  // the caret: its rect, and how much of the editor's text stands before it. A collapsed range at the end of the text has no rect of its own
+  // (the first Actions run read 0,0,0,0 there), so the rect falls back to the last line box of the text before the caret
   I.caret = () => { const ed = I.ed(), s = getSelection(); if (!ed || !s || !s.rangeCount || !ed.contains(s.anchorNode)) return null; const r0 = s.getRangeAt(0);
-    const pre = document.createRange(); pre.selectNodeContents(ed); pre.setEnd(r0.startContainer, r0.startOffset); const r = r0.getClientRects()[0] || r0.getBoundingClientRect();
+    const pre = document.createRange(); pre.selectNodeContents(ed); pre.setEnd(r0.startContainer, r0.startOffset);
+    let r = r0.getClientRects()[0]; if (!r || !r.height) { const rs = [...pre.getClientRects()].filter((x) => x.height > 0); r = rs.length ? rs[rs.length - 1] : r0.getBoundingClientRect(); }
     return { before: pre.toString().length, r: rr(r) }; };
   I.toEnd = () => { const ed = I.ed(); if (!ed) return false; ed.focus(); const s = getSelection(); s.selectAllChildren(ed); s.collapseToEnd(); return true; };
+  // the caret at the end of row i (a row on screen at the top of the page: the writer's caret in view)
+  I.toRow = (i) => { const ed = I.ed(), row = ed && [...ed.querySelectorAll('.wz-row')][i]; if (!row) return false; ed.focus(); const s = getSelection(); s.selectAllChildren(row); s.collapseToEnd(); return true; };
   I.lh = () => { const ed = I.ed(), L = document.querySelector('[data-flux3-compile]') || (ed && ed.parentElement); if (!ed) return null; const raw = parseFloat(getComputedStyle(ed).lineHeight); const s = ed.offsetWidth ? ed.getBoundingClientRect().width / ed.offsetWidth : 1; return Number.isFinite(raw) && raw > 0 ? raw * s : null; };
   // every word in the editor with its rect (one rect each), for the compile's checks
   I.words = () => { const ed = I.ed(); if (!ed) return []; const out = []; const walk = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT);
@@ -328,7 +332,9 @@ try { await withHarness(async (app) => {
   // ---- RESTORE: in and out on a Draft page, against the control ---------------------------------------------------------------------------------
   const testRestore = async (flag) => {
     await open({ flag, id: DRAFTP, pageTw: 'off' });
-    await ev('(() => { const s = document.querySelector(".mode-page .mode-scroll"); if (s) s.scrollTop = 0; window.__f4.toEnd(); })()');
+    // the writer's caret in view: the end of the second row, at the top of an unscrolled page (the first Actions run put the caret at the end of the
+    // text while the page sat at scroll 0, a caret out of view; the control moved its scroll too, 0 -> 464, so that read was the scenario's)
+    await ev('(() => { const s = document.querySelector(".mode-page .mode-scroll"); if (s) s.scrollTop = 0; window.__f4.toRow(1); })()');
     await sleep(600);
     const before = await st();
     await pressToggle(); await sleep(900);
@@ -441,8 +447,15 @@ try { await withHarness(async (app) => {
     JSON.stringify({ in: [id.jackedIn.jacked, id.jackedIn.idleLayer, id.jackedIn.idleLive], out: [id.out.jacked, id.out.idleLayer] }));
 
   // ---- EDGE ------------------------------------------------------------------------------------------------------------------------------------------
+  // each run on its OWN fresh page one word short of the lap (the first Actions run's mutant run reused the page an earlier run had typed past the
+  // goal, so it read 250 words, not 249)
+  let edgeRun = 0;
   const testEdge = async () => {
-    await open({ id: GOAL });
+    edgeRun += 1;
+    const pid = `${GOAL}-${edgeRun}`;
+    await mk({ id: pid, text: Array.from({ length: 249 }, (_, i) => `w${i}`).join(' '), createdAt: new Date().toISOString(), origin: 'loose', source: 'page' });
+    await sleep(300);
+    await open({ id: pid });
     const a = await st();
     if (SHOTS) await snap('s4-dark-1920-edge');
     await app.typeKeys(' x');
@@ -453,7 +466,7 @@ try { await withHarness(async (app) => {
     await pressToggle(); await sleep(300);
     const out = await st();
     await hand(false);
-    await open({ id: GOAL, prefs: { progress: 'off' } });
+    await open({ id: pid, prefs: { progress: 'off' } });
     const off = await st();
     return { a, goal, next, out, off };
   };

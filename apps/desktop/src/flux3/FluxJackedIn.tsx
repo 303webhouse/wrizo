@@ -41,6 +41,23 @@ const glyphsFor = (text: string, seed: number): string => {
   return out;
 };
 const still = () => prefersReducedMotion() || getAmbianceDial() === 0;
+// the caret's line box. A collapsed range often has no rect of its own (at the end of a text node, or between rows), so it falls back to the text
+// before the caret in its own row (the last line box of that text is the caret's line), then to the row itself (an empty row)
+const caretBox = (at: Range, ed: HTMLElement): DOMRect | null => {
+  const own = at.getClientRects()[0];
+  if (own && own.height) return own;
+  const c = at.startContainer;
+  const el = c.nodeType === Node.ELEMENT_NODE ? (c === ed ? (ed.children[at.startOffset - 1] as HTMLElement | undefined) ?? null : (c as HTMLElement)) : c.parentElement;
+  const row = el?.closest<HTMLElement>('.wz-row') ?? null;
+  if (!row || !ed.contains(row)) return null;
+  const pre = document.createRange();
+  pre.selectNodeContents(row);
+  if (row.contains(c)) pre.setEnd(c, at.startOffset);
+  const rs = [...pre.getClientRects()].filter((r) => r.height > 0);
+  if (rs.length) return rs[rs.length - 1];
+  const rr = row.getBoundingClientRect();
+  return rr.height ? rr : null;
+};
 
 export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
   const flux = useTheme() === 'flux';
@@ -90,9 +107,8 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
       const ed = scroll.querySelector<HTMLElement>('.forward-only-editor');
       const sel = document.getSelection();
       if (!ed || !sel || !sel.rangeCount || !ed.contains(sel.anchorNode)) return;   // the writing line is the caret's; no caret here, no change
-      const at = sel.getRangeAt(0);
-      const caret = at.getClientRects()[0] ?? at.getBoundingClientRect();
-      if (!caret || !caret.height) return;
+      const caret = caretBox(sel.getRangeAt(0), ed);
+      if (!caret) return;
       const { L, s } = frame();
       const lhLayout = parseFloat(getComputedStyle(ed).lineHeight);
       const lh = Number.isFinite(lhLayout) && lhLayout > 0 ? lhLayout * s : caret.height * 1.4;
