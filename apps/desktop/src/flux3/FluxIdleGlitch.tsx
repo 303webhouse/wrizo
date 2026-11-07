@@ -17,6 +17,7 @@ import { useTheme } from '../store/theme';
 import { useWritingSettings } from '../store/writingSettings';
 import { prefersReducedMotion, useAmbianceDial } from '../store/ambianceDial';
 import { tryFlash } from '../store/flashBudget';
+import { useJacked } from './jackIn';
 
 export const IDLE_GATE_S = 45;
 export const RAMP_S = 180;
@@ -33,7 +34,9 @@ export function FluxIdleGlitch({ paperRef }: { paperRef: RefObject<HTMLElement |
   const theme = useTheme();
   const settings = useWritingSettings();
   const dial = useAmbianceDial();
-  const on = theme === 'flux' && settings.flicker && dial > 0;
+  // FLUX3 S4 - none while Jacked In (the spec's §6: no glitch there; the compile owns the lines above the writing line)
+  const jacked = useJacked();
+  const on = theme === 'flux' && settings.flicker && dial > 0 && !jacked;
 
   useEffect(() => {
     if (!on || typeof document === 'undefined') return;

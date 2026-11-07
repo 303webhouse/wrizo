@@ -3,8 +3,11 @@ import type { ReactNode } from 'react';
 import type { EditorMode } from './ForwardOnlyEditor';
 import { DrawerNote } from './DrawerNote';
 import { useChromeDissolve } from './useChromeDissolve';
-import { useWritingSettings, setWritingSettings, setTypewriterExplicit, typewriterForPage } from '../store/writingSettings';
+import { useWritingSettings, setWritingSettings, setTypewriterExplicit, typewriterForPage, freeWriteTypewriter } from '../store/writingSettings';
 import type { ProgressMetric, FadeDepth, ProgressStyle } from '../store/writingSettings';
+// FLUX3 S4 - a mount point only: under ?flux3=1, a page's Typewriter in Flux is Jacked In (src/flux3/FluxJackedIn.tsx); without the flag nothing mounts
+import { FLUX3 } from '../flux3/flag';
+import { FluxJackedIn } from '../flux3/FluxJackedIn';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { useAssistResponse } from '../store/aiAssist';
 import { ChromeHandle } from './WritingShell';
@@ -175,7 +178,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
   // Typewriter engages in Free Write and Draft only; Draft reads this page's own value, Free Write and pageId-less callers the shared field [ModeStage §6]
   const typewriterOn = mode === 'drafting' && pageId != null
     ? typewriterForPage(pageId, words === 0)
-    : (mode === 'journal' || mode === 'drafting') && settings.typewriter;
+    : (mode === 'journal' || mode === 'drafting') && freeWriteTypewriter(settings);
   // the zoom: on the framed prose page Typewriter scales the same page ~1.6x by a transform, so no line reflows and the editor never unmounts (page primacy's one exception); entering tucks both drawers [ModeStage §7]
   const zoomed = !!framed && typewriterOn;
   const pagecolRef = useRef<HTMLDivElement>(null);
@@ -659,6 +662,8 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
           </aside>
         ))}
       </div>
+
+      {FLUX3 && pageId != null && <FluxJackedIn on={typewriterOn} freeWrite={mode === 'journal'} scrollRef={scrollRef} refresh={tick} />}
 
       {/* Connect AI — stub entry point (no provider wired in B3). */}
       {!framed && connectOpen && (

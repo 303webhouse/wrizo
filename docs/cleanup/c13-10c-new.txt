@@ -18,5 +18,7 @@ flux3WordMany=words
 flux3PortConnectAnother=Connect another
 flux3PortDisconnect=Disconnect
 flux3Checkpoint=Checkpoint
+# FLUX3 S4 (INK) - Jacked In: the "Jack In by default" switch's label
+flux3JackInDefault=Jack In by default
 # 10e (POLISH) - the Progress row's label for the stored 'project' metric; its Flux word comes with the full pass
 progressDrawer=Drawer
