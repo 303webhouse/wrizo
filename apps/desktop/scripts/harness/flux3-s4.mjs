@@ -705,9 +705,11 @@ try { await withHarness(async (app) => {
     const shot = await app.cdp('Page.captureScreenshot', { format: 'png' });
     return ev(`window.__f4.pix(${JSON.stringify(shot.data)}, ${JSON.stringify(box)})`);
   };
-  // under reduced motion: the tunnel stands still (no streak crosses a measured line), and the veil, the compile and the rows are the same
+  // at Ambiance 0: the tunnel stands still (no streak crosses a measured line), and the veil, the compile and the rows are the same. (r9's first
+  // runs used reduced motion: there the zoomed Typewriter left the writing line BELOW the window after the burst, y 880-1050 of 768, so every
+  // line box fell off the screen; INFO TERM-WHERE-CONTROL asks whether today's Typewriter does the same, flag off)
   const testTerminal = async (tone) => {
-    await open({ tone, view: [1366, 768], reduced: true });
+    await open({ tone, view: [1366, 768], dial: 0 });
     const rest = await ev('window.__f4.term()');
     // a burst that wraps: lines rise while keys land, and BEFORE the pause the line two up (it rose during the burst, so no signal covers it yet:
     // the open's own pause compiled only the lines that stood two up then) must show no text
@@ -739,6 +741,15 @@ try { await withHarness(async (app) => {
     const k = x.rows.findIndex(at); if (k < 3) return false;
     return x.rows.slice(1, k).every((r, i) => r.share < x.rows[i].share - 0.02) && x.rows[k].share < x.rows[k - 1].share && x.rows.slice(k).every(at); };
   const tmL = await testTerminal('light'), tmD = await testTerminal('dark');
+  // INFO (a finding, never a verdict): where the writing line stands after the same burst under REDUCED MOTION, flag on and on the control
+  const whereReduced = async (flag) => {
+    await open({ flag, view: [1366, 768], reduced: true, prefs: flag ? {} : { typewriter: true } });
+    for (const ch of ' and the line keeps going forward with more plain words now, on and on across the measure of the page until it wraps') { await app.typeKeys(ch); await sleep(25); }
+    await sleep(600);
+    return ev("(() => { const c = window.__f4.caret(), sc = document.querySelector('.mode-page .mode-scroll'), z = document.querySelector('.mode-pagecol')?.getAttribute('data-zoom'); return { zoom: z, caretY: c ? Math.round(c.r.y) : null, caretH: c ? Math.round(c.r.h) : null, top: sc ? sc.scrollTop : null, vh: innerHeight, onScreen: !!c && c.r.y > 0 && c.r.y + c.r.h < innerHeight }; })()");
+  };
+  const wrOn = await whereReduced(true), wrOff = await whereReduced(false);
+  console.log(`INFO TERM-WHERE-CONTROL reduced motion, after a burst: Jacked In ${JSON.stringify(wrOn)} / the control (flag off, the Typewriter on) ${JSON.stringify(wrOff)}${!wrOff.onScreen ? ' - the TYPEWRITER\'s own (not S4\'s)' : ''}`);
   for (const [tone, x] of [['light', tmL], ['dark', tmD]]) {
     ok(`TERM-PAPER (${tone}) jacked in, no paper: the page clear (${x.rest && x.rest.pageBg}), its readouts hidden, the veil on the editor; the ground ${tone === 'light' ? 'the white room (the paper\'s colour)' : 'the night glass (nothing laid)'} (${x.rest && x.rest.groundBg})`,
       termPaperOk(x.rest, tone) && termPaperOk(x.after, tone), JSON.stringify({ rest: x.rest, after: x.after }));
