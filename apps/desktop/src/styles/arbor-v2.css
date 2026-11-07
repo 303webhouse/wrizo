@@ -825,7 +825,9 @@
   border-radius:inherit; opacity:1; transition:opacity 3s ease; }
 :root[data-arbor2][data-theme='plateau'] .arbor2-pergola .arbor2-pergola-drift{ position:absolute; inset:-16px; }
 :root[data-arbor2][data-theme='plateau'] .arbor2-pagesh .arbor2-pergola-drift{ position:absolute; }   /* sized and placed in the page's own units by pergola.ts */
-:root[data-arbor2][data-theme='plateau'] :is(.arbor2-pergola, .arbor2-pagesh) .arbor2-pergola-drift{ will-change:transform; animation:arbor2-pergola-drift 20s ease-in-out infinite alternate; }
+/* TEST BUILD (1) the leaves shiver continuously, no swap, no drift - Nick's idea via Fable, Nov 7: NO DRIFT. The wrapper stays (the swap, the sleep and the copies' placement use it); it no longer moves. Was:
+   :root[data-arbor2][data-theme='plateau'] :is(.arbor2-pergola, .arbor2-pagesh) .arbor2-pergola-drift{ will-change:transform; animation:arbor2-pergola-drift 20s ease-in-out infinite alternate; } */
+:root[data-arbor2][data-theme='plateau'] :is(.arbor2-pergola, .arbor2-pagesh) .arbor2-pergola-drift{ will-change:transform; }
 :root[data-arbor2][data-theme='plateau'] :is(.arbor2-pergola, .arbor2-pagesh) svg{ display:block; width:100%; height:100%; }
 :root[data-arbor2][data-theme='plateau'] :is(.arbor2-pergola, .arbor2-pagesh) .wz-leaf{ animation:arbor2-breeze 16s ease-in-out infinite; }
 @keyframes arbor2-breeze{ 0%{ transform:rotate(0); } 1.56%{ transform:rotate(8deg); } 3.44%{ transform:rotate(-6deg); } 5.31%{ transform:rotate(3.5deg); } 7.19%{ transform:rotate(-1.5deg); } 8.75%, 100%{ transform:rotate(0); } }
@@ -838,7 +840,8 @@
    drift box exactly as the room's svg is fitted (xMidYMid slice); in an unscaled host the drift runs on literal pixels, so on the compositor. The
    page's copy is r20's live drawing. */
 :root[data-arbor2][data-theme='plateau'] .arbor2-pagesh[data-bitmap='true'] .arbor2-pergola-drift{ background-repeat:no-repeat; background-position:center; background-size:cover; }
-:root[data-arbor2][data-theme='plateau'] .arbor2-pagesh[data-bitmap='true'][data-flat='true'] .arbor2-pergola-drift{ animation-name:arbor2-pergola-drift-px; }
+/* TEST BUILD: no drift, so no literal-pixel drift on the bitmap copies either. Was:
+   :root[data-arbor2][data-theme='plateau'] .arbor2-pagesh[data-bitmap='true'][data-flat='true'] .arbor2-pergola-drift{ animation-name:arbor2-pergola-drift-px; } */
 @keyframes arbor2-pergola-drift-px{ 0%{ transform:translate(0, 0); } 100%{ transform:translate(12px, -5px); } }
 /* r21 latency fix, part 2 (Fable, Nov 5): the shade's fade on the compositor, and the faded drawing out of style work until it returns
    (pergola.ts sets data-asleep once the writing fade has run; nothing visible changes - the layer is at opacity 0) */
@@ -864,7 +867,8 @@
    there is no pergola and the rhizome stays, barely there. While writing the breeze holds still (nothing in a faded layer repaints), and resumes
    with the return. Reduced motion: cuts. */
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'][data-wz-writing='true'] :is(.arbor2-pergola, .arbor2-pagesh){ opacity:0; transition:opacity 6s ease; }
-:root[data-arbor2][data-theme='plateau'][data-wz-writing='true'] :is(.arbor2-pergola, .arbor2-pagesh) :is(.arbor2-pergola-drift, .wz-leaf){ animation-play-state:paused; }
+/* TEST BUILD (1): the leaves shiver CONTINUOUSLY - nothing holds them still while writing (the shade still fades out over 6 s and sleeps once faded). Was:
+   :root[data-arbor2][data-theme='plateau'][data-wz-writing='true'] :is(.arbor2-pergola, .arbor2-pagesh) :is(.arbor2-pergola-drift, .wz-leaf){ animation-play-state:paused; } */
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .wz-rhizome-field[data-vines='true']{ opacity:0; transition:opacity 3s ease; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'][data-wz-writing='true'] .wz-rhizome-field[data-vines='true']{ opacity:1; transition:opacity 6s ease; }
 @media (prefers-reduced-motion: reduce){

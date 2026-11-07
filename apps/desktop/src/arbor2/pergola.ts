@@ -168,7 +168,7 @@ export function mountPergola(): void {
       // the page keeps r20's live copy; every other surface draws the shared bitmap
       const c = h.matches(HOSTS[0]) ? makeLayer('arbor2-pagesh', PAGE_ALPHA) : makeBitmapLayer(PAGE_ALPHA);
       if (room.layer.hasAttribute('data-asleep')) c.layer.setAttribute('data-asleep', 'true');
-      { const p = liveOf.get(c.layer); if (p) requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(() => { if (writing()) cut(p); else clock(p); }))); else if (room.layer.hasAttribute('data-live-off')) c.layer.setAttribute('data-live-off', 'true'); }
+      { const p = liveOf.get(c.layer); if (p) requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(() => { clock(p); }   /* TEST BUILD (1), Nov 7: no swap - was: if (writing()) cut(p); else clock(p); */))); else if (room.layer.hasAttribute('data-live-off')) c.layer.setAttribute('data-live-off', 'true'); }
       h.appendChild(c.layer); copies.set(h, c); ro.observe(h); place(h, c);
       requestAnimationFrame(() => requestAnimationFrame(() => sync(c.layer)));
     }
@@ -219,7 +219,8 @@ export function mountPergola(): void {
   const onWriting = () => {
     window.clearTimeout(sleepT);
     if (!writing()) { liveOff(false); sleep(false); requestAnimationFrame(() => requestAnimationFrame(clockAll)); return; }
-    liveOff(true);
+    // TEST BUILD (1) (Nick's idea via Fable, Nov 7): the leaves shiver continuously - NO SWAP, so no cut at the key. Was:
+    // liveOff(true);
     // the fade's own length, as the stylesheet sets it while writing (6 s; reduced motion: none), and a quarter second to spare
     const d = getComputedStyle(room.layer).transitionDuration.split(',')[0].trim();
     const ms = (parseFloat(d) || 0) * (d.endsWith('ms') ? 1 : 1000);
