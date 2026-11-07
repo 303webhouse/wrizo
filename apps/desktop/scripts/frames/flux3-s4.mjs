@@ -1,5 +1,5 @@
 // FLUX3 S4 - JACKED IN as named screens for the frames job (-f themes=flux -f screens_file=apps/desktop/scripts/frames/flux3-s4.mjs
-// -f screens=jack-frame,jack-compiled,jack-out,jack-edge,jack-switch,jack-esc,jack-esc-control). The pages flux3-s4.mjs seeds (through the app's seams, never raw storage),
+// -f screens=jack-frame,jack-compiled,jack-out,jack-edge,jack-switch,jack-esc,jack-esc-control,jack-tunnel,jack-tunnel-fast). The pages flux3-s4.mjs seeds (through the app's seams, never raw storage),
 // in Free Write under ?flux3=1, the shared Typewriter field off (so the page is Jacked In by the default alone). jack-frame: jacked in at rest.
 // jack-compiled: after a burst of typing and the pause (the lines two up and beyond compiled). jack-out: mid-decompile, the toggle just pressed.
 // jack-edge: a page one word short of the lap (the burst edge nearly empty). jack-switch: the TOOLS foot open on "Jack In by default".
@@ -43,8 +43,21 @@ const escLater = async (app, name, opts) => {
   console.log(`FLUX3-S4-FRAME ${name} ${JSON.stringify({ ...(await stood(app)), ...look })}`);
 };
 
+const tunnelOf = (app) => app.evalJs("(() => { const t = document.querySelector('[data-flux3-tunnel]'); if (!t) return null; const a = t.getAnimations({ subtree: true }); return { anims: a.length, rates: [...new Set(a.map((x) => x.playbackRate))], fast: t.hasAttribute('data-fast'), still: t.hasAttribute('data-still'), writing: document.documentElement.getAttribute('data-wz-writing') }; })()");
+
 export default {
-  'jack-esc': (app) => escLater(app, 'jack-esc', { flag: true, typewriter: false }),
+  // THE TUNNEL (Nick kept it, Nov 7): at rest, and mid-burst (shot while she is still typing fast: the speed re-set, the streaks on)
+  'jack-tunnel': async (app) => {
+    await seed(app, LONG_TEXT);
+    console.log(`FLUX3-S4-FRAME jack-tunnel ${JSON.stringify({ ...(await stood(app)), tunnel: await tunnelOf(app) })}`);
+  },
+  'jack-tunnel-fast': async (app) => {
+    await seed(app, LONG_TEXT);
+    const burst = ' the signal holds while she writes on and on';
+    for (let i = 0; i < 110; i += 1) { await app.typeKeys(burst[i % burst.length]); await sleep(35); }
+    console.log(`FLUX3-S4-FRAME jack-tunnel-fast ${JSON.stringify({ ...(await stood(app)), tunnel: await tunnelOf(app) })}`);
+  },
+  'jack-esc':(app) => escLater(app, 'jack-esc', { flag: true, typewriter: false }),
   'jack-esc-control': (app) => escLater(app, 'jack-esc-control', { flag: false, typewriter: true }),
   'jack-frame': async (app) => {
     await seed(app, LONG_TEXT);

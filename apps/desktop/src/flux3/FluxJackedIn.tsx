@@ -11,13 +11,14 @@
 //   - THE DEFAULT. Entering Free Write in Flux with "Jack In by default" on lays a session overlay over the shared Typewriter field
 //     (writingSettings.setFreeWriteOverlay) before the page paints, so Free Write opens Jacked In while the shared field, and every other theme's
 //     Typewriter, stay as they are. The writer's own toggle clears it; leaving Free Write lifts it. Nothing is saved (ruling D).
-//   - No tunnel here: it waits for Nick's ruling (B).
+//   - THE TUNNEL (Nick kept it, Nov 7: ruling B, INK's lean) is FluxTunnel.tsx, mounted here while jacked in.
 import { useEffect, useLayoutEffect, type RefObject } from 'react';
 import { useTheme } from '../store/theme';
 import { setFreeWriteOverlay } from '../store/writingSettings';
 import { getAmbianceDial, prefersReducedMotion } from '../store/ambianceDial';
 import { tryFlash } from '../store/flashBudget';
 import { getJackInDefault, setJacked } from './jackIn';
+import { FluxTunnel } from './FluxTunnel';
 
 export const COMPILE_PAUSE_MS = 700;   // the pause the compile waits for (the Glitch bar's and the gutter's own pause)
 export const COMPILE_LINES = 2;        // the caret's line is 0, the line above it 1: from 2 up, the words compile
@@ -114,8 +115,33 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
       Object.assign(el.style, { left: `${(r.left - L.left) / s}px`, top: `${(r.top - L.top) / s}px`, width: `${r.width / s}px`, height: `${r.height / s}px`, lineHeight: `${r.height / s}px` });
     };
 
+    // ESC READS (the Wrizors' S4 review, Fable Nov 7): Esc brings the chrome back as it does today, and the page then reads as the Typewriter's
+    // does: the signal resolves (each block turns over and fades) and nothing compiles again until she types
+    let lookingUp = false;
+    let fadeTimer = 0;
+    const turnOver = (el: Element) => { el.querySelectorAll('i').forEach((b) => { b.className = b.className === 'f' ? 'h' : 'f'; }); };
+    const resolve = () => {
+      sig = '';
+      if (!words.size) return;
+      const els = [...words.keys()];
+      words.clear();
+      if (still() || !tryFlash('f3-resolve')) { els.forEach((el) => el.remove()); return; }
+      const fade = document.createElement('div');
+      fade.className = 'flux3-compile-fade';
+      fade.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:0;';
+      els.forEach((el) => { turnOver(el); fade.appendChild(el); });
+      layer.appendChild(fade);
+      requestAnimationFrame(() => fade.classList.add('decompile'));
+      fadeTimer = window.setTimeout(() => fade.remove(), DECOMPILE_MS + 60);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { lookingUp = true; if (timer) window.clearTimeout(timer); timer = 0; resolve(); return; }
+      if (e.key.length === 1 || e.key === 'Enter' || e.key === 'Backspace') lookingUp = false;   // she writes again: the next pause compiles
+    };
+
     const compile = () => {
       timer = 0;
+      if (lookingUp) return;
       if (!scroll.isConnected) return;
       const ed = scroll.querySelector<HTMLElement>('.forward-only-editor');
       const sel = document.getSelection();
@@ -179,6 +205,7 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
     const schedule = () => { if (timer) window.clearTimeout(timer); timer = window.setTimeout(compile, COMPILE_PAUSE_MS); };
     const opts = { capture: true, passive: true } as const;
     const DOC_EVENTS = ['keydown', 'beforeinput', 'selectionchange', 'wz-zoom-changed'] as const;
+    document.addEventListener('keydown', onKey, opts);   // before schedule's own keydown, so an Esc never schedules a compile
     DOC_EVENTS.forEach((ev) => document.addEventListener(ev, schedule, opts));
     scroll.addEventListener('scroll', schedule, { passive: true });
     window.addEventListener('resize', schedule);
@@ -186,6 +213,8 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
 
     return () => {
       if (timer) window.clearTimeout(timer);
+      if (fadeTimer) window.clearTimeout(fadeTimer);
+      document.removeEventListener('keydown', onKey, opts);
       DOC_EVENTS.forEach((ev) => document.removeEventListener(ev, schedule, opts));
       scroll.removeEventListener('scroll', schedule);
       window.removeEventListener('resize', schedule);
@@ -195,7 +224,7 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
       const stays = scroll.isConnected && document.documentElement.getAttribute('data-theme') === 'flux';
       if (!stays || !words.size || still() || !tryFlash('f3-decompile')) { layer.remove(); return; }
       // the signal resolves: every block turns over (filled to hollow, hollow to filled), still whole, and fades off its word
-      words.forEach((_, el) => { el.querySelectorAll('i').forEach((b) => { b.className = b.className === 'f' ? 'h' : 'f'; }); });
+      words.forEach((_, el) => turnOver(el));
       const end = performance.now() + DECOMPILE_MS;
       // each glyph run follows its own word while the page settles out of the zoom (its Range is the word; the page's layout box moves under it)
       const follow = () => {
@@ -211,5 +240,5 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
     };
   }, [jackedIn, scrollRef]);
 
-  return null;
+  return jackedIn ? <FluxTunnel scrollRef={scrollRef} /> : null;
 }

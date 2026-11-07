@@ -170,8 +170,36 @@
 :root[data-flux3][data-theme='flux'] .flux3-compile-word > i.h{ border:1px solid currentColor; }
 :root[data-flux3][data-theme='flux'][data-page='light'] .flux3-compile-word{ color:color-mix(in srgb, var(--f3-cyan-text) 46%, transparent); }
 /* the decompile: one fade, revealing the words already in the doc (the still state never reaches here: it is a cut) */
-:root[data-flux3][data-theme='flux'] .flux3-compile.decompile{ opacity:0; transition:opacity 420ms ease-out; }
+:root[data-flux3][data-theme='flux'] .flux3-compile.decompile,
+:root[data-flux3][data-theme='flux'] .flux3-compile-fade.decompile{ opacity:0; transition:opacity 420ms ease-out; }
 /* the burst edge: the lap's remainder as a lime line across the top of the window, drawn by a transform; no transition (a step per word) */
 :root[data-flux3][data-theme='flux'] .flux3-burst{ position:fixed; left:0; right:0; top:0; height:2px; z-index:70; pointer-events:none;
   background:color-mix(in srgb, var(--f3-cyan) 14%, transparent); }
 :root[data-flux3][data-theme='flux'] .flux3-burst > i{ position:absolute; inset:0; background:var(--f3-lime); transform-origin:0 50%; }
+/* THE TUNNEL (src/flux3/FluxTunnel.tsx; Nick kept it, Nov 7). Behind the page (first in .mode-stage, under the page column), no pointer. Every
+   animation is transform or opacity (the compositor's), and its speed is the animations' playbackRate, re-set at most every 2 s.
+   THE RECEDE EXCEPTION (named): nothing here recedes while she types, unless the tunnel carries data-recede (TUNNEL_SWITCHES.recedeWhileTyping)
+   or holds while she types with data-hold (TUNNEL_SWITCHES.holdWhileTyping). */
+:root[data-flux3][data-theme='flux'] .flux3-tunnel{ position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none; contain:strict;
+  --t-line:color-mix(in srgb, var(--f3-cyan) 34%, transparent); --t-ray:color-mix(in srgb, var(--f3-cyan) 10%, transparent); transition:opacity var(--fade-dur, 1.2s) ease; }
+:root[data-flux3][data-theme='flux'][data-page='light'] .flux3-tunnel{ --t-line:color-mix(in srgb, var(--f3-cyan-text) 26%, transparent); --t-ray:color-mix(in srgb, var(--f3-cyan-text) 8%, transparent); }
+:root[data-flux3][data-theme='flux'] .flux3-tunnel-rays{ position:absolute; inset:-50%; background:repeating-conic-gradient(from 0deg at 50% 50%, var(--t-ray) 0deg 0.3deg, transparent 0.3deg 22.5deg);
+  -webkit-mask-image:radial-gradient(closest-side, transparent 6%, #000 55%); mask-image:radial-gradient(closest-side, transparent 6%, #000 55%); }
+:root[data-flux3][data-theme='flux'] .flux3-tunnel-frame{ position:absolute; left:50%; top:50%; width:180%; height:180%; box-sizing:border-box; border:1px solid var(--t-line);
+  transform:translate(-50%,-50%) scale(var(--s)); opacity:var(--o); animation:flux3-tunnel-run 9s cubic-bezier(.6,0,.9,.4) infinite; }
+@keyframes flux3-tunnel-run{ from{ transform:translate(-50%,-50%) scale(.04); opacity:0; } 14%{ opacity:.3; } to{ transform:translate(-50%,-50%) scale(1); opacity:1; } }
+/* at speed, lime streaks out of the vanishing point (each a still rotation around an animated run) */
+:root[data-flux3][data-theme='flux'] .flux3-tunnel-streaks{ position:absolute; left:50%; top:50%; width:0; height:0; opacity:0; transition:opacity .6s ease; }
+:root[data-flux3][data-theme='flux'] .flux3-tunnel[data-fast] .flux3-tunnel-streaks{ opacity:1; }
+:root[data-flux3][data-theme='flux'] .flux3-tunnel-streaks > b{ position:absolute; left:0; top:0; width:0; height:0; }
+:root[data-flux3][data-theme='flux'] .flux3-tunnel-streaks > b > i{ position:absolute; left:0; top:0; width:18vmax; height:1px; transform-origin:0 50%;
+  background:linear-gradient(90deg, transparent, color-mix(in srgb, var(--f3-lime) 60%, transparent)); animation:flux3-tunnel-streak 1.6s cubic-bezier(.5,0,1,.6) infinite; }
+@keyframes flux3-tunnel-streak{ from{ transform:translateX(6vmax) scaleX(.2); opacity:0; } 30%{ opacity:1; } to{ transform:translateX(70vmax) scaleX(1); opacity:0; } }
+/* the still state: the frames at their places, nothing running, no streaks */
+:root[data-flux3][data-theme='flux'] .flux3-tunnel[data-still] .flux3-tunnel-frame,
+:root[data-flux3][data-theme='flux'] .flux3-tunnel[data-still] .flux3-tunnel-streaks > b > i{ animation:none; }
+:root[data-flux3][data-theme='flux'] .flux3-tunnel[data-still] .flux3-tunnel-streaks{ display:none; }
+/* THE SWITCHES' rules (inert unless a switch is flipped): recede with the chrome while she types; or hold still while she types */
+html[data-wz-writing='true'][data-flux3][data-theme='flux'] .flux3-tunnel[data-recede]{ opacity:0; }
+html[data-wz-writing='true'][data-flux3][data-theme='flux'] .flux3-tunnel[data-hold] .flux3-tunnel-frame,
+html[data-wz-writing='true'][data-flux3][data-theme='flux'] .flux3-tunnel[data-hold] .flux3-tunnel-streaks > b > i{ animation-play-state:paused; }

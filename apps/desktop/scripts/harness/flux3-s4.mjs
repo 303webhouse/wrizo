@@ -30,8 +30,17 @@
 //   ESC / REACH (C) while jacked in, Esc does what it does today (the chrome comes back; still jacked in), and an edge dwell summons the chrome:
 //          both identical to the control (flag off, the Typewriter on). ESC-LATER (the Wrizors' S4 review, Fable Nov 7): >= 1.2 s after Esc,
 //          the band mask, every opacity down to the lines, the caret, the focus and Flux's block caret are the control's (the signal reported).
+//          ESC-READ (the r4 frames: the control's lines read after Esc, Jacked In's stayed compiled): Esc resolves the signal through the
+//          budget, so at 1.2 s no word is compiled; writing again, the next pause compiles. MUT-LOOKUP (landed): Esc not resolving fails it.
 //   COMPILE-WHOLE (same review) every character, punctuation included, is ONE WHOLE block inside its own slot; no text in the layer.
 //          MUT-BLOCK (landed) a block wider than its slot: COMPILE-WHOLE fails.
+//   TUN    THE TUNNEL (Nick kept it, Nov 7; INK's lean B, src/flux3/FluxTunnel.tsx): while jacked in, first in .mode-stage behind the page,
+//          aria-hidden, no pointer, no canvas, 12 frames, every animation transform/opacity only and running; the paper opaque and above it.
+//          TUN-TYPE the named recede exception: while keys land (the chrome receded) it stays and runs. TUN-RATE re-set at most every 2 s
+//          (every updatePlaybackRate is logged), faster while she types fast, the streaks at speed, back to rest after; its only DOM change the
+//          streaks' flag, at most every 2 s. TUN-STILL no animation under reduced motion and Ambiance 0. TUN-WHERE only while jacked in.
+//          MUT-RECEDE / MUT-HOLD (landed): each one-line switch flipped alone does exactly its thing. MUT-RESET (landed): TUN-RATE fails.
+//          INFO SPLIT: L's K arm, Jacked In with the tunnel never mounted (landed), so a red L splits into the tunnel's share.
 //   FL     Forward Lock is today's: Backspace in Jacked In strikes and never deletes, exactly as the control.
 //   L      the Jacked In arm (box only; information on Actions): key -> paint (rhizome-latency's method) against the control (Flux, flag off, the
 //          Typewriter on), interleaved rounds: J median <= C median + C's spread, p95 likewise, no key over 100 ms; no canvas drew more while
@@ -143,7 +152,22 @@ const INSTRUMENT = `(() => {
     return { caret: !!I.caret(), focus: !!ed && document.activeElement === ed, block: !!bc && bcr.width > 0 && bcr.height > 0 && bcs.visibility !== 'hidden' && bcs.display !== 'none',   /* not its opacity: it blinks */
       colMask: mask(col), scMask: mask(sc), op: [op(page), op(col), op(sc), op(ed)], rowOps: ed ? [...new Set([...ed.children].map((r) => getComputedStyle(r).opacity))] : null,
       compiled: document.querySelectorAll('[data-flux3-compile] .flux3-compile-word').length, writing: document.documentElement.getAttribute('data-wz-writing') }; };
-  I.flashes = (kind) =>(window.__wzFlashLog || []).filter((f) => f.ok && (!kind || f.kind === kind)).map((f) => f.t);
+  // THE TUNNEL: every playbackRate set on its animations (the only way its speed changes), its mutations, and what it is
+  I.rates = [];
+  const upr = Animation.prototype.updatePlaybackRate;
+  Animation.prototype.updatePlaybackRate = function (r) { const tg = this.effect && this.effect.target; if (tg && tg.closest && tg.closest('[data-flux3-tunnel]')) I.rates.push([performance.now(), r]); return upr.call(this, r); };
+  I.watchTunnel = () => { I.tunMut = []; const t = document.querySelector('[data-flux3-tunnel]'); if (I.mt) I.mt.disconnect(); if (!t) return false;
+    I.mt = new MutationObserver((ms) => { const at = performance.now(); for (const m of ms) I.tunMut.push([at, m.type, m.attributeName || '']); }); I.mt.observe(t, { childList: true, subtree: true, attributes: true, characterData: true }); return true; };
+  I.tunnel = () => { const t = document.querySelector('[data-flux3-tunnel]'); if (!t) return null; const cs = getComputedStyle(t), anims = t.getAnimations({ subtree: true }), props = new Set();
+    anims.forEach((a) => { try { a.effect.getKeyframes().forEach((k) => Object.keys(k).forEach((p) => props.add(p))); } catch { props.add('unreadable'); } });
+    const page = document.querySelector('.mode-page'), par = t.parentElement;
+    return { inStage: !!par && par.classList.contains('mode-stage'), first: !!par && par.firstElementChild === t, aria: t.getAttribute('aria-hidden'), pe: cs.pointerEvents, op: +cs.opacity, z: cs.zIndex,
+      canvas: t.querySelectorAll('canvas').length, frames: t.querySelectorAll('.flux3-tunnel-frame').length, anims: anims.length, running: anims.filter((a) => a.playState === 'running').length,
+      props: [...props].filter((p) => !['offset', 'easing', 'composite', 'computedOffset'].includes(p)).sort(), rates: [...new Set(anims.map((a) => a.playbackRate))],
+      time: anims.length ? +(+anims[0].currentTime).toFixed(0) : null, fast: t.hasAttribute('data-fast'), still: t.hasAttribute('data-still'), recede: t.hasAttribute('data-recede'), hold: t.hasAttribute('data-hold'),
+      pageBg: page ? getComputedStyle(page).backgroundColor : null, pageAbove: !!page && (() => { const r = page.getBoundingClientRect(), e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!e && !t.contains(e); })(),
+      writing: document.documentElement.getAttribute('data-wz-writing') }; };
+  I.flashes = (kind) => (window.__wzFlashLog || []).filter((f) => f.ok && (!kind || f.kind === kind)).map((f) => f.t);
   I.st = () => {
     const root = document.documentElement, page = document.querySelector('.mode-page'), ed = I.ed(), col = document.querySelector('.mode-pagecol'), sc = document.querySelector('.mode-page .mode-scroll');
     const burst = document.querySelector('[data-flux3-burst]'), bi = burst && burst.querySelector('i');
@@ -173,6 +197,14 @@ const MUTANTS = {
   edge: [/\?0:Math\.max\(0,Math\.min\(1,1-([\w$]+)\)\)/g, '?0:Math.max(0,Math.min(1,$1))'],
   still: [/\.size\|\|([\w$]+)\(\)\|\|!([\w$]+)\("f3-decompile"\)/g, '.size||!1||!$2("f3-decompile")'],
   block: [/=420,([\w$]+)=\.72([,;])/g, '=420,$1=1.6$2'],
+  // the tunnel's two one-line switches, each flipped alone (Nick: in case he changes his mind), and the re-set's interval
+  recede: [/recedeWhileTyping:!1/g, 'recedeWhileTyping:!0'],
+  hold: [/holdWhileTyping:!1/g, 'holdWhileTyping:!0'],
+  reset: [/resetMs:2e3/g, 'resetMs:100'],
+  // Esc no longer resolving the signal (r4's behaviour): ESC-READ fails
+  lookup: [/if\(([\w$]+)\.key==="Escape"\)\{([\w$]+)=!0,([\w$]+)&&window\.clearTimeout\(\3\),\3=0,([\w$]+)\(\);return\}/g, 'if($1.key==="Escape"){return}'],
+  // the L split's K arm (information): Jacked In with the tunnel never mounted
+  notunnel: [/if\(!([\w$]+)\)return;const ([\w$]+)=document\.createElement\("div"\);return \2\.className="flux3-tunnel"/g, 'if(!0)return;const $2=document.createElement("div");return $2.className="flux3-tunnel"'],
 };
 
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -519,12 +551,15 @@ try { await withHarness(async (app) => {
     for (const ch of ' more words') { await app.typeKeys(ch); await sleep(60); }
     await sleep(300);
     const typing = await st();
+    const pre = await ev('window.__f4.look()');
+    const g0 = (await ev('window.__f4.flashes("f3-resolve")')).length;
     await app.key('Escape');
     await sleep(500);
     const esc = await st();
     // ESC-LATER (the Wrizors' S4 review, Fable Nov 7): the page >= 1.2 s after Esc, read the same way on both sides
     await sleep(700);
     const later = await ev('window.__f4.look()');
+    const resolveGrants = (await ev('window.__f4.flashes("f3-resolve")')).length - g0;
     await snap(flag ? 's4-esc-later' : 's4-esc-later-control');
     for (const ch of ' and more') { await app.typeKeys(ch); await sleep(60); }
     await sleep(300);
@@ -532,7 +567,8 @@ try { await withHarness(async (app) => {
     await app.mouseMove(2, 540);
     await sleep(700);
     const reach = await st();
-    return { typing: [typing.zoom, typing.writing], esc: [esc.zoom, esc.writing, esc.jacked], later, typing2: [typing2.zoom, typing2.writing], reach: [reach.zoom, reach.writing] };
+    const again = await ev('window.__f4.look()');
+    return { typing: [typing.zoom, typing.writing], esc: [esc.zoom, esc.writing, esc.jacked], pre, later, resolveGrants, again, typing2: [typing2.zoom, typing2.writing], reach: [reach.zoom, reach.writing] };
   };
   const kOn = await testControls(true), kOff = await testControls(false);
   // what dims or hides: the band mask on the column and the scroller, the opacity of the page, the column, the scroller, the editor and each of its
@@ -542,6 +578,11 @@ try { await withHarness(async (app) => {
   ok(`ESC-LATER >= 1.2 s after Esc the lines are as lit and the caret as present as the control's (caret ${eL.on && eL.on.caret}/${eL.off && eL.off.caret}, block caret ${eL.on && eL.on.block}/${eL.off && eL.off.block}, focus ${eL.on && eL.on.focus}/${eL.off && eL.off.focus}; signal still on ${eL.on && eL.on.compiled} words)`,
     !!eL.on && !!eL.off && eL.off.caret && eL.off.block && eL.off.focus && eL.on.caret === eL.off.caret && eL.on.block === eL.off.block && eL.on.focus === eL.off.focus && same(dimOf(eL.on), dimOf(eL.off)),
     JSON.stringify(eL));
+  // ESC-READ (the r4 frames, Nov 7: the control's lines read after Esc, Jacked In's stayed compiled): Esc resolves the signal through the budget
+  // and the page reads as the control's; once she writes again, the next pause compiles again
+  const escRead = (k) => !!k.pre && k.pre.compiled >= 8 && !!k.later && k.later.compiled === 0 && k.resolveGrants === 1 && !!k.again && k.again.compiled > 0;
+  ok(`ESC-READ Esc resolves the signal (${kOn.pre && kOn.pre.compiled} words before, ${kOn.later && kOn.later.compiled} at 1.2 s, ${kOn.resolveGrants} grant), the page reading as the control's; writing again, the next pause compiles (${kOn.again && kOn.again.compiled})`,
+    escRead(kOn) && kOff.later && kOff.later.compiled === 0, JSON.stringify({ pre: kOn.pre && kOn.pre.compiled, later: kOn.later && kOn.later.compiled, grants: kOn.resolveGrants, again: kOn.again && kOn.again.compiled }));
   ok('ESC while jacked in, Esc does what it does today (the chrome comes back, still in the Typewriter), the same as the control', kOn.esc[2] === true && kOn.esc[0] === 'true' && same(kOn.typing, kOff.typing) && same(kOn.esc.slice(0, 2), kOff.esc.slice(0, 2)),
     JSON.stringify({ on: kOn, off: kOff }));
   ok('REACH an edge dwell summons the chrome while jacked in, the same as the control', same(kOn.typing2, kOff.typing2) && same(kOn.reach, kOff.reach), JSON.stringify({ on: [kOn.typing2, kOn.reach], off: [kOff.typing2, kOff.reach] }));
@@ -559,17 +600,68 @@ try { await withHarness(async (app) => {
   const fOn = await testFL(true, FL_ON), fOff = await testFL(false, FL_OFF);
   ok('FL Backspace in Jacked In strikes and never deletes, exactly as the control', fOn.zoom === 'true' && /abc/.test(fOn.text) && fOn.text === fOff.text && fOn.struck === fOff.struck, JSON.stringify({ on: fOn, off: fOff }));
 
+  // ---- TUN: the tunnel (Nick kept it, Nov 7: ruling B, INK's lean) -------------------------------------------------------------------------------
+  const testTunnel = async () => {
+    await open();
+    const rest = await ev('window.__f4.tunnel()');
+    await sleep(600);
+    const rest2 = await ev('window.__f4.tunnel()');
+    await ev('(() => { window.__f4.watchTunnel(); window.__f4.rates = []; return true; })()');
+    const t0 = await ev('performance.now()');
+    let mid = null;
+    for (let i = 0; i < 90; i += 1) { await app.typeKeys(CYCLE[i % CYCLE.length]); await sleep(40); if (i === 60) mid = await ev('window.__f4.tunnel()'); }
+    const t1 = await ev('performance.now()');
+    const end = await ev('window.__f4.tunnel()');
+    await sleep(6500);
+    const after = await ev('window.__f4.tunnel()');
+    return { rest, rest2, mid, end, after, rates: await ev('window.__f4.rates'), muts: await ev('window.__f4.tunMut || []'), t0, t1 };
+  };
+  // a re-set sets every animation's rate at once: one set is a cluster of calls within 100 ms
+  const setsOf = (rates) => { const out = []; for (const [t, r] of rates || []) { const last = out[out.length - 1]; if (last && t - last.t < 100) continue; out.push({ t, r }); } return out; };
+  const gapsOk = (ts) => ts.every((t, i) => i === 0 || t - ts[i - 1] >= 1990);
+  const opaque = (bg) => { const m = /rgba?\(([^)]+)\)/.exec(bg || ''); if (!m) return false; const p = m[1].split(/[ ,/]+/).filter(Boolean); return p.length < 4 || +p[3] === 1; };
+  const tunOk = (x) => !!x.rest && x.rest.inStage && x.rest.first && x.rest.aria === 'true' && x.rest.pe === 'none' && x.rest.canvas === 0 && x.rest.frames === 12 && x.rest.anims >= 12
+    && x.rest.running === x.rest.anims && same(x.rest.props, ['opacity', 'transform']) && !!x.rest2 && x.rest2.time > x.rest.time && opaque(x.rest.pageBg) && x.rest.pageAbove;
+  const typeOk = (x) => !!x.mid && x.mid.writing === 'true' && x.mid.op >= 0.99 && x.mid.anims > 0 && x.mid.running === x.mid.anims;
+  const rateOf = (x) => { const sets = setsOf(x.rates), during = sets.filter((s) => s.t >= x.t0 && s.t <= x.t1 + 50), muts = (x.muts || []);
+    return { sets: sets.map((s) => [Math.round(s.t - x.t0), +s.r.toFixed(2)]), gaps: gapsOk(sets.map((s) => s.t)), top: during.length ? Math.max(...during.map((s) => s.r)) : null,
+      rest: x.after ? x.after.rates : null, fast: !!(x.mid && x.mid.fast) || !!(x.end && x.end.fast), mutKinds: [...new Set(muts.map((m) => m[2] || m[1]))], mutGaps: gapsOk(muts.map((m) => m[0])) }; };
+  const tun = await testTunnel();
+  const tr = rateOf(tun);
+  ok(`TUN the tunnel stands behind the page while jacked in: first in .mode-stage, aria-hidden, no pointer, no canvas, ${tun.rest && tun.rest.frames} frames, every animation transform/opacity only (${tun.rest && tun.rest.props}) and running; the page's paper opaque (${tun.rest && tun.rest.pageBg}) and above it`,
+    tunOk(tun), JSON.stringify({ rest: tun.rest, t2: tun.rest2 && tun.rest2.time }));
+  ok(`TUN-TYPE the named recede exception: while keys land (the chrome receded: data-wz-writing ${tun.mid && tun.mid.writing}) the tunnel stays (opacity ${tun.mid && tun.mid.op}) and runs (${tun.mid && tun.mid.running}/${tun.mid && tun.mid.anims})`,
+    typeOk(tun), JSON.stringify(tun.mid));
+  ok(`TUN-RATE her speed is the tunnel's: re-set at most every 2 s (sets at ${JSON.stringify(tr.sets)}), up to ${tr.top} while she types fast, the streaks at speed, back to rest after (${JSON.stringify(tr.rest)}); its only DOM change is the streaks' flag, at most every 2 s (${tr.mutKinds})`,
+    tr.gaps && tr.top !== null && tr.top >= 2 && tr.fast && !!tr.rest && tr.rest.every((r) => r <= 1.1) && tr.mutKinds.every((k) => k === 'data-fast') && tr.mutGaps, JSON.stringify(tr));
+  const testTunnelStill = async () => { await open({ reduced: true }); const r = await ev('window.__f4.tunnel()'); await open({ dial: 0 }); const d = await ev('window.__f4.tunnel()'); return { r, d }; };
+  const ts0 = await testTunnelStill();
+  ok('TUN-STILL reduced motion and Ambiance 0: the frames stand still (no animation at all), the streaks gone', !!ts0.r && ts0.r.still && ts0.r.anims === 0 && ts0.r.frames === 12 && !!ts0.d && ts0.d.still && ts0.d.anims === 0,
+    JSON.stringify({ r: ts0.r && [ts0.r.still, ts0.r.anims], d: ts0.d && [ts0.d.still, ts0.d.anims] }));
+  const testTunnelWhere = async () => {
+    await open(); const on = !!(await ev('window.__f4.tunnel()')); await pressToggle(); await sleep(900); const out = !!(await ev('window.__f4.tunnel()'));
+    await open({ flag: false, prefs: { typewriter: true } }); const ctl = !!(await ev('window.__f4.tunnel()'));
+    await open({ theme: 'plateau', prefs: { typewriter: true } }); const other = !!(await ev('window.__f4.tunnel()'));
+    return { on, out, ctl, other };
+  };
+  const tw = await testTunnelWhere();
+  ok('TUN-WHERE only while jacked in: gone on jacking out, absent off the flag and in another theme\'s Typewriter', tw.on && !tw.out && !tw.ctl && !tw.other, JSON.stringify(tw));
+
   // ---- L: the Jacked In arm --------------------------------------------------------------------------------------------------------------------------
-  const lat = { C: [], J: [] };
+  // K (information, the tunnel's share; Nick kept the tunnel Nov 7): Jacked In with the tunnel never mounted (the landed `notunnel` mutant), run
+  // after each round's C/J pair so C and J keep the order they had before the tunnel
+  const lat = { C: [], J: [], K: [] };
   let cursor = 0;
+  let kLanded = null;
   for (let round = 0; round <= ROUNDS; round += 1) {
-    for (const arm of (round % 2 ? ['J', 'C'] : ['C', 'J'])) {
+    for (const arm of [...(round % 2 ? ['J', 'C'] : ['C', 'J']), 'K']) {
       const pid = `f3s4-lat-${arm}-${round}`;
       // the arm's own fresh page, through the seam (it enters the cache and flushes before it returns, so seeding from any surface is safe)
       await mk({ id: pid, text: LAT_TEXT, createdAt: new Date().toISOString(), origin: 'loose', source: 'page' });
       await sleep(300);
-      await open({ flag: arm === 'J', id: pid, prefs: arm === 'J' ? {} : { typewriter: true } });
-      const stood = await st();
+      if (arm === 'K') { mutant = 'notunnel'; landed.notunnel = undefined; }
+      try { await open({ flag: arm !== 'C', id: pid, prefs: arm === 'C' ? { typewriter: true } : {} }); } finally { if (arm === 'K') { kLanded = landed.notunnel; mutant = null; } }
+      const stood = { ...(await st()), tunnel: !!(await ev('window.__f4.tunnel()')) };
       await ev(`(() => { window.__lat = []; let t0 = 0; if (window.__latOff) window.__latOff();
         const kd = () => { t0 = performance.now(); };
         const bi = () => { const t = t0; requestAnimationFrame(() => requestAnimationFrame(() => { const now = performance.now(); window.__lat.push({ ms: now - t, key: t, at: now }); })); };
@@ -579,7 +671,7 @@ try { await withHarness(async (app) => {
       await sleep(250);
       const got = await ev(`(() => { const l = window.__lat.slice(), fr = window.__f4.frames; const a = l.length ? Math.min(...l.map((x) => x.key)) : 0, b = l.length ? Math.max(...l.map((x) => x.at)) : 0;
         return { lat: l.map((x) => x.ms), drawFrames: fr.filter((f) => f[0] >= a && f[0] <= b && f[1] > 0).length }; })()`);
-      if (round > 0) lat[arm].push({ ...got, stood: { flag: stood.flag, zoom: stood.zoom, jacked: stood.jacked, theme: stood.theme } });
+      if (round > 0) lat[arm].push({ ...got, stood: { flag: stood.flag, zoom: stood.zoom, jacked: stood.jacked, theme: stood.theme, tunnel: stood.tunnel } });
     }
   }
   const cMeds = lat.C.map((r) => stat(r.lat).median), cP95s = lat.C.map((r) => stat(r.lat).p95);
@@ -592,6 +684,9 @@ try { await withHarness(async (app) => {
   const latLine = `J median ${r1(J.median)} <= C ${r1(C.median)} + ${r1(spreadMed)}, J p95 ${r1(J.p95)} <= C ${r1(C.p95)} + ${r1(spreadP95)}, J max ${r1(J.max)} <= ${MAX_MS}`;
   if (ON_BOX) ok(`L the Jacked In arm adds no latency beyond the control's own spread: ${latLine}`, latOk, JSON.stringify({ C, J, cMeds, cP95s, stoodRight, enough }));
   else console.log(`INFO L (Actions: timing is the box's to judge) ${latOk ? 'within' : 'OUTSIDE'} the control's spread: ${latLine}`);
+  const K = lat.K.length ? stat(lat.K.flatMap((r) => r.lat)) : null;
+  const kStood = kLanded === 1 && lat.K.every((r) => r.stood.flag && r.stood.jacked && !r.stood.tunnel) && lat.J.every((r) => r.stood.tunnel);
+  console.log(`INFO SPLIT (the tunnel's share; information, never a verdict): C median ${r1(C.median)} p95 ${r1(C.p95)} / K (Jacked In, no tunnel) ${K ? `median ${r1(K.median)} p95 ${r1(K.p95)}` : 'none'} / J (with the tunnel) median ${r1(J.median)} p95 ${r1(J.p95)}; K stood right (landed, jacked, no tunnel; J with it): ${kStood}`);
   ok(`L-DRAW no canvas drew more while keys landed in Jacked In than in the control (J ${lat.J.map((r) => r.drawFrames).join('/')} vs C ${lat.C.map((r) => r.drawFrames).join('/')})`, drawsOk && stoodRight && enough,
     JSON.stringify({ stoodRight, enough, n: [lat.C.map((r) => r.lat.length), lat.J.map((r) => r.lat.length)] }));
 
@@ -611,6 +706,17 @@ try { await withHarness(async (app) => {
   ok('MUT-EDGE (landed) the edge filling instead of draining: EDGE fails', mE.landed === 1 && mE.r.a.burst && Math.abs(mE.r.a.burst.left - 0.004) > 0.5, JSON.stringify({ landed: mE.landed, left: mE.r.a.burst && mE.r.a.burst.left }));
   const mS = await withMutant('still', () => testDecompile({ reduced: true }));
   ok('MUT-STILL (landed) the still state ignored: STILL fails (a decompile ran under reduced motion)', mS.landed === 1 && !stillOk(mS.r), JSON.stringify({ landed: mS.landed, r: mS.r }));
+  const mLu = await withMutant('lookup', () => testControls(true));
+  ok('MUT-LOOKUP (landed) Esc not resolving the signal: ESC-READ fails (the lines stay compiled after Esc)', mLu.landed === 1 && !!mLu.r.later && mLu.r.later.compiled > 0 && !escRead(mLu.r),
+    JSON.stringify({ landed: mLu.landed, later: mLu.r.later && mLu.r.later.compiled }));
+  const mRc = await withMutant('recede', testTunnel);
+  ok('MUT-RECEDE (landed) the recede switch flipped, alone: the tunnel recedes while she types (TUN-TYPE fails) and is there at rest', mRc.landed === 1 && !!mRc.r.rest && mRc.r.rest.recede && !mRc.r.rest.hold && !typeOk(mRc.r) && !!mRc.r.mid && mRc.r.mid.running === mRc.r.mid.anims,
+    JSON.stringify({ landed: mRc.landed, mid: mRc.r.mid && { op: mRc.r.mid.op, running: mRc.r.mid.running, anims: mRc.r.mid.anims } }));
+  const mHd = await withMutant('hold', testTunnel);
+  ok('MUT-HOLD (landed) the hold switch flipped, alone: the tunnel holds still while she types (TUN-TYPE fails), visible, and runs at rest', mHd.landed === 1 && !!mHd.r.rest && mHd.r.rest.hold && !mHd.r.rest.recede && !typeOk(mHd.r) && !!mHd.r.mid && mHd.r.mid.op >= 0.99 && mHd.r.rest.running === mHd.r.rest.anims,
+    JSON.stringify({ landed: mHd.landed, mid: mHd.r.mid && { op: mHd.r.mid.op, running: mHd.r.mid.running, anims: mHd.r.mid.anims } }));
+  const mRs = await withMutant('reset', testTunnel);
+  ok('MUT-RESET (landed) the speed re-set every 100 ms: TUN-RATE fails (sets closer than 2 s)', mRs.landed === 1 && !rateOf(mRs.r).gaps, JSON.stringify({ landed: mRs.landed, sets: rateOf(mRs.r).sets.slice(0, 6) }));
   const mW = await withMutant('block', testCompile);
   const mWw = wholeOf(mW.r.whole);
   ok('MUT-BLOCK (landed) a block wider than its slot: COMPILE-WHOLE fails (blocks stand outside their slots)', mW.landed === 1 && mWw.n > 0 && mWw.bad.length > 0, JSON.stringify({ landed: mW.landed, n: mWw.n, bad: mWw.bad.length }));
