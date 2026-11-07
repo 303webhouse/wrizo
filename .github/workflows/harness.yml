@@ -7,7 +7,7 @@
 #   (`--ref` picks the workflow + tooling; `ref` is the tree that is tested. Your branch does not need this file or the CI patch: the job
 #    applies apps/desktop/scripts/ci-runner.patch itself when your tree lacks it. Once this is on main, drop `--ref`.)
 #   Read the result on the run page: the "Pair summary" lists every non-OK file and (with box_default/box_parked) the parity against a box log;
-#   the merged logs are the `pair-merged` artifact.
+#   the merged logs are the `pair-merged` artifact. The FULL output of every non-OK file is kept in that same artifact under failed/<leg>/<file>.<leg>.txt (#47), and the summary table names the path.
 #
 # SECURITY (the repo is PUBLIC, so every log line is public):
 #   - triggers: workflow_dispatch ONLY. No push, no pull_request, no `pull_request_target`, no fork trigger.
