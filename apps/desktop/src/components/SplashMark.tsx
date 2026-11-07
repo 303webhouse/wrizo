@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { ThemeId } from '../store/theme';
+import { isArbor2 } from '../arbor2/flag';
 
 // per-theme drawn-on-open splash: only connectors and stage outlines turn brass, never the letters; the glow's drop-shadow values are this file's own (the brief says only "a short glow") [SplashMark §1]
 
@@ -131,7 +132,9 @@ function ArborMark({ reduced, width, height, onFloorReached }: MarkProps) {
     // Brief: "Ending: a short hold, then a 0.45s fade" — the floor is the
     // moment just before that fade, i.e. the pop's own end plus a short hold.
     const floorAt = finalAt + 260 + 480 + 500;
-    window.setTimeout(onFloorReached, floorAt * SPEED);
+    // ARBOR v2 MOCKUP r19 (spec draft 38 §12c): in the Arbor mockup the sketch's end is the pop's settling (its "run is finished"), where the
+    // front door's order begins (src/arbor2/frontLayer.tsx: the logo 0.2 s later); off the flag the floor is unchanged
+    window.setTimeout(onFloorReached, (isArbor2() ? finalAt + 260 + 480 : floorAt) * SPEED);
   }, [reduced, onFloorReached]);
 
   const finalCx = ARBOR_FINAL_CREAM.x + ARBOR_FINAL_CREAM.w / 2;
@@ -157,7 +160,9 @@ function ArborMark({ reduced, width, height, onFloorReached }: MarkProps) {
       </defs>
 
       {/* The whole sketch in cream (TEXT recoloured cream, FINAL DRAFT's own outline cut out — it pops, so it is its own layer below). */}
-      <image href={`${BRAND}/base.png`} x={0} y={0} width={ARBOR_CANVAS.w} height={ARBOR_CANVAS.h} />
+      {/* ARBOR v2 MOCKUP r18 (Nick, via Fable, Nov 3): under the flag, Nick's drawing without its top line "WRIZO (in abstract)" - only that
+          line erased, every other pixel his (scripts/arbor2-splash-r18.mjs; proof: scripts/harness/arbor2-r18-unit.mjs). The logo stands there. */}
+      <image href={isArbor2() ? '/brand/arbor2/splash-base-r18.png' : `${BRAND}/base.png`} x={0} y={0} width={ARBOR_CANVAS.w} height={ARBOR_CANVAS.h} />
       <image href={`${BRAND}/${ARBOR_FINAL_CREAM.file}`} x={ARBOR_FINAL_CREAM.x} y={ARBOR_FINAL_CREAM.y} width={ARBOR_FINAL_CREAM.w} height={ARBOR_FINAL_CREAM.h} />
 
       {/* The six connectors — each masked by its own progressively-drawn path above.

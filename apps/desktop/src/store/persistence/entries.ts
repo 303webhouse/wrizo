@@ -6,6 +6,7 @@ import { getProject } from './projects';
 import { saveJournalEntry } from './journal';
 import { isPairedPlanBoard, unpairPlanBoard } from './planPairing';
 import { getSystemKind } from './systemBoards';
+import { newPageSize } from '../../arbor2/newPageSize';   // ARBOR v2 MOCKUP r17 (see journal.ts)
 
 export function getJournalEntries(): JournalEntry[] {
   return cache.journalEntries
@@ -256,6 +257,7 @@ export function createLooseHomePage(): JournalEntry {
     createdAt: now,
     updatedAt: now,
   };
+  newPageSize(entry);   // ARBOR v2 MOCKUP r17: a page born under the flag starts at 11 pt (../../arbor2/newPageSize.ts)
   saveJournalEntry(entry);
   return entry;
 }

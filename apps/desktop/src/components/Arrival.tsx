@@ -14,6 +14,11 @@ import { useDeskFrameViewport } from './DeskFrame';
 
 import { isSignedOutHere } from '../store/signedOutHere';
 import { runAuthCall } from '../store/authSubmit';
+import { isArbor2 } from '../arbor2/flag';
+import { useTheme } from '../store/theme';
+import { SplashMark } from './SplashMark';
+import { splashSizeFor, arborBoxFor } from './Splash';
+import { ArborFront, takeWantWrite, WANT_WRITE } from '../arbor2/frontLayer';
 
 // the Threshold, route '/' for every boot: Write is local-first and never needs an account; Open resumes an authed session or reaches sign-in [Arrival §1]
 export type ArrivalAuthState = 'loading' | 'anon' | 'authed';
@@ -52,6 +57,37 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   // Signed in: the door is back to Write / Open, whatever stage the sign-in left behind.
   useEffect(() => { if (authState === 'authed') setStage('doors'); }, [authState]);
   const framed = useDeskFrameViewport();
+  // ARBOR v2 MOCKUP r14 (Fable, Nov 1: "retire the Arrival screen in Arbor under the flag. The splash's Sign in door opens the existing
+  // sign-in / sign-up forms (keep the invite-code field)"). Under the flag in Arbor, the threshold's hero (its logo, tagline, load bar and
+  // doors) is not drawn: the splash's own finished frame stays as the front door - the same drawing at the same size and place on the same
+  // ground - with the tagline and the doors beneath it: Write and Sign in for a visitor, Write and Open for a signed-in writer. Every door
+  // keeps its own handler, and Sign in opens this file's existing sign-in and sign-up stages, unchanged (the invite code included).
+  const theme = useTheme();
+  const arborFront = isArbor2() && theme === 'plateau';
+  // (r20: under the flag in Arbor the drawing's box takes even whole sizes, as the splash's does - the logo lands on the same whole pixel in both)
+  const sizeFor = isArbor2() && theme === 'plateau' ? arborBoxFor : splashSizeFor;
+  const [frontBox, setFrontBox] = useState(() => (typeof window === 'undefined' ? { width: 0, height: 0 } : sizeFor(window.innerWidth, window.innerHeight)));
+  useEffect(() => {
+    if (!arborFront) return undefined;
+    const resize = () => setFrontBox(sizeFor(window.innerWidth, window.innerHeight));
+    resize(); window.addEventListener('resize', resize);
+    return () => window.removeEventListener('resize', resize);
+  }, [arborFront]);
+
+  // ARBOR v2 MOCKUP r18 (Nick, via Fable, Nov 3: "Enter = Write"): on the front door's doors, Enter writes - unless a control or a field has
+  // the key (a focused door presses itself; the sign-in form submits). Read through a ref so the listener always calls today's handler.
+  const writeRef = useRef<() => void>(() => {});
+  useEffect(() => {
+    if (!arborFront || stage !== 'doors') return undefined;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Enter' || e.isComposing || e.repeat || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      const t = e.target as HTMLElement | null;
+      if (t && t.closest && t.closest('input, textarea, select, button, a, [contenteditable="true"], [role="dialog"]')) return;
+      e.preventDefault(); writeRef.current();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [arborFront, stage]);
 
   // B10.1 - a quiet "Loading your pages" state while the landing waits for the account's first pull (capped).
   const [landing, setLanding] = useState(false);
@@ -62,6 +98,15 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
     writing.current = true;
     try { await writeDoor(); } finally { writing.current = false; }
   };
+  writeRef.current = () => { if (landing) return; if (arborFront && authState === 'authed') handleOpen(); else void handleWrite(); };
+  // ARBOR v2 MOCKUP r19: an Enter that skipped the splash asks for Write - taken here once the front door can (ready, its doors up)
+  useEffect(() => {
+    if (!arborFront || stage !== 'doors') return undefined;
+    const take = () => { if (ready && takeWantWrite()) writeRef.current(); };
+    take();
+    window.addEventListener(WANT_WRITE, take);
+    return () => window.removeEventListener(WANT_WRITE, take);
+  }, [arborFront, stage, ready]);
 
   const writeDoor = async () => {
     // B10.1 - derived per account, after the first pull (see store/firstRun.ts). Synchronous in every case but one: a signed-in
@@ -160,32 +205,58 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   return (
     <div className="wz-home wz-arrival">
       <div className="wz-ambient" aria-hidden="true" />
-      <WrizoMark className="wz-mark show" alt="" />
+      {!arborFront && <WrizoMark className="wz-mark show" alt="" />}
 
-      <section className={stage === 'doors' ? 'wz-hero' : 'wz-hero gone'}>
-        <WrizoMark className="wz-logo" alt="Wrizo" />
-        <div className="wz-tagline">For humans writing</div>
-        <div className="wz-arrival-bootbar" data-ready={ready ? 'true' : 'false'} aria-hidden="true">
-          <div className="wz-arrival-bootbar-fill" />
-        </div>
-
-        {stage === 'doors' && (
-          <div className="wz-arrival-doors">
-            <button type="button" className="wz-btn wz-primary wz-arrival-write" disabled={!ready || landing} onClick={() => { void handleWrite(); }}>
-              Write
-            </button>
-            <button type="button" className="wz-link wz-arrival-open" disabled={!ready || landing} onClick={handleOpen}>
-              Open
-            </button>
-            {landing && <div className="wz-sub wz-arrival-loading" role="status">Loading your pages…</div>}
-            {authState === 'anon' && (
-              <button type="button" className="wz-link wz-arrival-signin" onClick={() => { setError(''); setStage('signin'); }}>
-                Sign in
-              </button>
-            )}
+      {arborFront ? (
+        <section className={stage === 'doors' ? 'arbor2-front' : 'arbor2-front gone'} aria-label="Wrizo">
+          <div className="arbor2-front-mark" style={{ width: `${frontBox.width}px`, height: `${frontBox.height}px`, marginLeft: `${-frontBox.width / 2}px`, marginTop: `${-frontBox.height / 2}px` }} aria-hidden="true">
+            <SplashMark theme="plateau" reduced width={frontBox.width} height={frontBox.height} onFloorReached={() => {}} />
+            {/* ARBOR v2 MOCKUP r18 (Nick, via Fable, Nov 3): the logo, still, where the drawing's top line stood, the tagline under it - the splash's
+                last frame, in the same rect (src/arbor2/frontLayer.tsx) */}
+            <ArborFront mode="door" part="top" width={frontBox.width} />
           </div>
-        )}
-      </section>
+          {/* r18: the doors are hand-drawn boxes INSIDE the drawing - Write and Log in (signed in: Write and Open); they come last, after the logo.
+              Every door keeps its own handler; Log in opens this file's sign-in stage, unchanged (-> the sign-up with the invite code). */}
+          {/* r19 (spec draft 38 §12c): Write and Sign in (signed in: Write only, into the last page), in the drawing's twin box (screen readers see them) */}
+          {stage === 'doors' && (
+            <div className="arbor2-front-mark arbor2-front-doorbox" style={{ width: `${frontBox.width}px`, height: `${frontBox.height}px`, marginLeft: `${-frontBox.width / 2}px`, marginTop: `${-frontBox.height / 2}px` }}>
+              <ArborFront mode="door" part="doors" width={frontBox.width} authed={authState === 'authed'} ready={ready} landing={landing}
+                onWrite={() => writeRef.current()} onLogin={() => { setError(''); setStage('signin'); }} />
+            </div>
+          )}
+          {/* (r14's foot - the tagline and the doors under the drawing - moved into the drawing in r18; the quiet loading line stays under it) */}
+          {landing && (
+            <div className="arbor2-front-foot" style={{ top: `calc(50% + ${Math.round(frontBox.height / 2)}px + 8px)` }}>
+              <div className="wz-sub wz-arrival-loading" role="status">Loading your pages…</div>
+            </div>
+          )}
+        </section>
+      ) : (
+        <section className={stage === 'doors' ? 'wz-hero' : 'wz-hero gone'}>
+          <WrizoMark className="wz-logo" alt="Wrizo" />
+          <div className="wz-tagline">For humans writing</div>
+          <div className="wz-arrival-bootbar" data-ready={ready ? 'true' : 'false'} aria-hidden="true">
+            <div className="wz-arrival-bootbar-fill" />
+          </div>
+  
+          {stage === 'doors' && (
+            <div className="wz-arrival-doors">
+              <button type="button" className="wz-btn wz-primary wz-arrival-write" disabled={!ready || landing} onClick={() => { void handleWrite(); }}>
+                Write
+              </button>
+              <button type="button" className="wz-link wz-arrival-open" disabled={!ready || landing} onClick={handleOpen}>
+                Open
+              </button>
+              {landing && <div className="wz-sub wz-arrival-loading" role="status">Loading your pages…</div>}
+              {authState === 'anon' && (
+                <button type="button" className="wz-link wz-arrival-signin" onClick={() => { setError(''); setStage('signin'); }}>
+                  Sign in
+                </button>
+              )}
+            </div>
+          )}
+        </section>
+      )}
 
       {stage === 'signin' && (
         <section className="wz-screen show" style={{ zIndex: 8 }}>
