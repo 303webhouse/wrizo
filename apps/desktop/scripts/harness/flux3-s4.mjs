@@ -74,6 +74,10 @@ const ROUNDS = 3, KEYS = 44, MIN_KEYS = 40, GAP = 90, MAX_MS = 100;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
+// PARKED (HARNESS_PARKED=1): retired checks, quoted verbatim with what superseded them, each re-asserting the new truth; the COUNT is held too
+const parkedChecks = [];
+const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass: !!pass, detail });
+const PARKED_EXPECTED = 1;   // ESC-LATER's premise that the control keeps its caret after Esc (Actions 42359165446, Nov 7)
 
 function buildIdentity() {
   const out = { bundle: null, builtAt: null, head: null, srcCommitAt: null, dirtySrc: null, stale: null };
@@ -575,9 +579,19 @@ try { await withHarness(async (app) => {
   // lines, the caret (the selection's, the focus, Flux's block caret). The compiled signal is reported apart: still jacked in, it is S4's own layer
   const dimOf = (l) => l && { colMask: l.colMask, scMask: l.scMask, op: l.op, rowOps: l.rowOps };
   const eL = { on: kOn.later, off: kOff.later };
-  ok(`ESC-LATER >= 1.2 s after Esc the lines are as lit and the caret as present as the control's (caret ${eL.on && eL.on.caret}/${eL.off && eL.off.caret}, block caret ${eL.on && eL.on.block}/${eL.off && eL.off.block}, focus ${eL.on && eL.on.focus}/${eL.off && eL.off.focus}; signal still on ${eL.on && eL.on.compiled} words)`,
-    !!eL.on && !!eL.off && eL.off.caret && eL.off.block && eL.off.focus && eL.on.caret === eL.off.caret && eL.on.block === eL.off.block && eL.on.focus === eL.off.focus && same(dimOf(eL.on), dimOf(eL.off)),
-    JSON.stringify(eL));
+  // ---- PARKED - SUPERSEDED by its own first run (Actions 42359165446, Nov 7): the control itself loses the focus and Flux's block caret after
+  // Esc (today's Esc), so the premise "the control's caret is present" was false; every compared value matched. Kept VERBATIM and no longer run;
+  // its parked record is in the HARNESS_PARKED block, and its successor follows.
+  // ok(`ESC-LATER >= 1.2 s after Esc the lines are as lit and the caret as present as the control's (caret ${eL.on && eL.on.caret}/${eL.off && eL.off.caret}, block caret ${eL.on && eL.on.block}/${eL.off && eL.off.block}, focus ${eL.on && eL.on.focus}/${eL.off && eL.off.focus}; signal still on ${eL.on && eL.on.compiled} words)`,
+  //   !!eL.on && !!eL.off && eL.off.caret && eL.off.block && eL.off.focus && eL.on.caret === eL.off.caret && eL.on.block === eL.off.block && eL.on.focus === eL.off.focus && same(dimOf(eL.on), dimOf(eL.off)),
+  //   JSON.stringify(eL));
+  const escSame = !!eL.on && !!eL.off && eL.on.caret === eL.off.caret && eL.on.block === eL.off.block && eL.on.focus === eL.off.focus && same(dimOf(eL.on), dimOf(eL.off));
+  ok(`ESC-LATER [successor] >= 1.2 s after Esc the lines are as lit, and the caret, the focus and Flux's block caret exactly as the control's (caret ${eL.on && eL.on.caret}/${eL.off && eL.off.caret}, block caret ${eL.on && eL.on.block}/${eL.off && eL.off.block}, focus ${eL.on && eL.on.focus}/${eL.off && eL.off.focus})`,
+    escSame, JSON.stringify(eL));
+  if (process.env.HARNESS_PARKED === '1') {
+    pok('PARKED (was "ESC-LATER >= 1.2 s after Esc the lines are as lit and the caret as present as the control\'s") - SUPERSEDED by its first run (Actions 42359165446, Nov 7: today\'s Esc takes the focus and Flux\'s block caret on the control too). Opposite reasserted: the control has no focus and no block caret after Esc, and Jacked In matches it; live successor ESC-LATER [successor]',
+      escSame && !!eL.off && eL.off.focus === false && eL.off.block === false, JSON.stringify(eL));
+  }
   // ESC-READ (the r4 frames, Nov 7: the control's lines read after Esc, Jacked In's stayed compiled): Esc resolves the signal through the budget
   // and the page reads as the control's; once she writes again, the next pause compiles again
   const escRead = (k) => !!k.pre && k.pre.compiled >= 8 && !!k.later && k.later.compiled === 0 && k.resolveGrants === 1 && !!k.again && k.again.compiled > 0;
@@ -728,7 +742,14 @@ try { await withHarness(async (app) => {
     !!BUILD.bundle && served === BUILD.bundle && BUILD.stale === false, JSON.stringify(BUILD));
 }); } catch (err) { ok('the run reached its end', false, String((err && err.stack) || err).split('\n').slice(0, 3).join(' | ')); }
 
-const failed = checks.filter((c) => !c.pass);
+if (process.env.HARNESS_PARKED === '1') {
+  for (const c of parkedChecks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
+  console.log(parkedChecks.every((c) => c.pass) && parkedChecks.length === PARKED_EXPECTED
+    ? `\nFLUX3-S4 PARKED: PASS (${parkedChecks.length} checks) - HARNESS_PARKED=1 armed, every retired check's successor green`
+    : `\nFLUX3-S4 PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed (expected ${PARKED_EXPECTED} parked)`);
+}
+const failed = checks.filter((c) => !c.pass).concat(parkedChecks.filter((c) => !c.pass))
+  .concat(process.env.HARNESS_PARKED === '1' && parkedChecks.length !== PARKED_EXPECTED ? [{ name: 'parked count' }] : []);
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
 console.log(failed.length ? `\nFLUX3-S4 VERIFY: FAIL - ${failed.length}/${checks.length} failed` : `\nFLUX3-S4 VERIFY: PASS (${checks.length} checks)`);
 process.exit(failed.length ? 1 : 0);
