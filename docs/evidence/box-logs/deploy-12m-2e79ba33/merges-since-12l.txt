@@ -1,0 +1,14 @@
+be09012a merge flux3/s3-r2 ed49c7a0 (Flux S3: the doc, behind ?flux3=1; the idle glitch follows its word at 1920)
+d622b505 ledger (220): Flux S3-r2 proofs (not merged), ab3 control; evidence (text logs)
+0d86f347 ledger (219): ARBOR's last-frame turn; S3-r2 ready
+84a66bd6 ledger (218): ARBOR's day x3 turn
+cef01769 ledger (217): FIX's C stabiliser merged, pair clean; S3 waits for the Wrizors
+387c4010 merge rhizome-c-stable-r1 635be6c3 (FIX: C and C2 judged against the fade's reference shift; the old budgets parked verbatim)
+5c619e90 ledger (216): ARBOR's swap turn
+2a666c6a ledger (215): Flux S3 proofs (not merged), ab4 control, FIX's stabiliser; evidence (text logs)
+3a6152e0 ledger (214): FIX's C stabiliser proof, green; evidence (text logs); park-the-old-C requested
+51dac48b ledger (213): step 11 and pw1 waits merged, pair clean; ARBOR diagnostic; S3 re-cut
+e174ba6f merge pw1-s5-waits 6af46154 (pw1 S5 waits on state, not on time)
+fba9ca38 merge c13-11-dead c583a2d1 (#13 step 11: the dead-code cut, POLISH)
+cf1503ee ledger (212): POLISH turn 24 (step 11 and the S5 waits), clean, awaiting Fable; evidence (text logs)
+7bb76117 deploy #12l (c1c4386d) live and verified: stamp, manifest, smoke 6/6; ledger (211)
