@@ -263,7 +263,10 @@ const screens = {
           aligned: !!b && !!rr && Math.abs(b.left - rr.left) <= 1.5 && Math.abs(b.top - rr.top) <= 1.5 && Math.abs(b.width - rr.width) <= 2 && Math.abs(b.height - rr.height) <= 2 }; }
       return out; })()`);
     { const v = r[HOSTS[0]]; ok[HOSTS[0]] = !!v && v.shown === true && v.alpha != null && Math.abs(v.alpha - 0.034) < 0.0005 && v.aria === 'true' && v.pe === 'none' && v.aligned === true; }
-    for (const sel of HOSTS.slice(1)) { const v = rb[sel]; ok[sel] = !!v && v.bitmap === 'true' && v.svg === false && v.bg === true && v.alpha != null && Math.abs(v.alpha - 0.034) < 0.0005 && v.shown === true && v.aria === 'true' && v.pe === 'none' && v.anim === 'arbor2-pergola-drift-px' && v.inStep === true && v.aligned === true; }
+    // PARKED 2026-11-07 (SUPERSEDED by Nick's no-drift ruling, Nov 7, via Fable: the copies' literal-pixel drift is no longer drawn). Original, verbatim:
+    // for (const sel of HOSTS.slice(1)) { const v = rb[sel]; ok[sel] = !!v && v.bitmap === 'true' && v.svg === false && v.bg === true && v.alpha != null && Math.abs(v.alpha - 0.034) < 0.0005 && v.shown === true && v.aria === 'true' && v.pe === 'none' && v.anim === 'arbor2-pergola-drift-px' && v.inStep === true && v.aligned === true; }
+    // SUCCESSOR: the same bitmap copy, and NO drift on it (no animation on its drift box; the in-step read goes with the drift).
+    for (const sel of HOSTS.slice(1)) { const v = rb[sel]; ok[sel] = !!v && v.bitmap === 'true' && v.svg === false && v.bg === true && v.alpha != null && Math.abs(v.alpha - 0.034) < 0.0005 && v.shown === true && v.aria === 'true' && v.pe === 'none' && v.anim === null && v.aligned === true; }
     if (Object.values(ok).some((x) => !x)) fail('R21-SHADE-MENUS', { ok, r, rb });
     say('r21-shade-menus', { ok });
   },

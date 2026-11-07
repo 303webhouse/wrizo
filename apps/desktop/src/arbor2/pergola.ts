@@ -10,6 +10,8 @@
 // cluster shivers once every 16 s, staggered left to right over ~2.6 s (each cluster's own delay and pivot are in the file), and the drift
 // (12 px over 20 s) moves a wrapper outside the blur, so it is composited and never re-blurs the shade. The page copy's animations are given
 // the room's start times, so the breeze crosses both together. Reduced motion: still (the CSS).
+// NO DRIFT (Nick, Nov 7, via Fable): the wrapper no longer moves (arbor-v2.css); it stays for the swap, the sleep and the copies' placement.
+// data-flat and a bitmap copy's start-time sync below are now inert (nothing animates on a bitmap copy), kept as the tested build had them.
 // REST <-> WRITING rides the existing recede hook (<html data-wz-writing>, useChromeDissolve): opacity transitions on these two layers and the
 // rhizome's, nothing else (arbor-v2.css). Nothing is stored.
 import svgText from './pergola-shadow.svg?raw';

@@ -19,6 +19,9 @@ const q = process.env.WS_URL_SEARCH || '';
 const want = (/[?&]arbor2room=(day|night)\b/.exec(q) || [])[1] || null;
 // (Nov 6, for the diagnostic trees - default unchanged: RP_MODE=r20 for r20 + the pin, which draws no bitmap copies; RP_MODE=allbmp for the
 // test build whose room and page copy are bitmaps too. P1-P3 are the same in every mode; the by-day reads P4-P6 follow the mode.)
+// (Nov 7: RP_MODE=nodrift for the two no-drift test builds - the room's and the page's copies live, the bar's and rail's the one bitmap, and NO
+// drift anywhere: P4n / P5 / P6n.)
+// (Nov 7, Nick's no-drift ruling via Fable: the DEFAULT mode's P4 and P6 are parked - they read the drift - and their successors are P4n / P6n.)
 const MODE = process.env.RP_MODE || 'fix';
 
 const READ = `(() => {
@@ -61,6 +64,11 @@ await withHarness(async (app) => {
     if (MODE === 'r20') {
       ok('P4r the room\'s pergola is the live drawing (r20): shown, its svg, 115 leaf clusters, its drift running', !!p && p.display !== 'none' && p.svg && p.leaves === 115 && p.anim === 'running', JSON.stringify(p));
       ok('P6r r20 draws no copy on the bar or the rail', (!bar || bar.none === true) && (!rail || rail.none === true), JSON.stringify({ bar, rail }));
+    } else if (MODE === 'nodrift') {
+      ok("P4n the room's pergola is the live drawing with NO drift (the Nov 7 test builds): shown, its svg, 115 leaf clusters, no animation on its drift wrapper",!!p && p.display !== 'none' && p.svg && p.leaves === 115 && p.anim === null, JSON.stringify(p));
+      ok("P5 the page's copy is r20's live drawing (svg, g[filter] at 0.034)", !!pg && pg.bitmap === null && pg.svg === true && pg.g != null && Math.abs(pg.g - 0.034) < 0.0005, JSON.stringify(pg));
+      const still = (c) => !!c && c.bitmap === 'true' && c.svg === false && c.bg === 'url("blob:ht' && c.alpha != null && Math.abs(c.alpha - 0.034) < 0.0005 && c.display !== 'none' && c.anim === null && !!c.box && c.box.every((v, i) => Math.abs(v) <= (i < 2 ? 1.5 : 2));
+      ok("P6n the top bar's and the rail's copies draw the one bitmap (no svg, blob: background, 0.034), with NO drift, on the room's drift box",still(bar) && still(rail), JSON.stringify({ bar, rail }));
     } else {
       ok('P4a the room\'s pergola draws the bitmap (allbmp test build): shown, no svg, its drift running', !!p && p.display !== 'none' && p.svg === false && p.anim === 'running', JSON.stringify(p));
       ok('P6a the page, bar and rail copies draw the bitmap (no svg)', [pg, bar, rail].every((c) => !c || (c.bitmap === 'true' && c.svg === false)), JSON.stringify({ pg, bar, rail }));
@@ -68,11 +76,18 @@ await withHarness(async (app) => {
   }
   if (want === 'day' && MODE === 'fix') {
     const p = s.pergola, pg = s.page, bar = s.bar, rail = s.rail;
-    ok('P4 the room\'s pergola is r20\'s live drawing: shown, its svg, 115 leaf clusters, its drift running', !!p && p.display !== 'none' && p.svg && p.leaves === 115 && p.anim === 'running', JSON.stringify(p));
+    // PARKED 2026-11-07 (SUPERSEDED by Nick's no-drift ruling, Nov 7, via Fable: the room's drift is no longer drawn). Original, verbatim:
+    // ok('P4 the room\'s pergola is r20\'s live drawing: shown, its svg, 115 leaf clusters, its drift running', !!p && p.display !== 'none' && p.svg && p.leaves === 115 && p.anim === 'running', JSON.stringify(p));
+    // SUCCESSOR P4n (the no-drift read, as RP_MODE=nodrift's):
+    ok("P4n the room's pergola is the live drawing with NO drift (the Nov 7 test builds): shown, its svg, 115 leaf clusters, no animation on its drift wrapper",!!p && p.display !== 'none' && p.svg && p.leaves === 115 && p.anim === null, JSON.stringify(p));
     ok('P5 the page\'s copy is r20\'s live drawing (svg, g[filter] at 0.034)', !!pg && pg.bitmap === null && pg.svg === true && pg.g != null && Math.abs(pg.g - 0.034) < 0.0005, JSON.stringify(pg));
     const bmpOk = (c) => !!c && c.bitmap === 'true' && c.svg === false && c.bg === 'url("blob:ht' && c.alpha != null && Math.abs(c.alpha - 0.034) < 0.0005 && c.display !== 'none'
       && c.anim === 'arbor2-pergola-drift-px' && c.dt != null && Math.abs(c.dt) < 1 && !!c.box && c.box.every((v, i) => Math.abs(v) <= (i < 2 ? 1.5 : 2));
-    ok('P6 the top bar\'s and the rail\'s copies draw the one bitmap (no svg, blob: background, 0.034), on the literal-pixel drift in step with the room\'s, on the room\'s drift box', bmpOk(bar) && bmpOk(rail), JSON.stringify({ bar, rail }));
+    // PARKED 2026-11-07 (SUPERSEDED by Nick's no-drift ruling, Nov 7, via Fable: the copies' literal-pixel drift is no longer drawn). Original, verbatim:
+    // ok('P6 the top bar\'s and the rail\'s copies draw the one bitmap (no svg, blob: background, 0.034), on the literal-pixel drift in step with the room\'s, on the room\'s drift box', bmpOk(bar) && bmpOk(rail), JSON.stringify({ bar, rail }));
+    // SUCCESSOR P6n (the no-drift read, as RP_MODE=nodrift's):
+    const stillN = (c) => !!c && c.bitmap === 'true' && c.svg === false && c.bg === 'url("blob:ht' && c.alpha != null && Math.abs(c.alpha - 0.034) < 0.0005 && c.display !== 'none' && c.anim === null && !!c.box && c.box.every((v, i) => Math.abs(v) <= (i < 2 ? 1.5 : 2));
+    ok("P6n the top bar's and the rail's copies draw the one bitmap (no svg, blob: background, 0.034), with NO drift, on the room's drift box",stillN(bar) && stillN(rail), JSON.stringify({ bar, rail }));
   }
   return checks;
 }, { label: 'arbor2-roompin' });

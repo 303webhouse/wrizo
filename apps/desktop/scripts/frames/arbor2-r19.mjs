@@ -90,7 +90,7 @@ const SHADE = `(() => { const box = (e) => { if (!e) return null; const r = e.ge
     paper: box(document.querySelector('.mode-page')), paperBg: document.querySelector('.mode-page') ? getComputedStyle(document.querySelector('.mode-page')).backgroundColor : null,
     ink: document.querySelector('.forward-only-editor') ? getComputedStyle(document.querySelector('.forward-only-editor')).color : null,
     field: field ? { op: op(field), vines: field.getAttribute('data-vines'), flash: field.getAttribute('data-flash') } : null,
-    leafAnims: leafAnims.length, leafTiming: leafAnims[0] ? timing(leafAnims[0]) : null, running: allAnims.filter((a) => a.playState === 'running').map(timing).slice(0, 6), runningN: allAnims.filter((a) => a.playState === 'running').length,
+    leafAnims: leafAnims.length, leafTiming: leafAnims[0] ? timing(leafAnims[0]) : null, running: allAnims.filter((a) => a.playState === 'running').map(timing).slice(0, 6), runningN: allAnims.filter((a) => a.playState === 'running').length, driftN: allAnims.filter((a) => /arbor2-pergola-drift/.test(a.animationName || '') || (Number(a.effect.getTiming().duration) === 20000 && a.effect.getTiming().direction === 'alternate')).length,
     // (instrument fix after the green leg 41902687605: this key was "room", a second one - it overwrote the room layer's read above)
     writing: document.documentElement.getAttribute('data-wz-writing'), roomName: document.documentElement.getAttribute('data-arbor2-room'), vw: innerWidth, vh: innerHeight }; })()`;
 const VINES = `(() => { const f = document.querySelector('.wz-rhizome-field'); if (!f) return null;
@@ -199,12 +199,15 @@ const screens = {
       paint: !!d.room && d.room.fill === 'rgb(63, 77, 34)' && Math.abs(d.room.gop - 0.2) < 0.001 && d.room.blur === 2.8,
       structure: !!d.room && d.room.rafters === 10 && d.room.rects === 3 && d.room.leaves >= 100 && d.room.leaves <= 130,
       breeze: d.leafAnims >= 100 && !!d.leafTiming && d.leafTiming[1] === 16000 && d.leafTiming[2] === 'Infinity',
-      drift: d.running.some((t) => t[1] === 20000 && t[3] === 'alternate'),
+      // PARKED 2026-11-07 (SUPERSEDED by Nick's no-drift ruling, Nov 7, via Fable: the drift is no longer drawn). Original, verbatim:
+      // drift: d.running.some((t) => t[1] === 20000 && t[3] === 'alternate'),
+      // SUCCESSOR noDrift: no drift animation on the shade at all, counted over every one of its animations (the breeze above is the liveness half)
+      noDrift: d.driftN === 0 && d.runningN > 0,
       decorative: !!d.room && d.room.aria === 'true' && d.room.pe === 'none',
       markOver: !!mark && mark.over,
       noneAtNight: !n.room || n.room.op === 0,
     };
-    const brief = { ok, room: d.room, leafAnims: d.leafAnims, leafTiming: d.leafTiming, running: d.running, mark, night: n.room && { op: n.room.op } };
+    const brief = { ok, room: d.room, leafAnims: d.leafAnims, leafTiming: d.leafTiming, running: d.running, driftN: d.driftN, mark, night: n.room && { op: n.room.op } };
     if (Object.values(ok).some((x) => !x)) fail('R19-PERGOLA', brief);
     say('r19-pergola', brief);
   },

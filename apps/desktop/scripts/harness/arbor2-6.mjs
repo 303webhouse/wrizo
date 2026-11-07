@@ -139,9 +139,17 @@ await withHarness(async (app) => {
   // SUCCESSOR L1e: with motion, the drift runs on the inner wrapper and the layer itself holds still - the wrapper (displayed, a non-zero rect)
   // runs one arbor2-pergola-drift, 20 s, forever, alternate; and the leaves stir rarely: all 115 clusters on the 16 s arbor2-breeze, forever,
   // staggered (their own delays, spread over >= 2 s); at rest nothing of it is paused.
-  const dr0 = pg && pg.drift && pg.drift.anims.length === 1 ? pg.drift.anims[0] : null;
-  ok('L1e with motion: the pergola\'s drift runs on its wrapper (arbor2-pergola-drift, 20 s, infinite, alternate) and the layer holds still; 115 leaf clusters on the 16 s breeze, staggered; none paused at rest',
-    pgLive && pg.anim === 'none' && !!pg.drift && pg.drift.display !== 'none' && pg.drift.w > 0 && pg.drift.h > 0 && !!dr0 && dr0.name === 'arbor2-pergola-drift' && dr0.dur === 20000 && dr0.inf && dr0.dir === 'alternate'
+  // PARKED 2026-11-07 (SUPERSEDED by Nick's no-drift ruling, Nov 7, via Fable: the swap kept, the drift dropped - the wrapper carries no
+  // animation, so this check reads a drift that is no longer drawn). Original, verbatim:
+  // const dr0 = pg && pg.drift && pg.drift.anims.length === 1 ? pg.drift.anims[0] : null;
+  // ok('L1e with motion: the pergola\'s drift runs on its wrapper (arbor2-pergola-drift, 20 s, infinite, alternate) and the layer holds still; 115 leaf clusters on the 16 s breeze, staggered; none paused at rest',
+  //   pgLive && pg.anim === 'none' && !!pg.drift && pg.drift.display !== 'none' && pg.drift.w > 0 && pg.drift.h > 0 && !!dr0 && dr0.name === 'arbor2-pergola-drift' && dr0.dur === 20000 && dr0.inf && dr0.dir === 'alternate'
+  //     && pg.leaves === 115 && pg.breeze === 115 && pg.delays.length >= 2 && pg.delays[pg.delays.length - 1] - pg.delays[0] >= 2000 && pg.writing !== 'true' && pg.paused === 0,
+  //   JSON.stringify(pg && { ...pg, delays: [pg.delays.length, pg.delays[0], pg.delays[pg.delays.length - 1]] }));
+  // SUCCESSOR L1f: NO DRIFT - the wrapper is there (displayed, a non-zero rect) and runs NO animation, the layer holds still; and the leaves
+  // still stir: all 115 clusters on the 16 s arbor2-breeze, forever, staggered (>= 2 s), none paused at rest (the liveness half: the breeze runs).
+  ok('L1f with motion, NO DRIFT (Nick, Nov 7): the pergola\'s wrapper is drawn and runs no animation, the layer holds still; 115 leaf clusters on the 16 s breeze, staggered; none paused at rest',
+    pgLive && pg.anim === 'none' && !!pg.drift && pg.drift.display !== 'none' && pg.drift.w > 0 && pg.drift.h > 0 && pg.drift.anims.length === 0
       && pg.leaves === 115 && pg.breeze === 115 && pg.delays.length >= 2 && pg.delays[pg.delays.length - 1] - pg.delays[0] >= 2000 && pg.writing !== 'true' && pg.paused === 0,
     JSON.stringify(pg && { ...pg, delays: [pg.delays.length, pg.delays[0], pg.delays[pg.delays.length - 1]] }));
   await snap(app, 'item6-day-shadows-1366');

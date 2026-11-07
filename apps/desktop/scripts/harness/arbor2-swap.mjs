@@ -17,6 +17,7 @@
 //       (W9 and W10 parked for an instrument fault, Nov 6 - successors W9b / W10b: an unzoomed page, everything held by a removable stylesheet,
 //       the cut's own choice as the premise, and two control shots proving the instrument; see below)
 //       (W9b and W10b parked for an instrument fault again, Nov 7 - successors W9c / W10c: the page's own id, the shade's fade pinned before the freeze)
+//   (NO DRIFT, Nick Nov 7 via Fable: the swap kept, the drift dropped - W3c and W4e parked, successors W3d / W4f: the wrapper there, no drift)
 //   W8  the flash copy's pre-rendered mask (Fable, Nov 6: "keep the look identical"): on ONE page, the flash held (every finite animation
 //       landed, the rest paused), shot with the bitmap mask and again with the SVG mask it replaces put back (a test-only switch in this page) -
 //       the two shots differ by no more than 9 levels on more than 0.01% of the pixels (the vines' shape is seeded by the session, so two runs'
@@ -44,7 +45,7 @@ const READ = `(() => { const root = document.documentElement, room = document.qu
   const da = d ? d.getAnimations().find((a) => /arbor2-pergola-drift/.test(a.animationName || '')) : null;
   const anims = room ? document.getAnimations().filter((a) => { const t = a.effect && a.effect.target; return !!t && (room.contains(t)) && a.playState === 'running'; }).length : null;
   const dt = da && da.currentTime != null ? Number(da.currentTime) : null;
-  return { driftT: dt, writing: root.getAttribute('data-wz-writing'), roomName: root.getAttribute('data-arbor2-room'), zoom: document.querySelector('.desk-frame-stage .mode-pagecol')?.getAttribute('data-zoom') === 'true',
+  return { wrap: !!d, driftT: dt, writing: root.getAttribute('data-wz-writing'), roomName: root.getAttribute('data-arbor2-room'), zoom: document.querySelector('.desk-frame-stage .mode-pagecol')?.getAttribute('data-zoom') === 'true',
     room: lay(room), page: lay(document.querySelector('.desk-frame-stage .mode-page > .arbor2-pagesh')), drift: da ? { name: da.animationName, start: da.startTime, state: da.playState } : null, running: anims,
     ls: JSON.stringify(Object.keys(localStorage).sort().map((k) => [k, localStorage.getItem(k)])) }; })()`;
 const METER = "(() => { if (window.__swapMeter) return true; window.__swapMeter = true; window.__lat = []; document.addEventListener('keydown', (e) => { const t0 = e.timeStamp; requestAnimationFrame(() => requestAnimationFrame(() => window.__lat.push(performance.now() - t0))); }, true); return true; })()";
@@ -127,8 +128,12 @@ await withHarness(async (app) => {
   // writing). Fix the check, not the build." - turn 08:08Z read the drift paused at the key, start time null). Original, verbatim:
   // ok('W3 the drift runs on through the swap: the room\'s drift is the same animation (start time unchanged), running', !!rest.drift && !!k1.drift && rest.drift.start === k1.drift.start && k1.drift.state === 'running', JSON.stringify({ rest: rest.drift, key: k1.drift }));
   // SUCCESSOR W3c: r19's rule - the room's drift runs at rest and PAUSES on the first key (the same named animation), held where it was.
-  ok('W3c the drift (r19): running at rest, paused on the first key - the same animation, held where it was', !!rest.drift && rest.drift.state === 'running' && !!k1c.drift && k1c.drift.name === rest.drift.name && k1c.drift.state === 'paused'
-    && k1c.driftT != null && rest.driftT != null && k1c.driftT >= rest.driftT, JSON.stringify({ rest: { ...rest.drift, t: rest.driftT }, key: { ...k1c.drift, t: k1c.driftT } }));
+  // PARKED 2026-11-07 (SUPERSEDED by Nick's no-drift ruling, Nov 7, via Fable: there is no drift to run or pause). Original, verbatim:
+  // ok('W3c the drift (r19): running at rest, paused on the first key - the same animation, held where it was', !!rest.drift && rest.drift.state === 'running' && !!k1c.drift && k1c.drift.name === rest.drift.name && k1c.drift.state === 'paused'
+  //   && k1c.driftT != null && rest.driftT != null && k1c.driftT >= rest.driftT, JSON.stringify({ rest: { ...rest.drift, t: rest.driftT }, key: { ...k1c.drift, t: k1c.driftT } }));
+  // SUCCESSOR W3d: NO DRIFT - the room's wrapper is there (the liveness half) at rest and on the first key, and no drift animation runs on it.
+  ok('W3d no drift (Nick, Nov 7): the room\'s wrapper is there at rest and on the first key, and no drift animation is on it', !!rest.wrap && !!k1c.wrap && rest.drift === null && k1c.drift === null,
+    JSON.stringify({ rest: { wrap: rest.wrap, drift: rest.drift }, key: { wrap: k1c.wrap, drift: k1c.drift } }));
   await backToRest(app);
   const back = await app.evalJs(READ);
   // PARKED 2026-11-06, never run (SUPERSEDED by Fable's ruling (c): on the return the still picture fades out to 0, it is not display:none).
@@ -146,9 +151,15 @@ await withHarness(async (app) => {
   //   back.writing !== 'true' && restC(back.room, 0.2) && (back.zoom || restC(back.page, 0.034)) && !!back.drift && back.drift.state === 'running' && back.driftT != null && k1c.driftT != null && back.driftT >= k1c.driftT,
   //   JSON.stringify({ ...back, ls: undefined, pausedT: k1c.driftT }));
   // SUCCESSOR W4e: the same return, read with W1d's reading.
-  ok('W4e the chrome\'s return: the live drawing back at full and in style work, the still picture at 0, the drift resumed from where it paused (not restarted)',
-    back.writing !== 'true' && restD(back.room, 0.2) && (back.zoom || restD(back.page, 0.034)) && !!back.drift && back.drift.state === 'running' && back.driftT != null && k1c.driftT != null && back.driftT >= k1c.driftT,
-    JSON.stringify({ ...back, ls: undefined, pausedT: k1c.driftT }));
+  // PARKED 2026-11-07 (SUPERSEDED by Nick's no-drift ruling, Nov 7, via Fable: the drift clause reads a drift that is no longer drawn; the rest
+  // of W4e stands in W4f). Original, verbatim:
+  // ok('W4e the chrome\'s return: the live drawing back at full and in style work, the still picture at 0, the drift resumed from where it paused (not restarted)',
+  //   back.writing !== 'true' && restD(back.room, 0.2) && (back.zoom || restD(back.page, 0.034)) && !!back.drift && back.drift.state === 'running' && back.driftT != null && k1c.driftT != null && back.driftT >= k1c.driftT,
+  //   JSON.stringify({ ...back, ls: undefined, pausedT: k1c.driftT }));
+  // SUCCESSOR W4f: the same return, and NO DRIFT - the wrapper there, no drift animation on it.
+  ok('W4f the chrome\'s return: the live drawing back at full and in style work, the still picture at 0; the wrapper there and no drift on it (Nick, Nov 7)',
+    back.writing !== 'true' && restD(back.room, 0.2) && (back.zoom || restD(back.page, 0.034)) && !!back.wrap && back.drift === null,
+    JSON.stringify({ ...back, ls: undefined }));
 
   // W5: the swap key against the same page's first key with the shade off
   const on = await firstKeys(app, 6);

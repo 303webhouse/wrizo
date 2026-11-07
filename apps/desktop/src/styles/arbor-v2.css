@@ -813,7 +813,9 @@
    THE PAGE (.arbor2-pagesh, inside .mode-page, beneath the words): the same drawing at the same screen position, its group at 4% (pergola.ts);
    the page isolates so the layer sits on its paper and under its text. At rest only; never on the zoomed page; never printed (Fable, ruling 3).
    THE BREEZE: each leaf cluster shivers once every 16 s (8deg -> -6 -> 3.5 -> -1.5 -> still in ~1.4 s, about its root), staggered left to right
-   over ~2.6 s by the file's own delays; THE DRIFT, 12 px over 20 s, on the wrapper outside the blur (composited). Reduced motion: still.
+   over ~2.6 s by the file's own delays. Reduced motion: still.
+   NO DRIFT (Nick, Nov 7, via Fable: the swap kept, the drift dropped - the latency turn's build (2), green day x3 + night): the wrapper outside
+   the blur stays (the swap, the sleep and the copies' placement use it) and no longer moves.
    The corner mark (.brand-mark, z 110) is drawn over the shade.
    ========================================================================================================================================== */
 :root[data-arbor2][data-theme='plateau'] .arbor2-sun{ display:none !important; }
@@ -825,21 +827,17 @@
   border-radius:inherit; opacity:1; transition:opacity 3s ease; }
 :root[data-arbor2][data-theme='plateau'] .arbor2-pergola .arbor2-pergola-drift{ position:absolute; inset:-16px; }
 :root[data-arbor2][data-theme='plateau'] .arbor2-pagesh .arbor2-pergola-drift{ position:absolute; }   /* sized and placed in the page's own units by pergola.ts */
-:root[data-arbor2][data-theme='plateau'] :is(.arbor2-pergola, .arbor2-pagesh) .arbor2-pergola-drift{ will-change:transform; animation:arbor2-pergola-drift 20s ease-in-out infinite alternate; }
+:root[data-arbor2][data-theme='plateau'] :is(.arbor2-pergola, .arbor2-pagesh) .arbor2-pergola-drift{ will-change:transform; }
 :root[data-arbor2][data-theme='plateau'] :is(.arbor2-pergola, .arbor2-pagesh) svg{ display:block; width:100%; height:100%; }
 :root[data-arbor2][data-theme='plateau'] :is(.arbor2-pergola, .arbor2-pagesh) .wz-leaf{ animation:arbor2-breeze 16s ease-in-out infinite; }
 @keyframes arbor2-breeze{ 0%{ transform:rotate(0); } 1.56%{ transform:rotate(8deg); } 3.44%{ transform:rotate(-6deg); } 5.31%{ transform:rotate(3.5deg); } 7.19%{ transform:rotate(-1.5deg); } 8.75%, 100%{ transform:rotate(0); } }
-/* (the page copy drifts in the page's own units: --arbor2-pk is its scale, so 12 px on the screen stays 12 px) */
-@keyframes arbor2-pergola-drift{ 0%{ transform:translate(0, 0); } 100%{ transform:translate(calc(12px / var(--arbor2-pk, 1)), calc(-5px / var(--arbor2-pk, 1))); } }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-off~='shadows'] :is(.arbor2-pergola, .arbor2-pagesh){ display:none; }
 :root[data-arbor2][data-theme='plateau'] .mode-pagecol[data-zoom='true'] .arbor2-pagesh{ display:none; }
 @media print{ .arbor2-pergola, .arbor2-pagesh{ display:none !important; } }
 /* r21 latency fix (Fable, Nov 5): the copies on the bar, the rail, the drawers and the menus draw ONE bitmap (pergola.ts), centred and covering their
-   drift box exactly as the room's svg is fitted (xMidYMid slice); in an unscaled host the drift runs on literal pixels, so on the compositor. The
-   page's copy is r20's live drawing. */
+   drift box exactly as the room's svg is fitted (xMidYMid slice). The page's copy is r20's live drawing. (No drift since Nov 7: the copies'
+   literal-pixel drift went with the room's.) */
 :root[data-arbor2][data-theme='plateau'] .arbor2-pagesh[data-bitmap='true'] .arbor2-pergola-drift{ background-repeat:no-repeat; background-position:center; background-size:cover; }
-:root[data-arbor2][data-theme='plateau'] .arbor2-pagesh[data-bitmap='true'][data-flat='true'] .arbor2-pergola-drift{ animation-name:arbor2-pergola-drift-px; }
-@keyframes arbor2-pergola-drift-px{ 0%{ transform:translate(0, 0); } 100%{ transform:translate(12px, -5px); } }
 /* r21 latency fix, part 2 (Fable, Nov 5): the shade's fade on the compositor, and the faded drawing out of style work until it returns
    (pergola.ts sets data-asleep once the writing fade has run; nothing visible changes - the layer is at opacity 0) */
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] :is(.arbor2-pergola, .arbor2-pagesh){ will-change:opacity; }
