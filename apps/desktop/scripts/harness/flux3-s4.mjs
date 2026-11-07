@@ -724,6 +724,8 @@ try { await withHarness(async (app) => {
     const tSeen = Date.now();
     await app.waitFor("(() => { const c = window.__f4.caret(); return !!c && c.r.y > 0 && c.r.y + c.r.h < innerHeight; })()", { timeout: 450, label: 'the writing line on screen' }).catch(() => {});
     // and settled (r9d's dark read caught a glide: the caret at 605 on its way to 424): two reads 60 ms apart agree, inside the pause
+    // and AT the Typewriter's anchor (the middle of the column), not merely still: r9f's mutant run read a line held steady in the band's fade
+    await app.waitFor("(() => { const c = window.__f4.caret(), col = document.querySelector('.mode-pagecol'), lh = window.__f4.lh(); if (!c || !col || !lh) return false; const R = col.getBoundingClientRect(); return Math.abs(c.r.y + c.r.h / 2 - (R.top + R.height / 2)) < lh * 0.75; })()", { timeout: 500, label: 'the writing line at the anchor' }).catch(() => {});
     let lastY = null, same2 = 0;
     for (let i = 0; i < 8; i += 1) { const y = await ev('(() => { const c = window.__f4.caret(); return c ? Math.round(c.r.y) : null; })()'); same2 = y !== null && y === lastY ? same2 + 1 : 0; if (same2 >= 2) break; lastY = y; await sleep(50); }
     const d1 = { ...(await ev(DIAG)), waited: Date.now() - tSeen };
@@ -777,8 +779,10 @@ try { await withHarness(async (app) => {
       // (its re-assertion re-pointed in the same unmerged round: at Ambiance 0 no row reaches the floor, so "two rows at the floor" has no rows)
       pok(`PARKED (was "TERM-ROWS (${tone}) on the pause the rows of signal grow smaller toward the top") - SUPERSEDED by its own first run (Actions 42410571466: under reduced motion sixteen rows stood in view and held the floor past the sixth). Opposite reasserted: no row is ever below the floor, so a view that reaches it holds rows of one size; live successor TERM-ROWS [successor 2]`,
         termRowsSucc2(x) && !!x.rows && x.rows.every((r) => r.share >= FLOOR - 0.01), JSON.stringify(x.rows));
-      pok(`PARKED (was "TERM-ROWS [successor] (${tone}) ... down to the floor, and every row past it at the floor") - SUPERSEDED by its own first run at Ambiance 0 (Actions 42415597899: four rows in view, none at the floor). Opposite reasserted: this view holds rows that never reach the floor, every one smaller than the one below; live successor TERM-ROWS [successor 2]`,
-        termRowsSucc2(x) && !!x.rows && !x.rows.some((r) => Math.abs(r.share - FLOOR) <= 0.01), JSON.stringify(x.rows));
+      // (re-pointed in the same unmerged round: r9f's dark view held eight rows and reached the floor, so "this view never reaches it" hung on
+      // where the scroll landed; the claim that does not: the parked check is true exactly of a view that reaches the floor)
+      pok(`PARKED (was "TERM-ROWS [successor] (${tone}) ... down to the floor, and every row past it at the floor") - SUPERSEDED by its own first run at Ambiance 0 (Actions 42415597899: four rows in view, none at the floor). Opposite reasserted: it holds exactly when the view reaches the floor (here ${x.rows && x.rows.some((r) => Math.abs(r.share - FLOOR) <= 0.01) ? 'it does' : 'it does not'}); live successor TERM-ROWS [successor 2]`,
+        termRowsSucc2(x) && !!x.rows && termRowsSucc(x) === x.rows.some((r) => Math.abs(r.share - FLOOR) <= 0.01), JSON.stringify(x.rows));
     }
   }
   const kCtl = await caretOf({ flag: false, tone: 'light', prefs: { typewriter: true } });
