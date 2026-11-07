@@ -93,7 +93,8 @@ const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass: !!pass,
 // ESC-LATER's premise that the control keeps its caret after Esc (Actions 42359165446, Nov 7); TUN's opaque paper, TUN-CLEAR and MUT-NOHOLE
 // (Nick's terminal, Nov 7, r9: no paper, the words inside the tunnel); r9's own first run (Actions 42410571466): TUN-BEHIND's covers premise
 // and TERM-ROWS' "smaller every row" (light and dark: two records); TERM-ROWS [successor]'s "down to the floor" (Actions 42415597899: two records)
-const PARKED_EXPECTED = 9;
+// TERM-LINES' "before the pause" (light, dark) with MUT-TERMINAL and MUT-DIM (Actions 42420374454: four records)
+const PARKED_EXPECTED = 13;
 
 function buildIdentity() {
   const out = { bundle: null, builtAt: null, head: null, srcCommitAt: null, dirtySrc: null, stale: null };
@@ -736,11 +737,26 @@ try { await withHarness(async (app) => {
     const dim = await pixOf(await ev('window.__f4.lineBox(1)'));
     const hid = await pixOf(hidBox);
     await sleep(1500);
-    return { rest, hidSignal, write, dim, hid, rows: await ev('window.__f4.rows()'), after: await ev('window.__f4.term()') };
+    // THE SETTLED READ (TERM-LINES [successor]): long past the pause and the glides, the writing line at the anchor; the lines two and three up are
+    // signal now, so the text UNDER them is read with the signal layer hidden for that one shot (the instrument's only touch: the overlay's own
+    // visibility, put back at once)
+    await app.waitFor("(() => { const c = window.__f4.caret(), col = document.querySelector('.mode-pagecol'), lh = window.__f4.lh(); if (!c || !col || !lh) return false; const R = col.getBoundingClientRect(); return Math.abs(c.r.y + c.r.h / 2 - (R.top + R.height / 2)) < lh * 0.75; })()", { timeout: 1500, label: 'the writing line at the anchor (settled)' }).catch(() => {});
+    const sst = await st();
+    const sigOver = (k) => ev(`(() => { const b = window.__f4.lineBox(${k}); if (!b) return null; return [...document.querySelectorAll('[data-flux3-compile] .flux3-compile-word')].filter((g) => { const r = g.getBoundingClientRect(); return r.right > b.x && r.left < b.x + b.width && r.bottom > b.y && r.top < b.y + b.height; }).length; })()`);
+    const settled = { zoom: sst.zoom, jacked: sst.jacked, write: await pixOf(await ev('window.__f4.lineBox(0)')), dim: await pixOf(await ev('window.__f4.lineBox(1)')), sig2: await sigOver(2), sig3: await sigOver(3) };
+    await ev("(() => { const L = document.querySelector('[data-flux3-compile]'); if (L) L.style.visibility = 'hidden'; return true; })()");
+    await sleep(60);
+    try { settled.under2 = await pixOf(await ev('window.__f4.lineBox(2)')); settled.under3 = await pixOf(await ev('window.__f4.lineBox(3)')); }
+    finally { await ev("(() => { const L = document.querySelector('[data-flux3-compile]'); if (L) L.style.removeProperty('visibility'); return true; })()"); }
+    return { rest, hidSignal, write, dim, hid, settled, rows: await ev('window.__f4.rows()'), after: await ev('window.__f4.term()') };
   };
   const clear = (bg) => { const m = /rgba?\(([^)]+)\)/.exec(bg || ''); if (!m) return false; const p = m[1].split(/[ ,/]+/).filter(Boolean); return p.length === 4 && +p[3] === 0; };
   const termPaperOk = (x, tone) => !!x && clear(x.pageBg) && x.readouts === 'hidden' && /gradient/.test(x.edMask || '') && !x.looking && (tone === 'light' ? x.groundBg === 'rgb(244, 247, 248)' : clear(x.groundBg));
   const termLinesOk = (x) => !!x.write && !!x.dim && !!x.hid && x.hidSignal === 0 && x.write.ratio >= 4.5 && x.dim.ratio >= 4.5 && x.dim.ratio <= x.write.ratio * 0.85 && x.hid.ratio < 2.5;
+  // the settled read: jacked and zoomed; the writing line and the dim one >= 4.5 (the dim one dimmer); the lines two and three up ARE signal, and
+  // with the signal hidden for that shot, no text under it (< 2.5: only the tunnel's still lines)
+  const termLinesSucc = (x) => { const s = x.settled; return !!s && s.zoom === 'true' && s.jacked && !!s.write && !!s.dim && !!s.under2 && !!s.under3 && s.sig2 > 0 && s.sig3 > 0
+    && s.write.ratio >= 4.5 && s.dim.ratio >= 4.5 && s.dim.ratio <= s.write.ratio * 0.85 && s.under2.ratio < 2.5 && s.under3.ratio < 2.5; };
   const termRowsOk = (x) => !!x.rows && x.rows.length >= 3 && x.rows.every((r, i) => i === 0 || r.share < x.rows[i - 1].share - 0.02) && x.rows[0].share <= 0.73;
   // the floor: BLOCK_FILL (.72) x SIGNAL.rowMin (.5); at least three rows above it, each smaller than the one below, then every row at it
   const FLOOR = 0.36;
@@ -763,8 +779,18 @@ try { await withHarness(async (app) => {
   for (const [tone, x] of [['light', tmL], ['dark', tmD]]) {
     ok(`TERM-PAPER (${tone}) jacked in, no paper: the page clear (${x.rest && x.rest.pageBg}), its readouts hidden, the veil on the editor; the ground ${tone === 'light' ? 'the white room (the paper\'s colour)' : 'the night glass (nothing laid)'} (${x.rest && x.rest.groundBg})`,
       termPaperOk(x.rest, tone) && termPaperOk(x.after, tone), JSON.stringify({ rest: x.rest, after: x.after }));
-    ok(`TERM-LINES (${tone}, in pixels) the writing line ${x.write && x.write.ratio}:1, the dim line above it ${x.dim && x.dim.ratio}:1 (>= 4.5, dimmer), the line two up hidden before the pause (${x.hid && x.hid.ratio}:1, < 2.5; signal over it then: ${x.hidSignal})`,
-      termLinesOk(x), JSON.stringify({ write: x.write, dim: x.dim, hid: x.hid, hidSignal: x.hidSignal }));
+    // ---- PARKED - SUPERSEDED by its own runs (Actions 42415597899 to 42420374454, Nov 7): "before the pause" races the Typewriter's glides (the
+    // line stood in the band's fade, or the wait ran past the 700 ms pause and the line two up was signal by the read). Kept VERBATIM and no
+    // longer run; its successor reads the settled page.
+    // ok(`TERM-LINES (${tone}, in pixels) the writing line ${x.write && x.write.ratio}:1, the dim line above it ${x.dim && x.dim.ratio}:1 (>= 4.5, dimmer), the line two up hidden before the pause (${x.hid && x.hid.ratio}:1, < 2.5; signal over it then: ${x.hidSignal})`,
+    //   termLinesOk(x), JSON.stringify({ write: x.write, dim: x.dim, hid: x.hid, hidSignal: x.hidSignal }));
+    const sx = x.settled || {};
+    ok(`TERM-LINES [successor] (${tone}, in pixels, settled) the writing line ${sx.write && sx.write.ratio}:1, the dim line above it ${sx.dim && sx.dim.ratio}:1 (>= 4.5, dimmer); under the signal two and three up no text (${sx.under2 && sx.under2.ratio}:1, ${sx.under3 && sx.under3.ratio}:1, < 2.5; signal words there ${sx.sig2}, ${sx.sig3})`,
+      termLinesSucc(x), JSON.stringify(sx));
+    if (process.env.HARNESS_PARKED === '1') {
+      pok(`PARKED (was "TERM-LINES (${tone}, in pixels) ... the line two up hidden before the pause") - SUPERSEDED by its own runs (Actions 42415597899 to 42420374454: "before the pause" raced the Typewriter's glides). Opposite reasserted: once settled, the line two up IS signal (${sx.sig2} words), so it is read under the signal; live successor TERM-LINES [successor]`,
+        termLinesSucc(x) && sx.sig2 > 0, JSON.stringify(sx));
+    }
     // ---- PARKED - SUPERSEDED by its own first run (Actions 42410571466, Nov 7): the rows shrink to the floor (SIGNAL.rowMin: share .36 from the
     // sixth row up) and hold it there, so "smaller every row" was false above the floor. Kept VERBATIM and no longer run; its parked record is in
     // the HARNESS_PARKED block, and its successor follows.
@@ -966,11 +992,24 @@ try { await withHarness(async (app) => {
   ok('MUT-CARET (landed, in boot-*.css) the light page\'s caret back to the shared orange: CARET-LIGHT fails', mCa.landed === 1 && !!mCa.r && !caretLightOk(mCa.r), JSON.stringify({ landed: mCa.landed, r: mCa.r }));
   // THE TERMINAL's mutants (r9), each on the light tone (its floor is the tighter one)
   const mTv = await withMutant('terminal', () => testTerminal('light'));
-  ok(`MUT-TERMINAL (landed, in boot-*.css) the veil never laid: TERM-LINES fails (the line two up reads ${mTv.r.hid && mTv.r.hid.ratio}:1)`, mTv.landed === 1 && !termLinesOk(mTv.r) && !!mTv.r.hid && mTv.r.hid.ratio >= 2.5,
-    JSON.stringify({ landed: mTv.landed, hid: mTv.r.hid, hidSignal: mTv.r.hidSignal }));
+  // ---- PARKED with TERM-LINES (Actions 42420374454: its read raced the pause). Kept VERBATIM and no longer run; successors follow.
+  // ok(`MUT-TERMINAL (landed, in boot-*.css) the veil never laid: TERM-LINES fails (the line two up reads ${mTv.r.hid && mTv.r.hid.ratio}:1)`, mTv.landed === 1 && !termLinesOk(mTv.r) && !!mTv.r.hid && mTv.r.hid.ratio >= 2.5,
+  //   JSON.stringify({ landed: mTv.landed, hid: mTv.r.hid, hidSignal: mTv.r.hidSignal }));
+  const mTs = mTv.r.settled || {};
+  ok(`MUT-TERMINAL [successor] (landed, in boot-*.css) the veil never laid: TERM-LINES [successor] fails (under the signal, two up reads ${mTs.under2 && mTs.under2.ratio}:1)`,
+    mTv.landed === 1 && !termLinesSucc(mTv.r) && !!mTs.under2 && mTs.under2.ratio >= 2.5, JSON.stringify({ landed: mTv.landed, settled: mTs }));
   const mDm = await withMutant('dim', () => testTerminal('light'));
-  ok(`MUT-DIM (landed, in boot-*.css) the dim line at .3: TERM-LINES fails (the dim line ${mDm.r.dim && mDm.r.dim.ratio}:1)`, mDm.landed === 1 && !termLinesOk(mDm.r) && !!mDm.r.dim && mDm.r.dim.ratio < 4.5,
-    JSON.stringify({ landed: mDm.landed, dim: mDm.r.dim }));
+  // ok(`MUT-DIM (landed, in boot-*.css) the dim line at .3: TERM-LINES fails (the dim line ${mDm.r.dim && mDm.r.dim.ratio}:1)`, mDm.landed === 1 && !termLinesOk(mDm.r) && !!mDm.r.dim && mDm.r.dim.ratio < 4.5,
+  //   JSON.stringify({ landed: mDm.landed, dim: mDm.r.dim }));
+  const mDs = mDm.r.settled || {};
+  ok(`MUT-DIM [successor] (landed, in boot-*.css) the dim line at .3: TERM-LINES [successor] fails (the dim line ${mDs.dim && mDs.dim.ratio}:1)`,
+    mDm.landed === 1 && !termLinesSucc(mDm.r) && !!mDs.dim && mDs.dim.ratio < 4.5, JSON.stringify({ landed: mDm.landed, dim: mDs.dim }));
+  if (process.env.HARNESS_PARKED === '1') {
+    pok('PARKED (was "MUT-TERMINAL (landed) the veil never laid: TERM-LINES fails") - SUPERSEDED with TERM-LINES (Actions 42420374454). Opposite reasserted: the same landed mutant fails the successor read; live successor MUT-TERMINAL [successor]',
+      mTv.landed === 1 && !termLinesSucc(mTv.r), JSON.stringify({ settled: mTs }));
+    pok('PARKED (was "MUT-DIM (landed) the dim line at .3: TERM-LINES fails") - SUPERSEDED with TERM-LINES (Actions 42420374454). Opposite reasserted: the same landed mutant fails the successor read; live successor MUT-DIM [successor]',
+      mDm.landed === 1 && !termLinesSucc(mDm.r), JSON.stringify({ dim: mDs.dim }));
+  }
   const mRo = await withMutant('rows', () => testTerminal('light'));
   ok('MUT-ROWS (landed) the rows not shrinking: TERM-ROWS fails', mRo.landed === 1 && !termRowsOk(mRo.r), JSON.stringify({ landed: mRo.landed, rows: mRo.r.rows }));
   ok('MUT-ROWS [successor] (the same landed mutant) the rows not shrinking: TERM-ROWS [successor] fails', mRo.landed === 1 && !termRowsSucc(mRo.r), JSON.stringify({ rows: mRo.r.rows && mRo.r.rows.slice(0, 4) }));
