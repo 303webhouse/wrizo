@@ -91,8 +91,9 @@ const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail
 const parkedChecks = [];
 const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass: !!pass, detail });
 // ESC-LATER's premise that the control keeps its caret after Esc (Actions 42359165446, Nov 7); TUN's opaque paper, TUN-CLEAR and MUT-NOHOLE
-// (Nick's terminal, Nov 7, r9: no paper, the words inside the tunnel)
-const PARKED_EXPECTED = 4;
+// (Nick's terminal, Nov 7, r9: no paper, the words inside the tunnel); r9's own first run (Actions 42410571466): TUN-BEHIND's covers premise
+// and TERM-ROWS' "smaller every row" (light and dark: two records)
+const PARKED_EXPECTED = 7;
 
 function buildIdentity() {
   const out = { bundle: null, builtAt: null, head: null, srcCommitAt: null, dirtySrc: null, stale: null };
@@ -186,7 +187,11 @@ const INSTRUMENT = `(() => {
       time: anims.length ? +(+anims[0].currentTime).toFixed(0) : null, fast: t.hasAttribute('data-fast'), still: t.hasAttribute('data-still'), recede: t.hasAttribute('data-recede'), hold: t.hasAttribute('data-hold'),
       pageBg: page ? getComputedStyle(page).backgroundColor : null, pageAbove: !!page && (() => { const r = page.getBoundingClientRect(), e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!e && !t.contains(e); })(),
       writing: document.documentElement.getAttribute('data-wz-writing'), clear: I.hole(t, page, cs), mask: cs.maskImage || cs.webkitMaskImage || 'none',
-      covers: !!page && (() => { const B = t.getBoundingClientRect(), P = page.getBoundingClientRect(); return B.left <= P.left && B.top <= P.top && B.right >= P.right && B.bottom >= P.bottom; })() }; };
+      covers: !!page && (() => { const B = t.getBoundingClientRect(), P = page.getBoundingClientRect(); return B.left <= P.left && B.top <= P.top && B.right >= P.right && B.bottom >= P.bottom; })(),
+      // the page's SEEN part (the zoomed page is taller than the stage, which clips it: r9's first run) within the tunnel's box
+      coversSeen: !!page && !!par && (() => { const B = t.getBoundingClientRect(), P = page.getBoundingClientRect(), S = par.getBoundingClientRect();
+        const x0 = Math.max(P.left, S.left), y0 = Math.max(P.top, S.top), x1 = Math.min(P.right, S.right), y1 = Math.min(P.bottom, S.bottom);
+        return x1 > x0 && y1 > y0 && B.left <= x0 + 0.5 && B.top <= y0 + 0.5 && B.right >= x1 - 0.5 && B.bottom >= y1 - 0.5; })() }; };
   // the page's rect cut out of the tunnel: the hole (its four custom properties, in screen px) against the page's own rect, and the mask applied
   I.hole = (t, page, cs) => { if (!page) return null; const B = t.getBoundingClientRect(), s = t.offsetWidth ? B.width / t.offsetWidth : 1, v = (n) => parseFloat(t.style.getPropertyValue(n)) || 0;
     const h = { x: B.left + v('--hx') * s, y: B.top + v('--hy') * s, w: v('--hw') * s, h: v('--hh') * s }, P = page.getBoundingClientRect();
@@ -210,18 +215,21 @@ const INSTRUMENT = `(() => {
   // the box of the line k above the caret's (k = 0: the writing line), in screen px: the editor's width, the middle 70% of that line's height
   I.lineBox = (k) => { const ed = I.ed(), c = I.caret(), lh = I.lh(); if (!ed || !c || !lh) return null; const E = ed.getBoundingClientRect(), cy = c.r.y + c.r.h / 2 - k * lh;
     return { x: Math.max(0, Math.round(E.left)), y: Math.max(0, Math.round(cy - lh * 0.35)), width: Math.round(E.width), height: Math.max(1, Math.round(lh * 0.7)) }; };
-  // THE PIXELS (a mask, an opacity and a band all meet in paint, so the read is of paint): a clipped screenshot decoded here on an OffscreenCanvas
-  // (never appended); the ground is the commonest colour, the ink the pixel of most contrast against it
-  I.pix = async (b64) => { const bin = atob(b64), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i += 1) u[i] = bin.charCodeAt(i);
+  // THE PIXELS (a mask, an opacity and a band all meet in paint, so the read is of paint): the viewport's own screenshot (the frames job's capture;
+  // r9's first run clipped it in CDP and read the html ground, flat, in both tones) decoded here on an OffscreenCanvas (never appended), and the
+  // box cut from it; the ground is the commonest colour, the ink the pixel of most contrast against it
+  I.pix = async (b64, box) => { const bin = atob(b64), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i += 1) u[i] = bin.charCodeAt(i);
     const bm = await createImageBitmap(new Blob([u], { type: 'image/png' })), cv = new OffscreenCanvas(bm.width, bm.height), cx = cv.getContext('2d'); cx.drawImage(bm, 0, 0);
-    const d = cx.getImageData(0, 0, bm.width, bm.height).data, counts = new Map();
+    const bx = Math.max(0, Math.min(bm.width - 1, box.x)), by = Math.max(0, Math.min(bm.height - 1, box.y));
+    const bw = Math.max(1, Math.min(bm.width - bx, box.width)), bh = Math.max(1, Math.min(bm.height - by, box.height));
+    const d = cx.getImageData(bx, by, bw, bh).data, counts = new Map();
     for (let i = 0; i < d.length; i += 4) { const q = ((d[i] >> 2) << 12) | ((d[i + 1] >> 2) << 6) | (d[i + 2] >> 2); counts.set(q, (counts.get(q) || 0) + 1); }
     let best = 0, n = 0; counts.forEach((v, q) => { if (v > n) { n = v; best = q; } });
     const ground = [((best >> 12) & 63) * 4 + 2, ((best >> 6) & 63) * 4 + 2, (best & 63) * 4 + 2];
     const lum = (c) => { const l = c.map((v) => { const x = v / 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }); return 0.2126 * l[0] + 0.7152 * l[1] + 0.0722 * l[2]; };
     const lg = lum(ground); let ratio = 1, ink = ground;
     for (let i = 0; i < d.length; i += 4) { const c = [d[i], d[i + 1], d[i + 2]], l = lum(c), r = (Math.max(l, lg) + 0.05) / (Math.min(l, lg) + 0.05); if (r > ratio) { ratio = r; ink = c; } }
-    return { ground, ink, ratio: +ratio.toFixed(2), w: bm.width, h: bm.height }; };
+    return { ground, ink, ratio: +ratio.toFixed(2), box: [bx, by, bw, bh], shot: [bm.width, bm.height] }; };
   // the compiled rows: each row's blocks against their slots (THE ROWS: smaller toward the top)
   I.rows = () => { const L = document.querySelector('[data-flux3-compile]'); if (!L) return null; const by = {};
     L.querySelectorAll('.flux3-compile-word').forEach((g) => { const n = [...(g.dataset.word || '')].length, b = g.firstElementChild; if (!n || !b) return; const r = +g.dataset.row;
@@ -694,8 +702,8 @@ try { await withHarness(async (app) => {
   // ---- TERM: the terminal (r9, Nick Nov 7, the spec's draft 13 §6: no paper; one writing line, one dim line, then signal rows) -------------------
   const pixOf = async (box) => {
     if (!box || box.width < 2 || box.height < 2) return null;
-    const shot = await app.cdp('Page.captureScreenshot', { format: 'png', clip: { ...box, scale: 1 } });
-    return ev(`window.__f4.pix(${JSON.stringify(shot.data)})`);
+    const shot = await app.cdp('Page.captureScreenshot', { format: 'png' });
+    return ev(`window.__f4.pix(${JSON.stringify(shot.data)}, ${JSON.stringify(box)})`);
   };
   // under reduced motion: the tunnel stands still (no streak crosses a measured line), and the veil, the compile and the rows are the same
   const testTerminal = async (tone) => {
@@ -717,13 +725,27 @@ try { await withHarness(async (app) => {
   const termPaperOk = (x, tone) => !!x && clear(x.pageBg) && x.readouts === 'hidden' && /gradient/.test(x.edMask || '') && !x.looking && (tone === 'light' ? x.groundBg === 'rgb(244, 247, 248)' : clear(x.groundBg));
   const termLinesOk = (x) => !!x.write && !!x.dim && !!x.hid && x.hidSignal === 0 && x.write.ratio >= 4.5 && x.dim.ratio >= 4.5 && x.dim.ratio <= x.write.ratio * 0.85 && x.hid.ratio < 2.5;
   const termRowsOk = (x) => !!x.rows && x.rows.length >= 3 && x.rows.every((r, i) => i === 0 || r.share < x.rows[i - 1].share - 0.02) && x.rows[0].share <= 0.73;
+  // the floor: BLOCK_FILL (.72) x SIGNAL.rowMin (.5); at least three rows above it, each smaller than the one below, then every row at it
+  const FLOOR = 0.36;
+  const termRowsSucc = (x) => { if (!x.rows || x.rows.length < 4 || x.rows[0].share > 0.73) return false; const at = (r) => Math.abs(r.share - FLOOR) <= 0.01;
+    const k = x.rows.findIndex(at); if (k < 3) return false;
+    return x.rows.slice(1, k).every((r, i) => r.share < x.rows[i].share - 0.02) && x.rows[k].share < x.rows[k - 1].share && x.rows.slice(k).every(at); };
   const tmL = await testTerminal('light'), tmD = await testTerminal('dark');
   for (const [tone, x] of [['light', tmL], ['dark', tmD]]) {
     ok(`TERM-PAPER (${tone}) jacked in, no paper: the page clear (${x.rest && x.rest.pageBg}), its readouts hidden, the veil on the editor; the ground ${tone === 'light' ? 'the white room (the paper\'s colour)' : 'the night glass (nothing laid)'} (${x.rest && x.rest.groundBg})`,
       termPaperOk(x.rest, tone) && termPaperOk(x.after, tone), JSON.stringify({ rest: x.rest, after: x.after }));
     ok(`TERM-LINES (${tone}, in pixels) the writing line ${x.write && x.write.ratio}:1, the dim line above it ${x.dim && x.dim.ratio}:1 (>= 4.5, dimmer), the line two up hidden before the pause (${x.hid && x.hid.ratio}:1, < 2.5; signal over it then: ${x.hidSignal})`,
       termLinesOk(x), JSON.stringify({ write: x.write, dim: x.dim, hid: x.hid, hidSignal: x.hidSignal }));
-    ok(`TERM-ROWS (${tone}) on the pause the rows of signal grow smaller toward the top (block share per row ${JSON.stringify(x.rows && x.rows.map((r) => [r.row, r.share]))})`, termRowsOk(x), JSON.stringify(x.rows));
+    // ---- PARKED - SUPERSEDED by its own first run (Actions 42410571466, Nov 7): the rows shrink to the floor (SIGNAL.rowMin: share .36 from the
+    // sixth row up) and hold it there, so "smaller every row" was false above the floor. Kept VERBATIM and no longer run; its parked record is in
+    // the HARNESS_PARKED block, and its successor follows.
+    // ok(`TERM-ROWS (${tone}) on the pause the rows of signal grow smaller toward the top (block share per row ${JSON.stringify(x.rows && x.rows.map((r) => [r.row, r.share]))})`, termRowsOk(x), JSON.stringify(x.rows));
+    ok(`TERM-ROWS [successor] (${tone}) on the pause each row of signal smaller toward the top down to the floor, and every row past it at the floor (block share per row ${JSON.stringify(x.rows && x.rows.slice(0, 8).map((r) => [r.row, r.share]))})`,
+      termRowsSucc(x), JSON.stringify(x.rows));
+    if (process.env.HARNESS_PARKED === '1') {
+      pok(`PARKED (was "TERM-ROWS (${tone}) on the pause the rows of signal grow smaller toward the top") - SUPERSEDED by its own first run (Actions 42410571466: the rows hold the floor past the sixth). Opposite reasserted: two rows at the floor share a size; live successor TERM-ROWS [successor]`,
+        !termRowsOk(x) && termRowsSucc(x), JSON.stringify(x.rows));
+    }
   }
   const kCtl = await caretOf({ flag: false, tone: 'light', prefs: { typewriter: true } });
   console.log(`INFO CARET-CONTROL the flag-off light caret (Flux v2, not S4's scope: new CSS only under the flag): ${kCtl && kCtl.ratio}:1 ${JSON.stringify(kCtl)}`);
@@ -783,14 +805,23 @@ try { await withHarness(async (app) => {
   const clearOk = (t) => !!t && !!t.clear && t.clear.off <= 1 && t.clear.page.w > 0 && /exclude|xor/.test(t.clear.comp) && t.clear.masks === 2;
   // ok(`TUN-CLEAR nothing of the tunnel stands behind her words: the page's rect is cut out of it (hole vs page, worst ${tun.rest && tun.rest.clear && tun.rest.clear.off} px; mask ${tun.rest && tun.rest.clear && tun.rest.clear.comp}), at rest and while she types`,
   //   clearOk(tun.rest) && clearOk(tun.mid), JSON.stringify({ rest: tun.rest && tun.rest.clear, mid: tun.mid && tun.mid.clear }));
+  // ---- PARKED - SUPERSEDED by its own first run (Actions 42410571466, Nov 7): the zoomed page is TALLER than the stage that clips it (1396 px in
+  // a 1080 window), so no box inside the stage can cover the page's whole rect; the tunnel's mask was none on every read. Kept VERBATIM and no
+  // longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
   const behindOk = (t) => !!t && t.mask === 'none' && t.covers && !clearOk(t);
-  ok(`TUN-BEHIND [successor of TUN-CLEAR] the words stand inside the tunnel: nothing cut out of it (mask ${tun.rest && tun.rest.mask}), its box covering the page's, at rest and while she types`,
-    behindOk(tun.rest) && behindOk(tun.mid), JSON.stringify({ rest: tun.rest && [tun.rest.mask, tun.rest.covers, tun.rest.clear], mid: tun.mid && [tun.mid.mask, tun.mid.covers] }));
+  // ok(`TUN-BEHIND [successor of TUN-CLEAR] the words stand inside the tunnel: nothing cut out of it (mask ${tun.rest && tun.rest.mask}), its box covering the page's, at rest and while she types`,
+  //   behindOk(tun.rest) && behindOk(tun.mid), JSON.stringify({ rest: tun.rest && [tun.rest.mask, tun.rest.covers, tun.rest.clear], mid: tun.mid && [tun.mid.mask, tun.mid.covers] }));
+  const behindSeen = (t) => !!t && t.mask === 'none' && t.coversSeen && !clearOk(t);
+  ok(`TUN-BEHIND [successor] the words stand inside the tunnel: nothing cut out of it (mask ${tun.rest && tun.rest.mask}), its box covering the page's seen part (the stage clips the zoomed page), at rest and while she types`,
+    behindSeen(tun.rest) && behindSeen(tun.mid), JSON.stringify({ rest: tun.rest && [tun.rest.mask, tun.rest.coversSeen, tun.rest.clear], mid: tun.mid && [tun.mid.mask, tun.mid.coversSeen] }));
   if (process.env.HARNESS_PARKED === '1') {
     pok('PARKED (was "TUN ... the page\'s paper opaque and above it") - SUPERSEDED by Nick\'s terminal (Nov 7, spec draft 13 §6, r9: no paper while jacked in). Opposite reasserted: the paper is clear, not opaque, and the rest of TUN holds; live successor TUN [successor]',
       tunSucc(tun) && !opaque(tun.rest.pageBg), JSON.stringify({ pageBg: tun.rest && tun.rest.pageBg }));
-    pok('PARKED (was "TUN-CLEAR nothing of the tunnel stands behind her words: the page\'s rect is cut out of it") - SUPERSEDED by Nick\'s terminal (r9: the words stand inside the tunnel). Opposite reasserted: no hole is cut (no mask, the hole check fails), at rest and while she types; live successor TUN-BEHIND',
-      behindOk(tun.rest) && behindOk(tun.mid) && !clearOk(tun.rest) && !clearOk(tun.mid), JSON.stringify({ rest: tun.rest && tun.rest.clear, mid: tun.mid && tun.mid.clear }));
+    // (its re-assertion re-pointed to TUN-BEHIND [successor] in the same unmerged round: the first one leaned on the covers premise parked below)
+    pok('PARKED (was "TUN-CLEAR nothing of the tunnel stands behind her words: the page\'s rect is cut out of it") - SUPERSEDED by Nick\'s terminal (r9: the words stand inside the tunnel). Opposite reasserted: no hole is cut (no mask, the hole check fails), at rest and while she types; live successor TUN-BEHIND [successor]',
+      behindSeen(tun.rest) && behindSeen(tun.mid) && !clearOk(tun.rest) && !clearOk(tun.mid), JSON.stringify({ rest: tun.rest && tun.rest.clear, mid: tun.mid && tun.mid.clear }));
+    pok('PARKED (was "TUN-BEHIND ... its box covering the page\'s") - SUPERSEDED by its own first run (Actions 42410571466: the zoomed page is taller than the stage that clips it). Opposite reasserted: the page\'s whole rect is NOT inside the tunnel\'s box, and its seen part is; live successor TUN-BEHIND [successor]',
+      !!tun.rest && !tun.rest.covers && tun.rest.coversSeen && behindSeen(tun.rest), JSON.stringify({ covers: tun.rest && tun.rest.covers, seen: tun.rest && tun.rest.coversSeen }));
   }
   ok(`TUN-TYPE the named recede exception: while keys land (the chrome receded: data-wz-writing ${tun.mid && tun.mid.writing}) the tunnel stays (opacity ${tun.mid && tun.mid.op}) and runs (${tun.mid && tun.mid.running}/${tun.mid && tun.mid.anims})`,
     typeOk(tun), JSON.stringify(tun.mid));
@@ -883,8 +914,9 @@ try { await withHarness(async (app) => {
   // ok('MUT-NOHOLE (landed) the page\'s rect never cut out of the tunnel: TUN-CLEAR fails', mNh.landed === 1 && !!mNh.r.rest && !clearOk(mNh.r.rest), JSON.stringify({ landed: mNh.landed, clear: mNh.r.rest && mNh.r.rest.clear }));
   if (process.env.HARNESS_PARKED === '1') {
     const mNh = await withMutant('nohole', testTunnel);
+    // (its re-assertion re-pointed to TUN-BEHIND [successor]'s measure in the same unmerged round, as TUN-CLEAR's above)
     pok('PARKED (was "MUT-NOHOLE (landed) the page\'s rect never cut out of the tunnel: TUN-CLEAR fails") - SUPERSEDED by Nick\'s terminal (r9). Opposite reasserted: the hole\'s code is gone from the bundle (its anchor lands 0 times) and the tunnel is uncut',
-      mNh.landed === 0 && behindOk(mNh.r.rest), JSON.stringify({ landed: mNh.landed, rest: mNh.r.rest && [mNh.r.rest.mask, mNh.r.rest.covers] }));
+      mNh.landed === 0 && behindSeen(mNh.r.rest), JSON.stringify({ landed: mNh.landed, rest: mNh.r.rest && [mNh.r.rest.mask, mNh.r.rest.coversSeen] }));
   }
   ok('MUT-LOOKUP-TERM (the same landed mutant) Esc not looking up: ESC-TERM fails (the veil stays on)', mLu.landed === 1 && !escTerm(mLu.r), JSON.stringify({ later: mLu.r.later && [mLu.r.later.looking, mLu.r.later.edMask] }));
   const mRs = await withMutant('reset', testTunnel);
@@ -903,6 +935,7 @@ try { await withHarness(async (app) => {
     JSON.stringify({ landed: mDm.landed, dim: mDm.r.dim }));
   const mRo = await withMutant('rows', () => testTerminal('light'));
   ok('MUT-ROWS (landed) the rows not shrinking: TERM-ROWS fails', mRo.landed === 1 && !termRowsOk(mRo.r), JSON.stringify({ landed: mRo.landed, rows: mRo.r.rows }));
+  ok('MUT-ROWS [successor] (the same landed mutant) the rows not shrinking: TERM-ROWS [successor] fails', mRo.landed === 1 && !termRowsSucc(mRo.r), JSON.stringify({ rows: mRo.r.rows && mRo.r.rows.slice(0, 4) }));
 
   // ---- B: the build -----------------------------------------------------------------------------------------------------------------------------
   await open();
