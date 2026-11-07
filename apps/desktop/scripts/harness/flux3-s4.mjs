@@ -713,7 +713,9 @@ try { await withHarness(async (app) => {
     const rest = await ev('window.__f4.term()');
     // a burst that wraps: lines rise while keys land, and BEFORE the pause the line two up (it rose during the burst, so no signal covers it yet:
     // the open's own pause compiled only the lines that stood two up then) must show no text
-    for (const ch of ' and the line keeps going forward with more plain words now, on and on across the measure of the page until it wraps') { await app.typeKeys(ch); await sleep(25); }
+    // at 70 ms a key (r9e: at 25 ms the burst outran the Typewriter's own line glides, and the writing line stood four lines below the anchor,
+    // inside the band's fade, steady for 60 ms: the Typewriter's engine, the same on the control)
+    for (const ch of ' and the line keeps going forward with more plain words now, on and on across the measure of the page until it wraps') { await app.typeKeys(ch); await sleep(70); }
     await sleep(120);
     // the writing line on screen first (r9b's run read every line box below the window: the diagnostic says where the caret stood, and how long
     // the line took to come into view, never past 450 ms, inside the 700 ms pause)
@@ -722,8 +724,8 @@ try { await withHarness(async (app) => {
     const tSeen = Date.now();
     await app.waitFor("(() => { const c = window.__f4.caret(); return !!c && c.r.y > 0 && c.r.y + c.r.h < innerHeight; })()", { timeout: 450, label: 'the writing line on screen' }).catch(() => {});
     // and settled (r9d's dark read caught a glide: the caret at 605 on its way to 424): two reads 60 ms apart agree, inside the pause
-    let lastY = null;
-    for (let i = 0; i < 6; i += 1) { const y = await ev('(() => { const c = window.__f4.caret(); return c ? Math.round(c.r.y) : null; })()'); if (y !== null && y === lastY) break; lastY = y; await sleep(60); }
+    let lastY = null, same2 = 0;
+    for (let i = 0; i < 8; i += 1) { const y = await ev('(() => { const c = window.__f4.caret(); return c ? Math.round(c.r.y) : null; })()'); same2 = y !== null && y === lastY ? same2 + 1 : 0; if (same2 >= 2) break; lastY = y; await sleep(50); }
     const d1 = { ...(await ev(DIAG)), waited: Date.now() - tSeen };
     console.log(`INFO TERM-WHERE (${tone}) after the burst ${JSON.stringify(d0)} then ${JSON.stringify(d1)}`);
     const hidBox = await ev('window.__f4.lineBox(2)');
