@@ -347,10 +347,15 @@ try { await withHarness(async (app) => {
   const rOn = await testRestore(true), rOff = await testRestore(false);
   ok('RESTORE the jacked rect is the Typewriter\'s own zoom rect (flag on = flag off), and Jacked In while on', rOn.inside.jacked && rOn.inside.zoom === 'true' && rOff.inside.zoom === 'true' && same(rOn.inside.page, rOff.inside.page),
     JSON.stringify({ on: rOn.inside.page, off: rOff.inside.page }));
-  const restored = (r) => same(r.before.page, r.after.page) && r.before.scrollTop === r.after.scrollTop && r.before.text === r.after.text && !!r.before.caret && !!r.after.caret && r.before.caret.before === r.after.caret.before;
-  ok('RESTORE on leaving, the rect, the scroll, the caret and the text are exactly as before (flag on), and as the control\'s',
-    restored(rOn) && same(rOn.after.page, rOff.after.page) && rOn.after.scrollTop === rOff.after.scrollTop,
-    JSON.stringify({ on: { b: [rOn.before.page, rOn.before.scrollTop, rOn.before.caret], a: [rOn.after.page, rOn.after.scrollTop, rOn.after.caret] }, off: { restored: restored(rOff), a: [rOff.after.page, rOff.after.scrollTop] } }));
+  // THE SCROLL IS HELD TO THE CONTROL, NOT TO "BEFORE" (Actions runs 42342032987 + 42343730035, both legs): the control - today's Typewriter, flag
+  // off - leaves at a different scroll than it entered (0 -> 79 with the caret in view at the top of the page), so an exact-scroll check is a claim
+  // about the Typewriter itself, not about Jacked In. S4's claim is that Jacked In leaves exactly as the Typewriter does; the absolute scroll is
+  // printed as a FINDING for Fable, never silently dropped.
+  const restored = (r) => same(r.before.page, r.after.page) && r.before.text === r.after.text && !!r.before.caret && !!r.after.caret && r.before.caret.before === r.after.caret.before;
+  ok('RESTORE on leaving, the rect, the caret and the text are exactly as before (flag on), and the scroll is the control\'s (Jacked In leaves as the Typewriter does)',
+    restored(rOn) && same(rOn.after.page, rOff.after.page) && rOn.after.scrollTop === rOff.after.scrollTop && rOn.before.scrollTop === rOff.before.scrollTop,
+    JSON.stringify({ on: { b: [rOn.before.page, rOn.before.scrollTop, rOn.before.caret], a: [rOn.after.page, rOn.after.scrollTop, rOn.after.caret] }, off: { restored: restored(rOff), b: rOff.before.scrollTop, a: [rOff.after.page, rOff.after.scrollTop] } }));
+  console.log(`FINDING RESTORE-SCROLL the Typewriter's own exit: scroll ${rOff.before.scrollTop} -> ${rOff.after.scrollTop} on the control (flag off), ${rOn.before.scrollTop} -> ${rOn.after.scrollTop} under the flag${rOff.before.scrollTop === rOff.after.scrollTop ? ' (exact)' : ' (NOT exact on the control: a Typewriter question, not S4\'s)'}`);
 
   // ---- COMPILE ---------------------------------------------------------------------------------------------------------------------------------------
   const testCompile = async ({ snapName = null } = {}) => {

@@ -41,15 +41,26 @@ const glyphsFor = (text: string, seed: number): string => {
   return out;
 };
 const still = () => prefersReducedMotion() || getAmbianceDial() === 0;
+// the editor's lines: its direct children (Draft's are `.wz-row` spans, Free Write's plain line elements: useTypewriterFade's caretRow says the same)
+const rowsOf = (ed: HTMLElement): HTMLElement[] => {
+  const kids = [...ed.children] as HTMLElement[];
+  const rows = kids.filter((c) => c.classList.contains('wz-row'));
+  return rows.length ? rows : kids;
+};
+// the line (a direct child of the editor) that holds a node
+const rowOf = (n: Node | null, ed: HTMLElement): HTMLElement | null => {
+  let e: Node | null = n;
+  while (e && e.parentNode !== ed) e = e.parentNode;
+  return e && e.nodeType === Node.ELEMENT_NODE ? (e as HTMLElement) : null;
+};
 // the caret's line box. A collapsed range often has no rect of its own (at the end of a text node, or between rows), so it falls back to the text
 // before the caret in its own row (the last line box of that text is the caret's line), then to the row itself (an empty row)
 const caretBox = (at: Range, ed: HTMLElement): DOMRect | null => {
   const own = at.getClientRects()[0];
   if (own && own.height) return own;
   const c = at.startContainer;
-  const el = c.nodeType === Node.ELEMENT_NODE ? (c === ed ? (ed.children[at.startOffset - 1] as HTMLElement | undefined) ?? null : (c as HTMLElement)) : c.parentElement;
-  const row = el?.closest<HTMLElement>('.wz-row') ?? null;
-  if (!row || !ed.contains(row)) return null;
+  const row = c === ed ? ((ed.children[at.startOffset - 1] as HTMLElement | undefined) ?? null) : rowOf(c, ed);
+  if (!row) return null;
   const pre = document.createRange();
   pre.selectNodeContents(row);
   if (row.contains(c)) pre.setEnd(c, at.startOffset);
@@ -115,7 +126,7 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
       const limit = caret.top - (COMPILE_LINES - 0.5) * lh;   // a word whose top is above this sits two lines up or more
       const view = scroll.getBoundingClientRect();
       const found: { r: DOMRect; range: Range; text: string; fs: number }[] = [];
-      const rows = [...ed.children].filter((c) => c.classList.contains('wz-row')) as HTMLElement[];
+      const rows = rowsOf(ed);
       for (let i = rows.length - 1; i >= 0; i -= 1) {
         const rr = rows[i].getBoundingClientRect();
         if (rr.top >= limit) continue;
