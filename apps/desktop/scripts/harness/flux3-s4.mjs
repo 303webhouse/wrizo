@@ -212,7 +212,12 @@ const INSTRUMENT = `(() => {
   // change of the editor's rendered scale by more than .05, with the time, data-zoom and data-wz-writing then
   I.zoomWatch = () => { I.zlog = []; let last = null; const t0 = performance.now(); if (I.zraf) cancelAnimationFrame(I.zraf);
     const tick = () => { const ed = I.ed(), col = document.querySelector('.mode-pagecol'); const s = ed && ed.offsetWidth ? +(ed.getBoundingClientRect().width / ed.offsetWidth).toFixed(3) : null;
-      if (s !== null && (last === null || Math.abs(s - last) > 0.05)) { I.zlog.push([Math.round(performance.now() - t0), s, col ? col.getAttribute('data-zoom') : null, document.documentElement.getAttribute('data-wz-writing')]); last = s; }
+      if (s !== null && (last === null || Math.abs(s - last) > 0.05)) {
+        // and what the zoom is made of (DeskFrame: --wz-zoom from the stage's width and the strip's right edge, on a stage resize)
+        const stg = document.querySelector('.desk-frame-stage'), strip = document.querySelector('.desk-frame-strip'), S = stg && stg.getBoundingClientRect(), T = strip && strip.getBoundingClientRect();
+        I.zlog.push([Math.round(performance.now() - t0), s, col ? col.getAttribute('data-zoom') : null, document.documentElement.getAttribute('data-wz-writing'),
+          stg ? getComputedStyle(stg).getPropertyValue('--wz-zoom').trim() : null, S ? [Math.round(S.left), Math.round(S.width), Math.round(S.height)] : null, T ? [Math.round(T.left), Math.round(T.right), Math.round(T.width)] : null,
+          stg ? getComputedStyle(stg).getPropertyValue('--wz-k').trim() : null]); last = s; }
       I.zraf = requestAnimationFrame(tick); };
     I.zraf = requestAnimationFrame(tick); return true; };
   I.zoomStop = () => { if (I.zraf) cancelAnimationFrame(I.zraf); I.zraf = 0; return I.zlog || []; };

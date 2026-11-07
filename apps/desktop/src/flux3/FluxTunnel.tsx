@@ -79,8 +79,11 @@ export function FluxTunnel({ scrollRef }: Props) {
       if (f !== fast && (!f || tryFlash('f3-tunnel'))) { fast = f; if (f) box.setAttribute('data-fast', ''); else box.removeAttribute('data-fast'); }
     };
     document.addEventListener('keydown', onKey, { capture: true, passive: true });
-    const iv = window.setInterval(reset, TUNNEL.resetMs);
-    return () => { document.removeEventListener('keydown', onKey, { capture: true }); window.clearInterval(iv); box.removeAttribute('data-fast'); };
+    // re-armed AFTER each re-set, never an interval: an interval's late tick is followed by an early one (r9's run: two re-sets 1937 ms apart)
+    let iv = 0;
+    const arm = () => { iv = window.setTimeout(() => { reset(); arm(); }, TUNNEL.resetMs); };
+    arm();
+    return () => { document.removeEventListener('keydown', onKey, { capture: true }); window.clearTimeout(iv); box.removeAttribute('data-fast'); };
   }, [box, still]);
 
   if (!box) return null;
