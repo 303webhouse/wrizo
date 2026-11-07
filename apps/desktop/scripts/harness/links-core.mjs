@@ -113,7 +113,7 @@ const CONTROL = () => links(`a [words](${ADDR}) b`).length === 1;
   const rc = marks(c);
   ok('NEST: a size span INSIDE a link - both read, nesting', Array.isArray(rc) && rc.some((r) => r.kind === 'font' && r.points === 14) && rc.some((r) => r.kind === 'link') && noCrossing(c), J(rc));
   const d = `[a link with [big]{.size-14} in it](${ADDR})`;
-  ok('NEST: stripLine reads through every nesting to the words and the address', strip(a) === `bold link (${ADDR})` && strip(b) === `bold and italic words (${ADDR})` && strip(c) === `big words (${ADDR})` && strip(d) === `a link with big in it (${ADDR})`, J([strip(a), strip(b), strip(c), strip(d)]));
+  ok('NEST: stripLine reads through every nesting to the WORDS only (RULED Nov 4/6: the address is the copy / export path, never stripLine)', strip(a) === 'bold link' && strip(b) === 'bold and italic words' && strip(c) === 'big words' && strip(d) === 'a link with big in it', J([strip(a), strip(b), strip(c), strip(d)]));
   const cross = `**a [b** c](${ADDR})`;
   const rx = marks(cross);
   const linkRun = links(cross).length === 1, boldRun = Array.isArray(rx) && rx.some((r) => r.kind === 'bold');
@@ -128,7 +128,7 @@ const CONTROL = () => links(`a [words](${ADDR}) b`).length === 1;
   const typed = `a \\[words\\](${ADDR}) b`;
   ok('LITERAL: a typed bracket is stored escaped and never opens a link - `\\[words\\](address)` is text', CONTROL() && links(typed).length === 0, J(links(typed)));
   ok('LITERAL: an unclosed `[words](https://...` is text', CONTROL() && links(`a [words](${ADDR} b`).length === 0 && links(`a [words] (${ADDR}) b`).length === 0, J([links(`a [words](${ADDR} b`), links(`a [words] (${ADDR}) b`)]));
-  ok('LITERAL: a link in a line\'s own structure (`- `, `> `, `# `) is read after the structure', ['- ', '> ', '# '].every((lead) => strip(`${lead}[w](${ADDR})`) === `w (${ADDR})`), J(['- ', '> ', '# '].map((lead) => strip(`${lead}[w](${ADDR})`))));
+  ok('LITERAL: a link in a line\'s own structure (`- `, `> `, `# `) is read after the structure - the WORDS only from stripLine', ['- ', '> ', '# '].every((lead) => strip(`${lead}[w](${ADDR})`) === 'w'), J(['- ', '> ', '# '].map((lead) => strip(`${lead}[w](${ADDR})`))));
 }
 
 // ---- EXPORT - .txt / Copy My Words give "words (address)"; .md keeps the mark
