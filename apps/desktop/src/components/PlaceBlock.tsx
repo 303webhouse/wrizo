@@ -26,7 +26,8 @@ export function PlaceBlock({ active, onToggle, drawerIcon, journalIcon }: { acti
       <button type="button" data-category="drawers" data-place-kind={place.kind}
         className={`wz-strip-item wz-place-block${active ? ' active' : ''}`} aria-pressed={active} aria-label={`${t('switcherHeading')}: ${name}`} title={fullPath} onClick={onToggle}>
         <span className="wz-strip-glyph wz-place-icon" aria-hidden="true"><ThemeIcon id={isJournal ? 'log' : 'rack'} fallback={isJournal ? journalIcon : drawerIcon} /></span>
-        <span className="wz-strip-label wz-place-name">{name}</span>
+        {/* bug #4 (ruled Nov 7): in the Journal the Journal pin below names the place, so this door is its icon alone - still the switcher's only door (aria-label and title keep the name) */}
+        {isJournal ? null : <span className="wz-strip-label wz-place-name">{name}</span>}
       </button>
     </div>
   );

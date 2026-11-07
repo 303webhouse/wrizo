@@ -4,6 +4,7 @@ import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
 import { CascadeSurvey } from './CascadeSurvey';
 import { PlaceBlock } from './PlaceBlock';
+import { usePlace } from '../store/usePlace';
 import { ThemeIcon } from './ThemeIcon';
 import { renderCategoryPanel, buildSurvey, resolveStickyPlanSurvey, type CategoryId, type CascadeSurveyKind, type CascadeContext } from './CascadePanels';
 import type { PageFaceSubject } from './PageFace';
@@ -154,6 +155,8 @@ function cascadeExitMs(): number {
 
 export function useCascade({ subject, project, navigate }: CascadeProps): { strip: ReactNode; layers: ReactNode } {
   const { t } = useDeskLexicon();
+  // TOOLS bug #4 (ruled Nov 7): when the current place IS the Journal, the Journal pin is the one that names it - it wears its `active` state, and the place slot above it draws only its icon (PlaceBlock), so the word shows once
+  const inJournal = usePlace().kind === 'journal';
   // PW1 S4 — THE CASCADE SURVIVES TRAVEL. This state is per-surface: a travel
   // unmounts the whole hook, so before this the destination always mounted at
   // REST and a writer who reached a card through the rail arrived with the rail
@@ -266,7 +269,7 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
       <PlaceBlock active={state.category === 'drawers'} onToggle={() => toggleCategory('drawers')} drawerIcon={<DrawersIcon />} journalIcon={<JournalIcon />} />
       {renderSection(SECTION_A, state, toggleCategory, t, 'wz-strip-section--bracketed')}
       <div className="wz-strip-sep" role="separator" aria-orientation="horizontal" />
-      {renderSection(SECTION_C, state, toggleCategory, t)}
+      {renderSection(SECTION_C, state, toggleCategory, t, '', inJournal ? 'journal' : null)}
       {/* Settings, Themes and Trash pin to the window corner. The
           separator travels with them so the space above the group is empty. */}
       <div className="wz-strip-foot">
@@ -329,6 +332,7 @@ function renderSection(
   toggle: (id: CategoryId) => void,
   t: (id: DeskTermId) => string,
   extraClass = '',
+  currentPlace: CategoryId | null = null,
 ): ReactNode {
   return (
     <div className={`wz-strip-section${extraClass ? ` ${extraClass}` : ''}`}>
@@ -338,8 +342,9 @@ function renderSection(
           type="button"
           // data-category names the button, so a harness never selects a category by index (an index survives a reorder and silently picks a different panel) [Cascade §7]
           data-category={item.id}
-          className={`wz-strip-item${state.category === item.id ? ' active' : ''}`}
+          className={`wz-strip-item${state.category === item.id || currentPlace === item.id ? ' active' : ''}`}
           aria-pressed={state.category === item.id}
+          aria-current={currentPlace === item.id ? 'location' : undefined}
           onClick={() => toggle(item.id)}
         >
           <span className="wz-strip-glyph" aria-hidden="true">{item.icon}</span>
