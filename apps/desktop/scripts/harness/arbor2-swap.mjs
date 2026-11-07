@@ -14,6 +14,8 @@
 //   W9  the last frame, mid-shiver: a key landed while leaves shiver - the still shown (the drawing at that pose) against the live drawing paused
 //       at the same pose (a test-only reveal in this page): over 9 levels on no more than 0.01% of the pixels
 //   W10 the last frame, at rest: the same, for a key with no leaf moving (the shared still)
+//       (W9 and W10 parked for an instrument fault, Nov 6 - successors W9b / W10b: an unzoomed page, everything held by a removable stylesheet,
+//       the cut's own choice as the premise, and two control shots proving the instrument; see below)
 //   W8  the flash copy's pre-rendered mask (Fable, Nov 6: "keep the look identical"): on ONE page, the flash held (every finite animation
 //       landed, the rest paused), shot with the bitmap mask and again with the SVG mask it replaces put back (a test-only switch in this page) -
 //       the two shots differ by no more than 9 levels on more than 0.01% of the pixels (the vines' shape is seeded by the session, so two runs'
@@ -190,32 +192,69 @@ await withHarness(async (app) => {
     return { n: w * h, over, max }; })()`);
   // how many of the room's leaves are mid-shiver right now (a test-side read: the leaf animations' own times)
   const MOVINGNOW = "(() => { const r = document.querySelector('.arbor2-pergola'); if (!r) return -1; let n = 0; r.querySelectorAll('.wz-leaf').forEach((g) => { const a = g.getAnimations()[0]; if (!a || a.currentTime == null) return; const d = a.effect.getTiming().delay || 0; const t = Number(a.currentTime) - d; if (t < 0) return; const ph = t % 16000; if (ph > 0 && ph < 1400) n++; }); return n; })()";
-  const lastFrame = async (want) => {
+  // PARKED 2026-11-06, an INSTRUMENT fault (Fable, Nov 6: "fix W9/W10's instrument fault"; turn 09:27Z). Three faults, none of them the build's:
+  // (1) the page was ZOOMED (Typewriter on: the 1.6x page covers most of the room, the page copy is not drawn), so the shots held little of the
+  // shade; (2) only the shade's animations were held, so the chrome went on fading between the two shots; (3) the hold PAUSED the leaves through
+  // the Web Animations API, which takes a CSS animation out of CSS's hands for good - after W9 the leaves never ran again and W10's counter read
+  // the same 18 for its whole wait. The instrument that stood (lastFrame) is replaced below; the checks that stood, verbatim:
+  // ok('W9 the last frame, mid-shiver: the cut\'s still against the live drawing paused at the same pose - over 9 levels on no more than 0.01% of the pixels',
+  //   lfS.moving >= 8 && lfS.over <= lfS.n * 0.0001, JSON.stringify({ ...lfS, overPct: Math.round((lfS.over / lfS.n) * 1e6) / 1e4 }));
+  // ok('W10 the last frame, at rest: the cut\'s still against the live drawing at rest - over 9 levels on no more than 0.01% of the pixels',
+  //   lfR.moving === 0 && lfR.over <= lfR.n * 0.0001, JSON.stringify({ ...lfR, overPct: Math.round((lfR.over / lfR.n) * 1e6) / 1e4 }));
+  // SUCCESSORS W9b / W10b. The page is NOT zoomed (Typewriter off for this page, a test-only per-page setting the app already has, cleared after);
+  // EVERYTHING is held by a removable test-only stylesheet (every animation paused by CSS, no transition, no caret) - never by pausing an
+  // animation from script; the premise is the CUT'S OWN CHOICE (the shared still = no leaf moving, a pose picture = some), with the moving counter
+  // checked against it; and two control shots prove the instrument: the same frame twice is the same picture (the hold holds), and the frame with
+  // the shade hidden differs on at least 1% of the pixels (the shade is in the shot).
+  const FREEZE = "*, *::before, *::after { animation-play-state: paused !important; transition: none !important; caret-color: transparent !important; }";
+  const REVEAL = '.arbor2-pergola-drift > .arbor2-live{ opacity:1 !important; content-visibility:visible !important; } .arbor2-pergola-drift > .arbor2-still{ opacity:0 !important; }';
+  const HIDE = '.arbor2-pergola, .arbor2-pagesh{ visibility:hidden !important; }';
+  const styleOn = (id, css) => app.evalJs(`(() => { const s = document.createElement('style'); s.id = ${JSON.stringify(id)}; s.textContent = ${JSON.stringify(css)}; document.head.appendChild(s); return true; })()`);
+  const styleOff = (id) => app.evalJs(`(() => { document.getElementById(${JSON.stringify(id)})?.remove(); return true; })()`);
+  const frames2 = () => app.evalJs('new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))');
+  const STILLBG = "(() => { const s = document.querySelector('.arbor2-pergola .arbor2-still'), p = document.querySelector('.desk-frame-stage .mode-page > .arbor2-pagesh .arbor2-still'); return { room: s ? s.style.backgroundImage : null, page: p ? p.style.backgroundImage : null }; })()";
+  const twPage = (await app.evalJs('location.hash')).replace(/^#\/page\//, '');
+  await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-' + ${JSON.stringify(twPage)}, 'off')`);
+  await app.goto('/');
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk (typewriter off)' });
+  await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(twPage)}`);
+  await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.arbor2-pergola .arbor2-still')", { label: 'page reopened, typewriter off', timeout: 10000 }).catch(() => {});
+  const lastFrameB = async (want) => {
     await backToRest(app);
+    const restBg = await app.evalJs(STILLBG);   // at rest the still holds the SHARED bitmap (uncut puts it back)
     // wait for the breeze to be where this check wants it: mid-shiver (some leaves moving) or at rest (none), at most 18 s
     const t0 = Date.now(); let n = await app.evalJs(MOVINGNOW);
     while (Date.now() - t0 < 18000 && (want === 'shiver' ? n < 8 : n !== 0)) { await sleep(40); n = await app.evalJs(MOVINGNOW); }
     await app.evalJs("document.querySelector('.forward-only-editor').focus()");
     await app.typeKeys('s');
     await app.waitFor("document.querySelector('.arbor2-pergola')?.getAttribute('data-live-off') === 'true'", { label: 'cut', timeout: 2000 }).catch(() => {});
-    // hold the room's fade where it is (the 6 s writing fade would change the picture between the two shots)
-    await app.evalJs("(() => { document.getAnimations().forEach((a) => { const t = a.effect && a.effect.target; if (t && t.closest && t.closest('.arbor2-pergola, .arbor2-pagesh')) a.pause(); }); document.querySelectorAll('.arbor2-pergola, .arbor2-pagesh').forEach((l) => { l.style.transition = 'none'; l.style.opacity = getComputedStyle(l).opacity; }); return true; })()");
-    await sleep(150);
+    await sleep(1200);   // the key's save and its re-render land before the hold (the cut and r19's pause are already in place)
+    const cutBg = await app.evalJs(STILLBG);
+    const zoom = await app.evalJs("document.querySelector('.desk-frame-stage .mode-pagecol')?.getAttribute('data-zoom') === 'true'");
+    const off = await app.evalJs("document.querySelector('.arbor2-pergola')?.getAttribute('data-live-off') ?? null");
+    await styleOn('w9-freeze', FREEZE); await frames2(); await sleep(150);
     const a = await app.screenshot();
-    // the test-only reveal: the live drawing (paused by r19's rule at the pose the key found) in place of the still
-    await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'w9-reveal'; s.textContent = '.arbor2-pergola-drift > .arbor2-live{ opacity:1 !important; content-visibility:visible !important; } .arbor2-pergola-drift > .arbor2-still{ opacity:0 !important; }'; document.head.appendChild(s); return true; })()");
-    await app.evalJs('new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))'); await sleep(150);
-    const b = await app.screenshot();
-    await app.evalJs("(() => { document.getElementById('w9-reveal')?.remove(); document.querySelectorAll('.arbor2-pergola, .arbor2-pagesh').forEach((l) => { l.style.transition = ''; l.style.opacity = ''; }); document.getAnimations().forEach((a) => { const t = a.effect && a.effect.target; if (t && t.closest && t.closest('.arbor2-pergola, .arbor2-pagesh') && a.playState === 'paused' && document.documentElement.getAttribute('data-wz-writing') !== 'true') a.play(); }); return true; })()");
-    if (process.env.ARBOR_SHOTS) { fs.mkdirSync(process.env.ARBOR_SHOTS, { recursive: true }); fs.writeFileSync(path.join(process.env.ARBOR_SHOTS, `lastframe-${want}-still.png`), Buffer.from(a, 'base64')); fs.writeFileSync(path.join(process.env.ARBOR_SHOTS, `lastframe-${want}-live.png`), Buffer.from(b, 'base64')); }
-    return { moving: n, ...(await shotCmp(a, b)) };
+    await sleep(400);
+    const a2 = await app.screenshot();   // control 1: the same frame again
+    await styleOn('w9-reveal', REVEAL); await frames2(); await sleep(150);
+    const b = await app.screenshot();   // the live drawing (paused by r19's rule at the pose the key found) in place of the still
+    await styleOff('w9-reveal'); await styleOn('w9-hide', HIDE); await frames2(); await sleep(150);
+    const c = await app.screenshot();   // control 2: the shade hidden
+    await styleOff('w9-hide'); await styleOff('w9-freeze');
+    if (process.env.ARBOR_SHOTS) { fs.mkdirSync(process.env.ARBOR_SHOTS, { recursive: true }); [['still', a], ['still-again', a2], ['live', b], ['no-shade', c]].forEach(([k, s]) => fs.writeFileSync(path.join(process.env.ARBOR_SHOTS, `lastframe-b-${want}-${k}.png`), Buffer.from(s, 'base64'))); }
+    const pct = (x) => (x ? Math.round((x.over / x.n) * 1e6) / 1e4 : null);
+    const vs = await shotCmp(a, b), same = await shotCmp(a, a2), shade = await shotCmp(a, c);
+    const choice = !restBg.room || !cutBg.room ? null : cutBg.room === restBg.room ? 'shared still' : 'pose';
+    return { want, moving: n, choice, zoom, off, vs, overPct: pct(vs), same, samePct: pct(same), shade, shadePct: pct(shade), pageChoice: !restBg.page || !cutBg.page ? null : cutBg.page === restBg.page ? 'shared still' : 'pose' };
   };
-  const lfS = await lastFrame('shiver');
-  ok('W9 the last frame, mid-shiver: the cut\'s still against the live drawing paused at the same pose - over 9 levels on no more than 0.01% of the pixels',
-    lfS.moving >= 8 && lfS.over <= lfS.n * 0.0001, JSON.stringify({ ...lfS, overPct: Math.round((lfS.over / lfS.n) * 1e6) / 1e4 }));
-  const lfR = await lastFrame('rest');
-  ok('W10 the last frame, at rest: the cut\'s still against the live drawing at rest - over 9 levels on no more than 0.01% of the pixels',
-    lfR.moving === 0 && lfR.over <= lfR.n * 0.0001, JSON.stringify({ ...lfR, overPct: Math.round((lfR.over / lfR.n) * 1e6) / 1e4 }));
+  const premiseB = (x, choice) => !!x.vs && !x.zoom && x.off === 'true' && x.choice === choice && (choice === 'pose' ? x.moving >= 8 : x.moving === 0) && x.same.over === 0 && x.shade.over >= x.shade.n * 0.01;
+  const lfS = await lastFrameB('shiver');
+  ok('W9b the last frame, mid-shiver: on an unzoomed page, the cut drew a POSE (the counter agreeing: 8+ leaves moving), and its still against the live drawing paused at that pose - over 9 levels on no more than 0.01% of the pixels (the hold proven: the same frame twice identical; the shade proven in the shot: hidden, 1%+ of the pixels change)',
+    premiseB(lfS, 'pose') && lfS.vs.over <= lfS.vs.n * 0.0001, JSON.stringify(lfS));
+  const lfR = await lastFrameB('rest');
+  ok('W10b the last frame, at rest: on an unzoomed page, the cut kept the SHARED still (the counter agreeing: no leaf moving), and it against the live drawing at rest - over 9 levels on no more than 0.01% of the pixels (the same two controls)',
+    premiseB(lfR, 'shared still') && lfR.vs.over <= lfR.vs.n * 0.0001, JSON.stringify(lfR));
+  await app.evalJs(`localStorage.removeItem('wrizo-typewriter-page-' + ${JSON.stringify(twPage)})`);
   // W8: the flash held, two masks, one moment
   const pageId = (await app.evalJs('location.hash')).replace(/^#\/page\//, '');
   await app.goto('/');
