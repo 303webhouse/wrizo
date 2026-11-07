@@ -211,7 +211,12 @@ const INSTRUMENT = `(() => {
   // THE ZOOM, frame by frame (r9i: the dark read found the editor at scale 1.0 between two reads at 1.6, data-zoom 'true' throughout): every
   // change of the editor's rendered scale by more than .05, with the time, data-zoom and data-wz-writing then
   I.zoomWatch = () => { I.zlog = []; let last = null; const t0 = performance.now(); if (I.zraf) cancelAnimationFrame(I.zraf);
+    I.flips = []; let flipping = false;
     const tick = () => { const ed = I.ed(), col = document.querySelector('.mode-pagecol'); const s = ed && ed.offsetWidth ? +(ed.getBoundingClientRect().width / ed.offsetWidth).toFixed(3) : null;
+      // ModeStage's page-turn (.flipping): when it starts, what its page count reads (floor(editor.scrollHeight / scroll.clientHeight))
+      const pg = document.querySelector('.mode-page'), sc = document.querySelector('.mode-page .mode-scroll'), f = !!pg && pg.classList.contains('flipping');
+      if (f && !flipping && ed && sc) I.flips.push([Math.round(performance.now() - t0), ed.scrollHeight, sc.clientHeight, sc.scrollWidth, sc.clientWidth, sc.offsetHeight, getComputedStyle(pg).transform.slice(0, 40)]);
+      flipping = f;
       if (s !== null && (last === null || Math.abs(s - last) > 0.05)) {
         // and what the zoom is made of (DeskFrame: --wz-zoom from the stage's width and the strip's right edge, on a stage resize)
         const stg = document.querySelector('.desk-frame-stage'), strip = document.querySelector('.desk-frame-strip'), S = stg && stg.getBoundingClientRect(), T = strip && strip.getBoundingClientRect();
@@ -763,8 +768,8 @@ try { await withHarness(async (app) => {
     try { settled.under2 = await pixOf(await ev('window.__f4.lineBox(2)')); settled.under3 = await pixOf(await ev('window.__f4.lineBox(3)')); }
     finally { await ev("(() => { const L = document.querySelector('[data-flux3-compile]'); if (L) L.style.removeProperty('visibility'); return true; })()"); }
     const zlog = await ev('window.__f4.zoomStop()');
-    console.log(`INFO TERM-ZOOM (${tone}) the editor's scale, each change: ${JSON.stringify(zlog)}`);
-    return { rest, hidSignal, write, dim, hid, settled, zlog, rows: await ev('window.__f4.rows()'), after: await ev('window.__f4.term()') };
+    console.log(`INFO TERM-ZOOM (${tone}) the editor's scale, each change: ${JSON.stringify(zlog)}; page-turns [t, editor scrollHeight, scroll clientHeight, scrollWidth, clientWidth, offsetHeight, transform]: ${JSON.stringify(await ev('window.__f4.flips'))}`);
+    return { rest, hidSignal, write, dim, hid, settled, zlog, flips: await ev('window.__f4.flips'), rows: await ev('window.__f4.rows()'), after: await ev('window.__f4.term()') };
   };
   const clear = (bg) => { const m = /rgba?\(([^)]+)\)/.exec(bg || ''); if (!m) return false; const p = m[1].split(/[ ,/]+/).filter(Boolean); return p.length === 4 && +p[3] === 0; };
   const termPaperOk = (x, tone) => !!x && clear(x.pageBg) && x.readouts === 'hidden' && /gradient/.test(x.edMask || '') && !x.looking && (tone === 'light' ? x.groundBg === 'rgb(244, 247, 248)' : clear(x.groundBg));
@@ -797,7 +802,8 @@ try { await withHarness(async (app) => {
     await ev('window.__f4.zoomWatch()');
     for (const ch of ' and the line keeps going forward with more plain words now, on and on across the measure of the page until it wraps') { await app.typeKeys(ch); await sleep(70); }
     await sleep(3000);
-    return ev('window.__f4.zoomStop()');
+    const z = await ev('window.__f4.zoomStop()');
+    return { zoom: z, flips: await ev('window.__f4.flips') };
   };
   console.log(`INFO TERM-ZOOM-CONTROL (flag off, the Typewriter on, dark, Ambiance 0) the editor's scale, each change: ${JSON.stringify(await zoomControl())}`);
   console.log(`INFO TERM-WHERE-CONTROL reduced motion, after a burst: Jacked In ${JSON.stringify(wrOn)} / the control (flag off, the Typewriter on) ${JSON.stringify(wrOff)}${!wrOff.onScreen ? ' - the TYPEWRITER\'s own (not S4\'s)' : ''}`);
@@ -809,6 +815,11 @@ try { await withHarness(async (app) => {
     // longer run; its successor reads the settled page.
     // ok(`TERM-LINES (${tone}, in pixels) the writing line ${x.write && x.write.ratio}:1, the dim line above it ${x.dim && x.dim.ratio}:1 (>= 4.5, dimmer), the line two up hidden before the pause (${x.hid && x.hid.ratio}:1, < 2.5; signal over it then: ${x.hidSignal})`,
     //   termLinesOk(x), JSON.stringify({ write: x.write, dim: x.dim, hid: x.hid, hidSignal: x.hidSignal }));
+    // TERM-ZOOM (r9's zoom watch: ModeStage's page-turn threw the zoomed page to scale 1 for half a second, the rect moving): the page's scale
+    // holds through the whole terminal run, whatever page-turns come
+    const zs = (x.zlog || []).map((z) => z[1]);
+    ok(`TERM-ZOOM (${tone}) the page's scale holds at the zoom through the terminal run (scales seen ${JSON.stringify([...new Set(zs)])}; page-turns ${JSON.stringify((x.flips || []).length)})`,
+      zs.length >= 1 && zs.every((v) => Math.abs(v - zs[0]) <= 0.05) && zs[0] > 1.05, JSON.stringify({ zlog: x.zlog, flips: x.flips }));
     const sx = x.settled || {};
     ok(`TERM-LINES [successor] (${tone}, in pixels, settled) the writing line ${sx.write && sx.write.ratio}:1, the dim line above it ${sx.dim && sx.dim.ratio}:1 (>= 4.5, dimmer); under the signal two and three up no text (${sx.under2 && sx.under2.ratio}:1, ${sx.under3 && sx.under3.ratio}:1, < 2.5; signal words there ${sx.sig2}, ${sx.sig3})`,
       termLinesSucc(x), JSON.stringify(sx));

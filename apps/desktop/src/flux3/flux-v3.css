@@ -191,6 +191,9 @@
   --f3-term-mask:linear-gradient(to top, #000 0, #000 1lh, rgb(0 0 0 / var(--f3-dim)) 1lh, rgb(0 0 0 / var(--f3-dim)) 2lh, transparent 2lh); }
 :root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .mode-page{ background:transparent; border-color:transparent; box-shadow:none; outline:none; }
 :root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .flux-readouts{ visibility:hidden; }
+/* no page to turn: ModeStage's page-turn (.flipping, 12-studio-chrome.css) animates the page's transform from none, so while zoomed it threw the
+   page back to scale 1 for half a second (r9's zoom watch: four times in six seconds, the rect moving). Jacked in it does not play */
+:root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .mode-page.flipping{ animation:none; }
 :root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .mode-scroll{ scrollbar-color:transparent transparent; }
 :root[data-flux3][data-theme='flux'][data-flux3-jacked]:not([data-flux3-looking]) .mode-pagecol[data-zoom='true'] .forward-only-editor{
   -webkit-mask-image:var(--f3-term-mask); mask-image:var(--f3-term-mask); }
