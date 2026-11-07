@@ -40,6 +40,8 @@
 //          (every updatePlaybackRate is logged), faster while she types fast, the streaks at speed, back to rest after; its only DOM change the
 //          streaks' flag, at most every 2 s. TUN-STILL no animation under reduced motion and Ambiance 0. TUN-WHERE only while jacked in.
 //          MUT-RECEDE / MUT-HOLD (landed): each one-line switch flipped alone does exactly its thing. MUT-RESET (landed): TUN-RATE fails.
+//          TUN-CLEAR (the r5 frames: the tunnel showed through the band mask's fade, behind the text): the page's rect is cut out of the tunnel
+//          (a still mask hole, measured on mount, settle, resize and zoom), at rest and while she types. MUT-NOHOLE (landed): it fails.
 //          INFO SPLIT: L's K arm, Jacked In with the tunnel never mounted (landed), so a red L splits into the tunnel's share.
 //   FL     Forward Lock is today's: Backspace in Jacked In strikes and never deletes, exactly as the control.
 //   L      the Jacked In arm (box only; information on Actions): key -> paint (rhizome-latency's method) against the control (Flux, flag off, the
@@ -170,7 +172,12 @@ const INSTRUMENT = `(() => {
       props: [...props].filter((p) => !['offset', 'easing', 'composite', 'computedOffset'].includes(p)).sort(), rates: [...new Set(anims.map((a) => a.playbackRate))],
       time: anims.length ? +(+anims[0].currentTime).toFixed(0) : null, fast: t.hasAttribute('data-fast'), still: t.hasAttribute('data-still'), recede: t.hasAttribute('data-recede'), hold: t.hasAttribute('data-hold'),
       pageBg: page ? getComputedStyle(page).backgroundColor : null, pageAbove: !!page && (() => { const r = page.getBoundingClientRect(), e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!e && !t.contains(e); })(),
-      writing: document.documentElement.getAttribute('data-wz-writing') }; };
+      writing: document.documentElement.getAttribute('data-wz-writing'), clear: I.hole(t, page, cs) }; };
+  // the page's rect cut out of the tunnel: the hole (its four custom properties, in screen px) against the page's own rect, and the mask applied
+  I.hole = (t, page, cs) => { if (!page) return null; const B = t.getBoundingClientRect(), s = t.offsetWidth ? B.width / t.offsetWidth : 1, v = (n) => parseFloat(t.style.getPropertyValue(n)) || 0;
+    const h = { x: B.left + v('--hx') * s, y: B.top + v('--hy') * s, w: v('--hw') * s, h: v('--hh') * s }, P = page.getBoundingClientRect();
+    return { hole: rr(new DOMRect(h.x, h.y, h.w, h.h)), page: rr(P), off: +Math.max(Math.abs(h.x - P.left), Math.abs(h.y - P.top), Math.abs(h.w - P.width), Math.abs(h.h - P.height)).toFixed(2),
+      comp: cs.maskComposite || cs.webkitMaskComposite || '', masks: (cs.maskImage || cs.webkitMaskImage || '').split('linear-gradient').length - 1 }; };
   I.flashes = (kind) => (window.__wzFlashLog || []).filter((f) => f.ok && (!kind || f.kind === kind)).map((f) => f.t);
   I.st = () => {
     const root = document.documentElement, page = document.querySelector('.mode-page'), ed = I.ed(), col = document.querySelector('.mode-pagecol'), sc = document.querySelector('.mode-page .mode-scroll');
@@ -207,6 +214,8 @@ const MUTANTS = {
   reset: [/resetMs:2e3/g, 'resetMs:100'],
   // Esc no longer resolving the signal (r4's behaviour): ESC-READ fails
   lookup: [/if\(([\w$]+)\.key==="Escape"\)\{([\w$]+)=!0,([\w$]+)&&window\.clearTimeout\(\3\),\3=0,([\w$]+)\(\);return\}/g, 'if($1.key==="Escape"){return}'],
+  // the page's rect never cut out of the tunnel (r5's build): TUN-CLEAR fails
+  nohole: [/\.setProperty\("--hw",/g, '.setProperty("--hw-unset",'],
   // the L split's K arm (information): Jacked In with the tunnel never mounted
   notunnel: [/if\(!([\w$]+)\)return;const ([\w$]+)=document\.createElement\("div"\);return \2\.className="flux3-tunnel"/g, 'if(!0)return;const $2=document.createElement("div");return $2.className="flux3-tunnel"'],
 };
@@ -555,6 +564,10 @@ try { await withHarness(async (app) => {
     for (const ch of ' more words') { await app.typeKeys(ch); await sleep(60); }
     await sleep(300);
     const typing = await st();
+    // the pause before Esc, the same on both sides, so signal shows under the flag (Actions 42360786133: Esc 300 ms after the last key found
+    // nothing compiled yet, and ESC-READ's premise read 0); under the flag it then waits on the signal itself, never past 2 s more
+    await sleep(1000);
+    if (flag) await app.waitFor("document.querySelectorAll('[data-flux3-compile] .flux3-compile-word').length >= 8", { timeout: 2000, label: 'signal before Esc' }).catch(() => {});
     const pre = await ev('window.__f4.look()');
     const g0 = (await ev('window.__f4.flashes("f3-resolve")')).length;
     await app.key('Escape');
@@ -644,6 +657,10 @@ try { await withHarness(async (app) => {
   const tr = rateOf(tun);
   ok(`TUN the tunnel stands behind the page while jacked in: first in .mode-stage, aria-hidden, no pointer, no canvas, ${tun.rest && tun.rest.frames} frames, every animation transform/opacity only (${tun.rest && tun.rest.props}) and running; the page's paper opaque (${tun.rest && tun.rest.pageBg}) and above it`,
     tunOk(tun), JSON.stringify({ rest: tun.rest, t2: tun.rest2 && tun.rest2.time }));
+  // TUN-CLEAR (the r5 frames, Nov 7: the tunnel showed through the band mask's fade, behind the text; r6: the paper itself is opaque): the page's rect is cut out
+  const clearOk = (t) => !!t && !!t.clear && t.clear.off <= 1 && t.clear.page.w > 0 && /exclude|xor/.test(t.clear.comp) && t.clear.masks === 2;
+  ok(`TUN-CLEAR nothing of the tunnel stands behind her words: the page's rect is cut out of it (hole vs page, worst ${tun.rest && tun.rest.clear && tun.rest.clear.off} px; mask ${tun.rest && tun.rest.clear && tun.rest.clear.comp}), at rest and while she types`,
+    clearOk(tun.rest) && clearOk(tun.mid), JSON.stringify({ rest: tun.rest && tun.rest.clear, mid: tun.mid && tun.mid.clear }));
   ok(`TUN-TYPE the named recede exception: while keys land (the chrome receded: data-wz-writing ${tun.mid && tun.mid.writing}) the tunnel stays (opacity ${tun.mid && tun.mid.op}) and runs (${tun.mid && tun.mid.running}/${tun.mid && tun.mid.anims})`,
     typeOk(tun), JSON.stringify(tun.mid));
   ok(`TUN-RATE her speed is the tunnel's: re-set at most every 2 s (sets at ${JSON.stringify(tr.sets)}), up to ${tr.top} while she types fast, the streaks at speed, back to rest after (${JSON.stringify(tr.rest)}); its only DOM change is the streaks' flag, at most every 2 s (${tr.mutKinds})`,
@@ -729,6 +746,8 @@ try { await withHarness(async (app) => {
   const mHd = await withMutant('hold', testTunnel);
   ok('MUT-HOLD (landed) the hold switch flipped, alone: the tunnel holds still while she types (TUN-TYPE fails), visible, and runs at rest', mHd.landed === 1 && !!mHd.r.rest && mHd.r.rest.hold && !mHd.r.rest.recede && !typeOk(mHd.r) && !!mHd.r.mid && mHd.r.mid.op >= 0.99 && mHd.r.rest.running === mHd.r.rest.anims,
     JSON.stringify({ landed: mHd.landed, mid: mHd.r.mid && { op: mHd.r.mid.op, running: mHd.r.mid.running, anims: mHd.r.mid.anims } }));
+  const mNh = await withMutant('nohole', testTunnel);
+  ok('MUT-NOHOLE (landed) the page\'s rect never cut out of the tunnel: TUN-CLEAR fails', mNh.landed === 1 && !!mNh.r.rest && !clearOk(mNh.r.rest), JSON.stringify({ landed: mNh.landed, clear: mNh.r.rest && mNh.r.rest.clear }));
   const mRs = await withMutant('reset', testTunnel);
   ok('MUT-RESET (landed) the speed re-set every 100 ms: TUN-RATE fails (sets closer than 2 s)', mRs.landed === 1 && !rateOf(mRs.r).gaps, JSON.stringify({ landed: mRs.landed, sets: rateOf(mRs.r).sets.slice(0, 6) }));
   const mW = await withMutant('block', testCompile);

@@ -58,6 +58,37 @@ export function FluxTunnel({ scrollRef }: Props) {
     flag('data-still', still);
   }, [box, still]);
 
+  // THE HOLE: the page's own rect is cut out of the tunnel (a still mask), so nothing of the tunnel ever stands behind her words, whatever the
+  // paper: the Typewriter's band mask fades the page column above and below the writing line, and the r5 frames showed the tunnel through it, behind the text (r6: the paper itself is opaque). Measured when the tunnel
+  // mounts, as the zoom settles, on a resize and on a zoom change; never per frame (the page does not move while jacked in: the scroll is inside it)
+  useEffect(() => {
+    if (!box) return undefined;
+    const stage = box.parentElement;
+    const measure = () => {
+      const page = stage?.querySelector('.mode-page');
+      if (!page) return;
+      const B = box.getBoundingClientRect();
+      const s = box.offsetWidth > 0 ? B.width / box.offsetWidth : 1;
+      const P = page.getBoundingClientRect();
+      box.style.setProperty('--hx', `${((P.left - B.left) / s).toFixed(1)}px`);
+      box.style.setProperty('--hy', `${((P.top - B.top) / s).toFixed(1)}px`);
+      box.style.setProperty('--hw', `${(P.width / s).toFixed(1)}px`);
+      box.style.setProperty('--hh', `${(P.height / s).toFixed(1)}px`);
+    };
+    measure();
+    const settle = window.setTimeout(measure, 700);
+    const onEnd = (e: TransitionEvent) => { if (e.propertyName === 'transform') measure(); };
+    window.addEventListener('resize', measure);
+    document.addEventListener('wz-zoom-changed', measure);
+    stage?.addEventListener('transitionend', onEnd);
+    return () => {
+      window.clearTimeout(settle);
+      window.removeEventListener('resize', measure);
+      document.removeEventListener('wz-zoom-changed', measure);
+      stage?.removeEventListener('transitionend', onEnd);
+    };
+  }, [box]);
+
   // THE SPEED: one timestamp per key; a re-set at most every 2 s
   useEffect(() => {
     if (!box || still) return undefined;
