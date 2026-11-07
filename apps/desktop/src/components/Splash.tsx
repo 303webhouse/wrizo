@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { useTheme } from '../store/theme';
 import { SplashMark, prefersReducedMotion } from './SplashMark';
+import { isArbor2 } from '../arbor2/flag';
+import { ArborFront, startArborFront, finishArborFront } from '../arbor2/frontLayer';
 
 // the splash: pointer-events:none so it never eats a keystroke; sized by the ink's bounding box to about a quarter of the screen's area (capped at 60% height, 70% width); per-theme animation; holds until its animation ends and the app is ready; once per app load [Splash §1]
 
@@ -60,6 +62,9 @@ function forcedNotReady(): boolean {
   }
 }
 
+/** ARBOR v2 MOCKUP r20 (Fable's ruling 3): under the flag the drawing's box takes EVEN whole sizes, so centred (the splash's flex, the front door's
+ *  margins) it starts on a whole pixel in both places and the logo inside lands on the same whole pixel in each. */
+export function arborBoxFor(vw: number, vh: number) { const b = splashSizeFor(vw, vh); return { ...b, width: 2 * Math.round(b.width / 2), height: 2 * Math.round(b.height / 2) }; }
 export function splashSizeFor(vw: number, vh: number) {
   const byArea = Math.sqrt(vw * vh * AREA_FRACTION * ASPECT);
   const inkW = Math.min(byArea, vh * MAX_INK_HEIGHT_FRACTION * ASPECT, vw * MAX_INK_WIDTH_FRACTION);
@@ -103,11 +108,15 @@ export function Splash({ ready }: { ready: boolean }) {
     floorPassedRef.current = true;
     tryEndRef.current?.();
   }, []);
+  // ARBOR v2 MOCKUP r19 (spec draft 38 §12c; Fable, Nov 4): in Arbor the sketch's end starts the front door's order (the logo, the typed tagline,
+  // the doors: src/arbor2/frontLayer.tsx), and the hold's floor ends when the doors are in (~7.8 s at 1366, inside the 10 s ceiling).
+  const arborFront = isArbor2() && theme === 'plateau';
+  const arborFloor = useCallback(() => startArborFront(onFloorReached), [onFloorReached]);
 
   useEffect(() => {
     if (!live) return undefined;
 
-    const resize = () => setBox(splashSizeFor(window.innerWidth, window.innerHeight));
+    const resize = () => setBox((isArbor2() && theme === 'plateau' ? arborBoxFor : splashSizeFor)(window.innerWidth, window.innerHeight));
     resize();
 
     const tryEnd = () => {
@@ -129,6 +138,21 @@ export function Splash({ ready }: { ready: boolean }) {
     // live (S2/S3's own claim). They observe and leave; they never dismiss
     // anything now, never `preventDefault`, never capture, never consume.
     const noop = () => {};
+    // ARBOR v2 MOCKUP r19 - THE SPLASH IS ALWAYS SKIPPABLE (Fable, Nov 4): any click, Esc or key jumps to the finished frame with the doors -
+    // the splash goes at once, ready or not (the front door's own boot state takes over); Enter = Write at any moment. Arbor only.
+    const skip = (e: Event) => {
+      if (!arborFront || goneRef.current) return;
+      // (r20, main's splash law - "a writer who opens Wrizo and immediately types must not have that first character eaten"): the key is the
+      // skip's own only on the front door, where no page waits under the splash; over a page it ends the splash and goes on to the page.
+      const front = /^#?\/?$/.test(location.hash);
+      const enter = front && e.type === 'keydown' && (e as KeyboardEvent).key === 'Enter';
+      if (front) { if (e.type === 'keydown') e.preventDefault(); e.stopImmediatePropagation(); }
+      finishArborFront({ write: enter });
+      goneRef.current = true;
+      delete document.documentElement.dataset.splashHold;
+      setLive(false);
+    };
+    if (arborFront) { window.addEventListener('pointerdown', skip, true); window.addEventListener('keydown', skip, true); }
     const opts: AddEventListenerOptions = { passive: true, capture: false };
     const events = ['pointerdown', 'keydown', 'wheel', 'touchstart'] as const;
     events.forEach((e) => window.addEventListener(e, noop, opts));
@@ -139,6 +163,7 @@ export function Splash({ ready }: { ready: boolean }) {
       window.clearTimeout(ceiling);
       window.clearInterval(lineCycle);
       events.forEach((e) => window.removeEventListener(e, noop, opts));
+      window.removeEventListener('pointerdown', skip, true); window.removeEventListener('keydown', skip, true);
       window.removeEventListener('resize', resize);
       tryEndRef.current = null;
       // Defensive, not the normal path (tryEnd already clears this when leaving
@@ -194,8 +219,11 @@ export function Splash({ ready }: { ready: boolean }) {
         style={{ width: `${box.width}px`, height: `${box.height}px` }}
         onTransitionEnd={() => { if (leaving) setLive(false); }}
       >
-        <SplashMark theme={theme} reduced={reduced} width={box.width} height={box.height} onFloorReached={onFloorReached} />
+        <SplashMark theme={theme} reduced={reduced} width={box.width} height={box.height} onFloorReached={arborFront ? arborFloor : onFloorReached} />
+        {/* ARBOR v2 MOCKUP r18 (Nick, via Fable, Nov 3): the logo written out where the drawing's top line stood, the tagline under it (src/arbor2/frontLayer.tsx) */}
+        {arborFront && <ArborFront mode="splash" width={box.width} />}
       </div>
+      {/* (r16's logo written out in the corner mark's rect moved into the drawing in r18, above) */}
       {/* role=status: announced politely; `key` remounts each line to restart the fade, which reduced motion drops [Splash §7] */}
       {t(LOADING_LINE_KEYS[lineIndex]) !== '' && (
         <div className="wz-splash-loading" role="status">

@@ -36,6 +36,11 @@
 //   COARSE C, STABILISED (Nov 6): C and C2 are judged against the fade's REFERENCE SHIFT - the main control's own, of the same turn (RL_REF, from scripts/rhizome-latency-ref.mjs; a default when none) -
 //   not against +5/+4 over the fast control (the fade sits ~9 ms / ~2.8 ms behind it on this box on every tree tried; see the REF block). A stalled FAST control now voids a measurement as the slow one does.
 //   Still red: the 150 ms stall (the 100 ms ceiling), a per-key cost on the fade (M4: +10 ms per fade key; C2 and, when the frame clock shows it, C).
+//   THE SWAP KEY (Nick's ruling 1, Nov 6, via Fable: "accept the one swap key. B's look stays."). Under Arbor's day room the pergola's live drawing is swapped for its still on the FIRST key of a
+//   burst (writing begins), and that one key may run to SWAP_KEY_MAX_MS (70). The exception is NARROW, and every part of it is a check here: by DAY only (the root's data-arbor2 with
+//   data-arbor2-room="day", read when the burst is armed and when it is read), the FIRST key of a burst only, 70 ms at most. Every other control key keeps the 50 ms bar (A+), by night and on
+//   main every key does, and the day swap key is left OUT of the controls B, B2, C and C2 are held against, so it cannot loosen their bars. The rule is one pure function (burstOk), proven
+//   browserless (P6-P10) and live by rhizome-latency-mutant.mjs: M5 (80 ms on the swap key) must red A+S, M6 (a second slow key in the burst) must red A+. On main nothing changes (no day room).
 //
 // Run: node scripts/harness/rhizome-latency.mjs   (from apps/desktop; PART 2 needs a box turn)      BROWSERLESS_ONLY=1 runs PART 1 alone
 import fs from 'node:fs';
@@ -55,6 +60,14 @@ const rng = (seed) => () => { seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(
 const MUTANT_MS = Number(process.env.RL_MUTANT_MS || 0);   // the injected regressions (0 = none): a cost on every flash/fade key,
 const MUTANT_STALL_MS = Number(process.env.RL_MUTANT_STALL_MS || 0);   // and one stall at the first key of every fade
 const MUTANT_FADE_MS = Number(process.env.RL_MUTANT_FADE_MS || 0);   // and (coarse-C stabilising, Nov 5) a MODERATE cost on the fade's keys alone - the case the 100 ms ceiling cannot see
+const MUTANT_SWAP_MS = Number(process.env.RL_MUTANT_SWAP_MS || 0);   // THE SWAP KEY's mutants (Nov 6): a cost on the FIRST key of every control burst (the swap key),
+const MUTANT_SECOND_MS = Number(process.env.RL_MUTANT_SECOND_MS || 0);   // and one on the SECOND key of every control burst (a second slow key in the burst)
+// THE SWAP KEY (Nick's ruling 1, Nov 6). A burst is { day, ms: [...], cost: [...] } in key order; `day` = the Arbor day room held from the burst's arming to its reading.
+const SWAP_KEY_MAX_MS = 70;
+const swapKeyOk = (b) => !(b.day && b.ms.length) || b.ms[0] <= SWAP_KEY_MAX_MS;   // by day, the first key: at most 70 ms
+const otherKeysOk = (b, noiseMs) => b.ms.every((v, i) => (i === 0 && b.day) || v <= noiseMs);   // every other key (and, off the day room, the first too): the normal bar
+const burstOk = (b, noiseMs) => swapKeyOk(b) && otherKeysOk(b, noiseMs);
+const swapless = (b, field) => b[field].filter((v, i) => !(i === 0 && b.day) && v !== null);   // a burst's samples for the controls: the day swap key left out
 // THE FADE'S REFERENCE SHIFT (coarse-C stabilising, Nov 5/6, Fable: "judge C against the same-turn main control, not the fixed +5 slack"). The fade is NOT free on this box: its keys land a median
 // ~9 ms (4.8..11.2) behind the fast control's, p95 ~17.5 (11.5..27.5) and its main-thread cost ~2.8 ms (1.4..5.6) above it - the same on 8aae0c76, 6ea4007f and 8d56e13e (20 runs, three trees,
 // interleaved: a box state, not a commit; the first 29 runs of ticket 150 had it at -1.6..+1.8). A budget of +5 over the control sat INSIDE that, so C and C2 flapped. They are now held to the
@@ -100,6 +113,20 @@ ok('P3 the flash states change no geometry (no transform, size, position or marg
 const mutCss = css + "\n.wz-rhizome-field{ filter:drop-shadow(0 0 3px var(--brass)); }\n";
 ok('P4 (mutant, landed) a drop-shadow on the field AT REST turns P1 red', mutCss !== css && pins(mutCss).onlyInFlashTrue === false, JSON.stringify(shadowSites(mutCss).slice(-1)));
 ok('P5 FULL_COVER is gone from the growth module (it was kept "for the old fill-the-ground target" and nothing reads it)', !/FULL_COVER/.test(growth), '');
+// THE SWAP KEY's rule, proven on bursts made here (browserless): it holds exactly what Nick ruled and no more.
+{
+  const rest = Array.from({ length: 15 }, (_, i) => 24 + (i % 7));
+  const day = (...ms) => ({ day: true, ms: [...ms, ...rest].slice(0, 16), cost: [] });
+  const off = (...ms) => ({ day: false, ms: [...ms, ...rest].slice(0, 16), cost: [] });
+  const v = (b) => ({ swap: swapKeyOk(b), others: otherKeysOk(b, 50), ok: burstOk(b, 50) });
+  const cases = { day65: v(day(65)), day70: v(day(70)), day70_1: v(day(70.1)), day80: v(day(80)), daySecond60: v(day(40, 60)), daySwapAndSecond: v(day(65, 55)), dayLate51: v(day(30, ...rest.slice(0, 9), 51)), night55: v(off(55)), main50: v(off(50)), main51: v(off(51)) };
+  ok('P6 THE SWAP KEY rule: by day the first key of a burst may run to 70 ms (65 and 70 pass, 70.1 does not); every other key keeps 50', cases.day65.ok && cases.day70.ok && !cases.day70_1.ok && !cases.day70_1.swap && cases.day70_1.others && !cases.dayLate51.ok, JSON.stringify(cases));
+  ok('P7 (mutant, the swap key at 80 ms by day) the rule is RED on the swap key itself', !cases.day80.ok && !cases.day80.swap && cases.day80.others, JSON.stringify(cases.day80));
+  ok('P8 (mutant, a second slow key in the burst by day) RED on the other keys, whether the swap key is fast (40) or slow (65)', !cases.daySecond60.ok && cases.daySecond60.swap && !cases.daySecond60.others && !cases.daySwapAndSecond.ok && !cases.daySwapAndSecond.others, JSON.stringify([cases.daySecond60, cases.daySwapAndSecond]));
+  ok('P9 off the day room (night, main) there is no exception: a first key of 55 is red, 50 passes, 51 does not', !cases.night55.ok && cases.main50.ok && !cases.main51.ok, JSON.stringify([cases.night55, cases.main50, cases.main51]));
+  const cd = { day: true, ms: [60, 25, 26], cost: [30, null, 14] }, cn = { day: false, ms: [60, 25, 26], cost: [30, null, 14] };
+  ok('P10 the controls leave out the day swap key and only it (by day: its ms and cost dropped, a null cost dropped as before; off the day room: every key kept)', JSON.stringify([swapless(cd, 'ms'), swapless(cd, 'cost'), swapless(cn, 'ms'), swapless(cn, 'cost')]) === JSON.stringify([[25, 26], [14], [60, 25, 26], [30, 14]]), '');
+}
 
 // ---- PART 2 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 async function part2() {
@@ -162,6 +189,9 @@ async function part2() {
         if ((v === 'true' || v === 'fading') && window.__rlMutantMs) m = window.__rlMutantMs;
         if (v === 'fading' && window.__rlMutantFade) m = Math.max(m, window.__rlMutantFade);   // RL_MUTANT_FADE_MS: a cost on the FADE's keys alone (not the hold's)
         if (v === 'fading' && window.__rlMutantStall && !window.__stalled) { window.__stalled = true; m = Math.max(m, window.__rlMutantStall); }
+        const pos = window.__kn || 0; window.__kn = pos + 1;   // THE SWAP KEY's mutants: the key's place in this burst (0 = the first, the swap key); only control keys (flash false) carry them
+        if (v === 'false' && pos === 0 && window.__rlMutantSwap) m = Math.max(m, window.__rlMutantSwap);
+        if (v === 'false' && pos === 1 && window.__rlMutantSecond) m = Math.max(m, window.__rlMutantSecond);
         if (!m) return; const e = performance.now() + m; while (performance.now() < e) { /* the injected cost */ } };
       const bi = () => { const t = t0, k = cur; requestAnimationFrame(() => {
         const r = performance.now(); const mc = new MessageChannel(); mc.port1.onmessage = () => { if (k) k.frame = performance.now() - r; mc.port1.close(); }; mc.port2.postMessage(0);
@@ -171,6 +201,8 @@ async function part2() {
       document.addEventListener('keydown', kd, true); document.addEventListener('beforeinput', spin, true); document.addEventListener('beforeinput', bi, true);
       window.__latOff = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('beforeinput', spin, true); document.removeEventListener('beforeinput', bi, true); };
       window.__rlMutantMs = ${MUTANT_MS}; window.__rlMutantStall = ${MUTANT_STALL_MS}; window.__rlMutantFade = ${MUTANT_FADE_MS};
+      window.__rlMutantSwap = ${MUTANT_SWAP_MS}; window.__rlMutantSecond = ${MUTANT_SECOND_MS}; window.__kn = 0;
+      window.__isDay = () => document.documentElement.hasAttribute('data-arbor2') && document.documentElement.getAttribute('data-arbor2-room') === 'day'; window.__dayAtArm = window.__isDay();
       return true; })()`);
     const jit = rng(0x7A11);
     const typeSteady = async (n, gap = 90, jitter = true) => { for (let i = 0; i < n; i += 1) { await app.typeKeys('a'); await sleep(jitter ? Math.round(gap * (0.7 + 0.6 * jit())) : gap); } };   // jittered: gap +-30%, seeded
@@ -178,6 +210,8 @@ async function part2() {
     const stat = (xs) => { const s = (xs || []).slice().sort((a, b) => a - b); const q = (p) => (s.length ? s[Math.min(s.length - 1, Math.floor(p * s.length))] : null); return { n: s.length, median: q(0.5), p95: q(0.95), max: s.length ? s[s.length - 1] : null }; };
     const r1 = (x) => (x === null ? null : Math.round(x * 10) / 10);
     const show = (st) => JSON.stringify({ n: st.n, median: r1(st.median), p95: r1(st.p95), max: r1(st.max) });
+    // THE SWAP KEY: one control burst, in key order (the first sample is the first key typed after arm(), the swap key by day), with the room it was typed in
+    const burst = (cond) => app.evalJs(`(() => { const xs = window.__lat.filter((x) => ${cond}); return { day: !!(window.__dayAtArm && window.__isDay()), ms: xs.map((x) => x.ms), cost: xs.map((x) => window.__val(x, 'cost')) }; })()`);
     const stored = (id) => app.evalJs(`(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === ${JSON.stringify(id)}) || {}).text ?? ''`);
 
     const pageId = await openPage();
@@ -209,7 +243,7 @@ async function part2() {
     // - measured over 20 runs - against a 5 ms budget; at 80+ it is ~1.1 ms, and the budget is not near it.
     const TARGET_KEYS = 80;
     const measure = async () => {
-      const M = { holdAll: [], fadeAll: [], slowAll: [], rounds: [], restPre: [], restFast: [], fine: { hold: { cost: [] }, fade: { cost: [] }, pre: { cost: [] }, fast: { cost: [] } }, flashPremise: true, filterPremise: true, savedAll: true, lastSaved: '' };
+      const M = { holdAll: [], fadeAll: [], slowAll: [], rounds: [], restPre: [], restFast: [], burstsPre: [], burstsFast: [], fine: { hold: { cost: [] }, fade: { cost: [] }, pre: { cost: [] }, fast: { cost: [] } }, flashPremise: true, filterPremise: true, savedAll: true, lastSaved: '' };
       for (let round = 1; round <= MAX_ROUNDS && (M.holdAll.length < TARGET_KEYS || M.fadeAll.length < TARGET_KEYS || M.restPre.length < TARGET_KEYS || M.restFast.length < TARGET_KEYS); round += 1) {
         // the control for the fade: a round of its own - the same page state (7 words, goal 8, the sprout, freshly opened) and the same fast, fixed gap, no crossing. It is NOT typed inside the crossing
         // round: measured, a fast burst earlier in that round leaves the hold's keys a slow tail (p95 60-90 ms) that has nothing to do with the flash.
@@ -217,8 +251,10 @@ async function part2() {
         await arm();
         await typeSteady(FAST_KEYS, 25, false);
         await sleep(200);
-        M.restFast.push(...await lat('false'));
-        M.fine.fast.cost.push(...(await lat('false', 'cost')).filter((v) => v !== null));
+        // PARKED - SUPERSEDED by THE SWAP KEY (Nick's ruling 1, Nov 6): the controls leave out the day swap key. The line(s) that stood, verbatim (the successor is the line below this block):
+        // M.restFast.push(...await lat('false'));
+        // M.fine.fast.cost.push(...(await lat('false', 'cost')).filter((v) => v !== null));
+        { const b = await burst("x.flash === 'false'"); M.burstsFast.push(b); M.restFast.push(...swapless(b, 'ms')); M.fine.fast.cost.push(...swapless(b, 'cost')); }
         await seedAndReopen(pageId, 7, { n: 8, unit: 'words' });
         await arm();
         await typeSteady(PRE_KEYS);   // the control for the hold: its pace, seconds before the 8th word
@@ -247,8 +283,10 @@ async function part2() {
         M.holdAll.push(...h); M.fadeAll.push(...f);
         M.fine.hold.cost.push(...(await lat('true', 'cost')).filter((v) => v !== null));
         M.fine.fade.cost.push(...(await lat('fading', 'cost')).filter((v) => v !== null));
-        M.fine.pre.cost.push(...(await app.evalJs(`window.__lat.filter((x) => x.key < ${tailAt} && x.flash === 'false').map((x) => window.__val(x, 'cost'))`)).filter((v) => v !== null));
-        M.restPre.push(...await app.evalJs(`window.__lat.filter((x) => x.key < ${tailAt} && x.flash === 'false').map((x) => x.ms)`));
+        // PARKED - SUPERSEDED by THE SWAP KEY (Nick's ruling 1, Nov 6): the controls leave out the day swap key. The line(s) that stood, verbatim (the successor is the line below this block):
+        // M.fine.pre.cost.push(...(await app.evalJs(`window.__lat.filter((x) => x.key < ${tailAt} && x.flash === 'false').map((x) => window.__val(x, 'cost'))`)).filter((v) => v !== null));
+        // M.restPre.push(...await app.evalJs(`window.__lat.filter((x) => x.key < ${tailAt} && x.flash === 'false').map((x) => x.ms)`));
+        { const b = await burst(`x.key < ${tailAt} && x.flash === 'false'`); M.burstsPre.push(b); M.restPre.push(...swapless(b, 'ms')); M.fine.pre.cost.push(...swapless(b, 'cost')); }
         // WHERE the slow frames fell: a fade key more than 20 ms over that round's fade median (or over 50 ms outright), with its offset from the moment the fade began and from the moment it ended
         const att = await app.evalJs(`(() => {
           const fl = window.__fl, tF = (fl.find((x) => x[1] === 'fading') || [null])[0], iT = fl.findIndex((x) => x[1] === 'true');
@@ -281,7 +319,10 @@ async function part2() {
 //       const fine = (x, rest) => x.n >= MIN_KEYS && rest.n >= MIN_KEYS && x.median <= rest.median + COST_MEDIAN_SLACK;
 //       return { b: within(h, r), c: within(d, f), b2: fine(fc(m.fine.hold.cost), fc(m.fine.pre.cost)), c2: fine(fc(m.fine.fade.cost), fc(m.fine.fast.cost)), noisy: r.max > REST_NOISE_MS, control: show(r), controlFast: show(f), flash: show(h), fade: show(d) };
       const fine = (x, rest, ref = 0) => x.n >= MIN_KEYS && rest.n >= MIN_KEYS && x.median <= rest.median + ref + COST_MEDIAN_SLACK;
-      return { b: within(h, r), c: within(d, f, REF), b2: fine(fc(m.fine.hold.cost), fc(m.fine.pre.cost)), c2: fine(fc(m.fine.fade.cost), fc(m.fine.fast.cost), REF.c2), noisy: r.max > REST_NOISE_MS || f.max > REST_NOISE_MS,control: show(r), controlFast: show(f), flash: show(h), fade: show(d) };
+      // PARKED - SUPERSEDED by THE SWAP KEY (Nick's ruling 1, Nov 6): a control is void when a key breaks ITS bar (the day swap key's is 70 ms). The line(s) that stood, verbatim (the successor is the line below this block):
+//       return { b: within(h, r), c: within(d, f, REF), b2: fine(fc(m.fine.hold.cost), fc(m.fine.pre.cost)), c2: fine(fc(m.fine.fade.cost), fc(m.fine.fast.cost), REF.c2), noisy: r.max > REST_NOISE_MS || f.max > REST_NOISE_MS,control: show(r), controlFast: show(f), flash: show(h), fade: show(d) };
+      const noisy = ![...m.burstsPre, ...m.burstsFast].every((bu) => burstOk(bu, REST_NOISE_MS));
+      return { b: within(h, r), c: within(d, f, REF), b2: fine(fc(m.fine.hold.cost), fc(m.fine.pre.cost)), c2: fine(fc(m.fine.fade.cost), fc(m.fine.fast.cost), REF.c2), noisy, control: show(r), controlFast: show(f), flash: show(h), fade: show(d) };
     };
     const attempts = [];
     let M, passes = 0, fails = 0;
@@ -301,11 +342,22 @@ async function part2() {
     const restSt = stat(restPre), fastSt = stat(restFast);
     // PARKED - SUPERSEDED by the reference-shift check (Fable, Nov 6; coarse-C stabilising). The line(s) that stood, verbatim (the successor is the line below this block):
 //     console.log('RL-RAW: ' + JSON.stringify({ mutantMs: MUTANT_MS, mutantStallMs: MUTANT_STALL_MS, attempts, restA, restPre, restFast, hold: holdAll, fade: fadeAll, fine: M.fine }));
-    console.log('RL-RAW: ' + JSON.stringify({ mutantMs: MUTANT_MS, mutantStallMs: MUTANT_STALL_MS, mutantFadeMs: MUTANT_FADE_MS, attempts, restA, restPre, restFast, hold: holdAll, fade: fadeAll, fine: M.fine }));
-    ok(`A+ the rest baselines are the control bursts typed on the crossing page seconds before the 8th word: ${restSt.n} keys at the hold's pace and ${fastSt.n} at the fade's, over ${rounds.length} round(s), ${attempts.length} measurement(s) (a slow-control key over ${REST_NOISE_MS} ms = a box stall: the measurement is void and taken again; a failing one is measured again to confirm it)`,
-      // PARKED - SUPERSEDED by the reference-shift check (Fable, Nov 6; coarse-C stabilising). The line(s) that stood, verbatim (the successor is the line below this block):
+    // PARKED - SUPERSEDED by THE SWAP KEY (Nick's ruling 1, Nov 6): the raw line carries the swap-key mutants and the control bursts in key order. The line(s) that stood, verbatim (the successor is the line below this block):
+//     console.log('RL-RAW: ' + JSON.stringify({ mutantMs: MUTANT_MS, mutantStallMs: MUTANT_STALL_MS, mutantFadeMs: MUTANT_FADE_MS, attempts, restA, restPre, restFast, hold: holdAll, fade: fadeAll, fine: M.fine }));
+    console.log('RL-RAW: ' + JSON.stringify({ mutantMs: MUTANT_MS, mutantStallMs: MUTANT_STALL_MS, mutantFadeMs: MUTANT_FADE_MS, mutantSwapMs: MUTANT_SWAP_MS, mutantSecondMs: MUTANT_SECOND_MS, attempts, restA, restPre, restFast, hold: holdAll, fade: fadeAll, fine: M.fine, bursts: { pre: M.burstsPre, fast: M.burstsFast } }));
+    const allBursts = [...M.burstsPre, ...M.burstsFast], dayBursts = allBursts.filter((b) => b.day);
+    const swapKeys = dayBursts.map((b) => r1(b.ms[0])).filter((x) => Number.isFinite(x));
+    const otherSlow = allBursts.flatMap((b, bi) => b.ms.map((v, i) => ({ burst: bi, at: i, ms: r1(v), day: b.day })).filter((x) => !(x.at === 0 && x.day) && x.ms > REST_NOISE_MS));
+    // PARKED - SUPERSEDED by THE SWAP KEY (Nick's ruling 1, Nov 6): A+ holds every key but the day swap key to the bar; the swap key is A+S's. The line(s) that stood, verbatim (the successor is the line below this block):
+//     ok(`A+ the rest baselines are the control bursts typed on the crossing page seconds before the 8th word: ${restSt.n} keys at the hold's pace and ${fastSt.n} at the fade's, over ${rounds.length} round(s), ${attempts.length} measurement(s) (a slow-control key over ${REST_NOISE_MS} ms = a box stall: the measurement is void and taken again; a failing one is measured again to confirm it)`,
+//       restSt.n >= MIN_KEYS && fastSt.n >= MIN_KEYS && !(restSt.max > REST_NOISE_MS) && !(fastSt.max > REST_NOISE_MS), `control ${show(restSt)} | control fast ${show(fastSt)} | A block ${show(restASt)} | attempts ${JSON.stringify(attempts)}`);
+//     (inside that call, the park that stood before it - verbatim:)
+//      // PARKED - SUPERSEDED by the reference-shift check (Fable, Nov 6; coarse-C stabilising). The line(s) that stood, verbatim (the successor is the line below this block):
 //       restSt.n >= MIN_KEYS && fastSt.n >= MIN_KEYS && !(restSt.max > REST_NOISE_MS), `control ${show(restSt)} | control fast ${show(fastSt)} | A block ${show(restASt)} | attempts ${JSON.stringify(attempts)}`);
-      restSt.n >= MIN_KEYS && fastSt.n >= MIN_KEYS && !(restSt.max > REST_NOISE_MS) && !(fastSt.max > REST_NOISE_MS), `control ${show(restSt)} | control fast ${show(fastSt)} | A block ${show(restASt)} | attempts ${JSON.stringify(attempts)}`);
+    ok(`A+ the rest baselines are the control bursts typed on the crossing page seconds before the 8th word: ${restSt.n} keys at the hold's pace and ${fastSt.n} at the fade's, over ${rounds.length} round(s), ${attempts.length} measurement(s) (a control key over ${REST_NOISE_MS} ms - any key but the day swap key, which is A+S's - = a box stall: the measurement is void and taken again; a failing one is measured again to confirm it)`,
+      restSt.n >= MIN_KEYS && fastSt.n >= MIN_KEYS && allBursts.length > 0 && allBursts.every((b) => otherKeysOk(b, REST_NOISE_MS)), `control ${show(restSt)} | control fast ${show(fastSt)} | A block ${show(restASt)} | over ${REST_NOISE_MS} ms ${JSON.stringify(otherSlow)} | attempts ${JSON.stringify(attempts)}`);
+    ok(`A+S THE SWAP KEY (Nick's ruling 1, Nov 6): by day, the first key of each control burst (the swap to the still) is at most ${SWAP_KEY_MAX_MS} ms; ${dayBursts.length} of ${allBursts.length} burst(s) by day (off the day room there is no exception: A+ holds the first key too)`,
+      allBursts.length > 0 && dayBursts.every(swapKeyOk), `swap keys ${JSON.stringify(swapKeys)} | over ${REST_NOISE_MS} ms ${swapKeys.filter((x) => x > REST_NOISE_MS).length} | max ${swapKeys.length ? Math.max(...swapKeys) : null}`);
     ok('B premise: every round crossed the goal and the flash was HOLDING - on main with the drop-shadow actually applied to the full field, under Arbor\'s vines with the brass copy\'s composited layer running its animation', flashPremise && filterPremise, JSON.stringify(rounds.slice(-1)));
     ok(`B premise: at least ${MIN_KEYS} keys were painted while data-flash was true (${rounds.length} round(s); a flash that was over before the keys landed certifies nothing)`, holdSt.n >= MIN_KEYS, show(holdSt));
     ok(`B typing inside the flash is as fast as typing at rest: median within ${MEDIAN_SLACK} ms and p95 within ${P95_SLACK} ms of the rest numbers, and no key over ${MAX_MS} ms`,

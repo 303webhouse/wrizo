@@ -6,6 +6,7 @@ import { useThemePrefs } from '../store/themePrefs';
 import { useInstalledFonts, addInstalledFont, queryLocalFamilies, fontIsAvailable } from '../store/installedFonts';
 import { ROSTER, faceStack, faceNameFromStack, themeDefaultFaceName, deviceFace, storedFaceFor, ensureFaceLoaded, faceForSlug, fontSlug, DEFAULT_FACE_NAME, type StoredFace } from '../store/fontRoster';
 import { stepUp, stepDown, normalizeTypedSize, formatSize } from '../store/fontSize';
+import { isArbor2 } from '../arbor2/flag';
 
 export interface TypeControlProps {
   form: 'small' | 'full';
@@ -156,11 +157,44 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
   const sizeTo = (n: number) => { if (selSize !== null && scope?.onSizeSelection) scope.onSizeSelection(n); else onSize(n); };
   const up = stepUp(shownSize); const down = stepDown(shownSize);
   const holdBox = () => { if (held || !scope?.has || !scope.holdSelection) return; if (scope.holdSelection()) setHeld({ size: scope.size }); };
+  // ARBOR v2 MOCKUP r17 (Fable, Nov 2, Nick: "the font-size box: an editable number box between - and + ... Whole numbers 6-72; Enter or blur applies;
+  // a bad value reverts; default 11; the same scope as -/+"). Under the mockup's flag the box takes only a whole number from 6 to 72; anything else - a
+  // half point, 5, 73, a word - snaps back to the size in effect. It applies through sizeTo, the very road - and + take. (r20: rebased onto main's
+  // size box - held selection, draftRef - which draws the box in every form, so the mockup's own form condition retired with it.)
+  const mockBox = isArbor2() && theme === 'plateau';
+  const strictSize = (raw: string): number | null => { const t = raw.trim(); if (!/^\d{1,2}$/.test(t)) return null; const n = Number(t); return n >= 6 && n <= 72 ? n : null; };
+  // (r17 fix after the green look 41572170258: with words highlighted, pressing into the box moved the page's selection into the box, so the
+  // highlighted-words road found no range and did nothing. Under the flag the box keeps the highlight it was opened on and gives it back before
+  // sizing, so it sizes those words, as - and + do. r20: kept on top of main's own hold after the rebase - main's holdBox alone did not size them
+  // under a mockup flag (Machina's twin, gm10 run 41922077883).)
+  const keptRange = useRef<Range | null>(null);
+  const lastHighlight = useRef<Range | null>(null);
+  useEffect(() => {
+    if (!mockBox) return undefined;
+    const onSel = () => { const sel = window.getSelection(); if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return; const r = sel.getRangeAt(0); if (rootRef.current && rootRef.current.contains(r.commonAncestorContainer)) return; lastHighlight.current = r.cloneRange(); };
+    document.addEventListener('selectionchange', onSel);
+    return () => document.removeEventListener('selectionchange', onSel);
+  }, [mockBox]);
+  const holdHighlight = () => {
+    if (!mockBox || selSize === null) { keptRange.current = null; return; }
+    const sel = window.getSelection();
+    const live = sel && sel.rangeCount > 0 && !sel.isCollapsed && !(rootRef.current && rootRef.current.contains(sel.getRangeAt(0).commonAncestorContainer)) ? sel.getRangeAt(0).cloneRange() : null;
+    keptRange.current = live ?? lastHighlight.current;
+  };
   const commitDraft = () => {
     const typed = draftRef.current;
     if (typed === null) return;
-    const n = normalizeTypedSize(typed);
+    const n = mockBox ? strictSize(typed) : normalizeTypedSize(typed);
     setDraft(null);                          // a refused entry snaps back to the previous value
+    const kept = keptRange.current; keptRange.current = null;
+    if (n !== null && mockBox && kept && scope?.onSizeSelection) {
+      // the page first takes the focus back, THEN the highlight is put back, then only those words are sized
+      const startEl = kept.startContainer.nodeType === 1 ? (kept.startContainer as Element) : kept.startContainer.parentElement;
+      (startEl?.closest('[contenteditable="true"]') as HTMLElement | null)?.focus({ preventScroll: true });
+      const sel = window.getSelection(); sel?.removeAllRanges(); sel?.addRange(kept);
+      scope.onSizeSelection(n);
+      return;
+    }
     if (n !== null && n !== shownSize) sizeTo(n);
   };
 
@@ -231,18 +265,23 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
       )}
       <div className="wz-type-size">
         <button type="button" className="mode-tbtn wz-type-step" aria-label={t('typeSmaller')} aria-disabled={down === null} onMouseDown={keepFocus} onClick={() => { if (down !== null) sizeTo(down); }}>{'−'}</button>
-        <input
-          className="wz-type-num"
-          type="text"
-          inputMode="decimal"
-          aria-label={t('typeSize')}
-          value={draft ?? formatSize(shownSize)}
-          onChange={(e) => setDraft(e.target.value)}
-          onMouseDownCapture={holdBox}
-          onFocus={holdBox}
-          onBlur={() => { commitDraft(); if (held) { setHeld(null); scope?.releaseSelection?.(); } }}
-          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commitDraft(); (e.target as HTMLInputElement).blur(); } else if (e.key === 'Escape') setDraft(null); }}
-        />
+        {/* ARBOR v2 MOCKUP r17 (the Wrizors' note md5 a17aae25: "- [ 11 pt ] +"): under the flag the number and its unit share one hairline box; r10
+            put the wrapper back around main's input after the rebase took main's markup */}
+        <span className={mockBox ? 'wz-type-num-box' : 'wz-type-num-plain'}>
+          <input
+            className="wz-type-num"
+            type="text"
+            inputMode="decimal"
+            aria-label={t('typeSize')}
+            value={draft ?? formatSize(shownSize)}
+            onChange={(e) => setDraft(e.target.value)}
+            onMouseDownCapture={() => { holdHighlight(); holdBox(); }}
+            onFocus={() => { holdHighlight(); holdBox(); }}
+            onBlur={() => { commitDraft(); if (held) { setHeld(null); scope?.releaseSelection?.(); } }}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commitDraft(); (e.target as HTMLInputElement).blur(); } else if (e.key === 'Escape') setDraft(null); }}
+          />
+          {mockBox && <span className="wz-type-num-unit" aria-hidden="true">pt</span>}
+        </span>
         <button type="button" className="mode-tbtn wz-type-step" aria-label={t('typeLarger')} aria-disabled={up === null} onMouseDown={keepFocus} onClick={() => { if (up !== null) sizeTo(up); }}>+</button>
       </div>
     </div>

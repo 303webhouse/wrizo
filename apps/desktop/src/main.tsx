@@ -37,12 +37,15 @@ import './store/deleteSeams';
 // FLUX3 - the redesign's styles and root mark load only under ?flux3=1 (a separate chunk, never fetched without the flag)
 import { FLUX3 } from './flux3/flag';
 if (FLUX3) void import('./flux3/boot');
+import { isArbor2 } from './arbor2/flag';
 
 // TH1 — apply the theme + preference attributes to <html> before the first
 // render so there is never a themeless/wrong-voice flash.
 initTheme();
 initThemePrefs();
 initThemeCast();
+// ARBOR v2 working mockup: its CSS and switches load ONLY under ?arbor2=1 (src/arbor2/flag.ts). Without the flag nothing is fetched.
+if (isArbor2()) void import('./arbor2/mount');
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
