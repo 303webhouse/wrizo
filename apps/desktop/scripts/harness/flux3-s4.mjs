@@ -751,6 +751,12 @@ try { await withHarness(async (app) => {
     JSON.stringify({ on: kOn, off: kOff }));
   ok('REACH an edge dwell summons the chrome while jacked in, the same as the control', same(kOn.typing2, kOff.typing2) && same(kOn.reach, kOff.reach), JSON.stringify({ on: [kOn.typing2, kOn.reach], off: [kOff.typing2, kOff.reach] }));
 
+  // THE PIXELS of a box on the viewport (the viewport's own screenshot, cut in the page: I.pix); the CARET and TERM sections both read them
+  const pixOf = async (box) => {
+    if (!box || box.width < 2 || box.height < 2) return null;
+    const shot = await app.cdp('Page.captureScreenshot', { format: 'png' });
+    return ev(`window.__f4.pix(${JSON.stringify(shot.data)}, ${JSON.stringify(box)})`);
+  };
   // ---- CARET: Flux's block caret on its page (the Wrizors' S4 r7 blocker, Fable Nov 7: the light tone's caret read 1.4:1 on its page) -----------------
   const caretOf = async ({ atRow = null, ...o }) => {
     await open({ view: [1366, 768], ...o });
@@ -790,8 +796,10 @@ try { await withHarness(async (app) => {
   // ---- PARKED - SUPERSEDED by the Wrizors' carry (relayed by Chat 1, Nov 8; the spec's draft 13 §6 "Dark #FF9800"): the shared orange at .82
   // rendered #D98307 over the night glass, so Jacked In's dark caret is now solid brass. Kept VERBATIM and no longer run; its successors follow.
   // ok('CARET-DARK the dark tone keeps its caret (the shared orange, rgba(255, 152, 0, 0.82))', !!kDark && kDark.caret === 'rgba(255, 152, 0, 0.82)', JSON.stringify(kDark));
+  // read on its own page, with its state read at once (d89e08fb's run read the state after the plain Draft page had opened: "jacked false")
+  const kDarkJ = await caretOf({ tone: 'dark', id: CARETP });
   const kDarkSt = await st();
-  ok(`CARET-JACKED-DARK [successor] Jacked In's dark caret is solid brass, #FF9800 (${kDark && kDark.caret}; jacked ${kDarkSt.jacked})`, kDarkSt.jacked && !!kDark && kDark.caret === 'rgb(255, 152, 0)', JSON.stringify(kDark));
+  ok(`CARET-JACKED-DARK [successor] Jacked In's dark caret is solid brass, #FF9800 (${kDarkJ && kDarkJ.caret}; jacked ${kDarkSt.jacked})`, kDarkSt.jacked && !!kDarkJ && kDarkJ.caret === 'rgb(255, 152, 0)', JSON.stringify(kDarkJ));
   // CARET-DARK-PIXELS (Fable, Nov 8: "a pixel check"): the colour the block PAINTS, read from the viewport's own screenshot inside the block (under
   // reduced motion, so no blink phase can catch it unpainted): brass, (255, 152, 0) within 8 a channel, not the .82 blend (~#D98307)
   const caretPixel = async (o) => {
@@ -812,11 +820,7 @@ try { await withHarness(async (app) => {
       !!kDark && kDark.caret !== 'rgba(255, 152, 0, 0.82)' && kDark.caret === 'rgb(255, 152, 0)' && !!kPlainD && kPlainD.caret === 'rgba(255, 152, 0, 0.82)', JSON.stringify({ kDark, kPlainD }));
   }
   // ---- TERM: the terminal (r9, Nick Nov 7, the spec's draft 13 §6: no paper; one writing line, one dim line, then signal rows) -------------------
-  const pixOf = async (box) => {
-    if (!box || box.width < 2 || box.height < 2) return null;
-    const shot = await app.cdp('Page.captureScreenshot', { format: 'png' });
-    return ev(`window.__f4.pix(${JSON.stringify(shot.data)}, ${JSON.stringify(box)})`);
-  };
+  // (pixOf now stands above the CARET section, which reads the dark caret's pixels too)
   // at Ambiance 0: the tunnel stands still (no streak crosses a measured line), and the veil, the compile and the rows are the same. (r9's first
   // runs used reduced motion: there the zoomed Typewriter left the writing line BELOW the window after the burst, y 880-1050 of 768, so every
   // line box fell off the screen; INFO TERM-WHERE-CONTROL asks whether today's Typewriter does the same, flag off)
