@@ -336,7 +336,8 @@ const MUTANTS = {
   // the caret's editor boundary counted in ELEMENTS again (r9's caretBox): the open's own pause finds no caret: OPEN-ROWS fails
   openrow: [/\?([\w$]+)\.childNodes\[([\w$]+)\.startOffset-1\]\?\?null:null/g, '?$1.children[$2.startOffset-1]??null:null'],
   // the page's own scrolling postponing her pause again (r10b's measure: the open's glides fired 30-46 scrolls a second): OPEN-ROWS fails
-  scrollpause: [/scrollPostpones:!1/g, 'scrollPostpones:!0'],
+  // (the minifier folds PAUSE.scrollPostpones away: the anchor is the scroll handler itself, `L=()=>{d||E()}` registered on "scroll")
+  scrollpause: [/const ([\w$]+)=\(\)=>\{([\w$]+)\|\|([\w$]+)\(\)\};return ([\w$]+)\.addEventListener\("scroll",\1,\{passive:!0\}\)/g, 'const $1=()=>{$3()};return $4.addEventListener("scroll",$1,{passive:!0})'],
 };
 
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
