@@ -18,7 +18,14 @@ const ok = (name, pass, detail) => checks.push({ name, pass: !!pass, detail });
 // SUCCESSOR: scripts/harness/arbor2-r9-unit.mjs C1-C3 (the choice, the clock, a pick lands at once).
 const src = ['../../src/arbor2/room.ts', '../../src/arbor2/mount.tsx'].map((p) => fs.readFileSync(new URL(p, import.meta.url), 'utf8')).join('\n');
 ok('R2 nothing in the room or the mount touches storage', !/localStorage|sessionStorage|indexedDB/.test(src), '');
-ok('R2 the Room control writes data-room, and the old bar switch is gone (the control sits in the Mood menu)', /setAttribute\('data-room'/.test(src) && /function RoomRow/.test(src) && /<RoomRow \/>/.test(src) && !/<Seg label="Room"/.test(src), '');
+// PARKED 2026-11-07 (SUPERSEDED by the r17 build 4ae539ca, the Wrizors' note md5 a17aae25 gated by Fable: the Room row leaves the Mood menu
+// for the Themes menu, under Page - the ruling arbor2-r9-unit's C6b park cites. Red since 4ae539ca, found Nov 7). Original, verbatim:
+// ok('R2 the Room control writes data-room, and the old bar switch is gone (the control sits in the Mood menu)', /setAttribute\('data-room'/.test(src) && /function RoomRow/.test(src) && /<RoomRow \/>/.test(src) && !/<Seg label="Room"/.test(src), '');
+// SUCCESSOR R2b: the Room control writes data-room, the old bar switch is gone, and the control sits in the Themes menu (ThemePicker draws
+// arbor2/themeRoom.tsx's row under the flag), not in the Mood menu.
+const themeRoom = fs.readFileSync(new URL('../../src/arbor2/themeRoom.tsx', import.meta.url), 'utf8'), picker = fs.readFileSync(new URL('../../src/components/ThemePicker.tsx', import.meta.url), 'utf8');
+ok('R2b the Room control writes data-room, and the old bar switch is gone (the control sits in the Themes menu, not the Mood menu)', /setAttribute\('data-room'/.test(src) && /setAttribute\('data-room'/.test(themeRoom)
+  && !/<RoomRow \/>/.test(src) && !/<Seg label="Room"/.test(src) && /isArbor2\(\) && current === 'plateau' && <ArborThemeRoomRow \/>/.test(picker), '');
 const css = fs.readFileSync(new URL('../../src/styles/arbor-v2.css', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
 const rules = [...css.matchAll(/([^{}]+)\{([^}]*)\}/g)].map((m) => [m[1].trim(), m[2]]);
 const ROOM_VARS = /--(ink-950|ink-900|ink-800|text-hi|text-mid|text-low|arbor-letter|rail-surface|chrome-surface)\s*:/;

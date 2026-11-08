@@ -37,7 +37,14 @@ if (src && out) {
   const doors = [...tsx.matchAll(/\{ id: '(\w+)', x: (\d+), y: (\d+), w: (\d+), h: (\d+) \}/g)].map((m) => ({ id: m[1], x: +m[2], y: +m[3], w: +m[4], h: +m[5] }));
   const logo = rect('TOP_LOGO');
   const inkIn = (r, pad) => { let n = 0; for (let y = Math.max(0, r.y - pad); y < Math.min(out.height, r.y + r.h + pad); y++) for (let x = Math.max(0, r.x - pad); x < Math.min(out.width, r.x + r.w + pad); x++) if (ink(out, x, y)) n++; return n; };
-  ok('U6 the logo\'s rect is read from frontLayer.tsx and lies where the line stood (inside its span, at the top)', !!logo && logo.x >= LINE.x0 - 300 && logo.x + logo.w <= LINE.x1 + 300 && logo.y + logo.h <= LINE.y1, JSON.stringify(logo));
+  // PARKED 2026-11-07 (SUPERSEDED by the r19 build 70fd53de, spec draft 38 §12c, Fable/Nick Nov 4: the logo writes itself out in the sketch's
+  // top-left, just below PAGE - no longer where the erased line stood. Red since 70fd53de, found Nov 7). Original, verbatim:
+  // ok('U6 the logo\'s rect is read from frontLayer.tsx and lies where the line stood (inside its span, at the top)', !!logo && logo.x >= LINE.x0 - 300 && logo.x + logo.w <= LINE.x1 + 300 && logo.y + logo.h <= LINE.y1, JSON.stringify(logo));
+  // SUCCESSOR U6b: the rect is read and lies in the drawing's top-left quarter, clear of the erased line's box. (PAGE is drawn by the sketch's
+  // own animation, not in this picture, so "below PAGE" is the frames' to see; U7 still holds the box on empty ground.)
+  ok('U6b the logo\'s rect is read from frontLayer.tsx and lies in the drawing\'s top-left quarter (r19: below PAGE), clear of the erased line\'s box',
+    !!logo && logo.x >= 0 && logo.y >= 0 && logo.x + logo.w <= out.width / 2 && logo.y + logo.h <= out.height / 2 && (logo.x + logo.w <= LINE.x0 || logo.y >= LINE.y1),
+    JSON.stringify({ logo, drawing: [out.width, out.height] }));
   ok('U7 the logo sits on ground the erasing left empty: no ink of the drawing under it', !!logo && inkIn(logo, 0) === 0, logo ? String(inkIn(logo, 0)) : 'no rect');
   ok('U8 two door boxes are read from frontLayer.tsx', doors.length === 2 && doors[0].id === 'write', JSON.stringify(doors));
   ok('U9 the doors are INSIDE the drawing and on its empty ground: no ink under either box or within 30 px of it', doors.length === 2 && doors.every((d) => d.x >= 0 && d.y >= 0 && d.x + d.w <= out.width && d.y + d.h <= out.height && inkIn(d, 30) === 0), JSON.stringify(doors.map((d) => inkIn(d, 30))));
