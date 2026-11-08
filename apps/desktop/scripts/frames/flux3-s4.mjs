@@ -4,6 +4,8 @@
 // jack-compiled: after a burst of typing and the pause (the lines two up and beyond compiled). jack-out: mid-decompile, the toggle just pressed.
 // jack-edge: a page one word short of the lap (the burst edge nearly empty). jack-switch: the TOOLS foot open on "Jack In by default".
 // Each screen prints what it stood on ("FLUX3-S4-FRAME ...").
+import { installArms, STAND as ARM_STAND, READ as ARM_READ, STOOD } from '../flux3-s4-arms.mjs';
+
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
 const PARA = 'The signal runs along these plain words so that the page holds many lines above the writing line, each one long enough to wrap across the measure of the page.';
@@ -59,7 +61,30 @@ const outLater = async (app, name, opts) => {
 
 const tunnelOf = (app) => app.evalJs("(() => { const t = document.querySelector('[data-flux3-tunnel]'); if (!t) return null; const a = t.getAnimations({ subtree: true }); return { anims: a.length, rates: [...new Set(a.map((x) => x.playbackRate))], fast: t.hasAttribute('data-fast'), still: t.hasAttribute('data-still'), writing: document.documentElement.getAttribute('data-wz-writing') }; })()");
 
+// THE LATENCY EXPERIMENT'S ARMS (Fable, Nov 8: frames per arm, light and dark; Nick picks). Each arm is an in-flight patch of the served files
+// (scripts/flux3-s4-arms.mjs), armed for the screen's own load only. arm-*: after a burst and the pause (the rows compiled); arm-*-typing: shot
+// while she is still typing (the hold's only difference shows there). Each prints whether every patch landed once and what stood.
+const armShot = async (app, name, arm, typing) => {
+  const arms = await installArms(app);
+  arms.set(arm);
+  try { await seed(app, LONG_TEXT); } finally { arms.set(null); }
+  const landed = arms.landed(arm);
+  await app.evalJs(ARM_STAND);
+  const burst = ' the signal holds while she writes on and on';
+  for (let i = 0; i < (typing ? 60 : 44); i += 1) { await app.typeKeys(burst[i % burst.length]); await sleep(typing ? 35 : 60); }
+  const mid = typing ? await app.evalJs(ARM_READ) : null;
+  if (!typing) { await app.mouseMove(8, 8); await sleep(1600); }
+  const rest = typing ? null : await app.evalJs(ARM_READ);
+  const ok = typing ? (arm === 'hold' ? !!mid && mid.hold && mid.running === 0 : !!mid && mid.running > 0) : STOOD[arm](rest, null);
+  console.log(`FLUX3-S4-ARM-FRAME ${name} ${JSON.stringify({ arm, landed, counts: arms.counts(), stood: ok, ...(await stood(app)), read: rest || mid })}`);
+};
+const ARM_SCREENS = Object.fromEntries([
+  ['arm-J', 'J', false], ['arm-J-typing', 'J', true], ['arm-hold-typing', 'hold', true],
+  ['arm-light', 'light', false], ['arm-margins', 'margins', false], ['arm-veil', 'veil', false],
+].map(([name, arm, typing]) => [name, (app) => armShot(app, name, arm, typing)]));
+
 export default {
+  ...ARM_SCREENS,
   // THE TUNNEL (Nick kept it, Nov 7): at rest, and mid-burst (shot while she is still typing fast: the speed re-set, the streaks on)
   'jack-tunnel': async (app) => {
     await seed(app, LONG_TEXT);
