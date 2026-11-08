@@ -624,10 +624,17 @@ Object.assign(screens, {
       await waitSoft(app, "document.querySelector('.arbor2-front-doorbox .arbor2-front-doors')?.getAttribute('data-phase') === 'shown' && !document.querySelector('.wz-splash')", { label: 'doors', timeout: 20000 });
       await waitSoft(app, "!document.querySelector('.arbor2-front-doorbox .arbor2-door')?.disabled", { label: 'ready', timeout: 8000 });
       const f = await app.evalJs(FR);
-      await app.evalJs("document.querySelector('.arbor2-front-doorbox .arbor2-door')?.click()");
+      // PARKED 2026-11-08 (SUPERSEDED by Fable's ruling A3 on the Nick walk, Nov 8 - walk-triage.txt A3: signed in, the doors are Write + Open (main's
+      // pair: Write a new page, Open the last one) - r19's "Write only, into the last page". Original, verbatim:
+      // await app.evalJs("document.querySelector('.arbor2-front-doorbox .arbor2-door')?.click()");
+      // await waitSoft(app, "/arbor-r19-last/.test(location.hash)", { label: 'the last page', timeout: 8000 });
+      // const r = await app.evalJs('location.hash');
+      // const ok = { writeOnly: f.doors.map((d) => d.word).join('|') === 'Write', intoLastPage: /arbor-r19-last/.test(r) };
+      // SUCCESSOR (A3): the doors are Write | Open, and OPEN goes into the last page.
+      await app.evalJs("document.querySelector('.arbor2-front-doorbox .arbor2-door.wz-arrival-open')?.click()");
       await waitSoft(app, "/arbor-r19-last/.test(location.hash)", { label: 'the last page', timeout: 8000 });
       const r = await app.evalJs('location.hash');
-      const ok = { writeOnly: f.doors.map((d) => d.word).join('|') === 'Write', intoLastPage: /arbor-r19-last/.test(r) };
+      const ok = { writeOpen: f.doors.map((d) => d.word).join('|') === 'Write|Open', openIntoLastPage: /arbor-r19-last/.test(r) };
       if (Object.values(ok).some((x) => !x)) fail('R19-FRONT-AUTHED', { ok, doors: f.doors.map((d) => d.word), route: r });
       say('r19-front-authed', { ok, doors: f.doors.map((d) => d.word), route: r });
     } finally { await unhold(app); }

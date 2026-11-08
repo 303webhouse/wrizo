@@ -283,7 +283,11 @@ export default {
     // offers "Write" ONLY - no "Open"; Write goes into her last page). Original, verbatim:
     // const ok = { front: s.front && !s.hero, doors: JSON.stringify(s.doors) === '["Write","Open"]', write: pressed && left };
     // SUCCESSOR doorsB: the one door, Write; Write still leaves for a page (into the last page: r19-front-authed proves which).
-    const ok = { front: s.front && !s.hero, doorsB: JSON.stringify(s.doors) === '["Write"]', write: pressed && left };
+    // PARKED 2026-11-08 (SUPERSEDED by Fable's ruling A3 on the Nick walk, Nov 8 - walk-triage.txt A3: signed in, the doors are Write + Open (main's
+    // pair) - not r19's Write alone. Original (r19's successor), verbatim:
+    // const ok = { front: s.front && !s.hero, doorsB: JSON.stringify(s.doors) === '["Write"]', write: pressed && left };
+    // SUCCESSOR doorsC: Write and Open; Write still leaves for a page.
+    const ok = { front: s.front && !s.hero, doorsC: JSON.stringify(s.doors) === '["Write","Open"]', write: pressed && left };
     const brief = { ok, doors: s.doors, front: s.front, hero: s.hero, route: await app.evalJs('location.hash') };
     if (Object.values(ok).some((x) => !x)) fail('R14-FRONT-AUTHED', brief);
     say('r14-front-authed', brief);

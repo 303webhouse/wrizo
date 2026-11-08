@@ -18,8 +18,9 @@ type Undo = { line: string; run: () => void } | null;
 const titleOf = (text: string | undefined): string => (withoutFontMarks(text ?? '').trim().split('\n')[0] ?? '').trim().slice(0, 60) || 'Untitled';
 
 // ARBOR v2 MOCKUP (?arbor2=1, Arbor only): `only` shows ONE VIEW of this pane under the Tutor drawer's cloth tabs. 'board' = the board parts
-// (Place this..., the paired page, the plan board, the Boards group); 'grafts' = the rest (Cards, Sources, Pages, shared tags). Both keep
-// "+ Graft..." (the same picker). Undefined (every caller off the flag) = the whole pane, byte-for-byte today's. A filter on what is drawn:
+// (Place this..., the paired page, the plan board, the Boards group); 'grafts' = the rest (Cards, Sources, Pages, shared tags). "+ Graft..."
+// is GRAFTS' alone (the Nick walk, Nov 8, Fable's ruling A1: "BOARD shows Board's, never the Graft row"; it was in both). Undefined (every
+// caller off the flag) = the whole pane, byte-for-byte today's. A filter on what is drawn:
 // no new behaviour, no new state.
 // ARBOR v2 MOCKUP r18 - `help`: a "?" drawn at the end of the "+ Graft..." row (the Arbor mockup's Grafts help, off the folder tab); absent = today's row.
 export function ConnectionsDrawerPanel({ only, help }: { only?: 'board' | 'grafts'; help?: ReactNode } = {}) {
@@ -100,7 +101,7 @@ export function ConnectionsDrawerPanel({ only, help }: { only?: 'board' | 'graft
 
   return (
     <div className="wz-links-pane" data-links-pane="">
-      {(() => { const add = (
+      {only !== 'board' && (() => { const add = (
       <button ref={addRef} type="button" className="wz-graft-add" data-graft-add="" disabled={!subject} aria-expanded={pickerOpen ? 'true' : 'false'}
         onClick={() => { setPlaceOpen(false); setPickerOpen((o) => !o); }}>
         <span aria-hidden="true">+</span> {t('graftAdd')}

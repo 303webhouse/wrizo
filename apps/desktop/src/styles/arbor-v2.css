@@ -803,6 +803,14 @@
 /* r19 - FREE WRITE'S TUTOR OPENER ON ITS DRAWER'S OUTER EDGE (Fable's yes, Nov 4; the mirror of r18's Tools fix): on the zoomed page the Tutor
    drawer lies over the page and ends on its anchor's right edge, so open, the opener rides there (left:100%), arrow pointing back, as in Draft. */
 :root[data-arbor2][data-theme='plateau'] .desk-frame-stage:has(.mode-pagecol[data-zoom='true']) .wz-tutor-grip:is([data-open='true'], [data-docked='true']){ left:var(--arbor2-drawer-zx, 100%); }
+/* the Nick walk, Nov 8 (Fable's ruling A5): on the zoomed page the Tutor drawer stood 16 px off the page (the closed tab's place: page 1496,
+   drawer 1512 at 2000 wide). Drawn 16 px back over the tab's old place, exactly as Draft's rule above does; nothing is laid out again, and
+   drawerEdge.ts's -zx reads the drawer's new right edge, so the open opener still rides it. */
+:root[data-arbor2][data-theme='plateau'] .desk-frame-stage:has(.mode-pagecol[data-zoom='true']) .wz-tutor-panel{ position:relative; left:-16px; }
+
+/* the Nick walk, Nov 8 (Fable's ruling A4): the splash's loading line outlived the doors by ~1 s (last seen 8.8 s, the doors at 7.9 s). It now
+   yields to the typed tagline - it fades (its own .45 s) as the tagline's caret appears, ~1.5 s before the doors; reduced motion: a cut. */
+:root[data-arbor2][data-theme='plateau'] .wz-splash:has(.arbor2-top-tagline:not([data-state='wait'])) .wz-splash-loading{ opacity:0; }
 
 /* ==========================================================================================================================================
    r19 §18.1 - THE DAY ROOM IS A VINE-COVERED PERGOLA'S SHADOW (Nick, Nov 4; the Wrizors' texture, arbor-pergola-shadow.svg md5 1ae1d048, drawn by
@@ -886,7 +894,8 @@
    brass outline (drawn inside its edge, so nothing moves) and letters in deep olive #33401F. The three choices the red leg found brass (run
    41901581121): the segmented choices (.mode-seg: Page / Room, ...), the type scope (Selection / Whole document) and the page kind (Normal /
    Screenplay / Research); all take --choice (brass) for text and edge. Night is unchanged. */
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] :is(.wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel, .wz-theme-picker) :is(.mode-seg button.on, .wz-type-scope[data-on='true'], .wz-sliver-mode-btn[aria-pressed='true'], .wz-page-setup-chip[aria-checked='true']){
+/* (the Nick walk, Nov 8, Fable's ruling A2: the chosen template in PRESETS was brass text by day - the fourth such choice, added here) */
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] :is(.wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel, .wz-theme-picker) :is(.mode-seg button.on, .wz-type-scope[data-on='true'], .wz-sliver-mode-btn[aria-pressed='true'], .wz-page-setup-chip[aria-checked='true'], .wz-template-row[aria-pressed='true']){
   color:#33401F; border-color:transparent; outline:none; box-shadow:inset 0 0 0 1.5px var(--brass); }   /* (a 1.5 px border or outline is drawn 1 px at DPR 1: the ring is a shadow) */
 
 /* r19 §18.2 - the bars' lettering by day (after the first green leg 41902687605): quiet #BDB09A (4.91:1 on the olive) and the sage #A7B27E for

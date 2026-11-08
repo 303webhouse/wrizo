@@ -252,7 +252,11 @@ const SCREENS = {
   'r18-doors-authed': async (app) => {
     await load(app); await doorsShown(app);
     const s = await app.evalJs(FRONT);
-    const ok = { writeOnly: JSON.stringify(s.doors.map((d) => d.word)) === JSON.stringify(['Write']), insideDrawing: s.doors.length === 1 && s.doors.every((d) => inside(d.r, s.mark)) };
+    // PARKED 2026-11-08 (SUPERSEDED by Fable's ruling A3 on the Nick walk, Nov 8 - walk-triage.txt A3: signed in, the doors are Write + Open (main's
+    // pair) - r18-doors-authed-v1's reading again. Original (r19's successor), verbatim:
+    // const ok = { writeOnly: JSON.stringify(s.doors.map((d) => d.word)) === JSON.stringify(['Write']), insideDrawing: s.doors.length === 1 && s.doors.every((d) => inside(d.r, s.mark)) };
+    // SUCCESSOR (A3): signed in, Write and Open, both inside the drawing.
+    const ok = { writeOpen: JSON.stringify(s.doors.map((d) => d.word)) === JSON.stringify(['Write', 'Open']), insideDrawing: s.doors.length === 2 && s.doors.every((d) => inside(d.r, s.mark)) };
     const brief = { ok, doors: s.doors.map((d) => d.word) };
     if (Object.values(ok).some((x) => !x)) fail('R18-DOORS-AUTHED', brief);
     say('r18-doors-authed', brief);

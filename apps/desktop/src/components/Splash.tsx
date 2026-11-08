@@ -72,7 +72,9 @@ export function splashSizeFor(vw: number, vh: number) {
   return { width: inkW / FILL_X, height: inkH / FILL_Y, inkW, inkH };
 }
 
-export function Splash({ ready }: { ready: boolean }) {
+// (ARBOR v2 MOCKUP, the Nick walk Nov 8, Fable's ruling A3: `authed` lets the Arbor splash draw the doors the front door will show - true / false,
+// or null while the session has not answered; unused off the flag)
+export function Splash({ ready, authed = null }: { ready: boolean; authed?: boolean | null }) {
   // the flag and data-splash-hold are read during the first render, not in an effect, so no frame paints a splash about to retract or a front door about to hide [Splash §4]
   const [live, setLive] = useState(() => {
     if (alreadyShown) return false;
@@ -221,7 +223,7 @@ export function Splash({ ready }: { ready: boolean }) {
       >
         <SplashMark theme={theme} reduced={reduced} width={box.width} height={box.height} onFloorReached={arborFront ? arborFloor : onFloorReached} />
         {/* ARBOR v2 MOCKUP r18 (Nick, via Fable, Nov 3): the logo written out where the drawing's top line stood, the tagline under it (src/arbor2/frontLayer.tsx) */}
-        {arborFront && <ArborFront mode="splash" width={box.width} />}
+        {arborFront && <ArborFront mode="splash" width={box.width} authed={authed} />}
       </div>
       {/* (r16's logo written out in the corner mark's rect moved into the drawing in r18, above) */}
       {/* role=status: announced politely; `key` remounts each line to restart the fade, which reduced motion drops [Splash §7] */}

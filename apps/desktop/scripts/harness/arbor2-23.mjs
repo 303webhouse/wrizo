@@ -146,18 +146,33 @@ await withHarness(async (app) => {
   await clickSel(app, '#wz-tutor-tab-board'); await sleep(400);
   const bd = await read(app);
   await snap(app, 'item3-night-board-tab');
-  ok('B1 BOARD: "+ Graft..." is there and no Cards / Sources / Pages group is drawn', !!bd.pane && bd.pane.add && !bd.pane.groups.some((g) => ['Cards', 'Sources', 'Pages', 'SharedTags'].includes(g)), JSON.stringify(bd.pane));
+  // PARKED 2026-11-08 (SUPERSEDED by Fable's ruling A1 on the Nick walk, Nov 8 - walk-triage.txt A1: "BOARD shows Board's, never the Graft row";
+  // "+ Graft..." is GRAFTS' alone now; off the flag there is no BOARD view, so the ruling is Arbor's). Original, verbatim:
+  // ok('B1 BOARD: "+ Graft..." is there and no Cards / Sources / Pages group is drawn', !!bd.pane && bd.pane.add && !bd.pane.groups.some((g) => ['Cards', 'Sources', 'Pages', 'SharedTags'].includes(g)), JSON.stringify(bd.pane));
+  // SUCCESSOR B1c: BOARD draws no "+ Graft..." and no Cards / Sources / Pages group.
+  ok('B1c BOARD: no "+ Graft..." (GRAFTS\' alone) and no Cards / Sources / Pages group is drawn', !!bd.pane && !bd.pane.add && !bd.pane.groups.some((g) => ['Cards', 'Sources', 'Pages', 'SharedTags'].includes(g)), JSON.stringify(bd.pane));
   await clickSel(app, '#wz-tutor-tab-links'); await sleep(400);
   const gr = await read(app);
   ok('B1 GRAFTS: no Boards group is drawn there', !!gr.pane && gr.pane.add && !gr.pane.groups.includes('Boards'), JSON.stringify(gr.pane));
-  await clickSel(app, '#wz-tutor-tab-board'); await sleep(300);
+  // PARKED 2026-11-08 (SUPERSEDED by Fable's ruling A1 on the Nick walk, Nov 8 - walk-triage.txt A1: "BOARD shows Board's, never the Graft row";
+  // the picker opened from BOARD's "+ Graft...", which BOARD no longer draws). Original, verbatim:
+  // await clickSel(app, '#wz-tutor-tab-board'); await sleep(300);
+  // const lsBefore = (await read(app)).ls;
+  // await clickSel(app, '[data-graft-add]'); await sleep(500);
+  // const pk = await app.evalJs("(() => { const a = document.querySelector('[data-graft-add]'); return a ? a.getAttribute('aria-expanded') : null; })()");
+  // await snap(app, 'item3-night-board-picker');
+  // await app.key('Escape'); await sleep(300);
+  // const lsAfter = (await read(app)).ls;
+  // ok('B2 BOARD\'s "+ Graft..." opens the same picker, and choosing nothing changes nothing', pk === 'true' && lsAfter === lsBefore, JSON.stringify({ expanded: pk }));
+  // SUCCESSOR B2b: GRAFTS' "+ Graft..." opens the picker, and choosing nothing changes nothing.
+  await clickSel(app, '#wz-tutor-tab-links'); await sleep(300);
   const lsBefore = (await read(app)).ls;
   await clickSel(app, '[data-graft-add]'); await sleep(500);
   const pk = await app.evalJs("(() => { const a = document.querySelector('[data-graft-add]'); return a ? a.getAttribute('aria-expanded') : null; })()");
-  await snap(app, 'item3-night-board-picker');
+  await snap(app, 'item3-night-grafts-picker');
   await app.key('Escape'); await sleep(300);
   const lsAfter = (await read(app)).ls;
-  ok('B2 BOARD\'s "+ Graft..." opens the same picker, and choosing nothing changes nothing', pk === 'true' && lsAfter === lsBefore, JSON.stringify({ expanded: pk }));
+  ok('B2b GRAFTS\' "+ Graft..." opens the picker, and choosing nothing changes nothing', pk === 'true' && lsAfter === lsBefore, JSON.stringify({ expanded: pk }));
   ok('B1 the page never moved through the Tutor tabs', sameRect(bd.page, off.page) && sameRect(gr.page, off.page), JSON.stringify(bd.page));
   await setFlag(app, false);
   return checks;

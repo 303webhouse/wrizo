@@ -326,7 +326,7 @@ export function App() {
         <GlobalHeader onLogout={() => { void handleLogout(); }} authed={authState === 'authed'} />
         <BrandMark />
         {/* The splash, mounted at the app root rather than on a route: it belongs to every app OPENING, not to '/'. It renders once per load, is pointer-events:none throughout, and dims whatever is mounted behind it (Arrival at boot). `ready` is Arrival's own boot-bar derivation (authState !== 'loading'), so the splash holds longer while the app is not ready. [App §5] */}
-        <Splash ready={authState !== 'loading'} />
+        <Splash ready={authState !== 'loading'} authed={authState === 'loading' ? null : authState === 'authed'} />
         <VoiceWallWhisper />
         <ThemeEffectsLayer />
         <FluxBlockCaret />

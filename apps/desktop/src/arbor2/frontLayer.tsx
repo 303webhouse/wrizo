@@ -173,7 +173,9 @@ const SKETCH = 'M 22 24 Q 120 12 236 16 T 430 14 Q 440 104 432 186 Q 236 196 18 
 type Door = { word: string; cls: string; disabled: boolean; onClick: () => void };
 
 // ---- THE DOORS ----
-function Doors({ mode, now, authed, ready, landing, onWrite, onLogin }: { mode: 'splash' | 'door'; now: number; authed: boolean; ready: boolean; landing: boolean; onWrite: () => void; onLogin: () => void }) {
+// (the Nick walk, Nov 8, Fable's ruling A3: signed in, the doors are Write + Open - main's pair - not r19's Write alone; `authed` null = not
+// known yet (the splash before the session answers): the second door waits rather than show the wrong one)
+function Doors({ mode, now, authed, ready, landing, onWrite, onLogin, onOpen }: { mode: 'splash' | 'door'; now: number; authed: boolean | null; ready: boolean; landing: boolean; onWrite: () => void; onLogin: () => void; onOpen: () => void }) {
   const phase = !seq.sketchDone || now < seq.doorsIn ? 'wait' : now < seq.shownAt ? 'in' : 'shown';
   const [pulse, setPulse] = useState(0);
   // THE NUDGE (Nick, kept, via Fable Nov 4): 5 s after the doors arrive, then every 30 s; any act of the writer stops it for good. The front door only.
@@ -190,7 +192,8 @@ function Doors({ mode, now, authed, ready, landing, onWrite, onLogin }: { mode: 
   }, [mode, phase === 'wait']);   // eslint-disable-line react-hooks/exhaustive-deps
   const doors: Door[] = [
     { word: 'Write', cls: 'wz-arrival-write', disabled: mode === 'splash' || !ready || landing, onClick: onWrite },
-    ...(authed ? [] : [{ word: 'Sign in', cls: 'wz-arrival-signin', disabled: mode === 'splash' || !ready, onClick: onLogin }]),
+    ...(authed === true ? [{ word: 'Open', cls: 'wz-arrival-open', disabled: mode === 'splash' || !ready || landing, onClick: onOpen }]
+      : authed === false ? [{ word: 'Sign in', cls: 'wz-arrival-signin', disabled: mode === 'splash' || !ready, onClick: onLogin }] : []),
   ];
   return (
     <div className="arbor2-front-doors" data-phase={phase} data-pulse={pulse} data-mode={mode} data-reduced={seq.reduced ? 'true' : undefined}>
@@ -211,8 +214,8 @@ function Doors({ mode, now, authed, ready, landing, onWrite, onLogin }: { mode: 
  *  the front door (`mode='door'`, the same frame, the doors live). width = the drawing's box width (its height keeps the canvas's aspect). */
 // part: 'all' (the splash), or the front door's two halves - 'top' (the logo and the tagline, inside the drawing's aria-hidden box) and 'doors'
 // (the doors, in a twin box screen readers see)
-export function ArborFront({ mode, part = 'all', width, authed = false, ready = false, landing = false, onWrite = () => {}, onLogin = () => {} }: {
-  mode: 'splash' | 'door'; part?: 'all' | 'top' | 'doors'; width: number; authed?: boolean; ready?: boolean; landing?: boolean; onWrite?: () => void; onLogin?: () => void;
+export function ArborFront({ mode, part = 'all', width, authed = false, ready = false, landing = false, onWrite = () => {}, onLogin = () => {}, onOpen = () => {} }: {
+  mode: 'splash' | 'door'; part?: 'all' | 'top' | 'doors'; width: number; authed?: boolean | null; ready?: boolean; landing?: boolean; onWrite?: () => void; onLogin?: () => void; onOpen?: () => void;
 }) {
   const now = useSeq();
   // the front door never waits on a splash that is not there (a reload past the splash, a later visit in the session): the finished frame
@@ -221,7 +224,7 @@ export function ArborFront({ mode, part = 'all', width, authed = false, ready = 
     <div className="arbor2-top" data-mode={mode} aria-hidden={mode === 'splash' ? 'true' : undefined} style={{ ['--arbor2-u' as string]: `${width / CW}px` } as CSSProperties}>
       {part !== 'doors' && <Logo writeOut={mode === 'splash'} now={now} />}
       {part !== 'doors' && <Tagline now={now} />}
-      {part !== 'top' && <Doors mode={mode} now={now} authed={authed} ready={ready} landing={landing} onWrite={onWrite} onLogin={onLogin} />}
+      {part !== 'top' && <Doors mode={mode} now={now} authed={authed} ready={ready} landing={landing} onWrite={onWrite} onLogin={onLogin} onOpen={onOpen} />}
     </div>
   );
 }
