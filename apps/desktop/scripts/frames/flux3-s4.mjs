@@ -79,7 +79,7 @@ const armShot = async (app, name, arm, typing) => {
   console.log(`FLUX3-S4-ARM-FRAME ${name} ${JSON.stringify({ arm, landed, counts: arms.counts(), stood: ok, ...(await stood(app)), read: rest || mid })}`);
 };
 const ARM_SCREENS = Object.fromEntries([
-  ['arm-J', 'J', false], ['arm-J-typing', 'J', true], ['arm-hold-typing', 'hold', true],
+  ['arm-j', 'J', false], ['arm-j-typing', 'J', true], ['arm-hold-typing', 'hold', true],
   ['arm-light', 'light', false], ['arm-margins', 'margins', false], ['arm-veil', 'veil', false],
 ].map(([name, arm, typing]) => [name, (app) => armShot(app, name, arm, typing)]));
 
