@@ -153,6 +153,7 @@ function ArborMark({ reduced, width, height, onFloorReached }: MarkProps) {
     window.setTimeout(onFloorReached, arbor ? (finalAt + ARBOR2_BEAT) * speed : floorAt * SPEED);
   }, [reduced, onFloorReached]);
 
+  const lit = reduced && !isArbor2();   // the finished frame's outlines: brass off the flag, cream under it (r22)
   const finalCx = ARBOR_FINAL_CREAM.x + ARBOR_FINAL_CREAM.w / 2;
   const finalCy = ARBOR_FINAL_CREAM.y + ARBOR_FINAL_CREAM.h / 2;
 
@@ -188,11 +189,13 @@ function ArborMark({ reduced, width, height, onFloorReached }: MarkProps) {
         <image key={e.id} data-edge={e.id} href={`${BRAND}/${e.file}`} x={e.x} y={e.y} width={e.w} height={e.h} mask={`url(#wz-splash-arbor-mask-${e.id})`} />
       ))}
 
-      {/* The five stage outlines — brass, letters left out by the cutting script, so "no brass on letter pixels" holds by construction. */}
+      {/* The five stage outlines — brass, letters left out by the cutting script, so "no brass on letter pixels" holds by construction.
+          ARBOR v2 MOCKUP r22: under the flag they never light, the finished frame included (`lit`; Actions frames 42523455219 read all five at 1
+          on the front door's copy) - only the arrows are brass. */}
       {(Object.keys(ARBOR_OUTLINES) as ArborStage[]).filter((s) => s !== 'final').map((stage) => {
         const o = ARBOR_OUTLINES[stage];
         return (
-          <g key={stage} data-stage={stage} ref={(el) => { if (el) outlineRefs.current[stage] = el; }} style={{ opacity: reduced ? 1 : 0 }}>
+          <g key={stage} data-stage={stage} ref={(el) => { if (el) outlineRefs.current[stage] = el; }} style={{ opacity: lit ? 1 : 0 }}>
             <image href={`${BRAND}/${o.file}`} x={o.x} y={o.y} width={o.w} height={o.h} />
           </g>
         );
@@ -201,7 +204,7 @@ function ArborMark({ reduced, width, height, onFloorReached }: MarkProps) {
       <g
         data-stage="final"
         ref={(el) => { if (el) { outlineRefs.current.final = el; finalGroupRef.current = el; } }}
-        style={{ opacity: reduced ? 1 : 0, transformBox: 'view-box', transformOrigin: `${finalCx}px ${finalCy}px` }}
+        style={{ opacity: lit ? 1 : 0, transformBox: 'view-box', transformOrigin: `${finalCx}px ${finalCy}px` }}
       >
         <image href={`${BRAND}/${ARBOR_OUTLINES.final.file}`} x={ARBOR_OUTLINES.final.x} y={ARBOR_OUTLINES.final.y} width={ARBOR_OUTLINES.final.w} height={ARBOR_OUTLINES.final.h} />
       </g>

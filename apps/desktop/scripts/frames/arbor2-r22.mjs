@@ -195,19 +195,23 @@ const screens = {
     if (Object.values(ok).some((x) => !x)) fail('R22-SPLASH-ARROWS', { ok, span, s, door });
     say('r22-splash-arrows', { ok, span, s, door });
   },
-  // mid-run: the arrows part-drawn in brass, every stage outline still Nick's cream
-  'r22-pic-splash-mid': async (app) => {
-    await app.evalJs("history.replaceState(null, '', '/?arbor2=1#/')"); await app.reload();
-    // PARKED 2026-11-08 (SUPERSEDED - Actions frames 42522633708: the 100 ms poll missed the ~1.1 s run, so the frame was the finished front door,
-    // not mid-run). Original, verbatim:
-    // await waitSoft(app, "(() => { const ps = [...document.querySelectorAll('.wz-splash .wz-splash-arbor mask path')]; return ps.length === 6 && ps.some((p) => Number(getComputedStyle(p).strokeDashoffset.replace('px', '')) <= 0.001) && ps.some((p) => Number(getComputedStyle(p).strokeDashoffset.replace('px', '')) > 0.5); })()", { label: 'mid-run', timeout: 10000 });
-    // await app.evalJs("document.getAnimations().forEach((a) => { try { a.pause(); } catch {} }); true");
-    // SUCCESSOR: as soon as the six arrows' animations exist, pause every animation and set the splash's to the run's middle moment (all six
-    // start together, so one currentTime is one moment; the delays are inside it).
-    await waitSoft(app, "(() => { const ps = [...document.querySelectorAll('.wz-splash .wz-splash-arbor mask path')]; return ps.length === 6 && ps.every((p) => p.getAnimations().length); })()", { label: 'arrows planned', timeout: 10000 });
-    const mid = await app.evalJs("(() => { document.getAnimations().forEach((a) => { try { a.pause(); } catch {} }); const as = [...document.querySelectorAll('.wz-splash .wz-splash-arbor mask path')].map((p) => p.getAnimations()[0]); const t = as.map((a) => a.effect.getTiming()); const lo = Math.min(...t.map((x) => Number(x.delay))), hi = Math.max(...t.map((x) => Number(x.delay) + Number(x.duration))); const m = (lo + hi) / 2; as.forEach((a) => { a.currentTime = m; }); return { lo, hi, m }; })()");
-    say('r22-pic-splash-mid', { mid });
-  },
+  // PARKED 2026-11-08 (SUPERSEDED - Actions frames 42523455219: the frames job refuses any frame while the opening splash is on screen ("the
+  // opening splash is still on screen"), so a mid-run splash picture cannot be a frames-job screen). Original, verbatim:
+  // // mid-run: the arrows part-drawn in brass, every stage outline still Nick's cream
+  // 'r22-pic-splash-mid': async (app) => {
+    // await app.evalJs("history.replaceState(null, '', '/?arbor2=1#/')"); await app.reload();
+    // // PARKED 2026-11-08 (SUPERSEDED - Actions frames 42522633708: the 100 ms poll missed the ~1.1 s run, so the frame was the finished front door,
+    // // not mid-run). Original, verbatim:
+    // // await waitSoft(app, "(() => { const ps = [...document.querySelectorAll('.wz-splash .wz-splash-arbor mask path')]; return ps.length === 6 && ps.some((p) => Number(getComputedStyle(p).strokeDashoffset.replace('px', '')) <= 0.001) && ps.some((p) => Number(getComputedStyle(p).strokeDashoffset.replace('px', '')) > 0.5); })()", { label: 'mid-run', timeout: 10000 });
+    // // await app.evalJs("document.getAnimations().forEach((a) => { try { a.pause(); } catch {} }); true");
+    // // SUCCESSOR: as soon as the six arrows' animations exist, pause every animation and set the splash's to the run's middle moment (all six
+    // // start together, so one currentTime is one moment; the delays are inside it).
+    // await waitSoft(app, "(() => { const ps = [...document.querySelectorAll('.wz-splash .wz-splash-arbor mask path')]; return ps.length === 6 && ps.every((p) => p.getAnimations().length); })()", { label: 'arrows planned', timeout: 10000 });
+    // const mid = await app.evalJs("(() => { document.getAnimations().forEach((a) => { try { a.pause(); } catch {} }); const as = [...document.querySelectorAll('.wz-splash .wz-splash-arbor mask path')].map((p) => p.getAnimations()[0]); const t = as.map((a) => a.effect.getTiming()); const lo = Math.min(...t.map((x) => Number(x.delay))), hi = Math.max(...t.map((x) => Number(x.delay) + Number(x.duration))); const m = (lo + hi) / 2; as.forEach((a) => { a.currentTime = m; }); return { lo, hi, m }; })()");
+    // say('r22-pic-splash-mid', { mid });
+  // },
+  // SUCCESSOR: the mid-run splash is seen in the box recording (scripts/frames/arbor2-walk.mjs step 1, every frame, day and night, both sizes), and
+  // r22-splash-arrows above reads its plan and the front door's finished drawing.
 };
 
 export default guarded(screens, { verdict: ['ARBOR-R22'] });
