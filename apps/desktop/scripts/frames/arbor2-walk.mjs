@@ -356,8 +356,14 @@ const METER = `(() => { window.__lat = []; window.__st = []; let t0 = 0, n = 0; 
   const pg = document.querySelector('.arbor2-pergola'), sh = document.querySelector('.arbor2-pagesh'), field = document.querySelector('.wz-rhizome-field'), bar = [...document.querySelectorAll('.chrome-top')].find((b) => b.getBoundingClientRect().height > 0), grip = document.querySelector('.wz-sliver-grip');
   let k = 0; const op = (e) => e ? Math.round(Number(getComputedStyle(e).opacity) * 1000) / 1000 : null;
   const iv = setInterval(() => { k++; const row = [Math.round(performance.now()), document.documentElement.getAttribute('data-wz-writing'), pg ? pg.getAttribute('data-live-off') : null, op(pg), op(sh), op(field), op(bar), op(grip)];
-    if (k % 5 === 0 && pg) row.push(pg.querySelectorAll('.wz-leaf').length ? [...pg.querySelectorAll('.wz-leaf')].flatMap((l) => l.getAnimations()).filter((a) => a.playState === 'running').length : 0);
+    // PARKED 2026-11-08 (SUPERSEDED - the fourth walk turn, 09:18Z-09:44Z, walk-triage.txt G; Fable, Nov 8: A6 is this read, not the app. Every 5th
+    // tick it read getAnimations() on every leaf of the pergola, which is under content-visibility:hidden while she writes, so the read forced the
+    // style work the app skips: 30-49 ms on 91 fires, and every slow key by day sat on one of them). Original, verbatim:
+    // if (k % 5 === 0 && pg) row.push(pg.querySelectorAll('.wz-leaf').length ? [...pg.querySelectorAll('.wz-leaf')].flatMap((l) => l.getAnimations()).filter((a) => a.playState === 'running').length : 0);
+    // SUCCESSOR: no animation read during the burst. The running-leaf count is taken once, before the first key, while the pergola is still drawn
+    // (window.__leavesBefore); mid-burst the attribute data-live-off is the reading (it was already the must's). It was info only, never a verdict.
     window.__st.push(row); }, 100);
+  window.__leavesBefore = pg ? [...pg.querySelectorAll('.wz-leaf')].flatMap((l) => l.getAnimations()).filter((a) => a.playState === 'running').length : null;
   window.__latOff = () => { clearInterval(iv); document.removeEventListener('keydown', kd, true); document.removeEventListener('beforeinput', bi, true); }; return true; })()`;
 // the breeze mid-crossing: the leftmost leaf's own cycle 1.0-1.6 s in (the wave takes ~2.6 s to cross)
 const BREEZE_PHASE = "(() => { const ls = [...document.querySelectorAll('.arbor2-pergola .wz-leaf')].map((l) => ({ x: l.getBoundingClientRect().left, a: l.getAnimations().find((a) => a.animationName === 'arbor2-breeze') })).filter((x) => x.a); if (!ls.length) return null; ls.sort((p, q) => p.x - q.x); const a = ls[0].a; const d = Number(a.effect.getTiming().duration) || 16000; const del = Number(a.effect.getTiming().delay) || 0; return ((((Number(a.currentTime) || 0) - del) % d) + d) % d; })()";
@@ -396,7 +402,7 @@ async function burst(w, room, recorded) {
   const lat = await js('window.__lat'); const st = await js('window.__st'); const moveAt = await js('window.__moveAt || null'); await js('window.__latOff && window.__latOff(); true');
   const csv = 'key,key_to_paint_ms\n' + lat.map((x) => `${x.i},${x.ms}`).join('\n') + '\n';
   writeFileSync(path.join(OUT, `keylog-${room}${w === 2000 ? '' : '__1366'}${recorded ? '__recorded' : ''}.csv`), csv);
-  writeFileSync(path.join(OUT, `walk-4-states__${room}__${w}${recorded ? '__recorded' : ''}.json`), JSON.stringify({ cols: ['t', 'writing', 'liveOff', 'pergolaOp', 'pageShadeOp', 'vinesOp', 'topBarOp', 'toolsOpenerOp', 'leavesRunning(every 5th)'], firstKeyAt: lat[0] ? lat[0].at : null, rows: st }));
+  writeFileSync(path.join(OUT, `walk-4-states__${room}__${w}${recorded ? '__recorded' : ''}.json`), JSON.stringify({ cols: ['t', 'writing', 'liveOff', 'pergolaOp', 'pageShadeOp', 'vinesOp', 'topBarOp', 'toolsOpenerOp'], leavesRunningBeforeFirstKey: await js('window.__leavesBefore ?? null'), firstKeyAt: lat[0] ? lat[0].at : null, rows: st }));
   return { lat, st, moveAt };
 }
 async function step4() {
