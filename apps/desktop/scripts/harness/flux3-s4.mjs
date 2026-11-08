@@ -102,7 +102,8 @@ const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass: !!pass,
 // MUT-OPENROWS (Actions 42435766295: the open drew its rows with the elements count back; the cause was the scroll)
 // MUT-CARETEND [successor] (Actions 42438849747: its scenarios reach the flagged condition only sometimes)
 // MUT-CARETEND [successor 2] (Actions 42444379803: the boundary too is a sometime witness; the witness is INFO)
-const PARKED_EXPECTED = 20;
+// CARET-DARK (the Wrizors' carry, Nov 8: Jacked In's dark caret solid #FF9800)
+const PARKED_EXPECTED = 21;
 
 function buildIdentity() {
   const out = { bundle: null, builtAt: null, head: null, srcCommitAt: null, dirtySrc: null, stale: null };
@@ -332,6 +333,8 @@ const MUTANTS = {
   caret: [/flux-block-caret\{background:#a84e00(?=[;}])/gi, 'flux-block-caret{background:rgba(255,152,0,.82)', 'css'],
   // Jacked In's light caret without its ink outline (Nick's ruling, Nov 7): CARET-JACKED-LIGHT fails
   outline: [/outline:1px solid #042632/gi, 'outline:none', 'css'],
+  // Jacked In's dark caret back to the shared .82 orange (the Wrizors' carry, Nov 8): CARET-JACKED-DARK fails
+  darkbrass: [/:not\(\[data-page=light\]\) \.flux-block-caret\{background:#ff9800\}/gi, ':not([data-page=light]) .flux-block-caret-off{background:#ff9800}', 'css'],
   // the Wrizors' S4 r9 review: the caret's text-end place off (FluxBlockCaret §5): CARET-END fails; a refused compile never tried again: OPEN-ROWS
   caretend: [/textEnd:!0\}/g, 'textEnd:!1}'],
   // the block caret blinking while keys land again (FluxBlockCaret §6's rule unmatched, in the app's own built styles: index-*.css): CARET-SOLID fails
@@ -784,7 +787,18 @@ try { await withHarness(async (app) => {
     pok('PARKED (was "CARET-LIGHT the block caret on the light page is >= 4.5:1 against the page under it, in the orange family") - SUPERSEDED by Nick\'s ruling (Nov 7: Jacked In\'s light caret is brass with a 1 px ink outline). Opposite reasserted: the jacked light caret\'s FILL is under 4.5:1 (brass), and its outline carries the contrast; live successors CARET-JACKED-LIGHT, CARET-PLAIN-LIGHT',
       !caretLightOk(kLight) && caretBrassOk(kLight, kLightSt), JSON.stringify(kLight));
   }
-  ok('CARET-DARK the dark tone keeps its caret (the shared orange, rgba(255, 152, 0, 0.82))', !!kDark && kDark.caret === 'rgba(255, 152, 0, 0.82)', JSON.stringify(kDark));
+  // ---- PARKED - SUPERSEDED by the Wrizors' carry (relayed by Chat 1, Nov 8; the spec's draft 13 §6 "Dark #FF9800"): the shared orange at .82
+  // rendered #D98307 over the night glass, so Jacked In's dark caret is now solid brass. Kept VERBATIM and no longer run; its successors follow.
+  // ok('CARET-DARK the dark tone keeps its caret (the shared orange, rgba(255, 152, 0, 0.82))', !!kDark && kDark.caret === 'rgba(255, 152, 0, 0.82)', JSON.stringify(kDark));
+  const kDarkSt = await st();
+  ok(`CARET-JACKED-DARK [successor] Jacked In's dark caret is solid brass, #FF9800 (${kDark && kDark.caret}; jacked ${kDarkSt.jacked})`, kDarkSt.jacked && !!kDark && kDark.caret === 'rgb(255, 152, 0)', JSON.stringify(kDark));
+  const kPlainD = await caretOf({ tone: 'dark', id: DRAFTP, pageTw: 'off', atRow: 1 });
+  const kPlainDSt = await st();
+  ok(`CARET-PLAIN-DARK [successor] outside Jacked In the dark caret is today's (${kPlainD && kPlainD.caret}; jacked ${kPlainDSt.jacked})`, !kPlainDSt.jacked && !!kPlainD && kPlainD.caret === 'rgba(255, 152, 0, 0.82)', JSON.stringify(kPlainD));
+  if (process.env.HARNESS_PARKED === '1') {
+    pok('PARKED (was "CARET-DARK the dark tone keeps its caret (the shared orange, rgba(255, 152, 0, 0.82))") - SUPERSEDED by the Wrizors\' carry (Nov 8; spec draft 13 §6 "Dark #FF9800"). Opposite reasserted: Jacked In\'s dark caret is not the shared .82 orange but solid brass, while the plain dark caret keeps it; live successors CARET-JACKED-DARK, CARET-PLAIN-DARK',
+      !!kDark && kDark.caret !== 'rgba(255, 152, 0, 0.82)' && kDark.caret === 'rgb(255, 152, 0)' && !!kPlainD && kPlainD.caret === 'rgba(255, 152, 0, 0.82)', JSON.stringify({ kDark, kPlainD }));
+  }
   // ---- TERM: the terminal (r9, Nick Nov 7, the spec's draft 13 §6: no paper; one writing line, one dim line, then signal rows) -------------------
   const pixOf = async (box) => {
     if (!box || box.width < 2 || box.height < 2) return null;
@@ -1187,6 +1201,9 @@ try { await withHarness(async (app) => {
   const mOl = await withMutant('outline', async () => { const k = await caretOf({ tone: 'light', id: CARETP }); return { k, st0: await st() }; });
   ok(`MUT-OUTLINE (landed, in boot-*.css) the jacked light caret without its ink outline: CARET-JACKED-LIGHT fails (outline ${mOl.r.k && mOl.r.k.outline && mOl.r.k.outline.style})`,
     mOl.landed === 1 && !caretBrassOk(mOl.r.k, mOl.r.st0), JSON.stringify({ landed: mOl.landed, k: mOl.r.k }));
+  const mDb = await withMutant('darkbrass', async () => { const k = await caretOf({ tone: 'dark' }); return { k, st0: await st() }; });
+  ok(`MUT-DARKBRASS (landed, in boot-*.css) Jacked In's dark caret back to the shared .82 orange: CARET-JACKED-DARK fails (${mDb.r.k && mDb.r.k.caret})`,
+    mDb.landed === 1 && !(mDb.r.st0.jacked && !!mDb.r.k && mDb.r.k.caret === 'rgb(255, 152, 0)'), JSON.stringify({ landed: mDb.landed, k: mDb.r.k }));
   const mBl = await withMutant('blink', () => testBlink(false));
   ok(`MUT-BLINK (landed, in index-*.css) the block caret blinking while keys land again: CARET-SOLID fails (during: ${JSON.stringify(mBl.r.during.map((d) => d && d.anim))})`,
     mBl.landed === 1 && !solidOk(mBl.r), JSON.stringify({ landed: mBl.landed, during: mBl.r.during }));

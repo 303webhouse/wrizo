@@ -83,7 +83,9 @@ export function FluxBlockCaret() {
       // not run then). An inline span with no visible text (the new line after Enter) stays the row: its start is the caret's place (C17-AT)
       const zeroWidth = (ch: string) => ch.charCodeAt(0) === 0x200b || ch.charCodeAt(0) === 0xfeff;
       const visible = (s: string) => [...s].some((ch) => ch.trim() !== '' && !zeroWidth(ch));
-      const wordRow = !!row0 && CARET_PLACE.textEnd && getComputedStyle(row0).display === 'inline' && visible(row0.textContent ?? '');
+      // whether a span holds a visible character, from its text nodes one by one (never its whole text: no editor-text reader here)
+      const holdsText = (el: Element) => { const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); for (let n = w.nextNode(); n; n = w.nextNode()) if (visible(n.nodeValue ?? '')) return true; return false; };
+      const wordRow = !!row0 && CARET_PLACE.textEnd && getComputedStyle(row0).display === 'inline' && holdsText(row0);
       const row = wordRow ? null : row0;
       const atTextEnd = (): DOMRect | null => {
         const a = sel.anchorNode;
