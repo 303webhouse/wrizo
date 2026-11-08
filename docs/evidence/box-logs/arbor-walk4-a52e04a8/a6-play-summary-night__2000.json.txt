@@ -1,0 +1,219 @@
+{
+ "keys": 408,
+ "slow": [],
+ "slowGapsMs": [],
+ "mainThread": "52124:40020",
+ "clocksJoined": true,
+ "traceEvents": 569962,
+ "mutations": 114,
+ "longTasks": 0,
+ "longs": [],
+ "bySlow": [],
+ "groupsNearSlow": [],
+ "groupsAll": [
+  {
+   "group": "attr div.mode-pfill.started style",
+   "n": 60,
+   "medianGapMs": 764.6000000000004,
+   "subtree": 0,
+   "nearSlowKeys": 0,
+   "sample": [
+    "width: 12.4%; -> width: 12.8%;",
+    "width: 12.8%; -> width: 13.2%;",
+    "width: 13.2%; -> width: 13.6%;",
+    "width: 13.6%; -> width: 14%;"
+   ]
+  },
+  {
+   "group": "attr div.arbor2-sun-leaf data-flutter",
+   "n": 10,
+   "medianGapMs": 498.6999999999971,
+   "subtree": 0,
+   "nearSlowKeys": 0,
+   "sample": [
+    "null -> true",
+    "true -> null",
+    "null -> true",
+    "true -> null"
+   ]
+  },
+  {
+   "group": "attr div.wz-goal-glow style",
+   "n": 7,
+   "medianGapMs": 6598.699999999997,
+   "subtree": 0,
+   "nearSlowKeys": 0,
+   "sample": [
+    "--glow-intensity: 0.190; -> --glow-intensity: 0.206;",
+    "--glow-intensity: 0.206; -> --glow-intensity: 0.219;",
+    "--glow-intensity: 0.219; -> --glow-intensity: 0.231;",
+    "--glow-intensity: 0.231; -> --glow-intensity: 0.241;"
+   ]
+  },
+  {
+   "group": "attr div.wz-sliver-goal-hairline-fill style",
+   "n": 7,
+   "medianGapMs": 6598.699999999997,
+   "subtree": 0,
+   "nearSlowKeys": 0,
+   "sample": [
+    "width: 12.5%; -> width: 16.7%;",
+    "width: 16.7%; -> width: 20.8%;",
+    "width: 20.8%; -> width: 25%;",
+    "width: 25%; -> width: 29.2%;"
+   ]
+  },
+  {
+   "group": "attr div.wz-sliver-goal data-done",
+   "n": 7,
+   "medianGapMs": 6598.699999999997,
+   "subtree": 2,
+   "nearSlowKeys": 0,
+   "sample": [
+    "3 -> 4",
+    "4 -> 5",
+    "5 -> 6",
+    "6 -> 7"
+   ]
+  },
+  {
+   "group": "attr div.arbor2-sun-leaf style",
+   "n": 5,
+   "medianGapMs": 10959.900000000001,
+   "subtree": 0,
+   "nearSlowKeys": 0,
+   "sample": [
+    "left: 863.9px; top: 758.2px; --leaf-size: 11px; --leaf-rot: 231deg; -> left: 863.9px; top: 758.2px; --leaf-size: 11px; --leaf-rot: 231deg; --flutter-ms: 353ms;",
+    "left: 1447.4px; top: 788px; --leaf-size: 12px; --leaf-rot: 118deg; -> left: 1447.4px; top: 788px; --leaf-size: 12px; --leaf-rot: 118deg; --flutter-ms: 493ms;",
+    "left: 1365.3px; top: 715.1px; --leaf-size: 10px; --leaf-rot: 165deg; -> left: 1365.3px; top: 715.1px; --leaf-size: 10px; --leaf-rot: 165deg; --flutter-ms: 326ms;",
+    "left: 1425.6px; top: 820.3px; --leaf-size: 11px; --leaf-rot: 217deg; -> left: 1425.6px; top: 820.3px; --leaf-size: 11px; --leaf-rot: 217deg; --flutter-ms: 481ms;"
+   ]
+  },
+  {
+   "group": "attr div.arbor2-pagesh data-live-off",
+   "n": 4,
+   "medianGapMs": 0,
+   "subtree": 810,
+   "nearSlowKeys": 0,
+   "sample": [
+    "null -> true",
+    "null -> true",
+    "null -> true",
+    "null -> true"
+   ]
+  },
+  {
+   "group": "attr div.arbor2-pagesh data-asleep",
+   "n": 4,
+   "medianGapMs": 0,
+   "subtree": 810,
+   "nearSlowKeys": 0,
+   "sample": [
+    "null -> true",
+    "null -> true",
+    "null -> true",
+    "null -> true"
+   ]
+  },
+  {
+   "group": "attr div.mode-stage style",
+   "n": 1,
+   "medianGapMs": null,
+   "subtree": 825,
+   "nearSlowKeys": 0,
+   "sample": [
+    "null -> --fade-dur: 2.8s;"
+   ]
+  },
+  {
+   "group": "attr div.desk-frame-host style",
+   "n": 1,
+   "medianGapMs": null,
+   "subtree": 1104,
+   "nearSlowKeys": 0,
+   "sample": [
+    "null -> --fade-dur: 2.8s;"
+   ]
+  },
+  {
+   "group": "attr html style",
+   "n": 1,
+   "medianGapMs": null,
+   "subtree": 1998,
+   "nearSlowKeys": 0,
+   "sample": [
+    "--arbor2-t: 0; --arbor2-afternoon: 0.000; --arbor2-day-ground: #F1EAD8; --arbor2-vignette-mask: linear-gradient(to right, rgb(0,0,0) 690px, rgba(0,0,0,0) 690px, -> --arbor2-t: 0; --arbor2-afternoon: 0.000; --arbor2-day-ground: #F1EAD8; --arbor2-vignette-mask: linear-gradient(to right, rgb(0,0,0) 690px, rgba(0,0,0,0) 690px,"
+   ]
+  },
+  {
+   "group": "attr div.mode-stage data-writing",
+   "n": 1,
+   "medianGapMs": null,
+   "subtree": 825,
+   "nearSlowKeys": 0,
+   "sample": [
+    "false -> true"
+   ]
+  },
+  {
+   "group": "attr html data-wz-writing",
+   "n": 1,
+   "medianGapMs": null,
+   "subtree": 1998,
+   "nearSlowKeys": 0,
+   "sample": [
+    "null -> true"
+   ]
+  },
+  {
+   "group": "attr div.arbor2-pergola data-live-off",
+   "n": 1,
+   "medianGapMs": null,
+   "subtree": 810,
+   "nearSlowKeys": 0,
+   "sample": [
+    "null -> true"
+   ]
+  },
+  {
+   "group": "attr div.chrome-fade data-chrome-receded",
+   "n": 1,
+   "medianGapMs": null,
+   "subtree": 2,
+   "nearSlowKeys": 0,
+   "sample": [
+    "false -> true"
+   ]
+  },
+  {
+   "group": "attr div.desk-frame data-writing",
+   "n": 1,
+   "medianGapMs": null,
+   "subtree": 1084,
+   "nearSlowKeys": 0,
+   "sample": [
+    "false -> true"
+   ]
+  },
+  {
+   "group": "attr div.desk-frame-host data-chrome-receded",
+   "n": 1,
+   "medianGapMs": null,
+   "subtree": 1104,
+   "nearSlowKeys": 0,
+   "sample": [
+    "false -> true"
+   ]
+  },
+  {
+   "group": "attr div.arbor2-pergola data-asleep",
+   "n": 1,
+   "medianGapMs": null,
+   "subtree": 810,
+   "nearSlowKeys": 0,
+   "sample": [
+    "null -> true"
+   ]
+  }
+ ]
+}

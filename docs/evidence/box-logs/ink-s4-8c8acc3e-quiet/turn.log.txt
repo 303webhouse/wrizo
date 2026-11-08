@@ -1,0 +1,18 @@
+2026-11-08T09:04:22Z tree F:/wrizo-work/INK-maincontrol/apps/desktop: HEAD 0cfba431, dirty 0, bundle index-e17ME4Wi.js
+2026-11-08T09:04:22Z tree F:/wrizo-work/INK-s4/apps/desktop: HEAD 8c8acc3e, dirty 0, bundle index-Bt-Xhx32.js
+2026-11-08T09:04:22Z harness browsers at turn start: 0
+2026-11-08T09:04:23Z granted to lane "ink" and bound to the process tree of pid 22612 - name this turn's start and end in your report
+2026-11-08T09:04:23Z TURN START
+2026-11-08T09:04:23Z quiet check at start: Wow.exe absent
+2026-11-08T09:04:23Z [main-1] start (rhizome-latency.mjs on main, RL_REF=default)
+2026-11-08T09:05:36Z [main-1] exit 0: SUITE RESULT: CLEAN — tree=0cfba431 bundle=index-e17ME4Wi.js/994681b
+2026-11-08T09:05:36Z [main-2] start (rhizome-latency.mjs on main, RL_REF=default)
+2026-11-08T09:06:38Z [main-2] exit 0: SUITE RESULT: CLEAN — tree=0cfba431 bundle=index-e17ME4Wi.js/994681b
+2026-11-08T09:06:38Z RL_REF from 2 main runs: (none: REFUSED: 2 usable control run(s); a reference needs at least 3)
+2026-11-08T09:06:38Z [s4-default] start (1 files, RL_REF=default)
+2026-11-08T09:17:18Z [s4-default] [01/1] FAIL      exit=1  634s flux3-s4.mjs :: ROWS-SHADOW VERIFY: PASS (10 renders checked, shadow == DOM on every one) ;; FLUX3-S4 VERIFY: FAIL - 1/84 failed
+2026-11-08T09:17:18Z [s4-default] SUITE DONE HARNESS_PARKED=unset — 0/1 of 1 returned a passing verdict
+2026-11-08T09:17:18Z [s4-default] SUITE RESULT: NOT CLEAN — tree=8c8acc3e bundle=index-Bt-Xhx32.js/1005642b
+2026-11-08T09:17:18Z harness browsers at turn end: 0
+2026-11-08T09:17:18Z release: released
+2026-11-08T09:17:18Z TURN END (a leg was NOT CLEAN: see the logs)

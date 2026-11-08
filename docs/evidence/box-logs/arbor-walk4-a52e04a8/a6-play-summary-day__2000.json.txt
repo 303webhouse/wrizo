@@ -1,0 +1,4066 @@
+{
+ "keys": 408,
+ "slow": [
+  {
+   "key": 28,
+   "ms": 62.3,
+   "at": 22966
+  },
+  {
+   "key": 37,
+   "ms": 60.2,
+   "at": 23967
+  },
+  {
+   "key": 55,
+   "ms": 74,
+   "at": 25950
+  },
+  {
+   "key": 87,
+   "ms": 58.8,
+   "at": 29460
+  },
+  {
+   "key": 128,
+   "ms": 57.6,
+   "at": 33969
+  },
+  {
+   "key": 137,
+   "ms": 58.5,
+   "at": 34967
+  },
+  {
+   "key": 155,
+   "ms": 74.8,
+   "at": 36949
+  },
+  {
+   "key": 187,
+   "ms": 60,
+   "at": 40462
+  },
+  {
+   "key": 255,
+   "ms": 73.3,
+   "at": 47948
+  },
+  {
+   "key": 278,
+   "ms": 52.3,
+   "at": 50472
+  },
+  {
+   "key": 328,
+   "ms": 52.7,
+   "at": 55971
+  },
+  {
+   "key": 337,
+   "ms": 59.5,
+   "at": 56957
+  },
+  {
+   "key": 387,
+   "ms": 62.2,
+   "at": 62463
+  },
+  {
+   "key": 405,
+   "ms": 74.7,
+   "at": 64447
+  }
+ ],
+ "slowGapsMs": [
+  1001,
+  1983,
+  3510,
+  4509,
+  998,
+  1982,
+  3513,
+  7486,
+  2524,
+  5499,
+  986,
+  5506,
+  1984
+ ],
+ "mainThread": "17948:39428",
+ "clocksJoined": true,
+ "traceEvents": 1045421,
+ "mutations": 112,
+ "longTasks": 184,
+ "longs": [
+  {
+   "perfAt": 19996,
+   "ms": 41.2,
+   "top": [
+    "ThreadControllerImpl::RunTask 41.1 ms",
+    "Edge_RunTask 41.1 ms",
+    "EventDispatch keypress 40.4 ms",
+    "EventDispatch textInput 40 ms",
+    "EventDispatch input 39.4 ms",
+    "UpdateLayoutTree 32.6 ms",
+    "FunctionCall index-BgvFQhrf.js:gt:147 20.9 ms",
+    "FunctionCall index-BgvFQhrf.js:?:41 17.6 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 1
+    },
+    {
+     "ms": 17.8,
+     "elements": 1957
+    },
+    {
+     "ms": 14.9,
+     "elements": 1957
+    },
+    {
+     "ms": 0.3,
+     "elements": 6
+    }
+   ],
+   "invalidations": [
+    "4x ScheduleStyle attr data-live-off on DIV class='arbor2-pagesh'",
+    "4x StyleInvalidator Element has pending invalidation list on DIV class='arbor2-pagesh'",
+    "2x StyleRecalc Related style rule on DIV class='mode-stage'",
+    "2x StyleRecalc Related style rule on HTML",
+    "2x StyleRecalc Control on DIV",
+    "2x StyleInvalidator Invalidation set matched class on DIV class='arbor2-live' [[{\"selector\":\":root[data-arbor2][data-theme=\\\"plateau\\\"] :is(.arbor2-pergola, .arbor2-pagesh)[data-live-off=\\\"true\\\"] .a]",
+    "2x StyleRecalc Related style rule on DIV class='arbor2-live'",
+    "2x StyleInvalidator Invalidation set matched class on DIV class='arbor2-still' [[{\"selector\":\":root[data-arbor2][data-theme=\\\"plateau\\\"] :is(.arbor2-pergola, .arbor2-pagesh)[data-live-off=\\\"true\\\"] .a]",
+    "2x StyleRecalc Related style rule on DIV class='arbor2-still'",
+    "2x Layout Style changed on DIV class='arbor2-live'",
+    "1x StyleRecalc PseudoClass on DIV class='forward-only-editor'",
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 19996,
+   "ms": 41.1,
+   "top": [
+    "Edge_RunTask 41.1 ms",
+    "EventDispatch keypress 40.4 ms",
+    "EventDispatch textInput 40 ms",
+    "EventDispatch input 39.4 ms",
+    "UpdateLayoutTree 32.6 ms",
+    "FunctionCall index-BgvFQhrf.js:gt:147 20.9 ms",
+    "FunctionCall index-BgvFQhrf.js:?:41 17.6 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 1
+    },
+    {
+     "ms": 17.8,
+     "elements": 1957
+    },
+    {
+     "ms": 14.9,
+     "elements": 1957
+    },
+    {
+     "ms": 0.3,
+     "elements": 6
+    }
+   ],
+   "invalidations": [
+    "4x ScheduleStyle attr data-live-off on DIV class='arbor2-pagesh'",
+    "4x StyleInvalidator Element has pending invalidation list on DIV class='arbor2-pagesh'",
+    "2x StyleRecalc Related style rule on DIV class='mode-stage'",
+    "2x StyleRecalc Related style rule on HTML",
+    "2x StyleRecalc Control on DIV",
+    "2x StyleInvalidator Invalidation set matched class on DIV class='arbor2-live' [[{\"selector\":\":root[data-arbor2][data-theme=\\\"plateau\\\"] :is(.arbor2-pergola, .arbor2-pagesh)[data-live-off=\\\"true\\\"] .a]",
+    "2x StyleRecalc Related style rule on DIV class='arbor2-live'",
+    "2x StyleInvalidator Invalidation set matched class on DIV class='arbor2-still' [[{\"selector\":\":root[data-arbor2][data-theme=\\\"plateau\\\"] :is(.arbor2-pergola, .arbor2-pagesh)[data-live-off=\\\"true\\\"] .a]",
+    "2x StyleRecalc Related style rule on DIV class='arbor2-still'",
+    "2x Layout Style changed on DIV class='arbor2-live'",
+    "1x StyleRecalc PseudoClass on DIV class='forward-only-editor'",
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 20481.8,
+   "ms": 47.3,
+   "top": [
+    "ThreadControllerImpl::RunTask 47.3 ms",
+    "Edge_RunTask 47.3 ms",
+    "TimerFire#31 47.3 ms",
+    "FunctionCall :?:7 47.3 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.8,
+     "elements": 116
+    }
+   ],
+   "invalidations": [
+    "55x Layout Style changed on g class='wz-leaf'",
+    "52x StyleRecalc Animation on DIV class='arbor2-pagesh'",
+    "13x StyleRecalc Animation on DIV class='chrome-fade'",
+    "13x StyleRecalc Animation on DIV class='brand-mark'",
+    "13x StyleRecalc Animation on DIV class='chrome-fade chrome-top sprint-nav'",
+    "13x StyleRecalc Animation on ASIDE class='desk-frame-strip chrome-fade desk-dissolve'",
+    "13x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "13x StyleRecalc Animation on BUTTON class='wz-sliver-grip'",
+    "13x StyleRecalc Animation on BUTTON class='wz-tutor-grip'",
+    "13x StyleRecalc Animation on BUTTON class='chrome-handle'",
+    "13x StyleRecalc Animation on DIV class='arbor2-pergola'",
+    "13x StyleRecalc Animation on DIV class='arbor2-bar'"
+   ]
+  },
+  {
+   "perfAt": 20481.8,
+   "ms": 47.3,
+   "top": [
+    "Edge_RunTask 47.3 ms",
+    "TimerFire#31 47.3 ms",
+    "FunctionCall :?:7 47.3 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.8,
+     "elements": 116
+    }
+   ],
+   "invalidations": [
+    "55x Layout Style changed on g class='wz-leaf'",
+    "52x StyleRecalc Animation on DIV class='arbor2-pagesh'",
+    "13x StyleRecalc Animation on DIV class='chrome-fade'",
+    "13x StyleRecalc Animation on DIV class='brand-mark'",
+    "13x StyleRecalc Animation on DIV class='chrome-fade chrome-top sprint-nav'",
+    "13x StyleRecalc Animation on ASIDE class='desk-frame-strip chrome-fade desk-dissolve'",
+    "13x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "13x StyleRecalc Animation on BUTTON class='wz-sliver-grip'",
+    "13x StyleRecalc Animation on BUTTON class='wz-tutor-grip'",
+    "13x StyleRecalc Animation on BUTTON class='chrome-handle'",
+    "13x StyleRecalc Animation on DIV class='arbor2-pergola'",
+    "13x StyleRecalc Animation on DIV class='arbor2-bar'"
+   ]
+  },
+  {
+   "perfAt": 20981.2,
+   "ms": 47.2,
+   "top": [
+    "ThreadControllerImpl::RunTask 47.2 ms",
+    "Edge_RunTask 47.2 ms",
+    "TimerFire#31 47.2 ms",
+    "FunctionCall :?:7 47.2 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "68x StyleRecalc Animation on DIV class='arbor2-pagesh'",
+    "17x StyleRecalc Animation on DIV class='chrome-fade'",
+    "17x StyleRecalc Animation on DIV class='brand-mark'",
+    "17x StyleRecalc Animation on DIV class='chrome-fade chrome-top sprint-nav'",
+    "17x StyleRecalc Animation on ASIDE class='desk-frame-strip chrome-fade desk-dissolve'",
+    "17x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "17x StyleRecalc Animation on BUTTON class='wz-sliver-grip'",
+    "17x StyleRecalc Animation on BUTTON class='wz-tutor-grip'",
+    "17x StyleRecalc Animation on BUTTON class='chrome-handle'",
+    "17x StyleRecalc Animation on DIV class='arbor2-pergola'",
+    "17x StyleRecalc Animation on DIV class='arbor2-bar'",
+    "17x Layout Style changed on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 20981.2,
+   "ms": 47.2,
+   "top": [
+    "Edge_RunTask 47.2 ms",
+    "TimerFire#31 47.2 ms",
+    "FunctionCall :?:7 47.2 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "68x StyleRecalc Animation on DIV class='arbor2-pagesh'",
+    "17x StyleRecalc Animation on DIV class='chrome-fade'",
+    "17x StyleRecalc Animation on DIV class='brand-mark'",
+    "17x StyleRecalc Animation on DIV class='chrome-fade chrome-top sprint-nav'",
+    "17x StyleRecalc Animation on ASIDE class='desk-frame-strip chrome-fade desk-dissolve'",
+    "17x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "17x StyleRecalc Animation on BUTTON class='wz-sliver-grip'",
+    "17x StyleRecalc Animation on BUTTON class='wz-tutor-grip'",
+    "17x StyleRecalc Animation on BUTTON class='chrome-handle'",
+    "17x StyleRecalc Animation on DIV class='arbor2-pergola'",
+    "17x StyleRecalc Animation on DIV class='arbor2-bar'",
+    "17x Layout Style changed on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 21481.8,
+   "ms": 48.6,
+   "top": [
+    "ThreadControllerImpl::RunTask 48.6 ms",
+    "Edge_RunTask 48.6 ms",
+    "TimerFire#31 48.5 ms",
+    "FunctionCall :?:7 48.5 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "64x StyleRecalc Animation on DIV class='arbor2-pagesh'",
+    "16x StyleRecalc Animation on DIV class='chrome-fade'",
+    "16x StyleRecalc Animation on DIV class='brand-mark'",
+    "16x StyleRecalc Animation on DIV class='chrome-fade chrome-top sprint-nav'",
+    "16x StyleRecalc Animation on ASIDE class='desk-frame-strip chrome-fade desk-dissolve'",
+    "16x StyleRecalc Animation on BUTTON class='wz-sliver-grip'",
+    "16x StyleRecalc Animation on BUTTON class='wz-tutor-grip'",
+    "16x StyleRecalc Animation on BUTTON class='chrome-handle'",
+    "16x StyleRecalc Animation on DIV class='arbor2-pergola'",
+    "16x StyleRecalc Animation on DIV class='arbor2-bar'",
+    "2x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 21481.8,
+   "ms": 48.6,
+   "top": [
+    "Edge_RunTask 48.6 ms",
+    "TimerFire#31 48.5 ms",
+    "FunctionCall :?:7 48.5 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "64x StyleRecalc Animation on DIV class='arbor2-pagesh'",
+    "16x StyleRecalc Animation on DIV class='chrome-fade'",
+    "16x StyleRecalc Animation on DIV class='brand-mark'",
+    "16x StyleRecalc Animation on DIV class='chrome-fade chrome-top sprint-nav'",
+    "16x StyleRecalc Animation on ASIDE class='desk-frame-strip chrome-fade desk-dissolve'",
+    "16x StyleRecalc Animation on BUTTON class='wz-sliver-grip'",
+    "16x StyleRecalc Animation on BUTTON class='wz-tutor-grip'",
+    "16x StyleRecalc Animation on BUTTON class='chrome-handle'",
+    "16x StyleRecalc Animation on DIV class='arbor2-pergola'",
+    "16x StyleRecalc Animation on DIV class='arbor2-bar'",
+    "2x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 21982.1,
+   "ms": 47,
+   "top": [
+    "ThreadControllerImpl::RunTask 47 ms",
+    "Edge_RunTask 47 ms",
+    "TimerFire#31 47 ms",
+    "FunctionCall :?:7 46.9 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "64x StyleRecalc Animation on DIV class='arbor2-pagesh'",
+    "16x StyleRecalc Animation on DIV class='chrome-fade'",
+    "16x StyleRecalc Animation on DIV class='brand-mark'",
+    "16x StyleRecalc Animation on DIV class='chrome-fade chrome-top sprint-nav'",
+    "16x StyleRecalc Animation on ASIDE class='desk-frame-strip chrome-fade desk-dissolve'",
+    "16x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "16x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "16x StyleRecalc Animation on BUTTON class='wz-sliver-grip'",
+    "16x StyleRecalc Animation on BUTTON class='wz-tutor-grip'",
+    "16x StyleRecalc Animation on BUTTON class='chrome-handle'",
+    "16x StyleRecalc Animation on DIV class='arbor2-pergola'",
+    "16x StyleRecalc Animation on DIV class='arbor2-bar'"
+   ]
+  },
+  {
+   "perfAt": 21982.1,
+   "ms": 47,
+   "top": [
+    "Edge_RunTask 47 ms",
+    "TimerFire#31 47 ms",
+    "FunctionCall :?:7 46.9 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "64x StyleRecalc Animation on DIV class='arbor2-pagesh'",
+    "16x StyleRecalc Animation on DIV class='chrome-fade'",
+    "16x StyleRecalc Animation on DIV class='brand-mark'",
+    "16x StyleRecalc Animation on DIV class='chrome-fade chrome-top sprint-nav'",
+    "16x StyleRecalc Animation on ASIDE class='desk-frame-strip chrome-fade desk-dissolve'",
+    "16x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "16x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "16x StyleRecalc Animation on BUTTON class='wz-sliver-grip'",
+    "16x StyleRecalc Animation on BUTTON class='wz-tutor-grip'",
+    "16x StyleRecalc Animation on BUTTON class='chrome-handle'",
+    "16x StyleRecalc Animation on DIV class='arbor2-pergola'",
+    "16x StyleRecalc Animation on DIV class='arbor2-bar'"
+   ]
+  },
+  {
+   "perfAt": 22482.3,
+   "ms": 46.2,
+   "top": [
+    "ThreadControllerImpl::RunTask 46.2 ms",
+    "Edge_RunTask 46.2 ms",
+    "TimerFire#31 46.2 ms",
+    "FunctionCall :?:7 46.1 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "60x StyleRecalc Animation on DIV class='arbor2-pagesh'",
+    "15x StyleRecalc Animation on DIV class='chrome-fade'",
+    "15x StyleRecalc Animation on DIV class='brand-mark'",
+    "15x StyleRecalc Animation on DIV class='chrome-fade chrome-top sprint-nav'",
+    "15x StyleRecalc Animation on ASIDE class='desk-frame-strip chrome-fade desk-dissolve'",
+    "15x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "15x StyleRecalc Animation on BUTTON class='wz-sliver-grip'",
+    "15x StyleRecalc Animation on BUTTON class='wz-tutor-grip'",
+    "15x StyleRecalc Animation on BUTTON class='chrome-handle'",
+    "15x StyleRecalc Animation on DIV class='arbor2-pergola'",
+    "15x StyleRecalc Animation on DIV class='arbor2-bar'",
+    "13x StyleRecalc Animation on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 22482.3,
+   "ms": 46.2,
+   "top": [
+    "Edge_RunTask 46.2 ms",
+    "TimerFire#31 46.2 ms",
+    "FunctionCall :?:7 46.1 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "60x StyleRecalc Animation on DIV class='arbor2-pagesh'",
+    "15x StyleRecalc Animation on DIV class='chrome-fade'",
+    "15x StyleRecalc Animation on DIV class='brand-mark'",
+    "15x StyleRecalc Animation on DIV class='chrome-fade chrome-top sprint-nav'",
+    "15x StyleRecalc Animation on ASIDE class='desk-frame-strip chrome-fade desk-dissolve'",
+    "15x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "15x StyleRecalc Animation on BUTTON class='wz-sliver-grip'",
+    "15x StyleRecalc Animation on BUTTON class='wz-tutor-grip'",
+    "15x StyleRecalc Animation on BUTTON class='chrome-handle'",
+    "15x StyleRecalc Animation on DIV class='arbor2-pergola'",
+    "15x StyleRecalc Animation on DIV class='arbor2-bar'",
+    "13x StyleRecalc Animation on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 22983.6,
+   "ms": 44.7,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.7 ms",
+    "Edge_RunTask 44.7 ms",
+    "TimerFire#31 44.7 ms",
+    "FunctionCall :?:7 44.7 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "44x StyleRecalc Animation on DIV class='arbor2-pagesh'",
+    "11x StyleRecalc Animation on DIV class='arbor2-pergola'",
+    "10x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "6x StyleRecalc Animation on DIV class='chrome-fade'",
+    "6x StyleRecalc Animation on DIV class='chrome-fade chrome-top sprint-nav'",
+    "6x StyleRecalc Animation on ASIDE class='desk-frame-strip chrome-fade desk-dissolve'",
+    "4x StyleRecalc Animation on DIV class='brand-mark'",
+    "4x StyleRecalc Animation on BUTTON class='wz-sliver-grip'",
+    "4x StyleRecalc Animation on BUTTON class='wz-tutor-grip'",
+    "4x StyleRecalc Animation on BUTTON class='chrome-handle'",
+    "4x StyleRecalc Animation on DIV class='arbor2-bar'",
+    "3x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 22983.6,
+   "ms": 44.7,
+   "top": [
+    "Edge_RunTask 44.7 ms",
+    "TimerFire#31 44.7 ms",
+    "FunctionCall :?:7 44.7 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "44x StyleRecalc Animation on DIV class='arbor2-pagesh'",
+    "11x StyleRecalc Animation on DIV class='arbor2-pergola'",
+    "10x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "6x StyleRecalc Animation on DIV class='chrome-fade'",
+    "6x StyleRecalc Animation on DIV class='chrome-fade chrome-top sprint-nav'",
+    "6x StyleRecalc Animation on ASIDE class='desk-frame-strip chrome-fade desk-dissolve'",
+    "4x StyleRecalc Animation on DIV class='brand-mark'",
+    "4x StyleRecalc Animation on BUTTON class='wz-sliver-grip'",
+    "4x StyleRecalc Animation on BUTTON class='wz-tutor-grip'",
+    "4x StyleRecalc Animation on BUTTON class='chrome-handle'",
+    "4x StyleRecalc Animation on DIV class='arbor2-bar'",
+    "3x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 23480.9,
+   "ms": 44.8,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.8 ms",
+    "Edge_RunTask 44.8 ms",
+    "TimerFire#31 44.8 ms",
+    "FunctionCall :?:7 44.8 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "72x StyleRecalc Animation on DIV class='arbor2-pagesh'",
+    "18x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "18x StyleRecalc Animation on DIV class='arbor2-pergola'",
+    "18x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 23480.9,
+   "ms": 44.8,
+   "top": [
+    "Edge_RunTask 44.8 ms",
+    "TimerFire#31 44.8 ms",
+    "FunctionCall :?:7 44.8 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "72x StyleRecalc Animation on DIV class='arbor2-pagesh'",
+    "18x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "18x StyleRecalc Animation on DIV class='arbor2-pergola'",
+    "18x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 23983.9,
+   "ms": 43.4,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.4 ms",
+    "Edge_RunTask 43.4 ms",
+    "TimerFire#31 43.4 ms",
+    "FunctionCall :?:7 43.4 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "40x StyleRecalc Animation on DIV class='arbor2-pagesh'",
+    "10x StyleRecalc Animation on DIV class='arbor2-pergola'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 23983.9,
+   "ms": 43.4,
+   "top": [
+    "Edge_RunTask 43.4 ms",
+    "TimerFire#31 43.4 ms",
+    "FunctionCall :?:7 43.4 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "40x StyleRecalc Animation on DIV class='arbor2-pagesh'",
+    "10x StyleRecalc Animation on DIV class='arbor2-pergola'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 24480.5,
+   "ms": 43.7,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.7 ms",
+    "Edge_RunTask 43.7 ms",
+    "TimerFire#31 43.7 ms",
+    "FunctionCall :?:7 43.7 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 7
+    }
+   ],
+   "invalidations": [
+    "80x StyleRecalc Animation on DIV class='arbor2-pagesh'",
+    "20x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "20x StyleRecalc Animation on DIV class='arbor2-pergola'",
+    "19x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 24480.5,
+   "ms": 43.7,
+   "top": [
+    "Edge_RunTask 43.7 ms",
+    "TimerFire#31 43.7 ms",
+    "FunctionCall :?:7 43.7 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 7
+    }
+   ],
+   "invalidations": [
+    "80x StyleRecalc Animation on DIV class='arbor2-pagesh'",
+    "20x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "20x StyleRecalc Animation on DIV class='arbor2-pergola'",
+    "19x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 24981.3,
+   "ms": 43.3,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.3 ms",
+    "Edge_RunTask 43.3 ms",
+    "TimerFire#31 43.3 ms",
+    "FunctionCall :?:7 43.3 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "60x StyleRecalc Animation on DIV class='arbor2-pagesh'",
+    "15x StyleRecalc Animation on DIV class='arbor2-pergola'",
+    "10x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "10x Layout Style changed on DIV class='mode-pfill started'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 24981.3,
+   "ms": 43.3,
+   "top": [
+    "Edge_RunTask 43.3 ms",
+    "TimerFire#31 43.3 ms",
+    "FunctionCall :?:7 43.3 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "60x StyleRecalc Animation on DIV class='arbor2-pagesh'",
+    "15x StyleRecalc Animation on DIV class='arbor2-pergola'",
+    "10x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "10x Layout Style changed on DIV class='mode-pfill started'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 25479.7,
+   "ms": 42.5,
+   "top": [
+    "ThreadControllerImpl::RunTask 42.5 ms",
+    "Edge_RunTask 42.5 ms",
+    "TimerFire#31 42.5 ms",
+    "FunctionCall :?:7 42.5 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "64x StyleRecalc Animation on DIV class='arbor2-pagesh'",
+    "16x StyleRecalc Animation on DIV class='arbor2-pergola'",
+    "15x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "15x Layout Style changed on DIV class='mode-pfill started'",
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 25479.7,
+   "ms": 42.5,
+   "top": [
+    "Edge_RunTask 42.5 ms",
+    "TimerFire#31 42.5 ms",
+    "FunctionCall :?:7 42.5 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "64x StyleRecalc Animation on DIV class='arbor2-pagesh'",
+    "16x StyleRecalc Animation on DIV class='arbor2-pergola'",
+    "15x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "15x Layout Style changed on DIV class='mode-pfill started'",
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 25980.6,
+   "ms": 43.6,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.6 ms",
+    "Edge_RunTask 43.6 ms",
+    "TimerFire#31 43.6 ms",
+    "FunctionCall :?:7 43.6 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "44x StyleRecalc Animation on DIV class='arbor2-pagesh'",
+    "11x StyleRecalc Animation on DIV class='arbor2-pergola'",
+    "2x Layout Text changed on #text",
+    "1x StyleRecalc Animation on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 25980.6,
+   "ms": 43.6,
+   "top": [
+    "Edge_RunTask 43.6 ms",
+    "TimerFire#31 43.6 ms",
+    "FunctionCall :?:7 43.6 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "44x StyleRecalc Animation on DIV class='arbor2-pagesh'",
+    "11x StyleRecalc Animation on DIV class='arbor2-pergola'",
+    "2x Layout Text changed on #text",
+    "1x StyleRecalc Animation on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 26479.5,
+   "ms": 44.3,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.3 ms",
+    "Edge_RunTask 44.3 ms",
+    "TimerFire#31 44.3 ms",
+    "FunctionCall :?:7 44.3 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0,
+     "elements": 1
+    }
+   ],
+   "invalidations": [
+    "16x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "16x Layout Style changed on DIV class='mode-pfill started'",
+    "5x StyleInvalidator Invalidation set matched class on DIV class='arbor2-pergola-drift' [[{\"selector\":\":root[data-arbor2][data-theme=\\\"plateau\\\"] :is(.arbor2-pergola, .arbor2-pagesh)[data-asleep=\\\"true\\\"] > .a]",
+    "5x StyleRecalc Related style rule on DIV class='arbor2-pergola-drift'",
+    "5x Layout Style changed on DIV class='arbor2-pergola-drift'",
+    "4x ScheduleStyle attr data-asleep on DIV class='arbor2-pagesh'",
+    "4x StyleInvalidator Element has pending invalidation list on DIV class='arbor2-pagesh'",
+    "1x ScheduleStyle attr data-asleep on DIV class='arbor2-pergola'",
+    "1x StyleInvalidator Element has pending invalidation list on DIV class='arbor2-pergola'",
+    "1x Layout Text changed on #text",
+    "1x StyleRecalc DisplayLock on DIV class='arbor2-pergola-drift'"
+   ]
+  },
+  {
+   "perfAt": 26479.5,
+   "ms": 44.3,
+   "top": [
+    "Edge_RunTask 44.3 ms",
+    "TimerFire#31 44.3 ms",
+    "FunctionCall :?:7 44.3 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0,
+     "elements": 1
+    }
+   ],
+   "invalidations": [
+    "16x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "16x Layout Style changed on DIV class='mode-pfill started'",
+    "5x StyleInvalidator Invalidation set matched class on DIV class='arbor2-pergola-drift' [[{\"selector\":\":root[data-arbor2][data-theme=\\\"plateau\\\"] :is(.arbor2-pergola, .arbor2-pagesh)[data-asleep=\\\"true\\\"] > .a]",
+    "5x StyleRecalc Related style rule on DIV class='arbor2-pergola-drift'",
+    "5x Layout Style changed on DIV class='arbor2-pergola-drift'",
+    "4x ScheduleStyle attr data-asleep on DIV class='arbor2-pagesh'",
+    "4x StyleInvalidator Element has pending invalidation list on DIV class='arbor2-pagesh'",
+    "1x ScheduleStyle attr data-asleep on DIV class='arbor2-pergola'",
+    "1x StyleInvalidator Element has pending invalidation list on DIV class='arbor2-pergola'",
+    "1x Layout Text changed on #text",
+    "1x StyleRecalc DisplayLock on DIV class='arbor2-pergola-drift'"
+   ]
+  },
+  {
+   "perfAt": 26975.9,
+   "ms": 43.7,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.7 ms",
+    "Edge_RunTask 43.7 ms",
+    "TimerFire#31 43.7 ms",
+    "FunctionCall :?:7 43.7 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "12x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "12x Layout Style changed on DIV class='mode-pfill started'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 26975.9,
+   "ms": 43.7,
+   "top": [
+    "Edge_RunTask 43.7 ms",
+    "TimerFire#31 43.7 ms",
+    "FunctionCall :?:7 43.7 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "12x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "12x Layout Style changed on DIV class='mode-pfill started'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 27477.1,
+   "ms": 44.1,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.1 ms",
+    "Edge_RunTask 44.1 ms",
+    "TimerFire#31 44 ms",
+    "FunctionCall :?:7 44 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "4x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "3x Layout Style changed on DIV class='mode-pfill started'",
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 27477.1,
+   "ms": 44.1,
+   "top": [
+    "Edge_RunTask 44.1 ms",
+    "TimerFire#31 44 ms",
+    "FunctionCall :?:7 44 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "4x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "3x Layout Style changed on DIV class='mode-pfill started'",
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 27977.3,
+   "ms": 44,
+   "top": [
+    "ThreadControllerImpl::RunTask 44 ms",
+    "Edge_RunTask 44 ms",
+    "TimerFire#31 44 ms",
+    "FunctionCall :?:7 44 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "15x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "15x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 27977.3,
+   "ms": 44,
+   "top": [
+    "Edge_RunTask 44 ms",
+    "TimerFire#31 44 ms",
+    "FunctionCall :?:7 44 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "15x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "15x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 28476.1,
+   "ms": 45.8,
+   "top": [
+    "ThreadControllerImpl::RunTask 45.8 ms",
+    "Edge_RunTask 45.8 ms",
+    "TimerFire#31 45.8 ms",
+    "FunctionCall :?:7 45.8 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "18x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "18x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "18x StyleRecalc Animation on DIV class='wz-sliver-goal-hairline-fill'",
+    "18x Layout Style changed on DIV class='mode-pfill started'",
+    "18x Layout Style changed on DIV class='wz-sliver-goal-hairline-fill'",
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 28476.1,
+   "ms": 45.8,
+   "top": [
+    "Edge_RunTask 45.8 ms",
+    "TimerFire#31 45.8 ms",
+    "FunctionCall :?:7 45.8 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "18x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "18x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "18x StyleRecalc Animation on DIV class='wz-sliver-goal-hairline-fill'",
+    "18x Layout Style changed on DIV class='mode-pfill started'",
+    "18x Layout Style changed on DIV class='wz-sliver-goal-hairline-fill'",
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 28974.9,
+   "ms": 46,
+   "top": [
+    "ThreadControllerImpl::RunTask 46 ms",
+    "Edge_RunTask 46 ms",
+    "TimerFire#31 46 ms",
+    "FunctionCall :?:7 45.9 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 2
+    }
+   ],
+   "invalidations": [
+    "11x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 28974.9,
+   "ms": 46,
+   "top": [
+    "Edge_RunTask 46 ms",
+    "TimerFire#31 46 ms",
+    "FunctionCall :?:7 45.9 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 2
+    }
+   ],
+   "invalidations": [
+    "11x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 29474.6,
+   "ms": 43.8,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.8 ms",
+    "Edge_RunTask 43.8 ms",
+    "TimerFire#31 43.8 ms",
+    "FunctionCall :?:7 43.8 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "14x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "14x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "13x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 29474.6,
+   "ms": 43.8,
+   "top": [
+    "Edge_RunTask 43.8 ms",
+    "TimerFire#31 43.8 ms",
+    "FunctionCall :?:7 43.8 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "14x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "14x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "13x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 29980.8,
+   "ms": 43.3,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.3 ms",
+    "Edge_RunTask 43.3 ms",
+    "TimerFire#31 43.3 ms",
+    "FunctionCall :?:7 43.2 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "16x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "16x Layout Style changed on DIV class='mode-pfill started'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 29980.8,
+   "ms": 43.3,
+   "top": [
+    "Edge_RunTask 43.3 ms",
+    "TimerFire#31 43.3 ms",
+    "FunctionCall :?:7 43.2 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "16x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "16x Layout Style changed on DIV class='mode-pfill started'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 30480.9,
+   "ms": 43.7,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.7 ms",
+    "Edge_RunTask 43.7 ms",
+    "TimerFire#31 43.7 ms",
+    "FunctionCall :?:7 43.7 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "4x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "3x Layout Text changed on #text",
+    "3x Layout Style changed on DIV class='mode-pfill started'",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 30480.9,
+   "ms": 43.7,
+   "top": [
+    "Edge_RunTask 43.7 ms",
+    "TimerFire#31 43.7 ms",
+    "FunctionCall :?:7 43.7 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "4x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "3x Layout Text changed on #text",
+    "3x Layout Style changed on DIV class='mode-pfill started'",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 30981.1,
+   "ms": 44.3,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.3 ms",
+    "Edge_RunTask 44.3 ms",
+    "TimerFire#31 44.3 ms",
+    "FunctionCall :?:7 44.2 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "10x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "10x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 30981.1,
+   "ms": 44.3,
+   "top": [
+    "Edge_RunTask 44.3 ms",
+    "TimerFire#31 44.3 ms",
+    "FunctionCall :?:7 44.2 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "10x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "10x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 31480.3,
+   "ms": 44.2,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.2 ms",
+    "Edge_RunTask 44.2 ms",
+    "TimerFire#31 44.2 ms",
+    "FunctionCall :?:7 44.2 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "3x Layout Text changed on #text",
+    "3x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "3x Layout Style changed on DIV class='mode-pfill started'",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 31480.3,
+   "ms": 44.2,
+   "top": [
+    "Edge_RunTask 44.2 ms",
+    "TimerFire#31 44.2 ms",
+    "FunctionCall :?:7 44.2 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "3x Layout Text changed on #text",
+    "3x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "3x Layout Style changed on DIV class='mode-pfill started'",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 31980.2,
+   "ms": 44.2,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.2 ms",
+    "Edge_RunTask 44.2 ms",
+    "TimerFire#31 44.2 ms",
+    "FunctionCall :?:7 44.2 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "13x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "11x Layout Style changed on DIV class='mode-pfill started'",
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 31980.2,
+   "ms": 44.2,
+   "top": [
+    "Edge_RunTask 44.2 ms",
+    "TimerFire#31 44.2 ms",
+    "FunctionCall :?:7 44.2 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "13x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "11x Layout Style changed on DIV class='mode-pfill started'",
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 32481.3,
+   "ms": 44.4,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.4 ms",
+    "Edge_RunTask 44.4 ms",
+    "TimerFire#31 44.4 ms",
+    "FunctionCall :?:7 44.4 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "14x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "14x Layout Style changed on DIV class='mode-pfill started'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 32481.3,
+   "ms": 44.4,
+   "top": [
+    "Edge_RunTask 44.4 ms",
+    "TimerFire#31 44.4 ms",
+    "FunctionCall :?:7 44.4 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "14x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "14x Layout Style changed on DIV class='mode-pfill started'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 32981.1,
+   "ms": 43.6,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.6 ms",
+    "Edge_RunTask 43.6 ms",
+    "TimerFire#31 43.6 ms",
+    "FunctionCall :?:7 43.6 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "16x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "16x Layout Style changed on DIV class='mode-pfill started'",
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 32981.1,
+   "ms": 43.6,
+   "top": [
+    "Edge_RunTask 43.6 ms",
+    "TimerFire#31 43.6 ms",
+    "FunctionCall :?:7 43.6 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "16x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "16x Layout Style changed on DIV class='mode-pfill started'",
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 33485.8,
+   "ms": 43.9,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.9 ms",
+    "Edge_RunTask 43.9 ms",
+    "TimerFire#31 43.9 ms",
+    "FunctionCall :?:7 43.9 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 33485.8,
+   "ms": 43.9,
+   "top": [
+    "Edge_RunTask 43.9 ms",
+    "TimerFire#31 43.9 ms",
+    "FunctionCall :?:7 43.9 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 33981.9,
+   "ms": 44.3,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.3 ms",
+    "Edge_RunTask 44.3 ms",
+    "TimerFire#31 44.3 ms",
+    "FunctionCall :?:7 44.3 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "17x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "15x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 33981.9,
+   "ms": 44.3,
+   "top": [
+    "Edge_RunTask 44.3 ms",
+    "TimerFire#31 44.3 ms",
+    "FunctionCall :?:7 44.3 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "17x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "15x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 34480.1,
+   "ms": 44.6,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.6 ms",
+    "Edge_RunTask 44.6 ms",
+    "TimerFire#31 44.6 ms",
+    "FunctionCall :?:7 44.5 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "15x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "15x Layout Style changed on DIV class='mode-pfill started'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 34480.1,
+   "ms": 44.6,
+   "top": [
+    "Edge_RunTask 44.6 ms",
+    "TimerFire#31 44.6 ms",
+    "FunctionCall :?:7 44.5 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "15x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "15x Layout Style changed on DIV class='mode-pfill started'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 34982.1,
+   "ms": 43.8,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.8 ms",
+    "Edge_RunTask 43.8 ms",
+    "TimerFire#31 43.8 ms",
+    "FunctionCall :?:7 43.8 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "17x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "17x StyleRecalc Animation on DIV class='wz-sliver-goal-hairline-fill'",
+    "17x Layout Style changed on DIV class='wz-sliver-goal-hairline-fill'",
+    "2x Layout Text changed on #text",
+    "1x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "1x Layout Style changed on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 34982.1,
+   "ms": 43.8,
+   "top": [
+    "Edge_RunTask 43.8 ms",
+    "TimerFire#31 43.8 ms",
+    "FunctionCall :?:7 43.8 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "17x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "17x StyleRecalc Animation on DIV class='wz-sliver-goal-hairline-fill'",
+    "17x Layout Style changed on DIV class='wz-sliver-goal-hairline-fill'",
+    "2x Layout Text changed on #text",
+    "1x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "1x Layout Style changed on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 35480.2,
+   "ms": 43.8,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.8 ms",
+    "Edge_RunTask 43.8 ms",
+    "TimerFire#31 43.8 ms",
+    "FunctionCall :?:7 43.8 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "18x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "18x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "17x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 35480.2,
+   "ms": 43.8,
+   "top": [
+    "Edge_RunTask 43.8 ms",
+    "TimerFire#31 43.8 ms",
+    "FunctionCall :?:7 43.8 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "18x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "18x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "17x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 35980.3,
+   "ms": 42.7,
+   "top": [
+    "ThreadControllerImpl::RunTask 42.7 ms",
+    "Edge_RunTask 42.7 ms",
+    "TimerFire#31 42.7 ms",
+    "FunctionCall :?:7 42.7 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "15x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "15x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "15x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 35980.3,
+   "ms": 42.7,
+   "top": [
+    "Edge_RunTask 42.7 ms",
+    "TimerFire#31 42.7 ms",
+    "FunctionCall :?:7 42.7 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "15x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "15x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "15x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 36480,
+   "ms": 43.6,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.6 ms",
+    "Edge_RunTask 43.6 ms",
+    "TimerFire#31 43.6 ms",
+    "FunctionCall :?:7 43.6 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 36480,
+   "ms": 43.6,
+   "top": [
+    "Edge_RunTask 43.6 ms",
+    "TimerFire#31 43.6 ms",
+    "FunctionCall :?:7 43.6 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 36980.1,
+   "ms": 43.7,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.7 ms",
+    "Edge_RunTask 43.7 ms",
+    "TimerFire#31 43.7 ms",
+    "FunctionCall :?:7 43.7 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "13x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "12x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 36980.1,
+   "ms": 43.7,
+   "top": [
+    "Edge_RunTask 43.7 ms",
+    "TimerFire#31 43.7 ms",
+    "FunctionCall :?:7 43.7 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "13x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "12x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 37480.2,
+   "ms": 43.5,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.5 ms",
+    "Edge_RunTask 43.5 ms",
+    "TimerFire#31 43.5 ms",
+    "FunctionCall :?:7 43.5 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "18x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "18x Layout Style changed on DIV class='mode-pfill started'",
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 37480.2,
+   "ms": 43.5,
+   "top": [
+    "Edge_RunTask 43.5 ms",
+    "TimerFire#31 43.5 ms",
+    "FunctionCall :?:7 43.5 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "18x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "18x Layout Style changed on DIV class='mode-pfill started'",
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 37979.7,
+   "ms": 45.1,
+   "top": [
+    "ThreadControllerImpl::RunTask 45.1 ms",
+    "Edge_RunTask 45.1 ms",
+    "TimerFire#31 45.1 ms",
+    "FunctionCall :?:7 45.1 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 2
+    }
+   ],
+   "invalidations": [
+    "5x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "5x Layout Style changed on DIV class='mode-pfill started'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 37979.7,
+   "ms": 45.1,
+   "top": [
+    "Edge_RunTask 45.1 ms",
+    "TimerFire#31 45.1 ms",
+    "FunctionCall :?:7 45.1 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 2
+    }
+   ],
+   "invalidations": [
+    "5x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "5x Layout Style changed on DIV class='mode-pfill started'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 38481.3,
+   "ms": 44.3,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.3 ms",
+    "Edge_RunTask 44.3 ms",
+    "TimerFire#31 44.3 ms",
+    "FunctionCall :?:7 44.3 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "14x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "12x Layout Style changed on DIV class='mode-pfill started'",
+    "2x StyleInvalidator Invalidation set invalidates self on DIV class='arbor2-sun-leaf'",
+    "1x Layout Text changed on #text",
+    "1x ScheduleStyle attr style on DIV class='arbor2-sun-leaf'",
+    "1x ScheduleStyle attr data-flutter on DIV class='arbor2-sun-leaf'"
+   ]
+  },
+  {
+   "perfAt": 38481.3,
+   "ms": 44.3,
+   "top": [
+    "Edge_RunTask 44.3 ms",
+    "TimerFire#31 44.3 ms",
+    "FunctionCall :?:7 44.3 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "14x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "12x Layout Style changed on DIV class='mode-pfill started'",
+    "2x StyleInvalidator Invalidation set invalidates self on DIV class='arbor2-sun-leaf'",
+    "1x Layout Text changed on #text",
+    "1x ScheduleStyle attr style on DIV class='arbor2-sun-leaf'",
+    "1x ScheduleStyle attr data-flutter on DIV class='arbor2-sun-leaf'"
+   ]
+  },
+  {
+   "perfAt": 38980,
+   "ms": 44.4,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.4 ms",
+    "Edge_RunTask 44.4 ms",
+    "TimerFire#31 44.3 ms",
+    "FunctionCall :?:7 44.3 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "7x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "7x Layout Style changed on DIV class='mode-pfill started'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 38980,
+   "ms": 44.4,
+   "top": [
+    "Edge_RunTask 44.4 ms",
+    "TimerFire#31 44.3 ms",
+    "FunctionCall :?:7 44.3 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "7x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "7x Layout Style changed on DIV class='mode-pfill started'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 39479.1,
+   "ms": 44.2,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.2 ms",
+    "Edge_RunTask 44.2 ms",
+    "TimerFire#31 44.2 ms",
+    "FunctionCall :?:7 44.1 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "12x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "10x Layout Style changed on DIV class='mode-pfill started'",
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 39479.1,
+   "ms": 44.2,
+   "top": [
+    "Edge_RunTask 44.2 ms",
+    "TimerFire#31 44.2 ms",
+    "FunctionCall :?:7 44.1 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "12x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "10x Layout Style changed on DIV class='mode-pfill started'",
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 39979,
+   "ms": 44.2,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.1 ms",
+    "Edge_RunTask 44.1 ms",
+    "TimerFire#31 44.1 ms",
+    "FunctionCall :?:7 44.1 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "12x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "12x Layout Style changed on DIV class='mode-pfill started'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 39979,
+   "ms": 44.1,
+   "top": [
+    "Edge_RunTask 44.1 ms",
+    "TimerFire#31 44.1 ms",
+    "FunctionCall :?:7 44.1 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "12x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "12x Layout Style changed on DIV class='mode-pfill started'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 40477.3,
+   "ms": 44.3,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.3 ms",
+    "Edge_RunTask 44.3 ms",
+    "TimerFire#31 44.3 ms",
+    "FunctionCall :?:7 44.3 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "16x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "16x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 40477.3,
+   "ms": 44.3,
+   "top": [
+    "Edge_RunTask 44.3 ms",
+    "TimerFire#31 44.3 ms",
+    "FunctionCall :?:7 44.3 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "16x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "16x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 40980.5,
+   "ms": 43.9,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.9 ms",
+    "Edge_RunTask 43.9 ms",
+    "TimerFire#31 43.9 ms",
+    "FunctionCall :?:7 43.8 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 40980.5,
+   "ms": 43.9,
+   "top": [
+    "Edge_RunTask 43.9 ms",
+    "TimerFire#31 43.9 ms",
+    "FunctionCall :?:7 43.8 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 41478.1,
+   "ms": 46.4,
+   "top": [
+    "ThreadControllerImpl::RunTask 46.4 ms",
+    "Edge_RunTask 46.4 ms",
+    "TimerFire#31 46.3 ms",
+    "FunctionCall :?:7 46.3 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "16x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "16x Layout Style changed on DIV class='mode-pfill started'",
+    "9x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "9x StyleRecalc Animation on DIV class='wz-sliver-goal-hairline-fill'",
+    "9x Layout Style changed on DIV class='wz-sliver-goal-hairline-fill'",
+    "2x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='wz-goal-glow'",
+    "1x ScheduleStyle attr style on DIV class='wz-goal-glow'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='wz-goal-glow'",
+    "1x StyleRecalc Related style rule on DIV class='wz-goal-glow'",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='wz-sliver-goal-hairline-fill'",
+    "1x ScheduleStyle attr style on DIV class='wz-sliver-goal-hairline-fill'"
+   ]
+  },
+  {
+   "perfAt": 41478.1,
+   "ms": 46.4,
+   "top": [
+    "Edge_RunTask 46.4 ms",
+    "TimerFire#31 46.3 ms",
+    "FunctionCall :?:7 46.3 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "16x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "16x Layout Style changed on DIV class='mode-pfill started'",
+    "9x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "9x StyleRecalc Animation on DIV class='wz-sliver-goal-hairline-fill'",
+    "9x Layout Style changed on DIV class='wz-sliver-goal-hairline-fill'",
+    "2x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='wz-goal-glow'",
+    "1x ScheduleStyle attr style on DIV class='wz-goal-glow'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='wz-goal-glow'",
+    "1x StyleRecalc Related style rule on DIV class='wz-goal-glow'",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='wz-sliver-goal-hairline-fill'",
+    "1x ScheduleStyle attr style on DIV class='wz-sliver-goal-hairline-fill'"
+   ]
+  },
+  {
+   "perfAt": 41978.2,
+   "ms": 45,
+   "top": [
+    "ThreadControllerImpl::RunTask 45 ms",
+    "Edge_RunTask 45 ms",
+    "TimerFire#31 45 ms",
+    "FunctionCall :?:7 45 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "18x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "15x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "15x Layout Style changed on DIV class='mode-pfill started'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 41978.2,
+   "ms": 45,
+   "top": [
+    "Edge_RunTask 45 ms",
+    "TimerFire#31 45 ms",
+    "FunctionCall :?:7 45 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "18x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "15x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "15x Layout Style changed on DIV class='mode-pfill started'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 42477,
+   "ms": 43.8,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.8 ms",
+    "Edge_RunTask 43.8 ms",
+    "TimerFire#31 43.8 ms",
+    "FunctionCall :?:7 43.8 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "12x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "3x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "2x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 42477,
+   "ms": 43.8,
+   "top": [
+    "Edge_RunTask 43.8 ms",
+    "TimerFire#31 43.8 ms",
+    "FunctionCall :?:7 43.8 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "12x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "3x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "2x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 42977.8,
+   "ms": 45.2,
+   "top": [
+    "ThreadControllerImpl::RunTask 45.2 ms",
+    "Edge_RunTask 45.2 ms",
+    "TimerFire#31 45.2 ms",
+    "FunctionCall :?:7 45.1 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "16x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "15x Layout Style changed on DIV class='mode-pfill started'",
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 42977.8,
+   "ms": 45.2,
+   "top": [
+    "Edge_RunTask 45.2 ms",
+    "TimerFire#31 45.2 ms",
+    "FunctionCall :?:7 45.1 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "16x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "15x Layout Style changed on DIV class='mode-pfill started'",
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 43480,
+   "ms": 44.6,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.5 ms",
+    "Edge_RunTask 44.5 ms",
+    "TimerFire#31 44.5 ms",
+    "FunctionCall :?:7 44.5 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "17x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "17x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 43480,
+   "ms": 44.5,
+   "top": [
+    "Edge_RunTask 44.5 ms",
+    "TimerFire#31 44.5 ms",
+    "FunctionCall :?:7 44.5 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "17x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "17x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 43976.8,
+   "ms": 44.2,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.2 ms",
+    "Edge_RunTask 44.2 ms",
+    "TimerFire#31 44.2 ms",
+    "FunctionCall :?:7 44.2 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 43976.8,
+   "ms": 44.2,
+   "top": [
+    "Edge_RunTask 44.2 ms",
+    "TimerFire#31 44.2 ms",
+    "FunctionCall :?:7 44.2 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 44473,
+   "ms": 43.5,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.5 ms",
+    "Edge_RunTask 43.5 ms",
+    "TimerFire#31 43.5 ms",
+    "FunctionCall :?:7 43.5 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "16x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "15x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 44473,
+   "ms": 43.5,
+   "top": [
+    "Edge_RunTask 43.5 ms",
+    "TimerFire#31 43.5 ms",
+    "FunctionCall :?:7 43.5 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "16x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "15x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 44976.7,
+   "ms": 43.8,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.8 ms",
+    "Edge_RunTask 43.8 ms",
+    "TimerFire#31 43.8 ms",
+    "FunctionCall :?:7 43.8 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "16x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "16x Layout Style changed on DIV class='mode-pfill started'",
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 44976.7,
+   "ms": 43.8,
+   "top": [
+    "Edge_RunTask 43.8 ms",
+    "TimerFire#31 43.8 ms",
+    "FunctionCall :?:7 43.8 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "16x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "16x Layout Style changed on DIV class='mode-pfill started'",
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 45473.7,
+   "ms": 43.7,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.7 ms",
+    "Edge_RunTask 43.7 ms",
+    "TimerFire#31 43.7 ms",
+    "FunctionCall :?:7 43.7 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "4x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "4x Layout Style changed on DIV class='mode-pfill started'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 45473.7,
+   "ms": 43.7,
+   "top": [
+    "Edge_RunTask 43.7 ms",
+    "TimerFire#31 43.7 ms",
+    "FunctionCall :?:7 43.7 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "4x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "4x Layout Style changed on DIV class='mode-pfill started'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 45981.5,
+   "ms": 43.8,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.8 ms",
+    "Edge_RunTask 43.8 ms",
+    "TimerFire#31 43.8 ms",
+    "FunctionCall :?:7 43.8 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "12x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "9x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 45981.5,
+   "ms": 43.8,
+   "top": [
+    "Edge_RunTask 43.8 ms",
+    "TimerFire#31 43.8 ms",
+    "FunctionCall :?:7 43.8 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "12x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "9x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 46480.5,
+   "ms": 44.4,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.4 ms",
+    "Edge_RunTask 44.4 ms",
+    "TimerFire#31 44.4 ms",
+    "FunctionCall :?:7 44.4 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "8x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "8x Layout Style changed on DIV class='mode-pfill started'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 46480.5,
+   "ms": 44.4,
+   "top": [
+    "Edge_RunTask 44.4 ms",
+    "TimerFire#31 44.4 ms",
+    "FunctionCall :?:7 44.4 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "8x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "8x Layout Style changed on DIV class='mode-pfill started'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 46979.9,
+   "ms": 44,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.9 ms",
+    "Edge_RunTask 43.9 ms",
+    "TimerFire#31 43.9 ms",
+    "FunctionCall :?:7 43.9 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "11x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "9x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 46979.9,
+   "ms": 43.9,
+   "top": [
+    "Edge_RunTask 43.9 ms",
+    "TimerFire#31 43.9 ms",
+    "FunctionCall :?:7 43.9 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "11x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "9x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 47479.5,
+   "ms": 43.7,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.7 ms",
+    "Edge_RunTask 43.7 ms",
+    "TimerFire#31 43.7 ms",
+    "FunctionCall :?:7 43.6 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 2
+    }
+   ],
+   "invalidations": [
+    "17x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "17x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 47479.5,
+   "ms": 43.7,
+   "top": [
+    "Edge_RunTask 43.7 ms",
+    "TimerFire#31 43.7 ms",
+    "FunctionCall :?:7 43.6 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 2
+    }
+   ],
+   "invalidations": [
+    "17x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "17x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 47978.3,
+   "ms": 43.4,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.4 ms",
+    "Edge_RunTask 43.4 ms",
+    "TimerFire#31 43.4 ms",
+    "FunctionCall :?:7 43.4 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "15x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "15x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='wz-goal-glow'",
+    "1x ScheduleStyle attr style on DIV class='wz-goal-glow'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='wz-goal-glow'",
+    "1x StyleRecalc Related style rule on DIV class='wz-goal-glow'",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='wz-sliver-goal-hairline-fill'",
+    "1x ScheduleStyle attr style on DIV class='wz-sliver-goal-hairline-fill'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='wz-sliver-goal-hairline-fill'",
+    "1x StyleRecalc Related style rule on DIV class='wz-sliver-goal-hairline-fill'"
+   ]
+  },
+  {
+   "perfAt": 47978.3,
+   "ms": 43.4,
+   "top": [
+    "Edge_RunTask 43.4 ms",
+    "TimerFire#31 43.4 ms",
+    "FunctionCall :?:7 43.4 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "15x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "15x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='wz-goal-glow'",
+    "1x ScheduleStyle attr style on DIV class='wz-goal-glow'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='wz-goal-glow'",
+    "1x StyleRecalc Related style rule on DIV class='wz-goal-glow'",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='wz-sliver-goal-hairline-fill'",
+    "1x ScheduleStyle attr style on DIV class='wz-sliver-goal-hairline-fill'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='wz-sliver-goal-hairline-fill'",
+    "1x StyleRecalc Related style rule on DIV class='wz-sliver-goal-hairline-fill'"
+   ]
+  },
+  {
+   "perfAt": 48478.7,
+   "ms": 44.1,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.1 ms",
+    "Edge_RunTask 44.1 ms",
+    "TimerFire#31 44 ms",
+    "FunctionCall :?:7 44 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 2
+    }
+   ],
+   "invalidations": [
+    "12x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "9x StyleRecalc Animation on DIV class='wz-sliver-goal-hairline-fill'",
+    "9x Layout Style changed on DIV class='wz-sliver-goal-hairline-fill'",
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 48478.7,
+   "ms": 44.1,
+   "top": [
+    "Edge_RunTask 44.1 ms",
+    "TimerFire#31 44 ms",
+    "FunctionCall :?:7 44 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 2
+    }
+   ],
+   "invalidations": [
+    "12x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "9x StyleRecalc Animation on DIV class='wz-sliver-goal-hairline-fill'",
+    "9x Layout Style changed on DIV class='wz-sliver-goal-hairline-fill'",
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 48977.2,
+   "ms": 44.7,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.7 ms",
+    "Edge_RunTask 44.7 ms",
+    "TimerFire#31 44.7 ms",
+    "FunctionCall :?:7 44.6 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "13x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "13x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "13x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 48977.2,
+   "ms": 44.7,
+   "top": [
+    "Edge_RunTask 44.7 ms",
+    "TimerFire#31 44.7 ms",
+    "FunctionCall :?:7 44.6 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "13x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "13x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "13x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 49479.8,
+   "ms": 44.1,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.1 ms",
+    "Edge_RunTask 44.1 ms",
+    "TimerFire#31 44.1 ms",
+    "FunctionCall :?:7 44.1 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "15x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "15x Layout Style changed on DIV class='mode-pfill started'",
+    "11x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 49479.8,
+   "ms": 44.1,
+   "top": [
+    "Edge_RunTask 44.1 ms",
+    "TimerFire#31 44.1 ms",
+    "FunctionCall :?:7 44.1 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "15x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "15x Layout Style changed on DIV class='mode-pfill started'",
+    "11x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 49973.9,
+   "ms": 43.9,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.9 ms",
+    "Edge_RunTask 43.9 ms",
+    "TimerFire#31 43.9 ms",
+    "FunctionCall :?:7 43.9 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "3x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text",
+    "1x Layout Style changed on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 49973.9,
+   "ms": 43.9,
+   "top": [
+    "Edge_RunTask 43.9 ms",
+    "TimerFire#31 43.9 ms",
+    "FunctionCall :?:7 43.9 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "3x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text",
+    "1x Layout Style changed on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 50481.3,
+   "ms": 43,
+   "top": [
+    "ThreadControllerImpl::RunTask 43 ms",
+    "Edge_RunTask 43 ms",
+    "TimerFire#31 43 ms",
+    "FunctionCall :?:7 43 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "15x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "15x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 50481.3,
+   "ms": 43,
+   "top": [
+    "Edge_RunTask 43 ms",
+    "TimerFire#31 43 ms",
+    "FunctionCall :?:7 43 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "15x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "15x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 50980.6,
+   "ms": 45.9,
+   "top": [
+    "ThreadControllerImpl::RunTask 45.9 ms",
+    "Edge_RunTask 45.9 ms",
+    "TimerFire#31 45.9 ms",
+    "FunctionCall :?:7 45.9 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "17x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "17x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 50980.6,
+   "ms": 45.9,
+   "top": [
+    "Edge_RunTask 45.9 ms",
+    "TimerFire#31 45.9 ms",
+    "FunctionCall :?:7 45.9 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "17x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "17x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 51481.1,
+   "ms": 43.9,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.9 ms",
+    "Edge_RunTask 43.9 ms",
+    "TimerFire#31 43.9 ms",
+    "FunctionCall :?:7 43.9 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'",
+    "1x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "1x Layout Style changed on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 51481.1,
+   "ms": 43.9,
+   "top": [
+    "Edge_RunTask 43.9 ms",
+    "TimerFire#31 43.9 ms",
+    "FunctionCall :?:7 43.9 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'",
+    "1x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "1x Layout Style changed on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 51980.3,
+   "ms": 44.4,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.4 ms",
+    "Edge_RunTask 44.4 ms",
+    "TimerFire#31 44.4 ms",
+    "FunctionCall :?:7 44.4 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "16x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "15x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 51980.3,
+   "ms": 44.4,
+   "top": [
+    "Edge_RunTask 44.4 ms",
+    "TimerFire#31 44.4 ms",
+    "FunctionCall :?:7 44.4 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "16x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "15x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 52480.3,
+   "ms": 44.6,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.6 ms",
+    "Edge_RunTask 44.6 ms",
+    "TimerFire#31 44.6 ms",
+    "FunctionCall :?:7 44.6 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "14x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "14x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 52480.3,
+   "ms": 44.6,
+   "top": [
+    "Edge_RunTask 44.6 ms",
+    "TimerFire#31 44.6 ms",
+    "FunctionCall :?:7 44.6 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "14x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "14x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 52979.7,
+   "ms": 43.8,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.8 ms",
+    "Edge_RunTask 43.8 ms",
+    "TimerFire#31 43.8 ms",
+    "FunctionCall :?:7 43.8 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "8x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "8x Layout Style changed on DIV class='mode-pfill started'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 52979.7,
+   "ms": 43.8,
+   "top": [
+    "Edge_RunTask 43.8 ms",
+    "TimerFire#31 43.8 ms",
+    "FunctionCall :?:7 43.8 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "8x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "8x Layout Style changed on DIV class='mode-pfill started'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 53484.3,
+   "ms": 43.8,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.8 ms",
+    "Edge_RunTask 43.8 ms",
+    "TimerFire#31 43.8 ms",
+    "FunctionCall :?:7 43.8 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "7x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "7x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 53484.3,
+   "ms": 43.8,
+   "top": [
+    "Edge_RunTask 43.8 ms",
+    "TimerFire#31 43.8 ms",
+    "FunctionCall :?:7 43.8 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "7x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "7x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 53980.1,
+   "ms": 44.4,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.4 ms",
+    "Edge_RunTask 44.4 ms",
+    "TimerFire#31 44.4 ms",
+    "FunctionCall :?:7 44.4 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "10x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "10x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 53980.1,
+   "ms": 44.4,
+   "top": [
+    "Edge_RunTask 44.4 ms",
+    "TimerFire#31 44.4 ms",
+    "FunctionCall :?:7 44.4 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "10x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "10x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 54473.7,
+   "ms": 44.4,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.4 ms",
+    "Edge_RunTask 44.4 ms",
+    "TimerFire#31 44.4 ms",
+    "FunctionCall :?:7 44.4 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "10x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "8x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 54473.7,
+   "ms": 44.4,
+   "top": [
+    "Edge_RunTask 44.4 ms",
+    "TimerFire#31 44.4 ms",
+    "FunctionCall :?:7 44.4 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "10x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "8x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 54972.9,
+   "ms": 45.2,
+   "top": [
+    "ThreadControllerImpl::RunTask 45.2 ms",
+    "Edge_RunTask 45.2 ms",
+    "TimerFire#31 45.2 ms",
+    "FunctionCall :?:7 45.2 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "17x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "16x StyleRecalc Animation on DIV class='wz-sliver-goal-hairline-fill'",
+    "16x Layout Style changed on DIV class='wz-sliver-goal-hairline-fill'",
+    "16x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "16x Layout Style changed on DIV class='mode-pfill started'",
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 54972.9,
+   "ms": 45.2,
+   "top": [
+    "Edge_RunTask 45.2 ms",
+    "TimerFire#31 45.2 ms",
+    "FunctionCall :?:7 45.2 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "17x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "16x StyleRecalc Animation on DIV class='wz-sliver-goal-hairline-fill'",
+    "16x Layout Style changed on DIV class='wz-sliver-goal-hairline-fill'",
+    "16x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "16x Layout Style changed on DIV class='mode-pfill started'",
+    "1x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 55479.9,
+   "ms": 44,
+   "top": [
+    "ThreadControllerImpl::RunTask 44 ms",
+    "Edge_RunTask 44 ms",
+    "TimerFire#31 44 ms",
+    "FunctionCall :?:7 44 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "14x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "14x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "14x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 55479.9,
+   "ms": 44,
+   "top": [
+    "Edge_RunTask 44 ms",
+    "TimerFire#31 44 ms",
+    "FunctionCall :?:7 44 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "14x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "14x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "14x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 55980.4,
+   "ms": 43.5,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.5 ms",
+    "Edge_RunTask 43.5 ms",
+    "TimerFire#31 43.5 ms",
+    "FunctionCall :?:7 43.5 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "11x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 55980.4,
+   "ms": 43.5,
+   "top": [
+    "Edge_RunTask 43.5 ms",
+    "TimerFire#31 43.5 ms",
+    "FunctionCall :?:7 43.5 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "11x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 56480.9,
+   "ms": 43.6,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.6 ms",
+    "Edge_RunTask 43.6 ms",
+    "TimerFire#31 43.6 ms",
+    "FunctionCall :?:7 43.6 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "14x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "12x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 56480.9,
+   "ms": 43.6,
+   "top": [
+    "Edge_RunTask 43.6 ms",
+    "TimerFire#31 43.6 ms",
+    "FunctionCall :?:7 43.6 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "14x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "12x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 56972.7,
+   "ms": 44,
+   "top": [
+    "ThreadControllerImpl::RunTask 44 ms",
+    "Edge_RunTask 44 ms",
+    "TimerFire#31 44 ms",
+    "FunctionCall :?:7 44 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "13x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "13x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 56972.7,
+   "ms": 44,
+   "top": [
+    "Edge_RunTask 44 ms",
+    "TimerFire#31 44 ms",
+    "FunctionCall :?:7 44 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "13x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "13x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 57484.1,
+   "ms": 43.8,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.7 ms",
+    "Edge_RunTask 43.7 ms",
+    "TimerFire#31 43.7 ms",
+    "FunctionCall :?:7 43.7 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 57484.1,
+   "ms": 43.7,
+   "top": [
+    "Edge_RunTask 43.7 ms",
+    "TimerFire#31 43.7 ms",
+    "FunctionCall :?:7 43.7 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 57980.2,
+   "ms": 43,
+   "top": [
+    "ThreadControllerImpl::RunTask 43 ms",
+    "Edge_RunTask 43 ms",
+    "TimerFire#31 43 ms",
+    "FunctionCall :?:7 43 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "14x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "13x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 57980.2,
+   "ms": 43,
+   "top": [
+    "Edge_RunTask 43 ms",
+    "TimerFire#31 43 ms",
+    "FunctionCall :?:7 43 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "14x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "13x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 58479.1,
+   "ms": 44.4,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.4 ms",
+    "Edge_RunTask 44.4 ms",
+    "TimerFire#31 44.4 ms",
+    "FunctionCall :?:7 44.3 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "18x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "17x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 58479.1,
+   "ms": 44.4,
+   "top": [
+    "Edge_RunTask 44.4 ms",
+    "TimerFire#31 44.4 ms",
+    "FunctionCall :?:7 44.3 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "18x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "17x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 58980.6,
+   "ms": 43.2,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.2 ms",
+    "Edge_RunTask 43.2 ms",
+    "TimerFire#31 43.2 ms",
+    "FunctionCall :?:7 43.1 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "3x Layout Text changed on #text",
+    "2x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "2x Layout Style changed on DIV class='mode-pfill started'",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 58980.6,
+   "ms": 43.2,
+   "top": [
+    "Edge_RunTask 43.2 ms",
+    "TimerFire#31 43.2 ms",
+    "FunctionCall :?:7 43.1 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "3x Layout Text changed on #text",
+    "2x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "2x Layout Style changed on DIV class='mode-pfill started'",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 59479.5,
+   "ms": 43.8,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.8 ms",
+    "Edge_RunTask 43.8 ms",
+    "TimerFire#31 43.8 ms",
+    "FunctionCall :?:7 43.8 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "15x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "13x Layout Style changed on DIV class='mode-pfill started'",
+    "2x StyleInvalidator Invalidation set invalidates self on DIV class='arbor2-sun-leaf'",
+    "1x Layout Text changed on #text",
+    "1x ScheduleStyle attr style on DIV class='arbor2-sun-leaf'",
+    "1x ScheduleStyle attr data-flutter on DIV class='arbor2-sun-leaf'"
+   ]
+  },
+  {
+   "perfAt": 59479.5,
+   "ms": 43.8,
+   "top": [
+    "Edge_RunTask 43.8 ms",
+    "TimerFire#31 43.8 ms",
+    "FunctionCall :?:7 43.8 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0,
+     "elements": 0
+    }
+   ],
+   "invalidations": [
+    "15x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "13x Layout Style changed on DIV class='mode-pfill started'",
+    "2x StyleInvalidator Invalidation set invalidates self on DIV class='arbor2-sun-leaf'",
+    "1x Layout Text changed on #text",
+    "1x ScheduleStyle attr style on DIV class='arbor2-sun-leaf'",
+    "1x ScheduleStyle attr data-flutter on DIV class='arbor2-sun-leaf'"
+   ]
+  },
+  {
+   "perfAt": 59980.2,
+   "ms": 46,
+   "top": [
+    "ThreadControllerImpl::RunTask 46 ms",
+    "Edge_RunTask 46 ms",
+    "TimerFire#31 46 ms",
+    "FunctionCall :?:7 46 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "15x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "14x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 59980.2,
+   "ms": 46,
+   "top": [
+    "Edge_RunTask 46 ms",
+    "TimerFire#31 46 ms",
+    "FunctionCall :?:7 46 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "15x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "14x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 60480.9,
+   "ms": 48.8,
+   "top": [
+    "ThreadControllerImpl::RunTask 48.8 ms",
+    "Edge_RunTask 48.8 ms",
+    "TimerFire#31 48.8 ms",
+    "FunctionCall :?:7 48.7 ms",
+    "UpdateLayoutTree 5.6 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 5.6,
+     "elements": 811
+    }
+   ],
+   "invalidations": [
+    "10x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "10x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'",
+    "1x StyleRecalc DisplayLock on DIV class='arbor2-pergola-drift'"
+   ]
+  },
+  {
+   "perfAt": 60480.9,
+   "ms": 48.8,
+   "top": [
+    "Edge_RunTask 48.8 ms",
+    "TimerFire#31 48.8 ms",
+    "FunctionCall :?:7 48.7 ms",
+    "UpdateLayoutTree 5.6 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 5.6,
+     "elements": 811
+    }
+   ],
+   "invalidations": [
+    "10x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "10x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'",
+    "1x StyleRecalc DisplayLock on DIV class='arbor2-pergola-drift'"
+   ]
+  },
+  {
+   "perfAt": 60978,
+   "ms": 43.9,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.9 ms",
+    "Edge_RunTask 43.9 ms",
+    "TimerFire#31 43.9 ms",
+    "FunctionCall :?:7 43.9 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "9x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "6x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 60978,
+   "ms": 43.9,
+   "top": [
+    "Edge_RunTask 43.9 ms",
+    "TimerFire#31 43.9 ms",
+    "FunctionCall :?:7 43.9 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "9x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "6x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 61478.2,
+   "ms": 44.9,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.9 ms",
+    "Edge_RunTask 44.9 ms",
+    "TimerFire#31 44.9 ms",
+    "FunctionCall :?:7 44.9 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "16x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "16x StyleRecalc Animation on DIV class='wz-sliver-goal-hairline-fill'",
+    "16x Layout Style changed on DIV class='wz-sliver-goal-hairline-fill'",
+    "7x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "7x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 61478.2,
+   "ms": 44.9,
+   "top": [
+    "Edge_RunTask 44.9 ms",
+    "TimerFire#31 44.9 ms",
+    "FunctionCall :?:7 44.9 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "16x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "16x StyleRecalc Animation on DIV class='wz-sliver-goal-hairline-fill'",
+    "16x Layout Style changed on DIV class='wz-sliver-goal-hairline-fill'",
+    "7x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "7x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 61976.8,
+   "ms": 43.9,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.9 ms",
+    "Edge_RunTask 43.9 ms",
+    "TimerFire#31 43.9 ms",
+    "FunctionCall :?:7 43.9 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 2
+    }
+   ],
+   "invalidations": [
+    "14x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "10x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "7x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 61976.8,
+   "ms": 43.9,
+   "top": [
+    "Edge_RunTask 43.9 ms",
+    "TimerFire#31 43.9 ms",
+    "FunctionCall :?:7 43.9 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 2
+    }
+   ],
+   "invalidations": [
+    "14x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "10x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "7x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 62480.8,
+   "ms": 43.9,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.9 ms",
+    "Edge_RunTask 43.9 ms",
+    "TimerFire#31 43.9 ms",
+    "FunctionCall :?:7 43.9 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "15x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "15x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "14x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 62480.8,
+   "ms": 43.9,
+   "top": [
+    "Edge_RunTask 43.9 ms",
+    "TimerFire#31 43.9 ms",
+    "FunctionCall :?:7 43.9 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "15x StyleRecalc Animation on DIV class='wz-goal-glow'",
+    "15x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "14x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 62979.7,
+   "ms": 44.1,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.1 ms",
+    "Edge_RunTask 44.1 ms",
+    "TimerFire#31 44.1 ms",
+    "FunctionCall :?:7 44.1 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 2
+    }
+   ],
+   "invalidations": [
+    "17x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "17x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 62979.7,
+   "ms": 44.1,
+   "top": [
+    "Edge_RunTask 44.1 ms",
+    "TimerFire#31 44.1 ms",
+    "FunctionCall :?:7 44.1 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 2
+    }
+   ],
+   "invalidations": [
+    "17x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "17x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 63480,
+   "ms": 44.2,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.2 ms",
+    "Edge_RunTask 44.2 ms",
+    "TimerFire#31 44.2 ms",
+    "FunctionCall :?:7 44.2 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'",
+    "1x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "1x Layout Style changed on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 63480,
+   "ms": 44.2,
+   "top": [
+    "Edge_RunTask 44.2 ms",
+    "TimerFire#31 44.2 ms",
+    "FunctionCall :?:7 44.2 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "3x Layout Text changed on #text",
+    "1x StyleRecalc Inline CSS style declaration was mutated on DIV class='mode-pfill started'",
+    "1x ScheduleStyle attr style on DIV class='mode-pfill started'",
+    "1x StyleInvalidator Invalidation set invalidates self on DIV class='mode-pfill started'",
+    "1x StyleRecalc Related style rule on DIV class='mode-pfill started'",
+    "1x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "1x Layout Style changed on DIV class='mode-pfill started'"
+   ]
+  },
+  {
+   "perfAt": 63978.2,
+   "ms": 44.2,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.2 ms",
+    "Edge_RunTask 44.2 ms",
+    "TimerFire#31 44.2 ms",
+    "FunctionCall :?:7 44.2 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "14x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "13x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 63978.2,
+   "ms": 44.2,
+   "top": [
+    "Edge_RunTask 44.2 ms",
+    "TimerFire#31 44.2 ms",
+    "FunctionCall :?:7 44.2 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "14x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "13x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 64476.4,
+   "ms": 44.9,
+   "top": [
+    "ThreadControllerImpl::RunTask 44.9 ms",
+    "Edge_RunTask 44.9 ms",
+    "TimerFire#31 44.9 ms",
+    "FunctionCall :?:7 44.9 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "16x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "16x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 64476.4,
+   "ms": 44.9,
+   "top": [
+    "Edge_RunTask 44.9 ms",
+    "TimerFire#31 44.9 ms",
+    "FunctionCall :?:7 44.9 ms"
+   ],
+   "recalcs": [],
+   "invalidations": [
+    "16x StyleRecalc Animation on DIV class='mode-pfill started'",
+    "16x Layout Style changed on DIV class='mode-pfill started'",
+    "2x Layout Text changed on #text"
+   ]
+  },
+  {
+   "perfAt": 64975.7,
+   "ms": 44,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.9 ms",
+    "Edge_RunTask 43.9 ms",
+    "TimerFire#31 43.9 ms",
+    "FunctionCall :?:7 43.9 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": []
+  },
+  {
+   "perfAt": 64975.7,
+   "ms": 43.9,
+   "top": [
+    "Edge_RunTask 43.9 ms",
+    "TimerFire#31 43.9 ms",
+    "FunctionCall :?:7 43.9 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": []
+  },
+  {
+   "perfAt": 65476.2,
+   "ms": 43.9,
+   "top": [
+    "ThreadControllerImpl::RunTask 43.9 ms",
+    "Edge_RunTask 43.9 ms",
+    "TimerFire#31 43.9 ms",
+    "FunctionCall :?:7 43.8 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": []
+  },
+  {
+   "perfAt": 65476.2,
+   "ms": 43.9,
+   "top": [
+    "Edge_RunTask 43.9 ms",
+    "TimerFire#31 43.9 ms",
+    "FunctionCall :?:7 43.8 ms"
+   ],
+   "recalcs": [
+    {
+     "ms": 0.1,
+     "elements": 0
+    }
+   ],
+   "invalidations": []
+  }
+ ],
+ "bySlow": [
+  {
+   "key": 28,
+   "ms": 62.3,
+   "at": 22966,
+   "mutations": [
+    "1x attr div.mode-pfill.started style"
+   ],
+   "longTasks": [
+    "44.7 ms: ThreadControllerImpl::RunTask 44.7 ms | Edge_RunTask 44.7 ms | TimerFire#31 44.7 ms",
+    "44.7 ms: Edge_RunTask 44.7 ms | TimerFire#31 44.7 ms | FunctionCall :?:7 44.7 ms"
+   ]
+  },
+  {
+   "key": 37,
+   "ms": 60.2,
+   "at": 23967,
+   "mutations": [
+    "1x attr div.mode-pfill.started style"
+   ],
+   "longTasks": [
+    "43.4 ms: ThreadControllerImpl::RunTask 43.4 ms | Edge_RunTask 43.4 ms | TimerFire#31 43.4 ms",
+    "43.4 ms: Edge_RunTask 43.4 ms | TimerFire#31 43.4 ms | FunctionCall :?:7 43.4 ms"
+   ]
+  },
+  {
+   "key": 55,
+   "ms": 74,
+   "at": 25950,
+   "mutations": [
+    "1x attr div.mode-pfill.started style"
+   ],
+   "longTasks": [
+    "43.6 ms: ThreadControllerImpl::RunTask 43.6 ms | Edge_RunTask 43.6 ms | TimerFire#31 43.6 ms",
+    "43.6 ms: Edge_RunTask 43.6 ms | TimerFire#31 43.6 ms | FunctionCall :?:7 43.6 ms"
+   ]
+  },
+  {
+   "key": 87,
+   "ms": 58.8,
+   "at": 29460,
+   "mutations": [],
+   "longTasks": [
+    "43.8 ms: ThreadControllerImpl::RunTask 43.8 ms | Edge_RunTask 43.8 ms | TimerFire#31 43.8 ms",
+    "43.8 ms: Edge_RunTask 43.8 ms | TimerFire#31 43.8 ms | FunctionCall :?:7 43.8 ms"
+   ]
+  },
+  {
+   "key": 128,
+   "ms": 57.6,
+   "at": 33969,
+   "mutations": [],
+   "longTasks": [
+    "44.3 ms: ThreadControllerImpl::RunTask 44.3 ms | Edge_RunTask 44.3 ms | TimerFire#31 44.3 ms",
+    "44.3 ms: Edge_RunTask 44.3 ms | TimerFire#31 44.3 ms | FunctionCall :?:7 44.3 ms"
+   ]
+  },
+  {
+   "key": 137,
+   "ms": 58.5,
+   "at": 34967,
+   "mutations": [],
+   "longTasks": [
+    "43.8 ms: ThreadControllerImpl::RunTask 43.8 ms | Edge_RunTask 43.8 ms | TimerFire#31 43.8 ms",
+    "43.8 ms: Edge_RunTask 43.8 ms | TimerFire#31 43.8 ms | FunctionCall :?:7 43.8 ms"
+   ]
+  },
+  {
+   "key": 155,
+   "ms": 74.8,
+   "at": 36949,
+   "mutations": [],
+   "longTasks": [
+    "43.7 ms: ThreadControllerImpl::RunTask 43.7 ms | Edge_RunTask 43.7 ms | TimerFire#31 43.7 ms",
+    "43.7 ms: Edge_RunTask 43.7 ms | TimerFire#31 43.7 ms | FunctionCall :?:7 43.7 ms"
+   ]
+  },
+  {
+   "key": 187,
+   "ms": 60,
+   "at": 40462,
+   "mutations": [],
+   "longTasks": [
+    "44.3 ms: ThreadControllerImpl::RunTask 44.3 ms | Edge_RunTask 44.3 ms | TimerFire#31 44.3 ms",
+    "44.3 ms: Edge_RunTask 44.3 ms | TimerFire#31 44.3 ms | FunctionCall :?:7 44.3 ms"
+   ]
+  },
+  {
+   "key": 255,
+   "ms": 73.3,
+   "at": 47948,
+   "mutations": [
+    "1x attr div.wz-goal-glow style",
+    "1x attr div.wz-sliver-goal-hairline-fill style",
+    "1x attr div.wz-sliver-goal data-done"
+   ],
+   "longTasks": [
+    "43.4 ms: ThreadControllerImpl::RunTask 43.4 ms | Edge_RunTask 43.4 ms | TimerFire#31 43.4 ms",
+    "43.4 ms: Edge_RunTask 43.4 ms | TimerFire#31 43.4 ms | FunctionCall :?:7 43.4 ms"
+   ]
+  },
+  {
+   "key": 278,
+   "ms": 52.3,
+   "at": 50472,
+   "mutations": [],
+   "longTasks": [
+    "43 ms: ThreadControllerImpl::RunTask 43 ms | Edge_RunTask 43 ms | TimerFire#31 43 ms",
+    "43 ms: Edge_RunTask 43 ms | TimerFire#31 43 ms | FunctionCall :?:7 43 ms"
+   ]
+  },
+  {
+   "key": 328,
+   "ms": 52.7,
+   "at": 55971,
+   "mutations": [
+    "1x attr div.mode-pfill.started style"
+   ],
+   "longTasks": [
+    "43.5 ms: ThreadControllerImpl::RunTask 43.5 ms | Edge_RunTask 43.5 ms | TimerFire#31 43.5 ms",
+    "43.5 ms: Edge_RunTask 43.5 ms | TimerFire#31 43.5 ms | FunctionCall :?:7 43.5 ms"
+   ]
+  },
+  {
+   "key": 337,
+   "ms": 59.5,
+   "at": 56957,
+   "mutations": [],
+   "longTasks": [
+    "44 ms: ThreadControllerImpl::RunTask 44 ms | Edge_RunTask 44 ms | TimerFire#31 44 ms",
+    "44 ms: Edge_RunTask 44 ms | TimerFire#31 44 ms | FunctionCall :?:7 44 ms"
+   ]
+  },
+  {
+   "key": 387,
+   "ms": 62.2,
+   "at": 62463,
+   "mutations": [],
+   "longTasks": [
+    "43.9 ms: ThreadControllerImpl::RunTask 43.9 ms | Edge_RunTask 43.9 ms | TimerFire#31 43.9 ms",
+    "43.9 ms: Edge_RunTask 43.9 ms | TimerFire#31 43.9 ms | FunctionCall :?:7 43.9 ms"
+   ]
+  },
+  {
+   "key": 405,
+   "ms": 74.7,
+   "at": 64447,
+   "mutations": [],
+   "longTasks": [
+    "44.9 ms: ThreadControllerImpl::RunTask 44.9 ms | Edge_RunTask 44.9 ms | TimerFire#31 44.9 ms",
+    "44.9 ms: Edge_RunTask 44.9 ms | TimerFire#31 44.9 ms | FunctionCall :?:7 44.9 ms"
+   ]
+  }
+ ],
+ "groupsNearSlow": [
+  {
+   "group": "attr div.mode-pfill.started style",
+   "n": 60,
+   "medianGapMs": 765.0999999999985,
+   "subtree": 0,
+   "nearSlowKeys": 4,
+   "sample": [
+    "width: 12.4%; -> width: 12.8%;",
+    "width: 12.8%; -> width: 13.2%;",
+    "width: 13.2%; -> width: 13.6%;",
+    "width: 13.6%; -> width: 14%;"
+   ]
+  },
+  {
+   "group": "attr div.wz-goal-glow style",
+   "n": 7,
+   "medianGapMs": 6602.399999999994,
+   "subtree": 0,
+   "nearSlowKeys": 1,
+   "sample": [
+    "--glow-intensity: 0.190; -> --glow-intensity: 0.206;",
+    "--glow-intensity: 0.206; -> --glow-intensity: 0.219;",
+    "--glow-intensity: 0.219; -> --glow-intensity: 0.231;",
+    "--glow-intensity: 0.231; -> --glow-intensity: 0.241;"
+   ]
+  },
+  {
+   "group": "attr div.wz-sliver-goal-hairline-fill style",
+   "n": 7,
+   "medianGapMs": 6602.399999999994,
+   "subtree": 0,
+   "nearSlowKeys": 1,
+   "sample": [
+    "width: 12.5%; -> width: 16.7%;",
+    "width: 16.7%; -> width: 20.8%;",
+    "width: 20.8%; -> width: 25%;",
+    "width: 25%; -> width: 29.2%;"
+   ]
+  },
+  {
+   "group": "attr div.wz-sliver-goal data-done",
+   "n": 7,
+   "medianGapMs": 6602.399999999994,
+   "subtree": 2,
+   "nearSlowKeys": 1,
+   "sample": [
+    "3 -> 4",
+    "4 -> 5",
+    "5 -> 6",
+    "6 -> 7"
+   ]
+  }
+ ],
+ "groupsAll": [
+  {
+   "group": "attr div.mode-pfill.started style",
+   "n": 60,
+   "medianGapMs": 765.0999999999985,
+   "subtree": 0,
+   "nearSlowKeys": 4,
+   "sample": [
+    "width: 12.4%; -> width: 12.8%;",
+    "width: 12.8%; -> width: 13.2%;",
+    "width: 13.2%; -> width: 13.6%;",
+    "width: 13.6%; -> width: 14%;"
+   ]
+  },
+  {
+   "group": "attr div.arbor2-sun-leaf data-flutter",
+   "n": 8,
+   "medianGapMs": 553.5,
+   "subtree": 0,
+   "nearSlowKeys": 0,
+   "sample": [
+    "null -> true",
+    "true -> null",
+    "null -> true",
+    "true -> null"
+   ]
+  },
+  {
+   "group": "attr div.wz-goal-glow style",
+   "n": 7,
+   "medianGapMs": 6602.399999999994,
+   "subtree": 0,
+   "nearSlowKeys": 1,
+   "sample": [
+    "--glow-intensity: 0.190; -> --glow-intensity: 0.206;",
+    "--glow-intensity: 0.206; -> --glow-intensity: 0.219;",
+    "--glow-intensity: 0.219; -> --glow-intensity: 0.231;",
+    "--glow-intensity: 0.231; -> --glow-intensity: 0.241;"
+   ]
+  },
+  {
+   "group": "attr div.wz-sliver-goal-hairline-fill style",
+   "n": 7,
+   "medianGapMs": 6602.399999999994,
+   "subtree": 0,
+   "nearSlowKeys": 1,
+   "sample": [
+    "width: 12.5%; -> width: 16.7%;",
+    "width: 16.7%; -> width: 20.8%;",
+    "width: 20.8%; -> width: 25%;",
+    "width: 25%; -> width: 29.2%;"
+   ]
+  },
+  {
+   "group": "attr div.wz-sliver-goal data-done",
+   "n": 7,
+   "medianGapMs": 6602.399999999994,
+   "subtree": 2,
+   "nearSlowKeys": 1,
+   "sample": [
+    "3 -> 4",
+    "4 -> 5",
+    "5 -> 6",
+    "6 -> 7"
+   ]
+  },
+  {
+   "group": "attr div.arbor2-pagesh data-live-off",
+   "n": 4,
+   "medianGapMs": 0,
+   "subtree": 810,
+   "nearSlowKeys": 0,
+   "sample": [
+    "null -> true",
+    "null -> true",
+    "null -> true",
+    "null -> true"
+   ]
+  },
+  {
+   "group": "attr div.arbor2-sun-leaf style",
+   "n": 4,
+   "medianGapMs": 14692.200000000004,
+   "subtree": 0,
+   "nearSlowKeys": 0,
+   "sample": [
+    "left: 1905.8px; top: 787.2px; --leaf-size: 18px; --leaf-rot: 223deg; -> left: 1905.8px; top: 787.2px; --leaf-size: 18px; --leaf-rot: 223deg; --flutter-ms: 356ms;",
+    "left: 1905.8px; top: 787.2px; --leaf-size: 18px; --leaf-rot: 223deg; --flutter-ms: 356ms; -> left: 1905.8px; top: 787.2px; --leaf-size: 18px; --leaf-rot: 223deg; --flutter-ms: 314ms;",
+    "left: 1905.8px; top: 787.2px; --leaf-size: 18px; --leaf-rot: 223deg; --flutter-ms: 314ms; -> left: 1905.8px; top: 787.2px; --leaf-size: 18px; --leaf-rot: 223deg; --flutter-ms: 553ms;",
+    "left: 1127.9px; top: 868.8px; --leaf-size: 14px; --leaf-rot: 272deg; -> left: 1127.9px; top: 868.8px; --leaf-size: 14px; --leaf-rot: 272deg; --flutter-ms: 325ms;"
+   ]
+  },
+  {
+   "group": "attr div.arbor2-pagesh data-asleep",
+   "n": 4,
+   "medianGapMs": 0,
+   "subtree": 810,
+   "nearSlowKeys": 0,
+   "sample": [
+    "null -> true",
+    "null -> true",
+    "null -> true",
+    "null -> true"
+   ]
+  },
+  {
+   "group": "attr html style",
+   "n": 2,
+   "medianGapMs": 40145.2,
+   "subtree": 1998,
+   "nearSlowKeys": 0,
+   "sample": [
+    "--arbor2-t: 1; --arbor2-afternoon: 0.000; --arbor2-day-ground: #F1EAD8; --arbor2-vignette-mask: linear-gradient(to right, rgb(0,0,0) 690px, rgba(0,0,0,0) 690px, -> --arbor2-t: 1; --arbor2-afternoon: 0.000; --arbor2-day-ground: #F1EAD8; --arbor2-vignette-mask: linear-gradient(to right, rgb(0,0,0) 690px, rgba(0,0,0,0) 690px,",
+    "--arbor2-t: 1; --arbor2-afternoon: 0.000; --arbor2-day-ground: #F1EAD8; --arbor2-vignette-mask: linear-gradient(to right, rgb(0,0,0) 690px, rgba(0,0,0,0) 690px, -> --arbor2-t: 1; --arbor2-afternoon: 0.004; --arbor2-day-ground: #F1EAD8; --arbor2-vignette-mask: linear-gradient(to right, rgb(0,0,0) 690px, rgba(0,0,0,0) 690px,"
+   ]
+  },
+  {
+   "group": "attr div.mode-stage style",
+   "n": 1,
+   "medianGapMs": null,
+   "subtree": 825,
+   "nearSlowKeys": 0,
+   "sample": [
+    "null -> --fade-dur: 2.8s;"
+   ]
+  },
+  {
+   "group": "attr div.desk-frame-host style",
+   "n": 1,
+   "medianGapMs": null,
+   "subtree": 1104,
+   "nearSlowKeys": 0,
+   "sample": [
+    "null -> --fade-dur: 2.8s;"
+   ]
+  },
+  {
+   "group": "attr div.mode-stage data-writing",
+   "n": 1,
+   "medianGapMs": null,
+   "subtree": 825,
+   "nearSlowKeys": 0,
+   "sample": [
+    "false -> true"
+   ]
+  },
+  {
+   "group": "attr html data-wz-writing",
+   "n": 1,
+   "medianGapMs": null,
+   "subtree": 1998,
+   "nearSlowKeys": 0,
+   "sample": [
+    "null -> true"
+   ]
+  },
+  {
+   "group": "attr div.arbor2-pergola data-live-off",
+   "n": 1,
+   "medianGapMs": null,
+   "subtree": 810,
+   "nearSlowKeys": 0,
+   "sample": [
+    "null -> true"
+   ]
+  },
+  {
+   "group": "attr div.chrome-fade data-chrome-receded",
+   "n": 1,
+   "medianGapMs": null,
+   "subtree": 2,
+   "nearSlowKeys": 0,
+   "sample": [
+    "false -> true"
+   ]
+  },
+  {
+   "group": "attr div.desk-frame data-writing",
+   "n": 1,
+   "medianGapMs": null,
+   "subtree": 1084,
+   "nearSlowKeys": 0,
+   "sample": [
+    "false -> true"
+   ]
+  },
+  {
+   "group": "attr div.desk-frame-host data-chrome-receded",
+   "n": 1,
+   "medianGapMs": null,
+   "subtree": 1104,
+   "nearSlowKeys": 0,
+   "sample": [
+    "false -> true"
+   ]
+  },
+  {
+   "group": "attr div.arbor2-pergola data-asleep",
+   "n": 1,
+   "medianGapMs": null,
+   "subtree": 810,
+   "nearSlowKeys": 0,
+   "sample": [
+    "null -> true"
+   ]
+  }
+ ]
+}

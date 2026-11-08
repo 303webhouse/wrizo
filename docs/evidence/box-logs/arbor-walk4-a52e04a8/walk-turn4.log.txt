@@ -1,0 +1,200 @@
+09:18:14Z (local 02:18) quiet check before the turn: wow=0 cpu=0
+harness browsers at turn start: 0
+granted to lane "arbor" - name this turn's start and end in your report
+TURN START 2026-11-08T09:18:15Z
+Preparing worktree (detached HEAD 3dd856b6)
+Updating files:  95% (2150/2249)Updating files:  96% (2160/2249)Updating files:  97% (2182/2249)Updating files:  98% (2205/2249)Updating files:  99% (2227/2249)Updating files: 100% (2249/2249)Updating files: 100% (2249/2249), done.
+HEAD is now at 3dd856b6 Merge arbor/r21-unit-parks (ba958420) into the confirming tree: nodrift 8dfd7ee2 + R4 fix 54f8b9a7 + the unit parks
+09:18:28Z (local 02:18) tree /c/Users/nickh/arbor-main-control/apps/desktop: HEAD be09012a, dirty 0, bundle index-Dt7qx1Ho.js
+09:18:28Z (local 02:18) tree /f/wrizo-work/arbor-nodrift/apps/desktop: HEAD a52e04a8, dirty 0, bundle index-BgvFQhrf.js
+09:18:28Z (local 02:18) tree /f/wrizo-work/arbor-confirm17/apps/desktop: HEAD 3dd856b6, dirty 0, bundle index-XbNUWvOm.js
+09:18:29Z (local 02:18) quiet check before the play server: wow=0 cpu=0
+09:18:30Z (local 02:18) play server started (pid 30280)
+09:18:35Z (local 02:18) play server READY
+09:18:35Z (local 02:18) quiet check before A4 (walk step 1): wow=0 cpu=0
+09:18:35Z (local 02:18) A4 walk start
+09:23:11Z (local 02:23) A4 walk exit 0
+WALK-STEP 1 start 2026-11-08T09:18:37.532Z
+WALK-MUST PASS [1] day__2000 the loading line (as the eye sees it) has gone before the doors arrive  {"loadingGone":6051,"loadingLast":5993,"loadingLastOwnOpacity":8687,"doorsIn":7911}
+WALK-MUST PASS [1] night__2000 the loading line (as the eye sees it) has gone before the doors arrive  {"loadingGone":6033,"loadingLast":5983,"loadingLastOwnOpacity":8547,"doorsIn":7900}
+WALK-MUST PASS [1] day__1366 the loading line (as the eye sees it) has gone before the doors arrive  {"loadingGone":6030,"loadingLast":5999,"loadingLastOwnOpacity":8545,"doorsIn":7902}
+WALK-MUST PASS [1] night__1366 the loading line (as the eye sees it) has gone before the doors arrive  {"loadingGone":6020,"loadingLast":5987,"loadingLastOwnOpacity":8537,"doorsIn":7903}
+WALK-STEP 1 end 251 s
+ARBOR2-WALK: PASS (35 pass, 0 fail, 18 eye; 29 shots/recordings in C:\Users\nickh\Downloads\arbor-mockup-frames\walk-final\turn4)
+09:23:11Z (local 02:23) quiet check before A6 (walk step 4, traced): wow=0 cpu=0
+09:23:11Z (local 02:23) A6 walk start
+09:28:21Z (local 02:28) A6 walk exit 0
+WALK-STEP 4 start 2026-11-08T09:23:16.133Z
+A6-PLAY day__2000: 408 keys, 14 slow (>45 ms), 184 long tasks (>=30 ms), 112 mutations, clocks joined
+  slow key 28 62.3 ms: 1x attr div.mode-pfill.started style || 44.7 ms: ThreadControllerImpl::RunTask 44.7 ms | Edge_RunTask 44.7 ms | TimerFire#31 44.7 ms ; 44.7 ms: Edge_RunTask 44.7 ms | TimerFire#31 44.7 ms | FunctionCall :?:7 44.7 ms
+  slow key 37 60.2 ms: 1x attr div.mode-pfill.started style || 43.4 ms: ThreadControllerImpl::RunTask 43.4 ms | Edge_RunTask 43.4 ms | TimerFire#31 43.4 ms ; 43.4 ms: Edge_RunTask 43.4 ms | TimerFire#31 43.4 ms | FunctionCall :?:7 43.4 ms
+  slow key 55 74 ms: 1x attr div.mode-pfill.started style || 43.6 ms: ThreadControllerImpl::RunTask 43.6 ms | Edge_RunTask 43.6 ms | TimerFire#31 43.6 ms ; 43.6 ms: Edge_RunTask 43.6 ms | TimerFire#31 43.6 ms | FunctionCall :?:7 43.6 ms
+  slow key 87 58.8 ms: (no mutation) || 43.8 ms: ThreadControllerImpl::RunTask 43.8 ms | Edge_RunTask 43.8 ms | TimerFire#31 43.8 ms ; 43.8 ms: Edge_RunTask 43.8 ms | TimerFire#31 43.8 ms | FunctionCall :?:7 43.8 ms
+  slow key 128 57.6 ms: (no mutation) || 44.3 ms: ThreadControllerImpl::RunTask 44.3 ms | Edge_RunTask 44.3 ms | TimerFire#31 44.3 ms ; 44.3 ms: Edge_RunTask 44.3 ms | TimerFire#31 44.3 ms | FunctionCall :?:7 44.3 ms
+  slow key 137 58.5 ms: (no mutation) || 43.8 ms: ThreadControllerImpl::RunTask 43.8 ms | Edge_RunTask 43.8 ms | TimerFire#31 43.8 ms ; 43.8 ms: Edge_RunTask 43.8 ms | TimerFire#31 43.8 ms | FunctionCall :?:7 43.8 ms
+  slow key 155 74.8 ms: (no mutation) || 43.7 ms: ThreadControllerImpl::RunTask 43.7 ms | Edge_RunTask 43.7 ms | TimerFire#31 43.7 ms ; 43.7 ms: Edge_RunTask 43.7 ms | TimerFire#31 43.7 ms | FunctionCall :?:7 43.7 ms
+  slow key 187 60 ms: (no mutation) || 44.3 ms: ThreadControllerImpl::RunTask 44.3 ms | Edge_RunTask 44.3 ms | TimerFire#31 44.3 ms ; 44.3 ms: Edge_RunTask 44.3 ms | TimerFire#31 44.3 ms | FunctionCall :?:7 44.3 ms
+  slow key 255 73.3 ms: 1x attr div.wz-goal-glow style | 1x attr div.wz-sliver-goal-hairline-fill style | 1x attr div.wz-sliver-goal data-done || 43.4 ms: ThreadControllerImpl::RunTask 43.4 ms | Edge_RunTask 43.4 ms | TimerFire#31 43.4 ms ; 43.4 ms: Edge_RunTask 43.4 ms | TimerFire#31 43.4 ms | FunctionCall :?:7 43.4 ms
+  slow key 278 52.3 ms: (no mutation) || 43 ms: ThreadControllerImpl::RunTask 43 ms | Edge_RunTask 43 ms | TimerFire#31 43 ms ; 43 ms: Edge_RunTask 43 ms | TimerFire#31 43 ms | FunctionCall :?:7 43 ms
+  slow key 328 52.7 ms: 1x attr div.mode-pfill.started style || 43.5 ms: ThreadControllerImpl::RunTask 43.5 ms | Edge_RunTask 43.5 ms | TimerFire#31 43.5 ms ; 43.5 ms: Edge_RunTask 43.5 ms | TimerFire#31 43.5 ms | FunctionCall :?:7 43.5 ms
+  slow key 337 59.5 ms: (no mutation) || 44 ms: ThreadControllerImpl::RunTask 44 ms | Edge_RunTask 44 ms | TimerFire#31 44 ms ; 44 ms: Edge_RunTask 44 ms | TimerFire#31 44 ms | FunctionCall :?:7 44 ms
+  near-slow 4/60 gap 765.0999999999985 ms subtree 0: attr div.mode-pfill.started style  e.g. width: 12.4%; -> width: 12.8%;
+  near-slow 1/7 gap 6602.399999999994 ms subtree 0: attr div.wz-goal-glow style  e.g. --glow-intensity: 0.190; -> --glow-intensity: 0.206;
+  near-slow 1/7 gap 6602.399999999994 ms subtree 0: attr div.wz-sliver-goal-hairline-fill style  e.g. width: 12.5%; -> width: 16.7%;
+  near-slow 1/7 gap 6602.399999999994 ms subtree 2: attr div.wz-sliver-goal data-done  e.g. 3 -> 4
+A6-PLAY night__2000: 408 keys, 0 slow (>45 ms), 0 long tasks (>=30 ms), 114 mutations, clocks joined
+WALK-MUST FAIL [4] 2000 no key after the first drops a frame by day (key-to-paint over 45 ms = a dropped frame)  {"slow":[{"key":28,"ms":62.3},{"key":37,"ms":60.2},{"key":55,"ms":74},{"key":87,"ms":58.8},{"key":128,"ms":57.6},{"key":137,"ms":58.5},{"key":155,"ms":74.8},{"key":187,"ms":60},{"key":255,"ms":73.3},{"key":278,"ms":52.3}],"count":14}
+WALK-STEP 4 end 304 s
+ARBOR2-WALK: FAIL (5 pass, 1 fail, 1 eye; 12 shots/recordings in F:\wrizo-work\arbor-turn4-out\walk-a6)
+SUCCESS: The process with PID 43360 (child process of PID 25404) has been terminated.
+SUCCESS: The process with PID 29676 (child process of PID 25404) has been terminated.
+SUCCESS: The process with PID 52752 (child process of PID 25404) has been terminated.
+SUCCESS: The process with PID 37696 (child process of PID 25404) has been terminated.
+SUCCESS: The process with PID 47720 (child process of PID 25404) has been terminated.
+SUCCESS: The process with PID 18796 (child process of PID 25404) has been terminated.
+SUCCESS: The process with PID 4748 (child process of PID 25404) has been terminated.
+SUCCESS: The process with PID 14144 (child process of PID 25404) has been terminated.
+SUCCESS: The process with PID 13476 (child process of PID 25404) has been terminated.
+SUCCESS: The process with PID 25404 (child process of PID 30280) has been terminated.
+SUCCESS: The process with PID 41140 (child process of PID 30280) has been terminated.
+SUCCESS: The process with PID 41052 (child process of PID 30280) has been terminated.
+SUCCESS: The process with PID 30280 (child process of PID 12204) has been terminated.
+09:28:21Z (local 02:28) play server tree stopped (pid 30280)
+postgres left on arbor2-play-XdoWr0: 0 (stopped)
+09:28:25Z (local 02:28) deleted this turn's throwaway folder arbor2-play-XdoWr0
+09:28:25Z (local 02:28) quiet check before [main-1]: wow=0 cpu=0
+09:28:25Z (local 02:28) [main-1] start (rhizome-latency.mjs in /c/Users/nickh/arbor-main-control/apps/desktop, WS_URL_SEARCH=unset, RL_REF=default)
+SUITE START HARNESS_PARKED=unset files=1 tree=be09012a bundle=index-Dt7qx1Ho.js/994571b out=F:/wrizo-work/arbor-turn4-out/main-1
+[01/1] OK        exit=0   67s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (17 checks)
+SUITE RESULT: CLEAN — tree=be09012a bundle=index-Dt7qx1Ho.js/994571b
+    rhizome-latency.mjs.default.txt: RHIZOME-LATENCY VERIFY: PASS (17 checks)
+      PASS  B premise: every round crossed the goal and the flash was HOLDING - on main with the drop-shadow actually applied to the full field, under Arbor's vines with the brass copy's composited layer running its animation
+      PASS  B premise: at least 40 keys were painted while data-flash was true (6 round(s); a flash that was over before the keys landed certifies nothing)  [{"n":92,"median":25.7,"p95":32.1,"max":33.4}]
+      PASS  B typing inside the flash is as fast as typing at rest: median within 5 ms and p95 within 25 ms of the rest numbers, and no key over 100 ms  [rest {"n":96,"median":25.2,"p95":32.5,"max":33.1} | flash {"n":92,"median":25.7,"p95":32.1,"max":33.4}]
+      PASS  C premise: at least 40 keys were painted during the fade (enough that a percentile means something)  [{"n":146,"median":27.8,"p95":45.3,"max":66.1}]
+      PASS  B2 main-thread time per key inside the flash (the key's handler task + the frame that paints it, ms): the median is within 4 ms of the same page's control - a cost the frame clock hides  [control {"n":96,"median":12.8,"p95":35,"max":37.6} | flash {"n":92,"median":12.7,"p95":24.9,"max":37.7}]
+      PASS  C2 main-thread time per key inside the fade: the median is within 4 ms of the fast control's PLUS the fade's reference cost (2.8 ms, the default (the Nov 6 20-run medians; no RL_REF given))  [control {"n":132,"median":14.3,"p95":36,"max":39} | fade {"n":146,"median":14.5,"p95":38.8,"max":77.3} | shift 0.2 vs ref 2.8]
+      PASS  C typing inside the fade is as fast as at rest at the same pace (the same budgets over the fade's reference shift - median +9 ms, p95 +17.5 ms, the default (the Nov 6 20-run medians; no RL_REF given) - against the fast control; no key over 100 ms)  [rest {"n":132,"median":25.9,"p95":32.8,"max":33.8} | fade {"n":146,"median":27.8,"p95":45.3,"max":66.1} | shift median 1.9 p95 12.5 vs ref 9/17.5]
+      PASS  C attribution (information, never a verdict): 6 slow fade key(s) over 6 round(s), 1 within 150 ms of the fade's start - SOME line up with the fade start
+09:29:37Z (local 02:29) quiet check before [main-2]: wow=0 cpu=0
+09:29:37Z (local 02:29) [main-2] start (rhizome-latency.mjs in /c/Users/nickh/arbor-main-control/apps/desktop, WS_URL_SEARCH=unset, RL_REF=default)
+SUITE START HARNESS_PARKED=unset files=1 tree=be09012a bundle=index-Dt7qx1Ho.js/994571b out=F:/wrizo-work/arbor-turn4-out/main-2
+[01/1] OK        exit=0   67s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (17 checks)
+SUITE RESULT: CLEAN — tree=be09012a bundle=index-Dt7qx1Ho.js/994571b
+    rhizome-latency.mjs.default.txt: RHIZOME-LATENCY VERIFY: PASS (17 checks)
+      PASS  B premise: every round crossed the goal and the flash was HOLDING - on main with the drop-shadow actually applied to the full field, under Arbor's vines with the brass copy's composited layer running its animation
+      PASS  B premise: at least 40 keys were painted while data-flash was true (6 round(s); a flash that was over before the keys landed certifies nothing)  [{"n":88,"median":25.9,"p95":32.2,"max":32.8}]
+      PASS  B typing inside the flash is as fast as typing at rest: median within 5 ms and p95 within 25 ms of the rest numbers, and no key over 100 ms  [rest {"n":96,"median":25.5,"p95":33.1,"max":33.9} | flash {"n":88,"median":25.9,"p95":32.2,"max":32.8}]
+      PASS  C premise: at least 40 keys were painted during the fade (enough that a percentile means something)  [{"n":147,"median":26.7,"p95":35.9,"max":65.3}]
+      PASS  B2 main-thread time per key inside the flash (the key's handler task + the frame that paints it, ms): the median is within 4 ms of the same page's control - a cost the frame clock hides  [control {"n":96,"median":13.8,"p95":35.6,"max":36.8} | flash {"n":88,"median":13.7,"p95":33.4,"max":38.1}]
+      PASS  C2 main-thread time per key inside the fade: the median is within 4 ms of the fast control's PLUS the fade's reference cost (2.8 ms, the default (the Nov 6 20-run medians; no RL_REF given))  [control {"n":132,"median":13.4,"p95":36.3,"max":39} | fade {"n":147,"median":13.5,"p95":36.9,"max":100.4} | shift 0.1 vs ref 2.8]
+      PASS  C typing inside the fade is as fast as at rest at the same pace (the same budgets over the fade's reference shift - median +9 ms, p95 +17.5 ms, the default (the Nov 6 20-run medians; no RL_REF given) - against the fast control; no key over 100 ms)  [rest {"n":132,"median":25.1,"p95":32.7,"max":33.6} | fade {"n":147,"median":26.7,"p95":35.9,"max":65.3} | shift median 1.6 p95 3.2 vs ref 9/17.5]
+      PASS  C attribution (information, never a verdict): 2 slow fade key(s) over 6 round(s), 1 within 150 ms of the fade's start - SOME line up with the fade start
+09:30:49Z (local 02:30) quiet check before [main-3]: wow=0 cpu=0
+09:30:49Z (local 02:30) [main-3] start (rhizome-latency.mjs in /c/Users/nickh/arbor-main-control/apps/desktop, WS_URL_SEARCH=unset, RL_REF=default)
+SUITE START HARNESS_PARKED=unset files=1 tree=be09012a bundle=index-Dt7qx1Ho.js/994571b out=F:/wrizo-work/arbor-turn4-out/main-3
+[01/1] OK        exit=0   66s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (17 checks)
+SUITE RESULT: CLEAN — tree=be09012a bundle=index-Dt7qx1Ho.js/994571b
+    rhizome-latency.mjs.default.txt: RHIZOME-LATENCY VERIFY: PASS (17 checks)
+      PASS  B premise: every round crossed the goal and the flash was HOLDING - on main with the drop-shadow actually applied to the full field, under Arbor's vines with the brass copy's composited layer running its animation
+      PASS  B premise: at least 40 keys were painted while data-flash was true (6 round(s); a flash that was over before the keys landed certifies nothing)  [{"n":91,"median":26.4,"p95":32.1,"max":35.4}]
+      PASS  B typing inside the flash is as fast as typing at rest: median within 5 ms and p95 within 25 ms of the rest numbers, and no key over 100 ms  [rest {"n":96,"median":25,"p95":32.3,"max":33.5} | flash {"n":91,"median":26.4,"p95":32.1,"max":35.4}]
+      PASS  C premise: at least 40 keys were painted during the fade (enough that a percentile means something)  [{"n":145,"median":26.4,"p95":40.7,"max":59.5}]
+      PASS  B2 main-thread time per key inside the flash (the key's handler task + the frame that paints it, ms): the median is within 4 ms of the same page's control - a cost the frame clock hides  [control {"n":96,"median":13.1,"p95":34.9,"max":43.2} | flash {"n":91,"median":13.7,"p95":31.4,"max":37.9}]
+      PASS  C2 main-thread time per key inside the fade: the median is within 4 ms of the fast control's PLUS the fade's reference cost (2.8 ms, the default (the Nov 6 20-run medians; no RL_REF given))  [control {"n":132,"median":13.6,"p95":35.7,"max":41.3} | fade {"n":145,"median":14.4,"p95":37.1,"max":64.5} | shift 0.8 vs ref 2.8]
+      PASS  C typing inside the fade is as fast as at rest at the same pace (the same budgets over the fade's reference shift - median +9 ms, p95 +17.5 ms, the default (the Nov 6 20-run medians; no RL_REF given) - against the fast control; no key over 100 ms)  [rest {"n":132,"median":25.7,"p95":32.8,"max":33.8} | fade {"n":145,"median":26.4,"p95":40.7,"max":59.5} | shift median 0.7 p95 7.9 vs ref 9/17.5]
+      PASS  C attribution (information, never a verdict): 6 slow fade key(s) over 6 round(s), 2 within 150 ms of the fade's start - SOME line up with the fade start
+C:/Users/nickh/AppData/Local/Temp/claude/68ba17a7e36493c0/4822361e-ef72-47ae-a410-5545e35f7b5f/scratchpad/lt4-main-1-rhizome-latency.mjs.default.txt: fade shift median 1.9 p95 12.5 cost 0.2
+C:/Users/nickh/AppData/Local/Temp/claude/68ba17a7e36493c0/4822361e-ef72-47ae-a410-5545e35f7b5f/scratchpad/lt4-main-2-rhizome-latency.mjs.default.txt: fade shift median 1.6 p95 3.2 cost 0.1
+C:/Users/nickh/AppData/Local/Temp/claude/68ba17a7e36493c0/4822361e-ef72-47ae-a410-5545e35f7b5f/scratchpad/lt4-main-3-rhizome-latency.mjs.default.txt: fade shift median 0.7 p95 7.9 cost 0.8
+09:32:01Z (local 02:32) RL_REF {"c":1.6,"p95":7.9,"c2":0.2,"runs":3}
+09:32:01Z (local 02:32) quiet check before [C-day-1]: wow=0 cpu=0
+09:32:01Z (local 02:32) [C-day-1] start (rhizome-latency.mjs in /f/wrizo-work/arbor-confirm17/apps/desktop, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF={"c":1.6,"p95":7.9,"c2":0.2,"runs":3})
+SUITE START HARNESS_PARKED=unset files=1 tree=3dd856b6 bundle=index-XbNUWvOm.js/1030079b out=F:/wrizo-work/arbor-turn4-out/C-day-1
+[01/1] OK        exit=0  225s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (23 checks)
+SUITE RESULT: CLEAN — tree=3dd856b6 bundle=index-XbNUWvOm.js/1030079b
+    rhizome-latency.mjs.default.txt: RHIZOME-LATENCY VERIFY: PASS (23 checks)
+      PASS  B premise: every round crossed the goal and the flash was HOLDING - on main with the drop-shadow actually applied to the full field, under Arbor's vines with the brass copy's composited layer running its animation
+      PASS  B premise: at least 40 keys were painted while data-flash was true (7 round(s); a flash that was over before the keys landed certifies nothing)  [{"n":82,"median":25.5,"p95":32.8,"max":40.3}]
+      PASS  B typing inside the flash is as fast as typing at rest: median within 5 ms and p95 within 25 ms of the rest numbers, and no key over 100 ms  [rest {"n":105,"median":25.7,"p95":31.9,"max":33.5} | flash {"n":82,"median":25.5,"p95":32.8,"max":40.3}]
+      PASS  C premise: at least 40 keys were painted during the fade (enough that a percentile means something)  [{"n":174,"median":25.3,"p95":35.8,"max":37.5}]
+      PASS  B2 main-thread time per key inside the flash (the key's handler task + the frame that paints it, ms): the median is within 4 ms of the same page's control - a cost the frame clock hides  [control {"n":105,"median":16.5,"p95":38.8,"max":41.6} | flash {"n":82,"median":19.5,"p95":44.3,"max":54}]
+      PASS  C2 main-thread time per key inside the fade: the median is within 4 ms of the fast control's PLUS the fade's reference cost (0.2 ms, the same turn's main control (RL_REF))  [control {"n":147,"median":18.1,"p95":39.3,"max":56.8} | fade {"n":174,"median":18.1,"p95":38.9,"max":41.3} | shift 0 vs ref 0.2]
+      PASS  C typing inside the fade is as fast as at rest at the same pace (the same budgets over the fade's reference shift - median +1.6 ms, p95 +7.9 ms, the same turn's main control (RL_REF) - against the fast control; no key over 100 ms)  [rest {"n":147,"median":25.3,"p95":35.5,"max":36.6} | fade {"n":174,"median":25.3,"p95":35.8,"max":37.5} | shift median 0 p95 0.3 vs ref 1.6/7.9]
+      PASS  C attribution (information, never a verdict): 0 slow fade key(s) over 7 round(s), 0 within 150 ms of the fade's start - none slow
+09:35:52Z (local 02:35) quiet check before [W-day-1]: wow=0 cpu=0
+09:35:52Z (local 02:35) [W-day-1] start (rhizome-latency.mjs in /f/wrizo-work/arbor-nodrift/apps/desktop, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF={"c":1.6,"p95":7.9,"c2":0.2,"runs":3})
+SUITE START HARNESS_PARKED=unset files=1 tree=a52e04a8 bundle=index-BgvFQhrf.js/1030264b out=F:/wrizo-work/arbor-turn4-out/W-day-1
+[01/1] OK        exit=0  132s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (25 checks)
+SUITE RESULT: CLEAN — tree=a52e04a8 bundle=index-BgvFQhrf.js/1030264b
+    rhizome-latency.mjs.default.txt: RHIZOME-LATENCY VERIFY: PASS (25 checks)
+      PASS  B premise: every round crossed the goal and the flash was HOLDING - on main with the drop-shadow actually applied to the full field, under Arbor's vines with the brass copy's composited layer running its animation
+      PASS  B premise: at least 40 keys were painted while data-flash was true (7 round(s); a flash that was over before the keys landed certifies nothing)  [{"n":90,"median":25.3,"p95":33.6,"max":34.9}]
+      PASS  B typing inside the flash is as fast as typing at rest: median within 5 ms and p95 within 25 ms of the rest numbers, and no key over 100 ms  [rest {"n":105,"median":24.9,"p95":32.2,"max":33.6} | flash {"n":90,"median":25.3,"p95":33.6,"max":34.9}]
+      PASS  C premise: at least 40 keys were painted during the fade (enough that a percentile means something)  [{"n":173,"median":25.2,"p95":35.9,"max":37.1}]
+      PASS  B2 main-thread time per key inside the flash (the key's handler task + the frame that paints it, ms): the median is within 4 ms of the same page's control - a cost the frame clock hides  [control {"n":105,"median":18.4,"p95":40.9,"max":42.6} | flash {"n":90,"median":19.5,"p95":46.9,"max":106.5}]
+      PASS  C2 main-thread time per key inside the fade: the median is within 4 ms of the fast control's PLUS the fade's reference cost (0.2 ms, the same turn's main control (RL_REF))  [control {"n":147,"median":17.1,"p95":39.1,"max":54.4} | fade {"n":173,"median":17.9,"p95":40.4,"max":43.7} | shift 0.8 vs ref 0.2]
+      PASS  C typing inside the fade is as fast as at rest at the same pace (the same budgets over the fade's reference shift - median +1.6 ms, p95 +7.9 ms, the same turn's main control (RL_REF) - against the fast control; no key over 100 ms)  [rest {"n":147,"median":26.1,"p95":34.9,"max":36.9} | fade {"n":173,"median":25.2,"p95":35.9,"max":37.1} | shift median -0.9 p95 1 vs ref 1.6/7.9]
+      PASS  C attribution (information, never a verdict): 0 slow fade key(s) over 7 round(s), 0 within 150 ms of the fade's start - none slow
+09:38:09Z (local 02:38) quiet check before [main-4]: wow=0 cpu=0
+09:38:09Z (local 02:38) [main-4] start (rhizome-latency.mjs in /c/Users/nickh/arbor-main-control/apps/desktop, WS_URL_SEARCH=unset, RL_REF={"c":1.6,"p95":7.9,"c2":0.2,"runs":3})
+SUITE START HARNESS_PARKED=unset files=1 tree=be09012a bundle=index-Dt7qx1Ho.js/994571b out=F:/wrizo-work/arbor-turn4-out/main-4
+[01/1] OK        exit=0   66s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (17 checks)
+SUITE RESULT: CLEAN — tree=be09012a bundle=index-Dt7qx1Ho.js/994571b
+    rhizome-latency.mjs.default.txt: RHIZOME-LATENCY VERIFY: PASS (17 checks)
+      PASS  B premise: every round crossed the goal and the flash was HOLDING - on main with the drop-shadow actually applied to the full field, under Arbor's vines with the brass copy's composited layer running its animation
+      PASS  B premise: at least 40 keys were painted while data-flash was true (6 round(s); a flash that was over before the keys landed certifies nothing)  [{"n":91,"median":25.3,"p95":32.2,"max":33}]
+      PASS  B typing inside the flash is as fast as typing at rest: median within 5 ms and p95 within 25 ms of the rest numbers, and no key over 100 ms  [rest {"n":96,"median":25.7,"p95":32.9,"max":33.7} | flash {"n":91,"median":25.3,"p95":32.2,"max":33}]
+      PASS  C premise: at least 40 keys were painted during the fade (enough that a percentile means something)  [{"n":145,"median":25.8,"p95":43.1,"max":57.1}]
+      PASS  B2 main-thread time per key inside the flash (the key's handler task + the frame that paints it, ms): the median is within 4 ms of the same page's control - a cost the frame clock hides  [control {"n":96,"median":13.8,"p95":36.6,"max":38.6} | flash {"n":91,"median":13.8,"p95":35.7,"max":37.1}]
+      PASS  C2 main-thread time per key inside the fade: the median is within 4 ms of the fast control's PLUS the fade's reference cost (0.2 ms, the same turn's main control (RL_REF))  [control {"n":132,"median":14.5,"p95":35.8,"max":39.4} | fade {"n":145,"median":14,"p95":37.6,"max":73.3} | shift -0.5 vs ref 0.2]
+      PASS  C typing inside the fade is as fast as at rest at the same pace (the same budgets over the fade's reference shift - median +1.6 ms, p95 +7.9 ms, the same turn's main control (RL_REF) - against the fast control; no key over 100 ms)  [rest {"n":132,"median":25.4,"p95":32.9,"max":34.4} | fade {"n":145,"median":25.8,"p95":43.1,"max":57.1} | shift median 0.4 p95 10.2 vs ref 1.6/7.9]
+      PASS  C attribution (information, never a verdict): 6 slow fade key(s) over 6 round(s), 2 within 150 ms of the fade's start - SOME line up with the fade start
+09:39:21Z (local 02:39) quiet check before [W-day-2]: wow=0 cpu=0
+09:39:21Z (local 02:39) [W-day-2] start (rhizome-latency.mjs in /f/wrizo-work/arbor-nodrift/apps/desktop, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF={"c":1.6,"p95":7.9,"c2":0.2,"runs":3})
+SUITE START HARNESS_PARKED=unset files=1 tree=a52e04a8 bundle=index-BgvFQhrf.js/1030264b out=F:/wrizo-work/arbor-turn4-out/W-day-2
+[01/1] OK        exit=0  132s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (25 checks)
+SUITE RESULT: CLEAN — tree=a52e04a8 bundle=index-BgvFQhrf.js/1030264b
+    rhizome-latency.mjs.default.txt: RHIZOME-LATENCY VERIFY: PASS (25 checks)
+      PASS  B premise: every round crossed the goal and the flash was HOLDING - on main with the drop-shadow actually applied to the full field, under Arbor's vines with the brass copy's composited layer running its animation
+      PASS  B premise: at least 40 keys were painted while data-flash was true (7 round(s); a flash that was over before the keys landed certifies nothing)  [{"n":87,"median":25.2,"p95":33,"max":41.3}]
+      PASS  B typing inside the flash is as fast as typing at rest: median within 5 ms and p95 within 25 ms of the rest numbers, and no key over 100 ms  [rest {"n":105,"median":25.4,"p95":32.3,"max":33.3} | flash {"n":87,"median":25.2,"p95":33,"max":41.3}]
+      PASS  C premise: at least 40 keys were painted during the fade (enough that a percentile means something)  [{"n":173,"median":25.8,"p95":35.6,"max":37.8}]
+      PASS  B2 main-thread time per key inside the flash (the key's handler task + the frame that paints it, ms): the median is within 4 ms of the same page's control - a cost the frame clock hides  [control {"n":105,"median":17.8,"p95":39,"max":41.6} | flash {"n":87,"median":19.3,"p95":44.5,"max":50.3}]
+      PASS  C2 main-thread time per key inside the fade: the median is within 4 ms of the fast control's PLUS the fade's reference cost (0.2 ms, the same turn's main control (RL_REF))  [control {"n":147,"median":16.6,"p95":39.5,"max":62.1} | fade {"n":173,"median":17.7,"p95":39.2,"max":43.9} | shift 1.1 vs ref 0.2]
+      PASS  C typing inside the fade is as fast as at rest at the same pace (the same budgets over the fade's reference shift - median +1.6 ms, p95 +7.9 ms, the same turn's main control (RL_REF) - against the fast control; no key over 100 ms)  [rest {"n":147,"median":24.9,"p95":35.8,"max":43.7} | fade {"n":173,"median":25.8,"p95":35.6,"max":37.8} | shift median 0.9 p95 -0.2 vs ref 1.6/7.9]
+      PASS  C attribution (information, never a verdict): 0 slow fade key(s) over 7 round(s), 0 within 150 ms of the fade's start - none slow
+09:41:38Z (local 02:41) quiet check before [C-day-2]: wow=0 cpu=0
+09:41:38Z (local 02:41) [C-day-2] start (rhizome-latency.mjs in /f/wrizo-work/arbor-confirm17/apps/desktop, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF={"c":1.6,"p95":7.9,"c2":0.2,"runs":3})
+SUITE START HARNESS_PARKED=unset files=1 tree=3dd856b6 bundle=index-XbNUWvOm.js/1030079b out=F:/wrizo-work/arbor-turn4-out/C-day-2
+[01/1] OK        exit=0   81s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (23 checks)
+SUITE RESULT: CLEAN — tree=3dd856b6 bundle=index-XbNUWvOm.js/1030079b
+    rhizome-latency.mjs.default.txt: RHIZOME-LATENCY VERIFY: PASS (23 checks)
+      PASS  B premise: every round crossed the goal and the flash was HOLDING - on main with the drop-shadow actually applied to the full field, under Arbor's vines with the brass copy's composited layer running its animation
+      PASS  B premise: at least 40 keys were painted while data-flash was true (7 round(s); a flash that was over before the keys landed certifies nothing)  [{"n":88,"median":25.9,"p95":32.8,"max":46}]
+      PASS  B typing inside the flash is as fast as typing at rest: median within 5 ms and p95 within 25 ms of the rest numbers, and no key over 100 ms  [rest {"n":105,"median":26.3,"p95":32.7,"max":33.8} | flash {"n":88,"median":25.9,"p95":32.8,"max":46}]
+      PASS  C premise: at least 40 keys were painted during the fade (enough that a percentile means something)  [{"n":172,"median":26.4,"p95":35.6,"max":36.9}]
+      PASS  B2 main-thread time per key inside the flash (the key's handler task + the frame that paints it, ms): the median is within 4 ms of the same page's control - a cost the frame clock hides  [control {"n":105,"median":18.5,"p95":40.5,"max":43.8} | flash {"n":88,"median":18.9,"p95":40.9,"max":47.4}]
+      PASS  C2 main-thread time per key inside the fade: the median is within 4 ms of the fast control's PLUS the fade's reference cost (0.2 ms, the same turn's main control (RL_REF))  [control {"n":147,"median":17.9,"p95":39.5,"max":44.7} | fade {"n":172,"median":17.5,"p95":38.6,"max":40.8} | shift -0.4 vs ref 0.2]
+      PASS  C typing inside the fade is as fast as at rest at the same pace (the same budgets over the fade's reference shift - median +1.6 ms, p95 +7.9 ms, the same turn's main control (RL_REF) - against the fast control; no key over 100 ms)  [rest {"n":147,"median":25.5,"p95":35.2,"max":36.2} | fade {"n":172,"median":26.4,"p95":35.6,"max":36.9} | shift median 0.9 p95 0.4 vs ref 1.6/7.9]
+      PASS  C attribution (information, never a verdict): 0 slow fade key(s) over 7 round(s), 0 within 150 ms of the fade's start - none slow
+09:43:04Z (local 02:43) quiet check before [main-5]: wow=0 cpu=0
+09:43:04Z (local 02:43) [main-5] start (rhizome-latency.mjs in /c/Users/nickh/arbor-main-control/apps/desktop, WS_URL_SEARCH=unset, RL_REF={"c":1.6,"p95":7.9,"c2":0.2,"runs":3})
+SUITE START HARNESS_PARKED=unset files=1 tree=be09012a bundle=index-Dt7qx1Ho.js/994571b out=F:/wrizo-work/arbor-turn4-out/main-5
+[01/1] OK        exit=0   67s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (17 checks)
+SUITE RESULT: CLEAN — tree=be09012a bundle=index-Dt7qx1Ho.js/994571b
+    rhizome-latency.mjs.default.txt: RHIZOME-LATENCY VERIFY: PASS (17 checks)
+      PASS  B premise: every round crossed the goal and the flash was HOLDING - on main with the drop-shadow actually applied to the full field, under Arbor's vines with the brass copy's composited layer running its animation
+      PASS  B premise: at least 40 keys were painted while data-flash was true (6 round(s); a flash that was over before the keys landed certifies nothing)  [{"n":90,"median":25.6,"p95":32.2,"max":33.5}]
+      PASS  B typing inside the flash is as fast as typing at rest: median within 5 ms and p95 within 25 ms of the rest numbers, and no key over 100 ms  [rest {"n":96,"median":24.1,"p95":32,"max":33.5} | flash {"n":90,"median":25.6,"p95":32.2,"max":33.5}]
+      PASS  C premise: at least 40 keys were painted during the fade (enough that a percentile means something)  [{"n":145,"median":26.3,"p95":40,"max":58.2}]
+      PASS  B2 main-thread time per key inside the flash (the key's handler task + the frame that paints it, ms): the median is within 4 ms of the same page's control - a cost the frame clock hides  [control {"n":96,"median":12.9,"p95":34.4,"max":42.8} | flash {"n":90,"median":13.3,"p95":19.2,"max":39.5}]
+      PASS  C2 main-thread time per key inside the fade: the median is within 4 ms of the fast control's PLUS the fade's reference cost (0.2 ms, the same turn's main control (RL_REF))  [control {"n":132,"median":14.3,"p95":36.8,"max":41.4} | fade {"n":145,"median":14,"p95":37.5,"max":81.4} | shift -0.3 vs ref 0.2]
+      PASS  C typing inside the fade is as fast as at rest at the same pace (the same budgets over the fade's reference shift - median +1.6 ms, p95 +7.9 ms, the same turn's main control (RL_REF) - against the fast control; no key over 100 ms)  [rest {"n":132,"median":25.7,"p95":32.5,"max":33.9} | fade {"n":145,"median":26.3,"p95":40,"max":58.2} | shift median 0.6 p95 7.5 vs ref 1.6/7.9]
+      PASS  C attribution (information, never a verdict): 5 slow fade key(s) over 6 round(s), 2 within 150 ms of the fade's start - SOME line up with the fade start
+postgres processes on the box now: 10
+node arbor2-play now: 0
+harness browsers at turn end: 0 (this turn's: 0, stopped; others left alone: 0)
+09:44:19Z (local 02:44) browser sweep done
+released
+TURN END 2026-11-08T09:44:19Z

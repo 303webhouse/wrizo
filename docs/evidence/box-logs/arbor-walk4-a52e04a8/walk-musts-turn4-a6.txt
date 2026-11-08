@@ -1,0 +1,8 @@
+ARBOR - the Nick walk, driven 2026-11-08T09:23:11.730Z (scripts/frames/arbor2-walk.mjs). 5 PASS, 1 FAIL (read by the instrument), 1 EYE (the frames named; the Wrizors' call).
+Departures from the script: recordings are JPEG frame folders with frames.json (no encoder on the box; no new dependency); the key-to-paint logs (keylog-*.csv) come from un-recorded bursts, the recorded bursts carry their own (*__recorded.csv); Room by day/night is the URL test pin on the cold loads of steps 1-2 and the Room row's attribute after; the splash at test speed from step 3; step 9 uses the mockup's clock hook (arbor2Clock) for the device clock; step 10 does not drive a drag.
+
+MUSTS THAT DID NOT HOLD (as read):
+- [4] 2000 no key after the first drops a frame by day (key-to-paint over 45 ms = a dropped frame)  {"slow":[{"key":28,"ms":62.3},{"key":37,"ms":60.2},{"key":55,"ms":74},{"key":87,"ms":58.8},{"key":128,"ms":57.6},{"key":137,"ms":58.5},{"key":155,"ms":74.8},{"key":187,"ms":60},{"key":255,"ms":73.3},{"key":278,"ms":52.3}],"count":14}
+
+FOR THE EYE (frames named in walk-log.json):
+- [4] 2000 no visible snap (a leaf never jumps); mid-burst ten seconds of nothing moving; the openers recede with the chrome; new growth from its parent's tip
