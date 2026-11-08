@@ -67,14 +67,18 @@ const caretBox = (at: Range, ed: HTMLElement): DOMRect | null => {
   const own = at.getClientRects()[0];
   if (own && own.height) return own;
   const c = at.startContainer;
-  const row = c === ed ? ((ed.children[at.startOffset - 1] as HTMLElement | undefined) ?? null) : rowOf(c, ed);
+  // a caret held at the editor's own boundary counts CHILD NODES (text nodes too), never only elements (the Wrizors' S4 r9 review: on opening,
+  // ed.children at that offset was nothing, so the open's own pause found no caret and compiled nothing)
+  const before = c === ed ? (ed.childNodes[at.startOffset - 1] ?? null) : null;
+  const row: Node | null = c === ed ? before : rowOf(c, ed);
   if (!row) return null;
   const pre = document.createRange();
   pre.selectNodeContents(row);
   if (row.contains(c)) pre.setEnd(c, at.startOffset);
   const rs = [...pre.getClientRects()].filter((r) => r.height > 0);
   if (rs.length) return rs[rs.length - 1];
-  const rr = row.getBoundingClientRect();
+  if (row.nodeType !== Node.ELEMENT_NODE) return null;
+  const rr = (row as Element).getBoundingClientRect();
   return rr.height ? rr : null;
 };
 
@@ -147,15 +151,18 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
       if (lookingUp && (e.key.length === 1 || e.key === 'Enter' || e.key === 'Backspace')) look(false);   // she writes again: the next pause compiles
     };
 
+    // harness mode only (the flash budget's pattern): why each compile stopped where it did, behind a flag read at call time; unset, nothing
+    const W = window as unknown as { __wzVerifyCompile?: boolean; __wzCompileLog?: [number, string][] };
+    const why = (w: string) => { if (W.__wzVerifyCompile) (W.__wzCompileLog ??= []).push([Math.round(performance.now()), w]); };
     const compile = () => {
       timer = 0;
-      if (lookingUp) return;
-      if (!scroll.isConnected) return;
+      if (lookingUp) { why('looking'); return; }
+      if (!scroll.isConnected) { why('gone'); return; }
       const ed = scroll.querySelector<HTMLElement>('.forward-only-editor');
       const sel = document.getSelection();
-      if (!ed || !sel || !sel.rangeCount || !ed.contains(sel.anchorNode)) return;   // the writing line is the caret's; no caret here, no change
+      if (!ed || !sel || !sel.rangeCount || !ed.contains(sel.anchorNode)) { why('no-caret'); return; }   // the writing line is the caret's; no caret here, no change
       const caret = caretBox(sel.getRangeAt(0), ed);
-      if (!caret) return;
+      if (!caret) { why('no-caret-box'); return; }
       const { L, s } = frame();
       const lhLayout = parseFloat(getComputedStyle(ed).lineHeight);
       const lh = Number.isFinite(lhLayout) && lhLayout > 0 ? lhLayout * s : caret.height * 1.4;
@@ -185,10 +192,11 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
         }
       }
       const next = found.map((f) => `${Math.round((f.r.left - L.left) / s)},${Math.round((f.r.top - L.top) / s)},${f.text}`).join('|');
-      if (next === sig) return;                    // the same words in the same places: nothing to change
+      if (next === sig) { why(found.length ? 'same' : 'none-found'); return; }   // the same words in the same places: nothing to change
       // refused by the flash budget: tried again after another pause (the Wrizors' S4 r9 review: an open whose only pause was refused showed no
       // rows at all until she paused again; a key still resets the wait, so nothing compiles while keys land)
-      if (!tryFlash('f3-compile')) { timer = window.setTimeout(compile, COMPILE_PAUSE_MS); return; }
+      if (!tryFlash('f3-compile')) { why('refused'); timer = window.setTimeout(compile, COMPILE_PAUSE_MS); return; }
+      why(`drawn ${found.length}`);
       sig = next;
       layer.replaceChildren();
       words.clear();

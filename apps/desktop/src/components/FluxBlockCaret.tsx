@@ -20,7 +20,7 @@ import { caretRow } from './useTypewriterFade';
 const PROSE_SURFACES = '.forward-only-editor, .entry-edit, .board-text, .script-el-active';
 // A caret held at an ELEMENT boundary (the editor restoring it as its own child index after a re-render) has no rect of its own, and the row
 // fallback took the in-progress word's INLINE span for the "row", so the block stood on the last word's first letter (the Wrizors' S4 r9
-// review). The end of the text just before that boundary is the caret's place, and an inline span is never a row [FluxBlockCaret §5]
+// review). An inline span is never a row: the probe finds the caret's place instead [FluxBlockCaret §5]
 export const CARET_PLACE = { textEnd: true };
 
 interface Rect { left: number; top: number; width: number; height: number }
@@ -56,26 +56,8 @@ export function FluxBlockCaret() {
       let r = range.getClientRects()[0];
       // the caret's row is the truth where the range gives no rect (a fresh empty line) or a rect off the row; the block stands at the row's start, on scrolls and glides too [FluxBlockCaret §1]
       const row0 = caretRow(sel, surface);
-      const row = row0 && CARET_PLACE.textEnd && getComputedStyle(row0).display === 'inline' ? null : row0;   // [FluxBlockCaret §5]
-      // [FluxBlockCaret §5] the end of the text just before an element-boundary caret: its last text node's end, or its last character's right edge
-      const atTextEnd = (): DOMRect | null => {
-        const a = sel.anchorNode;
-        if (!CARET_PLACE.textEnd || !a || a.nodeType !== Node.ELEMENT_NODE || sel.anchorOffset === 0) return null;
-        let n: Node | null = a.childNodes[sel.anchorOffset - 1] ?? null;
-        while (n && n.nodeType === Node.ELEMENT_NODE && n.lastChild) n = n.lastChild;
-        const len = n && n.nodeType === Node.TEXT_NODE ? (n.nodeValue ?? '').length : 0;
-        if (!n || !len) return null;
-        const end = document.createRange();
-        end.setStart(n, len); end.collapse(true);
-        const er = end.getClientRects()[0];
-        if (er && er.height) return er;
-        const last = document.createRange();
-        last.setStart(n, len - 1); last.setEnd(n, len);
-        const lr = [...last.getClientRects()].pop();
-        return lr && lr.height ? new DOMRect(lr.right, lr.top, 0, lr.height) : null;
-      };
-      // at an element boundary the text's end IS the place, whatever rect the range gave (a block row below still corrects a caret on a new line)
-      { const fromEnd = atTextEnd(); if (fromEnd) r = fromEnd; }
+      // [FluxBlockCaret §5] an inline span (the in-progress word) is never the caret's row: without a rect, the probe below finds the caret's place
+      const row = row0 && CARET_PLACE.textEnd && getComputedStyle(row0).display === 'inline' ? null : row0;
       const atRowStart = (): DOMRect | null => {
         if (!row) return null;
         const rr = row.getBoundingClientRect();

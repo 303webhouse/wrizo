@@ -98,7 +98,8 @@ const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass: !!pass,
 // and TERM-ROWS' "smaller every row" (light and dark: two records); TERM-ROWS [successor]'s "down to the floor" (Actions 42415597899: two records)
 // TERM-LINES' "before the pause" (light, dark) with MUT-TERMINAL and MUT-DIM (Actions 42420374454: four records)
 // CARET-LIGHT and MUT-CARET (Nick's ruling, Nov 7: Jacked In's light caret is brass with a 1 px ink outline: two records)
-const PARKED_EXPECTED = 15;
+// MUT-CARETEND and MUT-RETRY (Actions 42431319040: both blind on their first run)
+const PARKED_EXPECTED = 17;
 
 function buildIdentity() {
   const out = { bundle: null, builtAt: null, head: null, srcCommitAt: null, dirtySrc: null, stale: null };
@@ -125,6 +126,7 @@ const INSTRUMENT = `(() => {
   if (window.__f4) return;
   const I = window.__f4 = { keys: [], first: null, layerMut: [], draws: 0, frames: [] };
   window.__wzVerifyFlashes = true;
+  window.__wzVerifyCompile = true;   // FluxJackedIn's harness-only log of why each compile stopped
   addEventListener('keydown', () => I.keys.push(performance.now()), true);
   // the first frame in which the editor exists: was the page already zoomed (jacked in)?
   const watchFirst = () => { const ed = document.querySelector('.forward-only-editor'); if (ed) { const c = document.querySelector('.mode-pagecol'); I.first = { at: performance.now(), zoom: c ? c.getAttribute('data-zoom') : null, jacked: document.documentElement.hasAttribute('data-flux3-jacked') }; return; } requestAnimationFrame(watchFirst); };
@@ -324,7 +326,10 @@ const MUTANTS = {
   outline: [/outline:1px solid #042632/gi, 'outline:none', 'css'],
   // the Wrizors' S4 r9 review: the caret's text-end place off (FluxBlockCaret §5): CARET-END fails; a refused compile never tried again: OPEN-ROWS
   caretend: [/textEnd:!0\}/g, 'textEnd:!1}'],
-  retry: [/if\(!([\w$]+)\("f3-compile"\)\)\{([\w$]+)=window\.setTimeout\(([\w$]+),([\w$]+)\);return\}/g, 'if(!$1("f3-compile"))return;'],
+  // (re-pointed: the compile now logs why it stops, so the refusal branch is `{N("refused"),d=window.setTimeout(...);return}`)
+  retry: [/if\(!([\w$]+)\("f3-compile"\)\)\{([\w$]+)\("refused"\),([\w$]+)=window\.setTimeout\(([\w$]+),([\w$]+)\);return\}/g, 'if(!$1("f3-compile")){$2("refused");return}'],
+  // the caret's editor boundary counted in ELEMENTS again (r9's caretBox): the open's own pause finds no caret: OPEN-ROWS fails
+  openrow: [/\?([\w$]+)\.childNodes\[([\w$]+)\.startOffset-1\]\?\?null:null/g, '?$1.children[$2.startOffset-1]??null:null'],
 };
 
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -728,8 +733,11 @@ try { await withHarness(async (app) => {
   ok('REACH an edge dwell summons the chrome while jacked in, the same as the control', same(kOn.typing2, kOff.typing2) && same(kOn.reach, kOff.reach), JSON.stringify({ on: [kOn.typing2, kOn.reach], off: [kOff.typing2, kOff.reach] }));
 
   // ---- CARET: Flux's block caret on its page (the Wrizors' S4 r7 blocker, Fable Nov 7: the light tone's caret read 1.4:1 on its page) -----------------
-  const caretOf = async (o) => {
+  const caretOf = async ({ atRow = null, ...o }) => {
     await open({ view: [1366, 768], ...o });
+    // an un-jacked page does not follow the caret to the text's end (278a0ad9's run: the Draft caret stood below the window and nothing was read
+    // under it): the caret at the end of a row at the top of the unscrolled page
+    if (atRow !== null) { await ev(`(() => { const s = document.querySelector('.mode-page .mode-scroll'); if (s) s.scrollTop = 0; return window.__f4.toRow(${atRow}); })()`); await sleep(400); }
     await app.waitFor("!!document.querySelector('.flux-block-caret')", { timeout: 4000, label: 'the block caret' }).catch(() => {});
     return ev('window.__f4.caretInk()');
   };
@@ -749,7 +757,7 @@ try { await withHarness(async (app) => {
   ok(`CARET-JACKED-LIGHT [successor] Jacked In's light caret is brass (${kLight && kLight.caret}) held by a 1 px ink outline (${kLight && kLight.outline && kLight.outline.width}px ${kLight && kLight.outline && kLight.outline.style}) at ${kLight && kLight.outline && kLight.outline.ratio}:1 against the page (>= 4.5)`,
     caretBrassOk(kLight, kLightSt), JSON.stringify({ k: kLight, jacked: kLightSt.jacked }));
   // the plain light caret under the flag (a Draft page whose own Typewriter is off: not jacked): r8's #A84E00 fill, >= 4.5:1
-  const kPlain = await caretOf({ tone: 'light', id: DRAFTP, pageTw: 'off' });
+  const kPlain = await caretOf({ tone: 'light', id: DRAFTP, pageTw: 'off', atRow: 1 });
   const kPlainSt = await st();
   ok(`CARET-PLAIN-LIGHT [successor] outside Jacked In the light caret's fill is >= 4.5:1 against the page (${kPlain && kPlain.ratio}:1), in the orange family, and no outline`,
     !kPlainSt.jacked && caretLightOk(kPlain) && !!kPlain.outline && kPlain.outline.ratio === null, JSON.stringify({ k: kPlain, jacked: kPlainSt.jacked }));
@@ -910,21 +918,27 @@ try { await withHarness(async (app) => {
   ok(`JACKOUT-ALL jacking out leaves no signal anywhere, both tones, by 900 ms (light ${joL.before} -> ${JSON.stringify(joL.after)}; dark ${joD.before} -> ${JSON.stringify(joD.after)})`, joOk(joL) && joOk(joD), JSON.stringify({ joL, joD }));
 
   // (2) the block caret at the text's end, 300 ms after a burst (Jacked In, and the control: the fix is in FluxBlockCaret, shared)
-  const testCaretEnd = async (flag) => {
+  // mode 'compiled' is the frames' jack-compiled screen exactly (the r9 frame the Wrizors flagged): the words in one call, the pointer to the
+  // corner, the frame 1.6 s later
+  const testCaretEnd = async (flag, mode = 'burst') => {
     await open({ flag, prefs: flag ? {} : { typewriter: true } });
-    for (const ch of ' the signal holds while she writes on and on and on whil') { await app.typeKeys(ch); await sleep(35); }
-    await sleep(300);
+    if (mode === 'compiled') { await app.typeKeys(' and the line keeps going forward with more plain words now, on and on across the measure of the page until it wraps again'); await app.mouseMove(8, 8); await sleep(1600); }
+    else { for (const ch of ' the signal holds while she writes on and on and on whil') { await app.typeKeys(ch); await sleep(35); } await sleep(300); }
     return ev('window.__f4.blockAt()');
   };
   const ceOn = await testCaretEnd(true), ceOff = await testCaretEnd(false);
+  const ceOnB = await testCaretEnd(true, 'compiled'), ceOffB = await testCaretEnd(false, 'compiled');
   const atEnd = (x) => !!x && !!x.block && !!x.end && Math.abs(x.block.x - x.end.right) <= 3 && Math.abs((x.block.y + x.block.h / 2) - (x.end.y + x.end.h / 2)) <= x.end.h * 0.6;
   ok(`CARET-END 300 ms after a burst the block caret stands at the text's end (Jacked In: caret x ${ceOn && ceOn.block && ceOn.block.x}, end ${ceOn && ceOn.end && ceOn.end.right}; the control: ${ceOff && ceOff.block && ceOff.block.x} vs ${ceOff && ceOff.end && ceOff.end.right})`,
     atEnd(ceOn) && atEnd(ceOff), JSON.stringify({ on: ceOn, off: ceOff }));
+  ok(`CARET-END-COMPILED the frames' jack-compiled screen: 1.6 s after the words land the block caret stands at the text's end (Jacked In: ${ceOnB && ceOnB.block && ceOnB.block.x} vs ${ceOnB && ceOnB.end && ceOnB.end.right}; the control: ${ceOffB && ceOffB.block && ceOffB.block.x} vs ${ceOffB && ceOffB.end && ceOffB.end.right})`,
+    atEnd(ceOnB) && atEnd(ceOffB), JSON.stringify({ on: ceOnB, off: ceOffB }));
 
   // (3) the rows compiled at the last pause STAY while she types (only NEW compiling waits for the pause: ruling F)
   const testRowsStay = async (tone) => {
     await open({ tone });
     const flashes0 = await ev('(window.__wzFlashLog || []).filter((f) => f.kind === "f3-compile").map((f) => f.ok)');
+    const clog = await ev('(window.__wzCompileLog || []).map((x) => x[1])');
     const rest = await ev("({ n: document.querySelectorAll('[data-flux3-compile] .flux3-compile-word').length })");
     await ev("(() => { window.__f4.firstSig = document.querySelector('[data-flux3-compile] .flux3-compile-word'); return true; })()");
     const k0 = await ev('window.__f4.keys.length');
@@ -932,7 +946,7 @@ try { await withHarness(async (app) => {
     const burst = ' and the line keeps going forward with more plain words now, on and on';
     for (let i = 0; i < burst.length; i += 1) { await app.typeKeys(burst[i]); await sleep(40); if (i === burst.length - 10) mid = await ev("(() => { const L = document.querySelector('[data-flux3-compile]'), ws = [...document.querySelectorAll('[data-flux3-compile] .flux3-compile-word')]; const cs = L ? getComputedStyle(L) : null; return { n: ws.length, same: !!window.__f4.firstSig && window.__f4.firstSig.isConnected, vis: cs ? cs.visibility : null, op: cs ? +cs.opacity : null, seen: ws.filter((g) => { const r = g.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight && r.width > 0; }).length, writing: document.documentElement.getAttribute('data-wz-writing') }; })()"); }
     const keys = await ev(`window.__f4.keys.length - ${k0}`);
-    return { rest, mid, keys, flashes0 };
+    return { rest, mid, keys, flashes0, clog };
   };
   const rsL = await testRowsStay('light'), rsD = await testRowsStay('dark');
   ok(`OPEN-ROWS on opening, the open's own pause compiles: rows at rest (light ${rsL.rest.n}, dark ${rsD.rest.n} words; compile grants ${JSON.stringify(rsL.flashes0)} / ${JSON.stringify(rsD.flashes0)})`, rsL.rest.n >= 8 && rsD.rest.n >= 8, JSON.stringify({ rsL, rsD }));
@@ -1117,17 +1131,33 @@ try { await withHarness(async (app) => {
   // the mutant (a guard passing blind). Kept VERBATIM and no longer run; its successor runs the same landed mutant on the plain light page.
   // const mCa = await withMutant('caret', () => caretOf({ tone: 'light' }));
   // ok('MUT-CARET (landed, in boot-*.css) the light page\'s caret back to the shared orange: CARET-LIGHT fails', mCa.landed === 1 && !!mCa.r && !caretLightOk(mCa.r), JSON.stringify({ landed: mCa.landed, r: mCa.r }));
-  const mCa = await withMutant('caret', () => caretOf({ tone: 'light', id: DRAFTP, pageTw: 'off' }));
+  const mCa = await withMutant('caret', () => caretOf({ tone: 'light', id: DRAFTP, pageTw: 'off', atRow: 1 }));
   ok('MUT-CARET [successor] (landed, in boot-*.css) the plain light caret back to the shared orange: CARET-PLAIN-LIGHT fails', mCa.landed === 1 && !!mCa.r && !caretLightOk(mCa.r), JSON.stringify({ landed: mCa.landed, r: mCa.r }));
   // MUT-OUTLINE (Nick's ruling): the jacked light caret without its outline: CARET-JACKED-LIGHT fails
   const mOl = await withMutant('outline', async () => { const k = await caretOf({ tone: 'light' }); return { k, st0: await st() }; });
   ok(`MUT-OUTLINE (landed, in boot-*.css) the jacked light caret without its ink outline: CARET-JACKED-LIGHT fails (outline ${mOl.r.k && mOl.r.k.outline && mOl.r.k.outline.style})`,
     mOl.landed === 1 && !caretBrassOk(mOl.r.k, mOl.r.st0), JSON.stringify({ landed: mOl.landed, k: mOl.r.k }));
   const mCe = await withMutant('caretend', () => testCaretEnd(true));
-  ok(`MUT-CARETEND (landed) the caret's text-end place off: CARET-END fails (caret x ${mCe.r && mCe.r.block && mCe.r.block.x}, end ${mCe.r && mCe.r.end && mCe.r.end.right}; anchor ${JSON.stringify(mCe.r && mCe.r.anchor)})`,
-    mCe.landed === 1 && !atEnd(mCe.r), JSON.stringify({ landed: mCe.landed, r: mCe.r }));
+  // ---- PARKED - SUPERSEDED by its own first run (Actions 42431319040): the burst scenario does not reproduce the flagged frame (the caret stood
+  // at the text's end with the fix off too), so this guard was blind. Kept VERBATIM and no longer run; its successor adds the frame's own scenario.
+  // ok(`MUT-CARETEND (landed) the caret's text-end place off: CARET-END fails (caret x ${mCe.r && mCe.r.block && mCe.r.block.x}, end ${mCe.r && mCe.r.end && mCe.r.end.right}; anchor ${JSON.stringify(mCe.r && mCe.r.anchor)})`,
+  //   mCe.landed === 1 && !atEnd(mCe.r), JSON.stringify({ landed: mCe.landed, r: mCe.r }));
+  const mCeB = await withMutant('caretend', () => testCaretEnd(true, 'compiled'));
+  ok(`MUT-CARETEND [successor] (landed) an inline span taken for the caret's row again: CARET-END or CARET-END-COMPILED fails (burst ${mCe.r && mCe.r.block && mCe.r.block.x} vs ${mCe.r && mCe.r.end && mCe.r.end.right}; compiled ${mCeB.r && mCeB.r.block && mCeB.r.block.x} vs ${mCeB.r && mCeB.r.end && mCeB.r.end.right})`,
+    mCe.landed === 1 && mCeB.landed === 1 && (!atEnd(mCe.r) || !atEnd(mCeB.r)), JSON.stringify({ burst: mCe.r, compiled: mCeB.r }));
+  // MUT-OPENROWS: the caret's boundary counted in ELEMENTS again (r9's caretBox): OPEN-ROWS fails
+  const mOr = await withMutant('openrow', () => testRowsStay('dark'));
+  ok(`MUT-OPENROWS (landed) the caret's boundary counted in elements again: OPEN-ROWS fails (rows at rest ${mOr.r.rest.n}; compile log ${JSON.stringify(mOr.r.clog)})`, mOr.landed === 1 && mOr.r.rest.n < 8, JSON.stringify({ landed: mOr.landed, r: mOr.r }));
   const mRt = await withMutant('retry', () => testRowsStay('dark'));
-  ok(`MUT-RETRY (landed) a refused compile never tried again: OPEN-ROWS fails (rows at rest ${mRt.r.rest.n}; grants ${JSON.stringify(mRt.r.flashes0)})`, mRt.landed === 1 && mRt.r.rest.n < 8, JSON.stringify({ landed: mRt.landed, r: mRt.r }));
+  // ---- PARKED - SUPERSEDED by its own first run (Actions 42431319040): no compile at open was refused (no f3-compile grant or refusal at all:
+  // the compile stopped before the budget), so this guard was blind; the cause is MUT-OPENROWS'. Kept VERBATIM and no longer run.
+  // ok(`MUT-RETRY (landed) a refused compile never tried again: OPEN-ROWS fails (rows at rest ${mRt.r.rest.n}; grants ${JSON.stringify(mRt.r.flashes0)})`, mRt.landed === 1 && mRt.r.rest.n < 8, JSON.stringify({ landed: mRt.landed, r: mRt.r }));
+  if (process.env.HARNESS_PARKED === '1') {
+    pok('PARKED (was "MUT-CARETEND (landed) the caret\'s text-end place off: CARET-END fails") - SUPERSEDED by its own first run (Actions 42431319040: the burst did not reproduce the flagged frame). Opposite reasserted: with the fix off, the burst scenario still puts the caret at the end; live successor MUT-CARETEND [successor]',
+      mCe.landed === 1 && atEnd(mCe.r), JSON.stringify(mCe.r));
+    pok('PARKED (was "MUT-RETRY (landed) a refused compile never tried again: OPEN-ROWS fails") - SUPERSEDED by its own first run (Actions 42431319040: no compile was refused at open). Opposite reasserted: with the retry stripped, the open\'s compile is never refused (the compile log has no "refused"), so the retry is not what draws the open\'s rows; live successor MUT-OPENROWS',
+      mRt.landed === 1 && !(mRt.r.clog || []).includes('refused'), JSON.stringify({ clog: mRt.r.clog, rows: mRt.r.rest.n }));
+  }
   if (process.env.HARNESS_PARKED === '1') {
     pok('PARKED (was "MUT-CARET (landed) the light page\'s caret back to the shared orange: CARET-LIGHT fails") - SUPERSEDED with CARET-LIGHT (Nick\'s ruling, Nov 7). Opposite reasserted: on the jacked page the read fails CARET-LIGHT without any mutant (brass), so the old guard was blind there; live successor MUT-CARET [successor]',
       !caretLightOk(kLight) && mCa.landed === 1 && !caretLightOk(mCa.r), JSON.stringify({ unmutated: kLight && kLight.ratio }));
