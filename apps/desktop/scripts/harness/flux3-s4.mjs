@@ -335,6 +335,8 @@ const MUTANTS = {
   retry: [/if\(!([\w$]+)\("f3-compile"\)\)\{([\w$]+)\("refused"\),([\w$]+)=window\.setTimeout\(([\w$]+),([\w$]+)\);return\}/g, 'if(!$1("f3-compile")){$2("refused");return}'],
   // the caret's editor boundary counted in ELEMENTS again (r9's caretBox): the open's own pause finds no caret: OPEN-ROWS fails
   openrow: [/\?([\w$]+)\.childNodes\[([\w$]+)\.startOffset-1\]\?\?null:null/g, '?$1.children[$2.startOffset-1]??null:null'],
+  // the page's own scrolling postponing her pause again (r10b's measure: the open's glides fired 30-46 scrolls a second): OPEN-ROWS fails
+  scrollpause: [/scrollPostpones:!1/g, 'scrollPostpones:!0'],
 };
 
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -743,6 +745,9 @@ try { await withHarness(async (app) => {
     // an un-jacked page does not follow the caret to the text's end (278a0ad9's run: the Draft caret stood below the window and nothing was read
     // under it): the caret at the end of a row at the top of the unscrolled page
     if (atRow !== null) { await ev(`(() => { const s = document.querySelector('.mode-page .mode-scroll'); if (s) s.scrollTop = 0; return window.__f4.toRow(${atRow}); })()`); await sleep(400); }
+    // the block caret on screen before the read (r10b: jacked in, the Typewriter was still gliding the long page to its end: the caret at y 1802)
+    await app.waitFor("(() => { const b = document.querySelector('.flux-block-caret'); if (!b) return false; const r = b.getBoundingClientRect(); return r.height > 0 && r.top >= 0 && r.bottom <= innerHeight; })()", { timeout: 8000, label: 'the block caret on screen' }).catch(() => {});
+    await sleep(300);
     await app.waitFor("!!document.querySelector('.flux-block-caret')", { timeout: 4000, label: 'the block caret' }).catch(() => {});
     return ev('window.__f4.caretInk()');
   };
@@ -1154,6 +1159,12 @@ try { await withHarness(async (app) => {
   const mCeB = await withMutant('caretend', () => testCaretEnd(true, 'compiled'));
   ok(`MUT-CARETEND [successor] (landed) an inline span taken for the caret's row again: CARET-END or CARET-END-COMPILED fails (burst ${mCe.r && mCe.r.block && mCe.r.block.x} vs ${mCe.r && mCe.r.end && mCe.r.end.right}; compiled ${mCeB.r && mCeB.r.block && mCeB.r.block.x} vs ${mCeB.r && mCeB.r.end && mCeB.r.end.right})`,
     mCe.landed === 1 && mCeB.landed === 1 && (!atEnd(mCe.r) || !atEnd(mCeB.r)), JSON.stringify({ burst: mCe.r, compiled: mCeB.r }));
+  const mSp = await withMutant('scrollpause', () => testRowsStay('dark'));
+  ok(`MUT-SCROLL (landed) the page's own scrolling postponing her pause again: OPEN-ROWS fails (rows at rest ${mSp.r.rest.n}; compile log ${JSON.stringify(mSp.r.clog)})`, mSp.landed === 1 && mSp.r.rest.n < 8, JSON.stringify({ landed: mSp.landed, r: mSp.r }));
+  // INFO: the control's rest after opening (flag off, the Typewriter on): does today's Typewriter scroll the same way? (its glides, not S4's)
+  await open({ flag: false, prefs: { typewriter: true } });
+  await ev('(() => { window.__f4.evc = {}; return true; })()'); await sleep(1000);
+  console.log(`INFO OPEN-SCROLL-CONTROL (flag off, the Typewriter on) events in one second of rest after opening: ${JSON.stringify(await ev('window.__f4.evc'))}`);
   // MUT-OPENROWS: the caret's boundary counted in ELEMENTS again (r9's caretBox): OPEN-ROWS fails
   const mOr = await withMutant('openrow', () => testRowsStay('dark'));
   ok(`MUT-OPENROWS (landed) the caret's boundary counted in elements again: OPEN-ROWS fails (rows at rest ${mOr.r.rest.n}; compile log ${JSON.stringify(mOr.r.clog)})`, mOr.landed === 1 && mOr.r.rest.n < 8, JSON.stringify({ landed: mOr.landed, r: mOr.r }));

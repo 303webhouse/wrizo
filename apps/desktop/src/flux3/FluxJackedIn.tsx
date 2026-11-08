@@ -33,6 +33,10 @@ const BLOCK_HEIGHT = 0.62;             // a block's height, in the word's own fo
 // blocks shrink INSIDE their own slots (every word's signal stays on its own word's rect, so no block ever stands on another word), by rowShrink
 // per row above the first, never below rowMin. Its fading is the Typewriter's own band on the column.
 export const SIGNAL = { rowShrink: 0.12, rowMin: 0.5 };
+// THE PAUSE is hers (ruling F): a key restarts it, the page's own scrolling does not. The Typewriter glides a long page to its end line by
+// line on opening (30-46 scroll events a second, for seconds), and with every scroll restarting the wait the open's own pause never came:
+// no rows at all until she typed and paused (the Wrizors' S4 r9 review). A scroll now starts a compile only when none is waiting
+export const PAUSE = { scrollPostpones: false };
 
 interface Props {
   on: boolean;                          // the page's Typewriter is running (ModeStage's typewriterOn)
@@ -228,7 +232,8 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
     const DOC_EVENTS = ['keydown', 'beforeinput', 'selectionchange', 'wz-zoom-changed'] as const;
     document.addEventListener('keydown', onKey, opts);   // before schedule's own keydown, so an Esc never schedules a compile
     DOC_EVENTS.forEach((ev) => document.addEventListener(ev, schedule, opts));
-    scroll.addEventListener('scroll', schedule, { passive: true });
+    const onScroll = () => { if (PAUSE.scrollPostpones || !timer) schedule(); };
+    scroll.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', schedule);
     schedule();
 
@@ -238,7 +243,7 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
       root.removeAttribute('data-flux3-looking');
       document.removeEventListener('keydown', onKey, opts);
       DOC_EVENTS.forEach((ev) => document.removeEventListener(ev, schedule, opts));
-      scroll.removeEventListener('scroll', schedule);
+      scroll.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', schedule);
       cancelAnimationFrame(raf);
       // THE DECOMPILE: only when she jacks out and the page stays, in Flux, with signal showing; anything else (leaving, the still state, a refused
