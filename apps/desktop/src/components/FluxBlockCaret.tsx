@@ -78,19 +78,23 @@ export function FluxBlockCaret() {
       let r = range.getClientRects()[0];
       // the caret's row is the truth where the range gives no rect (a fresh empty line) or a rect off the row; the block stands at the row's start, on scrolls and glides too [FluxBlockCaret §1]
       const row0 = caretRow(sel, surface);
-      // [FluxBlockCaret §5] an inline span (the in-progress word) is never the caret's row. Without a rect, the caret at an element boundary stands
-      // at the END of the text just before it, read without touching the DOM, so it follows scrolls and glides too (a probe may not run then)
-      const row = row0 && CARET_PLACE.textEnd && getComputedStyle(row0).display === 'inline' ? null : row0;
+      // [FluxBlockCaret §5] an inline span HOLDING TEXT (the in-progress word) is never the caret's row: without a rect, the caret at an element
+      // boundary stands at the END of the text just before it, read without touching the DOM, so it follows scrolls and glides too (a probe may
+      // not run then). An inline span with no visible text (the new line after Enter) stays the row: its start is the caret's place (C17-AT)
+      const zeroWidth = (ch: string) => ch.charCodeAt(0) === 0x200b || ch.charCodeAt(0) === 0xfeff;
+      const visible = (s: string) => [...s].some((ch) => ch.trim() !== '' && !zeroWidth(ch));
+      const wordRow = !!row0 && CARET_PLACE.textEnd && getComputedStyle(row0).display === 'inline' && visible(row0.textContent ?? '');
+      const row = wordRow ? null : row0;
       const atTextEnd = (): DOMRect | null => {
         const a = sel.anchorNode;
-        if (!CARET_PLACE.textEnd || !a || a.nodeType !== Node.ELEMENT_NODE || sel.anchorOffset === 0) return null;
+        if (!wordRow || !a || a.nodeType !== Node.ELEMENT_NODE || sel.anchorOffset === 0) return null;
         for (let s: Node | null = a.childNodes[sel.anchorOffset - 1] ?? null; s; s = s.previousSibling) {
           let t: Text | null = null;
           if (s.nodeType === Node.TEXT_NODE) t = s as Text;
-          else { const w = document.createTreeWalker(s, NodeFilter.SHOW_TEXT); for (let n = w.nextNode(); n; n = w.nextNode()) if ((n.nodeValue ?? '').replace(/[​﻿]/g, '').length) t = n as Text; }
+          else { const w = document.createTreeWalker(s, NodeFilter.SHOW_TEXT); for (let n = w.nextNode(); n; n = w.nextNode()) if (visible(n.nodeValue ?? '')) t = n as Text; }
           const v = t?.nodeValue ?? '';
           let i = v.length;
-          while (i > 0 && /[​﻿]/.test(v[i - 1])) i -= 1;
+          while (i > 0 && zeroWidth(v[i - 1])) i -= 1;
           if (!t || !i) continue;
           const one = document.createRange();
           one.setStart(t, i - 1); one.setEnd(t, i);
