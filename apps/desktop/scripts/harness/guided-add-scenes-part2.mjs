@@ -119,7 +119,12 @@ await withHarness(async (app) => {
 
         {
           // Outline: ordinary nested cards; the door sits on the top-level steps only
-          await showAs('outline'); await waitSoft("!!document.querySelector('.board-outline')", { label: 'outline' }); await sleep(700);
+          await showAs('outline'); await waitSoft("!!document.querySelector('.board-outline')", { label: 'outline' });
+          // PARKED - SUPERSEDED by the rows wait below (bug #46, Fable Nov 6: wait on the Outline's rows rendering, not a fixed 700 ms - the way pw1's S5 waits on what it reads). The line that stood, verbatim:
+          // await showAs('outline'); await waitSoft("!!document.querySelector('.board-outline')", { label: 'outline' }); await sleep(700);
+          // The rows the next read counts (7 rows, 2 nested, 5 doors) - the wait is soft, so a short Outline still reaches the assertion below, which reports it - then two frames so the nested geometry read after it sees laid-out rows.
+          await waitSoft("document.querySelectorAll('.board-outline-row').length >= 7 && document.querySelectorAll('.board-outline-children .board-outline-row').length >= 2 && document.querySelectorAll('.board-scenes-door').length >= 5", { label: 'outline rows (7 rows, 2 nested, 5 doors)', timeout: 10000 });
+          await app.evalJs('new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => r(true))))');
           const ol = await q("({ rows: document.querySelectorAll('.board-outline-row').length, nested: document.querySelectorAll('.board-outline-children .board-outline-row').length, doors: [...document.querySelectorAll('.board-scenes-door')].length, doorOnChild: !!document.querySelector('.board-outline-children .board-scenes-door') })");
           ok(`[${T}] in Outline the scenes are ordinary nested cards under their step, and only the five main steps carry the door`, ol.rows === 7 && ol.nested === 2 && ol.doors === 5 && !ol.doorOnChild, JSON.stringify(ol));
           // THE OUTLINE NESTS (Fable, Oct 27: the scenes sat in a 2nd column at x ~ 950): each scene is indented under its step, its top is between its step's and the next step's, its arrows are on its own row, and it carries 2.1 / 2.2
