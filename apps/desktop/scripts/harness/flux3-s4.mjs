@@ -1174,7 +1174,8 @@ try { await withHarness(async (app) => {
   // ok(`MUT-CARETEND [successor] (landed) an inline span taken for the caret's row again: CARET-END or CARET-END-COMPILED fails (burst ${mCe.r && mCe.r.block && mCe.r.block.x} vs ${mCe.r && mCe.r.end && mCe.r.end.right}; compiled ${mCeB.r && mCeB.r.block && mCeB.r.block.x} vs ${mCeB.r && mCeB.r.end && mCeB.r.end.right})`,
   //   mCe.landed === 1 && mCeB.landed === 1 && (!atEnd(mCe.r) || !atEnd(mCeB.r)), JSON.stringify({ burst: mCe.r, compiled: mCeB.r }));
   const mCeC = await withMutant('caretend', () => testCaretEnd(true, 'boundary'));
-  ok(`MUT-CARETEND [successor 2] (landed) the fix off: CARET-END-BOUNDARY fails (caret x ${mCeC.r && mCeC.r.block && mCeC.r.block.x} vs the end ${mCeC.r && mCeC.r.end && mCeC.r.end.right})`,
+  console.log(`INFO MUT-CARETEND-WHERE the fix off, the caret at the editor's boundary: ${JSON.stringify(mCeC.r)} / the fix on: ${JSON.stringify(ceOnC)}`);
+  ok(`MUT-CARETEND [successor 2] (landed) the fix off: CARET-END-BOUNDARY fails (caret x ${mCeC.r && mCeC.r.block && mCeC.r.block.x} y ${mCeC.r && mCeC.r.block && mCeC.r.block.y} h ${mCeC.r && mCeC.r.block && mCeC.r.block.h} vs the end ${mCeC.r && mCeC.r.end && mCeC.r.end.right} y ${mCeC.r && mCeC.r.end && mCeC.r.end.y} h ${mCeC.r && mCeC.r.end && mCeC.r.end.h})`,
     mCeC.landed === 1 && !atEnd(mCeC.r), JSON.stringify({ boundary: mCeC.r }));
   if (process.env.HARNESS_PARKED === '1') {
     pok('PARKED (was "MUT-CARETEND [successor] ... CARET-END or CARET-END-COMPILED fails") - SUPERSEDED by its own run (Actions 42438849747: both scenarios reached the end with the fix off). Opposite reasserted: at the editor\'s own boundary the fix off always misplaces it; live successor MUT-CARETEND [successor 2]',
