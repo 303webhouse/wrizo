@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+# walk-turn3.sh - ARBOR, turn 3 (Fable's rulings on walk-triage.txt, Nov 8; on Chat 1's "ARBOR go"). Tree: arbor/r21-walk3 adf09ce2 =
+# 3dd856b6 + the fixes A1-A5 + A+L (arbor/r21-walk-fixes 4e8c35d3) + the walk driver, its parks, the seed shim and the A6 trace (69f6c2be).
+#   1. the walk on the play server, 2000 only: steps 1, 2 (A3, A4), 4 (the pause by an edge dwell; every frame), 6 (A1, A2, A5), 10 (the drag)
+#      -> Downloads\arbor-mockup-frames\walk-final\turn3\
+#   2. the A6 trace: 400 keys by day and by night on the locally served build (no play server) -> F:\wrizo-work\arbor-turn3-out\a6\
+#   3. the latency re-check vs main: main x3 (RL_REF), the tree by day (with A+L) and by night, main again; the stabiliser harness
+# box-take arbor (token drawn, never logged). The trap: the play server's tree and its Postgres stopped, ONLY this turn's throwaway folder
+# deleted (under F:\wrizo-work\arbor-tmp), this turn's harness browsers swept, released by token.
+S="C:/Users/nickh/AppData/Local/Temp/claude/68ba17a7e36493c0/4822361e-ef72-47ae-a410-5545e35f7b5f/scratchpad"
+R19="C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/4822361e-ef72-47ae-a410-5545e35f7b5f/scratchpad/r19"
+LOG="$S/walk-turn3.log.txt"
+T="/f/wrizo-work/arbor-nodrift"; D="$T/apps/desktop"
+MW="/c/Users/nickh/arbor-main-control"; MAIN=be09012a
+TMPF="/f/wrizo-work/arbor-tmp"
+OUTS="F:/wrizo-work/arbor-turn3-out"
+OUTW='C:\Users\nickh\Downloads\arbor-mockup-frames\walk-final\turn3'
+: > "$LOG"
+say() { echo "$(date -u +%H:%M:%SZ) (local $(date +%H:%M)) $*" >> "$LOG"; }
+mkdir -p "$TMPF" "$OUTS" || exit 1
+export TEMP='F:\wrizo-work\arbor-tmp' TMP='F:\wrizo-work\arbor-tmp'
+
+[ "$(git -C "$T" rev-parse --short=8 HEAD)" = "adf09ce2" ] || { say "tree tip is not adf09ce2"; exit 1; }
+[ "$(git -C "$T" status --short | wc -l)" = "0" ] || { say "tree dirty"; exit 1; }
+[ "$(git -C "$T" diff --stat 4e8c35d3 HEAD -- apps/desktop/src apps/server/src | wc -l)" = "0" ] || { say "app code differs from the fixes branch 4e8c35d3"; exit 1; }
+B=$(ls "$D/dist-web/assets" | grep -E '^index-.*\.js$')
+[ "$B" = "index-BgvFQhrf.js" ] || { say "web bundle is $B, not the fixes build index-BgvFQhrf.js"; exit 1; }
+[ -f "$T/apps/server/dist/index.js" ] || { say "no server build"; exit 1; }
+MAINFULL=$(git -C "$T" rev-parse "$MAIN^{commit}") || exit 1
+[ "$(git -C "$MW" rev-parse HEAD)" = "$MAINFULL" ] || { say "main control is not at $MAIN"; exit 1; }
+( cd "$MW/apps/desktop" && pnpm run build:web > "$S/mc3-build.log.txt" 2>&1 ) || { say "main build failed"; exit 1; }
+for X in "$MW/apps/desktop" "$D"; do say "tree $X: HEAD $(git -C $X rev-parse --short=8 HEAD), dirty $(git -C $X status --short | wc -l), bundle $(ls $X/dist-web/assets | grep -E '^index-.*\.js$')"; done
+ls -d "$TMPF"/arbor2-play-* 2>/dev/null > "$S/walk3-pre-play-dirs.txt"
+
+cd "$D" || exit 1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$S/harness-browsers.ps1" list "$S/walk3-pre-browsers.txt" >> "$LOG" 2>&1
+node scripts/box-take.mjs take arbor > "$S/walk3-take.txt" 2>&1
+grep -v '^WS_BOX_TURN=' "$S/walk3-take.txt" >> "$LOG"
+TOKEN=$(grep -oE '^WS_BOX_TURN=[^ ]+' "$S/walk3-take.txt" | cut -d= -f2)
+rm -f "$S/walk3-take.txt"
+if [ -z "$TOKEN" ]; then say "NO TURN (box not free) - nothing run"; exit 1; fi
+echo "TURN START $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$LOG"
+export WS_BOX_TURN="$TOKEN"
+PLAY_WINPID=""
+stop_play() {
+  if [ -n "$PLAY_WINPID" ]; then taskkill //PID "$PLAY_WINPID" //T //F >> "$LOG" 2>&1; say "play server tree stopped (pid $PLAY_WINPID)"; PLAY_WINPID=""; fi
+  sleep 2
+  for d in $(ls -d "$TMPF"/arbor2-play-* 2>/dev/null); do
+    grep -qxF "$d" "$S/walk3-pre-play-dirs.txt" && continue
+    n=$(basename "$d")
+    powershell.exe -NoProfile -Command "\$p = @(Get-CimInstance Win32_Process | Where-Object { \$_.Name -like 'postgres*' -and \$_.CommandLine -like '*$n*' }); foreach (\$x in \$p) { try { Stop-Process -Id \$x.ProcessId -Force -ErrorAction Stop } catch {} }; 'postgres left on $n: ' + \$p.Count + ' (stopped)'" >> "$LOG" 2>&1
+    sleep 1
+    case "$d" in "$TMPF"/arbor2-play-??????) rm -rf "$d" && say "deleted this turn's throwaway folder $n" || say "could not delete $n";; *) say "not deleting $d (unexpected name)";; esac
+  done
+}
+finish() {
+  cd "$D"
+  stop_play
+  powershell.exe -NoProfile -Command "'postgres processes on the box now: ' + @(Get-CimInstance Win32_Process | Where-Object { \$_.Name -like 'postgres*' }).Count; 'node arbor2-play now: ' + @(Get-CimInstance Win32_Process | Where-Object { \$_.Name -eq 'node.exe' -and \$_.CommandLine -like '*arbor2-play*' }).Count" >> "$LOG" 2>&1
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$S/harness-browsers.ps1" sweep "$S/walk3-pre-browsers.txt" >> "$LOG" 2>&1
+  say "browser sweep done"
+  node scripts/box-take.mjs release "$TOKEN" >> "$LOG" 2>&1
+  echo "TURN END $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$LOG"
+}
+trap finish EXIT
+
+# ---- 1. the walk on the play server ----
+cd "$T" || exit 1
+EMBEDDED_PG_FROM=C:/Users/nickh/wrizo-read/package.json node apps/server/scripts/arbor2-play.mjs > "$S/walk-play3.log.txt" 2>&1 &
+PLAY_PID=$!
+sleep 1
+PLAY_WINPID=$(cat /proc/$PLAY_PID/winpid 2>/dev/null)
+say "play server started (pid $PLAY_WINPID)"
+for i in $(seq 1 120); do grep -q '^READY' "$S/walk-play3.log.txt" && break; kill -0 $PLAY_PID 2>/dev/null || break; sleep 1; done
+if grep -q '^READY' "$S/walk-play3.log.txt"; then
+  say "play server READY"
+  cd "$D" || exit 1
+  say "walk start"
+  WALK_STEPS=1,2,4,6,10 WALK_SIZES=2000 WALK_OUT="$OUTW" node scripts/frames/arbor2-walk.mjs > "$S/walk-run3.log.txt" 2>&1
+  say "walk exit $?"
+  grep -E "^WALK-STEP|^WALK-MUST FAIL|^ARBOR2-WALK" "$S/walk-run3.log.txt" >> "$LOG"
+else
+  say "play server not READY - the walk is not run"; sed 's/^/  play: /' "$S/walk-play3.log.txt" | head -20 >> "$LOG"
+fi
+stop_play
+
+# ---- 2. the A6 trace (the locally served build) ----
+cd "$D" || exit 1
+say "a6 trace start"
+WS_URL_SEARCH='?arbor2=1' A6_OUT="$OUTS/a6" node scripts/frames/arbor2-a6-trace.mjs > "$S/a6-trace3.log.txt" 2>&1
+say "a6 trace exit $?"
+grep -E "^A6|^  long" "$S/a6-trace3.log.txt" >> "$LOG"
+
+# ---- 3. the latency re-check vs main ----
+run() { # run <label> <dir> <file> <urlsearch or empty>
+  local label="$1" dir="$2" file="$3" o="$S/lt3-$1.out.txt" f
+  if [ -n "$4" ]; then export WS_URL_SEARCH="$4"; else unset WS_URL_SEARCH; fi
+  say "[$label] start ($file in $dir, WS_URL_SEARCH=${WS_URL_SEARCH:-unset}, RL_REF=${RL_REF:-default})"
+  ( cd "$dir" && node scripts/run-suite.mjs --only "$file" --out "$OUTS/$label" > "$o" 2>&1 )
+  grep -E "^\[[0-9]+/|SUITE (START|RESULT)" "$o" >> "$LOG"
+  for f in "$OUTS/$label"/*.txt; do [ -f "$f" ] || continue; cp "$f" "$S/lt3-$label-$(basename "$f")"; node "$R19/lt5-lines.cjs" "$f" >> "$LOG" 2>&1; done
+  unset WS_URL_SEARCH
+}
+unset RL_REF
+run main-1 "$MW/apps/desktop" rhizome-latency.mjs ""
+run main-2 "$MW/apps/desktop" rhizome-latency.mjs ""
+run main-3 "$MW/apps/desktop" rhizome-latency.mjs ""
+( cd "$MW/apps/desktop" && node scripts/rhizome-latency-ref.mjs "$S/lt3-main-1-rhizome-latency.mjs.default.txt" "$S/lt3-main-2-rhizome-latency.mjs.default.txt" "$S/lt3-main-3-rhizome-latency.mjs.default.txt" > "$S/lt3-ref.txt" 2> "$S/lt3-ref.err.txt" )
+REF=$(tail -1 "$S/lt3-ref.txt"); cat "$S/lt3-ref.err.txt" >> "$LOG"
+if echo "$REF" | grep -q '"runs"'; then export RL_REF="$REF"; say "RL_REF $RL_REF"; else say "NO RL_REF (builder refused) - judged on the default, and say so"; fi
+run W-day-1 "$D" rhizome-latency.mjs '?arbor2=1&arbor2room=day'
+run W-night-1 "$D" rhizome-latency.mjs '?arbor2=1&arbor2room=night'
+run main-4 "$MW/apps/desktop" rhizome-latency.mjs ""
+unset RL_REF

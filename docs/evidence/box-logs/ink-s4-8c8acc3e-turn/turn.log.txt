@@ -1,0 +1,47 @@
+2026-11-08T07:39:36Z tree F:/wrizo-work/INK-maincontrol/apps/desktop: HEAD 0cfba431, dirty 0, bundle index-e17ME4Wi.js
+2026-11-08T07:39:36Z tree F:/wrizo-work/INK-s4/apps/desktop: HEAD 8c8acc3e, dirty 0, bundle index-Bt-Xhx32.js
+2026-11-08T07:39:37Z harness browsers at turn start: 0
+2026-11-08T07:39:37Z granted to lane "ink" and bound to the process tree of pid 1868 - name this turn's start and end in your report
+2026-11-08T07:39:37Z TURN START
+2026-11-08T07:39:37Z [main-1] start (rhizome-latency.mjs on main, RL_REF=default)
+2026-11-08T07:40:54Z [main-1] exit 0: SUITE RESULT: CLEAN — tree=0cfba431 bundle=index-e17ME4Wi.js/994681b
+2026-11-08T07:40:54Z [main-2] start (rhizome-latency.mjs on main, RL_REF=default)
+2026-11-08T07:42:08Z [main-2] exit 0: SUITE RESULT: CLEAN — tree=0cfba431 bundle=index-e17ME4Wi.js/994681b
+2026-11-08T07:42:08Z [main-3] start (rhizome-latency.mjs on main, RL_REF=default)
+2026-11-08T07:43:21Z [main-3] exit 0: SUITE RESULT: CLEAN — tree=0cfba431 bundle=index-e17ME4Wi.js/994681b
+2026-11-08T07:43:21Z [main-4] start (rhizome-latency.mjs on main, RL_REF=default)
+2026-11-08T07:44:35Z [main-4] exit 0: SUITE RESULT: CLEAN — tree=0cfba431 bundle=index-e17ME4Wi.js/994681b
+2026-11-08T07:44:35Z RL_REF from 4 main runs: {"c":8.3,"p95":18.8,"c2":2.2,"runs":4}
+2026-11-08T07:44:35Z [s4-default] start (12 files, RL_REF=same turn)
+2026-11-08T08:16:48Z [s4-default] [01/12] OK        exit=0   88s flux-v2.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FLUX-V2 VERIFY: PASS (159 checks)
+2026-11-08T08:16:48Z [s4-default] [02/12] OK        exit=0  236s flux3-layer.mjs :: FLUX3-LAYER VERIFY: PASS (36 checks)
+2026-11-08T08:16:48Z [s4-default] [03/12] OK        exit=0   42s flux3-page-rect.mjs :: ROWS-SHADOW VERIFY: PASS (8 renders checked, shadow == DOM on every one) ;; FLUX3-PAGE-RECT VERIFY: PASS (14 checks)
+2026-11-08T08:16:48Z [s4-default] [04/12] OK        exit=0  188s flux3-s1.mjs :: FLUX3-S1 VERIFY: PASS (31 checks)
+2026-11-08T08:16:48Z [s4-default] [05/12] OK        exit=0  277s flux3-s2.mjs :: FLUX3-S2 VERIFY: PASS (37 checks)
+2026-11-08T08:16:48Z [s4-default] [06/12] OK        exit=0  219s flux3-s3.mjs :: ROWS-SHADOW VERIFY: PASS (432 renders checked, shadow == DOM on every one) ;; FLUX3-S3 VERIFY: PASS (38 checks)
+2026-11-08T08:16:48Z [s4-default] [07/12] FAIL      exit=1  645s flux3-s4.mjs :: ROWS-SHADOW VERIFY: PASS (10 renders checked, shadow == DOM on every one) ;; FLUX3-S4 VERIFY: FAIL - 1/84 failed
+2026-11-08T08:16:48Z [s4-default] [08/12] OK        exit=0   28s polish10-caret.mjs :: ROWS-SHADOW VERIFY: PASS (15 renders checked, shadow == DOM on every one) ;; POLISH10-CARET VERIFY: PASS (22 checks)
+2026-11-08T08:16:48Z [s4-default] [09/12] OK        exit=0  101s polish10-recede.mjs :: ROWS-SHADOW VERIFY: PASS (106 renders checked, shadow == DOM on every one) ;; POLISH10-RECEDE VERIFY: PASS (29 checks)
+2026-11-08T08:16:48Z [s4-default] [10/12] OK        exit=0   68s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (17 checks)
+2026-11-08T08:16:48Z [s4-default] [11/12] OK        exit=0    1s seed-guard.mjs :: SEED-GUARD VERIFY: PASS (36 checks)
+2026-11-08T08:16:48Z [s4-default] [12/12] OK        exit=0   30s th2.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; TH2 VERIFY: PASS (46 checks)
+2026-11-08T08:16:48Z [s4-default] SUITE DONE HARNESS_PARKED=unset — 11/12 of 12 returned a passing verdict
+2026-11-08T08:16:48Z [s4-default] SUITE RESULT: NOT CLEAN — tree=8c8acc3e bundle=index-Bt-Xhx32.js/1005642b
+2026-11-08T08:16:48Z [s4-parked] start (12 files, RL_REF=same turn)
+2026-11-08T08:49:14Z [s4-parked] [01/12] OK        exit=0   88s flux-v2.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FLUX-V2 VERIFY: PASS (159 checks)
+2026-11-08T08:49:14Z [s4-parked] [02/12] OK        exit=0  236s flux3-layer.mjs :: FLUX3-LAYER VERIFY: PASS (36 checks) ;; PASS  PARKED (was "D2-DRAG rule 1: ZERO layer draw calls while a node is dragged (press to release)") - SUPERSEDED Nov 4 (Fable): the dragged card's l
+2026-11-08T08:49:14Z [s4-parked] [03/12] OK        exit=0   42s flux3-page-rect.mjs :: ROWS-SHADOW VERIFY: PASS (8 renders checked, shadow == DOM on every one) ;; FLUX3-PAGE-RECT VERIFY: PASS (14 checks)
+2026-11-08T08:49:14Z [s4-parked] [04/12] OK        exit=0  188s flux3-s1.mjs :: FLUX3-S1 VERIFY: PASS (31 checks)
+2026-11-08T08:49:14Z [s4-parked] [05/12] OK        exit=0  277s flux3-s2.mjs :: PASS  PARKED (was "HELD a drag on a node swipes and moves no card; Delete and Backspace delete nothing; a double-click on a side node opens no editor and no hologram") - SUPERSEDED by Nick's ru
+2026-11-08T08:49:14Z [s4-parked] [06/12] OK        exit=0  219s flux3-s3.mjs :: ROWS-SHADOW VERIFY: PASS (432 renders checked, shadow == DOM on every one) ;; FLUX3-S3 VERIFY: PASS (38 checks)
+2026-11-08T08:49:14Z [s4-parked] [07/12] FAIL      exit=1  659s flux3-s4.mjs :: ROWS-SHADOW VERIFY: PASS (10 renders checked, shadow == DOM on every one) ;; PASS  PARKED (was "ESC-LATER >= 1.2 s after Esc the lines are as lit and the caret as present as the control's") - S
+2026-11-08T08:49:14Z [s4-parked] [08/12] OK        exit=0   28s polish10-caret.mjs :: ROWS-SHADOW VERIFY: PASS (15 renders checked, shadow == DOM on every one) ;; PASS  PARKED (was "MC18 (mutant): with a caret colour forced back on (LANDED: rgba(0, 0, 0, 0)), C18 fails") -
+2026-11-08T08:49:14Z [s4-parked] [09/12] OK        exit=0  101s polish10-recede.mjs :: ROWS-SHADOW VERIFY: PASS (107 renders checked, shadow == DOM on every one) ;; PASS  PARKED (was "MR1 (mutant): with the wordmark forced to full strength, R1 fails and names it") - SUPERS
+2026-11-08T08:49:14Z [s4-parked] [10/12] OK        exit=0   67s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (17 checks)
+2026-11-08T08:49:14Z [s4-parked] [11/12] OK        exit=0    1s seed-guard.mjs :: SEED-GUARD PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; item 85-B parks nothing. It adds the guard that was missing rather than superseding one. ;; SEED-GUARD VERIFY: PASS (36 checks)
+2026-11-08T08:49:14Z [s4-parked] [12/12] OK        exit=0   33s th2.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; "name": "PARKED (was \"check 2: canonical route /journal still resolves under Flux (URL stays canonical)\") — B1 S5: pages
+2026-11-08T08:49:14Z [s4-parked] SUITE DONE HARNESS_PARKED=1 — 11/12 of 12 returned a passing verdict
+2026-11-08T08:49:14Z [s4-parked] SUITE RESULT: NOT CLEAN — tree=8c8acc3e bundle=index-Bt-Xhx32.js/1005642b
+2026-11-08T08:49:15Z harness browsers at turn end: 0
+2026-11-08T08:49:15Z release: released
+2026-11-08T08:49:15Z TURN END (a leg was NOT CLEAN: see the logs)

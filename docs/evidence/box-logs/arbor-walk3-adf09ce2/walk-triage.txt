@@ -1,0 +1,90 @@
+ARBOR - the Nick walk, triage of the 33 FAILs (ARBOR, Nov 8, after the box turn 06:03:01Z-06:26:31Z)
+Tree: arbor/r21-nick-walk 6555cb01 = 3dd856b6 (the confirmed build, bundle index-XbNUWvOm.js) + the walk driver + the seed shim (tooling).
+Play server: the sample account, signed in from step 3 on. 75 PASS / 33 FAIL / 58 EYE as read by the instrument (walk-musts.txt).
+Each FAIL below was checked against its frame or its logged numbers.
+
+A. ARBOR FINDINGS (the frame shows it)
+1. [6] BOARD shows the Graft row. With the Tutor drawer on BOARD, the drawer holds "+ Graft..." above "Place this..." (Draft and
+   Free Write, day and night, 2000 and 1366). The script: "BOARD shows Board's, never the Graft row".   walk-6-tutor-board__day__2000.png
+2. [6] Brass text by day. In Tools > PRESETS the chosen template "Blank" is written in brass (#FF9800), not deep olive in a brass
+   outline.   walk-6-tutor-board__day__2000.png (left drawer), walk-6-tools-presets__day__2000.png
+3. [2] Signed in, the splash still shows a "Sign in" door. On the signed-in reload the doors arrive as "Write" + "Sign in", with the
+   loading line "Turning the soil..." still under them; the splash then fades into the last page.   walk-2-signed-in-door__day__2000.png
+4. [1] The loading line outlives the doors by about 1 s. It is last seen at 8.8-8.9 s; the doors arrive at 7.9 s (all four cold loads,
+   day and night, 2000 and 1366). By 8.8 s it is faint, still fading.   walk-1-front-cold__day__1366/00098.jpg
+5. [6] Free Write: the Tutor drawer is not flush. The page's right edge is at 1496 and the open Tutor drawer starts at 1512 (16 px gap,
+   day and night, 2000). The Tools drawer is flush (504 = 504). Draft is flush on both sides.   walk-6-freewrite-tutor-tutor__day__2000.png
+6. [4] A few dropped frames while typing by day. Key-to-paint over 45 ms (one frame dropped) after the first key:
+   - 2000: 7 of 407 keys by day, at 57-63 ms (keys 10, 19, 160, 260, 269, 319, 360); 0 by night (max 34 ms).
+   - 1366: 15 by day; 0 by night.
+   The medians and p95s match night (day 21 / 32.3 ms, night 22.5 / 32.2 ms at 2000), so the first-key rule's main must PASSES.
+   Cause not yet found.   keylog-day.csv, keylog-night.csv, walk-4-states__day__2000.json
+
+B. NOT ARBOR (the play server's environment)
+7. [2] x2 "the sign-up form carries the invite code". The play server has sign-up closed (no invite set), so "Create an account"
+   shows "Save your writing to an account. By invitation, for now. <- back". Nothing Arbor draws.   walk-2-signup-form__day__2000.png
+
+C. THE INSTRUMENT, NOT THE APP (re-read from the frame or the numbers; the must holds or is for the eye)
+8.  [5] x2 the flash "not seen". The driver waited after the 60th word; the flash had begun as the word landed.
+    walk-5-vines-60w__day__2000.png shows every stem in brass. (The separate "peak" frame came after the flash.)
+9.  [4] x2 the swap "4.4 s". The driver called the shade gone at opacity < 0.05; the logged fade runs 1 -> 0.003 at 5.6 s -> 0 at
+    6.1 s, i.e. ~6 s.
+10. [3] x2 page text "13.6:1 at the shade". The driver mixed 3.4% BLACK over the page; the shade is not black, so the true figure is
+    higher. The page itself reads 14.64:1. This is for the eye / the round's own measure, not a reading.
+11. [8] x2 "glow / shade at night". The "glow" is the page's 1 px hairline ring (spread 1 px, no blur). The shade layer's wrapper is
+    at 0.6 opacity, but nothing of it is drawn (the pergola is display:none).   walk-8-rest__night__2000.png: no glow, no shade.
+12. [7] the Themes Room row "null". The driver looked for a class that is not there; the frame shows Page, then directly under it
+    "Room: Light · Dark · By the clock" with its "?".   walk-7-themes__day__1366.png
+13. [7] the double-clicked word. The selection is "morning " (Chrome on Windows includes the trailing space). The word is selected.
+14. [6] x2 Free Write "PRESETS not chosen". Free Write's Tools drawer has FORMAT and INK, not PRESETS.
+15. [6] x2 Free Write "not flush". This is the same reading as finding 5 (the Tutor side). It is counted once, there.
+
+D. NOT YET PROVEN (wants a short second turn)
+- [4] x2 the pause. The driver never moved the pointer after the burst, and the chrome did not come back in 10 s without it
+  (data-wz-writing stayed true). So the 3 s return of the shade, and the vines going, were not measured.
+- [10] the scrollbar drag is not driven.
+- The recordings ran at about 11 fps while the splash moved (every 2nd frame). The script asks for >= 10; a second turn can take
+  every frame.
+
+E. THE SECOND TURN (06:34:04Z-06:47:14Z; steps 4 and 5 only, the driver at 57ed230f with its parks; frames in turn2\)
+- The swap: PASS at both sizes. The shade goes from 1 to 0 in 5.80 s (2000) and 5.81 s (1366) after the first key; the leaves stop on
+  the first key (the live drawing off at 99-103 ms) and stay still on every sample mid-burst.
+- The first-key rule: PASS. Day and night keys are alike (2000: day 22.4 / 33.0 ms, night 22.2 / 31.9 ms; 1366: day 21.2 / 32.2 ms,
+  night 22.3 / 32.1 ms).
+- Finding A6 reproduces. By day 10 of 407 keys drop one frame at each size (2000: 51-81 ms; 1366: 54-78 ms). By night 0 (max 34 ms).
+  The slow keys come about every 50 keys (about 5.5 s at this pace), often in pairs about 1 s apart. Cause not found.
+- The flash: seen as it starts at the 60th word, day and night. The driver's colour read is again the instrument: the brass is drawn
+  in its own layer (.arbor2-vines-flash), and the read looked at the green vine paths. The source holds it 1.2 s (FLASH_MS) and then
+  fades it over 2.2 s, as the script says; the frames show it.   turn2\walk-5-vines-60w__day__2000.png, turn2\walk-5-flash-peak__*.png
+- The pause: STILL NOT PROVEN, and the instrument again. useChromeDissolve brings the chrome back on an explicit summon (the pointer at a
+  viewport edge, within 56 px, for 260 ms; Esc; a tap outside the text) or after 3 minutes. Pointer movement over the page does not
+  summon, by design. The driver moved the pointer across the middle of the page, so data-wz-writing stayed true and the return was not
+  timed. A summon (an edge dwell, or Esc) would time it.
+
+F. THE THIRD TURN (07:11:29Z-07:38:41Z; arbor/r21-walk3 adf09ce2 = 3dd856b6 + Fable's fixes A1-A5 + the guard's A+L; 2000 only;
+   frames in turn3\)
+- Fixed, read and seen:
+  - A1: BOARD shows "Place this..." only, no "+ Graft..." (Draft and Free Write, day and night).
+  - A2: no brass text by day in the drawers.
+  - A3: signed in, the doors are Write | Open, on the splash, and no Sign in door.   turn3\walk-2-signed-in-door__day__2000.png
+  - A5: the Free Write Tutor drawer is flush (day and night).
+- A4, fixed, seen: no loading line under the sketch at 7.7 s (before the doors) or at 8.4 s (after them).
+    turn3\walk-1-front-cold__day__2000\00109.jpg, 00115.jpg
+  Its must still reads FAIL. That is the instrument: it reads the line's own text element, whose opacity stays 1 while its parent fades.
+- The pause: PASS. An edge dwell brings the chrome back 346 ms after the pointer arrives, and the shade is back in 2.81 s (~3 s).
+- The swap: PASS (5.9 s). The leaves stop on the first key (101 ms).
+- The scrollbar drag: driven; the frames are for the eye.   turn3\walk-10-long-page-mid-drag__day__2000.png
+- A6 (still open, a ship blocker):
+  - By day 10 of 407 keys dropped one frame in the walk on the play server (55-80 ms).
+  - The A6 trace on the locally served build (no sign-in, no real server) did NOT reproduce it: 0 slow keys by day or by night over
+    400 keys each. Its one long task was the first key, the swap (excluded by rule).
+  - The guard's A+L passed by day there too (0 of 400 over 50 ms).
+  - So A6 needs what only the play server has (a signed-in account, the real server's sync, the sample account's content), and A+L
+    as built cannot see it. The trace must be run on the play server.
+- The latency re-check vs main (be09012a, RL_REF from this turn's mains):
+  - The four mains PASS; the night run on the tree PASSES.
+  - The day run on the tree is RED on one check, B2: the flash keys' main-thread cost median 30.3 ms vs its control's 19.1 (budget
+    +4). Turn 17's three day runs on 3dd856b6 read +1.5 to +3.2. A1-A5 touch nothing on the flash's path.
+  - A game ("Wow") has been running on the box since ~06:06Z: through all three walk turns, but not during turn 17.
+  - Not attributed yet: the fair test is 3dd856b6 and adf09ce2 by day, interleaved, on a quiet box.
+- Still for the eye or not ours: B7 (sign-up is closed on the play server).

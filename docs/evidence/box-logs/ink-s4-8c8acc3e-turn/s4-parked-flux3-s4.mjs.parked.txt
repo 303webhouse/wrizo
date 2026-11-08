@@ -1,0 +1,134 @@
+BUILD: tree=8c8acc3e bundle=index-Bt-Xhx32.js builtAt=2026-11-08T08:16:52.974Z lastSrcCommit=2026-11-08T06:06:17.000Z dirtySrcFiles=0 stale=false machine=box
+FINDING RESTORE-SCROLL the Typewriter's own exit: scroll 0 -> 79 on the control (flag off), 0 -> 79 under the flag (NOT exact on the control: a Typewriter question, not S4's)
+INFO TERM-WHERE (light) after the burst {"caret":{"x":605.53,"y":423.77,"w":66.55,"h":38.4},"lh":43.53034622172172,"ed":[-1057,466],"top":916,"vh":768} then {"caret":{"x":605.53,"y":423.77,"w":66.55,"h":38.4},"lh":43.53034622172172,"ed":[-1057,466],"top":916,"vh":768,"waited":671}
+INFO TERM-ZOOM (light) the editor's scale, each change: [[14,1.6,"true","true","1.6000",[40,1286,601],[0,84,84],"1.0000"]]; page-turns [t, editor scrollHeight, scroll clientHeight, scrollWidth, clientWidth, offsetHeight, transform]: []
+INFO TERM-WHERE (dark) after the burst {"caret":{"x":436.9,"y":424.38,"w":66.55,"h":38.4},"lh":43.53034622172172,"ed":[-1143,466],"top":970,"vh":768} then {"caret":{"x":436.9,"y":424.38,"w":66.55,"h":38.4},"lh":43.53034622172172,"ed":[-1143,466],"top":970,"vh":768,"waited":670}
+INFO TERM-ZOOM (dark) the editor's scale, each change: [[13,1.6,"true","true","1.6000",[40,1286,601],[0,84,84],"1.0000"]]; page-turns [t, editor scrollHeight, scroll clientHeight, scrollWidth, clientWidth, offsetHeight, transform]: [[7894,1006,501,530,530,501,"matrix(1.6, 0, 0, 1.6, 0, 0)"]]
+INFO TERM-ZOOM-CONTROL (flag off, the Typewriter on, dark, Ambiance 0) the editor's scale, each change: {"zoom":[[10,1.6,"true","true","1.6000",[40,1286,601],[0,84,84],"1.0000"]],"flips":[]}
+INFO TERM-WHERE-CONTROL reduced motion, after a burst: Jacked In {"zoom":"true","caretY":1012,"caretH":38,"top":657,"vh":768,"onScreen":false} / the control (flag off, the Typewriter on) {"zoom":"true","caretY":1056,"caretH":38,"top":657,"vh":768,"onScreen":false} - the TYPEWRITER's own (not S4's)
+INFO CARET-CONTROL the flag-off light caret (Flux v2, not S4's scope: new CSS only under the flag): 1.79:1 {"at":[572,506,6,38],"caret":"rgba(255, 152, 0, 0.82)","page":[244,247,248],"pageEl":"mode-page focused","ink":[253,169,45],"ratio":1.79,"outline":{"style":"none","width":3,"color":"rgb(231, 244, 241)","ratio":null}}
+INFO OPEN-ROWS-WHY (light) compile log ["drawn 292","drawn 328"]; events in one second of rest {"scroll:mode-scroll":39}
+INFO OPEN-ROWS-WHY (dark) compile log ["drawn 305","drawn 316"]; events in one second of rest {"scroll:mode-scroll":39}
+INFO SPLIT (the tunnel's share; information, never a verdict): C median 25.6 p95 32.3 / K (Jacked In, no tunnel) median 32.3 p95 37.4 / J (with the tunnel) median 42.8 p95 60.9; K stood right (landed, jacked, no tunnel; J with it): true
+INFO MUT-CARETEND-WITNESS the fix off (landed 1/1/1): the old misplacement this run in 3 of 3 scenarios (burst, compiled, boundary): [{"x":584.9,"y":805.9,"h":41.8},{"x":1264.8,"y":1218.8,"h":41.8},{"x":1142.2,"y":662.1,"h":41.8}]
+INFO OPEN-ROWS-WHY (dark) compile log []; events in one second of rest {"scroll:mode-scroll":41}
+INFO OPEN-SCROLL-CONTROL (flag off, the Typewriter on) events in one second of rest after opening: {"scroll:mode-scroll":61}
+INFO OPEN-ROWS-WHY (dark) compile log ["drawn 292","drawn 328"]; events in one second of rest {"scroll:mode-scroll":38}
+INFO OPEN-ROWS-WHY (dark) compile log ["drawn 292","drawn 328"]; events in one second of rest {"scroll:mode-scroll":37}
+INFO TERM-WHERE (light) after the burst {"caret":{"x":800.88,"y":437.98,"w":66.55,"h":38.4},"lh":43.53034622172172,"ed":[-2870,480],"top":2049,"vh":768} then {"caret":{"x":800.88,"y":437.98,"w":66.55,"h":38.4},"lh":43.53034622172172,"ed":[-2870,480],"top":2049,"vh":768,"waited":670}
+INFO TERM-ZOOM (light) the editor's scale, each change: [[17,1.6,"true","true","1.6000",[40,1286,601],[0,84,84],"1.0000"]]; page-turns [t, editor scrollHeight, scroll clientHeight, scrollWidth, clientWidth, offsetHeight, transform]: []
+INFO TERM-WHERE (light) after the burst {"caret":{"x":646.78,"y":438.58,"w":66.55,"h":38.4},"lh":43.53034622172172,"ed":[-2956,480],"top":2103,"vh":768} then {"caret":{"x":646.78,"y":438.58,"w":66.55,"h":38.4},"lh":43.53034622172172,"ed":[-2956,480],"top":2103,"vh":768,"waited":675}
+INFO TERM-ZOOM (light) the editor's scale, each change: [[16,1.6,"true","true","1.6000",[40,1286,601],[0,84,84],"1.0000"]]; page-turns [t, editor scrollHeight, scroll clientHeight, scrollWidth, clientWidth, offsetHeight, transform]: []
+INFO TERM-WHERE (light) after the burst {"caret":{"x":505.78,"y":439.18,"w":66.55,"h":38.4},"lh":43.53034622172172,"ed":[-3042,481],"top":2157,"vh":768} then {"caret":{"x":505.78,"y":439.18,"w":66.55,"h":38.4},"lh":43.53034622172172,"ed":[-3042,481],"top":2157,"vh":768,"waited":669}
+INFO TERM-ZOOM (light) the editor's scale, each change: [[17,1.6,"true","true","1.6000",[40,1286,601],[0,84,84],"1.0000"]]; page-turns [t, editor scrollHeight, scroll clientHeight, scrollWidth, clientWidth, offsetHeight, transform]: []
+
+ROWS-SHADOW VERIFY: PASS (10 renders checked, shadow == DOM on every one)
+PASS  PARKED (was "ESC-LATER >= 1.2 s after Esc the lines are as lit and the caret as present as the control's") - SUPERSEDED by its first run (Actions 42359165446, Nov 7: today's Esc takes the focus and Flux's block caret on the control too). Opposite reasserted: the control has no focus and no block caret after Esc, and Jacked In matches it; live successor ESC-LATER [successor]
+PASS  PARKED (was "CARET-LIGHT the block caret on the light page is >= 4.5:1 against the page under it, in the orange family") - SUPERSEDED by Nick's ruling (Nov 7: Jacked In's light caret is brass with a 1 px ink outline). Opposite reasserted: the jacked light caret's FILL is under 4.5:1 (brass), and its outline carries the contrast; live successors CARET-JACKED-LIGHT, CARET-PLAIN-LIGHT
+PASS  PARKED (was "CARET-DARK the dark tone keeps its caret (the shared orange, rgba(255, 152, 0, 0.82))") - SUPERSEDED by the Wrizors' carry (Nov 8; spec draft 13 §6 "Dark #FF9800"). Opposite reasserted: Jacked In's dark caret is not the shared .82 orange but solid brass, while the plain dark caret keeps it; live successors CARET-JACKED-DARK, CARET-PLAIN-DARK
+PASS  PARKED (was "TERM-LINES (light, in pixels) ... the line two up hidden before the pause") - SUPERSEDED by its own runs (Actions 42415597899 to 42420374454: "before the pause" raced the Typewriter's glides). Opposite reasserted: once settled, the line two up IS signal (12 words), so it is read under the signal; live successor TERM-LINES [successor]
+PASS  PARKED (was "TERM-ROWS (light) on the pause the rows of signal grow smaller toward the top") - SUPERSEDED by its own first run (Actions 42410571466: under reduced motion sixteen rows stood in view and held the floor past the sixth). Opposite reasserted: no row is ever below the floor, so a view that reaches it holds rows of one size; live successor TERM-ROWS [successor 2]
+PASS  PARKED (was "TERM-ROWS [successor] (light) ... down to the floor, and every row past it at the floor") - SUPERSEDED by its own first run at Ambiance 0 (Actions 42415597899: four rows in view, none at the floor). Opposite reasserted: it holds exactly when the view reaches the floor (here it does not); live successor TERM-ROWS [successor 2]
+PASS  PARKED (was "TERM-LINES (dark, in pixels) ... the line two up hidden before the pause") - SUPERSEDED by its own runs (Actions 42415597899 to 42420374454: "before the pause" raced the Typewriter's glides). Opposite reasserted: once settled, the line two up IS signal (13 words), so it is read under the signal; live successor TERM-LINES [successor]
+PASS  PARKED (was "TERM-ROWS (dark) on the pause the rows of signal grow smaller toward the top") - SUPERSEDED by its own first run (Actions 42410571466: under reduced motion sixteen rows stood in view and held the floor past the sixth). Opposite reasserted: no row is ever below the floor, so a view that reaches it holds rows of one size; live successor TERM-ROWS [successor 2]
+PASS  PARKED (was "TERM-ROWS [successor] (dark) ... down to the floor, and every row past it at the floor") - SUPERSEDED by its own first run at Ambiance 0 (Actions 42415597899: four rows in view, none at the floor). Opposite reasserted: it holds exactly when the view reaches the floor (here it does not); live successor TERM-ROWS [successor 2]
+PASS  PARKED (was "TUN ... the page's paper opaque and above it") - SUPERSEDED by Nick's terminal (Nov 7, spec draft 13 §6, r9: no paper while jacked in). Opposite reasserted: the paper is clear, not opaque, and the rest of TUN holds; live successor TUN [successor]
+PASS  PARKED (was "TUN-CLEAR nothing of the tunnel stands behind her words: the page's rect is cut out of it") - SUPERSEDED by Nick's terminal (r9: the words stand inside the tunnel). Opposite reasserted: no hole is cut (no mask, the hole check fails), at rest and while she types; live successor TUN-BEHIND [successor]
+PASS  PARKED (was "TUN-BEHIND ... its box covering the page's") - SUPERSEDED by its own first run (Actions 42410571466: the zoomed page is taller than the stage that clips it). Opposite reasserted: the page's whole rect is NOT inside the tunnel's box, and its seen part is; live successor TUN-BEHIND [successor]
+PASS  PARKED (was "MUT-NOHOLE (landed) the page's rect never cut out of the tunnel: TUN-CLEAR fails") - SUPERSEDED by Nick's terminal (r9). Opposite reasserted: the hole's code is gone from the bundle (its anchor lands 0 times) and the tunnel is uncut
+PASS  PARKED (was "MUT-CARETEND [successor 2] (landed) the fix off: CARET-END-BOUNDARY fails") - SUPERSEDED by its own runs (Actions 42442405357, 42444379803: a sometime witness). Opposite reasserted: the mutant lands, and with the fix on every scenario (burst, compiled, boundary; Jacked In and the control) holds the caret at the end
+PASS  PARKED (was "MUT-CARETEND [successor] ... CARET-END or CARET-END-COMPILED fails") - SUPERSEDED by its own run (Actions 42438849747: both scenarios reached the end with the fix off). Opposite reasserted: every scenario is a sometime witness (the old misplacement needs a redraw with no rect); with the fix on every scenario holds the caret at the end (INFO MUT-CARETEND-WITNESS)
+PASS  PARKED (was "MUT-OPENROWS (landed) the caret's boundary counted in elements again: OPEN-ROWS fails") - SUPERSEDED by its own first valid run (Actions 42435766295). Opposite reasserted: with the elements count back, the open still draws its rows (340); the open's cause is MUT-SCROLL's
+PASS  PARKED (was "MUT-CARETEND (landed) the caret's text-end place off: CARET-END fails") - SUPERSEDED by its own first run (Actions 42431319040: the burst alone did not reproduce the flagged frame; on 42433836311 it did). Opposite reasserted: the burst is a sometime witness, as every scenario is; with the fix on every scenario holds the caret at the end (INFO MUT-CARETEND-WITNESS)
+PASS  PARKED (was "MUT-RETRY (landed) a refused compile never tried again: OPEN-ROWS fails") - SUPERSEDED by its own first run (Actions 42431319040: no compile was refused at open). Opposite reasserted: with the retry stripped, the open's compile is never refused (the compile log has no "refused"), so the retry is not what draws the open's rows; live successor MUT-OPENROWS
+PASS  PARKED (was "MUT-CARET (landed) the light page's caret back to the shared orange: CARET-LIGHT fails") - SUPERSEDED with CARET-LIGHT (Nick's ruling, Nov 7). Opposite reasserted: on the jacked page the read fails CARET-LIGHT without any mutant (brass), so the old guard was blind there; live successor MUT-CARET [successor]
+PASS  PARKED (was "MUT-TERMINAL (landed) the veil never laid: TERM-LINES fails") - SUPERSEDED with TERM-LINES (Actions 42420374454). Opposite reasserted: the same landed mutant fails the successor read; live successor MUT-TERMINAL [successor]
+PASS  PARKED (was "MUT-DIM (landed) the dim line at .3: TERM-LINES fails") - SUPERSEDED with TERM-LINES (Actions 42420374454). Opposite reasserted: the same landed mutant fails the successor read; live successor MUT-DIM [successor]
+
+FLUX3-S4 PARKED: PASS (21 checks) - HARNESS_PARKED=1 armed, every retired check's successor green
+PASS  DEF flag on, Flux: a loose page opens in Free Write JACKED IN (zoomed, marked) while the shared Typewriter field stays off
+PASS  DEF-FIRST the first frame with the editor is already jacked in (the page never paints un-jacked first)
+PASS  DEF-TAB Draft (its own memory: off) is not jacked; back to Free Write jacks in again
+PASS  DEF-OFF flag off: the same page opens un-jacked (the shared field rules, as today)
+PASS  DEF-THEME flag on, another theme (Arbor): un-jacked, and no switch
+PASS  DEF-DRAFT a Draft page whose own memory is off opens un-jacked (the default is Free Write's only)
+PASS  DEF-DRESS (E) a Draft page whose own Typewriter is on is Jacked In too (the dress on every Flux Typewriter)
+PASS  SWITCH "Jack In by default" is in the TOOLS foot under the flag in Flux, and absent off the flag
+PASS  SWITCH Off: Free Write opens un-jacked; On: jacked again
+PASS  SWITCH flipping it writes nothing to storage (in-session, ruling D)
+PASS  TOGGLE today's Typewriter toggle jacks out (zoom off, unmarked; the shared field still off) and back in (it writes the shared field, as today)
+PASS  RESTORE the jacked rect is the Typewriter's own zoom rect (flag on = flag off), and Jacked In while on
+PASS  RESTORE on leaving, the rect, the caret and the text are exactly as before (flag on), and the scroll is the control's (Jacked In leaves as the Typewriter does)
+PASS  COMPILE-ZERO while keys land: no layer change and no compile grant (181 keys)
+PASS  COMPILE on the pause, words two lines up and beyond are covered (81 words), none on the caret's line or the line above (13 words there, 0 covered)
+PASS  COMPILE-PLACE every glyph run stands on its own word's rect (+-1 px; worst 0.17), and still after a scroll with no re-compile (worst 0.17, 81 runs)
+PASS  COMPILE-TEXT the text, the caret and the Glitch bar's count are unchanged by the compile
+PASS  COMPILE-WHOLE every character, punctuation included, is one whole block inside its own slot (81 words, 7 with punctuation, 340 blocks, 213 filled; 0 bad)
+PASS  COMPILE-A11Y the layer sits in the page's own scroller, aria-hidden, no pointer, not selectable
+PASS  DECOMPILE jacking out with signal showing (149 words): one grant, the glyph runs on their words as the page settles (worst 0.09), gone by 700 ms, the text unchanged
+PASS  STILL reduced motion and Ambiance 0 cut the decompile (gone at once, no grant)
+PASS  FLASH no second holds more than 3 granted flashes across the compile and decompile runs (max 2)
+PASS  IDLE no idle glitch while jacked in (still 400 s on its clock); it is back once jacked out (premise)
+PASS  EDGE a 2 px line on the window's top holds 1 - the lap (249/250 words: 0.004), drawn by a transform with no transition
+PASS  EDGE at the goal it empties, then fills for the next lap; gone once jacked out and with Progress off
+PASS  ESC-LATER [successor] >= 1.2 s after Esc the lines are as lit, and the caret, the focus and Flux's block caret exactly as the control's (caret true/true, block caret false/false, focus false/false)
+PASS  ESC-READ Esc resolves the signal (81 words before, 0 at 1.2 s, 1 grant), the page reading as the control's; writing again, the next pause compiles (81)
+PASS  ESC-TERM Esc lifts the terminal's veil (the editor's mask none), and writing again lowers it
+PASS  ESC while jacked in, Esc does what it does today (the chrome comes back, still in the Typewriter), the same as the control
+PASS  REACH an edge dwell summons the chrome while jacked in, the same as the control
+PASS  CARET-JACKED-LIGHT [successor] Jacked In's light caret is brass (rgb(255, 152, 0)) held by a 1 px ink outline (1px solid) at 14.68:1 against the page (>= 4.5)
+PASS  CARET-PLAIN-LIGHT [successor] outside Jacked In the light caret's fill is >= 4.5:1 against the page (5.2:1), in the orange family, and no outline
+PASS  CARET-JACKED-DARK [successor] Jacked In's dark caret is solid brass, #FF9800 (rgb(255, 152, 0); jacked true)
+PASS  CARET-DARK-PIXELS Jacked In's dark caret paints brass ([254,154,2], jacked true; #FF9800 = [255,152,0], the old blend ~[217,131,7])
+PASS  CARET-PLAIN-DARK [successor] outside Jacked In the dark caret is today's (rgba(255, 152, 0, 0.82); jacked false)
+PASS  TERM-PAPER (light) jacked in, no paper: the page clear (rgba(0, 0, 0, 0)), its readouts hidden, the veil on the editor; the ground the white room (the paper's colour) (rgb(244, 247, 248))
+PASS  TERM-ZOOM (light) the page's scale holds at the zoom through the terminal run (scales seen [1.6]; page-turns 0)
+PASS  TERM-LINES [successor] (light, in pixels, settled) the writing line 12.91:1, the dim line above it 7.08:1 (>= 4.5, dimmer); under the signal two and three up no text (1.06:1, 1.07:1, < 2.5; signal words there 12, 13)
+PASS  TERM-ROWS [successor 2] (light) on the pause each row of signal smaller than the one below it, or both at the floor; never below it (block share per row [[2,0.72],[3,0.633],[4,0.546],[5,0.46]])
+PASS  TERM-PAPER (dark) jacked in, no paper: the page clear (rgba(0, 0, 0, 0)), its readouts hidden, the veil on the editor; the ground the night glass (nothing laid) (rgba(0, 0, 0, 0))
+PASS  TERM-ZOOM (dark) the page's scale holds at the zoom through the terminal run (scales seen [1.6]; page-turns 1)
+PASS  TERM-LINES [successor] (dark, in pixels, settled) the writing line 13.53:1, the dim line above it 8.97:1 (>= 4.5, dimmer); under the signal two and three up no text (1.1:1, 1.11:1, < 2.5; signal words there 13, 12)
+PASS  TERM-ROWS [successor 2] (dark) on the pause each row of signal smaller than the one below it, or both at the floor; never below it (block share per row [[2,0.72],[3,0.633],[4,0.547],[5,0.46]])
+PASS  ESC-ALL Esc resolves every compiled line, both tones (light: 90 before, 0 words and 0 pieces at 1.2 s; dark: 81 before, 0 and 0)
+PASS  JACKOUT-ALL jacking out leaves no signal anywhere, both tones, by 900 ms (light 276 -> {"layers":0,"words":0,"zoom":null}; dark 276 -> {"layers":0,"words":0,"zoom":null})
+PASS  CARET-END 300 ms after a burst the block caret stands at the text's end (Jacked In: caret x 1146, end 1146; the control: 768.8 vs 768.8)
+PASS  CARET-END-COMPILED the frames' jack-compiled screen: 1.6 s after the words land the block caret stands at the text's end (Jacked In: 908.9 vs 909; the control: 1265.8 vs 1265.8)
+PASS  CARET-END-BOUNDARY a caret held at the editor's own boundary (no rect of its own) stands at the text's end (Jacked In: 719 vs 719; the control: 1001.3 vs 1001.3; anchor {"type":1,"name":"forward-only-editor","offset":2,"kids":2})
+PASS  OPEN-ROWS on opening, the open's own pause compiles: rows at rest (light 299, dark 301 words; compile grants [true,true] / [true,true])
+PASS  ROWS-STAY mid-burst (keys landing, the chrome receded) the rows compiled at the last pause are all still there and seen (light {"n":299,"same":true,"vis":"visible","op":1,"seen":155,"writing":"true"}, dark {"n":301,"same":true,"vis":"visible","op":1,"seen":144,"writing":"true"})
+PASS  CARET-SOLID the block caret holds solid while keys land and blinks at rest, Jacked In (jacked true) and plain Flux (jacked false) (during: ["none","none","none","none","none"] / ["none","none","none","none","none"]; at rest: flux-block-caret-blink / flux-block-caret-blink)
+PASS  FL Backspace in Jacked In strikes and never deletes, exactly as the control
+PASS  TUN [successor] the tunnel stands behind the page while jacked in: first in .mode-stage, aria-hidden, no pointer, no canvas, 12 frames, every animation transform/opacity only (opacity,transform) and running; the page above it with no paper (rgba(0, 0, 0, 0))
+PASS  TUN-BEHIND [successor] the words stand inside the tunnel: nothing cut out of it (mask none), its box covering the page's seen part (the stage clips the zoomed page), at rest and while she types
+PASS  TUN-TYPE the named recede exception: while keys land (the chrome receded: data-wz-writing true) the tunnel stays (opacity 1) and runs (22/22)
+PASS  TUN-RATE her speed is the tunnel's: re-set at most every 2 s (sets at [[1180,5],[7219,3],[9231,1]]), up to 5 while she types fast, the streaks at speed, back to rest after ([1]); its only DOM change is the streaks' flag, at most every 2 s (data-fast)
+PASS  TUN-STILL reduced motion and Ambiance 0: the frames stand still (no animation at all), the streaks gone
+PASS  TUN-WHERE only while jacked in: gone on jacking out, absent off the flag and in another theme's Typewriter
+FAIL  L the Jacked In arm adds no latency beyond the control's own spread: J median 42.8 <= C 25.6 + 0.6, J p95 60.9 <= C 32.3 + 0.7, J max 87.3 <= 100  -- {"C":{"n":132,"median":25.600000023841858,"p95":32.299999952316284,"max":34.60000002384186},"J":{"n":132,"median":42.799999952316284,"p95":60.89999997615814,"max":87.29999995231628},"cMeds":[25.600000023841858,25.800000071525574,26.199999928474426],"cP95s":[31.800000071525574,32.5,32.199999928474426],"stoodRight":true,"enough":true}
+PASS  L-DRAW no canvas drew more while keys landed in Jacked In than in the control (J 1/1/1 vs C 1/1/1)
+PASS  MUT-PERKEY (landed) the compile not waiting for the pause: COMPILE-ZERO fails (the layer changed while keys landed)
+PASS  MUT-LINES (landed) the compile one line up: COMPILE fails (a word on the line above covered)
+PASS  MUT-DEFAULT (landed) the default not laid: DEF fails (Free Write opens un-jacked)
+PASS  MUT-CLEAR (landed) the toggle not clearing the default: TOGGLE fails (it cannot jack out)
+PASS  MUT-IDLE (landed) the idle glitch running while jacked: IDLE fails
+PASS  MUT-EDGE (landed) the edge filling instead of draining: EDGE fails
+PASS  MUT-STILL (landed) the still state ignored: STILL fails (a decompile ran under reduced motion)
+PASS  MUT-LOOKUP (landed) Esc not resolving the signal: ESC-READ fails (the lines stay compiled after Esc)
+PASS  MUT-RECEDE (landed) the recede switch flipped, alone: the tunnel recedes while she types (TUN-TYPE fails) and is there at rest
+PASS  MUT-HOLD (landed) the hold switch flipped, alone: the tunnel holds still while she types (TUN-TYPE fails), visible, and runs at rest
+PASS  MUT-LOOKUP-TERM (the same landed mutant) Esc not looking up: ESC-TERM fails (the veil stays on)
+PASS  MUT-RESET (landed) the speed re-set every 100 ms: TUN-RATE fails (sets closer than 2 s)
+PASS  MUT-BLOCK (landed) a block wider than its slot: COMPILE-WHOLE fails (blocks stand outside their slots)
+PASS  MUT-CARET [successor] (landed, in boot-*.css) the plain light caret back to the shared orange: CARET-PLAIN-LIGHT fails
+PASS  MUT-OUTLINE (landed, in boot-*.css) the jacked light caret without its ink outline: CARET-JACKED-LIGHT fails (outline none)
+PASS  MUT-DARKBRASS (landed, in boot-*.css) Jacked In's dark caret back to the shared .82 orange: CARET-DARK-PIXELS and CARET-JACKED-DARK fail (paints [218,134,6]; rgba(255, 152, 0, 0.82))
+PASS  MUT-BLINK (landed, in index-*.css) the block caret blinking while keys land again: CARET-SOLID fails (during: ["flux-block-caret-blink","flux-block-caret-blink","flux-block-caret-blink","flux-block-caret-blink","flux-block-caret-blink"])
+PASS  MUT-SCROLL (landed) the page's own scrolling postponing her pause again: OPEN-ROWS fails (rows at rest 0; compile log [])
+PASS  MUT-TERMINAL [successor] (landed, in boot-*.css) the veil never laid: TERM-LINES [successor] fails (under the signal, two up reads 11.19:1)
+PASS  MUT-DIM [successor] (landed, in boot-*.css) the dim line at .3: TERM-LINES [successor] fails (the dim line 1.96:1)
+PASS  MUT-ROWS (landed) the rows not shrinking: TERM-ROWS fails
+PASS  MUT-ROWS [successor] (the same landed mutant) the rows not shrinking: TERM-ROWS [successor] fails
+PASS  MUT-ROWS [successor 2] (the same landed mutant) the rows not shrinking: TERM-ROWS [successor 2] fails
+PASS  B the build: served index-Bt-Xhx32.js = dist-web's index-Bt-Xhx32.js, built 2026-11-08T08:16:52.974Z after the last src commit 2026-11-08T06:06:17.000Z (tree 8c8acc3e, 0 uncommitted src file(s))
+
+FLUX3-S4 VERIFY: FAIL - 1/84 failed
