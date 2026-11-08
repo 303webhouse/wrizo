@@ -50,6 +50,9 @@
 //          row of signal smaller toward the top. ESC-TERM Esc lifts the veil, writing lowers it. TUN [successor] / TUN-BEHIND: the words inside
 //          the tunnel, nothing cut out of it (TUN's opaque paper, TUN-CLEAR and MUT-NOHOLE PARKED). MUT-TERMINAL / MUT-DIM (landed in
 //          boot-*.css), MUT-ROWS (landed) and MUT-LOOKUP-TERM each fail their check.
+//   CARET  (Nick's ruling, Nov 7) CARET-JACKED-LIGHT Jacked In's light caret is brass (#FF9800) with a 1 px solid ink outline >= 4.5:1
+//          against the page; CARET-PLAIN-LIGHT outside Jacked In the light caret's fill (#A84E00) >= 4.5:1, no outline; MUT-OUTLINE and
+//          MUT-CARET [successor] (landed in boot-*.css) each fail theirs. (CARET-LIGHT and MUT-CARET below are PARKED by the ruling.)
 //   CARET  (the Wrizors' S4 r7 blocker, Fable Nov 7: the light tone's caret read 1.4:1) CARET-LIGHT Flux's block caret on the light page is
 //          >= 4.5:1 against the page under it (computed colours, its alpha composited), in the orange family; CARET-DARK the dark tone keeps the
 //          shared orange. MUT-CARET (landed, in boot-*.css: flux-v3.css's built file) the shared orange back on the light page: CARET-LIGHT
@@ -94,7 +97,8 @@ const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass: !!pass,
 // (Nick's terminal, Nov 7, r9: no paper, the words inside the tunnel); r9's own first run (Actions 42410571466): TUN-BEHIND's covers premise
 // and TERM-ROWS' "smaller every row" (light and dark: two records); TERM-ROWS [successor]'s "down to the floor" (Actions 42415597899: two records)
 // TERM-LINES' "before the pause" (light, dark) with MUT-TERMINAL and MUT-DIM (Actions 42420374454: four records)
-const PARKED_EXPECTED = 13;
+// CARET-LIGHT and MUT-CARET (Nick's ruling, Nov 7: Jacked In's light caret is brass with a 1 px ink outline: two records)
+const PARKED_EXPECTED = 15;
 
 function buildIdentity() {
   const out = { bundle: null, builtAt: null, head: null, srcCommitAt: null, dirtySrc: null, stale: null };
@@ -207,7 +211,11 @@ const INSTRUMENT = `(() => {
     const page = under.c.slice(0, 3), ink = cc.slice(0, 3).map((v, k) => v * cc[3] + page[k] * (1 - cc[3]));
     const lum = (c) => { const l = c.map((v) => { const x = v / 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }); return 0.2126 * l[0] + 0.7152 * l[1] + 0.0722 * l[2]; };
     const a = lum(ink), b = lum(page);
-    return { caret: getComputedStyle(bc).backgroundColor, page, pageEl: String(under.e.className || under.e.tagName).slice(0, 60), ink: ink.map(Math.round), ratio: +((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)).toFixed(2) }; };
+    // its OUTLINE (Nick, Nov 7: Jacked In's light caret is brass held by a 1 px ink outline): style, width, colour, and the colour against the page
+    const bs = getComputedStyle(bc), oc = rgba(bs.outlineColor), ow = parseFloat(bs.outlineWidth) || 0;
+    const oInk = oc ? oc.slice(0, 3).map((v, k) => v * oc[3] + page[k] * (1 - oc[3])) : null, ol = oInk ? lum(oInk) : null;
+    const outline = { style: bs.outlineStyle, width: ow, color: bs.outlineColor, ratio: ol === null || bs.outlineStyle === 'none' || ow <= 0 ? null : +((Math.max(ol, b) + 0.05) / (Math.min(ol, b) + 0.05)).toFixed(2) };
+    return { caret: bs.backgroundColor, page, pageEl: String(under.e.className || under.e.tagName).slice(0, 60), ink: ink.map(Math.round), ratio: +((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)).toFixed(2), outline }; };
   // THE ZOOM, frame by frame (r9i: the dark read found the editor at scale 1.0 between two reads at 1.6, data-zoom 'true' throughout): every
   // change of the editor's rendered scale by more than .05, with the time, data-zoom and data-wz-writing then
   I.zoomWatch = () => { I.zlog = []; let last = null; const t0 = performance.now(); if (I.zraf) cancelAnimationFrame(I.zraf);
@@ -303,6 +311,8 @@ const MUTANTS = {
   // the light page's block caret back to the shared orange (r7's build), in flux-v3.css's built file (boot-*.css): CARET-LIGHT fails
   // (re-pointed r9 to the caret's own rule: the light room's finished Glitch bar takes the same orange)
   caret: [/flux-block-caret\{background:#a84e00(?=[;}])/gi, 'flux-block-caret{background:rgba(255,152,0,.82)', 'css'],
+  // Jacked In's light caret without its ink outline (Nick's ruling, Nov 7): CARET-JACKED-LIGHT fails
+  outline: [/outline:1px solid #042632/gi, 'outline:none', 'css'],
 };
 
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -715,8 +725,26 @@ try { await withHarness(async (app) => {
   const hueOf = (c) => { if (!c) return null; const [r, g, b] = c, mx = Math.max(r, g, b), mn = Math.min(r, g, b); if (mx === mn) return null; return mx === r ? (60 * (g - b)) / (mx - mn) : null; };
   const caretLightOk = (k) => !!k && k.ratio !== null && k.ratio >= 4.5 && !!k.ink && hueOf(k.ink) !== null && hueOf(k.ink) >= 15 && hueOf(k.ink) <= 45;
   const kLight = await caretOf({ tone: 'light' }), kDark = await caretOf({ tone: 'dark' });
-  ok(`CARET-LIGHT the block caret on the light page is >= 4.5:1 against the page under it (${kLight && kLight.ratio}:1), in the orange family (hue ${kLight && r1(hueOf(kLight.ink))})`,
-    caretLightOk(kLight), JSON.stringify(kLight));
+  // ---- PARKED - SUPERSEDED by Nick's ruling (Nov 7, via Fable): Jacked In's light caret is BRASS #FF9800 held by a 1 px ink outline, so its fill
+  // is no longer the contrast (this open is Free Write: jacked in by default). Kept VERBATIM and no longer run; its parked record is in the
+  // HARNESS_PARKED block, and its successors follow: the jacked caret's outline, and the plain (un-jacked) light caret's fill.
+  // ok(`CARET-LIGHT the block caret on the light page is >= 4.5:1 against the page under it (${kLight && kLight.ratio}:1), in the orange family (hue ${kLight && r1(hueOf(kLight.ink))})`,
+  //   caretLightOk(kLight), JSON.stringify(kLight));
+  // the jacked light caret: jacked in, the fill brass (opaque #FF9800), a 1 px solid outline that reads >= 4.5:1 against the page under it
+  const caretBrassOk = (k, st0) => !!k && !!st0 && st0.jacked && k.caret === 'rgb(255, 152, 0)' && !!k.outline && k.outline.style === 'solid' && k.outline.width >= 1 && k.outline.width < 1.5
+    && k.outline.ratio !== null && k.outline.ratio >= 4.5;
+  const kLightSt = await st();
+  ok(`CARET-JACKED-LIGHT [successor] Jacked In's light caret is brass (${kLight && kLight.caret}) held by a 1 px ink outline (${kLight && kLight.outline && kLight.outline.width}px ${kLight && kLight.outline && kLight.outline.style}) at ${kLight && kLight.outline && kLight.outline.ratio}:1 against the page (>= 4.5)`,
+    caretBrassOk(kLight, kLightSt), JSON.stringify({ k: kLight, jacked: kLightSt.jacked }));
+  // the plain light caret under the flag (a Draft page whose own Typewriter is off: not jacked): r8's #A84E00 fill, >= 4.5:1
+  const kPlain = await caretOf({ tone: 'light', id: DRAFTP, pageTw: 'off' });
+  const kPlainSt = await st();
+  ok(`CARET-PLAIN-LIGHT [successor] outside Jacked In the light caret's fill is >= 4.5:1 against the page (${kPlain && kPlain.ratio}:1), in the orange family, and no outline`,
+    !kPlainSt.jacked && caretLightOk(kPlain) && !!kPlain.outline && kPlain.outline.ratio === null, JSON.stringify({ k: kPlain, jacked: kPlainSt.jacked }));
+  if (process.env.HARNESS_PARKED === '1') {
+    pok('PARKED (was "CARET-LIGHT the block caret on the light page is >= 4.5:1 against the page under it, in the orange family") - SUPERSEDED by Nick\'s ruling (Nov 7: Jacked In\'s light caret is brass with a 1 px ink outline). Opposite reasserted: the jacked light caret\'s FILL is under 4.5:1 (brass), and its outline carries the contrast; live successors CARET-JACKED-LIGHT, CARET-PLAIN-LIGHT',
+      !caretLightOk(kLight) && caretBrassOk(kLight, kLightSt), JSON.stringify(kLight));
+  }
   ok('CARET-DARK the dark tone keeps its caret (the shared orange, rgba(255, 152, 0, 0.82))', !!kDark && kDark.caret === 'rgba(255, 152, 0, 0.82)', JSON.stringify(kDark));
   // ---- TERM: the terminal (r9, Nick Nov 7, the spec's draft 13 §6: no paper; one writing line, one dim line, then signal rows) -------------------
   const pixOf = async (box) => {
@@ -1024,8 +1052,20 @@ try { await withHarness(async (app) => {
   const mW = await withMutant('block', testCompile);
   const mWw = wholeOf(mW.r.whole);
   ok('MUT-BLOCK (landed) a block wider than its slot: COMPILE-WHOLE fails (blocks stand outside their slots)', mW.landed === 1 && mWw.n > 0 && mWw.bad.length > 0, JSON.stringify({ landed: mW.landed, n: mWw.n, bad: mWw.bad.length }));
-  const mCa = await withMutant('caret', () => caretOf({ tone: 'light' }));
-  ok('MUT-CARET (landed, in boot-*.css) the light page\'s caret back to the shared orange: CARET-LIGHT fails', mCa.landed === 1 && !!mCa.r && !caretLightOk(mCa.r), JSON.stringify({ landed: mCa.landed, r: mCa.r }));
+  // ---- PARKED with CARET-LIGHT (Nick's ruling, Nov 7): opened jacked in, its read is now the brass caret, which fails CARET-LIGHT with or without
+  // the mutant (a guard passing blind). Kept VERBATIM and no longer run; its successor runs the same landed mutant on the plain light page.
+  // const mCa = await withMutant('caret', () => caretOf({ tone: 'light' }));
+  // ok('MUT-CARET (landed, in boot-*.css) the light page\'s caret back to the shared orange: CARET-LIGHT fails', mCa.landed === 1 && !!mCa.r && !caretLightOk(mCa.r), JSON.stringify({ landed: mCa.landed, r: mCa.r }));
+  const mCa = await withMutant('caret', () => caretOf({ tone: 'light', id: DRAFTP, pageTw: 'off' }));
+  ok('MUT-CARET [successor] (landed, in boot-*.css) the plain light caret back to the shared orange: CARET-PLAIN-LIGHT fails', mCa.landed === 1 && !!mCa.r && !caretLightOk(mCa.r), JSON.stringify({ landed: mCa.landed, r: mCa.r }));
+  // MUT-OUTLINE (Nick's ruling): the jacked light caret without its outline: CARET-JACKED-LIGHT fails
+  const mOl = await withMutant('outline', async () => { const k = await caretOf({ tone: 'light' }); return { k, st0: await st() }; });
+  ok(`MUT-OUTLINE (landed, in boot-*.css) the jacked light caret without its ink outline: CARET-JACKED-LIGHT fails (outline ${mOl.r.k && mOl.r.k.outline && mOl.r.k.outline.style})`,
+    mOl.landed === 1 && !caretBrassOk(mOl.r.k, mOl.r.st0), JSON.stringify({ landed: mOl.landed, k: mOl.r.k }));
+  if (process.env.HARNESS_PARKED === '1') {
+    pok('PARKED (was "MUT-CARET (landed) the light page\'s caret back to the shared orange: CARET-LIGHT fails") - SUPERSEDED with CARET-LIGHT (Nick\'s ruling, Nov 7). Opposite reasserted: on the jacked page the read fails CARET-LIGHT without any mutant (brass), so the old guard was blind there; live successor MUT-CARET [successor]',
+      !caretLightOk(kLight) && mCa.landed === 1 && !caretLightOk(mCa.r), JSON.stringify({ unmutated: kLight && kLight.ratio }));
+  }
   // THE TERMINAL's mutants (r9), each on the light tone (its floor is the tighter one)
   const mTv = await withMutant('terminal', () => testTerminal('light'));
   // ---- PARKED with TERM-LINES (Actions 42420374454: its read raced the pause). Kept VERBATIM and no longer run; successors follow.

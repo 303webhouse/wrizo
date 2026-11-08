@@ -179,6 +179,9 @@
 /* the block caret on the light page (the Wrizors' S4 r7 blocker: the shared orange at .82 over the light paper reads under 2:1). A solid, darker
    orange of the same family: 5.2:1 on the paper #F4F7F8, 4.8:1 even on the dim paper (the floor is 4.5). The dark tone keeps its caret. */
 :root[data-flux3][data-theme='flux'][data-page='light'] .flux-block-caret{ background:#A84E00; box-shadow:0 0 6px rgba(168, 78, 0, .4); }
+/* JACKED IN's light tone (Nick, Nov 7): the caret is brass, #FF9800, held by a 1 px ink outline that carries the contrast (the page's own ink,
+   14.7:1 on the white room); the brass fill is the mark. Dark is unchanged. Outside Jacked In the light caret stays #A84E00 (above) */
+:root[data-flux3][data-theme='flux'][data-flux3-jacked][data-page='light'] .flux-block-caret{ background:#FF9800; box-shadow:none; outline:1px solid #042632; outline-offset:0; }
 /* THE TERMINAL (Nick, Nov 7, the spec's draft 13 §6: "we're at a futuristic terminal now"). While jacked in there is NO PAPER: the sheet, its
    edge, its readouts (DOC, TRK, the hint), its corner brackets, its grid and its scrollbar go, and the words stand on the room's own ground inside
    the tunnel's frames (dark: the night glass; light: the white room, the paper's own colour, so every contrast stays the page's). Paint only: the
