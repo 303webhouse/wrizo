@@ -17,6 +17,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { withHarness } from '../runtime-verify.mjs';
+import { a6Start, a6Stop } from './arbor2-a6-analyse.mjs';
 
 const OUT = path.resolve(process.env.WALK_OUT || 'walk-final');
 const A = (process.env.WALK_SIGNED_OUT || 'http://127.0.0.1:3401').replace(/\/+$/, '');
@@ -26,6 +27,8 @@ const SIZES = { 2000: [2000, 970], 1366: [1366, 768] };
 // WALK_SIZES=2000 (or 1366) runs the steps' size loops at that size alone (turn 3: Fable's short turn); unset = both, as the script asks
 const ONLY_SIZES = process.env.WALK_SIZES ? process.env.WALK_SIZES.split(',').map(Number) : null;
 const sizesOf = (xs) => (ONLY_SIZES ? xs.filter((w) => ONLY_SIZES.includes(w)) : xs);
+// WALK_A6_TRACE=1 (turn 4): step 4's un-recorded keylog bursts run under the A6 trace (arbor2-a6-analyse.mjs) - attribution only, no verdict
+const A6_TRACE = process.env.WALK_A6_TRACE === '1';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 mkdirSync(OUT, { recursive: true });
 
@@ -116,8 +119,17 @@ const samePage = (a, b) => !!a && !!b && ['l', 't', 'r', 'b'].every((k) => Math.
 // ---- the front door's timeline (steps 1, 2, 11): every change of its parts, stamped in the page's own clock (ms after navigation) ----
 const TIMELINE = `(() => { window.__walkTL = []; let last = '';
   const tick = () => { try { const q = (s) => document.querySelector(s); const lg = q('.arbor2-top-logo'), tg = q('.arbor2-top-tagline'), dr = q('.arbor2-front-doors'), sp = q('.wz-splash');
-    const ld = [...document.querySelectorAll('.wz-splash-loading-text, .wz-arrival-loading, .wz-splash-loading')].filter((e) => { const r = e.getBoundingClientRect(); return r.height > 0 && Number(getComputedStyle(e).opacity) > 0.05 && (e.textContent || '').trim(); }).map((e) => e.textContent.trim()).join('|');
-    const s = JSON.stringify([!!sp, lg ? lg.dataset.writing : null, tg ? tg.dataset.state : null, tg ? Number(tg.dataset.typed) : null, dr ? dr.dataset.phase : null, dr ? Number(dr.dataset.pulse) : null, ld || null, location.hash, dr ? dr.dataset.mode : null]);
+    // PARKED 2026-11-08 (SUPERSEDED - the third walk turn, 07:11Z-07:38Z, walk-triage.txt F: it read each element's OWN opacity; Fable's A4 fix
+    // fades the line's box (.wz-splash-loading, opacity 0) and the text inside it keeps its own opacity 1, so the text was "seen" until it unmounted
+    // at 8.7 s while the frames at 7.7 s and 8.4 s show no line). Original, verbatim:
+    // const ld = [...document.querySelectorAll('.wz-splash-loading-text, .wz-arrival-loading, .wz-splash-loading')].filter((e) => { const r = e.getBoundingClientRect(); return r.height > 0 && Number(getComputedStyle(e).opacity) > 0.05 && (e.textContent || '').trim(); }).map((e) => e.textContent.trim()).join('|');
+    // SUCCESSOR: the line as the eye sees it - its opacity times every ancestor's (display:none or visibility:hidden = 0); the own-opacity reading
+    // is kept beside it (column 9), data only.
+    const eff = (e) => { let o = 1; for (let n = e; n && n.nodeType === 1; n = n.parentElement) { const cs = getComputedStyle(n); if (cs.display === 'none' || cs.visibility === 'hidden') return 0; o *= Number(cs.opacity); } return o; };
+    const ldEls = [...document.querySelectorAll('.wz-splash-loading-text, .wz-arrival-loading, .wz-splash-loading')].filter((e) => { const r = e.getBoundingClientRect(); return r.height > 0 && (e.textContent || '').trim(); });
+    const ld = ldEls.filter((e) => eff(e) > 0.05).map((e) => e.textContent.trim()).join('|');
+    const ldOwn = ldEls.filter((e) => Number(getComputedStyle(e).opacity) > 0.05).map((e) => e.textContent.trim()).join('|');
+    const s = JSON.stringify([!!sp, lg ? lg.dataset.writing : null, tg ? tg.dataset.state : null, tg ? Number(tg.dataset.typed) : null, dr ? dr.dataset.phase : null, dr ? Number(dr.dataset.pulse) : null, ld || null, location.hash, dr ? dr.dataset.mode : null, ldOwn || null]);
     if (s !== last) { last = s; window.__walkTL.push([Math.round(performance.now()), JSON.parse(s)]); } } catch (e) { /* early document */ }
     requestAnimationFrame(tick); };
   requestAnimationFrame(tick); })();`;
@@ -137,7 +149,10 @@ const tlTimes = (tl) => {
   const first = (pred) => { const x = tl.find(([, s]) => pred(s)); return x ? x[0] : null; };
   return { logoWrite: first((s) => s[1] === 'true'), logoStill: first((s) => s[1] === 'still'), caret: first((s) => s[2] === 'typing' || s[2] === 'done'), tagFirst: first((s) => s[3] >= 1), tagDone: first((s) => s[2] === 'done'),
     doorsIn: first((s) => s[4] === 'in' || s[4] === 'shown'), doorsShown: first((s) => s[4] === 'shown'), pulse1: first((s) => s[5] >= 1), pulse2: first((s) => s[5] >= 2), splashGone: first((s) => !s[0]),
-    loadingLast: (() => { const xs = tl.filter(([, s]) => s[6]); return xs.length ? xs[xs.length - 1][0] : null; })(), loadingAfterDoors: (() => { const d = first((s) => s[4] === 'in' || s[4] === 'shown'); return d === null ? null : tl.some(([t, s]) => t > d + 400 && s[6]); })() };
+    loadingLast: (() => { const xs = tl.filter(([, s]) => s[6]); return xs.length ? xs[xs.length - 1][0] : null; })(), loadingAfterDoors: (() => { const d = first((s) => s[4] === 'in' || s[4] === 'shown'); return d === null ? null : tl.some(([t, s]) => t > d + 400 && s[6]); })(),
+    // turn 4 (data for A4's successor): when the line (as the eye sees it) went - the first sample after its last sighting; and the parked
+    // own-opacity reading's last sighting, beside it
+    loadingGone: (() => { let k = -1; tl.forEach(([, s], i) => { if (s[6]) k = i; }); return k < 0 ? null : k + 1 < tl.length ? tl[k + 1][0] : null; })(), loadingLastOwn: (() => { const xs = tl.filter(([, s]) => s[9]); return xs.length ? xs[xs.length - 1][0] : null; })() };
 };
 const near = (v, want, tol) => v !== null && Math.abs(v - want) <= tol;
 const urlA = (room) => `${A}/?arbor2=1&arbor2room=${room}#/`;
@@ -165,7 +180,12 @@ async function step1() {
     const words = fin && fin.doors ? fin.doors.map((d) => d.word) : [];
     must('1', `${tag} Write, then Sign in; never "Log in"`, JSON.stringify(words) === '["Write","Sign in"]' && fin && !fin.logIn, { words, logIn: fin && fin.logIn });
     must('1', `${tag} the nudge: 5 s after the doors, once; again every 30 s`, t.doorsIn !== null && t.pulse1 !== null && near(t.pulse1 - t.doorsIn, 5000, 600) && (t.pulse2 === null || near(t.pulse2 - t.pulse1, 30000, 1000)), { doorsIn: t.doorsIn, pulse1: t.pulse1, pulse2: t.pulse2 });
-    must('1', `${tag} the loading line has gone by the time the doors arrive`, t.doorsIn !== null && t.loadingAfterDoors === false, { loadingLast: t.loadingLast, doorsIn: t.doorsIn });
+    // PARKED 2026-11-08 (SUPERSEDED - the third walk turn, 07:11Z-07:38Z, walk-triage.txt F: read through the own-opacity line parked in TIMELINE,
+    // and with 400 ms of grace after the doors where Fable's A4 says "gone BEFORE the doors arrive"). Original, verbatim:
+    // must('1', `${tag} the loading line has gone by the time the doors arrive`, t.doorsIn !== null && t.loadingAfterDoors === false, { loadingLast: t.loadingLast, doorsIn: t.doorsIn });
+    // SUCCESSOR: read as the eye sees it (through its ancestors' opacity), and strictly: gone at or before the doors' first sample, no grace; and
+    // the line must have been SEEN first (a reading that never saw it is blind, so it is red).
+    must('1', `${tag} the loading line (as the eye sees it) has gone before the doors arrive`, t.doorsIn !== null && t.loadingLast !== null && t.loadingGone !== null && t.loadingGone <= t.doorsIn, { loadingGone: t.loadingGone, loadingLast: t.loadingLast, loadingLastOwnOpacity: t.loadingLastOwn, doorsIn: t.doorsIn });
     must('1', `${tag} the tagline "For humans who write." in EB Garamond, cream; brass caret blinking ~1 s; the logo in the sketch's top-left below PAGE; the full stop before the z's loop; doors cream rising 6 px; <= 3 flashes a second`, null,
       { frames: [`walk-1-front-cold__${tag}/`, `walk-1-front-finished__${tag}.png`], tagline: fin && fin.tag, caret: fin && fin.caret, logoRect: fin && fin.logoRect, doors: fin && fin.doors });
     // hover and Tab: brass, and back
@@ -371,6 +391,7 @@ async function burst(w, room, recorded) {
   // (the dwell is 260 ms); moveAt is stamped as it arrives there. Then 3 s, the still, and 7 s more.
   const after = async () => { await sleep(1500); const [W] = SIZES[w]; const x = Math.round(W * 0.5); await moveTo(x, 300); await sleep(60); await js('window.__moveAt = Math.round(performance.now()); true'); for (let i = 0; i < 6; i++) { await moveTo(x + (i % 2 ? 2 : -2), 18); await sleep(90); } await sleep(3000); if (recorded) await shot(`walk-4-pause-plus-3s__${tag}`); await sleep(7000); };
   if (recorded) await record(`walk-4-burst__${room}__${w}`, 0, async () => { await typeAll(); await after(); });
+  else if (A6_TRACE) { const h6 = await a6Start(app); await typeAll(); await sleep(600); await a6Stop(app, h6, { lat: await js('window.__lat'), out: OUT, label: `${room}__${w}` }); await after(); }
   else { await typeAll(); await after(); }
   const lat = await js('window.__lat'); const st = await js('window.__st'); const moveAt = await js('window.__moveAt || null'); await js('window.__latOff && window.__latOff(); true');
   const csv = 'key,key_to_paint_ms\n' + lat.map((x) => `${x.i},${x.ms}`).join('\n') + '\n';
