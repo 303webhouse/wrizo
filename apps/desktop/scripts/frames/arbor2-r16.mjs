@@ -98,9 +98,16 @@ export default {
     const ok = {
       noMask: rows.every((r) => !/url\(/.test(r.m.mask || '')) && rows.every((r) => Math.abs(r.m.opacity - 0.7) < 0.01),
       nightLayers: /wrizo-logo-night\.png/.test(n.m.night.img) && n.m.night.op === 1 && n.m.day.op === 0,
-      dayLayers: /wrizo-logo-sage-all\.png/.test(d.m.day.img) && d.m.day.op === 1 && d.m.night.op === 0,
+      // PARKED 2026-11-08 (SUPERSEDED by r22, Nick's walk (Fable, Nov 8): "The day sage logo is nearly invisible: darker green, >= 3:1 vs the
+      // day room" - the day copy is now the all-green #44522E, scripts/arbor2-logo-r22.mjs; the sage drew 1.27:1 at .7 on the plaster). Original, verbatim:
+      // dayLayers: /wrizo-logo-sage-all\.png/.test(d.m.day.img) && d.m.day.op === 1 && d.m.night.op === 0,
+      // SUCCESSOR: the same reading, on the r22 day copy.
+      dayLayers: /wrizo-logo-day-green-all\.png/.test(d.m.day.img) && d.m.day.op === 1 && d.m.night.op === 0,
       nightColours: has(n.px.top, CORNER.night.letters) && n.px.brassPx >= 40,
-      dayColours: has(d.px.top, CORNER.day.letters) && d.px.brassPx === 0,
+      // PARKED 2026-11-08 (SUPERSEDED by r22, as dayLayers above: the day ink is the green #44522E, no longer the sage). Original, verbatim:
+      // dayColours: has(d.px.top, CORNER.day.letters) && d.px.brassPx === 0,
+      // SUCCESSOR: the same reading (the mark's un-blended ink, no brass), against the r22 green.
+      dayColours: has(d.px.top, [0x44, 0x52, 0x2E]) && d.px.brassPx === 0,
       fade: Math.abs(mid.night.op - 0.5) <= 0.02 && Math.abs(mid.day.op - 0.5) <= 0.02 && early.night.op > 0.5 && early.day.op < 0.5 && Math.abs(early.night.op + early.day.op - 1) < 0.01,
       sameRect: JSON.stringify(n.m.rect) === JSON.stringify(d.m.rect),
     };

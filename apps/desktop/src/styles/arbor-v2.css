@@ -619,7 +619,10 @@
 :root[data-arbor2][data-theme='plateau'] .brand-mark::before,
 :root[data-arbor2][data-theme='plateau'] .brand-mark::after{ content:''; position:absolute; inset:0; background-position:center; background-size:contain; background-repeat:no-repeat; pointer-events:none; }
 :root[data-arbor2][data-theme='plateau'] .brand-mark::before{ background-image:url('/brand/arbor2/wrizo-logo-night.png'); opacity:calc(1 - var(--arbor2-t, 0)); }
-:root[data-arbor2][data-theme='plateau'] .brand-mark::after{ background-image:url('/brand/arbor2/wrizo-logo-sage-all.png'); opacity:var(--arbor2-t, 0); }
+/* r22 (Nick's walk, Nov 8, via Fable: "The day sage logo is nearly invisible: darker green, >= 3:1 vs the day room"): the day copy is the all-green
+   #44522E (scripts/arbor2-logo-r22.mjs): 3.20:1 at the mark's .7 over the plaster behind it (#E2DAC2), where the sage drew 1.27:1. Was:
+   background-image:url('/brand/arbor2/wrizo-logo-sage-all.png') */
+:root[data-arbor2][data-theme='plateau'] .brand-mark::after{ background-image:url('/brand/arbor2/wrizo-logo-day-green-all.png'); opacity:var(--arbor2-t, 0); }
 /* the front door and the splash: the night copy in both rooms (their ground is the splash's dark) */
 :root[data-arbor2][data-theme='plateau'] .brand-mark.arbor2-logo-corner::before{ opacity:1; }
 :root[data-arbor2][data-theme='plateau'] .brand-mark.arbor2-logo-corner::after{ opacity:0; }
@@ -942,6 +945,16 @@
 /* reduced motion: the openers still cut (r17's rule above, restated here because the two rules above come later) */
 @media (prefers-reduced-motion: reduce){
   :root[data-arbor2][data-theme='plateau'] :is(.wz-sliver-grip, .wz-tutor-grip){ transition:color .15s, background-color .15s, border-color .15s, opacity var(--fade-dur, 2.8s) ease; }
+}
+/* r22 - TABS FOLLOW THEIR DRAWER (Nick's walk, Nov 8, via Fable: "Enter drops a block, the screen fades, but the Tools strip's tabs stayed").
+   The folder tabs are portalled out of the drawer into its anchor (SideDrawer.tsx, folderTabs.ts), so the panel's own fade (13-desk-frame.css,
+   .desk-frame[data-writing] .desk-dissolve) never reached them. Now they go with the open Tools panel, on the chrome's fade, and stay where the
+   panel stays (a held pop-out). Any key does this, Enter included. The Tutor's tabs already follow theirs: an open Tutor closes on a key outside
+   it, and a docked one stands with its tabs. */
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame[data-writing='true'] .desk-frame-sliver-anchor:has(.wz-sliver[data-open='true']):not(:has(.wz-sliver-panel[data-popout-hold='true'])) .arbor2-c2--left{
+  opacity:0; pointer-events:none; transition:left var(--drawer-dur) var(--drawer-ease), opacity var(--fade-dur, 2.8s) ease; }
+@media (prefers-reduced-motion: reduce){
+  :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame[data-writing='true'] .desk-frame-sliver-anchor .arbor2-c2--left{ transition:none; }
 }
 :root[data-arbor2][data-theme='plateau'][data-wz-writing='true'] .mode-scroll{ scrollbar-color:transparent transparent; }
 /* scrollbars only when something scrolls: every scroller in the room takes auto, never a standing bar */

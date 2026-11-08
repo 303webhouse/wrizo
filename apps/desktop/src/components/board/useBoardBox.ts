@@ -1,5 +1,6 @@
 import { useState, useLayoutEffect, type MutableRefObject } from 'react';
 import { useStandingHands, DRAWER_MIN } from '../../store/menusDrawers';
+import { isArbor2 } from '../../arbor2/flag';
 
 export function useBoardBox({ wrapRef }: {
   wrapRef: MutableRefObject<HTMLDivElement | null>;
@@ -18,8 +19,12 @@ export function useBoardBox({ wrapRef }: {
       const strip = document.querySelector('.desk-frame-strip')?.getBoundingClientRect();
       const intrusion = strip && strip.width > 0 ? Math.max(0, strip.right - s.left) : 0;
       const openW = Math.max(320, Math.min(0.34 * window.innerWidth, 460));   // --tutor-panel-open-w
-      const l = Math.max(m, hands.tools ? DRAWER_MIN + intrusion : 0);
-      const r = Math.max(m, hands.tutor ? 16 + openW : 0);
+      // ARBOR v2 MOCKUP r22 (Nick's walk, Nov 8, via Fable: "On a Board, the Tutor drawer opens INSIDE the board; it must open at the
+      // surface's edge, as on the Page"): under the flag the board keeps its rect and the drawers open at its edge (the page-primacy law);
+      // where the margin is too narrow for one they overlay, as on the Page. Off the flag the board still narrows.
+      const keep = isArbor2();
+      const l = keep ? m : Math.max(m, hands.tools ? DRAWER_MIN + intrusion : 0);
+      const r = keep ? m : Math.max(m, hands.tutor ? 16 + openW : 0);
       const w = Math.max(240, W - l - r);
       stage.style.setProperty('--board-l', `${l}px`);
       stage.style.setProperty('--board-r', `${r}px`);

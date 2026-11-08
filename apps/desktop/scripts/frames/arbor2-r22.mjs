@@ -1,0 +1,166 @@
+// ARBOR v2 MOCKUP, ROUND r22 - as named screens for INK's frames job (-f themes=plateau -f screens_file=apps/desktop/scripts/frames/arbor2-r22.mjs).
+// Source: Nick's walk of the play server (Nov 8), his notes relayed by Fable the same day:
+//   2. "On a Board, the Tutor drawer opens INSIDE the board; it must open at the surface's edge, as on the Page."
+//   4. "The day sage logo is nearly invisible: darker green, >= 3:1 vs the day room; before/after frames."
+//   5. "Splash: the flow chart cycles faster and ONLY the arrows animate (orange = the writer's acts)."
+//   7. "Enter drops a block, the screen fades, but the Tools strip's tabs stayed. Rule: tabs follow their drawer."
+// Every check THROWS with its numbers when it fails and prints them when it passes ("ARBOR-R22 <screen> {...}"). Seeds go through window.wrizo*.
+// Pictures (-pic-) are for the eye: the board with each drawer open, the corner logo by day before and after, the splash mid-run.
+import { guarded } from './mockup-kit.mjs';
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
+const say = (name, data) => console.log(`ARBOR-R22 ${name} ${JSON.stringify(data)}`);
+const fail = (name, data) => { console.log(`ARBOR-R22-FAIL ${name} ${JSON.stringify(data)}`); throw new Error(`${name} FAILED ${JSON.stringify(data)}`.slice(0, 1200)); };
+const FINISH = "(() => { document.getAnimations().forEach((a) => { try { if (a.effect && Number.isFinite(a.effect.getComputedTiming().endTime)) a.finish(); } catch {} }); return true; })()";
+const PAGEW = 'The morning light came in low across the table, and she began to write. The kettle ticked as it cooled, and outside a dog asked the street a question nobody answered.';
+const DRAWER_MIN = 200;   // store/menusDrawers.ts: below this margin a drawer overlays, on the Page and now on the Board
+const setRoom = async (app, room) => { await app.evalJs(`document.documentElement.setAttribute('data-room', ${JSON.stringify(room === 'day' ? 'light' : 'dark')})`); await sleep(700); };
+const caretEnd = "(() => { const e = document.querySelector('.forward-only-editor'); if (!e) return false; e.focus(); const r = document.createRange(); r.selectNodeContents(e); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()";
+const key = async (app, k, code, vk, text) => {
+  await app.cdp('Input.dispatchKeyEvent', { type: 'keyDown', key: k, code, windowsVirtualKeyCode: vk, ...(text ? { text, unmodifiedText: text } : {}) });
+  await app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: k, code, windowsVirtualKeyCode: vk });
+};
+const go = async (app, hash) => {
+  await app.evalJs(`history.replaceState(null, '', '/?arbor2=1' + ${JSON.stringify(hash)})`); await app.reload();
+  await waitSoft(app, "document.documentElement.getAttribute('data-arbor2') === 'true'", { label: 'flag', timeout: 15000 });
+  await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 20000 });
+};
+const openPage = async (app, id) => {
+  await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id, text: PAGEW, createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page' })})`);
+  await sleep(300); await go(app, `#/page/${id}`);
+  if (!(await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'page', timeout: 10000 }))) fail('R22-OPEN-PAGE', { id, editor: false });
+  await sleep(900);
+  await app.evalJs("(() => { const b = [...document.querySelectorAll('.desk-mode-tab')].find((x) => (x.textContent || '').trim().toLowerCase() === 'draft'); if (b) b.click(); return !!b; })()"); await sleep(900);
+  await app.evalJs("document.querySelector('.forward-only-editor')?.blur(); getSelection()?.removeAllRanges()");
+  await app.mouseMove(600, 300); await sleep(700);
+};
+const openBoard = async (app, id) => {
+  await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id, text: 'R22 board', pageType: 'board', boxes: [{ id: `${id}-box`, kind: 'text', x: 0.62, y: 0.12, w: 0.34, h: 0.16, z: 1, text: 'A card near the right edge' }], createdAt: '2026-04-01T00:00:00.000Z', origin: null, source: null })})`);
+  await sleep(300); await go(app, `#/page/${id}`);
+  if (!(await waitSoft(app, "!!document.querySelector('.board-canvas-wrap, .board-canvas')", { label: 'board', timeout: 10000 }))) fail('R22-OPEN-BOARD', { id, board: false });
+  await sleep(1200); await app.mouseMove(600, 300); await sleep(500);
+};
+// the board's rect, the stage's, and every visible drawer panel's (the board area is what useBoardBox sizes; the wrap is what Tutor.tsx measures)
+const BOARD = `(() => { const rr = (e) => { if (!e) return null; const r = e.getBoundingClientRect(); return { l: Math.round(r.left * 10) / 10, r: Math.round(r.right * 10) / 10, t: Math.round(r.top), w: Math.round(r.width * 10) / 10 }; };
+  const wrap = document.querySelector('.board-canvas-wrap') || document.querySelector('.board-canvas'); const stage = document.querySelector('.desk-frame-stage');
+  const vis = (s) => [...document.querySelectorAll(s)].find((e) => { const r = e.getBoundingClientRect(); return r.width > 4 && getComputedStyle(e).visibility !== 'hidden'; }) || null;
+  const tp = document.querySelector('.wz-tutor-panel'), sp = document.querySelector('.wz-sliver-panel');
+  const slideR = tp && tp.querySelector('.wz-drawer-slide'), slideL = sp && sp.querySelector('.wz-drawer-slide');
+  return { wrap: rr(wrap), stage: rr(stage), tutor: tp ? { open: tp.getAttribute('data-open'), panel: rr(tp), slide: rr(slideR) } : null, tools: sp ? { open: sp.getAttribute('data-open'), panel: rr(sp), slide: rr(slideL) } : null,
+    boardL: stage ? stage.style.getPropertyValue('--board-l') : null, boardR: stage ? stage.style.getPropertyValue('--board-r') : null, card: rr(vis('.board-box')) }; })()`;
+const same = (a, b) => !!a && !!b && Math.abs(a.l - b.l) <= 0.5 && Math.abs(a.r - b.r) <= 0.5 && Math.abs(a.w - b.w) <= 0.5;
+// effective opacity (the element's times every ancestor's; display:none / visibility:hidden = 0)
+const EFF = "const eff = (e) => { if (!e) return null; let o = 1; for (let n = e; n && n.nodeType === 1; n = n.parentElement) { const cs = getComputedStyle(n); if (cs.display === 'none' || cs.visibility === 'hidden') return 0; o *= Number(cs.opacity); } return Math.round(o * 100) / 100; };";
+
+const screens = {
+  // ── 2. THE BOARD KEEPS ITS RECT; EACH DRAWER OPENS AT ITS EDGE (flush where the margin holds a drawer, over it where it does not, as on the Page)
+  'r22-board-drawers': async (app) => {
+    await openBoard(app, 'arbor-r22-board'); await setRoom(app, 'day');
+    const shut = await app.evalJs(BOARD);
+    if (!shut.wrap || !shut.stage) fail('R22-BOARD-DRAWERS', { blind: true, shut });
+    const margin = Math.round((shut.stage.r - shut.wrap.r) * 10) / 10, marginL = Math.round((shut.wrap.l - shut.stage.l) * 10) / 10;
+    await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(900); await app.evalJs(FINISH); await sleep(200);
+    const tut = await app.evalJs(BOARD);
+    await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(900); await app.evalJs(FINISH);
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(900); await app.evalJs(FINISH); await sleep(200);
+    const tools = await app.evalJs(BOARD);
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(900); await app.evalJs(FINISH);
+    const back = await app.evalJs(BOARD);
+    const tutorVisL = tut.tutor && tut.tutor.slide ? tut.tutor.slide.l : null, toolsVisR = tools.tools && tools.tools.slide ? tools.tools.slide.r : null;
+    const ok = {
+      tutorOpened: !!tut.tutor && tut.tutor.open === 'true', toolsOpened: !!tools.tools && tools.tools.open === 'true',
+      boardStillWithTutor: same(shut.wrap, tut.wrap), boardStillWithTools: same(shut.wrap, tools.wrap), boardBack: same(shut.wrap, back.wrap),
+      // where the margin holds a drawer it stands at the board's edge, never over it; where it does not, it overlays (the Page's rule)
+      tutorAtEdge: margin >= DRAWER_MIN ? tutorVisL !== null && Math.abs(tutorVisL - shut.wrap.r) <= 2 : tutorVisL !== null,
+      toolsAtEdge: marginL >= DRAWER_MIN + 60 ? toolsVisR !== null && Math.abs(toolsVisR - shut.wrap.l) <= 2 : toolsVisR !== null,
+    };
+    const data = { ok, margin, marginL, shut: shut.wrap, withTutor: tut.wrap, tutorSlide: tut.tutor && tut.tutor.slide, withTools: tools.wrap, toolsSlide: tools.tools && tools.tools.slide, vars: [tut.boardL, tut.boardR, tools.boardL, tools.boardR], win: await app.evalJs('[innerWidth, innerHeight]') };
+    if (Object.values(ok).some((x) => !x)) fail('R22-BOARD-DRAWERS', data);
+    say('r22-board-drawers', data);
+  },
+  'r22-pic-board-tutor': async (app) => { await openBoard(app, 'arbor-r22-pbt'); await setRoom(app, 'day'); await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(900); await app.evalJs(FINISH); },
+  'r22-pic-board-tutor-night': async (app) => { await openBoard(app, 'arbor-r22-pbtn'); await setRoom(app, 'night'); await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(900); await app.evalJs(FINISH); },
+  'r22-pic-board-tools': async (app) => { await openBoard(app, 'arbor-r22-pbl'); await setRoom(app, 'day'); await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(900); await app.evalJs(FINISH); },
+
+  // ── 7. TABS FOLLOW THEIR DRAWER: Enter (any key) fades the open Tools drawer and its folder tabs together; Esc brings both back
+  'r22-tabs-follow': async (app) => {
+    await openPage(app, 'arbor-r22-tabs'); await setRoom(app, 'day');
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(900); await app.evalJs(FINISH); await sleep(200);
+    const R = `(() => { ${EFF} const tabs = document.querySelector('.arbor2-c2--left'), panel = document.querySelector('.wz-sliver-panel');
+      return { tabs: tabs ? { op: eff(tabs), pe: getComputedStyle(tabs).pointerEvents, n: tabs.querySelectorAll('.wz-drawer-tab').length } : null, panel: panel ? { op: eff(panel), open: panel.getAttribute('data-open') } : null,
+        writing: document.documentElement.getAttribute('data-wz-writing') }; })()`;
+    const rest = await app.evalJs(R);
+    await app.evalJs(caretEnd); await key(app, 'Enter', 'Enter', 13, '\r'); await sleep(300); await key(app, 'w', 'KeyW', 87, 'w');
+    await sleep(3500); await app.evalJs(FINISH); await sleep(200);
+    const wr = await app.evalJs(R);
+    await key(app, 'Escape', 'Escape', 27); await sleep(1500); await app.evalJs(FINISH); await sleep(200);
+    const back = await app.evalJs(R);
+    const ok = {
+      seen: !!rest.tabs && rest.tabs.n >= 2 && rest.tabs.op === 1 && !!rest.panel && rest.panel.open === 'true' && rest.panel.op === 1,
+      writing: wr.writing === 'true',
+      panelFaded: !!wr.panel && wr.panel.op === 0,
+      tabsFollow: !!wr.tabs && wr.tabs.op === 0 && wr.tabs.pe === 'none',
+      returned: back.writing !== 'true' && !!back.tabs && back.tabs.op === 1 && !!back.panel && back.panel.op === 1,
+    };
+    if (Object.values(ok).some((x) => !x)) fail('R22-TABS-FOLLOW', { ok, rest, wr, back });
+    say('r22-tabs-follow', { ok, rest, wr, back });
+  },
+
+  // ── 4. THE DAY LOGO, DARKER: the corner mark's ink as drawn (at .7) against the plaster around it, read from the screen, >= 3:1
+  'r22-day-logo': async (app) => {
+    await openPage(app, 'arbor-r22-logo'); await setRoom(app, 'day');
+    await app.evalJs("document.documentElement.setAttribute('data-arbor2-off', ((document.documentElement.getAttribute('data-arbor2-off') || '') + ' shadows').trim())"); await sleep(500);
+    const m = await app.evalJs(`(() => { const e = [...document.querySelectorAll('.brand-mark')].find((x) => x.getBoundingClientRect().width > 0); if (!e) return null; const r = e.getBoundingClientRect(), a = getComputedStyle(e, '::after');
+      return { rect: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)], op: Number(getComputedStyle(e).opacity), dayImg: a.backgroundImage, dayOp: Number(a.opacity), room: document.documentElement.getAttribute('data-arbor2-room') }; })()`);
+    if (!m) fail('R22-DAY-LOGO', { mark: false });
+    const png = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data;
+    const px = await app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${png}'; await img.decode(); const dpr = img.width / innerWidth;
+      const [x, y, w, h] = ${JSON.stringify(m.rect)}.map((v) => Math.round(v * dpr)); const c = document.createElement('canvas'); c.width = w; c.height = h; const cx = c.getContext('2d'); cx.drawImage(img, -x, -y);
+      const d = cx.getImageData(0, 0, w, h).data; const cnt = new Map(); const at = (i) => d[i] + ',' + d[i + 1] + ',' + d[i + 2];
+      for (let i = 0; i < w; i++) { for (const j of [0, h - 1]) { const k = at((j * w + i) * 4); cnt.set(k, (cnt.get(k) || 0) + 1); } }
+      const g = [...cnt.entries()].sort((a, b) => b[1] - a[1])[0][0].split(',').map(Number);
+      const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; const L = (p) => 0.2126 * lin(p[0]) + 0.7152 * lin(p[1]) + 0.0722 * lin(p[2]);
+      const ink = new Map(); let inked = 0;
+      for (let i = 0; i < d.length; i += 4) { const p = [d[i], d[i + 1], d[i + 2]]; if (Math.max(...p.map((v, k) => Math.abs(v - g[k]))) < 24) continue; inked++; const q = p.map((v) => Math.round(v / 6) * 6).join(','); ink.set(q, (ink.get(q) || 0) + 1); }
+      const top = [...ink.entries()].sort((a, b) => b[1] - a[1])[0]; const t = top ? top[0].split(',').map(Number) : null;
+      const ratio = t ? (Math.max(L(t), L(g)) + 0.05) / (Math.min(L(t), L(g)) + 0.05) : null;
+      return { ground: g, ink: t, inked, ratio: ratio ? Math.round(ratio * 100) / 100 : null }; })()`);
+    const ok = { dayRoom: m.room === 'day', file: /wrizo-logo-day-green-all\.png/.test(m.dayImg) && m.dayOp === 1, drawnAt7: Math.abs(m.op - 0.7) < 0.01, seen: px.inked >= 200, contrast: px.ratio !== null && px.ratio >= 3 };
+    if (Object.values(ok).some((x) => !x)) fail('R22-DAY-LOGO', { ok, m, px });
+    say('r22-day-logo', { ok, m, px });
+  },
+  // before / after, the same corner, the same room (before = the r21 sage copy put back for this frame only)
+  'r22-pic-logo-day-before': async (app) => { await openPage(app, 'arbor-r22-plb'); await setRoom(app, 'day'); await app.evalJs("(() => { const s = document.createElement('style'); s.textContent = \":root[data-arbor2][data-theme='plateau'] .brand-mark::after{ background-image:url('/brand/arbor2/wrizo-logo-sage-all.png') !important; }\"; document.head.appendChild(s); return true; })()"); await sleep(500); },
+  'r22-pic-logo-day-after': async (app) => { await openPage(app, 'arbor-r22-pla'); await setRoom(app, 'day'); await sleep(500); },
+
+  // ── 5. THE SPLASH: only the arrows animate (the five stage outlines never light), and the run is faster (the arrows done in <= 1.5 s)
+  'r22-splash-arrows': async (app) => {
+    const SAMPLER = `(() => { const t0 = performance.now(); window.__r22 = { outlinesMax: 0, first: null, done: null, edges: 0, sketchDone: null, samples: 0 };
+      const tick = () => { const s = window.__r22; const svg = document.querySelector('.wz-splash .wz-splash-arbor');
+        if (svg) { s.samples++; const st = [...svg.querySelectorAll('g[data-stage]')]; st.forEach((g) => { const o = Number(getComputedStyle(g).opacity); if (o > s.outlinesMax) s.outlinesMax = o; });
+          const ps = [...svg.querySelectorAll('mask path')]; s.edges = ps.length; const offs = ps.map((p) => Number(getComputedStyle(p).strokeDashoffset.replace('px', '')));
+          const now = Math.round(performance.now() - t0); if (s.first === null && offs.some((v) => v < 0.98)) s.first = now; if (s.done === null && ps.length && offs.every((v) => v <= 0.001)) s.done = now; }
+        const f = window.wrizoArborFront; if (f && f.sketchDone && s.sketchDone === null) s.sketchDone = Math.round(f.sketchDone - t0);
+        if (performance.now() - t0 < 12000) requestAnimationFrame(tick); };
+      requestAnimationFrame(tick); })();`;
+    const { identifier } = await app.cdp('Page.addScriptToEvaluateOnNewDocument', { source: SAMPLER });
+    try {
+      await app.evalJs("history.replaceState(null, '', '/?arbor2=1#/')"); await app.reload();
+      await waitSoft(app, "!!window.__r22 && window.__r22.done !== null", { label: 'arrows done', timeout: 15000 }); await sleep(1500);
+    } finally { await app.cdp('Page.removeScriptToEvaluateOnNewDocument', { identifier }).catch(() => {}); }
+    const s = await app.evalJs('window.__r22');
+    const run = s && s.first !== null && s.done !== null ? s.done - s.first : null;
+    const ok = { sampled: !!s && s.samples > 20 && s.edges === 6, outlinesNeverLight: !!s && s.outlinesMax === 0, arrowsDrew: !!s && s.first !== null && s.done !== null, faster: run !== null && run <= 1500 };
+    if (Object.values(ok).some((x) => !x)) fail('R22-SPLASH-ARROWS', { ok, s, run });
+    say('r22-splash-arrows', { ok, s, run });
+  },
+  // mid-run: the arrows part-drawn in brass, every stage outline still Nick's cream
+  'r22-pic-splash-mid': async (app) => {
+    await app.evalJs("history.replaceState(null, '', '/?arbor2=1#/')"); await app.reload();
+    await waitSoft(app, "(() => { const ps = [...document.querySelectorAll('.wz-splash .wz-splash-arbor mask path')]; return ps.length === 6 && ps.some((p) => Number(getComputedStyle(p).strokeDashoffset.replace('px', '')) <= 0.001) && ps.some((p) => Number(getComputedStyle(p).strokeDashoffset.replace('px', '')) > 0.5); })()", { label: 'mid-run', timeout: 10000 });
+    await app.evalJs("document.getAnimations().forEach((a) => { try { a.pause(); } catch {} }); true");
+  },
+};
+
+export default guarded(screens, { verdict: ['ARBOR-R22'] });

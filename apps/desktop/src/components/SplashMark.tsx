@@ -5,6 +5,10 @@ import { isArbor2 } from '../arbor2/flag';
 // per-theme drawn-on-open splash: only connectors and stage outlines turn brass, never the letters; the glow's drop-shadow values are this file's own (the brief says only "a short glow") [SplashMark §1]
 
 const SPEED = 0.7; // every mockup time below is multiplied by 0.7 [SplashMark §2]
+// ARBOR v2 MOCKUP r22 (Nick's walk, Nov 8): the Arbor run's own multiplier (faster), and the beat after the last arrow before the front door's
+// order begins (the pop it replaces was 260 + 480)
+const ARBOR2_SPEED = 0.4;
+const ARBOR2_BEAT = 400;
 const GLOW_OFF = 'drop-shadow(0 0 0 transparent)';
 const GLOW_ON = 'drop-shadow(0 0 16px rgba(255,152,0,.8))';
 const GLOW_REST = 'drop-shadow(0 0 5px rgba(255,152,0,.35))';
@@ -75,10 +79,16 @@ function ArborMark({ reduced, width, height, onFloorReached }: MarkProps) {
 
     const v = ARBOR_WAVE_PX_PER_MS;
     const v2 = ARBOR_FINAL_WAVE_PX_PER_MS;
+    // ARBOR v2 MOCKUP r22 (Nick's walk, Nov 8, via Fable: "Splash: the flow chart cycles faster and ONLY the arrows animate (orange = the
+    // writer's acts)"): under the flag the run takes ARBOR2_SPEED of the time (0.4 here vs 0.7: the arrows are done in ~1.5 s, not ~2.6 s) and
+    // the five stage outlines never light, glow or pop - they stay Nick's cream (the base drawing and FINAL DRAFT's cream copy). Only the six
+    // connectors draw on, in brass. Off the flag nothing changes.
+    const arbor = isArbor2();
+    const speed = arbor ? ARBOR2_SPEED : SPEED;
 
     const A = (el: Element | null, kf: Keyframe[], at: number, dur: number, easing = 'ease-in-out') => {
       if (!el) return;
-      el.animate(kf, { delay: at * SPEED, duration: Math.max(1, dur * SPEED), fill: 'forwards', easing });
+      el.animate(kf, { delay: at * speed, duration: Math.max(1, dur * speed), fill: 'forwards', easing });
     };
     const draw = (p: SVGPathElement | null, at: number, dur: number) => A(p, [{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], at, dur, 'linear');
     const pop = (el: Element | null, at: number) => A(el, [
@@ -105,7 +115,7 @@ function ArborMark({ reduced, width, height, onFloorReached }: MarkProps) {
       });
     }
 
-    A(outlineRefs.current.ideas ?? null, [
+    if (!arbor) A(outlineRefs.current.ideas ?? null, [
       { opacity: 0, filter: GLOW_OFF }, { opacity: 1, filter: GLOW_ON, offset: 0.6 }, { opacity: 1, filter: GLOW_REST },
     ], ideasAt, ideasDur + 250);
 
@@ -116,7 +126,7 @@ function ArborMark({ reduced, width, height, onFloorReached }: MarkProps) {
       draw(pathRefs.current[e.id] ?? null, s, d);
       lastEnd = Math.max(lastEnd, s + d);
     });
-    (['text', 'page', 'feedback'] as const).forEach((stage) => {
+    if (!arbor) (['text', 'page', 'feedback'] as const).forEach((stage) => {
       A(outlineRefs.current[stage] ?? null, [{ opacity: 0 }, { opacity: 1 }], (reach[stage] as number) - 60, 380);
     });
 
@@ -124,17 +134,20 @@ function ArborMark({ reduced, width, height, onFloorReached }: MarkProps) {
     const fd = lens[finalEdge.id] / v2;
     draw(pathRefs.current[finalEdge.id] ?? null, fs, fd);
     const finalAt = fs + fd;
-    A(outlineRefs.current.final ?? null, [
-      { opacity: 0, filter: GLOW_OFF }, { opacity: 1, filter: GLOW_ON, offset: 0.6 }, { opacity: 1, filter: GLOW_REST },
-    ], finalAt, 750);
-    pop(finalGroupRef.current, finalAt + 260);
+    if (!arbor) {
+      A(outlineRefs.current.final ?? null, [
+        { opacity: 0, filter: GLOW_OFF }, { opacity: 1, filter: GLOW_ON, offset: 0.6 }, { opacity: 1, filter: GLOW_REST },
+      ], finalAt, 750);
+      pop(finalGroupRef.current, finalAt + 260);
+    }
 
     // Brief: "Ending: a short hold, then a 0.45s fade" — the floor is the
     // moment just before that fade, i.e. the pop's own end plus a short hold.
     const floorAt = finalAt + 260 + 480 + 500;
     // ARBOR v2 MOCKUP r19 (spec draft 38 §12c): in the Arbor mockup the sketch's end is the pop's settling (its "run is finished"), where the
     // front door's order begins (src/arbor2/frontLayer.tsx: the logo 0.2 s later); off the flag the floor is unchanged
-    window.setTimeout(onFloorReached, (isArbor2() ? finalAt + 260 + 480 : floorAt) * SPEED);
+    // (r22: with no pop under the flag, the run is finished when the last arrow lands, plus a beat of ARBOR2_BEAT)
+    window.setTimeout(onFloorReached, arbor ? (finalAt + ARBOR2_BEAT) * speed : floorAt * SPEED);
   }, [reduced, onFloorReached]);
 
   const finalCx = ARBOR_FINAL_CREAM.x + ARBOR_FINAL_CREAM.w / 2;
