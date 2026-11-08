@@ -81,7 +81,10 @@ const record = async (name, ms, during = null) => {
     frames.push({ i, f, t: Math.round(t - t0) });
     cdp('Page.screencastFrameAck', { sessionId: p.sessionId }).catch(() => {});
   });
-  await cdp('Page.startScreencast', { format: 'jpeg', quality: 80, maxWidth: 1400, maxHeight: 1400, everyNthFrame: 2 });   // every 2nd frame: ~30 fps while things move (the script asks >= 10)
+  // PARKED 2026-11-08 (SUPERSEDED - the first walk turn, 06:03Z-06:26Z, walk-triage.txt C D: every 2nd frame came to ~11 fps while the splash moved - too close to the script's floor of 10). Original, verbatim:
+  // await cdp('Page.startScreencast', { format: 'jpeg', quality: 80, maxWidth: 1400, maxHeight: 1400, everyNthFrame: 2 });   // every 2nd frame: ~30 fps while things move (the script asks >= 10)
+  // SUCCESSOR: every frame.
+  await cdp('Page.startScreencast', { format: 'jpeg', quality: 80, maxWidth: 1400, maxHeight: 1400, everyNthFrame: 1 });
   const start = Date.now();
   const job = during ? Promise.resolve().then(during).catch((e) => note('rec', 'during-error', String(e && e.message).slice(0, 300))) : null;
   while (Date.now() - start < ms) await sleep(100);
@@ -281,7 +284,7 @@ const REST = `(() => { ${COLOUR} const q = (s) => [...document.querySelectorAll(
   return { room: root.getAttribute('data-arbor2-room'), dayness: root.getAttribute('data-arbor2-dayness'), writing: root.getAttribute('data-wz-writing'),
     bar: bar ? { bg: hex(parse(getComputedStyle(bar).backgroundColor)), border: getComputedStyle(bar).borderBottomColor, rect: rr(bar) } : null, rail: rail ? { bg: hex(bgOf(rail)), rect: rr(rail) } : null, page: rr(page), win: [innerWidth, innerHeight],
     pergola: pg ? { op: Number(getComputedStyle(pg).opacity), display: getComputedStyle(pg).display, liveOff: pg.getAttribute('data-live-off'), leaves: leaves.length, running: anims.filter((a) => a.playState === 'running').length, names: [...new Set(anims.map((a) => a.animationName))], driftAnims: [...drift].flatMap((d) => d.getAnimations()).length } : null,
-    pageShade: sh ? { op: Number(getComputedStyle(sh).opacity) } : null, mark: mark ? { op: Number(getComputedStyle(mark).opacity), rect: rr(mark), color: getComputedStyle(mark).color } : null,
+    pageShade: sh ? { op: Number(getComputedStyle(sh).opacity), display: getComputedStyle(sh).display } : null, mark: mark ? { op: Number(getComputedStyle(mark).opacity), rect: rr(mark), color: getComputedStyle(mark).color } : null,
     scroll: scroller ? { sh: scroller.scrollHeight, ch: scroller.clientHeight, bar: scroller.offsetWidth - scroller.clientWidth } : { fits: true }, vines: field ? { op: Number(getComputedStyle(field).opacity), vis: field.getAttribute('data-vines') } : null,
     text: ink && pageBg ? { ink: hex(ink), page: hex(pageBg), ratio: ratio(ink, pageBg), atShade: ratio(ink, { r: pageBg.r * (1 - 0.034), g: pageBg.g * (1 - 0.034), b: pageBg.b * (1 - 0.034) }) } : null,
     glow: page ? getComputedStyle(page).boxShadow : null, openers: [q('.wz-sliver-grip'), q('.wz-tutor-grip')].map((g) => g ? Number(getComputedStyle(g).opacity) : null) }; })()`;
@@ -294,7 +297,10 @@ async function step3() {
     await shot(`walk-3-rest__day__${w}`);
     must('3', `${w} the bars olive #3A4322; the rail floats 40 px below the top bar and 40 px above the window's bottom`, !!r.bar && r.bar.bg === '#3A4322' && !!r.rail && r.rail.bg === '#3A4322' && Math.abs(r.rail.rect.t - r.bar.rect.b - 40) <= 1 && Math.abs(r.win[1] - r.rail.rect.b - 40) <= 1, { bar: r.bar, rail: r.rail, win: r.win });
     must('3', `${w} the pergola drawn, its leaves on the breeze, NO drift (no animation on the wrapper)`, !!r.pergola && r.pergola.leaves > 0 && r.pergola.names.includes('arbor2-breeze') && r.pergola.driftAnims === 0, r.pergola);
-    must('3', `${w} page text >= 13.9:1 at the shade's darkest (3.4% over the page)`, !!r.text && r.text.atShade >= 13.9, r.text);
+    // PARKED 2026-11-08 (SUPERSEDED - the first walk turn, 06:03Z-06:26Z, walk-triage.txt C10: it mixed 3.4% BLACK over the page, and the shade is not black, so its 13.6 under-reads). Original, verbatim:
+    // must('3', `${w} page text >= 13.9:1 at the shade's darkest (3.4% over the page)`, !!r.text && r.text.atShade >= 13.9, r.text);
+    // SUCCESSOR: the page's own ratio is read (and must clear the floor with no shade at all); the figure at the shade's darkest is the eye's / the round's.
+    must('3', `${w} page text >= 13.9:1 on the page (the figure under the shade's darkest is for the eye: the shade is not black)`, !!r.text && r.text.ratio >= 13.9 ? null : false, r.text);
     must('3', `${w} no scrollbar (the page fits)`, !r.scroll.sh || r.scroll.sh <= r.scroll.ch, r.scroll);
     must('3', `${w} the vines hidden by day at rest`, !r.vines || r.vines.op < 0.02 || r.vines.vis === 'false', r.vines);
     must('3', `${w} the shade at 3.4% beneath the words; the corner mark (sage, .7) on top of the shade; beams/rafters/post/leaves out of the timber; the breeze left to right in ~2.6 s every 16 s, still between`, null, { frames: [`walk-3-rest__day__${w}.png`, `walk-3-breeze__day__${w}/`], pageShade: r.pageShade, mark: r.mark });
@@ -346,14 +352,17 @@ async function burst(w, room, recorded) {
     }
     typeAll.mid = false;
   };
-  const after = async () => { await sleep(3000); if (recorded) await shot(`walk-4-pause-plus-3s__${tag}`); await sleep(7000); };
+  // PARKED 2026-11-08 (SUPERSEDED - the first walk turn, 06:03Z-06:26Z, walk-triage.txt CD: it never moved the pointer after the burst, and without that the chrome does not come back - data-wz-writing stayed true for 10 s). Original, verbatim:
+  // const after = async () => { await sleep(3000); if (recorded) await shot(`walk-4-pause-plus-3s__${tag}`); await sleep(7000); };
+  // SUCCESSOR: 1.5 s after the last key the pointer moves (the writer reaching for the chrome), stamped in the page's clock; then 3 s, the still, and 7 s more.
+  const after = async () => { await sleep(1500); const [W, H] = SIZES[w]; await js('window.__moveAt = Math.round(performance.now()); true'); for (let i = 0; i < 4; i++) { await moveTo(Math.round(W * (0.3 + i * 0.1)), Math.round(H * 0.5)); await sleep(60); } await sleep(3000); if (recorded) await shot(`walk-4-pause-plus-3s__${tag}`); await sleep(7000); };
   if (recorded) await record(`walk-4-burst__${room}__${w}`, 0, async () => { await typeAll(); await after(); });
   else { await typeAll(); await after(); }
-  const lat = await js('window.__lat'); const st = await js('window.__st'); await js('window.__latOff && window.__latOff(); true');
+  const lat = await js('window.__lat'); const st = await js('window.__st'); const moveAt = await js('window.__moveAt || null'); await js('window.__latOff && window.__latOff(); true');
   const csv = 'key,key_to_paint_ms\n' + lat.map((x) => `${x.i},${x.ms}`).join('\n') + '\n';
   writeFileSync(path.join(OUT, `keylog-${room}${w === 2000 ? '' : '__1366'}${recorded ? '__recorded' : ''}.csv`), csv);
   writeFileSync(path.join(OUT, `walk-4-states__${room}__${w}${recorded ? '__recorded' : ''}.json`), JSON.stringify({ cols: ['t', 'writing', 'liveOff', 'pergolaOp', 'pageShadeOp', 'vinesOp', 'topBarOp', 'toolsOpenerOp', 'leavesRunning(every 5th)'], firstKeyAt: lat[0] ? lat[0].at : null, rows: st }));
-  return { lat, st };
+  return { lat, st, moveAt };
 }
 async function step4() {
   for (const w of [2000, 1366]) {
@@ -367,10 +376,18 @@ async function step4() {
     // the shade's own timeline: the first key -> leaves still; the swap's fade; the pause's return
     const fk = day.lat[0] ? day.lat[0].at : null, rows = day.st;
     const firstAfter = (pred) => { const r = rows.find((x) => fk !== null && x[0] >= fk && pred(x)); return r ? r[0] - fk : null; };
-    const stillAt = firstAfter((x) => x[2] === 'true'), shadeGone = firstAfter((x) => x[3] !== null && x[3] < 0.05), writingOn = firstAfter((x) => x[1] === 'true');
+    // PARKED 2026-11-08 (SUPERSEDED - the first walk turn, 06:03Z-06:26Z, walk-triage.txt C9: "gone" at opacity < 0.05 lands ~4.4 s into a 6 s ease; the logged fade reaches 0.003 at 5.6 s and 0 at 6.1 s). Original, verbatim:
+    // const stillAt = firstAfter((x) => x[2] === 'true'), shadeGone = firstAfter((x) => x[3] !== null && x[3] < 0.05), writingOn = firstAfter((x) => x[1] === 'true');
+    // SUCCESSOR: gone = the first sample at 0 (to 3 places), the fade's end.
+    const stillAt = firstAfter((x) => x[2] === 'true'), shadeGone = firstAfter((x) => x[3] !== null && x[3] <= 0.001), writingOn = firstAfter((x) => x[1] === 'true');
     const lastKey = day.lat.length ? day.lat[day.lat.length - 1].at : null;
-    const pauseRow = rows.find((x) => lastKey !== null && x[0] > lastKey && x[1] !== 'true'), pauseAt = pauseRow ? pauseRow[0] : null;
-    const backAt = pauseAt === null ? null : (rows.find((x) => x[0] > pauseAt && x[3] !== null && x[3] > 0.95) || [null])[0];
+    // PARKED 2026-11-08 (SUPERSEDED - the first walk turn, 06:03Z-06:26Z, walk-triage.txt CD, with the pause above: no pointer, no pause). Original, verbatim:
+    // const pauseRow = rows.find((x) => lastKey !== null && x[0] > lastKey && x[1] !== 'true'), pauseAt = pauseRow ? pauseRow[0] : null;
+    // const backAt = pauseAt === null ? null : (rows.find((x) => x[0] > pauseAt && x[3] !== null && x[3] > 0.95) || [null])[0];
+    // SUCCESSOR: the pause is the first sample after the pointer moved with the chrome back (writing not 'true'); back = the shade's fade-in at 1 (to 3 places).
+    const moveAt = day.moveAt;
+    const pauseRow = rows.find((x) => moveAt !== null && x[0] >= moveAt && x[1] !== 'true'), pauseAt = pauseRow ? pauseRow[0] : null;
+    const backAt = pauseAt === null ? null : (rows.find((x) => x[0] > pauseAt && x[3] !== null && x[3] >= 0.999) || [null])[0];
     // (the live drawing leaves style work under data-live-off - content-visibility:hidden, the still picture shown - so "nothing moves" is the
     // live layer OFF on every sample mid-burst; the leaves' own animation count is reported beside it, information only)
     const mid = rows.filter((x) => fk !== null && lastKey !== null && x[0] > fk + 400 && x[0] < lastKey);
@@ -378,8 +395,14 @@ async function step4() {
     note('4', `shade timeline day ${w}`, { stillAfterFirstKeyMs: stillAt, writingOnMs: writingOn, shadeGoneAfterFirstKeyMs: shadeGone, pauseAt: pauseAt !== null && lastKey !== null ? pauseAt - lastKey : null, shadeBackMsAfterPause: backAt !== null && pauseAt !== null ? backAt - pauseAt : null, liveOffMid: [...new Set(offMid)], leavesRunningMid: [...new Set(runningMid)] });
     must('4', `${w} the leaves stop on the first key (the live drawing off, its still shown, within ~300 ms)`, stillAt !== null && stillAt <= 300, { stillAt });
     must('4', `${w} while she types nothing in the shade moves (the live drawing off on every sample mid-burst)`, offMid.length > 20 && offMid.every((x) => x === 'true'), { samples: offMid.length, values: [...new Set(offMid)], leavesRunningInfo: [...new Set(runningMid)] });
-    must('4', `${w} the swap: the shade fades out over ~6 s as the vines fade in, all together`, shadeGone !== null && near(shadeGone, 6000, 1500), { shadeGone });
-    must('4', `${w} the pause: the vines out and the shade back together over ~3 s`, backAt !== null && pauseAt !== null && near(backAt - pauseAt, 3000, 1000), { pauseAfterLastKey: pauseAt !== null && lastKey !== null ? pauseAt - lastKey : null, back: backAt !== null && pauseAt !== null ? backAt - pauseAt : null });
+    // PARKED 2026-11-08 (SUPERSEDED - the first walk turn, 06:03Z-06:26Z, walk-triage.txt C9: read against the < 0.05 threshold parked above). Original, verbatim:
+    // must('4', `${w} the swap: the shade fades out over ~6 s as the vines fade in, all together`, shadeGone !== null && near(shadeGone, 6000, 1500), { shadeGone });
+    // SUCCESSOR: the fade's end at ~6 s (within 1 s).
+    must('4', `${w} the swap: the shade fades out over ~6 s (to 0) as the vines fade in, all together`, shadeGone !== null && near(shadeGone, 6000, 1000), { shadeGone });
+    // PARKED 2026-11-08 (SUPERSEDED - the first walk turn, 06:03Z-06:26Z, walk-triage.txt CD: blind - no pointer, so no pause to time). Original, verbatim:
+    // must('4', `${w} the pause: the vines out and the shade back together over ~3 s`, backAt !== null && pauseAt !== null && near(backAt - pauseAt, 3000, 1000), { pauseAfterLastKey: pauseAt !== null && lastKey !== null ? pauseAt - lastKey : null, back: backAt !== null && pauseAt !== null ? backAt - pauseAt : null });
+    // SUCCESSOR: the same must, timed from the pause the pointer brings (and the pause itself must come within 1 s of the move).
+    must('4', `${w} the pause (the pointer moves, the chrome returns): the shade back over ~3 s`, moveAt !== null && pauseAt !== null && pauseAt - moveAt <= 1000 && backAt !== null && near(backAt - pauseAt, 3000, 1000), { moveAt, pauseAfterMove: pauseAt !== null && moveAt !== null ? pauseAt - moveAt : null, back: backAt !== null && pauseAt !== null ? backAt - pauseAt : null });
     // the recorded pair (frames + stills), its own log marked
     await burst(w, 'day', true); await burst(w, 'night', true);
     must('4', `${w} no visible snap (a leaf never jumps); mid-burst ten seconds of nothing moving; the openers recede with the chrome; new growth from its parent's tip`, null, { frames: [`walk-4-burst__day__${w}/`, `walk-4-burst__night__${w}/`, `walk-4-after-first-key-0.1s__day__${w}.png`, `walk-4-after-first-key-0.3s__day__${w}.png`, `walk-4-mid-burst__day__${w}.png`, `walk-4-pause-plus-3s__day__${w}.png`] });
@@ -399,17 +422,24 @@ async function lap(w, room, shotsAt = [30, 52, 60]) {
   await size(w); await openPage('lap', { text: '', progress: 'words', style: 'rhizome', goal: { n: 60, unit: 'words' } }); await setRoom(room); await sleep(1500);
   await js(caretEnd); await sleep(150);
   const reads = {};
-  let typed = 0;
+  let typed = 0, flashAt = null, flashWord = null;
   for (let k = 0; k < 80; k++) {
     const wd = WORDS[k % WORDS.length] + ' ';
-    for (const ch of wd) { await key(ch); await sleep(95); }
+    for (const ch of wd) { await key(ch); await sleep(95); if (k >= 57 && flashAt === null && await js("document.querySelector('.wz-rhizome-field')?.getAttribute('data-flash') === 'true'")) { flashAt = Date.now(); flashWord = k + 1; } }
     typed = k + 1;
     if (typed % 6 === 0) await sleep(350);   // short bursts
     if (shotsAt.includes(typed)) { await sleep(150); reads[typed] = await js(HEADS); await shot(`walk-5-vines-${typed}w__${tag}`); }
     if (typed === 60) {
-      const ok = await soft("document.querySelector('.wz-rhizome-field')?.getAttribute('data-flash') === 'true'", 4000);
-      const t0 = Date.now(); while (Date.now() - t0 < 1000) { await key('x'); await sleep(140); }   // keep writing through the rise; the peak at ~1.2 s
-      reads.flash = await js(HEADS); reads.flashSeen = ok;
+      // PARKED 2026-11-08 (SUPERSEDED - the first walk turn, 06:03Z-06:26Z, walk-triage.txt C8: it waited AFTER the 60th word and its space, by when the flash had begun - the 60-word frame shows every stem brass). Original, verbatim:
+      // const ok = await soft("document.querySelector('.wz-rhizome-field')?.getAttribute('data-flash') === 'true'", 4000);
+      // const t0 = Date.now(); while (Date.now() - t0 < 1000) { await key('x'); await sleep(140); }   // keep writing through the rise; the peak at ~1.2 s
+      // reads.flash = await js(HEADS); reads.flashSeen = ok;
+      // SUCCESSOR: the flash is caught where it starts (flashAt, read after every key from the 58th word, in the typing loop above); then the
+      // rise is written through and read at ~1.1 s after its start (the peak at ~1.2 s).
+      const ok = flashAt !== null || await soft("document.querySelector('.wz-rhizome-field')?.getAttribute('data-flash') === 'true'", 1500);
+      if (flashAt === null && ok) flashAt = Date.now();
+      while (flashAt !== null && Date.now() - flashAt < 1100) { await key('x'); await sleep(140); }
+      reads.flash = await js(HEADS); reads.flashSeen = ok; reads.flashAtWord = flashWord;
       if (shotsAt.length > 1) await shot(`walk-5-flash-peak__${tag}`);
       await key(' ');
       if (shotsAt.length === 1) break;
@@ -467,7 +497,11 @@ async function step6() {
     const p0 = await js(PAGE_RECT);
     await openTools(); await sleep(900);
     const tabRows = {};
-    for (const t of ['FORMAT', 'PRESETS']) { const ok = await clickText('.wz-drawer-tab', t); await sleep(700); tabRows[t] = { ok, tabs: await js(TABS), d: await js(DRAWERS) }; if (mode === 'draft' || t === 'FORMAT') await shot(`walk-6-${mtag}tools-${t.toLowerCase()}__${tag}`); }
+    // PARKED 2026-11-08 (SUPERSEDED - the first walk turn, 06:03Z-06:26Z, walk-triage.txt C14: Free Write's Tools drawer carries FORMAT and INK; PRESETS is Draft's). Original, verbatim:
+    // for (const t of ['FORMAT', 'PRESETS']) { const ok = await clickText('.wz-drawer-tab', t); await sleep(700); tabRows[t] = { ok, tabs: await js(TABS), d: await js(DRAWERS) }; if (mode === 'draft' || t === 'FORMAT') await shot(`walk-6-${mtag}tools-${t.toLowerCase()}__${tag}`); }
+    // SUCCESSOR: the Tools tabs the mode carries (Draft: FORMAT, PRESETS; Free Write: FORMAT, INK).
+    const toolTabs = mode === 'free' ? ['FORMAT', 'INK'] : ['FORMAT', 'PRESETS'];
+    for (const t of toolTabs) { const ok = await clickText('.wz-drawer-tab', t); await sleep(700); tabRows[t] = { ok, tabs: await js(TABS), d: await js(DRAWERS) }; await shot(`walk-6-${mtag}tools-${t.toLowerCase()}__${tag}`); }
     await openTutor(); await sleep(900);
     for (const t of ['TUTOR', 'GRAFTS', 'BOARD']) { const ok = await clickText('.wz-drawer-tab', t); await sleep(700); tabRows[t] = { ok, tabs: await js(TABS), d: await js(DRAWERS), board: t === 'BOARD' ? await js("(() => { const p = document.querySelector('.wz-tutor-panel'); return p ? { graftRow: /graft/i.test(p.innerText), text: p.innerText.slice(0, 160) } : null; })()") : null }; if (mode === 'draft' || t === 'TUTOR') await shot(`walk-6-${mtag}tutor-${t.toLowerCase()}__${tag}`); }
     const p1 = await js(PAGE_RECT);
@@ -476,7 +510,10 @@ async function step6() {
     const flush = (x, side) => x && x.open && d.page && (side === 'l' ? Math.abs(x.rect[2] - d.page[0]) <= 1 : Math.abs(x.rect[0] - d.page[1]) <= 1);
     must('6', `${mode} ${tag} the page never moves while the drawers open`, samePage(p0, p1), { p0, p1 });
     must('6', `${mode} ${tag} each open drawer flush against the page; its opener on the drawer's outer edge`, flush(d.tools, 'l') && flush(d.tutor, 'r') && d.tools.grip && d.tutor.grip && d.tools.grip[2] <= d.tools.rect[0] + 2 && d.tutor.grip[0] >= d.tutor.rect[2] - 2, { tools: d.tools, tutor: d.tutor, page: d.page });
-    must('6', `${mode} ${tag} every tab clicked shows itself chosen`, ['FORMAT', 'PRESETS', 'TUTOR', 'GRAFTS', 'BOARD'].every((t) => tabRows[t].ok && tabRows[t].tabs.some((x) => x.on && x.word.toUpperCase() === t)), Object.fromEntries(Object.entries(tabRows).map(([k, v]) => [k, { ok: v.ok, on: v.tabs.filter((x) => x.on).map((x) => x.word) }])));
+    // PARKED 2026-11-08 (SUPERSEDED - the first walk turn, 06:03Z-06:26Z, walk-triage.txt C14: read with PRESETS in Free Write). Original, verbatim:
+    // must('6', `${mode} ${tag} every tab clicked shows itself chosen`, ['FORMAT', 'PRESETS', 'TUTOR', 'GRAFTS', 'BOARD'].every((t) => tabRows[t].ok && tabRows[t].tabs.some((x) => x.on && x.word.toUpperCase() === t)), Object.fromEntries(Object.entries(tabRows).map(([k, v]) => [k, { ok: v.ok, on: v.tabs.filter((x) => x.on).map((x) => x.word) }])));
+    // SUCCESSOR: the mode's own tabs.
+    must('6', `${mode} ${tag} every tab clicked shows itself chosen`, [...toolTabs, 'TUTOR', 'GRAFTS', 'BOARD'].every((t) => tabRows[t].ok && tabRows[t].tabs.some((x) => x.on && x.word.toUpperCase() === t)), Object.fromEntries(Object.entries(tabRows).map(([k, v]) => [k, { ok: v.ok, on: v.tabs.filter((x) => x.on).map((x) => x.word) }])));
     must('6', `${mode} ${tag} BOARD shows Board's contents, never the Graft row`, tabRows.BOARD.board && !tabRows.BOARD.board.graftRow, tabRows.BOARD.board);
     if (room === 'day') must('6', `${mode} ${tag} by day no brass text in the drawers`, tabRows.BOARD.d.brassText.length === 0 && tabRows.FORMAT.d.brassText.length === 0, { board: tabRows.BOARD.d.brassText, format: tabRows.FORMAT.d.brassText });
     must('6', `${mode} ${tag} the tab rule (own cloth, no brass, the chosen tab forward +8/+8, its colour the drawer's 3 px border); one "?" per row, guide green; Arbor's focus ring; Send the box's height${mode === 'free' ? '; the Forward lock outlined, only its knob green; an open drawer hides the line ends (known)' : ''}`, null, { frames: `walk-6-${mtag}*__${tag}.png`, tabs: tabRows.BOARD.tabs });
@@ -512,7 +549,10 @@ async function menus(w, room, which = 'all') {
   if (which === 'all' || which === 'themes') await opened('Themes', 'themes', () => clickSel(".wz-strip-item[data-category='theme']"));
   if (which === 'themes') {
     await clickSel(".wz-strip-item[data-category='theme']"); await sleep(700);
-    const row = await js("(() => { const r = document.querySelector('.arbor2-room-row'); return r ? { text: r.innerText.replace(/\\s+/g, ' ').trim(), help: !!r.querySelector('.arbor2-room-help, button'), line: (document.querySelector('.arbor2-room-help-line') || {}).textContent || null } : null; })()");
+    // PARKED 2026-11-08 (SUPERSEDED - the first walk turn, 06:03Z-06:26Z, walk-triage.txt C12: .arbor2-room-row is not the row's class; the frame shows the row). Original, verbatim:
+    // const row = await js("(() => { const r = document.querySelector('.arbor2-room-row'); return r ? { text: r.innerText.replace(/\\s+/g, ' ').trim(), help: !!r.querySelector('.arbor2-room-help, button'), line: (document.querySelector('.arbor2-room-help-line') || {}).textContent || null } : null; })()");
+    // SUCCESSOR: the row is .arbor2-theme-room (arbor2/themeRoom.tsx); its place under the Page row is read too.
+    const row = await js("(() => { const r = document.querySelector('.arbor2-theme-room'); if (!r) return null; const prev = r.previousElementSibling; return { text: r.innerText.replace(/\\s+/g, ' ').trim(), help: !!r.querySelector('.arbor2-room-help'), line: (document.querySelector('.arbor2-room-help-line') || {}).textContent || null, above: prev ? prev.innerText.replace(/\\s+/g, ' ').trim().slice(0, 40) : null }; })()");
     await escape(); return { results, row };
   }
   const rail = await js("[...document.querySelectorAll('.wz-strip-item')].filter((e) => e.getBoundingClientRect().width > 0).map((e, i) => ({ i, cat: e.getAttribute('data-category'), label: (e.getAttribute('aria-label') || e.textContent || '').trim() }))");
@@ -563,7 +603,11 @@ async function step7() {
   }
   must('7', 'the Mood menu: every switch shown, "Lamp breath" gone', !r.mood.some((t) => /lamp breath/i.test(t)), r.mood);
   must('7', 'Boards: a double-clicked card opens for editing (the cream sheet)', r.card.found && r.card.editing.editable ? null : false, r.card);
-  must('7', 'on the page a double-clicked word selects the word', r.word === 'morning', { selected: r.word });
+  // PARKED 2026-11-08 (SUPERSEDED - the first walk turn, 06:03Z-06:26Z, walk-triage.txt C13: Chrome on Windows selects a double-clicked word with its trailing space - "morning ").
+  // Original, verbatim:
+  // must('7', 'on the page a double-clicked word selects the word', r.word === 'morning', { selected: r.word });
+  // SUCCESSOR: the word, its trailing space aside.
+  must('7', 'on the page a double-clicked word selects the word', String(r.word).trim() === 'morning', { selected: r.word });
   must('7', 'each menu opens like a drawer (no bounce), sits where it did, no brass text by day, the shade crosses it at 3.4%', null, { frames: 'walk-7-*__day__2000.png' });
   const t1366 = await menus(1366, 'day', 'themes');
   note('7', 'themes 1366', t1366);
@@ -580,7 +624,12 @@ async function step8() {
     const r = await js(REST); note('8', `night ${w}`, r);
     await shot(`walk-8-rest__night__${w}`);
     must('8', `${w} the top bar and rail solid brown #241912 (hairlines #35271C)`, !!r.bar && r.bar.bg === '#241912' && !!r.rail && r.rail.bg === '#241912', { bar: r.bar, rail: r.rail });
-    must('8', `${w} no glow around the page; no pergola, no shade at night`, (!r.glow || r.glow === 'none') && (!r.pergola || r.pergola.op < 0.02 || r.pergola.display === 'none') && (!r.pageShade || r.pageShade.op < 0.02), { glow: r.glow, pergola: r.pergola, pageShade: r.pageShade });
+    // PARKED 2026-11-08 (SUPERSEDED - the first walk turn, 06:03Z-06:26Z, walk-triage.txt C11: the page's 1 px hairline ring - spread, no blur - read as a glow, and the page shade's wrapper opacity read while it is display:none).
+    // Original, verbatim:
+    // must('8', `${w} no glow around the page; no pergola, no shade at night`, (!r.glow || r.glow === 'none') && (!r.pergola || r.pergola.op < 0.02 || r.pergola.display === 'none') && (!r.pageShade || r.pageShade.op < 0.02), { glow: r.glow, pergola: r.pergola, pageShade: r.pageShade });
+    // SUCCESSOR: a glow is a shadow with a blur; the shade is drawn only when it is displayed.
+    const blurred = String(r.glow || 'none').split(/,(?![^(]*\))/).some((sh) => { const px = (sh.match(/-?[\d.]+px/g) || []).map(parseFloat); return px.length >= 3 && px[2] > 0; });
+    must('8', `${w} no glow around the page; no pergola, no shade at night`, !blurred && (!r.pergola || r.pergola.op < 0.02 || r.pergola.display === 'none') && (!r.pageShade || r.pageShade.display === 'none' || r.pageShade.op < 0.02), { glow: r.glow, blurred, pergola: r.pergola, pageShade: r.pageShade });
     must('8', `${w} the corner mark cream with the brass "o" and i-dot at .7; labels cream 13.6:1; menus and drawers as before`, null, { mark: r.mark, frames: [`walk-8-rest__night__${w}.png`, `walk-8-drawers-board__night__${w}.png`, `walk-8-themes__night__${w}.png`] });
     await openTools(); await sleep(700); await openTutor(); await sleep(700); await clickText('.wz-drawer-tab', 'BOARD'); await sleep(700);
     await shot(`walk-8-drawers-board__night__${w}`); await escape(); await escape();
