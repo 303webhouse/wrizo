@@ -56,8 +56,28 @@ export function FluxBlockCaret() {
       let r = range.getClientRects()[0];
       // the caret's row is the truth where the range gives no rect (a fresh empty line) or a rect off the row; the block stands at the row's start, on scrolls and glides too [FluxBlockCaret §1]
       const row0 = caretRow(sel, surface);
-      // [FluxBlockCaret §5] an inline span (the in-progress word) is never the caret's row: without a rect, the probe below finds the caret's place
+      // [FluxBlockCaret §5] an inline span (the in-progress word) is never the caret's row. Without a rect, the caret at an element boundary stands
+      // at the END of the text just before it, read without touching the DOM, so it follows scrolls and glides too (a probe may not run then)
       const row = row0 && CARET_PLACE.textEnd && getComputedStyle(row0).display === 'inline' ? null : row0;
+      const atTextEnd = (): DOMRect | null => {
+        const a = sel.anchorNode;
+        if (!CARET_PLACE.textEnd || !a || a.nodeType !== Node.ELEMENT_NODE || sel.anchorOffset === 0) return null;
+        for (let s: Node | null = a.childNodes[sel.anchorOffset - 1] ?? null; s; s = s.previousSibling) {
+          let t: Text | null = null;
+          if (s.nodeType === Node.TEXT_NODE) t = s as Text;
+          else { const w = document.createTreeWalker(s, NodeFilter.SHOW_TEXT); for (let n = w.nextNode(); n; n = w.nextNode()) if ((n.nodeValue ?? '').replace(/[​﻿]/g, '').length) t = n as Text; }
+          const v = t?.nodeValue ?? '';
+          let i = v.length;
+          while (i > 0 && /[​﻿]/.test(v[i - 1])) i -= 1;
+          if (!t || !i) continue;
+          const one = document.createRange();
+          one.setStart(t, i - 1); one.setEnd(t, i);
+          const lr = [...one.getClientRects()].pop();
+          if (lr && lr.height) return new DOMRect(lr.right, lr.top, 0, lr.height);
+        }
+        return null;
+      };
+      if (!r) { const fromEnd = atTextEnd(); if (fromEnd) r = fromEnd; }
       const atRowStart = (): DOMRect | null => {
         if (!row) return null;
         const rr = row.getBoundingClientRect();
