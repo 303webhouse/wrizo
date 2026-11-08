@@ -1,0 +1,4 @@
+2026-11-08T02:35:39.171Z TAKEN, turn start
+2026-11-08T03:00:11.449Z default leg exit=0
+2026-11-08T03:24:29.033Z parked leg exit=0
+2026-11-08T03:24:29.076Z RELEASED status=0 turn end
