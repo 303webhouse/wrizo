@@ -65,6 +65,15 @@ export default {
     await seed(app, LONG_TEXT);
     console.log(`FLUX3-S4-FRAME jack-tunnel ${JSON.stringify({ ...(await stood(app)), tunnel: await tunnelOf(app) })}`);
   },
+  // the Wrizors' S4 r9 review (Fable, Nov 7): the frame 300 ms after a burst (the caret at the text's end; the rows of the last pause still there)
+  'jack-burst-300': async (app) => {
+    await seed(app, LONG_TEXT);
+    const burst = ' the signal holds while she writes on and on and on whil';
+    for (const ch of burst) { await app.typeKeys(ch); await sleep(35); }
+    await sleep(300);
+    const at = await app.evalJs("(() => { const bc = document.querySelector('.flux-block-caret'), ed = document.querySelector('.forward-only-editor'); let last = null; const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); for (let n = w.nextNode(); n; n = w.nextNode()) if ((n.nodeValue || '').trim()) last = n; let end = null; if (last) { const i = last.nodeValue.trimEnd().length; const r = document.createRange(); r.setStart(last, i - 1); r.setEnd(last, i); end = [...r.getClientRects()].pop(); } return { caretX: bc ? Math.round(bc.getBoundingClientRect().left) : null, endX: end ? Math.round(end.right) : null }; })()");
+    console.log(`FLUX3-S4-FRAME jack-burst-300 ${JSON.stringify({ ...(await stood(app)), ...at })}`);
+  },
   'jack-tunnel-fast': async (app) => {
     await seed(app, LONG_TEXT);
     const burst = ' the signal holds while she writes on and on';

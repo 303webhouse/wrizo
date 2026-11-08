@@ -186,7 +186,9 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
       }
       const next = found.map((f) => `${Math.round((f.r.left - L.left) / s)},${Math.round((f.r.top - L.top) / s)},${f.text}`).join('|');
       if (next === sig) return;                    // the same words in the same places: nothing to change
-      if (!tryFlash('f3-compile')) return;         // refused: skipped, the next pause tries again
+      // refused by the flash budget: tried again after another pause (the Wrizors' S4 r9 review: an open whose only pause was refused showed no
+      // rows at all until she paused again; a key still resets the wait, so nothing compiles while keys land)
+      if (!tryFlash('f3-compile')) { timer = window.setTimeout(compile, COMPILE_PAUSE_MS); return; }
       sig = next;
       layer.replaceChildren();
       words.clear();
