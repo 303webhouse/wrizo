@@ -41,6 +41,10 @@
 //   data-arbor2-room="day", read when the burst is armed and when it is read), the FIRST key of a burst only, 70 ms at most. Every other control key keeps the 50 ms bar (A+), by night and on
 //   main every key does, and the day swap key is left OUT of the controls B, B2, C and C2 are held against, so it cannot loosen their bars. The rule is one pure function (burstOk), proven
 //   browserless (P6-P10) and live by rhizome-latency-mutant.mjs: M5 (80 ms on the swap key) must red A+S, M6 (a second slow key in the burst) must red A+. On main nothing changes (no day room).
+//   A+L THE LONG BURST (Fable's ruling A6 on the Nick walk, Nov 8: by day ~1 key in 40 dropped a frame over a 400-key burst - 51-81 ms, every ~5.5 s, by
+//   night none - which the 16- and 22-key control bursts are too short to meet). By day, after the crossing: LONG_KEYS steady keys on the same page with a
+//   far goal, and every key after the swap key under the same 50 ms bar (A+'s otherKeysOk, the rule P6-P8 prove; P11 proves it on 400 keys). The slow keys'
+//   times and the gaps between them are printed (the period is the attribution). Off the day room it is not run and says so (main, night: no day room).
 //
 // Run: node scripts/harness/rhizome-latency.mjs   (from apps/desktop; PART 2 needs a box turn)      BROWSERLESS_ONLY=1 runs PART 1 alone
 import fs from 'node:fs';
@@ -64,6 +68,7 @@ const MUTANT_SWAP_MS = Number(process.env.RL_MUTANT_SWAP_MS || 0);   // THE SWAP
 const MUTANT_SECOND_MS = Number(process.env.RL_MUTANT_SECOND_MS || 0);   // and one on the SECOND key of every control burst (a second slow key in the burst)
 // THE SWAP KEY (Nick's ruling 1, Nov 6). A burst is { day, ms: [...], cost: [...] } in key order; `day` = the Arbor day room held from the burst's arming to its reading.
 const SWAP_KEY_MAX_MS = 70;
+const LONG_KEYS = 400;   // A+L: the long day burst (the Nick walk's 60-word burst was ~408 keys)
 const swapKeyOk = (b) => !(b.day && b.ms.length) || b.ms[0] <= SWAP_KEY_MAX_MS;   // by day, the first key: at most 70 ms
 const otherKeysOk = (b, noiseMs) => b.ms.every((v, i) => (i === 0 && b.day) || v <= noiseMs);   // every other key (and, off the day room, the first too): the normal bar
 const burstOk = (b, noiseMs) => swapKeyOk(b) && otherKeysOk(b, noiseMs);
@@ -126,6 +131,12 @@ ok('P5 FULL_COVER is gone from the growth module (it was kept "for the old fill-
   ok('P9 off the day room (night, main) there is no exception: a first key of 55 is red, 50 passes, 51 does not', !cases.night55.ok && cases.main50.ok && !cases.main51.ok, JSON.stringify([cases.night55, cases.main50, cases.main51]));
   const cd = { day: true, ms: [60, 25, 26], cost: [30, null, 14] }, cn = { day: false, ms: [60, 25, 26], cost: [30, null, 14] };
   ok('P10 the controls leave out the day swap key and only it (by day: its ms and cost dropped, a null cost dropped as before; off the day room: every key kept)', JSON.stringify([swapless(cd, 'ms'), swapless(cd, 'cost'), swapless(cn, 'ms'), swapless(cn, 'cost')]) === JSON.stringify([[25, 26], [14], [60, 25, 26], [30, 14]]), '');
+  // P11 - A+L's rule on LONG_KEYS-key bursts (the walk's A6 shape: one slow key deep in a long day burst): a clean day burst with a 65 ms swap key passes;
+  // one key of 51 ms anywhere after the first (key 2, key 200, the last) is red; 50 passes; off the day room the first key is held too.
+  const long = (isDay, at = {}) => ({ day: isDay, ms: Array.from({ length: LONG_KEYS }, (_, i) => (i in at ? at[i] : 22 + (i % 11))), cost: [] });
+  const lc = { clean: otherKeysOk(long(true, { 0: 65 }), 50), k2: otherKeysOk(long(true, { 0: 65, 1: 51 }), 50), k200: otherKeysOk(long(true, { 199: 51 }), 50), last: otherKeysOk(long(true, { [LONG_KEYS - 1]: 51 }), 50), at50: otherKeysOk(long(true, { 199: 50 }), 50), offFirst: otherKeysOk(long(false, { 0: 51 }), 50), walk: otherKeysOk(long(true, { 9: 57.5, 18: 63.2, 109: 51.5 }), 50) };
+  ok(`P11 A+L's rule on ${LONG_KEYS}-key bursts: a clean day burst passes (its 65 ms swap key aside); one key over 50 ms anywhere after the first is red (key 2, key 200, the last); 50 passes; off the day room the first key is held too; the walk's own burst (57.5 / 63.2 / 51.5 ms) is red`,
+    lc.clean && !lc.k2 && !lc.k200 && !lc.last && lc.at50 && !lc.offFirst && !lc.walk, JSON.stringify(lc));
 }
 
 // ---- PART 2 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -380,6 +391,22 @@ async function part2() {
     ok(`C attribution (information, never a verdict): ${slowAll.length} slow fade key(s) over ${rounds.length} round(s), ${near.length} within 150 ms of the fade's start - ${slowAll.length ? (near.length === slowAll.length ? 'ALL line up with the fade start (the filter drop is the suspect)' : near.length ? 'SOME line up with the fade start' : 'NONE line up with the fade start (not the filter drop)') : 'none slow'}`,
       true, JSON.stringify({ perKey: slowAll.map((k) => `r${k.round}: ${k.ms} ms @ ${k.sinceFadeStart} ms after the fade began (${k.beforeFadeEnd} ms before it ended)`), rounds }));
     ok(`D no key was dropped across the crossing: in every round the stored text ends with " tail" followed by every typed "a" (${HOLD_KEYS + FADE_KEYS} of them)`, savedAll, lastSaved);
+    // A+L THE LONG BURST (Fable's ruling A6, Nov 8): by day, LONG_KEYS steady keys (~9 a second) on the same page with a far goal; every key after the swap key
+    // under the 50 ms bar. The slow keys' times and the gaps between them are printed (the period is the attribution, never a verdict).
+    await seedAndReopen(pageId, 7, { n: 1000, unit: 'words' });
+    await arm();
+    if (await app.evalJs('!!window.__dayAtArm')) {
+      await typeSteady(LONG_KEYS, 110);
+      await sleep(400);
+      const lb = await burst("x.flash === 'false'");
+      const at = await app.evalJs("window.__lat.filter((x) => x.flash === 'false').map((x) => Math.round(x.key))");
+      const slowL = lb.ms.map((v, i) => ({ key: i + 1, ms: r1(v), t: at[i] })).filter((x) => !(x.key === 1 && lb.day) && x.ms > REST_NOISE_MS);
+      const gapsL = slowL.slice(1).map((x, i) => x.t - slowL[i].t);
+      ok(`A+L THE LONG BURST (Fable's ruling A6, Nov 8): by day, ${LONG_KEYS} steady keys - every key after the swap key at most ${REST_NOISE_MS} ms (${lb.ms.length} painted; ${slowL.length} over)`,
+        lb.day && lb.ms.length >= LONG_KEYS - 5 && otherKeysOk(lb, REST_NOISE_MS), JSON.stringify({ n: lb.ms.length, swapKey: r1(lb.ms[0]), rest: show(stat(lb.ms.slice(1))), slow: slowL, gapsMs: gapsL }));
+    } else {
+      ok('A+L THE LONG BURST: off the day room (main, night) - not run; it is the day room\'s check', true, 'not the day room');
+    }
   });
 }
 
