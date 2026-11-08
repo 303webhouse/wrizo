@@ -74,9 +74,16 @@ const capture = async (app, name, on) => {
   if (!Array.isArray(rows) || rows.length < 20) fail(name, { blind: 'the sampler drew no frames', n: Array.isArray(rows) ? rows.length : null, ...ctx });
   const s = summarise(rows);
   if (!turned) fail(name, { blind: 'no page turn in 90 Enters', keys, ...ctx, rest: s.rest, typing: s.typing });
-  // #51 by its own definition: during the turn the zoomed page's transform is 'none' (scale 1), where at rest it is the zoom (~1.6)
-  const is51 = s.typing.flipNone > 0 && s.rest.scaleMin !== null && s.rest.scaleMin > 1.2;
-  say(name, { is51, keys, ...ctx, rest: s.rest, typing: s.typing, turnMs: s.turnMs, strip: s.strip });
+  // PARKED 2026-11-08 (SUPERSEDED - Actions frames 42535756776, 8 of 8 lines: is51 read FALSE while every strip showed the zoomed page at scale
+  // 0.997-1 for ~550 ms of each turn. The premise was wrong: Chrome computes mode-flip's 'none' keyframe as matrix(1, ...), never the string
+  // 'none', so flipNone counted nothing; the instrument, not the app). Original, verbatim:
+  // // #51 by its own definition: during the turn the zoomed page's transform is 'none' (scale 1), where at rest it is the zoom (~1.6)
+  // const is51 = s.typing.flipNone > 0 && s.rest.scaleMin !== null && s.rest.scaleMin > 1.2;
+  // say(name, { is51, keys, ...ctx, rest: s.rest, typing: s.typing, turnMs: s.turnMs, strip: s.strip });
+  // SUCCESSOR: #51 is the zoom dropping to scale 1 (within .02) on a .flipping frame, where at rest the page is zoomed (> 1.2).
+  const atOneFlipping = rows.filter((r) => r.flip && r.zoom && (r.tf === 'none' || (typeof r.tf === 'number' && Math.abs(r.tf - 1) < 0.02))).length;
+  const is51 = atOneFlipping > 0 && s.rest.scaleMin !== null && s.rest.scaleMin > 1.2;
+  say(name, { is51, atOneFlipping, keys, ...ctx, rest: s.rest, typing: s.typing, turnMs: s.turnMs, strip: s.strip });
 };
 
 export default guarded({

@@ -43,7 +43,7 @@ const READ = `(() => { ${COLOUR}
   const paper = parse(sheet ? getComputedStyle(sheet).backgroundColor : cs.backgroundColor);
   const ink = parse(ecs.color), low = parse(cs.getPropertyValue('--ink-on-paper-low').trim() ? (() => { const i = document.createElement('i'); i.style.color = cs.getPropertyValue('--ink-on-paper-low').trim(); p.appendChild(i); const c = getComputedStyle(i).color; i.remove(); return c; })() : null);
   const b = p.getBoundingClientRect();
-  return { page: true, room: document.documentElement.getAttribute('data-arbor2-room'), tone: document.documentElement.getAttribute('data-page'), zoom: col?.getAttribute('data-zoom') ?? null,
+  return { page: true, room: document.documentElement.getAttribute('data-arbor2-room'), tone: document.documentElement.getAttribute('data-page'), zoom: col?.getAttribute('data-zoom') ?? null, bg: cs.backgroundColor,
     paper: hex(paper), border: hex(parse(cs.getPropertyValue('--paper-border').trim() ? (() => { const i = document.createElement('i'); i.style.color = cs.getPropertyValue('--paper-border').trim(); p.appendChild(i); const c = getComputedStyle(i).color; i.remove(); return c; })() : null)),
     ink: hex(ink), low: hex(low), inkRatio: paper && ink ? ratio(ink, paper) : null, lowRatio: paper && low ? ratio(low, paper) : null,
     caret: hex(parse(ecs.caretColor)), selLine: sel.textDecorationLine, selColour: hex(parse(sel.textDecorationColor)), selBg: sel.backgroundColor,
@@ -94,14 +94,31 @@ export default {
       // SUCCESSOR: the light page's ink measures >= 13.9 - Draft letters in #241A10, Free Write in the walnut pen ink #1A0F06.
       : r.inkRatio >= 13.9 && r.ink === (r.mode === 'draft' ? '#241A10' : '#1A0F06');
     const ok = {};
+    // PARKED 2026-11-08 (SUPERSEDED - r22, Fable's ruling 1 on Nick's walk, Nov 8: "while Typewriter is on, Arbor's page draws no fill or edge of
+    // its own; the words sit on the room's ground under the lamplight glow; the text floors hold, measured on the room" - Free Write's zoomed page
+    // has no paper (it read black through the retired sheet's fallback) and its ink is the room's, not the Page setting's). Original, verbatim:
+    // for (const [m, v] of Object.entries(out)) {
+    //   ok[m + ' page'] = pageOk(v.toneRoom);
+    //   ok[m + ' other room'] = pageOk(v.switched) && v.switched.room !== v.toneRoom.room;
+    //   ok[m + ' rect'] = same(v.off, v.toneRoom.rect) && same(v.off, v.switched.rect);
+    // }
+    // // Typewriter stays unframed: the zoomed page's sheet is the page's own paper, hard (no mask), no shadow
+    // const z = out.freewrite.toneRoom;
+    // ok['typewriter unframed'] = z.zoom === 'true' && z.sheetMask === 'none' && z.sheetShadow === 'none' && z.paper === (dark ? '#1A1510' : '#F3EDE1');
+    // SUCCESSOR: Draft exactly as before (pageOk, both rooms). Free Write (zoomed) in both rooms: the page bare (its background clear) with no
+    // sheet, the words, low ink and caret the ROOM's - night cream #EFE4CB / #B9AA8C, the caret brass on a dark page and the ink on a light one;
+    // day walnut #1A0F06 / #6B5F4E, the caret the ink - and a dark page keeps its brass selection rule. The floor on the room's own pixels is
+    // r22-typewriter's (scripts/frames/arbor2-r22.mjs): the ratio here was taken against the page's paper, which the zoomed page no longer has.
+    const zoomedOk = (r) => { const night = r.room === 'night';
+      return r.zoom === 'true' && /^rgba\(0, 0, 0, 0\)$|^transparent$/.test(r.bg || '') && r.sheetMask === null && r.sheetShadow === null
+        && r.ink === (night ? '#EFE4CB' : '#1A0F06') && r.low === (night ? '#B9AA8C' : '#6B5F4E') && r.caret === (night ? (dark ? '#FF9800' : '#EFE4CB') : '#1A0F06')
+        && (!dark || (/underline/.test(r.selLine) && /overline/.test(r.selLine) && r.selColour === '#FF9800')); };
     for (const [m, v] of Object.entries(out)) {
-      ok[m + ' page'] = pageOk(v.toneRoom);
-      ok[m + ' other room'] = pageOk(v.switched) && v.switched.room !== v.toneRoom.room;
+      const judge = m === 'freewrite' ? zoomedOk : pageOk;
+      ok[m + ' page'] = judge(v.toneRoom);
+      ok[m + ' other room'] = judge(v.switched) && v.switched.room !== v.toneRoom.room;
       ok[m + ' rect'] = same(v.off, v.toneRoom.rect) && same(v.off, v.switched.rect);
     }
-    // Typewriter stays unframed: the zoomed page's sheet is the page's own paper, hard (no mask), no shadow
-    const z = out.freewrite.toneRoom;
-    ok['typewriter unframed'] = z.zoom === 'true' && z.sheetMask === 'none' && z.sheetShadow === 'none' && z.paper === (dark ? '#1A1510' : '#F3EDE1');
     const brief = { dark, ok, fw: out.freewrite, dr: { off: out.draft.off, on: out.draft.toneRoom.rect, sw: out.draft.switched.rect, ink: out.draft.toneRoom.ink, paper: out.draft.toneRoom.paper } };
     if (Object.values(ok).some((x) => !x)) fail('R7-PAGE', brief);
     say('r7-page', brief);

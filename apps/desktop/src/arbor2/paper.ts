@@ -24,7 +24,11 @@
 // r5 (spec §10b, Fable Oct 31: "No diffused or vignetted paper edges on the zoomed page: the zoom and the fading text are the only
 // flourishes"; Arbor-only, still unframed): the sheet's feather is 0 - a hard rectangle with no mask, no border, no shadow, and the
 // vignette's hole over it is hard too. (Oct 29's 48 px feather - "no visible edge" - is superseded.) The pergola keeps its own soft edge.
-export const FEATHER = 0;
+// r22 (Fable, Nov 8, ruling 1 on Nick's walk: "while Typewriter is on, Arbor's page draws no fill or edge of its own; the words sit on the
+// room's ground under the lamplight glow; the text floors hold, measured on the room; leaving restores the page exactly"): THE SHEET RETIRES,
+// with its feather and its mask (FEATHER, sheetMask, featherFor). The zoomed page is bare (styles/arbor-v2.css), nothing stands in for it, and
+// the vignette gets no hole over it (the room's shade crosses it unbroken). Only the sun layer's soft hole stays, so no slat crosses the words.
+// A page that is not zoomed is exactly as before: its own opaque paper and the vignette's hard hole. Leaving Typewriter is that page again.
 export const SUN_EDGE = 24;
 const BLACK = 'rgb(0,0,0)', CLEAR = 'rgba(0,0,0,0)';
 const px = (n: number) => `${Math.round(n * 10) / 10}px`;
@@ -69,29 +73,13 @@ export function holePath(w: number, h: number, ox: number, oy: number, hole: Box
   return `path(evenodd, "M0 0H${f(w)}V${f(h)}H0Z M${f(l)} ${f(t)}H${f(r)}V${f(b)}H${f(l)}Z")`;
 }
 
-/** The sheet's own mask (its layers INTERSECT): 0 at each side, 1 from `f` px in. Offsets are in the sheet's box (w x h). */
-export function sheetMask(w: number, h: number, f: number): string {
-  const g = (dir: string, n: number) => `linear-gradient(${dir}, ${CLEAR} 0px, ${BLACK} ${px(f)}, ${BLACK} ${px(n - f)}, ${CLEAR} ${px(n)})`;
-  return `${g('to right', w)}, ${g('to bottom', h)}`;
-}
-
-/** The vignette's mask (its layers ADD), in viewport px: 1 outside `hole`, 0 from `f` px inside it - the sheet's complement. f = 0 is a hard hole. */
+/** The vignette's mask (its layers ADD), in viewport px: 1 outside `hole`, 0 from `f` px inside it. f = 0 is a hard hole. */
 export function vignetteMask(hole: Box, f: number): string {
   const g = (dir: string, a: number, b: number) => `linear-gradient(${dir}, ${BLACK} ${px(a)}, ${CLEAR} ${px(a + f)}, ${CLEAR} ${px(b - f)}, ${BLACK} ${px(b)})`;
   return `${g('to right', hole.l, hole.r)}, ${g('to bottom', hole.t, hole.b)}`;
 }
 
-/** The feather a sheet of w x h can carry: FEATHER, or less on a sheet too small to hold two (never a band of nothing). */
-export function featherFor(w: number, h: number): number {
-  return Math.max(0, Math.min(FEATHER, Math.floor(Math.min(w, h) / 4)));
-}
-
 export function mountPaper(): void {
-  const sheet = document.createElement('div');
-  sheet.className = 'arbor2-paper';
-  sheet.setAttribute('aria-hidden', 'true');
-  document.body.appendChild(sheet);   // after the sun layer: same z-index, later in order, so it paints over the slats
-
   let last = '';
   const update = () => {
     const v = visiblePage();
@@ -102,17 +90,6 @@ export function mountPaper(): void {
     if (key === last) return;
     last = key;
     const root = document.documentElement;
-    const f = v && v.zoomed ? featherFor(v.box.r - v.box.l, v.box.b - v.box.t) : 0;
-    if (v && v.zoomed) {
-      const w = v.box.r - v.box.l, h = v.box.b - v.box.t;
-      sheet.style.cssText = `left:${v.box.l}px;top:${v.box.t}px;width:${w}px;height:${h}px;background:${v.paper};`
-        + (f > 0 ? `mask-image:${sheetMask(w, h, f)};mask-composite:intersect` : '');   // r5: f = 0 - a hard sheet, no mask at all
-      sheet.setAttribute('data-on', 'true');
-      root.setAttribute('data-arbor2-sheet', 'on');   // after the sheet is drawn: the page lets go of its own paper only once this one is there
-    } else {
-      root.removeAttribute('data-arbor2-sheet');
-      sheet.removeAttribute('data-on');
-    }
     if (sun) {
       if (v) {
         // in the layer's own box (it sits at inset -80px): whole at the page's edge, nothing SUN_EDGE px in (the hard clip drew a line there)
@@ -129,7 +106,8 @@ export function mountPaper(): void {
     // MASK, so that over the sheet's feather it is exactly what the paper leaves (the hard clip it replaces drew a line there)
     // (the vignette's hole is the PAGE itself, hard: widened to the room's hole it left a pale unshaded band around the page that read as a
     // frame - seen in the r5 day frames at 1920, run 41243059463; only the pergola's hole takes the count row in)
-    if (v) root.style.setProperty('--arbor2-vignette-mask', vignetteMask(v.box, f));
+    // r22: the zoomed page has no hole - the room's shade crosses it unbroken, like the ground and the glow (a hole would draw its edge)
+    if (v && !v.zoomed) root.style.setProperty('--arbor2-vignette-mask', vignetteMask(v.box, 0));
     else root.style.removeProperty('--arbor2-vignette-mask');
   };
   update();

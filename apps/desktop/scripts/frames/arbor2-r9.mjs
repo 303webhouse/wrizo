@@ -97,6 +97,7 @@ const STEP = `(() => { ${COLOUR}
   const p = document.querySelector('.mode-page'), ed = document.querySelector('${ED}'), sheet = document.querySelector('.arbor2-paper[data-on="true"]');
   const paper = p ? parse(sheet ? getComputedStyle(sheet).backgroundColor : getComputedStyle(p).backgroundColor) : null, ink = ed ? parse(getComputedStyle(ed).color) : null;
   out.paper = hex(paper); out.ink = hex(ink); out.inkRatio = paper && ink ? ratio(ink, paper) : null;
+  out.zoom = p ? p.closest('.mode-pagecol')?.getAttribute('data-zoom') ?? null : null; out.bg = p ? getComputedStyle(p).backgroundColor : null;   // (r22 driver, for r9-fade's page successor)
   out.gLum = hexLum(cs.getPropertyValue('--ink-950').trim());
   return out; })()`;
 
@@ -221,8 +222,11 @@ export default {
     await clock(app, '22:00');
     const okD = await pickThemesRoom(app, 'day'); await sleep(60);
     const pD = await app.evalJs(STATE), paperD = await app.evalJs(paperOf);
+    // (r22 driver: the page's own background as computed, alpha kept, and whether it is zoomed - for pageKept's successor below)
+    const PAGEBG = "(() => { const p = document.querySelector('.mode-page'); return p ? { bg: getComputedStyle(p).backgroundColor, zoom: p.closest('.mode-pagecol')?.getAttribute('data-zoom') ?? null } : null; })()";
+    const bgD = await app.evalJs(PAGEBG);
     const okC = await pickThemesRoom(app, 'clock'); await sleep(60);
-    const pC = await app.evalJs(STATE);
+    const pC = await app.evalJs(STATE), bgC = await app.evalJs(PAGEBG);
     const keys1 = await app.evalJs('[...Object.keys(localStorage), ...Object.keys(sessionStorage)].sort()');
     await pickRoom(app, 'night', 300);
     await load(app, '#/page/arbor-r9-room'); await sleep(800);
@@ -237,7 +241,12 @@ export default {
       pickNight: okN && pN.dataRoom === 'dark' && pN.room === 'night' && pN.t === '0' && pressed(rowN) === 'night',
       pickDay: okD && pD.dataRoom === 'light' && pD.room === 'day' && pD.t === '1',
       backToClock: okC && !pC.dataRoom && pC.room === 'night' && pC.t === '0',
-      pageKept: !!paper0 && paper0 === paperD,
+      // PARKED 2026-11-08 (SUPERSEDED - r22, Fable's ruling 1, Nov 8: the zoomed Free Write page draws no fill of its own, so both reads were
+      // the retired sheet's fallback - a clear background hexed to #000000 - and the check passed BLIND, comparing two transparent reads). Original, verbatim:
+      // pageKept: !!paper0 && paper0 === paperD,
+      // SUCCESSOR pageKept2: the page is as its mode makes it in the day room AND back on the clock, the background read with its alpha - zoomed,
+      // clear in both; off the zoom, the same opaque paper in both.
+      pageKept2: !!bgD && !!bgC && bgD.zoom === bgC.zoom && (bgD.zoom === 'true' ? [bgD, bgC].every((b) => /^rgba\(0, 0, 0, 0\)$|^transparent$/.test(b.bg)) : bgD.bg === bgC.bg && !/, 0\)$/.test(bgD.bg)),
       noStorage: JSON.stringify(keys0) === JSON.stringify(keys1) && !keys1.some((k) => /room|clock/i.test(k)),
       session: !s4.dataRoom && pressed(row4) === 'clock',
     };
@@ -276,7 +285,16 @@ export default {
       lettersWithRoom: JSON.stringify(letterSwitches) === JSON.stringify(switches),
       inlineOnlyWhileFading: m.every((x) => (Number(x.t) > 0 && Number(x.t) < 1) === x.inline.includes('--ink-950')) && e.every((x) => (Number(x.t) > 0 && Number(x.t) < 1) === x.inline.includes('--ink-950')),
       rect: m.every((x) => same(m[0].rect.page, x.rect.page) && same(m[0].rect.col, x.rect.col)),
-      page: m.every((x) => x.paper === m[0].paper && x.ink === m[0].ink) && !!m[0].paper,
+      // PARKED 2026-11-08 (SUPERSEDED - r22, Fable's ruling 1, Nov 8: under Typewriter's zoom the words sit on the ROOM in the room's ink, so on
+      // this Free Write page the ink changes when the room does (cream -> walnut at the switch); the paper half read the retired sheet's fallback,
+      // a clear background hexed to #000000, BLIND). Original, verbatim:
+      // page: m.every((x) => x.paper === m[0].paper && x.ink === m[0].ink) && !!m[0].paper,
+      // SUCCESSOR page2: off the zoom as before (one paper, one ink, all the way through); zoomed, the page clear at every step and its ink the
+      // room's at every step - cream by night, walnut by day - so it changes exactly where the room does, once. (Whether the words hold their
+      // floor on the room in the middle of the fade is r10-sweep-freewrite's, left live: that is the question with Fable.)
+      page2: m[0].zoom === 'true'
+        ? m.every((x) => x.zoom === 'true' && /^rgba\(0, 0, 0, 0\)$|^transparent$/.test(x.bg || '') && x.ink === (x.room === 'night' ? '#EFE4CB' : '#1A0F06'))
+        : m.every((x) => x.paper === m[0].paper && x.ink === m[0].ink) && !!m[0].paper,
       floors: floors.length === 0,
     };
     const brief = { ok, tone: m[0].tone, steps: m.map((x) => [x.at, x.t, x.room, x.g, x.letter]), evening: e.map((x) => [x.at, x.t, x.room]), switchAt: switches.map((i) => m[i].at), floors: floors.slice(0, 4) };

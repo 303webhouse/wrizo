@@ -4,9 +4,13 @@
 //   4. "The day sage logo is nearly invisible: darker green, >= 3:1 vs the day room; before/after frames."
 //   5. "Splash: the flow chart cycles faster and ONLY the arrows animate (orange = the writer's acts)."
 //   7. "Enter drops a block, the screen fades, but the Tools strip's tabs stayed. Rule: tabs follow their drawer."
+// and Fable's rulings on notes 1 and 3 (Nov 8): 1. "while Typewriter is on, Arbor's page draws no fill or edge of its own; the words sit on the
+//   room's ground under the lamplight glow; the text floors hold, measured on the room; leaving restores the page exactly." 3. "ALL night-room
+//   browns step darker together (the room ground, rails, panels, the dark page), keeping the lamplight's warm gradient. Three steps."
 // Every check THROWS with its numbers when it fails and prints them when it passes ("ARBOR-R22 <screen> {...}"). Seeds go through window.wrizo*.
 // Pictures (-pic-) are for the eye: the board with each drawer open, the corner logo by day before and after, the splash mid-run.
 import { guarded } from './mockup-kit.mjs';
+import { zoomProof, holeOf, stopsOf } from './arbor2.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
@@ -52,6 +56,45 @@ const BOARD = `(() => { const rr = (e) => { if (!e) return null; const r = e.get
 const same = (a, b) => !!a && !!b && Math.abs(a.l - b.l) <= 0.5 && Math.abs(a.r - b.r) <= 0.5 && Math.abs(a.w - b.w) <= 0.5;
 // effective opacity (the element's times every ancestor's; display:none / visibility:hidden = 0)
 const EFF = "const eff = (e) => { if (!e) return null; let o = 1; for (let n = e; n && n.nodeType === 1; n = n.parentElement) { const cs = getComputedStyle(n); if (cs.display === 'none' || cs.visibility === 'hidden') return 0; o *= Number(cs.opacity); } return Math.round(o * 100) / 100; };";
+
+// ── r22 notes 1 and 3 (Fable's rulings, Nov 8) ──
+const clickMode = async (app, word) => {
+  const hit = await app.evalJs(`(() => { const b = [...document.querySelectorAll('.desk-mode-tab')].find((x) => (x.textContent || '').trim().toLowerCase() === ${JSON.stringify(word)}); if (b) b.click(); return !!b; })()`);
+  if (!hit) fail('R22-MODE', { word, found: false });
+  await sleep(1200);
+};
+const openFree = async (app, id) => {
+  await openPage(app, id); await clickMode(app, 'free write');
+  if (!(await waitSoft(app, "!!document.querySelector('.mode-pagecol[data-zoom=\"true\"]')", { label: 'typewriter zoom', timeout: 6000 }))) fail('R22-OPEN-FREE', { id, zoomed: false });
+  await app.evalJs("document.querySelector('.forward-only-editor')?.blur(); getSelection()?.removeAllRanges()");
+  await app.mouseMove(600, 300); await sleep(700);
+};
+const openTools = async (app) => { await app.evalJs("(() => { const g = document.querySelector('.wz-sliver-grip'); if (g && document.querySelector('.wz-sliver')?.getAttribute('data-open') !== 'true') g.click(); return true; })()"); await sleep(300); };
+// the page as drawn (for "leaving restores the page exactly")
+const PAGEREAD = `(() => { const p = document.querySelector('.mode-page'), ed = document.querySelector('.forward-only-editor'); if (!p || !ed) return null; const cs = getComputedStyle(p), r = p.getBoundingClientRect();
+  return { bg: cs.backgroundColor, shadow: cs.boxShadow, ink: getComputedStyle(ed).color, zoom: p.closest('.mode-pagecol')?.getAttribute('data-zoom') ?? null,
+    rect: { l: Math.round(r.left * 10) / 10, r: Math.round(r.right * 10) / 10, w: Math.round(r.width * 10) / 10 } }; })()`;
+// the mockup bar's Night browns row, pressed as Nick would (the bar opens if it is folded); true when the step's button reads pressed afterwards
+const pickBrown = (app, s) => app.evalJs(`(async () => { const word = ${JSON.stringify({ now: 'Now', a: 'A', b: 'B', c: 'C' })}[${JSON.stringify(s)}];
+  const head = [...document.querySelectorAll('.arbor2-bar-head')].find((h) => h.textContent.trim() === 'Arbor mockup'); if (head && head.getAttribute('aria-expanded') !== 'true') { head.click(); await new Promise((r) => setTimeout(r, 100)); }
+  const row = document.querySelector('.arbor2-bar-row[aria-label="Night browns"]'); const b = row && [...row.querySelectorAll('.arbor2-bar-opt')].find((x) => x.textContent.trim() === word);
+  if (!b) return false; b.click(); await new Promise((r) => setTimeout(r, 150)); return b.getAttribute('aria-pressed') === 'true'; })()`);
+// every token the steps move, as computed (the values as the stylesheet writes them)
+const BROWNREAD = `(() => { const cs = getComputedStyle(document.documentElement), v = (n) => cs.getPropertyValue(n).trim().toUpperCase();
+  const room = {}; for (const n of ['--ink-950', '--ink-900', '--ink-800', '--ink-border', '--ink-border-strong', '--arbor2-bar', '--arbor2-bar-line']) room[n] = v(n);
+  const page = {}; for (const n of ['--paper', '--paper-dim', '--paper-border']) page[n] = v(n);
+  const sp = document.querySelector('.wz-sliver-panel');
+  return { room, page, glow: cs.getPropertyValue('--lamp-glow').trim(), drawer: sp ? getComputedStyle(sp).getPropertyValue('--desk-ground').trim().toUpperCase() : null,
+    tone: document.documentElement.getAttribute('data-page'), brown: document.documentElement.getAttribute('data-arbor2-brown') }; })()`;
+const parseHex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+const contrast = (a, b) => { const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; const L = (p) => 0.2126 * lin(p[0]) + 0.7152 * lin(p[1]) + 0.0722 * lin(p[2]);
+  const x = L(a), y = L(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+// the four steps, as styles/arbor-v2.css writes them (Now = today's palette; A / B / C = OKLab L -.02 / -.04 / -.06 on every night brown)
+const BROWNS = {
+  now: {"room":{"--ink-950":"#120A06","--ink-900":"#1B120C","--ink-800":"#261A12","--ink-border":"#3A2A1C","--ink-border-strong":"#4A3726","--arbor2-bar":"#241912","--arbor2-bar-line":"#35271C"},"glow":["#2E1D0E","#20140B","#170E08","#120A06"],"drawer":"#2E2118","page":{"--paper":"#1A1510","--paper-dim":"#150F0B","--paper-border":"#3A2D22"}},
+  a: {"room":{"--ink-950":"#0D0704","--ink-900":"#160E09","--ink-800":"#20160F","--ink-border":"#342519","--ink-border-strong":"#443222","--arbor2-bar":"#1F150E","--arbor2-bar-line":"#2F2218"},"glow":["#28190B","#1A1008","#120A06","#0D0704"],"drawer":"#281D14","page":{"--paper":"#15110C","--paper-dim":"#100B08","--paper-border":"#34281E"}},
+  b: {"room":{"--ink-950":"#080402","--ink-900":"#110A06","--ink-800":"#1B120B","--ink-border":"#2E2115","--ink-border-strong":"#3E2D1F","--arbor2-bar":"#19110B","--arbor2-bar-line":"#291E15"},"glow":["#221509","#150C06","#0D0704","#080402"],"drawer":"#231811","page":{"--paper":"#100C09","--paper-dim":"#0B0705","--paper-border":"#2F241A"}},
+  c: {"room":{"--ink-950":"#050201","--ink-900":"#0C0604","--ink-800":"#160D08","--ink-border":"#281C12","--ink-border-strong":"#38291B","--arbor2-bar":"#140C08","--arbor2-bar-line":"#241911"},"glow":["#1C1006","#100804","#080402","#050201"],"drawer":"#1D140D","page":{"--paper":"#0C0806","--paper-dim":"#070403","--paper-border":"#291F17"}}};
 
 const screens = {
   // ── 2. THE BOARD KEEPS ITS RECT; EACH DRAWER OPENS AT ITS EDGE (flush where the margin holds a drawer, over it where it does not, as on the Page)
@@ -212,6 +255,108 @@ const screens = {
   // },
   // SUCCESSOR: the mid-run splash is seen in the box recording (scripts/frames/arbor2-walk.mjs step 1, every frame, day and night, both sizes), and
   // r22-splash-arrows above reads its plan and the front door's finished drawing.
+  // ── 1. TYPEWRITER ON THE ROOM (Fable's ruling 1, Nov 8: "while Typewriter is on, Arbor's page draws no fill or edge of its own; the words sit on
+  // the room's ground under the lamplight glow; the text floors hold, measured on the room; leaving restores the page exactly"). The page opens in
+  // Draft (read), goes to Free Write (Typewriter's zoom), then back to Draft (read again). Per room, zoomed:
+  //   proof   zoomProof V7 (scripts/frames/arbor2.mjs): no sheet, the page bare, the room's shade unbroken over it, the words the room's ink, and by
+  //           day no slat on the prose or the count
+  //   floor   the words' ink against the room's own PIXELS (a screenshot) in the writing band - the page's margin either side of the prose, from
+  //           the writing line to 1.4 lines below it, where the band is whole - >= 13.9 at every sample (the page-text floor, docs/MAP.md)
+  //   caret   by day the caret is the ink (the dark page's brass is 2:1 on plaster)
+  //   back    Draft again: the page's background, shadow, ink and rect exactly as before Free Write
+  'r22-typewriter': async (app) => {
+    const out = {};
+    for (const room of ['night', 'day']) {
+      await openPage(app, `arbor-r22-tw-${room}`); await setRoom(app, room);
+      const before = await app.evalJs(PAGEREAD);
+      await clickMode(app, 'free write');
+      const zoomed = await waitSoft(app, "!!document.querySelector('.mode-pagecol[data-zoom=\"true\"]')", { label: 'typewriter zoom', timeout: 6000 });
+      if (!zoomed) fail('R22-TYPEWRITER', { room, zoomed: false });
+      await app.evalJs(caretEnd); await sleep(900);
+      const z = await app.evalJs(`(${zoomProof.toString()})(${holeOf.toString()}, ${stopsOf.toString()})`);
+      const m = await app.evalJs(`(() => { const col = document.querySelector('.mode-pagecol'), p = col.querySelector('.mode-page'), ed = p.querySelector('.forward-only-editor');
+        const pr = p.getBoundingClientRect(), er = ed.getBoundingClientRect(), cr = col.getBoundingClientRect();
+        const lh = parseFloat(getComputedStyle(col).getPropertyValue('--tw-lh')) || 43.52, y0 = cr.top + cr.height * 0.5;
+        const xs = [pr.left + 8, (pr.left + er.left) / 2, er.left - 8, er.right + 8, (er.right + pr.right) / 2, pr.right - 8].filter((x) => x > pr.left && x < pr.right && (x < er.left - 2 || x > er.right + 2));
+        return { xs, ys: [-0.1, 0.3, 0.7, 1.1, 1.4].map((k) => y0 + k * lh), ink: getComputedStyle(ed).color, caret: getComputedStyle(ed).caretColor, page: document.documentElement.getAttribute('data-page') }; })()`);
+      const png = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data;
+      const px = await app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${png}'; await img.decode(); const dpr = img.width / innerWidth;
+        const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; const cx = c.getContext('2d'); cx.drawImage(img, 0, 0);
+        const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; const L = (p) => 0.2126 * lin(p[0]) + 0.7152 * lin(p[1]) + 0.0722 * lin(p[2]);
+        const ink = ${JSON.stringify(m.ink)}.match(/\\d+/g).slice(0, 3).map(Number);
+        const rows = []; for (const y of ${JSON.stringify(m.ys)}) for (const x of ${JSON.stringify(m.xs)}) { const d = cx.getImageData(Math.round(x * dpr), Math.round(y * dpr), 1, 1).data; const g = [d[0], d[1], d[2]];
+          rows.push({ x: Math.round(x), y: Math.round(y), g, r: Math.round(((Math.max(L(ink), L(g)) + 0.05) / (Math.min(L(ink), L(g)) + 0.05)) * 100) / 100 }); }
+        const min = rows.reduce((a, b) => (b.r < a.r ? b : a), rows[0]);
+        return { n: rows.length, min, grounds: [...new Set(rows.map((q) => q.g.join(',')))].slice(0, 6) }; })()`);
+      await app.evalJs("document.querySelector('.forward-only-editor')?.blur(); getSelection()?.removeAllRanges()");
+      await clickMode(app, 'draft'); await sleep(1200);
+      const after = await app.evalJs(PAGEREAD);
+      const back = !!before && !!after && before.bg === after.bg && before.shadow === after.shadow && before.ink === after.ink && same(before.rect, after.rect) && after.zoom !== 'true';
+      out[room] = { ok: { proof: !!z && z.pass, floor: px.n >= 10 && px.min.r >= 13.9, caret: room === 'night' || m.caret === m.ink, back },
+        z: z && { noSheet: z.noSheet, bare: z.bare, unbroken: z.unbroken, inkOk: z.inkOk, sunEdge: z.sunEdge, ink: z.ink, want: z.want, vMask: z.vMask }, page: m.page, ink: m.ink, caret: m.caret, px, before, after };
+    }
+    const bad = Object.entries(out).flatMap(([room, v]) => Object.entries(v.ok).filter(([, x]) => !x).map(([k]) => `${room} ${k}`));
+    if (bad.length) fail('R22-TYPEWRITER', { bad, ...out });
+    say('r22-typewriter', out);
+  },
+  // for the eye: Typewriter by night and by day (the job's two tones give each a light and a dark Page setting - the words are the room's either way)
+  'r22-pic-typewriter-night': async (app) => { await openFree(app, 'arbor-r22-ptn'); await setRoom(app, 'night'); await sleep(900); },
+  'r22-pic-typewriter-day': async (app) => { await openFree(app, 'arbor-r22-ptd'); await setRoom(app, 'day'); await sleep(900); },
+
+  // ── 3. THREE DARKER NIGHT BROWNS (Fable's ruling 2, Nov 8: "ALL night-room browns step darker together (the room ground, rails, panels, the
+  // dark page), keeping the lamplight's warm gradient. Three steps, floors measured, frames for Nick"). For Now, A, B, C by night: the mockup bar's
+  // Night browns row is pressed (as Nick would), every token reads its step's value (the room, its surfaces and hairlines, the glow, the bars, the
+  // drawers' ground; the dark page with the dark tone), the room's own pixels in a corner are that step's ground (liveness: the step paints),
+  // and every lettering pair holds its floor on the measured grounds. By day nothing changes (the day tokens read the same at every step).
+  'r22-browns': async (app) => {
+    await openPage(app, 'arbor-r22-browns');
+    const rows = {};
+    for (const s of ['now', 'a', 'b', 'c']) {
+      await setRoom(app, 'night');
+      const pressed = await pickBrown(app, s);
+      await sleep(500);
+      const t = await app.evalJs(BROWNREAD);
+      const png = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data;
+      const corner = await app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${png}'; await img.decode(); const dpr = img.width / innerWidth;
+        const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; const cx = c.getContext('2d'); cx.drawImage(img, 0, 0);
+        const page = document.querySelector('.mode-page').getBoundingClientRect();
+        // the darkest of five points in the room's margin left of the page (a vine or a leaf only lightens a point; the vignette only darkens it)
+        const pts = [0.35, 0.45, 0.55, 0.65, 0.75].map((f) => { const d = cx.getImageData(Math.round((page.left - 24) * dpr), Math.round(innerHeight * f * dpr), 1, 1).data; return [d[0], d[1], d[2]]; });
+        return pts.reduce((a, b) => (a[0] + a[1] + a[2] <= b[0] + b[1] + b[2] ? a : b)); })()`);
+      await setRoom(app, 'day'); await sleep(300);
+      const day = await app.evalJs(BROWNREAD);
+      rows[s] = { pressed, t, corner, day };
+    }
+    await pickBrown(app, 'now'); await setRoom(app, 'night');
+    const dark = rows.now.t.tone === 'dark';
+    const ok = {}, floors = [];
+    for (const [s, r] of Object.entries(rows)) {
+      const want = BROWNS[s];
+      ok[`${s} pressed`] = r.pressed === true;
+      ok[`${s} tokens`] = Object.entries(want.room).every(([k, v]) => r.t.room[k] === v) && r.t.drawer === want.drawer && (!dark || Object.entries(want.page).every(([k, v]) => r.t.page[k] === v));
+      ok[`${s} glow`] = want.glow.every((g) => r.t.glow.toUpperCase().includes(g));
+      // the vignette darkens the room's edge, so the corner reads at or a little under the ground - never over it
+      const g = parseHex(want.room['--ink-950']);
+      ok[`${s} paints`] = r.corner.every((v, i) => v <= g[i] + 2 && v >= g[i] - 10);
+      ok[`${s} day unchanged`] = JSON.stringify(r.day.room) === JSON.stringify(rows.now.day.room);
+      for (const [label, ink, ground, floor] of [['cream / room', '#EFE4CB', want.room['--ink-950'], 4.5], ['cream / bar', '#EFE4CB', want.room['--arbor2-bar'], 4.5],
+        ['cream / drawer', '#EFE4CB', want.drawer, 4.5], ['quiet / room', '#B9AA8C', want.room['--ink-950'], 4.5], ['quiet / bar', '#B9AA8C', want.room['--arbor2-bar'], 4.5],
+        ['quiet / drawer', '#B9AA8C', want.drawer, 4.5], ['olive text / raised', '#85914C', want.room['--ink-800'], 4.5], ['olive text / drawer', '#85914C', want.drawer, 4.5],
+        ['olive mark / room', '#6B7A3A', want.room['--ink-950'], 3], ['cream / dark page', '#EFE4CB', want.page['--paper'], 13.9], ['cream / glow top', '#EFE4CB', want.glow[0], 4.5]]) {
+        const ratio = contrast(parseHex(ink), parseHex(ground));
+        floors.push([s, label, Math.round(ratio * 100) / 100]);
+        if (ratio < floor) ok[`${s} ${label}`] = false;
+      }
+    }
+    const brief = { ok, dark, corners: Object.fromEntries(Object.entries(rows).map(([s, r]) => [s, r.corner])), floors };
+    if (Object.values(ok).some((x) => !x)) fail('R22-BROWNS', { bad: Object.keys(ok).filter((k) => !ok[k]), ...brief, rows });
+    say('r22-browns', brief);
+  },
+  // for Nick to pick: each step by night with the Tools drawer open (the room, the bars, a drawer, the page), and by day (unchanged, to compare)
+  ...Object.fromEntries(['now', 'a', 'b', 'c'].flatMap((s) => [
+    [`r22-pic-browns-${s}-night`, async (app) => { await openPage(app, `arbor-r22-pbn-${s}`); await setRoom(app, 'night'); await pickBrown(app, s); await openTools(app); await sleep(900); await app.evalJs(FINISH); await app.mouseMove(600, 300); await sleep(300); }],
+    [`r22-pic-browns-${s}-day`, async (app) => { await openPage(app, `arbor-r22-pbd-${s}`); await setRoom(app, 'day'); await pickBrown(app, s); await openTools(app); await sleep(900); await app.evalJs(FINISH); await app.mouseMove(600, 300); await sleep(300); }],
+  ])),
 };
 
 export default guarded(screens, { verdict: ['ARBOR-R22'] });

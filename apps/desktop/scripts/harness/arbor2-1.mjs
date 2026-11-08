@@ -304,7 +304,16 @@ await withHarness(async (app) => {
       // ok('L2c day: the room is the whitewash, shaded by the afternoon (#EFE6D2 -> #E3D4B6), and the page has its paper (its own, or the zoomed page\'s sheet)', onLine && paperThere(sh), JSON.stringify({ i950: t.i950, ...sh }));
       // SUCCESSOR L2d: the room is the plaster, on the line from #F1EAD8 to #EEE2C8, and the page has its paper.
       const onPlaster = g.length === 3 && g[0] >= 0xEE && g[0] <= 0xF1 && g[1] >= 0xE2 && g[1] <= 0xEA && g[2] >= 0xC8 && g[2] <= 0xD8;
-      ok('L2d day: the room is the plaster, warmed by the afternoon (#F1EAD8 -> #EEE2C8), and the page has its paper (its own, or the zoomed page\'s sheet)', onPlaster && paperThere(sh), JSON.stringify({ i950: t.i950, ...sh }));
+      // PARKED 2026-11-08 (SUPERSEDED - r22, Fable's ruling 1 on Nick's walk: "while Typewriter is on, Arbor's page draws no fill or edge of its
+      // own" - the zoomed page has no paper and the sheet that stood in retired, so "the page has its paper" is false there by design). Original, verbatim:
+      // ok('L2d day: the room is the plaster, warmed by the afternoon (#F1EAD8 -> #EEE2C8), and the page has its paper (its own, or the zoomed page\'s sheet)', onPlaster && paperThere(sh), JSON.stringify({ i950: t.i950, ...sh }));
+      // SUCCESSOR L2e: the same plaster, and the page is as its mode makes it - off the zoom its own paper; zoomed, bare (a transparent background)
+      // with nothing standing in for it. The zoom is read, not assumed.
+      const sh2 = await app.evalJs(`(() => { const p = document.querySelector('.mode-page'), col = p && p.closest('.mode-pagecol');
+        return { zoomed: !!col && col.getAttribute('data-zoom') === 'true', pageBg: p ? getComputedStyle(p).backgroundColor : null,
+          sheetEl: !!document.querySelector('.arbor2-paper'), sheetAttr: document.documentElement.getAttribute('data-arbor2-sheet') }; })()`);
+      const pageAsMode = !!sh2 && sh2.pageBg !== null && !sh2.sheetEl && sh2.sheetAttr === null && (sh2.zoomed ? sh2.pageBg === 'rgba(0, 0, 0, 0)' : sh2.pageBg === PAPER_RGB);
+      ok('L2e day: the room is the plaster, warmed by the afternoon (#F1EAD8 -> #EEE2C8), and the page is as its mode makes it (its own paper; zoomed, bare with no sheet)', onPlaster && pageAsMode, JSON.stringify({ i950: t.i950, ...sh2 }));
     }
   }
 

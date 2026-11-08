@@ -102,7 +102,7 @@ root.setAttribute('data-arbor2', 'true');
 applyRoom();
 mountSun(root);   // item 6: the day room's light (r19: its old pergola is no longer drawn - arbor-v2.css; sun.ts still writes the afternoon's ground)
 mountPergola();   // r19 §18.1: the Wrizors' pergola shadow, in the room and at 4% on the page at rest (pergola.ts; stores nothing)
-mountPaper();     // the zoomed page stays a whole opaque sheet, and the sun layer has a hole over the page (paper.ts; Fable, Oct 29)
+mountPaper();     // the sun layer has a hole over the page, the vignette too off Typewriter (paper.ts; r22: the zoomed page's sheet retired)
 mountChrome(root);    // r5 §2c.1: the top bar drawn flush to the window's top, the "..." inside it (chrome.ts; the page never moves)
 mountDrawerEdge(root, '--arbor2-drawer');   // r11 (Nick, via Fable, Nov 1): open, a drawer is flush to the page and its tab rides its outer edge
 new MutationObserver(applyRoom).observe(root, { attributes: true, attributeFilter: ['data-room'] });
@@ -214,6 +214,14 @@ function MockupBar() {
     if (logo === 'brass') root.setAttribute('data-arbor2-logo', 'brass');
     else root.removeAttribute('data-arbor2-logo');
   }, [logo]);
+  // r22 note 3 (Nick's walk, Nov 8; Fable's ruling 2): three darker night browns to pick from - Now is today's; A, B, C each a step darker
+  // (styles/arbor-v2.css data-arbor2-brown). In-session, an attribute on <html>; nothing stored. A fade in progress re-reads the room's tokens.
+  const [brown, setBrown] = useState<'now' | 'a' | 'b' | 'c'>('now');
+  useEffect(() => {
+    if (brown === 'now') root.removeAttribute('data-arbor2-brown');
+    else root.setAttribute('data-arbor2-brown', brown);
+    fadeToks = null; applyRoom();
+  }, [brown]);
   return (
     <div className="arbor2-bar" data-open={open ? 'true' : 'false'}>
       <button type="button" className="arbor2-bar-head" aria-expanded={open} onClick={() => setOpen(o => !o)}>Arbor mockup</button>
@@ -221,6 +229,7 @@ function MockupBar() {
         <>
           <p className="arbor2-bar-note">The rhizome (Progress: Rhizome, with a word goal) keeps its finished laps faint by day; by night it shows only at the goal.</p>
           <Seg<'brass' | 'all'> label="Logo" value={logo} opts={[['all', 'Sage'], ['brass', 'Brass o']]} onPick={setLogo} />
+          <Seg<'now' | 'a' | 'b' | 'c'> label="Night browns" value={brown} opts={[['now', 'Now'], ['a', 'A'], ['b', 'B'], ['c', 'C']]} onPick={setBrown} />
           <button type="button" className="arbor2-bar-head" aria-expanded={mood} onClick={() => setMood(m => !m)}>Mood {mood ? '▾' : '▸'}</button>
           {mood && <MoodMenu off={off} flip={flip} />}
         </>

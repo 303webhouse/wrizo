@@ -281,10 +281,27 @@
    the room. Geometry, colour and its feathered mask come from paper.ts (inline); it takes no pointer and sits under every surface.
    UNFRAMED (Fable, Oct 29: "the zoomed page is unframed, so give the opaque night sheet no visible edge"): no glow, and while it stands in
    the page lets go of its own paper, shadow and border (focused too - by day the focused page drew a 1px ring), so nothing draws an edge. */
-.arbor2-paper{ display:none; }
-:root[data-arbor2][data-theme='plateau'] .arbor2-paper[data-on='true']{ display:block; position:fixed; z-index:-1; pointer-events:none; box-shadow:none; }
-:root[data-arbor2][data-theme='plateau'][data-arbor2-sheet='on'] .mode-pagecol[data-zoom='true'] .mode-page,
-:root[data-arbor2][data-theme='plateau'][data-arbor2-sheet='on'] .mode-pagecol[data-zoom='true'] .mode-page.focused{ background:transparent; box-shadow:none; border-color:transparent; }
+/* r22 (Fable, Nov 8, ruling 1 on Nick's walk): THE SHEET RETIRES (src/arbor2/paper.ts). Its rules were, verbatim:
+     .arbor2-paper{ display:none; }
+     :root[data-arbor2][data-theme='plateau'] .arbor2-paper[data-on='true']{ display:block; position:fixed; z-index:-1; pointer-events:none; box-shadow:none; }
+     :root[data-arbor2][data-theme='plateau'][data-arbor2-sheet='on'] .mode-pagecol[data-zoom='true'] .mode-page,
+     :root[data-arbor2][data-theme='plateau'][data-arbor2-sheet='on'] .mode-pagecol[data-zoom='true'] .mode-page.focused{ background:transparent; box-shadow:none; border-color:transparent; }
+   TYPEWRITER ON THE ROOM: "while Typewriter is on, Arbor's page draws no fill or edge of its own; the words sit on the room's ground under the
+   lamplight glow; the text floors hold, measured on the room; leaving restores the page exactly." The zoomed page is bare (no paper, no hairline,
+   focused too), and its inks are the ROOM's, whatever the Page setting: the words sit on the room, so the ink is the one that holds there.
+     NIGHT  the dark page's own pair: cream #EFE4CB (>= 14.1:1 on the night glow from a quarter of the way down, 15.5 on the room #120A06),
+            low #B9AA8C; pen red / blue #FF9088 / #8AB4FF (the dark page's pair, >= 7:1)
+     DAY    walnut #1A0F06 - the pen's own default (>= 14.7:1 on the plaster at its latest afternoon #EEE2C8, where the light page's #241A10 is
+            13.3, under the 13.9 floor), low #6B5F4E; pen red / blue as stored (#B8231F 5.0 / #1F4FB8 5.7, as on the paper: 5.5 / 6.3)
+   (the pen's ink reaches the editor INLINE; under the zoom ModeStage hands it these variables, so it follows the room as the room changes.)
+   Selectors keyed on data-zoom only: leaving Typewriter, none applies and the page is its own paper again, exactly. */
+:root[data-arbor2][data-theme='plateau'] .mode-pagecol[data-zoom='true'] :is(.mode-page, .mode-page.focused){ background:transparent; box-shadow:none; border-color:transparent; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .mode-pagecol[data-zoom='true'] .mode-page{
+  --ink-on-paper:#EFE4CB; --ink-on-paper-low:#B9AA8C; --arbor2-tw-red:#FF9088; --arbor2-tw-blue:#8AB4FF; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .mode-pagecol[data-zoom='true'] .mode-page{
+  --ink-on-paper:#1A0F06; --ink-on-paper-low:#6B5F4E; --arbor2-tw-red:#B8231F; --arbor2-tw-blue:#1F4FB8; }
+/* the dark page's brass caret is 2:1 on the day plaster: zoomed by day, the caret is the ink (the pen's inline caret is the ink already) */
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .mode-pagecol[data-zoom='true'] .mode-page:not([data-instrument='ink']) .forward-only-editor{ caret-color:var(--ink-on-paper) !important; }
 /* THE PERGOLA v2 (spec §7b, Oct 31; supersedes §7.1's drawing - sun.ts places every piece in viewport pixels, a fresh seed per session):
    THREE OR FOUR thick BEAMS (shadow bands 36-60 px at the near end, narrowing to 40% as they recede: the clip-path) running as ONE feature
    from the bottom-left corner toward the right, LOW - they inhabit the bottom-right quadrant and the upper half stays mostly clear; ONE OR
@@ -961,3 +978,36 @@
 :root[data-arbor2][data-theme='plateau'] :is(.mode-scroll, .wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel-body){ scrollbar-gutter:auto; }
 /* the "..." menu's full-screen line (an inline muted grey, near-invisible on the bar's ground): the bar's own cream */
 :root[data-arbor2][data-theme='plateau'] :is(.gh-corner-menu, .chrome-fade) button[aria-label$='full screen']{ color:var(--arbor-letter, #EFE4CB) !important; }
+
+/* r22 - NOTE 3, THREE DARKER NIGHT BROWNS FOR NICK TO PICK (Nick's walk, Nov 8: "Render THREE darker dark-mode browns that keep the lamplight
+   glow"; Fable's ruling 2: "ALL night-room browns step darker together (the room ground, rails, panels, the dark page), keeping the lamplight's
+   warm gradient. Three steps, floors measured, frames for Nick"). The mockup bar's "Night browns" row (Now · A · B · C) sets data-arbor2-brown on
+   <html>, in-session (nothing stored); Now is today's palette, untouched. Each step takes the SAME OKLab lightness off every night brown (A -.02,
+   B -.04, C -.06; chroma in proportion, so each keeps its hue): the room, its surfaces and hairlines, the glow's stops, the bars, the drawers' ground
+   and the dark page. A fixed step, not a ratio: every brown keeps its distance from the next, so the glow still lifts off the room and the bars
+   off the ground by the same perceived step (a ratio flattened them: the glow's top fell to 1.06 of the room). Lettering and marks are unchanged.
+   CONTRAST (WCAG; Now / A / B / C - every pair with text rises; floors: page text 13.9, labels 4.5, names 7, graphics 3):
+     cream #EFE4CB on the room 15.52 / 15.85 / 16.17 / 16.37 · on the bars 13.60 / 14.19 / 14.76 / 15.32 · on the drawers 12.35 / 13.03 / 13.74 / 14.36
+     on the dark page 14.35 / 14.88 / 15.42 / 15.79 · on the glow's top stop 12.81 / 13.48 / 14.10 / 14.77
+     quiet #B9AA8C on the room 8.58 / 8.76 / 8.94 / 9.05 · on the bars 7.52 / 7.84 / 8.16 / 8.46 · on the drawers 6.82 / 7.20 / 7.59 / 7.94
+     olive #85914C (text) on raised 4.97 / 5.20 / 5.41 / 5.62 · on the drawers 4.57 / 4.82 / 5.08 / 5.31 · olive mark #6B7A3A on the room 4.17 / 4.26 / 4.35 / 4.40
+     brass on the dark page 8.41 / 8.72 / 9.03 / 9.25 · sage guide on the room 8.69 / 8.88 / 9.05 / 9.17
+   (the vines #6B5139 are decoration, unchanged: 2.67 / 2.73 / 2.78 / 2.82 on the room). Measured on screen: scripts/frames/arbor2-r22.mjs r22-browns. */
+:root[data-arbor2][data-theme='plateau'][data-arbor2-brown='a'][data-arbor2-room='night']{   /* A: OKLab L -0.02 */
+  --ink-950:#0D0704; --ink-900:#160E09; --ink-800:#20160F; --ink-border:#342519; --ink-border-strong:#443222;
+  --lamp-glow: radial-gradient(135% 95% at 50% -8%, #28190B 0%, #1A1008 38%, #120A06 70%, #0D0704 100%);
+  --arbor2-bar:#1F150E; --arbor2-bar-line:#2F2218; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-brown='a'][data-arbor2-room='night'] :is(.wz-sliver-panel, .wz-tutor-panel){ --desk-ground:#281D14; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-brown='a'][data-page='dark']{ --paper:#15110C; --paper-dim:#100B08; --paper-border:#34281E; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-brown='b'][data-arbor2-room='night']{   /* B: OKLab L -0.04 */
+  --ink-950:#080402; --ink-900:#110A06; --ink-800:#1B120B; --ink-border:#2E2115; --ink-border-strong:#3E2D1F;
+  --lamp-glow: radial-gradient(135% 95% at 50% -8%, #221509 0%, #150C06 38%, #0D0704 70%, #080402 100%);
+  --arbor2-bar:#19110B; --arbor2-bar-line:#291E15; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-brown='b'][data-arbor2-room='night'] :is(.wz-sliver-panel, .wz-tutor-panel){ --desk-ground:#231811; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-brown='b'][data-page='dark']{ --paper:#100C09; --paper-dim:#0B0705; --paper-border:#2F241A; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-brown='c'][data-arbor2-room='night']{   /* C: OKLab L -0.06 */
+  --ink-950:#050201; --ink-900:#0C0604; --ink-800:#160D08; --ink-border:#281C12; --ink-border-strong:#38291B;
+  --lamp-glow: radial-gradient(135% 95% at 50% -8%, #1C1006 0%, #100804 38%, #080402 70%, #050201 100%);
+  --arbor2-bar:#140C08; --arbor2-bar-line:#241911; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-brown='c'][data-arbor2-room='night'] :is(.wz-sliver-panel, .wz-tutor-panel){ --desk-ground:#1D140D; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-brown='c'][data-page='dark']{ --paper:#0C0806; --paper-dim:#070403; --paper-border:#291F17; }

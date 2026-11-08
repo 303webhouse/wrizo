@@ -91,6 +91,13 @@ function effectivePenInk(ink: string, theme: ThemeId, pageTone: PageTone): strin
   return PEN_INKS_FLUX_LIGHT[ink] ?? ink;
 }
 
+// ARBOR v2 MOCKUP r22 (Fable, Nov 8, ruling 1; flag-only): under Typewriter's zoom Arbor's page is bare and the words sit on the ROOM, so the
+// pen's ink follows the room, not the Page setting: each swatch becomes a variable the zoomed page sets per room (styles/arbor-v2.css) - the
+// default the room's page ink, red and blue the pair for that ground. CSS, so it follows the room as the room changes. Display-only: the
+// stored swatch is still the hex. A swatch not in the set (null) keeps effectivePenInk. Off the zoom, and off the flag, nothing changes.
+const ARBOR2_TW_INK: Record<string, string> = { '#1a0f06': 'var(--ink-on-paper)', '#b8231f': 'var(--arbor2-tw-red, #b8231f)', '#1f4fb8': 'var(--arbor2-tw-blue, #1f4fb8)' };
+const arbor2TypewriterInk = (ink: string): string | null => ARBOR2_TW_INK[ink.toLowerCase()] ?? null;
+
 interface RailDef { heading: string; items: string[]; ai: 'sealed' | 'open'; tools: 'pen' | 'format'; }
 const RAILS: Record<EditorMode, RailDef> = {
   journal:  { heading: 'capture', items: ['Spark deck', 'Fragments', 'Send → Drawer'], ai: 'sealed', tools: 'pen' },
@@ -585,7 +592,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
               className="mode-scroll"
               data-typewriter={typewriterOn ? 'true' : 'false'}
             >
-              {children({ noteWrite, penColor: rail.tools === 'pen' ? effectivePenInk(penColorProp ?? pen, penTheme, penPageTone) : undefined })}
+              {children({ noteWrite, penColor: rail.tools === 'pen' ? (zoomed && penTheme === 'plateau' && isArbor2() ? arbor2TypewriterInk(penColorProp ?? pen) : null) ?? effectivePenInk(penColorProp ?? pen, penTheme, penPageTone) : undefined })}
             </div>
             {!framed && <div className="mode-wordcount mode-dissolve">{words} words</div>}
           </div>

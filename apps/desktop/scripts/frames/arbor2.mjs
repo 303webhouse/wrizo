@@ -373,7 +373,10 @@ export function zoomProofV5(holeOf, stopsOf) {
 //   SUNEDGE  by day: the sun layer has no clip; nothing over the prose column; nothing 25 px inside the page; at the page's top edge the light
 //            is whole 3 px outside and still >= .95 at the edge (the 24 px soft edge, inward); and nothing falls on the count row under the
 //            page (r5: the room's hole takes the row in, so its quiet text keeps the plaster's contrast)
-export function zoomProof(holeOf, stopsOf) {
+// PARKED 2026-11-08 (SUPERSEDED - r22, Fable's ruling 1 on Nick's walk: "while Typewriter is on, Arbor's page draws no fill or edge of its own;
+// the words sit on the room's ground under the lamplight glow" - SHEET, HARD and SEAMLESS certify the retired sheet and the vignette's hole over
+// it). Kept verbatim under the name zoomProofV6 (no screen calls it); SUCCESSOR V7 below.
+export function zoomProofV6(holeOf, stopsOf) {
   const col = document.querySelector('.mode-pagecol[data-zoom="true"]'), p = col && col.querySelector('.mode-page');
   if (!p) return { pass: false, why: 'no zoomed page' };
   const a = p.getBoundingClientRect(), c = col.getBoundingClientRect();
@@ -441,6 +444,64 @@ export function zoomProof(holeOf, stopsOf) {
     pageBg: pcs.backgroundColor, pageShadow: pcs.boxShadow, sMask: String(sm).slice(0, 80), vMask: String(vm).slice(0, 120), uMask: uMask && String(uMask).slice(0, 120) };
 }
 
+// SUCCESSOR V7 (r22, Fable's ruling 1, Nov 8: "while Typewriter is on, Arbor's page draws no fill or edge of its own; the words sit on the room's
+// ground under the lamplight glow; the text floors hold, measured on the room"). Reads computed style only, never paper.ts:
+//   NOSHEET  nothing stands in for the page: no .arbor2-paper in the document, no data-arbor2-sheet on <html>
+//   BARE     as V6: the page itself draws no edge (no background, no shadow, no visible border)
+//   UNBROKEN the room's vignette carries no mask at all, so its shade crosses the page with no hole and no edge
+//   INK      the words are the ROOM's ink - cream #EFE4CB by night, walnut #1A0F06 by day - whatever the Page setting (the floor, measured on
+//            the room's own pixels, is r22-typewriter's in scripts/frames/arbor2-r22.mjs)
+//   SUNEDGE  as V6, by day: the sun layer's soft hole keeps every slat off the prose and off the count row
+export function zoomProof(holeOf, stopsOf) {
+  const col = document.querySelector('.mode-pagecol[data-zoom="true"]'), p = col && col.querySelector('.mode-page');
+  if (!p) return { pass: false, why: 'no zoomed page' };
+  const a = p.getBoundingClientRect(), c = col.getBoundingClientRect();
+  let count = null;
+  for (const el of document.querySelectorAll('body *')) {
+    const own = [...el.childNodes].some((n) => n.nodeType === 3 && /^\s*\d+\s+words?\s*$/i.test(n.textContent));
+    if (!own) continue;
+    const r = el.getBoundingClientRect();
+    if (r.width > 0 && r.height > 0 && r.top > a.top + 40 && r.left < a.right && r.right > a.left) count = r;
+  }
+  const vis = { l: Math.max(a.left, c.left), t: Math.max(a.top, c.top), r: Math.min(a.right, c.right), b: Math.min(a.bottom, c.bottom, innerHeight) };
+  const room = document.documentElement.getAttribute('data-arbor2-room');
+  const pcs = getComputedStyle(p);
+  const noSheet = !document.querySelector('.arbor2-paper') && !document.documentElement.hasAttribute('data-arbor2-sheet');
+  const clear = (v) => v === 'transparent' || /^rgba\(.*,\s*0\)$/.test(v) || /\/\s*0\)$/.test(v);
+  const bare = clear(pcs.backgroundColor) && pcs.boxShadow === 'none'
+    && ['Top', 'Right', 'Bottom', 'Left'].every((sd) => parseFloat(pcs[`border${sd}Width`]) === 0 || clear(pcs[`border${sd}Color`]));
+  const vcs = getComputedStyle(document.body, '::after'), vm = vcs.maskImage;
+  const unbroken = stopsOf(vm).length === 0;
+  const ed = p.querySelector('.forward-only-editor'), ink = ed ? getComputedStyle(ed).color : null;
+  const want = room === 'night' ? 'rgb(239, 228, 203)' : room === 'day' ? 'rgb(26, 15, 6)' : null;
+  const inkOk = !!ink && ink === want;
+  const at = (st, v) => {
+    if (!st.length) return 1;
+    if (v <= st[0].px) return st[0].a;
+    for (let i = 1; i < st.length; i++) if (v <= st[i].px) return st[i].px === st[i - 1].px ? st[i].a : st[i - 1].a + (st[i].a - st[i - 1].a) * (v - st[i - 1].px) / (st[i].px - st[i - 1].px);
+    return st[st.length - 1].a;
+  };
+  const every = (v, w) => String(v || '').split(',').every((x) => x.trim() === w);
+  let sunEdge = null, uMask = null, proseMax = null, countMax = null;
+  if (room === 'day') {
+    const sn = document.querySelector('.arbor2-sun'), sr = sn ? sn.getBoundingClientRect() : null, ucs = sn ? getComputedStyle(sn) : null;
+    uMask = ucs ? ucs.maskImage : '';
+    const ug = stopsOf(uMask);
+    const uOk = !!sr && ug.length === 2 && every(ucs.maskComposite, 'add') && (!ucs.clipPath || ucs.clipPath === 'none');
+    const uA = (x, y) => (uOk ? 1 - ug.reduce((m, g) => m * (1 - at(g.stops, g.axis === 'x' ? x - sr.left : y - sr.top)), 1) : 1);
+    const er = ed ? ed.getBoundingClientRect() : null;
+    const pr = er && { l: Math.max(er.left, vis.l), t: Math.max(er.top, vis.t), r: Math.min(er.right, vis.r), b: Math.min(er.bottom, vis.b) };
+    if (pr && pr.r - pr.l > 2 && pr.b - pr.t > 2) {
+      proseMax = 0;
+      for (let i = 0; i <= 8; i++) for (let j = 0; j <= 8; j++) proseMax = Math.max(proseMax, uA(pr.l + (pr.r - pr.l) * i / 8, pr.t + (pr.b - pr.t) * j / 8));
+    }
+    if (count) countMax = Math.max(uA(count.left + 2, count.top + count.height / 2), uA((count.left + count.right) / 2, count.top + count.height / 2), uA(count.right - 2, count.top + count.height / 2));
+    sunEdge = uOk && proseMax === 0 && (countMax === null || countMax === 0);
+  }
+  return { pass: noSheet && bare && unbroken && inkOk && sunEdge !== false, room, noSheet, bare, unbroken, inkOk, sunEdge, ink, want, proseMax, countMax, vis,
+    pageBg: pcs.backgroundColor, pageShadow: pcs.boxShadow, vMask: String(vm).slice(0, 120), uMask: uMask && String(uMask).slice(0, 120) };
+}
+
 export default {
   // the proof above, on a zoomed Free Write page with words (the picture is the same as arbor-page; the row FAILS if the proof does)
   'arbor-proof-zoom': async (app) => {
@@ -451,7 +512,9 @@ export default {
     // the job keeps 300 characters of an error: the verdicts and the clips it read come first
     // (r5: the proof is V6 - its verdicts are sheet / bare / hard / seamless / sunEdge; V5's line is kept below, commented, verbatim)
     // if (!r || !r.pass) throw new Error('ZOOM PROOF FAILED ' + JSON.stringify(r && { sheet: r.sheet, bare: r.bare, edgeless: r.edgeless, whole: r.whole, seamless: r.seamless, sunEdge: r.sunEdge, proseMax: r.proseMax, footOk: r.footOk, room: r.room, worst: r.worst, why: r.why, sheetShadow: r.sheetShadow, pageBg: r.pageBg, vMask: r.vMask }));
-    if (!r || !r.pass) throw new Error('ZOOM PROOF FAILED ' + JSON.stringify(r && { sheet: r.sheet, bare: r.bare, hard: r.hard, seamless: r.seamless, sunEdge: r.sunEdge, proseMax: r.proseMax, countMax: r.countMax, vMax: r.vMax, jumps: r.jumps, footOk: r.footOk, room: r.room, why: r.why, sMask: r.sMask, vMask: r.vMask }));
+    // (r22: the proof is V7 - its verdicts are noSheet / bare / unbroken / inkOk / sunEdge; V6's line is kept below, commented, verbatim)
+    // if (!r || !r.pass) throw new Error('ZOOM PROOF FAILED ' + JSON.stringify(r && { sheet: r.sheet, bare: r.bare, hard: r.hard, seamless: r.seamless, sunEdge: r.sunEdge, proseMax: r.proseMax, countMax: r.countMax, vMax: r.vMax, jumps: r.jumps, footOk: r.footOk, room: r.room, why: r.why, sMask: r.sMask, vMask: r.vMask }));
+    if (!r || !r.pass) throw new Error('ZOOM PROOF FAILED ' + JSON.stringify(r && { noSheet: r.noSheet, bare: r.bare, unbroken: r.unbroken, inkOk: r.inkOk, sunEdge: r.sunEdge, ink: r.ink, want: r.want, proseMax: r.proseMax, countMax: r.countMax, room: r.room, why: r.why, vMask: r.vMask }));
   },
   // item 1: the room and the page (night = dark tone, day = light tone; day adds item 6's pergola light)
   'arbor-page': async (app) => { await page(app, 'arbor-words', WORDS); },

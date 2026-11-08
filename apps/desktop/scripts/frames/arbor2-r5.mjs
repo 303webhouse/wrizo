@@ -617,8 +617,22 @@ export default {
       const pairs = []; for (let i = 0; i + 1 < stops.length; i += 2) pairs.push(Math.abs(stops[i + 1] - stops[i]));
       return { sheet: s.getAttribute('data-on') === 'true', mask: cs.maskImage, shadow: cs.boxShadow, pageShadow: pcs.boxShadow, pageBorder: pcs.borderTopColor,
         edgeGap: pairs.length ? Math.max(...pairs) : null, within: sb.left >= pb.left - 0.5 && sb.right <= pb.right + 0.5 }; })()`);
-    const ok = { sheet: r.sheet, hard: r.mask === 'none', vignette: r.edgeGap === 0, unframed: r.shadow === 'none' && r.pageShadow === 'none' && /rgba\(0, 0, 0, 0\)|transparent/.test(r.pageBorder || ''), within: r.within };
-    if (Object.values(ok).some((v) => !v)) fail('R5-TYPEWRITER', { bad: Object.keys(ok).filter((k) => !ok[k]), ...r });
-    say('r5-typewriter', { ok, ...r });
+    // PARKED 2026-11-08 (SUPERSEDED - r22, Fable's ruling 1 on Nick's walk, Nov 8: "while Typewriter is on, Arbor's page draws no fill or edge of
+    // its own; the words sit on the room's ground under the lamplight glow" - the sheet and the vignette's hole over it retired). Original, verbatim:
+    // const ok = { sheet: r.sheet, hard: r.mask === 'none', vignette: r.edgeGap === 0, unframed: r.shadow === 'none' && r.pageShadow === 'none' && /rgba\(0, 0, 0, 0\)|transparent/.test(r.pageBorder || ''), within: r.within };
+    // if (Object.values(ok).some((v) => !v)) fail('R5-TYPEWRITER', { bad: Object.keys(ok).filter((k) => !ok[k]), ...r });
+    // say('r5-typewriter', { ok, ...r });
+    // SUCCESSOR: the zoomed page draws nothing of its own and nothing stands in for it - no .arbor2-paper, no data-arbor2-sheet, the page's
+    // background clear, no shadow, no visible border - and the room's vignette has no hole (its mask is gone), so no edge is drawn anywhere.
+    // (The room's ink and its floor on the room's pixels: scripts/frames/arbor2-r22.mjs r22-typewriter.)
+    const r2 = await app.evalJs(`(() => { const p = document.querySelector('.mode-pagecol[data-zoom="true"] .mode-page'); if (!p) return { zoomed: false };
+      const pcs = getComputedStyle(p), clear = (v) => v === 'transparent' || /^rgba\\(.*,\\s*0\\)$/.test(v);
+      return { zoomed: true, sheetEl: !!document.querySelector('.arbor2-paper'), sheetAttr: document.documentElement.getAttribute('data-arbor2-sheet'),
+        bg: pcs.backgroundColor, bgClear: clear(pcs.backgroundColor), pageShadow: pcs.boxShadow, pageBorder: pcs.borderTopColor,
+        vMaskVar: getComputedStyle(document.documentElement).getPropertyValue('--arbor2-vignette-mask').trim(), vMask: getComputedStyle(document.body, '::after').maskImage }; })()`);
+    const ok2 = { zoomed: r2.zoomed, noSheet: !r2.sheetEl && r2.sheetAttr === null, bare: r2.bgClear && r2.pageShadow === 'none' && /rgba\(0, 0, 0, 0\)|transparent/.test(r2.pageBorder || ''),
+      unbroken: r2.vMaskVar === '' && r2.vMask === 'none' };
+    if (Object.values(ok2).some((v) => !v)) fail('R5-TYPEWRITER', { bad: Object.keys(ok2).filter((k) => !ok2[k]), ...r2 });
+    say('r5-typewriter', { ok: ok2, ...r2 });
   },
 };

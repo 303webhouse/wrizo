@@ -131,8 +131,20 @@ await withHarness(async (app) => {
   // ok('L2e the light layer is fixed, z-index -1, a child of body (behind every surface), and the paper is opaque (the page\'s own, or the zoomed page\'s sheet)', !!day.sun && day.sun.z === '-1' && day.sun.pos === 'fixed' && day.sun.parent === 'BODY' && paperThere, JSON.stringify({ sun: day.sun, ...sh }));
   // SUCCESSOR L2g: the pergola layer is displayed with a size (liveness), fixed, z-index -1, a child of body, and the paper is opaque (the same paper read).
   // (renamed L2f -> L2g before any green, r21: "L2f" is already the zoomed-page successor's name below; a name is never reused)
-  ok('L2g the pergola layer is drawn (displayed, a non-zero rect), fixed, z-index -1, a child of body (behind every surface), and the paper is opaque (the page\'s own, or the zoomed page\'s sheet)',
-    pgLive && pg.z === '-1' && pg.pos === 'fixed' && pg.parent === 'BODY' && paperThere, JSON.stringify({ pergola: pg && { display: pg.display, w: pg.w, h: pg.h, z: pg.z, pos: pg.pos, parent: pg.parent }, ...sh }));
+  // PARKED 2026-11-08 (SUPERSEDED - r22, Fable's ruling 1 on Nick's walk: "while Typewriter is on, Arbor's page draws no fill or edge of its own;
+  // the words sit on the room's ground" - the zoomed page has no paper and no sheet stands in, so "the paper is opaque" is false there by design).
+  // Original, verbatim:
+  // ok('L2g the pergola layer is drawn (displayed, a non-zero rect), fixed, z-index -1, a child of body (behind every surface), and the paper is opaque (the page\'s own, or the zoomed page\'s sheet)',
+  //   pgLive && pg.z === '-1' && pg.pos === 'fixed' && pg.parent === 'BODY' && paperThere, JSON.stringify({ pergola: pg && { display: pg.display, w: pg.w, h: pg.h, z: pg.z, pos: pg.pos, parent: pg.parent }, ...sh }));
+  // SUCCESSOR L2h: the same pergola facts, and the page is as its mode makes it - a page off the zoom has its own opaque paper; the zoomed page
+  // is bare (a transparent background) and nothing stands in for it (no .arbor2-paper, no data-arbor2-sheet). The zoom is read, not assumed.
+  const sh2 = await app.evalJs(`(() => { const p = document.querySelector('.mode-page'), col = p && p.closest('.mode-pagecol');
+    return { zoomed: !!col && col.getAttribute('data-zoom') === 'true', pageBg: p ? getComputedStyle(p).backgroundColor : null,
+      sheetEl: !!document.querySelector('.arbor2-paper'), sheetAttr: document.documentElement.getAttribute('data-arbor2-sheet') }; })()`);
+  const pageAsMode = !!sh2 && sh2.pageBg !== null && !sh2.sheetEl && sh2.sheetAttr === null
+    && (sh2.zoomed ? sh2.pageBg === 'rgba(0, 0, 0, 0)' : sh2.pageBg === 'rgb(243, 237, 225)');
+  ok('L2h the pergola layer is drawn (displayed, a non-zero rect), fixed, z-index -1, a child of body (behind every surface), and the page is as its mode makes it (its own paper; zoomed, bare with no sheet)',
+    pgLive && pg.z === '-1' && pg.pos === 'fixed' && pg.parent === 'BODY' && pageAsMode, JSON.stringify({ pergola: pg && { display: pg.display, w: pg.w, h: pg.h, z: pg.z, pos: pg.pos, parent: pg.parent }, ...sh2 }));
   // PARKED 2026-11-04 (SUPERSEDED with L2e above: it read the retired sun layer's drift sheet - arbor2-sun-drift on a hidden layer, passing BLIND).
   // Original, verbatim:
   // ok('L1c with motion: the drift runs on the inner sheet and the layer itself holds still', !!day.sun && day.sun.driftAnim === 'arbor2-sun-drift' && day.sun.anim === 'none', JSON.stringify(day.sun));
@@ -238,11 +250,23 @@ await withHarness(async (app) => {
   // }
   // SUCCESSOR L2f: the same page, night and day - a HARD, unframed sheet exactly over the visible page, the vignette's hole hard over it, and
   // by day the pergola's 24 px soft edge, never over the prose, and nothing on the count row.
+  // PARKED 2026-11-08 (SUPERSEDED - r22, Fable's ruling 1 on Nick's walk: "while Typewriter is on, Arbor's page draws no fill or edge of its own;
+  // the words sit on the room's ground under the lamplight glow" - the sheet and the vignette's hole over it retired; the proof is zoomProof V7
+  // (scripts/frames/arbor2.mjs; V6 kept there as zoomProofV6)). Original, verbatim:
+  // for (const room of ['Night', 'Day']) {
+  //   await pickBar(app, room); await sleep(500);
+  //   const z = await app.evalJs(`(${zoomProof.toString()})(${holeOf.toString()}, ${stopsOf.toString()})`);
+  //   ok(`L2f [${room.toLowerCase()}] zoomed Free Write: a hard, unframed paper sheet behind the visible page (above the progress row), the vignette's hole hard${room === 'Day' ? ', and the light has a 24 px soft edge, never over the prose or the count' : ''}`,
+  //     zoomed && !!z && z.pass && z.sheet && z.bare && z.hard && z.seamless && (room === 'Day' ? z.sunEdge === true && z.proseMax === 0 : z.sunEdge === null), JSON.stringify({ zoomed, z }));
+  //   await snap(app, `item6-${room.toLowerCase()}-zoomed-freewrite`);
+  // }
+  // SUCCESSOR L2i: the same page, night and day - no sheet, the page bare, the room's shade unbroken over it, the words in the room's ink, and
+  // by day the pergola's soft hole still keeps every slat off the prose and the count row.
   for (const room of ['Night', 'Day']) {
     await pickBar(app, room); await sleep(500);
     const z = await app.evalJs(`(${zoomProof.toString()})(${holeOf.toString()}, ${stopsOf.toString()})`);
-    ok(`L2f [${room.toLowerCase()}] zoomed Free Write: a hard, unframed paper sheet behind the visible page (above the progress row), the vignette's hole hard${room === 'Day' ? ', and the light has a 24 px soft edge, never over the prose or the count' : ''}`,
-      zoomed && !!z && z.pass && z.sheet && z.bare && z.hard && z.seamless && (room === 'Day' ? z.sunEdge === true && z.proseMax === 0 : z.sunEdge === null), JSON.stringify({ zoomed, z }));
+    ok(`L2i [${room.toLowerCase()}] zoomed Free Write: the page draws no fill or edge and nothing stands in for it, the room's shade crosses it unbroken, and the words are the room's ink${room === 'Day' ? ', and no slat reaches the prose or the count' : ''}`,
+      zoomed && !!z && z.pass && z.noSheet && z.bare && z.unbroken && z.inkOk && (room === 'Day' ? z.sunEdge === true && z.proseMax === 0 : z.sunEdge === null), JSON.stringify({ zoomed, z }));
     await snap(app, `item6-${room.toLowerCase()}-zoomed-freewrite`);
   }
 

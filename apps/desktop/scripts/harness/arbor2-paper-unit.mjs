@@ -2,7 +2,12 @@
 //   P1  the hole lands where the page is: viewport pixels minus the layer's own offset (the layer sits at inset -80px)
 //   P2  the path is evenodd, outer rect first, and the frames proof's OWN regex (scripts/frames/arbor2.mjs zoomProof) reads the hole back
 //       exactly - so the browser check and the clip it measures cannot drift apart in format
-import { holePath, sheetMask, vignetteMask, featherFor, FEATHER, SUN_EDGE } from '../../src/arbor2/paper.ts';
+// PARKED 2026-11-08 (SUPERSEDED - Fable's ruling 1 on Nick's walk, Nov 8: "while Typewriter is on, Arbor's page draws no fill or edge of its
+// own"; r22 retires the zoomed page's sheet and its helpers, so paper.ts exports no sheetMask, featherFor or FEATHER). Original, verbatim:
+// import { holePath, sheetMask, vignetteMask, featherFor, FEATHER, SUN_EDGE } from '../../src/arbor2/paper.ts';
+// SUCCESSOR: the same import without the retired names.
+import { holePath, vignetteMask, SUN_EDGE } from '../../src/arbor2/paper.ts';
+import * as paperMod from '../../src/arbor2/paper.ts';
 import { zoomProof, holeOf, stopsOf } from '../frames/arbor2.mjs';
 import fs from 'node:fs';
 
@@ -38,7 +43,11 @@ const zp = zoomProof.toString();
 // zoomProof reads no clip at all and three masks through stopsOf). Original, verbatim:
 // ok('P2c zoomProof reads clips through holeOf and masks through stopsOf, with no parser of its own', /^function zoomProof\(holeOf, stopsOf\)/.test(zp) && !/matchAll/.test(zp) && (zp.match(/holeOf\(/g) || []).length === 1 && (zp.match(/stopsOf\(/g) || []).length === 2, '');
 // SUCCESSOR P2d: zoomProof reads every mask (sheet, vignette, sun) through the stopsOf it is handed, no clip, and no parser of its own.
-ok('P2d zoomProof reads its three masks through stopsOf, no clip, no parser of its own', /^function zoomProof\(holeOf, stopsOf\)/.test(zp) && !/matchAll/.test(zp) && (zp.match(/holeOf\(/g) || []).length === 0 && (zp.match(/stopsOf\(/g) || []).length === 3, '');
+// PARKED 2026-11-08 (SUPERSEDED - r22, Fable's ruling 1: the sheet retired, so zoomProof V7 reads two masks, the vignette's and the sun's;
+// V6 is kept in scripts/frames/arbor2.mjs as zoomProofV6). Original, verbatim:
+// ok('P2d zoomProof reads its three masks through stopsOf, no clip, no parser of its own', /^function zoomProof\(holeOf, stopsOf\)/.test(zp) && !/matchAll/.test(zp) && (zp.match(/holeOf\(/g) || []).length === 0 && (zp.match(/stopsOf\(/g) || []).length === 3, '');
+// SUCCESSOR P2e: zoomProof (V7) reads its two masks (vignette, sun) through the stopsOf it is handed, no clip, and no parser of its own.
+ok('P2e zoomProof reads its two masks through stopsOf, no clip, no parser of its own', /^function zoomProof\(holeOf, stopsOf\)/.test(zp) && !/matchAll/.test(zp) && (zp.match(/holeOf\(/g) || []).length === 0 && (zp.match(/stopsOf\(/g) || []).length === 2, '');
 ok('P2b holeOf refuses a clip with no hole', holeOf('path(evenodd, "M0 0H10V10H0Z")') === null && holeOf('') === null && holeOf('none') === null, '');
 // P3 stopsOf reads a computed gradient in each colour spelling Chrome may hand back, and the axis CSS defaults to
 const g3 = stopsOf('linear-gradient(to right, rgb(0, 0, 0) 187px, rgba(0, 0, 0, 0) 235px, rgba(0, 0, 0, 0) 1131.5px, rgb(0, 0, 0) 1179.5px), linear-gradient(rgb(0 0 0 / 0) 0px, rgb(0 0 0) 48px, transparent 60px, #000 70px)');
@@ -54,9 +63,14 @@ const at = (st, v) => {
   for (let i = 1; i < st.length; i++) if (v <= st[i].px) return st[i].px === st[i - 1].px ? st[i].a : st[i - 1].a + (st[i].a - st[i - 1].a) * (v - st[i - 1].px) / (st[i].px - st[i - 1].px);
   return st[st.length - 1].a;
 };
-const box = { l: 187, t: 107, r: 1179.5, b: 678 }, W = box.r - box.l, H = box.b - box.t, F = featherFor(W, H);
-const sg = stopsOf(sheetMask(W, H, F)), vg = stopsOf(vignetteMask(box, F));
-const sA = (x, y) => sg.reduce((m, g) => m * at(g.stops, g.axis === 'x' ? x - box.l : y - box.t), 1);
+// PARKED 2026-11-08 (SUPERSEDED - r22, Fable's ruling 1: the sheet and its feather retired; these drivers call the retired helpers). Original, verbatim:
+// const box = { l: 187, t: 107, r: 1179.5, b: 678 }, W = box.r - box.l, H = box.b - box.t, F = featherFor(W, H);
+// const sg = stopsOf(sheetMask(W, H, F)), vg = stopsOf(vignetteMask(box, F));
+// const sA = (x, y) => sg.reduce((m, g) => m * at(g.stops, g.axis === 'x' ? x - box.l : y - box.t), 1);
+// const vA = (x, y) => 1 - vg.reduce((m, g) => m * (1 - at(g.stops, g.axis === 'x' ? x : y)), 1);
+// SUCCESSOR: the same box; the vignette's hole is the only mask over a page now, and it is hard (feather 0) - a framed, unzoomed page.
+const box = { l: 187, t: 107, r: 1179.5, b: 678 }, W = box.r - box.l, H = box.b - box.t;
+const vg = stopsOf(vignetteMask(box, 0));
 const vA = (x, y) => 1 - vg.reduce((m, g) => m * (1 - at(g.stops, g.axis === 'x' ? x : y)), 1);
 // PARKED 2026-10-31 (SUPERSEDED: spec §10b, Fable Oct 31 - "No diffused or vignetted paper edges on the zoomed page": FEATHER is 0 and the
 // zoomed sheet is a hard rectangle with no mask). Original, verbatim:
@@ -65,11 +79,20 @@ const vA = (x, y) => 1 - vg.reduce((m, g) => m * (1 - at(g.stops, g.axis === 'x'
 //   && [sA(box.l + F, box.t + F), sA(box.r - F, box.b - F), sA(700, 400)].every((v) => v === 1), '');
 // SUCCESSOR P4b: no feather on any sheet, and paper.ts writes the sheet's mask only when there is a feather (so the r5 sheet carries none).
 const paperSrc = fs.readFileSync(new URL('../../src/arbor2/paper.ts', import.meta.url), 'utf8');
-ok('P4b no feather (FEATHER 0, on a full page and a small one), and a featherless sheet carries no mask', FEATHER === 0 && F === 0 && featherFor(100, 60) === 0 && featherFor(4, 4) === 0
-  && paperSrc.includes("(f > 0 ? `mask-image:${sheetMask(w, h, f)};mask-composite:intersect` : '')"), JSON.stringify({ FEATHER, F }));
-let worst = 0;
-for (let i = 0; i <= 40; i++) for (let j = 0; j <= 40; j++) { const x = box.l + W * i / 40, y = box.t + H * j / 40; worst = Math.max(worst, Math.abs(sA(x, y) + vA(x, y) - 1)); }
-ok('P4 vignette + paper = 1 everywhere on the page (41 x 41), corners included', worst < 1e-9, String(worst));
+// PARKED 2026-11-08 (SUPERSEDED - r22, Fable's ruling 1: "while Typewriter is on, Arbor's page draws no fill or edge of its own" - there is no
+// sheet to carry a mask, and no complement for the vignette to keep). Original, verbatim:
+// ok('P4b no feather (FEATHER 0, on a full page and a small one), and a featherless sheet carries no mask', FEATHER === 0 && F === 0 && featherFor(100, 60) === 0 && featherFor(4, 4) === 0
+//   && paperSrc.includes("(f > 0 ? `mask-image:${sheetMask(w, h, f)};mask-composite:intersect` : '')"), JSON.stringify({ FEATHER, F }));
+// let worst = 0;
+// for (let i = 0; i <= 40; i++) for (let j = 0; j <= 40; j++) { const x = box.l + W * i / 40, y = box.t + H * j / 40; worst = Math.max(worst, Math.abs(sA(x, y) + vA(x, y) - 1)); }
+// ok('P4 vignette + paper = 1 everywhere on the page (41 x 41), corners included', worst < 1e-9, String(worst));
+// SUCCESSOR P4c: the sheet is gone from paper.ts - none of its helpers is exported, nothing makes an .arbor2-paper or sets data-arbor2-sheet -
+// and the vignette's hole is written only for a page that is not zoomed (the zoomed page's own bareness and the unbroken shade are measured
+// on screen: zoomProof V7, scripts/frames/arbor2.mjs, and r22-typewriter, scripts/frames/arbor2-r22.mjs).
+const gone = ['sheetMask', 'featherFor', 'FEATHER'].filter((n) => n in paperMod);
+ok('P4c no sheet: no sheet helper exported, no .arbor2-paper made, no data-arbor2-sheet set, and the vignette hole only off the zoom',
+  gone.length === 0 && !/arbor2-paper'/.test(paperSrc) && !/setAttribute\('data-arbor2-sheet'/.test(paperSrc)
+  && paperSrc.includes("if (v && !v.zoomed) root.style.setProperty('--arbor2-vignette-mask', vignetteMask(v.box, 0));"), JSON.stringify({ exported: gone }));
 ok('P4 the vignette is whole just outside the page', [[box.l - 1, 400], [box.r + 1, 400], [700, box.t - 1], [700, box.b + 1], [box.l - 1, box.t - 1]].every(([x, y]) => vA(x, y) === 1), '');
 const hg = stopsOf(vignetteMask(box, 0));
 const hA = (x, y) => 1 - hg.reduce((m, g) => m * (1 - at(g.stops, g.axis === 'x' ? x : y)), 1);

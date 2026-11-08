@@ -170,7 +170,8 @@ export default {
       out.tokens = { g: cs.getPropertyValue('--ink-950').trim().toUpperCase(), s: cs.getPropertyValue('--ink-900').trim().toUpperCase() };
       const p = document.querySelector('.mode-page'), ed = document.querySelector('${ED}'), sheet = document.querySelector('.arbor2-paper[data-on="true"]');
       const paper = p ? parse(sheet ? getComputedStyle(sheet).backgroundColor : getComputedStyle(p).backgroundColor) : null, ink = ed ? parse(getComputedStyle(ed).color) : null, low = p ? tok(p, '--ink-on-paper-low') : null;
-      out.page = { paper: hex(paper), ink: hex(ink), low: hex(low), inkRatio: paper && ink ? ratio(ink, paper) : null, lowRatio: paper && low ? ratio(low, paper) : null };
+      out.page = { paper: hex(paper), ink: hex(ink), low: hex(low), inkRatio: paper && ink ? ratio(ink, paper) : null, lowRatio: paper && low ? ratio(low, paper) : null,
+        zoom: p ? p.closest('.mode-pagecol')?.getAttribute('data-zoom') ?? null : null, bg: p ? getComputedStyle(p).backgroundColor : null };
       return out; })()`;
     await page(app, 'arbor-r8-contrast', WORDS);
     await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'arbor2-r8-lit'; s.textContent = '*{ --arbor2-dim:1 !important; transition:none !important; }'; document.head.appendChild(s); document.documentElement.setAttribute('data-arbor2-lit', ''); })()");
@@ -211,7 +212,14 @@ export default {
       const n = parseInt(r.tokens.g.replace('#', ''), 16);
       const roomOk = want === 'night' ? r.tokens.g === '#120A06' && r.tokens.s === '#1B120C' : (n >> 16) >= 0xEC && (n & 255) >= 0xC4 && r.tokens.s === '#E8DFC8';
       if (!roomOk) problems.push({ stage: r.stage, tokens: r.tokens });
-      if (r.page.paper !== PAPER || !(r.page.inkRatio >= 13.9) || !(r.page.lowRatio >= 4.5)) problems.push({ stage: r.stage, page: r.page });
+      // PARKED 2026-11-08 (SUPERSEDED - r22, Fable's ruling 1 on Nick's walk, Nov 8: "while Typewriter is on, Arbor's page draws no fill or edge
+      // of its own; the words sit on the room's ground ...; the text floors hold, measured on the room" - the Free Write stages are zoomed: the page
+      // has no paper (this read black through the retired sheet's fallback) and the ratios were taken against it). Original, verbatim:
+      // if (r.page.paper !== PAPER || !(r.page.inkRatio >= 13.9) || !(r.page.lowRatio >= 4.5)) problems.push({ stage: r.stage, page: r.page });
+      // SUCCESSOR: a page off the zoom as before; the zoomed page bare (its background clear) with the room's ink - cream #EFE4CB by night, walnut
+      // #1A0F06 by day - its floor on the room's own pixels being r22-typewriter's (scripts/frames/arbor2-r22.mjs).
+      if (r.page.zoom === 'true') { if (!/^rgba\(0, 0, 0, 0\)$|^transparent$/.test(r.page.bg || '') || r.page.ink !== (want === 'night' ? '#EFE4CB' : '#1A0F06')) problems.push({ stage: r.stage, page: r.page }); }
+      else if (r.page.paper !== PAPER || !(r.page.inkRatio >= 13.9) || !(r.page.lowRatio >= 4.5)) problems.push({ stage: r.stage, page: r.page });
     }
     if (!picks.day || !picks.night) problems.unshift({ picks });
     const all = reads.flatMap((r) => r.pairs);
