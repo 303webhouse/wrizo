@@ -94,17 +94,31 @@ const screens = {
     await app.evalJs(caretEnd); await key(app, 'Enter', 'Enter', 13, '\r'); await sleep(300); await key(app, 'w', 'KeyW', 87, 'w');
     await sleep(3500); await app.evalJs(FINISH); await sleep(200);
     const wr = await app.evalJs(R);
-    await key(app, 'Escape', 'Escape', 27); await sleep(1500); await app.evalJs(FINISH); await sleep(200);
+    // PARKED 2026-11-08 (SUPERSEDED - Actions frames 42522633708, 4 of 4 red on this line only: Esc returns the chrome AND closes the open Tools
+    // drawer, so the tabs rightly left with it (back: tabs at 0, taking the pointer again - not writing). The return that keeps the drawer open is
+    // the writer reaching for the chrome: the pointer resting at the top edge, as the walk drives it). Original, verbatim:
+    // await key(app, 'Escape', 'Escape', 27); await sleep(1500); await app.evalJs(FINISH); await sleep(200);
+    // SUCCESSOR: the edge dwell brings the chrome back with the drawer still open (panel and tabs both return); then Esc closes the drawer and
+    // the tabs go with it (they follow their drawer that way too).
+    const [W] = await app.evalJs('[innerWidth, innerHeight]'); const x = Math.round(W * 0.5);
+    await app.mouseMove(x, 300); await sleep(60); for (let i = 0; i < 8; i++) { await app.mouseMove(x + (i % 2 ? 2 : -2), 18); await sleep(90); }
+    await sleep(1500); await app.evalJs(FINISH); await sleep(200);
     const back = await app.evalJs(R);
+    await key(app, 'Escape', 'Escape', 27); await sleep(1200); await app.evalJs(FINISH); await sleep(200);
+    const shut = await app.evalJs(R);
     const ok = {
       seen: !!rest.tabs && rest.tabs.n >= 2 && rest.tabs.op === 1 && !!rest.panel && rest.panel.open === 'true' && rest.panel.op === 1,
       writing: wr.writing === 'true',
       panelFaded: !!wr.panel && wr.panel.op === 0,
       tabsFollow: !!wr.tabs && wr.tabs.op === 0 && wr.tabs.pe === 'none',
-      returned: back.writing !== 'true' && !!back.tabs && back.tabs.op === 1 && !!back.panel && back.panel.op === 1,
+      // PARKED 2026-11-08 (SUPERSEDED - as the Esc line above: it read the return after Esc, which closes the drawer). Original, verbatim:
+      // returned: back.writing !== 'true' && !!back.tabs && back.tabs.op === 1 && !!back.panel && back.panel.op === 1,
+      // SUCCESSOR: after the edge dwell, the drawer still open and both back at full
+      returned: back.writing !== 'true' && !!back.tabs && back.tabs.op === 1 && back.tabs.pe !== 'none' && !!back.panel && back.panel.open === 'true' && back.panel.op === 1,
+      closedTogether: !!shut.panel && shut.panel.open !== 'true' && !!shut.tabs && shut.tabs.op === 0,
     };
-    if (Object.values(ok).some((x) => !x)) fail('R22-TABS-FOLLOW', { ok, rest, wr, back });
-    say('r22-tabs-follow', { ok, rest, wr, back });
+    if (Object.values(ok).some((x) => !x)) fail('R22-TABS-FOLLOW', { ok, back, shut, wr: wr.tabs });
+    say('r22-tabs-follow', { ok, back, shut, wr: wr.tabs });
   },
 
   // ── 4. THE DAY LOGO, DARKER: the corner mark's ink as drawn (at .7) against the plaster around it, read from the screen, >= 3:1
@@ -136,30 +150,63 @@ const screens = {
 
   // ── 5. THE SPLASH: only the arrows animate (the five stage outlines never light), and the run is faster (the arrows done in <= 1.5 s)
   'r22-splash-arrows': async (app) => {
-    const SAMPLER = `(() => { const t0 = performance.now(); window.__r22 = { outlinesMax: 0, first: null, done: null, edges: 0, sketchDone: null, samples: 0 };
-      const tick = () => { const s = window.__r22; const svg = document.querySelector('.wz-splash .wz-splash-arbor');
-        if (svg) { s.samples++; const st = [...svg.querySelectorAll('g[data-stage]')]; st.forEach((g) => { const o = Number(getComputedStyle(g).opacity); if (o > s.outlinesMax) s.outlinesMax = o; });
-          const ps = [...svg.querySelectorAll('mask path')]; s.edges = ps.length; const offs = ps.map((p) => Number(getComputedStyle(p).strokeDashoffset.replace('px', '')));
-          const now = Math.round(performance.now() - t0); if (s.first === null && offs.some((v) => v < 0.98)) s.first = now; if (s.done === null && ps.length && offs.every((v) => v <= 0.001)) s.done = now; }
-        const f = window.wrizoArborFront; if (f && f.sketchDone && s.sketchDone === null) s.sketchDone = Math.round(f.sketchDone - t0);
-        if (performance.now() - t0 < 12000) requestAnimationFrame(tick); };
-      requestAnimationFrame(tick); })();`;
+    // PARKED 2026-11-08 (SUPERSEDED - Actions frames 42522633708, 4 of 4 red: a requestAnimationFrame sampler during the page's load got 5-10
+    // samples, so it never saw an arrow start or finish (first/done null) while the frames show the arrows drawn; the instrument, not the app.
+    // It also read only the splash, and the front door's own finished drawing (Arrival.tsx, the same mark `reduced`) still lit the outlines -
+    // the app fix is in SplashMark.tsx). Original, verbatim:
+    // const SAMPLER = `(() => { const t0 = performance.now(); window.__r22 = { outlinesMax: 0, first: null, done: null, edges: 0, sketchDone: null, samples: 0 };
+      // const tick = () => { const s = window.__r22; const svg = document.querySelector('.wz-splash .wz-splash-arbor');
+        // if (svg) { s.samples++; const st = [...svg.querySelectorAll('g[data-stage]')]; st.forEach((g) => { const o = Number(getComputedStyle(g).opacity); if (o > s.outlinesMax) s.outlinesMax = o; });
+          // const ps = [...svg.querySelectorAll('mask path')]; s.edges = ps.length; const offs = ps.map((p) => Number(getComputedStyle(p).strokeDashoffset.replace('px', '')));
+          // const now = Math.round(performance.now() - t0); if (s.first === null && offs.some((v) => v < 0.98)) s.first = now; if (s.done === null && ps.length && offs.every((v) => v <= 0.001)) s.done = now; }
+        // const f = window.wrizoArborFront; if (f && f.sketchDone && s.sketchDone === null) s.sketchDone = Math.round(f.sketchDone - t0);
+        // if (performance.now() - t0 < 12000) requestAnimationFrame(tick); };
+      // requestAnimationFrame(tick); })();`;
+    // const { identifier } = await app.cdp('Page.addScriptToEvaluateOnNewDocument', { source: SAMPLER });
+    // try {
+      // await app.evalJs("history.replaceState(null, '', '/?arbor2=1#/')"); await app.reload();
+      // await waitSoft(app, "!!window.__r22 && window.__r22.done !== null", { label: 'arrows done', timeout: 15000 }); await sleep(1500);
+    // } finally { await app.cdp('Page.removeScriptToEvaluateOnNewDocument', { identifier }).catch(() => {}); }
+    // const s = await app.evalJs('window.__r22');
+    // const run = s && s.first !== null && s.done !== null ? s.done - s.first : null;
+    // const ok = { sampled: !!s && s.samples > 20 && s.edges === 6, outlinesNeverLight: !!s && s.outlinesMax === 0, arrowsDrew: !!s && s.first !== null && s.done !== null, faster: run !== null && run <= 1500 };
+    // if (Object.values(ok).some((x) => !x)) fail('R22-SPLASH-ARROWS', { ok, s, run });
+    // say('r22-splash-arrows', { ok, s, run });
+    // SUCCESSOR: read the plan, not the paint. From document start a 16 ms interval (not a frame callback) records the six arrows' own animation
+    // timings (delay + duration, already scaled) the moment they exist, the stage outlines' animation count and their highest opacity; then,
+    // with the splash gone, the front door's finished drawing: every arrow drawn, every outline still at 0 (cream).
+    const SAMPLER = `(() => { const t0 = performance.now(); window.__r22b = { plan: null, outlineAnims: 0, outlinesMax: 0, samples: 0 };
+      const iv = setInterval(() => { const s = window.__r22b; const svg = document.querySelector('.wz-splash .wz-splash-arbor'); if (!svg) { if (performance.now() - t0 > 12000) clearInterval(iv); return; }
+        s.samples++; const st = [...svg.querySelectorAll('g[data-stage]')]; st.forEach((g) => { const o = Number(getComputedStyle(g).opacity); if (o > s.outlinesMax) s.outlinesMax = o; s.outlineAnims = Math.max(s.outlineAnims, g.getAnimations().length); });
+        const ps = [...svg.querySelectorAll('mask path')];
+        if (!s.plan && ps.length === 6 && ps.every((p) => p.getAnimations().length)) s.plan = ps.map((p) => { const t = p.getAnimations()[0].effect.getTiming(); return [Math.round(Number(t.delay)), Math.round(Number(t.duration))]; });
+        if (performance.now() - t0 > 12000) clearInterval(iv); }, 16); })();`;
     const { identifier } = await app.cdp('Page.addScriptToEvaluateOnNewDocument', { source: SAMPLER });
     try {
       await app.evalJs("history.replaceState(null, '', '/?arbor2=1#/')"); await app.reload();
-      await waitSoft(app, "!!window.__r22 && window.__r22.done !== null", { label: 'arrows done', timeout: 15000 }); await sleep(1500);
+      await waitSoft(app, '!!window.__r22b && !!window.__r22b.plan', { label: 'the arrows planned', timeout: 15000 });
+      await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 20000 }); await sleep(800);
     } finally { await app.cdp('Page.removeScriptToEvaluateOnNewDocument', { identifier }).catch(() => {}); }
-    const s = await app.evalJs('window.__r22');
-    const run = s && s.first !== null && s.done !== null ? s.done - s.first : null;
-    const ok = { sampled: !!s && s.samples > 20 && s.edges === 6, outlinesNeverLight: !!s && s.outlinesMax === 0, arrowsDrew: !!s && s.first !== null && s.done !== null, faster: run !== null && run <= 1500 };
-    if (Object.values(ok).some((x) => !x)) fail('R22-SPLASH-ARROWS', { ok, s, run });
-    say('r22-splash-arrows', { ok, s, run });
+    const s = await app.evalJs('window.__r22b');
+    const door = await app.evalJs("(() => { const svg = document.querySelector('.arbor2-front-mark .wz-splash-arbor'); if (!svg) return null; return { outlines: [...svg.querySelectorAll('g[data-stage]')].map((g) => Number(getComputedStyle(g).opacity)), arrows: [...svg.querySelectorAll('mask path')].map((p) => Number(getComputedStyle(p).strokeDashoffset.replace('px', ''))) }; })()");
+    const span = s && s.plan ? Math.max(...s.plan.map(([d, u]) => d + u)) - Math.min(...s.plan.map(([d]) => d)) : null;
+    const ok = { planned: !!s && !!s.plan && s.plan.length === 6 && s.samples > 0, outlinesNeverAnimate: !!s && s.outlineAnims === 0 && s.outlinesMax === 0,
+      faster: span !== null && span <= 1500, doorArrowsDrawn: !!door && door.arrows.length === 6 && door.arrows.every((v) => v <= 0.001), doorOutlinesCream: !!door && door.outlines.length === 5 && door.outlines.every((o) => o === 0) };
+    if (Object.values(ok).some((x) => !x)) fail('R22-SPLASH-ARROWS', { ok, span, s, door });
+    say('r22-splash-arrows', { ok, span, s, door });
   },
   // mid-run: the arrows part-drawn in brass, every stage outline still Nick's cream
   'r22-pic-splash-mid': async (app) => {
     await app.evalJs("history.replaceState(null, '', '/?arbor2=1#/')"); await app.reload();
-    await waitSoft(app, "(() => { const ps = [...document.querySelectorAll('.wz-splash .wz-splash-arbor mask path')]; return ps.length === 6 && ps.some((p) => Number(getComputedStyle(p).strokeDashoffset.replace('px', '')) <= 0.001) && ps.some((p) => Number(getComputedStyle(p).strokeDashoffset.replace('px', '')) > 0.5); })()", { label: 'mid-run', timeout: 10000 });
-    await app.evalJs("document.getAnimations().forEach((a) => { try { a.pause(); } catch {} }); true");
+    // PARKED 2026-11-08 (SUPERSEDED - Actions frames 42522633708: the 100 ms poll missed the ~1.1 s run, so the frame was the finished front door,
+    // not mid-run). Original, verbatim:
+    // await waitSoft(app, "(() => { const ps = [...document.querySelectorAll('.wz-splash .wz-splash-arbor mask path')]; return ps.length === 6 && ps.some((p) => Number(getComputedStyle(p).strokeDashoffset.replace('px', '')) <= 0.001) && ps.some((p) => Number(getComputedStyle(p).strokeDashoffset.replace('px', '')) > 0.5); })()", { label: 'mid-run', timeout: 10000 });
+    // await app.evalJs("document.getAnimations().forEach((a) => { try { a.pause(); } catch {} }); true");
+    // SUCCESSOR: as soon as the six arrows' animations exist, pause every animation and set the splash's to the run's middle moment (all six
+    // start together, so one currentTime is one moment; the delays are inside it).
+    await waitSoft(app, "(() => { const ps = [...document.querySelectorAll('.wz-splash .wz-splash-arbor mask path')]; return ps.length === 6 && ps.every((p) => p.getAnimations().length); })()", { label: 'arrows planned', timeout: 10000 });
+    const mid = await app.evalJs("(() => { document.getAnimations().forEach((a) => { try { a.pause(); } catch {} }); const as = [...document.querySelectorAll('.wz-splash .wz-splash-arbor mask path')].map((p) => p.getAnimations()[0]); const t = as.map((a) => a.effect.getTiming()); const lo = Math.min(...t.map((x) => Number(x.delay))), hi = Math.max(...t.map((x) => Number(x.delay) + Number(x.duration))); const m = (lo + hi) / 2; as.forEach((a) => { a.currentTime = m; }); return { lo, hi, m }; })()");
+    say('r22-pic-splash-mid', { mid });
   },
 };
 

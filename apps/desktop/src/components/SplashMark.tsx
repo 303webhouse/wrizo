@@ -71,7 +71,10 @@ function ArborMark({ reduced, width, height, onFloorReached }: MarkProps) {
       // Brief: "Reduced motion: the finished brass drawing shows at once,
       // then the usual fade" — every outline and connector snaps to its lit
       // end state, no glow burst, no pop scale (it settles at rest=1 anyway).
-      Object.values(outlineRefs.current).forEach((g) => { if (g) g.style.opacity = '1'; });
+      // ARBOR v2 MOCKUP r22 (Nick's walk, Nov 8: "ONLY the arrows animate (orange = the writer's acts)"): under the flag the finished frame -
+      // reduced motion, and the front door's own copy of the drawing (Arrival.tsx renders this mark `reduced`) - lights only the arrows; the
+      // stage outlines stay Nick's cream (Actions frames 42522633708: the front door still drew TEXT, FEEDBACK and the boxes in brass)
+      if (!isArbor2()) Object.values(outlineRefs.current).forEach((g) => { if (g) g.style.opacity = '1'; });
       Object.values(pathRefs.current).forEach((p) => { if (p) p.style.strokeDashoffset = '0'; });
       onFloorReached();
       return;
