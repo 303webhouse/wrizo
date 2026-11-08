@@ -800,13 +800,21 @@ try { await withHarness(async (app) => {
   const kDarkJ = await caretOf({ tone: 'dark', id: CARETP });
   const kDarkSt = await st();
   ok(`CARET-JACKED-DARK [successor] Jacked In's dark caret is solid brass, #FF9800 (${kDarkJ && kDarkJ.caret}; jacked ${kDarkSt.jacked})`, kDarkSt.jacked && !!kDarkJ && kDarkJ.caret === 'rgb(255, 152, 0)', JSON.stringify(kDarkJ));
-  // CARET-DARK-PIXELS (Fable, Nov 8: "a pixel check"): the colour the block PAINTS, read from the viewport's own screenshot inside the block (under
-  // reduced motion, so no blink phase can catch it unpainted): brass, (255, 152, 0) within 8 a channel, not the .82 blend (~#D98307)
+  // CARET-DARK-PIXELS (Fable, Nov 8: "a pixel check"): the colour the block PAINTS, read from the viewport's own screenshot inside the block:
+  // brass, (255, 152, 0) within 8 a channel, not the .82 blend (~#D98307). The read types one key first, so the block is SOLID for the shot
+  // (FluxBlockCaret §6: no blink phase can catch it unpainted). Not under reduced motion: there the zoomed Typewriter leaves the caret below the
+  // window (48cf08a4's run: y 923 of 768, the read was the ground). The block must stand on screen, or the read proves nothing
   const caretPixel = async (o) => {
-    const k = await caretOf({ ...o, reduced: true });
-    if (!k || !k.at) return { k, px: null, st0: await st() };
+    await caretOf({ ...o });
+    await app.typeKeys('x');
+    await sleep(150);
+    const k = await ev('window.__f4.caretInk()');
+    const st0 = await st();
+    const vh = await ev('innerHeight');
+    if (!k || !k.at) return { k, px: null, st0, seen: false };
     const [x, y, w, h] = k.at;
-    return { k, px: await pixOf({ x: x + 1, y: y + 2, width: Math.max(2, w - 2), height: Math.max(2, h - 4) }), st0: await st() };
+    const seen = y >= 0 && y + h <= vh && w > 0;
+    return { k, px: seen ? await pixOf({ x: x + 1, y: y + 2, width: Math.max(2, w - 2), height: Math.max(2, h - 4) }) : null, st0, seen };
   };
   const brassPx = (p) => !!p && !!p.px && Math.abs(p.px.ground[0] - 255) <= 8 && Math.abs(p.px.ground[1] - 152) <= 8 && p.px.ground[2] <= 8;
   const cpD = await caretPixel({ tone: 'dark', id: CARETP });
@@ -1219,7 +1227,8 @@ try { await withHarness(async (app) => {
     mOl.landed === 1 && !caretBrassOk(mOl.r.k, mOl.r.st0), JSON.stringify({ landed: mOl.landed, k: mOl.r.k }));
   const mDb = await withMutant('darkbrass', () => caretPixel({ tone: 'dark', id: CARETP }));
   ok(`MUT-DARKBRASS (landed, in boot-*.css) Jacked In's dark caret back to the shared .82 orange: CARET-DARK-PIXELS and CARET-JACKED-DARK fail (paints ${mDb.r.px && JSON.stringify(mDb.r.px.ground)}; ${mDb.r.k && mDb.r.k.caret})`,
-    mDb.landed === 1 && !brassPx(mDb.r) && !!mDb.r.k && mDb.r.k.caret !== 'rgb(255, 152, 0)', JSON.stringify({ landed: mDb.landed, r: mDb.r }));
+    // (the block on screen and its pixels read: 48cf08a4's run read the ground under a caret below the window, and this passed blind)
+    mDb.landed === 1 && mDb.r.seen && !!mDb.r.px && !brassPx(mDb.r) && !!mDb.r.k && mDb.r.k.caret !== 'rgb(255, 152, 0)', JSON.stringify({ landed: mDb.landed, r: mDb.r }));
   const mBl = await withMutant('blink', () => testBlink(false));
   ok(`MUT-BLINK (landed, in index-*.css) the block caret blinking while keys land again: CARET-SOLID fails (during: ${JSON.stringify(mBl.r.during.map((d) => d && d.anim))})`,
     mBl.landed === 1 && !solidOk(mBl.r), JSON.stringify({ landed: mBl.landed, during: mBl.r.during }));
