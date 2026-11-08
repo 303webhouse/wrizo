@@ -127,6 +127,10 @@ const INSTRUMENT = `(() => {
   const I = window.__f4 = { keys: [], first: null, layerMut: [], draws: 0, frames: [] };
   window.__wzVerifyFlashes = true;
   window.__wzVerifyCompile = true;   // FluxJackedIn's harness-only log of why each compile stopped
+  // every event the compile's pause listens to, counted (r10b: at rest after opening the compile never ran at all: something kept resetting it)
+  I.evc = {};
+  for (const t of ['selectionchange', 'keydown', 'beforeinput', 'wz-zoom-changed', 'scroll']) document.addEventListener(t, (e) => { const k = t === 'scroll' ? 'scroll:' + ((e.target && e.target.className && String(e.target.className).slice(0, 24)) || (e.target === document ? 'document' : '?')) : t; I.evc[k] = (I.evc[k] || 0) + 1; }, true);
+  addEventListener('resize', () => { I.evc.resize = (I.evc.resize || 0) + 1; });
   addEventListener('keydown', () => I.keys.push(performance.now()), true);
   // the first frame in which the editor exists: was the page already zoomed (jacked in)?
   const watchFirst = () => { const ed = document.querySelector('.forward-only-editor'); if (ed) { const c = document.querySelector('.mode-pagecol'); I.first = { at: performance.now(), zoom: c ? c.getAttribute('data-zoom') : null, jacked: document.documentElement.hasAttribute('data-flux3-jacked') }; return; } requestAnimationFrame(watchFirst); };
@@ -210,7 +214,8 @@ const INSTRUMENT = `(() => {
   I.caretInk = () => { const bc = document.querySelector('.flux-block-caret'); if (!bc) return null; const r = bc.getBoundingClientRect(); if (!r.width || !r.height) return null;
     const rgba = (s) => { if (!s || !s.startsWith('rgb')) return null; const v = s.replace(/[^0-9.,]/g, '').split(',').map(Number); return v.length >= 3 ? [v[0], v[1], v[2], v.length > 3 ? v[3] : 1] : null; };
     const under = document.elementsFromPoint(r.left + r.width / 2, r.top + r.height / 2).filter((e) => e !== bc).map((e) => ({ e, c: rgba(getComputedStyle(e).backgroundColor) })).find((x) => x.c && x.c[3] >= 0.99);
-    const cc = rgba(getComputedStyle(bc).backgroundColor); if (!cc || !under) return { caret: getComputedStyle(bc).backgroundColor, page: null, ratio: null };
+    const cc = rgba(getComputedStyle(bc).backgroundColor); if (!cc || !under) return { caret: getComputedStyle(bc).backgroundColor, page: null, ratio: null, at: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)], vh: innerHeight,
+      stack: document.elementsFromPoint(r.left + r.width / 2, r.top + r.height / 2).slice(0, 6).map((e) => String(e.className || e.tagName).slice(0, 30) + ':' + getComputedStyle(e).backgroundColor) };
     const page = under.c.slice(0, 3), ink = cc.slice(0, 3).map((v, k) => v * cc[3] + page[k] * (1 - cc[3]));
     const lum = (c) => { const l = c.map((v) => { const x = v / 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }); return 0.2126 * l[0] + 0.7152 * l[1] + 0.0722 * l[2]; };
     const a = lum(ink), b = lum(page);
@@ -218,7 +223,7 @@ const INSTRUMENT = `(() => {
     const bs = getComputedStyle(bc), oc = rgba(bs.outlineColor), ow = parseFloat(bs.outlineWidth) || 0;
     const oInk = oc ? oc.slice(0, 3).map((v, k) => v * oc[3] + page[k] * (1 - oc[3])) : null, ol = oInk ? lum(oInk) : null;
     const outline = { style: bs.outlineStyle, width: ow, color: bs.outlineColor, ratio: ol === null || bs.outlineStyle === 'none' || ow <= 0 ? null : +((Math.max(ol, b) + 0.05) / (Math.min(ol, b) + 0.05)).toFixed(2) };
-    return { caret: bs.backgroundColor, page, pageEl: String(under.e.className || under.e.tagName).slice(0, 60), ink: ink.map(Math.round), ratio: +((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)).toFixed(2), outline }; };
+    return { at: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)], caret: bs.backgroundColor, page, pageEl: String(under.e.className || under.e.tagName).slice(0, 60), ink: ink.map(Math.round), ratio: +((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)).toFixed(2), outline }; };
   // THE CARET AT THE TEXT'S END (the Wrizors' S4 r9 review: the block stood on the last word's first letter): Flux's block caret against the
   // right edge of the text's last character, and how the selection is held (a text node, or an element boundary)
   I.blockAt = () => { const bc = document.querySelector('.flux-block-caret'), ed = I.ed(), s = getSelection(); if (!ed) return null;
@@ -939,6 +944,10 @@ try { await withHarness(async (app) => {
     await open({ tone });
     const flashes0 = await ev('(window.__wzFlashLog || []).filter((f) => f.kind === "f3-compile").map((f) => f.ok)');
     const clog = await ev('(window.__wzCompileLog || []).map((x) => x[1])');
+    // and over one more second of rest, the events that reset the compile's pause
+    await ev('(() => { window.__f4.evc = {}; return true; })()'); await sleep(1000);
+    const restEvents = await ev('window.__f4.evc');
+    console.log(`INFO OPEN-ROWS-WHY (${tone}) compile log ${JSON.stringify(clog)}; events in one second of rest ${JSON.stringify(restEvents)}`);
     const rest = await ev("({ n: document.querySelectorAll('[data-flux3-compile] .flux3-compile-word').length })");
     await ev("(() => { window.__f4.firstSig = document.querySelector('[data-flux3-compile] .flux3-compile-word'); return true; })()");
     const k0 = await ev('window.__f4.keys.length');
@@ -1153,8 +1162,10 @@ try { await withHarness(async (app) => {
   // the compile stopped before the budget), so this guard was blind; the cause is MUT-OPENROWS'. Kept VERBATIM and no longer run.
   // ok(`MUT-RETRY (landed) a refused compile never tried again: OPEN-ROWS fails (rows at rest ${mRt.r.rest.n}; grants ${JSON.stringify(mRt.r.flashes0)})`, mRt.landed === 1 && mRt.r.rest.n < 8, JSON.stringify({ landed: mRt.landed, r: mRt.r }));
   if (process.env.HARNESS_PARKED === '1') {
-    pok('PARKED (was "MUT-CARETEND (landed) the caret\'s text-end place off: CARET-END fails") - SUPERSEDED by its own first run (Actions 42431319040: the burst did not reproduce the flagged frame). Opposite reasserted: with the fix off, the burst scenario still puts the caret at the end; live successor MUT-CARETEND [successor]',
-      mCe.landed === 1 && atEnd(mCe.r), JSON.stringify(mCe.r));
+    // (re-pointed in the same unmerged round: 42433836311's burst DID reproduce it with the fix off, so the burst alone is a sometime witness;
+    // the claim that holds: across the burst and the frame's own scenario, the fix off is caught)
+    pok('PARKED (was "MUT-CARETEND (landed) the caret\'s text-end place off: CARET-END fails") - SUPERSEDED by its own first run (Actions 42431319040: the burst alone did not reproduce the flagged frame; on 42433836311 it did). Opposite reasserted: the burst is a sometime witness, and with the frame\'s own scenario beside it the fix off is always caught; live successor MUT-CARETEND [successor]',
+      mCe.landed === 1 && mCeB.landed === 1 && (!atEnd(mCe.r) || !atEnd(mCeB.r)), JSON.stringify({ burst: mCe.r, compiled: mCeB.r }));
     pok('PARKED (was "MUT-RETRY (landed) a refused compile never tried again: OPEN-ROWS fails") - SUPERSEDED by its own first run (Actions 42431319040: no compile was refused at open). Opposite reasserted: with the retry stripped, the open\'s compile is never refused (the compile log has no "refused"), so the retry is not what draws the open\'s rows; live successor MUT-OPENROWS',
       mRt.landed === 1 && !(mRt.r.clog || []).includes('refused'), JSON.stringify({ clog: mRt.r.clog, rows: mRt.r.rest.n }));
   }
