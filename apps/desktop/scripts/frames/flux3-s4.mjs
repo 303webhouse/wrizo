@@ -1,5 +1,5 @@
 // FLUX3 S4 - JACKED IN as named screens for the frames job (-f themes=flux -f screens_file=apps/desktop/scripts/frames/flux3-s4.mjs
-// -f screens=jack-frame,jack-compiled,jack-out,jack-out-esc,jack-out-esc-control,jack-edge,jack-switch,jack-esc,jack-esc-control,jack-tunnel,jack-tunnel-fast). The pages flux3-s4.mjs seeds (through the app's seams, never raw storage),
+// -f screens=jack-frame,jack-compiled,jack-burst-300,jack-out,jack-out-later,jack-out-esc,jack-out-esc-control,jack-edge,jack-switch,jack-esc,jack-esc-control,jack-tunnel,jack-tunnel-fast). The pages flux3-s4.mjs seeds (through the app's seams, never raw storage),
 // in Free Write under ?flux3=1, the shared Typewriter field off (so the page is Jacked In by the default alone). jack-frame: jacked in at rest.
 // jack-compiled: after a burst of typing and the pause (the lines two up and beyond compiled). jack-out: mid-decompile, the toggle just pressed.
 // jack-edge: a page one word short of the lap (the burst edge nearly empty). jack-switch: the TOOLS foot open on "Jack In by default".
@@ -83,6 +83,14 @@ export default {
   'jack-esc':(app) => escLater(app, 'jack-esc', { flag: true, typewriter: false }),
   'jack-esc-control': (app) => escLater(app, 'jack-esc-control', { flag: false, typewriter: true }),
   'jack-out-esc': (app) => outLater(app, 'jack-out-esc', { flag: true, typewriter: false }),
+  // the Wrizors' last S4 item (Fable, Nov 7): the plain page >= 1 s after jacking out (past the 420 ms fade): clean words, no signal
+  'jack-out-later': async (app) => {
+    await seed(app, LONG_TEXT);
+    await openHand(app);
+    const t = await point(app, '[data-mode-toggle="typewriter"]');
+    if (t) { await click(app, t); await sleep(1200); }
+    console.log(`FLUX3-S4-FRAME jack-out-later ${JSON.stringify({ ...(await stood(app)), toggled: !!t, layers: await app.evalJs("document.querySelectorAll('[data-flux3-compile]').length") })}`);
+  },
   'jack-out-esc-control': (app) => outLater(app, 'jack-out-esc-control', { flag: false, typewriter: true }),
   'jack-frame': async (app) => {
     await seed(app, LONG_TEXT);

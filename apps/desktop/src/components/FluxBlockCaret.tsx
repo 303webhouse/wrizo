@@ -22,6 +22,10 @@ const PROSE_SURFACES = '.forward-only-editor, .entry-edit, .board-text, .script-
 // fallback took the in-progress word's INLINE span for the "row", so the block stood on the last word's first letter (the Wrizors' S4 r9
 // review). An inline span is never a row: the probe finds the caret's place instead [FluxBlockCaret §5]
 export const CARET_PLACE = { textEnd: true };
+// The block holds SOLID while keys land and blinks only at rest (the Wrizors' S4 carry, ruled in by Fable, Nov 7: plain Flux too). A key marks the
+// drawn block data-typing (06-flux-v2.css stops its blink); restMs after the last key the mark lifts and the blink resumes. The mark is set on the
+// element directly, so a key costs no render [FluxBlockCaret §6]
+export const CARET_BLINK = { restMs: 600 };
 
 interface Rect { left: number; top: number; width: number; height: number }
 
@@ -29,6 +33,24 @@ export function FluxBlockCaret() {
   const theme = useTheme();
   const [rect, setRect] = useState<Rect | null>(null);
   const activeElRef = useRef<HTMLElement | null>(null);
+  const caretElRef = useRef<HTMLDivElement | null>(null);
+  const typingRef = useRef(false);
+  const markTyping = (el: HTMLDivElement | null) => { if (!el) return; if (typingRef.current) el.setAttribute('data-typing', ''); else el.removeAttribute('data-typing'); };
+
+  // [FluxBlockCaret §6] solid while keys land, blinking at rest
+  useEffect(() => {
+    if (theme !== 'flux') return undefined;
+    let rest = 0;
+    const set = (on: boolean) => { typingRef.current = on; markTyping(caretElRef.current); };
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.key.length === 1 || e.key === 'Enter' || e.key === 'Backspace' || e.key === 'Delete' || e.key === 'Tab')) return;
+      if (!typingRef.current) set(true);
+      window.clearTimeout(rest);
+      rest = window.setTimeout(() => set(false), CARET_BLINK.restMs);
+    };
+    document.addEventListener('keydown', onKey, { capture: true, passive: true });
+    return () => { document.removeEventListener('keydown', onKey, { capture: true }); window.clearTimeout(rest); set(false); };
+  }, [theme]);
 
   useEffect(() => {
     if (theme !== 'flux') {
@@ -150,6 +172,7 @@ export function FluxBlockCaret() {
   if (theme !== 'flux' || !rect) return null;
   return (
     <div
+      ref={(el) => { caretElRef.current = el; markTyping(el); }}
       aria-hidden="true"
       className="flux-block-caret"
       style={{ left: rect.left, top: rect.top, width: rect.width, height: rect.height }}

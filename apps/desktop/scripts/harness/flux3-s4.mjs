@@ -334,6 +334,8 @@ const MUTANTS = {
   outline: [/outline:1px solid #042632/gi, 'outline:none', 'css'],
   // the Wrizors' S4 r9 review: the caret's text-end place off (FluxBlockCaret §5): CARET-END fails; a refused compile never tried again: OPEN-ROWS
   caretend: [/textEnd:!0\}/g, 'textEnd:!1}'],
+  // the block caret blinking while keys land again (FluxBlockCaret §6's rule unmatched, in the app's own built styles: index-*.css): CARET-SOLID fails
+  blink: [/\.flux-block-caret\[data-typing\]\{animation:none;opacity:1\}/g, '.flux-block-caret[data-typing-off]{animation:none;opacity:1}', 'icss'],
   // (re-pointed: the compile now logs why it stops, so the refusal branch is `{N("refused"),d=window.setTimeout(...);return}`)
   retry: [/if\(!([\w$]+)\("f3-compile"\)\)\{([\w$]+)\("refused"\),([\w$]+)=window\.setTimeout\(([\w$]+),([\w$]+)\);return\}/g, 'if(!$1("f3-compile")){$2("refused");return}'],
   // the caret's editor boundary counted in ELEMENTS again (r9's caretBox): the open's own pause finds no caret: OPEN-ROWS fails
@@ -362,14 +364,15 @@ try { await withHarness(async (app) => {
   await app.cdp('Network.enable');
   await app.cdp('Network.setCacheDisabled', { cacheDisabled: true });
   // the bundle, and flux-v3.css's built file (the flag's dynamic import: boot-*.css); a mutant names its file kind (js unless it says css)
-  await app.cdp('Fetch.enable', { patterns: [{ urlPattern: '*/assets/index-*.js', requestStage: 'Response' }, { urlPattern: '*/assets/boot-*.css', requestStage: 'Response' }] });
+  await app.cdp('Fetch.enable', { patterns: [{ urlPattern: '*/assets/index-*.js', requestStage: 'Response' }, { urlPattern: '*/assets/boot-*.css', requestStage: 'Response' }, { urlPattern: '*/assets/index-*.css', requestStage: 'Response' }] });
   app.tap(async (method, p) => {
     if (method !== 'Fetch.requestPaused') return;
     try {
       const body = await app.cdp('Fetch.getResponseBody', { requestId: p.requestId });
       let text = body.base64Encoded ? Buffer.from(body.body, 'base64').toString('utf8') : body.body;
-      const isCss = /\.css(\?|$)/.test((p.request && p.request.url) || '');
-      if (mutant && ((MUTANTS[mutant][2] || 'js') === 'css') === isCss) {
+      // the file kind: js (index-*.js), css (boot-*.css: flux-v3.css built), icss (index-*.css: the app's own styles)
+      const u = (p.request && p.request.url) || '', fileKind = /\.css(\?|$)/.test(u) ? (/\/boot-/.test(u) ? 'css' : 'icss') : 'js';
+      if (mutant && (MUTANTS[mutant][2] || 'js') === fileKind) {
         const [from, to] = MUTANTS[mutant];
         const n = (text.match(from) || []).length;
         landed[mutant] = n;
@@ -979,6 +982,27 @@ try { await withHarness(async (app) => {
   const stayOk = (x) => x.rest.n >= 8 && !!x.mid && x.mid.writing === 'true' && x.mid.n === x.rest.n && x.mid.same && x.mid.vis === 'visible' && x.mid.op >= 0.99 && x.mid.seen >= 4;
   ok(`ROWS-STAY mid-burst (keys landing, the chrome receded) the rows compiled at the last pause are all still there and seen (light ${JSON.stringify(rsL.mid)}, dark ${JSON.stringify(rsD.mid)})`, stayOk(rsL) && stayOk(rsD), JSON.stringify({ rsL, rsD }));
 
+  // ---- CARET-SOLID (the Wrizors' carry, ruled in by Fable, Nov 7): the block caret holds solid while keys land and blinks only at rest, in
+  // Jacked In and in plain Flux (flag off, no Typewriter): the shared FluxBlockCaret -------------------------------------------------------------
+  const testBlink = async (flag) => {
+    await open({ flag });
+    await app.waitFor("!!document.querySelector('.flux-block-caret')", { timeout: 4000, label: 'the block caret' }).catch(() => {});
+    const look = "(() => { const b = document.querySelector('.flux-block-caret'); if (!b) return null; const c = getComputedStyle(b); return { anim: c.animationName, op: c.opacity, typing: b.hasAttribute('data-typing') }; })()";
+    const before = await ev(look);
+    const during = [];
+    const burst = ' the caret holds solid while the keys land';
+    for (let i = 0; i < burst.length; i += 1) { await app.typeKeys(burst[i]); await sleep(60); if (i % 8 === 7) during.push(await ev(look)); }
+    await sleep(1500);
+    const rest = await ev(look);
+    const st0 = await st();
+    return { before, during, rest, jacked: st0.jacked };
+  };
+  const blOn = await testBlink(true), blOff = await testBlink(false);
+  const solidOk = (x) => !!x.before && x.before.anim === 'flux-block-caret-blink' && !x.before.typing && x.during.length >= 4 && x.during.every((d) => !!d && d.anim === 'none' && d.op === '1' && d.typing)
+    && !!x.rest && x.rest.anim === 'flux-block-caret-blink' && !x.rest.typing;
+  ok(`CARET-SOLID the block caret holds solid while keys land and blinks at rest, Jacked In (jacked ${blOn.jacked}) and plain Flux (jacked ${blOff.jacked}) (during: ${JSON.stringify(blOn.during.map((d) => d && d.anim))} / ${JSON.stringify(blOff.during.map((d) => d && d.anim))}; at rest: ${blOn.rest && blOn.rest.anim} / ${blOff.rest && blOff.rest.anim})`,
+    blOn.jacked && !blOff.jacked && solidOk(blOn) && solidOk(blOff), JSON.stringify({ blOn, blOff }));
+
   // ---- FL: Forward Lock is today's -------------------------------------------------------------------------------------------------------------------
   const testFL = async (flag, id) => {
     await open({ flag, id, prefs: flag ? {} : { typewriter: true } });
@@ -1163,6 +1187,9 @@ try { await withHarness(async (app) => {
   const mOl = await withMutant('outline', async () => { const k = await caretOf({ tone: 'light', id: CARETP }); return { k, st0: await st() }; });
   ok(`MUT-OUTLINE (landed, in boot-*.css) the jacked light caret without its ink outline: CARET-JACKED-LIGHT fails (outline ${mOl.r.k && mOl.r.k.outline && mOl.r.k.outline.style})`,
     mOl.landed === 1 && !caretBrassOk(mOl.r.k, mOl.r.st0), JSON.stringify({ landed: mOl.landed, k: mOl.r.k }));
+  const mBl = await withMutant('blink', () => testBlink(false));
+  ok(`MUT-BLINK (landed, in index-*.css) the block caret blinking while keys land again: CARET-SOLID fails (during: ${JSON.stringify(mBl.r.during.map((d) => d && d.anim))})`,
+    mBl.landed === 1 && !solidOk(mBl.r), JSON.stringify({ landed: mBl.landed, during: mBl.r.during }));
   const mCe = await withMutant('caretend', () => testCaretEnd(true));
   // ---- PARKED - SUPERSEDED by its own first run (Actions 42431319040): the burst scenario does not reproduce the flagged frame (the caret stood
   // at the text's end with the fix off too), so this guard was blind. Kept VERBATIM and no longer run; its successor adds the frame's own scenario.

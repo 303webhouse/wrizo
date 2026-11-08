@@ -173,6 +173,8 @@
 @media (prefers-reduced-motion:reduce){
   .flux-block-caret{ animation:none; opacity:1; }
 }
+/* solid while keys land, blinking only at rest: FluxBlockCaret marks the block data-typing on a key and lifts it after a short rest [flux-v2 §13] */
+.flux-block-caret[data-typing]{ animation:none; opacity:1; }
 
 html {
   /* themed, never an Arbor literal (the same move as .wz-splash-veil) [flux-v2 §12] */
