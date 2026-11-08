@@ -23,6 +23,9 @@ const A = (process.env.WALK_SIGNED_OUT || 'http://127.0.0.1:3401').replace(/\/+$
 const B = (process.env.WALK_DOOR || 'http://127.0.0.1:3400').replace(/\/+$/, '');
 const ONLY = process.env.WALK_STEPS ? process.env.WALK_STEPS.split(',').map((s) => s.trim()) : null;
 const SIZES = { 2000: [2000, 970], 1366: [1366, 768] };
+// WALK_SIZES=2000 (or 1366) runs the steps' size loops at that size alone (turn 3: Fable's short turn); unset = both, as the script asks
+const ONLY_SIZES = process.env.WALK_SIZES ? process.env.WALK_SIZES.split(',').map(Number) : null;
+const sizesOf = (xs) => (ONLY_SIZES ? xs.filter((w) => ONLY_SIZES.includes(w)) : xs);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 mkdirSync(OUT, { recursive: true });
 
@@ -143,7 +146,7 @@ const urlA = (room) => `${A}/?arbor2=1&arbor2room=${room}#/`;
 async function step1() {
   let tlId = null;
   try { tlId = (await cdp('Page.addScriptToEvaluateOnNewDocument', { source: TIMELINE })).identifier; } catch { /* the timeline is then read from nothing: said below */ }
-  for (const w of [2000, 1366]) for (const room of ['day', 'night']) {
+  for (const w of sizesOf([2000, 1366])) for (const room of ['day', 'night']) {
     const tag = `${room}__${w}`;
     await size(w); await fresh(A);
     let tl = [];
@@ -205,7 +208,7 @@ async function step1() {
 
 // ======================================== STEP 2: sign in ========================================
 async function step2() {
-  for (const w of [2000, 1366]) {
+  for (const w of sizesOf([2000, 1366])) {
     await size(w); await fresh(A); await nav(urlA('day')); await sleep(1200); await key('Escape'); await sleep(600);
     const opened = await clickSel('.wz-arrival-signin'); await sleep(1200);
     const f = await js(`(() => { ${COLOUR} const texts = [...document.querySelectorAll('body *')].filter((e) => vis(e) && [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim().length > 1));
@@ -225,12 +228,13 @@ async function step2() {
   await size(2000);
   await nav(`${B}/`); await soft("location.search.includes('arbor2=1')", 15000); await sleep(2500);
   await cdp('Page.addScriptToEvaluateOnNewDocument', { source: TIMELINE }).then((r) => { step2.tl = r.identifier; }).catch(() => {});
-  let doorShot = false, fadeShot = false, sawSignin = false;
+  let doorShot = false, fadeShot = false, sawSignin = false, doorWords = null;
   await record('walk-2-signed-in-reload__day__2000', 14000, async () => {
     await nav(`${B}/?arbor2=1&arbor2room=day#/`);
     const t0 = Date.now();
     while (Date.now() - t0 < 12000 && !(doorShot && fadeShot)) {
-      const s = await js("(() => { const sp = document.querySelector('.wz-splash'); const dr = document.querySelector('.arbor2-front-doors'); return { sp: sp ? Number(getComputedStyle(sp).opacity) : null, phase: dr ? dr.dataset.phase : null, signin: !!document.querySelector('.wz-arrival-signin') }; })()").catch(() => null);
+      const s = await js("(() => { const sp = document.querySelector('.wz-splash'); const dr = document.querySelector('.arbor2-front-doors'); return { sp: sp ? Number(getComputedStyle(sp).opacity) : null, phase: dr ? dr.dataset.phase : null, signin: !!document.querySelector('.wz-arrival-signin'), words: dr ? [...dr.querySelectorAll('.arbor2-door-word')].map((e) => e.textContent.trim()).join('|') : null }; })()").catch(() => null);
+      if (s && doorWords === null && (s.phase === 'in' || s.phase === 'shown')) doorWords = s.words;
       if (s && s.signin) sawSignin = true;
       if (s && !doorShot && (s.phase === 'in' || s.phase === 'shown')) { doorShot = true; await shot('walk-2-signed-in-door__day__2000'); }
       if (s && !fadeShot && s.sp !== null && s.sp > 0.25 && s.sp < 0.8) { fadeShot = true; await shot('walk-2-signed-in-fade__day__2000'); }
@@ -241,7 +245,11 @@ async function step2() {
   const end = await js(`(() => { ${COLOUR} const m = document.querySelector('.arbor2-logo-corner'); const cs = m ? getComputedStyle(m) : null; const r = m ? m.getBoundingClientRect() : null;
     return { hash: location.hash, editor: !!document.querySelector('.forward-only-editor'), mark: m ? { op: Number(cs.opacity), rect: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)] } : null, signin: !!document.querySelector('.wz-arrival-signin'), splash: !!document.querySelector('.wz-splash') }; })()`);
   note('2', 'signed-in reload timeline', t); note('2', 'signed-in end', end);
-  must('2', 'signed in, the front door shows Write only (no Sign in door)', doorShot && !sawSignin, { doorShot, sawSignin, end });
+  // PARKED 2026-11-08 (SUPERSEDED by Fable's ruling A3 on the Nick walk, Nov 8 - walk-triage.txt A3: signed in, the doors are Write + Open (main's
+  // pair) - not the script's "Write only"). Original, verbatim:
+  // must('2', 'signed in, the front door shows Write only (no Sign in door)', doorShot && !sawSignin, { doorShot, sawSignin, end });
+  // SUCCESSOR (A3): signed in, the splash's doors are Write | Open, and no Sign in door appears.
+  must('2', 'signed in, the doors are Write + Open (no Sign in door), on the splash as on the front door', doorShot && !sawSignin && doorWords === 'Write|Open', { doorShot, sawSignin, doorWords, end });
   must('2', 'the splash fades into the last page; the logo fades out with the sketch; the corner mark fades in in its own rect (day: sage, .7); nothing slides', end.editor && !end.splash ? null : false, { frames: ['walk-2-signed-in-reload__day__2000/', 'walk-2-signed-in-door__day__2000.png', 'walk-2-signed-in-fade__day__2000.png'], mark: end.mark, fadeShot });
   if (step2.tl) await cdp('Page.removeScriptToEvaluateOnNewDocument', { identifier: step2.tl }).catch(() => {});
   // from here: the play server's origin, signed in; the splash at the harness's test speed
@@ -291,7 +299,7 @@ const REST = `(() => { ${COLOUR} const q = (s) => [...document.querySelectorAll(
 
 // ======================================== STEP 3: the day room at rest ========================================
 async function step3() {
-  for (const w of [2000, 1366]) {
+  for (const w of sizesOf([2000, 1366])) {
     await size(w); await openPage('rest'); await setRoom('day'); await sleep(2000);
     const r = await js(REST); note('3', `rest ${w}`, r);
     await shot(`walk-3-rest__day__${w}`);
@@ -355,7 +363,13 @@ async function burst(w, room, recorded) {
   // PARKED 2026-11-08 (SUPERSEDED - the first walk turn, 06:03Z-06:26Z, walk-triage.txt CD: it never moved the pointer after the burst, and without that the chrome does not come back - data-wz-writing stayed true for 10 s). Original, verbatim:
   // const after = async () => { await sleep(3000); if (recorded) await shot(`walk-4-pause-plus-3s__${tag}`); await sleep(7000); };
   // SUCCESSOR: 1.5 s after the last key the pointer moves (the writer reaching for the chrome), stamped in the page's clock; then 3 s, the still, and 7 s more.
-  const after = async () => { await sleep(1500); const [W, H] = SIZES[w]; await js('window.__moveAt = Math.round(performance.now()); true'); for (let i = 0; i < 4; i++) { await moveTo(Math.round(W * (0.3 + i * 0.1)), Math.round(H * 0.5)); await sleep(60); } await sleep(3000); if (recorded) await shot(`walk-4-pause-plus-3s__${tag}`); await sleep(7000); };
+  // PARKED 2026-11-08 (SUPERSEDED - the second walk turn, 06:34Z-06:47Z, walk-triage.txt E: movement over the page does not summon the chrome, by
+  // design (useChromeDissolve: an edge dwell - within 56 px for 260 ms - Esc, or a tap outside the text; else 3 minutes); the moves crossed the middle
+  // and data-wz-writing stayed true). Original, verbatim:
+  // const after = async () => { await sleep(1500); const [W, H] = SIZES[w]; await js('window.__moveAt = Math.round(performance.now()); true'); for (let i = 0; i < 4; i++) { await moveTo(Math.round(W * (0.3 + i * 0.1)), Math.round(H * 0.5)); await sleep(60); } await sleep(3000); if (recorded) await shot(`walk-4-pause-plus-3s__${tag}`); await sleep(7000); };
+  // SUCCESSOR: 1.5 s after the last key the writer REACHES for the chrome - the pointer rests at the top edge (18 px in), stirring 2 px, for ~0.5 s
+  // (the dwell is 260 ms); moveAt is stamped as it arrives there. Then 3 s, the still, and 7 s more.
+  const after = async () => { await sleep(1500); const [W] = SIZES[w]; const x = Math.round(W * 0.5); await moveTo(x, 300); await sleep(60); await js('window.__moveAt = Math.round(performance.now()); true'); for (let i = 0; i < 6; i++) { await moveTo(x + (i % 2 ? 2 : -2), 18); await sleep(90); } await sleep(3000); if (recorded) await shot(`walk-4-pause-plus-3s__${tag}`); await sleep(7000); };
   if (recorded) await record(`walk-4-burst__${room}__${w}`, 0, async () => { await typeAll(); await after(); });
   else { await typeAll(); await after(); }
   const lat = await js('window.__lat'); const st = await js('window.__st'); const moveAt = await js('window.__moveAt || null'); await js('window.__latOff && window.__latOff(); true');
@@ -365,7 +379,7 @@ async function burst(w, room, recorded) {
   return { lat, st, moveAt };
 }
 async function step4() {
-  for (const w of [2000, 1366]) {
+  for (const w of sizesOf([2000, 1366])) {
     const day = await burst(w, 'day', false), night = await burst(w, 'night', false);
     const d = day.lat.map((x) => x.ms), n = night.lat.map((x) => x.ms);
     const dRest = stats(d.slice(1)), nAll = stats(n.slice(1));
@@ -490,7 +504,7 @@ const DRAWERS = `(() => { ${COLOUR} const one = (panel, grip) => { const p = doc
 const openTools = () => js("(() => { const g = document.querySelector('.wz-sliver-grip'); if (g && document.querySelector('.wz-sliver')?.getAttribute('data-open') !== 'true') g.click(); return !!g; })()");
 const openTutor = () => js("(() => { const g = document.querySelector('.wz-tutor-grip'); const p = document.querySelector('.wz-tutor-panel'); if (g && p?.getAttribute('data-open') !== 'true') g.click(); return !!g; })()");
 async function step6() {
-  for (const w of [2000, 1366]) for (const room of ['day', 'night']) for (const mode of ['draft', 'free']) {
+  for (const w of sizesOf([2000, 1366])) for (const room of ['day', 'night']) for (const mode of ['draft', 'free']) {
     if (w === 1366 && mode === 'free') continue;
     const tag = `${room}__${w}`, mtag = mode === 'free' ? 'freewrite-' : '';
     await size(w); await openPage('drawers', { mode }); await setRoom(room);
@@ -619,7 +633,7 @@ async function step7() {
 
 // ======================================== STEP 8: night ========================================
 async function step8() {
-  for (const w of [2000, 1366]) {
+  for (const w of sizesOf([2000, 1366])) {
     await size(w); await openPage('night'); await setRoom('night'); await sleep(1500);
     const r = await js(REST); note('8', `night ${w}`, r);
     await shot(`walk-8-rest__night__${w}`);
@@ -678,11 +692,25 @@ async function step10() {
   await sleep(120); const s2 = await js(SCROLLBAR); await shot('walk-10-long-page-mid-scroll__day__2000');
   await sleep(1600); await shot('walk-10-long-page-after-scroll-1.6s__day__2000');
   await moveTo(Math.round(pr.r - 3), Math.round((pr.t + pr.b) / 2)); await sleep(500); await shot('walk-10-long-page-hover-edge__day__2000');
+  // the drag (turn 3): press the 4 px bar where its thumb stands, pull 160 px down, a still mid-drag, release
+  const th = await js("(() => { const e = document.querySelector('.forward-only-editor'); let s = null; for (let n = e; n; n = n.parentElement) { const cs = getComputedStyle(n); if (/(auto|scroll)/.test(cs.overflowY) && n.scrollHeight > n.clientHeight + 1) { s = n; break; } } if (!s) return null; const r = s.getBoundingClientRect(); return { x: Math.round(r.right - 2), y: Math.round(r.top + ((s.scrollTop + s.clientHeight / 2) / s.scrollHeight) * s.clientHeight), top: s.scrollTop }; })()");
+  let dragged = null;
+  if (th) {
+    await moveTo(th.x, th.y); await sleep(300);
+    await cdp('Input.dispatchMouseEvent', { type: 'mousePressed', x: th.x, y: th.y, button: 'left', buttons: 1, clickCount: 1, pointerType: 'mouse' });
+    for (let i = 1; i <= 8; i++) { await cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x: th.x, y: th.y + i * 20, button: 'left', buttons: 1, pointerType: 'mouse' }); await sleep(40); }
+    await shot('walk-10-long-page-mid-drag__day__2000');
+    await cdp('Input.dispatchMouseEvent', { type: 'mouseReleased', x: th.x, y: th.y + 160, button: 'left', buttons: 0, clickCount: 1, pointerType: 'mouse' });
+    const after = await js(SCROLLBAR); dragged = { thumb: th, before: th.top, after: after.top };
+  }
   await moveTo(5, 5); await sleep(1500);
   await js(caretEnd); for (const ch of ' and then she wrote on') { await key(ch); await sleep(110); }
   await sleep(200); const s3 = await js(SCROLLBAR); await shot('walk-10-long-page-typing__day__2000');
-  note('10', 'scrollbar', { s1, s2, s3 });
-  must('10', 'on the long page: appears only on scroll, hover or drag (4 px, the theme\'s colours, the writing surface only), fades ~1 s after; never while typing', s1.scrolls && s2.top > 0 ? null : false, { rest: s1, scrolled: s2, typing: s3, note: 'drag is not driven (the thumb has no handle to find); judge scroll + hover + typing from the frames' });
+  note('10', 'scrollbar', { s1, s2, s3, dragged });
+  // PARKED 2026-11-08 (SUPERSEDED - walk-triage.txt D, Fable's turn-3 list: the scrollbar drag is now driven, so the must reads it). Original, verbatim:
+  // must('10', 'on the long page: appears only on scroll, hover or drag (4 px, the theme\'s colours, the writing surface only), fades ~1 s after; never while typing', s1.scrolls && s2.top > 0 ? null : false, { rest: s1, scrolled: s2, typing: s3, note: 'drag is not driven (the thumb has no handle to find); judge scroll + hover + typing from the frames' });
+  // SUCCESSOR: the same must, with the drag read (the thumb pulled 160 px moved the page down); the look stays the eye's.
+  must('10', 'on the long page: appears only on scroll, hover or drag (4 px, the theme\'s colours, the writing surface only), fades ~1 s after; never while typing', s1.scrolls && s2.top > 0 && !!dragged && dragged.after > dragged.before ? null : false, { rest: s1, scrolled: s2, typing: s3, dragged, frames: ['walk-10-long-page-mid-scroll__day__2000.png', 'walk-10-long-page-hover-edge__day__2000.png', 'walk-10-long-page-mid-drag__day__2000.png', 'walk-10-long-page-typing__day__2000.png'] });
 }
 
 // ======================================== STEP 11: reduced motion ========================================
