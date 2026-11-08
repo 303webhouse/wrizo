@@ -198,6 +198,21 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
     if (n !== null && n !== shownSize) sizeTo(n);
   };
 
+  // the size box's input, drawn bare off the flag (main's markup) and inside the mockup's hairline box under it
+  const sizeInput = (
+    <input
+      className="wz-type-num"
+      type="text"
+      inputMode="decimal"
+      aria-label={t('typeSize')}
+      value={draft ?? formatSize(shownSize)}
+      onChange={(e) => setDraft(e.target.value)}
+      onMouseDownCapture={() => { holdHighlight(); holdBox(); }}
+      onFocus={() => { holdHighlight(); holdBox(); }}
+      onBlur={() => { commitDraft(); if (held) { setHeld(null); scope?.releaseSelection?.(); } }}
+      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commitDraft(); (e.target as HTMLInputElement).blur(); } else if (e.key === 'Escape') setDraft(null); }}
+    />
+  );
   return (
     <div className="wz-type" data-form={form} data-scoped={scope ? 'true' : undefined} role="group" aria-label={t('typeGroup')} ref={rootRef}>
       {scope && (
@@ -266,22 +281,9 @@ export function TypeControl({ form, face, size, onPickFace, onSize, scope }: Typ
       <div className="wz-type-size">
         <button type="button" className="mode-tbtn wz-type-step" aria-label={t('typeSmaller')} aria-disabled={down === null} onMouseDown={keepFocus} onClick={() => { if (down !== null) sizeTo(down); }}>{'−'}</button>
         {/* ARBOR v2 MOCKUP r17 (the Wrizors' note md5 a17aae25: "- [ 11 pt ] +"): under the flag the number and its unit share one hairline box; r10
-            put the wrapper back around main's input after the rebase took main's markup */}
-        <span className={mockBox ? 'wz-type-num-box' : 'wz-type-num-plain'}>
-          <input
-            className="wz-type-num"
-            type="text"
-            inputMode="decimal"
-            aria-label={t('typeSize')}
-            value={draft ?? formatSize(shownSize)}
-            onChange={(e) => setDraft(e.target.value)}
-            onMouseDownCapture={() => { holdHighlight(); holdBox(); }}
-            onFocus={() => { holdHighlight(); holdBox(); }}
-            onBlur={() => { commitDraft(); if (held) { setHeld(null); scope?.releaseSelection?.(); } }}
-            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commitDraft(); (e.target as HTMLInputElement).blur(); } else if (e.key === 'Escape') setDraft(null); }}
-          />
-          {mockBox && <span className="wz-type-num-unit" aria-hidden="true">pt</span>}
-        </span>
+            put the wrapper back around main's input after the rebase took main's markup. Off the flag the input stands bare in the row, as on main
+            (R4, Fable Nov 7: the wrapper only under the flag - its only rule loads with the flag). */}
+        {mockBox ? <span className="wz-type-num-box">{sizeInput}<span className="wz-type-num-unit" aria-hidden="true">pt</span></span> : sizeInput}
         <button type="button" className="mode-tbtn wz-type-step" aria-label={t('typeLarger')} aria-disabled={up === null} onMouseDown={keepFocus} onClick={() => { if (up !== null) sizeTo(up); }}>+</button>
       </div>
     </div>

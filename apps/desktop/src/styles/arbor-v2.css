@@ -662,7 +662,6 @@
 :root[data-arbor2] .wz-type-num-box{ display:inline-flex; align-items:center; border:1px solid var(--ink-border); padding-right:5px; }
 :root[data-arbor2] .wz-type-num-box .wz-type-num{ border:0; width:2.2em; text-align:right; padding-right:3px; }
 :root[data-arbor2] .wz-type-num-unit{ font-size:11px; color:var(--text-mid); }
-.wz-type-num-plain{ display:contents; }
 
 /* ==========================================================================================================================================
    r17 - NICK'S C2 FOLDER TABS (Nick, Nov 2 8:28 pm; spec draft 23 §9c; the Wrizors' note md5 a17aae25, gated by Fable). Reskin only: the drawers'

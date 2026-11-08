@@ -109,6 +109,13 @@ for (const ch of css) {
 const media = [...css.matchAll(/@media[^{]*\{([\s\S]*?\})\s*\}/g)].flatMap((m) => [...m[1].matchAll(/([^{}]+)\{/g)].map((x) => x[1].trim())).flatMap((s) => topSplit(s).map((x) => x.trim()))
   .filter((s) => s && !s.startsWith(':root[data-arbor2]') && !/^\.arbor2-/.test(s));
 ok('R4 every rule in the Arbor file is scoped under the flag (or is the mockup\'s own .arbor2-* class)', loose.length === 0 && media.length === 0, JSON.stringify({ loose: loose.slice(0, 4), media: media.slice(0, 4) }));
+// R4b (Fable's R4 ruling, Nov 7): the size box's wrapper only under the flag. Off the flag TypeControl draws main's markup - the input bare in
+// the .wz-type-size row - so it needs no rule from the Arbor file (whose CSS loads only with the flag), and the old unscoped helper class is gone.
+const tc = fs.readFileSync(new URL('../../src/components/TypeControl.tsx', import.meta.url), 'utf8');
+ok('R4b off the flag the size input stands bare in its row (the wrapper and its pt only under mockBox); no .wz-type-num-plain anywhere',
+  /\{mockBox \? <span className="wz-type-num-box">\{sizeInput\}<span className="wz-type-num-unit" aria-hidden="true">pt<\/span><\/span> : sizeInput\}/.test(tc)
+  && /const mockBox = isArbor2\(\) && theme === 'plateau';/.test(tc) && (tc.match(/\{sizeInput\}|: sizeInput\}/g) || []).length === 2
+  && !/wz-type-num-plain/.test(tc) && !/wz-type-num-plain/.test(css), '');
 ok('R4 Alegreya Sans comes from this origin (two @font-face blocks, /fonts/arbor2/, woff2), never a font CDN', (css.match(/@font-face/g) || []).length === 2
   && /url\('\/fonts\/arbor2\/alegreya-sans-latin-400-normal\.woff2'\)/.test(css) && !/googleapis|gstatic|jsdelivr|unpkg/.test(css), '');
 const woff = fs.readFileSync(new URL('../../public/fonts/arbor2/alegreya-sans-latin-400-normal.woff2', import.meta.url));
