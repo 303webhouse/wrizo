@@ -80,7 +80,7 @@ const DIST = path.resolve(here, '..', '..', 'dist-web');
 const SHOTS = process.env.FLUX3_SHOTS || null;
 if (SHOTS) fs.mkdirSync(SHOTS, { recursive: true });
 const ON_BOX = process.env.GITHUB_ACTIONS !== 'true';
-const LONG = 'f3s4-long', DRAFTP = 'f3s4-draft', GOAL = 'f3s4-goal', FL_ON = 'f3s4-fl-on', FL_OFF = 'f3s4-fl-off';
+const LONG = 'f3s4-long', DRAFTP = 'f3s4-draft', GOAL = 'f3s4-goal', FL_ON = 'f3s4-fl-on', FL_OFF = 'f3s4-fl-off', CARETP = 'f3s4-caret';
 const PARA = 'The signal runs along these plain words so that the page holds many lines above the writing line, each one long enough to wrap across the measure of the page.';
 const LONG_TEXT = Array.from({ length: 10 }, (_, i) => `${i + 1}. ${PARA}`).join('\n');
 const LAT_TEXT = Array.from({ length: 150 }, (_, i) => 'word' + i).join(' ');
@@ -99,7 +99,8 @@ const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass: !!pass,
 // TERM-LINES' "before the pause" (light, dark) with MUT-TERMINAL and MUT-DIM (Actions 42420374454: four records)
 // CARET-LIGHT and MUT-CARET (Nick's ruling, Nov 7: Jacked In's light caret is brass with a 1 px ink outline: two records)
 // MUT-CARETEND and MUT-RETRY (Actions 42431319040: both blind on their first run)
-const PARKED_EXPECTED = 17;
+// MUT-OPENROWS (Actions 42435766295: the open drew its rows with the elements count back; the cause was the scroll)
+const PARKED_EXPECTED = 18;
 
 function buildIdentity() {
   const out = { bundle: null, builtAt: null, head: null, srcCommitAt: null, dirtySrc: null, stale: null };
@@ -391,6 +392,8 @@ try { await withHarness(async (app) => {
   await mk({ id: GOAL, text: Array.from({ length: 249 }, (_, i) => `w${i}`).join(' '), createdAt: at, origin: 'loose', source: 'page' });
   await mk({ id: FL_ON, text: 'Forward lock line', createdAt: at, origin: 'loose', source: 'page' });
   await mk({ id: FL_OFF, text: 'Forward lock line', createdAt: at, origin: 'loose', source: 'page' });
+  // the jacked caret's reads on a page of their own (r10c: on LONG, grown by every earlier scenario, the Typewriter never brought the caret on screen)
+  await mk({ id: CARETP, text: LONG_TEXT, createdAt: at, origin: 'loose', source: 'page' });
   await sleep(400);
 
   // preferences (not collections), set before the reload as the app reads them at boot; the shared Typewriter field is OFF unless a test says so
@@ -755,7 +758,7 @@ try { await withHarness(async (app) => {
   // the orange family: red over green over blue, its hue between 15 and 45 degrees (the shared orange is 36, the light caret 28)
   const hueOf = (c) => { if (!c) return null; const [r, g, b] = c, mx = Math.max(r, g, b), mn = Math.min(r, g, b); if (mx === mn) return null; return mx === r ? (60 * (g - b)) / (mx - mn) : null; };
   const caretLightOk = (k) => !!k && k.ratio !== null && k.ratio >= 4.5 && !!k.ink && hueOf(k.ink) !== null && hueOf(k.ink) >= 15 && hueOf(k.ink) <= 45;
-  const kLight = await caretOf({ tone: 'light' }), kDark = await caretOf({ tone: 'dark' });
+  const kLight = await caretOf({ tone: 'light', id: CARETP }), kDark = await caretOf({ tone: 'dark' });
   // ---- PARKED - SUPERSEDED by Nick's ruling (Nov 7, via Fable): Jacked In's light caret is BRASS #FF9800 held by a 1 px ink outline, so its fill
   // is no longer the contrast (this open is Free Write: jacked in by default). Kept VERBATIM and no longer run; its parked record is in the
   // HARNESS_PARKED block, and its successors follow: the jacked caret's outline, and the plain (un-jacked) light caret's fill.
@@ -1149,7 +1152,7 @@ try { await withHarness(async (app) => {
   const mCa = await withMutant('caret', () => caretOf({ tone: 'light', id: DRAFTP, pageTw: 'off', atRow: 1 }));
   ok('MUT-CARET [successor] (landed, in boot-*.css) the plain light caret back to the shared orange: CARET-PLAIN-LIGHT fails', mCa.landed === 1 && !!mCa.r && !caretLightOk(mCa.r), JSON.stringify({ landed: mCa.landed, r: mCa.r }));
   // MUT-OUTLINE (Nick's ruling): the jacked light caret without its outline: CARET-JACKED-LIGHT fails
-  const mOl = await withMutant('outline', async () => { const k = await caretOf({ tone: 'light' }); return { k, st0: await st() }; });
+  const mOl = await withMutant('outline', async () => { const k = await caretOf({ tone: 'light', id: CARETP }); return { k, st0: await st() }; });
   ok(`MUT-OUTLINE (landed, in boot-*.css) the jacked light caret without its ink outline: CARET-JACKED-LIGHT fails (outline ${mOl.r.k && mOl.r.k.outline && mOl.r.k.outline.style})`,
     mOl.landed === 1 && !caretBrassOk(mOl.r.k, mOl.r.st0), JSON.stringify({ landed: mOl.landed, k: mOl.r.k }));
   const mCe = await withMutant('caretend', () => testCaretEnd(true));
@@ -1168,7 +1171,14 @@ try { await withHarness(async (app) => {
   console.log(`INFO OPEN-SCROLL-CONTROL (flag off, the Typewriter on) events in one second of rest after opening: ${JSON.stringify(await ev('window.__f4.evc'))}`);
   // MUT-OPENROWS: the caret's boundary counted in ELEMENTS again (r9's caretBox): OPEN-ROWS fails
   const mOr = await withMutant('openrow', () => testRowsStay('dark'));
-  ok(`MUT-OPENROWS (landed) the caret's boundary counted in elements again: OPEN-ROWS fails (rows at rest ${mOr.r.rest.n}; compile log ${JSON.stringify(mOr.r.clog)})`, mOr.landed === 1 && mOr.r.rest.n < 8, JSON.stringify({ landed: mOr.landed, r: mOr.r }));
+  // ---- PARKED - SUPERSEDED by its own first valid run (Actions 42435766295): with the elements count back, the open still drew its rows (the
+  // first compile found no caret, the next ones drew): the cause was the scroll (MUT-SCROLL). The child-node count stays, as the right reading of
+  // an offset at an element boundary. Kept VERBATIM and no longer run; its parked record follows.
+  // ok(`MUT-OPENROWS (landed) the caret's boundary counted in elements again: OPEN-ROWS fails (rows at rest ${mOr.r.rest.n}; compile log ${JSON.stringify(mOr.r.clog)})`, mOr.landed === 1 && mOr.r.rest.n < 8, JSON.stringify({ landed: mOr.landed, r: mOr.r }));
+  if (process.env.HARNESS_PARKED === '1') {
+    pok(`PARKED (was "MUT-OPENROWS (landed) the caret's boundary counted in elements again: OPEN-ROWS fails") - SUPERSEDED by its own first valid run (Actions 42435766295). Opposite reasserted: with the elements count back, the open still draws its rows (${mOr.r.rest.n}); the open's cause is MUT-SCROLL's`,
+      mOr.landed === 1 && mOr.r.rest.n >= 8, JSON.stringify({ landed: mOr.landed, clog: mOr.r.clog }));
+  }
   const mRt = await withMutant('retry', () => testRowsStay('dark'));
   // ---- PARKED - SUPERSEDED by its own first run (Actions 42431319040): no compile at open was refused (no f3-compile grant or refusal at all:
   // the compile stopped before the budget), so this guard was blind; the cause is MUT-OPENROWS'. Kept VERBATIM and no longer run.
