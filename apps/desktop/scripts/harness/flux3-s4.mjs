@@ -100,7 +100,8 @@ const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass: !!pass,
 // CARET-LIGHT and MUT-CARET (Nick's ruling, Nov 7: Jacked In's light caret is brass with a 1 px ink outline: two records)
 // MUT-CARETEND and MUT-RETRY (Actions 42431319040: both blind on their first run)
 // MUT-OPENROWS (Actions 42435766295: the open drew its rows with the elements count back; the cause was the scroll)
-const PARKED_EXPECTED = 18;
+// MUT-CARETEND [successor] (Actions 42438849747: its scenarios reach the flagged condition only sometimes)
+const PARKED_EXPECTED = 19;
 
 function buildIdentity() {
   const out = { bundle: null, builtAt: null, head: null, srcCommitAt: null, dirtySrc: null, stale: null };
@@ -938,6 +939,9 @@ try { await withHarness(async (app) => {
     await open({ flag, prefs: flag ? {} : { typewriter: true } });
     if (mode === 'compiled') { await app.typeKeys(' and the line keeps going forward with more plain words now, on and on across the measure of the page until it wraps again'); await app.mouseMove(8, 8); await sleep(1600); }
     else { for (const ch of ' the signal holds while she writes on and on and on whil') { await app.typeKeys(ch); await sleep(35); } await sleep(300); }
+    // 'boundary': the caret then held exactly where the editor restores it after a re-render, at its OWN child boundary (a collapsed range there has
+    // no rect): the flagged frame's condition made certain, where the burst and the compiled screen reach it only sometimes (53fa9ed9's parked leg)
+    if (mode === 'boundary') { await ev("(() => { const e = document.querySelector('.forward-only-editor'), s = getSelection(); s.removeAllRanges(); const r = document.createRange(); r.setStart(e, e.childNodes.length); r.collapse(true); s.addRange(r); return true; })()"); await sleep(300); }
     return ev('window.__f4.blockAt()');
   };
   const ceOn = await testCaretEnd(true), ceOff = await testCaretEnd(false);
@@ -947,6 +951,9 @@ try { await withHarness(async (app) => {
     atEnd(ceOn) && atEnd(ceOff), JSON.stringify({ on: ceOn, off: ceOff }));
   ok(`CARET-END-COMPILED the frames' jack-compiled screen: 1.6 s after the words land the block caret stands at the text's end (Jacked In: ${ceOnB && ceOnB.block && ceOnB.block.x} vs ${ceOnB && ceOnB.end && ceOnB.end.right}; the control: ${ceOffB && ceOffB.block && ceOffB.block.x} vs ${ceOffB && ceOffB.end && ceOffB.end.right})`,
     atEnd(ceOnB) && atEnd(ceOffB), JSON.stringify({ on: ceOnB, off: ceOffB }));
+  const ceOnC = await testCaretEnd(true, 'boundary'), ceOffC = await testCaretEnd(false, 'boundary');
+  ok(`CARET-END-BOUNDARY a caret held at the editor's own boundary (no rect of its own) stands at the text's end (Jacked In: ${ceOnC && ceOnC.block && ceOnC.block.x} vs ${ceOnC && ceOnC.end && ceOnC.end.right}; the control: ${ceOffC && ceOffC.block && ceOffC.block.x} vs ${ceOffC && ceOffC.end && ceOffC.end.right}; anchor ${JSON.stringify(ceOnC && ceOnC.anchor)})`,
+    atEnd(ceOnC) && atEnd(ceOffC) && !!ceOnC.anchor && ceOnC.anchor.type === 1, JSON.stringify({ on: ceOnC, off: ceOffC }));
 
   // (3) the rows compiled at the last pause STAY while she types (only NEW compiling waits for the pause: ruling F)
   const testRowsStay = async (tone) => {
@@ -1161,8 +1168,18 @@ try { await withHarness(async (app) => {
   // ok(`MUT-CARETEND (landed) the caret's text-end place off: CARET-END fails (caret x ${mCe.r && mCe.r.block && mCe.r.block.x}, end ${mCe.r && mCe.r.end && mCe.r.end.right}; anchor ${JSON.stringify(mCe.r && mCe.r.anchor)})`,
   //   mCe.landed === 1 && !atEnd(mCe.r), JSON.stringify({ landed: mCe.landed, r: mCe.r }));
   const mCeB = await withMutant('caretend', () => testCaretEnd(true, 'compiled'));
-  ok(`MUT-CARETEND [successor] (landed) an inline span taken for the caret's row again: CARET-END or CARET-END-COMPILED fails (burst ${mCe.r && mCe.r.block && mCe.r.block.x} vs ${mCe.r && mCe.r.end && mCe.r.end.right}; compiled ${mCeB.r && mCeB.r.block && mCeB.r.block.x} vs ${mCeB.r && mCeB.r.end && mCeB.r.end.right})`,
-    mCe.landed === 1 && mCeB.landed === 1 && (!atEnd(mCe.r) || !atEnd(mCeB.r)), JSON.stringify({ burst: mCe.r, compiled: mCeB.r }));
+  // ---- PARKED - SUPERSEDED by its own run (53fa9ed9's parked leg, Actions 42438849747): with the fix off, both scenarios put the caret at the end
+  // that time: the old misplacement needs the caret at the editor's boundary with no rect, which these reach only sometimes. Kept VERBATIM and no
+  // longer run; its successor makes the condition certain.
+  // ok(`MUT-CARETEND [successor] (landed) an inline span taken for the caret's row again: CARET-END or CARET-END-COMPILED fails (burst ${mCe.r && mCe.r.block && mCe.r.block.x} vs ${mCe.r && mCe.r.end && mCe.r.end.right}; compiled ${mCeB.r && mCeB.r.block && mCeB.r.block.x} vs ${mCeB.r && mCeB.r.end && mCeB.r.end.right})`,
+  //   mCe.landed === 1 && mCeB.landed === 1 && (!atEnd(mCe.r) || !atEnd(mCeB.r)), JSON.stringify({ burst: mCe.r, compiled: mCeB.r }));
+  const mCeC = await withMutant('caretend', () => testCaretEnd(true, 'boundary'));
+  ok(`MUT-CARETEND [successor 2] (landed) the fix off: CARET-END-BOUNDARY fails (caret x ${mCeC.r && mCeC.r.block && mCeC.r.block.x} vs the end ${mCeC.r && mCeC.r.end && mCeC.r.end.right})`,
+    mCeC.landed === 1 && !atEnd(mCeC.r), JSON.stringify({ boundary: mCeC.r }));
+  if (process.env.HARNESS_PARKED === '1') {
+    pok('PARKED (was "MUT-CARETEND [successor] ... CARET-END or CARET-END-COMPILED fails") - SUPERSEDED by its own run (Actions 42438849747: both scenarios reached the end with the fix off). Opposite reasserted: at the editor\'s own boundary the fix off always misplaces it; live successor MUT-CARETEND [successor 2]',
+      mCeC.landed === 1 && !atEnd(mCeC.r), JSON.stringify({ burst: mCe.r && mCe.r.block, compiled: mCeB.r && mCeB.r.block, boundary: mCeC.r && mCeC.r.block }));
+  }
   const mSp = await withMutant('scrollpause', () => testRowsStay('dark'));
   ok(`MUT-SCROLL (landed) the page's own scrolling postponing her pause again: OPEN-ROWS fails (rows at rest ${mSp.r.rest.n}; compile log ${JSON.stringify(mSp.r.clog)})`, mSp.landed === 1 && mSp.r.rest.n < 8, JSON.stringify({ landed: mSp.landed, r: mSp.r }));
   // INFO: the control's rest after opening (flag off, the Typewriter on): does today's Typewriter scroll the same way? (its glides, not S4's)
@@ -1184,10 +1201,9 @@ try { await withHarness(async (app) => {
   // the compile stopped before the budget), so this guard was blind; the cause is MUT-OPENROWS'. Kept VERBATIM and no longer run.
   // ok(`MUT-RETRY (landed) a refused compile never tried again: OPEN-ROWS fails (rows at rest ${mRt.r.rest.n}; grants ${JSON.stringify(mRt.r.flashes0)})`, mRt.landed === 1 && mRt.r.rest.n < 8, JSON.stringify({ landed: mRt.landed, r: mRt.r }));
   if (process.env.HARNESS_PARKED === '1') {
-    // (re-pointed in the same unmerged round: 42433836311's burst DID reproduce it with the fix off, so the burst alone is a sometime witness;
-    // the claim that holds: across the burst and the frame's own scenario, the fix off is caught)
-    pok('PARKED (was "MUT-CARETEND (landed) the caret\'s text-end place off: CARET-END fails") - SUPERSEDED by its own first run (Actions 42431319040: the burst alone did not reproduce the flagged frame; on 42433836311 it did). Opposite reasserted: the burst is a sometime witness, and with the frame\'s own scenario beside it the fix off is always caught; live successor MUT-CARETEND [successor]',
-      mCe.landed === 1 && mCeB.landed === 1 && (!atEnd(mCe.r) || !atEnd(mCeB.r)), JSON.stringify({ burst: mCe.r, compiled: mCeB.r }));
+    // (re-pointed again in the same unmerged round: 42438849747's parked leg showed both scenarios are sometime witnesses; the boundary is certain)
+    pok('PARKED (was "MUT-CARETEND (landed) the caret\'s text-end place off: CARET-END fails") - SUPERSEDED by its own first run (Actions 42431319040: the burst alone did not reproduce the flagged frame; on 42433836311 it did). Opposite reasserted: the burst is a sometime witness; at the editor\'s own boundary the fix off is always caught; live successor MUT-CARETEND [successor 2]',
+      mCeC.landed === 1 && !atEnd(mCeC.r), JSON.stringify({ burst: mCe.r && mCe.r.block, boundary: mCeC.r && mCeC.r.block }));
     pok('PARKED (was "MUT-RETRY (landed) a refused compile never tried again: OPEN-ROWS fails") - SUPERSEDED by its own first run (Actions 42431319040: no compile was refused at open). Opposite reasserted: with the retry stripped, the open\'s compile is never refused (the compile log has no "refused"), so the retry is not what draws the open\'s rows; live successor MUT-OPENROWS',
       mRt.landed === 1 && !(mRt.r.clog || []).includes('refused'), JSON.stringify({ clog: mRt.r.clog, rows: mRt.r.rest.n }));
   }
