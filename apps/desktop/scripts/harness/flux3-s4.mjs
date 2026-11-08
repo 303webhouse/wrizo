@@ -792,6 +792,18 @@ try { await withHarness(async (app) => {
   // ok('CARET-DARK the dark tone keeps its caret (the shared orange, rgba(255, 152, 0, 0.82))', !!kDark && kDark.caret === 'rgba(255, 152, 0, 0.82)', JSON.stringify(kDark));
   const kDarkSt = await st();
   ok(`CARET-JACKED-DARK [successor] Jacked In's dark caret is solid brass, #FF9800 (${kDark && kDark.caret}; jacked ${kDarkSt.jacked})`, kDarkSt.jacked && !!kDark && kDark.caret === 'rgb(255, 152, 0)', JSON.stringify(kDark));
+  // CARET-DARK-PIXELS (Fable, Nov 8: "a pixel check"): the colour the block PAINTS, read from the viewport's own screenshot inside the block (under
+  // reduced motion, so no blink phase can catch it unpainted): brass, (255, 152, 0) within 8 a channel, not the .82 blend (~#D98307)
+  const caretPixel = async (o) => {
+    const k = await caretOf({ ...o, reduced: true });
+    if (!k || !k.at) return { k, px: null, st0: await st() };
+    const [x, y, w, h] = k.at;
+    return { k, px: await pixOf({ x: x + 1, y: y + 2, width: Math.max(2, w - 2), height: Math.max(2, h - 4) }), st0: await st() };
+  };
+  const brassPx = (p) => !!p && !!p.px && Math.abs(p.px.ground[0] - 255) <= 8 && Math.abs(p.px.ground[1] - 152) <= 8 && p.px.ground[2] <= 8;
+  const cpD = await caretPixel({ tone: 'dark', id: CARETP });
+  ok(`CARET-DARK-PIXELS Jacked In's dark caret paints brass (${cpD.px && JSON.stringify(cpD.px.ground)}, jacked ${cpD.st0 && cpD.st0.jacked}; #FF9800 = [255,152,0], the old blend ~[217,131,7])`,
+    !!cpD.st0 && cpD.st0.jacked && brassPx(cpD), JSON.stringify(cpD));
   const kPlainD = await caretOf({ tone: 'dark', id: DRAFTP, pageTw: 'off', atRow: 1 });
   const kPlainDSt = await st();
   ok(`CARET-PLAIN-DARK [successor] outside Jacked In the dark caret is today's (${kPlainD && kPlainD.caret}; jacked ${kPlainDSt.jacked})`, !kPlainDSt.jacked && !!kPlainD && kPlainD.caret === 'rgba(255, 152, 0, 0.82)', JSON.stringify(kPlainD));
@@ -1201,9 +1213,9 @@ try { await withHarness(async (app) => {
   const mOl = await withMutant('outline', async () => { const k = await caretOf({ tone: 'light', id: CARETP }); return { k, st0: await st() }; });
   ok(`MUT-OUTLINE (landed, in boot-*.css) the jacked light caret without its ink outline: CARET-JACKED-LIGHT fails (outline ${mOl.r.k && mOl.r.k.outline && mOl.r.k.outline.style})`,
     mOl.landed === 1 && !caretBrassOk(mOl.r.k, mOl.r.st0), JSON.stringify({ landed: mOl.landed, k: mOl.r.k }));
-  const mDb = await withMutant('darkbrass', async () => { const k = await caretOf({ tone: 'dark' }); return { k, st0: await st() }; });
-  ok(`MUT-DARKBRASS (landed, in boot-*.css) Jacked In's dark caret back to the shared .82 orange: CARET-JACKED-DARK fails (${mDb.r.k && mDb.r.k.caret})`,
-    mDb.landed === 1 && !(mDb.r.st0.jacked && !!mDb.r.k && mDb.r.k.caret === 'rgb(255, 152, 0)'), JSON.stringify({ landed: mDb.landed, k: mDb.r.k }));
+  const mDb = await withMutant('darkbrass', () => caretPixel({ tone: 'dark', id: CARETP }));
+  ok(`MUT-DARKBRASS (landed, in boot-*.css) Jacked In's dark caret back to the shared .82 orange: CARET-DARK-PIXELS and CARET-JACKED-DARK fail (paints ${mDb.r.px && JSON.stringify(mDb.r.px.ground)}; ${mDb.r.k && mDb.r.k.caret})`,
+    mDb.landed === 1 && !brassPx(mDb.r) && !!mDb.r.k && mDb.r.k.caret !== 'rgb(255, 152, 0)', JSON.stringify({ landed: mDb.landed, r: mDb.r }));
   const mBl = await withMutant('blink', () => testBlink(false));
   ok(`MUT-BLINK (landed, in index-*.css) the block caret blinking while keys land again: CARET-SOLID fails (during: ${JSON.stringify(mBl.r.during.map((d) => d && d.anim))})`,
     mBl.landed === 1 && !solidOk(mBl.r), JSON.stringify({ landed: mBl.landed, during: mBl.r.during }));
