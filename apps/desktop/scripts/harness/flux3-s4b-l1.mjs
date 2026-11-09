@@ -20,6 +20,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { withHarness } from '../runtime-verify.mjs';
+import { makeL } from '../lib/l-method.mjs';
 
 const SHOTS = process.env.FLUX3_SHOTS || null;
 if (SHOTS) fs.mkdirSync(SHOTS, { recursive: true });
@@ -175,63 +176,28 @@ try { await withHarness(async (app) => {
     if (undo) { await ev(undo); await sleep(250); }
     ok(`MUT-${name.toUpperCase().replace(/ /g, '-')} the reader goes RED on its mutant (${name})${undo ? ' and green again undone' : ''}`, wentRed && (undo ? (groundOk(await read()) && curOk(await read())) : true), name);
   }
-  // ---- L: the ground adds no typing latency (six interleaved rounds, TWO readings, the Corridor's method) ----------------------------------------------
+  // ---- L: the ground adds no typing latency (six interleaved rounds, TWO readings, scripts/lib/l-method.mjs) -------------------------------------------------------
   // J: a Page room in BUILD with the ground; C: the SAME page with the ground box taken away right after load (the only difference). The control against itself is GREEN and
-  // +5 / +10 ms added to every key of arm J (on the control page) are RED on the cost reading (clock: key -> two frames on; cost: key -> the end of its last event + the frame that paints it).
+  // +5 / +10 ms added to every key of arm J (on the control page) are RED on the cost reading (on the box; FLUX3_L=1 runs it elsewhere).
   if (ON_BOX || process.env.FLUX3_L === '1') {
-    const ROUNDS = 6, KEYS = 44, MIN_KEYS = 40, GAP = 90, MAX_MS = 100;
     const LAT_TEXT = Array.from({ length: 150 }, (_, i) => 'word' + i).join(' ');
-    const CYCLE = 'the ground sits behind the room and holds still ';
-    const stat = (xs) => { const s = (xs || []).slice().sort((a, b) => a - b); const q = (p) => (s.length ? s[Math.min(s.length - 1, Math.floor(p * s.length))] : null); return { n: s.length, median: q(0.5), p95: q(0.95), max: s.length ? s[s.length - 1] : null }; };
-    const r1 = (x) => (x === null || x === undefined ? null : Math.round(x * 10) / 10);
-    const runL = async (label, extra, groundInJ) => {
-      const lat = { C: [], J: [] };
-      let cursor = 0;
-      for (let round = 0; round <= ROUNDS; round += 1) {
-        for (const arm of (round % 2 ? ['J', 'C'] : ['C', 'J'])) {
-          const id = `f3l1-lat-${Date.now()}-${seq += 1}`;
-          await mk({ id, text: LAT_TEXT, createdAt: new Date().toISOString(), origin: 'loose', source: 'page' });
-          await sleep(300);
-          await open({ id });
-          const hadGround = !!(await ev("!!document.querySelector('[data-flux3-room-ground]')"));
-          if (!(arm === 'J' && groundInJ)) await ev("(() => { const b = document.querySelector('[data-flux3-room-ground]'); if (b) b.remove(); })()");
-          await ev(`(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus(); const s = getSelection(); s.selectAllChildren(ed); s.collapseToEnd(); window.__lat = []; window.__ks = []; let t0 = 0, cur = null; if (window.__latOff) window.__latOff();
-            const kd = () => { t0 = performance.now(); const k = { busy: null, frame: null, s0: t0 }; cur = k; window.__ks.push(k); };
-            const inp = () => { const k = cur; if (!k || k.busy !== null || k.posted) return; k.posted = true; const mc = new MessageChannel(); mc.port1.onmessage = () => { k.busy = performance.now() - k.s0; mc.port1.close(); }; mc.port2.postMessage(0); };
-            const spin = () => { ${arm === 'J' && extra ? `const e = performance.now() + ${extra}; while (performance.now() < e) { /* the mutant: a slow key */ }` : ''} };
-            const bi = () => { const t = t0, k = cur; requestAnimationFrame(() => { const r = performance.now(); const mc = new MessageChannel(); mc.port1.onmessage = () => { if (k) k.frame = performance.now() - r; mc.port1.close(); };
-              mc.port2.postMessage(0); requestAnimationFrame(() => { window.__lat.push(performance.now() - t); }); }); };
-            document.addEventListener('keydown', kd, true); document.addEventListener('beforeinput', spin, true); document.addEventListener('beforeinput', bi, true); document.addEventListener('beforeinput', inp, false); document.addEventListener('input', inp, false);
-            window.__latOff = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('beforeinput', spin, true); document.removeEventListener('beforeinput', bi, true); document.removeEventListener('beforeinput', inp, false); document.removeEventListener('input', inp, false); }; return true; })()`);
-          for (let i = 0; i < KEYS; i += 1) { await app.typeKeys(CYCLE[cursor % CYCLE.length]); cursor += 1; await sleep(GAP); }
-          await sleep(250);
-          const got = await ev('window.__lat.slice()');
-          const cost = (await ev('window.__ks.map((k) => (k.busy != null && k.frame != null ? k.busy + k.frame : null))')).filter((x) => x != null);
-          const hasGround = await ev("!!document.querySelector('[data-flux3-room-ground]')");
-          if (round > 0) lat[arm].push({ lat: got, cost, stood: { hadGround, hasGround } });
-        }
-      }
-      const judge = (f, ceiling) => {
-        const cMeds = lat.C.map((r) => stat(r[f]).median), cP95s = lat.C.map((r) => stat(r[f]).p95);
-        const spreadMed = Math.max(...cMeds) - Math.min(...cMeds), spreadP95 = Math.max(...cP95s) - Math.min(...cP95s);
-        const C = stat(lat.C.flatMap((r) => r[f])), J = stat(lat.J.flatMap((r) => r[f]));
-        const pass = J.median <= C.median + spreadMed && J.p95 <= C.p95 + spreadP95 && (ceiling == null || J.max <= ceiling);
-        return { pass, line: `J median ${r1(J.median)} <= C ${r1(C.median)} + ${r1(spreadMed)}, J p95 ${r1(J.p95)} <= C ${r1(C.p95)} + ${r1(spreadP95)}${ceiling == null ? '' : `, J max ${r1(J.max)} <= ${ceiling}`}`, C, J };
-      };
-      const enough = [...lat.C, ...lat.J].every((r) => r.lat.length >= MIN_KEYS && r.cost.length >= MIN_KEYS);
+    const L = makeL({
+      app, ev, sleep, cycle: 'the ground sits behind the room and holds still ',
+      prepare: async (arm, on) => {
+        const id = `f3l1-lat-${Date.now()}-${seq += 1}`;
+        await mk({ id, text: LAT_TEXT, createdAt: new Date().toISOString(), origin: 'loose', source: 'page' });
+        await sleep(300);
+        await open({ id });
+        const hadGround = !!(await ev("!!document.querySelector('[data-flux3-room-ground]')"));
+        if (!(arm === 'J' && on)) await ev("(() => { const b = document.querySelector('[data-flux3-room-ground]'); if (b) b.remove(); })()");
+        await ev("(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus(); const s = getSelection(); s.selectAllChildren(ed); s.collapseToEnd(); return true; })()");
+        await sleep(400);
+        return { hadGround, hasGround: !!(await ev("!!document.querySelector('[data-flux3-room-ground]')")) };
+      },
       // the arms stood as named: J had the ground when asked, C never did
-      const stoodRight = lat.J.every((r) => r.stood.hadGround && r.stood.hasGround === !!groundInJ) && lat.C.every((r) => r.stood.hadGround && !r.stood.hasGround);
-      const clock = judge('lat', MAX_MS), costR = judge('cost', null);
-      return { pass: enough && stoodRight && clock.pass && costR.pass, line: `${label}: clock [${clock.line}] cost [${costR.line}]`, enough, stoodRight, cost: costR, clock };
-    };
-    const green = await runL('control against itself (the ground away in both arms)', 0, false);
-    ok(`L-METHOD-GREEN the method passes the control against itself: ${green.line}`, green.pass && green.enough && green.stoodRight);
-    const l = await runL('the ground in J', 0, true);
-    ok(`L the room's ground adds no typing latency beyond the control's own spread: ${l.line}`, l.pass && l.enough && l.stoodRight);
-    for (const extra of [5, 10]) {
-      const m = await runL(`control + ${extra} ms mutant`, extra, false);
-      ok(`L-MUT-${extra} the method calls a key that is ${extra} ms slower RED on the cost reading (the mutant landed: ${m.line})`, !m.cost.pass && m.enough && m.stoodRight);
-    }
+      stoodRight: (arm, on, stood) => !!stood && stood.hadGround && stood.hasGround === (arm === 'J' && on),
+    });
+    await L.run(ok, { subject: "the room's ground", onlyMethod: false });
   } else console.log("INFO L (Actions: timing is the box's to judge; FLUX3_L=1 runs it here)");
 }); } catch (e) { console.log('HARNESS ERROR', e && e.stack || e); checks.push({ name: 'HARNESS', pass: false, detail: String(e && e.message || e) }); }
 
