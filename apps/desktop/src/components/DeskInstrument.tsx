@@ -10,6 +10,7 @@ import { FLUX3 } from '../flux3/flag';
 import { FluxIdleGlitch } from '../flux3/FluxIdleGlitch';
 import { FluxGlitchBar } from '../flux3/FluxGlitchBar';
 import { FluxDoc } from '../flux3/FluxDoc';
+import { FluxRoomGround } from '../flux3/FluxRoomGround';   // S4b L1: the circuit ground across the room (a box behind the framed host's content)
 
 // the progress instrument's framed home: bar and rhizome share the rhizome's lane under the page, and the goal flare fires there on the same `celebrating` transition, for both styles [DeskInstrument §1]
 export function DeskInstrument({ unitCount, text, seedKey, paperRef, glitch = false }: {
@@ -31,6 +32,7 @@ export function DeskInstrument({ unitCount, text, seedKey, paperRef, glitch = fa
       {glitch && (FLUX3 ? <FluxIdleGlitch paperRef={paperRef} /> : <GlitchMeter text={text} />)}
       {glitch && <RunStrip text={text} />}
       {FLUX3 && glitch && <FluxDoc paperRef={paperRef} entryId={seedKey} />}
+      {FLUX3 && glitch && <FluxRoomGround />}
       <DeskGoalLane unitCount={unitCount} />
     </>
   );
