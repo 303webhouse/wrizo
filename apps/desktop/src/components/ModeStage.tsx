@@ -395,6 +395,8 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
     const ed = scroll?.querySelector('.forward-only-editor') as HTMLElement | null;
     if (!scroll || !ed) return;
     const target = e.target as HTMLElement | null;
+    // Typewriter is forward-only: a press anywhere on the page, text included, puts the caret at the END of her text, never mid-page
+    if (typewriterOn && target && ed.contains(target)) { ed.focus(); const at = editorPlainText(ed).length; requestAnimationFrame(() => { if (ed.isConnected) setCaretOffset(ed, at); }); return; }
     if (target && ed.contains(target)) return;
     const inScroll = !!target && scroll.contains(target);
     if (target?.closest?.('button, a, input, textarea, select, [role="button"], [role="option"]')) { if (inScroll) focusEditor(); return; }
@@ -402,7 +404,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
     const rows = [...ed.querySelectorAll<HTMLElement>('.wz-row')].filter(r => r.getBoundingClientRect().height > 0);
     const lastBottom = rows.length ? rows[rows.length - 1].getBoundingClientRect().bottom : -Infinity;
     let offset: number | null;
-    if (!rows.length || e.clientY > lastBottom) offset = editorPlainText(ed).length;
+    if (!rows.length || e.clientY > lastBottom || typewriterOn) offset = editorPlainText(ed).length;
     else {
       const er = ed.getBoundingClientRect();
       const firstTop = rows[0].getBoundingClientRect().top;
