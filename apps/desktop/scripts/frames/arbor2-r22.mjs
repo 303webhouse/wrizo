@@ -400,6 +400,31 @@ const screens = {
     }
     say('r22-typewriter-layers', out);
   },
+  // ── 1c. THE GOAL GLOW IN TYPEWRITER (RULED by Fable, Nov 8: "in Arbor Typewriter the goal glow grows only to 0.19 and holds; the dark page's words
+  // take the lifted cream #F7F0DE (14.2:1). The floors hold at every progress level"). The goal is set through the seam to 8 words and the page
+  // already has more - progress 1, the glow's intensity at its cap .34 (liveness: read). Per room: in Free Write (Typewriter) the glow's opacity
+  // holds at .19 and the words hold the floor on the ground under them (the words hidden for one screenshot); back in Draft the glow is its whole
+  // .34 again (the cap is Typewriter's only). The goal goes back to the app's default (24 lines, store/writingGoal.ts) at the end, through the seam.
+  'r22-typewriter-glow': async (app) => {
+    const GLOW = "(() => { const g = [...document.querySelectorAll('.wz-goal-glow')].find((e) => e.getBoundingClientRect().width > 0); return g ? { int: Number(g.style.getPropertyValue('--glow-intensity')), op: Number(getComputedStyle(g).opacity) } : null; })()";
+    const out = {};
+    for (const room of ['night', 'day']) {
+      const seam = await app.evalJs("typeof window.wrizoSetWritingGoal === 'function' ? (window.wrizoSetWritingGoal({ n: 8, unit: 'words' }), true) : false");
+      if (!seam) fail('R22-TYPEWRITER-GLOW', { seam: false });
+      await openFree(app, `arbor-r22-glow-${room}`); await setRoom(app, room); await sleep(1900);   // the glow's own 1.4 s transition
+      const tw = await app.evalJs(GLOW);
+      const px = await floorUnderWords(app);
+      const ink = px.ink;
+      await clickMode(app, 'draft'); await sleep(1900);
+      const draft = await app.evalJs(GLOW);
+      out[room] = { tw, draft, ink, floor: px.min && px.min.r, ground: px.min && px.min.g, n: px.n,
+        ok: { reached: !!tw && tw.int >= 0.335, held: !!tw && tw.op >= 0.185 && tw.op <= 0.195, floor: px.n >= 10 && px.min.r >= 13.9, draftWhole: !!draft && draft.op >= 0.335 } };
+    }
+    await app.evalJs("typeof window.wrizoSetWritingGoal === 'function' && window.wrizoSetWritingGoal({ n: 24, unit: 'lines' })");
+    const bad = Object.entries(out).flatMap(([room, v]) => Object.entries(v.ok).filter(([, x]) => !x).map(([k]) => `${room} ${k}`));
+    if (bad.length) fail('R22-TYPEWRITER-GLOW', { bad, ...out });
+    say('r22-typewriter-glow', out);
+  },
 
   // ── 3. THREE DARKER NIGHT BROWNS (Fable's ruling 2, Nov 8: "ALL night-room browns step darker together (the room ground, rails, panels, the
   // dark page), keeping the lamplight's warm gradient. Three steps, floors measured, frames for Nick"). For Now, A, B, C by night: the mockup bar's

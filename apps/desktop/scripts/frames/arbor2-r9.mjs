@@ -306,8 +306,14 @@ export default {
       //   ? m.every((x) => x.zoom === 'true' && /^rgba\(0, 0, 0, 0\)$|^transparent$/.test(x.bg || '') && x.ink === (x.room === 'night' || x.tone === 'dark' ? '#EFE4CB' : '#1A0F06'))
       //   : m.every((x) => x.paper === m[0].paper && x.ink === m[0].ink) && !!m[0].paper,
       // SUCCESSOR page4: the same, the night room's words #F7F0DE (the day room's dark page keeps its own cream #EFE4CB, the light page walnut).
-      page4: m[0].zoom === 'true'
-        ? m.every((x) => x.zoom === 'true' && /^rgba\(0, 0, 0, 0\)$|^transparent$/.test(x.bg || '') && x.ink === (x.room === 'night' ? '#F7F0DE' : x.tone === 'dark' ? '#EFE4CB' : '#1A0F06'))
+      // PARKED 2026-11-08 (SUPERSEDED - Fable's ruling, Nov 8: "the dark page's words take the lifted cream #F7F0DE" in Typewriter by day too).
+      // Original, verbatim:
+      // page4: m[0].zoom === 'true'
+      //   ? m.every((x) => x.zoom === 'true' && /^rgba\(0, 0, 0, 0\)$|^transparent$/.test(x.bg || '') && x.ink === (x.room === 'night' ? '#F7F0DE' : x.tone === 'dark' ? '#EFE4CB' : '#1A0F06'))
+      //   : m.every((x) => x.paper === m[0].paper && x.ink === m[0].ink) && !!m[0].paper,
+      // SUCCESSOR page5: the zoomed words #F7F0DE in the night room and on the dark page by day, walnut on the light page by day.
+      page5: m[0].zoom === 'true'
+        ? m.every((x) => x.zoom === 'true' && /^rgba\(0, 0, 0, 0\)$|^transparent$/.test(x.bg || '') && x.ink === (x.room === 'night' || x.tone === 'dark' ? '#F7F0DE' : '#1A0F06'))
         : m.every((x) => x.paper === m[0].paper && x.ink === m[0].ink) && !!m[0].paper,
       floors: floors.length === 0,
     };

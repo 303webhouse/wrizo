@@ -301,8 +301,18 @@
   --ink-on-paper:#F7F0DE; --ink-on-paper-low:#B9AA8C; --arbor2-tw-ink:#F7F0DE; --arbor2-tw-red:#FF9088; --arbor2-tw-blue:#8AB4FF; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day']:not([data-page='dark']) .mode-pagecol[data-zoom='true'] .mode-page{
   --arbor2-tw-ink:#1A0F06; --arbor2-tw-red:#B8231F; --arbor2-tw-blue:#1F4FB8; }
+/* (the dark page by day was, before Fable's ruling below: --arbor2-tw-ink:var(--ink-on-paper) - the dark page's cream #EFE4CB) */
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'][data-page='dark'] .mode-pagecol[data-zoom='true'] .mode-page{
-  --arbor2-tw-ink:var(--ink-on-paper); --arbor2-tw-red:#FF9088; --arbor2-tw-blue:#8AB4FF; }
+  --ink-on-paper:#F7F0DE; --arbor2-tw-ink:#F7F0DE; --arbor2-tw-red:#FF9088; --arbor2-tw-blue:#8AB4FF; }
+/* r22 - THE GOAL GLOW UNDER TYPEWRITER'S WORDS (RULED by Fable, Nov 8, on ARBOR's measured lean: "in Arbor Typewriter the goal glow grows only to
+   0.19 and holds; the dark page's words take the lifted cream #F7F0DE (14.2:1). The floors hold at every progress level"). The goal's glow
+   (components/GoalGlow.tsx, .wz-goal-glow, warm, its opacity the goal's eased progress x the --goal-glow-cap .34) lies behind the page; on
+   Arbor's clear zoomed page it lies under the words, and at its cap no ink holds 13.9 (the light page's walnut ~13.5). Measured at .19 (Actions
+   frames 42540157120 / 42540817428): the dark fill under it rgb(44,30,18) - #F7F0DE 14.19 there, the light page's walnut 14.6, the night's
+   page-less cream 14.91. So while Typewriter is on the glow grows to .19 and holds there (CSS min() on the opacity GoalGlow writes: it follows
+   entering and leaving Typewriter at once, with no change to the JS cap); off Typewriter it is untouched. The night fill and the day sheet are
+   the dark/light grounds it lies on; the dark page by day letters in #F7F0DE (above), as the night words do. */
+:root[data-arbor2][data-theme='plateau']:has(.mode-pagecol[data-zoom='true']) .wz-goal-glow{ opacity:min(var(--glow-intensity, 0), .19); }
 /* THE PERGOLA v2 (spec §7b, Oct 31; supersedes §7.1's drawing - sun.ts places every piece in viewport pixels, a fresh seed per session):
    THREE OR FOUR thick BEAMS (shadow bands 36-60 px at the near end, narrowing to 40% as they recede: the clip-path) running as ONE feature
    from the bottom-left corner toward the right, LOW - they inhabit the bottom-right quadrant and the upper half stays mostly clear; ONE OR

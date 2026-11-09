@@ -133,7 +133,16 @@ export default {
     const zoomedOk2 = (r) => r.zoom === 'true' && /^rgba\(0, 0, 0, 0\)$|^transparent$/.test(r.bg || '') && r.sheetMask === null && r.sheetShadow === null
       && r.ink === '#F7F0DE' && r.low === '#B9AA8C' && r.caret === (dark ? '#FF9800' : '#F7F0DE')
       && (!dark || (/underline/.test(r.selLine) && /overline/.test(r.selLine) && r.selColour === '#FF9800'));
-    const judgeFw = (r) => (r.room === 'night' ? zoomedOk2(r) : pageOk(r) && dayUnframed(r));
+    // PARKED 2026-11-08 (SUPERSEDED - Fable's ruling, Nov 8: "the dark page's words take the lifted cream #F7F0DE" in Typewriter - pageOk pins the
+    // dark page's ink to #EFE4CB, which is the Draft page's and stays so). Original, verbatim:
+    // const judgeFw = (r) => (r.room === 'night' ? zoomedOk2(r) : pageOk(r) && dayUnframed(r));
+    // SUCCESSOR: by day, pageOk with the zoomed dark page's ink #F7F0DE (its ratio on the paper, the low ink, the brass caret and the selection
+    // rule as pageOk), and the light page exactly pageOk; by night zoomedOk2.
+    const pageOkTw = (r) => (dark
+      ? r.paper === '#1A1510' && r.border === '#3A2D22' && r.ink === '#F7F0DE' && r.inkRatio >= 13.9 && r.low === '#B9AA8C' && r.lowRatio >= 4.5 && r.caret === '#FF9800'
+        && /underline/.test(r.selLine) && /overline/.test(r.selLine) && r.selColour === '#FF9800'
+      : pageOk(r));
+    const judgeFw = (r) => (r.room === 'night' ? zoomedOk2(r) : pageOkTw(r) && dayUnframed(r));
     for (const [m, v] of Object.entries(out)) {
       const judge = m === 'freewrite' ? judgeFw : pageOk;
       ok[m + ' page'] = judge(v.toneRoom);
