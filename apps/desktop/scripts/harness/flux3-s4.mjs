@@ -39,6 +39,10 @@
 //          TUN-TYPE the named recede exception: while keys land (the chrome receded) it stays and runs. TUN-RATE re-set at most every 2 s
 //          (every updatePlaybackRate is logged), faster while she types fast, the streaks at speed, back to rest after; its only DOM change the
 //          streaks' flag, at most every 2 s. TUN-STILL no animation under reduced motion and Ambiance 0. TUN-WHERE only while jacked in.
+//          THE LIGHTER TUNNEL (Nick's pick, Nov 8, from the latency experiment's arms on flux3/s4-arms): TUN [successor 2] and TUN-STILL
+//          [successor] read 6 frames, each 110% of the stage, and no rays (TUN [successor]'s and TUN-STILL's 12 frames PARKED).
+//   GLOW   GLOW-TOKEN (Nick, Nov 8: the warm glow behind the words, a lighter blue or gone after he tries it): under the flag the goal glow is
+//          one token, --f3-goal-glow, today's warm gradient exactly as the control's; the token alone set to none takes it away, and back.
 //          MUT-RECEDE / MUT-HOLD (landed): each one-line switch flipped alone does exactly its thing. MUT-RESET (landed): TUN-RATE fails.
 //          TUN-CLEAR (the r5 frames: the tunnel showed through the band mask's fade, behind the text): the page's rect is cut out of the tunnel
 //          (a still mask hole, measured on mount, settle, resize and zoom), at rest and while she types. MUT-NOHOLE (landed): it fails.
@@ -103,7 +107,8 @@ const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass: !!pass,
 // MUT-CARETEND [successor] (Actions 42438849747: its scenarios reach the flagged condition only sometimes)
 // MUT-CARETEND [successor 2] (Actions 42444379803: the boundary too is a sometime witness; the witness is INFO)
 // CARET-DARK (the Wrizors' carry, Nov 8: Jacked In's dark caret solid #FF9800)
-const PARKED_EXPECTED = 21;
+// TUN [successor] and TUN-STILL (Nick's lighter tunnel, Nov 8: 6 frames of 110%, no rays: two records)
+const PARKED_EXPECTED = 23;
 
 function buildIdentity() {
   const out = { bundle: null, builtAt: null, head: null, srcCommitAt: null, dirtySrc: null, stale: null };
@@ -198,7 +203,8 @@ const INSTRUMENT = `(() => {
     anims.forEach((a) => { try { a.effect.getKeyframes().forEach((k) => Object.keys(k).forEach((p) => props.add(p))); } catch { props.add('unreadable'); } });
     const page = document.querySelector('.mode-page'), par = t.parentElement;
     return { inStage: !!par && par.classList.contains('mode-stage'), first: !!par && par.firstElementChild === t, aria: t.getAttribute('aria-hidden'), pe: cs.pointerEvents, op: +cs.opacity, z: cs.zIndex,
-      canvas: t.querySelectorAll('canvas').length, frames: t.querySelectorAll('.flux3-tunnel-frame').length, anims: anims.length, running: anims.filter((a) => a.playState === 'running').length,
+      canvas: t.querySelectorAll('canvas').length, frames: t.querySelectorAll('.flux3-tunnel-frame').length, rays: t.querySelectorAll('.flux3-tunnel-rays').length,
+      frameW: (() => { const f = t.querySelector('.flux3-tunnel-frame'); return f && t.offsetWidth ? +(f.offsetWidth / t.offsetWidth).toFixed(2) : null; })(), anims: anims.length, running: anims.filter((a) => a.playState === 'running').length,
       props: [...props].filter((p) => !['offset', 'easing', 'composite', 'computedOffset'].includes(p)).sort(), rates: [...new Set(anims.map((a) => a.playbackRate))],
       time: anims.length ? +(+anims[0].currentTime).toFixed(0) : null, fast: t.hasAttribute('data-fast'), still: t.hasAttribute('data-still'), recede: t.hasAttribute('data-recede'), hold: t.hasAttribute('data-hold'),
       pageBg: page ? getComputedStyle(page).backgroundColor : null, pageAbove: !!page && (() => { const r = page.getBoundingClientRect(), e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!e && !t.contains(e); })(),
@@ -1089,8 +1095,17 @@ try { await withHarness(async (app) => {
   const tunBase = (x) => !!x.rest && x.rest.inStage && x.rest.first && x.rest.aria === 'true' && x.rest.pe === 'none' && x.rest.canvas === 0 && x.rest.frames === 12 && x.rest.anims >= 12
     && x.rest.running === x.rest.anims && same(x.rest.props, ['opacity', 'transform']) && !!x.rest2 && x.rest2.time > x.rest.time && x.rest.pageAbove;
   const tunSucc = (x) => tunBase(x) && clear(x.rest.pageBg);
-  ok(`TUN [successor] the tunnel stands behind the page while jacked in: first in .mode-stage, aria-hidden, no pointer, no canvas, ${tun.rest && tun.rest.frames} frames, every animation transform/opacity only (${tun.rest && tun.rest.props}) and running; the page above it with no paper (${tun.rest && tun.rest.pageBg})`,
-    tunSucc(tun), JSON.stringify({ rest: tun.rest, t2: tun.rest2 && tun.rest2.time }));
+  // ---- PARKED - SUPERSEDED by Nick's lighter tunnel (Nov 8, picked from the latency experiment's arms on flux3/s4-arms): 6 frames of 110% of the
+  // stage, no rays (its 12 frames were the r12 tunnel). Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block, and its
+  // successor follows.
+  // ok(`TUN [successor] the tunnel stands behind the page while jacked in: first in .mode-stage, aria-hidden, no pointer, no canvas, ${tun.rest && tun.rest.frames} frames, every animation transform/opacity only (${tun.rest && tun.rest.props}) and running; the page above it with no paper (${tun.rest && tun.rest.pageBg})`,
+  //   tunSucc(tun), JSON.stringify({ rest: tun.rest, t2: tun.rest2 && tun.rest2.time }));
+  const lighter = (r) => !!r && r.frames === 6 && r.rays === 0 && r.frameW === 1.1;
+  const tunBase2 = (x) => !!x.rest && x.rest.inStage && x.rest.first && x.rest.aria === 'true' && x.rest.pe === 'none' && x.rest.canvas === 0 && lighter(x.rest) && x.rest.anims >= 6
+    && x.rest.running === x.rest.anims && same(x.rest.props, ['opacity', 'transform']) && !!x.rest2 && x.rest2.time > x.rest.time && x.rest.pageAbove;
+  const tunSucc2 = (x) => tunBase2(x) && clear(x.rest.pageBg);
+  ok(`TUN [successor 2] the lighter tunnel (Nick, Nov 8) stands behind the page while jacked in: first in .mode-stage, aria-hidden, no pointer, no canvas, ${tun.rest && tun.rest.frames} frames each ${tun.rest && tun.rest.frameW} of the stage, ${tun.rest && tun.rest.rays} rays, every animation transform/opacity only (${tun.rest && tun.rest.props}) and running; the page above it with no paper (${tun.rest && tun.rest.pageBg})`,
+    tunSucc2(tun), JSON.stringify({ rest: tun.rest, t2: tun.rest2 && tun.rest2.time }));
   // ---- PARKED - SUPERSEDED by Nick's terminal (r9): the words stand on the room's ground INSIDE the tunnel's frames, so nothing is cut out of it
   // (r7's hole served a sheet of paper). Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
   const clearOk = (t) => !!t && !!t.clear && t.clear.off <= 1 && t.clear.page.w > 0 && /exclude|xor/.test(t.clear.comp) && t.clear.masks === 2;
@@ -1106,8 +1121,11 @@ try { await withHarness(async (app) => {
   ok(`TUN-BEHIND [successor] the words stand inside the tunnel: nothing cut out of it (mask ${tun.rest && tun.rest.mask}), its box covering the page's seen part (the stage clips the zoomed page), at rest and while she types`,
     behindSeen(tun.rest) && behindSeen(tun.mid), JSON.stringify({ rest: tun.rest && [tun.rest.mask, tun.rest.coversSeen, tun.rest.clear], mid: tun.mid && [tun.mid.mask, tun.mid.coversSeen] }));
   if (process.env.HARNESS_PARKED === '1') {
+    // (its re-assertion re-pointed to TUN [successor 2] in the same unmerged S4: "the rest of TUN" now holds of the lighter tunnel)
     pok('PARKED (was "TUN ... the page\'s paper opaque and above it") - SUPERSEDED by Nick\'s terminal (Nov 7, spec draft 13 §6, r9: no paper while jacked in). Opposite reasserted: the paper is clear, not opaque, and the rest of TUN holds; live successor TUN [successor]',
-      tunSucc(tun) && !opaque(tun.rest.pageBg), JSON.stringify({ pageBg: tun.rest && tun.rest.pageBg }));
+      tunSucc2(tun) && !opaque(tun.rest.pageBg), JSON.stringify({ pageBg: tun.rest && tun.rest.pageBg }));
+    pok('PARKED (was "TUN [successor] the tunnel stands behind the page while jacked in ... 12 frames") - SUPERSEDED by Nick\'s lighter tunnel (Nov 8: 6 frames of 110%, no rays). Opposite reasserted: the r12 tunnel\'s check fails on its frames (not 12), and the lighter one holds; live successor TUN [successor 2]',
+      !!tun.rest && tun.rest.frames !== 12 && !tunSucc(tun) && tunSucc2(tun), JSON.stringify({ frames: tun.rest && tun.rest.frames, frameW: tun.rest && tun.rest.frameW, rays: tun.rest && tun.rest.rays }));
     // (its re-assertion re-pointed to TUN-BEHIND [successor] in the same unmerged round: the first one leaned on the covers premise parked below)
     pok('PARKED (was "TUN-CLEAR nothing of the tunnel stands behind her words: the page\'s rect is cut out of it") - SUPERSEDED by Nick\'s terminal (r9: the words stand inside the tunnel). Opposite reasserted: no hole is cut (no mask, the hole check fails), at rest and while she types; live successor TUN-BEHIND [successor]',
       behindSeen(tun.rest) && behindSeen(tun.mid) && !clearOk(tun.rest) && !clearOk(tun.mid), JSON.stringify({ rest: tun.rest && tun.rest.clear, mid: tun.mid && tun.mid.clear }));
@@ -1120,8 +1138,17 @@ try { await withHarness(async (app) => {
     tr.gaps && tr.top !== null && tr.top >= 2 && tr.fast && !!tr.rest && tr.rest.every((r) => r <= 1.1) && tr.mutKinds.every((k) => k === 'data-fast') && tr.mutGaps, JSON.stringify(tr));
   const testTunnelStill = async () => { await open({ reduced: true }); const r = await ev('window.__f4.tunnel()'); await open({ dial: 0 }); const d = await ev('window.__f4.tunnel()'); return { r, d }; };
   const ts0 = await testTunnelStill();
-  ok('TUN-STILL reduced motion and Ambiance 0: the frames stand still (no animation at all), the streaks gone', !!ts0.r && ts0.r.still && ts0.r.anims === 0 && ts0.r.frames === 12 && !!ts0.d && ts0.d.still && ts0.d.anims === 0,
-    JSON.stringify({ r: ts0.r && [ts0.r.still, ts0.r.anims], d: ts0.d && [ts0.d.still, ts0.d.anims] }));
+  // ---- PARKED - SUPERSEDED by Nick's lighter tunnel (Nov 8: 6 frames, no rays). Kept VERBATIM and no longer run; its parked record is in the
+  // HARNESS_PARKED block, and its successor follows.
+  // ok('TUN-STILL reduced motion and Ambiance 0: the frames stand still (no animation at all), the streaks gone', !!ts0.r && ts0.r.still && ts0.r.anims === 0 && ts0.r.frames === 12 && !!ts0.d && ts0.d.still && ts0.d.anims === 0,
+  //   JSON.stringify({ r: ts0.r && [ts0.r.still, ts0.r.anims], d: ts0.d && [ts0.d.still, ts0.d.anims] }));
+  const still2 = (t) => !!t && t.still && t.anims === 0 && lighter(t);
+  ok('TUN-STILL [successor] reduced motion and Ambiance 0: the lighter tunnel\'s 6 frames stand still (no animation at all), no rays, the streaks gone', still2(ts0.r) && still2(ts0.d),
+    JSON.stringify({ r: ts0.r && [ts0.r.still, ts0.r.anims, ts0.r.frames, ts0.r.rays, ts0.r.frameW], d: ts0.d && [ts0.d.still, ts0.d.anims, ts0.d.frames, ts0.d.rays, ts0.d.frameW] }));
+  if (process.env.HARNESS_PARKED === '1') {
+    pok('PARKED (was "TUN-STILL ... the frames stand still", 12 of them) - SUPERSEDED by Nick\'s lighter tunnel (Nov 8). Opposite reasserted: under reduced motion the frames are not 12, and the lighter tunnel stands still; live successor TUN-STILL [successor]',
+      !!ts0.r && ts0.r.frames !== 12 && still2(ts0.r) && still2(ts0.d), JSON.stringify({ r: ts0.r && ts0.r.frames, d: ts0.d && ts0.d.frames }));
+  }
   const testTunnelWhere = async () => {
     await open(); const on = !!(await ev('window.__f4.tunnel()')); await pressToggle(); await sleep(900); const out = !!(await ev('window.__f4.tunnel()'));
     await open({ flag: false, prefs: { typewriter: true } }); const ctl = !!(await ev('window.__f4.tunnel()'));
@@ -1130,6 +1157,17 @@ try { await withHarness(async (app) => {
   };
   const tw = await testTunnelWhere();
   ok('TUN-WHERE only while jacked in: gone on jacking out, absent off the flag and in another theme\'s Typewriter', tw.on && !tw.out && !tw.ctl && !tw.other, JSON.stringify(tw));
+
+  // ---- GLOW: the goal glow is ONE token under the flag (Nick, Nov 8: a lighter blue or gone, his call after trying it; not changed yet) ---------
+  // today's warm gradient, the control's own, read through --f3-goal-glow; the token set to none alone takes the glow away, and back again
+  const GLOW_READ = `(() => { const g = document.querySelector('.wz-goal-glow'); if (!g) return { found: false }; const root = document.documentElement, bg = () => getComputedStyle(g).backgroundImage;
+    const tok = getComputedStyle(root).getPropertyValue('--f3-goal-glow').trim(), before = bg(); root.style.setProperty('--f3-goal-glow', 'none'); const off = bg();
+    root.style.removeProperty('--f3-goal-glow'); const back = bg(); return { found: true, tok: !!tok, before, off, back }; })()`;
+  const testGlow = async () => { await open(); const on = await ev(GLOW_READ); await open({ flag: false, prefs: { typewriter: true } }); const ctl = await ev(GLOW_READ); return { on, ctl }; };
+  const gw = await testGlow();
+  ok(`GLOW-TOKEN the goal glow behind Jacked In's words is one token (--f3-goal-glow): today's warm gradient, the control's own (${gw.on && gw.on.before}); the token alone set to none takes it away (${gw.on && gw.on.off}), and back`,
+    !!gw.on && gw.on.found && gw.on.tok && /rgba\(224, 113, 44, 0\.55\)/.test(gw.on.before || '') && !!gw.ctl && gw.ctl.found && !gw.ctl.tok && gw.on.before === gw.ctl.before
+      && gw.on.off === 'none' && gw.on.back === gw.on.before, JSON.stringify(gw));
 
   // ---- L: the Jacked In arm --------------------------------------------------------------------------------------------------------------------------
   // K (information, the tunnel's share; Nick kept the tunnel Nov 7): Jacked In with the tunnel never mounted (the landed `notunnel` mutant), run

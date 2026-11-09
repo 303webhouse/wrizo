@@ -1,6 +1,6 @@
 // FLUX3 S4 - THE TUNNEL (the spec's §6: "a tunnel of signal that rushes faster the faster she writes (felt speed, never a score; lime streaks
 // at speed)"; Nick, via Fable Nov 7: KEEP it, built to INK's lean B). Jacked In's ground: square frames rushing out of a vanishing point at the
-// writing line's height (the zoom's anchor, the middle of the stage), a still field of rays, and at speed, lime streaks. It sits BEHIND the page,
+// writing line's height (the zoom's anchor, the middle of the stage), and at speed, lime streaks. It sits BEHIND the page,
 // inside .mode-stage under the page column, aria-hidden and taking no pointer: nothing here moves, covers or reads the page. While jacked in the
 // page has no paper (r9, the terminal), so the frames pass behind the words.
 //   - COMPOSITOR ONLY. CSS animations of transform and opacity, nothing else: no canvas, no per-frame JS, no layout.
@@ -10,6 +10,8 @@
 //   - THE RECEDE EXCEPTION (named, Nick Nov 7): while she types, the chrome recedes and the tunnel does not. It is the one thing off the page that
 //     stays, and moves, while keys land, because its speed IS her speed. Two one-line switches below undo it, if Nick changes his mind.
 //   - The still state (reduced motion, Ambiance 0): the frames stand still at their places and the streaks are gone.
+//   - THE LIGHTER TUNNEL (Nick's pick, Nov 8, from the latency experiment's arms): 6 frames, each 110% of the stage, and no rays. On a quiet
+//     box it measured +0.4 / +0.4 ms (median / p95) over the control, within L's budget; the r12 tunnel (12 frames of 180%, rays) was +10.2 / +24.6.
 import { useEffect, useLayoutEffect, useState, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { useAmbianceDial, prefersReducedMotion } from '../store/ambianceDial';
@@ -25,7 +27,7 @@ export const TUNNEL = {
   windowMs: 3000,    // her trailing rate: the keys of the last 3 s
   streakKps: 2.5,    // at or above this many keys a second, the lime streaks show
 };
-const FRAMES = 12;
+const FRAMES = 6;    // the lighter tunnel (Nick, Nov 8): the experiment's light arm kept every second of 12, so the same places, delays and scales
 const STREAKS = 10;
 const RUN_S = 9;     // a frame's run from the vanishing point to past the screen's edge, at rest (playbackRate 1)
 // the playback rate for a rate of keys a second: 1 at rest, 5 at a fast typist's 6 keys a second and above
@@ -89,7 +91,6 @@ export function FluxTunnel({ scrollRef }: Props) {
   if (!box) return null;
   return createPortal(
     <>
-      <div className="flux3-tunnel-rays" />
       {Array.from({ length: FRAMES }, (_, i) => {
         const d = i / FRAMES;   // where this frame stands on its run (also its still place)
         return <i key={i} className="flux3-tunnel-frame" style={{ animationDelay: `${-d * RUN_S}s`, ['--s' as string]: (0.04 + Math.pow(d, 2.2) * 0.96).toFixed(4), ['--o' as string]: (0.12 + d * 0.7).toFixed(3) }} />;
