@@ -47,9 +47,10 @@ export const DEPTH0 = 1.1, DEPTH_STEP = 1.03; // the nearest frame's depth, and 
 export const VP = { x: 50, y: 21 };           // the vanishing point, % of the window
 export const depthOf = (n: number): number => DEPTH0 + DEPTH_STEP * n;
 export const scaleOf = (n: number): number => 1 / depthOf(n);
-// each slot's line strength as a WCAG contrast against the ground #020C10, and the opacity of a #57D0F5 line that gives it (worked out in the lane's notes: contrast of the line composited on the ground)
-export const LINE_CONTRAST = [2.85, 1.85, 1.65, 1.3, 1.27, 1.25, 1.22, 1.2];
-export const LINE_ALPHA = [0.432, 0.281, 0.24, 0.148, 0.138, 0.13, 0.119, 0.112];
+// each slot's line strength as MEASURED in the render (the Wrizors' table: nearest 2.8-2.9:1, the next two 1.6-1.9, the far five 1.2-1.3, against the ground #020C10) and the opacity of a #57D0F5 line that gives it.
+// A 1 px line stands on fractional pixels, so the opacity runs above the flat-pixel arithmetic (2.85:1 flat is .43; the render read 2.06 at that, 2.9 at .58); worked out in the render by a calibration run (Nov 9), then smoothed so a frame does not pulse as it passes.
+export const LINE_CONTRAST = [2.85, 1.85, 1.7, 1.3, 1.3, 1.2, 1.25, 1.2];
+export const LINE_ALPHA = [0.58, 0.39, 0.29, 0.19, 0.17, 0.17, 0.15, 0.16];
 const alphaAt = (n: number): number => (n < 0 || n >= FRAME_SLOTS ? 0 : LINE_ALPHA[n]);
 export const RAIL_ALPHA = 0.16;               // the rails and ribs: about 1.35:1, the far frames' strength
 
