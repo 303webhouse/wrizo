@@ -1,0 +1,20 @@
+BUILD: tree=42ec8e9c bundle=index-e17ME4Wi.js builtAt=2026-11-09T20:10:43.813Z lastSrcCommit=2026-11-08T00:36:28.000Z dirtySrcFiles=0 stale=false
+
+ROWS-SHADOW VERIFY: PASS (765 renders checked, shadow == DOM on every one)
+PASS  P1 every arm stood where it claims (C: Arbor/plateau, no flag, no stand-in; T and M: Flux, ?flux3=1, the stand-in mounted; Page: Dark; the instrument in place): 16/16
+PASS  P2 the same surface in every arm (mode/typewriter: draft/false), the Typewriter off
+PASS  P2b that surface is Draft (the ordinary page)
+PASS  P3b the stand-in really animated at rest (>= 20 frames in 1500 ms, >= 80% of them drawing) in every loaded arm-round: 8/8
+PASS  P4 the stand-in moved no page rect (the .mode-page rect before mounting it = with it drawing): 8/8
+PASS  P5 at least 40 keys painted in every arm-round (44 typed each)
+PASS  P6 no key was dropped: in every arm-round the stored page holds the seed plus every typed character
+FAIL  L typing on Flux with every motion on adds no latency beyond the control's own spread: T median 23.2 <= C 24.2 + 2, T p95 32.9 <= C 32.4 + 0.4, no T key over 100 ms  -- C {"n":176,"median":24.2,"p95":32.4,"max":32.8} | T {"n":176,"median":23.2,"p95":32.9,"max":34.4} | C per round median/p95 26.1/32.5 24.3/32.1 24.1/32.3 24.2/32.4
+PASS  D2 the drawing layer damps while she types: its own canvas drew in 4 frame(s) while T's keys landed (allowed 4, the one in flight at the first key, per round)
+PASS  OTHER (information) canvases other than the layer that drew while the keys landed: C [[],[],[],[]] | T [[],[],[],[]]
+PASS  SPLIT (information) median/p95 ms: C Arbor 24.2/32.4 | F Flux, no layer 23.9/32.9 | T Flux + layer 23.2/32.9
+PASS  MUT premise: the mutant landed - with its damping skipped the layer drew through the typing (>= 80% of the frames while the keys landed, every round)
+PASS  MUT-b the no-damping mutant FAILS the probe (caught by L: YES; caught by D2: YES) - M median 37.6 p95 46.9 max 52.8, its layer drew in 691 frame(s) while typing
+PASS  COST (information) the drawing layer per frame at 1920x1080, full motion, undamped at rest: rAF time median 0.7 ms, p95 1, max 4.6 (control 0 / 0); frame interval median 32.9 ms, p95 39 (control 16.7 / 16.8); 354/357 frames over 18.7 ms
+PASS  B the build: served index-e17ME4Wi.js = dist-web's index-e17ME4Wi.js, built 2026-11-09T20:10:43.813Z after the last src commit 2026-11-08T00:36:28.000Z (tree 42ec8e9c, 0 uncommitted src file(s))
+
+FLUX3-LATENCY VERIFY: FAIL - 1/15 failed
