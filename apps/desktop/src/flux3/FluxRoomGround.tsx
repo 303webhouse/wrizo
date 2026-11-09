@@ -122,11 +122,27 @@ export function FluxRoomGround() {
       if (still() || typeof box.animate !== 'function') return;
       const W = box.clientWidth, H = box.clientHeight;
       const T = TONES[toneNow()];
+      // the room is mostly covered (the page, the rail, the strip, a board's frame): a point under them is not seen at all. Traces that run through the OPEN room come first, so the
+      // current shows (the Wrizors, Nov 9: none showed in the stills); with none open, the old pick stands. Measured once per draw, never per frame or key.
+      const hr = box.getBoundingClientRect();
+      const blockers = ['.mode-page', '.desk-rail', '.desk-frame-strip', '.board-canvas-wrap']
+        .map((s) => document.querySelector(s)).filter((e): e is Element => !!e).map((e) => e.getBoundingClientRect());
+      const open = (pts: Pt[]): boolean => {
+        for (let j = 1; j < pts.length; j++) {
+          const n = Math.max(1, Math.ceil(Math.hypot(pts[j][0] - pts[j - 1][0], pts[j][1] - pts[j - 1][1]) / 20));
+          for (let s = 0; s <= n; s++) {
+            const x = hr.left + pts[j - 1][0] + ((pts[j][0] - pts[j - 1][0]) * s) / n, y = hr.top + pts[j - 1][1] + ((pts[j][1] - pts[j - 1][1]) * s) / n;
+            if (blockers.some((r) => x > r.left - 6 && x < r.right + 6 && y > r.top - 6 && y < r.bottom + 6)) return false;
+          }
+        }
+        return true;
+      };
       const picks = traces
-        .map((pts, i) => ({ pts, i, len: lengthOf(pts) }))
+        .map((pts, i) => ({ pts, i, len: lengthOf(pts), open: open(pts) }))
         .filter((t) => t.len >= MIN_TRACE_PX && t.pts.every((p) => p[0] > 8 && p[0] < W - 8 && p[1] > 8 && p[1] < H - 8))
-        .sort((a, b) => rnd(a.i, 5, 9) - rnd(b.i, 5, 9))
+        .sort((a, b) => Number(b.open) - Number(a.open) || rnd(a.i, 5, 9) - rnd(b.i, 5, 9))
         .slice(0, MAX_POINTS);
+      box.dataset.open = String(picks.filter((p) => p.open).length);
       picks.forEach((t, n) => {
         const d = document.createElement('i');
         d.style.cssText = `position:absolute;left:-3px;top:-3px;width:6px;height:6px;background:rgb(${T.end});box-shadow:0 0 8px rgb(${T.end});opacity:0;will-change:transform,opacity;`;
