@@ -1,0 +1,1411 @@
+{
+ "started": "2026-11-09T01:42:14.669Z",
+ "ended": "2026-11-09T01:46:27.556Z",
+ "signedOut": "http://127.0.0.1:3401",
+ "door": "http://127.0.0.1:3400",
+ "musts": [
+  {
+   "step": "1",
+   "name": "day__2000 the logo writes itself out after the sketch, still ~1.6 s after it starts (r22: the times are the faster splash's - recorded)",
+   "verdict": "PASS",
+   "data": {
+    "logoWrite": 1957,
+    "logoStill": 3968
+   }
+  },
+  {
+   "step": "1",
+   "name": "day__2000 a beat (~0.45 s), then the tagline types; the caret first",
+   "verdict": "PASS",
+   "data": {
+    "caret": 4244,
+    "tagFirst": 4468,
+    "tagDone": 6090
+   }
+  },
+  {
+   "step": "1",
+   "name": "day__2000 the doors arrive ~0.35 s after the full stop (r22: the time is the faster splash's - recorded)",
+   "verdict": "PASS",
+   "data": {
+    "tagDone": 6090,
+    "doorsIn": 6436
+   }
+  },
+  {
+   "step": "1",
+   "name": "day__2000 Write, then Sign in; never \"Log in\"",
+   "verdict": "PASS",
+   "data": {
+    "words": [
+     "Write",
+     "Sign in"
+    ],
+    "logIn": false
+   }
+  },
+  {
+   "step": "1",
+   "name": "day__2000 the nudge: 5 s after the doors, once; again every 30 s",
+   "verdict": "PASS",
+   "data": {
+    "doorsIn": 6436,
+    "pulse1": 11465,
+    "pulse2": 41452
+   }
+  },
+  {
+   "step": "1",
+   "name": "day__2000 the loading line (as the eye sees it) has gone before the doors arrive",
+   "verdict": "PASS",
+   "data": {
+    "loadingGone": 4643,
+    "loadingLast": 4585,
+    "loadingLastOwnOpacity": 7248,
+    "doorsIn": 6436
+   }
+  },
+  {
+   "step": "1",
+   "name": "day__2000 the tagline \"For humans who write.\" in EB Garamond, cream; brass caret blinking ~1 s; the logo in the sketch's top-left below PAGE; the full stop before the z's loop; doors cream rising 6 px; <= 3 flashes a second",
+   "verdict": "EYE",
+   "data": {
+    "frames": [
+     "walk-1-front-cold__day__2000/",
+     "walk-1-front-finished__day__2000.png"
+    ],
+    "tagline": {
+     "state": "done",
+     "typed": 21,
+     "text": "For humans who write.",
+     "font": "\"EB Garamond\", \"EB Garamond Variable\", Georgia, serif, serif",
+     "color": "#EFE4CB",
+     "rect": [
+      602,
+      323,
+      181,
+      21
+     ]
+    },
+    "caret": {
+     "color": "rgba(0, 0, 0, 0)",
+     "anim": [
+      "arbor2-caret:1060"
+     ]
+    },
+    "logoRect": [
+     729,
+     291,
+     128,
+     57
+    ],
+    "doors": [
+     {
+      "cls": "arbor2-door wz-arrival-write",
+      "word": "Write",
+      "color": "#EFE4CB",
+      "stroke": "rgb(239, 228, 203)",
+      "op": 1,
+      "r": [
+       1138,
+       701,
+       106,
+       47
+      ],
+      "disabled": false
+     },
+     {
+      "cls": "arbor2-door wz-arrival-signin",
+      "word": "Sign in",
+      "color": "#EFE4CB",
+      "stroke": "rgb(239, 228, 203)",
+      "op": 1,
+      "r": [
+       1261,
+       701,
+       106,
+       47
+      ],
+      "disabled": false
+     }
+    ]
+   }
+  },
+  {
+   "step": "1",
+   "name": "day__2000 hover Write: it turns brass, and back when the mouse leaves",
+   "verdict": "EYE",
+   "data": {
+    "hover": {
+     "cls": "arbor2-door wz-arrival-write",
+     "word": "Write",
+     "color": "#FF9800",
+     "stroke": "rgb(255, 152, 0)",
+     "op": 1,
+     "r": [
+      1138,
+      701,
+      106,
+      47
+     ],
+     "disabled": false
+    },
+    "left": {
+     "cls": "arbor2-door wz-arrival-write",
+     "word": "Write",
+     "color": "#EFE4CB",
+     "stroke": "rgb(239, 228, 203)",
+     "op": 1,
+     "r": [
+      1138,
+      701,
+      106,
+      47
+     ],
+     "disabled": false
+    }
+   }
+  },
+  {
+   "step": "1",
+   "name": "day__2000 hover Sign in: it turns brass, and back when the mouse leaves",
+   "verdict": "EYE",
+   "data": {
+    "hover": {
+     "cls": "arbor2-door wz-arrival-signin",
+     "word": "Sign in",
+     "color": "#FF9800",
+     "stroke": "rgb(255, 152, 0)",
+     "op": 1,
+     "r": [
+      1261,
+      701,
+      106,
+      47
+     ],
+     "disabled": false
+    },
+    "left": {
+     "cls": "arbor2-door wz-arrival-signin",
+     "word": "Sign in",
+     "color": "#EFE4CB",
+     "stroke": "rgb(239, 228, 203)",
+     "op": 1,
+     "r": [
+      1261,
+      701,
+      106,
+      47
+     ],
+     "disabled": false
+    }
+   }
+  },
+  {
+   "step": "1",
+   "name": "day__2000 Tab to each door: brass",
+   "verdict": "EYE",
+   "data": {
+    "first": {
+     "active": "",
+     "doors": [
+      "#EFE4CB",
+      "#EFE4CB"
+     ]
+    },
+    "second": {
+     "active": "arbor2-door wz-arrival-write",
+     "doors": [
+      "#FF9800",
+      "#EFE4CB"
+     ]
+    }
+   }
+  },
+  {
+   "step": "1",
+   "name": "day__2000 skip (a) click mid-sketch: straight to the finished frame (logo written, whole tagline, caret, doors)",
+   "verdict": "PASS",
+   "data": {
+    "logo": "still",
+    "tag": "done",
+    "phase": "shown",
+    "caret": true,
+    "splash": false
+   }
+  },
+  {
+   "step": "1",
+   "name": "day__2000 skip (b) esc mid-sketch: straight to the finished frame (logo written, whole tagline, caret, doors)",
+   "verdict": "PASS",
+   "data": {
+    "logo": "still",
+    "tag": "done",
+    "phase": "shown",
+    "caret": true,
+    "splash": false
+   }
+  },
+  {
+   "step": "1",
+   "name": "day__2000 skip (c) Enter at the first frame = Write: straight to a new page",
+   "verdict": "PASS",
+   "data": {
+    "hash": "#/page/new",
+    "editor": true
+   }
+  },
+  {
+   "step": "1",
+   "name": "night__2000 the logo writes itself out after the sketch, still ~1.6 s after it starts (r22: the times are the faster splash's - recorded)",
+   "verdict": "PASS",
+   "data": {
+    "logoWrite": 1922,
+    "logoStill": 3923
+   }
+  },
+  {
+   "step": "1",
+   "name": "night__2000 a beat (~0.45 s), then the tagline types; the caret first",
+   "verdict": "PASS",
+   "data": {
+    "caret": 4222,
+    "tagFirst": 4439,
+    "tagDone": 6089
+   }
+  },
+  {
+   "step": "1",
+   "name": "night__2000 the doors arrive ~0.35 s after the full stop (r22: the time is the faster splash's - recorded)",
+   "verdict": "PASS",
+   "data": {
+    "tagDone": 6089,
+    "doorsIn": 6439
+   }
+  },
+  {
+   "step": "1",
+   "name": "night__2000 Write, then Sign in; never \"Log in\"",
+   "verdict": "PASS",
+   "data": {
+    "words": [
+     "Write",
+     "Sign in"
+    ],
+    "logIn": false
+   }
+  },
+  {
+   "step": "1",
+   "name": "night__2000 the nudge: 5 s after the doors, once; again every 30 s",
+   "verdict": "PASS",
+   "data": {
+    "doorsIn": 6439,
+    "pulse1": 11421,
+    "pulse2": 41437
+   }
+  },
+  {
+   "step": "1",
+   "name": "night__2000 the loading line (as the eye sees it) has gone before the doors arrive",
+   "verdict": "PASS",
+   "data": {
+    "loadingGone": 4556,
+    "loadingLast": 4539,
+    "loadingLastOwnOpacity": 7139,
+    "doorsIn": 6439
+   }
+  },
+  {
+   "step": "1",
+   "name": "night__2000 the tagline \"For humans who write.\" in EB Garamond, cream; brass caret blinking ~1 s; the logo in the sketch's top-left below PAGE; the full stop before the z's loop; doors cream rising 6 px; <= 3 flashes a second",
+   "verdict": "EYE",
+   "data": {
+    "frames": [
+     "walk-1-front-cold__night__2000/",
+     "walk-1-front-finished__night__2000.png"
+    ],
+    "tagline": {
+     "state": "done",
+     "typed": 21,
+     "text": "For humans who write.",
+     "font": "\"EB Garamond\", \"EB Garamond Variable\", Georgia, serif, serif",
+     "color": "#EFE4CB",
+     "rect": [
+      602,
+      323,
+      181,
+      21
+     ]
+    },
+    "caret": {
+     "color": "rgba(0, 0, 0, 0)",
+     "anim": [
+      "arbor2-caret:1060"
+     ]
+    },
+    "logoRect": [
+     729,
+     291,
+     128,
+     57
+    ],
+    "doors": [
+     {
+      "cls": "arbor2-door wz-arrival-write",
+      "word": "Write",
+      "color": "#EFE4CB",
+      "stroke": "rgb(239, 228, 203)",
+      "op": 1,
+      "r": [
+       1138,
+       701,
+       106,
+       47
+      ],
+      "disabled": false
+     },
+     {
+      "cls": "arbor2-door wz-arrival-signin",
+      "word": "Sign in",
+      "color": "#EFE4CB",
+      "stroke": "rgb(239, 228, 203)",
+      "op": 1,
+      "r": [
+       1261,
+       701,
+       106,
+       47
+      ],
+      "disabled": false
+     }
+    ]
+   }
+  },
+  {
+   "step": "1",
+   "name": "night__2000 hover Write: it turns brass, and back when the mouse leaves",
+   "verdict": "EYE",
+   "data": {
+    "hover": {
+     "cls": "arbor2-door wz-arrival-write",
+     "word": "Write",
+     "color": "#FF9800",
+     "stroke": "rgb(255, 152, 0)",
+     "op": 1,
+     "r": [
+      1138,
+      701,
+      106,
+      47
+     ],
+     "disabled": false
+    },
+    "left": {
+     "cls": "arbor2-door wz-arrival-write",
+     "word": "Write",
+     "color": "#EFE4CB",
+     "stroke": "rgb(239, 228, 203)",
+     "op": 1,
+     "r": [
+      1138,
+      701,
+      106,
+      47
+     ],
+     "disabled": false
+    }
+   }
+  },
+  {
+   "step": "1",
+   "name": "night__2000 hover Sign in: it turns brass, and back when the mouse leaves",
+   "verdict": "EYE",
+   "data": {
+    "hover": {
+     "cls": "arbor2-door wz-arrival-signin",
+     "word": "Sign in",
+     "color": "#FF9800",
+     "stroke": "rgb(255, 152, 0)",
+     "op": 1,
+     "r": [
+      1261,
+      701,
+      106,
+      47
+     ],
+     "disabled": false
+    },
+    "left": {
+     "cls": "arbor2-door wz-arrival-signin",
+     "word": "Sign in",
+     "color": "#EFE4CB",
+     "stroke": "rgb(239, 228, 203)",
+     "op": 1,
+     "r": [
+      1261,
+      701,
+      106,
+      47
+     ],
+     "disabled": false
+    }
+   }
+  },
+  {
+   "step": "1",
+   "name": "night__2000 Tab to each door: brass",
+   "verdict": "EYE",
+   "data": {
+    "first": {
+     "active": "",
+     "doors": [
+      "#EFE4CB",
+      "#EFE4CB"
+     ]
+    },
+    "second": {
+     "active": "arbor2-door wz-arrival-write",
+     "doors": [
+      "#FF9800",
+      "#EFE4CB"
+     ]
+    }
+   }
+  },
+  {
+   "step": "1",
+   "name": "night__2000 skip (a) click mid-sketch: straight to the finished frame (logo written, whole tagline, caret, doors)",
+   "verdict": "PASS",
+   "data": {
+    "logo": "still",
+    "tag": "done",
+    "phase": "shown",
+    "caret": true,
+    "splash": false
+   }
+  },
+  {
+   "step": "1",
+   "name": "night__2000 skip (b) esc mid-sketch: straight to the finished frame (logo written, whole tagline, caret, doors)",
+   "verdict": "PASS",
+   "data": {
+    "logo": "still",
+    "tag": "done",
+    "phase": "shown",
+    "caret": true,
+    "splash": false
+   }
+  },
+  {
+   "step": "1",
+   "name": "night__2000 skip (c) Enter at the first frame = Write: straight to a new page",
+   "verdict": "PASS",
+   "data": {
+    "hash": "#/page/new",
+    "editor": true
+   }
+  },
+  {
+   "step": "1",
+   "name": "day__1366 the logo writes itself out after the sketch, still ~1.6 s after it starts (r22: the times are the faster splash's - recorded)",
+   "verdict": "PASS",
+   "data": {
+    "logoWrite": 1945,
+    "logoStill": 3962
+   }
+  },
+  {
+   "step": "1",
+   "name": "day__1366 a beat (~0.45 s), then the tagline types; the caret first",
+   "verdict": "PASS",
+   "data": {
+    "caret": 4239,
+    "tagFirst": 4439,
+    "tagDone": 6092
+   }
+  },
+  {
+   "step": "1",
+   "name": "day__1366 the doors arrive ~0.35 s after the full stop (r22: the time is the faster splash's - recorded)",
+   "verdict": "PASS",
+   "data": {
+    "tagDone": 6092,
+    "doorsIn": 6457
+   }
+  },
+  {
+   "step": "1",
+   "name": "day__1366 Write, then Sign in; never \"Log in\"",
+   "verdict": "PASS",
+   "data": {
+    "words": [
+     "Write",
+     "Sign in"
+    ],
+    "logIn": false
+   }
+  },
+  {
+   "step": "1",
+   "name": "day__1366 the nudge: 5 s after the doors, once; again every 30 s",
+   "verdict": "PASS",
+   "data": {
+    "doorsIn": 6457,
+    "pulse1": 11439,
+    "pulse2": 41456
+   }
+  },
+  {
+   "step": "1",
+   "name": "day__1366 the loading line (as the eye sees it) has gone before the doors arrive",
+   "verdict": "PASS",
+   "data": {
+    "loadingGone": 4579,
+    "loadingLast": 4549,
+    "loadingLastOwnOpacity": 7158,
+    "doorsIn": 6457
+   }
+  },
+  {
+   "step": "1",
+   "name": "day__1366 the tagline \"For humans who write.\" in EB Garamond, cream; brass caret blinking ~1 s; the logo in the sketch's top-left below PAGE; the full stop before the z's loop; doors cream rising 6 px; <= 3 flashes a second",
+   "verdict": "EYE",
+   "data": {
+    "frames": [
+     "walk-1-front-cold__day__1366/",
+     "walk-1-front-finished__day__1366.png"
+    ],
+    "tagline": {
+     "state": "done",
+     "typed": 21,
+     "text": "For humans who write.",
+     "font": "\"EB Garamond\", \"EB Garamond Variable\", Georgia, serif, serif",
+     "color": "#EFE4CB",
+     "rect": [
+      370,
+      257,
+      142,
+      17
+     ]
+    },
+    "caret": {
+     "color": "rgba(0, 0, 0, 0)",
+     "anim": [
+      "arbor2-caret:1060"
+     ]
+    },
+    "logoRect": [
+     470,
+     232,
+     101,
+     45
+    ],
+    "doors": [
+     {
+      "cls": "arbor2-door wz-arrival-write",
+      "word": "Write",
+      "color": "#EFE4CB",
+      "stroke": "rgb(239, 228, 203)",
+      "op": 1,
+      "r": [
+       792,
+       553,
+       84,
+       37
+      ],
+      "disabled": false
+     },
+     {
+      "cls": "arbor2-door wz-arrival-signin",
+      "word": "Sign in",
+      "color": "#EFE4CB",
+      "stroke": "rgb(239, 228, 203)",
+      "op": 1,
+      "r": [
+       888,
+       553,
+       84,
+       37
+      ],
+      "disabled": false
+     }
+    ]
+   }
+  },
+  {
+   "step": "1",
+   "name": "day__1366 hover Write: it turns brass, and back when the mouse leaves",
+   "verdict": "EYE",
+   "data": {
+    "hover": {
+     "cls": "arbor2-door wz-arrival-write",
+     "word": "Write",
+     "color": "#FF9800",
+     "stroke": "rgb(255, 152, 0)",
+     "op": 1,
+     "r": [
+      792,
+      553,
+      84,
+      37
+     ],
+     "disabled": false
+    },
+    "left": {
+     "cls": "arbor2-door wz-arrival-write",
+     "word": "Write",
+     "color": "#EFE4CB",
+     "stroke": "rgb(239, 228, 203)",
+     "op": 1,
+     "r": [
+      792,
+      553,
+      84,
+      37
+     ],
+     "disabled": false
+    }
+   }
+  },
+  {
+   "step": "1",
+   "name": "day__1366 hover Sign in: it turns brass, and back when the mouse leaves",
+   "verdict": "EYE",
+   "data": {
+    "hover": {
+     "cls": "arbor2-door wz-arrival-signin",
+     "word": "Sign in",
+     "color": "#FF9800",
+     "stroke": "rgb(255, 152, 0)",
+     "op": 1,
+     "r": [
+      888,
+      553,
+      84,
+      37
+     ],
+     "disabled": false
+    },
+    "left": {
+     "cls": "arbor2-door wz-arrival-signin",
+     "word": "Sign in",
+     "color": "#EFE4CB",
+     "stroke": "rgb(239, 228, 203)",
+     "op": 1,
+     "r": [
+      888,
+      553,
+      84,
+      37
+     ],
+     "disabled": false
+    }
+   }
+  },
+  {
+   "step": "1",
+   "name": "day__1366 Tab to each door: brass",
+   "verdict": "EYE",
+   "data": {
+    "first": {
+     "active": "",
+     "doors": [
+      "#EFE4CB",
+      "#EFE4CB"
+     ]
+    },
+    "second": {
+     "active": "arbor2-door wz-arrival-write",
+     "doors": [
+      "#FF9800",
+      "#EFE4CB"
+     ]
+    }
+   }
+  },
+  {
+   "step": "1",
+   "name": "day__1366 skip (a) click mid-sketch: straight to the finished frame (logo written, whole tagline, caret, doors)",
+   "verdict": "PASS",
+   "data": {
+    "logo": "still",
+    "tag": "done",
+    "phase": "shown",
+    "caret": true,
+    "splash": false
+   }
+  },
+  {
+   "step": "1",
+   "name": "day__1366 skip (b) esc mid-sketch: straight to the finished frame (logo written, whole tagline, caret, doors)",
+   "verdict": "PASS",
+   "data": {
+    "logo": "still",
+    "tag": "done",
+    "phase": "shown",
+    "caret": true,
+    "splash": false
+   }
+  },
+  {
+   "step": "1",
+   "name": "day__1366 skip (c) Enter at the first frame = Write: straight to a new page",
+   "verdict": "PASS",
+   "data": {
+    "hash": "#/page/new",
+    "editor": true
+   }
+  },
+  {
+   "step": "1",
+   "name": "night__1366 the logo writes itself out after the sketch, still ~1.6 s after it starts (r22: the times are the faster splash's - recorded)",
+   "verdict": "PASS",
+   "data": {
+    "logoWrite": 1948,
+    "logoStill": 3931
+   }
+  },
+  {
+   "step": "1",
+   "name": "night__1366 a beat (~0.45 s), then the tagline types; the caret first",
+   "verdict": "PASS",
+   "data": {
+    "caret": 4231,
+    "tagFirst": 4448,
+    "tagDone": 6097
+   }
+  },
+  {
+   "step": "1",
+   "name": "night__1366 the doors arrive ~0.35 s after the full stop (r22: the time is the faster splash's - recorded)",
+   "verdict": "PASS",
+   "data": {
+    "tagDone": 6097,
+    "doorsIn": 6447
+   }
+  },
+  {
+   "step": "1",
+   "name": "night__1366 Write, then Sign in; never \"Log in\"",
+   "verdict": "PASS",
+   "data": {
+    "words": [
+     "Write",
+     "Sign in"
+    ],
+    "logIn": false
+   }
+  },
+  {
+   "step": "1",
+   "name": "night__1366 the nudge: 5 s after the doors, once; again every 30 s",
+   "verdict": "PASS",
+   "data": {
+    "doorsIn": 6447,
+    "pulse1": 11446,
+    "pulse2": 41446
+   }
+  },
+  {
+   "step": "1",
+   "name": "night__1366 the loading line (as the eye sees it) has gone before the doors arrive",
+   "verdict": "PASS",
+   "data": {
+    "loadingGone": 4564,
+    "loadingLast": 4547,
+    "loadingLastOwnOpacity": 7130,
+    "doorsIn": 6447
+   }
+  },
+  {
+   "step": "1",
+   "name": "night__1366 the tagline \"For humans who write.\" in EB Garamond, cream; brass caret blinking ~1 s; the logo in the sketch's top-left below PAGE; the full stop before the z's loop; doors cream rising 6 px; <= 3 flashes a second",
+   "verdict": "EYE",
+   "data": {
+    "frames": [
+     "walk-1-front-cold__night__1366/",
+     "walk-1-front-finished__night__1366.png"
+    ],
+    "tagline": {
+     "state": "done",
+     "typed": 21,
+     "text": "For humans who write.",
+     "font": "\"EB Garamond\", \"EB Garamond Variable\", Georgia, serif, serif",
+     "color": "#EFE4CB",
+     "rect": [
+      370,
+      257,
+      142,
+      17
+     ]
+    },
+    "caret": {
+     "color": "rgba(0, 0, 0, 0)",
+     "anim": [
+      "arbor2-caret:1060"
+     ]
+    },
+    "logoRect": [
+     470,
+     232,
+     101,
+     45
+    ],
+    "doors": [
+     {
+      "cls": "arbor2-door wz-arrival-write",
+      "word": "Write",
+      "color": "#EFE4CB",
+      "stroke": "rgb(239, 228, 203)",
+      "op": 1,
+      "r": [
+       792,
+       553,
+       84,
+       37
+      ],
+      "disabled": false
+     },
+     {
+      "cls": "arbor2-door wz-arrival-signin",
+      "word": "Sign in",
+      "color": "#EFE4CB",
+      "stroke": "rgb(239, 228, 203)",
+      "op": 1,
+      "r": [
+       888,
+       553,
+       84,
+       37
+      ],
+      "disabled": false
+     }
+    ]
+   }
+  },
+  {
+   "step": "1",
+   "name": "night__1366 hover Write: it turns brass, and back when the mouse leaves",
+   "verdict": "EYE",
+   "data": {
+    "hover": {
+     "cls": "arbor2-door wz-arrival-write",
+     "word": "Write",
+     "color": "#FF9800",
+     "stroke": "rgb(255, 152, 0)",
+     "op": 1,
+     "r": [
+      792,
+      553,
+      84,
+      37
+     ],
+     "disabled": false
+    },
+    "left": {
+     "cls": "arbor2-door wz-arrival-write",
+     "word": "Write",
+     "color": "#EFE4CB",
+     "stroke": "rgb(239, 228, 203)",
+     "op": 1,
+     "r": [
+      792,
+      553,
+      84,
+      37
+     ],
+     "disabled": false
+    }
+   }
+  },
+  {
+   "step": "1",
+   "name": "night__1366 hover Sign in: it turns brass, and back when the mouse leaves",
+   "verdict": "EYE",
+   "data": {
+    "hover": {
+     "cls": "arbor2-door wz-arrival-signin",
+     "word": "Sign in",
+     "color": "#FF9800",
+     "stroke": "rgb(255, 152, 0)",
+     "op": 1,
+     "r": [
+      888,
+      553,
+      84,
+      37
+     ],
+     "disabled": false
+    },
+    "left": {
+     "cls": "arbor2-door wz-arrival-signin",
+     "word": "Sign in",
+     "color": "#EFE4CB",
+     "stroke": "rgb(239, 228, 203)",
+     "op": 1,
+     "r": [
+      888,
+      553,
+      84,
+      37
+     ],
+     "disabled": false
+    }
+   }
+  },
+  {
+   "step": "1",
+   "name": "night__1366 Tab to each door: brass",
+   "verdict": "EYE",
+   "data": {
+    "first": {
+     "active": "",
+     "doors": [
+      "#EFE4CB",
+      "#EFE4CB"
+     ]
+    },
+    "second": {
+     "active": "arbor2-door wz-arrival-write",
+     "doors": [
+      "#FF9800",
+      "#EFE4CB"
+     ]
+    }
+   }
+  },
+  {
+   "step": "1",
+   "name": "night__1366 skip (a) click mid-sketch: straight to the finished frame (logo written, whole tagline, caret, doors)",
+   "verdict": "PASS",
+   "data": {
+    "logo": "still",
+    "tag": "done",
+    "phase": "shown",
+    "caret": true,
+    "splash": false
+   }
+  },
+  {
+   "step": "1",
+   "name": "night__1366 skip (b) esc mid-sketch: straight to the finished frame (logo written, whole tagline, caret, doors)",
+   "verdict": "PASS",
+   "data": {
+    "logo": "still",
+    "tag": "done",
+    "phase": "shown",
+    "caret": true,
+    "splash": false
+   }
+  },
+  {
+   "step": "1",
+   "name": "night__1366 skip (c) Enter at the first frame = Write: straight to a new page",
+   "verdict": "PASS",
+   "data": {
+    "hash": "#/page/new",
+    "editor": true
+   }
+  },
+  {
+   "step": "1",
+   "name": "a 2x still mid-typing of the tagline was taken while it typed",
+   "verdict": "PASS",
+   "data": null
+  }
+ ],
+ "log": [
+  {
+   "step": "1",
+   "what": "timeline day__2000",
+   "data": {
+    "logoWrite": 1957,
+    "logoStill": 3968,
+    "caret": 4244,
+    "tagFirst": 4468,
+    "tagDone": 6090,
+    "doorsIn": 6436,
+    "doorsShown": 7020,
+    "pulse1": 11465,
+    "pulse2": 41452,
+    "splashGone": 7546,
+    "loadingLast": 4585,
+    "loadingAfterDoors": false,
+    "loadingGone": 4643,
+    "loadingLastOwn": 7248
+   }
+  },
+  {
+   "step": "1",
+   "what": "finished day__2000",
+   "data": {
+    "splash": false,
+    "logo": "still",
+    "logoRect": [
+     729,
+     291,
+     128,
+     57
+    ],
+    "tag": {
+     "state": "done",
+     "typed": 21,
+     "text": "For humans who write.",
+     "font": "\"EB Garamond\", \"EB Garamond Variable\", Georgia, serif, serif",
+     "color": "#EFE4CB",
+     "rect": [
+      602,
+      323,
+      181,
+      21
+     ]
+    },
+    "caret": {
+     "color": "rgba(0, 0, 0, 0)",
+     "anim": [
+      "arbor2-caret:1060"
+     ]
+    },
+    "doors": [
+     {
+      "cls": "arbor2-door wz-arrival-write",
+      "word": "Write",
+      "color": "#EFE4CB",
+      "stroke": "rgb(239, 228, 203)",
+      "op": 1,
+      "r": [
+       1138,
+       701,
+       106,
+       47
+      ],
+      "disabled": false
+     },
+     {
+      "cls": "arbor2-door wz-arrival-signin",
+      "word": "Sign in",
+      "color": "#EFE4CB",
+      "stroke": "rgb(239, 228, 203)",
+      "op": 1,
+      "r": [
+       1261,
+       701,
+       106,
+       47
+      ],
+      "disabled": false
+     }
+    ],
+    "phase": "shown",
+    "pulse": 2,
+    "mode": "door",
+    "hash": "#/",
+    "active": "",
+    "logIn": false,
+    "signIn": true
+   }
+  },
+  {
+   "step": "1",
+   "what": "timeline night__2000",
+   "data": {
+    "logoWrite": 1922,
+    "logoStill": 3923,
+    "caret": 4222,
+    "tagFirst": 4439,
+    "tagDone": 6089,
+    "doorsIn": 6439,
+    "doorsShown": 7006,
+    "pulse1": 11421,
+    "pulse2": 41437,
+    "splashGone": 7502,
+    "loadingLast": 4539,
+    "loadingAfterDoors": false,
+    "loadingGone": 4556,
+    "loadingLastOwn": 7139
+   }
+  },
+  {
+   "step": "1",
+   "what": "finished night__2000",
+   "data": {
+    "splash": false,
+    "logo": "still",
+    "logoRect": [
+     729,
+     291,
+     128,
+     57
+    ],
+    "tag": {
+     "state": "done",
+     "typed": 21,
+     "text": "For humans who write.",
+     "font": "\"EB Garamond\", \"EB Garamond Variable\", Georgia, serif, serif",
+     "color": "#EFE4CB",
+     "rect": [
+      602,
+      323,
+      181,
+      21
+     ]
+    },
+    "caret": {
+     "color": "rgba(0, 0, 0, 0)",
+     "anim": [
+      "arbor2-caret:1060"
+     ]
+    },
+    "doors": [
+     {
+      "cls": "arbor2-door wz-arrival-write",
+      "word": "Write",
+      "color": "#EFE4CB",
+      "stroke": "rgb(239, 228, 203)",
+      "op": 1,
+      "r": [
+       1138,
+       701,
+       106,
+       47
+      ],
+      "disabled": false
+     },
+     {
+      "cls": "arbor2-door wz-arrival-signin",
+      "word": "Sign in",
+      "color": "#EFE4CB",
+      "stroke": "rgb(239, 228, 203)",
+      "op": 1,
+      "r": [
+       1261,
+       701,
+       106,
+       47
+      ],
+      "disabled": false
+     }
+    ],
+    "phase": "shown",
+    "pulse": 2,
+    "mode": "door",
+    "hash": "#/",
+    "active": "",
+    "logIn": false,
+    "signIn": true
+   }
+  },
+  {
+   "step": "1",
+   "what": "timeline day__1366",
+   "data": {
+    "logoWrite": 1945,
+    "logoStill": 3962,
+    "caret": 4239,
+    "tagFirst": 4439,
+    "tagDone": 6092,
+    "doorsIn": 6457,
+    "doorsShown": 7029,
+    "pulse1": 11439,
+    "pulse2": 41456,
+    "splashGone": 37,
+    "loadingLast": 4549,
+    "loadingAfterDoors": false,
+    "loadingGone": 4579,
+    "loadingLastOwn": 7158
+   }
+  },
+  {
+   "step": "1",
+   "what": "finished day__1366",
+   "data": {
+    "splash": false,
+    "logo": "still",
+    "logoRect": [
+     470,
+     232,
+     101,
+     45
+    ],
+    "tag": {
+     "state": "done",
+     "typed": 21,
+     "text": "For humans who write.",
+     "font": "\"EB Garamond\", \"EB Garamond Variable\", Georgia, serif, serif",
+     "color": "#EFE4CB",
+     "rect": [
+      370,
+      257,
+      142,
+      17
+     ]
+    },
+    "caret": {
+     "color": "rgba(0, 0, 0, 0)",
+     "anim": [
+      "arbor2-caret:1060"
+     ]
+    },
+    "doors": [
+     {
+      "cls": "arbor2-door wz-arrival-write",
+      "word": "Write",
+      "color": "#EFE4CB",
+      "stroke": "rgb(239, 228, 203)",
+      "op": 1,
+      "r": [
+       792,
+       553,
+       84,
+       37
+      ],
+      "disabled": false
+     },
+     {
+      "cls": "arbor2-door wz-arrival-signin",
+      "word": "Sign in",
+      "color": "#EFE4CB",
+      "stroke": "rgb(239, 228, 203)",
+      "op": 1,
+      "r": [
+       888,
+       553,
+       84,
+       37
+      ],
+      "disabled": false
+     }
+    ],
+    "phase": "shown",
+    "pulse": 2,
+    "mode": "door",
+    "hash": "#/",
+    "active": "",
+    "logIn": false,
+    "signIn": true
+   }
+  },
+  {
+   "step": "1",
+   "what": "timeline night__1366",
+   "data": {
+    "logoWrite": 1948,
+    "logoStill": 3931,
+    "caret": 4231,
+    "tagFirst": 4448,
+    "tagDone": 6097,
+    "doorsIn": 6447,
+    "doorsShown": 7014,
+    "pulse1": 11446,
+    "pulse2": 41446,
+    "splashGone": 32,
+    "loadingLast": 4547,
+    "loadingAfterDoors": false,
+    "loadingGone": 4564,
+    "loadingLastOwn": 7130
+   }
+  },
+  {
+   "step": "1",
+   "what": "finished night__1366",
+   "data": {
+    "splash": false,
+    "logo": "still",
+    "logoRect": [
+     470,
+     232,
+     101,
+     45
+    ],
+    "tag": {
+     "state": "done",
+     "typed": 21,
+     "text": "For humans who write.",
+     "font": "\"EB Garamond\", \"EB Garamond Variable\", Georgia, serif, serif",
+     "color": "#EFE4CB",
+     "rect": [
+      370,
+      257,
+      142,
+      17
+     ]
+    },
+    "caret": {
+     "color": "rgba(0, 0, 0, 0)",
+     "anim": [
+      "arbor2-caret:1060"
+     ]
+    },
+    "doors": [
+     {
+      "cls": "arbor2-door wz-arrival-write",
+      "word": "Write",
+      "color": "#EFE4CB",
+      "stroke": "rgb(239, 228, 203)",
+      "op": 1,
+      "r": [
+       792,
+       553,
+       84,
+       37
+      ],
+      "disabled": false
+     },
+     {
+      "cls": "arbor2-door wz-arrival-signin",
+      "word": "Sign in",
+      "color": "#EFE4CB",
+      "stroke": "rgb(239, 228, 203)",
+      "op": 1,
+      "r": [
+       888,
+       553,
+       84,
+       37
+      ],
+      "disabled": false
+     }
+    ],
+    "phase": "shown",
+    "pulse": 2,
+    "mode": "door",
+    "hash": "#/",
+    "active": "",
+    "logIn": false,
+    "signIn": true
+   }
+  }
+ ],
+ "shots": [
+  "walk-1-front-cold__day__2000/",
+  "walk-1-front-finished__day__2000.png",
+  "walk-1-front-hover-write__day__2000.png",
+  "walk-1-front-hover-signin__day__2000.png",
+  "walk-1-front-tab__day__2000.png",
+  "walk-1-front-skip-click__day__2000.png",
+  "walk-1-front-skip-esc__day__2000.png",
+  "walk-1-front-enter__day__2000.png",
+  "walk-1-front-cold__night__2000/",
+  "walk-1-front-finished__night__2000.png",
+  "walk-1-front-hover-write__night__2000.png",
+  "walk-1-front-hover-signin__night__2000.png",
+  "walk-1-front-tab__night__2000.png",
+  "walk-1-front-skip-click__night__2000.png",
+  "walk-1-front-skip-esc__night__2000.png",
+  "walk-1-front-enter__night__2000.png",
+  "walk-1-front-cold__day__1366/",
+  "walk-1-front-finished__day__1366.png",
+  "walk-1-front-hover-write__day__1366.png",
+  "walk-1-front-hover-signin__day__1366.png",
+  "walk-1-front-skip-click__day__1366.png",
+  "walk-1-front-skip-esc__day__1366.png",
+  "walk-1-front-enter__day__1366.png",
+  "walk-1-front-cold__night__1366/",
+  "walk-1-front-finished__night__1366.png",
+  "walk-1-front-skip-click__night__1366.png",
+  "walk-1-front-skip-esc__night__1366.png",
+  "walk-1-front-enter__night__1366.png",
+  "walk-1-front-tagline-2x__day__1366.png"
+ ]
+}
