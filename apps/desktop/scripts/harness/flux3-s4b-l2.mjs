@@ -108,7 +108,7 @@ try { await withHarness(async (app) => {
   const hintSrc = fs.readFileSync(new URL('../../src/store/fluxReadouts.ts', import.meta.url), 'utf8');
   const casSrc = fs.readFileSync(new URL('../../src/components/Cascade.tsx', import.meta.url), 'utf8');
   const body = hintSrc.slice(hintSrc.indexOf('export function railHint'), hintSrc.indexOf('/** RACK'));
-  const literals = (src) => [...src.matchAll(/`([^`]*)`/g)].map((m) => m[1].replace(/${[^}]*}/g, ' ')).join(' | ');
+  const literals = (src) => [...src.matchAll(/`([^`]*)`/g)].map((m) => m[1].replace(/\$\{[^}]*\}/g, ' ')).join(' | ');
   const nounLit = (src) => /(doc|circuit|rack|drawer|journal|board|log|schema)/i.test(literals(src).replace(/Page: /g, ''));
   ok('HINTS-LEX the hint builder holds no noun of its own (its sentence frames only) and Cascade reads all four from the box-label lexicon entries (drawerPage, stripPlan, drawerPlaceDrawers, drawerPlaceJournal) - the day circuits become schemas the hints follow', body.length > 200 && !nounLit(body) && /doc: t('drawerPage'), circuit: t('stripPlan'), rack: t('drawerPlaceDrawers'), log: t('drawerPlaceJournal')/.test(casSrc) && nounLit(body.replace('not filed in a ${rack}', 'not filed in a drawer')) , JSON.stringify({ frames: literals(body) }));
 
