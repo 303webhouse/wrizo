@@ -1,7 +1,8 @@
 // FLUX3 S4b L1 - THE CIRCUIT GROUND ACROSS THE ROOM (Nick, Nov 9: "the loved look"; flux-mockup-vs-build.md §4 L1). Every check is a sentence of the plan,
 // read in the live page behind ?flux3=1 (Flux theme).
 //   GROUND   one box (data-flux3-room-ground) sits first in the framed host, behind its content (z-index -1 in the host's own stacking context), inert
-//            (no pointer, aria-hidden), and its canvas really has circuitry on it (non-transparent pixels), on a Page room and on a Schema (board) room.
+//            (no pointer, aria-hidden), and its background image is the circuitry (a picture; NO canvas element in the page: a full-room canvas layer cost
+//            ~3 ms a frame on a software renderer), on a Page room and on a Schema (board) room.
 //   RECT     the ground adds nothing to any layout: the page's rect, the host's rect and the editor's are the same with the box shown and with it taken away.
 //   ONCE     the ground is drawn once per size, never per key and never per frame: the canvas is cleared the same number of times before and after
 //            forty keys and a pause; a resize redraws it. The room is dark in both Page tones, so a tone change leaves it as it is (S5's Room setting changes that).
@@ -26,14 +27,13 @@ const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail
 
 const INSTRUMENT = `(() => {
   if (window.__l1) return;
-  const I = window.__l1 = { clears: 0 };
-  const cr = CanvasRenderingContext2D.prototype.clearRect;
-  CanvasRenderingContext2D.prototype.clearRect = function (...a) { const p = this.canvas && this.canvas.parentElement; if (p && p.hasAttribute('data-flux3-room-ground')) I.clears += 1; return cr.apply(this, a); };
+  const I = window.__l1 = {};
+  Object.defineProperty(I, 'clears', { get: () => { const b = document.querySelector('[data-flux3-room-ground]'); return b ? Number(b.dataset.draws || 0) : 0; } });
   I.box = () => document.querySelector('[data-flux3-room-ground]');
-  I.read = () => { const b = I.box(); if (!b) return null; const host = b.parentElement, cv = b.querySelector('canvas'); const cs = getComputedStyle(b);
-    let px = 0; try { const g = cv.getContext('2d'); const d = g.getImageData(0, 0, cv.width, cv.height).data; for (let i = 3; i < d.length; i += 4) if (d[i] > 0) px += 1; } catch (e) { px = -1; }
+  I.read = () => { const b = I.box(); if (!b) return null; const host = b.parentElement; const cs = getComputedStyle(b);
+    const px = /^url\("?data:image\/png/.test(cs.backgroundImage) ? cs.backgroundImage.length : 0;
     const anims = b.getAnimations({ subtree: true }); const props = new Set(); anims.forEach((a) => (a.effect.getKeyframes() || []).forEach((k) => Object.keys(k).forEach((p) => { if (!['offset', 'easing', 'composite', 'computedOffset'].includes(p)) props.add(p); })));
-    return { first: host.firstElementChild === b, host: String(host.className).slice(0, 24), z: cs.zIndex, pe: cs.pointerEvents, aria: b.getAttribute('aria-hidden'), op: +cs.opacity, px, dots: b.querySelectorAll('i').length, anims: anims.length, running: anims.filter((a) => a.playState === 'running').length, paused: anims.filter((a) => a.playState === 'paused').length, props: [...props], iso: getComputedStyle(host).isolation, cw: cv.width, ch: cv.height }; };
+    return { first: host.firstElementChild === b, host: String(host.className).slice(0, 24), z: cs.zIndex, pe: cs.pointerEvents, aria: b.getAttribute('aria-hidden'), op: +cs.opacity, px, dots: b.querySelectorAll('i').length, anims: anims.length, running: anims.filter((a) => a.playState === 'running').length, paused: anims.filter((a) => a.playState === 'paused').length, props: [...props], iso: getComputedStyle(host).isolation, canvases: b.querySelectorAll('canvas').length, draws: Number(b.dataset.draws || 0) }; };
   I.rects = () => { const q = (s) => { const e = document.querySelector(s); if (!e) return null; const r = e.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)]; }; return { page: q('.mode-page'), host: q('.desk-frame-host'), editor: q('.forward-only-editor'), board: q('.board-canvas-wrap') }; };
 })()`;
 
@@ -69,8 +69,8 @@ try { await withHarness(async (app) => {
   // ---- GROUND + RECT on a Page room --------------------------------------------------------------------------------------------------------------
   await page({ tone: 'dark' });
   const g = await read();
-  const groundOk = (r) => !!r && r.first && r.z === '-1' && r.pe === 'none' && r.aria === 'true' && r.px > 2000 && r.iso === 'isolate' && /desk-frame-host/.test(r.host);
-  ok('GROUND a Page room: the ground box is first in the framed host, behind its content (z -1, the host isolated), inert, and its canvas has circuitry on it', groundOk(g), JSON.stringify(g));
+  const groundOk = (r) => !!r && r.first && r.z === '-1' && r.pe === 'none' && r.aria === 'true' && r.px > 30000 && r.canvases === 0 && r.draws >= 1 && r.iso === 'isolate' && /desk-frame-host/.test(r.host);
+  ok('GROUND a Page room: the ground box is first in the framed host, behind its content (z -1, the host isolated), inert, and its background image is the circuitry (a picture, no canvas element in the page)', groundOk(g), JSON.stringify(g));
   await snap('l1-page-dark');
   const rectOn = await ev('window.__l1.rects()');
   await ev("document.querySelector('[data-flux3-room-ground]').style.display = 'none'"); await sleep(250);
@@ -114,7 +114,7 @@ try { await withHarness(async (app) => {
   ok('DIAL Ambiance 0 draws no ground; 25 is half strength (opacity .5); 100 is capped at full', d0 === null && !!d25 && Math.abs(d25.op - 0.5) < 0.02 && !!d100 && d100.op === 1, JSON.stringify({ d0, op25: d25 && d25.op, op100: d100 && d100.op }));
   await page({ reduced: true });
   const still = await read();
-  ok('STILL reduced motion: the ground stands (circuitry drawn) with no point moving', !!still && still.px > 2000 && still.dots === 0 && still.anims === 0, JSON.stringify(still));
+  ok('STILL reduced motion: the ground stands (circuitry drawn) with no point moving', !!still && still.px > 30000 && still.dots === 0 && still.anims === 0, JSON.stringify(still));
 
   // ---- a Schema (board) room ----------------------------------------------------------------------------------------------------------------------
   const bid = `f3l1-board-${Date.now()}`;
