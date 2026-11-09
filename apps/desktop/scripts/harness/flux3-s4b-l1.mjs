@@ -128,7 +128,7 @@ try { await withHarness(async (app) => {
   const base = await read();
   const muts = [
     ['a fourth point', "(() => { const b = document.querySelector('[data-flux3-room-ground]'); const d = document.createElement('i'); d.className = 'mut'; d.style.cssText = 'position:absolute;left:0;top:0;width:4px;height:4px'; b.appendChild(d); d.animate([{ transform: 'translateX(0px)' }, { transform: 'translateX(40px)' }], { duration: 1000, iterations: Infinity }); })()", "document.querySelectorAll('[data-flux3-room-ground] i.mut').forEach((e) => e.remove())", async () => !curOk(await read())],
-    ['a hit target', "document.querySelector('[data-flux3-room-ground]').style.setProperty('pointer-events', 'auto', 'important')", "document.querySelector('[data-flux3-room-ground]').style.removeProperty('pointer-events')", async () => !groundOk(await read())],
+    ['a hit target', "document.querySelector('[data-flux3-room-ground]').style.setProperty('pointer-events', 'auto', 'important')", "document.querySelector('[data-flux3-room-ground]').style.setProperty('pointer-events', 'none')", async () => !groundOk(await read())],
     ['ground hidden', "document.querySelector('[data-flux3-room-ground]').remove()", null, async () => !groundOk(await read())],
   ];
   ok('MUT-BASE the readers are green on the untouched page before their mutants run', groundOk(base) && curOk(base), JSON.stringify(base));
