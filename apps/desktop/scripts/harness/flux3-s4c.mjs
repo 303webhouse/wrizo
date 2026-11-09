@@ -4,7 +4,18 @@
 //             and her saved preference is back on leaving (and untouched in storage).
 //   CHROME    no rail, strip, corkboard, hands' anchors or Glitch bar while jacked in (computed opacity 0, no pointer); the page's rect does not move
 //             (page primacy); Esc brings them back.
-//   COR       the corridor: 8 thin frames + the lime and brass frames + one SVG of rails; every animation is transform or opacity (the compositor's); no canvas.
+//   COR       the corridor: nine stepping frames (eight stand at once) + the lime and brass ones + one SVG of rails and ribs; every animation is transform or opacity (the compositor's); no canvas.
+//   WINDOW    (B1) the corridor is the WHOLE WINDOW: fixed, the ground colour at the window's corners and where the room and the sheet used to show, and no leftover 1 px edge at x 422.
+//   STRENGTH  (B3) the eight frames stand at the video's depths (half-widths 0.91 .47 .32 .24 .19 .16 .14 .12 of the screen's half) at its line strengths (nearest ~2.85:1, next two ~1.7, far five ~1.25);
+//             the rails and ribs are ONE still picture (no animation on them).
+//   ROW-SCALE (B4) each finished row is ONE holder scaled as a whole about the corridor's centre line (7.5% a row, floor 40%); the words inside carry no transform of their own.
+//   GLOW-*    (B2, Nick 3:43 pm) the glow BUILDS with the goal: 0 at the start of a lap, ~25% / ~50% of the recipe at a quarter / half of the goal, the whole recipe at the goal (12% at the centre, 4% at 55%,
+//             none at the edge, never above 14%, a mutant at 16% goes RED); none when no goal is set; the quiet lane is BELOW the glow.
+//   MARK      (B5) the WRIZO mark is hidden for the whole Jacked In session, at rest too.
+//   EXIT      (B6) the exit line shows ~3 s then goes, 4.5:1 or better, names the key that actually leaves (the line's key is pressed and leaves), through the lexicon.
+//   NUDGE     the 4 s nudge: one line below her text after 4 s of stillness, her next key clears it, never in BUILD or another theme, quiet colour, removal is one small change.
+//   LEAVE-X   (Nick 3:43 pm) the circled X: pointer movement shows it, a key hides it (no timer), a click = BUILD on the same doc, a real button with a lexicon name, 40 px, 24 px in, 3:1 or better, not brass.
+//   CARET-N / DIM / DOTS   the caret is a block as wide as an "n"; the veil's dim is ~#8C989C; the milestone's earned letters are lime, the newest brass, the unearned dots at 4.5:1.
 //   PACE      speed follows her pace: playbackRate is set at most 4 times a second, rises while she types fast, and is 0 (the frames hold still: a frame's
 //             transform is the same 600 ms apart) after she stops.
 //   ROWS      only this session's lines compile (none of the seeded text: its words are zq<n>), the signal rows step back at an even step (-7.5% block
@@ -22,6 +33,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { withHarness } from '../runtime-verify.mjs';
+import { makeL } from '../lib/l-method.mjs';
 
 const SHOTS = process.env.FLUX3_SHOTS || null;
 if (SHOTS) fs.mkdirSync(SHOTS, { recursive: true });
@@ -33,11 +45,9 @@ const LAT_TEXT = Array.from({ length: 150 }, (_, i) => 'word' + i).join(' ');
 const CYCLE = 'the signal holds while she writes on ';
 const LINE = ' and the corridor keeps going forward with more plain words now, on and on across the measure of the page until it wraps again and again, line after line';
 const ONLY_L = process.env.FLUX3_ONLY_L === '1';   // the control plan's L-only run: the method alone, on whatever tree is built
-const ROUNDS = 6, KEYS = 44, MIN_KEYS = 40, GAP = 90, MAX_MS = 100;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
-const stat = (xs) => { const s = (xs || []).slice().sort((a, b) => a - b); const q = (p) => (s.length ? s[Math.min(s.length - 1, Math.floor(p * s.length))] : null); return { n: s.length, median: q(0.5), p95: q(0.95), max: s.length ? s[s.length - 1] : null }; };
 const r1 = (x) => (x === null || x === undefined ? null : Math.round(x * 10) / 10);
 
 const INSTRUMENT = `(() => {
@@ -56,7 +66,13 @@ const INSTRUMENT = `(() => {
   I.chrome = () => { const sel = ['.desk-rail', '.desk-frame-strip', '.desk-frame-corkboard', '.desk-frame-sliver-anchor', '.flux3-glitchbar'];
     return sel.map((s) => { const e = document.querySelector(s); if (!e) return [s, null, null]; const c = getComputedStyle(e); return [s, +c.opacity, c.pointerEvents]; }); };
   I.rows = () => { const L = document.querySelector('[data-flux3-compile]'); if (!L) return null;
-    return [...L.querySelectorAll('.flux3-compile-word')].map((g) => ({ word: g.dataset.word, row: +g.dataset.row, h: g.firstElementChild ? +g.firstElementChild.style.height.replace('px', '') : null, op: +g.style.opacity })); };
+    return [...L.querySelectorAll('.flux3-compile-word')].map((g) => ({ word: g.dataset.word, row: +g.dataset.row, k: g.parentElement ? +g.parentElement.dataset.k : null, op: g.parentElement ? +g.parentElement.style.opacity : null })); };
+  // the exit line's life: when it was added to the page, when it went (removed or invisible), and what it looked like when it came
+  I.exit = { addedAt: null, goneAt: null, text: null, color: null, firstOpacity: null, mounts: 0 };
+  new MutationObserver(() => { const e = document.querySelector('.flux3-exit-line'); if (e && I.exit.addedAt === null) { I.exit.addedAt = performance.now(); I.exit.text = e.textContent; const c = getComputedStyle(e); I.exit.color = c.color; I.exit.firstOpacity = +c.opacity; }
+    if (!e && I.exit.addedAt !== null && I.exit.goneAt === null) I.exit.goneAt = performance.now(); }).observe(document, { childList: true, subtree: true });
+  I.nudgeAt = null; I.nudgeGoneAt = null;
+  I.mountAt = null; new MutationObserver(() => { if (I.mountAt === null && document.querySelector('[data-flux3-corridor]')) I.mountAt = performance.now(); const n = document.querySelector('.flux3-nudge'); if (n && I.nudgeAt === null) I.nudgeAt = performance.now(); if (!n && I.nudgeAt !== null && I.nudgeGoneAt === null) I.nudgeGoneAt = performance.now(); }).observe(document, { childList: true, subtree: true });
 })()`;
 
 try { await withHarness(async (app) => {
@@ -93,67 +109,21 @@ try { await withHarness(async (app) => {
   };
 
   const doL = async () => {
-  // ---- L: the Jacked In arm, six rounds ----------------------------------------------------------------------------------------------------------
-  // J: Jacked In with the Corridor. C: the control (Flux, flag off, the Typewriter on). A mutant adds `extra` ms of busy-wait to every key in the arm under test.
-  const runL = async (label, extra = 0, jFlag = true) => {
-    const lat = { C: [], J: [] };
-    let cursor = 0;
-    for (let round = 0; round <= ROUNDS; round += 1) {
-      for (const arm of (round % 2 ? ['J', 'C'] : ['C', 'J'])) {
-        const id = await fresh(LAT_TEXT);
-        await open({ id, tone: 'dark', flag: arm === 'J' ? jFlag : false, prefs: arm === 'J' && jFlag ? {} : { typewriter: true } });
-        const stood = await st();
-        // TWO READINGS (Fable, Nov 9). The first (key -> two frames on) is quantised by the frame clock and does not see a few ms of main-thread cost (measured on Actions: a 20 ms busy-wait
-        // in keydown/beforeinput moved its median by ~2 ms). The second is the cost itself, as rhizome-latency's B2/C2: per key, cost = BUSY (keydown -> the end of the task that handled it:
-        // a message posted from the key's LAST event (the input, bubbling, after the page's own handlers) runs only after the key's tasks and the render they flush; posted at keydown it could
-        // run between the keydown and beforeinput tasks and miss a cost after it: a Nov 9 Actions run saw the +5 ms mutant move the median by 1.2 ms on one leg and 12 on the other)
-        // + FRAME (the start of the first rAF after the input -> the end of that frame's rendering: a message posted from the rAF runs after style, layout and paint).
-        // The mutant spins in beforeinput (before the meter's own listener), so BUSY carries it.
-        await ev(`(() => { window.__lat = []; window.__ks = []; let t0 = 0, cur = null; if (window.__latOff) window.__latOff();
-          const kd = () => { t0 = performance.now(); const k = { busy: null, frame: null, s0: t0 }; cur = k; window.__ks.push(k); };
-          const inp = () => { const k = cur; if (!k || k.busy !== null || k.posted) return; k.posted = true; const mc = new MessageChannel(); mc.port1.onmessage = () => { k.busy = performance.now() - k.s0; mc.port1.close(); }; mc.port2.postMessage(0); };
-          const spin = () => { ${arm === 'J' && extra ? `const e = performance.now() + ${extra}; while (performance.now() < e) { /* the mutant: a slow key */ }` : ''} };
-          const bi = () => { const t = t0, k = cur; requestAnimationFrame(() => { const r = performance.now(); const mc = new MessageChannel(); mc.port1.onmessage = () => { if (k) k.frame = performance.now() - r; mc.port1.close(); };
-            mc.port2.postMessage(0); requestAnimationFrame(() => { window.__lat.push(performance.now() - t); }); }); };
-          document.addEventListener('keydown', kd, true); document.addEventListener('beforeinput', spin, true); document.addEventListener('beforeinput', bi, true); document.addEventListener('beforeinput', inp, false); document.addEventListener('input', inp, false);
-          window.__latOff = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('beforeinput', spin, true); document.removeEventListener('beforeinput', bi, true); document.removeEventListener('beforeinput', inp, false); document.removeEventListener('input', inp, false); }; return true; })()`);
-        for (let i = 0; i < KEYS; i += 1) { await app.typeKeys(CYCLE[cursor % CYCLE.length]); cursor += 1; await sleep(GAP); }
-        await sleep(250);
-        const got = await ev('window.__lat.slice()');
-        const cost = (await ev('window.__ks.map((k) => (k.busy != null && k.frame != null ? k.busy + k.frame : null))')).filter((x) => x != null);
-        if (round > 0) lat[arm].push({ lat: got, cost, stood: { flag: stood.flag, zoom: stood.zoom, jacked: stood.jacked } });
-      }
-    }
-    // one reading's verdict: the arm's median and p95 within the control's own round-to-round spread (>= 6 control rounds), and no single key over the ceiling (latency only)
-    const judge = (f, ceiling) => {
-      const cMeds = lat.C.map((r) => stat(r[f]).median), cP95s = lat.C.map((r) => stat(r[f]).p95);
-      const spreadMed = Math.max(...cMeds) - Math.min(...cMeds), spreadP95 = Math.max(...cP95s) - Math.min(...cP95s);
-      const C = stat(lat.C.flatMap((r) => r[f])), J = stat(lat.J.flatMap((r) => r[f]));
-      const pass = J.median <= C.median + spreadMed && J.p95 <= C.p95 + spreadP95 && (ceiling == null || J.max <= ceiling);
-      const line = `J median ${r1(J.median)} <= C ${r1(C.median)} + ${r1(spreadMed)}, J p95 ${r1(J.p95)} <= C ${r1(C.p95)} + ${r1(spreadP95)}${ceiling == null ? '' : `, J max ${r1(J.max)} <= ${ceiling}`}`;
-      return { pass, line, C, J };
-    };
-    const enough = lat.C.every((r) => r.lat.length >= MIN_KEYS && r.cost.length >= MIN_KEYS) && lat.J.every((r) => r.lat.length >= MIN_KEYS && r.cost.length >= MIN_KEYS);
-    const stoodRight = lat.J.every((r) => (jFlag ? r.stood.flag && r.stood.jacked : !r.stood.flag) && r.stood.zoom === 'true') && lat.C.every((r) => !r.stood.flag && r.stood.zoom === 'true');
-    const clock = judge('lat', MAX_MS), cost = judge('cost', null);
-    // L's verdict = BOTH readings (the frame clock and the main-thread cost per key)
-    const pass = enough && stoodRight && clock.pass && cost.pass;
-    const line = `${label}: clock [${clock.line}] cost [${cost.line}]`;
-    return { pass, line, enough, stoodRight, clock, cost, C: { clock: clock.C, cost: cost.C }, J: { clock: clock.J, cost: cost.J } };
-  };
+  // ---- L: the Jacked In arm against the control (six interleaved rounds, TWO readings, scripts/lib/l-method.mjs) ---------------------------------------------
+  // J: Jacked In with the Corridor. C: the control (Flux, flag off, the Typewriter on). On `main` (ONLY_L) the method runs alone: the control against itself, then the +5 / +10 ms mutants.
   if (ON_BOX || process.env.FLUX3_L === '1') {
-    const main = await runL('main (the control against itself)', 0, false);
-    ok(`L-METHOD-GREEN the method passes the control against itself (the box's own noise): ${main.line}`, main.pass && main.enough && main.stoodRight, JSON.stringify({ C: main.C, J: main.J }));
-    const l0 = ONLY_L ? null : await runL('Corridor', 0, true);
-    if (l0) ok(`L the Jacked In arm adds no latency beyond the control's own spread: ${l0.line}`, l0.pass, JSON.stringify({ C: l0.C, J: l0.J }));
-    // SUPERSEDED (Nov 9, Fable's ruling): the first L-MUT-5/10 asserted RED on the frame-clock reading alone, and that reading cannot see a few ms of main-thread cost (their runs on the
-    // box and Actions stayed green). The successors below assert RED on the COST reading, where the mutant lands.
-    // The mutants run on the CONTROL page (the flag off in both arms, the same page the green check above passes), with the cost added to arm J alone: the only thing that differs is the
-    // injected key cost, so a RED here is the method seeing it (a mutant on the Corridor would be confounded by the Corridor's own cost, red or green for another reason).
-    for (const extra of [5, 10]) {
-      const m = await runL(`main + ${extra} ms mutant`, extra, false);
-      ok(`L-MUT-${extra} the method calls a key that is ${extra} ms slower RED on the cost reading (the mutant landed: ${m.line})`, !m.cost.pass && m.enough && m.stoodRight, JSON.stringify({ C: m.C, J: m.J }));
-    }
+    const L = makeL({
+      app, ev, sleep, cycle: CYCLE,
+      prepare: async (arm, on) => {
+        const id = await fresh(LAT_TEXT);
+        const jacked = arm === 'J' && on;
+        await open({ id, tone: 'dark', flag: jacked, prefs: jacked ? {} : { typewriter: true } });
+        const s = await st();
+        return { flag: s.flag, zoom: s.zoom, jacked: s.jacked };
+      },
+      stoodRight: (arm, on, stood) => !!stood && (arm === 'J' && on ? stood.flag && stood.jacked : !stood.flag) && stood.zoom === 'true',
+    });
+    await L.run(ok, { subject: 'Corridor', onlyMethod: ONLY_L });
   } else console.log('INFO L (Actions: timing is the box\'s to judge; FLUX3_L=1 runs it here)');
   };
   if (ONLY_L) { await doL(); } else {
@@ -176,10 +146,13 @@ try { await withHarness(async (app) => {
   // ---- COR: the corridor's makeup -----------------------------------------------------------------------------------------------------------------
   const readCor = async () => { const cor = await ev(`(() => { const c = document.querySelector('[data-flux3-corridor]'); if (!c) return null; const fr = [...c.querySelectorAll('.flux3-cor-frame')]; const anims = c.getAnimations({ subtree: true });
     const props = new Set(); anims.forEach((x) => (x.effect.getKeyframes() || []).forEach((k) => Object.keys(k).forEach((p) => { if (!['offset', 'easing', 'composite', 'computedOffset'].includes(p)) props.add(p); })));
-    return { frames: fr.length, thin: fr.filter((f) => getComputedStyle(f).borderTopWidth === '1px').length, rails: c.querySelectorAll('svg.flux3-cor-rails').length, props: [...props], canvas: c.querySelectorAll('canvas').length, pe: getComputedStyle(c).pointerEvents, aria: c.getAttribute('aria-hidden'), first: c === document.querySelector('.mode-stage').firstElementChild }; })()`);
-    return { cor, pass: !!cor && cor.frames === 10 && cor.thin === 10 && cor.rails === 1 && cor.first && cor.pe === 'none' && cor.aria === 'true' && cor.props.length > 0 && cor.props.every((p) => p === 'transform' || p === 'opacity') && cor.canvas === 0 }; };
+    const svg = c.querySelector('svg.flux3-cor-rails'); const cs = getComputedStyle(c); const b = c.getBoundingClientRect();
+    const count = (sel) => { const p = svg && svg.querySelector(sel); return p ? (p.getAttribute('d').match(/M/g) || []).length : 0; };
+    return { frames: fr.length, stepping: fr.filter((f) => !f.dataset.kind).length, rails: c.querySelectorAll('svg.flux3-cor-rails').length, fan: count('.flux3-cor-fan'), ribs: count('.flux3-cor-ribs'), railAnims: svg ? svg.getAnimations({ subtree: true }).length : -1,
+      props: [...props], canvas: c.querySelectorAll('canvas').length, pe: cs.pointerEvents, aria: c.getAttribute('aria-hidden'), first: c === document.querySelector('.mode-stage').firstElementChild, pos: cs.position, box: [Math.round(b.left), Math.round(b.top), Math.round(b.width), Math.round(b.height)] }; })()`);
+    return { cor, pass: !!cor && cor.frames === 11 && cor.stepping === 9 && cor.rails === 1 && cor.fan >= 20 && cor.ribs >= 100 && cor.railAnims === 0 && cor.first && cor.pe === 'none' && cor.aria === 'true' && cor.props.length > 0 && cor.props.every((p) => p === 'transform' || p === 'opacity') && cor.canvas === 0 }; };
   const corridor = await readCor();
-  ok('COR the corridor stands: 8 thin frames + the lime and brass ones, one SVG of rails, first in the stage, inert; its animations touch only transform and opacity; no canvas', corridor.pass, JSON.stringify(corridor.cor));
+  ok('COR the corridor stands: nine stepping frames (eight at once) + the lime and brass ones, ONE svg of rails (a fan of >= 20) and ribs (>= 100 ticks) with no animation on it, first in the stage, inert; its animations touch only transform and opacity; no canvas', corridor.pass, JSON.stringify(corridor.cor));
 
   // ---- PACE: speed follows her typing, at most 4 Hz, and holds still when she stops -----------------------------------------------------------------
   await ev('window.__f4.rates.length = 0');
@@ -208,9 +181,24 @@ try { await withHarness(async (app) => {
   const sessionOnly = seeded === 0;
   const byRow = new Map(); (rows || []).forEach((w) => { if (!byRow.has(w.row)) byRow.set(w.row, w); });
   const rs = [...byRow.keys()].sort((x, y) => x - y);
-  const steps = rs.slice(1).map((k, i) => ({ h: byRow.get(k).h / byRow.get(rs[i]).h, op: byRow.get(k).op - byRow.get(rs[i]).op }));
-  ok(`ROWS some of this session's lines compiled (${rs.length} rows), at most six, each a step back (height x~0.925 of the one before, opacity ~-0.15)`,
-    rs.length >= 2 && rs.length <= 6 && steps.every((s) => s.h > 0.85 && s.h < 1 && s.op < -0.05 && s.op > -0.3), JSON.stringify({ rs, steps }));
+  const steps = rs.slice(1).map((k, i) => ({ k: byRow.get(k).k / byRow.get(rs[i]).k, op: byRow.get(k).op - byRow.get(rs[i]).op }));
+  ok(`ROWS some of this session's lines compiled (${rs.length} rows), at most six, each a step back (the row's scale x~0.92 of the one before, opacity ~-0.15)`,
+    rs.length >= 2 && rs.length <= 6 && steps.every((s) => s.k > 0.85 && s.k < 1 && s.op < -0.05 && s.op > -0.3), JSON.stringify({ rs, steps }));
+  // ROW-SCALE (the Wrizors' Corridor B4): each finished row is ONE holder scaled as a whole about the corridor's CENTRE LINE; a word's rendered centre is the centre line + k x its own distance from it
+  const READ_ROWS = `(() => { const layer = document.querySelector('[data-flux3-compile]'); if (!layer) return null; const L = layer.getBoundingClientRect(); const s = layer.offsetWidth > 0 ? L.width / layer.offsetWidth : 1; const cxWin = innerWidth / 2;
+    return [...layer.querySelectorAll('.flux3-compile-row')].map((hd) => { const k = +hd.dataset.k; const m = /^([0-9.-]+)px/.exec(hd.style.transformOrigin); const originX = m ? +m[1] : null; const words = [...hd.querySelectorAll('.flux3-compile-word')]; let worst = 0;
+      words.forEach((w) => { const un = L.left + (parseFloat(w.style.left) + parseFloat(w.style.width) / 2) * s; const r = w.getBoundingClientRect(); worst = Math.max(worst, Math.abs(r.left + r.width / 2 - (cxWin + k * (un - cxWin)))); });
+      const wordFree = words.every((w) => getComputedStyle(w).transform === 'none' && [...w.children].every((b) => getComputedStyle(b).transform === 'none'));
+      return { row: +hd.dataset.row, k, n: words.length, originOk: originX !== null && Math.abs(L.left + originX * s - cxWin) < 2, worst: +worst.toFixed(2), wordFree, one: getComputedStyle(hd).transform !== 'none' }; }); })()`;
+  const rowScale = (rr) => !!rr && rr.length >= 2 && rr.every((x) => x.originOk && x.worst < 2.5 && x.wordFree && x.one && x.n > 0);
+  const rr0 = await ev(READ_ROWS);
+  const srcJ = fs.readFileSync(new URL('../../src/flux3/FluxJackedIn.tsx', import.meta.url), 'utf8');
+  const floorOk = /rowMin: 0\.4/.test(srcJ) && /rowShrink: 0\.075/.test(srcJ) && /rowFade: 0\.15/.test(srcJ);
+  ok('ROW-SCALE each finished row is ONE holder (one transform, one opacity) scaled as a whole about the corridor centre line: every word sits at centre + k x its distance, no word or block has a transform of its own; 7.5% a row, floor 40%, 15% fainter', rowScale(rr0) && floorOk, JSON.stringify({ rr0, floorOk }));
+  await ev("(() => { const hd = document.querySelector('.flux3-compile-row'); hd.dataset.was = hd.style.transformOrigin; hd.style.transformOrigin = '0px 0px'; })()"); await sleep(120);
+  const rrM = await ev(READ_ROWS);
+  await ev("(() => { const hd = document.querySelector('.flux3-compile-row'); hd.style.transformOrigin = hd.dataset.was; })()"); await sleep(120);
+  ok('MUT-ROW-SCALE the reader goes RED when a row is scaled about its corner instead of the centre line, and green again undone', !rowScale(rrM) && rowScale(await ev(READ_ROWS)), JSON.stringify({ rrM }));
   ok('ROWS-SESSION none of the seeded (older) text became signal: every compiled word is one she typed this session', (rows || []).length > 0 && sessionOnly && seeded === 0, JSON.stringify((rows || []).slice(0, 6)));
   await snap('c-rows');
 
@@ -267,20 +255,25 @@ try { await withHarness(async (app) => {
   }
 
   // ---- POP: a milestone ---------------------------------------------------------------------------------------------------------------------------
-  const gid = await fresh(Array.from({ length: 24 }, (_, i) => `w${i}`).join(' '));
+  const gid = await fresh(Array.from({ length: 49 }, (_, i) => `w${i}`).join(' '));
   await open({ id: gid, tone: 'dark' });
   // the corridor's brass tint lasts ~0.3 s and may come while she is still typing: an observer records it from before the first key
   await ev("(() => { const c = document.querySelector('[data-flux3-corridor]'); window.__popSeen = []; if (c) new MutationObserver(() => window.__popSeen.push([Math.round(performance.now()), c.hasAttribute('data-pop')])).observe(c, { attributes: true, attributeFilter: ['data-pop'] }); return !!c; })()");
-  await type(' one two three four five six seven', 30);
+  await type(' one two three', 30);
   let pop = null, brass = false;
-  for (let i = 0; i < 30 && !pop; i += 1) { await sleep(60); pop = await ev(`(() => { const p = document.querySelector('[data-flux3-pop]'); if (!p) return null; return { letters: [...p.children].map((s) => s.textContent).join(''), news: [...p.children].filter((s) => s.dataset.new).length, newColour: (p.querySelector('[data-new]') ? getComputedStyle(p.querySelector('[data-new]')).color : null), text: p.textContent.replace(/[A-Z]/g, '').trim() }; })()`); }
+  for (let i = 0; i < 30 && !pop; i += 1) { await sleep(60); pop = await ev(`(() => { const p = document.querySelector('[data-flux3-pop]'); if (!p) return null; const cc = (e) => (e ? getComputedStyle(e).color : null); const ks = [...p.children]; return { letters: ks.map((s) => s.textContent).join(''), news: ks.filter((s) => s.dataset.new).length, newColour: cc(p.querySelector('[data-new]')), earnedColour: cc(ks[0]), dotColour: cc(ks[ks.length - 1]), text: p.textContent.replace(/[A-Z\u00B7]/g, '').trim() }; })()`); }
   const seen = await ev('window.__popSeen.slice()');
   const onAt = seen.find((s) => s[1]), offAt = seen.find((s) => !s[1] && onAt && s[0] > onAt[0]);
   brass = !!onAt && !!offAt && offAt[0] - onAt[0] >= 200 && offAt[0] - onAt[0] <= 500;
   await snap('c-pop');
   await sleep(2600);
   const gone = await ev("!document.querySelector('[data-flux3-pop]')");
-  ok('POP a milestone pops one brass letter of CHECKPOINT (the newest), no number, the corridor goes brass for ~0.3 s, and the word fades', !!pop && pop.letters === 'CHECKPOINT' && pop.news === 1 && /255, 152, 0/.test(pop.newColour || '') && pop.text === '' && brass && gone, JSON.stringify({ pop, brass, seen, gone }));
+  const lumc = (c) => { const m = /(\d+),\s*(\d+),\s*(\d+)/.exec(c || ''); if (!m) return null; const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * lin(+m[1]) + 0.7152 * lin(+m[2]) + 0.0722 * lin(+m[3]); };
+  const GROUND_L = lumc('rgb(2, 12, 16)');
+  const crOn = (c) => { const l = lumc(c); return l === null ? null : (Math.max(l, GROUND_L) + 0.05) / (Math.min(l, GROUND_L) + 0.05); };
+  const dotsOk = !!pop && pop.letters === 'CH' + '·'.repeat(8) && (crOn(pop.dotColour) || 0) >= 4.5 && /183, 255, 60/.test(pop.earnedColour || '');
+  ok('POP a milestone pops one brass letter of CHECKPOINT (the newest) after the earned lime one, the unearned ones are DOTS at 4.5:1 or better (no ghost letters), no number, the corridor goes brass for ~0.3 s, and the word fades',
+    !!pop && dotsOk && pop.news === 1 && /255, 152, 0/.test(pop.newColour || '') && pop.text === '' && brass && gone, JSON.stringify({ pop, brass, seen, gone, dotContrast: pop && crOn(pop.dotColour) }));
 
   // ---- THE MODE (draft 21 §6, Nick Nov 9): JACK IN is the free-writing mode; BUILD never offers it; Esc tap or F9 leaves to BUILD ---------------------------
   // SUPERSEDED (Nov 9): the first ESC check here read "Esc looking up brings the chrome back (the marks lift)" (data-flux3-looking, S4's Esc). Esc now LEAVES Jacked In for BUILD on
@@ -328,6 +321,245 @@ try { await withHarness(async (app) => {
   await sleep(1400);
   const fAfter = await left(fid);
   ok('F9 leaves Jacked In for BUILD on the same doc with the caret at the end (the backup where Esc exits full screen), and the reader read "not left" before', !fBefore.left && fAfter.left && !!fAfter.cb && fAfter.cb.before >= fAfter.cb.total - 1, JSON.stringify({ fBefore: fBefore.left, fAfter }));
+
+  // ================================================================ THE CORRIDOR r2 (the Wrizors' six blockers, Nick's 3:43 pm rulings) ================================================================
+  // a screenshot read in the page: pixels at points (the median of a block), scans, contrasts. The shot is the window at 1920 x 1080, DPR 1.
+  const shotEval = async (body) => {
+    const data = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data;
+    return ev(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${data}'; await img.decode(); const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight;
+      const x = c.getContext('2d'); x.drawImage(img, 0, 0); const D = x.getImageData(0, 0, c.width, c.height); const W = c.width;
+      const px = (a, b) => { const i = (b * W + a) * 4; return [D.data[i], D.data[i + 1], D.data[i + 2]]; };
+      const med = (cx, cy, r) => { const ch = [[], [], []]; for (let yy = cy - r; yy <= cy + r; yy++) for (let xx = cx - r; xx <= cx + r; xx++) { const p = px(xx, yy); for (let k = 0; k < 3; k++) ch[k].push(p[k]); } return ch.map((a) => { a.sort((m, n) => m - n); return a[a.length >> 1]; }); };
+      const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; const lum = (p) => 0.2126 * lin(p[0]) + 0.7152 * lin(p[1]) + 0.0722 * lin(p[2]);
+      const cr = (p, q) => (Math.max(lum(p), lum(q)) + 0.05) / (Math.min(lum(p), lum(q)) + 0.05);
+      return (() => { ${body} })(); })()`);
+  };
+  const GR = [2, 12, 16];
+  const shortPage = async (text, o = {}) => { const id = await fresh(text); await open({ id, tone: 'dark', ...o }); return id; };
+
+  // ---- WINDOW (B1): the corridor is the whole window; nothing of the room or the sheet shows --------------------------------------------------------------------------------------
+  await shortPage('A short older line.');
+  await sleep(3200);   // the exit line has gone, the pointer parked
+  const PTS = [[40, 400], [1880, 400], [1000, 10], [600, 1070], [40, 100], [1880, 950]];
+  const readWin = async () => {
+    const box = await ev("(() => { const c = document.querySelector('[data-flux3-corridor]'); const b = c.getBoundingClientRect(); return { box: [Math.round(b.left), Math.round(b.top), Math.round(b.width), Math.round(b.height)], pos: getComputedStyle(c).position, w: innerWidth, h: innerHeight }; })()");
+    const px = await shotEval(`return ${JSON.stringify(PTS)}.map((p) => med(p[0], p[1], 4));`);
+    const dev = px.map((p) => Math.max(...p.map((v, k) => Math.abs(v - GR[k]))));
+    return { ...box, px, dev, pass: box.pos === 'fixed' && box.box[0] === 0 && box.box[1] === 0 && box.box[2] === box.w && box.box[3] === box.h && dev.every((d) => d <= 8) };
+  };
+  const win0 = await readWin();
+  ok('WINDOW the corridor is the whole window (fixed, 0,0, the window\'s size) and the ground #020C10 shows at six places where the room\'s navy and the sheet used to (within 8 of it in every channel)', win0.pass, JSON.stringify(win0));
+  await ev("(() => { const d = document.createElement('div'); d.id = 'mut-room'; d.style.cssText = 'position:fixed;left:0;top:300px;width:100px;height:200px;background:#101A27;z-index:5;pointer-events:none;'; document.body.appendChild(d); })()"); await sleep(120);
+  const winM = await readWin();
+  await ev("document.getElementById('mut-room').remove()"); await sleep(120);
+  ok('MUT-WINDOW the reader goes RED when the room\'s navy shows at the left edge, and green again undone', !winM.pass && (await readWin()).pass, JSON.stringify({ dev: winM.dev }));
+  const readEdge = async () => { const r = await shotEval('let n = 0, bad = 0; for (let y = 179; y <= 750; y += 6) { n += 1; const a = px(422, y), b = px(416, y); if (Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) + Math.abs(a[2] - b[2]) > 14) bad += 1; } return { n, bad };'); return { ...r, pass: r.bad <= Math.ceil(r.n * 0.05) }; };
+  const edge0 = await readEdge();
+  ok('EDGE no leftover 1 px line at x 422 (the zoomed sheet\'s old left edge): the column at x 422 matches the one 6 px left on 95% of the samples from y 179 to 750', edge0.pass, JSON.stringify(edge0));
+  await ev("(() => { const d = document.createElement('div'); d.id = 'mut-edge'; d.style.cssText = 'position:fixed;left:422px;top:179px;width:1px;height:571px;background:#8AA;z-index:5;pointer-events:none;'; document.body.appendChild(d); })()"); await sleep(120);
+  const edgeM = await readEdge();
+  await ev("document.getElementById('mut-edge').remove()"); await sleep(120);
+  ok('MUT-EDGE the reader goes RED when a 1 px line stands at x 422, and green again undone', !edgeM.pass && (await readEdge()).pass, JSON.stringify(edgeM));
+
+  // ---- STRENGTH (B3): eight frames at the video's depths and line strengths; the rails and ribs are one still picture (reduced motion: the frames stand at their places) -------------------------
+  await shortPage('A short older line.', { reduced: true });
+  await sleep(1500);
+  const SCALES = [0, 1, 2, 3, 4, 5, 6, 7].map((j) => 1 / (1.1 + 1.03 * j));
+  const readStrength = async () => shotEval(`const S = ${JSON.stringify(SCALES)}; const Wd = innerWidth, Hd = innerHeight, vpx = 0.5 * Wd, vpy = 0.21 * Hd;
+    return S.map((s) => { const x = Math.round(vpx - s * vpx), y = Math.round(vpy + s * (Hd / 2 - vpy)); const ref = med(x - 10, y, 2); let best = 1; for (let dx = -2; dx <= 2; dx++) { for (let dy = -1; dy <= 1; dy++) best = Math.max(best, cr(px(x + dx, y + dy), ref)); } return { s: +s.toFixed(4), x, y, c: +best.toFixed(2) }; });`);
+  const RANGE = [[2.2, 3.6], [1.4, 2.4], [1.3, 2.2], [1.08, 1.65], [1.08, 1.65], [1.08, 1.65], [1.08, 1.65], [1.08, 1.65]];
+  const strengthOk = (rr) => rr.length === 8 && rr.every((r, j) => r.c >= RANGE[j][0] && r.c <= RANGE[j][1]);
+  const str0 = await readStrength();
+  console.log('S4C STRENGTH (frame j: left-edge midpoint contrast) ' + JSON.stringify(str0.map((r) => r.c)));
+  ok('STRENGTH the eight frames stand at the video\'s depths (half-widths 0.91 .47 .32 .24 .19 .16 .14 .12) with its line strengths: nearest 2.2-3.6:1, next two 1.3-2.4, far five 1.08-1.65 (printed: ' + str0.map((r) => r.c).join(' ') + ')', strengthOk(str0), JSON.stringify(str0));
+  await ev("(() => { const f = document.querySelector('.flux3-cor-frame[data-slot=\"3\"]'); f.style.display = 'none'; })()"); await sleep(150);
+  const strM = await readStrength();
+  await ev("(() => { document.querySelector('.flux3-cor-frame[data-slot=\"3\"]').style.display = ''; })()"); await sleep(150);
+  ok('MUT-STRENGTH the reader goes RED when one frame is missing (slot 3), and green again undone', !strengthOk(strM) && strengthOk(await readStrength()), JSON.stringify(strM.map((r) => r.c)));
+
+  // ---- GLOW (B2, Nick 3:43 pm): it BUILDS with the goal ------------------------------------------------------------------------------------------------------------------------
+  const wordsOf = (n) => Array.from({ length: n }, (_, i) => 'w' + i).join(' ');
+  const readGlow2 = () => ev("(() => { const g = document.querySelector('.flux3-cor-glow'); if (!g) return null; const c = document.querySelector('[data-flux3-corridor]'); return { op: +getComputedStyle(g).opacity, bg: getComputedStyle(g).backgroundImage, lineY: parseFloat(c.style.getPropertyValue('--cor-line-y')) }; })()");
+  // the colour at a point 660 px left of the middle on her line (off her text): the glow's gradient there is 0.0493 of the recipe's cyan at full progress
+  const glowPx = async (g) => (await shotEval(`return med(300, ${Math.round(g.lineY)}, 10);`));
+  const glowAt = async (n) => { await shortPage(wordsOf(n)); await sleep(1100); const g = await readGlow2(); return { g, px: g ? await glowPx(g) : null }; };
+  const gz = await glowAt(1), g25 = await glowAt(62), g50 = await glowAt(125);
+  await shortPage(wordsOf(249)); await sleep(500);
+  await type(' one two', 30);
+  let g100 = null;
+  for (let i = 0; i < 14; i += 1) { await sleep(100); g100 = await readGlow2(); if (g100 && g100.op > 0.97) break; }
+  const g100px = g100 ? await glowPx(g100) : null;   // taken inside the lap's 1.1 s celebration
+  const dB = (a) => (a && gz.px ? a[2] - gz.px[2] : null);
+  const near = (v, lo, hi) => v !== null && v >= lo && v <= hi;
+  console.log('S4C GLOW opacity 0/25/50/100 = ' + [gz.g, g25.g, g50.g, g100].map((x) => x && x.op).join(' / ') + '; blue channel above the 0% pixel: ' + [dB(g25.px), dB(g50.px), dB(g100px)].join(' / '));
+  ok('GLOW-BUILDS the glow reads the goal\'s progress: ~0 at the start of a lap, ~25% at 62 of 250 words, ~50% at 125, the whole recipe (1.0) at the goal (the lap\'s celebration)',
+    !!gz.g && gz.g.op < 0.02 && near(g25.g && g25.g.op, 0.22, 0.28) && near(g50.g && g50.g.op, 0.47, 0.53) && !!g100 && g100.op > 0.97, JSON.stringify({ z: gz.g && gz.g.op, a: g25.g && g25.g.op, b: g50.g && g50.g.op, c: g100 && g100.op }));
+  ok('GLOW-PIXEL the colour on her line, off her text, rises with the glow: the blue channel is ~+2.8 / +5.6 / +11.3 above the start-of-lap pixel at 25% / 50% / 100% (the recipe\'s gradient there is 4.9%)',
+    near(dB(g25.px), 1.5, 4.3) && near(dB(g50.px), 4, 7.6) && near(dB(g100px), 9.3, 13.5), JSON.stringify({ z: gz.px, a: g25.px, b: g50.px, c: g100px }));
+  const recipeOk = (bg) => { const al = [...String(bg || '').matchAll(/rgba\(87, 208, 245, ([0-9.]+)\)/g)].map((m) => +m[1]); return al.length === 2 && al[0] === 0.12 && al[1] === 0.04 && al.every((v) => v <= 0.14) && /rgba\(0, 0, 0, 0\)/.test(String(bg)); };
+  ok('GLOW-RECIPE at the goal the glow is #57D0F5 at 12% at the centre, 4% at 55%, none at the edge (never above 14%)', recipeOk(g50.g && g50.g.bg), (g50.g && g50.g.bg) || 'no glow');
+  await ev("document.documentElement.style.setProperty('--f3-goal-glow', 'radial-gradient(ellipse at center, rgb(87 208 245 / .16) 0%, rgb(87 208 245 / .04) 55%, transparent 100%)')"); await sleep(150);
+  const recM = await readGlow2();
+  await ev("document.documentElement.style.removeProperty('--f3-goal-glow')"); await sleep(150);
+  ok('MUT-GLOW-16 the reader goes RED when the glow is set to 16% (the ruled ceiling is 14%), and green again undone', !recipeOk(recM && recM.bg) && recipeOk((await readGlow2()).bg), JSON.stringify({ bg: recM && recM.bg }));
+  // none when no goal is set (the writer clears the target)
+  await ev("localStorage.setItem('wrizo-writing-goal-lines', '')");
+  await shortPage(wordsOf(125)); await sleep(1000);
+  const gNone = await readGlow2();
+  await ev("localStorage.removeItem('wrizo-writing-goal-lines')");
+  ok('GLOW-NONE with no goal set the glow is 0 even at 125 words', !!gNone && gNone.op === 0, JSON.stringify(gNone));
+  // the quiet lane thins the frames and rails only: it is BELOW the glow in the stack, and the glow is not covered
+  await shortPage(wordsOf(125)); await sleep(900);
+  const readOrder = () => ev("(() => { const c = document.querySelector('[data-flux3-corridor]'); const k = [...c.children]; const lane = k.findIndex((e) => e.classList.contains('flux3-cor-lane')), glow = k.findIndex((e) => e.classList.contains('flux3-cor-glow')), frame = k.findIndex((e) => e.classList.contains('flux3-cor-frame')), rails = k.findIndex((e) => e.classList.contains('flux3-cor-rails')); return { lane, glow, frame, rails, laneBg: getComputedStyle(k[lane]).backgroundImage }; })()");
+  const orderOk = (o) => o.rails >= 0 && o.rails < o.lane && o.frame >= 0 && o.frame < o.lane && o.lane >= 0 && o.lane < o.glow && /rgb\(2, 12, 16\)/.test(o.laneBg);
+  const ord0 = await readOrder();
+  ok('GLOW-LANE the quiet lane (an oval of the ground\'s own colour) covers the rails and frames and sits BELOW the glow, so it never covers it', orderOk(ord0), JSON.stringify(ord0));
+  await ev("(() => { const c = document.querySelector('[data-flux3-corridor]'); const g = c.querySelector('.flux3-cor-glow'); g.dataset.was = 'x'; c.insertBefore(g, c.querySelector('.flux3-cor-lane')); })()"); await sleep(120);
+  const ordM = await readOrder();
+  await ev("(() => { const c = document.querySelector('[data-flux3-corridor]'); c.appendChild(c.querySelector('.flux3-cor-glow')); })()"); await sleep(120);
+  ok('MUT-GLOW-LANE the reader goes RED when the glow is put under the lane, and green again undone', !orderOk(ordM) && orderOk(await readOrder()), JSON.stringify(ordM));
+
+  // ---- MARK (B5): the WRIZO mark is hidden for the whole Jacked In session ------------------------------------------------------------------------------------------------------
+  await jackedOpen('The mark stays gone while she writes.', 'dark');
+  await sleep(2600);
+  const readMark = () => ev("(() => { const ms = [...document.querySelectorAll('.wz-mark, .wz-flux-wordmark')]; return { n: ms.length, shown: ms.filter((m) => { const c = getComputedStyle(m); return c.visibility !== 'hidden' && +c.opacity > 0.01 && m.getBoundingClientRect().width > 0; }).length }; })()");
+  const mk0 = await readMark();
+  await type('typing, then stopping', 30); await sleep(2600);
+  const mk1 = await readMark();
+  ok('MARK the WRIZO mark is hidden for the whole Jacked In session: after entering, and again after she types and stops (and there is a mark on this page to hide)', mk0.n >= 1 && mk0.shown === 0 && mk1.n >= 1 && mk1.shown === 0, JSON.stringify({ mk0, mk1 }));
+  await ev("document.querySelectorAll('.wz-mark, .wz-flux-wordmark').forEach((m) => { m.style.setProperty('visibility', 'visible', 'important'); m.style.setProperty('opacity', '1', 'important'); })"); await sleep(120);
+  const mkM = await readMark();
+  await ev("document.querySelectorAll('.wz-mark, .wz-flux-wordmark').forEach((m) => { m.style.removeProperty('visibility'); m.style.removeProperty('opacity'); })"); await sleep(120);
+  ok('MUT-MARK the reader goes RED when the mark is forced visible, and green again undone', mkM.shown > 0 && (await readMark()).shown === 0, JSON.stringify(mkM));
+
+  // ---- EXIT (B6): the exit line, the first 3 s ---------------------------------------------------------------------------------------------------------------------------------
+  const KEYMAP = { Esc: ['Escape', 'Escape', 27], F9: ['F9', 'F9', 120] };
+  const namesLeavingKey = (t) => { const m = /·\s*(\S+)\s+TO JACK OUT$/i.exec(String(t || '').trim()); return !!m && !!KEYMAP[m[1][0].toUpperCase() + m[1].slice(1).toLowerCase()]; };
+  const readExit = async (reduced) => { await shortPage('exit line', { reduced }); await sleep(reduced ? 3600 : 4400); return ev('window.__f4.exit'); };
+  const exN = await readExit(false);
+  const life = exN.goneAt !== null && exN.addedAt !== null ? exN.goneAt - exN.addedAt : null;
+  const mountGap = await ev('window.__f4.mountAt === null || window.__f4.exit.addedAt === null ? null : window.__f4.exit.addedAt - window.__f4.mountAt');
+  ok('EXIT the line is there from entry (first seen at full strength within 0.5 s of the corridor mounting), reads JACKED IN · ESC TO JACK OUT, is gone by ~3.6 s (3 s, then a 0.6 s fade), and is 4.5:1 or better on the ground (printed: life ' + (life && Math.round(life)) + ' ms, ' + (crOn(exN.color) || 0).toFixed(2) + ':1)',
+    exN.addedAt !== null && mountGap !== null && mountGap < 500 && exN.firstOpacity > 0.99 && /^JACKED IN · ESC TO JACK OUT$/.test(String(exN.text || '').toUpperCase()) && life !== null && life >= 2900 && life <= 4300 && (crOn(exN.color) || 0) >= 4.5, JSON.stringify({ exN, life, mountGap }));
+  const exR = await readExit(true);
+  const lifeR = exR.goneAt !== null && exR.addedAt !== null ? exR.goneAt - exR.addedAt : null;
+  ok('EXIT-STILL with reduced motion the line is a cut: gone at ~3 s with no fade (printed: ' + (lifeR && Math.round(lifeR)) + ' ms)', lifeR !== null && lifeR >= 2900 && lifeR <= 3500, JSON.stringify({ exR, lifeR }));
+  // it names the key that actually leaves: read the key off the line, press THAT key, and the page leaves to BUILD; the handler and the line read one constant
+  const named = /·\s*(\S+)\s+to jack out$/i.exec(String(exN.text || '').trim());
+  const kid = await jackedOpen('press the named key', 'dark');
+  const namedKey = named ? KEYMAP[named[1][0].toUpperCase() + named[1].slice(1).toLowerCase()] : null;
+  if (namedKey) { await keyTap(namedKey[0], namedKey[1], namedKey[2], 60); await sleep(1400); }
+  const kLeft = await left(kid);
+  const srcIn = fs.readFileSync(new URL('../../src/flux3/FluxJackedIn.tsx', import.meta.url), 'utf8');
+  const srcHints = fs.readFileSync(new URL('../../src/flux3/FluxJackedHints.tsx', import.meta.url), 'utf8');
+  const srcJack = fs.readFileSync(new URL('../../src/flux3/jackIn.ts', import.meta.url), 'utf8');
+  const codeOnly = (s) => s.split('\n').filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l)).join('\n');
+  const oneSource = /e\.key === LEAVE_KEY\b/.test(srcIn) && /leaveKeyNow\(\)/.test(srcHints) && /export const LEAVE_KEY = 'Escape'/.test(srcJack) && !/jack out/i.test(codeOnly(srcHints)) && /flux3JackedExit/.test(srcHints);
+  ok('EXIT-KEY the key the line names is the key that leaves (pressed, it leaves to BUILD), the handler and the line read one constant (jackIn.ts), and the words come through the lexicon (no literal in the component)', !!namedKey && kLeft.left && oneSource && namesLeavingKey(exN.text), JSON.stringify({ named: named && named[1], kLeft: kLeft.left, oneSource }));
+  ok('MUT-EXIT the key reader goes RED when the line names a key that does not leave (F4, DEL) and green on the real ones', !namesLeavingKey('JACKED IN · F4 TO JACK OUT') && !namesLeavingKey('JACKED IN · DEL TO JACK OUT') && namesLeavingKey('JACKED IN · ESC TO JACK OUT') && namesLeavingKey('JACKED IN · F9 TO JACK OUT'), '');
+
+  // ---- NUDGE: after 4 s of stillness, one line below her text; her next key clears it; Jacked In only ------------------------------------------------------------------------------
+  await jackedOpen('The nudge waits four seconds.', 'dark');
+  const readNudge = () => ev(`(() => { const n = document.querySelector('.flux3-nudge'); if (!n) return null; const c = getComputedStyle(n); const cr = document.querySelector('.flux-block-caret'); const q = n.getBoundingClientRect(); const cb = cr ? cr.getBoundingClientRect() : null; return { text: n.textContent, color: c.color, below: cb ? q.top > cb.bottom : null, anim: c.animationName }; })()`);
+  let nd = null;
+  for (let i = 0; i < 70 && !nd; i += 1) { nd = await readNudge(); if (!nd) await sleep(100); }
+  const nTimes = await ev('({ at: window.__f4.nudgeAt, mount: window.__f4.mountAt })');
+  const nDelay = nTimes.at !== null && nTimes.mount !== null ? nTimes.at - nTimes.mount : null;
+  const notRed = (c) => { const m = /(\d+),\s*(\d+),\s*(\d+)/.exec(c || ''); return !!m && +m[1] <= +m[2]; };
+  const nudgeOk = (n) => !!n && /^KEEP THE SIGNAL · ANY WORD WILL DO$/.test(String(n.text).toUpperCase()) && (crOn(n.color) || 0) >= 4.5 && notRed(n.color) && n.below === true;
+  ok('NUDGE after ~4 s of stillness one quiet line stands below her text: KEEP THE SIGNAL · ANY WORD WILL DO, 4.5:1 or better, not red (printed: shown ' + (nDelay && Math.round(nDelay)) + ' ms after entry)', nudgeOk(nd) && nDelay !== null && nDelay >= 3800 && nDelay <= 5600, JSON.stringify({ nd, nDelay }));
+  await app.typeKeys('x'); await sleep(200);
+  const ndGone = await readNudge();
+  let ndBack = null;
+  for (let i = 0; i < 60 && !ndBack; i += 1) { await sleep(100); ndBack = await readNudge(); }
+  ok('NUDGE-KEY her next key clears it at once, and after another 4 s of stillness it comes back (no countdown, no penalty)', ndGone === null && nudgeOk(ndBack), JSON.stringify({ ndGone, ndBack }));
+  ok('MUT-NUDGE the reader goes RED on a red line, a line that is not below her text and a wrong word, and green on the real one', !nudgeOk({ ...nd, color: 'rgb(255, 0, 0)' }) && !nudgeOk({ ...nd, below: false }) && !nudgeOk({ ...nd, text: 'HURRY UP' }) && nudgeOk(nd), '');
+  const exR2 = await readExit(true);   // (a reduced-motion page, to read the nudge's animation)
+  let ndR = null;
+  for (let i = 0; i < 50 && !ndR; i += 1) { ndR = await readNudge(); if (!ndR) await sleep(100); }
+  ok('NUDGE-STILL with reduced motion the nudge is a cut (no fade animation)', !!ndR && ndR.anim === 'none', JSON.stringify({ ndR, exR2: !!exR2 }));
+  await shortPage('A draft page with some words', { mode: 'drafting' });
+  await sleep(5300);
+  const bNone = await ev("({ nudge: document.querySelectorAll('.flux3-nudge').length, exit: document.querySelectorAll('.flux3-exit-line').length, x: document.querySelectorAll('.flux3-leave-x').length, corridor: document.querySelectorAll('[data-flux3-corridor]').length })");
+  await ev("localStorage.setItem('wrizo-theme', 'plateau')");
+  const aid = await fresh('A page in Arbor');
+  await ev(`history.replaceState(null, '', '/?flux3=1#/page/${aid}')`); await app.reload();
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { timeout: 15000, label: 'the page' }).catch(() => {});
+  await sleep(5300);
+  const aNone = await ev("({ theme: document.documentElement.getAttribute('data-theme'), nudge: document.querySelectorAll('.flux3-nudge').length, exit: document.querySelectorAll('.flux3-exit-line').length, x: document.querySelectorAll('.flux3-leave-x').length, corridor: document.querySelectorAll('[data-flux3-corridor]').length })");
+  await ev("localStorage.setItem('wrizo-theme', 'flux')");
+  ok('NUDGE-ONLY the nudge, the exit line and the circled X exist only in Jacked In: none in BUILD (Draft), none in Arbor', bNone.nudge + bNone.exit + bNone.x + bNone.corridor === 0 && aNone.theme !== 'flux' && aNone.nudge + aNone.exit + aNone.x + aNone.corridor === 0, JSON.stringify({ bNone, aNone }));
+  const walk = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(path.join(d, e.name)) : /\.(ts|tsx)$/.test(e.name) ? [path.join(d, e.name)] : []));
+  const users = walk(new URL('../../src/', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')).filter((p) => /\bFluxNudge\b/.test(fs.readFileSync(p, 'utf8'))).map((p) => path.basename(p)).sort();
+  ok('NUDGE-ONE-CHANGE taking the nudge out is one small change: only FluxNudge.tsx itself and FluxJackedHints.tsx (one import, one element) mention it', JSON.stringify(users) === JSON.stringify(['FluxJackedHints.tsx', 'FluxNudge.tsx']), JSON.stringify(users));
+
+  // ---- LEAVE-X (Nick 3:43 pm): the circled X ------------------------------------------------------------------------------------------------------------------------------------------
+  const xid = await jackedOpen('The circled X appears with the pointer.', 'dark');
+  const readX = () => ev(`(() => { const b = document.querySelector('.flux3-leave-x'); if (!b) return null; const c = getComputedStyle(b); const q = b.getBoundingClientRect(); return { tag: b.tagName, label: b.getAttribute('aria-label'), on: b.hasAttribute('data-on'), op: +c.opacity, pe: c.pointerEvents, color: c.color, trans: c.transitionDuration, rect: [Math.round(q.left), Math.round(q.top), Math.round(q.width), Math.round(q.height)], w: innerWidth, h: innerHeight, tab: b.tabIndex }; })()`);
+  const shown = (x) => !!x && x.on && x.op > 0.95 && x.pe === 'auto';
+  const hidden = (x) => !!x && !x.on && x.op < 0.02 && x.pe === 'none';
+  await app.typeKeys('a'); await sleep(500);
+  const x1 = await readX();
+  await app.mouseMove(1500, 700); await sleep(60); await app.mouseMove(1520, 720); await sleep(500);
+  const x2 = await readX();
+  await sleep(3000);   // no timer: it stays while she does not type
+  const x2b = await readX();
+  await app.typeKeys('b'); await sleep(500);
+  const x3 = await readX();
+  ok('LEAVE-X typing keeps it at opacity 0; pointer movement shows it; it stays (no timer); a key hides it again', hidden(x1) && shown(x2) && shown(x2b) && hidden(x3), JSON.stringify({ x1, x2, x2b, x3 }));
+  await app.mouseMove(1500, 700); await sleep(60); await app.mouseMove(1510, 710); await sleep(500);
+  const x4 = await readX();
+  const lum3 = lumc(x4 && x4.color);
+  const inRect = !!x4 && x4.rect[2] === 40 && x4.rect[3] === 40 && x4.rect[0] === x4.w - 24 - 40 && x4.rect[1] === x4.h - 24 - 40;
+  ok('LEAVE-X-LOOK a real button named "Jack out" through the lexicon, 40 px, 24 px in from the lower-right corner, the quiet label colour at 3:1 or better against the ground (not brass)', !!x4 && x4.tag === 'BUTTON' && x4.label === 'Jack out' && inRect && (crOn(x4.color) || 0) >= 3 && !/255, 152, 0/.test(x4.color) && /flux3JackedLeave: 'Jack out'/.test(fs.readFileSync(new URL('../../src/store/lexicon/canonical/chrome.ts', import.meta.url), 'utf8')), JSON.stringify({ x4, cr: crOn(x4 && x4.color) }));
+  await app.mouseMove(x4.rect[0] + 20, x4.rect[1] + 20); await sleep(400);
+  const x5 = await readX();
+  ok('LEAVE-X-HOVER hover is Flux\'s choice colour (#00C2FF)', !!x5 && /0, 194, 255/.test(x5.color), JSON.stringify(x5));
+  // mutants: the three readers
+  await ev("(() => { const b = document.querySelector('.flux3-leave-x'); b.style.setProperty('opacity', '0', 'important'); })()");
+  await app.mouseMove(1400, 600); await sleep(60); await app.mouseMove(1410, 610); await sleep(450);
+  const xm1 = await readX();
+  await ev("document.querySelector('.flux3-leave-x').style.removeProperty('opacity')"); await sleep(300);
+  await app.typeKeys('c'); await sleep(450);
+  await ev("window.__keepX = setInterval(() => { const b = document.querySelector('.flux3-leave-x'); if (b) b.setAttribute('data-on', ''); }, 20)");
+  await app.typeKeys('d'); await sleep(450);
+  const xm2 = await readX();
+  await ev("clearInterval(window.__keepX); document.querySelector('.flux3-leave-x').removeAttribute('data-on')"); await sleep(400);
+  ok('MUT-LEAVE-X the show reader goes RED when the button is kept invisible, and the hide reader goes RED when the button is kept showing through a key', !shown(xm1) && !hidden(xm2), JSON.stringify({ xm1, xm2 }));
+  await app.mouseMove(1400, 600); await sleep(60); await app.mouseMove(1420, 620); await sleep(500);
+  await ev("document.querySelector('.flux3-leave-x').style.setProperty('pointer-events', 'none', 'important')");
+  const xr = await ev("(() => { const b = document.querySelector('.flux3-leave-x').getBoundingClientRect(); return [Math.round(b.left + 20), Math.round(b.top + 20)]; })()");
+  await click(xr[0], xr[1]); await sleep(1200);
+  const deadClick = await left(xid);
+  await ev("document.querySelector('.flux3-leave-x').style.removeProperty('pointer-events')"); await sleep(200);
+  await click(xr[0], xr[1]); await sleep(1500);
+  const realClick = await left(xid);
+  ok('LEAVE-X-CLICK a click is exactly an Esc tap: BUILD on the same doc, the caret at the END, the saved tone back (the reader read "not left" when the button was made dead)', !deadClick.left && realClick.left && !!realClick.cb && realClick.cb.before >= realClick.cb.total - 1, JSON.stringify({ deadClick: deadClick.left, realClick }));
+  const rm = await shortPage('reduced motion cut', { reduced: true }); await sleep(800);
+  await app.mouseMove(1500, 700); await sleep(60); await app.mouseMove(1520, 720); await sleep(300);
+  const xr2 = await readX();
+  ok('LEAVE-X-STILL reduced motion is a cut (no transition on the button)', !!xr2 && /^0s(, 0s)*$/.test(xr2.trans), JSON.stringify(xr2));
+
+  // ---- CARET-N and DIM -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+  await jackedOpen('The caret is a block.', 'dark');
+  await type('abc', 40); await sleep(400);
+  const readCaret = () => ev(`(() => { const c = document.querySelector('.flux-block-caret'); const ed = document.querySelector('.forward-only-editor'); if (!c || !ed) return null; const cs = getComputedStyle(ed); const cv = document.createElement('canvas').getContext('2d'); cv.font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily; const k = ed.offsetWidth > 0 ? ed.getBoundingClientRect().width / ed.offsetWidth : 1; return { w: +c.getBoundingClientRect().width.toFixed(2), n: +(cv.measureText('n').width * k).toFixed(2) }; })()`);
+  const caretOk = (c) => !!c && c.n > 8 && Math.abs(c.w - c.n) <= 1.5;
+  const cN = await readCaret();
+  ok('CARET-N in Jacked In the caret is a block as wide as an "n" of the page\'s own font (printed: ' + (cN && cN.w) + ' px against an n of ' + (cN && cN.n) + ' px)', caretOk(cN), JSON.stringify(cN));
+  await ev("document.querySelector('.flux-block-caret').style.setProperty('width', '5px', 'important')"); await sleep(120);
+  const cM = await readCaret();
+  await ev("document.querySelector('.flux-block-caret').style.removeProperty('width')"); await sleep(120);
+  ok('MUT-CARET-N the reader goes RED on the old 5 px bar, and green again undone', !caretOk(cM) && caretOk(await readCaret()), JSON.stringify(cM));
+  const dim = parseFloat(await ev("getComputedStyle(document.documentElement).getPropertyValue('--f3-dim')"));
+  const linC = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  const lumA = (p) => 0.2126 * linC(p[0]) + 0.7152 * linC(p[1]) + 0.0722 * linC(p[2]);
+  const crA = (p, q) => (Math.max(lumA(p), lumA(q)) + 0.05) / (Math.min(lumA(p), lumA(q)) + 0.05);
+  const dimLine = (a, bg) => [232, 246, 250].map((t, i) => t * a + bg[i] * (1 - a));
+  const dimCr = (a) => ({ ground: crA(dimLine(a, [2, 12, 16]), [2, 12, 16]), glow: crA(dimLine(a, [12, 36, 43]), [12, 36, 43]) });
+  const dimOk = (a) => a >= 0.55 && a <= 0.65 && dimCr(a).ground >= 6.4 && dimCr(a).ground <= 8.5 && dimCr(a).glow >= 5.3;
+  ok('DIM the line above the writing line is dimmed to about #8C989C (the veil\'s --f3-dim ' + dim + ': ' + dimCr(dim).ground.toFixed(2) + ':1 on the ground, ' + dimCr(dim).glow.toFixed(2) + ':1 at the glow\'s brightest; floor 4.5)', dimOk(dim), JSON.stringify({ dim, c: dimCr(dim) }));
+  ok('MUT-DIM the reader goes RED at the old 0.78 (10.9:1, too bright) and at 0.40 (too faint), green at 0.60', !dimOk(0.78) && !dimOk(0.4) && dimOk(0.6), '');
 
   // ---- NEW PAGE + VOICE: a page born in Flux (under the flag) is 14 pt; the default Voice is Crimson Pro ----------------------------------------------
   const born = await ev("(() => { const e = window.wrizoCreateJournalPage(); return e && e.pageSettings ? e.pageSettings.size : null; })()");
