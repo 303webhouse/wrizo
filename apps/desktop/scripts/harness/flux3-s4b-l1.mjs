@@ -3,6 +3,9 @@
 //   GROUND   one box (data-flux3-room-ground) sits first in the framed host, behind its content (z-index -1 in the host's own stacking context), inert
 //            (no pointer, aria-hidden), and its background image is the circuitry (a picture; NO canvas element in the page: a full-room canvas layer cost
 //            ~3 ms a frame on a software renderer), on a Page room and on a Schema (board) room.
+//   TAME     no trace is louder than the rest (the Wrizors, Nov 9: one long trace read 3.75:1 and passed for a link): the strongest pixel in the ground's picture, composited on
+//            the room's colour, has a lower contrast than the FAINTEST real link (the Schema layer's link colour, read from its source), and the reader goes RED on the old
+//            full-strength drawing.
 //   RECT     the ground adds nothing to any layout: the page's rect, the host's rect and the editor's are the same with the box shown and with it taken away.
 //   ONCE     the ground is drawn once per size, never per key and never per frame: the canvas is cleared the same number of times before and after
 //            forty keys and a pause; a resize redraws it. The room is dark in both Page tones, so a tone change leaves it as it is (S5's Room setting changes that).
@@ -34,6 +37,16 @@ const INSTRUMENT = `(() => {
     const px = cs.backgroundImage.indexOf('data:image/png') > 0 ? cs.backgroundImage.length : 0;
     const anims = b.getAnimations({ subtree: true }); const props = new Set(); anims.forEach((a) => (a.effect.getKeyframes() || []).forEach((k) => Object.keys(k).forEach((p) => { if (!['offset', 'easing', 'composite', 'computedOffset'].includes(p)) props.add(p); })));
     return { first: host.firstElementChild === b, host: String(host.className).slice(0, 24), z: cs.zIndex, pe: cs.pointerEvents, aria: b.getAttribute('aria-hidden'), op: +cs.opacity, px, dots: b.querySelectorAll('i').length, anims: anims.length, running: anims.filter((a) => a.playState === 'running').length, paused: anims.filter((a) => a.playState === 'paused').length, props: [...props], iso: getComputedStyle(host).isolation, canvases: b.querySelectorAll('canvas').length, draws: Number(b.dataset.draws || 0) }; };
+  // the strongest pixel of a picture (a data: URL) composited on the room's ground colour, as WCAG contrast against that colour
+  I.maxContrast = async (url, bg) => { const img = new Image(); img.src = url; await img.decode(); const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight;
+    const x = c.getContext('2d'); x.drawImage(img, 0, 0); const d = x.getImageData(0, 0, c.width, c.height).data;
+    const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+    const lum = (r, g, b) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b); const L0 = lum(bg[0], bg[1], bg[2]);
+    let max = 1, at = null; for (let i = 0; i < d.length; i += 4) { const a = d[i + 3] / 255; if (!a) continue;
+      const L1 = lum(d[i] * a + bg[0] * (1 - a), d[i + 1] * a + bg[1] * (1 - a), d[i + 2] * a + bg[2] * (1 - a)); const cr = (Math.max(L0, L1) + 0.05) / (Math.min(L0, L1) + 0.05);
+      if (cr > max) { max = cr; at = [(i / 4) % c.width, Math.floor(i / 4 / c.width)]; } }
+    return { max, at, w: c.width, h: c.height }; };
+  I.picture = () => { const b = I.box(); if (!b) return null; const bi = getComputedStyle(b).backgroundImage; const s = bi.indexOf('data:image'); if (s < 0) return null; const e = bi.lastIndexOf(')'); let u = bi.slice(s, e); if (u.charCodeAt(u.length - 1) === 34) u = u.slice(0, -1); return u; };
   I.rects = () => { const q = (s) => { const e = document.querySelector(s); if (!e) return null; const r = e.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)]; }; return { page: q('.mode-page'), host: q('.desk-frame-host'), editor: q('.forward-only-editor'), board: q('.board-canvas-wrap') }; };
 })()`;
 
@@ -72,6 +85,21 @@ try { await withHarness(async (app) => {
   const groundOk = (r) => !!r && r.first && r.z === '-1' && r.pe === 'none' && r.aria === 'true' && r.px > 30000 && r.canvases === 0 && r.draws >= 1 && r.iso === 'isolate' && /desk-frame-host/.test(r.host);
   ok('GROUND a Page room: the ground box is first in the framed host, behind its content (z -1, the host isolated), inert, and its background image is the circuitry (a picture, no canvas element in the page)', groundOk(g), JSON.stringify(g));
   await snap('l1-page-dark');
+  // ---- TAME: no trace louder than the rest; the strongest ground pixel is fainter than the faintest real link -------------------------------------------------
+  const layerSrc = fs.readFileSync(new URL('../../src/flux3/flux3-layer.ts', import.meta.url), 'utf8');
+  const darkTone = layerSrc.slice(layerSrc.indexOf('dark: {'), layerSrc.indexOf('light: {'));
+  const gm = /ground: '#([0-9a-fA-F]{6})'/.exec(darkTone), lm = /link: 'rgba\((\d+),\s*(\d+),\s*(\d+),\s*([0-9.]+)\)'/.exec(darkTone);
+  const hex = gm ? [0, 2, 4].map((i) => parseInt(gm[1].slice(i, i + 2), 16)) : null;
+  const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  const lum = (c) => 0.2126 * lin(c[0]) + 0.7152 * lin(c[1]) + 0.0722 * lin(c[2]);
+  const cr2 = (a, b) => (Math.max(lum(a), lum(b)) + 0.05) / (Math.min(lum(a), lum(b)) + 0.05);
+  const linkC = hex && lm ? cr2([+lm[1], +lm[2], +lm[3]].map((v, i) => v * +lm[4] + hex[i] * (1 - +lm[4])), hex) : null;
+  const url0 = await ev('window.__l1.picture()');
+  const tame = url0 && hex ? await ev(`window.__l1.maxContrast(${JSON.stringify(url0)}, ${JSON.stringify(hex)})`) : null;
+  // the old drawing (a coarse trace at full strength and 2.5 px, its end pad over it) as a picture, for the reader's red proof
+  const oldUrl = await ev(`(() => { const c = document.createElement('canvas'); c.width = 400; c.height = 120; const x = c.getContext('2d'); x.strokeStyle = 'rgba(42,106,118,0.550)'; x.lineWidth = 2.5; x.beginPath(); x.moveTo(20, 60); x.lineTo(380, 60); x.lineTo(380, 100); x.stroke(); x.fillStyle = 'rgba(87,208,245,0.350)'; x.beginPath(); x.rect(378, 98, 4, 4); x.fill(); return c.toDataURL('image/png'); })()`);
+  const oldC = oldUrl && hex ? await ev(`window.__l1.maxContrast(${JSON.stringify(oldUrl)}, ${JSON.stringify(hex)})`) : null;
+  ok(`TAME the strongest pixel of the ground (${tame && tame.max.toFixed(2)}:1) is fainter than the faintest real link (${linkC && linkC.toFixed(2)}:1), and the reader goes RED on the old full-strength drawing (${oldC && oldC.max.toFixed(2)}:1)`, !!tame && linkC !== null && tame.max < linkC && !!oldC && oldC.max >= linkC, JSON.stringify({ tame, linkC, oldC, hex }));
   const rectOn = await ev('window.__l1.rects()');
   await ev("document.querySelector('[data-flux3-room-ground]').style.display = 'none'"); await sleep(250);
   const rectOff = await ev('window.__l1.rects()');
