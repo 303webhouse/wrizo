@@ -86,4 +86,9 @@ SCREENS['diag-pink'] = diag('diag-pink', "document.querySelectorAll('.forward-on
 SCREENS['diag-nocompile'] = diag('diag-nocompile', "document.querySelectorAll('.flux3-compile').forEach((e) => { e.style.display = 'none'; })");
 SCREENS['diag-nofade'] = diag('diag-nofade', "document.querySelectorAll('.mode-pagecol, .mode-page, .mode-scroll').forEach((e) => { e.style.setProperty('mask-image','none','important'); e.style.setProperty('-webkit-mask-image','none','important'); e.style.setProperty('opacity','1','important'); }); document.querySelectorAll('.forward-only-editor *').forEach((e) => e.style.setProperty('opacity','1','important'))");
 SCREENS['diag-resize'] = diag('diag-resize', "window.dispatchEvent(new Event('resize'))");
+SCREENS['diag-vars'] = async (app) => {
+  await seed(app, 'An older line she wrote before this session.');
+  const v = async () => app.evalJs("(() => { const p = document.querySelector('.mode-page'); const c = getComputedStyle(p); const col = document.querySelector('.mode-pagecol'); const st = document.querySelector('.desk-frame-stage'); const g = (e, n) => getComputedStyle(e).getPropertyValue(n).trim(); return { h: g(p, '--wz-page-h'), hl: g(p, '--wz-page-hl'), k: g(p, '--wz-k'), z: g(p, '--wz-zoom'), w: g(p, '--wz-page-w'), height: c.height, inline: p.getAttribute('style'), stage: st && st.className, stageH: st && Math.round(st.getBoundingClientRect().height), colH: Math.round(col.getBoundingClientRect().height), zoom: col.getAttribute('data-zoom'), iw: innerWidth, ih: innerHeight }; })()");
+  console.log(`FLUX3-S4C-FRAME diag-vars-jacked ${JSON.stringify(await v())}`);
+};
 export default SCREENS;
