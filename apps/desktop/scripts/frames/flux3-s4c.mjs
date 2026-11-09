@@ -27,7 +27,7 @@ const seed = async (app, text) => {
   return id;
 };
 const type = async (app, text, gap = 40) => { for (const ch of text) { await app.typeKeys(ch); await sleep(gap); } };
-const stood = (app) => app.evalJs("({ flag: document.documentElement.hasAttribute('data-flux3'), theme: document.documentElement.getAttribute('data-theme'), page: document.documentElement.getAttribute('data-page'), jacked: document.documentElement.hasAttribute('data-flux3-jacked'), corridor: !!document.querySelector('[data-flux3-corridor]'), rows: document.querySelectorAll('.flux3-compile-word').length, pop: !!document.querySelector('[data-flux3-pop]') })");
+const stood = (app) => app.evalJs("({ flag: document.documentElement.hasAttribute('data-flux3'), theme: document.documentElement.getAttribute('data-theme'), page: document.documentElement.getAttribute('data-page'), jacked: document.documentElement.hasAttribute('data-flux3-jacked'), corridor: !!document.querySelector('[data-flux3-corridor]'), rows: document.querySelectorAll('.flux3-compile-word').length, pop: !!document.querySelector('[data-flux3-pop]'), ink: (() => { const ed = document.querySelector('.forward-only-editor'); if (!ed) return null; const c = getComputedStyle(ed); const r = ed.getBoundingClientRect(); return { color: c.color, ff: c.fontFamily.slice(0, 40), op: c.opacity, vis: c.visibility, mask: (c.webkitMaskImage || c.maskImage || '').slice(0, 30), rect: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)], text: ed.textContent.slice(0, 30), fonts: [...document.fonts].filter((f) => /Crimson/.test(f.family)).map((f) => f.family + ':' + f.status).slice(0, 4) }; })() })");
 
 export default {
   'corridor-rest': async (app) => {
