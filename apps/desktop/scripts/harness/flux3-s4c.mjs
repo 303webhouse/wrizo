@@ -153,7 +153,8 @@ try { await withHarness(async (app) => {
   await click(rc.x, rc.y);
   await sleep(400);
   const cb = await ev('window.__f4.caretBefore()');
-  ok('CARET a press mid-page in Typewriter puts the caret at the END of her text', !!cb && cb.before >= cb.total - 1, JSON.stringify(cb));
+  const hit = await ev(`(() => { const e = document.elementFromPoint(${rc.x}, ${rc.y}); return e ? String(e.className || e.tagName).slice(0, 60) : null; })()`);
+  ok('CARET a press mid-page in Typewriter puts the caret at the END of her text', !!cb && cb.before >= cb.total - 1, JSON.stringify({ cb, hit, rc }));
 
   // ---- GLOW: one token, the lighter blue ----------------------------------------------------------------------------------------------------------
   const readGlow = async () => { const glow = await ev("getComputedStyle(document.documentElement).getPropertyValue('--f3-goal-glow').trim()");
@@ -166,7 +167,7 @@ try { await withHarness(async (app) => {
   const readDark = async () => (await ev("document.documentElement.getAttribute('data-page')")) === 'dark';
   const mutants = [
     ['tone light', "document.documentElement.setAttribute('data-page', 'light')", "document.documentElement.setAttribute('data-page', 'dark')", async () => !(await readDark())],
-    ['chrome visible', "(() => { const s = document.createElement('style'); s.id = 'mut-chrome'; s.textContent = '.desk-rail,.desk-frame-strip,.desk-frame-corkboard,.flux3-glitchbar{opacity:1 !important}'; document.head.appendChild(s); })()", "document.getElementById('mut-chrome')?.remove()", async () => !(await readChrome()).pass],
+    ['chrome visible', "document.querySelectorAll('.desk-rail,.desk-frame-strip,.desk-frame-corkboard,.flux3-glitchbar').forEach((e) => { e.style.setProperty('opacity', '1', 'important'); e.style.setProperty('pointer-events', 'auto', 'important'); })", "document.querySelectorAll('.desk-rail,.desk-frame-strip,.desk-frame-corkboard,.flux3-glitchbar').forEach((e) => { e.style.removeProperty('opacity'); e.style.removeProperty('pointer-events'); })", async () => !(await readChrome()).pass],
     ['glow 20%', "document.documentElement.style.setProperty('--f3-goal-glow', 'radial-gradient(ellipse at center, rgb(87 208 245 / .2) 0%, rgb(87 208 245 / .04) 55%, transparent 100%)')", "document.documentElement.style.removeProperty('--f3-goal-glow')", async () => !(await readGlow()).pass],
     ['a frame removed', "(() => { const f = document.querySelector('.flux3-cor-frame'); window.__mutFrame = f; f.style.display = 'none'; f.className = 'x'; })()", "(() => { const f = window.__mutFrame; if (f) f.className = 'flux3-cor-frame'; if (f) f.style.display = ''; })()", async () => !(await readCor()).pass],
   ];
@@ -180,14 +181,18 @@ try { await withHarness(async (app) => {
   // ---- POP: a milestone ---------------------------------------------------------------------------------------------------------------------------
   const gid = await fresh(Array.from({ length: 24 }, (_, i) => `w${i}`).join(' '));
   await open({ id: gid, tone: 'dark' });
+  // the corridor's brass tint lasts ~0.3 s and may come while she is still typing: an observer records it from before the first key
+  await ev("(() => { const c = document.querySelector('[data-flux3-corridor]'); window.__popSeen = []; if (c) new MutationObserver(() => window.__popSeen.push([Math.round(performance.now()), c.hasAttribute('data-pop')])).observe(c, { attributes: true, attributeFilter: ['data-pop'] }); return !!c; })()");
   await type(' one two three four five six seven', 30);
   let pop = null, brass = false;
   for (let i = 0; i < 30 && !pop; i += 1) { await sleep(60); pop = await ev(`(() => { const p = document.querySelector('[data-flux3-pop]'); if (!p) return null; return { letters: [...p.children].map((s) => s.textContent).join(''), news: [...p.children].filter((s) => s.dataset.new).length, newColour: (p.querySelector('[data-new]') ? getComputedStyle(p.querySelector('[data-new]')).color : null), text: p.textContent.replace(/[A-Z]/g, '').trim() }; })()`); }
-  for (let i = 0; pop && !brass && i < 50; i += 1) { brass = await ev("!!document.querySelector('[data-flux3-corridor][data-pop]')"); if (!brass) await sleep(30); }
+  const seen = await ev('window.__popSeen.slice()');
+  const onAt = seen.find((s) => s[1]), offAt = seen.find((s) => !s[1] && onAt && s[0] > onAt[0]);
+  brass = !!onAt && !!offAt && offAt[0] - onAt[0] >= 200 && offAt[0] - onAt[0] <= 500;
   await snap('c-pop');
   await sleep(2600);
   const gone = await ev("!document.querySelector('[data-flux3-pop]')");
-  ok('POP a milestone pops one brass letter of CHECKPOINT (the newest), no number, the corridor goes brass for ~0.3 s, and the word fades', !!pop && pop.letters === 'CHECKPOINT' && pop.news === 1 && /255, 152, 0/.test(pop.newColour || '') && pop.text === '' && brass && gone, JSON.stringify({ pop, brass, gone }));
+  ok('POP a milestone pops one brass letter of CHECKPOINT (the newest), no number, the corridor goes brass for ~0.3 s, and the word fades', !!pop && pop.letters === 'CHECKPOINT' && pop.news === 1 && /255, 152, 0/.test(pop.newColour || '') && pop.text === '' && brass && gone, JSON.stringify({ pop, brass, seen, gone }));
 
   // ---- ESC: the chrome returns --------------------------------------------------------------------------------------------------------------------
   await app.typeKeys('x');
