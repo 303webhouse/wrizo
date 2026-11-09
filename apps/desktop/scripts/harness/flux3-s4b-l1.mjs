@@ -3,8 +3,8 @@
 //   GROUND   one box (data-flux3-room-ground) sits first in the framed host, behind its content (z-index -1 in the host's own stacking context), inert
 //            (no pointer, aria-hidden), and its canvas really has circuitry on it (non-transparent pixels), on a Page room and on a Schema (board) room.
 //   RECT     the ground adds nothing to any layout: the page's rect, the host's rect and the editor's are the same with the box shown and with it taken away.
-//   ONCE     the ground is drawn once per size or tone, never per key and never per frame: the canvas is cleared the same number of times before and after
-//            forty keys and a pause; a resize redraws it; a tone change redraws it.
+//   ONCE     the ground is drawn once per size, never per key and never per frame: the canvas is cleared the same number of times before and after
+//            forty keys and a pause; a resize redraws it. The room is dark in both Page tones, so a tone change leaves it as it is (S5's Room setting changes that).
 //   DIAL     Ambiance 0 draws nothing; the default is full strength; 25 is half (opacity = dial / 50).
 //   CURRENT  at most three drifting points, every animation on transform or opacity alone; reduced motion: none; a key pauses them and they run again after
 //            the quiet (the damping rule).
@@ -87,7 +87,7 @@ try { await withHarness(async (app) => {
   const c3 = await ev('window.__l1.clears');
   await ev("document.documentElement.setAttribute('data-page', 'dark')"); await sleep(400);
   await app.emulateDpr(1, 1920, 1080); await sleep(600);
-  ok(`ONCE the ground is drawn once per size or tone: 0 redraws over 44 keys and a pause (${c1 - c0}), a resize redraws it (${c2 - c1} >= 1), a tone change redraws it (${c3 - c2} >= 1)`, c1 - c0 === 0 && c2 - c1 >= 1 && c3 - c2 >= 1, JSON.stringify({ c0, c1, c2, c3 }));
+  ok(`ONCE the ground is drawn once per size: 0 redraws over 44 keys and a pause (${c1 - c0}), a resize redraws it (${c2 - c1} >= 1), a Page-tone change leaves it (${c3 - c2} == 0: the room is dark in both)`, c1 - c0 === 0 && c2 - c1 >= 1 && c3 - c2 === 0, JSON.stringify({ c0, c1, c2, c3 }));
 
   // ---- CURRENT + DAMPING ---------------------------------------------------------------------------------------------------------------------------
   await sleep(1200);

@@ -1,7 +1,8 @@
 // FLUX3 S4b L1 - THE CIRCUIT GROUND ACROSS THE ROOM (flux-mockup-vs-build.md §4 L1; Nick, Nov 9 "the loved look"). The Schema's circuitry (grid, traces, the
 // pads at their ends) used to exist only inside the board's frame; on the doc the room was a flat navy. Here the SAME ground is drawn behind the whole room:
 // the host of a framed page or board (.desk-frame-host), behind every other thing in it.
-//   - ONE canvas, drawn ONCE per size or tone (a ResizeObserver on the host, a MutationObserver on the root's data-page), never per frame, never per key.
+//   - ONE canvas, drawn ONCE per size (a ResizeObserver on the host), never per frame, never per key. The room is dark in both Page tones (the Page tone is the
+//     paper's), so one tone of ground; S5's Room setting will bring the white room and its own tone.
 //     It uses the Schema layer's own helpers at its resting scale (s = 1: the 40 px grid and the 160 px circuit cells), so the room and the Schema match.
 //   - A BOX under everything: position:absolute inside the host, z-index -1 in a stacking context the host makes for it (isolation), pointer-events none,
 //     aria-hidden, inline structural styles (flux-v3.css is a dynamic import and may arrive after this mounts). It adds nothing to any layout: the page's
@@ -21,7 +22,8 @@ const CALM_MS = 1500;        // quiet after her last key before the current drif
 const POINT_PX_PER_S = 60;   // a slow drift
 const MIN_TRACE_PX = 240;
 
-const toneNow = (): 'dark' | 'light' => (document.documentElement.getAttribute('data-page') === 'light' ? 'light' : 'dark');
+// the ROOM is dark in both Page tones today (the Page tone is the paper's; the white room is S5's Room setting), so the ground is the dark tone's, always
+const toneNow = (): 'dark' | 'light' => 'dark';
 
 // the ground at scale 1 (the Schema's resting view), the same grid and circuit levels drawGround draws; returns the traces for the current's path
 function paint(cv: HTMLCanvasElement, W: number, H: number, tone: 'dark' | 'light'): Pt[][] {
@@ -147,8 +149,6 @@ export function FluxRoomGround() {
     schedule();
     const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(schedule) : null;
     ro?.observe(host);
-    const mo = new MutationObserver(schedule);
-    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-page'] });
 
     // DAMPING: a key pauses the current (once; later keys only push the wake-up back), and it drifts on again CALM_MS after the last one
     const wake = () => { timer = 0; calm = true; points.forEach((a) => a.play()); };
@@ -164,7 +164,6 @@ export function FluxRoomGround() {
       if (timer) window.clearTimeout(timer);
       if (raf) cancelAnimationFrame(raf);
       ro?.disconnect();
-      mo.disconnect();
       clearPoints();
       box.remove();
       host.style.position = prev.position;
