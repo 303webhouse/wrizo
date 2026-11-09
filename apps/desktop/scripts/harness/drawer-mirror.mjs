@@ -209,12 +209,29 @@ await withHarness(async (app) => {
     if (await openPage(app, id)) {
       const z0 = await app.evalJs(GEO);
       const zl = z0 && z0.page && z0.stage ? z0.page.left - z0.stage.left : null; const zr = z0 && z0.page && z0.stage ? z0.stage.right - z0.page.right : null;
-      await setOpen(app, 'tools', true); const zs = await app.evalJs(GEO);
+      // PARKED 2026-11-09 (SUPERSEDED - Nick, Nov 8, via Fable: "in ANY Typewriter mode, in every theme, the TOOLS and TUTOR opener handles are
+      // hidden for the whole session; leaving Typewriter brings them back" (13-desk-frame.css §12b, ARBOR 65e0494c). In the zoom both tabs are hidden, so
+      // the trusted presses land on nothing: the Tools opens only by Ctrl+/ and the Tutor has no door at all - "opening the Tutor after the Tools" is no
+      // longer a writer's act there, and the Tutor's tab is not seen to open. Kept verbatim; they no longer run:
+      //   await setOpen(app, 'tools', true); const zs = await app.evalJs(GEO);
+      //   await press(app, 'tutor'); const zt = await app.evalJs(GEO);
+      //   ok(`${th.name} 1366x768 zoomed 3: there is NO room for both (${Math.round(zl)} / ${Math.round(zr)}px beside the 1.6x page, < ${DRAWER_MIN}), so opening the Tutor after the Tools CLOSES the Tools`,
+      //     !!z0 && z0.zoom && zl != null && (zl < DRAWER_MIN || zr < DRAWER_MIN) && !!zs && zs.sOpen && !!zt && zt.tOpen && !zt.sOpen, J({ zl, zr, toolsOpened: zs && zs.sOpen, after: zt && { sOpen: zt.sOpen, tOpen: zt.tOpen } }));
+      //   ok(`${th.name} 1366x768 zoomed 1 (Tutor): in the zoom too the tab's rect is unchanged by opening its drawer (it rides the painted page's edge)`, !!zs && !!zt && pred1(zs, zt, 'tutor'),
+      //     J({ shut: zs && zs.tTab, open: zt && zt.tTab }));
+      //   await setOpen(app, 'tutor', false);
+      // SUCCESSORS: in the zoom both tabs are hidden; the Tools still opens by its shortcut (Ctrl+/); a trusted press where the Tutor's tab sits opens
+      // no Tutor; and the hidden Tutor tab keeps its box (nothing moves). Then the Tools closes by the same shortcut.
+      const zVis = () => app.evalJs("(() => { const v = (s) => { const g = document.querySelector(s); return g ? getComputedStyle(g).visibility : null; }; return { s: v('.wz-sliver-grip'), t: v('.wz-tutor-grip') }; })()");
+      const zCtrlSlash = async () => { for (const type of ['keyDown', 'keyUp']) await app.cdp('Input.dispatchKeyEvent', { type, key: '/', code: 'Slash', windowsVirtualKeyCode: 191, modifiers: 2 }); await sleep(250); await waitSoft(app, settled('tools'), { label: 'tools settled', timeout: 2500 }); await sleep(250); };
+      const zv = await zVis();
+      await zCtrlSlash(); const zs = await app.evalJs(GEO);
       await press(app, 'tutor'); const zt = await app.evalJs(GEO);
-      ok(`${th.name} 1366x768 zoomed 3: there is NO room for both (${Math.round(zl)} / ${Math.round(zr)}px beside the 1.6x page, < ${DRAWER_MIN}), so opening the Tutor after the Tools CLOSES the Tools`,
-        !!z0 && z0.zoom && zl != null && (zl < DRAWER_MIN || zr < DRAWER_MIN) && !!zs && zs.sOpen && !!zt && zt.tOpen && !zt.sOpen, J({ zl, zr, toolsOpened: zs && zs.sOpen, after: zt && { sOpen: zt.sOpen, tOpen: zt.tOpen } }));
-      ok(`${th.name} 1366x768 zoomed 1 (Tutor): in the zoom too the tab's rect is unchanged by opening its drawer (it rides the painted page's edge)`, !!zs && !!zt && pred1(zs, zt, 'tutor'),
-        J({ shut: zs && zs.tTab, open: zt && zt.tTab }));
+      ok(`${th.name} 1366x768 zoomed 3b: in the zoom (${Math.round(zl)} / ${Math.round(zr)}px beside the 1.6x page) both tabs are HIDDEN, the Tools opens by Ctrl+/, and a press where the Tutor's tab sits opens NO Tutor`,
+        !!z0 && z0.zoom && !!zv && zv.s === 'hidden' && zv.t === 'hidden' && !!zs && zs.sOpen && !!zt && !zt.tOpen, J({ zl, zr, vis: zv, toolsOpened: zs && zs.sOpen, after: zt && { sOpen: zt.sOpen, tOpen: zt.tOpen } }));
+      ok(`${th.name} 1366x768 zoomed 1b (Tutor): in the zoom the hidden Tutor tab keeps its box - its rect is unchanged by the press`, !!zs && !!zt && sameRect(zs.tTab, zt.tTab),
+        J({ before: zs && zs.tTab, after: zt && zt.tTab }));
+      if (await app.evalJs(OPEN.tools)) await zCtrlSlash();
       await setOpen(app, 'tutor', false);
     } else ok(`${th.name} 1366x768 zoomed fixture: the page opened`, false, '');
     await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${id}', 'off')`);

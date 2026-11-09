@@ -45,9 +45,16 @@ const attr = (app, sel, a) => app.evalJs(`document.querySelector(${J(sel)})?.get
 const click = async (app, x, y) => { await app.mouseMove(x, y); await app.mouseDown(x, y); await app.mouseUp(x, y); };
 const TOGGLE = '[data-mode-toggle="typewriter"]';
 const zoomedNow = (app) => app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') === 'true'");
+const ctrlSlash = async (app) => { for (const type of ['keyDown', 'keyUp']) await app.cdp('Input.dispatchKeyEvent', { type, key: '/', code: 'Slash', windowsVirtualKeyCode: 191, modifiers: 2 }); };
+const gripShown = (app) => app.evalJs("(() => { const g = document.querySelector('.wz-sliver-grip'); return !!g && getComputedStyle(g).visibility !== 'hidden'; })()");
 const setView = async (app, zoom) => {
   if ((await zoomedNow(app)) === zoom) return zoom;
-  if ((await attr(app, '.wz-sliver', 'data-open')) !== 'true') { const g = await rectOf(app, '.wz-sliver-grip'); if (g) { await click(app, g.x, g.y); await sleep(600); } }
+  // PARKED 2026-11-09 (SUPERSEDED - Nick, Nov 8, via Fable: "in ANY Typewriter mode, in every theme, the TOOLS and TUTOR opener handles are hidden for
+  // the whole session; leaving Typewriter brings them back" (13-desk-frame.css §12b, ARBOR 65e0494c). Under the zoom this trusted click on the grip
+  // lands on nothing, so the drawer never opened and the view could not be left. Kept verbatim; it no longer runs:
+  //   if ((await attr(app, '.wz-sliver', 'data-open')) !== 'true') { const g = await rectOf(app, '.wz-sliver-grip'); if (g) { await click(app, g.x, g.y); await sleep(600); } }
+  // SUCCESSOR: the writer's own way in each state - the grip while it shows, Ctrl+/ (the Sliver's shortcut) while Typewriter hides it.
+  if ((await attr(app, '.wz-sliver', 'data-open')) !== 'true') { if (await gripShown(app)) { const g = await rectOf(app, '.wz-sliver-grip'); if (g) { await click(app, g.x, g.y); await sleep(600); } } else { await ctrlSlash(app); await sleep(600); } }
   const probe = () => app.evalJs(`(() => { const b = document.querySelector(${J(TOGGLE)}); if (!b) return null; b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     const r = b.getBoundingClientRect(); const x = r.left + r.width / 2; const y = r.top + r.height / 2; const hit = document.elementFromPoint(x, y);
     return { x: Math.round(x), y: Math.round(y), hits: !!hit && (hit === b || b.contains(hit)) }; })()`);

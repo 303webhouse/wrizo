@@ -1106,6 +1106,13 @@ export default {
   // (a graphic), the rest of the room dims as before (.6 at rest, .52 with a drawer open, labels >= 4.5:1 dimmed).
   'arbor-dim': async (app) => {
     await page(app, 'arbor-words', WORDS);
+    // PARKED 2026-11-09 (SUPERSEDED premise - Nick, Nov 8, via Fable: "in ANY Typewriter mode, in every theme, the TOOLS and TUTOR opener handles are
+    // hidden for the whole session; leaving Typewriter brings them back" (13-desk-frame.css §12b, ARBOR 65e0494c)). The proof ran on this page as it
+    // opens - a loose page opens in Free Write, in Typewriter - where both openers are now hidden by rule, so gripsLit saw none. The proof went straight
+    // on from the line above. SUCCESSOR: the same proof, unchanged, on the same page in Draft (Typewriter off; a page with words), where the openers stand.
+    await clickSel(app, '.desk-mode-tab[data-mode-key="draft"]');
+    if (!(await waitSoft(app, "!document.querySelector('.mode-pagecol[data-zoom=\"true\"]')", { label: 'Draft, Typewriter off', timeout: 6000 }))) throw new Error('DIM PROOF FAILED premise: the page did not leave Typewriter for Draft');
+    await sleep(600);
     await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'arbor2-proof-still'; s.textContent = '*, *::before, *::after { transition: none !important; }'; document.head.appendChild(s); if (document.activeElement) document.activeElement.blur(); })()");
     await sleep(300);
     const MEASURE = `(() => {

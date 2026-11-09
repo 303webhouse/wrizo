@@ -227,8 +227,19 @@ const TOGGLE = '[data-mode-toggle="typewriter"]';
 // rest), the button is brought into view inside the panel, and the click point must HIT the button (elementFromPoint) - or the press is refused and the
 // premise check that reads it fails with what was hit.
 const settledSliver = "(() => { const l = document.querySelector('.wz-sliver-panel > .wz-drawer-slide'); if (!l) return true; const cs = getComputedStyle(l); return cs.transform === 'none' && cs.pointerEvents !== 'none'; })()";
+// a trusted Ctrl+/ - the Sliver's own shortcut (Sliver.tsx SLIVER_SHORTCUT_LABEL)
+const ctrlSlash = async (app) => { for (const type of ['keyDown', 'keyUp']) await app.cdp('Input.dispatchKeyEvent', { type, key: '/', code: 'Slash', windowsVirtualKeyCode: 191, modifiers: 2 }); };
+const gripShown = (app) => app.evalJs("(() => { const g = document.querySelector('.wz-sliver-grip'); return !!g && getComputedStyle(g).visibility !== 'hidden'; })()");
 const pressTypewriter = async (app) => {
-  if ((await attr(app, '.wz-sliver', 'data-open')) !== 'true') { const g = await rectOf(app, '.wz-sliver-grip'); if (g) { await click(app, g.x, g.y); await sleep(300); } }
+  // PARKED 2026-11-09 (SUPERSEDED - Nick, Nov 8, via Fable: "in ANY Typewriter mode, in every theme, the TOOLS and TUTOR opener handles are hidden for
+  // the whole session; leaving Typewriter brings them back" (13-desk-frame.css §12b, ARBOR 65e0494c). Under the zoom this driver's trusted click on the
+  // grip lands on nothing, so the OFF press never opened the drawer. Kept verbatim; it no longer runs:
+  //   if ((await attr(app, '.wz-sliver', 'data-open')) !== 'true') { const g = await rectOf(app, '.wz-sliver-grip'); if (g) { await click(app, g.x, g.y); await sleep(300); } }
+  // SUCCESSOR: the writer's own way in each state - the grip while it shows, Ctrl+/ while Typewriter hides it. The press and its HIT stay as they were.
+  if ((await attr(app, '.wz-sliver', 'data-open')) !== 'true') {
+    if (await gripShown(app)) { const g = await rectOf(app, '.wz-sliver-grip'); if (g) { await click(app, g.x, g.y); await sleep(300); } }
+    else { await ctrlSlash(app); await sleep(300); }
+  }
   await waitSoft(app, `document.querySelector('.wz-sliver')?.getAttribute('data-open') === 'true' && ${settledSliver}`, { label: 'the Sliver settled open', timeout: 3000 });
   // (lane run on 64e5b7f9: at 2560/3840 the press hit the Sliver's own container - right after typing the chrome is DISSOLVED, pointer-events off,
   // until the pointer moves; a writer's hand moving to the button restores it. So the pointer goes there, and the hit is waited for, up to 2.5s.)

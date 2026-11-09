@@ -145,6 +145,25 @@ await withHarness(async (app) => {
   for (const s of writingSurfaces) {
     for (const [w, h] of writingLegs) {
       await s.setup(app, w, h);
+      // PARKED 2026-11-09 (SUPERSEDED - Nick, Nov 8, via Fable: "in ANY Typewriter mode, in every theme, the TOOLS and TUTOR opener handles are hidden
+      // for the whole session; leaving Typewriter brings them back" (13-desk-frame.css §12b, ARBOR 65e0494c)). The Page legs ran straight on from the
+      // setup into the zoom (a fresh empty Draft page opens in Typewriter under Arbor) and measured the Tutor OPEN over the zoomed page with its grip
+      // "reachable"; in Typewriter that grip is hidden and the Tutor has no door, so that is no longer a writer's state. The legs went on, verbatim:
+      //   await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(200);
+      //   await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(300);
+      // SUCCESSOR: a zoomed Page leg first records the new rule (the Tutor's grip hidden and unreachable), then leaves Typewriter the writer's way
+      // (Ctrl+/ opens the Tools, its own switch, Ctrl+/ shuts it) and measures the same three-regime law in the normal view, where the Tutor opens.
+      if (s.name === 'Page' && await app.evalJs("!!document.querySelector('.mode-pagecol[data-zoom=\"true\"]')")) {
+        const ctrlSlash = async () => { for (const type of ['keyDown', 'keyUp']) await app.cdp('Input.dispatchKeyEvent', { type, key: '/', code: 'Slash', windowsVirtualKeyCode: 191, modifiers: 2 }); await sleep(450); };
+        const gz = await gripDiag(app); const gzVis = await app.evalJs("(() => { const g = document.querySelector('.wz-tutor-grip'); return g ? getComputedStyle(g).visibility : null; })()");
+        ok(`S2 TYPEWRITER (Page @ ${w}x${h}): in Typewriter the Tutor's grip is HIDDEN and unreachable (Nick, Nov 8)`, gzVis === 'hidden' && gz.reachable === false, JSON.stringify({ vis: gzVis, gz }));
+        await ctrlSlash();
+        const offHit = await app.evalJs("(() => { const b = document.querySelector('.wz-sliver [data-mode-toggle=\"typewriter\"]'); if (b) b.click(); return !!b; })()"); await sleep(900);
+        await ctrlSlash();
+        const zoomAfter = await app.evalJs("!!document.querySelector('.mode-pagecol[data-zoom=\"true\"]')");
+        const toolsAfter = await app.evalJs("document.querySelector('.wz-sliver')?.getAttribute('data-open') ?? null");
+        ok(`S2 premise (Page @ ${w}x${h}): Typewriter left by the Tools drawer's own switch (reached by Ctrl+/) - the normal view, the drawer shut`, offHit && !zoomAfter && toolsAfter === 'false', JSON.stringify({ offHit, zoomAfter, toolsAfter }));
+      }
       await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(200);
       await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(300);
       // ---- PARKED - SUPERSEDED by page-size (Fable's 1366 rule, Oct 23: a drawer NARROWS to fit beside the page down to DRAWER_MIN, 200px, and only

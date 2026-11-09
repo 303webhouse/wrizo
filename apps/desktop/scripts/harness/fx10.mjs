@@ -73,6 +73,12 @@ const fx10Mirror = [];   // the drawer mirror (Oct 24): the page surface's open-
 // documented narrow degradation) and the unmoved tab rides ABOVE it - the topmost element at its centre (turn on 8d3673bd: panel 693 / 807, tab 970 / 1110)
 const fx10MirrorOk = (o) => !!o.gripClosed && !!o.gripOpen && Math.abs(o.gripClosed.left - o.gripOpen.left) < 0.5
   && (Math.abs(o.panelLeft - o.gripOpen.right) < 1.5 || (o.margin != null && o.margin < 200 && o.gripOnTop === true));
+// SUCCESSOR (2026-11-09, Nick, Nov 8, via Fable: "in ANY Typewriter mode, in every theme, the TOOLS and TUTOR opener handles are hidden for the whole
+// session; leaving Typewriter brings them back" - 13-desk-frame.css §12b, ARBOR 65e0494c): fx10MirrorOk above stays verbatim. Under DRAWER_MIN the
+// narrow degradation is the zoom, where the tab is now HIDDEN (visibility) and so can never be the topmost element at its centre; there the tab must be
+// hidden instead. Outside Typewriter it must still ride on top. Everything else is unchanged.
+const fx10MirrorOk2 = (o) => !!o.gripClosed && !!o.gripOpen && Math.abs(o.gripClosed.left - o.gripOpen.left) < 0.5
+  && (Math.abs(o.panelLeft - o.gripOpen.right) < 1.5 || (o.margin != null && o.margin < 200 && (o.zoom === true ? o.gripHidden === true : o.gripOnTop === true)));
 const fx10ParkReads = [];   // the default leg's own S4 reads (one per width), for the parked records at the foot (page-size r3)
 const fx10Ps = [];   // page-size's park audit (Oct 24): the page surface's grip reads, for the parked records
 // page-size: the Tutor grip against the PAINTED page (the column is stage-wide in the zoom), with the editor's edge and the margin the CSS reads
@@ -215,10 +221,17 @@ await withHarness(async (app) => {
           JSON.stringify({ paperRight: paperOpen.right, gripLeft: gripOpen.left, gripRight: gripOpen.right, panelLeft: panelOpen.left }));
       } else {
         const ov = await app.evalJs("(() => { const p = document.querySelector('.desk-frame-stage--prose .mode-page'); const st = document.querySelector('.desk-frame-stage'); const g = document.querySelector('.wz-tutor-grip'); if (!p || !st || !g) return {}; const r = g.getBoundingClientRect(); const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return { margin: Math.round(st.getBoundingClientRect().right - p.getBoundingClientRect().right), gripOnTop: !!hit && g.contains(hit) }; })()");
-        const o = { width, gripClosed, gripOpen, panelLeft: panelOpen.left, margin: ov.margin ?? null, gripOnTop: ov.gripOnTop ?? null };
+        // (typewriter-handles, 2026-11-09: two more reads for the successor below - is the page in Typewriter, and is the tab hidden by visibility)
+        const ovTw = await app.evalJs("(() => { const g = document.querySelector('.wz-tutor-grip'); return { zoom: !!document.querySelector('.mode-pagecol[data-zoom=\"true\"]'), gripHidden: !!g && getComputedStyle(g).visibility === 'hidden' }; })()");
+        const o = { width, gripClosed, gripOpen, panelLeft: panelOpen.left, margin: ov.margin ?? null, gripOnTop: ov.gripOnTop ?? null, zoom: ovTw.zoom, gripHidden: ovTw.gripHidden };
         fx10Mirror.push(o);
-        ok(`S1 geometry @${width}px/page: grip-clears-panel (open) [drawer-mirror successor] — the grip never moves once the panel opens, and the panel starts AT it (never inside its tab row) - or, under DRAWER_MIN beside the page, overlays from the stage's edge with the tab riding above it`,
-          fx10MirrorOk(o), JSON.stringify(o));
+        // PARKED 2026-11-09 (SUPERSEDED - Nick, Nov 8, via Fable: in any Typewriter mode the Tools and Tutor opener handles are hidden for the whole
+        // session (13-desk-frame.css §12b, ARBOR 65e0494c); the fresh page here is in Typewriter, so under DRAWER_MIN (1100, 1280) its tab can no longer
+        // "ride above" the panel). Kept verbatim; it no longer runs:
+        //   ok(`S1 geometry @${width}px/page: grip-clears-panel (open) [drawer-mirror successor] — the grip never moves once the panel opens, and the panel starts AT it (never inside its tab row) - or, under DRAWER_MIN beside the page, overlays from the stage's edge with the tab riding above it`,
+        //     fx10MirrorOk(o), JSON.stringify(o));
+        ok(`S1 geometry @${width}px/page: grip-clears-panel (open) [typewriter-handles successor] — the grip never moves once the panel opens, and the panel starts AT it (never inside its tab row) - or, under DRAWER_MIN beside the page, overlays from the stage's edge with the tab riding above it outside Typewriter and HIDDEN in it`,
+          fx10MirrorOk2(o), JSON.stringify(o));
       }
       // ---- PARKED FOR THE BOARD SURFACE - SUPERSEDED there by POLISH #10 item 1 (Nick, Oct 25: the board narrows beside open drawers): kept VERBATIM;
       // it runs unchanged on the page; on the board its successor runs instead. Records in the parked section.
@@ -785,9 +798,14 @@ if (process.env.HARNESS_PARKED === '1') {
   // PAGE-SIZE'S PARK AUDIT (Oct 24) - THREE parks of fx10's own: S1's grip-flush (closed) on the PAGE surface at the three reference widths (the board's
   // still runs). Records re-verify the new truth from the default leg's own reads. (S4's scrollbar checks are TOOLS' - their fix builds on page-size.)
   // THE DRAWER MIRROR (Oct 24) - THREE more: S1's grip-clears-panel (open) on the PAGE surface at the three reference widths (the board's still runs).
+  // TYPEWRITER-HANDLES (2026-11-09) - THREE more: that [drawer-mirror successor] itself, on the PAGE surface at the three reference widths (the hidden
+  // tab can no longer ride above the panel in the zoom). The drawer-mirror records below now re-verify through its successor, fx10MirrorOk2 (the
+  // live truth); fx10MirrorOk stays verbatim.
   for (const o of fx10Mirror) {
-    parkedChecks.push({ name: `PARKED for the page surface (was "S1 geometry @${o.width}px/page: grip-clears-panel (open) [tutor-drawer-arrow successor] — the grip MOVES once the panel opens, landing 16px outside the panel's own near edge (never inside its tab row)") — the drawer mirror: the tab never moves, the panel starts at it; live successor: S1 geometry @${o.width}px/page: grip-clears-panel (open) [drawer-mirror successor]`,
-      pass: fx10MirrorOk(o), detail: JSON.stringify(o) });
+    parkedChecks.push({ name: `PARKED for the page surface (was "S1 geometry @${o.width}px/page: grip-clears-panel (open) [drawer-mirror successor]") — typewriter-handles (Nick, Nov 8): in Typewriter the tab is hidden, so under DRAWER_MIN it must be hidden, not on top; live successor: S1 geometry @${o.width}px/page: grip-clears-panel (open) [typewriter-handles successor]`,
+      pass: fx10MirrorOk2(o), detail: JSON.stringify(o) });
+    parkedChecks.push({ name: `PARKED for the page surface (was "S1 geometry @${o.width}px/page: grip-clears-panel (open) [tutor-drawer-arrow successor] — the grip MOVES once the panel opens, landing 16px outside the panel's own near edge (never inside its tab row)") — the drawer mirror: the tab never moves, the panel starts at it; live successor: S1 geometry @${o.width}px/page: grip-clears-panel (open) [typewriter-handles successor]`,
+      pass: fx10MirrorOk2(o), detail: JSON.stringify(o) });
   }
   // POLISH #10 items 1 + 16 (Oct 26) - NINE more, on the BOARD surface at the three reference widths: grip-clears-panel (open) and the paper rect's
   // two BYTE-IDENTICAL checks. Each record re-verifies the new truth (the board beside the drawer) from the default leg's own reads.

@@ -80,7 +80,15 @@ const openPage = async (app, { id, mode, w = 1280, h = 900, settings = null, tex
 const openDrawer = async (app) => {
   // A CLOSED drawer keeps its body mounted (aria-hidden, pointer-events none), so the control's presence is not "open":
   // read the panel's own state, and press the grip only when it is shut.
-  if ((await app.evalJs("(document.querySelector('.wz-sliver-panel') || {}).dataset && document.querySelector('.wz-sliver-panel').dataset.open")) !== 'true') await press(app, "document.querySelector('.wz-sliver-grip')", 'the tool drawer grip');
+  // PARKED 2026-11-09 (SUPERSEDED - Nick, Nov 8, via Fable: "in ANY Typewriter mode, in every theme, the TOOLS and TUTOR opener handles are hidden for
+  // the whole session; leaving Typewriter brings them back" (13-desk-frame.css §12b, ARBOR 65e0494c). Free Write opens in Typewriter, so the hit-tested
+  // press on its hidden grip is refused (a DRIVER fail) and the drawer never opens. Kept verbatim; it no longer runs:
+  //   if ((await app.evalJs("(document.querySelector('.wz-sliver-panel') || {}).dataset && document.querySelector('.wz-sliver-panel').dataset.open")) !== 'true') await press(app, "document.querySelector('.wz-sliver-grip')", 'the tool drawer grip');
+  // SUCCESSOR: the writer's own way in each state - the hit-tested grip while it shows, Ctrl+/ (the Sliver's shortcut) while Typewriter hides it.
+  if ((await app.evalJs("(document.querySelector('.wz-sliver-panel') || {}).dataset && document.querySelector('.wz-sliver-panel').dataset.open")) !== 'true') {
+    if (await app.evalJs("(() => { const g = document.querySelector('.wz-sliver-grip'); return !!g && getComputedStyle(g).visibility !== 'hidden'; })()")) await press(app, "document.querySelector('.wz-sliver-grip')", 'the tool drawer grip');
+    else for (const type of ['keyDown', 'keyUp']) await app.cdp('Input.dispatchKeyEvent', { type, key: '/', code: 'Slash', windowsVirtualKeyCode: 191, modifiers: 2 });
+  }
   await sleep(500);
 };
 

@@ -188,9 +188,17 @@ await withHarness(async (app) => {
       disjoint(gripClosed, textClosed), JSON.stringify({ gripClosed, textClosed }));
 
     const gripVisClosed = await app.evalJs(`(() => { const cs = getComputedStyle(document.querySelector('.wz-sliver-grip')); return { opacity: cs.opacity, display: cs.display, visibility: cs.visibility }; })()`);
-    ok(`S1 @ ${width}px: the grip persists VISIBLE while the sliver is closed (persistent chrome, never dissolves on its own)`,
-      gripVisClosed.opacity !== '0' && gripVisClosed.display !== 'none' && gripVisClosed.visibility !== 'hidden',
-      JSON.stringify(gripVisClosed));
+    // PARKED 2026-11-09 (SUPERSEDED - Nick, Nov 8, via Fable: "in ANY Typewriter mode, in every theme, the TOOLS and TUTOR opener handles are hidden for
+    // the whole session; leaving Typewriter brings them back" (13-desk-frame.css §12b, ARBOR 65e0494c). This fresh page is in Typewriter (Arbor's
+    // default, as the park above says), so the grip is hidden there by rule. Kept verbatim; it no longer runs:
+    //   ok(`S1 @ ${width}px: the grip persists VISIBLE while the sliver is closed (persistent chrome, never dissolves on its own)`,
+    //     gripVisClosed.opacity !== '0' && gripVisClosed.display !== 'none' && gripVisClosed.visibility !== 'hidden',
+    //     JSON.stringify(gripVisClosed));
+    // SUCCESSOR: the grip persists VISIBLE while the sliver is closed outside Typewriter, and is HIDDEN (visibility) in it - never by a dissolve.
+    const zoomClosed = await app.evalJs("!!document.querySelector('.mode-pagecol[data-zoom=\"true\"]')");
+    ok(`S1 @ ${width}px [typewriter-handles successor]: sliver CLOSED - the grip is VISIBLE outside Typewriter and HIDDEN in it (now: ${zoomClosed ? 'Typewriter' : 'normal'})`,
+      zoomClosed ? gripVisClosed.visibility === 'hidden' && gripVisClosed.display !== 'none' : gripVisClosed.opacity !== '0' && gripVisClosed.display !== 'none' && gripVisClosed.visibility !== 'hidden',
+      JSON.stringify({ zoom: zoomClosed, ...gripVisClosed }));
 
     await openSliver(app);
     await sleep(250);
@@ -210,9 +218,16 @@ await withHarness(async (app) => {
       disjoint(gripOpen, textOpen), JSON.stringify({ gripOpen, textOpen }));
 
     const gripVisOpen = await app.evalJs(`(() => { const cs = getComputedStyle(document.querySelector('.wz-sliver-grip')); return { opacity: cs.opacity, display: cs.display, visibility: cs.visibility }; })()`);
-    ok(`S1 @ ${width}px: the grip persists VISIBLE while the sliver is open too`,
-      gripVisOpen.opacity !== '0' && gripVisOpen.display !== 'none' && gripVisOpen.visibility !== 'hidden',
-      JSON.stringify(gripVisOpen));
+    // PARKED 2026-11-09 (SUPERSEDED - the same ruling as the closed check above: in Typewriter the grip is hidden for the whole session, its drawer open
+    // or not). Kept verbatim; it no longer runs:
+    //   ok(`S1 @ ${width}px: the grip persists VISIBLE while the sliver is open too`,
+    //     gripVisOpen.opacity !== '0' && gripVisOpen.display !== 'none' && gripVisOpen.visibility !== 'hidden',
+    //     JSON.stringify(gripVisOpen));
+    // SUCCESSOR: sliver OPEN - VISIBLE outside Typewriter, HIDDEN in it.
+    const zoomOpen = await app.evalJs("!!document.querySelector('.mode-pagecol[data-zoom=\"true\"]')");
+    ok(`S1 @ ${width}px [typewriter-handles successor]: sliver OPEN - the grip is VISIBLE outside Typewriter and HIDDEN in it (now: ${zoomOpen ? 'Typewriter' : 'normal'})`,
+      zoomOpen ? gripVisOpen.visibility === 'hidden' && gripVisOpen.display !== 'none' : gripVisOpen.opacity !== '0' && gripVisOpen.display !== 'none' && gripVisOpen.visibility !== 'hidden',
+      JSON.stringify({ zoom: zoomOpen, ...gripVisOpen }));
 
     const panelBg = await app.evalJs(`(() => {
       const cs = getComputedStyle(document.querySelector('.wz-sliver-panel'));
