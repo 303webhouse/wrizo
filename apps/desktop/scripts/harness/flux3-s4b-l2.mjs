@@ -179,9 +179,10 @@ try { await withHarness(async (app) => {
   // the place follows a page only at landing, not on a route: stand her in the long Drawer the way the switcher would (the device's own place preference, not a collection)
   if (ld) await ev(`localStorage.setItem('wz.place.anon', JSON.stringify({ kind: 'drawer', id: ${JSON.stringify(ld.id)}, setId: ${JSON.stringify(ls && ls.id)} }))`);
   await open('l2-ld1');
+  await open('l2-ld1');   // the second load: the page opened last is now this one, and the place follows the page the writer last opened
   const lr = await rail();
   const lDoor = lr && lr.items.find((i) => i.cat === 'drawers');
-  ok('CLAMP a long Drawer name WRAPS to two lines and is cut there (line-clamp 2, more text than shows), never one clipped line and never more, and the rail keeps its width', !!lDoor && lDoor.clamp === '2' && lDoor.labH <= Math.ceil(lDoor.labLH * 2) + 1 && lDoor.labH >= Math.floor(lDoor.labLH * 1.5) && lDoor.labSH > lDoor.labCH && lr.width === base.width, JSON.stringify({ lDoor, w: lr && lr.width, w0: base && base.width }));
+  ok('CLAMP a long Drawer name WRAPS to two lines and is cut there (line-clamp 2, more text than shows), never one clipped line and never more, and the rail keeps its width', !!lDoor && lDoor.clamp === '2' && lDoor.labH <= Math.ceil(lDoor.labLH * 2) + 1 && lDoor.labH >= Math.floor(lDoor.labLH * 1.5) && lDoor.labSH > lDoor.labCH && lr.width === base.width, JSON.stringify({ lDoor, w: lr && lr.width, w0: base && base.width, placeKey: await ev("localStorage.getItem('wz.place.anon')") }));
   await snap('l2-long-name');
   // ---- L: the rail adds no typing latency (six interleaved rounds, TWO readings, scripts/lib/l-method.mjs) -------------------------------------------------
   if (ON_BOX || process.env.FLUX3_L === '1') {
