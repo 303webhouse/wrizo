@@ -379,6 +379,27 @@ const screens = {
     if (Object.values(ok).some((x) => !x)) fail('R22-TYPEWRITER-DAWN', { ok, rows });
     say('r22-typewriter-dawn', { ok, rows });
   },
+  // ── A CAPTURE (no assertion): what paints UNDER Typewriter's words. Actions frames 42540157120 read the ground under the words at rgb(44,30,18)
+  // on the dark fill rgb(26,21,16) - a warm lift inside the page only. With the words hidden, every element at the page's middle on the writing
+  // line (elementsFromPoint), with its painted background, opacity and any glow variables, plus the writing goal and the goal glow's own state.
+  'r22-typewriter-layers': async (app) => {
+    const out = {};
+    for (const room of ['night', 'day']) {
+      await openFree(app, `arbor-r22-layers-${room}`); await setRoom(app, room); await sleep(600);
+      out[room] = await app.evalJs(`(() => { const col = document.querySelector('.mode-pagecol'), cr = col.getBoundingClientRect();
+        const x = Math.round(cr.left + cr.width / 2), y = Math.round(cr.top + cr.height * 0.5);
+        const layers = document.elementsFromPoint(x, y).map((e) => { const cs = getComputedStyle(e); const bg = cs.backgroundColor, bi = cs.backgroundImage;
+          return { el: e.tagName.toLowerCase() + (e.id ? '#' + e.id : '') + (e.className && typeof e.className === 'string' ? '.' + e.className.trim().split(/\\s+/).slice(0, 3).join('.') : ''),
+            bg: bg === 'rgba(0, 0, 0, 0)' ? null : bg, img: bi === 'none' ? null : bi.slice(0, 90), op: cs.opacity === '1' ? null : cs.opacity, z: cs.zIndex === 'auto' ? null : cs.zIndex,
+            glow: cs.getPropertyValue('--glow-intensity').trim() || null, mix: cs.mixBlendMode === 'normal' ? null : cs.mixBlendMode, filt: cs.filter === 'none' ? null : cs.filter.slice(0, 40) }; })
+          .filter((l) => l.bg || l.img || l.op || l.mix);
+        const gg = [...document.querySelectorAll('.wz-goal-glow')].map((e) => ({ op: getComputedStyle(e).opacity, int: e.style.getPropertyValue('--glow-intensity') || getComputedStyle(e).getPropertyValue('--glow-intensity'), r: (() => { const b = e.getBoundingClientRect(); return [Math.round(b.left), Math.round(b.top), Math.round(b.width), Math.round(b.height)]; })() }));
+        let goal = null; try { goal = localStorage.getItem('wrizo-writing-goal-lines'); } catch {}
+        return { at: [x, y], room: document.documentElement.getAttribute('data-arbor2-room'), page: document.documentElement.getAttribute('data-page'), layers, goalGlow: gg, goal,
+          words: (document.querySelector('.forward-only-editor')?.textContent || '').trim().split(/\\s+/).length }; })()`);
+    }
+    say('r22-typewriter-layers', out);
+  },
 
   // ── 3. THREE DARKER NIGHT BROWNS (Fable's ruling 2, Nov 8: "ALL night-room browns step darker together (the room ground, rails, panels, the
   // dark page), keeping the lamplight's warm gradient. Three steps, floors measured, frames for Nick"). For Now, A, B, C by night: the mockup bar's
