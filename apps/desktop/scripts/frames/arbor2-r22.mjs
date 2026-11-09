@@ -480,6 +480,70 @@ const screens = {
     [`r22-pic-browns-${s}-night`, async (app) => { await openPage(app, `arbor-r22-pbn-${s}`); await setRoom(app, 'night'); await pickBrown(app, s); await openTools(app); await sleep(900); await app.evalJs(FINISH); await app.mouseMove(600, 300); await sleep(300); }],
     [`r22-pic-browns-${s}-day`, async (app) => { await openPage(app, `arbor-r22-pbd-${s}`); await setRoom(app, 'day'); await pickBrown(app, s); await openTools(app); await sleep(900); await app.evalJs(FINISH); await app.mouseMove(600, 300); await sleep(300); }],
   ])),
+
+  // ── NICK, Nov 8 (relayed by Fable): "in ANY Typewriter mode, in every theme, the TOOLS and TUTOR opener handles are hidden for the whole session;
+  // leaving Typewriter brings them back." (styles/13-desk-frame.css §12b). Run with -f themes=plateau,flux,machina. A handle counts as HIDDEN only
+  // when it is visibility:hidden, the point at its centre reaches something else, and it cannot take focus; SHOWN only when all three are the
+  // opposite. Both handles must exist with a box, or the check is blind and fails. Typewriter is left both ways a writer can: the mode strip (Draft,
+  // on a page with words, is Typewriter-off) and the switch in the Tools drawer, reached by Ctrl+/ since its handle is gone; entering again hides
+  // them again (a hover over where they sit included). Mode tabs are found by data-mode-key, because their words are themed.
+  'r22-typewriter-handles': async (app) => {
+    const HANDLES = `(() => { const one = (s) => { const g = document.querySelector(s); if (!g) return null; const r = g.getBoundingClientRect(), cs = getComputedStyle(g);
+      const at = r.width > 0 && r.height > 0 ? document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2) : null;
+      const was = document.activeElement; g.focus(); const focused = document.activeElement === g; if (focused) { g.blur(); if (was && was !== document.body) was.focus?.(); }
+      return { vis: cs.visibility, w: Math.round(r.width), h: Math.round(r.height), reach: !!at && g.contains(at), focused }; };
+      return { zoom: !!document.querySelector('.mode-pagecol[data-zoom="true"]'), toolsOpen: document.querySelector('.wz-sliver')?.getAttribute('data-open') ?? null,
+        tools: one('.wz-sliver-grip'), tutor: one('.wz-tutor-grip'), theme: document.documentElement.getAttribute('data-theme') }; })()`;
+    const boxed = (h) => !!h && h.w > 0 && h.h > 0;
+    const hidden = (s) => !!s && boxed(s.tools) && boxed(s.tutor) && [s.tools, s.tutor].every((h) => h.vis === 'hidden' && !h.reach && !h.focused);
+    const shown = (s) => !!s && boxed(s.tools) && boxed(s.tutor) && [s.tools, s.tutor].every((h) => h.vis === 'visible' && h.reach && h.focused);
+    const mode = async (k) => {
+      const hit = await app.evalJs(`(() => { const b = document.querySelector('.desk-mode-tab[data-mode-key=${JSON.stringify(k)}]'); if (b) b.click(); return !!b; })()`);
+      if (!hit) fail('R22-TW-HANDLES', { mode: k, found: false });
+      await sleep(1200);
+    };
+    const ctrlSlash = async () => {
+      await app.cdp('Input.dispatchKeyEvent', { type: 'keyDown', key: '/', code: 'Slash', windowsVirtualKeyCode: 191, modifiers: 2 });
+      await app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: '/', code: 'Slash', windowsVirtualKeyCode: 191, modifiers: 2 });
+      await sleep(500); await app.evalJs(FINISH);
+    };
+    const toggleTw = async () => { const hit = await app.evalJs("(() => { const b = document.querySelector('.wz-sliver [data-mode-toggle=\"typewriter\"]'); if (b) b.click(); return !!b; })()"); await sleep(1200); return hit; };
+    const away = async () => { await app.evalJs("document.querySelector('.forward-only-editor')?.blur(); getSelection()?.removeAllRanges()"); await app.mouseMove(600, 300); await sleep(500); };
+    const id = 'arbor-r22-twh';
+    await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id, text: PAGEW, createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page' })})`);
+    await sleep(300); await go(app, `#/page/${id}`);
+    if (!(await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'page', timeout: 10000 }))) fail('R22-TW-HANDLES', { id, editor: false });
+    await sleep(900);
+    await mode('freewrite');
+    if (!(await waitSoft(app, "!!document.querySelector('.mode-pagecol[data-zoom=\"true\"]')", { label: 'typewriter zoom', timeout: 6000 }))) fail('R22-TW-HANDLES', { id, zoomed: false });
+    await away();
+    const inFree = await app.evalJs(HANDLES);                                        // 1. Free Write's Typewriter: hidden
+    await mode('draft'); await away();
+    const inDraft = await app.evalJs(HANDLES);                                       // 2. left by the mode strip: back
+    await mode('freewrite'); await away();
+    const backFree = await app.evalJs(HANDLES);                                      // 3. in again: hidden again
+    await app.evalJs("(() => { const g = document.querySelector('.wz-sliver-grip'); if (!g) return false; const r = g.getBoundingClientRect(); window.__twhAt = [r.left + r.width / 2, r.top + r.height / 2]; return true; })()");
+    const at = await app.evalJs('window.__twhAt || null');
+    if (at) { await app.mouseMove(at[0], at[1]); await sleep(400); }
+    const hovered = await app.evalJs(HANDLES);                                       // 4. a hover where the Tools handle sits brings nothing back
+    await away();
+    await ctrlSlash();
+    const opened = await app.evalJs(HANDLES);                                        // 5. Ctrl+/ still opens the Tools drawer (the way out)
+    const offHit = await toggleTw(); await ctrlSlash(); await away();
+    const switchedOff = await app.evalJs(HANDLES);                                   // 6. left by the drawer's own switch: back
+    await ctrlSlash(); const onHit = await toggleTw(); await away();
+    const switchedOn = await app.evalJs(HANDLES);                                    // 7. on again by the switch: hidden, the drawer tucked
+    const steps = { inFree, inDraft, backFree, hovered, opened, switchedOff, switchedOn };
+    const ok = !!inFree?.zoom && hidden(inFree)
+      && !inDraft?.zoom && shown(inDraft)
+      && !!backFree?.zoom && hidden(backFree)
+      && !!at && !!hovered?.zoom && hidden(hovered)
+      && !!opened?.zoom && opened.toolsOpen === 'true'
+      && offHit && !switchedOff?.zoom && switchedOff.toolsOpen === 'false' && shown(switchedOff)
+      && onHit && !!switchedOn?.zoom && switchedOn.toolsOpen === 'false' && hidden(switchedOn);
+    if (!ok) fail('r22-typewriter-handles', { offHit, onHit, ...steps });
+    say('r22-typewriter-handles', { theme: inFree.theme, steps: Object.fromEntries(Object.entries(steps).map(([k, s]) => [k, { zoom: s.zoom, toolsOpen: s.toolsOpen, tools: s.tools.vis, tutor: s.tutor.vis }])) });
+  },
 };
 
 export default guarded(screens, { verdict: ['ARBOR-R22'] });

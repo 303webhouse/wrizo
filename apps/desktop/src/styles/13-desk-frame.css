@@ -261,6 +261,11 @@
 /* THE ZOOM: the same page transformed by --wz-zoom (1.6, capped to the stage's width), scale never reflow, so its layout box and every line break stay as in the normal view. The column widens to the stage so the band mask spans the zoomed page. THE BAND, in line-heights (--tw-lh) from the anchor at 50% of the column (--tw-lead keeps the .12 stop 56px or more from the top): 0 at the top, .12 / .40 / .72 at 6.6 / 4.2 / 2.2 lines above, full from 0.15 above to 1.45 below, .40 at 2.8 below, 0 from 4.4 below. Text and paper fade into the desk together; this band replaces the scroller's top mask [desk-frame §11] */
 /* while zoomed the Sliver keeps DRAWER_MIN by growing rightward from its anchor, over the zoomed band (a tool overlays, nothing is displaced); never leftward, under the strip; its grip stays on top, so it still closes [desk-frame §12] */
 .desk-frame-stage--prose:has(.mode-pagecol[data-zoom='true']) .wz-sliver-panel{ left:0; right:auto; width:max(calc(100% - 16px), 200px); }
+/* NICK, Nov 8 (relayed by Fable): in ANY Typewriter mode, in every theme, the Tools and Tutor opener handles are hidden for the whole session; leaving
+   Typewriter brings them back. visibility keeps each handle's box (nothing moves) and takes it out of reach and out of the tab order. Entering
+   Typewriter already tucks both drawers (ModeStage §7); a Tools drawer opened by Ctrl+/ under it closes by Esc or Ctrl+/ (this supersedes §12's
+   "its grip stays on top, so it still closes"). Checked by frames/arbor2-r22.mjs r22-typewriter-handles. [desk-frame §12b] */
+.desk-frame-stage:has(.mode-pagecol[data-zoom='true']) :is(.wz-sliver-grip, .wz-tutor-grip){ visibility:hidden; }
 /* while zoomed the column fills the stage: .mode-stage is a content-sized flex item, so a 100% column inside it would stay narrow and the band mask would cut the enlarged page at its sides [desk-frame §13] */
 .desk-frame-stage--prose:has(.mode-pagecol[data-zoom='true']) > .mode-stage{ flex:1 1 auto; width:100%; }
 .desk-frame-stage--prose .mode-pagecol[data-zoom='true']{
