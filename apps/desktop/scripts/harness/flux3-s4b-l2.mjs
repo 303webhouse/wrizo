@@ -146,20 +146,20 @@ try { await withHarness(async (app) => {
   ok('LAST none before a node is touched; after a card is moved Circuits shows LAST 0x.... in orange, the address the Schema footer shows', noLast && lastOk, JSON.stringify({ noLast, ...lastDetail }));
 
   // ---- MUT: each reader goes red on its own mutant, then green again undone -----------------------------------------------------------------------------
-  await open('l2-p1');
+  await open('l2-d1');   // (the place she last stood in is a Drawer's: the readers are the Drawer's, with the same Log-once rule)
   const base = await rail();
   const muts = [
     ['a second log icon', "(() => { const s = document.querySelector('.wz-strip'); const d = s.querySelector('[data-theme-icon=\"rack\"]'); const c = d.cloneNode(true); c.setAttribute('data-theme-icon', 'log'); c.classList.add('mut'); d.parentElement.appendChild(c); })()", "document.querySelectorAll('.wz-strip .mut').forEach((e) => e.remove())", async () => !dupOk(await rail())],
-    ['a wrong reading', "(() => { const r = document.querySelector('.wz-strip [data-category=\"page\"] .wz-strip-readout'); r.dataset.was = r.textContent; r.textContent = '99'; })()", "(() => { const r = document.querySelector('.wz-strip [data-category=\"page\"] .wz-strip-readout'); r.textContent = r.dataset.was; })()", async () => !readJ(await rail())],
-    ['a second orange place', "(() => { const l = document.querySelector('.wz-strip [data-category=\"page\"] .wz-strip-label'); l.style.color = 'rgb(255, 152, 0)'; })()", "(() => { document.querySelector('.wz-strip [data-category=\"page\"] .wz-strip-label').style.color = ''; })()", async () => !hereJ(await rail())],
+    ['a wrong reading', "(() => { const r = document.querySelector('.wz-strip [data-category=\"page\"] .wz-strip-readout'); r.dataset.was = r.textContent; r.textContent = '99'; })()", "(() => { const r = document.querySelector('.wz-strip [data-category=\"page\"] .wz-strip-readout'); r.textContent = r.dataset.was; })()", async () => !readD(await rail())],
+    ['a second orange place', "(() => { const l = document.querySelector('.wz-strip [data-category=\"page\"] .wz-strip-label'); l.style.color = 'rgb(255, 152, 0)'; })()", "(() => { document.querySelector('.wz-strip [data-category=\"page\"] .wz-strip-label').style.color = ''; })()", async () => !hereD(await rail())],
   ];
-  ok('MUT-BASE the readers are green on the untouched Journal rail before their mutants run', dupOk(base) && readJ(base) && hereJ(base), JSON.stringify(base && base.items.map((i) => [i.cat, i.read])));
+  ok('MUT-BASE the readers are green on the untouched rail (in the Drawer) before their mutants run', dupOk(base) && readD(base) && hereD(base), JSON.stringify(base && base.items.map((i) => [i.cat, i.read])));
   for (const [name, apply, undo, red] of muts) {
     await ev(apply); await sleep(250);
     const wentRed = await red();
     await ev(undo); await sleep(250);
     const back = await rail();
-    ok(`MUT-${name.toUpperCase().replace(/ /g, '-')} the reader goes RED on its mutant (${name}) and green again undone`, wentRed && dupOk(back) && readJ(back) && hereJ(back), name);
+    ok(`MUT-${name.toUpperCase().replace(/ /g, '-')} the reader goes RED on its mutant (${name}) and green again undone`, wentRed && dupOk(back) && readD(back) && hereD(back), name);
   }
 
   // ---- L: the rail adds no typing latency (six interleaved rounds, TWO readings, scripts/lib/l-method.mjs) -------------------------------------------------
