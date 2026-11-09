@@ -31,7 +31,7 @@ const INSTRUMENT = `(() => {
   Object.defineProperty(I, 'clears', { get: () => { const b = document.querySelector('[data-flux3-room-ground]'); return b ? Number(b.dataset.draws || 0) : 0; } });
   I.box = () => document.querySelector('[data-flux3-room-ground]');
   I.read = () => { const b = I.box(); if (!b) return null; const host = b.parentElement; const cs = getComputedStyle(b);
-    const px = /^url\("?data:image\/png/.test(cs.backgroundImage) ? cs.backgroundImage.length : 0;
+    const px = cs.backgroundImage.indexOf('data:image/png') > 0 ? cs.backgroundImage.length : 0;
     const anims = b.getAnimations({ subtree: true }); const props = new Set(); anims.forEach((a) => (a.effect.getKeyframes() || []).forEach((k) => Object.keys(k).forEach((p) => { if (!['offset', 'easing', 'composite', 'computedOffset'].includes(p)) props.add(p); })));
     return { first: host.firstElementChild === b, host: String(host.className).slice(0, 24), z: cs.zIndex, pe: cs.pointerEvents, aria: b.getAttribute('aria-hidden'), op: +cs.opacity, px, dots: b.querySelectorAll('i').length, anims: anims.length, running: anims.filter((a) => a.playState === 'running').length, paused: anims.filter((a) => a.playState === 'paused').length, props: [...props], iso: getComputedStyle(host).isolation, canvases: b.querySelectorAll('canvas').length, draws: Number(b.dataset.draws || 0) }; };
   I.rects = () => { const q = (s) => { const e = document.querySelector(s); if (!e) return null; const r = e.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)]; }; return { page: q('.mode-page'), host: q('.desk-frame-host'), editor: q('.forward-only-editor'), board: q('.board-canvas-wrap') }; };
