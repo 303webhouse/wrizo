@@ -224,7 +224,12 @@ export default {
       // else if (r.page.paper !== PAPER || !(r.page.inkRatio >= 13.9) || !(r.page.lowRatio >= 4.5)) problems.push({ stage: r.stage, page: r.page });
       // SUCCESSOR: zoomed by NIGHT, page-less with the room's cream; every other stage - zoomed by day included, where the sheet stands in for the
       // paper and this read finds it - the original line: the tone's paper, ink >= 13.9 and low ink >= 4.5 on it.
-      if (r.page.zoom === 'true' && want === 'night') { if (!/^rgba\(0, 0, 0, 0\)$|^transparent$/.test(r.page.bg || '') || r.page.ink !== '#EFE4CB') problems.push({ stage: r.stage, page: r.page }); }
+      // PARKED 2026-11-08 (SUPERSEDED - Actions frames 42539081886: the night glow under the writing line measured rgb(43,24,12), where cream #EFE4CB
+      // is 13.43; Typewriter's night words are a lifted cream #F7F0DE). Original, verbatim:
+      // if (r.page.zoom === 'true' && want === 'night') { if (!/^rgba\(0, 0, 0, 0\)$|^transparent$/.test(r.page.bg || '') || r.page.ink !== '#EFE4CB') problems.push({ stage: r.stage, page: r.page }); }
+      // else if (r.page.paper !== PAPER || !(r.page.inkRatio >= 13.9) || !(r.page.lowRatio >= 4.5)) problems.push({ stage: r.stage, page: r.page });
+      // SUCCESSOR: the same, the night words pinned to #F7F0DE.
+      if (r.page.zoom === 'true' && want === 'night') { if (!/^rgba\(0, 0, 0, 0\)$|^transparent$/.test(r.page.bg || '') || r.page.ink !== '#F7F0DE') problems.push({ stage: r.stage, page: r.page }); }
       else if (r.page.paper !== PAPER || !(r.page.inkRatio >= 13.9) || !(r.page.lowRatio >= 4.5)) problems.push({ stage: r.stage, page: r.page });
     }
     if (!picks.day || !picks.night) problems.unshift({ picks });

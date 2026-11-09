@@ -300,8 +300,14 @@ export default {
       // SUCCESSOR page3: zoomed, the page's own background clear at every step (the sheet or the night fill stands in) and the ink at every step the
       // room's own: cream in the night room, the page's ink in the day room (walnut on the light page, cream on the dark) - so on the light page it
       // changes exactly where the room does, once. Off the zoom as before.
-      page3: m[0].zoom === 'true'
-        ? m.every((x) => x.zoom === 'true' && /^rgba\(0, 0, 0, 0\)$|^transparent$/.test(x.bg || '') && x.ink === (x.room === 'night' || x.tone === 'dark' ? '#EFE4CB' : '#1A0F06'))
+      // PARKED 2026-11-08 (SUPERSEDED - Actions frames 42539081886: the night glow under the writing line measured rgb(43,24,12), where cream #EFE4CB
+      // is 13.43; Typewriter's night words are a lifted cream #F7F0DE - page3 pinned #EFE4CB in the night room). Original, verbatim:
+      // page3: m[0].zoom === 'true'
+      //   ? m.every((x) => x.zoom === 'true' && /^rgba\(0, 0, 0, 0\)$|^transparent$/.test(x.bg || '') && x.ink === (x.room === 'night' || x.tone === 'dark' ? '#EFE4CB' : '#1A0F06'))
+      //   : m.every((x) => x.paper === m[0].paper && x.ink === m[0].ink) && !!m[0].paper,
+      // SUCCESSOR page4: the same, the night room's words #F7F0DE (the day room's dark page keeps its own cream #EFE4CB, the light page walnut).
+      page4: m[0].zoom === 'true'
+        ? m.every((x) => x.zoom === 'true' && /^rgba\(0, 0, 0, 0\)$|^transparent$/.test(x.bg || '') && x.ink === (x.room === 'night' ? '#F7F0DE' : x.tone === 'dark' ? '#EFE4CB' : '#1A0F06'))
         : m.every((x) => x.paper === m[0].paper && x.ink === m[0].ink) && !!m[0].paper,
       floors: floors.length === 0,
     };

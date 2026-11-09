@@ -286,9 +286,9 @@
    same day: "page-less Typewriter is NIGHT/dark ONLY. Day/light Typewriter stays exactly as before (the page's paper stays) ... By the clock: the
    page fill fades in step with the room's tone; the floors hold at every moment." The sheet (src/arbor2/paper.ts) is drawn by day as before, and
    by night only as the dark fill that comes in while the room leaves the night (paper.ts's note has the arithmetic).
-     NIGHT  page-less: the page bare, no sheet at rest; the words in the dark page's own pair whatever the Page setting - cream #EFE4CB (>= 14.1:1
-            on the night glow from a quarter of the way down, 15.5 on the room #120A06; 14.35 on the dark fill), low #B9AA8C; pen red / blue
-            #FF9088 / #8AB4FF (>= 7:1)
+     NIGHT  page-less: the page bare, no sheet at rest; the words a LIFTED cream #F7F0DE whatever the Page setting (measured: the lamp glow under
+            the writing line is rgb(43,24,12) at its brightest - Actions frames 42539081886 - where the dark page's cream #EFE4CB is 13.43, under
+            the 13.9 floor; #F7F0DE is 14.91 there, 15.94 on the dark fill), low #B9AA8C (7.2); pen red / blue #FF9088 / #8AB4FF (>= 7:1)
      DAY    as before r22: the sheet in the page's own paper, the page's own inks (Free Write's walnut pen #1A0F06 on the light page, cream on the
             dark), the dark page's brass caret
    (the pen's ink reaches the editor INLINE; under the zoom ModeStage hands it --arbor2-tw-ink / -red / -blue, so it follows the room as the room
@@ -298,7 +298,7 @@
 :root[data-arbor2][data-theme='plateau']{ --arbor2-tw-night-paper:#1A1510; }   /* the night fill: the dark page's paper (the brown steps step it) */
 :root[data-arbor2][data-theme='plateau'] .mode-pagecol[data-zoom='true'] :is(.mode-page, .mode-page.focused){ background:transparent; box-shadow:none; border-color:transparent; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .mode-pagecol[data-zoom='true'] .mode-page{
-  --ink-on-paper:#EFE4CB; --ink-on-paper-low:#B9AA8C; --arbor2-tw-ink:#EFE4CB; --arbor2-tw-red:#FF9088; --arbor2-tw-blue:#8AB4FF; }
+  --ink-on-paper:#F7F0DE; --ink-on-paper-low:#B9AA8C; --arbor2-tw-ink:#F7F0DE; --arbor2-tw-red:#FF9088; --arbor2-tw-blue:#8AB4FF; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day']:not([data-page='dark']) .mode-pagecol[data-zoom='true'] .mode-page{
   --arbor2-tw-ink:#1A0F06; --arbor2-tw-red:#B8231F; --arbor2-tw-blue:#1F4FB8; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'][data-page='dark'] .mode-pagecol[data-zoom='true'] .mode-page{

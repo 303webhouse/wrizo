@@ -563,7 +563,10 @@ export function zoomProofV8(holeOf, stopsOf) {
 //          (no hole, no edge); the words cream #EFE4CB whatever the Page setting
 //   DAY    as before r22 (V6's day half): the hard sheet exactly over the visible page in the page's own paper, whole, no shadow, no mask; the page
 //          bare; the vignette's hole hard and 0 over the page; the words the page's own ink (walnut #1A0F06 on the light page, cream on the dark)
-export function zoomProof(holeOf, stopsOf) {
+// PARKED 2026-11-08 (SUPERSEDED - Actions frames 42539081886: under the night lamp glow the ground under the writing line measured rgb(43,24,12),
+// where the dark page's cream #EFE4CB is 13.43, under the 13.9 floor; Typewriter's night words are a lifted cream #F7F0DE (14.91) - V9 pinned
+// #EFE4CB). Kept verbatim under the name zoomProofV9 (no screen calls it); SUCCESSOR V10 below.
+export function zoomProofV9(holeOf, stopsOf) {
   const col = document.querySelector('.mode-pagecol[data-zoom="true"]'), p = col && col.querySelector('.mode-page');
   if (!p) return { pass: false, why: 'no zoomed page' };
   const a = p.getBoundingClientRect(), c = col.getBoundingClientRect();
@@ -593,6 +596,57 @@ export function zoomProof(holeOf, stopsOf) {
     sheet = fillWant === 0 ? !k : (over && sheetHard && Math.abs(Number(kcs.opacity) - fillWant) < 0.01 && kcs.backgroundColor === colourOf(getComputedStyle(root).getPropertyValue('--arbor2-tw-night-paper').trim()));
     vignette = vg.length === 0;
     want = 'rgb(239, 228, 203)';
+  } else {
+    const at = (st, v) => {
+      if (!st.length) return 1;
+      if (v <= st[0].px) return st[0].a;
+      for (let i = 1; i < st.length; i++) if (v <= st[i].px) return st[i].px === st[i - 1].px ? st[i].a : st[i - 1].a + (st[i].a - st[i - 1].a) * (v - st[i - 1].px) / (st[i].px - st[i - 1].px);
+      return st[st.length - 1].a;
+    };
+    sheet = over && sheetHard && Number(kcs.opacity) === 1 && kcs.backgroundColor === colourOf(pcs.getPropertyValue('--paper').trim());
+    const vOk = vg.length === 2 && String(vcs.maskComposite || '').split(',').every((x) => x.trim() === 'add');
+    const vA = (x, y) => (vOk ? 1 - vg.reduce((m, g) => m * (1 - at(g.stops, g.axis === 'x' ? x : y)), 1) : 1);
+    let vMax = 0;
+    for (let i = 0; i <= 12; i++) for (let j = 0; j <= 12; j++) vMax = Math.max(vMax, vA(vis.l + .5 + (vis.r - vis.l - 1) * i / 12, vis.t + .5 + (vis.b - vis.t - 1) * j / 12));
+    vignette = vOk && vMax === 0 && vg.every((g) => g.stops.length === 4 && g.stops[0].px === g.stops[1].px && g.stops[2].px === g.stops[3].px);
+    want = dark ? 'rgb(239, 228, 203)' : 'rgb(26, 15, 6)';
+  }
+  const inkOk = !!ink && ink === want;
+  return { pass: bare && sheet && vignette && inkOk, room, dark, dayness, fillWant, bare, sheet, vignette, inkOk, ink, want, vis,
+    sheetOn: !!k, sheetBg: kcs && kcs.backgroundColor, sheetOpacity: kcs && kcs.opacity, pageBg: pcs.backgroundColor, vMask: String(vm).slice(0, 120) };
+}
+
+// SUCCESSOR V10 (r22): V9 with the night words' ink pinned to the lifted cream #F7F0DE (rgb 247,240,222). Everything else as V9.
+export function zoomProof(holeOf, stopsOf) {
+  const col = document.querySelector('.mode-pagecol[data-zoom="true"]'), p = col && col.querySelector('.mode-page');
+  if (!p) return { pass: false, why: 'no zoomed page' };
+  const a = p.getBoundingClientRect(), c = col.getBoundingClientRect();
+  let foot = Infinity;
+  for (const el of document.querySelectorAll('.mode-progress, .mode-progress *')) {
+    const r = el.getBoundingClientRect();
+    if (r.width > 0 && r.height > 0 && r.top > a.top + 40 && r.left < a.right && r.right > a.left) foot = Math.min(foot, r.top);
+  }
+  const vis = { l: Math.max(a.left, c.left), t: Math.max(a.top, c.top), r: Math.min(a.right, c.right), b: Math.min(a.bottom, c.bottom, innerHeight, foot) };
+  const root = document.documentElement, room = root.getAttribute('data-arbor2-room'), dark = root.getAttribute('data-page') === 'dark';
+  const dayness = Number(root.getAttribute('data-arbor2-dayness') || (room === 'day' ? 1 : 0)) || 0;
+  const pcs = getComputedStyle(p);
+  const clear = (v) => v === 'transparent' || /^rgba\(.*,\s*0\)$/.test(v) || /\/\s*0\)$/.test(v);
+  const bare = clear(pcs.backgroundColor) && pcs.boxShadow === 'none'
+    && ['Top', 'Right', 'Bottom', 'Left'].every((sd) => parseFloat(pcs[`border${sd}Width`]) === 0 || clear(pcs[`border${sd}Color`]));
+  const colourOf = (v) => { const i = document.createElement('i'); i.style.color = v; document.body.appendChild(i); const out = getComputedStyle(i).color; i.remove(); return out; };
+  const k = document.querySelector('.arbor2-paper[data-on="true"]'), kr = k ? k.getBoundingClientRect() : null, kcs = k ? getComputedStyle(k) : null;
+  const near = (x, y) => Math.abs(x - y) <= 1;
+  const over = !!kr && near(kr.left, vis.l) && near(kr.top, vis.t) && near(kr.right, vis.r) && near(kr.bottom, vis.b);
+  const sm = kcs ? kcs.maskImage : '';
+  const sheetHard = !!kcs && stopsOf(sm).length === 0 && kcs.boxShadow === 'none' && kcs.display !== 'none' && kcs.visibility !== 'hidden';
+  const vcs = getComputedStyle(document.body, '::after'), vm = vcs.maskImage, vg = stopsOf(vm);
+  const ed = p.querySelector('.forward-only-editor'), ink = ed ? getComputedStyle(ed).color : null;
+  let sheet, vignette, want, fillWant = null;
+  if (room === 'night') {
+    fillWant = Math.max(0, Math.min(1, dayness / 0.02));
+    sheet = fillWant === 0 ? !k : (over && sheetHard && Math.abs(Number(kcs.opacity) - fillWant) < 0.01 && kcs.backgroundColor === colourOf(getComputedStyle(root).getPropertyValue('--arbor2-tw-night-paper').trim()));
+    vignette = vg.length === 0;
+    want = 'rgb(247, 240, 222)';
   } else {
     const at = (st, v) => {
       if (!st.length) return 1;

@@ -124,7 +124,16 @@ export default {
     // SUCCESSOR: Free Write by NIGHT is zoomedOk's night half (page-less, the room's cream); Free Write by DAY is as before r22 - pageOk (the paper
     // read through the sheet that stands in for it) and r7's own "typewriter unframed" (the sheet hard, no shadow, in the tone's paper). Draft as before.
     const dayUnframed = (r) => r.zoom === 'true' && r.sheetMask === 'none' && r.sheetShadow === 'none' && r.paper === (dark ? '#1A1510' : '#F3EDE1');
-    const judgeFw = (r) => (r.room === 'night' ? zoomedOk(r) : pageOk(r) && dayUnframed(r));
+    // PARKED 2026-11-08 (SUPERSEDED - Actions frames 42539081886: the lamp glow under the writing line measured rgb(43,24,12), where cream #EFE4CB
+    // is 13.43, under 13.9; Typewriter's night words and the light page's caret there are a lifted cream #F7F0DE (14.91) - zoomedOk pins #EFE4CB).
+    // Original, verbatim:
+    // const judgeFw = (r) => (r.room === 'night' ? zoomedOk(r) : pageOk(r) && dayUnframed(r));
+    // SUCCESSOR: by night zoomedOk2 - zoomedOk with the words and the light page's caret in #F7F0DE (the low ink, the dark page's brass caret and
+    // its selection rule as zoomedOk); by day as before.
+    const zoomedOk2 = (r) => r.zoom === 'true' && /^rgba\(0, 0, 0, 0\)$|^transparent$/.test(r.bg || '') && r.sheetMask === null && r.sheetShadow === null
+      && r.ink === '#F7F0DE' && r.low === '#B9AA8C' && r.caret === (dark ? '#FF9800' : '#F7F0DE')
+      && (!dark || (/underline/.test(r.selLine) && /overline/.test(r.selLine) && r.selColour === '#FF9800'));
+    const judgeFw = (r) => (r.room === 'night' ? zoomedOk2(r) : pageOk(r) && dayUnframed(r));
     for (const [m, v] of Object.entries(out)) {
       const judge = m === 'freewrite' ? judgeFw : pageOk;
       ok[m + ' page'] = judge(v.toneRoom);
