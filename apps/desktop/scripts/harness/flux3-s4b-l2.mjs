@@ -32,7 +32,7 @@ const INSTRUMENT = `(() => {
     const items = [...s.querySelectorAll('.wz-strip-item')].map((b) => { const lab = b.querySelector('.wz-strip-label'), rd = b.querySelector('.wz-strip-readout:not(.wz-strip-last)'), last = b.querySelector('.wz-strip-last');
       return { cat: b.getAttribute('data-category'), label: lab ? lab.textContent.trim() : null, read: rd ? rd.textContent.trim() : null, last: last ? last.textContent.trim() : null,
         icon: (b.querySelector('[data-theme-icon]') || {}).getAttribute ? b.querySelector('[data-theme-icon]').getAttribute('data-theme-icon') : null, kind: b.getAttribute('data-place-kind'), here: b.getAttribute('aria-current'),
-        labelColor: lab ? getComputedStyle(lab).color : null, tt: lab ? getComputedStyle(lab).textTransform : null, title: b.getAttribute('title'), bw: getComputedStyle(b).borderTopWidth, labH: lab ? Math.round(lab.getBoundingClientRect().height) : null, labLH: lab ? parseFloat(getComputedStyle(lab).lineHeight) : null, clamp: lab ? getComputedStyle(lab).webkitLineClamp : null, readColor: rd ? getComputedStyle(rd).color : null, lastColor: last ? getComputedStyle(last).color : null }; });
+        labelColor: lab ? getComputedStyle(lab).color : null, tt: lab ? getComputedStyle(lab).textTransform : null, title: b.getAttribute('title'), bw: getComputedStyle(b).borderTopWidth, labH: lab ? Math.round(lab.getBoundingClientRect().height) : null, labLH: lab ? parseFloat(getComputedStyle(lab).lineHeight) : null, clamp: lab ? getComputedStyle(lab).webkitLineClamp : null, labSH: lab ? lab.scrollHeight : null, labCH: lab ? lab.clientHeight : null, readColor: rd ? getComputedStyle(rd).color : null, lastColor: last ? getComputedStyle(last).color : null }; });
     return { items, width: Math.round(s.getBoundingClientRect().width), logIcons: s.querySelectorAll('[data-theme-icon="log"]').length, readouts: s.querySelectorAll('.wz-strip-readout').length }; };
   I.rects = () => { const q = (s) => { const e = document.querySelector(s); if (!e) return null; const r = e.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)]; }; return { page: q('.mode-page'), host: q('.desk-frame-host'), editor: q('.forward-only-editor'), board: q('.board-canvas-wrap'), strip: q('.wz-strip') }; };
   // the control arm: the L2 readouts and the L2 rules away (the same page without the rail's dress)
@@ -179,7 +179,7 @@ try { await withHarness(async (app) => {
   await open('l2-ld1');
   const lr = await rail();
   const lDoor = lr && lr.items.find((i) => i.cat === 'drawers');
-  ok('CLAMP a long Drawer name takes two lines at most (line-clamp 2, ellipsis), never more, and the rail keeps its width', !!lDoor && lDoor.clamp === '2' && lDoor.labH <= Math.ceil(lDoor.labLH * 2) + 1 && lr.width === base.width, JSON.stringify({ lDoor, w: lr && lr.width, w0: base && base.width }));
+  ok('CLAMP a long Drawer name WRAPS to two lines and is cut there (line-clamp 2, more text than shows), never one clipped line and never more, and the rail keeps its width', !!lDoor && lDoor.clamp === '2' && lDoor.labH <= Math.ceil(lDoor.labLH * 2) + 1 && lDoor.labH >= Math.floor(lDoor.labLH * 1.5) && lDoor.labSH > lDoor.labCH && lr.width === base.width, JSON.stringify({ lDoor, w: lr && lr.width, w0: base && base.width }));
   await snap('l2-long-name');
   // ---- L: the rail adds no typing latency (six interleaved rounds, TWO readings, scripts/lib/l-method.mjs) -------------------------------------------------
   if (ON_BOX || process.env.FLUX3_L === '1') {
