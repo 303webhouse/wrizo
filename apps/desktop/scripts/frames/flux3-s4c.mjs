@@ -52,7 +52,7 @@ export default {
     console.log(`FLUX3-S4C-FRAME corridor-entry ${JSON.stringify(await stood(app))}`);
   },
   'corridor-rest': async (app) => {
-    await seed(app, 'An older line she wrote before this session.');
+    await seed(app, 'An older line she wrote before this session.', { settle: 4200 });   // the exit line (3 s) has gone
     console.log(`FLUX3-S4C-FRAME corridor-rest ${JSON.stringify(await stood(app))}`);
   },
   'corridor-still': async (app) => {
@@ -69,7 +69,8 @@ export default {
   'corridor-rows': async (app) => {
     await seed(app, 'An older line she wrote before this session.');
     await type(app, LINE + LINE + LINE, 22);
-    await sleep(2000);   // the pause compiles her finished lines
+    await waitSoft(app, "document.querySelectorAll('[data-flux3-compile] .flux3-compile-row').length >= 3", { label: 'the rows', timeout: 8000 });   // the pause compiles her finished lines
+    await sleep(400);
     console.log(`FLUX3-S4C-FRAME corridor-rows ${JSON.stringify(await stood(app))}`);
   },
   'corridor-pop': async (app) => {
@@ -114,7 +115,7 @@ export default {
     await seed(app, 'First line of her text.\nSecond line goes here.');
     await type(app, ' and a little more written now so there is signal to resolve');
     await type(app, LINE, 15);
-    await sleep(1800);   // the pause compiles her finished lines
+    await waitSoft(app, "document.querySelectorAll('[data-flux3-compile] .flux3-compile-row').length >= 2", { label: 'the rows', timeout: 8000 });   // the pause compiles her finished lines
     await tapEsc(app);
     await sleep(300);    // 0.3 s after Esc: the decompile under way
     console.log(`FLUX3-S4C-FRAME corridor-esc ${JSON.stringify(await stood(app))}`);

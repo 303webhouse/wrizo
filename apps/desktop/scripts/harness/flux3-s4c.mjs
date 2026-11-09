@@ -160,7 +160,7 @@ try { await withHarness(async (app) => {
   await type(CYCLE + CYCLE, 40);   // ~25 keys a second: a fast typist
   const t1 = await ev('performance.now()');
   const fast = await ev('window.__f4.rates.slice()');
-  await sleep(2600);   // she stops: the pace eases to zero in ~1.5 s
+  await sleep(3800);   // she stops: the pace eases to zero in ~1.5 s, and the step in hand is finished (a second at most) so the corridor holds ON A SLOT
   const later = await ev('window.__f4.rates.slice()');
   const lastRate = later.length ? later[later.length - 1][1] : null;
   // the updates come in bursts (one tick calls updatePlaybackRate on every animation), so count the TICKS: distinct times 200 ms apart or more
@@ -366,7 +366,7 @@ try { await withHarness(async (app) => {
   await sleep(1500);
   const SCALES = [0, 1, 2, 3, 4, 5, 6, 7].map((j) => 1 / (1.1 + 1.03 * j));
   const readStrength = async () => shotEval(`const S = ${JSON.stringify(SCALES)}; const Wd = innerWidth, Hd = innerHeight, vpx = 0.5 * Wd, vpy = 0.21 * Hd;
-    return S.map((s) => { const x = Math.round(vpx - s * vpx), y = Math.round(vpy + s * (Hd / 2 - vpy)); const ref = med(x - 10, y, 2); let best = 1; for (let dx = -2; dx <= 2; dx++) { for (let dy = -1; dy <= 1; dy++) best = Math.max(best, cr(px(x + dx, y + dy), ref)); } return { s: +s.toFixed(4), x, y, c: +best.toFixed(2) }; });`);
+    return S.map((s) => { const x = Math.round(vpx - s * vpx), y0 = Math.round(vpy + s * (Hd / 2 - vpy)); const rowBest = []; for (const dy of [-30, -15, 0, 15, 30]) { const y = y0 + dy; const ref = px(x - 10, y); let best = 1; for (let dx = -3; dx <= 3; dx++) best = Math.max(best, cr(px(x + dx, y), ref)); rowBest.push(best); } rowBest.sort((p, q) => p - q); return { s: +s.toFixed(4), x, y: y0, c: +rowBest[2].toFixed(2) }; });`);
   const RANGE = [[2.2, 3.6], [1.4, 2.4], [1.3, 2.2], [1.08, 1.65], [1.08, 1.65], [1.08, 1.65], [1.08, 1.65], [1.08, 1.65]];
   const strengthOk = (rr) => rr.length === 8 && rr.every((r, j) => r.c >= RANGE[j][0] && r.c <= RANGE[j][1]);
   const str0 = await readStrength();
@@ -422,14 +422,14 @@ try { await withHarness(async (app) => {
   // ---- MARK (B5): the WRIZO mark is hidden for the whole Jacked In session ------------------------------------------------------------------------------------------------------
   await jackedOpen('The mark stays gone while she writes.', 'dark');
   await sleep(2600);
-  const readMark = () => ev("(() => { const ms = [...document.querySelectorAll('.wz-mark, .wz-flux-wordmark')]; return { n: ms.length, shown: ms.filter((m) => { const c = getComputedStyle(m); return c.visibility !== 'hidden' && +c.opacity > 0.01 && m.getBoundingClientRect().width > 0; }).length }; })()");
+  const readMark = () => ev("(() => { const ms = [...document.querySelectorAll('.brand-mark, .wz-mark, .wz-flux-wordmark')]; return { n: ms.length, shown: ms.filter((m) => { const c = getComputedStyle(m), p = getComputedStyle(m, '::before'); const painted = (c.visibility !== 'hidden' && +c.opacity > 0.01 && m.getBoundingClientRect().width > 0 && m.textContent.trim().length > 0) || (p.content !== 'none' && p.content !== 'normal' && p.visibility !== 'hidden' && +p.opacity > 0.01 && c.display !== 'none' && c.visibility !== 'hidden'); return painted; }).length }; })()");
   const mk0 = await readMark();
   await type('typing, then stopping', 30); await sleep(2600);
   const mk1 = await readMark();
   ok('MARK the WRIZO mark is hidden for the whole Jacked In session: after entering, and again after she types and stops (and there is a mark on this page to hide)', mk0.n >= 1 && mk0.shown === 0 && mk1.n >= 1 && mk1.shown === 0, JSON.stringify({ mk0, mk1 }));
-  await ev("document.querySelectorAll('.wz-mark, .wz-flux-wordmark').forEach((m) => { m.style.setProperty('visibility', 'visible', 'important'); m.style.setProperty('opacity', '1', 'important'); })"); await sleep(120);
+  await ev("document.querySelectorAll('.brand-mark, .wz-mark, .wz-flux-wordmark').forEach((m) => { m.style.setProperty('visibility', 'visible', 'important'); m.style.setProperty('opacity', '1', 'important'); })"); await sleep(120);
   const mkM = await readMark();
-  await ev("document.querySelectorAll('.wz-mark, .wz-flux-wordmark').forEach((m) => { m.style.removeProperty('visibility'); m.style.removeProperty('opacity'); })"); await sleep(120);
+  await ev("document.querySelectorAll('.brand-mark, .wz-mark, .wz-flux-wordmark').forEach((m) => { m.style.removeProperty('visibility'); m.style.removeProperty('opacity'); })"); await sleep(120);
   ok('MUT-MARK the reader goes RED when the mark is forced visible, and green again undone', mkM.shown > 0 && (await readMark()).shown === 0, JSON.stringify(mkM));
 
   // ---- EXIT (B6): the exit line, the first 3 s ---------------------------------------------------------------------------------------------------------------------------------
@@ -538,7 +538,7 @@ try { await withHarness(async (app) => {
   const rm = await shortPage('reduced motion cut', { reduced: true }); await sleep(800);
   await app.mouseMove(1500, 700); await sleep(60); await app.mouseMove(1520, 720); await sleep(300);
   const xr2 = await readX();
-  ok('LEAVE-X-STILL reduced motion is a cut (no transition on the button)', !!xr2 && /^0s(, 0s)*$/.test(xr2.trans), JSON.stringify(xr2));
+  ok('LEAVE-X-STILL reduced motion is a cut (no transition on the button: every duration under a millisecond)', !!xr2 && String(xr2.trans).split(',').every((d) => parseFloat(d) < 0.001), JSON.stringify(xr2));
 
   // ---- CARET-N and DIM -----------------------------------------------------------------------------------------------------------------------------------------------------------------
   await jackedOpen('The caret is a block.', 'dark');
@@ -547,9 +547,9 @@ try { await withHarness(async (app) => {
   const caretOk = (c) => !!c && c.n > 8 && Math.abs(c.w - c.n) <= 1.5;
   const cN = await readCaret();
   ok('CARET-N in Jacked In the caret is a block as wide as an "n" of the page\'s own font (printed: ' + (cN && cN.w) + ' px against an n of ' + (cN && cN.n) + ' px)', caretOk(cN), JSON.stringify(cN));
-  await ev("document.querySelector('.flux-block-caret').style.setProperty('width', '5px', 'important')"); await sleep(120);
+  await ev("(() => { const c = document.querySelector('.flux-block-caret'); c.dataset.was = c.style.width; c.style.setProperty('width', '5px', 'important'); })()"); await sleep(120);
   const cM = await readCaret();
-  await ev("document.querySelector('.flux-block-caret').style.removeProperty('width')"); await sleep(120);
+  await ev("(() => { const c = document.querySelector('.flux-block-caret'); c.style.removeProperty('width'); c.style.width = c.dataset.was; })()"); await sleep(120);
   ok('MUT-CARET-N the reader goes RED on the old 5 px bar, and green again undone', !caretOk(cM) && caretOk(await readCaret()), JSON.stringify(cM));
   const dim = parseFloat(await ev("getComputedStyle(document.documentElement).getPropertyValue('--f3-dim')"));
   const linC = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };

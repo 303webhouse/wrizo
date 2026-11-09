@@ -225,7 +225,8 @@
 /* a frame: the window's own rectangle scaled about the vanishing point (21% of the height). It steps ONE slot a cycle, from the next slot's size to its own, and repeats, so the picture at the
    end of a cycle is the picture at its start. --a/--b the start and end scale, --o0/--o1 the line's opacity (its strength follows its depth), --bw the border that reads 1 px at mid-step */
 :root[data-flux3][data-theme='flux'] .flux3-cor-frame{ position:absolute; left:0; top:0; width:100%; height:100%; display:block; box-sizing:border-box; border:var(--bw, 1px) solid var(--c-line);
-  transform-origin:50% 21%; transform:scale(var(--b)); opacity:var(--o1); will-change:transform, opacity; animation:flux3-cor-step 1.1s linear infinite; }
+  transform-origin:50% 21%; transform:scale(var(--b)); opacity:var(--o1); will-change:transform, opacity; animation:flux3-cor-step 1.1s linear infinite; animation-play-state:paused; }
+:root[data-flux3][data-theme='flux'] .flux3-corridor[data-run] .flux3-cor-frame{ animation-play-state:running; }
 @keyframes flux3-cor-step{ from{ transform:scale(var(--a)); opacity:var(--o0); } to{ transform:scale(var(--b)); opacity:var(--o1); } }
 /* at speed, one lime frame (hidden until then, on the nearest frame's own step); on a milestone, one brass frame past her */
 :root[data-flux3][data-theme='flux'] .flux3-cor-frame[data-kind='lime']{ border-color:var(--c-lime); opacity:.9; visibility:hidden; }
@@ -245,10 +246,10 @@
 :root[data-flux3][data-theme='flux'] .flux3-corridor[data-still] .flux3-cor-frame[data-kind]{ visibility:hidden; }
 :root[data-flux3][data-theme='flux'] .flux3-corridor[data-still] .flux3-cor-glow{ transition:none; }
 /* NOTHING ELSE FROM THE PAGE'S CHROME STANDS IN THE TERMINAL (the Wrizors' Corridor review, Nov 9): the sheet's inner edge (its ::after offset shadow stood at the zoomed sheet's left edge, a 1 px
-   line at x 422), the WRIZO mark (orange: the only orange is hers) and the page's own goal glow (the corridor carries the glow now). Paint only: nothing moves */
+   line at x 422), the WRIZO mark (.brand-mark, its ::before: orange, and the only orange is hers) and the page's own goal glow (the corridor carries the glow now). Paint only: nothing moves */
 :root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .mode-page::before,
 :root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .mode-page::after{ display:none; }
-:root[data-flux3][data-theme='flux'][data-flux3-jacked] :is(.wz-mark, .wz-flux-wordmark){ visibility:hidden !important; opacity:0 !important; }
+:root[data-flux3][data-theme='flux'][data-flux3-jacked] :is(.brand-mark, .wz-mark, .wz-flux-wordmark){ visibility:hidden !important; opacity:0 !important; }
 :root[data-flux3][data-theme='flux'][data-flux3-jacked] .wz-goal-glow{ display:none; }
 @media (prefers-reduced-motion: reduce){ :root[data-flux3][data-theme='flux'] .flux3-cor-glow{ transition:none; } }
 /* THE MILESTONE LETTERS: CHECKPOINT under her line. Earned letters are LIME, the newly earned one pops in BRASS, the ones not yet earned are DOTS (the approved video's own; ghost letters were text at 1.87:1).

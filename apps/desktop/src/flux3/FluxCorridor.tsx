@@ -8,7 +8,9 @@
 //     nearest frame leaves, a new one fades in at the far end), so the corridor flows without a seam. One transform + one opacity per frame, the compositor's.
 //   - PACE DRIVES IT (Nick's named exception, Jacked In only). A key does ONE thing here: it stamps its time into an array. Every 250 ms (4 Hz, never faster) one tick reads the keys of the last
 //     PACE.windowMs, smooths them into a single number, and sets the animations' own playbackRate (updatePlaybackRate keeps every frame where it stands). No per-frame JS, no canvas, no layout.
-//   - WHEN SHE STOPS the pace eases to zero over ~1.5 s and the playbackRate reaches 0: the corridor HOLDS STILL. Nothing moves while she thinks.
+//   - WHEN SHE STOPS the pace eases to zero over ~1.5 s and the corridor HOLDS STILL: it finishes the step it is in at the base speed (a second at most) and stops EXACTLY on a slot, so the picture
+//     at rest is the video's (the eight frames at their depths). Nothing moves while she thinks. The animations START PAUSED (css: animation-play-state, [data-run] runs them), so one that begins
+//     after the pace effect ran (flux-v3.css is a dynamic import) is never left running.
 //   - AT SPEED a lime frame shows (never a score), asked of the flash budget like every flash.
 //   - THE POP: a brass tint and one brass frame flying past, ~0.3 s, once per milestone (FluxCheckpointPop sends 'flux3-pop'); one change through the flash budget.
 //   - THE GLOW (Nick, Nov 9 3:43 pm): it BUILDS as she nears her goal. It reads the same progress as the Glitch bar's units (useGoalProgress over WORD_GOAL, as the bar, the burst edge and the pop
@@ -33,7 +35,8 @@ export const PACE = {
   stillBelow: 0.15,  // under this smoothed pace the corridor holds (playbackRate 0)
 };
 export const POP_MS = 300;   // the brass tint's length
-const STEP_S = 1.1;          // a frame's step from one slot to the next at playbackRate 1
+const STEP_S = 1.1;          // a frame's step from one slot to the next at playbackRate 1 (flux-v3.css flux3-cor-step: keep the two in step)
+const SETTLE_RATE = 1;       // the speed at which a step is finished when she stops
 const MAX_RATE = 5;          // the playbackRate at a fast typist's pace
 // the playback rate for a smoothed pace in keys a second: 0 at rest, MAX_RATE at maxKps and above
 export const rateFor = (pace: number): number => (pace < PACE.stillBelow ? 0 : Math.min(1, pace / PACE.maxKps) * MAX_RATE);
@@ -129,20 +132,39 @@ export function FluxCorridor({ scrollRef, unitCount }: Props) {
     let pace = 0;
     let rate = 0;
     let fast = false;
+    let settle = 0;
+    const anims = () => box.getAnimations({ subtree: true });
+    const stopOnSlot = () => {
+      settle = 0;
+      const dur = STEP_S * 1000;
+      anims().forEach((a) => { if (typeof a.currentTime === 'number' && a.effect && a.effect.getTiming().iterations === Infinity) a.currentTime = Math.round(a.currentTime / dur) * dur; a.updatePlaybackRate(0); });
+      rate = 0;
+      box.removeAttribute('data-run');
+    };
     const tick = () => {
       const now = performance.now();
       while (keys.length && now - keys[0] > PACE.windowMs) keys.shift();
       pace += (keys.length / (PACE.windowMs / 1000) - pace) * PACE.ease;
       const next = rateFor(pace);
-      if (Math.abs(next - rate) >= 0.02 || (next === 0 && rate !== 0)) { rate = next; box.getAnimations({ subtree: true }).forEach((a) => a.updatePlaybackRate(rate)); }
+      if (next > 0) {
+        if (settle) { window.clearTimeout(settle); settle = 0; }
+        if (Math.abs(next - rate) >= 0.02 || !box.hasAttribute('data-run')) { rate = next; box.setAttribute('data-run', ''); anims().forEach((a) => a.updatePlaybackRate(rate)); }
+      } else if (rate > 0 && !settle) {
+        // she stopped: finish the step in hand at the base speed, then hold on the slot
+        const loop = anims().find((a) => a.effect && a.effect.getTiming().iterations === Infinity);
+        const dur = STEP_S * 1000;
+        const t = loop && typeof loop.currentTime === 'number' ? loop.currentTime : 0;
+        const rem = dur - (t % dur);
+        if (rem < 40 || rem > dur - 40) stopOnSlot();
+        else { rate = SETTLE_RATE; anims().forEach((a) => a.updatePlaybackRate(rate)); settle = window.setTimeout(stopOnSlot, rem / SETTLE_RATE); }
+      }
       const f = fast ? pace >= PACE.limeKps * 0.75 : pace >= PACE.limeKps;
       if (f !== fast && (!f || tryFlash('f3-corridor'))) { fast = f; if (f) box.setAttribute('data-fast', ''); else box.removeAttribute('data-fast'); }
     };
     document.addEventListener('keydown', onKey, { capture: true, passive: true });
-    // the corridor stands still until she types: its animations start paused
-    box.getAnimations({ subtree: true }).forEach((a) => a.updatePlaybackRate(0));
+    // the corridor stands still until she types: its animations start PAUSED (css), and [data-run] runs them
     const iv = window.setInterval(tick, PACE.tickMs);
-    return () => { document.removeEventListener('keydown', onKey, { capture: true }); window.clearInterval(iv); box.removeAttribute('data-fast'); };
+    return () => { document.removeEventListener('keydown', onKey, { capture: true }); window.clearInterval(iv); window.clearTimeout(settle); box.removeAttribute('data-fast'); box.removeAttribute('data-run'); };
   }, [box, still]);
 
   // THE POP: brass for POP_MS, once per milestone (FluxCheckpointPop asked the flash budget before it sent this)
