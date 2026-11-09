@@ -39,7 +39,12 @@ export function FluxCheckpointPop({ unitCount }: { unitCount: number }) {
     seen.current = filled;
     if (!grew || !gated) return undefined;
     const still = prefersReducedMotion() || dial === 0;
-    if (!still && tryFlash('f3-pop')) window.dispatchEvent(new CustomEvent('flux3-pop'));
+    // the pop is the milestone's one flash, so a refused ask tries again (the budget refills in under a second); the letter shows either way
+    if (!still) {
+      let tries = 0;
+      const ask = () => { if (tryFlash('f3-pop')) window.dispatchEvent(new CustomEvent('flux3-pop')); else if ((tries += 1) < 4) window.setTimeout(ask, 350); };
+      ask();
+    }
     setShow({ i: filled - 1, goal: celebrating, filled });
     window.clearTimeout(offRef.current);
     offRef.current = window.setTimeout(() => setShow(null), POP_SHOW_MS);

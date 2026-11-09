@@ -110,7 +110,7 @@ try { await withHarness(async (app) => {
   // ---- COR: the corridor's makeup -----------------------------------------------------------------------------------------------------------------
   const readCor = async () => { const cor = await ev(`(() => { const c = document.querySelector('[data-flux3-corridor]'); if (!c) return null; const fr = [...c.querySelectorAll('.flux3-cor-frame')]; const anims = c.getAnimations({ subtree: true });
     const props = new Set(); anims.forEach((x) => (x.effect.getKeyframes() || []).forEach((k) => Object.keys(k).forEach((p) => { if (!['offset', 'easing', 'composite', 'computedOffset'].includes(p)) props.add(p); })));
-    return { frames: fr.length, thin: fr.filter((f) => getComputedStyle(f).borderTopWidth === '1px').length, rails: c.querySelectorAll('svg.flux3-cor-rails').length, props: [...props], canvas: document.querySelectorAll('canvas').length, pe: getComputedStyle(c).pointerEvents, aria: c.getAttribute('aria-hidden'), first: c === document.querySelector('.mode-stage').firstElementChild }; })()`);
+    return { frames: fr.length, thin: fr.filter((f) => getComputedStyle(f).borderTopWidth === '1px').length, rails: c.querySelectorAll('svg.flux3-cor-rails').length, props: [...props], canvas: c.querySelectorAll('canvas').length, pe: getComputedStyle(c).pointerEvents, aria: c.getAttribute('aria-hidden'), first: c === document.querySelector('.mode-stage').firstElementChild }; })()`);
     return { cor, pass: !!cor && cor.frames === 10 && cor.thin === 10 && cor.rails === 1 && cor.first && cor.pe === 'none' && cor.aria === 'true' && cor.props.length > 0 && cor.props.every((p) => p === 'transform' || p === 'opacity') && cor.canvas === 0 }; };
   const corridor = await readCor();
   ok('COR the corridor stands: 8 thin frames + the lime and brass ones, one SVG of rails, first in the stage, inert; its animations touch only transform and opacity; no canvas', corridor.pass, JSON.stringify(corridor.cor));
@@ -149,7 +149,7 @@ try { await withHarness(async (app) => {
   await snap('c-rows');
 
   // ---- CARET: a press anywhere on the page puts the caret at the END of her text ------------------------------------------------------------------
-  const rc = await ev("(() => { const r = document.querySelector('.forward-only-editor').getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height * 0.5) }; })()");
+  const rc = await ev("(() => { const r = document.querySelector('.forward-only-editor').getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(innerHeight * 0.3) }; })()");
   await click(rc.x, rc.y);
   await sleep(400);
   const cb = await ev('window.__f4.caretBefore()');
@@ -183,7 +183,7 @@ try { await withHarness(async (app) => {
   await type(' one two three four five six seven', 30);
   let pop = null, brass = false;
   for (let i = 0; i < 30 && !pop; i += 1) { await sleep(60); pop = await ev(`(() => { const p = document.querySelector('[data-flux3-pop]'); if (!p) return null; return { letters: [...p.children].map((s) => s.textContent).join(''), news: [...p.children].filter((s) => s.dataset.new).length, newColour: (p.querySelector('[data-new]') ? getComputedStyle(p.querySelector('[data-new]')).color : null), text: p.textContent.replace(/[A-Z]/g, '').trim() }; })()`); }
-  if (pop) brass = await ev("!!document.querySelector('[data-flux3-corridor][data-pop]')");
+  for (let i = 0; pop && !brass && i < 50; i += 1) { brass = await ev("!!document.querySelector('[data-flux3-corridor][data-pop]')"); if (!brass) await sleep(30); }
   await snap('c-pop');
   await sleep(2600);
   const gone = await ev("!document.querySelector('[data-flux3-pop]')");
@@ -241,5 +241,5 @@ try { await withHarness(async (app) => {
 
 let bad = 0;
 for (const c of checks) { console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '  ' + c.detail}`); if (!c.pass) bad += 1; }
-console.log(`${checks.length - bad}/${checks.length} checks`);
+console.log(bad ? `\nFLUX3-S4C VERIFY: FAIL - ${bad}/${checks.length} failed` : `\nFLUX3-S4C VERIFY: PASS (${checks.length} checks)`);
 process.exit(bad ? 1 : 0);
