@@ -174,9 +174,17 @@ async function step1() {
     await shot(`walk-1-front-finished__${tag}`);
     // the sequence, in the script's order (times at 1366 are the script's; 2000 reported against the same)
     const logoAfterSketch = t.logoWrite !== null && t.logoStill !== null && t.logoWrite < t.logoStill;
-    must('1', `${tag} the logo writes itself out after the sketch (write at ~3.3 s, still ~1.6 s later)`, w === 1366 ? logoAfterSketch && near(t.logoWrite, 3300, 700) && near(t.logoStill - t.logoWrite, 1600, 500) : logoAfterSketch ? null : false, { logoWrite: t.logoWrite, logoStill: t.logoStill });
+    // PARKED 2026-11-08 (SUPERSEDED - Nick's walk note 5, via Fable, Nov 8: "Splash: the flow chart cycles faster and ONLY the arrows animate", built
+    // in r22 da405d89 (SplashMark ARBOR2_SPEED .4, the floor at the last arrow + 400 ms): the sketch ends ~1.6 s sooner, so the absolute times the
+    // script pins at 1366 (the logo writing at ~3.3 s, the doors at ~7.3 s) are the old splash's. Should have been parked in da405d89; parked
+    // before the r22 box recording). Original, verbatim:
+    // must('1', `${tag} the logo writes itself out after the sketch (write at ~3.3 s, still ~1.6 s later)`, w === 1366 ? logoAfterSketch && near(t.logoWrite, 3300, 700) && near(t.logoStill - t.logoWrite, 1600, 500) : logoAfterSketch ? null : false, { logoWrite: t.logoWrite, logoStill: t.logoStill });
+    // must('1', `${tag} the doors arrive ~0.35 s after the full stop (~7.3 s at 1366)`, t.tagDone !== null && t.doorsIn !== null && near(t.doorsIn - t.tagDone, 350, 300) && (w !== 1366 || near(t.doorsIn, 7300, 900)), { tagDone: t.tagDone, doorsIn: t.doorsIn });
+    // SUCCESSOR: the order and the beats as the script has them (the logo after the sketch and still ~1.6 s after it starts writing; the doors ~0.35 s
+    // after the full stop), at every size; the absolute times are recorded for the Wrizors, not pinned (no new times are ruled for the faster splash).
+    must('1', `${tag} the logo writes itself out after the sketch, still ~1.6 s after it starts (r22: the times are the faster splash's - recorded)`, logoAfterSketch && near(t.logoStill - t.logoWrite, 1600, 500), { logoWrite: t.logoWrite, logoStill: t.logoStill });
     must('1', `${tag} a beat (~0.45 s), then the tagline types; the caret first`, t.logoStill !== null && t.tagFirst !== null && t.caret !== null && t.caret <= t.tagFirst && near(t.tagFirst - t.logoStill, 450, 350), { caret: t.caret, tagFirst: t.tagFirst, tagDone: t.tagDone });
-    must('1', `${tag} the doors arrive ~0.35 s after the full stop (~7.3 s at 1366)`, t.tagDone !== null && t.doorsIn !== null && near(t.doorsIn - t.tagDone, 350, 300) && (w !== 1366 || near(t.doorsIn, 7300, 900)), { tagDone: t.tagDone, doorsIn: t.doorsIn });
+    must('1', `${tag} the doors arrive ~0.35 s after the full stop (r22: the time is the faster splash's - recorded)`, t.tagDone !== null && t.doorsIn !== null && near(t.doorsIn - t.tagDone, 350, 300), { tagDone: t.tagDone, doorsIn: t.doorsIn });
     const words = fin && fin.doors ? fin.doors.map((d) => d.word) : [];
     must('1', `${tag} Write, then Sign in; never "Log in"`, JSON.stringify(words) === '["Write","Sign in"]' && fin && !fin.logIn, { words, logIn: fin && fin.logIn });
     must('1', `${tag} the nudge: 5 s after the doors, once; again every 30 s`, t.doorsIn !== null && t.pulse1 !== null && near(t.pulse1 - t.doorsIn, 5000, 600) && (t.pulse2 === null || near(t.pulse2 - t.pulse1, 30000, 1000)), { doorsIn: t.doorsIn, pulse1: t.pulse1, pulse2: t.pulse2 });
