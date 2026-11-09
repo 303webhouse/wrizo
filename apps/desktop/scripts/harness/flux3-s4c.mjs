@@ -103,34 +103,51 @@ try { await withHarness(async (app) => {
         const id = await fresh(LAT_TEXT);
         await open({ id, tone: 'dark', flag: arm === 'J' ? jFlag : false, prefs: arm === 'J' && jFlag ? {} : { typewriter: true } });
         const stood = await st();
-        await ev(`(() => { window.__lat = []; let t0 = 0; if (window.__latOff) window.__latOff();
-          const kd = () => { t0 = performance.now(); ${arm === 'J' && extra ? `const e = performance.now() + ${extra}; while (performance.now() < e) { /* the mutant: a slow key */ }` : ''} };
-          const bi = () => { const t = t0; requestAnimationFrame(() => requestAnimationFrame(() => { window.__lat.push(performance.now() - t); })); };
-          document.addEventListener('keydown', kd, true); document.addEventListener('beforeinput', bi, true);
-          window.__latOff = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('beforeinput', bi, true); }; return true; })()`);
+        // TWO READINGS (Fable, Nov 9). The first (key -> two frames on) is quantised by the frame clock and does not see a few ms of main-thread cost (measured on Actions: a 20 ms busy-wait
+        // in keydown/beforeinput moved its median by ~2 ms). The second is the cost itself, as rhizome-latency's B2/C2: per key, cost = BUSY (keydown -> the end of the task that handled it:
+        // a message posted at keydown runs only after the key's tasks and the render they flush) + FRAME (the start of the first rAF after the input -> the end of that frame's
+        // rendering: a message posted from the rAF runs after style, layout and paint). The mutant spins in beforeinput (before the meter's own listener), so BUSY carries it.
+        await ev(`(() => { window.__lat = []; window.__ks = []; let t0 = 0, cur = null; if (window.__latOff) window.__latOff();
+          const kd = () => { t0 = performance.now(); const k = { busy: null, frame: null }; cur = k; window.__ks.push(k); const s0 = t0; const mc = new MessageChannel(); mc.port1.onmessage = () => { k.busy = performance.now() - s0; mc.port1.close(); }; mc.port2.postMessage(0); };
+          const spin = () => { ${arm === 'J' && extra ? `const e = performance.now() + ${extra}; while (performance.now() < e) { /* the mutant: a slow key */ }` : ''} };
+          const bi = () => { const t = t0, k = cur; requestAnimationFrame(() => { const r = performance.now(); const mc = new MessageChannel(); mc.port1.onmessage = () => { if (k) k.frame = performance.now() - r; mc.port1.close(); };
+            mc.port2.postMessage(0); requestAnimationFrame(() => { window.__lat.push(performance.now() - t); }); }); };
+          document.addEventListener('keydown', kd, true); document.addEventListener('beforeinput', spin, true); document.addEventListener('beforeinput', bi, true);
+          window.__latOff = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('beforeinput', spin, true); document.removeEventListener('beforeinput', bi, true); }; return true; })()`);
         for (let i = 0; i < KEYS; i += 1) { await app.typeKeys(CYCLE[cursor % CYCLE.length]); cursor += 1; await sleep(GAP); }
         await sleep(250);
         const got = await ev('window.__lat.slice()');
-        if (round > 0) lat[arm].push({ lat: got, stood: { flag: stood.flag, zoom: stood.zoom, jacked: stood.jacked } });
+        const cost = (await ev('window.__ks.map((k) => (k.busy != null && k.frame != null ? k.busy + k.frame : null))')).filter((x) => x != null);
+        if (round > 0) lat[arm].push({ lat: got, cost, stood: { flag: stood.flag, zoom: stood.zoom, jacked: stood.jacked } });
       }
     }
-    const cMeds = lat.C.map((r) => stat(r.lat).median), cP95s = lat.C.map((r) => stat(r.lat).p95);
-    const spreadMed = Math.max(...cMeds) - Math.min(...cMeds), spreadP95 = Math.max(...cP95s) - Math.min(...cP95s);
-    const C = stat(lat.C.flatMap((r) => r.lat)), J = stat(lat.J.flatMap((r) => r.lat));
-    const enough = lat.C.every((r) => r.lat.length >= MIN_KEYS) && lat.J.every((r) => r.lat.length >= MIN_KEYS);
+    // one reading's verdict: the arm's median and p95 within the control's own round-to-round spread (>= 6 control rounds), and no single key over the ceiling (latency only)
+    const judge = (f, ceiling) => {
+      const cMeds = lat.C.map((r) => stat(r[f]).median), cP95s = lat.C.map((r) => stat(r[f]).p95);
+      const spreadMed = Math.max(...cMeds) - Math.min(...cMeds), spreadP95 = Math.max(...cP95s) - Math.min(...cP95s);
+      const C = stat(lat.C.flatMap((r) => r[f])), J = stat(lat.J.flatMap((r) => r[f]));
+      const pass = J.median <= C.median + spreadMed && J.p95 <= C.p95 + spreadP95 && (ceiling == null || J.max <= ceiling);
+      const line = `J median ${r1(J.median)} <= C ${r1(C.median)} + ${r1(spreadMed)}, J p95 ${r1(J.p95)} <= C ${r1(C.p95)} + ${r1(spreadP95)}${ceiling == null ? '' : `, J max ${r1(J.max)} <= ${ceiling}`}`;
+      return { pass, line, C, J };
+    };
+    const enough = lat.C.every((r) => r.lat.length >= MIN_KEYS && r.cost.length >= MIN_KEYS) && lat.J.every((r) => r.lat.length >= MIN_KEYS && r.cost.length >= MIN_KEYS);
     const stoodRight = lat.J.every((r) => (jFlag ? r.stood.flag && r.stood.jacked : !r.stood.flag) && r.stood.zoom === 'true') && lat.C.every((r) => !r.stood.flag && r.stood.zoom === 'true');
-    const pass = enough && stoodRight && J.median <= C.median + spreadMed && J.p95 <= C.p95 + spreadP95 && J.max <= MAX_MS;
-    const line = `${label}: J median ${r1(J.median)} <= C ${r1(C.median)} + ${r1(spreadMed)}, J p95 ${r1(J.p95)} <= C ${r1(C.p95)} + ${r1(spreadP95)}, J max ${r1(J.max)} <= ${MAX_MS}`;
-    return { pass, line, enough, stoodRight, C, J };
+    const clock = judge('lat', MAX_MS), cost = judge('cost', null);
+    // L's verdict = BOTH readings (the frame clock and the main-thread cost per key)
+    const pass = enough && stoodRight && clock.pass && cost.pass;
+    const line = `${label}: clock [${clock.line}] cost [${cost.line}]`;
+    return { pass, line, enough, stoodRight, clock, cost, C: { clock: clock.C, cost: cost.C }, J: { clock: clock.J, cost: cost.J } };
   };
   if (ON_BOX || process.env.FLUX3_L === '1') {
     const main = await runL('main (the control against itself)', 0, false);
     ok(`L-METHOD-GREEN the method passes the control against itself (the box's own noise): ${main.line}`, main.pass && main.enough && main.stoodRight, JSON.stringify({ C: main.C, J: main.J }));
     const l0 = ONLY_L ? null : await runL('Corridor', 0, true);
     if (l0) ok(`L the Jacked In arm adds no latency beyond the control's own spread: ${l0.line}`, l0.pass, JSON.stringify({ C: l0.C, J: l0.J }));
+    // SUPERSEDED (Nov 9, Fable's ruling): the first L-MUT-5/10 asserted RED on the frame-clock reading alone, and that reading cannot see a few ms of main-thread cost (their runs on the
+    // box and Actions stayed green). The successors below assert RED on the COST reading, where the mutant lands.
     for (const extra of ONLY_L ? [] : [5, 10]) {
       const m = await runL(`+${extra} ms mutant`, extra, true);
-      ok(`L-MUT-${extra} the method calls a key that is ${extra} ms slower RED (the mutant landed: ${m.line})`, !m.pass && m.enough && m.stoodRight, JSON.stringify({ C: m.C, J: m.J }));
+      ok(`L-MUT-${extra} the method calls a key that is ${extra} ms slower RED on the cost reading (the mutant landed: ${m.line})`, !m.cost.pass && m.enough && m.stoodRight, JSON.stringify({ C: m.C, J: m.J }));
     }
   } else console.log('INFO L (Actions: timing is the box\'s to judge; FLUX3_L=1 runs it here)');
   };
