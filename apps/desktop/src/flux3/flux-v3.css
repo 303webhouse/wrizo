@@ -159,3 +159,84 @@
   linear-gradient(var(--f3-room-cyan), var(--f3-room-cyan)) 100% 50% / 5px 5px no-repeat; }
 :root[data-flux3][data-theme='flux'] .wz-sliver-panel[data-open='true'],
 :root[data-flux3][data-theme='flux'] .wz-tutor-panel[data-open='true']{ box-shadow:inset 0 0 0 1px var(--f3-room-cyan); }
+
+/* ---- S4: JACKED IN (the spec's §6; src/flux3/FluxJackedIn.tsx, FluxBurstEdge.tsx). Overlays only: the compile layer sits inside the page's own
+   scroller (its position is inline, so it scrolls, scales and fades with the text), and the burst edge is a line on <body>. Nothing here moves
+   the page: the Typewriter's own zoom is the only rect change, as everywhere. ---- */
+/* the compiled words: one whole block per character (sized inline from the word, smaller row by row toward the top), in the choice colour,
+   quiet: a filled block, or a hollow one drawn by its 1 px edge. No paper behind them: the text under the signal is the terminal's to hide */
+:root[data-flux3][data-theme='flux'] .flux3-compile-word{ color:color-mix(in srgb, var(--f3-cyan) 46%, transparent); pointer-events:none; user-select:none; }
+:root[data-flux3][data-theme='flux'] .flux3-compile-word > i.f{ background:currentColor; }
+:root[data-flux3][data-theme='flux'] .flux3-compile-word > i.h{ border:1px solid currentColor; }
+:root[data-flux3][data-theme='flux'][data-page='light'] .flux3-compile-word{ color:color-mix(in srgb, var(--f3-cyan-text) 46%, transparent); }
+/* the decompile: one fade, revealing the words already in the doc (the still state never reaches here: it is a cut) */
+:root[data-flux3][data-theme='flux'] .flux3-compile.decompile,
+:root[data-flux3][data-theme='flux'] .flux3-compile-fade.decompile{ opacity:0; transition:opacity 420ms ease-out; }
+/* the burst edge: the lap's remainder as a lime line across the top of the window, drawn by a transform; no transition (a step per word) */
+:root[data-flux3][data-theme='flux'] .flux3-burst{ position:fixed; left:0; right:0; top:0; height:2px; z-index:70; pointer-events:none;
+  background:color-mix(in srgb, var(--f3-cyan) 14%, transparent); }
+:root[data-flux3][data-theme='flux'] .flux3-burst > i{ position:absolute; inset:0; background:var(--f3-lime); transform-origin:0 50%; }
+/* the block caret on the light page (the Wrizors' S4 r7 blocker: the shared orange at .82 over the light paper reads under 2:1). A solid, darker
+   orange of the same family: 5.2:1 on the paper #F4F7F8, 4.8:1 even on the dim paper (the floor is 4.5). The dark tone keeps its caret. */
+:root[data-flux3][data-theme='flux'][data-page='light'] .flux-block-caret{ background:#A84E00; box-shadow:0 0 6px rgba(168, 78, 0, .4); }
+/* JACKED IN's light tone (Nick, Nov 7): the caret is brass, #FF9800, held by a 1 px ink outline that carries the contrast (the page's own ink,
+   14.7:1 on the white room); the brass fill is the mark. Dark is unchanged. Outside Jacked In the light caret stays #A84E00 (above) */
+:root[data-flux3][data-theme='flux'][data-flux3-jacked][data-page='light'] .flux-block-caret{ background:#FF9800; box-shadow:none; outline:1px solid #042632; outline-offset:0; }
+/* JACKED IN's dark tone (the spec's draft 13 §6: "Dark #FF9800"; the Wrizors' carry, Nov 8: the shared orange at .82 rendered #D98307 over the
+   night glass): the block is solid brass. Outside Jacked In the dark caret is today's */
+:root[data-flux3][data-theme='flux'][data-flux3-jacked]:not([data-page='light']) .flux-block-caret{ background:#FF9800; }
+/* THE TERMINAL (Nick, Nov 7, the spec's draft 13 §6: "we're at a futuristic terminal now"). While jacked in there is NO PAPER: the sheet, its
+   edge, its readouts (DOC, TRK, the hint), its corner brackets, its grid and its scrollbar go, and the words stand on the room's own ground inside
+   the tunnel's frames (dark: the night glass; light: the white room, the paper's own colour, so every contrast stays the page's). Paint only: the
+   page keeps its rect, its zoom, its text and its caret. The Typewriter's band stays on the column: with no paper it darkens nothing, and it
+   fades the signal toward the top.
+   THE VEIL: the writing line reads at full strength, the line above it dimmed (--f3-dim), and every line further up is taken from the text (it
+   is the signal's: FluxJackedIn compiles it on the pause). A still mask on the editor, counted in its own line-heights up from its last line (the
+   writing line), so it rides the Typewriter's own line advance with no script. Esc (looking up: data-flux3-looking) lifts it. */
+:root[data-flux3][data-theme='flux'][data-flux3-jacked]{ --f3-dim:.78;
+  --f3-term-mask:linear-gradient(to top, #000 0, #000 1lh, rgb(0 0 0 / var(--f3-dim)) 1lh, rgb(0 0 0 / var(--f3-dim)) 2lh, transparent 2lh); }
+:root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .mode-page{ background:transparent; border-color:transparent; box-shadow:none; outline:none; }
+:root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .flux-readouts{ visibility:hidden; }
+/* no page to turn: ModeStage's page-turn (.flipping, 12-studio-chrome.css) animates the page's transform from none, so while zoomed it threw the
+   page back to scale 1 for half a second (r9's zoom watch: four times in six seconds, the rect moving). Jacked in it does not play */
+:root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .mode-page.flipping{ animation:none; }
+:root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .mode-scroll{ scrollbar-color:transparent transparent; }
+:root[data-flux3][data-theme='flux'][data-flux3-jacked]:not([data-flux3-looking]) .mode-pagecol[data-zoom='true'] .forward-only-editor{
+  -webkit-mask-image:var(--f3-term-mask); mask-image:var(--f3-term-mask); }
+/* the white room (the light tone): the stage's column takes the paper's colour, and what stands on the room there takes light-room inks */
+:root[data-flux3][data-theme='flux'][data-flux3-jacked][data-page='light'] .desk-frame-stagecol{ background:var(--paper);
+  --f3-room-text:#17313A; --f3-room-quiet:#4F6B70; --f3-room-addr:#006E91; --f3-room-cyan:#006E91; --f3-room-hair:#B7C9CC; --f3-room-fill:#F4F7F8; }
+:root[data-flux3][data-theme='flux'][data-flux3-jacked][data-page='light'] .desk-frame-stagecol .flux3-glitchbar-unit[data-on='true']{ background:#3F6B00; border-color:#3F6B00; }
+:root[data-flux3][data-theme='flux'][data-flux3-jacked][data-page='light'] .desk-frame-stagecol .flux3-glitchbar[data-goal='true'] .flux3-glitchbar-unit{ background:#A84E00; border-color:#A84E00; }
+/* THE GOAL GLOW, ONE TOKEN (Nick, Nov 8: the warm glow behind the words, a lighter blue or gone, his call after trying it). It is the goal's
+   glow (.wz-goal-glow, 13-desk-frame.css: rising with the goal, opacity its only variable), seen through Jacked In's clear page. Today's value,
+   verbatim, until he decides. To swap, change --f3-goal-glow alone. Gone: none. A lighter blue, e.g.:
+   radial-gradient(ellipse at center, color-mix(in srgb, var(--f3-cyan) 30%, transparent) 0%, color-mix(in srgb, var(--f3-cyan) 12%, transparent) 40%, transparent 68%) */
+:root[data-flux3][data-theme='flux']{ --f3-goal-glow:radial-gradient(ellipse at center, rgba(224,113,44,.55) 0%, rgba(224,113,44,.22) 40%, transparent 68%); }
+:root[data-flux3][data-theme='flux'] .wz-goal-glow{ background:var(--f3-goal-glow); }
+/* THE TUNNEL (src/flux3/FluxTunnel.tsx; Nick kept it, Nov 7). Behind the page (first in .mode-stage, under the page column), no pointer. Every
+   animation is transform or opacity (the compositor's), and its speed is the animations' playbackRate, re-set at most every 2 s.
+   THE RECEDE EXCEPTION (named): nothing here recedes while she types, unless the tunnel carries data-recede (TUNNEL_SWITCHES.recedeWhileTyping)
+   or holds while she types with data-hold (TUNNEL_SWITCHES.holdWhileTyping).
+   THE LIGHTER TUNNEL (Nick's pick, Nov 8, from the latency experiment): 6 frames of 110% of the stage, no rays (the rays' rule and --t-ray are gone). */
+:root[data-flux3][data-theme='flux'] .flux3-tunnel{ position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none; contain:strict;
+  --t-line:color-mix(in srgb, var(--f3-cyan) 34%, transparent); transition:opacity var(--fade-dur, 1.2s) ease; }
+:root[data-flux3][data-theme='flux'][data-page='light'] .flux3-tunnel{ --t-line:color-mix(in srgb, var(--f3-cyan-text) 26%, transparent); }
+:root[data-flux3][data-theme='flux'] .flux3-tunnel-frame{ position:absolute; left:50%; top:50%; width:110%; height:110%; box-sizing:border-box; border:1px solid var(--t-line);
+  transform:translate(-50%,-50%) scale(var(--s)); opacity:var(--o); animation:flux3-tunnel-run 9s cubic-bezier(.6,0,.9,.4) infinite; }
+@keyframes flux3-tunnel-run{ from{ transform:translate(-50%,-50%) scale(.04); opacity:0; } 14%{ opacity:.3; } to{ transform:translate(-50%,-50%) scale(1); opacity:1; } }
+/* at speed, lime streaks out of the vanishing point (each a still rotation around an animated run) */
+:root[data-flux3][data-theme='flux'] .flux3-tunnel-streaks{ position:absolute; left:50%; top:50%; width:0; height:0; opacity:0; transition:opacity .6s ease; }
+:root[data-flux3][data-theme='flux'] .flux3-tunnel[data-fast] .flux3-tunnel-streaks{ opacity:1; }
+:root[data-flux3][data-theme='flux'] .flux3-tunnel-streaks > b{ position:absolute; left:0; top:0; width:0; height:0; }
+:root[data-flux3][data-theme='flux'] .flux3-tunnel-streaks > b > i{ position:absolute; left:0; top:0; width:18vmax; height:1px; transform-origin:0 50%;
+  background:linear-gradient(90deg, transparent, color-mix(in srgb, var(--f3-lime) 60%, transparent)); animation:flux3-tunnel-streak 1.6s cubic-bezier(.5,0,1,.6) infinite; }
+@keyframes flux3-tunnel-streak{ from{ transform:translateX(6vmax) scaleX(.2); opacity:0; } 30%{ opacity:1; } to{ transform:translateX(70vmax) scaleX(1); opacity:0; } }
+/* the still state: the frames at their places, nothing running, no streaks */
+:root[data-flux3][data-theme='flux'] .flux3-tunnel[data-still] .flux3-tunnel-frame,
+:root[data-flux3][data-theme='flux'] .flux3-tunnel[data-still] .flux3-tunnel-streaks > b > i{ animation:none; }
+:root[data-flux3][data-theme='flux'] .flux3-tunnel[data-still] .flux3-tunnel-streaks{ display:none; }
+/* THE SWITCHES' rules (inert unless a switch is flipped): recede with the chrome while she types; or hold still while she types */
+html[data-wz-writing='true'][data-flux3][data-theme='flux'] .flux3-tunnel[data-recede]{ opacity:0; }
+html[data-wz-writing='true'][data-flux3][data-theme='flux'] .flux3-tunnel[data-hold] .flux3-tunnel-frame,
+html[data-wz-writing='true'][data-flux3][data-theme='flux'] .flux3-tunnel[data-hold] .flux3-tunnel-streaks > b > i{ animation-play-state:paused; }
