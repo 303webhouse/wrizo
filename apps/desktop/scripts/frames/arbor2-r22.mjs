@@ -96,6 +96,29 @@ const BROWNS = {
   b: {"room":{"--ink-950":"#080402","--ink-900":"#110A06","--ink-800":"#1B120B","--ink-border":"#2E2115","--ink-border-strong":"#3E2D1F","--arbor2-bar":"#19110B","--arbor2-bar-line":"#291E15"},"glow":["#221509","#150C06","#0D0704","#080402"],"drawer":"#231811","page":{"--paper":"#100C09","--paper-dim":"#0B0705","--paper-border":"#2F241A"}},
   c: {"room":{"--ink-950":"#050201","--ink-900":"#0C0604","--ink-800":"#160D08","--ink-border":"#281C12","--ink-border-strong":"#38291B","--arbor2-bar":"#140C08","--arbor2-bar-line":"#241911"},"glow":["#1C1006","#100804","#080402","#050201"],"drawer":"#1D140D","page":{"--paper":"#0C0806","--paper-dim":"#070403","--paper-border":"#291F17"}}};
 
+// the ground UNDER the zoomed page's words: the words (and caret) made transparent for one screenshot, an 8 x 5 grid on the words' column in the
+// writing band (the writing line to 1.4 lines below it); each sample's ratio to the words' ink (r22-typewriter's successor sampler, as a helper)
+const floorUnderWords = async (app) => {
+  const m = await app.evalJs(`(() => { const col = document.querySelector('.mode-pagecol'), p = col && col.querySelector('.mode-page'), ed = p && p.querySelector('.forward-only-editor'); if (!ed) return null;
+    const er = ed.getBoundingClientRect(), cr = col.getBoundingClientRect(), pr = p.getBoundingClientRect();
+    const lh = parseFloat(getComputedStyle(col).getPropertyValue('--tw-lh')) || 43.52, y0 = cr.top + cr.height * 0.5;
+    const l = Math.max(er.left, pr.left) + 4, r = Math.min(er.right, pr.right - 24) - 4;
+    return { xs: Array.from({ length: 8 }, (_, i) => l + (r - l) * i / 7), ys: [0, 0.35, 0.7, 1.05, 1.4].map((k) => y0 + k * lh), ink: getComputedStyle(ed).color }; })()`);
+  if (!m) return { n: 0, min: null };
+  await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'r22-tw-hide2'; s.textContent = '.forward-only-editor, .forward-only-editor *{ color:transparent !important; caret-color:transparent !important; -webkit-text-fill-color:transparent !important; }'; document.head.appendChild(s); return true; })()");
+  await sleep(150);
+  const png = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data;
+  await app.evalJs("document.getElementById('r22-tw-hide2')?.remove()");
+  return app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${png}'; await img.decode(); const dpr = img.width / innerWidth;
+    const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; const cx = c.getContext('2d'); cx.drawImage(img, 0, 0);
+    const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; const L = (p) => 0.2126 * lin(p[0]) + 0.7152 * lin(p[1]) + 0.0722 * lin(p[2]);
+    const ink = ${JSON.stringify(m.ink)}.match(/\\d+/g).slice(0, 3).map(Number);
+    const rows = []; for (const y of ${JSON.stringify(m.ys)}) for (const x of ${JSON.stringify(m.xs)}) { const d = cx.getImageData(Math.round(x * dpr), Math.round(y * dpr), 1, 1).data; const g = [d[0], d[1], d[2]];
+      rows.push({ x: Math.round(x), y: Math.round(y), g, r: Math.round(((Math.max(L(ink), L(g)) + 0.05) / (Math.min(L(ink), L(g)) + 0.05)) * 100) / 100 }); }
+    const min = rows.reduce((a, b) => (b.r < a.r ? b : a), rows[0]);
+    return { n: rows.length, min, ink }; })()`);
+};
+
 const screens = {
   // ── 2. THE BOARD KEEPS ITS RECT; EACH DRAWER OPENS AT ITS EDGE (flush where the margin holds a drawer, over it where it does not, as on the Page)
   'r22-board-drawers': async (app) => {
@@ -264,6 +287,9 @@ const screens = {
   //           the writing line to 1.4 lines below it, where the band is whole - >= 13.9 at every sample (the page-text floor, docs/MAP.md)
   //   caret   by day the caret is the ink (the dark page's brass is 2:1 on plaster)
   //   back    Draft again: the page's background, shadow, ink and rect exactly as before Free Write
+  // (Nick's CORRECTION, via Fable, Nov 8: "page-less Typewriter is NIGHT/dark ONLY. Day/light Typewriter stays exactly as before (the page's paper
+  // stays)". So: proof = zoomProof V9, by room - page-less by night, the hard sheet in the page's paper by day; floor = the words against the ground
+  // under them, which by day is the sheet; caret2 = brass on a dark page in both rooms, the ink on a light one. The lines above are kept as written.)
   'r22-typewriter': async (app) => {
     const out = {};
     for (const room of ['night', 'day']) {
@@ -315,8 +341,12 @@ const screens = {
       await clickMode(app, 'draft'); await sleep(1200);
       const after = await app.evalJs(PAGEREAD);
       const back = !!before && !!after && before.bg === after.bg && before.shadow === after.shadow && before.ink === after.ink && same(before.rect, after.rect) && after.zoom !== 'true';
-      out[room] = { ok: { proof: !!z && z.pass, floor: px.n >= 10 && px.min.r >= 13.9, caret: room === 'night' || m.caret === m.ink, back },
-        z: z && { noSheet: z.noSheet, bare: z.bare, unbroken: z.unbroken, inkOk: z.inkOk, sunEdge: z.sunEdge, ink: z.ink, want: z.want, vMask: z.vMask }, page: m.page, ink: m.ink, caret: m.caret, px, before, after };
+      // PARKED 2026-11-08 (SUPERSEDED - Nick's correction via Fable, Nov 8: "Day/light Typewriter stays exactly as before" - by day the dark page's
+      // caret is brass again, as it was before r22). Original, verbatim:
+      // out[room] = { ok: { proof: !!z && z.pass, floor: px.n >= 10 && px.min.r >= 13.9, caret: room === 'night' || m.caret === m.ink, back },
+      // SUCCESSOR caret2: in both rooms the dark page's caret is brass (#FF9800, its own rule) and the light page's is the words' ink.
+      out[room] = { ok: { proof: !!z && z.pass, floor: px.n >= 10 && px.min.r >= 13.9, caret2: m.page === 'dark' ? m.caret === 'rgb(255, 152, 0)' : m.caret === m.ink, back },
+        z: z && { room: z.room, bare: z.bare, sheet: z.sheet, vignette: z.vignette, inkOk: z.inkOk, sheetOn: z.sheetOn, sheetBg: z.sheetBg, ink: z.ink, want: z.want, vMask: z.vMask }, page: m.page, ink: m.ink, caret: m.caret, px, before, after };
     }
     const bad = Object.entries(out).flatMap(([room, v]) => Object.entries(v.ok).filter(([, x]) => !x).map(([k]) => `${room} ${k}`));
     if (bad.length) fail('R22-TYPEWRITER', { bad, ...out });
@@ -325,6 +355,30 @@ const screens = {
   // for the eye: Typewriter by night and by day (the job's two tones give each a light and a dark Page setting - the words are the room's either way)
   'r22-pic-typewriter-night': async (app) => { await openFree(app, 'arbor-r22-ptn'); await setRoom(app, 'night'); await sleep(900); },
   'r22-pic-typewriter-day': async (app) => { await openFree(app, 'arbor-r22-ptd'); await setRoom(app, 'day'); await sleep(900); },
+  // ── 1b. THE DAWN IN TYPEWRITER (Nick's correction, via Fable, Nov 8: "By the clock: the page fill fades in step with the room's tone; the floors hold
+  // at every moment"). Following the clock (the room row's By the clock), Free Write by night, then the clock walked through the dawn's first half
+  // in small steps - the night fill's whole window (dayness 0 -> .02, the first ~24 s) and beyond - and the room's switch. At each step: the proof
+  // (zoomProof V9: by night the fill at min(1, dayness / .02), by day the sheet) and the floor (the words against the ground UNDER them, the words
+  // made transparent for one screenshot) >= 13.9. The page tone of the job decides the ink by day (cream on the dark page, walnut on the light).
+  'r22-typewriter-dawn': async (app) => {
+    await openFree(app, 'arbor-r22-dawn');
+    await app.evalJs("document.documentElement.removeAttribute('data-room')"); await sleep(300);   // By the clock
+    if ((await app.evalJs("typeof window.arbor2Clock === 'function'")) !== true) fail('R22-TYPEWRITER-DAWN', { seam: false });
+    const steps = ['06:40', '06:50:03', '06:50:06', '06:50:09', '06:50:12', '06:50:18', '06:50:24', '06:50:36', '06:51', '06:53', '06:56', '06:59:50', '07:00:10', '07:05', '07:20'];
+    const rows = [];
+    for (const at of steps) {
+      await app.evalJs(`window.arbor2Clock(${JSON.stringify(at)})`); await sleep(200);
+      const z = await app.evalJs(`(${zoomProof.toString()})(${holeOf.toString()}, ${stopsOf.toString()})`);
+      const px = await floorUnderWords(app);
+      rows.push({ at, dayness: z && z.dayness, room: z && z.room, fill: z && z.fillWant, sheetOpacity: z && z.sheetOpacity, proof: !!z && z.pass, min: px.min && px.min.r, ground: px.min && px.min.g, n: px.n,
+        why: z && !z.pass ? { bare: z.bare, sheet: z.sheet, vignette: z.vignette, inkOk: z.inkOk, ink: z.ink, want: z.want } : undefined });
+    }
+    await app.evalJs('window.arbor2Clock(null)');
+    const inWindow = rows.filter((r) => r.room === 'night' && r.dayness > 0 && r.dayness < 0.02).length;
+    const ok = { proof: rows.every((r) => r.proof), floor: rows.every((r) => r.n >= 10 && r.min >= 13.9), window: inWindow >= 2, crossed: rows.some((r) => r.room === 'night') && rows.some((r) => r.room === 'day') };
+    if (Object.values(ok).some((x) => !x)) fail('R22-TYPEWRITER-DAWN', { ok, rows });
+    say('r22-typewriter-dawn', { ok, rows });
+  },
 
   // ── 3. THREE DARKER NIGHT BROWNS (Fable's ruling 2, Nov 8: "ALL night-room browns step darker together (the room ground, rails, panels, the
   // dark page), keeping the lamplight's warm gradient. Three steps, floors measured, frames for Nick"). For Now, A, B, C by night: the mockup bar's

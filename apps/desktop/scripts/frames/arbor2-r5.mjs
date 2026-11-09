@@ -630,9 +630,19 @@ export default {
       return { zoomed: true, sheetEl: !!document.querySelector('.arbor2-paper'), sheetAttr: document.documentElement.getAttribute('data-arbor2-sheet'),
         bg: pcs.backgroundColor, bgClear: clear(pcs.backgroundColor), pageShadow: pcs.boxShadow, pageBorder: pcs.borderTopColor,
         vMaskVar: getComputedStyle(document.documentElement).getPropertyValue('--arbor2-vignette-mask').trim(), vMask: getComputedStyle(document.body, '::after').maskImage }; })()`);
-    const ok2 = { zoomed: r2.zoomed, noSheet: !r2.sheetEl && r2.sheetAttr === null, bare: r2.bgClear && r2.pageShadow === 'none' && /rgba\(0, 0, 0, 0\)|transparent/.test(r2.pageBorder || ''),
-      unbroken: r2.vMaskVar === '' && r2.vMask === 'none' };
-    if (Object.values(ok2).some((v) => !v)) fail('R5-TYPEWRITER', { bad: Object.keys(ok2).filter((k) => !ok2[k]), ...r2 });
-    say('r5-typewriter', { ok: ok2, ...r2 });
+    // PARKED 2026-11-08 (SUPERSEDED - Nick's correction via Fable, Nov 8: "page-less Typewriter is NIGHT/dark ONLY. Day/light Typewriter stays exactly
+    // as before (the page's paper stays)" - the sheet is back by day, and its element is mounted again in both rooms). Original, verbatim:
+    // const ok2 = { zoomed: r2.zoomed, noSheet: !r2.sheetEl && r2.sheetAttr === null, bare: r2.bgClear && r2.pageShadow === 'none' && /rgba\(0, 0, 0, 0\)|transparent/.test(r2.pageBorder || ''),
+    //   unbroken: r2.vMaskVar === '' && r2.vMask === 'none' };
+    // if (Object.values(ok2).some((v) => !v)) fail('R5-TYPEWRITER', { bad: Object.keys(ok2).filter((k) => !ok2[k]), ...r2 });
+    // say('r5-typewriter', { ok: ok2, ...r2 });
+    // SUCCESSOR: by room. NIGHT page-less - no sheet drawn (none data-on, no data-arbor2-sheet), the page bare, the vignette with no hole. DAY as before
+    // r22 - the original checks above (a hard sheet within the page, the vignette's hole hard, unframed), read from the same READ.
+    const r3 = await app.evalJs("({ room: document.documentElement.getAttribute('data-arbor2-room'), drawn: !!document.querySelector('.arbor2-paper[data-on=\"true\"]') })");
+    const ok3 = r3.room === 'night'
+      ? { zoomed: r2.zoomed, noSheet: !r3.drawn && r2.sheetAttr === null, bare: r2.bgClear && r2.pageShadow === 'none' && /rgba\(0, 0, 0, 0\)|transparent/.test(r2.pageBorder || ''), unbroken: r2.vMaskVar === '' && r2.vMask === 'none' }
+      : { zoomed: r2.zoomed, sheet: r.sheet, hard: r.mask === 'none', vignette: r.edgeGap === 0, unframed: r.shadow === 'none' && r.pageShadow === 'none' && /rgba\(0, 0, 0, 0\)|transparent/.test(r.pageBorder || ''), within: r.within };
+    if (Object.values(ok3).some((v) => !v)) fail('R5-TYPEWRITER', { room: r3.room, bad: Object.keys(ok3).filter((k) => !ok3[k]), ...r2, day: r });
+    say('r5-typewriter', { room: r3.room, ok: ok3, ...r2 });
   },
 };

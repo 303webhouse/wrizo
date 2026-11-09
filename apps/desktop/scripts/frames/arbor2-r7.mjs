@@ -113,8 +113,20 @@ export default {
       return r.zoom === 'true' && /^rgba\(0, 0, 0, 0\)$|^transparent$/.test(r.bg || '') && r.sheetMask === null && r.sheetShadow === null
         && r.ink === (night ? '#EFE4CB' : '#1A0F06') && r.low === (night ? '#B9AA8C' : '#6B5F4E') && r.caret === (night ? (dark ? '#FF9800' : '#EFE4CB') : '#1A0F06')
         && (!dark || (/underline/.test(r.selLine) && /overline/.test(r.selLine) && r.selColour === '#FF9800')); };
+    // PARKED 2026-11-08 (SUPERSEDED - Nick's correction via Fable, Nov 8: "page-less Typewriter is NIGHT/dark ONLY. Day/light Typewriter stays exactly
+    // as before (the page's paper stays)" - zoomedOk judged the day room page-less too). Original, verbatim:
+    // for (const [m, v] of Object.entries(out)) {
+    //   const judge = m === 'freewrite' ? zoomedOk : pageOk;
+    //   ok[m + ' page'] = judge(v.toneRoom);
+    //   ok[m + ' other room'] = judge(v.switched) && v.switched.room !== v.toneRoom.room;
+    //   ok[m + ' rect'] = same(v.off, v.toneRoom.rect) && same(v.off, v.switched.rect);
+    // }
+    // SUCCESSOR: Free Write by NIGHT is zoomedOk's night half (page-less, the room's cream); Free Write by DAY is as before r22 - pageOk (the paper
+    // read through the sheet that stands in for it) and r7's own "typewriter unframed" (the sheet hard, no shadow, in the tone's paper). Draft as before.
+    const dayUnframed = (r) => r.zoom === 'true' && r.sheetMask === 'none' && r.sheetShadow === 'none' && r.paper === (dark ? '#1A1510' : '#F3EDE1');
+    const judgeFw = (r) => (r.room === 'night' ? zoomedOk(r) : pageOk(r) && dayUnframed(r));
     for (const [m, v] of Object.entries(out)) {
-      const judge = m === 'freewrite' ? zoomedOk : pageOk;
+      const judge = m === 'freewrite' ? judgeFw : pageOk;
       ok[m + ' page'] = judge(v.toneRoom);
       ok[m + ' other room'] = judge(v.switched) && v.switched.room !== v.toneRoom.room;
       ok[m + ' rect'] = same(v.off, v.toneRoom.rect) && same(v.off, v.switched.rect);

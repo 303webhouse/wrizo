@@ -507,7 +507,9 @@ export function zoomProofV7(holeOf, stopsOf) {
 
 // SUCCESSOR V8 (r22): V7 with SUNEDGE reading the layer that is drawn by day - .arbor2-pergola (displayed, with a size: liveness), its mask the soft
 // hole paper.ts writes around the words' column while zoomed; nothing over the prose. NOSHEET, BARE, UNBROKEN and INK as V7.
-export function zoomProof(holeOf, stopsOf) {
+// PARKED 2026-11-08 (SUPERSEDED - Nick's correction via Fable, Nov 8: "page-less Typewriter is NIGHT/dark ONLY. Day/light Typewriter stays exactly
+// as before (the page's paper stays)" - V8 read the day room page-less too). Kept verbatim under the name zoomProofV8 (no screen calls it); SUCCESSOR V9.
+export function zoomProofV8(holeOf, stopsOf) {
   const col = document.querySelector('.mode-pagecol[data-zoom="true"]'), p = col && col.querySelector('.mode-page');
   if (!p) return { pass: false, why: 'no zoomed page' };
   const a = p.getBoundingClientRect(), c = col.getBoundingClientRect();
@@ -555,6 +557,61 @@ export function zoomProof(holeOf, stopsOf) {
   return { pass: noSheet && bare && unbroken && inkOk && sunEdge !== false, room, noSheet, bare, unbroken, inkOk, sunEdge, ink, want, proseMax, countMax, vis,
     pageBg: pcs.backgroundColor, pageShadow: pcs.boxShadow, vMask: String(vm).slice(0, 120), uMask: uMask && String(uMask).slice(0, 120) };
 }
+// SUCCESSOR V9 (r22, Nick's correction). Reads computed style only, never paper.ts. By room:
+//   NIGHT  page-less: the page bare; at full night (dayness 0) no sheet at all, and while the room leaves the night (dayness > 0) only the dark
+//          fill - the sheet over the visible page in --arbor2-tw-night-paper at opacity min(1, dayness / .02); the room's vignette carries no mask
+//          (no hole, no edge); the words cream #EFE4CB whatever the Page setting
+//   DAY    as before r22 (V6's day half): the hard sheet exactly over the visible page in the page's own paper, whole, no shadow, no mask; the page
+//          bare; the vignette's hole hard and 0 over the page; the words the page's own ink (walnut #1A0F06 on the light page, cream on the dark)
+export function zoomProof(holeOf, stopsOf) {
+  const col = document.querySelector('.mode-pagecol[data-zoom="true"]'), p = col && col.querySelector('.mode-page');
+  if (!p) return { pass: false, why: 'no zoomed page' };
+  const a = p.getBoundingClientRect(), c = col.getBoundingClientRect();
+  let foot = Infinity;
+  for (const el of document.querySelectorAll('.mode-progress, .mode-progress *')) {
+    const r = el.getBoundingClientRect();
+    if (r.width > 0 && r.height > 0 && r.top > a.top + 40 && r.left < a.right && r.right > a.left) foot = Math.min(foot, r.top);
+  }
+  const vis = { l: Math.max(a.left, c.left), t: Math.max(a.top, c.top), r: Math.min(a.right, c.right), b: Math.min(a.bottom, c.bottom, innerHeight, foot) };
+  const root = document.documentElement, room = root.getAttribute('data-arbor2-room'), dark = root.getAttribute('data-page') === 'dark';
+  const dayness = Number(root.getAttribute('data-arbor2-dayness') || (room === 'day' ? 1 : 0)) || 0;
+  const pcs = getComputedStyle(p);
+  const clear = (v) => v === 'transparent' || /^rgba\(.*,\s*0\)$/.test(v) || /\/\s*0\)$/.test(v);
+  const bare = clear(pcs.backgroundColor) && pcs.boxShadow === 'none'
+    && ['Top', 'Right', 'Bottom', 'Left'].every((sd) => parseFloat(pcs[`border${sd}Width`]) === 0 || clear(pcs[`border${sd}Color`]));
+  const colourOf = (v) => { const i = document.createElement('i'); i.style.color = v; document.body.appendChild(i); const out = getComputedStyle(i).color; i.remove(); return out; };
+  const k = document.querySelector('.arbor2-paper[data-on="true"]'), kr = k ? k.getBoundingClientRect() : null, kcs = k ? getComputedStyle(k) : null;
+  const near = (x, y) => Math.abs(x - y) <= 1;
+  const over = !!kr && near(kr.left, vis.l) && near(kr.top, vis.t) && near(kr.right, vis.r) && near(kr.bottom, vis.b);
+  const sm = kcs ? kcs.maskImage : '';
+  const sheetHard = !!kcs && stopsOf(sm).length === 0 && kcs.boxShadow === 'none' && kcs.display !== 'none' && kcs.visibility !== 'hidden';
+  const vcs = getComputedStyle(document.body, '::after'), vm = vcs.maskImage, vg = stopsOf(vm);
+  const ed = p.querySelector('.forward-only-editor'), ink = ed ? getComputedStyle(ed).color : null;
+  let sheet, vignette, want, fillWant = null;
+  if (room === 'night') {
+    fillWant = Math.max(0, Math.min(1, dayness / 0.02));
+    sheet = fillWant === 0 ? !k : (over && sheetHard && Math.abs(Number(kcs.opacity) - fillWant) < 0.01 && kcs.backgroundColor === colourOf(getComputedStyle(root).getPropertyValue('--arbor2-tw-night-paper').trim()));
+    vignette = vg.length === 0;
+    want = 'rgb(239, 228, 203)';
+  } else {
+    const at = (st, v) => {
+      if (!st.length) return 1;
+      if (v <= st[0].px) return st[0].a;
+      for (let i = 1; i < st.length; i++) if (v <= st[i].px) return st[i].px === st[i - 1].px ? st[i].a : st[i - 1].a + (st[i].a - st[i - 1].a) * (v - st[i - 1].px) / (st[i].px - st[i - 1].px);
+      return st[st.length - 1].a;
+    };
+    sheet = over && sheetHard && Number(kcs.opacity) === 1 && kcs.backgroundColor === colourOf(pcs.getPropertyValue('--paper').trim());
+    const vOk = vg.length === 2 && String(vcs.maskComposite || '').split(',').every((x) => x.trim() === 'add');
+    const vA = (x, y) => (vOk ? 1 - vg.reduce((m, g) => m * (1 - at(g.stops, g.axis === 'x' ? x : y)), 1) : 1);
+    let vMax = 0;
+    for (let i = 0; i <= 12; i++) for (let j = 0; j <= 12; j++) vMax = Math.max(vMax, vA(vis.l + .5 + (vis.r - vis.l - 1) * i / 12, vis.t + .5 + (vis.b - vis.t - 1) * j / 12));
+    vignette = vOk && vMax === 0 && vg.every((g) => g.stops.length === 4 && g.stops[0].px === g.stops[1].px && g.stops[2].px === g.stops[3].px);
+    want = dark ? 'rgb(239, 228, 203)' : 'rgb(26, 15, 6)';
+  }
+  const inkOk = !!ink && ink === want;
+  return { pass: bare && sheet && vignette && inkOk, room, dark, dayness, fillWant, bare, sheet, vignette, inkOk, ink, want, vis,
+    sheetOn: !!k, sheetBg: kcs && kcs.backgroundColor, sheetOpacity: kcs && kcs.opacity, pageBg: pcs.backgroundColor, vMask: String(vm).slice(0, 120) };
+}
 
 export default {
   // the proof above, on a zoomed Free Write page with words (the picture is the same as arbor-page; the row FAILS if the proof does)
@@ -568,7 +625,9 @@ export default {
     // if (!r || !r.pass) throw new Error('ZOOM PROOF FAILED ' + JSON.stringify(r && { sheet: r.sheet, bare: r.bare, edgeless: r.edgeless, whole: r.whole, seamless: r.seamless, sunEdge: r.sunEdge, proseMax: r.proseMax, footOk: r.footOk, room: r.room, worst: r.worst, why: r.why, sheetShadow: r.sheetShadow, pageBg: r.pageBg, vMask: r.vMask }));
     // (r22: the proof is V7 - its verdicts are noSheet / bare / unbroken / inkOk / sunEdge; V6's line is kept below, commented, verbatim)
     // if (!r || !r.pass) throw new Error('ZOOM PROOF FAILED ' + JSON.stringify(r && { sheet: r.sheet, bare: r.bare, hard: r.hard, seamless: r.seamless, sunEdge: r.sunEdge, proseMax: r.proseMax, countMax: r.countMax, vMax: r.vMax, jumps: r.jumps, footOk: r.footOk, room: r.room, why: r.why, sMask: r.sMask, vMask: r.vMask }));
-    if (!r || !r.pass) throw new Error('ZOOM PROOF FAILED ' + JSON.stringify(r && { noSheet: r.noSheet, bare: r.bare, unbroken: r.unbroken, inkOk: r.inkOk, sunEdge: r.sunEdge, ink: r.ink, want: r.want, proseMax: r.proseMax, countMax: r.countMax, room: r.room, why: r.why, vMask: r.vMask }));
+    // (Nick's correction, Nov 8: the proof is V9, by room - its verdicts are bare / sheet / vignette / inkOk; V7's line is kept below, commented, verbatim)
+    // if (!r || !r.pass) throw new Error('ZOOM PROOF FAILED ' + JSON.stringify(r && { noSheet: r.noSheet, bare: r.bare, unbroken: r.unbroken, inkOk: r.inkOk, sunEdge: r.sunEdge, ink: r.ink, want: r.want, proseMax: r.proseMax, countMax: r.countMax, room: r.room, why: r.why, vMask: r.vMask }));
+    if (!r || !r.pass) throw new Error('ZOOM PROOF FAILED ' + JSON.stringify(r && { room: r.room, dark: r.dark, bare: r.bare, sheet: r.sheet, vignette: r.vignette, inkOk: r.inkOk, ink: r.ink, want: r.want, sheetOn: r.sheetOn, sheetBg: r.sheetBg, sheetOpacity: r.sheetOpacity, why: r.why, vMask: r.vMask }));
   },
   // item 1: the room and the page (night = dark tone, day = light tone; day adds item 6's pergola light)
   'arbor-page': async (app) => { await page(app, 'arbor-words', WORDS); },

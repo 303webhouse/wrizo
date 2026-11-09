@@ -292,8 +292,16 @@ export default {
       // SUCCESSOR page2: off the zoom as before (one paper, one ink, all the way through); zoomed, the page clear at every step and its ink the
       // room's at every step - cream by night, walnut by day - so it changes exactly where the room does, once. (Whether the words hold their
       // floor on the room in the middle of the fade is r10-sweep-freewrite's, left live: that is the question with Fable.)
-      page2: m[0].zoom === 'true'
-        ? m.every((x) => x.zoom === 'true' && /^rgba\(0, 0, 0, 0\)$|^transparent$/.test(x.bg || '') && x.ink === (x.room === 'night' ? '#EFE4CB' : '#1A0F06'))
+      // PARKED 2026-11-08 (SUPERSEDED - Nick's correction via Fable, Nov 8: "page-less Typewriter is NIGHT/dark ONLY. Day/light Typewriter stays
+      // exactly as before (the page's paper stays)" - by day the zoomed page's ink is the page's own again: cream on a dark page). Original, verbatim:
+      // page2: m[0].zoom === 'true'
+      //   ? m.every((x) => x.zoom === 'true' && /^rgba\(0, 0, 0, 0\)$|^transparent$/.test(x.bg || '') && x.ink === (x.room === 'night' ? '#EFE4CB' : '#1A0F06'))
+      //   : m.every((x) => x.paper === m[0].paper && x.ink === m[0].ink) && !!m[0].paper,
+      // SUCCESSOR page3: zoomed, the page's own background clear at every step (the sheet or the night fill stands in) and the ink at every step the
+      // room's own: cream in the night room, the page's ink in the day room (walnut on the light page, cream on the dark) - so on the light page it
+      // changes exactly where the room does, once. Off the zoom as before.
+      page3: m[0].zoom === 'true'
+        ? m.every((x) => x.zoom === 'true' && /^rgba\(0, 0, 0, 0\)$|^transparent$/.test(x.bg || '') && x.ink === (x.room === 'night' || x.tone === 'dark' ? '#EFE4CB' : '#1A0F06'))
         : m.every((x) => x.paper === m[0].paper && x.ink === m[0].ink) && !!m[0].paper,
       floors: floors.length === 0,
     };

@@ -25,11 +25,24 @@
 // flourishes"; Arbor-only, still unframed): the sheet's feather is 0 - a hard rectangle with no mask, no border, no shadow, and the
 // vignette's hole over it is hard too. (Oct 29's 48 px feather - "no visible edge" - is superseded.) The pergola keeps its own soft edge.
 // r22 (Fable, Nov 8, ruling 1 on Nick's walk: "while Typewriter is on, Arbor's page draws no fill or edge of its own; the words sit on the
-// room's ground under the lamplight glow; the text floors hold, measured on the room; leaving restores the page exactly"): THE SHEET RETIRES,
-// with its feather and its mask (FEATHER, sheetMask, featherFor). The zoomed page is bare (styles/arbor-v2.css), nothing stands in for it, and
-// the vignette gets no hole over it (the room's shade crosses it unbroken). Only the sun layer's soft hole stays, so no slat crosses the words.
-// A page that is not zoomed is exactly as before: its own opaque paper and the vignette's hard hole. Leaving Typewriter is that page again.
+// room's ground under the lamplight glow; the text floors hold, measured on the room; leaving restores the page exactly"): the sheet retired,
+// with its feather and its mask (FEATHER, sheetMask, featherFor - they stay retired: the sheet is hard).
+// r22 CORRECTION (Nick, via Fable, Nov 8: "page-less Typewriter is NIGHT/dark ONLY. Day/light Typewriter stays exactly as before (the page's
+// paper stays) ... By the clock: the page fill fades in step with the room's tone; the floors hold at every moment"): THE SHEET IS BACK BY DAY.
+//   DAY room    the hard sheet in the page's own paper behind the column, the page's own background stood down, the vignette's hard hole over
+//               it - exactly as before r22 (the sheet also covers the day pergola, so no slat crosses the words).
+//   NIGHT room  page-less at rest (dayness 0): no sheet, no vignette hole; the words in the room's cream on the room under the glow.
+//   THE FADE    while the room leaves the night (dayness 0 -> .5, still the night room), a DARK fill - the dark page's paper
+//               (--arbor2-tw-night-paper) - comes in under the words at opacity min(1, dayness / NIGHT_FILL_T0): the room's ground lightens
+//               toward the day, and cream on it holds 13.9 only while it stays dark (it is 13.2:1 at dayness .05). Dark on dark (1.08:1 on the
+//               room), whole by dayness .02, about 24 s into a 20-minute fade. At the room's switch (dayness .5) the sheet and the ink change
+//               together in one frame, as the room's lettering already does: a 13.9 floor admits only grounds darker than luminance .026 or
+//               lighter than .645, so no fill that fades smoothly between a dark and a light ground can hold it - the change has to be a cut,
+//               and it lands on the cut that is already there. The dusk runs the same way back.
 export const SUN_EDGE = 24;
+export const NIGHT_FILL_T0 = 0.02;
+/** The night fill's opacity at a dayness in [0, .5): 0 at full night, whole from NIGHT_FILL_T0 on (scripts/harness/arbor2-paper-unit.mjs P6). */
+export const nightFill = (dayness: number): number => Math.max(0, Math.min(1, dayness / NIGHT_FILL_T0));
 const BLACK = 'rgb(0,0,0)', CLEAR = 'rgba(0,0,0,0)';
 const px = (n: number) => `${Math.round(n * 10) / 10}px`;
 type Box = { l: number; t: number; r: number; b: number };
@@ -80,24 +93,34 @@ export function vignetteMask(hole: Box, f: number): string {
 }
 
 export function mountPaper(): void {
+  const sheet = document.createElement('div');
+  sheet.className = 'arbor2-paper';
+  sheet.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(sheet);   // after the sun and the pergola: the same z-index, later in order, so it paints over them
+
   let last = '';
   const update = () => {
     const v = visiblePage();
     const sun = document.querySelector('.arbor2-sun') as HTMLElement | null;
     // the room is in the key: by night the sun layer is display:none (a 0x0 box), so its clip is measured again when the day comes back
-    const room = document.documentElement.getAttribute('data-arbor2-room');
-    // r22 (after Actions frames 42537140287): the zoomed page is bare, so the day pergola - a fixed room layer at its full strength, until now
-    // hidden under the page's paper or the retired sheet - crossed the words (the shade read rgb(205,195,166) under them, walnut 10:1, the floor
-    // 13.9). Zoomed, the pergola takes a soft hole around the WORDS' column (not the page's rect: the shade still crosses the page's margins, so
-    // no page edge is drawn): whole SUN_EDGE + 8 px out from the column, nothing from 8 px out. Off the zoom no mask (the page's paper covers it).
-    const ed = v && v.zoomed ? document.querySelector('.mode-pagecol[data-zoom="true"] .forward-only-editor') as HTMLElement | null : null;
-    const er = ed ? ed.getBoundingClientRect() : null;
-    const prose = v && er && er.width > 2 ? { l: er.left - SUN_EDGE - 8, t: v.box.t - SUN_EDGE - 8, r: er.right + SUN_EDGE + 8, b: v.box.b + SUN_EDGE + 8 } : null;
+    const root = document.documentElement;
+    const room = root.getAttribute('data-arbor2-room');
+    const dayness = Number(root.getAttribute('data-arbor2-dayness') ?? (room === 'day' ? 1 : 0)) || 0;
+    // the sheet: by day the page's paper, whole; by night the dark fill at nightFill(dayness) (0 at full night: no sheet at all)
+    const fill = v && v.zoomed ? (room === 'day' ? 1 : nightFill(dayness)) : 0;
     const key = (v ? `${v.box.l},${v.box.t},${v.box.r},${v.box.b},${v.room.l},${v.room.r},${v.room.b},${v.zoomed},${v.paper},${innerWidth},${innerHeight},${room}` : `none,${innerWidth},${room}`)
-      + (prose ? `,${Math.round(prose.l)},${Math.round(prose.r)}` : '');
+      + `,${fill}`;
     if (key === last) return;
     last = key;
-    const root = document.documentElement;
+    if (v && fill > 0) {
+      const w = v.box.r - v.box.l, h = v.box.b - v.box.t;
+      sheet.style.cssText = `left:${v.box.l}px;top:${v.box.t}px;width:${w}px;height:${h}px;background:${room === 'day' ? v.paper : 'var(--arbor2-tw-night-paper)'};opacity:${fill};`;
+      sheet.setAttribute('data-on', 'true');
+      root.setAttribute('data-arbor2-sheet', room === 'day' ? 'on' : 'night');   // after the sheet is drawn
+    } else {
+      root.removeAttribute('data-arbor2-sheet');
+      sheet.removeAttribute('data-on');
+    }
     if (sun) {
       if (v) {
         // in the layer's own box (it sits at inset -80px): whole at the page's edge, nothing SUN_EDGE px in (the hard clip drew a line there)
@@ -114,18 +137,17 @@ export function mountPaper(): void {
     // MASK, so that over the sheet's feather it is exactly what the paper leaves (the hard clip it replaces drew a line there)
     // (the vignette's hole is the PAGE itself, hard: widened to the room's hole it left a pale unshaded band around the page that read as a
     // frame - seen in the r5 day frames at 1920, run 41243059463; only the pergola's hole takes the count row in)
-    // r22: the zoomed page has no hole - the room's shade crosses it unbroken, like the ground and the glow (a hole would draw its edge)
-    if (v && !v.zoomed) root.style.setProperty('--arbor2-vignette-mask', vignetteMask(v.box, 0));
+    // r22: by night the zoomed page has no hole - the room's shade crosses it unbroken, like the ground and the glow (a hole would draw its edge;
+    // the shade only darkens the ground under cream). By day the hard hole over the sheet, as before.
+    if (v && (!v.zoomed || room === 'day')) root.style.setProperty('--arbor2-vignette-mask', vignetteMask(v.box, 0));
     else root.style.removeProperty('--arbor2-vignette-mask');
-    const perg = document.querySelector('.arbor2-pergola') as HTMLElement | null;   // fixed at inset 0: its own box is the viewport
-    if (perg) {
-      if (prose) { perg.style.maskImage = vignetteMask(prose, SUN_EDGE); perg.style.maskComposite = 'add'; }
-      else { perg.style.maskImage = ''; perg.style.maskComposite = ''; }
-    }
   };
   update();
   addEventListener('resize', update);
   addEventListener('hashchange', () => requestAnimationFrame(update));
   document.addEventListener('wz-zoom-changed', () => requestAnimationFrame(update));
+  // the night fill follows the room's dayness in the same frame (a microtask after applyRoom, before the paint): a 300 ms lag would leave the
+  // fading room's lighter ground under cream for a frame or more
+  new MutationObserver(update).observe(document.documentElement, { attributes: true, attributeFilter: ['data-arbor2-dayness', 'data-arbor2-room'] });
   setInterval(update, 300);
 }

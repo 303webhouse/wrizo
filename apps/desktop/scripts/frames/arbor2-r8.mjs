@@ -218,7 +218,13 @@ export default {
       // if (r.page.paper !== PAPER || !(r.page.inkRatio >= 13.9) || !(r.page.lowRatio >= 4.5)) problems.push({ stage: r.stage, page: r.page });
       // SUCCESSOR: a page off the zoom as before; the zoomed page bare (its background clear) with the room's ink - cream #EFE4CB by night, walnut
       // #1A0F06 by day - its floor on the room's own pixels being r22-typewriter's (scripts/frames/arbor2-r22.mjs).
-      if (r.page.zoom === 'true') { if (!/^rgba\(0, 0, 0, 0\)$|^transparent$/.test(r.page.bg || '') || r.page.ink !== (want === 'night' ? '#EFE4CB' : '#1A0F06')) problems.push({ stage: r.stage, page: r.page }); }
+      // PARKED 2026-11-08 (SUPERSEDED - Nick's correction via Fable, Nov 8: "page-less Typewriter is NIGHT/dark ONLY. Day/light Typewriter stays
+      // exactly as before (the page's paper stays)" - the day Free Write stages read page-less here). Original, verbatim:
+      // if (r.page.zoom === 'true') { if (!/^rgba\(0, 0, 0, 0\)$|^transparent$/.test(r.page.bg || '') || r.page.ink !== (want === 'night' ? '#EFE4CB' : '#1A0F06')) problems.push({ stage: r.stage, page: r.page }); }
+      // else if (r.page.paper !== PAPER || !(r.page.inkRatio >= 13.9) || !(r.page.lowRatio >= 4.5)) problems.push({ stage: r.stage, page: r.page });
+      // SUCCESSOR: zoomed by NIGHT, page-less with the room's cream; every other stage - zoomed by day included, where the sheet stands in for the
+      // paper and this read finds it - the original line: the tone's paper, ink >= 13.9 and low ink >= 4.5 on it.
+      if (r.page.zoom === 'true' && want === 'night') { if (!/^rgba\(0, 0, 0, 0\)$|^transparent$/.test(r.page.bg || '') || r.page.ink !== '#EFE4CB') problems.push({ stage: r.stage, page: r.page }); }
       else if (r.page.paper !== PAPER || !(r.page.inkRatio >= 13.9) || !(r.page.lowRatio >= 4.5)) problems.push({ stage: r.stage, page: r.page });
     }
     if (!picks.day || !picks.night) problems.unshift({ picks });

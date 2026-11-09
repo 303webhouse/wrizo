@@ -95,7 +95,9 @@ function effectivePenInk(ink: string, theme: ThemeId, pageTone: PageTone): strin
 // pen's ink follows the room, not the Page setting: each swatch becomes a variable the zoomed page sets per room (styles/arbor-v2.css) - the
 // default the room's page ink, red and blue the pair for that ground. CSS, so it follows the room as the room changes. Display-only: the
 // stored swatch is still the hex. A swatch not in the set (null) keeps effectivePenInk. Off the zoom, and off the flag, nothing changes.
-const ARBOR2_TW_INK: Record<string, string> = { '#1a0f06': 'var(--ink-on-paper)', '#b8231f': 'var(--arbor2-tw-red, #b8231f)', '#1f4fb8': 'var(--arbor2-tw-blue, #1f4fb8)' };
+// (Nick's correction, Nov 8: page-less Typewriter is night only - by day the zoomed page keeps its paper and these variables carry the values the
+// pen had before r22, set per Page setting in styles/arbor-v2.css)
+const ARBOR2_TW_INK: Record<string, string> = { '#1a0f06': 'var(--arbor2-tw-ink, var(--ink-on-paper))', '#b8231f': 'var(--arbor2-tw-red, #b8231f)', '#1f4fb8': 'var(--arbor2-tw-blue, #1f4fb8)' };
 const arbor2TypewriterInk = (ink: string): string | null => ARBOR2_TW_INK[ink.toLowerCase()] ?? null;
 
 interface RailDef { heading: string; items: string[]; ai: 'sealed' | 'open'; tools: 'pen' | 'format'; }

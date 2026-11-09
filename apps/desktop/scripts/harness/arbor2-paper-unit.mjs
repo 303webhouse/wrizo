@@ -90,9 +90,23 @@ const paperSrc = fs.readFileSync(new URL('../../src/arbor2/paper.ts', import.met
 // and the vignette's hole is written only for a page that is not zoomed (the zoomed page's own bareness and the unbroken shade are measured
 // on screen: zoomProof V7, scripts/frames/arbor2.mjs, and r22-typewriter, scripts/frames/arbor2-r22.mjs).
 const gone = ['sheetMask', 'featherFor', 'FEATHER'].filter((n) => n in paperMod);
-ok('P4c no sheet: no sheet helper exported, no .arbor2-paper made, no data-arbor2-sheet set, and the vignette hole only off the zoom',
-  gone.length === 0 && !/arbor2-paper'/.test(paperSrc) && !/setAttribute\('data-arbor2-sheet'/.test(paperSrc)
-  && paperSrc.includes("if (v && !v.zoomed) root.style.setProperty('--arbor2-vignette-mask', vignetteMask(v.box, 0));"), JSON.stringify({ exported: gone }));
+// PARKED 2026-11-08 (SUPERSEDED - Nick's correction via Fable, Nov 8: "page-less Typewriter is NIGHT/dark ONLY. Day/light Typewriter stays exactly
+// as before (the page's paper stays) ... By the clock: the page fill fades in step with the room's tone" - the sheet is back, by day and as the
+// night fill). Original, verbatim:
+// ok('P4c no sheet: no sheet helper exported, no .arbor2-paper made, no data-arbor2-sheet set, and the vignette hole only off the zoom',
+//   gone.length === 0 && !/arbor2-paper'/.test(paperSrc) && !/setAttribute\('data-arbor2-sheet'/.test(paperSrc)
+//   && paperSrc.includes("if (v && !v.zoomed) root.style.setProperty('--arbor2-vignette-mask', vignetteMask(v.box, 0));"), JSON.stringify({ exported: gone }));
+// SUCCESSOR P4d: the sheet's feather helpers stay retired (the sheet is hard), paper.ts makes the sheet again, and the vignette's hole is written
+// off the zoom and by day - never over the night's page-less page (the sheet on screen, by room: zoomProof V9 and r22-typewriter).
+ok('P4d the sheet is back and hard: no feather helper exported, an .arbor2-paper made, and the vignette hole off the zoom or by day only',
+  gone.length === 0 && /className = 'arbor2-paper'/.test(paperSrc)
+  && paperSrc.includes("if (v && (!v.zoomed || room === 'day')) root.style.setProperty('--arbor2-vignette-mask', vignetteMask(v.box, 0));"), JSON.stringify({ exported: gone }));
+// P6 THE NIGHT FILL (Nick's correction: "the page fill fades in step with the room's tone; the floors hold at every moment"): 0 at full night,
+// whole from NIGHT_FILL_T0 (.02) of the dayness on - the opacity at which cream holds 14.0 on the fading room's ground and glow (the arithmetic:
+// paper.ts's note); and never more than whole.
+ok('P6 the night fill: 0 at dayness 0, half at .01, whole from .02, never over 1', paperMod.NIGHT_FILL_T0 === 0.02 && paperMod.nightFill(0) === 0
+  && Math.abs(paperMod.nightFill(0.01) - 0.5) < 1e-9 && paperMod.nightFill(0.02) === 1 && paperMod.nightFill(0.3) === 1 && paperMod.nightFill(0.49) === 1 && paperMod.nightFill(-1) === 0,
+  JSON.stringify({ t0: paperMod.NIGHT_FILL_T0, at: [0, 0.01, 0.02, 0.3].map((t) => paperMod.nightFill?.(t)) }));
 ok('P4 the vignette is whole just outside the page', [[box.l - 1, 400], [box.r + 1, 400], [700, box.t - 1], [700, box.b + 1], [box.l - 1, box.t - 1]].every(([x, y]) => vA(x, y) === 1), '');
 const hg = stopsOf(vignetteMask(box, 0));
 const hA = (x, y) => 1 - hg.reduce((m, g) => m * (1 - at(g.stops, g.axis === 'x' ? x : y)), 1);

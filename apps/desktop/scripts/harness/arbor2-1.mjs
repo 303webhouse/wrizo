@@ -313,7 +313,12 @@ await withHarness(async (app) => {
         return { zoomed: !!col && col.getAttribute('data-zoom') === 'true', pageBg: p ? getComputedStyle(p).backgroundColor : null,
           sheetEl: !!document.querySelector('.arbor2-paper'), sheetAttr: document.documentElement.getAttribute('data-arbor2-sheet') }; })()`);
       const pageAsMode = !!sh2 && sh2.pageBg !== null && !sh2.sheetEl && sh2.sheetAttr === null && (sh2.zoomed ? sh2.pageBg === 'rgba(0, 0, 0, 0)' : sh2.pageBg === PAPER_RGB);
-      ok('L2e day: the room is the plaster, warmed by the afternoon (#F1EAD8 -> #EEE2C8), and the page is as its mode makes it (its own paper; zoomed, bare with no sheet)', onPlaster && pageAsMode, JSON.stringify({ i950: t.i950, ...sh2 }));
+      // PARKED 2026-11-08 (SUPERSEDED - Nick's correction via Fable, Nov 8: "page-less Typewriter is NIGHT/dark ONLY. Day/light Typewriter stays
+      // exactly as before (the page's paper stays)" - this is the day room, where the sheet stands in again). Original, verbatim:
+      // ok('L2e day: the room is the plaster, warmed by the afternoon (#F1EAD8 -> #EEE2C8), and the page is as its mode makes it (its own paper; zoomed, bare with no sheet)', onPlaster && pageAsMode, JSON.stringify({ i950: t.i950, ...sh2 }));
+      // SUCCESSOR L2f: by day, L2d's own claim again - the plaster, and the page has its paper: its own, or (zoomed) the sheet standing in for it,
+      // in the paper colour, the page's own background clear (the same SHEET read as L2d's, above).
+      ok('L2f day: the room is the plaster, warmed by the afternoon (#F1EAD8 -> #EEE2C8), and the page has its paper (its own, or the zoomed page\'s sheet)', onPlaster && paperThere(sh), JSON.stringify({ i950: t.i950, ...sh, zoomed: sh2 && sh2.zoomed }));
     }
   }
 

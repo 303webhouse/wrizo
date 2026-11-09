@@ -281,27 +281,28 @@
    the room. Geometry, colour and its feathered mask come from paper.ts (inline); it takes no pointer and sits under every surface.
    UNFRAMED (Fable, Oct 29: "the zoomed page is unframed, so give the opaque night sheet no visible edge"): no glow, and while it stands in
    the page lets go of its own paper, shadow and border (focused too - by day the focused page drew a 1px ring), so nothing draws an edge. */
-/* r22 (Fable, Nov 8, ruling 1 on Nick's walk): THE SHEET RETIRES (src/arbor2/paper.ts). Its rules were, verbatim:
-     .arbor2-paper{ display:none; }
-     :root[data-arbor2][data-theme='plateau'] .arbor2-paper[data-on='true']{ display:block; position:fixed; z-index:-1; pointer-events:none; box-shadow:none; }
-     :root[data-arbor2][data-theme='plateau'][data-arbor2-sheet='on'] .mode-pagecol[data-zoom='true'] .mode-page,
-     :root[data-arbor2][data-theme='plateau'][data-arbor2-sheet='on'] .mode-pagecol[data-zoom='true'] .mode-page.focused{ background:transparent; box-shadow:none; border-color:transparent; }
-   TYPEWRITER ON THE ROOM: "while Typewriter is on, Arbor's page draws no fill or edge of its own; the words sit on the room's ground under the
-   lamplight glow; the text floors hold, measured on the room; leaving restores the page exactly." The zoomed page is bare (no paper, no hairline,
-   focused too), and its inks are the ROOM's, whatever the Page setting: the words sit on the room, so the ink is the one that holds there.
-     NIGHT  the dark page's own pair: cream #EFE4CB (>= 14.1:1 on the night glow from a quarter of the way down, 15.5 on the room #120A06),
-            low #B9AA8C; pen red / blue #FF9088 / #8AB4FF (the dark page's pair, >= 7:1)
-     DAY    walnut #1A0F06 - the pen's own default (>= 14.7:1 on the plaster at its latest afternoon #EEE2C8, where the light page's #241A10 is
-            13.3, under the 13.9 floor), low #6B5F4E; pen red / blue as stored (#B8231F 5.0 / #1F4FB8 5.7, as on the paper: 5.5 / 6.3)
-   (the pen's ink reaches the editor INLINE; under the zoom ModeStage hands it these variables, so it follows the room as the room changes.)
-   Selectors keyed on data-zoom only: leaving Typewriter, none applies and the page is its own paper again, exactly. */
+/* r22 (Fable, Nov 8, ruling 1 on Nick's walk: "while Typewriter is on, Arbor's page draws no fill or edge of its own; the words sit on the room's
+   ground under the lamplight glow; the text floors hold, measured on the room; leaving restores the page exactly"), with Nick's CORRECTION the
+   same day: "page-less Typewriter is NIGHT/dark ONLY. Day/light Typewriter stays exactly as before (the page's paper stays) ... By the clock: the
+   page fill fades in step with the room's tone; the floors hold at every moment." The sheet (src/arbor2/paper.ts) is drawn by day as before, and
+   by night only as the dark fill that comes in while the room leaves the night (paper.ts's note has the arithmetic).
+     NIGHT  page-less: the page bare, no sheet at rest; the words in the dark page's own pair whatever the Page setting - cream #EFE4CB (>= 14.1:1
+            on the night glow from a quarter of the way down, 15.5 on the room #120A06; 14.35 on the dark fill), low #B9AA8C; pen red / blue
+            #FF9088 / #8AB4FF (>= 7:1)
+     DAY    as before r22: the sheet in the page's own paper, the page's own inks (Free Write's walnut pen #1A0F06 on the light page, cream on the
+            dark), the dark page's brass caret
+   (the pen's ink reaches the editor INLINE; under the zoom ModeStage hands it --arbor2-tw-ink / -red / -blue, so it follows the room as the room
+   changes; by day they are the values the pen had before r22.) Selectors keyed on data-zoom only: leaving Typewriter, none applies. */
+.arbor2-paper{ display:none; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-paper[data-on='true']{ display:block; position:fixed; z-index:-1; pointer-events:none; box-shadow:none; }
+:root[data-arbor2][data-theme='plateau']{ --arbor2-tw-night-paper:#1A1510; }   /* the night fill: the dark page's paper (the brown steps step it) */
 :root[data-arbor2][data-theme='plateau'] .mode-pagecol[data-zoom='true'] :is(.mode-page, .mode-page.focused){ background:transparent; box-shadow:none; border-color:transparent; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .mode-pagecol[data-zoom='true'] .mode-page{
-  --ink-on-paper:#EFE4CB; --ink-on-paper-low:#B9AA8C; --arbor2-tw-red:#FF9088; --arbor2-tw-blue:#8AB4FF; }
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .mode-pagecol[data-zoom='true'] .mode-page{
-  --ink-on-paper:#1A0F06; --ink-on-paper-low:#6B5F4E; --arbor2-tw-red:#B8231F; --arbor2-tw-blue:#1F4FB8; }
-/* the dark page's brass caret is 2:1 on the day plaster: zoomed by day, the caret is the ink (the pen's inline caret is the ink already) */
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .mode-pagecol[data-zoom='true'] .mode-page:not([data-instrument='ink']) .forward-only-editor{ caret-color:var(--ink-on-paper) !important; }
+  --ink-on-paper:#EFE4CB; --ink-on-paper-low:#B9AA8C; --arbor2-tw-ink:#EFE4CB; --arbor2-tw-red:#FF9088; --arbor2-tw-blue:#8AB4FF; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day']:not([data-page='dark']) .mode-pagecol[data-zoom='true'] .mode-page{
+  --arbor2-tw-ink:#1A0F06; --arbor2-tw-red:#B8231F; --arbor2-tw-blue:#1F4FB8; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'][data-page='dark'] .mode-pagecol[data-zoom='true'] .mode-page{
+  --arbor2-tw-ink:var(--ink-on-paper); --arbor2-tw-red:#FF9088; --arbor2-tw-blue:#8AB4FF; }
 /* THE PERGOLA v2 (spec §7b, Oct 31; supersedes §7.1's drawing - sun.ts places every piece in viewport pixels, a fresh seed per session):
    THREE OR FOUR thick BEAMS (shadow bands 36-60 px at the near end, narrowing to 40% as they recede: the clip-path) running as ONE feature
    from the bottom-left corner toward the right, LOW - they inhabit the bottom-right quadrant and the upper half stays mostly clear; ONE OR
@@ -999,15 +1000,18 @@
   --arbor2-bar:#1F150E; --arbor2-bar-line:#2F2218; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-brown='a'][data-arbor2-room='night'] :is(.wz-sliver-panel, .wz-tutor-panel){ --desk-ground:#281D14; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-brown='a'][data-page='dark']{ --paper:#15110C; --paper-dim:#100B08; --paper-border:#34281E; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-brown='a']{ --arbor2-tw-night-paper:#15110C; }   /* Typewriter's night fill steps with the dark page */
 :root[data-arbor2][data-theme='plateau'][data-arbor2-brown='b'][data-arbor2-room='night']{   /* B: OKLab L -0.04 */
   --ink-950:#080402; --ink-900:#110A06; --ink-800:#1B120B; --ink-border:#2E2115; --ink-border-strong:#3E2D1F;
   --lamp-glow: radial-gradient(135% 95% at 50% -8%, #221509 0%, #150C06 38%, #0D0704 70%, #080402 100%);
   --arbor2-bar:#19110B; --arbor2-bar-line:#291E15; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-brown='b'][data-arbor2-room='night'] :is(.wz-sliver-panel, .wz-tutor-panel){ --desk-ground:#231811; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-brown='b'][data-page='dark']{ --paper:#100C09; --paper-dim:#0B0705; --paper-border:#2F241A; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-brown='b']{ --arbor2-tw-night-paper:#100C09; }   /* Typewriter's night fill steps with the dark page */
 :root[data-arbor2][data-theme='plateau'][data-arbor2-brown='c'][data-arbor2-room='night']{   /* C: OKLab L -0.06 */
   --ink-950:#050201; --ink-900:#0C0604; --ink-800:#160D08; --ink-border:#281C12; --ink-border-strong:#38291B;
   --lamp-glow: radial-gradient(135% 95% at 50% -8%, #1C1006 0%, #100804 38%, #080402 70%, #050201 100%);
   --arbor2-bar:#140C08; --arbor2-bar-line:#241911; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-brown='c'][data-arbor2-room='night'] :is(.wz-sliver-panel, .wz-tutor-panel){ --desk-ground:#1D140D; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-brown='c'][data-page='dark']{ --paper:#0C0806; --paper-dim:#070403; --paper-border:#291F17; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-brown='c']{ --arbor2-tw-night-paper:#0C0806; }   /* Typewriter's night fill steps with the dark page */
