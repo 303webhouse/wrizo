@@ -105,15 +105,18 @@ try { await withHarness(async (app) => {
         const stood = await st();
         // TWO READINGS (Fable, Nov 9). The first (key -> two frames on) is quantised by the frame clock and does not see a few ms of main-thread cost (measured on Actions: a 20 ms busy-wait
         // in keydown/beforeinput moved its median by ~2 ms). The second is the cost itself, as rhizome-latency's B2/C2: per key, cost = BUSY (keydown -> the end of the task that handled it:
-        // a message posted at keydown runs only after the key's tasks and the render they flush) + FRAME (the start of the first rAF after the input -> the end of that frame's
-        // rendering: a message posted from the rAF runs after style, layout and paint). The mutant spins in beforeinput (before the meter's own listener), so BUSY carries it.
+        // a message posted from the key's LAST event (the input, bubbling, after the page's own handlers) runs only after the key's tasks and the render they flush; posted at keydown it could
+        // run between the keydown and beforeinput tasks and miss a cost after it: a Nov 9 Actions run saw the +5 ms mutant move the median by 1.2 ms on one leg and 12 on the other)
+        // + FRAME (the start of the first rAF after the input -> the end of that frame's rendering: a message posted from the rAF runs after style, layout and paint).
+        // The mutant spins in beforeinput (before the meter's own listener), so BUSY carries it.
         await ev(`(() => { window.__lat = []; window.__ks = []; let t0 = 0, cur = null; if (window.__latOff) window.__latOff();
-          const kd = () => { t0 = performance.now(); const k = { busy: null, frame: null }; cur = k; window.__ks.push(k); const s0 = t0; const mc = new MessageChannel(); mc.port1.onmessage = () => { k.busy = performance.now() - s0; mc.port1.close(); }; mc.port2.postMessage(0); };
+          const kd = () => { t0 = performance.now(); const k = { busy: null, frame: null, s0: t0 }; cur = k; window.__ks.push(k); };
+          const inp = () => { const k = cur; if (!k || k.busy !== null || k.posted) return; k.posted = true; const mc = new MessageChannel(); mc.port1.onmessage = () => { k.busy = performance.now() - k.s0; mc.port1.close(); }; mc.port2.postMessage(0); };
           const spin = () => { ${arm === 'J' && extra ? `const e = performance.now() + ${extra}; while (performance.now() < e) { /* the mutant: a slow key */ }` : ''} };
           const bi = () => { const t = t0, k = cur; requestAnimationFrame(() => { const r = performance.now(); const mc = new MessageChannel(); mc.port1.onmessage = () => { if (k) k.frame = performance.now() - r; mc.port1.close(); };
             mc.port2.postMessage(0); requestAnimationFrame(() => { window.__lat.push(performance.now() - t); }); }); };
-          document.addEventListener('keydown', kd, true); document.addEventListener('beforeinput', spin, true); document.addEventListener('beforeinput', bi, true);
-          window.__latOff = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('beforeinput', spin, true); document.removeEventListener('beforeinput', bi, true); }; return true; })()`);
+          document.addEventListener('keydown', kd, true); document.addEventListener('beforeinput', spin, true); document.addEventListener('beforeinput', bi, true); document.addEventListener('beforeinput', inp, false); document.addEventListener('input', inp, false);
+          window.__latOff = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('beforeinput', spin, true); document.removeEventListener('beforeinput', bi, true); document.removeEventListener('beforeinput', inp, false); document.removeEventListener('input', inp, false); }; return true; })()`);
         for (let i = 0; i < KEYS; i += 1) { await app.typeKeys(CYCLE[cursor % CYCLE.length]); cursor += 1; await sleep(GAP); }
         await sleep(250);
         const got = await ev('window.__lat.slice()');
