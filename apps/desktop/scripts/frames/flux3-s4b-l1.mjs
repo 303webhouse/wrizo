@@ -20,7 +20,7 @@ const seed = async (app, row, mode) => {
   await sleep(2200);
   return id;
 };
-const stood = (app) => app.evalJs("(() => { const b = document.querySelector('[data-flux3-room-ground]'); const r = (s) => { const e = document.querySelector(s); if (!e) return null; const q = e.getBoundingClientRect(); return [Math.round(q.left), Math.round(q.top), Math.round(q.width), Math.round(q.height)]; }; return { flag: document.documentElement.hasAttribute('data-flux3'), page: document.documentElement.getAttribute('data-page'), ground: !!b, dots: b ? b.querySelectorAll('i').length : 0, canvas: b ? [b.querySelector('canvas').width, b.querySelector('canvas').height] : null, pageRect: r('.mode-page'), host: r('.desk-frame-host') }; })()");
+const stood = (app) => app.evalJs("(() => { const b = document.querySelector('[data-flux3-room-ground]'); const r = (s) => { const e = document.querySelector(s); if (!e) return null; const q = e.getBoundingClientRect(); return [Math.round(q.left), Math.round(q.top), Math.round(q.width), Math.round(q.height)]; }; return { flag: document.documentElement.hasAttribute('data-flux3'), page: document.documentElement.getAttribute('data-page'), ground: !!b, dots: b ? b.querySelectorAll('i').length : 0, picture: b ? getComputedStyle(b).backgroundImage.length : 0, draws: b ? b.dataset.draws : null, pageRect: r('.mode-page'), host: r('.desk-frame-host') }; })()");
 
 export default {
   'room-page': async (app) => {
