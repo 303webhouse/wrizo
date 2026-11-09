@@ -47,6 +47,7 @@ const INSTRUMENT = `(() => {
       if (cr > max) { max = cr; at = [(i / 4) % c.width, Math.floor(i / 4 / c.width)]; } }
     return { max, at, w: c.width, h: c.height }; };
   I.picture = () => { const b = I.box(); if (!b) return null; const bi = getComputedStyle(b).backgroundImage; const s = bi.indexOf('data:image'); if (s < 0) return null; const e = bi.lastIndexOf(')'); let u = bi.slice(s, e); if (u.charCodeAt(u.length - 1) === 34) u = u.slice(0, -1); return u; };
+  I.layerGround = () => { const cv = document.querySelector('[data-flux3-layer] canvas'); return cv && cv.width ? cv.toDataURL('image/png') : null; };
   I.rects = () => { const q = (s) => { const e = document.querySelector(s); if (!e) return null; const r = e.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)]; }; return { page: q('.mode-page'), host: q('.desk-frame-host'), editor: q('.forward-only-editor'), board: q('.board-canvas-wrap') }; };
 })()`;
 
@@ -153,6 +154,10 @@ try { await withHarness(async (app) => {
   const bd = await read();
   ok('GROUND a Schema room: the same ground sits first in the board\'s framed host', groundOk(bd), JSON.stringify(bd));
   await snap('l1-board-dark');
+  // TAME-SCHEMA: the Schema layer's own ground (the board's frame) holds the same rule at the resting view - its coarse trace is no louder than the finer one, so none reads as a link
+  const lurl = await ev('window.__l1.layerGround()');
+  const ltame = lurl && hex ? await ev(`window.__l1.maxContrast(${JSON.stringify(lurl)}, ${JSON.stringify(hex)})`) : null;
+  ok(`TAME-SCHEMA the strongest pixel of the Schema layer's ground at the resting view (${ltame && ltame.max.toFixed(2)}:1) is fainter than the faintest real link (${linkC && linkC.toFixed(2)}:1)`, !!ltame && linkC !== null && ltame.max < linkC, JSON.stringify({ ltame, linkC }));
 
   // ---- MUT: each reader goes red on its own mutant (a change landed, then the SAME read; undone after) ---------------------------------------------------
   await page({ tone: 'dark' });
