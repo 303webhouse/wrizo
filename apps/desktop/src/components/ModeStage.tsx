@@ -497,7 +497,9 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
           </aside>
         )}
 
-        <div className="mode-pagecol" ref={pagecolRef} data-zoom={zoomed ? 'true' : undefined}>
+        <div className="mode-pagecol" ref={pagecolRef} data-zoom={zoomed ? 'true' : undefined}
+          /* Typewriter is forward-only and Jacked In has no paper edge to aim at: a press anywhere in the page's column puts the caret at the end too */
+          onClick={typewriterOn ? onPaperPress : undefined}>
           {/* Format / pen bar (top of page) — chrome, dissolves on write.
               AB2 S2/S3 — retires when framed: its ink swatches and Draft's
               format tools both have a home now in the sliver (CD1:
