@@ -1,0 +1,21 @@
+2026-11-09T16:53:59Z TURN PLAN: L1 HEAD df13e90d (dirty 0); control INK-maincontrol HEAD 7d9f94d5 (dirty 0) running flux3-s4c.mjs L-only (a scratch copy; the stamp will read +1dirty)
+2026-11-09T16:53:59Z harness browsers at turn start: 0
+2026-11-09T16:54:00Z quiet check before the grant: Wow / OBS / streaming absent
+2026-11-09T16:54:00Z TAKE: granted to lane "ink" and bound to the process tree of pid 19904 - name this turn's start and end in your report
+WS_BOX_TURN=<drawn>   (drawn now, printed once, not stored - only its hash is in the grant file; export it in the shell or script that runs the harness)
+2026-11-09T16:54:00Z TURN START
+2026-11-09T16:54:01Z quiet check before control-before: Wow / OBS / streaming absent
+2026-11-09T16:54:01Z [control-before] start (flux3-s4c.mjs in INK-maincontrol, )
+2026-11-09T16:59:15Z [control-before] exit 0: [01/1] OK        exit=0  312s flux3-s4c.mjs :: FLUX3-S4C VERIFY: PASS (3 checks) ;; SUITE DONE HARNESS_PARKED=unset — 1/1 of 1 returned a passing verdict ;; SUITE RESULT: CLEAN — tree=7d9f94d5+1dirty bundle=index-e17ME4Wi.js/994681b NO-REBUILD
+2026-11-09T16:59:15Z quiet check before l1-default: Wow / OBS / streaming absent
+2026-11-09T16:59:15Z [l1-default] start (flux3-s4b-l1.mjs in INK-s4b-l1, )
+2026-11-09T17:06:53Z [l1-default] exit 0: [01/1] OK        exit=0  456s flux3-s4b-l1.mjs :: ROWS-SHADOW VERIFY: PASS (2570 renders checked, shadow == DOM on every one) ;; FLUX3-S4B-L1 VERIFY: PASS (16 checks) ;; SUITE DONE HARNESS_PARKED=unset — 1/1 of 1 returned a passing verdict ;; SUITE RESULT: CLEAN — tree=df13e90d bundle=index-DiaPpw_I.js/998681b NO-REBUILD
+2026-11-09T17:06:54Z quiet check before l1-parked: Wow / OBS / streaming absent
+2026-11-09T17:06:54Z [l1-parked] start (flux3-s4b-l1.mjs in INK-s4b-l1, --parked)
+2026-11-09T17:14:33Z [l1-parked] exit 0: [01/1] OK        exit=0  458s flux3-s4b-l1.mjs :: ROWS-SHADOW VERIFY: PASS (2570 renders checked, shadow == DOM on every one) ;; FLUX3-S4B-L1 VERIFY: PASS (16 checks) ;; SUITE DONE HARNESS_PARKED=1 — 1/1 of 1 returned a passing verdict ;; SUITE RESULT: CLEAN — tree=df13e90d bundle=index-DiaPpw_I.js/998681b NO-REBUILD
+2026-11-09T17:14:34Z quiet check before control-after: Wow / OBS / streaming absent
+2026-11-09T17:14:34Z [control-after] start (flux3-s4c.mjs in INK-maincontrol, )
+2026-11-09T17:19:49Z [control-after] exit 0: [01/1] OK        exit=0  313s flux3-s4c.mjs :: FLUX3-S4C VERIFY: PASS (3 checks) ;; SUITE DONE HARNESS_PARKED=unset — 1/1 of 1 returned a passing verdict ;; SUITE RESULT: CLEAN — tree=7d9f94d5+1dirty bundle=index-e17ME4Wi.js/994681b NO-REBUILD
+2026-11-09T17:19:49Z RELEASE: released  grant file now absent
+2026-11-09T17:19:50Z harness browsers at turn end: 0
+2026-11-09T17:19:50Z TURN END
