@@ -95,4 +95,12 @@ SCREENS['diag-vars-main'] = async (app) => {
   await seed(app, 'An older line she wrote before this session.', { flag: false, typewriter: true });
   console.log(`FLUX3-S4C-FRAME diag-vars-main ${JSON.stringify(await app.evalJs("(() => { const p = document.querySelector('.mode-page'); const col = document.querySelector('.mode-pagecol'); const g = (e, n) => getComputedStyle(e).getPropertyValue(n).trim(); return { hl: g(p, '--wz-page-hl'), h: g(p, '--wz-page-h'), height: getComputedStyle(p).height, zoom: col && col.getAttribute('data-zoom'), flag: document.documentElement.hasAttribute('data-flux3') }; })()"))}`);
 };
+SCREENS['diag-top'] = async (app) => {
+  await seed(app, 'An older line she wrote before this session.');
+  const p = async () => app.evalJs("(() => { const stage = document.querySelector('.desk-frame-stage'); const s = stage.getBoundingClientRect(); const page = stage.querySelector('.mode-page'); const col = page.parentElement; const c = col.getBoundingClientRect(); const g = (n) => getComputedStyle(stage).getPropertyValue(n).trim(); return { s: [Math.round(s.top), Math.round(s.height)], colTop: Math.round(c.top), colH: Math.round(c.height), off: page.offsetTop, offParent: page.offsetParent && String(page.offsetParent.className).slice(0, 24), k: g('--wz-k'), hl: g('--wz-page-hl'), foot: g('--wz-page-foot'), kids: [...col.children].map((e) => String(e.className).slice(0, 18) + ':' + Math.round(e.getBoundingClientRect().height)) }; })()");
+  console.log(`FLUX3-S4C-FRAME diag-top-before ${JSON.stringify(await p())}`);
+  await app.cdp('Emulation.setDeviceMetricsOverride', { width: 1900, height: 1060, deviceScaleFactor: 1, mobile: false });
+  await sleep(700);
+  console.log(`FLUX3-S4C-FRAME diag-top-after-resize ${JSON.stringify(await p())}`);
+};
 export default SCREENS;
