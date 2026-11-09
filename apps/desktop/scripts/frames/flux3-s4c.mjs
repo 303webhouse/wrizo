@@ -85,4 +85,5 @@ SCREENS['diag-rows'] = async (app) => {
 SCREENS['diag-pink'] = diag('diag-pink', "document.querySelectorAll('.forward-only-editor, .forward-only-editor *').forEach((e) => { e.style.setProperty('color','#ff00ff','important'); e.style.setProperty('-webkit-text-fill-color','#ff00ff','important'); e.style.setProperty('opacity','1','important'); })");
 SCREENS['diag-nocompile'] = diag('diag-nocompile', "document.querySelectorAll('.flux3-compile').forEach((e) => { e.style.display = 'none'; })");
 SCREENS['diag-nofade'] = diag('diag-nofade', "document.querySelectorAll('.mode-pagecol, .mode-page, .mode-scroll').forEach((e) => { e.style.setProperty('mask-image','none','important'); e.style.setProperty('-webkit-mask-image','none','important'); e.style.setProperty('opacity','1','important'); }); document.querySelectorAll('.forward-only-editor *').forEach((e) => e.style.setProperty('opacity','1','important'))");
+SCREENS['diag-resize'] = diag('diag-resize', "window.dispatchEvent(new Event('resize'))");
 export default SCREENS;
