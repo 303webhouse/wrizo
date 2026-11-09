@@ -176,6 +176,8 @@ try { await withHarness(async (app) => {
   const ls = ld ? await ev(`window.wrizoCreateBinder('Set L', 'book', ${JSON.stringify(ld.id)})`) : null;
   if (ls) await page('l2-ld1', 'A page in the long drawer.', { projectId: ls.id, origin: null });
   await sleep(400);
+  // the place follows a page only at landing, not on a route: stand her in the long Drawer the way the switcher would (the device's own place preference, not a collection)
+  if (ld) await ev(`localStorage.setItem('wz.place.anon', JSON.stringify({ kind: 'drawer', id: ${JSON.stringify(ld.id)}, setId: ${JSON.stringify(ls && ls.id)} }))`);
   await open('l2-ld1');
   const lr = await rail();
   const lDoor = lr && lr.items.find((i) => i.cat === 'drawers');
