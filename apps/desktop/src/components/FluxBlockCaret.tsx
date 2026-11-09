@@ -18,6 +18,14 @@ import { caretRow } from './useTypewriterFade';
 // a writer never ends up with no visible caret at all if a rect can't be
 // resolved (an empty line, a fresh mount, a non-Chromium selection quirk).
 const PROSE_SURFACES = '.forward-only-editor, .entry-edit, .board-text, .script-el-active';
+// A caret held at an ELEMENT boundary (the editor restoring it as its own child index after a re-render) has no rect of its own, and the row
+// fallback took the in-progress word's INLINE span for the "row", so the block stood on the last word's first letter (the Wrizors' S4 r9
+// review). An inline span is never a row: the probe finds the caret's place instead [FluxBlockCaret §5]
+export const CARET_PLACE = { textEnd: true };
+// The block holds SOLID while keys land and blinks only at rest (the Wrizors' S4 carry, ruled in by Fable, Nov 7: plain Flux too). A key marks the
+// drawn block data-typing (06-flux-v2.css stops its blink); restMs after the last key the mark lifts and the blink resumes. The mark is set on the
+// element directly, so a key costs no render [FluxBlockCaret §6]
+export const CARET_BLINK = { restMs: 600 };
 
 interface Rect { left: number; top: number; width: number; height: number }
 
@@ -25,6 +33,24 @@ export function FluxBlockCaret() {
   const theme = useTheme();
   const [rect, setRect] = useState<Rect | null>(null);
   const activeElRef = useRef<HTMLElement | null>(null);
+  const caretElRef = useRef<HTMLDivElement | null>(null);
+  const typingRef = useRef(false);
+  const markTyping = (el: HTMLDivElement | null) => { if (!el) return; if (typingRef.current) el.setAttribute('data-typing', ''); else el.removeAttribute('data-typing'); };
+
+  // [FluxBlockCaret §6] solid while keys land, blinking at rest
+  useEffect(() => {
+    if (theme !== 'flux') return undefined;
+    let rest = 0;
+    const set = (on: boolean) => { typingRef.current = on; markTyping(caretElRef.current); };
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.key.length === 1 || e.key === 'Enter' || e.key === 'Backspace' || e.key === 'Delete' || e.key === 'Tab')) return;
+      if (!typingRef.current) set(true);
+      window.clearTimeout(rest);
+      rest = window.setTimeout(() => set(false), CARET_BLINK.restMs);
+    };
+    document.addEventListener('keydown', onKey, { capture: true, passive: true });
+    return () => { document.removeEventListener('keydown', onKey, { capture: true }); window.clearTimeout(rest); set(false); };
+  }, [theme]);
 
   useEffect(() => {
     if (theme !== 'flux') {
@@ -51,7 +77,35 @@ export function FluxBlockCaret() {
       const range = sel.getRangeAt(0).cloneRange();
       let r = range.getClientRects()[0];
       // the caret's row is the truth where the range gives no rect (a fresh empty line) or a rect off the row; the block stands at the row's start, on scrolls and glides too [FluxBlockCaret §1]
-      const row = caretRow(sel, surface);
+      const row0 = caretRow(sel, surface);
+      // [FluxBlockCaret §5] an inline span HOLDING TEXT (the in-progress word) is never the caret's row: without a rect, the caret at an element
+      // boundary stands at the END of the text just before it, read without touching the DOM, so it follows scrolls and glides too (a probe may
+      // not run then). An inline span with no visible text (the new line after Enter) stays the row: its start is the caret's place (C17-AT)
+      const zeroWidth = (ch: string) => ch.charCodeAt(0) === 0x200b || ch.charCodeAt(0) === 0xfeff;
+      const visible = (s: string) => [...s].some((ch) => ch.trim() !== '' && !zeroWidth(ch));
+      // whether a span holds a visible character, from its text nodes one by one (never its whole text: no editor-text reader here)
+      const holdsText = (el: Element) => { const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); for (let n = w.nextNode(); n; n = w.nextNode()) if (visible(n.nodeValue ?? '')) return true; return false; };
+      const wordRow = !!row0 && CARET_PLACE.textEnd && getComputedStyle(row0).display === 'inline' && holdsText(row0);
+      const row = wordRow ? null : row0;
+      const atTextEnd = (): DOMRect | null => {
+        const a = sel.anchorNode;
+        if (!wordRow || !a || a.nodeType !== Node.ELEMENT_NODE || sel.anchorOffset === 0) return null;
+        for (let s: Node | null = a.childNodes[sel.anchorOffset - 1] ?? null; s; s = s.previousSibling) {
+          let t: Text | null = null;
+          if (s.nodeType === Node.TEXT_NODE) t = s as Text;
+          else { const w = document.createTreeWalker(s, NodeFilter.SHOW_TEXT); for (let n = w.nextNode(); n; n = w.nextNode()) if (visible(n.nodeValue ?? '')) t = n as Text; }
+          const v = t?.nodeValue ?? '';
+          let i = v.length;
+          while (i > 0 && zeroWidth(v[i - 1])) i -= 1;
+          if (!t || !i) continue;
+          const one = document.createRange();
+          one.setStart(t, i - 1); one.setEnd(t, i);
+          const lr = [...one.getClientRects()].pop();
+          if (lr && lr.height) return new DOMRect(lr.right, lr.top, 0, lr.height);
+        }
+        return null;
+      };
+      if (!r) { const fromEnd = atTextEnd(); if (fromEnd) r = fromEnd; }
       const atRowStart = (): DOMRect | null => {
         if (!row) return null;
         const rr = row.getBoundingClientRect();
@@ -124,6 +178,7 @@ export function FluxBlockCaret() {
   if (theme !== 'flux' || !rect) return null;
   return (
     <div
+      ref={(el) => { caretElRef.current = el; markTyping(el); }}
       aria-hidden="true"
       className="flux-block-caret"
       style={{ left: rect.left, top: rect.top, width: rect.width, height: rect.height }}

@@ -167,8 +167,23 @@ export function holdTypewriterPage(id: string): () => void {
   return () => { if (heldPageId === id) heldPageId = null; };
 }
 
+// FLUX3 S4 - the Jack In default: a SESSION overlay on Free Write's shared field, laid only by src/flux3/FluxJackedIn.tsx (Flux, under ?flux3=1).
+// It is never saved and never written into `typewriter`, so no other theme's Typewriter changes; the writer's own toggle (below) clears it.
+let freeWriteOverlay = false;
+export function setFreeWriteOverlay(on: boolean): void {
+  if (freeWriteOverlay === on) return;
+  freeWriteOverlay = on;
+  current = { ...current };   // a new value, so every reader re-renders; nothing is stored
+  subs.forEach(fn => fn(current));
+}
+/** Free Write's Typewriter: the shared field, or the Jack In default's overlay while it lies. */
+export function freeWriteTypewriter(s: WritingSettings): boolean {
+  return s.typewriter || freeWriteOverlay;
+}
+
 /** The writer's toggle. Writes the live value and, on a held Draft/Screenplay page, that page's own memory. */
 export function setTypewriterExplicit(on: boolean): void {
+  freeWriteOverlay = false;
   setWritingSettings({ typewriter: on });
   if (heldPageId != null) writePageTypewriter(heldPageId, on);
 }
