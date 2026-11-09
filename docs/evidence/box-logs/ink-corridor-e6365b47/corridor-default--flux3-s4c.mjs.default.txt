@@ -1,0 +1,21 @@
+PASS DEF Flux Free Write opens Jacked In (zoomed, marked) and is ALWAYS DARK even with the saved Page = light
+PASS CHROME no rail, strip, corkboard, hands or Glitch bar while jacked in (opacity 0, no pointer)
+PASS CHROME-RECT the page's rect does not move while the chrome is away (page primacy)
+PASS COR the corridor stands: 8 thin frames + the lime and brass ones, one SVG of rails, first in the stage, inert; its animations touch only transform and opacity; no canvas
+PASS PACE the rate rises while she types fast (max 5), is set at most 4 times a second (1.1/s), and is 0 after she stops (0) with the frames holding still
+PASS ROWS some of this session's lines compiled (6 rows), at most six, each a step back (height x~0.925 of the one before, opacity ~-0.15)
+PASS ROWS-SESSION none of the seeded (older) text became signal: every compiled word is one she typed this session
+PASS CARET a press mid-page in Typewriter puts the caret at the END of her text
+PASS GLOW --f3-goal-glow is #57D0F5 at 12% then 4%, none at the edge, never above 14% (radial-gradient(ellipse at center, rgb(87 208 245 / .12) 0%, rgb(87 208 245 / .04) 55%, transparent 100%))
+PASS MUT-TONE-LIGHT the reader goes RED on its mutant (tone light) and green again undone
+PASS MUT-CHROME-VISIBLE the reader goes RED on its mutant (chrome visible) and green again undone
+PASS MUT-GLOW-20% the reader goes RED on its mutant (glow 20%) and green again undone
+PASS MUT-A-FRAME-REMOVED the reader goes RED on its mutant (a frame removed) and green again undone
+PASS POP a milestone pops one brass letter of CHECKPOINT (the newest), no number, the corridor goes brass for ~0.3 s, and the word fades
+PASS ESC looking up brings the chrome back (the marks lift)
+PASS L-METHOD-GREEN the method passes the control against itself (the box's own noise): main (the control against itself): J median 25.5 <= C 25.2 + 2.1, J p95 32.6 <= C 32.6 + 1, J max 33.8 <= 100
+FAIL L the Jacked In arm adds no latency beyond the control's own spread: Corridor: J median 25.8 <= C 25.2 + 1.8, J p95 33.3 <= C 32.3 + 0.5, J max 40.1 <= 100  {"C":{"n":264,"median":25.199999928474426,"p95":32.299999952316284,"max":33.799999952316284},"J":{"n":264,"median":25.799999952316284,"p95":33.299999952316284,"max":40.10000002384186}}
+FAIL L-MUT-5 the method calls a key that is 5 ms slower RED (the mutant landed: +5 ms mutant: J median 26 <= C 25.5 + 1.3, J p95 33.1 <= C 32.5 + 1.4, J max 49.8 <= 100)  {"C":{"n":264,"median":25.5,"p95":32.5,"max":34},"J":{"n":264,"median":26,"p95":33.10000002384186,"max":49.799999952316284}}
+FAIL L-MUT-10 the method calls a key that is 10 ms slower RED (the mutant landed: +10 ms mutant: J median 25.6 <= C 25.3 + 1.4, J p95 33.1 <= C 32.7 + 1.2, J max 39.4 <= 100)  {"C":{"n":264,"median":25.299999952316284,"p95":32.700000047683716,"max":37.89999997615814},"J":{"n":264,"median":25.600000023841858,"p95":33.10000002384186,"max":39.39999997615814}}
+
+FLUX3-S4C VERIFY: FAIL - 3/19 failed

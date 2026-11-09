@@ -1,0 +1,3 @@
+PASS L-METHOD-GREEN the method passes the control against itself (the box's own noise): main (the control against itself): J median 25.9 <= C 25.5 + 1.1, J p95 32.7 <= C 32.7 + 1.2, J max 34.3 <= 100
+
+FLUX3-S4C VERIFY: PASS (1 checks)
