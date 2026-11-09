@@ -103,4 +103,9 @@ SCREENS['diag-top'] = async (app) => {
   await sleep(700);
   console.log(`FLUX3-S4C-FRAME diag-top-after-resize ${JSON.stringify(await p())}`);
 };
+SCREENS['diag-first'] = async (app) => {
+  await app.cdp('Page.addScriptToEvaluateOnNewDocument', { source: `(() => { window.__hl = []; const sp = CSSStyleDeclaration.prototype.setProperty; CSSStyleDeclaration.prototype.setProperty = function (n, v, p) { if (n === '--wz-page-hl') { try { const st = document.querySelector('.desk-frame-stage'); const page = st && st.querySelector('.mode-page'); const col = page && page.parentElement; const s = st && st.getBoundingClientRect(); const c = col && col.getBoundingClientRect(); window.__hl.push({ v, t: Math.round(performance.now()), sh: s && Math.round(s.height), ct: c && Math.round(c.top - s.top), off: page && page.offsetTop, stageKids: st ? [...st.children].map((e) => String(e.className).slice(0, 20) + ':' + Math.round(e.getBoundingClientRect().height) + ':' + getComputedStyle(e).position) : null, colKids: col ? [...col.children].map((e) => String(e.className).slice(0, 14) + ':' + Math.round(e.getBoundingClientRect().height)) : null, cor: !!document.querySelector('[data-flux3-corridor]'), jk: document.documentElement.hasAttribute('data-flux3-jacked'), sheets: document.styleSheets.length }); } catch (e) { window.__hl.push(String(e)); } } return sp.call(this, n, v, p); }; })()` });
+  await seed(app, 'An older line she wrote before this session.');
+  console.log(`FLUX3-S4C-FRAME diag-first ${JSON.stringify(await app.evalJs('window.__hl'))}`);
+};
 export default SCREENS;
