@@ -36,7 +36,7 @@ const INSTRUMENT = `(() => {
   I.read = () => { const b = I.box(); if (!b) return null; const host = b.parentElement; const cs = getComputedStyle(b);
     const px = cs.backgroundImage.indexOf('data:image/png') > 0 ? cs.backgroundImage.length : 0;
     const anims = b.getAnimations({ subtree: true }); const props = new Set(); anims.forEach((a) => (a.effect.getKeyframes() || []).forEach((k) => Object.keys(k).forEach((p) => { if (!['offset', 'easing', 'composite', 'computedOffset'].includes(p)) props.add(p); })));
-    return { first: host.firstElementChild === b, host: String(host.className).slice(0, 24), z: cs.zIndex, pe: cs.pointerEvents, aria: b.getAttribute('aria-hidden'), op: +cs.opacity, px, dots: b.querySelectorAll('i').length, anims: anims.length, running: anims.filter((a) => a.playState === 'running').length, paused: anims.filter((a) => a.playState === 'paused').length, props: [...props], iso: getComputedStyle(host).isolation, canvases: b.querySelectorAll('canvas').length, draws: Number(b.dataset.draws || 0) }; };
+    return { first: host.firstElementChild === b, host: String(host.className).slice(0, 24), z: cs.zIndex, pe: cs.pointerEvents, aria: b.getAttribute('aria-hidden'), op: +cs.opacity, px, dots: b.querySelectorAll('i').length, openPoints: Number(b.dataset.open || 0), anims: anims.length, running: anims.filter((a) => a.playState === 'running').length, paused: anims.filter((a) => a.playState === 'paused').length, props: [...props], iso: getComputedStyle(host).isolation, canvases: b.querySelectorAll('canvas').length, draws: Number(b.dataset.draws || 0) }; };
   // the strongest pixel of a picture (a data: URL) composited on the room's ground colour, as WCAG contrast against that colour
   I.maxContrast = async (url, bg) => { const img = new Image(); img.src = url; await img.decode(); const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight;
     const x = c.getContext('2d'); x.drawImage(img, 0, 0); const d = x.getImageData(0, 0, c.width, c.height).data;
@@ -125,6 +125,7 @@ try { await withHarness(async (app) => {
   const cur = await read();
   const curOk = (r) => !!r && r.dots >= 1 && r.dots <= 3 && r.anims === r.dots && r.props.length > 0 && r.props.every((p) => p === 'transform' || p === 'opacity');
   ok('CURRENT one to three drifting points, one animation each, transform and opacity alone', curOk(cur), JSON.stringify(cur));
+  ok('CURRENT-OPEN every point drifts on a trace that runs through the open room, not under the page, rail or strip (the current shows)', !!cur && cur.dots >= 1 && cur.openPoints === cur.dots, JSON.stringify({ dots: cur && cur.dots, openPoints: cur && cur.openPoints }));
   await ev("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('x'); await sleep(200);
   const damped = await read();
