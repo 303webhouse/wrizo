@@ -5,7 +5,7 @@
 import { withHarness } from '../runtime-verify.mjs';
 import { makeL } from '../lib/l-method.mjs';
 
-const ON_BOX = process.env.GITHUB_ACTIONS !== 'true';
+const ON_BOX = true; // PROBE ONLY
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
