@@ -11,7 +11,7 @@
 //     and fades, and the words are there, already in the doc. One change through the flash budget; the still state is a cut.
 //   - THE MODE (draft 21 §6, Nick Nov 9). JACK IN is the top-bar mode, not a switch: ModeStage turns the Typewriter on for Flux's free-writing slot and
 //     never for BUILD (Draft), and offers no toggle for it in either (no "Jack In by default" row, no gear/sliver switch). There is no off inside it.
-//     Leaving: an Esc TAP (a key held under ESC_TAP_MS) or F9 asks the page editor (LEAVE_JACK_EVENT) for BUILD on the same doc, caret at the end of her
+//     Leaving: an Esc TAP (a key held under ESC_TAP_MS), F9, or a click on the circled X (FluxJackedHints) calls ONE function (jackIn.ts leaveJackedIn), which asks the page editor for BUILD on the same doc, caret at the end of her
 //     text, full screen kept (Chrome/Edge: the Escape key is locked while full screen, so a HOLD still exits full screen; F9 is the backup for browsers
 //     without the lock). Nothing is saved.
 //   - THE CORRIDOR (Nick's pick, Nov 9: Style B, flux-jacked-in-concepts.md) is FluxCorridor.tsx, mounted here while jacked in. Its rules, kept here:
@@ -23,9 +23,10 @@ import { useTheme } from '../store/theme';
 import { getAmbianceDial, prefersReducedMotion } from '../store/ambianceDial';
 import { tryFlash } from '../store/flashBudget';
 import { openPopupCount } from '../store/escapeExit';
-import { LEAVE_JACK_EVENT, setJacked } from './jackIn';
+import { LEAVE_KEY, LEAVE_KEY_BACKUP, leaveJackedIn, setJacked } from './jackIn';
 import { getThemePrefs } from '../store/themePrefs';
 import { FluxCorridor } from './FluxCorridor';
+import { FluxJackedHints } from './FluxJackedHints';
 
 export const COMPILE_PAUSE_MS = 700;   // the pause the compile waits for (the Glitch bar's and the gutter's own pause)
 export const COMPILE_LINES = 2;        // the caret's line is 0, the line above it 1: from 2 up, the words compile
@@ -49,6 +50,7 @@ export const ESC_TAP_MS = 500;         // an Esc held shorter than this is a tap
 interface Props {
   on: boolean;                          // the page's Typewriter is running (ModeStage's typewriterOn: Flux's free-writing mode)
   scrollRef: RefObject<HTMLDivElement | null>;
+  unitCount: number;                    // her words: the same count the Glitch bar's units read (the corridor's glow builds with it)
 }
 
 // a word's blocks (true: filled, false: hollow), one per character, fixed by the word and its place, so a compile that finds the same words
@@ -92,7 +94,7 @@ const caretBox = (at: Range, ed: HTMLElement): DOMRect | null => {
   return rr.height ? rr : null;
 };
 
-export function FluxJackedIn({ on, scrollRef }: Props) {
+export function FluxJackedIn({ on, scrollRef, unitCount }: Props) {
   const flux = useTheme() === 'flux';
   const jackedIn = flux && on;
 
@@ -100,13 +102,13 @@ export function FluxJackedIn({ on, scrollRef }: Props) {
   useEffect(() => {
     if (!jackedIn) return undefined;
     let escAt = 0;
-    const leave = () => { window.dispatchEvent(new CustomEvent(LEAVE_JACK_EVENT)); };
+    const leave = leaveJackedIn;
     const down = (e: KeyboardEvent) => {
-      if (e.key === 'F9' && !e.repeat) { e.preventDefault(); leave(); return; }
-      if (e.key === 'Escape' && !e.repeat && !e.isComposing && openPopupCount() === 0) escAt = performance.now();
+      if (e.key === LEAVE_KEY_BACKUP && !e.repeat) { e.preventDefault(); leave(); return; }
+      if (e.key === LEAVE_KEY && !e.repeat && !e.isComposing && openPopupCount() === 0) escAt = performance.now();
     };
     const up = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return;
+      if (e.key !== LEAVE_KEY) return;
       const tap = escAt > 0 && performance.now() - escAt < ESC_TAP_MS;
       escAt = 0;
       if (tap) leave();
@@ -230,17 +232,32 @@ export function FluxJackedIn({ on, scrollRef }: Props) {
       sig = next;
       layer.replaceChildren();
       words.clear();
+      // THE ROWS (Nick's refinement 1, the Wrizors' Corridor review B4): each finished row is ONE holder, scaled as a whole about the corridor's CENTRE LINE (7.5% a row, floor 40%) and faded 15% a row;
+      // one transform and one opacity per row, set here when the line ends. The words inside keep their own full-size slots and sit at their true places, so the holder's scale is what pulls the ends in.
+      const cx = (window.innerWidth / 2 - L.left) / s;
+      const holders = new Map<number, HTMLElement>();
+      const holderFor = (row: number, cy: number): HTMLElement => {
+        let hd = holders.get(row);
+        if (hd) return hd;
+        hd = document.createElement('div');
+        hd.className = 'flux3-compile-row';
+        hd.dataset.row = String(row);
+        const k = Math.max(SIGNAL.rowMin, 1 - SIGNAL.rowShrink * (row - COMPILE_LINES + 1));   // the first signal row is one step back from the writing line's size
+        Object.assign(hd.style, { position: 'absolute', left: '0px', top: '0px', width: '100%', height: '0px', transformOrigin: `${cx}px ${cy}px`, transform: `scale(${k.toFixed(4)})`, opacity: Math.max(0, 1 - SIGNAL.rowFade * (row - COMPILE_LINES + 1)).toFixed(2) });
+        hd.dataset.k = k.toFixed(4);
+        layer.appendChild(hd);
+        holders.set(row, hd);
+        return hd;
+      };
       found.forEach((f) => {
         const el = document.createElement('span');
         el.className = 'flux3-compile-word';
         el.dataset.word = f.text;   // the word it covers (a check holds the glyphs to that word's own rect)
         el.dataset.row = String(f.row);
-        // one block per character, seeded by the word's place in the page's own layout (the layer scrolls with the text, so that place holds);
-        // each row up a little smaller (THE ROWS), still inside its slot
+        // one block per character, seeded by the word's place in the page's own layout (the layer scrolls with the text, so that place holds)
         const chars = [...f.text];
         const slot = f.r.width / s / chars.length;
-        const k = Math.max(SIGNAL.rowMin, 1 - SIGNAL.rowShrink * (f.row - COMPILE_LINES + 1));   // the first signal row is one step back from the writing line's size
-        const bw = slot * BLOCK_FILL * k, bh = Math.min(f.fs * BLOCK_HEIGHT, f.r.height / s) * k;
+        const bw = slot * BLOCK_FILL, bh = Math.min(f.fs * BLOCK_HEIGHT, f.r.height / s);
         Object.assign(el.style, { position: 'absolute', display: 'flex', alignItems: 'center' });
         blocksFor(chars, Math.round((f.r.left - L.left) / s) * 7 + Math.round((f.r.top - L.top) / s) * 13).forEach((filled) => {
           const b = document.createElement('i');
@@ -248,9 +265,8 @@ export function FluxJackedIn({ on, scrollRef }: Props) {
           Object.assign(b.style, { display: 'block', flex: 'none', boxSizing: 'border-box', width: `${bw}px`, height: `${bh}px`, margin: `0 ${(slot - bw) / 2}px` });
           el.appendChild(b);
         });
-        el.style.opacity = String(Math.max(0, 1 - SIGNAL.rowFade * (f.row - COMPILE_LINES + 1)).toFixed(2));
         placeOn(el, f.r, L, s);
-        layer.appendChild(el);
+        holderFor(f.row, (f.r.top + f.r.height / 2 - L.top) / s).appendChild(el);
         words.set(el, { range: f.range, text: f.text });
       });
     };
@@ -279,6 +295,7 @@ export function FluxJackedIn({ on, scrollRef }: Props) {
       const stays = scroll.isConnected && document.documentElement.getAttribute('data-theme') === 'flux';
       if (!stays || !words.size || still() || !tryFlash('f3-decompile')) { layer.remove(); return; }
       // the signal resolves: every block turns over (filled to hollow, hollow to filled), still whole, and fades off its word
+      layer.querySelectorAll<HTMLElement>('.flux3-compile-row').forEach((hd) => { hd.style.transform = 'none'; hd.style.opacity = '1'; });
       words.forEach((_, el) => turnOver(el));
       const end = performance.now() + DECOMPILE_MS;
       // each glyph run follows its own word while the page settles out of the zoom (its Range is the word; the page's layout box moves under it)
@@ -295,5 +312,5 @@ export function FluxJackedIn({ on, scrollRef }: Props) {
     };
   }, [jackedIn, scrollRef]);
 
-  return jackedIn ? <FluxCorridor scrollRef={scrollRef} /> : null;
+  return jackedIn ? <><FluxCorridor scrollRef={scrollRef} unitCount={unitCount} /><FluxJackedHints /></> : null;
 }

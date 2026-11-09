@@ -20,3 +20,17 @@ export function fluxJackMode(theme: string): boolean { return FLUX3 && theme ===
 
 /** FluxJackedIn asks its host page to leave Jacked In for BUILD on the same doc (an Esc tap, F9); the page editor owns the mode. */
 export const LEAVE_JACK_EVENT = 'flux3-leave-jack';
+
+/** THE KEY THAT LEAVES, in one place. The handler (FluxJackedIn) and the exit line (FluxJackedHints) both read these, so the line names the key that actually leaves and stays true if the key changes.
+ *  Escape is the primary (a TAP: a key held under ESC_TAP_MS); F9 is the backup for browsers that cannot lock Escape while full screen (a held Escape exits full screen there). */
+export const LEAVE_KEY = 'Escape';
+export const LEAVE_KEY_BACKUP = 'F9';
+const KEY_LABEL: Record<string, string> = { Escape: 'Esc', F9: 'F9' };
+export const keyLabel = (key: string): string => KEY_LABEL[key] ?? key;
+/** The key the exit line names: Escape, except in a full-screen browser that cannot lock it (there a tap on Escape would not reach the page, so the backup is the honest one). */
+export function leaveKeyNow(): string {
+  const kb = (typeof navigator !== 'undefined' ? (navigator as unknown as { keyboard?: { lock?: unknown } }).keyboard : undefined);
+  return typeof document !== 'undefined' && document.fullscreenElement && !kb?.lock ? LEAVE_KEY_BACKUP : LEAVE_KEY;
+}
+/** Leave Jacked In for BUILD on the same doc, caret at the end, full screen kept. The ONE function an Esc tap, F9 and the circled X all call. */
+export function leaveJackedIn(): void { window.dispatchEvent(new CustomEvent(LEAVE_JACK_EVENT)); }

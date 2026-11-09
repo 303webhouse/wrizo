@@ -673,7 +673,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
         ))}
       </div>
 
-      {FLUX3 && pageId != null && <FluxJackedIn on={typewriterOn} scrollRef={scrollRef} />}
+      {FLUX3 && pageId != null && <FluxJackedIn on={typewriterOn} scrollRef={scrollRef} unitCount={words} />}
 
       {/* Connect AI — stub entry point (no provider wired in B3). */}
       {!framed && connectOpen && (

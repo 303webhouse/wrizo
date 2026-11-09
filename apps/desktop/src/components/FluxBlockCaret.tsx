@@ -29,6 +29,25 @@ export const CARET_BLINK = { restMs: 600 };
 
 interface Rect { left: number; top: number; width: number; height: number }
 
+// JACKED IN's caret is a block as wide as an "n" (the spec's §6; the Wrizors' Corridor review). The width is read from the writing surface's own font, once per surface and line height (a font or
+// a zoom change moves the line height), so a key does no measuring: it reuses the cached number. Outside Jacked In the caret is today's slim block.
+const nCache = new WeakMap<HTMLElement, { h: number; w: number }>();
+let nCanvas: CanvasRenderingContext2D | null = null;
+export function nWidthPx(surface: HTMLElement, height: number): number | null {
+  const key = Math.round(height);
+  const hit = nCache.get(surface);
+  if (hit && hit.h === key) return hit.w;
+  if (!nCanvas) nCanvas = document.createElement('canvas').getContext('2d');
+  if (!nCanvas) return null;
+  const cs = getComputedStyle(surface);
+  nCanvas.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+  const k = surface.offsetWidth > 0 ? surface.getBoundingClientRect().width / surface.offsetWidth : 1;   // the Typewriter's zoom scales the page by a transform
+  const w = nCanvas.measureText('n').width * (k || 1);
+  if (!(w > 0)) return null;
+  nCache.set(surface, { h: key, w });
+  return w;
+}
+
 export function FluxBlockCaret() {
   const theme = useTheme();
   const [rect, setRect] = useState<Rect | null>(null);
@@ -144,7 +163,8 @@ export function FluxBlockCaret() {
       activeElRef.current = surface;
       surface.setAttribute('data-flux-caret-active', 'true');
       const height = r.height || 18;
-      setRect({ left: r.left, top: r.top, width: caretWidth(height), height });
+      const nW = document.documentElement.hasAttribute('data-flux3-jacked') ? nWidthPx(surface, height) : null;
+      setRect({ left: r.left, top: r.top, width: nW ?? caretWidth(height), height });
     };
 
     const onBlurCheck = () => {

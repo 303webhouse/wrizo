@@ -1,7 +1,7 @@
 // FLUX3 S4 - THE MILESTONE POP (flux-jacked-in-concepts.md §1: "a brass milestone pop with the CHECKPOINT letter"). The Glitch bar is gone while
 // Jacked In (no bar), so its word is shown here: at each Glitch-bar unit (her goal / 10, the same useGoalProgress the bar and the burst edge read, so
 // the three can never disagree) the word CHECKPOINT shows under her line with the NEWLY EARNED letter popping in brass, and fades after POP_SHOW_MS.
-// No number: letters, never a score. At the goal the whole word is lit brass (Flux's one brass moment). The corridor turns brass for 0.3 s and sends
+// No number: letters, never a score. EARNED letters are lime, the NEWEST is brass, the ones not yet earned are DOTS (text at 4.5:1 or better, never ghost letters; the approved video's own). At the goal the whole word is lit brass (Flux's one brass moment). The corridor turns brass for 0.3 s and sends
 // one brass frame past, on the 'flux3-pop' event (FluxCorridor.tsx).
 //   - One change per milestone, and milestones are minutes apart; the change asks the flash budget first (a refused one still shows the letter).
 //   - The still state (reduced motion, Ambiance 0): the letter lights with no event (no ring, no tint).
@@ -56,7 +56,7 @@ export function FluxCheckpointPop({ unitCount }: { unitCount: number }) {
   return createPortal(
     <div className="flux3-pop" aria-hidden="true" data-flux3-pop="" data-goal={show.goal ? 'true' : 'false'}>
       {letters.map((ch, i) => (
-        <span key={i} data-on={i < show.filled ? 'true' : 'false'} data-new={!show.goal && i === show.i ? 'true' : undefined}>{ch}</span>
+        <span key={i} data-on={i < show.filled ? 'true' : 'false'} data-new={!show.goal && i === show.i ? 'true' : undefined}>{i < show.filled ? ch : '\u00B7'}</span>
       ))}
     </div>,
     document.body,
