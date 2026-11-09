@@ -265,7 +265,6 @@
    Typewriter brings them back. visibility keeps each handle's box (nothing moves) and takes it out of reach and out of the tab order. Entering
    Typewriter already tucks both drawers (ModeStage §7); a Tools drawer opened by Ctrl+/ under it closes by Esc or Ctrl+/ (this supersedes §12's
    "its grip stays on top, so it still closes"). Checked by frames/arbor2-r22.mjs r22-typewriter-handles. [desk-frame §12b] */
-.desk-frame-stage:has(.mode-pagecol[data-zoom='true']) :is(.wz-sliver-grip, .wz-tutor-grip){ visibility:hidden; }
 /* while zoomed the column fills the stage: .mode-stage is a content-sized flex item, so a 100% column inside it would stay narrow and the band mask would cut the enlarged page at its sides [desk-frame §13] */
 .desk-frame-stage--prose:has(.mode-pagecol[data-zoom='true']) > .mode-stage{ flex:1 1 auto; width:100%; }
 .desk-frame-stage--prose .mode-pagecol[data-zoom='true']{
