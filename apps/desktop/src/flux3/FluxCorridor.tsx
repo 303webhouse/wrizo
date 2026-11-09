@@ -46,6 +46,9 @@ export function FluxCorridor({ scrollRef }: Props) {
     el.className = 'flux3-corridor';
     el.setAttribute('aria-hidden', 'true');
     el.setAttribute('data-flux3-corridor', '');
+    // the structural styles are inline, so the box can NEVER fall into the stage's flow: flux-v3.css is a dynamic import and can arrive after this mounts, and a static
+    // 1.7k-px box ahead of the page column made DeskFrame measure the page's room as 0 (the page, clipped to 0, hid every line she typed; frames found it, Nov 9)
+    el.style.cssText = 'position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;contain:strict;z-index:0;';
     stage.prepend(el);
     setBox(el);
     return () => { el.remove(); setBox(null); };

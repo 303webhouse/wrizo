@@ -211,6 +211,20 @@ try { await withHarness(async (app) => {
   ok('ROWS-SESSION none of the seeded (older) text became signal: every compiled word is one she typed this session', (rows || []).length > 0 && sessionOnly && seeded === 0, JSON.stringify((rows || []).slice(0, 6)));
   await snap('c-rows');
 
+  // ---- VISIBLE: the line she is writing is INSIDE the page's painted box (found by the frames job, Nov 9: DeskFrame measured the page's room as 0 because the corridor's box was in flow
+  // before flux-v3.css arrived; the page clipped to a sliver and hid every line she typed, while every other check here stayed green) ------------------------------------------------
+  const readVisible = async () => ev(`(() => { const pg = document.querySelector('.mode-page'), ed = document.querySelector('.forward-only-editor'); if (!pg || !ed) return null;
+    const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let n, l = null; while ((n = w.nextNode())) l = n; if (!l) return null;
+    const g = document.createRange(); g.setStart(l, Math.max(0, l.nodeValue.length - 4)); g.setEnd(l, l.nodeValue.length); const q = g.getBoundingClientRect(), p = pg.getBoundingClientRect();
+    const hl = parseFloat(getComputedStyle(document.querySelector('.desk-frame-stage')).getPropertyValue('--wz-page-hl'));
+    return { page: [Math.round(p.top), Math.round(p.height)], line: [Math.round(q.top), Math.round(q.height)], hl, inside: q.top >= p.top - 1 && q.bottom <= p.bottom + 1 && p.height > 300 && hl > 100 }; })()`);
+  const vis = await readVisible();
+  ok('VISIBLE the line she is writing stands inside the page\'s painted box (the page keeps its room: --wz-page-hl > 100, the box taller than 300 px)', !!vis && vis.inside, JSON.stringify(vis));
+  await ev("(() => { const p = document.querySelector('.mode-page'); p.style.setProperty('height', '90px', 'important'); })()"); await sleep(150);
+  const visMut = await readVisible();
+  await ev("document.querySelector('.mode-page').style.removeProperty('height')"); await sleep(150);
+  ok('MUT-VISIBLE the reader goes RED on its mutant (the page squeezed to 90 px) and green again undone', !!visMut && !visMut.inside && !!(await readVisible())?.inside, JSON.stringify({ visMut }));
+
   // ---- CARET: a press anywhere on the page puts the caret at the END of her text ------------------------------------------------------------------
   // two presses: inside the page's own box (mid-page), and in the page's column OUTSIDE the page (Jacked In has no paper edge to aim at)
   const pr = await ev("(() => { const r = document.querySelector('.mode-page').getBoundingClientRect(), c = document.querySelector('.mode-pagecol').getBoundingClientRect(); return { inside: { x: Math.round(r.left + r.width / 2), y: Math.round(Math.max(60, Math.min(innerHeight - 60, r.top + r.height / 2))) }, outside: { x: Math.round(c.left + c.width / 2), y: 330 }, page: [Math.round(r.top), Math.round(r.height)] }; })()");
@@ -288,8 +302,9 @@ try { await withHarness(async (app) => {
   await sleep(1400);
   const eAfter = await left(eid);
   const eChrome = await ev('window.__f4.chrome()');
-  ok('ESC a tap leaves Jacked In for BUILD on the same doc: the mode is Draft, no Typewriter zoom, the saved (light) tone is back, the caret is at the END, the chrome is back, and the reader read "not left" before the press',
-    !eBefore.left && eAfter.left && eAfter.s.tone === 'light' && !!eAfter.cb && eAfter.cb.before >= eAfter.cb.total - 1 && eChrome.every(([, o]) => o === null || o > 0.9) && (await toggles()) === 0,
+  const eVis = await readVisible();
+  ok('ESC a tap leaves Jacked In for BUILD on the same doc: the mode is Draft, no Typewriter zoom, the saved (light) tone is back, the caret is at the END and its line is inside the page (visible), the chrome is back, and the reader read "not left" before the press',
+    !eBefore.left && eAfter.left && !!eVis && eVis.inside && eAfter.s.tone === 'light' && !!eAfter.cb && eAfter.cb.before >= eAfter.cb.total - 1 && eChrome.every(([, o]) => o === null || o > 0.9) && (await toggles()) === 0,
     JSON.stringify({ eBefore: eBefore.left, eAfter, eChrome }));
   // BUILD never offers it: a drafting page opens plain even with the shared Typewriter setting ON, and has no toggle
   const bid = await fresh('a draft page with some words');
