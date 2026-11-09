@@ -160,7 +160,7 @@ try { await withHarness(async (app) => {
   await type(CYCLE + CYCLE, 40);   // ~25 keys a second: a fast typist
   const t1 = await ev('performance.now()');
   const fast = await ev('window.__f4.rates.slice()');
-  await sleep(2600);   // she stops: the pace eases to zero in ~1.5 s
+  await sleep(3800);   // she stops: the pace eases to zero in ~1.5 s, and the step in hand is finished (a second at most) so the corridor holds ON A SLOT
   const later = await ev('window.__f4.rates.slice()');
   const lastRate = later.length ? later[later.length - 1][1] : null;
   // the updates come in bursts (one tick calls updatePlaybackRate on every animation), so count the TICKS: distinct times 200 ms apart or more
@@ -422,14 +422,14 @@ try { await withHarness(async (app) => {
   // ---- MARK (B5): the WRIZO mark is hidden for the whole Jacked In session ------------------------------------------------------------------------------------------------------
   await jackedOpen('The mark stays gone while she writes.', 'dark');
   await sleep(2600);
-  const readMark = () => ev("(() => { const ms = [...document.querySelectorAll('.wz-mark, .wz-flux-wordmark')]; return { n: ms.length, shown: ms.filter((m) => { const c = getComputedStyle(m); return c.visibility !== 'hidden' && +c.opacity > 0.01 && m.getBoundingClientRect().width > 0; }).length }; })()");
+  const readMark = () => ev("(() => { const ms = [...document.querySelectorAll('.brand-mark, .wz-mark, .wz-flux-wordmark')]; return { n: ms.length, shown: ms.filter((m) => { const c = getComputedStyle(m), p = getComputedStyle(m, '::before'); const painted = (c.visibility !== 'hidden' && +c.opacity > 0.01 && m.getBoundingClientRect().width > 0 && m.textContent.trim().length > 0) || (p.content !== 'none' && p.content !== 'normal' && p.visibility !== 'hidden' && +p.opacity > 0.01 && c.display !== 'none' && c.visibility !== 'hidden'); return painted; }).length }; })()");
   const mk0 = await readMark();
   await type('typing, then stopping', 30); await sleep(2600);
   const mk1 = await readMark();
   ok('MARK the WRIZO mark is hidden for the whole Jacked In session: after entering, and again after she types and stops (and there is a mark on this page to hide)', mk0.n >= 1 && mk0.shown === 0 && mk1.n >= 1 && mk1.shown === 0, JSON.stringify({ mk0, mk1 }));
-  await ev("document.querySelectorAll('.wz-mark, .wz-flux-wordmark').forEach((m) => { m.style.setProperty('visibility', 'visible', 'important'); m.style.setProperty('opacity', '1', 'important'); })"); await sleep(120);
+  await ev("document.querySelectorAll('.brand-mark, .wz-mark, .wz-flux-wordmark').forEach((m) => { m.style.setProperty('visibility', 'visible', 'important'); m.style.setProperty('opacity', '1', 'important'); })"); await sleep(120);
   const mkM = await readMark();
-  await ev("document.querySelectorAll('.wz-mark, .wz-flux-wordmark').forEach((m) => { m.style.removeProperty('visibility'); m.style.removeProperty('opacity'); })"); await sleep(120);
+  await ev("document.querySelectorAll('.brand-mark, .wz-mark, .wz-flux-wordmark').forEach((m) => { m.style.removeProperty('visibility'); m.style.removeProperty('opacity'); })"); await sleep(120);
   ok('MUT-MARK the reader goes RED when the mark is forced visible, and green again undone', mkM.shown > 0 && (await readMark()).shown === 0, JSON.stringify(mkM));
 
   // ---- EXIT (B6): the exit line, the first 3 s ---------------------------------------------------------------------------------------------------------------------------------
