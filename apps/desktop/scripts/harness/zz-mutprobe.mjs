@@ -19,11 +19,22 @@ try { await withHarness(async (app) => {
   await ev("(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus(); const s = getSelection(); s.selectAllChildren(ed); s.collapseToEnd(); })()");
   const CYCLE = 'the signal holds while she writes on ';
   let cursor = 0;
-  for (const [name, extra, where] of [['none', 0, 'keydown'], ['kd+10', 10, 'keydown'], ['kd+5', 5, 'keydown'], ['bi+10', 10, 'beforeinput'], ['none2', 0, 'keydown']]) {
-    await ev(`(() => { window.__lat = []; let t0 = 0; if (window.__latOff) window.__latOff();
-      const spin = () => { const e = performance.now() + ${extra}; while (performance.now() < e) { /* spin */ } };
-      const kd = () => { t0 = performance.now(); ${where === 'keydown' && extra ? 'spin();' : ''} };
-      const bi = () => { ${where === 'beforeinput' && extra ? 'spin();' : ''} const t = t0; requestAnimationFrame(() => requestAnimationFrame(() => { window.__lat.push(performance.now() - t); })); };
+  const VARIANTS = [
+    ['none', ''],
+    ['rAF1-spin-10', 'RAF1_SPIN=10'],
+    ['rAF1-spin-20', 'RAF1_SPIN=20'],
+    ['bi-spin-20', 'BI_SPIN=20'],
+    ['kd-spin-20', 'KD_SPIN=20'],
+    ['blur-layer', 'BLUR=1'],
+    ['none2', ''],
+  ];
+  for (const [name, cfg] of VARIANTS) {
+    const kv = Object.fromEntries(cfg ? [cfg.split('=')] : []);
+    await ev(`(() => { window.__lat = []; let t0 = 0; if (window.__latOff) window.__latOff(); if (window.__mutEl) { window.__mutEl.remove(); window.__mutEl = null; }
+      const spin = (ms) => { const e = performance.now() + ms; while (performance.now() < e) { /* spin */ } };
+      ${kv.BLUR ? "const el = document.createElement('div'); el.style.cssText = 'position:fixed;inset:0;z-index:9999;pointer-events:none;background:rgba(87,208,245,.02);backdrop-filter:blur(30px);will-change:transform'; document.body.appendChild(el); window.__mutEl = el; el.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(3px)' }], { duration: 400, iterations: Infinity, direction: 'alternate' });" : ''}
+      const kd = () => { t0 = performance.now(); ${kv.KD_SPIN ? `spin(${kv.KD_SPIN});` : ''} };
+      const bi = () => { ${kv.BI_SPIN ? `spin(${kv.BI_SPIN});` : ''} const t = t0; requestAnimationFrame(() => { ${kv.RAF1_SPIN ? `spin(${kv.RAF1_SPIN});` : ''} requestAnimationFrame(() => { window.__lat.push(performance.now() - t); }); }); };
       document.addEventListener('keydown', kd, true); document.addEventListener('beforeinput', bi, true);
       window.__latOff = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('beforeinput', bi, true); }; return true; })()`);
     for (let i = 0; i < 44; i += 1) { await app.typeKeys(CYCLE[cursor % CYCLE.length]); cursor += 1; await sleep(90); }
