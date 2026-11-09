@@ -403,7 +403,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
     if (target && ed.contains(target)) return;
     const inScroll = !!target && scroll.contains(target);
     if (target?.closest?.('button, a, input, textarea, select, [role="button"], [role="option"]')) { if (inScroll) focusEditor(); return; }
-    if (!inScroll && target !== e.currentTarget) return;
+    if (!inScroll && target !== e.currentTarget && !typewriterOn) return;
     const rows = [...ed.querySelectorAll<HTMLElement>('.wz-row')].filter(r => r.getBoundingClientRect().height > 0);
     const lastBottom = rows.length ? rows[rows.length - 1].getBoundingClientRect().bottom : -Infinity;
     let offset: number | null;
