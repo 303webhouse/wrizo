@@ -12,6 +12,7 @@ import { FluxGlitchBar } from '../flux3/FluxGlitchBar';
 import { FluxDoc } from '../flux3/FluxDoc';
 // FLUX3 S4 - a mount point only: Jacked In's burst edge, which drains with this lane's own lap (src/flux3/FluxBurstEdge.tsx)
 import { FluxBurstEdge } from '../flux3/FluxBurstEdge';
+import { FluxCheckpointPop } from '../flux3/FluxCheckpointPop';
 
 // the progress instrument's framed home: bar and rhizome share the rhizome's lane under the page, and the goal flare fires there on the same `celebrating` transition, for both styles [DeskInstrument §1]
 export function DeskInstrument({ unitCount, text, seedKey, paperRef, glitch = false }: {
@@ -34,6 +35,7 @@ export function DeskInstrument({ unitCount, text, seedKey, paperRef, glitch = fa
       {glitch && <RunStrip text={text} />}
       {FLUX3 && glitch && <FluxDoc paperRef={paperRef} entryId={seedKey} />}
       {FLUX3 && glitch && <FluxBurstEdge unitCount={unitCount} />}
+      {FLUX3 && glitch && <FluxCheckpointPop unitCount={unitCount} />}
       <DeskGoalLane unitCount={unitCount} />
     </>
   );
