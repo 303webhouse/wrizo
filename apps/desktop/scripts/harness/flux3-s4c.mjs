@@ -32,6 +32,7 @@ const SEED = Array.from({ length: 10 }, () => PARA).join('\n');
 const LAT_TEXT = Array.from({ length: 150 }, (_, i) => 'word' + i).join(' ');
 const CYCLE = 'the signal holds while she writes on ';
 const LINE = ' and the corridor keeps going forward with more plain words now, on and on across the measure of the page until it wraps again and again, line after line';
+const ONLY_L = process.env.FLUX3_ONLY_L === '1';   // the control plan's L-only run: the method alone, on whatever tree is built
 const ROUNDS = 6, KEYS = 44, MIN_KEYS = 40, GAP = 90, MAX_MS = 100;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const checks = [];
@@ -91,6 +92,49 @@ try { await withHarness(async (app) => {
     await sleep(1600);
   };
 
+  const doL = async () => {
+  // ---- L: the Jacked In arm, six rounds ----------------------------------------------------------------------------------------------------------
+  // J: Jacked In with the Corridor. C: the control (Flux, flag off, the Typewriter on). A mutant adds `extra` ms of busy-wait to every key in the arm under test.
+  const runL = async (label, extra = 0, jFlag = true) => {
+    const lat = { C: [], J: [] };
+    let cursor = 0;
+    for (let round = 0; round <= ROUNDS; round += 1) {
+      for (const arm of (round % 2 ? ['J', 'C'] : ['C', 'J'])) {
+        const id = await fresh(LAT_TEXT);
+        await open({ id, tone: 'dark', flag: arm === 'J' ? jFlag : false, prefs: arm === 'J' && jFlag ? {} : { typewriter: true } });
+        const stood = await st();
+        await ev(`(() => { window.__lat = []; let t0 = 0; if (window.__latOff) window.__latOff();
+          const kd = () => { t0 = performance.now(); ${arm === 'J' && extra ? `const e = performance.now() + ${extra}; while (performance.now() < e) { /* the mutant: a slow key */ }` : ''} };
+          const bi = () => { const t = t0; requestAnimationFrame(() => requestAnimationFrame(() => { window.__lat.push(performance.now() - t); })); };
+          document.addEventListener('keydown', kd, true); document.addEventListener('beforeinput', bi, true);
+          window.__latOff = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('beforeinput', bi, true); }; return true; })()`);
+        for (let i = 0; i < KEYS; i += 1) { await app.typeKeys(CYCLE[cursor % CYCLE.length]); cursor += 1; await sleep(GAP); }
+        await sleep(250);
+        const got = await ev('window.__lat.slice()');
+        if (round > 0) lat[arm].push({ lat: got, stood: { flag: stood.flag, zoom: stood.zoom, jacked: stood.jacked } });
+      }
+    }
+    const cMeds = lat.C.map((r) => stat(r.lat).median), cP95s = lat.C.map((r) => stat(r.lat).p95);
+    const spreadMed = Math.max(...cMeds) - Math.min(...cMeds), spreadP95 = Math.max(...cP95s) - Math.min(...cP95s);
+    const C = stat(lat.C.flatMap((r) => r.lat)), J = stat(lat.J.flatMap((r) => r.lat));
+    const enough = lat.C.every((r) => r.lat.length >= MIN_KEYS) && lat.J.every((r) => r.lat.length >= MIN_KEYS);
+    const stoodRight = lat.J.every((r) => (jFlag ? r.stood.flag && r.stood.jacked : !r.stood.flag) && r.stood.zoom === 'true') && lat.C.every((r) => !r.stood.flag && r.stood.zoom === 'true');
+    const pass = enough && stoodRight && J.median <= C.median + spreadMed && J.p95 <= C.p95 + spreadP95 && J.max <= MAX_MS;
+    const line = `${label}: J median ${r1(J.median)} <= C ${r1(C.median)} + ${r1(spreadMed)}, J p95 ${r1(J.p95)} <= C ${r1(C.p95)} + ${r1(spreadP95)}, J max ${r1(J.max)} <= ${MAX_MS}`;
+    return { pass, line, enough, stoodRight, C, J };
+  };
+  if (ON_BOX || process.env.FLUX3_L === '1') {
+    const main = await runL('main (the control against itself)', 0, false);
+    ok(`L-METHOD-GREEN the method passes the control against itself (the box's own noise): ${main.line}`, main.pass && main.enough && main.stoodRight, JSON.stringify({ C: main.C, J: main.J }));
+    const l0 = ONLY_L ? null : await runL('Corridor', 0, true);
+    if (l0) ok(`L the Jacked In arm adds no latency beyond the control's own spread: ${l0.line}`, l0.pass, JSON.stringify({ C: l0.C, J: l0.J }));
+    for (const extra of ONLY_L ? [] : [5, 10]) {
+      const m = await runL(`+${extra} ms mutant`, extra, true);
+      ok(`L-MUT-${extra} the method calls a key that is ${extra} ms slower RED (the mutant landed: ${m.line})`, !m.pass && m.enough && m.stoodRight, JSON.stringify({ C: m.C, J: m.J }));
+    }
+  } else console.log('INFO L (Actions: timing is the box\'s to judge; FLUX3_L=1 runs it here)');
+  };
+  if (ONLY_L) { await doL(); } else {
   // ---- DEF: Jacked In, always dark --------------------------------------------------------------------------------------------------------------
   const pid = await fresh(SEED);
   await open({ id: pid, tone: 'light' });
@@ -149,12 +193,20 @@ try { await withHarness(async (app) => {
   await snap('c-rows');
 
   // ---- CARET: a press anywhere on the page puts the caret at the END of her text ------------------------------------------------------------------
-  const rc = await ev("(() => { const r = document.querySelector('.forward-only-editor').getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(innerHeight * 0.3) }; })()");
+  // two presses: inside the page's own box (mid-page), and in the page's column OUTSIDE the page (Jacked In has no paper edge to aim at)
+  const pr = await ev("(() => { const r = document.querySelector('.mode-page').getBoundingClientRect(), c = document.querySelector('.mode-pagecol').getBoundingClientRect(); return { inside: { x: Math.round(r.left + r.width / 2), y: Math.round(Math.max(60, Math.min(innerHeight - 60, r.top + r.height / 2))) }, outside: { x: Math.round(c.left + c.width / 2), y: 330 }, page: [Math.round(r.top), Math.round(r.height)] }; })()");
+  const toStart = () => ev("(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus(); const s = getSelection(); s.collapse(ed.firstChild || ed, 0); return true; })()");
+  await toStart();
+  await click(pr.outside.x, pr.outside.y);
+  await sleep(400);
+  const cbOut = await ev('window.__f4.caretBefore()');
+  await toStart();
+  const rc = pr.inside;
   await click(rc.x, rc.y);
   await sleep(400);
   const cb = await ev('window.__f4.caretBefore()');
   const hit = await ev(`(() => { const e = document.elementFromPoint(${rc.x}, ${rc.y}); return e ? String(e.className || e.tagName).slice(0, 60) : null; })()`);
-  ok('CARET a press mid-page in Typewriter puts the caret at the END of her text', !!cb && cb.before >= cb.total - 1, JSON.stringify({ cb, hit, rc }));
+  ok('CARET a press mid-page in Typewriter puts the caret at the END of her text', !!cb && cb.before >= cb.total - 1 && !!cbOut && cbOut.before >= cbOut.total - 1, JSON.stringify({ cb, cbOut, hit, pr }));
 
   // ---- GLOW: one token, the lighter blue ----------------------------------------------------------------------------------------------------------
   const readGlow = async () => { const glow = await ev("getComputedStyle(document.documentElement).getPropertyValue('--f3-goal-glow').trim()");
@@ -174,7 +226,7 @@ try { await withHarness(async (app) => {
   for (const [name, apply, undo, red] of mutants) {
     await ev(apply); await sleep(150);
     const wentRed = await red();
-    await ev(undo); await sleep(150);
+    await ev(undo); await sleep(900);   // the chrome's own fade (0.6 s) back to nothing
     ok(`MUT-${name.toUpperCase().replace(/ /g, '-')} the reader goes RED on its mutant (${name}) and green again undone`, wentRed && (await readDark()) && (await readChrome()).pass && (await readGlow()).pass && (await readCor()).pass, name);
   }
 
@@ -202,46 +254,8 @@ try { await withHarness(async (app) => {
   const esc = await st();
   ok('ESC looking up brings the chrome back (the marks lift)', esc.looking && !(await ev('window.__f4.chrome()')).some(([, o]) => o === 0), JSON.stringify(esc));
 
-  // ---- L: the Jacked In arm, six rounds ----------------------------------------------------------------------------------------------------------
-  // J: Jacked In with the Corridor. C: the control (Flux, flag off, the Typewriter on). A mutant adds `extra` ms of busy-wait to every key in the arm under test.
-  const runL = async (label, extra = 0, jFlag = true) => {
-    const lat = { C: [], J: [] };
-    let cursor = 0;
-    for (let round = 0; round <= ROUNDS; round += 1) {
-      for (const arm of (round % 2 ? ['J', 'C'] : ['C', 'J'])) {
-        const id = await fresh(LAT_TEXT);
-        await open({ id, tone: 'dark', flag: arm === 'J' ? jFlag : false, prefs: arm === 'J' && jFlag ? {} : { typewriter: true } });
-        const stood = await st();
-        await ev(`(() => { window.__lat = []; let t0 = 0; if (window.__latOff) window.__latOff();
-          const kd = () => { t0 = performance.now(); ${arm === 'J' && extra ? `const e = performance.now() + ${extra}; while (performance.now() < e) { /* the mutant: a slow key */ }` : ''} };
-          const bi = () => { const t = t0; requestAnimationFrame(() => requestAnimationFrame(() => { window.__lat.push(performance.now() - t); })); };
-          document.addEventListener('keydown', kd, true); document.addEventListener('beforeinput', bi, true);
-          window.__latOff = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('beforeinput', bi, true); }; return true; })()`);
-        for (let i = 0; i < KEYS; i += 1) { await app.typeKeys(CYCLE[cursor % CYCLE.length]); cursor += 1; await sleep(GAP); }
-        await sleep(250);
-        const got = await ev('window.__lat.slice()');
-        if (round > 0) lat[arm].push({ lat: got, stood: { flag: stood.flag, zoom: stood.zoom, jacked: stood.jacked } });
-      }
-    }
-    const cMeds = lat.C.map((r) => stat(r.lat).median), cP95s = lat.C.map((r) => stat(r.lat).p95);
-    const spreadMed = Math.max(...cMeds) - Math.min(...cMeds), spreadP95 = Math.max(...cP95s) - Math.min(...cP95s);
-    const C = stat(lat.C.flatMap((r) => r.lat)), J = stat(lat.J.flatMap((r) => r.lat));
-    const enough = lat.C.every((r) => r.lat.length >= MIN_KEYS) && lat.J.every((r) => r.lat.length >= MIN_KEYS);
-    const stoodRight = lat.J.every((r) => (jFlag ? r.stood.flag && r.stood.jacked : !r.stood.flag) && r.stood.zoom === 'true') && lat.C.every((r) => !r.stood.flag && r.stood.zoom === 'true');
-    const pass = enough && stoodRight && J.median <= C.median + spreadMed && J.p95 <= C.p95 + spreadP95 && J.max <= MAX_MS;
-    const line = `${label}: J median ${r1(J.median)} <= C ${r1(C.median)} + ${r1(spreadMed)}, J p95 ${r1(J.p95)} <= C ${r1(C.p95)} + ${r1(spreadP95)}, J max ${r1(J.max)} <= ${MAX_MS}`;
-    return { pass, line, enough, stoodRight, C, J };
-  };
-  if (ON_BOX || process.env.FLUX3_L === '1') {
-    const main = await runL('main (the control against itself)', 0, false);
-    ok(`L-METHOD-GREEN the method passes the control against itself (the box's own noise): ${main.line}`, main.pass && main.enough && main.stoodRight, JSON.stringify({ C: main.C, J: main.J }));
-    const l0 = await runL('Corridor', 0, true);
-    ok(`L the Jacked In arm adds no latency beyond the control's own spread: ${l0.line}`, l0.pass, JSON.stringify({ C: l0.C, J: l0.J }));
-    for (const extra of [5, 10]) {
-      const m = await runL(`+${extra} ms mutant`, extra, true);
-      ok(`L-MUT-${extra} the method calls a key that is ${extra} ms slower RED (the mutant landed: ${m.line})`, !m.pass && m.enough && m.stoodRight, JSON.stringify({ C: m.C, J: m.J }));
-    }
-  } else console.log('INFO L (Actions: timing is the box\'s to judge; FLUX3_L=1 runs it here)');
+  await doL();
+  }
 }); } catch (e) { console.log('HARNESS ERROR', e && e.stack || e); checks.push({ name: 'HARNESS', pass: false, detail: String(e && e.message || e) }); }
 
 let bad = 0;
