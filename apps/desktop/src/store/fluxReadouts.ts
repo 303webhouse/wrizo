@@ -36,6 +36,11 @@ export function coordReadout(x: number, y: number): string {
   return `X ${c(x)} · Y ${c(y)}`;
 }
 
+/** The rail box's count: a true number of what is stored, two digits at least (04, 12). */
+export function railReadout(n: number): string {
+  return pad(n, 2);
+}
+
 /** RACK ▸ name - the rack the writer is in. */
 export function rackReadout(name: string): string {
   return `RACK ▸ ${name}`;

@@ -159,3 +159,23 @@
   linear-gradient(var(--f3-room-cyan), var(--f3-room-cyan)) 100% 50% / 5px 5px no-repeat; }
 :root[data-flux3][data-theme='flux'] .wz-sliver-panel[data-open='true'],
 :root[data-flux3][data-theme='flux'] .wz-tutor-panel[data-open='true']{ box-shadow:inset 0 0 0 1px var(--f3-room-cyan); }
+
+/* ---- S4b L2: THE COMMAND-BOX RAIL (flux-mockup-vs-build.md L2; q9: "the existing rail ... in command-box dress"). Dress only: the rail is a fixed DeskFrame track, so nothing here can
+   move the page (the boxes live inside the strip's own width). Each PLACE (Docs, Circuits, Log, and the drawer you are in) is a hairline box with its name in letter-spaced caps and its
+   TRUE reading under it (Cascade.tsx: counts of what is stored; the foot's tools - Config, Skin, Trash - stay plain). YOUR PLACE is orange: the box's bar, name and reading;
+   under Circuits the last node you touched this session reads in orange too (the Schema footer's LAST). The open category stays electric blue, as flux-v2 ruled. ---- */
+:root[data-flux3][data-theme='flux'] .wz-strip > .wz-strip-section > .wz-strip-item{
+  width:calc(100% - 12px); margin:4px 6px; padding:7px 2px 6px; gap:2px;
+  border:1px solid var(--f3-hair); border-left-width:2px; }
+:root[data-flux3][data-theme='flux'] .wz-strip > .wz-strip-section > .wz-strip-item.active{ border-left-color:var(--line-active); }
+:root[data-flux3][data-theme='flux'] .wz-strip > .wz-strip-section > .wz-strip-item .wz-strip-label{
+  font-family:var(--font-chromeLabel); font-weight:700; font-size:9px; letter-spacing:.14em; text-transform:uppercase; line-height:1.15; max-width:100%; overflow:hidden; text-overflow:clip; }
+:root[data-flux3][data-theme='flux'] .wz-strip-readout{
+  display:block; font-family:var(--font-chromeLabel); font-weight:600; font-size:10px; letter-spacing:.1em; line-height:1.1; color:var(--f3-addr); white-space:nowrap; }
+:root[data-flux3][data-theme='flux'] .wz-strip-readout.wz-strip-last{ font-size:7.5px; letter-spacing:.04em; color:var(--f3-orange); }
+/* your place: the Journal pin while she is in the Journal, the place block while she is in a Drawer */
+:root[data-flux3][data-theme='flux'] .wz-strip > .wz-strip-section > .wz-strip-item[aria-current='location'],
+:root[data-flux3][data-theme='flux'] .wz-strip > .wz-strip-section > .wz-place-block:not([data-place-kind='journal']){ border-left-color:var(--f3-orange); }
+:root[data-flux3][data-theme='flux'] .wz-strip > .wz-strip-section > .wz-strip-item[aria-current='location'] .wz-strip-label,
+:root[data-flux3][data-theme='flux'] .wz-strip > .wz-strip-section > .wz-strip-item[aria-current='location'] .wz-strip-readout,
+:root[data-flux3][data-theme='flux'] .wz-strip > .wz-strip-section > .wz-place-block:not([data-place-kind='journal']) .wz-place-name{ color:var(--f3-orange); }
