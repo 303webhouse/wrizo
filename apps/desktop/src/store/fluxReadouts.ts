@@ -41,17 +41,28 @@ export function railReadout(n: number): string {
   return pad(n, 2);
 }
 
-/** The hover hint that names what a rail box's count counts (a bare number is only true when its scope is clear). where: the Journal (unfiled) or a Drawer. */
+/** The words a rail hint quotes - ALL of them read from the lexicon entries the boxes' own labels use (drawerPage, stripPlan, drawerPlaceDrawers, drawerPlaceJournal), so a hint follows its box when
+ *  a word is renamed (Law 5: the day circuits become schemas, "2 circuits" becomes "2 schemas" with no edit here). Plural labels as the lexicon gives them; the singular is the label without its
+ *  final s, which every one of these (Pages/Docs, Boards/Circuits, Drawers/Racks) is. */
+export interface RailHintWords { doc: string; circuit: string; rack: string; log: string }
+const singular = (plural: string): string => plural.toLowerCase().replace(/s$/, '');
+const plural = (w: string): string => w.toLowerCase();
+const one = (n: number, w: string): string => `${n} ${n === 1 ? singular(w) : plural(w)}`;
+
+/** The hover hint that names what a rail box's count counts (a bare number is only true when its scope is clear). where: unfiled (the Journal) or inside a rack (a Drawer). Sentence frames live here; the
+ *  nouns arrive in `words`. */
 export type RailHintKind = 'docs' | 'circuits' | 'log' | 'place' | 'voice' | 'tone';
-export function railHint(kind: RailHintKind, n: number | string, where: 'journal' | 'drawer'): string {
+export function railHint(kind: RailHintKind, n: number | string, where: 'journal' | 'drawer', words: RailHintWords): string {
   const num = typeof n === 'number' ? n : 0;
-  const noun = (one: string, many: string) => `${num} ${num === 1 ? one : many}`;
-  if (kind === 'docs') return `${noun('doc', 'docs')} ${where === 'journal' ? 'in the Journal (not filed in a drawer)' : 'in this drawer'}`;
-  if (kind === 'circuits') return `${noun('circuit', 'circuits')} ${where === 'journal' ? 'in the Journal (not filed in a drawer)' : 'in this drawer'}`;
-  if (kind === 'log') return `${noun('doc', 'docs')} in the Journal, whichever drawer you are in`;
-  if (kind === 'place') return where === 'journal' ? `${noun('doc or circuit', 'docs and circuits')} not filed in a drawer` : `${noun('doc or circuit', 'docs and circuits')} filed in this drawer`;
-  if (kind === 'voice') return `The Voice of your pages: ${n}`;
-  return `The page tone: ${n}`;
+  const rack = singular(words.rack);
+  const scope = where === 'journal' ? `not filed in a ${rack}` : `in this ${rack}`;
+  if (kind === 'docs') return `${one(num, words.doc)} ${scope}`;
+  if (kind === 'circuits') return `${one(num, words.circuit)} ${scope}`;
+  if (kind === 'log') return `${one(num, words.doc)} in the ${words.log}`;
+  if (kind === 'place') return `${num === 1 ? `1 ${singular(words.doc)} or ${singular(words.circuit)}` : `${num} ${plural(words.doc)} and ${plural(words.circuit)}`} ${scope}`;
+  const cap = String(n).charAt(0).toUpperCase() + String(n).slice(1).toLowerCase();
+  if (kind === 'voice') return `The Voice of your ${plural(words.doc)}: ${cap}`;
+  return `Page: ${cap}`;
 }
 
 /** RACK ▸ name - the rack the writer is in. */

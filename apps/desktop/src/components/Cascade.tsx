@@ -171,6 +171,8 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
   const boxes = FLUX3 && useTheme() === 'flux';
   const lastNode = useLastTouched();
   const prefs = useThemePrefs();
+  // the nouns every hint quotes, read from the same lexicon entries the boxes' labels use (law 5)
+  const hintWords = { doc: t('drawerPage'), circuit: t('stripPlan'), rack: t('drawerPlaceDrawers'), log: t('drawerPlaceJournal') };
   const readouts = useMemo(() => {
     if (!boxes) return null;
     const count = (v: 'pages' | 'boards') => sectionsOf(place, v).reduce((n, g) => n + g.items.length, 0);
@@ -180,15 +182,15 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
     const filed = place.kind === 'journal' ? journalMembers().length : docs + circuits;
     return {
       where, filed,
-      place: { count: railReadout(filed), hint: railHint('place', filed, where) },
-      page: { count: railReadout(docs), hint: railHint('docs', docs, where) },
-      plan: { count: railReadout(circuits), hint: railHint('circuits', circuits, where) },
-      journal: { count: railReadout(logDocs), hint: railHint('log', logDocs, where) },
+      place: { count: railReadout(filed), hint: railHint('place', filed, where, hintWords) },
+      page: { count: railReadout(docs), hint: railHint('docs', docs, where, hintWords) },
+      plan: { count: railReadout(circuits), hint: railHint('circuits', circuits, where, hintWords) },
+      journal: { count: railReadout(logDocs), hint: railHint('log', logDocs, where, hintWords) },
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [boxes, place.kind, place.id, place.setId, subject.entry.id, subject.entry.pageType]);
+  }, [boxes, hintWords.doc, hintWords.circuit, hintWords.rack, hintWords.log, place.kind, place.id, place.setId, subject.entry.id, subject.entry.pageType]);
   // the foot's boxes read the two settings they open (live: the prefs store notifies). The Trash has NO count: the Trash is a place, not a nag (TrashPanel: A18's anti-solicitation core).
-  const footReads = boxes ? { settings: { count: prefs.voice.toUpperCase(), hint: railHint('voice', prefs.voice, 'journal') }, theme: { count: prefs.page.toUpperCase(), hint: railHint('tone', prefs.page, 'journal') } } : null;
+  const footReads = boxes ? { settings: { count: prefs.voice.toUpperCase(), hint: railHint('voice', prefs.voice, 'journal', hintWords) }, theme: { count: prefs.page.toUpperCase(), hint: railHint('tone', prefs.page, 'journal', hintWords) } } : null;
   const lastReadout = boxes && lastNode ? `${t('flux3ReadLast').toUpperCase()} 0x${nodeHex(lastNode)}` : null;
   // PW1 S4 — THE CASCADE SURVIVES TRAVEL. This state is per-surface: a travel
   // unmounts the whole hook, so before this the destination always mounted at

@@ -6,6 +6,8 @@
 //            Drawer's own pages and boards, and the Log still reads the Journal's. Two digits at least.
 //   HERE     your place is orange: the Journal pin (label, reading, bar) while she is in the Journal, the place block's name while she is in a Drawer; nothing else is.
 //   LAST     under Circuits the last node touched this session reads in orange (LAST 0x....), the same address the Schema's own footer shows; none before a node is touched.
+//   HINTS    (law 5) every hover hint speaks Flux: the nouns are read from the lexicon entries the boxes' own labels use, the six strings are the Wrizors table exactly (printed in the
+//            run), none says drawer / Journal / page / board, and the reader goes red on the old sentences.
 //   RECT     the dress adds nothing to any layout: the page's rect, the host's and the rail's width are the same with the readouts shown and taken away (page primacy).
 //   L        the rail adds no typing latency: six interleaved rounds, TWO readings, through scripts/lib/l-method.mjs; J = the page with the dress, C = the same page with the L2
 //            readouts and rules taken away (control green, +5 / +10 ms red; on the box, FLUX3_L=1 runs it elsewhere).
@@ -85,12 +87,30 @@ try { await withHarness(async (app) => {
   ok('DUP the Journal rail draws the Log icon once and the word "Log" once (the door wears the switcher\'s rack glyph; the Journal pin is the Log)', dupOk(j) && logWords === 1, JSON.stringify({ door, pin, logIcons: j && j.logIcons, logWords }));
   await snap('l2-journal-dark');
   // PLACE (Journal): the door is never blank - UNFILED and one true count (the Journal's docs and circuits not filed in a drawer: 3 + 2)
-  ok('PLACE in the Journal the door reads UNFILED with its count 05 (3 docs + 2 circuits not filed in a drawer), never blank, and says so on hover', !!door && /^unfiled$/i.test(door.label || '') && door.read === '05' && /not filed in a drawer/.test(door.title || ''), JSON.stringify({ door }));
+  ok('PLACE in the Journal the door reads UNFILED with its count 05 (3 docs + 2 circuits not filed in a drawer), never blank, and says so on hover', !!door && /^unfiled$/i.test(door.label || '') && door.read === '05' && /not filed in a rack/.test(door.title || ''), JSON.stringify({ door }));
   // FOOT: Config, Skin and Trash are command boxes in caps; Config reads the Voice, Skin the page tone; the Trash has no count (a place, not a nag)
   const cfg = by(j, 'settings'), skin = by(j, 'theme'), trash = by(j, 'trash');
   ok('FOOT Config reads the Voice (SERIF), Skin the page tone (DARK), the Trash no count; all three are boxes with caps names', !!cfg && !!skin && !!trash && cfg.read === 'SERIF' && skin.read === 'DARK' && trash.read === null && [cfg, skin, trash].every((i) => i.tt === 'uppercase' && i.bw === '1px'), JSON.stringify({ cfg, skin, trash }));
   ok('CAPS every box on the rail wears its name in caps: the door, Docs, Circuits, Log, Config, Skin, Trash', !!j && j.items.every((i) => i.label === null || i.tt === 'uppercase'), JSON.stringify(j && j.items.map((i) => [i.cat, i.tt])));
-  ok('HINTS each count names what it counts on hover (docs, circuits, log, voice, tone)', !!j && /3 docs in the Journal/.test(by(j, 'page').title) && /2 circuits in the Journal/.test(by(j, 'plan').title) && /3 docs in the Journal, whichever drawer/.test(by(j, 'journal').title) && /Voice/.test(cfg.title) && /page tone/i.test(skin.title) && !trash.title, JSON.stringify(j && j.items.map((i) => [i.cat, i.title])));
+  // HINTS (law 5): every noun comes from the lexicon entry the box's own label uses; the Wrizors' six strings, exact, in the Journal (unfiled) and in a rack (below)
+  const JOURNAL_SIX = { place: '5 docs and circuits not filed in a rack', page: '3 docs not filed in a rack', plan: '2 circuits not filed in a rack', journal: '3 docs in the Log', settings: 'The Voice of your docs: Serif', theme: 'Page: Dark' };
+  const sixOf = (r) => r ? { place: (r.items.find((i) => i.cat === 'drawers') || {}).title, page: by(r, 'page').title, plan: by(r, 'plan').title, journal: by(r, 'journal').title, settings: by(r, 'settings').title, theme: by(r, 'theme').title } : null;
+  // a hint may not speak Arbor words (drawer, Journal, page, board); the tone box's own label "Page: " is its setting's name and is the one place the word stands
+  const FORBIDDEN = /(drawers?|journal|pages?|boards?)/i;
+  const speaksArbor = (s) => FORBIDDEN.test(String(s || '').replace(/^Page: /, ''));
+  const sixJ = sixOf(j);
+  console.log('L2 HINTS (Journal, unfiled): ' + JSON.stringify(sixJ));
+  ok('HINTS the six hover hints in the Journal are the Wrizors strings exactly, none speaks Arbor words, and the Trash has none', !!sixJ && Object.keys(JOURNAL_SIX).every((k) => sixJ[k] === JOURNAL_SIX[k]) && Object.values(sixJ).every((s) => !speaksArbor(s)) && !trash.title, JSON.stringify({ sixJ }));
+  // the reader must be able to go red: Arbor's old sentences, and one planted word
+  const OLD_SIX = ['3 docs in the Journal (not filed in a drawer)', '2 circuits in this drawer', '3 docs in the Journal, whichever drawer you are in', 'The Voice of your pages: Serif', 'The page tone: Dark', '5 docs and circuits filed in this drawer'];
+  ok('HINTS-MUT the word reader goes RED on the old sentences (drawer, Journal, pages, page tone) and on one planted word, and green on the real six', OLD_SIX.every((s) => speaksArbor(s)) && speaksArbor('3 docs in the Board') && !speaksArbor('Page: Dark') && Object.values(JOURNAL_SIX).every((s) => !speaksArbor(s)), JSON.stringify({ OLD_SIX }));
+  // the nouns are read from the lexicon entries the boxes' own labels use (source-read): the hint builder holds no noun of its own, Cascade passes the four labels
+  const hintSrc = fs.readFileSync(new URL('../../src/store/fluxReadouts.ts', import.meta.url), 'utf8');
+  const casSrc = fs.readFileSync(new URL('../../src/components/Cascade.tsx', import.meta.url), 'utf8');
+  const body = hintSrc.slice(hintSrc.indexOf('export function railHint'), hintSrc.indexOf('/** RACK'));
+  const literals = (src) => [...src.matchAll(/`([^`]*)`/g)].map((m) => m[1].replace(/${[^}]*}/g, ' ')).join(' | ');
+  const nounLit = (src) => /(doc|circuit|rack|drawer|journal|board|log|schema)/i.test(literals(src).replace(/Page: /g, ''));
+  ok('HINTS-LEX the hint builder holds no noun of its own (its sentence frames only) and Cascade reads all four from the box-label lexicon entries (drawerPage, stripPlan, drawerPlaceDrawers, drawerPlaceJournal) - the day circuits become schemas the hints follow', body.length > 200 && !nounLit(body) && /doc: t('drawerPage'), circuit: t('stripPlan'), rack: t('drawerPlaceDrawers'), log: t('drawerPlaceJournal')/.test(casSrc) && nounLit(body.replace('not filed in a ${rack}', 'not filed in a drawer')) , JSON.stringify({ frames: literals(body) }));
 
   // ---- READ in the Journal -------------------------------------------------------------------------------------------------------------------------------
   const readJ = (r) => { const a = by(r, 'page'), b = by(r, 'plan'), c = by(r, 'journal'); return !!a && !!b && !!c && a.read === '03' && b.read === '02' && c.read === '03' && /^[0-9]{2,}$/.test(a.read); };
@@ -130,7 +150,11 @@ try { await withHarness(async (app) => {
   ok('DUP-DRAWER in a Drawer the rail still draws the Log icon once (the Journal pin) and the door is the rack', !!dupDrawer && !!dDoor && dDoor.icon === 'rack', JSON.stringify({ logIcons: dr && dr.logIcons, door: dDoor && dDoor.icon }));
 
   // PLACE (Drawer): the Drawer's own name in caps and one true count (2 docs + 1 circuit = 03); its hover says so
-  ok('PLACE in a Drawer the door reads the Drawer own name (THE LATE FERRY) with its count 03 and says what it counts on hover', !!dDoor && dDoor.label === 'The Late Ferry' && dDoor.tt === 'uppercase' && dDoor.read === '03' && /filed in this drawer/.test(dDoor.title || ''), JSON.stringify({ dDoor }));
+  ok('PLACE in a Drawer the door reads the Drawer own name (THE LATE FERRY) with its count 03 and says what it counts on hover', !!dDoor && dDoor.label === 'The Late Ferry' && dDoor.tt === 'uppercase' && dDoor.read === '03' && /docs and circuits in this rack/.test(dDoor.title || ''), JSON.stringify({ dDoor }));
+  const DRAWER_SIX = { place: '3 docs and circuits in this rack', page: '2 docs in this rack', plan: '1 circuit in this rack', journal: '3 docs in the Log', settings: 'The Voice of your docs: Serif', theme: 'Page: Dark' };
+  const sixD = sixOf(dr);
+  console.log('L2 HINTS (in a rack): ' + JSON.stringify(sixD));
+  ok('HINTS-RACK the six hover hints in a rack read as the Wrizors table (docs, circuits and the place in "this rack", the Log still the Journal) and none speaks Arbor words', !!sixD && Object.keys(DRAWER_SIX).every((k) => sixD[k] === DRAWER_SIX[k]) && Object.values(sixD).every((s) => !speaksArbor(s)), JSON.stringify({ sixD }));
   // ---- LAST: a node touched this session reads in orange under Circuits ----------------------------------------------------------------------------------
   await open('l2-b1');
   const l0 = await rail();
