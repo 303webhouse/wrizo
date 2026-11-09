@@ -1,5 +1,7 @@
 import type { PageSettings } from '../types';
 import { PAGE_SETTINGS_FALLBACK } from '../types';
+import { getTheme } from './theme';
+import { fluxJackMode } from '../flux3/jackIn';
 
 // the writer's default page dress: the per-page value lives on the entry, this file holds the per-user default, one shape; local first (read synchronously at birth), the server is the durable copy [pageDefaults §1]
 
@@ -41,9 +43,12 @@ function dressOnly(v: PageSettings | null): PageSettings | null {
 
 // a page BORN now is born at 11 pt; a page that already exists keeps reading PAGE_SIZE_DEFAULT (12) through its absent size, so nothing is rewritten and no field is new; the writer's own default dress comes first, with its own size if it set one, else the app's floor (PAGE_SETTINGS_FALLBACK) [pageDefaults §3]
 export const NEW_PAGE_SIZE = 11;
+// FLUX3 (draft 21 §3, Nick Nov 9): in Flux under ?flux3=1 a page is born at 14 pt (the screen is meant to feel closer, in-the-zone); other themes stay at 11; pages already written keep their size
+export const FLUX_NEW_PAGE_SIZE = 14;
+export function newPageSize(): number { return fluxJackMode(getTheme()) ? FLUX_NEW_PAGE_SIZE : NEW_PAGE_SIZE; }
 export function bornPageSettings(): PageSettings {
   const d = defaults;
-  return { ...(d ?? PAGE_SETTINGS_FALLBACK), size: d?.size ?? NEW_PAGE_SIZE };
+  return { ...(d ?? PAGE_SETTINGS_FALLBACK), size: d?.size ?? newPageSize() };
 }
 
 /** Synchronous read, for the birth path. Null when the writer has never
