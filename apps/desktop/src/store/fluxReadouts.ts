@@ -59,7 +59,10 @@ export function railHint(kind: RailHintKind, n: number | string, where: 'journal
   if (kind === 'docs') return `${one(num, words.doc)} ${scope}`;
   if (kind === 'circuits') return `${one(num, words.circuit)} ${scope}`;
   if (kind === 'log') return `${one(num, words.doc)} in the ${words.log}`;
-  if (kind === 'place') return `${num === 1 ? `1 ${singular(words.doc)} or ${singular(words.circuit)}` : `${num} ${plural(words.doc)} and ${plural(words.circuit)}`} ${scope}`;
+  if (kind === 'place') {
+    const pair = num === 1 ? `1 ${singular(words.doc)} or ${singular(words.circuit)}` : `${num} ${plural(words.doc)} and ${plural(words.circuit)}`;
+    return `${pair} ${scope}`;
+  }
   const cap = String(n).charAt(0).toUpperCase() + String(n).slice(1).toLowerCase();
   if (kind === 'voice') return `The Voice of your ${plural(words.doc)}: ${cap}`;
   return `Page: ${cap}`;

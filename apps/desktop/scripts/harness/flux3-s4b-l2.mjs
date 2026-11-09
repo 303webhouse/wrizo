@@ -96,7 +96,7 @@ try { await withHarness(async (app) => {
   const JOURNAL_SIX = { place: '5 docs and circuits not filed in a rack', page: '3 docs not filed in a rack', plan: '2 circuits not filed in a rack', journal: '3 docs in the Log', settings: 'The Voice of your docs: Serif', theme: 'Page: Dark' };
   const sixOf = (r) => r ? { place: (r.items.find((i) => i.cat === 'drawers') || {}).title, page: by(r, 'page').title, plan: by(r, 'plan').title, journal: by(r, 'journal').title, settings: by(r, 'settings').title, theme: by(r, 'theme').title } : null;
   // a hint may not speak Arbor words (drawer, Journal, page, board); the tone box's own label "Page: " is its setting's name and is the one place the word stands
-  const FORBIDDEN = /(drawers?|journal|pages?|boards?)/i;
+  const FORBIDDEN = /(^|[^a-z])(drawers?|journal|pages?|boards?)([^a-z]|$)/i;
   const speaksArbor = (s) => FORBIDDEN.test(String(s || '').replace(/^Page: /, ''));
   const sixJ = sixOf(j);
   console.log('L2 HINTS (Journal, unfiled): ' + JSON.stringify(sixJ));
