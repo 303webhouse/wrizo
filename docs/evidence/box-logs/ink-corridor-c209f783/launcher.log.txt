@@ -1,0 +1,48 @@
+2026-11-09T08:18:04Z TURN PLAN: control origin/main in INK-maincontrol HEAD 7d9f94d5 (dirty 0); Corridor HEAD e6365b47 (dirty 0)
+2026-11-09T08:18:05Z harness browsers at turn start: 0
+2026-11-09T08:18:05Z quiet check before the grant: Wow / OBS / streaming absent
+2026-11-09T08:18:06Z TAKE: granted to lane "ink" and bound to the process tree of pid 54412 - name this turn's start and end in your report
+WS_BOX_TURN=<drawn>   (drawn now, printed once, not stored - only its hash is in the grant file; export it in the shell or script that runs the harness)
+2026-11-09T08:18:06Z TURN START
+2026-11-09T08:18:06Z quiet check before control-before-1: Wow / OBS / streaming absent
+2026-11-09T08:18:06Z [control-before-1] start (flux3-s4c.mjs in INK-maincontrol, , L only)
+2026-11-09T08:19:54Z [control-before-1] exit 0: SUITE DONE HARNESS_PARKED=unset — 1/1 of 1 returned a passing verdict ;; SUITE RESULT: CLEAN — tree=7d9f94d5+1dirty bundle=index-e17ME4Wi.js/994681b NO-REBUILD
+2026-11-09T08:19:54Z quiet check before control-before-2: Wow / OBS / streaming absent
+2026-11-09T08:19:54Z [control-before-2] start (flux3-s4c.mjs in INK-maincontrol, , L only)
+2026-11-09T08:21:40Z [control-before-2] exit 0: SUITE DONE HARNESS_PARKED=unset — 1/1 of 1 returned a passing verdict ;; SUITE RESULT: CLEAN — tree=7d9f94d5+1dirty bundle=index-e17ME4Wi.js/994681b NO-REBUILD
+2026-11-09T08:21:41Z quiet check before corridor-default: Wow / OBS / streaming absent
+2026-11-09T08:21:41Z [corridor-default] start (flux3-s4c.mjs in INK-corridor, )
+2026-11-09T08:29:20Z [corridor-default] exit 1: [01/1] FAIL      exit=1  457s flux3-s4c.mjs :: FLUX3-S4C VERIFY: FAIL - 3/19 failed ;; SUITE DONE HARNESS_PARKED=unset — 0/1 of 1 returned a passing verdict ;; SUITE RESULT: NOT CLEAN — tree=e6365b47 bundle=index-DGX1AqMN.js/1008429b NO-REBUILD
+2026-11-09T08:29:21Z quiet check before corridor-parked: Wow / OBS / streaming absent
+2026-11-09T08:29:21Z [corridor-parked] start (flux3-s4c.mjs in INK-corridor, --parked)
+2026-11-09T08:37:00Z [corridor-parked] exit 1: [01/1] FAIL      exit=1  457s flux3-s4c.mjs :: FLUX3-S4C VERIFY: FAIL - 2/19 failed ;; SUITE DONE HARNESS_PARKED=1 — 0/1 of 1 returned a passing verdict ;; SUITE RESULT: NOT CLEAN — tree=e6365b47 bundle=index-DGX1AqMN.js/1008429b NO-REBUILD
+2026-11-09T08:37:00Z quiet check before control-after: Wow / OBS / streaming absent
+2026-11-09T08:37:00Z [control-after] start (flux3-s4c.mjs in INK-maincontrol, , L only)
+2026-11-09T08:38:46Z [control-after] exit 0: SUITE DONE HARNESS_PARKED=unset — 1/1 of 1 returned a passing verdict ;; SUITE RESULT: CLEAN — tree=7d9f94d5+1dirty bundle=index-e17ME4Wi.js/994681b NO-REBUILD
+2026-11-09T08:38:46Z RELEASE: released  grant file now absent
+2026-11-09T08:38:47Z harness browsers at turn end: 0
+2026-11-09T08:38:47Z TURN END
+2026-11-09T15:32:17Z TURN PLAN: control origin/main in INK-maincontrol HEAD 7d9f94d5 (dirty 0); Corridor HEAD c209f783 (dirty 0)
+2026-11-09T15:32:17Z harness browsers at turn start: 0
+2026-11-09T15:32:17Z quiet check before the grant: Wow / OBS / streaming absent
+2026-11-09T15:32:18Z TAKE: granted to lane "ink" and bound to the process tree of pid 22612 - name this turn's start and end in your report
+WS_BOX_TURN=<drawn>   (drawn now, printed once, not stored - only its hash is in the grant file; export it in the shell or script that runs the harness)
+2026-11-09T15:32:18Z TURN START
+2026-11-09T15:32:18Z quiet check before control-before-1: Wow / OBS / streaming absent
+2026-11-09T15:32:18Z [control-before-1] start (flux3-s4c.mjs in INK-maincontrol, , L only)
+2026-11-09T15:37:33Z [control-before-1] exit 0: SUITE DONE HARNESS_PARKED=unset — 1/1 of 1 returned a passing verdict ;; SUITE RESULT: CLEAN — tree=7d9f94d5+1dirty bundle=index-e17ME4Wi.js/994681b NO-REBUILD
+2026-11-09T15:37:33Z quiet check before control-before-2: Wow / OBS / streaming absent
+2026-11-09T15:37:33Z [control-before-2] start (flux3-s4c.mjs in INK-maincontrol, , L only)
+2026-11-09T15:42:48Z [control-before-2] exit 0: SUITE DONE HARNESS_PARKED=unset — 1/1 of 1 returned a passing verdict ;; SUITE RESULT: CLEAN — tree=7d9f94d5+1dirty bundle=index-e17ME4Wi.js/994681b NO-REBUILD
+2026-11-09T15:42:48Z quiet check before corridor-default: Wow / OBS / streaming absent
+2026-11-09T15:42:48Z [corridor-default] start (flux3-s4c.mjs in INK-corridor, )
+2026-11-09T15:50:43Z [corridor-default] exit 0: SUITE DONE HARNESS_PARKED=unset — 1/1 of 1 returned a passing verdict ;; SUITE RESULT: CLEAN — tree=c209f783 bundle=index-mdVLCeLK.js/1008558b NO-REBUILD
+2026-11-09T15:50:43Z quiet check before corridor-parked: Wow / OBS / streaming absent
+2026-11-09T15:50:43Z [corridor-parked] start (flux3-s4c.mjs in INK-corridor, --parked)
+2026-11-09T15:58:38Z [corridor-parked] exit 0: SUITE DONE HARNESS_PARKED=1 — 1/1 of 1 returned a passing verdict ;; SUITE RESULT: CLEAN — tree=c209f783 bundle=index-mdVLCeLK.js/1008558b NO-REBUILD
+2026-11-09T15:58:38Z quiet check before control-after: Wow / OBS / streaming absent
+2026-11-09T15:58:38Z [control-after] start (flux3-s4c.mjs in INK-maincontrol, , L only)
+2026-11-09T16:03:53Z [control-after] exit 0: SUITE DONE HARNESS_PARKED=unset — 1/1 of 1 returned a passing verdict ;; SUITE RESULT: CLEAN — tree=7d9f94d5+1dirty bundle=index-e17ME4Wi.js/994681b NO-REBUILD
+2026-11-09T16:03:53Z RELEASE: released  grant file now absent
+2026-11-09T16:03:53Z harness browsers at turn end: 0
+2026-11-09T16:03:53Z TURN END
