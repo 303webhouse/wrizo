@@ -12,12 +12,12 @@ const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts
 const CYCLE = 'the signal holds while she writes on ';
 const LINE = ' and the corridor keeps going forward with more plain words now, on and on across the measure of the page until it wraps again and again, line after line';
 
-const seed = async (app, text) => {
+const seed = async (app, text, o = {}) => {
   const id = `f3s4c-frames-${Date.now()}`;
-  await app.evalJs("localStorage.setItem('wrizo-theme', 'flux'); localStorage.setItem('wrizo-ambiance-dial', '50'); (() => { const w = JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}'); Object.assign(w, { flicker: true, progressStyle: 'bar', progress: 'words', instrumentsOn: true, typewriter: false }); localStorage.setItem('wrizo-writing-settings', JSON.stringify(w)); })()");
+  await app.evalJs("localStorage.setItem('wrizo-theme', 'flux'); localStorage.setItem('wrizo-ambiance-dial', '50'); (() => { const w = JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}'); Object.assign(w, { flicker: true, progressStyle: 'bar', progress: 'words', instrumentsOn: true, typewriter: " + (o.typewriter ? 'true' : 'false') + " }); localStorage.setItem('wrizo-writing-settings', JSON.stringify(w)); })()");
   await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id, text, createdAt: new Date().toISOString(), origin: 'loose', source: 'page' })})`);
   await sleep(400);
-  await app.evalJs(`localStorage.removeItem('wrizo-mode-page-${id}'); history.replaceState(null, '', '/?flux3=1#/page/${id}')`);
+  await app.evalJs(`localStorage.removeItem('wrizo-mode-page-${id}'); history.replaceState(null, '', '/${o.flag === false ? '' : '?flux3=1'}#/page/${id}')`);
   await app.reload();
   await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'the page', timeout: 15000 });
   await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 });
@@ -90,5 +90,9 @@ SCREENS['diag-vars'] = async (app) => {
   await seed(app, 'An older line she wrote before this session.');
   const v = async () => app.evalJs("(() => { const p = document.querySelector('.mode-page'); const c = getComputedStyle(p); const col = document.querySelector('.mode-pagecol'); const st = document.querySelector('.desk-frame-stage'); const g = (e, n) => getComputedStyle(e).getPropertyValue(n).trim(); return { h: g(p, '--wz-page-h'), hl: g(p, '--wz-page-hl'), k: g(p, '--wz-k'), z: g(p, '--wz-zoom'), w: g(p, '--wz-page-w'), height: c.height, inline: p.getAttribute('style'), stage: st && st.className, stageH: st && Math.round(st.getBoundingClientRect().height), colH: Math.round(col.getBoundingClientRect().height), zoom: col.getAttribute('data-zoom'), iw: innerWidth, ih: innerHeight }; })()");
   console.log(`FLUX3-S4C-FRAME diag-vars-jacked ${JSON.stringify(await v())}`);
+};
+SCREENS['diag-vars-main'] = async (app) => {
+  await seed(app, 'An older line she wrote before this session.', { flag: false, typewriter: true });
+  console.log(`FLUX3-S4C-FRAME diag-vars-main ${JSON.stringify(await app.evalJs("(() => { const p = document.querySelector('.mode-page'); const col = document.querySelector('.mode-pagecol'); const g = (e, n) => getComputedStyle(e).getPropertyValue(n).trim(); return { hl: g(p, '--wz-page-hl'), h: g(p, '--wz-page-h'), height: getComputedStyle(p).height, zoom: col && col.getAttribute('data-zoom'), flag: document.documentElement.hasAttribute('data-flux3') }; })()"))}`);
 };
 export default SCREENS;
