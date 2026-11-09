@@ -13,6 +13,9 @@
   --f3-addr:#17313A; --f3-quiet:#4F6B70; --f3-cyan-text:#006E91; --f3-lime:#3F6B00; --f3-orange-text:#7A3B00;
   --f3-strip:rgba(237, 243, 243, .96); --f3-hair:#B7C9CC; --f3-label:#17313A;
 }
+/* THE DEFAULT VOICE (Nick via Fable, Nov 9, draft 20): the mockup's serif, Crimson Pro, is Flux's default writing face under the flag, for every page on the
+   default (an explicit face the writer chose, Titillium Web included, still wins). fontRoster.themeDefaultFaceName names it in the face list. */
+:root[data-flux3][data-theme='flux']{ --font-proseSerif:'Crimson Pro Variable', Georgia, serif; }
 
 /* ---- the board frame: the drawing layer shows through a clear canvas; the wrap is positioned so it (and its scrollbars) paint over the layer ---- */
 :root[data-flux3][data-theme='flux'] .board-canvas-wrap{ position:relative; background:transparent; }
@@ -188,7 +191,7 @@
    fades the signal toward the top.
    THE VEIL: the writing line reads at full strength, the line above it dimmed (--f3-dim), and every line further up is taken from the text (it
    is the signal's: FluxJackedIn compiles it on the pause). A still mask on the editor, counted in its own line-heights up from its last line (the
-   writing line), so it rides the Typewriter's own line advance with no script. Esc (looking up: data-flux3-looking) lifts it. */
+   writing line), so it rides the Typewriter's own line advance with no script. (Esc leaves Jacked In for BUILD, so there is no lifted state.) */
 :root[data-flux3][data-theme='flux'][data-flux3-jacked]{ --f3-dim:.78;
   --f3-term-mask:linear-gradient(to top, #000 0, #000 1lh, rgb(0 0 0 / var(--f3-dim)) 1lh, rgb(0 0 0 / var(--f3-dim)) 2lh, transparent 2lh); }
 :root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .mode-page{ background:transparent; border-color:transparent; box-shadow:none; outline:none; }
@@ -197,7 +200,7 @@
    page back to scale 1 for half a second (r9's zoom watch: four times in six seconds, the rect moving). Jacked in it does not play */
 :root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .mode-page.flipping{ animation:none; }
 :root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .mode-scroll{ scrollbar-color:transparent transparent; }
-:root[data-flux3][data-theme='flux'][data-flux3-jacked]:not([data-flux3-looking]) .mode-pagecol[data-zoom='true'] .forward-only-editor{
+:root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .forward-only-editor{
   -webkit-mask-image:var(--f3-term-mask); mask-image:var(--f3-term-mask); }
 /* THE GOAL GLOW, ONE TOKEN (Nick, Nov 8: a lighter blue; the Wrizors' concepts file, Nov 9). The goal's glow (.wz-goal-glow, 13-desk-frame.css: rising
    with the goal, opacity its only variable) seen through Jacked In's clear page: Flux's soft cyan #57D0F5 at 12% in the middle, 4% at 55%, none at the
@@ -208,9 +211,9 @@
 :root[data-flux3][data-theme='flux'][data-flux3-jacked] .desk-frame-stagecol{ background:var(--f3-term-ground); }
 /* NO STRIPS, HANDLES, RAIL OR BAR while jacked in (Nick, Nov 8, all themes; the Wrizors' Corridor): the rail, the strip and corkboard, the drawers'
    anchors with their handles, the Glitch bar and its count, and every chrome-fade piece are invisible and take no pointer. Only opacity and pointer
-   events: nothing moves, so the page keeps its rect. Esc (looking up: data-flux3-looking) brings them back as it does today. The burst edge (the
+   events: nothing moves, so the page keeps its rect. Esc leaves Jacked In for BUILD, which brings them back. The burst edge (the
    2px lime line on <body>) and the page stay. */
-:root[data-flux3][data-theme='flux'][data-flux3-jacked]:not([data-flux3-looking]) :is(.desk-rail, .desk-frame-strip, .desk-frame-corkboard, .desk-frame-sliver-anchor,
+:root[data-flux3][data-theme='flux'][data-flux3-jacked] :is(.desk-rail, .desk-frame-strip, .desk-frame-corkboard, .desk-frame-sliver-anchor,
   .desk-frame-tutor-anchor, .desk-frame-tutor-panel-anchor, .desk-frame-meter, .flux3-glitchbar, .chrome-fade, .desk-dissolve){ opacity:0 !important; pointer-events:none !important; transition:opacity .6s ease; }
 /* THE CORRIDOR (src/flux3/FluxCorridor.tsx). Behind the page (first in .mode-stage), no pointer. Every animation is transform or opacity (the
    compositor's); its speed is the animations' playbackRate, set at most four times a second from her pace, and 0 when she stops. */

@@ -9,19 +9,21 @@
 //     DOM text, selection, copy and word count are never changed; the caret's line and the line just above it are never covered.
 //   - THE DECOMPILE. Jacking out while the page stays (the Typewriter turned off) resolves the signal: each glyph run is put back on its own word
 //     and fades, and the words are there, already in the doc. One change through the flash budget; the still state is a cut.
-//   - THE DEFAULT. Entering Free Write in Flux with "Jack In by default" on lays a session overlay over the shared Typewriter field
-//     (writingSettings.setFreeWriteOverlay) before the page paints, so Free Write opens Jacked In while the shared field, and every other theme's
-//     Typewriter, stay as they are. The writer's own toggle clears it; leaving Free Write lifts it. Nothing is saved (ruling D).
+//   - THE MODE (draft 21 §6, Nick Nov 9). JACK IN is the top-bar mode, not a switch: ModeStage turns the Typewriter on for Flux's free-writing slot and
+//     never for BUILD (Draft), and offers no toggle for it in either (no "Jack In by default" row, no gear/sliver switch). There is no off inside it.
+//     Leaving: an Esc TAP (a key held under ESC_TAP_MS) or F9 asks the page editor (LEAVE_JACK_EVENT) for BUILD on the same doc, caret at the end of her
+//     text, full screen kept (Chrome/Edge: the Escape key is locked while full screen, so a HOLD still exits full screen; F9 is the backup for browsers
+//     without the lock). Nothing is saved.
 //   - THE CORRIDOR (Nick's pick, Nov 9: Style B, flux-jacked-in-concepts.md) is FluxCorridor.tsx, mounted here while jacked in. Its rules, kept here:
 //     ALWAYS DARK (the page tone is held 'dark' on <html> while jacked in and put back on leaving; the saved Page preference is never touched), ONLY THIS
 //     SESSION'S LINES COMPILE (the lines at and above the caret's line when she jacked in are never signal), and FINISHED LINES STEP BACK at an even
 //     step (ROWS below), six rows, then gone.
 import { useEffect, useLayoutEffect, type RefObject } from 'react';
 import { useTheme } from '../store/theme';
-import { setFreeWriteOverlay } from '../store/writingSettings';
 import { getAmbianceDial, prefersReducedMotion } from '../store/ambianceDial';
 import { tryFlash } from '../store/flashBudget';
-import { getJackInDefault, setJacked } from './jackIn';
+import { openPopupCount } from '../store/escapeExit';
+import { LEAVE_JACK_EVENT, setJacked } from './jackIn';
 import { getThemePrefs } from '../store/themePrefs';
 import { FluxCorridor } from './FluxCorridor';
 
@@ -42,11 +44,11 @@ export const SIGNAL = { rowShrink: 0.075, rowMin: 0.4, rowFade: 0.15, rowsShown:
 // no rows at all until she typed and paused (the Wrizors' S4 r9 review). A scroll now starts a compile only when none is waiting
 export const PAUSE = { scrollPostpones: false };
 
+export const ESC_TAP_MS = 500;         // an Esc held shorter than this is a tap (leaves Jacked In); longer is a hold (the browser's full-screen exit)
+
 interface Props {
-  on: boolean;                          // the page's Typewriter is running (ModeStage's typewriterOn)
-  freeWrite: boolean;                   // the page is in Free Write
+  on: boolean;                          // the page's Typewriter is running (ModeStage's typewriterOn: Flux's free-writing mode)
   scrollRef: RefObject<HTMLDivElement | null>;
-  refresh: () => void;                  // ModeStage's own re-render, so the default's overlay is read before the page paints
 }
 
 // a word's blocks (true: filled, false: hollow), one per character, fixed by the word and its place, so a compile that finds the same words
@@ -90,16 +92,39 @@ const caretBox = (at: Range, ed: HTMLElement): DOMRect | null => {
   return rr.height ? rr : null;
 };
 
-export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
+export function FluxJackedIn({ on, scrollRef }: Props) {
   const flux = useTheme() === 'flux';
   const jackedIn = flux && on;
 
-  // THE DEFAULT: laid in a layout effect and read by a synchronous re-render, so the page never paints un-jacked first
-  useLayoutEffect(() => {
-    if (!(flux && freeWrite)) return undefined;
-    if (getJackInDefault()) { setFreeWriteOverlay(true); refresh(); }
-    return () => { setFreeWriteOverlay(false); };
-  }, [flux, freeWrite, refresh]);
+  // LEAVING: an Esc tap or F9 asks the page editor for BUILD on the same doc (it owns the mode). A popup open on the page takes its own Esc first.
+  useEffect(() => {
+    if (!jackedIn) return undefined;
+    let escAt = 0;
+    const leave = () => { window.dispatchEvent(new CustomEvent(LEAVE_JACK_EVENT)); };
+    const down = (e: KeyboardEvent) => {
+      if (e.key === 'F9' && !e.repeat) { e.preventDefault(); leave(); return; }
+      if (e.key === 'Escape' && !e.repeat && !e.isComposing && openPopupCount() === 0) escAt = performance.now();
+    };
+    const up = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      const tap = escAt > 0 && performance.now() - escAt < ESC_TAP_MS;
+      escAt = 0;
+      if (tap) leave();
+    };
+    document.addEventListener('keydown', down, true);
+    document.addEventListener('keyup', up, true);
+    // Chrome/Edge: lock Escape while full screen so a tap reaches the page and only a hold exits full screen (other browsers: F9 is the way out)
+    const kb = (navigator as unknown as { keyboard?: { lock?: (keys: string[]) => Promise<void>; unlock?: () => void } }).keyboard;
+    const lock = () => { if (document.fullscreenElement) kb?.lock?.(['Escape'])?.catch(() => { /* unsupported or refused: F9 stays */ }); };
+    lock();
+    document.addEventListener('fullscreenchange', lock);
+    return () => {
+      document.removeEventListener('keydown', down, true);
+      document.removeEventListener('keyup', up, true);
+      document.removeEventListener('fullscreenchange', lock);
+      try { kb?.unlock?.(); } catch { /* none */ }
+    };
+  }, [jackedIn]);
 
   useLayoutEffect(() => {
     setJacked(jackedIn);
@@ -149,39 +174,14 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
       Object.assign(el.style, { left: `${(r.left - L.left) / s}px`, top: `${(r.top - L.top) / s}px`, width: `${r.width / s}px`, height: `${r.height / s}px`, lineHeight: `${r.height / s}px` });
     };
 
-    // ESC READS (the Wrizors' S4 review, Fable Nov 7): Esc brings the chrome back as it does today, and the page then reads as the Typewriter's
-    // does: the signal resolves (each block turns over and fades) and nothing compiles again until she types
-    // Looking up also lifts the terminal's veil (flux-v3.css: data-flux3-looking), so the lines above read; writing again lowers it
-    let lookingUp = false;
-    let fadeTimer = 0;
-    const root = document.documentElement;
-    const look = (on: boolean) => { lookingUp = on; if (on) root.setAttribute('data-flux3-looking', ''); else root.removeAttribute('data-flux3-looking'); };
+    // (Esc no longer "looks up": it LEAVES to BUILD, see the effect above; leaving runs the decompile in this effect's cleanup.)
     const turnOver = (el: Element) => { el.querySelectorAll('i').forEach((b) => { b.className = b.className === 'f' ? 'h' : 'f'; }); };
-    const resolve = () => {
-      sig = '';
-      if (!words.size) return;
-      const els = [...words.keys()];
-      words.clear();
-      if (still() || !tryFlash('f3-resolve')) { els.forEach((el) => el.remove()); return; }
-      const fade = document.createElement('div');
-      fade.className = 'flux3-compile-fade';
-      fade.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:0;';
-      els.forEach((el) => { turnOver(el); fade.appendChild(el); });
-      layer.appendChild(fade);
-      requestAnimationFrame(() => fade.classList.add('decompile'));
-      fadeTimer = window.setTimeout(() => fade.remove(), DECOMPILE_MS + 60);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { look(true); if (timer) window.clearTimeout(timer); timer = 0; resolve(); return; }
-      if (lookingUp && (e.key.length === 1 || e.key === 'Enter' || e.key === 'Backspace')) look(false);   // she writes again: the next pause compiles
-    };
 
     // harness mode only (the flash budget's pattern): why each compile stopped where it did, behind a flag read at call time; unset, nothing
     const W = window as unknown as { __wzVerifyCompile?: boolean; __wzCompileLog?: [number, string][] };
     const why = (w: string) => { if (W.__wzVerifyCompile) (W.__wzCompileLog ??= []).push([Math.round(performance.now()), w]); };
     const compile = () => {
       timer = 0;
-      if (lookingUp) { why('looking'); return; }
       if (!scroll.isConnected) { why('gone'); return; }
       const ed = scroll.querySelector<HTMLElement>('.forward-only-editor');
       const sel = document.getSelection();
@@ -260,7 +260,6 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
     const onFirst = () => readFloor();
     document.addEventListener('keydown', onFirst, opts);
     document.addEventListener('selectionchange', onFirst, opts);
-    document.addEventListener('keydown', onKey, opts);   // before schedule's own keydown, so an Esc never schedules a compile
     DOC_EVENTS.forEach((ev) => document.addEventListener(ev, schedule, opts));
     const onScroll = () => { if (PAUSE.scrollPostpones || !timer) schedule(); };
     scroll.addEventListener('scroll', onScroll, { passive: true });
@@ -269,9 +268,6 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
 
     return () => {
       if (timer) window.clearTimeout(timer);
-      if (fadeTimer) window.clearTimeout(fadeTimer);
-      root.removeAttribute('data-flux3-looking');
-      document.removeEventListener('keydown', onKey, opts);
       document.removeEventListener('keydown', onFirst, opts);
       document.removeEventListener('selectionchange', onFirst, opts);
       DOC_EVENTS.forEach((ev) => document.removeEventListener(ev, schedule, opts));

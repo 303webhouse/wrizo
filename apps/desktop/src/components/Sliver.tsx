@@ -4,9 +4,8 @@ import { useTheme, type ThemeId } from '../store/theme';
 import { TypeControl, type TypeControlProps } from './TypeControl';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
 import { useWritingSettings, setWritingSettings, setTypewriterExplicit, typewriterForPage, freeWriteTypewriter } from '../store/writingSettings';
-// FLUX3 S4 - Free Write's Typewriter reads through the Jack In default's session overlay; the switch sits beside Flicker, under the flag only
-import { FLUX3 } from '../flux3/flag';
-import { useJackInDefault, setJackInDefault } from '../flux3/jackIn';
+// FLUX3 S4 - Flux (under the flag): JACK IN is a mode, so the Typewriter's on/off toggle is not offered here (draft 21 §6)
+import { fluxJackMode } from '../flux3/jackIn';
 import type { ProgressMetric, FadeDepth, ProgressStyle } from '../store/writingSettings';
 import { useWritingGoal, setWritingGoal, goalCount, goalFraction, DEFAULT_GOAL_LINES, type WritingGoal, type GoalUnit } from '../store/writingGoal';
 // FX3 S5 — the writing-settings gear leaves the paper entirely and moves to
@@ -825,7 +824,7 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
   const theme = useTheme();
   // a Draft or Screenplay page asks typewriterForPage; Free Write (no pageId) reads the shared field [Sliver §28]
   const typewriterOn = pageId != null ? typewriterForPage(pageId, pageEmpty ?? false) : freeWriteTypewriter(settings);
-  const jackInDefault = useJackInDefault();
+  const fluxJack = fluxJackMode(theme);
 
   // the foot is one three-dot menu: Typewriter, Progress and the remaining preferences open together under their headings; one instrument open at a time [Sliver §29]
   const [open, setOpen] = useState(false);
@@ -875,7 +874,7 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
           ON is a brass icon with no fill, OFF is quiet; the state is aria-pressed, the name never changes. Their own class, NOT the row's: the row stays
           the "..." button alone. */}
       <div className="wz-sliver-instruments-modes">
-        {typewriterAvailable && (
+        {typewriterAvailable && !fluxJack && (
           <button type="button" className="wz-sliver-mode-btn" data-mode-toggle="typewriter"
             aria-label={t('modeToggleTypewriter')} title={t('modeToggleTypewriter')}
             aria-pressed={typewriterOn}
@@ -906,15 +905,6 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
               <Seg label={t('footMenuFlicker')} value={settings.flicker ? 'on' : 'off'}
                 opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}
                 onPick={v => setWritingSettings({ flicker: v === 'on' })} />
-            </section>
-          )}
-          {/* FLUX3 S4 - "Jack In by default" (the spec's §10 switch; in-session until the shared switches store, Fable's ruling D) */}
-          {FLUX3 && theme === 'flux' && (
-            <section className="wz-foot-settings-block" data-flux3-jackin-switch="">
-              <h4>{t('flux3JackInDefault')}</h4>
-              <Seg label={t('flux3JackInDefault')} value={jackInDefault ? 'on' : 'off'}
-                opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}
-                onPick={v => setJackInDefault(v === 'on')} />
             </section>
           )}
           <section className="wz-foot-settings-block">
