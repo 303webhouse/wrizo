@@ -29,7 +29,7 @@ const seed = async (app, text) => {
 const type = async (app, text, gap = 40) => { for (const ch of text) { await app.typeKeys(ch); await sleep(gap); } };
 const stood = (app) => app.evalJs("({ flag: document.documentElement.hasAttribute('data-flux3'), theme: document.documentElement.getAttribute('data-theme'), page: document.documentElement.getAttribute('data-page'), jacked: document.documentElement.hasAttribute('data-flux3-jacked'), corridor: !!document.querySelector('[data-flux3-corridor]'), rows: document.querySelectorAll('.flux3-compile-word').length, pop: !!document.querySelector('[data-flux3-pop]'), ink: (() => { const ed = document.querySelector('.forward-only-editor'); if (!ed) return null; const c = getComputedStyle(ed); const r = ed.getBoundingClientRect(); return { color: c.color, ff: c.fontFamily.slice(0, 40), op: c.opacity, vis: c.visibility, mask: (c.webkitMaskImage || c.maskImage || '').slice(0, 30), rect: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)], text: ed.textContent.slice(0, 30), last: (() => { const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let n, l = null; while ((n = w.nextNode())) l = n; if (!l) return null; const g = document.createRange(); g.setStart(l, Math.max(0, l.nodeValue.length - 6)); g.setEnd(l, l.nodeValue.length); const q = g.getBoundingClientRect(); const cx = Math.round(q.left + q.width / 2), cy = Math.round(q.top + q.height / 2); const chain = []; for (let e = ed; e && chain.length < 9; e = e.parentElement) { const s = getComputedStyle(e); chain.push((e.className || e.tagName).toString().slice(0, 22) + ' o' + s.opacity + (s.maskImage !== 'none' ? ' M' : '') + (s.filter !== 'none' ? ' F' : '')); } return { q: [Math.round(q.left), Math.round(q.top), Math.round(q.width), Math.round(q.height)], top: document.elementsFromPoint(cx, cy).slice(0, 5).map((e) => (e.className || e.tagName).toString().slice(0, 28)), chain, st: ed.closest('.mode-scroll') ? ed.closest('.mode-scroll').scrollTop : null }; })(), fonts: [...document.fonts].filter((f) => /Crimson/.test(f.family)).map((f) => f.family + ':' + f.status).slice(0, 4) }; })() })");
 
-export default {
+const SCREENS = {
   'corridor-rest': async (app) => {
     await seed(app, 'An older line she wrote before this session.');
     console.log(`FLUX3-S4C-FRAME corridor-rest ${JSON.stringify(await stood(app))}`);
@@ -63,3 +63,17 @@ export default {
     console.log(`FLUX3-S4C-FRAME build-after-esc ${JSON.stringify(await stood(app))}`);
   },
 };
+
+// DIAGNOSTIC screens (INK, Nov 9): the same typed state, one mask lifted at a time, to see which layer hides the writing line in the headless frame
+const diag = (name, js) => async (app) => {
+  await seed(app, 'An older line she wrote before this session.');
+  await type(app, CYCLE + CYCLE + CYCLE, 30);
+  await app.evalJs(js);
+  await sleep(500);
+  console.log(`FLUX3-S4C-FRAME ${name} ${JSON.stringify(await stood(app))}`);
+};
+SCREENS['diag-nomask-col'] = diag('diag-nomask-col', "document.querySelector('.mode-pagecol').style.setProperty('mask-image','none','important'); document.querySelector('.mode-pagecol').style.setProperty('-webkit-mask-image','none','important')");
+SCREENS['diag-nomask-ed'] = diag('diag-nomask-ed', "document.querySelector('.forward-only-editor').style.setProperty('mask-image','none','important'); document.querySelector('.forward-only-editor').style.setProperty('-webkit-mask-image','none','important')");
+SCREENS['diag-nomask-both'] = diag('diag-nomask-both', "['.mode-pagecol','.forward-only-editor'].forEach((s) => { const e = document.querySelector(s); e.style.setProperty('mask-image','none','important'); e.style.setProperty('-webkit-mask-image','none','important'); })");
+SCREENS['diag-nocorridor'] = diag('diag-nocorridor', "document.querySelector('[data-flux3-corridor]').style.display = 'none'");
+export default SCREENS;
