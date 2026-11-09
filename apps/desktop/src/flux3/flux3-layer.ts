@@ -423,6 +423,7 @@ export class FluxLayer {
     if (!W || !H) return;
     const wx0 = -v.tx / v.s, wy0 = -v.ty / v.s, wx1 = (W - v.tx) / v.s, wy1 = (H - v.ty) / v.s;
     const k = Math.ceil(Math.log(14 / (GRID * v.s)) / Math.log(8));
+    let fineTa = 0;   // the finer level's trace strength this view (0 when it is not drawn)
     for (let lvl = k; lvl <= k + 1; lvl++) {
       const step = GRID * Math.pow(8, lvl), px = step * v.s;
       if (px < 6) continue;
@@ -435,9 +436,16 @@ export class FluxLayer {
       g.stroke();
       const cell = step * 4, cpx = cell * v.s;
       if (cpx < 110 || cpx > 2600) continue;
-      const ta = Math.min(1, (cpx - 110) / 160) * Math.min(1, (2600 - cpx) / 900);
+      // THE COARSE LEVEL IS NEVER LOUDER THAN THE FINE ONE WHILE BOTH SHOW (the Wrizors, Nov 9: at the resting view one long coarse trace, full strength and 2.5 px, read 3.75:1 against ~1.4 for
+      // the rest and passed for a link). While the finer level is at its ordinary strength the coarse level is held to it (alpha and width); as the finer level fades out with zoom the
+      // coarse one comes up to its own, so the far view is as it was and nothing pops.
+      const taRaw = Math.min(1, (cpx - 110) / 160) * Math.min(1, (2600 - cpx) / 900);
+      const ORD_TA = (GRID * 4 - 110) / 160;                    // the strength the finest level draws at the resting view (0.3125)
+      const f = Math.min(1, fineTa / ORD_TA);                    // 1 while the finer level is at (or past) that strength, 0 once it is gone
+      const ta = Math.min(taRaw, 1 - (1 - ORD_TA) * f);
+      if (lvl === k) fineTa = taRaw;
       g.strokeStyle = `rgba(${T.trace},${(0.55 * ta).toFixed(3)})`;
-      g.lineWidth = Math.max(1, Math.min(2.5, cpx / 400));
+      g.lineWidth = Math.max(1, Math.min(2.5, cpx / 400) * (1 - f) + f);
       g.beginPath();
       const ends: Pt[] = [];
       for (let cx = Math.floor(wx0 / cell); cx <= Math.floor(wx1 / cell); cx++) {
