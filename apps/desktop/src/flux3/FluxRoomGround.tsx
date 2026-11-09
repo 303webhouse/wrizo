@@ -1,7 +1,7 @@
 // FLUX3 S4b L1 - THE CIRCUIT GROUND ACROSS THE ROOM (flux-mockup-vs-build.md §4 L1; Nick, Nov 9 "the loved look"). The Schema's circuitry (grid, traces, the
 // pads at their ends) used to exist only inside the board's frame; on the doc the room was a flat navy. Here the SAME ground is drawn behind the whole room:
 // the host of a framed page or board (.desk-frame-host), behind every other thing in it.
-//   - ONE canvas, drawn ONCE per size (a ResizeObserver on the host), never per frame, never per key. The room is dark in both Page tones (the Page tone is the
+//   - ONE offscreen canvas, drawn ONCE per size (a ResizeObserver on the host), never per frame, never per key. The room is dark in both Page tones (the Page tone is the
 //     paper's), so one tone of ground; S5's Room setting will bring the white room and its own tone.
 //     It uses the Schema layer's own helpers at its resting scale (s = 1: the 40 px grid and the 160 px circuit cells), so the room and the Schema match.
 //   - A BOX under everything: position:absolute inside the host, z-index -1 in a stacking context the host makes for it (isolation), pointer-events none,
@@ -29,7 +29,6 @@ const toneNow = (): 'dark' | 'light' => 'dark';
 function paint(cv: HTMLCanvasElement, W: number, H: number, tone: 'dark' | 'light'): Pt[][] {
   const dpr = Math.min(DPR_CAP, (typeof devicePixelRatio === 'number' && devicePixelRatio) || 1);
   cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
-  cv.style.width = `${W}px`; cv.style.height = `${H}px`;
   const traces: Pt[][] = [];
   const g = cv.getContext('2d');
   if (!g || !W || !H) return traces;
@@ -98,9 +97,10 @@ export function FluxRoomGround() {
     box.setAttribute('aria-hidden', 'true');
     box.setAttribute('data-flux3-room-ground', '');
     box.style.cssText = `position:absolute;left:0;top:0;right:0;bottom:0;z-index:-1;overflow:hidden;pointer-events:none;contain:strict;opacity:${Math.min(1, dial / 50).toFixed(2)};`;
+    // the canvas is OFFSCREEN: the ground is drawn into it once per size and handed to the box as its background image. A canvas ELEMENT is its own compositor layer, a
+    // full-room one costing about 3 ms a frame on a software renderer (Actions, Nov 9: the cost reading found it; hiding the canvas took it away); a background image is just
+    // paint, and typing repaints only the text's own rect.
     const cv = document.createElement('canvas');
-    cv.style.cssText = 'position:absolute;left:0;top:0;display:block;';
-    box.appendChild(cv);
     host.prepend(box);
 
     let traces: Pt[][] = [];
@@ -143,6 +143,10 @@ export function FluxRoomGround() {
       raf = 0;
       const W = Math.max(0, box.clientWidth), H = Math.max(0, box.clientHeight);
       traces = paint(cv, W, H, toneNow());
+      box.style.backgroundImage = W && H ? `url(${cv.toDataURL('image/png')})` : 'none';
+      box.style.backgroundSize = `${W}px ${H}px`;
+      box.style.backgroundRepeat = 'no-repeat';
+      box.dataset.draws = String(Number(box.dataset.draws || 0) + 1);
       startCurrent();
     };
     const schedule = () => { if (!raf) raf = requestAnimationFrame(draw); };
