@@ -48,9 +48,13 @@ function paint(cv: HTMLCanvasElement, W: number, H: number, tone: 'dark' | 'ligh
     g.stroke();
     const cell = step * 4;
     if (cell < 110 || cell > 2600) continue;
-    const ta = Math.min(1, (cell - 110) / 160) * Math.min(1, (2600 - cell) / 900);
+    // THE ORDINARY STRENGTH (the Wrizors, Nov 9: one long trace read 3.75:1 against ~1.4 for the rest, and on the Schema it read as a link). The Schema's own ground lets the
+    // coarse level (1280 px cells) come up to full strength and 2.5 px, because on the board it is the far view; across a ROOM it is one huge trace among small ones. Here every
+    // level is held to the strength of the finest level's traces (alpha and width), so no trace is louder than the rest and none can pass for a link.
+    const ORD_TA = Math.min(1, (GRID * 4 - 110) / 160);
+    const ta = Math.min(ORD_TA, Math.min(1, (cell - 110) / 160) * Math.min(1, (2600 - cell) / 900));
     g.strokeStyle = `rgba(${T.trace},${(0.55 * ta).toFixed(3)})`;
-    g.lineWidth = Math.max(1, Math.min(2.5, cell / 400));
+    g.lineWidth = 1;
     g.beginPath();
     const ends: Pt[] = [];
     for (let cx = 0; cx <= Math.floor(W / cell); cx++) {
