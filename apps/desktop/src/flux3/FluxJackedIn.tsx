@@ -12,14 +12,18 @@
 //   - THE DEFAULT. Entering Free Write in Flux with "Jack In by default" on lays a session overlay over the shared Typewriter field
 //     (writingSettings.setFreeWriteOverlay) before the page paints, so Free Write opens Jacked In while the shared field, and every other theme's
 //     Typewriter, stay as they are. The writer's own toggle clears it; leaving Free Write lifts it. Nothing is saved (ruling D).
-//   - THE TUNNEL (Nick kept it, Nov 7: ruling B, INK's lean) is FluxTunnel.tsx, mounted here while jacked in.
+//   - THE CORRIDOR (Nick's pick, Nov 9: Style B, flux-jacked-in-concepts.md) is FluxCorridor.tsx, mounted here while jacked in. Its rules, kept here:
+//     ALWAYS DARK (the page tone is held 'dark' on <html> while jacked in and put back on leaving; the saved Page preference is never touched), ONLY THIS
+//     SESSION'S LINES COMPILE (the lines at and above the caret's line when she jacked in are never signal), and FINISHED LINES STEP BACK at an even
+//     step (ROWS below), six rows, then gone.
 import { useEffect, useLayoutEffect, type RefObject } from 'react';
 import { useTheme } from '../store/theme';
 import { setFreeWriteOverlay } from '../store/writingSettings';
 import { getAmbianceDial, prefersReducedMotion } from '../store/ambianceDial';
 import { tryFlash } from '../store/flashBudget';
 import { getJackInDefault, setJacked } from './jackIn';
-import { FluxTunnel } from './FluxTunnel';
+import { getThemePrefs } from '../store/themePrefs';
+import { FluxCorridor } from './FluxCorridor';
 
 export const COMPILE_PAUSE_MS = 700;   // the pause the compile waits for (the Glitch bar's and the gutter's own pause)
 export const COMPILE_LINES = 2;        // the caret's line is 0, the line above it 1: from 2 up, the words compile
@@ -32,7 +36,7 @@ const BLOCK_HEIGHT = 0.62;             // a block's height, in the word's own fo
 // THE ROWS (r9, the terminal: the spec's draft 13 §6): each row of signal a little smaller toward the top, streaming up into the tunnel. A row's
 // blocks shrink INSIDE their own slots (every word's signal stays on its own word's rect, so no block ever stands on another word), by rowShrink
 // per row above the first, never below rowMin. Its fading is the Typewriter's own band on the column.
-export const SIGNAL = { rowShrink: 0.12, rowMin: 0.5 };
+export const SIGNAL = { rowShrink: 0.075, rowMin: 0.4, rowFade: 0.15, rowsShown: 6 };   // the Corridor's step (Nick, Nov 9): -7.5% size and -15% opacity a row, six rows
 // THE PAUSE is hers (ruling F): a key restarts it, the page's own scrolling does not. The Typewriter glides a long page to its end line by
 // line on opening (30-46 scroll events a second, for seconds), and with every scroll restarting the wait the open's own pause never came:
 // no rows at all until she typed and paused (the Wrizors' S4 r9 review). A scroll now starts a compile only when none is waiting
@@ -100,8 +104,9 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
   useLayoutEffect(() => {
     setJacked(jackedIn);
     const root = document.documentElement;
-    if (jackedIn) root.setAttribute('data-flux3-jacked', ''); else root.removeAttribute('data-flux3-jacked');
-    return () => { setJacked(false); root.removeAttribute('data-flux3-jacked'); };
+    if (jackedIn) { root.setAttribute('data-flux3-jacked', ''); root.setAttribute('data-page', 'dark'); } else root.removeAttribute('data-flux3-jacked');
+    // ALWAYS DARK: the tone is the attribute alone, held for the session; leaving puts the writer's own saved tone back
+    return () => { setJacked(false); root.removeAttribute('data-flux3-jacked'); root.setAttribute('data-page', getThemePrefs().page); };
   }, [jackedIn]);
 
   // THE COMPILE and THE DECOMPILE
@@ -119,7 +124,23 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
     let sig = '';
     let timer = 0;
     let raf = 0;
+    // THIS SESSION'S LINES ONLY: the caret's line when she jacked in (its top, counted from the editor's top in the editor's own layout px, so the
+    // page's zoom cancels) is the floor; a word on that line or above it is the doc's older text and never becomes signal. Read once, at her first
+    // key or selection change with a caret in the editor (a key's own keydown comes before its input, so the caret has not moved yet)
+    let floor: number | null = null;
+    const readFloor = () => {
+      if (floor != null) return;
+      const ed = scroll.querySelector<HTMLElement>('.forward-only-editor');
+      const sel = document.getSelection();
+      if (!ed || !sel || !sel.rangeCount || !ed.contains(sel.anchorNode)) return;
+      const box = caretBox(sel.getRangeAt(0), ed);
+      if (!box) return;
+      const er = ed.getBoundingClientRect();
+      const k = ed.offsetHeight > 0 ? er.height / ed.offsetHeight : 1;
+      floor = (box.top - er.top) / (k || 1);
+    };
 
+    readFloor();
     const frame = () => {
       const L = layer.getBoundingClientRect();
       return { L, s: layer.offsetWidth > 0 ? L.width / layer.offsetWidth : 1 };
@@ -174,6 +195,9 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
       const view = scroll.getBoundingClientRect();
       const found: { r: DOMRect; range: Range; text: string; fs: number; row: number }[] = [];
       const rows = rowsOf(ed);
+      const edR = ed.getBoundingClientRect();
+      const edTop = edR.top;
+      const edK = ed.offsetHeight > 0 ? edR.height / ed.offsetHeight || 1 : 1;
       for (let i = rows.length - 1; i >= 0; i -= 1) {
         const rr = rows[i].getBoundingClientRect();
         if (rr.top >= limit) continue;
@@ -189,8 +213,10 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
             if (rects.length !== 1) continue;   // a word broken across lines stays as it is
             const r = rects[0];
             if (r.top >= limit || r.bottom <= view.top || r.top >= view.bottom || r.width <= 0) continue;
+            if (floor != null && (r.top - edTop) / edK <= floor + 1) continue;   // the doc's older text: never signal
             const parent = n.parentElement;
             const row = Math.max(COMPILE_LINES, Math.round((caret.top - r.top) / lh));   // the line above the caret's it stands on
+            if (row >= COMPILE_LINES + SIGNAL.rowsShown) continue;   // the sixth row is the last: further up, nothing
             found.push({ r, range, text: m[0], fs: parent ? parseFloat(getComputedStyle(parent).fontSize) || 16 : 16, row });
           }
         }
@@ -213,7 +239,7 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
         // each row up a little smaller (THE ROWS), still inside its slot
         const chars = [...f.text];
         const slot = f.r.width / s / chars.length;
-        const k = Math.max(SIGNAL.rowMin, 1 - SIGNAL.rowShrink * (f.row - COMPILE_LINES));
+        const k = Math.max(SIGNAL.rowMin, 1 - SIGNAL.rowShrink * (f.row - COMPILE_LINES + 1));   // the first signal row is one step back from the writing line's size
         const bw = slot * BLOCK_FILL * k, bh = Math.min(f.fs * BLOCK_HEIGHT, f.r.height / s) * k;
         Object.assign(el.style, { position: 'absolute', display: 'flex', alignItems: 'center' });
         blocksFor(chars, Math.round((f.r.left - L.left) / s) * 7 + Math.round((f.r.top - L.top) / s) * 13).forEach((filled) => {
@@ -222,6 +248,7 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
           Object.assign(b.style, { display: 'block', flex: 'none', boxSizing: 'border-box', width: `${bw}px`, height: `${bh}px`, margin: `0 ${(slot - bw) / 2}px` });
           el.appendChild(b);
         });
+        el.style.opacity = String(Math.max(0, 1 - SIGNAL.rowFade * (f.row - COMPILE_LINES + 1)).toFixed(2));
         placeOn(el, f.r, L, s);
         layer.appendChild(el);
         words.set(el, { range: f.range, text: f.text });
@@ -230,6 +257,9 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
     const schedule = () => { if (timer) window.clearTimeout(timer); timer = window.setTimeout(compile, COMPILE_PAUSE_MS); };
     const opts = { capture: true, passive: true } as const;
     const DOC_EVENTS = ['keydown', 'beforeinput', 'selectionchange', 'wz-zoom-changed'] as const;
+    const onFirst = () => readFloor();
+    document.addEventListener('keydown', onFirst, opts);
+    document.addEventListener('selectionchange', onFirst, opts);
     document.addEventListener('keydown', onKey, opts);   // before schedule's own keydown, so an Esc never schedules a compile
     DOC_EVENTS.forEach((ev) => document.addEventListener(ev, schedule, opts));
     const onScroll = () => { if (PAUSE.scrollPostpones || !timer) schedule(); };
@@ -242,6 +272,8 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
       if (fadeTimer) window.clearTimeout(fadeTimer);
       root.removeAttribute('data-flux3-looking');
       document.removeEventListener('keydown', onKey, opts);
+      document.removeEventListener('keydown', onFirst, opts);
+      document.removeEventListener('selectionchange', onFirst, opts);
       DOC_EVENTS.forEach((ev) => document.removeEventListener(ev, schedule, opts));
       scroll.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', schedule);
@@ -267,5 +299,5 @@ export function FluxJackedIn({ on, freeWrite, scrollRef, refresh }: Props) {
     };
   }, [jackedIn, scrollRef]);
 
-  return jackedIn ? <FluxTunnel scrollRef={scrollRef} /> : null;
+  return jackedIn ? <FluxCorridor scrollRef={scrollRef} /> : null;
 }
