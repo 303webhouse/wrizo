@@ -117,7 +117,7 @@ export default {
     await type(app, LINE, 15);
     await waitSoft(app, "document.querySelectorAll('[data-flux3-compile] .flux3-compile-row').length >= 2", { label: 'the rows', timeout: 8000 });   // the pause compiles her finished lines
     await tapEsc(app);
-    await sleep(300);    // 0.3 s after Esc: the decompile under way
+    await sleep(100);    // the shot lands ~0.3 s after the tap (the job's own delay): the decompile under way
     console.log(`FLUX3-S4C-FRAME corridor-esc ${JSON.stringify(await stood(app))}`);
   },
   'build-after-esc': async (app) => {
