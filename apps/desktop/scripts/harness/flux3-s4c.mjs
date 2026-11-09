@@ -145,8 +145,10 @@ try { await withHarness(async (app) => {
     if (l0) ok(`L the Jacked In arm adds no latency beyond the control's own spread: ${l0.line}`, l0.pass, JSON.stringify({ C: l0.C, J: l0.J }));
     // SUPERSEDED (Nov 9, Fable's ruling): the first L-MUT-5/10 asserted RED on the frame-clock reading alone, and that reading cannot see a few ms of main-thread cost (their runs on the
     // box and Actions stayed green). The successors below assert RED on the COST reading, where the mutant lands.
-    for (const extra of ONLY_L ? [] : [5, 10]) {
-      const m = await runL(`+${extra} ms mutant`, extra, true);
+    // The mutants run on the CONTROL page (the flag off in both arms, the same page the green check above passes), with the cost added to arm J alone: the only thing that differs is the
+    // injected key cost, so a RED here is the method seeing it (a mutant on the Corridor would be confounded by the Corridor's own cost, red or green for another reason).
+    for (const extra of [5, 10]) {
+      const m = await runL(`main + ${extra} ms mutant`, extra, false);
       ok(`L-MUT-${extra} the method calls a key that is ${extra} ms slower RED on the cost reading (the mutant landed: ${m.line})`, !m.cost.pass && m.enough && m.stoodRight, JSON.stringify({ C: m.C, J: m.J }));
     }
   } else console.log('INFO L (Actions: timing is the box\'s to judge; FLUX3_L=1 runs it here)');
