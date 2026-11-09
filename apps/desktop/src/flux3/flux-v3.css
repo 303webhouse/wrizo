@@ -238,8 +238,8 @@
 /* the quiet lane: the FRAMES AND RAILS thin in a soft oval around her words (the ground's own colour, no box, no band), so their motion never crosses the line she is writing. It sits under the glow */
 :root[data-flux3][data-theme='flux'] .flux3-cor-lane{ position:absolute; inset:0;
   background:radial-gradient(ellipse 46% 15% at 50% var(--cor-line-y, 55%), var(--f3-term-ground) 0%, color-mix(in srgb, var(--f3-term-ground) 70%, transparent) 55%, transparent 100%); }
-/* the glow: the ONE token (--f3-goal-glow), centred on her writing line, ABOVE the lane. Its opacity is her progress toward the goal (0 at the start of a lap, 1 at the goal): it builds */
-:root[data-flux3][data-theme='flux'] .flux3-cor-glow{ position:absolute; left:0; width:100%; height:100%; top:calc(var(--cor-line-y, 55%) - 50%); display:block; background:var(--f3-goal-glow);
+/* the glow: the ONE token (--f3-goal-glow), centred on her writing line, ABOVE the lane. Its box is tall enough to reach the window's top and bottom whichever side of the middle her line stands (a shorter box left a hard edge at the top). Its opacity is her progress toward the goal (0 at the start of a lap, 1 at the goal): it builds */
+:root[data-flux3][data-theme='flux'] .flux3-cor-glow{ position:absolute; left:0; width:100%; height:calc(2 * max(var(--cor-line-y, 55%), 100% - var(--cor-line-y, 55%))); top:calc(var(--cor-line-y, 55%) - max(var(--cor-line-y, 55%), 100% - var(--cor-line-y, 55%))); display:block; background:var(--f3-goal-glow);
   transition:opacity .6s ease-out; }
 /* the still state: the frames at their places, nothing running, no lime, no brass tint, the glow without its fade */
 :root[data-flux3][data-theme='flux'] .flux3-corridor[data-still] .flux3-cor-frame{ animation:none; will-change:auto; }

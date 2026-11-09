@@ -52,7 +52,7 @@ export default {
     console.log(`FLUX3-S4C-FRAME corridor-entry ${JSON.stringify(await stood(app))}`);
   },
   'corridor-rest': async (app) => {
-    await seed(app, 'An older line she wrote before this session.', { settle: 4200 });   // the exit line (3 s) has gone
+    await seed(app, 'An older line she wrote before this session.', { settle: 3750 });   // the exit line (3 s + 0.6 s fade) has gone, the 4 s nudge has not come
     console.log(`FLUX3-S4C-FRAME corridor-rest ${JSON.stringify(await stood(app))}`);
   },
   'corridor-still': async (app) => {
