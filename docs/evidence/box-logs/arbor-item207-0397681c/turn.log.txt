@@ -1,0 +1,29 @@
+harness browsers at turn start: 0
+granted to lane "arbor" - name this turn's start and end in your report
+TURN START 2026-11-09T08:40:30Z
+08:40:37Z tree /f/wrizo-work/arbor-notes/apps/desktop: HEAD 0397681c, dirty 0, bundle index-BqJgOUa_.js
+08:40:37Z tree /f/wrizo-work/arbor-main234/apps/desktop: HEAD 7d9f94d5, dirty 0, bundle index-e17ME4Wi.js
+08:40:37Z [r22-default] start (item207.mjs in /f/wrizo-work/arbor-notes/apps/desktop default)
+SUITE START HARNESS_PARKED=unset files=1 tree=0397681c bundle=index-BqJgOUa_.js/1030544b out=F:/wrizo-work/arbor-turn-twh/r22-default
+[01/1] OK        exit=0   44s item207.mjs :: ROWS-SHADOW VERIFY: PASS (8 renders checked, shadow == DOM on every one) ;; ITEM207 VERIFY: PASS (47 checks)
+SUITE RESULT: CLEAN — tree=0397681c bundle=index-BqJgOUa_.js/1030544b
+08:41:26Z [r22-default] exit 0; bundle now index-BqJgOUa_.js
+08:41:27Z [r22-parked] start (item207.mjs in /f/wrizo-work/arbor-notes/apps/desktop --parked)
+SUITE START HARNESS_PARKED=1 files=1 tree=0397681c bundle=index-BqJgOUa_.js/1030544b out=F:/wrizo-work/arbor-turn-twh/r22-parked
+[01/1] OK        exit=0   44s item207.mjs :: ROWS-SHADOW VERIFY: PASS (8 renders checked, shadow == DOM on every one) ;; ITEM207 PARKED: PASS (9 checks) — HARNESS_PARKED=1 armed; font-span's three parks and page-size's six re-verified ;; ITEM207 VERIFY: PASS (56 checks)
+SUITE RESULT: CLEAN — tree=0397681c bundle=index-BqJgOUa_.js/1030544b
+08:42:15Z [r22-parked] exit 0; bundle now index-BqJgOUa_.js
+08:42:16Z [main-default] start (item207.mjs in /f/wrizo-work/arbor-main234/apps/desktop default)
+SUITE START HARNESS_PARKED=unset files=1 tree=7d9f94d5 bundle=index-e17ME4Wi.js/994681b out=F:/wrizo-work/arbor-turn-twh/main-default
+[01/1] OK        exit=0   44s item207.mjs :: ROWS-SHADOW VERIFY: PASS (8 renders checked, shadow == DOM on every one) ;; ITEM207 VERIFY: PASS (47 checks)
+SUITE RESULT: CLEAN — tree=7d9f94d5 bundle=index-e17ME4Wi.js/994681b
+08:43:04Z [main-default] exit 0; bundle now index-e17ME4Wi.js
+08:43:05Z [main-parked] start (item207.mjs in /f/wrizo-work/arbor-main234/apps/desktop --parked)
+SUITE START HARNESS_PARKED=1 files=1 tree=7d9f94d5 bundle=index-e17ME4Wi.js/994681b out=F:/wrizo-work/arbor-turn-twh/main-parked
+[01/1] OK        exit=0   44s item207.mjs :: ROWS-SHADOW VERIFY: PASS (8 renders checked, shadow == DOM on every one) ;; ITEM207 PARKED: PASS (9 checks) — HARNESS_PARKED=1 armed; font-span's three parks and page-size's six re-verified ;; ITEM207 VERIFY: PASS (56 checks)
+SUITE RESULT: CLEAN — tree=7d9f94d5 bundle=index-e17ME4Wi.js/994681b
+08:43:53Z [main-parked] exit 0; bundle now index-e17ME4Wi.js
+harness browsers at turn end: 0 (this turn's: 0, stopped; others left alone: 0)
+08:43:54Z browser sweep done
+released
+TURN END 2026-11-09T08:43:54Z
