@@ -19,7 +19,7 @@ import { makeL } from '../lib/l-method.mjs';
 const SHOTS = process.env.FLUX3_SHOTS || null;
 if (SHOTS) fs.mkdirSync(SHOTS, { recursive: true });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const ON_BOX = process.env.GITHUB_ACTIONS !== 'true';
+const ON_BOX = true; // PROBE ONLY
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
 const LAT_TEXT = Array.from({ length: 150 }, (_, i) => 'word' + i).join(' ');
