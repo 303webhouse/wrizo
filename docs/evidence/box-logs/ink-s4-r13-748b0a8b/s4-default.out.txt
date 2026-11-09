@@ -1,0 +1,11 @@
+BOX TURN: granted to lane "ink" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=1 tree=748b0a8b bundle=index-D7zUnzYV.js/1005596b out=C:\Users\nickh\AppData\Local\Temp\wrizo-suite-29060
+(node:29060) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[01/1] FAIL      exit=1  635s flux3-s4.mjs :: ROWS-SHADOW VERIFY: PASS (10 renders checked, shadow == DOM on every one) ;; FLUX3-S4 VERIFY: FAIL - 1/85 failed
+
+SUITE DONE HARNESS_PARKED=unset — 0/1 of 1 returned a passing verdict
+  FAIL: flux3-s4.mjs — full output at C:\Users\nickh\AppData\Local\Temp\wrizo-suite-29060\flux3-s4.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=748b0a8b bundle=index-D7zUnzYV.js/1005596b
