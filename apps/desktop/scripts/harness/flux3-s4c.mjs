@@ -77,11 +77,11 @@ try { await withHarness(async (app) => {
   const mk = (row) => ev(`window.wrizoCreateJournalPage(${JSON.stringify(row)})`);
   let seq = 0;
   const fresh = async (text, id = `f3s4c-${Date.now()}-${seq += 1}`) => { await mk({ id, text, createdAt: new Date().toISOString(), origin: 'loose', source: 'page' }); await sleep(300); return id; };
-  const open = async ({ id, flag = true, tone = 'light', dial = 50, prefs = {}, reduced = false } = {}) => {
+  const open = async ({ id, flag = true, tone = 'light', dial = 50, prefs = {}, reduced = false, mode = null } = {}) => {
     await ev(`(() => { const p = JSON.parse(localStorage.getItem('wrizo-theme-prefs') || '{}'); p.page = ${JSON.stringify(tone)}; localStorage.setItem('wrizo-theme-prefs', JSON.stringify(p));
       localStorage.setItem('wrizo-theme', 'flux'); localStorage.setItem('wrizo-ambiance-dial', ${JSON.stringify(String(dial))});
       const w = JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}'); Object.assign(w, { flicker: true, progressStyle: 'bar', progress: 'words', instrumentsOn: true, typewriter: false }, ${JSON.stringify(prefs)}); localStorage.setItem('wrizo-writing-settings', JSON.stringify(w));
-      localStorage.removeItem('wrizo-mode-page-${id}'); })()`);
+      ${mode ? `localStorage.setItem('wrizo-mode-page-${id}', ${JSON.stringify(mode)});` : `localStorage.removeItem('wrizo-mode-page-${id}');`} })()`);
     await app.cdp('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: reduced ? 'reduce' : 'no-preference' }] });
     await ev(`history.replaceState(null, '', ${JSON.stringify(flag ? '/?flux3=1' : '/')} + '#/page/${id}')`);
     await app.reload();
@@ -263,13 +263,58 @@ try { await withHarness(async (app) => {
   const gone = await ev("!document.querySelector('[data-flux3-pop]')");
   ok('POP a milestone pops one brass letter of CHECKPOINT (the newest), no number, the corridor goes brass for ~0.3 s, and the word fades', !!pop && pop.letters === 'CHECKPOINT' && pop.news === 1 && /255, 152, 0/.test(pop.newColour || '') && pop.text === '' && brass && gone, JSON.stringify({ pop, brass, seen, gone }));
 
-  // ---- ESC: the chrome returns --------------------------------------------------------------------------------------------------------------------
-  await app.typeKeys('x');
-  await app.cdp('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
-  await app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+  // ---- THE MODE (draft 21 §6, Nick Nov 9): JACK IN is the free-writing mode; BUILD never offers it; Esc tap or F9 leaves to BUILD ---------------------------
+  // SUPERSEDED (Nov 9): the first ESC check here read "Esc looking up brings the chrome back (the marks lift)" (data-flux3-looking, S4's Esc). Esc now LEAVES Jacked In for BUILD on
+  // the same doc (a tap; a hold is the browser's full-screen exit), so that behaviour no longer exists; its successors are ESC / ESC-HOLD / F9 below.
+  const toggles = () => ev(`document.querySelectorAll('.typewriter-toggle, [data-mode-toggle="typewriter"]').length`);
+  const keyTap = async (key, code, vk, heldMs = 40) => {
+    await app.cdp('Input.dispatchKeyEvent', { type: 'keyDown', key, code, windowsVirtualKeyCode: vk });
+    await sleep(heldMs);
+    await app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', key, code, windowsVirtualKeyCode: vk });
+  };
+  const left = async (id) => { const s = await st(); const m = await ev(`localStorage.getItem('wrizo-mode-page-${id}')`); const cb = await ev('window.__f4.caretBefore()');
+    return { left: !s.jacked && s.zoom !== 'true' && m === 'drafting', s, m, cb }; };
+  const jackedOpen = async (text, tone = 'light') => { const id = await fresh(text); await open({ id, tone }); await ev('window.__f4.toEnd()'); await app.mouseMove(8, 8); return id; };
+
+  ok('MODE-NOTOGGLE Free Write in Flux IS Jacked In with no Typewriter toggle offered anywhere on the page (no off inside it)', (await st()).jacked && (await toggles()) === 0, JSON.stringify({ toggles: await toggles() }));
+
+  // ESC: a tap leaves to BUILD on the same doc, the caret at the END of her text, the saved tone back, the chrome back
+  const eid = await jackedOpen('first line of her text\nsecond line goes here', 'light');
+  await ev("(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus(); const s = getSelection(); s.collapse(ed.firstChild || ed, 0); return true; })()");   // her caret parked at the START: leaving must still end at the end
+  const eBefore = await left(eid);
+  await keyTap('Escape', 'Escape', 27, 60);
+  await sleep(1400);
+  const eAfter = await left(eid);
+  const eChrome = await ev('window.__f4.chrome()');
+  ok('ESC a tap leaves Jacked In for BUILD on the same doc: the mode is Draft, no Typewriter zoom, the saved (light) tone is back, the caret is at the END, the chrome is back, and the reader read "not left" before the press',
+    !eBefore.left && eAfter.left && eAfter.s.tone === 'light' && !!eAfter.cb && eAfter.cb.before >= eAfter.cb.total - 1 && eChrome.every(([, o]) => o === null || o > 0.9) && (await toggles()) === 0,
+    JSON.stringify({ eBefore: eBefore.left, eAfter, eChrome }));
+  // BUILD never offers it: a drafting page opens plain even with the shared Typewriter setting ON, and has no toggle
+  const bid = await fresh('a draft page with some words');
+  await open({ id: bid, tone: 'dark', mode: 'drafting', prefs: { typewriter: true } });
+  const bs = await st();
+  ok('BUILD (Draft) is never Jacked In: not marked, no zoom, no Typewriter toggle, even with the shared Typewriter setting on', bs.flag && !bs.jacked && bs.zoom !== 'true' && (await toggles()) === 0, JSON.stringify({ bs, toggles: await toggles() }));
+  // ESC-HOLD: a held Esc is the browser's full-screen exit, not a leave
+  const hid = await jackedOpen('held escape stays jacked in', 'dark');
+  await keyTap('Escape', 'Escape', 27, 750);
   await sleep(900);
-  const esc = await st();
-  ok('ESC looking up brings the chrome back (the marks lift)', esc.looking && !(await ev('window.__f4.chrome()')).some(([, o]) => o === 0), JSON.stringify(esc));
+  const hs = await left(hid);
+  ok('ESC-HOLD an Esc held ~0.75 s is not a tap: still Jacked In (the browser keeps the hold for leaving full screen)', !hs.left && hs.s.jacked, JSON.stringify(hs));
+  // F9: the backup for browsers without the Escape lock
+  const fid = await jackedOpen('f nine leaves too', 'dark');
+  await ev("(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus(); const s = getSelection(); s.collapse(ed.firstChild || ed, 0); return true; })()");
+  const fBefore = await left(fid);
+  await keyTap('F9', 'F9', 120, 40);
+  await sleep(1400);
+  const fAfter = await left(fid);
+  ok('F9 leaves Jacked In for BUILD on the same doc with the caret at the end (the backup where Esc exits full screen), and the reader read "not left" before', !fBefore.left && fAfter.left && !!fAfter.cb && fAfter.cb.before >= fAfter.cb.total - 1, JSON.stringify({ fBefore: fBefore.left, fAfter }));
+
+  // ---- NEW PAGE + VOICE: a page born in Flux (under the flag) is 14 pt; the default Voice is Crimson Pro ----------------------------------------------
+  const born = await ev("(() => { const e = window.wrizoCreateJournalPage(); return e && e.pageSettings ? e.pageSettings.size : null; })()");
+  await sleep(400);
+  const vid = await jackedOpen('the voice of the page', 'dark');
+  const ff = await ev("getComputedStyle(document.querySelector('.forward-only-editor')).fontFamily");
+  ok(`NEWPAGE-14 a page born in Flux under the flag is 14 pt (got ${born}); VOICE the page's default face is Crimson Pro (got ${String(ff).slice(0, 40)})`, born === 14 && /^["']?Crimson Pro/.test(ff), JSON.stringify({ born, ff, vid }));
 
   await doL();
   }

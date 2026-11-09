@@ -57,6 +57,7 @@ import { BLOCK_TOKEN, MARK_OF, type MarkKind } from '../store/markRuns';
 const MARK_KIND: Record<string, MarkKind> = Object.fromEntries(Object.entries(MARK_OF).map(([k, m]) => [m, k as MarkKind]));
 import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText } from '../store/draftDecoration';
 import { editorPlainText, writeRows } from '../store/lineRows';
+import { LEAVE_JACK_EVENT } from '../flux3/jackIn';
 import { getRegisteredUndoStack } from '../store/textUndo';
 import { proseTextToScriptDoc, isProseEmpty } from '../store/structureConvert';
 import { serializeScriptDoc } from '../store/scriptText';
@@ -420,6 +421,29 @@ function PageEditorView({ id }: { id: string }) {
     setMode(next);
     localStorage.setItem(modeKey, next);
   };
+
+  // FLUX3 S4 (draft 21 §6): Flux's Jacked In is the free-writing mode; an Esc tap or F9 inside it leaves to BUILD (Draft) on this same doc, the caret at the end of
+  // her text. The event comes from src/flux3/FluxJackedIn.tsx; nothing else sends it, so every other theme is untouched.
+  const switchModeRef = useRef(switchMode);
+  switchModeRef.current = switchMode;
+  const caretToEndRef = useRef(false);
+  useEffect(() => {
+    const onLeave = () => { caretToEndRef.current = true; switchModeRef.current('drafting'); };
+    window.addEventListener(LEAVE_JACK_EVENT, onLeave);
+    return () => window.removeEventListener(LEAVE_JACK_EVENT, onLeave);
+  }, []);
+  useEffect(() => {
+    if (mode !== 'drafting' || !caretToEndRef.current) return undefined;
+    let raf = 0;
+    let tries = 0;
+    const place = () => {
+      const ed = editorRef.current;
+      if (ed && ed.isConnected) { caretToEndRef.current = false; ed.focus(); setCaretOffset(ed, editorPlainText(ed).length); return; }
+      if ((tries += 1) < 30) raf = requestAnimationFrame(place);
+    };
+    raf = requestAnimationFrame(() => { raf = requestAnimationFrame(place); });
+    return () => cancelAnimationFrame(raf);
+  }, [mode]);
 
   const { flush, onTextChange } = usePageAutosave({ unbornRef, id, textRef, lastSavedRef, setText, text });
 

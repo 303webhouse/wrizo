@@ -7,6 +7,7 @@ import { useWritingSettings, setWritingSettings, setTypewriterExplicit, typewrit
 import type { ProgressMetric, FadeDepth, ProgressStyle } from '../store/writingSettings';
 // FLUX3 S4 - a mount point only: under ?flux3=1, a page's Typewriter in Flux is Jacked In (src/flux3/FluxJackedIn.tsx); without the flag nothing mounts
 import { FLUX3 } from '../flux3/flag';
+import { fluxJackMode } from '../flux3/jackIn';
 import { FluxJackedIn } from '../flux3/FluxJackedIn';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { useAssistResponse } from '../store/aiAssist';
@@ -176,9 +177,14 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
   // the bar's label is desk chrome, so it takes the desk one.
   const { t: deskT } = useDeskLexicon();
   // Typewriter engages in Free Write and Draft only; Draft reads this page's own value, Free Write and pageId-less callers the shared field [ModeStage §6]
-  const typewriterOn = mode === 'drafting' && pageId != null
-    ? typewriterForPage(pageId, words === 0)
-    : (mode === 'journal' || mode === 'drafting') && freeWriteTypewriter(settings);
+  // FLUX3 S4 (draft 21 §6): in Flux under the flag JACK IN is the free-writing MODE: Free Write IS Jacked In, with no off inside it, and Draft (BUILD) is never the Typewriter
+  const stageTheme = useTheme();
+  const fluxJack = fluxJackMode(stageTheme) && pageId != null;
+  const typewriterOn = fluxJack
+    ? mode === 'journal'
+    : mode === 'drafting' && pageId != null
+      ? typewriterForPage(pageId, words === 0)
+      : (mode === 'journal' || mode === 'drafting') && freeWriteTypewriter(settings);
   // the zoom: on the framed prose page Typewriter scales the same page ~1.6x by a transform, so no line reflows and the editor never unmounts (page primacy's one exception); entering tucks both drawers [ModeStage §7]
   const zoomed = !!framed && typewriterOn;
   const pagecolRef = useRef<HTMLDivElement>(null);
@@ -623,7 +629,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
                   />
                 )
               )}
-              {(mode === 'journal' || mode === 'drafting') && (
+              {(mode === 'journal' || mode === 'drafting') && !fluxJack && (
                 // FX2 S2 — a hand-click here must outrank any later
                 // Draft-open seed for the rest of the session (see
                 // setTypewriterExplicit's own comment).
@@ -667,7 +673,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
         ))}
       </div>
 
-      {FLUX3 && pageId != null && <FluxJackedIn on={typewriterOn} freeWrite={mode === 'journal'} scrollRef={scrollRef} refresh={tick} />}
+      {FLUX3 && pageId != null && <FluxJackedIn on={typewriterOn} scrollRef={scrollRef} />}
 
       {/* Connect AI — stub entry point (no provider wired in B3). */}
       {!framed && connectOpen && (
@@ -698,7 +704,8 @@ function AssistIcon() {
 // options exist only where they act: Progress:Project needs a StoryPlan; the Bar|Rhizome style needs the framed stage; typewriterAvailable is false on a screenplay page; stored values are untouched either way [ModeStage §18]
 export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvailable = true }: { settings: { progress: ProgressMetric; fadeDepth: FadeDepth; timer: boolean; typewriter: boolean; progressStyle: ProgressStyle }; hasMilestones?: boolean; framed?: boolean; typewriterAvailable?: boolean }) {
   const { t: deskLex } = useDeskLexicon();
-  const machina = useTheme() === 'machina';
+  const settingsTheme = useTheme();
+  const machina = settingsTheme === 'machina';
   const progressOpts = progressOptions(hasMilestones, deskLex('progressDrawer'));
   // MACHINA has ONE progress instrument (Run), so the style choice is not offered under it.
   const showProgressStyle = !!framed && settings.progress === 'words' && !machina;
@@ -723,7 +730,7 @@ export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvail
           sliver's own TypewriterToggle), and both must arm the same
           session-explicit flag so neither can be silently overridden by a
           later Draft-open seed. */}
-      {typewriterAvailable && <Seg label="Typewriter" value={settings.typewriter ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setTypewriterExplicit(v === 'on')} />}
+      {typewriterAvailable && !fluxJackMode(settingsTheme) && <Seg label="Typewriter" value={settings.typewriter ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setTypewriterExplicit(v === 'on')} />}
     </div>
   );
 }

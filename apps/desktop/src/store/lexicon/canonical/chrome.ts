@@ -233,7 +233,6 @@ export const CANONICAL_CHROME = {
   flux3PortConnectAnother: 'Connect another',
   flux3PortDisconnect: 'Disconnect',
   flux3Checkpoint: 'Checkpoint',
-  flux3JackInDefault: 'Jack In by default',
   ctxDelete: 'Delete',
   ctxDeleteBoard: 'Delete board',
   ctxUngroup: 'Ungroup',
