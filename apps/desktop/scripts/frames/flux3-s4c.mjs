@@ -76,4 +76,10 @@ SCREENS['diag-nomask-col'] = diag('diag-nomask-col', "document.querySelector('.m
 SCREENS['diag-nomask-ed'] = diag('diag-nomask-ed', "document.querySelector('.forward-only-editor').style.setProperty('mask-image','none','important'); document.querySelector('.forward-only-editor').style.setProperty('-webkit-mask-image','none','important')");
 SCREENS['diag-nomask-both'] = diag('diag-nomask-both', "['.mode-pagecol','.forward-only-editor'].forEach((s) => { const e = document.querySelector(s); e.style.setProperty('mask-image','none','important'); e.style.setProperty('-webkit-mask-image','none','important'); })");
 SCREENS['diag-nocorridor'] = diag('diag-nocorridor', "document.querySelector('[data-flux3-corridor]').style.display = 'none'");
+SCREENS['diag-rows'] = async (app) => {
+  await seed(app, 'An older line she wrote before this session.');
+  await type(app, CYCLE + CYCLE + CYCLE, 30);
+  const d = await app.evalJs(`(() => { const ed = document.querySelector('.forward-only-editor'); const out = { kids: [...ed.children].map((c) => { const s = getComputedStyle(c); return { tag: c.tagName + '.' + String(c.className).slice(0, 20), o: s.opacity, c: s.color, f: s.webkitTextFillColor, v: s.visibility, d: s.display, h: Math.round(c.getBoundingClientRect().height), t: c.textContent.slice(0, 18), st: s.textShadow.slice(0, 20), bg: s.backgroundClip }; }), edStyle: (() => { const s = getComputedStyle(ed); return { fill: s.webkitTextFillColor, color: s.color, mix: s.mixBlendMode, clip: s.clipPath, ov: s.overflow }; })(), glow: !!document.querySelector('.flux3-compile'), compileLayerOp: (() => { const l = document.querySelector('.flux3-compile'); return l ? getComputedStyle(l).opacity : null; })() }; return out; })()`);
+  console.log(`FLUX3-S4C-FRAME diag-rows ${JSON.stringify(d)}`);
+};
 export default SCREENS;
