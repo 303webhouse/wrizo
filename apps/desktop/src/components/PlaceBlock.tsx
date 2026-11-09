@@ -12,7 +12,7 @@ import { FLUX3 } from '../flux3/flag';
 // Pressing it opens the switcher (the `drawers` category panel, same id, so every data-category selector still finds it). It lives INSIDE the
 // strip, which is a fixed DeskFrame track already wearing chrome-fade and desk-dissolve - so it recedes with the rest of the rail while typing, and
 // never moves, resizes or unmounts the page (PAGE IS PRIMARY: it is a tool that orbits).
-export function PlaceBlock({ active, onToggle, drawerIcon, journalIcon }: { active: boolean; onToggle: () => void; drawerIcon: ReactNode; journalIcon: ReactNode }) {
+export function PlaceBlock({ active, onToggle, drawerIcon, journalIcon, reading }: { active: boolean; onToggle: () => void; drawerIcon: ReactNode; journalIcon: ReactNode; reading?: { count: string; hint: string } | null }) {
   const { t } = useDeskLexicon();
   const theme = useTheme();
   const place = usePlace();
@@ -25,11 +25,13 @@ export function PlaceBlock({ active, onToggle, drawerIcon, journalIcon }: { acti
   return (
     <div className="wz-strip-section wz-place-section">
       <button type="button" data-category="drawers" data-place-kind={place.kind}
-        className={`wz-strip-item wz-place-block${active ? ' active' : ''}`} aria-pressed={active} aria-label={`${t('switcherHeading')}: ${name}`} title={fullPath} onClick={onToggle}>
+        className={`wz-strip-item wz-place-block${active ? ' active' : ''}`} aria-pressed={active} aria-label={`${t('switcherHeading')}: ${name}`} title={reading ? `${fullPath}: ${reading.hint}` : fullPath} onClick={onToggle}>
         <span className="wz-strip-glyph wz-place-icon" aria-hidden="true"><ThemeIcon id={isJournal && !(FLUX3 && theme === 'flux') ? 'log' : 'rack'} fallback={isJournal && !(FLUX3 && theme === 'flux') ? journalIcon : drawerIcon} /></span>
         {/* S4b L2 (flag, Flux): in the Journal this door wears the SWITCHER's glyph (the rack) instead of the Log icon, so the Journal pin below is the only Log - the door and the pin no longer draw the same picture twice */}
         {/* bug #4 (ruled Nov 7): in the Journal the Journal pin below names the place, so this door is its icon alone - still the switcher's only door (aria-label and title keep the name) */}
-        {isJournal ? null : <span className="wz-strip-label wz-place-name">{name}</span>}
+        {/* S4b L2 (flag, Flux; the Wrizors, Nov 9: an empty box looked broken): the door is never blank. In the Journal it reads UNFILED, in a Drawer the Drawer's own name (two lines at most), and one true count under it */}
+        {isJournal && !reading ? null : <span className="wz-strip-label wz-place-name">{isJournal ? t('pageHomeLoose') : name}</span>}
+        {reading ? <span className="wz-strip-readout" aria-hidden="true">{reading.count}</span> : null}
       </button>
     </div>
   );

@@ -41,6 +41,19 @@ export function railReadout(n: number): string {
   return pad(n, 2);
 }
 
+/** The hover hint that names what a rail box's count counts (a bare number is only true when its scope is clear). where: the Journal (unfiled) or a Drawer. */
+export type RailHintKind = 'docs' | 'circuits' | 'log' | 'place' | 'voice' | 'tone';
+export function railHint(kind: RailHintKind, n: number | string, where: 'journal' | 'drawer'): string {
+  const num = typeof n === 'number' ? n : 0;
+  const noun = (one: string, many: string) => `${num} ${num === 1 ? one : many}`;
+  if (kind === 'docs') return `${noun('doc', 'docs')} ${where === 'journal' ? 'in the Journal (not filed in a drawer)' : 'in this drawer'}`;
+  if (kind === 'circuits') return `${noun('circuit', 'circuits')} ${where === 'journal' ? 'in the Journal (not filed in a drawer)' : 'in this drawer'}`;
+  if (kind === 'log') return `${noun('doc', 'docs')} in the Journal, whichever drawer you are in`;
+  if (kind === 'place') return where === 'journal' ? `${noun('doc or circuit', 'docs and circuits')} not filed in a drawer` : `${noun('doc or circuit', 'docs and circuits')} filed in this drawer`;
+  if (kind === 'voice') return `The Voice of your pages: ${n}`;
+  return `The page tone: ${n}`;
+}
+
 /** RACK ▸ name - the rack the writer is in. */
 export function rackReadout(name: string): string {
   return `RACK ▸ ${name}`;

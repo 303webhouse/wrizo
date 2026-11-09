@@ -31,7 +31,7 @@ export default {
   },
   'rail-drawer': async (app) => {
     await mkPage(app, 'l2f-j1', 'A page in the Journal.'); await mkPage(app, 'l2f-j2', 'Another Journal page.'); await mkPage(app, 'l2f-j3', 'A third.');
-    const d = await app.evalJs("window.wrizoCreateDrawer('Cartridge')");
+    const d = await app.evalJs("window.wrizoCreateDrawer('The Late Ferry')");
     const s = d ? await app.evalJs(`window.wrizoCreateBinder('Set A', 'book', ${JSON.stringify(d.id)})`) : null;
     if (s) { await mkPage(app, 'l2f-d1', 'A page in the drawer.\nA second line.', { projectId: s.id, origin: null }); await mkPage(app, 'l2f-d2', 'Another page in the drawer.', { projectId: s.id, origin: null }); await mkBoard(app, 'l2f-db1', { projectId: s.id }); }
     await sleep(500);

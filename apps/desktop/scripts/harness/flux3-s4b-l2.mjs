@@ -32,7 +32,7 @@ const INSTRUMENT = `(() => {
     const items = [...s.querySelectorAll('.wz-strip-item')].map((b) => { const lab = b.querySelector('.wz-strip-label'), rd = b.querySelector('.wz-strip-readout:not(.wz-strip-last)'), last = b.querySelector('.wz-strip-last');
       return { cat: b.getAttribute('data-category'), label: lab ? lab.textContent.trim() : null, read: rd ? rd.textContent.trim() : null, last: last ? last.textContent.trim() : null,
         icon: (b.querySelector('[data-theme-icon]') || {}).getAttribute ? b.querySelector('[data-theme-icon]').getAttribute('data-theme-icon') : null, kind: b.getAttribute('data-place-kind'), here: b.getAttribute('aria-current'),
-        labelColor: lab ? getComputedStyle(lab).color : null, readColor: rd ? getComputedStyle(rd).color : null, lastColor: last ? getComputedStyle(last).color : null }; });
+        labelColor: lab ? getComputedStyle(lab).color : null, tt: lab ? getComputedStyle(lab).textTransform : null, title: b.getAttribute('title'), bw: getComputedStyle(b).borderTopWidth, labH: lab ? Math.round(lab.getBoundingClientRect().height) : null, labLH: lab ? parseFloat(getComputedStyle(lab).lineHeight) : null, clamp: lab ? getComputedStyle(lab).webkitLineClamp : null, readColor: rd ? getComputedStyle(rd).color : null, lastColor: last ? getComputedStyle(last).color : null }; });
     return { items, width: Math.round(s.getBoundingClientRect().width), logIcons: s.querySelectorAll('[data-theme-icon="log"]').length, readouts: s.querySelectorAll('.wz-strip-readout').length }; };
   I.rects = () => { const q = (s) => { const e = document.querySelector(s); if (!e) return null; const r = e.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)]; }; return { page: q('.mode-page'), host: q('.desk-frame-host'), editor: q('.forward-only-editor'), board: q('.board-canvas-wrap'), strip: q('.wz-strip') }; };
   // the control arm: the L2 readouts and the L2 rules away (the same page without the rail's dress)
@@ -84,6 +84,13 @@ try { await withHarness(async (app) => {
   const dupOk = (r) => { const d = r && r.items.find((i) => i.cat === 'drawers'), p = by(r, 'journal'); return !!r && !!d && !!p && r.logIcons === 1 && p.icon === 'log' && d.icon === 'rack' && r.items.filter((i) => (i.label || '').toLowerCase() === 'log').length === 1; };
   ok('DUP the Journal rail draws the Log icon once and the word "Log" once (the door wears the switcher\'s rack glyph; the Journal pin is the Log)', dupOk(j) && logWords === 1, JSON.stringify({ door, pin, logIcons: j && j.logIcons, logWords }));
   await snap('l2-journal-dark');
+  // PLACE (Journal): the door is never blank - UNFILED and one true count (the Journal's docs and circuits not filed in a drawer: 3 + 2)
+  ok('PLACE in the Journal the door reads UNFILED with its count 05 (3 docs + 2 circuits not filed in a drawer), never blank, and says so on hover', !!door && /^unfiled$/i.test(door.label || '') && door.read === '05' && /not filed in a drawer/.test(door.title || ''), JSON.stringify({ door }));
+  // FOOT: Config, Skin and Trash are command boxes in caps; Config reads the Voice, Skin the page tone; the Trash has no count (a place, not a nag)
+  const cfg = by(j, 'settings'), skin = by(j, 'theme'), trash = by(j, 'trash');
+  ok('FOOT Config reads the Voice (SERIF), Skin the page tone (DARK), the Trash no count; all three are boxes with caps names', !!cfg && !!skin && !!trash && cfg.read === 'SERIF' && skin.read === 'DARK' && trash.read === null && [cfg, skin, trash].every((i) => i.tt === 'uppercase' && i.bw === '1px'), JSON.stringify({ cfg, skin, trash }));
+  ok('CAPS every box on the rail wears its name in caps: the door, Docs, Circuits, Log, Config, Skin, Trash', !!j && j.items.every((i) => i.label === null || i.tt === 'uppercase'), JSON.stringify(j && j.items.map((i) => [i.cat, i.tt])));
+  ok('HINTS each count names what it counts on hover (docs, circuits, log, voice, tone)', !!j && /3 docs in the Journal/.test(by(j, 'page').title) && /2 circuits in the Journal/.test(by(j, 'plan').title) && /3 docs in the Journal, whichever drawer/.test(by(j, 'journal').title) && /Voice/.test(cfg.title) && /page tone/i.test(skin.title) && !trash.title, JSON.stringify(j && j.items.map((i) => [i.cat, i.title])));
 
   // ---- READ in the Journal -------------------------------------------------------------------------------------------------------------------------------
   const readJ = (r) => { const a = by(r, 'page'), b = by(r, 'plan'), c = by(r, 'journal'); return !!a && !!b && !!c && a.read === '03' && b.read === '02' && c.read === '03' && /^[0-9]{2,}$/.test(a.read); };
@@ -107,7 +114,7 @@ try { await withHarness(async (app) => {
   ok('DUP-OFF without the flag the rail is unchanged: no readouts, and the door and the Journal pin both draw the Log icon as before', !!off && off.readouts === 0 && !!offDoor && !!offPin && offDoor.icon === 'log' && offPin.icon === 'log', JSON.stringify({ readouts: off && off.readouts, door: offDoor && offDoor.icon, pin: offPin && offPin.icon }));
 
   // ---- READ + HERE in a Drawer's set --------------------------------------------------------------------------------------------------------------------
-  const drawer = await ev("window.wrizoCreateDrawer('Cartridge')");
+  const drawer = await ev("window.wrizoCreateDrawer('The Late Ferry')");
   const set = drawer ? await ev(`window.wrizoCreateBinder('Set A', 'book', ${JSON.stringify(drawer.id)})`) : null;
   if (set) { await page('l2-d1', 'A page in the drawer.', { projectId: set.id, origin: null }); await page('l2-d2', 'Another page in the drawer.', { projectId: set.id, origin: null }); await board('l2-db1', { projectId: set.id }); }
   await sleep(500);
@@ -122,6 +129,8 @@ try { await withHarness(async (app) => {
   const dupDrawer = dr && dr.logIcons === 1;
   ok('DUP-DRAWER in a Drawer the rail still draws the Log icon once (the Journal pin) and the door is the rack', !!dupDrawer && !!dDoor && dDoor.icon === 'rack', JSON.stringify({ logIcons: dr && dr.logIcons, door: dDoor && dDoor.icon }));
 
+  // PLACE (Drawer): the Drawer's own name in caps and one true count (2 docs + 1 circuit = 03); its hover says so
+  ok('PLACE in a Drawer the door reads the Drawer own name (THE LATE FERRY) with its count 03 and says what it counts on hover', !!dDoor && dDoor.label === 'The Late Ferry' && dDoor.tt === 'uppercase' && dDoor.read === '03' && /filed in this drawer/.test(dDoor.title || ''), JSON.stringify({ dDoor }));
   // ---- LAST: a node touched this session reads in orange under Circuits ----------------------------------------------------------------------------------
   await open('l2-b1');
   const l0 = await rail();
@@ -162,6 +171,16 @@ try { await withHarness(async (app) => {
     ok(`MUT-${name.toUpperCase().replace(/ /g, '-')} the reader goes RED on its mutant (${name}) and green again undone`, wentRed && dupOk(back) && readD(back) && hereD(back), name);
   }
 
+  // CLAMP: a long Drawer name wraps to two lines at most and ends in an ellipsis; the door's width is the rail's
+  const ld = await ev("window.wrizoCreateDrawer('The Late Ferry And Other Very Long Cartridge Names Of Many Words Indeed')");
+  const ls = ld ? await ev(`window.wrizoCreateBinder('Set L', 'book', ${JSON.stringify(ld.id)})`) : null;
+  if (ls) await page('l2-ld1', 'A page in the long drawer.', { projectId: ls.id, origin: null });
+  await sleep(400);
+  await open('l2-ld1');
+  const lr = await rail();
+  const lDoor = lr && lr.items.find((i) => i.cat === 'drawers');
+  ok('CLAMP a long Drawer name takes two lines at most (line-clamp 2, ellipsis), never more, and the rail keeps its width', !!lDoor && lDoor.clamp === '2' && lDoor.labH <= Math.ceil(lDoor.labLH * 2) + 1 && lr.width === base.width, JSON.stringify({ lDoor, w: lr && lr.width, w0: base && base.width }));
+  await snap('l2-long-name');
   // ---- L: the rail adds no typing latency (six interleaved rounds, TWO readings, scripts/lib/l-method.mjs) -------------------------------------------------
   if (ON_BOX || process.env.FLUX3_L === '1') {
     let n = 0;
