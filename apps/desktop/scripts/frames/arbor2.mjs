@@ -452,7 +452,10 @@ export function zoomProofV6(holeOf, stopsOf) {
 //   INK      the words are the ROOM's ink - cream #EFE4CB by night, walnut #1A0F06 by day - whatever the Page setting (the floor, measured on
 //            the room's own pixels, is r22-typewriter's in scripts/frames/arbor2-r22.mjs)
 //   SUNEDGE  as V6, by day: the sun layer's soft hole keeps every slat off the prose and off the count row
-export function zoomProof(holeOf, stopsOf) {
+// PARKED 2026-11-08 (SUPERSEDED - Actions frames 42537140287: V7 passed BLIND by day - SUNEDGE read the mask paper.ts writes on the retired
+// .arbor2-sun layer (r19 never draws it), while the pergola that IS drawn crossed the bare page under the words). Kept verbatim under the name
+// zoomProofV7 (no screen calls it); SUCCESSOR V8 below it.
+export function zoomProofV7(holeOf, stopsOf) {
   const col = document.querySelector('.mode-pagecol[data-zoom="true"]'), p = col && col.querySelector('.mode-page');
   if (!p) return { pass: false, why: 'no zoomed page' };
   const a = p.getBoundingClientRect(), c = col.getBoundingClientRect();
@@ -497,6 +500,57 @@ export function zoomProof(holeOf, stopsOf) {
     }
     if (count) countMax = Math.max(uA(count.left + 2, count.top + count.height / 2), uA((count.left + count.right) / 2, count.top + count.height / 2), uA(count.right - 2, count.top + count.height / 2));
     sunEdge = uOk && proseMax === 0 && (countMax === null || countMax === 0);
+  }
+  return { pass: noSheet && bare && unbroken && inkOk && sunEdge !== false, room, noSheet, bare, unbroken, inkOk, sunEdge, ink, want, proseMax, countMax, vis,
+    pageBg: pcs.backgroundColor, pageShadow: pcs.boxShadow, vMask: String(vm).slice(0, 120), uMask: uMask && String(uMask).slice(0, 120) };
+}
+
+// SUCCESSOR V8 (r22): V7 with SUNEDGE reading the layer that is drawn by day - .arbor2-pergola (displayed, with a size: liveness), its mask the soft
+// hole paper.ts writes around the words' column while zoomed; nothing over the prose. NOSHEET, BARE, UNBROKEN and INK as V7.
+export function zoomProof(holeOf, stopsOf) {
+  const col = document.querySelector('.mode-pagecol[data-zoom="true"]'), p = col && col.querySelector('.mode-page');
+  if (!p) return { pass: false, why: 'no zoomed page' };
+  const a = p.getBoundingClientRect(), c = col.getBoundingClientRect();
+  let count = null;
+  for (const el of document.querySelectorAll('body *')) {
+    const own = [...el.childNodes].some((n) => n.nodeType === 3 && /^\s*\d+\s+words?\s*$/i.test(n.textContent));
+    if (!own) continue;
+    const r = el.getBoundingClientRect();
+    if (r.width > 0 && r.height > 0 && r.top > a.top + 40 && r.left < a.right && r.right > a.left) count = r;
+  }
+  const vis = { l: Math.max(a.left, c.left), t: Math.max(a.top, c.top), r: Math.min(a.right, c.right), b: Math.min(a.bottom, c.bottom, innerHeight) };
+  const room = document.documentElement.getAttribute('data-arbor2-room');
+  const pcs = getComputedStyle(p);
+  const noSheet = !document.querySelector('.arbor2-paper') && !document.documentElement.hasAttribute('data-arbor2-sheet');
+  const clear = (v) => v === 'transparent' || /^rgba\(.*,\s*0\)$/.test(v) || /\/\s*0\)$/.test(v);
+  const bare = clear(pcs.backgroundColor) && pcs.boxShadow === 'none'
+    && ['Top', 'Right', 'Bottom', 'Left'].every((sd) => parseFloat(pcs[`border${sd}Width`]) === 0 || clear(pcs[`border${sd}Color`]));
+  const vcs = getComputedStyle(document.body, '::after'), vm = vcs.maskImage;
+  const unbroken = stopsOf(vm).length === 0;
+  const ed = p.querySelector('.forward-only-editor'), ink = ed ? getComputedStyle(ed).color : null;
+  const want = room === 'night' ? 'rgb(239, 228, 203)' : room === 'day' ? 'rgb(26, 15, 6)' : null;
+  const inkOk = !!ink && ink === want;
+  const at = (st, v) => {
+    if (!st.length) return 1;
+    if (v <= st[0].px) return st[0].a;
+    for (let i = 1; i < st.length; i++) if (v <= st[i].px) return st[i].px === st[i - 1].px ? st[i].a : st[i - 1].a + (st[i].a - st[i - 1].a) * (v - st[i - 1].px) / (st[i].px - st[i - 1].px);
+    return st[st.length - 1].a;
+  };
+  const every = (v, w) => String(v || '').split(',').every((x) => x.trim() === w);
+  let sunEdge = null, uMask = null, proseMax = null, countMax = null;
+  if (room === 'day') {
+    const sn = document.querySelector('.arbor2-pergola'), sr = sn ? sn.getBoundingClientRect() : null, ucs = sn ? getComputedStyle(sn) : null;
+    uMask = ucs ? ucs.maskImage : '';
+    const ug = stopsOf(uMask);
+    const uOk = !!sr && ucs.display !== 'none' && sr.width > 0 && ug.length === 2 && every(ucs.maskComposite, 'add') && (!ucs.clipPath || ucs.clipPath === 'none');
+    const uA = (x, y) => (uOk ? 1 - ug.reduce((m, g) => m * (1 - at(g.stops, g.axis === 'x' ? x - sr.left : y - sr.top)), 1) : 1);
+    const er = ed ? ed.getBoundingClientRect() : null;
+    const pr = er && { l: Math.max(er.left, vis.l), t: Math.max(er.top, vis.t), r: Math.min(er.right, vis.r), b: Math.min(er.bottom, vis.b) };
+    if (pr && pr.r - pr.l > 2 && pr.b - pr.t > 2) {
+      proseMax = 0;
+      for (let i = 0; i <= 8; i++) for (let j = 0; j <= 8; j++) proseMax = Math.max(proseMax, uA(pr.l + (pr.r - pr.l) * i / 8, pr.t + (pr.b - pr.t) * j / 8));
+    }
+    sunEdge = uOk && proseMax === 0;   // (the count sits on the page's own plate, which covers the room's layers)
   }
   return { pass: noSheet && bare && unbroken && inkOk && sunEdge !== false, room, noSheet, bare, unbroken, inkOk, sunEdge, ink, want, proseMax, countMax, vis,
     pageBg: pcs.backgroundColor, pageShadow: pcs.boxShadow, vMask: String(vm).slice(0, 120), uMask: uMask && String(uMask).slice(0, 120) };

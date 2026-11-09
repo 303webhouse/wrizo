@@ -86,7 +86,15 @@ export function mountPaper(): void {
     const sun = document.querySelector('.arbor2-sun') as HTMLElement | null;
     // the room is in the key: by night the sun layer is display:none (a 0x0 box), so its clip is measured again when the day comes back
     const room = document.documentElement.getAttribute('data-arbor2-room');
-    const key = v ? `${v.box.l},${v.box.t},${v.box.r},${v.box.b},${v.room.l},${v.room.r},${v.room.b},${v.zoomed},${v.paper},${innerWidth},${innerHeight},${room}` : `none,${innerWidth},${room}`;
+    // r22 (after Actions frames 42537140287): the zoomed page is bare, so the day pergola - a fixed room layer at its full strength, until now
+    // hidden under the page's paper or the retired sheet - crossed the words (the shade read rgb(205,195,166) under them, walnut 10:1, the floor
+    // 13.9). Zoomed, the pergola takes a soft hole around the WORDS' column (not the page's rect: the shade still crosses the page's margins, so
+    // no page edge is drawn): whole SUN_EDGE + 8 px out from the column, nothing from 8 px out. Off the zoom no mask (the page's paper covers it).
+    const ed = v && v.zoomed ? document.querySelector('.mode-pagecol[data-zoom="true"] .forward-only-editor') as HTMLElement | null : null;
+    const er = ed ? ed.getBoundingClientRect() : null;
+    const prose = v && er && er.width > 2 ? { l: er.left - SUN_EDGE - 8, t: v.box.t - SUN_EDGE - 8, r: er.right + SUN_EDGE + 8, b: v.box.b + SUN_EDGE + 8 } : null;
+    const key = (v ? `${v.box.l},${v.box.t},${v.box.r},${v.box.b},${v.room.l},${v.room.r},${v.room.b},${v.zoomed},${v.paper},${innerWidth},${innerHeight},${room}` : `none,${innerWidth},${room}`)
+      + (prose ? `,${Math.round(prose.l)},${Math.round(prose.r)}` : '');
     if (key === last) return;
     last = key;
     const root = document.documentElement;
@@ -109,6 +117,11 @@ export function mountPaper(): void {
     // r22: the zoomed page has no hole - the room's shade crosses it unbroken, like the ground and the glow (a hole would draw its edge)
     if (v && !v.zoomed) root.style.setProperty('--arbor2-vignette-mask', vignetteMask(v.box, 0));
     else root.style.removeProperty('--arbor2-vignette-mask');
+    const perg = document.querySelector('.arbor2-pergola') as HTMLElement | null;   // fixed at inset 0: its own box is the viewport
+    if (perg) {
+      if (prose) { perg.style.maskImage = vignetteMask(prose, SUN_EDGE); perg.style.maskComposite = 'add'; }
+      else { perg.style.maskImage = ''; perg.style.maskComposite = ''; }
+    }
   };
   update();
   addEventListener('resize', update);

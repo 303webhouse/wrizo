@@ -274,16 +274,39 @@ const screens = {
       if (!zoomed) fail('R22-TYPEWRITER', { room, zoomed: false });
       await app.evalJs(caretEnd); await sleep(900);
       const z = await app.evalJs(`(${zoomProof.toString()})(${holeOf.toString()}, ${stopsOf.toString()})`);
+      // PARKED 2026-11-08 (SUPERSEDED - Actions frames 42537140287, 4 of 4 red on "floor": the instrument read the page's MARGINS, not the ground
+      // under the words - its worst night and day samples, 8 px inside the page's right edge, were the page's scrollbar thumb (#B9AA8C / #6B5F4E,
+      // the low ink); it also caught the day pergola crossing the bare page, a real miss fixed in paper.ts). Original, verbatim:
+      // const m = await app.evalJs(`(() => { const col = document.querySelector('.mode-pagecol'), p = col.querySelector('.mode-page'), ed = p.querySelector('.forward-only-editor');
+        // const pr = p.getBoundingClientRect(), er = ed.getBoundingClientRect(), cr = col.getBoundingClientRect();
+        // const lh = parseFloat(getComputedStyle(col).getPropertyValue('--tw-lh')) || 43.52, y0 = cr.top + cr.height * 0.5;
+        // const xs = [pr.left + 8, (pr.left + er.left) / 2, er.left - 8, er.right + 8, (er.right + pr.right) / 2, pr.right - 8].filter((x) => x > pr.left && x < pr.right && (x < er.left - 2 || x > er.right + 2));
+        // return { xs, ys: [-0.1, 0.3, 0.7, 1.1, 1.4].map((k) => y0 + k * lh), ink: getComputedStyle(ed).color, caret: getComputedStyle(ed).caretColor, page: document.documentElement.getAttribute('data-page') }; })()`);
+      // const png = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data;
+      // const px = await app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${png}'; await img.decode(); const dpr = img.width / innerWidth;
+        // const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; const cx = c.getContext('2d'); cx.drawImage(img, 0, 0);
+        // const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; const L = (p) => 0.2126 * lin(p[0]) + 0.7152 * lin(p[1]) + 0.0722 * lin(p[2]);
+        // const ink = ${JSON.stringify(m.ink)}.match(/\\d+/g).slice(0, 3).map(Number);
+        // const rows = []; for (const y of ${JSON.stringify(m.ys)}) for (const x of ${JSON.stringify(m.xs)}) { const d = cx.getImageData(Math.round(x * dpr), Math.round(y * dpr), 1, 1).data; const g = [d[0], d[1], d[2]];
+          // rows.push({ x: Math.round(x), y: Math.round(y), g, r: Math.round(((Math.max(L(ink), L(g)) + 0.05) / (Math.min(L(ink), L(g)) + 0.05)) * 100) / 100 }); }
+        // const min = rows.reduce((a, b) => (b.r < a.r ? b : a), rows[0]);
+        // return { n: rows.length, min, grounds: [...new Set(rows.map((q) => q.g.join(',')))].slice(0, 6) }; })()`);
+      // SUCCESSOR: the ground UNDER THE WORDS. For one screenshot the words (and the caret) are made transparent - the page, the room, the glow,
+      // the vignette and the pergola stay as they are - and the ground is read on a grid across the words' own column (the editor's rect, 8 x 5)
+      // in the writing band, from the writing line to 1.4 lines below it, where the band is whole. The words' ink against every sample >= 13.9.
       const m = await app.evalJs(`(() => { const col = document.querySelector('.mode-pagecol'), p = col.querySelector('.mode-page'), ed = p.querySelector('.forward-only-editor');
-        const pr = p.getBoundingClientRect(), er = ed.getBoundingClientRect(), cr = col.getBoundingClientRect();
+        const er = ed.getBoundingClientRect(), cr = col.getBoundingClientRect(), pr = p.getBoundingClientRect();
         const lh = parseFloat(getComputedStyle(col).getPropertyValue('--tw-lh')) || 43.52, y0 = cr.top + cr.height * 0.5;
-        const xs = [pr.left + 8, (pr.left + er.left) / 2, er.left - 8, er.right + 8, (er.right + pr.right) / 2, pr.right - 8].filter((x) => x > pr.left && x < pr.right && (x < er.left - 2 || x > er.right + 2));
-        return { xs, ys: [-0.1, 0.3, 0.7, 1.1, 1.4].map((k) => y0 + k * lh), ink: getComputedStyle(ed).color, caret: getComputedStyle(ed).caretColor, page: document.documentElement.getAttribute('data-page') }; })()`);
+        const l = Math.max(er.left, pr.left) + 4, r = Math.min(er.right, pr.right - 24) - 4;
+        return { xs: Array.from({ length: 8 }, (_, i) => l + (r - l) * i / 7), ys: [0, 0.35, 0.7, 1.05, 1.4].map((k) => y0 + k * lh), ink: getComputedStyle(ed).color, caret: getComputedStyle(ed).caretColor, page: document.documentElement.getAttribute('data-page') }; })()`);
+      await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'r22-tw-hide'; s.textContent = '.forward-only-editor, .forward-only-editor *{ color:transparent !important; caret-color:transparent !important; -webkit-text-fill-color:transparent !important; }'; document.head.appendChild(s); return true; })()");
+      await sleep(250);
       const png = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data;
+      await app.evalJs("document.getElementById('r22-tw-hide')?.remove()");
       const px = await app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${png}'; await img.decode(); const dpr = img.width / innerWidth;
         const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; const cx = c.getContext('2d'); cx.drawImage(img, 0, 0);
         const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; const L = (p) => 0.2126 * lin(p[0]) + 0.7152 * lin(p[1]) + 0.0722 * lin(p[2]);
-        const ink = ${JSON.stringify(m.ink)}.match(/\\d+/g).slice(0, 3).map(Number);
+        const ink = ${JSON.stringify(m.ink)}.match(/\d+/g).slice(0, 3).map(Number);
         const rows = []; for (const y of ${JSON.stringify(m.ys)}) for (const x of ${JSON.stringify(m.xs)}) { const d = cx.getImageData(Math.round(x * dpr), Math.round(y * dpr), 1, 1).data; const g = [d[0], d[1], d[2]];
           rows.push({ x: Math.round(x), y: Math.round(y), g, r: Math.round(((Math.max(L(ink), L(g)) + 0.05) / (Math.min(L(ink), L(g)) + 0.05)) * 100) / 100 }); }
         const min = rows.reduce((a, b) => (b.r < a.r ? b : a), rows[0]);
