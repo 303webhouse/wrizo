@@ -220,7 +220,10 @@ export default {
       if (r.barBg !== BAR19[want] || r.railBg !== BAR19[want]) problems.push({ stage: r.stage, bars: [r.barBg, r.railBg], want: BAR19[want] });
       // the room's ground: night #120A06 / raised #1B120C; day the plaster (R >= 0xEC, B >= 0xC4) with raised #E8DFC8
       const n = parseInt(r.tokens.g.replace('#', ''), 16);
-      const roomOk = want === 'night' ? r.tokens.g === '#120A06' && r.tokens.s === '#1B120C' : (n >> 16) >= 0xEC && (n & 255) >= 0xC4 && r.tokens.s === '#E8DFC8';
+      // PARKED 2026-11-10 (SUPERSEDED - NICK RULED, Nov 9, 11:29 pm, via Fable: the night room is brown B - ground #080402, surface #110A06, raised #1B120B; unmasked once the rail reader stopped reading the ribbon, frames 42792789971 / 42793301526). Original, verbatim:
+      // const roomOk = want === 'night' ? r.tokens.g === '#120A06' && r.tokens.s === '#1B120C' : (n >> 16) >= 0xEC && (n & 255) >= 0xC4 && r.tokens.s === '#E8DFC8';
+      // SUCCESSOR: by night the room tokens are B's (ground #080402, surface #110A06); by day unchanged
+      const roomOk = want === 'night' ? r.tokens.g === '#080402' && r.tokens.s === '#110A06' : (n >> 16) >= 0xEC && (n & 255) >= 0xC4 && r.tokens.s === '#E8DFC8';
       if (!roomOk) problems.push({ stage: r.stage, tokens: r.tokens });
       // PARKED 2026-11-08 (SUPERSEDED - r22, Fable's ruling 1 on Nick's walk, Nov 8: "while Typewriter is on, Arbor's page draws no fill or edge
       // of its own; the words sit on the room's ground ...; the text floors hold, measured on the room" - the Free Write stages are zoomed: the page
