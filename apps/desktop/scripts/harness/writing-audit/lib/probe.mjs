@@ -43,7 +43,7 @@ export function probeInstall() {
   const boxAt = (p) => {
     const e = ed(); if (!e) return null;
     const pt = pointAt(e, p); if (!pt) return { via: 'rows-drift' };
-    if (pt.len === 0) { const r = pt.row.getBoundingClientRect(); return { via: 'row', x: r.left + padLeft(pt.row), top: r.top, height: lineH(pt.row, r) }; }
+    if (pt.len === 0) { const r = pt.row.getBoundingClientRect(); return { via: 'row', x: r.left + padLeft(pt.row), top: r.top, height: lineH(pt.row, r), noY: r.height < 4 }; }
     const rg = document.createRange();
     if (pt.col < pt.len) {
       const nx = pointAt(e, p + 1); if (!nx) return { via: 'rows-drift' };
@@ -93,6 +93,7 @@ export function probeInstall() {
     out.editorRect = rr(e.getBoundingClientRect());
     out.scroll = { top: scroller ? scroller.scrollTop : null, win: window.scrollY, scrollerH: scroller ? scroller.scrollHeight : null, clientH: scroller ? scroller.clientHeight : null };
     out.rows = rowsOf(e).length;
+    out.tw = scroller ? scroller.getAttribute('data-typewriter') : null;
     // where the selection sits in the DOM (a text node's first characters and offset, or the element and offset): the evidence for a caret that is in the right place by number and the wrong place on screen
     if (inEd) { const n = sel.focusNode; let row = n.nodeType === 1 ? n : n.parentElement; while (row && row.parentElement !== e && row !== e) row = row.parentElement; const rows = rowsOf(e); out.selPoint = (n.nodeType === 3 ? 'text ' + JSON.stringify(n.data.slice(0, 14)) : n.nodeName + (n.className ? '.' + String(n.className).split(' ')[0] : '')) + ' @' + sel.focusOffset + (row && row !== e ? ' in row ' + rows.indexOf(row) : ' (between rows)'); }
     return out;

@@ -49,9 +49,10 @@ export function verify({ exp, box, before, early, late, errors = [], expect = {}
       const atPageCorner = !!page && drawn.x <= page.x + TOL.corner && drawn.top <= page.y + TOL.corner && !(Math.abs(dx) <= TOL.corner && Math.abs(dy) <= TOL.corner);
       const atViewCorner = drawn.x <= 2 && drawn.top <= 2 && !(Math.abs(dx) <= 2 && Math.abs(dy) <= 2);
       const offPage = !!page && (drawn.x < page.x - 2 || drawn.x > page.x + page.w + 2 || drawn.top < page.y - 2 || drawn.top > page.y + page.h + 2);
+      const yOk = box.noY ? true : Math.abs(dy) <= tolY;   // an empty row with no height of its own (an empty document) has no line to measure against: x, corners and the page edge still apply
       if (atPageCorner || atViewCorner) fail('drawn', `${what} at the ${atViewCorner ? 'window' : 'page'}'s top-left corner (${rect(drawn)}) where the text puts it at ${rect(box)} (${box.via})${at}`);
-      else if (offPage && !(Math.abs(dx) <= TOL.x && Math.abs(dy) <= tolY)) fail('drawn', `${what} off the page (${rect(drawn)}; page ${Math.round(page.x)},${Math.round(page.y)} ${Math.round(page.w)}x${Math.round(page.h)})${at}`);
-      else if (Math.abs(dx) > TOL.x || Math.abs(dy) > tolY) fail('drawn', `${what} at ${rect(drawn)} but the text puts the caret at ${rect(box)} (${box.via}); off by ${dx.toFixed(1)}, ${dy.toFixed(1)}${at}`);
+      else if (offPage && !(Math.abs(dx) <= TOL.x && yOk)) fail('drawn', `${what} off the page (${rect(drawn)}; page ${Math.round(page.x)},${Math.round(page.y)} ${Math.round(page.w)}x${Math.round(page.h)})${at}`);
+      else if (Math.abs(dx) > TOL.x || !yOk) fail('drawn', `${what} at ${rect(drawn)} but the text puts the caret at ${rect(box)} (${box.via}); off by ${dx.toFixed(1)}, ${dy.toFixed(1)}${at}`);
     }
   }
 
@@ -63,7 +64,8 @@ export function verify({ exp, box, before, early, late, errors = [], expect = {}
   if (before && before.page && early && early.page && !rectEq(before.page, early.page)) fail('page', `the page's rect changed within 2 frames ${JSON.stringify(before.page)} -> ${JSON.stringify(early.page)}`);
 
   // 7. THE VIEW HAS NOT JUMPED (a short document never scrolls: the scroll changes only when the caret would leave the window)
-  if (before && before.scroll && late.scroll && !expect.scroll) {
+  if ((before && before.tw) || late.tw) notes.push('the Typewriter is engaged on this page: it scrolls the line to its resting place by design, so the view is not judged here (its own cases are a later session)');
+  else if (before && before.scroll && late.scroll && !expect.scroll) {
     if (before.scroll.top !== late.scroll.top || before.scroll.win !== late.scroll.win) fail('view', `scroll moved: scroller ${before.scroll.top} -> ${late.scroll.top} (scrollHeight ${late.scroll.scrollerH}, clientHeight ${late.scroll.clientH}), window ${before.scroll.win} -> ${late.scroll.win}; the caret is at ${late.px ? late.px.x + ',' + late.px.top : late.fluxCaret ? Math.round(late.fluxCaret.x) + ',' + Math.round(late.fluxCaret.top) : 'unseen'} in a page ${late.page ? Math.round(late.page.y) + '..' + Math.round(late.page.y + late.page.h) : '?'} tall`);
   }
 
