@@ -45,7 +45,20 @@ export function ArborEdgedCaret() {
       if (!surface || !onLightPage(surface)) { clear(); return; }
       const range = sel.getRangeAt(0).cloneRange();
       let r: DOMRect | undefined = range.getClientRects()[0];
-      const row = caretRow(sel, surface);
+      // a caret BETWEEN elements (the anchor an element, e.g. the editor itself after a select-all collapse) has no rect of its own: it stands at
+      // the end of the last text before it - read there, never at a row's start (where the native caret is not)
+      let boundary = false;
+      if (!r && a && a.nodeType === 1 && sel.anchorOffset > 0) {
+        let n: Node | null = a.childNodes[sel.anchorOffset - 1] ?? null;
+        while (n && n.nodeType === 1 && n.lastChild) n = n.lastChild;
+        if (n && n.nodeType === 3 && (n.textContent ?? '').length) {
+          const tr = document.createRange(); const len = (n.textContent ?? '').length;
+          tr.setStart(n, len - 1); tr.setEnd(n, len);
+          const last = [...tr.getClientRects()].pop();
+          if (last && last.height) { r = new DOMRect(last.right, last.top, 0, last.height); boundary = true; }
+        }
+      }
+      const row = boundary ? null : caretRow(sel, surface);
       const atRowStart = (): DOMRect | undefined => {
         if (!row) return undefined;
         const rr = row.getBoundingClientRect();

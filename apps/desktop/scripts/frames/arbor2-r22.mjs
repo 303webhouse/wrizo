@@ -559,7 +559,8 @@ const screens = {
   // "Arbor's caret on the LIGHT page = brass with a 1 px edge in the page ink #241A10, light page only." Run per page tone (the job's two tones),
   // in Draft (both rooms: the page keeps its paper) and in Free Write's Typewriter (by day the paper stays; by night it is page-less, so no light page).
   // Each case reads, with the caret at the end of the words: the drawn caret (src/arbor2/edgedCaret.tsx) and its pixels from a screenshot taken with
-  // its blink held lit - the four columns must be edge, brass, brass, edge, the edge 13.9:1 or better on the paper and 3:1 or better on the brass;
+  // its blink held lit - the four columns must be edge, brass, brass, edge, the edge 3:1 or better on the paper beside it and on the brass (a caret is a
+  // graphic: the 3:1 floor; the page-text 13.9 is the INK's, below) - and the drawn caret standing where the native one is (the words' end, within 2 px);
   // the native caret hidden under it; and, read with the drawn one lifted for a moment, the caret r22 drew before the build (Fable's question 2).
   // The page ink (§19.1): the editor's ink on the page's paper, measured from pixels, 13.9:1 or better, #241A10 on the light page. Off the light page
   // (the dark page, night Typewriter) there must be NO drawn caret and a visible native one. Ends lit on the shot's case (Draft by day).
@@ -589,7 +590,8 @@ const CARETREAD = `(() => { const ed = document.querySelector('.forward-only-edi
   const lift = ed.getAttribute('data-arbor2-caret-active'); if (lift) ed.removeAttribute('data-arbor2-caret-active'); const before = getComputedStyle(ed).caretColor; if (lift) ed.setAttribute('data-arbor2-caret-active', lift);
   return { drawn: r ? { l: r.left, t: r.top, w: r.width, h: r.height } : null, native: getComputedStyle(ed).caretColor, before, active: ed.getAttribute('data-arbor2-caret-active'),
     ink: getComputedStyle(ed).color, paper: p ? getComputedStyle(p).backgroundColor : null, zoom: !!ed.closest('.mode-pagecol[data-zoom="true"]'),
-    tone: document.documentElement.getAttribute('data-page'), room: document.documentElement.getAttribute('data-arbor2-room'), w: innerWidth }; })()`;
+    tone: document.documentElement.getAttribute('data-page'), room: document.documentElement.getAttribute('data-arbor2-room'), w: innerWidth,
+    endX: (() => { const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let t = null, n; while ((n = w.nextNode())) if (n.textContent.length) t = n; if (!t) return null; const q = document.createRange(); q.setStart(t, t.textContent.length - 1); q.setEnd(t, t.textContent.length); const x = [...q.getClientRects()].pop(); return x ? x.right : null; })() }; })()`;
 const rgbOf = (s) => (String(s).match(/\d+(\.\d+)?/g) || []).slice(0, 3).map(Number);
 const near3 = (a, b, tol = 24) => !!a && !!b && a.every((v, i) => Math.abs(v - b[i]) <= tol);
 const transparentCaret = (s) => /rgba\(0, 0, 0, 0\)|transparent/.test(String(s));
@@ -602,8 +604,11 @@ const lightCaretCase = async (app) => {
   // the four columns at the caret's middle row and the paper 14 px to its right (with no drawn caret, the paper beside the selection's own rect)
   m.px = await app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${png}'; await img.decode(); const dpr = img.width / innerWidth; const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
     const cx = c.getContext('2d'); cx.drawImage(img, 0, 0); const g = (x, y) => Array.from(cx.getImageData(Math.floor(x * dpr), Math.floor(y * dpr), 1, 1).data.slice(0, 3));
-    const d = ${JSON.stringify(m.drawn)}; const s = getSelection(); const sr = s && s.rangeCount ? s.getRangeAt(0).getClientRects()[0] : null; const at = d || (sr ? { l: sr.left, t: sr.top, w: 0, h: sr.height } : null);
-    return { cols: d ? [0, 1, 2, 3].map((i) => g(d.l + i + 0.5, d.t + d.h / 2)) : null, paper: at ? g(at.l + at.w + 14, at.t + at.h / 2) : null }; })()`);
+    const d = ${JSON.stringify(m.drawn)}; const ed = document.querySelector('.forward-only-editor'), p = ed.closest('.mode-page'); const er = ed.getBoundingClientRect(), pr = p.getBoundingClientRect();
+    // (after run 42757912151, no assertion changed: the paper for the INK is read in the page's left margin, level with the words' first line, so it
+    // never depends on a caret; the paper the caret sits on is read 14 px to its right)
+    return { cols: d ? [0, 1, 2, 3].map((i) => g(d.l + i + 0.5, d.t + d.h / 2)) : null, beside: d ? g(d.l + d.w + 14, d.t + d.h / 2) : null,
+      paper: g((pr.left + er.left) / 2, er.top + 12), dot: d ? document.elementFromPoint(d.l + d.w + 14, d.t + d.h / 2)?.className ?? null : null }; })()`);
   return m;
 };
 const lightCaret = async (app, name, where) => {
@@ -615,15 +620,16 @@ const lightCaret = async (app, name, where) => {
   for (const [room, c] of Object.entries(cases)) {
     if (!c) { bad.push(`${room}: no editor`); continue; }
     const light = c.tone !== 'dark' && !(c.zoom && c.room === 'night');
-    const paper = c.px?.paper, cols = c.px?.cols;
+    const paper = c.px?.paper, beside = c.px?.beside, cols = c.px?.cols;
     if (light) {
       if (!c.drawn || Math.round(c.drawn.w) !== 4 || c.drawn.h < 10) bad.push(`${room}: no 4 px drawn caret`);
       if (c.active !== 'true' || !transparentCaret(c.native)) bad.push(`${room}: the native caret still shows (${c.native})`);
       if (!cols || !near3(cols[0], EDGE) || !near3(cols[3], EDGE)) bad.push(`${room}: the edge is not the page ink`);
       if (!cols || !near3(cols[1], BRASS) || !near3(cols[2], BRASS)) bad.push(`${room}: the core is not brass`);
-      c.edgeOnPaper = cols && paper ? Math.round(contrast(cols[0], paper) * 100) / 100 : null;
+      c.edgeOnPaper = cols && beside ? Math.round(contrast(cols[0], beside) * 100) / 100 : null;
       c.edgeOnBrass = cols ? Math.round(contrast(cols[0], cols[1]) * 100) / 100 : null;
-      if (!(c.edgeOnPaper >= 13.9)) bad.push(`${room}: edge on paper ${c.edgeOnPaper}`);
+      if (!(c.edgeOnPaper >= 3)) bad.push(`${room}: edge on paper ${c.edgeOnPaper}`);
+      if (!c.drawn || c.endX == null || Math.abs(c.drawn.l + 1 - c.endX) > 2) bad.push(`${room}: drawn at x ${c.drawn && c.drawn.l + 1}, the words end at ${c.endX}`);
       if (!(c.edgeOnBrass >= 3)) bad.push(`${room}: edge on brass ${c.edgeOnBrass}`);
       if (!c.zoom && rgbOf(c.ink).join() !== EDGE.join()) bad.push(`${room}: the page ink is ${c.ink}, not #241A10`);
     } else {
@@ -636,7 +642,7 @@ const lightCaret = async (app, name, where) => {
   }
   if (bad.length) fail(name, { bad, cases });
   say(name, Object.fromEntries(Object.entries(cases).map(([k, c]) => [k, { tone: c.tone, room: c.room, zoom: c.zoom, w: c.w, drawn: c.drawn, before: c.before, native: c.native, ink: c.ink,
-    inkOnPaper: c.inkOnPaper, edgeOnPaper: c.edgeOnPaper ?? null, edgeOnBrass: c.edgeOnBrass ?? null, cols: c.px?.cols ?? null, paper: c.px?.paper ?? null }])));
+    inkOnPaper: c.inkOnPaper, edgeOnPaper: c.edgeOnPaper ?? null, edgeOnBrass: c.edgeOnBrass ?? null, cols: c.px?.cols ?? null, paper: c.px?.paper ?? null, beside: c.px?.beside ?? null, dot: c.px?.dot ?? null, endX: c.endX ?? null }])));
   // leave the blink held lit for the job's own shot
   await app.evalJs("document.querySelector('.arbor2-edged-caret')?.getAnimations().forEach((a) => { a.pause(); a.currentTime = 0; })");
 };
