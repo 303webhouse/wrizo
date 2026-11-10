@@ -1,0 +1,54 @@
+2026-11-10T06:16:50Z tree F:/wrizo-work/arbor-notes: HEAD bc33de6e (want bc33de6e), dirty 0, bundle index-B1u4JCOf.js
+2026-11-10T06:16:51Z tree F:/wrizo-work/arbor-main234: HEAD df125819 (want df125819), dirty 0, bundle index-B9fpcTSq.js
+2026-11-10T06:16:52Z take: granted to lane "arbor" and bound to the process tree of pid 49744 - name this turn's start and end in your report
+TURN START 2026-11-10T06:16:52Z
+2026-11-10T06:16:52Z [pin-1] start (arbor2-roompin.mjs in F:/wrizo-work/arbor-notes default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF=default)
+2026-11-10T06:16:52Z [pin-1] exit 3; bundle now index-B1u4JCOf.js
+2026-11-10T06:16:52Z [main-1] start (rhizome-latency.mjs in F:/wrizo-work/arbor-main234 default, WS_URL_SEARCH=unset, RL_REF=default)
+2026-11-10T06:16:53Z [main-1] exit 3; bundle now index-B9fpcTSq.js
+2026-11-10T06:16:53Z [main-2] start (rhizome-latency.mjs in F:/wrizo-work/arbor-main234 default, WS_URL_SEARCH=unset, RL_REF=default)
+2026-11-10T06:16:53Z [main-2] exit 3; bundle now index-B9fpcTSq.js
+2026-11-10T06:16:53Z [main-3] start (rhizome-latency.mjs in F:/wrizo-work/arbor-main234 default, WS_URL_SEARCH=unset, RL_REF=default)
+2026-11-10T06:16:53Z [main-3] exit 3; bundle now index-B9fpcTSq.js
+2026-11-10T06:16:53Z NO RL_REF (builder refused: node:fs:439
+    return binding.readFileUtf8(path, stringToFlags(options.flag));
+                   ^
+
+Error: ENOENT: no such file or directory, open 'F:\wrizo-work\arbor-turn-caret\main-1\rhizome-) - later runs judged on the default, and say so
+2026-11-10T06:16:54Z [ship-caret-L-1] start (arbor2-caret-latency.mjs in F:/wrizo-work/arbor-notes default, WS_URL_SEARCH=unset, RL_REF=default)
+2026-11-10T06:16:54Z [ship-caret-L-1] exit 3; bundle now index-B1u4JCOf.js
+2026-11-10T06:16:54Z [ship-day-1] start (rhizome-latency.mjs in F:/wrizo-work/arbor-notes default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF=default)
+2026-11-10T06:16:54Z [ship-day-1] exit 3; bundle now index-B1u4JCOf.js
+2026-11-10T06:16:54Z [main-4] start (rhizome-latency.mjs in F:/wrizo-work/arbor-main234 default, WS_URL_SEARCH=unset, RL_REF=default)
+2026-11-10T06:16:54Z [main-4] exit 3; bundle now index-B9fpcTSq.js
+2026-11-10T06:16:55Z [ship-day-2] start (rhizome-latency.mjs in F:/wrizo-work/arbor-notes default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF=default)
+2026-11-10T06:16:55Z [ship-day-2] exit 3; bundle now index-B1u4JCOf.js
+2026-11-10T06:16:55Z [main-5] start (rhizome-latency.mjs in F:/wrizo-work/arbor-main234 default, WS_URL_SEARCH=unset, RL_REF=default)
+2026-11-10T06:16:55Z [main-5] exit 3; bundle now index-B9fpcTSq.js
+2026-11-10T06:16:55Z [ship-day-3] start (rhizome-latency.mjs in F:/wrizo-work/arbor-notes default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF=default)
+2026-11-10T06:16:55Z [ship-day-3] exit 3; bundle now index-B1u4JCOf.js
+2026-11-10T06:16:55Z [main-6] start (rhizome-latency.mjs in F:/wrizo-work/arbor-main234 default, WS_URL_SEARCH=unset, RL_REF=default)
+2026-11-10T06:16:55Z [main-6] exit 3; bundle now index-B9fpcTSq.js
+2026-11-10T06:16:56Z [ship-night-1] start (rhizome-latency.mjs in F:/wrizo-work/arbor-notes default, WS_URL_SEARCH=?arbor2=1&arbor2room=night, RL_REF=default)
+2026-11-10T06:16:56Z [ship-night-1] exit 3; bundle now index-B1u4JCOf.js
+2026-11-10T06:16:56Z [main-7] start (rhizome-latency.mjs in F:/wrizo-work/arbor-main234 default, WS_URL_SEARCH=unset, RL_REF=default)
+2026-11-10T06:16:56Z [main-7] exit 3; bundle now index-B9fpcTSq.js
+2026-11-10T06:16:56Z [ship-caret-L-2] start (arbor2-caret-latency.mjs in F:/wrizo-work/arbor-notes default, WS_URL_SEARCH=unset, RL_REF=default)
+2026-11-10T06:16:56Z [ship-caret-L-2] exit 3; bundle now index-B1u4JCOf.js
+2026-11-10T06:16:56Z [ship-caret-L-parked] start (arbor2-caret-latency.mjs in F:/wrizo-work/arbor-notes --parked, WS_URL_SEARCH=unset, RL_REF=default)
+2026-11-10T06:16:56Z [ship-caret-L-parked] exit 3; bundle now index-B1u4JCOf.js
+2026-11-10T06:16:57Z [ship-day-parked] start (rhizome-latency.mjs in F:/wrizo-work/arbor-notes --parked, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF=default)
+2026-11-10T06:16:57Z [ship-day-parked] exit 3; bundle now index-B1u4JCOf.js
+2026-11-10T06:16:57Z [ship-rl-mutant] start (rhizome-latency-mutant.mjs in F:/wrizo-work/arbor-notes default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF=default)
+2026-11-10T06:16:57Z [ship-rl-mutant] exit 3; bundle now index-B1u4JCOf.js
+2026-11-10T06:16:57Z [pin-2] start (arbor2-roompin.mjs in F:/wrizo-work/arbor-notes default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF=default)
+2026-11-10T06:16:57Z [pin-2] exit 3; bundle now index-B1u4JCOf.js
+2026-11-10T06:16:57Z [keycost] start (arbor2-keycost.mjs in F:/wrizo-work/arbor-notes default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF=default)
+2026-11-10T06:16:57Z [keycost] exit 3; bundle now index-B1u4JCOf.js
+2026-11-10T06:16:58Z [sleep] start (arbor2-sleep.mjs in F:/wrizo-work/arbor-notes default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF=default)
+2026-11-10T06:16:58Z [sleep] exit 3; bundle now index-B1u4JCOf.js
+2026-11-10T06:16:58Z [swap] start (arbor2-swap.mjs in F:/wrizo-work/arbor-notes default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF=default)
+2026-11-10T06:16:58Z [swap] exit 3; bundle now index-B1u4JCOf.js
+2026-11-10T06:16:58Z this run's harness browsers swept
+2026-11-10T06:16:59Z release: NOT RELEASING: the grant is not yours (lane=arbor token=359216d3...)
+TURN END 2026-11-10T06:16:59Z
