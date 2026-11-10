@@ -1,0 +1,85 @@
+S4C STRENGTH (frame j: left-edge midpoint contrast) [2.81,1.84,1.66,1.31,1.33,1.17,1.26,1.12]
+S4C GLOW after the goal: 1429ms 1.00 (target 1) | 2621ms 0.72 (target 0.402) | 3723ms 0.49 (target 0.402) | 4838ms 0.40 (target 0.402) | 5971ms 0.40 (target 0.402) | 7104ms 0.40 (target 0.402) | 8237ms 0.40 (target 0.402) | 9372ms 0.40 (target 0.402) | 10504ms 0.40 (target 0.402) | 11638ms 0.40 (target 0.402)
+S4C GLOW opacity 0/25/50/100 = 0.004 / 0.248 / 0.5 / 0.99781; blue channel above the 0% pixel: 3 / 6 / 10
+S4C VEIL ink (max red of each of the last lines, oldest first): {"short":[143,235],"filled":[36,27,20,144,235],"noClip":[146,175,206,144,232],"noBand":[29,29,22,232,232],"faintBand":[35,27,14,204,232],"clip3":[41,28,206,144,234],"back":[41,28,25,144,234],"long":[35,22,10,144,213]}
+INFO L (Actions: timing is the box's to judge; FLUX3_L=1 runs it here)
+
+ROWS-SHADOW VERIFY: PASS (7 renders checked, shadow == DOM on every one)
+PASS DEF Flux Free Write opens Jacked In (zoomed, marked) and is ALWAYS DARK even with the saved Page = light
+PASS CHROME no rail, strip, corkboard, hands or Glitch bar while jacked in (opacity 0, no pointer)
+PASS CHROME-RECT the page's rect does not move while the chrome is away (page primacy)
+PASS COR the corridor stands: nine stepping frames (eight at once) + the lime and brass ones, ONE svg of rails (a fan of >= 20) and ribs (>= 100 ticks) with no animation on it, first in the stage, inert; its animations touch only transform and opacity; no canvas
+PASS PACE the rate rises while she types fast (max 5), is set at most 4 times a second (0.8/s), and is 0 after she stops (0) with the frames holding still
+PASS ROWS some of this session's lines compiled (6 rows), at most six, each a step back (the row's scale x~0.92 of the one before, opacity ~-0.15)
+PASS ROW-SCALE each finished row is ONE holder (one transform, one opacity) scaled as a whole about the corridor centre line: every word sits at centre + k x its distance, no word or block has a transform of its own; 7.5% a row, floor 40%, 15% fainter
+PASS MUT-ROW-SCALE the reader goes RED when a row is scaled about its corner instead of the centre line, and green again undone
+PASS ROWS-SESSION none of the seeded (older) text became signal: every compiled word is one she typed this session
+PASS VISIBLE the line she is writing stands inside the page's painted box (the page keeps its room: --wz-page-hl > 100, the box taller than 300 px)
+PASS MUT-VISIBLE the reader goes RED on its mutant (the page squeezed to 90 px) and green again undone
+PASS CARET a press mid-page in Typewriter puts the caret at the END of her text
+PASS GLOW --f3-goal-glow is #57D0F5 at 12% then 4%, none at the edge, never above 14% (radial-gradient(ellipse at center, rgb(87 208 245 / .12) 0%, rgb(87 208 245 / .04) 55%, transparent 100%))
+PASS MUT-TONE-LIGHT the reader goes RED on its mutant (tone light) and green again undone
+PASS MUT-CHROME-VISIBLE the reader goes RED on its mutant (chrome visible) and green again undone
+PASS MUT-GLOW-20% the reader goes RED on its mutant (glow 20%) and green again undone
+PASS MUT-A-FRAME-REMOVED the reader goes RED on its mutant (a frame removed) and green again undone
+PASS POP a milestone pops one brass letter of CHECKPOINT (the newest) after the earned lime one, the unearned ones are DOTS at 4.5:1 or better (no ghost letters), no number, the corridor goes brass for ~0.3 s, and the word fades
+PASS MODE-NOTOGGLE Free Write in Flux IS Jacked In with no Typewriter toggle offered anywhere on the page (no off inside it)
+PASS ESC a tap leaves Jacked In for BUILD on the same doc: the mode is Draft, no Typewriter zoom, the saved (light) tone is back, the caret is at the END and its line is inside the page (visible), the chrome is back, and the reader read "not left" before the press
+PASS BUILD (Draft) is never Jacked In: not marked, no zoom, no Typewriter toggle, even with the shared Typewriter setting on
+PASS ESC-HOLD an Esc held ~0.75 s is not a tap: still Jacked In (the browser keeps the hold for leaving full screen)
+PASS F9 leaves Jacked In for BUILD on the same doc with the caret at the end (the backup where Esc exits full screen), and the reader read "not left" before
+PASS WINDOW the corridor is the whole window (fixed, 0,0, the window's size) and the ground #020C10 shows at six places where the room's navy and the sheet used to (within 8 of it in every channel)
+PASS MUT-WINDOW the reader goes RED when the room's navy shows at the left edge, and green again undone
+PASS EDGE no leftover 1 px line at x 422 (the zoomed sheet's old left edge): the column at x 422 matches the one 6 px left on 95% of the samples from y 179 to 750
+PASS MUT-EDGE the reader goes RED when a 1 px line stands at x 422, and green again undone
+PASS STRENGTH the eight frames stand at the video's depths (half-widths 0.91 .47 .32 .24 .19 .16 .14 .12) with its line strengths: nearest 2.2-3.6:1, next two 1.3-2.4, far five 1.08-1.65 (printed: 2.81 1.84 1.66 1.31 1.33 1.17 1.26 1.12)
+PASS MUT-STRENGTH the reader goes RED when one frame is missing (slot 3), and green again undone
+PASS GLOW-AFTER-GOAL after the goal the glow holds at full for ~2 s, eases down over ~3 s, and stands at 40% (+60% of the fill) from then on, never under 40%
+PASS MUT-GLOW-AFTER-GOAL the reader goes RED when the glow lets go before the hold is over, and when it dips under the 40% floor later
+PASS GLOW-BUILDS the glow reads the goal's progress: ~0 at the start of a lap, ~25% at 62 of 250 words, ~50% at 125, the whole recipe (1.0) at the goal (the lap's celebration)
+PASS GLOW-PIXEL the colour on her line, off her text, rises with the glow: the blue channel is ~+2.8 / +5.6 / +11.3 above the start-of-lap pixel at 25% / 50% / 100% (the recipe's gradient there is 4.9%)
+PASS GLOW-RECIPE at the goal the glow is #57D0F5 at 12% at the centre, 4% at 55%, none at the edge (never above 14%)
+PASS MUT-GLOW-16 the reader goes RED when the glow is set to 16% (the ruled ceiling is 14%), and green again undone
+PASS GLOW-NONE with no goal set the glow is 0 even at 125 words
+PASS GLOW-LANE the quiet lane (an oval of the ground's own colour) covers the rails and frames and sits BELOW the glow, so it never covers it
+PASS MUT-GLOW-LANE the reader goes RED when the glow is put under the lane, and green again undone
+PASS MARK the WRIZO mark is hidden for the whole Jacked In session: after entering, and again after she types and stops (and there is a mark on this page to hide)
+PASS MUT-MARK the reader goes RED when the mark is forced visible, and green again undone
+PASS EXIT the line is there from entry (first seen at full strength within 0.5 s of the corridor mounting), reads WIRED IN · ESC TO UNPLUG, is gone by ~3.6 s (3 s, then a 0.6 s fade), and is 4.5:1 or better on the ground (printed: life 3592 ms, 17.51:1)
+PASS EXIT-STILL with reduced motion the line is a cut: gone at ~3 s with no fade (printed: 2991 ms)
+PASS EXIT-KEY the key the line names is the key that leaves (pressed, it leaves to BUILD), the handler and the line read one constant (jackIn.ts), and the words come through the lexicon (no literal in the component)
+PASS MUT-EXIT the key reader goes RED when the line names a key that does not leave (F4, DEL) and green on the real ones
+PASS NUDGE after 4 s of stillness (counted once the entry line has gone: the earliest ~7.6 s after entry) one quiet line stands below her text: KEEP THE SIGNAL · ANY WORD WILL DO, 4.5:1 or better, not red (printed: shown 7593 ms after entry)
+PASS NUDGE-KEY her next key clears it at once, and after another 4 s of stillness it comes back (no countdown, no penalty)
+PASS MUT-NUDGE the reader goes RED on a red line, a line that is not below her text and a wrong word, and green on the real one
+PASS NUDGE-STILL with reduced motion the nudge is a cut (no fade animation)
+PASS NUDGE-ONLY the nudge, the exit line and the circled X exist only in Jacked In: none in BUILD (Draft), none in Arbor
+PASS NUDGE-ONE-CHANGE taking the nudge out is one small change: only FluxNudge.tsx itself and FluxJackedHints.tsx (one import, one element) mention it
+PASS IDLE-SWITCH with the Skin switch "Idle line" OFF the line never shows (9.8 s of stillness), and with it ON (the default) it does
+PASS MUT-IDLE-SWITCH the reader goes RED when the line shows with the switch off, and when it does not show with the switch on
+PASS IDLE-STILLNESS the pointer moving is not stillness: no line for 11 s while the pointer moves every second (past the 7.6 s earliest), then it comes within ~4 s of the pointer stopping
+PASS IDLE-PLACE the line is centred on the corridor's centre line and its centre stands about 1.6 lines below her writing line (printed: 1.6 lines)
+PASS MUT-IDLE-PLACE the reader goes RED when the line is off the centre line or only half a line below
+PASS LEAVE-X typing keeps it at opacity 0; pointer movement shows it; it stays (no timer); a key hides it again
+PASS LEAVE-X-LOOK (draft 23, 6a.11) a real button named through the lexicon, a 48 px press area 20 px in from the corner around a 40 px circle 24 px in, FILLED with the ground colour, the X's arms 14 px, the hint "<name> (<key>)" naming the key that works, the quiet label colour at 3:1 or better against the ground (not brass), a 0.2 s fade
+PASS LEAVE-X-HOVER hover is Flux's choice colour (#00C2FF)
+PASS MUT-LEAVE-X the show reader goes RED when the button is kept invisible, and the hide reader goes RED when the button is kept showing through a key
+PASS LEAVE-X-CLICK a click is exactly an Esc tap: BUILD on the same doc, the caret at the END, the saved tone back (the reader read "not left" when the button was made dead)
+PASS LEAVE-X-STILL reduced motion is a cut (no transition on the button: every duration under a millisecond)
+PASS WIRE-IN-WORDS no string a writer can see in Flux contains "jack" (any case): the page's visible text and every label, title and hint while jacked, the entry line, and every value in the lexicon files (0 found)
+PASS MUT-WIRE-IN-WORDS the reader goes RED on the old words (the entry line, the X's name, its hint), a planted JACK in capitals, and a lexicon line with the word, and green on the new ones
+FAIL VEIL the veil keeps its look WITHOUT a mask: the writing line reads full strength (#E8F6FA), the line above it the .60 dim (#8C989C), every older line shows nothing - on a page just begun, a page of ~5 lines and a long scrolled page; and no mask-image is on the editor (the mask does not ship)  {"veilReads":{"short":{"lines":2,"ink":[143,235],"steady":true,"ok":true},"filled":{"lines":5,"ink":[36,27,20,144,235],"steady":true,"ok":true},"long":{"lines":5,"ink":[35,22,10,144,213],"steady":true,"ok":false}},"maskNone":{"m":"none","w":"none","clip":"inset(calc(100% - 54.3438px) 0px 0px)"}}
+PASS MUT-VEIL the look reader goes RED when the clip is gone (an old line stays), the band is gone (the dim line reads bright), the band is too faint, or the clip is a line too tall; and green again undone
+PASS CARET-N in Jacked In the caret is a block as wide as an "n" of the page's own font (printed: 14.95 px against an n of 14.96 px)
+PASS MUT-CARET-N the reader goes RED on the old 5 px bar, and green again undone
+PASS DIM the line above the writing line is dimmed to about #8C989C (the veil's --f3-dim 0.6: 6.70:1 on the ground, 6.07:1 at the glow's brightest; floor 4.5)
+PASS MUT-DIM the reader goes RED at the old 0.78 (10.9:1, too bright) and at 0.40 (too faint), green at 0.60
+PASS GROUND-GATE while jacked the room's circuit ground is NOT drawn (no ground box on the page), and the rows have compiled (5 rows)
+PASS MUT-GROUND-GATE the reader goes RED when a ground box stands on the page while jacked, and green again undone
+PASS DECOMPILE the rows stay on the page, whole and visible, through the leave (every frame for 330 ms after the Esc tap holds the words and their blocks at opacity > 0), and are gone after the fade (103 frames sampled)
+PASS MUT-DECOMPILE the reader goes RED on a cut (the signal removed the instant she leaves) and green on the real fade
+PASS GROUND-BACK after Esc the ground is back on the BUILD page (one box), and its current is running (a point animating)
+PASS MUT-GROUND-BACK the reader goes RED when the current is stopped, and when the ground is gone
+PASS NEWPAGE-14 a page born in Flux under the flag is 14 pt (got 14); VOICE the page's default face is Crimson Pro (got "Crimson Pro Variable", Georgia, serif)
+
+FLUX3-S4C VERIFY: FAIL - 1/76 failed
