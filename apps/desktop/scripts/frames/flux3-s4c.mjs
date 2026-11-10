@@ -99,7 +99,7 @@ export default {
   'corridor-glow-100': async (app) => {
     await seed(app, words(249));
     await type(app, ' one two three', 30);   // the goal: the lap's celebration holds the glow full for ~1.1 s
-    await app.evalJs("(() => { const g = document.querySelector('.flux3-cor-glow'); window.__hold = window.setInterval(() => { g.style.opacity = '1'; }, 30); return true; })()");
+    await app.evalJs("(() => { const g = document.querySelector('.flux3-cor-glow'); g.style.transition = 'none'; window.__hold = window.setInterval(() => { g.style.opacity = '1'; }, 30); return true; })()");   // transition off: the glow now eases (3 s), so a forced opacity would be caught mid-rise (r2-g read #091C23 at 1366, ~75%); this frames-only hold is the full glow
     await sleep(900);
     console.log(`FLUX3-S4C-FRAME corridor-glow-100 ${JSON.stringify(await stood(app))}`);
   },
