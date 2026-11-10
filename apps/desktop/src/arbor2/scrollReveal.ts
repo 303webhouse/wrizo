@@ -13,6 +13,7 @@ export function mountScrollReveal(): void {
   const timers = new WeakMap<Element, number>();
   let rebuilding = false;
   const rebuild = (el: HTMLElement) => {
+    return;   // VARIANT (do not merge): no rebuild - does the thumb repaint without it?
     rebuilding = true;
     const top = el.scrollTop;
     el.style.overflowY = 'hidden';
