@@ -611,6 +611,19 @@ try { await withHarness(async (app) => {
     await ev('window.__f4.toEnd()');
     await type(typed, 22);
     veilReads[name] = await veilRead();
+    if (name === 'long') {
+      // DIAGNOSIS (Chat 1: say whether the band/clip edge dims the writing line's top pixels on a scrolled page, or 213 is that glyph row's own colour): the writing line's peak red row by row with the band, without it, and the editor's fractional geometry
+      const prof = async () => { const lines = await veilLines(); return shotEval('const l = ' + JSON.stringify(lines[lines.length - 1]) + '; const out = []; for (let y = l.top - 2; y <= l.bottom + 2; y += 1) { let m = 0; for (let x = Math.max(0, l.left); x < Math.min(innerWidth, l.right); x += 1) { const p = px(x, y); if (p[0] > m) m = p[0]; } out.push(m); } return { top: l.top, rows: out };'); };
+      veilReads.longProfile = await prof();
+      veilReads.longGeom = await ev("(() => { const e = document.querySelector('.forward-only-editor'); const r = e.getBoundingClientRect(); const lh = parseFloat(getComputedStyle(e).lineHeight); const sc = document.querySelector('.mode-scroll'); return { editorTop: r.top, editorBottom: r.bottom, h: r.height, lh, scrollTop: sc ? sc.scrollTop : null }; })()");
+      await VEIL_STYLE(VEIL_ED + '::after{ display:none !important; }');
+      await sleep(120);
+      veilReads.longNoBand = await veilRead();
+      veilReads.longNoBandProfile = await prof();
+      await ev("document.getElementById('mut-veil').remove()");
+      await sleep(120);
+      console.log('S4C VEIL long writing-line peak red by row: with the band ' + JSON.stringify(veilReads.longProfile) + ' | without it ' + JSON.stringify(veilReads.longNoBandProfile) + ' | geometry ' + JSON.stringify(veilReads.longGeom));
+    }
     if (name === 'filled') {
       const mutate = async (css) => { await VEIL_STYLE(css); await sleep(120); const r = await veilRead(); await ev("document.getElementById('mut-veil').remove()"); await sleep(120); return r; };
       veilReads.noClip = await mutate(`${VEIL_ED}{ clip-path:none !important; }`);
