@@ -19,6 +19,10 @@
 //                              second key fell between 50 and 70 ms - a second key over 70 would be red under ANY 70 ms rule and so would test the cap, not the place (a green mutant may test another guard).
 // Both voids every measurement (an injected cost is in each), so each takes the guard's four measurements - about 10 minutes a mutant.
 // RL_MUTANTS=M0,M5,M6 runs only those (default: all).
+// M6 PARKED (Nov 10; SUCCESSOR M6b, the park below the MUTANTS list): 35 ms put the second keys at 42-45 ms on the box on Nov 10 06:18Z (ship
+// bc33de6e), never in 50-70, so M6 could not land; on Nov 6 (turn 15, PASS) it landed only because 2 of 14 reached 53 and 54. Its landing was luck.
+//   M6b RL_MUTANT_SECOND_MS=45  the same mutant at 45 ms (the measured 42-45 + 10 = ~52-55: inside 50-70): A+ RED, A+S green, the same landing premise.
+// RL_MUTANTS=M0,M5,M6b runs the swap key's pair.
 // PARKED - SUPERSEDED by the reference-shift check (Fable, Nov 6; coarse-C stabilising). The line(s) that stood, verbatim (the successor is the line below this block):
 // // Run: node scripts/harness/rhizome-latency-mutant.mjs   (from apps/desktop; four live runs of the guard - a box turn; it inherits WS_BOX_TURN)
 // Run: node scripts/harness/rhizome-latency-mutant.mjs   (from apps/desktop; five mutants, each a live run or two of the guard - a box turn; it inherits WS_BOX_TURN)
@@ -44,7 +48,11 @@ const MUTANTS = [
   { id: 'M4', env: { RL_MUTANT_FADE_MS: '10' }, what: 'a 10 ms cost on the fade\'s keys alone', exit: 1, red: [], redAny: [C, C2], green: [B, B2] },
   // THE SWAP KEY (Nick's ruling 1, Nov 6): each mutant reds its own half of the rule and leaves the other half green
   { id: 'M5', env: { RL_MUTANT_SWAP_MS: '80' }, what: '80 ms on the swap key (the first key of every control burst)', exit: 1, red: [AS], green: [AP] },
-  { id: 'M6', env: { RL_MUTANT_SECOND_MS: '35' }, what: 'a second slow key in every control burst (35 ms on its second key)', exit: 1, red: [AP], green: [AS] },
+  // PARKED 2026-11-10 (SUPERSEDED - its landing premise was luck: 35 ms gave second keys of 42-45 ms on the box, Nov 10 06:18Z, none in 50-70; see the
+  // header). The entry that stood, verbatim:
+  // { id: 'M6', env: { RL_MUTANT_SECOND_MS: '35' }, what: 'a second slow key in every control burst (35 ms on its second key)', exit: 1, red: [AP], green: [AS] },
+  // SUCCESSOR M6b: the same mutant, verdict and landing premise, at 45 ms
+  { id: 'M6b', env: { RL_MUTANT_SECOND_MS: '45' }, what: 'a second slow key in every control burst (45 ms on its second key)', exit: 1, red: [AP], green: [AS] },
 ];
 const ONLY = process.env.RL_MUTANTS ? process.env.RL_MUTANTS.split(',').map((s) => s.trim()).filter(Boolean) : null;
 
@@ -62,7 +70,7 @@ for (const m of MUTANTS.filter((x) => !ONLY || ONLY.includes(x.id))) {
   const swapLanded = () => bursts.length > 0 && bursts.every((b) => b.day) && bursts.every((b) => b.ms.length && b.ms[0] >= 80);
   // M6 landed: every burst by day, and at least one SECOND key fell between 50 and 70 ms (where only the place in the burst can red it)
   const secondLanded = () => bursts.length > 0 && bursts.every((b) => b.day) && bursts.some((b) => b.ms.length > 1 && b.ms[1] > 50 && b.ms[1] <= 70);
-  const placeInfo = m.id === 'M5' || m.id === 'M6' ? { bursts: bursts.length, day: bursts.filter((b) => b.day).length, first: bursts.map((b) => Math.round(b.ms[0])), second: bursts.map((b) => Math.round(b.ms[1])) } : null;
+  const placeInfo = m.id === 'M5' || m.id === 'M6' || m.id === 'M6b' ? { bursts: bursts.length, day: bursts.filter((b) => b.day).length, first: bursts.map((b) => Math.round(b.ms[0])), second: bursts.map((b) => Math.round(b.ms[1])) } : null;
   const info = { mutantMs: raw.mutantMs, mutantStallMs: raw.mutantStallMs, controlMedian: median(raw.restPre), flashMedian: median(raw.hold), fadeMedian: median(raw.fade), fadeMax: Math.max(...raw.fade),
     costControl: cost('pre'), costFlash: cost('hold'), costFastControl: cost('fast'), costFade: cost('fade') };
   if (m.id !== 'M0') {
@@ -72,6 +80,7 @@ for (const m of MUTANTS.filter((x) => !ONLY || ONLY.includes(x.id))) {
 //         : cost('hold') - cost('pre') >= 10 && cost('fade') - cost('fast') >= 10;
         : m.id === 'M5' ? swapLanded(raw)
         : m.id === 'M6' ? secondLanded(raw)
+        : m.id === 'M6b' ? secondLanded(raw)   // M6's successor: the same landing premise
         : m.id === 'M4' ? cost('fade') - cost('fast') >= 6 && cost('hold') - cost('pre') < 4   // 10 ms on every fade key adds +6.5..+14 to the fade's cost median; the hold is untouched
           : cost('hold') - cost('pre') >= 10 && cost('fade') - cost('fast') >= 10;
     ok(`${m.id} (landed): the injected regression is visible in the guard's own samples`, landed, JSON.stringify(placeInfo ? { ...info, ...placeInfo } : info));
