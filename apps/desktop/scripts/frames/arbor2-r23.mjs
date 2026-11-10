@@ -183,7 +183,48 @@ const selection = async (app, name) => {
   say(name, out);
 };
 
+// ── 7. THE PAGE UNDER THE SHADE (Fable, Nov 10, 2:15 pm; the Wrizors' B1): the page's share of the 1.5x shade is 2.8%, and its ink reads 14.0:1 or
+// better on the darkest shaded paper AS DRAWN. By day, Page: Light, Draft: the words (and caret) made transparent for one shot, the page's own rect
+// (inset 6 px from its edge) scanned every 3 px; the darkest pixel is the shade's deepest overlap; #241A10 against it >= 14.0. The mutant puts the
+// page copy back to 3.4% (its group's opacity) and must read UNDER 14.0 - the check can go red.
+const pageShade = async (app, name, mutant) => {
+  await openPage(app, `arbor-r23-ps-${Math.random().toString(36).slice(2, 6)}`); await setRoom(app, 'day'); await sleep(900);
+  const alpha = await app.evalJs(`(() => { const g = document.querySelector('.desk-frame-stage .mode-page .arbor2-pagesh g[filter]'); if (!g) return null; ${mutant ? "g.setAttribute('opacity', '0.034');" : ''} return g.getAttribute('opacity'); })()`);
+  await app.evalJs("(() => { const st = document.createElement('style'); st.id = 'r23-ps-hide'; st.textContent = '.forward-only-editor, .forward-only-editor *{ color:transparent !important; -webkit-text-fill-color:transparent !important; caret-color:transparent !important; } .arbor2-edged-caret{ visibility:hidden !important; }'; document.head.appendChild(st); document.querySelector('.forward-only-editor')?.blur(); getSelection()?.removeAllRanges(); return true; })()");
+  await sleep(250);
+  const png = await shot(app);
+  await app.evalJs("document.getElementById('r23-ps-hide')?.remove()");
+  const r = await app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${png}'; await img.decode(); const k = img.width / innerWidth; const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+    const cx = c.getContext('2d'); cx.drawImage(img, 0, 0); const p = document.querySelector('.desk-frame-stage .mode-page').getBoundingClientRect();
+    const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; const L = (q) => 0.2126 * lin(q[0]) + 0.7152 * lin(q[1]) + 0.0722 * lin(q[2]);
+    let dark = null, n = 0, lightest = null; for (let y = p.top + 6; y < p.bottom - 6; y += 3) for (let x = p.left + 6; x < p.right - 6; x += 3) { const d = cx.getImageData(Math.floor(x * k), Math.floor(y * k), 1, 1).data; const q = [d[0], d[1], d[2]]; n++;
+      if (!dark || L(q) < L(dark.q)) dark = { q, x: Math.round(x), y: Math.round(y) }; if (!lightest || L(q) > L(lightest)) lightest = q; }
+    const ink = [0x24, 0x1a, 0x10]; const ratio = (a, b) => { const x = L(a), y = L(b); return Math.round(((Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05)) * 100) / 100; };
+    return { n, darkest: dark, lightest, inkOnDarkest: dark ? ratio(ink, dark.q) : null, w: innerWidth, room: document.documentElement.getAttribute('data-arbor2-room'), tone: document.documentElement.getAttribute('data-page') }; })()`);
+  return { alpha, ...r };
+};
+const pageShadeCheck = async (app, name) => {
+  const r = await pageShade(app, name, false);
+  if (r.tone === 'dark') { say(name, { skipped: 'the dark page (its words read 15.4:1; the shade barely changes it)', r }); return; }
+  const bad = [];
+  if (r.room !== 'day') bad.push(`room ${r.room}`);
+  if (r.alpha !== '0.028') bad.push(`the page copy's share is ${r.alpha}, not 0.028`);
+  if (!(r.n > 1000)) bad.push('the scan read too little of the page');
+  if (!(r.inkOnDarkest >= 14.0)) bad.push(`the ink reads ${r.inkOnDarkest}:1 on the darkest shaded paper`);
+  if (bad.length) fail(name, { bad, r });
+  say(name, r);
+};
 const screens = {
+  'r23-page-shade': (app) => pageShadeCheck(app, 'r23-page-shade'),
+  'r23-page-shade-2000': async (app) => { await app.emulateDpr(1, 2000, 1125); await pageShadeCheck(app, 'r23-page-shade-2000'); },
+  // the mutant: the page copy back at 3.4% must read under 14.0 (the Wrizors drew 13.85) - it LANDS (the opacity took) and the bar goes red on it
+  'r23-page-shade-mutant': async (app) => {
+    const r = await pageShade(app, 'r23-page-shade-mutant', true);
+    if (r.tone === 'dark') { say('r23-page-shade-mutant', { skipped: 'the dark page', r }); return; }
+    const ok = { landed: r.alpha === '0.034', red: r.inkOnDarkest !== null && r.inkOnDarkest < 14.0 };
+    if (!ok.landed || !ok.red) fail('r23-page-shade-mutant', { ok, r });
+    say('r23-page-shade-mutant', { ok, r });
+  },
   'r23-night-b': (app) => nightB(app, 'r23-night-b'),
   'r23-pergola': (app) => pergola(app, 'r23-pergola'),
   'r23-pergola-2000': async (app) => { await app.emulateDpr(1, 2000, 1125); await pergola(app, 'r23-pergola-2000'); },

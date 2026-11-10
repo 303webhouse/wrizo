@@ -98,7 +98,10 @@ await withHarness(async (app) => {
   // SUCCESSOR W1d: at rest the live drawing at full and in style work, the still picture drawn and waiting at 0 (its target the layer's strength).
   const restD = (l, a) => !!l && l.live === 'visible' && l.liveO === 1 && l.stillO === 0 && l.stillBg === true && Math.abs(l.stillA - a) < 0.0005 && l.off === null;
   ok('W1d at rest: the live drawing at full and in style work, the still picture drawn and waiting at 0 (its target the layer\'s strength)',
-    rest.roomName === 'day' && restD(rest.room, 0.2) && (rest.zoom || restD(rest.page, 0.034)), JSON.stringify(rest));
+    // PARKED 2026-11-10 (SUPERSEDED - FABLE, Nov 10, 2:15 pm, item 7 (the Wrizors' B1 on r23): the PAGE's share of the shade goes from 3.4% to 2.8% so its ink reads 14.0:1 or better as drawn under the 1.5x shade; the panels and bars keep 3.4%, the room 20%). Original, verbatim:
+    // rest.roomName === 'day' && restD(rest.room, 0.2) && (rest.zoom || restD(rest.page, 0.034)), JSON.stringify(rest));
+    // SUCCESSOR: the page's copy at 0.028 (everything else as it stood)
+    rest.roomName === 'day' && restD(rest.room, 0.2) && (rest.zoom || restD(rest.page, 0.028)), JSON.stringify(rest));
 
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('w');
@@ -158,7 +161,10 @@ await withHarness(async (app) => {
   //   JSON.stringify({ ...back, ls: undefined, pausedT: k1c.driftT }));
   // SUCCESSOR W4f: the same return, and NO DRIFT - the wrapper there, no drift animation on it.
   ok('W4f the chrome\'s return: the live drawing back at full and in style work, the still picture at 0; the wrapper there and no drift on it (Nick, Nov 7)',
-    back.writing !== 'true' && restD(back.room, 0.2) && (back.zoom || restD(back.page, 0.034)) && !!back.wrap && back.drift === null,
+    // PARKED 2026-11-10 (SUPERSEDED - FABLE, Nov 10, 2:15 pm, item 7 (the Wrizors' B1 on r23): the PAGE's share of the shade goes from 3.4% to 2.8% so its ink reads 14.0:1 or better as drawn under the 1.5x shade; the panels and bars keep 3.4%, the room 20%). Original, verbatim:
+    // back.writing !== 'true' && restD(back.room, 0.2) && (back.zoom || restD(back.page, 0.034)) && !!back.wrap && back.drift === null,
+    // SUCCESSOR: the page's copy at 0.028 (everything else as it stood)
+    back.writing !== 'true' && restD(back.room, 0.2) && (back.zoom || restD(back.page, 0.028)) && !!back.wrap && back.drift === null,
     JSON.stringify({ ...back, ls: undefined }));
 
   // W5: the swap key against the same page's first key with the shade off

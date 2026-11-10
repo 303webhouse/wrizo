@@ -66,7 +66,10 @@ await withHarness(async (app) => {
       ok('P6r r20 draws no copy on the bar or the rail', (!bar || bar.none === true) && (!rail || rail.none === true), JSON.stringify({ bar, rail }));
     } else if (MODE === 'nodrift') {
       ok("P4n the room's pergola is the live drawing with NO drift (the Nov 7 test builds): shown, its svg, 115 leaf clusters, no animation on its drift wrapper",!!p && p.display !== 'none' && p.svg && p.leaves === 115 && p.anim === null, JSON.stringify(p));
-      ok("P5 the page's copy is r20's live drawing (svg, g[filter] at 0.034)", !!pg && pg.bitmap === null && pg.svg === true && pg.g != null && Math.abs(pg.g - 0.034) < 0.0005, JSON.stringify(pg));
+      // PARKED 2026-11-10 (SUPERSEDED - FABLE, Nov 10, 2:15 pm, item 7 (the Wrizors' B1 on r23): the PAGE's share of the shade goes from 3.4% to 2.8% so its ink reads 14.0:1 or better as drawn under the 1.5x shade; the panels and bars keep 3.4%, the room 20%). Original, verbatim:
+      // ok("P5 the page's copy is r20's live drawing (svg, g[filter] at 0.034)", !!pg && pg.bitmap === null && pg.svg === true && pg.g != null && Math.abs(pg.g - 0.034) < 0.0005, JSON.stringify(pg));
+      // SUCCESSOR: the page's copy at 0.028 (everything else as it stood)
+      ok("P5 the page's copy is r20's live drawing (svg, g[filter] at 0.028)", !!pg && pg.bitmap === null && pg.svg === true && pg.g != null && Math.abs(pg.g - 0.028) < 0.0005, JSON.stringify(pg));
       const still = (c) => !!c && c.bitmap === 'true' && c.svg === false && c.bg === 'url("blob:ht' && c.alpha != null && Math.abs(c.alpha - 0.034) < 0.0005 && c.display !== 'none' && c.anim === null && !!c.box && c.box.every((v, i) => Math.abs(v) <= (i < 2 ? 1.5 : 2));
       ok("P6n the top bar's and the rail's copies draw the one bitmap (no svg, blob: background, 0.034), with NO drift, on the room's drift box",still(bar) && still(rail), JSON.stringify({ bar, rail }));
     } else {
@@ -80,7 +83,10 @@ await withHarness(async (app) => {
     // ok('P4 the room\'s pergola is r20\'s live drawing: shown, its svg, 115 leaf clusters, its drift running', !!p && p.display !== 'none' && p.svg && p.leaves === 115 && p.anim === 'running', JSON.stringify(p));
     // SUCCESSOR P4n (the no-drift read, as RP_MODE=nodrift's):
     ok("P4n the room's pergola is the live drawing with NO drift (the Nov 7 test builds): shown, its svg, 115 leaf clusters, no animation on its drift wrapper",!!p && p.display !== 'none' && p.svg && p.leaves === 115 && p.anim === null, JSON.stringify(p));
-    ok('P5 the page\'s copy is r20\'s live drawing (svg, g[filter] at 0.034)', !!pg && pg.bitmap === null && pg.svg === true && pg.g != null && Math.abs(pg.g - 0.034) < 0.0005, JSON.stringify(pg));
+    // PARKED 2026-11-10 (SUPERSEDED - FABLE, Nov 10, 2:15 pm, item 7 (the Wrizors' B1 on r23): the PAGE's share of the shade goes from 3.4% to 2.8% so its ink reads 14.0:1 or better as drawn under the 1.5x shade; the panels and bars keep 3.4%, the room 20%). Original, verbatim:
+    // ok('P5 the page\'s copy is r20\'s live drawing (svg, g[filter] at 0.034)', !!pg && pg.bitmap === null && pg.svg === true && pg.g != null && Math.abs(pg.g - 0.034) < 0.0005, JSON.stringify(pg));
+    // SUCCESSOR: the page's copy at 0.028 (everything else as it stood)
+    ok('P5 the page\'s copy is r20\'s live drawing (svg, g[filter] at 0.028)', !!pg && pg.bitmap === null && pg.svg === true && pg.g != null && Math.abs(pg.g - 0.028) < 0.0005, JSON.stringify(pg));
     const bmpOk = (c) => !!c && c.bitmap === 'true' && c.svg === false && c.bg === 'url("blob:ht' && c.alpha != null && Math.abs(c.alpha - 0.034) < 0.0005 && c.display !== 'none'
       && c.anim === 'arbor2-pergola-drift-px' && c.dt != null && Math.abs(c.dt) < 1 && !!c.box && c.box.every((v, i) => Math.abs(v) <= (i < 2 ? 1.5 : 2));
     // PARKED 2026-11-07 (SUPERSEDED by Nick's no-drift ruling, Nov 7, via Fable: the copies' literal-pixel drift is no longer drawn). Original, verbatim:

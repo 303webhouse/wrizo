@@ -46,7 +46,11 @@ function withBitmap(use: (url: string) => void): void {
 
 // the shade across the paper. §18.1 asks 4% ("the page's text holds 14.1:1"); on this page (paper #F3EDE1, ink #241A10) 4% measured 13.78:1
 // at the darkest overlap (run 41903778893), under Fable's 13.9 floor - 3.4% is the strongest that holds it (13.91). HANDED UP to Fable.
-const PAGE_ALPHA = '0.034';
+const PAGE_ALPHA = '0.034';   // (since Nov 10 the panels' and bars' share only; the page has its own, below)
+// FABLE, Nov 10, 2:15 pm, item 7 (the Wrizors' B1 on r23): under the 1.5x shade the page's paper draws #EDE7DA and its ink reads 13.85:1, under the
+// 13.9 floor; the PAGE's share goes to 2.8% (#EEE9DC, 14.08:1), measured as drawn at 14.0 or better (frames/arbor2-r23.mjs r23-page-shade). The
+// room keeps its 20% and the panels their 3.4%.
+const PAGE_SHADE_ALPHA = '0.028';
 
 /** A copy that draws the shared bitmap: the layer, its drift wrapper (the bitmap covers it, centred - the room's own xMidYMid slice) */
 function makeBitmapLayer(alpha: string): { layer: HTMLDivElement; drift: HTMLDivElement } {
@@ -168,7 +172,7 @@ export function mountPergola(): void {
     for (const h of now) {
       if (copies.has(h)) continue;
       // the page keeps r20's live copy; every other surface draws the shared bitmap
-      const c = h.matches(HOSTS[0]) ? makeLayer('arbor2-pagesh', PAGE_ALPHA) : makeBitmapLayer(PAGE_ALPHA);
+      const c = h.matches(HOSTS[0]) ? makeLayer('arbor2-pagesh', PAGE_SHADE_ALPHA) : makeBitmapLayer(PAGE_ALPHA);
       if (room.layer.hasAttribute('data-asleep')) c.layer.setAttribute('data-asleep', 'true');
       { const p = liveOf.get(c.layer); if (p) requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(() => { if (writing()) cut(p); else clock(p); }))); else if (room.layer.hasAttribute('data-live-off')) c.layer.setAttribute('data-live-off', 'true'); }
       h.appendChild(c.layer); copies.set(h, c); ro.observe(h); place(h, c);

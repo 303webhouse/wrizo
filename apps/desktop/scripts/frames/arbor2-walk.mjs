@@ -322,7 +322,10 @@ const REST = `(() => { ${COLOUR} const q = (s) => [...document.querySelectorAll(
     pergola: pg ? { op: Number(getComputedStyle(pg).opacity), display: getComputedStyle(pg).display, liveOff: pg.getAttribute('data-live-off'), leaves: leaves.length, running: anims.filter((a) => a.playState === 'running').length, names: [...new Set(anims.map((a) => a.animationName))], driftAnims: [...drift].flatMap((d) => d.getAnimations()).length } : null,
     pageShade: sh ? { op: Number(getComputedStyle(sh).opacity), display: getComputedStyle(sh).display } : null, mark: mark ? { op: Number(getComputedStyle(mark).opacity), rect: rr(mark), color: getComputedStyle(mark).color } : null,
     scroll: scroller ? { sh: scroller.scrollHeight, ch: scroller.clientHeight, bar: scroller.offsetWidth - scroller.clientWidth } : { fits: true }, vines: field ? { op: Number(getComputedStyle(field).opacity), vis: field.getAttribute('data-vines') } : null,
-    text: ink && pageBg ? { ink: hex(ink), page: hex(pageBg), ratio: ratio(ink, pageBg), atShade: ratio(ink, { r: pageBg.r * (1 - 0.034), g: pageBg.g * (1 - 0.034), b: pageBg.b * (1 - 0.034) }) } : null,
+    // PARKED 2026-11-10 (SUPERSEDED - FABLE, Nov 10, 2:15 pm, item 7 (the Wrizors' B1 on r23): the PAGE's share of the shade goes from 3.4% to 2.8% so its ink reads 14.0:1 or better as drawn under the 1.5x shade; the panels and bars keep 3.4%, the room 20%). Original, verbatim:
+    // text: ink && pageBg ? { ink: hex(ink), page: hex(pageBg), ratio: ratio(ink, pageBg), atShade: ratio(ink, { r: pageBg.r * (1 - 0.034), g: pageBg.g * (1 - 0.034), b: pageBg.b * (1 - 0.034) }) } : null,
+    // SUCCESSOR: the page's copy at 0.028 (everything else as it stood)
+    text: ink && pageBg ? { ink: hex(ink), page: hex(pageBg), ratio: ratio(ink, pageBg), atShade: ratio(ink, { r: pageBg.r * (1 - 0.028), g: pageBg.g * (1 - 0.028), b: pageBg.b * (1 - 0.028) }) } : null,
     glow: page ? getComputedStyle(page).boxShadow : null, openers: [q('.wz-sliver-grip'), q('.wz-tutor-grip')].map((g) => g ? Number(getComputedStyle(g).opacity) : null) }; })()`;
 
 // ======================================== STEP 3: the day room at rest ========================================
