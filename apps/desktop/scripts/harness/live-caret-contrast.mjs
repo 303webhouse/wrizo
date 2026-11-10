@@ -37,10 +37,10 @@ await withHarness(async (app) => {
       await sleep(350);
     }
     // computed: the caret colour ('auto' = the text ink) against the page colour read off the rendered pixel beside the text (done here, in node)
-    const nums = (s) => (/(d+(?:.d+)?),s*(d+(?:.d+)?),s*(d+(?:.d+)?)/.exec(s) || []).slice(1).map(Number);
+    const nums = (s) => String(s).match(/[0-9.]+/g).slice(0, 3).map(Number);
     const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
     const lum = (p) => 0.2126 * lin(p[0]) + 0.7152 * lin(p[1]) + 0.0722 * lin(p[2]);
-    const cc = info.caretColor === 'auto' || /rgba(0, 0, 0, 0)/.test(info.caretColor) ? info.color : info.caretColor;
+    const cc = info.caretColor === 'auto' || String(info.caretColor).replace(/ /g, '') === 'rgba(0,0,0,0)' ? info.color : info.caretColor;
     const ca = nums(cc), pb = best.board;
     const comp = { caretResolved: cc, page: pb, c: ca.length === 3 && pb ? +((Math.max(lum(ca), lum(pb)) + 0.05) / (Math.min(lum(ca), lum(pb)) + 0.05)).toFixed(2) : null };
     out[name] = { info, rendered: best, computed: comp };
