@@ -79,7 +79,13 @@ const FIT = `(() => { ${R}
   const rail = q(document.querySelector('.desk-frame-strip, .desk-rail')), page = q(document.querySelector('.desk-frame-stage .mode-page')), tab = q(document.querySelector('.wz-sliver-grip'));
   const panel = document.querySelector('.wz-sliver-panel'), slide = document.querySelector('.wz-sliver-panel > .wz-drawer-slide');
   const P = q(panel), S = q(slide);
-  const cut = [...slide.querySelectorAll('*')].filter((e) => shown(e) && e.children.length === 0 || (shown(e) && /wz-drawer-tab\\b/.test(e.className))).map((e) => ({ e, r: e.getBoundingClientRect() }))
+  // PARKED 2026-11-10 (SUPERSEDED - frames 42899266269 on 1f73f22f: the only "cut" item was .arbor2-pergola-drift, the pergola's shade copy inside
+  // the drawer - aria-hidden decoration that is larger than its box on purpose (it paints the room's shade across the panel at 3.4%); it counted as
+  // content once its bitmap had loaded, so the check went red on a colour-only change (green on d8ee4198, 42779181000)). Original, verbatim:
+  // const cut = [...slide.querySelectorAll('*')].filter((e) => shown(e) && e.children.length === 0 || (shown(e) && /wz-drawer-tab\\b/.test(e.className))).map((e) => ({ e, r: e.getBoundingClientRect() }))
+  // SUCCESSOR: the same reader over the drawer's CONTENT - nothing inside aria-hidden decoration (the shade's copies) is counted; every row, word
+  // and cloth still is.
+  const cut = [...slide.querySelectorAll('*')].filter((e) => !e.closest('[aria-hidden="true"]') && (shown(e) && e.children.length === 0 || (shown(e) && /wz-drawer-tab\\b/.test(e.className)))).map((e) => ({ e, r: e.getBoundingClientRect() }))
     .filter(({ r }) => r.width > 0 && r.top < innerHeight && r.right > S.r + 0.5).map(({ e, r }) => ({ cls: String(e.className).split(' ')[0] || e.tagName, text: (e.textContent || '').trim().slice(0, 16), right: Math.round(r.right * 10) / 10 }));
   const cloths = [...slide.querySelectorAll('.wz-drawer-tab')].map((e) => ({ text: e.textContent.trim(), r: q(e), shown: shown(e) }));
   return { rail, page, tab, panel: P, slide: S, cut, cloths, zoom: !!document.querySelector(".mode-pagecol[data-zoom='true']"), w: innerWidth }; })()`;
