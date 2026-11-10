@@ -102,7 +102,10 @@ export default {
       // day room" - the day copy is now the all-green #44522E, scripts/arbor2-logo-r22.mjs; the sage drew 1.27:1 at .7 on the plaster). Original, verbatim:
       // dayLayers: /wrizo-logo-sage-all\.png/.test(d.m.day.img) && d.m.day.op === 1 && d.m.night.op === 0,
       // SUCCESSOR: the same reading, on the r22 day copy.
-      dayLayers: /wrizo-logo-day-green-all\.png/.test(d.m.day.img) && d.m.day.op === 1 && d.m.night.op === 0,
+      // PARKED 2026-11-10 (SUPERSEDED - FABLE, Nov 10, 2:15 pm, item 10: the day logo darkens until it reads 3:1 on shaded plaster - the day copy is now wrizo-logo-day-green2-all.png, #374325 (scripts/arbor2-logo-r23.mjs); r22's file is kept). Original, verbatim:
+      // dayLayers: /wrizo-logo-day-green-all\.png/.test(d.m.day.img) && d.m.day.op === 1 && d.m.night.op === 0,
+      // SUCCESSOR: the day layer is the r23 copy
+      dayLayers: /wrizo-logo-day-green2-all\.png/.test(d.m.day.img) && d.m.day.op === 1 && d.m.night.op === 0,
       nightColours: has(n.px.top, CORNER.night.letters) && n.px.brassPx >= 40,
       // PARKED 2026-11-08 (SUPERSEDED by r22, as dayLayers above: the day ink is the green #44522E, no longer the sage). Original, verbatim:
       // dayColours: has(d.px.top, CORNER.day.letters) && d.px.brassPx === 0,

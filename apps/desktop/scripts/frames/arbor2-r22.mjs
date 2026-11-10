@@ -207,7 +207,10 @@ const screens = {
       const top = [...ink.entries()].sort((a, b) => b[1] - a[1])[0]; const t = top ? top[0].split(',').map(Number) : null;
       const ratio = t ? (Math.max(L(t), L(g)) + 0.05) / (Math.min(L(t), L(g)) + 0.05) : null;
       return { ground: g, ink: t, inked, ratio: ratio ? Math.round(ratio * 100) / 100 : null }; })()`);
-    const ok = { dayRoom: m.room === 'day', file: /wrizo-logo-day-green-all\.png/.test(m.dayImg) && m.dayOp === 1, drawnAt7: Math.abs(m.op - 0.7) < 0.01, seen: px.inked >= 200, contrast: px.ratio !== null && px.ratio >= 3 };
+    // PARKED 2026-11-10 (SUPERSEDED - FABLE, Nov 10, 2:15 pm, item 10: the day logo darkens until it reads 3:1 on shaded plaster - the day copy is now wrizo-logo-day-green2-all.png, #374325 (scripts/arbor2-logo-r23.mjs); r22's file is kept). Original, verbatim:
+    // const ok = { dayRoom: m.room === 'day', file: /wrizo-logo-day-green-all\.png/.test(m.dayImg) && m.dayOp === 1, drawnAt7: Math.abs(m.op - 0.7) < 0.01, seen: px.inked >= 200, contrast: px.ratio !== null && px.ratio >= 3 };
+    // SUCCESSOR: the r23 copy (darker, for the shade); the same drawn-at-.7 and 3:1 bars
+    const ok = { dayRoom: m.room === 'day', file: /wrizo-logo-day-green2-all\.png/.test(m.dayImg) && m.dayOp === 1, drawnAt7: Math.abs(m.op - 0.7) < 0.01, seen: px.inked >= 200, contrast: px.ratio !== null && px.ratio >= 3 };
     if (Object.values(ok).some((x) => !x)) fail('R22-DAY-LOGO', { ok, m, px });
     say('r22-day-logo', { ok, m, px });
   },
