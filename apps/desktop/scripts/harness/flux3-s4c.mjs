@@ -600,7 +600,13 @@ try { await withHarness(async (app) => {
   // the writing line (last) reads #E8F6FA (a glyph pixel on a long page reads 213..236 by where the subpixels fall, so the floor is 190: the dim line never passes 168); the line above it #8C989C (+-); every older line shows nothing legible (the corridor's brightest line is ~50)
   const veilOk = (ink) => ink.length >= 2 && ink[ink.length - 1][0] >= 190 && ink[ink.length - 2][0] >= 118 && ink[ink.length - 2][0] <= 168 && ink.slice(0, ink.length - 2).every((p) => p[0] <= 80);
   // the Typewriter GLIDES a long page after the last key, so the lines' rects and the shot are taken until two reads of the rects agree (the page is standing still), then judged
-  const veilRead = async () => { let lines = [], ink = [], steady = false; for (let t = 0; t < 8 && !steady; t += 1) { lines = await veilLines(); ink = await veilInk(lines); steady = JSON.stringify(lines) === JSON.stringify(await veilLines()); } return { lines: lines.length, ink: ink.map((p) => p[0]), steady, ok: steady && veilOk(ink) }; };
+  const veilRead = async (mutated) => {
+    // the page is read once the writing line has stood at the same place for 2 s (8 reads, 250 ms apart): the Typewriter's own band mask (on the page column; the control has it too) dims a line that has not yet reached its anchor, and a long page glides for seconds after the last key
+    let lines = [], same = 0, prev = '', steady = false;
+    for (let t = 0; t < 60 && !steady; t += 1) { lines = await veilLines(); const k = JSON.stringify(lines); same = k === prev ? same + 1 : 0; prev = k; steady = same >= 8; if (!steady) await sleep(250); }
+    const ink = await veilInk(lines);
+    return { lines: lines.length, ink: ink.map((p) => p[0]), steady, ok: steady && veilOk(ink) };
+  };
   const VEIL_STYLE = (css) => ev(`(() => { const s = document.createElement('style'); s.id = 'mut-veil'; s.textContent = ${JSON.stringify(css)}; document.head.appendChild(s); })()`);
   const VEIL_ED = "[data-flux3-jacked] .mode-pagecol[data-zoom='true'] .forward-only-editor";
   const veilCases = [['short', 'A.', LINE.slice(0, 120)], ['filled', 'The veil keeps its look.', LINE + LINE], ['long', Array.from({ length: 60 }, (_, i) => 'older words on line number ' + i).join('\n'), ' ' + LINE]];
