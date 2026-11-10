@@ -234,6 +234,13 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk (typewriter off)' });
   await app.evalJs(`location.hash = ${JSON.stringify(twHash)}`);
   await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.arbor2-pergola .arbor2-still')", { label: 'page reopened, typewriter off', timeout: 10000 }).catch(() => {});
+  // PREMISE CHANGE (driver only, Nov 10; the W9c / W10c assertions below stand VERBATIM): the per-page Typewriter setting above is read only in
+  // DRAFT - the page opened in Free Write, where the zoom follows the shared setting (on by default), so the box turn of Nov 10 06:18Z (ship
+  // bc33de6e) read zoom:true on both, as W9b's turn did. The page is now put in Draft by its mode tab (data-mode-key: the words are themed) and the
+  // zoom waited off before the shiver; if it stays zoomed the premise still reads it and the check is red, as before.
+  await app.evalJs("(() => { const b = document.querySelector('.desk-mode-tab[data-mode-key=\"draft\"]'); if (b) b.click(); return !!b; })()");
+  await app.waitFor("document.querySelector('.desk-frame-stage .mode-pagecol')?.getAttribute('data-zoom') !== 'true' && !!document.querySelector('.forward-only-editor')", { label: 'Draft, unzoomed', timeout: 6000 }).catch(() => {});
+  await sleep(1300);   // the mode switch's own re-persist lands ~1.1 s after it
   // W9c: the shade's 6 s writing fade is PINNED where it stands at the cut (inline opacity = its computed value, inline transition none - never a
   // script pause of an animation), BEFORE the freeze sheet: W9b's sheet cancelled the fade's transition, which jumps it to its END (opacity 0) - its
   // shots held no shade at all (hiding the shade changed 0 pixels). Unpinned at the end.
