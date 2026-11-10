@@ -501,7 +501,10 @@ const screens = {
       const pts = [0.35, 0.45, 0.55, 0.65, 0.75].map((f) => { const d = cx.getImageData(Math.round((page.left - 24) * dpr), Math.round(innerHeight * f * dpr), 1, 1).data; return [d[0], d[1], d[2]]; });
       return pts.reduce((a, b) => (a[0] + a[1] + a[2] <= b[0] + b[1] + b[2] ? a : b)); })()`);
     const rows = !!(await app.evalJs("!!document.querySelector('.arbor2-bar-row[aria-label=\"Night browns\"]')"));
-    const want = BROWNS.b, dark = t.tone === 'dark', ok = {}, floors = [];
+    // PARKED 2026-11-10 (SUPERSEDED - FABLE RULED, Nov 10, 1:50 pm, (i): B's drawer ground is lifted just enough to stand 6.0 L* off the dark page - #231811 -> #241811 (L* 9.55 against the page's 3.55: 6.00; 6.1 as r13 rounds)). Original, verbatim:
+    // const want = BROWNS.b, dark = t.tone === 'dark', ok = {}, floors = [];
+    // SUCCESSOR: B's table with the drawer ground lifted to #241811 (every other token as B; the floors read on the lifted ground)
+    const want = { ...BROWNS.b, drawer: '#241811' }, dark = t.tone === 'dark', ok = {}, floors = [];
     ok['brown attribute b'] = t.brown === 'b';
     ok['no Night browns row'] = !rows;
     ok.tokens = Object.entries(want.room).every(([k, v]) => t.room[k] === v) && t.drawer === want.drawer && (!dark || Object.entries(want.page).every(([k, v]) => t.page[k] === v));
