@@ -643,7 +643,14 @@ const lightCaretCase = async (app) => {
   await app.evalJs(caretEnd); await sleep(700);
   const m = await app.evalJs(CARETREAD);
   if (!m) return null;
+  // (driver, Nov 10, no assertion changed - frames 42924222690, 1920 light, the night case: the drawn caret stood where it should (x 767, 4 px) but
+  // all four columns read bare paper - the blink was OFF at the shot. Pausing its animation from script does not hold if the caret element is
+  // re-created between the read and the shot (it is keyed on its place), so the blink is held LIT for the shot by a test-only sheet instead, the
+  // swap check's way: animation none, opacity 1 - and lifted after)
+  await app.evalJs("(() => { const st = document.createElement('style'); st.id = 'r22-caret-lit'; st.textContent = '.arbor2-edged-caret{ animation:none !important; opacity:1 !important; }'; document.head.appendChild(st); return true; })()");
+  await sleep(120);
   const png = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data;
+  await app.evalJs("document.getElementById('r22-caret-lit')?.remove()");
   // the four columns at the caret's middle row and the paper 14 px to its right (with no drawn caret, the paper beside the selection's own rect)
   m.px = await app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${png}'; await img.decode(); const dpr = img.width / innerWidth; const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
     const cx = c.getContext('2d'); cx.drawImage(img, 0, 0); const g = (x, y) => Array.from(cx.getImageData(Math.floor(x * dpr), Math.floor(y * dpr), 1, 1).data.slice(0, 3));
@@ -687,7 +694,7 @@ const lightCaret = async (app, name, where) => {
   say(name, Object.fromEntries(Object.entries(cases).map(([k, c]) => [k, { tone: c.tone, room: c.room, zoom: c.zoom, w: c.w, drawn: c.drawn, before: c.before, native: c.native, ink: c.ink,
     inkOnPaper: c.inkOnPaper, edgeOnPaper: c.edgeOnPaper ?? null, edgeOnBrass: c.edgeOnBrass ?? null, cols: c.px?.cols ?? null, paper: c.px?.paper ?? null, beside: c.px?.beside ?? null, dot: c.px?.dot ?? null, endX: c.endX ?? null }])));
   // leave the blink held lit for the job's own shot
-  await app.evalJs("document.querySelector('.arbor2-edged-caret')?.getAnimations().forEach((a) => { a.pause(); a.currentTime = 0; })");
+  await app.evalJs("(() => { const st = document.createElement('style'); st.id = 'r22-caret-lit-shot'; st.textContent = '.arbor2-edged-caret{ animation:none !important; opacity:1 !important; }'; document.head.appendChild(st); return true; })()");   // (driver, Nov 10: the same test-only sheet as the read, for the job's shot)
 };
 const inset8x = async (app) => {
   const png = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data;
