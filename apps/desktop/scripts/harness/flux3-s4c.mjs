@@ -452,18 +452,18 @@ try { await withHarness(async (app) => {
 
   // ---- EXIT (B6): the exit line, the first 3 s ---------------------------------------------------------------------------------------------------------------------------------
   const KEYMAP = { Esc: ['Escape', 'Escape', 27], F9: ['F9', 'F9', 120] };
-  const namesLeavingKey = (t) => { const m = /·\s*(\S+)\s+TO JACK OUT$/i.exec(String(t || '').trim()); return !!m && !!KEYMAP[m[1][0].toUpperCase() + m[1].slice(1).toLowerCase()]; };
+  const namesLeavingKey = (t) => { const m = /·\s*(\S+)\s+TO UNPLUG$/i.exec(String(t || '').trim()); return !!m && !!KEYMAP[m[1][0].toUpperCase() + m[1].slice(1).toLowerCase()]; };
   const readExit = async (reduced) => { await shortPage('exit line', { reduced }); await sleep(reduced ? 3600 : 4400); return ev('window.__f4.exit'); };
   const exN = await readExit(false);
   const life = exN.goneAt !== null && exN.addedAt !== null ? exN.goneAt - exN.addedAt : null;
   const mountGap = await ev('window.__f4.mountAt === null || window.__f4.exit.addedAt === null ? null : window.__f4.exit.addedAt - window.__f4.mountAt');
-  ok('EXIT the line is there from entry (first seen at full strength within 0.5 s of the corridor mounting), reads JACKED IN · ESC TO JACK OUT, is gone by ~3.6 s (3 s, then a 0.6 s fade), and is 4.5:1 or better on the ground (printed: life ' + (life && Math.round(life)) + ' ms, ' + (crOn(exN.color) || 0).toFixed(2) + ':1)',
-    exN.addedAt !== null && mountGap !== null && mountGap < 500 && exN.firstOpacity > 0.99 && /^JACKED IN · ESC TO JACK OUT$/.test(String(exN.text || '').toUpperCase()) && life !== null && life >= 2900 && life <= 4300 && (crOn(exN.color) || 0) >= 4.5, JSON.stringify({ exN, life, mountGap }));
+  ok('EXIT the line is there from entry (first seen at full strength within 0.5 s of the corridor mounting), reads WIRED IN · ESC TO UNPLUG, is gone by ~3.6 s (3 s, then a 0.6 s fade), and is 4.5:1 or better on the ground (printed: life ' + (life && Math.round(life)) + ' ms, ' + (crOn(exN.color) || 0).toFixed(2) + ':1)',
+    exN.addedAt !== null && mountGap !== null && mountGap < 500 && exN.firstOpacity > 0.99 && /^WIRED IN · ESC TO UNPLUG$/.test(String(exN.text || '').toUpperCase()) && life !== null && life >= 2900 && life <= 4300 && (crOn(exN.color) || 0) >= 4.5, JSON.stringify({ exN, life, mountGap }));
   const exR = await readExit(true);
   const lifeR = exR.goneAt !== null && exR.addedAt !== null ? exR.goneAt - exR.addedAt : null;
   ok('EXIT-STILL with reduced motion the line is a cut: gone at ~3 s with no fade (printed: ' + (lifeR && Math.round(lifeR)) + ' ms)', lifeR !== null && lifeR >= 2900 && lifeR <= 3500, JSON.stringify({ exR, lifeR }));
   // it names the key that actually leaves: read the key off the line, press THAT key, and the page leaves to BUILD; the handler and the line read one constant
-  const named = /·\s*(\S+)\s+to jack out$/i.exec(String(exN.text || '').trim());
+  const named = /·\s*(\S+)\s+to unplug$/i.exec(String(exN.text || '').trim());
   const kid = await jackedOpen('press the named key', 'dark');
   const namedKey = named ? KEYMAP[named[1][0].toUpperCase() + named[1].slice(1).toLowerCase()] : null;
   if (namedKey) { await keyTap(namedKey[0], namedKey[1], namedKey[2], 60); await sleep(1400); }
@@ -472,9 +472,9 @@ try { await withHarness(async (app) => {
   const srcHints = fs.readFileSync(new URL('../../src/flux3/FluxJackedHints.tsx', import.meta.url), 'utf8');
   const srcJack = fs.readFileSync(new URL('../../src/flux3/jackIn.ts', import.meta.url), 'utf8');
   const codeOnly = (s) => s.split('\n').filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l)).join('\n');
-  const oneSource = /e\.key === LEAVE_KEY\b/.test(srcIn) && /leaveKeyNow\(\)/.test(srcHints) && /export const LEAVE_KEY = 'Escape'/.test(srcJack) && !/jack out/i.test(codeOnly(srcHints)) && /flux3JackedExit/.test(srcHints);
+  const oneSource = /e\.key === LEAVE_KEY\b/.test(srcIn) && /leaveKeyNow\(\)/.test(srcHints) && /export const LEAVE_KEY = 'Escape'/.test(srcJack) && !/unplug/i.test(codeOnly(srcHints)) && /flux3JackedExit/.test(srcHints);
   ok('EXIT-KEY the key the line names is the key that leaves (pressed, it leaves to BUILD), the handler and the line read one constant (jackIn.ts), and the words come through the lexicon (no literal in the component)', !!namedKey && kLeft.left && oneSource && namesLeavingKey(exN.text), JSON.stringify({ named: named && named[1], kLeft: kLeft.left, oneSource }));
-  ok('MUT-EXIT the key reader goes RED when the line names a key that does not leave (F4, DEL) and green on the real ones', !namesLeavingKey('JACKED IN · F4 TO JACK OUT') && !namesLeavingKey('JACKED IN · DEL TO JACK OUT') && namesLeavingKey('JACKED IN · ESC TO JACK OUT') && namesLeavingKey('JACKED IN · F9 TO JACK OUT'), '');
+  ok('MUT-EXIT the key reader goes RED when the line names a key that does not leave (F4, DEL) and green on the real ones', !namesLeavingKey('WIRED IN · F4 TO UNPLUG') && !namesLeavingKey('WIRED IN · DEL TO UNPLUG') && namesLeavingKey('WIRED IN · ESC TO UNPLUG') && namesLeavingKey('WIRED IN · F9 TO UNPLUG'), '');
 
   // ---- NUDGE: after 4 s of stillness, one line below her text; her next key clears it; Jacked In only ------------------------------------------------------------------------------
   await jackedOpen('The nudge waits four seconds.', 'dark');
@@ -553,7 +553,7 @@ try { await withHarness(async (app) => {
   const x4 = await readX();
   const lum3 = lumc(x4 && x4.color);
   const inRect = !!x4 && x4.rect[2] === 48 && x4.rect[3] === 48 && x4.rect[0] === x4.w - 20 - 48 && x4.rect[1] === x4.h - 20 - 48;   // the 48 px press area; the 40 px circle stands 24 px in from each edge
-  ok('LEAVE-X-LOOK (draft 23, 6a.11) a real button named through the lexicon, a 48 px press area 20 px in from the corner around a 40 px circle 24 px in, FILLED with the ground colour, the X\'s arms 14 px, the hint "<name> (<key>)" naming the key that works, the quiet label colour at 3:1 or better against the ground (not brass), a 0.2 s fade', !!x4 && x4.tag === 'BUTTON' && x4.label === 'Jack out' && inRect && x4.fill === 'rgb(2, 12, 16)' && x4.arm === 14 && / \(Esc\)$/.test(String(x4.title)) && parseFloat(String(x4.trans).split(',')[0]) === 0.2 && (crOn(x4.color) || 0) >= 3 && !/255, 152, 0/.test(x4.color) && /flux3JackedLeave: 'Jack out'/.test(fs.readFileSync(new URL('../../src/store/lexicon/canonical/chrome.ts', import.meta.url), 'utf8')), JSON.stringify({ x4, cr: crOn(x4 && x4.color) }));
+  ok('LEAVE-X-LOOK (draft 23, 6a.11) a real button named through the lexicon, a 48 px press area 20 px in from the corner around a 40 px circle 24 px in, FILLED with the ground colour, the X\'s arms 14 px, the hint "<name> (<key>)" naming the key that works, the quiet label colour at 3:1 or better against the ground (not brass), a 0.2 s fade', !!x4 && x4.tag === 'BUTTON' && x4.label === 'Unplug' && inRect && x4.fill === 'rgb(2, 12, 16)' && x4.arm === 14 && /^Unplug \(Esc\)$/.test(String(x4.title)) && parseFloat(String(x4.trans).split(',')[0]) === 0.2 && (crOn(x4.color) || 0) >= 3 && !/255, 152, 0/.test(x4.color) && /flux3JackedLeave: 'Unplug'/.test(fs.readFileSync(new URL('../../src/store/lexicon/canonical/chrome.ts', import.meta.url), 'utf8')), JSON.stringify({ x4, cr: crOn(x4 && x4.color) }));
   await app.mouseMove(x4.rect[0] + 20, x4.rect[1] + 20); await sleep(400);
   const x5 = await readX();
   ok('LEAVE-X-HOVER hover is Flux\'s choice colour (#00C2FF)', !!x5 && /0, 194, 255/.test(x5.color), JSON.stringify(x5));
@@ -581,6 +581,17 @@ try { await withHarness(async (app) => {
   await app.mouseMove(1500, 700); await sleep(60); await app.mouseMove(1520, 720); await sleep(300);
   const xr2 = await readX();
   ok('LEAVE-X-STILL reduced motion is a cut (no transition on the button: every duration under a millisecond)', !!xr2 && String(xr2.trans).split(',').every((d) => parseFloat(d) < 0.001), JSON.stringify(xr2));
+
+  // ---- WIRE-IN-WORDS (Nick, Nov 9, 7:26 pm; the Wrizors' list): no string a writer can see in Flux contains "jack", in any case -------------------------------------------------------------------
+  await jackedOpen('Words a writer can see.', 'dark');
+  await sleep(1200);
+  const wordsSeen = await ev("(() => { const out = [document.body.innerText]; document.querySelectorAll('[aria-label], [title], [placeholder], [alt]').forEach((e) => { ['aria-label', 'title', 'placeholder', 'alt'].forEach((a) => { const v = e.getAttribute(a); if (v) out.push(v); }); }); return out.join(' || '); })()");
+  const exitSeen = await ev('window.__f4.exit.text');
+  const lexSrc = ['../../src/store/lexicon/canonical/chrome.ts', '../../src/store/lexicon/overrides/flux.ts'].map((p) => fs.readFileSync(new URL(p, import.meta.url), 'utf8'));
+  const lexJack = lexSrc.flatMap((t) => t.split('\n').filter((l) => !/^\s*\/\//.test(l) && /:\s*['"][^'"]*jack[^'"]*['"]/i.test(l)));
+  const noJack = (s) => !/jack/i.test(String(s || ''));
+  ok('WIRE-IN-WORDS no string a writer can see in Flux contains "jack" (any case): the page\'s visible text and every label, title and hint while jacked, the entry line, and every value in the lexicon files (' + lexJack.length + ' found)', noJack(wordsSeen) && noJack(exitSeen) && lexJack.length === 0 && /Wired in/.test(String(exitSeen)), JSON.stringify({ exitSeen, lexJack, jackIn: (/.{20}jack.{20}/i.exec(wordsSeen) || [])[0] }));
+  ok('MUT-WIRE-IN-WORDS the reader goes RED on the old words (the entry line, the X\'s name, its hint), a planted JACK in capitals, and a lexicon line with the word, and green on the new ones', !noJack('Jacked in · Esc to jack out') && !noJack('Jack out (Esc)') && !noJack('JACK IN') && /:\s*['"][^'"]*jack[^'"]*['"]/i.test("  flux3JackedLeave: 'Jack out',") && noJack('Wired in · Esc to unplug') && noJack('Unplug (Esc)'), '');
 
   // ---- CARET-N and DIM -----------------------------------------------------------------------------------------------------------------------------------------------------------------
   await jackedOpen('The caret is a block.', 'dark');
