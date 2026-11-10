@@ -214,7 +214,66 @@ const pageShadeCheck = async (app, name) => {
   if (bad.length) fail(name, { bad, r });
   say(name, r);
 };
+// ── 8 / 9. LABELS AS DRAWN (Fable, Nov 10, 2:15 pm; the Wrizors' B2 and "WORDS"): every rail label (the Journal pin's included) and the count row's
+// "WORDS", by day and by night, the Tools drawer closed and open (the night dim). Each read from two shots - as drawn, and with that text made
+// transparent: the GROUND is the median of the hidden shot's pixels in the label's box, the INK the drawn pixel farthest from it (the strongest
+// stroke the eye gets); ink against ground >= 4.5:1. The mutant draws "WORDS" in r22's low ink #6B5F4E and must read UNDER 4.5 (it did, 4.13).
+const LABELS = '.desk-frame-strip .wz-strip-label, .desk-frame-instrument .mode-pmetric';
+const labelsDrawn = async (app) => {
+  const boxes = await app.evalJs(`[...document.querySelectorAll(${JSON.stringify(LABELS)})].filter((e) => e.getBoundingClientRect().width > 0).map((e) => { const r = e.getBoundingClientRect(); return { text: e.textContent.trim().slice(0, 16), x: r.left, y: r.top, w: r.width, h: r.height }; })`);
+  const a = await shot(app);
+  await app.evalJs(`(() => { const st = document.createElement('style'); st.id = 'r23-lab-hide'; st.textContent = ${JSON.stringify(LABELS)}.split(', ').map((q) => q + '{ color:transparent !important; -webkit-text-fill-color:transparent !important; }').join(' '); document.head.appendChild(st); return true; })()`);
+  await sleep(150);
+  const b = await shot(app);
+  await app.evalJs("document.getElementById('r23-lab-hide')?.remove()");
+  return app.evalJs(`(async () => { const load = (b64) => new Promise((res) => { const i = new Image(); i.onload = () => res(i); i.src = 'data:image/png;base64,' + b64; });
+    const [A, B] = await Promise.all([load(${JSON.stringify(a)}), load(${JSON.stringify(b)})]); const k = A.naturalWidth / innerWidth;
+    const grab = (img, x, y, w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'); g.drawImage(img, x, y, w, h, 0, 0, w, h); return g.getImageData(0, 0, w, h).data; };
+    const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; const L = (q) => 0.2126 * lin(q[0]) + 0.7152 * lin(q[1]) + 0.0722 * lin(q[2]);
+    const ratio = (p, q) => { const x = L(p), y = L(q); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+    return ${JSON.stringify(boxes)}.map((bx) => { const x = Math.floor(bx.x * k), y = Math.floor(bx.y * k), w = Math.max(1, Math.ceil(bx.w * k)), h = Math.max(1, Math.ceil(bx.h * k));
+      const da = grab(A, x, y, w, h), db = grab(B, x, y, w, h); const gs = []; for (let i = 0; i < db.length; i += 4) gs.push([db[i], db[i + 1], db[i + 2]]);
+      gs.sort((p, q) => L(p) - L(q)); const ground = gs[Math.floor(gs.length / 2)];
+      let ink = ground, best = 1; for (let i = 0; i < da.length; i += 4) { const p = [da[i], da[i + 1], da[i + 2]]; const r = ratio(p, ground); if (r > best) { best = r; ink = p; } }
+      return { text: bx.text, ink: '#' + ink.map((v) => v.toString(16).padStart(2, '0')).join('').toUpperCase(), ground: '#' + ground.map((v) => v.toString(16).padStart(2, '0')).join('').toUpperCase(), ratio: Math.round(best * 100) / 100 }; }); })()`);
+};
+const labels = async (app, name, mutant) => {
+  await openPage(app, `arbor-r23-lab-${Math.random().toString(36).slice(2, 6)}`);
+  if (mutant) await app.evalJs("(() => { const st = document.createElement('style'); st.id = 'r23-lab-mut'; st.textContent = '.desk-frame-instrument .mode-pmetric{ color:#6B5F4E !important; }'; document.head.appendChild(st); return true; })()");
+  const out = {};
+  for (const room of ['day', 'night']) {
+    await setRoom(app, room); await app.mouseMove(600, 300); await sleep(700); await app.evalJs(FINISH);
+    out[room + '-closed'] = await labelsDrawn(app);
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(900); await app.evalJs(FINISH);
+    out[room + '-open'] = await labelsDrawn(app);
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(700);
+  }
+  if (mutant) await app.evalJs("document.getElementById('r23-lab-mut')?.remove()");
+  return out;
+};
+const labelsCheck = async (app, name) => {
+  const out = await labels(app, name, false);
+  const rows = Object.entries(out).flatMap(([k, v]) => v.map((r) => ({ at: k, ...r })));
+  const journal = rows.filter((r) => /^journal$/i.test(r.text)), words = rows.filter((r) => /^words$/i.test(r.text));
+  const low = rows.filter((r) => r.ratio < 4.5);
+  const bad = [];
+  if (journal.length < 4) bad.push(`the Journal label read in ${journal.length} of 4 states`);
+  if (words.length < 4) bad.push(`WORDS read in ${words.length} of 4 states`);
+  if (low.length) bad.push(`${low.length} label(s) under 4.5:1 as drawn`);
+  if (bad.length) fail(name, { bad, low, journal, words });
+  say(name, { journal, words, lowest: rows.sort((a, b) => a.ratio - b.ratio).slice(0, 4) });
+};
 const screens = {
+  'r23-labels': (app) => labelsCheck(app, 'r23-labels'),
+  'r23-labels-2000': async (app) => { await app.emulateDpr(1, 2000, 1125); await labelsCheck(app, 'r23-labels-2000'); },
+  'r23-labels-mutant': async (app) => {
+    const out = await labels(app, 'r23-labels-mutant', true);
+    const words = Object.entries(out).flatMap(([k, v]) => v.filter((r) => /^words$/i.test(r.text)).map((r) => ({ at: k, ...r })));
+    const dayWords = words.filter((w) => w.at.startsWith('day'));
+    const ok = { landed: dayWords.length > 0, red: dayWords.some((w) => w.ratio < 4.5) };
+    if (!ok.landed || !ok.red) fail('r23-labels-mutant', { ok, words });
+    say('r23-labels-mutant', { ok, words });
+  },
   'r23-page-shade': (app) => pageShadeCheck(app, 'r23-page-shade'),
   'r23-page-shade-2000': async (app) => { await app.emulateDpr(1, 2000, 1125); await pageShadeCheck(app, 'r23-page-shade-2000'); },
   // the mutant: the page copy back at 3.4% must read under 14.0 (the Wrizors drew 13.85) - it LANDS (the opacity took) and the bar goes red on it

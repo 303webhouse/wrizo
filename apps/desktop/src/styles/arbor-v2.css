@@ -560,6 +560,16 @@
 /* r19 (§18.5, Nick's white bar): nothing under the page unless something is in it - an instrument holding no count is no plate at all */
 :root[data-arbor2][data-theme='plateau'] .desk-frame-instrument:not(:has(.mode-progress)){ background:none; padding:0; }
 :root[data-arbor2][data-theme='plateau'] .desk-frame-instrument :is(.mode-pmeta, .mode-pmetric){ color:var(--ink-on-paper-low); }
+/* FABLE, Nov 10, 2:15 pm, item 9 (the Wrizors' r23 read): "WORDS" at the count row's right is a label - 4.5:1 as DRAWN. In the low ink #6B5F4E it computes
+   5.1-5.3:1 on the paper but draws 4.13:1 (9 px, thin, wide-tracked caps lose about a fifth). On the LIGHT page it takes #554B3D (computed 7.0:1 on the
+   shaded paper #EEE9DC, 7.3:1 on #F3EDE1); "31 words" beside it keeps the low ink (5.32:1 as drawn). The dark page's #B9AA8C on #100C09 computes ~9:1.
+   Measured as drawn by frames/arbor2-r23.mjs r23-labels. */
+:root[data-arbor2][data-theme='plateau']:not([data-page='dark']) .desk-frame-instrument .mode-pmetric{ color:#554B3D; }
+/* FABLE, Nov 10, 2:15 pm, item 8 (the Wrizors' B2): the rail's active item (the Journal pin, since bug #4) drew its LABEL in the active colour - the
+   global .wz-strip-item.active{ color:var(--accent-rest) } (14-ink-options.css), sage #A7B27E in the rail by day: 4.39:1 on the olive rail. Its label now
+   takes the other rail labels' colour (--text-hi, 8.44:1 by day); the olive ribbon still marks where she is. By night it already had their colour and
+   their fade (probe-labels: cream at the strip's .6 / .52). Measured as drawn by r23-labels. */
+:root[data-arbor2][data-theme='plateau'] .desk-frame-strip .wz-strip-item.active .wz-strip-label{ color:var(--text-hi); }
 
 /* ==========================================================================================================================================
    THE DRAWER ALIGNMENT (Nick, via Fable, Nov 1; all themes, built here under the flag).
