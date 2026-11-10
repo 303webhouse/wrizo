@@ -32,15 +32,17 @@ await withHarness(async (app) => {
       const r = await app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${data}'; await img.decode(); const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; const x = c.getContext('2d'); x.drawImage(img, 0, 0); const D = x.getImageData(0, 0, c.width, c.height); const W = c.width;
         const P = (a, b) => { const i = (b * W + a) * 4; return [D.data[i], D.data[i + 1], D.data[i + 2]]; };
         const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; const lum = (p) => 0.2126 * lin(p[0]) + 0.7152 * lin(p[1]) + 0.0722 * lin(p[2]); const cr = (p, q) => (Math.max(lum(p), lum(q)) + 0.05) / (Math.min(lum(p), lum(q)) + 0.05);
-        const c0 = ${JSON.stringify(info.caret)}; const ref = P(c0.x + 14, c0.y + Math.round(c0.h / 2)); let b = 1; for (let dx = -2; dx <= 2; dx++) for (let dy = 2; dy < c0.h - 2; dy += 3) b = Math.max(b, cr(P(c0.x + dx, c0.y + dy), ref)); return { b: +b.toFixed(2), page: ref }; })()`);
+        const c0 = ${JSON.stringify(info.caret)}; const ref = P(c0.x + 14, c0.y + Math.round(c0.h / 2)); let b = 1; for (let dx = 0; dx <= 2; dx++) for (let dy = 2; dy < c0.h - 2; dy += 3) b = Math.max(b, cr(P(c0.x + dx, c0.y + dy), ref)); return { b: +b.toFixed(2), page: ref }; })()`);
       best.shots += 1; best.board = r.page; if (best.rendered === null || r.b > best.rendered) best.rendered = r.b;
       await sleep(350);
     }
-    // computed: the caret colour ('auto' = the text ink) against the page colour read off the rendered pixel beside the text
-    const comp = await app.evalJs(`(() => { const nums = (s) => (/(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)/.exec(s) || []).slice(1).map(Number);
-      const info = ${JSON.stringify(info)}; const cc = info.caretColor === 'auto' || /rgba\(0, 0, 0, 0\)/.test(info.caretColor) ? info.color : info.caretColor; const a = nums(cc), b = ${JSON.stringify(best.board)} || nums(info.pageBg);
-      const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; const lum = (p) => 0.2126 * lin(p[0]) + 0.7152 * lin(p[1]) + 0.0722 * lin(p[2]);
-      return { caretResolved: cc, page: b, c: a.length === 3 && b ? +((Math.max(lum(a), lum(b)) + 0.05) / (Math.min(lum(a), lum(b)) + 0.05)).toFixed(2) : null }; })()`);
+    // computed: the caret colour ('auto' = the text ink) against the page colour read off the rendered pixel beside the text (done here, in node)
+    const nums = (s) => (/(d+(?:.d+)?),s*(d+(?:.d+)?),s*(d+(?:.d+)?)/.exec(s) || []).slice(1).map(Number);
+    const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+    const lum = (p) => 0.2126 * lin(p[0]) + 0.7152 * lin(p[1]) + 0.0722 * lin(p[2]);
+    const cc = info.caretColor === 'auto' || /rgba(0, 0, 0, 0)/.test(info.caretColor) ? info.color : info.caretColor;
+    const ca = nums(cc), pb = best.board;
+    const comp = { caretResolved: cc, page: pb, c: ca.length === 3 && pb ? +((Math.max(lum(ca), lum(pb)) + 0.05) / (Math.min(lum(ca), lum(pb)) + 0.05)).toFixed(2) : null };
     out[name] = { info, rendered: best, computed: comp };
   }
 }).catch((e) => { out.error = String(e && e.stack || e); });
