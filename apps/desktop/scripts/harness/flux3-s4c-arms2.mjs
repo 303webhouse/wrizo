@@ -32,6 +32,8 @@ const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
 try { await withHarness(async (app) => {
   const ev = (js) => app.evalJs(js);
+  // round 3: flux3-s4c's own INSTRUMENT (the flash-verify flags, a keydown recorder and the playbackRate wrapper) goes on every page, as it does in the real L, so the probe's full matches the real turn
+  await app.cdp('Page.addScriptToEvaluateOnNewDocument', { source: "(() => { window.__wzVerifyFlashes = true; window.__wzVerifyCompile = true; const keys = []; addEventListener('keydown', () => keys.push(performance.now()), true); const upr = Animation.prototype.updatePlaybackRate; Animation.prototype.updatePlaybackRate = function (r) { return upr.call(this, r); }; })()" });
   await app.emulateDpr(1, 1920, 1080);
   await app.goto('/');
   await ev("localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-splash-hold','50'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4'); localStorage.setItem('wrizo-theme','flux');");
@@ -57,7 +59,7 @@ try { await withHarness(async (app) => {
   };
   let arm = ARMS[0];
   const L = makeL({
-    app, ev, sleep, cycle: CYCLE,
+    app, ev, sleep, cycle: CYCLE, rounds: Number(process.env.ARMS_ROUNDS || 6),
     prepare: async (a, on) => {
       const jacked = a === 'J' && on;
       await open(jacked, jacked ? arm.off : '');
