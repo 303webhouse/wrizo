@@ -115,15 +115,18 @@ const pergolaPic = async (app, which) => {
 const STRIP = `(() => { const s = document.querySelector('.desk-frame-stage .mode-scroll'); if (!s) return null; const r = s.getBoundingClientRect(), k = s.offsetWidth ? r.width / s.offsetWidth : 1;
   const strip = (s.offsetWidth - s.clientWidth) * k; return { right: r.right, strip, top: r.top, h: r.height, over: s.scrollHeight > s.clientHeight + 1, sb: s.getAttribute('data-arbor2-sb') }; })()`;
 const drawnCols = async (app, st) => {
-  const ys = [0.3, 0.5, 0.7].map((f) => st.top + st.h * f);
+  // (after run 42776334582, no assertion changed: on a long page the thumb is a short bar wherever the page is scrolled to, so the strip is scanned
+  // down its whole height, every 2 px; each row is read against the paper 6 px left of the strip on the same row)
+  const ys = Array.from({ length: Math.floor(st.h / 2) }, (_, i) => st.top + 1 + i * 2);
   // (after run 42775628857, no assertion changed: the columns are the strip's own - the window ran 2 px past it onto the page's hairline)
   const xs = Array.from({ length: Math.floor(st.strip) }, (_, i) => st.right - st.strip + 0.5 + i);
   const png = await shot(app);
   const px = await pixels(app, png, ys.flatMap((y) => xs.map((x) => [x, y])).concat(ys.map((y) => [st.right - st.strip - 6, y])));
-  const ref = px.slice(-3); const grid = px.slice(0, -3);
+  const ref = px.slice(-ys.length); const grid = px.slice(0, -ys.length);
   // a column is drawn when, on any of the three rows, it differs from the paper beside the strip by more than 24 on a channel
   const cols = xs.filter((_, i) => ys.some((__, j) => { const p = grid[j * xs.length + i], q = ref[j]; return p.some((v, c) => Math.abs(v - q[c]) > 24); }));
-  return { n: cols.length, cols: cols.map((x) => Math.round(x)), mid: xs.map((_, i) => grid[xs.length + i].join(',')).join(' '), ref: ref[1].join(',') };
+  const rows = ys.filter((_, j) => xs.some((__, i) => { const p = grid[j * xs.length + i], q = ref[j]; return p.some((v, c) => Math.abs(v - q[c]) > 24); }));
+  return { n: cols.length, cols: cols.map((x) => Math.round(x)), rows: rows.length ? [Math.round(rows[0]), Math.round(rows[rows.length - 1])] : null };
 };
 const scrollbar = async (app, name) => {
   await openPage(app, `arbor-r23-sb-${Math.random().toString(36).slice(2, 6)}`, LONG); await setRoom(app, 'night');
