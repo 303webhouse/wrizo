@@ -236,7 +236,10 @@ export default {
     // PARKED 2026-11-10 (SUPERSEDED - NICK RULED, Nov 9, 11:29 pm, via Fable: the night room is brown B, which steps every night brown and the dark page darker: room #080402, bars #19110B / line #291E15, drawers #231811, dark page #100C09 / #2F241A; the brown-B sweep on the ship, frames 42777131592-42782418982). Original, verbatim:
     // const ok = { night: g.room === 'night', lifted: g.left === 'rgb(46, 33, 24)' && g.right === 'rgb(46, 33, 24)', track: g.track === g.left,
     // SUCCESSOR: the night drawers' ground is B's #231811 (stepOffPage, the next line, is a RULE, left as it stands: under B it reads 5.9 - handed to Fable)
-    const ok = { night: g.room === 'night', lifted: g.left === 'rgb(35, 24, 17)' && g.right === 'rgb(35, 24, 17)', track: g.track === g.left,
+    // PARKED 2026-11-10 (SUPERSEDED - FABLE RULED, Nov 10, 1:50 pm, (i): B's drawer ground is lifted just enough to stand 6.0 L* off the dark page - #231811 -> #241811 (L* 9.55 against the page's 3.55: 6.00; 6.1 as r13 rounds)). Original, verbatim:
+    // const ok = { night: g.room === 'night', lifted: g.left === 'rgb(35, 24, 17)' && g.right === 'rgb(35, 24, 17)', track: g.track === g.left,
+    // SUCCESSOR: the night drawers' ground is the lifted #241811 (stepOffPage, the next line, now holds by the ruling)
+    const ok = { night: g.room === 'night', lifted: g.left === 'rgb(36, 24, 17)' && g.right === 'rgb(36, 24, 17)', track: g.track === g.left,
       stepOffPage: g.tone !== 'dark' || (lD != null && lP != null && lD - lP >= 6), measured: px.length >= 10, floors: low.length === 0 };
     const brief = { ok, ground: g, lstar: { drawer: lD, page: lP }, runs: px.length, lowest: px.filter((x) => x.p2 != null && !x.disabled).sort((a, b) => a.p2 - b.p2).slice(0, 4), low: low.slice(0, 8), inactive };
     if (Object.values(ok).some((x) => !x)) fail('R13-NIGHT-DRAWERS', brief);

@@ -56,7 +56,10 @@ const nightB = async (app, name) => {
   if (r.brown !== 'b') bad.push(`data-arbor2-brown is ${r.brown}`);
   if (r.room !== 'night') bad.push(`room ${r.room}`);
   for (const [k, want] of Object.entries(B)) if (r.toks[k] !== want) bad.push(`${k} ${r.toks[k]} (want ${want})`);
-  if (r.drawer !== '#231811') bad.push(`drawer ground ${r.drawer} (want #231811)`);
+  // PARKED 2026-11-10 (SUPERSEDED - FABLE RULED, Nov 10, 1:50 pm, (i): B's drawer ground is lifted just enough to stand 6.0 L* off the dark page - #231811 -> #241811 (L* 9.55 against the page's 3.55: 6.00; 6.1 as r13 rounds)). Original, verbatim:
+  // if (r.drawer !== '#231811') bad.push(`drawer ground ${r.drawer} (want #231811)`);
+  // SUCCESSOR: the drawer ground is the lifted #241811
+  if (r.drawer !== '#241811') bad.push(`drawer ground ${r.drawer} (want #241811)`);
   if (r.browns) bad.push('the Night browns row is still in the bar');
   if (r.tone === 'dark') { const want = 'rgb(16, 12, 9)'; if (r.paper !== want) bad.push(`dark page paper ${r.paper} (want #100C09)`); }
   r.inkOnPaper = r.ink && r.paper ? contrast(rgb(r.ink), rgb(r.paper)) : null;
@@ -193,6 +196,10 @@ const screens = {
   'r23-scrollbar': (app) => scrollbar(app, 'r23-scrollbar'),
   // brown B for the record (the successor of r22's step pictures): by night and by day, the Tools drawer open
   'r23-pic-night-b': async (app) => { await openPage(app, `arbor-r23-pnb-${Math.random().toString(36).slice(2, 6)}`); await setRoom(app, 'night'); await app.evalJs("(() => { const g = document.querySelector('.wz-sliver-grip'); if (g && document.querySelector('.wz-sliver')?.getAttribute('data-open') !== 'true') g.click(); return true; })()"); await sleep(900); await app.evalJs(FINISH); await app.mouseMove(600, 300); await sleep(300); },
+  // 4a (Fable, Nov 10, 1:50 pm: "4a closes when the ship's night Typewriter frame at rest (both widths) is in r23-for-wrizors"): Free Write's
+  // Typewriter by night, at rest - no handles, no strips (Nick's Nov 8 ruling); the pointer away, nothing typed
+  'r23-pic-typewriter-night': async (app) => { await openPage(app, `arbor-r23-twn-${Math.random().toString(36).slice(2, 6)}`, PAGEW, 'freewrite'); await setRoom(app, 'night'); await app.evalJs("document.querySelector('.forward-only-editor')?.blur(); getSelection()?.removeAllRanges()"); await app.mouseMove(600, 300); await sleep(1500); await app.evalJs(FINISH); },
+  'r23-pic-typewriter-night-2000': async (app) => { await app.emulateDpr(1, 2000, 1125); await openPage(app, `arbor-r23-twn2-${Math.random().toString(36).slice(2, 6)}`, PAGEW, 'freewrite'); await setRoom(app, 'night'); await app.evalJs("document.querySelector('.forward-only-editor')?.blur(); getSelection()?.removeAllRanges()"); await app.mouseMove(900, 400); await sleep(1500); await app.evalJs(FINISH); },
   'r23-pic-day': async (app) => { await openPage(app, `arbor-r23-pd-${Math.random().toString(36).slice(2, 6)}`); await setRoom(app, 'day'); await app.evalJs("(() => { const g = document.querySelector('.wz-sliver-grip'); if (g && document.querySelector('.wz-sliver')?.getAttribute('data-open') !== 'true') g.click(); return true; })()"); await sleep(900); await app.evalJs(FINISH); await app.mouseMove(600, 300); await sleep(300); },
   'r23-selection': (app) => selection(app, 'r23-selection'),
 };

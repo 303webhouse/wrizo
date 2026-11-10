@@ -1029,6 +1029,8 @@
   --ink-950:#080402; --ink-900:#110A06; --ink-800:#1B120B; --ink-border:#2E2115; --ink-border-strong:#3E2D1F;
   --lamp-glow: radial-gradient(135% 95% at 50% -8%, #221509 0%, #150C06 38%, #0D0704 70%, #080402 100%);
   --arbor2-bar:#19110B; --arbor2-bar-line:#291E15; }
-:root[data-arbor2][data-theme='plateau'][data-arbor2-brown='b'][data-arbor2-room='night'] :is(.wz-sliver-panel, .wz-tutor-panel){ --desk-ground:#231811; }
+/* FABLE RULED (Nov 10, 1:50 pm, (i)): B's drawer ground lifted just enough to stand 6.0 L* off B's dark page (#100C09, L* 3.55): #231811 (5.86) ->
+   #241811 (L* 9.55, 6.00; one OKLab step of .002 along its own hue). Lettering on it: cream 13.7, quiet 7.6, olive text 5.05 (floors 4.5). Was #231811. */
+:root[data-arbor2][data-theme='plateau'][data-arbor2-brown='b'][data-arbor2-room='night'] :is(.wz-sliver-panel, .wz-tutor-panel){ --desk-ground:#241811; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-brown='b'][data-page='dark']{ --paper:#100C09; --paper-dim:#0B0705; --paper-border:#2F241A; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-brown='b']{ --arbor2-tw-night-paper:#100C09; }   /* Typewriter's night fill steps with the dark page */
