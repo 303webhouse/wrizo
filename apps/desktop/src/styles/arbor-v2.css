@@ -534,7 +534,7 @@
    r22-light-caret. */
 :root[data-arbor2][data-theme='plateau'] [data-arbor2-caret-active='true']{ caret-color:transparent !important; }
 .arbor2-edged-caret{ position:fixed; z-index:60; pointer-events:none; box-sizing:border-box; width:4px; background:var(--brass, #FF9800);
-  border:1px solid #241A10; animation:arbor2-edged-caret 1.06s steps(1, end) infinite; }
+  border:1px solid #FF9800; animation:arbor2-edged-caret 1.06s steps(1, end) infinite; }
 @keyframes arbor2-edged-caret{ 0%{ opacity:1; } 50%{ opacity:0; } }
 @media (prefers-reduced-motion: reduce){ .arbor2-edged-caret{ animation:none; } }
 
