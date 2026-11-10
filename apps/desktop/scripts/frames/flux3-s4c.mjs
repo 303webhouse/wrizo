@@ -79,9 +79,11 @@ export default {
     // 0.3 s attribute held on, the brass frame's own animation clock stepped to mid-flight, the letters' own 2 s fade paused at full and their node kept on the page, and the 4 s idle line
     // kept out of the shot (it would come up in the seconds the frames job takes). Nothing is drawn by the script.
     await seed(app, words(49));
-    await type(app, ' one two three', 30);
-    await waitSoft(app, "!!document.querySelector('[data-flux3-pop]') && !!document.querySelector('[data-flux3-corridor][data-pop]')", { label: 'the pop', timeout: 4000 });
+    await type(app, ' one', 30);
+    // the real pop fired at the 50th word; its letters stand for 2 s, its 0.3 s tint is gone by the time this runs, so the tint is held on below
+    await waitSoft(app, "!!document.querySelector('[data-flux3-pop]')", { label: 'the pop letters', timeout: 4000 });
     await holdAttr(app, 'data-pop');
+    await sleep(60);
     await app.evalJs("(() => { const c = document.querySelector('[data-flux3-corridor]'); c.getAnimations({ subtree: true }).forEach((a) => { const t = a.effect && a.effect.target; if (t && t.getAttribute('data-kind') === 'brass') { a.pause(); a.currentTime = 120; } }); const p = document.querySelector('[data-flux3-pop]'); p.getAnimations().forEach((a) => { a.pause(); a.currentTime = 700; }); const st = document.createElement('style'); st.textContent = '.flux3-nudge{display:none !important}'; document.head.appendChild(st); new MutationObserver(() => { if (!document.body.contains(p)) document.body.appendChild(p); }).observe(document.body, { childList: true }); return true; })()");
     await sleep(100);
     console.log(`FLUX3-S4C-FRAME corridor-pop ${JSON.stringify(await stood(app))}`);
