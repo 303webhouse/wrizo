@@ -9,7 +9,10 @@
 //   G3  coverage, printed: per file, how many check screens set their own room and how many take the pin's DAY
 //   G4  the Arbor harness files that run without WS_URL_SEARCH's room pin (arbor2-1, -4, -6, -23) pin the clock themselves: pinClock(app, 12) first
 //       inside withHarness, unpinClock in a finally, imported from the kit (Chat 1's option (1): nothing in runtime-verify.mjs)
-//   MUT a copy of one file with the wrapper taken out (in memory) must FAIL G1's rule (the guard can go red); MUT4 the same for G4's pin
+//   G5  census (c): the screens that read something the room changes and run neither both rooms nor a single room by design run in BOTH rooms -
+//       each file passes exactly the list below to withRoomPin's bothRooms (its '<name>-night' legs), and every listed screen exists
+//   MUT a copy of one file with the wrapper taken out (in memory) must FAIL G1's rule (the guard can go red); MUT4 the same for G4's pin;
+//       MUT5 a file whose bothRooms drops a listed screen must FAIL G5
 // Run: node apps/desktop/scripts/harness/arbor2-room-guard.mjs   (no browser, no box)
 import fs from 'node:fs';
 import path from 'node:path';
@@ -63,6 +66,17 @@ ok(`G4 the four Arbor harness files pin the clock to midday themselves and clear
 const h1 = norm(fs.readFileSync(path.join(HF, 'arbor2-1.mjs'), 'utf8'));
 const h1m = h1.replace('await withHarness(async (app) => { await pinClock(app, 12); try {', 'await withHarness(async (app) => { try {');
 ok('MUT4 G4 is RED on a harness file without the pin (the mutant landed: the text changed)', h1m !== h1 && !pinnedHarness(h1m), '');
+// G5: the two-leg list (Fable's census (c); ARBOR's list, room-census-4c: 16 screens)
+const TWO_LEGS = {"arbor2-r11.mjs":["r11-drawers-zoom"], "arbor2-r13.mjs":["r13-tutor-cloths"], "arbor2-r14.mjs":["r14-signin","r14-signup","r14-front-authed"], "arbor2-r16.mjs":["r16-help","r16-footer","r16-forms"], "arbor2-r17.mjs":["r17-tabs"], "arbor2-r18.mjs":["r18-forward-lock"], "arbor2-r19.mjs":["r19-white-bar","r19-front-enter","r19-front-hover","r19-front-authed","r19-front-reduced"], "arbor2-r22.mjs":["r22-splash-arrows"]};
+const legsOf = (t) => { const m = t.match(/\nexport default withRoomPin\([^\n]*\{ bothRooms: (\[[^\]]*\]) \}\);/); return m ? JSON.parse(m[1]) : []; };
+const legBad = [];
+for (const [f, want] of Object.entries(TWO_LEGS)) { const t = norm(fs.readFileSync(path.join(FR, f), 'utf8')); const got = legsOf(t);
+  const missing = want.filter((n) => !got.includes(n)), unlisted = got.filter((n) => !want.includes(n)), absent = want.filter((n) => !new RegExp(`\\n {2}'${n}': `).test(t));
+  if (missing.length || unlisted.length || absent.length) legBad.push({ f, missing, unlisted, absent }); }
+ok(`G5 the ${Object.values(TWO_LEGS).flat().length} two-leg screens run by day and by night (each file's bothRooms is the list, every listed screen exists)`, legBad.length === 0, JSON.stringify(legBad));
+const r19 = norm(fs.readFileSync(path.join(FR, 'arbor2-r19.mjs'), 'utf8'));
+const r19m = r19.replace('"r19-white-bar",', '');
+ok('MUT5 G5 is RED on a file whose bothRooms drops a listed screen (the mutant landed)', r19m !== r19 && legsOf(r19m).length === TWO_LEGS['arbor2-r19.mjs'].length - 1, '');
 // MUT: arbor2-r23.mjs with its wrapper taken out, in memory
 const r23 = norm(fs.readFileSync(path.join(FR, 'arbor2-r23.mjs'), 'utf8'));
 const mut = r23.replace(/\nexport default withRoomPin\((guarded\([^\n]*\))\);/, '\nexport default $1;');

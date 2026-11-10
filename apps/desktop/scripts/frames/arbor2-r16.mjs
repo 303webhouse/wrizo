@@ -605,4 +605,4 @@ const PLACEHOLDERS = `(() => { const parse = (s) => (String(s).match(/[\\d.]+/g)
     return { placeholder: i.placeholder, ratio: Math.round((Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05) * 100) / 100 }; }); })()`;
 
 // (census (a), Nov 10: every screen here runs under the kit's room pin - midday unless the screen sets its own room; mockup-kit.mjs withRoomPin)
-export default withRoomPin(__screens);
+export default withRoomPin(__screens, { bothRooms: ["r16-help","r16-footer","r16-forms"] });   // census (c): these also run by night ('<name>-night')

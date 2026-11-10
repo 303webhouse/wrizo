@@ -267,4 +267,4 @@ const __screens = {
 };
 
 // (census (a), Nov 10: every screen here runs under the kit's room pin - midday unless the screen sets its own room; mockup-kit.mjs withRoomPin)
-export default withRoomPin(__screens);
+export default withRoomPin(__screens, { bothRooms: ["r13-tutor-cloths"] });   // census (c): these also run by night ('<name>-night')

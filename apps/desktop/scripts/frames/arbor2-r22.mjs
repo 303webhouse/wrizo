@@ -700,4 +700,4 @@ const inset8x = async (app) => {
 };
 
 // (census (a), Nov 10: every screen here runs under the kit's room pin - midday unless the screen sets its own room; mockup-kit.mjs withRoomPin)
-export default withRoomPin(guarded(screens, { verdict: ['ARBOR-R22'] }));
+export default withRoomPin(guarded(screens, { verdict: ['ARBOR-R22'] }), { bothRooms: ["r22-splash-arrows"] });   // census (c): these also run by night ('<name>-night')

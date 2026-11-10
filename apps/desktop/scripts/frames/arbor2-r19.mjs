@@ -713,4 +713,4 @@ Object.assign(screens, {
 });
 
 // (census (a), Nov 10: every screen here runs under the kit's room pin - midday unless the screen sets its own room; mockup-kit.mjs withRoomPin)
-export default withRoomPin(guarded(screens, { verdict: ['ARBOR-R19'] }));
+export default withRoomPin(guarded(screens, { verdict: ['ARBOR-R19'] }), { bothRooms: ["r19-white-bar","r19-front-enter","r19-front-hover","r19-front-authed","r19-front-reduced"] });   // census (c): these also run by night ('<name>-night')

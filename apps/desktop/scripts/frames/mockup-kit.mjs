@@ -440,9 +440,15 @@ export async function pinClock(app, hour = 12) {
   try { await app.evalJs("(() => { if (typeof window.arbor2Clock === 'function') window.arbor2Clock(null); return true; })()"); } catch { /* no page yet */ }
 }
 export async function unpinClock(app) { try { await app.cdp('Emulation.setTimezoneOverride', { timezoneId: '' }); } catch { /* already clear */ } }
-export function withRoomPin(screens) {
+export function withRoomPin(screens, { bothRooms = [] } = {}) {
   const out = {};
   for (const [name, fn] of Object.entries(screens)) out[name] = async (app, ctx) => { await pinClock(app, 12); try { await fn(app, ctx); } finally { await unpinClock(app); } };
+  // census (c): each listed screen gets a NIGHT leg of its own, '<name>-night' - the same screen under the clock pinned to midnight
+  for (const name of bothRooms) {
+    if (!screens[name]) throw new Error(`withRoomPin: bothRooms names "${name}", which is not a screen here`);
+    const fn = screens[name];
+    out[`${name}-night`] = async (app, ctx) => { await pinClock(app, 0); try { await fn(app, ctx); } finally { await unpinClock(app); } };
+  }
   return out;
 }
 export const isPicture = (name) => /-pic-/.test(name) || /-walk-(open|closed)-/.test(name);

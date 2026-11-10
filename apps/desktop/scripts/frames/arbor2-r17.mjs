@@ -245,4 +245,4 @@ const __screens = guarded({
 }, { verdict: ["ARBOR-R17"] });
 
 // (census (a), Nov 10: every screen here runs under the kit's room pin - midday unless the screen sets its own room; mockup-kit.mjs withRoomPin)
-export default withRoomPin(__screens);
+export default withRoomPin(__screens, { bothRooms: ["r17-tabs"] });   // census (c): these also run by night ('<name>-night')

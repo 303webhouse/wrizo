@@ -138,4 +138,4 @@ const __screens = guarded({
 }, { verdict: ["ARBOR-R11","ARBOR-WALK-REDUCED-REPEAT","ARBOR-WALK-REDUCED-LIVENESS","ARBOR-WALK-REDUCED-CUT"] });
 
 // (census (a), Nov 10: every screen here runs under the kit's room pin - midday unless the screen sets its own room; mockup-kit.mjs withRoomPin)
-export default withRoomPin(__screens);
+export default withRoomPin(__screens, { bothRooms: ["r11-drawers-zoom"] });   // census (c): these also run by night ('<name>-night')
