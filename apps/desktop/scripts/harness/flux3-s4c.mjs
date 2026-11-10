@@ -639,7 +639,7 @@ try { await withHarness(async (app) => {
       await ev("document.getElementById('mut-veil').remove()");
       await sleep(120);
       // a colour set INLINE and !important (the only thing that beats the rule; the pen colour is inline, so it beat the plain rule once): the words must read bright on both lines and the colour reader must see it
-      await ev("document.querySelector('.forward-only-editor').style.color = '#E8F6FA'");
+      await ev("document.querySelector('.forward-only-editor').style.setProperty('color', '#E8F6FA', 'important')");
       await sleep(120);
       veilReads.inlineInk = { ...(await veilRead()), color: (await boxRead()).color };
       await ev("document.querySelector('.forward-only-editor').style.removeProperty('color')");
