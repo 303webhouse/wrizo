@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
@@ -12,6 +12,14 @@ import type { JournalEntry, Project } from '../types';
 import { routeForEntry } from '../store/routeForEntry';
 import { firstLine } from '../store/entryText';
 import { stageCascadeHandoff, takeCascadeHandoff } from '../store/planTrail';
+// FLUX3 S4b L2 - the command-box rail's true readouts (flag only; Arbor and every other theme render exactly as before)
+import { FLUX3 } from '../flux3/flag';
+import { useTheme } from '../store/theme';
+import { sectionsOf, journalMembers } from '../store/place';
+import { railReadout, railHint } from '../store/fluxReadouts';
+import { useThemePrefs } from '../store/themePrefs';
+import { useLastTouched } from '../flux3/lastTouched';
+import { nodeHex } from '../flux3/FluxNodeRecord';
 
 // PW1 S4(ii) — the surface actually LEFT, named. A board carries its title; a
 // page carries its first line; neither is ever allowed to be blank, because the
@@ -156,7 +164,34 @@ function cascadeExitMs(): number {
 export function useCascade({ subject, project, navigate }: CascadeProps): { strip: ReactNode; layers: ReactNode } {
   const { t } = useDeskLexicon();
   // TOOLS bug #4 (ruled Nov 7): when the current place IS the Journal, the Journal pin is the one that names it - it wears its `active` state, and the place slot above it draws only its icon (PlaceBlock), so the word shows once
-  const inJournal = usePlace().kind === 'journal';
+  const place = usePlace();
+  const inJournal = place.kind === 'journal';
+  // L2: the command-box readouts. TRUE counts of what is already stored (the pages and boards of where she is, the Journal's pages), read when the rail renders for a new place, page or
+  // open category - never per key. Nothing new is stored. "Last" is the in-session last-touched node (lastTouched.ts) in orange, the same one the Schema's footer reads.
+  const boxes = FLUX3 && useTheme() === 'flux';
+  const lastNode = useLastTouched();
+  const prefs = useThemePrefs();
+  // the nouns every hint quotes, read from the same lexicon entries the boxes' labels use (law 5)
+  const hintWords = { doc: t('drawerPage'), circuit: t('stripPlan'), rack: t('drawerPlaceDrawers'), log: t('drawerPlaceJournal') };
+  const readouts = useMemo(() => {
+    if (!boxes) return null;
+    const count = (v: 'pages' | 'boards') => sectionsOf(place, v).reduce((n, g) => n + g.items.length, 0);
+    const where = place.kind === 'journal' ? 'journal' : 'drawer';
+    const docs = count('pages'), circuits = count('boards');
+    const logDocs = journalMembers().filter((e) => e.pageType !== 'board').length;
+    const filed = place.kind === 'journal' ? journalMembers().length : docs + circuits;
+    return {
+      where, filed,
+      place: { count: railReadout(filed), hint: railHint('place', filed, where, hintWords) },
+      page: { count: railReadout(docs), hint: railHint('docs', docs, where, hintWords) },
+      plan: { count: railReadout(circuits), hint: railHint('circuits', circuits, where, hintWords) },
+      journal: { count: railReadout(logDocs), hint: railHint('log', logDocs, where, hintWords) },
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [boxes, hintWords.doc, hintWords.circuit, hintWords.rack, hintWords.log, place.kind, place.id, place.setId, subject.entry.id, subject.entry.pageType]);
+  // the foot's boxes read the two settings they open (live: the prefs store notifies). The Trash has NO count: the Trash is a place, not a nag (TrashPanel: A18's anti-solicitation core).
+  const footReads = boxes ? { settings: { count: prefs.voice.toUpperCase(), hint: railHint('voice', prefs.voice, 'journal', hintWords) }, theme: { count: prefs.page.toUpperCase(), hint: railHint('tone', prefs.page, 'journal', hintWords) } } : null;
+  const lastReadout = boxes && lastNode ? `${t('flux3ReadLast').toUpperCase()} 0x${nodeHex(lastNode)}` : null;
   // PW1 S4 — THE CASCADE SURVIVES TRAVEL. This state is per-surface: a travel
   // unmounts the whole hook, so before this the destination always mounted at
   // REST and a writer who reached a card through the rail arrived with the rail
@@ -266,15 +301,15 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
 
   const strip = (
     <div className="wz-strip">
-      <PlaceBlock active={state.category === 'drawers'} onToggle={() => toggleCategory('drawers')} drawerIcon={<DrawersIcon />} journalIcon={<JournalIcon />} />
-      {renderSection(SECTION_A, state, toggleCategory, t, 'wz-strip-section--bracketed')}
+      <PlaceBlock active={state.category === 'drawers'} onToggle={() => toggleCategory('drawers')} drawerIcon={<DrawersIcon />} journalIcon={<JournalIcon />} reading={readouts ? readouts.place : null} />
+      {renderSection(SECTION_A, state, toggleCategory, t, 'wz-strip-section--bracketed', null, readouts, lastReadout)}
       <div className="wz-strip-sep" role="separator" aria-orientation="horizontal" />
-      {renderSection(SECTION_C, state, toggleCategory, t, '', inJournal ? 'journal' : null)}
+      {renderSection(SECTION_C, state, toggleCategory, t, '', inJournal ? 'journal' : null, readouts, null)}
       {/* Settings, Themes and Trash pin to the window corner. The
           separator travels with them so the space above the group is empty. */}
       <div className="wz-strip-foot">
         <div className="wz-strip-sep" role="separator" aria-orientation="horizontal" />
-        {renderSection(SECTION_D, state, toggleCategory, t)}
+        {renderSection(SECTION_D, state, toggleCategory, t, '', null, footReads, null)}
         {/* the thin line just above the Trash at the very foot */}
         <div className="wz-strip-sep" role="separator" aria-orientation="horizontal" />
         {renderSection(SECTION_TRASH, state, toggleCategory, t)}
@@ -333,6 +368,8 @@ function renderSection(
   t: (id: DeskTermId) => string,
   extraClass = '',
   currentPlace: CategoryId | null = null,
+  readouts: Partial<Record<CategoryId, { count: string; hint: string }>> | null = null,
+  lastReadout: string | null = null,
 ): ReactNode {
   return (
     <div className={`wz-strip-section${extraClass ? ` ${extraClass}` : ''}`}>
@@ -342,6 +379,7 @@ function renderSection(
           type="button"
           // data-category names the button, so a harness never selects a category by index (an index survives a reorder and silently picks a different panel) [Cascade §7]
           data-category={item.id}
+          title={readouts && readouts[item.id] ? readouts[item.id]!.hint : undefined}
           className={`wz-strip-item${state.category === item.id || currentPlace === item.id ? ' active' : ''}`}
           aria-pressed={state.category === item.id}
           aria-current={currentPlace === item.id ? 'location' : undefined}
@@ -349,6 +387,9 @@ function renderSection(
         >
           <span className="wz-strip-glyph" aria-hidden="true">{item.icon}</span>
           <span className="wz-strip-label">{t(item.labelTerm)}</span>
+          {/* L2 (flag): the box's true reading, and under Circuits the last node touched this session (orange) - decoration for the eye, the label is the name */}
+          {readouts && readouts[item.id] ? <span className="wz-strip-readout" aria-hidden="true">{readouts[item.id]!.count}</span> : null}
+          {item.id === 'plan' && lastReadout ? <span className="wz-strip-readout wz-strip-last" aria-hidden="true">{lastReadout}</span> : null}
         </button>
       ))}
     </div>
