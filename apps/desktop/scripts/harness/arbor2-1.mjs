@@ -203,8 +203,15 @@ await withHarness(async (app) => {
   //   on.prog == null && Array.isArray(progOpts) && progOpts.join() === 'Night,Day,Sage,Brass o', JSON.stringify({ prog: on.prog, progOpts }));
   // SUCCESSOR N1e: with the Mood list folded the bar's choices are exactly the logo's (Sage, Brass o) - no progress option, the room now in the
   // Mood menu (frames r8-room proves the control) - and no night-progress attribute exists.
-  ok('N1e one Rhizome style, no progress switch: the folded bar offers the logo (Sage / Brass o) only - the room lives in the Mood menu - and no night-progress attribute exists',
-    on.prog == null && Array.isArray(progOpts) && progOpts.join() === 'Sage,Brass o', JSON.stringify({ prog: on.prog, progOpts }));
+  // PARKED 2026-11-09 (SUPERSEDED - Nick's walk note 3, Nov 8, ruled by Fable: "three darker night browns", built in r22 as the mockup bar's
+  // Night browns row (Now · A · B · C) so the steps can be tried live; Actions run 42762670044 measured progOpts Sage,Brass o,Now,A,B,C. Missed when
+  // r22 note 3 landed; parked now). Original, verbatim:
+  // ok('N1e one Rhizome style, no progress switch: the folded bar offers the logo (Sage / Brass o) only - the room lives in the Mood menu - and no night-progress attribute exists',
+  //   on.prog == null && Array.isArray(progOpts) && progOpts.join() === 'Sage,Brass o', JSON.stringify({ prog: on.prog, progOpts }));
+  // SUCCESSOR N1f: the folded bar offers exactly the logo's two (Sage, Brass o) and the Night browns' four (Now, A, B, C) - still no progress
+  // option, the room still in the Mood menu - and no night-progress attribute exists.
+  ok('N1f one Rhizome style, no progress switch: the folded bar offers the logo (Sage / Brass o) and the Night browns (Now / A / B / C) only - the room lives in the Mood menu - and no night-progress attribute exists',
+    on.prog == null && Array.isArray(progOpts) && progOpts.join() === 'Sage,Brass o,Now,A,B,C', JSON.stringify({ prog: on.prog, progOpts }));
 
   // PARKED 2026-11-01 (SUPERSEDED by Fable's ruling, Nov 1: "Room settled: Follow the clock / Always day / Always night (unset = clock,
   // 07:00-19:00 local)" - the room no longer follows the Page tone, unset or set). Original, verbatim:
