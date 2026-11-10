@@ -1,7 +1,9 @@
 // ARBOR v2 WORKING MOCKUP (Fable's brief, Oct 29): on only with ?arbor2=1 in the URL. No stored flag, no localStorage key.
 // The query sits before the hash (http://localhost:5173/?arbor2=1#/), so it survives every hash-route change.
 export function isArbor2(): boolean {
-  if (typeof window === 'undefined') return false;
+  // (a window without a location - a Node shim such as the sample seed's - is not Arbor: page birth calls this, so it must never throw; Fable, ruling (a),
+  // Nov 7; pinned by scripts/harness/arbor2-flag-unit.mjs)
+  if (typeof window === 'undefined' || !window.location) return false;
   const fromSearch = new URLSearchParams(window.location.search).get('arbor2');
   if (fromSearch != null) return fromSearch === '1';
   const q = window.location.hash.indexOf('?');
