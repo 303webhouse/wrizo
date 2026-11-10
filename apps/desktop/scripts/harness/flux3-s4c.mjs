@@ -396,10 +396,11 @@ try { await withHarness(async (app) => {
   // ---- GLOW-AFTER-GOAL (draft 23, 6a.6): at the goal the glow holds at full while CHECKPOINT shows (2 s), eases down over 3 s to 40%, and from then on is 40% + 60% of the fill; it never falls under 40% for the session
   const series = [];
   const t0g = Date.now();
-  for (let i = 0; i < 40; i += 1) { await sleep(250); const g = await readGlow2(); series.push({ t: Date.now() - t0g, op: g ? g.op : null }); }
+  // each sample waits two animation frames first (a transition only advances on frames) and reads the glow's TARGET (data-glow) beside its computed opacity
+  for (let i = 0; i < 40; i += 1) { await sleep(250); await ev('new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))'); const g = await readGlow2(); const dg = await ev("(() => { const e = document.querySelector('.flux3-cor-glow'); return e ? +e.getAttribute('data-glow') : null; })()"); series.push({ t: Date.now() - t0g, op: g ? g.op : null, target: dg }); }
   const heldOk = (s) => { const held = s.filter((x) => x.t <= 1000 && x.op !== null); const late = s.filter((x) => x.t >= 7000 && x.op !== null); const mid = s.filter((x) => x.t > 2600 && x.op !== null);
     return held.length >= 4 && held.every((x) => x.op >= 0.93) && late.length >= 4 && late.every((x) => x.op >= 0.37 && x.op <= 0.5) && mid.every((x) => x.op >= 0.37) && s.some((x) => x.t >= 3500 && x.t <= 5500 && x.op < 0.9); };
-  console.log('S4C GLOW after the goal: ' + series.filter((x, i) => i % 4 === 0).map((x) => x.t + 'ms ' + (x.op && x.op.toFixed(2))).join(' | '));
+  console.log('S4C GLOW after the goal: ' + series.filter((x, i) => i % 4 === 0).map((x) => x.t + 'ms ' + (x.op && x.op.toFixed(2)) + ' (target ' + x.target + ')').join(' | '));
   ok('GLOW-AFTER-GOAL after the goal the glow holds at full for ~2 s, eases down over ~3 s, and stands at 40% (+60% of the fill) from then on, never under 40%', heldOk(series), JSON.stringify(series.filter((x, i) => i % 3 === 0)));
   const dropEarly = series.map((x) => ({ t: x.t, op: x.t > 700 ? 0.3 : 1 }));
   const dipLate = series.map((x) => ({ t: x.t, op: x.t > 8000 ? 0.1 : x.op }));
