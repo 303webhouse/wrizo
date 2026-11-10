@@ -3,7 +3,7 @@
 // Knobs (env): WA_THEME WA_FLAG WA_TONE WA_W WA_H (as s1-caret.mjs) WA_TYPEWRITER=on|off|default WA_GROUPS WA_ONLY WA_OUT WA_STRICT
 import fs from 'node:fs';
 import path from 'node:path';
-import { withHarness } from '../../runtime-verify.mjs';
+import { withHarness } from '../../../runtime-verify.mjs';
 import { makeDriver, sleep, THEMES } from './driver.mjs';
 import { Model, stepLabel } from './model.mjs';
 import { verify } from './verify.mjs';
