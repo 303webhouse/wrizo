@@ -3,32 +3,19 @@
 // While the page scrolls, or the pointer is over the scrollbar's own strip (a drag scrolls, so it counts as scrolling), the scroller carries
 // data-arbor2-sb="on"; 1 s after the last of those it is taken off (styles/arbor-v2.css paints the thumb only then). In-session, nothing stored.
 // Never while she writes (html[data-wz-writing]): the Typewriter's glide scrolls the page on her keys, and the recede already hides the bar then.
-// THE REPAINT (frames r23 run 42775628857: with the attribute on, the strip stayed clear): Chromium keeps a ::-webkit-scrollbar's parts as styled
-// until the scrollbar is rebuilt, so each change of state rebuilds it once - overflow hidden for one layout, the scroll position put back. Twice
-// a scroll (on, then off), never per scroll event, never on a key.
+// (A rebuild of the scrollbar on each change of state was tried for the repaint and is not needed: the variant without it, frames 42777004777, drew
+// the thumb on scroll and hover and cleared it after, the same as with it - the first red was the check's own sampling. Removed: no extra layout.)
 const HOLD_MS = 1000;
 const SCROLLER = '.mode-scroll';
 
 export function mountScrollReveal(): void {
   const timers = new WeakMap<Element, number>();
-  let rebuilding = false;
-  const rebuild = (el: HTMLElement) => {
-    rebuilding = true;
-    const top = el.scrollTop;
-    el.style.overflowY = 'hidden';
-    void el.offsetWidth;
-    el.style.overflowY = '';
-    void el.offsetWidth;
-    if (el.scrollTop !== top) el.scrollTop = top;
-    rebuilding = false;
-  };
   const set = (el: HTMLElement, on: boolean) => {
     if ((el.getAttribute('data-arbor2-sb') === 'on') === on) return;
     if (on) el.setAttribute('data-arbor2-sb', 'on'); else el.removeAttribute('data-arbor2-sb');
-    rebuild(el);
   };
   const show = (el: HTMLElement) => {
-    if (rebuilding || document.documentElement.getAttribute('data-wz-writing') === 'true') return;
+    if (document.documentElement.getAttribute('data-wz-writing') === 'true') return;
     set(el, true);
     const t = timers.get(el);
     if (t) window.clearTimeout(t);
