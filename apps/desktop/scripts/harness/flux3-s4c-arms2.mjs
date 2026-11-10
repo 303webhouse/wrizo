@@ -15,8 +15,14 @@ const CYCLE = 'the signal holds while she writes on ';
 const ON_BOX = process.env.GITHUB_ACTIONS !== 'true';
 const NOBOX = "(() => { const c = document.querySelector('[data-flux3-corridor]'); if (c) c.remove(); })()";
 const NOMASK = "document.querySelectorAll('.forward-only-editor').forEach((e) => { e.style.setProperty('mask-image', 'none', 'important'); e.style.setProperty('-webkit-mask-image', 'none', 'important'); })";
+const STYLE = (css) => `(() => { const s = document.createElement('style'); s.textContent = ${JSON.stringify(css)}; document.head.appendChild(s); })()`;
+const ED = "[data-flux3-jacked] .mode-pagecol[data-zoom='true'] .forward-only-editor";
 const ARMS = [
   { name: 'full', off: '', dom: '' },
+  // ROUND 4 (waits on the box: the mask does not ship; Fable, Nov 10): the veil WITHOUT a mask, each judged by L against the real control
+  { name: 'clip-only', off: '', dom: STYLE(`${ED}{ -webkit-mask-image:none !important; mask-image:none !important; clip-path:inset(calc(100% - 2lh) 0 0 0) !important; }`) },
+  { name: 'clip-band', off: '', dom: STYLE(`${ED}{ -webkit-mask-image:none !important; mask-image:none !important; clip-path:inset(calc(100% - 2lh) 0 0 0) !important; position:relative; } ${ED}::after{ content:''; position:absolute; left:0; right:0; bottom:1lh; height:1lh; background:rgb(2 12 16 / .4); pointer-events:none; }`) },
+  { name: 'row-opacity', off: '', dom: STYLE(`${ED}{ -webkit-mask-image:none !important; mask-image:none !important; } ${ED} > *{ opacity:0; } ${ED} > *:last-child{ opacity:1; } ${ED} > *:nth-last-child(2){ opacity:.6; }`) },
   { name: 'no-box', off: '', dom: NOBOX },
   { name: 'box-empty', off: '', dom: "(() => { const c = document.querySelector('[data-flux3-corridor]'); [...c.children].forEach((e) => e.remove()); })()" },
   { name: 'box-empty-transparent', off: '', dom: "(() => { const c = document.querySelector('[data-flux3-corridor]'); [...c.children].forEach((e) => e.remove()); c.style.setProperty('background', 'transparent', 'important'); })()" },
@@ -25,9 +31,6 @@ const ARMS = [
   { name: 'no-compile', off: 'compile', dom: '' },
   { name: 'no-hints', off: 'hints', dom: '' },
   { name: 'no-caretn', off: 'caretn', dom: '' },
-  // ROUND 4 (not yet run: waits on Fable's veil ruling): the veil without an offscreen mask surface. clip-only = mask off + a rect clip-path relative to the editor's own box (no dim); clip-band = that + a ground-tinted band over the line above the last (the dim, .4 of the ground).
-  { name: 'clip-only', off: '', dom: (() => { const s = document.createElement('style'); s.textContent = "[data-flux3-jacked] .mode-pagecol[data-zoom='true'] .forward-only-editor{ -webkit-mask-image:none !important; mask-image:none !important; clip-path:inset(calc(100% - 2lh) 0 0 0) !important; }"; document.head.appendChild(s); })() },
-  { name: 'clip-band', off: '', dom: (() => { const s = document.createElement('style'); s.textContent = "[data-flux3-jacked] .mode-pagecol[data-zoom='true'] .forward-only-editor{ -webkit-mask-image:none !important; mask-image:none !important; clip-path:inset(calc(100% - 2lh) 0 0 0) !important; } [data-flux3-jacked] .mode-pagecol[data-zoom='true'] .forward-only-editor{ position:relative; } [data-flux3-jacked] .mode-pagecol[data-zoom='true'] .forward-only-editor::after{ content:''; position:absolute; left:0; right:0; bottom:1lh; height:1lh; background:rgb(2 12 16 / .4); pointer-events:none; }"; document.head.appendChild(s); })() },
   { name: 'bare-jacked', off: 'pace,compile,hints,caretn', dom: NOBOX + '; ' + NOMASK },
 ];
 const only = process.env.ARMS_ONLY ? process.env.ARMS_ONLY.split(',') : null;
