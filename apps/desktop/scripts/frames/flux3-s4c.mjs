@@ -8,6 +8,7 @@
 //   corridor-still:      reduced motion (the frames at their places, nothing running)
 //   corridor-esc:        0.3 s after an Esc tap (the decompile)
 //   corridor-rest:       at rest (the frames hold still; no exit line; the glow at the start of a lap)
+//   corridor-glow-floor: 7.5 s after the goal: the glow at its 40% floor (hold 2 s, ease 3 s)
 //   corridor-glow-25 / -50 / -100: the glow BUILDING with the goal (62, 125 words of 250; at the goal the lap's celebration holds it full)
 //   corridor-x:          the circled X showing (the pointer moved, nothing typed)
 //   corridor-nudge:      the 4 s nudge showing under her text
@@ -42,7 +43,7 @@ const tapEsc = async (app, held = 60) => {
 const stood = (app) => app.evalJs(`(() => { const r = document.documentElement; const q = (s) => { const e = document.querySelector(s); if (!e) return null; const b = e.getBoundingClientRect(); return [Math.round(b.left), Math.round(b.top), Math.round(b.width), Math.round(b.height)]; };
   const g = document.querySelector('.flux3-cor-glow'); const ex = document.querySelector('.flux3-exit-line'); const nx = document.querySelector('.flux3-nudge'); const lx = document.querySelector('.flux3-leave-x');
   return { flag: r.hasAttribute('data-flux3'), theme: r.getAttribute('data-theme'), page: r.getAttribute('data-page'), jacked: r.hasAttribute('data-flux3-jacked'), corridor: q('[data-flux3-corridor]'), pageRect: q('.mode-page'),
-    glow: g ? +getComputedStyle(g).opacity : null, exitLine: ex ? ex.textContent : null, nudge: nx ? nx.textContent : null, leaveX: lx ? { on: lx.hasAttribute('data-on'), rect: q('.flux3-leave-x') } : null, fast: !!document.querySelector('[data-flux3-corridor][data-fast]'), pop: !!document.querySelector('[data-flux3-corridor][data-pop]') }; })()`);
+    glow: g ? +getComputedStyle(g).opacity : null, exitLine: ex ? ex.textContent : null, nudge: nx ? nx.textContent : null, leaveX: lx ? { on: lx.hasAttribute('data-on'), rect: q('.flux3-leave-x') } : null, dot: document.elementsFromPoint(14, 15).slice(0, 4).map((e) => (e.tagName + '.' + String(e.className).slice(0, 40) + ' ' + getComputedStyle(e).backgroundColor)), fast: !!document.querySelector('[data-flux3-corridor][data-fast]'), pop: !!document.querySelector('[data-flux3-corridor][data-pop]') }; })()`);
 // hold a page's own state for a still (the page's animations and timers are its own; only the clock or the removal is held)
 const holdAttr = (app, attr) => app.evalJs(`(() => { const c = document.querySelector('[data-flux3-corridor]'); if (!c) return false; c.setAttribute('${attr}', ''); window.__hold = window.setInterval(() => c.setAttribute('${attr}', ''), 30); return true; })()`);
 
@@ -74,12 +75,14 @@ export default {
     console.log(`FLUX3-S4C-FRAME corridor-rows ${JSON.stringify(await stood(app))}`);
   },
   'corridor-pop': async (app) => {
-    await seed(app, words(24));
-    await type(app, ' one two three four five six seven', 30);
+    // HOW THIS SHOT IS MADE: a real milestone (49 words, then three more: the 50th fills the second letter, so C is earned = lime and H is the newest = brass), the corridor's tint is the page's own
+    // 0.3 s attribute held on, the brass frame's own animation clock stepped to mid-flight, the letters' own 2 s fade paused at full and their node kept on the page, and the 4 s idle line
+    // kept out of the shot (it would come up in the seconds the frames job takes). Nothing is drawn by the script.
+    await seed(app, words(49));
+    await type(app, ' one two three', 30);
     await waitSoft(app, "!!document.querySelector('[data-flux3-pop]') && !!document.querySelector('[data-flux3-corridor][data-pop]')", { label: 'the pop', timeout: 4000 });
-    // inside the 0.3 s: keep the tint, and step the brass frame's own animation clock to mid-flight
     await holdAttr(app, 'data-pop');
-    await app.evalJs("(() => { const c = document.querySelector('[data-flux3-corridor]'); c.getAnimations({ subtree: true }).forEach((a) => { const t = a.effect && a.effect.target; if (t && t.getAttribute('data-kind') === 'brass') { a.pause(); a.currentTime = 120; } }); return true; })()");
+    await app.evalJs("(() => { const c = document.querySelector('[data-flux3-corridor]'); c.getAnimations({ subtree: true }).forEach((a) => { const t = a.effect && a.effect.target; if (t && t.getAttribute('data-kind') === 'brass') { a.pause(); a.currentTime = 120; } }); const p = document.querySelector('[data-flux3-pop]'); p.getAnimations().forEach((a) => { a.pause(); a.currentTime = 700; }); const st = document.createElement('style'); st.textContent = '.flux3-nudge{display:none !important}'; document.head.appendChild(st); new MutationObserver(() => { if (!document.body.contains(p)) document.body.appendChild(p); }).observe(document.body, { childList: true }); return true; })()");
     await sleep(100);
     console.log(`FLUX3-S4C-FRAME corridor-pop ${JSON.stringify(await stood(app))}`);
   },
@@ -98,11 +101,18 @@ export default {
     await sleep(900);
     console.log(`FLUX3-S4C-FRAME corridor-glow-100 ${JSON.stringify(await stood(app))}`);
   },
+  'corridor-glow-floor': async (app) => {
+    await seed(app, words(249));
+    await type(app, ' one two three', 30);   // the goal; the hold (2 s) and the ease (3 s) go by, and the glow stands at 40%
+    await sleep(7500);
+    console.log(`FLUX3-S4C-FRAME corridor-glow-floor ${JSON.stringify(await stood(app))}`);
+  },
   'corridor-x': async (app) => {
     await seed(app, 'An older line she wrote before this session.');
-    await app.mouseMove(1500, 700);
+    const vw = await app.evalJs('innerWidth'), vh = await app.evalJs('innerHeight');   // by the window's own size (a 1366 window has no x 1500)
+    await app.mouseMove(Math.round(vw * 0.75), Math.round(vh * 0.65));
     await sleep(120);
-    await app.mouseMove(1520, 720);
+    await app.mouseMove(Math.round(vw * 0.77), Math.round(vh * 0.67));
     await sleep(500);
     console.log(`FLUX3-S4C-FRAME corridor-x ${JSON.stringify(await stood(app))}`);
   },

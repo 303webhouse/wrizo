@@ -753,6 +753,8 @@ export function ThemePanel() {
       <Seg label="Voice" value={prefs.voice} opts={[['serif', 'Serif'], ['sans', 'Sans']]} onPick={v => setThemePrefs({ voice: v as 'serif' | 'sans' })} />
       <PageToneRow page={prefs.page} />
       <Seg label="Fade" value={prefs.fade} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setThemePrefs({ fade: v as 'on' | 'off' })} />
+      {/* FLUX3 S4 (draft 23, 6a.9): Jacked In's idle line has its own switch, on by default; shown only where the line exists (Flux, under the flag) */}
+      {FLUX3 && theme === 'flux' && <Seg label="Idle line" value={prefs.idle} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setThemePrefs({ idle: v as 'on' | 'off' })} />}
       {/* R2 (TH2 review) — a canon-level pref with no UI is a TH1 allowance,
           not a TH2 one, now that Flux actually schedules dial-scaled events. */}
       <Seg label="Ambiance" value={String(dial)} opts={[['0', '0'], ['25', '25'], ['50', '50'], ['75', '75'], ['100', '100']]} onPick={v => setAmbianceDial(Number(v))} />

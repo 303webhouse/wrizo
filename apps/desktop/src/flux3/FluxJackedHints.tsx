@@ -5,16 +5,15 @@
 //   - THE CIRCLED X (Nick, Nov 9 3:43 pm): in the lower-right corner of the window, it comes with POINTER MOVEMENT and goes to opacity 0 when she types (the chrome's recede rule: no timer). A click
 //     does exactly what an Esc tap does (jackIn.ts leaveJackedIn, the same function): BUILD on the same doc, caret at the end, full screen kept. A real button with an accessible name through the
 //     lexicon; not brass (it is chrome, not her act); hover and focus in Flux's choice colour; reduced motion is a cut. A key costs one flag check (it hides only when it is showing).
-//     The look is the Wrizors' (draft 23); until their numbers land: 40 px, 24 px in from the corner, the quiet label colour.
+//     The look is draft 23's (6a.11): a 40 px circle filled with the ground colour (nothing of the corridor shows through), 24 px in from the corner, a 48 px press area, ring and X 1.5 px, the X's
+//     arms 14 px, the quiet label colour (cyan on hover; keyboard focus adds a 2 px cyan ring 3 px outside the circle), a 0.2 s fade, and the hint "<name> (<key>)".
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { prefersReducedMotion } from '../store/ambianceDial';
-import { keyLabel, leaveJackedIn, leaveKeyNow } from './jackIn';
+import { EXIT_FADE_MS, EXIT_LINE_MS, keyLabel, leaveJackedIn, leaveKeyNow } from './jackIn';
 import { FluxNudge } from './FluxNudge';
 
-export const EXIT_LINE_MS = 3000;   // the exit line shows this long
-export const EXIT_FADE_MS = 600;    // and fades over this
 // a key that is HER typing (the same set the corridor's pace and the nudge read)
 export const isTypingKey = (e: KeyboardEvent): boolean => e.key.length === 1 || e.key === 'Enter' || e.key === 'Backspace';
 
@@ -51,9 +50,11 @@ function LeaveX() {
     return () => { document.removeEventListener('pointermove', onMove, { capture: true }); document.removeEventListener('keydown', onKey, { capture: true }); };
   }, []);
   if (typeof document === 'undefined') return null;
+  // the hover hint names the key that works in her browser, as the entry line does (draft 23, 6a.11)
+  const hint = t('flux3JackedLeaveHint').replace('{key}', keyLabel(leaveKeyNow()));
   return createPortal(
-    <button ref={ref} type="button" className="flux3-leave-x" data-flux3-leave="" tabIndex={-1} aria-label={t('flux3JackedLeave')} onClick={leaveJackedIn}>
-      <svg viewBox="0 0 40 40" width="40" height="40" aria-hidden="true" focusable="false"><circle cx="20" cy="20" r="19" /><path d="M14 14 L26 26 M26 14 L14 26" /></svg>
+    <button ref={ref} type="button" className="flux3-leave-x" data-flux3-leave="" tabIndex={-1} aria-label={t('flux3JackedLeave')} title={hint} onClick={leaveJackedIn}>
+      <svg viewBox="0 0 40 40" width="40" height="40" aria-hidden="true" focusable="false"><circle cx="20" cy="20" r="19" /><path d="M13 13 L27 27 M27 13 L13 27" /></svg>
     </button>,
     document.body,
   );

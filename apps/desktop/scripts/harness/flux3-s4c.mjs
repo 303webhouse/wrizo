@@ -393,6 +393,18 @@ try { await withHarness(async (app) => {
   let g100 = null;
   for (let i = 0; i < 14; i += 1) { await sleep(100); g100 = await readGlow2(); if (g100 && g100.op > 0.97) break; }
   const g100px = g100 ? await glowPx(g100) : null;   // taken inside the lap's 1.1 s celebration
+  // ---- GLOW-AFTER-GOAL (draft 23, 6a.6): at the goal the glow holds at full while CHECKPOINT shows (2 s), eases down over 3 s to 40%, and from then on is 40% + 60% of the fill; it never falls under 40% for the session
+  const series = [];
+  const t0g = Date.now();
+  for (let i = 0; i < 40; i += 1) { await sleep(250); const g = await readGlow2(); series.push({ t: Date.now() - t0g, op: g ? g.op : null }); }
+  const heldOk = (s) => { const held = s.filter((x) => x.t <= 1000 && x.op !== null); const late = s.filter((x) => x.t >= 7000 && x.op !== null); const mid = s.filter((x) => x.t > 2600 && x.op !== null);
+    return held.length >= 4 && held.every((x) => x.op >= 0.93) && late.length >= 4 && late.every((x) => x.op >= 0.37 && x.op <= 0.5) && mid.every((x) => x.op >= 0.37) && s.some((x) => x.t >= 3500 && x.t <= 5500 && x.op < 0.9); };
+  console.log('S4C GLOW after the goal: ' + series.filter((x, i) => i % 4 === 0).map((x) => x.t + 'ms ' + (x.op && x.op.toFixed(2))).join(' | '));
+  ok('GLOW-AFTER-GOAL after the goal the glow holds at full for ~2 s, eases down over ~3 s, and stands at 40% (+60% of the fill) from then on, never under 40%', heldOk(series), JSON.stringify(series.filter((x, i) => i % 3 === 0)));
+  const dropEarly = series.map((x) => ({ t: x.t, op: x.t > 700 ? 0.3 : 1 }));
+  const dipLate = series.map((x) => ({ t: x.t, op: x.t > 8000 ? 0.1 : x.op }));
+  ok('MUT-GLOW-AFTER-GOAL the reader goes RED when the glow lets go before the hold is over, and when it dips under the 40% floor later', !heldOk(dropEarly) && !heldOk(dipLate) && heldOk(series), '');
+
   const dB = (a) => (a && gz.px ? a[2] - gz.px[2] : null);
   const near = (v, lo, hi) => v !== null && v >= lo && v <= hi;
   console.log('S4C GLOW opacity 0/25/50/100 = ' + [gz.g, g25.g, g50.g, g100].map((x) => x && x.op).join(' / ') + '; blue channel above the 0% pixel: ' + [dB(g25.px), dB(g50.px), dB(g100px)].join(' / '));
@@ -466,12 +478,12 @@ try { await withHarness(async (app) => {
   await jackedOpen('The nudge waits four seconds.', 'dark');
   const readNudge = () => ev(`(() => { const n = document.querySelector('.flux3-nudge'); if (!n) return null; const c = getComputedStyle(n); const cr = document.querySelector('.flux-block-caret'); const q = n.getBoundingClientRect(); const cb = cr ? cr.getBoundingClientRect() : null; return { text: n.textContent, color: c.color, below: cb ? q.top > cb.bottom : null, anim: c.animationName }; })()`);
   let nd = null;
-  for (let i = 0; i < 70 && !nd; i += 1) { nd = await readNudge(); if (!nd) await sleep(100); }
+  for (let i = 0; i < 130 && !nd; i += 1) { nd = await readNudge(); if (!nd) await sleep(100); }
   const nTimes = await ev('({ at: window.__f4.nudgeAt, mount: window.__f4.mountAt })');
   const nDelay = nTimes.at !== null && nTimes.mount !== null ? nTimes.at - nTimes.mount : null;
   const notRed = (c) => { const m = /(\d+),\s*(\d+),\s*(\d+)/.exec(c || ''); return !!m && +m[1] <= +m[2]; };
   const nudgeOk = (n) => !!n && /^KEEP THE SIGNAL · ANY WORD WILL DO$/.test(String(n.text).toUpperCase()) && (crOn(n.color) || 0) >= 4.5 && notRed(n.color) && n.below === true;
-  ok('NUDGE after ~4 s of stillness one quiet line stands below her text: KEEP THE SIGNAL · ANY WORD WILL DO, 4.5:1 or better, not red (printed: shown ' + (nDelay && Math.round(nDelay)) + ' ms after entry)', nudgeOk(nd) && nDelay !== null && nDelay >= 3800 && nDelay <= 5600, JSON.stringify({ nd, nDelay }));
+  ok('NUDGE after 4 s of stillness (counted once the entry line has gone: the earliest ~7.6 s after entry) one quiet line stands below her text: KEEP THE SIGNAL · ANY WORD WILL DO, 4.5:1 or better, not red (printed: shown ' + (nDelay && Math.round(nDelay)) + ' ms after entry)', nudgeOk(nd) && nDelay !== null && nDelay >= 7400 && nDelay <= 9800, JSON.stringify({ nd, nDelay }));
   await app.typeKeys('x'); await sleep(200);
   const ndGone = await readNudge();
   let ndBack = null;
@@ -497,9 +509,33 @@ try { await withHarness(async (app) => {
   const users = walk(new URL('../../src/', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')).filter((p) => /\bFluxNudge\b/.test(fs.readFileSync(p, 'utf8'))).map((p) => path.basename(p)).sort();
   ok('NUDGE-ONE-CHANGE taking the nudge out is one small change: only FluxNudge.tsx itself and FluxJackedHints.tsx (one import, one element) mention it', JSON.stringify(users) === JSON.stringify(['FluxJackedHints.tsx', 'FluxNudge.tsx']), JSON.stringify(users));
 
+  // ---- IDLE-SWITCH and IDLE-STILLNESS (draft 23, 6a.9): the Skin switch "Idle line" (off = never shows) and the two rules (stillness is neither typing nor the pointer moving; the count starts when the entry line has gone) -----
+  await ev("(() => { const p = JSON.parse(localStorage.getItem('wrizo-theme-prefs') || '{}'); p.idle = 'off'; localStorage.setItem('wrizo-theme-prefs', JSON.stringify(p)); })()");
+  await shortPage('The idle line is switched off.');
+  await sleep(9800);
+  const idleOff = await ev("({ nudge: document.querySelectorAll('.flux3-nudge').length, at: window.__f4.nudgeAt, prefs: JSON.parse(localStorage.getItem('wrizo-theme-prefs') || '{}').idle })");
+  await ev("(() => { const p = JSON.parse(localStorage.getItem('wrizo-theme-prefs') || '{}'); p.idle = 'on'; localStorage.setItem('wrizo-theme-prefs', JSON.stringify(p)); })()");
+  await shortPage('The idle line is switched on.');
+  await sleep(9800);
+  const idleOn = await ev("({ nudge: document.querySelectorAll('.flux3-nudge').length, at: window.__f4.nudgeAt, prefs: JSON.parse(localStorage.getItem('wrizo-theme-prefs') || '{}').idle })");
+  const switchOk = (off, on) => off.prefs === 'off' && off.nudge === 0 && off.at === null && on.prefs === 'on' && on.nudge === 1;
+  ok('IDLE-SWITCH with the Skin switch "Idle line" OFF the line never shows (9.8 s of stillness), and with it ON (the default) it does', switchOk(idleOff, idleOn), JSON.stringify({ idleOff, idleOn }));
+  ok('MUT-IDLE-SWITCH the reader goes RED when the line shows with the switch off, and when it does not show with the switch on', !switchOk({ ...idleOff, nudge: 1, at: 100 }, idleOn) && !switchOk(idleOff, { ...idleOn, nudge: 0 }), '');
+  await shortPage('The pointer is not stillness.');
+  let movedNudge = 0;
+  for (let i = 0; i < 11; i += 1) { await app.mouseMove(300 + i * 40, 500 + (i % 2) * 30); await sleep(1000); movedNudge += await ev("document.querySelectorAll('.flux3-nudge').length"); }
+  const afterMoves = await ev('window.__f4.nudgeAt');
+  let stillAt = null;
+  for (let i = 0; i < 70 && stillAt === null; i += 1) { await sleep(100); if ((await ev("document.querySelectorAll('.flux3-nudge').length")) > 0) stillAt = i; }
+  ok('IDLE-STILLNESS the pointer moving is not stillness: no line for 11 s while the pointer moves every second (past the 7.6 s earliest), then it comes within ~4 s of the pointer stopping', movedNudge === 0 && afterMoves === null && stillAt !== null && stillAt < 60, JSON.stringify({ movedNudge, afterMoves, stillAt }));
+  const nd2 = await ev(`(() => { const n = document.querySelector('.flux3-nudge'); const c = document.querySelector('.flux-block-caret'); if (!n || !c) return null; const q = n.getBoundingClientRect(), k = c.getBoundingClientRect(); return { cx: Math.round(q.left + q.width / 2), w: innerWidth, lines: +(((q.top + q.height / 2) - (k.top + k.height / 2)) / k.height).toFixed(2) }; })()`);
+  const placeOk = (p) => !!p && Math.abs(p.cx - p.w / 2) <= 2 && p.lines >= 1.25 && p.lines <= 1.95;
+  ok('IDLE-PLACE the line is centred on the corridor\'s centre line and its centre stands about 1.6 lines below her writing line (printed: ' + (nd2 && nd2.lines) + ' lines)', placeOk(nd2), JSON.stringify(nd2));
+  ok('MUT-IDLE-PLACE the reader goes RED when the line is off the centre line or only half a line below', !placeOk({ ...nd2, cx: nd2.cx + 40 }) && !placeOk({ ...nd2, lines: 0.5 }) && placeOk(nd2), '');
+
   // ---- LEAVE-X (Nick 3:43 pm): the circled X ------------------------------------------------------------------------------------------------------------------------------------------
   const xid = await jackedOpen('The circled X appears with the pointer.', 'dark');
-  const readX = () => ev(`(() => { const b = document.querySelector('.flux3-leave-x'); if (!b) return null; const c = getComputedStyle(b); const q = b.getBoundingClientRect(); return { tag: b.tagName, label: b.getAttribute('aria-label'), on: b.hasAttribute('data-on'), op: +c.opacity, pe: c.pointerEvents, color: c.color, trans: c.transitionDuration, rect: [Math.round(q.left), Math.round(q.top), Math.round(q.width), Math.round(q.height)], w: innerWidth, h: innerHeight, tab: b.tabIndex }; })()`);
+  const readX = () => ev(`(() => { const b = document.querySelector('.flux3-leave-x'); if (!b) return null; const c = getComputedStyle(b); const q = b.getBoundingClientRect(); return { tag: b.tagName, label: b.getAttribute('aria-label'), on: b.hasAttribute('data-on'), op: +c.opacity, pe: c.pointerEvents, color: c.color, trans: c.transitionDuration, rect: [Math.round(q.left), Math.round(q.top), Math.round(q.width), Math.round(q.height)], w: innerWidth, h: innerHeight, tab: b.tabIndex, fill: getComputedStyle(b.querySelector('circle')).fill, arm: Math.round(b.querySelector('path').getBBox().width), title: b.getAttribute('title') }; })()`);
   const shown = (x) => !!x && x.on && x.op > 0.95 && x.pe === 'auto';
   const hidden = (x) => !!x && !x.on && x.op < 0.02 && x.pe === 'none';
   await app.typeKeys('a'); await sleep(500);
@@ -514,8 +550,8 @@ try { await withHarness(async (app) => {
   await app.mouseMove(1500, 700); await sleep(60); await app.mouseMove(1510, 710); await sleep(500);
   const x4 = await readX();
   const lum3 = lumc(x4 && x4.color);
-  const inRect = !!x4 && x4.rect[2] === 40 && x4.rect[3] === 40 && x4.rect[0] === x4.w - 24 - 40 && x4.rect[1] === x4.h - 24 - 40;
-  ok('LEAVE-X-LOOK a real button named "Jack out" through the lexicon, 40 px, 24 px in from the lower-right corner, the quiet label colour at 3:1 or better against the ground (not brass)', !!x4 && x4.tag === 'BUTTON' && x4.label === 'Jack out' && inRect && (crOn(x4.color) || 0) >= 3 && !/255, 152, 0/.test(x4.color) && /flux3JackedLeave: 'Jack out'/.test(fs.readFileSync(new URL('../../src/store/lexicon/canonical/chrome.ts', import.meta.url), 'utf8')), JSON.stringify({ x4, cr: crOn(x4 && x4.color) }));
+  const inRect = !!x4 && x4.rect[2] === 48 && x4.rect[3] === 48 && x4.rect[0] === x4.w - 20 - 48 && x4.rect[1] === x4.h - 20 - 48;   // the 48 px press area; the 40 px circle stands 24 px in from each edge
+  ok('LEAVE-X-LOOK (draft 23, 6a.11) a real button named through the lexicon, a 48 px press area 20 px in from the corner around a 40 px circle 24 px in, FILLED with the ground colour, the X\'s arms 14 px, the hint "<name> (<key>)" naming the key that works, the quiet label colour at 3:1 or better against the ground (not brass), a 0.2 s fade', !!x4 && x4.tag === 'BUTTON' && x4.label === 'Jack out' && inRect && x4.fill === 'rgb(2, 12, 16)' && x4.arm === 14 && / \(Esc\)$/.test(String(x4.title)) && parseFloat(String(x4.trans).split(',')[0]) === 0.2 && (crOn(x4.color) || 0) >= 3 && !/255, 152, 0/.test(x4.color) && /flux3JackedLeave: 'Jack out'/.test(fs.readFileSync(new URL('../../src/store/lexicon/canonical/chrome.ts', import.meta.url), 'utf8')), JSON.stringify({ x4, cr: crOn(x4 && x4.color) }));
   await app.mouseMove(x4.rect[0] + 20, x4.rect[1] + 20); await sleep(400);
   const x5 = await readX();
   ok('LEAVE-X-HOVER hover is Flux\'s choice colour (#00C2FF)', !!x5 && /0, 194, 255/.test(x5.color), JSON.stringify(x5));

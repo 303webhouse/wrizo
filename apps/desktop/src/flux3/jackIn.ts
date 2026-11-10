@@ -34,3 +34,6 @@ export function leaveKeyNow(): string {
 }
 /** Leave Jacked In for BUILD on the same doc, caret at the end, full screen kept. The ONE function an Esc tap, F9 and the circled X all call. */
 export function leaveJackedIn(): void { window.dispatchEvent(new CustomEvent(LEAVE_JACK_EVENT)); }
+
+export const EXIT_LINE_MS = 3000;   // the entry line shows this long
+export const EXIT_FADE_MS = 600;    // and fades over this

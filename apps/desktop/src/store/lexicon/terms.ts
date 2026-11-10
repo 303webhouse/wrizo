@@ -109,7 +109,7 @@ export type DeskTermId =
   // FLUX3 S2 - the Schema's Stack and hologram (src/flux3/FluxStack.tsx, behind ?flux3=1): the Stack button's word and the level readout's two words
   | 'flux3ViewStack' | 'flux3ViewHologram' | 'flux3WordOne' | 'flux3WordMany' | 'flux3PortConnectAnother' | 'flux3PortDisconnect' | 'flux3Checkpoint'
   // FLUX3 S4 Corridor r2 - Jacked In's exit line, the 4 s nudge and the leave button's accessible name (src/flux3/FluxJackedHints.tsx)
-  | 'flux3JackedExit' | 'flux3JackedNudge' | 'flux3JackedLeave'
+  | 'flux3JackedExit' | 'flux3JackedNudge' | 'flux3JackedLeave' | 'flux3JackedLeaveHint'
   // the right-click menus, the "Send to Trash?" dialog, the Settings row and the toasts [deskLexicon §5]
   | 'ctxDelete' | 'ctxDeleteBoard' | 'ctxUngroup' | 'deleteDialogTitle' | 'deleteDialogPurgeTitle' | 'deleteDialogCancel' | 'deleteDialogConfirm' | 'deleteDialogDontAsk'
   | 'ctxEmptyTrash' | 'emptyTrashQuestionOne' | 'emptyTrashQuestionMany' | 'purgedElsewhere' | 'destructiveTypeToGo' | 'destructiveGo'

@@ -238,6 +238,7 @@ export const CANONICAL_CHROME = {
   flux3JackedExit: 'Jacked in · {key} to jack out',
   flux3JackedNudge: 'Keep the signal · any word will do',
   flux3JackedLeave: 'Jack out',
+  flux3JackedLeaveHint: 'Jack out ({key})',
   ctxDelete: 'Delete',
   ctxDeleteBoard: 'Delete board',
   ctxUngroup: 'Ungroup',

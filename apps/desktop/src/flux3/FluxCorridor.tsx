@@ -15,10 +15,10 @@
 //   - THE POP: a brass tint and one brass frame flying past, ~0.3 s, once per milestone (FluxCheckpointPop sends 'flux3-pop'); one change through the flash budget.
 //   - THE GLOW (Nick, Nov 9 3:43 pm): it BUILDS as she nears her goal. It reads the same progress as the Glitch bar's units (useGoalProgress over WORD_GOAL, as the bar, the burst edge and the pop
 //     do), is 0 at the start of a lap and none when no goal is set, and at the goal reaches the ruled recipe: --f3-goal-glow, #57D0F5 at 12% at the centre, 4% at 55%, none at the edge, never above
-//     14%. One static gradient; only its opacity follows progress.
+//     14%. One static gradient; only its opacity follows progress (the after-a-goal hold, the 40% floor and the easing are in the constants GLOW_*).
 //   - THE QUIET LANE: a soft oval of the ground's own colour over the FRAMES AND RAILS around her writing line, so their motion never crosses it. It sits BELOW the glow, so it never covers it.
 //   - The still state (reduced motion, Ambiance 0): the frames stand at their places, nothing runs, no lime, no brass tint.
-import { useEffect, useLayoutEffect, useState, type RefObject } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { useAmbianceDial, prefersReducedMotion } from '../store/ambianceDial';
 import { tryFlash } from '../store/flashBudget';
@@ -35,6 +35,10 @@ export const PACE = {
   stillBelow: 0.15,  // under this smoothed pace the corridor holds (playbackRate 0)
 };
 export const POP_MS = 300;   // the brass tint's length
+export const GLOW_HOLD_MS = 2000;     // after a goal the glow holds at full while CHECKPOINT shows
+export const GLOW_SETTLE_MS = 3000;   // then eases down this long to the floor
+export const GLOW_FLOOR = 0.4;        // and from her first goal on never falls under 40% for this session (memory only: nothing is saved)
+export const GLOW_EASE_MS = 1200;     // a change in her count eases over this
 const STEP_S = 1.1;          // a frame's step from one slot to the next at playbackRate 1 (flux-v3.css flux3-cor-step: keep the two in step)
 const SETTLE_RATE = 1;       // the speed at which a step is finished when she stops
 const MAX_RATE = 5;          // the playbackRate at a fast typist's pace
@@ -95,8 +99,28 @@ export function FluxCorridor({ scrollRef, unitCount }: Props) {
   const goal = useWritingGoal();
   const settings = useWritingSettings();
   const { frac, celebrating } = useGoalProgress(unitCount, WORD_GOAL);
-  // none when no goal is set (or the instruments are off, as the goal's own glow); 0 at the start of a lap; the whole recipe at the goal
-  const glow = goal != null && goal.n > 0 && settings.instrumentsOn && dial !== 0 ? (celebrating ? 1 : frac) : 0;
+  // THE GLOW'S STRENGTH (draft 23, 6a.6): none when no goal is set (or the instruments are off, as the goal's own glow, or Ambiance 0); until a goal is met it is the bar's own fill, a straight line from
+  // nothing; AT a goal it holds at full while CHECKPOINT shows, then eases down to 40%, and from then on it is 40% + 60% of the fill (the floor stays for this session, in memory only)
+  const [holding, setHolding] = useState(false);
+  const [settling, setSettling] = useState(false);
+  const earned = useRef(false);
+  const timers = useRef<number[]>([]);
+  useEffect(() => {
+    if (!celebrating) return;
+    earned.current = true;
+    setHolding(true);
+    setSettling(false);
+    timers.current.forEach((t) => window.clearTimeout(t));
+    timers.current = [
+      window.setTimeout(() => { setHolding(false); setSettling(true); }, GLOW_HOLD_MS),
+      window.setTimeout(() => setSettling(false), GLOW_HOLD_MS + GLOW_SETTLE_MS),
+    ];
+  }, [celebrating]);
+  useEffect(() => () => timers.current.forEach((t) => window.clearTimeout(t)), []);
+  const enabled = goal != null && goal.n > 0 && settings.instrumentsOn && dial !== 0;
+  const reached = earned.current || celebrating;
+  const glow = !enabled ? 0 : holding || celebrating ? 1 : reached ? GLOW_FLOOR + (1 - GLOW_FLOOR) * frac : frac;
+  const glowEase = settling ? GLOW_SETTLE_MS : GLOW_EASE_MS;
 
   // the corridor's box, FIRST in .mode-stage (so the page column and every other positioned piece of the stage paints above it) and FIXED to the window: nothing of the room or the sheet shows
   useLayoutEffect(() => {
@@ -201,7 +225,7 @@ export function FluxCorridor({ scrollRef, unitCount }: Props) {
       <i className="flux3-cor-frame" data-kind="lime" style={vars(0) as React.CSSProperties} />
       <i className="flux3-cor-frame" data-kind="brass" />
       <div className="flux3-cor-lane" />
-      <i className="flux3-cor-glow" data-glow={glow.toFixed(3)} style={{ opacity: glow }} />
+      <i className="flux3-cor-glow" data-glow={glow.toFixed(3)} style={{ opacity: glow, ['--glow-ease' as string]: `${glowEase}ms` }} />
     </>,
     box,
   );

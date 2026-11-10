@@ -16,22 +16,26 @@ import { useEffect, useState } from 'react';
 export type Voice = 'serif' | 'sans';
 export type PageTone = 'dark' | 'light';
 export type Fade = 'on' | 'off';
+// Flux's Jacked In 4 s idle line (Flux draft 23, 6a.9): its own switch under Skin, on by default, off = the line never shows
+export type Idle = 'on' | 'off';
 
 export interface ThemePrefs {
   voice: Voice;
   page: PageTone;
   fade: Fade;
+  idle: Idle;
 }
 
 const KEY = 'wrizo-theme-prefs';
-const DEFAULTS: ThemePrefs = { voice: 'serif', page: 'light', fade: 'on' };
+const DEFAULTS: ThemePrefs = { voice: 'serif', page: 'light', fade: 'on', idle: 'on' };
 
 // a raw localStorage read is untrusted: each field is validated against its enum, so a bad value falls to its default instead of reaching a data-* attribute [themePrefs §1]
 function sanitize(parsed: Partial<Record<keyof ThemePrefs, unknown>>): ThemePrefs {
   const voice: Voice = parsed.voice === 'serif' || parsed.voice === 'sans' ? parsed.voice : DEFAULTS.voice;
   const page: PageTone = parsed.page === 'dark' || parsed.page === 'light' ? parsed.page : DEFAULTS.page;
   const fade: Fade = parsed.fade === 'on' || parsed.fade === 'off' ? parsed.fade : DEFAULTS.fade;
-  return { voice, page, fade };
+  const idle: Idle = parsed.idle === 'on' || parsed.idle === 'off' ? parsed.idle : DEFAULTS.idle;
+  return { voice, page, fade, idle };
 }
 
 function load(): ThemePrefs {
