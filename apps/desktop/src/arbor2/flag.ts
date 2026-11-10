@@ -18,3 +18,11 @@ export function arbor2RoomPin(): 'day' | 'night' | null {
   const v = new URLSearchParams(window.location.search).get('arbor2room') ?? (q >= 0 ? new URLSearchParams(window.location.hash.slice(q + 1)).get('arbor2room') : null);
   return v === 'day' || v === 'night' ? v : null;
 }
+
+// TEST-ONLY CARET PIN (the room pin's pattern, for scripts/harness/arbor2-caret-latency.mjs's control arm): with the flag on, &arbor2caret=off leaves the
+// light page's drawn edged caret unmounted (edgedCaret.tsx), so the same page types with r22's native caret. Never stored or shown; harness use only.
+export function arbor2CaretOff(): boolean {
+  if (typeof window === 'undefined' || !isArbor2()) return false;
+  const q = window.location.hash.indexOf('?');
+  return (new URLSearchParams(window.location.search).get('arbor2caret') ?? (q >= 0 ? new URLSearchParams(window.location.hash.slice(q + 1)).get('arbor2caret') : null)) === 'off';
+}

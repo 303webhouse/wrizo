@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTheme } from '../store/theme';
 import { caretRow } from '../components/useTypewriterFade';
-import { isArbor2 } from './flag';
+import { isArbor2, arbor2CaretOff } from './flag';
 
 // ARBOR v2 MOCKUP (spec §19.2; NICK RULED, Nov 9, 9:14 pm): on the LIGHT page the caret is brass with a 1 px edge in the page's ink #241A10
 // (14.6:1 on the paper, 7.9:1 against the brass; plain brass is 1.85:1 on #F3EDE1), 2 px of brass showing. The dark page keeps its plain brass
@@ -26,7 +26,7 @@ export function ArborEdgedCaret() {
   const theme = useTheme();
   const [rect, setRect] = useState<Rect | null>(null);
   const activeRef = useRef<HTMLElement | null>(null);
-  const on = isArbor2() && theme === 'plateau';
+  const on = isArbor2() && theme === 'plateau' && !arbor2CaretOff();   // (the caret pin: the latency check's control arm only)
 
   useEffect(() => {
     const clear = () => {
