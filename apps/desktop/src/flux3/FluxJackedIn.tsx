@@ -149,6 +149,9 @@ export function FluxJackedIn({ on, scrollRef, unitCount }: Props) {
     layer.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:0;pointer-events:none;user-select:none;-webkit-user-select:none;z-index:3;';
     scroll.appendChild(layer);
     const words = new Map<HTMLElement, { range: Range; text: string }>();
+    // where the signal last stood on the screen (read at each compile, and the scroller's position kept as it scrolls): leaving to BUILD replaces the page's scroller and the layer with it, so the
+    // fade runs from here, in a fixed overlay
+    const snap = { left: 0, top: 0, s: 1, w: 0, scrollTop: 0, now: 0 };
     let sig = '';
     let timer = 0;
     let raf = 0;
@@ -192,6 +195,7 @@ export function FluxJackedIn({ on, scrollRef, unitCount }: Props) {
       const caret = caretBox(sel.getRangeAt(0), ed);
       if (!caret) { why('no-caret-box'); return; }
       const { L, s } = frame();
+      Object.assign(snap, { left: L.left, top: L.top, s, w: layer.offsetWidth, scrollTop: scroll.scrollTop, now: scroll.scrollTop });
       const lhLayout = parseFloat(getComputedStyle(ed).lineHeight);
       const lh = Number.isFinite(lhLayout) && lhLayout > 0 ? lhLayout * s : caret.height * 1.4;
       const limit = caret.top - (COMPILE_LINES - 0.5) * lh;   // a word whose top is above this sits two lines up or more
@@ -279,7 +283,7 @@ export function FluxJackedIn({ on, scrollRef, unitCount }: Props) {
     document.addEventListener('keydown', onFirst, opts);
     document.addEventListener('selectionchange', onFirst, opts);
     DOC_EVENTS.forEach((ev) => document.addEventListener(ev, schedule, opts));
-    const onScroll = () => { if (PAUSE.scrollPostpones || !timer) schedule(); };
+    const onScroll = () => { snap.now = scroll.scrollTop; if (PAUSE.scrollPostpones || !timer) schedule(); };
     scroll.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', schedule);
     schedule();
@@ -294,8 +298,20 @@ export function FluxJackedIn({ on, scrollRef, unitCount }: Props) {
       cancelAnimationFrame(raf);
       // THE DECOMPILE: only when she jacks out and the page stays, in Flux, with signal showing; anything else (leaving, the still state, a refused
       // flash) is a cut
-      const stays = scroll.isConnected && document.documentElement.getAttribute('data-theme') === 'flux';
-      if (!stays || !words.size || still()) { layer.remove(); return; }
+      if (!words.size || still() || document.documentElement.getAttribute('data-theme') !== 'flux') { layer.remove(); return; }
+      // the page's scroller is gone (leaving to BUILD replaces it): the fade stands on in a fixed overlay at the signal's last place, whole, and goes after DECOMPILE_MS
+      if (!scroll.isConnected) {
+        const ov = document.createElement('div');
+        ov.setAttribute('aria-hidden', 'true');
+        ov.style.cssText = `position:fixed;left:${snap.left}px;top:${snap.top - (snap.now - snap.scrollTop) * snap.s}px;width:${snap.w}px;height:0;transform:scale(${snap.s});transform-origin:0 0;pointer-events:none;z-index:70;`;
+        ov.appendChild(layer);
+        document.body.appendChild(ov);
+        if (tryFlash('f3-decompile')) words.forEach((_, el) => turnOver(el));
+        layer.querySelectorAll<HTMLElement>('.flux3-compile-row').forEach((hd) => { hd.style.transform = 'none'; hd.style.opacity = '1'; });
+        requestAnimationFrame(() => layer.classList.add('decompile'));
+        window.setTimeout(() => ov.remove(), DECOMPILE_MS + 80);
+        return;
+      }
       // the signal resolves: every block turns over (filled to hollow, hollow to filled), still whole, and fades off its word. The TURN is the one change the flash budget is asked for; a refusal
       // drops the turn and keeps the fade, so the rows are never cut away while she leaves (Fable, Nov 9: the rows visible all through the leave)
       const flip = tryFlash('f3-decompile');
