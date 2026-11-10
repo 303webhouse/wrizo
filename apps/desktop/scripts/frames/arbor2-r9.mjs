@@ -66,7 +66,11 @@ const COLOUR = `
     for (let n = el; n; n = n.parentElement) {
       const cs = getComputedStyle(n);
       let c = parse(cs.backgroundColor);
-      if ((!c || c.a === 0) && cs.backgroundImage !== 'none' && !/url\\(/.test(cs.backgroundImage)) c = firstStop(cs.backgroundImage);
+      // (driver, Nov 10, no assertion changed - frames 42785538439 / probe d2126733: since main's bug #4 the rail's active item holds the "Journal"
+      // label, and main's polish draws its olive ribbon as background-image linear-gradient(...) at 3px x 56%; the first stop of a gradient that does
+      // not cover the box is a mark beside the text, not the ground under it - only a covering gradient is read as a ground)
+      // if ((!c || c.a === 0) && cs.backgroundImage !== 'none' && !/url\\(/.test(cs.backgroundImage)) c = firstStop(cs.backgroundImage);
+      if ((!c || c.a === 0) && cs.backgroundImage !== 'none' && !/url\\(/.test(cs.backgroundImage) && /^(auto|auto auto|cover|100% 100%)$/.test(cs.backgroundSize.trim())) c = firstStop(cs.backgroundImage);
       if (c && c.a > 0) { layers.push(c); if (c.a >= 1) break; }
     }
     let g = layers.length && layers[layers.length - 1].a >= 1 ? layers.pop() : (parse(getComputedStyle(document.documentElement).backgroundColor) || { r: 0, g: 0, b: 0, a: 1 });
