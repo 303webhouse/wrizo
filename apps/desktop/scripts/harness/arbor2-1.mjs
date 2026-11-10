@@ -295,8 +295,13 @@ await withHarness(async (app) => { await pinClock(app, 12); try {
       // ok('L3b night: the lamp is on screen - nothing opaque covers body beside the page top (the desk host is see-through); the bar keeps its own espresso ground',
       //   cover.margin.length === 0 && cover.bar === 'rgb(27, 18, 12)', JSON.stringify(cover));
       // SUCCESSOR L3c: the same, with the bar on the night room's brown #241912.
-      ok('L3c night: the lamp is on screen - nothing opaque covers body beside the page top (the desk host is see-through); the bar keeps its own ground, the night room\'s brown #241912',
-        cover.margin.length === 0 && cover.bar === 'rgb(36, 25, 18)', JSON.stringify(cover));
+      // PARKED 2026-11-10 (SUPERSEDED - NICK RULED, Nov 9, 11:29 pm, via Fable: the night room is brown B, its bars #19110B; Actions 42919087185 read
+      // rgb(25, 17, 11) - missed by the brown-B sweep, which re-ran the frames files and not the Arbor harness files). Original, verbatim:
+      // ok('L3c night: the lamp is on screen - nothing opaque covers body beside the page top (the desk host is see-through); the bar keeps its own ground, the night room\'s brown #241912',
+      //   cover.margin.length === 0 && cover.bar === 'rgb(36, 25, 18)', JSON.stringify(cover));
+      // SUCCESSOR L3d: the same, with the bar on brown B's #19110B.
+      ok('L3d night: the lamp is on screen - nothing opaque covers body beside the page top (the desk host is see-through); the bar keeps its own ground, brown B\'s #19110B',
+        cover.margin.length === 0 && cover.bar === 'rgb(25, 17, 11)', JSON.stringify(cover));
       await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]); await sleep(150);
       const rm = await state(app);
       ok('L1 night, reduced motion: the lamp is a still frame (no animation)', rm.lampAnim === 'none', rm.lampAnim);
