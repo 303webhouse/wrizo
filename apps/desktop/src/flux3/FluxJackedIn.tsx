@@ -296,36 +296,45 @@ export function FluxJackedIn({ on, scrollRef, unitCount }: Props) {
       scroll.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', schedule);
       cancelAnimationFrame(raf);
-      // THE DECOMPILE: only when she jacks out and the page stays, in Flux, with signal showing; anything else (leaving, the still state, a refused
-      // flash) is a cut
+      // THE DECOMPILE: when she jacks out in Flux with signal showing (the page staying, or leaving to BUILD); anything else (the still state, another theme) is a cut. A refused flash drops the turn, never the fade
       if (!words.size || still() || document.documentElement.getAttribute('data-theme') !== 'flux') { layer.remove(); return; }
-      // the page's scroller is gone (leaving to BUILD replaces it): the fade stands on in a fixed overlay at the signal's last place, whole, and goes after DECOMPILE_MS
-      if (!scroll.isConnected) {
+      // LEAVING TO BUILD REPLACES THE PAGE'S SCROLLER, and the layer (and every word's Range) goes with it. The fade then stands on in a fixed overlay at the signal's last screen place, whole,
+      // from where its opacity had got to (elapsed ms into the fade), and goes after DECOMPILE_MS (Fable, Nov 9: the rows visible all through the leave; the harness caught them cut ~90 ms in)
+      let overlaid = false;
+      const toOverlay = (elapsed: number) => {
+        if (overlaid) return;
+        overlaid = true;
+        cancelAnimationFrame(raf);
         const ov = document.createElement('div');
         ov.setAttribute('aria-hidden', 'true');
         ov.style.cssText = `position:fixed;left:${snap.left}px;top:${snap.top - (snap.now - snap.scrollTop) * snap.s}px;width:${snap.w}px;height:0;transform:scale(${snap.s});transform-origin:0 0;pointer-events:none;z-index:70;`;
+        layer.classList.remove('decompile');
+        layer.style.transition = 'none';
+        layer.style.opacity = String(Math.max(0, 1 - elapsed / DECOMPILE_MS));
         ov.appendChild(layer);
         document.body.appendChild(ov);
-        if (tryFlash('f3-decompile')) words.forEach((_, el) => turnOver(el));
-        layer.querySelectorAll<HTMLElement>('.flux3-compile-row').forEach((hd) => { hd.style.transform = 'none'; hd.style.opacity = '1'; });
-        requestAnimationFrame(() => layer.classList.add('decompile'));
-        window.setTimeout(() => ov.remove(), DECOMPILE_MS + 80);
-        return;
-      }
+        requestAnimationFrame(() => requestAnimationFrame(() => { layer.style.transition = `opacity ${Math.max(60, DECOMPILE_MS - elapsed)}ms ease-out`; layer.style.opacity = '0'; }));
+        window.setTimeout(() => ov.remove(), DECOMPILE_MS + 120);
+      };
       // the signal resolves: every block turns over (filled to hollow, hollow to filled), still whole, and fades off its word. The TURN is the one change the flash budget is asked for; a refusal
       // drops the turn and keeps the fade, so the rows are never cut away while she leaves (Fable, Nov 9: the rows visible all through the leave)
       const flip = tryFlash('f3-decompile');
       layer.querySelectorAll<HTMLElement>('.flux3-compile-row').forEach((hd) => { hd.style.transform = 'none'; hd.style.opacity = '1'; });
       if (flip) words.forEach((_, el) => turnOver(el));
-      const end = performance.now() + DECOMPILE_MS;
+      const start = performance.now();
+      const end = start + DECOMPILE_MS;
+      if (!scroll.isConnected) { layer.querySelectorAll<HTMLElement>('.flux3-compile-row').forEach((hd) => { hd.style.transform = 'none'; hd.style.opacity = '1'; }); toOverlay(0); return; }
       // each glyph run follows its own word while the page settles out of the zoom (its Range is the word; the page's layout box moves under it)
       const follow = () => {
+        if (!scroll.isConnected) { toOverlay(performance.now() - start); return; }
         const { L, s } = frame();
         words.forEach(({ range, text }, el) => {
           const rects = range.getClientRects();
+          if (!range.startContainer.isConnected) return;   // its text went with the page's scroller: the overlay takes over on the next frame
           if (rects.length !== 1 || range.toString() !== text) { el.remove(); words.delete(el); return; }
           placeOn(el, rects[0], L, s);
         });
+        if (!scroll.isConnected) { toOverlay(performance.now() - start); return; }
         if (performance.now() < end && words.size) raf = requestAnimationFrame(follow); else layer.remove();
       };
       raf = requestAnimationFrame(() => { follow(); layer.classList.add('decompile'); });
