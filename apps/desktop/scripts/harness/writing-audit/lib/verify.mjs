@@ -60,8 +60,10 @@ export function verify({ exp, box, before, early, late, errors = [], expect = {}
   if (!expect.blur && !late.focused) fail('focus', `focus left the editor (active element: ${late.active})`);
 
   // 6. THE PAGE HAS NOT MOVED (law 1: its rectangle is the same before and after)
-  if (before && before.page && late.page && !rectEq(before.page, late.page)) fail('page', `the page's rect changed ${JSON.stringify(before.page)} -> ${JSON.stringify(late.page)}`);
-  if (before && before.page && early && early.page && !rectEq(before.page, early.page)) fail('page', `the page's rect changed within 2 frames ${JSON.stringify(before.page)} -> ${JSON.stringify(early.page)}`);
+  const zoomEngaged = !!before && !before.tw && !!late.tw;   // the one ruled exception (page-size, Oct 2026): the Typewriter's zoom engages and the same page is drawn larger
+  if (zoomEngaged && before.page && late.page && !rectEq(before.page, late.page)) notes.push(`the Typewriter zoom engaged on this step: the page went ${Math.round(before.page.w)}x${Math.round(before.page.h)} -> ${Math.round(late.page.w)}x${Math.round(late.page.h)} (the ruled exception; the page's rect is judged between steps from here)`);
+  else if (before && before.page && late.page && !rectEq(before.page, late.page)) fail('page', `the page's rect changed ${JSON.stringify(before.page)} -> ${JSON.stringify(late.page)}`);
+  if (!zoomEngaged && before && before.page && early && early.page && !rectEq(before.page, early.page)) fail('page', `the page's rect changed within 2 frames ${JSON.stringify(before.page)} -> ${JSON.stringify(early.page)}`);
 
   // 7. THE VIEW HAS NOT JUMPED (a short document never scrolls: the scroll changes only when the caret would leave the window)
   if ((before && before.tw) || late.tw) notes.push('the Typewriter is engaged on this page: it scrolls the line to its resting place by design, so the view is not judged here (its own cases are a later session)');

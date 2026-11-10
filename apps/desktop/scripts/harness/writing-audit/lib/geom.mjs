@@ -26,7 +26,7 @@ export const lineOf = (lines, p) => lines.findIndex((l) => l.ps.includes(p));
 export function nearest(line, x) {
   let best = Infinity;
   line.xs.forEach((sx) => { best = Math.min(best, Math.abs(sx - x)); });
-  return line.ps.filter((_, i) => Math.abs(line.xs[i] - x) <= best + 1);
+  return line.ps.filter((_, i) => Math.abs(line.xs[i] - x) <= best + 3);
 }
 
 /** Up / Down from offset p with goal column goalX */

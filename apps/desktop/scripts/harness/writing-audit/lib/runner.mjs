@@ -38,7 +38,9 @@ export async function main({ groupsDef, order, title }) {
   }
   async function settleRead(d) {
     await d.frames(); const early = await d.read();
-    await sleep(350); const late = await d.read();
+    await sleep(350);
+    let late = await d.read();
+    if (late.tw) { await d.still(); late = await d.read(); }
     await attachPixels(d, late);
     return { early, late };
   }
@@ -151,7 +153,7 @@ export async function main({ groupsDef, order, title }) {
       }
       rec.finalText = late.text;
       m = exp;
-      lastVertical = st.geo === 'up' || st.geo === 'down';
+      lastVertical = (st.geo === 'up' || st.geo === 'down') && late.focus !== 0 && late.focus !== n;   // a jump to the document's start or end starts a new goal column
     }
     return rec;
   }

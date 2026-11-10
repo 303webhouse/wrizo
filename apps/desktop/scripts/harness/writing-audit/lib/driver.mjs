@@ -68,10 +68,23 @@ export function makeDriver(app, cfg) {
       await waitFor(`window.__wa && window.__wa.read().text === ${JSON.stringify(text)}`, 'the editor holds the seeded text', 8000);
       await waitFor("!document.querySelector('.wz-splash')", 'splash gone', 8000).catch(() => {});
       await sleep(350);
+      await d.still();
       d.errors.length = 0;
       return id;
     },
     read: () => ev('window.__wa.read()'),
+    /** wait until the page's rect and the scroll position have not changed for `quiet` consecutive looks (cap `capMs`): the Typewriter glides, the page eases in; a read in the middle is a read of the animation */
+    async still(capMs = 3000, quiet = 3, gapMs = 150) {
+      const key = (r) => JSON.stringify([r.page, r.scroll && r.scroll.top, r.scroll && r.scroll.win, r.tw]);
+      let last = null, same = 0; const t0 = Date.now();
+      while (Date.now() - t0 < capMs) {
+        const k = key(await d.read());
+        same = k === last ? same + 1 : 0; last = k;
+        if (same >= quiet) return Date.now() - t0;
+        await sleep(gapMs);
+      }
+      return -1;
+    },
     /** the native caret as PAINTED, from screenshots (the caret blinks, so up to `tries` looks, 100 ms apart):
      *  1. the forced-magenta caret (probe.arm); 2. if the colour cannot be forced (run 42918956962: nothing magenta in 8 looks), the caret by DIFFERENCE - the same frame with and without the selection
      *  (removeAllRanges, then the selection is put back exactly where it was). `via` says which found it; null if neither ever does. */
