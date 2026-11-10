@@ -76,7 +76,7 @@ try { await withHarness(async (app) => {
       ok(`ARM ${name} stood and counted keys`, r.enough && r.stoodRight, r.line);
     }
     // the mutants: +5 / +10 ms in the key path of arm J on the control page
-    for (const extra of [5, 10]) {
+    for (const extra of (process.env.ARMS_MUTANTS === '1' ? [5, 10] : [])) {   // the mutants run in the last step only
       variant = '';
       const m = await L.runArms(`control + ${extra} ms mutant`, { extra, on: false });
       ok(`L-MUT-${extra} the method calls a key ${extra} ms slower RED on the cost reading (${m.line})`, !m.cost.pass && m.enough && m.stoodRight, '');
