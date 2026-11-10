@@ -1,3 +1,4 @@
+import { withRoomPin } from './mockup-kit.mjs';
 // ARBOR v2 MOCKUP, ROUND r7 (Fable, Oct 31) - the self-checks for Arbor's DARK PAGE (§2d) and the light page's ink, as named screens for INK's
 // frames job (-f screens_file=apps/desktop/scripts/frames/arbor2-r7.mjs). The job's dark tone IS the existing Page: Dark preference
 // (data-page='dark'), so the dark frames are the dark page; the light frames the light page. Every screen THROWS with its numbers when its check
@@ -65,7 +66,7 @@ const pickThemesRoom = (app, which) => app.evalJs(`(async () => { const text = $
   for (let i = 0; i < 3; i++) await new Promise((r) => requestAnimationFrame(r));
   if (tools && !document.querySelector(".wz-sliver[data-open='true']")) { document.querySelector('.wz-sliver-grip')?.click(); for (let i = 0; i < 3; i++) await new Promise((r) => requestAnimationFrame(r)); }
   return !!b; })()`);
-export default {
+const __screens = {
   // ── THE PAGE IN BOTH TONES AND BOTH ROOMS, AND ITS RECT. Dark tone: paper #1A1510, border #3A2D22, ink #EFE4CB (>= 13.9:1), low ink #B9AA8C
   // (>= 4.5:1), caret brass, selection brass rules over and under (no fill that hides the ink); the same in the DAY room (the bar's Room switch).
   // Light tone: ink #241A10 >= 13.9:1, in both rooms. Zoomed Free Write and Draft; the page's rect equals flag-off in every case (Page: Dark too).
@@ -183,3 +184,6 @@ export default {
     say('r7-board', { ok, ...r });
   },
 };
+
+// (census (a), Nov 10: every screen here runs under the kit's room pin - midday unless the screen sets its own room; mockup-kit.mjs withRoomPin)
+export default withRoomPin(__screens);

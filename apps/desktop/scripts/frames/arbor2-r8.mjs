@@ -1,3 +1,4 @@
+import { withRoomPin } from './mockup-kit.mjs';
 // ARBOR v2 MOCKUP, ROUND r8 (Fable, Oct 31: Nick picked a separate Room setting) - the self-checks, as named screens for INK's frames job
 // (-f screens_file=apps/desktop/scripts/frames/arbor2-r8.mjs). In the mockup the room reads data-room when it is set, else it follows data-page;
 // the bar's old Room switch is the Room control now, "Room: Day / Night" at the head of the Mood menu. In session only, nothing stored.
@@ -84,7 +85,7 @@ const RECT = `(() => { const r = (el) => { if (!el) return null; const b = el.ge
   return { page: r(document.querySelector('.mode-page')), col: r(document.querySelector('.mode-pagecol')), bar: r(bar), zoom: document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null, w: innerWidth }; })()`;
 const same = (a, b) => !!a && !!b && ['l', 't', 'w', 'h'].every((k) => Math.abs(a[k] - b[k]) <= 0.5);
 
-export default {
+const __screens = {
   // PARKED 2026-11-01 (SUPERSEDED by Fable's ruling, Nov 1: "Room settled: Follow the clock / Always day / Always night (unset = clock,
   // 07:00-19:00 local)" - unset, the room no longer follows the tone, and the row's buttons are the three choices). Kept verbatim under the
   // name r8-room-v1 (not in r8's run list any more); SUCCESSOR: r9-room in scripts/frames/arbor2-r9.mjs.
@@ -287,3 +288,6 @@ export default {
     say('r8-board', { ok, reads });
   },
 };
+
+// (census (a), Nov 10: every screen here runs under the kit's room pin - midday unless the screen sets its own room; mockup-kit.mjs withRoomPin)
+export default withRoomPin(__screens);

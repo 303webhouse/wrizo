@@ -1,3 +1,4 @@
+import { withRoomPin } from './mockup-kit.mjs';
 // ARBOR v2 MOCKUP, ROUND r9 (Fable, Nov 1: "Room settled: Follow the clock / Always day / Always night (unset = clock, 07:00-19:00 local)...
 // Arbor crossfades over ~20 min (a cut under reduced motion)") - the self-checks, as named screens for INK's frames job
 // (-f screens_file=apps/desktop/scripts/frames/arbor2-r9.mjs). In session only, nothing stored.
@@ -111,7 +112,7 @@ const THEMES_ROWREAD = `(async () => { const VAL = { Light: 'day', Dark: 'night'
   const row = [...document.querySelectorAll('.wz-theme-picker .mode-crow')].find((r) => r.querySelector(':scope > span')?.textContent.trim() === 'Room');
   const out = row ? { label: 'Room', opts: [...row.querySelectorAll('.mode-seg button')].map((b) => [VAL[b.textContent.trim()] ?? b.textContent.trim(), b.textContent.trim(), b.classList.contains('on') ? 'true' : 'false']), notInMood: !document.querySelector('.arbor2-mood [data-room-opt], .arbor2-room-row') } : null;
   if (!was) strip.click(); return out; })()`;
-export default {
+const __screens = {
   // ── THE ROOM CONTROL. The Mood menu's FIRST row is "Room" with exactly Follow the clock / Always day / Always night; unset (no data-room) it is
   // Follow the clock, pressed. Following the clock the room is day at 12:00 and night at 22:00 WHATEVER the page tone; Always night at noon and
   // Always day at 22:00 land at once (dayness 0 / 1, no fade); Follow the clock again gives the clock's room; the page keeps the tone's paper;
@@ -403,3 +404,6 @@ export default {
     say('r9-pic-menu', row);
   },
 };
+
+// (census (a), Nov 10: every screen here runs under the kit's room pin - midday unless the screen sets its own room; mockup-kit.mjs withRoomPin)
+export default withRoomPin(__screens);

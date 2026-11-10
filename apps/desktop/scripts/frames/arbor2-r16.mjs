@@ -1,3 +1,4 @@
+import { withRoomPin } from './mockup-kit.mjs';
 // ARBOR v2 MOCKUP, ROUND r16 - as named screens for INK's frames job (-f themes=plateau -f screens_file=apps/desktop/scripts/frames/arbor2-r16.mjs).
 // Sources (Nov 2): the Wrizors' r14 review, Downloads\wrizors-to-ARBOR-nov2.md (md5 11058930) via Fable: 1. Nick's logo back in the app's
 // corner rect at .7, both rooms, on the front door; 2. the tagline "For humans who write." and the door words in Alegreya Sans; 3. a "?" is
@@ -76,7 +77,7 @@ const near = (a, b, tol) => a.every((v, i) => Math.abs(v - b[i]) <= tol);
 // is a colour among the mark's inks (the most common un-blended colours, rounded to 6)
 const has = (top, rgb, tol = 14) => top.some(([c, n]) => n >= 20 && near(c, rgb, tol));
 
-export default {
+const __screens = {
   // ── 1. THE CORNER LOGO FOLLOWS THE ROOM: night = cream letters + brass o and dot; day = all sage; at the fade's middle, half and half.
   'r16-logo-rooms': async (app) => {
     await page(app, 'arbor-r16-logo');
@@ -602,3 +603,6 @@ const PLACEHOLDERS = `(() => { const parse = (s) => (String(s).match(/[\\d.]+/g)
   return [...document.querySelectorAll('.wz-screen input.wz-field')].filter((i) => i.getBoundingClientRect().width > 0).map((i) => { const ph = parse(getComputedStyle(i, '::placeholder').color), bg = parse(getComputedStyle(i).backgroundColor);
     const a = ph.length > 3 ? ph[3] : 1; const fg = [0, 1, 2].map((k) => ph[k] * a + bg[k] * (1 - a)); const x = L(fg), y = L(bg);
     return { placeholder: i.placeholder, ratio: Math.round((Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05) * 100) / 100 }; }); })()`;
+
+// (census (a), Nov 10: every screen here runs under the kit's room pin - midday unless the screen sets its own room; mockup-kit.mjs withRoomPin)
+export default withRoomPin(__screens);

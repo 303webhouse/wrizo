@@ -5,6 +5,7 @@
 // the Machina mockup). Each THROWS with its numbers when it fails ("ARBOR-R17 <screen> {...}"). Written red-first: run against r16 rebased
 // (6bbe5c91) before the r17 build. Seeds go through window.wrizo*.
 import { themeRoomCheck, sizeBoxCheck, guarded } from './mockup-kit.mjs';
+import { withRoomPin } from './mockup-kit.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ED = '.forward-only-editor';
@@ -75,7 +76,7 @@ const newPageCheck = async (app, name) => {
 const openMood = (app) => app.evalJs("(() => { const m = [...document.querySelectorAll('.arbor2-bar-head')].find((h) => /^Mood/.test(h.textContent.trim()) && h.getAttribute('aria-expanded') !== 'true'); if (m) m.click(); return true; })()");
 
 // (Fable, Nov 2, all lanes: a check that throws, crashes or prints no verdict is RED - the kit's verdict guard wraps every screen here)
-export default guarded({
+const __screens = guarded({
   // ── THE ROOM BESIDE PAGE in the Themes menu: Arbor's words, Day / Night / By the clock move the room at once, the Mood menu's row agrees
   // (amendment before any green: the Wrizors' note md5 a17aae25, gated by Fable, sets the words "Room: Light · Dark · By the clock" and takes
   // the row out of the Mood menu. Original: words By the clock / Day / Night, the Mood row agreeing.)
@@ -242,3 +243,6 @@ export default guarded({
   'r17-pic-tabs': async (app) => { await page(app, 'arbor-r17-pic-t', 'Draft'); await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(150); await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(900); await app.evalJs("(() => { const s = document.createElement('style'); s.textContent = '.arbor2-bar{ visibility:hidden !important; }'; document.head.appendChild(s); })()"); },
   'r17-pic-grafts': async (app) => { await page(app, 'arbor-r17-pic-g', 'Draft'); await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(600); await app.evalJs("document.querySelector('#wz-tutor-tab-links')?.click()"); await sleep(600); await app.evalJs("(() => { const s = document.createElement('style'); s.textContent = '.arbor2-bar{ visibility:hidden !important; }'; document.head.appendChild(s); })()"); },
 }, { verdict: ["ARBOR-R17"] });
+
+// (census (a), Nov 10: every screen here runs under the kit's room pin - midday unless the screen sets its own room; mockup-kit.mjs withRoomPin)
+export default withRoomPin(__screens);

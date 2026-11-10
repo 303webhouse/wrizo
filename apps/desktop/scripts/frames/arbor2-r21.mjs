@@ -5,6 +5,7 @@
 // scrollbars only when needed; the "..." menu's full-screen line >= 4.5:1) and its Judgement 2 (the reach curve). Every check THROWS with its numbers
 // and prints them when it passes ("ARBOR-R21 <screen> {...}"). Written red-first (r21 base c664768f).
 import { guarded } from './mockup-kit.mjs';
+import { withRoomPin } from './mockup-kit.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
@@ -307,4 +308,5 @@ Object.assign(screens, {
 });
 const hideBar = (app) => app.evalJs("(() => { const s = document.createElement('style'); s.textContent = '.arbor2-bar{ visibility:hidden !important; }'; document.head.appendChild(s); return true; })()");
 
-export default guarded(screens, { verdict: ['ARBOR-R21'] });
+// (census (a), Nov 10: every screen here runs under the kit's room pin - midday unless the screen sets its own room; mockup-kit.mjs withRoomPin)
+export default withRoomPin(guarded(screens, { verdict: ['ARBOR-R21'] }));

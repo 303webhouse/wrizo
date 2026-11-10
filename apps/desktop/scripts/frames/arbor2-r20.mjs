@@ -7,6 +7,7 @@
 // right on the front door (no page), wrong over a page, where the key must land.
 // Every check THROWS with its numbers when it fails and prints them when it passes ("ARBOR-R20 <screen> {...}"). Written red-first (r20 base 61baa507).
 import { guarded } from './mockup-kit.mjs';
+import { withRoomPin } from './mockup-kit.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
@@ -169,4 +170,5 @@ Object.assign(screens, {
   'r20-pic-night-bars': async (app) => { await openPage(app, 'arbor-r20-p4'); await setRoom(app, 'night'); await sleep(600); await hideBar(app); },
 });
 
-export default guarded(screens, { verdict: ['ARBOR-R20'] });
+// (census (a), Nov 10: every screen here runs under the kit's room pin - midday unless the screen sets its own room; mockup-kit.mjs withRoomPin)
+export default withRoomPin(guarded(screens, { verdict: ['ARBOR-R20'] }));

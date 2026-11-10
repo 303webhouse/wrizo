@@ -426,6 +426,25 @@ export async function sizeBoxCheck(app, { name, say, fail, selection = false }) 
  *      but is red on a throw or a page error like any other screen.
  *  A guard that cannot watch the page is red too (no app.tap = blind, never a quiet pass). Self-tests: scripts/frames/mockup-kit-selftest.mjs
  *  (the frames job; planted throws must come out failed) and scripts/harness/mockup-kit-guard-unit.mjs (browserless). */
+/* THE ROOM PIN (Fable, Nov 10, 3:45 pm, census (a): "no Arbor screen takes its room from the clock"; the mechanism approved by Chat 1). The frames
+ *  runner's clock is America/Denver, so a screen that set no room read day or night by the hour it ran (r13's tools-fit went red at 21:00Z on an
+ *  unchanged sha). withRoomPin(screens) wraps each Arbor screen: before it runs, the browser's timezone is overridden (CDP
+ *  Emulation.setTimezoneOverride) to an Etc/GMT zone where it is about MIDDAY now, and the room is re-read (arbor2Clock(null), when the page has
+ *  it) - so every screen that sets no room sees DAY. A screen that sets its own room still wins: data-room, the URL pin (arbor2room) and the
+ *  faked clock (arbor2Clock('hh:mm'), the "By the clock" checks) all override the clock. No URL is forced, the app is untouched, and only files
+ *  that wrap their export in withRoomPin are touched. Cleared after each screen. Checked by arbor2-r23.mjs r23-room-pin (with its mutant leg). */
+export const zoneAt = (hour, now = new Date()) => { const h = now.getUTCHours() + now.getUTCMinutes() / 60; let x = Math.round(hour - h); if (x > 14) x -= 24; if (x < -12) x += 24;
+  return x === 0 ? 'Etc/GMT' : `Etc/GMT${x > 0 ? '-' : '+'}${Math.abs(x)}`; };   // Etc/GMT-5 is UTC+5 (the IANA sign is inverted)
+export async function pinClock(app, hour = 12) {
+  await app.cdp('Emulation.setTimezoneOverride', { timezoneId: zoneAt(hour) });
+  try { await app.evalJs("(() => { if (typeof window.arbor2Clock === 'function') window.arbor2Clock(null); return true; })()"); } catch { /* no page yet */ }
+}
+export async function unpinClock(app) { try { await app.cdp('Emulation.setTimezoneOverride', { timezoneId: '' }); } catch { /* already clear */ } }
+export function withRoomPin(screens) {
+  const out = {};
+  for (const [name, fn] of Object.entries(screens)) out[name] = async (app, ctx) => { await pinClock(app, 12); try { await fn(app, ctx); } finally { await unpinClock(app); } };
+  return out;
+}
 export const isPicture = (name) => /-pic-/.test(name) || /-walk-(open|closed)-/.test(name);
 export function guarded(screens, { verdict, picture = isPicture }) {
   if (!Array.isArray(verdict) || !verdict.length) throw new Error('guarded: name the verdict prefixes');

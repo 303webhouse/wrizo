@@ -8,7 +8,8 @@
 //   4b. the Wrizors: the page's scrollbar thumb was 6 px and stood at rest; Nick's Nov 4 rule - 4 px, only on scroll, hover or drag (~1 s after).
 //   4c. the Wrizors: "Selection" in the Tools drawer read 2.2:1 - its switched-off state (nothing highlighted); chosen-able, it must read 4.5:1.
 // Every check THROWS with its numbers when it fails and prints them when it passes ("ARBOR-R23 <screen> {...}"). Seeds go through window.wrizo*.
-import { guarded } from './mockup-kit.mjs';
+import { guarded, zoneAt, pinClock } from './mockup-kit.mjs';
+import { withRoomPin } from './mockup-kit.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
@@ -266,7 +267,26 @@ const labelsCheck = async (app, name) => {
   if (bad.length) fail(name, { bad, low, journal, words });
   say(name, { journal, words, lowest: rows.sort((a, b) => a.ratio - b.ratio).slice(0, 4) });
 };
+// ── CENSUS (a): THE ROOM PIN ITSELF (Chat 1's condition (i)): a page that sets no room, opened under a faked NIGHT clock (the browser's timezone
+// at local midnight) reads NIGHT - the pin removed, the mutant leg: the fake works and the room follows the clock - and the same page, after the
+// kit's pinClock(12) and a reload, reads DAY. The local hour each time is printed, so the clock as the page sees it is on the record.
+const roomPinCheck = async (app, name) => {
+  const id = `arbor-r23-rp-${Math.random().toString(36).slice(2, 6)}`;
+  await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id, text: PAGEW, createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page' })})`);
+  await sleep(300);
+  const READ = "({ room: document.documentElement.getAttribute('data-arbor2-room'), dataRoom: document.documentElement.getAttribute('data-room'), hour: new Date().getHours(), tz: Intl.DateTimeFormat().resolvedOptions().timeZone })";
+  await app.cdp('Emulation.setTimezoneOverride', { timezoneId: zoneAt(0) });
+  await go(app, `#/page/${id}`); await sleep(900);
+  const unpinned = await app.evalJs(READ);
+  await pinClock(app, 12);
+  await go(app, `#/page/${id}`); await sleep(900);
+  const pinned = await app.evalJs(READ);
+  const ok = { mutantNight: unpinned.room === 'night' && unpinned.dataRoom === null, pinnedDay: pinned.room === 'day' && pinned.dataRoom === null && pinned.hour >= 10 && pinned.hour <= 14 };
+  if (!ok.mutantNight || !ok.pinnedDay) fail(name, { ok, unpinned, pinned });
+  say(name, { ok, unpinned, pinned });
+};
 const screens = {
+  'r23-room-pin': (app) => roomPinCheck(app, 'r23-room-pin'),
   'r23-labels': (app) => labelsCheck(app, 'r23-labels'),
   'r23-labels-2000': async (app) => { await app.emulateDpr(1, 2000, 1125); await labelsCheck(app, 'r23-labels-2000'); },
   'r23-labels-mutant': async (app) => {
@@ -307,4 +327,5 @@ const screens = {
   'r23-selection': (app) => selection(app, 'r23-selection'),
 };
 
-export default guarded(screens, { verdict: ['ARBOR-R23'] });
+// (census (a), Nov 10: every screen here runs under the kit's room pin - midday unless the screen sets its own room; mockup-kit.mjs withRoomPin)
+export default withRoomPin(guarded(screens, { verdict: ['ARBOR-R23'] }));

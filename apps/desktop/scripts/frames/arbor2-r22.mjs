@@ -10,6 +10,7 @@
 // Every check THROWS with its numbers when it fails and prints them when it passes ("ARBOR-R22 <screen> {...}"). Seeds go through window.wrizo*.
 // Pictures (-pic-) are for the eye: the board with each drawer open, the corner logo by day before and after, the splash mid-run.
 import { guarded } from './mockup-kit.mjs';
+import { withRoomPin } from './mockup-kit.mjs';
 import { zoomProof, holeOf, stopsOf } from './arbor2.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -698,4 +699,5 @@ const inset8x = async (app) => {
   await sleep(200);
 };
 
-export default guarded(screens, { verdict: ['ARBOR-R22'] });
+// (census (a), Nov 10: every screen here runs under the kit's room pin - midday unless the screen sets its own room; mockup-kit.mjs withRoomPin)
+export default withRoomPin(guarded(screens, { verdict: ['ARBOR-R22'] }));

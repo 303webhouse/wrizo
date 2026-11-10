@@ -1,3 +1,4 @@
+import { withRoomPin } from './mockup-kit.mjs';
 // ARBOR v2 MOCKUP, ROUND r13 - the Wrizors' three fixes, as named screens for INK's frames job (-f themes=plateau -f screens_file=apps/desktop/
 // scripts/frames/arbor2-r13.mjs). Sources: Fable, Nov 1 ("Arbor r13 = the Wrizors' three fixes: Downloads\wrizors-to-ARBOR-nov1d.md (md5
 // efd6b91b). The Tools drawer must stop AT the page edge (today it runs under the page and cuts INK / PRESETS / Pages Kind); the Tutor cloths
@@ -162,7 +163,7 @@ const fitCheck2 = async (app, name, want3 = false) => {
   say(name, brief);
 };
 
-export default {
+const __screens = {
   // PARKED 2026-11-02 (SUPERSEDED by Nick's C2 folder tabs, Nov 2 (spec draft 23 §9c; the Wrizors' note md5 a17aae25, gated by Fable): the tabs stand OFF the drawer - the Tools tabs up from its top edge, the Tutor tabs off its right edge - so they are no longer inside it). Kept verbatim under the name r13-tools-fit-v1 (not in the run list); SUCCESSOR r13-tools-fit below (fitCheck2).
   'r13-tools-fit-v1': async (app) => { await page(app, 'arbor-r13-fit'); await fitCheck(app, 'R13-TOOLS-FIT'); },
   // (premise change, Nov 10: the room is pinned DAY - the screens followed the runner's clock; see nothingCutB's park)
@@ -264,3 +265,6 @@ export default {
     say('r13-night-drawers', brief);
   },
 };
+
+// (census (a), Nov 10: every screen here runs under the kit's room pin - midday unless the screen sets its own room; mockup-kit.mjs withRoomPin)
+export default withRoomPin(__screens);

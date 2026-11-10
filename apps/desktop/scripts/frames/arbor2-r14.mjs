@@ -1,3 +1,4 @@
+import { withRoomPin } from './mockup-kit.mjs';
 // ARBOR v2 MOCKUP, ROUND r14 - THE ARRIVAL SCREEN RETIRES; THE SPLASH IS THE FRONT DOOR, as named screens for INK's frames job (-f themes=plateau
 // -f screens_file=apps/desktop/scripts/frames/arbor2-r14.mjs). Source: Fable, Nov 1 ("retire the Arrival screen in Arbor under the flag. The
 // splash's Sign in door opens the existing sign-in / sign-up forms (keep the invite-code field); add a check that both work from the splash").
@@ -85,7 +86,7 @@ const MEASURE = (b64) => `(async () => {
     ratios.sort((a, b) => a - b); return { text: run.text, p2: ratios.length ? Math.round(ratios[Math.floor(ratios.length * 0.02)] * 100) / 100 : null }; }); })()`;
 const pixels = async (app, sel) => { await app.evalJs(COLLECT(sel)); await app.evalJs(HIDE); const shot = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data; await app.evalJs(SHOW); return app.evalJs(MEASURE(shot)); };
 
-export default {
+const __screens = {
   // ── THE FRONT DOOR, a visitor: no Arrival hero (logo, load bar), the splash's finished drawing where the splash drew it, the tagline, and two
   // doors - Write and Sign in (no Open: a visitor has nothing to open). Its words >= 4.5:1 on what is behind them, in both rooms.
   // PARKED 2026-11-02 (SUPERSEDED by the Wrizors, wrizors-to-ARBOR-nov2.md via Fable: "The tagline must read exactly 'For humans who
@@ -302,3 +303,6 @@ export default {
   'r14-pic-signin': async (app) => { const a = await anon(app); try { await front(app, null); await app.evalJs(clickDoor('Sign in')); await sleep(500); } finally { await a.done(); } },
   'r14-pic-signup': async (app) => { const a = await anon(app); try { await front(app, null); await app.evalJs(clickDoor('Sign in')); await sleep(300); await app.evalJs(clickDoor('New here? Create an account')); await sleep(800); } finally { await a.done(); } },
 };
+
+// (census (a), Nov 10: every screen here runs under the kit's room pin - midday unless the screen sets its own room; mockup-kit.mjs withRoomPin)
+export default withRoomPin(__screens);

@@ -1,3 +1,4 @@
+import { withRoomPin } from './mockup-kit.mjs';
 // ARBOR v2 MOCKUP, ROUND r10 - THE FADE, PROVEN AT EVERY MOMENT. Named screens for INK's frames job (-f screens_file=apps/desktop/scripts/frames/
 // arbor2-r10.mjs). Sources: Fable, Nov 1 ("the floors hold at EVERY moment ... sweep every text that sits on the bare room across the whole
 // fade. Fix the proof: measure each text against the actual ground behind it, step by step"; "measure every text on the bare room at least every
@@ -182,7 +183,7 @@ const judge2 = (name, samples) => {
   return brief;
 };
 
-export default {
+const __screens = {
   // ── THE SWEEP, FREE WRITE: morning and evening fades, every text against the pixels behind it, at least every 5%; floors 4.5:1 throughout.
   // PARKED 2026-11-01 (SUPERSEDED by Fable's ruling, Nov 1, on the Wrizors' answer (spec draft 13 §2e): the count row's plate is the page's paper and its letters the page's low ink, following the Page setting, never the room; judge's bareSeen required the count on the bare room). Kept verbatim under the name
   // r10-sweep-freewrite-v1 (not in the run list); SUCCESSOR r10-sweep-freewrite below, the same sweep through judge2.
@@ -352,3 +353,6 @@ export default {
     say('r10-pic-menu', await app.evalJs("(document.querySelector('.arbor2-mood > li')?.textContent || '').replace(/\\s+/g, ' ').trim()"));
   },
 };
+
+// (census (a), Nov 10: every screen here runs under the kit's room pin - midday unless the screen sets its own room; mockup-kit.mjs withRoomPin)
+export default withRoomPin(__screens);

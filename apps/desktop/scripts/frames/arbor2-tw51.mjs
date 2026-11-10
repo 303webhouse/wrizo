@@ -8,6 +8,7 @@
 // flag the Arbor sheet's width against the page's (paper.ts re-measures every 300 ms). A CAPTURE, not a check: it prints its verdict line
 // ("ARBOR-TW51 <screen> {...}", is51 true/false) and throws only when it is blind (no zoom, no turn, no frames).
 import { guarded } from './mockup-kit.mjs';
+import { withRoomPin } from './mockup-kit.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
@@ -86,7 +87,10 @@ const capture = async (app, name, on) => {
   say(name, { is51, atOneFlipping, keys, ...ctx, rest: s.rest, typing: s.typing, turnMs: s.turnMs, strip: s.strip });
 };
 
-export default guarded({
+const __screens = guarded({
   'tw51-flag': async (app) => { await capture(app, 'tw51-flag', true); },
   'tw51-plain': async (app) => { await capture(app, 'tw51-plain', false); },
 }, { verdict: ['ARBOR-TW51'] });
+
+// (census (a), Nov 10: every screen here runs under the kit's room pin - midday unless the screen sets its own room; mockup-kit.mjs withRoomPin)
+export default withRoomPin(__screens);

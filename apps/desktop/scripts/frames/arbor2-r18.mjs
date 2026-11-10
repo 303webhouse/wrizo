@@ -12,6 +12,7 @@
 // 401), as r14. Every check THROWS with its numbers when it fails and prints them when it passes ("ARBOR-R18 <screen> {...}"); the kit's
 // verdict guard reds a crash or a silent check. Written red-first: run against r17 rebased (0f258d1c) before the r18 build.
 import { guarded } from './mockup-kit.mjs';
+import { withRoomPin } from './mockup-kit.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
@@ -611,4 +612,5 @@ const SCREENS = {
   },
 };
 
-export default guarded(SCREENS, { verdict: ['ARBOR-R18'] });
+// (census (a), Nov 10: every screen here runs under the kit's room pin - midday unless the screen sets its own room; mockup-kit.mjs withRoomPin)
+export default withRoomPin(guarded(SCREENS, { verdict: ['ARBOR-R18'] }));

@@ -5,6 +5,7 @@
 // the pictures show the SHADE ITSELF is the same. Picture screens only (no verdict): INK's frames job,
 //   -f themes=plateau -f tones=light -f screens_file=apps/desktop/scripts/frames/arbor2-shade-look.mjs -f screens=<the names below>
 import { guarded } from './mockup-kit.mjs';
+import { withRoomPin } from './mockup-kit.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
@@ -66,4 +67,5 @@ const screens = {
   'shade-pic-flash-day': async (app) => { await flashPic(app, 'arbor-flash-day', 'day'); },
 };
 
-export default guarded(screens, { verdict: ['ARBOR-SHADE'] });
+// (census (a), Nov 10: every screen here runs under the kit's room pin - midday unless the screen sets its own room; mockup-kit.mjs withRoomPin)
+export default withRoomPin(guarded(screens, { verdict: ['ARBOR-SHADE'] }));

@@ -1,3 +1,4 @@
+import { withRoomPin } from './mockup-kit.mjs';
 // ARBOR v2 MOCKUP - named screens for INK's frames job (.github/workflows/frames.yml, -f screens_file=apps/desktop/scripts/frames/arbor2.mjs).
 // NOT in harness/: run-suite runs every .mjs there, and this only takes pictures.
 //
@@ -721,7 +722,7 @@ export function zoomProof(holeOf, stopsOf) {
     sheetOn: !!k, sheetBg: kcs && kcs.backgroundColor, sheetOpacity: kcs && kcs.opacity, pageBg: pcs.backgroundColor, vMask: String(vm).slice(0, 120) };
 }
 
-export default {
+const __screens = {
   // the proof above, on a zoomed Free Write page with words (the picture is the same as arbor-page; the row FAILS if the proof does)
   'arbor-proof-zoom': async (app) => {
     await page(app, 'arbor-words', WORDS);
@@ -1215,3 +1216,6 @@ export default {
     }
   },
 };
+
+// (census (a), Nov 10: every screen here runs under the kit's room pin - midday unless the screen sets its own room; mockup-kit.mjs withRoomPin)
+export default withRoomPin(__screens);

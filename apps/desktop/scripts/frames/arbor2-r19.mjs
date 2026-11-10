@@ -20,6 +20,7 @@
 // Every check THROWS with its numbers when it fails and prints them when it passes ("ARBOR-R19 <screen> {...}"); the kit's verdict guard reds a
 // crash or a silent check. Pictures (-pic-) owe no verdict. Written red-first: run against r18 rebased (576202ff) before the r19 build.
 import { guarded } from './mockup-kit.mjs';
+import { withRoomPin } from './mockup-kit.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
@@ -711,4 +712,5 @@ Object.assign(screens, {
   'r19-pic-fw-tutor': async (app) => { await openPage(app, 'arbor-r19-pfwt', { mode: null }); await openTutor(app); await settle(app); await hideBar(app); },
 });
 
-export default guarded(screens, { verdict: ['ARBOR-R19'] });
+// (census (a), Nov 10: every screen here runs under the kit's room pin - midday unless the screen sets its own room; mockup-kit.mjs withRoomPin)
+export default withRoomPin(guarded(screens, { verdict: ['ARBOR-R19'] }));

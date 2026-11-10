@@ -1,3 +1,4 @@
+import { withRoomPin } from './mockup-kit.mjs';
 // ARBOR v2 MOCKUP, ROUND r5 (spec draft 5, md5 069cad00; Fable's r5 brief, Oct 31) - the self-checks, as named screens for INK's frames
 // job (.github/workflows/frames.yml, -f screens_file=apps/desktop/scripts/frames/arbor2-r5.mjs). Every screen THROWS with its numbers
 // when its check fails (the job keeps 300 characters of an error, so the verdicts come first), and prints them when it passes
@@ -66,7 +67,7 @@ const COLOUR = `
   const textEls = (root) => [...root.querySelectorAll('*')].concat([root]).filter((el) => [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()) && shown(el));
 `;
 
-export default {
+const __screens = {
   // ── 1. THE PAGE NEVER MOVES (§2c, the flush top bar; "page-rect identical flag on/off with the flush bar at 1366 + 1920, both rooms").
   // The same page is loaded with the flag OFF and then ON, in Free Write (Typewriter zoom) and in Draft; the page's rect must match to
   // half a pixel; with the flag on the top bar must sit flush at the window's top (its top <= 0.5 px) with the "..." inside it.
@@ -656,3 +657,6 @@ export default {
     say('r5-typewriter', { room: r3.room, ok: ok3, ...r2 });
   },
 };
+
+// (census (a), Nov 10: every screen here runs under the kit's room pin - midday unless the screen sets its own room; mockup-kit.mjs withRoomPin)
+export default withRoomPin(__screens);
