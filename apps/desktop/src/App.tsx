@@ -22,6 +22,7 @@ import { Splash } from './components/Splash';
 import { LandingGate } from './components/LandingGate';
 import { PlaceBootstrap } from './components/PlaceBootstrap';
 import { FluxBlockCaret } from './components/FluxBlockCaret';
+import { ArborEdgedCaret } from './arbor2/edgedCaret';
 import { ContextMenuHost } from './components/ContextMenuHost';
 import { HelpPop } from './components/HelpPop';
 import { DeleteDialog } from './components/DeleteDialog';
@@ -330,6 +331,8 @@ export function App() {
         <VoiceWallWhisper />
         <ThemeEffectsLayer />
         <FluxBlockCaret />
+        {/* ARBOR v2 MOCKUP (spec §19.2, Nick Nov 9): the light page's brass caret with its 1 px ink edge; nothing off the flag */}
+        <ArborEdgedCaret />
         {/* BOARD CONTEXT MENU: the one small menu and the one "Send to Trash?" dialog, mounted once - every surface asks for them through store/contextMenu.ts and store/deleteGate.ts */}
         <ContextMenuHost />
         <DeleteDialog />

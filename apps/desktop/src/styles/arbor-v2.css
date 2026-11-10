@@ -527,6 +527,16 @@
 :root[data-arbor2][data-theme='plateau'][data-page='dark'] .mode-page:not([data-instrument='ink']) .forward-only-editor{ caret-color:var(--brass) !important; }
 :root[data-arbor2][data-theme='plateau'][data-page='dark'] .mode-page ::selection{ background:rgba(255, 152, 0, .16); color:inherit;
   text-decoration-line:underline overline; text-decoration-color:var(--brass); text-decoration-thickness:1.5px; }
+/* §19.2 - THE LIGHT PAGE'S CARET (NICK RULED, Nov 9, 9:14 pm): brass with a 1 px edge in the page's ink #241A10, light page only; 2 px of brass
+   showing (plain brass is 1.85:1 on #F3EDE1; the edge is 14.6:1 on the paper and 7.9:1 against the brass). Drawn by src/arbor2/edgedCaret.tsx over
+   the native caret, which is hidden only on the editor carrying it (!important: the pen ink reaches the caret INLINE). Blinks as the native caret
+   does, lit again at every move; reduced motion: steady. The dark page's plain brass caret (above) is unchanged. Checked by frames/arbor2-r22.mjs
+   r22-light-caret. */
+:root[data-arbor2][data-theme='plateau'] [data-arbor2-caret-active='true']{ caret-color:transparent !important; }
+.arbor2-edged-caret{ position:fixed; z-index:60; pointer-events:none; box-sizing:border-box; width:4px; background:var(--brass, #FF9800);
+  border:1px solid #241A10; animation:arbor2-edged-caret 1.06s steps(1, end) infinite; }
+@keyframes arbor2-edged-caret{ 0%{ opacity:1; } 50%{ opacity:0; } }
+@media (prefers-reduced-motion: reduce){ .arbor2-edged-caret{ animation:none; } }
 
 /* ==========================================================================================================================================
    r7 - THE LIGHT PAGE'S INK (Fable, Oct 31): #2B2014 measures 13.65:1 on the paper #F3EDE1, under the 13.9 floor; Arbor's light page letters in
