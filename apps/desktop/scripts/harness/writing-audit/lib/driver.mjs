@@ -71,13 +71,27 @@ export function makeDriver(app, cfg) {
       return id;
     },
     read: () => ev('window.__wa.read()'),
-    /** the native caret as PAINTED: screenshots (up to `tries`, 100 ms apart: the caret blinks) scanned for the forced-magenta caret; null if none is ever seen */
-    async pixelCaret(tries = 8) {
+    /** the native caret as PAINTED, from screenshots (the caret blinks, so up to `tries` looks, 100 ms apart):
+     *  1. the forced-magenta caret (probe.arm); 2. if the colour cannot be forced (run 42918956962: nothing magenta in 8 looks), the caret by DIFFERENCE - the same frame with and without the selection
+     *  (removeAllRanges, then the selection is put back exactly where it was). `via` says which found it; null if neither ever does. */
+    async pixelCaret(tries = 6) {
       await ev('window.__wa.arm()');
       for (let i = 0; i < tries; i++) {
         const shot = await app.cdp('Page.captureScreenshot', { format: 'png' });
         const r = await ev(`window.__wa.scan(${JSON.stringify(shot.data)})`);
-        if (r) return { ...r, tries: i + 1 };
+        if (r) return { ...r, via: 'color', tries: i + 1 };
+        await sleep(100);
+      }
+      const at = await ev('(() => { const r = window.__wa.read(); return { a: r.anchor, f: r.focus }; })()');
+      if (at.a === null) return null;
+      for (let i = 0; i < tries; i++) {
+        const A = await app.cdp('Page.captureScreenshot', { format: 'png' });
+        await ev('window.__wa.clear()');
+        await sleep(60);
+        const B = await app.cdp('Page.captureScreenshot', { format: 'png' });
+        await ev(`window.__wa.place(${at.a}, ${at.f})`);
+        const r = await ev(`window.__wa.diff(${JSON.stringify(A.data)}, ${JSON.stringify(B.data)})`);
+        if (r && r.width <= 8) return { ...r, via: 'diff', tries: tries + i + 1 };
         await sleep(100);
       }
       return null;

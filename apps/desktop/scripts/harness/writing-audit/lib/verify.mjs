@@ -39,7 +39,7 @@ export function verify({ exp, box, before, early, late, errors = [], expect = {}
     const drawn = flux ? late.fluxCaret : late.px;
     const what = flux ? 'Flux block caret' : 'native caret (painted)';
     const at = late.selPoint ? ` [selection: ${late.selPoint}]` : '';
-    if (!drawn) fail('drawn', flux ? `Flux: the block caret is not drawn (no .flux-block-caret) while the selection is a caret in the editor${at}` : `no caret is painted anywhere on screen (looked in ${late.pxTries ?? '?'} screenshots)${at}`);
+    if (!drawn) fail('drawn', flux ? `Flux: the block caret is not drawn (no .flux-block-caret) while the selection is a caret in the editor${at}` : `no caret is painted anywhere on screen (looked in ${late.pxTries ?? '?'} screenshots, by forced colour and by difference; computed caret-color ${late.caretColor}, forced-colour sheet in place: ${late.armed})${at}`);
     else if (!box || box.via === 'rows-drift') notes.push(`drawn place not checked: the page's rows (${late.rows}) are not one per line of the model`);
     else {
       const dx = drawn.x - box.x;

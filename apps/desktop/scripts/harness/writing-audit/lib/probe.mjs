@@ -86,6 +86,7 @@ export function probeInstall() {
     out.focused = !!ae && (ae === e || e.contains(ae));
     out.active = ae ? (ae.tagName + (ae.className && typeof ae.className === 'string' ? '.' + ae.className.split(' ')[0] : '')) : null;
     out.caret = caretRect(e, sel);
+    { const an = sel.anchorNode; const el = an && (an.nodeType === 1 ? an : an.parentElement); out.caretColor = el ? getComputedStyle(el).caretColor : null; out.armed = !!document.getElementById('wa-caret-color'); }
     const fc = document.querySelector('.flux-block-caret');
     out.fluxCaret = fc ? (() => { const r = fc.getBoundingClientRect(); return { x: r.left, top: r.top, height: r.height, width: r.width }; })() : null;
     out.page = page ? rr(page.getBoundingClientRect()) : null;
@@ -115,15 +116,29 @@ export function probeInstall() {
     st.textContent = 'html html .forward-only-editor, html html .forward-only-editor * { caret-color: #ff00ff !important; }';
     document.head.appendChild(st); return true;
   };
-  const scan = async (b64) => {
+  const decode = async (b64) => {
     const bytes = Uint8Array.from(atob(b64), (ch) => ch.charCodeAt(0));
     const bmp = await createImageBitmap(new Blob([bytes], { type: 'image/png' }));
     const cv = new OffscreenCanvas(bmp.width, bmp.height), g = cv.getContext('2d'); g.drawImage(bmp, 0, 0);
-    const { data, width, height } = g.getImageData(0, 0, bmp.width, bmp.height);
-    let x0 = 1e9, x1 = -1, y0 = 1e9, y1 = -1, n = 0;
-    for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) { const i = (y * width + x) * 4; if (data[i] >= 190 && data[i + 2] >= 190 && data[i + 1] <= 110) { n++; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; } }
-    return n ? { x: x0, top: y0, width: x1 - x0 + 1, height: y1 - y0 + 1, n } : null;
+    return g.getImageData(0, 0, bmp.width, bmp.height);
   };
+  const box2 = (x0, x1, y0, y1, n) => (n ? { x: x0, top: y0, width: x1 - x0 + 1, height: y1 - y0 + 1, n } : null);
+  // magenta (or magenta blended into the paper): red and blue both well above green
+  const scan = async (b64) => {
+    const { data, width, height } = await decode(b64);
+    let x0 = 1e9, x1 = -1, y0 = 1e9, y1 = -1, n = 0;
+    for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) { const i = (y * width + x) * 4; if (data[i] - data[i + 1] >= 70 && data[i + 2] - data[i + 1] >= 70) { n++; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; } }
+    return box2(x0, x1, y0, y1, n);
+  };
+  // the caret by DIFFERENCE: the same frame with and without the selection; what changed is the caret (the fallback when the caret's colour cannot be forced)
+  const diff = async (a64, b64) => {
+    const A = await decode(a64), B = await decode(b64);
+    if (A.width !== B.width || A.height !== B.height) return null;
+    let x0 = 1e9, x1 = -1, y0 = 1e9, y1 = -1, n = 0;
+    for (let y = 0; y < A.height; y++) for (let x = 0; x < A.width; x++) { const i = (y * A.width + x) * 4; if (Math.abs(A.data[i] - B.data[i]) + Math.abs(A.data[i + 1] - B.data[i + 1]) + Math.abs(A.data[i + 2] - B.data[i + 2]) > 90) { n++; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; } }
+    return box2(x0, x1, y0, y1, n);
+  };
+  const clear = () => { getSelection().removeAllRanges(); return true; };
   const dom = (n = 600) => { const e = ed(); return e ? e.innerHTML.slice(0, n) : null; };
-  window.__wa = { read, boxAt, place, dom, arm, scan };
+  window.__wa = { read, boxAt, place, dom, arm, scan, diff, clear };
 }

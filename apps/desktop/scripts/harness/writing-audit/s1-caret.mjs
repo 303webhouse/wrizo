@@ -35,7 +35,7 @@ const proof = [], cases = [], findings = [];
 async function attachPixels(d, r) {
   if (r.theme === 'flux' || !r.editor || !r.collapsed || !r.focused) return;
   const px = await d.pixelCaret();
-  r.px = px; r.pxTries = px ? px.tries : 8;
+  r.px = px; r.pxTries = px ? px.tries : 12; r.pxVia = px ? px.via : null;
 }
 async function settleRead(d) {
   await d.frames(); const early = await d.read();
