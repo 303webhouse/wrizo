@@ -20,7 +20,7 @@ const screens = {
     await sleep(900);
     await app.evalJs("document.querySelector('.desk-mode-tab[data-mode-key=\"draft\"]')?.click()"); await sleep(1200);
     await app.mouseMove(600, 300); await sleep(500);
-    const out = {};
+    const out = { runner: await app.evalJs("({ tz: Intl.DateTimeFormat().resolvedOptions().timeZone, now: new Date().toString(), iso: new Date().toISOString() })") };
     for (const room of ['day', 'night']) {
       await app.evalJs(`document.documentElement.setAttribute('data-room', ${JSON.stringify(room === 'day' ? 'light' : 'dark')})`); await sleep(1500);
       out[room + '-closed'] = await app.evalJs(READ);
