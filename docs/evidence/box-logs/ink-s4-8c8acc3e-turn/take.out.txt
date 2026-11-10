@@ -1,0 +1,2 @@
+granted to lane "ink" and bound to the process tree of pid 1868 - name this turn's start and end in your report
+WS_BOX_TURN=<redacted>   (drawn now, printed once, not stored - only its hash is in the grant file; export it in the shell or script that runs the harness)

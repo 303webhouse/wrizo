@@ -832,12 +832,19 @@ await withHarness(async (app) => {
     panelGone: !document.querySelector('.wz-cascade-panel'),
     leaving: !!document.querySelector('.wz-cascade-panel[data-leaving="true"]'),
     categoryActive: document.querySelector('.wz-strip-item[data-category=journal]').classList.contains('active'),
+    categoryPressed: document.querySelector('.wz-strip-item[data-category=journal]').getAttribute('aria-pressed') === 'true',
   })`);
   await sleep(450);
   const dismissedAfterExit = await app.evalJs(`({ surveyGone: !document.querySelector('.wz-cascade-survey'), panelGone: !document.querySelector('.wz-cascade-panel') })`);
-  ok('T5 [item-8 successor]: a docked survey\'s own explicit close button dismisses it entirely - the layers EXIT (still drawn, data-leaving, inert, at 200 ms) and are gone after the exit; the category is no longer olive',
-    ((dismissedDocked.surveyGone && dismissedDocked.panelGone) || dismissedDocked.leaving) && dismissedAfterExit.surveyGone && dismissedAfterExit.panelGone && !dismissedDocked.categoryActive, JSON.stringify({ dismissedDocked, dismissedAfterExit }));
-  ok('T5 [parked record]: the ORIGINAL (both layers gone 200 ms after the press) fails ONLY because the exit lasts --drawer-dur; it holds once the exit has played', dismissedAfterExit.surveyGone && dismissedAfterExit.panelGone && !dismissedDocked.categoryActive, JSON.stringify(dismissedAfterExit));
+  // ---- PARKED - SUPERSEDED by TOOLS rail bug #4 (Fable, Nov 7): in the Journal the Journal pin wears `.active` while the PLACE is the Journal (the ruling), so `.active` no longer means "a panel is open" there; the panel's own state is `aria-pressed`.
+  // The two records below are kept VERBATIM and no longer run; the successors follow and read aria-pressed (the same assertion about the panel, through the attribute that still means it).
+  // ok('T5 [item-8 successor]: a docked survey\'s own explicit close button dismisses it entirely - the layers EXIT (still drawn, data-leaving, inert, at 200 ms) and are gone after the exit; the category is no longer olive',
+  //   ((dismissedDocked.surveyGone && dismissedDocked.panelGone) || dismissedDocked.leaving) && dismissedAfterExit.surveyGone && dismissedAfterExit.panelGone && !dismissedDocked.categoryActive, JSON.stringify({ dismissedDocked, dismissedAfterExit }));
+  // ok('T5 [parked record]: the ORIGINAL (both layers gone 200 ms after the press) fails ONLY because the exit lasts --drawer-dur; it holds once the exit has played', dismissedAfterExit.surveyGone && dismissedAfterExit.panelGone && !dismissedDocked.categoryActive, JSON.stringify(dismissedAfterExit));
+  // ------------------------------------------------------------------
+  ok('T5 [item-8 successor, bug-4 panel state]: a docked survey\'s own explicit close button dismisses it entirely - the layers EXIT (still drawn, data-leaving, inert, at 200 ms) and are gone after the exit; the category panel is no longer open (aria-pressed)',
+    ((dismissedDocked.surveyGone && dismissedDocked.panelGone) || dismissedDocked.leaving) && dismissedAfterExit.surveyGone && dismissedAfterExit.panelGone && !dismissedDocked.categoryPressed, JSON.stringify({ dismissedDocked, dismissedAfterExit }));
+  ok('T5 [parked record, bug-4 panel state]: the ORIGINAL (both layers gone 200 ms after the press) fails ONLY because the exit lasts --drawer-dur; it holds once the exit has played', dismissedAfterExit.surveyGone && dismissedAfterExit.panelGone && !dismissedDocked.categoryPressed, JSON.stringify(dismissedAfterExit));
 
   // ==========================================================================
   // S2 — reduced motion: the dock/undock transition honors prefers-reduced-

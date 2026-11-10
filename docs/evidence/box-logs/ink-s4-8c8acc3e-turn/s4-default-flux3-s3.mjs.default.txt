@@ -1,0 +1,45 @@
+BUILD: tree=8c8acc3e bundle=index-Bt-Xhx32.js builtAt=2026-11-08T07:44:40.382Z lastSrcCommit=2026-11-08T06:06:17.000Z dirtySrcFiles=0 stale=false machine=box
+CONTRAST dark {"gutter":6.75,"gutterN":9.89,"act":16.08,"head":16.08,"unit":15.48,"count":6.75}
+CONTRAST light {"gutter":6.75,"gutterN":9.89,"act":16.08,"head":16.08,"unit":15.48,"count":6.75}
+
+ROWS-SHADOW VERIFY: PASS (432 renders checked, shadow == DOM on every one)
+PASS  P flag on: the gutter (a row per paragraph), the ports (one per link), the Glitch bar in the lane (no ProgressBar), the idle layer
+PASS  OFF flag off: no gutter, no ports, no Glitch bar, no idle layer; the ProgressBar is in the lane
+PASS  R [dark 1366] the page's rect and text are identical with the flag on and off, with a port's box open, and with the TOOLS hand open
+PASS  R [dark 1920] the page's rect and text are identical with the flag on and off, with a port's box open, and with the TOOLS hand open
+PASS  R [light 1366] the page's rect and text are identical with the flag on and off, with a port's box open, and with the TOOLS hand open
+PASS  R [light 1920] the page's rect and text are identical with the flag on and off, with a port's box open, and with the TOOLS hand open
+PASS  R coverage: 4/4 cells compared
+PASS  GUTTER every paragraph's row: its number and its words, beside its first line (+-2 px), outside the page's left edge
+PASS  PORTS one per link, named for it, straddling the page's right edge
+PASS  PORTS a press draws the box: the item's name, Dock, Connect another, Disconnect
+PASS  TYPE zero work while 132 keys land: the gutter measured nothing (first key to last), the Glitch bar changed no glyph
+PASS  TYPE the recede rule: the gutter and the ports go and come back with the page's own chrome (0 while she types, back when she reaches), and are measured again on the pause (her new words counted)
+PASS  TYPE the unit she filled glitches on the pause and resolves, every change granted by the flash budget, at most 3 in any second
+PASS  GUTTER a paragraph scrolled past the top keeps its row at the text's top edge (never above the page's text)
+PASS  GOAL crossing the goal: the units hand to orange and read CHECKPOINT
+PASS  IDLE words glitch and resolve (9 in 8 s) while the page's text, selection and word count never change
+PASS  IDLE every glitched word is one of HER words (the editor's text), never the page's chrome (its readouts, its hint line)
+PASS  IDLE never a word on the caret's line
+PASS  IDLE at most 3 changes in any 1 s (appearances and resolutions: 3)
+PASS  IDLE a pointer moving makes the page whole within 300 ms
+PASS  PLACE [1366] the glitched word's glyphs stand on the word's own rect (+-1 px) as it appears, and after the page moves under it (no scroll, no key)
+PASS  PLACE [1920] the glitched word's glyphs stand on the word's own rect (+-1 px) as it appears, and after the page moves under it (no scroll, no key)
+PASS  PLACE [2000] the glitched word's glyphs stand on the word's own rect (+-1 px) as it appears, and after the page moves under it (no scroll, no key)
+PASS  IDLE hidden: nothing appears while the window is hidden
+PASS  IDLE off under reduced motion (nothing appears), at Ambiance 0 and with Flicker off (no layer at all)
+PASS  B-SWAP under the flag the idle glitch replaces GlitchMeter (rhizome style: GlitchMeter runs off the flag, not on it; the idle layer on it)
+PASS  HANDS the opener tabs keep today's shape, place and arrow (flag off vs on, closed and open, both hands); under the flag an open tab draws its line
+PASS  HANDS each open tab's line runs into its own panel (away from the page), never into the page
+PASS  DISCONNECT through the app's own confirm removes that one link (its port goes) and nothing else
+PASS  C [dark] the gutter, the port box, the Glitch bar's letters and count: >= 4.5:1
+PASS  C [light] the gutter, the port box, the Glitch bar's letters and count: >= 4.5:1
+PASS  MUT-PAUSE (landed) the Glitch bar not waiting for the pause: TYPE fails (a glyph changed while keys landed)
+PASS  MUT-GUTTERWORK (landed) the gutter measuring on every change: TYPE fails (it measured while keys landed)
+PASS  MUT-RATE (landed) the idle glitch's gap at 0: IDLE fails (more than 3 changes in a second)
+PASS  MUT-STOP (landed) activity no longer clearing the glitch: IDLE fails (not whole within 300 ms)
+PASS  MUT-FOLLOW (landed) the glyphs left where the word first stood: PLACE fails (off the word once the page moves)
+PASS  MUT-CARET (landed) the caret's line not avoided: IDLE fails (a word on the caret's line)
+PASS  B the build: served index-Bt-Xhx32.js = dist-web's index-Bt-Xhx32.js, built 2026-11-08T07:44:40.382Z after the last src commit 2026-11-08T06:06:17.000Z (tree 8c8acc3e, 0 uncommitted src file(s))
+
+FLUX3-S3 VERIFY: PASS (38 checks)

@@ -1,0 +1,33 @@
+
+ROWS-SHADOW VERIFY: PASS (106 renders checked, shadow == DOM on every one)
+PASS  fixture: one Draft page per skin through the seams
+PASS  Arbor 1366x768 R1 (premise): the writer is writing (the desk dissolved)  [true]
+PASS  Arbor 1366x768 R1: THE CENSUS - nothing off the page paints while typing (effective opacity 0)  [[]]
+PASS  Arbor 1366x768 R2: the page itself stays - the page 1, its text 1  [{"pageO":1,"edO":1}]
+PASS  Arbor 1366x768 R3: the two tab arrows stay - Tools 1, Tutor 1  [{"gs":1,"gt":1}]
+PASS  MR1m (mutant, successor to MR1): with the wordmark forced to full strength above the fix (LANDED: opacity 1), R1 fails and names it  [[{"el":"div.brand-mark","kind":"mask","o":1}]]
+PASS  Arbor 1366x768 R4: it returns as today - Escape brings the rail (1) and the mode bar (1) back above half strength within 2s  [{"strip":1,"bar":1}]
+PASS  Arbor 1366x768 R5: keyboard focus restores it - focus on the rail's first item brings the chrome back (rail 0 -> 1, bar 1)  [{"before":0,"after":{"strip":1,"bar":1}}]
+PASS  Flux 1366x768 R1 (premise): the writer is writing (the desk dissolved)  [true]
+PASS  Flux 1366x768 R1: THE CENSUS - nothing off the page paints while typing (effective opacity 0)  [[]]
+PASS  Flux 1366x768 R2: the page itself stays - the page 1, its text 1  [{"pageO":1,"edO":1}]
+PASS  Flux 1366x768 R3: the two tab arrows stay - Tools 1, Tutor 1  [{"gs":1,"gt":1}]
+PASS  Flux 1366x768 R4: it returns as today - Escape brings the rail (1) and the mode bar (1) back above half strength within 2s  [{"strip":1,"bar":1}]
+PASS  Flux 1366x768 R5: keyboard focus restores it - focus on the rail's first item brings the chrome back (rail 0 -> 1, bar 1)  [{"before":0,"after":{"strip":1,"bar":1}}]
+PASS  Machina 1366x768 R1 (premise): the writer is writing (the desk dissolved)  [true]
+PASS  Machina 1366x768 R1: THE CENSUS - nothing off the page paints while typing (effective opacity 0)  [[]]
+PASS  Machina 1366x768 R2: the page itself stays - the page 1, its text 1  [{"pageO":1,"edO":1}]
+PASS  Machina 1366x768 R3: the two tab arrows stay - Tools 1, Tutor 1  [{"gs":1,"gt":1}]
+PASS  Machina 1366x768 R4: it returns as today - Escape brings the rail (1) and the mode bar (1) back above half strength within 2s  [{"strip":1,"bar":1}]
+PASS  Machina 1366x768 R5: keyboard focus restores it - focus on the rail's first item brings the chrome back (rail 0 -> 1, bar 1)  [{"before":0,"after":{"strip":1,"bar":1}}]
+PASS  Arbor R7: every progress strip that is on stays visible and live while typing (desk-frame-instrument 1)  [[{"el":"desk-frame-instrument","o":1}]]
+PASS  Arbor R8: a DOCKED panel stays visible while typing (the docked Tutor at 1)  [{"docked":"true","dockO":1}]
+PASS  Flux R7: every progress strip that is on stays visible and live while typing (desk-frame-instrument 1)  [[{"el":"desk-frame-instrument","o":1}]]
+PASS  Flux R8: a DOCKED panel stays visible while typing (the docked Tutor at 1)  [{"docked":"true","dockO":1}]
+PASS  Machina R7: every progress strip that is on stays visible and live while typing (machina-run 1, desk-frame-instrument 1)  [[{"el":"machina-run","o":1},{"el":"desk-frame-instrument","o":1}]]
+PASS  Machina R8: a DOCKED panel stays visible while typing (the docked Tutor at 1)  [{"docked":"true","dockO":1}]
+PASS  Arbor 1000x800 R9: the NARROW layout (unframed: true) follows the full recede - nothing off the page paints while typing  [[]]
+PASS  Arbor R6: with 'partial' stored (the old default), the framed desk still recedes to 0 - the rail at 0  [0]
+PASS  R6 (source): "Recede depth" is offered nowhere - neither the Tools drawer nor the narrow layout's settings panel renders its row (Nick: REMOVED)  [[]]
+
+POLISH10-RECEDE VERIFY: PASS (29 checks)

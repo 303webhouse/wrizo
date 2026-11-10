@@ -1,0 +1,8 @@
+DEPLOY #12n - main a1718101 (tree 0dd4aaba) - railway cdf6779d-eb87-4a74-a586-103effb54e06 - 2026-11-08 ~03:30Z
+healthz: {"ok":true,"build":"index-e17ME4Wi"}  http=200
+smoke-login: PASS (6/6)  (smoke.txt)
+served js: assets/index-e17ME4Wi.js 994681 bytes md5 b1efa3dcf8a1b826e5abed696cb1a76c
+tested js: assets/index-e17ME4Wi.js 994681 bytes md5 b1efa3dcf8a1b826e5abed696cb1a76c   (identical)
+served css: assets/index-0Gk9Ng_3.css 248713 bytes md5 81cd19ca5fa753843a6829f84281330f
+tested css: assets/index-0Gk9Ng_3.css 248713 bytes md5 81cd19ca5fa753843a6829f84281330f  (identical)
+(tested = train-12n dist-web, F:\wrizo-work\chat1-train-12n, tree a1718101)

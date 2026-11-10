@@ -1,0 +1,19 @@
+2026-11-09T01:27:52Z tree F:/wrizo-work/INK-maincontrol/apps/desktop: HEAD 11bac40b, dirty 0, bundle index-e17ME4Wi.js
+2026-11-09T01:27:52Z tree F:/wrizo-work/INK-s4/apps/desktop: HEAD 2e676c27, dirty 0, bundle index-Bt-Xhx32.js
+2026-11-09T01:27:53Z harness browsers at turn start: 0
+2026-11-09T01:27:53Z granted to lane "ink" and bound to the process tree of pid 36808 - name this turn's start and end in your report
+2026-11-09T01:27:53Z TURN START
+2026-11-09T01:27:53Z quiet check at start: Wow.exe absent
+2026-11-09T01:27:53Z [main-1] start (rhizome-latency.mjs on main)
+2026-11-09T01:29:07Z [main-1] exit 0: SUITE RESULT: CLEAN — tree=11bac40b bundle=index-e17ME4Wi.js/994681b
+2026-11-09T01:29:07Z [main-2] start (rhizome-latency.mjs on main)
+2026-11-09T01:30:20Z [main-2] exit 0: SUITE RESULT: CLEAN — tree=11bac40b bundle=index-e17ME4Wi.js/994681b
+2026-11-09T01:30:20Z [arms] start (flux3-s4-arms.mjs, ARMS_ROUNDS=6)
+2026-11-09T01:37:32Z [arms] [01/1] OK        exit=0  427s flux3-s4-arms.mjs :: FLUX3-S4-ARMS VERIFY: PASS (11 checks)
+2026-11-09T01:37:32Z [arms] SUITE DONE HARNESS_PARKED=unset — 1/1 of 1 returned a passing verdict
+2026-11-09T01:37:32Z [arms] SUITE RESULT: CLEAN — tree=2e676c27 bundle=index-Bt-Xhx32.js/1005642b
+2026-11-09T01:37:32Z [main-3] start (rhizome-latency.mjs on main)
+2026-11-09T01:38:45Z [main-3] exit 0: SUITE RESULT: CLEAN — tree=11bac40b bundle=index-e17ME4Wi.js/994681b
+2026-11-09T01:38:45Z harness browsers at turn end: 0
+2026-11-09T01:38:45Z release: released
+2026-11-09T01:38:45Z TURN END

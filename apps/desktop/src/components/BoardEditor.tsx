@@ -98,6 +98,7 @@ import type { LastAction } from './board/geometry';
 import { FLUX3 } from '../flux3/flag';
 import { FluxSchema } from '../flux3/FluxSchema';
 import { FluxNodeRecord } from '../flux3/FluxNodeRecord';
+import { FluxRoomGround } from '../flux3/FluxRoomGround';   // S4b L1: the circuit ground across the room (a box behind the framed host's content)
 
 // J4 — the Board: a canvas of positioned boxes (I2/I3 realized). Boxes only
 // ever arrive via a port (J4 Slice 2) or, AB4 S2/S5, a pin (a membership
@@ -1560,6 +1561,7 @@ export function BoardEditor({ id }: { id: string }) {
   if (framed) {
     return (
       <div className="desk-frame-host" data-chrome-receded={boardDissolve.dissolved ? 'true' : 'false'}>
+        {FLUX3 && <FluxRoomGround />}
         {/* the nav row recedes with the rest of the framed chrome [BoardEditor §57] */}
         {/* FX18 S3 (SV27): the board's top menu parallels the Page's mode strip — right-
             aligned. Crumb stays left (marginRight:auto); the mode bar + actions group right

@@ -1,0 +1,23 @@
+2026-11-09T03:57:19Z tree F:/wrizo-work/INK-maincontrol/apps/desktop: HEAD 11bac40b, dirty 0, bundle index-e17ME4Wi.js
+2026-11-09T03:57:20Z tree F:/wrizo-work/INK-s4/apps/desktop: HEAD 748b0a8b, dirty 0, bundle index-Bt-Xhx32.js
+2026-11-09T03:57:20Z harness browsers at turn start: 0
+2026-11-09T03:57:20Z granted to lane "ink" and bound to the process tree of pid 47740 - name this turn's start and end in your report
+2026-11-09T03:57:20Z TURN START
+2026-11-09T03:57:21Z quiet check at start: Wow / OBS absent
+2026-11-09T03:57:22Z [main-1] start (rhizome-latency.mjs on main)
+2026-11-09T03:58:34Z [main-1] exit 0: SUITE RESULT: CLEAN — tree=11bac40b bundle=index-e17ME4Wi.js/994681b
+2026-11-09T03:58:34Z [main-2] start (rhizome-latency.mjs on main)
+2026-11-09T03:59:47Z [main-2] exit 0: SUITE RESULT: CLEAN — tree=11bac40b bundle=index-e17ME4Wi.js/994681b
+2026-11-09T03:59:48Z [s4-default] start (flux3-s4.mjs)
+2026-11-09T04:10:28Z [s4-default] [01/1] FAIL      exit=1  635s flux3-s4.mjs :: ROWS-SHADOW VERIFY: PASS (10 renders checked, shadow == DOM on every one) ;; FLUX3-S4 VERIFY: FAIL - 1/85 failed
+2026-11-09T04:10:28Z [s4-default] SUITE DONE HARNESS_PARKED=unset — 0/1 of 1 returned a passing verdict
+2026-11-09T04:10:28Z [s4-default] SUITE RESULT: NOT CLEAN — tree=748b0a8b bundle=index-D7zUnzYV.js/1005596b
+2026-11-09T04:10:29Z [s4-parked] start (flux3-s4.mjs, HARNESS_PARKED=1)
+2026-11-09T04:21:23Z [s4-parked] [01/1] FAIL      exit=1  649s flux3-s4.mjs :: ROWS-SHADOW VERIFY: PASS (10 renders checked, shadow == DOM on every one) ;; PASS  PARKED (was "ESC-LATER >= 1.2 s after Esc the lines are as lit and the caret as present as the control's") - SU
+2026-11-09T04:21:23Z [s4-parked] SUITE DONE HARNESS_PARKED=1 — 0/1 of 1 returned a passing verdict
+2026-11-09T04:21:23Z [s4-parked] SUITE RESULT: NOT CLEAN — tree=748b0a8b bundle=index-D7zUnzYV.js/1005596b
+2026-11-09T04:21:23Z [main-3] start (rhizome-latency.mjs on main)
+2026-11-09T04:22:36Z [main-3] exit 0: SUITE RESULT: CLEAN — tree=11bac40b bundle=index-e17ME4Wi.js/994681b
+2026-11-09T04:22:36Z harness browsers at turn end: 0
+2026-11-09T04:22:36Z release: released
+2026-11-09T04:22:36Z TURN END (a step was NOT CLEAN or stopped: see the logs)

@@ -1,0 +1,236 @@
+
+ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one)
+[
+  {
+    "name": "check 1 (source) [theme-leftovers]: a Flux override for .mode-bar exists",
+    "pass": true,
+    "detail": "[data-theme='flux'] .mode-bar{ background:var(--chrome-surface); }"
+  },
+  {
+    "name": "check 1 (source) [theme-leftovers]: it points the bar's fill at --chrome-surface (Flux's own themed token), not the raw --ink-900",
+    "pass": true,
+    "detail": "[data-theme='flux'] .mode-bar{ background:var(--chrome-surface); }"
+  },
+  {
+    "name": "check 1 [hue-212 successor]: ground token is Flux's #010811",
+    "pass": true,
+    "detail": "#010811"
+  },
+  {
+    "name": "check 1 [hue-212 successor]: line token is Flux's #193556",
+    "pass": true,
+    "detail": "#193556"
+  },
+  {
+    "name": "check 1: line-active is Flux's electric blue #00C2FF",
+    "pass": true,
+    "detail": "#00C2FF"
+  },
+  {
+    "name": "check 1: signal-live is Flux's lime #A6FF3D",
+    "pass": true,
+    "detail": "#A6FF3D"
+  },
+  {
+    "name": "check 1: the accent invariant (--brass) is untouched by the theme switch",
+    "pass": true,
+    "detail": "#ff9800"
+  },
+  {
+    "name": "check 1 [flux-v2]: the choice token (--choice) is the Flux cyan #00C2FF while --brass stays #FF9800",
+    "pass": true,
+    "detail": "{\"choice\":\"#00C2FF\",\"brass\":\"#ff9800\"}"
+  },
+  {
+    "name": "check 1: chromeLabel font slot is Rajdhani",
+    "pass": true,
+    "detail": "\"Rajdhani\", sans-serif"
+  },
+  {
+    "name": "check 1: contentLabel font slot is Chakra Petch",
+    "pass": true,
+    "detail": "\"Chakra Petch\", sans-serif"
+  },
+  {
+    "name": "check 1 [item-10 successor]: proseSerif is Flux's default writing face, Titillium Web (Nick, Oct 24)",
+    "pass": true,
+    "detail": "\"Titillium Web\", system-ui, sans-serif"
+  },
+  {
+    "name": "check 1 [parked record]: the ORIGINAL (proseSerif stays Crimson Pro) now fails ONLY because Flux's default became Titillium Web",
+    "pass": true,
+    "detail": "\"Titillium Web\", system-ui, sans-serif"
+  },
+  {
+    "name": "check 1: proseSans font slot is Chakra Petch",
+    "pass": true,
+    "detail": "\"Chakra Petch\", sans-serif"
+  },
+  {
+    "name": "check 1 [hue-212 successor]: Page:dark applies Flux's dark-glass pair (#0C1826 / #E8F6FA)",
+    "pass": true,
+    "detail": "{\"paper\":\"#0C1826\",\"ink\":\"#E8F6FA\"}"
+  },
+  {
+    "name": "check 1 [flux-v2 successor]: Page:light applies Flux's light pair (#F4F7F8 / #042632)",
+    "pass": true,
+    "detail": "{\"paper\":\"#F4F7F8\",\"ink\":\"#042632\"}"
+  },
+  {
+    "name": "check 2 [big-projects-1a successor]: DeskRail renders Flux terms (Journal->Log, Drawers->Racks) and carries no Shelf/Cache item",
+    "pass": true,
+    "detail": "[\"Catch\",\"Log\",\"Racks\",\"Library\"]"
+  },
+  {
+    "name": "check 2: the Drawers page heading also renders Flux's \"Racks\" (TH2 lexicon sweep)",
+    "pass": true,
+    "detail": "Racks"
+  },
+  {
+    "name": "check 2: canonical route /drawers still resolves under Flux",
+    "pass": true,
+    "detail": "#/drawers"
+  },
+  {
+    "name": "check 2 [theme-leftovers successor]: the Free-write tab renders Flux's \"Wire In\" (ModeSwitcher sweep)",
+    "pass": true,
+    "detail": "Wire In"
+  },
+  {
+    "name": "check 2 (arbor-quiet-brass successor): the Publish dialog renders Flux's \"Uplink\"",
+    "pass": true,
+    "detail": "Uplink"
+  },
+  {
+    "name": "check 3: chrome (top nav) recedes toward 0 opacity under Flux, same mechanism as Plateau",
+    "pass": true,
+    "detail": "0"
+  },
+  {
+    "name": "check 3 (A1): flipping Fade to off immediately resurfaces chrome mid-dissolve (not just gates future writes)",
+    "pass": true,
+    "detail": "false"
+  },
+  {
+    "name": "check 6: the Flux glow mounts with a live --m progress value and a non-zero opacity transition",
+    "pass": true,
+    "detail": "{\"m\":0.205,\"opacity\":\"0.198874\",\"transitionDuration\":\"0.6s, 0.6s\"}"
+  },
+  {
+    "name": "check 4: crossing the goal fires the celebration (celebrate class appears)",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "check 4 (R1): the fill's computed background resolves to brass (#FF9800) during the celebrate window, not lime",
+    "pass": true,
+    "detail": "rgb(255, 152, 0)"
+  },
+  {
+    "name": "check 4: the celebration does not re-fire on continued typing past the goal (settles back to false)",
+    "pass": true,
+    "detail": "false"
+  },
+  {
+    "name": "check 4: deleting back below the goal does not re-trigger the celebration",
+    "pass": true,
+    "detail": "false"
+  },
+  {
+    "name": "check 3: the bottom bar is genuinely faded before the surge (proves the override below is real)",
+    "pass": true,
+    "detail": "0"
+  },
+  {
+    "name": "check 3: the celebrate-summon rule overrides the bottom bar's fade to fully visible",
+    "pass": true,
+    "detail": "1"
+  },
+  {
+    "name": "check 3: celebrate-summon removes itself after ~2.5s (bottom bar re-fades normally)",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "check 5: dial 0 yields a static effects layer (no growth in transient children over 3s)",
+    "pass": true,
+    "detail": "3 -> 3"
+  },
+  {
+    "name": "check 5: prefers-reduced-motion leaves the effects layer non-animating",
+    "pass": true,
+    "detail": "{\"fxChildrenReducedMotion\":3,\"reducedMotionAnimating\":false}"
+  },
+  {
+    "name": "check 5: the texture layer damps toward its typing-state opacity floor while busy",
+    "pass": true,
+    "detail": "0.13"
+  },
+  {
+    "name": "check 5 (R2): dialIntervalScale(50) is exactly 1.0 (RC-2 dial-center, unchanged rates)",
+    "pass": true,
+    "detail": "{\"at50\":1,\"at1\":1.75,\"at100\":0.55}"
+  },
+  {
+    "name": "check 5 (R2): dialIntervalScale is monotonic decreasing (low dial slower, high dial faster)",
+    "pass": true,
+    "detail": "{\"at50\":1,\"at1\":1.75,\"at100\":0.55}"
+  },
+  {
+    "name": "check 5 (R2): even at dial 100, the fastest loop's clamped interval never breaches its structural floor (1040ms)",
+    "pass": true,
+    "detail": "{\"min\":1435.412649543066,\"macroblockFloorMs\":1040}"
+  },
+  {
+    "name": "check 5 (R2): an Ambiance row renders in the theme settings panel",
+    "pass": true,
+    "detail": "Ambiance0255075100"
+  },
+  {
+    "name": "check 5 (R2): picking an Ambiance stop in the UI writes the pref",
+    "pass": true,
+    "detail": "25"
+  },
+  {
+    "name": "check 1 (R2): Rajdhani and Chakra Petch actually loaded (not just declared in a slot var)",
+    "pass": true,
+    "detail": "{\"rajdhani\":true,\"chakra\":true}"
+  },
+  {
+    "name": "check 7 (A3): switching back to Plateau mid-session restores Plateau's own ground token",
+    "pass": true,
+    "detail": "{\"theme\":\"plateau\",\"brass\":\"#ff9800\",\"ground\":\"#110600\"}"
+  },
+  {
+    "name": "check 7 (A3): the Flux<->Plateau round trip is lossless — prefs/dial survive both switches unchanged",
+    "pass": true,
+    "detail": "{\"theme\":\"flux\",\"prefs\":{\"voice\":\"serif\",\"page\":\"light\",\"fade\":\"on\"},\"dial\":50} -> mid:{\"theme\":\"plateau\",\"brass\":\"#ff9800\",\"ground\":\"#110600\"} -> {\"theme\":\"flux\",\"prefs\":{\"voice\":\"serif\",\"page\":\"light\",\"fade\":\"on\"},\"dial\":50}"
+  },
+  {
+    "name": "check A2: setThemePrefs sanitizes invalid enum values rather than trusting them verbatim",
+    "pass": true,
+    "detail": "{\"voice\":\"serif\",\"page\":\"light\",\"fade\":\"on\"}"
+  },
+  {
+    "name": "check A2: a corrupted stored value never reaches the data-voice attribute on load (falls back to the default)",
+    "pass": true,
+    "detail": "serif"
+  },
+  {
+    "name": "check 2 (R3): ImportDraft's own heading now reads \"Which cartridge?\" under Flux",
+    "pass": true,
+    "detail": "Which cartridge?"
+  },
+  {
+    "name": "check 5 slice: the Flux block caret renders and marks its host element data-flux-caret-active",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "check 5 slice: the Firewall chip fires on a blocked paste and reads \"FIREWALL ▪ PASTE BLOCKED\"",
+    "pass": true,
+    "detail": "FIREWALL ▪ PASTE BLOCKED"
+  }
+]
+
+TH2 VERIFY: PASS (46 checks)

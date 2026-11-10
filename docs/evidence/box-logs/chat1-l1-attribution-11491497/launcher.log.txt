@@ -1,0 +1,22 @@
+2026-11-10T00:01:16Z TURN PLAN: L1 HEAD 11491497 (dirty 0); control INK-maincontrol HEAD 12dde34e (dirty 0)
+2026-11-10T00:01:16Z harness browsers at turn start: 0
+2026-11-10T00:01:16Z quiet check before the grant: Wow / OBS / streaming absent
+2026-11-10T00:01:17Z TAKE: granted to lane "chat1" and bound to the process tree of pid 44096 - name this turn's start and end in your report
+WS_BOX_TURN=<drawn>   (drawn now, printed once, not stored - only its hash is in the grant file; export it in the shell or script that runs the harness)
+2026-11-10T00:01:17Z TURN START
+2026-11-10T00:01:17Z quiet check before ctrl-default-1: Wow / OBS / streaming absent
+2026-11-10T00:01:17Z [ctrl-default-1] start (flux3-latency.mjs in INK-maincontrol, )
+2026-11-10T00:05:24Z [ctrl-default-1] exit 0: [01/1] OK        exit=0  245s flux3-latency.mjs :: ROWS-SHADOW VERIFY: PASS (765 renders checked, shadow == DOM on every one) ;; FLUX3-LATENCY VERIFY: PASS (15 checks) ;; SUITE DONE HARNESS_PARKED=unset — 1/1 of 1 returned a passing verdict ;; SUITE RESULT: CLEAN — tree=12dde34e bundle=index-e17ME4Wi.js/994681b NO-REBUILD
+2026-11-10T00:05:24Z quiet check before l1-default-1: Wow / OBS / streaming absent
+2026-11-10T00:05:24Z [l1-default-1] start (flux3-latency.mjs in INK-s4b-l1, )
+2026-11-10T00:09:31Z [l1-default-1] exit 0: [01/1] OK        exit=0  245s flux3-latency.mjs :: ROWS-SHADOW VERIFY: PASS (765 renders checked, shadow == DOM on every one) ;; FLUX3-LATENCY VERIFY: PASS (15 checks) ;; SUITE DONE HARNESS_PARKED=unset — 1/1 of 1 returned a passing verdict ;; SUITE RESULT: CLEAN — tree=11491497 bundle=index-DNIIhuzA.js/999369b NO-REBUILD
+2026-11-10T00:09:32Z quiet check before ctrl-default-2: Wow / OBS / streaming absent
+2026-11-10T00:09:32Z [ctrl-default-2] start (flux3-latency.mjs in INK-maincontrol, )
+2026-11-10T00:13:39Z [ctrl-default-2] exit 0: [01/1] OK        exit=0  245s flux3-latency.mjs :: ROWS-SHADOW VERIFY: PASS (765 renders checked, shadow == DOM on every one) ;; FLUX3-LATENCY VERIFY: PASS (15 checks) ;; SUITE DONE HARNESS_PARKED=unset — 1/1 of 1 returned a passing verdict ;; SUITE RESULT: CLEAN — tree=12dde34e bundle=index-e17ME4Wi.js/994681b NO-REBUILD
+2026-11-10T00:13:39Z quiet check before l1-default-2: Wow / OBS / streaming absent
+2026-11-10T00:13:39Z [l1-default-2] start (flux3-latency.mjs in INK-s4b-l1, )
+2026-11-10T00:17:48Z [l1-default-2] exit 0: [01/1] OK        exit=0  247s flux3-latency.mjs :: ROWS-SHADOW VERIFY: PASS (765 renders checked, shadow == DOM on every one) ;; FLUX3-LATENCY VERIFY: PASS (15 checks) ;; SUITE DONE HARNESS_PARKED=unset — 1/1 of 1 returned a passing verdict ;; SUITE RESULT: CLEAN — tree=11491497 bundle=index-DNIIhuzA.js/999369b NO-REBUILD
+2026-11-10T00:17:49Z VOID: Wow.exe:50932 appeared before ctrl-parked-1; stopping
+2026-11-10T00:17:49Z RELEASE: released  grant file now absent
+2026-11-10T00:17:49Z harness browsers at turn end: 0
+2026-11-10T00:17:49Z TURN END (VOID)

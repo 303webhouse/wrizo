@@ -1,0 +1,20 @@
+
+ROWS-SHADOW VERIFY: PASS (2570 renders checked, shadow == DOM on every one)
+PASS GROUND a Page room: the ground box is first in the framed host, behind its content (z -1, the host isolated), inert, and its background image is the circuitry (a picture, no canvas element in the page)
+PASS RECT the page, the host and the editor have the same rects with the ground shown and taken away (a ground, never a panel: page primacy)
+PASS ONCE the ground is drawn once per size: 0 redraws over 44 keys and a pause (0), a resize redraws it (1 >= 1), a Page-tone change leaves it (0 == 0: the room is dark in both)
+PASS CURRENT one to three drifting points, one animation each, transform and opacity alone
+PASS DAMP a key pauses the current (all points paused 0.2 s after it) and it runs again after the quiet (all running 2.5 s after)
+PASS DIAL Ambiance 0 draws no ground; 25 is half strength (opacity .5); 100 is capped at full
+PASS STILL reduced motion: the ground stands (circuitry drawn) with no point moving
+PASS GROUND a Schema room: the same ground sits first in the board's framed host
+PASS MUT-BASE the readers are green on the untouched page before their mutants run
+PASS MUT-A-FOURTH-POINT the reader goes RED on its mutant (a fourth point) and green again undone
+PASS MUT-A-HIT-TARGET the reader goes RED on its mutant (a hit target) and green again undone
+PASS MUT-GROUND-HIDDEN the reader goes RED on its mutant (ground hidden)
+PASS L-METHOD-GREEN the method passes the control against itself: control against itself (the ground away in both arms): clock [J median 24.9 <= C 25.5 + 1, J p95 32.1 <= C 32.5 + 0.6, J max 34 <= 100] cost [J median 13 <= C 13.3 + 1.8, J p95 35.7 <= C 36 + 5.1]
+PASS L the room's ground adds no typing latency beyond the control's own spread: the ground in J: clock [J median 24.9 <= C 25.1 + 1, J p95 32.3 <= C 32.5 + 1.2, J max 34.2 <= 100] cost [J median 13 <= C 13.5 + 3.7, J p95 36.1 <= C 36.6 + 7.9]
+PASS L-MUT-5 the method calls a key that is 5 ms slower RED on the cost reading (the mutant landed: control + 5 ms mutant: clock [J median 25.2 <= C 24.8 + 1.9, J p95 32.8 <= C 32.8 + 1.7, J max 36.3 <= 100] cost [J median 18.5 <= C 14 + 1.8, J p95 41.1 <= C 36.7 + 5.8])
+PASS L-MUT-10 the method calls a key that is 10 ms slower RED on the cost reading (the mutant landed: control + 10 ms mutant: clock [J median 25.2 <= C 24.9 + 1.6, J p95 32.8 <= C 32.8 + 1.3, J max 40 <= 100] cost [J median 32.7 <= C 14.1 + 1.5, J p95 47.4 <= C 36.5 + 1.7])
+
+FLUX3-S4B-L1 VERIFY: PASS (16 checks)

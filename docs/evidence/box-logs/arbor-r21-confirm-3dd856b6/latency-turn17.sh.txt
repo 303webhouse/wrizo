@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+# latency-turn17.sh - ARBOR, the confirming turn (Fable Nov 7; Chat 1's "ARBOR go"): the combined build against main be09012a, judged by the
+# stabiliser with RL_REF from this turn's first three mains.
+#   C = arbor/r21-confirm 3dd856b6 (nodrift 8dfd7ee2 + the R4 fix 54f8b9a7 + the unit parks ba958420), in /f/wrizo-work/arbor-nodrift
+# Order: pin probe (default mode = the no-drift reads); main 1-3 -> RL_REF; C day, main x3; C night, main; pin probe. Trees by ABSOLUTE path.
+# Every new out folder and browser profile under F:\wrizo-work - TEMP/TMP (the harness's profile dir) and --out point there.
+# box-take arbor (token drawn, never logged); the trap kills this run's harness browsers and releases with the token.
+S="C:/Users/nickh/AppData/Local/Temp/claude/68ba17a7e36493c0/4822361e-ef72-47ae-a410-5545e35f7b5f/scratchpad"
+R19="C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/4822361e-ef72-47ae-a410-5545e35f7b5f/scratchpad/r19"
+LOG="$S/latency-turn17.log.txt"
+MW="/c/Users/nickh/arbor-main-control"
+TC="/f/wrizo-work/arbor-nodrift"; FC="$TC/apps/desktop"
+OUTS="F:/wrizo-work/arbor-turn17-out"
+MAIN=be09012a
+: > "$LOG"
+say() { echo "$(date -u +%H:%M:%SZ) (local $(date +%H:%M)) $*" >> "$LOG"; }
+mkdir -p /f/wrizo-work/arbor-tmp "$OUTS" || exit 1
+export TEMP='F:\wrizo-work\arbor-tmp' TMP='F:\wrizo-work\arbor-tmp'
+
+[ "$(git -C "$TC" rev-parse --short=8 HEAD)" = "3dd856b6" ] || { say "C tip is not 3dd856b6"; exit 1; }
+[ "$(git -C "$TC" status --short | wc -l)" = "0" ] || { say "tree $TC dirty"; exit 1; }
+MAINFULL=$(git -C "$TC" rev-parse "$MAIN^{commit}") || exit 1
+if [ "$(git -C "$MW" rev-parse HEAD)" != "$MAINFULL" ]; then say "main control is not at $MAIN"; exit 1; fi
+( cd "$MW/apps/desktop" && pnpm run build:web > "$S/mc17-build.log.txt" 2>&1 ) || { say "main build failed"; exit 1; }
+( cd "$FC" && pnpm run build:web > "$S/fc17-build.log.txt" 2>&1 ) || { say "C build failed"; exit 1; }
+for T in "$MW/apps/desktop" "$FC"; do say "tree $T: HEAD $(git -C $T rev-parse --short HEAD), dirty $(git -C $T status --short | wc -l), bundle $(ls $T/dist-web/assets | grep -E '^index-.*\.js$')"; done
+
+cd "$FC" || exit 1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$S/harness-browsers.ps1" list "$S/lt17-pre-browsers.txt" >> "$LOG" 2>&1
+node scripts/box-take.mjs take arbor > "$S/lt17-take.txt" 2>&1
+grep -v '^WS_BOX_TURN=' "$S/lt17-take.txt" >> "$LOG"
+TOKEN=$(grep -oE '^WS_BOX_TURN=[^ ]+' "$S/lt17-take.txt" | cut -d= -f2)
+rm -f "$S/lt17-take.txt"
+if [ -z "$TOKEN" ]; then say "NO TURN (box not free) - nothing run"; exit 1; fi
+echo "TURN START $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$LOG"
+export WS_BOX_TURN="$TOKEN"
+finish() {
+  cd "$FC"
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$S/harness-browsers.ps1" sweep "$S/lt17-pre-browsers.txt" >> "$LOG" 2>&1
+  say "browser sweep done"
+  node scripts/box-take.mjs release "$TOKEN" >> "$LOG" 2>&1
+  echo "TURN END $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$LOG"
+}
+trap finish EXIT
+
+run() { # run <label> <dir> <file> <urlsearch or empty>
+  local label="$1" dir="$2" file="$3" o="$S/lt17-$1.out.txt" out f
+  if [ -n "$4" ]; then export WS_URL_SEARCH="$4"; else unset WS_URL_SEARCH; fi
+  say "[$label] start ($file in $dir, WS_URL_SEARCH=${WS_URL_SEARCH:-unset}, RL_REF=${RL_REF:-default}, RP_MODE=${RP_MODE:-unset})"
+  ( cd "$dir" && node scripts/run-suite.mjs --only "$file" --out "$OUTS/$label" > "$o" 2>&1 )
+  grep -E "^\[[0-9]+/|SUITE (START|RESULT)" "$o" >> "$LOG"
+  out="$OUTS/$label"
+  for f in "$out"/*.txt; do
+    [ -f "$f" ] || continue
+    cp "$f" "$S/lt17-$label-$(basename "$f")"
+    node "$R19/lt5-lines.cjs" "$f" >> "$LOG" 2>&1
+  done
+  unset WS_URL_SEARCH
+}
+DAY='?arbor2=1&arbor2room=day'
+NIGHT='?arbor2=1&arbor2room=night'
+unset RP_MODE RL_REF
+run pin-C-1 "$FC" arbor2-roompin.mjs "$DAY"
+run main-1 "$MW/apps/desktop" rhizome-latency.mjs ""
+run main-2 "$MW/apps/desktop" rhizome-latency.mjs ""
+run main-3 "$MW/apps/desktop" rhizome-latency.mjs ""
+( cd "$MW/apps/desktop" && node scripts/rhizome-latency-ref.mjs "$S/lt17-main-1-rhizome-latency.mjs.default.txt" "$S/lt17-main-2-rhizome-latency.mjs.default.txt" "$S/lt17-main-3-rhizome-latency.mjs.default.txt" > "$S/lt17-ref.txt" 2> "$S/lt17-ref.err.txt" )
+REF=$(tail -1 "$S/lt17-ref.txt")
+cat "$S/lt17-ref.err.txt" >> "$LOG"
+if echo "$REF" | grep -q '"runs"'; then export RL_REF="$REF"; say "RL_REF $RL_REF"; else say "NO RL_REF (builder refused) - later runs judged on the default, and say so"; fi
+run C-day-1 "$FC" rhizome-latency.mjs "$DAY"
+run main-4 "$MW/apps/desktop" rhizome-latency.mjs ""
+run C-day-2 "$FC" rhizome-latency.mjs "$DAY"
+run main-5 "$MW/apps/desktop" rhizome-latency.mjs ""
+run C-day-3 "$FC" rhizome-latency.mjs "$DAY"
+run main-6 "$MW/apps/desktop" rhizome-latency.mjs ""
+run C-night-1 "$FC" rhizome-latency.mjs "$NIGHT"
+run main-7 "$MW/apps/desktop" rhizome-latency.mjs ""
+unset RL_REF
+run pin-C-2 "$FC" arbor2-roompin.mjs "$DAY"

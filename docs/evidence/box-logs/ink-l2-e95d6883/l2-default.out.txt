@@ -1,0 +1,9 @@
+BOX TURN: granted to lane "ink" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=1 tree=e95d6883 bundle=index-B9fpcTSq.js/1001407b NO-REBUILD out=F:\wrizo-work\INK-s4b-l2-turn-out\l2-default
+[01/1] FAIL      exit=1  466s flux3-s4b-l2.mjs :: ROWS-SHADOW VERIFY: PASS (2525 renders checked, shadow == DOM on every one) ;; FLUX3-S4B-L2 VERIFY: FAIL - 1/26 failed
+
+SUITE DONE HARNESS_PARKED=unset — 0/1 of 1 returned a passing verdict
+  FAIL: flux3-s4b-l2.mjs — full output at F:\wrizo-work\INK-s4b-l2-turn-out\l2-default\flux3-s4b-l2.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=e95d6883 bundle=index-B9fpcTSq.js/1001407b NO-REBUILD

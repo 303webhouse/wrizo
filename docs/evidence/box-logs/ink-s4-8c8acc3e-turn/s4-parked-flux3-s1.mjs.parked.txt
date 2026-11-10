@@ -1,0 +1,36 @@
+BUILD: tree=8c8acc3e bundle=index-Bt-Xhx32.js builtAt=2026-11-08T08:16:52.974Z lastSrcCommit=2026-11-08T06:06:17.000Z dirtySrcFiles=0 stale=false machine=box
+CONTRAST dark  {"addr":11.05,"kind":9.56,"preset":16.36,"links":5.97,"ok":16.36,"teleLabel":5.24,"teleValue":8.4,"lvl":14.37,"you":8.05}  (last: "Card B the schema holds still while she types on 0xC7A9")
+CONTRAST light {"addr":13.02,"kind":5.5,"preset":6.04,"links":5.45,"ok":6.04,"teleLabel":5.11,"teleValue":5.16,"lvl":5.66,"you":7.65}  (last: "Card B the schema holds still while she types on the schema holds still while she types on 0xC7A9")
+PASS  P1 flag on: the root carries data-flux3, flux-v3.css is applied (the canvas is clear), the theme is flux, the flag is in the URL
+PASS  P2 ONE layer, aria-hidden, taking no pointer, hosted by the board frame, and under the cards (card A is what is under its own centre)
+PASS  P3 a node record on every card (9/9), and the readouts are true (9 nodes, 3 links)
+PASS  OFF flag off: no layer, no record, no readouts, no root mark, and the flag's chunk was never fetched
+PASS  G [dark 1366] the board frame and all 9 cards keep their rects with the flag on, and every card its text
+PASS  G [dark 1920] the board frame and all 9 cards keep their rects with the flag on, and every card its text
+PASS  G [light 1366] the board frame and all 9 cards keep their rects with the flag on, and every card its text
+PASS  G [light 1920] the board frame and all 9 cards keep their rects with the flag on, and every card its text
+PASS  G coverage: 4/4 cells compared
+PASS  H the readouts never cover the board's hint (4 cells; the hint is present in each)
+PASS  G the board's boxes (what it saves) are unchanged by the flag-on visits (nothing new is saved)
+PASS  LINKS each seeded link is drawn on the motion canvas out of its from-card (A-C, B-D, E-F), and nothing beside G, which has no link
+PASS  E electrons only on the selected node's links: 2 per motion frame per link (A: 1 link, G: none, E: 1 link)
+PASS  D2-KEYS ZERO layer draw calls while 42 keys land in a card (first key to last)
+PASS  D2-KEYS premises: the layer animated just before, the words reached the card, and it draws again after she settles
+PASS  D2-WHEEL ZERO layer draw calls while the board scrolls by the wheel (12 notches)
+PASS  D2-WHEEL premises: the board scrolled, the held frame moved with it (a transform), and the ground was redrawn at the new view after settling
+PASS  D2-SCROLL ZERO layer draw calls while the board scrolls with no wheel and no pointer (the scroll position stepped, as a scrollbar drag moves it)
+PASS  D2-SCROLL premises: the layer animated before and draws again after
+PASS  HIDDEN ZERO layer draw calls while the window is hidden; it draws again when shown
+PASS  STILL reduced motion = the still frame: ZERO layer draw calls once settled, the links still drawn, and motion resumes when it clears
+PASS  F <= 3 flashes a second, measured: 4 links made in a 249 ms burst each lit once (4 flashes), at most 3 starts in any 1 s
+PASS  C [dark] labels >= 4.5:1 against the ground or the strip, the LAST node's name >= 7:1
+PASS  C [light] labels >= 4.5:1 against the ground or the strip, the LAST node's name >= 7:1
+PASS  BUDGET premise: the Schema arm drew (full motion at rest) and the control drew nothing
+PASS  BUDGET rule 2: at rest, the Schema's median frame interval is within 10% of the control's (the box)
+PASS  MUT-DAMP (landed) the damping gate always open: D2-KEYS fails
+PASS  MUT-SCROLL (landed) the layer deaf to scroll: D2-SCROLL fails
+PASS  MUT-HIDDEN (landed) the hidden gate always false: HIDDEN fails
+PASS  MUT-FLASH (landed) the flash spacing removed: F fails (more than 3 starts in a second)
+PASS  B the build: served index-Bt-Xhx32.js = dist-web's index-Bt-Xhx32.js, built 2026-11-08T08:16:52.974Z after the last src commit 2026-11-08T06:06:17.000Z (tree 8c8acc3e, 0 uncommitted src file(s))
+
+FLUX3-S1 VERIFY: PASS (31 checks)

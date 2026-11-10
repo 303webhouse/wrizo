@@ -1,0 +1,25 @@
+ARBOR - the Nick walk, driven 2026-11-08T09:18:35.859Z (scripts/frames/arbor2-walk.mjs). 35 PASS, 0 FAIL (read by the instrument), 18 EYE (the frames named; the Wrizors' call).
+Departures from the script: recordings are JPEG frame folders with frames.json (no encoder on the box; no new dependency); the key-to-paint logs (keylog-*.csv) come from un-recorded bursts, the recorded bursts carry their own (*__recorded.csv); Room by day/night is the URL test pin on the cold loads of steps 1-2 and the Room row's attribute after; the splash at test speed from step 3; step 9 uses the mockup's clock hook (arbor2Clock) for the device clock; step 10 does not drive a drag.
+
+MUSTS THAT DID NOT HOLD (as read):
+- none
+
+FOR THE EYE (frames named in walk-log.json):
+- [1] day__2000 the logo writes itself out after the sketch (write at ~3.3 s, still ~1.6 s later)
+- [1] day__2000 the tagline "For humans who write." in EB Garamond, cream; brass caret blinking ~1 s; the logo in the sketch's top-left below PAGE; the full stop before the z's loop; doors cream rising 6 px; <= 3 flashes a second
+- [1] day__2000 hover Write: it turns brass, and back when the mouse leaves
+- [1] day__2000 hover Sign in: it turns brass, and back when the mouse leaves
+- [1] day__2000 Tab to each door: brass
+- [1] night__2000 the logo writes itself out after the sketch (write at ~3.3 s, still ~1.6 s later)
+- [1] night__2000 the tagline "For humans who write." in EB Garamond, cream; brass caret blinking ~1 s; the logo in the sketch's top-left below PAGE; the full stop before the z's loop; doors cream rising 6 px; <= 3 flashes a second
+- [1] night__2000 hover Write: it turns brass, and back when the mouse leaves
+- [1] night__2000 hover Sign in: it turns brass, and back when the mouse leaves
+- [1] night__2000 Tab to each door: brass
+- [1] day__1366 the tagline "For humans who write." in EB Garamond, cream; brass caret blinking ~1 s; the logo in the sketch's top-left below PAGE; the full stop before the z's loop; doors cream rising 6 px; <= 3 flashes a second
+- [1] day__1366 hover Write: it turns brass, and back when the mouse leaves
+- [1] day__1366 hover Sign in: it turns brass, and back when the mouse leaves
+- [1] day__1366 Tab to each door: brass
+- [1] night__1366 the tagline "For humans who write." in EB Garamond, cream; brass caret blinking ~1 s; the logo in the sketch's top-left below PAGE; the full stop before the z's loop; doors cream rising 6 px; <= 3 flashes a second
+- [1] night__1366 hover Write: it turns brass, and back when the mouse leaves
+- [1] night__1366 hover Sign in: it turns brass, and back when the mouse leaves
+- [1] night__1366 Tab to each door: brass

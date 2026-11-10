@@ -1,0 +1,23 @@
+BUILD: tree=2e676c27 bundle=index-Bt-Xhx32.js builtAt=2026-11-09T01:30:24.083Z lastSrcCommit=2026-11-08T06:06:17.000Z dirtySrcFiles=0 stale=false machine=box rounds=6
+INFO ARMS the box, 6 rounds of 44 keys each, ms key -> paint (median / p95 / max); L's budget: C + C's own round spread (median 2.5, p95 2.9)
+INFO ARM C        25.3 /  32.5 /  39.3  vs C     -  (n 264; rounds 24.3/32.2 25.1/31.8 25.2/31.6 26.5/34.5 26/32.2 26.8/32.7)  the control
+INFO ARM J        35.5 /  57.1 /  68.6  vs C +10.2 / +24.6 outside L's budget  (n 264; rounds 32.4/61 34.5/55.3 42.5/56.1 33.4/52.5 36.8/63.8 34.3/55.9)  Jacked In as built (r12)
+INFO ARM K        20.8 /  32.4 /  39.3  vs C -4.5 / -0.1 WITHIN L's budget  (n 264; rounds 20.4/32 20.1/30.9 21.9/32.7 20.2/31.1 21.8/34.6 21.2/30.2)  Jacked In, the tunnel never mounted
+INFO ARM hold     24.6 /  40.7 /  68.9  vs C -0.7 / +8.2 outside L's budget  (n 264; rounds 23/33.6 26.2/52.1 22.7/36.3 24.8/37.4 25.8/42.4 24.7/34.1)  (1) the tunnel holds while keys land (the hold switch on)
+INFO ARM light    25.7 /  32.9 /  59.1  vs C +0.4 / +0.4 WITHIN L's budget  (n 264; rounds 27.1/33.6 27.1/33.4 25.9/31.7 25.3/32.5 25.6/32.6 24.6/32.2)  (2) a lighter tunnel: 6 frames of 110%, no rays
+INFO ARM margins  41.4 /  64.3 / 115.2  vs C +16.1 / +31.8 outside L's budget  (n 264; rounds 42.4/63.7 42.8/60.5 41.4/73.2 45/63 42.2/68.1 36.6/64.2)  (3) the tunnel clipped to the margins (none behind the words)
+INFO ARM veil     28.3 /  49.1 /  62.8  vs C +3 / +16.6 outside L's budget  (n 264; rounds 29.7/46.3 27/40.8 27.4/37.7 30.4/50.9 30/50.2 27/49.1)  (4) the veil a rectangle clip, not a mask (the dim line full)
+INFO ARM veilK    18.7 /  29.7 /  35.5  vs C -6.6 / -2.8 WITHIN L's budget  (n 264; rounds 18.2/31.3 18.6/28.7 18.8/29.3 19.1/28 19.8/31 18.8/28)  (4) the veil a rectangle clip, without the tunnel
+PASS  ARM-C the control (flag off, the Typewriter on, zoomed, no tunnel) in all 6 rounds
+PASS  ARM-J Jacked In as built (r12): every patch landed once, and its effect read on the page in all 6 rounds
+PASS  ARM-K Jacked In, the tunnel never mounted: every patch landed once, and its effect read on the page in all 6 rounds
+PASS  ARM-hold (1) the tunnel holds while keys land (the hold switch on): every patch landed once, and its effect read on the page in all 6 rounds
+PASS  ARM-light (2) a lighter tunnel: 6 frames of 110%, no rays: every patch landed once, and its effect read on the page in all 6 rounds
+PASS  ARM-margins (3) the tunnel clipped to the margins (none behind the words): every patch landed once, and its effect read on the page in all 6 rounds
+PASS  ARM-veil (4) the veil a rectangle clip, not a mask (the dim line full): every patch landed once, and its effect read on the page in all 6 rounds
+PASS  ARM-veilK (4) the veil a rectangle clip, without the tunnel: every patch landed once, and its effect read on the page in all 6 rounds
+PASS  ARMS-LIVE the readers tell every arm from J: J's own read (unpatched) fails each other arm's predicate
+PASS  ARMS-KEYS every arm's every round timed at least 40 of 44 keys
+PASS  B the build: served index-Bt-Xhx32.js = dist-web's index-Bt-Xhx32.js, built 2026-11-09T01:30:24.083Z after the last src commit 2026-11-08T06:06:17.000Z (tree 2e676c27, 0 uncommitted src file(s))
+
+FLUX3-S4-ARMS VERIFY: PASS (11 checks)

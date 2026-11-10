@@ -1,0 +1,24 @@
+{
+  "startedAt": "2026-11-09T08:42:19.655Z",
+  "setting": "unset",
+  "tree": "7d9f94d5",
+  "dirtyFiles": 0,
+  "bundle": {
+    "js": "index-e17ME4Wi.js",
+    "css": "index-0Gk9Ng_3.css",
+    "bytes": 994681
+  },
+  "rebuiltBeforeRun": true,
+  "runner": "run-suite.mjs (item 77(c) stamp)",
+  "reaper": {
+    "enumerated": 0,
+    "reaped": [],
+    "reapFailed": [],
+    "liveOwnersUntouched": [],
+    "unknownOwnersSpared": [],
+    "ageFloorSec": 300,
+    "youngSpared": [],
+    "ageUnreadableSpared": [],
+    "profileDirsRemoved": []
+  }
+}

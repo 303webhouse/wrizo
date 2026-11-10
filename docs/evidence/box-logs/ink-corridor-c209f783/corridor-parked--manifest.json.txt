@@ -1,0 +1,24 @@
+{
+  "startedAt": "2026-11-09T15:50:44.116Z",
+  "setting": "HARNESS_PARKED=1",
+  "tree": "c209f783",
+  "dirtyFiles": 0,
+  "bundle": {
+    "js": "index-mdVLCeLK.js",
+    "css": "index-Br35jmXa.css",
+    "bytes": 1008558
+  },
+  "rebuiltBeforeRun": false,
+  "runner": "run-suite.mjs (item 77(c) stamp)",
+  "reaper": {
+    "enumerated": 0,
+    "reaped": [],
+    "reapFailed": [],
+    "liveOwnersUntouched": [],
+    "unknownOwnersSpared": [],
+    "ageFloorSec": 300,
+    "youngSpared": [],
+    "ageUnreadableSpared": [],
+    "profileDirsRemoved": []
+  }
+}

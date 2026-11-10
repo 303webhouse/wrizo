@@ -1,0 +1,19 @@
+BUILD: tree=8c8acc3e bundle=index-Bt-Xhx32.js builtAt=2026-11-08T07:44:40.382Z lastSrcCommit=2026-11-08T06:06:17.000Z dirtySrcFiles=0 stale=false
+
+ROWS-SHADOW VERIFY: PASS (8 renders checked, shadow == DOM on every one)
+PASS  P0 a page was opened through the app (CreateProject -> Start writing)
+PASS  P1 every read stood where it claimed (page + editor mounted, splash gone, data-theme flux, the asked tone and surface, the flag exactly when on): 16/16
+PASS  R [dark Free Write 1366x768] the page rect with ?flux3=1 is identical to the rect without it
+PASS  R [dark Free Write 1920x1080] the page rect with ?flux3=1 is identical to the rect without it
+PASS  R [dark Draft 1366x768] the page rect with ?flux3=1 is identical to the rect without it
+PASS  R [dark Draft 1920x1080] the page rect with ?flux3=1 is identical to the rect without it
+PASS  R [light Free Write 1366x768] the page rect with ?flux3=1 is identical to the rect without it
+PASS  R [light Free Write 1920x1080] the page rect with ?flux3=1 is identical to the rect without it
+PASS  R [light Draft 1366x768] the page rect with ?flux3=1 is identical to the rect without it
+PASS  R [light Draft 1920x1080] the page rect with ?flux3=1 is identical to the rect without it
+PASS  R coverage: 8/8 cells compared (1366 + 1920, dark + light, Free Write + Draft)
+PASS  P2 the Typewriter state is the same with the flag on and off in every cell (the ruled zoom exception never decides a pair)
+PASS  M (mutant, landed) a 3px translate on .mode-page under the flag makes R report a difference
+PASS  B the build: served index-Bt-Xhx32.js = dist-web's index-Bt-Xhx32.js, built 2026-11-08T07:44:40.382Z after the last src commit 2026-11-08T06:06:17.000Z (tree 8c8acc3e, 0 uncommitted src file(s))
+
+FLUX3-PAGE-RECT VERIFY: PASS (14 checks)

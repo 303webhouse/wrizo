@@ -1,0 +1,147 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+WALK-STEP 1 start 2026-11-08T07:11:38.424Z
+WALK-REC walk-1-front-cold__day__2000/ 453 frames, 9.2 fps over 49048 ms
+WALK 1 timeline day__2000 {"logoWrite":3524,"logoStill":5490,"caret":5753,"tagFirst":5972,"tagDone":7620,"doorsIn":7967,"doorsShown":8532,"pulse1":12994,"pulse2":42983,"splashGone":41,"loadingLast":8747,"loadingAfterDoors":true}
+WALK 1 finished day__2000 {"splash":false,"logo":"still","logoRect":[729,291,128,57],"tag":{"state":"done","typed":21,"text":"For humans who write.","font":"\"EB Garamond\", \"EB Garamond Variable\", Georgia, serif, serif","color":"#EFE4CB","rect":[602,323,181,21]},"caret":{"color":"rgba(0, 0, 0, 0)","anim":["arbor2-caret:1060"]},"doors":[{"cls":"arbor2-door wz-arrival-write","word":"Write","color":"#EFE4CB","stroke":"rgb(239, 228, 203)","op":1,"r":[1138,701,106,47],"disabled":false},{"cls":"arbor2-door wz-arrival-signin","word":"Sign in","color":"#EFE4CB","stroke":"rgb(239, 228, 203)","op":1,"r":[1261,701,106,47],"disabled":false}],"phase":"shown","pulse":2,"mode":"door","hash":"#/","active":"","logIn":false,"signIn":true}
+WALK-SHOT walk-1-front-finished__day__2000.png
+WALK-MUST EYE [1] day__2000 the logo writes itself out after the sketch (write at ~3.3 s, still ~1.6 s later)  {"logoWrite":3524,"logoStill":5490}
+WALK-MUST PASS [1] day__2000 a beat (~0.45 s), then the tagline types; the caret first  {"caret":5753,"tagFirst":5972,"tagDone":7620}
+WALK-MUST PASS [1] day__2000 the doors arrive ~0.35 s after the full stop (~7.3 s at 1366)  {"tagDone":7620,"doorsIn":7967}
+WALK-MUST PASS [1] day__2000 Write, then Sign in; never "Log in"  {"words":["Write","Sign in"],"logIn":false}
+WALK-MUST PASS [1] day__2000 the nudge: 5 s after the doors, once; again every 30 s  {"doorsIn":7967,"pulse1":12994,"pulse2":42983}
+WALK-MUST FAIL [1] day__2000 the loading line has gone by the time the doors arrive  {"loadingLast":8747,"doorsIn":7967}
+WALK-MUST EYE [1] day__2000 the tagline "For humans who write." in EB Garamond, cream; brass caret blinking ~1 s; the logo in the sketch's top-left below PAGE; the full stop before the z's loop; doors cream rising 6 px; <= 3 flashes a second  {"frames":["walk-1-front-cold__day__2000/","walk-1-front-finished__day__2000.png"],"tagline":{"state":"done","typed":21,"text":"For humans who write.","font":"\"EB Garamond\", \"EB Garamond Variable\", Georgia, serif, serif","color":"#EFE4CB","rect":[602,323,181,21]},"caret":{"color":"rgba(0, 0, 0, 0)","anim":["arbor2-caret:1060"]},"logoRect":[729,291,128,57],"doors":[{"cls":"arbor2-door wz-arrival-write","word":"Write","color":"#EFE4CB","stroke":"rgb(239, 228, 203)","op":1,"r":[1138,701,106,47],"disabled":false},{"cls":"arbor2-door wz-arrival-signin","word":"Sign in","color":"#EFE4CB","stroke
+WALK-SHOT walk-1-front-hover-write__day__2000.png
+WALK-MUST EYE [1] day__2000 hover Write: it turns brass, and back when the mouse leaves  {"hover":{"cls":"arbor2-door wz-arrival-write","word":"Write","color":"#FF9800","stroke":"rgb(255, 152, 0)","op":1,"r":[1138,701,106,47],"disabled":false},"left":{"cls":"arbor2-door wz-arrival-write","word":"Write","color":"#EFE4CB","stroke":"rgb(239, 228, 203)","op":1,"r":[1138,701,106,47],"disabled":false}}
+WALK-SHOT walk-1-front-hover-signin__day__2000.png
+WALK-MUST EYE [1] day__2000 hover Sign in: it turns brass, and back when the mouse leaves  {"hover":{"cls":"arbor2-door wz-arrival-signin","word":"Sign in","color":"#FF9800","stroke":"rgb(255, 152, 0)","op":1,"r":[1261,701,106,47],"disabled":false},"left":{"cls":"arbor2-door wz-arrival-signin","word":"Sign in","color":"#EFE4CB","stroke":"rgb(239, 228, 203)","op":1,"r":[1261,701,106,47],"disabled":false}}
+WALK-SHOT walk-1-front-tab__day__2000.png
+WALK-MUST EYE [1] day__2000 Tab to each door: brass  {"first":{"active":"","doors":["#EFE4CB","#EFE4CB"]},"second":{"active":"arbor2-door wz-arrival-write","doors":["#FF9800","#EFE4CB"]}}
+WALK-SHOT walk-1-front-skip-click__day__2000.png
+WALK-MUST PASS [1] day__2000 skip (a) click mid-sketch: straight to the finished frame (logo written, whole tagline, caret, doors)  {"logo":"still","tag":"done","phase":"shown","caret":true,"splash":false}
+WALK-SHOT walk-1-front-skip-esc__day__2000.png
+WALK-MUST PASS [1] day__2000 skip (b) esc mid-sketch: straight to the finished frame (logo written, whole tagline, caret, doors)  {"logo":"still","tag":"done","phase":"shown","caret":true,"splash":false}
+WALK-SHOT walk-1-front-enter__day__2000.png
+WALK-MUST PASS [1] day__2000 skip (c) Enter at the first frame = Write: straight to a new page  {"hash":"#/page/new","editor":true}
+WALK-REC walk-1-front-cold__night__2000/ 673 frames, 13.7 fps over 49032 ms
+WALK 1 timeline night__2000 {"logoWrite":3398,"logoStill":5405,"caret":5698,"tagFirst":5915,"tagDone":7565,"doorsIn":7914,"doorsShown":8481,"pulse1":12898,"pulse2":42912,"splashGone":36,"loadingLast":8555,"loadingAfterDoors":true}
+WALK 1 finished night__2000 {"splash":false,"logo":"still","logoRect":[729,291,128,57],"tag":{"state":"done","typed":21,"text":"For humans who write.","font":"\"EB Garamond\", \"EB Garamond Variable\", Georgia, serif, serif","color":"#EFE4CB","rect":[602,323,181,21]},"caret":{"color":"rgba(0, 0, 0, 0)","anim":["arbor2-caret:1060"]},"doors":[{"cls":"arbor2-door wz-arrival-write","word":"Write","color":"#EFE4CB","stroke":"rgb(239, 228, 203)","op":1,"r":[1138,701,106,47],"disabled":false},{"cls":"arbor2-door wz-arrival-signin","word":"Sign in","color":"#EFE4CB","stroke":"rgb(239, 228, 203)","op":1,"r":[1261,701,106,47],"disabled":false}],"phase":"shown","pulse":2,"mode":"door","hash":"#/","active":"","logIn":false,"signIn":true}
+WALK-SHOT walk-1-front-finished__night__2000.png
+WALK-MUST EYE [1] night__2000 the logo writes itself out after the sketch (write at ~3.3 s, still ~1.6 s later)  {"logoWrite":3398,"logoStill":5405}
+WALK-MUST PASS [1] night__2000 a beat (~0.45 s), then the tagline types; the caret first  {"caret":5698,"tagFirst":5915,"tagDone":7565}
+WALK-MUST PASS [1] night__2000 the doors arrive ~0.35 s after the full stop (~7.3 s at 1366)  {"tagDone":7565,"doorsIn":7914}
+WALK-MUST PASS [1] night__2000 Write, then Sign in; never "Log in"  {"words":["Write","Sign in"],"logIn":false}
+WALK-MUST PASS [1] night__2000 the nudge: 5 s after the doors, once; again every 30 s  {"doorsIn":7914,"pulse1":12898,"pulse2":42912}
+WALK-MUST FAIL [1] night__2000 the loading line has gone by the time the doors arrive  {"loadingLast":8555,"doorsIn":7914}
+WALK-MUST EYE [1] night__2000 the tagline "For humans who write." in EB Garamond, cream; brass caret blinking ~1 s; the logo in the sketch's top-left below PAGE; the full stop before the z's loop; doors cream rising 6 px; <= 3 flashes a second  {"frames":["walk-1-front-cold__night__2000/","walk-1-front-finished__night__2000.png"],"tagline":{"state":"done","typed":21,"text":"For humans who write.","font":"\"EB Garamond\", \"EB Garamond Variable\", Georgia, serif, serif","color":"#EFE4CB","rect":[602,323,181,21]},"caret":{"color":"rgba(0, 0, 0, 0)","anim":["arbor2-caret:1060"]},"logoRect":[729,291,128,57],"doors":[{"cls":"arbor2-door wz-arrival-write","word":"Write","color":"#EFE4CB","stroke":"rgb(239, 228, 203)","op":1,"r":[1138,701,106,47],"disabled":false},{"cls":"arbor2-door wz-arrival-signin","word":"Sign in","color":"#EFE4CB","st
+WALK-SHOT walk-1-front-hover-write__night__2000.png
+WALK-MUST EYE [1] night__2000 hover Write: it turns brass, and back when the mouse leaves  {"hover":{"cls":"arbor2-door wz-arrival-write","word":"Write","color":"#FF9800","stroke":"rgb(255, 152, 0)","op":1,"r":[1138,701,106,47],"disabled":false},"left":{"cls":"arbor2-door wz-arrival-write","word":"Write","color":"#EFE4CB","stroke":"rgb(239, 228, 203)","op":1,"r":[1138,701,106,47],"disabled":false}}
+WALK-SHOT walk-1-front-hover-signin__night__2000.png
+WALK-MUST EYE [1] night__2000 hover Sign in: it turns brass, and back when the mouse leaves  {"hover":{"cls":"arbor2-door wz-arrival-signin","word":"Sign in","color":"#FF9800","stroke":"rgb(255, 152, 0)","op":1,"r":[1261,701,106,47],"disabled":false},"left":{"cls":"arbor2-door wz-arrival-signin","word":"Sign in","color":"#EFE4CB","stroke":"rgb(239, 228, 203)","op":1,"r":[1261,701,106,47],"disabled":false}}
+WALK-SHOT walk-1-front-tab__night__2000.png
+WALK-MUST EYE [1] night__2000 Tab to each door: brass  {"first":{"active":"","doors":["#EFE4CB","#EFE4CB"]},"second":{"active":"arbor2-door wz-arrival-write","doors":["#FF9800","#EFE4CB"]}}
+WALK-SHOT walk-1-front-skip-click__night__2000.png
+WALK-MUST PASS [1] night__2000 skip (a) click mid-sketch: straight to the finished frame (logo written, whole tagline, caret, doors)  {"logo":"still","tag":"done","phase":"shown","caret":true,"splash":false}
+WALK-SHOT walk-1-front-skip-esc__night__2000.png
+WALK-MUST PASS [1] night__2000 skip (b) esc mid-sketch: straight to the finished frame (logo written, whole tagline, caret, doors)  {"logo":"still","tag":"done","phase":"shown","caret":true,"splash":false}
+WALK-SHOT walk-1-front-enter__night__2000.png
+WALK-MUST PASS [1] night__2000 skip (c) Enter at the first frame = Write: straight to a new page  {"hash":"#/page/new","editor":true}
+WALK-SHOT walk-1-front-tagline-2x__day__1366.png
+WALK-MUST PASS [1] a 2x still mid-typing of the tagline was taken while it typed  null
+WALK-STEP 1 end 131 s
+WALK-STEP 2 start 2026-11-08T07:13:49.026Z
+WALK-SHOT walk-2-signin-form__day__2000.png
+WALK-MUST EYE [2] 2000 Sign in opens the existing forms (the invite code included); quiet text >= 4.5:1  {"inputs":["email:email","password:password"],"invite":false,"logIn":false,"lowest":[{"t":"Arbor mockup","c":"#56623A","bg":"#E8DFC8","ratio":4.94},{"t":"The rhizome (Progress: Rhizome, with a w","c":"#56623A","bg":"#E8DFC8","ratio":4.94},{"t":"Logo","c":"#56623A","bg":"#E8DFC8","ratio":4.94},{"t":"Mood ▸","c":"#56623A","bg":"#E8DFC8","ratio":4.94}],"hash":"#/"}
+WALK-SHOT walk-2-signup-form__day__2000.png
+WALK-MUST FAIL [2] 2000 the sign-up form carries the invite code  {"via":"New here? Create an account"}
+WALK-SHOT walk-2-signed-in-door__day__2000.png
+WALK-REC walk-2-signed-in-reload__day__2000/ 129 frames, 14 fps over 9133 ms
+WALK 2 signed-in reload timeline {"logoWrite":3468,"logoStill":5404,"caret":5720,"tagFirst":5921,"tagDone":7589,"doorsIn":7910,"doorsShown":8497,"pulse1":null,"pulse2":null,"splashGone":37,"loadingLast":8682,"loadingAfterDoors":true}
+WALK 2 signed-in end {"hash":"#/page/mw7hup94iev1kj3mm","editor":true,"mark":null,"signin":false,"splash":false}
+WALK-MUST PASS [2] signed in, the doors are Write + Open (no Sign in door), on the splash as on the front door  {"doorShot":true,"sawSignin":false,"doorWords":"Write|Open","end":{"hash":"#/page/mw7hup94iev1kj3mm","editor":true,"mark":null,"signin":false,"splash":false}}
+WALK-MUST EYE [2] the splash fades into the last page; the logo fades out with the sketch; the corner mark fades in in its own rect (day: sage, .7); nothing slides  {"frames":["walk-2-signed-in-reload__day__2000/","walk-2-signed-in-door__day__2000.png","walk-2-signed-in-fade__day__2000.png"],"mark":null,"fadeShot":false}
+WALK-STEP 2 end 23 s
+WALK-STEP 4 start 2026-11-08T07:14:12.079Z
+WALK 4 keylog 2000 {"dayFirst":170.9,"dayRest":{"n":407,"median":21.2,"p95":32.2,"max":79.7},"nightFirst":15.7,"nightRest":{"n":407,"median":22.6,"p95":32.2,"max":34},"dayKeys":408,"nightKeys":408}
+WALK-MUST PASS [4] 2000 every key from the second on no slower than by night (median within 2 ms, p95 within 5 ms)  {"dayRest":{"n":407,"median":21.2,"p95":32.2,"max":79.7},"nightRest":{"n":407,"median":22.6,"p95":32.2,"max":34},"dayFirst":170.9}
+WALK-MUST FAIL [4] 2000 no key after the first drops a frame by day (key-to-paint over 45 ms = a dropped frame)  {"slow":[{"key":2,"ms":68.5},{"key":10,"ms":62.7},{"key":19,"ms":61.3},{"key":87,"ms":79.7},{"key":110,"ms":61.3},{"key":119,"ms":60.9},{"key":160,"ms":54.7},{"key":269,"ms":56.4},{"key":319,"ms":58.6},{"key":369,"ms":62.7}],"count":10}
+WALK 4 shade timeline day 2000 {"stillAfterFirstKeyMs":101,"writingOnMs":101,"shadeGoneAfterFirstKeyMs":5897,"pauseAt":2024,"shadeBackMsAfterPause":2810,"liveOffMid":["true"],"leavesRunningMid":[0]}
+WALK-MUST PASS [4] 2000 the leaves stop on the first key (the live drawing off, its still shown, within ~300 ms)  {"stillAt":101}
+WALK-MUST PASS [4] 2000 while she types nothing in the shade moves (the live drawing off on every sample mid-burst)  {"samples":443,"values":["true"],"leavesRunningInfo":[0]}
+WALK-MUST PASS [4] 2000 the swap: the shade fades out over ~6 s (to 0) as the vines fade in, all together  {"shadeGone":5897}
+WALK-MUST PASS [4] 2000 the pause (the pointer moves, the chrome returns): the shade back over ~3 s  {"moveAt":66547,"pauseAfterMove":346,"back":2810}
+WALK-SHOT walk-4-before-first-key__day__2000.png
+WALK-SHOT walk-4-after-first-key-0.1s__day__2000.png
+WALK-SHOT walk-4-after-first-key-0.3s__day__2000.png
+WALK-SHOT walk-4-mid-burst__day__2000.png
+WALK-SHOT walk-4-pause-plus-3s__day__2000.png
+WALK-REC walk-4-burst__day__2000/ 1274 frames, 22.3 fps over 57015 ms
+WALK-SHOT walk-4-before-first-key__night__2000.png
+WALK-SHOT walk-4-after-first-key-0.1s__night__2000.png
+WALK-SHOT walk-4-after-first-key-0.3s__night__2000.png
+WALK-SHOT walk-4-mid-burst__night__2000.png
+WALK-SHOT walk-4-pause-plus-3s__night__2000.png
+WALK-REC walk-4-burst__night__2000/ 1921 frames, 33.7 fps over 56997 ms
+WALK-MUST EYE [4] 2000 no visible snap (a leaf never jumps); mid-burst ten seconds of nothing moving; the openers recede with the chrome; new growth from its parent's tip  {"frames":["walk-4-burst__day__2000/","walk-4-burst__night__2000/","walk-4-after-first-key-0.1s__day__2000.png","walk-4-after-first-key-0.3s__day__2000.png","walk-4-mid-burst__day__2000.png","walk-4-pause-plus-3s__day__2000.png"]}
+WALK-STEP 4 end 286 s
+WALK-STEP 6 start 2026-11-08T07:18:58.077Z
+WALK-SHOT walk-6-tools-format__day__2000.png
+WALK-SHOT walk-6-tools-presets__day__2000.png
+WALK-SHOT walk-6-tutor-tutor__day__2000.png
+WALK-SHOT walk-6-tutor-grafts__day__2000.png
+WALK-SHOT walk-6-tutor-board__day__2000.png
+WALK 6 drawers draft day__2000 {"FORMAT":{"ok":true,"tabs":[{"id":"wz-sliver-tab-format","word":"Format","on":true,"bg":"#56632E","color":"#EFE4CB","r":[436,75,104,36]},{"id":"wz-sliver-tab-presets","word":"Presets","on":false,"bg":"#7FA0BC","color":"#2B1D12","r":[524,83,96,25]}],"d":{"tools":{"open":true,"rect":[426,108,690,871],"grip":[410,124,426,158],"glyph":"›","border":["rgb(167, 127, 69)","1px","1px","0px","1px"]},"tutor":{"open":true,"rect":[1384,108,1844,871],"grip":[1310,124,1326,158],"glyph":"›","border":["rgb(167, 127, 69)","1px","0px","1px","1px"]},"page":[690,1310],"brassText":[],"helps":0}},"PRESETS":{"ok":true,"tabs":[{"id":"wz-sliver-tab-format","word":"Format","on":false,"bg":"#56632E","color":"#EFE4CB","r":[440,83,96,25]},{"id":"wz-sliver-tab-presets","word":"Presets","on":true,"bg":"#7FA0BC","color":"#2B1D12","r":[520,75,104,36]}],"d":{"tools":{"open":true,"rect":[426,108,690,871],"grip":[410,124,4
+WALK-MUST PASS [6] draft day__2000 the page never moves while the drawers open  {"p0":{"l":690,"t":108,"r":1310,"b":871},"p1":{"l":690,"t":108,"r":1310,"b":871}}
+WALK-MUST PASS [6] draft day__2000 each open drawer flush against the page; its opener on the drawer's outer edge  {"tools":{"open":true,"rect":[426,108,690,871],"grip":[410,124,426,158],"glyph":"›","border":["rgb(167, 127, 69)","1px","1px","0px","1px"]},"tutor":{"open":true,"rect":[1310,108,1770,871],"grip":[1770,124,1786,158],"glyph":"‹","border":["rgb(167, 127, 69)","1px","0px","1px","1px"]},"page":[690,1310]}
+WALK-MUST PASS [6] draft day__2000 every tab clicked shows itself chosen  {"FORMAT":{"ok":true,"on":["Format"]},"PRESETS":{"ok":true,"on":["Presets"]},"TUTOR":{"ok":true,"on":["Presets","Tutor"]},"GRAFTS":{"ok":true,"on":["Presets","Grafts"]},"BOARD":{"ok":true,"on":["Presets","Board"]}}
+WALK-MUST PASS [6] draft day__2000 BOARD shows Board's contents, never the Graft row  {"graftRow":false,"text":"Place this…"}
+WALK-MUST PASS [6] draft day__2000 by day no brass text in the drawers  {"board":[],"format":[]}
+WALK-MUST EYE [6] draft day__2000 the tab rule (own cloth, no brass, the chosen tab forward +8/+8, its colour the drawer's 3 px border); one "?" per row, guide green; Arbor's focus ring; Send the box's height  {"frames":"walk-6-*__day__2000.png","tabs":[{"id":"wz-sliver-tab-format","word":"Format","on":false,"bg":"#56632E","color":"#EFE4CB","r":[440,83,96,25]},{"id":"wz-sliver-tab-presets","word":"Presets","on":true,"bg":"#7FA0BC","color":"#2B1D12","r":[520,75,104,36]},{"id":"wz-tutor-tab-tutor","word":"Tutor","on":false,"bg":"#56632E","color":"#EFE4CB","r":[1770,170,25,98]},{"id":"wz-tutor-tab-links","word":"Grafts","on":false,"bg":"#7FA0BC","color":"#2B1D12","r":[1770,258,25,98]},{"id":"wz-tutor-tab-board","word":"Board","on":true,"bg":"#A8392F","color":"#EFE4CB","r":[1767,342,36,106]}]}
+WALK-SHOT walk-6-freewrite-tools-format__day__2000.png
+WALK-SHOT walk-6-freewrite-tools-ink__day__2000.png
+WALK-SHOT walk-6-freewrite-tutor-tutor__day__2000.png
+WALK 6 drawers free day__2000 {"FORMAT":{"ok":true,"tabs":[{"id":"wz-sliver-tab-format","word":"Format","on":true,"bg":"#56632E","color":"#EFE4CB","r":[330,75,104,36]},{"id":"wz-sliver-tab-ink","word":"Ink","on":false,"bg":"#A8392F","color":"#EFE4CB","r":[418,83,96,25]}],"d":{"tools":{"open":true,"rect":[304,108,504,871],"grip":[288,124,304,158],"glyph":"›","border":["rgb(167, 127, 69)","1px","1px","0px","1px"]},"tutor":{"open":true,"rect":[1452,108,1844,871],"grip":[1496,124,1512,158],"glyph":"›","border":["rgb(167, 127, 69)","1px","0px","1px","1px"]},"page":[504,1496],"brassText":[],"helps":0}},"INK":{"ok":true,"tabs":[{"id":"wz-sliver-tab-format","word":"Format","on":false,"bg":"#56632E","color":"#EFE4CB","r":[334,83,96,25]},{"id":"wz-sliver-tab-ink","word":"Ink","on":true,"bg":"#A8392F","color":"#EFE4CB","r":[414,75,104,36]}],"d":{"tools":{"open":true,"rect":[304,108,504,871],"grip":[288,124,304,158],"glyph":"›",
+WALK-MUST PASS [6] free day__2000 the page never moves while the drawers open  {"p0":{"l":504,"t":108,"r":1496,"b":1328.8},"p1":{"l":504,"t":108,"r":1496,"b":1328.8}}
+WALK-MUST PASS [6] free day__2000 each open drawer flush against the page; its opener on the drawer's outer edge  {"tools":{"open":true,"rect":[304,108,504,871],"grip":[288,124,304,158],"glyph":"›","border":["rgb(167, 127, 69)","1px","1px","0px","1px"]},"tutor":{"open":true,"rect":[1496,108,1844,871],"grip":[1844,124,1860,158],"glyph":"‹","border":["rgb(167, 127, 69)","1px","0px","1px","1px"]},"page":[504,1496]}
+WALK-MUST PASS [6] free day__2000 every tab clicked shows itself chosen  {"FORMAT":{"ok":true,"on":["Format"]},"INK":{"ok":true,"on":["Ink"]},"TUTOR":{"ok":true,"on":["Ink","Tutor"]},"GRAFTS":{"ok":true,"on":["Ink","Grafts"]},"BOARD":{"ok":true,"on":["Ink","Board"]}}
+WALK-MUST PASS [6] free day__2000 BOARD shows Board's contents, never the Graft row  {"graftRow":false,"text":"Place this…"}
+WALK-MUST PASS [6] free day__2000 by day no brass text in the drawers  {"board":[],"format":[]}
+WALK-MUST EYE [6] free day__2000 the tab rule (own cloth, no brass, the chosen tab forward +8/+8, its colour the drawer's 3 px border); one "?" per row, guide green; Arbor's focus ring; Send the box's height; the Forward lock outlined, only its knob green; an open drawer hides the line ends (known)  {"frames":"walk-6-freewrite-*__day__2000.png","tabs":[{"id":"wz-sliver-tab-format","word":"Format","on":false,"bg":"#56632E","color":"#EFE4CB","r":[334,83,96,25]},{"id":"wz-sliver-tab-ink","word":"Ink","on":true,"bg":"#A8392F","color":"#EFE4CB","r":[414,75,104,36]},{"id":"wz-tutor-tab-tutor","word":"Tutor","on":false,"bg":"#56632E","color":"#EFE4CB","r":[1844,170,25,98]},{"id":"wz-tutor-tab-links","word":"Grafts","on":false,"bg":"#7FA0BC","color":"#2B1D12","r":[1844,258,25,98]},{"id":"wz-tutor-tab-board","word":"Board","on":true,"bg":"#A8392F","color":"#EFE4CB","r":[1841,342,36,106]}]}
+WALK-SHOT walk-6-tools-format__night__2000.png
+WALK-SHOT walk-6-tools-presets__night__2000.png
+WALK-SHOT walk-6-tutor-tutor__night__2000.png
+WALK-SHOT walk-6-tutor-grafts__night__2000.png
+WALK-SHOT walk-6-tutor-board__night__2000.png
+WALK 6 drawers draft night__2000 {"FORMAT":{"ok":true,"tabs":[{"id":"wz-sliver-tab-format","word":"Format","on":true,"bg":"#56632E","color":"#EFE4CB","r":[436,75,104,36]},{"id":"wz-sliver-tab-presets","word":"Presets","on":false,"bg":"#7FA0BC","color":"#2B1D12","r":[524,83,96,25]}],"d":{"tools":{"open":true,"rect":[426,108,690,871],"grip":[410,124,426,158],"glyph":"›","border":["rgb(58, 42, 28)","1px","1px","0px","1px"]},"tutor":{"open":true,"rect":[1384,108,1844,871],"grip":[1310,124,1326,158],"glyph":"›","border":["rgb(58, 42, 28)","1px","0px","1px","1px"]},"page":[690,1310],"brassText":["#FF9800"],"helps":0}},"PRESETS":{"ok":true,"tabs":[{"id":"wz-sliver-tab-format","word":"Format","on":false,"bg":"#56632E","color":"#EFE4CB","r":[440,83,96,25]},{"id":"wz-sliver-tab-presets","word":"Presets","on":true,"bg":"#7FA0BC","color":"#2B1D12","r":[520,75,104,36]}],"d":{"tools":{"open":true,"rect":[426,108,690,871],"grip":[410,
+WALK-MUST PASS [6] draft night__2000 the page never moves while the drawers open  {"p0":{"l":690,"t":108,"r":1310,"b":871},"p1":{"l":690,"t":108,"r":1310,"b":871}}
+WALK-MUST PASS [6] draft night__2000 each open drawer flush against the page; its opener on the drawer's outer edge  {"tools":{"open":true,"rect":[426,108,690,871],"grip":[410,124,426,158],"glyph":"›","border":["rgb(58, 42, 28)","1px","1px","0px","1px"]},"tutor":{"open":true,"rect":[1310,108,1770,871],"grip":[1770,124,1786,158],"glyph":"‹","border":["rgb(58, 42, 28)","1px","0px","1px","1px"]},"page":[690,1310]}
+WALK-MUST PASS [6] draft night__2000 every tab clicked shows itself chosen  {"FORMAT":{"ok":true,"on":["Format"]},"PRESETS":{"ok":true,"on":["Presets"]},"TUTOR":{"ok":true,"on":["Presets","Tutor"]},"GRAFTS":{"ok":true,"on":["Presets","Grafts"]},"BOARD":{"ok":true,"on":["Presets","Board"]}}
+WALK-MUST PASS [6] draft night__2000 BOARD shows Board's contents, never the Graft row  {"graftRow":false,"text":"Place this…"}
+WALK-MUST EYE [6] draft night__2000 the tab rule (own cloth, no brass, the chosen tab forward +8/+8, its colour the drawer's 3 px border); one "?" per row, guide green; Arbor's focus ring; Send the box's height  {"frames":"walk-6-*__night__2000.png","tabs":[{"id":"wz-sliver-tab-format","word":"Format","on":false,"bg":"#56632E","color":"#EFE4CB","r":[440,83,96,25]},{"id":"wz-sliver-tab-presets","word":"Presets","on":true,"bg":"#7FA0BC","color":"#2B1D12","r":[520,75,104,36]},{"id":"wz-tutor-tab-tutor","word":"Tutor","on":false,"bg":"#56632E","color":"#EFE4CB","r":[1770,170,25,98]},{"id":"wz-tutor-tab-links","word":"Grafts","on":false,"bg":"#7FA0BC","color":"#2B1D12","r":[1770,258,25,98]},{"id":"wz-tutor-tab-board","word":"Board","on":true,"bg":"#A8392F","color":"#EFE4CB","r":[1767,342,36,106]}]}
+WALK-SHOT walk-6-freewrite-tools-format__night__2000.png
+WALK-SHOT walk-6-freewrite-tools-ink__night__2000.png
+WALK-SHOT walk-6-freewrite-tutor-tutor__night__2000.png
+WALK 6 drawers free night__2000 {"FORMAT":{"ok":true,"tabs":[{"id":"wz-sliver-tab-format","word":"Format","on":true,"bg":"#56632E","color":"#EFE4CB","r":[330,75,104,36]},{"id":"wz-sliver-tab-ink","word":"Ink","on":false,"bg":"#A8392F","color":"#EFE4CB","r":[418,83,96,25]}],"d":{"tools":{"open":true,"rect":[304,108,504,871],"grip":[288,124,304,158],"glyph":"›","border":["rgb(58, 42, 28)","1px","1px","0px","1px"]},"tutor":{"open":true,"rect":[1452,108,1844,871],"grip":[1496,124,1512,158],"glyph":"›","border":["rgb(58, 42, 28)","1px","0px","1px","1px"]},"page":[504,1496],"brassText":[],"helps":0}},"INK":{"ok":true,"tabs":[{"id":"wz-sliver-tab-format","word":"Format","on":false,"bg":"#56632E","color":"#EFE4CB","r":[334,83,96,25]},{"id":"wz-sliver-tab-ink","word":"Ink","on":true,"bg":"#A8392F","color":"#EFE4CB","r":[414,75,104,36]}],"d":{"tools":{"open":true,"rect":[304,108,504,871],"grip":[288,124,304,158],"glyph":"›","bor
+WALK-MUST PASS [6] free night__2000 the page never moves while the drawers open  {"p0":{"l":504,"t":108,"r":1496,"b":1328.8},"p1":{"l":504,"t":108,"r":1496,"b":1328.8}}
+WALK-MUST PASS [6] free night__2000 each open drawer flush against the page; its opener on the drawer's outer edge  {"tools":{"open":true,"rect":[304,108,504,871],"grip":[288,124,304,158],"glyph":"›","border":["rgb(58, 42, 28)","1px","1px","0px","1px"]},"tutor":{"open":true,"rect":[1496,108,1844,871],"grip":[1844,124,1860,158],"glyph":"‹","border":["rgb(58, 42, 28)","1px","0px","1px","1px"]},"page":[504,1496]}
+WALK-MUST PASS [6] free night__2000 every tab clicked shows itself chosen  {"FORMAT":{"ok":true,"on":["Format"]},"INK":{"ok":true,"on":["Ink"]},"TUTOR":{"ok":true,"on":["Ink","Tutor"]},"GRAFTS":{"ok":true,"on":["Ink","Grafts"]},"BOARD":{"ok":true,"on":["Ink","Board"]}}
+WALK-MUST PASS [6] free night__2000 BOARD shows Board's contents, never the Graft row  {"graftRow":false,"text":"Place this…"}
+WALK-MUST EYE [6] free night__2000 the tab rule (own cloth, no brass, the chosen tab forward +8/+8, its colour the drawer's 3 px border); one "?" per row, guide green; Arbor's focus ring; Send the box's height; the Forward lock outlined, only its knob green; an open drawer hides the line ends (known)  {"frames":"walk-6-freewrite-*__night__2000.png","tabs":[{"id":"wz-sliver-tab-format","word":"Format","on":false,"bg":"#56632E","color":"#EFE4CB","r":[334,83,96,25]},{"id":"wz-sliver-tab-ink","word":"Ink","on":true,"bg":"#A8392F","color":"#EFE4CB","r":[414,75,104,36]},{"id":"wz-tutor-tab-tutor","word":"Tutor","on":false,"bg":"#56632E","color":"#EFE4CB","r":[1844,170,25,98]},{"id":"wz-tutor-tab-links","word":"Grafts","on":false,"bg":"#7FA0BC","color":"#2B1D12","r":[1844,258,25,98]},{"id":"wz-tutor-tab-board","word":"Board","on":true,"bg":"#A8392F","color":"#EFE4CB","r":[1841,342,36,106]}]}
+WALK-SHOT walk-6-size-box-new-page__day__2000.png
+WALK-MUST PASS [6] the size box - [ N pt ] +; a new page shows 11 pt  {"value":"11","box":true,"unit":true}
+WALK-STEP 6 end 49 s
+WALK-STEP 10 start 2026-11-08T07:19:46.784Z
+WALK-SHOT walk-10-short-page-no-scrollbar__day__2000.png
+WALK-MUST PASS [10] no scrollbar while the page fits  {"scrolls":false}
+WALK-SHOT walk-10-long-page-at-rest__day__2000.png
+WALK-SHOT walk-10-long-page-mid-scroll__day__2000.png
+WALK-SHOT walk-10-long-page-after-scroll-1.6s__day__2000.png
+WALK-SHOT walk-10-long-page-hover-edge__day__2000.png
+WALK-SHOT walk-10-long-page-mid-drag__day__2000.png
+WALK-SHOT walk-10-long-page-typing__day__2000.png
+WALK 10 scrollbar {"s1":{"scrolls":true,"width":10,"sbWidth":"auto","sbColor":"auto","attrs":["class=mode-scroll","data-typewriter=false","data-scrolled=true"],"top":379},"s2":{"scrolls":true,"width":10,"sbWidth":"auto","sbColor":"auto","attrs":["class=mode-scroll","data-typewriter=false","data-scrolled=true"],"top":1259},"s3":{"scrolls":true,"width":15,"sbWidth":"auto","sbColor":"rgba(0, 0, 0, 0) rgba(0, 0, 0, 0)","attrs":["class=mode-scroll","data-typewriter=false","data-scrolled=true"],"top":4322},"dragged":{"thumb":{"x":1307,"y":362,"top":1259},"before":1259,"after":2573}}
+WALK-MUST EYE [10] on the long page: appears only on scroll, hover or drag (4 px, the theme's colours, the writing surface only), fades ~1 s after; never while typing  {"rest":{"scrolls":true,"width":10,"sbWidth":"auto","sbColor":"auto","attrs":["class=mode-scroll","data-typewriter=false","data-scrolled=true"],"top":379},"scrolled":{"scrolls":true,"width":10,"sbWidth":"auto","sbColor":"auto","attrs":["class=mode-scroll","data-typewriter=false","data-scrolled=true"],"top":1259},"typing":{"scrolls":true,"width":15,"sbWidth":"auto","sbColor":"rgba(0, 0, 0, 0) rgba(0, 0, 0, 0)","attrs":["class=mode-scroll","data-typewriter=false","data-scrolled=true"],"top":4322},"dragged":{"thumb":{"x":1307,"y":362,"top":1259},"before":1259,"after":2573},"frames":["walk-10-long
+WALK-STEP 10 end 21 s
+
+ARBOR2-WALK: FAIL (41 pass, 4 fail, 18 eye; 57 shots/recordings in C:\Users\nickh\Downloads\arbor-mockup-frames\walk-final\turn3)

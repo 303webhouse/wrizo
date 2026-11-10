@@ -1,0 +1,43 @@
+BUILD: tree=8c8acc3e bundle=index-Bt-Xhx32.js builtAt=2026-11-08T07:44:40.382Z lastSrcCommit=2026-11-08T06:06:17.000Z dirtySrcFiles=0 stale=false machine=box
+CONTRAST dark {"countLabel":4.81,"countValue":7.71,"laneTitle":14.64}  (count: "01 / 09")
+CONTRAST light {"countLabel":5.14,"countValue":5.18,"laneTitle":14.64}  (count: "01 / 09")
+BUDGET control 16.60 ms, Stack 16.70 ms, limit 18.26 ms; rounds {"C":[16.6,16.6,16.6,16.7],"T":[16.8,16.7,16.6,16.7]}
+PASS  P flag on: the Stack's button is in Show as, not pressed
+PASS  OFF flag off: no Stack button and no Stack mark anywhere
+PASS  SEQ [dark 1366] every lane (3) and card (9) keeps its rect with the flag on, in the same order
+PASS  SEQ [dark 1920] every lane (3) and card (9) keeps its rect with the flag on, in the same order
+PASS  SEQ [light 1366] every lane (3) and card (9) keeps its rect with the flag on, in the same order
+PASS  SEQ [light 1920] every lane (3) and card (9) keeps its rect with the flag on, in the same order
+PASS  SEQ coverage: 4/4 cells compared
+PASS  SEQ the dress is applied under the flag (the lane's bracket, the card's brackets) and absent without it
+PASS  ENTER the Stack opens: every card flown (a transform, the Stack's mark), the centre the first node in the board's order, the level says Stack, the button pressed
+PASS  ENTER the layer is still behind the Stack (zero draw calls at rest) and dimmed
+PASS  SCALE the centre stands larger than its card, every other node smaller than the centre
+PASS  ORDER the arrow keys walk the Stack in exactly the order Sequence shows (f3-b f3-a f3-h f3-c f3-d f3-e f3-f f3-g f3-p)
+PASS  HOLO a click on the centre opens the hologram: the veil shown, the centre grown again (>= 1.35x), the level says Hologram
+PASS  HOLO the arrow keys flip the hologram; Esc closes it (the Stack again), Esc again closes the Stack
+PASS  HINT the board's hint (Live's gestures, which the Stack holds) is hidden under the Stack and the hologram, and back once the Stack closes
+PASS  RECT [dark 1366] after the Stack and the hologram every card (9) has its rect and its style attribute back, no mark left, nothing saved
+PASS  RECT [dark 1920] after the Stack and the hologram every card (9) has its rect and its style attribute back, no mark left, nothing saved
+PASS  RECT [light 1366] after the Stack and the hologram every card (9) has its rect and its style attribute back, no mark left, nothing saved
+PASS  RECT [light 1920] after the Stack and the hologram every card (9) has its rect and its style attribute back, no mark left, nothing saved
+PASS  RECT coverage: 4/4 cells visited
+PASS  RECT RESUME the layer draws again once the Stack has closed (motion is back)
+PASS  HELD a drag on a node swipes and moves no card; Delete and Backspace delete nothing (the Stack is a way of looking)
+PASS  STACK-DBL a double-click on ANY Stack node (a side node here) opens that node's own editor - today's editor, as in every theme (Nick, Nov 6) - and the Stack stays open
+PASS  D2-HOLO ZERO layer draw calls while 27 keys land in the hologram's node (the board's own editor), and the words are stored in the card
+PASS  F <= 3 flashes a second, measured: the centre changed 16 times under held keys and 40 wheel notches, at most 3 in any 1 s (closest 350 ms)
+PASS  STILL reduced motion = the still state: the Stack opens with no transition (<= 1 ms, its transform final at once), the veil at once, no layer draw, and closing gives every node back at once
+PASS  FLY at the default dial the nodes fly out (9 of 9 still in flight 60 ms in) and fly home on closing
+PASS  STILL Ambiance 0 = the still state: the Stack opens with no transition (0 s exactly, its transform final at once), the veil at once, no layer draw, and closing gives every node back at once
+PASS  C [dark] the hologram's count against the veil, Sequence's lane title against its lane: >= 4.5:1
+PASS  C [light] the hologram's count against the veil, Sequence's lane title against its lane: >= 4.5:1
+PASS  BUDGET premise: the Stack arm was open (its nodes flown) and the control had none
+PASS  BUDGET swiping the Stack, the median frame interval is within 10% of the control's (the box)
+PASS  MUT-GATE (landed) the centre's rate gate set to 0: F fails (more than 3 changes in a second)
+PASS  MUT-HOLD (landed) the Stack's press handler unbound: HELD fails (the drag reaches the board)
+PASS  MUT-CLEAN (landed) the transform left behind on closing: RECT fails (a style attribute is not given back)
+PASS  MUT-STILL (landed) the still state ignored (the nodes always fly): STILL at Ambiance 0 fails
+PASS  B the build: served index-Bt-Xhx32.js = dist-web's index-Bt-Xhx32.js, built 2026-11-08T07:44:40.382Z after the last src commit 2026-11-08T06:06:17.000Z (tree 8c8acc3e, 0 uncommitted src file(s))
+
+FLUX3-S2 VERIFY: PASS (37 checks)

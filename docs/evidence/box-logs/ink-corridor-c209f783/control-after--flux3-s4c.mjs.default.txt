@@ -1,0 +1,5 @@
+PASS L-METHOD-GREEN the method passes the control against itself (the box's own noise): main (the control against itself): clock [J median 24.7 <= C 25.5 + 1.1, J p95 32.4 <= C 32.5 + 1.5, J max 34.3 <= 100] cost [J median 14.7 <= C 14.4 + 1.8, J p95 35.2 <= C 36.3 + 6]
+PASS L-MUT-5 the method calls a key that is 5 ms slower RED on the cost reading (the mutant landed: main + 5 ms mutant: clock [J median 25.5 <= C 25 + 1.5, J p95 32.3 <= C 32.4 + 1.6, J max 39 <= 100] cost [J median 19.2 <= C 14.7 + 2.6, J p95 39.5 <= C 36.3 + 17.9])
+PASS L-MUT-10 the method calls a key that is 10 ms slower RED on the cost reading (the mutant landed: main + 10 ms mutant: clock [J median 25.5 <= C 25.4 + 1.4, J p95 32.7 <= C 32.3 + 5.4, J max 39.8 <= 100] cost [J median 31.3 <= C 14.7 + 1.1, J p95 46.5 <= C 35.8 + 22.3])
+
+FLUX3-S4C VERIFY: PASS (3 checks)

@@ -1,0 +1,60 @@
+Starting a throwaway Postgres on this PC...
+The files belonging to this database system will be owned by user "nickh".
+This user must also own the server process.
+
+
+The database cluster will be initialized with locale "C".
+The default text search configuration will be set to "english".
+
+Data page checksums are enabled.
+
+
+
+creating directory F:/wrizo-work/arbor-tmp/arbor2-play-8mbhtd/data ... 
+ok
+
+creating subdirectories ... 
+ok
+
+selecting dynamic shared memory implementation ... windows
+selecting default "max_connections" ... 
+100
+selecting default "shared_buffers" ... 
+128MB
+selecting default time zone ... 
+America/Denver
+
+creating configuration files ... 
+ok
+
+running bootstrap script ... 
+ok
+
+performing post-bootstrap initialization ... 
+ok
+syncing data to disk ... 
+ok
+
+
+Success. You can now start the database server using:
+
+    ^"C^:^\Users^\nickh^\wrizo^-read^\node^_modules^\^.pnpm^\^@embedded^-postgres^+windows^-x64^@18^.4^.0^-beta^.17^\node^_modules^\^@embedded^-postgres^\windows^-x64^\native^\bin^\pg^_ctl^" -D ^"F^:^\wrizo^-work^\arbor^-tmp^\arbor2^-play^-8mbhtd^\data^" -l logfile start
+
+
+2026-11-08 18:41:54.724 MST [13636] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-11-08 18:41:54.727 MST [13636] LOG:  listening on IPv6 address "::1", port 54335
+
+2026-11-08 18:41:54.727 MST [13636] LOG:  listening on IPv4 address "127.0.0.1", port 54335
+
+2026-11-08 18:41:54.771 MST [45788] LOG:  database system was shut down at 2026-11-08 18:41:52 MST
+
+2026-11-08 18:41:54.774 MST [13636] LOG:  database system is ready to accept connections
+
+[migrate] applied 001_init.sql
+Seeding the sample content (Chat 1's seed)...
+
+READY. Open:  http://127.0.0.1:3400/?arbor2=1
+(this PC only; a throwaway database with the sample content; Ctrl+C stops it and deletes the database)
+2026-11-08 18:46:54.767 MST [21912] LOG:  checkpoint starting: time
+

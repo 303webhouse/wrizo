@@ -1,0 +1,12 @@
+PASS  P1
+PASS  P2
+PASS  P3
+FAIL  P4  -- the full path (RACK > name in Flux) is on the button as its title (hover); aria-label keeps the plain name for a reader
+FAIL  P5  -- the visible rail label is the place name alone (no RACK prefix)
+PASS  mutant "the Flux place name wraps again": landed and turns P1 RED
+PASS  mutant "the ellipsis is gone": landed and turns P2 RED
+PASS  mutant "break-anywhere comes back": landed and turns P3 RED
+FAIL  mutant "the title is dropped": landed and turns P4 RED  -- {"did":false,"red":[]}
+FAIL  mutant "the rail label shows the full RACK path again": landed and turns P5 RED  -- {"did":false,"red":[]}
+FAIL  all 5 mutations landed and 5 were killed  -- 3 landed / 3 killed
+POLISH10-14 VERIFY: FAIL - 5/11

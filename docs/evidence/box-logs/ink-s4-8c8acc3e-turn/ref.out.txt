@@ -1,0 +1,5 @@
+F:\wrizo-work\INK-s4-ci\box-turn-s4\main-1-rhizome-latency.mjs.default.txt: fade shift median 7.9 p95 18.8 cost 2
+F:\wrizo-work\INK-s4-ci\box-turn-s4\main-2-rhizome-latency.mjs.default.txt: fade shift median 6.1 p95 15.8 cost 1.8
+F:\wrizo-work\INK-s4-ci\box-turn-s4\main-3-rhizome-latency.mjs.default.txt: fade shift median 8.3 p95 19.6 cost 2.2
+F:\wrizo-work\INK-s4-ci\box-turn-s4\main-4-rhizome-latency.mjs.default.txt: fade shift median 8.3 p95 18.1 cost 2.8
+RL_REF='{"c":8.3,"p95":18.8,"c2":2.2,"runs":4}'
