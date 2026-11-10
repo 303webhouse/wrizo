@@ -996,6 +996,13 @@
 }
 :root[data-arbor2][data-theme='plateau'][data-wz-writing='true'] .mode-scroll{ scrollbar-color:transparent transparent; }
 /* scrollbars only when something scrolls: every scroller in the room takes auto, never a standing bar */
+/* 4b (the Wrizors, Nov 10, via Fable; Nick's Nov 4 rule): the page's thumb is 4 px (it was 6: the 10 px webkit bar less a 4 px clear edge) and is
+   painted only while the page scrolls or the pointer is on its strip, ~1 s after (src/arbor2/scrollReveal.ts); at rest the strip is clear. The bar
+   keeps its 10 px box, so nothing reflows. Measured by frames/arbor2-r22.mjs r22-scrollbar. */
+@supports selector(::-webkit-scrollbar){
+  :root[data-arbor2][data-theme='plateau'] .desk-frame-stage--prose .mode-scroll::-webkit-scrollbar-thumb{ background:transparent; border-left-width:calc(6px / var(--wz-sb-k)); }
+  :root[data-arbor2][data-theme='plateau'] .desk-frame-stage--prose .mode-scroll[data-arbor2-sb='on']::-webkit-scrollbar-thumb{ background:var(--ink-on-paper-low); background-clip:padding-box; }
+}
 :root[data-arbor2][data-theme='plateau'] :is(.mode-scroll, .wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel-body){ scrollbar-gutter:auto; }
 /* the "..." menu's full-screen line (an inline muted grey, near-invisible on the bar's ground): the bar's own cream */
 :root[data-arbor2][data-theme='plateau'] :is(.gh-corner-menu, .chrome-fade) button[aria-label$='full screen']{ color:var(--arbor-letter, #EFE4CB) !important; }
@@ -1014,13 +1021,10 @@
      olive #85914C (text) on raised 4.97 / 5.20 / 5.41 / 5.62 · on the drawers 4.57 / 4.82 / 5.08 / 5.31 · olive mark #6B7A3A on the room 4.17 / 4.26 / 4.35 / 4.40
      brass on the dark page 8.41 / 8.72 / 9.03 / 9.25 · sage guide on the room 8.69 / 8.88 / 9.05 / 9.17
    (the vines #6B5139 are decoration, unchanged: 2.67 / 2.73 / 2.78 / 2.82 on the room). Measured on screen: scripts/frames/arbor2-r22.mjs r22-browns. */
-:root[data-arbor2][data-theme='plateau'][data-arbor2-brown='a'][data-arbor2-room='night']{   /* A: OKLab L -0.02 */
-  --ink-950:#0D0704; --ink-900:#160E09; --ink-800:#20160F; --ink-border:#342519; --ink-border-strong:#443222;
-  --lamp-glow: radial-gradient(135% 95% at 50% -8%, #28190B 0%, #1A1008 38%, #120A06 70%, #0D0704 100%);
-  --arbor2-bar:#1F150E; --arbor2-bar-line:#2F2218; }
-:root[data-arbor2][data-theme='plateau'][data-arbor2-brown='a'][data-arbor2-room='night'] :is(.wz-sliver-panel, .wz-tutor-panel){ --desk-ground:#281D14; }
-:root[data-arbor2][data-theme='plateau'][data-arbor2-brown='a'][data-page='dark']{ --paper:#15110C; --paper-dim:#100B08; --paper-border:#34281E; }
-:root[data-arbor2][data-theme='plateau'][data-arbor2-brown='a']{ --arbor2-tw-night-paper:#15110C; }   /* Typewriter's night fill steps with the dark page */
+/* NICK RULED (Nov 9, 11:29 pm, via Fable: "Yeah, B, for sure"): the night room is brown B. mount.tsx sets data-arbor2-brown="b" once, beside the
+   flag; A and C and the bar's Night browns row are gone (their values stay in the table above, for the record). The base tokens above B are r21's,
+   kept as written so the source pins that read them still read what they pinned; on screen the night room is B. The Wrizors' B numbers are the
+   checks (arbor-r22-review.md): page words 15.4:1, drawer heading 6.8:1, bar and rail labels 4.8:1, count row 8.5:1. */
 :root[data-arbor2][data-theme='plateau'][data-arbor2-brown='b'][data-arbor2-room='night']{   /* B: OKLab L -0.04 */
   --ink-950:#080402; --ink-900:#110A06; --ink-800:#1B120B; --ink-border:#2E2115; --ink-border-strong:#3E2D1F;
   --lamp-glow: radial-gradient(135% 95% at 50% -8%, #221509 0%, #150C06 38%, #0D0704 70%, #080402 100%);
@@ -1028,10 +1032,3 @@
 :root[data-arbor2][data-theme='plateau'][data-arbor2-brown='b'][data-arbor2-room='night'] :is(.wz-sliver-panel, .wz-tutor-panel){ --desk-ground:#231811; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-brown='b'][data-page='dark']{ --paper:#100C09; --paper-dim:#0B0705; --paper-border:#2F241A; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-brown='b']{ --arbor2-tw-night-paper:#100C09; }   /* Typewriter's night fill steps with the dark page */
-:root[data-arbor2][data-theme='plateau'][data-arbor2-brown='c'][data-arbor2-room='night']{   /* C: OKLab L -0.06 */
-  --ink-950:#050201; --ink-900:#0C0604; --ink-800:#160D08; --ink-border:#281C12; --ink-border-strong:#38291B;
-  --lamp-glow: radial-gradient(135% 95% at 50% -8%, #1C1006 0%, #100804 38%, #080402 70%, #050201 100%);
-  --arbor2-bar:#140C08; --arbor2-bar-line:#241911; }
-:root[data-arbor2][data-theme='plateau'][data-arbor2-brown='c'][data-arbor2-room='night'] :is(.wz-sliver-panel, .wz-tutor-panel){ --desk-ground:#1D140D; }
-:root[data-arbor2][data-theme='plateau'][data-arbor2-brown='c'][data-page='dark']{ --paper:#0C0806; --paper-dim:#070403; --paper-border:#291F17; }
-:root[data-arbor2][data-theme='plateau'][data-arbor2-brown='c']{ --arbor2-tw-night-paper:#0C0806; }   /* Typewriter's night fill steps with the dark page */

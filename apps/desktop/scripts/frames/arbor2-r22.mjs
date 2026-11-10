@@ -441,7 +441,10 @@ const screens = {
   // Night browns row is pressed (as Nick would), every token reads its step's value (the room, its surfaces and hairlines, the glow, the bars, the
   // drawers' ground; the dark page with the dark tone), the room's own pixels in a corner are that step's ground (liveness: the step paints),
   // and every lettering pair holds its floor on the measured grounds. By day nothing changes (the day tokens read the same at every step).
-  'r22-browns': async (app) => {
+  // PARKED 2026-11-10 (SUPERSEDED - NICK RULED, Nov 9, 11:29 pm, via Fable: "B, for sure"; the night room is brown B and the mockup bar's Night
+  // browns row (Now / A / B / C) is gone, so there is nothing to press). Kept verbatim under the name r22-browns-v1 (not in the run list); SUCCESSOR
+  // r22-browns-b below: B's tokens with nothing pressed, its corner paints, its floors.
+  'r22-browns-v1': async (app) => {
     await openPage(app, 'arbor-r22-browns');
     const rows = {};
     for (const s of ['now', 'a', 'b', 'c']) {
@@ -485,10 +488,43 @@ const screens = {
     if (Object.values(ok).some((x) => !x)) fail('R22-BROWNS', { bad: Object.keys(ok).filter((k) => !ok[k]), ...brief, rows });
     say('r22-browns', brief);
   },
+  // SUCCESSOR r22-browns-b: by night, with nothing pressed, every token reads B's value (r22-browns' own table), the room's corner paints B's
+  // ground, and every lettering pair holds its floor on B's grounds; by day the day tokens read as they did.
+  'r22-browns-b': async (app) => {
+    await openPage(app, 'arbor-r22-browns-b');
+    await setRoom(app, 'night'); await sleep(500);
+    const t = await app.evalJs(BROWNREAD);
+    const png = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data;
+    const corner = await app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${png}'; await img.decode(); const dpr = img.width / innerWidth;
+      const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; const cx = c.getContext('2d'); cx.drawImage(img, 0, 0);
+      const page = document.querySelector('.mode-page').getBoundingClientRect();
+      const pts = [0.35, 0.45, 0.55, 0.65, 0.75].map((f) => { const d = cx.getImageData(Math.round((page.left - 24) * dpr), Math.round(innerHeight * f * dpr), 1, 1).data; return [d[0], d[1], d[2]]; });
+      return pts.reduce((a, b) => (a[0] + a[1] + a[2] <= b[0] + b[1] + b[2] ? a : b)); })()`);
+    const rows = !!(await app.evalJs("!!document.querySelector('.arbor2-bar-row[aria-label=\"Night browns\"]')"));
+    const want = BROWNS.b, dark = t.tone === 'dark', ok = {}, floors = [];
+    ok['brown attribute b'] = t.brown === 'b';
+    ok['no Night browns row'] = !rows;
+    ok.tokens = Object.entries(want.room).every(([k, v]) => t.room[k] === v) && t.drawer === want.drawer && (!dark || Object.entries(want.page).every(([k, v]) => t.page[k] === v));
+    ok.glow = want.glow.every((g) => t.glow.toUpperCase().includes(g));
+    const g = parseHex(want.room['--ink-950']);
+    ok.paints = corner.every((v, i) => v <= g[i] + 2 && v >= g[i] - 10);
+    for (const [label, ink, ground, floor] of [['cream / room', '#EFE4CB', want.room['--ink-950'], 4.5], ['cream / bar', '#EFE4CB', want.room['--arbor2-bar'], 4.5],
+      ['cream / drawer', '#EFE4CB', want.drawer, 4.5], ['quiet / room', '#B9AA8C', want.room['--ink-950'], 4.5], ['quiet / bar', '#B9AA8C', want.room['--arbor2-bar'], 4.5],
+      ['quiet / drawer', '#B9AA8C', want.drawer, 4.5], ['olive text / raised', '#85914C', want.room['--ink-800'], 4.5], ['olive text / drawer', '#85914C', want.drawer, 4.5],
+      ['olive mark / room', '#6B7A3A', want.room['--ink-950'], 3], ['cream / dark page', '#EFE4CB', want.page['--paper'], 13.9], ['cream / glow top', '#EFE4CB', want.glow[0], 4.5]]) {
+      const ratio = contrast(parseHex(ink), parseHex(ground));
+      floors.push([label, Math.round(ratio * 100) / 100]);
+      if (ratio < floor) ok[label] = false;
+    }
+    if (Object.values(ok).some((x) => !x)) fail('R22-BROWNS-B', { bad: Object.keys(ok).filter((k) => !ok[k]), dark, corner, floors, t });
+    say('r22-browns-b', { ok, dark, corner, floors });
+  },
+  // PARKED 2026-11-10 (SUPERSEDED with r22-browns: the steps were for Nick to pick, and he picked B; nothing to press). Kept verbatim under the
+  // names r22-pic-browns-<step>-<room>-v1 (not in the run list); SUCCESSOR pictures: r23-pic-night-b and r23-pic-day (scripts/frames/arbor2-r23.mjs).
   // for Nick to pick: each step by night with the Tools drawer open (the room, the bars, a drawer, the page), and by day (unchanged, to compare)
   ...Object.fromEntries(['now', 'a', 'b', 'c'].flatMap((s) => [
-    [`r22-pic-browns-${s}-night`, async (app) => { await openPage(app, `arbor-r22-pbn-${s}`); await setRoom(app, 'night'); await pickBrown(app, s); await openTools(app); await sleep(900); await app.evalJs(FINISH); await app.mouseMove(600, 300); await sleep(300); }],
-    [`r22-pic-browns-${s}-day`, async (app) => { await openPage(app, `arbor-r22-pbd-${s}`); await setRoom(app, 'day'); await pickBrown(app, s); await openTools(app); await sleep(900); await app.evalJs(FINISH); await app.mouseMove(600, 300); await sleep(300); }],
+    [`r22-pic-browns-${s}-night-v1`, async (app) => { await openPage(app, `arbor-r22-pbn-${s}`); await setRoom(app, 'night'); await pickBrown(app, s); await openTools(app); await sleep(900); await app.evalJs(FINISH); await app.mouseMove(600, 300); await sleep(300); }],
+    [`r22-pic-browns-${s}-day-v1`, async (app) => { await openPage(app, `arbor-r22-pbd-${s}`); await setRoom(app, 'day'); await pickBrown(app, s); await openTools(app); await sleep(900); await app.evalJs(FINISH); await app.mouseMove(600, 300); await sleep(300); }],
   ])),
 
   // ── NICK, Nov 8 (relayed by Fable): "in ANY Typewriter mode, in every theme, the TOOLS and TUTOR opener handles are hidden for the whole session;

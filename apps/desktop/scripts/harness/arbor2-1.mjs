@@ -210,8 +210,13 @@ await withHarness(async (app) => {
   //   on.prog == null && Array.isArray(progOpts) && progOpts.join() === 'Sage,Brass o', JSON.stringify({ prog: on.prog, progOpts }));
   // SUCCESSOR N1f: the folded bar offers exactly the logo's two (Sage, Brass o) and the Night browns' four (Now, A, B, C) - still no progress
   // option, the room still in the Mood menu - and no night-progress attribute exists.
-  ok('N1f one Rhizome style, no progress switch: the folded bar offers the logo (Sage / Brass o) and the Night browns (Now / A / B / C) only - the room lives in the Mood menu - and no night-progress attribute exists',
-    on.prog == null && Array.isArray(progOpts) && progOpts.join() === 'Sage,Brass o,Now,A,B,C', JSON.stringify({ prog: on.prog, progOpts }));
+  // PARKED 2026-11-10 (SUPERSEDED - NICK RULED, Nov 9, 11:29 pm, via Fable: the night room is brown B and the Now / A / C options leave the
+  // mockup panel; B alone is no choice, so the Night browns row is gone). Original, verbatim:
+  // ok('N1f one Rhizome style, no progress switch: the folded bar offers the logo (Sage / Brass o) and the Night browns (Now / A / B / C) only - the room lives in the Mood menu - and no night-progress attribute exists',
+  //   on.prog == null && Array.isArray(progOpts) && progOpts.join() === 'Sage,Brass o,Now,A,B,C', JSON.stringify({ prog: on.prog, progOpts }));
+  // SUCCESSOR N1g: the folded bar offers exactly the logo's two (Sage, Brass o) - no browns, no progress option - and no night-progress attribute.
+  ok('N1g one Rhizome style, no progress switch: the folded bar offers the logo (Sage / Brass o) only - the night browns are B, not a choice; the room lives in the Mood menu - and no night-progress attribute exists',
+    on.prog == null && Array.isArray(progOpts) && progOpts.join() === 'Sage,Brass o', JSON.stringify({ prog: on.prog, progOpts }));
 
   // PARKED 2026-11-01 (SUPERSEDED by Fable's ruling, Nov 1: "Room settled: Follow the clock / Always day / Always night (unset = clock,
   // 07:00-19:00 local)" - the room no longer follows the Page tone, unset or set). Original, verbatim:

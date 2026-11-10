@@ -7,6 +7,7 @@ import { mountChrome } from './chrome';
 import { mountPergola } from './pergola';
 import { arbor2RoomPin } from './flag';
 import { mountDrawerEdge } from './drawerEdge';
+import { mountScrollReveal } from './scrollReveal';
 import { clearRhizome, undoClearRhizome, canUndoClear, hasRhizome, subscribeLife } from './rhizomeLife';
 
 // ARBOR v2 WORKING MOCKUP - loaded only under ?arbor2=1 (main.tsx). Everything here is IN-SESSION: it writes attributes on
@@ -99,7 +100,11 @@ const setRoom = (c: Choice) => { const v = dataRoomOf(c); if (v) root.setAttribu
 };
 
 root.setAttribute('data-arbor2', 'true');
+// NICK RULED (Nov 9, 11:29 pm, via Fable): the night room takes brown B - set before the room's tokens are first read; the bar's Night browns row
+// (Now / A / B / C) is gone with A and C (styles/arbor-v2.css). In-session attribute, nothing stored.
+root.setAttribute('data-arbor2-brown', 'b');
 applyRoom();
+mountScrollReveal();   // 4b (Fable, Nov 10; Nick's Nov 4 rule): the page's scrollbar shows only while she scrolls, hovers on it or drags it
 mountSun(root);   // item 6: the day room's light (r19: its old pergola is no longer drawn - arbor-v2.css; sun.ts still writes the afternoon's ground)
 mountPergola();   // r19 §18.1: the Wrizors' pergola shadow, in the room and at 4% on the page at rest (pergola.ts; stores nothing)
 mountPaper();     // the sun layer has a hole over the page, the vignette too off Typewriter (paper.ts; r22: the zoomed page's sheet retired)
@@ -214,14 +219,7 @@ function MockupBar() {
     if (logo === 'brass') root.setAttribute('data-arbor2-logo', 'brass');
     else root.removeAttribute('data-arbor2-logo');
   }, [logo]);
-  // r22 note 3 (Nick's walk, Nov 8; Fable's ruling 2): three darker night browns to pick from - Now is today's; A, B, C each a step darker
-  // (styles/arbor-v2.css data-arbor2-brown). In-session, an attribute on <html>; nothing stored. A fade in progress re-reads the room's tokens.
-  const [brown, setBrown] = useState<'now' | 'a' | 'b' | 'c'>('now');
-  useEffect(() => {
-    if (brown === 'now') root.removeAttribute('data-arbor2-brown');
-    else root.setAttribute('data-arbor2-brown', brown);
-    fadeToks = null; applyRoom();
-  }, [brown]);
+  // (r22 note 3's Night browns row - Now / A / B / C - left with Nick's pick of B, Nov 9: B is set once, above, beside the flag)
   return (
     <div className="arbor2-bar" data-open={open ? 'true' : 'false'}>
       <button type="button" className="arbor2-bar-head" aria-expanded={open} onClick={() => setOpen(o => !o)}>Arbor mockup</button>
@@ -229,7 +227,6 @@ function MockupBar() {
         <>
           <p className="arbor2-bar-note">The rhizome (Progress: Rhizome, with a word goal) keeps its finished laps faint by day; by night it shows only at the goal.</p>
           <Seg<'brass' | 'all'> label="Logo" value={logo} opts={[['all', 'Sage'], ['brass', 'Brass o']]} onPick={setLogo} />
-          <Seg<'now' | 'a' | 'b' | 'c'> label="Night browns" value={brown} opts={[['now', 'Now'], ['a', 'A'], ['b', 'B'], ['c', 'C']]} onPick={setBrown} />
           <button type="button" className="arbor2-bar-head" aria-expanded={mood} onClick={() => setMood(m => !m)}>Mood {mood ? '▾' : '▸'}</button>
           {mood && <MoodMenu off={off} flip={flip} />}
         </>
