@@ -325,7 +325,10 @@ const REST = `(() => { ${COLOUR} const q = (s) => [...document.querySelectorAll(
     // PARKED 2026-11-10 (SUPERSEDED - FABLE, Nov 10, 2:15 pm, item 7 (the Wrizors' B1 on r23): the PAGE's share of the shade goes from 3.4% to 2.8% so its ink reads 14.0:1 or better as drawn under the 1.5x shade; the panels and bars keep 3.4%, the room 20%). Original, verbatim:
     // text: ink && pageBg ? { ink: hex(ink), page: hex(pageBg), ratio: ratio(ink, pageBg), atShade: ratio(ink, { r: pageBg.r * (1 - 0.034), g: pageBg.g * (1 - 0.034), b: pageBg.b * (1 - 0.034) }) } : null,
     // SUCCESSOR: the page's copy at 0.028 (everything else as it stood)
-    text: ink && pageBg ? { ink: hex(ink), page: hex(pageBg), ratio: ratio(ink, pageBg), atShade: ratio(ink, { r: pageBg.r * (1 - 0.028), g: pageBg.g * (1 - 0.028), b: pageBg.b * (1 - 0.028) }) } : null,
+    // PARKED 2026-11-10 (SUPERSEDED - FABLE RULED, Nov 10, 3:45 pm, item 7: the page's share of the shade is 2.5% - at 2.8% the darkest shaded paper drew (237,232,218) and the ink read 13.95:1, under the 14.0 bar (frames 42905730226)). Original, verbatim:
+    // text: ink && pageBg ? { ink: hex(ink), page: hex(pageBg), ratio: ratio(ink, pageBg), atShade: ratio(ink, { r: pageBg.r * (1 - 0.028), g: pageBg.g * (1 - 0.028), b: pageBg.b * (1 - 0.028) }) } : null,
+    // SUCCESSOR: the page's copy at 0.025
+    text: ink && pageBg ? { ink: hex(ink), page: hex(pageBg), ratio: ratio(ink, pageBg), atShade: ratio(ink, { r: pageBg.r * (1 - 0.025), g: pageBg.g * (1 - 0.025), b: pageBg.b * (1 - 0.025) }) } : null,
     glow: page ? getComputedStyle(page).boxShadow : null, openers: [q('.wz-sliver-grip'), q('.wz-tutor-grip')].map((g) => g ? Number(getComputedStyle(g).opacity) : null) }; })()`;
 
 // ======================================== STEP 3: the day room at rest ========================================

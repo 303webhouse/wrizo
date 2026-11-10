@@ -116,8 +116,14 @@ ok('R4b off the flag the size input stands bare in its row (the wrapper and its 
   /\{mockBox \? <span className="wz-type-num-box">\{sizeInput\}<span className="wz-type-num-unit" aria-hidden="true">pt<\/span><\/span> : sizeInput\}/.test(tc)
   && /const mockBox = isArbor2\(\) && theme === 'plateau';/.test(tc) && (tc.match(/\{sizeInput\}|: sizeInput\}/g) || []).length === 2
   && !/wz-type-num-plain/.test(tc) && !/wz-type-num-plain/.test(css), '');
-ok('R4 Alegreya Sans comes from this origin (two @font-face blocks, /fonts/arbor2/, woff2), never a font CDN', (css.match(/@font-face/g) || []).length === 2
-  && /url\('\/fonts\/arbor2\/alegreya-sans-latin-400-normal\.woff2'\)/.test(css) && !/googleapis|gstatic|jsdelivr|unpkg/.test(css), '');
+// PARKED 2026-11-10 (SUPERSEDED - FABLE RULED, Nov 10, 3:45 pm, item 8: the rail's active label at weight 500 - a real 500 cut, two more @font-face
+// blocks). Original, verbatim:
+// ok('R4 Alegreya Sans comes from this origin (two @font-face blocks, /fonts/arbor2/, woff2), never a font CDN', (css.match(/@font-face/g) || []).length === 2
+//   && /url\('\/fonts\/arbor2\/alegreya-sans-latin-400-normal\.woff2'\)/.test(css) && !/googleapis|gstatic|jsdelivr|unpkg/.test(css), '');
+// SUCCESSOR R4b: four blocks - 400 and 500, latin and latin-ext - every one from /fonts/arbor2/ as woff2, never a font CDN; the 500 files exist.
+ok('R4b Alegreya Sans comes from this origin (four @font-face blocks: 400 and 500, latin and latin-ext; /fonts/arbor2/, woff2), never a font CDN', (css.match(/@font-face/g) || []).length === 4
+  && ['400', '500'].every((w) => ['latin', 'latin-ext'].every((r) => css.includes(`url('/fonts/arbor2/alegreya-sans-${r}-${w}-normal.woff2')`) && fs.existsSync(new URL(`../../public/fonts/arbor2/alegreya-sans-${r}-${w}-normal.woff2`, import.meta.url))))
+  && !/googleapis|gstatic|jsdelivr|unpkg/.test(css), '');
 const woff = fs.readFileSync(new URL('../../public/fonts/arbor2/alegreya-sans-latin-400-normal.woff2', import.meta.url));
 ok('R4 the bundled face is a real woff2 with its licence beside it', woff.slice(0, 4).toString('latin1') === 'wOF2'
   && fs.existsSync(new URL('../../public/fonts/arbor2/OFL-alegreya-sans.txt', import.meta.url)), '');

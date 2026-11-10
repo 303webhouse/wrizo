@@ -50,7 +50,8 @@ const PAGE_ALPHA = '0.034';   // (since Nov 10 the panels' and bars' share only;
 // FABLE, Nov 10, 2:15 pm, item 7 (the Wrizors' B1 on r23): under the 1.5x shade the page's paper draws #EDE7DA and its ink reads 13.85:1, under the
 // 13.9 floor; the PAGE's share goes to 2.8% (#EEE9DC, 14.08:1), measured as drawn at 14.0 or better (frames/arbor2-r23.mjs r23-page-shade). The
 // room keeps its 20% and the panels their 3.4%.
-const PAGE_SHADE_ALPHA = '0.028';
+// FABLE RULED (Nov 10, 3:45 pm): 2.5%, the bar staying 14.0 as drawn - at 2.8% the overlap drew (237,232,218), 13.95:1 (frames 42905730226). Was '0.028'.
+const PAGE_SHADE_ALPHA = '0.025';
 
 /** A copy that draws the shared bitmap: the layer, its drift wrapper (the bitmap covers it, centred - the room's own xMidYMid slice) */
 function makeBitmapLayer(alpha: string): { layer: HTMLDivElement; drift: HTMLDivElement } {

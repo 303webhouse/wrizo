@@ -208,7 +208,10 @@ const pageShadeCheck = async (app, name) => {
   if (r.tone === 'dark') { say(name, { skipped: 'the dark page (its words read 15.4:1; the shade barely changes it)', r }); return; }
   const bad = [];
   if (r.room !== 'day') bad.push(`room ${r.room}`);
-  if (r.alpha !== '0.028') bad.push(`the page copy's share is ${r.alpha}, not 0.028`);
+  // PARKED 2026-11-10 (SUPERSEDED - FABLE RULED, Nov 10, 3:45 pm, item 7: the page's share of the shade is 2.5% - at 2.8% the darkest shaded paper drew (237,232,218) and the ink read 13.95:1, under the 14.0 bar (frames 42905730226)). Original, verbatim:
+  // if (r.alpha !== '0.028') bad.push(`the page copy's share is ${r.alpha}, not 0.028`);
+  // SUCCESSOR: the page's copy at 0.025
+  if (r.alpha !== '0.025') bad.push(`the page copy's share is ${r.alpha}, not 0.025`);
   if (!(r.n > 1000)) bad.push('the scan read too little of the page');
   if (!(r.inkOnDarkest >= 14.0)) bad.push(`the ink reads ${r.inkOnDarkest}:1 on the darkest shaded paper`);
   if (bad.length) fail(name, { bad, r });

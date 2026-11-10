@@ -456,6 +456,14 @@
 @font-face{ font-family:'Alegreya Sans'; font-style:normal; font-weight:400; font-display:swap;
   src:url('/fonts/arbor2/alegreya-sans-latin-ext-400-normal.woff2') format('woff2');
   unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+/* FABLE RULED (Nov 10, 3:45 pm, item 8): the rail's ACTIVE label at weight 500, as the crumb's current page - a REAL 500 cut (the font strategy forbids
+   synthesized bold), vendored from @fontsource/alegreya-sans 5.2.5 like the 400s (whose files are byte-identical to that package's); OFL as above. */
+@font-face{ font-family:'Alegreya Sans'; font-style:normal; font-weight:500; font-display:swap;
+  src:url('/fonts/arbor2/alegreya-sans-latin-500-normal.woff2') format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face{ font-family:'Alegreya Sans'; font-style:normal; font-weight:500; font-display:swap;
+  src:url('/fonts/arbor2/alegreya-sans-latin-ext-500-normal.woff2') format('woff2');
+  unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
 :root[data-arbor2][data-theme='plateau']{ --arbor2-chrome-face:'Alegreya Sans', var(--font-ui); }
 :root[data-arbor2][data-theme='plateau'] :is(.desk-frame-strip .wz-strip-label, .desk-rail-label),
 :root[data-arbor2][data-theme='plateau'] .chrome-top.sprint-nav :is(.sprint-crumb, .btn-quiet){ font-family:var(--arbor2-chrome-face); font-weight:400; font-size:13px; letter-spacing:.04em; }
@@ -570,6 +578,10 @@
    takes the other rail labels' colour (--text-hi, 8.44:1 by day); the olive ribbon still marks where she is. By night it already had their colour and
    their fade (probe-labels: cream at the strip's .6 / .52). Measured as drawn by r23-labels. */
 :root[data-arbor2][data-theme='plateau'] .desk-frame-strip .wz-strip-item.active .wz-strip-label{ color:var(--text-hi); }
+/* FABLE RULED (Nov 10, 3:45 pm, item 8): by night with the drawer open the active label ("Journal") drew 4.26:1 - the other labels' colour and fade,
+   but its thin glyphs read fainter (frames 42905730226). The ACTIVE label is weight 500 in both rooms, as the crumb's current page (font-strategy.md);
+   it must read 4.5:1 as drawn, drawer open (frames/arbor2-r23.mjs r23-labels). */
+:root[data-arbor2][data-theme='plateau'] .desk-frame-strip .wz-strip-item.active .wz-strip-label{ font-weight:500; }
 
 /* ==========================================================================================================================================
    THE DRAWER ALIGNMENT (Nick, via Fable, Nov 1; all themes, built here under the flag).
@@ -1012,10 +1024,9 @@
 /* 4b (the Wrizors, Nov 10, via Fable; Nick's Nov 4 rule): the page's thumb is 4 px (it was 6: the 10 px webkit bar less a 4 px clear edge) and is
    painted only while the page scrolls or the pointer is on its strip, ~1 s after (src/arbor2/scrollReveal.ts); at rest the strip is clear. The bar
    keeps its 10 px box, so nothing reflows. Measured by frames/arbor2-r22.mjs r22-scrollbar. */
-@supports selector(::-webkit-scrollbar){
-  :root[data-arbor2][data-theme='plateau'] .desk-frame-stage--prose .mode-scroll::-webkit-scrollbar-thumb{ background:transparent; border-left-width:calc(6px / var(--wz-sb-k)); }
-  :root[data-arbor2][data-theme='plateau'] .desk-frame-stage--prose .mode-scroll[data-arbor2-sb='on']::-webkit-scrollbar-thumb{ background:var(--ink-on-paper-low); background-clip:padding-box; }
-}
+/* (the rules are flag-scoped and webkit-only by their own selectors: a browser without ::-webkit-scrollbar drops them, so no @supports wrapper - arbor2-r5-unit R4 keeps every rule in this file under the flag) */
+:root[data-arbor2][data-theme='plateau'] .desk-frame-stage--prose .mode-scroll::-webkit-scrollbar-thumb{ background:transparent; border-left-width:calc(6px / var(--wz-sb-k)); }
+:root[data-arbor2][data-theme='plateau'] .desk-frame-stage--prose .mode-scroll[data-arbor2-sb='on']::-webkit-scrollbar-thumb{ background:var(--ink-on-paper-low); background-clip:padding-box; }
 :root[data-arbor2][data-theme='plateau'] :is(.mode-scroll, .wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel-body){ scrollbar-gutter:auto; }
 /* the "..." menu's full-screen line (an inline muted grey, near-invisible on the bar's ground): the bar's own cream */
 :root[data-arbor2][data-theme='plateau'] :is(.gh-corner-menu, .chrome-fade) button[aria-label$='full screen']{ color:var(--arbor-letter, #EFE4CB) !important; }
