@@ -212,7 +212,10 @@ const pageShadeCheck = async (app, name) => {
   // PARKED 2026-11-10 (SUPERSEDED - FABLE RULED, Nov 10, 3:45 pm, item 7: the page's share of the shade is 2.5% - at 2.8% the darkest shaded paper drew (237,232,218) and the ink read 13.95:1, under the 14.0 bar (frames 42905730226)). Original, verbatim:
   // if (r.alpha !== '0.028') bad.push(`the page copy's share is ${r.alpha}, not 0.028`);
   // SUCCESSOR: the page's copy at 0.025
-  if (r.alpha !== '0.025') bad.push(`the page copy's share is ${r.alpha}, not 0.025`);
+  // PARKED 2026-11-10 (SUPERSEDED - FABLE RULED, Nov 10, 4:50 pm, item 7: the page's share of the shade is 2.0% - at 2.5% the darkest shaded paper drew (238,232,219) and the ink read 13.98:1, under the 14.0 bar (frames 42917675987)). Original, verbatim:
+  // if (r.alpha !== '0.025') bad.push(`the page copy's share is ${r.alpha}, not 0.025`);
+  // SUCCESSOR: the page's copy at 0.020
+  if (r.alpha !== '0.020') bad.push(`the page copy's share is ${r.alpha}, not 0.020`);
   if (!(r.n > 1000)) bad.push('the scan read too little of the page');
   if (!(r.inkOnDarkest >= 14.0)) bad.push(`the ink reads ${r.inkOnDarkest}:1 on the darkest shaded paper`);
   if (bad.length) fail(name, { bad, r });

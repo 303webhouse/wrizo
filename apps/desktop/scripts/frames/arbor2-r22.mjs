@@ -608,6 +608,14 @@ const screens = {
   // The page ink (§19.1): the editor's ink on the page's paper, measured from pixels, 13.9:1 or better, #241A10 on the light page. Off the light page
   // (the dark page, night Typewriter) there must be NO drawn caret and a visible native one. Ends lit on the shot's case (Draft by day).
   'r22-light-caret': async (app) => lightCaret(app, 'r22-light-caret', 'draft'),
+  // the caret as the product shows it - no test sheet (r22-light-caret holds the blink lit for its pixel read): it draws and it blinks
+  'r22-light-caret-blink': async (app) => caretBlinkCheck(app, 'r22-light-caret-blink'),
+  'r22-light-caret-blink-mutant': async (app) => {
+    const r = await caretBlink(app, 'r22-light-caret-blink-mutant', true); if (!r) return;
+    const ok = { landed: !!r.at && r.at.shown === false, red: r.lit === 0 };
+    if (!ok.landed || !ok.red) fail('r22-light-caret-blink-mutant', { ok, r });
+    say('r22-light-caret-blink-mutant', { ok, r });
+  },
   'r22-light-caret-2000': async (app) => { await app.emulateDpr(1, 2000, 1125); await lightCaret(app, 'r22-light-caret-2000', 'draft'); },
   'r22-light-caret-tw': async (app) => lightCaret(app, 'r22-light-caret-tw', 'tw'),
   'r22-light-caret-tw-2000': async (app) => { await app.emulateDpr(1, 2000, 1125); await lightCaret(app, 'r22-light-caret-tw-2000', 'tw'); },
@@ -660,6 +668,39 @@ const lightCaretCase = async (app) => {
     return { cols: d ? [0, 1, 2, 3].map((i) => g(d.l + i + 0.5, d.t + d.h / 2)) : null, beside: d ? g(d.l + d.w + 14, d.t + d.h / 2) : null,
       paper: g((pr.left + er.left) / 2, er.top + 12), dot: d ? document.elementFromPoint(d.l + d.w + 14, d.t + d.h / 2)?.className ?? null : null }; })()`);
   return m;
+};
+// ── THE CARET SHOWS IN THE PRODUCT, as it is (Fable, Nov 10, 4:50 pm: "name the check that proves the caret shows in the product without" the
+// test-only sheet that r22-light-caret holds it lit with). Light page, Draft by day, the caret at the words' end, NO test sheet and nothing paused:
+// eight shots ~170 ms apart (more than one 1.06 s blink). In at least one the four columns at the caret read edge, brass, brass, edge (it draws), and
+// in at least one they read the paper (it blinks). The mutant hides the caret (a test-only display:none) and must give NO lit shot - red.
+const caretBlink = async (app, name, mutant) => {
+  await openPage(app, `arbor-r22-blink-${Math.random().toString(36).slice(2, 6)}`); await setRoom(app, 'day');
+  if (await app.evalJs("document.documentElement.getAttribute('data-page') === 'dark'")) { say(name, { skipped: 'the dark page has no drawn caret (its native brass caret is r7\'s)' }); return null; }
+  await app.evalJs(caretEnd); await sleep(700);
+  if (mutant) await app.evalJs("(() => { const st = document.createElement('style'); st.id = 'r22-blink-mut'; st.textContent = '.arbor2-edged-caret{ display:none !important; }'; document.head.appendChild(st); return true; })()");
+  const at = await app.evalJs("(() => { const c = document.querySelector('.arbor2-edged-caret'); const r = c ? c.getBoundingClientRect() : null; const s = getSelection(); const sr = s && s.rangeCount ? s.getRangeAt(0).getClientRects()[0] : null; return r && r.width ? { l: r.left, t: r.top, w: r.width, h: r.height, shown: getComputedStyle(c).display !== 'none' } : null; })()");
+  const ref = at || await app.evalJs("(() => { const ed = document.querySelector('.forward-only-editor'); const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let t = null, n; while ((n = w.nextNode())) if (n.textContent.length) t = n; const q = document.createRange(); q.setStart(t, t.textContent.length - 1); q.setEnd(t, t.textContent.length); const x = [...q.getClientRects()].pop(); return { l: x.right - 1, t: x.top, w: 4, h: x.height, shown: false }; })()");
+  const shots = [];
+  for (let i = 0; i < 8; i++) {
+    const png = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data;
+    shots.push(await app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${png}'; await img.decode(); const k = img.width / innerWidth; const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+      const cx = c.getContext('2d'); cx.drawImage(img, 0, 0); const d = ${JSON.stringify(ref)}; const g = (x, y) => Array.from(cx.getImageData(Math.floor(x * k), Math.floor(y * k), 1, 1).data.slice(0, 3));
+      return [0, 1, 2, 3].map((j) => g(d.l + j + 0.5, d.t + d.h / 2)); })()`));
+    await sleep(170);
+  }
+  if (mutant) await app.evalJs("document.getElementById('r22-blink-mut')?.remove()");
+  const lit = shots.filter((c) => near3(c[0], EDGE) && near3(c[1], BRASS) && near3(c[2], BRASS) && near3(c[3], EDGE)).length;
+  const bare = shots.filter((c) => c.every((p) => p.every((v) => v > 200))).length;
+  return { at, lit, bare, n: shots.length };
+};
+const caretBlinkCheck = async (app, name) => {
+  const r = await caretBlink(app, name, false); if (!r) return;
+  const bad = [];
+  if (!r.at || !r.at.shown) bad.push('no drawn caret');
+  if (r.lit < 1) bad.push(`no shot showed the edged caret lit (${r.n} shots)`);
+  if (r.bare < 1) bad.push(`no shot showed it off - it did not blink (${r.n} shots)`);
+  if (bad.length) fail(name, { bad, r });
+  say(name, r);
 };
 const lightCaret = async (app, name, where) => {
   const id = `arbor-r22-lc-${where}-${Math.random().toString(36).slice(2, 7)}`;

@@ -104,7 +104,10 @@ await withHarness(async (app) => {
     // PARKED 2026-11-10 (SUPERSEDED - FABLE RULED, Nov 10, 3:45 pm, item 7: the page's share of the shade is 2.5% - at 2.8% the darkest shaded paper drew (237,232,218) and the ink read 13.95:1, under the 14.0 bar (frames 42905730226)). Original, verbatim:
     // rest.roomName === 'day' && restD(rest.room, 0.2) && (rest.zoom || restD(rest.page, 0.028)), JSON.stringify(rest));
     // SUCCESSOR: the page's copy at 0.025
-    rest.roomName === 'day' && restD(rest.room, 0.2) && (rest.zoom || restD(rest.page, 0.025)), JSON.stringify(rest));
+    // PARKED 2026-11-10 (SUPERSEDED - FABLE RULED, Nov 10, 4:50 pm, item 7: the page's share of the shade is 2.0% - at 2.5% the darkest shaded paper drew (238,232,219) and the ink read 13.98:1, under the 14.0 bar (frames 42917675987)). Original, verbatim:
+    // rest.roomName === 'day' && restD(rest.room, 0.2) && (rest.zoom || restD(rest.page, 0.025)), JSON.stringify(rest));
+    // SUCCESSOR: the page's copy at 0.020
+    rest.roomName === 'day' && restD(rest.room, 0.2) && (rest.zoom || restD(rest.page, 0.020)), JSON.stringify(rest));
 
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('w');
@@ -170,7 +173,10 @@ await withHarness(async (app) => {
     // PARKED 2026-11-10 (SUPERSEDED - FABLE RULED, Nov 10, 3:45 pm, item 7: the page's share of the shade is 2.5% - at 2.8% the darkest shaded paper drew (237,232,218) and the ink read 13.95:1, under the 14.0 bar (frames 42905730226)). Original, verbatim:
     // back.writing !== 'true' && restD(back.room, 0.2) && (back.zoom || restD(back.page, 0.028)) && !!back.wrap && back.drift === null,
     // SUCCESSOR: the page's copy at 0.025
-    back.writing !== 'true' && restD(back.room, 0.2) && (back.zoom || restD(back.page, 0.025)) && !!back.wrap && back.drift === null,
+    // PARKED 2026-11-10 (SUPERSEDED - FABLE RULED, Nov 10, 4:50 pm, item 7: the page's share of the shade is 2.0% - at 2.5% the darkest shaded paper drew (238,232,219) and the ink read 13.98:1, under the 14.0 bar (frames 42917675987)). Original, verbatim:
+    // back.writing !== 'true' && restD(back.room, 0.2) && (back.zoom || restD(back.page, 0.025)) && !!back.wrap && back.drift === null,
+    // SUCCESSOR: the page's copy at 0.020
+    back.writing !== 'true' && restD(back.room, 0.2) && (back.zoom || restD(back.page, 0.020)) && !!back.wrap && back.drift === null,
     JSON.stringify({ ...back, ls: undefined }));
 
   // W5: the swap key against the same page's first key with the shade off

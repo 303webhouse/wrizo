@@ -72,7 +72,10 @@ await withHarness(async (app) => {
       // PARKED 2026-11-10 (SUPERSEDED - FABLE RULED, Nov 10, 3:45 pm, item 7: the page's share of the shade is 2.5% - at 2.8% the darkest shaded paper drew (237,232,218) and the ink read 13.95:1, under the 14.0 bar (frames 42905730226)). Original, verbatim:
       // ok("P5 the page's copy is r20's live drawing (svg, g[filter] at 0.028)", !!pg && pg.bitmap === null && pg.svg === true && pg.g != null && Math.abs(pg.g - 0.028) < 0.0005, JSON.stringify(pg));
       // SUCCESSOR: the page's copy at 0.025
-      ok("P5 the page's copy is r20's live drawing (svg, g[filter] at 0.025)", !!pg && pg.bitmap === null && pg.svg === true && pg.g != null && Math.abs(pg.g - 0.025) < 0.0005, JSON.stringify(pg));
+      // PARKED 2026-11-10 (SUPERSEDED - FABLE RULED, Nov 10, 4:50 pm, item 7: the page's share of the shade is 2.0% - at 2.5% the darkest shaded paper drew (238,232,219) and the ink read 13.98:1, under the 14.0 bar (frames 42917675987)). Original, verbatim:
+      // ok("P5 the page's copy is r20's live drawing (svg, g[filter] at 0.025)", !!pg && pg.bitmap === null && pg.svg === true && pg.g != null && Math.abs(pg.g - 0.025) < 0.0005, JSON.stringify(pg));
+      // SUCCESSOR: the page's copy at 0.020
+      ok("P5 the page's copy is r20's live drawing (svg, g[filter] at 0.020)", !!pg && pg.bitmap === null && pg.svg === true && pg.g != null && Math.abs(pg.g - 0.020) < 0.0005, JSON.stringify(pg));
       const still = (c) => !!c && c.bitmap === 'true' && c.svg === false && c.bg === 'url("blob:ht' && c.alpha != null && Math.abs(c.alpha - 0.034) < 0.0005 && c.display !== 'none' && c.anim === null && !!c.box && c.box.every((v, i) => Math.abs(v) <= (i < 2 ? 1.5 : 2));
       ok("P6n the top bar's and the rail's copies draw the one bitmap (no svg, blob: background, 0.034), with NO drift, on the room's drift box",still(bar) && still(rail), JSON.stringify({ bar, rail }));
     } else {
@@ -92,7 +95,10 @@ await withHarness(async (app) => {
     // PARKED 2026-11-10 (SUPERSEDED - FABLE RULED, Nov 10, 3:45 pm, item 7: the page's share of the shade is 2.5% - at 2.8% the darkest shaded paper drew (237,232,218) and the ink read 13.95:1, under the 14.0 bar (frames 42905730226)). Original, verbatim:
     // ok('P5 the page\'s copy is r20\'s live drawing (svg, g[filter] at 0.028)', !!pg && pg.bitmap === null && pg.svg === true && pg.g != null && Math.abs(pg.g - 0.028) < 0.0005, JSON.stringify(pg));
     // SUCCESSOR: the page's copy at 0.025
-    ok('P5 the page\'s copy is r20\'s live drawing (svg, g[filter] at 0.025)', !!pg && pg.bitmap === null && pg.svg === true && pg.g != null && Math.abs(pg.g - 0.025) < 0.0005, JSON.stringify(pg));
+    // PARKED 2026-11-10 (SUPERSEDED - FABLE RULED, Nov 10, 4:50 pm, item 7: the page's share of the shade is 2.0% - at 2.5% the darkest shaded paper drew (238,232,219) and the ink read 13.98:1, under the 14.0 bar (frames 42917675987)). Original, verbatim:
+    // ok('P5 the page\'s copy is r20\'s live drawing (svg, g[filter] at 0.025)', !!pg && pg.bitmap === null && pg.svg === true && pg.g != null && Math.abs(pg.g - 0.025) < 0.0005, JSON.stringify(pg));
+    // SUCCESSOR: the page's copy at 0.020
+    ok('P5 the page\'s copy is r20\'s live drawing (svg, g[filter] at 0.020)', !!pg && pg.bitmap === null && pg.svg === true && pg.g != null && Math.abs(pg.g - 0.020) < 0.0005, JSON.stringify(pg));
     const bmpOk = (c) => !!c && c.bitmap === 'true' && c.svg === false && c.bg === 'url("blob:ht' && c.alpha != null && Math.abs(c.alpha - 0.034) < 0.0005 && c.display !== 'none'
       && c.anim === 'arbor2-pergola-drift-px' && c.dt != null && Math.abs(c.dt) < 1 && !!c.box && c.box.every((v, i) => Math.abs(v) <= (i < 2 ? 1.5 : 2));
     // PARKED 2026-11-07 (SUPERSEDED by Nick's no-drift ruling, Nov 7, via Fable: the copies' literal-pixel drift is no longer drawn). Original, verbatim:
