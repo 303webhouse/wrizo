@@ -60,7 +60,10 @@ const screens = {
       const bar = [...document.querySelectorAll('.chrome-top.sprint-nav')].find((b) => b.getBoundingClientRect().height > 0), strip = document.querySelector('.desk-frame-strip');
       const lab = (root) => root ? [...root.querySelectorAll('button, a, span, .wz-strip-label')].filter((e) => e.children.length === 0 && (e.textContent || '').trim() && e.getBoundingClientRect().width > 0).slice(0, 24).map((e) => [e.textContent.trim().slice(0, 14), getComputedStyle(e).color, op(e)]) : [];
       return { bar: bar && { bg: getComputedStyle(bar).backgroundColor, op: op(bar), line: getComputedStyle(bar).borderBottomColor }, strip: strip && { bg: getComputedStyle(strip).backgroundColor, op: op(strip) }, labels: [...lab(bar), ...lab(strip)], room: document.documentElement.getAttribute('data-arbor2-room') }; })()`);
-    const want = 'rgb(36, 25, 18)', ground = { r: 36, g: 25, b: 18, a: 1 };
+    // PARKED 2026-11-10 (SUPERSEDED - NICK RULED, Nov 9, 11:29 pm, via Fable: the night room is brown B, which steps every night brown and the dark page darker: room #080402, bars #19110B / line #291E15, drawers #231811, dark page #100C09 / #2F241A; the brown-B sweep on the ship, frames 42777131592-42782418982). Original, verbatim:
+    // const want = 'rgb(36, 25, 18)', ground = { r: 36, g: 25, b: 18, a: 1 };
+    // SUCCESSOR: the night bars measure solid B's #19110B, the labels held on it
+    const want = 'rgb(25, 17, 11)', ground = { r: 25, g: 17, b: 11, a: 1 };
     const painted = (x) => !!x && x.bg === want && x.op === 1;
     const worst = r.labels.map(([t, c, o]) => { const p = parseRgb(c); return [t, p ? ratio(over(p, (p.a ?? 1) * o, ground), ground) : 0, o]; }).sort((a, b) => a[1] - b[1])[0];
     const ok = { night: r.room === 'night', barSolid: painted(r.bar), railSolid: painted(r.strip), labelsHold: !!worst && worst[1] >= 4.5 };

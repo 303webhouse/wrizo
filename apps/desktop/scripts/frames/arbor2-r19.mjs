@@ -151,7 +151,10 @@ const screens = {
   // ── B. THE BARS ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
   'r19-bars': async (app) => {
     await openPage(app, 'arbor-r19-bars');
-    const want = { day: { bg: hex('#3A4322'), line: '#4E5A30' }, night: { bg: hex('#241912'), line: '#35271C' } };
+    // PARKED 2026-11-10 (SUPERSEDED - NICK RULED, Nov 9, 11:29 pm, via Fable: the night room is brown B, which steps every night brown and the dark page darker: room #080402, bars #19110B / line #291E15, drawers #231811, dark page #100C09 / #2F241A; the brown-B sweep on the ship, frames 42777131592-42782418982). Original, verbatim:
+    // const want = { day: { bg: hex('#3A4322'), line: '#4E5A30' }, night: { bg: hex('#241912'), line: '#35271C' } };
+    // SUCCESSOR: by night the bars are B's #19110B with B's line #291E15 (the day unchanged)
+    const want = { day: { bg: hex('#3A4322'), line: '#4E5A30' }, night: { bg: hex('#19110B'), line: '#291E15' } };
     const out = {};
     for (const room of ['day', 'night']) {
       await setRoom(app, room);

@@ -86,7 +86,10 @@ export default {
     }
     const dark = out.freewrite.toneRoom.tone === 'dark';
     const pageOk = (r) => dark
-      ? r.paper === '#1A1510' && r.border === '#3A2D22' && r.ink === '#EFE4CB' && r.inkRatio >= 13.9 && r.low === '#B9AA8C' && r.lowRatio >= 4.5 && r.caret === '#FF9800'
+      // PARKED 2026-11-10 (SUPERSEDED - NICK RULED, Nov 9, 11:29 pm, via Fable: the night room is brown B, which steps every night brown and the dark page darker: room #080402, bars #19110B / line #291E15, drawers #231811, dark page #100C09 / #2F241A; the brown-B sweep on the ship, frames 42777131592-42782418982). Original, verbatim:
+      // ? r.paper === '#1A1510' && r.border === '#3A2D22' && r.ink === '#EFE4CB' && r.inkRatio >= 13.9 && r.low === '#B9AA8C' && r.lowRatio >= 4.5 && r.caret === '#FF9800'
+      // SUCCESSOR: the dark page is B's paper #100C09 and border #2F241A; the inks, floors and caret unchanged
+      ? r.paper === '#100C09' && r.border === '#2F241A' && r.ink === '#EFE4CB' && r.inkRatio >= 13.9 && r.low === '#B9AA8C' && r.lowRatio >= 4.5 && r.caret === '#FF9800'
         && /underline/.test(r.selLine) && /overline/.test(r.selLine) && r.selColour === '#FF9800'
       // PARKED 2026-10-31 (SUPERSEDED, red leg run 41246277946: the premise was wrong - Free Write's prose is the writer's PEN ink, Arbor's walnut
       // #1A0F06 (ModeStage's PEN_INKS, 16.16:1), not --ink-on-paper; #2B2014 is the ink of Draft and Revise). Original, verbatim:
@@ -123,7 +126,10 @@ export default {
     // }
     // SUCCESSOR: Free Write by NIGHT is zoomedOk's night half (page-less, the room's cream); Free Write by DAY is as before r22 - pageOk (the paper
     // read through the sheet that stands in for it) and r7's own "typewriter unframed" (the sheet hard, no shadow, in the tone's paper). Draft as before.
-    const dayUnframed = (r) => r.zoom === 'true' && r.sheetMask === 'none' && r.sheetShadow === 'none' && r.paper === (dark ? '#1A1510' : '#F3EDE1');
+    // PARKED 2026-11-10 (SUPERSEDED - NICK RULED, Nov 9, 11:29 pm, via Fable: the night room is brown B, which steps every night brown and the dark page darker: room #080402, bars #19110B / line #291E15, drawers #231811, dark page #100C09 / #2F241A; the brown-B sweep on the ship, frames 42777131592-42782418982). Original, verbatim:
+    // const dayUnframed = (r) => r.zoom === 'true' && r.sheetMask === 'none' && r.sheetShadow === 'none' && r.paper === (dark ? '#1A1510' : '#F3EDE1');
+    // SUCCESSOR: the zoomed dark page's sheet is B's #100C09
+    const dayUnframed = (r) => r.zoom === 'true' && r.sheetMask === 'none' && r.sheetShadow === 'none' && r.paper === (dark ? '#100C09' : '#F3EDE1');
     // PARKED 2026-11-08 (SUPERSEDED - Actions frames 42539081886: the lamp glow under the writing line measured rgb(43,24,12), where cream #EFE4CB
     // is 13.43, under 13.9; Typewriter's night words and the light page's caret there are a lifted cream #F7F0DE (14.91) - zoomedOk pins #EFE4CB).
     // Original, verbatim:
@@ -139,7 +145,10 @@ export default {
     // SUCCESSOR: by day, pageOk with the zoomed dark page's ink #F7F0DE (its ratio on the paper, the low ink, the brass caret and the selection
     // rule as pageOk), and the light page exactly pageOk; by night zoomedOk2.
     const pageOkTw = (r) => (dark
-      ? r.paper === '#1A1510' && r.border === '#3A2D22' && r.ink === '#F7F0DE' && r.inkRatio >= 13.9 && r.low === '#B9AA8C' && r.lowRatio >= 4.5 && r.caret === '#FF9800'
+      // PARKED 2026-11-10 (SUPERSEDED - NICK RULED, Nov 9, 11:29 pm, via Fable: the night room is brown B, which steps every night brown and the dark page darker: room #080402, bars #19110B / line #291E15, drawers #231811, dark page #100C09 / #2F241A; the brown-B sweep on the ship, frames 42777131592-42782418982). Original, verbatim:
+      // ? r.paper === '#1A1510' && r.border === '#3A2D22' && r.ink === '#F7F0DE' && r.inkRatio >= 13.9 && r.low === '#B9AA8C' && r.lowRatio >= 4.5 && r.caret === '#FF9800'
+      // SUCCESSOR: the dark page is B's paper #100C09 and border #2F241A; the lifted ink unchanged
+      ? r.paper === '#100C09' && r.border === '#2F241A' && r.ink === '#F7F0DE' && r.inkRatio >= 13.9 && r.low === '#B9AA8C' && r.lowRatio >= 4.5 && r.caret === '#FF9800'
         && /underline/.test(r.selLine) && /overline/.test(r.selLine) && r.selColour === '#FF9800'
       : pageOk(r));
     const judgeFw = (r) => (r.room === 'night' ? zoomedOk2(r) : pageOkTw(r) && dayUnframed(r));

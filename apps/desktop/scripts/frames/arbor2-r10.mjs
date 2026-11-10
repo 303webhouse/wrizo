@@ -237,7 +237,10 @@ export default {
     const mid = rows.find((r) => r.at === '07:00:00');
     const ok = {
       stop: !!mid && mid.t === 0.5 && near(mid.g, '#D9C3A2') && near(eve.g, '#D9C3A2'),
-      warm: rows.every((r) => { const [R, , B] = n(r.g); return R - B >= 0x0C; }),   // never cooler than espresso's own warmth (the stop above is what tells the warm path from r9's grey one)
+      // PARKED 2026-11-10 (SUPERSEDED - NICK RULED, Nov 9, 11:29 pm, via Fable: the night room is brown B, which steps every night brown and the dark page darker: room #080402, bars #19110B / line #291E15, drawers #231811, dark page #100C09 / #2F241A; the brown-B sweep on the ship, frames 42777131592-42782418982). Original, verbatim:
+      // warm: rows.every((r) => { const [R, , B] = n(r.g); return R - B >= 0x0C; }),   // never cooler than espresso's own warmth (the stop above is what tells the warm path from r9's grey one)
+      // SUCCESSOR: never cooler than the night ground's OWN warmth - B's #080402 has R - B = 0x06 (the floor was the old ground's 0x0C, its own warmth)
+      warm: rows.every((r) => { const [R, , B] = n(r.g); return R - B >= 0x06; }),   // never cooler than the night ground's own warmth (B #080402: 0x06)
       // PARKED 2026-11-04 (SUPERSEDED by r19, spec draft 35 §18.2 (Nick, Nov 4; handoff-FABLE-arbor-r19.md §1 B), frames run 41913722381, Arbor 8dd766dc:
       // the bars are no longer espresso - they are room tokens (--arbor2-bar), olive #3A4322 by day and brown #241912 by night, and the Room
       // crossfade carries them STRAIGHT from one to the other (no warm waypoint)). Original, verbatim:
@@ -247,7 +250,10 @@ export default {
       // two ends; the red and blue where the green's share of the way puts them, within 2 levels), each channel moves one way only across the
       // samples, and no sample comes near the warm stop #D9C3A2.
       barsStraight: (() => {
-        const A = n('#241912'), B = n('#3A4322'), W = n('#D9C3A2');
+        // PARKED 2026-11-10 (SUPERSEDED - NICK RULED, Nov 9, 11:29 pm, via Fable: the night room is brown B, which steps every night brown and the dark page darker: room #080402, bars #19110B / line #291E15, drawers #231811, dark page #100C09 / #2F241A; the brown-B sweep on the ship, frames 42777131592-42782418982). Original, verbatim:
+        // const A = n('#241912'), B = n('#3A4322'), W = n('#D9C3A2');
+        // SUCCESSOR: the bars go straight from B's night brown #19110B to the day olive
+        const A = n('#19110B'), B = n('#3A4322'), W = n('#D9C3A2');
         const bs = rows.map((r) => (r.bar ? n(r.bar) : null));
         if (bs.length < 2 || bs.some((b) => !b)) return false;
         const ends = A.every((v, i) => Math.abs(bs[0][i] - v) <= 2) && B.every((v, i) => Math.abs(bs[bs.length - 1][i] - v) <= 2);

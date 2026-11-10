@@ -195,9 +195,15 @@ export default {
     // the top bar and the rail are no longer espresso #1B120C - they are olive #3A4322 by day and brown #241912 by night, room tokens (--arbor2-bar)). Original, verbatim:
     // const ESP = '#1B120C';
     // SUCCESSOR (bars by room): the top bar and the rail olive #3A4322 by day, brown #241912 by night.
-    const BAR19 = { day: '#3A4322', night: '#241912' };
+    // PARKED 2026-11-10 (SUPERSEDED - NICK RULED, Nov 9, 11:29 pm, via Fable: the night room is brown B, which steps every night brown and the dark page darker: room #080402, bars #19110B / line #291E15, drawers #231811, dark page #100C09 / #2F241A; the brown-B sweep on the ship, frames 42777131592-42782418982). Original, verbatim:
+    // const BAR19 = { day: '#3A4322', night: '#241912' };
+    // SUCCESSOR: the night bars are B's #19110B
+    const BAR19 = { day: '#3A4322', night: '#19110B' };
     const dark = reads[0].tone === 'dark';
-    const PAPER = dark ? '#1A1510' : '#F3EDE1';
+    // PARKED 2026-11-10 (SUPERSEDED - NICK RULED, Nov 9, 11:29 pm, via Fable: the night room is brown B, which steps every night brown and the dark page darker: room #080402, bars #19110B / line #291E15, drawers #231811, dark page #100C09 / #2F241A; the brown-B sweep on the ship, frames 42777131592-42782418982). Original, verbatim:
+    // const PAPER = dark ? '#1A1510' : '#F3EDE1';
+    // SUCCESSOR: the dark page is B's #100C09 (it steps with the browns in both rooms, as r22 note 3 built it)
+    const PAPER = dark ? '#100C09' : '#F3EDE1';
     const problems = [];
     for (const r of reads) {
       const want = r.stage.startsWith('day') ? 'day' : 'night';

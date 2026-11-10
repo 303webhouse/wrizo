@@ -320,7 +320,10 @@ export default {
       // the top bar and the rail are no longer espresso #1B120C in both rooms - they are olive #3A4322 by day and brown #241912 by night). Original, verbatim:
       // if (r.barBg !== ESP || r.railBg !== ESP) problems.push({ stage: r.stage, bars: [r.barBg, r.railBg] });
       // SUCCESSOR: the bars are the room's - olive #3A4322 by day, brown #241912 by night.
-      const BAR19 = r.room === 'day' ? '#3A4322' : r.room === 'night' ? '#241912' : null;
+      // PARKED 2026-11-10 (SUPERSEDED - NICK RULED, Nov 9, 11:29 pm, via Fable: the night room is brown B, which steps every night brown and the dark page darker: room #080402, bars #19110B / line #291E15, drawers #231811, dark page #100C09 / #2F241A; the brown-B sweep on the ship, frames 42777131592-42782418982). Original, verbatim:
+      // const BAR19 = r.room === 'day' ? '#3A4322' : r.room === 'night' ? '#241912' : null;
+      // SUCCESSOR: the bars are the room's - olive #3A4322 by day, B's brown #19110B by night
+      const BAR19 = r.room === 'day' ? '#3A4322' : r.room === 'night' ? '#19110B' : null;
       if (!BAR19 || r.barBg !== BAR19 || r.railBg !== BAR19) problems.push({ stage: r.stage, bars: [r.barBg, r.railBg], want: BAR19, room: r.room });
       for (const g of r.grips) if (g.bg !== (g.open ? BRASS : OLIVE)) problems.push({ stage: r.stage, grip: g });
       for (const c of r.cloths) {

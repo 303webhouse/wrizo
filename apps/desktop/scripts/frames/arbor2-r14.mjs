@@ -155,7 +155,10 @@ export default {
       // (amendment before any green, run 41358900562: the splash's own ground is not one colour - #120A06 by night, #0A0503 by day (the day
       // splash rule) - so the front must match the SPLASH in each room, not match itself across rooms. Original: sameGround: rows[0].s.ground
       // === rows[1].s.ground)
-      const SPLASH = { night: 'rgb(18, 10, 6)', day: 'rgb(10, 5, 3)' };
+      // PARKED 2026-11-10 (SUPERSEDED - NICK RULED, Nov 9, 11:29 pm, via Fable: the night room is brown B, which steps every night brown and the dark page darker: room #080402, bars #19110B / line #291E15, drawers #231811, dark page #100C09 / #2F241A; the brown-B sweep on the ship, frames 42777131592-42782418982). Original, verbatim:
+      // const SPLASH = { night: 'rgb(18, 10, 6)', day: 'rgb(10, 5, 3)' };
+      // SUCCESSOR: by night the splash's ground is B's room #080402 (by day unchanged)
+      const SPLASH = { night: 'rgb(8, 4, 2)', day: 'rgb(10, 5, 3)' };
       // PARKED 2026-11-04 (SUPERSEDED with okRow above, frames run 41930092070). Original, verbatim:
       // const ok = { visitor: rows.every(okRow), splashGround: rows.every((r) => r.s.ground === SPLASH[r.room]) };
       // SUCCESSOR: visitorB reads okRowB (the report's per-row ok reads it too).
