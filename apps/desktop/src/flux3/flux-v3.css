@@ -203,10 +203,10 @@
    (1lh = its line height, counted up from its last line, as the mask and the band were), so it rides the last line by itself: nothing is set per key or per line, no mask-image, no pseudo-element.
    - the writing line (the last): her ink, --f3-ink #E8F6FA; the line above it: --f3-dim-ink #8F9B9E (6.9:1 on the ground #020C10; the floor is 4.5:1);
    - a RECT CLIP (clip-path: inset, no radius: a paint clip, not a surface) keeps the last two lines and hides every older one (they are the signal's now).
-   The native caret stays her ink (the block caret is drawn over it). */
+   The caret is left as the editor sets it (inline caret-color) and the block caret is drawn over it. */
 :root[data-flux3][data-theme='flux'][data-flux3-jacked]{ --f3-ink:#E8F6FA; --f3-dim-ink:#8F9B9E; }
 :root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .forward-only-editor{ position:relative; clip-path:inset(calc(100% - 2lh) 0 0 0);
-  color:transparent; caret-color:var(--f3-ink);
+  color:transparent !important;   /* !important: the editor sets its colour INLINE (the pen colour), which beats any rule; the text is painted by the gradient below */
   background-image:linear-gradient(to bottom, var(--f3-dim-ink) calc(100% - 1lh), var(--f3-ink) calc(100% - 1lh));
   -webkit-background-clip:text; background-clip:text; }
 /* THE GOAL GLOW, ONE TOKEN (Nick, Nov 8: a lighter blue; the Wrizors' concepts file, Nov 9). The goal's glow (.wz-goal-glow, 13-desk-frame.css: rising
