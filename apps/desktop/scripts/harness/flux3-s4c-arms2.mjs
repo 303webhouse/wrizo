@@ -74,8 +74,8 @@ try { await withHarness(async (app) => {
     const green = await L.runArms('the control against itself', { on: false });
     ok(`L-METHOD-GREEN ${green.line}`, green.pass && green.enough && green.stoodRight, '');
     console.log('ARM control-vs-itself: ' + green.line);
-    for (const a of ARMS) {
-      if (only && !only.includes(a.name)) continue;
+    // ARMS_ONLY names the arms IN ORDER and may repeat one (round 3: full / no-mask three times each, interleaved)
+    for (const a of (only ? only.map((n) => ARMS.find((x) => x.name === n)).filter(Boolean) : ARMS)) {
       arm = a;
       const r = await L.runArms(`arm ${a.name}`, { on: true });
       console.log(`ARM ${a.name}: clock J median ${c(r.J.clock.median)} p95 ${c(r.J.clock.p95)} max ${c(r.J.clock.max)} | C median ${c(r.C.clock.median)} p95 ${c(r.C.clock.p95)} || cost J median ${c(r.J.cost.median)} p95 ${c(r.J.cost.p95)} | C median ${c(r.C.cost.median)} p95 ${c(r.C.cost.p95)} || J-C clock median ${c(r.J.clock.median - r.C.clock.median)} p95 ${c(r.J.clock.p95 - r.C.clock.p95)}; cost median ${c(r.J.cost.median - r.C.cost.median)} p95 ${c(r.J.cost.p95 - r.C.cost.p95)} || verdict ${r.pass ? 'GREEN' : 'RED'} (${r.enough ? 'keys enough' : 'KEYS SHORT'}, ${r.stoodRight ? 'arms stood' : 'ARMS DID NOT STAND'})`);
