@@ -4,6 +4,8 @@
 import { Model, prevWordStart, nextWordStop } from './lib/model.mjs';
 import { verify } from './lib/verify.mjs';
 import { GROUPS } from './lib/cases.mjs';
+import { GROUPS2 } from './lib/cases2.mjs';
+import { visualLines, lineOf, vertical, homeEnd, hit, nearest } from './lib/geom.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
@@ -86,6 +88,20 @@ ok('V17 a console error is a CONSOLE failure', names(v({}, { errors: ['console.e
 ok('V18 a caret that moves after the keystroke is a SETTLED failure (bug 33)', (() => { const r = verify({ exp, box, before: clean(), early: { ...clean(), anchor: 6, focus: 6 }, late: { ...clean(), anchor: 11, focus: 11 }, errors: [] }); return names(r).includes('settled'); })());
 ok('V19 rows that are not one per line are noted, not guessed at', (() => { const r = v({}, { box: { via: 'rows-drift' } }); return r.fails.length === 0 && r.notes.some((n) => /rows/.test(n)); })());
 ok('V20 a selection (not a caret) is not judged by drawn place', (() => { const r = verify({ exp: { text: 'Hello\nworld', a: 0, f: 5 }, box: null, before: clean(), early: { ...clean(), anchor: 0, focus: 5, collapsed: false }, late: { ...clean(), anchor: 0, focus: 5, collapsed: false, caret: null }, errors: [] }); return r.fails.length === 0; })());
+
+// ---- the layout-aware oracle (session 2): synthetic stops, a wrapped paragraph then an empty line then a short one ----
+const mk = (top, ps, xs) => ps.map((p, i) => ({ p, x: xs[i], top, height: 20 }));
+const stops = [...mk(100, [0, 1, 2, 3, 4], [10, 20, 30, 40, 50]), ...mk(124, [5, 6, 7, 8, 9], [10, 20, 30, 40, 50]), ...mk(148, [10], [10]), ...mk(172, [11, 12, 13], [10, 25, 40])];
+const L = visualLines(stops);
+ok('G0 stops group into 4 visual lines', L.length === 4 && L[1].ps.join() === '5,6,7,8,9' && lineOf(L, 12) === 3, JSON.stringify(L.map((l) => l.ps)));
+ok('G1 Down from x=30 lands on the stop nearest x=30 on the next line', vertical(L, 3, 30, 'down', 13).join() === '7');
+ok('G2 the goal column survives an empty line (Down, Down: x=30 again picks the nearest stop)', vertical(L, 10, 30, 'down', 13).join() === '12');
+ok('G3 Up on the first line: the start of the document, or no move', vertical(L, 3, 30, 'up', 13).join() === '0,3');
+ok('G4 Down on the last line: the end of the document, or no move', vertical(L, 12, 25, 'down', 13).join() === '13,12');
+ok('G5 Home is the visual line first stop; End allows the soft-wrap position before the next line', homeEnd(L, 7, 'Home', '').join() === '5' && homeEnd(L, 7, 'End', '').join() === '9,10');
+ok('G6 a click beyond the end of a wrapped line lands at its end', hit(L, 1, 500).join() === '9');
+ok('G7 a tie is both answers', nearest({ ps: [1, 2], xs: [20, 30] }, 25).join() === '1,2');
+ok('G8 every session-2 case uses a known step kind, and the Enter group is the 20 session-1 cases', (() => { const bad = Object.values(GROUPS2).flat().flatMap((c) => c.steps).filter((st) => !['type', 'key', 'click', 'drag'].includes(st.k)); return GROUPS2.enterTw.length === 20 && bad.length === 0; })());
 
 const failed = checks.filter((c) => !c.pass);
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : `  [${c.detail}]`}`);

@@ -55,13 +55,14 @@ export function makeDriver(app, cfg) {
       await ev(PROBE);
     },
     /** a fresh page holding `text`, opened in `mode` ('drafting' = Draft, 'journal' = Free Write, 'revise'), the editor mounted and its rows in place */
-    async openPage(text, mode = 'drafting') {
+    async openPage(text, mode = 'drafting', opts = {}) {
       const id = `wa-${Date.now().toString(36)}-${++n}`;
       const row = { id, text, createdAt: new Date().toISOString(), origin: 'journal', source: 'page' };
       await ev(`location.hash = '#/'`);
       await sleep(150);
       await ev(`window.wrizoCreateJournalPage(${JSON.stringify(row)})`);
       await ev(`localStorage.setItem('wrizo-mode-page-${id}', ${JSON.stringify(mode)})`);
+      if (opts.typewriter === 'on' || opts.typewriter === 'off') await ev(`localStorage.setItem('wrizo-typewriter-page-${id}', ${JSON.stringify(opts.typewriter)})`);
       await ev(`location.hash = '#/page/${id}'`);
       await waitFor(`!!document.querySelector('.forward-only-editor') && !!document.querySelector('.mode-page')`, 'the editor', 15000);
       await waitFor(`window.__wa && window.__wa.read().text === ${JSON.stringify(text)}`, 'the editor holds the seeded text', 8000);
@@ -95,6 +96,23 @@ export function makeDriver(app, cfg) {
         await sleep(100);
       }
       return null;
+    },
+    stops: () => ev('window.__wa.stops()'),
+    /** a real mouse click (count 2 = double, 3 = triple) at viewport (x, y) */
+    async click(x, y, count = 1) {
+      const base = { x, y, button: 'left', pointerType: 'mouse' };
+      await app.cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y, buttons: 0, pointerType: 'mouse' });
+      for (let i = 1; i <= count; i++) {
+        await app.cdp('Input.dispatchMouseEvent', { type: 'mousePressed', ...base, buttons: 1, clickCount: i });
+        await app.cdp('Input.dispatchMouseEvent', { type: 'mouseReleased', ...base, buttons: 0, clickCount: i });
+      }
+    },
+    /** press at (x0, y0), move in steps, release at (x1, y1) */
+    async drag(x0, y0, x1, y1, steps = 8) {
+      await app.cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x: x0, y: y0, buttons: 0, pointerType: 'mouse' });
+      await app.cdp('Input.dispatchMouseEvent', { type: 'mousePressed', x: x0, y: y0, button: 'left', buttons: 1, clickCount: 1, pointerType: 'mouse' });
+      for (let i = 1; i <= steps; i++) await app.cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x: x0 + ((x1 - x0) * i) / steps, y: y0 + ((y1 - y0) * i) / steps, buttons: 1, button: 'left', pointerType: 'mouse' });
+      await app.cdp('Input.dispatchMouseEvent', { type: 'mouseReleased', x: x1, y: y1, button: 'left', buttons: 0, clickCount: 1, pointerType: 'mouse' });
     },
     box: (p) => ev(`window.__wa.boxAt(${p})`),
     place: (a, f) => ev(`window.__wa.place(${a}, ${f === undefined ? 'undefined' : f})`),

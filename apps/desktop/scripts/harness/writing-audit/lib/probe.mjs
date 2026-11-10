@@ -140,6 +140,13 @@ export function probeInstall() {
     return box2(x0, x1, y0, y1, n);
   };
   const clear = () => { getSelection().removeAllRanges(); return true; };
+  // the layout-aware oracle's input (lib/geom.mjs): one entry per plain offset, where the model says that position is drawn
+  const stops = () => {
+    const e = ed(); if (!e) return null;
+    const n = plainOf(e).length, out = [];
+    for (let p = 0; p <= n; p++) { const b = boxAt(p); out.push(b && b.x !== undefined ? { p, x: b.x, top: b.top, height: b.height, via: b.via } : { p, via: (b && b.via) || 'none' }); }
+    return out;
+  };
   const dom = (n = 600) => { const e = ed(); return e ? e.innerHTML.slice(0, n) : null; };
-  window.__wa = { read, boxAt, place, dom, arm, scan, diff, clear };
+  window.__wa = { read, boxAt, place, dom, arm, scan, diff, clear, stops };
 }
