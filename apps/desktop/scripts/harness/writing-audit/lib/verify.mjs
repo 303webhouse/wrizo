@@ -32,26 +32,26 @@ export function verify({ exp, box, before, early, late, errors = [], expect = {}
     fail('settled', `after 2 frames: selection ${early.anchor}..${early.focus} text ${short((early.text || '').slice(0, 40))}; settled: ${late.anchor}..${late.focus} text ${short((late.text || '').slice(0, 40))}`);
   }
 
-  // 4. THE CARET IS DRAWN WHERE THE TEXT SAYS (a collapsed caret in the editor; Flux's own block caret too)
+  // 4. THE CARET IS DRAWN WHERE THE TEXT SAYS (a collapsed caret in the editor). Flux paints its own block caret (an element: its box is the drawn place). Arbor and Machina use the browser's native caret, which is
+  //    read from the PIXELS (late.px: the forced-magenta caret found in a screenshot, probe.mjs `scan`), because the rectangle a range reports is not where the caret is painted (run 42918219726).
   if (exp.a === exp.f && late.collapsed && late.focused) {
-    const page = late.page;
-    const drawnNative = late.caret;
-    const drawn = late.theme === 'flux' ? late.fluxCaret : late.caret;
-    if (late.theme === 'flux' && !late.fluxCaret) fail('drawn', 'Flux: the block caret is not drawn (no .flux-block-caret) while the selection is a caret in the editor');
-    if (!box || box.via === 'rows-drift') notes.push(`drawn place not checked: the page's rows (${late.rows}) are not one per line of the model`);
+    const page = late.page, flux = late.theme === 'flux';
+    const drawn = flux ? late.fluxCaret : late.px;
+    const what = flux ? 'Flux block caret' : 'native caret (painted)';
+    const at = late.selPoint ? ` [selection: ${late.selPoint}]` : '';
+    if (!drawn) fail('drawn', flux ? `Flux: the block caret is not drawn (no .flux-block-caret) while the selection is a caret in the editor${at}` : `no caret is painted anywhere on screen (looked in ${late.pxTries ?? '?'} screenshots)${at}`);
+    else if (!box || box.via === 'rows-drift') notes.push(`drawn place not checked: the page's rows (${late.rows}) are not one per line of the model`);
     else {
-      const judge = (name, d) => {
-        if (!d) { if (name === 'selection rect') fail('drawn', 'the selection gives no rectangle and no row to fall back to'); return; }
-        const dx = d.x - box.x, dy = d.top - box.top;
-        const atPageCorner = !!page && d.x <= page.x + TOL.corner && d.top <= page.y + TOL.corner && !(Math.abs(dx) <= TOL.corner && Math.abs(dy) <= TOL.corner);
-        const atViewCorner = d.x <= 2 && d.top <= 2 && !(Math.abs(dx) <= 2 && Math.abs(dy) <= 2);
-        const offPage = !!page && (d.x < page.x - 2 || d.x > page.x + page.w + 2 || d.top < page.y - 2 || d.top > page.y + page.h + 2);
-        if (atPageCorner || atViewCorner) fail('drawn', `${name} at the ${atViewCorner ? 'window' : 'page'}'s top-left corner (${rect(d)}) where the text puts it at ${rect(box)} (${box.via})`);
-        else if (offPage && !(Math.abs(dx) <= TOL.x && Math.abs(dy) <= TOL.y)) fail('drawn', `${name} off the page (${rect(d)}; page ${Math.round(page.x)},${Math.round(page.y)} ${Math.round(page.w)}x${Math.round(page.h)})`);
-        else if (Math.abs(dx) > TOL.x || Math.abs(dy) > TOL.y) fail('drawn', `${name} at ${rect(d)} but the text puts the caret at ${rect(box)} (${box.via}); off by ${dx.toFixed(1)}, ${dy.toFixed(1)}`);
-      };
-      if (late.theme === 'flux') { judge('Flux block caret', drawn); if (drawnNative) judge('selection rect', drawnNative); }
-      else judge('selection rect', drawn);
+      const dx = drawn.x - box.x;
+      // vertical: the centre of the drawn caret against the expected line (a caret is shorter than its line box, and sits inside it)
+      const cy = drawn.top + (drawn.height || 0) / 2, ey = box.top + (box.height || 0) / 2, dy = cy - ey;
+      const tolY = Math.max(TOL.y, (box.height || 0) * 0.45);
+      const atPageCorner = !!page && drawn.x <= page.x + TOL.corner && drawn.top <= page.y + TOL.corner && !(Math.abs(dx) <= TOL.corner && Math.abs(dy) <= TOL.corner);
+      const atViewCorner = drawn.x <= 2 && drawn.top <= 2 && !(Math.abs(dx) <= 2 && Math.abs(dy) <= 2);
+      const offPage = !!page && (drawn.x < page.x - 2 || drawn.x > page.x + page.w + 2 || drawn.top < page.y - 2 || drawn.top > page.y + page.h + 2);
+      if (atPageCorner || atViewCorner) fail('drawn', `${what} at the ${atViewCorner ? 'window' : 'page'}'s top-left corner (${rect(drawn)}) where the text puts it at ${rect(box)} (${box.via})${at}`);
+      else if (offPage && !(Math.abs(dx) <= TOL.x && Math.abs(dy) <= tolY)) fail('drawn', `${what} off the page (${rect(drawn)}; page ${Math.round(page.x)},${Math.round(page.y)} ${Math.round(page.w)}x${Math.round(page.h)})${at}`);
+      else if (Math.abs(dx) > TOL.x || Math.abs(dy) > tolY) fail('drawn', `${what} at ${rect(drawn)} but the text puts the caret at ${rect(box)} (${box.via}); off by ${dx.toFixed(1)}, ${dy.toFixed(1)}${at}`);
     }
   }
 
@@ -64,7 +64,7 @@ export function verify({ exp, box, before, early, late, errors = [], expect = {}
 
   // 7. THE VIEW HAS NOT JUMPED (a short document never scrolls: the scroll changes only when the caret would leave the window)
   if (before && before.scroll && late.scroll && !expect.scroll) {
-    if (before.scroll.top !== late.scroll.top || before.scroll.win !== late.scroll.win) fail('view', `scroll moved: scroller ${before.scroll.top} -> ${late.scroll.top}, window ${before.scroll.win} -> ${late.scroll.win}`);
+    if (before.scroll.top !== late.scroll.top || before.scroll.win !== late.scroll.win) fail('view', `scroll moved: scroller ${before.scroll.top} -> ${late.scroll.top} (scrollHeight ${late.scroll.scrollerH}, clientHeight ${late.scroll.clientH}), window ${before.scroll.win} -> ${late.scroll.win}; the caret is at ${late.px ? late.px.x + ',' + late.px.top : late.fluxCaret ? Math.round(late.fluxCaret.x) + ',' + Math.round(late.fluxCaret.top) : 'unseen'} in a page ${late.page ? Math.round(late.page.y) + '..' + Math.round(late.page.y + late.page.h) : '?'} tall`);
   }
 
   // 9. NO ERROR IN THE CONSOLE

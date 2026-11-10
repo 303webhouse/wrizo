@@ -31,9 +31,16 @@ const lines = [];
 const out = (s) => { lines.push(s); console.log(s); };
 const proof = [], cases = [], findings = [];
 
+// the native caret as painted (Arbor, Machina); Flux's block caret is an element and needs no screenshot
+async function attachPixels(d, r) {
+  if (r.theme === 'flux' || !r.editor || !r.collapsed || !r.focused) return;
+  const px = await d.pixelCaret();
+  r.px = px; r.pxTries = px ? px.tries : 8;
+}
 async function settleRead(d) {
   await d.frames(); const early = await d.read();
   await sleep(350); const late = await d.read();
+  await attachPixels(d, late);
   return { early, late };
 }
 
@@ -45,7 +52,7 @@ async function readerProof(d) {
     await d.openPage(TEXT);
     const placed = await d.place(p);
     const m = new Model(TEXT, p, p, 'linux');
-    const read = async () => { const before = await d.read(); await d.frames(); const early = await d.read(); await sleep(120); const late = await d.read(); return { before, early, late }; };
+    const read = async () => { const before = await d.read(); await d.frames(); const early = await d.read(); await sleep(120); const late = await d.read(); await attachPixels(d, late); return { before, early, late }; };
     // control: nothing injected, the verdict is clean
     const r0 = await read();
     const box = await d.box(p);
@@ -59,6 +66,7 @@ async function readerProof(d) {
     await d.ev(mutate);
     await d.frames(); await sleep(120);
     const late = await d.read();
+    await attachPixels(d, late);
     const v1 = verify({ exp: m.snapshot(), box, before, early: early || await d.read(), late, errors: d.errors.slice(e0) });
     proof.push({ name: `R-mutant ${name}: the reader names "${expectCheck}"`, pass: want(expectCheck)(v1), detail: v1.fails.map((f) => `${f.check}: ${f.detail}`).join(' | ') || 'NOTHING FLAGGED' });
   };
@@ -101,7 +109,7 @@ async function runCase(d, cs) {
     rec.steps.push(stepLabel(st));
     if (v.notes.length) rec.notes.push(...v.notes);
     if (v.fails.length) {
-      rec.fail = { step: i + 1, label: stepLabel(st), fails: v.fails, expected: exp.snapshot(), got: { text: late.text, anchor: late.anchor, focus: late.focus, caret: late.caret, fluxCaret: late.fluxCaret, page: late.page }, box, dom: await d.dom(700) };
+      rec.fail = { step: i + 1, label: stepLabel(st), fails: v.fails, expected: exp.snapshot(), got: { text: late.text, anchor: late.anchor, focus: late.focus, caret: late.caret, px: late.px, fluxCaret: late.fluxCaret, page: late.page, scroll: late.scroll, selPoint: late.selPoint }, box, dom: await d.dom(700) };
       rec.shot = await d.shot(`${TAG.replace(/\//g, '-')}-${cs.id}-step${i + 1}`);
       return rec;
     }

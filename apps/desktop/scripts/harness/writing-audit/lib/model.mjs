@@ -40,6 +40,10 @@ export function nextWordStop(t, p, platform) {
   return q;
 }
 
+/** SMART DELETE (measured, not assumed: Actions run 42918219726, D11, Chrome 156 on Linux): a word deleted from between two spaces takes one of them with it, so 'Hello big world' minus 'big' is
+ *  'Hello world', not 'Hello  world'. True when the range [s, e) has a space on each side. */
+function smartTail(t, s, e) { return s > 0 && e < t.length && isSpace(t[s - 1]) && isSpace(t[e]); }
+
 export class Model {
   constructor(text = '', a = text.length, f = a, platform = 'linux') { this.text = text; this.a = a; this.f = f; this.platform = platform; }
   clone() { return new Model(this.text, this.a, this.f, this.platform); }
@@ -63,11 +67,13 @@ export class Model {
       case 'Backspace':
         if (!this.collapsed) { this.replace(this.start, this.end, ''); return; }
         if (this.f === 0) return;
-        this.replace(ctrl ? prevWordStart(t, this.f) : this.f - 1, this.f, ''); return;
+        if (ctrl) { const s0 = prevWordStart(t, this.f); this.replace(s0, this.f + (smartTail(t, s0, this.f) ? 1 : 0), ''); return; }
+        this.replace(this.f - 1, this.f, ''); return;
       case 'Delete':
         if (!this.collapsed) { this.replace(this.start, this.end, ''); return; }
         if (this.f >= n) return;
-        this.replace(this.f, ctrl ? nextWordStop(t, this.f, this.platform) : this.f + 1, ''); return;
+        if (ctrl) { const e0 = nextWordStop(t, this.f, this.platform); this.replace(this.f, e0 + (smartTail(t, this.f, e0) ? 1 : 0), ''); return; }
+        this.replace(this.f, this.f + 1, ''); return;
       case 'ArrowLeft':
         if (!shift && !this.collapsed) { const s = ctrl ? prevWordStart(t, this.start) : this.start; this.a = this.f = s; return; }
         move(ctrl ? prevWordStart(t, this.f) : Math.max(0, this.f - 1)); return;

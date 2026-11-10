@@ -92,6 +92,8 @@ export function probeInstall() {
     out.editorRect = rr(e.getBoundingClientRect());
     out.scroll = { top: scroller ? scroller.scrollTop : null, win: window.scrollY, scrollerH: scroller ? scroller.scrollHeight : null, clientH: scroller ? scroller.clientHeight : null };
     out.rows = rowsOf(e).length;
+    // where the selection sits in the DOM (a text node's first characters and offset, or the element and offset): the evidence for a caret that is in the right place by number and the wrong place on screen
+    if (inEd) { const n = sel.focusNode; let row = n.nodeType === 1 ? n : n.parentElement; while (row && row.parentElement !== e && row !== e) row = row.parentElement; const rows = rowsOf(e); out.selPoint = (n.nodeType === 3 ? 'text ' + JSON.stringify(n.data.slice(0, 14)) : n.nodeName + (n.className ? '.' + String(n.className).split(' ')[0] : '')) + ' @' + sel.focusOffset + (row && row !== e ? ' in row ' + rows.indexOf(row) : ' (between rows)'); }
     return out;
   };
 
@@ -104,6 +106,24 @@ export function probeInstall() {
     getSelection().setBaseAndExtent(pa.node, pa.off, pf.node, pf.off);
     return true;
   };
+  // THE NATIVE CARET, SEEN. The rectangle the browser gives a collapsed range is NOT where it paints the caret (run 42918219726: after Enter at the end of a middle paragraph the range said the start of the row above while the
+  // caret was painted at the page's right margin). So the native caret is found in a screenshot: every editor character's caret-color is forced to magenta (a style sheet in <head>, the editor's DOM untouched) and the
+  // magenta pixels' bounding box is the caret. `scan` decodes the PNG in the page (a Blob and createImageBitmap, no fetch) and returns that box in CSS pixels (the viewport is emulated at dpr 1).
+  const arm = () => {
+    if (document.getElementById('wa-caret-color')) return true;
+    const st = document.createElement('style'); st.id = 'wa-caret-color';
+    st.textContent = 'html html .forward-only-editor, html html .forward-only-editor * { caret-color: #ff00ff !important; }';
+    document.head.appendChild(st); return true;
+  };
+  const scan = async (b64) => {
+    const bytes = Uint8Array.from(atob(b64), (ch) => ch.charCodeAt(0));
+    const bmp = await createImageBitmap(new Blob([bytes], { type: 'image/png' }));
+    const cv = new OffscreenCanvas(bmp.width, bmp.height), g = cv.getContext('2d'); g.drawImage(bmp, 0, 0);
+    const { data, width, height } = g.getImageData(0, 0, bmp.width, bmp.height);
+    let x0 = 1e9, x1 = -1, y0 = 1e9, y1 = -1, n = 0;
+    for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) { const i = (y * width + x) * 4; if (data[i] >= 190 && data[i + 2] >= 190 && data[i + 1] <= 110) { n++; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; } }
+    return n ? { x: x0, top: y0, width: x1 - x0 + 1, height: y1 - y0 + 1, n } : null;
+  };
   const dom = (n = 600) => { const e = ed(); return e ? e.innerHTML.slice(0, n) : null; };
-  window.__wa = { read, boxAt, place, dom };
+  window.__wa = { read, boxAt, place, dom, arm, scan };
 }

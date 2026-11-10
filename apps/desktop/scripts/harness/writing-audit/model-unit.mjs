@@ -42,6 +42,8 @@ ok('M14 a paragraph boundary is one word-step', prevWordStart('ab\ncd', 3) === 2
 ok('M15 Ctrl+Right: Windows stops at the next word start, Linux at this word end', nextWordStop('Hello big world', 0, 'win') === 6 && nextWordStop('Hello big world', 0, 'linux') === 5);
 m = run('Hello big world', 15, 15, K('Backspace', { ctrl: true }));
 ok('M16 Ctrl+Backspace deletes the word before the caret', m.text === 'Hello big ' && m.f === 10, snap(m));
+m = run('Hello big world', 6, 6, K('Delete', { ctrl: true }));
+ok('M16b smart delete: a word taken from between two spaces takes one space with it (measured, Chrome 156 Linux)', m.text === 'Hello world' && m.f === 6, snap(m));
 let threw = false; try { run('a', 0, 0, K('PageUp')); } catch { threw = true; }
 ok('M17 a key the model has no rule for is refused, never guessed', threw);
 const all = Object.values(GROUPS).flat();
@@ -53,7 +55,7 @@ ok('M19 case ids are unique, and Enter is the first group', new Set(all.map((c) 
 // ---- the verdict: a clean read, then one read built to trip each detector ----
 const page = { x: 400, y: 80, w: 700, h: 600 };
 const clean = () => ({ editor: true, theme: 'plateau', text: 'Hello\nworld', anchor: 6, focus: 6, collapsed: true, focused: true, active: 'DIV.forward-only-editor', rows: 2,
-  caret: { via: 'range', x: 450, top: 140, height: 24 }, fluxCaret: null, page: { ...page }, scroll: { top: 0, win: 0 }, selNode: null });
+  caret: { via: 'range', x: 450, top: 140, height: 24 }, px: { x: 450, top: 143, width: 1, height: 18 }, pxTries: 1, fluxCaret: null, page: { ...page }, scroll: { top: 0, win: 0 }, selNode: null });
 const exp = { text: 'Hello\nworld', a: 6, f: 6 };
 const box = { via: 'char', x: 450, top: 140, height: 24 };
 const v = (over, o = {}) => verify({ exp: o.exp || exp, box: o.box === undefined ? box : o.box, before: clean(), early: { ...clean(), ...over }, late: { ...clean(), ...over }, errors: o.errors || [], expect: o.expect || {} });
@@ -64,13 +66,16 @@ ok('V2 a doubled paragraph break is a TEXT failure', names(v({ text: 'Hello\n\nw
 ok('V3 a non-breaking space is a note, not a failure', (() => { const r = v({ text: 'Hello\nworld', rawHasNbsp: true }); return r.fails.length === 0; })());
 ok('V4 the caret one character off is a CARET failure', names(v({ anchor: 7, focus: 7 })).includes('caret'));
 ok('V5 a selection outside the editor is a CARET failure', names(v({ anchor: null, focus: null, selNode: 'BODY' })).includes('caret'));
-ok("V6 NICK'S BUG: the caret drawn at the page's top-left corner is a DRAWN failure", (() => { const r = v({ caret: { via: 'range', x: 402, top: 82, height: 24 } }); return names(r).includes('drawn') && /corner/.test(r.fails.find((f) => f.check === 'drawn').detail); })());
-ok("V7 the caret drawn at the window's corner is a DRAWN failure", (() => { const r = v({ caret: { via: 'range', x: 0, top: 0, height: 24 } }); return names(r).includes('drawn') && /window/.test(r.fails.find((f) => f.check === 'drawn').detail); })());
-ok('V8 the caret drawn off the page is a DRAWN failure', names(v({ caret: { via: 'range', x: 1300, top: 400, height: 24 } })).includes('drawn'));
-ok('V9 the caret drawn one line too high is a DRAWN failure', names(v({ caret: { via: 'range', x: 450, top: 110, height: 24 } })).includes('drawn'));
+ok("V6 NICK'S BUG: the caret drawn at the page's top-left corner is a DRAWN failure", (() => { const r = v({ px: { x: 402, top: 84, width: 1, height: 18 } }); return names(r).includes('drawn') && /corner/.test(r.fails.find((f) => f.check === 'drawn').detail); })());
+ok("V7 the caret drawn at the window's corner is a DRAWN failure", (() => { const r = v({ px: { x: 0, top: 0, width: 1, height: 18 } }); return names(r).includes('drawn') && /window/.test(r.fails.find((f) => f.check === 'drawn').detail); })());
+ok('V8 the caret drawn off the page is a DRAWN failure', names(v({ px: { x: 1300, top: 400, width: 1, height: 18 } })).includes('drawn'));
+ok('V9 the caret drawn one line too high is a DRAWN failure', names(v({ px: { x: 450, top: 110, width: 1, height: 18 } })).includes('drawn'));
 ok("V10 Flux: the block caret not drawn at all is a DRAWN failure", names(v({ theme: 'flux', fluxCaret: null })).includes('drawn'));
 ok("V11 Flux: the block caret at the page's corner is a DRAWN failure", names(v({ theme: 'flux', fluxCaret: { x: 402, top: 82, height: 24, width: 8 } })).includes('drawn'));
 ok('V12 Flux: the block caret where the text puts it passes', v({ theme: 'flux', fluxCaret: { x: 450, top: 140, height: 24, width: 8 } }).fails.length === 0);
+ok('V9b the native caret painted at the right margin of the right row is a DRAWN failure (run 42918219726, E18)', names(v({ px: { x: 908, top: 230, width: 1, height: 18 } })).includes('drawn'));
+ok('V9c no caret painted anywhere is a DRAWN failure', (() => { const r = v({ px: null, pxTries: 8 }); return names(r).includes('drawn') && /no caret is painted/.test(r.fails.find((f) => f.check === 'drawn').detail); })());
+ok('V9d the range rectangle being wrong is NOT a failure when the painted caret is right (it was the proxy that was wrong)', v({ caret: { via: 'range', x: 450, top: 110, height: 24 } }).fails.length === 0);
 ok('V13 focus left the editor is a FOCUS failure', names(v({ focused: false, active: 'BODY' })).includes('focus'));
 ok('V14 a step that means to blur is not a focus failure', !names(v({ focused: false }, { expect: { blur: true } })).includes('focus'));
 ok('V15 the page moved 7px is a PAGE failure', names(v({ page: { ...page, x: 407 } })).includes('page'));

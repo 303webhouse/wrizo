@@ -71,6 +71,17 @@ export function makeDriver(app, cfg) {
       return id;
     },
     read: () => ev('window.__wa.read()'),
+    /** the native caret as PAINTED: screenshots (up to `tries`, 100 ms apart: the caret blinks) scanned for the forced-magenta caret; null if none is ever seen */
+    async pixelCaret(tries = 8) {
+      await ev('window.__wa.arm()');
+      for (let i = 0; i < tries; i++) {
+        const shot = await app.cdp('Page.captureScreenshot', { format: 'png' });
+        const r = await ev(`window.__wa.scan(${JSON.stringify(shot.data)})`);
+        if (r) return { ...r, tries: i + 1 };
+        await sleep(100);
+      }
+      return null;
+    },
     box: (p) => ev(`window.__wa.boxAt(${p})`),
     place: (a, f) => ev(`window.__wa.place(${a}, ${f === undefined ? 'undefined' : f})`),
     dom: (len = 500) => ev(`window.__wa.dom(${len})`),
