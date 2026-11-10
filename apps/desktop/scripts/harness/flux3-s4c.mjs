@@ -53,7 +53,7 @@ const r1 = (x) => (x === null || x === undefined ? null : Math.round(x * 10) / 1
 const INSTRUMENT = `(() => {
   if (window.__f4) return;
   const I = window.__f4 = { keys: [], rates: [], first: null };
-  window.__wzVerifyFlashes = true;
+  window.__wzVerifyFlashes = true; window.__wzVerifyCompile = true;
   addEventListener('keydown', () => I.keys.push(performance.now()), true);
   const upr = Animation.prototype.updatePlaybackRate;
   Animation.prototype.updatePlaybackRate = function (r) { const tg = this.effect && this.effect.target; if (tg && tg.closest && tg.closest('[data-flux3-corridor]')) I.rates.push([performance.now(), r]); return upr.call(this, r); };
@@ -175,7 +175,11 @@ try { await withHarness(async (app) => {
   // ---- ROWS: only this session's lines, stepping back --------------------------------------------------------------------------------------------
   await type(LINE + LINE + LINE, 25);
   await app.mouseMove(8, 8);
-  await sleep(1800);
+  // the compile asks the flash budget, which the idle glitch's own flashes can hold at the moment of the pause: it asks again every 200 ms, so the rows come within a few seconds, never lost
+  let rowsWait = 0;
+  for (; rowsWait < 60; rowsWait += 1) { await sleep(100); if ((await ev("document.querySelectorAll('[data-flux3-compile] .flux3-compile-row').length")) >= 2) break; }
+  await sleep(300);
+  const compileLog = await ev('(window.__wzCompileLog || []).slice(-4)');
   const rows = await ev('window.__f4.rows()');
   const seeded = (rows || []).filter((w) => /^zq\d+$/.test(w.word)).length;
   const sessionOnly = seeded === 0;
@@ -183,7 +187,7 @@ try { await withHarness(async (app) => {
   const rs = [...byRow.keys()].sort((x, y) => x - y);
   const steps = rs.slice(1).map((k, i) => ({ k: byRow.get(k).k / byRow.get(rs[i]).k, op: byRow.get(k).op - byRow.get(rs[i]).op }));
   ok(`ROWS some of this session's lines compiled (${rs.length} rows), at most six, each a step back (the row's scale x~0.92 of the one before, opacity ~-0.15)`,
-    rs.length >= 2 && rs.length <= 6 && steps.every((s) => s.k > 0.85 && s.k < 1 && s.op < -0.05 && s.op > -0.3), JSON.stringify({ rs, steps }));
+    rs.length >= 2 && rs.length <= 6 && rowsWait < 40 && steps.every((s) => s.k > 0.85 && s.k < 1 && s.op < -0.05 && s.op > -0.3), JSON.stringify({ rs, steps, rowsWait, compileLog }));
   // ROW-SCALE (the Wrizors' Corridor B4): each finished row is ONE holder scaled as a whole about the corridor's CENTRE LINE; a word's rendered centre is the centre line + k x its own distance from it
   const READ_ROWS = `(() => { const layer = document.querySelector('[data-flux3-compile]'); if (!layer) return null; const L = layer.getBoundingClientRect(); const s = layer.offsetWidth > 0 ? L.width / layer.offsetWidth : 1; const cxWin = innerWidth / 2;
     return [...layer.querySelectorAll('.flux3-compile-row')].map((hd) => { const k = +hd.dataset.k; const m = /^([0-9.-]+)px/.exec(hd.style.transformOrigin); const originX = m ? +m[1] : null; const words = [...hd.querySelectorAll('.flux3-compile-word')]; let worst = 0;
@@ -560,6 +564,39 @@ try { await withHarness(async (app) => {
   const dimOk = (a) => a >= 0.55 && a <= 0.65 && dimCr(a).ground >= 6.4 && dimCr(a).ground <= 8.5 && dimCr(a).glow >= 5.3;
   ok('DIM the line above the writing line is dimmed to about #8C989C (the veil\'s --f3-dim ' + dim + ': ' + dimCr(dim).ground.toFixed(2) + ':1 on the ground, ' + dimCr(dim).glow.toFixed(2) + ':1 at the glow\'s brightest; floor 4.5)', dimOk(dim), JSON.stringify({ dim, c: dimCr(dim) }));
   ok('MUT-DIM the reader goes RED at the old 0.78 (10.9:1, too bright) and at 0.40 (too faint), green at 0.60', !dimOk(0.78) && !dimOk(0.4) && dimOk(0.6), '');
+
+  // ---- GROUND-GATE (Fable, Nov 9 7:15 pm) and DECOMPILE: no room ground while jacked and the ground back, current running, after Esc; the rows stay visible all through the leave ----------------
+  const gateId = await jackedOpen('The ground stays away while she is jacked in.', 'dark');
+  const readGround = () => ev("(() => { const g = [...document.querySelectorAll('[data-flux3-room-ground]')]; return { n: g.length, jacked: document.documentElement.hasAttribute('data-flux3-jacked'), running: g.flatMap((b) => b.getAnimations({ subtree: true })).filter((a) => a.playState === 'running').length, points: g.flatMap((b) => b.getAnimations({ subtree: true })).length }; })()");
+  await type(LINE + LINE + LINE, 25);
+  await app.mouseMove(8, 8);
+  let rowsUp = 0;
+  for (let i = 0; i < 80 && rowsUp < 2; i += 1) { await sleep(100); rowsUp = await ev("document.querySelectorAll('[data-flux3-compile] .flux3-compile-row').length"); }
+  const gJ = await readGround();
+  const groundOffOk = (g) => g.jacked && g.n === 0;
+  ok('GROUND-GATE while jacked the room\'s circuit ground is NOT drawn (no ground box on the page), and the rows have compiled (' + rowsUp + ' rows)', groundOffOk(gJ) && rowsUp >= 2, JSON.stringify({ gJ, rowsUp }));
+  await ev("(() => { const b = document.createElement('div'); b.setAttribute('data-flux3-room-ground', ''); b.id = 'mut-ground'; document.body.appendChild(b); })()");
+  const gM = await readGround();
+  await ev("document.getElementById('mut-ground').remove()");
+  ok('MUT-GROUND-GATE the reader goes RED when a ground box stands on the page while jacked, and green again undone', !groundOffOk(gM) && groundOffOk(await readGround()), JSON.stringify(gM));
+  // the leave: a recorder installed before the tap samples every frame for 1.2 s
+  await ev("(() => { window.__leave = []; window.__upAt = null; const t0 = performance.now(); window.__leaveT0 = t0; addEventListener('keyup', (e) => { if (e.key === 'Escape' && window.__upAt === null) window.__upAt = performance.now() - t0; }, true); const tick = () => { const L = document.querySelector('[data-flux3-compile]'); const w = L ? [...L.querySelectorAll('.flux3-compile-word')] : []; const rr = L ? L.querySelectorAll('.flux3-compile-row').length : 0; window.__leave.push({ t: Math.round(performance.now() - t0), words: w.length, rows: rr, op: L ? +getComputedStyle(L).opacity : 0, blocks: w.reduce((n, e) => n + e.children.length, 0) }); if (performance.now() - t0 < 1800) requestAnimationFrame(tick); }; requestAnimationFrame(tick); return true; })()");
+  await keyTap('Escape', 'Escape', 27, 60);
+  await sleep(2300);
+  const leave = await ev('({ s: window.__leave, up: window.__upAt })');
+  // after the tap: for DECOMPILE_MS (420 ms) the signal is still on the page, whole (words and their blocks), fading; then gone. Never a frame with the signal cut while the fade is due.
+  const leaveOk = (L) => { if (!L || L.up === null || !L.s.length) return false; const after = L.s.filter((x) => x.t >= L.up + 20);
+    const first = after.filter((x) => x.t <= L.up + 330); const last = after.filter((x) => x.t >= L.up + 700);
+    return first.length >= 5 && first.every((x) => x.words > 0 && x.blocks > 0 && x.op > 0.02) && last.length > 0 && last.every((x) => x.words === 0); };
+  const cutSeq = { up: 100, s: [0, 20, 60, 100, 130, 150, 180, 200, 240, 300, 360, 420, 900].map((t) => ({ t, words: t < 120 ? 20 : 0, blocks: t < 120 ? 90 : 0, rows: 3, op: 1 })) };
+  ok('DECOMPILE the rows stay on the page, whole and visible, through the leave (every frame for 330 ms after the Esc tap holds the words and their blocks at opacity > 0), and are gone after the fade (' + (leave.s && leave.s.length) + ' frames sampled)', leaveOk(leave), JSON.stringify({ up: leave.up, first: (leave.s || []).filter((x) => x.t >= leave.up && x.t <= leave.up + 500).map((x) => [x.t, x.words, x.op]).slice(0, 14) }));
+  ok('MUT-DECOMPILE the reader goes RED on a cut (the signal removed the instant she leaves) and green on the real fade', !leaveOk(cutSeq) && leaveOk(leave), '');
+  const gB = await readGround();
+  ok('GROUND-BACK after Esc the ground is back on the BUILD page (one box), and its current is running (a point animating)', gB.n === 1 && !gB.jacked && gB.points > 0 && gB.running > 0, JSON.stringify(gB));
+  const groundBackOk = (g) => g.n === 1 && !g.jacked && g.points > 0 && g.running > 0;
+  await ev("document.querySelectorAll('[data-flux3-room-ground]').forEach((b) => b.getAnimations({ subtree: true }).forEach((a) => a.pause()))"); await sleep(150);
+  const gBM = await readGround();
+  ok('MUT-GROUND-BACK the reader goes RED when the current is stopped, and when the ground is gone', !groundBackOk(gBM) && !groundBackOk({ ...gB, n: 0 }), JSON.stringify(gBM));
 
   // ---- NEW PAGE + VOICE: a page born in Flux (under the flag) is 14 pt; the default Voice is Crimson Pro ----------------------------------------------
   const born = await ev("(() => { const e = window.wrizoCreateJournalPage(); return e && e.pageSettings ? e.pageSettings.size : null; })()");

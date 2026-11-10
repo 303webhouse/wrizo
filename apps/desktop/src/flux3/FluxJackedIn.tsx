@@ -31,6 +31,7 @@ import { FluxJackedHints } from './FluxJackedHints';
 export const COMPILE_PAUSE_MS = 700;   // the pause the compile waits for (the Glitch bar's and the gutter's own pause)
 export const COMPILE_LINES = 2;        // the caret's line is 0, the line above it 1: from 2 up, the words compile
 export const DECOMPILE_MS = 420;       // the decompile's fade
+export const COMPILE_RETRY_MS = 200;   // a compile the flash budget refused asks again this soon (the budget refills inside a second; the glitch's own flashes can hold it at the very moment she pauses)
 // THE SIGNAL: every character, punctuation included, compiles to ONE WHOLE BLOCK (the mockup's filled and hollow blocks). A block is drawn, not
 // typed: each character has an equal slot of its word's own width and its block stands inside that slot, so no font metric can clip one (the
 // Wrizors' S4 review: glyph runs in a font, squeezed by letter-spacing into the word's box, were cut at their ends).
@@ -225,9 +226,10 @@ export function FluxJackedIn({ on, scrollRef, unitCount }: Props) {
       }
       const next = found.map((f) => `${Math.round((f.r.left - L.left) / s)},${Math.round((f.r.top - L.top) / s)},${f.text}`).join('|');
       if (next === sig) { why(found.length ? 'same' : 'none-found'); return; }   // the same words in the same places: nothing to change
-      // refused by the flash budget: tried again after another pause (the Wrizors' S4 r9 review: an open whose only pause was refused showed no
-      // rows at all until she paused again; a key still resets the wait, so nothing compiles while keys land)
-      if (!tryFlash('f3-compile')) { why('refused'); timer = window.setTimeout(compile, COMPILE_PAUSE_MS); return; }
+      // refused by the flash budget: asked again COMPILE_RETRY_MS later (the Wrizors' S4 r9 review: an open whose only pause was refused showed no rows at all until she paused again; Nov 9 r2: the
+      // harness caught it 4 times in 10 - the idle glitch's flashes (sl-*, f3-glitchbar) were holding the budget at the moment of the pause, and a 700 ms retry could be refused again; a key still
+      // resets the wait, so nothing compiles while keys land)
+      if (!tryFlash('f3-compile')) { why('refused'); timer = window.setTimeout(compile, COMPILE_RETRY_MS); return; }
       why(`drawn ${found.length}`);
       sig = next;
       layer.replaceChildren();
@@ -293,10 +295,12 @@ export function FluxJackedIn({ on, scrollRef, unitCount }: Props) {
       // THE DECOMPILE: only when she jacks out and the page stays, in Flux, with signal showing; anything else (leaving, the still state, a refused
       // flash) is a cut
       const stays = scroll.isConnected && document.documentElement.getAttribute('data-theme') === 'flux';
-      if (!stays || !words.size || still() || !tryFlash('f3-decompile')) { layer.remove(); return; }
-      // the signal resolves: every block turns over (filled to hollow, hollow to filled), still whole, and fades off its word
+      if (!stays || !words.size || still()) { layer.remove(); return; }
+      // the signal resolves: every block turns over (filled to hollow, hollow to filled), still whole, and fades off its word. The TURN is the one change the flash budget is asked for; a refusal
+      // drops the turn and keeps the fade, so the rows are never cut away while she leaves (Fable, Nov 9: the rows visible all through the leave)
+      const flip = tryFlash('f3-decompile');
       layer.querySelectorAll<HTMLElement>('.flux3-compile-row').forEach((hd) => { hd.style.transform = 'none'; hd.style.opacity = '1'; });
-      words.forEach((_, el) => turnOver(el));
+      if (flip) words.forEach((_, el) => turnOver(el));
       const end = performance.now() + DECOMPILE_MS;
       // each glyph run follows its own word while the page settles out of the zoom (its Range is the word; the page's layout box moves under it)
       const follow = () => {
