@@ -1,0 +1,179 @@
+[
+  {
+    "name": "F1 flag OFF: no data-arbor2, no mockup bar, no arbor2 rule in any stylesheet",
+    "pass": true,
+    "detail": "{\"flag\":null,\"bar\":false,\"rule\":false}"
+  },
+  {
+    "name": "SP1b the splash is untouched in the day room: its veil (the layer that paints its ground) stays the night espresso (rgb 10,5,3)",
+    "pass": true,
+    "detail": "{\"bg\":\"rgba(0, 0, 0, 0)\",\"veilBg\":\"rgb(10, 5, 3)\",\"room\":\"day\"}"
+  },
+  {
+    "name": "F2 flag ON: data-arbor2 set, the bar is drawn, a room is chosen",
+    "pass": true,
+    "detail": "{\"flag\":\"true\",\"bar\":true,\"room\":\"day\"}"
+  },
+  {
+    "name": "N1g one Rhizome style, no progress switch: the folded bar offers the logo (Sage / Brass o) only - the night browns are B, not a choice; the room lives in the Mood menu - and no night-progress attribute exists",
+    "pass": true,
+    "detail": "{\"prog\":null,\"progOpts\":[\"Sage\",\"Brass o\"]}"
+  },
+  {
+    "name": "T1b unset, the room follows the clock, not the Page tone: day at 12:00 and night at 22:00 in both tones",
+    "pass": true,
+    "detail": "{\"12:00 dark\":\"day\",\"12:00 light\":\"day\",\"22:00 dark\":\"night\",\"22:00 light\":\"night\"}"
+  },
+  {
+    "name": "T2 the Room switch overrides the tone in-session (Night, then Day)",
+    "pass": true,
+    "detail": "{\"n\":\"night\",\"d\":\"day\"}"
+  },
+  {
+    "name": "T2 nothing is stored: localStorage byte-equal before and after every switch",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "P1 [night 1366x768]: the page rect is identical to flag-off",
+    "pass": true,
+    "detail": "{\"on\":{\"x\":187,\"y\":107,\"w\":992,\"h\":897.6},\"off\":{\"x\":187,\"y\":107,\"w\":992,\"h\":897.6}}"
+  },
+  {
+    "name": "P1 [night 1920x1080]: the page rect is identical to flag-off",
+    "pass": true,
+    "detail": "{\"on\":{\"x\":420.4,\"y\":107,\"w\":1079.3,\"h\":1396.7},\"off\":{\"x\":420.4,\"y\":107,\"w\":1079.3,\"h\":1396.7}}"
+  },
+  {
+    "name": "C1 [night] --arbor-letter #EFE4CB >= 7:1 on 950/900/800",
+    "pass": true,
+    "detail": "{\"i950\":16.17,\"i900\":15.54,\"i800\":14.61}"
+  },
+  {
+    "name": "C1 [night] --text-hi #EDE6DA >= 7:1 on 950/900/800",
+    "pass": true,
+    "detail": "{\"i950\":16.46,\"i900\":15.83,\"i800\":14.88}"
+  },
+  {
+    "name": "C1 [night] --text-mid #B5A998 >= 4.5:1 on 950/900/800",
+    "pass": true,
+    "detail": "{\"i950\":8.84,\"i900\":8.5,\"i800\":7.99}"
+  },
+  {
+    "name": "C1 [night] --text-low #B9AA8C >= 4.5:1 on 950/900/800",
+    "pass": true,
+    "detail": "{\"i950\":8.94,\"i900\":8.59,\"i800\":8.08}"
+  },
+  {
+    "name": "C1 [night] --arbor-guide #A7B27E >= 4.5:1 on 950/900/800",
+    "pass": true,
+    "detail": "{\"i950\":9.05,\"i900\":8.7,\"i800\":8.18}"
+  },
+  {
+    "name": "L1g night: no lamp pool (r21 \"no glow\") - the lamp layer has no background image and no animation",
+    "pass": true,
+    "detail": "{\"anim\":\"none\",\"bg\":\"none\"}"
+  },
+  {
+    "name": "L3c night: the lamp is on screen - nothing opaque covers body beside the page top (the desk host is see-through); the bar keeps its own ground, the night room's brown #241912",
+    "pass": false,
+    "detail": "{\"margin\":[],\"bar\":\"rgb(25, 17, 11)\"}"
+  },
+  {
+    "name": "L1 night, reduced motion: the lamp is a still frame (no animation)",
+    "pass": true,
+    "detail": "none"
+  },
+  {
+    "name": "P1 [day 1366x768]: the page rect is identical to flag-off",
+    "pass": true,
+    "detail": "{\"on\":{\"x\":187,\"y\":107,\"w\":992,\"h\":897.6},\"off\":{\"x\":187,\"y\":107,\"w\":992,\"h\":897.6}}"
+  },
+  {
+    "name": "P1 [day 1920x1080]: the page rect is identical to flag-off",
+    "pass": true,
+    "detail": "{\"on\":{\"x\":420.4,\"y\":107,\"w\":1079.3,\"h\":1396.7},\"off\":{\"x\":420.4,\"y\":107,\"w\":1079.3,\"h\":1396.7}}"
+  },
+  {
+    "name": "C1 [day] --arbor-letter #33401F >= 7:1 on 950/900/800",
+    "pass": true,
+    "detail": "{\"i950\":9.24,\"i900\":8.35,\"i800\":9.83}"
+  },
+  {
+    "name": "C1 [day] --text-hi #33401F >= 7:1 on 950/900/800",
+    "pass": true,
+    "detail": "{\"i950\":9.24,\"i900\":8.35,\"i800\":9.83}"
+  },
+  {
+    "name": "C1 [day] --text-mid #33401F >= 4.5:1 on 950/900/800",
+    "pass": true,
+    "detail": "{\"i950\":9.24,\"i900\":8.35,\"i800\":9.83}"
+  },
+  {
+    "name": "C1 [day] --text-low #56623A >= 4.5:1 on 950/900/800",
+    "pass": true,
+    "detail": "{\"i950\":5.46,\"i900\":4.94,\"i800\":5.81}"
+  },
+  {
+    "name": "C1 [day] --arbor-guide #4F6B2C >= 4.5:1 on 950/900/800",
+    "pass": true,
+    "detail": "{\"i950\":5.04,\"i900\":4.56,\"i800\":5.36}"
+  },
+  {
+    "name": "L2f day: the room is the plaster, warmed by the afternoon (#F1EAD8 -> #EEE2C8), and the page has its paper (its own, or the zoomed page's sheet)",
+    "pass": true,
+    "detail": "{\"i950\":\"#F1EAD8\",\"sheetOn\":\"on\",\"sheetBg\":\"rgb(243, 237, 225)\",\"pageBg\":\"rgba(0, 0, 0, 0)\",\"zoomed\":true}"
+  },
+  {
+    "name": "H2b night, growing: the field is visible, its vines barely there (every vine rgb(107, 81, 57), the vines' group at .75)",
+    "pass": true,
+    "detail": "{\"flash\":\"false\",\"vis\":\"visible\",\"segs\":0,\"stroke\":null,\"segVis\":null,\"vinesAttr\":\"true\",\"op\":1,\"vines\":140,\"fills\":[\"rgb(107, 81, 57)\"],\"groupOp\":0.75}"
+  },
+  {
+    "name": "H2e at the goal: the brass copy (svg.arbor2-vines-flash) stands over the field - every vine in it rgb(255, 152, 0), at opacity 1 once its rise is finished - and the field's own vines stay brown",
+    "pass": true,
+    "detail": "{\"overlay\":{\"flash\":\"true\",\"sibling\":true,\"paths\":145,\"fills\":[\"rgb(255, 152, 0)\"],\"op\":0.320261,\"anims\":[[\"arbor2-flash-up\",\"running\"]]},\"finished\":{\"op\":1,\"anims\":[[\"arbor2-flash-up\",\"finished\"]]},\"field\":{\"flash\":\"true\",\"vis\":\"visible\",\"segs\":0,\"stroke\":null,\"segVis\":null,\"vinesAttr\":\"true\",\"op\":1,\"vines\":145,\"fills\":[\"rgb(107, 81, 57)\"],\"groupOp\":0.75}}"
+  },
+  {
+    "name": "H5b off the prose column: at the flash the web's paint clip cuts out the whole page (an evenodd hole >= the page rect), read whatever the spelling",
+    "pass": true,
+    "detail": "{\"evenodd\":true,\"nums\":15,\"holes\":2,\"covered\":true,\"page\":{\"l\":147.00466918945312,\"t\":0,\"r\":1138.9797668457031,\"b\":897.6000366210938},\"clip\":\"path(evenodd, \\\"M 0 0 H 1286 V 601 H 0 Z M 147 0 H 1139 V 897.6 H 147 Z M -40 -16\"}"
+  },
+  {
+    "name": "H2d after the fade: the field stays visible, back to brown (every vine rgb(107, 81, 57), the vines' group at .75)",
+    "pass": true,
+    "detail": "{\"flash\":\"false\",\"vis\":\"visible\",\"segs\":0,\"stroke\":null,\"segVis\":null,\"vinesAttr\":\"true\",\"op\":1,\"vines\":156,\"fills\":[\"rgb(107, 81, 57)\"],\"groupOp\":0.75}"
+  },
+  {
+    "name": "H2 flash budget: the web changes state <= 3 times in any second (true -> fading -> false)",
+    "pass": true,
+    "detail": "[[9114,\"false\"],[9188,\"true\"],[10367,\"fading\"],[12573,\"false\"]]"
+  },
+  {
+    "name": "H1c the goal leaves the retired lamp layer as it was (no animation before or after)",
+    "pass": true,
+    "detail": "{\"before\":\"none\",\"after\":\"none\"}"
+  },
+  {
+    "name": "H4c reduced motion: a still frame - the brass copy stands at opacity 1 (every vine in it brass) with no running animation, then cuts (true -> false, never fading)",
+    "pass": true,
+    "detail": "{\"h4\":{\"flash\":\"true\",\"vis\":\"visible\",\"anim\":\"none\",\"stroke\":null},\"h4c\":{\"flash\":\"true\",\"sibling\":true,\"paths\":155,\"fills\":[\"rgb(255, 152, 0)\"],\"op\":1,\"anims\":[]},\"log4\":[[8916,\"false\"],[9044,\"true\"],[10178,\"false\"]]}"
+  },
+  {
+    "name": "H3c day: at rest the rhizome is hidden (field opacity 0, its vines drawn beneath); while writing every vine is the leaf rgb(79, 107, 44)",
+    "pass": true,
+    "detail": "{\"rest\":{\"flash\":\"false\",\"vis\":\"visible\",\"segs\":0,\"stroke\":null,\"segVis\":null,\"vinesAttr\":\"true\",\"op\":0,\"vines\":161,\"fills\":[\"rgb(79, 107, 44)\"],\"groupOp\":1},\"writing\":\"true\",\"write\":{\"flash\":\"false\",\"vis\":\"visible\",\"segs\":0,\"stroke\":null,\"segVis\":null,\"vinesAttr\":\"true\",\"op\":0,\"vines\":161,\"fills\":[\"rgb(79, 107, 44)\"],\"groupOp\":1}}"
+  },
+  {
+    "name": "R1 while she types the mockup bar is at opacity 0",
+    "pass": true,
+    "detail": "0"
+  },
+  {
+    "name": "S1 scope: Flux under the flag keeps its own room (--ink-950 and --text-low byte-equal)",
+    "pass": true,
+    "detail": "{\"off\":\"#010811\",\"on\":\"#010811\"}"
+  }
+]
+
+ARBOR2-1 VERIFY: FAIL - 1/35 failed
