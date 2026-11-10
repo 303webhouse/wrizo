@@ -37,3 +37,6 @@ export function leaveJackedIn(): void { window.dispatchEvent(new CustomEvent(LEA
 
 export const EXIT_LINE_MS = 3000;   // the entry line shows this long
 export const EXIT_FADE_MS = 600;    // and fades over this
+
+/** THROWAWAY (ink/cor-arms): the arms probe turns pieces of the always-on work off through localStorage 'wrizo-arms-off'. */
+export const armsOff = (k: string): boolean => { try { return (localStorage.getItem('wrizo-arms-off') || '').split(',').includes(k); } catch { return false; } };

@@ -23,7 +23,7 @@ import { useTheme } from '../store/theme';
 import { getAmbianceDial, prefersReducedMotion } from '../store/ambianceDial';
 import { tryFlash } from '../store/flashBudget';
 import { openPopupCount } from '../store/escapeExit';
-import { LEAVE_KEY, LEAVE_KEY_BACKUP, leaveJackedIn, setJacked } from './jackIn';
+import { LEAVE_KEY, LEAVE_KEY_BACKUP, leaveJackedIn, setJacked, armsOff } from './jackIn';
 import { getThemePrefs } from '../store/themePrefs';
 import { FluxCorridor } from './FluxCorridor';
 import { FluxJackedHints } from './FluxJackedHints';
@@ -140,7 +140,7 @@ export function FluxJackedIn({ on, scrollRef, unitCount }: Props) {
   // THE COMPILE and THE DECOMPILE
   useEffect(() => {
     const scroll = scrollRef.current;
-    if (!jackedIn || !scroll) return undefined;
+    if (!jackedIn || !scroll || armsOff('compile')) return undefined;
     const layer = document.createElement('div');
     layer.className = 'flux3-compile';
     layer.setAttribute('aria-hidden', 'true');

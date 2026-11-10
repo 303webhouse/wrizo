@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTheme } from '../store/theme';
 import { caretWidth } from '../store/fluxReadouts';
+import { armsOff } from '../flux3/jackIn';
 import { caretRow } from './useTypewriterFade';
 
 // TH2 Slice 5 — the orange block caret (canon §13); FLUX V2 slimmed it to a third of its old width (store/fluxReadouts.ts caretWidth). One global mount
@@ -163,7 +164,7 @@ export function FluxBlockCaret() {
       activeElRef.current = surface;
       surface.setAttribute('data-flux-caret-active', 'true');
       const height = r.height || 18;
-      const nW = document.documentElement.hasAttribute('data-flux3-jacked') ? nWidthPx(surface, height) : null;
+      const nW = document.documentElement.hasAttribute('data-flux3-jacked') && !armsOff('caretn') ? nWidthPx(surface, height) : null;
       setRect({ left: r.left, top: r.top, width: nW ?? caretWidth(height), height });
     };
 

@@ -11,7 +11,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { prefersReducedMotion } from '../store/ambianceDial';
-import { EXIT_FADE_MS, EXIT_LINE_MS, keyLabel, leaveJackedIn, leaveKeyNow } from './jackIn';
+import { EXIT_FADE_MS, EXIT_LINE_MS, keyLabel, leaveJackedIn, leaveKeyNow, armsOff } from './jackIn';
 import { FluxNudge } from './FluxNudge';
 
 // a key that is HER typing (the same set the corridor's pace and the nudge read)
@@ -61,5 +61,6 @@ function LeaveX() {
 }
 
 export function FluxJackedHints() {
+  if (armsOff('hints')) return null;
   return <><ExitLine /><LeaveX /><FluxNudge /></>;
 }

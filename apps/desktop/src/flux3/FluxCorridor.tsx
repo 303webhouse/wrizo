@@ -25,6 +25,7 @@ import { tryFlash } from '../store/flashBudget';
 import { useWritingGoal } from '../store/writingGoal';
 import { useWritingSettings } from '../store/writingSettings';
 import { useGoalProgress, WORD_GOAL } from '../components/WritingIncentives';
+import { armsOff } from './jackIn';
 
 export const PACE = {
   tickMs: 250,       // the speed is set at most this often (4 Hz)
@@ -151,7 +152,7 @@ export function FluxCorridor({ scrollRef, unitCount }: Props) {
 
   // THE PACE: one timestamp per key; one tick every PACE.tickMs
   useEffect(() => {
-    if (!box || still) return undefined;
+    if (!box || still || armsOff('pace')) return undefined;
     const keys: number[] = [];
     const onKey = (e: KeyboardEvent) => { if (e.key.length === 1 || e.key === 'Enter' || e.key === 'Backspace') keys.push(performance.now()); };
     let pace = 0;
