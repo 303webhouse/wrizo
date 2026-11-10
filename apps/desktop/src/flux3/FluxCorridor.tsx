@@ -158,7 +158,9 @@ export function FluxCorridor({ scrollRef, unitCount }: Props) {
     let rate = 0;
     let fast = false;
     let settle = 0;
-    const anims = () => box.getAnimations({ subtree: true });
+    // the FRAMES' animations only (CSSAnimation). The glow's opacity TRANSITION lives in the same box: stopping every animation at rest froze it mid-ease (the harness read its target at 0.40 and its
+    // opacity stuck at 0.95 for ten seconds)
+    const anims = () => box.getAnimations({ subtree: true }).filter((a) => 'animationName' in a);
     const stopOnSlot = () => {
       settle = 0;
       const dur = STEP_S * 1000;
