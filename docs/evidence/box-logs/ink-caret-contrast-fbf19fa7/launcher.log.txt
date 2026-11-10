@@ -1,0 +1,11 @@
+2026-11-10T02:36:26Z TURN PLAN: tree INK-maincontrol HEAD fbf19fa7 (main dcaf614e; dirty 0); step: live-caret-contrast.mjs
+2026-11-10T02:36:26Z harness browsers at turn start: 0
+2026-11-10T02:36:27Z quiet check before the grant: Wow / OBS / streaming absent
+2026-11-10T02:36:27Z TAKE: granted to lane "ink" and bound to the process tree of pid 9632 - name this turn's start and end in your report
+WS_BOX_TURN=<drawn>   (drawn now, printed once, not stored - only its hash is in the grant file; export it in the shell or script that runs the harness)
+2026-11-10T02:36:27Z TURN START
+2026-11-10T02:36:28Z quiet check before live-caret-contrast: Wow / OBS / streaming absent
+2026-11-10T02:36:45Z [live-caret-contrast] exit 0
+2026-11-10T02:36:45Z RELEASE: released  grant file now absent
+2026-11-10T02:36:46Z harness browsers at turn end: 0
+2026-11-10T02:36:46Z TURN END
