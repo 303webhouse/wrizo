@@ -71,9 +71,11 @@ const nightB = async (app, name) => {
 // drawing and the page's copy stay aligned (r21-shade-menus' rule). Pictures: at rest, mid-breeze, a drawer and a pop-out open.
 const PERGOLA = `(() => { const svg = document.querySelector('.arbor2-pergola svg'); if (!svg) return null; const place = svg.querySelector('g.arbor2-pergola-place'); const blur = svg.querySelector('feGaussianBlur');
   const beams = place ? [...place.querySelectorAll('rect')].slice(0, 2).map((b) => { const r = b.getBoundingClientRect(); return { l: Math.round(r.left), r: Math.round(r.right), t: Math.round(r.top), b: Math.round(r.bottom) }; }) : [];
+  const ends = place ? [...place.querySelectorAll('rect')].slice(0, 2).map((b) => { const m = b.getScreenCTM(); const x = b.x.baseVal.value, y = b.y.baseVal.value, w = b.width.baseVal.value, h = b.height.baseVal.value;
+    const pt = (px, py) => { const p = new DOMPoint(px, py).matrixTransform(m); return [Math.round(p.x), Math.round(p.y)]; }; return { left: [pt(x, y), pt(x, y + h)], right: [pt(x + w, y), pt(x + w, y + h)] }; }) : [];
   const polys = place ? [...place.querySelectorAll('polygon')].map((p) => p.getBoundingClientRect()) : [];
   const page = document.querySelector('.mode-page .arbor2-pagesh svg')?.getBoundingClientRect(), room = svg.getBoundingClientRect();
-  return { matrix: place ? place.getAttribute('transform') : null, blur: blur ? blur.getAttribute('stdDeviation') : null, beams, w: innerWidth, h: innerHeight,
+  return { ends, matrix: place ? place.getAttribute('transform') : null, blur: blur ? blur.getAttribute('stdDeviation') : null, beams, w: innerWidth, h: innerHeight,
     raftersOffBottom: polys.filter((r) => r.bottom > innerHeight).length, rafters: polys.length,
     pageAligned: !page || (Math.abs(page.left - room.left) <= 1.5 && Math.abs(page.top - room.top) <= 1.5 && Math.abs(page.width - room.width) <= 2) }; })()`;
 const pergola = async (app, name) => {
@@ -83,7 +85,13 @@ const pergola = async (app, name) => {
   if (!r) fail(name, { bad: ['no room pergola'] });
   if (r.matrix !== 'matrix(1.5 0 0 1.5 -240 -345)') bad.push(`placement ${r.matrix}`);
   if (r.blur !== '2.8') bad.push(`blur ${r.blur}`);
-  if (r.beams.length !== 2 || !r.beams.every((b) => b.l < 0)) bad.push('a beam ends inside the window on the left');
+  // PARKED 2026-11-10 (SUPERSEDED on its first run, frames 42775628857 - its premise was wrong, not the build: Nick's placement B, as Fable's panel B
+  // draws it, runs the UPPER beam off the left edge and the LOWER beam off the bottom-left; the lower beam's box starts 19 px (35 at 2000) inside the
+  // left edge while its end lies below the window). The line that stood, verbatim:
+  // if (r.beams.length !== 2 || !r.beams.every((b) => b.l < 0)) bad.push('a beam ends inside the window on the left');
+  // SUCCESSOR: Nick's words - no END of either beam shows: every corner of both ends of both beams, mapped to the screen, lies outside the window.
+  const inside = ([x, y]) => x >= 0 && x <= r.w && y >= 0 && y <= r.h;
+  if (r.ends.length !== 2 || r.ends.some((e) => [...e.left, ...e.right].some(inside))) bad.push('a beam end shows inside the window');
   if (!(r.raftersOffBottom >= 1)) bad.push('no rafter leaves the window at the bottom');
   if (!r.pageAligned) bad.push('the page copy is not aligned with the room');
   if (bad.length) fail(name, { bad, r });
@@ -108,13 +116,14 @@ const STRIP = `(() => { const s = document.querySelector('.desk-frame-stage .mod
   const strip = (s.offsetWidth - s.clientWidth) * k; return { right: r.right, strip, top: r.top, h: r.height, over: s.scrollHeight > s.clientHeight + 1, sb: s.getAttribute('data-arbor2-sb') }; })()`;
 const drawnCols = async (app, st) => {
   const ys = [0.3, 0.5, 0.7].map((f) => st.top + st.h * f);
-  const xs = Array.from({ length: Math.ceil(st.strip) + 4 }, (_, i) => st.right - st.strip - 2 + i);
+  // (after run 42775628857, no assertion changed: the columns are the strip's own - the window ran 2 px past it onto the page's hairline)
+  const xs = Array.from({ length: Math.floor(st.strip) }, (_, i) => st.right - st.strip + 0.5 + i);
   const png = await shot(app);
   const px = await pixels(app, png, ys.flatMap((y) => xs.map((x) => [x, y])).concat(ys.map((y) => [st.right - st.strip - 6, y])));
   const ref = px.slice(-3); const grid = px.slice(0, -3);
   // a column is drawn when, on any of the three rows, it differs from the paper beside the strip by more than 24 on a channel
   const cols = xs.filter((_, i) => ys.some((__, j) => { const p = grid[j * xs.length + i], q = ref[j]; return p.some((v, c) => Math.abs(v - q[c]) > 24); }));
-  return { n: cols.length, cols: cols.map((x) => Math.round(x)) };
+  return { n: cols.length, cols: cols.map((x) => Math.round(x)), mid: xs.map((_, i) => grid[xs.length + i].join(',')).join(' '), ref: ref[1].join(',') };
 };
 const scrollbar = async (app, name) => {
   await openPage(app, `arbor-r23-sb-${Math.random().toString(36).slice(2, 6)}`, LONG); await setRoom(app, 'night');
@@ -123,9 +132,10 @@ const scrollbar = async (app, name) => {
   if (!st || !st.over || !(st.strip > 0)) fail(name, { bad: ['the page does not overflow or has no strip'], st });
   const rest = await drawnCols(app, st);
   await app.cdp('Input.dispatchMouseEvent', { type: 'mouseWheel', x: 600, y: 400, deltaX: 0, deltaY: 240 }); await sleep(180);
+  const topA = await app.evalJs("document.querySelector('.desk-frame-stage .mode-scroll').scrollTop");
   const scrolled = { ...(await drawnCols(app, st)), sb: (await app.evalJs(STRIP)).sb };
   await sleep(1600);
-  const after = { ...(await drawnCols(app, st)), sb: (await app.evalJs(STRIP)).sb };
+  const after = { ...(await drawnCols(app, st)), sb: (await app.evalJs(STRIP)).sb, top: await app.evalJs("document.querySelector('.desk-frame-stage .mode-scroll').scrollTop"), topA };
   await app.mouseMove(st.right - st.strip / 2, st.top + st.h * 0.5); await sleep(150);
   const hover = { ...(await drawnCols(app, st)), sb: (await app.evalJs(STRIP)).sb };
   const bad = [];
@@ -133,6 +143,7 @@ const scrollbar = async (app, name) => {
   if (scrolled.n < 3 || scrolled.n > 5) bad.push(`scrolling: ${scrolled.n} column(s) drawn (want 4)`);
   if (after.n !== 0) bad.push(`1.6 s after: ${after.n} column(s) still drawn`);
   if (hover.n < 3 || hover.n > 5) bad.push(`on the strip: ${hover.n} column(s) drawn (want 4)`);
+  if (Math.abs(after.top - after.topA) > 1) bad.push(`the page moved when the bar went: scrollTop ${after.topA} -> ${after.top}`);
   if (bad.length) fail(name, { bad, st, rest, scrolled, after, hover });
   say(name, { st, rest, scrolled, after, hover });
 };
