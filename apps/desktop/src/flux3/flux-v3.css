@@ -314,3 +314,7 @@
 :root[data-flux3][data-theme='flux'] .wz-strip > .wz-strip-section > .wz-strip-item[aria-current='location'] .wz-strip-label,
 :root[data-flux3][data-theme='flux'] .wz-strip > .wz-strip-section > .wz-strip-item[aria-current='location'] .wz-strip-readout,
 :root[data-flux3][data-theme='flux'] .wz-strip > .wz-strip-section > .wz-place-block:not([data-place-kind='journal']) .wz-place-name{ color:#FF9800; }
+
+/* Jacked In is a MODE (draft 21 §6): the Typewriter's on/off toggles are not offered in Flux under the flag, in either mode (the lines that draw them stay main's: a theme changes only the skin) */
+:root[data-flux3][data-theme='flux'] .wz-sliver-mode-btn[data-mode-toggle='typewriter'],
+:root[data-flux3][data-theme='flux'] .typewriter-toggle{ display:none !important; }

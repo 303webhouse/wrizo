@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import type { EditorMode } from './ForwardOnlyEditor';
 import { DrawerNote } from './DrawerNote';
 import { useChromeDissolve } from './useChromeDissolve';
-import { useWritingSettings, setWritingSettings, setTypewriterExplicit, typewriterForPage, freeWriteTypewriter } from '../store/writingSettings';
+import { useWritingSettings, setWritingSettings, setTypewriterExplicit, typewriterForPage } from '../store/writingSettings';
 import type { ProgressMetric, FadeDepth, ProgressStyle } from '../store/writingSettings';
 // FLUX3 S4 - a mount point only: under ?flux3=1, a page's Typewriter in Flux is Jacked In (src/flux3/FluxJackedIn.tsx); without the flag nothing mounts
 import { FLUX3 } from '../flux3/flag';
@@ -180,13 +180,13 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
   // FLUX3 S4 (draft 21 §6): in Flux under the flag JACK IN is the free-writing MODE: Free Write IS Jacked In, with no off inside it, and Draft (BUILD) is never the Typewriter
   const stageTheme = useTheme();
   const fluxJack = fluxJackMode(stageTheme) && pageId != null;
-  const typewriterOn = fluxJack
-    ? mode === 'journal'
-    : mode === 'drafting' && pageId != null
-      ? typewriterForPage(pageId, words === 0)
-      : (mode === 'journal' || mode === 'drafting') && freeWriteTypewriter(settings);
+  const typewriterOn = mode === 'drafting' && pageId != null
+    ? typewriterForPage(pageId, words === 0)
+    : (mode === 'journal' || mode === 'drafting') && settings.typewriter;
+  // ... and Flux's Jacked In is the free-writing MODE: it runs the Typewriter whatever the setting says, and BUILD (Draft) never does (typewriterRun is typewriterOn in every other theme)
+  const typewriterRun = fluxJack ? mode === 'journal' : typewriterOn;
   // the zoom: on the framed prose page Typewriter scales the same page ~1.6x by a transform, so no line reflows and the editor never unmounts (page primacy's one exception); entering tucks both drawers [ModeStage §7]
-  const zoomed = !!framed && typewriterOn;
+  const zoomed = !!framed && typewriterRun;
   const pagecolRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!zoomed) return;
@@ -315,7 +315,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
   // container-mode call, one of the two "paper" surfaces the brief's S3
   // retunes; Journal's own window-scroll call is untouched (see
   // useTypewriterFade.ts's own comment).
-  useTypewriterFade({ enabled: typewriterOn, containerRef: scrollRef, editorSelector: '.forward-only-editor', holdBand: CONTAINER_HOLD_BAND,
+  useTypewriterFade({ enabled: typewriterRun, containerRef: scrollRef, editorSelector: '.forward-only-editor', holdBand: CONTAINER_HOLD_BAND,
     // zoomed, the writing line is held at ZOOM_ANCHOR of the page column, the anchor the band mask is drawn against [ModeStage §13]
     zoom: zoomed ? { holdRef: pagecolRef, anchor: ZOOM_ANCHOR } : undefined });
 
@@ -405,15 +405,15 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
     if (!scroll || !ed) return;
     const target = e.target as HTMLElement | null;
     // Typewriter is forward-only: a press anywhere on the page, text included, puts the caret at the END of her text, never mid-page
-    if (typewriterOn && target && ed.contains(target)) { ed.focus(); const at = editorPlainText(ed).length; requestAnimationFrame(() => { if (ed.isConnected) setCaretOffset(ed, at); }); return; }
+    if (fluxJack && typewriterRun && target && ed.contains(target)) { ed.focus(); const at = editorPlainText(ed).length; requestAnimationFrame(() => { if (ed.isConnected) setCaretOffset(ed, at); }); return; }
     if (target && ed.contains(target)) return;
     const inScroll = !!target && scroll.contains(target);
     if (target?.closest?.('button, a, input, textarea, select, [role="button"], [role="option"]')) { if (inScroll) focusEditor(); return; }
-    if (!inScroll && target !== e.currentTarget && !typewriterOn) return;
+    if (!inScroll && target !== e.currentTarget && !(fluxJack && typewriterRun)) return;
     const rows = [...ed.querySelectorAll<HTMLElement>('.wz-row')].filter(r => r.getBoundingClientRect().height > 0);
     const lastBottom = rows.length ? rows[rows.length - 1].getBoundingClientRect().bottom : -Infinity;
     let offset: number | null;
-    if (!rows.length || e.clientY > lastBottom || typewriterOn) offset = editorPlainText(ed).length;
+    if (!rows.length || e.clientY > lastBottom || (fluxJack && typewriterRun)) offset = editorPlainText(ed).length;
     else {
       const er = ed.getBoundingClientRect();
       const firstTop = rows[0].getBoundingClientRect().top;
@@ -485,7 +485,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
           <button type="button" className="mode-iconbtn mode-gear" aria-label="Writing settings" aria-expanded={gearOpen} onClick={() => setGearOpen(o => !o)}>
             <GearIcon />
           </button>
-          {gearOpen && <SettingsPanel settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: typewriterOn, progressStyle: settings.progressStyle }} hasMilestones={!!milestones && milestones.beats.length > 0} />}
+          {gearOpen && <SettingsPanel settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: typewriterOn, progressStyle: settings.progressStyle }} hasMilestones={!!milestones && milestones.beats.length > 0} typewriterAvailable={!fluxJack} />}
           {gearOpen && <ThemePanel />}
         </div>
       </FirstRunVeil>
@@ -505,7 +505,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
 
         <div className="mode-pagecol" ref={pagecolRef} data-zoom={zoomed ? 'true' : undefined}
           /* Typewriter is forward-only and Jacked In has no paper edge to aim at: a press anywhere in the page's column puts the caret at the end too */
-          onClick={typewriterOn ? onPaperPress : undefined}>
+          onClick={fluxJack && typewriterRun ? onPaperPress : undefined}>
           {/* Format / pen bar (top of page) — chrome, dissolves on write.
               AB2 S2/S3 — retires when framed: its ink swatches and Draft's
               format tools both have a home now in the sliver (CD1:
@@ -587,7 +587,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
             <div
               ref={scrollRef}
               className="mode-scroll"
-              data-typewriter={typewriterOn ? 'true' : 'false'}
+              data-typewriter={typewriterRun ? 'true' : 'false'}
             >
               {children({ noteWrite, penColor: rail.tools === 'pen' ? effectivePenInk(penColorProp ?? pen, penTheme, penPageTone) : undefined })}
             </div>
@@ -629,7 +629,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
                   />
                 )
               )}
-              {(mode === 'journal' || mode === 'drafting') && !fluxJack && (
+              {(mode === 'journal' || mode === 'drafting') && (
                 // FX2 S2 — a hand-click here must outrank any later
                 // Draft-open seed for the rest of the session (see
                 // setTypewriterExplicit's own comment).
@@ -673,7 +673,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
         ))}
       </div>
 
-      {FLUX3 && pageId != null && <FluxJackedIn on={typewriterOn} scrollRef={scrollRef} unitCount={words} />}
+      {FLUX3 && pageId != null && <FluxJackedIn on={typewriterRun} scrollRef={scrollRef} unitCount={words} />}
 
       {/* Connect AI — stub entry point (no provider wired in B3). */}
       {!framed && connectOpen && (
@@ -730,7 +730,7 @@ export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvail
           sliver's own TypewriterToggle), and both must arm the same
           session-explicit flag so neither can be silently overridden by a
           later Draft-open seed. */}
-      {typewriterAvailable && !fluxJackMode(settingsTheme) && <Seg label="Typewriter" value={settings.typewriter ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setTypewriterExplicit(v === 'on')} />}
+      {typewriterAvailable && <Seg label="Typewriter" value={settings.typewriter ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setTypewriterExplicit(v === 'on')} />}
     </div>
   );
 }

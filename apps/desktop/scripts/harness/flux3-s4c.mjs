@@ -282,7 +282,7 @@ try { await withHarness(async (app) => {
   // ---- THE MODE (draft 21 §6, Nick Nov 9): JACK IN is the free-writing mode; BUILD never offers it; Esc tap or F9 leaves to BUILD ---------------------------
   // SUPERSEDED (Nov 9): the first ESC check here read "Esc looking up brings the chrome back (the marks lift)" (data-flux3-looking, S4's Esc). Esc now LEAVES Jacked In for BUILD on
   // the same doc (a tap; a hold is the browser's full-screen exit), so that behaviour no longer exists; its successors are ESC / ESC-HOLD / F9 below.
-  const toggles = () => ev(`document.querySelectorAll('.typewriter-toggle, [data-mode-toggle="typewriter"]').length`);
+  const toggles = () => ev(`[...document.querySelectorAll('.typewriter-toggle, [data-mode-toggle="typewriter"]')].filter((e) => getComputedStyle(e).display !== 'none').length`);   // the toggles' lines are main's; under the flag they are hidden (css), so the count is of what is SHOWN
   const keyTap = async (key, code, vk, heldMs = 40) => {
     await app.cdp('Input.dispatchKeyEvent', { type: 'keyDown', key, code, windowsVirtualKeyCode: vk });
     await sleep(heldMs);

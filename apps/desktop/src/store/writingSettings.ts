@@ -167,11 +167,6 @@ export function holdTypewriterPage(id: string): () => void {
   return () => { if (heldPageId === id) heldPageId = null; };
 }
 
-/** Free Write's Typewriter: the shared field. (Flux's Jacked In is the free-writing MODE itself, not a setting: ModeStage reads fluxJackMode, Nov 9.) */
-export function freeWriteTypewriter(s: WritingSettings): boolean {
-  return s.typewriter;
-}
-
 /** The writer's toggle. Writes the live value and, on a held Draft/Screenplay page, that page's own memory. */
 export function setTypewriterExplicit(on: boolean): void {
   setWritingSettings({ typewriter: on });

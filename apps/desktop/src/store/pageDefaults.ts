@@ -1,7 +1,6 @@
 import type { PageSettings } from '../types';
 import { PAGE_SETTINGS_FALLBACK } from '../types';
-import { getTheme } from './theme';
-import { fluxJackMode } from '../flux3/jackIn';
+import { FLUX3 } from '../flux3/flag';
 
 // the writer's default page dress: the per-page value lives on the entry, this file holds the per-user default, one shape; local first (read synchronously at birth), the server is the durable copy [pageDefaults §1]
 
@@ -45,7 +44,8 @@ function dressOnly(v: PageSettings | null): PageSettings | null {
 export const NEW_PAGE_SIZE = 11;
 // FLUX3 (draft 21 §3, Nick Nov 9): in Flux under ?flux3=1 a page is born at 14 pt (the screen is meant to feel closer, in-the-zone); other themes stay at 11; pages already written keep their size
 export const FLUX_NEW_PAGE_SIZE = 14;
-export function newPageSize(): number { return fluxJackMode(getTheme()) ? FLUX_NEW_PAGE_SIZE : NEW_PAGE_SIZE; }
+// the theme is read off the document (data-theme), as the flag is read off the URL: this file imports no react and no theme store
+export function newPageSize(): number { return FLUX3 && typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'flux' ? FLUX_NEW_PAGE_SIZE : NEW_PAGE_SIZE; }
 export function bornPageSettings(): PageSettings {
   const d = defaults;
   return { ...(d ?? PAGE_SETTINGS_FALLBACK), size: d?.size ?? newPageSize() };
