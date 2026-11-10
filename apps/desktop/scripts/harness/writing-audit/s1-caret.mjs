@@ -10,7 +10,7 @@
 //              WA_ONLY=E01,E02 (case ids) WA_OUT=<dir> (shots + findings json) WA_STRICT=1 (exit 1 on any finding; default: findings are reported, the exit says only whether the READER PROOF held)
 import fs from 'node:fs';
 import path from 'node:path';
-import { withHarness } from '../runtime-verify.mjs';
+import { withHarness } from '../../runtime-verify.mjs';
 import { makeDriver, sleep, THEMES } from './lib/driver.mjs';
 import { Model, stepLabel } from './lib/model.mjs';
 import { verify } from './lib/verify.mjs';
