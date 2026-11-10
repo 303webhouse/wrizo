@@ -190,18 +190,22 @@
    page keeps its rect, its zoom, its text and its caret. The Typewriter's band stays on the column: with no paper it darkens nothing, and it
    fades the signal toward the top.
    THE VEIL: the writing line reads at full strength, the line above it dimmed (--f3-dim), and every line further up is taken from the text (it
-   is the signal's: FluxJackedIn compiles it on the pause). A still mask on the editor, counted in its own line-heights up from its last line (the
+   is the signal's: FluxJackedIn compiles it on the pause). Drawn without a mask (see THE VEIL, WITHOUT A MASK below), counted in the editor's own line-heights up from its last line (the
    writing line), so it rides the Typewriter's own line advance with no script. (Esc leaves Jacked In for BUILD, so there is no lifted state.) */
-:root[data-flux3][data-theme='flux'][data-flux3-jacked]{ --f3-dim:.60;
-  --f3-term-mask:linear-gradient(to top, #000 0, #000 1lh, rgb(0 0 0 / var(--f3-dim)) 1lh, rgb(0 0 0 / var(--f3-dim)) 2lh, transparent 2lh); }
+:root[data-flux3][data-theme='flux'][data-flux3-jacked]{ --f3-dim:.60; }
 :root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .mode-page{ background:transparent; border-color:transparent; box-shadow:none; outline:none; }
 :root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .flux-readouts{ visibility:hidden; }
 /* no page to turn: ModeStage's page-turn (.flipping, 12-studio-chrome.css) animates the page's transform from none, so while zoomed it threw the
    page back to scale 1 for half a second (r9's zoom watch: four times in six seconds, the rect moving). Jacked in it does not play */
 :root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .mode-page.flipping{ animation:none; }
 :root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .mode-scroll{ scrollbar-color:transparent transparent; }
-:root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .forward-only-editor{
-  -webkit-mask-image:var(--f3-term-mask); mask-image:var(--f3-term-mask); }
+/* THE VEIL, WITHOUT A MASK (Fable, Nov 10: a mask-image on the editor is an offscreen surface repainted on every key; the box's arms found it was the whole of Jacked In's always-on cost, clock p95 38.8 against 32.6 and a 61 ms key).
+   Both halves are written from the editor's OWN box, as the mask was (1lh = the editor's line height, measured up from its last line), so they move with the last line by themselves: nothing is set per key or per line.
+   - a RECT CLIP (clip-path: inset, no radius: a paint clip, not a surface) keeps the last two lines and hides every older one (they are the signal's now);
+   - a BAND over the line above the writing line, the ground's own colour at 1 - dim (.40), so her words there read at the dim (.60 over the ground: the identical colour the mask gave). */
+:root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .forward-only-editor{ position:relative; clip-path:inset(calc(100% - 2lh) 0 0 0); }
+:root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .forward-only-editor::after{ content:''; position:absolute; left:0; right:0; bottom:1lh; height:1lh; pointer-events:none;
+  background:rgb(2 12 16 / calc(1 - var(--f3-dim))); }
 /* THE GOAL GLOW, ONE TOKEN (Nick, Nov 8: a lighter blue; the Wrizors' concepts file, Nov 9). The goal's glow (.wz-goal-glow, 13-desk-frame.css: rising
    with the goal, opacity its only variable) seen through Jacked In's clear page: Flux's soft cyan #57D0F5 at 12% in the middle, 4% at 55%, none at the
    edge, over the ground #020C10. Never above 14%: at 16% her words fall under the page law's 13.9:1. The orange glow retires: orange is her act only. */

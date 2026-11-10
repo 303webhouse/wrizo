@@ -593,6 +593,40 @@ try { await withHarness(async (app) => {
   ok('WIRE-IN-WORDS no string a writer can see in Flux contains "jack" (any case): the page\'s visible text and every label, title and hint while jacked, the entry line, and every value in the lexicon files (' + lexJack.length + ' found)', noJack(wordsSeen) && noJack(exitSeen) && lexJack.length === 0 && /Wired in/.test(String(exitSeen)), JSON.stringify({ exitSeen, lexJack, jackIn: (/.{20}jack.{20}/i.exec(wordsSeen) || [])[0] }));
   ok('MUT-WIRE-IN-WORDS the reader goes RED on the old words (the entry line, the X\'s name, its hint), a planted JACK in capitals, and a lexicon line with the word, and green on the new ones', !noJack('Jacked in · Esc to jack out') && !noJack('Jack out (Esc)') && !noJack('JACK IN') && /:\s*['"][^'"]*jack[^'"]*['"]/i.test("  flux3JackedLeave: 'Jack out',") && noJack('Wired in · Esc to unplug') && noJack('Unplug (Esc)'), '');
 
+  // ---- VEIL (Fable, Nov 10: the mask does not ship; the same fade without a mask): the writing line at full strength, the line above at .60 (#8C989C), every older line hidden - read from DRAWN PIXELS --------------
+  // Read right after the last key (before the 700 ms pause compiles signal rows over the hidden lines), at three page states: a page the typing has just begun to fill, a page of ~5 lines, a long page (60 seeded lines, scrolled).
+  const veilLines = () => ev("(() => { const ed = document.querySelector('.forward-only-editor'); const rs = []; const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) { if (!n.nodeValue.trim()) continue; const r = document.createRange(); r.selectNodeContents(n); for (const q of r.getClientRects()) if (q.width > 1 && q.height > 4) rs.push([q.left, q.top, q.right, q.bottom]); } rs.sort((a, b) => a[1] - b[1]); const lines = []; for (const q of rs) { const last = lines[lines.length - 1]; if (last && Math.abs(q[1] - last.top) < 4) { last.left = Math.min(last.left, q[0]); last.right = Math.max(last.right, q[2]); } else lines.push({ top: q[1], bottom: q[3], left: q[0], right: q[2] }); } return lines.slice(-5).map((l) => ({ top: Math.round(l.top), bottom: Math.round(l.bottom), left: Math.round(l.left), right: Math.round(l.right) })); })()");
+  const veilInk = async (lines) => shotEval(`const L = ${JSON.stringify(lines)}; return L.map((l) => { let mx = [0, 0, 0]; for (let y = Math.max(0, l.top); y < Math.min(innerHeight, l.bottom); y += 1) for (let x = Math.max(0, l.left); x < Math.min(innerWidth, l.right); x += 1) { const p = px(x, y); if (p[0] > mx[0]) mx = p; } return mx; });`);
+  // the writing line (last) reads #E8F6FA; the line above it #8C989C (+-); every older line shows nothing legible (the corridor's brightest line is ~50)
+  const veilOk = (ink) => ink.length >= 3 && ink[ink.length - 1][0] >= 215 && ink[ink.length - 2][0] >= 118 && ink[ink.length - 2][0] <= 168 && ink.slice(0, ink.length - 2).every((p) => p[0] <= 80);
+  const veilRead = async () => { const lines = await veilLines(); const ink = await veilInk(lines); return { lines: lines.length, ink: ink.map((p) => p[0]), ok: veilOk(ink) }; };
+  const VEIL_STYLE = (css) => ev(`(() => { const s = document.createElement('style'); s.id = 'mut-veil'; s.textContent = ${JSON.stringify(css)}; document.head.appendChild(s); })()`);
+  const VEIL_ED = "[data-flux3-jacked] .mode-pagecol[data-zoom='true'] .forward-only-editor";
+  const veilCases = [['short', 'A.', LINE.slice(0, 120)], ['filled', 'The veil keeps its look.', LINE + LINE], ['long', Array.from({ length: 60 }, (_, i) => 'older words on line number ' + i).join('\n'), ' ' + LINE]];
+  const veilReads = {};
+  for (const [name, seedText, typed] of veilCases) {
+    const vid = await fresh(seedText);
+    await open({ id: vid, tone: 'dark' });
+    await ev('window.__f4.toEnd()');
+    await type(typed, 22);
+    veilReads[name] = await veilRead();
+    if (name === 'filled') {
+      const mutate = async (css) => { await VEIL_STYLE(css); await sleep(120); const r = await veilRead(); await ev("document.getElementById('mut-veil').remove()"); await sleep(120); return r; };
+      veilReads.noClip = await mutate(`${VEIL_ED}{ clip-path:none !important; }`);
+      veilReads.noBand = await mutate(`${VEIL_ED}::after{ display:none !important; }`);
+      veilReads.faintBand = await mutate(`${VEIL_ED}::after{ background:rgb(2 12 16 / .12) !important; }`);
+      veilReads.clip3 = await mutate(`${VEIL_ED}{ clip-path:inset(calc(100% - 3lh) 0 0 0) !important; }`);
+      veilReads.back = await veilRead();
+    }
+  }
+  const maskNone = await ev("(() => { const e = document.querySelector('.forward-only-editor'); const c = getComputedStyle(e); return { m: c.maskImage, w: c.webkitMaskImage, clip: c.clipPath }; })()");
+  console.log('S4C VEIL ink (max red of each of the last lines, oldest first): ' + JSON.stringify(Object.fromEntries(Object.entries(veilReads).map(([k, v]) => [k, v.ink]))));
+  ok('VEIL the veil keeps its look WITHOUT a mask: the writing line reads full strength (#E8F6FA), the line above it the .60 dim (#8C989C), every older line shows nothing - on a page just begun, a page of ~5 lines and a long scrolled page; and no mask-image is on the editor (the mask does not ship)',
+    ['short', 'filled', 'long'].every((k) => veilReads[k] && veilReads[k].ok) && maskNone.m === 'none' && /inset/.test(maskNone.clip), JSON.stringify({ veilReads: { short: veilReads.short, filled: veilReads.filled, long: veilReads.long }, maskNone }));
+  ok('MUT-VEIL the look reader goes RED when the clip is gone (an old line stays), the band is gone (the dim line reads bright), the band is too faint, or the clip is a line too tall; and green again undone',
+    veilReads.noClip && !veilReads.noClip.ok && veilReads.noBand && !veilReads.noBand.ok && veilReads.faintBand && !veilReads.faintBand.ok && veilReads.clip3 && !veilReads.clip3.ok && veilReads.back && veilReads.back.ok,
+    JSON.stringify({ noClip: veilReads.noClip, noBand: veilReads.noBand, faintBand: veilReads.faintBand, clip3: veilReads.clip3, back: veilReads.back }));
+
   // ---- CARET-N and DIM -----------------------------------------------------------------------------------------------------------------------------------------------------------------
   await jackedOpen('The caret is a block.', 'dark');
   await type('abc', 40); await sleep(400);
