@@ -354,7 +354,10 @@ export default {
     // const tokOk = day ? (plaster(t.g) && t.s.toUpperCase() === '#E8DFC8' && t.r.toUpperCase() === '#C9A46B')
     // SUCCESSOR: day raised is the lifted cream #F6F1E4 and the quiet text #56623A.
     const tokOk = day ? (plaster(t.g) && t.s.toUpperCase() === '#E8DFC8' && t.r.toUpperCase() === '#F6F1E4' && t.low.toUpperCase() === '#56623A')
-      : (t.g.toUpperCase() === '#120A06' && t.s.toUpperCase() === '#1B120C' && t.r.toUpperCase() === '#261A12');
+      // PARKED 2026-11-10 (SUPERSEDED - NICK RULED, Nov 9, 11:29 pm, via Fable: the night room is brown B - ground #080402, surface #110A06, raised #1B120B; unmasked once the rail reader stopped reading the ribbon, frames 42792789971 / 42793301526). Original, verbatim:
+      // : (t.g.toUpperCase() === '#120A06' && t.s.toUpperCase() === '#1B120C' && t.r.toUpperCase() === '#261A12');
+      // SUCCESSOR: by night the room tokens are B's (ground #080402, surface #110A06, raised #1B120B)
+      : (t.g.toUpperCase() === '#080402' && t.s.toUpperCase() === '#110A06' && t.r.toUpperCase() === '#1B120B');
     if (!tokOk) problems.push({ tokens: t });
     const all = reads.flatMap((r) => r.pairs);
     const summary = { room: reads[0].room, pairs: all.length, min: all.length ? Math.min(...all.map((p) => p.ratio)) : null, tokens: t, type: reads[0].type, cloths: reads.flatMap((r) => r.cloths).filter((c, i, a) => a.findIndex((x) => x.id === c.id) === i) };
