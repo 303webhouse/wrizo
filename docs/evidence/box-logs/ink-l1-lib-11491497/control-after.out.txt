@@ -1,0 +1,8 @@
+BOX TURN: granted to lane "ink" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=1 tree=12dde34e bundle=index-e17ME4Wi.js/994681b NO-REBUILD out=F:\wrizo-work\INK-s4b-l1-lib-turn-out\control-after
+[01/1] OK        exit=0  296s l-method.mjs :: L-METHOD VERIFY: PASS (3 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 1/1 of 1 returned a passing verdict
+SUITE RESULT: CLEAN — tree=12dde34e bundle=index-e17ME4Wi.js/994681b NO-REBUILD

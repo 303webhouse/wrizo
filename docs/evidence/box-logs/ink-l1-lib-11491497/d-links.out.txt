@@ -1,0 +1,156 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+MEASUREMENT-D {
+ "dark-resting": {
+  "info": {
+   "stroke": "rgb(255, 152, 0)",
+   "sw": "1px",
+   "op": "0.9",
+   "sel": "false"
+  },
+  "flag": {
+   "flag": false,
+   "theme": "flux",
+   "tone": "dark"
+  },
+  "pixels": {
+   "median": 2.59,
+   "max": 2.62,
+   "board": [
+    13,
+    24,
+    39
+   ]
+  },
+  "computed": {
+   "c": null,
+   "stroke": [
+    255,
+    152,
+    0,
+    null
+   ],
+   "alpha": null,
+   "boardColour": [
+    13,
+    24,
+    39
+   ]
+  }
+ },
+ "dark-selected": {
+  "info": {
+   "stroke": "rgb(255, 152, 0)",
+   "sw": "2px",
+   "op": "1",
+   "sel": "true"
+  },
+  "flag": {
+   "flag": false,
+   "theme": "flux",
+   "tone": "dark"
+  },
+  "pixels": {
+   "median": 8.33,
+   "max": 8.33,
+   "board": [
+    13,
+    24,
+    39
+   ]
+  },
+  "computed": {
+   "c": null,
+   "stroke": [
+    255,
+    152,
+    0,
+    null
+   ],
+   "alpha": null,
+   "boardColour": [
+    13,
+    24,
+    39
+   ]
+  }
+ },
+ "light-resting": {
+  "info": {
+   "stroke": "rgb(255, 152, 0)",
+   "sw": "1px",
+   "op": "0.9",
+   "sel": "false"
+  },
+  "flag": {
+   "flag": false,
+   "theme": "flux",
+   "tone": "light"
+  },
+  "pixels": {
+   "median": 1.39,
+   "max": 1.39,
+   "board": [
+    244,
+    247,
+    248
+   ]
+  },
+  "computed": {
+   "c": null,
+   "stroke": [
+    255,
+    152,
+    0,
+    null
+   ],
+   "alpha": null,
+   "boardColour": [
+    244,
+    247,
+    248
+   ]
+  }
+ },
+ "light-selected": {
+  "info": {
+   "stroke": "rgb(255, 152, 0)",
+   "sw": "2px",
+   "op": "1",
+   "sel": "true"
+  },
+  "flag": {
+   "flag": false,
+   "theme": "flux",
+   "tone": "light"
+  },
+  "pixels": {
+   "median": 1.99,
+   "max": 2,
+   "board": [
+    244,
+    247,
+    248
+   ]
+  },
+  "computed": {
+   "c": null,
+   "stroke": [
+    255,
+    152,
+    0,
+    null
+   ],
+   "alpha": null,
+   "boardColour": [
+    244,
+    247,
+    248
+   ]
+  }
+ }
+}
+D dark resting: rendered 2.59 (max 2.62) ; from computed colours null
+D dark selected: rendered 8.33 (max 8.33) ; from computed colours null
+D light resting: rendered 1.39 (max 1.39) ; from computed colours null
+D light selected: rendered 1.99 (max 2) ; from computed colours null
