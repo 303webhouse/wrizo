@@ -15,7 +15,7 @@
 //   EXIT      (B6) the exit line shows ~3 s then goes, 4.5:1 or better, names the key that actually leaves (the line's key is pressed and leaves), through the lexicon.
 //   NUDGE     the 4 s nudge: one line below her text after 4 s of stillness, her next key clears it, never in BUILD or another theme, quiet colour, removal is one small change.
 //   LEAVE-X   (Nick 3:43 pm) the circled X: pointer movement shows it, a key hides it (no timer), a click = BUILD on the same doc, a real button with a lexicon name, 40 px, 24 px in, 3:1 or better, not brass.
-//   CARET-N / DIM / DOTS   the caret is a block as wide as an "n"; the veil's dim is ~#8C989C; the milestone's earned letters are lime, the newest brass, the unearned dots at 4.5:1.
+//   CARET-N / DIM / DOTS   the caret is a block as wide as an "n"; the dim ink is #8F9B9E, on her words only (no box); the milestone's earned letters are lime, the newest brass, the unearned dots at 4.5:1.
 //   PACE      speed follows her pace: playbackRate is set at most 4 times a second, rises while she types fast, and is 0 (the frames hold still: a frame's
 //             transform is the same 600 ms apart) after she stops.
 //   ROWS      only this session's lines compile (none of the seeded text: its words are zq<n>), the signal rows step back at an even step (-7.5% block
@@ -593,11 +593,11 @@ try { await withHarness(async (app) => {
   ok('WIRE-IN-WORDS no string a writer can see in Flux contains "jack" (any case): the page\'s visible text and every label, title and hint while jacked, the entry line, and every value in the lexicon files (' + lexJack.length + ' found)', noJack(wordsSeen) && noJack(exitSeen) && lexJack.length === 0 && /Wired in/.test(String(exitSeen)), JSON.stringify({ exitSeen, lexJack, jackIn: (/.{20}jack.{20}/i.exec(wordsSeen) || [])[0] }));
   ok('MUT-WIRE-IN-WORDS the reader goes RED on the old words (the entry line, the X\'s name, its hint), a planted JACK in capitals, and a lexicon line with the word, and green on the new ones', !noJack('Jacked in · Esc to jack out') && !noJack('Jack out (Esc)') && !noJack('JACK IN') && /:\s*['"][^'"]*jack[^'"]*['"]/i.test("  flux3JackedLeave: 'Jack out',") && noJack('Wired in · Esc to unplug') && noJack('Unplug (Esc)'), '');
 
-  // ---- VEIL (Fable, Nov 10: the mask does not ship; the same fade without a mask): the writing line at full strength, the line above at .60 (#8C989C), every older line hidden - read from DRAWN PIXELS --------------
+  // ---- VEIL (Fable, Nov 10: the mask does not ship; Nick, Nov 10: no dark box - the dim falls on her words only): the writing line at full strength (#E8F6FA), the line above it in its own dim ink (#8F9B9E), every older line hidden - read from DRAWN PIXELS --------------
   // Read right after the last key (before the 700 ms pause compiles signal rows over the hidden lines), at three page states: a page the typing has just begun to fill, a page of ~5 lines, a long page (60 seeded lines, scrolled).
   const veilLines = () => ev("(() => { const ed = document.querySelector('.forward-only-editor'); const rs = []; const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) { if (!n.nodeValue.trim()) continue; const r = document.createRange(); r.selectNodeContents(n); for (const q of r.getClientRects()) if (q.width > 1 && q.height > 4) rs.push([q.left, q.top, q.right, q.bottom]); } rs.sort((a, b) => a[1] - b[1]); const lines = []; for (const q of rs) { const last = lines[lines.length - 1]; if (last && Math.abs(q[1] - last.top) < 4) { last.left = Math.min(last.left, q[0]); last.right = Math.max(last.right, q[2]); } else lines.push({ top: q[1], bottom: q[3], left: q[0], right: q[2] }); } return lines.slice(-5).map((l) => ({ top: Math.round(l.top), bottom: Math.round(l.bottom), left: Math.round(l.left), right: Math.round(l.right) })); })()");
   const veilInk = async (lines) => shotEval(`const L = ${JSON.stringify(lines)}; return L.map((l) => { let mx = [0, 0, 0]; for (let y = Math.max(0, l.top); y < Math.min(innerHeight, l.bottom); y += 1) for (let x = Math.max(0, l.left); x < Math.min(innerWidth, l.right); x += 1) { const p = px(x, y); if (p[0] > mx[0]) mx = p; } return mx; });`);
-  // the writing line (last) reads #E8F6FA (a glyph pixel on a long page reads 213..236 by where the subpixels fall, so the floor is 190: the dim line never passes 168); the line above it #8C989C (+-); every older line shows nothing legible (the corridor's brightest line is ~50)
+  // the writing line (last) reads #E8F6FA (a glyph pixel on a long page reads 213..236 by where the subpixels fall, so the floor is 190: the dim line never passes 168); the line above it #8F9B9E (+-); every older line shows nothing legible (the corridor's brightest line is ~50)
   const veilOk = (ink) => ink.length >= 2 && ink[ink.length - 1][0] >= 190 && ink[ink.length - 2][0] >= 118 && ink[ink.length - 2][0] <= 168 && ink.slice(0, ink.length - 2).every((p) => p[0] <= 80);
   // the Typewriter GLIDES a long page after the last key, so the lines' rects and the shot are taken until two reads of the rects agree (the page is standing still), then judged
   const veilRead = async (mutated) => {
@@ -611,6 +611,9 @@ try { await withHarness(async (app) => {
   const VEIL_ED = "[data-flux3-jacked] .mode-pagecol[data-zoom='true'] .forward-only-editor";
   const veilCases = [['short', 'A.', LINE.slice(0, 120)], ['filled', 'The veil keeps its look.', LINE + LINE], ['long', Array.from({ length: 60 }, (_, i) => 'older words on line number ' + i).join('\n'), ' ' + LINE]];
   const veilReads = {};
+  // NO BOX (Nick, Nov 10: "I don't want the dark box"): nothing is painted on the editor but its words - no ::before / ::after generated box (the old design's band was one)
+  const boxRead = () => ev("(() => { const e = document.querySelector('.forward-only-editor'); return { after: getComputedStyle(e, '::after').content, before: getComputedStyle(e, '::before').content }; })()");
+  const boxOk = (r) => !!r && r.after === 'none' && r.before === 'none';
   // The Typewriter's own band mask sits on the page column (13-desk-frame.css; main has it too) and dims any line that has not yet reached its anchor; under load a long page can stand ~24 px short of it (full pair 42905615882: scrollTop 1602 against 1626 alone, the writing line at ~141 with OUR band switched off). That is the Typewriter's glide, not the veil, so the veil is judged with that one paint rule off for these reads (paint only: no layout, nothing the veil owns). WHAT THIS PROVES, AND WHAT IT DOES NOT: it proves the veil's OWN look (the clip + the band); it does NOT prove the COMBINED look a writer sees (the veil under the Typewriter's column mask) - the frames (scripts/frames/flux3-s4c.mjs, r2-h) show that, and the Wrizors read it; the clip and the band are untouched, and every mutant below still lands on them.
   const colMaskOff = () => ev(`(() => { if (document.getElementById('veil-colmask-off')) return; const s = document.createElement('style'); s.id = 'veil-colmask-off'; s.textContent = ".mode-pagecol[data-zoom='true']{ -webkit-mask-image:none !important; mask-image:none !important; }"; document.head.appendChild(s); })()`);
   for (const [name, seedText, typed] of veilCases) {
@@ -620,36 +623,31 @@ try { await withHarness(async (app) => {
     await ev('window.__f4.toEnd()');
     await type(typed, 22);
     veilReads[name] = await veilRead();
-    if (name === 'long') {
-      // DIAGNOSIS (Chat 1: say whether the band/clip edge dims the writing line's top pixels on a scrolled page, or 213 is that glyph row's own colour): the writing line's peak red row by row with the band, without it, and the editor's fractional geometry
-      const prof = async () => { const lines = await veilLines(); return shotEval('const l = ' + JSON.stringify(lines[lines.length - 1]) + '; const out = []; for (let y = l.top - 2; y <= l.bottom + 2; y += 1) { let m = 0; for (let x = Math.max(0, l.left); x < Math.min(innerWidth, l.right); x += 1) { const p = px(x, y); if (p[0] > m) m = p[0]; } out.push(m); } return { top: l.top, rows: out };'); };
-      veilReads.longProfile = await prof();
-      veilReads.longGeom = await ev("(() => { const e = document.querySelector('.forward-only-editor'); const r = e.getBoundingClientRect(); const lh = parseFloat(getComputedStyle(e).lineHeight); const sc = document.querySelector('.mode-scroll'); return { editorTop: r.top, editorBottom: r.bottom, h: r.height, lh, scrollTop: sc ? sc.scrollTop : null }; })()");
-      await VEIL_STYLE(VEIL_ED + '::after{ display:none !important; }');
-      await sleep(120);
-      veilReads.longNoBand = await veilRead();
-      veilReads.longNoBandProfile = await prof();
-      await ev("document.getElementById('mut-veil').remove()");
-      await sleep(120);
-      console.log('S4C VEIL long writing-line peak red by row: with the band ' + JSON.stringify(veilReads.longProfile) + ' | without it ' + JSON.stringify(veilReads.longNoBandProfile) + ' | geometry ' + JSON.stringify(veilReads.longGeom));
-    }
     if (name === 'filled') {
       const mutate = async (css) => { await VEIL_STYLE(css); await sleep(120); const r = await veilRead(); await ev("document.getElementById('mut-veil').remove()"); await sleep(120); return r; };
       veilReads.noClip = await mutate(`${VEIL_ED}{ clip-path:none !important; }`);
-      veilReads.noBand = await mutate(`${VEIL_ED}::after{ display:none !important; }`);
-      veilReads.faintBand = await mutate(`${VEIL_ED}::after{ background:rgb(2 12 16 / .12) !important; }`);
+      veilReads.noDim = await mutate(`${VEIL_ED}{ background-image:linear-gradient(#E8F6FA, #E8F6FA) !important; }`);
+      veilReads.faintDim = await mutate(`${VEIL_ED}{ background-image:linear-gradient(to bottom, #C8D6DA calc(100% - 1lh), #E8F6FA calc(100% - 1lh)) !important; }`);
+      veilReads.darkDim = await mutate(`${VEIL_ED}{ background-image:linear-gradient(to bottom, #5A6466 calc(100% - 1lh), #E8F6FA calc(100% - 1lh)) !important; }`);
       veilReads.clip3 = await mutate(`${VEIL_ED}{ clip-path:inset(calc(100% - 3lh) 0 0 0) !important; }`);
+      // the dark box (Nick, Nov 10): the old design's ground-coloured band, put back, must be seen by the no-box reader
+      await VEIL_STYLE(`${VEIL_ED}::after{ content:''; position:absolute; left:0; right:0; bottom:1lh; height:1lh; background:rgb(2 12 16 / .40); }`);
+      await sleep(120);
+      veilReads.boxMut = await boxRead();
+      await ev("document.getElementById('mut-veil').remove()");
+      await sleep(120);
       veilReads.back = await veilRead();
     }
   }
   await ev("(() => { const s = document.getElementById('veil-colmask-off'); if (s) s.remove(); })()");
-  const maskNone = await ev("(() => { const e = document.querySelector('.forward-only-editor'); const c = getComputedStyle(e); return { m: c.maskImage, w: c.webkitMaskImage, clip: c.clipPath }; })()");
-  console.log('S4C VEIL ink (max red of each of the last lines, oldest first): ' + JSON.stringify(Object.fromEntries(Object.entries(veilReads).map(([k, v]) => [k, v.ink]))));
-  ok('VEIL (the veil\'s own look, the Typewriter\'s column mask off; the combined look is the frames\') the veil keeps its look WITHOUT a mask: the writing line reads full strength (#E8F6FA), the line above it the .60 dim (#8C989C), every older line shows nothing - on a page just begun, a page of ~5 lines and a long scrolled page; and no mask-image is on the editor (the mask does not ship)',
-    ['short', 'filled', 'long'].every((k) => veilReads[k] && veilReads[k].ok) && maskNone.m === 'none' && /inset/.test(maskNone.clip), JSON.stringify({ veilReads: { short: veilReads.short, filled: veilReads.filled, long: veilReads.long }, maskNone }));
-  ok('MUT-VEIL the look reader goes RED when the clip is gone (an old line stays), the band is gone (the dim line reads bright), the band is too faint, or the clip is a line too tall; and green again undone',
-    veilReads.noClip && !veilReads.noClip.ok && veilReads.noBand && !veilReads.noBand.ok && veilReads.faintBand && !veilReads.faintBand.ok && veilReads.clip3 && !veilReads.clip3.ok && veilReads.back && veilReads.back.ok,
-    JSON.stringify({ noClip: veilReads.noClip, noBand: veilReads.noBand, faintBand: veilReads.faintBand, clip3: veilReads.clip3, back: veilReads.back }));
+  const maskNone = await ev("(() => { const e = document.querySelector('.forward-only-editor'); const c = getComputedStyle(e); return { m: c.maskImage, w: c.webkitMaskImage, clip: c.clipPath, bgClip: c.webkitBackgroundClip || c.backgroundClip }; })()");
+  const boxNow = await boxRead();
+  console.log('S4C VEIL ink (max red of each of the last lines, oldest first): ' + JSON.stringify(Object.fromEntries(Object.entries(veilReads).filter(([k, v]) => v && v.ink).map(([k, v]) => [k, v.ink]))));
+  ok('VEIL (the veil\'s own look, the Typewriter\'s column mask off; the combined look is the frames\') the dim is on HER WORDS ONLY: the writing line reads full strength (#E8F6FA), the line above it the dim (#8F9B9E), every older line shows nothing - on a page just begun, a page of ~5 lines and a long scrolled page; no mask-image and no ::before/::after box is on the editor (Nick, Nov 10: no dark box)',
+    ['short', 'filled', 'long'].every((k) => veilReads[k] && veilReads[k].ok) && maskNone.m === 'none' && /inset/.test(maskNone.clip) && /text/.test(maskNone.bgClip) && boxOk(boxNow), JSON.stringify({ veilReads: { short: veilReads.short, filled: veilReads.filled, long: veilReads.long }, maskNone, boxNow }));
+  ok('MUT-VEIL the look reader goes RED when the clip is gone (an old line stays), the dim is gone (the line above reads bright), the dim is too faint, the dim is too dark, or the clip is a line too tall; the no-box reader goes RED when the old ground-coloured band is put back; and green again undone',
+    veilReads.noClip && !veilReads.noClip.ok && veilReads.noDim && !veilReads.noDim.ok && veilReads.faintDim && !veilReads.faintDim.ok && veilReads.darkDim && !veilReads.darkDim.ok && veilReads.clip3 && !veilReads.clip3.ok && !boxOk(veilReads.boxMut) && veilReads.back && veilReads.back.ok,
+    JSON.stringify({ noClip: veilReads.noClip, noDim: veilReads.noDim, faintDim: veilReads.faintDim, darkDim: veilReads.darkDim, clip3: veilReads.clip3, boxMut: veilReads.boxMut, back: veilReads.back }));
 
   // ---- CARET-N and DIM -----------------------------------------------------------------------------------------------------------------------------------------------------------------
   await jackedOpen('The caret is a block.', 'dark');
@@ -662,15 +660,15 @@ try { await withHarness(async (app) => {
   const cM = await readCaret();
   await ev("(() => { const c = document.querySelector('.flux-block-caret'); c.style.removeProperty('width'); c.style.width = c.dataset.was; })()"); await sleep(120);
   ok('MUT-CARET-N the reader goes RED on the old 5 px bar, and green again undone', !caretOk(cM) && caretOk(await readCaret()), JSON.stringify(cM));
-  const dim = parseFloat(await ev("getComputedStyle(document.documentElement).getPropertyValue('--f3-dim')"));
+  const dimInk = (await ev("getComputedStyle(document.documentElement).getPropertyValue('--f3-dim-ink')")).trim();
+  const hexRgb = (x) => { const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(x); return m ? [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)] : null; };
   const linC = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
   const lumA = (p) => 0.2126 * linC(p[0]) + 0.7152 * linC(p[1]) + 0.0722 * linC(p[2]);
   const crA = (p, q) => (Math.max(lumA(p), lumA(q)) + 0.05) / (Math.min(lumA(p), lumA(q)) + 0.05);
-  const dimLine = (a, bg) => [232, 246, 250].map((t, i) => t * a + bg[i] * (1 - a));
-  const dimCr = (a) => ({ ground: crA(dimLine(a, [2, 12, 16]), [2, 12, 16]), glow: crA(dimLine(a, [12, 36, 43]), [12, 36, 43]) });
-  const dimOk = (a) => a >= 0.55 && a <= 0.65 && dimCr(a).ground >= 6.4 && dimCr(a).ground <= 8.5 && dimCr(a).glow >= 5.3;
-  ok('DIM the line above the writing line is dimmed to about #8C989C (the veil\'s --f3-dim ' + dim + ': ' + dimCr(dim).ground.toFixed(2) + ':1 on the ground, ' + dimCr(dim).glow.toFixed(2) + ':1 at the glow\'s brightest; floor 4.5)', dimOk(dim), JSON.stringify({ dim, c: dimCr(dim) }));
-  ok('MUT-DIM the reader goes RED at the old 0.78 (10.9:1, too bright) and at 0.40 (too faint), green at 0.60', !dimOk(0.78) && !dimOk(0.4) && dimOk(0.6), '');
+  const dimCr = (x) => { const p = hexRgb(x); return p ? { ground: crA(p, [2, 12, 16]), glow: crA(p, [12, 36, 43]) } : { ground: 0, glow: 0 }; };
+  const dimOk = (x) => dimCr(x).ground >= 6.4 && dimCr(x).ground <= 8.5 && dimCr(x).glow >= 5.3;
+  ok('DIM the line above the writing line is dimmed to about #8F9B9E (the dim ink ' + dimInk + ': ' + dimCr(dimInk).ground.toFixed(2) + ':1 on the ground, ' + dimCr(dimInk).glow.toFixed(2) + ':1 at the glow\'s brightest; floor 4.5)', dimOk(dimInk), JSON.stringify({ dimInk, c: dimCr(dimInk) }));
+  ok('MUT-DIM the reader goes RED at a dim ink that is too bright (#C8D6DA, 12:1) and at one that is too faint (#5A6466, 3.4:1), green at #8F9B9E', !dimOk('#C8D6DA') && !dimOk('#5A6466') && dimOk('#8F9B9E'), '');
 
   // ---- GROUND-GATE (Fable, Nov 9 7:15 pm) and DECOMPILE: no room ground while jacked and the ground back, current running, after Esc; the rows stay visible all through the leave ----------------
   const gateId = await jackedOpen('The ground stays away while she is jacked in.', 'dark');
