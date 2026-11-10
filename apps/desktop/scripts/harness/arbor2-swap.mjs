@@ -291,9 +291,66 @@ await withHarness(async (app) => {
   //   premiseB(lfR, 'shared still') && lfR.vs.over <= lfR.vs.n * 0.0001, JSON.stringify(lfR));
   // SUCCESSORS W9c / W10c: the same premise and bar, on the fixed instrument (the page's own id; the fade pinned before the freeze); the breeze
   // clock at the key rides along as information.
-  const lfS = await lastFrameB('shiver');
-  ok('W9c the last frame, mid-shiver: on an unzoomed page, the cut drew a POSE (the counter agreeing: 8+ leaves moving), and its still against the live drawing paused at that pose - over 9 levels on no more than 0.01% of the pixels (the hold proven: the same frame twice identical; the shade proven in the shot: hidden, 1%+ of the pixels change)',
-    premiseB(lfS, 'pose') && lfS.vs.over <= lfS.vs.n * 0.0001, JSON.stringify(lfS));
+  // PARKED 2026-11-10 (SUPERSEDED - Fable's ruling, Nov 10, 1:50 pm, on Nick's Nov 7 design: "the still picture fades in over about 200 ms on her
+  // first key; after that nothing in the shade moves". W9c asserted r21's POSE cut (a still drawn at the moving leaves' pose) - a design that no
+  // longer stands: the build keeps the SHARED still (box turns of Nov 10 06:18Z and 08:51Z: choice "shared still", 8 leaves moving, 0.0654% over).
+  // W9c sampled ~1.2 s after the key, outside the 200 ms; its red was the old premise, not movement). The lines that stood, verbatim:
+  // const lfS = await lastFrameB('shiver');
+  // ok('W9c the last frame, mid-shiver: on an unzoomed page, the cut drew a POSE (the counter agreeing: 8+ leaves moving), and its still against the live drawing paused at that pose - over 9 levels on no more than 0.01% of the pixels (the hold proven: the same frame twice identical; the shade proven in the shot: hidden, 1%+ of the pixels change)',
+  //   premiseB(lfS, 'pose') && lfS.vs.over <= lfS.vs.n * 0.0001, JSON.stringify(lfS));
+  // SUCCESSOR W9d (Fable's words): a burst started mid-shiver; from 250 ms after the first key to the end of the burst NOTHING in the shade moves -
+  // the room beside the page (right of the page and its opener, between the top bar and the mockup bar) shot at 250 / 700 / 1150 / 1600 / 1900 ms,
+  // each against the 250 ms shot: over 9 levels on no more than 0.01% of the pixels. Held so only the shade's own movement can show: the shade's
+  // writing fade pinned where it stands at the key (W9c's PIN), the rhizome and its vines hidden (they grow on her words). Premises: 8+ leaves
+  // moving at the key, writing on at every shot, the cut taken (data-live-off), the region non-empty. W9d-M, in the same run: the same burst with
+  // the leaves kept moving (the live drawing shown and its leaves running, a test-only sheet) - it must land (leaves moving at the shots) and FAIL
+  // W9d's bar (a check that cannot go red is not run).
+  const HOLDEXTRA = '.wz-rhizome-field, .arbor2-vines, .arbor2-vines-flash{ visibility:hidden !important; }';
+  const LEAVES_MOVE = '.arbor2-pergola .arbor2-live{ opacity:1 !important; content-visibility:visible !important; visibility:visible !important; } .arbor2-pergola .arbor2-still{ opacity:0 !important; } .arbor2-pergola .wz-leaf{ animation-play-state:running !important; }';
+  const REGION = "(() => { const p = document.querySelector('.desk-frame-stage .mode-page').getBoundingClientRect(); const bar = document.querySelector('.arbor2-bar'); const top = document.querySelector('.chrome-top.sprint-nav'); const br = bar ? bar.getBoundingClientRect() : null; const tb = top ? top.getBoundingClientRect().bottom : 60; return { x0: Math.ceil(p.right + 40), x1: Math.floor(innerWidth - 24), y0: Math.ceil(tb + 24), y1: Math.floor(Math.min(innerHeight - 24, br ? br.top - 12 : innerHeight - 24)), dpr: devicePixelRatio || 1 }; })()";
+  const regionCmp = (a, b, R) => app.evalJs(`(async () => { const load = (b64) => new Promise((res) => { const i = new Image(); i.onload = () => res(i); i.src = 'data:image/png;base64,' + b64; });
+    const [x, y] = await Promise.all([load(${JSON.stringify(a)}), load(${JSON.stringify(b)})]); const R = ${JSON.stringify(R)}, k = x.naturalWidth / innerWidth;
+    const sx = Math.round(R.x0 * k), sy = Math.round(R.y0 * k), w = Math.max(0, Math.round((R.x1 - R.x0) * k)), h = Math.max(0, Math.round((R.y1 - R.y0) * k)); if (!w || !h) return { n: 0, over: 0, max: 0 };
+    const px = (img) => { const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'); g.drawImage(img, sx, sy, w, h, 0, 0, w, h); return g.getImageData(0, 0, w, h).data; };
+    const A = px(x), B = px(y); let max = 0, over = 0;
+    for (let i = 0; i < A.length; i += 4) { const d = Math.max(Math.abs(A[i] - B[i]), Math.abs(A[i + 1] - B[i + 1]), Math.abs(A[i + 2] - B[i + 2])); if (d > 9) over++; if (d > max) max = d; }
+    return { n: w * h, over, max }; })()`);
+  const burstStill = async (mutant) => {
+    await backToRest(app);
+    const t0w = Date.now(); let n = await app.evalJs(MOVINGNOW);
+    while (Date.now() - t0w < 18000 && n < 8) { await sleep(40); n = await app.evalJs(MOVINGNOW); }
+    await styleOn('w9d-hold', HOLDEXTRA); if (mutant) await styleOn('w9d-mutant', LEAVES_MOVE);
+    const R = await app.evalJs(REGION);
+    await app.evalJs("document.querySelector('.forward-only-editor').focus()");
+    await app.typeKeys('s');
+    const k0 = Date.now();
+    await app.waitFor("document.querySelector('.arbor2-pergola')?.getAttribute('data-live-off') === 'true'", { label: 'cut', timeout: 1000 }).catch(() => {});
+    const pinned = await app.evalJs(PIN);
+    const marks = [250, 700, 1150, 1600, 1900], shots = []; let nextKey = 120;
+    while (shots.length < marks.length) {
+      const el = Date.now() - k0;
+      if (el >= marks[shots.length]) {
+        const s = await app.screenshot();
+        shots.push({ at: Date.now() - k0, s, moving: await app.evalJs(MOVINGNOW), leafT: await app.evalJs(LEAFT), writing: await app.evalJs("document.documentElement.getAttribute('data-wz-writing')"), off: await app.evalJs("document.querySelector('.arbor2-pergola')?.getAttribute('data-live-off') ?? null") });
+      } else if (el >= nextKey) { await app.typeKeys('s'); nextKey += 120; }
+      else await sleep(8);
+    }
+    await styleOff('w9d-hold'); if (mutant) await styleOff('w9d-mutant'); await app.evalJs(UNPIN);
+    const diffs = [];
+    for (const x of shots.slice(1)) diffs.push(await regionCmp(shots[0].s, x.s, R));
+    const pct = (d) => (d.n ? Math.round((d.over / d.n) * 1e6) / 1e4 : null);
+    return { mutant, movingAtKey: n, R, pinned, shots: shots.map((x) => ({ at: x.at, moving: x.moving, leafT: x.leafT, writing: x.writing, off: x.off })), diffs: diffs.map((d) => ({ ...d, pct: pct(d) })) };
+  };
+  // the room's first leaf's own animation clock: it ADVANCES only while the leaves really move (paused, it stands; the moving counter alone reads a paused pose as moving)
+  const LEAFT = "(() => { const g = document.querySelector('.arbor2-pergola .wz-leaf'); const a = g ? g.getAnimations()[0] : null; return a && a.currentTime != null ? Math.round(Number(a.currentTime)) : null; })()";
+  const premiseD = (x) => x.movingAtKey >= 8 && x.diffs.length === 4 && x.diffs.every((d) => d.n > 0) && x.shots.every((s) => s.writing === 'true' && s.off === 'true');
+  const stillOkD = (x) => x.diffs.every((d) => d.over <= d.n * 0.0001);
+  const wd = await burstStill(false);
+  ok('W9d her first keys mid-shiver: from 250 ms after the first key to the end of the burst nothing in the shade moves - the room beside the page shot at 250 / 700 / 1150 / 1600 / 1900 ms, each over 9 levels on no more than 0.01% of its pixels against the 250 ms shot (the fade pinned, the rhizome hidden)',
+    premiseD(wd) && stillOkD(wd), JSON.stringify(wd));
+  const wm = await burstStill(true);
+  ok('W9d-M (mutant, the leaves kept moving): it landed (the leaf animation clock ran on across the shots) and W9d\'s bar is RED on it',
+    premiseD(wm) && wm.shots[0].leafT != null && wm.shots[wm.shots.length - 1].leafT > wm.shots[0].leafT + 1000 && !stillOkD(wm), JSON.stringify(wm));
   const lfR = await lastFrameB('rest');
   ok('W10c the last frame, at rest: on an unzoomed page, the cut kept the SHARED still (the counter agreeing: no leaf moving), and it against the live drawing at rest - over 9 levels on no more than 0.01% of the pixels (the same two controls)',
     premiseB(lfR, 'shared still') && lfR.vs.over <= lfR.vs.n * 0.0001, JSON.stringify(lfR));
