@@ -2,7 +2,7 @@
 import { withHarness } from '../runtime-verify.mjs';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const LINE = ' and the corridor keeps going forward with more plain words now, on and on across the measure of the page until it wraps again and again, line after line';
-const HOOK = `(() => { window.__rm = []; const log = (k, t) => { try { if (t && t.nodeType === 1 && (t.hasAttribute('data-flux3-compile') || t.classList.contains('flux3-compile-word') || t.classList.contains('flux3-compile-row') || t.querySelector && t.querySelector('[data-flux3-compile]'))) window.__rm.push({ k, at: Math.round(performance.now()), cls: t.className, stack: String(new Error().stack).split('\n').slice(2, 8).join(' | ') }); } catch (e) {} };
+const HOOK = `(() => { window.__rm = []; const log = (k, t) => { try { if (t && t.nodeType === 1 && (t.hasAttribute('data-flux3-compile') || t.classList.contains('flux3-compile-word') || t.classList.contains('flux3-compile-row') || t.querySelector && t.querySelector('[data-flux3-compile]'))) window.__rm.push({ k, at: Math.round(performance.now()), cls: t.className, stack: String(new Error().stack).slice(0, 900) }); } catch (e) {} };
   const rc = Node.prototype.removeChild; Node.prototype.removeChild = function (c) { log('removeChild', c); return rc.call(this, c); };
   const rm = Element.prototype.remove; Element.prototype.remove = function () { log('remove', this); return rm.call(this); };
   const rcs = Element.prototype.replaceChildren; Element.prototype.replaceChildren = function (...a) { try { [...this.children].forEach((c) => log('replaceChildren', c)); } catch (e) {} return rcs.apply(this, a); }; })();`;
