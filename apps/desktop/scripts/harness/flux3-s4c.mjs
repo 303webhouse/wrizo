@@ -611,9 +611,12 @@ try { await withHarness(async (app) => {
   const VEIL_ED = "[data-flux3-jacked] .mode-pagecol[data-zoom='true'] .forward-only-editor";
   const veilCases = [['short', 'A.', LINE.slice(0, 120)], ['filled', 'The veil keeps its look.', LINE + LINE], ['long', Array.from({ length: 60 }, (_, i) => 'older words on line number ' + i).join('\n'), ' ' + LINE]];
   const veilReads = {};
+  // The Typewriter's own band mask sits on the page column (13-desk-frame.css; main has it too) and dims any line that has not yet reached its anchor; under load a long page can stand ~24 px short of it (full pair 42905615882: scrollTop 1602 against 1626 alone, the writing line at ~141 with OUR band switched off). That is the Typewriter's glide, not the veil, so the veil is judged with that one paint rule off for these reads (paint only: no layout, nothing the veil owns); the clip and the band are untouched, and every mutant below still lands on them.
+  const colMaskOff = () => ev(`(() => { if (document.getElementById('veil-colmask-off')) return; const s = document.createElement('style'); s.id = 'veil-colmask-off'; s.textContent = ".mode-pagecol[data-zoom='true']{ -webkit-mask-image:none !important; mask-image:none !important; }"; document.head.appendChild(s); })()`);
   for (const [name, seedText, typed] of veilCases) {
     const vid = await fresh(seedText);
     await open({ id: vid, tone: 'dark' });
+    await colMaskOff();
     await ev('window.__f4.toEnd()');
     await type(typed, 22);
     veilReads[name] = await veilRead();
@@ -639,6 +642,7 @@ try { await withHarness(async (app) => {
       veilReads.back = await veilRead();
     }
   }
+  await ev("(() => { const s = document.getElementById('veil-colmask-off'); if (s) s.remove(); })()");
   const maskNone = await ev("(() => { const e = document.querySelector('.forward-only-editor'); const c = getComputedStyle(e); return { m: c.maskImage, w: c.webkitMaskImage, clip: c.clipPath }; })()");
   console.log('S4C VEIL ink (max red of each of the last lines, oldest first): ' + JSON.stringify(Object.fromEntries(Object.entries(veilReads).map(([k, v]) => [k, v.ink]))));
   ok('VEIL the veil keeps its look WITHOUT a mask: the writing line reads full strength (#E8F6FA), the line above it the .60 dim (#8C989C), every older line shows nothing - on a page just begun, a page of ~5 lines and a long scrolled page; and no mask-image is on the editor (the mask does not ship)',
