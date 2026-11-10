@@ -63,7 +63,7 @@ const INSTRUMENT = `(() => {
   I.st = () => { const col = document.querySelector('.mode-pagecol'), r = document.documentElement; const pg = document.querySelector('.mode-page'); const pr = pg && pg.getBoundingClientRect();
     return { theme: r.getAttribute('data-theme'), flag: r.hasAttribute('data-flux3'), jacked: r.hasAttribute('data-flux3-jacked'), looking: r.hasAttribute('data-flux3-looking'), tone: r.getAttribute('data-page'), zoom: col ? col.getAttribute('data-zoom') : null,
       rect: pr ? [Math.round(pr.left), Math.round(pr.top), Math.round(pr.width), Math.round(pr.height)] : null }; };
-  I.chrome = () => { const sel = ['.desk-rail', '.desk-frame-strip', '.desk-frame-corkboard', '.desk-frame-sliver-anchor', '.flux3-glitchbar'];
+  I.chrome = () => { const sel = ['.desk-rail', '.desk-frame-strip', '.desk-frame-corkboard', '.desk-frame-sliver-anchor', '.flux3-glitchbar', '.chrome-handle'];
     return sel.map((s) => { const e = document.querySelector(s); if (!e) return [s, null, null]; const c = getComputedStyle(e); return [s, +c.opacity, c.pointerEvents]; }); };
   I.rows = () => { const L = document.querySelector('[data-flux3-compile]'); if (!L) return null;
     return [...L.querySelectorAll('.flux3-compile-word')].map((g) => ({ word: g.dataset.word, row: +g.dataset.row, k: g.parentElement ? +g.parentElement.dataset.k : null, op: g.parentElement ? +g.parentElement.style.opacity : null })); };
@@ -247,7 +247,7 @@ try { await withHarness(async (app) => {
   const readDark = async () => (await ev("document.documentElement.getAttribute('data-page')")) === 'dark';
   const mutants = [
     ['tone light', "document.documentElement.setAttribute('data-page', 'light')", "document.documentElement.setAttribute('data-page', 'dark')", async () => !(await readDark())],
-    ['chrome visible', "document.querySelectorAll('.desk-rail,.desk-frame-strip,.desk-frame-corkboard,.flux3-glitchbar').forEach((e) => { e.style.setProperty('opacity', '1', 'important'); e.style.setProperty('pointer-events', 'auto', 'important'); })", "document.querySelectorAll('.desk-rail,.desk-frame-strip,.desk-frame-corkboard,.flux3-glitchbar').forEach((e) => { e.style.removeProperty('opacity'); e.style.removeProperty('pointer-events'); })", async () => !(await readChrome()).pass],
+    ['chrome visible', "document.querySelectorAll('.desk-rail,.desk-frame-strip,.desk-frame-corkboard,.flux3-glitchbar,.chrome-handle').forEach((e) => { e.style.setProperty('opacity', '1', 'important'); e.style.setProperty('pointer-events', 'auto', 'important'); })", "document.querySelectorAll('.desk-rail,.desk-frame-strip,.desk-frame-corkboard,.flux3-glitchbar,.chrome-handle').forEach((e) => { e.style.removeProperty('opacity'); e.style.removeProperty('pointer-events'); })", async () => !(await readChrome()).pass],
     ['glow 20%', "document.documentElement.style.setProperty('--f3-goal-glow', 'radial-gradient(ellipse at center, rgb(87 208 245 / .2) 0%, rgb(87 208 245 / .04) 55%, transparent 100%)')", "document.documentElement.style.removeProperty('--f3-goal-glow')", async () => !(await readGlow()).pass],
     ['a frame removed', "(() => { const f = document.querySelector('.flux3-cor-frame'); window.__mutFrame = f; f.style.display = 'none'; f.className = 'x'; })()", "(() => { const f = window.__mutFrame; if (f) f.className = 'flux3-cor-frame'; if (f) f.style.display = ''; })()", async () => !(await readCor()).pass],
   ];

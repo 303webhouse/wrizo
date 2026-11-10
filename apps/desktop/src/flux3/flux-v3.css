@@ -214,7 +214,7 @@
    events: nothing moves, so the page keeps its rect. Esc leaves Jacked In for BUILD, which brings them back. The burst edge (the
    2px lime line on <body>) and the page stay. */
 :root[data-flux3][data-theme='flux'][data-flux3-jacked] :is(.desk-rail, .desk-frame-strip, .desk-frame-corkboard, .desk-frame-sliver-anchor,
-  .desk-frame-tutor-anchor, .desk-frame-tutor-panel-anchor, .desk-frame-meter, .flux3-glitchbar, .chrome-fade, .desk-dissolve){ opacity:0 !important; pointer-events:none !important; transition:opacity .6s ease; }
+  .desk-frame-tutor-anchor, .desk-frame-tutor-panel-anchor, .desk-frame-meter, .flux3-glitchbar, .chrome-fade, .desk-dissolve, .chrome-handle){ opacity:0 !important; pointer-events:none !important; transition:opacity .6s ease; }
 /* THE CORRIDOR (src/flux3/FluxCorridor.tsx). The WHOLE WINDOW (fixed; the room, the sheet and the strips show nowhere around it), behind the page (first in .mode-stage), no pointer. Every
    animation is transform or opacity (the compositor's); its speed is the animations' playbackRate, set at most four times a second from her pace, and 0 when she stops. */
 :root[data-flux3][data-theme='flux'] .flux3-corridor{ position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; contain:strict; background:var(--f3-term-ground);
