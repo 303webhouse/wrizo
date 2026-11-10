@@ -331,7 +331,9 @@ export function FluxJackedIn({ on, scrollRef, unitCount }: Props) {
         words.forEach(({ range, text }, el) => {
           const rects = range.getClientRects();
           if (!range.startContainer.isConnected) return;   // its text went with the page's scroller: the overlay takes over on the next frame
-          if (rects.length !== 1 || range.toString() !== text) { el.remove(); words.delete(el); return; }
+          // a word the new layout cannot place (it re-wrapped, or its text node was replaced on the way to BUILD) STANDS where it last was and fades with the rest: the rows are never cut away
+          // while she leaves (the harness caught every word being removed within 90 ms)
+          if (rects.length !== 1 || range.toString() !== text) return;
           placeOn(el, rects[0], L, s);
         });
         if (!scroll.isConnected) { toOverlay(performance.now() - start); return; }
