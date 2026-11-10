@@ -1,6 +1,10 @@
 // POLISH #10 ITEM 14 (INK) - Flux: the rail's place label "RACK > The Well" stays on ONE line, with an ellipsis; the full name on hover/focus. BROWSERLESS (source) half; the live half is the F14 successor in
 // flux-v2-part2.mjs (a box turn). Falsifies FX V2's F14 ("wraps, white-space normal, no ellipsis"): that check is PARKED verbatim there (SUPERSEDED) with its successor beside it.
 // Every check has a mutant, its landing asserted.   Run: node scripts/harness/polish10-14.mjs   (from apps/desktop; no box needed)
+// S4b L2 (INK, Nov 10): P4 and P5 read PlaceBlock.tsx's lines as source, and L2 (behind ?flux3=1) changed those two lines: the button's title is now `reading ? reading.hint : fullPath` (the readout's
+// hint under the flag, fullPath without it) and the label span reads `{isJournal ? t('pageHomeLoose') : name}` (the Journal door is never blank under the flag). P4 and P5 and their two mutants are PARKED
+// below VERBATIM (SUPERSEDED), and P4b / P5b with their mutants pin the same invariants on the new source: without the flag the title is the full path and the Journal door is its icon alone (bug #4);
+// with it the title is the readout's hint and the label is UNFILED or the place name; the visible label is never the RACK path. The mutation count is now 7 (3 css + 4 place-block).
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -31,9 +35,16 @@ function suite(css, pb) {
   chk('P1', () => { const w = last(css, FLUX, 'white-space'); return [w === 'nowrap', `Flux: the place name does not wrap (white-space ${w})`]; });
   chk('P2', () => { const t = last(css, FLUX, 'text-overflow'); const o = last(css, FLUX, 'overflow'); return [t === 'ellipsis' && o === 'hidden', `Flux: it ends in an ellipsis (text-overflow ${t}, overflow ${o})`]; });
   chk('P3', () => { const w = last(css, FLUX, 'overflow-wrap'); return [w === null || w === 'normal', `Flux: no break-anywhere rule left to defeat the one line (overflow-wrap ${w})`]; });
-  chk('P4', () => [/<button[^>]*className=\{`wz-strip-item wz-place-block[^>]*title=\{fullPath\}/s.test(pb) && /const fullPath = theme === 'flux' && drawer \? rackReadout\(name\) : name;/.test(pb), 'the full path (RACK > name in Flux) is on the button as its title (hover); aria-label keeps the plain name for a reader']);
+  // PARKED - SUPERSEDED (S4b L2, Nov 10; the original line, verbatim, no longer runs; its successor P4b follows):
+  // chk('P4', () => [/<button[^>]*className=\{`wz-strip-item wz-place-block[^>]*title=\{fullPath\}/s.test(pb) && /const fullPath = theme === 'flux' && drawer \? rackReadout\(name\) : name;/.test(pb), 'the full path (RACK > name in Flux) is on the button as its title (hover); aria-label keeps the plain name for a reader']);
   // Nick, Oct 28: the narrow rail shows ONLY the place name - the RACK prefix lives in the title, never in the visible label.
-  chk('P5', () => [/<span className="wz-strip-label wz-place-name">\{name\}<\/span>/.test(pb) && !/wz-place-name">\{(label|fullPath)\}/.test(pb), 'the visible rail label is the place name alone (no RACK prefix)']);
+  // PARKED - SUPERSEDED (S4b L2, Nov 10; the original line, verbatim, no longer runs; its successor P5b follows):
+  // chk('P5', () => [/<span className="wz-strip-label wz-place-name">\{name\}<\/span>/.test(pb) && !/wz-place-name">\{(label|fullPath)\}/.test(pb), 'the visible rail label is the place name alone (no RACK prefix)']);
+  // SUCCESSOR P4b: the full path is still the button's title WITHOUT the flag (no readout: `reading` is null, so the title is fullPath, RACK > name in Flux); under the flag the title is the readout's hint
+  chk('P4b', () => [/<button[^>]*className=\{`wz-strip-item wz-place-block[^>]*title=\{reading \? reading\.hint : fullPath\}/s.test(pb) && /const fullPath = theme === 'flux' && drawer \? rackReadout\(name\) : name;/.test(pb), 'the full path (RACK > name in Flux) is on the button as its title when there is no readout (the flag off), the readout\'s hint when there is one; aria-label keeps the plain name for a reader']);
+  // SUCCESSOR P5b: the narrow rail still shows ONLY the place name - the RACK prefix never in the visible label; without the flag the Journal door is its icon alone (bug #4, Nov 7), with it the door reads
+  // UNFILED (L2: never blank) or the place name
+  chk('P5b', () => [/\{isJournal && !reading \? null : <span className="wz-strip-label wz-place-name">\{isJournal \? t\('pageHomeLoose'\) : name\}<\/span>\}/.test(pb) && !/wz-place-name">\{[^}]*(label|fullPath)/.test(pb), 'the visible rail label is the place name alone (no RACK prefix); the Journal door is its icon alone without a readout, UNFILED with one']);
   return R;
 }
 
@@ -41,8 +52,13 @@ const MUT = [
   { name: 'the Flux place name wraps again', file: 'css', find: /(\[data-theme='flux'\] \.wz-place-block \.wz-place-name\{[^}]*?)white-space:nowrap;/, to: '$1white-space:normal;', red: ['P1'] },
   { name: 'the ellipsis is gone', file: 'css', find: /(\[data-theme='flux'\] \.wz-place-block \.wz-place-name\{[^}]*?)text-overflow:ellipsis;/, to: '$1text-overflow:clip;', red: ['P2'] },
   { name: 'break-anywhere comes back', file: 'css', find: /(\[data-theme='flux'\] \.wz-place-block \.wz-place-name\{[^}]*?)text-align:center;/, to: '$1text-align:center; overflow-wrap:anywhere;', red: ['P3'] },
-  { name: 'the title is dropped', file: 'pb', find: / title=\{fullPath\}/, to: '', red: ['P4'] },
-  { name: 'the rail label shows the full RACK path again', file: 'pb', find: /wz-place-name">\{name\}<\/span>/, to: 'wz-place-name">{fullPath}</span>', red: ['P5'] },
+  // PARKED - SUPERSEDED (the two mutants of P4 and P5; verbatim; their successors are the four below):
+  // { name: 'the title is dropped', file: 'pb', find: / title=\{fullPath\}/, to: '', red: ['P4'] },
+  // { name: 'the rail label shows the full RACK path again', file: 'pb', find: /wz-place-name">\{name\}<\/span>/, to: 'wz-place-name">{fullPath}</span>', red: ['P5'] },
+  { name: 'the title is dropped', file: 'pb', find: / title=\{reading \? reading\.hint : fullPath\}/, to: '', red: ['P4b'] },
+  { name: 'the flag-off title is no longer the full path', file: 'pb', find: /title=\{reading \? reading\.hint : fullPath\}/, to: 'title={reading ? reading.hint : name}', red: ['P4b'] },
+  { name: 'the rail label shows the full RACK path again', file: 'pb', find: /: name\}<\/span>\}/, to: ': fullPath}</span>}', red: ['P5b'] },
+  { name: 'the flag-off Journal door gets a label again (bug #4)', file: 'pb', find: /\{isJournal && !reading \? null : /, to: '{', red: ['P5b'] },
 ];
 
 const css0 = readRaw('index.css'), pb0 = readRaw('components/PlaceBlock.tsx');

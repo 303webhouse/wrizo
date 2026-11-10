@@ -1,0 +1,72 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+
+ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one)
+MEASUREMENT-CARET {
+ "arbor": {
+  "info": {
+   "theme": "plateau",
+   "tone": "light",
+   "caretColor": "rgb(43, 32, 20)",
+   "color": "rgb(43, 32, 20)",
+   "pageBg": "rgb(243, 237, 225)",
+   "caret": {
+    "x": 576,
+    "y": 173,
+    "h": 21
+   }
+  },
+  "rendered": {
+   "rendered": 13.6,
+   "shots": 6,
+   "board": [
+    243,
+    237,
+    225
+   ]
+  },
+  "computed": {
+   "caretResolved": "rgb(43, 32, 20)",
+   "page": [
+    243,
+    237,
+    225
+   ],
+   "c": 13.65
+  }
+ },
+ "machina": {
+  "info": {
+   "theme": "machina",
+   "tone": "light",
+   "caretColor": "rgb(19, 22, 28)",
+   "color": "rgb(19, 22, 28)",
+   "pageBg": "rgb(248, 249, 252)",
+   "caret": {
+    "x": 581,
+    "y": 173,
+    "h": 22
+   }
+  },
+  "rendered": {
+   "rendered": 17.18,
+   "shots": 6,
+   "board": [
+    248,
+    249,
+    252
+   ]
+  },
+  "computed": {
+   "caretResolved": "rgb(19, 22, 28)",
+   "page": [
+    248,
+    249,
+    252
+   ],
+   "c": 17.21
+  }
+ }
+}
+CARET arbor (light page): computed 13.65:1 (rgb(43, 32, 20)) ; rendered 13.6:1 over 6 shots
+CARET machina (light page): computed 17.21:1 (rgb(19, 22, 28)) ; rendered 17.18:1 over 6 shots

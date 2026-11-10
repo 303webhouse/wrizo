@@ -288,3 +288,29 @@
   :root[data-flux3][data-theme='flux'] .flux3-nudge{ animation:none; }
 }
 @media (prefers-reduced-motion:reduce){ :root[data-flux3][data-theme='flux'] .flux3-pop, :root[data-flux3][data-theme='flux'] .flux3-pop > span[data-new='true']{ animation:none; } }
+/* ---- S4b L2: THE COMMAND-BOX RAIL (flux-mockup-vs-build.md L2; q9: "the existing rail ... in command-box dress"). Dress only: the rail is a fixed DeskFrame track, so nothing here can
+   move the page (the boxes live inside the strip's own width). Every door on the rail is a hairline box with its name in letter-spaced caps: the PLACE you are in (the Drawer's name, two lines
+   at most, or UNFILED), Docs, Circuits, Log, and the foot's Config and Skin and Trash. Each carries one TRUE reading under its name (Cascade.tsx; the Trash has none: the Trash is a place, not a nag),
+   and its hover hint says what the number counts. YOUR PLACE is orange: the box's bar, name and reading; under Circuits the last node you touched this session reads in orange too (the Schema
+   footer's LAST). The open category stays electric blue, as flux-v2 ruled. The rail is dark in BOTH Page tones (the Page tone is the paper's), so its boxes use the dark tone's own colours. ---- */
+:root[data-flux3][data-theme='flux'] .wz-strip > .wz-strip-section > .wz-strip-item,
+:root[data-flux3][data-theme='flux'] .wz-strip-foot > .wz-strip-section > .wz-strip-item{
+  width:calc(100% - 12px); margin:4px 6px; padding:7px 2px 6px; gap:2px;
+  border:1px solid #1D4A52; border-left-width:2px; }
+:root[data-flux3][data-theme='flux'] .wz-strip-foot > .wz-strip-section > .wz-strip-item{ margin:3px 6px; padding:5px 2px 4px; }
+:root[data-flux3][data-theme='flux'] .wz-strip > .wz-strip-section > .wz-strip-item.active,
+:root[data-flux3][data-theme='flux'] .wz-strip-foot > .wz-strip-section > .wz-strip-item.active{ border-left-color:var(--line-active); }
+:root[data-flux3][data-theme='flux'] .wz-strip > .wz-strip-section > .wz-strip-item .wz-strip-label,
+:root[data-flux3][data-theme='flux'] .wz-strip-foot > .wz-strip-section > .wz-strip-item .wz-strip-label{
+  font-family:var(--font-chromeLabel); font-weight:700; font-size:9px; letter-spacing:.14em; text-transform:uppercase; line-height:1.15; max-width:100%; overflow:hidden; text-overflow:clip; }
+/* the place box's name: two lines at most, then an ellipsis; a long unbroken word breaks rather than overflows */
+:root[data-flux3][data-theme='flux'] .wz-strip .wz-place-name{ display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; line-clamp:2; overflow:hidden; text-overflow:ellipsis; overflow-wrap:anywhere; text-align:center; width:100%; white-space:normal; line-height:1.2; }   /* flux-v2 §8 made it one nowrap line: here it wraps to two */
+:root[data-flux3][data-theme='flux'] .wz-strip-readout{
+  display:block; font-family:var(--font-chromeLabel); font-weight:600; font-size:10px; letter-spacing:.1em; line-height:1.1; color:#57D0F5; white-space:nowrap; }
+:root[data-flux3][data-theme='flux'] .wz-strip-readout.wz-strip-last{ font-size:8px; letter-spacing:.03em; color:#FF9800; }
+/* your place: the Journal pin while she is in the Journal, the place block while she is in a Drawer */
+:root[data-flux3][data-theme='flux'] .wz-strip > .wz-strip-section > .wz-strip-item[aria-current='location'],
+:root[data-flux3][data-theme='flux'] .wz-strip > .wz-strip-section > .wz-place-block:not([data-place-kind='journal']){ border-left-color:#FF9800; }
+:root[data-flux3][data-theme='flux'] .wz-strip > .wz-strip-section > .wz-strip-item[aria-current='location'] .wz-strip-label,
+:root[data-flux3][data-theme='flux'] .wz-strip > .wz-strip-section > .wz-strip-item[aria-current='location'] .wz-strip-readout,
+:root[data-flux3][data-theme='flux'] .wz-strip > .wz-strip-section > .wz-place-block:not([data-place-kind='journal']) .wz-place-name{ color:#FF9800; }
