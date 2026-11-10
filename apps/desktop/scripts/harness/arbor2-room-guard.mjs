@@ -7,7 +7,9 @@
 //       through withRoomPin, and imports it from the kit
 //   G2  the kit's withRoomPin pins the clock before each screen and clears it after (its own source, read)
 //   G3  coverage, printed: per file, how many check screens set their own room and how many take the pin's DAY
-//   MUT a copy of one file with the wrapper taken out (in memory) must FAIL G1's rule (the guard can go red)
+//   G4  the Arbor harness files that run without WS_URL_SEARCH's room pin (arbor2-1, -4, -6, -23) pin the clock themselves: pinClock(app, 12) first
+//       inside withHarness, unpinClock in a finally, imported from the kit (Chat 1's option (1): nothing in runtime-verify.mjs)
+//   MUT a copy of one file with the wrapper taken out (in memory) must FAIL G1's rule (the guard can go red); MUT4 the same for G4's pin
 // Run: node apps/desktop/scripts/harness/arbor2-room-guard.mjs   (no browser, no box)
 import fs from 'node:fs';
 import path from 'node:path';
@@ -52,6 +54,15 @@ ok('G2 withRoomPin pins the clock (pinClock) before each screen and clears it (u
 const tot = coverage.reduce((a, c) => ({ own: a.own + c.own, pinned: a.pinned + c.pinned }), { own: 0, pinned: 0 });
 console.log(`     coverage: ${tot.own} check screens set their own room, ${tot.pinned} take the pin's DAY - ${coverage.map((c) => `${c.f.replace('.mjs', '')} ${c.own}/${c.pinned}`).join(' · ')}`);
 ok('G3 coverage counted (every check screen is either own-room or pinned)', tot.own + tot.pinned > 100, JSON.stringify(tot));
+// G4: the four harness files
+const HF = path.resolve(here);
+const pinnedHarness = (t) => /import { pinClock, unpinClock } from '\.\.\/frames\/mockup-kit\.mjs';/.test(t) && /await withHarness\(async \(app\) => \{ await pinClock\(app, 12\); try \{/.test(t) && /\} finally \{ await unpinClock\(app\); \} \}, \{ label: /.test(t);
+const H4 = ['arbor2-1.mjs', 'arbor2-4.mjs', 'arbor2-6.mjs', 'arbor2-23.mjs'];
+const notPinned = H4.filter((f) => !pinnedHarness(norm(fs.readFileSync(path.join(HF, f), 'utf8'))));
+ok(`G4 the four Arbor harness files pin the clock to midday themselves and clear it in a finally (${H4.join(', ')})`, notPinned.length === 0, JSON.stringify({ notPinned }));
+const h1 = norm(fs.readFileSync(path.join(HF, 'arbor2-1.mjs'), 'utf8'));
+const h1m = h1.replace('await withHarness(async (app) => { await pinClock(app, 12); try {', 'await withHarness(async (app) => { try {');
+ok('MUT4 G4 is RED on a harness file without the pin (the mutant landed: the text changed)', h1m !== h1 && !pinnedHarness(h1m), '');
 // MUT: arbor2-r23.mjs with its wrapper taken out, in memory
 const r23 = norm(fs.readFileSync(path.join(FR, 'arbor2-r23.mjs'), 'utf8'));
 const mut = r23.replace(/\nexport default withRoomPin\((guarded\([^\n]*\))\);/, '\nexport default $1;');

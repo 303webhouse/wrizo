@@ -31,6 +31,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { withHarness } from '../runtime-verify.mjs';
+// census (a), Nov 10 (Fable's ruling; Chat 1's option (1)): this file runs with the browser clock pinned to midday - the room is DAY unless a step
+// sets its own - and the pin is cleared in a finally (scripts/frames/mockup-kit.mjs pinClock / unpinClock; held by arbor2-room-guard.mjs G4)
+import { pinClock, unpinClock } from '../frames/mockup-kit.mjs';
 
 const SHOTS = process.env.ARBOR_SHOTS || null; // e.g. C:\Users\nickh\Downloads\arbor-mockup-frames
 if (SHOTS) fs.mkdirSync(SHOTS, { recursive: true });
@@ -154,7 +157,7 @@ const newPage = async (app) => {
   return (await app.evalJs('location.hash')).replace(/^#\/page\//, '');
 };
 
-await withHarness(async (app) => {
+await withHarness(async (app) => { await pinClock(app, 12); try {
   await freshDesk(app);
   await app.emulateDpr(1, 1366, 768);
   const pageId = await newPage(app);
@@ -543,7 +546,7 @@ await withHarness(async (app) => {
   ok('S1 scope: Flux under the flag keeps its own room (--ink-950 and --text-low byte-equal)', fluxOff.tokens.i950 === fluxOn.tokens.i950 && fluxOff.tokens.low === fluxOn.tokens.low, JSON.stringify({ off: fluxOff.tokens.i950, on: fluxOn.tokens.i950 }));
   await setFlag(app, false);
   return checks;
-}, { label: 'arbor2-1' });
+} finally { await unpinClock(app); } }, { label: 'arbor2-1' });
 
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));

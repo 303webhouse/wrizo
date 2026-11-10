@@ -17,6 +17,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { withHarness } from '../runtime-verify.mjs';
+// census (a), Nov 10 (Fable's ruling; Chat 1's option (1)): this file runs with the browser clock pinned to midday - the room is DAY unless a step
+// sets its own - and the pin is cleared in a finally (scripts/frames/mockup-kit.mjs pinClock / unpinClock; held by arbor2-room-guard.mjs G4)
+import { pinClock, unpinClock } from '../frames/mockup-kit.mjs';
 import { zoomProof, holeOf, stopsOf } from '../frames/arbor2.mjs';
 
 const SHOTS = process.env.ARBOR_SHOTS || null;
@@ -66,7 +69,7 @@ const openPage = async (app) => {
   await app.evalJs("history.replaceState(null, '', '/?arbor2=1' + location.hash)");
 };
 
-await withHarness(async (app) => {
+await withHarness(async (app) => { await pinClock(app, 12); try {
   await app.goto('/');
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '4');");
   await app.reload(); await pinRoom(app);
@@ -311,7 +314,7 @@ await withHarness(async (app) => {
   await snap(app, 'item6-day-shadows-reduced-motion');
   await app.emulateMedia([]);
   return checks;
-}, { label: 'arbor2-6' });
+} finally { await unpinClock(app); } }, { label: 'arbor2-6' });
 
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));

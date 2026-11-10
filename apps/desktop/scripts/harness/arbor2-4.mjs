@@ -15,6 +15,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { withHarness } from '../runtime-verify.mjs';
+// census (a), Nov 10 (Fable's ruling; Chat 1's option (1)): this file runs with the browser clock pinned to midday - the room is DAY unless a step
+// sets its own - and the pin is cleared in a finally (scripts/frames/mockup-kit.mjs pinClock / unpinClock; held by arbor2-room-guard.mjs G4)
+import { pinClock, unpinClock } from '../frames/mockup-kit.mjs';
 
 const SHOTS = process.env.ARBOR_SHOTS || null;
 if (SHOTS) fs.mkdirSync(SHOTS, { recursive: true });
@@ -84,7 +87,7 @@ const WALNUT = 'rgb(26, 18, 6)', SEA = 'rgb(23, 69, 78)', OXBLOOD = 'rgb(107, 31
 // r5 (spec §9c): the openers olive / brass, the cloths olive (a measured deeper step), cold blue, madder; cream and walnut lettering
 const OLIVE = 'rgb(107, 122, 58)', BRASS = 'rgb(255, 152, 0)', OLIVE_CLOTH = 'rgb(86, 99, 46)', BLUE = 'rgb(127, 160, 188)', MADDER = 'rgb(168, 57, 47)', CREAM5 = 'rgb(239, 228, 203)', WALNUT5 = 'rgb(43, 29, 18)';
 
-await withHarness(async (app) => {
+await withHarness(async (app) => { await pinClock(app, 12); try {
   await app.goto('/');
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '4');");
   await app.reload(); await pinRoom(app);
@@ -244,7 +247,7 @@ await withHarness(async (app) => {
   await app.emulateMedia([]);
   await setFlag(app, false);
   return checks;
-}, { label: 'arbor2-4' });
+} finally { await unpinClock(app); } }, { label: 'arbor2-4' });
 
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
