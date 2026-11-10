@@ -53,12 +53,12 @@ const BUSY_MS = 600;          // after the last key, wheel or pointer release, t
 const FRAME_MS = 1000 / 30;   // the motion's rate
 const FLASH_MS = 1100;        // a new link lights up, then settles
 const FLASH_GAP_MS = 334;     // never more than 3 flashes a second
-const GRID = 40;              // the ground's finest grid, in board units
+export const GRID = 40;              // the ground's finest grid, in board units
 const PAD = 12;               // the motion box's margin (an electron's half-width and its glow)
 const MAX_PULSES = 3;
 const DPR_CAP = 2;
 
-const TONES: Record<FluxTone, { ground: string; glow: string; grid: string; trace: string; end: string; link: string; hot: string; flash: string; cyan: string }> = {
+export const TONES: Record<FluxTone, { ground: string; glow: string; grid: string; trace: string; end: string; link: string; hot: string; flash: string; cyan: string }> = {
   dark: {
     ground: '#020c10',
     glow: 'radial-gradient(70% 60% at 50% 48%, rgba(8,40,72,.45), rgba(2,12,16,0) 70%)',
@@ -73,12 +73,12 @@ const TONES: Record<FluxTone, { ground: string; glow: string; grid: string; trac
   },
 };
 
-type Pt = [number, number];
+export type Pt = [number, number];
 interface Route { a: string; b: string; pts: Pt[]; len: number; hot: boolean; phase: number }
 interface Pulse { pts: Pt[]; len: number; t0: number; dur: number }
 
 // a stable hash in [0,1): the ground's circuitry is the same every time the same part of the board is drawn
-function rnd(a: number, b: number, c: number): number {
+export function rnd(a: number, b: number, c: number): number {
   let h = (a * 374761393 + b * 668265263 + c * 2147483647) | 0;
   h = Math.imul(h ^ (h >>> 13), 1274126177);
   h ^= h >>> 16;
@@ -117,7 +117,7 @@ function route(A: FluxNode, B: FluxNode): Pt[] {
   return [[ax, ay], [ax + out, ay], [ax + out, my], [bx - out, my], [bx - out, by], [bx, by]];
 }
 // one piece of the ground's circuitry inside a cell (board units)
-function circuit(cx: number, cy: number, lvl: number, i: number, cell: number): Pt[] {
+export function circuit(cx: number, cy: number, lvl: number, i: number, cell: number): Pt[] {
   const r = (n: number) => rnd(cx * 13 + n, cy * 7 + i, lvl);
   const x0 = (cx + r(1)) * cell, y0 = (cy + Math.round(r(2) * 4) / 4) * cell;
   const x1 = (cx + r(3)) * cell, y1 = (cy + Math.round(r(4) * 4) / 4) * cell;
@@ -423,6 +423,7 @@ export class FluxLayer {
     if (!W || !H) return;
     const wx0 = -v.tx / v.s, wy0 = -v.ty / v.s, wx1 = (W - v.tx) / v.s, wy1 = (H - v.ty) / v.s;
     const k = Math.ceil(Math.log(14 / (GRID * v.s)) / Math.log(8));
+    let fineTa = 0;   // the finer level's trace strength this view (0 when it is not drawn)
     for (let lvl = k; lvl <= k + 1; lvl++) {
       const step = GRID * Math.pow(8, lvl), px = step * v.s;
       if (px < 6) continue;
@@ -435,9 +436,16 @@ export class FluxLayer {
       g.stroke();
       const cell = step * 4, cpx = cell * v.s;
       if (cpx < 110 || cpx > 2600) continue;
-      const ta = Math.min(1, (cpx - 110) / 160) * Math.min(1, (2600 - cpx) / 900);
+      // THE COARSE LEVEL IS NEVER LOUDER THAN THE FINE ONE WHILE BOTH SHOW (the Wrizors, Nov 9: at the resting view one long coarse trace, full strength and 2.5 px, read 3.75:1 against ~1.4 for
+      // the rest and passed for a link). While the finer level is at its ordinary strength the coarse level is held to it (alpha and width); as the finer level fades out with zoom the
+      // coarse one comes up to its own, so the far view is as it was and nothing pops.
+      const taRaw = Math.min(1, (cpx - 110) / 160) * Math.min(1, (2600 - cpx) / 900);
+      const ORD_TA = (GRID * 4 - 110) / 160;                    // the strength the finest level draws at the resting view (0.3125)
+      const f = Math.min(1, fineTa / ORD_TA);                    // 1 while the finer level is at (or past) that strength, 0 once it is gone
+      const ta = Math.min(taRaw, 1 - (1 - ORD_TA) * f);
+      if (lvl === k) fineTa = taRaw;
       g.strokeStyle = `rgba(${T.trace},${(0.55 * ta).toFixed(3)})`;
-      g.lineWidth = Math.max(1, Math.min(2.5, cpx / 400));
+      g.lineWidth = Math.max(1, Math.min(2.5, cpx / 400) * (1 - f) + f);
       g.beginPath();
       const ends: Pt[] = [];
       for (let cx = Math.floor(wx0 / cell); cx <= Math.floor(wx1 / cell); cx++) {
