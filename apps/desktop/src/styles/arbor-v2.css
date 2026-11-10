@@ -1000,7 +1000,7 @@
    painted only while the page scrolls or the pointer is on its strip, ~1 s after (src/arbor2/scrollReveal.ts); at rest the strip is clear. The bar
    keeps its 10 px box, so nothing reflows. Measured by frames/arbor2-r22.mjs r22-scrollbar. */
 @supports selector(::-webkit-scrollbar){
-  :root[data-arbor2][data-theme='plateau'] .desk-frame-stage--prose .mode-scroll::-webkit-scrollbar-thumb{ background:transparent; border-left-width:calc(6px / var(--wz-sb-k)); }
+  :root[data-arbor2][data-theme='plateau'] .desk-frame-stage--prose .mode-scroll::-webkit-scrollbar-thumb{ background:var(--ink-on-paper-low); border-left-width:calc(6px / var(--wz-sb-k)); }
   :root[data-arbor2][data-theme='plateau'] .desk-frame-stage--prose .mode-scroll[data-arbor2-sb='on']::-webkit-scrollbar-thumb{ background:var(--ink-on-paper-low); background-clip:padding-box; }
 }
 :root[data-arbor2][data-theme='plateau'] :is(.mode-scroll, .wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel-body){ scrollbar-gutter:auto; }
