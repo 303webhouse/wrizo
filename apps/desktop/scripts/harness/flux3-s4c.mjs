@@ -612,8 +612,10 @@ try { await withHarness(async (app) => {
   const veilCases = [['short', 'A.', LINE.slice(0, 120)], ['filled', 'The veil keeps its look.', LINE + LINE], ['long', Array.from({ length: 60 }, (_, i) => 'older words on line number ' + i).join('\n'), ' ' + LINE]];
   const veilReads = {};
   // NO BOX (Nick, Nov 10: "I don't want the dark box"): nothing is painted on the editor but its words - no ::before / ::after generated box (the old design's band was one)
-  const boxRead = () => ev("(() => { const e = document.querySelector('.forward-only-editor'); return { after: getComputedStyle(e, '::after').content, before: getComputedStyle(e, '::before').content }; })()");
+  const boxRead = () => ev("(() => { const e = document.querySelector('.forward-only-editor'); return { after: getComputedStyle(e, '::after').content, before: getComputedStyle(e, '::before').content, color: getComputedStyle(e).color }; })()");
   const boxOk = (r) => !!r && r.after === 'none' && r.before === 'none';
+  // the words are painted by the editor's gradient (background-clip:text), so the editor's own computed colour must be transparent - read without a picture, so an INLINE colour (the Journal editor sets one from the pen: it beat the stylesheet once, frames r3-a) cannot re-break it unseen
+  const inkOk = (r) => !!r && /^(transparent|rgba\(0, 0, 0, 0\))$/.test(r.color);
   // The Typewriter's own band mask sits on the page column (13-desk-frame.css; main has it too) and dims any line that has not yet reached its anchor; under load a long page can stand ~24 px short of it (full pair 42905615882: scrollTop 1602 against 1626 alone, the writing line at ~141 with OUR band switched off). That is the Typewriter's glide, not the veil, so the veil is judged with that one paint rule off for these reads (paint only: no layout, nothing the veil owns). WHAT THIS PROVES, AND WHAT IT DOES NOT: it proves the veil's OWN look (the clip + the band); it does NOT prove the COMBINED look a writer sees (the veil under the Typewriter's column mask) - the frames (scripts/frames/flux3-s4c.mjs, r2-h) show that, and the Wrizors read it; the clip and the band are untouched, and every mutant below still lands on them.
   const colMaskOff = () => ev(`(() => { if (document.getElementById('veil-colmask-off')) return; const s = document.createElement('style'); s.id = 'veil-colmask-off'; s.textContent = ".mode-pagecol[data-zoom='true']{ -webkit-mask-image:none !important; mask-image:none !important; }"; document.head.appendChild(s); })()`);
   for (const [name, seedText, typed] of veilCases) {
@@ -636,6 +638,12 @@ try { await withHarness(async (app) => {
       veilReads.boxMut = await boxRead();
       await ev("document.getElementById('mut-veil').remove()");
       await sleep(120);
+      // a colour set INLINE and !important (the only thing that beats the rule; the pen colour is inline, so it beat the plain rule once): the words must read bright on both lines and the colour reader must see it
+      await ev("document.querySelector('.forward-only-editor').style.color = '#E8F6FA'");
+      await sleep(120);
+      veilReads.inlineInk = { ...(await veilRead()), color: (await boxRead()).color };
+      await ev("document.querySelector('.forward-only-editor').style.removeProperty('color')");
+      await sleep(120);
       veilReads.back = await veilRead();
     }
   }
@@ -643,11 +651,11 @@ try { await withHarness(async (app) => {
   const maskNone = await ev("(() => { const e = document.querySelector('.forward-only-editor'); const c = getComputedStyle(e); return { m: c.maskImage, w: c.webkitMaskImage, clip: c.clipPath, bgClip: c.webkitBackgroundClip || c.backgroundClip }; })()");
   const boxNow = await boxRead();
   console.log('S4C VEIL ink (max red of each of the last lines, oldest first): ' + JSON.stringify(Object.fromEntries(Object.entries(veilReads).filter(([k, v]) => v && v.ink).map(([k, v]) => [k, v.ink]))));
-  ok('VEIL (the veil\'s own look, the Typewriter\'s column mask off; the combined look is the frames\') the dim is on HER WORDS ONLY: the writing line reads full strength (#E8F6FA), the line above it the dim (#8F9B9E), every older line shows nothing - on a page just begun, a page of ~5 lines and a long scrolled page; no mask-image and no ::before/::after box is on the editor (Nick, Nov 10: no dark box)',
-    ['short', 'filled', 'long'].every((k) => veilReads[k] && veilReads[k].ok) && maskNone.m === 'none' && /inset/.test(maskNone.clip) && /text/.test(maskNone.bgClip) && boxOk(boxNow), JSON.stringify({ veilReads: { short: veilReads.short, filled: veilReads.filled, long: veilReads.long }, maskNone, boxNow }));
-  ok('MUT-VEIL the look reader goes RED when the clip is gone (an old line stays), the dim is gone (the line above reads bright), the dim is too faint, the dim is too dark, or the clip is a line too tall; the no-box reader goes RED when the old ground-coloured band is put back; and green again undone',
-    veilReads.noClip && !veilReads.noClip.ok && veilReads.noDim && !veilReads.noDim.ok && veilReads.faintDim && !veilReads.faintDim.ok && veilReads.darkDim && !veilReads.darkDim.ok && veilReads.clip3 && !veilReads.clip3.ok && !boxOk(veilReads.boxMut) && veilReads.back && veilReads.back.ok,
-    JSON.stringify({ noClip: veilReads.noClip, noDim: veilReads.noDim, faintDim: veilReads.faintDim, darkDim: veilReads.darkDim, clip3: veilReads.clip3, boxMut: veilReads.boxMut, back: veilReads.back }));
+  ok('VEIL (the veil\'s own look, the Typewriter\'s column mask off; the combined look is the frames\') the dim is on HER WORDS ONLY: the writing line reads full strength (#E8F6FA), the line above it the dim (#8F9B9E), every older line shows nothing - on a page just begun, a page of ~5 lines and a long scrolled page; no mask-image and no ::before/::after box is on the editor (Nick, Nov 10: no dark box); the computed colour of the editor is transparent (the gradient paints the words)',
+    ['short', 'filled', 'long'].every((k) => veilReads[k] && veilReads[k].ok) && maskNone.m === 'none' && /inset/.test(maskNone.clip) && /text/.test(maskNone.bgClip) && boxOk(boxNow) && inkOk(boxNow), JSON.stringify({ veilReads: { short: veilReads.short, filled: veilReads.filled, long: veilReads.long }, maskNone, boxNow }));
+  ok('MUT-VEIL the look reader goes RED when the clip is gone (an old line stays), the dim is gone (the line above reads bright), the dim is too faint, the dim is too dark, or the clip is a line too tall; the no-box reader goes RED when the old ground-coloured band is put back; the picture AND the colour reader go RED when an inline pen colour is set on the editor; and green again undone',
+    veilReads.noClip && !veilReads.noClip.ok && veilReads.noDim && !veilReads.noDim.ok && veilReads.faintDim && !veilReads.faintDim.ok && veilReads.darkDim && !veilReads.darkDim.ok && veilReads.clip3 && !veilReads.clip3.ok && !boxOk(veilReads.boxMut) && veilReads.inlineInk && !veilReads.inlineInk.ok && !inkOk(veilReads.inlineInk) && veilReads.back && veilReads.back.ok,
+    JSON.stringify({ noClip: veilReads.noClip, noDim: veilReads.noDim, faintDim: veilReads.faintDim, darkDim: veilReads.darkDim, clip3: veilReads.clip3, boxMut: veilReads.boxMut, inlineInk: veilReads.inlineInk, back: veilReads.back }));
 
   // ---- CARET-N and DIM -----------------------------------------------------------------------------------------------------------------------------------------------------------------
   await jackedOpen('The caret is a block.', 'dark');
