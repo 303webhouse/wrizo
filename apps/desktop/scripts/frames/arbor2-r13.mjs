@@ -80,7 +80,7 @@ const FIT = `(() => { ${R}
   const panel = document.querySelector('.wz-sliver-panel'), slide = document.querySelector('.wz-sliver-panel > .wz-drawer-slide');
   const P = q(panel), S = q(slide);
   const cut = [...slide.querySelectorAll('*')].filter((e) => shown(e) && e.children.length === 0 || (shown(e) && /wz-drawer-tab\\b/.test(e.className))).map((e) => ({ e, r: e.getBoundingClientRect() }))
-    .filter(({ r }) => r.width > 0 && r.top < innerHeight && r.right > S.r + 0.5).map(({ e, r }) => ({ cls: String(e.className).split(' ')[0] || e.tagName, text: (e.textContent || '').trim().slice(0, 16), right: Math.round(r.right * 10) / 10 }));
+    .filter(({ r }) => r.width > 0 && r.top < innerHeight && r.right > S.r + 0.5).map(({ e, r }) => ({ cls: String(e.className).split(' ')[0] || e.tagName, text: (e.textContent || '').trim().slice(0, 16), right: Math.round(r.right * 10) / 10, deco: !!e.closest('[aria-hidden="true"]') }));
   const cloths = [...slide.querySelectorAll('.wz-drawer-tab')].map((e) => ({ text: e.textContent.trim(), r: q(e), shown: shown(e) }));
   return { rail, page, tab, panel: P, slide: S, cut, cloths, zoom: !!document.querySelector(".mode-pagecol[data-zoom='true']"), w: innerWidth }; })()`;
 const fitCheck = async (app, name, want3 = false) => {
@@ -149,7 +149,11 @@ const fitCheck2 = async (app, name, want3 = false) => {
       && s.cloths.every((c) => c.shown && c.r.l >= s.slide.l - 0.5 && c.r.r <= s.slide.r + 0.5 && Math.abs(c.r.b - (c.on ? s.slide.t + 3 : s.slide.t)) <= 1)
       && s.cloths.every((c) => { const k = CLOTH19[c.text.trim().toLowerCase()]; return !!k && c.bg === k[0] && c.fg === k[1] && !/underline/.test(String(c.deco)) && c.bg !== 'rgb(255, 152, 0)' && c.fg !== 'rgb(255, 152, 0)'; })
       && (!want3 || s.cloths.some((c) => /^ink$/i.test(c.text))),
-    nothingCut: s.cut.length === 0,
+    // PARKED 2026-11-10 (SUPERSEDED - frames 42899266269 / 42901236726 / 42901561717 / 42901904213 red, d8ee4198 itself included; probe a419f414 (42902442927): BY DAY the drawer holds the pergola's shade copy (.arbor2-pagesh > .arbor2-pergola-drift, aria-hidden, 1398 px wide at 3.4% - the ruled shade across the panels), BY NIGHT nothing; the screens never pinned the room, so they followed the runner's clock). Original, verbatim:
+    // nothingCut: s.cut.length === 0,
+    // SUCCESSOR nothingCutB: nothing of the drawer's CONTENT passes its edge - every row, word and cloth; the shade's aria-hidden copy (decoration that
+    // paints the room's shade across the panel on purpose) is not content. A mutant (r13-tools-fit-cut-mutant) proves a real row past the edge is caught.
+    nothingCutB: s.cut.filter((c) => !c.deco).length === 0,
     pageStill: !!closedPage && ['l', 'r', 't', 'b'].every((k) => Math.abs(closedPage[k] - s.page[k]) <= 0.5) && await app.evalJs(`document.querySelector('${ED}')?.__r13 === 1`),
   };
   const brief = { ok, w: s.w, room, drawer, panel: s.panel, slide: s.slide, tab: s.tab, rail: s.rail, page: s.page, cloths: s.cloths.map((c) => [c.text, c.r.l, c.r.r]), cut: s.cut.slice(0, 8) };
@@ -161,10 +165,23 @@ const fitCheck2 = async (app, name, want3 = false) => {
 export default {
   // PARKED 2026-11-02 (SUPERSEDED by Nick's C2 folder tabs, Nov 2 (spec draft 23 §9c; the Wrizors' note md5 a17aae25, gated by Fable): the tabs stand OFF the drawer - the Tools tabs up from its top edge, the Tutor tabs off its right edge - so they are no longer inside it). Kept verbatim under the name r13-tools-fit-v1 (not in the run list); SUCCESSOR r13-tools-fit below (fitCheck2).
   'r13-tools-fit-v1': async (app) => { await page(app, 'arbor-r13-fit'); await fitCheck(app, 'R13-TOOLS-FIT'); },
-  'r13-tools-fit': async (app) => { await page(app, 'arbor-r13-fit'); await fitCheck2(app, 'R13-TOOLS-FIT'); },
+  // (premise change, Nov 10: the room is pinned DAY - the screens followed the runner's clock; see nothingCutB's park)
+  'r13-tools-fit': async (app) => { await page(app, 'arbor-r13-fit'); await setRoom(app, 'day'); await fitCheck2(app, 'R13-TOOLS-FIT'); },
   // PARKED 2026-11-02 (SUPERSEDED by Nick's C2 folder tabs, Nov 2 (spec draft 23 §9c; the Wrizors' note md5 a17aae25, gated by Fable): the tabs stand OFF the drawer - the Tools tabs up from its top edge, the Tutor tabs off its right edge - so they are no longer inside it). Kept verbatim under the name r13-tools-fit-2000-v1 (not in the run list); SUCCESSOR r13-tools-fit-2000 below (fitCheck2).
   'r13-tools-fit-2000-v1': async (app) => { await app.emulateDpr(1, 2000, 1125); await page(app, 'arbor-r13-fit2'); await fitCheck(app, 'R13-TOOLS-FIT-2000'); },
-  'r13-tools-fit-2000': async (app) => { await app.emulateDpr(1, 2000, 1125); await page(app, 'arbor-r13-fit2'); await fitCheck2(app, 'R13-TOOLS-FIT-2000'); },
+  'r13-tools-fit-2000': async (app) => { await app.emulateDpr(1, 2000, 1125); await page(app, 'arbor-r13-fit2'); await setRoom(app, 'day'); await fitCheck2(app, 'R13-TOOLS-FIT-2000'); },
+  // the MUTANT for nothingCutB: by day, a real 900 px row pushed into the open Tools drawer must be caught as cut (and the shade's copy still not)
+  'r13-tools-fit-cut-mutant': async (app) => {
+    await page(app, 'arbor-r13-fit-mut'); await setRoom(app, 'day'); await openSide(app, 'left');
+    await app.evalJs("(() => { const sec = document.querySelector('.wz-sliver-panel > .wz-drawer-slide .wz-sliver-section') || document.querySelector('.wz-sliver-panel > .wz-drawer-slide'); const m = document.createElement('span'); m.id = 'r13-mutant-row'; m.textContent = 'MUTANT ROW'; m.style.cssText = 'display:inline-block;width:900px'; sec.appendChild(m); return true; })()");
+    await sleep(200);
+    const s = await app.evalJs(FIT);
+    const real = s.cut.filter((c) => !c.deco), deco = s.cut.filter((c) => c.deco);
+    await app.evalJs("document.getElementById('r13-mutant-row')?.remove()");
+    const ok = { landed: real.some((c) => c.text === 'MUTANT ROW'), caught: real.length > 0, decoNotCounted: deco.every((c) => c.deco === true) };
+    if (Object.values(ok).some((x) => !x)) fail('R13-TOOLS-FIT-CUT-MUTANT', { ok, cut: s.cut });
+    say('R13-TOOLS-FIT-CUT-MUTANT', { ok, cut: s.cut });
+  },
   // Free Write, where the drawer has its three cloths (Ink among them): Free Write opens in Typewriter's zoom, which keeps today's drawers
   // (ruled), so the writer's own Typewriter switch in the drawer is turned off first, as she would
   // PARKED 2026-11-02 (SUPERSEDED by Nick's C2 folder tabs, Nov 2 (spec draft 23 §9c; the Wrizors' note md5 a17aae25, gated by Fable): the tabs stand OFF the drawer - the Tools tabs up from its top edge, the Tutor tabs off its right edge - so they are no longer inside it). Kept verbatim under the name r13-tools-fit-freewrite-v1 (not in the run list); SUCCESSOR r13-tools-fit-freewrite below.
@@ -182,6 +199,7 @@ export default {
     if (await app.evalJs("document.querySelector('[data-mode-toggle=\"typewriter\"]')?.getAttribute('aria-pressed') === 'true'")) await app.evalJs("document.querySelector('[data-mode-toggle=\"typewriter\"]').click()");
     await waitSoft(app, "!document.querySelector(\".mode-pagecol[data-zoom='true']\")", { label: 'typewriter off', timeout: 3000 });
     await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await app.evalJs(FINISH); await sleep(600);
+    await setRoom(app, 'day');   // (premise change, Nov 10: the room pinned DAY, as the two screens above)
     await fitCheck2(app, 'R13-TOOLS-FIT-FREEWRITE', true);
   },
 
