@@ -92,7 +92,7 @@ export async function main({ title }) {
     const px = await d.pixelCaret(); r.px = px; r.pxTries = px ? px.tries : 12;
   }
   // one step against the model; `full` adds the settle wait and the painted caret
-  async function execStep(d, m, st, goal, full) {
+  async function execStep(d, m, st, goal, full, px = true) {
     const theme = cfg.theme;
     const before = await d.read();
     const needStops = st.geo || st.k === 'click';
@@ -126,10 +126,10 @@ export async function main({ title }) {
     if (full) {
       await d.frames(); early = await d.read(); await sleep(350); late = await d.read();
       if (late.tw) { await d.still(); late = await d.read(); }
-      await attachPixels(d, late);
+      if (px) await attachPixels(d, late);
     } else { await d.frames(); late = await d.read(); early = late; }
     if (anyF) { const p = anyF.includes(late.focus) ? late.focus : anyF[0]; exp.f = p; exp.a = st.shift ? m.a : p; }
-    const wantDrawn = full || theme === 'flux';
+    const wantDrawn = (full && px) || theme === 'flux';
     const box = wantDrawn && exp.collapsed ? await d.box(exp.f) : null;
     const v = verify({ exp: exp.snapshot(), box, before, early, late, errors: d.errors.slice(e0), expect: { noDrawn: !wantDrawn, noPage: !full && !!(before.tw || late.tw) } });
     { const li0 = lns ? lineOf(lns, before.focus) : -1; const jumped = (st.geo === 'up' && li0 === 0) || (st.geo === 'down' && lns && li0 === lns.length - 1); goal.keep = (st.geo === 'up' || st.geo === 'down') && !jumped; }
@@ -153,7 +153,9 @@ export async function main({ title }) {
       const stNext = st;
       const full = fixed ? fixed.fullAt && fixed.fullAt.has(i) : (i === total - 1 || i % 12 === 11 || (st.k === 'key' && st.key === 'Enter'));
       let res;
-      try { res = await execStep(d, m, stNext, goal, !!full); }
+      // Arbor's pixel reads are slow (about 5 minutes a sequence at every Enter): there the painted caret is read every 20th step and the last, everything else every step
+      const px = cfg.theme !== 'plateau' || i === total - 1 || i % 20 === 19;
+      try { res = await execStep(d, m, stNext, goal, !!full, px); }
       catch (e) { return { trace, counts, fail: { i, st, class: 'harness', fails: [{ check: 'harness', detail: String((e && e.message) || e).slice(0, 200) }] } }; }
       trace.push(res.resolved);
       stepsRun++;

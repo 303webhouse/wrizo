@@ -14,7 +14,7 @@ export function probeInstall() {
   if (window.__wa) return;
   const ZW = '\u200b';
   const strip = (s) => s.split(ZW).join('');
-  const ed = () => document.querySelector('.forward-only-editor');
+  const ed = () => document.querySelector(window.__wa_sel || '.forward-only-editor');
   const rowsOf = (e) => [...e.children].filter((c) => c.nodeType === 1 && c.tagName !== 'BR' && !(c.classList && c.classList.contains('md-eof-guard')));
   const textNodes = (root) => { const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); const out = []; let n; while ((n = w.nextNode())) out.push(n); return out; };
   const plainOf = (e) => strip(e.textContent || '');
@@ -24,6 +24,30 @@ export function probeInstall() {
   const rr = (r) => (r ? { x: +r.x.toFixed(2), y: +r.y.toFixed(2), w: +r.width.toFixed(2), h: +r.height.toFixed(2) } : null);
   const padLeft = (el) => parseFloat(getComputedStyle(el).paddingLeft) || 0;
   const lineH = (el, r) => Math.min(r.height || 18, parseFloat(getComputedStyle(el).lineHeight) || r.height || 18);
+
+  // GENERIC geometry, for an editor that is not the Draft page's row editor (Free Write, the card pop-up): plain offsets over the text nodes, characters measured by Range rectangles
+  const gpoint = (e, p) => {
+    let rem = p, last = null;
+    for (const t of textNodes(e)) { const L = strip(t.data).length; if (L === 0) continue; last = t; if (rem <= L) return { node: t, off: rawIndexAt(t, rem) }; rem -= L; }
+    return last ? { node: last, off: last.data.length } : { node: e, off: 0 };
+  };
+  const gchar = (e, i) => { const a = gpoint(e, i), b = gpoint(e, i + 1); const rg = document.createRange(); rg.setStart(a.node, a.off); rg.setEnd(b.node, b.off); const r = [...rg.getClientRects()].find((q) => q.height > 0) || rg.getBoundingClientRect(); return r; };
+  const lhOf = (e) => { const v = parseFloat(getComputedStyle(e).lineHeight); return Number.isFinite(v) && v > 0 ? v : (parseFloat(getComputedStyle(e).fontSize) || 16) * 1.5; };
+  const gbox = (e, p) => {
+    const text = plainOf(e), n = text.length, lines = text.split('\n');
+    let line = 0, acc = 0;
+    while (line < lines.length - 1 && p > acc + lines[line].length) { acc += lines[line].length + 1; line++; }
+    const col = p - acc, len = lines[line].length, er = e.getBoundingClientRect(), cs = getComputedStyle(e);
+    if (n === 0) return { via: 'g-empty', x: er.left + (parseFloat(cs.paddingLeft) || 0), top: er.top + (parseFloat(cs.paddingTop) || 0), height: lhOf(e), noY: false };
+    if (len > 0 && col < len) { const r = gchar(e, p); return { via: 'g-char', x: r.left, top: r.top, height: r.height }; }
+    if (len > 0) { const r = gchar(e, p - 1); return { via: 'g-prevchar', x: r.right, top: r.top, height: r.height }; }
+    if (p < n) { const r = gchar(e, p); return { via: 'g-newline', x: r.left, top: r.top, height: r.height || lhOf(e) }; }
+    const r = gchar(e, n - 1);               // an empty last line after a trailing newline: one line below the newline's own line, at that line's left edge
+    let prevStart = n - 1; while (prevStart > 0 && text[prevStart - 1] !== '\n') prevStart--;
+    const lead = gchar(e, prevStart);
+    const lh = (lines.length >= 3 && lines[lines.length - 3] !== undefined) ? (() => { try { const a = gchar(e, Math.max(0, prevStart - 1 - (lines[lines.length - 3] || '').length)); return Math.abs(r.top - a.top) || lhOf(e); } catch (x) { return lhOf(e); } })() : lhOf(e);
+    return { via: 'g-lastempty', x: lead.left, top: r.top + lh, height: r.height || lh };
+  };
 
   // the DOM point for plain offset p, INSIDE the row that owns it (a line start is the row's first text node, not the newline between rows)
   const pointAt = (e, p) => {
@@ -42,7 +66,7 @@ export function probeInstall() {
   // where the model says offset p should be drawn
   const boxAt = (p) => {
     const e = ed(); if (!e) return null;
-    const pt = pointAt(e, p); if (!pt) return { via: 'rows-drift' };
+    const pt = pointAt(e, p); if (!pt) return window.__wa_generic ? gbox(e, p) : { via: 'rows-drift' };
     if (pt.len === 0) { const r = pt.row.getBoundingClientRect(); return { via: 'row', x: r.left + padLeft(pt.row), top: r.top, height: lineH(pt.row, r), noY: r.height < 4 }; }
     const rg = document.createRange();
     if (pt.col < pt.len) {
@@ -72,7 +96,7 @@ export function probeInstall() {
 
   const read = () => {
     const e = ed(), sel = getSelection(), root = document.documentElement;
-    const page = document.querySelector('.mode-page'), scroller = document.querySelector('.mode-scroll');
+    const page = document.querySelector('.mode-page') || document.querySelector('.board-popup'), scroller = document.querySelector('.mode-scroll');
     const out = { editor: !!e, theme: root.getAttribute('data-theme'), tone: root.getAttribute('data-page'), view: { w: innerWidth, h: innerHeight }, platform: navigator.userAgent.indexOf('Windows') >= 0 ? 'win' : 'linux' };
     if (!e) return out;
     out.text = plainOf(e);
@@ -103,7 +127,8 @@ export function probeInstall() {
   const place = (a, f) => {
     const e = ed(); if (!e) return false;
     e.focus({ preventScroll: true });
-    const pa = pointAt(e, a), pf = f === undefined || f === a ? pa : pointAt(e, f);
+    let pa = pointAt(e, a), pf = f === undefined || f === a ? pa : pointAt(e, f);
+    if ((!pa || !pf) && window.__wa_generic) { pa = gpoint(e, a); pf = f === undefined || f === a ? pa : gpoint(e, f); }
     if (!pa || !pf) return false;
     getSelection().setBaseAndExtent(pa.node, pa.off, pf.node, pf.off);
     return true;
@@ -148,5 +173,6 @@ export function probeInstall() {
     return out;
   };
   const dom = (n = 600) => { const e = ed(); return e ? e.innerHTML.slice(0, n) : null; };
-  window.__wa = { read, boxAt, place, dom, arm, scan, diff, clear, stops };
+  const surface = (sel, generic) => { window.__wa_sel = sel; window.__wa_generic = !!generic; return true; };
+  window.__wa = { surface, read, boxAt, place, dom, arm, scan, diff, clear, stops };
 }

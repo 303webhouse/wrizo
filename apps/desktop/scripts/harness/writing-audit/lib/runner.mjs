@@ -15,7 +15,7 @@ const label2 = (st) => {
   return stepLabel(st) + (st.geo ? ' [layout oracle]' : st.prop ? ' [property]' : '');
 };
 
-export async function main({ groupsDef, order, title }) {
+export async function main({ groupsDef, order, title, surfaceHook = null, editorSel = '.forward-only-editor', pageSel = '.mode-page' }) {
   const env = process.env;
   const cfg = {
     theme: env.WA_THEME || 'plateau', flag: env.WA_FLAG || 'off', tone: env.WA_TONE || 'light',
@@ -69,9 +69,9 @@ export async function main({ groupsDef, order, title }) {
       proof.push({ name: `R-mutant ${name}: the reader names "${expectCheck}"`, pass: v1.fails.some((f) => f.check === expectCheck), detail: v1.fails.map((f) => `${f.check}: ${f.detail}`).join(' | ') || 'NOTHING FLAGGED' });
     };
     await ctl('caret elsewhere in the text', 3, 'window.__wa.place(9)', 'caret');
-    await ctl('text changed behind the editor', 3, "(() => { const w = document.createTreeWalker(document.querySelector('.forward-only-editor'), NodeFilter.SHOW_TEXT); const n = w.nextNode(); n.data = n.data + 'Z'; })()", 'text');
-    await ctl('focus lost', 3, "document.querySelector('.forward-only-editor').blur()", 'focus');
-    await ctl('page shifted by 7px', 3, "(() => { document.querySelector('.mode-page').style.transform = 'translateX(7px)'; })()", 'page');
+    await ctl('text changed behind the editor', 3, `(() => { const w = document.createTreeWalker(document.querySelector(${JSON.stringify(editorSel)}), NodeFilter.SHOW_TEXT); const n = w.nextNode(); n.data = n.data + 'Z'; })()`, 'text');
+    await ctl('focus lost', 3, `document.querySelector(${JSON.stringify(editorSel)}).blur()`, 'focus');
+    await ctl('page shifted by 7px', 3, `(() => { document.querySelector(${JSON.stringify(pageSel)}).style.transform = 'translateX(7px)'; })()`, 'page');
     await ctl('an error in the console', 3, "console.error('wa-reader-mutant')", 'console');
     await ctl('caret moved after the keystroke', 3, 'window.__wa.place(9)', 'settled', { early: true });
     if (cfg.theme === 'flux') await ctl('Flux block caret at the page corner', 3, "(() => { const c = document.querySelector('.flux-block-caret'); if (c) { c.style.left = '0px'; c.style.top = '0px'; } })()", 'drawn');
@@ -164,6 +164,7 @@ export async function main({ groupsDef, order, title }) {
   try {
     await withHarness(async (app) => {
       const d = makeDriver(app, cfg);
+      if (surfaceHook) await surfaceHook(d);
       out(`WRITING AUDIT ${title} [${TAG}] (${new Date().toISOString()})`);
       await d.boot();
       await d.openPage('probe', 'drafting', OPEN);

@@ -111,6 +111,31 @@ export function makeDriver(app, cfg) {
       return null;
     },
     stops: () => ev('window.__wa.stops()'),
+    /** which editor the reader reads: a CSS selector, and whether its geometry is the generic (row-less) kind */
+    surface: (sel, generic = false) => ev(`window.__wa.surface(${JSON.stringify(sel)}, ${generic})`),
+    /** a Free Write page (the forward-only editor): seeded with `text`, mounted */
+    async openFreeWrite(text = '') {
+      await d.surface('.forward-only-editor', true);
+      return d.openPage(text, 'journal', {});
+    },
+    /** a card on a board, opened in its pop-up with a real double-click; the reader reads the pop-up's editor */
+    async openCard(text = '') {
+      const id = `wa-card-${Date.now().toString(36)}-${++n}`;
+      await ev(`location.hash = '#/'`); await sleep(150);
+      await ev(`window.wrizoCreateJournalPage(${JSON.stringify({ id, text: 'Audit board', pageType: 'board', origin: 'loose', source: 'page', createdAt: new Date().toISOString(), boxes: [{ id: 'wa-card', kind: 'text', x: 0.1, y: 0.08, w: 0.3, h: 0.3, z: 1, text }] })})`);
+      await ev(`location.hash = '#/page/${id}'`);
+      await waitFor("!!document.querySelector('[data-box-id=\"wa-card\"]')", 'the card', 15000);
+      await sleep(600);
+      const c = await ev(`(() => { const r = document.querySelector('[data-box-id="wa-card"]').getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()`);
+      await d.click(c.x, c.y, 1); await sleep(80); await d.click(c.x, c.y, 2);
+      await waitFor("!!document.querySelector('.board-popup-editor')", 'the card pop-up', 6000);
+      await sleep(350);
+      await d.surface('.board-popup-editor', true);
+      await waitFor(`window.__wa.read().text === ${JSON.stringify(text)}`, 'the card editor holds the seeded text', 6000);
+      await d.still();
+      d.errors.length = 0;
+      return id;
+    },
     /** a real mouse click (count 2 = double, 3 = triple) at viewport (x, y) */
     async click(x, y, count = 1) {
       const base = { x, y, button: 'left', pointerType: 'mouse' };
