@@ -289,6 +289,7 @@ export function rowsPointFor(R: Rows, target: number): { node: Node; offset: num
   }
   const visible = cands.find((c) => !inHidden(c.node));
   if (visible) return visible;
+  if (cands.length === 0 && row.firstChild === null) return { node: el, offset: Array.prototype.indexOf.call(el.childNodes, row) };
   if (local === 0) {
     const sepBefore = row.previousSibling;
     if (sepBefore && sepBefore.nodeType === 3) return { node: sepBefore, offset: (sepBefore as Text).data.length };
