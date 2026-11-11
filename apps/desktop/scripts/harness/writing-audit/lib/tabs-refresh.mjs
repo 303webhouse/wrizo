@@ -2,7 +2,7 @@
 // The save is given its full time first (the page autosaves 2 s after the last key, then the store writes 0.3 s later), so these cases hold only windows that are NOT in the middle of an edit: a window that IS (both typing at once) is part 3 (keep both).
 // TR1  window A types and the save settles: window B (opened before, nothing unsaved) shows A's words within 2.5 s, then B types: A's and B's words are both stored
 // TR2  window B types and the save settles, then A (the stale one) types: both stored, and A saw B's words before it typed
-// TR3  the writer's caret in the idle window stays where it was when the other window's save arrives (and the editor keeps focus)
+// TR3  the writer's caret in the idle window stays where it was when the other window's save arrives (the window she is not typing in keeps its caret; focus is the browser's: typing in A takes it from B)
 import { runTabs } from './tabs-common.mjs';
 
 const SETTLE = 3600;   // 2 s autosave + 0.3 s store write + margin
@@ -47,7 +47,6 @@ export async function main({ title }) {
         const focused = await h.ev(`(() => { const d = document.getElementById('wa-tab-b').contentDocument; return !!d.activeElement && !!d.activeElement.closest('.forward-only-editor'); })()`);
         notes.push(`B after the refresh: text ${JSON.stringify(r && r.text)}, caret ${r && r.anchor}..${r && r.focus}, editor focused ${focused}`);
         if (!r || r.focus !== 3 || r.anchor !== 3) fails.push(`window B's caret moved: it was at 3 and is now ${r && r.anchor}..${r && r.focus}`);
-        if (!focused) fails.push("window B's editor lost focus when the other window's save arrived");
       });
     },
   });
