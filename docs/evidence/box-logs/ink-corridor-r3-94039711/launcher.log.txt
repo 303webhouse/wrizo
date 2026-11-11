@@ -1,0 +1,21 @@
+2026-11-11T10:43:47Z TURN PLAN: Corridor HEAD 94039711 (dirty 0); control INK-maincontrol HEAD 31a69f23 (dirty 0) running l-method.mjs L-only (a scratch copy; the stamp will read +1dirty)
+2026-11-11T10:43:48Z harness browsers at turn start: 0
+2026-11-11T10:43:48Z quiet check before the grant: Wow / OBS / streaming absent
+2026-11-11T10:43:49Z TAKE: granted to lane "ink" and bound to the process tree of pid 1216 - name this turn's start and end in your report
+WS_BOX_TURN=<drawn>   (drawn now, printed once, not stored - only its hash is in the grant file; export it in the shell or script that runs the harness)
+2026-11-11T10:43:49Z TURN START
+2026-11-11T10:43:49Z quiet check before control-before: Wow / OBS / streaming absent
+2026-11-11T10:43:49Z [control-before] start (l-method.mjs in INK-maincontrol, )
+2026-11-11T10:48:49Z [control-before] exit 0: [01/1] OK        exit=0  298s l-method.mjs :: L-METHOD VERIFY: PASS (3 checks) ;; SUITE DONE HARNESS_PARKED=unset — 1/1 of 1 returned a passing verdict ;; SUITE RESULT: CLEAN — tree=31a69f23 bundle=index-B9fpcTSq.js/1001407b NO-REBUILD
+2026-11-11T10:48:49Z quiet check before corridor-default: Wow / OBS / streaming absent
+2026-11-11T10:48:49Z [corridor-default] start (flux3-s4c.mjs in INK-corridor, )
+2026-11-11T11:00:59Z [corridor-default] exit 0: [01/1] OK        exit=0  728s flux3-s4c.mjs :: ROWS-SHADOW VERIFY: PASS (7 renders checked, shadow == DOM on every one) ;; FLUX3-S4C VERIFY: PASS (80 checks) ;; SUITE DONE HARNESS_PARKED=unset — 1/1 of 1 returned a passing verdict ;; SUITE RESULT: CLEAN — tree=94039711 bundle=index-H13tydK-.js/1023337b NO-REBUILD
+2026-11-11T11:00:59Z quiet check before corridor-parked: Wow / OBS / streaming absent
+2026-11-11T11:00:59Z [corridor-parked] start (flux3-s4c.mjs in INK-corridor, --parked)
+2026-11-11T11:13:08Z [corridor-parked] exit 0: [01/1] OK        exit=0  727s flux3-s4c.mjs :: ROWS-SHADOW VERIFY: PASS (7 renders checked, shadow == DOM on every one) ;; FLUX3-S4C VERIFY: PASS (80 checks) ;; SUITE DONE HARNESS_PARKED=1 — 1/1 of 1 returned a passing verdict ;; SUITE RESULT: CLEAN — tree=94039711 bundle=index-H13tydK-.js/1023337b NO-REBUILD
+2026-11-11T11:13:09Z quiet check before control-after: Wow / OBS / streaming absent
+2026-11-11T11:13:09Z [control-after] start (l-method.mjs in INK-maincontrol, )
+2026-11-11T11:18:06Z [control-after] exit 0: [01/1] OK        exit=0  295s l-method.mjs :: L-METHOD VERIFY: PASS (3 checks) ;; SUITE DONE HARNESS_PARKED=unset — 1/1 of 1 returned a passing verdict ;; SUITE RESULT: CLEAN — tree=31a69f23 bundle=index-B9fpcTSq.js/1001407b NO-REBUILD
+2026-11-11T11:18:06Z RELEASE: released  grant file now absent
+2026-11-11T11:18:07Z harness browsers at turn end: 0
+2026-11-11T11:18:07Z TURN END
