@@ -83,15 +83,16 @@ export async function main({ title }) {
     // Both windows show ONE quiet line ([data-same-page-elsewhere]): not a pop-up (no dialog, no button, nothing that takes focus), it never stops the writer typing, and it goes when the other window closes or leaves the page. It saves nothing: windows signal each other.
     const LINE = '[data-same-page-elsewhere]';
     const lineJs = (docExpr) => `(() => { const l = ${docExpr}.querySelector(${JSON.stringify(LINE)}); if (!l) return null; const r = l.getBoundingClientRect(); return { text: l.textContent.trim(), w: r.width, h: r.height, dialog: !!l.closest('[role=dialog],[role=alertdialog],dialog'), focusable: !!l.querySelector('button,input,a,select,textarea,[tabindex]') || l.hasAttribute('tabindex') }; })()`;
+    const dropFrames = async () => { await ev(`document.querySelectorAll('#wa-tab-b').forEach((f) => f.remove())`); await sleep(600); };   // a window of an earlier case must not stay open and answer for this one
     const lineIn = (w) => ev(lineJs(w === 'B' ? "document.getElementById('wa-tab-b').contentDocument" : 'document'));
     const presence = (w) => ev(w === 'B' ? "JSON.stringify(document.getElementById('wa-tab-b').contentWindow.wrizoPresence && document.getElementById('wa-tab-b').contentWindow.wrizoPresence())" : 'JSON.stringify(window.wrizoPresence && window.wrizoPresence())');
     const lineWait = async (w, want, ms) => { const t0 = Date.now(); let v = await lineIn(w); while ((!!v) !== want && Date.now() - t0 < ms) { await sleep(400); v = await lineIn(w); } return v; };
     const mkPage = async (pid, text) => {
+      await dropFrames();   // BEFORE the page is made: a closing window writes its whole, older store over this one's, and would take the new page with it
       await ev(`location.hash = '#/'`); await sleep(150);
       await ev(`window.wrizoCreateJournalPage(${JSON.stringify({ id: pid, text, createdAt: new Date().toISOString(), origin: 'journal', source: 'page' })})`);
       await ev(`localStorage.setItem('wrizo-mode-page-${pid}', 'drafting'); localStorage.setItem('wrizo-typewriter-page-${pid}', 'off')`);
     };
-    const dropFrames = async () => { await ev(`document.querySelectorAll('#wa-tab-b').forEach((f) => f.remove())`); await sleep(300); };   // a window of an earlier case must not stay open and answer for this one
     const tabBd = async () => {   // tab B, and what B looked like if it never came up
       try { await tabB(); } catch (e) {
         const st = await ev(`(() => { const f = document.getElementById('wa-tab-b'); if (!f) return 'no frame'; try { const d = f.contentDocument, w = f.contentWindow; return JSON.stringify({ ready: d.readyState, hash: w.location.hash, editor: !!d.querySelector('.forward-only-editor'), wa: !!w.__wa, body: (d.body.innerText || '').slice(0, 160) }); } catch (x) { return 'ERR ' + x.message; } })()`);
