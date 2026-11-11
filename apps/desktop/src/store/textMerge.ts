@@ -37,7 +37,7 @@ function changes(base: string[], other: string[]): Range[] {
   while (s < base.length - p && s < other.length - p && base[base.length - 1 - s] === other[other.length - 1 - s]) s += 1;
   const a = base.slice(p, base.length - s), b = other.slice(p, other.length - s);
   if (!a.length && !b.length) return [];
-  if (!a.length || !b.length || a.length * b.length > LCS_LIMIT) return [{ bs: p, be: p + a.length, os: p, oe: p + b.length }];
+  if (!a.length || !b.length || a.length * b.length > LCS_LIMIT) return splitEqualRuns([{ bs: p, be: p + a.length, os: p, oe: p + b.length }], base, other);
   const n = a.length, m = b.length, w = m + 1;
   const t = new Uint32Array((n + 1) * w);
   for (let i = n - 1; i >= 0; i -= 1) for (let j = m - 1; j >= 0; j -= 1) t[i * w + j] = a[i] === b[j] ? t[(i + 1) * w + j + 1] + 1 : Math.max(t[(i + 1) * w + j], t[i * w + j + 1]);
@@ -50,7 +50,17 @@ function changes(base: string[], other: string[]): Range[] {
     if (j >= m || (i < n && t[(i + 1) * w + j] >= t[i * w + j + 1])) i += 1; else j += 1;
   }
   close();
-  return out;
+  return splitEqualRuns(out, base, other);
+}
+
+/** A run that replaced n elements by n elements is n separate one-element changes (each element that really differs): two windows that changed NEIGHBOURING paragraphs then never share a stretch, so neither is mistaken for a conflict. */
+function splitEqualRuns(runs: Range[], base: string[], other: string[]): Range[] {
+  const res: Range[] = [];
+  for (const r of runs) {
+    if (r.be - r.bs !== r.oe - r.os || r.be - r.bs < 2) { res.push(r); continue; }
+    for (let k = 0; k < r.be - r.bs; k += 1) if (base[r.bs + k] !== other[r.os + k]) res.push({ bs: r.bs + k, be: r.bs + k + 1, os: r.os + k, oe: r.os + k + 1 });
+  }
+  return res;
 }
 
 /** For each base line, the line of `other` it is, when `other` left it alone (-1 for a line inside a changed stretch). */

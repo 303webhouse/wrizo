@@ -45,6 +45,11 @@ const m = (b, a, t) => mergeText(b, a, t);
   // the caret stays in its own line
   ok(r.mapCaret('Base. a0 a1 '.length) === 'Base. a0 a1 '.length, 'the caret at the end of the edited paragraph stays there');
 }
+{ // neighbouring paragraphs changed by two windows, one of them the SAME change on both sides (a window that had already adopted the other's edit): no conflict, nothing written twice
+  const NLC = String.fromCharCode(10);
+  const r = m(['First.', 'Second.', 'Third.'].join(NLC), ['First. a0', 'Second.', 'Third. c0'].join(NLC), ['First. a0', 'Second. b0', 'Third.'].join(NLC));
+  ok(r.text === ['First. a0', 'Second. b0', 'Third. c0'].join(NLC) && !r.kept, `neighbours, one change shared: ${JSON.stringify(r.text)}`);
+}
 { // the same paragraph changed two ways: both whole versions kept
   const NL = String.fromCharCode(10);
   const r = m('The quick fox.', 'The fast fox.', 'The slow fox.');
