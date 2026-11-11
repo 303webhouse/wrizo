@@ -3,7 +3,7 @@
 //   SYMMETRY      mergeText(base, a, b).text === mergeText(base, b, a).text         (two windows merging each other's work settle on one page)
 //   NEVER DROPS   every word either side ADDED (each is unique in this battery) is in the merged text
 //   FAST PATHS    one side unchanged gives the other side's text exactly
-//   NO BLENDING   every line of the merged text is a whole line of base, mine or theirs (a paragraph both sides changed is kept as two whole versions, never mixed word by word: a mixed line could be a sentence nobody wrote)
+//   NO BLENDING   every line of the merged text is a whole line of base, mine or theirs (a paragraph both sides changed is kept as two whole versions, never mixed word by word: a mixed line could be a sentence nobody wrote; a blank line is not a sentence)
 //   CARET         mapCaret stays inside the text, and for a caret after a character that is still there it stands after the same character
 // Run: node scripts/harness/writing-audit/merge-unit.mjs (from apps/desktop). Exit 1 on any failure.
 import { createRequire } from 'node:module';
@@ -37,6 +37,13 @@ const m = (b, a, t) => mergeText(b, a, t);
 { // neighbouring paragraphs (the changes touch)
   const r = m('A\nB\nC', 'A mine\nB\nC', 'A\nB theirs\nC');
   ok(r.text === 'A mine\nB theirs\nC', `neighbouring paragraphs: ${JSON.stringify(r.text)}`);
+}
+{ // a paragraph ADDED just after one the other window edited is no conflict (typing at the end of a paragraph while another window adds the next one)
+  const r = m('Base. a0 ', 'Base. a0 a1 ', 'Base. a0 ' + String.fromCharCode(10) + 'Base. b0 ');
+  ok(r.text === 'Base. a0 a1 ' + String.fromCharCode(10) + 'Base. b0 ' && !r.kept, `an added paragraph beside an edited one: ${JSON.stringify(r.text)}`);
+  ok(m('Base. a0 ', 'Base. a0 ' + String.fromCharCode(10) + 'Base. b0 ', 'Base. a0 a1 ').text === r.text, 'an added paragraph beside an edited one: the same page the other way round');
+  // the caret stays in its own line
+  ok(r.mapCaret('Base. a0 a1 '.length) === 'Base. a0 a1 '.length, 'the caret at the end of the edited paragraph stays there');
 }
 { // the same paragraph changed two ways: both whole versions kept
   const NL = String.fromCharCode(10);
@@ -100,7 +107,7 @@ for (let n = 0; n < 3000; n += 1) {
   for (let k = 0, ka = pick(4); k < ka; k += 1) a = edit(a, addedA);
   for (let k = 0, kb = pick(4); k < kb; k += 1) b = edit(b, addedB);
   const ab = m(base, a, b), ba = m(base, b, a);
-  { const NLC = String.fromCharCode(10); const inputs = new Set([...base.split(NLC), ...a.split(NLC), ...b.split(NLC)]); for (const line of ab.text.split(NLC)) ok(inputs.has(line), `NO BLENDING #${n}: the line ${JSON.stringify(line)} is in none of the three texts: ${JSON.stringify({ base, a, b, merged: ab.text })}`); }
+  { const NLC = String.fromCharCode(10); const inputs = new Set([...base.split(NLC), ...a.split(NLC), ...b.split(NLC)]); for (const line of ab.text.split(NLC)) ok(line === '' || inputs.has(line), `NO BLENDING #${n}: the line ${JSON.stringify(line)} is in none of the three texts: ${JSON.stringify({ base, a, b, merged: ab.text })}`); }
   ok(ab.text === ba.text, `SYMMETRY #${n}: ${JSON.stringify({ base, a, b, ab: ab.text, ba: ba.text })}`);
   for (const w of [...addedA, ...addedB]) {
     // a word added and then replaced again by the same side's later edit is not in that side's final text: only words that are in a side's text count

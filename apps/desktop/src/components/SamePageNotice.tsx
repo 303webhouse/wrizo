@@ -13,7 +13,7 @@ export function SamePageLine() {
   const { t } = useDeskLexicon();
   const [elsewhere, setElsewhere] = useState(() => samePageElsewhere());
   useEffect(() => registerLineHost(), []);
-  useEffect(() => subscribeSamePage(() => setElsewhere(samePageElsewhere())), []);
+  useEffect(() => { setElsewhere(samePageElsewhere()); return subscribeSamePage(() => setElsewhere(samePageElsewhere())); }, []);   // asked again once mounted: a row that mounts as the page changes would otherwise hold the old page's answer
   if (!elsewhere) return null;
   return <span className="wz-same-page-line" role="status" aria-live="off" data-same-page-elsewhere="true">{t('samePageElsewhere')}</span>;
 }
