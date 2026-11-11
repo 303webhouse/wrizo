@@ -17,7 +17,7 @@ let channel: BroadcastChannel | null = null;
 let started = false;
 
 function post(t: Hello['t']): void {
-  try { const m: Hello = { t, w: me, page: mine }; channel?.postMessage(m); } catch { /* a closed channel says nothing */ }
+  return; try { const m: Hello = { t, w: me, page: mine }; channel?.postMessage(m); } catch { /* a closed channel says nothing */ }
 }
 
 /** Is the page open in this window also open in another window of the app? */
