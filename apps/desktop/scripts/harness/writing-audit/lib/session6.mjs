@@ -92,6 +92,12 @@ export async function main({ title }) {
       await ev(`localStorage.setItem('wrizo-mode-page-${pid}', 'drafting'); localStorage.setItem('wrizo-typewriter-page-${pid}', 'off')`);
     };
     const dropFrames = async () => { await ev(`document.querySelectorAll('#wa-tab-b').forEach((f) => f.remove())`); await sleep(300); };   // a window of an earlier case must not stay open and answer for this one
+    const tabBd = async () => {   // tab B, and what B looked like if it never came up
+      try { await tabB(); } catch (e) {
+        const st = await ev(`(() => { const f = document.getElementById('wa-tab-b'); if (!f) return 'no frame'; try { const d = f.contentDocument, w = f.contentWindow; return JSON.stringify({ ready: d.readyState, hash: w.location.hash, editor: !!d.querySelector('.forward-only-editor'), wa: !!w.__wa, body: (d.body.innerText || '').slice(0, 160) }); } catch (x) { return 'ERR ' + x.message; } })()`);
+        throw new Error(`${e.message.split('; diag=')[0]}; B is ${st}`);
+      }
+    };
     const openA = async (pid) => {
       await dropFrames();
       await ev(`location.hash = '#/page/${pid}'`);
@@ -103,7 +109,7 @@ export async function main({ title }) {
       await openA(pid);
       const alone = await lineIn('A');
       if (alone) fails.push(`the line shows in a window that is the only one open: ${JSON.stringify(alone)}`);
-      await tabB();
+      await tabBd();
       const a = await lineWait('A', true, 9000), b = await lineWait('B', true, 9000);
       if (!a) fails.push('window A shows no quiet line though the same page is open in window B');
       if (!b) fails.push('window B shows no quiet line though the same page is open in window A');
@@ -125,7 +131,7 @@ export async function main({ title }) {
       const pid = `wa-warn2-${Date.now().toString(36)}`;
       await mkPage(pid, 'Base. ');
       await openA(pid);
-      await tabB();
+      await tabBd();
       if (!(await lineWait('A', true, 9000))) fails.push('no line to remove: window A never showed it');
       await ev(`document.getElementById('wa-tab-b').remove()`);
       if (await lineWait('A', false, 12000)) fails.push(`the line is still in window A twelve seconds after window B closed; A believes ${await presence('A')}`);
@@ -134,7 +140,7 @@ export async function main({ title }) {
       const p1 = `wa-warn3a-${Date.now().toString(36)}`, p2 = `wa-warn3b-${Date.now().toString(36)}`;
       await mkPage(p1, 'Page one. '); await mkPage(p2, 'Page two. ');
       await openA(p1);
-      await tabB();
+      await tabBd();
       await ev(`document.getElementById('wa-tab-b').contentWindow.location.hash = '#/page/${p2}'`); await sleep(3500);
       const a = await lineIn('A'), b = await lineIn('B');
       if (a || b) fails.push(`two windows on different pages show the line (A ${JSON.stringify(a && a.text)}, B ${JSON.stringify(b && b.text)}); A believes ${await presence('A')}; B believes ${await presence('B')}; B at ${await ev("document.getElementById('wa-tab-b').contentWindow.location.hash")}`);
