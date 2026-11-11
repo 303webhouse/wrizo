@@ -127,6 +127,7 @@ export function mergeText(base: string, mine: string, theirs: string): MergeResu
   if (mine === base) return { ...same(theirs, false), mapCaret: (o) => Math.max(0, Math.min(o, theirs.length)) };
   if (theirs === base) return same(mine, false);
 
+  return { text: mine, merged: true, kept: false, mapCaret: (o) => o };   // MUTANT: this window's text wins (must be RED)
   let kept = false;
   const lm = splitLines(mine);
   const resolveLines: Resolve = (b, m, t, at) => {
