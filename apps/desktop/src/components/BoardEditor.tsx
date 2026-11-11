@@ -9,7 +9,7 @@ import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { DRAWER_MIN, useStandingHands } from '../store/menusDrawers';
 import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { boardName, plainLines } from '../store/entryText';
+import { boardName, fullBoardName, plainLines } from '../store/entryText';
 import {
   getJournalEntry, saveBoardBoxes, flushNow, getDrawer, getProject,
   patchJournalEntry, getBoardsConnecting, generateId, createLooseHomePage, pinPageToBoard,
@@ -824,7 +824,7 @@ export function BoardEditor({ id }: { id: string }) {
     setRenaming(false);
     if (!next) return;                       // empty reverts: the old name stands
     const live = getJournalEntry(id);
-    if (!live || next === boardName(live.text, 'Untitled')) return;
+    if (!live || next === fullBoardName(live.text, 'Untitled')) return;   // #69: against the whole stored name, not the 60-character cut
     patchJournalEntry(id, next, {});
   };
 
@@ -1599,7 +1599,7 @@ export function BoardEditor({ id }: { id: string }) {
                 className="crumb-here crumb-rename-btn"
                 title={t('boardRenameLabel')}
                 // the draft derives with an empty fallback, so a nameless board opens a nameless field, with no sentinel string to keep in step [BoardEditor §61]
-                onClick={() => { setNameDraft(boardName(getJournalEntry(id)?.text, '')); setRenaming(true); }}
+                onClick={() => { setNameDraft(fullBoardName(getJournalEntry(id)?.text, '')); setRenaming(true); }}
               >{title}</button>
             )}
             {gapsLine}
