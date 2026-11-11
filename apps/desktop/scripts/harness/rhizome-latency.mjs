@@ -338,10 +338,14 @@ async function part2() {
     const attempts = [];
     let M, passes = 0, fails = 0;
     for (let n = 1; n <= MAX_MEASURES; n += 1) {
+      // each attempt's own wall-clock window (UTC), so a box event can be placed against an attempt from a stamp, never an estimate (Chat 1, Nov 11:
+      // turn 4 had to place a 35 s overlap by run timing). Record only: nothing below reads it.
+      const t0 = new Date().toISOString();
       M = await measure();
+      const t1 = new Date().toISOString();
       const j = judge(M);
       const good = j.b && j.c && j.b2 && j.c2 && M.flashPremise && M.savedAll;
-      attempts.push({ n, void: j.noisy, ok: good, control: j.control, controlFast: j.controlFast, flash: j.flash, fade: j.fade });
+      attempts.push({ n, t0, t1, void: j.noisy, ok: good, control: j.control, controlFast: j.controlFast, flash: j.flash, fade: j.fade });
       if (!M.flashPremise) break;
       if (j.noisy) continue;
       if (good) passes += 1; else fails += 1;
