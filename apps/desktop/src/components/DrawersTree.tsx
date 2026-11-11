@@ -6,6 +6,7 @@ import {
   createDrawer, getDrawers, getProjects, renameDrawer, setProjectDrawer, softDeleteDrawer,
 } from '../store/persistence';
 import { useLexicon } from '../store/themeLexicon';
+import { useDeskLexicon } from '../store/deskLexicon';
 
 // Drawers D1 — the browsable Drawer → Binder(Project) tree that replaces the
 // Desk's flat recent list. The top of the Drawers IA. A "Binder" is still the
@@ -28,6 +29,7 @@ function byActivityThenTitle(a: Project, b: Project): number {
 export function DrawersTree() {
   const navigate = useNavigate();
   const { t: lex, tMany: lexMany } = useLexicon();
+  const { t: desk } = useDeskLexicon();
   const drawers = getDrawers().sort((a, b) => a.order - b.order);
   const projects = getProjects();
   const liveDrawerIds = new Set(drawers.map(d => d.id));
@@ -71,7 +73,7 @@ export function DrawersTree() {
         {moveFor === p.id && (
           <div className="dz-menu" role="menu">
             {currentDrawerId !== null && (
-              <button type="button" className="dz-menu-item" onClick={() => move(p.id, null)}>Unsorted</button>
+              <button type="button" className="dz-menu-item" onClick={() => move(p.id, null)}>{desk('switcherUnsorted')}</button>
             )}
             {drawers.filter(d => d.id !== currentDrawerId).map(d => (
               <button type="button" key={d.id} className="dz-menu-item" onClick={() => move(p.id, d.id)}>{d.name}</button>
