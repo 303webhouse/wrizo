@@ -20,3 +20,8 @@ flux3PortDisconnect=Disconnect
 flux3Checkpoint=Checkpoint
 # 10e (POLISH) - the Progress row's label for the stored 'project' metric; its Flux word comes with the full pass
 progressDrawer=Drawer
+# FLUX3 S4 Corridor r2 (INK) - Jacked In's exit line, the 4 s nudge and the leave button's name
+flux3JackedExit=Wired in · {key} to unplug
+flux3JackedNudge=Keep the signal · any word will do
+flux3JackedLeave=Unplug
+flux3JackedLeaveHint=Unplug ({key})

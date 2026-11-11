@@ -5,6 +5,10 @@ import { DrawerNote } from './DrawerNote';
 import { useChromeDissolve } from './useChromeDissolve';
 import { useWritingSettings, setWritingSettings, setTypewriterExplicit, typewriterForPage } from '../store/writingSettings';
 import type { ProgressMetric, FadeDepth, ProgressStyle } from '../store/writingSettings';
+// FLUX3 S4 - a mount point only: under ?flux3=1, a page's Typewriter in Flux is Jacked In (src/flux3/FluxJackedIn.tsx); without the flag nothing mounts
+import { FLUX3 } from '../flux3/flag';
+import { fluxJackMode } from '../flux3/jackIn';
+import { FluxJackedIn } from '../flux3/FluxJackedIn';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { useAssistResponse } from '../store/aiAssist';
 import { ChromeHandle } from './WritingShell';
@@ -173,11 +177,16 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
   // the bar's label is desk chrome, so it takes the desk one.
   const { t: deskT } = useDeskLexicon();
   // Typewriter engages in Free Write and Draft only; Draft reads this page's own value, Free Write and pageId-less callers the shared field [ModeStage §6]
+  // FLUX3 S4 (draft 21 §6): in Flux under the flag JACK IN is the free-writing MODE: Free Write IS Jacked In, with no off inside it, and Draft (BUILD) is never the Typewriter
+  const stageTheme = useTheme();
+  const fluxJack = fluxJackMode(stageTheme) && pageId != null;
   const typewriterOn = mode === 'drafting' && pageId != null
     ? typewriterForPage(pageId, words === 0)
     : (mode === 'journal' || mode === 'drafting') && settings.typewriter;
+  // ... and Flux's Jacked In is the free-writing MODE: it runs the Typewriter whatever the setting says, and BUILD (Draft) never does (typewriterRun is typewriterOn in every other theme)
+  const typewriterRun = fluxJack ? mode === 'journal' : typewriterOn;
   // the zoom: on the framed prose page Typewriter scales the same page ~1.6x by a transform, so no line reflows and the editor never unmounts (page primacy's one exception); entering tucks both drawers [ModeStage §7]
-  const zoomed = !!framed && typewriterOn;
+  const zoomed = !!framed && typewriterRun;
   const pagecolRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!zoomed) return;
@@ -306,7 +315,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
   // container-mode call, one of the two "paper" surfaces the brief's S3
   // retunes; Journal's own window-scroll call is untouched (see
   // useTypewriterFade.ts's own comment).
-  useTypewriterFade({ enabled: typewriterOn, containerRef: scrollRef, editorSelector: '.forward-only-editor', holdBand: CONTAINER_HOLD_BAND,
+  useTypewriterFade({ enabled: typewriterRun, containerRef: scrollRef, editorSelector: '.forward-only-editor', holdBand: CONTAINER_HOLD_BAND,
     // zoomed, the writing line is held at ZOOM_ANCHOR of the page column, the anchor the band mask is drawn against [ModeStage §13]
     zoom: zoomed ? { holdRef: pagecolRef, anchor: ZOOM_ANCHOR } : undefined });
 
@@ -395,14 +404,16 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
     const ed = scroll?.querySelector('.forward-only-editor') as HTMLElement | null;
     if (!scroll || !ed) return;
     const target = e.target as HTMLElement | null;
+    // Typewriter is forward-only: a press anywhere on the page, text included, puts the caret at the END of her text, never mid-page
+    if (fluxJack && typewriterRun && target && ed.contains(target)) { ed.focus(); const at = editorPlainText(ed).length; requestAnimationFrame(() => { if (ed.isConnected) setCaretOffset(ed, at); }); return; }
     if (target && ed.contains(target)) return;
     const inScroll = !!target && scroll.contains(target);
     if (target?.closest?.('button, a, input, textarea, select, [role="button"], [role="option"]')) { if (inScroll) focusEditor(); return; }
-    if (!inScroll && target !== e.currentTarget) return;
+    if (!inScroll && target !== e.currentTarget && !(fluxJack && typewriterRun)) return;
     const rows = [...ed.querySelectorAll<HTMLElement>('.wz-row')].filter(r => r.getBoundingClientRect().height > 0);
     const lastBottom = rows.length ? rows[rows.length - 1].getBoundingClientRect().bottom : -Infinity;
     let offset: number | null;
-    if (!rows.length || e.clientY > lastBottom) offset = editorPlainText(ed).length;
+    if (!rows.length || e.clientY > lastBottom || (fluxJack && typewriterRun)) offset = editorPlainText(ed).length;
     else {
       const er = ed.getBoundingClientRect();
       const firstTop = rows[0].getBoundingClientRect().top;
@@ -474,7 +485,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
           <button type="button" className="mode-iconbtn mode-gear" aria-label="Writing settings" aria-expanded={gearOpen} onClick={() => setGearOpen(o => !o)}>
             <GearIcon />
           </button>
-          {gearOpen && <SettingsPanel settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: typewriterOn, progressStyle: settings.progressStyle }} hasMilestones={!!milestones && milestones.beats.length > 0} />}
+          {gearOpen && <SettingsPanel settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: typewriterOn, progressStyle: settings.progressStyle }} hasMilestones={!!milestones && milestones.beats.length > 0} typewriterAvailable={!fluxJack} />}
           {gearOpen && <ThemePanel />}
         </div>
       </FirstRunVeil>
@@ -492,7 +503,9 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
           </aside>
         )}
 
-        <div className="mode-pagecol" ref={pagecolRef} data-zoom={zoomed ? 'true' : undefined}>
+        <div className="mode-pagecol" ref={pagecolRef} data-zoom={zoomed ? 'true' : undefined}
+          /* Typewriter is forward-only and Jacked In has no paper edge to aim at: a press anywhere in the page's column puts the caret at the end too */
+          onClick={fluxJack && typewriterRun ? onPaperPress : undefined}>
           {/* Format / pen bar (top of page) — chrome, dissolves on write.
               AB2 S2/S3 — retires when framed: its ink swatches and Draft's
               format tools both have a home now in the sliver (CD1:
@@ -574,7 +587,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
             <div
               ref={scrollRef}
               className="mode-scroll"
-              data-typewriter={typewriterOn ? 'true' : 'false'}
+              data-typewriter={typewriterRun ? 'true' : 'false'}
             >
               {children({ noteWrite, penColor: rail.tools === 'pen' ? effectivePenInk(penColorProp ?? pen, penTheme, penPageTone) : undefined })}
             </div>
@@ -660,6 +673,8 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
         ))}
       </div>
 
+      {FLUX3 && pageId != null && <FluxJackedIn on={typewriterRun} scrollRef={scrollRef} unitCount={words} />}
+
       {/* Connect AI — stub entry point (no provider wired in B3). */}
       {!framed && connectOpen && (
         <div className="sprint-modal-backdrop" onClick={() => setConnectOpen(false)}>
@@ -689,7 +704,8 @@ function AssistIcon() {
 // options exist only where they act: Progress:Project needs a StoryPlan; the Bar|Rhizome style needs the framed stage; typewriterAvailable is false on a screenplay page; stored values are untouched either way [ModeStage §18]
 export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvailable = true }: { settings: { progress: ProgressMetric; fadeDepth: FadeDepth; timer: boolean; typewriter: boolean; progressStyle: ProgressStyle }; hasMilestones?: boolean; framed?: boolean; typewriterAvailable?: boolean }) {
   const { t: deskLex } = useDeskLexicon();
-  const machina = useTheme() === 'machina';
+  const settingsTheme = useTheme();
+  const machina = settingsTheme === 'machina';
   const progressOpts = progressOptions(hasMilestones, deskLex('progressDrawer'));
   // MACHINA has ONE progress instrument (Run), so the style choice is not offered under it.
   const showProgressStyle = !!framed && settings.progress === 'words' && !machina;
@@ -737,6 +753,8 @@ export function ThemePanel() {
       <Seg label="Voice" value={prefs.voice} opts={[['serif', 'Serif'], ['sans', 'Sans']]} onPick={v => setThemePrefs({ voice: v as 'serif' | 'sans' })} />
       <PageToneRow page={prefs.page} />
       <Seg label="Fade" value={prefs.fade} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setThemePrefs({ fade: v as 'on' | 'off' })} />
+      {/* FLUX3 S4 (draft 23, 6a.9): Jacked In's idle line has its own switch, on by default; shown only where the line exists (Flux, under the flag) */}
+      {FLUX3 && theme === 'flux' && <Seg label="Idle line" value={prefs.idle} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setThemePrefs({ idle: v as 'on' | 'off' })} />}
       {/* R2 (TH2 review) — a canon-level pref with no UI is a TH1 allowance,
           not a TH2 one, now that Flux actually schedules dial-scaled events. */}
       <Seg label="Ambiance" value={String(dial)} opts={[['0', '0'], ['25', '25'], ['50', '50'], ['75', '75'], ['100', '100']]} onPick={v => setAmbianceDial(Number(v))} />

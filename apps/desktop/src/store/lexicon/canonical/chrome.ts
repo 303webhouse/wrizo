@@ -233,6 +233,12 @@ export const CANONICAL_CHROME = {
   flux3PortConnectAnother: 'Connect another',
   flux3PortDisconnect: 'Disconnect',
   flux3Checkpoint: 'Checkpoint',
+  // FLUX3 S4 Corridor r2 (Wrizors' concepts file, §1): the exit line shows for the first 3 s ({key} is the key that actually leaves, read from jackIn.ts), the nudge after 4 s of stillness,
+  // and the circled X's accessible name. Shown in capitals by CSS; TOOLS' pass sets their Flux words
+  flux3JackedExit: 'Wired in · {key} to unplug',
+  flux3JackedNudge: 'Keep the signal · any word will do',
+  flux3JackedLeave: 'Unplug',
+  flux3JackedLeaveHint: 'Unplug ({key})',
   ctxDelete: 'Delete',
   ctxDeleteBoard: 'Delete board',
   ctxUngroup: 'Ungroup',

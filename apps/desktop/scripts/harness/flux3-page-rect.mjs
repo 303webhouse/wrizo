@@ -127,7 +127,7 @@ try { await withHarness(async (app) => {
           const cell = `${tone} ${label} ${w}x${h}`;
           reads[`${flagOn ? 'on' : 'off'}|${cell}`] = s;
           const good = s.editor && !s.splash && s.theme === 'flux' && s.page === tone && s.mode === key && (flagOn ? s.flag === '1' : s.flag === null) && !!s.rect;
-          premises.push({ cell: `${flagOn ? 'flag on' : 'flag off'} ${cell}`, good, s: good ? undefined : s });
+          premises.push({ cell: `${flagOn ? 'flag on' : 'flag off'} ${cell}`, good, s: good ? undefined : s, raw: s, flagOn, tone, key });
           await snap(`s0-rect-${flagOn ? 'on' : 'off'}-${tone}-${key}-${w}`);
         }
       }
@@ -136,8 +136,19 @@ try { await withHarness(async (app) => {
   await app.emulateDpr(1, 1366, 768);
 
   const bad = premises.filter((p) => !p.good);
-  ok(`P1 every read stood where it claimed (page + editor mounted, splash gone, data-theme flux, the asked tone and surface, the flag exactly when on): ${premises.length - bad.length}/${premises.length}`,
-    premises.length === 16 && bad.length === 0, JSON.stringify(bad.slice(0, 3)));
+  // PARKED - SUPERSEDED (S4 Corridor, Nov 10; the original P1, verbatim, no longer runs; its successor P1b follows). Under ?flux3=1 Flux's Free Write IS Jacked In (draft 21 §6: a mode, always dark, whatever
+  // the saved Page tone): the 'flag on, light, Free Write' cells read page 'dark', which the original `s.page === tone` calls a stand-in that did not stand.
+  // ok(`P1 every read stood where it claimed (page + editor mounted, splash gone, data-theme flux, the asked tone and surface, the flag exactly when on): ${premises.length - bad.length}/${premises.length}`,
+  // premises.length === 16 && bad.length === 0, JSON.stringify(bad.slice(0, 3)));
+  // SUCCESSOR P1b: the same premise, with the one thing the ruling changed: flag on + Free Write reads the tone 'dark' (Jacked In, always dark) and the Typewriter running; every other cell reads the tone asked.
+  const standsAs = (p) => { const s = p.raw; const jacked = p.flagOn && p.key === 'freewrite'; return !!s && s.editor && !s.splash && s.theme === 'flux' && s.page === (jacked ? 'dark' : p.tone) && s.mode === p.key && (p.flagOn ? s.flag === '1' : s.flag === null) && !!s.rect && (!jacked || s.typewriter === 'true'); };
+  const bad2 = premises.filter((p) => !standsAs(p));
+  ok(`P1b every read stood where it claimed (page + editor mounted, splash gone, data-theme flux, the asked tone and surface, the flag exactly when on; flag on + Free Write = Jacked In: dark, Typewriter running): ${premises.length - bad2.length}/${premises.length}`,
+    premises.length === 16 && bad2.length === 0, JSON.stringify(bad2.slice(0, 3).map((p) => ({ cell: p.cell, s: p.raw }))));
+  // P1b's mutant: a cell that read the wrong tone in a plain-page cell, or Jacked In without its Typewriter, fails the same premise
+  const wrongTone = premises.map((p, i) => (i === 0 ? { ...p, raw: { ...p.raw, page: p.tone === 'dark' ? 'light' : 'dark' } } : p));
+  const noTypewriter = premises.map((p) => (p.flagOn && p.key === 'freewrite' ? { ...p, raw: { ...p.raw, typewriter: 'false' } } : p));
+  ok('MUT-P1b the premise goes RED on a plain-page cell with the wrong tone and on Jacked In without its Typewriter', wrongTone.some((p) => !standsAs(p)) && noTypewriter.some((p) => !standsAs(p)), '');
 
   // R: the same cell, flag off vs on
   let pairs = 0;

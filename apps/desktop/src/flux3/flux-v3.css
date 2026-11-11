@@ -13,6 +13,9 @@
   --f3-addr:#17313A; --f3-quiet:#4F6B70; --f3-cyan-text:#006E91; --f3-lime:#3F6B00; --f3-orange-text:#7A3B00;
   --f3-strip:rgba(237, 243, 243, .96); --f3-hair:#B7C9CC; --f3-label:#17313A;
 }
+/* THE DEFAULT VOICE (Nick via Fable, Nov 9, draft 20): the mockup's serif, Crimson Pro, is Flux's default writing face under the flag, for every page on the
+   default (an explicit face the writer chose, Titillium Web included, still wins). fontRoster.themeDefaultFaceName names it in the face list. */
+:root[data-flux3][data-theme='flux']{ --font-proseSerif:'Crimson Pro Variable', Georgia, serif; }
 
 /* ---- the board frame: the drawing layer shows through a clear canvas; the wrap is positioned so it (and its scrollbars) paint over the layer ---- */
 :root[data-flux3][data-theme='flux'] .board-canvas-wrap{ position:relative; background:transparent; }
@@ -160,6 +163,138 @@
 :root[data-flux3][data-theme='flux'] .wz-sliver-panel[data-open='true'],
 :root[data-flux3][data-theme='flux'] .wz-tutor-panel[data-open='true']{ box-shadow:inset 0 0 0 1px var(--f3-room-cyan); }
 
+/* ---- S4: JACKED IN (the spec's §6; src/flux3/FluxJackedIn.tsx, FluxBurstEdge.tsx). Overlays only: the compile layer sits inside the page's own
+   scroller (its position is inline, so it scrolls, scales and fades with the text), and the burst edge is a line on <body>. Nothing here moves
+   the page: the Typewriter's own zoom is the only rect change, as everywhere. ---- */
+/* the compiled words: one whole block per character (sized inline from the word, smaller row by row toward the top), in the choice colour,
+   quiet: a filled block, or a hollow one drawn by its 1 px edge. No paper behind them: the text under the signal is the terminal's to hide */
+:root[data-flux3][data-theme='flux'] .flux3-compile-word{ color:color-mix(in srgb, var(--f3-cyan) 46%, transparent); pointer-events:none; user-select:none; }
+:root[data-flux3][data-theme='flux'] .flux3-compile-word > i.f{ background:currentColor; }
+:root[data-flux3][data-theme='flux'] .flux3-compile-word > i.h{ border:1px solid currentColor; }
+/* the decompile: one fade, revealing the words already in the doc (the still state never reaches here: it is a cut) */
+:root[data-flux3][data-theme='flux'] .flux3-compile.decompile,
+:root[data-flux3][data-theme='flux'] .flux3-compile-fade.decompile{ opacity:0; transition:opacity 420ms ease-out; }
+/* the burst edge: the lap's remainder as a lime line across the top of the window, drawn by a transform; no transition (a step per word) */
+:root[data-flux3][data-theme='flux'] .flux3-burst{ position:fixed; left:0; right:0; top:0; height:2px; z-index:70; pointer-events:none;
+  background:color-mix(in srgb, var(--f3-cyan) 14%, transparent); }
+:root[data-flux3][data-theme='flux'] .flux3-burst > i{ position:absolute; inset:0; background:var(--f3-lime); transform-origin:0 50%; }
+/* the block caret on the light page (the Wrizors' S4 r7 blocker: the shared orange at .82 over the light paper reads under 2:1). A solid, darker
+   orange of the same family: 5.2:1 on the paper #F4F7F8, 4.8:1 even on the dim paper (the floor is 4.5). The dark tone keeps its caret. */
+:root[data-flux3][data-theme='flux'][data-page='light'] .flux-block-caret{ background:#A84E00; box-shadow:0 0 6px rgba(168, 78, 0, .4); }
+/* JACKED IN's dark tone (the spec's draft 13 §6: "Dark #FF9800"; the Wrizors' carry, Nov 8: the shared orange at .82 rendered #D98307 over the
+   night glass): the block is solid brass. Outside Jacked In the dark caret is today's */
+:root[data-flux3][data-theme='flux'][data-flux3-jacked]:not([data-page='light']) .flux-block-caret{ background:#FF9800; }
+/* THE TERMINAL (Nick, Nov 7, the spec's draft 13 §6: "we're at a futuristic terminal now"). While jacked in there is NO PAPER: the sheet, its
+   edge, its readouts (DOC, TRK, the hint), its corner brackets, its grid and its scrollbar go, and the words stand on the room's own ground inside
+   the tunnel's frames (dark: the night glass; light: the white room, the paper's own colour, so every contrast stays the page's). Paint only: the
+   page keeps its rect, its zoom, its text and its caret. The Typewriter's band stays on the column: with no paper it darkens nothing, and it
+   fades the signal toward the top.
+   THE VEIL: the writing line reads at full strength, the line above it dimmed (--f3-dim-ink), and every line further up is taken from the text (it
+   is the signal's: FluxJackedIn compiles it on the pause). Drawn on her words only (see THE DIM IS ON HER WORDS ONLY below), counted in the editor's own line-heights up from its last line (the
+   writing line), so it rides the Typewriter's own line advance with no script. (Esc leaves Jacked In for BUILD, so there is no lifted state.) */
+:root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .mode-page{ background:transparent; border-color:transparent; box-shadow:none; outline:none; }
+:root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .flux-readouts{ visibility:hidden; }
+/* no page to turn: ModeStage's page-turn (.flipping, 12-studio-chrome.css) animates the page's transform from none, so while zoomed it threw the
+   page back to scale 1 for half a second (r9's zoom watch: four times in six seconds, the rect moving). Jacked in it does not play */
+:root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .mode-page.flipping{ animation:none; }
+:root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .mode-scroll{ scrollbar-color:transparent transparent; }
+/* THE DIM IS ON HER WORDS ONLY (Nick, Nov 10, after wirein-fade-band.png: "I don't want the dark box"; Fable, Nov 10, 4:30 pm). Nothing is painted over the ground, the glow or the corridor's lines: the
+   band that was a ground-coloured rectangle is gone. The editor's own text takes its colour from ONE static gradient, clipped to the glyphs (background-clip:text), written from the editor's OWN box
+   (1lh = its line height, counted up from its last line, as the mask and the band were), so it rides the last line by itself: nothing is set per key or per line, no mask-image, no pseudo-element.
+   - the writing line (the last): her ink, --f3-ink #E8F6FA; the line above it: --f3-dim-ink #8F9B9E (6.9:1 on the ground #020C10; the floor is 4.5:1);
+   - a RECT CLIP (clip-path: inset, no radius: a paint clip, not a surface) keeps the last two lines and hides every older one (they are the signal's now).
+   The caret is left as the editor sets it (inline caret-color) and the block caret is drawn over it. */
+:root[data-flux3][data-theme='flux'][data-flux3-jacked]{ --f3-ink:#E8F6FA; --f3-dim-ink:#8F9B9E; }
+:root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .forward-only-editor{ position:relative; clip-path:inset(calc(100% - 2lh) 0 0 0);
+  color:transparent !important;   /* !important: the editor sets its colour INLINE (the pen colour), which beats any rule; the text is painted by the gradient below */
+  background-image:linear-gradient(to bottom, var(--f3-dim-ink) calc(100% - 1lh), var(--f3-ink) calc(100% - 1lh));
+  -webkit-background-clip:text; background-clip:text; }
+/* THE GOAL GLOW, ONE TOKEN (Nick, Nov 8: a lighter blue; the Wrizors' concepts file, Nov 9). The goal's glow (.wz-goal-glow, 13-desk-frame.css: rising
+   with the goal, opacity its only variable) seen through Jacked In's clear page: Flux's soft cyan #57D0F5 at 12% in the middle, 4% at 55%, none at the
+   edge, over the ground #020C10. Never above 14%: at 16% her words fall under the page law's 13.9:1. The orange glow retires: orange is her act only. */
+:root[data-flux3][data-theme='flux']{ --f3-goal-glow:radial-gradient(ellipse at center, rgb(87 208 245 / .12) 0%, rgb(87 208 245 / .04) 55%, transparent 100%); --f3-term-ground:#020C10; }
+:root[data-flux3][data-theme='flux'] .wz-goal-glow{ background:var(--f3-goal-glow); }
+/* the Corridor's ground: the night, #020C10, under the whole stage column while jacked in (always dark) */
+:root[data-flux3][data-theme='flux'][data-flux3-jacked] .desk-frame-stagecol{ background:var(--f3-term-ground); }
+/* NO STRIPS, HANDLES, RAIL OR BAR while jacked in (Nick, Nov 8, all themes; the Wrizors' Corridor): the rail, the strip and corkboard, the drawers'
+   anchors with their handles, the Glitch bar and its count, and every chrome-fade piece are invisible and take no pointer. Only opacity and pointer
+   events: nothing moves, so the page keeps its rect. Esc leaves Jacked In for BUILD, which brings them back. The burst edge (the
+   2px lime line on <body>) and the page stay. */
+:root[data-flux3][data-theme='flux'][data-flux3-jacked] :is(.desk-rail, .desk-frame-strip, .desk-frame-corkboard, .desk-frame-sliver-anchor,
+  .desk-frame-tutor-anchor, .desk-frame-tutor-panel-anchor, .desk-frame-meter, .flux3-glitchbar, .chrome-fade, .desk-dissolve, .chrome-handle){ opacity:0 !important; pointer-events:none !important; transition:opacity .6s ease; }
+/* THE CORRIDOR (src/flux3/FluxCorridor.tsx). The WHOLE WINDOW (fixed; the room, the sheet and the strips show nowhere around it), behind the page (first in .mode-stage), no pointer. Every
+   animation is transform or opacity (the compositor's); its speed is the animations' playbackRate, set at most four times a second from her pace, and 0 when she stops. */
+:root[data-flux3][data-theme='flux'] .flux3-corridor{ position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; contain:strict; background:var(--f3-term-ground);
+  --c-line:#57D0F5; --c-lime:color-mix(in srgb, var(--f3-lime) 70%, transparent); --c-brass:#FF9800; }
+/* the rails and their ribs: ONE static picture (a fan across the floor, walls and ceiling, the horizon line, and short ticks standing on each frame slot's edge); about 1.35:1 */
+:root[data-flux3][data-theme='flux'] .flux3-cor-rails{ position:absolute; inset:0; width:100%; height:100%; fill:none; stroke:var(--c-line); stroke-width:1; }
+:root[data-flux3][data-theme='flux'] .flux3-cor-rails path{ vector-effect:non-scaling-stroke; opacity:.16; }
+/* a frame: the window's own rectangle scaled about the vanishing point (21% of the height). It steps ONE slot a cycle, from the next slot's size to its own, and repeats, so the picture at the
+   end of a cycle is the picture at its start. --a/--b the start and end scale, --o0/--o1 the line's opacity (its strength follows its depth), --bw the border that reads 1 px at mid-step */
+:root[data-flux3][data-theme='flux'] .flux3-cor-frame{ position:absolute; left:0; top:0; width:100%; height:100%; display:block; box-sizing:border-box; border:var(--bw, 1px) solid var(--c-line);
+  transform-origin:50% 21%; transform:scale(var(--b)); opacity:var(--o1); will-change:transform, opacity; animation:flux3-cor-step 1.1s linear infinite; animation-play-state:paused; }
+:root[data-flux3][data-theme='flux'] .flux3-corridor[data-run] .flux3-cor-frame{ animation-play-state:running; }
+@keyframes flux3-cor-step{ from{ transform:scale(var(--a)); opacity:var(--o0); } to{ transform:scale(var(--b)); opacity:var(--o1); } }
+/* at speed, one lime frame (hidden until then, on the nearest frame's own step); on a milestone, one brass frame past her */
+:root[data-flux3][data-theme='flux'] .flux3-cor-frame[data-kind='lime']{ border-color:var(--c-lime); opacity:.9; visibility:hidden; }
+:root[data-flux3][data-theme='flux'] .flux3-corridor[data-fast] .flux3-cor-frame[data-kind='lime']{ visibility:visible; }
+:root[data-flux3][data-theme='flux'] .flux3-cor-frame[data-kind='brass']{ --bw:2px; border-color:var(--c-brass); animation:none; opacity:0; transform:scale(.4); }
+:root[data-flux3][data-theme='flux'] .flux3-corridor[data-pop] .flux3-cor-frame[data-kind='brass']{ animation:flux3-cor-pass .3s linear 1 forwards; }
+@keyframes flux3-cor-pass{ from{ transform:scale(.4); opacity:.9; } to{ transform:scale(1.4); opacity:0; } }
+:root[data-flux3][data-theme='flux'] .flux3-corridor[data-pop]{ --c-line:var(--c-brass); }
+/* the quiet lane: the FRAMES AND RAILS thin in a soft oval around her words (the ground's own colour, no box, no band), so their motion never crosses the line she is writing. It sits under the glow */
+:root[data-flux3][data-theme='flux'] .flux3-cor-lane{ position:absolute; inset:0;
+  background:radial-gradient(ellipse 46% 15% at 50% var(--cor-line-y, 55%), var(--f3-term-ground) 0%, color-mix(in srgb, var(--f3-term-ground) 70%, transparent) 55%, transparent 100%); }
+/* the glow: the ONE token (--f3-goal-glow), centred on her writing line, ABOVE the lane. Its box is tall enough to reach the window's top and bottom whichever side of the middle her line stands (a shorter box left a hard edge at the top). Its opacity is her progress toward the goal (0 at the start of a lap, 1 at the goal): it builds */
+:root[data-flux3][data-theme='flux'] .flux3-cor-glow{ position:absolute; left:0; width:100%; height:calc(2 * max(var(--cor-line-y, 55%), 100% - var(--cor-line-y, 55%))); top:calc(var(--cor-line-y, 55%) - max(var(--cor-line-y, 55%), 100% - var(--cor-line-y, 55%))); display:block; background:var(--f3-goal-glow);
+  transition:opacity var(--glow-ease, 1200ms) ease-out; }
+/* the still state: the frames at their places, nothing running, no lime, no brass tint, the glow without its fade */
+:root[data-flux3][data-theme='flux'] .flux3-corridor[data-still] .flux3-cor-frame{ animation:none; will-change:auto; }
+:root[data-flux3][data-theme='flux'] .flux3-corridor[data-still] .flux3-cor-frame[data-kind]{ visibility:hidden; }
+:root[data-flux3][data-theme='flux'] .flux3-corridor[data-still] .flux3-cor-glow{ transition:none; }
+/* NOTHING ELSE FROM THE PAGE'S CHROME STANDS IN THE TERMINAL (the Wrizors' Corridor review, Nov 9): the sheet's inner edge (its ::after offset shadow stood at the zoomed sheet's left edge, a 1 px
+   line at x 422), the WRIZO mark (.brand-mark, its ::before: orange, and the only orange is hers) and the page's own goal glow (the corridor carries the glow now). Paint only: nothing moves */
+:root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .mode-page::before,
+:root[data-flux3][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .mode-page::after{ display:none; }
+:root[data-flux3][data-theme='flux'][data-flux3-jacked] :is(.brand-mark, .wz-mark, .wz-flux-wordmark){ visibility:hidden !important; opacity:0 !important; }
+:root[data-flux3][data-theme='flux'][data-flux3-jacked] .wz-goal-glow{ display:none; }
+@media (prefers-reduced-motion: reduce){ :root[data-flux3][data-theme='flux'] .flux3-cor-glow{ transition:none; } }
+/* THE MILESTONE LETTERS: CHECKPOINT under her line. Earned letters are LIME, the newly earned one pops in BRASS, the ones not yet earned are DOTS (the approved video's own; ghost letters were text at 1.87:1).
+   Fixed to the window, nothing moves the page */
+:root[data-flux3][data-theme='flux'] .flux3-pop{ position:fixed; left:0; right:0; top:87%; z-index:70; pointer-events:none; display:flex; justify-content:center; gap:.6em;
+  font:700 14px/1 var(--f3-chrome-font, 'Chakra Petch', sans-serif); letter-spacing:.3em; animation:flux3-pop-in 2s ease-out 1 forwards; }
+:root[data-flux3][data-theme='flux'] .flux3-pop > span{ display:inline-block; min-width:1ch; text-align:center; color:var(--f3-room-quiet, #7FA8A0); }
+:root[data-flux3][data-theme='flux'] .flux3-pop > span[data-on='true']{ color:var(--f3-lime); }
+:root[data-flux3][data-theme='flux'] .flux3-pop > span[data-new='true']{ color:#FF9800; animation:flux3-pop-letter .3s ease-out 1; }
+:root[data-flux3][data-theme='flux'] .flux3-pop[data-goal='true'] > span{ color:#FF9800; }
+@keyframes flux3-pop-in{ 0%{ opacity:0; } 8%{ opacity:1; } 80%{ opacity:1; } 100%{ opacity:0; } }
+@keyframes flux3-pop-letter{ from{ transform:scale(1.8); } to{ transform:scale(1); } }
+/* JACKED IN'S QUIET WORDS AND WAY OUT (src/flux3/FluxJackedHints.tsx, FluxNudge.tsx): the exit line (first 3 s), the 4 s nudge, the circled X. The quiet label colour on the ground (4.5:1 and better);
+   the X is chrome, not her act: never brass; hover and focus in Flux's choice colour; reduced motion is a cut */
+:root[data-flux3][data-theme='flux'] .flux3-exit-line,
+:root[data-flux3][data-theme='flux'] .flux3-nudge{ position:fixed; z-index:70; pointer-events:none; font:700 11px/1 var(--f3-chrome-font, 'Chakra Petch', sans-serif); letter-spacing:.3em; text-transform:uppercase;
+  color:var(--f3-room-quiet, #7FA8A0); white-space:nowrap; }
+:root[data-flux3][data-theme='flux'] .flux3-exit-line{ left:0; right:0; bottom:32px; text-align:center; opacity:1; transition:opacity .6s ease-out; }
+:root[data-flux3][data-theme='flux'] .flux3-exit-line[data-phase='fading']{ opacity:0; }
+:root[data-flux3][data-theme='flux'] .flux3-nudge{ transform:translate(-50%, -50%); animation:flux3-nudge-in .8s ease-out 1 both; }
+@keyframes flux3-nudge-in{ from{ opacity:0; } to{ opacity:1; } }
+:root[data-flux3][data-theme='flux'] .flux3-leave-x{ position:fixed; right:20px; bottom:20px; z-index:70; width:48px; height:48px; padding:0; border:0; border-radius:50%; background:transparent;
+  color:var(--f3-room-quiet, #7FA8A0); cursor:pointer; opacity:0; pointer-events:none; transition:opacity .2s ease-out, color .15s ease-out; display:flex; align-items:center; justify-content:center; }
+:root[data-flux3][data-theme='flux'] .flux3-leave-x[data-on]{ opacity:1; pointer-events:auto; }
+:root[data-flux3][data-theme='flux'] .flux3-leave-x svg{ display:block; fill:none; stroke:currentColor; }
+/* the circle is FILLED with the ground colour, so nothing of the corridor shows through and its contrast holds whatever passes behind it */
+:root[data-flux3][data-theme='flux'] .flux3-leave-x circle{ stroke-width:1.5; fill:#020C10; }
+:root[data-flux3][data-theme='flux'] .flux3-leave-x path{ stroke-width:1.5; stroke-linecap:square; }
+:root[data-flux3][data-theme='flux'] .flux3-leave-x:hover,
+:root[data-flux3][data-theme='flux'] .flux3-leave-x:focus-visible{ color:var(--f3-cyan); outline:none; }
+/* keyboard focus adds a 2 px cyan ring 3 px outside the circle */
+:root[data-flux3][data-theme='flux'] .flux3-leave-x:focus-visible::after{ content:''; position:absolute; left:-1px; top:-1px; right:-1px; bottom:-1px; border:2px solid var(--f3-cyan); border-radius:50%; pointer-events:none; }
+@media (prefers-reduced-motion: reduce){
+  :root[data-flux3][data-theme='flux'] .flux3-exit-line,
+  :root[data-flux3][data-theme='flux'] .flux3-leave-x{ transition:none; }
+  :root[data-flux3][data-theme='flux'] .flux3-nudge{ animation:none; }
+}
+@media (prefers-reduced-motion:reduce){ :root[data-flux3][data-theme='flux'] .flux3-pop, :root[data-flux3][data-theme='flux'] .flux3-pop > span[data-new='true']{ animation:none; } }
 /* ---- S4b L2: THE COMMAND-BOX RAIL (flux-mockup-vs-build.md L2; q9: "the existing rail ... in command-box dress"). Dress only: the rail is a fixed DeskFrame track, so nothing here can
    move the page (the boxes live inside the strip's own width). Every door on the rail is a hairline box with its name in letter-spaced caps: the PLACE you are in (the Drawer's name, two lines
    at most, or UNFILED), Docs, Circuits, Log, and the foot's Config and Skin and Trash. Each carries one TRUE reading under its name (Cascade.tsx; the Trash has none: the Trash is a place, not a nag),
@@ -186,3 +321,7 @@
 :root[data-flux3][data-theme='flux'] .wz-strip > .wz-strip-section > .wz-strip-item[aria-current='location'] .wz-strip-label,
 :root[data-flux3][data-theme='flux'] .wz-strip > .wz-strip-section > .wz-strip-item[aria-current='location'] .wz-strip-readout,
 :root[data-flux3][data-theme='flux'] .wz-strip > .wz-strip-section > .wz-place-block:not([data-place-kind='journal']) .wz-place-name{ color:#FF9800; }
+
+/* Jacked In is a MODE (draft 21 §6): the Typewriter's on/off toggles are not offered in Flux under the flag, in either mode (the lines that draw them stay main's: a theme changes only the skin) */
+:root[data-flux3][data-theme='flux'] .wz-sliver-mode-btn[data-mode-toggle='typewriter'],
+:root[data-flux3][data-theme='flux'] .typewriter-toggle{ display:none !important; }
