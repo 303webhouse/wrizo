@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { flushNow, getDrawer, getJournalEntry, getProject, saveJournalEntry, patchJournalEntry, getBoardsConnecting, inJournalView, getOrCreatePlanBoard } from '../store/persistence';
 import { setPageDress } from '../store/pageDress';
@@ -75,6 +75,7 @@ import { wordCount } from '../store/wordCount';
 import { useFirstRunGate, FIRST_RUN_WORD_TARGET } from './pageEditor/useFirstRunGate';
 import { usePageTypewriter } from './pageEditor/usePageTypewriter';
 import { usePageAutosave } from './pageEditor/usePageAutosave';
+import { useExternalPageText } from './pageEditor/useExternalPageText';
 
 /** W5 - the glow for a page born from a step: a STABLE ref callback (one function for the module), so a re-render never re-fires it; celebrateReturnChip itself is once-per-element. */
 const glowStepChip = (el: HTMLElement | null): void => { if (el) celebrateReturnChip(el); };
@@ -179,6 +180,9 @@ function PageEditorView({ id }: { id: string }) {
   const initialText = entry?.text ?? '';
   const [text, setText] = useState(initialText);
   const [modeSeed, setModeSeed] = useState(initialText);
+  // #76 part 1: bumped when words another window saved are adopted; the editor is keyed on it, so it mounts again on the new text
+  const [remount, setRemount] = useState(0);
+  const caretAfterAdopt = useRef<{ start: number; end: number } | null>(null);
   const [receded, setReceded] = useState(false);
   const [focused, setFocused] = useState(false);
   const [showPublish, setShowPublish] = useState(false); // Publish stub dialog (matches QuickSprint)
@@ -446,6 +450,28 @@ function PageEditorView({ id }: { id: string }) {
   }, [mode]);
 
   const { flush, onTextChange } = usePageAutosave({ unbornRef, id, textRef, lastSavedRef, setText, text });
+
+  // #76 PART 1 - another window saved this page and this one has nothing unsaved: show the saved words now. The editor mounts again on them (keyed on `remount`), and a writer who was in it keeps focus and her caret (clamped to the new text).
+  const adoptOtherWindowText = (next: string) => {
+    const ed = editorRef.current;
+    const had = !!ed && ed.isConnected && !!document.activeElement && ed.contains(document.activeElement);
+    caretAfterAdopt.current = had && ed ? (getSelectionOffsets(ed) ?? { start: next.length, end: next.length }) : null;
+    lastSavedRef.current = next;
+    textRef.current = next;
+    setText(next);
+    setModeSeed(next);
+    setRemount((n) => n + 1);
+  };
+  useExternalPageText({ id, unbornRef, textRef, lastSavedRef, adopt: adoptOtherWindowText });
+  useLayoutEffect(() => {
+    const at = caretAfterAdopt.current;
+    caretAfterAdopt.current = null;
+    const ed = editorRef.current;
+    if (!at || !ed || !ed.isConnected) return;
+    const n = editorPlainText(ed).length;
+    ed.focus({ preventScroll: true });
+    setSelectionOffsets(ed, Math.min(at.start, n), Math.min(at.end, n));
+  }, [remount]);
 
   // This hook sits ABOVE the early return below (the hooks-order guards enforce it); its body reads `applyFormatAt`, defined below, safely, since an effect runs after render, and its deps carry `!!realEntry` so the listener attaches once the editor mounts. Tab indents through draftFormat's own indent (a leading tab), the same formatter as the rail's arrows, so a key and a click cannot drift apart. It is a state machine (store/tabChord.ts): each Tab tap is one more first-line level, Shift+Tab one back, Tab held + 1 one whole-paragraph level per press; a tap applies on release, and a quick Tab-then-1 types its 1. Draft and Revise act everywhere; Free Write is forward-only, so it acts on a BLANK line only and never outdents. Capturing Tab costs a keyboard-only writer Tab-out; Escape leaves the surface (store/escapeExit.ts). While an Outline is in Draft it owns Tab and this machine stands aside (a ref, read at press time). [PageEditor §10]
   const outlineKeysRef = useRef(false);
@@ -715,7 +741,7 @@ function PageEditorView({ id }: { id: string }) {
         />
       ) : (
       <ForwardOnlyEditor
-        key={`${id}-${mode}`}
+        key={`${id}-${mode}-${remount}`}
         ref={editorRef}
         insertMarkerRef={insertMarkerRef}
         initialText={modeSeed}

@@ -1,7 +1,8 @@
 import type { Project, StoryPlan, SessionLog, Draft, JournalEntry, Drawer } from '../../types';
 import { clearProofingLocal } from '../proofing';
 import { mergeBoxLists } from '../boxTombstones';
-import { type CollectionName, DIRTY_KEY, KEYS, cache, clone, dirty, flushTimers, notify, persistDirty, scheduleFlush } from './core';
+import { type CollectionName, COLLECTIONS, DIRTY_KEY, KEYS, cache, clone, dirty, flushTimers, notify, persistDirty, scheduleFlush } from './core';
+import { isSignedOutHere } from '../signedOutHere';
 import { adoptLegacyScratch } from './drafts';
 import { announcePurged, purgedToAnnounce } from './purge';
 
@@ -23,6 +24,7 @@ function applyCollection<T extends { id: string; updatedAt: string }>(
   name: CollectionName,
   collection: T[],
   remote: T[] | undefined,
+  flushAfter = true,
 ): boolean {
   if (!remote || remote.length === 0) return false;
   let changed = false;
@@ -73,7 +75,7 @@ function applyCollection<T extends { id: string; updatedAt: string }>(
       changed = true;
     }
   }
-  if (changed) scheduleFlush(name);
+  if (changed && flushAfter) scheduleFlush(name);
   return changed;
 }
 
@@ -88,6 +90,29 @@ export function applyRemoteRecords(remote: RemoteRecords): void {
   changed = applyCollection('drawers', cache.drawers, remote.drawers) || changed;
   if (changed) notify();
   announcePurged();
+}
+
+// #76 PART 1 - REFRESH. Every window of the app on this computer shares one localStorage, and each keeps its own in-memory cache; nothing used to tell a window that another had written. Now the browser's `storage` event does:
+// when another window writes a collection, this window takes the records that are NEWER there (the same rules as a pull from the server: a record with an unsaved edit HERE is kept, and its board boxes merge; a clean one is replaced), and
+// tells its screens (notify), so an open page with nothing unsaved shows the other window's words at once. It writes nothing back (flushAfter false): the other window already wrote them, and a write here would only echo.
+export function applyOtherWindowWrite(name: CollectionName, raw: string | null): void {
+  if (!raw || isSignedOutHere()) return;
+  let rows: unknown;
+  try { rows = JSON.parse(raw); } catch { return; }
+  if (!Array.isArray(rows)) return;
+  const changed = applyCollection(name, cache[name] as unknown as { id: string; updatedAt: string }[], rows as { id: string; updatedAt: string }[], false);
+  if (changed) notify();
+  announcePurged();
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e: StorageEvent) => {
+    try {
+      if (e.storageArea !== window.localStorage) return;
+      const name = COLLECTIONS.find((n) => KEYS[n] === e.key);
+      if (name) applyOtherWindowWrite(name, e.newValue);
+    } catch { /* a listener never breaks a write path */ }
+  });
 }
 
 // Wipe all local data (cache + dirty + localStorage). Used on logout so the
