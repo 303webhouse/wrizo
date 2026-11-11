@@ -183,7 +183,7 @@ await withHarness(async (app) => {
 console.log(JSON.stringify(checks, null, 2));
 if (process.env.HARNESS_PARKED === '1') {
   // eslint-disable-next-line no-console
-  console.log('\nA11Y-TUTOR-LIVE-REGION PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; this file parks two A8 originals as quoted comments (the Phase 1 'first thing inside .wz-tutor-panel', Oct 12; the Arbor-tabs tag end, Nov 10), each with its live successor in the default leg - nothing re-runs here.');
+  console.log('\nA11Y-TUTOR-LIVE-REGION PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; this file parks two A8 originals as quoted comments (the Phase 1 "first thing inside .wz-tutor-panel", Oct 12; the Arbor-tabs tag end, Nov 10), each with its live successor in the default leg - nothing re-runs here.');
 }
 const pass = checks.every((c) => c.pass);
 // eslint-disable-next-line no-console
