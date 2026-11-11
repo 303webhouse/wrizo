@@ -1,4 +1,4 @@
-// TWO WINDOWS, shared by the #76 checks (refresh: tabs-refresh.mjs; keep both: tabs-merge.mjs). A second app instance in a same-origin <iframe> is a second window: its own JS realm and cache, the same localStorage.
+// TWO OR THREE WINDOWS, shared by the #76 checks (refresh: tabs-refresh.mjs; keep both: tabs-merge.mjs). A same-origin <iframe> of the app is another window: its own JS realm and cache, the same localStorage.
 // `runTabs({ title, cases })` boots the app once per config (WA_THEME / WA_FLAG / WA_TONE / WA_W / WA_H, as every audit file does), hands `cases` the helpers below, prints PASS/FAIL lines and FINDINGS, and exits 1 on a red when WA_STRICT=1.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -30,9 +30,17 @@ export async function runTabs({ title, cases }) {
       record(id, name, fails, notes);
     };
 
-    const B = "document.getElementById('wa-tab-b').contentWindow";
+    // windows: A is the page itself, B and C are same-origin iframes (each its own JS realm and cache, all on one localStorage)
+    const win = (w) => (w === 'A' ? 'window' : `document.getElementById('wa-tab-${w.toLowerCase()}').contentWindow`);
+    const tabWin = async (w) => {
+      const id = `wa-tab-${w.toLowerCase()}`;
+      await ev(`document.querySelectorAll('#${id}').forEach((f) => f.remove())`); await sleep(300);
+      await ev(`(() => { const f = document.createElement('iframe'); f.id = '${id}'; f.src = location.href; f.style.cssText = 'position:fixed;${w === 'C' ? 'left' : 'right'}:0;top:0;width:700px;height:600px;z-index:99999;background:#fff;border:0'; document.body.appendChild(f); return true; })()`);
+      await app.waitFor(`(() => { const f = document.getElementById('${id}'); try { return !!f.contentDocument.querySelector('.forward-only-editor') && !!f.contentWindow.__wa; } catch (e) { return false; } })()`, { timeout: 25000, label: `tab ${w}` });
+      await sleep(900);
+    };
     const h = {
-      app, d, ev, run, sleep,
+      app, d, ev, run, sleep, win,
       stored: (id) => ev(`(() => { try { const rows = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]'); const r = rows.find((x) => x.id === ${JSON.stringify(id)}); return r ? r.text : null; } catch (e) { return 'ERR ' + e.message; } })()`),
       mkPage: async (pid, text) => {
         await ev(`document.querySelectorAll('#wa-tab-b,#wa-tab-c').forEach((f) => f.remove())`); await sleep(600);   // BEFORE the page is made: a closing window writes its whole, older store over this one's, and would take the new page with it
@@ -45,22 +53,18 @@ export async function runTabs({ title, cases }) {
         await app.waitFor("!!document.querySelector('.forward-only-editor')", { timeout: 15000, label: 'tab A' }); await sleep(700);
         await d.surface('.forward-only-editor', false);
       },
-      tabB: async () => {
-        await ev(`document.querySelectorAll('#wa-tab-b,#wa-tab-c').forEach((f) => f.remove())`); await sleep(300);   // a window of an earlier case must not stay open and answer for this one
-        await ev(`(() => { const f = document.createElement('iframe'); f.id = 'wa-tab-b'; f.src = location.href; f.style.cssText = 'position:fixed;right:0;top:0;width:900px;height:700px;z-index:99999;background:#fff;border:0'; document.body.appendChild(f); return true; })()`);
-        await app.waitFor(`(() => { const f = document.getElementById('wa-tab-b'); try { return !!f.contentDocument.querySelector('.forward-only-editor') && !!f.contentWindow.__wa; } catch (e) { return false; } })()`, { timeout: 25000, label: 'tab B' });
-        await sleep(900);
-      },
-      tabRead: (w) => ev(w === 'B' ? `${B}.__wa.read()` : 'window.__wa.read()'),
-      // focus a window's editor and put the caret at plain offset `at` (default: the end)
+      tabB: () => tabWin('B'),
+      tabC: () => tabWin('C'),
+      tabRead: (w) => ev(`${win(w)}.__wa.read()`),
+      // focus a window's editor and put the caret at plain offset `at`: a number, or an expression of the window's text `t` written as a string (see tabs-merge.mjs); default: the end
       tabFocus: async (w, at) => {
-        const win = w === 'B' ? B : 'window';
-        await ev(`(() => { const w = ${win}; w.focus(); const e = w.document.querySelector('.forward-only-editor'); e.focus({ preventScroll: true }); const n = w.__wa.read().text.length; w.__wa.place(${at === undefined ? 'n' : at}); return n; })()`);
+        const where = at === undefined ? 'n' : typeof at === 'number' ? String(at) : `(() => { const t = w.__wa.read().text; return ${at}; })()`;
+        await ev(`(() => { const w = ${win(w)}; w.focus(); const e = w.document.querySelector('.forward-only-editor'); e.focus({ preventScroll: true }); const n = w.__wa.read().text.length; w.__wa.place(${where}); return n; })()`);
         await sleep(150);
       },
-      // type into a window (A types through the driver; B is typed into through its own driver surface: the keys go to whichever window has focus)
+      // type into a window: the keys go to whichever window has focus, so the window is focused first
       typeIn: async (w, s, at) => { await h.tabFocus(w, at); await d.type(s); },
-      // the plain text a window shows right now, and the caret
+      keyIn: async (w, key, at) => { await h.tabFocus(w, at); await d.key(key); },
       shows: async (w) => { const r = await h.tabRead(w); return r && r.text; },
       waitShows: async (w, pred, ms) => { const t0 = Date.now(); let t = await h.shows(w); while (!pred(t) && Date.now() - t0 < ms) { await sleep(300); t = await h.shows(w); } return t; },
     };
