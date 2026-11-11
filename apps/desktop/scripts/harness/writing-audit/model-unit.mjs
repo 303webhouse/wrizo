@@ -5,6 +5,7 @@ import { Model, prevWordStart, nextWordStop } from './lib/model.mjs';
 import { verify } from './lib/verify.mjs';
 import { GROUPS } from './lib/cases.mjs';
 import { GROUPS2 } from './lib/cases2.mjs';
+import { mulberry32, genStep, startState, classify } from './lib/random.mjs';
 import { visualLines, lineOf, vertical, homeEnd, hit, nearest } from './lib/geom.mjs';
 
 const checks = [];
@@ -106,6 +107,14 @@ ok('G5 Home is the visual line first stop; End allows the soft-wrap position bef
 ok('G6 a click beyond the end of a wrapped line lands at its end', hit(L, 1, 500).join() === '9');
 ok('G7 a tie is both answers, and a third of a character of slack is a tie too', nearest({ ps: [1, 2], xs: [20, 30] }, 25).join() === '1,2' && nearest({ ps: [1, 2], xs: [20, 29] }, 25).join() === '1,2' && nearest({ ps: [1, 2], xs: [20, 40] }, 21).join() === '1');
 ok('G8 every session-2 case uses a known step kind, and the Enter group is the 20 session-1 cases', (() => { const bad = Object.values(GROUPS2).flat().flatMap((c) => c.steps).filter((st) => !['type', 'key', 'click', 'drag'].includes(st.k)); return GROUPS2.enterTw.length === 20 && bad.length === 0; })());
+
+// ---- the random writer (session 3): determinism and the signature of a known bug ----
+const seq = (seed) => { const r = mulberry32(seed); const m = new Model('hello world\nsecond line', 5, 5, 'linux'); const out = []; for (let i = 0; i < 40; i++) { const st = genStep(r, m); out.push(JSON.stringify(st)); try { if (st.k === 'type' || (st.k === 'key' && !st.geo && !st.ctrl)) m.apply(st); } catch {} } return out.join('|'); };
+ok('Z1 a seed replays exactly (the same 40 steps twice), and another seed does not', seq(12345) === seq(12345) && seq(12345) !== seq(54321));
+ok('Z2 the start state is seeded and the caret is inside the text', (() => { for (let s = 1; s < 50; s++) { const st = startState(mulberry32(s)); if (st.at < 0 || st.at > st.text.length) return false; } return true; })());
+ok('Z3 F1 (the caret painted at the margin on an empty middle line) is recognised as KNOWN, a text loss is NEW', classify('plateau', { k: 'key', key: 'Enter' }, { fails: [{ check: 'drawn', detail: 'native caret (painted) at 908,227 ... [selection: text "\\n" @1 (between rows)]' }] }, { focus: 5 }, { f: 5 }) === 'F1' && classify('plateau', { k: 'type' }, { fails: [{ check: 'text', detail: 'got x want y' }] }, { focus: 5 }, { f: 5 }) === 'new');
+ok('Z4 the word keys are an oracle caveat, never a new finding', classify('plateau', { k: 'key', key: 'Backspace', ctrl: true }, { fails: [{ check: 'text', detail: 'x' }] }, { focus: 1 }, { f: 1 }) === 'oracle:word');
+ok('Z5 F2 (Flux, Enter, the caret jumps UP) is recognised; the same failure on Arbor is NEW', classify('flux', { k: 'key', key: 'Enter' }, { fails: [{ check: 'caret', detail: 'selection 3..3 want 5..5' }] }, { focus: 3 }, { f: 5 }) === 'F2' && classify('plateau', { k: 'key', key: 'Enter' }, { fails: [{ check: 'caret', detail: 'selection 3..3 want 5..5' }] }, { focus: 3 }, { f: 5 }) === 'new');
 
 const failed = checks.filter((c) => !c.pass);
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : `  [${c.detail}]`}`);

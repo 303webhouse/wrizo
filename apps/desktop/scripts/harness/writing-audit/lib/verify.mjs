@@ -34,7 +34,7 @@ export function verify({ exp, box, before, early, late, errors = [], expect = {}
 
   // 4. THE CARET IS DRAWN WHERE THE TEXT SAYS (a collapsed caret in the editor). Flux paints its own block caret (an element: its box is the drawn place). Arbor and Machina use the browser's native caret, which is
   //    read from the PIXELS (late.px: the forced-magenta caret found in a screenshot, probe.mjs `scan`), because the rectangle a range reports is not where the caret is painted (run 42918219726).
-  if (exp.a === exp.f && late.collapsed && late.focused) {
+  if (exp.a === exp.f && late.collapsed && late.focused && !expect.noDrawn) {
     const page = late.page, flux = late.theme === 'flux';
     const drawn = flux ? late.fluxCaret : late.px;
     const what = flux ? 'Flux block caret' : 'native caret (painted)';
@@ -60,10 +60,12 @@ export function verify({ exp, box, before, early, late, errors = [], expect = {}
   if (!expect.blur && !late.focused) fail('focus', `focus left the editor (active element: ${late.active})`);
 
   // 6. THE PAGE HAS NOT MOVED (law 1: its rectangle is the same before and after)
+  const noPage = !!expect.noPage;
   const zoomEngaged = !!before && !before.tw && !!late.tw;   // the one ruled exception (page-size, Oct 2026): the Typewriter's zoom engages and the same page is drawn larger
-  if (zoomEngaged && before.page && late.page && !rectEq(before.page, late.page)) notes.push(`the Typewriter zoom engaged on this step: the page went ${Math.round(before.page.w)}x${Math.round(before.page.h)} -> ${Math.round(late.page.w)}x${Math.round(late.page.h)} (the ruled exception; the page's rect is judged between steps from here)`);
+  if (noPage) { /* a fast step in the Typewriter: the zoom glides; the page's rect is judged at the full steps */ }
+  else if (zoomEngaged && before.page && late.page && !rectEq(before.page, late.page)) notes.push(`the Typewriter zoom engaged on this step: the page went ${Math.round(before.page.w)}x${Math.round(before.page.h)} -> ${Math.round(late.page.w)}x${Math.round(late.page.h)} (the ruled exception; the page's rect is judged between steps from here)`);
   else if (before && before.page && late.page && !rectEq(before.page, late.page)) fail('page', `the page's rect changed ${JSON.stringify(before.page)} -> ${JSON.stringify(late.page)}`);
-  if (!zoomEngaged && before && before.page && early && early.page && !rectEq(before.page, early.page)) fail('page', `the page's rect changed within 2 frames ${JSON.stringify(before.page)} -> ${JSON.stringify(early.page)}`);
+  if (!noPage && !zoomEngaged && before && before.page && early && early.page && !rectEq(before.page, early.page)) fail('page', `the page's rect changed within 2 frames ${JSON.stringify(before.page)} -> ${JSON.stringify(early.page)}`);
 
   // 7. THE VIEW HAS NOT JUMPED (a short document never scrolls: the scroll changes only when the caret would leave the window)
   if ((before && before.tw) || late.tw) notes.push('the Typewriter is engaged on this page: it scrolls the line to its resting place by design, so the view is not judged here (its own cases are a later session)');
