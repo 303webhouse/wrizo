@@ -253,6 +253,9 @@ export const CANONICAL_CHROME = {
   emptyTrashQuestionOne: 'Delete 1 item for good?',
   emptyTrashQuestionMany: 'Delete {n} items for good?',
   purgedElsewhere: 'This page was deleted for good on another device.',
+  // #76 - PLACEHOLDER WORDS: the Wrizors word both of these lines
+  samePageElsewhere: 'This page is also open in another window.',
+  samePageKeptBoth: 'This page was changed in another window too. Both versions are kept.',
   destructiveTypeToGo: 'Type {phrase} to go on:',
   destructiveGo: 'Delete for good',
   settingsAskBeforeDelete: 'Ask before deleting',

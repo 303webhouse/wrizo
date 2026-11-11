@@ -127,6 +127,8 @@ export const FLUX_OVERRIDES = {
     publishDownloadPageMd: 'Current Docs (.md)',
     publishDownloadPageTxt: 'Current Docs (.txt)',
     purgedElsewhere: 'This doc was deleted for good on another device.',
+    samePageElsewhere: 'This doc is also open in another window.',
+    samePageKeptBoth: 'This doc was changed in another window too. Both versions are kept.',
     railBoard: 'Circuit',
     railPageKind: 'Docs Kind',
     sectionsEmpty: 'No docs here yet.',

@@ -192,6 +192,9 @@
 }
 .wz-stale-banner-text { font-size: 1rem; line-height: 1.3; }
 
+/* #76 PART 2 - the quiet line while the same page is open in another window: small, muted, at the foot of the window, and inert (pointer-events:none, no focusable child), so it cannot block a key or a click. */
+.wz-same-page-line { position: fixed; left: 50%; bottom: 10px; transform: translateX(-50%); z-index: 90; max-width: calc(100vw - 32px); text-align: center; font-size: .75rem; line-height: 1.3; color: var(--color-text-muted); opacity: .85; pointer-events: none; user-select: none; }
+
 /* THE SPLASH: the hand-drawn Wrizo over the live app. It cannot block writing: pointer-events:none on the container and both children, so input reaches whatever is underneath. z-index 400, above the whole stack (modals top out at 300). Its size is set inline by Splash.tsx from the asset's measured ink box, about a quarter of the screen [beginnings §10] */
 /* the drawing stays truly centred: the loading line is positioned absolutely, never a flex participant, so it cannot move the mark [beginnings §11] */
 .wz-splash{
