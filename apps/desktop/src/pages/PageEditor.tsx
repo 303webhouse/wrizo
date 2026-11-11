@@ -76,7 +76,8 @@ import { useFirstRunGate, FIRST_RUN_WORD_TARGET } from './pageEditor/useFirstRun
 import { usePageTypewriter } from './pageEditor/usePageTypewriter';
 import { usePageAutosave } from './pageEditor/usePageAutosave';
 import { useExternalPageText } from './pageEditor/useExternalPageText';
-import { subscribeKeptBoth } from '../store/mergeNotice';
+import { announceKeptBoth, noteMerge, subscribeKeptBoth } from '../store/mergeNotice';
+import { mergeText } from '../store/textMerge';
 
 /** W5 - the glow for a page born from a step: a STABLE ref callback (one function for the module), so a re-render never re-fires it; celebrateReturnChip itself is once-per-element. */
 const glowStepChip = (el: HTMLElement | null): void => { if (el) celebrateReturnChip(el); };
@@ -453,7 +454,9 @@ function PageEditorView({ id }: { id: string }) {
     return () => cancelAnimationFrame(raf);
   }, [mode]);
 
-  const { flush, onTextChange } = usePageAutosave({ unbornRef, id, textRef, lastSavedRef, setText, text });
+  const reconcileRef = useRef<() => boolean>(() => false);
+  const lastTypedAtRef = useRef(0);   // when she last pressed a key in this editor: the page is not rebuilt under her fingers
+  const { flush, onTextChange } = usePageAutosave({ unbornRef, id, textRef, lastSavedRef, setText, text, reconcileRef });
 
   // #76 PART 1 - another window saved this page and this one has nothing unsaved: show the saved words now. The editor mounts again on them (keyed on `remount`), and a writer who was in it keeps focus and her caret (clamped to the new text).
   const adoptOtherWindowText = (next: string, how: { lastSaved: string; mapCaret?: (offset: number) => number }) => {
@@ -470,7 +473,24 @@ function PageEditorView({ id }: { id: string }) {
     setModeSeed(next);
     setRemount((n) => n + 1);
   };
-  useExternalPageText({ id, unbornRef, textRef, lastSavedRef, adopt: adoptOtherWindowText });
+  // #76 - RECONCILE this page with its record. `base` is what this editor last saved or loaded (lastSavedRef), `mine` what it shows, `theirs` what the record holds now. The record is the same as either: nothing to do. Nothing unsaved here: show
+  // the record's words. Unsaved words here: the three are merged (store/textMerge.ts), the merge is SAVED at once and shown, and the page says so once. Never a save of `mine` over words `theirs` has that `mine` has not seen.
+  const reconcile = (): boolean => {
+    if (unbornRef.current) return false;
+    const latest = getJournalEntry(id);
+    if (!latest) return false;
+    const theirs = latest.text ?? '', mine = textRef.current, base = lastSavedRef.current;
+    if (theirs === base || theirs === mine) return false;
+    if (mine === base) { noteMerge({ at: 'adopt', mine, theirs }); adoptOtherWindowText(theirs, { lastSaved: theirs }); return true; }
+    const r = mergeText(base, mine, theirs);
+    noteMerge({ at: 'merge', base, mine, theirs, out: r.text });
+    saveJournalEntry({ ...latest, text: r.text });
+    adoptOtherWindowText(r.text, { lastSaved: r.text, mapCaret: r.mapCaret });
+    if (r.merged) announceKeptBoth(id);
+    return true;
+  };
+  reconcileRef.current = reconcile;
+  useExternalPageText({ id, unbornRef, lastTypedAtRef, reconcileRef });
   useEffect(() => subscribeKeptBoth((pid) => { if (pid === id) keptToast.show(dt('samePageKeptBoth')); }), [id]);   // eslint-disable-line react-hooks/exhaustive-deps
   // a passive effect on purpose: the editor's own mount (a child's passive effect) lands the caret at the end and focuses, and this runs after it
   useEffect(() => {
@@ -756,7 +776,7 @@ function PageEditorView({ id }: { id: string }) {
           text={text}
           autoFocus={initialText.trim() === ''}
           onChange={onTextChange}
-          onForward={() => { noteWrite(); warm.release(); noteSessionKeystroke(); }}
+          onForward={() => { lastTypedAtRef.current = Date.now(); noteWrite(); warm.release(); noteSessionKeystroke(); }}
           onFocus={() => setFocused(true)}
           onBlur={() => { setFocused(false); flush(); }}
         />
@@ -772,7 +792,7 @@ function PageEditorView({ id }: { id: string }) {
         onFormatKey={mode === 'drafting' ? applyRailFormat : undefined}
         lens={lensActive}
         onLensKey={applyLensKey}
-        onForward={() => { noteWrite(); warm.release(); noteSessionKeystroke(); }}
+        onForward={() => { lastTypedAtRef.current = Date.now(); noteWrite(); warm.release(); noteSessionKeystroke(); }}
         onFocus={() => setFocused(true)}
         onBlur={() => { setFocused(false); flush(); }}
         placeholder=""

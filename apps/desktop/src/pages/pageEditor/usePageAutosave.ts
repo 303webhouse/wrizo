@@ -5,13 +5,15 @@ import { type UnbornHandle } from '../../components/UnbornSurface';
 
 const AUTOSAVE_MS = 2000;
 
-export function usePageAutosave({ unbornRef, id, textRef, lastSavedRef, setText, text }: {
+export function usePageAutosave({ unbornRef, id, textRef, lastSavedRef, setText, text, reconcileRef }: {
   unbornRef: MutableRefObject<UnbornHandle | null>;
   id: string;
   textRef: MutableRefObject<string>;
   lastSavedRef: MutableRefObject<string>;
   setText: Dispatch<SetStateAction<string>>;
   text: string;
+  /** #76: brings in words another window saved into this page's record, merged with the unsaved ones here (PageEditor's reconcile); true when it did, and saved the result */
+  reconcileRef?: MutableRefObject<() => boolean>;
 }) {
   // Persist the page text to its JournalEntry (debounced), merging the latest
   // record so other metadata is never clobbered.
@@ -21,6 +23,8 @@ export function usePageAutosave({ unbornRef, id, textRef, lastSavedRef, setText,
   // the debounce and re-create the litter this ticket removes.
   const flush = () => {
     if (unbornRef.current) return;
+    // #76: the record may hold words another window saved since this editor last saved or loaded: they are merged with the unsaved ones FIRST; a save never writes this window's text over them
+    if (reconcileRef && reconcileRef.current()) return;
     const latest = getJournalEntry(id);
     if (latest && latest.text !== textRef.current) {
       saveJournalEntry({ ...latest, text: textRef.current });

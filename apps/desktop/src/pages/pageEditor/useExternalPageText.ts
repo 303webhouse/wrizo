@@ -1,31 +1,27 @@
 import { useEffect, type MutableRefObject } from 'react';
-import { getJournalEntry, subscribe } from '../../store/persistence';
-import { mergeText } from '../../store/textMerge';
-import { announceKeptBoth } from '../../store/mergeNotice';
+import { subscribe } from '../../store/persistence';
 
-// #76 PART 1 - an open page with NOTHING UNSAVED takes the words another window saved, at once. The store tells every screen when a record changed (store/persistence/syncApply.ts applyOtherWindowWrite, from the browser's `storage` event);
-// here the open page compares its record's text with what THIS editor last saved or loaded (lastSavedRef) and what it shows now (textRef):
-//   - the same as either: nothing new (or this window's own save): nothing to do;
-//   - different, and this editor has nothing unsaved (shows exactly what it last saved): the other window's words are adopted;
-//   - different, and this editor HAS unsaved words (#76 part 3, KEEP BOTH): the two are merged (store/textMerge.ts) with what this editor last saved or loaded as the starting text, so the other window's words come in, this window's
-//     unsaved words stay, and neither is dropped; the merged page is saved with the editor's next save, and the page says so once.
-export function useExternalPageText({ id, unbornRef, textRef, lastSavedRef, adopt }: {
+// #76 PART 1 and 3 - the record of an open page can change under it: another window saved it. The store tells every screen (store/persistence/syncApply.ts applyOtherWindowWrite, from the browser's `storage` event, and the sync pull);
+// this hook runs the page's `reconcile` (PageEditor.tsx) when that happens, so a page with nothing unsaved shows the other window's words at once, and one WITH unsaved words has the two merged (store/textMerge.ts).
+// While she is typing in this window (a key in the last IDLE_MS) the page is not rebuilt under her fingers: the reconcile waits for the pause. A save that comes sooner reconciles first anyway (usePageAutosave), so nothing is ever written over the other window's words.
+const IDLE_MS = 800;
+
+export function useExternalPageText({ id, unbornRef, lastTypedAtRef, reconcileRef }: {
   id: string;
   unbornRef: MutableRefObject<unknown>;
-  textRef: MutableRefObject<string>;
-  lastSavedRef: MutableRefObject<string>;
-  adopt: (next: string, how: { lastSaved: string; mapCaret?: (offset: number) => number }) => void;
+  lastTypedAtRef: MutableRefObject<number>;
+  reconcileRef: MutableRefObject<() => boolean>;
 }) {
-  useEffect(() => subscribe(() => {
-    if (unbornRef.current) return;
-    const latest = getJournalEntry(id);
-    if (!latest) return;
-    const theirs = latest.text ?? '';
-    if (theirs === lastSavedRef.current || theirs === textRef.current) return;
-    if (textRef.current === lastSavedRef.current) { adopt(theirs, { lastSaved: theirs }); return; }
-    const r = mergeText(lastSavedRef.current, textRef.current, theirs);
-    adopt(r.text, { lastSaved: theirs, mapCaret: r.mapCaret });
-    if (r.merged) announceKeptBoth(id);
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const run = () => {
+      timer = null;
+      const quiet = Date.now() - lastTypedAtRef.current;
+      if (quiet < IDLE_MS) { timer = setTimeout(run, IDLE_MS - quiet + 40); return; }
+      reconcileRef.current();
+    };
+    const unsubscribe = subscribe(() => { if (unbornRef.current || timer !== null) return; run(); });
+    return () => { unsubscribe(); if (timer !== null) clearTimeout(timer); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [id]);
+  }, [id]);
 }

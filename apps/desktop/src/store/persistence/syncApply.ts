@@ -3,7 +3,7 @@ import { clearProofingLocal } from '../proofing';
 import { mergeBoxLists } from '../boxTombstones';
 import { type CollectionName, COLLECTIONS, DIRTY_KEY, KEYS, cache, clone, dirty, flushTimers, isUnflushed, lastRaw, notify, onDisk, onDiskText, persistDirty, scheduleFlush, setPreFlush } from './core';
 import { mergeText } from '../textMerge';
-import { announceKeptBoth } from '../mergeNotice';
+import { announceKeptBoth, noteMerge } from '../mergeNotice';
 import { isSignedOutHere } from '../signedOutHere';
 import { adoptLegacyScratch } from './drafts';
 import { announcePurged, purgedToAnnounce } from './purge';
@@ -127,6 +127,7 @@ function mergeUnflushedPages(rows: JournalEntry[], mineById: Map<string, Journal
     const t = theirs.text ?? '', m = mine.text ?? '';
     const base = onDiskText.get(theirs.id) ?? '';
     const r = mergeText(base, m, t);
+    noteMerge({ at: 'store-merge', base, mine: m, theirs: t, out: r.text });
     const stamp = [theirs.updatedAt ?? '', mine.updatedAt ?? '', new Date().toISOString()].sort().pop() as string;
     const winner = (theirs.updatedAt ?? '') > (mine.updatedAt ?? '') ? theirs : mine;
     const out = clone(winner) as JournalEntry;
