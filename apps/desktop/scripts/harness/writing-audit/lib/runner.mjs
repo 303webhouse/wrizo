@@ -151,6 +151,7 @@ export async function main({ groupsDef, order, title }) {
         const fail = { step: i + 1, label: label2(st), fails: v.fails, expected: exp.snapshot(), got: { text: late.text, anchor: late.anchor, focus: late.focus, px: late.px, fluxCaret: late.fluxCaret, page: late.page, selPoint: late.selPoint, tw: late.tw }, box, dom: await d.dom(700) };
         rec.fails.push(fail);
         if (!rec.fail) { rec.fail = fail; rec.shot = await d.shot(`${TAG.replace(/\//g, '-')}-${cs.id}-step${i + 1}`); }
+        else if (cs.cont && rec.fails.length <= 6) await d.shot(`${TAG.replace(/\//g, '-')}-${cs.id}-step${i + 1}`);
         if (!cs.cont) return rec;
       }
       rec.finalText = late.text;
