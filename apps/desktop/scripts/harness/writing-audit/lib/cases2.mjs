@@ -17,6 +17,8 @@ const W = 'The quick brown fox jumps over the lazy dog and keeps running through
 const P3 = 'A third one that also runs long enough to wrap onto a second visual line for sure, yes.';
 const DOC = `${W}\nSecond paragraph is short.\n${P3}`;
 
+const P13 = Array.from({ length: 13 }, (_, i) => `Line ${i + 1}`).join(String.fromCharCode(10));
+const PARA = Array.from({ length: 12 }, (_, i) => ['The rain kept on all night and the river rose against the old stone wall. ', 'Nobody in the house slept, and the dog stood at the door listening to the water. ', 'By morning the garden was gone and the road had turned into a brown and quiet stream. '][i % 3]);
 export const GROUPS2 = {
   // 1. Enter with the Typewriter engaged: the whole session-1 Enter group again (the runner turns the Typewriter on), then long pages where it scrolls
   enterTw: GROUPS.enter,
@@ -74,6 +76,7 @@ GROUPS2.repro = [
   c('R06', 'Random (Flux light 1920, seed -1658324437): Shift+Enter, Up, End, Shift+Enter, type, Right on an empty page', '', 0, [K('Enter', { shift: true }), K('ArrowUp', { geo: 'up' }), K('End', { geo: 'end' }), K('Enter', { shift: true }), T('coffee '), K('ArrowRight')], { cont: true }),
   c('R07', 'Random (Flux dark, seed -557978882): Enter, Left, Shift+Enter, type "!", Backspace, Right on an empty page', '', 0, [K('Enter'), K('ArrowLeft'), K('Enter', { shift: true }), T('!'), K('Backspace'), K('ArrowRight')], { cont: true }),
   c('R08', 'The page-turn: Shift+Enter across the sheet boundary (about 16 lines) - does the page move?', Array.from({ length: 14 }, (_, i) => `Line ${i + 1}`).join('\n'), Array.from({ length: 14 }, (_, i) => `Line ${i + 1}`).join('\n').length, [K('Enter', { shift: true }), T('a'), K('Enter', { shift: true }), T('b'), K('Enter', { shift: true }), T('c'), K('Enter', { shift: true }), T('d')], { cont: true }),
+  c('R10', 'A long paragraph typed at the foot of a 13-line page wraps onto new rows past the sheet: the caret line stays in view', P13, P13.length, [K('Enter'), ...PARA.map((x) => T(x))], { cont: true }),
   c('R09', 'Random (Arbor 1920, seed 756326421): Up on the first line, then Down', 'on town rain light and about rain nothing the' + String.fromCharCode(10) + 'she the rain on nothing a' + String.fromCharCode(10) + 'morning the harbor a', 34, [K('ArrowUp', { geo: 'up' }), K('ArrowDown', { geo: 'down' })], { cont: true }),
 ];
 // NICK'S LITERAL FLOWS (Fable, Nov 11): an empty page, Draft; where the caret is DRAWN after every key and where the next letter lands (TRACE lines), one frame per red.
