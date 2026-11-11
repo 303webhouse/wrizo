@@ -27,7 +27,7 @@ export async function main({ title }) {
         for (const w of wins) shown[w] = await h.shows(w);
         for (const w of wins) if (shown[w] !== st) fails.push(`window ${w} shows ${JSON.stringify(shown[w])} but the stored page is ${JSON.stringify(st)}`);
         notes.push(`stored ${JSON.stringify(st)}`);
-        if (fails.length) for (const w of wins) notes.push(`merges in ${w}: ${await h.ev(`JSON.stringify(${h.win(w)}.wrizoMergeLog || [])`)}`);
+        if (fails.length || process.env.WA_MERGELOG === '1') for (const w of wins) notes.push(`merges in ${w}: ${(await h.ev(`JSON.stringify(${h.win(w)}.wrizoMergeLog || [])`)).slice(0, 2500)}`);
         return st;
       };
       const typed = (st, list, fails) => { for (const [s, n] of list) if (count(st, s) < n) fails.push(`WORDS LOST: "${s.trim()}" typed ${n} time(s), found ${count(st, s)} in ${JSON.stringify(st)}`); };
@@ -101,6 +101,7 @@ export async function main({ title }) {
         const lines = String(st).split(NL);
         const whole = ['The quick brown fox ran home.', 'The quick fox ran slowly home.'];
         for (const w of whole) if (!lines.includes(w)) fails.push(`the whole paragraph ${JSON.stringify(w)} is not kept: ${JSON.stringify(st)}`);
+        for (const w of whole) if (lines.filter((l) => l === w).length > 1) fails.push(`the paragraph ${JSON.stringify(w)} is written ${lines.filter((l) => l === w).length} times: ${JSON.stringify(st)}`);
         for (const l of lines) if (l && !whole.includes(l)) fails.push(`a sentence neither window wrote: ${JSON.stringify(l)} in ${JSON.stringify(st)}`);
       });
     },
