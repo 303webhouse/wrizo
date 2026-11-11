@@ -22,6 +22,8 @@
 //       landed, the rest paused), shot with the bitmap mask and again with the SVG mask it replaces put back (a test-only switch in this page) -
 //       the two shots differ by no more than 9 levels on more than 0.01% of the pixels (the vines' shape is seeded by the session, so two runs'
 //       pictures cannot be compared; one page can)
+//       (W8b parked Nov 11 for an instrument fault, Fable's item 5 - successors W8c / W8c-M: the flash's own box, a fixed page, the holes
+//       re-measured and held across the shots, and a misplaced-mask mutant that must be red)
 import fs from 'node:fs';
 import path from 'node:path';
 import { withHarness } from '../runtime-verify.mjs';
@@ -408,8 +410,72 @@ await withHarness(async (app) => {
   //   maskWas === 'bitmap' && !!cmp && cmp.over <= cmp.n * 0.0001, JSON.stringify({ maskWas, ...cmp, overPct: cmp ? Math.round((cmp.over / cmp.n) * 1e6) / 1e4 : null }));
   // SUCCESSOR W8b: the bitmap mask is the one in use, and the difference stays within twice the accepted measure (0.02% -> 0.04% of the
   // pixels over 9 levels) - a regression fails; the walk judges the look.
-  ok('W8b the flash copy\'s pre-rendered mask in use, its difference from the SVG mask within twice the accepted 0.02% (the walk judges the look)',
-    maskWas === 'bitmap' && !!cmp && cmp.over <= cmp.n * 0.0004, JSON.stringify({ maskWas, ...cmp, overPct: cmp ? Math.round((cmp.over / cmp.n) * 1e6) / 1e4 : null }));
+  // PARKED 2026-11-11 (SUPERSEDED - Fable, Nov 11, 12:30 pm, item 5: "Compare only the flash's own box, on a fixed page, with a mutant that proves
+  // it still catches a real mask mismatch. Only if the gap still crosses 0.04% do you touch the mask's smoothing." Box turn 5's shots placed W8b's
+  // difference in two parts, neither of them the tree: (a) THE INSTRUMENT'S OWN - the field re-measures its holes only on a DOM mutation, and the hold
+  // above finishes the left grip's fade-out with none, so shot A kept the faded grip's hole (a 5 x 8 px gap in a vine left of the page, max 222 levels)
+  // while the swap's own style write re-measured and shot B had no hole; (b) edge anti-aliasing along the vines, whose amount moved with the
+  // session-seeded drawing - 0.0037% to 0.0925% on one bar). Original, verbatim (its two shots still run above; their measure rides in W8c's detail):
+  // ok('W8b the flash copy\'s pre-rendered mask in use, its difference from the SVG mask within twice the accepted 0.02% (the walk judges the look)',
+  //   maskWas === 'bitmap' && !!cmp && cmp.over <= cmp.n * 0.0004, JSON.stringify({ maskWas, ...cmp, overPct: cmp ? Math.round((cmp.over / cmp.n) * 1e6) / 1e4 : null }));
+  // SUCCESSOR W8c: the same bar (0.04% over 9 levels), on the flash's OWN box (the brass vines' bounding box, in the viewport) of a FIXED page, the
+  // holes re-measured after the hold and proven unchanged across the two shots; W8c-M in the same run, the bitmap mask misplaced (40% to the right),
+  // must land and be RED on that bar.
+  // THE FIXED PAGE: its id is fixed (born through the seam) and the session clock its drawing is seeded with (RhizomeField's SESSION_START, read
+  // once while the main bundle evaluates) is pinned to one instant until the document's DOMContentLoaded - a test-only init script for every
+  // document from here to the end of this run; after DOMContentLoaded the page has the real clock. The drawing's hash is printed so runs compare.
+  const W8_CLOCK = "(() => { if (window.__w8cClock) return; window.__w8cClock = true; const real = Date.now.bind(Date); let pinned = true; Date.now = () => (pinned ? 1767225600000 : real()); document.addEventListener('DOMContentLoaded', () => { pinned = false; }, { once: true }); })()";
+  await app.cdp('Page.addScriptToEvaluateOnNewDocument', { source: W8_CLOCK });
+  const W8_ID = 'arbor-w8c-fixed-page';
+  await app.goto('/');
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before the fixed page' });
+  await app.evalJs(`(() => { window.wrizoSetWritingGoal({ n: 8, unit: 'words' }); window.wrizoCreateJournalPage({ id: ${JSON.stringify(W8_ID)}, text: 'light kettle street table question morning dog', createdAt: '2026-01-01T00:00:00.000Z', origin: 'journal' }); return true; })()`);
+  await app.reload();
+  const clockPinned = await app.evalJs('!!window.__w8cClock');
+  await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(W8_ID)}`);
+  await app.waitFor("!!document.querySelector('.wz-rhizome-field') && !!document.querySelector('.forward-only-editor')", { label: 'the fixed page, its field', timeout: 10000 }).catch(() => {});
+  await backToRest(app);
+  await app.evalJs("(() => { const e = document.querySelector('.forward-only-editor'); e.focus(); const r = document.createRange(); r.selectNodeContents(e); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()");
+  await app.typeKeys(' word');
+  await app.waitFor("document.querySelector('.arbor2-vines-flash')?.getAttribute('data-mask') === 'bitmap'", { label: 'W8c flash, bitmap mask', timeout: 4000 }).catch(() => {});
+  await sleep(300);
+  await app.evalJs("(() => { document.getAnimations().forEach((a) => { try { if (a.effect && Number.isFinite(a.effect.getComputedTiming().endTime)) a.finish(); else a.pause(); } catch {} }); return true; })()");
+  // the instrument fault (a), removed: the shade's fade pinned (W9c's PIN, a style write), the freeze sheet (nothing new animates between the shots),
+  // and one inert style write on the root (an unused custom property) - each a mutation the field answers by re-measuring its holes AFTER the hold;
+  // the bitmap is redrawn if they changed. Then the holes and the mask must stand still: read twice, 500 ms apart, and again at shot B.
+  const w8Pinned = await app.evalJs(PIN);
+  await styleOn('w8c-freeze', FREEZE);
+  await app.evalJs("(() => { document.documentElement.style.setProperty('--w8c-remeasure', '1'); return true; })()");
+  await frames2(); await sleep(800);
+  const W8STATE = "(() => { const f = document.querySelector('.arbor2-vines-flash'); const g = f && f.querySelector(':scope > g'); if (!f || !g) return null; const b = g.getBoundingClientRect(), s = f.getBoundingClientRect();"
+    + " const html = g.innerHTML; let h = 0; for (let i = 0; i < html.length; i += 1) h = (Math.imul(h, 31) + html.charCodeAt(i)) | 0;"
+    + " return { mask: f.getAttribute('data-mask'), maskImage: f.style.maskImage, clip: f.style.clipPath, gMask: g.getAttribute('mask'), maskPos: getComputedStyle(f).maskPosition || getComputedStyle(f).webkitMaskPosition, drawing: { len: html.length, hash: h >>> 0 },"
+    + " R: { x0: Math.floor(Math.max(0, b.left, s.left)), y0: Math.floor(Math.max(0, b.top, s.top)), x1: Math.ceil(Math.min(innerWidth, b.right, s.right)), y1: Math.ceil(Math.min(innerHeight, b.bottom, s.bottom)) } }; })()";
+  const s1 = await app.evalJs(W8STATE);
+  await sleep(500);
+  const s1b = await app.evalJs(W8STATE);
+  const w8a = await app.screenshot();
+  await app.evalJs("(() => { const f = document.querySelector('.arbor2-vines-flash'); if (!f) return false; f.style.maskImage = 'none'; f.style.webkitMaskImage = 'none'; f.querySelector(':scope > g')?.setAttribute('mask', 'url(#wz-rhizome-mask)'); return true; })()");
+  await frames2(); await sleep(300);
+  const s2 = await app.evalJs(W8STATE);
+  const w8b = await app.screenshot();
+  // W8c-M: the bitmap mask back, MISPLACED (40% to the right: the field's left part has no mask over it) - a real mask mismatch
+  await app.evalJs(`(() => { const f = document.querySelector('.arbor2-vines-flash'); if (!f) return false; f.querySelector(':scope > g')?.removeAttribute('mask'); f.style.maskImage = ${JSON.stringify(s1 ? s1.maskImage : '')}; f.style.webkitMaskImage = ${JSON.stringify(s1 ? s1.maskImage : '')}; f.style.maskPosition = '40% 0'; f.style.webkitMaskPosition = '40% 0'; return true; })()`);
+  await frames2(); await sleep(300);
+  const s3 = await app.evalJs(W8STATE);
+  const w8m = await app.screenshot();
+  await app.evalJs("(() => { const f = document.querySelector('.arbor2-vines-flash'); if (f) { f.style.maskPosition = ''; f.style.webkitMaskPosition = ''; } document.documentElement.style.removeProperty('--w8c-remeasure'); return true; })()");
+  await styleOff('w8c-freeze'); await app.evalJs(UNPIN);
+  if (process.env.ARBOR_SHOTS) { fs.mkdirSync(process.env.ARBOR_SHOTS, { recursive: true }); [['bitmap-mask', w8a], ['svg-mask', w8b], ['mutant-misplaced', w8m]].forEach(([k, s]) => fs.writeFileSync(path.join(process.env.ARBOR_SHOTS, `w8c-flash-${k}.png`), Buffer.from(s, 'base64'))); }
+  const R8 = s1 ? s1.R : null;
+  const boxOk = !!R8 && R8.x1 - R8.x0 >= 40 && R8.y1 - R8.y0 >= 40;
+  const c8 = boxOk ? await regionCmp(w8a, w8b, R8) : null, m8 = boxOk ? await regionCmp(w8a, w8m, R8) : null;
+  const pct8 = (d) => (d && d.n ? Math.round((d.over / d.n) * 1e6) / 1e4 : null);
+  const premise8 = clockPinned && !!s1 && !!s1b && !!s2 && s1.mask === 'bitmap' && /^url\("blob:/.test(s1.maskImage || '') && s1.maskImage === s1b.maskImage && s1.clip === s1b.clip && s1.clip === s2.clip && s2.gMask === 'url(#wz-rhizome-mask)' && s2.maskImage === 'none' && s1.drawing.len > 0 && s1.drawing.hash === s2.drawing.hash && boxOk;
+  ok('W8c the flash copy\'s pre-rendered mask against the SVG mask, on the flash\'s OWN box of a FIXED page (the id fixed, the drawing\'s seed clock pinned), the holes re-measured after the hold and unchanged across both shots - over 9 levels on no more than 0.04% of the box\'s pixels',
+    premise8 && !!c8 && c8.over <= c8.n * 0.0004, JSON.stringify({ clockPinned, s1: s1 && { ...s1, maskImage: undefined, clip: s1.clip ? s1.clip.length : null }, settled: !!s1 && !!s1b && s1.maskImage === s1b.maskImage && s1.clip === s1b.clip, holesKept: !!s1 && !!s2 && s1.clip === s2.clip, box: c8 && { ...c8, overPct: pct8(c8) }, wholeScreenW8b: { maskWas, ...cmp, overPct: cmp ? Math.round((cmp.over / cmp.n) * 1e6) / 1e4 : null } }));
+  ok('W8c-M (mutant, the bitmap mask misplaced 40% to the right): it landed (the flash layer\'s mask position reads 40%) and W8c\'s bar is RED on it',
+    premise8 && !!s3 && /40%/.test(String(s3.maskPos)) && s3.mask === 'bitmap' && !!m8 && !(m8.over <= m8.n * 0.0004), JSON.stringify({ maskPos: s3 && s3.maskPos, box: m8 && { ...m8, overPct: pct8(m8) } }));
   const fin = await app.evalJs(READ);
   ok('W7 nothing stored: localStorage holds no key or value naming the swap', !/arbor2-(still|live)|swap/.test(fin.ls), fin.ls.length);
   return checks;
@@ -422,7 +488,10 @@ console.log(JSON.stringify(checks, null, 2));
 // raised. Every T2 run since printed "VERIFY: FAIL - 0/11 failed" with every check green - box turns 4 and 5, 15:55Z and 17:00Z Nov 11). Original, verbatim:
 // const pass = checks.length === 10 && checks.every((c) => c.pass);
 // SUCCESSOR: the count the file now has, and the verdict names it when the count is what fails (never again "FAIL - 0/n failed").
-const WANT_CHECKS = 11;
+// PARKED 2026-11-11 (SUPERSEDED - Fable, Nov 11, 12:30 pm, item 5: W8b parked, W8c and W8c-M added - one more check). Original, verbatim:
+// const WANT_CHECKS = 11;
+// SUCCESSOR: twelve.
+const WANT_CHECKS = 12;
 const pass = checks.length === WANT_CHECKS && checks.every((c) => c.pass);
 // eslint-disable-next-line no-console
 console.log(pass ? `\nARBOR2-SWAP VERIFY: PASS (${checks.length} checks)` : `\nARBOR2-SWAP VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length !== WANT_CHECKS ? ` (and ${checks.length} checks ran where ${WANT_CHECKS} were expected)` : ''}`);
