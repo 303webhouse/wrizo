@@ -33,14 +33,14 @@ export const TITLE_CASES = [
   c('TT14', 'A name over 60 characters: commit, then open the rename again - is the whole name still in the box?', [T('x'.repeat(70)), C('Enter'), C('Reopen')]),
 ];
 
-const READ = (sel) => `(() => { const i = document.querySelector(${JSON.stringify(sel)}); if (!i) return null; const cs = getComputedStyle(i), r = i.getBoundingClientRect();
+export const READ = (sel) => `(() => { const i = document.querySelector(${JSON.stringify(sel)}); if (!i) return null; const cs = getComputedStyle(i), r = i.getBoundingClientRect();
   const cv = document.createElement('canvas').getContext('2d'); cv.font = cs.font;
   const w = (n) => cv.measureText(i.value.slice(0, n)).width + (cs.letterSpacing && cs.letterSpacing !== 'normal' ? parseFloat(cs.letterSpacing) * n : 0);
   const x = r.left + (parseFloat(cs.borderLeftWidth) || 0) + (parseFloat(cs.paddingLeft) || 0) + w(i.selectionStart) - i.scrollLeft;
   return { value: i.value, s: i.selectionStart, e: i.selectionEnd, focused: document.activeElement === i, rect: { x: r.left, y: r.top, w: r.width, h: r.height }, expectX: x, scrollLeft: i.scrollLeft, view: { w: innerWidth, h: innerHeight } }; })()`;
 
 // the caret of an <input> as painted: a frame with the caret, a frame with its colour made transparent (inline, !important), the difference between them
-async function caretByDifference(d, app, sel, tries = 6) {
+export async function caretByDifference(d, app, sel, tries = 6) {
   for (let i = 0; i < tries; i++) {
     const A = await app.cdp('Page.captureScreenshot', { format: 'png' });
     await d.ev(`document.querySelector(${JSON.stringify(sel)}).style.setProperty('caret-color', 'transparent', 'important')`);

@@ -108,7 +108,7 @@ export async function main({ title }) {
         if (st.prop) { exp.a = exp.f = late.focus; if (!(late.focus > before.focus)) fails.push(`step ${i + 1} ${label}: the caret did not move forward (${before.focus} -> ${late.focus})`); }
         const box = exp.collapsed ? await d.box(exp.f) : null;
         const v = verify({ exp: exp.snapshot(), box, before, early, late, errors: d.errors.slice(e0), expect: { scroll: !!scroll } });
-        if (v.fails.length) { fails.push(`step ${i + 1} ${label}: ${v.fails.map((f) => `${f.check} - ${f.detail}`).join(' | ').slice(0, 420)}`); await d.shot(`${TAG.replace(/\//g, '-')}-BG-step${i + 1}`); break; }
+        if (v.fails.length) { fails.push(`step ${i + 1} ${label}: ${v.fails.map((f) => `${f.check} - ${f.detail}`).join(' | ').slice(0, 420)}`); if (fails.length <= 3) await d.shot(`${TAG.replace(/\//g, '-')}-BG-step${i + 1}`); if (fails.length >= 6) break; }
         m = exp;
       }
       notes.push(`${text.length} characters, ${text.split(/\s+/).length} words`);
