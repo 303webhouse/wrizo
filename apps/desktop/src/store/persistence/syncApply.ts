@@ -115,7 +115,7 @@ if (typeof window !== 'undefined') {
     try {
       if (e.storageArea !== window.localStorage) return;
       const name = COLLECTIONS.find((n) => KEYS[n] === e.key);
-      if (name) applyOtherWindowWrite(name, e.newValue);
+      if (name) { /* MUTANT: the window does not listen (must be RED) */ }
     } catch { /* a listener never breaks a write path */ }
   });
 }
