@@ -42,6 +42,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { withHarness } from '../runtime-verify.mjs';
+import { isOnBox, timingGate } from '../lib/timing-gate.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(here, '..', '..', '..', '..');
@@ -57,6 +58,16 @@ const LOAD = { traces: 300, electrons: 120, busyMs: BUSY_MS };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
+// THE TIMING LINES (bug #47, Fable, Nov 10: the fifth miss in this file was a 0.4 ms read of a hosted runner's clock; the instrument is fixed, not waved). A line that reads
+// THIS machine's clock - L, P3b, and the L half of MUT-b - gates on the box and is INFORMATION on a hosted runner (GITHUB_ACTIONS): it prints what it measured and what
+// it would have said, and gates nothing. Every other line (P1, P2, P2b, P4, P5, P6, D2, the D2 half of MUT-b, MUT premise, B) gates on both machines. The gate is
+// scripts/lib/timing-gate.mjs; scripts/harness/flux3-latency-gate.mjs (browserless) proves the box still gates, Actions does not, and the routing above.
+const ON_BOX = isOnBox();
+const timing = (name, pass, detail = '') => {
+  const g = timingGate(ON_BOX, pass);
+  checks.push({ name: g.info ? `${name} [INFORMATION on Actions: the measure ${g.actual ? 'PASSED' : 'did NOT pass'}; this line gates nothing here]` : name, pass: g.pass, detail });
+  if (g.info && !g.actual) console.log(`INFO (would have failed on the box) ${name} -- ${detail}`);
+};
 
 // ---- the build this run uses ------------------------------------------------------------------------------------------------------------------------
 function buildIdentity() {
@@ -316,7 +327,7 @@ try { await withHarness(async (app) => {
   //   loaded.length > 0 && animated.length === loaded.length, JSON.stringify(loaded.map((r) => ({ arm: r.name, round: r.round, frames: r.idle.n, drew: r.idle.drawFrames }))));
   // SUCCESSOR P3b: it animated (>= 80% of the rest frames drew) at any frame rate above 13 fps (>= 20 frames in 1.5 s); its cost is COST's to report.
   const animatedB = loaded.filter((r) => r.idle.n >= 20 && r.idle.drawFrames >= 0.8 * r.idle.n);
-  ok(`P3b the stand-in really animated at rest (>= 20 frames in ${IDLE_MS} ms, >= 80% of them drawing) in every loaded arm-round: ${animatedB.length}/${loaded.length}`,
+  timing(`P3b the stand-in really animated at rest (>= 20 frames in ${IDLE_MS} ms, >= 80% of them drawing) in every loaded arm-round: ${animatedB.length}/${loaded.length}`,
     loaded.length > 0 && animatedB.length === loaded.length, JSON.stringify(loaded.map((r) => ({ arm: r.name, round: r.round, frames: r.idle.n, drew: r.idle.drawFrames }))));
   const unmoved = loaded.filter((r) => r.rectBefore && r.rectBefore === r.where.rect);
   ok(`P4 the stand-in moved no page rect (the .mode-page rect before mounting it = with it drawing): ${unmoved.length}/${loaded.length}`, unmoved.length === loaded.length,
@@ -329,7 +340,7 @@ try { await withHarness(async (app) => {
   // ---- the verdicts
   const cRounds = res.C.map((r) => `${r1(stat(r.lat).median)}/${r1(stat(r.lat).p95)}`).join(' ');
   const t = judge(res.C, res.T);
-  ok(`L${MUTANT_RUN ? ' (FLUX3_MUTANT=1: T is undamped)' : ''} typing on Flux with every motion on adds no latency beyond the control's own spread: T median ${r1(t.X.median)} <= C ${r1(t.C.median)} + ${r1(t.spreadMed)}, T p95 ${r1(t.X.p95)} <= C ${r1(t.C.p95)} + ${r1(t.spreadP95)}, no T key over ${MAX_MS} ms`,
+  timing(`L${MUTANT_RUN ? ' (FLUX3_MUTANT=1: T is undamped)' : ''} typing on Flux with every motion on adds no latency beyond the control's own spread: T median ${r1(t.X.median)} <= C ${r1(t.C.median)} + ${r1(t.spreadMed)}, T p95 ${r1(t.X.p95)} <= C ${r1(t.C.p95)} + ${r1(t.spreadP95)}, no T key over ${MAX_MS} ms`,
     t.lat, `C ${show(t.C)} | T ${show(t.X)} | C per round median/p95 ${cRounds}`);
   // PARKED 2026-10-31 (SUPERSEDED, box turn 22:32-22:45Z and Actions 41248449604, e67e555a: D counted a draw on ANY canvas as the layer's. Every
   // T round showed exactly 2 drawing frames: the one in flight at the first key (0 ms) and one ~3.1 s into the typing, in every round on both
@@ -354,7 +365,7 @@ try { await withHarness(async (app) => {
     //   mLanded && !(m.lat && m.damp), `C ${show(m.C)} | M ${show(m.X)}`);
     // SUCCESSOR MUT-b: the mutant fails L or D2.
     ok(`MUT-b the no-damping mutant FAILS the probe (caught by L: ${m.lat ? 'no' : 'YES'}; caught by D2: ${m.layerDamp ? 'no' : 'YES'}) - M median ${r1(m.X.median)} p95 ${r1(m.X.p95)} max ${r1(m.X.max)}, its layer drew in ${m.xLayer} frame(s) while typing`,
-      mLanded && !(m.lat && m.layerDamp), `C ${show(m.C)} | M ${show(m.X)}`);
+      mLanded && (ON_BOX ? !(m.lat && m.layerDamp) : !m.layerDamp), `C ${show(m.C)} | M ${show(m.X)}`);   // on Actions only the D2 half gates: the L half is a timing line
   }
 
   // ---- the per-frame cost (information): the loaded arm undamped at rest, against the control at rest
