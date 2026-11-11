@@ -60,6 +60,14 @@
 /* Flux marks a card's first line by colour only: capitals, spacing or another face would widen the line and make the card taller; a skin changes only the skin [flux-v2 §5] */
 [data-theme='flux'] .board-text::first-line{ color:var(--text-accent); }
 [data-theme='flux'] .board-canvas-blur-wrap{ position:relative; }
+/* LIVE BOARD LINKS (bug #57; Nick approved the colours, Flux spec §4 'Link colours', draft 27). A link in connection mode was drawn in Arbor's brass (--brass #ff9800 at .9) in every theme; read from drawn pixels under Flux
+   it fell under the graphics floor (3:1, law 3): dark resting 2.59, light resting 1.39, light selected 1.99. Flux draws it in its own blues, opacity 1 so the drawn colour IS the colour (a 1 px line at .9 mixes with the board):
+   dark - resting #3A8FA5, selected #00C2FF; light - resting #35859E, selected #00719C (every one 3:1 or better on its board). Arbor keeps its brass. The thread-drag preview arm is a different mark and keeps its own. */
+[data-theme='flux'] .board-connection-line{ stroke:#3A8FA5; opacity:1; }
+[data-theme='flux'] .board-connection-line[data-selected='true']{ stroke:#00C2FF; }
+[data-theme='flux'][data-page='light'] .board-connection-line{ stroke:#35859E; }
+[data-theme='flux'][data-page='light'] .board-connection-line[data-selected='true']{ stroke:#00719C; }
+
 .flux-board-frame .flux-frame{ padding:12px; }
 
 /* the Inputs panel (the right drawer's second tab), its picker and the board's knob: glass, cyan edges, the arrow-into-a-socket glyph */
