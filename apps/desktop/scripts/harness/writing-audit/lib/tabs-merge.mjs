@@ -11,6 +11,7 @@ import { runTabs } from './tabs-common.mjs';
 const SETTLE = 7000;   // 2 s autosave + 0.3 s store write, twice over (the second window merges, then writes the merge), + margin
 const NL = String.fromCharCode(10);
 const FIRST_NL = `t.indexOf(String.fromCharCode(10))`;
+const END_OF_FIRST = `(t.indexOf(String.fromCharCode(10)) < 0 ? t.length : t.indexOf(String.fromCharCode(10)))`;
 const SECOND_NL = `t.indexOf(String.fromCharCode(10), t.indexOf(String.fromCharCode(10)) + 1)`;
 
 const count = (text, s) => String(text).split(s).length - 1;
@@ -51,8 +52,8 @@ export async function main({ title }) {
         const pid = `wa-m2-${Date.now().toString(36)}`;
         await h.mkPage(pid, 'Base. '); await h.openA(pid); await h.tabB();
         for (let r = 0; r < 3; r += 1) {
-          await h.typeIn('A', `a${r} `);
-          await h.typeIn('B', `b${r} `);
+          await h.typeIn('A', `a${r} `, END_OF_FIRST);   // each window keeps writing in ITS OWN paragraph (A's sorts first: "a" before "b")
+          await h.typeIn('B', `b${r} `, 't.length');
         }
         const st = await converge(pid, ['A', 'B'], fails, notes);
         typed(st, [['a0 ', 1], ['a1 ', 1], ['a2 ', 1], ['b0 ', 1], ['b1 ', 1], ['b2 ', 1]], fails);
