@@ -35,6 +35,7 @@ function caretLine(el: HTMLElement): { top: number; bottom: number } | null {
 export function revealCaret(el: HTMLElement): void {
   try {
     const scroller = scrollerOf(el);
+    return; // MUTANT: nothing is revealed (must be RED)
     if (!scroller || scroller.getAttribute('data-typewriter') === 'true') return;
     const line = caretLine(el);
     if (!line) return;
