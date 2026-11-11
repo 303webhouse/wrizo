@@ -84,6 +84,7 @@ export async function main({ title }) {
     const LINE = '[data-same-page-elsewhere]';
     const lineJs = (docExpr) => `(() => { const l = ${docExpr}.querySelector(${JSON.stringify(LINE)}); if (!l) return null; const r = l.getBoundingClientRect(); return { text: l.textContent.trim(), w: r.width, h: r.height, dialog: !!l.closest('[role=dialog],[role=alertdialog],dialog'), focusable: !!l.querySelector('button,input,a,select,textarea,[tabindex]') || l.hasAttribute('tabindex') }; })()`;
     const lineIn = (w) => ev(lineJs(w === 'B' ? "document.getElementById('wa-tab-b').contentDocument" : 'document'));
+    const presence = (w) => ev(w === 'B' ? "JSON.stringify(document.getElementById('wa-tab-b').contentWindow.wrizoPresence && document.getElementById('wa-tab-b').contentWindow.wrizoPresence())" : 'JSON.stringify(window.wrizoPresence && window.wrizoPresence())');
     const lineWait = async (w, want, ms) => { const t0 = Date.now(); let v = await lineIn(w); while ((!!v) !== want && Date.now() - t0 < ms) { await sleep(400); v = await lineIn(w); } return v; };
     const mkPage = async (pid, text) => {
       await ev(`location.hash = '#/'`); await sleep(150);
@@ -125,7 +126,7 @@ export async function main({ title }) {
       await tabB();
       if (!(await lineWait('A', true, 9000))) fails.push('no line to remove: window A never showed it');
       await ev(`document.getElementById('wa-tab-b').remove()`);
-      if (await lineWait('A', false, 12000)) fails.push('the line is still in window A twelve seconds after window B closed');
+      if (await lineWait('A', false, 12000)) fails.push(`the line is still in window A twelve seconds after window B closed; A believes ${await presence('A')}`);
     });
     await run('TW3', '#76 part 2: a window on a DIFFERENT page shows no line; it shows once both are on the same page', async (fails) => {
       const p1 = `wa-warn3a-${Date.now().toString(36)}`, p2 = `wa-warn3b-${Date.now().toString(36)}`;
@@ -134,7 +135,7 @@ export async function main({ title }) {
       await tabB();
       await ev(`document.getElementById('wa-tab-b').contentWindow.location.hash = '#/page/${p2}'`); await sleep(3500);
       const a = await lineIn('A'), b = await lineIn('B');
-      if (a || b) fails.push(`two windows on different pages show the line (A ${JSON.stringify(a && a.text)}, B ${JSON.stringify(b && b.text)})`);
+      if (a || b) fails.push(`two windows on different pages show the line (A ${JSON.stringify(a && a.text)}, B ${JSON.stringify(b && b.text)}); A believes ${await presence('A')}; B believes ${await presence('B')}; B at ${await ev("document.getElementById('wa-tab-b').contentWindow.location.hash")}`);
       await ev(`document.getElementById('wa-tab-b').contentWindow.location.hash = '#/page/${p1}'`);
       if (!(await lineWait('A', true, 9000))) fails.push('window B came to the same page and window A shows no line');
       if (!(await lineWait('B', true, 9000))) fails.push('window B came to the same page and shows no line');

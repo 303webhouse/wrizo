@@ -58,6 +58,11 @@ function start(): void {
   post('hello');
 }
 
+// a test/inspection seam, this file's established pattern (persistence core's wrizoDirty): what this window believes. Never read by app code.
+if (typeof window !== 'undefined') {
+  (window as unknown as { wrizoPresence?: () => unknown }).wrizoPresence = () => ({ me, mine, others: [...others].map(([w, o]) => ({ w, page: o.page, ageMs: Date.now() - o.seen })), channel: !!channel });
+}
+
 /** Say which page this window has open now (null: none). */
 export function setOpenPage(id: string | null): void {
   start();
