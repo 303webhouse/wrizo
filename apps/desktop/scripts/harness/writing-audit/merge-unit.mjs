@@ -13,7 +13,7 @@ const require = createRequire(import.meta.url);
 const esbuild = createRequire(require.resolve('vite'))('esbuild');
 const entry = path.resolve(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), '../../../src/store/textMerge.ts');
 const built = esbuild.buildSync({ entryPoints: [entry], bundle: true, format: 'esm', write: false, platform: 'node' });
-const { mergeText } = await import('data:text/javascript;base64,' + Buffer.from(built.outputFiles[0].text).toString('base64'));
+const { mergeText, mapCaretThrough } = await import('data:text/javascript;base64,' + Buffer.from(built.outputFiles[0].text).toString('base64'));
 
 let fails = 0, checks = 0;
 const ok = (cond, msg) => { checks += 1; if (!cond) { fails += 1; if (fails <= 25) console.log('FAIL  ' + msg); } };
@@ -111,6 +111,17 @@ for (let n = 0; n < 3000; n += 1) {
     ok(at >= 0 && at <= ab.text.length, `CARET #${n}: ${c} -> ${at} outside 0..${ab.text.length}`);
     if (c > 0 && /\S/.test(a[c - 1]) && /^u\d+$/.test(a.slice(0, c).split(/\s+/).pop() || '') && ab.text.includes(a.slice(Math.max(0, c - 4), c))) ok(ab.text[at - 1] === a[c - 1], `CARET #${n}: after "${a[c - 1]}" in mine, but after "${ab.text[at - 1]}" in the merge: ${JSON.stringify({ base, a, b, merged: ab.text, c, at })}`);
   }
+}
+
+// ---- a caret through words added elsewhere (a clean adoption) -----------------------------------------------------------------
+{
+  const o = 'Para one.' + String.fromCharCode(10) + 'Para two.' + String.fromCharCode(10) + 'Para three.';
+  const n = 'Para one. A0 A1' + String.fromCharCode(10) + 'Para two. B0' + String.fromCharCode(10) + 'Para three.';
+  ok(mapCaretThrough(o, n, o.length) === n.length, 'a caret at the end stays at the end when words were added above it');
+  const at = o.indexOf('three') + 3;   // inside "three"
+  ok(n.slice(0, mapCaretThrough(o, n, at)).endsWith('Para thr'), `a caret inside a word keeps its place in that word: ${JSON.stringify(n.slice(0, mapCaretThrough(o, n, at)))}`);
+  ok(mapCaretThrough(o, n, 0) === 0, 'a caret at the start stays at the start');
+  ok(mapCaretThrough('abc', 'abc', 2) === 2, 'no change, no move');
 }
 console.log(`${fails ? 'FAIL' : 'PASS'}  merge-unit: ${checks - fails} of ${checks} checks held${fails ? `, ${fails} failed` : ''}`);
 process.exit(fails ? 1 : 0);

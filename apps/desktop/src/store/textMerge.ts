@@ -164,3 +164,23 @@ export function mergeText(base: string, mine: string, theirs: string): MergeResu
   };
   return { text, merged: true, kept, mapCaret };
 }
+
+/** Where a caret at `offset` in `oldText` stands once the text has changed to `newText` (words added or removed elsewhere): just after the same character, found by aligning the two word by word. A caret inside a stretch that was rewritten goes to the end of what replaced it. */
+export function mapCaretThrough(oldText: string, newText: string, offset: number): number {
+  const c = Math.max(0, Math.min(offset, oldText.length));
+  if (c === 0) return 0;
+  const a = splitTokens(oldText), b = splitTokens(newText);
+  if (a.length + b.length > TOKEN_LIMIT * 2) return Math.min(c, newText.length);
+  const aOff = offsets(a), bOff = offsets(b);
+  let k = a.length - 1;
+  while (k > 0 && aOff[k] > c - 1) k -= 1;
+  const hs = changes(a, b);
+  let delta = 0;
+  for (const h of hs) {
+    if (k >= h.bs && k < h.be) return Math.min(newText.length, h.oe < b.length ? bOff[h.oe] : newText.length);
+    if (h.be <= k) delta += (h.oe - h.os) - (h.be - h.bs);
+  }
+  const k2 = k + delta;
+  if (k2 < 0 || k2 >= b.length) return newText.length;
+  return Math.min(newText.length, bOff[k2] + (c - aOff[k]));
+}

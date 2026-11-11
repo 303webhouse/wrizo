@@ -76,8 +76,8 @@ import { useFirstRunGate, FIRST_RUN_WORD_TARGET } from './pageEditor/useFirstRun
 import { usePageTypewriter } from './pageEditor/usePageTypewriter';
 import { usePageAutosave } from './pageEditor/usePageAutosave';
 import { useExternalPageText } from './pageEditor/useExternalPageText';
-import { announceKeptBoth, noteMerge, subscribeKeptBoth } from '../store/mergeNotice';
-import { mergeText } from '../store/textMerge';
+import { announceKeptBoth, noteMerge } from '../store/mergeNotice';
+import { mapCaretThrough, mergeText } from '../store/textMerge';
 
 /** W5 - the glow for a page born from a step: a STABLE ref callback (one function for the module), so a re-render never re-fires it; celebrateReturnChip itself is once-per-element. */
 const glowStepChip = (el: HTMLElement | null): void => { if (el) celebrateReturnChip(el); };
@@ -192,8 +192,6 @@ function PageEditorView({ id }: { id: string }) {
   // E1 S2 — Publish's own quiet confirmation line (the existing ActionToast
   // pattern, reused per the brief's own "don't invent a new one" instruction).
   const publishToast = useActionToast();
-  // #76 part 3: the one quiet line when two windows' words were merged
-  const keptToast = useActionToast();
   // AB2 S2 — ink color, lifted out of ModeStage so the sliver (CD1:
   // components/Sliver.tsx, a DeskFrame sibling) can control it; ModeStage
   // falls back to its own internal state when this isn't passed
@@ -464,7 +462,8 @@ function PageEditorView({ id }: { id: string }) {
     const had = !!ed && ed.isConnected && !!document.activeElement && ed.contains(document.activeElement);
     // her caret is kept whether or not the editor has focus (a window she is not in still has a caret in it); a merged text maps it to where the same character now is
     const sel = ed && ed.isConnected ? getSelectionOffsets(ed) : null;
-    const place = sel && how.mapCaret ? { start: how.mapCaret(sel.start), end: how.mapCaret(sel.end) } : sel;
+    const through = how.mapCaret ?? ((o: number) => mapCaretThrough(textRef.current, next, o));   // textRef still holds what the editor showed
+    const place = sel ? { start: through(sel.start), end: through(sel.end) } : null;
     caretAfterAdopt.current = place ? { ...place, focused: had } : had ? { start: next.length, end: next.length, focused: true } : null;
     focusBeforeAdopt.current = !had && document.activeElement instanceof HTMLElement ? document.activeElement : null;   // a writer who was NOT in the page keeps her focus where it was
     lastSavedRef.current = how.lastSaved;   // what was adopted from the other window: when the merged text differs from it, the editor's next save writes the merge
@@ -491,7 +490,6 @@ function PageEditorView({ id }: { id: string }) {
   };
   reconcileRef.current = reconcile;
   useExternalPageText({ id, unbornRef, lastTypedAtRef, reconcileRef });
-  useEffect(() => subscribeKeptBoth((pid) => { if (pid === id) keptToast.show(dt('samePageKeptBoth')); }), [id]);   // eslint-disable-line react-hooks/exhaustive-deps
   // a passive effect on purpose: the editor's own mount (a child's passive effect) lands the caret at the end and focuses, and this runs after it
   useEffect(() => {
     if (remount === 0) return;
@@ -1196,7 +1194,6 @@ function PageEditorView({ id }: { id: string }) {
         </p>
         <button type="button" className="btn-quiet" onClick={() => setShowPublish(false)}>Close</button>
         {publishToast.node}
-        {keptToast.node}
       </div>
     </div>
   );
