@@ -429,6 +429,9 @@ function partH(sliver = sliverSrc, tutor = tutorSrc) {
   return {
     sliverShell: /<SideDrawer side="left" idPrefix="wz-sliver" tabs=\{sideTabs\}/.test(sliver) && /<\/SideDrawer>/.test(sliver),
     tutorShell: /<SideDrawer side="right" idPrefix="wz-tutor" tabs=\{rightTabs\}>/.test(tutor) && /<\/SideDrawer>/.test(tutor),
+    // successors (ARBOR, Nov 10): the same shell claim, accepting Arbor's flag-only tab config beside the plain one
+    sliverShellB: /<SideDrawer side="left" idPrefix="wz-sliver" tabs=\{(?:sideTabs|\(arborTabs \?\? sideTabs\) as DrawerTabsConfig<string> \| undefined)\}/.test(sliver) && /<\/SideDrawer>/.test(sliver),
+    tutorShellB: /<SideDrawer side="right" idPrefix="wz-tutor" tabs=\{(?:rightTabs|\(arborRightTabs \?\? rightTabs\) as DrawerTabsConfig<string>)\}>/.test(tutor) && /<\/SideDrawer>/.test(tutor),
     noHandWrapper: !/<div className="wz-drawer-slide wz-drawer-slide--(left|right)">/.test(sliver + tutor),
     ungated: gated.filter((s) => !sliver.includes("allowed('" + s + "')")),
     tabLabels: /t\('inkModeText'\)/.test(sliver) && /t\('inkModeInk'\)/.test(sliver) && /label: t\('inkInstrument'\)/.test(sliver),
@@ -436,7 +439,9 @@ function partH(sliver = sliverSrc, tutor = tutorSrc) {
 }
 {
   const h = partH();
-  ok('(H1) both hands render through <SideDrawer> (left carries the TEXT|INK config and the foot; right carries the TUTOR|links config) - the S1 hand-written wrappers are gone', h.sliverShell && h.tutorShell && h.noHandWrapper, JSON.stringify(h));
+  // PARKED 2026-11-10 (SUPERSEDED - ARBOR's flag-only drawer tabs, r5 Oct 31: the drawers pass `(arborTabs ?? sideTabs)` / `(arborRightTabs ?? rightTabs)` and the links pane carries `only=` and `help=`; full pair 42928277885). Original, verbatim:
+  // ok('(H1) both hands render through <SideDrawer> (left carries the TEXT|INK config and the foot; right carries the TUTOR|links config) - the S1 hand-written wrappers are gone', h.sliverShell && h.tutorShell && h.noHandWrapper, JSON.stringify(h));
+  ok('(H1b [Arbor-tabs successor]) both hands render through <SideDrawer> (plain or Arbor tab config) - the S1 hand-written wrappers are gone', h.sliverShellB && h.tutorShellB && h.noHandWrapper, JSON.stringify(h));
   ok('(H2) EVERY Sliver section asks the table first (ink, typeface, forwardLock, format, templates, pageKind, capture, boardTools) - the table is not decorative', h.ungated.length === 0, JSON.stringify(h.ungated));
   ok('(H3) the tab words are the theme\'s own lexicon terms (Text / Ink and the row\'s name), not literals', h.tabLabels, JSON.stringify(h));
 }
@@ -541,6 +546,8 @@ function partM(tutor = tutorSrc, tabs = tabsSrc, note = noteSrc, c = css) {
   return {
     defaultTutor: /useState<RightTab>\('tutor'\)/.test(tutor),
     bodyOnTutorTab: /\{rightTab === 'tutor' && \(\n\s*<div className="wz-tutor-body">/.test(tutor) && /\{rightTab === 'links' && <ConnectionsDrawerPanel \/>\}/.test(tutor),
+    // successor (ARBOR, Nov 10): the links pane may carry Arbor's only= (flux passes undefined) - the claim is still "only on the links tab"
+    bodyOnTutorTabB: /\{rightTab === 'tutor' && \(\n\s*<div className="wz-tutor-body">/.test(tutor) && /\{rightTab === 'links' && <ConnectionsDrawerPanel(?: \/>\}| only=\{arbor2 \? \(arborBoard \? 'board' : 'grafts'\) : undefined\})/.test(tutor) && (tutor.match(/<ConnectionsDrawerPanel\b/g) || []).length === 1,
     noteOnlyWhenWords: /notes: linksNote \? \{ links: <DrawerNote label=\{t\('drawerLinksNoteLabel'\)\}>\{linksNote\}<\/DrawerNote> \} : undefined/.test(tutor),
     tabWords: /label: t\('tutorTabTutor'\)/.test(tutor) && /label: t\('drawerLinks'\)/.test(tutor) && /label: t\('drawerRightTabsLabel'\)/.test(tutor),
     escCloses: /e\.key === 'Escape' && open\) \{ e\.stopPropagation\(\); setOpen\(false\); \}/.test(note),
@@ -618,7 +625,9 @@ function partM(tutor = tutorSrc, tabs = tabsSrc, note = noteSrc, c = css) {
   const l = await partL();
   ok('(K4) the right drawer\'s tabs are TUTOR then the links tab, from one constant', JSON.stringify(l.tabs) === JSON.stringify(['tutor', 'links']), JSON.stringify(l));
   const m = partM();
-  ok('(K5) the Tutor opens on the TUTOR tab; its body renders ONLY there and the empty links pane only on the other; the tab words are lexicon terms', m.defaultTutor && m.bodyOnTutorTab && m.tabWords, JSON.stringify(m));
+  // PARKED 2026-11-10 (SUPERSEDED - ARBOR's flag-only drawer tabs, r5 Oct 31: the drawers pass `(arborTabs ?? sideTabs)` / `(arborRightTabs ?? rightTabs)` and the links pane carries `only=` and `help=`; full pair 42928277885). Original, verbatim:
+  // ok('(K5) the Tutor opens on the TUTOR tab; its body renders ONLY there and the empty links pane only on the other; the tab words are lexicon terms', m.defaultTutor && m.bodyOnTutorTab && m.tabWords, JSON.stringify(m));
+  ok('(K5b [Arbor-tabs successor]) the Tutor opens on the TUTOR tab; its body renders ONLY there and the links pane (one, with or without Arbor\'s only=) only on the other; the tab words are lexicon terms', m.defaultTutor && m.bodyOnTutorTabB && m.tabWords, JSON.stringify(m));
 
   // SUPERSEDED (help-buttons): the conditional-on-`linksNote` shape is gone -
   // the "?" now renders unconditionally (helpGrafts always has words in both
@@ -736,7 +745,10 @@ await mutant('the tab row does not wrap', async () => partF(mutate(tabsSrc, "ret
 await mutant('the chosen tab gets a fill', async () => partG(tabsSrc, mutate(css, ".wz-drawer-tab[data-on='true']{ color:var(--accent-rest); border-color:var(--accent-rest); background:none; }", ".wz-drawer-tab[data-on='true']{ color:var(--accent-rest); border-color:var(--accent-rest); background:color-mix(in srgb,var(--accent-rest) 14%,transparent); }")), (g) => g.chosenOutline === false);
 await mutant('the arrow tab turns brass when open', async () => partG(tabsSrc, mutate(css, ".wz-sliver[data-open='true'] .wz-sliver-grip{ color:var(--accent-rest); border-color:var(--accent-rest); }", ".wz-sliver[data-open='true'] .wz-sliver-grip{ color:var(--brass); border-color:var(--brass); }")), (g) => g.arrowStaysOlive === false);
 await mutant('the Sliver stops asking the table for the Typeface', async () => partH(mutate(sliverSrc, "content.type && allowed('typeface') && (", "content.type && ("), tutorSrc), (h) => h.ungated.includes('typeface'));
-await mutant('the Tutor goes back to a hand-written wrapper', async () => partH(sliverSrc, mutate(tutorSrc, '<SideDrawer side="right" idPrefix="wz-tutor" tabs={rightTabs}>', '<div className="wz-drawer-slide wz-drawer-slide--right">')), (h) => h.noHandWrapper === false || h.tutorShell === false);
+// PARKED 2026-11-10 (SUPERSEDED - ARBOR's flag-only drawer tabs, r5 Oct 31: the drawers pass `(arborTabs ?? sideTabs)` / `(arborRightTabs ?? rightTabs)` and the links pane carries `only=` and `help=`; full pair 42928277885). Original, verbatim:
+// await mutant('the Tutor goes back to a hand-written wrapper', async () => partH(sliverSrc, mutate(tutorSrc, '<SideDrawer side="right" idPrefix="wz-tutor" tabs={rightTabs}>', '<div className="wz-drawer-slide wz-drawer-slide--right">')), (h) => h.noHandWrapper === false || h.tutorShell === false);
+await mutant('the Tutor goes back to a hand-written wrapper [Arbor-tabs successor]', async () => partH(sliverSrc, mutate(tutorSrc, '<SideDrawer side="right" idPrefix="wz-tutor" tabs={(arborRightTabs ?? rightTabs) as DrawerTabsConfig<string>}>', '<div className="wz-drawer-slide wz-drawer-slide--right">')), (h) => h.noHandWrapper === false || h.tutorShellB === false);
+await mutant('the links pane renders on every tab [K5b can go red]', async () => partM(mutate(tutorSrc, "{rightTab === 'links' && <ConnectionsDrawerPanel only=", "{<ConnectionsDrawerPanel only=")), (m) => m.bodyOnTutorTabB === false);
 await mutant('PageEditor.tsx is changed outside the declared hunk', async () => ({ ok: diffConfined('@@ -10,0 +11 @@\n+  instrument: { value: instrument, onChange: setInstrument },\n@@ -500,0 +502 @@\n+  onChange(e);\n') }), (r) => r.ok === false);
 await mutant('PageEditor.tsx loses a line outside the declared hunk', async () => ({ ok: diffConfined('@@ -10 +10 @@\n-  const x = 1;\n+  instrument: { value: instrument, onChange: setInstrument },\n') }), (r) => r.ok === false);
 

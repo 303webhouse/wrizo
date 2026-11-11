@@ -65,7 +65,9 @@ const MEASURE = `(async () => {
   const paper = document.querySelector('.mode-page');
   const items = [...document.querySelectorAll('.wz-strip-item')];
   if (!aside || !nav || !paper || items.length < 5) return { ok: false, aside: !!aside, nav: !!nav, paper: !!paper, items: items.length };
+  // DRIVER (ARBOR, Nov 10, vw1 check 7): the foot's items stay a collection (place = items not in it); its first, Settings, is read by category below
   const foot = [...document.querySelectorAll('.wz-strip-foot .wz-strip-item')];
+  const footSettings = document.querySelector('.wz-strip-foot .wz-strip-item[data-category=settings]');
   const placeBlock = document.querySelector('.wz-place-block');
   const place = items.filter((i) => !foot.includes(i) && i !== placeBlock);
   const sizes = (it) => { const g = it.querySelector('.wz-strip-glyph'), s = it.querySelector('.wz-strip-glyph svg, .wz-strip-glyph .theme-icon-pixels, .wz-strip-glyph img'), l = it.querySelector('.wz-strip-label');
@@ -98,7 +100,7 @@ const MEASURE = `(async () => {
     act, hoverBgRest,
     ratios: {
       railLabelRest: asideBg && rgb(sizes(place[0]).labelColor) ? ratio(rgb(sizes(place[0]).labelColor), asideBg) : null,
-      footLabelRest: asideBg && rgb(sizes(foot[0]).labelColor) ? ratio(rgb(sizes(foot[0]).labelColor), asideBg) : null,
+      footLabelRest: asideBg && footSettings && rgb(sizes(footSettings).labelColor) ? ratio(rgb(sizes(footSettings).labelColor), asideBg) : null,   // was the foot collection's first item (Settings), by position
       openMark: asideBg && rgb(act.color) ? ratio(rgb(act.color), asideBg) : null,
       tabRest: tab && navBg ? ratio(rgb(cs(tab).color), navBg) : null,
     },
@@ -107,8 +109,9 @@ const MEASURE = `(async () => {
 })()`;
 
 // A genuine hover (trusted CDP pointer-move onto the second rail item), then its painted background, read while hovered.
-const HOVER_AT = `(() => { const r = document.querySelectorAll('.wz-strip-item')[1].getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()`;
-const HOVER_BG = `getComputedStyle(document.querySelectorAll('.wz-strip-item')[1]).backgroundColor`;
+// DRIVER (ARBOR, Nov 10, vw1 check 7): Pages by category; was querySelectorAll('.wz-strip-item')[1] (the item after the place block)
+const HOVER_AT = `(() => { const r = document.querySelector('.wz-strip-item[data-category=page]').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()`;
+const HOVER_BG = `getComputedStyle(document.querySelector('.wz-strip-item[data-category=page]')).backgroundColor`;
 
 const snap = async (app, name) => {
   if (!SHOTS) return;

@@ -69,10 +69,30 @@ const panelTagLine = panelTagStart < 0 ? '' : tutorSrc.slice(panelTagStart, tuto
 const sdStart = tutorSrc.indexOf('<SideDrawer side="right"');
 const liveStart = tutorSrc.indexOf('<div className="wz-sr-only" role="status"');
 const bodyCond = tutorSrc.indexOf("{rightTab === 'tutor' && (");
-const betweenSdAndLive = sdStart < 0 || liveStart < 0 ? 'x' : tutorSrc.slice(tutorSrc.indexOf('>', sdStart) + 1, liveStart);
-ok('A8 successor [Phase 1 drawers]: the live region is still INSIDE the aria-hidden .wz-tutor-panel - now the first thing inside its <SideDrawer>, ahead of the tab bodies and OUTSIDE the rightTab conditional - so the aria-hidden ancestor still keeps it silent while the Tutor is closed, and a tab switch never remounts it (no new closed-state guard was needed)',
-  panelTagStart >= 0 && panelTagLine.includes('aria-hidden={!open}') && panelTagStart < sdStart && sdStart < liveStart && liveStart < bodyCond && /^\s*(\{\/\*[\s\S]*?\*\/\}\s*)?$/.test(betweenSdAndLive),
-  JSON.stringify({ panelTagStart, sdStart, liveStart, bodyCond }));
+// ---- PARKED 2026-11-10 (SUPERSEDED - ARBOR's flag-only drawer tabs, r5 Oct 31: the <SideDrawer> tag now reads `tabs={(arborRightTabs ?? rightTabs) as DrawerTabsConfig<string>}>`,
+// so indexOf('>') stops inside `<string>` and the "between" slice was a piece of the tag; full pair 42928277885). Kept VERBATIM, no longer run:
+// const betweenSdAndLive = sdStart < 0 || liveStart < 0 ? 'x' : tutorSrc.slice(tutorSrc.indexOf('>', sdStart) + 1, liveStart);
+// ok('A8 successor [Phase 1 drawers]: the live region is still INSIDE the aria-hidden .wz-tutor-panel - now the first thing inside its <SideDrawer>, ahead of the tab bodies and OUTSIDE the rightTab conditional - so the aria-hidden ancestor still keeps it silent while the Tutor is closed, and a tab switch never remounts it (no new closed-state guard was needed)',
+//   panelTagStart >= 0 && panelTagLine.includes('aria-hidden={!open}') && panelTagStart < sdStart && sdStart < liveStart && liveStart < bodyCond && /^\s*(\{\/\*[\s\S]*?\*\/\}\s*)?$/.test(betweenSdAndLive),
+//   JSON.stringify({ panelTagStart, sdStart, liveStart, bodyCond }));
+// SUCCESSOR [Arbor tabs]: the same claim; the tag ends at the first '>' that closes its line (plain or Arbor tab config). A mutant follows.
+const a8b = (src) => {
+  const pTag = src.indexOf('<div className="wz-tutor-panel"');
+  const pLine = pTag < 0 ? '' : src.slice(pTag, src.indexOf('\n', pTag));
+  const sd = src.indexOf('<SideDrawer side="right"');
+  const sdEndM = sd < 0 ? null : /[^\n]*?>\r?\n/.exec(src.slice(sd));
+  const sdEnd = sdEndM ? sd + sdEndM[0].length : -1;
+  const live = src.indexOf('<div className="wz-sr-only" role="status"');
+  const body = src.indexOf("{rightTab === 'tutor' && (");
+  const between = sdEnd < 0 || live < 0 ? 'x' : src.slice(sdEnd, live);
+  return { ok: pTag >= 0 && pLine.includes('aria-hidden={!open}') && pTag < sd && sd < sdEnd && sdEnd <= live && live < body && /^\s*(\{\/\*[\s\S]*?\*\/\}\s*)?$/.test(between), pTag, sd, sdEnd, live, body };
+};
+const a8 = a8b(tutorSrc);
+ok('A8 successor [Arbor tabs]: the live region is still INSIDE the aria-hidden .wz-tutor-panel - the first thing inside its <SideDrawer> (the tag ending at the \'>\' that closes its line), ahead of the tab bodies and OUTSIDE the rightTab conditional',
+  a8.ok, JSON.stringify(a8));
+const a8mSrc = sdStart < 0 || liveStart < 0 ? '' : tutorSrc.slice(0, liveStart) + '<div className="wz-stray" />\n' + tutorSrc.slice(liveStart);
+ok('A8 successor MUTANT: a stray element between the <SideDrawer> tag and the live region turns the check RED (the mutation landed)',
+  a8mSrc.includes('wz-stray') && a8b(a8mSrc).ok === false, '');
 
 // ---- CSS: sr-only is the clip pattern (AT-visible, visually hidden) — ----
 // NOT display:none or visibility:hidden, either of which would ALSO hide it
@@ -163,7 +183,7 @@ await withHarness(async (app) => {
 console.log(JSON.stringify(checks, null, 2));
 if (process.env.HARNESS_PARKED === '1') {
   // eslint-disable-next-line no-console
-  console.log('\nA11Y-TUTOR-LIVE-REGION PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; this file parks nothing: no earlier check ever asserted the Tutor had (or lacked) a live region.');
+  console.log('\nA11Y-TUTOR-LIVE-REGION PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; this file parks two A8 originals as quoted comments (the Phase 1 'first thing inside .wz-tutor-panel', Oct 12; the Arbor-tabs tag end, Nov 10), each with its live successor in the default leg - nothing re-runs here.');
 }
 const pass = checks.every((c) => c.pass);
 // eslint-disable-next-line no-console

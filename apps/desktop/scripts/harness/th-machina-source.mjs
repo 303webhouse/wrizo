@@ -381,8 +381,13 @@ for (const cast of ['cool', 'neutral']) {
 const modeStage = src('components/ModeStage.tsx');
 const penFn = (/function effectivePenInk\([^)]*\): string \{([\s\S]*?)\n\}\n/.exec(modeStage) || [, ''])[1];
 const penRaw = '#1a0f06';
-ok('M21: effectivePenInk knows Machina - the default swatch becomes var(--ink-on-paper) (the page\'s own ink, every cast and tone), so Free Write can never paint #1a0f06 on the dark page (1.06:1)',
-  /theme === 'machina'/.test(penFn) && /ink === PEN_DEFAULT_INK\) return 'var\(--ink-on-paper\)'/.test(modeStage) && /const PEN_DEFAULT_INK = '#1a0f06';/.test(modeStage) && /export const PEN_INKS = \['#1a0f06'/.test(modeStage), '');
+// PARKED 2026-11-10 (SUPERSEDED - ARBOR r7, Oct 31, added a second `if (ink === PEN_DEFAULT_INK) return 'var(--ink-on-paper)';` for Arbor's dark page, so the file-wide regex below no longer sees Machina's own line (the pen mutant went red on that, full pair 42928277885)). Original, verbatim:
+// ok('M21: effectivePenInk knows Machina - the default swatch becomes var(--ink-on-paper) (the page\'s own ink, every cast and tone), so Free Write can never paint #1a0f06 on the dark page (1.06:1)',
+//   /theme === 'machina'/.test(penFn) && /ink === PEN_DEFAULT_INK\) return 'var\(--ink-on-paper\)'/.test(modeStage) && /const PEN_DEFAULT_INK = '#1a0f06';/.test(modeStage) && /export const PEN_INKS = \['#1a0f06'/.test(modeStage), '');
+// SUCCESSOR [Machina's own branch]: the default-swatch line must be the first line inside Machina's branch of effectivePenInk.
+const MACHINA_PEN = /if \(theme === 'machina'\) \{\r?\n\s*if \(ink === PEN_DEFAULT_INK\) return 'var\(--ink-on-paper\)';/;
+ok('M21 [Machina-branch successor]: effectivePenInk knows Machina - inside its own branch the default swatch becomes var(--ink-on-paper) (the page\'s own ink, every cast and tone), so Free Write can never paint #1a0f06 on the dark page (1.06:1)',
+  MACHINA_PEN.test(penFn) && /const PEN_DEFAULT_INK = '#1a0f06';/.test(modeStage) && /export const PEN_INKS = \['#1a0f06'/.test(modeStage), '');
 ok('M21: ...and the RAW default really is invisible on Machina\'s dark pages (the regression this guards: < 1.2:1 in both casts) while the page ink clears 13.9', ['cool', 'neutral'].every((c) => ratio(penRaw, cell(c, 'dark')['--paper']) < 1.2 && ratio(cell(c, 'dark')['--ink-on-paper'], cell(c, 'dark')['--paper']) >= 13.9), ['cool', 'neutral'].map((c) => ratio(penRaw, cell(c, 'dark')['--paper']).toFixed(2)).join(' / '));
 {
   const dark = Object.fromEntries([...(/const PEN_INKS_MACHINA_DARK: Record<string, string> = \{([\s\S]*?)\};/.exec(modeStage) || [, ''])[1].matchAll(/'(#[0-9a-fA-F]{6})': '(#[0-9a-fA-F]{6})'/g)].map((m) => [m[1], m[2]]));
@@ -457,7 +462,12 @@ ok('MUTANT: a Machina desk string re-introducing "Drawer" - M8 must go RED', LEA
   const planGone = mut(ccss, "[data-theme='machina'] .sprint-nav .page-plan-door{ color:var(--text-mid); }", '');
   ok('MUTANT: the PLAN door\'s plain rule deleted (it falls back to --accent-rest: orange under NEUTRAL) - M21 must go RED (the mutation LANDED)', planGone !== null && !plainOk(planGone), '');
   const penBack = mut(modeStage, "if (ink === PEN_DEFAULT_INK) return 'var(--ink-on-paper)';", 'if (ink === PEN_DEFAULT_INK) return ink;');
-  ok('MUTANT: the Machina default pen left as the raw #1a0f06 (the invisible Sprint text) - M21 must go RED (the mutation LANDED)', penBack !== null && !/ink === PEN_DEFAULT_INK\) return 'var\(--ink-on-paper\)'/.test(penBack) && /ink === PEN_DEFAULT_INK\) return 'var\(--ink-on-paper\)'/.test(modeStage), '');
+  // PARKED 2026-11-10 (SUPERSEDED - ARBOR r7, Oct 31, added a second `if (ink === PEN_DEFAULT_INK) return 'var(--ink-on-paper)';` for Arbor's dark page, so the file-wide regex below no longer sees Machina's own line (the pen mutant went red on that, full pair 42928277885)). Original, verbatim:
+  // ok('MUTANT: the Machina default pen left as the raw #1a0f06 (the invisible Sprint text) - M21 must go RED (the mutation LANDED)', penBack !== null && !/ink === PEN_DEFAULT_INK\) return 'var\(--ink-on-paper\)'/.test(penBack) && /ink === PEN_DEFAULT_INK\) return 'var\(--ink-on-paper\)'/.test(modeStage), '');
+  // SUCCESSOR: the same mutation (it lands on the FIRST occurrence - Machina's line); M21's successor must go red on it and stay green on the source.
+  const penFnOf = (t) => (/function effectivePenInk\([^)]*\): string \{([\s\S]*?)\n\}\n/.exec(t) || [, ''])[1];
+  ok('MUTANT [Machina-branch successor]: the Machina default pen left as the raw #1a0f06 (the invisible Sprint text) - M21 [Machina-branch successor] must go RED (the mutation LANDED on Machina\'s line; Arbor\'s copy is untouched)',
+    penBack !== null && !MACHINA_PEN.test(penFnOf(penBack)) && MACHINA_PEN.test(penFnOf(modeStage)) && /ink === PEN_DEFAULT_INK\) return 'var\(--ink-on-paper\)'/.test(penBack), '');
   const GLYPH = /\{theme === 'machina' \? '◂' : '↩'\}/;
   const rail2 = mut(rail, "{theme === 'machina' ? '◂' : '↩'}", '↩');
   ok('MUTANT: the way-back glyph left as the ember "↩" under Machina - M16 must go RED (the mutation LANDED)', rail2 !== null && !GLYPH.test(rail2) && GLYPH.test(rail), '');

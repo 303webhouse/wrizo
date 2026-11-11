@@ -330,8 +330,12 @@ await mutant('M11 the unchosen label keeps the " Variable" suffix (the package\'
   // const unguarded = t.replace("{form === 'full' && (", '{(');
   // ok('FALSIFICATION M9 the number input is shown in EVERY form (Free Write would gain it) — must go RED', landed(unguarded) && !ctlShape(unguarded).inputGuardedByFullForm, '');
   // ------------------------------------------------------------------
-  const reguarded = t.replace('<input\n          className="wz-type-num"', "{form === 'full' && (<input\n          className=\"wz-type-num\"");
-  ok('FALSIFICATION M9 [size-box successor] the number input is guarded to the FULL form again (Free Write and a card lose it) - must go RED', landed(reguarded) && ctlShape(reguarded).inputGuardedByFullForm, '');
+  // ---- PARKED 2026-11-10 (SUPERSEDED - ARBOR r17 lifted the size input into a `sizeInput` const at a different indent, so this anchor no longer lands; full pair 42928277885). Kept VERBATIM, no longer run; the successor follows. ----
+  // const reguarded = t.replace('<input\n          className="wz-type-num"', "{form === 'full' && (<input\n          className=\"wz-type-num\"");
+  // ok('FALSIFICATION M9 [size-box successor] the number input is guarded to the FULL form again (Free Write and a card lose it) - must go RED', landed(reguarded) && ctlShape(reguarded).inputGuardedByFullForm, '');
+  // ------------------------------------------------------------------
+  const reguardedB = t.replace(/<input\s+className="wz-type-num"/, "{form === 'full' && (<input className=\"wz-type-num\"");
+  ok('FALSIFICATION M9 [sizeInput successor] the number input is guarded to the FULL form again (Free Write and a card lose it) - must go RED (anchor: the input\'s tag and class, any indent)', landed(reguardedB) && ctlShape(reguardedB).inputGuardedByFullForm, '');
   const captioned = t.replace('<div className="wz-type"', '<div className="wz-sliver-h">Type</div><div className="wz-type"');
   ok('FALSIFICATION M10 a heading is added above the control — must go RED', landed(captioned) && ctlShape(captioned).caption, '');
 }

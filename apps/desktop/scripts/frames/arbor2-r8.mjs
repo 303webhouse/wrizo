@@ -163,7 +163,7 @@ const __screens = {
       const add = (where, el, floor) => { if (!el || !shown(el)) return; const p = pair(el); const row = { where, text: (el.textContent || '').trim().slice(0, 18), ...p, floor }; out.pairs.push(row); if (p.ratio < floor) out.bad.push(row); };
       const bar = [...document.querySelectorAll('.chrome-top.sprint-nav')].find((x) => x.getBoundingClientRect().height > 0);
       const rail = document.querySelector('.desk-frame-strip');
-      out.barBg = bar ? hex(ground(bar)) : null; out.railBg = rail ? hex(ground(rail.querySelector('.wz-strip-item') || rail)) : null;
+      out.barBg = bar ? hex(ground(bar)) : null; out.railBg = rail ? hex(ground(rail.querySelector('.wz-strip-item[data-category=drawers]') || rail)) : null;
       if (bar) textEls(bar).forEach((el) => add('bar', el, 4.5));
       if (rail) textEls(rail).forEach((el) => add('rail', el, 4.5));
       const stage = document.querySelector('.mode-stage');

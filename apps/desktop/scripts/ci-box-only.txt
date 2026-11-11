@@ -8,6 +8,12 @@ rhizome-latency-mutant.mjs
 typing-latency-scroll.mjs
 arbor2-caret-latency.mjs
 l-method.mjs
+# Run only under a room pin the box launcher sets (WS_URL_SEARCH='?arbor2=1&arbor2room=day'): the pair sets no WS_URL_SEARCH, so each fails its own
+# "the run is pinned" check (by design: they never pass unpinned). arbor2-keycost and arbor2-swap also hold millisecond budgets (ARBOR, Nov 10).
+arbor2-keycost.mjs
+arbor2-roompin.mjs
+arbor2-sleep.mjs
+arbor2-swap.mjs
 # Windows-bound: these test the box's own tooling (PowerShell/WMI process table, taskkill, C:\ and USERPROFILE paths). They have no Linux meaning.
 box-holder.mjs
 box-token-hash.mjs

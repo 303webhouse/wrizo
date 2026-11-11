@@ -54,7 +54,11 @@ const pickThemesRoom = (app, which) => app.evalJs(`(async () => { const text = $
 const pickBarMood = async (app, label0) => { const label = label0; await app.evalJs(`(() => { if ([...document.querySelectorAll('.arbor2-bar-opt')].some((x) => x.textContent.trim() === ${JSON.stringify(label)})) return; const m = [...document.querySelectorAll('.arbor2-bar-head')].find((h) => /^Mood/.test(h.textContent.trim()) && h.getAttribute('aria-expanded') !== 'true'); if (m) m.click(); })()`); await new Promise((r) => setTimeout(r, 150)); return app.evalJs(`(() => { const b = [...document.querySelectorAll('.arbor2-bar-opt')].find((x) => x.textContent.trim() === ${JSON.stringify(label)}); if (b) b.click(); return !!b; })()`); };
 const pickBar = (app, label) => (['Day', 'Night', 'By the clock'].includes(label) ? pickThemesRoom(app, label) : pickBarMood(app, label));
 const clickSel = (app, sel) => app.evalJs(`(() => { const b = document.querySelector(${JSON.stringify(sel)}); if (b) b.click(); return !!b; })()`);
-const openRail = (app, label) => app.evalJs(`(() => { const b = [...document.querySelectorAll('.wz-strip-item')].find((x) => (x.textContent || '').trim().toLowerCase() === ${JSON.stringify(label.toLowerCase())}); if (b) b.click(); return !!b; })()`);
+// DRIVER (ARBOR, Nov 10, vw1 check 7 in full pair 42928277885): the rail item by its data-category, never by its text (the place block can read
+// "Journal" too). Was: [...document.querySelectorAll('.wz-strip-item')].find((x) => (x.textContent || '').trim().toLowerCase() === label.toLowerCase())
+const RAIL_CATEGORY = { pages: 'page', boards: 'plan', journal: 'journal', settings: 'settings', themes: 'theme', trash: 'trash' };
+const openRail = (app, label) => { const cat = RAIL_CATEGORY[label.toLowerCase()]; if (!cat) return Promise.resolve(false);
+  return app.evalJs(`(() => { const b = document.querySelector('.wz-strip-item[data-category=${cat}]'); if (b) b.click(); return !!b; })()`); };
 
 const READ = `(() => {
   const rect = (el) => { if (!el) return null; const r = el.getBoundingClientRect(); return { x: +r.x.toFixed(1), y: +r.y.toFixed(1), w: +r.width.toFixed(1), h: +r.height.toFixed(1) }; };

@@ -8,7 +8,9 @@
 //   U2  the unset value IS '/': the declaration evaluated with an empty environment gives '/', so `${base}${URL_SEARCH}#x` === `${base}/#x`.
 //   U3  every page the driver opens goes through the opt-in: no `${base}/#` is left, and the three opens (goto, the reset, the launch) use it.
 //   U4  liveness: set, it does reach the URL - '?arbor2=1' and '/?arbor2=1' both give '/?arbor2=1' (a check that cannot fail is not run).
-//   U5  nothing opts in by accident: no harness or frames file sets WS_URL_SEARCH (only this proof names it).
+//   U5  nothing opts in by accident: no harness or frames file sets WS_URL_SEARCH (only this proof names it).   [PARKED Nov 10 - see U5b]
+//   U5b nothing opts in by accident: no harness or frames file SETS WS_URL_SEARCH (an assignment in code, comments stripped); files may READ it
+//       (Arbor's pinned files fail when it carries no pin). Coverage printed; MUT-U5b a file that sets it must be caught.
 // Run: node apps/desktop/scripts/harness/url-search-optin-unit.mjs  ->  "URL-SEARCH-OPTIN VERIFY: PASS (n checks)" or FAIL with the numbers.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -92,7 +94,19 @@ const scripts = path.resolve(here, '..');
 const hits = [];
 const walk = (dir) => { for (const e of fs.readdirSync(dir, { withFileTypes: true })) { const p = path.join(dir, e.name); if (e.isDirectory()) { if (e.name !== 'node_modules') walk(p); } else if (/\.(mjs|js|sh|yml)$/.test(e.name) && p !== RV && p !== fileURLToPath(import.meta.url) && fs.readFileSync(p, 'utf8').includes('WS_URL_SEARCH')) hits.push(path.relative(scripts, p)); } };
 walk(scripts);
-ok('U5 no harness or frames file sets WS_URL_SEARCH (nothing opts in by accident)', hits.length === 0, hits.join(', ') || 'none');
+// ---- PARKED 2026-11-10 (SUPERSEDED - its premise "only this proof names it" fell when Arbor's pinned files began READING WS_URL_SEARCH to prove the
+// room pin took (arbor2-keycost/-roompin/-sleep/-swap fail when it carries no pin) and naming it in their Run: lines; none of them SETS it. The check
+// tested mentions, not setting; full pair 42928277885). Kept VERBATIM, no longer run; the successor follows.
+// ok('U5 no harness or frames file sets WS_URL_SEARCH (nothing opts in by accident)', hits.length === 0, hits.join(', ') || 'none');
+// SUCCESSOR U5b: the claim as worded - a SET is an assignment in code (comments stripped): env.WS_URL_SEARCH = ..., WS_URL_SEARCH: ... in an env
+// object, ['WS_URL_SEARCH'] = ..., or a shell WS_URL_SEARCH=... / export. A READ (process.env.WS_URL_SEARCH || '') is not a set.
+const codeOnly = (t) => t.split('\n').filter((l) => !/^\s*(\/\/|#|\*|\/\*)/.test(l)).join('\n');
+const SETS = /env\.WS_URL_SEARCH\s*=(?!=)|\bWS_URL_SEARCH\s*:|\[\s*['"]WS_URL_SEARCH['"]\s*\]\s*=(?!=)|(?:^|[\s;&|(])(?:export\s+)?WS_URL_SEARCH=/m;
+const setters = hits.filter((rel) => SETS.test(codeOnly(fs.readFileSync(path.join(scripts, rel), 'utf8'))));
+ok(`U5b no harness or frames file SETS WS_URL_SEARCH (nothing opts in by accident) - coverage: ${hits.length} file(s) mention it, ${setters.length} set it`, setters.length === 0, JSON.stringify({ setters, mention: hits }));
+const mutSet = "const q = process.env.WS_URL_SEARCH || '';\nprocess.env.WS_URL_SEARCH = '?arbor2=1';\n";
+const mutRead = "// Run: WS_URL_SEARCH='?arbor2=1' node x.mjs\nconst q = process.env.WS_URL_SEARCH || '';\n";
+ok('MUT-U5b the setter test catches a file that sets it (and passes one that only reads and names it)', SETS.test(codeOnly(mutSet)) && !SETS.test(codeOnly(mutRead)), '');
 
 const failed = results.filter((r) => !r.pass).length;
 console.log(`URL-SEARCH-OPTIN VERIFY: ${failed ? `FAIL - ${failed}/${results.length} failed` : `PASS (${results.length} checks)`}`);

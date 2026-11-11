@@ -164,12 +164,13 @@ const INSTRUMENT = `(() => {
 })();`;
 
 const MUTANTS = {
-  gutterwork: [/=700,(\w+)=72,(\w+)=26,(\w+)=24/g, '=0,$1=72,$2=26,$3=24'],
-  rate: [/=45,(\w+)=180,(\w+)=900,/g, '=45,$1=180,$2=0,'],
-  stop: [/\(\)=>\{(\w+)=performance\.now\(\),(\w+)\.size&&(\w+)\(\)\}/g, '()=>{$1=performance.now()}'],
-  caret: [/(\w+)&&(\w+)\.height\?\[(\w+)\.top-2,(\w+)\.bottom\+2\]:null/g, 'null'],
-  pause: [/performance\.now\(\)-(\w+)<(\w+)\)return;(\w+)=(\w+)\.current\.shift\(\)/g, 'performance.now()-$1<0)return;$3=$4.current.shift()'],
-  follow: [/(Math\.abs\(parseFloat\((\w+)\.height\)-(\w+)\.height\)\))>\.25&&/g, '$1>1e9&&'],
+  // DRIVER FIX (ARBOR, Nov 10, full pair 42928277885): captures are [\w$]+ - a minified name may hold `$` (this build drew `$V=24`), which \w misses and the mutant never landed. Was (\w+).
+  gutterwork: [/=700,([\w$]+)=72,([\w$]+)=26,([\w$]+)=24/g, '=0,$1=72,$2=26,$3=24'],
+  rate: [/=45,([\w$]+)=180,([\w$]+)=900,/g, '=45,$1=180,$2=0,'],
+  stop: [/\(\)=>\{([\w$]+)=performance\.now\(\),([\w$]+)\.size&&([\w$]+)\(\)\}/g, '()=>{$1=performance.now()}'],
+  caret: [/([\w$]+)&&([\w$]+)\.height\?\[([\w$]+)\.top-2,([\w$]+)\.bottom\+2\]:null/g, 'null'],
+  pause: [/performance\.now\(\)-([\w$]+)<([\w$]+)\)return;([\w$]+)=([\w$]+)\.current\.shift\(\)/g, 'performance.now()-$1<0)return;$3=$4.current.shift()'],
+  follow: [/(Math\.abs\(parseFloat\(([\w$]+)\.height\)-([\w$]+)\.height\)\))>\.25&&/g, '$1>1e9&&'],
 };
 
 const lum = (c) => { const v = c.map((x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };

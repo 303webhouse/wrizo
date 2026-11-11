@@ -33,9 +33,11 @@ const css = (t) => `:root[data-theme='plateau']{ --ink-950:${t.i950}; --ink-900:
 
 const apply = (app, t) => app.evalJs(`(() => { let s = document.getElementById('polish-opt'); if (!s) { s = document.createElement('style'); s.id = 'polish-opt'; document.head.appendChild(s); } s.textContent = ${JSON.stringify(css(t))}; return true; })()`);
 const clear = (app) => app.evalJs(`(() => { const s = document.getElementById('polish-opt'); if (s) s.remove(); return true; })()`);
+const shot = new Set();   // the frames written THIS run (the verdict counts these, never files left on disk by an earlier run)
 const snap = async (app, name) => {
   const b64 = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data;
   fs.writeFileSync(path.join(OUT, `${name}.png`), Buffer.from(b64, 'base64'));
+  if (b64 && b64.length > 1000) shot.add(name);
 };
 
 // WCAG ratio, in node, from hex.
@@ -90,3 +92,16 @@ await withHarness(async (app) => {
 }, { label: 'polish-arbor-ground-options' });
 
 console.log(JSON.stringify(table, null, 1)); // eslint-disable-line no-console
+
+// THE VERDICT (ARBOR, Nov 10 - the suite read NOVERDICT, full pair 42928277885): a capture's verdict - it happened, whole. Not a judgement of any brown
+// (Nick ruled brown B, Nov 10); the pictures are for looking at.
+{
+  const keys = Object.keys(OPTIONS);
+  const photographed = keys.filter((k) => shot.has(`write-${k}`));
+  const measured = keys.filter((k) => table[k] && Object.keys(table[k].onRoom).length === Object.keys(INKS).length && Object.values(table[k].onRoom).every((v) => v > 1));
+  const sheet = shot.has('compare');
+  const pass = photographed.length === keys.length && measured.length === keys.length && sheet;
+  if (process.env.HARNESS_PARKED === '1') console.log('\nPOLISH-ARBOR-GROUND-OPTIONS PARKED: PASS (0 checks) - HARNESS_PARKED=1 armed; this capture parks nothing');
+  console.log(`\nPOLISH-ARBOR-GROUND-OPTIONS VERIFY: ${pass ? 'PASS' : 'FAIL'} (a capture, not a judgement: ${photographed.length}/${keys.length} options photographed this run, ${measured.length}/${keys.length} measured, comparison sheet ${sheet ? 'shot' : 'MISSING'})`);
+  if (!pass) process.exitCode = 1;
+}
