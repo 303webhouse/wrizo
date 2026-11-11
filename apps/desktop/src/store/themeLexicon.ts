@@ -52,7 +52,7 @@ const CANONICAL: Record<TermId, TermForms> = {
 const OVERRIDES: Partial<Record<ThemeId, Partial<Record<TermId, Partial<TermForms>>>>> = {
   flux: {
     page: { one: 'Doc', many: 'Docs' },
-    drawer: { one: 'Rack', many: 'Racks' },
+    drawer: { one: 'Drive', many: 'Drives' },
     binder: { one: 'Cartridge', many: 'Cartridges' },
     box: { one: 'Node', many: 'Nodes' },
     board: { one: 'Circuit', many: 'Circuits' },

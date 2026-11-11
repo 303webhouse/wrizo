@@ -68,9 +68,9 @@ export function railHint(kind: RailHintKind, n: number | string, where: 'journal
   return `Page: ${cap}`;
 }
 
-/** RACK ▸ name - the rack the writer is in. */
-export function rackReadout(name: string): string {
-  return `RACK ▸ ${name}`;
+/** DRIVE ▸ name - the drive the writer is in. The word is the lexicon's (the box's plural label, drawerPlaceDrawers, the way the hints take it), never a literal here: Rack became Drive (Nov 11) with one edit in the lexicon. */
+export function rackReadout(name: string, pluralWord: string): string {
+  return `${singular(pluralWord).toUpperCase()} ▸ ${name}`;
 }
 
 export const HINTS = {
