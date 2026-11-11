@@ -27,6 +27,11 @@ export const GROUPS2 = {
     c('L04', 'Type, Enter, type, Enter at the end of a 30-line page', LINES30, LINES30.length, [T(' more'), K('Enter'), T('next line'), K('Enter')]),
     c('L05', 'Enter on an empty line in the middle of a 30-line page', `${LINES30.split('\n').slice(0, 14).join('\n')}\n\n${LINES30.split('\n').slice(14).join('\n')}`, endOfLine(LINES30, 14) + 1, [K('Enter'), T('x')]),
   ],
+  enterKeys: [
+    c('L06', 'Ctrl+Home, then Enter, then type, on a 30-line page', LINES30, LINES30.length, [K('Home', { ctrl: true }), K('Enter'), T('x')]),
+    c('L07', 'Up fifteen lines, then Enter, then type, on a 30-line page', LINES30, LINES30.length, [...Array.from({ length: 15 }, () => K('ArrowUp', { geo: 'up' })), K('Enter'), T('x')]),
+    c('L08', 'Ctrl+Home on a 30-line page (does the view follow the caret?)', LINES30, LINES30.length, [K('Home', { ctrl: true })]),
+  ],
   // 2. #61: after Enter on an empty middle line, does the next typed character land in the wrong place?
   probe: [
     c('P61', '#61: Enter on an empty middle line, then type "x"', 'One\n\nThree', 4, [K('Enter'), T('x')], { cont: true }),
@@ -59,4 +64,11 @@ export const GROUPS2 = {
     c('U10', 'Click, then type (it lands where the click was)', 'One two three\nFour five six', 0, [{ k: 'click', q: 20 }, T('X')]),
   ],
 };
-export const ORDER2 = ['enterTw', 'enterLong', 'probe', 'vert', 'mouse'];
+// the SMOKE set (Fable's "dark and 1920"): the cases that found something plus one clean control per kind, drawn from both sessions' groups
+import { GROUPS as G1 } from './cases.mjs';
+const pick = (list, ids) => list.filter((x) => ids.includes(x.id));
+GROUPS2.smoke = [
+  ...pick(G1.enter, ['E02', 'E05', 'E16', 'E18']), ...pick(G1.type, ['T01', 'T06']), ...pick(G1.del, ['D02']), ...pick(G1.move, ['M06']), ...pick(G1.select, ['S03']),
+  ...pick(GROUPS2.probe, ['P61', 'P63']), ...pick(GROUPS2.vert, ['V02', 'V06', 'V08']), ...pick(GROUPS2.mouse, ['U03', 'U06', 'U08']), ...pick(GROUPS2.enterLong, ['L03']),
+];
+export const ORDER2 = ['enterTw', 'enterLong', 'enterKeys', 'probe', 'vert', 'mouse'];

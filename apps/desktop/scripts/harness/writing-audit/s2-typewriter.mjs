@@ -3,4 +3,4 @@
 process.env.WA_TYPEWRITER = process.env.WA_TYPEWRITER || 'on';
 const { main } = await import('./lib/runner.mjs');
 const { GROUPS2 } = await import('./lib/cases2.mjs');
-await main({ groupsDef: GROUPS2, order: ['enterTw', 'enterLong', 'probe'], title: 'S2-TYPEWRITER' });
+await main({ groupsDef: GROUPS2, order: ['enterTw', 'enterLong', 'enterKeys', 'probe'], title: 'S2-TYPEWRITER' });

@@ -71,6 +71,12 @@ export function verify({ exp, box, before, early, late, errors = [], expect = {}
     if (before.scroll.top !== late.scroll.top || before.scroll.win !== late.scroll.win) fail('view', `scroll moved: scroller ${before.scroll.top} -> ${late.scroll.top} (scrollHeight ${late.scroll.scrollerH}, clientHeight ${late.scroll.clientH}), window ${before.scroll.win} -> ${late.scroll.win}; the caret is at ${late.px ? late.px.x + ',' + late.px.top : late.fluxCaret ? Math.round(late.fluxCaret.x) + ',' + Math.round(late.fluxCaret.top) : 'unseen'} in a page ${late.page ? Math.round(late.page.y) + '..' + Math.round(late.page.y + late.page.h) : '?'} tall`);
   }
 
+  // 7b. THE LINE BEING WRITTEN IS IN THE WINDOW (a collapsed caret whose expected place is outside the viewport once the view has settled: the writer types where they cannot see)
+  if (box && box.via !== 'rows-drift' && exp.a === exp.f && late.collapsed && late.view && typeof box.top === 'number' && !expect.scroll) {
+    const bottom = box.top + (box.height || 0);
+    if (bottom < 0 || box.top > late.view.h || box.x < 0 || box.x > late.view.w) fail('view', `the caret's line is outside the window after the view settled: it is at ${Math.round(box.x)},${Math.round(box.top)}, the window is ${late.view.w}x${late.view.h}${late.tw ? ' (the Typewriter is engaged)' : ''}`);
+  }
+
   // 9. NO ERROR IN THE CONSOLE
   if (errors.length) fail('console', errors.slice(0, 2).map((e) => short(e, 120)).join(' | '));
 
