@@ -102,7 +102,7 @@ export async function main({ title }) {
     const exp = m.clone();
     let act, anyF = null, resolved = st;
     if (st.geo === 'up' || st.geo === 'down') {
-      if (!goal.keep || goal.x == null) goal.x = stops[before.focus] && stops[before.focus].x;
+      if (!goal.keep || goal.x == null) goal.x = (before.caret && typeof before.caret.x === 'number') ? before.caret.x : stops[before.focus] && stops[before.focus].x;
       anyF = vertical(lns, before.focus, goal.x, st.geo, n); act = () => d.key(st.key, st);
     } else if (st.geo === 'home' || st.geo === 'end') {
       anyF = homeEnd(lns, before.focus, st.key, m.text); act = () => d.key(st.key, st);

@@ -101,7 +101,7 @@ export async function main({ groupsDef, order, title }) {
       let act, anyF = null, anyPairs = null, prop = null;
       const n = m.text.length;
       if (st.geo === 'up' || st.geo === 'down') {
-        if (!lastVertical || goalX === null) goalX = stops[before.focus] && stops[before.focus].x;
+        if (!lastVertical || goalX === null) goalX = (before.caret && typeof before.caret.x === 'number') ? before.caret.x : stops[before.focus] && stops[before.focus].x;
         anyF = vertical(lns, before.focus, goalX, st.geo, n);
         act = () => d.key(st.key, st);
       } else if (st.geo === 'home' || st.geo === 'end') {
