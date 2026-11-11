@@ -418,7 +418,12 @@ await withHarness(async (app) => {
 if (!pinned) checks.unshift({ name: 'W0 the run is pinned to the day room (WS_URL_SEARCH carries arbor2=1 and arbor2room=day)', pass: false, detail: q });
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
-const pass = checks.length === 10 && checks.every((c) => c.pass);
+// PARKED 2026-11-11 (SUPERSEDED - my own fault: 1f73f22f parked W9c and added W9d AND W9d-M, so the file has 11 checks and this count was never
+// raised. Every T2 run since printed "VERIFY: FAIL - 0/11 failed" with every check green - box turns 4 and 5, 15:55Z and 17:00Z Nov 11). Original, verbatim:
+// const pass = checks.length === 10 && checks.every((c) => c.pass);
+// SUCCESSOR: the count the file now has, and the verdict names it when the count is what fails (never again "FAIL - 0/n failed").
+const WANT_CHECKS = 11;
+const pass = checks.length === WANT_CHECKS && checks.every((c) => c.pass);
 // eslint-disable-next-line no-console
-console.log(pass ? `\nARBOR2-SWAP VERIFY: PASS (${checks.length} checks)` : `\nARBOR2-SWAP VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed`);
+console.log(pass ? `\nARBOR2-SWAP VERIFY: PASS (${checks.length} checks)` : `\nARBOR2-SWAP VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length !== WANT_CHECKS ? ` (and ${checks.length} checks ran where ${WANT_CHECKS} were expected)` : ''}`);
 process.exit(pass ? 0 : 1);
