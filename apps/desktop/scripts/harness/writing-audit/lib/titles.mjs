@@ -29,6 +29,7 @@ export const TITLE_CASES = [
   c('TT11', 'Enter in the middle of the name commits the whole name', [K('Home'), K('ArrowRight'), K('ArrowRight'), C('Enter')]),
   c('TT12', 'Commit, reload, the name is still there', [T(' v2'), C('Enter'), C('Reload')]),
   c('TT13', 'Blur (click away) commits', [T(' b'), C('Blur')]),
+  c('TT14', 'A name over 60 characters: commit, then open the rename again - is the whole name still in the box?', [T('x'.repeat(70)), C('Enter'), C('Reopen')]),
 ];
 
 const READ = (sel) => `(() => { const i = document.querySelector(${JSON.stringify(sel)}); if (!i) return null; const cs = getComputedStyle(i), r = i.getBoundingClientRect();
@@ -36,6 +37,21 @@ const READ = (sel) => `(() => { const i = document.querySelector(${JSON.stringif
   const w = (n) => cv.measureText(i.value.slice(0, n)).width + (cs.letterSpacing && cs.letterSpacing !== 'normal' ? parseFloat(cs.letterSpacing) * n : 0);
   const x = r.left + (parseFloat(cs.borderLeftWidth) || 0) + (parseFloat(cs.paddingLeft) || 0) + w(i.selectionStart) - i.scrollLeft;
   return { value: i.value, s: i.selectionStart, e: i.selectionEnd, focused: document.activeElement === i, rect: { x: r.left, y: r.top, w: r.width, h: r.height }, expectX: x, scrollLeft: i.scrollLeft, view: { w: innerWidth, h: innerHeight } }; })()`;
+
+// the caret of an <input> as painted: a frame with the caret, a frame with its colour made transparent (inline, !important), the difference between them
+async function caretByDifference(d, app, sel, tries = 6) {
+  for (let i = 0; i < tries; i++) {
+    const A = await app.cdp('Page.captureScreenshot', { format: 'png' });
+    await d.ev(`document.querySelector(${JSON.stringify(sel)}).style.setProperty('caret-color', 'transparent', 'important')`);
+    await sleep(60);
+    const B = await app.cdp('Page.captureScreenshot', { format: 'png' });
+    await d.ev(`document.querySelector(${JSON.stringify(sel)}).style.removeProperty('caret-color')`);
+    const r = await d.ev(`window.__wa.diff(${JSON.stringify(A.data)}, ${JSON.stringify(B.data)})`);
+    if (r && r.width <= 8) return r;
+    await sleep(110);
+  }
+  return null;
+}
 
 export async function main({ title }) {
   const env = process.env;
@@ -53,6 +69,7 @@ export async function main({ title }) {
       out(`WRITING AUDIT ${title} [${TAGB}] (${new Date().toISOString()})`);
       await d.boot();
       const ev = d.ev;
+      const inputCaret = (sel) => caretByDifference(d, app, sel);
       const SURF = {
         board: {
           label: 'board title', sel: '.crumb-rename',
@@ -68,6 +85,7 @@ export async function main({ title }) {
             return id;
           },
           shown: () => ev("(document.querySelector('.crumb-rename-btn') || {}).textContent || null"),
+          async reopen() { await ev("document.querySelector('.crumb-rename-btn').click()"); await sleep(300); },
         },
         drawer: {
           label: 'drawer name', sel: '.dz-rename',
@@ -84,6 +102,7 @@ export async function main({ title }) {
             return null;
           },
           shown: () => ev("(document.querySelector('.dz-name') || {}).textContent || null"),
+          async reopen() { await ev("document.querySelector('.dz-menu-btn').click()"); await sleep(150); await ev("[...document.querySelectorAll('.dz-menu-item')].find((b) => b.textContent.trim() === 'Rename').click()"); await sleep(300); },
         },
       };
       d.waitForSel = (sel, t) => app.waitFor(`!!document.querySelector(${JSON.stringify(sel)})`, { timeout: t, label: sel });
@@ -119,7 +138,7 @@ export async function main({ title }) {
                   if (!late.focused) fails.push({ check: 'focus', detail: 'focus left the input' });
                   if (early && (early.s !== late.s || early.e !== late.e || early.value !== late.value)) fails.push({ check: 'settled', detail: `after 2 frames ${early.s}..${early.e} ${JSON.stringify(early.value)}; settled ${late.s}..${late.e}` });
                   if (m.collapsed && late.focused) {
-                    const px = await d.pixelCaret(6);
+                    const px = await inputCaret(S.sel);
                     if (!px) fails.push({ check: 'drawn', detail: 'no caret is painted anywhere on screen' });
                     else {
                       const dx = px.x - late.expectX, cy = px.top + px.height / 2, inY = cy >= late.rect.y - 2 && cy <= late.rect.y + late.rect.h + 2;
@@ -134,7 +153,14 @@ export async function main({ title }) {
                 if (st.via === 'Enter' || st.via === 'EnterEmpty') await d.key('Enter');
                 else if (st.via === 'Escape') await d.key('Escape');
                 else if (st.via === 'Blur') await d.click(40, d.cfg.height - 40, 1);
-                if (st.via !== 'Reload') {
+                if (st.via === 'Reopen') {
+                  // the rename opens on the name AS DISPLAYED: if that is cut, committing it again silently shortens the stored name
+                  await S.reopen();
+                  const r1 = await ev(READ(S.sel));
+                  const full = m.text;
+                  if (!r1) fails.push({ check: 'focus', detail: 'the rename input did not open again' });
+                  else if (r1.value !== full) fails.push({ check: 'text', detail: `the rename box opens on ${JSON.stringify(r1.value.slice(0, 80))} (${r1.value.length} characters) but the name that was committed has ${full.length}: committing it again would cut the stored name` });
+                } else if (st.via !== 'Reload') {
                   await sleep(500);
                   const gone = !(await ev(READ(S.sel)));
                   const shown = (await S.shown()) || '';

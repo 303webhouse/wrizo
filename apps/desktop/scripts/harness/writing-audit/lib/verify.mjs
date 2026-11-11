@@ -36,10 +36,11 @@ export function verify({ exp, box, before, early, late, errors = [], expect = {}
   //    read from the PIXELS (late.px: the forced-magenta caret found in a screenshot, probe.mjs `scan`), because the rectangle a range reports is not where the caret is painted (run 42918219726).
   if (exp.a === exp.f && late.collapsed && late.focused && !expect.noDrawn) {
     const page = late.page, flux = late.theme === 'flux';
-    const drawn = flux ? late.fluxCaret : late.px;
-    const what = flux ? 'Flux block caret' : 'native caret (painted)';
+    const useBlock = flux && !!late.fluxCaret;   // Flux draws its own block caret on the Page and Free Write; where it draws none (the card pop-up) the native caret is what a writer sees
+    const drawn = useBlock ? late.fluxCaret : late.px;
+    const what = useBlock ? 'Flux block caret' : 'native caret (painted)';
     const at = late.selPoint ? ` [selection: ${late.selPoint}]` : '';
-    if (!drawn) fail('drawn', flux ? `Flux: the block caret is not drawn (no .flux-block-caret) while the selection is a caret in the editor${at}` : `no caret is painted anywhere on screen (looked in ${late.pxTries ?? '?'} screenshots, by forced colour and by difference; computed caret-color ${late.caretColor}, forced-colour sheet in place: ${late.armed})${at}`);
+    if (!drawn) fail('drawn', `no caret is painted anywhere on screen (looked in ${late.pxTries ?? '?'} screenshots, by forced colour and by difference; computed caret-color ${late.caretColor}, forced-colour sheet in place: ${late.armed}${flux ? '; Flux drew no block caret here' : ''})${at}`);
     else if (!box || box.via === 'rows-drift') notes.push(`drawn place not checked: the page's rows (${late.rows}) are not one per line of the model`);
     else {
       const dx = drawn.x - box.x;

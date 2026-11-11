@@ -49,7 +49,7 @@ export async function main({ title }) {
   const proof = [], cases = [], findings = [];
 
   async function attachPixels(d, r) {
-    if (r.theme === 'flux' || !r.editor || !r.collapsed || !r.focused) return;
+    if ((r.theme === 'flux' && r.fluxCaret) || !r.editor || !r.collapsed || !r.focused) return;
     const px = await d.pixelCaret(); r.px = px; r.pxTries = px ? px.tries : 12;
   }
   async function settleRead(d) {

@@ -48,6 +48,7 @@ ok('M16 Ctrl+Backspace deletes the word before the caret', m.text === 'Hello big
 m = run('Hello big world', 6, 6, K('Delete', { ctrl: true }));
 ok('M16b smart delete: a word taken from between two spaces takes one space with it (measured, Chrome 156 Linux)', m.text === 'Hello world' && m.f === 6, snap(m));
 let threw = false; try { run('a', 0, 0, K('PageUp')); } catch { threw = true; }
+ok('M17b an emoji is one press of an arrow or Backspace', (() => { const t = 'a\ud83d\ude00b'; const l = run(t, 3, 3, K('ArrowLeft')); const bs = run(t, 3, 3, K('Backspace')); return l.f === 1 && bs.text === 'ab'; })());
 ok('M17 a key the model has no rule for is refused, never guessed', threw);
 const all = Object.values(GROUPS).flat();
 let bad = [];
@@ -73,7 +74,7 @@ ok("V6 NICK'S BUG: the caret drawn at the page's top-left corner is a DRAWN fail
 ok("V7 the caret drawn at the window's corner is a DRAWN failure", (() => { const r = v({ px: { x: 0, top: 0, width: 1, height: 18 } }); return names(r).includes('drawn') && /window/.test(r.fails.find((f) => f.check === 'drawn').detail); })());
 ok('V8 the caret drawn off the page is a DRAWN failure', names(v({ px: { x: 1300, top: 400, width: 1, height: 18 } })).includes('drawn'));
 ok('V9 the caret drawn one line too high is a DRAWN failure', names(v({ px: { x: 450, top: 110, width: 1, height: 18 } })).includes('drawn'));
-ok("V10 Flux: the block caret not drawn at all is a DRAWN failure", names(v({ theme: 'flux', fluxCaret: null })).includes('drawn'));
+ok("V10 Flux: no block caret AND no painted caret is a DRAWN failure (where Flux draws none, the native caret stands in)", names(v({ theme: 'flux', fluxCaret: null, px: null })).includes('drawn') && !names(v({ theme: 'flux', fluxCaret: null })).includes('drawn'));
 ok("V11 Flux: the block caret at the page's corner is a DRAWN failure", names(v({ theme: 'flux', fluxCaret: { x: 402, top: 82, height: 24, width: 8 } })).includes('drawn'));
 ok('V12 Flux: the block caret where the text puts it passes', v({ theme: 'flux', fluxCaret: { x: 450, top: 140, height: 24, width: 8 } }).fails.length === 0);
 ok('V9b the native caret painted at the right margin of the right row is a DRAWN failure (run 42918219726, E18)', names(v({ px: { x: 908, top: 230, width: 1, height: 18 } })).includes('drawn'));

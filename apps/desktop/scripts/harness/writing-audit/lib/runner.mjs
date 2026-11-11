@@ -32,7 +32,7 @@ export async function main({ groupsDef, order, title, surfaceHook = null, editor
   const OPEN = { typewriter: cfg.typewriter };
 
   async function attachPixels(d, r) {
-    if (r.theme === 'flux' || !r.editor || !r.collapsed || !r.focused) return;
+    if ((r.theme === 'flux' && r.fluxCaret) || !r.editor || !r.collapsed || !r.focused) return;
     const px = await d.pixelCaret();
     r.px = px; r.pxTries = px ? px.tries : 12; r.pxVia = px ? px.via : null;
   }

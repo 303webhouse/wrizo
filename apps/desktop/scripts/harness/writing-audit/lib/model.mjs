@@ -44,6 +44,10 @@ export function nextWordStop(t, p, platform) {
  *  'Hello world', not 'Hello  world'. True when the range [s, e) has a space on each side. */
 function smartTail(t, s, e) { return s > 0 && e < t.length && isSpace(t[s - 1]) && isSpace(t[e]); }
 
+/** one character step over a surrogate pair (an emoji is two UTF-16 units but one press of an arrow or Backspace) */
+const unitBefore = (t, p) => (p >= 2 && /[\uDC00-\uDFFF]/.test(t[p - 1]) && /[\uD800-\uDBFF]/.test(t[p - 2]) ? 2 : 1);
+const unitAfter = (t, p) => (p + 1 < t.length && /[\uD800-\uDBFF]/.test(t[p]) && /[\uDC00-\uDFFF]/.test(t[p + 1]) ? 2 : 1);
+
 export class Model {
   constructor(text = '', a = text.length, f = a, platform = 'linux') { this.text = text; this.a = a; this.f = f; this.platform = platform; }
   clone() { return new Model(this.text, this.a, this.f, this.platform); }
@@ -68,18 +72,18 @@ export class Model {
         if (!this.collapsed) { this.replace(this.start, this.end, ''); return; }
         if (this.f === 0) return;
         if (ctrl) { const s0 = prevWordStart(t, this.f); this.replace(s0, this.f + (smartTail(t, s0, this.f) ? 1 : 0), ''); return; }
-        this.replace(this.f - 1, this.f, ''); return;
+        this.replace(this.f - unitBefore(t, this.f), this.f, ''); return;
       case 'Delete':
         if (!this.collapsed) { this.replace(this.start, this.end, ''); return; }
         if (this.f >= n) return;
         if (ctrl) { const e0 = nextWordStop(t, this.f, this.platform); this.replace(this.f, e0 + (smartTail(t, this.f, e0) ? 1 : 0), ''); return; }
-        this.replace(this.f, this.f + 1, ''); return;
+        this.replace(this.f, this.f + unitAfter(t, this.f), ''); return;
       case 'ArrowLeft':
         if (!shift && !this.collapsed) { const s = ctrl ? prevWordStart(t, this.start) : this.start; this.a = this.f = s; return; }
-        move(ctrl ? prevWordStart(t, this.f) : Math.max(0, this.f - 1)); return;
+        move(ctrl ? prevWordStart(t, this.f) : Math.max(0, this.f - unitBefore(t, this.f))); return;
       case 'ArrowRight':
         if (!shift && !this.collapsed) { const e = ctrl ? nextWordStop(t, this.end, this.platform) : this.end; this.a = this.f = e; return; }
-        move(ctrl ? nextWordStop(t, this.f, this.platform) : Math.min(n, this.f + 1)); return;
+        move(ctrl ? nextWordStop(t, this.f, this.platform) : Math.min(n, this.f + unitAfter(t, this.f))); return;
       case 'Home': move(ctrl ? 0 : this.lineStart(this.f)); return;
       case 'End': move(ctrl ? n : this.lineEnd(this.f)); return;
       case 'a': if (ctrl) { this.a = 0; this.f = n; return; } break;

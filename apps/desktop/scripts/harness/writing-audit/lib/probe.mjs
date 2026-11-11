@@ -66,7 +66,8 @@ export function probeInstall() {
   // where the model says offset p should be drawn
   const boxAt = (p) => {
     const e = ed(); if (!e) return null;
-    const pt = pointAt(e, p); if (!pt) return window.__wa_generic ? gbox(e, p) : { via: 'rows-drift' };
+    if (window.__wa_generic) return gbox(e, p);
+    const pt = pointAt(e, p); if (!pt) return { via: 'rows-drift' };
     if (pt.len === 0) { const r = pt.row.getBoundingClientRect(); return { via: 'row', x: r.left + padLeft(pt.row), top: r.top, height: lineH(pt.row, r), noY: r.height < 4 }; }
     const rg = document.createRange();
     if (pt.col < pt.len) {
@@ -127,8 +128,8 @@ export function probeInstall() {
   const place = (a, f) => {
     const e = ed(); if (!e) return false;
     e.focus({ preventScroll: true });
-    let pa = pointAt(e, a), pf = f === undefined || f === a ? pa : pointAt(e, f);
-    if ((!pa || !pf) && window.__wa_generic) { pa = gpoint(e, a); pf = f === undefined || f === a ? pa : gpoint(e, f); }
+    let pa = window.__wa_generic ? null : pointAt(e, a), pf = f === undefined || f === a ? pa : (window.__wa_generic ? null : pointAt(e, f));
+    if (window.__wa_generic) { pa = gpoint(e, a); pf = f === undefined || f === a ? pa : gpoint(e, f); }
     if (!pa || !pf) return false;
     getSelection().setBaseAndExtent(pa.node, pa.off, pf.node, pf.off);
     return true;

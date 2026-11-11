@@ -88,7 +88,7 @@ export async function main({ title }) {
   let stepsRun = 0, seqRun = 0, t0 = Date.now(), seed0 = 0;
 
   async function attachPixels(d, r) {
-    if (r.theme === 'flux' || !r.editor || !r.collapsed || !r.focused) return;
+    if ((r.theme === 'flux' && r.fluxCaret) || !r.editor || !r.collapsed || !r.focused) return;
     const px = await d.pixelCaret(); r.px = px; r.pxTries = px ? px.tries : 12;
   }
   // one step against the model; `full` adds the settle wait and the painted caret
