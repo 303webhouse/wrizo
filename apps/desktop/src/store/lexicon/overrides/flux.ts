@@ -147,6 +147,7 @@ export const FLUX_OVERRIDES = {
     switcherJournals: 'Logs',
     switcherNewDrawer: '＋ New Drive',
     switcherNewDrawerName: 'Name the drive',
+    switcherUnsorted: 'Orphans',   // the place where unfiled work lives, NAMED: the switcher row, the breadcrumb, the pop-out heading, a graft's place label (Fable, Nov 11: one place, one name)
     syncPullShort: '{pulled} Docs sent, {live} showing. Reload to retry.',
     templateOpenedNewBack: 'Opened as a new doc · Back',
     tutorClose: 'Close the Operator',
