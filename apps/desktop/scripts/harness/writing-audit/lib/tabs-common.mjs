@@ -43,6 +43,7 @@ export async function runTabs({ title, cases }) {
       app, d, ev, run, sleep, win,
       stored: (id) => ev(`(() => { try { const rows = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]'); const r = rows.find((x) => x.id === ${JSON.stringify(id)}); return r ? r.text : null; } catch (e) { return 'ERR ' + e.message; } })()`),
       mkPage: async (pid, text) => {
+        await ev(`(window.wrizoMergeLog || []).length = 0`);
         await ev(`document.querySelectorAll('#wa-tab-b,#wa-tab-c').forEach((f) => f.remove())`); await sleep(600);   // BEFORE the page is made: a closing window writes its whole, older store over this one's, and would take the new page with it
         await ev(`location.hash = '#/'`); await sleep(150);
         await ev(`window.wrizoCreateJournalPage(${JSON.stringify({ id: pid, text, createdAt: new Date().toISOString(), origin: 'journal', source: 'page' })})`);
