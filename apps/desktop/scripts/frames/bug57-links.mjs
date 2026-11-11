@@ -28,7 +28,12 @@ const board = async (app) => {
 };
 const selectLine = async (app) => {
   const line = await app.evalJs(`(() => { const hit = document.querySelector('.board-connection-hit'); if (!hit) return null; const c = document.querySelector('.board-canvas').getBoundingClientRect(); return { x: Math.round((+hit.getAttribute('x1') + +hit.getAttribute('x2')) / 2 + c.left), y: Math.round((+hit.getAttribute('y1') + +hit.getAttribute('y2')) / 2 + c.top) }; })()`);
-  if (line) { await click(app, line.x, line.y); await sleep(500); await app.mouseMove(8, 8); await sleep(300); }
+  if (line) {
+    await click(app, line.x, line.y); await sleep(500);
+    // park the pointer ON the armed port (the line's start): the connect-mode preview arm runs from that port to the pointer, so a pointer left at the corner drew an orange diagonal across the picture (the first shot)
+    const p = await app.evalJs("(() => { const hit = document.querySelector('.board-connection-hit'); const c = document.querySelector('.board-canvas').getBoundingClientRect(); return hit ? { x: Math.round(+hit.getAttribute('x1') + c.left), y: Math.round(+hit.getAttribute('y1') + c.top) } : null; })()");
+    await app.mouseMove(p ? p.x : line.x, p ? p.y : line.y); await sleep(300);
+  }
   return line;
 };
 
