@@ -3,8 +3,8 @@
 //   - base   the text both started from (what this window last loaded or saved)
 //   - mine   this window's text
 //   - theirs the other window's text
-//   Paragraphs (lines) that only one side changed take that side's change. A paragraph BOTH sides changed is NEVER blended word by word (that could write a sentence neither window wrote): both WHOLE versions are kept, one under the other.
-//   A paragraph one side deleted and the other edited keeps the edit. Two paragraphs added at the same place are both kept. Every line of the result is a whole line from base, mine or theirs.
+//   Paragraphs (lines) that only one side changed take that side's change. Paragraphs both changed are merged WORD BY WORD when the two changed different words (or each added words at the same place); where they changed the SAME words
+//   differently, both versions of the paragraph are kept, one under the other. A paragraph one side deleted and the other edited keeps the edit. Anything the diff cannot bound (a page rewritten end to end on both sides) also keeps both.
 //   The order of two things kept side by side is decided by their own text, never by which window is "mine", so mergeText(base, a, b) and mergeText(base, b, a) are the same text and two windows merging each other's work settle on one page.
 // Pure: no DOM, no storage, no clock.
 
@@ -12,7 +12,7 @@ export interface MergeResult {
   text: string;
   /** both sides had changed the text (neither was the base): a real merge happened */
   merged: boolean;
-  /** at least one paragraph was changed on both sides, so both whole versions of it are kept (this is what the quiet line says) */
+  /** at least one paragraph was changed on both sides in the same words, so both versions of it are kept */
   kept: boolean;
   /** where a caret at `offset` in `mine` stands in the merged text (just after the same character) */
   mapCaret: (offset: number) => number;
@@ -22,7 +22,7 @@ interface Item { text: string; at: number }   // at: where this piece starts in 
 interface Range { bs: number; be: number; os: number; oe: number }   // base [bs, be) became other [os, oe)
 
 const LCS_LIMIT = 3_000_000;       // cells of the line/word table; beyond it a changed stretch is one block (safe: it only ever keeps more, never less)
-const TOKEN_LIMIT = 20_000;        // caret mapping only: longer texts are not aligned word by word
+const TOKEN_LIMIT = 20_000;        // a conflicting stretch longer than this many words is kept as two paragraphs, not merged word by word
 
 const splitLines = (s: string): string[] => s.match(/[^\n]*\n|[^\n]+$/g) ?? [];
 const splitTokens = (s: string): string[] => s.match(/\s+|\S+/g) ?? [];
@@ -104,6 +104,23 @@ function diff3(base: string[], mine: string[], theirs: string[], mineOffs: numbe
   return items;
 }
 
+/** WORD BY WORD, for a paragraph both sides changed: only changes that do not touch each other merge (two insertions at the same place keep both, in the order of their own text); a deletion against an edit keeps the edit. */
+function mergeWords(baseText: string, mineText: string, theirsText: string, mineAt: number): Item[] | null {
+  const tb = splitTokens(baseText), tm = splitTokens(mineText), tt = splitTokens(theirsText);
+  if (tb.length + tm.length + tt.length > TOKEN_LIMIT) return null;
+  const resolveWords: Resolve = (b, m, t, at) => {
+    const bj = b.join(''), mj = m.join(''), tj = t.join('');
+    if (mj === tj) return [{ text: mj, at }];
+    if (!b.length) {   // both added words at this same place: both stay, the smaller text first (never "mine first")
+      return mj < tj ? [{ text: mj, at }, { text: tj, at: -1 }] : [{ text: tj, at: -1 }, { text: mj, at }];
+    }
+    if (!mj && bj) return [{ text: tj, at: -1 }];          // mine deleted what theirs edited: the edit stays
+    if (!tj && bj) return [{ text: mj, at }];
+    return null;                                           // the same words changed in two ways: the paragraph keeps both
+  };
+  return diff3(tb, tm, tt, offsets(tm), mineAt, resolveWords);
+}
+
 export function mergeText(base: string, mine: string, theirs: string): MergeResult {
   const same = (text: string, merged: boolean): MergeResult => ({ text, merged, kept: false, mapCaret: (o) => Math.max(0, Math.min(o, text.length)) });
   if (mine === theirs) return same(mine, false);
@@ -117,8 +134,10 @@ export function mergeText(base: string, mine: string, theirs: string): MergeResu
     if (mj === tj) return [{ text: mj, at }];
     if (!mj && bj) return [{ text: tj, at: -1 }];           // a paragraph mine deleted and theirs edited: the edit stays
     if (!tj && bj) return [{ text: mj, at }];
-    // the same paragraph changed on both sides: NO word-by-word blending (it could write a sentence neither window wrote). Both WHOLE versions are kept, one under the other, ordered by their own text.
-    if (bj) kept = true;
+    const words = mergeWords(bj, mj, tj, at);
+    if (words) return words;
+    // the same words changed in two ways: both versions are kept, one under the other, ordered by their own text
+    kept = true;
     const glue = (x: string) => (x.endsWith('\n') ? x : `${x}\n`);
     return mj <= tj
       ? [{ text: glue(mj), at }, { text: tj, at: -1 }]
