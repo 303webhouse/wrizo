@@ -29,6 +29,7 @@ export const TITLE_CASES = [
   c('TT11', 'Enter in the middle of the name commits the whole name', [K('Home'), K('ArrowRight'), K('ArrowRight'), C('Enter')]),
   c('TT12', 'Commit, reload, the name is still there', [T(' v2'), C('Enter'), C('Reload')]),
   c('TT13', 'Blur (click away) commits', [T(' b'), C('Blur')]),
+  c('TT15', '#69, the second commit: an 81-character name, open the rename, change ONE character, commit, read the STORED name', [T('x'.repeat(70)), C('Enter'), C('Reopen'), K('Home'), T('Z'), C('Enter'), C('Stored')]),
   c('TT14', 'A name over 60 characters: commit, then open the rename again - is the whole name still in the box?', [T('x'.repeat(70)), C('Enter'), C('Reopen')]),
 ];
 
@@ -113,7 +114,8 @@ export async function main({ title }) {
           if (only && !only.has(cs.id)) continue;
           const rec = { id: cs.id, name: cs.name, tag: TAG, steps: [], fail: null, fails: [] };
           try {
-            await S.open();
+            const openedId = await S.open();
+            const ctx = { full: null };
             await d.ev('window.__wa.arm()');
             let r0 = await ev(READ(S.sel));
             if (!r0) throw new Error('the rename input did not open');
@@ -158,8 +160,15 @@ export async function main({ title }) {
                   await S.reopen();
                   const r1 = await ev(READ(S.sel));
                   const full = m.text;
+                  ctx.full = m.text;
+                  if (r1) m = new Model(r1.value, r1.value.length, r1.value.length, 'linux');   // the box is what the writer now edits: the model follows it
                   if (!r1) fails.push({ check: 'focus', detail: 'the rename input did not open again' });
                   else if (r1.value !== full) fails.push({ check: 'text', detail: `the rename box opens on ${JSON.stringify(r1.value.slice(0, 80))} (${r1.value.length} characters) but the name that was committed has ${full.length}: committing it again would cut the stored name` });
+                } else if (st.via === 'Stored') {
+                  // THE SECOND COMMIT (#69): what the board's stored name is now. The writer changed one character of a name the box showed cut at 60.
+                  const stored = await ev(`(() => { try { const rows = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]'); const r = rows.find((x) => x.id === ${JSON.stringify(openedId)}); return r ? r.text : null; } catch (e) { return 'ERR ' + e.message; } })()`);
+                  const wantStored = 'Z' + ctx.full;
+                  if (stored !== wantStored) fails.push({ check: 'text', detail: `the stored name is ${stored === null ? 'missing' : `${stored.length} characters`} (${JSON.stringify(String(stored).slice(-20))}), after changing one character of a name that had ${ctx.full.length}: the stored name should be ${wantStored.length} characters; ${stored !== null && wantStored.startsWith(stored.slice(0, 1)) && stored.length < wantStored.length ? 'the tail was cut' : 'it differs'}` });
                 } else if (st.via !== 'Reload') {
                   await sleep(500);
                   const gone = !(await ev(READ(S.sel)));
