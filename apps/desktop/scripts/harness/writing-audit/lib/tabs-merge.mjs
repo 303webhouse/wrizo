@@ -48,7 +48,7 @@ export async function main({ title }) {
         typed(st, [[' A0', 1], [' A1', 1], [' A2', 1], [' B0', 1], [' B1', 1], [' B2', 1]], fails);
         once(st, ['Para one.', 'Para two.', 'Para three.'], fails);
       });
-      await run('TM2', '#76 keep both: A and B type at once at the end of the SAME paragraph; every word kept, no paragraph written twice', async (fails, notes) => {
+      await run('TM2', '#76 keep both: A and B type at once at the end of the SAME paragraph; every word kept, no paragraph repeated', async (fails, notes) => {
         const pid = `wa-m2-${Date.now().toString(36)}`;
         await h.mkPage(pid, 'Base. '); await h.openA(pid); await h.tabB();
         for (let r = 0; r < 3; r += 1) {
@@ -57,7 +57,10 @@ export async function main({ title }) {
         }
         const st = await converge(pid, ['A', 'B'], fails, notes);
         typed(st, [['a0 ', 1], ['a1 ', 1], ['a2 ', 1], ['b0 ', 1], ['b1 ', 1], ['b2 ', 1]], fails);
-        if (count(st, 'Base.') > 2) fails.push(`the paragraph was written ${count(st, 'Base.')} times: ${JSON.stringify(st)}`);
+        // the two windows may each end up typing in the other's paragraph (the caret follows the merge), which is a real second conflict, kept whole: so a handful of paragraphs is right, a RUNAWAY or an exact repeat is not
+        const ls = String(st).split(NL);
+        if (ls.length > 4) fails.push(`the paragraph was written ${ls.length} times: ${JSON.stringify(st)}`);
+        for (const l of ls) if (ls.filter((x) => x === l).length > 1) fails.push(`the same paragraph is stored twice: ${JSON.stringify(l)} in ${JSON.stringify(st)}`);
       });
       await run('TM3', "#76 keep both: A deletes a paragraph while B types in it; B's words are kept", async (fails, notes) => {
         const pid = `wa-m3-${Date.now().toString(36)}`;
