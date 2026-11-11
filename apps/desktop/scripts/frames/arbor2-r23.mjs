@@ -288,7 +288,50 @@ const roomPinCheck = async (app, name) => {
   if (!ok.mutantNight || !ok.pinnedDay) fail(name, { ok, unpinned, pinned });
   say(name, { ok, unpinned, pinned });
 };
+// ── NIGHT, A DRAWER OPEN, PICTURED (Fable, Nov 11, 12:45 am, 3b): r23-labels-mutant took its style off before the job's closing shot, so its frame
+// was the product's (same md5) - and it mutated WORDS only; item 8's rail label had no mutant. These two screens END in the state they judge (night,
+// the Tools drawer open) so the job's shot pictures it: the product, and a mutant that undoes BOTH fixes - WORDS in r22's low ink #6B5F4E (item 9)
+// and the active rail label back to the global active colour at weight 400 (item 8's two rules removed) - left ON for the shot.
+const MUT8_9 = ".desk-frame-instrument .mode-pmetric{ color:#6B5F4E !important; } :root[data-arbor2][data-theme='plateau'] .desk-frame-strip .wz-strip-item.active .wz-strip-label{ color:var(--accent-rest) !important; font-weight:400 !important; }";
+const nightOpen = async (app, name, mutant) => {
+  await openPage(app, `arbor-r23-no-${Math.random().toString(36).slice(2, 6)}`);
+  if (mutant) await app.evalJs(`(() => { const st = document.createElement('style'); st.id = 'r23-no-mut'; st.textContent = ${JSON.stringify(MUT8_9)}; document.head.appendChild(st); return true; })()`);
+  const read = {};
+  for (const room of ['day', 'night']) {   // day first (the item 8 / 9 reds were read by day), night LAST so the shot is night
+    await setRoom(app, room); await app.mouseMove(600, 300); await sleep(700);
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(900); await app.evalJs(FINISH);
+    read[room] = await labelsDrawn(app);
+    if (room === 'day') { await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(700); }
+  }
+  const style = await app.evalJs("(() => { const l = document.querySelector('.desk-frame-strip .wz-strip-item.active .wz-strip-label'), w = document.querySelector('.desk-frame-instrument .mode-pmetric'); return { active: l ? l.textContent.trim() : null, weight: l ? getComputedStyle(l).fontWeight : null, words: w ? getComputedStyle(w).color : null, room: document.documentElement.getAttribute('data-arbor2-room'), open: document.querySelector('.wz-sliver')?.getAttribute('data-open') ?? null, tone: document.documentElement.getAttribute('data-page') }; })()");
+  const rows = Object.entries(read).flatMap(([k, v]) => v.map((r) => ({ at: k + '-open', ...r })));
+  return { rows, style };   // the mutant's style stays ON: the job's shot is taken after the screen returns
+};
+const nightOpenCheck = async (app, name) => {
+  const { rows, style } = await nightOpen(app, name, false);
+  const bad = [];
+  if (style.room !== 'night' || style.open !== 'true') bad.push(`not night with the drawer open at the shot (${style.room}, open ${style.open})`);
+  if (String(style.weight) !== '500') bad.push(`the active label is weight ${style.weight}, not 500`);
+  const low = rows.filter((r) => r.ratio < 4.5);
+  if (!rows.some((r) => /^journal$/i.test(r.text) && r.at === 'night-open')) bad.push('the Journal label was not read at night with the drawer open');
+  if (low.length) bad.push(`${low.length} label(s) under 4.5:1 as drawn`);
+  if (bad.length) fail(name, { bad, low, style });
+  say(name, { style, night: rows.filter((r) => r.at === 'night-open'), lowest: [...rows].sort((a, b) => a.ratio - b.ratio).slice(0, 4) });
+};
+const nightOpenMutant = async (app, name) => {
+  const { rows, style } = await nightOpen(app, name, true);
+  const journal = rows.filter((r) => /^journal$/i.test(r.text)), words = rows.filter((r) => /^words$/i.test(r.text));
+  const ok = {
+    landed: String(style.weight) === '400' && style.room === 'night' && style.open === 'true',
+    redJournal: journal.some((r) => r.ratio < 4.5),                                   // item 8's check goes red without its rules
+    redWords: style.tone === 'dark' ? null : words.some((r) => r.ratio < 4.5),       // item 9's: the light page only (WORDS on the dark page is r7's)
+  };
+  if (!ok.landed || !ok.redJournal || ok.redWords === false) fail(name, { ok, style, journal, words });
+  say(name, { ok, style, journal, words });
+};
 const screens = {
+  'r23-labels-night-open': (app) => nightOpenCheck(app, 'r23-labels-night-open'),
+  'r23-labels-night-open-mutant': (app) => nightOpenMutant(app, 'r23-labels-night-open-mutant'),
   'r23-room-pin': (app) => roomPinCheck(app, 'r23-room-pin'),
   'r23-labels': (app) => labelsCheck(app, 'r23-labels'),
   'r23-labels-2000': async (app) => { await app.emulateDpr(1, 2000, 1125); await labelsCheck(app, 'r23-labels-2000'); },
