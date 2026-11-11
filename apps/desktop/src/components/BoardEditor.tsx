@@ -1599,7 +1599,7 @@ export function BoardEditor({ id }: { id: string }) {
                 className="crumb-here crumb-rename-btn"
                 title={t('boardRenameLabel')}
                 // the draft derives with an empty fallback, so a nameless board opens a nameless field, with no sentinel string to keep in step [BoardEditor §61]
-                onClick={() => { setNameDraft(fullBoardName(getJournalEntry(id)?.text, '')); setRenaming(true); }}
+                onClick={() => { setNameDraft(boardName(getJournalEntry(id)?.text, '')); setRenaming(true); }}
               >{title}</button>
             )}
             {gapsLine}
