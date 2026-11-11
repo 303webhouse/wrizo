@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { flushNow, getDrawer, getJournalEntry, getProject, saveJournalEntry, patchJournalEntry, getBoardsConnecting, inJournalView, getOrCreatePlanBoard } from '../store/persistence';
 import { setPageDress } from '../store/pageDress';
@@ -183,6 +183,7 @@ function PageEditorView({ id }: { id: string }) {
   // #76 part 1: bumped when words another window saved are adopted; the editor is keyed on it, so it mounts again on the new text
   const [remount, setRemount] = useState(0);
   const caretAfterAdopt = useRef<{ start: number; end: number } | null>(null);
+  const focusBeforeAdopt = useRef<HTMLElement | null>(null);
   const [receded, setReceded] = useState(false);
   const [focused, setFocused] = useState(false);
   const [showPublish, setShowPublish] = useState(false); // Publish stub dialog (matches QuickSprint)
@@ -456,6 +457,7 @@ function PageEditorView({ id }: { id: string }) {
     const ed = editorRef.current;
     const had = !!ed && ed.isConnected && !!document.activeElement && ed.contains(document.activeElement);
     caretAfterAdopt.current = had && ed ? (getSelectionOffsets(ed) ?? { start: next.length, end: next.length }) : null;
+    focusBeforeAdopt.current = !had && document.activeElement instanceof HTMLElement ? document.activeElement : null;   // a writer who was NOT in the page keeps her focus where it was
     lastSavedRef.current = next;
     textRef.current = next;
     setText(next);
@@ -463,14 +465,18 @@ function PageEditorView({ id }: { id: string }) {
     setRemount((n) => n + 1);
   };
   useExternalPageText({ id, unbornRef, textRef, lastSavedRef, adopt: adoptOtherWindowText });
-  useLayoutEffect(() => {
-    const at = caretAfterAdopt.current;
-    caretAfterAdopt.current = null;
+  // a passive effect on purpose: the editor's own mount (a child's passive effect) lands the caret at the end and focuses, and this runs after it
+  useEffect(() => {
+    if (remount === 0) return;
+    const at = caretAfterAdopt.current, was = focusBeforeAdopt.current;
+    caretAfterAdopt.current = null; focusBeforeAdopt.current = null;
     const ed = editorRef.current;
-    if (!at || !ed || !ed.isConnected) return;
-    const n = editorPlainText(ed).length;
-    ed.focus({ preventScroll: true });
-    setSelectionOffsets(ed, Math.min(at.start, n), Math.min(at.end, n));
+    if (!ed || !ed.isConnected) return;
+    if (at) {
+      const n = editorPlainText(ed).length;
+      ed.focus({ preventScroll: true });
+      setSelectionOffsets(ed, Math.min(at.start, n), Math.min(at.end, n));
+    } else if (was && was.isConnected && was !== document.body) was.focus({ preventScroll: true });
   }, [remount]);
 
   // This hook sits ABOVE the early return below (the hooks-order guards enforce it); its body reads `applyFormatAt`, defined below, safely, since an effect runs after render, and its deps carry `!!realEntry` so the listener attaches once the editor mounts. Tab indents through draftFormat's own indent (a leading tab), the same formatter as the rail's arrows, so a key and a click cannot drift apart. It is a state machine (store/tabChord.ts): each Tab tap is one more first-line level, Shift+Tab one back, Tab held + 1 one whole-paragraph level per press; a tap applies on release, and a quick Tab-then-1 types its 1. Draft and Revise act everywhere; Free Write is forward-only, so it acts on a BLANK line only and never outdents. Capturing Tab costs a keyboard-only writer Tab-out; Escape leaves the surface (store/escapeExit.ts). While an Outline is in Draft it owns Tab and this machine stands aside (a ref, read at press time). [PageEditor §10]
