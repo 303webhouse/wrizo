@@ -6,7 +6,7 @@ export function noteMerge(entry: Record<string, string | number | boolean>): voi
   const short: Record<string, string | number | boolean> = {};
   for (const k of Object.keys(entry)) { const v = entry[k]; short[k] = typeof v === 'string' && v.length > 160 ? `${v.slice(0, 70)}...${v.slice(-70)}` : v; }
   trail.push(short);
-  if (trail.length > 24) trail.shift();
+  if (trail.length > 60) trail.shift();
 }
 type Listener = (pageId: string) => void;
 const listeners = new Set<Listener>();
