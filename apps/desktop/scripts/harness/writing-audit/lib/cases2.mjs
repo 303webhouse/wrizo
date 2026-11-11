@@ -64,6 +64,11 @@ export const GROUPS2 = {
     c('U10', 'Click, then type (it lands where the click was)', 'One two three\nFour five six', 0, [{ k: 'click', q: 20 }, T('X')]),
   ],
 };
+// the random writer's first shrunk finds (run 42930621300), replayed as scripted cases so every step is reported (cont)
+GROUPS2.repro = [
+  c('R01', 'Random (Arbor, seed 756177124): Ctrl+End, Up, Enter, Down', 'dog said harbor writes a long\nharbor window town on\nmorning ', 26, [K('End', { ctrl: true }), K('ArrowUp', { geo: 'up' }), K('Enter'), K('ArrowDown', { geo: 'down' })], { cont: true }),
+  c('R02', 'Random (Flux, seed -1659382475): Enter, Ctrl+Home, Enter, Shift+Enter, Backspace on an empty page', '', 0, [K('Enter'), K('Home', { ctrl: true }), K('Enter'), K('Enter', { shift: true }), K('Backspace')], { cont: true }),
+];
 // the SMOKE set (Fable's "dark and 1920"): the cases that found something plus one clean control per kind, drawn from both sessions' groups
 import { GROUPS as G1 } from './cases.mjs';
 const pick = (list, ids) => list.filter((x) => ids.includes(x.id));

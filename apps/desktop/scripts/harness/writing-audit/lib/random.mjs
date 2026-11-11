@@ -61,6 +61,7 @@ export function classify(theme, st, v, late, exp) {
   const checks = v.fails.map((f) => f.check);
   const detail = v.fails.map((f) => f.detail).join(' | ');
   if (st.ctrl && /Arrow|Backspace|Delete/.test(st.key || '')) return 'oracle:word';
+  if (checks.length && checks.every((c) => c === 'page')) return 'T1';
   if (checks.length && checks.every((c) => c === 'drawn') && /\(between rows\)/.test(detail)) return 'F1';
   if (theme === 'flux' && st.k === 'key' && st.key === 'Enter' && checks.includes('caret') && late.focus !== null && late.focus < exp.f) return 'F2';
   if (theme === 'flux' && checks.length && checks.every((c) => c === 'drawn') && /Flux block caret/.test(detail)) return 'F5';
@@ -76,14 +77,15 @@ export async function main({ title }) {
   if (!THEMES[cfg.theme]) { console.error('WA_THEME must be plateau, flux or machina'); process.exit(2); }
   const g = /^n(\d+)s(\d+)$/.exec(env.WA_GROUPS || '') || [null, '60', '1'];
   const NSEQ = Number(g[1]), SEEDBASE = Number(g[2]);
-  const BUDGET_MS = Number(env.WA_BUDGET_MIN || 80) * 60000;
+  const BUDGET_MS = Number(env.WA_BUDGET_MIN || 75) * 60000;
   const STEPS = Number(env.WA_STEPS || 150);
   const TAG = `${THEMES[cfg.theme].label}/${cfg.flag}/${cfg.tone}/${cfg.width}`;
   const tagHash = [...TAG].reduce((h, ch) => (Math.imul(h, 31) + ch.charCodeAt(0)) | 0, 7);
   if (cfg.out) fs.mkdirSync(cfg.out, { recursive: true });
   const out = (s) => console.log(s);
-  const known = {}, unknown = [], seqLog = [];
-  let stepsRun = 0, seqRun = 0, t0 = Date.now();
+  const known = {}, unknown = [], seqLog = [], t1 = [], seenSig = new Set();
+  let shrunkCount = 0;
+  let stepsRun = 0, seqRun = 0, t0 = Date.now(), seed0 = 0;
 
   async function attachPixels(d, r) {
     if (r.theme === 'flux' || !r.editor || !r.collapsed || !r.focused) return;
@@ -136,6 +138,7 @@ export async function main({ title }) {
 
   // run one sequence: `gen` (seeded) or a fixed `steps` list (a replay); returns the first NEW failure, with the steps that led to it
   async function runSeq(d, { seed, start, steps: fixed, limit }) {
+    seed0 = seed;
     const r = mulberry32(seed);
     await d.openPage(start.text, 'drafting', {});
     const placed = await d.place(start.at);
@@ -158,6 +161,7 @@ export async function main({ title }) {
         const cls = classify(cfg.theme, st, res.v, res.late, res.exp);
         if (cls === 'new') return { trace, counts, fail: { i, st: res.resolved, class: cls, fails: res.v.fails, late: { text: res.late.text, anchor: res.late.anchor, focus: res.late.focus, selPoint: res.late.selPoint }, expected: res.exp.snapshot() } };
         counts[cls] = (counts[cls] || 0) + 1;
+        if (cls === 'T1' && t1.length < 12) t1.push({ seed: seed0, step: i + 1, label: stepLabel(res.resolved), detail: res.v.fails[0].detail.slice(0, 260), textLen: res.exp.text.length, lines: res.exp.text.split('\n').length });
         // resync to what the page did, and carry on
         const L = res.late;
         if (L.anchor !== null && L.focus !== null && typeof L.text === 'string') m = new Model(L.text, L.anchor, L.focus, m.platform);
@@ -179,9 +183,9 @@ export async function main({ title }) {
       return !!(res.fail && res.fail.class === 'new' && res.fail.fails.some((f) => f.check === primary) && res.fail.i === list.length - 1);
     };
     let replays = 0, chunk = Math.max(1, Math.floor((steps.length - 1) / 2));
-    while (chunk >= 1 && replays < 40) {
+    while (chunk >= 1 && replays < 25) {
       let removed = false;
-      for (let s = 0; s + chunk <= steps.length - 1 && replays < 40; ) {
+      for (let s = 0; s + chunk <= steps.length - 1 && replays < 25; ) {
         const cand = [...steps.slice(0, s), ...steps.slice(s + chunk)];
         replays++;
         if (cand.length && await failsAgain(cand)) { steps = cand; removed = true; } else s += chunk;
@@ -226,7 +230,8 @@ export async function main({ title }) {
           const primary = f.fails[0].check;
           out(`FAIL  seq ${i + 1} seed ${seed} [${TAG}]: step ${f.i + 1} (${label(f.st)}): ${f.fails.map((x) => `${x.check} - ${x.detail}`).join(' || ').slice(0, 520)}`);
           let sh = null;
-          if (unknown.length < 6 && f.class === 'new') { sh = await shrink(d, start, res.trace, f.i, primary); out(`      shrunk ${f.i + 1} -> ${sh.steps.length} steps in ${sh.replays} replays: start ${JSON.stringify(start.text.slice(0, 60))} caret ${start.at}; ${sh.steps.map(label).join(' > ')}`); }
+          const sig = `${primary}|${f.st.key || f.st.k}`;
+          if (f.class === 'new' && !seenSig.has(sig) && shrunkCount < 3) { seenSig.add(sig); shrunkCount++; sh = await shrink(d, start, res.trace, f.i, primary); out(`      shrunk ${f.i + 1} -> ${sh.steps.length} steps in ${sh.replays} replays: start ${JSON.stringify(start.text.slice(0, 60))} caret ${start.at}; ${sh.steps.map(label).join(' > ')}`); }
           unknown.push({ seed, start, failStep: f.i + 1, fails: f.fails, got: f.late, expected: f.expected, steps: res.trace.slice(0, f.i + 1).map(label), shrunk: sh && sh.steps.map(label), replays: sh && sh.replays });
         } else out(`PASS  seq ${i + 1} seed ${seed} [${TAG}]: ${STEPS} steps${Object.keys(res.counts).length ? '  known: ' + Object.entries(res.counts).map(([k, v]) => `${k}x${v}`).join(' ') : ''}`);
         seqLog.push({ i: i + 1, seed, fail: !!res.fail, counts: res.counts });
@@ -234,7 +239,7 @@ export async function main({ title }) {
     });
   } catch (err) { out(`FAIL  the run reached its end  [${String((err && err.stack) || err).split('\n').slice(0, 4).join(' | ')}]`); process.exitCode = 1; }
   const mins = ((Date.now() - t0) / 60000).toFixed(1);
-  if (cfg.out) fs.writeFileSync(path.join(cfg.out, `random-${TAG.replace(/\//g, '-')}.json`), JSON.stringify({ tag: TAG, cfg, seeds: { base: SEEDBASE, tagHash }, sequences: seqRun, steps: stepsRun, minutes: mins, known, unknown, seqLog }, null, 1));
-  out(`\nRANDOM WRITER [${TAG}]: ${seqRun} sequences, ${stepsRun} steps in ${mins} min; known bugs seen (resynced): ${JSON.stringify(known)}; NEW failures: ${unknown.length}${unknown.length ? ' (seeds ' + unknown.map((u) => u.seed).join(', ') + ')' : ''}`);
+  if (cfg.out) fs.writeFileSync(path.join(cfg.out, `random-${TAG.replace(/\//g, '-')}.json`), JSON.stringify({ tag: TAG, cfg, seeds: { base: SEEDBASE, tagHash }, sequences: seqRun, steps: stepsRun, minutes: mins, known, t1Examples: t1, unknown, seqLog }, null, 1));
+  out(`\nRANDOM WRITER [${TAG}]: ${seqRun} sequences, ${stepsRun} steps in ${mins} min; known bugs seen (resynced): ${JSON.stringify(known)}; T1 (page rect moves within two frames) examples kept: ${t1.length}; NEW failures: ${unknown.length}${unknown.length ? ' (seeds ' + unknown.map((u) => u.seed).join(', ') + ')' : ''}`);
   process.exit(process.exitCode || 0);
 }
