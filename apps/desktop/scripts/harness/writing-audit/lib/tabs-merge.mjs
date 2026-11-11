@@ -27,7 +27,7 @@ export async function main({ title }) {
         for (const w of wins) shown[w] = await h.shows(w);
         for (const w of wins) if (shown[w] !== st) fails.push(`window ${w} shows ${JSON.stringify(shown[w])} but the stored page is ${JSON.stringify(st)}`);
         notes.push(`stored ${JSON.stringify(st)}`);
-        if (fails.length) for (const w of wins) {   // the merges this window made, one line each (printed whole, apart from the case's own line)
+        for (const w of wins) {   // the merges this window made, one line each (printed whole, apart from the case's own line)
           const log = JSON.parse(await h.ev(`JSON.stringify(${h.win(w)}.wrizoMergeLog || [])`));
           for (const e of log) console.log(`MERGELOG ${pid} ${w} ${JSON.stringify(e).split('\n').join('|')}`);
         }
