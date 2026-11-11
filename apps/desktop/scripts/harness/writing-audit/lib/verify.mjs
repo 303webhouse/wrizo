@@ -44,6 +44,7 @@ export function verify({ exp, box, before, early, late, errors = [], expect = {}
     else if (!box || box.via === 'rows-drift') notes.push(`drawn place not checked: the page's rows (${late.rows}) are not one per line of the model`);
     else {
       const dx = drawn.x - box.x;
+      const tolX = box.via && box.via.startsWith('g-prevchar') ? 14 : TOL.x;   // measured against a letter-spaced face (screenshot FW11: the caret is right after the c; the previous letter's rect ends a letter-space before)
       // vertical: the centre of the drawn caret against the expected line (a caret is shorter than its line box, and sits inside it)
       const cy = drawn.top + (drawn.height || 0) / 2, ey = box.top + (box.height || 0) / 2, dy = cy - ey;
       const tolY = Math.max(TOL.y, (box.height || 0) * 0.45);
@@ -52,8 +53,8 @@ export function verify({ exp, box, before, early, late, errors = [], expect = {}
       const offPage = !!page && (drawn.x < page.x - 2 || drawn.x > page.x + page.w + 2 || drawn.top < page.y - 2 || drawn.top > page.y + page.h + 2);
       const yOk = box.noY ? true : Math.abs(dy) <= tolY;   // an empty row with no height of its own (an empty document) has no line to measure against: x, corners and the page edge still apply
       if (atPageCorner || atViewCorner) fail('drawn', `${what} at the ${atViewCorner ? 'window' : 'page'}'s top-left corner (${rect(drawn)}) where the text puts it at ${rect(box)} (${box.via})${at}`);
-      else if (offPage && !(Math.abs(dx) <= TOL.x && yOk)) fail('drawn', `${what} off the page (${rect(drawn)}; page ${Math.round(page.x)},${Math.round(page.y)} ${Math.round(page.w)}x${Math.round(page.h)})${at}`);
-      else if (Math.abs(dx) > TOL.x || !yOk) fail('drawn', `${what} at ${rect(drawn)} but the text puts the caret at ${rect(box)} (${box.via}); off by ${dx.toFixed(1)}, ${dy.toFixed(1)}${at}`);
+      else if (offPage && !(Math.abs(dx) <= tolX && yOk)) fail('drawn', `${what} off the page (${rect(drawn)}; page ${Math.round(page.x)},${Math.round(page.y)} ${Math.round(page.w)}x${Math.round(page.h)})${at}`);
+      else if (Math.abs(dx) > tolX || !yOk) fail('drawn', `${what} at ${rect(drawn)} but the text puts the caret at ${rect(box)} (${box.via}); off by ${dx.toFixed(1)}, ${dy.toFixed(1)}${at}`);
     }
   }
 

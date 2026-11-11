@@ -165,7 +165,8 @@ export async function main({ title }) {
                   const gone = !(await ev(READ(S.sel)));
                   const shown = (await S.shown()) || '';
                   if (!gone) fails.push({ check: 'focus', detail: `the rename input is still open after ${st.via}` });
-                  if (shown.trim() !== want) fails.push({ check: 'text', detail: `after ${st.via} the name shows ${JSON.stringify(shown.trim())} want ${JSON.stringify(want)}` });
+                  const shownWant = (sk === 'board' && want.length > 60) ? want.slice(0, 60) : want;   // the DISPLAY is cut at 60 (boardName); what the rename box then holds is the Reopen check
+                  if (shown.trim() !== shownWant) fails.push({ check: 'text', detail: `after ${st.via} the name shows ${JSON.stringify(shown.trim())} want ${JSON.stringify(want)}` });
                   m.text = want; oldName2 = want;
                 } else {
                   await ev('window.wrizoFlushNow && window.wrizoFlushNow()');

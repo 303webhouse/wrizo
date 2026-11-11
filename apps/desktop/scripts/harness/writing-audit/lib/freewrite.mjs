@@ -134,7 +134,8 @@ export async function main({ title }) {
         const fail = { step: i + 1, label: rec.steps[rec.steps.length - 1], fails: v.fails, got: { text: late.text, anchor: late.anchor, focus: late.focus, px: late.px, fluxCaret: late.fluxCaret, selPoint: late.selPoint }, box, dom: await d.dom(700) };
         rec.fails.push(fail);
         if (!rec.fail) { rec.fail = fail; rec.shot = await d.shot(`${TAG.replace(/\//g, '-')}-${cs.id}-step${i + 1}`); }
-        return rec;
+        else if (rec.fails.length <= 6) await d.shot(`${TAG.replace(/\//g, '-')}-${cs.id}-step${i + 1}`);
+        if (rec.fails.length >= 6) return rec;
       }
       text = expText;
     }
@@ -158,9 +159,8 @@ export async function main({ title }) {
         cases.push(rec);
         if (rec.fail) {
           findings.push(rec);
-          const f = rec.fail;
-          out(`FAIL  ${cs.id} ${cs.name} [${TAG}] (typewriter ${rec.tw ?? 'off'}): step ${f.step} (${f.label}): ${f.fails.map((x) => `${x.check} - ${x.detail}`).join(' || ')}`);
-          if (f.dom) out(`      dom: ${String(f.dom).replace(/\s+/g, ' ').slice(0, 420)}`);
+          for (const f of rec.fails) out(`FAIL  ${cs.id} ${cs.name} [${TAG}] (typewriter ${rec.tw ?? 'off'}): step ${f.step} (${f.label}): ${f.fails.map((x) => `${x.check} - ${x.detail}`).join(' || ')}`);
+          if (rec.fail.dom) out(`      dom: ${String(rec.fail.dom).replace(/\s+/g, ' ').slice(0, 420)}`);
         } else out(`PASS  ${cs.id} ${cs.name} [${TAG}] (typewriter ${rec.tw ?? 'off'}) (${rec.steps.join(' > ')})${rec.notes.length ? '  notes: ' + [...new Set(rec.notes)].join('; ') : ''}`);
       }
     });
