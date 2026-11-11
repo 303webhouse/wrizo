@@ -1,0 +1,11 @@
+BOX TURN: granted to lane "arbor" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=1 tree=bc33de6e bundle=index-B1u4JCOf.js/1040908b out=F:\wrizo-work\arbor-turn4-1455Z\swap-t1
+[01/1] FAIL      exit=1  113s arbor2-swap.mjs :: ARBOR2-SWAP VERIFY: FAIL - 2/10 failed
+
+SUITE DONE HARNESS_PARKED=unset — 0/1 of 1 returned a passing verdict
+  FAIL: arbor2-swap.mjs — full output at F:\wrizo-work\arbor-turn4-1455Z\swap-t1\arbor2-swap.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=bc33de6e bundle=index-B1u4JCOf.js/1040908b
+(node:36340) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
