@@ -91,7 +91,9 @@ export async function main({ title }) {
       await ev(`window.wrizoCreateJournalPage(${JSON.stringify({ id: pid, text, createdAt: new Date().toISOString(), origin: 'journal', source: 'page' })})`);
       await ev(`localStorage.setItem('wrizo-mode-page-${pid}', 'drafting'); localStorage.setItem('wrizo-typewriter-page-${pid}', 'off')`);
     };
+    const dropFrames = async () => { await ev(`document.querySelectorAll('#wa-tab-b').forEach((f) => f.remove())`); await sleep(300); };   // a window of an earlier case must not stay open and answer for this one
     const openA = async (pid) => {
+      await dropFrames();
       await ev(`location.hash = '#/page/${pid}'`);
       await app.waitFor("!!document.querySelector('.forward-only-editor')", { timeout: 15000, label: 'tab A' }); await sleep(700);
     };
