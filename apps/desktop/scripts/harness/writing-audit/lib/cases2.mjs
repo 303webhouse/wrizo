@@ -70,6 +70,10 @@ GROUPS2.repro = [
   c('R02', 'Random (Flux, seed -1659382475): Enter, Ctrl+Home, Enter, Shift+Enter, Backspace on an empty page', '', 0, [K('Enter'), K('Home', { ctrl: true }), K('Enter'), K('Enter', { shift: true }), K('Backspace')], { cont: true }),
   c('R03', 'Random (Arbor): Ctrl+End, Up, Enter, Down with no settle between the keys', 'dog said harbor writes a long\nharbor window town on\nmorning ', 26, [K('End', { ctrl: true, fast: true }), K('ArrowUp', { geo: 'up', fast: true }), K('Enter', { fast: true }), K('ArrowDown', { geo: 'down', fast: true })], { cont: true }),
   c('R04', 'Enter then Down at once, mid-page', 'harbor window town on\nmorning light', 7, [K('Enter', { fast: true }), K('ArrowDown', { geo: 'down', fast: true })], { cont: true }),
+  c('R05', 'Random (Flux light 1920, seed -1658219708): Shift+Enter, Down, Shift+Right, Left on an empty page', '', 0, [K('Enter', { shift: true }), K('ArrowDown', { geo: 'down' }), K('ArrowRight', { shift: true }), K('ArrowLeft')], { cont: true }),
+  c('R06', 'Random (Flux light 1920, seed -1658324437): Shift+Enter, Up, End, Shift+Enter, type, Right on an empty page', '', 0, [K('Enter', { shift: true }), K('ArrowUp', { geo: 'up' }), K('End', { geo: 'end' }), K('Enter', { shift: true }), T('coffee '), K('ArrowRight')], { cont: true }),
+  c('R07', 'Random (Flux dark, seed -557978882): Enter, Left, Shift+Enter, type "!", Backspace, Right on an empty page', '', 0, [K('Enter'), K('ArrowLeft'), K('Enter', { shift: true }), T('!'), K('Backspace'), K('ArrowRight')], { cont: true }),
+  c('R08', 'The page-turn: Shift+Enter across the sheet boundary (about 16 lines) - does the page move?', Array.from({ length: 14 }, (_, i) => `Line ${i + 1}`).join('\n'), Array.from({ length: 14 }, (_, i) => `Line ${i + 1}`).join('\n').length, [K('Enter', { shift: true }), T('a'), K('Enter', { shift: true }), T('b'), K('Enter', { shift: true }), T('c'), K('Enter', { shift: true }), T('d')], { cont: true }),
 ];
 // the SMOKE set (Fable's "dark and 1920"): the cases that found something plus one clean control per kind, drawn from both sessions' groups
 import { GROUPS as G1 } from './cases.mjs';

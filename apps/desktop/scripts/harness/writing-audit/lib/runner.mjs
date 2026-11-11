@@ -155,7 +155,7 @@ export async function main({ groupsDef, order, title }) {
       }
       rec.finalText = late.text;
       m = exp;
-      lastVertical = (st.geo === 'up' || st.geo === 'down') && late.focus !== 0 && late.focus !== n;   // a jump to the document's start or end starts a new goal column
+      { const li0 = lns ? lineOf(lns, before.focus) : -1; const jumped = (st.geo === 'up' && li0 === 0) || (st.geo === 'down' && lns && li0 === lns.length - 1); lastVertical = (st.geo === 'up' || st.geo === 'down') && !jumped; }   // only a jump off the first (last) line to the document's start (end) starts a new goal column
     }
     return rec;
   }

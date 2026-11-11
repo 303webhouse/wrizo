@@ -132,7 +132,7 @@ export async function main({ title }) {
     const wantDrawn = full || theme === 'flux';
     const box = wantDrawn && exp.collapsed ? await d.box(exp.f) : null;
     const v = verify({ exp: exp.snapshot(), box, before, early, late, errors: d.errors.slice(e0), expect: { noDrawn: !wantDrawn, noPage: !full && !!(before.tw || late.tw) } });
-    goal.keep = (st.geo === 'up' || st.geo === 'down') && late.focus !== 0 && late.focus !== n;
+    { const li0 = lns ? lineOf(lns, before.focus) : -1; const jumped = (st.geo === 'up' && li0 === 0) || (st.geo === 'down' && lns && li0 === lns.length - 1); goal.keep = (st.geo === 'up' || st.geo === 'down') && !jumped; }
     return { exp, v, late, resolved, anyF };
   }
 
