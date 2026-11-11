@@ -139,7 +139,7 @@ export function probeInstall() {
   const arm = () => {
     if (document.getElementById('wa-caret-color')) return true;
     const st = document.createElement('style'); st.id = 'wa-caret-color';
-    st.textContent = 'html html .forward-only-editor, html html .forward-only-editor * { caret-color: #ff00ff !important; }';
+    st.textContent = 'html html .forward-only-editor, html html .forward-only-editor *, html html .board-popup-editor, html html .board-popup-editor *, html html input, html html textarea { caret-color: #ff00ff !important; }';
     document.head.appendChild(st); return true;
   };
   const decode = async (b64) => {
