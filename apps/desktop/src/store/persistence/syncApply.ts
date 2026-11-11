@@ -1,7 +1,9 @@
 import type { Project, StoryPlan, SessionLog, Draft, JournalEntry, Drawer } from '../../types';
 import { clearProofingLocal } from '../proofing';
 import { mergeBoxLists } from '../boxTombstones';
-import { type CollectionName, COLLECTIONS, DIRTY_KEY, KEYS, cache, clone, dirty, flushTimers, isUnflushed, notify, onDisk, persistDirty, scheduleFlush } from './core';
+import { type CollectionName, COLLECTIONS, DIRTY_KEY, KEYS, cache, clone, dirty, flushTimers, isUnflushed, lastRaw, notify, onDisk, onDiskText, persistDirty, scheduleFlush, setPreFlush } from './core';
+import { mergeText } from '../textMerge';
+import { announceKeptBoth } from '../mergeNotice';
 import { isSignedOutHere } from '../signedOutHere';
 import { adoptLegacyScratch } from './drafts';
 import { announcePurged, purgedToAnnounce } from './purge';
@@ -103,19 +105,54 @@ export function applyOtherWindowWrite(name: CollectionName, raw: string | null):
   if (!Array.isArray(rows)) return;
   const collection = cache[name] as unknown as { id: string; updatedAt: string }[];
   const mineById = new Map(collection.map((r) => [r.id, r]));
+  const mergedHere = name === 'journalEntries' ? mergeUnflushedPages(rows as JournalEntry[], mineById as unknown as Map<string, JournalEntry>) : false;
   // a record with a change of this window's own that is not yet written is a conflict (part 3 keeps both); every other record takes the newer copy, whether or not it has been pushed to the account
   const safe = (rows as { id: string; updatedAt: string }[]).filter((r) => { if (!r || !r.id) return false; const mine = mineById.get(r.id); return !mine || !isUnflushed(name, mine); });
   const changed = applyCollection(name, collection, safe, false, true);
-  if (changed) { for (const r of safe) { const mine = collection.find((x) => x.id === r.id); if (mine && mine.updatedAt === r.updatedAt) onDisk[name].set(r.id, r.updatedAt); } notify(); }
+  if (mergedHere) scheduleFlush(name);   // the merged page is this window's change now: it is written, and the other window takes it from the store
+  if (changed || mergedHere) { for (const r of safe) { const mine = collection.find((x) => x.id === r.id); if (mine && mine.updatedAt === r.updatedAt) onDisk[name].set(r.id, r.updatedAt); } notify(); }
   announcePurged();
 }
 
+// #76 PART 3 - KEEP BOTH, in the store. A PAGE this window has changed and not yet written, which another window has written differently since the two last agreed, is merged: the text from a three-way merge (store/textMerge.ts) of what
+// the store held when this window last agreed with it (the base), this window's text and the other window's text. The record is this window's, newer than both, still to be written (and pushed); a board's cards merge by their own times.
+function mergeUnflushedPages(rows: JournalEntry[], mineById: Map<string, JournalEntry>): boolean {
+  let any = false;
+  for (const theirs of rows) {
+    if (!theirs || !theirs.id) continue;
+    const mine = mineById.get(theirs.id);
+    if (!mine || !isUnflushed('journalEntries', mine)) continue;                 // nothing of this window's own to protect
+    if (theirs.updatedAt === onDisk.journalEntries.get(theirs.id)) continue;      // the store still holds what this window last agreed with: nobody else has written it
+    if (theirs.purgedAt || mine.purgedAt) continue;                              // a page deleted for good elsewhere is applyCollection's rule
+    const t = theirs.text ?? '', m = mine.text ?? '';
+    const base = onDiskText.get(theirs.id) ?? '';
+    const r = mergeText(base, m, t);
+    const stamp = [theirs.updatedAt ?? '', mine.updatedAt ?? '', new Date().toISOString()].sort().pop() as string;
+    const winner = (theirs.updatedAt ?? '') > (mine.updatedAt ?? '') ? theirs : mine;
+    const out = clone(winner) as JournalEntry;
+    out.text = r.text;
+    out.updatedAt = stamp;
+    if (out.pageType === 'board' && (mine.boxes || theirs.boxes)) out.boxes = mergeBoxLists(mine.boxes, theirs.boxes);
+    const i = cache.journalEntries.findIndex((x) => x.id === theirs.id);
+    if (i < 0) continue;
+    cache.journalEntries[i] = out;
+    dirty.journalEntries.add(theirs.id);
+    persistDirty();
+    onDiskText.set(theirs.id, t);                        // the store holds the other window's text: that is the starting point of the next merge
+    onDisk.journalEntries.set(theirs.id, theirs.updatedAt);
+    if (r.merged) announceKeptBoth(theirs.id);
+    any = true;
+  }
+  return any;
+}
+
 if (typeof window !== 'undefined') {
+  setPreFlush(applyOtherWindowWrite);
   window.addEventListener('storage', (e: StorageEvent) => {
     try {
       if (e.storageArea !== window.localStorage) return;
       const name = COLLECTIONS.find((n) => KEYS[n] === e.key);
-      if (name) applyOtherWindowWrite(name, e.newValue);
+      if (name) { lastRaw[KEYS[name]] = e.newValue; applyOtherWindowWrite(name, e.newValue); }
     } catch { /* a listener never breaks a write path */ }
   });
 }
