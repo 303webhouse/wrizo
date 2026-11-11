@@ -6,6 +6,7 @@ glitch-meter.mjs
 rhizome-latency.mjs
 rhizome-latency-mutant.mjs
 typing-latency-scroll.mjs
+l-method.mjs
 # Windows-bound: these test the box's own tooling (PowerShell/WMI process table, taskkill, C:\ and USERPROFILE paths). They have no Linux meaning.
 box-holder.mjs
 box-token-hash.mjs
@@ -21,3 +22,9 @@ splash.mjs
 typewriter-fade.mjs
 # Text-wrap parity not yet shown: the item-12 wrap cards sit ON a wrap threshold on purpose; on the runner Titillium Web needs 279.8px for card g4 body line vs 265px of room, so Flux and Machina wrap it (4 of 21 checks). Green on the box, cause on the box side not yet measured.
 polish10-12-part2.mjs
+# ARBOR (Nov 10): the Arbor ship's timing and room-pinned files. arbor2-caret-latency is a millisecond timing check (T vs its control); keycost, roompin, sleep and swap run only under the box's launcher room pin (WS_URL_SEARCH=?arbor2=1&arbor2room=day), which a pair does not set, so each fails its own "the run is pinned" check by design; keycost and swap also hold millisecond budgets.
+arbor2-caret-latency.mjs
+arbor2-keycost.mjs
+arbor2-roompin.mjs
+arbor2-sleep.mjs
+arbor2-swap.mjs
