@@ -44,6 +44,8 @@ const stood = (app) => app.evalJs(`(() => { const r = document.documentElement; 
   const g = document.querySelector('.flux3-cor-glow'); const ex = document.querySelector('.flux3-exit-line'); const nx = document.querySelector('.flux3-nudge'); const lx = document.querySelector('.flux3-leave-x');
   return { flag: r.hasAttribute('data-flux3'), theme: r.getAttribute('data-theme'), page: r.getAttribute('data-page'), jacked: r.hasAttribute('data-flux3-jacked'), corridor: q('[data-flux3-corridor]'), pageRect: q('.mode-page'),
     glow: g ? +getComputedStyle(g).opacity : null, exitLine: ex ? ex.textContent : null, nudge: nx ? nx.textContent : null, leaveX: lx ? { on: lx.hasAttribute('data-on'), rect: q('.flux3-leave-x') } : null, dot: document.elementsFromPoint(14, 15).slice(0, 4).map((e) => (e.tagName + '.' + String(e.className).slice(0, 40) + ' ' + getComputedStyle(e).backgroundColor)), fast: !!document.querySelector('[data-flux3-corridor][data-fast]'), pop: !!document.querySelector('[data-flux3-corridor][data-pop]') }; })()`);
+// wait until the writing line has LANDED (the Typewriter's own glide, which the column mask reads: a line short of its anchor is dimmed by main's band mask, so a shot taken mid-glide shows both lines dim - r3-b at 1920): its top unchanged for 1.2 s, 8 s at most
+const landed = async (app) => { const top = () => app.evalJs("(() => { const ed = document.querySelector('.forward-only-editor'); if (!ed) return -1; const r = document.createRange(); r.selectNodeContents(ed); const q = [...r.getClientRects()].filter((x) => x.height > 4); return q.length ? Math.round(q[q.length - 1].top) : -1; })()"); let last = await top(), same = 0; for (let i = 0; i < 40 && same < 6; i += 1) { await sleep(200); const t = await top(); same = t === last ? same + 1 : 0; last = t; } return last; };
 // hold a page's own state for a still (the page's animations and timers are its own; only the clock or the removal is held)
 const holdAttr = (app, attr) => app.evalJs(`(() => { const c = document.querySelector('[data-flux3-corridor]'); if (!c) return false; c.setAttribute('${attr}', ''); window.__hold = window.setInterval(() => c.setAttribute('${attr}', ''), 30); return true; })()`);
 
@@ -99,6 +101,7 @@ export default {
   'corridor-glow-100': async (app) => {
     await seed(app, words(249));
     await type(app, ' one two three', 30);   // the goal: the lap's celebration holds the glow full for ~1.1 s
+    console.log('FLUX3-S4C-FRAME corridor-glow-100 writing line landed at top ' + await landed(app));
     await app.evalJs("(() => { const g = document.querySelector('.flux3-cor-glow'); g.style.transition = 'none'; window.__hold = window.setInterval(() => { g.style.opacity = '1'; }, 30); return true; })()");   // transition off: the glow now eases (3 s), so a forced opacity would be caught mid-rise (r2-g read #091C23 at 1366, ~75%); this frames-only hold is the full glow
     await sleep(900);
     console.log(`FLUX3-S4C-FRAME corridor-glow-100 ${JSON.stringify(await stood(app))}`);
