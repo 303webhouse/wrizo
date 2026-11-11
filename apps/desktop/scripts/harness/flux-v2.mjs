@@ -95,9 +95,13 @@ async function refIcons() {
 
 // ---- the words: the brief's table, id -> Flux word -----------------------------------------------------------------------------------------------------------------------------
 const WORDS = {
-  stripPlan: 'Circuits', drawerPage: 'Docs', drawerPlaceDrawers: 'Racks', drawerPlaceJournal: 'Log', stripSettings: 'Config', stripChangeTheme: 'Skin', cascadeSettingsTitle: 'Config', cascadeThemeTitle: 'Skin',
+  // ---- PARKED - SUPERSEDED by the Rack to Drive word (Nick, Nov 11; the Wrizors' strings, Fable): the original, verbatim, no longer runs; its successor follows.
+  // stripPlan: 'Circuits', drawerPage: 'Docs', drawerPlaceDrawers: 'Racks', drawerPlaceJournal: 'Log', stripSettings: 'Config', stripChangeTheme: 'Skin', cascadeSettingsTitle: 'Config', cascadeThemeTitle: 'Skin',
+  stripPlan: 'Circuits', drawerPage: 'Docs', drawerPlaceDrawers: 'Drives', drawerPlaceJournal: 'Log', stripSettings: 'Config', stripChangeTheme: 'Skin', cascadeSettingsTitle: 'Config', cascadeThemeTitle: 'Skin',
   pagePlanDoor: 'Circuits', boardPageDoor: 'Docs', tutorTabTutor: 'Operator', drawerLinks: 'Inputs',
-  sectionsHeading: 'Tracks', sectionsNewSet: '＋ New cartridge', sectionsNewBoard: 'New Circuit', sectionsMoved: 'Moved to the Log.', switcherDrawers: 'Racks', switcherJournals: 'Logs', switcherNewDrawer: '＋ New Rack',
+  // ---- PARKED - SUPERSEDED by the Rack to Drive word (Nick, Nov 11; the Wrizors' strings, Fable): the original, verbatim, no longer runs; its successor follows.
+  // sectionsHeading: 'Tracks', sectionsNewSet: '＋ New cartridge', sectionsNewBoard: 'New Circuit', sectionsMoved: 'Moved to the Log.', switcherDrawers: 'Racks', switcherJournals: 'Logs', switcherNewDrawer: '＋ New Rack',
+  sectionsHeading: 'Tracks', sectionsNewSet: '＋ New cartridge', sectionsNewBoard: 'New Circuit', sectionsMoved: 'Moved to the Log.', switcherDrawers: 'Drives', switcherJournals: 'Logs', switcherNewDrawer: '＋ New Drive',
   boardThreadGrab: 'Drag to connect', linksRemoveTitle: 'Remove input?', pageFacePinnedTo: 'Also connected to', beginConnectPage: 'Connect Docs', cascadePlanBoardsConnected: 'Circuits connected',
   helpGrafts: 'Inputs join docs, nodes and circuits.', beginNewPageCard: 'New Doc', cascadePageNewPage: 'New Doc', cascadeJournalNewPage: 'New Doc', ctxDeleteBoard: 'Delete circuit',
   drawerPlaceTrash: 'Trash', cascadeJournalOpen: 'Open the Log',
@@ -153,7 +157,9 @@ async function suite(M, mk = () => load()) {
   keep('LX2b', census2.length === 0 && LX2_ALLOW.every((id) => census.includes(id)),
     `${census2.length} still name an Arbor noun: ${census2.slice(0, 8).join(', ')}; allowed and still Arbor: ${LX2_ALLOW.filter((id) => census.includes(id)).join(', ') || 'none (stale allowance)'}`);
   keep('LX3', M.formsFor('flux', 'plan').one === 'Circuit' && M.formsFor('flux', 'plan').many === 'Circuits' && M.formsFor('flux', 'freewrite').one === 'Wire In' && M.formsFor('flux', 'publish').one === 'Uplink', JSON.stringify(M.formsFor('flux', 'plan')));
-  keep('LX4', M.deskTerm('placeRootName', 'flux') === 'Root' && M.deskTerm('placeRootName', 'plateau') === 'Top Drawer', `${M.deskTerm('placeRootName', 'flux')} / ${M.deskTerm('placeRootName', 'plateau')}`);
+  // ---- PARKED - SUPERSEDED by the Rack to Drive word (Nick, Nov 11; the Wrizors' strings, Fable): the original, verbatim, no longer runs; its successor follows.
+  // keep('LX4', M.deskTerm('placeRootName', 'flux') === 'Root' && M.deskTerm('placeRootName', 'plateau') === 'Top Drawer', `${M.deskTerm('placeRootName', 'flux')} / ${M.deskTerm('placeRootName', 'plateau')}`);
+  keep('LX4b', M.deskTerm('placeRootName', 'flux') === 'New Drive' && M.deskTerm('placeRootName', 'plateau') === 'Top Drawer', `${M.deskTerm('placeRootName', 'flux')} / ${M.deskTerm('placeRootName', 'plateau')}`);
   // ---- PARKED - SUPERSEDED by #13 step 11 (Fable, Nov 5): fadeDepthLabel (the Recede-depth row, removed in polish #10 item 23) is deleted
   // from the lexicon. Kept VERBATIM and no longer run:
   // keep('LX5', M.deskTerm('tutorTabTutor', 'plateau') === 'Tutor' && M.deskTerm('drawerLinks', 'plateau') === 'Grafts' && M.deskTerm('stripPlan', 'plateau') === 'Boards' && M.deskTerm('modeRevise', 'plateau') === 'Revise' && M.deskTerm('fadeDepthLabel', 'plateau') === 'Recede depth' && M.deskTerm('timerLabel', 'plateau') === 'Timer' && M.deskTerm('railTypeface', 'plateau') === 'Font', 'Arbor is untouched');
@@ -179,7 +185,9 @@ async function suite(M, mk = () => load()) {
   keep('RO1', M.docReadout && M.docReadout(3, 'Ch 3') === 'DOC 03 // Ch 3' && M.docReadout(12, 'Notes') === 'DOC 12 // Notes' && M.docReadout(120, 'x') === 'DOC 120 // x', M.docReadout && M.docReadout(3, 'Ch 3'));
   keep('RO2', M.trackReadout && M.trackReadout(3, 14) === 'TRK 3/14' && M.trackReadout(1, 1) === 'TRK 1/1', M.trackReadout && M.trackReadout(3, 14));
   keep('RO3', M.coordReadout && M.coordReadout(0.056, 0.07) === 'X 056 · Y 070' && M.coordReadout(0.0004, 0) === 'X 000 · Y 000' && M.coordReadout(1.3, 0.9996) === 'X 999 · Y 999' && M.coordReadout(-0.2, 0.5) === 'X 000 · Y 500', M.coordReadout && M.coordReadout(0.056, 0.07));
-  keep('RO4', M.rackReadout && M.rackReadout('The Late Ferry') === 'RACK ▸ The Late Ferry', M.rackReadout && M.rackReadout('The Late Ferry'));
+  // ---- PARKED - SUPERSEDED by the Rack to Drive word (Nick, Nov 11; the Wrizors' strings, Fable): the original, verbatim, no longer runs; its successor follows.
+  // keep('RO4', M.rackReadout && M.rackReadout('The Late Ferry') === 'RACK ▸ The Late Ferry', M.rackReadout && M.rackReadout('The Late Ferry'));
+  keep('RO4b', M.rackReadout && M.rackReadout('The Late Ferry', 'Drives') === 'DRIVE ▸ The Late Ferry', M.rackReadout && M.rackReadout('The Late Ferry', 'Drives'));   // the word is the lexicon's now, passed in (Drives -> DRIVE)
   const H = M.HINTS || {};
   keep('RO5', H.prose === 'TYPE — THE CHROME RECEDES ▪ PASTE MEETS THE FIREWALL' && H.wireIn === 'FORWARD ONLY — NO WAY BACK ▪ PASTE MEETS THE FIREWALL' && M.hintFor && M.hintFor('prose') === H.prose && M.hintFor('wireIn') === H.wireIn, JSON.stringify(H));
   // ---- PARKED - SUPERSEDED by the Inputs work (the board hint landed after step 3, Fable Oct 21 ruling 2): the board now has its one true hint, "DRAG A NODE ▪ DRAG ITS INPUT TO CONNECT"; nothing else can be shown.

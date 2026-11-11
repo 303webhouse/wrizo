@@ -124,8 +124,12 @@ await withHarness(async (app) => {
   // ok('check 2: DeskRail renders Flux terms (Journal->Log, Shelf->Cache, Drawers->Racks)',
   //   railLabels.includes('Log') && railLabels.includes('Cache') && railLabels.includes('Racks'),
   //   JSON.stringify(railLabels));
-  ok('check 2 [big-projects-1a successor]: DeskRail renders Flux terms (Journal->Log, Drawers->Racks) and carries no Shelf/Cache item',
-    railLabels.includes('Log') && !railLabels.includes('Cache') && railLabels.includes('Racks'),
+  // ---- PARKED - SUPERSEDED by the Rack to Drive word (Nick, Nov 11; the Wrizors' strings, Fable): the original, verbatim, no longer runs; its successor follows.
+  // ok('check 2 [big-projects-1a successor]: DeskRail renders Flux terms (Journal->Log, Drawers->Racks) and carries no Shelf/Cache item',
+  //   railLabels.includes('Log') && !railLabels.includes('Cache') && railLabels.includes('Racks'),
+  //   JSON.stringify(railLabels));
+  ok('check 2 [drive successor]: DeskRail renders Flux terms (Journal->Log, Drawers->Drives) and carries no Shelf/Cache item',
+    railLabels.includes('Log') && !railLabels.includes('Cache') && railLabels.includes('Drives'),
     JSON.stringify(railLabels));
   // B1 park sweep — "canonical route /journal still resolves ... (URL stays
   // canonical)" is PARKED below (A4, quoted verbatim): retirement-by-
@@ -136,7 +140,9 @@ await withHarness(async (app) => {
   await app.goto('/drawers');
   await app.waitFor("!!document.querySelector('.dz-pagetitle')", { label: 'Drawers route under Flux' });
   const drawersHeading = await app.evalJs("document.querySelector('.dz-pagetitle')?.textContent");
-  ok('check 2: the Drawers page heading also renders Flux\'s "Racks" (TH2 lexicon sweep)', drawersHeading === 'Racks', String(drawersHeading));
+  // ---- PARKED - SUPERSEDED by the Rack to Drive word (Nick, Nov 11; the Wrizors' strings, Fable): the original, verbatim, no longer runs; its successor follows.
+  // ok('check 2: the Drawers page heading also renders Flux\'s "Racks" (TH2 lexicon sweep)', drawersHeading === 'Racks', String(drawersHeading));
+  ok('check 2 [drive successor]: the Drawers page heading also renders Flux\'s "Drives" (TH2 lexicon sweep)', drawersHeading === 'Drives', String(drawersHeading));
   ok('check 2: canonical route /drawers still resolves under Flux', (await app.evalJs('location.hash')).includes('/drawers'), await app.evalJs('location.hash'));
 
   // Tabs (ModeSwitcher) + Connect (Publish) + Board — via a real project's PageEditor.

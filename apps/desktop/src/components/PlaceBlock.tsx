@@ -20,8 +20,8 @@ export function PlaceBlock({ active, onToggle, drawerIcon, journalIcon, reading 
   // FLUX V2: the top drawer, while it still carries its born-with name, is shown by the theme's word for it (Flux: Root; Arbor: the same name). Render-time only - the stored name is never touched.
   const drawer = isJournal || place.id === UNSORTED ? null : getDrawer(place.id);
   const name = isJournal ? t('drawerPlaceJournal') : place.id === UNSORTED ? t('switcherUnsorted') : drawer ? (isDefaultRoot(drawer) ? t('placeRootName') : drawer.name) || t('drawerPlaceDrawers') : t('drawerPlaceDrawers');
-  // a real rack's full path reads "RACK ▸ <name>"; the narrow rail shows only the place name on one line (ellipsis), the full path in the title and the breadcrumb [PlaceBlock §1]
-  const fullPath = theme === 'flux' && drawer ? rackReadout(name) : name;
+  // a real drive's full path reads "DRIVE ▸ <name>" (the word is the lexicon's); the narrow rail shows only the place name on one line (ellipsis), the full path in the title and the breadcrumb [PlaceBlock §1]
+  const fullPath = theme === 'flux' && drawer ? rackReadout(name, t('drawerPlaceDrawers')) : name;
   return (
     <div className="wz-strip-section wz-place-section">
       <button type="button" data-category="drawers" data-place-kind={place.kind}

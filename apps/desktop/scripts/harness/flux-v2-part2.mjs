@@ -142,7 +142,9 @@ export async function part2({ ok, sleepMs }) {
       const labels = await q("[...document.querySelectorAll('.wz-strip [data-category] .wz-strip-label')].map((e) => e.textContent.trim())");
       ok('F8 the rail reads the Flux words: Docs, Circuits, Log, Config, Skin, Trash', ['Docs', 'Circuits', 'Log', 'Config', 'Skin', 'Trash'].every((w) => (labels || []).includes(w)), JSON.stringify(labels));
       const head = await txt('.wz-sections-place-name');
-      ok('F8 the Docs pop-out header reads RACK ▸ <the rack\'s name>', head === 'RACK ▸ The Late Ferry', String(head));
+      // ---- PARKED - SUPERSEDED by the Rack to Drive word (Nick, Nov 11; the Wrizors' strings, Fable): the original, verbatim, no longer runs; its successor follows.
+      // ok('F8 the Docs pop-out header reads RACK ▸ <the rack\'s name>', head === 'RACK ▸ The Late Ferry', String(head));
+      ok('F8 [drive successor] the Docs pop-out header reads DRIVE ▸ <the drive\'s name>', head === 'DRIVE ▸ The Late Ferry', String(head));
       const trackHd = await txt('.wz-sections-heading');
       ok('F8 the list heading reads Tracks', trackHd === 'Tracks', String(trackHd));
       // The default drawer is flagged by its born-with id (top-drawer-<uid>, deterministic); it reads Root until the writer renames it. The rail only shows a place on a page, so a page is filed in the top drawer's own set first.
@@ -158,13 +160,17 @@ export async function part2({ ok, sleepMs }) {
         const placeTitle = () => q("document.querySelector('.wz-place-block')?.getAttribute('title') ?? null");
         // ---- PARKED - SUPERSEDED by POLISH #10 item 14 (Nick, Oct 28: the narrow rail shows ONLY the place name; "RACK ▸ <name>" is the button's title). Kept VERBATIM and no longer run; its successor follows.
         // ok('F8 the default (flagged) top drawer is shown as Root, render-time only: its stored name is untouched', rootName === 'RACK ▸ Root' && (await storedName()) === 'Top Drawer', `${rootName} / stored ${await storedName()}`);
-        ok('F8 [polish-10 item 14 successor]: the default (flagged) top drawer is shown as Root on the rail (the name alone; "RACK ▸ Root" is its title), render-time only: its stored name is untouched', rootName === 'Root' && (await placeTitle()) === 'RACK ▸ Root' && (await storedName()) === 'Top Drawer', `${rootName} / title ${await placeTitle()} / stored ${await storedName()}`);
+        // ---- PARKED - SUPERSEDED by the Rack to Drive word (Nick, Nov 11; the Wrizors' strings, Fable): the original, verbatim, no longer runs; its successor follows.
+        // ok('F8 [polish-10 item 14 successor]: the default (flagged) top drawer is shown as Root on the rail (the name alone; "RACK ▸ Root" is its title), render-time only: its stored name is untouched', rootName === 'Root' && (await placeTitle()) === 'RACK ▸ Root' && (await storedName()) === 'Top Drawer', `${rootName} / title ${await placeTitle()} / stored ${await storedName()}`);
+        ok('F8 [drive successor of polish-10 item 14]: the default (flagged) top drawer is shown as New Drive on the rail (the name alone; "DRIVE ▸ New Drive" is its title), render-time only: its stored name is untouched', rootName === 'New Drive' && (await placeTitle()) === 'DRIVE ▸ New Drive' && (await storedName()) === 'Top Drawer', `${rootName} / title ${await placeTitle()} / stored ${await storedName()}`);
         await q(`window.wrizoRenameDrawer(${JSON.stringify(topIds.drawer)}, 'My Novel'); window.wrizoFlushNow()`);
         await sleep(700);
         const renamed = await placeName();
         // ---- PARKED - SUPERSEDED by POLISH #10 item 14 (same ruling). Kept VERBATIM and no longer run; its successor follows.
         // ok('F8 a top drawer the writer RENAMED keeps its own name (not Root)', renamed === 'RACK ▸ My Novel' && (await storedName()) === 'My Novel', `${renamed} / stored ${await storedName()}`);
-        ok('F8 [polish-10 item 14 successor]: a top drawer the writer RENAMED keeps its own name (not Root) - the name alone on the rail, "RACK ▸ My Novel" as its title', renamed === 'My Novel' && (await placeTitle()) === 'RACK ▸ My Novel' && (await storedName()) === 'My Novel', `${renamed} / title ${await placeTitle()} / stored ${await storedName()}`);
+        // ---- PARKED - SUPERSEDED by the Rack to Drive word (Nick, Nov 11; the Wrizors' strings, Fable): the original, verbatim, no longer runs; its successor follows.
+        // ok('F8 [polish-10 item 14 successor]: a top drawer the writer RENAMED keeps its own name (not Root) - the name alone on the rail, "RACK ▸ My Novel" as its title', renamed === 'My Novel' && (await placeTitle()) === 'RACK ▸ My Novel' && (await storedName()) === 'My Novel', `${renamed} / title ${await placeTitle()} / stored ${await storedName()}`);
+        ok('F8 [drive successor of polish-10 item 14]: a top drawer the writer RENAMED keeps its own name (not New Drive) - the name alone on the rail, "DRIVE ▸ My Novel" as its title', renamed === 'My Novel' && (await placeTitle()) === 'DRIVE ▸ My Novel' && (await storedName()) === 'My Novel', `${renamed} / title ${await placeTitle()} / stored ${await storedName()}`);
         await q(`window.wrizoRenameDrawer(${JSON.stringify(topIds.drawer)}, 'Top Drawer'); window.wrizoFlushNow()`);
       }
 
@@ -227,7 +233,9 @@ export async function part2({ ok, sleepMs }) {
       const pbTitle = await q("document.querySelector('.wz-place-block')?.getAttribute('title')");
       // ---- PARKED - SUPERSEDED by POLISH #10 item 14 (Nick, Oct 28: the rail shows ONLY the place name; the full path is the title). Kept VERBATIM and no longer run; its successor follows.
       // ok('F14 [polish-10 item 14 successor]: the place block still reads "RACK ▸ The Late Ferry" in full in the DOM, on ONE line (white-space nowrap, text-overflow ellipsis, one line tall), and the button carries the full text as its title', !!pbk && pbk.text === 'RACK ▸ The Late Ferry' && pbk.ws === 'nowrap' && pbk.overflow === 'ellipsis' && pbk.h <= 20 && pbTitle === 'RACK ▸ The Late Ferry', JSON.stringify({ pbk, pbTitle }));
-      ok('F14 [polish-10 item 14 successor 2]: the rail\'s place block reads "The Late Ferry" alone, on ONE line (white-space nowrap, text-overflow ellipsis, one line tall), and the button carries "RACK ▸ The Late Ferry" as its title', !!pbk && pbk.text === 'The Late Ferry' && pbk.ws === 'nowrap' && pbk.overflow === 'ellipsis' && pbk.h <= 20 && pbTitle === 'RACK ▸ The Late Ferry', JSON.stringify({ pbk, pbTitle }));
+      // ---- PARKED - SUPERSEDED by the Rack to Drive word (Nick, Nov 11; the Wrizors' strings, Fable): the original, verbatim, no longer runs; its successor follows.
+      // ok('F14 [polish-10 item 14 successor 2]: the rail\'s place block reads "The Late Ferry" alone, on ONE line (white-space nowrap, text-overflow ellipsis, one line tall), and the button carries "RACK ▸ The Late Ferry" as its title', !!pbk && pbk.text === 'The Late Ferry' && pbk.ws === 'nowrap' && pbk.overflow === 'ellipsis' && pbk.h <= 20 && pbTitle === 'RACK ▸ The Late Ferry', JSON.stringify({ pbk, pbTitle }));
+      ok('F14 [drive successor of polish-10 item 14 successor 2]: the rail\'s place block reads "The Late Ferry" alone, on ONE line (white-space nowrap, text-overflow ellipsis, one line tall), and the button carries "DRIVE ▸ The Late Ferry" as its title', !!pbk && pbk.text === 'The Late Ferry' && pbk.ws === 'nowrap' && pbk.overflow === 'ellipsis' && pbk.h <= 20 && pbTitle === 'DRIVE ▸ The Late Ferry', JSON.stringify({ pbk, pbTitle }));
 
 
       // ---- F15: the block caret is slim (about a third of its old width) ----------------------------------------------------------------------------------------------------------------------

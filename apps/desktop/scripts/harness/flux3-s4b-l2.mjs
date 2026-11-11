@@ -87,13 +87,17 @@ try { await withHarness(async (app) => {
   ok('DUP the Journal rail draws the Log icon once and the word "Log" once (the door wears the switcher\'s rack glyph; the Journal pin is the Log)', dupOk(j) && logWords === 1, JSON.stringify({ door, pin, logIcons: j && j.logIcons, logWords }));
   await snap('l2-journal-dark');
   // PLACE (Journal): the door is never blank - UNFILED and one true count (the Journal's docs and circuits not filed in a drawer: 3 + 2)
-  ok('PLACE in the Journal the door reads UNFILED with its count 05 (3 docs + 2 circuits not filed in a drawer), never blank, and says so on hover', !!door && /^unfiled$/i.test(door.label || '') && door.read === '05' && /not filed in a rack/.test(door.title || ''), JSON.stringify({ door }));
+  // ---- PARKED - SUPERSEDED by the Rack to Drive word (Nick, Nov 11; the Wrizors' strings, Fable): the original, verbatim, no longer runs; its successor follows.
+  // ok('PLACE in the Journal the door reads UNFILED with its count 05 (3 docs + 2 circuits not filed in a drawer), never blank, and says so on hover', !!door && /^unfiled$/i.test(door.label || '') && door.read === '05' && /not filed in a rack/.test(door.title || ''), JSON.stringify({ door }));
+  ok('PLACE [drive successor] in the Journal the door reads ORPHANS with its count 05 (3 docs + 2 circuits not filed in a drive), never blank, and says so on hover', !!door && /^orphans$/i.test(door.label || '') && door.read === '05' && /not filed in a drive/.test(door.title || ''), JSON.stringify({ door }));
   // FOOT: Config, Skin and Trash are command boxes in caps; Config reads the Voice, Skin the page tone; the Trash has no count (a place, not a nag)
   const cfg = by(j, 'settings'), skin = by(j, 'theme'), trash = by(j, 'trash');
   ok('FOOT Config reads the Voice (SERIF), Skin the page tone (DARK), the Trash no count; all three are boxes with caps names', !!cfg && !!skin && !!trash && cfg.read === 'SERIF' && skin.read === 'DARK' && trash.read === null && [cfg, skin, trash].every((i) => i.tt === 'uppercase' && i.bw === '1px'), JSON.stringify({ cfg, skin, trash }));
   ok('CAPS every box on the rail wears its name in caps: the door, Docs, Circuits, Log, Config, Skin, Trash', !!j && j.items.every((i) => i.label === null || i.tt === 'uppercase'), JSON.stringify(j && j.items.map((i) => [i.cat, i.tt])));
   // HINTS (law 5): every noun comes from the lexicon entry the box's own label uses; the Wrizors' six strings, exact, in the Journal (unfiled) and in a rack (below)
-  const JOURNAL_SIX = { place: '5 docs and circuits not filed in a rack', page: '3 docs not filed in a rack', plan: '2 circuits not filed in a rack', journal: '3 docs in the Log', settings: 'The Voice of your docs: Serif', theme: 'Page: Dark' };
+  // ---- PARKED - SUPERSEDED by the Rack to Drive word (Nick, Nov 11; the Wrizors' strings, Fable): the original, verbatim, no longer runs; its successor follows.
+  // const JOURNAL_SIX = { place: '5 docs and circuits not filed in a rack', page: '3 docs not filed in a rack', plan: '2 circuits not filed in a rack', journal: '3 docs in the Log', settings: 'The Voice of your docs: Serif', theme: 'Page: Dark' };
+  const JOURNAL_SIX = { place: '5 docs and circuits not filed in a drive', page: '3 docs not filed in a drive', plan: '2 circuits not filed in a drive', journal: '3 docs in the Log', settings: 'The Voice of your docs: Serif', theme: 'Page: Dark' };
   const sixOf = (r) => r ? { place: (r.items.find((i) => i.cat === 'drawers') || {}).title, page: by(r, 'page').title, plan: by(r, 'plan').title, journal: by(r, 'journal').title, settings: by(r, 'settings').title, theme: by(r, 'theme').title } : null;
   // a hint may not speak Arbor words (drawer, Journal, page, board); the tone box's own label "Page: " is its setting's name and is the one place the word stands
   const FORBIDDEN = /(^|[^a-z])(drawers?|journal|pages?|boards?)([^a-z]|$)/i;
@@ -107,7 +111,9 @@ try { await withHarness(async (app) => {
   // the nouns are read from the lexicon entries the boxes' own labels use (source-read): the hint builder holds no noun of its own, Cascade passes the four labels
   const hintSrc = fs.readFileSync(new URL('../../src/store/fluxReadouts.ts', import.meta.url), 'utf8');
   const casSrc = fs.readFileSync(new URL('../../src/components/Cascade.tsx', import.meta.url), 'utf8');
-  const body = hintSrc.slice(hintSrc.indexOf('export function railHint'), hintSrc.indexOf('/** RACK'));
+  // ---- PARKED - SUPERSEDED by the Rack to Drive word (Nick, Nov 11; the Wrizors' strings, Fable): the original, verbatim, no longer runs; its successor follows.
+  // const body = hintSrc.slice(hintSrc.indexOf('export function railHint'), hintSrc.indexOf('/** RACK'));
+  const body = hintSrc.slice(hintSrc.indexOf('export function railHint'), hintSrc.indexOf('/** DRIVE'));
   const literals = (src) => [...src.matchAll(/`([^`]*)`/g)].map((m) => m[1].replace(/\$\{[^}]*\}/g, ' ')).join(' | ');
   const nounLit = (src) => /(doc|circuit|rack|drawer|journal|board|log|schema)/i.test(literals(src).replace(/Page: /g, ''));
   ok('HINTS-LEX the hint builder holds no noun of its own (its sentence frames only) and Cascade reads all four from the box-label lexicon entries (drawerPage, stripPlan, drawerPlaceDrawers, drawerPlaceJournal) - the day circuits become schemas the hints follow', body.length > 200 && !nounLit(body) && casSrc.includes("doc: t('drawerPage'), circuit: t('stripPlan'), rack: t('drawerPlaceDrawers'), log: t('drawerPlaceJournal')") && nounLit(body.replace('not filed in a ${rack}', 'not filed in a drawer')) , JSON.stringify({ frames: literals(body) }));
@@ -150,11 +156,17 @@ try { await withHarness(async (app) => {
   ok('DUP-DRAWER in a Drawer the rail still draws the Log icon once (the Journal pin) and the door is the rack', !!dupDrawer && !!dDoor && dDoor.icon === 'rack', JSON.stringify({ logIcons: dr && dr.logIcons, door: dDoor && dDoor.icon }));
 
   // PLACE (Drawer): the Drawer's own name in caps and one true count (2 docs + 1 circuit = 03); its hover says so
-  ok('PLACE in a Drawer the door reads the Drawer own name (THE LATE FERRY) with its count 03 and says what it counts on hover', !!dDoor && dDoor.label === 'The Late Ferry' && dDoor.tt === 'uppercase' && dDoor.read === '03' && /docs and circuits in this rack/.test(dDoor.title || ''), JSON.stringify({ dDoor }));
-  const DRAWER_SIX = { place: '3 docs and circuits in this rack', page: '2 docs in this rack', plan: '1 circuit in this rack', journal: '3 docs in the Log', settings: 'The Voice of your docs: Serif', theme: 'Page: Dark' };
+  // ---- PARKED - SUPERSEDED by the Rack to Drive word (Nick, Nov 11; the Wrizors' strings, Fable): the original, verbatim, no longer runs; its successor follows.
+  // ok('PLACE in a Drawer the door reads the Drawer own name (THE LATE FERRY) with its count 03 and says what it counts on hover', !!dDoor && dDoor.label === 'The Late Ferry' && dDoor.tt === 'uppercase' && dDoor.read === '03' && /docs and circuits in this rack/.test(dDoor.title || ''), JSON.stringify({ dDoor }));
+  ok('PLACE [drive successor] in a Drawer the door reads the Drawer own name (THE LATE FERRY) with its count 03 and says what it counts on hover', !!dDoor && dDoor.label === 'The Late Ferry' && dDoor.tt === 'uppercase' && dDoor.read === '03' && /docs and circuits in this drive/.test(dDoor.title || ''), JSON.stringify({ dDoor }));
+  // ---- PARKED - SUPERSEDED by the Rack to Drive word (Nick, Nov 11; the Wrizors' strings, Fable): the original, verbatim, no longer runs; its successor follows.
+  // const DRAWER_SIX = { place: '3 docs and circuits in this rack', page: '2 docs in this rack', plan: '1 circuit in this rack', journal: '3 docs in the Log', settings: 'The Voice of your docs: Serif', theme: 'Page: Dark' };
+  const DRAWER_SIX = { place: '3 docs and circuits in this drive', page: '2 docs in this drive', plan: '1 circuit in this drive', journal: '3 docs in the Log', settings: 'The Voice of your docs: Serif', theme: 'Page: Dark' };
   const sixD = sixOf(dr);
   console.log('L2 HINTS (in a rack): ' + JSON.stringify(sixD));
-  ok('HINTS-RACK the six hover hints in a rack read as the Wrizors table (docs, circuits and the place in "this rack", the Log still the Journal) and none speaks Arbor words', !!sixD && Object.keys(DRAWER_SIX).every((k) => sixD[k] === DRAWER_SIX[k]) && Object.values(sixD).every((s) => !speaksArbor(s)), JSON.stringify({ sixD }));
+  // ---- PARKED - SUPERSEDED by the Rack to Drive word (Nick, Nov 11; the Wrizors' strings, Fable): the original, verbatim, no longer runs; its successor follows.
+  // ok('HINTS-RACK the six hover hints in a rack read as the Wrizors table (docs, circuits and the place in "this rack", the Log still the Journal) and none speaks Arbor words', !!sixD && Object.keys(DRAWER_SIX).every((k) => sixD[k] === DRAWER_SIX[k]) && Object.values(sixD).every((s) => !speaksArbor(s)), JSON.stringify({ sixD }));
+  ok('HINTS-DRIVE the six hover hints in a drive read as the Wrizors table (docs, circuits and the place in "this drive", the Log still the Journal) and none speaks Arbor words', !!sixD && Object.keys(DRAWER_SIX).every((k) => sixD[k] === DRAWER_SIX[k]) && Object.values(sixD).every((s) => !speaksArbor(s)), JSON.stringify({ sixD }));
   // ---- LAST: a node touched this session reads in orange under Circuits ----------------------------------------------------------------------------------
   await open('l2-b1');
   const l0 = await rail();

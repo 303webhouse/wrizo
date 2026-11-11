@@ -1,0 +1,21 @@
+# STANDING WORD CHANGES for the lexicon check (c13-10c-lexicon.mjs): one key@theme=word per line. Each cell reads the word now and read something else at the base; every other cell is held to the base.
+# Rack became Drive in Flux (Nick, Nov 11 1:46 am; the Wrizors' strings, Fable Nov 11 7:50 am): the noun, the first drive's name, and the rail box UNFILED -> ORPHANS (Nick's word for Flux's Shelf).
+backToDrawer@flux=Back to Drive
+cascadePlanNoDrawer@flux=Not in a drive
+createDrawerEyebrow@flux=NEW DRIVE
+createDrawerTitleLabel@flux=Drive title (optional)
+domainLabelAcademic@flux=Academic Drive
+domainLabelCreative@flux=Creative Drive
+domainLabelProfessional@flux=Professional Drive
+drawerHomeTitleLabel@flux=Drive title
+drawerPlaceDrawers@flux=Drives
+pageHomeLoose@flux=Orphans
+placeRootName@flux=New Drive
+placesNewDrawer@flux=File to a new drive…
+placesNewDrawerPlaceholder@flux=Drive name
+sectionsTakeOut@flux=Take out of this drive
+sprintSaveAsDrawer@flux=Save as Drive
+sprintSaveToDrawer@flux=Save to Drive
+switcherDrawers@flux=Drives
+switcherNewDrawer@flux=＋ New Drive
+switcherNewDrawerName@flux=Name the drive
