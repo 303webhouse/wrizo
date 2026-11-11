@@ -119,6 +119,11 @@ export function mergeText(base: string, mine: string, theirs: string): MergeResu
     const mj = m.lines.join(NL), tj = t.lines.join(NL);
     if (!mj && b.length) return t;            // a paragraph mine deleted and theirs edited: the edit stays
     if (!tj && b.length) return m;
+    // one side's version already stands whole inside the other's (a merge that was merged again): nothing to add, nothing to keep twice
+    const at = (needle: string[], hay: string[]): number => { if (!needle.length || needle.length > hay.length) return -1; for (let i = 0; i + needle.length <= hay.length; i += 1) if (needle.every((x, k) => hay[i + k] === x)) return i; return -1; };
+    const mi = b.length ? at(m.lines, t.lines) : -1;
+    if (mi >= 0) return { lines: t.lines, from: t.from.map((f, k) => (k >= mi && k < mi + m.lines.length ? m.from[k - mi] : f)) };   // mine's version stands whole inside theirs: take theirs, mine's lines keep their place for the caret
+    if (b.length && at(t.lines, m.lines) >= 0) return m;
     // the same paragraph changed on both sides (or two paragraphs added at the same place): NO word-by-word blending, it could write a sentence neither window wrote. Both WHOLE versions are kept, one under the other, ordered by their own text.
     if (b.length) kept = true;
     return mj <= tj ? { lines: [...m.lines, ...t.lines], from: [...m.from, ...t.from] } : { lines: [...t.lines, ...m.lines], from: [...t.from, ...m.from] };

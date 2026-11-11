@@ -474,8 +474,13 @@ function PageEditorView({ id }: { id: string }) {
   };
   // #76 - RECONCILE this page with its record. `base` is what this editor last saved or loaded (lastSavedRef), `mine` what it shows, `theirs` what the record holds now. The record is the same as either: nothing to do. Nothing unsaved here: show
   // the record's words. Unsaved words here: the three are merged (store/textMerge.ts), the merge is SAVED at once and shown, and the page says so once. Never a save of `mine` over words `theirs` has that `mine` has not seen.
+  const reconcilingRef = useRef(false);   // saving the merge tells every screen (notify), this one included: that echo must not merge the merge again
   const reconcile = (): boolean => {
-    if (unbornRef.current) return false;
+    if (unbornRef.current || reconcilingRef.current) return false;
+    reconcilingRef.current = true;
+    try { return reconcileNow(); } finally { reconcilingRef.current = false; }
+  };
+  const reconcileNow = (): boolean => {
     const latest = getJournalEntry(id);
     if (!latest) return false;
     const theirs = latest.text ?? '', mine = textRef.current, base = lastSavedRef.current;
