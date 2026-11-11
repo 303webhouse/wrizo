@@ -170,6 +170,8 @@ export async function main({ title }) {
       if (!(await lineWait('B', true, 9000))) fails.push('window B came to the same page and shows no line');
     });
 
+    await dropFrames();   // the second window of the last case must not stay on top of the page for the cases that follow (it covered the caret the next cases look for)
+
     // ====================== 10,000 WORDS ======================
     await run('BG', 'a 10,000-word page: typing, Enter, Ctrl+Home, Ctrl+End, PageDown, arrows, Backspace at the end', async (fails, notes) => {
       const text = bigText();
