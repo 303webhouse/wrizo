@@ -74,6 +74,7 @@ GROUPS2.repro = [
   c('R06', 'Random (Flux light 1920, seed -1658324437): Shift+Enter, Up, End, Shift+Enter, type, Right on an empty page', '', 0, [K('Enter', { shift: true }), K('ArrowUp', { geo: 'up' }), K('End', { geo: 'end' }), K('Enter', { shift: true }), T('coffee '), K('ArrowRight')], { cont: true }),
   c('R07', 'Random (Flux dark, seed -557978882): Enter, Left, Shift+Enter, type "!", Backspace, Right on an empty page', '', 0, [K('Enter'), K('ArrowLeft'), K('Enter', { shift: true }), T('!'), K('Backspace'), K('ArrowRight')], { cont: true }),
   c('R08', 'The page-turn: Shift+Enter across the sheet boundary (about 16 lines) - does the page move?', Array.from({ length: 14 }, (_, i) => `Line ${i + 1}`).join('\n'), Array.from({ length: 14 }, (_, i) => `Line ${i + 1}`).join('\n').length, [K('Enter', { shift: true }), T('a'), K('Enter', { shift: true }), T('b'), K('Enter', { shift: true }), T('c'), K('Enter', { shift: true }), T('d')], { cont: true }),
+  c('R09', 'Random (Arbor 1920, seed 756326421): Up on the first line, then Down', 'on town rain light and about rain nothing the' + String.fromCharCode(10) + 'she the rain on nothing a' + String.fromCharCode(10) + 'morning the harbor a', 34, [K('ArrowUp', { geo: 'up' }), K('ArrowDown', { geo: 'down' })], { cont: true }),
 ];
 // the SMOKE set (Fable's "dark and 1920"): the cases that found something plus one clean control per kind, drawn from both sessions' groups
 import { GROUPS as G1 } from './cases.mjs';
