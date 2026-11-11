@@ -36,7 +36,7 @@ export async function main({ title }) {
     // ====================== TWO TABS ======================
     const stored = (id) => ev(`(() => { try { const rows = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]'); const r = rows.find((x) => x.id === ${JSON.stringify(id)}); return r ? r.text : null; } catch (e) { return 'ERR ' + e.message; } })()`);
     const tabB = async () => {
-      await ev(`(() => { const f = document.createElement('iframe'); f.id = 'wa-tab-b'; f.src = location.href; f.style.cssText = 'position:fixed;right:0;top:0;width:900px;height:700px;z-index:99999;background:#fff;border:0'; document.body.appendChild(f); return true; })()`);
+      await ev(`(() => { const f = document.createElement('iframe'); f.id = 'wa-tab-b'; f.src = location.href; f.style.cssText = 'position:fixed;right:0;top:0;width:1200px;height:760px;z-index:99999;background:#fff;border:0'; document.body.appendChild(f); return true; })()`);
       await app.waitFor(`(() => { const f = document.getElementById('wa-tab-b'); try { return !!f.contentDocument.querySelector('.forward-only-editor') && !!f.contentWindow.__wa; } catch (e) { return false; } })()`, { timeout: 25000, label: 'tab B' });
       await sleep(900);
     };
@@ -82,7 +82,8 @@ export async function main({ title }) {
     // ====================== #76 PART 2: THE QUIET LINE WHEN THE SAME PAGE IS OPEN IN TWO WINDOWS ======================
     // Both windows show ONE quiet line ([data-same-page-elsewhere]): not a pop-up (no dialog, no button, nothing that takes focus), it never stops the writer typing, and it goes when the other window closes or leaves the page. It saves nothing: windows signal each other.
     const LINE = '[data-same-page-elsewhere]';
-    const lineJs = (docExpr) => `(() => { const l = ${docExpr}.querySelector(${JSON.stringify(LINE)}); if (!l) return null; const r = l.getBoundingClientRect(); return { text: l.textContent.trim(), w: r.width, h: r.height, dialog: !!l.closest('[role=dialog],[role=alertdialog],dialog'), focusable: !!l.querySelector('button,input,a,select,textarea,[tabindex]') || l.hasAttribute('tabindex') }; })()`;
+    const ROWS = '.mode-pmeta, .machina-run, .flux-readout-head';   // the count rows that carry the line: Arbor's under the page, Machina's Run row, Flux's header
+    const lineJs = (docExpr) => `(() => { const doc = ${docExpr}; const l = doc.querySelector(${JSON.stringify(LINE)}); if (!l) return null; const r = l.getBoundingClientRect(); const row = l.closest(${JSON.stringify(ROWS)}); const cs = doc.defaultView.getComputedStyle(l); const ps = doc.defaultView.getComputedStyle(l.parentElement); return { text: l.textContent.trim(), w: r.width, h: r.height, dialog: !!l.closest('[role=dialog],[role=alertdialog],dialog'), focusable: !!l.querySelector('button,input,a,select,textarea,[tabindex]') || l.hasAttribute('tabindex'), inRow: !!row, last: !!row && row.lastElementChild === l, rowsInPage: doc.querySelectorAll(${JSON.stringify(ROWS)}).length, sameColour: cs.color === ps.color, icon: !!l.querySelector('svg,img,i'), animated: cs.animationName !== 'none' || cs.transitionDuration.split(',').some((x) => parseFloat(x) > 0), events: cs.pointerEvents }; })()`;
     const dropFrames = async () => { await ev(`document.querySelectorAll('#wa-tab-b').forEach((f) => f.remove())`); await sleep(600); };   // a window of an earlier case must not stay open and answer for this one
     const lineIn = (w) => ev(lineJs(w === 'B' ? "document.getElementById('wa-tab-b').contentDocument" : 'document'));
     const presence = (w) => ev(w === 'B' ? "JSON.stringify(document.getElementById('wa-tab-b').contentWindow.wrizoPresence && document.getElementById('wa-tab-b').contentWindow.wrizoPresence())" : 'JSON.stringify(window.wrizoPresence && window.wrizoPresence())');
@@ -120,6 +121,11 @@ export async function main({ title }) {
         if (v.dialog) fails.push(`window ${w}'s line is a dialog, it must be a quiet line`);
         if (v.focusable) fails.push(`window ${w}'s line holds something that takes focus`);
         if (!v.text) fails.push(`window ${w}'s line is empty`);
+        if (v.rowsInPage > 0 && !(v.inRow && v.last)) fails.push(`window ${w}: the page has a count row, but the line is not LAST in it (inRow ${v.inRow}, last ${v.last})`);
+        if (v.inRow && !v.sameColour) fails.push(`window ${w}: the line is not in its row's label colour`);
+        if (v.icon) fails.push(`window ${w}: the line carries an icon`);
+        if (v.animated) fails.push(`window ${w}: the line moves (animation or transition)`);
+        if (v.events !== 'none') fails.push(`window ${w}: the line takes pointer events (${v.events})`);
       }
       notes.push(`A says ${JSON.stringify(a && a.text)}; B says ${JSON.stringify(b && b.text)}`);
       await tabFocusEnd('A'); await d.type('typed while warned ');
@@ -127,6 +133,20 @@ export async function main({ title }) {
       if (!inA.includes('typed while warned')) fails.push(`typing in window A was blocked while the line showed: A reads ${JSON.stringify(inA)}`);
       const focused = await ev(`!!document.activeElement && !!document.activeElement.closest('.forward-only-editor')`);
       if (!focused) fails.push('the editor in window A lost focus while the line showed');
+    });
+    await run('TW4', '#76 part 2: in a Typewriter the line is hidden with its count row', async (fails, notes) => {
+      const pid = `wa-warn4-${Date.now().toString(36)}`;
+      await mkPage(pid, 'Base. ');
+      await ev(`localStorage.setItem('wrizo-typewriter-page-${pid}', 'on')`);
+      await openA(pid);
+      await tabBd();
+      await sleep(4500);
+      const v = await lineIn('A');
+      notes.push(`line in A: ${JSON.stringify(v && { text: v.text, w: v.w, h: v.h, inRow: v.inRow })}`);
+      if (v && v.w > 0 && v.h > 0) {
+        const hidden = await ev(`(() => { const l = document.querySelector(${JSON.stringify(LINE)}); let n = l; while (n && n !== document.body) { const c = getComputedStyle(n); if (c.display === 'none' || c.visibility === 'hidden' || parseFloat(c.opacity) === 0) return true; n = n.parentElement; } return false; })()`);
+        if (!hidden) fails.push('in a Typewriter the line is still visible; it must hide with its count row');
+      }
     });
     await run('TW2', '#76 part 2: the line goes when the other window closes', async (fails) => {
       const pid = `wa-warn2-${Date.now().toString(36)}`;
