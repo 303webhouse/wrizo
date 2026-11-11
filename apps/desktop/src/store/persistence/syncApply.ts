@@ -141,7 +141,7 @@ function mergeUnflushedPages(rows: JournalEntry[], mineById: Map<string, Journal
     persistDirty();
     onDiskText.set(theirs.id, t);                        // the store holds the other window's text: that is the starting point of the next merge
     onDisk.journalEntries.set(theirs.id, theirs.updatedAt);
-    if (r.merged) announceKeptBoth(theirs.id);
+    if (r.kept) announceKeptBoth(theirs.id);
     any = true;
   }
   return any;

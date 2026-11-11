@@ -622,6 +622,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
                     label={label}
                     metricLabel={metricLabel}
                     hidden={effectiveProgress === 'off'}
+                    samePageLine
                     rightSlot={<>
                       {pageNum > 0 && <span className="mode-pagenum">p.{pageNum + 1}</span>}
                       {settings.timer && <span className="mode-timer" aria-label="Session time">⏱ {elapsedClock}</span>}

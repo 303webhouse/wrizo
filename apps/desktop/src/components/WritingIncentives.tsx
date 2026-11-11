@@ -4,6 +4,7 @@ import type { MilestoneBeat, Milestones } from '../store/milestones';
 import { useTheme } from '../store/theme';
 import { useLexicon } from '../store/themeLexicon';
 import { createJitteredScheduler } from '../store/effectsScheduler';
+import { SamePageLine } from './SamePageNotice';
 
 // TH2 Slice 2 — the spark burst is Flux-only spectacle riding the SAME
 // celebrate class/timing Plateau already uses (one celebration grammar,
@@ -102,12 +103,13 @@ interface ProgressBarProps {
   metricLabel: string;      // "words" / "session"
   hidden?: boolean;         // Off metric — render nothing (glow still warms via `m` elsewhere)
   rightSlot?: React.ReactNode; // e.g. page number, timer readout
+  samePageLine?: boolean;   // #76: this is the page's own count row, so the "open in another window" line stands last in it
 }
 
 // `hidden` suppresses the track + word/time label (the "Off" progress metric)
 // while still rendering the meta row, so a rightSlot (page number, opt-in
 // timer) can show on its own — matches the pre-existing off-but-timer-on case.
-export function ProgressBar({ frac, celebrating, label, metricLabel, hidden, rightSlot }: ProgressBarProps) {
+export function ProgressBar({ frac, celebrating, label, metricLabel, hidden, rightSlot, samePageLine }: ProgressBarProps) {
   const pct = celebrating ? 100 : Math.max(0, Math.min(100, frac * 100));
   // TH2 Slice 2 — Flux restyles this SAME bar (canon §9): lime fill, blue
   // caret notch in flight; on celebrate, an ignition sweep + 14-spark burst
@@ -143,6 +145,7 @@ export function ProgressBar({ frac, celebrating, label, metricLabel, hidden, rig
           {rightSlot}
           {!hidden && <span>{metricLabel}</span>}
         </span>
+        {samePageLine && <SamePageLine />}
       </div>
     </div>
   );

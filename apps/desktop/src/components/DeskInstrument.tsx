@@ -83,6 +83,7 @@ function DeskGoalLane({ unitCount }: { unitCount: number }) {
           celebrating={celebrating}
           label={`${unitCount} word${unitCount === 1 ? '' : 's'}`}
           metricLabel="words"
+          samePageLine={theme !== 'flux'}   /* Flux carries the line in its page frame's header readouts instead */
         />
       )}
     </div>

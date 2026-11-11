@@ -71,6 +71,16 @@ export function setOpenPage(id: string | null): void {
   emit();
 }
 
+// WHERE THE LINE STANDS. Each count row that can carry the line (Arbor's under the page, Machina's Run row, Flux's header) says it is mounted; with none mounted the notice draws the line by itself.
+let hostCount = 0;
+const hostListeners = new Set<() => void>();
+export function registerLineHost(): () => void {
+  hostCount += 1; hostListeners.forEach((fn) => fn());
+  return () => { hostCount -= 1; hostListeners.forEach((fn) => fn()); };
+}
+export const lineHostCount = (): number => hostCount;
+export function subscribeLineHosts(fn: () => void): () => void { hostListeners.add(fn); return () => { hostListeners.delete(fn); }; }
+
 export function subscribeSamePage(fn: () => void): () => void {
   start();
   listeners.add(fn);

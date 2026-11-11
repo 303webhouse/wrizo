@@ -485,7 +485,7 @@ function PageEditorView({ id }: { id: string }) {
     noteMerge({ at: 'merge', base, mine, theirs, out: r.text });
     saveJournalEntry({ ...latest, text: r.text });
     adoptOtherWindowText(r.text, { lastSaved: r.text, mapCaret: r.mapCaret });
-    if (r.merged) announceKeptBoth(id);
+    if (r.kept) announceKeptBoth(id);
     return true;
   };
   reconcileRef.current = reconcile;
