@@ -1,0 +1,11 @@
+file:///home/runner/work/wrizo/wrizo/build/apps/desktop/scripts/runtime-verify.mjs:445
+    if (r.exceptionDetails) throw new Error('page eval: ' + JSON.stringify(r.exceptionDetails));
+                                  ^
+
+Error: page eval: {"exceptionId":1,"text":"Uncaught","lineNumber":0,"columnNumber":0,"scriptId":"5","exception":{"type":"object","subtype":"error","className":"DOMException","description":"SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.","objectId":"4609202529715459501.1.2","preview":{"type":"object","subtype":"error","description":"SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.","overflow":false,"properties":[{"name":"stack","type":"string","value":"SecurityError: Failed to read the 'localStorage' p…rom 'Window': Access is denied for this document."},{"name":"code","type":"number","value":"18"},{"name":"name","type":"string","value":"SecurityError"},{"name":"message","type":"string","value":"Failed to read the 'localStorage' property from 'Window': Access is denied for this document."}]}}}
+    at Object.evalJs (file:///home/runner/work/wrizo/wrizo/build/apps/desktop/scripts/runtime-verify.mjs:445:35)
+    at async file:///home/runner/work/wrizo/wrizo/build/apps/desktop/scripts/harness/helpers-survive.mjs:18:3
+    at async withHarness (file:///home/runner/work/wrizo/wrizo/build/apps/desktop/scripts/runtime-verify.mjs:932:20)
+    at async file:///home/runner/work/wrizo/wrizo/build/apps/desktop/scripts/harness/helpers-survive.mjs:17:1
+
+Node.js v24.13.0

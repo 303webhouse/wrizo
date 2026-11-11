@@ -15,6 +15,9 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // H1 - one browser: a full navigation, then the helpers
 await withHarness(async (app) => {
+  // START RACE (main ticket, Nov 10; helpers-survive's PARKED leg NOVERDICT in 1 s, about 1 launch in 5): the harness hands the scenario a page that is still about:blank - its first navigation has not committed - and `localStorage`
+  // on that document throws SecurityError ("Access is denied for this document"). Wait for the app's own origin before the first storage touch; the line that stood first follows unchanged.
+  { let origin = null; for (let i = 0; i < 100; i += 1) { origin = await app.evalJs('location.origin').catch(() => null); if (origin && /^https?:/.test(origin)) break; await sleep(100); } }
   await app.evalJs('localStorage.setItem("wrizo-first-run-complete", "1")');
   await app.evalJs("location.hash = '#/'");
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' }).catch(() => {});
