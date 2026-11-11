@@ -929,6 +929,10 @@ export async function withHarness(scenario, opts = {}) {
     }
     // Wait for the first authed render, then inject helpers.
     await app.injectHelpers().catch(() => {});
+    // START RACE (#68, Fable Nov 11; helpers-survive was the first file seen, 15 more share the exposure): the scenario can be handed a page that is still about:blank - the browser's first navigation has not
+    // committed - and `localStorage` on that document throws SecurityError ("Access is denied for this document") before any check runs. Every scenario therefore starts on the app's own origin: wait here, once, for it
+    // (returns at once when the page is already there; a deployment under test has an https origin and passes the same test).
+    for (let i = 0; i < 100; i += 1) { let origin = null; try { origin = await app.evalJs('location.origin'); } catch { /* the page is between documents */ } if (origin && /^https?:/.test(origin)) break; await sleep(100); }
     const result = await scenario(app);
     if (verifyRows) {
       const checked = await app.evalJs("(() => { try { return Number(sessionStorage.getItem('wz-rows-checks') || 0); } catch { return 0; } })()").catch(() => 0);
