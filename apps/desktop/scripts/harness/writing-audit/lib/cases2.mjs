@@ -76,6 +76,15 @@ GROUPS2.repro = [
   c('R08', 'The page-turn: Shift+Enter across the sheet boundary (about 16 lines) - does the page move?', Array.from({ length: 14 }, (_, i) => `Line ${i + 1}`).join('\n'), Array.from({ length: 14 }, (_, i) => `Line ${i + 1}`).join('\n').length, [K('Enter', { shift: true }), T('a'), K('Enter', { shift: true }), T('b'), K('Enter', { shift: true }), T('c'), K('Enter', { shift: true }), T('d')], { cont: true }),
   c('R09', 'Random (Arbor 1920, seed 756326421): Up on the first line, then Down', 'on town rain light and about rain nothing the' + String.fromCharCode(10) + 'she the rain on nothing a' + String.fromCharCode(10) + 'morning the harbor a', 34, [K('ArrowUp', { geo: 'up' }), K('ArrowDown', { geo: 'down' })], { cont: true }),
 ];
+// NICK'S LITERAL FLOWS (Fable, Nov 11): an empty page, Draft; where the caret is DRAWN after every key and where the next letter lands (TRACE lines), one frame per red.
+GROUPS2.nick = [
+  c('NA', "Nick (a): Enter, Up, then a letter", '', 0, [K('Enter'), K('ArrowUp', { geo: 'up' }), T('x')], { cont: true, trace: true }),
+  c('NB', "Nick (b): Enter, Left, then a letter", '', 0, [K('Enter'), K('ArrowLeft'), T('x')], { cont: true, trace: true }),
+  c('NC', "Nick (c): Enter, Backspace, then a letter", '', 0, [K('Enter'), K('Backspace'), T('x')], { cont: true, trace: true }),
+  c('ND', "Nick (d): Enter, a letter", '', 0, [K('Enter'), T('x')], { cont: true, trace: true }),
+  c('NE', "Nick (e): a line of text, Enter, Up, then a letter", '', 0, [T('A line of text'), K('Enter'), K('ArrowUp', { geo: 'up' }), T('x')], { cont: true, trace: true }),
+  c('NF', "Nick (f): a line of text, Enter, Enter, Up, then a letter", '', 0, [T('A line of text'), K('Enter'), K('Enter'), K('ArrowUp', { geo: 'up' }), T('x')], { cont: true, trace: true }),
+];
 // the SMOKE set (Fable's "dark and 1920"): the cases that found something plus one clean control per kind, drawn from both sessions' groups
 import { GROUPS as G1 } from './cases.mjs';
 const pick = (list, ids) => list.filter((x) => ids.includes(x.id));

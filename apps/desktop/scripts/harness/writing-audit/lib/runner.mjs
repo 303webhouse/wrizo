@@ -146,6 +146,10 @@ export async function main({ groupsDef, order, title, surfaceHook = null, editor
         if (f.check === 'caret' && anyPairs) f.detail += ` (acceptable: ${anyPairs.map((q) => q.join('..')).join(' or ')})`;
       }
       rec.steps.push(label2(st));
+      if (cs.trace) {
+        const dr = late.theme === 'flux' && late.fluxCaret ? late.fluxCaret : late.px;
+        out(`TRACE ${cs.id} step ${i + 1} ${label2(st)}: painted caret ${dr ? `${Math.round(dr.x)},${Math.round(dr.top)}` : 'NOT SEEN'}; the text puts it at ${box ? `${Math.round(box.x)},${Math.round(box.top)} (${box.via})` : 'n/a'}; selection ${late.anchor}..${late.focus} [${late.selPoint || ''}]; text ${JSON.stringify(late.text)}; page ${late.page ? `${Math.round(late.page.x)},${Math.round(late.page.y)} ${Math.round(late.page.w)}x${Math.round(late.page.h)}` : '?'}${late.tw ? ' (Typewriter)' : ''}`);
+      }
       if (v.notes.length) rec.notes.push(...v.notes);
       if (v.fails.length) {
         const fail = { step: i + 1, label: label2(st), fails: v.fails, expected: exp.snapshot(), got: { text: late.text, anchor: late.anchor, focus: late.focus, px: late.px, fluxCaret: late.fluxCaret, page: late.page, selPoint: late.selPoint, tw: late.tw }, box, dom: await d.dom(700) };
