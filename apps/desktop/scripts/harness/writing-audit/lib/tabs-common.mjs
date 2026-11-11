@@ -35,6 +35,7 @@ export async function runTabs({ title, cases }) {
       app, d, ev, run, sleep,
       stored: (id) => ev(`(() => { try { const rows = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]'); const r = rows.find((x) => x.id === ${JSON.stringify(id)}); return r ? r.text : null; } catch (e) { return 'ERR ' + e.message; } })()`),
       mkPage: async (pid, text) => {
+        await ev(`document.querySelectorAll('#wa-tab-b,#wa-tab-c').forEach((f) => f.remove())`); await sleep(600);   // BEFORE the page is made: a closing window writes its whole, older store over this one's, and would take the new page with it
         await ev(`location.hash = '#/'`); await sleep(150);
         await ev(`window.wrizoCreateJournalPage(${JSON.stringify({ id: pid, text, createdAt: new Date().toISOString(), origin: 'journal', source: 'page' })})`);
         await ev(`localStorage.setItem('wrizo-mode-page-${pid}', 'drafting'); localStorage.setItem('wrizo-typewriter-page-${pid}', 'off')`);
@@ -45,7 +46,7 @@ export async function runTabs({ title, cases }) {
         await d.surface('.forward-only-editor', false);
       },
       tabB: async () => {
-        await ev(`document.querySelectorAll('#wa-tab-b').forEach((f) => f.remove())`); await sleep(300);   // a window of an earlier case must not stay open and answer for this one
+        await ev(`document.querySelectorAll('#wa-tab-b,#wa-tab-c').forEach((f) => f.remove())`); await sleep(300);   // a window of an earlier case must not stay open and answer for this one
         await ev(`(() => { const f = document.createElement('iframe'); f.id = 'wa-tab-b'; f.src = location.href; f.style.cssText = 'position:fixed;right:0;top:0;width:900px;height:700px;z-index:99999;background:#fff;border:0'; document.body.appendChild(f); return true; })()`);
         await app.waitFor(`(() => { const f = document.getElementById('wa-tab-b'); try { return !!f.contentDocument.querySelector('.forward-only-editor') && !!f.contentWindow.__wa; } catch (e) { return false; } })()`, { timeout: 25000, label: 'tab B' });
         await sleep(900);
