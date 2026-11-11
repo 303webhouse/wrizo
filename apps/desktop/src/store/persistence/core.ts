@@ -59,6 +59,20 @@ export const cache: Cache = {
   drawers: hydrate<Drawer>(KEYS.drawers),
 };
 
+// #76 PART 1 - WHAT THE BROWSER'S STORE HOLDS FOR EACH RECORD, as far as this window knows: the record's `updatedAt` the last time this window's cache and the store agreed on it (at boot, after this window wrote it, or after it took
+// another window's copy). A record whose `updatedAt` differs from that has been changed HERE and not yet written ("unflushed", at most the 300 ms of the debounce); a record whose `updatedAt` matches has nothing in it
+// the store does not already have, so another window's newer copy may replace it. (The sync registry's "dirty" is a different thing: it means not yet pushed to the account, and stays set for as long as a device is offline.)
+export const onDisk: Record<'projects' | 'storyPlans' | 'sessions' | 'drafts' | 'journalEntries' | 'drawers', Map<string, string>> = {
+  projects: new Map(), storyPlans: new Map(), sessions: new Map(), drafts: new Map(), journalEntries: new Map(), drawers: new Map(),
+};
+export function noteOnDisk(name: keyof typeof onDisk): void {
+  const m = onDisk[name];
+  m.clear();
+  for (const r of cache[name] as Array<{ id: string; updatedAt: string }>) if (r && r.id) m.set(r.id, r.updatedAt);
+}
+export function isUnflushed(name: keyof typeof onDisk, rec: { id: string; updatedAt: string }): boolean { return onDisk[name].get(rec.id) !== rec.updatedAt; }
+(Object.keys(onDisk) as Array<keyof typeof onDisk>).forEach(noteOnDisk);
+
 // Records returned to callers are cloned so the cache is never mutated by
 // reference, and so each read yields a fresh object (screens that re-fetch
 // after a write and feed the result to setState rely on a new reference to
@@ -285,6 +299,7 @@ function flush(name: CollectionName): void {
   const json = JSON.stringify(cache[name]);
   try {
     localStorage.setItem(KEYS[name], json);
+    noteOnDisk(name);   // #76: the store now holds every record as this window has it
     // STORAGE-FULL STEP 1 — the OTHER half of the catch below: a write that succeeds after a device WAS failing
     // (the writer freed space, or the browser recovered) clears that collection's failed flag. See storageHealth.ts.
     reportFlushOk(name);

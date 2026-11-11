@@ -1,7 +1,7 @@
 import type { Project, StoryPlan, SessionLog, Draft, JournalEntry, Drawer } from '../../types';
 import { clearProofingLocal } from '../proofing';
 import { mergeBoxLists } from '../boxTombstones';
-import { type CollectionName, COLLECTIONS, DIRTY_KEY, KEYS, cache, clone, dirty, flushTimers, notify, persistDirty, scheduleFlush } from './core';
+import { type CollectionName, COLLECTIONS, DIRTY_KEY, KEYS, cache, clone, dirty, flushTimers, isUnflushed, notify, onDisk, persistDirty, scheduleFlush } from './core';
 import { isSignedOutHere } from '../signedOutHere';
 import { adoptLegacyScratch } from './drafts';
 import { announcePurged, purgedToAnnounce } from './purge';
@@ -25,6 +25,7 @@ function applyCollection<T extends { id: string; updatedAt: string }>(
   collection: T[],
   remote: T[] | undefined,
   flushAfter = true,
+  ignoreDirty = false,
 ): boolean {
   if (!remote || remote.length === 0) return false;
   let changed = false;
@@ -43,7 +44,7 @@ function applyCollection<T extends { id: string; updatedAt: string }>(
       }
       continue;
     }
-    if (dirty[name].has(rec.id)) {
+    if (!ignoreDirty && dirty[name].has(rec.id)) {
       // local unsynced edit wins - but its BOARD BOXES still merge by per-box change time (BOARD CONTEXT MENU): a newer tombstone / purge from elsewhere must not be undone by a stale local copy of the card
       if (name === 'journalEntries') {
         const idx = collection.findIndex(r => r.id === rec.id);
@@ -100,8 +101,12 @@ export function applyOtherWindowWrite(name: CollectionName, raw: string | null):
   let rows: unknown;
   try { rows = JSON.parse(raw); } catch { return; }
   if (!Array.isArray(rows)) return;
-  const changed = applyCollection(name, cache[name] as unknown as { id: string; updatedAt: string }[], rows as { id: string; updatedAt: string }[], false);
-  if (changed) notify();
+  const collection = cache[name] as unknown as { id: string; updatedAt: string }[];
+  const mineById = new Map(collection.map((r) => [r.id, r]));
+  // a record with a change of this window's own that is not yet written is a conflict (part 3 keeps both); every other record takes the newer copy, whether or not it has been pushed to the account
+  const safe = (rows as { id: string; updatedAt: string }[]).filter((r) => { if (!r || !r.id) return false; const mine = mineById.get(r.id); return !mine || !isUnflushed(name, mine); });
+  const changed = applyCollection(name, collection, safe, false, true);
+  if (changed) { for (const r of safe) { const mine = collection.find((x) => x.id === r.id); if (mine && mine.updatedAt === r.updatedAt) onDisk[name].set(r.id, r.updatedAt); } notify(); }
   announcePurged();
 }
 
