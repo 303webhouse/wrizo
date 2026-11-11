@@ -128,13 +128,15 @@ export async function main({ groupsDef, order, title }) {
       } else { exp.apply(st); act = () => d.perform(st); }
       const e0 = d.errors.length;
       await act();
-      const { early, late } = await settleRead(d);
+      let early, late;
+      if (st.fast) { await d.frames(); late = await d.read(); early = late; }
+      else ({ early, late } = await settleRead(d));
       // fix the expectation to the acceptable answer the page gave (or the first acceptable one, which then fails with the list named)
       if (anyF) { const pick = anyF.includes(late.focus) ? late.focus : anyF[0]; exp.f = pick; exp.a = st.shift ? m.a : pick; }
       if (anyPairs) { const pr = anyPairs.find((q) => q[0] === late.anchor && q[1] === late.focus) || anyPairs[0]; exp.a = pr[0]; exp.f = pr[1]; }
       if (prop) { exp.a = exp.f = late.focus; }
       const box = exp.collapsed ? await d.box(exp.f) : null;
-      const v = verify({ exp: exp.snapshot(), box, before, early, late, errors: d.errors.slice(e0) });
+      const v = verify({ exp: exp.snapshot(), box, before, early, late, errors: d.errors.slice(e0), expect: st.fast ? { noDrawn: true } : {} });
       if (prop) {
         const down = prop === 'down';
         if (down ? !(late.focus > before.focus || before.focus === n) : !(late.focus < before.focus || before.focus === 0)) v.fails.push({ check: 'caret', detail: `${st.key} moved the caret from ${before.focus} to ${late.focus} (it must go ${down ? 'forward' : 'back'}, or stay at the document's end)` });

@@ -68,6 +68,8 @@ export const GROUPS2 = {
 GROUPS2.repro = [
   c('R01', 'Random (Arbor, seed 756177124): Ctrl+End, Up, Enter, Down', 'dog said harbor writes a long\nharbor window town on\nmorning ', 26, [K('End', { ctrl: true }), K('ArrowUp', { geo: 'up' }), K('Enter'), K('ArrowDown', { geo: 'down' })], { cont: true }),
   c('R02', 'Random (Flux, seed -1659382475): Enter, Ctrl+Home, Enter, Shift+Enter, Backspace on an empty page', '', 0, [K('Enter'), K('Home', { ctrl: true }), K('Enter'), K('Enter', { shift: true }), K('Backspace')], { cont: true }),
+  c('R03', 'Random (Arbor): Ctrl+End, Up, Enter, Down with no settle between the keys', 'dog said harbor writes a long\nharbor window town on\nmorning ', 26, [K('End', { ctrl: true, fast: true }), K('ArrowUp', { geo: 'up', fast: true }), K('Enter', { fast: true }), K('ArrowDown', { geo: 'down', fast: true })], { cont: true }),
+  c('R04', 'Enter then Down at once, mid-page', 'harbor window town on\nmorning light', 7, [K('Enter', { fast: true }), K('ArrowDown', { geo: 'down', fast: true })], { cont: true }),
 ];
 // the SMOKE set (Fable's "dark and 1920"): the cases that found something plus one clean control per kind, drawn from both sessions' groups
 import { GROUPS as G1 } from './cases.mjs';
