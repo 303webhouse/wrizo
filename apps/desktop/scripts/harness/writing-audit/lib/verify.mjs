@@ -76,7 +76,7 @@ export function verify({ exp, box, before, early, late, errors = [], expect = {}
   }
 
   // 7b. THE LINE BEING WRITTEN IS IN THE WINDOW (a collapsed caret whose expected place is outside the viewport once the view has settled: the writer types where they cannot see)
-  if (box && box.via !== 'rows-drift' && exp.a === exp.f && late.collapsed && late.view && typeof box.top === 'number' && !expect.scroll) {
+  if (box && box.via !== 'rows-drift' && exp.a === exp.f && late.collapsed && late.view && typeof box.top === 'number') {   // a step that scrolls on purpose is held to this too
     const bottom = box.top + (box.height || 0);
     if (bottom < 0 || box.top > late.view.h || box.x < 0 || box.x > late.view.w) fail('view', `the caret's line is outside the window after the view settled: it is at ${Math.round(box.x)},${Math.round(box.top)}, the window is ${late.view.w}x${late.view.h}${late.tw ? ' (the Typewriter is engaged)' : ''}`);
   }
