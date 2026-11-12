@@ -167,11 +167,17 @@ const MUTANTS = {
   // PARKED, SUPERSEDED (Nov 12; train 3's bundle names the last constant $G, which \w does not match, so this landed 0 times: an instrument fault that follows the bundle's identifier names). Original verbatim:
   //   gutterwork: [/=700,(\w+)=72,(\w+)=26,(\w+)=24/g, '=0,$1=72,$2=26,$3=24'],
   gutterwork: [/=700,([\w$]+)=72,([\w$]+)=26,([\w$]+)=24/g, '=0,$1=72,$2=26,$3=24'],
-  rate: [/=45,(\w+)=180,(\w+)=900,/g, '=45,$1=180,$2=0,'],
-  stop: [/\(\)=>\{(\w+)=performance\.now\(\),(\w+)\.size&&(\w+)\(\)\}/g, '()=>{$1=performance.now()}'],
-  caret: [/(\w+)&&(\w+)\.height\?\[(\w+)\.top-2,(\w+)\.bottom\+2\]:null/g, 'null'],
-  pause: [/performance\.now\(\)-(\w+)<(\w+)\)return;(\w+)=(\w+)\.current\.shift\(\)/g, 'performance.now()-$1<0)return;$3=$4.current.shift()'],
-  follow: [/(Math\.abs\(parseFloat\((\w+)\.height\)-(\w+)\.height\)\))>\.25&&/g, '$1>1e9&&'],
+  // PARKED, SUPERSEDED (Nov 12, the gutterwork fault: a minifier name may contain $, which \w does not match, so an anchor can land 0 times on a later build). The five originals, verbatim:
+  // rate: [/=45,(\w+)=180,(\w+)=900,/g, '=45,$1=180,$2=0,'],
+  // stop: [/\(\)=>\{(\w+)=performance\.now\(\),(\w+)\.size&&(\w+)\(\)\}/g, '()=>{$1=performance.now()}'],
+  // caret: [/(\w+)&&(\w+)\.height\?\[(\w+)\.top-2,(\w+)\.bottom\+2\]:null/g, 'null'],
+  // pause: [/performance\.now\(\)-(\w+)<(\w+)\)return;(\w+)=(\w+)\.current\.shift\(\)/g, 'performance.now()-$1<0)return;$3=$4.current.shift()'],
+  // follow: [/(Math\.abs\(parseFloat\((\w+)\.height\)-(\w+)\.height\)\))>\.25&&/g, '$1>1e9&&'],
+  rate: [/=45,([\w$]+)=180,([\w$]+)=900,/g, '=45,$1=180,$2=0,'],
+  stop: [/\(\)=>\{([\w$]+)=performance\.now\(\),([\w$]+)\.size&&([\w$]+)\(\)\}/g, '()=>{$1=performance.now()}'],
+  caret: [/([\w$]+)&&([\w$]+)\.height\?\[([\w$]+)\.top-2,([\w$]+)\.bottom\+2\]:null/g, 'null'],
+  pause: [/performance\.now\(\)-([\w$]+)<([\w$]+)\)return;([\w$]+)=([\w$]+)\.current\.shift\(\)/g, 'performance.now()-$1<0)return;$3=$4.current.shift()'],
+  follow: [/(Math\.abs\(parseFloat\(([\w$]+)\.height\)-([\w$]+)\.height\)\))>\.25&&/g, '$1>1e9&&'],
 };
 
 const lum = (c) => { const v = c.map((x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
@@ -535,17 +541,22 @@ try { await withHarness(async (app) => {
   const withMutant = async (name, run) => { mutant = name; landed[name] = undefined; try { const r = await run(); return { ...r, landed: landed[name] }; } finally { mutant = null; } };
   // the pause mutant first: its typing must cross a unit (84 -> 104 words crosses 100); the gutter's needs no crossing
   const mP = await withMutant('pause', testType);
+  ok('MUT-PAUSE-ANCHOR the pause mutant\'s anchor matched exactly once in the served bundle (a miss is a fault of the instrument, not a verdict on the product)', mP.landed === 1, JSON.stringify({ landed: mP.landed }));
   ok('MUT-PAUSE (landed) the Glitch bar not waiting for the pause: TYPE fails (a glyph changed while keys landed)', mP.landed === 1 && mP.glitchDuring > 0, JSON.stringify({ landed: mP.landed, glitchDuring: mP.glitchDuring }));
   const mW = await withMutant('gutterwork', testType);
   ok('MUT-GUTTERWORK-ANCHOR the gutterwork mutant\'s anchor matched exactly once in the served bundle (a miss is a fault of the instrument, not a verdict on the product)', mW.landed === 1, JSON.stringify({ landed: mW.landed }));
   ok('MUT-GUTTERWORK (landed) the gutter measuring on every change: TYPE fails (it measured while keys landed)', mW.landed === 1 && !mW.zeroWork, JSON.stringify({ landed: mW.landed, m: [mW.measuresFirst, mW.measuresMid, mW.measuresLast] }));
   const mR = await withMutant('rate', () => testIdle({ stop: false }));
+  ok('MUT-RATE-ANCHOR the rate mutant\'s anchor matched exactly once in the served bundle (a miss is a fault of the instrument, not a verdict on the product)', mR.landed === 1, JSON.stringify({ landed: mR.landed }));
   ok('MUT-RATE (landed) the idle glitch\'s gap at 0: IDLE fails (more than 3 changes in a second)', mR.landed === 1 && mR.maxPerSec > 3, JSON.stringify(mR));
   const mS = await withMutant('stop', () => testIdle({ watchMs: 2500 }));
+  ok('MUT-STOP-ANCHOR the stop mutant\'s anchor matched exactly once in the served bundle (a miss is a fault of the instrument, not a verdict on the product)', mS.landed === 1, JSON.stringify({ landed: mS.landed }));
   ok('MUT-STOP (landed) activity no longer clearing the glitch: IDLE fails (not whole within 300 ms)', mS.landed === 1 && (mS.stopMs === null || mS.stopMs > 300), JSON.stringify(mS));
   const mF = await withMutant('follow', () => testPlace([1920, 1080]));
+  ok('MUT-FOLLOW-ANCHOR the follow mutant\'s anchor matched exactly once in the served bundle (a miss is a fault of the instrument, not a verdict on the product)', mF.landed === 1, JSON.stringify({ landed: mF.landed }));
   ok('MUT-FOLLOW (landed) the glyphs left where the word first stood: PLACE fails (off the word once the page moves)', mF.landed === 1 && !mF.pass && mF.p1 && mF.p1.off > 1, JSON.stringify(mF));
   const mC = await withMutant('caret', () => testIdle({ watchMs: 9000, stop: false }));
+  ok('MUT-CARET-ANCHOR the caret mutant\'s anchor matched exactly once in the served bundle (a miss is a fault of the instrument, not a verdict on the product)', mC.landed === 1, JSON.stringify({ landed: mC.landed }));
   ok('MUT-CARET (landed) the caret\'s line not avoided: IDLE fails (a word on the caret\'s line)', mC.landed === 1 && mC.onCaret > 0, JSON.stringify(mC));
 
   // ---- B: the build -----------------------------------------------------------------------------------------------------------------------------
