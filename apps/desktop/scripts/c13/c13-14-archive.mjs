@@ -39,8 +39,9 @@ const mode = process.argv[2];
 const isComment = (l) => /^\s*\/\//.test(l);
 const MARK = /PARKED|SUPERSEDED|RETIRED/;
 const ASSERT = /^\s*\/\/\s*(\/\/\s*)?p?ok\(/;
-const POINTER = /^\s*\/\/ PARKED RECORD ARCHIVED \(#13 step 14\): archive\/([\w.-]+\.parked\.md) record (\d+)\s*$/;
-const pointerLine = (indent, archive, n) => `${indent}// PARKED RECORD ARCHIVED (#13 step 14): archive/${archive} record ${n}`;
+// the pointer does not begin with PARKED, so neither this tool's record pattern nor audit-parked-records' comment-form estimate counts it
+const POINTER = /^\s*\/\/ ARCHIVED PARK \(#13 step 14\): archive\/([\w.-]+\.parked\.md) record (\d+)\s*$/;
+const pointerLine = (indent, archive, n) => `${indent}// ARCHIVED PARK (#13 step 14): archive/${archive} record ${n}`;
 const noCR = (s) => s.replace(/\r\n/g, '\n');
 
 // the records of one file's text (lines without CR): [{ from, to }] (0-based, inclusive)
