@@ -38,10 +38,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const LAPTOP_W = 1280;
 const WIDE_W = 2200;
 
-// STRESS (bug #84, env PW1_FAST_POLL=1): every wait polls each millisecond instead of each 100 ms. When the cascade closes, its panel is gone for a few milliseconds before the copy that slides out is drawn; a poll that lands in that gap
-// reads "closed" while the panel is still leaving. At 100 ms that is one run in a dozen or two; at 1 ms it is nearly every run, so the race can be shown, and shown gone.
-const POLL_STEP = process.env.PW1_FAST_POLL === '1' ? 1 : 100;
-const settle = async (app, expr, ms = 4000, step = POLL_STEP) => {
+const settle = async (app, expr, ms = 4000, step = 100) => {
   const deadline = Date.now() + ms;
   let v = await app.evalJs(expr);
   while (v !== true && Date.now() < deadline) { await sleep(step); v = await app.evalJs(expr); }
@@ -436,7 +433,9 @@ await withHarness(async (app) => {
       await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))");
       await waitOr(app, "!document.querySelector('.wz-cascade-survey')", 'the first Escape closes the survey');
       await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))");
-      await waitOr(app, "!document.querySelector('.wz-cascade-panel')", 'the second Escape closes the panel (so the reopen below is a real reopen)');
+      // STRESS (bug #84, env PW1_NO_WAIT_CLOSE=1): do not wait for the closed panel before the reopen. When the cascade closes, the panel is drawn on for --drawer-dur (inert, data-leaving) while it slides out; one wait in a dozen or two
+      // happened to sample the few milliseconds before that copy is drawn, read "closed", and went on while the panel was still there. Going on at once puts the reopen inside the slide-out EVERY time, so the race can be shown, and shown gone.
+      if (process.env.PW1_NO_WAIT_CLOSE !== '1') await waitOr(app, "!document.querySelector('.wz-cascade-panel')", 'the second Escape closes the panel (so the reopen below is a real reopen)');
       if (await openPlan(app)) {
         // the reopened panel mounts its remembered survey in a render or two: wait for it, bounded; S5 below reads what is there either way
         await settle(app, "!!document.querySelector('.wz-cascade-survey')", 3000);
