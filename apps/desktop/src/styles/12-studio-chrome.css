@@ -208,6 +208,8 @@
 
 .mode-pmeta{ display:flex; justify-content:space-between; align-items:center; font-size:11px;
   color:var(--text-low); letter-spacing:.3px; }
+/* bug #83: Arbor's count-row label under the page ("0 words") read 3.82:1 in --text-low; the Wrizors' colour reads 5.46:1 on #201B17 and 5.39:1 on #221C17. Arbor only: the token is untouched (scripts/harness/bug83-count-row.mjs) */
+:root[data-theme='plateau'] .mode-pmeta{ color:#9C9081; }
 .mode-pmetric{ display:flex; align-items:center; gap:6px; text-transform:uppercase; letter-spacing:1.5px; font-size:9px; color:var(--brass-press); }
 .mode-pagenum{ color:var(--brass-press); font-family:var(--font-mono); letter-spacing:.3px; }
 
