@@ -329,6 +329,8 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
     let raf = 0;
     // #63: the page no longer animates when it turns (no page-turn animation in any theme); only the sound is left, as it was
     const flip = () => {
+      const pageEl = scroll.closest('.mode-page') as HTMLElement | null;
+      if (pageEl && !reduce) { pageEl.classList.remove('flipping'); void pageEl.offsetWidth; pageEl.classList.add('flipping'); setTimeout(() => pageEl.classList.remove('flipping'), 600); }
       if (soundOnRef.current && !reduce) playPageTurn();
     };
     const measure = () => {
