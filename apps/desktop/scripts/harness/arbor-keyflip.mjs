@@ -377,18 +377,25 @@ await withHarness(async (app) => {
   lh.mutBOld = await app.evalJs(SNAP);
   // KF-LOOK-HAS-DYN(-B): the product's own transition - the Typewriter zoom on, then off (data-zoom on .mode-pagecol, which the :has() reads) - and the
   // drawer comes back exactly as it was: the style query follows the panel's property both ways (its mutant: the query taken out)
-  const dyn = async (mut) => {
+  // (each element's name, in SNAP's order, so a reading that moves across the cycle is named - run 43310873472 reported "1 differ" unnamed)
+  const NAMES = `(() => [...document.querySelectorAll('body *')].map((el) => el.tagName.toLowerCase() + (el.className && typeof el.className === 'string' ? '.' + el.className.trim().split(/ +/).slice(0, 3).join('.') : '')))()`;
+  const dyn = async (mut, swap = null) => {
     const d = { z: await openUnzoomed() };
-    d.mut = mut ? await app.evalJs(SWAP('notutorq')) : null; await sleep(200);
+    d.mut = mut ? await app.evalJs(SWAP('notutorq')) : null;
+    d.swap = swap ? await app.evalJs(SWAP(swap)) : null; await sleep(200);
     d.a = await app.evalJs(SNAP); d.at = await app.evalJs(PANEL);
     d.on = await app.evalJs(SETZ(true)); await sleep(300);
     d.onRead = await app.evalJs(PANEL);
     d.off = await app.evalJs(SETZ(false)); await sleep(300);
     d.b = await app.evalJs(SNAP); d.bt = await app.evalJs(PANEL);
+    d.names = await app.evalJs(NAMES);
+    d.moved = d.a && d.b && d.names && d.a.length === d.b.length && d.names.length === d.a.length
+      ? d.a.map((x, i) => (x !== d.b[i] ? `${d.names[i]}: ${x} -> ${d.b[i]}` : null)).filter(Boolean) : null;
     return d;
   };
   lh.dyn = await dyn(false);
   lh.dynMut = await dyn(true);
+  lh.dynOld = await dyn(false, 'oldhas');   // the same cycle under T2's rule 642 (KF-LOOK-HAS-DYN-C)
 
   // the look by night: at rest, then while writing
   const look = {};
@@ -508,10 +515,23 @@ await withHarness(async (app) => {
   // ok(`MUT-KF-LOOK-HAS-DYN with the drawer's style query taken out, KF-LOOK-HAS-DYN's reading changes: the child reads ${lh.dynMut.bt && lh.dynMut.bt.kid} after the zoom (the fix reads ${lh.dyn.bt && lh.dyn.bt.kid})`,
   //   !!lh.dynMut.bt && !!lh.dyn.bt && lh.dynMut.bt.kid !== lh.dyn.bt.kid, JSON.stringify({ dynMut: { at: lh.dynMut.at, bt: lh.dynMut.bt }, fix: lh.dyn.bt }));
   const dynOkB = (d) => dynOk(d) && kidOf(d.at) === 'ltr' && kidOf(d.bt) === 'ltr' && d.at.zoom === null && d.bt.zoom === null;
-  ok(`KF-LOOK-HAS-DYN-B from the zoom OFF, the Typewriter zoom on, then off: the panel turns (${lh.dyn.at && lh.dyn.at.panel} -> ${lh.dyn.onRead && lh.dyn.onRead.panel} -> ${lh.dyn.bt && lh.dyn.bt.panel}), the drawer's child holds ltr (${kidOf(lh.dyn.at)} -> ${kidOf(lh.dyn.bt)}) and every element reads as it did before (${diff(lh.dyn.a, lh.dyn.b)} differ)`,
-    dynOkB(lh.dyn), JSON.stringify({ at: lh.dyn.at, onRead: lh.dyn.onRead, bt: lh.dyn.bt, diff: diff(lh.dyn.a, lh.dyn.b) }));
-  ok(`MUT-KF-LOOK-HAS-DYN-B with the drawer's style query taken out, KF-LOOK-HAS-DYN-B is RED (the child reads ${kidOf(lh.dynMut.at)} -> ${kidOf(lh.dynMut.bt)})`,
-    !!lh.dynMut.mut && lh.dynMut.mut.containers === 1 && !dynOkB(lh.dynMut), JSON.stringify({ dynMut: { mut: lh.dynMut.mut, at: lh.dynMut.at, bt: lh.dynMut.bt } }));
+  // PARKED 2026-11-12 (SUPERSEDED by KF-LOOK-HAS-DYN-C and its mutant - Actions run 43310873472: the panel and the drawer's child behaved (rtl -> ltr
+  // -> rtl; ltr -> ltr), but "every element reads as it did before" read 1 differ, unnamed: a premise wider than the fix - the zoom cycle itself can
+  // move an element that rule 642 never touches. The successor names what moves and requires the SAME to move under T2's rule). Original, verbatim:
+  // ok(`KF-LOOK-HAS-DYN-B from the zoom OFF, the Typewriter zoom on, then off: the panel turns (${lh.dyn.at && lh.dyn.at.panel} -> ${lh.dyn.onRead && lh.dyn.onRead.panel} -> ${lh.dyn.bt && lh.dyn.bt.panel}), the drawer's child holds ltr (${kidOf(lh.dyn.at)} -> ${kidOf(lh.dyn.bt)}) and every element reads as it did before (${diff(lh.dyn.a, lh.dyn.b)} differ)`,
+  //   dynOkB(lh.dyn), JSON.stringify({ at: lh.dyn.at, onRead: lh.dyn.onRead, bt: lh.dyn.bt, diff: diff(lh.dyn.a, lh.dyn.b) }));
+  // ok(`MUT-KF-LOOK-HAS-DYN-B with the drawer's style query taken out, KF-LOOK-HAS-DYN-B is RED (the child reads ${kidOf(lh.dynMut.at)} -> ${kidOf(lh.dynMut.bt)})`,
+  //   !!lh.dynMut.mut && lh.dynMut.mut.containers === 1 && !dynOkB(lh.dynMut), JSON.stringify({ dynMut: { mut: lh.dynMut.mut, at: lh.dynMut.at, bt: lh.dynMut.bt } }));
+  // the reading that moves across the cycle, by name (index-free: the two pages are separate documents)
+  const movedSet = (d) => (d && d.moved ? [...new Set(d.moved)].sort() : null);
+  const sameMoved = (d, ref) => !!movedSet(d) && !!movedSet(ref) && JSON.stringify(movedSet(d)) === JSON.stringify(movedSet(ref));
+  const panelOk = (d) => !!d && d.at && d.at.zoom === null && d.at.panel === 'rtl' && d.onRead && d.onRead.zoom === 'true' && d.onRead.panel !== 'rtl' && d.bt && d.bt.zoom === null && d.bt.panel === 'rtl'
+    && kidOf(d.at) === 'ltr' && kidOf(d.bt) === 'ltr';
+  ok(`KF-LOOK-HAS-DYN-C from the zoom OFF, the Typewriter zoom on, then off: the panel turns (${lh.dyn.at && lh.dyn.at.panel} -> ${lh.dyn.onRead && lh.dyn.onRead.panel} -> ${lh.dyn.bt && lh.dyn.bt.panel}), the drawer's child holds ltr (${kidOf(lh.dyn.at)} -> ${kidOf(lh.dyn.bt)}), and what moves across the cycle is what moves under T2's rule 642 (fix: ${JSON.stringify(movedSet(lh.dyn))}; T2: ${JSON.stringify(movedSet(lh.dynOld))})`,
+    panelOk(lh.dyn) && panelOk(lh.dynOld) && lh.dynOld.swap && lh.dynOld.swap.inserted === 1 && sameMoved(lh.dyn, lh.dynOld),
+    JSON.stringify({ fix: { at: lh.dyn.at, onRead: lh.dyn.onRead, bt: lh.dyn.bt, moved: lh.dyn.moved }, t2: { swap: lh.dynOld.swap, at: lh.dynOld.at, bt: lh.dynOld.bt, moved: lh.dynOld.moved } }));
+  ok(`MUT-KF-LOOK-HAS-DYN-C with the drawer's style query taken out, KF-LOOK-HAS-DYN-C is RED (the child reads ${kidOf(lh.dynMut.at)} -> ${kidOf(lh.dynMut.bt)})`,
+    !!lh.dynMut.mut && lh.dynMut.mut.containers === 1 && !(panelOk(lh.dynMut) && sameMoved(lh.dynMut, lh.dynOld)), JSON.stringify({ dynMut: { mut: lh.dynMut.mut, at: lh.dynMut.at, bt: lh.dynMut.bt, moved: lh.dynMut.moved } }));
   ok(`KF-SCAN-HAS no selector in src/**/*.css has a universal subject under a :has() (${hasHits.length}); the scanner finds T2's rule 642 (${oldHasHits.length} of 1, liveness)`,
     hasHits.length === 0 && oldHasHits.length === 1, JSON.stringify({ hasHits, oldHasHits }));
   ok(`KF-SPEC every rule the fix rewrote keeps T2's specificity (${SPEC_PAIRS.map((p) => `${p.what} ${JSON.stringify(p.was)} -> ${JSON.stringify(p.now)}`).join('; ')}); the calculator reads known values and sees one attribute fewer (liveness)`,
