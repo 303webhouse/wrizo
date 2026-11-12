@@ -32,7 +32,9 @@ export function probeInstall() {
     return last ? { node: last, off: last.data.length } : { node: e, off: 0 };
   };
   const gchar = (e, i) => { const a = gpoint(e, i), b = gpoint(e, i + 1); const rg = document.createRange(); rg.setStart(a.node, a.off); rg.setEnd(b.node, b.off); const r = [...rg.getClientRects()].find((q) => q.height > 0) || rg.getBoundingClientRect(); return r; };
-  const lhOf = (e) => { const v = parseFloat(getComputedStyle(e).lineHeight); return Number.isFinite(v) && v > 0 ? v : (parseFloat(getComputedStyle(e).fontSize) || 16) * 1.5; };
+  // the CSS line height is the UNSCALED one: the Typewriter zooms the page (a transform), and rectangles are drawn scaled, so the measured pitch is the CSS value times the page's scale (#70: 27.2 px CSS, 43.5 px drawn, in Arbor and Machina)
+  const scaleOf = (e) => { const w = e.offsetWidth; const r = e.getBoundingClientRect(); return w > 0 && r.width > 0 ? r.width / w : 1; };
+  const lhOf = (e) => { const v = parseFloat(getComputedStyle(e).lineHeight); return (Number.isFinite(v) && v > 0 ? v : (parseFloat(getComputedStyle(e).fontSize) || 16) * 1.5) * scaleOf(e); };
   const gbox = (e, p) => {
     const text = plainOf(e), n = text.length, lines = text.split('\n');
     let line = 0, acc = 0;
