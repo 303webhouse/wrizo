@@ -34,7 +34,12 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const rng = (seed) => () => { seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 const SHADE_OFF = process.env.ATTR_SHADE === 'off';
 const RHIZOME_OFF = process.env.ATTR_RHIZOME === 'off';
-const DIST = process.env.ATTR_DIST || undefined;
+// PARKED 2026-11-12 (SUPERSEDED - box turn 6, every main leg NOVERDICT in 9 s: runtime-verify's server serves a file only when path.join(dist, rel)
+// startsWith(dist), and a forward-slash ATTR_DIST never prefixes the backslash path Windows joins, so every request got index.html and the app never
+// ran). Original, verbatim:
+// const DIST = process.env.ATTR_DIST || undefined;
+// SUCCESSOR: the directory resolved to the platform's own form.
+const DIST = process.env.ATTR_DIST ? path.resolve(process.env.ATTR_DIST) : undefined;
 const ROUNDS = Number(process.env.ATTR_ROUNDS || 4);
 const LONG_BURSTS = Number(process.env.ATTR_LONG || 2);   // the slow keys are sparse (box turns 3-5: about one control key in a thousand over 50 ms): the steady burst gives the most keys a minute
 const SLOW_MS = 40, BAR_MS = 50, LONG_KEYS = 400;

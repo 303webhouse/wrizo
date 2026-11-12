@@ -460,7 +460,12 @@ await withHarness(async (app) => {
   const s2 = await app.evalJs(W8STATE);
   const w8b = await app.screenshot();
   // W8c-M: the bitmap mask back, MISPLACED (40% to the right: the field's left part has no mask over it) - a real mask mismatch
-  await app.evalJs(`(() => { const f = document.querySelector('.arbor2-vines-flash'); if (!f) return false; f.querySelector(':scope > g')?.removeAttribute('mask'); f.style.maskImage = ${JSON.stringify(s1 ? s1.maskImage : '')}; f.style.webkitMaskImage = ${JSON.stringify(s1 ? s1.maskImage : '')}; f.style.maskPosition = '40% 0'; f.style.webkitMaskPosition = '40% 0'; return true; })()`);
+  // PARKED 2026-11-12 (SUPERSEDED by W8c-M2 - box turn 6, F:\wrizo-work\arbor-turn6-0939Z, both swap legs: the mutant moved NO pixel, over 0 and max 0
+  // on 967,560. The flash's mask is sized 100% 100% (RhizomeField.tsx), and a percentage mask-position offsets by (box - mask) x %, which is 0 here:
+  // the mutant never misplaced anything). Original, verbatim:
+  // await app.evalJs(`(() => { const f = document.querySelector('.arbor2-vines-flash'); if (!f) return false; f.querySelector(':scope > g')?.removeAttribute('mask'); f.style.maskImage = ${JSON.stringify(s1 ? s1.maskImage : '')}; f.style.webkitMaskImage = ${JSON.stringify(s1 ? s1.maskImage : '')}; f.style.maskPosition = '40% 0'; f.style.webkitMaskPosition = '40% 0'; return true; })()`);
+  // SUCCESSOR (W8c-M2): misplaced by a LENGTH, 48 px to the right, which moves a full-size mask whatever its size
+  await app.evalJs(`(() => { const f = document.querySelector('.arbor2-vines-flash'); if (!f) return false; f.querySelector(':scope > g')?.removeAttribute('mask'); f.style.maskImage = ${JSON.stringify(s1 ? s1.maskImage : '')}; f.style.webkitMaskImage = ${JSON.stringify(s1 ? s1.maskImage : '')}; f.style.maskPosition = '48px 0px'; f.style.webkitMaskPosition = '48px 0px'; return true; })()`);
   await frames2(); await sleep(300);
   const s3 = await app.evalJs(W8STATE);
   const w8m = await app.screenshot();
@@ -474,8 +479,11 @@ await withHarness(async (app) => {
   const premise8 = clockPinned && !!s1 && !!s1b && !!s2 && s1.mask === 'bitmap' && /^url\("blob:/.test(s1.maskImage || '') && s1.maskImage === s1b.maskImage && s1.clip === s1b.clip && s1.clip === s2.clip && s2.gMask === 'url(#wz-rhizome-mask)' && s2.maskImage === 'none' && s1.drawing.len > 0 && s1.drawing.hash === s2.drawing.hash && boxOk;
   ok('W8c the flash copy\'s pre-rendered mask against the SVG mask, on the flash\'s OWN box of a FIXED page (the id fixed, the drawing\'s seed clock pinned), the holes re-measured after the hold and unchanged across both shots - over 9 levels on no more than 0.04% of the box\'s pixels',
     premise8 && !!c8 && c8.over <= c8.n * 0.0004, JSON.stringify({ clockPinned, s1: s1 && { ...s1, maskImage: undefined, clip: s1.clip ? s1.clip.length : null }, settled: !!s1 && !!s1b && s1.maskImage === s1b.maskImage && s1.clip === s1b.clip, holesKept: !!s1 && !!s2 && s1.clip === s2.clip, box: c8 && { ...c8, overPct: pct8(c8) }, wholeScreenW8b: { maskWas, ...cmp, overPct: cmp ? Math.round((cmp.over / cmp.n) * 1e6) / 1e4 : null } }));
-  ok('W8c-M (mutant, the bitmap mask misplaced 40% to the right): it landed (the flash layer\'s mask position reads 40%) and W8c\'s bar is RED on it',
-    premise8 && !!s3 && /40%/.test(String(s3.maskPos)) && s3.mask === 'bitmap' && !!m8 && !(m8.over <= m8.n * 0.0004), JSON.stringify({ maskPos: s3 && s3.maskPos, box: m8 && { ...m8, overPct: pct8(m8) } }));
+  // PARKED 2026-11-12 (SUPERSEDED by W8c-M2: its mutant was a no-op - see the parked mutant above). Original, verbatim:
+  // ok('W8c-M (mutant, the bitmap mask misplaced 40% to the right): it landed (the flash layer\'s mask position reads 40%) and W8c\'s bar is RED on it',
+  //   premise8 && !!s3 && /40%/.test(String(s3.maskPos)) && s3.mask === 'bitmap' && !!m8 && !(m8.over <= m8.n * 0.0004), JSON.stringify({ maskPos: s3 && s3.maskPos, box: m8 && { ...m8, overPct: pct8(m8) } }));
+  ok('W8c-M2 (mutant, the bitmap mask misplaced 48 px to the right): it landed (the flash layer\'s mask position reads 48px) and W8c\'s bar is RED on it',
+    premise8 && !!s3 && /^48px/.test(String(s3.maskPos)) && s3.mask === 'bitmap' && !!m8 && !(m8.over <= m8.n * 0.0004), JSON.stringify({ maskPos: s3 && s3.maskPos, box: m8 && { ...m8, overPct: pct8(m8) } }));
   const fin = await app.evalJs(READ);
   ok('W7 nothing stored: localStorage holds no key or value naming the swap', !/arbor2-(still|live)|swap/.test(fin.ls), fin.ls.length);
   return checks;
