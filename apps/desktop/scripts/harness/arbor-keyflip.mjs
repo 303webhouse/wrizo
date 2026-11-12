@@ -350,36 +350,41 @@ await withHarness(async (app) => {
   console.log(`KF-ATTRIB info-noroot-fade: --fade-dur writes on <html> held back: ${heldFade}`);
 
   // the Tutor drawer's direction (day room; the rule is not the night's): the fix against T2's rule 642, its coverage, and the mutant
+  // (Nov 12, run 43304604030: this fixture's page opens IN the Typewriter zoom - data-zoom='true' at rest - where rule 642 does not apply, so every
+  // Tutor-drawer read before this was blind. Each read now starts with the zoom OFF as the product sets it (ModeStage: data-zoom absent), waits, and
+  // reads the panel and its child, so the premise - the rule applies - is proven on the read itself)
+  const SETZ = (on) => `(() => { const c = document.querySelector('.mode-pagecol'); if (!c) return { err: 'no .mode-pagecol' }; if (${on}) c.setAttribute('data-zoom', 'true'); else c.removeAttribute('data-zoom'); return true; })()`;
+  const PANEL = `(() => { const c = document.querySelector('.mode-pagecol'); const p = document.querySelector('.wz-tutor-panel'); const k = p && p.firstElementChild; return { zoom: c ? c.getAttribute('data-zoom') : 'no pagecol', panel: p ? getComputedStyle(p).direction : null, kid: k ? getComputedStyle(k).direction : null }; })()`;
+  const openUnzoomed = async () => { await open('day'); await app.evalJs(NOTRANS); await app.evalJs(SETZ(false)); await sleep(300); return app.evalJs(PANEL); };
   const lh = {};
-  await open('day'); await app.evalJs(NOTRANS); await sleep(300);
-  lh.fix = await app.evalJs(SNAP); await sleep(200); lh.fix2 = await app.evalJs(SNAP);
+  lh.z1 = await openUnzoomed();
+  lh.fix = await app.evalJs(SNAP); await sleep(200); lh.fix2 = await app.evalJs(SNAP); lh.kFix = await app.evalJs(PANEL);
   lh.swapOld = await app.evalJs(SWAP('oldhas')); await sleep(200);
-  lh.old = await app.evalJs(SNAP);
+  lh.old = await app.evalJs(SNAP); lh.kOld = await app.evalJs(PANEL);
   lh.swapUn = await app.evalJs(SWAP('unins')); await sleep(200);
-  lh.none = await app.evalJs(SNAP);
-  await open('day'); await app.evalJs(NOTRANS); await sleep(300);
+  lh.none = await app.evalJs(SNAP); lh.kNone = await app.evalJs(PANEL);
+  lh.z2 = await openUnzoomed();
   lh.swapMut = await app.evalJs(SWAP('mutlookhas')); await sleep(200);
   lh.mut = await app.evalJs(SNAP);
   lh.swapMutOld = await app.evalJs(SWAP('oldhas')); await sleep(200);
   lh.mutOld = await app.evalJs(SNAP);
   lh.panelKids = await app.evalJs("document.querySelectorAll('.wz-tutor-panel > *').length");
-  // MUT-KF-LOOK-HAS-B: the panel's property overridden by an inserted rule, against T2's rule
-  await open('day'); await app.evalJs(NOTRANS); await sleep(300);
+  // MUT-KF-LOOK-HAS-B/C: the panel's property overridden by an inserted rule, against T2's rule
+  lh.z3 = await openUnzoomed();
   lh.swapMutB = await app.evalJs(SWAP('mutlookhasB')); await sleep(200);
-  lh.mutB = await app.evalJs(SNAP);
+  lh.mutB = await app.evalJs(SNAP); lh.kMutB = await app.evalJs(PANEL);
   lh.swapMutBOld = await app.evalJs(SWAP('oldhas')); await sleep(200);
   lh.mutBOld = await app.evalJs(SNAP);
-  // KF-LOOK-HAS-DYN: the product's own transition - the Typewriter zoom on, then off (data-zoom on .mode-pagecol, which the :has() reads) - and the
+  // KF-LOOK-HAS-DYN(-B): the product's own transition - the Typewriter zoom on, then off (data-zoom on .mode-pagecol, which the :has() reads) - and the
   // drawer comes back exactly as it was: the style query follows the panel's property both ways (its mutant: the query taken out)
-  const ZOOM = (on) => `(() => { const c = document.querySelector('.mode-pagecol'); if (!c) return { err: 'no .mode-pagecol' }; if (window.__kfZoomWas === undefined) window.__kfZoomWas = c.getAttribute('data-zoom'); if (${on}) c.setAttribute('data-zoom', 'true'); else if (window.__kfZoomWas == null) c.removeAttribute('data-zoom'); else c.setAttribute('data-zoom', window.__kfZoomWas); const p = document.querySelector('.wz-tutor-panel'); const k = p && p.firstElementChild; return { zoom: c.getAttribute('data-zoom'), panel: p ? getComputedStyle(p).direction : null, kid: k ? getComputedStyle(k).direction : null }; })()`;
   const dyn = async (mut) => {
-    await open('day'); await app.evalJs(NOTRANS); await sleep(300);
-    const d = { mut: mut ? await app.evalJs(SWAP('notutorq')) : null };
-    d.a = await app.evalJs(SNAP); d.at = await app.evalJs(ZOOM(false));
-    d.on = await app.evalJs(ZOOM(true)); await sleep(300);
-    d.onRead = await app.evalJs(ZOOM(true));
-    d.off = await app.evalJs(ZOOM(false)); await sleep(300);
-    d.b = await app.evalJs(SNAP); d.bt = await app.evalJs(ZOOM(false));
+    const d = { z: await openUnzoomed() };
+    d.mut = mut ? await app.evalJs(SWAP('notutorq')) : null; await sleep(200);
+    d.a = await app.evalJs(SNAP); d.at = await app.evalJs(PANEL);
+    d.on = await app.evalJs(SETZ(true)); await sleep(300);
+    d.onRead = await app.evalJs(PANEL);
+    d.off = await app.evalJs(SETZ(false)); await sleep(300);
+    d.b = await app.evalJs(SNAP); d.bt = await app.evalJs(PANEL);
     return d;
   };
   lh.dyn = await dyn(false);
@@ -476,20 +481,37 @@ await withHarness(async (app) => {
   // restyle (fix 1099, mutant 1095), so the rule it guarded is taken out of the fix). Original, verbatim:
   // ok(`MUT-KF-FLIP-FADE with the shade layers' own --fade-dur taken out, KF-FLIP is RED (printed: ${mutFade.tr.keyEls}/${mutFade.before.docEls})`,
   //   mutFade.tr && mutFade.tr.keyEls != null && !flipOk(mutFade), JSON.stringify({ tr: mutFade.tr, docEls: mutFade.before.docEls }));
-  ok(`KF-LOOK-HAS every element's computed opacity, colour and direction are the same with the fix as with T2's rule 642 (${LH.n} elements, ${LH.fixVsOld} differ); and T2's rule, taken out, changes ${LH.coverage} of them (coverage, 1 or more; ${LH.panelKids} in the Tutor drawer)`,
-    LH.n > 0 && LH.fixVsOld === 0 && LH.coverage >= 1, JSON.stringify(LH));
+  // PARKED 2026-11-12 (SUPERSEDED by KF-LOOK-HAS-B - BLIND, Actions run 43304604030: the fixture's page opens in the Typewriter zoom (data-zoom='true'),
+  // where rule 642 does not apply, so the fix and T2 agreed by default; its "coverage 1" was not the drawer's child, which read ltr in every state).
+  // Original, verbatim:
+  // ok(`KF-LOOK-HAS every element's computed opacity, colour and direction are the same with the fix as with T2's rule 642 (${LH.n} elements, ${LH.fixVsOld} differ); and T2's rule, taken out, changes ${LH.coverage} of them (coverage, 1 or more; ${LH.panelKids} in the Tutor drawer)`,
+  //   LH.n > 0 && LH.fixVsOld === 0 && LH.coverage >= 1, JSON.stringify(LH));
+  const kidOf = (r) => (r && r.kid) || null;
+  ok(`KF-LOOK-HAS-B with the zoom OFF (the panel reads ${lh.z1 && lh.z1.panel}): every element's computed opacity, colour and direction are the same with the fix as with T2's rule 642 (${LH.n} elements, ${LH.fixVsOld} differ); and T2's rule, taken out, changes ${LH.coverage} of them, the drawer's child among them (${kidOf(lh.kOld)} -> ${kidOf(lh.kNone)})`,
+    !!lh.z1 && lh.z1.panel === 'rtl' && lh.z1.zoom === null && LH.n > 0 && LH.fixVsOld === 0 && LH.coverage >= 1 && kidOf(lh.kFix) === 'ltr' && kidOf(lh.kOld) === 'ltr' && kidOf(lh.kNone) === 'rtl',
+    JSON.stringify({ z1: lh.z1, kFix: lh.kFix, kOld: lh.kOld, kNone: lh.kNone, LH }));
   // PARKED 2026-11-12 (SUPERSEDED by MUT-KF-LOOK-HAS-B - an instrument fault, Actions run 43299418991: the property removed through the CSSOM
   // (removeProperty on the rule) left the drawer's child as it was, 0 differ; a rule insertion is the edit every other read here uses). Original, verbatim:
   // ok(`MUT-KF-LOOK-HAS the Tutor drawer's custom property taken away: KF-LOOK-HAS is RED (${LH.mutVsOld} elements differ from T2's rule)`,
   //   lh.swapMut.tutorProp === 1 && LH.mutVsOld >= 1, JSON.stringify(LH));
   const mutBDiff = diff(lh.mutB, lh.mutBOld);
-  ok(`MUT-KF-LOOK-HAS-B the Tutor panel's custom property overridden (an inserted rule): KF-LOOK-HAS is RED (${mutBDiff} elements differ from T2's rule)`,
-    lh.swapMutB.inserted === 1 && mutBDiff >= 1, JSON.stringify({ mutBDiff, mutB: lh.swapMutB }));
+  // PARKED 2026-11-12 (SUPERSEDED by MUT-KF-LOOK-HAS-C - BLIND, run 43304604030: read in the zoom, where the rule does not apply). Original, verbatim:
+  // ok(`MUT-KF-LOOK-HAS-B the Tutor panel's custom property overridden (an inserted rule): KF-LOOK-HAS is RED (${mutBDiff} elements differ from T2's rule)`,
+  //   lh.swapMutB.inserted === 1 && mutBDiff >= 1, JSON.stringify({ mutBDiff, mutB: lh.swapMutB }));
+  ok(`MUT-KF-LOOK-HAS-C with the zoom OFF (the panel reads ${lh.z3 && lh.z3.panel}), the Tutor panel's custom property overridden (an inserted rule): KF-LOOK-HAS-B is RED (${mutBDiff} elements differ from T2's rule; the drawer's child reads ${kidOf(lh.kMutB)})`,
+    !!lh.z3 && lh.z3.panel === 'rtl' && lh.swapMutB.inserted === 1 && mutBDiff >= 1 && kidOf(lh.kMutB) === 'rtl', JSON.stringify({ z3: lh.z3, mutBDiff, kMutB: lh.kMutB, mutB: lh.swapMutB }));
   const dynOk = (d) => !!d && d.at && d.at.panel === 'rtl' && d.onRead && d.onRead.zoom === 'true' && d.onRead.panel !== 'rtl' && d.bt && d.bt.panel === 'rtl' && diff(d.a, d.b) === 0;
-  ok(`KF-LOOK-HAS-DYN the Typewriter zoom on, then off: the panel turns (rtl -> ${lh.dyn.onRead && lh.dyn.onRead.panel} -> ${lh.dyn.bt && lh.dyn.bt.panel}) and every element reads as it did before (${diff(lh.dyn.a, lh.dyn.b)} differ; the drawer's child ${lh.dyn.at && lh.dyn.at.kid} -> ${lh.dyn.bt && lh.dyn.bt.kid})`,
-    dynOk(lh.dyn), JSON.stringify({ at: lh.dyn.at, onRead: lh.dyn.onRead, bt: lh.dyn.bt, diff: diff(lh.dyn.a, lh.dyn.b) }));
-  ok(`MUT-KF-LOOK-HAS-DYN with the drawer's style query taken out, KF-LOOK-HAS-DYN's reading changes: the child reads ${lh.dynMut.bt && lh.dynMut.bt.kid} after the zoom (the fix reads ${lh.dyn.bt && lh.dyn.bt.kid})`,
-    !!lh.dynMut.bt && !!lh.dyn.bt && lh.dynMut.bt.kid !== lh.dyn.bt.kid, JSON.stringify({ dynMut: { at: lh.dynMut.at, bt: lh.dynMut.bt }, fix: lh.dyn.bt }));
+  // PARKED 2026-11-12 (SUPERSEDED by KF-LOOK-HAS-DYN-B and its mutant - BLIND, run 43304604030: the "off" restored the zoom the page OPENED in,
+  // data-zoom='true', so the panel never read rtl and the child read ltr in every state). Original, verbatim:
+  // ok(`KF-LOOK-HAS-DYN the Typewriter zoom on, then off: the panel turns (rtl -> ${lh.dyn.onRead && lh.dyn.onRead.panel} -> ${lh.dyn.bt && lh.dyn.bt.panel}) and every element reads as it did before (${diff(lh.dyn.a, lh.dyn.b)} differ; the drawer's child ${lh.dyn.at && lh.dyn.at.kid} -> ${lh.dyn.bt && lh.dyn.bt.kid})`,
+  //   dynOk(lh.dyn), JSON.stringify({ at: lh.dyn.at, onRead: lh.dyn.onRead, bt: lh.dyn.bt, diff: diff(lh.dyn.a, lh.dyn.b) }));
+  // ok(`MUT-KF-LOOK-HAS-DYN with the drawer's style query taken out, KF-LOOK-HAS-DYN's reading changes: the child reads ${lh.dynMut.bt && lh.dynMut.bt.kid} after the zoom (the fix reads ${lh.dyn.bt && lh.dyn.bt.kid})`,
+  //   !!lh.dynMut.bt && !!lh.dyn.bt && lh.dynMut.bt.kid !== lh.dyn.bt.kid, JSON.stringify({ dynMut: { at: lh.dynMut.at, bt: lh.dynMut.bt }, fix: lh.dyn.bt }));
+  const dynOkB = (d) => dynOk(d) && kidOf(d.at) === 'ltr' && kidOf(d.bt) === 'ltr' && d.at.zoom === null && d.bt.zoom === null;
+  ok(`KF-LOOK-HAS-DYN-B from the zoom OFF, the Typewriter zoom on, then off: the panel turns (${lh.dyn.at && lh.dyn.at.panel} -> ${lh.dyn.onRead && lh.dyn.onRead.panel} -> ${lh.dyn.bt && lh.dyn.bt.panel}), the drawer's child holds ltr (${kidOf(lh.dyn.at)} -> ${kidOf(lh.dyn.bt)}) and every element reads as it did before (${diff(lh.dyn.a, lh.dyn.b)} differ)`,
+    dynOkB(lh.dyn), JSON.stringify({ at: lh.dyn.at, onRead: lh.dyn.onRead, bt: lh.dyn.bt, diff: diff(lh.dyn.a, lh.dyn.b) }));
+  ok(`MUT-KF-LOOK-HAS-DYN-B with the drawer's style query taken out, KF-LOOK-HAS-DYN-B is RED (the child reads ${kidOf(lh.dynMut.at)} -> ${kidOf(lh.dynMut.bt)})`,
+    !!lh.dynMut.mut && lh.dynMut.mut.containers === 1 && !dynOkB(lh.dynMut), JSON.stringify({ dynMut: { mut: lh.dynMut.mut, at: lh.dynMut.at, bt: lh.dynMut.bt } }));
   ok(`KF-SCAN-HAS no selector in src/**/*.css has a universal subject under a :has() (${hasHits.length}); the scanner finds T2's rule 642 (${oldHasHits.length} of 1, liveness)`,
     hasHits.length === 0 && oldHasHits.length === 1, JSON.stringify({ hasHits, oldHasHits }));
   ok(`KF-SPEC every rule the fix rewrote keeps T2's specificity (${SPEC_PAIRS.map((p) => `${p.what} ${JSON.stringify(p.was)} -> ${JSON.stringify(p.now)}`).join('; ')}); the calculator reads known values and sees one attribute fewer (liveness)`,
