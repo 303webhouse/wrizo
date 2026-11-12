@@ -155,8 +155,6 @@ try { await withHarness(async (app) => {
       return { theme: root.getAttribute('data-theme'), flag: new URLSearchParams(location.search).get('flux3'), layer: document.querySelectorAll('[data-flux3-layer]').length,
         scale: cr && cv.offsetWidth ? cr.width / cv.offsetWidth : null, focused: !!ed && document.activeElement === ed, before: ed ? ed.textContent.length : -1,
         served: scripts.length ? scripts[0].replace(/^.*\\//, '') : null, instrument: !!window.__f3z }; })()`);
-    // the burn (the mutant): a synchronous 12 ms busy-wait on every keydown, ahead of the app's own handlers
-    if (arm.burn) await ev(`(() => { window.__burnN = 0; document.addEventListener('keydown', () => { const t = performance.now(); while (performance.now() - t < ${BURN_MS}) { /* burn */ } window.__burnN += 1; }, true); return true; })()`);
     // the meter (flux3-latency's, verbatim in method)
     await ev(`(() => {
       window.__lat = []; let t0 = 0;
@@ -166,6 +164,9 @@ try { await withHarness(async (app) => {
       document.addEventListener('keydown', kd, true); document.addEventListener('beforeinput', bi, true);
       window.__latOff = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('beforeinput', bi, true); };
       return true; })()`);
+    // the burn (the mutant): a synchronous 12 ms busy-wait on every keydown. It is installed AFTER the meter, so the meter's keydown stamp (the same phase, registered first, so it runs first) is taken
+    // BEFORE the burn and the 12 ms is inside the measured interval. (Round 1 of this probe installed it first: the stamp then came after the burn, the burn was invisible, and MUT-z went red on its premise.)
+    if (arm.burn) await ev(`(() => { window.__burnN = 0; document.addEventListener('keydown', () => { const t = performance.now(); while (performance.now() - t < ${BURN_MS}) { /* burn */ } window.__burnN += 1; }, true); return true; })()`);
     let typed = '';
     for (let i = 0; i < KEYS; i += 1) { const ch = CYCLE[(round * 7 + i) % CYCLE.length]; typed += ch; await app.typeKeys(ch); await sleep(GAP); }
     await sleep(250);
