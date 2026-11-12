@@ -200,6 +200,7 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
   // nothing and mounts at REST exactly as before. Read-and-clear, so an
   // ordinary navigation that merely follows a cascade travel never inherits a
   // stale rail — the baton is passed once and consumed once.
+  const logSet = (label: string) => { const tl = (window as unknown as { __tl?: unknown[][] }).__tl; if (tl) tl.push([Math.round(performance.now()), 'set', label]); };   // #84 PROBE ONLY
   const [state, setState] = useState<CascadeState>(() => {
     const h = takeCascadeHandoff();
     return h ? { category: h.category, survey: h.survey, docked: false } : REST;
@@ -207,7 +208,7 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
   const currentEntryId = subject.entry.id;
 
   // the two-drawer law: this drawer registers its close path, so an exclusion handoff shuts it exactly as a click would [Cascade §4]
-  useEffect(() => registerDrawer('cascade', () => setState(REST)), []);
+  useEffect(() => registerDrawer('cascade', () => { logSet('drawer-law-close'); setState(REST); }), []);
 
   // the open/close announcement is an effect keyed on one derived truth (a category chosen and not docked), so every path announces and a setState updater stays pure [Cascade §5]
   const cascadeOccupiesBand = !!state.category && !state.docked;
@@ -217,6 +218,7 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
   }, [cascadeOccupiesBand]);
 
   const toggleCategory = (id: CategoryId) => {
+    logSet('toggle ' + id);
     setState((s) => {
       if (s.category === id) {
         // S2: reopening the SAME category while docked restores the panel
@@ -239,9 +241,10 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
     });
   };
 
-  const openSurvey = (kind: CascadeSurveyKind) => setState((s) => ({ ...s, survey: kind, docked: false }));
+  const openSurvey = (kind: CascadeSurveyKind) => { logSet('openSurvey'); setState((s) => ({ ...s, survey: kind, docked: false })); };
 
   const closePanel = () => {
+    logSet('closePanel');
     setState((s) => {
       if (!s.category) return s;
       if (s.survey && availableCascadeMargin() >= DOCK_FLOOR_PX) return { ...s, docked: true };
@@ -249,9 +252,10 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
     });
   };
 
-  const dismissSurvey = () => setState(REST);   // the effect above announces
+  const dismissSurvey = () => { logSet('dismissSurvey'); setState(REST); };   // the effect above announces
 
   const onEscape = () => {
+    logSet('onEscape');
     setState((s) => {
       if (!s.category) return s;
       if (s.docked) return REST; // Escape dismisses a docked survey too
@@ -273,6 +277,7 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
       if (target?.closest?.('.wz-strip, .desk-frame-cascade-anchor')) return;
       if (e.key === 'Escape') { onEscape(); return; }
       if (state.docked) return; // a docked survey survives keystrokes
+      logSet('any-key ' + e.key);
       setState(REST);
     };
     document.addEventListener('keydown', onKeyDown);
@@ -283,7 +288,7 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
   // PW1 S1/S5 — walk back from a survey to the panel, which is now the list
   // (PW3). Deliberately the SAME transition Escape's own "survey -> panel" step
   // takes, rather than a second path that could drift from it.
-  const closeSurvey = () => setState((s) => (s.survey ? { ...s, survey: null } : s));
+  const closeSurvey = () => { logSet('closeSurvey'); setState((s) => (s.survey ? { ...s, survey: null } : s)); };
 
   // PW1 S4 — travel that KEEPS THE RAIL, and the ONE place it is minted. Stages
   // the cascade's shape for the destination's own mount, then navigates with
@@ -297,7 +302,7 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
     navigate(routeForEntry(entry), { state: { fromBoardId: subject.entry.id, fromBoardTitle: originTitle(subject.entry) } });
   };
 
-  const ctx: CascadeContext = { subject, project, navigate, openSurvey, closeSurvey, travelFromCascade, closeCascade: () => setState(REST) };
+  const ctx: CascadeContext = { subject, project, navigate, openSurvey, closeSurvey, travelFromCascade, closeCascade: () => { logSet('closeCascade'); setState(REST); } };
 
   const strip = (
     <div className="wz-strip">
