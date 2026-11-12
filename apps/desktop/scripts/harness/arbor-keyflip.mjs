@@ -75,13 +75,17 @@ const STATE = `(() => { const root = document.documentElement, pg = document.que
     docEls: document.querySelectorAll('*').length, liveEls: document.querySelectorAll('.arbor2-live *').length,
     bundle: [...document.scripts].map((s) => s.getAttribute('src') || '').filter((s) => s.indexOf('assets/index-') >= 0).join(',') }; })()`;
 // the read recorder: every getComputedStyle on a shade layer, inside the key's task or after it; the flip's own moment and whether it came inside
+// SUCCESSOR (Nov 12): every read and the flip also carry the FRAME they fell in (a rAF counter armed before the key). Actions run 43277044562 showed the
+// inKey flag (cleared by a timeout after the input event) stays set across frames: the fix's read landed 11-55 ms after the flip and was filed inKey,
+// where T2's pattern (the mutant) lands 1 ms after it. A read in the flip's own frame is the forced read; the fix's lands two frames later.
 const RECORD = `(() => {
-  const G = window.__kfg = { inKey: [], after: [], flips: [] }; let inKey = false; const t0 = performance.now();
+  const G = window.__kfg = { inKey: [], after: [], flips: [], reads: [] }; let inKey = false, frame = 0; const t0 = performance.now();
+  const tick = () => { frame += 1; requestAnimationFrame(tick); }; requestAnimationFrame(tick);
   const orig = window.__kfOrig || window.getComputedStyle; window.__kfOrig = orig;
-  window.getComputedStyle = function (el, ps) { try { if (el && el.matches && el.matches('.arbor2-pergola, .arbor2-pagesh')) (inKey ? G.inKey : G.after).push(Math.round(performance.now() - t0)); } catch (e) { /* the read goes on */ } return orig.call(window, el, ps); };
+  window.getComputedStyle = function (el, ps) { try { if (el && el.matches && el.matches('.arbor2-pergola, .arbor2-pagesh')) { const t = Math.round(performance.now() - t0); (inKey ? G.inKey : G.after).push(t); G.reads.push({ t, frame }); } } catch (e) { /* the read goes on */ } return orig.call(window, el, ps); };
   addEventListener('keydown', () => { inKey = true; }, true);
   addEventListener('input', () => { setTimeout(() => { inKey = false; }, 0); }, true);
-  new MutationObserver(() => { G.flips.push({ t: Math.round(performance.now() - t0), inKey, on: document.documentElement.getAttribute('data-wz-writing') }); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-wz-writing'] });
+  new MutationObserver(() => { G.flips.push({ t: Math.round(performance.now() - t0), inKey, frame, on: document.documentElement.getAttribute('data-wz-writing') }); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-wz-writing'] });
   return true; })()`;
 const READ_REC = `(() => window.__kfg)()`;
 // MUT-KF-READ: T2's pattern, rebuilt - an observer of the flip that reads the shade layer's style at once
@@ -91,9 +95,12 @@ const SNAP = `(() => { const r = []; const g = window.__kfOrig || getComputedSty
 // the stylesheet edits, in the running page (the sheet that carries the fix)
 const SWAP = (mode) => `((mode) => {
   const OLD = ${JSON.stringify(OLD_RULES)};
-  let sh = null;
-  for (const s of document.styleSheets) { let rs; try { rs = s.cssRules; } catch (e) { continue; } for (const r of rs) { if (r.cssText && r.cssText.indexOf('--arbor2-bar-dim') >= 0) { sh = s; break; } } if (sh) break; }
+  // the sheet is found once by its marker and remembered for the page (Actions run 43277044562: once 'old' had taken the marker out, 'none' could
+  // not find the sheet and changed nothing, so the coverage read compared T2's rules with themselves)
+  let sh = window.__kfSheet || null;
+  if (!sh) for (const s of document.styleSheets) { let rs; try { rs = s.cssRules; } catch (e) { continue; } for (const r of rs) { if (r.cssText && r.cssText.indexOf('--arbor2-bar-dim') >= 0) { sh = s; break; } } if (sh) break; }
   if (!sh) return { mode, err: 'the sheet carrying --arbor2-bar-dim was not found' };
+  window.__kfSheet = sh;
   const isCont = (r) => typeof CSSContainerRule !== 'undefined' && r instanceof CSSContainerRule && /--arbor2-(bar-dim|hook-lt)/.test(r.conditionText || r.cssText);
   const isProp = (name) => (r) => r instanceof CSSStyleRule && r.style.getPropertyValue(name).trim() === 'on';
   const del = (pred) => { let n = 0; for (let i = sh.cssRules.length - 1; i >= 0; i -= 1) if (pred(sh.cssRules[i])) { sh.deleteRule(i); n += 1; } return n; };
@@ -117,7 +124,9 @@ const SWAP = (mode) => `((mode) => {
 })(${JSON.stringify(mode)})`;
 
 // ---- the trace of one key ---------------------------------------------------------------------------------------------------------------------
-const CATS = ['toplevel', 'devtools.timeline', 'disabled-by-default-devtools.timeline'];
+// (+ the stack of each restyle and the invalidation tracking, Nov 12: Actions run 43277044562 left a 1096-element forced restyle in the key that is the
+// same with the fix, with T2's rules and with every flip rule taken out - these two name what forces it and what it restyles)
+const CATS = ['toplevel', 'devtools.timeline', 'disabled-by-default-devtools.timeline', 'disabled-by-default-devtools.timeline.stack', 'disabled-by-default-devtools.timeline.invalidationTracking'];
 const KEYTYPES = new Set(['keydown', 'keypress', 'textInput', 'beforeinput', 'input']);
 const analyse = (raw) => {
   const evs = raw.slice().sort((a, b) => a.ts - b.ts);
@@ -141,7 +150,20 @@ const analyse = (raw) => {
   const counted = win.filter((s) => Number.isFinite(els(s)));
   const big = counted.reduce((m, s) => (els(s) > (m ? els(m) : -1) ? s : m), null);
   const r1 = (x) => Math.round(x * 10) / 10;
-  return { keyTasks: keyTasks.length, keyTaskMs: r1(keyTasks.reduce((a, t) => a + (t.end - t.ts), 0) / 1000), restyles: win.length, counted: counted.length,
+  // attribution (information): each restyle's own stack (who forced it) and the invalidation reasons in the window (what it restyled, and why)
+  const frames = (s) => { const st = (s.args.beginData && s.args.beginData.stackTrace) || (s.args.data && s.args.data.stackTrace) || null; return st ? st.slice(0, 4).map((f) => ({ fn: f.functionName || '?', url: String(f.url || ''), line: f.lineNumber, col: f.columnNumber })) : []; };
+  const show = (s) => ({ els: els(s), ms: r1((s.end - s.ts) / 1000), at: r1((s.ts - K) / 1000), forced: inKey(s), stack: frames(s).map((f) => `${f.fn}@${f.url.split('/').pop()}:${f.line}:${f.col}`) });
+  const inv = {};
+  for (const e of evs) {
+    if (e.ts < K - 2000 || e.ts > K + WINDOW_US || !/InvalidationTracking/.test(e.name)) continue;
+    const d = (e.args && e.args.data) || {};
+    const why = d.reason || (d.changedAttribute ? 'attr ' + d.changedAttribute : d.changedClass ? 'class ' + d.changedClass : d.changedId ? 'id ' + d.changedId : d.changedPseudo ? 'pseudo ' + d.changedPseudo : '?');
+    const key = `${e.name.replace('InvalidationTracking', '')} | ${why}${d.extraData ? ' (' + String(d.extraData).slice(0, 40) + ')' : ''} | ${String(d.nodeName || '').slice(0, 70)}`;
+    inv[key] = (inv[key] || 0) + 1;
+  }
+  const attrib = { restyles: win.slice().sort((a, b) => els(b) - els(a)).slice(0, 6).map(show), invalidations: Object.entries(inv).sort((a, b) => b[1] - a[1]).slice(0, 18),
+    forcedFrames: [...new Map(win.filter(inKey).flatMap(frames).map((f) => [`${f.url}:${f.line}:${f.col}`, f])).values()].slice(0, 6) };
+  return { attrib, keyTasks: keyTasks.length, keyTaskMs: r1(keyTasks.reduce((a, t) => a + (t.end - t.ts), 0) / 1000), restyles: win.length, counted: counted.length,
     keyEls: big ? els(big) : null, keyElsMs: big ? r1((big.end - big.ts) / 1000) : null, keyElsForced: big ? inKey(big) : null,
     forcedEls: counted.filter(inKey).reduce((a, s) => a + els(s), 0), forcedMs: r1(win.filter(inKey).reduce((a, s) => a + (s.end - s.ts), 0) / 1000),
     sumEls: counted.reduce((a, s) => a + els(s), 0) };
@@ -150,6 +172,10 @@ const analyse = (raw) => {
 const flipOk = (m) => !!m && !!m.tr && m.tr.keyEls != null && !!m.before && m.tr.keyEls <= SHARE * m.before.docEls;
 const readOk = (m) => !!m && !!m.rec && m.rec.inKey.length === 0;
 const readLive = (m) => !!m && !!m.rec && m.rec.after.length >= 1 && m.rec.flips.length >= 1 && m.rec.after[0] >= m.rec.flips[0].t + 8;
+// the successors' readers: by FRAME - no shade read in the flip's own frame; at least one shade read seen in a later frame (the recorder is live)
+const flipFrame = (m) => (m && m.rec && m.rec.flips.length ? m.rec.flips[0].frame : null);
+const readOkB = (m) => flipFrame(m) != null && m.rec.reads.filter((r) => r.t >= m.rec.flips[0].t).every((r) => r.frame > flipFrame(m));
+const readLiveB = (m) => flipFrame(m) != null && m.rec.reads.some((r) => r.t >= m.rec.flips[0].t && r.frame > flipFrame(m));
 
 await withHarness(async (app) => {
   await app.goto('/');
@@ -203,8 +229,16 @@ await withHarness(async (app) => {
     const tr = await traceKey();
     const after = await app.evalJs(STATE);
     const rec = await app.evalJs(READ_REC);
-    const m = { label, swap: sw, before, after, tr, rec };
-    console.log(`KF ${label}: ` + JSON.stringify({ swap: sw, docEls: before.docEls, liveEls: before.liveEls, writing: after.writing, tr, reads: { inKey: rec.inKey, after: rec.after.slice(0, 3), flips: rec.flips } }));
+    const { attrib, ...trShort } = tr || {};
+    const m = { label, swap: sw, before, after, tr: trShort, rec };
+    console.log(`KF ${label}: ` + JSON.stringify({ swap: sw, docEls: before.docEls, liveEls: before.liveEls, writing: after.writing, tr: trShort, reads: { inKey: rec.inKey, after: rec.after.slice(0, 3), frames: rec.reads.slice(0, 4), flips: rec.flips } }));
+    if (attrib && /^(fix-1|old-1|info-floor)$/.test(label)) {
+      console.log(`KF-ATTRIB ${label} restyles: ` + JSON.stringify(attrib.restyles));
+      console.log(`KF-ATTRIB ${label} invalidations: ` + JSON.stringify(attrib.invalidations));
+      // the code at each frame that forced a restyle inside the key, read from the bundle the page loaded
+      const code = attrib.forcedFrames.length ? await app.evalJs(`(async () => { const F = ${JSON.stringify(attrib.forcedFrames)}; const cache = {}; const out = []; for (const f of F) { try { if (!cache[f.url]) cache[f.url] = (await (await fetch(f.url)).text()).split('\\n'); const L = cache[f.url][f.line] || ''; out.push({ at: f.fn + ' ' + f.url.split('/').pop() + ':' + f.line + ':' + f.col, code: L.slice(Math.max(0, f.col - 160), f.col + 160) }); } catch (e) { out.push({ at: f.url, err: String(e) }); } } return out; })()`) : [];
+      console.log(`KF-ATTRIB ${label} forcing code: ` + JSON.stringify(code));
+    }
     return m;
   };
 
@@ -260,14 +294,24 @@ await withHarness(async (app) => {
     fix.every(flipOk), JSON.stringify(fix.map((m) => ({ tr: m.tr, docEls: m.before.docEls, liveEls: m.before.liveEls }))));
   ok(`MUT-KF-FLIP with T2's two rules put back in the running page, KF-FLIP is RED on all ${REOPENS} reopens (printed: ${old.map((m) => `${m.tr.keyEls}/${m.before.docEls}`).join(', ')})`,
     old.every((m) => m.tr && m.tr.keyEls != null && !flipOk(m)), JSON.stringify(old.map((m) => ({ tr: m.tr, docEls: m.before.docEls, liveEls: m.before.liveEls }))));
-  ok('KF-READ no getComputedStyle on a shade layer inside the key\'s task, on every fix reopen; and the pergola\'s own read IS seen, 8 ms or more after the flip (the recorder is live)',
-    fix.every((m) => readOk(m) && readLive(m)), JSON.stringify(fix.map((m) => m.rec)));
-  ok('MUT-KF-READ T2\'s pattern rebuilt in the page (an observer of the flip reading the shade layer\'s style at once): KF-READ is RED', !readOk(mutRead), JSON.stringify(mutRead.rec));
-  ok(`KF-LOOK-REST by night at rest, every element's computed opacity and colour are the same with the fix as with T2's rules (${L.n} elements, ${L.restFixVsOld} differ); and T2's rules change ${L.coverage} of them (coverage, 1 or more)`,
-    look.room === 'night' && L.n > 0 && L.restFixVsOld === 0 && L.coverage >= 1 && look.swapOld.containers === 2 && look.swapOld.inserted === 2, JSON.stringify(L));
+  // PARKED 2026-11-12 (SUPERSEDED by KF-READ-B - an instrument fault, Actions run 43277044562, both legs: the inKey flag is cleared by a timeout after the
+  // input event and stayed set across frames, so the fix's read (11-55 ms after the flip, two frames on) was filed inKey; T2's pattern, rebuilt as the
+  // mutant, lands 1 ms after the flip). Original, verbatim:
+  // ok('KF-READ no getComputedStyle on a shade layer inside the key\'s task, on every fix reopen; and the pergola\'s own read IS seen, 8 ms or more after the flip (the recorder is live)',
+  //   fix.every((m) => readOk(m) && readLive(m)), JSON.stringify(fix.map((m) => m.rec)));
+  // ok('MUT-KF-READ T2\'s pattern rebuilt in the page (an observer of the flip reading the shade layer\'s style at once): KF-READ is RED', !readOk(mutRead), JSON.stringify(mutRead.rec));
+  ok('KF-READ-B no getComputedStyle on a shade layer in the FRAME of the flip, on every fix reopen; and a shade read IS seen in a later frame (the recorder is live)',
+    fix.every((m) => readOkB(m) && readLiveB(m)), JSON.stringify(fix.map((m) => ({ flips: m.rec.flips, reads: m.rec.reads }))));
+  ok('MUT-KF-READ-B T2\'s pattern rebuilt in the page (an observer of the flip reading the shade layer\'s style at once): KF-READ-B is RED', !readOkB(mutRead), JSON.stringify({ flips: mutRead.rec.flips, reads: mutRead.rec.reads }));
+  // PARKED 2026-11-12 (SUPERSEDED by KF-LOOK-REST-B - an instrument fault, Actions run 43277044562: the 'none' edit found its sheet by a marker that the
+  // 'old' edit had already taken out, so it changed nothing and the coverage compared T2's rules with themselves (0); the mutant read 22). Original, verbatim:
+  // ok(`KF-LOOK-REST by night at rest, every element's computed opacity and colour are the same with the fix as with T2's rules (${L.n} elements, ${L.restFixVsOld} differ); and T2's rules change ${L.coverage} of them (coverage, 1 or more)`,
+  //   look.room === 'night' && L.n > 0 && L.restFixVsOld === 0 && L.coverage >= 1 && look.swapOld.containers === 2 && look.swapOld.inserted === 2, JSON.stringify(L));
+  ok(`KF-LOOK-REST-B by night at rest, every element's computed opacity and colour are the same with the fix as with T2's rules (${L.n} elements, ${L.restFixVsOld} differ); and T2's two rules, taken out, change ${L.coverage} of them (coverage, 1 or more)`,
+    look.room === 'night' && L.n > 0 && L.restFixVsOld === 0 && L.coverage >= 1 && look.swapOld.containers === 2 && look.swapOld.inserted === 2 && look.swapNone.oldGone === 2, JSON.stringify(L));
   ok(`KF-LOOK-WRITING by night while writing, the same with the fix as with T2's rules (${L.writeFixVsOld} differ)`,
     L.writing === 'true' && L.writeFixVsOld === 0 && look.wSwapOld.inserted === 2, JSON.stringify(L));
-  ok(`MUT-KF-LOOK the fix's two custom properties taken away: KF-LOOK-REST is RED (${L.mutVsOld} elements differ from T2's rules)`,
+  ok(`MUT-KF-LOOK the fix's two custom properties taken away: KF-LOOK-REST(-B) is RED (${L.mutVsOld} elements differ from T2's rules)`,
     look.mSwap.barProp === 1 && look.mSwap.hookProp === 1 && L.mutVsOld >= 1, JSON.stringify(L));
   ok(`KF-SCAN no selector in src/**/*.css (${cssFiles.length} files) has a universal subject under a condition that flips at the key (${scanHits.length}); the scanner finds T2's ${oldHits.length} of 2 (liveness)`,
     cssFiles.length >= 5 && scanHits.length === 0 && oldHits.length === 2, JSON.stringify({ scanHits, oldHits }));
