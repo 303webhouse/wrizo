@@ -128,11 +128,12 @@ export function FluxBlockCaret() {
       const atRowStart = (): DOMRect | null => {
         if (!row) return null;
         const rr = row.getBoundingClientRect();
-        if (!rr.height) return null;
         const cs = getComputedStyle(row);
-        const lh = parseFloat(cs.lineHeight) || rr.height;
+        // #61: an EMPTY row (an empty line between two others) is an inline-block of height 0 that sits at the TOP of its line, so its start is still the caret's place, one line of height. Giving up here sent the empty line to the probe below, whose insertNode / removeChild moved the selection to the end of the line above.
+        const lh = parseFloat(cs.lineHeight) || rr.height || (parseFloat(cs.fontSize) || 16) * 1.4;
+        if (!rr.height && !(rr.width > 0 && lh > 0)) return null;
         const sc = row.offsetHeight > 0 ? rr.height / row.offsetHeight : 1;   // the page may be painted at a scale
-        return new DOMRect(rr.left + (parseFloat(cs.paddingLeft) || 0) * sc + (parseFloat(cs.textIndent) || 0) * sc, rr.top, 0, Math.min(rr.height, lh * sc));
+        return new DOMRect(rr.left + (parseFloat(cs.paddingLeft) || 0) * sc + (parseFloat(cs.textIndent) || 0) * sc, rr.top, 0, rr.height ? Math.min(rr.height, lh * sc) : lh * sc);
       };
       if (!r) { const fromRow = atRowStart(); if (fromRow) r = fromRow; }
       if (!r && !probe) return;   // keep the drawn caret; the next selectionchange resolves an empty line
