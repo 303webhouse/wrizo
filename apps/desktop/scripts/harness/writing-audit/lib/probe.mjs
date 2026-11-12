@@ -32,7 +32,9 @@ export function probeInstall() {
     return last ? { node: last, off: last.data.length } : { node: e, off: 0 };
   };
   const gchar = (e, i) => { const a = gpoint(e, i), b = gpoint(e, i + 1); const rg = document.createRange(); rg.setStart(a.node, a.off); rg.setEnd(b.node, b.off); const r = [...rg.getClientRects()].find((q) => q.height > 0) || rg.getBoundingClientRect(); return r; };
-  const lhOf = (e) => { const v = parseFloat(getComputedStyle(e).lineHeight); return Number.isFinite(v) && v > 0 ? v : (parseFloat(getComputedStyle(e).fontSize) || 16) * 1.5; };
+  // the CSS line height is the UNSCALED one: the Typewriter zooms the page (a transform), and rectangles are drawn scaled, so the measured pitch is the CSS value times the page's scale (#70: 27.2 px CSS, 43.5 px drawn, in Arbor and Machina)
+  const scaleOf = (e) => { const w = e.offsetWidth; const r = e.getBoundingClientRect(); return w > 0 && r.width > 0 ? r.width / w : 1; };
+  const lhOf = (e) => { const v = parseFloat(getComputedStyle(e).lineHeight); return (Number.isFinite(v) && v > 0 ? v : (parseFloat(getComputedStyle(e).fontSize) || 16) * 1.5) * scaleOf(e); };
   const gbox = (e, p) => {
     const text = plainOf(e), n = text.length, lines = text.split('\n');
     let line = 0, acc = 0;
@@ -162,8 +164,11 @@ export function probeInstall() {
   const diff = async (a64, b64) => {
     const A = await decode(a64), B = await decode(b64);
     if (A.width !== B.width || A.height !== B.height) return null;
+    // only inside the editor: the page around it moves on its own (Machina's progress tick steps after an Enter, #70), and a tick is not a caret
+    const E = ed(), ER = E ? E.getBoundingClientRect() : null;
+    const gx0 = ER ? Math.max(0, Math.floor(ER.left) - 4) : 0, gx1 = ER ? Math.min(A.width - 1, Math.ceil(ER.right) + 4) : A.width - 1, gy0 = ER ? Math.max(0, Math.floor(ER.top) - 4) : 0, gy1 = ER ? Math.min(A.height - 1, Math.ceil(ER.bottom) + 4) : A.height - 1;
     let x0 = 1e9, x1 = -1, y0 = 1e9, y1 = -1, n = 0;
-    for (let y = 0; y < A.height; y++) for (let x = 0; x < A.width; x++) { const i = (y * A.width + x) * 4; if (Math.abs(A.data[i] - B.data[i]) + Math.abs(A.data[i + 1] - B.data[i + 1]) + Math.abs(A.data[i + 2] - B.data[i + 2]) > 90) { n++; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; } }
+    for (let y = gy0; y <= gy1; y++) for (let x = gx0; x <= gx1; x++) { const i = (y * A.width + x) * 4; if (Math.abs(A.data[i] - B.data[i]) + Math.abs(A.data[i + 1] - B.data[i + 1]) + Math.abs(A.data[i + 2] - B.data[i + 2]) > 90) { n++; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; } }
     return box2(x0, x1, y0, y1, n);
   };
   const clear = () => { getSelection().removeAllRanges(); return true; };
