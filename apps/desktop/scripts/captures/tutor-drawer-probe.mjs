@@ -25,7 +25,7 @@
 // No assertions, no PASS/FAIL, no exit code - prints one JSON object and
 // exits 0. Chat 1 runs it and posts the output; the fix for bug 1 comes
 // from reading THIS, not from re-guessing the algebra a second time.
-// Run: node scripts/harness/tutor-drawer-probe.mjs   (from apps/desktop, dist-web freshly built, box turn granted)
+// Run: node scripts/captures/tutor-drawer-probe.mjs   (from apps/desktop, dist-web freshly built, box turn granted)
 import { withHarness } from '../runtime-verify.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

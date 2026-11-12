@@ -244,7 +244,7 @@ function makeEditor(m, id) {
 // PART F — the capture's logout frames (Batch 10's ship gate), pinned in source. The capture itself needs a box turn.
 // =============================================================================
 {
-  const cap = fs.readFileSync(path.join(DESKTOP, 'scripts', 'harness', 'arrival-signin-capture.mjs'), 'utf8').replace(/\r\n?/g, '\n');
+  const cap = fs.readFileSync(path.join(DESKTOP, 'scripts', 'captures', 'arrival-signin-capture.mjs'), 'utf8').replace(/\r\n?/g, '\n');
   ok('(F1) the capture takes all three: the sheet\'s first step, its confirm step, and a page with "Signing out…"',
     /save\(app, vp\.name, theme\.name, 'logout-sheet'\)/.test(cap) && /save\(app, vp\.name, theme\.name, 'logout-confirm'\)/.test(cap) && /save\(app, vp\.name, theme\.name, 'signing-out'\)/.test(cap), '');
   ok('(F2) sync is stubbed in the page, failing so a record stays unsaved, and stalling once __stall is set so the push is still waiting',

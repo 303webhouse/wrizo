@@ -12,7 +12,7 @@
 //   arbor-font-heading    the Sliver's type section open on Arbor (Draft,
 //                         framed) — the heading now reads "Font".
 //
-// Run: WS_BOX_TURN=<token> node scripts/harness/theme-leftovers-capture.mjs   (from apps/desktop, dist-web freshly built)
+// Run: WS_BOX_TURN=<token> node scripts/captures/theme-leftovers-capture.mjs   (from apps/desktop, dist-web freshly built)
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
