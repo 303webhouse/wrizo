@@ -419,6 +419,11 @@ await withHarness(async (app) => {
   // contents were last open, per page — and the survey's `‹` is always the way
   // back to the list.
   // ==========================================================================
+  await app.evalJs(`(() => { window.__tl = []; const t0 = performance.now(); const log = (k, d) => window.__tl.push([Math.round(performance.now() - t0), k, d]);
+    for (const ev of ['keydown', 'mousedown', 'mouseup', 'click']) document.addEventListener(ev, (e) => log(ev, String(e.key || '') + ' ' + String((e.target && (typeof e.target.className === 'string' ? e.target.className : e.target.tagName)) || '').slice(0, 44)), true);
+    let last = ''; const st = () => (document.querySelector('.wz-cascade-panel') ? 'P' : '-') + (document.querySelector('.wz-cascade-survey') ? 'S' : '-') + (document.querySelector('.wz-strip-item[data-category=plan]') ? 'i' : '-') + (document.querySelector('.chrome-fade,[data-chrome-receded]')?.getAttribute('data-chrome-receded') || '');
+    new MutationObserver(() => { const n = st(); if (n !== last) { last = n; log('state', n); } }).observe(document.body, { childList: true, subtree: true, attributes: true });
+    log('hash', location.hash); })()`);
   await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(s2PageId)}`);
   await waitOr(app, "!!document.querySelector('.forward-only-editor')", 'the S2 page again (stickiness)');
   await sleep(300);
@@ -450,7 +455,8 @@ await withHarness(async (app) => {
             survey: !!document.querySelector('.wz-cascade-survey'), zone: !!document.querySelector('.wz-cascade-plan-zone'), trail: localStorage.getItem('wrizo-plan-last-board') })`);
           await sleep(2500);
           const diag2 = await app.evalJs("JSON.stringify({ survey: !!document.querySelector('.wz-cascade-survey'), title: document.querySelector('.wz-cascade-survey-title')?.textContent, panel: !!document.querySelector('.wz-cascade-panel') })");
-          console.log('PW1-DIAG-84 now ' + diag1 + ' | 2.5 s later ' + diag2);
+          const tl = await app.evalJs('JSON.stringify((window.__tl || []).slice(-60))');
+          console.log('PW1-DIAG-84 now ' + diag1 + ' | 2.5 s later ' + diag2 + ' | TIMELINE ' + tl);
         }
         ok('S5 (Q6): the Plan panel REOPENS on the board whose contents were last open, per page — the machine declining to forget, restoring only what the writer themselves opened',
           restored.survey === true && restored.title === 'Winterfell timeline', JSON.stringify(restored));
