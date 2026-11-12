@@ -42,6 +42,14 @@ await runTabs({
       const after = JSON.parse(await bState());
       notes.push(`A at ${aHash}; B after the sign-out: ${j(after)}`);
       if (after.editor) fails.push(`window B still shows the writing page after window A signed out (B at ${after.hash}); a second window must leave the page at once`);
+      if (!after.editor && after.hash !== '#/') fails.push(`window B left the page but is at ${after.hash}, not at the sign-in door (#/)`);
+      if (!after.editor) {
+        // and nothing of the old account comes back: B's copy of the records must not be written over the wiped store
+        await sleep(3500);
+        const back = await ev(`(() => { try { const r = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]'); return r.length; } catch (e) { return 'ERR'; } })()`);
+        notes.push(`rows in the store 3.5 s later: ${back}`);
+        if (back !== 0) fails.push(`the signed-out device's store holds ${back} page row(s) again after window B left: the old account's words came back`);
+      }
       if (after.editor) {
         await h.tabFocus('B'); await d.type(' typed after the sign-out');
         await sleep(3500);

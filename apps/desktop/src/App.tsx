@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { Arrival } from './components/Arrival';
 import { DrawersPage } from './pages/Drawers';
@@ -40,7 +40,7 @@ import { useSigningOut } from './store/useSigningOut';
 import { flushAll } from './store/flushRegistry';
 import { LogoutBlockedSheet } from './components/LogoutBlockedSheet';
 import { StaleClientBanner } from './components/StaleClientBanner';
-import { isSignedOutHere, markSignedOutHere, clearSignedOutHere } from './store/signedOutHere';
+import { isSignedOutHere, markSignedOutHere, clearSignedOutHere, SIGNED_OUT_KEY } from './store/signedOutHere';
 import { clearLastPlace } from './store/lastPlace';
 import { SyncIndicator, FullscreenToggle } from './components/ChromeControls';
 
@@ -309,6 +309,29 @@ export function App() {
   // sequence; this is the one subscriber, running the SAME handleLogout the
   // corner-cluster button already calls.
   useEffect(() => onLogoutRequested((force) => { void handleLogout(force); }), []);
+
+  // #81 - ANOTHER WINDOW of this device signed out. The flag it set is shared by every window and it wiped the store, but this window was never told: it kept the page open, took typing, and saved none of it (every write is refused while
+  // the flag is set). Now it hears the flag (the browser's `storage` event) and finishes the sign-out HERE the same way the signing-out window did, minus the server call (that window made it): the sync stops, this window's copy of the
+  // records goes (nothing of the old account can be written back from it), and the screen goes to the sign-in door at once, which takes the writer off the page. Words typed in the last moments are not carried over: the account was
+  // signed out of on purpose, and the writer was in the other window when they chose it.
+  const authStateRef = useRef<AuthState>('loading');
+  authStateRef.current = authState;
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      try {
+        if (e.storageArea !== window.localStorage || e.key !== SIGNED_OUT_KEY || e.newValue !== '1') return;
+        if (authStateRef.current === 'anon') return;   // this window is already at the door
+        window.location.hash = '#/';
+        stopSync();
+        clearLastSyncAt();
+        resetLocalData();
+        setCurrentUser(null);
+        setAuthState('anon');
+      } catch { /* a listener never breaks the app */ }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
 
   // the router mounts regardless of auth state: Arrival (route '/') is both the boot screen and the front door; Write works local-first with no account, and the Journal, Drawers and Projects all run on local data, so only startSync() above is authed-only. Arrival's own boot bar (authState as a prop) carries the loading state. [App §4]
   return (
