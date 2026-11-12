@@ -21,6 +21,8 @@ import { useLastTouched } from './lastTouched';
 import { nodeHex } from './FluxNodeRecord';
 import { FluxStack } from './FluxStack';
 import { useStackView } from './stackView';
+import { getBoardScale, subscribeBoardScale, useBoardScale, zoomFigure } from './boardZoom';
+import { useFluxCamera } from './useFluxCamera';
 
 interface Props {
   wrapRef: RefObject<HTMLDivElement | null>;
@@ -34,6 +36,8 @@ interface Props {
   selectedId: string | null;
   pageWidthPx: number;
   labelFor: (b: Box) => string;
+  /** The board's id: a different board is a different camera (the zoom starts at 1.00 and is never saved). */
+  boardId: string;
 }
 
 export function FluxSchema(props: Props) {
@@ -41,7 +45,7 @@ export function FluxSchema(props: Props) {
   return theme === 'flux' ? <Schema {...props} /> : null;
 }
 
-function Schema({ wrapRef, canvasRef, boxes, nodes, connections, selectedId, pageWidthPx, labelFor }: Props) {
+function Schema({ wrapRef, canvasRef, boxes, nodes, connections, selectedId, pageWidthPx, labelFor, boardId }: Props) {
   const layerRef = useRef<FluxLayer | null>(null);
   const { page } = useThemePrefs();
   const dial = useAmbianceDial();
@@ -49,6 +53,11 @@ function Schema({ wrapRef, canvasRef, boxes, nodes, connections, selectedId, pag
   const stack = useStackView();
   const { t } = useDeskLexicon();
   const lex = useLexicon();
+  const zoom = useBoardScale();
+
+  // ZOOM, STEP 1 (flux-zoom-step1.md): the camera. It is set up BEFORE the layer's effect below, so on every scale change the canvas is painted first and the layer is told after
+  // (subscribers run in the order they subscribed). Zoom is off while the Stack or the hologram is open.
+  useFluxCamera({ wrapRef, canvasRef, boardId, active: !stack.on, motion: dial > 0 });
 
   // the layer lives as long as the Schema is shown; its host is the board's frame (the wrap's positioned parent)
   useEffect(() => {
@@ -61,13 +70,15 @@ function Schema({ wrapRef, canvasRef, boxes, nodes, connections, selectedId, pag
       const cv = canvasRef.current;
       if (!cv) return;
       const hr = host.getBoundingClientRect(), cr = cv.getBoundingClientRect();
-      layer.setView({ tx: cr.left - hr.left, ty: cr.top - hr.top, s: 1 });
+      layer.setView({ tx: cr.left - hr.left, ty: cr.top - hr.top, s: getBoardScale() });
     };
     place();
     wrap.addEventListener('scroll', place, { passive: true });
+    const unsubScale = subscribeBoardScale(place);   // a zoom moves the canvas's corner and its scale: the held frame follows, the real redraw waits until she settles
     const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(place) : null;
     ro?.observe(wrap);
     return () => {
+      unsubScale();
       wrap.removeEventListener('scroll', place);
       ro?.disconnect();
       layer.destroy();
@@ -110,7 +121,7 @@ function Schema({ wrapRef, canvasRef, boxes, nodes, connections, selectedId, pag
     {/* above the Stack's nodes too (they stand at topZ + 1 .. topZ + 101) */}
     <div className="flux3-tele" aria-hidden="true" style={{ zIndex: stack.on ? topZ + 102 : topZ }}>
       <span>{t('flux3ReadLevel')} <span className="flux3-tele-lvl">{level}</span></span>
-      <span>{t('flux3ReadZoom')} <b>1.00×10<sup>0</sup></b></span>
+      <span>{t('flux3ReadZoom')} <b data-f3-zoom-readout={zoom}>{zoomFigure(zoom).mant}×10<sup>{zoomFigure(zoom).exp < 0 ? '−' : ''}{Math.abs(zoomFigure(zoom).exp)}</sup></b></span>
       <span>{lex.tMany('box')} <b>{nodes.length}</b></span>
       <span>{t('flux3LinkMany')} <b>{scene.links.length}</b></span>
       <span>{t('flux3ReadLast')} <span className="flux3-tele-you">{lastBox ? `${labelFor(lastBox)} 0x${nodeHex(lastBox.id)}` : '—'}</span></span>
