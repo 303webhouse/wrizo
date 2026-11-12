@@ -249,7 +249,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
 
   // B5 — in-document pagination. A page is the SHEET HEIGHT (not a line count, so
   // it survives the type scale): when the editor's content overflows the sheet,
-  // flip to a fresh one with a page-turn (animation + soft sound). `pageNum` is
+  // flip to a fresh one with a page-turn (soft sound; no animation, #63). `pageNum` is
   // the current sheet (0-based), shown as "p.N" beside the progress bar. The bar
   // itself no longer tracks page fill — it's the word/time goal lap (see
   // WritingIncentives.tsx); a page turn and a goal-lap completion are
@@ -327,14 +327,8 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
     if (!scroll) return;
     const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     let raf = 0;
+    // #63: the page no longer animates when it turns (no page-turn animation in any theme); only the sound is left, as it was
     const flip = () => {
-      const pageEl = scroll.closest('.mode-page') as HTMLElement | null;
-      if (pageEl && !reduce) {
-        pageEl.classList.remove('flipping');
-        void pageEl.offsetWidth; // restart the animation
-        pageEl.classList.add('flipping');
-        setTimeout(() => pageEl.classList.remove('flipping'), 600);
-      }
       if (soundOnRef.current && !reduce) playPageTurn();
     };
     const measure = () => {
