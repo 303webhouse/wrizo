@@ -78,12 +78,24 @@ for (const [, rows] of MOCK) for (const [id, want] of rows) {
   try { lex = await load(`export { deskTerm } from '${SRCP}/store/deskLexicon';`); } catch (e) { lexErr = String(e.message || e).split('\n')[0]; }
   ok('(premise) the real lexicon bundles', !!lex && typeof lex.deskTerm === 'function', lexErr);
   const IDS = ['deckNameFromMyPages', 'deckFromMyPagesQPrompt', 'deckFromMyPagesNone', 'helpWhyFromMyPages', 'helpCoverFromMyPages'];
+  const C3b = (w) => !!w && /\bdocs?\b/i.test(w) && !/\bpages?\b/i.test(w) && !/\bfiles?\b/i.test(w);   // the successor's predicate, a pure function so its mutants can run on it
   for (const id of IDS) {
     const w = lex ? lex.deskTerm(id, 'machina') : '';
-    ok(`C3: Machina's ${id} says "files" and not "pages" ("${w}")`, !!w && /\bfiles?\b/i.test(w) && !/\bpages?\b/i.test(w), w);
+    // ---- PARKED - SUPERSEDED by Machina's File to Doc word (Nick, Nov 11; the Wrizors' list, Fable): the original, verbatim, no longer runs; its successor follows.
+    // ok(`C3: Machina's ${id} says "files" and not "pages" ("${w}")`, !!w && /\bfiles?\b/i.test(w) && !/\bpages?\b/i.test(w), w);
+    ok(`C3 [doc successor]: Machina's ${id} says "docs" and not "pages" or "files" ("${w}")`, C3b(w), w);
   }
   const canon = lex ? lex.deskTerm('deckNameFromMyPages', 'plateau') : '';
   ok('C3 control: Arbor keeps "pages" (the canonical word is untouched - the override is Machina\'s alone)', /pages/.test(canon), canon);
+  // C3 mutants (each must LAND, on a copy of what was read, and turn the successor's predicate RED): the five strings said "pages" (the canonical), "files" (the word before the Doc ruling), or nothing
+  {
+    const real = lex ? lex.deskTerm('deckNameFromMyPages', 'machina') : '';
+    const plant = (a, b) => real.replace(a, b);
+    ok('C3 mutant: "From my pages" (the canonical word leaking through) lands and goes RED', plant(/docs/i, 'pages') !== real && !C3b(plant(/docs/i, 'pages')), plant(/docs/i, 'pages'));
+    ok('C3 mutant: "From my files" (the word before the Doc ruling) lands and goes RED', plant(/docs/i, 'files') !== real && !C3b(plant(/docs/i, 'files')), plant(/docs/i, 'files'));
+    ok('C3 mutant: an empty string goes RED', !C3b(''), '');
+    ok('C3 mutant control: the real string passes the predicate', C3b(real), real);
+  }
 }
 for (const t of tmps) rmSync(t, { recursive: true, force: true });
 const bad = checks.filter((c) => !c.pass).length;
