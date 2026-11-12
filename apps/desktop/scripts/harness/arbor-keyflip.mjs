@@ -397,6 +397,40 @@ await withHarness(async (app) => {
   lh.dynMut = await dyn(true);
   lh.dynOld = await dyn(false, 'oldhas');   // the same cycle under T2's rule 642 (KF-LOOK-HAS-DYN-C)
 
+  // ---- the fourth pass (Fable, Nov 12, 4:00 pm: option (a) - no --fade-dur write on <html> on the Arbor redesign; "Arbor's fades keep their
+  // approved timings (the recede, the shade/rhizome swap, the drawers): a check with a mutant") ----
+  // Every element's declared timings (transition duration and property, animation duration) are read at rest, while receding (the first key) and
+  // returning (Esc), with the fix, and then with T2's <html> write put back in the same page (the same value the engine wrote): they must match.
+  const ALLNAMES = `(() => [...document.querySelectorAll('*')].map((el) => el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') + (el.className && typeof el.className === 'string' ? '.' + el.className.trim().split(/ +/).slice(0, 3).join('.') : '')))()`;
+  const TDUR = `(() => [...document.querySelectorAll('*')].map((el) => { const cs = getComputedStyle(el); return cs.transitionDuration + '|' + cs.transitionProperty + '|' + cs.animationDuration; }))()`;
+  const FADES = `(() => { const v = (el) => (el ? el.style.getPropertyValue('--fade-dur') : null); return { html: v(document.documentElement), root: v(document.getElementById('root')), bar: v(document.getElementById('arbor2-mockup-bar')), stage: v(document.querySelector('.mode-stage')) }; })()`;
+  const T2SIM = (on) => `(() => { const de = document.documentElement; if (${on}) de.style.setProperty('--fade-dur', document.getElementById('root').style.getPropertyValue('--fade-dur')); else de.style.removeProperty('--fade-dur'); return de.style.getPropertyValue('--fade-dur'); })()`;
+  const STRIP = `(() => { const saved = []; for (const el of [document.documentElement, ...document.querySelectorAll('[style]')]) { const v = el.style.getPropertyValue('--fade-dur'); if (v) { saved.push([el, v]); el.style.removeProperty('--fade-dur'); } } window.__kfStrip = saved; return saved.length; })()`;
+  const UNSTRIP = `(() => { const s = window.__kfStrip || []; for (const [el, v] of s) el.style.setProperty('--fade-dur', v); return s.length; })()`;
+  const BARSTRIP = `(() => { const h = document.getElementById('arbor2-mockup-bar'); const v = h ? h.style.getPropertyValue('--fade-dur') : ''; if (h) h.style.removeProperty('--fade-dur'); window.__kfBar = v; return v; })()`;
+  const BARBACK = `(() => { const h = document.getElementById('arbor2-mockup-bar'); if (h && window.__kfBar) h.style.setProperty('--fade-dur', window.__kfBar); return true; })()`;
+  const tm = {};
+  await open('day'); await focus();
+  tm.fRest = await app.evalJs(FADES);
+  tm.rest = await app.evalJs(TDUR); await app.evalJs(T2SIM(true)); tm.t2Rest = await app.evalJs(TDUR); await app.evalJs(T2SIM(false));
+  await app.typeKeys('a'); await sleep(250);
+  tm.fRecede = await app.evalJs(FADES); tm.wRecede = (await app.evalJs(STATE)).writing;
+  tm.names = await app.evalJs(ALLNAMES);
+  tm.recede = await app.evalJs(TDUR);
+  tm.t2Html = await app.evalJs(T2SIM(true)); tm.t2Recede = await app.evalJs(TDUR); await app.evalJs(T2SIM(false));
+  tm.strip = await app.evalJs(STRIP); tm.none = await app.evalJs(TDUR); tm.unstrip = await app.evalJs(UNSTRIP);
+  tm.barStrip = await app.evalJs(BARSTRIP); tm.mutRecede = await app.evalJs(TDUR); await app.evalJs(BARBACK);
+  await app.key('Escape'); await sleep(250);
+  tm.fReturn = await app.evalJs(FADES); tm.wReturn = (await app.evalJs(STATE)).writing;
+  tm.ret = await app.evalJs(TDUR); await app.evalJs(T2SIM(true)); tm.t2Ret = await app.evalJs(TDUR); await app.evalJs(T2SIM(false));
+  // the readers of --fade-dur on this page, by name, with their durations: the fix's, and with no --fade-dur anywhere (for the Wrizors)
+  tm.readers = tm.recede && tm.none && tm.names && tm.recede.length === tm.none.length && tm.names.length === tm.recede.length
+    ? tm.recede.map((x, i) => (x !== tm.none[i] ? `${tm.names[i]}: ${x.split('|')[0]} (unwritten ${tm.none[i].split('|')[0]})` : null)).filter(Boolean) : null;
+  console.log('KF TIMINGS: ' + JSON.stringify({ fRest: tm.fRest, fRecede: tm.fRecede, fReturn: tm.fReturn, writing: [tm.wRecede, tm.wReturn], readers: tm.readers }));
+  // MUT-KF-FLIP-ROOT: T2's <html> write put back (every --fade-dur write is copied onto <html>, as T2's ModeStage did): KF-FLIP must be RED
+  const mutRoot = await measure('mut-root', { pre: "(() => { const de = document.documentElement; const orig = CSSStyleDeclaration.prototype.setProperty; CSSStyleDeclaration.prototype.setProperty = function (n, v, p) { const r = orig.call(this, n, v, p); if (n === '--fade-dur' && this !== de.style) { window.__kfCopied = (window.__kfCopied || 0) + 1; orig.call(de.style, n, v, p); } return r; }; return true; })()" });
+  mutRoot.copied = await app.evalJs('window.__kfCopied || 0');
+
   // the look by night: at rest, then while writing
   const look = {};
   await open('night'); await app.evalJs(NOTRANS); await sleep(300);
@@ -532,6 +566,18 @@ await withHarness(async (app) => {
     JSON.stringify({ fix: { at: lh.dyn.at, onRead: lh.dyn.onRead, bt: lh.dyn.bt, moved: lh.dyn.moved }, t2: { swap: lh.dynOld.swap, at: lh.dynOld.at, bt: lh.dynOld.bt, moved: lh.dynOld.moved } }));
   ok(`MUT-KF-LOOK-HAS-DYN-C with the drawer's style query taken out, KF-LOOK-HAS-DYN-C is RED (the child reads ${kidOf(lh.dynMut.at)} -> ${kidOf(lh.dynMut.bt)})`,
     !!lh.dynMut.mut && lh.dynMut.mut.containers === 1 && !(panelOk(lh.dynMut) && sameMoved(lh.dynMut, lh.dynOld)), JSON.stringify({ dynMut: { mut: lh.dynMut.mut, at: lh.dynMut.at, bt: lh.dynMut.bt, moved: lh.dynMut.moved } }));
+  // ---- the fourth pass: option (a) ----
+  const tdiff = (a, b) => (a && b && a.length === b.length ? a.reduce((n, x, i) => n + (x !== b[i] ? 1 : 0), 0) : null);
+  const T = { rest: tdiff(tm.rest, tm.t2Rest), recede: tdiff(tm.recede, tm.t2Recede), ret: tdiff(tm.ret, tm.t2Ret), coverage: tdiff(tm.recede, tm.none), readers: tm.readers ? tm.readers.length : null, mut: tdiff(tm.mutRecede, tm.t2Recede) };
+  ok(`KF-TIMING no --fade-dur on <html> at rest, receding or returning (${JSON.stringify([tm.fRest.html, tm.fRecede.html, tm.fReturn.html])}); the app's root and the mockup bar carry the engine's value (recede ${tm.fRecede.root}/${tm.fRecede.bar}, return ${tm.fReturn.root}/${tm.fReturn.bar}); and every element's timings equal those with T2's <html> write put back (rest ${T.rest}, recede ${T.recede}, return ${T.ret} differ); ${T.readers} elements read --fade-dur here (coverage)`,
+    tm.fRest.html === '' && tm.fRecede.html === '' && tm.fReturn.html === '' && tm.wRecede === 'true' && tm.wReturn !== 'true'
+      && tm.fRecede.root === '2.8s' && tm.fRecede.bar === '2.8s' && tm.fReturn.root === '0.7s' && tm.fReturn.bar === '0.7s' && tm.t2Html === '2.8s'
+      && T.rest === 0 && T.recede === 0 && T.ret === 0 && T.coverage >= 1,
+    JSON.stringify({ T, fRest: tm.fRest, fRecede: tm.fRecede, fReturn: tm.fReturn, writing: [tm.wRecede, tm.wReturn], strip: tm.strip, readers: tm.readers }));
+  ok(`MUT-KF-TIMING the mockup bar's --fade-dur taken out while receding (${tm.barStrip}): KF-TIMING is RED (${T.mut} elements' timings differ from T2's)`,
+    tm.barStrip === '2.8s' && T.mut >= 1, JSON.stringify({ barStrip: tm.barStrip, mut: T.mut }));
+  ok(`MUT-KF-FLIP-ROOT with T2's <html> write put back (${mutRoot.copied} writes copied onto <html>), KF-FLIP is RED (printed: ${mutRoot.tr.keyEls}/${mutRoot.before.docEls})`,
+    mutRoot.copied >= 1 && mutRoot.tr && mutRoot.tr.keyEls != null && !flipOk(mutRoot), JSON.stringify({ copied: mutRoot.copied, tr: mutRoot.tr, docEls: mutRoot.before.docEls }));
   ok(`KF-SCAN-HAS no selector in src/**/*.css has a universal subject under a :has() (${hasHits.length}); the scanner finds T2's rule 642 (${oldHasHits.length} of 1, liveness)`,
     hasHits.length === 0 && oldHasHits.length === 1, JSON.stringify({ hasHits, oldHasHits }));
   ok(`KF-SPEC every rule the fix rewrote keeps T2's specificity (${SPEC_PAIRS.map((p) => `${p.what} ${JSON.stringify(p.was)} -> ${JSON.stringify(p.now)}`).join('; ')}); the calculator reads known values and sees one attribute fewer (liveness)`,
@@ -540,7 +586,7 @@ await withHarness(async (app) => {
   console.log('KF BUNDLE: ' + fix[0].before.bundle);
 }, { label: 'arbor-keyflip' });
 
-const WANT_CHECKS = 18;   // a check that never ran is a failure, never a quiet pass (10, + 7 for the second pass, + 1 for the third, Nov 12)
+const WANT_CHECKS = 21;   // a check that never ran is a failure, never a quiet pass (10, + 7 for the second pass, + 1 for the third, + 3 for option (a), Nov 12)
 const failed = checks.filter((c) => !c.pass);
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
 const pass = checks.length === WANT_CHECKS && !failed.length;
