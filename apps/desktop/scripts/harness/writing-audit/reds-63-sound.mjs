@@ -25,8 +25,12 @@ await withHarness(async (app) => {
   await d.boot();
   const ev = d.ev;
   const lines = (n) => Array.from({ length: n }, (_, i) => `Line ${i + 1}`).join(NL);
-  const hook = () => ev(`(() => { if (window.__ringHook) return true; window.__ringHook = true; window.__rings = 0; const C = window.AudioContext || window.webkitAudioContext; if (C) { const o = C.prototype.createBufferSource; C.prototype.createBufferSource = function () { window.__rings++; return o.apply(this, arguments); }; } const op = HTMLMediaElement.prototype.play; HTMLMediaElement.prototype.play = function () { window.__rings++; return op.apply(this, arguments); }; return true; })()`);
+  const hook = () => ev(`(() => { if (window.__ringHook) return true; window.__ringHook = true; window.__rings = 0; window.__srcs = []; const C = window.AudioContext || window.webkitAudioContext; if (C) { const o = C.prototype.createBufferSource; C.prototype.createBufferSource = function () { window.__rings++; return o.apply(this, arguments); }; } const op = HTMLMediaElement.prototype.play; HTMLMediaElement.prototype.play = function () { window.__rings++; window.__srcs.push(this.currentSrc || this.src || ''); return op.apply(this, arguments); }; return true; })()`);
   const rings = () => ev('window.__rings || 0');
+  // which file rang last, and does it load (the bundle serves it, as audio, with bytes)
+  const lastFile = () => ev(`(async () => { const u = (window.__srcs || []).slice(-1)[0] || ''; if (!u) return { url: '' }; try { const r = await fetch(u); const b = await r.arrayBuffer(); return { url: u, ok: r.ok, type: r.headers.get('content-type') || '', bytes: b.byteLength }; } catch (e) { return { url: u, error: String(e) }; } })()`);
+  const wantFile = cfg.theme === 'flux' ? 'flux-line-feed' : 'arbor-page-turn';
+  const fileFails = (f, want, fails, label) => { if (!f || !f.url) { fails.push(`${label}: no sound file was played`); return; } if (!f.url.includes(want)) fails.push(`${label}: the file played is ${f.url}, want ${want}`); if (!f.ok || f.bytes < 5000 || !/audio|wav|octet/i.test(f.type)) fails.push(`${label}: the file did not load as audio (${JSON.stringify({ ok: f.ok, type: f.type, bytes: f.bytes })})`); };
   const open = async (text) => { await d.surface('.forward-only-editor', false); await d.openPage(text, 'drafting', { typewriter: 'off' }); await d.place(text.length); await sleep(500); await hook(); };
   const shiftEnters = async (n) => { for (let i = 0; i < n; i++) { await d.key('Enter', { shift: true }); await sleep(70); } await sleep(900); };
   const backspaces = async (n) => { for (let i = 0; i < n; i++) { await d.key('Backspace'); await sleep(70); } await sleep(900); };
@@ -48,6 +52,7 @@ await withHarness(async (app) => {
     const got = (await rings()) - before;
     const want = DEFAULT_ON ? 1 : 0;
     if (got !== want) f1.push(`the page turned and the default (${DEFAULT_ON ? 'on' : 'off'}) rang ${got} time(s), want ${want}`);
+    if (DEFAULT_ON) fileFails(await lastFile(), wantFile, f1, 'the default turn');
   } catch (e) { f1.push('harness: ' + String((e && e.message) || e).slice(0, 200)); }
   check('S1 the default and a long page opening', f1);
 
@@ -90,6 +95,7 @@ await withHarness(async (app) => {
     const got = (await rings()) - b;
     const wantRings = DEFAULT_ON ? 0 : 1;
     if (got !== wantRings) f4.push(`after pressing ${other} the turn rang ${got} time(s), want ${wantRings}`);
+    if (wantRings === 1) fileFails(await lastFile(), wantFile, f4, `after pressing ${other}`);
   } catch (e) { f4.push('harness: ' + String((e && e.message) || e).slice(0, 200)); }
   check('S4 pressing the other value (stored per theme, followed at once)', f4);
 
