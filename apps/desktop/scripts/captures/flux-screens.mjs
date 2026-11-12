@@ -1,6 +1,6 @@
 // FLUX SCREENS - the ten frames Fable clears the Flux build against (cursor/flux-v2-mockup @ 7a020755): Inputs panel (picker open), the board with its hint + X · Y, the arrival logo, the card pop-up and
 // the deck wizard - each in DARK and LIGHT. A capture (frames out, nothing asserted beyond "the surface really appeared": a frame of the wrong screen is worse than none), run on a box turn.
-// Run: node scripts/harness/flux-screens.mjs <outDir>      writes <outDir>/<name>-<dark|light>.png (the lane converts to JPEG q80 <= 1400 px before committing, only frames it has LOOKED at)
+// Run: node scripts/captures/flux-screens.mjs <outDir>      writes <outDir>/<name>-<dark|light>.png (the lane converts to JPEG q80 <= 1400 px before committing, only frames it has LOOKED at)
 import fs from 'node:fs';
 import path from 'node:path';
 const out = process.argv[2];

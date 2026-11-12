@@ -17,7 +17,7 @@
 //
 // Output: the scratchpad folder below (outside the repo).
 //
-// Run: WS_ANON=1 WS_BOX_TURN=<token> node scripts/harness/arrival-signin-capture.mjs   (from apps/desktop)
+// Run: WS_ANON=1 WS_BOX_TURN=<token> node scripts/captures/arrival-signin-capture.mjs   (from apps/desktop)
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
