@@ -365,6 +365,12 @@ await withHarness(async (app) => {
   // await sleep(2700); // past the ~2.5s summon window
   // const summonClassGone = await app.evalJs("!document.querySelector('.sprint-bottombar.celebrate-summon')");
   // ok('check 3: celebrate-summon removes itself after ~2.5s (bottom bar re-fades normally)', summonClassGone === true, String(summonClassGone));
+  // #13 step 12a: check 5 below always ran AFTER the retired block above had typed its 251 words (and waited out its fades), so the same
+  // keys and pauses are kept here as a DRIVER - no claim rides on them - and check 5 meets the surface in the state it always met.
+  await app.typeKeys(Array.from({ length: 20 }, (_, i) => 'w' + i).join(' ') + ' ');
+  await sleep(3000);
+  await app.typeKeys(Array.from({ length: 231 }, (_, i) => 'x' + i).join(' ') + ' ');
+  await sleep(3050);
 
   // -- check 5: scheduler — dial 0, reduced-motion, and typing-gate ----------
   await app.evalJs("window.wrizoAmbiance.set(0)");

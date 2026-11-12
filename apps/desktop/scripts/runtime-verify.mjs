@@ -722,6 +722,14 @@ function makeApp(base, cdp, waitEvent, tap) {
       const freshId = await evalJs("window.wrizoCreateJournalPage({ text: '', projectId: null, origin: 'loose', source: 'page' }).id");
       await evalJs(`location.hash = '#/page/' + ${JSON.stringify(freshId)}`);
       await app.waitFor("document.querySelector('.forward-only-editor, textarea')", { label: 'sprint writing surface' });
+      // The sprint held its words in memory until a flush, so a fresh one started with nothing unsaved. A seeded page is itself a dirty
+      // record until the app's own sync pushes it (the double accepts by default): wait for that, so the surface starts clean too. A
+      // signed-out boot never syncs; the wait then just runs out (6 s) and the page stays as born.
+      for (let i = 0; i < 60; i += 1) {
+        const dirty = await evalJs("window.wrizoDirty ? Object.values(window.wrizoDirty.ids()).reduce((n, ids) => n + ids.length, 0) : 0");
+        if (dirty === 0) break;
+        await sleep(100);
+      }
       await injectHelpers();
     },
   };
