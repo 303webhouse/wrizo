@@ -434,7 +434,7 @@ await withHarness(async (app) => {
       await waitOr(app, "!document.querySelector('.wz-cascade-survey')", 'the first Escape closes the survey');
       await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))");
       // STRESS (bug #84, env PW1_NO_WAIT_CLOSE=1): do not wait for the closed panel before the reopen. When the cascade closes, the panel is drawn on for --drawer-dur (inert, data-leaving) while it slides out; one wait in a dozen or two
-      // happened to sample the few milliseconds before that copy is drawn, read "closed", and went on while the panel was still there. Going on at once puts the reopen inside the slide-out EVERY time, so the race can be shown, and shown gone.
+      // happened to sample the few milliseconds before that copy is drawn, read "closed", and went on while the panel was still there. Going on at once puts the reopen inside the slide-out far more often (1 run in 4 on Actions against about 1 in 18), so the race can be shown, and shown gone.
       if (process.env.PW1_NO_WAIT_CLOSE !== '1') await waitOr(app, "!document.querySelector('.wz-cascade-panel')", 'the second Escape closes the panel (so the reopen below is a real reopen)');
       if (await openPlan(app)) {
         // the reopened panel mounts its remembered survey in a render or two: wait for it, bounded; S5 below reads what is there either way
