@@ -426,11 +426,27 @@ await withHarness(async (app) => {
   ok('B2 S7 successor of "B1: a journal page filed to a project STILL turns up in the Journal (forgets nothing)": filing now REMOVES its card from the Journal Board (S4\'s own DoD — "Journal unchecks itself and the page leaves the Journal Board")',
     !filedPinnedIds.includes(filedEntry.id), JSON.stringify({ filedPinnedIds, filedEntryId: filedEntry.id }));
 
+  // ---- PARKED - SUPERSEDED by #13 step 12a (Nick's dormant answers, Oct 29; Fable's door ruling): ProjectHome is deleted, and
+  // /project/:id is a redirect to the project's first page (c13-12a-doors.mjs D1). Kept VERBATIM below and no longer run; the live
+  // successor and its mutant follow, and hold before the delete (ProjectHome lists the page) and after it (the route opens it).
+  //
+  // await app.goto(`/project/${filedEntry.projectId}`);
+  // await app.waitFor("!!document.querySelector('.page')", { label: 'ProjectHome (forgets-nothing check)' });
+  // await sleep(200);
+  // const projectAlsoLists = (await app.evalJs("document.querySelector('.page')?.innerText ?? ''")).includes('AB3FORGETSNOTHING');
+  // ok('S5 DoD: the filed page lists in its new project', projectAlsoLists);
+  const holds12a = (s, id) => !!s && ((s.hash === `#/page/${id}` && s.editor) || (s.hash.startsWith('#/project/') && s.text.includes('AB3FORGETSNOTHING')));
   await app.goto(`/project/${filedEntry.projectId}`);
-  await app.waitFor("!!document.querySelector('.page')", { label: 'ProjectHome (forgets-nothing check)' });
-  await sleep(200);
-  const projectAlsoLists = (await app.evalJs("document.querySelector('.page')?.innerText ?? ''")).includes('AB3FORGETSNOTHING');
-  ok('S5 DoD: the filed page lists in its new project', projectAlsoLists);
+  let projectRoute12a = null;
+  for (let i = 0; i < 50 && !holds12a(projectRoute12a, filedEntry.id); i += 1) {
+    await sleep(100);
+    projectRoute12a = await app.evalJs("({ hash: location.hash, editor: !!document.querySelector('.forward-only-editor'), text: document.querySelector('.page')?.innerText ?? '' })");
+  }
+  ok('S5 DoD [c13-12a successor]: the project holds the filed page - its route opens that page (its only page, so its first), or (before 12a) ProjectHome lists it',
+    holds12a(projectRoute12a, filedEntry.id), JSON.stringify({ hash: projectRoute12a?.hash, editor: projectRoute12a?.editor }));
+  ok('S5 [c13-12a successor mutant]: the reader is red on another page\'s route, on a page route with no editor, and on a project page that does not list it',
+    !holds12a({ hash: '#/page/not-it', editor: true, text: '' }, filedEntry.id) && !holds12a({ hash: `#/page/${filedEntry.id}`, editor: false, text: '' }, filedEntry.id)
+      && !holds12a({ hash: '#/project/x', editor: false, text: 'other' }, filedEntry.id) && holds12a({ hash: `#/page/${filedEntry.id}`, editor: true, text: '' }, filedEntry.id), '');
 
   // Where-it-lives, amended: /page/:id always renders PageEditor (its outer
   // component only branches on pageType for board/script) — this untyped-

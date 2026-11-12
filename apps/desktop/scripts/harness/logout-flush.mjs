@@ -202,12 +202,32 @@ function makeEditor(m, id) {
   ok('(D2) and before the unsaved decision, the server logout, the flag and the wipe',
     flushAt < body.indexOf('attemptSignOut(') && flushAt < body.indexOf('endServerSession(apiLogout)') && flushAt < body.indexOf('markSignedOutHere()') && flushAt < body.indexOf('resetLocalData()'), '');
 
+  // ---- PARKED - RETIRED by #13 step 12a (Nick's dormant answers, Oct 29): QuickSprint and BeatWizard are deleted, so their two D3 rows
+  // have no surface left to register a flush. The list, kept VERBATIM below and no longer run; the live successor follows: the same
+  // list, each row checked only while its surface's file exists, plus D3-ALL - the registry's callers are exactly the listed surfaces that
+  // exist (a count of registerFlush call sites, so a surface added later without a row here, or a row whose surface is gone, is red).
+  //
+  // const wired = [
+  //   ['PageEditor', 'pages/PageEditor.tsx', /const unregisterFlush = registerFlush\(flush\);/],
+  //   ['QuickSprint', 'pages/QuickSprint.tsx', /const unregisterFlush = registerFlush\(flushDraft\);/],
+  //   ['BeatWizard', 'pages/BeatWizard.tsx', /const unregisterFlush = registerFlush\(flushNotes\);/],
+  //   ['BoardEditor', 'components/BoardEditor.tsx', /const unregisterFlush = registerFlush\(\(\) => \{[\s\S]*?saveBoardBoxes\(id, boxesRef\.current\);/],
+  // ];
   const wired = [
     ['PageEditor', 'pages/PageEditor.tsx', /const unregisterFlush = registerFlush\(flush\);/],
     ['QuickSprint', 'pages/QuickSprint.tsx', /const unregisterFlush = registerFlush\(flushDraft\);/],
     ['BeatWizard', 'pages/BeatWizard.tsx', /const unregisterFlush = registerFlush\(flushNotes\);/],
     ['BoardEditor', 'components/BoardEditor.tsx', /const unregisterFlush = registerFlush\(\(\) => \{[\s\S]*?saveBoardBoxes\(id, boxesRef\.current\);/],
-  ];
+  ].filter(([, rel]) => fs.existsSync(path.join(SRC, rel)));
+  {
+    const walk12a = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk12a(path.join(d, e.name)) : /\.(ts|tsx)$/.test(e.name) ? [path.join(d, e.name)] : []));
+    const callSites = (texts) => texts.reduce((n, t) => n + (t.match(/=\s*registerFlush\(/g) || []).length, 0);
+    const texts12a = walk12a(SRC).filter((f) => !f.endsWith(`flushRegistry.ts`)).map((f) => fs.readFileSync(f, 'utf8'));
+    ok(`(D3-ALL) [c13-12a successor] the flush registry's callers are exactly the ${wired.length} listed surfaces that exist (${wired.map(([n]) => n).join(', ')})`,
+      callSites(texts12a) === wired.length, `call sites ${callSites(texts12a)}, surfaces ${wired.length}`);
+    ok('(D3-ALL) [c13-12a successor mutant] a planted extra caller makes the count differ',
+      callSites([...texts12a, 'const unregisterFlush = registerFlush(planted);']) !== wired.length, '');
+  }
   for (const [name, rel, re] of wired) {
     const src = read(rel);
     ok(`(D3-${name}) registers its flush, unregisters it in the same effect's cleanup, and imports the registry`,
@@ -270,8 +290,18 @@ function makeEditor(m, id) {
   const quietAt = cap.indexOf("performance.now() - (window.__focusLog.length ? window.__focusLog[window.__focusLog.length - 1].t : 0) > 800");
   ok('(F8) the capture waits for the page\'s caret restore to go quiet (no focus() call for 800 ms) BEFORE it writes the unsaved page and presses Sign out',
     quietAt > 0 && quietAt < cap.indexOf('window.wrizoCreateJournalPage(') && quietAt < cap.indexOf("await app.click('Sign out')"), String(quietAt));
-  ok('(F9) the focus trace that found it is kept: installed before the page loads, and reported (with the last focus() calls and their stacks) when a frame\'s focus is not where the sheet put it',
-    /HTMLElement\.prototype\.focus = function/.test(cap) && cap.indexOf('await app.evalJs(FOCUS_TRACE)') < cap.indexOf("await app.goto('/sprint')") && /FOCUS TRACE \(last 8 focus\(\) calls\)/.test(cap), '');
+  // ---- PARKED - SUPERSEDED by #13 step 12a: QuickSprint (/sprint) is deleted, so the logout phase of the capture signs out from the Desk
+  // (arrival-signin-capture.mjs says why). Kept VERBATIM and no longer run; the successor and its mutant follow: the same claim, read
+  // against the line that now takes the capture to its surface.
+  // ok('(F9) the focus trace that found it is kept: installed before the page loads, and reported (with the last focus() calls and their stacks) when a frame\'s focus is not where the sheet put it',
+  //   /HTMLElement\.prototype\.focus = function/.test(cap) && cap.indexOf('await app.evalJs(FOCUS_TRACE)') < cap.indexOf("await app.goto('/sprint')") && /FOCUS TRACE \(last 8 focus\(\) calls\)/.test(cap), '');
+  const f9 = (c) => /HTMLElement\.prototype\.focus = function/.test(c) && c.indexOf('await app.evalJs(FOCUS_TRACE)') > 0
+    && c.indexOf('await app.evalJs(FOCUS_TRACE)') < c.indexOf("await app.waitFor(`!!document.querySelector('.wz-arrival')`, { label: 'the Desk to sign out from' })") && /FOCUS TRACE \(last 8 focus\(\) calls\)/.test(c);
+  ok('(F9) [c13-12a successor] the focus trace that found it is kept: installed before the capture reaches the surface it signs out from (the Desk now), and reported when a frame\'s focus is not where the sheet put it',
+    f9(cap), '');
+  ok('(F9) [c13-12a successor mutant] the reader is red when the trace is installed after the surface is reached, and when the trace\'s report is gone',
+    !f9(cap.replace('await app.evalJs(FOCUS_TRACE);', '').replace("{ label: 'the Desk to sign out from' });", "{ label: 'the Desk to sign out from' }); await app.evalJs(FOCUS_TRACE);"))
+      && !f9(cap.replace('FOCUS TRACE (last 8 focus() calls)', 'gone')), '');
 }
 
 // =============================================================================

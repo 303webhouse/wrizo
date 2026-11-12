@@ -286,9 +286,6 @@ export type DeskTermId =
   // title (a proper noun — not lexicon vocabulary).
   // the Drawer terms: key names stay (internal ids), string values carry the writer's word [deskLexicon §15]
   | 'createDrawerEyebrow' | 'createDrawerTitleLabel'
-  | 'drawerHomeTitleLabel' | 'backToDrawer'
-  | 'domainLabelCreative' | 'domainLabelAcademic' | 'domainLabelProfessional'
-  | 'sprintSaveToDrawer' | 'sprintSaveAsDrawer'
   // B3 S1 — the deck engine's own chrome (components/DeckWizard.tsx): the
   // two doors' own labels, the library step, the room headings, and the
   // "Start Here" hint (R6's own wayfinding mark). Every deck NAME/prompt/

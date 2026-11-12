@@ -1,0 +1,10 @@
+# #13 step 12a: the source files it deletes (POLISH, at main e20382d8): the five old project screens, QuickSprint's ambient sound, the
+# idle nudges and the page file menu only those screens used.
+pages/ProjectHome.tsx
+pages/StructureWizard.tsx
+pages/BeatWizard.tsx
+pages/StructureBoard.tsx
+pages/QuickSprint.tsx
+store/ambient.ts
+store/idleNudges.ts
+components/PageFileMenu.tsx

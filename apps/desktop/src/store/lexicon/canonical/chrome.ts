@@ -579,12 +579,5 @@ export const CANONICAL_CHROME = {
   placesBoardsEmpty: 'No boards yet.',
   createDrawerEyebrow: 'NEW DRAWER',
   createDrawerTitleLabel: 'Drawer title (optional)',
-  drawerHomeTitleLabel: 'Drawer title',
-  backToDrawer: 'Back to Drawer',
-  domainLabelCreative: 'Creative Drawer',
-  domainLabelAcademic: 'Academic Drawer',
-  domainLabelProfessional: 'Professional Drawer',
-  sprintSaveToDrawer: 'Save to Drawer',
-  sprintSaveAsDrawer: 'Save as Drawer',
 
 } satisfies Partial<Record<DeskTermId, string>>;

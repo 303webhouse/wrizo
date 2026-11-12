@@ -20,6 +20,7 @@
 // dist-web freshly built via `pnpm run build:web`).
 import { withHarness } from '../runtime-verify.mjs';
 import { readFile } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { globalCss } from '../global-css.mjs';
 
@@ -335,29 +336,41 @@ await withHarness(async (app) => {
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before QuickSprint fixture' });
   await app.evalJs("window.wrizoTheme.set('flux')");
-  await app.evalJs(`location.hash = '#/sprint'`);
-  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'QuickSprint mounted under Flux' });
+  // #13 step 12a: /sprint (QuickSprint) is deleted. check 5 below needs only an unframed writing surface under Flux (this run's default
+  // width is below the 1100px frame, as QuickSprint was), so a fresh loose page through the seam. Was: location.hash = '#/sprint'.
+  const th2Page12a = await app.evalJs("window.wrizoCreateJournalPage({ text: '', projectId: null, origin: 'loose', source: 'page' }).id");
+  await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(th2Page12a)}`);
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'a writing surface under Flux' });
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
-  // Type a short burst first and let chrome genuinely settle faded (the
-  // ~2.8s FADE_OUT_S transition) BEFORE crossing the goal, so celebrate-
-  // summon has a real faded state to override rather than a mid-transition
-  // opacity that happens to read close to 1 either way.
-  const words20 = Array.from({ length: 20 }, (_, i) => 'w' + i).join(' ');
-  await app.typeKeys(words20 + ' ');
-  await app.waitFor("document.querySelector('.page')?.dataset.chromeReceded === 'true'", { label: 'QuickSprint chrome recedes on write', timeout: 6000 });
+  // ---- PARKED - RETIRED by #13 step 12a (Nick's dormant answers, Oct 29): the three check-3 rows below read QuickSprint's own bottom bar
+  // (.sprint-bottombar and its celebrate-summon override), which is deleted with QuickSprint and its CSS. Kept VERBATIM and no longer run;
+  // their record is in the parked block. The celebration grammar on the page itself keeps its live checks (check 4, above).
+  // // Type a short burst first and let chrome genuinely settle faded (the
+  // // ~2.8s FADE_OUT_S transition) BEFORE crossing the goal, so celebrate-
+  // // summon has a real faded state to override rather than a mid-transition
+  // // opacity that happens to read close to 1 either way.
+  // const words20 = Array.from({ length: 20 }, (_, i) => 'w' + i).join(' ');
+  // await app.typeKeys(words20 + ' ');
+  // await app.waitFor("document.querySelector('.page')?.dataset.chromeReceded === 'true'", { label: 'QuickSprint chrome recedes on write', timeout: 6000 });
+  // await sleep(3000);
+  // const preSummonOpacity = await app.evalJs("getComputedStyle(document.querySelector('.sprint-bottombar')).opacity");
+  // ok('check 3: the bottom bar is genuinely faded before the surge (proves the override below is real)', Number(preSummonOpacity) < 0.5, preSummonOpacity);
+  // const wordsRest = Array.from({ length: 231 }, (_, i) => 'x' + i).join(' ');
+  // await app.typeKeys(wordsRest + ' ');
+  // await app.waitFor("document.querySelector('.mode-pmeta span')?.textContent?.includes('251 words')", { label: 'QuickSprint word count crosses 251', timeout: 15000 });
+  // await app.waitFor("!!document.querySelector('.sprint-bottombar.celebrate-summon')", { label: 'celebrate-summon class applied to bottom bar', timeout: 2000 });
+  // await sleep(350); // let the .celebrate-summon override's own .25s opacity transition settle
+  // const summonOpacity = await app.evalJs("getComputedStyle(document.querySelector('.sprint-bottombar')).opacity");
+  // ok('check 3: the celebrate-summon rule overrides the bottom bar\'s fade to fully visible', Number(summonOpacity) === 1, summonOpacity);
+  // await sleep(2700); // past the ~2.5s summon window
+  // const summonClassGone = await app.evalJs("!document.querySelector('.sprint-bottombar.celebrate-summon')");
+  // ok('check 3: celebrate-summon removes itself after ~2.5s (bottom bar re-fades normally)', summonClassGone === true, String(summonClassGone));
+  // #13 step 12a: check 5 below always ran AFTER the retired block above had typed its 251 words (and waited out its fades), so the same
+  // keys and pauses are kept here as a DRIVER - no claim rides on them - and check 5 meets the surface in the state it always met.
+  await app.typeKeys(Array.from({ length: 20 }, (_, i) => 'w' + i).join(' ') + ' ');
   await sleep(3000);
-  const preSummonOpacity = await app.evalJs("getComputedStyle(document.querySelector('.sprint-bottombar')).opacity");
-  ok('check 3: the bottom bar is genuinely faded before the surge (proves the override below is real)', Number(preSummonOpacity) < 0.5, preSummonOpacity);
-  const wordsRest = Array.from({ length: 231 }, (_, i) => 'x' + i).join(' ');
-  await app.typeKeys(wordsRest + ' ');
-  await app.waitFor("document.querySelector('.mode-pmeta span')?.textContent?.includes('251 words')", { label: 'QuickSprint word count crosses 251', timeout: 15000 });
-  await app.waitFor("!!document.querySelector('.sprint-bottombar.celebrate-summon')", { label: 'celebrate-summon class applied to bottom bar', timeout: 2000 });
-  await sleep(350); // let the .celebrate-summon override's own .25s opacity transition settle
-  const summonOpacity = await app.evalJs("getComputedStyle(document.querySelector('.sprint-bottombar')).opacity");
-  ok('check 3: the celebrate-summon rule overrides the bottom bar\'s fade to fully visible', Number(summonOpacity) === 1, summonOpacity);
-  await sleep(2700); // past the ~2.5s summon window
-  const summonClassGone = await app.evalJs("!document.querySelector('.sprint-bottombar.celebrate-summon')");
-  ok('check 3: celebrate-summon removes itself after ~2.5s (bottom bar re-fades normally)', summonClassGone === true, String(summonClassGone));
+  await app.typeKeys(Array.from({ length: 231 }, (_, i) => 'x' + i).join(' ') + ' ');
+  await sleep(3050);
 
   // -- check 5: scheduler — dial 0, reduced-motion, and typing-gate ----------
   await app.evalJs("window.wrizoAmbiance.set(0)");
@@ -413,7 +426,8 @@ await withHarness(async (app) => {
 
   // -- check 5 (R2): the Ambiance row renders in ThemePanel and writes the pref --
   // .mode-gear only exists on a ModeStage-mounted writing surface — Desk has none.
-  await app.evalJs(`location.hash = '#/sprint'`);
+  // #13 step 12a: the same fresh page as check 5 above (unframed, so its gear is ModeStage's own). Was: location.hash = '#/sprint'.
+  await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(th2Page12a)}`);
   await app.waitFor("!!document.querySelector('.mode-gear')", { label: 'settings gear present on a writing surface', timeout: 5000 });
   await app.evalJs("document.querySelector('.mode-gear').click()");
   await sleep(150);
@@ -541,6 +555,13 @@ if (process.env.HARNESS_PARKED === '1') {
       hashNowBridges, await app.evalJs('location.hash'));
     return parkedChecks;
   });
+  // #13 step 12a: QuickSprint's three check-3 rows (its bottom bar's celebrate-summon). The record holds what makes the retirement true: /sprint
+  // is never left without a route (QuickSprint before the delete, the legacy redirect after; c13-12a-doors.mjs D3 lands it home).
+  const app12a = readFileSync(new URL('../../src/App.tsx', import.meta.url), 'utf8');
+  const sprint12a = (/<Route path="\/sprint" element=\{<(QuickSprint|LegacyProjectRedirect) \/>\} \/>/.exec(app12a) || [])[1] || null;
+  for (const n of ['check 3: the bottom bar is genuinely faded before the surge (proves the override below is real)', 'check 3: the celebrate-summon rule overrides the bottom bar\'s fade to fully visible', 'check 3: celebrate-summon removes itself after ~2.5s (bottom bar re-fades normally)']) {
+    pok(`PARKED (was "${n}") - RETIRED by #13 step 12a: QuickSprint and its bottom bar are deleted`, sprint12a !== null, `/sprint -> ${sprint12a}`);
+  }
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);

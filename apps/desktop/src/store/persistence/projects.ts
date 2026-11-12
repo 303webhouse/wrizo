@@ -49,43 +49,6 @@ export function createBinder(title: string, kind: Project['kind'], drawerId?: st
   return project;
 }
 
-function formatDefaultSprintTitle(now: Date): string {
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  return `Untitled ${year}-${month}-${day} ${hours}${minutes}`;
-}
-
-export function createQuickSprintProject(sprintText: string, title?: string): Project {
-  const now = new Date();
-  const iso = now.toISOString();
-  const project: Project = {
-    id: generateId(),
-    title: title?.trim() || formatDefaultSprintTitle(now),
-    type: 'creative',
-    storyPlanId: null,
-    sprintText,
-    lastActivityAt: iso,
-    lastActivityType: 'sprint',
-    createdAt: iso,
-    updatedAt: iso,
-  };
-  saveProject(project);
-  return project;
-}
-
-export function setProjectSprintText(projectId: string, sprintText: string): void {
-  const project = getProject(projectId);
-  if (!project) return;
-
-  project.sprintText = sprintText;
-  project.lastActivityAt = new Date().toISOString();
-  project.lastActivityType = 'sprint';
-  saveProject(project);
-}
-
 // Stamp a project's resume pointer (A3). Called when its beat notes change.
 export function stampBeatActivity(projectId: string): void {
   const project = getProject(projectId);

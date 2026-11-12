@@ -173,7 +173,9 @@ await withHarness(async (app) => {
 
   // -- check 4/5: the effects layer is mounted, empty (Plateau schedules zero
   // events), and contributes no layout size ------------------------------------
-  await app.goto('/sprint');
+  // #13 step 12a: /sprint (QuickSprint) is deleted; any ModeStage surface serves, so a fresh loose page through the seam. Was: goto('/sprint').
+  const th1Page12a = await app.evalJs("window.wrizoCreateJournalPage({ text: '', projectId: null, origin: 'loose', source: 'page' }).id");
+  await app.goto(`/page/${th1Page12a}`);
   await app.waitFor("!!document.querySelector('.mode-row')", { label: 'a ModeStage surface (fixed-track grid present)' });
   const fx = await app.evalJs(`(() => {
     const el = document.querySelector('.theme-fx-layer');
