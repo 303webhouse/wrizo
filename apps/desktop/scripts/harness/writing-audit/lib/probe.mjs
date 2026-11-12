@@ -163,8 +163,11 @@ export function probeInstall() {
   const diff = async (a64, b64) => {
     const A = await decode(a64), B = await decode(b64);
     if (A.width !== B.width || A.height !== B.height) return null;
+    // only inside the editor: the page around it moves on its own (Machina's progress tick steps after an Enter, #70), and a tick is not a caret
+    const E = ed(), ER = E ? E.getBoundingClientRect() : null;
+    const gx0 = ER ? Math.max(0, Math.floor(ER.left) - 4) : 0, gx1 = ER ? Math.min(A.width - 1, Math.ceil(ER.right) + 4) : A.width - 1, gy0 = ER ? Math.max(0, Math.floor(ER.top) - 4) : 0, gy1 = ER ? Math.min(A.height - 1, Math.ceil(ER.bottom) + 4) : A.height - 1;
     let x0 = 1e9, x1 = -1, y0 = 1e9, y1 = -1, n = 0;
-    for (let y = 0; y < A.height; y++) for (let x = 0; x < A.width; x++) { const i = (y * A.width + x) * 4; if (Math.abs(A.data[i] - B.data[i]) + Math.abs(A.data[i + 1] - B.data[i + 1]) + Math.abs(A.data[i + 2] - B.data[i + 2]) > 90) { n++; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; } }
+    for (let y = gy0; y <= gy1; y++) for (let x = gx0; x <= gx1; x++) { const i = (y * A.width + x) * 4; if (Math.abs(A.data[i] - B.data[i]) + Math.abs(A.data[i + 1] - B.data[i + 1]) + Math.abs(A.data[i + 2] - B.data[i + 2]) > 90) { n++; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; } }
     return box2(x0, x1, y0, y1, n);
   };
   const clear = () => { getSelection().removeAllRanges(); return true; };
