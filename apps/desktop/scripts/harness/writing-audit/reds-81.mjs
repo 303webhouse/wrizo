@@ -22,7 +22,10 @@ await runTabs({
       notes.push(`B before: ${j(before)}`);
       if (!before.editor) { fails.push(`window B was not on the page before the sign-out: ${j(before)}`); return; }
       // A signs out through the real button; a blocked sign-out (unsaved words) is confirmed
-      await ev(`window.focus(); (() => { const b = [...document.querySelectorAll('button')].find((x) => /^sign out$/i.test(x.textContent.trim())); if (b) b.click(); return !!b; })()`);
+      await ev(`window.focus(); (() => { const m = document.querySelector('[aria-label="Desk menu"]'); if (m && !document.querySelector('.gh-corner-menu')) m.click(); return !!m; })()`);   // framed pages keep Sign out in the Desk menu
+      await sleep(500);
+      const clicked = await ev(`(() => { const all = [...document.querySelectorAll('button')]; const b = all.find((x) => /^sign out$/i.test(x.textContent.trim())); if (b) b.click(); return JSON.stringify({ found: !!b, buttons: all.map((x) => (x.getAttribute('aria-label') || x.textContent || '').trim().slice(0, 24)).filter(Boolean).slice(0, 30) }); })()`);
+      notes.push(`sign-out press: ${clicked}`);
       const t0 = Date.now();
       let flagged = false;
       while (!flagged && Date.now() - t0 < 12000) {
