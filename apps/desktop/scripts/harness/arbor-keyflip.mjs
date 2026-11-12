@@ -117,6 +117,12 @@ const SWAP = (mode) => `((mode) => {
     out.barProp = del(isProp('--arbor2-bar-dim')); out.hookProp = unprop('--arbor2-hook-lt');
   } else if (mode === 'no938') {
     out.leafPause = del((r) => r instanceof CSSStyleRule && /data-wz-writing/.test(r.selectorText) && /wz-leaf/.test(r.selectorText));
+  } else if (mode === 'nohas' || mode === 'nohasroot' || mode === 'nohasstage') {
+    // information (run 43288120440 left a 1096-element restyle, twice in the key, on every variant, with ':has() on HTML / the stage' and
+    // 'invalidates subtree | HTML' beside it): take Arbor's :has() rules out - all, those anchored on the root, those anchored lower (the stage)
+    const arb = (r) => r instanceof CSSStyleRule && r.selectorText.indexOf(':has(') >= 0 && r.selectorText.indexOf('data-arbor2') >= 0;
+    const onRoot = (r) => r.selectorText.split(' ')[0].indexOf(':has(') >= 0;
+    out.deleted = del((r) => arb(r) && (mode === 'nohas' || (mode === 'nohasroot' ? onRoot(r) : !onRoot(r))));
   } else if (mode === 'floor') {
     out.flipRules = del((r) => r instanceof CSSStyleRule && /data-wz-writing|data-writing|data-chrome-receded/.test(r.selectorText)); out.containers = del(isCont);
   }
@@ -161,7 +167,11 @@ const analyse = (raw) => {
     const key = `${e.name.replace('InvalidationTracking', '')} | ${why}${d.extraData ? ' (' + String(d.extraData).slice(0, 40) + ')' : ''} | ${String(d.nodeName || '').slice(0, 70)}`;
     inv[key] = (inv[key] || 0) + 1;
   }
-  const attrib = { restyles: win.slice().sort((a, b) => els(b) - els(a)).slice(0, 6).map(show), invalidations: Object.entries(inv).sort((a, b) => b[1] - a[1]).slice(0, 18),
+  // the raw invalidation events on the root, the body and the stage (who scheduled what, and when)
+  const deep = evs.filter((e) => e.ts >= K - 2000 && e.ts <= K + WINDOW_US && /InvalidationTracking/.test(e.name) && !/^Layout/.test(e.name)
+    && /^(HTML|BODY|DIV class='desk-frame-stage)/.test(String((e.args && e.args.data && e.args.data.nodeName) || '')))
+    .slice(0, 16).map((e) => ({ n: e.name.replace('InvalidationTracking', ''), at: r1((e.ts - K) / 1000), d: JSON.stringify(e.args.data).slice(0, 700) }));
+  const attrib = { deep, restyles: win.slice().sort((a, b) => els(b) - els(a)).slice(0, 6).map(show), invalidations: Object.entries(inv).sort((a, b) => b[1] - a[1]).slice(0, 18),
     forcedFrames: [...new Map(win.filter(inKey).flatMap(frames).map((f) => [`${f.url}:${f.line}:${f.col}`, f])).values()].slice(0, 6) };
   return { attrib, keyTasks: keyTasks.length, keyTaskMs: r1(keyTasks.reduce((a, t) => a + (t.end - t.ts), 0) / 1000), restyles: win.length, counted: counted.length,
     keyEls: big ? els(big) : null, keyElsMs: big ? r1((big.end - big.ts) / 1000) : null, keyElsForced: big ? inKey(big) : null,
@@ -232,6 +242,8 @@ await withHarness(async (app) => {
     const { attrib, ...trShort } = tr || {};
     const m = { label, swap: sw, before, after, tr: trShort, rec };
     console.log(`KF ${label}: ` + JSON.stringify({ swap: sw, docEls: before.docEls, liveEls: before.liveEls, writing: after.writing, tr: trShort, reads: { inKey: rec.inKey, after: rec.after.slice(0, 3), frames: rec.reads.slice(0, 4), flips: rec.flips } }));
+    if (attrib && /^info-nohas/.test(label)) console.log(`KF-ATTRIB ${label} restyles: ` + JSON.stringify(attrib.restyles));
+    if (attrib && label === 'fix-1') console.log(`KF-ATTRIB ${label} deep: ` + JSON.stringify(attrib.deep));
     if (attrib && /^(fix-1|old-1|info-floor)$/.test(label)) {
       console.log(`KF-ATTRIB ${label} restyles: ` + JSON.stringify(attrib.restyles));
       console.log(`KF-ATTRIB ${label} invalidations: ` + JSON.stringify(attrib.invalidations));
@@ -247,6 +259,7 @@ await withHarness(async (app) => {
   const mutRead = await measure('mut-read', { oldRead: true });
   const no938 = await measure('info-no-leaf-pause', { swap: 'no938' });
   const floor = await measure('info-floor', { swap: 'floor' });
+  const noHas = [await measure('info-nohas', { swap: 'nohas' }), await measure('info-nohas-root', { swap: 'nohasroot' }), await measure('info-nohas-stage', { swap: 'nohasstage' })];
 
   // the look by night: at rest, then while writing
   const look = {};
@@ -281,12 +294,13 @@ await withHarness(async (app) => {
   console.log('KF SCAN: ' + JSON.stringify({ files: cssFiles.length, hits: scanHits, oldHits: oldHits.length }));
 
   // ---- the checks ----
-  const all = [...fix, ...old, mutRead, no938, floor];
+  const judged = [...fix, ...old, mutRead, no938, floor];   // the premise holds on these; the :has() reads are information only
+  const all = [...judged, ...noHas];
   const premise = (m) => m.before.arbor && m.before.room === 'day' && m.before.pergola && m.before.pergola !== 'none' && m.before.live >= 2 && m.before.field
     && m.before.writing !== 'true' && m.after.writing === 'true' && m.tr && !m.tr.err && m.tr.keyTasks >= 1 && m.tr.counted >= 1
     && m.rec && m.rec.flips.length >= 1 && m.rec.flips[0].inKey === true && m.rec.flips[0].on === 'true';
   ok('KF-PREMISE every reopen: Arbor, day room, the pergola shown, 2+ live drawings, the rhizome field; at rest before the key and writing after it; the flip came INSIDE the key\'s own task; the trace read the key\'s tasks and counted restyles',
-    all.every(premise), JSON.stringify(all.filter((m) => !premise(m)).map((m) => ({ label: m.label, before: m.before, after: m.after.writing, tr: m.tr, flips: m.rec && m.rec.flips }))));
+    judged.every(premise), JSON.stringify(judged.filter((m) => !premise(m)).map((m) => ({ label: m.label, before: m.before, after: m.after.writing, tr: m.tr, flips: m.rec && m.rec.flips }))));
   ok(`KF-SWAPS the page edits landed: T2's rules in place of the fix's 2 style queries (old), the leaves' pause rule out (info), the flip rules out (info)`,
     old.every((m) => m.swap && m.swap.containers === 2 && m.swap.inserted === 2 && m.swap.barProp === 1 && m.swap.hookProp === 1) && no938.swap.leafPause >= 1 && floor.swap.flipRules >= 1,
     JSON.stringify({ old: old.map((m) => m.swap), no938: no938.swap, floor: floor.swap }));
