@@ -67,6 +67,62 @@ walk(path.join(HERE, '..', '..', 'src'));
 const scanHits = cssFiles.flatMap((f) => scanCss(fs.readFileSync(f, 'utf8')).map((h) => `${path.basename(f)}: ${h}`));
 const oldHits = scanCss(OLD_RULES.join('\n'));
 
+// ---- the second pass (Nov 12, Actions run 43295952339 named two more whole-document restyles inside the key) ----------------------------------
+// T2's rule at arbor-v2.css:642, verbatim: a universal subject under a :has() (Chrome: "Invalidation set invalidates subtree | HTML", this selector)
+const OLD_HAS = ":root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-panel > *{ direction:ltr; }";
+// KF-SCAN-HAS: the same scan, for a universal subject under a :has() anywhere in the selector
+const HAS = /:has\(/;
+const scanCssBy = (css, re) => {
+  const hits = [];
+  const src = css.replace(/\/\*[\s\S]*?\*\//g, ' ');
+  const rx = /([^{}]+)\{/g; let m;
+  while ((m = rx.exec(src))) {
+    const raw = m[1].trim(); if (raw.startsWith('@')) continue;
+    for (const sel of splitTop(raw)) { const s = sel.trim(); if (!re.test(s)) continue; const subj = subjectOf(s); if (/^\*/.test(subj) && !/^\*[.#[]/.test(subj)) hits.push(s.slice(0, 120)); }
+  }
+  return hits;
+};
+const hasHits = cssFiles.flatMap((f) => scanCssBy(fs.readFileSync(f, 'utf8'), HAS).map((h) => `${path.basename(f)}: ${h}`));
+const oldHasHits = scanCssBy(OLD_HAS, HAS);
+// KF-SPEC: each rule the fix rewrote keeps T2's specificity. A selector's specificity [ids, classes/attributes/pseudo-classes, types]; :is/:not/:has
+// take their most specific argument, :where none, a pseudo-element counts as a type
+const cmp3 = (x, y) => (x[0] - y[0]) || (x[1] - y[1]) || (x[2] - y[2]);
+const spec = (s) => {
+  let a = 0, b = 0, c = 0, i = 0;
+  const word = () => { while (i < s.length && /[\w-]/.test(s[i])) i += 1; };
+  while (i < s.length) {
+    const ch = s[i];
+    if (ch === '#') { a += 1; i += 1; word(); }
+    else if (ch === '.') { b += 1; i += 1; word(); }
+    else if (ch === '[') { b += 1; let d = 1; i += 1; while (i < s.length && d) { if (s[i] === '[') d += 1; if (s[i] === ']') d -= 1; i += 1; } }
+    else if (ch === ':' && s[i + 1] === ':') { c += 1; i += 2; word(); }
+    else if (ch === ':') {
+      i += 1; const st = i; word(); const name = s.slice(st, i);
+      if (s[i] === '(') {
+        let d = 1, j = i + 1; while (j < s.length && d) { if (s[j] === '(') d += 1; if (s[j] === ')') d -= 1; j += 1; }
+        const inner = s.slice(i + 1, j - 1); i = j;
+        if (name === 'where') continue;
+        if (['is', 'not', 'has', 'matches'].includes(name)) { const m = splitTop(inner).map((x) => spec(x.trim().replace(/^[>+~]\s*/, ''))).reduce((best, x) => (cmp3(x, best) > 0 ? x : best), [0, 0, 0]); a += m[0]; b += m[1]; c += m[2]; }
+        else b += 1;
+      } else b += 1;
+    }
+    else if (/[a-zA-Z]/.test(ch)) { c += 1; word(); }
+    else i += 1;
+  }
+  return [a, b, c];
+};
+const selOf = (rule) => rule.slice(0, rule.lastIndexOf('{')).trim();
+const ARBOR_CSS = fs.readFileSync(path.join(HERE, '..', '..', 'src', 'styles', 'arbor-v2.css'), 'utf8');
+const inQuery = (name) => { const i = ARBOR_CSS.indexOf(`@container style(${name}: on){`); if (i < 0) return null; const rest = ARBOR_CSS.slice(ARBOR_CSS.indexOf('{', i) + 1); return rest.slice(0, rest.indexOf('{')).trim(); };
+const SPEC_PAIRS = [['the bars\' dim', selOf(OLD_RULES[0]), inQuery('--arbor2-bar-dim')], ['the hooks\' lettering', selOf(OLD_RULES[1]), inQuery('--arbor2-hook-lt')], ['the Tutor drawer\'s direction', selOf(OLD_HAS), inQuery('--arbor2-tutor-rtl')]]
+  .map(([what, was, now]) => ({ what, was: spec(was), now: now ? spec(now) : null, nowSel: now ? now.slice(0, 90) : null }));
+// the calculator's own liveness: known values, and one [data-arbor2] fewer must read lower
+const SPEC_SELF = [
+  JSON.stringify(spec(":root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-panel > *")) === '[0,7,0]',
+  JSON.stringify(spec('div#a.b:hover::before :where(.x) :is(.c, #d)')) === '[2,2,2]',
+  cmp3(spec(":root[data-arbor2][data-theme='plateau'] .wz-tutor-panel > *"), spec(":root[data-arbor2][data-arbor2][data-theme='plateau'] .wz-tutor-panel > *")) < 0,
+];
+
 // ---- page-side pieces ---------------------------------------------------------------------------------------------------------------------------
 // (its own read goes round the recorder: the instrument never reads a shade layer through the patched function)
 const STATE = `(() => { const root = document.documentElement, pg = document.querySelector('.arbor2-pergola'), g = window.__kfOrig || window.getComputedStyle;
@@ -91,7 +147,7 @@ const READ_REC = `(() => window.__kfg)()`;
 // MUT-KF-READ: T2's pattern, rebuilt - an observer of the flip that reads the shade layer's style at once
 const OLD_READ = `(() => { new MutationObserver(() => { const l = document.querySelector('.arbor2-pergola'); if (l && document.documentElement.getAttribute('data-wz-writing') === 'true') getComputedStyle(l).transitionDuration; }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-wz-writing'] }); return true; })()`;
 const NOTRANS = `(() => { const s = document.createElement('style'); s.textContent = '*, *::before, *::after { transition: none !important; animation-play-state: paused !important; }'; document.head.appendChild(s); return true; })()`;
-const SNAP = `(() => { const r = []; const g = window.__kfOrig || getComputedStyle; for (const el of document.querySelectorAll('body *')) { const cs = g.call(window, el); r.push(cs.opacity + '|' + cs.color); } return r; })()`;
+const SNAP = `(() => { const r = []; const g = window.__kfOrig || getComputedStyle; for (const el of document.querySelectorAll('body *')) { const cs = g.call(window, el); r.push(cs.opacity + '|' + cs.color + '|' + cs.direction); } return r; })()`;   // (+ direction, Nov 12: the Tutor drawer's rule)
 // the stylesheet edits, in the running page (the sheet that carries the fix)
 const SWAP = (mode) => `((mode) => {
   const OLD = ${JSON.stringify(OLD_RULES)};
@@ -125,6 +181,19 @@ const SWAP = (mode) => `((mode) => {
     out.deleted = del((r) => arb(r) && (mode === 'nohas' || (mode === 'nohasroot' ? onRoot(r) : !onRoot(r))));
   } else if (mode === 'floor') {
     out.flipRules = del((r) => r instanceof CSSStyleRule && /data-wz-writing|data-writing|data-chrome-receded/.test(r.selectorText)); out.containers = del(isCont);
+  } else if (mode === 'oldhas') {
+    // T2's rule 642 in place of the fix's Tutor-drawer style query (the inserted rule is remembered, for 'unins')
+    const OLD_HAS = ${JSON.stringify(OLD_HAS)};
+    window.__kfIns = window.__kfIns || []; out.containers = 0; out.inserted = 0;
+    for (let i = sh.cssRules.length - 1; i >= 0; i -= 1) { const r = sh.cssRules[i]; if (!(typeof CSSContainerRule !== 'undefined' && r instanceof CSSContainerRule && /--arbor2-tutor-rtl/.test(r.conditionText || r.cssText))) continue; sh.deleteRule(i); out.containers += 1; sh.insertRule(OLD_HAS, i); window.__kfIns.push(sh.cssRules[i]); out.inserted += 1; }
+    out.tutorProp = unprop('--arbor2-tutor-rtl');
+  } else if (mode === 'unins') {
+    let n = 0; for (const r of window.__kfIns || []) { const i = [...sh.cssRules].indexOf(r); if (i >= 0) { sh.deleteRule(i); n += 1; } } window.__kfIns = []; out.removed = n;
+  } else if (mode === 'mutlookhas') {
+    out.tutorProp = unprop('--arbor2-tutor-rtl');
+  } else if (mode === 'nofade') {
+    // the fix's --fade-dur on the shade layers taken out (MUT-KF-FLIP-FADE)
+    out.deleted = del((r) => r instanceof CSSStyleRule && r.style.getPropertyValue('--fade-dur').trim() !== '' && /arbor2-pergola/.test(r.selectorText) && /arbor2-pagesh/.test(r.selectorText));
   }
   return out;
 })(${JSON.stringify(mode)})`;
@@ -260,6 +329,24 @@ await withHarness(async (app) => {
   const no938 = await measure('info-no-leaf-pause', { swap: 'no938' });
   const floor = await measure('info-floor', { swap: 'floor' });
   const noHas = [await measure('info-nohas', { swap: 'nohas' }), await measure('info-nohas-root', { swap: 'nohasroot' }), await measure('info-nohas-stage', { swap: 'nohasstage' })];
+  // the second pass's mutants: T2's rule 642 put back; the shade layers' own --fade-dur taken out
+  const mutHas = await measure('mut-has', { swap: 'oldhas' });
+  const mutFade = await measure('mut-fade', { swap: 'nofade' });
+
+  // the Tutor drawer's direction (day room; the rule is not the night's): the fix against T2's rule 642, its coverage, and the mutant
+  const lh = {};
+  await open('day'); await app.evalJs(NOTRANS); await sleep(300);
+  lh.fix = await app.evalJs(SNAP); await sleep(200); lh.fix2 = await app.evalJs(SNAP);
+  lh.swapOld = await app.evalJs(SWAP('oldhas')); await sleep(200);
+  lh.old = await app.evalJs(SNAP);
+  lh.swapUn = await app.evalJs(SWAP('unins')); await sleep(200);
+  lh.none = await app.evalJs(SNAP);
+  await open('day'); await app.evalJs(NOTRANS); await sleep(300);
+  lh.swapMut = await app.evalJs(SWAP('mutlookhas')); await sleep(200);
+  lh.mut = await app.evalJs(SNAP);
+  lh.swapMutOld = await app.evalJs(SWAP('oldhas')); await sleep(200);
+  lh.mutOld = await app.evalJs(SNAP);
+  lh.panelKids = await app.evalJs("document.querySelectorAll('.wz-tutor-panel > *').length");
 
   // the look by night: at rest, then while writing
   const look = {};
@@ -292,6 +379,11 @@ await withHarness(async (app) => {
     writeFixVsOld: mWrite ? diff(look.writeFix, look.writeOld, mWrite) : null, mutVsOld: diff(look.restMut, look.restMutOld), swaps: { old: look.swapOld, none: look.swapNone, wOld: look.wSwapOld, mut: look.mSwap, mOld: look.mSwapOld } };
   console.log('KF LOOK: ' + JSON.stringify(L));
   console.log('KF SCAN: ' + JSON.stringify({ files: cssFiles.length, hits: scanHits, oldHits: oldHits.length }));
+  const mH = unstable(lh.fix, lh.fix2);
+  const LH = { n: lh.fix.length, unstable: mH ? mH.filter(Boolean).length : null, panelKids: lh.panelKids, fixVsOld: mH ? diff(lh.fix, lh.old, mH) : null, coverage: mH ? diff(lh.old, lh.none, mH) : null,
+    mutVsOld: diff(lh.mut, lh.mutOld), swaps: { old: lh.swapOld, un: lh.swapUn, mut: lh.swapMut, mutOld: lh.swapMutOld } };
+  console.log('KF LOOK-HAS: ' + JSON.stringify(LH));
+  console.log('KF SCAN-HAS: ' + JSON.stringify({ hits: hasHits, oldHits: oldHasHits.length }) + ' | KF SPEC: ' + JSON.stringify({ pairs: SPEC_PAIRS, self: SPEC_SELF }));
 
   // ---- the checks ----
   const judged = [...fix, ...old, mutRead, no938, floor];   // the premise holds on these; the :has() reads are information only
@@ -329,11 +421,28 @@ await withHarness(async (app) => {
     look.mSwap.barProp === 1 && look.mSwap.hookProp === 1 && L.mutVsOld >= 1, JSON.stringify(L));
   ok(`KF-SCAN no selector in src/**/*.css (${cssFiles.length} files) has a universal subject under a condition that flips at the key (${scanHits.length}); the scanner finds T2's ${oldHits.length} of 2 (liveness)`,
     cssFiles.length >= 5 && scanHits.length === 0 && oldHits.length === 2, JSON.stringify({ scanHits, oldHits }));
-  console.log('KF READINGS: ' + JSON.stringify(all.map((m) => ({ label: m.label, keyEls: m.tr.keyEls, keyElsMs: m.tr.keyElsMs, forced: m.tr.keyElsForced, forcedEls: m.tr.forcedEls, forcedMs: m.tr.forcedMs, keyTaskMs: m.tr.keyTaskMs, docEls: m.before.docEls, liveEls: m.before.liveEls, readsInKey: m.rec.inKey.length }))));
+  // ---- the second pass (Nov 12): T2's rule 642 (a universal subject under a :has()) and the --fade-dur write's reach into the shade ----
+  ok(`KF-SWAPS-2 the second pass's page edits landed: T2's rule 642 in place of the Tutor drawer's style query (mut-has, and both look reads), the shade layers' --fade-dur taken out (mut-fade)`,
+    mutHas.swap && mutHas.swap.containers === 1 && mutHas.swap.inserted === 1 && mutHas.swap.tutorProp === 1 && mutFade.swap && mutFade.swap.deleted === 1
+      && lh.swapOld.inserted === 1 && lh.swapUn.removed === 1 && lh.swapMut.tutorProp === 1 && lh.swapMutOld.inserted === 1,
+    JSON.stringify({ mutHas: mutHas.swap, mutFade: mutFade.swap, look: LH.swaps }));
+  ok(`MUT-KF-FLIP-HAS with T2's rule 642 put back in the running page, KF-FLIP is RED (printed: ${mutHas.tr.keyEls}/${mutHas.before.docEls})`,
+    mutHas.tr && mutHas.tr.keyEls != null && !flipOk(mutHas), JSON.stringify({ tr: mutHas.tr, docEls: mutHas.before.docEls }));
+  ok(`MUT-KF-FLIP-FADE with the shade layers' own --fade-dur taken out, KF-FLIP is RED (printed: ${mutFade.tr.keyEls}/${mutFade.before.docEls})`,
+    mutFade.tr && mutFade.tr.keyEls != null && !flipOk(mutFade), JSON.stringify({ tr: mutFade.tr, docEls: mutFade.before.docEls }));
+  ok(`KF-LOOK-HAS every element's computed opacity, colour and direction are the same with the fix as with T2's rule 642 (${LH.n} elements, ${LH.fixVsOld} differ); and T2's rule, taken out, changes ${LH.coverage} of them (coverage, 1 or more; ${LH.panelKids} in the Tutor drawer)`,
+    LH.n > 0 && LH.fixVsOld === 0 && LH.coverage >= 1, JSON.stringify(LH));
+  ok(`MUT-KF-LOOK-HAS the Tutor drawer's custom property taken away: KF-LOOK-HAS is RED (${LH.mutVsOld} elements differ from T2's rule)`,
+    lh.swapMut.tutorProp === 1 && LH.mutVsOld >= 1, JSON.stringify(LH));
+  ok(`KF-SCAN-HAS no selector in src/**/*.css has a universal subject under a :has() (${hasHits.length}); the scanner finds T2's rule 642 (${oldHasHits.length} of 1, liveness)`,
+    hasHits.length === 0 && oldHasHits.length === 1, JSON.stringify({ hasHits, oldHasHits }));
+  ok(`KF-SPEC every rule the fix rewrote keeps T2's specificity (${SPEC_PAIRS.map((p) => `${p.what} ${JSON.stringify(p.was)} -> ${JSON.stringify(p.now)}`).join('; ')}); the calculator reads known values and sees one attribute fewer (liveness)`,
+    SPEC_PAIRS.every((p) => p.now && cmp3(p.was, p.now) === 0) && SPEC_SELF.every(Boolean), JSON.stringify({ SPEC_PAIRS, SPEC_SELF }));
+  console.log('KF READINGS: ' + JSON.stringify([...all, mutHas, mutFade].map((m) => ({ label: m.label, keyEls: m.tr.keyEls, keyElsMs: m.tr.keyElsMs, forced: m.tr.keyElsForced, forcedEls: m.tr.forcedEls, forcedMs: m.tr.forcedMs, keyTaskMs: m.tr.keyTaskMs, docEls: m.before.docEls, liveEls: m.before.liveEls, readsInKey: m.rec.inKey.length }))));
   console.log('KF BUNDLE: ' + fix[0].before.bundle);
 }, { label: 'arbor-keyflip' });
 
-const WANT_CHECKS = 10;   // a check that never ran is a failure, never a quiet pass
+const WANT_CHECKS = 17;   // a check that never ran is a failure, never a quiet pass (10, + 7 for the second pass, Nov 12)
 const failed = checks.filter((c) => !c.pass);
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
 const pass = checks.length === WANT_CHECKS && !failed.length;
