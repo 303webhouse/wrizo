@@ -4,14 +4,14 @@
 //   Z100  Flux, ?flux3=1, the Schema at true size (1.00)
 //   Z020  the same at 0.20 (the whole board, far out: the board is tall enough that the outer limit lies below 0.20, so the seam lands on 0.20 exactly)
 //   Z400  the same at 4.00 (the inner limit: one card roughly fills the stage)
-//   MUT   Z400 plus a synthetic 12 ms burn on every keydown: the mutant that must FAIL the bar (the instrument can see a real added cost)
+//   MUT   Z400 plus a synthetic 24 ms burn on every keydown (1.5 frames: a latency is quantised to the 16.7 ms frame, so a 12 ms burn moved the median only ~5 ms on Actions): the mutant that must FAIL the bar
 // Each arm: the same nine-card board re-seeded through the app's seam at the Desk (a route with no flush handler), opened, scaled through the camera's own seam (window.wrizoFluxZoomTo), the card
 // centred, double-clicked open, the editor focused, then 44 keys one every 90 ms, the latency of each read IN the page as rhizome-latency and flux3-latency read it (keydown -> the second animation
 // frame after its beforeinput). The arm order rotates each round; one discarded warm-up. 1920x1080, Page: Dark, Draft not involved (a board).
 // VERDICTS (flux3-latency's bar, UNCHANGED; judged against the control's OWN spread):
 //   L-zoom@S   at each scale: the arm's pooled median <= C's + C's median spread, p95 <= C's + C's p95 spread, no key over 100 ms       (a TIMING line: it gates on the box, information on Actions)
 //   D2         the real layer damps while she types: its own canvas drew in at most one frame per round (the one in flight at the first key), at every scale
-//   MUT-z      the burn landed (its median >= Z400's + 6 ms) and the burn FAILS the bar (on the box; on Actions only the landing gates)
+//   MUT-z      the burn landed on every key (a count: gates everywhere), lifted the median by >= 8 ms (a timing line) and FAILS the bar (on the box; on Actions only the landing gates)
 //   SPLIT      information: median / p95 for C, Z100, Z020, Z400, and each zoomed arm's difference from Z100 (the zoom's own share, apart from Flux's)
 //   Premises   each arm stood where it claims (theme, flag, the measured scale, the editor focused), >= 40 keys painted per arm-round, every typed character reached the card, B the build
 // FLUX3_ROUNDS=<n> (default 4). Run: node scripts/harness/flux3-latency-zoom.mjs   (from apps/desktop; a box turn - this is a timing file; on Actions its timing lines are information)
@@ -26,7 +26,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(here, '..', '..', '..', '..');
 const DIST = path.resolve(here, '..', '..', 'dist-web');
 const ROUNDS = Math.max(3, Number(process.env.FLUX3_ROUNDS || 4));
-const KEYS = 44, MIN_KEYS = 40, GAP = 90, MAX_MS = 100, IDLE_MS = 1500, BURN_MS = 12;
+const KEYS = 44, MIN_KEYS = 40, GAP = 90, MAX_MS = 100, IDLE_MS = 1500, BURN_MS = 24;
 const VIEW = [1920, 1080];
 const BOARD = 'f3lz-board';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -217,8 +217,9 @@ try { await withHarness(async (app) => {
   ok(`SPLIT (information) median/p95 ms: C Arbor ${r1(S.C.median)}/${r1(S.C.p95)} | Z100 ${r1(S.Z100.median)}/${r1(S.Z100.p95)} | Z020 ${r1(S.Z020.median)}/${r1(S.Z020.p95)} (vs Z100 ${d('Z020')}) | Z400 ${r1(S.Z400.median)}/${r1(S.Z400.p95)} (vs Z100 ${d('Z400')})`, true, '');
   // the mutant: the burn landed on every key, and the bar sees it
   const m = judge(res.C, res.MUT);
-  const burnLanded = res.MUT.length > 0 && res.MUT.every((r) => r.burned >= MIN_KEYS) && S.MUT.median >= S.Z400.median + 6;
-  ok(`MUT-z premise: the ${BURN_MS} ms burn landed on every key (${res.MUT.map((r) => r.burned).join('/')} keydowns burned) and lifted the median by >= 6 ms (MUT ${r1(S.MUT.median)} vs Z400 ${r1(S.Z400.median)})`, burnLanded, JSON.stringify(res.MUT.map((r) => ({ round: r.round, burned: r.burned }))));
+  const burnLanded = res.MUT.length > 0 && res.MUT.every((r) => r.burned >= MIN_KEYS);
+  ok(`MUT-z premise: the ${BURN_MS} ms burn landed on every key (${res.MUT.map((r) => r.burned).join('/')} keydowns burned)`, burnLanded, JSON.stringify(res.MUT.map((r) => ({ round: r.round, burned: r.burned }))));
+  timing(`MUT-z effect the burn lifted the median by >= 8 ms (MUT ${r1(S.MUT.median)} vs Z400 ${r1(S.Z400.median)}: +${r1(S.MUT.median - S.Z400.median)})`, S.MUT.median >= S.Z400.median + 8, JSON.stringify({ mut: show(S.MUT), z400: show(S.Z400) }));
   ok(`MUT-z the burn FAILS the bar (caught by L: ${m.lat ? 'no' : 'YES'}) - MUT median ${r1(m.X.median)} p95 ${r1(m.X.p95)} max ${r1(m.X.max)}`, burnLanded && (ON_BOX ? !m.lat : true), `C ${show(m.C)} | MUT ${show(m.X)}`);   // on Actions only the landing gates: L is a timing line
 
   // ---- the build
