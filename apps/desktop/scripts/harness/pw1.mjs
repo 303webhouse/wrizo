@@ -175,7 +175,7 @@ const wakeChrome = async (app) => {
 // product bug. Ask first.
 const openPlan = async (app) => {
   // BUG #84: a CLOSING panel stays drawn for --drawer-dur (inert, data-leaving) while it slides out, and its plan zone is still in the DOM. That panel is not open: it is going. Counting it as open skipped the press, the panel
-  // finished leaving, and S5 (Q6) read a cascade that was never reopened (one run in a dozen or two on Actions; every run with PW1_NO_WAIT_CLOSE=1). So "already open" means a panel that is not leaving.
+  // finished leaving, and S5 (Q6) read a cascade that was never reopened (about 1 run in 18 on Actions; 1 in 4 with PW1_NO_WAIT_CLOSE=1). So "already open" means a panel that is not leaving.
   const already = await app.evalJs("!!document.querySelector('.wz-cascade-panel:not([data-leaving]) .wz-cascade-plan-zone') || (!!document.querySelector('.wz-cascade-panel:not([data-leaving])') && document.querySelector('.wz-strip-item[data-category=plan]')?.getAttribute('aria-pressed') === 'true')");
   if (already) return true;
   // NAME AND ASSERTION AGREE NOW. This read `.wz-strip-item').length > 2` —
@@ -436,7 +436,7 @@ await withHarness(async (app) => {
       await waitOr(app, "!document.querySelector('.wz-cascade-survey')", 'the first Escape closes the survey');
       await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))");
       // STRESS (bug #84, env PW1_NO_WAIT_CLOSE=1): do not wait for the closed panel before the reopen. When the cascade closes, the panel is drawn on for --drawer-dur (inert, data-leaving) while it slides out; one wait in a dozen or two
-      // happened to sample the few milliseconds before that copy is drawn, read "closed", and went on while the panel was still there. Going on at once puts the reopen inside the slide-out EVERY time, so the race can be shown, and shown gone.
+      // happened to sample the few milliseconds before that copy is drawn, read "closed", and went on while the panel was still there. Going on at once puts the reopen inside the slide-out far more often (1 run in 4 on Actions against about 1 in 18), so the race can be shown, and shown gone.
       if (process.env.PW1_NO_WAIT_CLOSE !== '1') await waitOr(app, "!document.querySelector('.wz-cascade-panel:not([data-leaving])')", 'the second Escape closes the panel (so the reopen below is a real reopen)');   // a panel still sliding out (data-leaving) is closed; the reopen presses the strip
       if (await openPlan(app)) {
         // the reopened panel mounts its remembered survey in a render or two: wait for it, bounded; S5 below reads what is there either way
