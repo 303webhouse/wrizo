@@ -1,4 +1,4 @@
-// RED-FIRST CHECK for #63's page-turn sound switch (Settings, "Page-turn sound: On / Off", remembered per theme on the device; Arbor on, Flux on, Machina off; nothing stored until she touches it; once per page per sitting).
+// RED-FIRST CHECK for #63's page-turn sound switch (the left rail's Settings, "Page-turn sound: On / Off", remembered per theme on the device; Arbor on, Flux on, Machina off; nothing stored until she touches it; once per page per sitting).
 // A ring is counted at the sound itself: the page's AudioContext buffer sources and any audio element played are counted from a hook the script installs. The page turns when the text crosses the sheet's height
 // (14 lines, then Shift+Enter four times); the writing makes the turn.
 //   S1  the default: Arbor and Flux ring once, Machina is quiet; opening a page that is already long rings nothing
@@ -32,9 +32,10 @@ await withHarness(async (app) => {
   const backspaces = async (n) => { for (let i = 0; i < n; i++) { await d.key('Backspace'); await sleep(70); } await sleep(900); };
   const stored = () => ev(`localStorage.getItem(${JSON.stringify(KEY)})`);
   const check = (name, fails) => { if (fails.length) bad++; console.log(`${fails.length ? 'FAIL' : 'PASS'}  ${name} [${TAG}]${fails.length ? ': ' + fails.join(' || ') : ''}`); };
-  const press = (value) => ev(`(() => { const row = [...document.querySelectorAll('.mode-crow')].find((r) => (r.querySelector('span') || {}).textContent === 'Page-turn sound'); if (!row) return 'no Page-turn sound row in Settings'; const b = [...row.querySelectorAll('button')].find((x) => x.textContent.trim() === ${JSON.stringify(value)}); if (!b) return 'no ' + ${JSON.stringify(value)} + ' button'; b.click(); return 'ok'; })()`);
-  const openSettings = async () => { const open = await ev(`(() => { const g = document.querySelector('[aria-label="Writing settings"]'); if (!g) return 'no gear'; if (g.getAttribute('aria-expanded') !== 'true') g.click(); return 'ok'; })()`); await sleep(300); return open; };
-  const closeSettings = async () => { await ev(`(() => { const g = document.querySelector('[aria-label="Writing settings"]'); if (g && g.getAttribute('aria-expanded') === 'true') g.click(); return true; })()`); await sleep(250); };
+  // the switch lives in the left rail's Settings (the cascade panel the page's own strip opens), two buttons like the Cast row: data-turn-sound-option on / off
+  const openSettings = async () => { const r = await ev(`(() => { const b = document.querySelector('.wz-strip [data-category="settings"]') || document.querySelector('[data-category="settings"]'); if (!b) return 'no Settings entry on the page strip'; b.click(); return 'ok'; })()`); await sleep(700); return r; };
+  const press = (value) => ev(`(() => { const row = document.querySelector('.wz-cascade-turnsound'); if (!row) return 'no Page-turn sound row in the rail Settings'; const b = row.querySelector('[data-turn-sound-option=' + JSON.stringify(${JSON.stringify(value.toLowerCase())}) + ']'); if (!b) return 'no ' + ${JSON.stringify(value)} + ' button'; b.click(); return 'ok'; })()`);
+  const closeSettings = async () => { await d.key('Escape'); await sleep(400); };
 
   // S1 - the default, and a long page opening rings nothing
   const f1 = [];
@@ -74,7 +75,7 @@ await withHarness(async (app) => {
   const f4 = [];
   try {
     await open(lines(14));
-    await openSettings();
+    const op = await openSettings(); if (op !== 'ok') f4.push(op);
     const other = DEFAULT_ON ? 'Off' : 'On';
     const res = await press(other);
     if (res !== 'ok') f4.push(res);
