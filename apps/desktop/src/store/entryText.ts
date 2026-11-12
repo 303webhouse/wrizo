@@ -55,6 +55,12 @@ export function boardName(text: string | undefined, fallback: string): string {
   return first ? first.slice(0, 60) : fallback;
 }
 
+// #69 - the board's name AS STORED: the same line boardName cuts for display, whole. The rename box opens on THIS, and a rename is compared against it, so an
+// 81-character name is edited whole (the 60-character cut is how a name is DRAWN, never what is kept).
+export function fullBoardName(text: string | undefined, fallback: string): string {
+  return firstPlainLine(text ?? '') || fallback;
+}
+
 // A single-line preview: collapse whitespace and truncate with an ellipsis.
 export function snippet(text: string, max = 140): string {
   const flat = text.replace(/\s+/g, ' ').trim();

@@ -1,0 +1,4 @@
+tested build (F:\wrizo-work\chat1-train-nd, the bundle the box stamped): index-BvBP5S1N.js 1023670 bytes md5 0e34d31bb0c0; index-NUGTKzyD.css 249127 bytes md5 b3c23102a5ea. Served: identical (see verify.txt).
+railway deployment list: 0efebcf7-27bf-4ba7-b00c-891ca89e92be SUCCESS 2026-11-12 10:49:15 -07:00 (17:49:15Z); cdf6779d-eb87-4a74-a586-103effb54e06 (#12n) REMOVING.
+primary checkout at deploy: detached e97dde15257050352f618e0fec5663334d56c783 (tree 576c05b5), tracked changes 0, railway status writer-studio / production / writer-studio-app. Railway status page read first: no active incident; next maintenance Nov 15 08:00-08:30Z.
+A first railway up from Git Bash exited 1 in one second ("No linked project found": the link is path-keyed; nothing uploaded, live unchanged); the one real attempt ran from PowerShell, exit 0, 75 s.
