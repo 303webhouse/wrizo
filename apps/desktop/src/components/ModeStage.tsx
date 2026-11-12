@@ -16,7 +16,7 @@ import { useTypewriterFade, CONTAINER_HOLD_BAND } from './useTypewriterFade';
 import { AmbientGlow, MilestoneBar, ProgressBar, TypewriterToggle, useGoalProgress, WORD_GOAL, TIME_GOAL_MS } from './WritingIncentives';
 import type { Milestones } from '../store/milestones';
 import { useTheme, setTheme, getTheme, type ThemeId } from '../store/theme';
-import { getTurnSound, setTurnSound, useTurnSound } from '../store/pageTurnSound';
+import { getTurnSound } from '../store/pageTurnSound';
 import { useLexicon } from '../store/themeLexicon';
 import { useThemePrefs, setThemePrefs, type PageTone } from '../store/themePrefs';
 import { useAmbianceDial, setAmbianceDial } from '../store/ambianceDial';
@@ -711,7 +711,6 @@ export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvail
   const { t: deskLex } = useDeskLexicon();
   const settingsTheme = useTheme();
   const machina = settingsTheme === 'machina';
-  const turnSound = useTurnSound(settingsTheme);
   const progressOpts = progressOptions(hasMilestones, deskLex('progressDrawer'));
   // MACHINA has ONE progress instrument (Run), so the style choice is not offered under it.
   const showProgressStyle = !!framed && settings.progress === 'words' && !machina;
@@ -737,8 +736,6 @@ export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvail
           session-explicit flag so neither can be silently overridden by a
           later Draft-open seed. */}
       {typewriterAvailable && <Seg label="Typewriter" value={settings.typewriter ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setTypewriterExplicit(v === 'on')} />}
-      {/* #63: the page's turn is a sound, never an animation; this is its switch, remembered per theme on this device (store/pageTurnSound.ts) */}
-      <Seg label="Page-turn sound" value={turnSound} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setTurnSound(settingsTheme, v as 'on' | 'off')} />
     </div>
   );
 }
