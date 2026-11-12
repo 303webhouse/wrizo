@@ -194,6 +194,13 @@ const SWAP = (mode) => `((mode) => {
   } else if (mode === 'nofade') {
     // the fix's --fade-dur on the shade layers taken out (MUT-KF-FLIP-FADE)
     out.deleted = del((r) => r instanceof CSSStyleRule && r.style.getPropertyValue('--fade-dur').trim() !== '' && /arbor2-pergola/.test(r.selectorText) && /arbor2-pagesh/.test(r.selectorText));
+  } else if (mode === 'mutlookhasB') {
+    // MUT-KF-LOOK-HAS-B: the Tutor panel's custom property overridden by an INSERTED rule (a rule insertion re-styles the page, as every other edit
+    // here; run 43299418991 showed a declaration removed through the CSSOM left the drawer's child where it was)
+    sh.insertRule(':root:root:root:root:root:root:root:root:root .wz-tutor-panel{ --arbor2-tutor-rtl: off; }', sh.cssRules.length); out.inserted = 1;
+  } else if (mode === 'notutorq') {
+    // MUT-KF-LOOK-HAS-DYN: the Tutor drawer's style query taken out
+    out.containers = del((r) => typeof CSSContainerRule !== 'undefined' && r instanceof CSSContainerRule && /--arbor2-tutor-rtl/.test(r.conditionText || r.cssText));
   }
   return out;
 })(${JSON.stringify(mode)})`;
@@ -297,12 +304,13 @@ await withHarness(async (app) => {
     let j; try { j = JSON.parse(s); } catch (e) { return { err: 'trace not JSON: ' + String(e).slice(0, 80) }; }
     return analyse(Array.isArray(j) ? j : (j.traceEvents || []));
   };
-  const measure = async (label, { swap = null, oldRead = false } = {}) => {
+  const measure = async (label, { swap = null, oldRead = false, pre = null } = {}) => {
     await open('day');
     const sw = swap ? await app.evalJs(SWAP(swap)) : null;
     if (swap) await sleep(500);
     await app.evalJs(RECORD);
     if (oldRead) await app.evalJs(OLD_READ);
+    if (pre) { await app.evalJs(pre); await sleep(400); }
     await focus();
     const before = await app.evalJs(STATE);
     const tr = await traceKey();
@@ -332,6 +340,14 @@ await withHarness(async (app) => {
   // the second pass's mutants: T2's rule 642 put back; the shade layers' own --fade-dur taken out
   const mutHas = await measure('mut-has', { swap: 'oldhas' });
   const mutFade = await measure('mut-fade', { swap: 'nofade' });
+  // information (the third pass, Nov 12): run 43299418991 left ONE whole-document restyle (1099, forced by the editor's caret effect) right after the
+  // dissolve hook writes --fade-dur on <html>. What would take it out: (a) the live shade drawings out of style work before the key (data-live-off,
+  // the product's own cut), (b) the <html> --fade-dur write held back
+  const preLive = await measure('info-prelive', { pre: "(() => { document.querySelectorAll('.arbor2-pergola, .arbor2-pagesh').forEach((l) => l.setAttribute('data-live-off', 'true')); return true; })()" });
+  const noRootFade = await measure('info-noroot-fade', { pre: "(() => { const de = document.documentElement; const orig = CSSStyleDeclaration.prototype.setProperty; CSSStyleDeclaration.prototype.setProperty = function (n, v, p) { if (this === de.style && n === '--fade-dur') { window.__kfHeld = (window.__kfHeld || 0) + 1; return; } return orig.call(this, n, v, p); }; return true; })()" });
+  const heldFade = await app.evalJs('window.__kfHeld || 0');
+  for (const m of [preLive, noRootFade]) console.log(`KF-ATTRIB ${m.label} restyles: ` + JSON.stringify((m.tr && m.tr.keyEls) != null ? { keyEls: m.tr.keyEls, forcedEls: m.tr.forcedEls, forcedMs: m.tr.forcedMs, keyTaskMs: m.tr.keyTaskMs } : m.tr));
+  console.log(`KF-ATTRIB info-noroot-fade: --fade-dur writes on <html> held back: ${heldFade}`);
 
   // the Tutor drawer's direction (day room; the rule is not the night's): the fix against T2's rule 642, its coverage, and the mutant
   const lh = {};
@@ -347,6 +363,27 @@ await withHarness(async (app) => {
   lh.swapMutOld = await app.evalJs(SWAP('oldhas')); await sleep(200);
   lh.mutOld = await app.evalJs(SNAP);
   lh.panelKids = await app.evalJs("document.querySelectorAll('.wz-tutor-panel > *').length");
+  // MUT-KF-LOOK-HAS-B: the panel's property overridden by an inserted rule, against T2's rule
+  await open('day'); await app.evalJs(NOTRANS); await sleep(300);
+  lh.swapMutB = await app.evalJs(SWAP('mutlookhasB')); await sleep(200);
+  lh.mutB = await app.evalJs(SNAP);
+  lh.swapMutBOld = await app.evalJs(SWAP('oldhas')); await sleep(200);
+  lh.mutBOld = await app.evalJs(SNAP);
+  // KF-LOOK-HAS-DYN: the product's own transition - the Typewriter zoom on, then off (data-zoom on .mode-pagecol, which the :has() reads) - and the
+  // drawer comes back exactly as it was: the style query follows the panel's property both ways (its mutant: the query taken out)
+  const ZOOM = (on) => `(() => { const c = document.querySelector('.mode-pagecol'); if (!c) return { err: 'no .mode-pagecol' }; if (window.__kfZoomWas === undefined) window.__kfZoomWas = c.getAttribute('data-zoom'); if (${on}) c.setAttribute('data-zoom', 'true'); else if (window.__kfZoomWas == null) c.removeAttribute('data-zoom'); else c.setAttribute('data-zoom', window.__kfZoomWas); const p = document.querySelector('.wz-tutor-panel'); const k = p && p.firstElementChild; return { zoom: c.getAttribute('data-zoom'), panel: p ? getComputedStyle(p).direction : null, kid: k ? getComputedStyle(k).direction : null }; })()`;
+  const dyn = async (mut) => {
+    await open('day'); await app.evalJs(NOTRANS); await sleep(300);
+    const d = { mut: mut ? await app.evalJs(SWAP('notutorq')) : null };
+    d.a = await app.evalJs(SNAP); d.at = await app.evalJs(ZOOM(false));
+    d.on = await app.evalJs(ZOOM(true)); await sleep(300);
+    d.onRead = await app.evalJs(ZOOM(true));
+    d.off = await app.evalJs(ZOOM(false)); await sleep(300);
+    d.b = await app.evalJs(SNAP); d.bt = await app.evalJs(ZOOM(false));
+    return d;
+  };
+  lh.dyn = await dyn(false);
+  lh.dynMut = await dyn(true);
 
   // the look by night: at rest, then while writing
   const look = {};
@@ -422,27 +459,46 @@ await withHarness(async (app) => {
   ok(`KF-SCAN no selector in src/**/*.css (${cssFiles.length} files) has a universal subject under a condition that flips at the key (${scanHits.length}); the scanner finds T2's ${oldHits.length} of 2 (liveness)`,
     cssFiles.length >= 5 && scanHits.length === 0 && oldHits.length === 2, JSON.stringify({ scanHits, oldHits }));
   // ---- the second pass (Nov 12): T2's rule 642 (a universal subject under a :has()) and the --fade-dur write's reach into the shade ----
-  ok(`KF-SWAPS-2 the second pass's page edits landed: T2's rule 642 in place of the Tutor drawer's style query (mut-has, and both look reads), the shade layers' --fade-dur taken out (mut-fade)`,
-    mutHas.swap && mutHas.swap.containers === 1 && mutHas.swap.inserted === 1 && mutHas.swap.tutorProp === 1 && mutFade.swap && mutFade.swap.deleted === 1
-      && lh.swapOld.inserted === 1 && lh.swapUn.removed === 1 && lh.swapMut.tutorProp === 1 && lh.swapMutOld.inserted === 1,
-    JSON.stringify({ mutHas: mutHas.swap, mutFade: mutFade.swap, look: LH.swaps }));
+  // PARKED 2026-11-12 (SUPERSEDED by KF-SWAPS-3 - Actions run 43299418991: the shade layers' own --fade-dur did not stop the <html> write's restyle
+  // (1099 elements with it, 1095 without: an inherited custom property re-styles the subtree under a changed parent even where a child sets its own);
+  // the rule is taken out of the fix, so mut-fade's edit has nothing to take out). Original, verbatim:
+  // ok(`KF-SWAPS-2 the second pass's page edits landed: T2's rule 642 in place of the Tutor drawer's style query (mut-has, and both look reads), the shade layers' --fade-dur taken out (mut-fade)`,
+  //   mutHas.swap && mutHas.swap.containers === 1 && mutHas.swap.inserted === 1 && mutHas.swap.tutorProp === 1 && mutFade.swap && mutFade.swap.deleted === 1
+  //     && lh.swapOld.inserted === 1 && lh.swapUn.removed === 1 && lh.swapMut.tutorProp === 1 && lh.swapMutOld.inserted === 1,
+  //   JSON.stringify({ mutHas: mutHas.swap, mutFade: mutFade.swap, look: LH.swaps }));
+  ok(`KF-SWAPS-3 the page edits landed: T2's rule 642 in place of the Tutor drawer's style query (mut-has, the look reads), the override inserted (MUT-KF-LOOK-HAS-B), the query taken out (the zoom mutant)`,
+    mutHas.swap && mutHas.swap.containers === 1 && mutHas.swap.inserted === 1 && mutHas.swap.tutorProp === 1
+      && lh.swapOld.inserted === 1 && lh.swapUn.removed === 1 && lh.swapMutB.inserted === 1 && lh.swapMutBOld.inserted === 1 && lh.dynMut.mut && lh.dynMut.mut.containers === 1,
+    JSON.stringify({ mutHas: mutHas.swap, look: LH.swaps, mutB: lh.swapMutB, mutBOld: lh.swapMutBOld, dynMut: lh.dynMut.mut }));
   ok(`MUT-KF-FLIP-HAS with T2's rule 642 put back in the running page, KF-FLIP is RED (printed: ${mutHas.tr.keyEls}/${mutHas.before.docEls})`,
     mutHas.tr && mutHas.tr.keyEls != null && !flipOk(mutHas), JSON.stringify({ tr: mutHas.tr, docEls: mutHas.before.docEls }));
-  ok(`MUT-KF-FLIP-FADE with the shade layers' own --fade-dur taken out, KF-FLIP is RED (printed: ${mutFade.tr.keyEls}/${mutFade.before.docEls})`,
-    mutFade.tr && mutFade.tr.keyEls != null && !flipOk(mutFade), JSON.stringify({ tr: mutFade.tr, docEls: mutFade.before.docEls }));
+  // PARKED 2026-11-12 (SUPERSEDED, no successor - its premise is falsified, Actions run 43299418991: the shade layers' own --fade-dur did not stop the
+  // restyle (fix 1099, mutant 1095), so the rule it guarded is taken out of the fix). Original, verbatim:
+  // ok(`MUT-KF-FLIP-FADE with the shade layers' own --fade-dur taken out, KF-FLIP is RED (printed: ${mutFade.tr.keyEls}/${mutFade.before.docEls})`,
+  //   mutFade.tr && mutFade.tr.keyEls != null && !flipOk(mutFade), JSON.stringify({ tr: mutFade.tr, docEls: mutFade.before.docEls }));
   ok(`KF-LOOK-HAS every element's computed opacity, colour and direction are the same with the fix as with T2's rule 642 (${LH.n} elements, ${LH.fixVsOld} differ); and T2's rule, taken out, changes ${LH.coverage} of them (coverage, 1 or more; ${LH.panelKids} in the Tutor drawer)`,
     LH.n > 0 && LH.fixVsOld === 0 && LH.coverage >= 1, JSON.stringify(LH));
-  ok(`MUT-KF-LOOK-HAS the Tutor drawer's custom property taken away: KF-LOOK-HAS is RED (${LH.mutVsOld} elements differ from T2's rule)`,
-    lh.swapMut.tutorProp === 1 && LH.mutVsOld >= 1, JSON.stringify(LH));
+  // PARKED 2026-11-12 (SUPERSEDED by MUT-KF-LOOK-HAS-B - an instrument fault, Actions run 43299418991: the property removed through the CSSOM
+  // (removeProperty on the rule) left the drawer's child as it was, 0 differ; a rule insertion is the edit every other read here uses). Original, verbatim:
+  // ok(`MUT-KF-LOOK-HAS the Tutor drawer's custom property taken away: KF-LOOK-HAS is RED (${LH.mutVsOld} elements differ from T2's rule)`,
+  //   lh.swapMut.tutorProp === 1 && LH.mutVsOld >= 1, JSON.stringify(LH));
+  const mutBDiff = diff(lh.mutB, lh.mutBOld);
+  ok(`MUT-KF-LOOK-HAS-B the Tutor panel's custom property overridden (an inserted rule): KF-LOOK-HAS is RED (${mutBDiff} elements differ from T2's rule)`,
+    lh.swapMutB.inserted === 1 && mutBDiff >= 1, JSON.stringify({ mutBDiff, mutB: lh.swapMutB }));
+  const dynOk = (d) => !!d && d.at && d.at.panel === 'rtl' && d.onRead && d.onRead.zoom === 'true' && d.onRead.panel !== 'rtl' && d.bt && d.bt.panel === 'rtl' && diff(d.a, d.b) === 0;
+  ok(`KF-LOOK-HAS-DYN the Typewriter zoom on, then off: the panel turns (rtl -> ${lh.dyn.onRead && lh.dyn.onRead.panel} -> ${lh.dyn.bt && lh.dyn.bt.panel}) and every element reads as it did before (${diff(lh.dyn.a, lh.dyn.b)} differ; the drawer's child ${lh.dyn.at && lh.dyn.at.kid} -> ${lh.dyn.bt && lh.dyn.bt.kid})`,
+    dynOk(lh.dyn), JSON.stringify({ at: lh.dyn.at, onRead: lh.dyn.onRead, bt: lh.dyn.bt, diff: diff(lh.dyn.a, lh.dyn.b) }));
+  ok(`MUT-KF-LOOK-HAS-DYN with the drawer's style query taken out, KF-LOOK-HAS-DYN's reading changes: the child reads ${lh.dynMut.bt && lh.dynMut.bt.kid} after the zoom (the fix reads ${lh.dyn.bt && lh.dyn.bt.kid})`,
+    !!lh.dynMut.bt && !!lh.dyn.bt && lh.dynMut.bt.kid !== lh.dyn.bt.kid, JSON.stringify({ dynMut: { at: lh.dynMut.at, bt: lh.dynMut.bt }, fix: lh.dyn.bt }));
   ok(`KF-SCAN-HAS no selector in src/**/*.css has a universal subject under a :has() (${hasHits.length}); the scanner finds T2's rule 642 (${oldHasHits.length} of 1, liveness)`,
     hasHits.length === 0 && oldHasHits.length === 1, JSON.stringify({ hasHits, oldHasHits }));
   ok(`KF-SPEC every rule the fix rewrote keeps T2's specificity (${SPEC_PAIRS.map((p) => `${p.what} ${JSON.stringify(p.was)} -> ${JSON.stringify(p.now)}`).join('; ')}); the calculator reads known values and sees one attribute fewer (liveness)`,
     SPEC_PAIRS.every((p) => p.now && cmp3(p.was, p.now) === 0) && SPEC_SELF.every(Boolean), JSON.stringify({ SPEC_PAIRS, SPEC_SELF }));
-  console.log('KF READINGS: ' + JSON.stringify([...all, mutHas, mutFade].map((m) => ({ label: m.label, keyEls: m.tr.keyEls, keyElsMs: m.tr.keyElsMs, forced: m.tr.keyElsForced, forcedEls: m.tr.forcedEls, forcedMs: m.tr.forcedMs, keyTaskMs: m.tr.keyTaskMs, docEls: m.before.docEls, liveEls: m.before.liveEls, readsInKey: m.rec.inKey.length }))));
+  console.log('KF READINGS: ' + JSON.stringify([...all, mutHas, mutFade, preLive, noRootFade].map((m) => ({ label: m.label, keyEls: m.tr.keyEls, keyElsMs: m.tr.keyElsMs, forced: m.tr.keyElsForced, forcedEls: m.tr.forcedEls, forcedMs: m.tr.forcedMs, keyTaskMs: m.tr.keyTaskMs, docEls: m.before.docEls, liveEls: m.before.liveEls, readsInKey: m.rec.inKey.length }))));
   console.log('KF BUNDLE: ' + fix[0].before.bundle);
 }, { label: 'arbor-keyflip' });
 
-const WANT_CHECKS = 17;   // a check that never ran is a failure, never a quiet pass (10, + 7 for the second pass, Nov 12)
+const WANT_CHECKS = 18;   // a check that never ran is a failure, never a quiet pass (10, + 7 for the second pass, + 1 for the third, Nov 12)
 const failed = checks.filter((c) => !c.pass);
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
 const pass = checks.length === WANT_CHECKS && !failed.length;

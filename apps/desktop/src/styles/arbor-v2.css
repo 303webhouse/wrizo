@@ -948,11 +948,6 @@
 :root[data-arbor2][data-theme='plateau'] .arbor2-pergola-drift > .arbor2-still{ opacity:0; background-repeat:no-repeat; background-position:center; background-size:cover; }
 :root[data-arbor2][data-theme='plateau'] :is(.arbor2-pergola, .arbor2-pagesh)[data-live-off='true'] .arbor2-pergola-drift > .arbor2-still{ opacity:var(--arbor2-still-a, .2); }
 :root[data-arbor2][data-theme='plateau'] :is(.arbor2-pergola, .arbor2-pagesh)[data-live-off='true'] .arbor2-pergola-drift > .arbor2-live{ opacity:0; content-visibility:hidden; }
-/* bug #80: the keystroke that starts writing writes --fade-dur on <html> and on the stage (useChromeDissolve, ModeStage §10). A custom property is
-   inherited, so that write re-styles everything under them - the live shade drawings included, ~800 elements each (Actions run 43295952339: a
-   ~1095-element restyle forced inside the key). Nothing in the shade reads --fade-dur; with its own value here, a shade layer's style is unchanged
-   by that write and the restyle stops at the layer. scripts/harness/arbor-keyflip.mjs (MUT-KF-FLIP-FADE takes this out). */
-:root[data-arbor2][data-theme='plateau'] :is(.arbor2-pergola, .arbor2-pagesh){ --fade-dur:0s; }
 
 /* r19 §18.1 - REST <-> WRITING (Fable, ruling 2: the existing recede/return hooks, Arbor-scoped, opacity transitions on two layers, no new JS
    animation path). <html data-wz-writing> (useChromeDissolve) is the hook: the first keystroke fades the whole shade (room + page) out over ~6 s
