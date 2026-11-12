@@ -16,14 +16,15 @@
 //   ZH    guard 6: no hairline is drawn thinner than 1 px at any scale: the node brackets (computed width x scale), the board links (non-scaling stroke >= 1 px), every stroke the layer draws (lineWidth >= 1),
 //         and the link colour is #57's at every scale
 //   ZFL   guard 2: <= 3 flashes a second: a full zoom out and in sampled ~8 times a second, the board's mean light/dark direction reverses at most 3 times in any second
-//   ZN    guard 7: nothing new is saved: ZERO writes to storage or IndexedDB across a zoom session (counted at the API), and leaving the board and coming back reads 1.00
+//   ZN    guard 7 (as Nick ruled it, Nov 12): nothing is saved - ZERO writes to storage or IndexedDB across a zoom session (counted at the API) - but the session REMEMBERS: leaving the board and coming back restores its scale (3.00 stays 3.00, the transform back); a reload is a new session and reads 1.00
+//   ZS2   the Stack still resets: after the Stack is closed again the board reads 1.00 (the Stack's reset is not undone by the memory)
 //   ZS    the Stack: zoom is OFF there (the scale goes back to 1.00, the readout names the Stack, a Ctrl+wheel and a key change nothing and are still prevented)
 //   ZG    the board's own gestures at scale: a card dragged 80 screen px at 2.00 (and 40 px at 0.50) moves 80 (40) on the screen: the pointer maths carries the scale
 //   ZHOME the way home (Nick, Nov 11): the ZOOM readout is a button; at 2.00 a click on it glides to exactly 1.00 (a run of frames between), the canvas's transform gone, the frame, host and footer unmoved, no card made or lost; its hint reads
 //         "Reset zoom (Ctrl + 0)"; the strip around it still takes no pointer (the button takes its own); under reduced motion the same click is a JUMP (the first changed frame is 1.00, nothing between)
 //   ZFL   (below) also runs the flash count by KEYS and under reduced motion: ZFL-K (key notches out and back), ZFL-RM (the wheel sweep) and ZFL-RM-K (the key sweep) - each <= 3 flashes in any second
 //   ZW    guard 8: the only word is ZOOM (the footer's second span is the existing flux3ReadZoom key's word)
-//   MUT-* six landed mutants of the bundle (the sixth: the readout's click does nothing -> ZHOME): page zoom not prevented (ZB), no clamp (ZL), the drag not scaled (ZG), the camera drawn by layout zoom (ZF), the layer told scale 1 (ZA)
+//   MUT-* seven landed mutants (the seventh: the camera never files the board's scale on the way out -> ZN's return) of the bundle (the sixth: the readout's click does nothing -> ZHOME; the seventh: the scale is not filed when the board is left -> ZN): page zoom not prevented (ZB), no clamp (ZL), the drag not scaled (ZG), the camera drawn by layout zoom (ZF), the layer told scale 1 (ZA)
 // FLUX_ZOOM_SHOTS=<dir> writes the frames (the Wrizors' list, §6, has its own frames file: scripts/frames/flux-zoom1.mjs). Run: node scripts/harness/flux-zoom1.mjs   (from apps/desktop; ZT/ZRM timing-free)
 import fs from 'node:fs';
 import path from 'node:path';
@@ -126,6 +127,8 @@ const MUTANTS = {
   zoomByLayout: [/(\w+)\.style\.transform=`translate\(\$\{\w+\}px, \$\{\w+\}px\) scale\(\$\{(\w+)\}\)`/g, '$1.style.zoom=String($2)'],
   layerScale1: [/s:\w+\(\)\}\)\};/g, 's:1})};'],
   // the readout's click calls nothing (the way home's button is there, the door does not open)
+  // the camera does not file the board's scale when it goes (guard 7's memory): the call just before the live scale is set back to 1 is cut from the cleanup
+  keepForgets: [/(,w+(),w+()),w+(w+,w+())(,w+(1),w+()}},[w+,w+,w+]))/g, '$1$2'],
   homeNoop: [/(className:"flux3-tele-zoom",tabIndex:-1,title:\w+\("flux3ZoomReset"\),"data-f3-zoom-home":"true",onPointerDown:\w+=>\w+\.stopPropagation\(\),onClick:\w+=>\{\w+\.stopPropagation\(\),)\w+\(\)\}/g, '$1void 0}'],
 };
 const countOf = (re, text) => { re.lastIndex = 0; let n = 0; while (re.exec(text)) n += 1; re.lastIndex = 0; return n; };
@@ -206,6 +209,18 @@ try { await withHarness(async (app) => {
 
   // ---- the probes: each returns { pass, detail }; the mutants run the same probe and must fail it
   const probes = {
+    // guard 7: at 3.00 leave the board (the Desk) and come back: the scale is restored, the canvas transformed again
+    async keeps() {
+      await open('dark');
+      await ev('window.wrizoFluxZoomTo(3)'); await settle(600);
+      const z = await S();
+      await ev("location.hash = '#/'"); await settle(1500);
+      await ev(`location.hash = '#/page/${BOARD}'`);
+      await app.waitFor("!!document.querySelector('.flux3-tele')", { timeout: 10000, label: 'the Schema again' }).catch(() => {});
+      await settle(1500);
+      const back = await S();
+      return { pass: near(z.s, 3, 0.01) && near(back.s, 3, 0.01) && back.tf !== '' && back.readout === '3.00×100', detail: JSON.stringify({ before: z.s, back: back.s, readout: back.readout, tf: back.tf }), back };
+    },
     // the way home: at 2.00 (or 4.00 under reduced motion) a click on the ZOOM readout returns the board to exactly 1.00
     async home(reduced = false) {
       await open('dark');
@@ -517,6 +532,8 @@ try { await withHarness(async (app) => {
     ok(`ZS the Stack: zoom was ${zin.s.toFixed(2)}; with the Stack open the scale is back to 1.00 (${st.readout}), the level names the Stack (${(st.level || '').trim()}), a Ctrl+wheel (the Stack's own hand swallows it and flips a card) and Ctrl+= change nothing (${st2.s.toFixed(3)}), and the key is still prevented`,
       near(zin.s, 2, 0.01) && st.stackOn && near(st.s, 1, 0.002) && st.tf === '' && near(st2.s, 1, 0.002) && pv.some((p) => p[0] === 'key') && pv.filter((p) => p[0] === 'key').every((p) => p[2]), JSON.stringify({ zin: zin.s, st: st.s, st2: st2.s, level: st.level, pv }));
     await ev("document.querySelector('[data-flux3-stack-tab]').click()"); await settle(900);
+    const stackOut = await S();
+    ok(`ZS2 the Stack still resets: the Stack closed again, the board reads ${stackOut.readout} (1.00, no transform), not the 2.00 it was at before`, near(stackOut.s, 1, 0.002) && stackOut.tf === '' && stackOut.readout === '1.00×100', JSON.stringify({ s: stackOut.s, tf: stackOut.tf, readout: stackOut.readout }));
   }
 
   // ZN: nothing new is saved: ZERO writes to storage or IndexedDB across a zoom session; leaving the board and coming back reads 1.00
@@ -531,14 +548,12 @@ try { await withHarness(async (app) => {
     await ev('window.wrizoFluxZoomTo(3)'); await settle(1500);
     await key('0'); await settle(1500);
     const writes = await ev(`window.__z.writes.slice(${w0})`);
-    await ev('window.wrizoFluxZoomTo(3)'); await settle(600);
-    await ev("location.hash = '#/'"); await settle(1500);
-    await ev(`location.hash = '#/page/${BOARD}'`);
-    await app.waitFor("!!document.querySelector('.flux3-tele')", { timeout: 10000, label: 'the Schema again' }).catch(() => {});
-    await settle(1500);
-    const back = await S();
-    ok(`ZN guard 7: nothing new is saved (${writes.length} writes to storage or IndexedDB across a session of wheel, key and seam zooms${writes.length ? ': ' + JSON.stringify(writes.slice(0, 4).map((x) => x.slice(1))) : ''}), and leaving the board and coming back reads 1.00 (${back.readout}, no transform)`,
-      writes.length === 0 && near(back.s, 1, 0.002) && back.tf === '' && back.readout === '1.00×100', JSON.stringify({ writes: writes.slice(0, 6), back: back.s, readout: back.readout }));
+    // the memory: leave at 3.00 and come back (the probe), then a RELOAD is a new session
+    const kept = await probes.keeps();
+    await open('dark');
+    const fresh = await S();
+    ok(`ZN guard 7: nothing is saved (${writes.length} writes to storage or IndexedDB across a session of wheel, key and seam zooms${writes.length ? ': ' + JSON.stringify(writes.slice(0, 4).map((x) => x.slice(1))) : ''}), the board KEEPS its zoom for the session (left at 3.00, back at ${kept.back.readout}, the transform restored) and a reload is a new session (reads ${fresh.readout}, no transform)`,
+      writes.length === 0 && kept.pass && near(fresh.s, 1, 0.002) && fresh.tf === '' && fresh.readout === '1.00×100', JSON.stringify({ writes: writes.slice(0, 6), kept: kept.detail, fresh: fresh.s, readout: fresh.readout }));
   }
 
   // ============================== the mutants: each must LAND and turn its check RED ==============================
@@ -554,6 +569,7 @@ try { await withHarness(async (app) => {
   await mutantRun('dragNotScaled', () => probes.drag(2, 80), 'the drag not scaled -> ZG');
   await mutantRun('zoomByLayout', probes.frame, 'the camera drawn by layout zoom, not a transform -> ZF');
   await mutantRun('layerScale1', probes.align, 'the layer told scale 1 -> ZA');
+  await mutantRun('keepForgets', probes.keeps, 'the scale is not filed when the board is left -> ZN');
   await mutantRun('homeNoop', async () => { const r = await probes.home(false); return { pass: r.homed, detail: r.detail }; }, 'the readout\'s click does nothing, the board stays zoomed -> ZHOME');
   await open('dark');
 }); } catch (e) { failedRun = true; console.error('HARNESS ERROR', e && e.stack ? e.stack : e); }

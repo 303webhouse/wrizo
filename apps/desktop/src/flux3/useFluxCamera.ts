@@ -7,14 +7,14 @@
 //   Under reduced motion or Ambiance 0 a notch JUMPS; otherwise it glides ~140 ms. A wheel or pinch has no easing of its own. Zoom is OFF while the Stack or the hologram is open (the scale goes back to 1).
 //   Nothing is saved: the scale is session-only and the Schema sets it back to 1 as it goes (boardZoom.ts).
 import { useEffect, useRef, type RefObject } from 'react';
-import { ZOOM_NOTCH, clampScale, getBoardScale, outerLimit, registerZoomHome, setBoardScale, subscribeBoardScale, wheelFactor } from './boardZoom';
+import { ZOOM_NOTCH, clampScale, getBoardScale, keepBoardScale, keptBoardScale, outerLimit, registerZoomHome, setBoardScale, subscribeBoardScale, wheelFactor } from './boardZoom';
 
 const GLIDE_MS = 140;
 
 interface Opts {
   wrapRef: RefObject<HTMLDivElement | null>;
   canvasRef: RefObject<HTMLDivElement | null>;
-  /** The board's id: a different board is a different camera (it starts at 1). */
+  /** The board's id: a different board is a different camera (it starts at the scale the session last left it at, else 1). */
   boardId: string;
   /** False while the Stack or the hologram is open: zoom is off there. */
   active: boolean;
@@ -136,6 +136,9 @@ export function useFluxCamera({ wrapRef, canvasRef, boardId, active, motion }: O
       if (c !== s) setBoardScale(c); else paint();
     }) : null;
     ro?.observe(wrap); ro?.observe(cv);
+    // guard 7 (Nick, Nov 12): the board comes back at the scale this session last left it (held between the limits); under the Stack the scale is 1 and stays 1
+    const back = keptBoardScale(boardId);
+    if (back !== 1 && activeRef.current) setBoardScale(clampScale(back, limits()));
 
     return () => {
       stopGlide();
@@ -149,7 +152,8 @@ export function useFluxCamera({ wrapRef, canvasRef, boardId, active, motion }: O
       delete w.wrizoFluxZoomTo;
       unregHome();
       unsub();
-      setBoardScale(1);   // nothing is saved: the next board, or this one on its return, starts at 1.00
+      keepBoardScale(boardId, getBoardScale());   // the session remembers it (memory only, never storage); a reload forgets
+      setBoardScale(1);   // the live scale is 1 wherever no Schema is mounted
       paint();
     };
   }, [wrapRef, canvasRef, boardId]);

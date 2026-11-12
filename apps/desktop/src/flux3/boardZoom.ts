@@ -1,6 +1,6 @@
 // FLUX ZOOM, STEP 1 - THE CAMERA'S STATE (the Wrizors' spec claude/wrizors/flux-zoom-step1.md; Nick, Nov 11): ONE scale for the whole Schema (a board in Flux, behind ?flux3=1).
-// SESSION ONLY: nothing here is saved, and a board does not remember its scale (spec guard 7): the scale is 1 whenever no Schema is mounted, and the Schema puts it back to 1 when it
-// goes. Every other theme and every other surface reads 1 here, so the board's pointer maths (which divides by it) is unchanged for them.
+// SESSION ONLY: nothing here is saved (spec guard 7, as Nick ruled it Nov 12): a board KEEPS its zoom for the session - leaving it and coming back restores it - and a new session (a reload) starts every board at 1.00.
+// The live scale is 1 whenever no Schema is mounted, and the Schema puts it back to 1 when it goes (after the camera has filed the board's scale in keepBoardScale). Every other theme and every other surface reads 1 here, so the board's pointer maths (which divides by it) is unchanged for them.
 // The pure parts (the limits, the readout's figure, the pinch and notch maths) live here so the browserless check can run the real functions.
 import { useSyncExternalStore } from 'react';
 
@@ -23,6 +23,10 @@ export function setBoardScale(next: number): void {
   scale = next;
   for (const f of [...subs]) f();
 }
+// THE SESSION'S MEMORY (guard 7): one scale per board id, in memory only (never storage), filed when the board's camera goes and read when it comes back. 1.00 is filed as nothing (the Stack, the way home, a fresh board).
+const kept = new Map<string, number>();
+export function keepBoardScale(boardId: string, s: number): void { if (s > 0 && s !== 1) kept.set(boardId, s); else kept.delete(boardId); }
+export function keptBoardScale(boardId: string): number { return kept.get(boardId) ?? 1; }
 // THE WAY HOME (Nick, Nov 11): the camera registers what Ctrl + 0 does (glide to true size about the centre); the footer's ZOOM readout asks for it. One door, one act: a click is Ctrl + 0.
 let home: (() => void) | null = null;
 export function registerZoomHome(fn: () => void): () => void { home = fn; return () => { if (home === fn) home = null; }; }
