@@ -32,7 +32,9 @@ const mouse = (app, type, x, y) => app.cdp('Input.dispatchMouseEvent', { type, x
 const click = async (app, x, y) => { await app.mouseMove(x, y); await mouse(app, 'mousePressed', x, y); await mouse(app, 'mouseReleased', x, y); };
 const pointOf = (app, expr) => app.evalJs(`(() => { const el = ${expr}; if (!el) return null; const r = el.getBoundingClientRect(); return r.width ? { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) } : null; })()`);
 const k5Park = [];   // the park record: each skin's K5 observation
-const THEMES = [{ id: 'plateau', name: 'Arbor', card: 'Card', page: 'Page' }, { id: 'flux', name: 'Flux', card: 'Node', page: 'Doc' }, { id: 'machina', name: 'Machina', card: 'Block', page: 'File' }];   // the theme's own card / page words (themeLexicon)
+// ---- PARKED - SUPERSEDED by Machina's File to Doc word (Nick, Nov 11; the Wrizors' list, Fable): the original, verbatim, no longer runs; its successor follows.
+// const THEMES = [{ id: 'plateau', name: 'Arbor', card: 'Card', page: 'Page' }, { id: 'flux', name: 'Flux', card: 'Node', page: 'Doc' }, { id: 'machina', name: 'Machina', card: 'Block', page: 'File' }];   // the theme's own card / page words (themeLexicon)
+const THEMES = [{ id: 'plateau', name: 'Arbor', card: 'Card', page: 'Page' }, { id: 'flux', name: 'Flux', card: 'Node', page: 'Doc' }, { id: 'machina', name: 'Machina', card: 'Block', page: 'Doc' }];   // the theme's own card / page words (themeLexicon)
 const CARD = 'Ada Lovelace\nCartographer of the Well. Fears deep water, keeps the map.';
 const SOURCE = 'Smith, J. (2020). The Well Under the Harbour. Harbour Press.';
 const PAGE = 'The rope was already there, and the well took the bucket back colder still.';
