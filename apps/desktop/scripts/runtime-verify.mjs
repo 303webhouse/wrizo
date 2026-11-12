@@ -717,7 +717,10 @@ function makeApp(base, cdp, waitEvent, tap) {
       await evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
       await app.reload();
       await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'authed Arrival' });
-      await evalJs(`location.hash = '#/sprint'`); // decoupled from launchpad button text
+      // #13 step 12a: QuickSprint (/sprint) is deleted. The fresh writing surface is a blank loose page born through the seam (unframed at
+      // the default width, as the sprint was). Was: location.hash = '#/sprint' (decoupled from launchpad button text).
+      const freshId = await evalJs("window.wrizoCreateJournalPage({ text: '', projectId: null, origin: 'loose', source: 'page' }).id");
+      await evalJs(`location.hash = '#/page/' + ${JSON.stringify(freshId)}`);
       await app.waitFor("document.querySelector('.forward-only-editor, textarea')", { label: 'sprint writing surface' });
       await injectHelpers();
     },

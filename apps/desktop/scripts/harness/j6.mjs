@@ -53,6 +53,7 @@
 // gutter change, and every migrated call site still routes correctly
 // below the gate too.
 import { withHarness } from '../runtime-verify.mjs';
+import { existsSync, readFileSync } from 'node:fs';
 import { assertHittable } from '../trusted-point.mjs';
 
 const checks = [];
@@ -343,39 +344,43 @@ await withHarness(async (app) => {
   // page (reachable today: ProjectHome's own `support` filter is "not
   // manuscript, not script" -- a pageType-less filed page falls in there
   // too) -- proving all three Link destinations. ---------------------------
-  {
-    await freshDesk(app, LAPTOP_W, 900);
-    const b4ProjectId = await seedFromDesk(app, `(() => {
-      const now = new Date().toISOString();
-      // ITEM 85-C — the project's id is generated, and THIS block's id escapes:
-      // two later navigations route to /project/:id. So it is returned and the
-      // caller threads it through. All three pages omit origin, so each says so.
-      const project = window.wrizoCreateProject('J6 ProjectHome Test');
-      window.wrizoCreateJournalPage({ id: 'j6-b4-chapter', text: 'Chapter One', pageType: 'manuscript', projectId: project.id, createdAt: now, origin: null });
-      window.wrizoCreateJournalPage({ id: 'j6-b4-support-typed', text: 'A Character', pageType: 'character', projectId: project.id, createdAt: now, origin: null });
-      window.wrizoCreateJournalPage({ id: 'j6-b4-support-legacy', text: 'A Legacy Filed Page', projectId: project.id, createdAt: now, origin: null });
-      return project.id;
-    })()`);
-    await app.reload();
-    await app.evalJs(`location.hash = '#/project/' + ${JSON.stringify(b4ProjectId)}`);
-    await app.waitFor("!!document.querySelector('.dz-tree')", { label: 'ProjectHome mounted' });
-    await sleep(300);
-    for (const [text, expectHash, label] of [
-      ['Chapter One', '#/page/j6-b4-chapter', 'S2 ProjectHome.tsx (migrated pageRoute -> routeForEntry): a Manuscript chapter row travels to /page/:id'],
-      ['A Character', '#/page/j6-b4-support-typed', 'S2 ProjectHome.tsx (migrated pageRoute -> routeForEntry): a TYPED support-page row travels to /page/:id'],
-      ['A Legacy Filed Page', '#/page/j6-b4-support-legacy', 'S2/FX14 successor ProjectHome.tsx: a LEGACY UNTYPED filed-page row travels to /page/:id now (routeForEntry unconditional; every entry opens in THE Page; original parked in SECTION B)'],
-    ]) {
-      const idx = await app.evalJs(`[...document.querySelectorAll('.dz-rowtitle')].findIndex(el => el.textContent.includes(${JSON.stringify(text)}))`);
-      if (idx < 0) { ok(label, false, 'row not found'); continue; }
-      await app.evalJs(`[...document.querySelectorAll('.dz-rowtitle')][${idx}].click()`);
-      await sleep(300);
-      const hash = await app.evalJs('location.hash');
-      ok(label, hash === expectHash, hash);
-      await app.evalJs(`location.hash = '#/project/' + ${JSON.stringify(b4ProjectId)}`);
-      await app.waitFor("!!document.querySelector('.dz-tree')", { label: `back on ProjectHome after ${text}` });
-      await sleep(250);
-    }
-  }
+  // ---- PARKED - RETIRED by #13 step 12a (Nick's dormant answers, Oct 29): ProjectHome.tsx is deleted, and with it these three call sites
+  // (its rows' links). The block is kept VERBATIM below and no longer runs; its record is in the parked block at the foot of this file. The
+  // rule it proved - every entry opens through routeForEntry at /page/:id - keeps its own checks above and below (S2, Legacy); the
+  // project's own route now opens its first page through the same routeForEntry (c13-12a-doors.mjs D1).
+  // {
+    // await freshDesk(app, LAPTOP_W, 900);
+    // const b4ProjectId = await seedFromDesk(app, `(() => {
+      // const now = new Date().toISOString();
+      // // ITEM 85-C — the project's id is generated, and THIS block's id escapes:
+      // // two later navigations route to /project/:id. So it is returned and the
+      // // caller threads it through. All three pages omit origin, so each says so.
+      // const project = window.wrizoCreateProject('J6 ProjectHome Test');
+      // window.wrizoCreateJournalPage({ id: 'j6-b4-chapter', text: 'Chapter One', pageType: 'manuscript', projectId: project.id, createdAt: now, origin: null });
+      // window.wrizoCreateJournalPage({ id: 'j6-b4-support-typed', text: 'A Character', pageType: 'character', projectId: project.id, createdAt: now, origin: null });
+      // window.wrizoCreateJournalPage({ id: 'j6-b4-support-legacy', text: 'A Legacy Filed Page', projectId: project.id, createdAt: now, origin: null });
+      // return project.id;
+    // })()`);
+    // await app.reload();
+    // await app.evalJs(`location.hash = '#/project/' + ${JSON.stringify(b4ProjectId)}`);
+    // await app.waitFor("!!document.querySelector('.dz-tree')", { label: 'ProjectHome mounted' });
+    // await sleep(300);
+    // for (const [text, expectHash, label] of [
+      // ['Chapter One', '#/page/j6-b4-chapter', 'S2 ProjectHome.tsx (migrated pageRoute -> routeForEntry): a Manuscript chapter row travels to /page/:id'],
+      // ['A Character', '#/page/j6-b4-support-typed', 'S2 ProjectHome.tsx (migrated pageRoute -> routeForEntry): a TYPED support-page row travels to /page/:id'],
+      // ['A Legacy Filed Page', '#/page/j6-b4-support-legacy', 'S2/FX14 successor ProjectHome.tsx: a LEGACY UNTYPED filed-page row travels to /page/:id now (routeForEntry unconditional; every entry opens in THE Page; original parked in SECTION B)'],
+    // ]) {
+      // const idx = await app.evalJs(`[...document.querySelectorAll('.dz-rowtitle')].findIndex(el => el.textContent.includes(${JSON.stringify(text)}))`);
+      // if (idx < 0) { ok(label, false, 'row not found'); continue; }
+      // await app.evalJs(`[...document.querySelectorAll('.dz-rowtitle')][${idx}].click()`);
+      // await sleep(300);
+      // const hash = await app.evalJs('location.hash');
+      // ok(label, hash === expectHash, hash);
+      // await app.evalJs(`location.hash = '#/project/' + ${JSON.stringify(b4ProjectId)}`);
+      // await app.waitFor("!!document.querySelector('.dz-tree')", { label: `back on ProjectHome after ${text}` });
+      // await sleep(250);
+    // }
+  // }
 
   // --- B5: the /journal/:id redirect. FX14 S2 note: this used to be
   // JournalEntry.tsx's own pageType (typed-only) redirect guard; FX14 unroutes
@@ -521,6 +526,20 @@ await withHarness(async (app) => {
 
   return checks;
 });
+
+// === PARKED — gated behind HARNESS_PARKED=1, skipped by default. #13 step 12a retires B4's three checks (above): the record holds what makes a
+// retirement (not a loss) true - /project/:id is never left without a route (ProjectHome before the delete, the redirect to the project's
+// first page after), and the redirect opens it through routeForEntry.
+if (process.env.HARNESS_PARKED === '1') {
+  const app12a = readFileSync(new URL('../../src/App.tsx', import.meta.url), 'utf8');
+  const route12a = (/<Route path="\/project\/:id" element=\{<(ProjectHome|LegacyProjectRedirect) \/>\} \/>/.exec(app12a) || [])[1] || null;
+  const redirect = existsSync(new URL('../../src/store/legacyProjectRoute.ts', import.meta.url)) ? readFileSync(new URL('../../src/store/legacyProjectRoute.ts', import.meta.url), 'utf8') : null;
+  const rec = { route12a, redirectUsesRouteForEntry: redirect === null ? null : /routeForEntry\(/.test(redirect) };
+  for (const n of ['S2 ProjectHome.tsx (migrated pageRoute -> routeForEntry): a Manuscript chapter row travels to /page/:id', 'S2 ProjectHome.tsx (migrated pageRoute -> routeForEntry): a TYPED support-page row travels to /page/:id', 'S2/FX14 successor ProjectHome.tsx: a LEGACY UNTYPED filed-page row travels to /page/:id now']) {
+    checks.push({ name: `PARKED (was "${n}") - RETIRED by #13 step 12a: ProjectHome.tsx is deleted; /project/:id opens the project's first page through routeForEntry`,
+      pass: (route12a === 'ProjectHome' && redirect === null) || (route12a === 'LegacyProjectRedirect' && rec.redirectUsesRouteForEntry === true), detail: JSON.stringify(rec) });
+  }
+}
 
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));

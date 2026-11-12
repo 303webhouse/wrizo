@@ -3,6 +3,7 @@
 // Run: node apps/desktop/scripts/harness/s1.mjs   (from apps/desktop, with
 // dist-web freshly built via `pnpm run build:web`).
 import { withHarness } from '../runtime-verify.mjs';
+import { readFileSync } from 'node:fs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -385,29 +386,54 @@ await withHarness(async (app) => {
   ok('birth paths: a non-screenplay kind still births a manuscript page (old birth path untouched)', bookEntry?.pageType === 'manuscript', bookEntry?.pageType);
   const bookProjectId = bookEntry.projectId;
 
-  await app.goto(`/project/${bookProjectId}`);
-  await app.waitFor("[...document.querySelectorAll('button')].some(b => b.textContent.includes('Add support page'))", { label: 'ProjectHome (book)' });
-  await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Add support page')).click()");
-  await app.waitFor("[...document.querySelectorAll('button')].some(b => b.textContent.trim() === 'Script')", { label: 'Script leaf in the generic picker' });
-  await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Script').click()");
-  await app.waitFor("!!document.querySelector('.script-el-active')", { label: 'a script page from the generic picker leaf' });
-  ok('birth paths: any binder can hold a script page via the generic picker leaf', true);
-  // Navigating away triggers ScriptEditor's own unmount-flush (visibilitychange
-  // + cleanup effect), so the fresh script page is saved before we check for it.
-  await app.goto(`/project/${bookProjectId}`);
-  await app.waitFor("!!document.querySelector('.eyebrow')", { label: 'ProjectHome after adding a script page' });
-  const scriptsSectionShown = await app.evalJs("[...document.querySelectorAll('.eyebrow')].some(e => e.textContent.trim() === 'Scripts')");
-  ok('birth paths: the binder now shows its own "Scripts" section, atop Manuscript', scriptsSectionShown === true);
-  const newScriptBtnShown = await app.evalJs("[...document.querySelectorAll('button')].some(b => b.textContent.includes('New script page'))");
-  ok('birth paths: the dedicated "+ New script page" button is present once a script page exists', newScriptBtnShown === true);
+  // ---- PARKED - #13 step 12a (Nick's dormant answers, Oct 29): ProjectHome is deleted, with its "Add support page" picker, its "Scripts"
+  // section and its "+ New script page" button. Kept VERBATIM below and no longer run. The first check is SUPERSEDED (successor below: the
+  // binder's live door to a script page, the one the Pages pop-out's new-page menu opens); the other two are RETIRED (their surface is gone;
+  // records in the parked block). A4 below takes its clean script page from the same live door.
+  //
+  // await app.goto(`/project/${bookProjectId}`);
+  // await app.waitFor("[...document.querySelectorAll('button')].some(b => b.textContent.includes('Add support page'))", { label: 'ProjectHome (book)' });
+  // await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Add support page')).click()");
+  // await app.waitFor("[...document.querySelectorAll('button')].some(b => b.textContent.trim() === 'Script')", { label: 'Script leaf in the generic picker' });
+  // await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Script').click()");
+  // await app.waitFor("!!document.querySelector('.script-el-active')", { label: 'a script page from the generic picker leaf' });
+  // ok('birth paths: any binder can hold a script page via the generic picker leaf', true);
+  // // Navigating away triggers ScriptEditor's own unmount-flush (visibilitychange
+  // // + cleanup effect), so the fresh script page is saved before we check for it.
+  // await app.goto(`/project/${bookProjectId}`);
+  // await app.waitFor("!!document.querySelector('.eyebrow')", { label: 'ProjectHome after adding a script page' });
+  // const scriptsSectionShown = await app.evalJs("[...document.querySelectorAll('.eyebrow')].some(e => e.textContent.trim() === 'Scripts')");
+  // ok('birth paths: the binder now shows its own "Scripts" section, atop Manuscript', scriptsSectionShown === true);
+  // const newScriptBtnShown = await app.evalJs("[...document.querySelectorAll('button')].some(b => b.textContent.includes('New script page'))");
+  // ok('birth paths: the dedicated "+ New script page" button is present once a script page exists', newScriptBtnShown === true);
+  // A script page born in a binder through the live door: an unborn page in that binder with structure screenplay; the first keys
+  // give it birth, and the route turns into its /page/:id.
+  const scriptIn12a = (row, binderId) => !!row && row.projectId === binderId && row.pageType === 'script';
+  const birthScript12a = async (label, first) => {
+    await app.goto(`/page/new?binder=${encodeURIComponent(bookProjectId)}&structure=screenplay`);
+    await app.waitFor("!!document.querySelector('.script-el-active')", { label });
+    await app.typeKeys(first);
+    await app.waitFor("/^#\\/page\\/(?!new)/.test(location.hash)", { label: `${label} born`, timeout: 6000 });
+    return (await app.evalJs('location.hash')).replace(/^#\/page\//, '');
+  };
+  const bornScriptId = await birthScript12a('a script page in the book, through its live door', 'int. lab');
+  await app.goto('/');
+  await app.waitFor(`(() => { const l = JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]'); return l.some(x => x.id === ${JSON.stringify(bornScriptId)}); })()`, { label: 'the born script page persisted', timeout: 6000 });
+  const bornScript = (await app.localJSON('writer-studio-journal-entries')).find((e) => e.id === bornScriptId);
+  ok('birth paths [c13-12a successor]: any binder can hold a script page - the binder\'s live door (an unborn page in it, structure screenplay) births a script page in that binder',
+    scriptIn12a(bornScript, bookProjectId), JSON.stringify({ projectId: bornScript?.projectId, pageType: bornScript?.pageType }));
+  ok('birth paths [c13-12a successor mutant]: the reader is red on a script page in another binder and on a prose page in this one',
+    !scriptIn12a({ projectId: 'other', pageType: 'script' }, bookProjectId) && !scriptIn12a({ projectId: bookProjectId, pageType: 'manuscript' }, bookProjectId), '');
 
   // -- A4: an exact-match golden-string assertion on a small, ISOLATED doc.
   // Containment testing (used everywhere above) can't catch whitespace drift
   // in the shadow — and this string is S3's future Fountain parser input. --
-  await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.includes('New script page')).click()");
-  await app.waitFor("!!document.querySelector('.script-el-active')", { label: 'a second, clean script page' });
-  const goldenId = (await app.evalJs('location.hash')).replace(/^#\/page\//, '');
-  await app.typeKeys('int. office');
+  // (#13 step 12a: the clean script page comes from the live door above; was ProjectHome's "+ New script page" button, parked with it.)
+  // await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.includes('New script page')).click()");
+  // await app.waitFor("!!document.querySelector('.script-el-active')", { label: 'a second, clean script page' });
+  // const goldenId = (await app.evalJs('location.hash')).replace(/^#\/page\//, '');
+  // await app.typeKeys('int. office');
+  const goldenId = await birthScript12a('a second, clean script page', 'int. office');
   await app.evalJs("__key('Enter')");
   await sleep(60);
   await app.typeKeys('She sits.');
@@ -464,6 +490,13 @@ if (process.env.HARNESS_PARKED === '1') {
     pok('PARKED (was "DoD5: the Desk\'s mirror surfaces the SCRIPT tag unprompted") — DORMANT, no unprompted successor: the resume pointer still resolves to this SCRIPT page, now reachable via Open (F2) rather than an unprompted glance',
       true);
   });
+  // #13 step 12a: ProjectHome's two retired checks. The record holds what makes a retirement (not a loss) true: /project/:id is never left
+  // without a route - ProjectHome before the delete, the redirect to the project's first page after (c13-12a-doors.mjs D1).
+  const app12a = readFileSync(new URL('../../src/App.tsx', import.meta.url), 'utf8');
+  const route12a = (/<Route path="\/project\/:id" element=\{<(ProjectHome|LegacyProjectRedirect) \/>\} \/>/.exec(app12a) || [])[1] || null;
+  for (const n of ['birth paths: the binder now shows its own "Scripts" section, atop Manuscript', 'birth paths: the dedicated "+ New script page" button is present once a script page exists']) {
+    pok(`PARKED (was "${n}") - RETIRED by #13 step 12a: ProjectHome is deleted; /project/:id opens the project's first page`, route12a !== null, `route=${route12a}`);
+  }
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
