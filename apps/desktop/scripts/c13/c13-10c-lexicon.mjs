@@ -17,7 +17,8 @@
 //   --gone <file>   (a later step that DELETES keys, #13 step 11) the file lists one key per line. Each must be in the table at <base>
 //        and absent now (no key, no word in any theme); every other key is held to (1) as before, in order. (2) sets aside the gone
 //        keys from <base>'s text the way the delete makes them go: a union line keeps its indent and loses only the gone members (a
-//        line left with none goes), and each gone key's own entry line goes.
+//        line left with none goes), and each gone key's own entry line goes. Several steps' lists join with commas (step 12b,
+//        `--gone a.txt,b.txt`): each step keeps its own record and the check reads their union.
 //   docs/cleanup/c13-10c-words.txt   the STANDING WORD CHANGES (Nov 11, Fable: Rack became Drive): one `key@theme=word` per line (# starts a comment; theme none, plateau, flux or machina). A declared cell must read <word> now and have read
 //        something else at <base> (a stale declaration, whose word the base already had, is red: take it out); every OTHER cell of the table is held to the base exactly. For (2) a declared key's entry lines are set aside from both texts.
 //   docs/cleanup/c13-10c-new.txt   the STANDING declarations (TOOLS, Nov 5, Fable): one `key=word` per line (# starts a comment), read on every run, so
@@ -38,7 +39,7 @@ if (!base) { console.error('usage: --base <rev>'); process.exit(2); }
 const ni = process.argv.indexOf('--new');
 const NEW = new Map(ni > 0 ? process.argv[ni + 1].split(',').map((p) => { const i = p.indexOf('='); return [p.slice(0, i), p.slice(i + 1)]; }) : []);
 const gi = process.argv.indexOf('--gone');
-const GONE = new Set(gi > 0 ? fs.readFileSync(path.resolve(ROOT, process.argv[gi + 1]), 'utf8').split(/\r?\n/).map((s) => s.trim()).filter((s) => s && !s.startsWith('#')) : []);
+const GONE = new Set(gi > 0 ? process.argv[gi + 1].split(',').flatMap((f) => fs.readFileSync(path.resolve(ROOT, f), 'utf8').split(/\r?\n/)).map((s) => s.trim()).filter((s) => s && !s.startsWith('#')) : []);
 // <base>'s text with the gone keys taken out as step 11's delete takes them (see --gone above)
 const withoutGone = (t) => t.split('\n').flatMap((l) => {
   const m = /^(\s*)((?:\|\s*'[A-Za-z0-9_]+'\s*)+)(;?)\s*$/.exec(l);

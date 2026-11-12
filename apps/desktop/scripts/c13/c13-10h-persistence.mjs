@@ -56,8 +56,9 @@ const realApi = api(barrel);
 //   realApi.pass, JSON.stringify({ extra: realApi.extra, lost: realApi.lost, unloaded: realApi.unloaded }));
 // successor: --gone <file> (one name per line, # comments) names exports a later step deleted on purpose. The barrel exports exactly its
 // names at <base> minus those (each must have been exported at <base> and be gone now); with no --gone it is the parked claim exactly.
+// Several steps' lists join with commas (step 12a, `--gone a.txt,b.txt`): each step keeps its own record and the check reads their union.
 const gi = process.argv.indexOf('--gone');
-const GONE = gi > 0 ? fs.readFileSync(path.join(ROOT, process.argv[gi + 1]), 'utf8').split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('#')) : [];
+const GONE = gi > 0 ? process.argv[gi + 1].split(',').flatMap((f) => fs.readFileSync(path.join(ROOT, f), 'utf8').split(/\r?\n/)).map((l) => l.trim()).filter((l) => l && !l.startsWith('#')) : [];
 const goneHere = (g) => g.filter((n) => was.has(n));   // the list may name exports of other modules too: only the barrel's count here
 const apiGone = (s, g) => { const r = api(s), want = goneHere(g);
   const lostNot = r.lost.filter((n) => !want.includes(n)), stillHere = want.filter((n) => !r.lost.includes(n));

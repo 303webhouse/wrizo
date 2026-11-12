@@ -4,11 +4,7 @@ import { Arrival } from './components/Arrival';
 import { DrawersPage } from './pages/Drawers';
 import { DeskRail } from './components/DeskRail';
 import { CreateProject } from './pages/CreateProject';
-import { ProjectHome } from './pages/ProjectHome';
-import { StructureWizard } from './pages/StructureWizard';
-import { BeatWizard } from './pages/BeatWizard';
-import { StructureBoard } from './pages/StructureBoard';
-import { QuickSprint } from './pages/QuickSprint';
+import { LegacyProjectRedirect } from './components/LegacyProjectRedirect';
 import { Spread } from './pages/Spread';
 // FX14 S2 — JournalEntry no longer routed (the /journal/:id redirect below replaces
 // it); the component + behavior-parity are J7's, so the file is left in place, unimported.
@@ -133,7 +129,7 @@ function GlobalHeader({ onLogout, authed }: { onLogout: () => void; authed: bool
   // AB1 S4 — "top-bar orphans collapse to one corner glyph + gear." While a
   // DeskFrame is mounted (store/deskFrameActive.ts), these three previously
   // independent controls collapse behind one glyph + popover instead of
-  // sitting inline; every other route (Journal, Shelf, Drawers, QuickSprint,
+  // sitting inline; every other route (Journal, Shelf, Drawers,
   // any writing surface below the 1100px gate) renders exactly as it always
   // has — this flag is false there.
   const deskFrameActive = useDeskFrameMounted();
@@ -346,14 +342,15 @@ export function App() {
         <Route path="/shelf" element={<Navigate to="/journal" replace />} />
         <Route path="/shelf-board" element={<ShelfBoardGate />} />
         <Route path="/project/new" element={<CreateProject />} />
-        <Route path="/project/:id" element={<ProjectHome />} />
+        {/* #13 step 12a: the old project screens are gone; their routes stay only as a redirect to a live surface (store/legacyProjectRoute.ts) */}
+        <Route path="/project/:id" element={<LegacyProjectRedirect />} />
         <Route path="/project/:id/import" element={<ImportDraft />} />
         <Route path="/import" element={<ImportDraft />} />
-        <Route path="/project/:id/sprint" element={<QuickSprint />} />
-        <Route path="/project/:id/wizard" element={<StructureWizard />} />
-        <Route path="/project/:id/beat" element={<BeatWizard />} />
-        <Route path="/project/:id/board" element={<StructureBoard />} />
-        <Route path="/sprint" element={<QuickSprint />} />
+        <Route path="/project/:id/sprint" element={<LegacyProjectRedirect />} />
+        <Route path="/project/:id/wizard" element={<LegacyProjectRedirect />} />
+        <Route path="/project/:id/beat" element={<LegacyProjectRedirect />} />
+        <Route path="/project/:id/board" element={<LegacyProjectRedirect />} />
+        <Route path="/sprint" element={<LegacyProjectRedirect />} />
         <Route path="/journal" element={<JournalBoardGate />} />
         <Route path="/trash" element={<TrashBoardGate />} />
         <Route path="/journal/spread" element={<Spread />} />
