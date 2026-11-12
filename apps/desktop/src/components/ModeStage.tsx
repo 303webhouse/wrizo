@@ -15,7 +15,8 @@ import { ChromeHandle } from './WritingShell';
 import { useTypewriterFade, CONTAINER_HOLD_BAND } from './useTypewriterFade';
 import { AmbientGlow, MilestoneBar, ProgressBar, TypewriterToggle, useGoalProgress, WORD_GOAL, TIME_GOAL_MS } from './WritingIncentives';
 import type { Milestones } from '../store/milestones';
-import { useTheme, setTheme, type ThemeId } from '../store/theme';
+import { useTheme, setTheme, getTheme, type ThemeId } from '../store/theme';
+import { getTurnSound, setTurnSound, useTurnSound } from '../store/pageTurnSound';
 import { useLexicon } from '../store/themeLexicon';
 import { useThemePrefs, setThemePrefs, type PageTone } from '../store/themePrefs';
 import { useAmbianceDial, setAmbianceDial } from '../store/ambianceDial';
@@ -249,15 +250,15 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
 
   // B5 — in-document pagination. A page is the SHEET HEIGHT (not a line count, so
   // it survives the type scale): when the editor's content overflows the sheet,
-  // flip to a fresh one with a page-turn (soft sound; no animation, #63). `pageNum` is
+  // the page turns: a soft sound, no animation (#63: nothing on the page moves when it turns). `pageNum` is
   // the current sheet (0-based), shown as "p.N" beside the progress bar. The bar
   // itself no longer tracks page fill — it's the word/time goal lap (see
   // WritingIncentives.tsx); a page turn and a goal-lap completion are
   // independent rewards now.
   const [pageNum, setPageNum] = useState(0);
   const pageNumRef = useRef(0);
-  const soundOnRef = useRef(soundOn);
-  soundOnRef.current = soundOn;
+  const pageIdRef = useRef(pageId);
+  pageIdRef.current = pageId;
 
   // B3 — the AI assist frame. Collapsible (persisted); a future AI response shown
   // through the shared channel pops it out. Connect is a stub (no provider wired).
@@ -320,16 +321,23 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
     zoom: zoomed ? { holdRef: pagecolRef, anchor: ZOOM_ANCHOR } : undefined });
 
   // Pagination: watch the editor's content height against the sheet height. On
-  // crossing a sheet boundary, flip (page-turn animation + soft sound). Height-
+  // crossing a sheet boundary, the page turns: the sound (when the writer has it on for this theme), never an animation. Height-
   // based, so the boundary always matches the visible sheet at any type scale.
+  // #63: the sound rings only for a turn the writing made (a key within the last 1.5 s; a long page opening, a way back or a resize is not a turn), and once per
+  // page per sitting: going back over the line and writing past it again is quiet, a page further on rings.
   useEffect(() => {
     const scroll = scrollRef.current;
     if (!scroll) return;
-    const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     let raf = 0;
-    // #63: the page no longer animates when it turns (no page-turn animation in any theme); only the sound is left, as it was
-    const flip = () => {
-      if (soundOnRef.current && !reduce) playPageTurn();
+    let lastKeyAt = 0;
+    const turn = (page: number) => {
+      const id = pageIdRef.current ?? '';
+      const done = turnSounded.get(id) ?? 0;
+      if (page <= done) return;
+      turnSounded.set(id, page);
+      if (Date.now() - lastKeyAt > 1500) return;
+      const theme = getTheme();
+      if (getTurnSound(theme) === 'on') playPageTurn();
     };
     const measure = () => {
       const ed = scroll.querySelector('.forward-only-editor') as HTMLElement | null;
@@ -341,15 +349,17 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
         const turned = page > pageNumRef.current;
         pageNumRef.current = page;
         setPageNum(page);
-        if (turned) flip();
+        if (turned) turn(page);
       }
     };
     const schedule = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(measure); };
+    const onKey = () => { lastKeyAt = Date.now(); };
     const mo = new MutationObserver(schedule);
     mo.observe(scroll, { childList: true, subtree: true, characterData: true });
     scroll.addEventListener('input', schedule);
+    scroll.addEventListener('keydown', onKey, true);
     schedule();
-    return () => { mo.disconnect(); scroll.removeEventListener('input', schedule); cancelAnimationFrame(raf); };
+    return () => { mo.disconnect(); scroll.removeEventListener('input', schedule); scroll.removeEventListener('keydown', onKey, true); cancelAnimationFrame(raf); };
   }, []);
 
   // Glow warmth: cumulative for the session (never resets), eased so early
@@ -701,6 +711,7 @@ export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvail
   const { t: deskLex } = useDeskLexicon();
   const settingsTheme = useTheme();
   const machina = settingsTheme === 'machina';
+  const turnSound = useTurnSound(settingsTheme);
   const progressOpts = progressOptions(hasMilestones, deskLex('progressDrawer'));
   // MACHINA has ONE progress instrument (Run), so the style choice is not offered under it.
   const showProgressStyle = !!framed && settings.progress === 'words' && !machina;
@@ -726,6 +737,8 @@ export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvail
           session-explicit flag so neither can be silently overridden by a
           later Draft-open seed. */}
       {typewriterAvailable && <Seg label="Typewriter" value={settings.typewriter ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setTypewriterExplicit(v === 'on')} />}
+      {/* #63: the page's turn is a sound, never an animation; this is its switch, remembered per theme on this device (store/pageTurnSound.ts) */}
+      <Seg label="Page-turn sound" value={turnSound} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setTurnSound(settingsTheme, v as 'on' | 'off')} />
     </div>
   );
 }
@@ -757,8 +770,11 @@ export function ThemePanel() {
   );
 }
 
-// A soft synthesized paper-rustle for the page turn (no asset; gated by the
-// sound toggle + reduced-motion by the caller). Best-effort — never throws.
+// the highest page already sounded for each page of writing in this sitting (until the app is reloaded): a page turn rings once, going back and writing past the line again is quiet [#63]
+const turnSounded = new Map<string, number>();
+
+// A soft synthesized paper-rustle for the page turn (no asset yet: the Wrizors' two sound files replace it; gated by the writer's page-turn switch by the
+// caller, not by reduced motion - a sound is not motion). Best-effort — never throws.
 function playPageTurn(): void {
   try {
     const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
