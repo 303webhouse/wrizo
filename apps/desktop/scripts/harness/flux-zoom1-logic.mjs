@@ -87,11 +87,11 @@ ok('Z5 a key notch is ×1.25 and its inverse returns exactly; one notch from tru
   const z7 = (m) => { let n = 0; const un = m.registerZoomHome(() => { n += 1; }); m.zoomHome(); const after1 = n; un(); m.zoomHome(); const after2 = n; let a = 0, b = 0; const u1 = m.registerZoomHome(() => { a += 1; }); const u2 = m.registerZoomHome(() => { b += 1; }); u1(); m.zoomHome(); u2(); return after1 === 1 && after2 === 1 && a === 0 && b === 1; };
   ok('Z7 the home registry: a registered way home runs on zoomHome(); after its unregister zoomHome() does nothing; a stale unregister does not remove a newer registration', z7(await load()));
   const z8 = (m) => { m.keepBoardScale('a', 2); m.keepBoardScale('b', 0.5); const ab = m.keptBoardScale('a') === 2 && m.keptBoardScale('b') === 0.5 && m.keptBoardScale('c') === 1; m.keepBoardScale('a', 1); const reset = m.keptBoardScale('a') === 1 && m.keptBoardScale('b') === 0.5; m.keepBoardScale('b', NaN); m.keepBoardScale('d', -3); return ab && reset && m.keptBoardScale('b') === 1 && m.keptBoardScale('d') === 1; };
-  ok('Z8 the session's memory: a board's scale is filed and read back by its id, boards do not share one, 1.00 is filed as nothing, a bad value files nothing', z8(await load()));
+  ok('Z8 the session\'s memory: a board\'s scale is filed and read back by its id, boards do not share one, 1.00 is filed as nothing, a bad value files nothing', z8(await load()));
   { const m1 = await load(); m1.keepBoardScale('a', 3); const m2 = await load(); ok('Z8b a new session (a fresh module) reads 1.00 for every board', m1.keptBoardScale('a') === 3 && m2.keptBoardScale('a') === 1); }
-  ok('MUT every board shares one memory: lands and Z8 goes RED', !z8(await load([[/kept.get(boardId) ?? 1/, 'kept.get("a") ?? 1']])));
-  ok('MUT the memory never files: lands and Z8 goes RED', !z8(await load([[/if (s > 0 && s !== 1) kept.set(boardId, s);/, 'if (false) kept.set(boardId, s);']])));
-  ok('MUT a filed 1.00 is kept as a scale (the way home never forgets): lands and Z8 goes RED', !z8(await load([[/else kept.delete(boardId);/, '']])));
+  ok('MUT every board shares one memory: lands and Z8 goes RED', !z8(await load([[/kept\.get\(boardId\) \?\? 1/, 'kept.get("a") ?? 1']])));
+  ok('MUT the memory never files: lands and Z8 goes RED', !z8(await load([[/if \(s > 0 && s !== 1\) kept\.set\(boardId, s\);/, 'if (false) kept.set(boardId, s);']])));
+  ok('MUT a filed 1.00 is kept as a scale (the way home never forgets): lands and Z8 goes RED', !z8(await load([[/else kept\.delete\(boardId\);/, '']])));
   ok('MUT zoomHome never calls the registered fn: lands and Z7 goes RED', !z7(await load([[/home\?\.\(\)/, 'void 0']])));
   ok('MUT the unregister never clears: lands and Z7 goes RED', !z7(await load([[/if \(home === fn\) home = null;/, '']])));
   ok('MUT a stale unregister removes a newer registration: lands and Z7 goes RED', !z7(await load([[/if \(home === fn\) home = null;/, 'home = null;']])));
@@ -114,10 +114,7 @@ const S = {
     && /registerZoomHome\(\(\) => \{[^\n]*glide\(1, c\.x, c\.y\);? \}\)/.test(t) && /\n\s*unregHome\(\);/.test(t)
     && /flux3ZoomReset: 'Reset zoom \(Ctrl \+ 0\)'/.test(chrome) && /'flux3ZoomReset'/.test(terms) && /^flux3ZoomReset=Reset zoom \(Ctrl \+ 0\)$/m.test(news),
   // guard 7: filed BEFORE the live scale goes back to 1, read on arrival through the clamp, never over the Stack
-  s7: (t) => /keepBoardScale(boardId, getBoardScale());[^
-]*
-s*setBoardScale(1);/.test(t) && /const back = keptBoardScale(boardId);
-s*if (back !== 1 && activeRef.current) setBoardScale(clampScale(back, limits()));/.test(t),
+  s7: (t) => /keepBoardScale\(boardId, getBoardScale\(\)\);[^\n]*\n\s*setBoardScale\(1\);/.test(t) && /const back = keptBoardScale\(boardId\);\n\s*if \(back !== 1 && activeRef\.current\) setBoardScale\(clampScale\(back, limits\(\)\)\);/.test(t),
   s5: (t) => /\.flux3-node::after\{ border-width:max\(2px, var\(--f3-hair, 2px\)\); \}/.test(t.replace(/\n/g, ' ')) || /flux3-node::after\{ border-width:max\(2px, var\(--f3-hair, 2px\)\); \}/.test(t),
 };
 ok('S1 the Schema wiring: the camera comes BEFORE the layer\'s effect, the layer\'s view carries the live scale and follows every change, the readout is the live figure (no typed 1.00), the board passes its id', S.s1(schema));
@@ -126,7 +123,7 @@ ok('S3 the camera: Ctrl/Cmd+wheel is taken (passive: false, preventDefault), + =
 // ok('S4 nothing saved: no storage in the camera or the store; the only word is the existing flux3ReadZoom key', S.s4(cam, zoomMod, schema));   // PARKED, SUPERSEDED by S4b (the way home adds flux3ZoomReset)
 ok('S4b nothing saved: no storage in the camera or the store; the Schema\'s words are flux3ReadZoom and the way home\'s one new key flux3ZoomReset, both through the lexicon (no literal Reset zoom in the camera, the store or the Schema)', S.s4b(cam, zoomMod, schema));
 ok('S6 the way home: the readout is a button whose click is zoomHome(), its hint is t(flux3ZoomReset) (canonical \'Reset zoom (Ctrl + 0)\', typed, declared new, no override), the camera registers Ctrl + 0\'s glide and unregisters', S.s6(schema, cam, chromeLex, termsLex, newKeys));
-ok('S7 guard 7: the camera files the board's scale before it sets the live scale back to 1, reads it on arrival through the clamp, and never restores it over the Stack', S.s7(cam));
+ok('S7 guard 7: the camera files the board\'s scale before it sets the live scale back to 1, reads it on arrival through the clamp, and never restores it over the Stack', S.s7(cam));
 ok('S5 the hairline rule: the node brackets are widened below a half so they are drawn 1 px at least (--f3-zoom)', S.s5(css));
 
 // ---- mutants

@@ -126,9 +126,9 @@ const MUTANTS = {
   // the camera drawn by CSS zoom instead of a transform: zoom changes LAYOUT, so the board's frame (auto height) would move and resize
   zoomByLayout: [/(\w+)\.style\.transform=`translate\(\$\{\w+\}px, \$\{\w+\}px\) scale\(\$\{(\w+)\}\)`/g, '$1.style.zoom=String($2)'],
   layerScale1: [/s:\w+\(\)\}\)\};/g, 's:1})};'],
-  // the readout's click calls nothing (the way home's button is there, the door does not open)
   // the camera does not file the board's scale when it goes (guard 7's memory): the call just before the live scale is set back to 1 is cut from the cleanup
-  keepForgets: [/(,w+(),w+()),w+(w+,w+())(,w+(1),w+()}},[w+,w+,w+]))/g, '$1$2'],
+  keepForgets: [/(,\w+\(\),\w+\(\)),\w+\(\w+,\w+\(\)\)(,\w+\(1\),\w+\(\)\}\},\[\w+,\w+,\w+\]\))/g, '$1$2'],
+  // the readout's click calls nothing (the way home's button is there, the door does not open)
   homeNoop: [/(className:"flux3-tele-zoom",tabIndex:-1,title:\w+\("flux3ZoomReset"\),"data-f3-zoom-home":"true",onPointerDown:\w+=>\w+\.stopPropagation\(\),onClick:\w+=>\{\w+\.stopPropagation\(\),)\w+\(\)\}/g, '$1void 0}'],
 };
 const countOf = (re, text) => { re.lastIndex = 0; let n = 0; while (re.exec(text)) n += 1; re.lastIndex = 0; return n; };
