@@ -52,10 +52,7 @@ function applyCollection<T extends { id: string; updatedAt: string }>(
         const idx = collection.findIndex(r => r.id === rec.id);
         if (idx >= 0) {
           const loc = collection[idx] as unknown as JournalEntry, rem = rec as unknown as JournalEntry;
-          if (loc.pageType === 'board' && (loc.boxes || rem.boxes)) {
-            const merged = mergeBoxLists(loc.boxes, rem.boxes);
-            if (JSON.stringify(merged) !== JSON.stringify(loc.boxes ?? [])) { (collection[idx] as unknown as JournalEntry).boxes = merged; changed = true; }
-          }
+          if (mergeBoxesInto(loc, loc, rem)) changed = true;
         }
       }
       continue;
@@ -80,6 +77,16 @@ function applyCollection<T extends { id: string; updatedAt: string }>(
   }
   if (changed && flushAfter) scheduleFlush(name);
   return changed;
+}
+
+// A board's boxes merge per box (store/boxTombstones.ts mergeBoxLists): `primary` is the side that is winning the entry, `target` takes the merged list. True when the target's list changed. The ONE place syncApply reads two boards' raw boxes
+// for a local edit against another copy (a pull, or another window's write): the readers guard (box-tombstones T11) counts these reads.
+function mergeBoxesInto(target: JournalEntry, primary: JournalEntry, secondary: JournalEntry): boolean {
+  if (primary.pageType !== 'board' || !(primary.boxes || secondary.boxes)) return false;
+  const merged = mergeBoxLists(primary.boxes, secondary.boxes);
+  if (JSON.stringify(merged) === JSON.stringify(target.boxes ?? [])) return false;
+  target.boxes = merged;
+  return true;
 }
 
 export function applyRemoteRecords(remote: RemoteRecords): void {
@@ -133,7 +140,7 @@ function mergeUnflushedPages(rows: JournalEntry[], mineById: Map<string, Journal
     const out = clone(winner) as JournalEntry;
     out.text = r.text;
     out.updatedAt = stamp;
-    if (out.pageType === 'board' && (mine.boxes || theirs.boxes)) out.boxes = mergeBoxLists(mine.boxes, theirs.boxes);
+    mergeBoxesInto(out, mine, theirs);
     const i = cache.journalEntries.findIndex((x) => x.id === theirs.id);
     if (i < 0) continue;
     cache.journalEntries[i] = out;
@@ -147,7 +154,7 @@ function mergeUnflushedPages(rows: JournalEntry[], mineById: Map<string, Journal
   return any;
 }
 
-if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {   // a harness that bundles this module with a bare `window` stand-in has no listeners to add
   setPreFlush(applyOtherWindowWrite);
   window.addEventListener('storage', (e: StorageEvent) => {
     try {
