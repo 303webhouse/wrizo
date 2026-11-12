@@ -50,6 +50,9 @@
   font-family:var(--font-chromeLabel); font-weight:600; font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--f3-quiet); }
 :root[data-flux3][data-theme='flux'] .flux3-tele b{ color:var(--f3-cyan-text); font-weight:600; }
 :root[data-flux3][data-theme='flux'] .flux3-tele sup{ font-size:.7em; line-height:0; }
+/* the way home: the ZOOM readout is a button (a click is Ctrl + 0). Drawn as the plain readout it always was; the strip takes no pointer, the button takes its own */
+:root[data-flux3][data-theme='flux'] .flux3-tele-zoom{ pointer-events:auto; cursor:pointer; background:none; border:0; margin:0; padding:0; font:inherit; letter-spacing:inherit; text-transform:inherit; color:inherit; }
+:root[data-flux3][data-theme='flux'] .flux3-tele-zoom:hover b{ text-decoration:underline; text-underline-offset:3px; }
 :root[data-flux3][data-theme='flux'] .flux3-tele-lvl{ color:var(--f3-lime); }
 :root[data-flux3][data-theme='flux'] .flux3-tele-you{ color:var(--f3-orange-text); text-transform:none; letter-spacing:.04em; display:inline-block; max-width:34ch; overflow:hidden;
   text-overflow:ellipsis; vertical-align:bottom; }

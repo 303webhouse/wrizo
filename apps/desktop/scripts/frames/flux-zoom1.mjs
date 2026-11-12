@@ -8,6 +8,12 @@
 //   zoom-mid     MID-ZOOM: three Ctrl-wheel notches in, shot at once (the ground is still held, the figure is mid-climb)
 //   zoom-reduced reduced motion on: Ctrl + `+` jumps (no easing) to 1.25
 //   zoom-stack   zoomed in, then the Stack opened: zoom is OFF there (the scale is back to 1.00 and the readout names the Stack)
+// ROUND 3 (Fable Nov 12): one FULL ZOOM OUT AND BACK IN as a run of stills, and the way home.
+//   zoom-cycle-01 .. 11     motion on: 1.00, 0.75, 0.50, 0.30, the outer limit, 0.30, 0.50, 0.75, 1.00, 2.00, 4.00 (each through the camera's own door, so each is a true camera state)
+//   zoom-cycle-12           the way home: at 4.00 a click on the ZOOM readout, shot after the glide (1.00)
+//   zoom-cycle-rm-01 .. 06  reduced motion on: 1.00, 0.50, the outer limit, 0.50, 1.00, 4.00 (every step a jump); zoom-cycle-rm-07 the click home at 4.00, shot 150 ms after (already 1.00: a jump)
+//   zoom-home-hover         at 2.00 with the pointer over the ZOOM readout (the underline; the native hint is not drawn by a headless capture)
+//   The flash COUNT is measured, not read off these stills: flux-zoom1.mjs ZFL / ZFL-K / ZFL-RM / ZFL-RM-K sample a continuous sweep eight times a second, motion on and reduced.
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
 
@@ -46,7 +52,30 @@ const stood = (app, screen) => app.evalJs(`(() => {
     scale: cr && cv.offsetWidth ? +(cr.width / cv.offsetWidth).toFixed(4) : null, zoomed: cv && cv.getAttribute('data-f3-zoomed'), frame: wr && { l: Math.round(wr.left), t: Math.round(wr.top), w: Math.round(wr.width), h: Math.round(wr.height) }, tele };
 })()`).then((s) => console.log('FLUX-ZOOM1-FRAME ' + JSON.stringify(s)));
 
+const CYCLE = [1, 0.75, 0.5, 0.3, 0.0001, 0.3, 0.5, 0.75, 1, 2, 4];
+const RM = [1, 0.5, 0.0001, 0.5, 1, 4];
+const reduce = (app) => app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+const clickHome = async (app) => {
+  const p = await app.evalJs("(() => { const e = document.querySelector('.flux3-tele-zoom'); if (!e) return null; const r = e.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
+  if (!p) return;
+  await app.cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x: p.x, y: p.y, pointerType: 'mouse', buttons: 0 });
+  await app.cdp('Input.dispatchMouseEvent', { type: 'mousePressed', x: p.x, y: p.y, button: 'left', buttons: 1, clickCount: 1, pointerType: 'mouse' });
+  await app.cdp('Input.dispatchMouseEvent', { type: 'mouseReleased', x: p.x, y: p.y, button: 'left', buttons: 0, clickCount: 1, pointerType: 'mouse' });
+};
+const cycleScreens = {};
+CYCLE.forEach((s, i) => { const name = `zoom-cycle-${String(i + 1).padStart(2, '0')}`; cycleScreens[name] = async (app) => { await seed(app); if (s !== 1) await zoomTo(app, s); if (s >= 2) await reveal(app, 'f3-d'); await stood(app, name); }; });
+cycleScreens['zoom-cycle-12'] = async (app) => { await seed(app); await zoomTo(app, 4); await reveal(app, 'f3-d'); await clickHome(app); await sleep(900); await stood(app, 'zoom-cycle-12'); };
+RM.forEach((s, i) => { const name = `zoom-cycle-rm-${String(i + 1).padStart(2, '0')}`; cycleScreens[name] = async (app) => { await seed(app); await reduce(app); if (s !== 1) await zoomTo(app, s); if (s >= 2) await reveal(app, 'f3-d'); await stood(app, name); }; });
+cycleScreens['zoom-cycle-rm-07'] = async (app) => { await seed(app); await reduce(app); await zoomTo(app, 4); await reveal(app, 'f3-d'); await clickHome(app); await sleep(150); await stood(app, 'zoom-cycle-rm-07'); };
+cycleScreens['zoom-home-hover'] = async (app) => {
+  await seed(app); await zoomTo(app, 2); await reveal(app, 'f3-d');
+  const p = await app.evalJs("(() => { const e = document.querySelector('.flux3-tele-zoom'); const r = e.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
+  await app.cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x: p.x, y: p.y, pointerType: 'mouse', buttons: 0 });
+  await sleep(300); await stood(app, 'zoom-home-hover');
+};
+
 export default {
+  ...cycleScreens,
   'zoom-outer': async (app) => { await seed(app); await zoomTo(app, 0.0001); await stood(app, 'zoom-outer'); },
   'zoom-050': async (app) => { await seed(app); await zoomTo(app, 0.5); await stood(app, 'zoom-050'); },
   'zoom-100': async (app) => { await seed(app); await stood(app, 'zoom-100'); },

@@ -19,8 +19,11 @@
 //   ZN    guard 7: nothing new is saved: ZERO writes to storage or IndexedDB across a zoom session (counted at the API), and leaving the board and coming back reads 1.00
 //   ZS    the Stack: zoom is OFF there (the scale goes back to 1.00, the readout names the Stack, a Ctrl+wheel and a key change nothing and are still prevented)
 //   ZG    the board's own gestures at scale: a card dragged 80 screen px at 2.00 (and 40 px at 0.50) moves 80 (40) on the screen: the pointer maths carries the scale
+//   ZHOME the way home (Nick, Nov 11): the ZOOM readout is a button; at 2.00 a click on it glides to exactly 1.00 (a run of frames between), the canvas's transform gone, the frame, host and footer unmoved, no card made or lost; its hint reads
+//         "Reset zoom (Ctrl + 0)"; the strip around it still takes no pointer (the button takes its own); under reduced motion the same click is a JUMP (the first changed frame is 1.00, nothing between)
+//   ZFL   (below) also runs the flash count by KEYS and under reduced motion: ZFL-K (key notches out and back), ZFL-RM (the wheel sweep) and ZFL-RM-K (the key sweep) - each <= 3 flashes in any second
 //   ZW    guard 8: the only word is ZOOM (the footer's second span is the existing flux3ReadZoom key's word)
-//   MUT-* five landed mutants of the bundle: page zoom not prevented (ZB), no clamp (ZL), the drag not scaled (ZG), the camera drawn by layout zoom (ZF), the layer told scale 1 (ZA)
+//   MUT-* six landed mutants of the bundle (the sixth: the readout's click does nothing -> ZHOME): page zoom not prevented (ZB), no clamp (ZL), the drag not scaled (ZG), the camera drawn by layout zoom (ZF), the layer told scale 1 (ZA)
 // FLUX_ZOOM_SHOTS=<dir> writes the frames (the Wrizors' list, §6, has its own frames file: scripts/frames/flux-zoom1.mjs). Run: node scripts/harness/flux-zoom1.mjs   (from apps/desktop; ZT/ZRM timing-free)
 import fs from 'node:fs';
 import path from 'node:path';
@@ -122,6 +125,8 @@ const MUTANTS = {
   // the camera drawn by CSS zoom instead of a transform: zoom changes LAYOUT, so the board's frame (auto height) would move and resize
   zoomByLayout: [/(\w+)\.style\.transform=`translate\(\$\{\w+\}px, \$\{\w+\}px\) scale\(\$\{(\w+)\}\)`/g, '$1.style.zoom=String($2)'],
   layerScale1: [/s:\w+\(\)\}\)\};/g, 's:1})};'],
+  // the readout's click calls nothing (the way home's button is there, the door does not open)
+  homeNoop: [/(className:"flux3-tele-zoom",tabIndex:-1,title:\w+\("flux3ZoomReset"\),"data-f3-zoom-home":"true",onPointerDown:\w+=>\w+\.stopPropagation\(\),onClick:\w+=>\{\w+\.stopPropagation\(\),)\w+\(\)\}/g, '$1void 0}'],
 };
 const countOf = (re, text) => { re.lastIndex = 0; let n = 0; while (re.exec(text)) n += 1; re.lastIndex = 0; return n; };
 
@@ -201,6 +206,30 @@ try { await withHarness(async (app) => {
 
   // ---- the probes: each returns { pass, detail }; the mutants run the same probe and must fail it
   const probes = {
+    // the way home: at 2.00 (or 4.00 under reduced motion) a click on the ZOOM readout returns the board to exactly 1.00
+    async home(reduced = false) {
+      await open('dark');
+      const s0 = await S();
+      if (reduced) await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+      const from = reduced ? 4 : 2;
+      await ev(`window.wrizoFluxZoomTo(${from})`); await settle(900);
+      const z = await S();
+      const b = await ev(`(() => { const e = document.querySelector('.flux3-tele-zoom'); if (!e) return null; const r = e.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, hit = document.elementFromPoint(cx, cy); const tele = document.querySelector('.flux3-tele'), tr = tele.getBoundingClientRect(); const away = document.elementFromPoint(tr.left + 6, tr.top + 11); return { x: cx, y: cy, title: e.getAttribute('title'), pe: getComputedStyle(e).pointerEvents, strip: getComputedStyle(tele).pointerEvents, hit: !!(hit && e.contains(hit)), awayInStrip: !!(away && tele.contains(away)), boxes: document.querySelectorAll('.board-box').length, text: e.textContent }; })()`);
+      if (!b) { if (reduced) await app.emulateMedia([]); return { pass: false, detail: 'no .flux3-tele-zoom button' }; }
+      await app.mouseMove(b.x, b.y); await sleep(60);
+      await ev('window.__z.track(900)'); await sleep(60);
+      await mouse('mousePressed', b.x, b.y); await mouse('mouseReleased', b.x, b.y);
+      await sleep(1000);
+      const ser = await ev('window.__z.series');
+      const a = await S();
+      const nb = await ev("document.querySelectorAll('.board-box').length");
+      if (reduced) await app.emulateMedia([]);
+      const same = (p, q) => ['x', 'y', 'w', 'h'].every((k) => near(p[k], q[k], 0.5));
+      const moved = ser.filter((v) => v > 1.0001 && v < from - 0.0001);
+      const pass = near(z.s, from, 0.01) && near(a.s, 1, 0.002) && a.tf === '' && a.readout === '1.00×100' && b.title === 'Reset zoom (Ctrl + 0)' && b.pe === 'auto' && b.strip === 'none' && b.hit && b.awayInStrip
+        && same(a.frame, s0.frame) && same(a.host, s0.host) && same(a.tele, s0.tele) && nb === b.boxes && (reduced ? moved.length === 0 : moved.length >= 2);
+      return { pass, detail: JSON.stringify({ from: z.s, after: a.s, tf: a.tf, readout: a.readout, title: b.title, pe: b.pe, strip: b.strip, hit: b.hit, away: b.awayInStrip, boxes: [b.boxes, nb], between: moved.length, frames: ser.length }) };
+    },
     async prevented() {
       await open('dark');
       const s = await S(); const c = centreOf(s);
@@ -274,6 +303,9 @@ try { await withHarness(async (app) => {
   ok('P the Schema is mounted (one layer, the readout), true size reads 1.00×10⁰, the canvas carries no transform and no data-f3-zoomed, the zoom seam exists',
     p0.layers === 1 && p0.readout === '1.00×100' && p0.tf === '' && p0.zoomedAttr === null && near(p0.s, 1, 0.002) && p0.seam === 'function', JSON.stringify({ layers: p0.layers, readout: p0.readout, tf: p0.tf, zoomedAttr: p0.zoomedAttr, s: p0.s, seam: p0.seam }));
   ok('ZW guard 8: the footer\'s zoom word is ZOOM (the existing key), shown in capitals by the footer\'s own styling', /^zoom$/i.test(p0.label || ''), p0.label);
+  { const r = await probes.home(false); ok(`ZHOME a click on the ZOOM readout at 2.00 glides to exactly 1.00 (a run of frames between), the transform gone, the frame, host and footer unmoved, no card made or lost, the hint "Reset zoom (Ctrl + 0)", the strip around the button still takes no pointer`, r.pass, r.detail); }
+  { const r = await probes.home(true); ok(`ZHOME-RM under reduced motion the same click at 4.00 is a JUMP to 1.00 (nothing between)`, r.pass, r.detail); }
+  await open('dark');
   const storeSnap = () => ev("JSON.stringify({ ls: Object.fromEntries(Object.entries(localStorage).sort()), board: window.wrizoBoard ? window.wrizoBoard() : null })");
   const stored0 = await storeSnap();
   const c0 = centreOf(p0);
@@ -449,6 +481,26 @@ try { await withHarness(async (app) => {
     ok(`ZFL guard 2: a full zoom in and out (${samples.length} frames sampled) reverses the board's light/dark direction at most 3 times in any second (worst ${worst}; range ${range.toFixed(3)})`, samples.length >= 15 && worst <= 3, JSON.stringify({ samples: samples.length, worst, range }));
   }
 
+  // the flash count again, by KEYS (a notch is a glide with motion on) and under reduced motion (every notch a jump): ZFL-K, ZFL-RM, ZFL-RM-K
+  for (const [name, reduced, byKeys] of [['ZFL-K', false, true], ['ZFL-RM', true, false], ['ZFL-RM-K', true, true]]) {
+    await open('dark');
+    if (reduced) await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+    const s = await S(); const c = centreOf(s);
+    await app.mouseMove(c.x, c.y);
+    const rect = { x: Math.round(s.frame.x), y: Math.round(s.frame.y), w: Math.round(s.frame.w), h: Math.round(s.frame.h) };
+    const samples = [];
+    const sample = async () => { const shot = await app.cdp('Page.captureScreenshot', { format: 'png' }); samples.push([Date.now(), await ev(`window.__z.mean(${JSON.stringify(shot.data)}, ${JSON.stringify(rect)})`)]); };
+    if (byKeys) { for (let i = 0; i < 14; i += 1) { await key(i < 7 ? '-' : '=', 2); if (i % 1 === 0) await sample(); await sleep(60); } }
+    else { for (let i = 0; i < 28; i += 1) { await wheel(c.x, c.y, i < 14 ? -120 : 120); if (i % 2 === 0) await sample(); await sleep(40); } }
+    for (let i = 0; i < 6; i += 1) { await sample(); await sleep(60); }
+    const range = Math.max(...samples.map((x) => x[1])) - Math.min(...samples.map((x) => x[1]));
+    let dir = 0; const flips = []; for (let i = 1; i < samples.length; i += 1) { const d = samples[i][1] - samples[i - 1][1]; if (Math.abs(d) > 0.15 * Math.max(range, 0.05)) { const nd = Math.sign(d); if (dir !== 0 && nd !== dir) flips.push(samples[i][0]); dir = nd; } }
+    const worst = flips.length ? Math.max(...flips.map((t) => flips.filter((u) => u >= t && u < t + 1000).length)) : 0;
+    const end = await S();
+    if (reduced) await app.emulateMedia([]);
+    ok(`${name} the flash count of a full zoom out and back (${byKeys ? 'key notches' : 'the wheel'}, ${reduced ? 'reduced motion' : 'motion on'}; ${samples.length} frames sampled, ended at ${end.s.toFixed(3)}) reverses the board's light/dark direction at most 3 times in any second (worst ${worst}; range ${range.toFixed(3)})`, samples.length >= 18 && worst <= 3 && end.s > 0.05, JSON.stringify({ samples: samples.length, worst, range, end: end.s }));
+  }
+
   // ZS: the Stack
   {
     await open('dark');
@@ -502,6 +554,7 @@ try { await withHarness(async (app) => {
   await mutantRun('dragNotScaled', () => probes.drag(2, 80), 'the drag not scaled -> ZG');
   await mutantRun('zoomByLayout', probes.frame, 'the camera drawn by layout zoom, not a transform -> ZF');
   await mutantRun('layerScale1', probes.align, 'the layer told scale 1 -> ZA');
+  await mutantRun('homeNoop', () => probes.home(false), 'the readout\'s click does nothing -> ZHOME');
   await open('dark');
 }); } catch (e) { failedRun = true; console.error('HARNESS ERROR', e && e.stack ? e.stack : e); }
 

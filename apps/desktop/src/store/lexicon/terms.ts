@@ -105,7 +105,7 @@ export type DeskTermId =
   // render as.
   | 'boardThreadPrefix' | 'boardThreadUntitled'
   // FLUX3 S1 - the Schema's node records and readouts (src/flux3/, behind ?flux3=1): new words only, no rename; TOOLS' lexicon pass sets their values
-  | 'flux3LinkOne' | 'flux3LinkMany' | 'flux3ChecksumOk' | 'flux3ReadLevel' | 'flux3ReadZoom' | 'flux3ReadLast' | 'flux3KindPreset'
+  | 'flux3LinkOne' | 'flux3LinkMany' | 'flux3ChecksumOk' | 'flux3ReadLevel' | 'flux3ReadZoom' | 'flux3ZoomReset' | 'flux3ReadLast' | 'flux3KindPreset'
   // FLUX3 S2 - the Schema's Stack and hologram (src/flux3/FluxStack.tsx, behind ?flux3=1): the Stack button's word and the level readout's two words
   | 'flux3ViewStack' | 'flux3ViewHologram' | 'flux3WordOne' | 'flux3WordMany' | 'flux3PortConnectAnother' | 'flux3PortDisconnect' | 'flux3Checkpoint'
   // FLUX3 S4 Corridor r2 - Jacked In's exit line, the 4 s nudge and the leave button's accessible name (src/flux3/FluxJackedHints.tsx)

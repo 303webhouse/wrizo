@@ -23,6 +23,10 @@ export function setBoardScale(next: number): void {
   scale = next;
   for (const f of [...subs]) f();
 }
+// THE WAY HOME (Nick, Nov 11): the camera registers what Ctrl + 0 does (glide to true size about the centre); the footer's ZOOM readout asks for it. One door, one act: a click is Ctrl + 0.
+let home: (() => void) | null = null;
+export function registerZoomHome(fn: () => void): () => void { home = fn; return () => { if (home === fn) home = null; }; }
+export function zoomHome(): void { home?.(); }
 export function useBoardScale(): number { return useSyncExternalStore(subscribeBoardScale, getBoardScale, getBoardScale); }
 
 /** The outer limit (spec §2): the whole board - its longer side - fills 60% of the stage's shorter side; never below 0.10, and never above true size (1.00). */

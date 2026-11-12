@@ -7,7 +7,7 @@
 //   Under reduced motion or Ambiance 0 a notch JUMPS; otherwise it glides ~140 ms. A wheel or pinch has no easing of its own. Zoom is OFF while the Stack or the hologram is open (the scale goes back to 1).
 //   Nothing is saved: the scale is session-only and the Schema sets it back to 1 as it goes (boardZoom.ts).
 import { useEffect, useRef, type RefObject } from 'react';
-import { ZOOM_NOTCH, clampScale, getBoardScale, outerLimit, setBoardScale, subscribeBoardScale, wheelFactor } from './boardZoom';
+import { ZOOM_NOTCH, clampScale, getBoardScale, outerLimit, registerZoomHome, setBoardScale, subscribeBoardScale, wheelFactor } from './boardZoom';
 
 const GLIDE_MS = 140;
 
@@ -120,6 +120,8 @@ export function useFluxCamera({ wrapRef, canvasRef, boardId, active, motion }: O
     // the harness's seam (like the other window.wrizo* ones): zoom to a scale about the centre, through the same clamp and the same paint as a key; the frames need 0.50 and 2.00 exactly
     const w = window as unknown as { wrizoFluxZoomTo?: (s: number) => number };
     w.wrizoFluxZoomTo = (s: number) => { stopGlide(); const c = centre(); zoomTo(s, c.x, c.y); return getBoardScale(); };
+    // the way home: a click on the footer's ZOOM readout does what Ctrl + 0 does (the same glide, the same centre, the same jump under reduced motion)
+    const unregHome = registerZoomHome(() => { if (!activeRef.current) return; const c = centre(); glide(1, c.x, c.y); });
     wrap.addEventListener('wheel', onWheel, { passive: false });
     window.addEventListener('keydown', onKey, true);
     wrap.addEventListener('touchstart', onTouchStart, { passive: true });
@@ -145,6 +147,7 @@ export function useFluxCamera({ wrapRef, canvasRef, boardId, active, motion }: O
       wrap.removeEventListener('touchcancel', onTouchEnd);
       ro?.disconnect();
       delete w.wrizoFluxZoomTo;
+      unregHome();
       unsub();
       setBoardScale(1);   // nothing is saved: the next board, or this one on its return, starts at 1.00
       paint();

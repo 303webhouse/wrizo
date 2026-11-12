@@ -21,7 +21,7 @@ import { useLastTouched } from './lastTouched';
 import { nodeHex } from './FluxNodeRecord';
 import { FluxStack } from './FluxStack';
 import { useStackView } from './stackView';
-import { getBoardScale, subscribeBoardScale, useBoardScale, zoomFigure } from './boardZoom';
+import { getBoardScale, subscribeBoardScale, useBoardScale, zoomFigure, zoomHome } from './boardZoom';
 import { useFluxCamera } from './useFluxCamera';
 
 interface Props {
@@ -121,7 +121,8 @@ function Schema({ wrapRef, canvasRef, boxes, nodes, connections, selectedId, pag
     {/* above the Stack's nodes too (they stand at topZ + 1 .. topZ + 101) */}
     <div className="flux3-tele" aria-hidden="true" style={{ zIndex: stack.on ? topZ + 102 : topZ }}>
       <span>{t('flux3ReadLevel')} <span className="flux3-tele-lvl">{level}</span></span>
-      <span>{t('flux3ReadZoom')} <b data-f3-zoom-readout={zoom}>{zoomFigure(zoom).mant}×10<sup>{zoomFigure(zoom).exp < 0 ? '−' : ''}{Math.abs(zoomFigure(zoom).exp)}</sup></b></span>
+      {/* THE WAY HOME: the readout is the door - a click returns the board to 1.00 (what Ctrl + 0 does). A mouse door inside the aria-hidden strip, so it is out of the tab order (Ctrl + 0 is the keyboard's); it takes the pointer on itself only */}
+      <span>{t('flux3ReadZoom')} <button type="button" className="flux3-tele-zoom" tabIndex={-1} title={t('flux3ZoomReset')} data-f3-zoom-home="true" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); zoomHome(); }}><b data-f3-zoom-readout={zoom}>{zoomFigure(zoom).mant}×10<sup>{zoomFigure(zoom).exp < 0 ? '−' : ''}{Math.abs(zoomFigure(zoom).exp)}</sup></b></button></span>
       <span>{lex.tMany('box')} <b>{nodes.length}</b></span>
       <span>{t('flux3LinkMany')} <b>{scene.links.length}</b></span>
       <span>{t('flux3ReadLast')} <span className="flux3-tele-you">{lastBox ? `${labelFor(lastBox)} 0x${nodeHex(lastBox.id)}` : '—'}</span></span>
