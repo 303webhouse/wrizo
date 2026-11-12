@@ -126,7 +126,7 @@ function caretInChange(from: string, to: TextSnapshot): number | null {
   let s = 0;
   while (s < max - p && from.charCodeAt(from.length - 1 - s) === to.text.charCodeAt(to.text.length - 1 - s)) s += 1;
   const end = to.text.length - s;
-  if (to.caret !== null && to.caret >= p && to.caret <= end) return to.caret;
+  if (to.caret !== null) return to.caret;
   return end > p ? end : p;
 }
 
