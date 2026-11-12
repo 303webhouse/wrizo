@@ -419,6 +419,9 @@ await withHarness(async (app) => {
   // contents were last open, per page — and the survey's `‹` is always the way
   // back to the list.
   // ==========================================================================
+  // STRESS (bug #84, env PW1_SLOW_EXIT=1): the cascade keeps a closing panel drawn for --drawer-dur (inert, data-leaving) so it slides out. Slowing that exit makes the window in which a driver can mistake the leaving panel
+  // for an open one long enough to hit every time, instead of one run in a dozen. The product is untouched; only the token the product reads is stretched, for this page.
+  if (process.env.PW1_SLOW_EXIT === '1') await app.evalJs("document.documentElement.style.setProperty('--drawer-dur', '1500ms')");
   await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(s2PageId)}`);
   await waitOr(app, "!!document.querySelector('.forward-only-editor')", 'the S2 page again (stickiness)');
   await sleep(300);
