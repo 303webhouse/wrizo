@@ -214,7 +214,7 @@ try { await withHarness(async (app) => {
       const from = reduced ? 4 : 2;
       await ev(`window.wrizoFluxZoomTo(${from})`); await settle(900);
       const z = await S();
-      const b = await ev(`(() => { const e = document.querySelector('.flux3-tele-zoom'); if (!e) return null; const r = e.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, hit = document.elementFromPoint(cx, cy); const tele = document.querySelector('.flux3-tele'), tr = tele.getBoundingClientRect(); const away = document.elementFromPoint(tr.left + 6, tr.top + 11); return { x: cx, y: cy, title: e.getAttribute('title'), pe: getComputedStyle(e).pointerEvents, strip: getComputedStyle(tele).pointerEvents, hit: !!(hit && e.contains(hit)), awayInStrip: !!(away && tele.contains(away)), boxes: document.querySelectorAll('.board-box').length, text: e.textContent }; })()`);
+      const b = await ev(`(() => { const e = document.querySelector('.flux3-tele-zoom'); if (!e) return null; const r = e.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, hit = document.elementFromPoint(cx, cy); const tele = document.querySelector('.flux3-tele'), tr = tele.getBoundingClientRect(); const away = document.elementFromPoint(tr.left + 6, tr.top + 11);   /* the strip takes no pointer, so elementFromPoint SKIPS it: a point in the strip away from the button lands on the board beneath */ return { x: cx, y: cy, title: e.getAttribute('title'), pe: getComputedStyle(e).pointerEvents, strip: getComputedStyle(tele).pointerEvents, hit: !!(hit && e.contains(hit)), awayInStrip: !!(away && tele.contains(away)), boxes: document.querySelectorAll('.board-box').length, text: e.textContent }; })()`);
       if (!b) { if (reduced) await app.emulateMedia([]); return { pass: false, detail: 'no .flux3-tele-zoom button' }; }
       await app.mouseMove(b.x, b.y); await sleep(60);
       await ev('window.__z.track(900)'); await sleep(60);
@@ -226,9 +226,9 @@ try { await withHarness(async (app) => {
       if (reduced) await app.emulateMedia([]);
       const same = (p, q) => ['x', 'y', 'w', 'h'].every((k) => near(p[k], q[k], 0.5));
       const moved = ser.filter((v) => v > 1.0001 && v < from - 0.0001);
-      const pass = near(z.s, from, 0.01) && near(a.s, 1, 0.002) && a.tf === '' && a.readout === '1.00×100' && b.title === 'Reset zoom (Ctrl + 0)' && b.pe === 'auto' && b.strip === 'none' && b.hit && b.awayInStrip
+      const pass = near(z.s, from, 0.01) && near(a.s, 1, 0.002) && a.tf === '' && a.readout === '1.00×100' && b.title === 'Reset zoom (Ctrl + 0)' && b.pe === 'auto' && b.strip === 'none' && b.hit && !b.awayInStrip
         && same(a.frame, s0.frame) && same(a.host, s0.host) && same(a.tele, s0.tele) && nb === b.boxes && (reduced ? moved.length === 0 : moved.length >= 2);
-      return { pass, detail: JSON.stringify({ from: z.s, after: a.s, tf: a.tf, readout: a.readout, title: b.title, pe: b.pe, strip: b.strip, hit: b.hit, away: b.awayInStrip, boxes: [b.boxes, nb], between: moved.length, frames: ser.length }) };
+      return { pass, homed: near(a.s, 1, 0.002), detail: JSON.stringify({ from: z.s, after: a.s, tf: a.tf, readout: a.readout, title: b.title, pe: b.pe, strip: b.strip, hit: b.hit, away: b.awayInStrip, boxes: [b.boxes, nb], between: moved.length, frames: ser.length }) };
     },
     async prevented() {
       await open('dark');
@@ -554,7 +554,7 @@ try { await withHarness(async (app) => {
   await mutantRun('dragNotScaled', () => probes.drag(2, 80), 'the drag not scaled -> ZG');
   await mutantRun('zoomByLayout', probes.frame, 'the camera drawn by layout zoom, not a transform -> ZF');
   await mutantRun('layerScale1', probes.align, 'the layer told scale 1 -> ZA');
-  await mutantRun('homeNoop', () => probes.home(false), 'the readout\'s click does nothing -> ZHOME');
+  await mutantRun('homeNoop', async () => { const r = await probes.home(false); return { pass: r.homed, detail: r.detail }; }, 'the readout\'s click does nothing, the board stays zoomed -> ZHOME');
   await open('dark');
 }); } catch (e) { failedRun = true; console.error('HARNESS ERROR', e && e.stack ? e.stack : e); }
 
