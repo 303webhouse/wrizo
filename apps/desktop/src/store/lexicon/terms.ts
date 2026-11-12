@@ -132,7 +132,6 @@ export type DeskTermId =
   | 'tutorDockClose'
   | 'tutorLensConsistency' | 'tutorLensStructure' | 'tutorLensFragments'
   | 'tutorLensConsistencyEmpty' | 'tutorLensFragmentsEmpty' | 'tutorLensFragmentsNote'
-  | 'tutorNudgesTitle' | 'tutorNudgesEmpty'
   // TU5 S3 — the book's Bible (L4): section header, a one-line note, empty
   // state, the add-input placeholder + button, and the per-fact
   // edit/delete/save/cancel affordances. All writer-facing chrome, all here.

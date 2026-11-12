@@ -22,8 +22,8 @@ const LIST = [
   { name: 'c13-10-seams-check (default)', args: ['c13/c13-10-seams-check.mjs'] },
   { name: 'c13-10-seams-check (parked)', args: ['c13/c13-10-seams-check.mjs'], env: { HARNESS_PARKED: '1' } },
   { name: 'c13-10b-readers', args: ['c13/c13-10b-readers.mjs', '--base', 'd1ede8e9'] },
-  // green by docs/cleanup/c13-10c-new.txt (the keys later steps added); #13 step 11's deleted keys are named by c13-11-lexicon.txt (--gone)
-  { name: 'c13-10c-lexicon', args: ['c13/c13-10c-lexicon.mjs', '--base', '01ae2fbc', '--gone', 'docs/cleanup/c13-11-lexicon.txt'] },
+  // green by docs/cleanup/c13-10c-new.txt (the keys later steps added); #13 step 11's deleted keys are named by c13-11-lexicon.txt (--gone), step 12b's by c13-12b-lexicon.txt
+  { name: 'c13-10c-lexicon', args: ['c13/c13-10c-lexicon.mjs', '--base', '01ae2fbc', '--gone', 'docs/cleanup/c13-11-lexicon.txt,docs/cleanup/c13-12b-lexicon.txt'] },
   { name: 'c13-10f-wordcount', args: ['c13/c13-10f-wordcount.mjs'] },
   // #13 step 11 deletes three dead exports of the barrel: the API is <base>'s minus exactly those (c13-11-exports.txt)
   { name: 'c13-10h-persistence', args: ['c13/c13-10h-persistence.mjs', '--base', '1913849e', '--gone', 'docs/cleanup/c13-11-exports.txt'] },
