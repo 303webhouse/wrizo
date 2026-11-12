@@ -38,7 +38,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const LAPTOP_W = 1280;
 const WIDE_W = 2200;
 
-const settle = async (app, expr, ms = 4000, step = 100) => {
+// STRESS (bug #84, env PW1_FAST_POLL=1): every wait polls each millisecond instead of each 100 ms. When the cascade closes, its panel is gone for a few milliseconds before the copy that slides out is drawn; a poll that lands in that gap
+// reads "closed" while the panel is still leaving. At 100 ms that is one run in a dozen or two; at 1 ms it is nearly every run, so the race can be shown, and shown gone.
+const POLL_STEP = process.env.PW1_FAST_POLL === '1' ? 1 : 100;
+const settle = async (app, expr, ms = 4000, step = POLL_STEP) => {
   const deadline = Date.now() + ms;
   let v = await app.evalJs(expr);
   while (v !== true && Date.now() < deadline) { await sleep(step); v = await app.evalJs(expr); }
@@ -419,9 +422,6 @@ await withHarness(async (app) => {
   // contents were last open, per page — and the survey's `‹` is always the way
   // back to the list.
   // ==========================================================================
-  // STRESS (bug #84, env PW1_SLOW_EXIT=1): the cascade keeps a closing panel drawn for --drawer-dur (inert, data-leaving) so it slides out. Slowing that exit makes the window in which a driver can mistake the leaving panel
-  // for an open one long enough to hit every time, instead of one run in a dozen. The product is untouched; only the token the product reads is stretched, for this page.
-  if (process.env.PW1_SLOW_EXIT === '1') await app.evalJs("document.documentElement.style.setProperty('--drawer-dur', '1500ms')");
   await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(s2PageId)}`);
   await waitOr(app, "!!document.querySelector('.forward-only-editor')", 'the S2 page again (stickiness)');
   await sleep(300);
