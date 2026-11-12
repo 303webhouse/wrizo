@@ -784,7 +784,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
         ? `<span class="fo-run fo-struck">${typedHtml(run.text)}</span>`
         : `<span class="fo-run">${decorateMarkdownForCard(run.text, null)}</span>`).join('')
         // #70: a page whose last character is a newline (Enter just pressed) draws no line for it, so the caret stayed at the end of the line above until the next letter; the guard (Draft's own) gives that line a character to hold the caret
-        + `<span class="fo-word">${word === '' && content[content.length - 1]?.text.endsWith('\n') ? `<span class="md-eof-guard" aria-hidden="true">${EOF_GUARD}</span>` : typedHtml(word)}</span>`;
+        + `<span class="fo-word">${word === '' && content[content.length - 1]?.text.endsWith('\n') ? `<span class="md-eof-guard" aria-hidden="true"></span>` : typedHtml(word)}</span>`;
 
   return (
     <div className="forward-only-editor-wrap" style={{ position: 'relative', display: 'flex', flexDirection: 'column', ...style }}>
