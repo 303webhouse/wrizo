@@ -1,0 +1,3 @@
+tested build (made from the tree 52be7d6a in F:\wrizo-work\chat1-train-76, vite build:web): index-9_IzgSRv.js 1036329 bytes md5 3afa2c2e2f05; index-RTdQSZR2.css 249742 bytes md5 9a46eeb3c241. Served: identical (verify.txt).
+railway deployment list: bd9fc74a-9f2b-4c28-ad94-2fbe444586ac SUCCESS 2026-11-12 12:39:24 -07:00 (19:39:24Z); 0efebcf7-27bf-4ba7-b00c-891ca89e92be (train 1) REMOVING.
+primary checkout at deploy: detached 52be7d6a1b8ef0a30642ea82a466ff5836d58289 (tree 6dbb75b8), changes 0, railway status writer-studio / production / writer-studio-app, no box job (grant absent). Railway status page read first: no incident; next maintenance Nov 15 08:00-08:30Z. One railway up from PowerShell, exit 0, 86 s.
