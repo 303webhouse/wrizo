@@ -1,7 +1,7 @@
 // FLUX ZOOM, STEP 1 - THE CAMERA (claude/wrizors/flux-zoom-step1.md; Nick, Nov 11): the Schema's smooth zoom, in and out, between an outer limit and 4.00. Behind ?flux3=1, on the Schema only.
 // ONE camera for the whole board: the board's canvas (the cards, the links, their words) is drawn at one scale by a CSS transform about its top-left corner, so nothing re-flows (a card keeps its
-// shape and its words), and the drawing layer under it is told the same scale through setView (the ground, the routes and the electrons scale with it). The board's own frame is held at the
-// height it had when the zoom began, so the page's rectangle never moves or scales (PAGE IS PRIMARY: the zoom changes what is drawn INSIDE the fixed frame, nothing around it).
+// shape and its words), and the drawing layer under it is told the same scale through setView (the ground, the routes and the electrons scale with it). A transform never changes layout, so the board's
+// frame, its host and everything around it keep their rectangles (PAGE IS PRIMARY: the zoom changes what is drawn INSIDE the fixed frame, nothing around it).
 //   Ctrl (Cmd) + wheel, or a trackpad pinch (the same event), zooms about the pointer; a two-finger pinch zooms about its midpoint; Ctrl + `+` / `-` zoom one notch (x1.25) about the centre; Ctrl + `0`
 //   returns to 1.00. The wheel alone and a scroll pan, as today. The browser's own page zoom never fires while the Schema is mounted (every Ctrl act is taken).
 //   Under reduced motion or Ambiance 0 a notch JUMPS; otherwise it glides ~140 ms. A wheel or pinch has no easing of its own. Zoom is OFF while the Stack or the hologram is open (the scale goes back to 1).
@@ -32,7 +32,6 @@ export function useFluxCamera({ wrapRef, canvasRef, boardId, active, motion }: O
   useEffect(() => {
     const wrap = wrapRef.current, cv = canvasRef.current;
     if (!wrap || !cv) return;
-    let frozenH: number | null = null;   // the frame's height when the zoom began, held while the scale is not 1
     let offL = 0, offT = 0;              // the board's centring offset inside the frame, in screen px (a board smaller than its frame sits in the middle)
     let raf = 0;
 
@@ -43,21 +42,17 @@ export function useFluxCamera({ wrapRef, canvasRef, boardId, active, motion }: O
       const s = getBoardScale();
       if (s === 1) {
         cv.style.transform = ''; cv.style.transformOrigin = '';
-        cv.style.removeProperty('--f3-zoom'); cv.removeAttribute('data-f3-zoomed');
-        wrap.style.height = ''; frozenH = null; offL = 0; offT = 0;
+        cv.style.removeProperty('--f3-zoom'); cv.style.removeProperty('--f3-hair'); cv.removeAttribute('data-f3-zoomed');
+        offL = 0; offT = 0;
         return;
       }
-      if (frozenH == null) {
-        const cs = getComputedStyle(wrap);
-        const edge = cs.boxSizing === 'border-box' ? 0 : (parseFloat(cs.borderTopWidth) || 0) + (parseFloat(cs.borderBottomWidth) || 0);
-        frozenH = wrap.getBoundingClientRect().height - edge;
-      }
-      wrap.style.height = `${frozenH}px`;
       offL = Math.max(0, (wrap.clientWidth - cv.offsetWidth * s) / 2);
       offT = Math.max(0, (wrap.clientHeight - cv.offsetHeight * s) / 2);
       cv.style.transformOrigin = '0 0';
       cv.style.transform = `translate(${offL}px, ${offT}px) scale(${s})`;
       cv.style.setProperty('--f3-zoom', String(s));
+      // a hairline is never drawn thinner than 1 px (guard 6): a border snaps DOWN to whole device pixels, so CSS is handed a whole-pixel width that is at least 1 px once scaled
+      cv.style.setProperty('--f3-hair', `${Math.max(1, Math.ceil(1 / s))}px`);
       cv.setAttribute('data-f3-zoomed', 'true');
     };
     const unsub = subscribeBoardScale(paint);

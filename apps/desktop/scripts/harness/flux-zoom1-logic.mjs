@@ -85,13 +85,13 @@ const S = {
   s1: (t) => { const iCam = t.indexOf('useFluxCamera({'), iLayer = t.indexOf('const layer = new FluxLayer(host)'); return iCam > 0 && iLayer > iCam && /s: getBoardScale\(\)/.test(t) && /subscribeBoardScale\(place\)/.test(t) && /zoomFigure\(zoom\)/.test(t) && !/1\.00×10<sup>0<\/sup>/.test(t) && /boardId=\{id\}/.test(editor); },
   s2: (g, e) => !/\(e\.client[XY] - start[XY]\) \/ pageWidthPx\b/.test(g) && (g.match(/getBoardScale\(\)/g) || []).length >= 5 && /from '..\/..\/flux3\/boardZoom'/.test(g) && !/\(e\.client[XY] - start\.[xy]\)(?! \/ zs)\)?;?$/m.test(e.slice(e.indexOf('onCanvasHandleMove'), e.indexOf('onCanvasHandleMove') + 700).split('\n').filter((l) => /const d[xy] = /.test(l)).join('\n')),
   s3: (t) => /addEventListener\('wheel', onWheel, \{ passive: false \}\)/.test(t) && /if \(!\(e\.ctrlKey \|\| e\.metaKey\)\) return;[^\n]*\n\s*e\.preventDefault\(\)/.test(t) && /e\.key === '\+' \|\| e\.key === '='/.test(t) && /e\.key === '-' \|\| e\.key === '_'/.test(t) && /e\.key === '0'/.test(t)
-    && /touchmove', onTouchMove, \{ passive: false \}/.test(t) && /activeRef\.current/.test(t) && /wrap\.style\.height = `\$\{frozenH\}px`/.test(t) && /if \(!active\) setBoardScale\(1\)/.test(t) && /setBoardScale\(1\);[^\n]*\n\s*paint\(\)/.test(t),
-  s4: (t, z, sch) => !/localStorage|sessionStorage|indexedDB|saveBoard|upsert|persist/i.test(t + z) && !/lexicon|store\/lexicon/.test(t + z) && /t\('flux3ReadZoom'\)/.test(sch),
-  s5: (t) => /\.flux3-node::after\{ border-width:max\(2px, calc\(1px \/ var\(--f3-zoom, 1\)\)\); \}/.test(t.replace(/\n/g, ' ')) || /flux3-node::after\{ border-width:max\(2px, calc\(1px \/ var\(--f3-zoom, 1\)\)\); \}/.test(t),
+    && /touchmove', onTouchMove, \{ passive: false \}/.test(t) && /activeRef\.current/.test(t) && /if \(!active\) setBoardScale\(1\)/.test(t) && /setBoardScale\(1\);[^\n]*\n\s*paint\(\)/.test(t) && /Math\.max\(1, Math\.ceil\(1 \/ s\)\)/.test(t),
+  s4: (t, z, sch) => [t, z].every((x) => !/localStorage|sessionStorage|indexedDB|saveBoard|upsert|persist/i.test(x) && !/lexicon|store\/lexicon/.test(x)) && /t\('flux3ReadZoom'\)/.test(sch),
+  s5: (t) => /\.flux3-node::after\{ border-width:max\(2px, var\(--f3-hair, 2px\)\); \}/.test(t.replace(/\n/g, ' ')) || /flux3-node::after\{ border-width:max\(2px, var\(--f3-hair, 2px\)\); \}/.test(t),
 };
 ok('S1 the Schema wiring: the camera comes BEFORE the layer\'s effect, the layer\'s view carries the live scale and follows every change, the readout is the live figure (no typed 1.00), the board passes its id', S.s1(schema));
 ok('S2 the pointer maths: no gesture delta is divided by the page width alone (each carries the scale), the canvas handle likewise', S.s2(gest, editor), `${(gest.match(/getBoardScale\(\)/g) || []).length} reads`);
-ok('S3 the camera: Ctrl/Cmd+wheel is taken (passive: false, preventDefault), + = - _ 0, the two-finger pinch, off under the Stack, the frame\'s height held, the scale put back to 1 on the way out', S.s3(cam));
+ok('S3 the camera: Ctrl/Cmd+wheel is taken (passive: false, preventDefault), + = - _ 0, the two-finger pinch, off under the Stack, the scale put back to 1 on the way out', S.s3(cam));
 ok('S4 nothing saved: no storage in the camera or the store; the only word is the existing flux3ReadZoom key', S.s4(cam, zoomMod, schema));
 ok('S5 the hairline rule: the node brackets are widened below a half so they are drawn 1 px at least (--f3-zoom)', S.s5(css));
 
@@ -118,10 +118,10 @@ ok('MUT gesture divisor put back to the page width: lands and S2 goes RED', (() 
 ok('MUT canvas handle divisor dropped: lands and S2 goes RED', (() => { const e2 = editor.replace('const dx = (e.clientX - start.x) / zs;', 'const dx = (e.clientX - start.x);'); return e2 !== editor && !S.s2(gest, e2); })());
 ok('MUT preventDefault removed: lands and S3 goes RED', (() => { const c2 = cam.replace(/(if \(!\(e\.ctrlKey \|\| e\.metaKey\)\) return;[^\n]*\n)\s*e\.preventDefault\(\);/, '$1'); return c2 !== cam && !S.s3(c2); })());
 ok('MUT wheel listener made passive: lands and S3 goes RED', (() => { const c2 = cam.replace("wrap.addEventListener('wheel', onWheel, { passive: false })", "wrap.addEventListener('wheel', onWheel, { passive: true })"); return c2 !== cam && !S.s3(c2); })());
-ok('MUT frame height not held: lands and S3 goes RED', (() => { const c2 = cam.replace('wrap.style.height = `${frozenH}px`;', ''); return c2 !== cam && !S.s3(c2); })());
+ok('MUT the camera sets a fractional hairline (1 / scale, not whole pixels): lands and S3 goes RED', (() => { const c2 = cam.replace('Math.max(1, Math.ceil(1 / s))', '(1 / s)'); return c2 !== cam && !S.s3(c2); })());
 ok('MUT zoom left on under the Stack: lands and S3 goes RED', (() => { const c2 = cam.replace('if (!active) setBoardScale(1);', ''); return c2 !== cam && !S.s3(c2); })());
-ok('MUT a storage write added: lands and S4 goes RED', (() => { const c2 = cam + '\nlocalStorage.setItem("z", "1");\n'; return !S.s4(c2, zoomMod, schema); })());
-ok('MUT bracket rule removed: lands and S5 goes RED', (() => { const css2 = css.replace(/:root\[data-flux3\]\[data-theme='flux'\] \.flux3-node::after\{ border-width:max\(2px, calc\(1px \/ var\(--f3-zoom, 1\)\)\); \}\n/, ''); return css2 !== css && !S.s5(css2); })());
+ok('MUT a storage write added: lands and S4 goes RED', (() => { const c2 = `${cam}\nlocalStorage.setItem("z", "1");\n`; return !S.s4(c2, zoomMod, schema); })());
+ok('MUT bracket rule removed: lands and S5 goes RED', (() => { const css2 = css.replace(/:root\[data-flux3\]\[data-theme='flux'\] \.flux3-node::after\{ border-width:max\(2px, var\(--f3-hair, 2px\)\); \}\n/, ''); return css2 !== css && !S.s5(css2); })());
 
 fs.rmSync(tmp, { recursive: true, force: true });
 const failed = results.filter((r) => !r.pass).length;

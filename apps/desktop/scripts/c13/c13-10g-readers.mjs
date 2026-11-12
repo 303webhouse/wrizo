@@ -39,7 +39,7 @@ const LF = (s) => s.replace(/\r\n?/g, '\n');
 
 // the readers, by how they read the module's text (each audited by hand at 10g; see docs/cleanup/c13-10g-notes.md)
 const JOIN = ['harness/board-click-create.mjs', 'harness/card-resize-axis.mjs', 'harness/connector-a.mjs', 'harness/deck-rows-logic.mjs',
-  'harness/flux-v2.mjs', 'harness/guided-add-scenes.mjs', 'harness/guided-w1.mjs', 'harness/guided-w3.mjs', 'harness/guided-w5.mjs',
+  'harness/flux-v2.mjs', 'harness/flux-zoom1-logic.mjs', 'harness/guided-add-scenes.mjs', 'harness/guided-w1.mjs', 'harness/guided-w3.mjs', 'harness/guided-w5.mjs',
   'harness/item207-core.mjs', 'harness/logout-flush.mjs', 'harness/machina-step-source.mjs', 'harness/page-links.mjs',
   'harness/sized-by-hand-logic.mjs', 'harness/theme-fonts-source.mjs', 'harness/walk-open-select.mjs', 'item138-silhouette-proof.mjs',
   'item163-drawer-line-proof.mjs', 'harness/big-projects-1a.mjs',

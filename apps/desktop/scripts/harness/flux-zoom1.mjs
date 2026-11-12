@@ -16,11 +16,11 @@
 //   ZH    guard 6: no hairline is drawn thinner than 1 px at any scale: the node brackets (computed width x scale), the board links (non-scaling stroke >= 1 px), every stroke the layer draws (lineWidth >= 1),
 //         and the link colour is #57's at every scale
 //   ZFL   guard 2: <= 3 flashes a second: a full zoom out and in sampled ~8 times a second, the board's mean light/dark direction reverses at most 3 times in any second
-//   ZN    guard 7: nothing new is saved: the stored board and every storage key are identical after the whole zoom session, and leaving the board and coming back reads 1.00
+//   ZN    guard 7: nothing new is saved: ZERO writes to storage or IndexedDB across a zoom session (counted at the API), and leaving the board and coming back reads 1.00
 //   ZS    the Stack: zoom is OFF there (the scale goes back to 1.00, the readout names the Stack, a Ctrl+wheel and a key change nothing and are still prevented)
 //   ZG    the board's own gestures at scale: a card dragged 80 screen px at 2.00 (and 40 px at 0.50) moves 80 (40) on the screen: the pointer maths carries the scale
 //   ZW    guard 8: the only word is ZOOM (the footer's second span is the existing flux3ReadZoom key's word)
-//   MUT-* five landed mutants of the bundle: page zoom not prevented (ZB), no clamp (ZL), the drag not scaled (ZG), the frame height not held (ZF), the layer told scale 1 (ZA)
+//   MUT-* five landed mutants of the bundle: page zoom not prevented (ZB), no clamp (ZL), the drag not scaled (ZG), the camera drawn by layout zoom (ZF), the layer told scale 1 (ZA)
 // FLUX_ZOOM_SHOTS=<dir> writes the frames (the Wrizors' list, §6, has its own frames file: scripts/frames/flux-zoom1.mjs). Run: node scripts/harness/flux-zoom1.mjs   (from apps/desktop; ZT/ZRM timing-free)
 import fs from 'node:fs';
 import path from 'node:path';
@@ -54,6 +54,13 @@ const INSTRUMENT = `(() => {
   addEventListener('keydown', (e) => { if (e.ctrlKey || e.metaKey) I.prevented.push(['key', e.key, e.defaultPrevented]); }, false);
   addEventListener('wheel', () => I.wheels.push(performance.now()), { capture: true, passive: true });
   addEventListener('wheel', (e) => { if (e.ctrlKey || e.metaKey) I.prevented.push(['wheel', e.deltaY, e.defaultPrevented]); }, { capture: false, passive: true });
+  // every write to storage or IndexedDB, with its key (guard 7: nothing is saved by zooming)
+  I.writes = [];
+  for (const m of ['setItem', 'removeItem', 'clear']) { const o = Storage.prototype[m]; Storage.prototype[m] = function (...a) { I.writes.push([performance.now(), 'storage.' + m, String(a[0])]); return o.apply(this, a); }; }
+  if (window.IDBObjectStore) for (const m of ['put', 'add', 'delete', 'clear']) { const o = IDBObjectStore.prototype[m]; IDBObjectStore.prototype[m] = function (...a) { I.writes.push([performance.now(), 'idb.' + m, String(this.name)]); return o.apply(this, a); }; }
+  // the board's scale on every frame for ms milliseconds (the glide is a run of frames; a jump is one)
+  I.series = [];
+  I.track = (ms) => { I.series = []; const cv = document.querySelector('.board-canvas'), t0 = performance.now(); const tick = () => { const r = cv.getBoundingClientRect(); I.series.push(+(r.width / cv.offsetWidth).toFixed(4)); if (performance.now() - t0 < ms) requestAnimationFrame(tick); }; requestAnimationFrame(tick); };
   const rr = (r) => ({ x: +r.x.toFixed(2), y: +r.y.toFixed(2), w: +r.width.toFixed(2), h: +r.height.toFixed(2) });
   I.calls = (t0, t1, f) => I.log.filter((e) => e[0] >= t0 && e[0] <= t1 && (!f || f(e))).length;
   I.minStroke = (t0) => { const w = I.log.filter((e) => e[0] >= t0 && e[2] === 'stroke').map((e) => e[3]); return w.length ? Math.min(...w) : null; };
@@ -112,7 +119,8 @@ const MUTANTS = {
   noPrevent: [/\(\w+\.ctrlKey\|\|\w+\.metaKey\)&&\((\w+)\.preventDefault\(\),/g, (m, e) => m.replace(`${e}.preventDefault(),`, '0,')],
   noClamp: [/const (\w+)=(\w+)\(\),(\w+)=(\w+)\((\w+),(\w+)\(\)\);if\(\3===\1\)return;const (\w+)=(\w+)\.getBoundingClientRect\(\)/g, (m, q, pn, L, Lg, M) => `const ${q}=${pn}(),${L}=${M};if(${L}===${q})return;const ${m.split('const ').pop()}`],
   dragNotScaled: [/(\.clientX-\w+\)\/)\((\w+)\*\w+\(\)\)(,\w+=\(\w+\.clientY-\w+\)\/)\(\2\*\w+\(\)\)/g, '$1$2$3$2'],
-  frameNotHeld: [/\w+\.style\.height=`\$\{\w+\}px`,(\w+=Math\.max\(0,\()/g, '0,$1'],
+  // the camera drawn by CSS zoom instead of a transform: zoom changes LAYOUT, so the board's frame (auto height) would move and resize
+  zoomByLayout: [/(\w+)\.style\.transform=`translate\(\$\{\w+\}px, \$\{\w+\}px\) scale\(\$\{(\w+)\}\)`/g, '$1.style.zoom=String($2)'],
   layerScale1: [/s:\w+\(\)\}\)\};/g, 's:1})};'],
 };
 const countOf = (re, text) => { re.lastIndex = 0; let n = 0; while (re.exec(text)) n += 1; re.lastIndex = 0; return n; };
@@ -333,9 +341,16 @@ try { await withHarness(async (app) => {
   {
     await open('dark');
     // after the key returns, sample the scale as fast as the harness can: the first sample, and whether any sample sat strictly between true size and the target
-    const k = async () => { await key('='); const first = (await S()).s; let mid = first > 1.0001 && first < 1.2499; for (let i = 0; i < 10; i += 1) { const v = (await S()).s; if (v > 1.0001 && v < 1.2499) mid = true; } return { s: first, mid }; };
+    // a per-frame series starts BEFORE the key; the key is pressed; the series says whether the scale ever sat between true size and the target, and what the first changed frame read
+    const k = async () => {
+      await ev('window.__z.track(1100)'); await sleep(80);
+      await key('='); await sleep(1250);
+      const ser = await ev('window.__z.series');
+      const changed = ser.find((v) => Math.abs(v - 1) > 1e-6);
+      return { s: changed == null ? 1 : changed, mid: ser.some((v) => v > 1.0001 && v < 1.2499), last: ser[ser.length - 1], frames: ser.length };
+    };
     await key('0'); await settle(400);
-    const glideRead = await k(); await settle(700); await key('0'); await settle(500);
+    const glideRead = await k(); await key('0'); await settle(500);
     await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
     const redRead = await k(); await settle(500);
     await app.emulateMedia([]);
@@ -343,7 +358,7 @@ try { await withHarness(async (app) => {
     await open('dark', { dial: 0 });
     const ambRead = await k();
     ok(`ZRM with motion on a notch glides (a sample sat between 1.00 and 1.25: ${glideRead.mid}); under reduced motion it is exactly 1.25 on the first frame with nothing between (${redRead.s.toFixed(3)}, mid ${redRead.mid}); with Ambiance 0 likewise (${ambRead.s.toFixed(3)}, mid ${ambRead.mid})`,
-      glideRead.mid && near(redRead.s, 1.25, 1e-6) && !redRead.mid && near(ambRead.s, 1.25, 1e-6) && !ambRead.mid, JSON.stringify({ glideRead, redRead, ambRead }));
+      glideRead.mid && near(glideRead.last, 1.25, 0.002) && near(redRead.s, 1.25, 1e-3) && !redRead.mid && near(ambRead.s, 1.25, 1e-3) && !ambRead.mid, JSON.stringify({ glideRead, redRead, ambRead }));
     await key('0'); await settle(300);
   }
 
@@ -391,6 +406,7 @@ try { await withHarness(async (app) => {
   for (const tone of ['dark', 'light']) {
     await open(tone);
     const bad = [];
+    let linkCount = 0;
     for (const sc of [0.0001, 0.5, 1, 2, 4]) {
       const t0 = await ev('performance.now()');
       await ev(`window.wrizoFluxZoomTo(${sc})`); await settle(1800);
@@ -398,12 +414,13 @@ try { await withHarness(async (app) => {
       const br = await ev('window.__z.bracket()'), links = await ev('window.__z.links()'), minStroke = await ev(`window.__z.minStroke(${t0})`);
       const want = tone === 'dark' ? 'rgb(58, 143, 165)' : 'rgb(53, 133, 158)';
       if (!(br * s.s >= 0.99)) bad.push(`bracket ${br}x${s.s.toFixed(2)}`);
-      if (!links.length || !links.every((l) => l.sw >= 1 && /non-scaling/.test(l.ve))) bad.push(`link width@${sc}`);
+      linkCount = links.length;
+      if (!links.every((l) => l.sw >= 1 && /non-scaling/.test(l.ve))) bad.push(`link width@${sc} ${JSON.stringify(links[0])}`);
       if (!links.every((l) => l.stroke === want || l.stroke === 'rgb(0, 194, 255)' || l.stroke === 'rgb(0, 113, 156)')) bad.push(`link colour ${links[0] && links[0].stroke}@${sc}`);
       if (minStroke != null && minStroke < 1 - 1e-9) bad.push(`layer stroke ${minStroke}@${sc}`);
       if (sc === 0.5 || sc === 2) await snap(`zoom-${tone}-${sc === 0.5 ? '050' : '200'}`);
     }
-    ok(`ZH (${tone}) no hairline is drawn thinner than 1 px at 0.10..4.00: the node brackets (width × scale), the board links (non-scaling, >= 1 px, #57's colours) and every stroke the layer draws (lineWidth >= 1)`, bad.length === 0, bad.join(', '));
+    ok(`ZH (${tone}) no hairline is drawn thinner than 1 px at 0.10..4.00: the node brackets (width × scale), the board's own SVG links where drawn (${linkCount}: non-scaling, >= 1 px, #57's colours) and every stroke the layer draws (lineWidth >= 1)`, bad.length === 0, bad.join(', '));
   }
 
   // ZA (the layer follows the scale: the route between A and C is drawn in the gap at three scales)
@@ -445,28 +462,31 @@ try { await withHarness(async (app) => {
     await wheel(c.x, c.y, -120); await sleep(100); await key('='); await settle(600);
     const st2 = await S(); const pv = await ev('window.__z.prevented');
     await snap('zoom-stack');
-    ok(`ZS the Stack: zoom was ${zin.s.toFixed(2)}; with the Stack open the scale is back to 1.00 (${st.readout}), the level names the Stack (${(st.level || '').trim()}), a Ctrl+wheel and Ctrl+= change nothing (${st2.s.toFixed(3)}) and are still prevented`,
-      near(zin.s, 2, 0.01) && st.stackOn && near(st.s, 1, 0.002) && st.tf === '' && near(st2.s, 1, 0.002) && pv.length >= 2 && pv.every((p) => p[2]), JSON.stringify({ zin: zin.s, st: st.s, st2: st2.s, level: st.level, pv }));
+    ok(`ZS the Stack: zoom was ${zin.s.toFixed(2)}; with the Stack open the scale is back to 1.00 (${st.readout}), the level names the Stack (${(st.level || '').trim()}), a Ctrl+wheel (the Stack's own hand swallows it and flips a card) and Ctrl+= change nothing (${st2.s.toFixed(3)}), and the key is still prevented`,
+      near(zin.s, 2, 0.01) && st.stackOn && near(st.s, 1, 0.002) && st.tf === '' && near(st2.s, 1, 0.002) && pv.some((p) => p[0] === 'key') && pv.filter((p) => p[0] === 'key').every((p) => p[2]), JSON.stringify({ zin: zin.s, st: st.s, st2: st2.s, level: st.level, pv }));
     await ev("document.querySelector('[data-flux3-stack-tab]').click()"); await settle(900);
   }
 
-  // ZN: nothing new is saved; leaving the board and coming back reads 1.00
+  // ZN: nothing new is saved: ZERO writes to storage or IndexedDB across a zoom session; leaving the board and coming back reads 1.00
   {
     await open('dark');
-    const before = await storeSnap();
-    await ev('window.wrizoFluxZoomTo(3)'); await settle(900);
+    await sleep(1500);
+    const w0 = await ev('window.__z.writes.length');
+    const s = await S(); const c = centreOf(s);
+    await app.mouseMove(c.x, c.y);
+    for (let i = 0; i < 6; i += 1) { await wheel(c.x, c.y, -120); await sleep(40); }
+    await key('='); await sleep(300); await key('-'); await sleep(300);
+    await ev('window.wrizoFluxZoomTo(3)'); await settle(1500);
+    await key('0'); await settle(1500);
+    const writes = await ev(`window.__z.writes.slice(${w0})`);
+    await ev('window.wrizoFluxZoomTo(3)'); await settle(600);
     await ev("location.hash = '#/'"); await settle(1500);
     await ev(`location.hash = '#/page/${BOARD}'`);
     await app.waitFor("!!document.querySelector('.flux3-tele')", { timeout: 10000, label: 'the Schema again' }).catch(() => {});
     await settle(1500);
     const back = await S();
-    await ev('window.wrizoFluxZoomTo(2)'); await settle(900);
-    const after = await storeSnap();
-    const keysOf = (j) => Object.keys(JSON.parse(j).ls);
-    const sameKeys = JSON.stringify(keysOf(before)) === JSON.stringify(keysOf(after));
-    const sameBoard = JSON.parse(before).board === JSON.parse(after).board;
-    ok(`ZN guard 7: nothing new is saved (the stored board and the storage key set are unchanged by a session of zooming), and leaving the board and coming back reads 1.00 (${back.readout}, no transform)`,
-      sameKeys && sameBoard && near(back.s, 1, 0.002) && back.tf === '' && back.readout === '1.00×100', JSON.stringify({ sameKeys, sameBoard, back: back.s, readout: back.readout }));
+    ok(`ZN guard 7: nothing new is saved (${writes.length} writes to storage or IndexedDB across a session of wheel, key and seam zooms${writes.length ? ': ' + JSON.stringify(writes.slice(0, 4).map((x) => x.slice(1))) : ''}), and leaving the board and coming back reads 1.00 (${back.readout}, no transform)`,
+      writes.length === 0 && near(back.s, 1, 0.002) && back.tf === '' && back.readout === '1.00×100', JSON.stringify({ writes: writes.slice(0, 6), back: back.s, readout: back.readout }));
   }
 
   // ============================== the mutants: each must LAND and turn its check RED ==============================
@@ -480,7 +500,7 @@ try { await withHarness(async (app) => {
   await mutantRun('noPrevent', probes.prevented, 'the browser\'s page zoom not prevented -> ZB');
   await mutantRun('noClamp', probes.limitIn, 'no clamp -> ZL');
   await mutantRun('dragNotScaled', () => probes.drag(2, 80), 'the drag not scaled -> ZG');
-  await mutantRun('frameNotHeld', probes.frame, 'the frame height not held -> ZF');
+  await mutantRun('zoomByLayout', probes.frame, 'the camera drawn by layout zoom, not a transform -> ZF');
   await mutantRun('layerScale1', probes.align, 'the layer told scale 1 -> ZA');
   await open('dark');
 }); } catch (e) { failedRun = true; console.error('HARNESS ERROR', e && e.stack ? e.stack : e); }

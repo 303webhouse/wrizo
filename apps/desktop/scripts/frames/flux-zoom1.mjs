@@ -36,6 +36,8 @@ const seed = async (app) => {
 };
 const centre = (app) => app.evalJs("(() => { const r = document.querySelector('.board-canvas-wrap').getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
 const zoomTo = async (app, s) => { await app.evalJs(`window.wrizoFluxZoomTo(${s})`); await sleep(1400); };   // the camera paints at once; the ground resumes ~0.6 s after
+// scroll the frame so a card sits in its middle (a scroll is a pan, as today), then wait for the ground to settle
+const reveal = async (app, id) => { await app.evalJs(`(() => { const wrap = document.querySelector('.board-canvas-wrap'), e = document.querySelector('.board-box[data-box-id="${id}"]'); if (!wrap || !e) return; const r = e.getBoundingClientRect(), w = wrap.getBoundingClientRect(); wrap.scrollLeft += (r.left + r.width / 2) - (w.left + wrap.clientWidth / 2); wrap.scrollTop += (r.top + r.height / 2) - (w.top + wrap.clientHeight / 2); })()`); await sleep(1500); };
 const stood = (app, screen) => app.evalJs(`(() => {
   const cv = document.querySelector('.board-canvas'), wrap = document.querySelector('.board-canvas-wrap');
   const cr = cv && cv.getBoundingClientRect(), wr = wrap && wrap.getBoundingClientRect();
@@ -48,8 +50,8 @@ export default {
   'zoom-outer': async (app) => { await seed(app); await zoomTo(app, 0.0001); await stood(app, 'zoom-outer'); },
   'zoom-050': async (app) => { await seed(app); await zoomTo(app, 0.5); await stood(app, 'zoom-050'); },
   'zoom-100': async (app) => { await seed(app); await stood(app, 'zoom-100'); },
-  'zoom-200': async (app) => { await seed(app); await zoomTo(app, 2); await stood(app, 'zoom-200'); },
-  'zoom-400': async (app) => { await seed(app); await zoomTo(app, 4); await stood(app, 'zoom-400'); },
+  'zoom-200': async (app) => { await seed(app); await zoomTo(app, 2); await reveal(app, 'f3-d'); await stood(app, 'zoom-200'); },
+  'zoom-400': async (app) => { await seed(app); await zoomTo(app, 4); await reveal(app, 'f3-d'); await stood(app, 'zoom-400'); },
   'zoom-mid': async (app) => {
     await seed(app);
     const c = await centre(app);
