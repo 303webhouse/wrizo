@@ -20,6 +20,8 @@ await withHarness(async (app) => {
   await d.boot();
   const ev = d.ev;
   const stored = (id) => ev(`(() => { try { const rows = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]'); const r = rows.find((x) => x.id === ${JSON.stringify(id)}); return r ? r.text : null; } catch (e) { return 'ERR ' + e.message; } })()`);
+  // the page saves a moment after the last change: look until the saved text is what it should be (or 14 s), so a slow save is not read as a wrong one
+  const savedBecomes = async (id, want) => { const t0 = Date.now(); let v = await stored(id); while (v !== want && Date.now() - t0 < 14000) { await sleep(400); v = await stored(id); } return v; };
   const readout = () => ev(`(() => { const q = document.querySelector('.mode-pmeta, .machina-run, .flux-readout-head'); return q ? q.textContent.trim() : null; })()`);
   const hasGuardInDom = () => ev(`!!document.querySelector('.md-eof-guard')`);
   const copyAll = async () => {
@@ -38,7 +40,7 @@ await withHarness(async (app) => {
 
   await d.key('Enter'); await d.frames(); await sleep(1800);
   console.log(`NOTE ${TAG} after Enter: guard in the page's DOM = ${await hasGuardInDom()}`);
-  const s1 = await stored(id), r1 = await readout(), c1 = await copyAll();
+  const s1 = await savedBecomes(id, 'Hello world' + NL), r1 = await readout(), c1 = await copyAll();
   console.log(`READOUT ${TAG} after-Enter ${JSON.stringify(r1)}`);
   verdict(typeof s1 === 'string' && !holds(s1) && s1 === 'Hello world' + NL, `(1) saved text after Enter is exactly "Hello world" + newline, no guard: ${JSON.stringify(s1)}`);
   verdict(typeof r1 === 'string' && !holds(r1), `(2) the count readout after Enter holds no guard: ${JSON.stringify(r1)}`);
@@ -48,7 +50,7 @@ await withHarness(async (app) => {
   await d.key('End', { ctrl: true }); await sleep(200);
   await d.type('x'); await d.frames(); await sleep(1800);
   console.log(`NOTE ${TAG} after the letter: guard in the page's DOM = ${await hasGuardInDom()}`);
-  const s2 = await stored(id), r2 = await readout(), c2 = await copyAll();
+  const s2 = await savedBecomes(id, 'Hello world' + NL + 'x'), r2 = await readout(), c2 = await copyAll();
   console.log(`READOUT ${TAG} after-letter ${JSON.stringify(r2)}`);
   verdict(typeof s2 === 'string' && !holds(s2) && s2 === 'Hello world' + NL + 'x', `(1) saved text after the next letter is exactly "Hello world", newline, x, no guard: ${JSON.stringify(s2)}`);
   verdict(typeof r2 === 'string' && !holds(r2), `(2) the count readout after the letter holds no guard: ${JSON.stringify(r2)}`);
