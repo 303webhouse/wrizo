@@ -30,6 +30,13 @@
 // `.click()` on a real <input> — no special fidelity claim beyond a click,
 // same standing discipline as B1's own Restore button.
 import { withHarness } from '../runtime-verify.mjs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { srcText } from '../global-css.mjs';
+
+// #13 step 12c: the narrow rail's roster, read against DeskRail's own source (the Library stub is expected only while the source lists it)
+const LIB_SLOT_12C = /key: 'library'/.test(srcText(path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'src'), 'components/DeskRail.tsx'));
+const roster12c = (labels, lib) => JSON.stringify(labels) === JSON.stringify(lib ? ['Catch', 'Journal', 'Drawers', 'Library'] : ['Catch', 'Journal', 'Drawers']);
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -1045,9 +1052,16 @@ await withHarness(async (app) => {
   // ok(`S8 @ ${LEGACY_W}px: DeskRail's own roster is BYTE-IDENTICAL — Catch, Journal, Shelf, Drawers, Library — completely untouched by this ticket`,
   //   JSON.stringify(legacyFloorShapeB2.railLabels) === JSON.stringify(['Catch', 'Journal', 'Shelf', 'Drawers', 'Library']),
   //   JSON.stringify(legacyFloorShapeB2.railLabels));
-  ok(`S8 @ ${LEGACY_W}px [big-projects-1a successor]: DeskRail's roster is Catch, Journal, Drawers, Library - the Shelf item is gone`,
-    JSON.stringify(legacyFloorShapeB2.railLabels) === JSON.stringify(['Catch', 'Journal', 'Drawers', 'Library']),
-    JSON.stringify(legacyFloorShapeB2.railLabels));
+  // ---- PARKED - SUPERSEDED by #13 step 12c (Nick's dormant answers, Oct 29: the narrow rail's Library slot is deleted): the roster loses its greyed Library stub.
+  // The big-projects-1a successor, kept VERBATIM below and no longer run; the live successor and its mutant follow.
+  //
+  // ok(`S8 @ ${LEGACY_W}px [big-projects-1a successor]: DeskRail's roster is Catch, Journal, Drawers, Library - the Shelf item is gone`,
+  //   JSON.stringify(legacyFloorShapeB2.railLabels) === JSON.stringify(['Catch', 'Journal', 'Drawers', 'Library']),
+  //   JSON.stringify(legacyFloorShapeB2.railLabels));
+  ok(`S8 @ ${LEGACY_W}px [c13-12c successor]: DeskRail's roster is Catch, Journal, Drawers - the Library stub stands only while DeskRail's source still lists it (before the delete), never after - the Shelf item is gone`,
+    roster12c(legacyFloorShapeB2.railLabels, LIB_SLOT_12C), JSON.stringify({ labels: legacyFloorShapeB2.railLabels, libSlotInSource: LIB_SLOT_12C }));
+  ok('S8 [c13-12c successor mutant]: the roster reader is red on a Library stub the source no longer lists, on a missing Drawers item and on a Shelf item, and green on Catch, Journal, Drawers',
+    !roster12c(['Catch', 'Journal', 'Drawers', 'Library'], false) && !roster12c(['Catch', 'Journal'], false) && !roster12c(['Catch', 'Journal', 'Shelf', 'Drawers'], false) && roster12c(['Catch', 'Journal', 'Drawers'], false), '');
 
   // DeskRail's own 'shelf' nav item still bridges correctly at the legacy
   // width too (it's a plain navigate('/shelf') call, untouched code).
