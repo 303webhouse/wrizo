@@ -178,18 +178,29 @@ ok('M5: CAST, run for real - default cool; neutral under Machina reflects data-c
 // M6 / M7 / M8 / M9 - the lexicons, run for real
 const { mod: L } = await load([], {});
 const D = (k) => L.deskLexicon.deskTerm(k, 'machina');
-const locked = { modeFreeWrite: 'Sprint', modeDraft: 'Build', modeRevise: 'Edit', modePublish: 'Finalize', pagePlanDoor: 'Plan', drawerPage: 'Files', stripPlan: 'Plans', drawerPlaceJournal: 'Notebook',
+// ---- PARKED - SUPERSEDED by Machina's File to Doc word (Nick, Nov 11; the Wrizors' list, Fable): the original, verbatim, no longer runs; its successor follows.
+// const locked = { modeFreeWrite: 'Sprint', modeDraft: 'Build', modeRevise: 'Edit', modePublish: 'Finalize', pagePlanDoor: 'Plan', drawerPage: 'Files', stripPlan: 'Plans', drawerPlaceJournal: 'Notebook',
+//   stripSettings: 'Controls', footSettings: 'Controls', stripChangeTheme: 'Theme', cascadeThemeTitle: 'Theme', tutorTabTutor: 'Consultant', drawerLinks: 'Assets', sectionsHeading: 'Parts',
+//   sectionsPresets: 'Forms', railTemplates: 'Forms', progressStyleRhizome: 'Run', placeRootName: 'Inbox', boardPageDoor: 'Files', graftKnobTip: 'Drag to asset' };
+const locked = { modeFreeWrite: 'Sprint', modeDraft: 'Build', modeRevise: 'Edit', modePublish: 'Finalize', pagePlanDoor: 'Plan', drawerPage: 'Docs', stripPlan: 'Plans', drawerPlaceJournal: 'Notebook',
   stripSettings: 'Controls', footSettings: 'Controls', stripChangeTheme: 'Theme', cascadeThemeTitle: 'Theme', tutorTabTutor: 'Consultant', drawerLinks: 'Assets', sectionsHeading: 'Parts',
-  sectionsPresets: 'Forms', railTemplates: 'Forms', progressStyleRhizome: 'Run', placeRootName: 'Inbox', boardPageDoor: 'Files', graftKnobTip: 'Drag to asset' };
+  sectionsPresets: 'Forms', railTemplates: 'Forms', progressStyleRhizome: 'Run', placeRootName: 'Inbox', boardPageDoor: 'Docs', graftKnobTip: 'Drag to asset' };
 const wrong = Object.entries(locked).filter(([k, v]) => D(k) !== v).map(([k, v]) => `${k}: ${D(k)} != ${v}`);
-ok('M6: the locked words resolve under Machina (strip Sprint / Build / Edit / Finalize and the Plan door kept as "Plan"; Files, Plans, Notebook, Controls, Theme, Consultant, Assets, Parts, Forms, Run, Inbox)', wrong.length === 0, JSON.stringify(wrong));
+// ---- PARKED - SUPERSEDED by Machina's File to Doc word (Nick, Nov 11; the Wrizors' list, Fable): the original, verbatim, no longer runs; its successor follows.
+// ok('M6: the locked words resolve under Machina (strip Sprint / Build / Edit / Finalize and the Plan door kept as "Plan"; Files, Plans, Notebook, Controls, Theme, Consultant, Assets, Parts, Forms, Run, Inbox)', wrong.length === 0, JSON.stringify(wrong));
+ok('M6 [doc successor]: the locked words resolve under Machina (strip Sprint / Build / Edit / Finalize and the Plan door kept as "Plan"; Docs, Plans, Notebook, Controls, Theme, Consultant, Assets, Parts, Forms, Run, Inbox)', wrong.length === 0, JSON.stringify(wrong));
 ok('M6: ...and the same keys under Arbor are NOT these words (the override is Machina\'s alone, not a canonical edit)',
   L.deskLexicon.deskTerm('modeDraft', 'plateau') !== 'Build' && L.deskLexicon.deskTerm('stripPlan', 'plateau') !== 'Plans' && L.deskLexicon.deskTerm('tutorTabTutor', 'plateau') !== 'Consultant', '');
 const T = (k) => L.themeLexicon.formsFor('machina', k);
-const tl = { page: ['File', 'Files'], drawer: ['Project', 'Projects'], binder: ['Folder', 'Folders'], box: ['Block', 'Blocks'], board: ['Plan', 'Plans'], journal: ['Notebook', 'Notebooks'], milestone: ['Deliverable', 'Deliverables'],
+// ---- PARKED - SUPERSEDED by Machina's File to Doc word (Nick, Nov 11; the Wrizors' list, Fable): the original, verbatim, no longer runs; its successor follows.
+// const tl = { page: ['File', 'Files'], drawer: ['Project', 'Projects'], binder: ['Folder', 'Folders'], box: ['Block', 'Blocks'], board: ['Plan', 'Plans'], journal: ['Notebook', 'Notebooks'], milestone: ['Deliverable', 'Deliverables'],
+//   freewrite: ['Sprint', 'Sprints'], home: ['HQ', 'HQ'], voicewall: ['Compliance', 'Compliance'], publish: ['Finalize', 'Finalize'] };
+const tl = { page: ['Doc', 'Docs'], drawer: ['Project', 'Projects'], binder: ['Folder', 'Folders'], box: ['Block', 'Blocks'], board: ['Plan', 'Plans'], journal: ['Notebook', 'Notebooks'], milestone: ['Deliverable', 'Deliverables'],
   freewrite: ['Sprint', 'Sprints'], home: ['HQ', 'HQ'], voicewall: ['Compliance', 'Compliance'], publish: ['Finalize', 'Finalize'] };
 const tlWrong = Object.entries(tl).filter(([k, [one, many]]) => T(k).one !== one || T(k).many !== many).map(([k]) => k);
-ok('M7: themeLexicon under Machina - Project / Folder / File / Plan / Block / Notebook / Deliverable / Sprint / HQ / Compliance / Finalize', tlWrong.length === 0, JSON.stringify(tlWrong));
+// ---- PARKED - SUPERSEDED by Machina's File to Doc word (Nick, Nov 11; the Wrizors' list, Fable): the original, verbatim, no longer runs; its successor follows.
+// ok('M7: themeLexicon under Machina - Project / Folder / File / Plan / Block / Notebook / Deliverable / Sprint / HQ / Compliance / Finalize', tlWrong.length === 0, JSON.stringify(tlWrong));
+ok('M7 [doc successor]: themeLexicon under Machina - Project / Folder / Doc / Plan / Block / Notebook / Deliverable / Sprint / HQ / Compliance / Finalize', tlWrong.length === 0, JSON.stringify(tlWrong));
 ok('M7: the Voice Wall chip reads COMPLIANCE (VoiceWallWhisper renders t(\'voicewall\').toUpperCase() + " ▪ PASTE BLOCKED")', L.themeLexicon.t('voicewall', 'machina').toUpperCase() === 'COMPLIANCE' && /\{t\('voicewall'\)\.toUpperCase\(\)\} ▪ PASTE BLOCKED/.test(src('components/VoiceWallWhisper.tsx')), '');
 ok('M7: \'notebook\' (a DIFFERENT concept from the journal) is left canonical - Machina\'s Notebook is the Journal word, and no word is invented for the other (hand-up item)', T('notebook').one === 'Notebook' && T('journal').one === 'Notebook', JSON.stringify([T('notebook'), T('journal')]));
 
@@ -198,11 +209,16 @@ const dsrc = src('store/deskLexicon.ts');
 const mStart = dsrc.indexOf('\n  machina: {');
 const mBlock = dsrc.slice(mStart, dsrc.indexOf('\n  },\n};', mStart));
 const mEntries = [...mBlock.matchAll(/^    ([A-Za-z0-9]+): '((?:[^'\\]|\\.)*)',/gm)].map((m) => [m[1], m[2]]);
-const LEAK = /\b(drawers?|boards?|pages?|journals?|grafts?|grafted|racks?|cartridges?|circuits?|nodes?|docs?|operator|tutor|links?|tracks?|sections?|sets?|presets?)\b/i;
+// ---- PARKED - SUPERSEDED by Machina's File to Doc word (Nick, Nov 11; the Wrizors' list, Fable): the original, verbatim, no longer runs; its successor follows.
+// const LEAK = /\b(drawers?|boards?|pages?|journals?|grafts?|grafted|racks?|cartridges?|circuits?|nodes?|docs?|operator|tutor|links?|tracks?|sections?|sets?|presets?)\b/i;
+const LEAK = /\b(drawers?|boards?|pages?|journals?|grafts?|grafted|racks?|cartridges?|circuits?|nodes?|operator|tutor|links?|tracks?|sections?|sets?|presets?)\b/i;
 // reviewed keep-list: strings where the word is the CORRECT Machina word or a plain-English use, not an Arbor/Flux noun
 const KEEP = new Set(['journalRouteEmptyDrawers', 'journalRoutePromoteDrawer', 'journalRouteSendToDrawer', 'switcherJournals']);
 const leaks = mEntries.filter(([k, v]) => !KEEP.has(k) && LEAK.test(v)).map(([k, v]) => `${k}: ${v}`);
-ok('M8: NO LEAK - no Machina desk string still names an Arbor or Flux noun (drawer / board / page / journal / graft / rack / cartridge / circuit / node / doc / operator / tutor / link / track / section / set / preset) outside a reviewed keep-list',
+// ---- PARKED - SUPERSEDED by Machina's File to Doc word (Nick, Nov 11; the Wrizors' list, Fable): the original, verbatim, no longer runs; its successor follows.
+// ok('M8: NO LEAK - no Machina desk string still names an Arbor or Flux noun (drawer / board / page / journal / graft / rack / cartridge / circuit / node / doc / operator / tutor / link / track / section / set / preset) outside a reviewed keep-list',
+//   mEntries.length > 90 && leaks.length === 0, JSON.stringify({ entries: mEntries.length, leaks }));
+ok('M8 [doc successor]: NO LEAK - no Machina desk string still names an Arbor or Flux noun (drawer / board / page / journal / graft / rack / cartridge / circuit / node / operator (Doc is the Machina page word now: no leak) / tutor / link / track / section / set / preset) outside a reviewed keep-list',
   mEntries.length > 90 && leaks.length === 0, JSON.stringify({ entries: mEntries.length, leaks }));
 // M9
 ok('M9: Workshop has NO Machina word - modeWorkshop is not overridden (the tab is hidden in every theme until it is built, Nick Oct 23)', !/^    modeWorkshop:/m.test(mBlock), '');
