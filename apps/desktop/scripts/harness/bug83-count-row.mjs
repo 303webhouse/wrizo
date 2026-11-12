@@ -3,6 +3,8 @@
 //   ROW-COLOUR  the label's computed colour is #9C9081 on live Arbor, in both Page tones (source-free)
 //   ROW-PIXELS  read from the DRAWN pixels of the label's own box (a 2x screenshot clipped to it): the desk it sits on (the box's commonest colour), the glyph's fullest pixel (the one
 //               farthest from the desk) = #9C9081 within 12 a channel, and the computed colour stands 4.5:1 or better against the drawn desk
+//               PARKED Nov 11 (the desk is grained: its commonest colour covered 10% of the box) -> ROW-PIXELS-B: the desk = the median of a ring just outside the label's box, proven flat
+//               (90%+ within 12 a channel); the glyph and contrast halves unchanged. MUT-ROW-OLD / MUT-ROW-LAW parked with it -> MUT-ROW-OLD-B / MUT-ROW-LAW-B on the new reader
 //   ROW-LIVE    the fixture is the live Arbor build: theme plateau, no ?arbor2 flag, the Page tone as asked, the label is the page's count row (framed or not, printed)
 //   ROW-SCOPE   the colour sits under [data-theme='plateau'] only: Flux and Machina still draw their own --text-low there (a probe row read live), and the source has one such rule, scoped
 //   MUT-ROW-OLD the OLD colour (#80766A, forced) turns the colour and the pixel readers RED in both tones        MUT-ROW-LAW the readers go RED on synthetic bad values
@@ -49,7 +51,15 @@ await withHarness(async (app) => {
         const deskKey = [...count.entries()].sort((a, b) => b[1] - a[1])[0][0]; const desk = deskKey.split(',').map(Number);
         let peak = desk, best = 1; for (let i = 0; i < D.length; i += 4) { const p = [D[i], D[i + 1], D[i + 2]]; const k = cr(p, desk); if (k > best) { best = k; peak = p; } }
         const m = /(\\d+(?:\\.\\d+)?),\\s*(\\d+(?:\\.\\d+)?),\\s*(\\d+(?:\\.\\d+)?)/.exec(${JSON.stringify(info.color)}); const comp = m ? [+m[1], +m[2], +m[3]] : null;
-        return { w: c.width, h: c.height, desk, deskShare: +(count.get(deskKey) / (D.length / 4)).toFixed(2), peak, peakContrast: +best.toFixed(2), computedContrast: comp ? +cr(comp, desk).toFixed(2) : null }; })()`);
+        // ROW-PIXELS-B's desk (Actions run 43154584284: the desk under the row is grained, so its commonest exact colour covered only 10% of the box): the per-channel MEDIAN of a ring, the clip's
+        // outer 2 CSS px, which lies outside the label's own box (the clip is that box plus 3 px); the ring is proven to be desk by its flatness (the share of it within 12 a channel of the median)
+        const W = c.width, H = c.height, sc = W / ${clip.width}, edge = Math.max(1, Math.round(2 * sc)); const ring = [];
+        for (let yy = 0; yy < H; yy += 1) for (let xx = 0; xx < W; xx += 1) if (xx < edge || yy < edge || xx >= W - edge || yy >= H - edge) { const i = (yy * W + xx) * 4; ring.push([D[i], D[i + 1], D[i + 2]]); }
+        const med = (k) => { const v = ring.map((p) => p[k]).sort((a, b) => a - b); return v[Math.floor(v.length / 2)]; }; const desk2 = [med(0), med(1), med(2)];
+        const ringFlat = ring.filter((p) => p.every((v, k) => Math.abs(v - desk2[k]) <= 12)).length / ring.length;   // 12: the grain's own spread; a glyph pixel sits 100+ away
+        let peak2 = desk2, best2 = 1; for (let i = 0; i < D.length; i += 4) { const p = [D[i], D[i + 1], D[i + 2]]; const k = cr(p, desk2); if (k > best2) { best2 = k; peak2 = p; } }
+        return { w: c.width, h: c.height, desk, deskShare: +(count.get(deskKey) / (D.length / 4)).toFixed(2), peak, peakContrast: +best.toFixed(2), computedContrast: comp ? +cr(comp, desk).toFixed(2) : null,
+          desk2, ringN: ring.length, ringFlat: +ringFlat.toFixed(2), peak2, peakContrast2: +best2.toFixed(2), computedContrast2: comp ? +cr(comp, desk2).toFixed(2) : null }; })()`);
       reads[`${tone}-${label}`] = { ...info, px };
     };
     await read('now');
@@ -73,25 +83,40 @@ const nums = (s) => (/(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)/.exe
 const near = (a, b, tol) => !!a && !!b && a.length === 3 && b.length === 3 && a.every((v, i) => Math.abs(v - b[i]) <= tol);
 const colourOk = (r) => !!r && !!r.color && near(nums(r.color), rgb(TARGET), 1);
 const pixelsOk = (r) => !!r && !!r.px && near(r.px.peak, rgb(TARGET), 12) && r.px.computedContrast >= 4.5 && r.px.deskShare >= 0.25;
+// ROW-PIXELS-B's reader: the desk is the ring's median and must be flat (90% of the ring within 12 a channel), the glyph's fullest pixel #9C9081 within 12, the computed colour 4.5:1+ on that desk
+const pixelsOk2 = (r) => !!r && !!r.px && near(r.px.peak2, rgb(TARGET), 12) && r.px.computedContrast2 >= 4.5 && r.px.ringFlat >= 0.9 && r.px.ringN > 0;
 const TONES = ['dark', 'light'];
 const cell = (t, s = 'now') => reads[`${t}-${s}`];
 const show = (t, s = 'now') => { const r = cell(t, s); return r && r.px ? `${t}${s === 'now' ? '' : ' ' + s}: "${r.text}" ${r.color} drew rgb(${r.px.peak}) on desk rgb(${r.px.desk}) = ${r.px.computedContrast}:1 (peak ${r.px.peakContrast}:1)` : `${t} ${s}: no reading`; };
+const show2 = (t, s = 'now') => { const r = cell(t, s); return r && r.px ? `${t}${s === 'now' ? '' : ' ' + s}: drew rgb(${r.px.peak2}) on ring desk rgb(${r.px.desk2}) (ring ${r.px.ringN} px, ${Math.round(100 * r.px.ringFlat)}% flat) = ${r.px.computedContrast2}:1 (peak ${r.px.peakContrast2}:1)` : `${t} ${s}: no reading`; };
+console.log('ROW-B readings: ' + TONES.map((t) => show2(t)).join(' | '));
+console.log('ROW-B mutant (old colour): ' + TONES.map((t) => show2(t, 'old')).join(' | '));
 console.log('ROW readings: ' + TONES.map((t) => show(t)).join(' | '));
 console.log('ROW mutant (old colour): ' + TONES.map((t) => show(t, 'old')).join(' | '));
 console.log('ROW scope: ' + JSON.stringify(scope));
 for (const t of TONES) {
   ok(`ROW-COLOUR ${t}: the count-row label's computed colour is ${TARGET}`, colourOk(cell(t)), JSON.stringify(cell(t) && { color: cell(t).color, text: cell(t).text }));
-  ok(`ROW-PIXELS ${t}: read from the drawn pixels of its own box, the glyph drew ${TARGET} (within 12 a channel) and stands 4.5:1 or better on the drawn desk (printed: ${cell(t) && cell(t).px ? cell(t).px.computedContrast + ':1' : 'n/a'})`, pixelsOk(cell(t)), JSON.stringify(cell(t)));
+  // PARKED (SUPERSEDED by ROW-PIXELS-B, Nov 11): an instrument fault, not the colour. Actions run 43154584284 (b3997146) drew the glyph rgb(160,146,127) (#9C9081 within 4) at 5.45:1, but the desk
+  // under the row is grained: its commonest exact colour covered 10% of the box, under this reader's 25% premise, so it went red on a sound page. Kept verbatim:
+  // ok(`ROW-PIXELS ${t}: read from the drawn pixels of its own box, the glyph drew ${TARGET} (within 12 a channel) and stands 4.5:1 or better on the drawn desk (printed: ${cell(t) && cell(t).px ? cell(t).px.computedContrast + ':1' : 'n/a'})`, pixelsOk(cell(t)), JSON.stringify(cell(t)));
+  ok(`ROW-PIXELS-B ${t}: read from the drawn pixels, the desk around the label (the ring's median, 90%+ of it within 12 a channel) and the glyph drew ${TARGET} (within 12 a channel), the label 4.5:1 or better on that desk (printed: ${cell(t) && cell(t).px ? cell(t).px.computedContrast2 + ':1' : 'n/a'})`, pixelsOk2(cell(t)), JSON.stringify(cell(t)));
 }
 ok('ROW-LIVE the fixture was the live Arbor build: theme plateau, no ?arbor2 flag, the Page tone as asked, the label is the count row ("<n> word(s)")', TONES.every((t) => { const r = cell(t); return r && r.theme === 'plateau' && r.arbor2 === false && !/arbor2/.test(r.search || '') && r.tone === t && /^\d+ words?$/.test((r.text || '').trim()); }), JSON.stringify(TONES.map((t) => cell(t) && { theme: cell(t).theme, tone: cell(t).tone, arbor2: cell(t).arbor2, text: cell(t).text, framed: cell(t).framed })));
 const CSS = fs.readFileSync(path.join(HERE, '..', '..', 'src', 'styles', '12-studio-chrome.css'), 'utf8');
 const rules = CSS.split('\n').filter((l) => /\.mode-pmeta\b/.test(l) && /9C9081/i.test(l));
 ok(`ROW-SCOPE the colour lives under [data-theme='plateau'] only: ${rules.length} rule, scoped; Flux and Machina draw their own --text-low there`, rules.length === 1 && /^:root\[data-theme='plateau'\] \.mode-pmeta\{/.test(rules[0].trim())
   && ['flux', 'machina'].every((th) => { const s = scope[th]; return s && s.theme === th && s.color === s.textLow && !near(nums(s.color), rgb(TARGET), 1); }), JSON.stringify({ rules: rules.map((l) => l.slice(0, 70)), scope }));
-ok(`MUT-ROW-OLD the colour and pixel readers go RED on the OLD colour (${OLD}, forced) in both tones`, TONES.every((t) => { const r = cell(t, 'old'); return r && r.px && !colourOk(r) && !pixelsOk(r); }), JSON.stringify(TONES.map((t) => show(t, 'old'))));
-ok('MUT-ROW-LAW the readers go RED on synthetic bad values: a glyph under 4.5:1, a wrong colour, a box that is not mostly desk; and GREEN on the good one',
-  !pixelsOk({ px: { peak: rgb(TARGET), computedContrast: 3.8, deskShare: 0.8 } }) && !pixelsOk({ px: { peak: rgb(OLD), computedContrast: 5.4, deskShare: 0.8 } }) && !pixelsOk({ px: { peak: rgb(TARGET), computedContrast: 5.4, deskShare: 0.1 } })
-  && !colourOk({ color: 'rgb(128, 118, 106)' }) && colourOk({ color: 'rgb(156, 144, 129)' }) && pixelsOk({ px: { peak: rgb(TARGET), computedContrast: 5.46, deskShare: 0.8 } }), '');
+// PARKED (SUPERSEDED by MUT-ROW-OLD-B and MUT-ROW-LAW-B, Nov 11): they proved the PARKED pixel reader, whose red on the old colour was partly its own desk premise (deskShare 0.1 on every read). Kept verbatim:
+// ok(`MUT-ROW-OLD the colour and pixel readers go RED on the OLD colour (${OLD}, forced) in both tones`, TONES.every((t) => { const r = cell(t, 'old'); return r && r.px && !colourOk(r) && !pixelsOk(r); }), JSON.stringify(TONES.map((t) => show(t, 'old'))));
+// ok('MUT-ROW-LAW the readers go RED on synthetic bad values: a glyph under 4.5:1, a wrong colour, a box that is not mostly desk; and GREEN on the good one',
+//   !pixelsOk({ px: { peak: rgb(TARGET), computedContrast: 3.8, deskShare: 0.8 } }) && !pixelsOk({ px: { peak: rgb(OLD), computedContrast: 5.4, deskShare: 0.8 } }) && !pixelsOk({ px: { peak: rgb(TARGET), computedContrast: 5.4, deskShare: 0.1 } })
+//   && !colourOk({ color: 'rgb(128, 118, 106)' }) && colourOk({ color: 'rgb(156, 144, 129)' }) && pixelsOk({ px: { peak: rgb(TARGET), computedContrast: 5.46, deskShare: 0.8 } }), '');
+// the successors: the old colour forced must turn BOTH live readers red, and the ring desk must be flat on that read too (so the red is the colour's, never the desk premise's)
+ok(`MUT-ROW-OLD-B the colour and pixel readers go RED on the OLD colour (${OLD}, forced) in both tones, on a desk the reader accepted (ring 90%+ flat)`, TONES.every((t) => { const r = cell(t, 'old'); return r && r.px && r.px.ringFlat >= 0.9 && !colourOk(r) && !pixelsOk2(r); }), JSON.stringify(TONES.map((t) => show2(t, 'old'))));
+ok('MUT-ROW-LAW-B the readers go RED on synthetic bad values: a label under 4.5:1, a wrong glyph colour, a desk that is not flat, an empty ring; and GREEN on the good one',
+  !pixelsOk2({ px: { peak2: rgb(TARGET), computedContrast2: 3.8, ringFlat: 0.95, ringN: 400 } }) && !pixelsOk2({ px: { peak2: rgb(OLD), computedContrast2: 5.4, ringFlat: 0.95, ringN: 400 } })
+  && !pixelsOk2({ px: { peak2: rgb(TARGET), computedContrast2: 5.4, ringFlat: 0.6, ringN: 400 } }) && !pixelsOk2({ px: { peak2: rgb(TARGET), computedContrast2: 5.4, ringFlat: 1, ringN: 0 } })
+  && !colourOk({ color: 'rgb(128, 118, 106)' }) && colourOk({ color: 'rgb(156, 144, 129)' }) && pixelsOk2({ px: { peak2: rgb(TARGET), computedContrast2: 5.46, ringFlat: 0.95, ringN: 400 } }), '');
 const failed = checks.filter((c) => !c.pass);
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
 console.log(failed.length ? `\nBUG83-COUNT-ROW VERIFY: FAIL - ${failed.length}/${checks.length} failed` : `\nBUG83-COUNT-ROW VERIFY: PASS (${checks.length} checks)`);
