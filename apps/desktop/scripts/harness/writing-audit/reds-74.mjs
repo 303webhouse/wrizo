@@ -4,7 +4,8 @@
 //   C  Backspace after "Hello": the text loses the "o"; undo brings it back with the caret at 5 (after it); redo has the caret at 4
 //   D  Enter at the END of "Hello" (a control: the caret was already at the end, so main already gets this right): undo 5, redo 6
 //   E  a letter typed at the very START of "abc" after the caret was moved there: undo puts the caret at 0
-// RED on main today for A, B, C and E (the caret jumps to the end of the page: the undo step remembers the caret of the PREVIOUS edit, not of this one). D stays green.
+//   F, G  the same undo inside a BOARD CARD's pop-up (it shares the stack): F a letter typed after "Hello", G Backspace after "Hello"; undo puts the caret at 5
+// RED on main today for A, B, C, E, F and G (the caret jumps to the end of the page: the undo step remembers the caret of the PREVIOUS edit, not of this one). D stays green.
 // Run: node scripts/harness/writing-audit/reds-74.mjs (from apps/desktop; on Actions via writing-audit.yml, script=reds-74.mjs; strict)
 import { withHarness } from '../../runtime-verify.mjs';
 import { makeDriver, sleep, THEMES } from './lib/driver.mjs';
@@ -60,6 +61,17 @@ await withHarness(async (app) => {
   await run('E', 'a letter at the very start, undo', async (fails) => {
     await open('abc', 3); await d.place(0); await sleep(200); await d.type('X'); expect(fails, 'staging', await settle(), 'Xabc', 1);
     await undo(); expect(fails, 'after undo', await settle(), 'abc', 0);
+  });
+  const openC = async (text, at) => { await d.openCard(text); await d.place(at); await sleep(250); };
+  await run('F', 'a card pop-up: a letter typed in the middle, undo, redo', async (fails) => {
+    await openC('Hello world', 5); await d.type('X'); expect(fails, 'staging', await settle(), 'HelloX world', 6);
+    await undo(); expect(fails, 'after undo', await settle(), 'Hello world', 5);
+    await redo(); expect(fails, 'after redo', await settle(), 'HelloX world', 6);
+  });
+  await run('G', 'a card pop-up: Backspace in the middle, undo, redo', async (fails) => {
+    await openC('Hello world', 5); await d.key('Backspace'); expect(fails, 'staging', await settle(), 'Hell world', 4);
+    await undo(); expect(fails, 'after undo', await settle(), 'Hello world', 5);
+    await redo(); expect(fails, 'after redo', await settle(), 'Hell world', 4);
   });
 });
 console.log(`RED-74 [${TAG}] ${bad ? `FAIL - ${bad} case(s)` : 'PASS'}`);
