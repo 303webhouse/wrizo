@@ -4,7 +4,7 @@
 //   Z100  Flux, ?flux3=1, the Schema at true size (1.00)
 //   Z020  the same at 0.20 (the whole board, far out: the board is tall enough that the outer limit lies below 0.20, so the seam lands on 0.20 exactly)
 //   Z400  the same at 4.00 (the inner limit: one card roughly fills the stage)
-//   MUT   Z400 plus a synthetic 24 ms burn on every keydown (1.5 frames: a latency is quantised to the 16.7 ms frame, so a 12 ms burn moved the median only ~5 ms on Actions): the mutant that must FAIL the bar
+//   MUT   Z400 plus a synthetic 24 ms burn on every beforeinput (1.5 frames: a latency is quantised to the 16.7 ms frame, so a 12 ms burn moved the median only ~5 ms on Actions): the mutant that must FAIL the bar
 // Each arm: the same nine-card board re-seeded through the app's seam at the Desk (a route with no flush handler), opened, scaled through the camera's own seam (window.wrizoFluxZoomTo), the card
 // centred, double-clicked open, the editor focused, then 44 keys one every 90 ms, the latency of each read IN the page as rhizome-latency and flux3-latency read it (keydown -> the second animation
 // frame after its beforeinput). The arm order rotates each round; one discarded warm-up. 1920x1080, Page: Dark, Draft not involved (a board).
@@ -164,9 +164,10 @@ try { await withHarness(async (app) => {
       document.addEventListener('keydown', kd, true); document.addEventListener('beforeinput', bi, true);
       window.__latOff = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('beforeinput', bi, true); };
       return true; })()`);
-    // the burn (the mutant): a synchronous 12 ms busy-wait on every keydown. It is installed AFTER the meter, so the meter's keydown stamp (the same phase, registered first, so it runs first) is taken
-    // BEFORE the burn and the 12 ms is inside the measured interval. (Round 1 of this probe installed it first: the stamp then came after the burn, the burn was invisible, and MUT-z went red on its premise.)
-    if (arm.burn) await ev(`(() => { window.__burnN = 0; document.addEventListener('keydown', () => { const t = performance.now(); while (performance.now() - t < ${BURN_MS}) { /* burn */ } window.__burnN += 1; }, true); return true; })()`);
+    // the burn (the mutant): a synchronous busy-wait on every beforeinput, installed AFTER the meter (the same phase, registered second, so it runs after the meter has stamped the keydown and queued its two
+    // animation frames): the frames cannot run until the burn ends, so the cost lands inside the measured interval whatever the frame phase. (Two earlier shapes failed on Actions: a burn on keydown installed
+    // BEFORE the meter was invisible - the stamp came after it; installed after the meter it moved the median 5 ms at 12 ms and, at 24 ms, LOWERED it by 19 on a slow runner, the frame phase swallowing it.)
+    if (arm.burn) await ev(`(() => { window.__burnN = 0; document.addEventListener('beforeinput', () => { const t = performance.now(); while (performance.now() - t < ${BURN_MS}) { /* burn */ } window.__burnN += 1; }, true); return true; })()`);
     let typed = '';
     for (let i = 0; i < KEYS; i += 1) { const ch = CYCLE[(round * 7 + i) % CYCLE.length]; typed += ch; await app.typeKeys(ch); await sleep(GAP); }
     await sleep(250);
@@ -218,7 +219,7 @@ try { await withHarness(async (app) => {
   // the mutant: the burn landed on every key, and the bar sees it
   const m = judge(res.C, res.MUT);
   const burnLanded = res.MUT.length > 0 && res.MUT.every((r) => r.burned >= MIN_KEYS);
-  ok(`MUT-z premise: the ${BURN_MS} ms burn landed on every key (${res.MUT.map((r) => r.burned).join('/')} keydowns burned)`, burnLanded, JSON.stringify(res.MUT.map((r) => ({ round: r.round, burned: r.burned }))));
+  ok(`MUT-z premise: the ${BURN_MS} ms burn landed on every key (${res.MUT.map((r) => r.burned).join('/')} keys burned)`, burnLanded, JSON.stringify(res.MUT.map((r) => ({ round: r.round, burned: r.burned }))));
   timing(`MUT-z effect the burn lifted the median by >= 8 ms (MUT ${r1(S.MUT.median)} vs Z400 ${r1(S.Z400.median)}: +${r1(S.MUT.median - S.Z400.median)})`, S.MUT.median >= S.Z400.median + 8, JSON.stringify({ mut: show(S.MUT), z400: show(S.Z400) }));
   ok(`MUT-z the burn FAILS the bar (caught by L: ${m.lat ? 'no' : 'YES'}) - MUT median ${r1(m.X.median)} p95 ${r1(m.X.p95)} max ${r1(m.X.max)}`, burnLanded && (ON_BOX ? !m.lat : true), `C ${show(m.C)} | MUT ${show(m.X)}`);   // on Actions only the landing gates: L is a timing line
 
