@@ -17,7 +17,7 @@
 //
 // Output: the scratchpad folder below (outside the repo).
 //
-// Run: WS_ANON=1 WS_BOX_TURN=<token> node scripts/harness/arrival-signin-capture.mjs   (from apps/desktop)
+// Run: WS_ANON=1 WS_BOX_TURN=<token> node scripts/captures/arrival-signin-capture.mjs   (from apps/desktop)
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -165,8 +165,11 @@ await withHarness(async (app) => {
       await app.evalJs(theme.setup); // a reload clears the theme attributes the capture sets
       await app.evalJs(LOGOUT_STUB);
       await app.evalJs(FOCUS_TRACE);
-      await app.goto('/sprint');
-      await app.waitFor(`!!document.querySelector('.forward-only-editor, textarea')`, { label: 'a page to sign out of' });
+      // #13 step 12a: QuickSprint (/sprint) is deleted, and it was the last unframed writing surface: a framed page at 1280 px folds the
+      // corner cluster (Sign out with it) behind its glyph. The logout phase now signs out from the Desk, which keeps the corner cluster.
+      // Was: await app.goto('/sprint'); + a wait for '.forward-only-editor, textarea' ("a page to sign out of").
+      await app.goto('/');
+      await app.waitFor(`!!document.querySelector('.wz-arrival')`, { label: 'the Desk to sign out from' });
       // The page re-applies its caret (applyCaret, which focuses the editor) several times in the ~600 ms after it mounts. A
       // sheet opened inside that window loses its focus to the editor — the focus trace caught exactly that (the sheet took
       // focus at 426 ms, applyCaret took it back at 431 ms). A person never presses Sign out that fast, so wait for the

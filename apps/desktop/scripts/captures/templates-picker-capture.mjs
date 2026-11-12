@@ -8,7 +8,7 @@
 // the Flux frame shows all five. Both frames are the expected, correct
 // result of the same rule, not a partial capture.
 //
-// Run: WS_BOX_TURN=<token> node scripts/harness/templates-picker-capture.mjs   (from apps/desktop, dist-web freshly built)
+// Run: WS_BOX_TURN=<token> node scripts/captures/templates-picker-capture.mjs   (from apps/desktop, dist-web freshly built)
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

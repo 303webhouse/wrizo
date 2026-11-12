@@ -35,8 +35,6 @@
    at rest, so it wears --accent-rest, not brass (matching the mode strip's
    own S7 hairline treatment, not the evental/press orange). */
 .desk-rail-item.active{ color:var(--accent-rest); border-left-color:var(--accent-rest); }
-.desk-rail-item.deferred{ color:var(--ink-border-strong); cursor:not-allowed; }
-.desk-rail-item.deferred:hover{ color:var(--ink-border-strong); background:none; }
 .desk-rail-glyph{ font-size:18px; line-height:1; }
 .desk-rail-label{ font-size:9px; letter-spacing:.5px; font-family:var(--font-contentLabel); } /* canon §4 — "cache/rack item names" */
 /* F3 — Catch action at the top of the rail. Quiet tan, matching the rail items;

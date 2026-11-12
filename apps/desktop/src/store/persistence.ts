@@ -1,6 +1,6 @@
 export { type DirtyCollection, generateId, type DirtyRecords, getDirtyRecords, markClean, hasDirtyRecords, countDirtyRecords, markAllJournalEntriesDirty, subscribe, flushNow } from './persistence/core';
-export { getProjects, getProject, saveProject, createProject, createBinder, createQuickSprintProject, setProjectSprintText, sprintTextOf, getFragments, appendText, toggleStruck, createFragment, reorderSpine, linkFragments, setFragmentRole } from './persistence/projects';
-export { getStoryPlans, getStoryPlan, getStoryPlanByProjectId, saveStoryPlan, createStoryPlan, updateBeatNotes, setBeatStatus, setCurrentBeat } from './persistence/storyPlans';
+export { getProjects, getProject, saveProject, createProject, createBinder } from './persistence/projects';
+export { getStoryPlans, getStoryPlan, getStoryPlanByProjectId, saveStoryPlan, createStoryPlan, setBeatStatus, setCurrentBeat } from './persistence/storyPlans';
 export { SCRATCH_DRAFT_ID, getDraft, saveDraft, clearDraft, saveSession, getSessions } from './persistence/drafts';
 export { saveJournalEntry, type JournalPageSeed, createJournalPage, createBinderPage } from './persistence/journal';
 export { createBoardPage, saveBoardBoxes, stashDeletedBoxes, restoreDeletedBox, purgeDeletedBox, getTrashedCards } from './persistence/boards';

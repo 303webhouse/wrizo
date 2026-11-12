@@ -1,0 +1,5 @@
+# #13 step 12a: the persistence exports the old project screens were the only callers of (POLISH, measured at main e20382d8). Kept because
+# a seam or a harness still calls them: createStoryPlan, setBeatStatus, setCurrentBeat (seams.ts), saveDraft, clearDraft (drafts-integrity).
+createQuickSprintProject
+setProjectSprintText
+updateBeatNotes

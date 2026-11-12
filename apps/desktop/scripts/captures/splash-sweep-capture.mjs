@@ -12,7 +12,7 @@
 // not knowable without a browser). Compare the Arbor frames against the
 // mockup artifact once captured; the moments may want retiming.
 //
-// Run: WS_BOX_TURN=<token> node scripts/harness/splash-sweep-capture.mjs   (from apps/desktop)
+// Run: WS_BOX_TURN=<token> node scripts/captures/splash-sweep-capture.mjs   (from apps/desktop)
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

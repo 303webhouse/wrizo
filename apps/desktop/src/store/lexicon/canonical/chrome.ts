@@ -308,8 +308,6 @@ export const CANONICAL_CHROME = {
   tutorLensFragmentsNote: 'Uses recency and shared tags only.',
   // FX12 S2 — tutorStructureNoBeat ("Not linked to a beat.") retired: the beats system
   // is dormant (CD4); the Structure lens no longer speaks that dead language.
-  tutorNudgesTitle: 'Waiting for you',
-  tutorNudgesEmpty: 'Nothing waiting right now.',
   tutorBibleTitle: "The book's Bible",
   tutorBibleEmpty: 'Nothing saved yet.',
   // ITEM word-diet.
@@ -581,12 +579,5 @@ export const CANONICAL_CHROME = {
   placesBoardsEmpty: 'No boards yet.',
   createDrawerEyebrow: 'NEW DRAWER',
   createDrawerTitleLabel: 'Drawer title (optional)',
-  drawerHomeTitleLabel: 'Drawer title',
-  backToDrawer: 'Back to Drawer',
-  domainLabelCreative: 'Creative Drawer',
-  domainLabelAcademic: 'Academic Drawer',
-  domainLabelProfessional: 'Professional Drawer',
-  sprintSaveToDrawer: 'Save to Drawer',
-  sprintSaveAsDrawer: 'Save as Drawer',
 
 } satisfies Partial<Record<DeskTermId, string>>;

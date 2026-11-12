@@ -164,7 +164,9 @@ const INSTRUMENT = `(() => {
 })();`;
 
 const MUTANTS = {
-  gutterwork: [/=700,(\w+)=72,(\w+)=26,(\w+)=24/g, '=0,$1=72,$2=26,$3=24'],
+  // PARKED, SUPERSEDED (Nov 12; train 3's bundle names the last constant $G, which \w does not match, so this landed 0 times: an instrument fault that follows the bundle's identifier names). Original verbatim:
+  //   gutterwork: [/=700,(\w+)=72,(\w+)=26,(\w+)=24/g, '=0,$1=72,$2=26,$3=24'],
+  gutterwork: [/=700,([\w$]+)=72,([\w$]+)=26,([\w$]+)=24/g, '=0,$1=72,$2=26,$3=24'],
   rate: [/=45,(\w+)=180,(\w+)=900,/g, '=45,$1=180,$2=0,'],
   stop: [/\(\)=>\{(\w+)=performance\.now\(\),(\w+)\.size&&(\w+)\(\)\}/g, '()=>{$1=performance.now()}'],
   caret: [/(\w+)&&(\w+)\.height\?\[(\w+)\.top-2,(\w+)\.bottom\+2\]:null/g, 'null'],
@@ -535,6 +537,7 @@ try { await withHarness(async (app) => {
   const mP = await withMutant('pause', testType);
   ok('MUT-PAUSE (landed) the Glitch bar not waiting for the pause: TYPE fails (a glyph changed while keys landed)', mP.landed === 1 && mP.glitchDuring > 0, JSON.stringify({ landed: mP.landed, glitchDuring: mP.glitchDuring }));
   const mW = await withMutant('gutterwork', testType);
+  ok('MUT-GUTTERWORK-ANCHOR the gutterwork mutant\'s anchor matched exactly once in the served bundle (a miss is a fault of the instrument, not a verdict on the product)', mW.landed === 1, JSON.stringify({ landed: mW.landed }));
   ok('MUT-GUTTERWORK (landed) the gutter measuring on every change: TYPE fails (it measured while keys landed)', mW.landed === 1 && !mW.zeroWork, JSON.stringify({ landed: mW.landed, m: [mW.measuresFirst, mW.measuresMid, mW.measuresLast] }));
   const mR = await withMutant('rate', () => testIdle({ stop: false }));
   ok('MUT-RATE (landed) the idle glitch\'s gap at 0: IDLE fails (more than 3 changes in a second)', mR.landed === 1 && mR.maxPerSec > 3, JSON.stringify(mR));
