@@ -17,6 +17,7 @@ import { AmbientGlow, MilestoneBar, ProgressBar, TypewriterToggle, useGoalProgre
 import type { Milestones } from '../store/milestones';
 import { useTheme, setTheme, getTheme, type ThemeId } from '../store/theme';
 import { getTurnSound } from '../store/pageTurnSound';
+import { playPageTurn } from '../store/pageTurnPlay';
 import { useLexicon } from '../store/themeLexicon';
 import { useThemePrefs, setThemePrefs, type PageTone } from '../store/themePrefs';
 import { useAmbianceDial, setAmbianceDial } from '../store/ambianceDial';
@@ -337,7 +338,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
       turnSounded.set(id, page);
       if (Date.now() - lastKeyAt > 1500) return;
       const theme = getTheme();
-      if (getTurnSound(theme) === 'on') playPageTurn();
+      if (getTurnSound(theme) === 'on') playPageTurn(theme);
     };
     const measure = () => {
       const ed = scroll.querySelector('.forward-only-editor') as HTMLElement | null;
@@ -769,34 +770,6 @@ export function ThemePanel() {
 
 // the highest page already sounded for each page of writing in this sitting (until the app is reloaded): a page turn rings once, going back and writing past the line again is quiet [#63]
 const turnSounded = new Map<string, number>();
-
-// A soft synthesized paper-rustle for the page turn (no asset yet: the Wrizors' two sound files replace it; gated by the writer's page-turn switch by the
-// caller, not by reduced motion - a sound is not motion). Best-effort — never throws.
-function playPageTurn(): void {
-  try {
-    const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!Ctx) return;
-    const ctx = new Ctx();
-    const dur = 0.2;
-    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
-    const data = buf.getChannelData(0);
-    for (let i = 0; i < data.length; i++) {
-      const t = i / data.length;
-      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, 2.5) * 0.22; // decaying noise
-    }
-    const src = ctx.createBufferSource();
-    src.buffer = buf;
-    const filt = ctx.createBiquadFilter();
-    filt.type = 'lowpass';
-    filt.frequency.value = 1700;
-    src.connect(filt);
-    filt.connect(ctx.destination);
-    src.start();
-    src.onended = () => { try { ctx.close(); } catch { /* ignore */ } };
-  } catch {
-    // audio unsupported / blocked — silent
-  }
-}
 
 // One-color tan chrome icons (currentColor; sized for large screens).
 function MicIcon({ off }: { off: boolean }) {
