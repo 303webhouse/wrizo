@@ -129,6 +129,8 @@ export const MACHINA_OVERRIDES = {
     publishDownloadPageMd: 'Current Files (.md)',
     publishDownloadPageTxt: 'Current Files (.txt)',
     purgedElsewhere: 'This file was deleted for good on another device.',
+    samePageElsewhere: 'This doc is open in another window.',
+    samePageKeptBoth: 'Two windows changed this paragraph. Both versions kept.',
     railBoard: 'Plan',
     railPageKind: 'Files Kind',
     sectionsEmpty: 'No files here yet.',

@@ -1,7 +1,10 @@
 import type { Project, StoryPlan, SessionLog, Draft, JournalEntry, Drawer } from '../../types';
 import { clearProofingLocal } from '../proofing';
 import { mergeBoxLists } from '../boxTombstones';
-import { type CollectionName, DIRTY_KEY, KEYS, cache, clone, dirty, flushTimers, notify, persistDirty, scheduleFlush } from './core';
+import { type CollectionName, COLLECTIONS, DIRTY_KEY, KEYS, cache, clone, dirty, flushTimers, isUnflushed, lastRaw, notify, onDisk, onDiskText, persistDirty, scheduleFlush, setPreFlush } from './core';
+import { mergeText } from '../textMerge';
+import { announceKeptBoth, noteMerge } from '../mergeNotice';
+import { isSignedOutHere } from '../signedOutHere';
 import { adoptLegacyScratch } from './drafts';
 import { announcePurged, purgedToAnnounce } from './purge';
 
@@ -23,6 +26,8 @@ function applyCollection<T extends { id: string; updatedAt: string }>(
   name: CollectionName,
   collection: T[],
   remote: T[] | undefined,
+  flushAfter = true,
+  ignoreDirty = false,
 ): boolean {
   if (!remote || remote.length === 0) return false;
   let changed = false;
@@ -41,16 +46,13 @@ function applyCollection<T extends { id: string; updatedAt: string }>(
       }
       continue;
     }
-    if (dirty[name].has(rec.id)) {
+    if (!ignoreDirty && dirty[name].has(rec.id)) {
       // local unsynced edit wins - but its BOARD BOXES still merge by per-box change time (BOARD CONTEXT MENU): a newer tombstone / purge from elsewhere must not be undone by a stale local copy of the card
       if (name === 'journalEntries') {
         const idx = collection.findIndex(r => r.id === rec.id);
         if (idx >= 0) {
           const loc = collection[idx] as unknown as JournalEntry, rem = rec as unknown as JournalEntry;
-          if (loc.pageType === 'board' && (loc.boxes || rem.boxes)) {
-            const merged = mergeBoxLists(loc.boxes, rem.boxes);
-            if (JSON.stringify(merged) !== JSON.stringify(loc.boxes ?? [])) { (collection[idx] as unknown as JournalEntry).boxes = merged; changed = true; }
-          }
+          if (mergeBoxesInto(loc, loc, rem)) changed = true;
         }
       }
       continue;
@@ -73,8 +75,18 @@ function applyCollection<T extends { id: string; updatedAt: string }>(
       changed = true;
     }
   }
-  if (changed) scheduleFlush(name);
+  if (changed && flushAfter) scheduleFlush(name);
   return changed;
+}
+
+// A board's boxes merge per box (store/boxTombstones.ts mergeBoxLists): `primary` is the side that is winning the entry, `target` takes the merged list. True when the target's list changed. The ONE place syncApply reads two boards' raw boxes
+// for a local edit against another copy (a pull, or another window's write): the readers guard (box-tombstones T11) counts these reads.
+function mergeBoxesInto(target: JournalEntry, primary: JournalEntry, secondary: JournalEntry): boolean {
+  if (primary.pageType !== 'board' || !(primary.boxes || secondary.boxes)) return false;
+  const merged = mergeBoxLists(primary.boxes, secondary.boxes);
+  if (JSON.stringify(merged) === JSON.stringify(target.boxes ?? [])) return false;
+  target.boxes = merged;
+  return true;
 }
 
 export function applyRemoteRecords(remote: RemoteRecords): void {
@@ -88,6 +100,69 @@ export function applyRemoteRecords(remote: RemoteRecords): void {
   changed = applyCollection('drawers', cache.drawers, remote.drawers) || changed;
   if (changed) notify();
   announcePurged();
+}
+
+// #76 PART 1 - REFRESH. Every window of the app on this computer shares one localStorage, and each keeps its own in-memory cache; nothing used to tell a window that another had written. Now the browser's `storage` event does:
+// when another window writes a collection, this window takes the records that are NEWER there (the same rules as a pull from the server: a record with an unsaved edit HERE is kept, and its board boxes merge; a clean one is replaced), and
+// tells its screens (notify), so an open page with nothing unsaved shows the other window's words at once. It writes nothing back (flushAfter false): the other window already wrote them, and a write here would only echo.
+export function applyOtherWindowWrite(name: CollectionName, raw: string | null): void {
+  if (!raw || isSignedOutHere()) return;
+  let rows: unknown;
+  try { rows = JSON.parse(raw); } catch { return; }
+  if (!Array.isArray(rows)) return;
+  const collection = cache[name] as unknown as { id: string; updatedAt: string }[];
+  const mineById = new Map(collection.map((r) => [r.id, r]));
+  const mergedHere = name === 'journalEntries' ? mergeUnflushedPages(rows as JournalEntry[], mineById as unknown as Map<string, JournalEntry>) : false;
+  // a record with a change of this window's own that is not yet written is a conflict (part 3 keeps both); every other record takes the newer copy, whether or not it has been pushed to the account
+  const safe = (rows as { id: string; updatedAt: string }[]).filter((r) => { if (!r || !r.id) return false; const mine = mineById.get(r.id); return !mine || !isUnflushed(name, mine); });
+  const changed = applyCollection(name, collection, safe, false, true);
+  if (mergedHere) scheduleFlush(name);   // the merged page is this window's change now: it is written, and the other window takes it from the store
+  if (changed || mergedHere) { for (const r of safe) { const mine = collection.find((x) => x.id === r.id); if (mine && mine.updatedAt === r.updatedAt) onDisk[name].set(r.id, r.updatedAt); } notify(); }
+  announcePurged();
+}
+
+// #76 PART 3 - KEEP BOTH, in the store. A PAGE this window has changed and not yet written, which another window has written differently since the two last agreed, is merged: the text from a three-way merge (store/textMerge.ts) of what
+// the store held when this window last agreed with it (the base), this window's text and the other window's text. The record is this window's, newer than both, still to be written (and pushed); a board's cards merge by their own times.
+function mergeUnflushedPages(rows: JournalEntry[], mineById: Map<string, JournalEntry>): boolean {
+  let any = false;
+  for (const theirs of rows) {
+    if (!theirs || !theirs.id) continue;
+    const mine = mineById.get(theirs.id);
+    if (!mine || !isUnflushed('journalEntries', mine)) continue;                 // nothing of this window's own to protect
+    if (theirs.updatedAt === onDisk.journalEntries.get(theirs.id)) continue;      // the store still holds what this window last agreed with: nobody else has written it
+    if (theirs.purgedAt || mine.purgedAt) continue;                              // a page deleted for good elsewhere is applyCollection's rule
+    const t = theirs.text ?? '', m = mine.text ?? '';
+    const base = onDiskText.get(theirs.id) ?? '';
+    const r = mergeText(base, m, t);
+    noteMerge({ at: 'store-merge', base, mine: m, theirs: t, out: r.text });
+    const stamp = [theirs.updatedAt ?? '', mine.updatedAt ?? '', new Date().toISOString()].sort().pop() as string;
+    const winner = (theirs.updatedAt ?? '') > (mine.updatedAt ?? '') ? theirs : mine;
+    const out = clone(winner) as JournalEntry;
+    out.text = r.text;
+    out.updatedAt = stamp;
+    mergeBoxesInto(out, mine, theirs);
+    const i = cache.journalEntries.findIndex((x) => x.id === theirs.id);
+    if (i < 0) continue;
+    cache.journalEntries[i] = out;
+    dirty.journalEntries.add(theirs.id);
+    persistDirty();
+    onDiskText.set(theirs.id, t);                        // the store holds the other window's text: that is the starting point of the next merge
+    onDisk.journalEntries.set(theirs.id, theirs.updatedAt);
+    if (r.kept) announceKeptBoth(theirs.id);
+    any = true;
+  }
+  return any;
+}
+
+if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {   // a harness that bundles this module with a bare `window` stand-in has no listeners to add
+  setPreFlush(applyOtherWindowWrite);
+  window.addEventListener('storage', (e: StorageEvent) => {
+    try {
+      if (e.storageArea !== window.localStorage) return;
+      const name = COLLECTIONS.find((n) => KEYS[n] === e.key);
+      if (name) { lastRaw[KEYS[name]] = e.newValue; applyOtherWindowWrite(name, e.newValue); }
+    } catch { /* a listener never breaks a write path */ }
+  });
 }
 
 // Wipe all local data (cache + dirty + localStorage). Used on logout so the

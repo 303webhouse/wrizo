@@ -25,6 +25,7 @@ import { HelpPop } from './components/HelpPop';
 import { DeleteDialog } from './components/DeleteDialog';
 import { DestructiveConfirm } from './components/DestructiveConfirm';
 import { PurgedElsewhereNotice } from './components/PurgedElsewhereNotice';
+import { SamePageNotice } from './components/SamePageNotice';
 import { WritingSessionProvider, useWritingSession } from './components/WritingSession';
 import { subscribe, resetLocalData, getOrCreateSystemBoard, countDirtyRecords, getDirtyRecords } from './store/persistence';
 import { apiMe, apiLogout, type AuthUser } from './store/api';
@@ -330,6 +331,8 @@ export function App() {
             deleted for good on another device (Q3) - both portals or a toast line, mounted once, displacing nothing */}
         <DestructiveConfirm />
         <PurgedElsewhereNotice />
+        {/* #76 part 2: the one quiet line while this page is open in another window too. A line beside the routes, never inside one: it cannot move or resize the page. */}
+        <SamePageNotice />
         <SignedOutRouteGuard authState={authState} />
         {/* RESUME ON OPEN: remembers the open Page/board and, on the first signed-in boot, lands there instead of the front door. Renders nothing. */}
         <LandingGate authState={authState} />
