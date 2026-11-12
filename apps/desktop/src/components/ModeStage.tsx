@@ -334,7 +334,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
     const turn = (page: number) => {
       const id = pageIdRef.current ?? '';
       const done = turnSounded.get(id) ?? 0;
-      if (page <= done) return;
+      /* mutant: no once-per-page guard */
       turnSounded.set(id, page);
       if (Date.now() - lastKeyAt > 1500) return;
       const theme = getTheme();
