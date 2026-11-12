@@ -113,6 +113,8 @@ export type DeskTermId =
   // the right-click menus, the "Send to Trash?" dialog, the Settings row and the toasts [deskLexicon §5]
   | 'ctxDelete' | 'ctxDeleteBoard' | 'ctxUngroup' | 'deleteDialogTitle' | 'deleteDialogPurgeTitle' | 'deleteDialogCancel' | 'deleteDialogConfirm' | 'deleteDialogDontAsk'
   | 'ctxEmptyTrash' | 'emptyTrashQuestionOne' | 'emptyTrashQuestionMany' | 'purgedElsewhere' | 'destructiveTypeToGo' | 'destructiveGo'
+  // #76: the quiet line while the same page is open in another window (placeholder words until the Wrizors word it), and the line that says both versions were kept after a merge
+  | 'samePageElsewhere' | 'samePageKeptBoth'
   | 'settingsAskBeforeDelete' | 'toastCardDeleted' | 'toastCardRestored' | 'trashCardBadge'
   // the Grafts / Links tab: the selected card's connections, each with an X that asks first [deskLexicon §6]
   | 'linksRemoveTitle' | 'linksRemoveAria' | 'linksKindPage' | 'linksKindBoard' | 'linksKindCard'

@@ -5,6 +5,7 @@ import { coordReadout, docReadout, hintFor, shouldAcquire, trackReadout, type Hi
 import { docNumberOf, trackOf } from '../store/place';
 import { useTheme } from '../store/theme';
 import type { JournalEntry } from '../types';
+import { SamePageLine } from './SamePageNotice';
 
 // FLUX V2 - THE PAGE FRAME'S READOUTS. Flux only (Arbor renders nothing). Mounted inside the lit page (ModeStage's `readouts` slot), absolutely positioned in the paper's own padding, so the page's
 // rect never moves (PAGE IS PRIMARY). Three things: a frame ring (a faint grid on the page FRAME only, never under text) with four corner brackets; a header with the page's true reading
@@ -37,6 +38,7 @@ export function FluxReadouts({ entry, surface }: { entry: JournalEntry | null; s
       <div className="flux-readout flux-readout-head">
         {doc != null && <span className="flux-readout-doc">{docReadout(doc, title)}</span>}
         {trk && <span className="flux-readout-trk">{trackReadout(trk.n, trk.m)}</span>}
+        <SamePageLine />
       </div>
       {hint && <div className="flux-readout flux-readout-hint">{hint}</div>}
     </div>

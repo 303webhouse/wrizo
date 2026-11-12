@@ -40,9 +40,13 @@ interface Cache {
   drawers: Drawer[];
 }
 
+// #76 part 3: the raw string each collection key held when this window last agreed with the store (boot, its own write, another window's write). flush() compares it with what the store holds NOW: a difference means another window wrote since.
+export const lastRaw: Record<string, string | null | undefined> = {};
+
 function hydrate<T>(key: string): T[] {
   try {
     const data = localStorage.getItem(key);
+    lastRaw[key] = data;
     return data ? (JSON.parse(data) as T[]) : [];
   } catch {
     // Corrupt or unavailable storage must never crash boot — start empty.
@@ -58,6 +62,26 @@ export const cache: Cache = {
   journalEntries: hydrate<JournalEntry>(KEYS.journalEntries),
   drawers: hydrate<Drawer>(KEYS.drawers),
 };
+
+// #76 PART 1 - WHAT THE BROWSER'S STORE HOLDS FOR EACH RECORD, as far as this window knows: the record's `updatedAt` the last time this window's cache and the store agreed on it (at boot, after this window wrote it, or after it took
+// another window's copy). A record whose `updatedAt` differs from that has been changed HERE and not yet written ("unflushed", at most the 300 ms of the debounce); a record whose `updatedAt` matches has nothing in it
+// the store does not already have, so another window's newer copy may replace it. (The sync registry's "dirty" is a different thing: it means not yet pushed to the account, and stays set for as long as a device is offline.)
+export const onDisk: Record<'projects' | 'storyPlans' | 'sessions' | 'drafts' | 'journalEntries' | 'drawers', Map<string, string>> = {
+  projects: new Map(), storyPlans: new Map(), sessions: new Map(), drafts: new Map(), journalEntries: new Map(), drawers: new Map(),
+};
+// and, for the pages, the TEXT the store held then: the starting point of a three-way merge of two windows' words (store/textMerge.ts). Memory only; the strings are the cache's own, not copies.
+export const onDiskText = new Map<string, string>();
+export function noteOnDisk(name: keyof typeof onDisk): void {
+  const m = onDisk[name];
+  m.clear();
+  for (const r of cache[name] as Array<{ id: string; updatedAt: string }>) if (r && r.id) m.set(r.id, r.updatedAt);
+  if (name === 'journalEntries') { onDiskText.clear(); for (const e of cache.journalEntries) if (e && e.id && typeof e.text === 'string') onDiskText.set(e.id, e.text); }
+}
+// registered by syncApply.ts (which imports this file): what to do with another window's write that this window finds in the store just before its own write
+let preFlush: ((name: CollectionName, raw: string | null) => void) | null = null;
+export function setPreFlush(fn: (name: CollectionName, raw: string | null) => void): void { preFlush = fn; }
+export function isUnflushed(name: keyof typeof onDisk, rec: { id: string; updatedAt: string }): boolean { return onDisk[name].get(rec.id) !== rec.updatedAt; }
+(Object.keys(onDisk) as Array<keyof typeof onDisk>).forEach(noteOnDisk);
 
 // Records returned to callers are cloned so the cache is never mutated by
 // reference, and so each read yields a fresh object (screens that re-fetch
@@ -282,9 +306,19 @@ maybeReportStorageUsage();
 
 function flush(name: CollectionName): void {
   if (writesHeld()) return;
+  // #76 part 3: a flush writes the whole collection, so before it does, look at what the store holds. If another window has written since this one last looked (and its storage event has not been heard yet), take its records in first:
+  // a record this window has changed and not yet written is MERGED with the other window's copy (their words and ours), never written over it.
+  if (preFlush) {
+    try {
+      const now = localStorage.getItem(KEYS[name]);
+      if (now !== lastRaw[KEYS[name]]) { lastRaw[KEYS[name]] = now; preFlush(name, now); }
+    } catch { /* an unreadable store is flushed as it always was */ }
+  }
   const json = JSON.stringify(cache[name]);
   try {
     localStorage.setItem(KEYS[name], json);
+    lastRaw[KEYS[name]] = json;
+    noteOnDisk(name);   // #76: the store now holds every record as this window has it
     // STORAGE-FULL STEP 1 — the OTHER half of the catch below: a write that succeeds after a device WAS failing
     // (the writer freed space, or the browser recovered) clears that collection's failed flag. See storageHealth.ts.
     reportFlushOk(name);
