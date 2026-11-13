@@ -20,10 +20,14 @@ const SRC = join(here, '..', 'src');
 // SUPERSEDED (Nov 2026, polish turn 9) - draftDecoration.ts now imports ./fontRoster (item 207) and that imports ./fontSize, so the scratch copy needs both or the bundle cannot resolve them. Kept verbatim:
 // const FILES = ['draftFormat.ts', 'markRuns.ts', 'draftDecoration.ts', 'tabChord.ts', 'entryText.ts', 'hiddenMarks.ts'];
 const FILES = ['draftFormat.ts', 'markRuns.ts', 'draftDecoration.ts', 'tabChord.ts', 'entryText.ts', 'hiddenMarks.ts', 'fontRoster.ts', 'fontSize.ts'];
+// SUPERSEDED (Nov 2026, Wire In): fontRoster.ts now imports ../flux3/flag (the FLUX3 query flag), so a bundle of the copied store files above cannot resolve it. The scratch dir holds those files flat, so ../flux3/flag is <tmp>/flux3/flag.ts:
+// SIBLINGS are the files outside src/store/ that a listed file imports, copied verbatim to the same relative place. FILES above is unchanged.
+const SIBLINGS = [['flux3', 'flag.ts']];
 const requireDesktop = createRequire(join(here, '..', 'package.json'));
 const esbuild = createRequire(requireDesktop.resolve('vite'))('esbuild');
 const tmp = join(tmpdir(), 'wrizo-format-proof');
 mkdirSync(tmp, { recursive: true });
+for (const [d, f] of SIBLINGS) { mkdirSync(join(tmp, d), { recursive: true }); writeFileSync(join(tmp, d, f), readFileSync(join(SRC, d, f), 'utf8')); }
 
 // A mutant is [name, file, transform]; the file it edits is copied (mutated) into a scratch dir beside unmutated copies of the
 // others, so the bundle is the real modules with exactly one edit.
