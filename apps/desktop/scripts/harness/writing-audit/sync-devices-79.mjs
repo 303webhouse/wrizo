@@ -30,7 +30,8 @@ const RealDate = Date;
 globalThis.Date = class extends RealDate { constructor(...a) { if (a.length) super(...a); else super(fakeNow); } static now() { return fakeNow; } };
 const tick = (ms = 1000) => { fakeNow += ms; };
 
-const stores = { A: new Map(), B: new Map() };
+// the one-time journal backfill (store/sync.ts maybeBackfillJournal) re-dirties every page on a device's FIRST post-D2 response; a device that has run for a while has long had its mark, so the two devices start with it set
+const stores = { A: new Map([['writer-studio-journal-resync-v1', '1']]), B: new Map([['writer-studio-journal-resync-v1', '1']]) };
 let current = stores.A;
 globalThis.localStorage = { getItem: (k) => (current.has(k) ? current.get(k) : null), setItem: (k, v) => current.set(k, String(v)), removeItem: (k) => current.delete(k), get length() { return current.size; }, key: (i) => [...current.keys()][i] ?? null };
 const noop = { addEventListener() {}, removeEventListener() {} };
