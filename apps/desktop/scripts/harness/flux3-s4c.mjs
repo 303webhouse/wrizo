@@ -111,6 +111,8 @@ try { await withHarness(async (app) => {
     await sleep(1600);
   };
 
+  // the L control's own stood-right test, a pure function so it has a mutant: the arm stood in Wire In (marked, zoomed), the control stood on Flux's TEXT page (not marked, not zoomed), both in the flag state under test
+  const lStoodRight = (arm, on, stood) => !!stood && stood.flag === FLAG && (arm === 'J' && on ? stood.jacked && stood.zoom === 'true' : !stood.jacked && stood.zoom !== 'true');
   const doL = async () => {
   // ---- L: the Jacked In arm against the control (six interleaved rounds, TWO readings, scripts/lib/l-method.mjs) ---------------------------------------------
   // J: Jacked In with the Corridor. C: the control (Flux's TEXT page in the same flag state; before Nov 12: Flux, flag off, the paper Typewriter on). On `main` (ONLY_L) the method runs alone: the control against itself, then the +5 / +10 ms mutants.
@@ -120,19 +122,24 @@ try { await withHarness(async (app) => {
       prepare: async (arm, on) => {
         const id = await fresh(LAT_TEXT);
         const jacked = arm === 'J' && on;
-        // SUPERSEDED (Nov 12, Wire In on its own): the control was `await open({ id, tone: 'dark', flag: jacked, prefs: jacked ? {} : { typewriter: true } })` - Flux with the flag OFF and the paper Typewriter ON. Flag-off Flux's free-writing mode is
-        // Wire In now and the paper Typewriter is retired in Flux, so that open is no longer a control. Original, verbatim:
-        //   stoodRight: (arm, on, stood) => !!stood && (arm === 'J' && on ? stood.flag && stood.jacked : !stood.flag) && stood.zoom === 'true',
-        // The control is Flux's TEXT page (the plain page, no Typewriter, no Corridor) in the same flag state as the arm under test.
+        // ARCHIVED PARK (#13 step 14): archive/flux3-s4c.mjs.parked.md record 1
+        // the control is Flux's TEXT page now (plain, no Typewriter, no Corridor), in the same flag state as the arm under test; lStoodRight (above) is its own check
         await open({ id, tone: 'dark', flag: FLAG, mode: jacked ? null : 'drafting', prefs: {} });
         const s = await st();
         return { flag: s.flag, zoom: s.zoom, jacked: s.jacked };
       },
-      stoodRight: (arm, on, stood) => !!stood && stood.flag === FLAG && (arm === 'J' && on ? stood.jacked && stood.zoom === 'true' : !stood.jacked && stood.zoom !== 'true'),
+      stoodRight: lStoodRight,
     });
     await L.run(ok, { subject: 'Corridor', onlyMethod: ONLY_L });
   } else console.log('INFO L (Actions: timing is the box\'s to judge; FLUX3_L=1 runs it here)');
   };
+  {
+    // L-CONTROL (Nov 12): the control reads right, and its mutant. The MUTANT is the parked original's own test (archive record 1), which accepts a 'control' that stood in Wire In: with the paper Typewriter gone, an open the old way lands in Wire In, and the old test calls it a control
+    const parkedOriginal = (arm, on, stood) => !!stood && (arm === 'J' && on ? stood.flag && stood.jacked : !stood.flag) && stood.zoom === 'true';
+    const textControl = { flag: FLAG, jacked: false, zoom: null }, wireArm = { flag: FLAG, jacked: true, zoom: 'true' };
+    ok('L-CONTROL the L control reads right: Flux\'s TEXT page stands as the control and Wire In as the arm; a control that stood in Wire In, an arm that stood on TEXT and a wrong flag state are each refused', lStoodRight('C', false, textControl) && lStoodRight('J', true, wireArm) && !lStoodRight('C', false, { ...wireArm }) && !lStoodRight('J', true, textControl) && !lStoodRight('C', false, { ...textControl, flag: !FLAG }) && !lStoodRight('J', true, { ...wireArm, flag: !FLAG }), '');
+    ok('MUT-L-CONTROL the parked original test accepts a control that stood in Wire In (blind to it), and the successor refuses it', parkedOriginal('C', false, { flag: false, jacked: true, zoom: 'true' }) === true && lStoodRight('C', false, { flag: FLAG, jacked: true, zoom: 'true' }) === false, '');
+  }
   if (ONLY_L) { await doL(); } else {
   // ---- DEF: Jacked In, always dark --------------------------------------------------------------------------------------------------------------
   const pid = await fresh(SEED);
