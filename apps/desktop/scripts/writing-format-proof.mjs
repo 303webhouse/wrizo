@@ -352,7 +352,10 @@ let ok = bad.length === 0;
 if (process.argv.includes('--mutants')) {
   const M = [
     ['EMPTY ITALIC: Italic at a bare caret writes its ambiguous empty pair again', 'draftFormat.ts', (s) => s.replace("return empty ? w : { text, start, end, pending: mark };", "return w;")],
-    ['WORD BACKSPACE: the range is cut raw, not through replaceRange (an emptied pair is left on the page)', 'hiddenMarks.ts', (s) => s.replace(/(while \(i >= li\.leadEnd && !\/\\s\/\.test\(text\[i\]\)\) \{ q = i; i = prevVisible\(q\); \}\s*)return replaceRange\(text, q, p, ''\);/, "$1return { text: text.slice(0, q) + text.slice(p), caret: q, structural: true };")],
+    // SUPERSEDED (Nov 2026): hiddenMarks.ts's word backspace now ends `return replaceRangeCore(text, q, p, '');` (the windowing split), so the regex below, which expects `return replaceRange(`, no longer lands. Kept verbatim:
+    // ['WORD BACKSPACE: the range is cut raw, not through replaceRange (an emptied pair is left on the page)', 'hiddenMarks.ts', (s) => s.replace(/(while \(i >= li\.leadEnd && !\/\\s\/\.test\(text\[i\]\)\) \{ q = i; i = prevVisible\(q\); \}\s*)return replaceRange\(text, q, p, ''\);/, "$1return { text: text.slice(0, q) + text.slice(p), caret: q, structural: true };")],
+    // The successor takes either name; the mutation is unchanged (the range is cut raw):
+    ['WORD BACKSPACE: the range is cut raw, not through replaceRange (an emptied pair is left on the page)', 'hiddenMarks.ts', (s) => s.replace(/(while \(i >= li\.leadEnd && !\/\\s\/\.test\(text\[i\]\)\) \{ q = i; i = prevVisible\(q\); \}\s*)return replaceRange(?:Core)?\(text, q, p, ''\);/, "$1return { text: text.slice(0, q) + text.slice(p), caret: q, structural: true };")],
     ['CLICK: a click is snapped by the keyboard rule (back inside the run)', 'hiddenMarks.ts', (s) => s.replace("return end === -1 ? snapCaret(text, p) : end;", "return snapCaret(text, p);")],
     ['MARKS: a caret after a run\'s closing marks counts as inside it (the old reader)', 'draftFormat.ts', (s) => s.replace("(at > r.open + ml && at <= r.close)", "(at > r.open + ml && at <= r.close + ml)")],
     ['HEADINGS: only one or two hashes are read', 'markRuns.ts', (s) => s.replace("/^(#{1,6}) /", "/^(#{1,2}) /")],
