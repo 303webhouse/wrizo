@@ -62,15 +62,7 @@ await withHarness(async (app) => {
       proseSerif: g('--font-proseSerif'), proseSans: g('--font-proseSans'),
     };
   })()`);
-  // ---- PARKED - SUPERSEDED by FLUX V2 (Fable's brief, Nick Oct 21): the ground is now #020c10 (the blue-black of the new shell).
-  // Kept VERBATIM below and no longer run; the live successor follows.
-  //
-  // ok('check 1: ground token is Flux\'s #04141A', tokenSpots.ground.toLowerCase() === '#04141a', tokenSpots.ground);
-  // ---- PARKED - SUPERSEDED by the hue-212 pass (Nick picked option B, Fable Oct 23): the ground is now #010811 and the line #193556 (hue 212).
-  // Kept VERBATIM below and no longer run; the live successor follows.
-  //
-  // ok('check 1 [flux-v2 successor]: ground token is Flux\'s #020c10', tokenSpots.ground.toLowerCase() === '#020c10', tokenSpots.ground);
-  // ok('check 1: line token is Flux\'s #1D4A52', tokenSpots.line.toLowerCase() === '#1d4a52', tokenSpots.line);
+  // ARCHIVED PARK (#13 step 14): archive/th2.mjs.parked.md record 1
   ok('check 1 [hue-212 successor]: ground token is Flux\'s #010811', tokenSpots.ground.toLowerCase() === '#010811', tokenSpots.ground);
   ok('check 1 [hue-212 successor]: line token is Flux\'s #193556', tokenSpots.line.toLowerCase() === '#193556', tokenSpots.line);
   ok('check 1: line-active is Flux\'s electric blue #00C2FF', tokenSpots.lineActive.toLowerCase() === '#00c2ff', tokenSpots.lineActive);
@@ -81,10 +73,7 @@ await withHarness(async (app) => {
   ok('check 1 [flux-v2]: the choice token (--choice) is the Flux cyan #00C2FF while --brass stays #FF9800', choiceToken.toLowerCase() === '#00c2ff' && tokenSpots.accent.toLowerCase() === '#ff9800', JSON.stringify({ choice: choiceToken, brass: tokenSpots.accent }));
   ok('check 1: chromeLabel font slot is Rajdhani', tokenSpots.chromeLabel.includes('Rajdhani'), tokenSpots.chromeLabel);
   ok('check 1: contentLabel font slot is Chakra Petch', tokenSpots.contentLabel.includes('Chakra Petch'), tokenSpots.contentLabel);
-// ---- PARKED - SUPERSEDED by TOOLS #10 item 10 (Nick, Oct 24: theme default writing faces - Flux's default writing face is Titillium Web) ----
-  // The ORIGINAL pinned Flux's --font-proseSerif to Crimson Pro (voice continuity). Kept VERBATIM below, no longer run; the successor follows and the original is a PARKED RECORD.
-// ok('check 1: proseSerif stays Crimson Pro (voice continuity, canon §4)', tokenSpots.proseSerif.includes('Crimson Pro'), tokenSpots.proseSerif);
-// ------------------------------------------------------------------
+// ARCHIVED PARK (#13 step 14): archive/th2.mjs.parked.md record 2
   ok('check 1 [item-10 successor]: proseSerif is Flux\'s default writing face, Titillium Web (Nick, Oct 24)', tokenSpots.proseSerif.includes('Titillium Web'), tokenSpots.proseSerif);
   ok('check 1 [parked record]: the ORIGINAL (proseSerif stays Crimson Pro) now fails ONLY because Flux\'s default became Titillium Web', !tokenSpots.proseSerif.includes('Crimson Pro') && tokenSpots.proseSerif.includes('Titillium Web'), tokenSpots.proseSerif);
   ok('check 1: proseSans font slot is Chakra Petch', tokenSpots.proseSans.includes('Chakra Petch'), tokenSpots.proseSans);
@@ -92,21 +81,11 @@ await withHarness(async (app) => {
   // Page dark/light pairs (canon §3 + §11).
   await app.evalJs("window.wrizoThemePrefs.set({ page: 'dark' })");
   const pageDark = await app.evalJs("(() => { const cs = getComputedStyle(document.documentElement); return { paper: cs.getPropertyValue('--paper').trim(), ink: cs.getPropertyValue('--ink-on-paper').trim() }; })()");
-  // ---- PARKED - SUPERSEDED by FLUX V2 (Fable's brief, Nick Oct 21): the dark page is the dark glass #0E1C24 with text #E8F6FA.
-  // Kept VERBATIM below and no longer run; the live successor follows.
-  //
-  // ok('check 1: Page:dark applies Flux\'s dark pair (#0B2429 / #E3F1EC)', pageDark.paper.toLowerCase() === '#0b2429' && pageDark.ink.toLowerCase() === '#e3f1ec', JSON.stringify(pageDark));
-  // ---- PARKED - SUPERSEDED by the hue-212 pass (Nick picked option B, Fable Oct 23): the dark page is now #0C1826 (text #E8F6FA unchanged).
-  // Kept VERBATIM below and no longer run; the live successor follows.
-  //
-  // ok('check 1 [flux-v2 successor]: Page:dark applies Flux\'s dark-glass pair (#0E1C24 / #E8F6FA)', pageDark.paper.toLowerCase() === '#0e1c24' && pageDark.ink.toLowerCase() === '#e8f6fa', JSON.stringify(pageDark));
+  // ARCHIVED PARK (#13 step 14): archive/th2.mjs.parked.md record 3
   ok('check 1 [hue-212 successor]: Page:dark applies Flux\'s dark-glass pair (#0C1826 / #E8F6FA)', pageDark.paper.toLowerCase() === '#0c1826' && pageDark.ink.toLowerCase() === '#e8f6fa', JSON.stringify(pageDark));
   await app.evalJs("window.wrizoThemePrefs.set({ page: 'light' })");
   const pageLight = await app.evalJs("(() => { const cs = getComputedStyle(document.documentElement); return { paper: cs.getPropertyValue('--paper').trim(), ink: cs.getPropertyValue('--ink-on-paper').trim() }; })()");
-  // ---- PARKED - SUPERSEDED by FLUX V2 (Fable's brief, Nick Oct 21): the light page is #F4F7F8 with text #042632 (the chrome stays dark).
-  // Kept VERBATIM below and no longer run; the live successor follows.
-  //
-  // ok('check 1: Page:light applies Flux\'s light pair (#EDF6F3 / #14231F)', pageLight.paper.toLowerCase() === '#edf6f3' && pageLight.ink.toLowerCase() === '#14231f', JSON.stringify(pageLight));
+  // ARCHIVED PARK (#13 step 14): archive/th2.mjs.parked.md record 4
   ok('check 1 [flux-v2 successor]: Page:light applies Flux\'s light pair (#F4F7F8 / #042632)', pageLight.paper.toLowerCase() === '#f4f7f8' && pageLight.ink.toLowerCase() === '#042632', JSON.stringify(pageLight));
 
   // -- check 2: lexicon renders on key surfaces; canonical routes resolve ----
@@ -158,10 +137,7 @@ await withHarness(async (app) => {
   await app.click('Start writing');
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted under Flux' });
   const tabLabel = await app.evalJs("document.querySelector('.mode-tab.active .mode-tab__label')?.textContent");
-  // SUPERSEDED (theme-leftovers, Nick approved Oct 16): "Overclock" retired
-  // for "Wire In" (themeLexicon.ts's own Flux freewrite override). Kept
-  // verbatim, no longer run:
-  //   ok('check 2: the Free-write tab renders Flux\'s "Overclock" (ModeSwitcher sweep)', tabLabel === 'Overclock', String(tabLabel));
+  // ARCHIVED PARK (#13 step 14): archive/th2.mjs.parked.md record 5
   ok('check 2 [theme-leftovers successor]: the Free-write tab renders Flux\'s "Wire In" (ModeSwitcher sweep)', tabLabel === 'Wire In', String(tabLabel));
   // Two .mode-tab--action tabs rendered (Workshop, then Publish/Connect) — the second was targeted by INDEX.
   // MAINTENANCE (hide-workshop, Oct 23): Workshop is hidden until built, so the lone action tab is Publish and index [1] is gone
@@ -170,10 +146,7 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.mode-tab--action:not(.deferred)')?.click()");
   await sleep(150);
   const publishDialogTitle = await app.evalJs("document.querySelector('.card-title')?.textContent");
-  // SUPERSEDED (item arbor-quiet-brass): themeLexicon.ts's Flux `publish` override
-  // renamed "Connect" -> "Uplink" (Fable's proposal) so it stops colliding with the
-  // board-connection family's new Flux word "Link".
-  // ok('check 2: the Publish dialog renders Flux's "Connect"', publishDialogTitle === 'Connect', String(publishDialogTitle));
+  // ARCHIVED PARK (#13 step 14): archive/th2.mjs.parked.md record 6
   ok('check 2 (arbor-quiet-brass successor): the Publish dialog renders Flux\'s "Uplink"', publishDialogTitle === 'Uplink', String(publishDialogTitle));
   await app.evalJs("[...document.querySelectorAll('.btn-quiet')].find(b => b.textContent === 'Close')?.click()");
   await sleep(150);
@@ -521,24 +494,7 @@ await withHarness(async (app) => {
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
 
-// === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
-// B1 (2026-07-19) is the first tenant of this scaffold. Quoted verbatim
-// below (the exact code that lived in this file's own live check 2 section
-// before this park):
-//
-//   "canonical route /journal still resolves under Flux (URL stays
-//   canonical)"
-//     ok('check 2: canonical route /journal still resolves under Flux
-//       (URL stays canonical)',
-//       (await app.evalJs('location.hash')).includes('/journal'),
-//       await app.evalJs('location.hash'));
-//
-// B1 S5 — pages/Journal.tsx (the room this route used to render) is
-// deleted; '/journal' now find-or-creates the Journal Board and redirects
-// (App.tsx's JournalBoardGate) — the URL deliberately does NOT stay
-// '/journal' anymore; that IS the new canonical behavior (retirement-by-
-// replacement), not a regression. Live successor: b1.mjs's own retirement
-// check (old links re-point, no 404 hole).
+// ARCHIVED PARK (#13 step 14): archive/th2.mjs.parked.md record 7
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });

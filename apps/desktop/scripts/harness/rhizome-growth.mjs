@@ -287,14 +287,7 @@ ok('R5: lap 2\'s opening stroke is that one root segment',
     mains.length >= 2 && mains.every(s => eq(s.x1, s.y1, root.x2, root.y2)),
     String(mains.length));
 }
-// ---- PARKED - SUPERSEDED by the flash fade (Nick, 2026-10-10: "a bit brighter and fade back out slower"). Kept VERBATIM and no
-// longer run: data-flash now carries a third state, 'fading', between the hold and the clear. Its record is in the HARNESS_PARKED
-// block at the foot; the successor follows.
-//
-// ok('R5: FLASH_MS is 1200 and the field holds data-flash',
-//   /const FLASH_MS = 1200/.test(fieldSrc) && fieldSrc.includes("data-flash={flashLap != null ? 'true' : 'false'}"),
-//   'flash');
-// ------------------------------------------------------------------
+// ARCHIVED PARK (#13 step 14): archive/rhizome-growth.mjs.parked.md record 1
 const r5FlashSeen = { hold: /const FLASH_MS = 1200/.test(fieldSrc), oldExpr: fieldSrc.includes("data-flash={flashLap != null ? 'true' : 'false'}") };
 ok('R5 [fade successor]: FLASH_MS is 1200 (the hold), FADE_MS is 1500 (the fade, not a cut), the field holds data-flash true -> fading -> false, and reduced motion skips the fade',
   /const FLASH_MS = 1200/.test(fieldSrc) && /const FADE_MS = 2200/.test(fieldSrc)

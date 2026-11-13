@@ -160,36 +160,7 @@ await withHarness(async (app) => {
         const buttons = boardSection ? boardSection.querySelectorAll('button') : [];
         return { buttonCount: buttons.length, labels: [...buttons].map(b => b.textContent.trim()) };
       })()`);
-      // SUPERSEDED (item arbor-quiet-brass): the footer toggle's label renamed
-      // "Show connections" -> "Show grafts" (Arbor's own word); same five tools, same order.
-      // ok('ab4.mjs S5 lineage, generation 5: the board sliver carries its five hand tools, in order — Add card, New page card, Existing page…, From a deck…, Show connections', sliverShape.buttonCount === 5 && sliverShape.labels[0] === 'Add card' && sliverShape.labels[1] === 'New page card' && sliverShape.labels[2] === 'Existing page…' && sliverShape.labels[3] === 'From a deck…' && sliverShape.labels[4] === 'Show connections', JSON.stringify(sliverShape));
-      // SUPERSEDED (item word-diet, Nick) — boardNewPageCard reworks "New page
-      // card" -> "New Pages Card"; boardAddExistingPage reworks "Existing
-      // page…" -> "+ Filed Pages" (the SAME door beginConnectPage already
-      // names — one picker, one name). ORIGINAL claim parked verbatim:
-      // ok('ab4.mjs S5 lineage, generation 6 (arbor-quiet-brass): the board sliver carries its five hand tools, in order — Add card, New page card, Existing page…, From a deck…, Show grafts',
-      //   sliverShape.buttonCount === 5
-      //     && sliverShape.labels[0] === 'Add card' && sliverShape.labels[1] === 'New page card'
-      //     && sliverShape.labels[2] === 'Existing page…' && sliverShape.labels[3] === 'From a deck…'
-      //     && sliverShape.labels[4] === 'Show grafts',
-      //   JSON.stringify(sliverShape));
-      // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
-      // The footer toggle left the board sliver: FOUR hand tools now, in the same order - Add card, New Pages Card, + Filed Pages, From a deck…
-      // Quoted VERBATIM below. Successor: the check directly below (generation 8).
-      // ok('ab4.mjs S5 lineage, generation 7 [word-diet successor]: the board sliver carries its five hand tools, in order — Add card, New Pages Card, + Filed Pages, From a deck…, Show grafts',
-      //   sliverShape.buttonCount === 5
-      //     && sliverShape.labels[0] === 'Add card' && sliverShape.labels[1] === 'New Pages Card'
-      //     && sliverShape.labels[2] === '+ Filed Pages' && sliverShape.labels[3] === 'From a deck…'
-      //     && sliverShape.labels[4] === 'Show grafts',
-      //   JSON.stringify(sliverShape));
-      // ---- PARKED - SUPERSEDED by word-diet-layouts (Fable Oct 15, the singular-exception rule) ----
-      // boardNewPageCard reworks back "New Pages Card" -> "New Page". Quoted VERBATIM below. Successor: the check directly below (generation 9).
-      // ok('ab4.mjs S5 lineage, generation 8 [connector-a successor]: the board sliver carries its FOUR hand tools, in order - Add card, New Pages Card, + Filed Pages, From a deck… - and no footer toggle',
-      //   sliverShape.buttonCount === 4
-      //     && sliverShape.labels[0] === 'Add card' && sliverShape.labels[1] === 'New Pages Card'
-      //     && sliverShape.labels[2] === '+ Filed Pages' && sliverShape.labels[3] === 'From a deck…'
-      //     && !sliverShape.labels.includes('Show grafts'),
-      //   JSON.stringify(sliverShape));
+      // ARCHIVED PARK (#13 step 14): archive/b3.mjs.parked.md record 1
       ok('ab4.mjs S5 lineage, generation 9 [word-diet-layouts successor]: the board sliver carries its FOUR hand tools, in order - Add card, New Page, + Filed Pages, From a deck… - and no footer toggle',
         sliverShape.buttonCount === 4
           && sliverShape.labels[0] === 'Add card' && sliverShape.labels[1] === 'New Page'
@@ -487,11 +458,7 @@ await withHarness(async (app) => {
   // two adjacent-pair relationship cards -> 2 threads each = 4 connections.
   ok('S2: Character Study is dealt PRE-THREADED — each of the two relationship cards threads to BOTH characters it names (2 threads x 2 relationship cards = 4 connections), the SAME \'connection\' Box kind the hand-drawn thread gesture mints',
     csConnections.length === 4, String(csConnections.length));
-  // ---- PARKED - SUPERSEDED by W3, guided paths (Nick / Fable, Oct 23): Character Study's dealt cards now carry the two W3 fields (prompt, deckStep); its threads still carry nothing.
-  // Kept VERBATIM below and no longer run; the live successor follows (scripts/harness/guided-w3.mjs carries the new law).
-  //
-  // const csForeignKeys = csBoxes.flatMap(b => Object.keys(b).filter(k => !KNOWN_BOX_KEYS.has(k)));
-  // ok('S2: Character Study\'s own dealt cards AND threads carry zero deck back-reference too', csForeignKeys.length === 0, JSON.stringify(csForeignKeys));
+  // ARCHIVED PARK (#13 step 14): archive/b3.mjs.parked.md record 2
   const W3_KEYS_CS = new Set(['prompt', 'deckStep']);
   const csForeignKeysW3 = csBoxes.flatMap(b => Object.keys(b).filter(k => !KNOWN_BOX_KEYS.has(k) && !W3_KEYS_CS.has(k)));
   const csThreadsClean = csBoxes.filter(b => b.kind === 'connection').every(b => !('prompt' in b) && !('deckStep' in b));
@@ -523,14 +490,7 @@ await withHarness(async (app) => {
     }
     return out;
   })()`);
-  // ---- PARKED - SUPERSEDED by W3, guided paths (Nick / Fable, Oct 23): the library is thirteen decks: the seven live ones + the six Tier 1 additions (Hero's Journey, Story Circle, Scene-Sequel, Argumentative Essay, Research Paper, Business Proposal).
-  // Kept VERBATIM below and no longer run; the live successor follows (scripts/harness/guided-w3.mjs carries the new law).
-  //
-  // ok('S4: the definitions sweep — all seven decks are registered', Object.keys(sweepResult).length === 7, JSON.stringify(Object.keys(sweepResult)));
-  // ---- PARKED - SUPERSEDED by Fable's Oct 23 ruling on From my pages (change 5): From my pages is the fourteenth deck (the seam's default answer for its page step is no pages: it deals nothing).
-  // Kept VERBATIM below and no longer run; the live successor follows.
-  //
-  // ok('S4: the definitions sweep [guided-w3 successor] - all thirteen decks are registered (the seven live + the six Tier 1 additions)', Object.keys(sweepResult).length === 13, JSON.stringify(Object.keys(sweepResult)));
+  // ARCHIVED PARK (#13 step 14): archive/b3.mjs.parked.md record 3
   ok('S4: the definitions sweep [guided-w3 successor 2] - all fourteen decks are registered (the seven live + the six Tier 1 additions + From my pages)', Object.keys(sweepResult).length === 14, JSON.stringify(Object.keys(sweepResult)));
   ok('S4 sweep [guided-w3]: "from-my-pages" with its default answers (no pages picked) deals nothing, without error', sweepResult['from-my-pages'] === 0, 'got ' + sweepResult['from-my-pages']);
   for (const [deckId, expected] of Object.entries({ 'hero-journey': 12, 'story-circle': 8, 'scene-sequel': 6, 'argument-essay': 5, 'research-paper': 5, 'business-proposal': 7 })) {

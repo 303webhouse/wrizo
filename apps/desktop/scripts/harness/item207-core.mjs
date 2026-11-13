@@ -73,14 +73,7 @@ ok('TYPED NUMBER: displays "10.5" and "11", never "10.50" or "11.0"', M.formatSi
 // "11 IS TODAY" — an untouched page emits nothing, so its editor style is the one it always had
 // ---------------------------------------------------------------------------
 ok('11 = TODAY: a page that never chose (no face, no size) yields an EMPTY style — byte-identical to the prior build', JSON.stringify(M.pageTypeStyle(undefined, undefined)) === '{}', JSON.stringify(M.pageTypeStyle(undefined, undefined)));
-// ---- PARKED - SUPERSEDED by page-size (Fable's ruling a, Oct 23: the page's number is REAL POINTS IN PAGE UNITS - 12 = 16px at page scale 1,
-// scaled with the page - and a NEW page defaults to 12; cards keep their own 11). Kept VERBATIM and no longer run. An explicit 11 is now a real,
-// smaller size (it emits a font-size), and 12 is no longer "17 x 12/11 x the paper scale". Successors follow; records in the parked section.
-//
-// ok('11 = TODAY: an explicit 11 yields no font-size either (the default is the absence of a rule)', M.pageTypeStyle(undefined, 11).fontSize === undefined && M.pageTypeStyle(M.storedFaceFor(M.rosterFace('Crimson Pro')), 11).fontSize === undefined, '');
-// ok('SIZE: 12 renders 17px x 12/11 x the paper scale, and 6 / 120 scale the same way (the number is the printed size; the screen is a uniform zoom)',
-//   M.pageTypeStyle(undefined, 12).fontSize === `calc(17px * ${12 / 11} * var(--paper-scale))` && M.pageTypeStyle(undefined, 120).fontSize === `calc(17px * ${120 / 11} * var(--paper-scale))`, M.pageTypeStyle(undefined, 12).fontSize);
-// ------------------------------------------------------------------
+// ARCHIVED PARK (#13 step 14): archive/item207-core.mjs.parked.md record 1
 let pageSizePark = null;   // page-size: the default leg's observation, for the parked leg's records (coreParks is declared further down)
 {
   const fs12 = M.pageTypeStyle(undefined, 12).fontSize; const fs12face = M.pageTypeStyle(M.storedFaceFor(M.rosterFace('Crimson Pro')), 12).fontSize;
@@ -113,12 +106,7 @@ ok('ROSTER: Times New Roman and Arial are NAMED (source "named"), installed-firs
 ok('ROSTER: the stored form of a named face carries its fallback; a bundled one does not', JSON.stringify(M.storedFaceFor(TNR)) === JSON.stringify({ name: 'Times New Roman', generic: 'serif', source: 'named', fallback: 'Tinos' }) && !('fallback' in M.storedFaceFor(M.rosterFace('Lora'))), JSON.stringify(M.storedFaceFor(TNR)));
 ok('SIZE-ADJUST (Fable\'s ruling): every face carries sizeAdjust and every one is 1 — the number is literal printed points; the field is the seam', M.ROSTER.every((f) => f.sizeAdjust === 1), '');
 ok('RESOLVER: a known face resolves to its stack; an absent face resolves to nothing (the theme/voice face stands)', M.faceStack(M.storedFaceFor(M.rosterFace('Lora'))) === "'Lora Variable', Georgia, serif" && M.faceStack(undefined) === undefined, '');
-// ---- PARKED - SUPERSEDED by TOOLS #10 item 11 (Fable: GO, Oct 27: the writer's own installed fonts - device-local list, StoredFace source 'device') ----
-// A face whose source is 'device' no longer falls back to a generic class of its own - it falls back to the THEME'S DEFAULT (--font-prose). The in-kind rule still holds for every other unknown face (source 'named' / 'file'). Kept VERBATIM below and no longer run; the successor follows, and the original is run as a PARKED RECORD (it must now fail, for exactly that reason).
-// ok('FALLBACK IN KIND: a face this build does not know still renders — its own name, then its generic class (a serif falls back to a serif, a monospace to a monospace, never a sans)',
-//   /'Some Device Font', Georgia, serif$/.test(M.faceStack({ name: 'Some Device Font', generic: 'serif', source: 'device' })) && /monospace$/.test(M.faceStack({ name: 'X', generic: 'monospace', source: 'device' })) && /sans-serif$/.test(M.faceStack({ name: 'Y', generic: 'sans-serif', source: 'file' })),
-//   M.faceStack({ name: 'Some Device Font', generic: 'serif', source: 'device' }));
-// ------------------------------------------------------------------
+// ARCHIVED PARK (#13 step 14): archive/item207-core.mjs.parked.md record 2
 ok('FALLBACK IN KIND [item-11 successor]: a face this build does not know (source named / file) still renders its own name, then its generic class (a serif to a serif, a monospace to a monospace, never a sans)',
   /'Some Named Font', Georgia, serif$/.test(M.faceStack({ name: 'Some Named Font', generic: 'serif', source: 'named' })) && /monospace$/.test(M.faceStack({ name: 'X', generic: 'monospace', source: 'file' })) && /sans-serif$/.test(M.faceStack({ name: 'Y', generic: 'sans-serif', source: 'named' })),
   M.faceStack({ name: 'Some Named Font', generic: 'serif', source: 'named' }));
@@ -181,27 +169,14 @@ const ctlShape = (t) => {
 };
 const shape = ctlShape(src('components/TypeControl.tsx'));
 const coreParks = {};   // FONT-SPAN: the default leg's observations, for the parked leg's records
-// ---- PARKED - SUPERSEDED by font-span (Nick approved the font-choices mockup, cursor/font-choices @ 6cc5f529, 2026-10-15) ----
-// Kept VERBATIM and no longer run. The control gains the two scope buttons ("Selection" / "Whole document" or "Whole card"), rendered
-// only where a host passes `scope` (Draft, a card); Free Write and Revise still render exactly the face button and the step pair.
-// ok('MINIMAL (his law): the control is exactly a face button and a `-` `+` pair (3 buttons) plus ONE number input, and that input exists only in the full form',
-//   shape.buttons === 3 && shape.inputs === 1 && shape.inputGuardedByFullForm, JSON.stringify(shape));
-// ------------------------------------------------------------------
+// ARCHIVED PARK (#13 step 14): archive/item207-core.mjs.parked.md record 3
 const scopeOnly = /\{scope && \(\s*<>\s*<div className="wz-type-scopes"[\s\S]*?<button[\s\S]*?<button[\s\S]*?<\/div>/.test(noComments(src('components/TypeControl.tsx')))
   && /\{!scope && <button/.test(noComments(src('components/TypeControl.tsx')));
 coreParks.minimal = { ...shape, scopeOnly };
-// ---- PARKED - SUPERSEDED by TOOLS #10 item 9 (Fable, Oct 27: "the font list is collapsed by default in the Draft Tools drawer") ----
-// Kept VERBATIM and no longer run. The scoped form now carries its own face button (the disclosure that opens the collapsed list) between the scope pair and the list, so it is 6 buttons in source and the face
-// button is no longer "only without scope". Successor below; the original is run as a PARKED RECORD (it must now fail, for exactly that reason).
-// ok('MINIMAL [font-span successor]: the control is a face button (unscoped hosts) OR the two scope buttons (scoped hosts), plus the `-` `+` pair - 5 buttons in source, the scope pair only under `scope`, the face button only without it - and ONE number input, only in the full form',
-//   shape.buttons === 5 && scopeOnly && shape.inputs === 1 && shape.inputGuardedByFullForm, JSON.stringify(coreParks.minimal));
-// ------------------------------------------------------------------
+// ARCHIVED PARK (#13 step 14): archive/item207-core.mjs.parked.md record 4
 const tcSrc = noComments(src('components/TypeControl.tsx'));
 const scopeFaceBtn = /\{scope && \(\s*<>\s*<div className="wz-type-scopes"[\s\S]*?<\/div>\s*<button\s+type="button"\s+className="wz-type-face"[\s\S]*?aria-expanded=\{listOpen\}[\s\S]*?onClick=\{\(\) => setListOpen\(\(o\) => !o\)\}[\s\S]*?<ul className="wz-type-list wz-type-list-inline"[^>]*hidden=\{!listOpen\}/.test(tcSrc);
-// ---- PARKED VERBATIM - SUPERSEDED by TOOLS #14 (Fable, Nov 2: the size box sits between `-` and `+` in EVERY form, small included). Kept below, no longer run; the successor follows. ----
-// ok('MINIMAL [item-9 successor]: the control is a face button (unscoped hosts) OR the two scope buttons + a face button that opens the COLLAPSED list (scoped hosts), plus the `-` `+` pair and the add-font form (its Add / Find buttons and name input) - 8 buttons and 2 inputs in source, the NUMBER input only in the full form',
-//   shape.buttons === 8 && scopeFaceBtn && /\{!scope && <button/.test(tcSrc) && shape.inputs === 2 && shape.inputGuardedByFullForm, JSON.stringify({ ...coreParks.minimal, scopeFaceBtn }));
-// ------------------------------------------------------------------
+// ARCHIVED PARK (#13 step 14): archive/item207-core.mjs.parked.md record 5
 ok('MINIMAL [size-box successor]: the control is a face button (unscoped hosts) OR the two scope buttons + a face button that opens the COLLAPSED list (scoped hosts), plus the `-` `+` pair and the add-font form - 8 buttons and 2 inputs in source, the NUMBER input in EVERY form (TOOLS #14: not guarded to the full form)',
   shape.buttons === 8 && scopeFaceBtn && /\{!scope && <button/.test(tcSrc) && shape.inputs === 2 && /\n\s*<input\s+className="wz-type-num"/.test(tcSrc) && !shape.inputGuardedByFullForm, JSON.stringify({ ...coreParks.minimal, scopeFaceBtn }));
 ok('MINIMAL [parked record]: the ORIGINAL (5 buttons) now fails ONLY because the scoped form gained its face button and the add-font form (8)', !(shape.buttons === 5 && scopeOnly && shape.inputs === 1 && shape.inputGuardedByFullForm) && shape.buttons === 8, JSON.stringify({ buttons: shape.buttons }));
@@ -213,10 +188,7 @@ ok('COLLAPSED (item 9): the scoped list is HIDDEN until the face button is press
   ok('MUTANT: the scoped list starts OPEN - COLLAPSED must go RED (the mutation LANDED)', sut2 !== tcSrc && !/const \[listOpen, setListOpen\] = useState\(false\)/.test(sut2), '');
 }
 ok('MINIMAL: no caption or heading of any kind in the control (no label, legend or heading element, no eyebrow class) — a control\'s name lives in its aria-label', !shape.caption, JSON.stringify(shape));
-// ---- PARKED - SUPERSEDED by TOOLS #10 item 11 (Fable: GO, Oct 27: the writer's own installed fonts - device-local list, StoredFace source 'device') ----
-// The control now carries an "Add a font..." row - in the SCOPED form only (Draft's drawer, a card's dock). Free Write and Revise still never get it (Nick's Q2). Kept VERBATIM below and no longer run; the successor follows, and the original is run as a PARKED RECORD (it must now fail, for exactly that reason).
-// ok('NO ADD DOOR (207a): the control carries no "Add a font…" row — it arrives with Route A (207b), and Free Write never gets it (his Q2)', !shape.addDoor, '');
-// ------------------------------------------------------------------
+// ARCHIVED PARK (#13 step 14): archive/item207-core.mjs.parked.md record 6
 const tcAdd = noComments(src('components/TypeControl.tsx'));
 const addRowScoped = /\{addRow\(\)\}\s*<\/ul>\s*<\/>/.test(tcAdd) && (tcAdd.match(/\{addRow\(\)\}/g) || []).length === 1;   // the one call sits inside the scoped list, never the unscoped popup
 ok('ADD DOOR [item-11 successor]: the control carries "Add a font..." in the SCOPED form only - one addRow() call, inside the scoped list, and none in the unscoped (Free Write / Revise) list (his Q2)', addRowScoped && /typeAddFont/.test(tcAdd), '');
@@ -229,45 +201,12 @@ ok('LABEL: the control reads the resolved --font-prose, not the voice attribute 
   /getPropertyValue\('--font-prose'\)/.test(src('components/TypeControl.tsx')) && !/data-voice/.test(noComments(src('components/TypeControl.tsx'))), '');
 const sliverSrc = src('components/Sliver.tsx');
 const mount = sliverSrc.match(/content\.type && \(\s*<div className="wz-sliver-section wz-sliver-type">[\s\S]*?<\/div>\s*\)\}/);
-// ---- PARKED - SUPERSEDED by PR #7 (Fable's spec C3: a "Typeface" heading above the font controls), 2026-10-02 ----
-// Kept VERBATIM and no longer run. The section now carries the drawer's own zone heading; the CONTROL stays caption-free
-// (MINIMAL above still asserts that), so only the section-has-no-heading half of this check changed.
-//
-// ok('MOUNT: the sliver mounts the control on the Free Write, Draft and Revise arms only, in one section with no heading',
-//   !!mount && /content\.kind === 'freewrite' \|\| content\.kind === 'draft' \|\| content\.kind === 'revise'/.test(sliverSrc) && !/wz-sliver-h/.test(mount[0]), mount ? 'found' : 'mount block not found');
-// ------------------------------------------------------------------
-// ---- PARKED - SUPERSEDED by the code-shape tolerant successor below (Fable, 2026-10-12: "mount block not found" on INK's
-// phase1-drawers, whose guard adds `&& allowed('typeface')` between `content.type` and the section). Kept VERBATIM and no longer
-// run: it matched only the literal `content.type && (`, so ANY further guard read as a missing mount. The claim is unchanged.
-//
-// ok('MOUNT [C3 successor]: the sliver mounts the control on the Free Write, Draft and Revise arms only, in one section headed "Typeface" (the lexicon\'s railTypeface) with the control directly beneath',
-//   !!mount && /content\.kind === 'freewrite' \|\| content\.kind === 'draft' \|\| content\.kind === 'revise'/.test(sliverSrc) && /^[^]*?<div className="wz-sliver-h">\{t\('railTypeface'\)\}<\/div><TypeControl \{\.\.\.content\.type\} \/>/.test(mount[0]) && (mount[0].match(/wz-sliver-h/g) || []).length === 1, mount ? 'found' : 'mount block not found');
-// ------------------------------------------------------------------
-// The SAME claim on the guard's real shape: the three arms, then content.type, then ANY further guards (`&& allowed(...)` and the
-// like), then the one section. A guard that drops an arm still fails (proved on a constructed source when this was written).
+// ARCHIVED PARK (#13 step 14): archive/item207-core.mjs.parked.md record 7
 const mountC3 = sliverSrc.match(/\{\(content\.kind === 'freewrite' \|\| content\.kind === 'draft' \|\| content\.kind === 'revise'\) && content\.type(?: && [^\n]*?)? && \(\s*<div className="wz-sliver-section wz-sliver-type">[\s\S]*?<\/div>\s*\)\}/);
 ok('MOUNT [C3 successor, guard-tolerant]: the sliver mounts the control on the Free Write, Draft and Revise arms only (any further guard allowed), in one section headed "Typeface" (the lexicon\'s railTypeface) with the control directly beneath',
   !!mountC3 && /^[^]*?<div className="wz-sliver-h">\{t\('railTypeface'\)\}<\/div><TypeControl \{\.\.\.content\.type\} \/>/.test(mountC3[0]) && (mountC3[0].match(/wz-sliver-h/g) || []).length === 1, mountC3 ? 'found' : 'mount block not found');
 const pe = src('pages/PageEditor.tsx');
-// ---- PARKED - SUPERSEDED by font-span (Nick approved the font-choices mockup, cursor/font-choices @ 6cc5f529; chat 1's ledger 68) ----
-// Kept VERBATIM and no longer run. Draft now passes the full form WITH its scope flag - `typeMember('full', true)`, the Selection /
-// Whole document pair - so the literal `typeMember('full')` no longer matches Draft's line, though the claim (Draft passes the FULL
-// form) still holds. The successor reads the form and the scope flag apart; its record is in this file's parked section.
-// ok('FORMS: Free Write passes the SMALL form (and none in INK), Draft and Revise pass the FULL form',
-//   /type: instrument === 'ink' \? undefined : typeMember\('small'\)/.test(pe) && /kind: 'draft',[\s\S]{0,200}type: typeMember\('full'\)/.test(pe) && /kind: 'revise', type: typeMember\('full'\)/.test(pe), '');
-// ------------------------------------------------------------------
-// ---- PARKED - SUPERSEDED by typewriter-scope (Fable Oct 21/22) ----
-// Kept VERBATIM and no longer run. The 200-char window between `kind: 'draft',` and
-// `type: typeMember('full', true)` was outrun, not broken: typewriter-scope inserted a comment
-// plus `pageId: id,` / `pageEmpty: textRef.current.trim().length === 0,` between them (PageEditor.tsx's
-// own per-page typewriter read, store/writingSettings.ts's new `typewriterForPage`) - the actual gap
-// grew to 383 chars. Draft's own form (`type: typeMember('full', true)`) is untouched; only this
-// regex's own fixed window needed widening (unbounded lazy, matching MOUNT's own style above),
-// which the live successor below does.
-//
-// ok('FORMS [font-span successor]: Free Write passes the SMALL form (and none in INK); Draft passes the FULL form WITH the Selection scope; Revise passes the FULL form WITHOUT it (no styling tools there by ruling)',
-//   formsNow.freeWriteSmall && formsNow.draftFullScoped && formsNow.reviseFullUnscoped, JSON.stringify(formsNow));
-// ------------------------------------------------------------------
+// ARCHIVED PARK (#13 step 14): archive/item207-core.mjs.parked.md record 8
 const formsNow = {
   freeWriteSmall: /type: instrument === 'ink' \? undefined : typeMember\('small'\)/.test(pe),
   draftFullScoped: /kind: 'draft',[\s\S]*?type: typeMember\('full', true\)/.test(pe),
@@ -326,10 +265,7 @@ await mutant('M11 the unchosen label keeps the " Variable" suffix (the package\'
   const landed = (mutated) => mutated !== t;
   const extraButton = t.replace('</div>\n  );\n}', '<button type="button">Add a font</button></div>\n  );\n}');
   ok('FALSIFICATION M8 an extra button (an add door) is added to the control — must go RED', landed(extraButton) && (ctlShape(extraButton).buttons !== 3 || ctlShape(extraButton).addDoor), '');
-  // ---- PARKED VERBATIM - SUPERSEDED by TOOLS #14 (Fable, Nov 2: the size box sits between `-` and `+` in EVERY form, small included). Kept below, no longer run; the successor follows. ----
-  // const unguarded = t.replace("{form === 'full' && (", '{(');
-  // ok('FALSIFICATION M9 the number input is shown in EVERY form (Free Write would gain it) — must go RED', landed(unguarded) && !ctlShape(unguarded).inputGuardedByFullForm, '');
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/item207-core.mjs.parked.md record 9
   const reguarded = t.replace('<input\n          className="wz-type-num"', "{form === 'full' && (<input\n          className=\"wz-type-num\"");
   ok('FALSIFICATION M9 [size-box successor] the number input is guarded to the FULL form again (Free Write and a card lose it) - must go RED', landed(reguarded) && ctlShape(reguarded).inputGuardedByFullForm, '');
   const captioned = t.replace('<div className="wz-type"', '<div className="wz-sliver-h">Type</div><div className="wz-type"');

@@ -204,9 +204,7 @@ await withHarness(async (app) => {
   const wordsClip = await app.evalJs("navigator.clipboard.readText()");
   ok('S2: "Copy My Words" places the markdown-stripped plain text on the REAL OS clipboard (a genuine readText() round trip, not just the test seam)',
     wordsClip.replace(/\r\n/g, '\n') === 'A Heading\n\nSome bold and italic words.\n\nA second paragraph.', wordsClip);
-  // SUPERSEDED (item word-diet, Nick) — publishCopyWordsConfirm shortens to "Copied".
-  // ok('S2: "Copy My Words" renders a confirmation (the house ActionToast quiet-line pattern) — S1\'s own live finding was total silence here before this fix',
-  //   wordsToast === 'Copied — your plain words are on the clipboard.', String(wordsToast));
+  // ARCHIVED PARK (#13 step 14): archive/e1.mjs.parked.md record 1
   ok('S2 [word-diet successor]: "Copy My Words" renders a confirmation (the house ActionToast quiet-line pattern)',
     wordsToast === 'Copied', String(wordsToast));
 
@@ -229,10 +227,7 @@ await withHarness(async (app) => {
   await trustedClick(app, 'Copy My Words');
   await sleep(300);
   const failToast = await app.evalJs("document.querySelector('.action-toast')?.textContent");
-  // SUPERSEDED (item word-diet, Nick) — publishCopyFailed shortens;
-  // ORIGINAL claim parked verbatim:
-  // ok('S2: a FORCED total clipboard failure (both the Clipboard API and the execCommand fallback denied) surfaces an HONEST failure message — never silence (the exact hole S1\'s live diagnosis found: an unhandled async rejection with zero fallback and zero surfaced error)',
-  //   failToast === 'Copy didn’t go through — try again, or use Download below.', String(failToast));
+  // ARCHIVED PARK (#13 step 14): archive/e1.mjs.parked.md record 2
   ok('S2 [word-diet successor]: a FORCED total clipboard failure (both the Clipboard API and the execCommand fallback denied) surfaces an HONEST failure message — never silence',
     failToast === 'Copy failed. Try again, or use Download.', String(failToast));
 
@@ -609,10 +604,7 @@ await withHarness(async (app) => {
     await trustedClick(app, 'Publish');
     await sleep(250);
     const btns = await app.evalJs("__diag().buttons");
-    // SUPERSEDED (item word-diet, Nick) — "This Page" -> "Current Pages" (publishDownloadPageMd/Txt).
-    // ok(`Geometry @${width}px: framed (.desk-frame present) and the full Download row renders (This Page .md/.txt + Everything)`,
-    //   framedShape === true && btns.includes('This Page (.md)') && btns.includes('This Page (.txt)') && btns.includes('Everything'),
-    //   JSON.stringify({ framedShape, btns: btns.filter(b => /download|page|everything/i.test(b)) }));
+    // ARCHIVED PARK (#13 step 14): archive/e1.mjs.parked.md record 3
     ok(`Geometry @${width}px [word-diet successor]: framed (.desk-frame present) and the full Download row renders (Current Pages .md/.txt + Everything)`,
       framedShape === true && btns.includes('Current Pages (.md)') && btns.includes('Current Pages (.txt)') && btns.includes('Everything'),
       JSON.stringify({ framedShape, btns: btns.filter(b => /download|page|everything/i.test(b)) }));
@@ -635,9 +627,7 @@ await withHarness(async (app) => {
   await trustedClick(app, 'Publish');
   await sleep(250);
   const legacyBtns = await app.evalJs("__diag().buttons");
-  // SUPERSEDED (item word-diet, Nick) — "This Page" -> "Current Pages".
-  // ok('Legacy (<1100px): the SAME Publish dialog (already shared with the framed host pre-ticket) carries the real Download row too — a legacy-viewport writer gets the same vacation insurance, not a lesser one',
-  //   legacyBtns.includes('This Page (.md)') && legacyBtns.includes('Everything'), JSON.stringify(legacyBtns.filter(b => /download|page|everything/i.test(b))));
+  // ARCHIVED PARK (#13 step 14): archive/e1.mjs.parked.md record 4
   ok('Legacy (<1100px) [word-diet successor]: the SAME Publish dialog (already shared with the framed host pre-ticket) carries the real Download row too — a legacy-viewport writer gets the same vacation insurance, not a lesser one',
     legacyBtns.includes('Current Pages (.md)') && legacyBtns.includes('Everything'), JSON.stringify(legacyBtns.filter(b => /download|page|everything/i.test(b))));
 
@@ -665,9 +655,7 @@ await withHarness(async (app) => {
   await trustedClick(app, 'Copy My Words');
   await sleep(300);
   const scriptWordsToast = await app.evalJs("document.querySelector('.action-toast')?.textContent");
-  // SUPERSEDED (item word-diet, Nick).
-  // ok('S2 (ScriptEditor\'s own Publish dialog): "Copy My Words" renders the same house confirmation',
-  //   scriptWordsToast === 'Copied — your plain words are on the clipboard.', String(scriptWordsToast));
+  // ARCHIVED PARK (#13 step 14): archive/e1.mjs.parked.md record 5
   ok('S2 (ScriptEditor\'s own Publish dialog) [word-diet successor]: "Copy My Words" renders the same house confirmation',
     scriptWordsToast === 'Copied', String(scriptWordsToast));
   await trustedClick(app, 'Copy Formatted');
@@ -680,11 +668,7 @@ await withHarness(async (app) => {
   await app.emulateDpr(1, LEGACY_W, 900);
   await sleep(200);
   const legacyScriptBtns = await app.evalJs('__diag().buttons');
-  // SUPERSEDED (item word-diet, Nick) — "This Page (.md)" -> "Current Pages
-  // (.md)"; checking the OLD text's absence here would now pass vacuously
-  // (it's gone everywhere), not for the reason this check actually claims.
-  // ok('Legacy (<1100px) ScriptEditor: has its OWN pre-existing "Copy script text" toolbar button, with no Publish dialog at all — untouched by this ticket',
-  //   legacyScriptBtns.includes('Copy script text') && !legacyScriptBtns.includes('This Page (.md)'), JSON.stringify(legacyScriptBtns));
+  // ARCHIVED PARK (#13 step 14): archive/e1.mjs.parked.md record 6
   ok('Legacy (<1100px) ScriptEditor [word-diet successor]: has its OWN pre-existing "Copy script text" toolbar button, with no Publish dialog at all — untouched by this ticket',
     legacyScriptBtns.includes('Copy script text') && !legacyScriptBtns.includes('Current Pages (.md)'), JSON.stringify(legacyScriptBtns));
   await trustedClick(app, 'Copy script text');

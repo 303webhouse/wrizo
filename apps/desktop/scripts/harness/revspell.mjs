@@ -83,25 +83,13 @@ for (const f of srcFiles) {
 const truthy = sites.filter((s) => !/spellCheck=\{false\}/.test(s));
 ok('S0: COVERAGE — the census read the whole client (> 100 source files), so the site list below means something and not blindness',
   srcFiles.length > 100, `files=${srcFiles.length}`);
-// ---- PARKED - SUPERSEDED by Fable's ruling of Oct 17 (page-templates, ledger 87): the Title Page sheet (components/TitlePageSheet.tsx) is a form of short fields, not a prose editor host. Spell-check is ON for its TITLE (the writer's own words,
-// like the page) and OFF for its AUTHOR, CONTACT and WORD LINE (names, addresses, a count). The claim "no editor host hardcodes it off" still holds for every PROSE host; it does not hold for those three fields, by design.
-// Kept VERBATIM below and no longer run; the successor says exactly that.
-//
-// ok('S1: NO editor host hardcodes spellCheck={false} any more — the one that did (ForwardOnlyEditor) is now mode-driven, so nothing forces the checker off in Revise',
-//   !sites.some((s) => /spellCheck=\{false\}/.test(s)), JSON.stringify(sites));
+// ARCHIVED PARK (#13 step 14): archive/revspell.mjs.parked.md record 1
 const falseSites = sites.filter((s) => /spellCheck=\{false\}/.test(s));
 const falseFields = falseSites.map((s) => (/data-field="([a-z]+)"/.exec(s) || [])[1] || null).sort();
 const sheetSrc = fs.readFileSync(path.join(SRC, 'components/TitlePageSheet.tsx'), 'utf8').split('\n');
 const titleLine = sheetSrc.find((l) => /data-field="title"/.test(l)) || null;   // the liveness read: the title field is really there, and is read by its own line
 s1Succ = falseSites.length === 3 && falseSites.every((s) => s.startsWith('components/TitlePageSheet.tsx:')) && JSON.stringify(falseFields) === JSON.stringify(['author', 'contact', 'words']) && !!titleLine && !/spellCheck/.test(titleLine);
-// ---- PARKED, generation 2 - SUPERSEDED by Fable's ruling of Oct 19 (delete-for-good, ledger 109): the in-app typed confirmation's phrase
-// input (components/DestructiveConfirm.tsx, className="wz-destructive-input") is a COMMAND, not writing - the writer types an exact phrase
-// such as DELETE EVERYTHING to unlock a destructive act - so spell-check is OFF there, by name. The successor below allows exactly that one
-// site beside the Title Page sheet's three, and fails any other. Kept VERBATIM and no longer run (s1Succ, its verdict, is still computed above).
-//
-// ok('S1 [page-templates successor]: no PROSE editor host hardcodes spellCheck={false}; the ONLY hardcoded-off sites are the Title Page sheet AUTHOR, CONTACT and WORD LINE fields (data-field author, contact, words), and its TITLE field carries no spellCheck attribute at all, so spell-check is ON for the title',
-//   s1Succ, JSON.stringify({ falseSites, falseFields, titleLine: titleLine && titleLine.trim() }));
-// THE ALLOWED hardcoded-off sites, each matched by NAME in the site's own line (never a whole-file exception):
+// ARCHIVED PARK (#13 step 14): archive/revspell.mjs.parked.md record 2
 const ALLOWED_OFF = [
   { name: 'the Title Page sheet: author, contact, word line (Fable, Oct 17)', test: (s) => s.startsWith('components/TitlePageSheet.tsx:') && /data-field="(author|contact|words)"/.test(s) },
   { name: 'the typed-confirmation phrase input (Fable, Oct 19)', test: (s) => s.startsWith('components/DestructiveConfirm.tsx:') && /className="wz-destructive-input"/.test(s) },
@@ -122,16 +110,7 @@ const s1MutOther = s1v2([...sites, 'components/SomeNewPanel.tsx:<textarea classN
 const s1MutSameFile = s1v2([...sites, 'components/DestructiveConfirm.tsx:<textarea className="wz-destructive-note" spellCheck={false} />']);
 ok('S1 (mutants): a new spellCheck={false} in another file, or a second one in DestructiveConfirm.tsx on an element that is not the phrase input, turns the successor RED (both inputs really differ from the census)',
   s1Now.pass && s1MutOther.pass === false && s1MutSameFile.pass === false && s1MutOther.stray.length === 1 && s1MutSameFile.stray.length === 1, JSON.stringify({ s1MutOther, s1MutSameFile }));
-// ---- PARKED - SUPERSEDED by #13 step 11 (Fable, Nov 5): pages/JournalEntry.tsx, the unrouted second host, is deleted as dead code, so the
-// count of two no longer holds. Kept VERBATIM below and no longer run; its record is in the parked block, and the successor follows.
-//
-// ok('S2: the only sites that can turn the checker ON are ForwardOnlyEditor (spellCheck={mode === \'revise\'}, gated) and JournalEntry.tsx (a pre-existing, untouched `spellCheck`; see the report — an unmounted component as far as a source search shows) — a THIRD host that enables it fails this run',
-//   truthy.length === 2
-//     && truthy.some((s) => s.startsWith('components/ForwardOnlyEditor.tsx:') && s.includes("spellCheck={mode === 'revise'}"))
-//     && truthy.some((s) => s.startsWith('pages/JournalEntry.tsx:')),
-//   JSON.stringify(truthy));
-// ------------------------------------------------------------------
-// the step 11 successor holds before the delete and after it: a site in a file step 11 deletes (imported by nothing) is set aside
+// ARCHIVED PARK (#13 step 14): archive/revspell.mjs.parked.md record 3
 const STEP11_GONE = ['pages/JournalEntry.tsx'];
 const s2v2 = (list) => {
   const live = list.filter((s) => !STEP11_GONE.some((g) => s.startsWith(`${g}:`)));

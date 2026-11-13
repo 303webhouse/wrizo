@@ -102,12 +102,7 @@ const callers2 = (srcDir, mutate = {}) => {
   const be = noCR(srcText(SRC, 'components/BoardEditor.tsx'));   // #13 step 10g: the module and its parts, joined
   const app = noCR(fs.readFileSync(path.join(SRC, 'App.tsx'), 'utf8'));
   const bad = callers2(SRC);
-  // ---- PARKED - SUPERSEDED by DELETE FOR GOOD (ledger 107) ----
-  // window.wrizoDelete.softAll (store/deleteSeams.ts) sends every live document to Trash for the seed. It does not ask "Send to Trash?": it
-  // asks through its OWN gate first - gate() refuses unless the writer completed the in-app typed confirmation this page session
-  // (store/destructiveGate.ts). Kept VERBATIM and no longer run; its parked record asserts that seam is the one new caller.
-  // ok('S1: every call of softDeleteEntry outside persistence.ts (and a Page\'s own in-page confirm, S3) sits inside requestDelete(...) - the ONE gate: a board (menu, Plan row, Drawers tile) and a card can only be deleted through "Send to Trash?" or with asking turned off', bad.length === 0, JSON.stringify(bad));
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/board-context-menu.mjs.parked.md record 1
   bcmS1Bad = bad;
   const ds = noCR(fs.readFileSync(path.join(SRC, 'store/deleteSeams.ts'), 'utf8'));
   const seamBad = bad.filter((x) => x.startsWith('store/deleteSeams.ts:'));
@@ -335,9 +330,7 @@ await withHarness(async (app) => {
         await pick(app, 'Restore'); await sleep(700);
         await app.evalJs('window.wrizoFlushNow()');
         const row16 = await app.evalJs(`(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === ${JSON.stringify(g.id)}) || {})`);
-        // ---- PARKED - SUPERSEDED by DELETE FOR GOOD (ledger 107): a trashed board can now be deleted for good from Trash, so its menu offers
-        // Delete after Restore and a separator. Kept VERBATIM and no longer run.
-        // ok('K16: its menu offers Restore (and no Delete), and Restore clears deletedAt - the board is back, with every card it had', Array.isArray(m16) && m16.includes('Restore') && !m16.includes('Delete') && !row16.deletedAt && (row16.boxes || []).length === 6, JSON.stringify({ m16, deletedAt: row16.deletedAt, n: (row16.boxes || []).length }));
+        // ARCHIVED PARK (#13 step 14): archive/board-context-menu.mjs.parked.md record 2
         bcmK16Menu = m16;
         ok('K16 [delete-for-good successor]: its menu offers Restore, a separator, then Delete (for good - it always asks; delete-for-good.mjs H4 walks it), and Restore clears deletedAt - the board is back, with every card it had',
           JSON.stringify(m16) === JSON.stringify(['Restore', '---', 'Delete']) && !row16.deletedAt && (row16.boxes || []).length === 6, JSON.stringify({ m16, deletedAt: row16.deletedAt, n: (row16.boxes || []).length }));
@@ -349,21 +342,7 @@ await withHarness(async (app) => {
   f = await fresh(app);
   await app.evalJs("document.querySelector('.wz-strip-item[data-category=drawers]')?.click()");
   await sleep(500);
-  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): K12 - a board TILE in the Drawers panel and its right-click "Delete board". The Drawers tab is the place switcher; board entries in the rail return with the Boards pop-out (step 2), which carries this same menu (the delete-for-good plan's connector risk 4).
-  // Kept VERBATIM below and no longer run; the live successor follows.
-  //
-  // const tile = await app.evalJs(`(() => { const t = [...document.querySelectorAll('.wz-drawers-tile')].find((b) => b.textContent.includes('Menu board')); if (!t) return null; const r = t.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()`);
-  // if (!tile) ok('K12 fixture: the board\'s tile is in the Drawers panel', false, 'absent');
-  // else {
-  //   await rightClick(app, tile.x, tile.y);
-  //   const mt = await menuItems(app);
-  //   ok('K12: a board tile\'s right-click offers Delete board', JSON.stringify(mt) === JSON.stringify(['Delete board']), JSON.stringify(mt));
-  //   await pick(app, 'Delete board'); await sleep(350);
-  //   ok('K12: and asks "Send to Trash?"', !!(await dialog(app)), '');
-  //   await dlgClick(app, 'go'); await sleep(700);
-  //   const row2 = await app.evalJs(`(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === ${JSON.stringify(f.id)}) || {})`);
-  //   ok('K12: the board is soft-deleted and its tile is gone from the panel', !!row2.deletedAt && !(await app.evalJs("[...document.querySelectorAll('.wz-drawers-tile')].some((b) => b.textContent.includes('Menu board'))")), JSON.stringify({ deletedAt: row2.deletedAt }));
-  // }
+  // ARCHIVED PARK (#13 step 14): archive/board-context-menu.mjs.parked.md record 3
   const k12 = await app.evalJs(`({ tiles: document.querySelectorAll('.wz-drawers-tile').length, switcher: !!document.querySelector('.wz-switcher'), items: [...document.querySelectorAll('.wz-switcher-item')].map((b) => b.textContent.trim()) })`);
   ok('K12 [big-projects-1a successor]: the Drawers tab is the place switcher - there is no board TILE to right-click (board entries return with the Boards pop-out, step 2); the board\'s own right-click "Delete board" on its canvas is held by K1-K11 above', k12.tiles === 0 && k12.switcher === true && !k12.items.includes('Shelf'), JSON.stringify(k12));
 
@@ -487,9 +466,7 @@ await withHarness(async (app) => {
         await pick(app, 'Restore'); await sleep(700);
         await app.evalJs('window.wrizoFlushNow()');
         const back = await rowOf();
-        // ---- PARKED - SUPERSEDED by DELETE FOR GOOD (ledger 107): a trashed page can now be deleted for good from Trash, so its menu offers
-        // Delete after Restore and a separator. Kept VERBATIM and no longer run.
-        // ok('K17: its menu offers Restore (no Delete) and Restore clears deletedAt - the page is back with every word', Array.isArray(mm) && mm.includes('Restore') && !mm.includes('Delete') && !back.deletedAt && back.text === WORDS, JSON.stringify({ mm, deletedAt: back.deletedAt }));
+        // ARCHIVED PARK (#13 step 14): archive/board-context-menu.mjs.parked.md record 4
         bcmK17Menu = mm;
         ok('K17 [delete-for-good successor]: its menu offers Restore, a separator, then Delete (for good - it always asks), and Restore clears deletedAt - the page is back with every word',
           JSON.stringify(mm) === JSON.stringify(['Restore', '---', 'Delete']) && !back.deletedAt && back.text === WORDS, JSON.stringify({ mm, deletedAt: back.deletedAt }));

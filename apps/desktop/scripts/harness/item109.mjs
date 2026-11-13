@@ -133,21 +133,7 @@ await withHarness(async (app) => {
     JSON.stringify({ editor: cold.editor }));
 
   coldSeen = { beginnings: cold.beginnings, flInvite: cold.flInvite };
-  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08: the page row keeps ONE door, Sprout, on a blank
-  // Free Write page). Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block below.
-  //
-  // ok('S2: THE INVITATION IS DRAWN — the beginnings row offers its doors on the empty page (Sprout / Plan / Screenplay). This is what a writer is offered at a fresh page today; the F6 first-line invite is NOT asserted, because FX15 put it to sleep by default and requiring it would gate a behaviour that was retired on purpose',
-  //   cold.beginnings.length >= 3 && cold.flInvite === false,
-  //   JSON.stringify({ beginnings: cold.beginnings, flInvite: cold.flInvite }));
-  // ------------------------------------------------------------------
-  // ---- PARKED - RETIRED by #13 step 12f (Fable, Nov 1): the Sprout door and the first-line invite are deleted, everywhere,
-  // forever. Kept VERBATIM and no longer run; its record is in the HARNESS_PARKED block below; successor next, and in full
-  // c13-12f-sprout-invite.mjs.
-  //
-  // ok('S2 [page-templates successor]: THE INVITATION IS DRAWN — the blank Free Write page\'s row offers its ONE door, Sprout (Screenplay is the Draft strip\'s template, Plan the PLAN bar\'s door), and the F6 first-line invite still sleeps',
-  //   JSON.stringify(cold.beginnings) === JSON.stringify(['Sprout']) && cold.flInvite === false,
-  //   JSON.stringify({ beginnings: cold.beginnings, flInvite: cold.flInvite }));
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/item109.mjs.parked.md record 1
   ok('S2 [12f successor]: a fresh blank Free Write page offers no door and no invite - the page and its caret are the whole invitation',
     Array.isArray(cold.beginnings) && cold.beginnings.length === 0 && cold.flInvite === false,
     JSON.stringify({ beginnings: cold.beginnings, flInvite: cold.flInvite }));

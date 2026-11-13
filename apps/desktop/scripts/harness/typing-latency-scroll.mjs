@@ -59,11 +59,7 @@ await withHarness(async (app) => {
   await sleep(600);
   await app.evalJs(`location.hash = '#/page/${PAGE}'`);
   const up = await waitSoft(app, `!!document.querySelector('${ED} .wz-row')`, { label: 'the 50k page, as rows', timeout: 30000 });
-  // ---- PARKED - SUPERSEDED by Fable's ruling of Oct 16 (chat 1's ledger 67): content-visibility is REMOVED from the rows (it took the
-  // off-screen rows' text out of innerText, and failed S1 and S5 below). Kept VERBATIM and no longer run; successor directly below.
-  // ok('(premise) the 50k-word page opens in Draft as rows, with content-visibility on them', up && (await app.evalJs(`getComputedStyle(document.querySelector('${ED} .wz-row')).contentVisibility`)) === 'auto',
-  //   String(up && await app.evalJs(`getComputedStyle(document.querySelector('${ED} .wz-row')).contentVisibility`)));
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/typing-latency-scroll.mjs.parked.md record 1
   const cvNow = up ? await app.evalJs(`getComputedStyle(document.querySelector('${ED} .wz-row')).contentVisibility`) : null;
   ok('(premise) [content-visibility removed] the 50k-word page opens in Draft as rows, and no row is skipped by content-visibility', up && cvNow === 'visible', String(cvNow));
   if (!up) return;
@@ -82,11 +78,7 @@ await withHarness(async (app) => {
   const e1 = await caret(app);
   ok('S1: Ctrl+End puts the caret at the very end of the 50k page, and it is on screen', !!e0 && !!e1 && e1.offset === e1.textLength && e1.visible, JSON.stringify({ e0, e1 }));
   ok('S1: as the rows settle, neither the caret\'s place on screen nor the scroll moves (within 2 px)', !!e0 && !!e1 && e0.top !== null && e1.top !== null && Math.abs(e1.top - e0.top) <= 2 && Math.abs(e1.scrollTop - e0.scrollTop) <= 2, JSON.stringify({ e0, e1 }));
-  // ---- PARKED - SUPERSEDED (chat 1's ledger 70): the native Ctrl+End scrolls the caret's line into view, NOT the scroller to its very bottom -
-  // on main the scroller stops 276 px above it too (the page's own space below the text) - and the estimated space this guarded against left
-  // with content-visibility. Kept VERBATIM, no longer run; successor below.
-  // ok('S1: the end is the true end - the scroller sits at its bottom, no estimated space left below the last line', !!e1 && e1.atBottom, JSON.stringify(e1));
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/typing-latency-scroll.mjs.parked.md record 2
   ok('S1 [native-route successor]: from the top, Ctrl+End really scrolls the page down to the last line - the caret starts at 0 and ends at the end, fully on screen',
     !!top0 && top0.offset === 0 && !!e1 && e1.offset === e1.textLength && e1.visible && e1.scrollTop > top0.scrollTop + 1000, JSON.stringify({ top0, e1 }));
 

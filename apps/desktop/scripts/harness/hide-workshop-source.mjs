@@ -99,11 +99,7 @@ ok('T5: the flash machinery SURVIVES for the other deferred postures (screenplay
   ok('MUTANT: Workshop re-added to ModeStrip - T1 must go RED', m1 !== strip && JSON.stringify(k1) !== JSON.stringify(['freewrite', 'draft', 'revise', 'publish']), JSON.stringify(k1));
   const m2 = pe.replace("            { label: lex('publish')", "            { label: 'Workshop', sub: 'coming soon', deferred: true },\n            { label: lex('publish')");
   ok('MUTANT: Workshop re-added to PageEditor\'s actions - T2 must go RED', m2 !== pe && /Workshop/i.test(actionsBlock(m2)), '');
-  // ---- PARKED - RETIRED by #13 step 11, with T3 (above): its subject, JournalEntry's row, is deleted. Kept VERBATIM and no longer run.
-  //
-  // const m3 = je.replace("['Draft', 'Format', lex('publish')]", "['Draft', 'Format', 'Workshop', lex('publish')]");
-  // ok('MUTANT: Workshop re-added to JournalEntry\'s row - T3 must go RED', m3 !== je && /Workshop/i.test(journalRow(m3)), journalRow(m3));
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/hide-workshop-source.mjs.parked.md record 1
 }
 
 // === PARKED - gated behind HARNESS_PARKED=1, skipped by default. #13 step 11 retires T3 and its mutant: the record holds what makes a

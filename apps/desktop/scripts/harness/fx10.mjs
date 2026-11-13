@@ -182,31 +182,9 @@ await withHarness(async (app) => {
       const panelOpen = await rectOf(app, '.wz-tutor-panel');
       const paperOpen = await rectOf(app, paperSel);
       const gripOpen = await rectOf(app, '.wz-tutor-grip');
-      // SUPERSEDED (item tutor-drawer-arrow, Nick's live bug report,
-      // confirmed by tutor-drawer-probe.mjs, ledger 57: "the arrow sits
-      // over GRAFTS" on a board, "touches the TUTOR tab's outline" on a
-      // page) — "the grip never moves" was the bug: the panel's own near
-      // edge lands at the SAME paper-flush coordinate the grip rests at
-      // (TU2 S4's own algebra), so a grip that stays put sits inside the
-      // open panel's own tab row. Quoted verbatim:
-      // ok(`S1 geometry @${width}px/${surface}: grip-flush (open) — the grip never moves once the panel opens`,
-      //   Math.abs(gripOpen.left - paperOpen.right) < 1.5, JSON.stringify({ gripLeft: gripOpen.left, paperRight: paperOpen.right }));
+      // ARCHIVED PARK (#13 step 14): archive/fx10.mjs.parked.md record 1
       const GRIP_GUTTER_PX = 16; // Tutor.tsx's own GRIP_GUTTER_PX, the exact mirror of .wz-sliver-panel's static 16px inset
-      // ---- PARKED FOR THE PAGE SURFACE - SUPERSEDED there by the DRAWER MIRROR (Nick, via Fable, Oct 24): on a writing surface the tab never moves and
-      // the panel starts AT it ([page][tab][panel], the mirror of the Tools drawer), so it can never sit inside the panel's tab row. The check runs
-      // VERBATIM, unchanged, on the BOARD, whose panel still overlays the canvas from the stage's edge and whose tab still moves clear of it. On the page
-      // its successor runs instead; records in the parked section.
-      // ---- PARKED FOR THE BOARD SURFACE TOO - SUPERSEDED there by POLISH #10 items 1 + 16 (Nick, Oct 25: the board narrows beside the drawers, which
-      // sit flush to it; drawers flush and mirrored on card surfaces): the board no longer lies under the panel, so the tab no longer moves clear of an
-      // overlay - it stands on the board's narrowed edge with the panel starting AT it. Measured on FIX's turn (Oct 26): gap 0 / 0.19 / 0 at
-      // 1100 / 1280 / 2200. Kept VERBATIM and no longer run; records in the parked section. Successor: [board-mirror successor] below.
-      //
-      // if (surface !== 'page') {
-      //   ok(`S1 geometry @${width}px/${surface}: grip-clears-panel (open) [tutor-drawer-arrow successor] — the grip MOVES once the panel opens, landing ${GRIP_GUTTER_PX}px outside the panel's own near edge (never inside its tab row)`,
-      //     Math.abs((panelOpen.left - gripOpen.right) - GRIP_GUTTER_PX) < 1.5,
-      //     JSON.stringify({ gripRight: gripOpen.right, panelLeft: panelOpen.left, gap: panelOpen.left - gripOpen.right }));
-      // } else {
-      // ------------------------------------------------------------------
+      // ARCHIVED PARK (#13 step 14): archive/fx10.mjs.parked.md record 2
       if (surface !== 'page') {
         const ob = { width, paperClosed, paperOpen, gripOpen, panelLeft: panelOpen.left };
         fx10Board.push(ob);

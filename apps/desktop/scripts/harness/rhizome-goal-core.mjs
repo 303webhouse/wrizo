@@ -266,11 +266,7 @@ const css = srcText(SRC, 'index.css');
 const fieldSrc = srcText(SRC, 'components/RhizomeField.tsx');
 ok('Engine: a new segment draws on over 250–400ms and the line carries pathLength 1',
   drawOn(css) && fieldSrc.includes('pathLength={1}'), String(drawOn(css)));
-// PARKED 2026-10-08, rhizome-growth.mjs R4. Reduced motion now fades a new
-// piece with wz-rhizome-appear (200ms), not wz-rhizome-grow (180ms, rest
-// opacity .32). The old fade was the previous engine's hairline appear.
-// ok('Engine: reduced motion keeps the plain opacity fade',
-//   css.includes('animation:wz-rhizome-grow 180ms ease'), 'fade');
+// ARCHIVED PARK (#13 step 14): archive/rhizome-goal-core.mjs.parked.md record 1
 
 const brokenNet = await load({ 'store/rhizomeEngine.ts': swap('opts?.connected === true', 'opts?.connected === false') });
 const plainGrow = (mod, salt, target) => {

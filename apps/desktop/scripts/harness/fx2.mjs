@@ -176,13 +176,7 @@ await withHarness(async (app) => {
 
     const gripClosed = await app.evalJs(rectOf('.wz-sliver-grip'));
     const paperClosed = await app.evalJs(rectOf('.mode-pagecol'));
-    // ---- PARKED - SUPERSEDED by page-size (Nick + Fable, Oct 23): .mode-pagecol is no longer the text column. The prose page is PAINTED by a transform
-    // inside it, and in the Typewriter zoom (Arbor's default) the column is the whole stage, so every grip on the stage "intersects" it (lane 3).
-    // The text column is the editor itself; the successor reads .forward-only-editor. Kept VERBATIM and no longer run; records in the parked section.
-    //
-    // ok(`S1 @ ${width}px: the grip rect and the text-column rect never intersect, sliver CLOSED`,
-    //   disjoint(gripClosed, paperClosed), JSON.stringify({ gripClosed, paperClosed }));
-    // ------------------------------------------------------------------
+    // ARCHIVED PARK (#13 step 14): archive/fx2.mjs.parked.md record 1
     const textClosed = await app.evalJs(rectOf('.forward-only-editor'));
     fx2Ps.push({ width, state: 'CLOSED', grip: gripClosed, text: textClosed });
     ok(`S1 @ ${width}px [page-size successor]: the grip rect and the TEXT column (the editor itself) never intersect, sliver CLOSED`,
@@ -198,13 +192,7 @@ await withHarness(async (app) => {
 
     const gripOpen = await app.evalJs(rectOf('.wz-sliver-grip'));
     const paperOpen = await app.evalJs(rectOf('.mode-pagecol'));
-    // ---- PARKED - SUPERSEDED by page-size (Nick + Fable, Oct 23): .mode-pagecol is no longer the text column. The prose page is PAINTED by a transform
-    // inside it, and in the Typewriter zoom (Arbor's default) the column is the whole stage, so every grip on the stage "intersects" it (lane 3).
-    // The text column is the editor itself; the successor reads .forward-only-editor. Kept VERBATIM and no longer run; records in the parked section.
-    //
-    // ok(`S1 @ ${width}px: the grip rect and the text-column rect never intersect, sliver OPEN`,
-    //   disjoint(gripOpen, paperOpen), JSON.stringify({ gripOpen, paperOpen }));
-    // ------------------------------------------------------------------
+    // ARCHIVED PARK (#13 step 14): archive/fx2.mjs.parked.md record 2
     const textOpen = await app.evalJs(rectOf('.forward-only-editor'));
     fx2Ps.push({ width, state: 'OPEN', grip: gripOpen, text: textOpen });
     ok(`S1 @ ${width}px [page-size successor]: the grip rect and the TEXT column (the editor itself) never intersect, sliver OPEN`,
@@ -304,30 +292,10 @@ await withHarness(async (app) => {
   const shortDom = await typewriterDom(app);
   const shortSetting = await typewriterSetting(app);
   ok('S2: an untyped support page defaults to Draft on open (the fixture itself, sanity-checked)', shortMode === 'Draft', String(shortMode));
-  // ---- PARKED - SUPERSEDED by Phase 1 S5 (the typewriter is remembered per page: a page that holds text and has no saved value opens OFF, a new empty page takes its theme's default; Nick, Oct 11), 2026-10-11 ----
-  // Kept VERBATIM and no longer run. The successor follows the parked lines.
-  //
-  // ok('S2: a ~3-line page (below the 10-line threshold) opens Draft with typewriter ON — DOM (.mode-scroll[data-typewriter])',
-  // shortDom === 'true', String(shortDom));
-  // ----------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/fx2.mjs.parked.md record 3
   ok('S5 successor: a ~3-line page that holds text and has no saved value opens Draft with typewriter OFF (the 1-9-line seed is gone) - DOM (.mode-scroll[data-typewriter])',
     shortDom === 'false', String(shortDom));
-  // ---- PARKED - SUPERSEDED by Phase 1 S5 (the typewriter is remembered per page: a page that holds text and has no saved value opens OFF, a new empty page takes its theme's default; Nick, Oct 11), 2026-10-11 ----
-  // GENERATION 1, kept VERBATIM and no longer run.
-  //
-  // ok('S2: a ~3-line page opens Draft with typewriter ON — the stored setting itself',
-  // shortSetting === true, String(shortSetting));
-  // ----------------------------------------------------------------------
-  // ---- PARKED - SUPERSEDED by typewriter-scope (Fable Oct 21), 2026-10-21 ----
-  // GENERATION 2, kept VERBATIM and no longer run: `shortSetting` reads the SHARED
-  // `wrizo-writing-settings` blob, which enterPageTypewriter no longer mirrors into (the
-  // cross-page leak this ticket exists to close) - so it can no longer stand in for "what did
-  // THIS page's own open resolve to." Generation 3 (the live check) reads the per-page key
-  // directly instead.
-  //
-  // ok('S5 successor: a ~3-line page opens Draft with typewriter OFF — the stored setting itself',
-  // shortSetting === false, String(shortSetting));
-  // ----------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/fx2.mjs.parked.md record 4
   const shortPageSetting = await typewriterPageSetting(app, 'fx2-draft');
   ok('typewriter-scope successor: a ~3-line page opens Draft with typewriter OFF — THIS page\'s own stored value (wrizo-typewriter-page-fx2-draft), not the retired shared mirror',
     shortPageSetting === 'off', String(shortPageSetting));
@@ -339,14 +307,7 @@ await withHarness(async (app) => {
   ok('S2: a ~15-line page also opens in Draft (the fixture itself, sanity-checked)', longMode === 'Draft', String(longMode));
   ok('S2: a ~15-line page (at/above the 10-line threshold) opens Draft with typewriter OFF — DOM',
     longDom === 'false', String(longDom));
-  // ---- PARKED - SUPERSEDED by typewriter-scope (Fable Oct 21), 2026-10-21 ----
-  // Kept VERBATIM and no longer run: `longSetting` reads the SHARED `wrizo-writing-settings`
-  // blob, which enterPageTypewriter no longer mirrors into (the cross-page leak this ticket
-  // exists to close). The successor reads the per-page key directly instead.
-  //
-  // ok('S2: a ~15-line page opens Draft with typewriter OFF — the stored setting itself',
-  // longSetting === false, String(longSetting));
-  // ----------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/fx2.mjs.parked.md record 5
   const longPageSetting = await typewriterPageSetting(app, 'fx2-draft');
   ok('typewriter-scope successor: a ~15-line page opens Draft with typewriter OFF — THIS page\'s own stored value (wrizo-typewriter-page-fx2-draft), not the retired shared mirror',
     longPageSetting === 'off', String(longPageSetting));
@@ -427,12 +388,7 @@ await withHarness(async (app) => {
   await gotoPage(app, 'fx2-draft-a');
   const pageAMode = await activeModeTab(app);
   const pageASeed = await typewriterDom(app);
-  // ---- PARKED - SUPERSEDED by Phase 1 S5 (the typewriter is remembered per page: a page that holds text and has no saved value opens OFF, a new empty page takes its theme's default; Nick, Oct 11), 2026-10-11 ----
-  // Kept VERBATIM and no longer run. The successor follows the parked lines.
-  //
-  // ok('S2 (cross-page, independent-review addition): page A (short) opens Draft with typewriter ON — fixture sanity',
-  // pageAMode === 'Draft' && pageASeed === 'true', JSON.stringify({ pageAMode, pageASeed }));
-  // ----------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/fx2.mjs.parked.md record 6
   ok('S5 successor (cross-page): page A (short, holds text, nothing saved) opens Draft with typewriter OFF - fixture sanity',
     pageAMode === 'Draft' && pageASeed === 'false', JSON.stringify({ pageAMode, pageASeed }));
 
@@ -471,12 +427,7 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle=\"typewriter\"]')?.click()");
   await sleep(150);
   const pageAExplicitOff = await typewriterDom(app);
-  // ---- PARKED - SUPERSEDED by Phase 1 S5 (the typewriter is remembered per page: a page that holds text and has no saved value opens OFF, a new empty page takes its theme's default; Nick, Oct 11), 2026-10-11 ----
-  // Kept VERBATIM and no longer run. The successor follows the parked lines.
-  //
-  // ok('S2 (cross-page, independent-review addition): explicit click on page A actually flips it OFF by hand',
-  // pageAExplicitOff === 'false', String(pageAExplicitOff));
-  // ----------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/fx2.mjs.parked.md record 7
   ok('S5 successor (cross-page): explicit click on page A actually flips it ON by hand (it opened OFF)',
     pageAExplicitOff === 'true', String(pageAExplicitOff));
 
@@ -486,29 +437,10 @@ await withHarness(async (app) => {
   const pageBSetting = await typewriterSetting(app);
   ok('S2 (cross-page, independent-review addition): page B (a DIFFERENT page/mount, also short) is Draft, sanity',
     pageBMode === 'Draft', String(pageBMode));
-  // ---- PARKED - SUPERSEDED by Phase 1 S5 (the typewriter is remembered per page: a page that holds text and has no saved value opens OFF, a new empty page takes its theme's default; Nick, Oct 11), 2026-10-11 ----
-  // Kept VERBATIM and no longer run. The successor follows the parked lines.
-  //
-  // ok('S2 (cross-page, independent-review addition): page B does NOT get silently re-seeded ON — the explicit OFF from page A survives the page/mount boundary, matching writingSettings.ts\'s own "different pages/mounts" claim for the module-level flag',
-  // pageBDom === 'false', String(pageBDom));
-  // ----------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/fx2.mjs.parked.md record 8
   ok('S5 successor (cross-page): page B keeps its OWN setting - it opens OFF (text, nothing saved); page A\'s explicit ON did not leak across the page/mount boundary',
     pageBDom === 'false', String(pageBDom));
-  // ---- PARKED - SUPERSEDED by Phase 1 S5 (the typewriter is remembered per page: a page that holds text and has no saved value opens OFF, a new empty page takes its theme's default; Nick, Oct 11), 2026-10-11 ----
-  // GENERATION 1, kept VERBATIM and no longer run.
-  //
-  // ok('S2 (cross-page, independent-review addition): ...and the stored setting itself is OFF, not reverted by page B\'s own seed',
-  // pageBSetting === false, String(pageBSetting));
-  // ----------------------------------------------------------------------
-  // ---- PARKED - SUPERSEDED by typewriter-scope (Fable Oct 21), 2026-10-21 ----
-  // GENERATION 2, kept VERBATIM and no longer run: `pageBSetting` reads the SHARED
-  // `wrizo-writing-settings` blob, which enterPageTypewriter no longer mirrors into (the
-  // cross-page leak this ticket exists to close). Generation 3 (the live check) reads page B's
-  // own per-page key directly instead.
-  //
-  // ok('S5 successor (cross-page): ...and the stored setting itself is OFF for page B',
-  // pageBSetting === false, String(pageBSetting));
-  // ----------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/fx2.mjs.parked.md record 9
   const pageBPageSetting = await typewriterPageSetting(app, 'fx2-draft-b');
   ok('typewriter-scope successor (cross-page): ...and page B\'s OWN stored value (wrizo-typewriter-page-fx2-draft-b) is OFF, never touched by page A\'s explicit ON or the retired shared mirror',
     pageBPageSetting === 'off', String(pageBPageSetting));

@@ -121,12 +121,7 @@ await withHarness(async (app) => {
     let pageNow = null; for (let i = 0; i < 32; i += 1) { await sleep(250); pageNow = await stored(app, P); if (pageNow && pageNow.text.trimEnd().endsWith('Cartographer of the Well')) break; }
     ok(`${tag} K4: copyable into the page - the reader's stretch copies as its plain words ("${copied}") and pasted into the page it lands as those words`,
       copied === 'Cartographer of the Well' && !!pageNow && pageNow.text.trimEnd().endsWith('Cartographer of the Well'), J({ copied, page: pageNow && pageNow.text.slice(-60), whisper: await app.evalJs("(() => { const w = document.querySelector('.vw-whisper'); return w ? [w.textContent, w.getAttribute('data-shown')] : null; })()"), edTail: await app.evalJs("(document.querySelector('.forward-only-editor')?.innerText || '').slice(-50)") }));
-    // K5: one at a time. PARKED VERBATIM (Fable, Oct 28): docking the source REPLACES the card - the reader replaces the Grafts list, so a second Dock control never stands
-    // beside it; the rule is one item at a time, and a swap is Undock, then Dock. The check below is kept as written and no longer run; its successor follows.
-    //   const srcBtn = await pointOf(app, dockBtn(null, S));
-    //   if (srcBtn) { await click(app, srcBtn.x, srcBtn.y); await sleep(800); }
-    //   const r5 = await app.evalJs(READER);
-    //   ok(`${tag} K5: one at a time - docking the source replaces the card: one reader, the source's words`, !!srcBtn && !!r5 && r5.count === 1 && /Smith, J\. \(2020\)/.test(r5.text || '') && !/Cartographer/.test(r5.text || ''), J(r5));
+    // ARCHIVED PARK (#13 step 14): archive/polish10-linkdock.mjs.parked.md record 1
     const undock0 = await pointOf(app, "document.querySelector('.wz-link-dock-close')");
     if (undock0) { await click(app, undock0.x, undock0.y); await sleep(700); }
     const listBack = await app.evalJs("!document.querySelector('.wz-link-dock') && !!document.querySelector('.wz-graft-row')");

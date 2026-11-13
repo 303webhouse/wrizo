@@ -26,23 +26,7 @@ const DECL = /\/\/ WS_URL_SEARCH \(opt-in[^\n]*\n\/\/[^\n]*\nconst URL_SEARCH = 
 const m = now.match(DECL);
 ok('U0 the opt-in declaration is found (the proof reads the real file)', !!m);
 
-// U1 PARKED (r2, Nov 5) - SUPERSEDED: it compared against the merge base of HEAD and origin/main. On the opt-in's own branch that was main
-// without the opt-in; once merged, on main the merge base IS main - the opt-in included - so U1 could never pass there (red on main since
-// 650f9a74). Kept verbatim below, not run. Successor: U1b.
-// // U1: against the merge base with main (the file as every other lane has it)
-// let base = null;
-// try {
-//   const repo = execFileSync('git', ['rev-parse', '--show-toplevel'], { cwd: here, encoding: 'utf8' }).trim();
-//   const mb = execFileSync('git', ['merge-base', 'HEAD', 'origin/main'], { cwd: repo, encoding: 'utf8' }).trim();
-//   base = norm(execFileSync('git', ['show', `${mb}:apps/desktop/scripts/runtime-verify.mjs`], { cwd: repo, encoding: 'utf8', maxBuffer: 64 << 20 }));
-// } catch (e) { ok('U1 the merge base\'s runtime-verify.mjs could be read', false, String(e.message || e).slice(0, 200)); }
-// if (base != null && m) {
-//   const unset = now.replace(DECL, '').split('${URL_SEARCH}').join('/');
-//   const same = unset === base;
-//   let where = '';
-//   if (!same) { const a = unset.split('\n'), b = base.split('\n'); const i = a.findIndex((l, k) => l !== b[k]); where = `first difference at line ${i + 1}: ${JSON.stringify((a[i] || '').slice(0, 90))} vs ${JSON.stringify((b[i] || '').slice(0, 90))}`; }
-//   ok('U1 unset, the driver is the merge base\'s file byte for byte', same, same ? `${base.length} chars identical` : where);
-// }
+// ARCHIVED PARK (#13 step 14): archive/url-search-optin-unit.mjs.parked.md record 1
 
 // U1b (successor): anchored on the commit that INTRODUCED the opt-in, wherever the proof runs (branch, main, a later train):
 //   (a) at that commit, unset, the driver was its parent's file byte for byte - the opt-in, as it came in, changed nothing else;

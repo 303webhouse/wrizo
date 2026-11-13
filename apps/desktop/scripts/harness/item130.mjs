@@ -174,11 +174,7 @@ await withHarness(async (app) => {
       //   !!f && Math.abs(f.delta - GATE_FLOOR_KNOWN_DELTA) < 0.6,
       //   JSON.stringify({ ...f, knownPreExisting: GATE_FLOOR_KNOWN_DELTA }));
     } else {
-      // ---- PARKED - SUPERSEDED by page-size (train #7, Oct 25): as above - zoomed, the anchor's documented overflow (b10: -37.98 at 1280 and 1366). Kept
-      // VERBATIM and no longer run; successor + record.
-      //
-      // ok(`ITEM130 S2 @ ${w}: the dock is still flush at the paper (0.00 +/- 0.6) — the repair bought reachability WITHOUT reflowing the paper for chrome`,
-      //   !!f && Math.abs(f.delta) < 0.6, JSON.stringify(f));
+      // ARCHIVED PARK (#13 step 14): archive/item130.mjs.parked.md record 1
     }
     const g = await app.evalJs(PS_FLUSH);
     i130Ps.push({ w, g });

@@ -136,12 +136,7 @@ const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass: !!pass,
 
 const base = scenario(await load());
 const v = verdict(base);
-// ---- PARKED - SUPERSEDED by page-size (Fable's ruling, Oct 23: the measured rule replaces Oct 12's one-drawer-at-every-width) ----
-// Kept VERBATIM and no longer run. The measured successors (O1m, O2m) follow.
-//
-// ok('(O1) opening the TUTOR while the Tools drawer is open closes the Tools drawer, through its own registered close path - at any width (no measuring is involved)', v.toolsThenTutor, JSON.stringify(base.toolsThenTutor));
-// ok('(O2) and the reverse: opening the Tools drawer while the Tutor is open closes the Tutor', v.tutorThenTools, JSON.stringify(base.tutorThenTools));
-// ----------------------------------------------------------------------
+// ARCHIVED PARK (#13 step 14): archive/one-drawer.mjs.parked.md record 1
 pok('PARKED (was "(O1) opening the TUTOR while the Tools drawer is open closes the Tools drawer, through its own registered close path - at any width (no measuring is involved)") - SUPERSEDED by page-size (Fable, Oct 23)', true, 'successor: O1m');
 pok('PARKED (was "(O2) and the reverse: opening the Tools drawer while the Tutor is open closes the Tutor") - SUPERSEDED by page-size (Fable, Oct 23)', true, 'successor: O2m');
 const measured = scenarioMeasured(await load());
@@ -160,11 +155,7 @@ ok('(O5) the far-left CASCADE keeps its own width-measured law and is none of th
   const tutorAnnounces = /if \(open\) requestOpen\('tutor'\);\n\s*else noteClosed\('tutor'\);\n\s*\}, \[open\]\);\n\s*useEffect\(\(\) => registerDrawer\('tutor', \(\) => setOpen\(false\)\), \[\]\);/.test(tutor)
     && /import \{ requestOpen, noteClosed, registerDrawer \} from '\.\.\/store\/menusDrawers';/.test(tutor);
   const sliverStill = /if \(open\) requestOpen\('tools'\);\n\s*else noteClosed\('tools'\);/.test(sliver) && /registerDrawer\('tools', \(\) => setOpen\(false\)\)/.test(sliver);
-  // ---- PARKED - SUPERSEDED by page-size (Fable, Oct 23): its Tutor half read the Oct 12 rule (Tools closes the Tutor whatever the room). Kept VERBATIM, no longer run.
-  // Successor: O5m above (the cascade half unchanged; the Tutor half measured).
-  //
-  // ok('(O5b) the sequence cascade -> Tutor -> Tools: Tools closes the Tutor AND the width law still sees the cascade standing and closes it where the band cannot hold both (the check tests the store\'s own record of what stands, not only the most recent opener)', v.cascadeSeen, JSON.stringify(base.cascadeTutorTools));
-  // ----------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/one-drawer.mjs.parked.md record 2
   pok('PARKED (was "(O5b) the sequence cascade -> Tutor -> Tools: Tools closes the Tutor AND the width law still sees the cascade standing and closes it where the band cannot hold both") - SUPERSEDED by page-size (Fable, Oct 23)', true, 'successor: O5m');
 ok('(O6) the Tutor announces from an EFFECT keyed on its open state (so every path that opens it announces) and registers its own close path; the Tools drawer still does the same', tutorAnnounces && sliverStill, JSON.stringify({ tutorAnnounces, sliverStill }));
 }
