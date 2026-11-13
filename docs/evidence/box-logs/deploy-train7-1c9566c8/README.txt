@@ -1,0 +1,4 @@
+tested build (build:web of 1c9566c8 in F:\wrizo-work\chat1-train-5): index-Cg3TK-Bx.js 997891 bytes md5 068b73ec951c; index-CLrdYJHw.css 244464 bytes md5 9977ba4b3ff7 (the CSS is unchanged from train 6). Served: both identical (verify.txt).
+railway deployment list: fc39f54d-26ba-4dd7-b238-ccfd94d67522 SUCCESS 2026-11-12 22:31:20 -07:00 (2026-11-13 05:31:20Z); 39a94e18-2038-4d9d-82e3-0c0adfd2dc1a (train 6) REMOVING.
+primary checkout at deploy: detached 1c9566c8649d3fecbaa793d5ce2c1fffad97abc3 (tree 6cc726e7), changes 0, railway status writer-studio / production / writer-studio-app, no box job (grant absent). Railway status page read first: no incident; next maintenance Nov 15 08:00-08:30Z. Live checked first: index-Cz1Drss5 (train 6). One railway up from PowerShell, exit 0, 90 s (start 2026-11-13 05:31:05Z).
+Fable's clearance (Nov 12, 10:30 pm): deploy 1c9566c8 on run 43361738517 (exactly flux-v2-part2 and polish10-14-frames on both legs, 250/252).
