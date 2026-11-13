@@ -175,7 +175,8 @@ await withHarness(async (app) => {
   console.log('--- M: sync base writes to storage, timed, with the event they ran in');
   await goDevice(R);
   server.offline = false; server.hold = false;
-  await ev(`(() => { window.__sbLog = []; const orig = Storage.prototype.setItem; Storage.prototype.setItem = function (k, v) { const t0 = performance.now(); try { return orig.call(this, k, v); } finally { const ks = String(k); if (ks.startsWith('wrizo-sync-base') || ks.startsWith('writer-studio-journal-entries')) window.__sbLog.push({ k: ks.startsWith('wrizo-sync-base:') ? 'page' : ks.startsWith('wrizo-sync-base') ? 'index' : 'records', len: String(v).length, ms: performance.now() - t0, ev: window.event ? window.event.type : null }); } }; return true; })()`);
+  const installLog = () => ev(`(() => { window.__sbLog = []; const orig = Storage.prototype.setItem; Storage.prototype.setItem = function (k, v) { const t0 = performance.now(); try { return orig.call(this, k, v); } finally { const ks = String(k); if (ks.startsWith('wrizo-sync-base') || ks.startsWith('writer-studio-journal-entries')) window.__sbLog.push({ k: ks.startsWith('wrizo-sync-base:') ? 'page' : ks.startsWith('wrizo-sync-base') ? 'index' : 'records', len: String(v).length, ms: performance.now() - t0, ev: window.event ? window.event.type : null }); } }; return true; })()`);
+  await installLog();
   const stats = (rows) => { if (!rows.length) return 'none'; const ms = rows.map((r) => r.ms).sort((a, b) => a - b); const q = (p) => ms[Math.min(ms.length - 1, Math.floor(p * ms.length))].toFixed(2); return `n=${rows.length} median ${q(0.5)} ms, p95 ${q(0.95)} ms, max ${ms[ms.length - 1].toFixed(2)} ms, chars max ${Math.max(...rows.map((r) => r.len))}`; };
   const inEvent = (rows) => rows.filter((r) => r.ev && /^(key|input|beforeinput|compos)/.test(r.ev));
   // 1. typing into a page: where does the base write run
@@ -195,6 +196,7 @@ await withHarness(async (app) => {
   await settle();
   // 2. 101 pages of 14 000 characters: the bound
   await goDevice(R);
+  await installLog();
   const BIG = 'abcdefghij klmnopqrstu vwxyz. '.repeat(470).slice(0, 14000);
   for (let i = 0; i < 101; i += 1) await ev(`window.wrizoCreateJournalPage(${JSON.stringify({ id: 'wo-b' + i, text: BIG + i, createdAt: new Date().toISOString(), origin: 'journal', source: 'page' })}); true`);
   await settle(30000);
