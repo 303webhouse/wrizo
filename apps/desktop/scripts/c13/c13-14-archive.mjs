@@ -17,9 +17,16 @@
 //        STRUCTURE (always): every pointer names an archive record that exists, every archive record has exactly one pointer, each
 //        archived record says where it came from and its parking commit qualifies, and no archived record is also still live.
 //        With --base (the commit before apply; a lane passes its merge-base with main): the brief's proofs -
-//          RECORDS: records live at <base> == records live now + records archived since <base> (moved, never lost)
-//          LINES:   every line removed from scripts/harness/*.mjs since <base> appears verbatim in an archive record (a multiset compare)
-//          POK:     the pok( call count is the same at <base> and now (the parked leg keeps its successor count)
+//          RECORDS, by identity: every record live at <base> is still held by a live record in its file (its lines, comment marks and
+//                   indent aside, in order: a generation-2 park that wraps an old record keeps it) or was archived since <base> verbatim;
+//                   every record archived since <base> was live at <base>; and the count closes: live at <base> + added since <base> ==
+//                   live now + archived since <base>, where ADDED = a live record that holds no record of <base> (a lane's new park).
+//                   (Was: live at <base> == live now + archived since, which a lane's lawful new park turned red - INK, flux-zoom-1, Nov 12.)
+//          LINES:   --strict: every line removed from scripts/harness/*.mjs since <base> appears verbatim in an archive record (a multiset
+//                   compare). Without --strict (a lane): the same, for the lines of <base>'s records that are not held live - a lane's
+//                   edit to an ordinary comment is not this tool's business.
+//          POK:     --strict: the pok( call count is the same at <base> and now. Without --strict (a lane): no pok( line is lost - each
+//                   one removed since <base> is held, comment marks aside, by a live or archived record; a lane may ADD pok( calls.
 //        --strict (the apply commit itself): every line added to scripts/harness/*.mjs since <base> is a pointer.
 //        LIVENESS (always): the same check on an in-memory copy with one archived record dropped must fail.
 //        --plant drop: run the check itself on that dropped copy (it must exit red).
@@ -144,6 +151,9 @@ function readNow() {
   const archives = new Map(fs.existsSync(archDir) ? fs.readdirSync(archDir).filter((f) => f.endsWith('.parked.md')).map((f) => [f, parseArchive(fs.readFileSync(path.join(archDir, f), 'utf8'))]) : []);
   return { live, archives };
 }
+// a record's identity: its lines with comment marks and indent removed (a generation-2 park re-comments its original), blanks dropped
+const bare = (ls) => ls.map((l) => l.replace(/^\s*(\/\/\s?)*/, '').trim()).filter(Boolean);
+const holds = (big, small) => { let k = 0; for (const l of big) if (k < small.length && l === small[k]) k++; return small.length > 0 && k === small.length; };
 const lineBag = (lines) => { const m = new Map(); for (const l of lines) m.set(l, (m.get(l) || 0) + 1); return m; };
 const bagMinus = (a, b) => { const out = []; for (const [l, c] of a) { const d = c - (b.get(l) || 0); for (let k = 0; k < d; k++) out.push(l); } return out; };
 
@@ -178,22 +188,58 @@ function check(state, baseRev, strict) {
   let recordsBase = 0, recordsNow = 0, pokBase = 0, pokNow = 0;
   const pokCount = (t) => t.split('\n').filter((l) => !isComment(l) && /\bpok\(/.test(l)).length;
   const removed = [], added = [];
+  const baseRecs = [], nowRecs = [];
   for (const f of new Set([...baseFiles, ...live.keys()])) {
     const b = baseFiles.includes(f) ? showAt(baseRev, f) : '';
     const n = live.get(f) ?? '';
-    recordsBase += recordsOf(b.split('\n')).length; recordsNow += recordsOf(n.split('\n')).length;
+    const bl = b.split('\n'), nl = n.split('\n');
+    const br = recordsOf(bl), nr = recordsOf(nl);
+    recordsBase += br.length; recordsNow += nr.length;
+    for (const r of br) baseRecs.push({ f, line: r.from + 1, lines: bl.slice(r.from, r.to + 1) });
+    for (const r of nr) nowRecs.push({ f, lines: nl.slice(r.from, r.to + 1) });
     pokBase += pokCount(b); pokNow += pokCount(n);
-    removed.push(...bagMinus(lineBag(b.split('\n')), lineBag(n.split('\n'))));
-    added.push(...bagMinus(lineBag(n.split('\n')), lineBag(b.split('\n'))));
+    removed.push(...bagMinus(lineBag(bl), lineBag(nl)));
+    added.push(...bagMinus(lineBag(nl), lineBag(bl)));
   }
-  const archivedBase = (() => { try { return git('ls-tree', '--name-only', baseRev, `${ARCHIVE}/`).split('\n').filter((f) => f.endsWith('.parked.md')).reduce((s, f) => s + parseArchive(git('show', `${baseRev}:${f}`)).length, 0); } catch { return 0; } })();
+  const baseArchives = (() => { try { return git('ls-tree', '--name-only', baseRev, `${ARCHIVE}/`).split('\n').filter((f) => f.endsWith('.parked.md')).map((f) => [path.basename(f), parseArchive(git('show', `${baseRev}:${f}`))]); } catch { return []; } })();
+  const baseArchKeys = new Set(baseArchives.flatMap(([a, recs]) => recs.map((r) => `${a}#${r.n}`)));
+  const archivedBase = baseArchKeys.size;
   const movedSince = archived - archivedBase;
-  if (recordsBase !== recordsNow + movedSince) fails.push(`RECORDS: ${recordsBase} live at base, ${recordsNow} live now + ${movedSince} archived since (a record was lost or added)`);
-  if (pokBase !== pokNow) fails.push(`POK: ${pokBase} pok( calls at base, ${pokNow} now`);
+  // RECORDS by identity: each record of <base> is archived since (verbatim) or held live in its file; what is left over is lost
+  const newArch = [...archives.entries()].flatMap(([a, recs]) => recs.filter((r) => !r.bad && !baseArchKeys.has(`${a}#${r.n}`)).map((r) => ({ f: `${HARNESS}/${r.file}`, lines: r.lines, a, n: r.n })));
+  const usedArch = new Set(), hosts = new Set(), lost = [];
+  let heldLive = 0, archivedMatched = 0;
+  for (const b of baseRecs) {
+    const arch = newArch.find((r) => !usedArch.has(r) && r.f === b.f && r.lines.join('\n') === b.lines.join('\n'));
+    if (arch) { usedArch.add(arch); archivedMatched++; continue; }
+    const host = nowRecs.find((r) => r.f === b.f && holds(bare(r.lines), bare(b.lines)));
+    if (host) { hosts.add(host); heldLive++; continue; }
+    lost.push(b);
+  }
+  const addedRecs = nowRecs.filter((r) => !hosts.has(r));
+  const strays = newArch.filter((r) => !usedArch.has(r));
+  if (lost.length) fails.push(`RECORDS: ${lost.length} records live at base are neither held live nor archived since (first: ${lost[0].f.replace(`${HARNESS}/`, '')}:${lost[0].line} ${JSON.stringify(lost[0].lines[0].trim().slice(0, 70))})`);
+  if (strays.length) fails.push(`RECORDS: ${strays.length} records archived since base were not live at base (first: ${strays[0].a} record ${strays[0].n})`);
+  if (recordsBase + addedRecs.length !== recordsNow + movedSince) fails.push(`RECORDS: ${recordsBase} live at base + ${addedRecs.length} added since != ${recordsNow} live now + ${movedSince} archived since`);
   const archBag = lineBag([...archives.values()].flatMap((recs) => recs.flatMap((r) => r.lines || [])));
-  const baseArchBag = lineBag((() => { try { return git('ls-tree', '--name-only', baseRev, `${ARCHIVE}/`).split('\n').filter((f) => f.endsWith('.parked.md')).flatMap((f) => parseArchive(git('show', `${baseRev}:${f}`)).flatMap((r) => r.lines || [])); } catch { return []; } })());
+  const baseArchBag = lineBag(baseArchives.flatMap(([, recs]) => recs.flatMap((r) => r.lines || [])));
   const newlyArchived = lineBag(bagMinus(archBag, baseArchBag));
-  const unaccounted = bagMinus(lineBag(removed.filter((l) => isComment(l) || l.trim() === '')), newlyArchived).filter((l) => l.trim() !== '');
+  if (strict) {
+    if (pokBase !== pokNow) fails.push(`POK: ${pokBase} pok( calls at base, ${pokNow} now`);
+  } else {
+    // a lane: no pok( line is lost - each one removed is held (comment marks aside) by a live or archived record
+    const recBare = new Set([...nowRecs, ...[...archives.values()].flat().filter((r) => !r.bad)].flatMap((r) => bare(r.lines)));
+    const gone = removed.filter((l) => !isComment(l) && /\bpok\(/.test(l) && !recBare.has(l.trim()));
+    if (gone.length) fails.push(`POK: ${gone.length} pok( lines removed since base are in no record (first: ${JSON.stringify(gone[0].trim().slice(0, 80))})`);
+  }
+  // LINES: --strict, every removed comment line; a lane, the lines of <base>'s records that are not held live
+  let scope = removed;
+  if (!strict) {
+    const pool = lineBag(baseRecs.filter((b) => !nowRecs.some((r) => r.f === b.f && holds(bare(r.lines), bare(b.lines)))).flatMap((b) => b.lines));
+    scope = [];
+    for (const l of removed) { const c = pool.get(l) || 0; if (c > 0) { pool.set(l, c - 1); scope.push(l); } }
+  }
+  const unaccounted = bagMinus(lineBag(scope.filter((l) => isComment(l) || l.trim() === '')), newlyArchived).filter((l) => l.trim() !== '');
   if (unaccounted.length) fails.push(`LINES: ${unaccounted.length} removed comment lines are in no archive record (first: ${JSON.stringify(unaccounted[0].slice(0, 80))})`);
   if (strict) {
     const removedCode = removed.filter((l) => l.trim() !== '' && !isComment(l));
@@ -201,7 +247,7 @@ function check(state, baseRev, strict) {
     const notPointer = added.filter((l) => l.trim() !== '' && !POINTER.test(l));
     if (notPointer.length) fails.push(`STRICT: ${notPointer.length} added lines are not pointers (first: ${JSON.stringify(notPointer[0].slice(0, 80))})`);
   }
-  return { ...out, recordsBase, recordsNow, movedSince, pokBase, pokNow, removed: removed.length };
+  return { ...out, recordsBase, recordsNow, movedSince, addedSince: addedRecs.length, heldLive, archivedMatched, lost: lost.length, pokBase, pokNow, removed: removed.length };
 }
 const dropOne = (state) => {
   const archives = new Map(state.archives);
@@ -237,7 +283,7 @@ if (mode === 'census') {
   const live = d.dropped ? check(d, baseRev, strict).fails.length > 0 : true;
   if (!live) r.fails.push('LIVENESS: a dropped archive record was NOT caught');
   console.log(`STRUCTURE: ${r.pointers} pointers, ${r.archived} archived records`);
-  if (baseRev) console.log(`AGAINST ${baseRev}: records ${r.recordsBase} at base = ${r.recordsNow} live + ${r.movedSince} archived since; pok( ${r.pokBase} -> ${r.pokNow}; ${r.removed} lines removed${strict ? ' (strict)' : ''}`);
+  if (baseRev) console.log(`AGAINST ${baseRev}: records ${r.recordsBase} at base (${r.heldLive} held live, ${r.archivedMatched} archived since, ${r.lost} lost) + ${r.addedSince} added = ${r.recordsNow} live + ${r.movedSince} archived since; pok( ${r.pokBase} -> ${r.pokNow}; ${r.removed} lines removed${strict ? ' (strict)' : ' (lane)'}`);
   console.log(`LIVENESS: ${d.dropped ? `dropping ${d.dropped} is ${live ? 'caught' : 'NOT caught'}` : 'nothing archived yet (no record to drop)'}`);
   for (const f of r.fails.slice(0, 12)) console.log(`FAIL  ${f}`);
   console.log(r.fails.length ? `\nC13-14 CHECK: FAIL (${r.fails.length})` : '\nC13-14 CHECK: PASS');
