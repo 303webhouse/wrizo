@@ -3,7 +3,7 @@
 // V05 (Flux: Up on the first line, then Down: the column ended at the page's start, the Flux page kept the old one and Down went to the old column of the second line). RED on main: V03 and V04 in all three themes, V05 in Flux.
 // Run: node scripts/harness/writing-audit/reds-62.mjs (from apps/desktop; on Actions via writing-audit.yml, script=reds-62.mjs; strict)
 process.env.WA_STRICT = process.env.WA_STRICT || '1';
-process.env.WA_ONLY = process.env.WA_ONLY || 'V03,V04,V05';
+process.env.WA_ONLY = process.env.WA_ONLY || 'V03,V04,V05,V10,V11,V12';
 process.env.WA_TYPEWRITER = process.env.WA_TYPEWRITER || 'off';
 const { main } = await import('./lib/runner.mjs');
 const { GROUPS2 } = await import('./lib/cases2.mjs');
