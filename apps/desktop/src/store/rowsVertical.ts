@@ -9,7 +9,7 @@ import { revealCaret } from './caretInView';
 //         when a run starts, and kept until any other key, a click, or the editor losing focus ends the run. And DOWN FROM AN EMPTY ROW: the browser cannot leave an empty inline-block row downward (the caret stays in it), so Down from an empty row
 //         puts the caret on the first line of the row below, at the column of the run.
 // Shift+Up and Shift+Down extend the selection the same way. Everything else (inside a row, a one-line neighbour, a selection collapsing, composing) is left to the browser; a caret that cannot be placed here is never an error into the writer's key.
-const live = new WeakMap<HTMLElement, { x: number }>();   // the column of the run of vertical keys in progress, per editor
+const live = new WeakMap<HTMLElement, { x: number; owned: boolean }>();   // the column of the run of vertical keys in progress, per editor; owned = this file has already moved the caret in the run
 
 /** A click, a lost focus or any key that is not Up or Down ends the run: the next vertical key reads the column afresh. */
 export function clearVerticalGoal(el: HTMLElement): void { live.delete(el); }
@@ -21,6 +21,18 @@ const lineRects = (node: Node): DOMRect[] => {
   r.selectNodeContents(node);
   return [...r.getClientRects()].filter((q) => q.height > 0 && q.width >= 0);
 };
+
+/** A row's rectangles grouped into its visual lines (one entry per line: where it starts, its top and its middle), top to bottom. */
+function distinctLines(rects: DOMRect[]): Array<{ top: number; left: number; mid: number }> {
+  const sorted = [...rects].sort((a, b) => a.top - b.top || a.left - b.left);
+  const out: Array<{ top: number; left: number; mid: number; bottom: number }> = [];
+  for (const q of sorted) {
+    const last = out[out.length - 1];
+    if (last && q.top < last.top + (last.bottom - last.top) * 0.5) { last.left = Math.min(last.left, q.left); last.bottom = Math.max(last.bottom, q.bottom); last.mid = (last.top + last.bottom) / 2; }
+    else out.push({ top: q.top, left: q.left, bottom: q.bottom, mid: q.top + q.height / 2 });
+  }
+  return out;
+}
 
 interface Where { row: HTMLElement; at: number; atRowStart: boolean; fnode: Node; foff: number }
 
@@ -83,11 +95,35 @@ export function rowsVerticalKey(el: HTMLElement, e: KeyboardEvent): boolean {
     const box = caretBox(w);
     // the run's column: read once, when the run starts, from where the caret is drawn
     let g = live.get(el);
-    if (!g) { if (!box) return false; g = { x: box.left }; live.set(el, g); }
+    if (!g) { if (!box) return false; g = { x: box.left, owned: false }; live.set(el, g); }
     const own = lineRects(w.row);
     const empty = own.length === 0;   // an empty row draws no text: nothing in it has a rectangle
     let target: { node: Node; offset: number } | null = null;
-    if (e.key === 'ArrowDown') {
+    if (g.owned) {
+      // THE RUN IS OURS from the first step this file took in it: the browser's own goal column is now the caret's drawn column (a glyph's width from the writer's), so every further Up and Down of the run goes line by line at the run's column,
+      // through the row's own lines and into the next row (its first line going down, its last going up); at the page's first or last line the browser has the key
+      const dir = e.key === 'ArrowUp' ? -1 : 1;
+      const lines = distinctLines(own);
+      let line: { left: number; mid: number } | null = null, row: HTMLElement = w.row;
+      if (lines.length && !box) return false;
+      let idx = -1;
+      if (lines.length && box) { let best = Infinity; lines.forEach((l, i) => { const d = Math.abs(l.top - box.top); if (d < best) { best = d; idx = i; } }); }
+      const j = idx + dir;
+      if (lines.length && j >= 0 && j < lines.length) line = lines[j];
+      else {
+        const other = R.rows[w.at + dir];
+        if (!other) return false;
+        const ol = distinctLines(lineRects(other));
+        row = other;
+        if (!ol.length) target = { node: other, offset: 0 };
+        else line = dir < 0 ? ol[ol.length - 1] : ol[0];
+      }
+      if (line) {
+        const p = pointToCaret(Math.max(g.x, line.left + 1.5), line.mid);
+        if (!p || !row.contains(p.node)) return false;
+        target = p;
+      }
+    } else if (e.key === 'ArrowDown') {
       // DOWN FROM AN EMPTY ROW (#62): the browser leaves the caret where it is
       if (!empty) return false;
       const below = R.rows[w.at + 1];
@@ -121,6 +157,7 @@ export function rowsVerticalKey(el: HTMLElement, e: KeyboardEvent): boolean {
       target = p;
     }
     if (!target) return false;
+    g.owned = true;
     if (e.shiftKey) sel.extend(target.node, target.offset); else sel.collapse(target.node, target.offset);
     e.preventDefault();
     if (!e.shiftKey) revealCaret(el);
