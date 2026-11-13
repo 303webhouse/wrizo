@@ -736,7 +736,7 @@ export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvail
           sliver's own TypewriterToggle), and both must arm the same
           session-explicit flag so neither can be silently overridden by a
           later Draft-open seed. */}
-      {typewriterAvailable && theme !== 'flux' && <Seg label="Typewriter" value={settings.typewriter ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setTypewriterExplicit(v === 'on')} />}
+      {typewriterAvailable && settingsTheme !== 'flux' && <Seg label="Typewriter" value={settings.typewriter ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setTypewriterExplicit(v === 'on')} />}
     </div>
   );
 }
