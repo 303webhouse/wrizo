@@ -58,13 +58,13 @@ const stubApi = { name: 'stub-api', setup(b) {
   b.onResolve({ filter: /(^|\/)api$/ }, (a) => (a.importer.includes(`${path.sep}store${path.sep}`) || a.importer.includes('/store/') ? { path: 'api-stub', namespace: 'stub-api' } : null));
   b.onLoad({ filter: /.*/, namespace: 'stub-api' }, () => ({ contents: 'export class SyncHttpError extends Error { constructor(status) { super("sync failed: " + status); this.status = status; } } export const apiSync = (p) => globalThis.__apiSync(p); export const postJson = async () => ({ ok: true, json: async () => ({}) });', loader: 'js' }));
 } };
-async function loadDevice(tag) {
-  current = stores[tag];
+async function loadDevice(tag, store = tag) {   // a second WINDOW of a device is another copy of the modules over the same storage
+  current = stores[store];
   const entry = ["export * as persist from './store/persistence';", "export { syncOnce } from './store/sync';", hasBase ? "export * as syncBase from './store/persistence/syncBase';" : ''].join(NL);
   const built = await esbuild.build({ stdin: { contents: entry, resolveDir: SRC, sourcefile: `entry-${tag}.ts`, loader: 'ts' }, bundle: true, format: 'esm', write: false, platform: 'node', plugins: [stubApi], logLevel: 'silent' });
   const code = built.outputFiles[0].text + `${NL}// device ${tag}`;
   const mod = await import('data:text/javascript;base64,' + Buffer.from(code).toString('base64'));
-  return { tag, mod, run: async (fn) => { current = stores[tag]; tagNow = tag; return fn(mod); } };
+  return { tag, mod, run: async (fn) => { current = stores[store]; tagNow = tag; return fn(mod); } };
 }
 const A = await loadDevice('A');
 const B = await loadDevice('B');
@@ -144,7 +144,7 @@ else {
   ok(!((await B.run((m) => m.syncBase.syncBaseIds())).includes('p6')), 'C6 the base is dropped once the page is clean and synced');
   await edit(B, 'p6', (t) => t + NL + 'B2.'); tick();
   await B.run((m) => m.persist.resetLocalData());
-  ok(((await B.run((m) => m.syncBase.syncBaseIds())).length === 0) && !stores.B.has('wrizo-sync-bases-v1'), 'C6 sign-out clears the bases and their storage key');
+  ok(((await B.run((m) => m.syncBase.syncBaseIds())).length === 0) && ![...stores.B.keys()].some((k) => k.startsWith('wrizo-sync-base')), 'C6 sign-out clears the bases and their storage keys');
   const pushedKeys = JSON.stringify([...server.rows.values()]);
   ok(!pushedKeys.includes('sync-bases') && !pushedKeys.includes('syncBase'), 'C6 nothing of the bases is on the server');
   // C7 - bounded
@@ -164,6 +164,24 @@ else {
   await edit(A, 'p8', (t) => t + NL + 'From A.'); tick(5000);
   await sync(A); tick(); await sync(B);
   ok(serverText('p8') === ['One.', 'Two.', 'From A.'].join(NL), `C8 a page with no kept base is merged the old way (the newer whole text wins, nothing is blended): ${JSON.stringify(serverText('p8'))}`);
+  // C9 - TWO WINDOWS OF ONE DEVICE: one storage, each window its own memory. A base one window wrote is dropped by the other; a window's write never loses the other's bases; a dropped base is not kept stale by the window that wrote it
+  const W = await loadDevice('B2', 'B');
+  const baseOf = (d, id) => d.run((m) => m.syncBase.getSyncBase(id));
+  await B.run((m) => m.syncBase.clearSyncBases());
+  await B.run((m) => m.syncBase.noteSyncBase('w1', 'text one'));
+  await W.run((m) => m.syncBase.dropSyncBase('w1'));
+  ok((await baseOf(B, 'w1')) === null && (await baseOf(W, 'w1')) === null && !stores.B.has('wrizo-sync-base:w1'), 'C9 a base window B wrote is dropped by window A (it did not know the page)');
+  await W.run((m) => m.syncBase.noteSyncBase('w2', 'text two'));
+  await B.run((m) => m.syncBase.noteSyncBase('w3', 'text three'));
+  await W.run((m) => m.syncBase.noteSyncBase('w5', 'text five'));
+  ok((await baseOf(B, 'w2')) === 'text two' && (await baseOf(W, 'w3')) === 'text three' && (await baseOf(W, 'w2')) === 'text two' && (await baseOf(B, 'w5')) === 'text five', 'C9 a write in one window never loses the bases the other window wrote');
+  await B.run((m) => m.syncBase.noteSyncBase('w4', 'old text'));
+  await W.run((m) => m.syncBase.dropSyncBase('w4'));
+  await B.run((m) => m.syncBase.noteSyncBase('w4', 'new text'));
+  ok((await baseOf(W, 'w4')) === 'new text' && (await baseOf(B, 'w4')) === 'new text', 'C9 a dropped base is not kept stale by the window that wrote it: the next edit records the new text');
+  ok((await W.run((m) => m.syncBase.syncBaseIds())).slice().sort().join() === 'w2,w3,w4,w5', 'C9 both windows list the same pages');
+  await W.run((m) => m.syncBase.clearSyncBases());
+  ok((await baseOf(B, 'w3')) === null && ![...stores.B.keys()].some((k) => k.startsWith('wrizo-sync-base')), 'C9 sign-out in one window clears the bases the other wrote');
 }
 console.log(`SYNC-DEVICES-79: ${fails ? `FAIL - ${fails}` : 'PASS'}`);
 process.exit(fails ? 1 : 0);
