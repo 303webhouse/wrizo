@@ -55,7 +55,7 @@ export function rowsUpKey(el: HTMLElement, e: KeyboardEvent): boolean {
     // a point exactly on the row's left edge hits the row box, not its last line (the browser answers with the row's START, its first line): at the edge the column is nudged one and a half pixels into the text
     const x0 = g && g.node === fnode && g.offset === foff ? g.x : hr.left;
     const x = Math.max(x0, last.left + 1.5);
-    const y = last.top + last.height / 2;
+    const y = aboveTop + last.height / 2;
     const d = document as unknown as { caretPositionFromPoint?: (x: number, y: number) => { offsetNode: Node; offset: number } | null; caretRangeFromPoint?: (x: number, y: number) => Range | null };
     let node: Node | null = null, offset = 0;
     if (d.caretPositionFromPoint) { const p = d.caretPositionFromPoint(x, y); if (p) { node = p.offsetNode; offset = p.offset; } }
