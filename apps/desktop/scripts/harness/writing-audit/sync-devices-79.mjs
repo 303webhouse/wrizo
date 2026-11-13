@@ -40,8 +40,11 @@ globalThis.document = { ...noop, visibilityState: 'visible', documentElement: { 
 // ---- the server double -------------------------------------------------------------------------------------------------
 const server = { rows: new Map() };
 const clone = (x) => JSON.parse(JSON.stringify(x));
+let tagNow = '';
+const APILOG = [];
 globalThis.__apiSync = async ({ lastSyncAt, push, pull }) => {
   const now = new Date().toISOString();
+  APILOG.push(`${tagNow} api lastSyncAt=${lastSyncAt} push=${((push && push.journalEntries) || []).map((r) => r.id + ':' + JSON.stringify(r.text) + '@' + r.updatedAt.slice(11, 19)).join(',')} pull=${pull}`);
   for (const rec of (push && push.journalEntries) || []) { const cur = server.rows.get(rec.id); if (!cur || rec.updatedAt > cur.rec.updatedAt) server.rows.set(rec.id, { rec: clone(rec), syncedAt: now }); }
   const out = {};
   if (pull !== false) out.journalEntries = [...server.rows.values()].filter((r) => lastSyncAt === null || r.syncedAt > lastSyncAt).map((r) => clone(r.rec));
@@ -60,7 +63,7 @@ async function loadDevice(tag) {
   const built = await esbuild.build({ stdin: { contents: entry, resolveDir: SRC, sourcefile: `entry-${tag}.ts`, loader: 'ts' }, bundle: true, format: 'esm', write: false, platform: 'node', plugins: [stubApi], logLevel: 'silent' });
   const code = built.outputFiles[0].text + `${NL}// device ${tag}`;
   const mod = await import('data:text/javascript;base64,' + Buffer.from(code).toString('base64'));
-  return { tag, mod, run: async (fn) => { current = stores[tag]; return fn(mod); } };
+  return { tag, mod, run: async (fn) => { current = stores[tag]; tagNow = tag; return fn(mod); } };
 }
 const A = await loadDevice('A');
 const B = await loadDevice('B');
@@ -92,7 +95,8 @@ const has = (t, s) => typeof t === 'string' && t.includes(s);
   ok(has(b, 'From A.') && has(b, 'From B.'), `C1 device B holds both lines: ${JSON.stringify(b)}`);
   ok(s === a && a === b, 'C1 server, A and B settle on one text');
 }
-if (process.env.TRACE79 !== '0') for (const l of TRACE) console.log('TRACE ' + l.slice(0, 400));
+if (process.env.TRACE79 !== '0') { for (const l of TRACE) console.log('TRACE ' + l.slice(0, 400)); for (const l of APILOG) console.log('API ' + l.slice(0, 400)); }
+APILOG.length = 0;
 TRACE.length = 0;
 // C2 - B's edit is the EARLIER one (an older updated_at), B syncs after A
 {
