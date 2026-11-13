@@ -63,6 +63,14 @@ function caretBox(w: Where): { top: number; left: number; height: number } | nul
     const f = own.reduce((m, q) => (q.top < m.top ? q : m), own[0]);
     return { top: f.top, left: f.left, height: f.height };
   }
+  // a collapsed range at a soft wrap reports the END of the line above (a quirk of its rectangle, not where the caret is drawn): the line a position is on is the line of the character AFTER it
+  if (w.fnode.nodeType === 3 && w.foff < (w.fnode as Text).length) {
+    const ch = document.createRange();
+    ch.setStart(w.fnode, w.foff);
+    ch.setEnd(w.fnode, w.foff + 1);
+    const c = [...ch.getClientRects()].find((x) => x.height > 0);
+    if (c) return { top: c.top, left: c.left, height: c.height };
+  }
   const here = document.createRange();
   here.setStart(w.fnode, w.foff);
   here.collapse(true);
