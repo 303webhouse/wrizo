@@ -58,6 +58,15 @@ await withHarness(async (app) => {
   };
   const open = async (id, sel) => { await q(`location.hash = '#/page/${id}'`); await waitSoft(`!!document.querySelector('${sel}')`, { label: id, timeout: 8000 }); await sleep(900); };
   const goDeck = async () => { await open('w2-deck', '.walk-card'); };
+  // WIRE IN (Nov 12): in Flux a loose page opens wired in, where none of today's chrome shows (the return chip is part of it, by design). Her way back is Unplug (an Esc tap, or the X), and then the chip on the TEXT tab.
+  const unplug = async () => {
+    await app.cdp('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 }); await sleep(60);
+    await app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+    await waitSoft("!document.documentElement.hasAttribute('data-flux3-jacked')", { label: 'unplugged', timeout: 5000 }); await sleep(1000);   // the chrome fades back over 0.6 s
+  };
+  // the chip as she would meet it: its own and its ancestors' opacity multiplied, whether it takes the pointer, whether it is drawn
+  const chipShown = () => q("(() => { const b = document.querySelector('[data-return-chip]'); if (!b) return null; const c = getComputedStyle(b); let e = b, o = 1; while (e && e !== document.documentElement) { o *= +getComputedStyle(e).opacity; e = e.parentElement; } return { op: +o.toFixed(2), pe: c.pointerEvents, disp: c.display, vis: c.visibility, jacked: document.documentElement.hasAttribute('data-flux3-jacked') }; })()");
+  const chipOk = (c) => !!c && c.op >= 0.9 && c.pe !== 'none' && c.disp !== 'none' && c.vis !== 'hidden' && !c.jacked;
 
   for (const theme of ['plateau', 'flux']) {
     for (const tone of ['dark', 'light']) {
@@ -113,10 +122,22 @@ await withHarness(async (app) => {
         const mode = await q("document.querySelector('.mode-switcher [aria-pressed=\"true\"], .mode-switcher [aria-selected=\"true\"], [data-mode-active]')?.textContent?.trim() ?? null");
         ok(`${T}: W4 the page opens for writing in Free Write`, !mode || /free write|journal|draft file|free|\[?write/i.test(String(mode)) && !/^draft$/i.test(String(mode)), String(mode));
         await shot(`${tag}-write-this-chip`);
+        let wiChip = null;
+        if (theme === 'flux') {
+          await unplug(); wiChip = await chipShown();
+          // MUT-CHIP-UNPLUG: the chip missing after Unplug goes RED, and so does a chip still hidden by the Corridor (a landed change, then the same read; undone)
+          await q("document.querySelector('[data-return-chip]').style.setProperty('display', 'none', 'important')"); const wiGone = await chipShown();
+          await q("document.querySelector('[data-return-chip]').style.removeProperty('display')");
+          ok(`${T}: MUT-CHIP-UNPLUG [Wire In successor] the chip missing after Unplug (display none) goes RED, a chip still hidden by the Corridor (opacity 0, no pointer, still wired in) goes RED, and the real chip reads green`, !chipOk(wiGone) && !chipOk({ op: 0, pe: 'none', disp: 'block', vis: 'visible', jacked: true }) && chipOk(await chipShown()), JSON.stringify({ wiGone, wiChip }));
+        }
         await click('[data-return-chip]');
         await waitSoft(`location.hash === '#/page/w2-deck'`, { label: 'back at the deck', timeout: 6000 });
         await waitSoft("!!document.querySelector('.walk-card')", { label: 'walk back', timeout: 6000 }); await sleep(700);
-        ok(`${T}: W5 the chip returns to the SAME card in the Deck's Walk`, (await current()) === c2, `${c2} vs ${await current()}`);
+        // SUPERSEDED (Nov 12, Wire In on its own; Fable's ruling 8:55 pm: the chip is hidden by design in the Corridor, her way back is Unplug then the chip on TEXT): in Flux this clicked the chip while still wired in, where it is hidden.
+        //   ok(`${T}: W5 the chip returns to the SAME card in the Deck's Walk`, (await current()) === c2, `${c2} vs ${await current()}`);
+        // The original stays live for Arbor (and Machina); Flux's successor runs after Unplug.
+        if (theme !== 'flux') ok(`${T}: W5 the chip returns to the SAME card in the Deck's Walk`, (await current()) === c2, `${c2} vs ${await current()}`);
+        else ok(`${T}: W5 [Wire In successor] after Unplug the chip is shown and tappable, and it returns to the SAME card in the Deck's Walk`, chipOk(wiChip) && (await current()) === c2, `${JSON.stringify(wiChip)} ${c2} vs ${await current()}`);
         ok(`${T}: W6 leaving without typing left no page and no graft`, (await rows()).length === count0 && liveLinks(await rowOf('w2-deck')).length === 1);
 
         // WT - type: born in the Deck's set, grafted to the card, in Free Write; the chip returns to that step
@@ -145,11 +166,19 @@ await withHarness(async (app) => {
           ok(`${T}: T6 "Came from" names the step, already placed (checked)`, came === 'Three-Act · Midpoint' && cameCk === 'true', `${came} / ${cameCk}`);
           await q("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))"); await sleep(300);
         }
+        let wiChip2 = null;
+        if (theme === 'flux') { await unplug(); wiChip2 = await chipShown(); }
         await wakeClick('[data-return-chip]');
         await waitSoft("!!document.querySelector('.walk-card')", { label: 'walk back 2', timeout: 6000 }); await sleep(700);
-        ok(`${T}: T7 from the typed page the chip still returns to that card`, (await current()) === c2, `${c2} vs ${await current()}`);
+        // SUPERSEDED (Nov 12, Wire In on its own; Fable's ruling 8:55 pm): the same reason as W5 above. Original, verbatim; live for Arbor, successor for Flux after Unplug:
+        //   ok(`${T}: T7 from the typed page the chip still returns to that card`, (await current()) === c2, `${c2} vs ${await current()}`);
+        if (theme !== 'flux') ok(`${T}: T7 from the typed page the chip still returns to that card`, (await current()) === c2, `${c2} vs ${await current()}`);
+        else ok(`${T}: T7 [Wire In successor] from the typed page, after Unplug, the chip is shown and still returns to that card`, chipOk(wiChip2) && (await current()) === c2, `${JSON.stringify(wiChip2)} ${c2} vs ${await current()}`);
         const kind2 = await q(`document.querySelector('.walk-mark[data-current="true"]')?.getAttribute('data-kindled')`);
-        ok(`${T}: T8 the card is kindled`, kind2 === 'true', String(kind2));
+        // SUPERSEDED (Nov 12, Wire In on its own; Fable's ruling 8:55 pm): the card is reached after Unplug in Flux now. Original, verbatim; live for Arbor, successor for Flux:
+        //   ok(`${T}: T8 the card is kindled`, kind2 === 'true', String(kind2));
+        if (theme !== 'flux') ok(`${T}: T8 the card is kindled`, kind2 === 'true', String(kind2));
+        else ok(`${T}: T8 [Wire In successor] after the way back through Unplug and the chip, the card is still kindled`, kind2 === 'true', String(kind2));
 
         // PT - Place this: from a page, the Decks' steps with place labels across Drawers; a press places; nothing without one
         await open('w2-pg2', '.forward-only-editor, [contenteditable="true"]');
