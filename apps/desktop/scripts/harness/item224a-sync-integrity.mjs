@@ -210,6 +210,8 @@ function loadSyncClient() {
   // B10.1 - the stale-client guard's two leaf modules, the real files. No build is known here, so the guard never trips.
   write('store/clientBuild.ts', stripTypes(dtRequire, fs.readFileSync(path.join(DESKTOP_SRC, 'store/clientBuild.ts'), 'utf8')));
   write('store/staleClient.ts', stripTypes(dtRequire, fs.readFileSync(path.join(DESKTOP_SRC, 'store/staleClient.ts'), 'utf8')));
+  // #79 - sync.ts reaches the device-local merge bases directly (persistence/syncBase.ts, no imports): the real file; write() points its relative import at the .mjs
+  write('store/persistence/syncBase.ts', stripTypes(dtRequire, fs.readFileSync(path.join(DESKTOP_SRC, 'store/persistence/syncBase.ts'), 'utf8')));
   const dest = write('store/sync.ts', stripTypes(dtRequire,fs.readFileSync(path.join(DESKTOP_SRC, 'store/sync.ts'), 'utf8')));
   return { mod: import(`file://${dest.replace(/\\/g, '/')}?t=${Date.now()}`), persistencePath: path.join(tmpDesktop, 'store/persistence.mjs'), apiPath: path.join(tmpDesktop, 'store/api.mjs') };
 }
