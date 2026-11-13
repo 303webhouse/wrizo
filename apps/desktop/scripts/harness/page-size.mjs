@@ -180,7 +180,8 @@ const IDENT_PROBE = `(() => { const p = document.querySelector('.mode-page'); co
     fontPx: parseFloat(getComputedStyle(e).fontSize), colW: e.offsetWidth, transform: ps.transform, zoom: col.getAttribute('data-zoom'), anchor: cs.getPropertyValue('--tw-anchor').trim(),
     lh: parseFloat(cs.getPropertyValue('--tw-lh')) || null, mask: String(cs.webkitMaskImage || cs.maskImage || 'none') }; })()`;
 const ident = {};
-const psParks = { C: [], MW: [], WT: [], MBR: null };   // the park audit (Oct 24): the default leg's observations, for the parked records
+const identMZ = {};   // Wire In: the MIZ mutant's reading (Flux dark, 1366)
+const psParks = { C: [], MW: [], WT: [], MBR: null, FZ: [], W0: [], IZ: [] };   // the park audit (Oct 24): the default leg's observations, for the parked records (FZ, W0, IZ: Wire In, Nov 12)   // the park audit (Oct 24): the default leg's observations, for the parked records
 const IDENT_TOL = 1;   // Nick's law, ±1px
 
 // strip every MASK the stage can paint, so a line's UNFADED ink can be read (layout is untouched: a mask never moves a line). MASKS ONLY - the red run (143)
@@ -374,6 +375,31 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
   const g0 = await app.evalJs('window.__psGeom()');
   const l0 = await app.evalJs('window.__psLines()');
   await app.evalJs('window.__psMark()');
+  // ---- PARKED - SUPERSEDED (Nov 12, Wire In: Fable's go "BUILD the Corridor on its own in today's Flux"): the paper Typewriter is RETIRED in Flux - its toggle is display:none, typewriterForPage reads false and a Flux Draft page never zooms - so FLUX's
+  // instance of this premise ("the writer's typewriter control turned the zoom ON") cannot hold and everything that hangs on it (Z, B, U, P, W/T, W, T, X, MW, MT, MB, G and the leave-the-zoom premise/U/X) has no zoom to read in Flux; those
+  // checks keep their meaning for the PAPER Typewriter and run unchanged for Arbor and Machina below. The original premise is kept VERBATIM and runs for Arbor and Machina only; Flux's successor follows (with its mutant), and the original is
+  // run as a PARKED RECORD for Flux (HARNESS_PARKED=1). The Wire In zoom (the Corridor, data-flux3-jacked) is read by the wirein harnesses, not here. ----
+  // ok(`${tag} zoom (premise): the writer's typewriter control turned the zoom ON (the press HIT the button)`, !!on && !!pressedOn.at && pressedOn.at.hits, J({ pressedOn, key: await typewriterIs(app, id) }));
+  // ------------------------------------------------------------------
+  if (th.id === 'flux' && kind === 'draft') {
+    // the Sliver open (as pressTypewriter opens it) so the toggle would be on screen if Flux offered it
+    if ((await attr(app, '.wz-sliver', 'data-open')) !== 'true') { const gr = await rectOf(app, '.wz-sliver-grip'); if (gr) { await click(app, gr.x, gr.y); await sleep(300); } }
+    await waitSoft(app, `document.querySelector('.wz-sliver')?.getAttribute('data-open') === 'true' && ${settledSliver}`, { label: 'the Sliver settled open', timeout: 3000 });
+    const fxProbe = () => app.evalJs(`(() => { const b = document.querySelector(${J(TOGGLE)}); const col = document.querySelector('.mode-pagecol'); const p = document.querySelector('.mode-page'); const r = p ? p.getBoundingClientRect() : null; const q = b ? b.getBoundingClientRect() : null;
+      return { toggle: !!b, display: b ? getComputedStyle(b).display : null, w: q ? Math.round(q.width) : null, zoom: col ? col.getAttribute('data-zoom') : null, pageW: r ? Math.round(r.width * 10) / 10 : null, stored: localStorage.getItem('wrizo-typewriter-page-${id}') }; })()`);
+    const fxOk = (r) => !!r && r.toggle && r.display === 'none' && r.w === 0 && r.zoom !== 'true' && !!g0 && Math.abs(r.pageW - g0.page.width) <= 0.5;
+    const fx = await fxProbe();
+    psParks.FZ.push({ tag, ok: fxOk(fx), fx, normalW: g0 && Math.round(g0.page.width * 10) / 10 });
+    ok(`${tag} zoom [Wire In successor]: Flux offers no Typewriter control (the toggle is display:none, no box) and the page is not zoomed - it keeps its normal width (a stored per-page value is data only)`, fxOk(fx), J({ fx, normalW: g0 && Math.round(g0.page.width * 10) / 10 }));
+    if (mutants) {
+      // MFZ: the toggle forced back on (inline !important beats the sheet's) - the SAME read must go RED
+      const landedFz = await app.evalJs(`(() => { const b = document.querySelector(${J(TOGGLE)}); if (!b) return null; b.style.setProperty('display', 'block', 'important'); return getComputedStyle(b).display; })()`);
+      const fxM = await fxProbe();
+      await app.evalJs(`(() => { const b = document.querySelector(${J(TOGGLE)}); if (b) b.style.removeProperty('display'); return true; })()`);
+      ok(`${th.name} ${w}x${h} MFZ (mutant) [Wire In successor]: with the Typewriter toggle forced back on (LANDED: display ${landedFz}), the no-control read FAILS`, landedFz === 'block' && !fxOk(fxM), J(fxM));
+    }
+    return;
+  }
   const pressedOn = await pressTypewriter(app);
   const on = kind === 'draft' ? (await typewriterIs(app, id)) === 'on' : pressedOn.pressed === 'true' || (await app.evalJs("!!document.querySelector('.mode-scroll[data-typewriter=\"true\"]') || null"));
   ok(`${tag} zoom (premise): the writer's typewriter control turned the zoom ON (the press HIT the button)`, !!on && !!pressedOn.at && pressedOn.at.hits, J({ pressedOn, key: await typewriterIs(app, id) }));
@@ -558,6 +584,23 @@ await withHarness(async (app) => {
         await app.evalJs('window.__psCaretToEnd()'); await app.typeKeys('x'); await sleep(900);
         const z0 = await app.evalJs("!!document.querySelector('.mode-pagecol[data-zoom=\"true\"]')");
         const fl = await app.evalJs('window.__psLines()');
+        // ---- PARKED - SUPERSEDED (Nov 12, Wire In): the paper Typewriter is RETIRED in Flux, so a FLUX page never zooms in TEXT (Draft) even with its per-page Typewriter value stored ON (this fixture stores ON for the fresh page; the value is
+        // kept as data and read again in other themes). FLUX's instance of this premise cannot hold (z0 is false) and W0's strength read below it has no zoom to read there. The original is kept VERBATIM and runs for Arbor and
+        // Machina only; Flux's successor follows (with its mutant), and the original is run as a PARKED RECORD for Flux (HARNESS_PARKED=1). ----
+        // ok(`${th.name} 1366x768 W0 (premise): a fresh page, zoomed, one line long`, z0 && !!fl && fl.length === 1, J({ z0, lines: fl && fl.length }));
+        // ------------------------------------------------------------------
+        if (th.id === 'flux') {
+          const storedOn = await app.evalJs(`localStorage.getItem('wrizo-typewriter-page-${fid}')`);
+          const freshOk = z0 === false && !!fl && fl.length === 1 && storedOn === 'on';
+          psParks.W0.push({ z0, lines: fl && fl.length, storedOn });
+          ok(`${th.name} 1366x768 W0 [Wire In successor]: a fresh page whose stored Typewriter value is ON, typed into in Flux's TEXT, is NOT zoomed (the paper Typewriter is retired; the stored value is kept as data) and is one line long`, freshOk, J({ z0, lines: fl && fl.length, storedOn }));
+          // MW0: the zoom attribute written onto the column - the SAME read (zoom present?) must flip and the successor go RED
+          const landedW0 = await app.evalJs("(() => { const c = document.querySelector('.mode-pagecol'); if (!c) return null; c.setAttribute('data-zoom', 'true'); return !!document.querySelector('.mode-pagecol[data-zoom=\"true\"]'); })()");
+          const z0m = await app.evalJs("!!document.querySelector('.mode-pagecol[data-zoom=\"true\"]')");
+          await app.evalJs("(() => { const c = document.querySelector('.mode-pagecol'); if (c) c.removeAttribute('data-zoom'); return true; })()");
+          ok(`${th.name} 1366x768 MW0 (mutant) [Wire In successor]: with the zoom attribute written onto the column (LANDED: ${landedW0}), the not-zoomed read FAILS`, landedW0 === true && z0m === true && !(z0m === false && !!fl && fl.length === 1 && storedOn === 'on'), J({ landedW0, z0m }));
+          continue;
+        }
         ok(`${th.name} 1366x768 W0 (premise): a fresh page, zoomed, one line long`, z0 && !!fl && fl.length === 1, J({ z0, lines: fl && fl.length }));
         if (z0 && fl && fl.length) {
           const s0 = await strengths(app, [fl[fl.length - 1]]);
@@ -641,6 +684,10 @@ await withHarness(async (app) => {
         }
         await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${did}', 'on')`);
         const zoomed = (await openPage(app, did)) ? await app.evalJs(IDENT_PROBE) : null;
+        // MIZ (the mutant, once) [Wire In successor]: the zoom attribute written onto Flux dark's column while the probe reads - the no-zoom read below must go RED (the attribute is put back as it was)
+        if (th.id === 'flux' && tone === 'dark' && iw === 1366 && zoomed) {
+          identMZ.fluxDark1366 = await app.evalJs(`(() => { const c = document.querySelector('.mode-pagecol'); if (!c) return null; const was = c.getAttribute('data-zoom'); c.setAttribute('data-zoom', 'true'); const r = ${IDENT_PROBE}; if (was == null) c.removeAttribute('data-zoom'); else c.setAttribute('data-zoom', was); return r; })()`);
+        }
         await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${did}', 'off')`);
         ident[skin][iw] = { normal, zoomed, mutated };
       }
@@ -663,14 +710,34 @@ await withHarness(async (app) => {
         const a = ident[base][w]; const b = ident[s][w];
         ok(`I ${s} vs ${base} @ ${w}: the NORMAL page is the same box, the same margins, the same text column and the same type size (within ${IDENT_TOL}px) - the skin changed only the skin`,
           !!a && !!b && sameNormal(a.normal, b.normal), J({ base: a && a.normal, here: b && b.normal }));
+        // ---- PARKED - SUPERSEDED (Nov 12, Wire In): the paper Typewriter is RETIRED in Flux, so a Flux page never zooms (data-zoom stays off even with its per-page value stored ON, as this loop stores it): there is no Flux zoom for the
+        // skin-parity read to compare against Arbor's, and the Flux instances read zoom null. The original is kept VERBATIM and runs for Arbor and Machina only (the guard on the line below); the Flux successor follows (with its
+        // mutant, MIZ, after the loop), and the original is run as a PARKED RECORD for the Flux skins (HARNESS_PARKED=1). ----
+        // ok(`I ${s} vs ${base} @ ${w}: the ZOOM is the same - its page box, the band's anchor and line unit, the mask's stops (within ${IDENT_TOL}px)`,
+        //   !!a && !!b && sameZoom(a.zoomed, b.zoomed), J({ base: a && a.zoomed, here: b && b.zoomed }));
+        // ------------------------------------------------------------------
+        if (!s.startsWith('Flux'))
         ok(`I ${s} vs ${base} @ ${w}: the ZOOM is the same - its page box, the band's anchor and line unit, the mask's stops (within ${IDENT_TOL}px)`,
           !!a && !!b && sameZoom(a.zoomed, b.zoomed), J({ base: a && a.zoomed, here: b && b.zoomed }));
+        else {
+          const unzoomed = !!b && !!b.zoomed && b.zoomed.zoom !== 'true' && sameNormal(b.normal, b.zoomed);
+          psParks.IZ.push({ s, w, unzoomed, zoom: b && b.zoomed && b.zoomed.zoom });
+          ok(`I ${s} @ ${w} [Wire In successor]: Flux's page does NOT zoom - with its per-page Typewriter value stored ON it is still its normal box, margins, column and type size (within ${IDENT_TOL}px) and data-zoom is not 'true' (the zoom's skin-parity is Arbor's and Machina's alone)`,
+            unzoomed, J({ normal: b && b.normal, stored: b && b.zoomed }));
+        }
       }
     }
     const mi = ident['Flux dark'] && ident['Flux dark'][1366] && ident['Flux dark'][1366].mutated;
     const miBase = ident[base] && ident[base][1366] && ident[base][1366].normal;
     ok('MI (mutant): with Flux dark\'s page padding widened 90px (LANDED: its left padding moved), the identity check FAILS - it can see a skin changing the size',
       !!mi && !!miBase && Math.abs(mi.padL - 90) < 0.5 && Math.abs(miBase.padL - 90) >= 10 && !sameNormal(miBase, mi), J({ base: miBase, mutated: mi }));
+    // MIZ (mutant) [Wire In successor]: the zoom attribute written onto Flux dark's column - the SAME no-zoom read the Flux successor makes (zoom not 'true', and the box its normal one) must go RED
+    {
+      const fdn = ident['Flux dark'] && ident['Flux dark'][1366] && ident['Flux dark'][1366].normal;
+      const mz = identMZ.fluxDark1366;
+      ok('MIZ (mutant) [Wire In successor]: with the zoom attribute written onto Flux dark\'s column (LANDED: its zoom read true), the no-zoom read FAILS - it can see a zoom come back to Flux',
+        !!mz && !!fdn && mz.zoom === 'true' && !(mz.zoom !== 'true' && sameNormal(fdn, mz)), J({ normal: fdn, mutated: mz }));
+    }
   }
   await app.evalJs("localStorage.setItem('wrizo-theme-prefs', " + J(J({ voice: 'serif', page: 'light', fade: 'on' })) + ")");
 
@@ -761,6 +828,16 @@ if (process.env.HARNESS_PARKED === '1') {
   // POLISH #10 item 19 - MW's name (the line held at 60%): one record per run of it, re-verifying the mutant still bites with the line at 50%
   for (const o of psParks.MW) rec.push({ name: `PARKED (was "${o.tag} MW (mutant): with the band's anchor moved up to 25% while the line is held at 60% (LANDED: --tw-anchor ${o.landedW}), W fails") - polish #10 item 19: the line is held at 50%`,
     pass: o.landedW === '25%' && !(o.s >= FULL), detail: J(o) });
+  // WIRE IN (Nov 12) - the paper Typewriter is RETIRED in Flux: three more parks, each one record per run of its Flux instance, re-verifying the new truth from the default leg's reads.
+  // FZ: the writer's typewriter control cannot turn the zoom on in Flux - the toggle is display:none (no box) and the page is not zoomed and keeps its normal width.
+  for (const o of psParks.FZ) rec.push({ name: `PARKED (was "${o.tag} zoom (premise): the writer's typewriter control turned the zoom ON (the press HIT the button)") - Wire In (Nov 12): the paper Typewriter is retired in Flux; its control is not offered and the page never zooms`,
+    pass: o.ok === true, detail: J(o) });
+  // W0: a fresh Flux page whose stored Typewriter value is ON is not zoomed (the stored value is data) and is one line long.
+  for (const o of psParks.W0) rec.push({ name: 'PARKED (was "Flux 1366x768 W0 (premise): a fresh page, zoomed, one line long") - Wire In (Nov 12): the paper Typewriter is retired in Flux; a stored ON is data, the page never zooms',
+    pass: o.z0 === false && o.lines === 1 && o.storedOn === 'on', detail: J(o) });
+  // IZ: Flux's zoom skin-parity - Flux has no zoom, so its page with a stored ON is its normal box, data-zoom not 'true'.
+  for (const o of psParks.IZ) rec.push({ name: `PARKED (was "I ${o.s} vs Arbor light @ ${o.w}: the ZOOM is the same - its page box, the band's anchor and line unit, the mask's stops (within ${IDENT_TOL}px)") - Wire In (Nov 12): the paper Typewriter is retired in Flux; there is no Flux zoom to compare, the page stays its normal box`,
+    pass: o.unzoomed === true && o.zoom !== 'true', detail: J(o) });
   // POLISH #10 item 5 - MBR: one record per run. It passes when the old mutant still covered the line, or when it missed it ONLY because the sheet's
   // centre now lies below the line (the exact falsification: the row moved, and wholly below the line).
   if (psParks.MBR) { const o = psParks.MBR; rec.push({ name: `PARKED (was "MBR (mutant): with the row put back on the sheet's centre (LANDED: its top ${o.now && o.now.rowTop} -> ${o.mutated && o.mutated.rowTop}), it covers the line - BR fails") - polish #10 item 5: the zoomed sheet covers the visible page, so its centre lies below the line`,
@@ -772,7 +849,7 @@ if (process.env.HARNESS_PARKED === '1') {
     }
   }
   for (const c of rec) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}  [${c.detail}]`);
-  console.log(rec.length && rec.every((c) => c.pass) ? `\nPAGE-SIZE PARKED: PASS (${rec.length} records) - this FILE parks 4 (C, one record per skin x size; MW's 60% name and W/T's on-screen premise, polish #10 item 19; MBR's sheet centre, polish #10 item 5)` : `\nPAGE-SIZE PARKED: FAIL - ${rec.filter((c) => !c.pass).length}/${rec.length} (${rec.length} records)`);
+  console.log(rec.length && rec.every((c) => c.pass) ? `\nPAGE-SIZE PARKED: PASS (${rec.length} records) - this FILE parks 7 (C, one record per skin x size; MW's 60% name and W/T's on-screen premise, polish #10 item 19; MBR's sheet centre, polish #10 item 5; and, Wire In, Nov 12: Flux's zoom premise, Flux's W0 premise, Flux's zoom skin-parity)` : `\nPAGE-SIZE PARKED: FAIL - ${rec.filter((c) => !c.pass).length}/${rec.length} (${rec.length} records)`);
 }
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nPAGE-SIZE VERIFY: PASS (${checks.length} checks)` : `\nPAGE-SIZE VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);

@@ -105,6 +105,10 @@ const freshPage = async (app, theme, page, { width = 800, id = 'fts-page' } = {}
   if (page === 'dark') await app.evalJs("window.wrizoThemePrefs.set({ page: 'dark' })");
   await sleep(200);
   await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id, text: 'A page for the sheet checks.', origin: 'loose', source: 'page', createdAt: '2026-05-01T00:00:00.000Z' })})`);
+  // WIRE IN ON ITS OWN (Nov 12): a loose page opens in Free Write, and in Flux Free Write IS Wire In (always dark, no paper), so a Flux page opened loose is no longer the plain page these checks read
+  // ('flux/light' read the dark tone). A fixture repair, not a change of any sentence below: a Flux page opens in TEXT (the per-page preference wrizo-mode-page-<id> = 'drafting', a pref and not a collection,
+  // written before the page mounts, as the app reads it at mount), where the saved tone, the paper and its tokens are the ones each check names. Arbor's open is untouched.
+  if (theme === 'flux') await app.evalJs(`localStorage.setItem('wrizo-mode-page-${id}', 'drafting')`);
   await sleep(300);
   await app.evalJs(`location.hash = '#/page/${id}'`);
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'the page' });
@@ -149,6 +153,9 @@ await withHarness(async (app) => {
   for (const [theme, page] of TONES) {
     const T = `[${theme}/${page}]`;
     await freshPage(app, theme, page, { width: 800, id: `fts-p3-${theme}-${page}` });
+    // the same premise as P1's, here too: P3 read Flux light's word-count in Wire In (dark) and passed while measuring the dark tone, so this check cannot be vacuous again
+    const now3 = await app.evalJs("(() => ({ theme: document.documentElement.getAttribute('data-theme') || 'plateau', page: document.documentElement.getAttribute('data-page') || 'light' }))()");
+    ok(`${T} (premise) the page is in theme=${theme} page=${page} (P3's own read)`, now3.theme === theme && now3.page === page, JSON.stringify(now3));
     const c = await contrastOf(app, '.mode-wordcount');
     ok(`${T} P3: the page's own word-count carries against its sheet (computed ${c?.ratio}:1, >= ${FLOOR})`, !!c && c.ratio >= FLOOR, JSON.stringify(c));
   }

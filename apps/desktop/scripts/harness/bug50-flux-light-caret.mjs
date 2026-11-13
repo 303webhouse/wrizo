@@ -2,7 +2,11 @@
 // 4.5 floor (found by flux3-s4.mjs's INFO CARET-CONTROL, Nov 7; the flag's own fix is S4 r8's). The fix, in styles/06-flux-v2.css: on the light
 // page a solid, darker orange of the same family, #A84E00 (5.2:1 on the paper); the dark tone keeps its caret.
 //
-// THE PAGE, seeded through the app's seam (wrizoCreateJournalPage; never raw storage): a loose page, opened in Free Write, no flag.
+// THE PAGE, seeded through the app's seam (wrizoCreateJournalPage; never raw storage): a loose page, no flag.
+// WIRE IN ON ITS OWN (Nov 12, Fable's go): in Flux a loose page's free-writing mode (Free Write) is Wire In now, ALWAYS DARK with a solid #FF9800 caret on the Corridor's ground, so the LIGHT tone's
+// caret (and the dark tone's plain-page caret) lives on Flux's TEXT page. The fixture therefore opens the page in TEXT (the per-page preference wrizo-mode-page-<id> = 'drafting', a pref and not a collection,
+// set before the reload as the app reads it at mount) for the light/dark caret reads; every one of their sentences below still says exactly what it says, and CARET-THEME keeps its original Free Write open.
+// The Wire In caret has its own read, CARET-WIRED. (This is a fixture repair: the opened mode is the only thing that moved.)
 //
 //   CARET-LIGHT  the block caret on the light page is >= 4.5:1 against the page under it (computed colours: the caret's colour composited over
 //                the first opaque background under its centre), in the orange family (hue 15-45 degrees).
@@ -10,6 +14,10 @@
 //   CARET-THEME  another theme (Arbor) has no block caret (the rule is Flux's only).
 //   MUT-CARET    (landed: a pattern matched exactly once in the served index-*.css, replaced in flight) the light page's caret back to the
 //                shared orange: CARET-LIGHT fails.
+//   CARET-WIRED  (Nov 12) Wire In on a Flux page saved LIGHT: the page is dark while wired in (data-flux3-jacked set) and the block caret is the solid #FF9800 (rgb(255, 152, 0)), >= 4.5:1 against the
+//                ground under it, in the orange family.
+//   MUT-CARET-WIRED (landed: a <style> rule in the page, then the SAME read) the Wire In caret back to the plain dark caret's rgba(255, 152, 0, 0.82) (still above 4.5:1,
+//                so only CARET-WIRED's own "solid #FF9800" clause can see it): CARET-WIRED fails; undone, it passes again.
 //   B            the build: the bundle served is dist-web's, built after the last commit touching apps/desktop/src.
 //
 // Run: node scripts/harness/bug50-flux-light-caret.mjs (from apps/desktop; a box turn, or a hosted runner).
@@ -101,9 +109,10 @@ try { await withHarness(async (app) => {
   await sleep(400);
 
   // preferences (not collections), set before the reload as the app reads them at boot
-  const caretOf = async ({ tone, theme = 'flux' }) => {
+  // `mode` is the page's own remembered mode ('drafting' = TEXT, 'journal' = Free Write, which is Wire In in Flux); the plain-page reads open TEXT, CARET-THEME and CARET-WIRED open Free Write
+  const caretOf = async ({ tone, theme = 'flux', mode = 'drafting' }) => {
     await ev(`(() => { const p = JSON.parse(localStorage.getItem('wrizo-theme-prefs') || '{}'); p.page = ${JSON.stringify(tone)}; localStorage.setItem('wrizo-theme-prefs', JSON.stringify(p));
-      localStorage.setItem('wrizo-theme', ${JSON.stringify(theme)}); })()`);
+      localStorage.setItem('wrizo-theme', ${JSON.stringify(theme)}); localStorage.setItem('wrizo-mode-page-${PAGE}', ${JSON.stringify(mode)}); })()`);
     await ev(`history.replaceState(null, '', '/#/page/${PAGE}')`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { timeout: 15000, label: 'the page' }).catch(() => {});
@@ -112,7 +121,7 @@ try { await withHarness(async (app) => {
     await app.mouseMove(8, 8);
     if (theme === 'flux') await app.waitFor("!!document.querySelector('.flux-block-caret')", { timeout: 4000, label: 'the block caret' }).catch(() => {});
     await sleep(800);
-    const st = await ev("({ theme: document.documentElement.getAttribute('data-theme'), page: document.documentElement.getAttribute('data-page'), flag: document.documentElement.hasAttribute('data-flux3'), block: !!document.querySelector('.flux-block-caret'), served: ([...document.scripts].map((s) => s.getAttribute('src') || '').find((s) => /index-/.test(s)) || '').replace(/^.*\\//, '') })");
+    const st = await ev("({ theme: document.documentElement.getAttribute('data-theme'), page: document.documentElement.getAttribute('data-page'), flag: document.documentElement.hasAttribute('data-flux3'), jacked: document.documentElement.hasAttribute('data-flux3-jacked'), block: !!document.querySelector('.flux-block-caret'), served: ([...document.scripts].map((s) => s.getAttribute('src') || '').find((s) => /index-/.test(s)) || '').replace(/^.*\\//, '') })");
     return { st, ink: await ev(CARET_INK) };
   };
 
@@ -125,13 +134,31 @@ try { await withHarness(async (app) => {
     lightOk(light), JSON.stringify(light));
   const dark = await caretOf({ tone: 'dark' });
   ok('CARET-DARK the dark tone keeps its caret (the shared orange, rgba(255, 152, 0, 0.82))', dark.st.page === 'dark' && !!dark.ink && dark.ink.caret === 'rgba(255, 152, 0, 0.82)', JSON.stringify(dark));
-  const arbor = await caretOf({ tone: 'light', theme: 'plateau' });
+  const arbor = await caretOf({ tone: 'light', theme: 'plateau', mode: 'journal' });
   ok('CARET-THEME another theme (Arbor, light page) has no block caret', arbor.st.theme === 'plateau' && !arbor.st.block, JSON.stringify(arbor.st));
 
   mutant = 'caret'; landed.caret = undefined;
   let mut;
   try { mut = await caretOf({ tone: 'light' }); } finally { mutant = null; }
   ok(`MUT-CARET (landed, in index-*.css) the light page's caret back to the shared orange: CARET-LIGHT fails (${mut.ink && mut.ink.ratio}:1)`, landed.caret === 1 && !lightOk(mut), JSON.stringify({ landed: landed.caret, ink: mut.ink }));
+
+  // CARET-WIRED (Nov 12): the same page saved LIGHT, opened in Free Write = Wire In (no flag): dark while wired in, and the caret is the solid #FF9800 over the Corridor's ground
+  const wiredOk = (x) => !!x && x.st.theme === 'flux' && x.st.page === 'dark' && x.st.jacked === true && !x.st.flag && !!x.ink && x.ink.caret === 'rgb(255, 152, 0)'
+    && x.ink.ratio !== null && x.ink.ratio >= 4.5 && hueOf(x.ink.ink) !== null && hueOf(x.ink.ink) >= 15 && hueOf(x.ink.ink) <= 45;
+  const wired = await caretOf({ tone: 'light', mode: 'journal' });
+  ok(`CARET-WIRED Wire In on a page saved light (no flag): the page is dark while wired in and the block caret is the solid #FF9800 (${wired.ink && wired.ink.caret}), ${wired.ink && wired.ink.ratio}:1 against the ground under it (>= 4.5), orange family (hue ${wired.ink && wired.ink.ink ? Math.round(hueOf(wired.ink.ink)) : null})`,
+    wiredOk(wired), JSON.stringify(wired));
+  let wiredMut = null, wiredLanded = null;
+  try {
+    await ev("(() => { const s = document.createElement('style'); s.id = 'bug50-wired-mutant'; s.textContent = \":root[data-theme='flux'] .flux-block-caret{ background:rgba(255, 152, 0, .82) !important; }\"; document.head.appendChild(s); })()");
+    await sleep(200);
+    wiredLanded = await ev("(() => { const b = document.querySelector('.flux-block-caret'); return b ? getComputedStyle(b).backgroundColor : null; })()");
+    wiredMut = { st: wired.st, ink: await ev(CARET_INK) };
+  } finally { await ev("document.getElementById('bug50-wired-mutant')?.remove()"); }
+  await sleep(200);
+  const wiredBack = { st: wired.st, ink: await ev(CARET_INK) };
+  ok(`MUT-CARET-WIRED (landed, a <style> rule in the page) the Wire In caret back to rgba(255, 152, 0, 0.82) (${wiredLanded}, ${wiredMut && wiredMut.ink && wiredMut.ink.ratio}:1, still >= 4.5): CARET-WIRED fails, and passes again undone`,
+    wiredLanded === 'rgba(255, 152, 0, 0.82)' && !!wiredMut && !!wiredMut.ink && wiredMut.ink.ratio >= 4.5 && !wiredOk(wiredMut) && wiredOk(wiredBack), JSON.stringify({ wiredLanded, wiredMut, wiredBack }));
 
   ok(`B the build: served ${light.st.served} = dist-web's ${BUILD.bundle}, built ${BUILD.builtAt} after the last src commit ${BUILD.srcCommitAt} (tree ${BUILD.head}, ${BUILD.dirtySrc} uncommitted src file(s))`,
     !!BUILD.bundle && light.st.served === BUILD.bundle && BUILD.stale === false, JSON.stringify(BUILD));

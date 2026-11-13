@@ -84,7 +84,18 @@ await withHarness(async (app) => {
     await app.evalJs("(() => { const e = document.querySelector('.forward-only-editor'); e.focus(); const r = document.createRange(); r.selectNodeContents(e); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()");
     await app.typeKeys(' And'); await sleep(900);
     const g0 = await app.evalJs(PROBE);
-    ok(`${tag} (premise): the page is in the ${view} view, the block is mounted on the writer's line`, !!g0 && (g0.zoom === 'true') === zoom && onRow(g0), J(g0));
+    // SUPERSEDED (Nov 12, Wire In: Flux's paper Typewriter is retired, so a Flux TEXT (Draft) page is never zoomed whatever its stored per-page value says, and Free Write IS Wire In, always zoomed - measured: Flux zoom data-zoom null, Flux Free Write normal data-zoom 'true') | successor: (premise, successor), mutants MP-Draft and MP-FW
+    // ok(`${tag} (premise): the page is in the ${view} view, the block is mounted on the writer's line`, !!g0 && (g0.zoom === 'true') === zoom && onRow(g0), J(g0));
+    const wantZoom = mode === 'journal';   // Wire In: Free Write is always zoomed; Flux Draft never is
+    const jacked = await app.evalJs("document.documentElement.hasAttribute('data-flux3-jacked')");
+    const premOk = (g, want) => !!g && (g.zoom === 'true') === want && onRow(g);
+    ok(`${tag} (premise, successor): the page is in the ${wantZoom ? 'zoomed view (Free Write is Wire In, always zoomed, the root marked data-flux3-jacked)' : 'normal view (Flux TEXT never zooms, whatever its stored Typewriter value says)'}, the block is mounted on the writer's line`,
+      premOk(g0, wantZoom) && (!wantZoom || jacked === true), J({ g0, jacked }));
+    if (process.env.HARNESS_PARKED === '1' && wantZoom !== zoom) {
+      const was = `${tag} (premise): the page is in the ${view} view, the block is mounted on the writer's line`;
+      ok(`PARKED (was "${was}") - SUPERSEDED (Nov 12): Wire In - the ${view} view the stored Typewriter value asks for is not what Flux runs now | successor: (premise, successor)`, !premOk(g0, zoom), J(g0));
+      parkedRecords += 1;
+    }
     if (mode === 'journal') {
       // the condition Nick hit: Free Write is the active mode AND the pen's ink is written INLINE on the editor (caret-color among it)
       const fw = await app.evalJs("({ tab: document.querySelector('.desk-mode-tab.active')?.getAttribute('data-mode-key') ?? null, inlineCaret: document.querySelector('.forward-only-editor')?.style.caretColor || null })");
@@ -128,11 +139,20 @@ await withHarness(async (app) => {
       parkedRecords += 1;
       }
     }
+    if (!zoom) {
+      // MP-Draft / MP-FW (mutants of the premise successor, Nov 12): the column's zoom flipped to the OTHER view - the premise's read goes red. LANDED is checked; the attribute is restored.
+      const flipTo = wantZoom ? null : 'true';
+      await app.evalJs(`(() => { const c = document.querySelector('.mode-pagecol'); if (!c) return false; ${flipTo ? `c.setAttribute('data-zoom', '${flipTo}')` : "c.removeAttribute('data-zoom')"}; return true; })()`);
+      const gm = await app.evalJs(PROBE);
+      await app.evalJs(`(() => { const c = document.querySelector('.mode-pagecol'); if (!c) return false; ${wantZoom ? "c.setAttribute('data-zoom', 'true')" : "c.removeAttribute('data-zoom')"}; return true; })()`);
+      ok(`${wantZoom ? 'MP-FW' : 'MP-Draft'} (mutant): with the column's zoom flipped to ${wantZoom ? 'off' : 'on'} (LANDED: data-zoom ${gm && gm.zoom}), the ${modeName} premise (successor) fails`,
+        !!gm && (gm.zoom === 'true') !== wantZoom && !premOk(gm, wantZoom), J(gm));
+    }
   }
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 700)}]` : ''}`);
-if (process.env.HARNESS_PARKED === '1') console.log(`\nPOLISH10-CARET PARKED: ${parkedRecords === 1 ? 'PASS' : 'FAIL'} (${parkedRecords} records) - this FILE parks 1 (MC18: it cannot land on the build; successor MC18m)`);
+if (process.env.HARNESS_PARKED === '1') console.log(`\nPOLISH10-CARET PARKED: ${parkedRecords === 3 ? 'PASS' : 'FAIL'} (${parkedRecords} records) - this FILE parks 3 (MC18: it cannot land on the build, successor MC18m; and, Nov 12, the Wire In premises of Flux Draft zoom and Flux Free Write normal, successor (premise, successor))`);
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nPOLISH10-CARET VERIFY: PASS (${checks.length} checks)` : `\nPOLISH10-CARET VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
 process.exit(passed === checks.length ? 0 : 1);

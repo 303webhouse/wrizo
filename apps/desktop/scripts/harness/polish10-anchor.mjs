@@ -40,6 +40,8 @@ const PROBE = `(() => {
   return { zoom: col.getAttribute('data-zoom'), colTop: box.top, colH: box.height, lh, first: firstTop == null ? null : (firstTop - box.top) / box.height, caret: caretTop == null ? null : (caretTop - box.top) / box.height,
     alphaAtCaret: caretMid == null ? null : Math.round(alphaAt(caretMid - box.top) * 1000) / 1000, fullFrom: fullFrom == null ? null : fullFrom / box.height, caretRel: caretTop == null ? null : (caretTop - box.top) / box.height, anchor: cs.getPropertyValue('--tw-anchor').trim() };
 })()`;
+// Wire In (Nov 12): in Flux the paper Typewriter is retired - a TEXT page runs none (not zoomed, no band anchor), whatever its stored per-page value says
+const noTw = (g) => !!g && g.zoom !== 'true' && !g.anchor;
 const openPage = async (app, id) => {
   await app.evalJs("location.hash = '#/'"); await sleep(300);
   await app.evalJs(`location.hash = '#/page/${id}'`);
@@ -71,8 +73,16 @@ await withHarness(async (app) => {
       await app.evalJs('window.wrizoFlushNow()'); await sleep(300);
       if (!(await openPage(app, id))) { ok(`${tag} fixture: the page opened`, false, ''); continue; }
       const g1 = await app.evalJs(PROBE);
-      ok(`${tag} A1: a FRESH page's first line starts at the middle of the column (its top at ${g1 && g1.first != null ? (g1.first * 100).toFixed(1) : '?'}%, want 50% within 3%)`,
-        !!g1 && g1.zoom === 'true' && g1.first != null && Math.abs(g1.first - 0.5) <= 0.03, J(g1));
+      // SUPERSEDED (Nov 12, Wire In: the paper Typewriter is retired in Flux, a Flux TEXT page is never zoomed whatever its stored per-page value says - measured data-zoom null, first line at 10.5% / 7.5%) | the original ran for Arbor AND Flux | successors: A1 (Arbor), A1F (Flux), mutant MFA1
+      // ok(`${tag} A1: a FRESH page's first line starts at the middle of the column (its top at ${g1 && g1.first != null ? (g1.first * 100).toFixed(1) : '?'}%, want 50% within 3%)`,
+      //   !!g1 && g1.zoom === 'true' && g1.first != null && Math.abs(g1.first - 0.5) <= 0.03, J(g1));
+      if (th.id === 'plateau') {
+        ok(`${tag} A1 (successor, Arbor): a FRESH page's first line starts at the middle of the column (its top at ${g1 && g1.first != null ? (g1.first * 100).toFixed(1) : '?'}%, want 50% within 3%)`,
+          !!g1 && g1.zoom === 'true' && g1.first != null && Math.abs(g1.first - 0.5) <= 0.03, J(g1));
+      } else {
+        ok(`${tag} A1F (successor, Flux): a Flux TEXT page runs NO Typewriter even with the page's stored Typewriter value 'on' - not zoomed (data-zoom ${g1 && g1.zoom}) and no band anchor ('${g1 && g1.anchor}')`,
+          noTw(g1), J(g1));
+      }
       await app.evalJs("(() => { const e = document.querySelector('.forward-only-editor'); e.focus(); const r = document.createRange(); r.selectNodeContents(e); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()");
       for (let i = 1; i <= 16; i += 1) { await app.typeKeys(`\nLine ${i} of the writing, long enough to be a line.`); await sleep(80); }
       // REVIEW OF TURN 1 (Oct 26): the engine pays a burst back ONE LINE PER GLIDE (each up to 600ms, then a 650ms land check), so 16 lines take
@@ -84,12 +94,40 @@ await withHarness(async (app) => {
           if (top != null && top === last) { still += 200; if (still >= 1000) return { ms: Date.now() - t0, top, settled: true }; } else { still = 0; last = top; } }
         return { ms: Date.now() - t0, top: last, settled: false }; })();
       const g2 = { ...(await app.evalJs(PROBE)), settle };
-      ok(`${tag} A2: writing on, the writing line is held at the middle (its top at ${g2 && g2.caret != null ? (g2.caret * 100).toFixed(1) : '?'}%, want 50% within one line)`,
-        !!g2 && g2.settle.settled && g2.caret != null && Math.abs(g2.caret - 0.5) <= g2.lh / g2.colH + 0.005, J(g2));
+      // SUPERSEDED (Nov 12, Wire In): as A1 - in Flux TEXT nothing holds the writing line at the middle (measured: the caret's top at 76.9% at 1366, 59.5% at 1920, data-zoom null) | successors: A2 (Arbor), A2F (Flux), mutant MFA1
+      // ok(`${tag} A2: writing on, the writing line is held at the middle (its top at ${g2 && g2.caret != null ? (g2.caret * 100).toFixed(1) : '?'}%, want 50% within one line)`,
+      //   !!g2 && g2.settle.settled && g2.caret != null && Math.abs(g2.caret - 0.5) <= g2.lh / g2.colH + 0.005, J(g2));
+      if (th.id === 'plateau') {
+        ok(`${tag} A2 (successor, Arbor): writing on, the writing line is held at the middle (its top at ${g2 && g2.caret != null ? (g2.caret * 100).toFixed(1) : '?'}%, want 50% within one line)`,
+          !!g2 && g2.settle.settled && g2.caret != null && Math.abs(g2.caret - 0.5) <= g2.lh / g2.colH + 0.005, J(g2));
+      } else {
+        ok(`${tag} A2F (successor, Flux): writing on, a Flux TEXT page still runs NO Typewriter - not zoomed (data-zoom ${g2 && g2.zoom}), no band anchor ('${g2 && g2.anchor}'), the scroller settled`,
+          noTw(g2) && g2.settle.settled, J(g2));
+      }
       const twTrace = await app.evalJs("(window.__wzTwTrace || []).filter((t) => t.d !== 'resync' && t.d !== 'fresh' && t.d !== 'wait').map((t) => t.d + (t.from != null ? ':' + t.from + '>' + t.to + '/' + t.maxTop + '@' + t.advance : t.top != null ? ':' + t.top : t.owed != null ? ':' + t.from + '>' + t.target + 'at' + t.at + 'owed' + t.owed : '')).join(' ').slice(0, 1500)");
       const dbgA3 = await app.evalJs("(() => { const sc = document.querySelector('.mode-scroll'); const ed = document.querySelector('.forward-only-editor'); const col = document.querySelector('.mode-pagecol'); return sc ? { scrollTop: Math.round(sc.scrollTop), scrollHeight: sc.scrollHeight, clientHeight: sc.clientHeight, maxTop: sc.scrollHeight - sc.clientHeight, edH: ed ? Math.round(ed.getBoundingClientRect().height) : null, colPad: col ? getComputedStyle(col).paddingBottom : null, edPad: ed ? getComputedStyle(ed).paddingBottom : null } : null; })()");
-      ok(`${tag} A3: the band is drawn against the same middle - the writing line at FULL strength (${g2 && g2.alphaAtCaret}), the top fade ending just above it`,
-        !!g2 && g2.alphaAtCaret >= 0.99 && g2.fullFrom != null && g2.fullFrom <= g2.caretRel && g2.caretRel - g2.fullFrom <= 2 * g2.lh / g2.colH, J({ anchor: g2 && g2.anchor, fullFrom: g2 && g2.fullFrom, caret: g2 && g2.caretRel, alpha: g2 && g2.alphaAtCaret, dbgA3, twTrace }));
+      // SUPERSEDED (Nov 12, Wire In): as A1 - a Flux TEXT page draws no band at all (measured: fullFrom null, anchor empty) | successors: A3 (Arbor), A3F (Flux), mutant MFA3
+      // ok(`${tag} A3: the band is drawn against the same middle - the writing line at FULL strength (${g2 && g2.alphaAtCaret}), the top fade ending just above it`,
+      //   !!g2 && g2.alphaAtCaret >= 0.99 && g2.fullFrom != null && g2.fullFrom <= g2.caretRel && g2.caretRel - g2.fullFrom <= 2 * g2.lh / g2.colH, J({ anchor: g2 && g2.anchor, fullFrom: g2 && g2.fullFrom, caret: g2 && g2.caretRel, alpha: g2 && g2.alphaAtCaret, dbgA3, twTrace }));
+      if (th.id === 'plateau') {
+        ok(`${tag} A3 (successor, Arbor): the band is drawn against the same middle - the writing line at FULL strength (${g2 && g2.alphaAtCaret}), the top fade ending just above it`,
+          !!g2 && g2.alphaAtCaret >= 0.99 && g2.fullFrom != null && g2.fullFrom <= g2.caretRel && g2.caretRel - g2.fullFrom <= 2 * g2.lh / g2.colH, J({ anchor: g2 && g2.anchor, fullFrom: g2 && g2.fullFrom, caret: g2 && g2.caretRel, alpha: g2 && g2.alphaAtCaret, dbgA3, twTrace }));
+      } else {
+        ok(`${tag} A3F (successor, Flux): a Flux TEXT page draws NO band - the column's mask has no full-strength stop (fullFrom ${g2 && g2.fullFrom})`,
+          !!g2 && g2.fullFrom == null, J({ anchor: g2 && g2.anchor, fullFrom: g2 && g2.fullFrom, zoom: g2 && g2.zoom, dbgA3 }));
+      }
+      if (th.id === 'flux' && w === 1366) {
+        // MFA1 (mutant, successor's): the zoom forced on (the column's own attribute) - A1F/A2F's read (noTw) goes red. LANDED is checked.
+        await app.evalJs("(() => { const c = document.querySelector('.mode-pagecol'); if (c) c.setAttribute('data-zoom', 'true'); return !!c; })()");
+        const gz = await app.evalJs(PROBE);
+        await app.evalJs("document.querySelector('.mode-pagecol')?.removeAttribute('data-zoom')");
+        ok(`MFA1 (mutant): with the column's zoom forced on (LANDED: data-zoom ${gz && gz.zoom}), A1F and A2F's read fails`, !!gz && gz.zoom === 'true' && !noTw(gz), J(gz));
+        // MFA3 (mutant, successor's): a band mask drawn on the column - A3F's read (no full-strength stop) goes red. LANDED is checked.
+        await app.evalJs("(() => { const c = document.querySelector('.mode-pagecol'); if (c) { c.style.setProperty('-webkit-mask-image', 'linear-gradient(rgba(0,0,0,0.2) 0%, rgb(0,0,0) 50%, rgb(0,0,0) 100%)', 'important'); } return !!c; })()");
+        const gk = await app.evalJs(PROBE);
+        await app.evalJs("document.querySelector('.mode-pagecol')?.style.removeProperty('-webkit-mask-image')");
+        ok(`MFA3 (mutant): with a band mask drawn on the column (LANDED: fullFrom ${gk && gk.fullFrom}), A3F fails`, !!gk && gk.fullFrom != null, J(gk));
+      }
       if (th.id === 'plateau' && w === 1366) {
         await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'p10a-ma3'; s.textContent = \".mode-pagecol[data-zoom='true']{ --tw-anchor: 70% !important; }\"; document.head.appendChild(s); return true; })()");
         await sleep(300);

@@ -68,7 +68,7 @@ const STATE = `(() => {
   return {
     theme: root.getAttribute('data-theme'), page: root.getAttribute('data-page'), mode: tab ? tab.getAttribute('data-mode-key') : null,
     flag: new URLSearchParams(location.search).get('flux3'), editor: !!document.querySelector('.forward-only-editor'), splash: !!document.querySelector('.wz-splash'),
-    typewriter: tw ? tw.getAttribute('data-typewriter') : null, served: scripts.length ? scripts[0].replace(/^.*\\//, '') : null,
+    typewriter: tw ? tw.getAttribute('data-typewriter') : null, jacked: root.hasAttribute('data-flux3-jacked'), zoom: p && p.closest('.mode-pagecol') ? p.closest('.mode-pagecol').getAttribute('data-zoom') : null, served: scripts.length ? scripts[0].replace(/^.*\\//, '') : null,
     rect: r ? { x: +r.x.toFixed(2), y: +r.y.toFixed(2), w: +r.width.toFixed(2), h: +r.height.toFixed(2) } : null,
   };
 })()`;
@@ -143,12 +143,41 @@ try { await withHarness(async (app) => {
   // SUCCESSOR P1b: the same premise, with the one thing the ruling changed: flag on + Free Write reads the tone 'dark' (Jacked In, always dark) and the Typewriter running; every other cell reads the tone asked.
   const standsAs = (p) => { const s = p.raw; const jacked = p.flagOn && p.key === 'freewrite'; return !!s && s.editor && !s.splash && s.theme === 'flux' && s.page === (jacked ? 'dark' : p.tone) && s.mode === p.key && (p.flagOn ? s.flag === '1' : s.flag === null) && !!s.rect && (!jacked || s.typewriter === 'true'); };
   const bad2 = premises.filter((p) => !standsAs(p));
-  ok(`P1b every read stood where it claimed (page + editor mounted, splash gone, data-theme flux, the asked tone and surface, the flag exactly when on; flag on + Free Write = Jacked In: dark, Typewriter running): ${premises.length - bad2.length}/${premises.length}`,
-    premises.length === 16 && bad2.length === 0, JSON.stringify(bad2.slice(0, 3).map((p) => ({ cell: p.cell, s: p.raw }))));
+  // PARKED - SUPERSEDED (Wire In on its own, Nov 12; Fable's go "BUILD the Corridor on its own in today's Flux"; the P1b below, verbatim, no longer runs; its successor P1c follows). Without the flag too, Flux's Free Write IS Wire In
+  // now (the Corridor: always dark, zoomed, marked data-flux3-jacked, the Typewriter running), so the two 'flag off light Free Write' cells (1366 and 1920) read page 'dark' where P1b's `jacked` (flag on + Free Write only)
+  // asks for the saved tone: 14/16 stood where claimed. P1b's own words ("flag on + Free Write = Jacked In") name the flag the ruling removed.
+  // ok(`P1b every read stood where it claimed (page + editor mounted, splash gone, data-theme flux, the asked tone and surface, the flag exactly when on; flag on + Free Write = Jacked In: dark, Typewriter running): ${premises.length - bad2.length}/${premises.length}`,
+  //   premises.length === 16 && bad2.length === 0, JSON.stringify(bad2.slice(0, 3).map((p) => ({ cell: p.cell, s: p.raw }))));
+  // SUCCESSOR P1c: the same premise, with the one thing the ruling changed: in Flux Free Write is Wire In WITH OR WITHOUT the flag: every Free Write cell reads page 'dark', data-flux3-jacked set, the page zoomed
+  // (data-zoom 'true') and the Typewriter running; every Draft (TEXT) cell reads the tone asked, not jacked, not zoomed, no Typewriter; the flag exactly when on.
+  const standsAs2 = (p) => {
+    const s = p.raw, wired = p.key === 'freewrite';
+    return !!s && s.editor && !s.splash && s.theme === 'flux' && s.page === (wired ? 'dark' : p.tone) && s.mode === p.key && (p.flagOn ? s.flag === '1' : s.flag === null) && !!s.rect
+      && (wired ? s.jacked === true && s.zoom === 'true' && s.typewriter === 'true' : s.jacked === false && s.zoom !== 'true' && s.typewriter !== 'true');
+  };
+  const bad3 = premises.filter((p) => !standsAs2(p));
+  ok(`P1c every read stood where it claimed (page + editor mounted, splash gone, data-theme flux, the flag exactly when on; Free Write = Wire In with or without the flag: dark, marked, zoomed, Typewriter running; Draft = the tone asked, plain page, no zoom, no Typewriter): ${premises.length - bad3.length}/${premises.length}`,
+    premises.length === 16 && bad3.length === 0, JSON.stringify(bad3.slice(0, 3).map((p) => ({ cell: p.cell, s: p.raw }))));
   // P1b's mutant: a cell that read the wrong tone in a plain-page cell, or Jacked In without its Typewriter, fails the same premise
   const wrongTone = premises.map((p, i) => (i === 0 ? { ...p, raw: { ...p.raw, page: p.tone === 'dark' ? 'light' : 'dark' } } : p));
   const noTypewriter = premises.map((p) => (p.flagOn && p.key === 'freewrite' ? { ...p, raw: { ...p.raw, typewriter: 'false' } } : p));
-  ok('MUT-P1b the premise goes RED on a plain-page cell with the wrong tone and on Jacked In without its Typewriter', wrongTone.some((p) => !standsAs(p)) && noTypewriter.some((p) => !standsAs(p)), '');
+  // PARKED - SUPERSEDED (Nov 12): this is the mutant of the P1b premise parked above (it exercises standsAs, P1b's own predicate, whose `jacked` is flag on + Free Write only). P1b no longer runs, so neither does its mutant. Verbatim, no longer run; the successor MUT-P1c follows.
+  // ok('MUT-P1b the premise goes RED on a plain-page cell with the wrong tone and on Jacked In without its Typewriter', wrongTone.some((p) => !standsAs(p)) && noTypewriter.some((p) => !standsAs(p)), '');
+  // MUT-P1c: P1c goes RED on each form it exists to catch, each one cell's raw read changed (the cell stood before, asserted) and the SAME predicate asked: a Draft cell with the wrong tone; the exact cell that failed P1b's way
+  // (flag OFF, light, Free Write) reading the saved tone instead of dark; Free Write not marked jacked / without its Typewriter / not zoomed; a Draft cell zoomed or marked jacked.
+  const iDraft = premises.findIndex((p) => p.key === 'draft'), iWiredOff = premises.findIndex((p) => p.key === 'freewrite' && !p.flagOn && p.tone === 'light'), iWired = premises.findIndex((p) => p.key === 'freewrite');
+  const mut1c = (name, i, patch) => { const p = premises[i]; const m = p ? { ...p, raw: { ...p.raw, ...patch(p) } } : null; return { name, stoodBefore: !!p && standsAs2(p), red: !!m && !standsAs2(m) }; };
+  const mutants1c = [
+    mut1c('wrong tone on a Draft cell', iDraft, (p) => ({ page: p.tone === 'dark' ? 'light' : 'dark' })),
+    mut1c('flag-off light Free Write reading the saved tone (the P1b way)', iWiredOff, (p) => ({ page: p.tone })),
+    mut1c('Free Write not marked jacked', iWired, () => ({ jacked: false })),
+    mut1c('Free Write without its Typewriter', iWired, () => ({ typewriter: 'false' })),
+    mut1c('Free Write not zoomed', iWired, () => ({ zoom: 'false' })),
+    mut1c('a Draft cell zoomed', iDraft, () => ({ zoom: 'true' })),
+    mut1c('a Draft cell marked jacked', iDraft, () => ({ jacked: true })),
+  ];
+  ok('MUT-P1c the premise goes RED on each mutant (a Draft cell with the wrong tone, flag-off light Free Write reading the saved tone, Free Write not jacked / without its Typewriter / not zoomed, a Draft cell zoomed or jacked), each cell having stood before',
+    mutants1c.every((m) => m.stoodBefore && m.red), JSON.stringify(mutants1c));
 
   // R: the same cell, flag off vs on
   let pairs = 0;
@@ -166,6 +195,37 @@ try { await withHarness(async (app) => {
   }
   ok(`R coverage: ${pairs}/8 cells compared (1366 + 1920, dark + light, Free Write + Draft)`, pairs === 8, JSON.stringify(diffs));
   ok('P2 the Typewriter state is the same with the flag on and off in every cell (the ruled zoom exception never decides a pair)', pairs === 8 && twDiffs.length === 0, JSON.stringify(twDiffs));
+
+  // R-WIRED (Nov 12, Wire In on its own): WHAT R NOW MEASURES, AND WHAT THIS ADDS. Without the flag Flux's Free Write is Wire In (zoomed, always dark, jacked), so R's two Free Write columns compare the Corridor flag OFF against the
+  // Corridor flag ON (the redesign's other pieces must not move it) and its two Draft columns compare the plain TEXT page both ways; neither asks the page-primacy question for the flag-off Corridor ITSELF: does the page's rect hold
+  // while Wire In's own overlays open and close (the entry line, the 4 s nudge, the circled X, the chrome fading out)? So: flag OFF, each tone, 1366: open Wire In, read the rect (settled), wait out the entry line and its fade
+  // (EXIT_LINE_MS 3000 + EXIT_FADE_MS 600) and the nudge (4 s), read it again: the same rect, and the same rect the R loop read for that cell. Structure only (marked, zoomed, always dark); no pixel value is claimed.
+  const wiredRect = [];
+  for (const tone of TONES) {
+    await open(false, tone);
+    await toSurface('freewrite');
+    const first = await state();
+    await sleep(4600);
+    const later = await state();
+    wiredRect.push({ tone, first, later });
+    const prior = reads[`off|${tone} Free Write 1366x768`];
+    ok(`R-WIRED [flag off, ${tone}] Wire In: the page rect holds while its overlays come and go (settled, then after the entry line, its fade and the nudge) and equals the R loop's read of the cell (marked, zoomed, dark: ${first.jacked}/${first.zoom}/${first.page})`,
+      first.jacked === true && first.zoom === 'true' && first.page === 'dark' && first.flag === null && first.mode === 'freewrite' && later.jacked === true && later.zoom === 'true' && !!first.rect && sameRect(first.rect, later.rect) && !!prior && sameRect(prior.rect, first.rect),
+      JSON.stringify({ first: first.rect, later: later.rect, prior: prior && prior.rect, marks: [first.jacked, first.zoom, first.page, later.jacked, later.zoom] }));
+  }
+  // R-WIRED's mutant (landed): the page nudged 3px under the open Wire In (the light read's page, still mounted): the SAME comparison reports a difference; removed in a finally
+  const lastWired = wiredRect[wiredRect.length - 1];
+  try {
+    await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'flux3-rect-wired-mutant'; s.textContent = '.mode-page{ translate: 3px 0 !important; }'; document.head.appendChild(s); })()");
+    await sleep(200);
+    const landedW = await app.evalJs("getComputedStyle(document.querySelector('.mode-page')).translate");
+    const mutW = await state();
+    ok('MUT-R-WIRED (mutant, landed) a 3px translate on .mode-page under a flag-off Wire In makes the R-WIRED comparison report a difference',
+      /3px/.test(String(landedW)) && !!lastWired && lastWired.first.jacked === true && sameRect(lastWired.first.rect, lastWired.later.rect) && !sameRect(lastWired.first.rect, mutW.rect),
+      JSON.stringify({ landed: landedW, before: lastWired && lastWired.first.rect, mutant: mutW.rect }));
+  } finally {
+    await app.evalJs("document.getElementById('flux3-rect-wired-mutant')?.remove()");
+  }
 
   // M: the guard can see. Flag on, Dark, Draft, 1366: a 3px translate on the page must read as a different rect.
   await open(true, 'dark');

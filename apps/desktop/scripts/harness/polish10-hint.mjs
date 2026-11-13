@@ -136,14 +136,27 @@ await withHarness(async (app) => {
       const pre = {};
       const presses = await raiseHint(app, pre);
       const g = await app.evalJs(PROBE);
-      ok(`${tag} H0 (premise): Backspace past the runway raises the hint (after ${presses} presses), on a page in the ${view} view (set through the writer's Typewriter control) with text on screen, the hold settled and the writer's line on screen before it`,
-        presses != null && !!g && (g.zoom === 'true') === zoom && viewNow === zoom && g.lines >= 3 && pre.settled && !!pre.caret && pre.caret.seen,
-        J({ presses, zoom: g && g.zoom, viewNow, lines: g && g.lines, text: g && g.text, pre }));
+      // SUPERSEDED (Nov 12, Wire In: Flux's paper Typewriter is retired and its Free Write IS Wire In, always zoomed - the Typewriter control is hidden in Flux, so a Flux Free Write page cannot be set to the normal view - measured: Flux normal data-zoom 'true', viewNow true) | the original ran for all six cases, one fails | successor: H0 (premise, successor), mutant MH0F
+      // ok(`${tag} H0 (premise): Backspace past the runway raises the hint (after ${presses} presses), on a page in the ${view} view (set through the writer's Typewriter control) with text on screen, the hold settled and the writer's line on screen before it`,
+      //   presses != null && !!g && (g.zoom === 'true') === zoom && viewNow === zoom && g.lines >= 3 && pre.settled && !!pre.caret && pre.caret.seen,
+      //   J({ presses, zoom: g && g.zoom, viewNow, lines: g && g.lines, text: g && g.text, pre }));
+      const wantZoom = th.id === 'flux' ? true : zoom;   // Wire In: a Flux Free Write page is always zoomed
+      const flux1 = th.id === 'flux' && !zoom;
+      const h0 = (gg) => presses != null && !!gg && (gg.zoom === 'true') === wantZoom && viewNow === wantZoom && gg.lines >= 3 && pre.settled && !!pre.caret && pre.caret.seen;
+      ok(`${tag} H0 (premise, successor): Backspace past the runway raises the hint (after ${presses} presses), on a page in the ${wantZoom ? 'zoom' : 'normal'} view (${flux1 ? 'Flux Free Write is Wire In: always zoomed, the Typewriter control is hidden' : "set through the writer's Typewriter control"}) with text on screen, the hold settled and the writer's line on screen before it`,
+        h0(g), J({ presses, zoom: g && g.zoom, viewNow, lines: g && g.lines, text: g && g.text, pre }));
       if (!g) continue;
       ok(`${tag} H1: the hint meets NO line of text on screen - the writing line included`, g.hit === 0, J({ nudge: g.nudge, writing: g.writing, hit: g.hit }));
       ok(`${tag} H2: the hint is on screen - inside the viewport and the stage${zoom ? '' : ', and inside the page'}`, onScreen(g), J({ nudge: g.nudge, page: g.page, stage: g.stage }));
       ok(`${tag} H3: the hint wears ${th.name}'s own type - ${th.id === 'plateau' ? 'its italic prose serif' : 'its own content face, upright'}`, typeOk(th.id, g),
         J({ family: g.family, style: g.style, prose: g.proseUsed, label: g.label }));
+      if (flux1) {
+        // MH0F (mutant, the premise successor's): the column's zoom removed (the normal view forced) on the Flux Free Write page - H0's read goes red. LANDED is checked; the attribute is restored.
+        await app.evalJs("document.querySelector('.mode-pagecol')?.removeAttribute('data-zoom')");
+        const gz = await app.evalJs(PROBE);
+        await app.evalJs("document.querySelector('.mode-pagecol')?.setAttribute('data-zoom', 'true')");
+        ok(`MH0F (mutant): with the Flux Free Write column's zoom removed (LANDED: data-zoom ${gz && gz.zoom}), H0 (successor) fails`, !!gz && gz.zoom !== 'true' && !h0(gz), J({ zoom: gz && gz.zoom }));
+      }
       if (th.id === 'plateau' && !zoom) {
         // MH: the hint pinned onto the writing line (its own box moved there) - H1 must fail
         // (review of turn 1: the move is in the hint's own LAYOUT px, inside a page painted at a scale - the unscaled move overshot to -77 in a zoomed
