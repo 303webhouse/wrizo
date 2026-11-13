@@ -7,7 +7,8 @@ import { revealCaret } from './caretInView';
 //         line and the row above wraps over more than one line, Up puts the caret on that row's LAST visual line, at the writer's column. Every other Up (inside a row, above a one-line row, a selection collapsing) is left to the browser.
 //   #62 - THE COLUMN. A run of Up and Down keys keeps the column the first of them started from: Down through a SHORTER paragraph and back Up must return to the column the writer left, not the one the short line cut it to; the column is read once,
 //         when a run starts, and kept until any other key, a click, or the editor losing focus ends the run. And DOWN FROM AN EMPTY ROW: the browser cannot leave an empty inline-block row downward (the caret stays in it), so Down from an empty row
-//         puts the caret on the first line of the row below, at the column of the run.
+//         puts the caret on the first line of the row below, at the column of the run. And UP FROM AN EMPTY ROW: the browser puts the caret at the start of the row above, not at the column of the run: Up from an empty row
+//         puts the caret on the LAST line of the row above, at the column of the run.
 // Shift+Up and Shift+Down extend the selection the same way. Everything else (inside a row, a one-line neighbour, a selection collapsing, composing) is left to the browser; a caret that cannot be placed here is never an error into the writer's key.
 const live = new WeakMap<HTMLElement, { x: number; owned: boolean; reset: boolean }>();   // the column of the run of vertical keys in progress, per editor; owned = this file has already moved the caret in the run
 
@@ -169,7 +170,8 @@ export function rowsVerticalKey(el: HTMLElement, e: KeyboardEvent): boolean {
       if (!ar.length) return false;
       const aboveTop = Math.min(...ar.map((q) => q.top));
       const last = ar.reduce((m, q) => (q.bottom > m.bottom ? q : m), ar[0]);
-      if (last.top - aboveTop < last.height * 0.6) return false;
+      // from an EMPTY row the browser drops the run's column whatever the row above is (Down, Down, Up, Up through an empty line landed at column 0): there the row above always gets the column; from a text row only a wrapped one does (#65)
+      if (!empty && last.top - aboveTop < last.height * 0.6) return false;
       // a point exactly on the row's left edge hits the row box, not its last line (the browser answers with the row's START, its first line): at the edge the column is nudged one and a half pixels into the text
       const p = pointToCaret(Math.max(g.x, last.left + 1.5), last.top + last.height / 2);
       if (!p || !above.contains(p.node)) return false;
