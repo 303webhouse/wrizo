@@ -60,8 +60,13 @@ await withHarness(async (app) => {
   const goDeck = async () => { await open('w2-deck', '.walk-card'); };
   // WIRE IN (Nov 12): in Flux a loose page opens wired in, where none of today's chrome shows (the return chip is part of it, by design). Her way back is Unplug (an Esc tap, or the X), and then the chip on the TEXT tab.
   const unplug = async () => {
-    await app.cdp('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 }); await sleep(60);
-    await app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+    // Esc's order: a tap first closes whatever is open (the Tutor drawer, a picker), and only then leaves the mode: tap until the root is no longer wired in (at most four)
+    for (let n = 0; n < 4; n += 1) {
+      if (!(await q("document.documentElement.hasAttribute('data-flux3-jacked')"))) break;
+      await app.cdp('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 }); await sleep(60);
+      await app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+      await sleep(700);
+    }
     await waitSoft("!document.documentElement.hasAttribute('data-flux3-jacked')", { label: 'unplugged', timeout: 5000 }); await sleep(1000);   // the chrome fades back over 0.6 s
   };
   // the chip as she would meet it: its own and its ancestors' opacity multiplied, whether it takes the pointer, whether it is drawn
@@ -127,8 +132,8 @@ await withHarness(async (app) => {
         if (theme === 'flux') {
           // WI-CHIP (the ruling, by design): while wired in the chip is not tappable - hidden with the rest of the chrome (opacity 0, no pointer) - and it is still named and in place (W3 above). MUT: its chrome forced visible goes RED.
           const wiHid = await chipShown();
-          await q("(() => { const b = document.querySelector('[data-return-chip]'); const c = b && b.closest('.chrome-fade'); if (c) { c.style.setProperty('opacity', '1', 'important'); c.style.setProperty('pointer-events', 'auto', 'important'); } if (b) { b.style.setProperty('pointer-events', 'auto', 'important'); } })()"); const wiForced = await chipShown();
-          await q("(() => { const b = document.querySelector('[data-return-chip]'); const c = b && b.closest('.chrome-fade'); if (c) { c.style.removeProperty('opacity'); c.style.removeProperty('pointer-events'); } if (b) b.style.removeProperty('pointer-events'); })()");
+          await q("(() => { window.__chipSaved = []; let e = document.querySelector('[data-return-chip]'); while (e && e !== document.documentElement) { const cs = getComputedStyle(e); if (+cs.opacity < 1 || cs.pointerEvents === 'none') { window.__chipSaved.push([e, e.style.getPropertyValue('opacity'), e.style.getPropertyPriority('opacity'), e.style.getPropertyValue('pointer-events'), e.style.getPropertyPriority('pointer-events')]); e.style.setProperty('opacity', '1', 'important'); e.style.setProperty('pointer-events', 'auto', 'important'); } e = e.parentElement; } return window.__chipSaved.length; })()"); const wiForced = await chipShown();
+          await q("(() => { for (const [e, o, op, p, pp] of window.__chipSaved || []) { e.style.removeProperty('opacity'); e.style.removeProperty('pointer-events'); if (o) e.style.setProperty('opacity', o, op); if (p) e.style.setProperty('pointer-events', p, pp); } window.__chipSaved = []; })()");
           ok(`${T}: WI-CHIP [Wire In successor] while wired in the return chip is not tappable (the Corridor hides the chrome it sits in: opacity 0, no pointer), by design; its way back is Unplug and then the chip on TEXT`, chipHiddenWI(wiHid), JSON.stringify(wiHid));
           ok(`${T}: MUT-WI-CHIP [Wire In successor] the mutant LANDED (the chip's chrome forced visible: opacity ${wiForced && wiForced.op}) and the same read goes RED`, !!wiForced && wiForced.op >= 0.9 && !chipHiddenWI(wiForced), JSON.stringify(wiForced));
           await unplug(); wiChip = await chipShown();
