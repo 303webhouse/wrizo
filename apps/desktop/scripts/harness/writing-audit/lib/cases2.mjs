@@ -47,15 +47,9 @@ export const GROUPS2 = {
     c('V03', 'Down, Down, Up, Up keeps the goal column', DOC, 30, [K('ArrowDown', { geo: 'down' }), K('ArrowDown', { geo: 'down' }), K('ArrowUp', { geo: 'up' }), K('ArrowUp', { geo: 'up' })]),
     c('V04', 'Down through an empty line', 'abcdefghij\n\nabcdefghij', 6, [K('ArrowDown', { geo: 'down' }), K('ArrowDown', { geo: 'down' })]),
     c('V05', 'Up on the first line and Down on the last', 'abc\ndef', 2, [K('ArrowUp', { geo: 'up' }), K('ArrowDown', { geo: 'down' }), K('ArrowDown', { geo: 'down' })]),
-    c('V10', 'Up through an empty line (the mirror of V04)', 'abcdefghij
-
-abcdefghij', 18, [K('ArrowUp', { geo: 'up' }), K('ArrowUp', { geo: 'up' })]),
-    c('V11', 'Up from an empty row (the caret starts in the empty line)', 'abcdefghij
-
-abcdefghij', 11, [K('ArrowUp', { geo: 'up' })]),
-    c('V12', 'Up from an empty row into a wrapped paragraph lands on its last line', `${W}
-
-short`, W.length + 1, [K('ArrowUp', { geo: 'up' })]),
+    c('V10', 'Up through an empty line (the mirror of V04)', 'abcdefghij\n\nabcdefghij', 18, [K('ArrowUp', { geo: 'up' }), K('ArrowUp', { geo: 'up' })]),
+    c('V11', 'Up from an empty row (the caret starts in the empty line)', 'abcdefghij\n\nabcdefghij', 11, [K('ArrowUp', { geo: 'up' })]),
+    c('V12', 'Up from an empty row into a wrapped paragraph lands on its last line', `${W}\n\nshort`, W.length + 1, [K('ArrowUp', { geo: 'up' })]),
     c('V06', 'Home and End on a wrapped line', DOC, 70, [K('Home', { geo: 'home' }), K('End', { geo: 'end' }), K('Home', { geo: 'home' })]),
     c('V07', 'Shift+Down twice (the selection grows by lines)', DOC, 5, [K('ArrowDown', { geo: 'down', shift: true }), K('ArrowDown', { geo: 'down', shift: true })]),
     c('V08', 'PageDown, PageDown, PageUp on a 30-line page', LINES30, 0, [K('PageDown', { prop: 'down' }), K('PageDown', { prop: 'down' }), K('PageUp', { prop: 'up' })]),
