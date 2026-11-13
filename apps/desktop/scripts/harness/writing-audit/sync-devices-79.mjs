@@ -8,7 +8,7 @@
 //   C5  only A edited: B takes A's page as before (nothing merged, nothing lost)
 //   C6  the merge bases are device-local and short-lived: none left once everything is synced; none after sign-out; the storage key is not part of any pushed record
 //   C7  the bases are bounded (150 dirty pages keep at most 100)
-//   C8  a page with no kept base is merged the old way: this device's text wins (the documented fall-back)
+//   C8  a page with no kept base is merged the old way: no merge, the newer whole text wins at the server (the documented fall-back)
 // RED on main (no merge: one side's words are gone in C1 to C4). Run: node scripts/harness/writing-audit/sync-devices-79.mjs (from apps/desktop; on Actions via writing-audit.yml, script=sync-devices-79.mjs). Exit 1 on any failure.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -69,7 +69,8 @@ const B = await loadDevice('B');
 const page = (d, id) => d.run((m) => (m.persist.getJournalEntries().find((e) => e.id === id) || null));
 const textOf = async (d, id) => { const p = await page(d, id); return p ? p.text : null; };
 const edit = (d, id, fn) => d.run((m) => { const e = m.persist.getJournalEntries().find((x) => x.id === id); const next = { ...JSON.parse(JSON.stringify(e)), text: fn(e.text) }; m.persist.saveJournalEntry(next); m.persist.flushNow(); });
-const sync = (d) => d.run(async (m) => { await m.syncOnce(); });
+const TRACE = [];
+const sync = (d) => d.run(async (m) => { await m.syncOnce(); const e = m.persist.getJournalEntries().map((x) => x.id + '=' + JSON.stringify(x.text)).join(' '); TRACE.push(`${d.tag} synced: server ${JSON.stringify([...server.rows.values()].map((r) => r.rec.id + ':' + r.rec.text))} | device ${e}`); });
 const serverText = (id) => (server.rows.get(id) ? server.rows.get(id).rec.text : null);
 async function setup(id, text) {
   server.rows.clear(); tick(60000);
@@ -91,6 +92,8 @@ const has = (t, s) => typeof t === 'string' && t.includes(s);
   ok(has(b, 'From A.') && has(b, 'From B.'), `C1 device B holds both lines: ${JSON.stringify(b)}`);
   ok(s === a && a === b, 'C1 server, A and B settle on one text');
 }
+if (process.env.TRACE79 !== '0') for (const l of TRACE) console.log('TRACE ' + l.slice(0, 400));
+TRACE.length = 0;
 // C2 - B's edit is the EARLIER one (an older updated_at), B syncs after A
 {
   await setup('p2', ['Alpha.', 'Beta.'].join(NL));
@@ -155,7 +158,7 @@ else {
   tick(5000);
   await edit(A, 'p8', (t) => t + NL + 'From A.'); tick(5000);
   await sync(A); tick(); await sync(B);
-  ok(serverText('p8') === ['One.', 'Two.', 'From B.'].join(NL), `C8 a page with no kept base: this device's text wins, as before: ${JSON.stringify(serverText('p8'))}`);
+  ok(serverText('p8') === ['One.', 'Two.', 'From A.'].join(NL), `C8 a page with no kept base is merged the old way (the newer whole text wins, nothing is blended): ${JSON.stringify(serverText('p8'))}`);
 }
 console.log(`SYNC-DEVICES-79: ${fails ? `FAIL - ${fails}` : 'PASS'}`);
 process.exit(fails ? 1 : 0);
