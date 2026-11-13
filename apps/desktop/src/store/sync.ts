@@ -1,3 +1,4 @@
+import * as persist from './persistence';
 import { getDirtyRecords, markClean, applyRemoteRecords, markAllJournalEntriesDirty, getJournalEntries, getSystemKind, applyAcknowledgedPurged, type DirtyRecords } from './persistence';
 import { getClientBuild, buildIsStale } from './clientBuild';
 import { isStaleClient, markStaleClient } from './staleClient';
@@ -199,13 +200,21 @@ function pack(items: PushItem[]): PushItem[][] {
 // is new: a record the server refused is excluded here even though the
 // request itself succeeded (200), so it stays dirty and is sent again next
 // cycle instead of being marked clean and silently lost.
+// #79 (the merge bases are reached through the namespace: a stub of './persistence' without them still loads)
+const mergeHooks = persist as unknown as { hasMergeBases?: () => boolean; settleSyncBases?: (pages: ReadonlyArray<{ id: string; text: string; stillDirty: boolean }>) => void };
+
 function cleanBatch(batch: PushItem[], rejectedIds: ReadonlySet<string> = EMPTY_SET): void {
   const still = stampMap(getDirtyRecords());
+  const pages: Array<{ id: string; text: string; stillDirty: boolean }> = [];
   markClean(batch.filter(i => {
     const key = recordKey(i.coll, i.rec.id);
     if (rejectedIds.has(key)) return false;
-    const cur = still.get(key); return cur === undefined || cur === i.rec.updatedAt;
+    const cur = still.get(key);
+    const clean = cur === undefined || cur === i.rec.updatedAt;
+    if (i.coll === 'journalEntries') pages.push({ id: i.rec.id, text: String((i.rec as { text?: unknown }).text ?? ''), stillDirty: !clean });
+    return clean;
   }).map(i => ({ collection: i.coll, id: i.rec.id })));
+  mergeHooks.settleSyncBases?.(pages);
 }
 const EMPTY_SET: ReadonlySet<string> = new Set();
 
@@ -328,6 +337,13 @@ async function runSync(fullPull: boolean): Promise<SyncRun> {
   const cursor = fullPull ? null : getLastSyncAt();
 
   try {
+    // #79: a page with unsynced words and a kept base is merged with the server's copy BEFORE it is pushed: the push replaces the server's whole text, so the other device's words must be pulled in first (the merged page is then what is pushed).
+    if (mergeHooks.hasMergeBases?.()) {
+      const pre = await apiSync({ lastSyncAt: cursor, push: {} });
+      live();
+      checkBuild(pre);
+      applyRemoteRecords(pre.pull);
+    }
     const items = collect(getDirtyRecords());
     const big = items.filter(isTooLarge);
     const sendable = items.filter(i => !isTooLarge(i));

@@ -1,3 +1,4 @@
+import { noteSyncBase } from './syncBase';
 import type { Project, StoryPlan, SessionLog, Draft, JournalEntry, Drawer } from '../../types';
 import { reportFlushFailed, reportFlushOk, reportStorageUsage } from '../storageHealth';
 import { isSignedOutHere } from '../signedOutHere';
@@ -379,6 +380,8 @@ export function upsert<T extends { id: string; updatedAt: string }>(
   if (isSignedOutHere()) return;
   record.updatedAt = new Date().toISOString();
   const index = collection.findIndex(r => r.id === record.id);
+  // #79: the page is about to go dirty for the first time since its last sync: keep the text it has NOW (the server's, as this device last saw it) as the base of a later merge (persistence/syncBase.ts)
+  if (name === 'journalEntries' && index >= 0 && !dirty[name].has(record.id)) noteSyncBase(record.id, (collection[index] as unknown as { text?: unknown }).text);
   if (index >= 0) {
     collection[index] = record;
   } else {

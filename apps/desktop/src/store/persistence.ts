@@ -15,5 +15,5 @@ export { getJournalEntryIncludingDeleted, restoreEntry } from './persistence/res
 export { type SystemBoardKind, getSystemKind, getOrCreateSystemBoard, reconcileSystemBoard } from './persistence/systemBoards';
 export { getDrawers, getDrawer, saveDrawer, createDrawer, renameDrawer, softDeleteDrawer, setProjectDrawer } from './persistence/drawers';
 import './persistence/seams';
-export { type RemoteRecords, applyRemoteRecords, resetLocalData } from './persistence/syncApply';
+export { type RemoteRecords, applyRemoteRecords, resetLocalData, hasMergeBases, settleSyncBases } from './persistence/syncApply';
 export { type PurgeAck, isPurged, subscribePurgedElsewhere, purgeEntry, purgeProject, purgeDrawer, purgeStoryPlan, emptyTrash, purgeAllDeleted, softDeleteProject, softDeleteStoryPlan, applyAcknowledgedPurged } from './persistence/purge';

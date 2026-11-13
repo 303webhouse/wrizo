@@ -1,3 +1,4 @@
+import { clearSyncBases, dropSyncBase, getSyncBase, setSyncBase } from './syncBase';
 import type { Project, StoryPlan, SessionLog, Draft, JournalEntry, Drawer } from '../../types';
 import { clearProofingLocal } from '../proofing';
 import { mergeBoxLists } from '../boxTombstones';
@@ -53,6 +54,7 @@ function applyCollection<T extends { id: string; updatedAt: string }>(
         if (idx >= 0) {
           const loc = collection[idx] as unknown as JournalEntry, rem = rec as unknown as JournalEntry;
           if (mergeBoxesInto(loc, loc, rem)) changed = true;
+          if (mergeRemoteTextInto(loc, rem)) changed = true;
         }
       }
       continue;
@@ -79,6 +81,26 @@ function applyCollection<T extends { id: string; updatedAt: string }>(
   return changed;
 }
 
+// #79 - TWO DEVICES, ONE PAGE. A page with an unsynced edit HERE used to ignore the text another device pushed, and the push that followed replaced the server's whole text: the other device's words were lost on both. Now the
+// three texts are merged (store/textMerge.ts, the #76 whole-line merge): the BASE is the text this device last synced (persistence/syncBase.ts), MINE the page here, THEIRS the pulled one. The merged page stays dirty and is stamped
+// newer than the pulled copy, so the next push carries it and wins at the server; the pulled text becomes the new base, so the same pull merges once. No base kept (evicted, or a page this device never synced): the old rule, this
+// device's text wins. A deleted page is never merged. Returns true when the page here changed.
+function mergeRemoteTextInto(loc: JournalEntry, rem: JournalEntry): boolean {
+  if (typeof loc.text !== 'string' || typeof rem.text !== 'string' || loc.deletedAt || rem.deletedAt || (rem as { purgedAt?: string }).purgedAt) return false;
+  if (rem.text === loc.text) return false;
+  const base = getSyncBase(loc.id);
+  if (base === null || rem.text === base) return false;   // no base: the old rule; the server's text is the one this device started from: every word of it is already here
+  const r = mergeText(base, loc.text, rem.text);
+  noteMerge({ at: 'sync-merge', base, mine: loc.text, theirs: rem.text, out: r.text });
+  setSyncBase(loc.id, rem.text);
+  if (r.text === loc.text) return false;
+  loc.text = r.text;
+  const now = new Date().toISOString();
+  loc.updatedAt = now > rem.updatedAt ? now : new Date(Date.parse(rem.updatedAt) + 1).toISOString();
+  if (r.kept) announceKeptBoth(loc.id);
+  return true;
+}
+
 // A board's boxes merge per box (store/boxTombstones.ts mergeBoxLists): `primary` is the side that is winning the entry, `target` takes the merged list. True when the target's list changed. The ONE place syncApply reads two boards' raw boxes
 // for a local edit against another copy (a pull, or another window's write): the readers guard (box-tombstones T11) counts these reads.
 function mergeBoxesInto(target: JournalEntry, primary: JournalEntry, secondary: JournalEntry): boolean {
@@ -100,6 +122,16 @@ export function applyRemoteRecords(remote: RemoteRecords): void {
   changed = applyCollection('drawers', cache.drawers, remote.drawers) || changed;
   if (changed) notify();
   announcePurged();
+}
+
+// #79 - for the sync engine (store/sync.ts reaches these through the namespace, so a stub of this module without them still loads): is there a page here with unsynced words AND a kept base, i.e. one a pull could merge?
+export function hasMergeBases(): boolean {
+  return (cache.journalEntries as JournalEntry[]).some((e) => dirty.journalEntries.has(e.id) && getSyncBase(e.id) !== null);
+}
+
+// #79 - after a push landed: a page that is clean again no longer needs its base; a page the writer kept typing in while the push was out still has unsynced words, and the server now holds the text that was pushed, which is its new base.
+export function settleSyncBases(pages: ReadonlyArray<{ id: string; text: string; stillDirty: boolean }>): void {
+  for (const p of pages) { if (p.stillDirty) setSyncBase(p.id, p.text); else dropSyncBase(p.id); }
 }
 
 // #76 PART 1 - REFRESH. Every window of the app on this computer shares one localStorage, and each keeps its own in-memory cache; nothing used to tell a window that another had written. Now the browser's `storage` event does:
@@ -188,6 +220,9 @@ export function resetLocalData(): void {
   } catch {
     // ignore
   }
+
+  // #79: the merge bases go with everything else at sign-out
+  clearSyncBases();
 
   // the proofing mirror goes out with everything else at sign-out, through its own store's function; unpushed words on this device go with it [persistence §30]
   clearProofingLocal();
