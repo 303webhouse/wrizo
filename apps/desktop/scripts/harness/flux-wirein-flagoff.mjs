@@ -89,7 +89,7 @@ try { await withHarness(async (app) => {
       if (mutant) {
         const [re, to, kind] = MUTANTS[mutant];
         const isCss = /\.css(\?|$)/.test(p.request.url);
-        if ((kind === 'css') === isCss) { const n = countOf(re, text); landed[mutant] = (landed[mutant] || 0) + n; if (n === 1) text = text.replace(re, to); }
+        if ((kind === 'css') === isCss) { const n = countOf(re, text); landed[mutant] = (landed[mutant] || 0) + n; if (n === 1) text = text.replace(re, to); else if (n > 1) { re.lastIndex = 0; let m; const cx = []; while ((m = re.exec(text)) && cx.length < 8) cx.push(text.slice(Math.max(0, m.index - 70), m.index + 70)); re.lastIndex = 0; console.log('MUTANT-ANCHOR ' + mutant + ' matched ' + n + ' places: ' + JSON.stringify(cx)); } }
       }
       await app.cdp('Fetch.fulfillRequest', { requestId: p.requestId, responseCode: p.responseStatusCode || 200, responseHeaders: p.responseHeaders || [], body: Buffer.from(text, 'utf8').toString('base64') });
     } catch { try { await app.cdp('Fetch.continueRequest', { requestId: p.requestId }); } catch { /* the request is gone */ } }
