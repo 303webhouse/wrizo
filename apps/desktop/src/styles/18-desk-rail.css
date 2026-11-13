@@ -59,7 +59,7 @@
 [data-theme='machina'][data-cast='neutral'] .desk-rail-wayback{ color:var(--orange); }
 [data-theme='machina'] .desk-rail-wayback:hover{ color:var(--text-hi); border-left-color:var(--ink-border-strong); }
 [data-theme='machina'][data-cast='neutral'] .desk-rail-wayback:hover{ color:var(--orange); border-left-color:var(--orange); }
-.wz-cascade-cast > span{ margin-right:auto; }
+.wz-cascade-cast > span, .wz-cascade-turnsound > span{ margin-right:auto; }   /* #94: the Page-turn sound pair sits together like Cast's Cool and Neutral (8 px), label to the left */
 
 /* The file's navigation row. */
 .sprint-nav{ display:flex; align-items:center; gap:14px; flex-wrap:wrap;
