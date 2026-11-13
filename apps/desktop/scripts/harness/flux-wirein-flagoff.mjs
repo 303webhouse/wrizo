@@ -12,8 +12,9 @@
 //   W9 FONT         her words keep today's page face inside the Corridor: the editor's computed font-family equals the same page's in TEXT
 //   W10 OTHERS      Arbor and Machina are untouched: no Corridor, no marked root, and Arbor's Free Write Typewriter (its setting ON) still zooms the page
 //   W11 FLAG-ON     with ?flux3=1 the redesign's other pieces still arrive (data-flux3, the room ground in TEXT) AND the Corridor still mounts: the flag gates the rest, not Wire In
-//   MUT-*           five landed mutants of the served bundle (a regex found exactly once, replaced in flight), each turning ITS OWN check RED and no other clause: the flag leaks on (W1), the marker never set (W3), the
-//                   toggles' rule gone (W4), Wire In mounting only when the flag says so (W2), the chrome rule not matching (W5)
+//   W12 IDLE        the idle line shows after 4 s of rest (none at first; then KEEP THE SIGNAL · ANY WORD WILL DO, drawn: not display none, fixed, opaque once its fade is done, below the caret; the nudge's earliest is ~7.6 s after entry)
+//   MUT-*           seven landed mutants of the served bundle (a regex found exactly once, replaced in flight), each turning ITS OWN check RED and no other clause: the flag leaks on (W1), the marker never set (W3), the
+//                   toggles' rule gone (W4), Wire In mounting only when the flag says so (W2), the chrome rule not matching (W5), the idle line hidden by its rule (W12), the idle line's switch read as off (W12)
 // FLUX_WIREIN_SHOTS=<dir> writes frames. Run: node scripts/harness/flux-wirein-flagoff.mjs   (from apps/desktop)
 import fs from 'node:fs';
 import path from 'node:path';
@@ -55,6 +56,8 @@ const MUTANTS = {
   jackNeedsFlag: [/([\w$]+)!=null&&((?:[\w$]+\.)?jsx\([\w$]+,\{on:[\w$]+,scrollRef:[\w$]+,unitCount:[\w$]+\}\))/g, '$1!=null&&!1&&$2', 'js'],
   togglesBack: [/(:root\[data-wirein\]\[data-theme=flux\] \.typewriter-toggle)\{display:none!important\}/g, '$1{display:inline-flex}', 'css'],
   chromeStays: [/\[data-flux3-jacked\] :is\(\.desk-rail/g, '[data-flux3-jackedx] :is(.desk-rail', 'css'],
+  idleHidden: [/(\.flux3-nudge)\{(transform:translate\(-50%,-50%\))/g, '$1{display:none;$2', 'css'],
+  idleOff: [/[\w$]+\(\)\.idle==="off"/g, '!0', 'js'],
 };
 const countOf = (re, text) => { re.lastIndex = 0; let n = 0; while (re.exec(text)) n += 1; re.lastIndex = 0; return n; };
 
@@ -149,6 +152,16 @@ try { await withHarness(async (app) => {
       const pass = seen.length >= 1 && seen.every((x) => x[1] === 0 && x[2] === 'none');   // the strip is the one of the three this layout renders (the rail and corkboard have their own class names); a missing one is not counted, a seen one must be gone
       return { pass, detail: JSON.stringify(c) };
     },
+    // W12: left alone, the idle line comes after 4 s of rest (counted once the entry line has gone: ~7.6 s after entry). None at first, then the line, drawn.
+    async idle() {
+      await open({ id: pidMain, tone: 'dark' });
+      const read = () => ev("(() => { const n = document.querySelector('.flux3-nudge'); if (!n) return null; const c = getComputedStyle(n); const r = n.getBoundingClientRect(); const k = document.querySelector('.flux-block-caret'); const kb = k ? k.getBoundingClientRect() : null; return { text: n.textContent, disp: c.display, pos: c.position, op: +c.opacity, w: Math.round(r.width), below: kb ? r.top > kb.bottom : null }; })()");
+      const early = await read();
+      let n = null; for (let i = 0; i < 110 && !(n && n.op >= 0.99); i += 1) { await sleep(150); n = await read(); }
+      await snap('wirein-flagoff-idle');
+      const pass = early === null && !!n && /^KEEP THE SIGNAL/i.test(String(n.text).trim()) && n.disp !== 'none' && n.pos === 'fixed' && n.op >= 0.99 && n.w > 100 && n.below === true;
+      return { pass, detail: JSON.stringify({ early, n }) };
+    },
   };
 
   { const r = await probes.flagOff(); ok('W1 FLAG-OFF without ?flux3=1: no data-flux3, the flag\'s chunk is never fetched, none of the redesign\'s own elements exists (Schema, doc gutter and ports, room ground, Glitch bar, idle glitch), and her words keep today\'s page face (no Crimson Pro default)', r.pass, r.detail); }
@@ -156,6 +169,7 @@ try { await withHarness(async (app) => {
   { const r = await probes.styled(); ok('W3 STYLED the Corridor is drawn by its own stylesheet: data-wirein on the root, the Corridor fixed to the window over the ground #020C10, the burst edge a fixed 2 px line', r.pass, r.detail); }
   { const r = await probes.toggles(); ok('W4 TOGGLES the paper Typewriter\'s toggles are not offered in Flux: a probe of the rule and every real one rendered compute display none', r.pass, r.detail); }
   { const r = await probes.chrome(); ok('W5 CHROME no rail, strip or corkboard while wired in (computed opacity 0, no pointer)', r.pass, r.detail); }
+  { const r = await probes.idle(); ok('W12 IDLE left alone the idle line shows after 4 s of rest: none at first, then KEEP THE SIGNAL · ANY WORD WILL DO below her writing line, drawn (not display none, fixed, opaque once its fade is done)', r.pass, r.detail); }
 
   // W6 / W7: leave with Esc, from a LIGHT page
   {
@@ -228,6 +242,8 @@ try { await withHarness(async (app) => {
   await mutantRun('markerGone', probes.styled, 'the stylesheet\'s marker never set -> W3');
   await mutantRun('togglesBack', probes.toggles, 'the toggles\' hiding rule gone -> W4');
   await mutantRun('chromeStays', probes.chrome, 'the chrome rule no longer matches a wired-in page -> W5');
+  await mutantRun('idleHidden', probes.idle, 'the idle line hidden by its own rule -> W12');
+  await mutantRun('idleOff', probes.idle, 'the idle line\'s switch read as off -> W12');
   mutant = null;
 }); } catch (e) { failedRun = true; console.error('HARNESS ERROR', e && e.stack ? e.stack : e); }
 

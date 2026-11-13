@@ -133,8 +133,39 @@ export default {
   },
   'wirein-nudge': async (app) => {
     await seed(app, 'An older line she wrote before this session.', { settle: 4800 });
+    // the nudge's earliest is ~7.6 s after entry (4 s of stillness counted once the entry line has gone): the first shot (Nov 12) was taken at ~6.2 s, before it: wait for the line itself
+    const came = await waitSoft(app, "!!document.querySelector('.flux3-nudge')", { label: 'the nudge', timeout: 9000 });
     await sleep(1400);   // the nudge's 0.8 s fade-in is done
+    console.log(`FLUX-WIREIN-FRAME wirein-nudge came ${came}`);
     console.log(`FLUX-WIREIN-FRAME wirein-nudge ${JSON.stringify(await stood(app))}`);
+  },
+  // the return chip (Fable, Nov 12 11:25 pm): a Deck's Walk, 'Write this' (the unborn page opens wired in: no chip drawn), Esc (Unplug) -> TEXT with the chip visible at once
+  'wirein-chip': async (app) => {
+    await app.evalJs("localStorage.setItem('wrizo-theme', 'flux'); localStorage.setItem('wrizo-ambiance-dial', '50');");
+    await app.cdp('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'no-preference' }] });
+    await app.evalJs(`(() => {
+      const d = window.wrizoCreateDrawer('The Well'); const p = window.wrizoCreateProject('The Well', 'creative'); window.wrizoSetProjectDrawer(p.id, d.id);
+      const step = (id, i, t) => ({ id, kind: 'text', x: 0.03 + (i - 1) * 0.3, y: 0.05, w: 0.2, h: 0.105, z: 1, seq: i, text: t + '\\n', prompt: 'What happens?', deckStep: { deck: 'three-act', step: 'hook' } });
+      const meta = (id) => ({ id, kind: 'board-meta', x: 0, y: 0, w: 0, h: 0, z: 0, homeView: 'walk' });
+      window.wrizoCreateJournalPage({ id: 'wic-deck', text: 'Three-Act', pageType: 'board', projectId: p.id, boxes: [step('s1', 1, 'Setup'), step('s2', 2, 'Midpoint'), step('s3', 3, 'Climax'), meta('m1')], origin: 'project', source: 'page', createdAt: '2026-01-01T00:00:01.000Z' });
+      window.wrizoFlushNow(); })()`);
+    await sleep(500);
+    await app.evalJs("location.hash = '#/page/wic-deck'");
+    await waitSoft(app, "!!document.querySelector('.walk-card')", { label: 'the Walk', timeout: 10000 });
+    await sleep(900);
+    await app.evalJs("document.querySelector('.walk-nav[data-dir=\"next\"]')?.click()");
+    await sleep(700);
+    await app.evalJs("document.querySelector('.walk-door[data-door=\"write\"]')?.click()");
+    await waitSoft(app, "/^#\\/page\\/new\\?/.test(location.hash) && document.documentElement.hasAttribute('data-flux3-jacked')", { label: 'wired in on the unborn page', timeout: 10000 });
+    await sleep(1500);
+    for (let n = 0; n < 4; n += 1) {   // Esc closes anything open first, then unplugs
+      if (!(await app.evalJs("document.documentElement.hasAttribute('data-flux3-jacked')"))) break;
+      await tapEsc(app); await sleep(700);
+    }
+    await waitSoft(app, "!document.documentElement.hasAttribute('data-flux3-jacked')", { label: 'unplugged', timeout: 6000 });
+    await sleep(1000);   // the chrome is back (0.6 s fade)
+    const chip = await app.evalJs("(() => { const b = document.querySelector('[data-return-chip]'); if (!b) return null; let e = b, o = 1; while (e && e !== document.documentElement) { o *= +getComputedStyle(e).opacity; e = e.parentElement; } const r = b.getBoundingClientRect(); return { text: b.textContent.trim(), op: +o.toFixed(2), pe: getComputedStyle(b).pointerEvents, rect: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)], hash: location.hash.slice(0, 40) }; })()");
+    console.log(`FLUX-WIREIN-FRAME wirein-chip ${JSON.stringify({ chip, ...(await stood(app)) })}`);
   },
   'wirein-esc': async (app) => {
     await seed(app, 'First line of her text.\nSecond line goes here.');
