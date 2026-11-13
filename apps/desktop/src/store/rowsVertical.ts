@@ -23,16 +23,24 @@ export function rowsUpKey(el: HTMLElement, e: KeyboardEvent): boolean {
     if (!e.shiftKey && !sel.isCollapsed) return false;   // Up over a selection collapses it: native
     const fnode = sel.focusNode, foff = sel.focusOffset;
     const fe = fnode.nodeType === 1 ? (fnode as Element) : fnode.parentElement;
-    const row = fe ? (fe.closest('.wz-row') as HTMLElement | null) : null;
+    let row = fe ? (fe.closest('.wz-row') as HTMLElement | null) : null;
+    // a caret at a row's START is often drawn in the separator BETWEEN rows (after its newline) or on the host itself, not inside the row: the row it starts is the one that follows
+    let atRowStart = false;
+    if (!row) {
+      let next: Node | null = null;
+      if (fnode === el) next = el.childNodes[foff] ?? null;
+      else if (fnode.parentNode === el && fnode.nodeType === 3 && foff === (fnode as Text).length) next = fnode.nextSibling;
+      while (next && next.nodeType !== 1) next = next.nextSibling;
+      if (next && (next as Element).classList.contains('wz-row')) { row = next as HTMLElement; atRowStart = true; }
+    }
     const at = row ? R.rows.indexOf(row) : -1;
     if (!row || at <= 0) return false;
-    const here = document.createRange();
-    here.setStart(fnode, foff); here.collapse(true);
-    const hr = [...here.getClientRects()].find((q) => q.height > 0) ?? here.getBoundingClientRect();
-    if (!hr || hr.height <= 0) return false;
     // only from the row's first visual line: inside a wrapped row the browser moves by line correctly
     const own = lineRects(row);
     if (!own.length) return false;
+    let hr: { top: number; left: number; height: number };
+    if (atRowStart) { const f = own.reduce((m, q) => (q.top < m.top ? q : m), own[0]); hr = { top: f.top, left: f.left, height: f.height }; }
+    else { const here = document.createRange(); here.setStart(fnode, foff); here.collapse(true); const q = [...here.getClientRects()].find((x) => x.height > 0) ?? here.getBoundingClientRect(); if (!q || q.height <= 0) return false; hr = { top: q.top, left: q.left, height: q.height }; }
     const ownTop = Math.min(...own.map((q) => q.top));
     const ownLh = Math.min(...own.map((q) => q.height));
     if (hr.top > ownTop + ownLh * 0.6) return false;
