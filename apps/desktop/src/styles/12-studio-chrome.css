@@ -244,7 +244,7 @@
    exactly that, not a press/starred moment). */
 .typewriter-toggle.on{ color:var(--accent-rest); border-color:var(--accent-rest); }
 
-/* Page-turn (B5): no animation in any theme (#63, Nick's ruling). The old mode-flip keyframes and .mode-page.flipping rule are gone. */
+/* Page-turn (B5): no animation in any theme (#63, Nick's ruling); the turn is a sound the writer can switch off, in ModeStage.tsx. The old mode-flip keyframes and .mode-page.flipping rule are gone. */
 
 /* Settings gear + popover (top-right of the stage). */
 .mode-gear-wrap{ position:absolute; top:-2px; right:0; z-index:5; display:flex; align-items:center; gap:8px; }
