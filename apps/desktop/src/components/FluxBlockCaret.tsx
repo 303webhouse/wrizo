@@ -117,7 +117,7 @@ export function FluxBlockCaret() {
         const ended = lastNav.key === 'End' && performance.now() - lastNav.at < 500;
         const same = !ended && !!downstream.current && downstream.current.node === wrapA && downstream.current.offset === wrapO;
         const fresh = NAV_DOWNSTREAM.has(lastNav.key) && performance.now() - lastNav.at < 500;
-        if (same || fresh) {
+        if (false && (same || fresh)) {
           const one = document.createRange();
           one.setStart(wrapA, wrapO); one.setEnd(wrapA, wrapO + 1);
           const cr = [...one.getClientRects()].find((q) => q.height > 0);
