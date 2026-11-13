@@ -314,10 +314,7 @@ async function part2() {
     const costSt = { pre: stat(M.fine.pre.cost), hold: stat(M.fine.hold.cost), fast: stat(M.fine.fast.cost), fade: stat(M.fine.fade.cost) };
     ok(`B2 main-thread time per key inside the flash (the key's handler task + the frame that paints it, ms): the median is within ${COST_MEDIAN_SLACK} ms of the same page's control - a cost the frame clock hides`,
       costSt.hold.n >= MIN_KEYS && costSt.pre.n >= MIN_KEYS && costSt.hold.median <= costSt.pre.median + COST_MEDIAN_SLACK, `control ${show(costSt.pre)} | flash ${show(costSt.hold)}`);
-    // PARKED - SUPERSEDED by the reference-shift check (Fable, Nov 6; coarse-C stabilising). The line(s) that stood, verbatim (the successor is the line below this block):
-//     ok(`C2 main-thread time per key inside the fade: the median is within ${COST_MEDIAN_SLACK} ms of the fast control's`,
-//       costSt.fade.n >= MIN_KEYS && costSt.fast.n >= MIN_KEYS && costSt.fade.median <= costSt.fast.median + COST_MEDIAN_SLACK, `control ${show(costSt.fast)} | fade ${show(costSt.fade)}`);
-//     ok('C typing inside the fade is as fast as at rest at the same pace (same budgets, against the fast control)', fadeSt.n >= MIN_KEYS && fastSt.n >= MIN_KEYS && fadeSt.median <= fastSt.median + MEDIAN_SLACK && fadeSt.p95 <= fastSt.p95 + P95_SLACK && fadeSt.max <= MAX_MS, `rest ${show(fastSt)} | fade ${show(fadeSt)}`);
+    // ARCHIVED PARK (#13 step 14): archive/rhizome-latency.mjs.parked.md record 1
     ok(`C2 main-thread time per key inside the fade: the median is within ${COST_MEDIAN_SLACK} ms of the fast control's PLUS the fade's reference cost (${REF.c2} ms, ${REF_SRC})`,
       costSt.fade.n >= MIN_KEYS && costSt.fast.n >= MIN_KEYS && costSt.fade.median <= costSt.fast.median + REF.c2 + COST_MEDIAN_SLACK, `control ${show(costSt.fast)} | fade ${show(costSt.fade)} | shift ${r1(costSt.fade.median - costSt.fast.median)} vs ref ${REF.c2}`);
     ok(`C typing inside the fade is as fast as at rest at the same pace (the same budgets over the fade's reference shift - median +${REF.c} ms, p95 +${REF.p95} ms, ${REF_SRC} - against the fast control; no key over ${MAX_MS} ms)`, fadeSt.n >= MIN_KEYS && fastSt.n >= MIN_KEYS && fadeSt.median <= fastSt.median + REF.c + MEDIAN_SLACK && fadeSt.p95 <= fastSt.p95 + REF.p95 + P95_SLACK && fadeSt.max <= MAX_MS,

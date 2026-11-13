@@ -98,10 +98,7 @@ await withHarness(async (app) => {
     const s2 = await scopeState(app, '.wz-sliver');
     ok(`${T} PAGE: ONLY the highlighted words take the face - painted in it, its marks hidden (zero size), and the words stay highlighted`,
       !!sp && sp.words === 'counted gulls' && /Atkinson/.test(sp.family) && sp.marks.length === 2 && sp.marks.every((f) => f === '0px') && sp.sel === 'counted gulls', JSON.stringify(sp));
-    // ---- PARKED - SUPERSEDED by FLUX V2 (the full pair on 21e18ae3, Fable's ruling Oct 22): a chosen row reads the theme's --choice (brass in Arbor, cyan #00C2FF in Flux; brass itself is locked), so the check compares to --choice.
-    // Kept VERBATIM below and no longer run; the live successor follows.
-    //
-    // ok(`${T} PAGE: the picked face's row is the one in brass`, !!s2 && s2.current.length === 1 && s2.current[0].name === 'Atkinson Hyperlegible' && s2.current[0].color === s2.brass, JSON.stringify(s2));
+    // ARCHIVED PARK (#13 step 14): archive/font-span.mjs.parked.md record 1
     const choiceNow = await app.evalJs("(() => { const p = document.createElement('span'); p.style.color = 'var(--choice)'; document.body.appendChild(p); const c = getComputedStyle(p).color; p.remove(); return c; })()");
     ok(`${T} PAGE: the picked face's row is the one in the choice colour (brass in Arbor, cyan in Flux)`, !!s2 && s2.current.length === 1 && s2.current[0].name === 'Atkinson Hyperlegible' && s2.current[0].color === choiceNow, JSON.stringify({ s2, choiceNow }));
     const r1 = await rowsState(app);

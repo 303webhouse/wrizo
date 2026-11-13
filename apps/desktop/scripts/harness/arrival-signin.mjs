@@ -227,14 +227,7 @@ const flag = await import(`file://${dest.replace(/\\/g, '/')}?t=${Date.now()}`);
   const guard = await import('file://' + gdest.replace(/\\/g, '/') + '?t=' + Date.now());
   fs.rmSync(gdest, { force: true });
   const w3 = guard.logoutWords(3, t);
-  // SUPERSEDED (item word-diet, Nick) — logoutBlockedBody/logoutAnyway/
-  // logoutAnywayConfirm all shortened; see the successors just below.
-  // ok('(F11) the body is the approved sentence, with the count in it',
-  //   w3.body === "3 changes haven’t saved to your account yet. Stay signed in until they save, or sign out anyway and lose them.", w3.body);
-  // ok('(F12) the second step reads "Sign out anyway (N changes will be lost)"', w3.anyway === 'Sign out anyway (3 changes will be lost)', w3.anyway);
-  // const w1 = guard.logoutWords(1, t);
-  // ok('(F13) a single change reads as one (no "1 changes")',
-  //   !/1 changes/.test(w1.body + w1.anyway + w1.confirm) && /1 change /.test(w1.body) && /\(1 change will be lost\)/.test(w1.anyway), JSON.stringify(w1));
+  // ARCHIVED PARK (#13 step 14): archive/arrival-signin.mjs.parked.md record 1
   ok('(F11) [word-diet successor] the body is the approved sentence, with the count in it',
     w3.body === "3 changes haven’t saved yet. Stay signed in, or sign out and lose them.", w3.body);
   ok('(F12) [word-diet successor] the second step reads "Sign out and lose N changes"', w3.anyway === 'Sign out and lose 3 changes', w3.anyway);

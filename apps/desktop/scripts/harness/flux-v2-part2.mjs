@@ -204,9 +204,7 @@ export async function part2({ ok, sleepMs }) {
         const m = /rgba?\\(([^)]+)\\)/.exec(cs.backgroundColor); const p = m ? m[1].split(',').map((x) => parseFloat(x)) : [255, 255, 255];
         return { bg: cs.backgroundColor, lum: (0.2126 * p[0] + 0.7152 * p[1] + 0.0722 * p[2]) / 255, border: cs.borderTopColor, color: cs.color, titleColor: fl.color, titleCase: fl.textTransform, titleLetterSpacing: fl.letterSpacing,
           frame: !!f, grid: !!(f && f.querySelector('.flux-frame')), brackets: !!(f && f.querySelector('.flux-brackets')), frameClick: f ? getComputedStyle(f).pointerEvents : null }; })()`) : null;
-      // ---- PARKED - SUPERSEDED by polish #10 item 12 (INK, Nick accepted it via Fable, Oct 29): a Flux card marks its first line by COLOUR ONLY - the capitals + letter-spacing + chrome font made the line wider, it wrapped, and the auto-grow made the Flux card taller than the Arbor one. F13 is kept VERBATIM below and no longer run; successor next.
-      //
-      // ok('F13 a board card is a dark-glass node: dark fill (not Arbor cream), a thin cyan edge, light ink, and a cyan UPPERCASE first line', !!nd && nd.lum < 0.15 && /0,\s*194,\s*255/.test(nd.border) && nd.titleColor === 'rgb(87, 208, 245)' && nd.titleCase === 'uppercase', JSON.stringify(nd));
+      // ARCHIVED PARK (#13 step 14): archive/flux-v2-part2.mjs.parked.md record 1
       ok('F13 [item-12 successor] a board card is a dark-glass node: dark fill (not Arbor cream), a thin cyan edge, light ink, and a cyan first line set by colour only (no capitals)', !!nd && nd.lum < 0.15 && /0,\s*194,\s*255/.test(nd.border) && nd.titleColor === 'rgb(87, 208, 245)' && nd.titleCase === 'none' && nd.titleLetterSpacing === 'normal', JSON.stringify(nd));
       ok('F13 the board wears the frame: the grid ring and the corner brackets, click-through', !!nd && nd.frame && nd.grid && nd.brackets && nd.frameClick === 'none', JSON.stringify(nd));
 
@@ -228,8 +226,7 @@ export async function part2({ ok, sleepMs }) {
       // ---- F14: the rail's place block reads RACK ▸ <name> and WRAPS - never truncated -----------------------------------------------------------------------------------------------------
       await open('fx-m2');
       const pbk = await q(`(() => { const e = document.querySelector('.wz-place-block .wz-place-name'); if (!e) return null; const cs = getComputedStyle(e); return { text: e.textContent, ws: cs.whiteSpace, overflow: cs.textOverflow, clipped: e.scrollWidth > e.clientWidth + 1, h: Math.round(e.getBoundingClientRect().height) }; })()`);
-      // ---- PARKED - SUPERSEDED by POLISH #10 item 14 (Nick/Fable, Oct 25: the rail's place label stays on ONE line with an ellipsis; the full name on hover/focus). Kept VERBATIM and no longer run; its successor follows.
-      // ok('F14 the place block reads "RACK ▸ The Late Ferry", wraps (white-space normal, no ellipsis) and nothing is clipped', !!pbk && pbk.text === 'RACK ▸ The Late Ferry' && pbk.ws === 'normal' && pbk.overflow !== 'ellipsis' && !pbk.clipped, JSON.stringify(pbk));
+      // ARCHIVED PARK (#13 step 14): archive/flux-v2-part2.mjs.parked.md record 2
       const pbTitle = await q("document.querySelector('.wz-place-block')?.getAttribute('title')");
       // ---- PARKED - SUPERSEDED by POLISH #10 item 14 (Nick, Oct 28: the rail shows ONLY the place name; the full path is the title). Kept VERBATIM and no longer run; its successor follows.
       // ok('F14 [polish-10 item 14 successor]: the place block still reads "RACK ▸ The Late Ferry" in full in the DOM, on ONE line (white-space nowrap, text-overflow ellipsis, one line tall), and the button carries the full text as its title', !!pbk && pbk.text === 'RACK ▸ The Late Ferry' && pbk.ws === 'nowrap' && pbk.overflow === 'ellipsis' && pbk.h <= 20 && pbTitle === 'RACK ▸ The Late Ferry', JSON.stringify({ pbk, pbTitle }));

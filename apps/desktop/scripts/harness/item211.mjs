@@ -122,13 +122,7 @@ await withHarness(async (app) => {
     const pt = await app.evalJs(`(() => { const b = document.querySelector('${ED} .md-bold'); const r = b.getBoundingClientRect(); return { x: Math.round(r.right + 1), y: Math.round(r.top + r.height / 2) }; })()`);
     await app.mouseDown(pt.x, pt.y); await app.mouseUp(pt.x, pt.y); await sleep(250);
     const clicked = await caret(app);
-    // ---- PARKED - SUPERSEDED by Nick's live bug (2026-10-06: "I can't click on the line next to 'BOLD' ... It seems to just activate
-    // the strip menu") - FIX's click rule, store/hiddenMarks.ts snapCaretAfterClick. Kept VERBATIM and no longer run. A CLICK now keeps
-    // the side of a run's closing marks it landed on, so a click just past the bold word lands AFTER the marks (14), outside the pair,
-    // and the strip lights nothing; the keyboard keeps the left-character rule (the check above, 14 -> 12 by snap, is unchanged).
-    //
-    // ok('WALK: a real click just past the bold word lands after its last visible letter (12), inside the pair', clicked === 12, String(clicked));
-    // ------------------------------------------------------------------
+    // ARCHIVED PARK (#13 step 14): archive/item211.mjs.parked.md record 1
     clickPast = clicked;
     ok('WALK [click-rule successor]: a real click just past the bold word lands AFTER its closing marks (14), outside the pair - where the writer clicked', clicked === 14, String(clicked));
   }
@@ -233,33 +227,16 @@ await withHarness(async (app) => {
     const tpl = await app.evalJs(`[...document.querySelectorAll('.wz-sliver-templates .wz-template-btn')].map(b => ({ name: b.getAttribute('aria-label'), title: b.title, disabled: b.getAttribute('aria-disabled'), opacity: getComputedStyle(b).opacity }))`);
     c2Seen = tpl.map((b) => b.name);
     c2RowsSeen = await app.evalJs("[...document.querySelectorAll('.wz-sliver-templates .wz-template-row')].map(b => ({ name: b.getAttribute('aria-label'), disabled: b.getAttribute('aria-disabled') }))");
-    // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08): the Templates row reads Screenplay (LIVE), then Outline, Title page, Bibliography and a NEW Custom placeholder, in that order. Kept VERBATIM and no
-    // longer run; its parked record is in the HARNESS_PARKED block at the foot of this file, and its successor follows.
-    //
-    // ok('C2: Outline, Bibliography and Title page are dimmed stand-ins - aria-disabled, tooltip "Coming soon"',
-    //   tpl.map((b) => b.name).join(',') === 'Outline,Bibliography,Title page' && tpl.every((b) => b.disabled === 'true' && b.title === 'Coming soon' && Number(b.opacity) < 1), JSON.stringify(tpl));
-    // ------------------------------------------------------------------
-    // ---- PARKED - SUPERSEDED by PAGE TEMPLATES R2 (the approved templates mockup cursor/templates @ 0fc9afef, Fable Oct 16): the four grayed stand-ins retire - the Templates section is a FIVE-row picker (Blank, Screenplay, Outline, Title Page, Bibliography), none disabled, Custom dropped. Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
-    //
-    // ok('C2 [page-templates successor]: Outline, Title page, Bibliography and Custom are dimmed stand-ins, in that order - aria-disabled, tooltip "Coming soon"',
-    //   tpl.map((b) => b.name).join(',') === 'Outline,Title page,Bibliography,Custom' && tpl.every((b) => b.disabled === 'true' && b.title === 'Coming soon' && Number(b.opacity) < 1), JSON.stringify(tpl));
+    // ARCHIVED PARK (#13 step 14): archive/item211.mjs.parked.md record 2
     ok('C2 [page-templates-r2 successor]: the Templates hold the five-row picker - Blank, Screenplay, Outline, Title Page, Bibliography, in that order - none disabled, and no dimmed stand-in is left',
       c2RowsSeen.map((b) => b.name).join(',') === 'Blank,Screenplay,Outline,Title Page,Bibliography' && c2RowsSeen.every((b) => b.disabled === null) && tpl.length === 0, JSON.stringify({ c2RowsSeen, standIns: tpl.length }));
     const textBefore = await stored(app, id);
     await app.evalJs("document.querySelectorAll('.wz-sliver-templates .wz-template-btn').forEach(b => b.click())"); await sleep(300);
-    // ---- PARKED - SUPERSEDED by PAGE TEMPLATES R2 (2026-10-16): there are no stand-ins to press; the rows are live, and the one that is a no-op is the choice already made. Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
-    //
-    // ok('C2: pressing them does nothing to the page', (await stored(app, id)) === textBefore && (await app.evalJs(`!!document.querySelector('${ED}')`)));
+    // ARCHIVED PARK (#13 step 14): archive/item211.mjs.parked.md record 3
     await app.evalJs("document.querySelector('.wz-template-row[data-template=\"blank\"]')?.click()"); await sleep(300);
     ok('C2 [page-templates-r2 successor]: pressing the choice already made (Blank) does nothing to the page', (await stored(app, id)) === textBefore && (await app.evalJs(`!!document.querySelector('${ED}')`)));
     const typeHead = await app.evalJs("(() => { const s = document.querySelector('.wz-sliver-type'); const h = s && s.firstElementChild; return h ? { cls: h.className, text: h.textContent, next: h.nextElementSibling && h.nextElementSibling.className } : null; })()");
-    // SUPERSEDED (two tickets converged on the same fact from two directions
-    // - theme-leftovers, Nick approved Oct 12, built Oct 16: this file never
-    // switches theme, so it runs on Arbor's own default, which now reads
-    // "Font"; and PAGE TEMPLATES R2, the approved mockup, which names the
-    // same word as part of the same table - railTypeface). Kept verbatim,
-    // no longer run:
-    //   ok('C3: a "Typeface" heading sits directly above the font controls', typeHead && typeHead.cls === 'wz-sliver-h' && typeHead.text === 'Typeface' && /wz-type/.test(typeHead.next || ''), JSON.stringify(typeHead));
+    // ARCHIVED PARK (#13 step 14): archive/item211.mjs.parked.md record 4
     c3HeadSeen = typeHead;
     ok('C3 [theme-leftovers + page-templates-r2 successor]: a "Font" heading (Arbor\'s own word) sits directly above the font controls',
       typeHead && typeHead.cls === 'wz-sliver-h' && typeHead.text === 'Font' && /wz-type/.test(typeHead.next || ''), JSON.stringify(typeHead));
@@ -270,9 +247,7 @@ await withHarness(async (app) => {
       const brass = document.createElement('span'); brass.style.color = 'var(--brass-press)'; panel.appendChild(brass);
       const out = { olive: getComputedStyle(probe).color, brass: getComputedStyle(brass).color, h4: [...panel.querySelectorAll('h4')].map(h => getComputedStyle(h).color) };
       probe.remove(); brass.remove(); return out; })()`);
-    // ---- PARKED - SUPERSEDED by NICK'S RULING (via Fable, Oct 25): "Recede depth" is REMOVED, and with it the Preferences block (its only row): the Settings panel holds TWO headings, not three. Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
-    //
-    //     ok('C4: every Settings heading is the theme\'s olive (--accent-rest), not brass', heads.h4.length === 3 && heads.h4.every((c) => c === heads.olive) && heads.olive !== heads.brass, JSON.stringify(heads));
+    // ARCHIVED PARK (#13 step 14): archive/item211.mjs.parked.md record 5
     c4Seen = heads;
     ok("C4 [recede-depth-removed successor]: every Settings heading (two, since the Preferences block went) is the theme's olive (--accent-rest), not brass", heads.h4.length === 2 && heads.h4.every((c) => c === heads.olive) && heads.olive !== heads.brass, JSON.stringify(heads));
   }
@@ -310,13 +285,7 @@ await withHarness(async (app) => {
     for (const off of [3, 6, 8, 10, 12, 14, 16]) shownAt[off] = await cardAt(off);
     ok('R1: on the card popup a mid-word caret (10) and a caret away from the word (3, 16) show no marks',
       [3, 10, 16].every((o) => shownAt[o].length === 0), JSON.stringify(shownAt));
-    // ---- PARKED - SUPERSEDED by the 211 card port (2026-10-06): the popup now runs the page's editing rules, so it shows no mark at any caret, as the page ----
-    // Kept VERBATIM and no longer run. The card kept the interim rule because Backspace and Delete there could half-delete a mark it
-    // could not see; it now runs the page's rules (store/hiddenMarksEditing.ts), so neither can, and nothing needs to show.
-    //
-    // ok('R1: on the card popup a caret touching a marker (6, 8, 12, 14) shows that run\'s two marks, so Backspace and Delete act on something visible',
-    //   [6, 8, 12, 14].every((o) => JSON.stringify(shownAt[o]) === JSON.stringify(['**', '**'])), JSON.stringify(shownAt));
-    // ------------------------------------------------------------------
+    // ARCHIVED PARK (#13 step 14): archive/item211.mjs.parked.md record 6
     r1CardShown = shownAt;
     ok('R1 [card-port successor]: on the card popup a caret touching a marker (6, 8, 12, 14) shows NO marks either - the card runs the page\'s editing rules now',
       [6, 8, 12, 14].every((o) => shownAt[o].length === 0), JSON.stringify(shownAt));
@@ -331,9 +300,7 @@ await withHarness(async (app) => {
       return { heading: r.querySelector('.wz-sliver-h').textContent, afterTemplates: !!r.previousElementSibling && r.previousElementSibling.classList.contains('wz-sliver-templates'),
         kinds: [...r.querySelectorAll('[data-page-kind]')].map(b => b.textContent + (b.getAttribute('aria-checked') === 'true' ? '*' : '')),
         convert: [...document.querySelectorAll('.wz-sliver .wz-cascade-action')].filter(b => /^Convert to/.test(b.textContent || '')).length }; })()`);
-  // SUPERSEDED (item word-diet, Nick) — railPageKind reworks, "Page kind" -> "Pages Kind".
-  // ok('R2: Draft\'s drawer has a "Page kind" row directly below the Templates - Normal (chosen), Screenplay, Research - and no Convert row',
-  //   !!row && row.heading === 'Page kind' && row.afterTemplates && row.kinds.join(',') === 'Normal*,Screenplay,Research' && row.convert === 0, JSON.stringify(row));
+  // ARCHIVED PARK (#13 step 14): archive/item211.mjs.parked.md record 7
     ok('R2 [word-diet successor]: Draft\'s drawer has a "Pages Kind" row directly below the Templates - Normal (chosen), Screenplay, Research - and no Convert row',
       !!row && row.heading === 'Pages Kind' && row.afterTemplates && row.kinds.join(',') === 'Normal*,Screenplay,Research' && row.convert === 0, JSON.stringify(row));
     const rect = () => app.evalJs(`(() => { const r = document.querySelector('${ED}').getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map(Math.round).join(','); })()`);

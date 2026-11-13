@@ -91,8 +91,7 @@ ok('PICK: a size pick wraps the highlight and keeps it highlighted', !!p1 && p1.
 const p2 = has(df, 'applySizePick') ? call(df.applySizePick, base, 4, 5, 18) : null;
 ok('PICK: ONE character takes a size alone', !!p2 && p2.text === 'The [f]{.size-18}erry was late and the harbour was cold' && sel(p2) === 'f', J(p2));
 const p3 = p1 && has(df, 'applySizePick') ? call(df.applySizePick, p1.text, p1.text.indexOf(' was late'), p1.text.indexOf(' was late') + ' was late'.length, 14) : null;
-// PARKED VERBATIM (Fable, Oct 28: a pick must not size a space the writer never selected - the gap between two same-size words keeps two spans). Kept as written, no longer run:
-// ok('PICK: neighbours of one size MERGE into one span', !!p3 && p3.text === 'The [ferry was late]{.size-14} and the harbour was cold', J(p3));
+// ARCHIVED PARK (#13 step 14): archive/polish10-size-core.mjs.parked.md record 1
 const parkMerge = { was: !!p3 && p3.text === 'The [ferry was late]{.size-14} and the harbour was cold', text: p3 && p3.text };
 // its successor: touching neighbours merge; a whitespace gap keeps two spans
 ok('PICK (successor of "neighbours MERGE"): a whitespace gap keeps two spans - the space the writer never selected is not sized', !!p3 && p3.text === 'The [ferry]{.size-14} [was late]{.size-14} and the harbour was cold', J(p3));

@@ -378,10 +378,7 @@ await withHarness(async (app) => {
   await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.trim().startsWith('The Shelf')).click()");
   await sleep(400); // clear the 300ms debounced-flush window before reading localStorage
   const toastShelf = await app.evalJs("document.querySelector('.action-toast')?.textContent ?? null");
-  // SUPERSEDED (item word-diet, Fable, review fix) — never a number
-  // directly before "Pages"; "These Pages" names the selection without one.
-  // ok('Review fix (B2 S3): the "File to Shelf" toast is now HONEST for a journal-homed page — it says nothing moved, instead of falsely claiming it left the Journal',
-  //   toastShelf === "1 page stays in the Journal — a journal-homed page can't be shelved directly; nothing moved.", toastShelf);
+  // ARCHIVED PARK (#13 step 14): archive/j5.mjs.parked.md record 1
   ok('Review fix (B2 S3) [word-diet successor]: the "File to Shelf" toast is now HONEST for a journal-homed page — it says nothing moved, instead of falsely claiming it left the Journal',
     toastShelf === "These Pages stay in the Journal — a journal-homed page can't be shelved directly; nothing moved.", toastShelf);
   entries = await app.localJSON('writer-studio-journal-entries');
@@ -431,9 +428,7 @@ await withHarness(async (app) => {
   await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Standalone document here')).click()");
   await sleep(400); // clear the 300ms debounced-flush window before reading localStorage
   const toastStandalone = await app.evalJs("document.querySelector('.action-toast')?.textContent ?? null");
-  // SUPERSEDED (item word-diet, Fable, review fix) — never a number
-  // directly before "Pages"; "these Pages" replaces the count.
-  // ok('FILE-standalone toast says "Untitled" and uses MOVES language', toastStandalone === 'Filed 1 page to Untitled — moved; it left the Journal.', toastStandalone);
+  // ARCHIVED PARK (#13 step 14): archive/j5.mjs.parked.md record 2
   ok('FILE-standalone toast says "Untitled" and uses MOVES language [word-diet successor]', toastStandalone === 'Filed these Pages to Untitled — moved; it left the Journal.', toastStandalone);
   const projectsAfterStandalone = await app.localJSON('writer-studio-projects');
   const standaloneBinder = projectsAfterStandalone.find((p) => p.drawerId === newDrawer.id);
@@ -579,9 +574,7 @@ await withHarness(async (app) => {
   await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Setup')).click()");
   await sleep(400); // clear the 300ms debounced-flush window before reading localStorage
   const toastLink = await app.evalJs("document.querySelector('.action-toast')?.textContent ?? null");
-  // SUPERSEDED (item word-diet, Fable, review fix) — "these Pages" (capital
-  // P, not lowercased) replaces "the page(s)".
-  // ok('plan-link toast carries the exact LINKS language', toastLink === 'Linked — marked routed to "Setup"; the page stays in the Journal.', toastLink);
+  // ARCHIVED PARK (#13 step 14): archive/j5.mjs.parked.md record 3
   ok('plan-link toast carries the exact LINKS language [word-diet successor]', toastLink === 'Linked — marked routed to "Setup"; these Pages stay in the Journal.', toastLink);
   entries = await app.localJSON('writer-studio-journal-entries');
   const eAfter = entries.find((e) => e.id === E.id);
@@ -671,25 +664,7 @@ await withHarness(async (app) => {
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
 
-// === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
-// B1 (2026-07-19) is the first tenant of this scaffold. Quoted verbatim
-// below (the exact code that lived in this file's own live section before
-// this park):
-//
-//   "the routed crumb appears in the Journal list"
-//     await app.goto('/journal');
-//     await app.waitFor("!!document.querySelector('.journal-row')", ...);
-//     const routedCrumbShown = await app.evalJs(`[...document.
-//       querySelectorAll('.journal-row')].some(r => r.textContent.
-//       includes('routed'))`);
-//     ok('the "routed" crumb appears in the Journal list', routedCrumbShown === true);
-//
-// B1 S5 — pages/Journal.tsx (the list surface this read from) is deleted;
-// '/journal' redirects to the Journal Board instead, which has no
-// per-card "routed" crumb (card metadata fields are the committee's own
-// second sitting, out of scope here). The underlying data claim this crumb
-// stood on has its own live, unaffected successor in this file's own live
-// section (`beatId + routedProjectIds set; nothing moved`).
+// ARCHIVED PARK (#13 step 14): archive/j5.mjs.parked.md record 4
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });

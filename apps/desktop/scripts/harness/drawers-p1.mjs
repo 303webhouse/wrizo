@@ -177,13 +177,7 @@ function diffConfined(diffText) {
 const baseRef = sh('git merge-base origin/main HEAD')?.trim() || sh('git rev-parse origin/main')?.trim() || null;
 {
   const fo = baseRef ? sh(`git diff --stat ${baseRef} -- src/components/ForwardOnlyEditor.tsx`) : null;
-  // SUPERSEDED (typing-latency, 2026-10-15; Fable: "drawers-p1 D1a/D1c: intended - park verbatim with successors"). D1a pinned that
-  // Phase 1's drawers left the typing surface untouched, and they did (Phase 1 is merged). It then read ANY later branch that changes
-  // the typing surface as a breach: typing-latency rebuilds the free-edit surface as rows, a declared typing-path change that takes
-  // the full pair. Not falsified: expired - the same shape as (D1c) below. Quoted VERBATIM; successor directly below.
-  // ok('(D1a) H1: ForwardOnlyEditor.tsx (the typing surface) is byte-identical to main', fo !== null && fo.trim() === '', String(fo));
-  // (D1a) successor, post-merge: on main, nothing has touched ForwardOnlyEditor.tsx since the merge base (the base IS HEAD, so the diff
-  // is empty); on a branch the diff is REPORTED, not judged - a branch that changes the typing surface takes the full pair.
+  // ARCHIVED PARK (#13 step 14): archive/drawers-p1.mjs.parked.md record 1
   {
     const onMainA = sh('git rev-parse HEAD')?.trim() === baseRef;
     ok('(D1a) [post-merge successor]: on main, ForwardOnlyEditor.tsx (the typing surface) has no diff against the merge base; on a branch the diff is reported, not judged (typing-path branches take the full pair)',
@@ -226,14 +220,7 @@ const baseRef = sh('git merge-base origin/main HEAD')?.trim() || sh('git rev-par
     }
     return removed === S5_REMOVED.length && added > 0 && added <= 18;
   }
-  // SUPERSEDED (item word-diet, Fable, review fix) — baseRef is `git
-  // merge-base origin/main HEAD`, computed fresh each run; once word-diet
-  // merges, Phase 1's own hunks are already IN origin/main, so this diff
-  // shows only whatever landed AFTER it — today, word-diet's own two
-  // hunks (the footer line's REMOVE, and "Copy page text" -> "Copy text").
-  // Neither touches the typing path either; parked word for word.
-  // ok('(D1c) H1: PageEditor.tsx differs from main ONLY by the declared hunks - the drawer wiring, S4\'s one guard line, and S5\'s one replacement of the line-count seed with the per-page typewriter memory (seven removed lines: five in the mount effect and its import, two being the band\'s retired instrument props); no typing-path line is touched',
-  //   peDiff !== null && diffConfinedS5(peDiff), String(peDiff).slice(0, 300));
+  // ARCHIVED PARK (#13 step 14): archive/drawers-p1.mjs.parked.md record 2
   const WD_REMOVED = [
     /^\s*footer: entry\.projectId == null \? 'Saved automatically — even if you never file it to a Drawer or the Shelf\.' : undefined,\s*$/,
     /^\s*<button type="button" className="btn-quiet page-copy" onClick=\{\(\) => copyText\(textRef\.current\)\} title=\{`Copy the clean \$\{lex\('page'\)\.toLowerCase\(\)\} text`\}>Copy \{lex\('page'\)\.toLowerCase\(\)\} text<\/button>\s*$/,
@@ -256,15 +243,7 @@ const baseRef = sh('git merge-base origin/main HEAD')?.trim() || sh('git rev-par
     }
     return removed === WD_REMOVED.length && added === WD_ADDED.length;
   }
-  // ---- PARKED - EXPIRED BY THE MERGE it described (word-diet landed on main as 79a48182) ----
-  // This check was BRANCH-RELATIVE: it diffed PageEditor.tsx against `git merge-base origin/main HEAD` and demanded exactly word-diet's own six changed lines. It was green while word-diet was unmerged;
-  // once those lines are IN main the merge base is HEAD itself, the diff is empty, and "removed === 6" can never hold again - red on main with nobody having touched the file (neither board-click-to-create
-  // nor connector-a changes PageEditor.tsx). Not falsified: expired. Its claim survives, asserted on CONTENT.
-  // Quoted VERBATIM below. Successor: the two checks directly below (content, and an empty diff on main).
-  // ok('(D1c) [word-diet successor]: PageEditor.tsx differs from origin/main ONLY by word-diet\'s own two declared hunks (the saved-silently footer\'s REMOVE, and "Copy page text" -> "Copy text"); no typing-path line is touched',
-  //   peDiff !== null && diffConfinedWD(peDiff), String(peDiff).slice(0, 300));
-  // (D1c) successor, post-merge: assert the CONTENT word-diet left, and - on main - that nothing has touched the file since (the merge base IS HEAD, so the diff is empty). On a branch the diff is whatever
-  // that branch declares; typing-path branches take the full pair, so the diff is reported, not judged, there.
+  // ARCHIVED PARK (#13 step 14): archive/drawers-p1.mjs.parked.md record 3
   {
     const pe = read('pages/PageEditor.tsx');
     const content = {
@@ -294,43 +273,7 @@ const baseRef = sh('git merge-base origin/main HEAD')?.trim() || sh('git rev-par
   // (D2b) successor: the block is unchanged from main EXCEPT for the one declared gate. Strip exactly that gate, then compare; the gate must be there.
   const GATE = " && allowed('pageKind')";
   const gated = !!now && now.split(GATE).length === 2;
-  // SUPERSEDED (item word-diet, Fable, review fix) — baseRef is `git
-  // merge-base origin/main HEAD`, computed fresh each run; S2's own gate
-  // is already IN origin/main now (phase1-drawers merged), so `was` (main)
-  // ALREADY carries it too — stripping it ONLY from `now` compares a
-  // gate-less `now` against a gated `was`, an artificial mismatch the gate
-  // itself didn't cause. Word-diet made no change inside this slice at
-  // all; parked word for word.
-  // ok('(D2b) H3: the Templates block in Sliver.tsx is unchanged from main (whitespace aside) save the ONE declared table gate allowed(\'pageKind\'); with that gate removed it is identical',
-  //   gated && now.replace(GATE, '') === was, `${now ? now.length : 0} (gate ${gated}) vs ${was ? was.length : 0}`);
-  // SUPERSEDED (help-buttons, Nick approved Oct 12): word-diet's own claim
-  // ("changed nothing inside this slice") stops being true the moment
-  // ANY later ticket touches the slice for a real reason - this one adds
-  // three HelpButton calls (the Templates heading's own "?", and one each
-  // for Outline/Title Page). Kept verbatim, no longer run:
-  //   ok('(D2b) [word-diet successor]: the Templates block in Sliver.tsx is BYTE-IDENTICAL to origin/main (whitespace aside) — S2\'s own gate is already in both, and word-diet changed nothing inside this slice',
-  //     gated && now === was, `${now ? now.length : 0} (gate ${gated}) vs ${was ? was.length : 0}`);
-  // SUPERSEDED (help-buttons' own D2c, byte-identical-save-three-gates):
-  // PAGE TEMPLATES R2 (the approved templates mockup cursor/templates @
-  // 0fc9afef, Fable Oct 16) rebuilds this block on purpose - the icon
-  // buttons and the four grayed stand-ins become a five-row picker - so
-  // "byte-identical save help-buttons' own three insertions" stopped being
-  // true for a reason that has nothing to do with help-buttons. Kept
-  // verbatim, no longer run:
-  //   const HELP_GATES = [
-  //     ' <HelpButton helpKey="helpTemplates" subjectLabel={t(\'railTemplates\')} />',
-  //     ' <HelpButton helpKey="helpOutline" subjectLabel={t(\'templateOutline\')} />',
-  //     ' <HelpButton helpKey="helpTitlePage" subjectLabel={t(\'templateTitlePage\')} />',
-  //   ];
-  //   const helpGated = HELP_GATES.every((g) => !!now && now.split(g).length === 2);
-  //   const nowStripped = HELP_GATES.reduce((t, g) => t.replace(g, ''), now ?? '');
-  //   ok('(D2c) [help-buttons successor]: the Templates block in Sliver.tsx is BYTE-IDENTICAL to origin/main (whitespace aside, pageKind gate already in both) save help-buttons\' own three named insertions; nothing else inside this slice moved',
-  //     gated && helpGated && nowStripped === was, `${now ? now.length : 0} (gate ${gated}, help ${helpGated}) vs ${was ? was.length : 0}`);
-  // Successor (D2d... renumbered below to avoid colliding with the pointer-
-  // events D2d that already exists past this block): page-templates-r2's own
-  // structural claim, PLUS help-buttons' own per-row "?" placement merged in
-  // on top of it - the two tickets touched the exact same slice for two
-  // unrelated reasons, so one check now carries both.
+  // ARCHIVED PARK (#13 step 14): archive/drawers-p1.mjs.parked.md record 4
   ok('(D2e) [page-templates-r2 + help-buttons, merged successors]: the Templates block in Sliver.tsx is the five-row picker - it still opens with the section div and the railTemplates heading (carrying its own "?"), maps content.templates into rows keyed by data-template, carries no grayed stand-in (no aria-disabled, no wz-template-btn), keeps the one declared table gate, and places a HelpButton only beside a theme-unique row name (THEME_UNIQUE_TEMPLATES/TEMPLATE_HELP_KEYS)',
     gated && !!now
       && now.includes("t('railTemplates')") && now.includes('<HelpButton helpKey="helpTemplates"')
@@ -415,8 +358,7 @@ function partG(tabs = tabsSrc, c = css) {
     f.right === 'ink' && f.wrapR === 'text' && f.left === 'text' && f.wrapL === 'ink' && f.home === 'text' && f.end === 'ink' && f.other === null && f.none === null, JSON.stringify(f));
   const g = partG();
   ok('(F2) the row is a real tablist: tab roles, aria-selected, and a roving tabindex (only the chosen tab is in the Tab order)', g.roles, JSON.stringify(g));
-  // SUPERSEDED (tutor-drawer-mirror round 2) — quoted verbatim:
-  // ok('(F3) the chosen tab is a BRASS OUTLINE and nothing else (no fill, no color-mix) - and the drawer\'s own arrow tab stays olive (Nick: the open tab is not a choice)', g.brassOutline && g.arrowStaysOlive, JSON.stringify(g));
+  // ARCHIVED PARK (#13 step 14): archive/drawers-p1.mjs.parked.md record 5
   ok('(F3) [tutor-drawer-mirror round 2 successor] the chosen tab is an OLIVE OUTLINE and nothing else (no fill, no color-mix) - the same "where you are" signal the drawer\'s own arrow tab already carries, not a one-off action (brass)',
     g.chosenOutline && g.arrowStaysOlive, JSON.stringify(g));
 }
@@ -496,11 +438,7 @@ function partJ(act = actionsSrc, pa = pageActionsSrc, sliver = sliverSrc, c = cs
       && i.turnOff.headers.on === false && i.turnOff.footers.on === false && i.turnOff.headers.text === 'H', JSON.stringify(i));
   const j = partJ();
   ok('(I2) the four actions are Tags, Copy, Delete, Header/Footer - in that order', JSON.stringify(j.order) === JSON.stringify(['tags', 'copy', 'delete', 'header-footer']), JSON.stringify(j.order));
-  // ---- PARKED - SUPERSEDED by board-context-menu (Fable ruling, Oct 16: "one pop-up for every delete") ----
-  // The Page's own in-page confirm ("Send this page to Trash?" with Send to Trash / Keep, focus on Keep) is RETIRED: Delete asks through the ONE standard dialog (Cancel / Delete / "Don't ask me again"), the same as a card, a board and a Drawers row. Esc still cancels the Tags editor (the check below).
-  // Quoted VERBATIM below. Successor: the check directly below; scripts/harness/board-context-menu.mjs S1/S3 (the gate) and box-tombstones.mjs T12 (the delete itself is still soft).
-  // ok('(I3) DELETE ASKS FIRST, in the page: the Delete button only opens the confirm; the one place that runs onDelete is the "Send to Trash" button; Esc and Keep cancel; focus lands on Keep',
-  //   j.asksFirst && j.escCancels && j.focusKeep && j.confirmWords, JSON.stringify(j));
+  // ARCHIVED PARK (#13 step 14): archive/drawers-p1.mjs.parked.md record 6
   ok('(I3) [one-dialog successor]: DELETE ASKS FIRST, through the ONE standard dialog: the Delete icon calls requestDelete(...), the module\'s one onDelete call sits inside it, and no in-page confirm survives (Esc still cancels the Tags editor)',
     j.asksViaGate && j.escCancels, JSON.stringify(j));
   ok('(I4) DELETE IS SOFT: softDeleteEntry (to the Trash) then flush, then the writer goes to their resume target or the front door - and no hard-delete call exists in the module', j.softOnly, JSON.stringify(j));
@@ -565,39 +503,14 @@ function partM(tutor = tutorSrc, tabs = tabsSrc, note = noteSrc, c = css) {
 }
 {
   const k = partK();
-  // SUPERSEDED IN PART (help-buttons, Nick approved Oct 12): K1's own
-  // `inUnion` read the union string drawerLinksNote/-NoteLabel were still
-  // part of; both retired (below). Kept verbatim, no longer run:
-  //   ok('(K1) the right drawer\'s second tab word is the THEME\'S, from the lexicon: Grafts in Arbor (the canonical theme), Links in Flux',
-  //     k.arborWord === 'Grafts' && k.fluxWord === 'Links' && k.inUnion, JSON.stringify(k));
-  // Successor: the SAME core claim (the word itself), against the union's
-  // own current, accurate shape.
+  // ARCHIVED PARK (#13 step 14): archive/drawers-p1.mjs.parked.md record 7
   const inUnionNow = /'tutorTabTutor' \| 'drawerLinks' \| 'drawerLinksEmpty' \| 'drawerRightTabsLabel'/.test(lexSrc);
-  // ---- PARKED - SUPERSEDED by FLUX V2 (Fable's brief, Nick Oct 21): the right drawer's second tab is INPUTS in Flux (the knob is an Input; the verb is connect).
-  // Kept VERBATIM below and no longer run; the live successor follows.
-  //
-  // ok('(K1 [help-buttons successor]) the right drawer\'s second tab word is the THEME\'S, from the lexicon: Grafts in Arbor (the canonical theme), Links in Flux',
-  //   k.arborWord === 'Grafts' && k.fluxWord === 'Links' && inUnionNow, JSON.stringify({ ...k, inUnionNow }));
-  // ---- PARKED - SUPERSEDED by #13 step 11 (Fable, Nov 5): drawerLinksEmpty (an empty-pane line nothing renders) is deleted from the lexicon,
-  // so the union line no longer carries it. Kept VERBATIM below and no longer run; the live successor follows.
-  //
-  // ok('(K1 [flux-v2 successor]) the right drawer\'s second tab word is the THEME\'S, from the lexicon: Grafts in Arbor (the canonical theme), Inputs in Flux',
-  //   k.arborWord === 'Grafts' && k.fluxWord === 'Inputs' && inUnionNow, JSON.stringify({ ...k, inUnionNow }));
-  // the union line as it stands before step 11's delete, or after it (drawerLinksEmpty gone): either is the same tab-word claim
+  // ARCHIVED PARK (#13 step 14): archive/drawers-p1.mjs.parked.md record 8
   const inUnion11 = inUnionNow || /'tutorTabTutor' \| 'drawerLinks' \| 'drawerRightTabsLabel'/.test(lexSrc);
   ok('(K1 [step 11 successor]) the right drawer\'s second tab word is the THEME\'S, from the lexicon: Grafts in Arbor (the canonical theme), Inputs in Flux',
     k.arborWord === 'Grafts' && k.fluxWord === 'Inputs' && inUnion11, JSON.stringify({ ...k, inUnionNow, inUnion11 }));
 
-  // SUPERSEDED WHOLE (help-buttons): drawerLinksNote/-NoteLabel are DELETED
-  // (not emptied) - the Arbor-only/Flux-empty explainer model this check
-  // proved is gone, replaced below by helpGrafts (BOTH themes carry text
-  // now, through the shared HelpButton, not a per-instance DrawerNote).
-  // Kept verbatim, no longer run:
-  //   ok('(K2) the "?" note: Nick\'s draft copy for Arbor, in one place; Flux has NO explainer (an empty term, so no "?") and no label',
-  //     k.arborNote === NICK_NOTE && k.fluxNote === '' && !!k.arborNoteLabel && k.fluxNoteLabel === '', JSON.stringify(k));
-  // The KEY pattern (name immediately followed by a colon), not a bare word
-  // match — this file's own comments explain the retirement by naming the
-  // old keys in prose, which a bare \bdrawerLinksNote\b would also catch.
+  // ARCHIVED PARK (#13 step 14): archive/drawers-p1.mjs.parked.md record 9
   const noteKeysGone = !/\bdrawerLinksNote:/.test(lexSrc) && !/\bdrawerLinksNoteLabel:/.test(lexSrc);
   const helpGraftsArbor = (new RegExp("helpGrafts:\\s*'([^']*)'").exec(lexSrc.slice(0, lexSrc.indexOf("const OVERRIDES"))) || [])[1] ?? null;
   const helpGraftsFlux = (new RegExp("helpGrafts:\\s*'([^']*)'").exec(lexSrc.slice(lexSrc.indexOf("const OVERRIDES"))) || [])[1] ?? null;
@@ -605,14 +518,7 @@ function partM(tutor = tutorSrc, tabs = tabsSrc, note = noteSrc, c = css) {
     noteKeysGone && !!helpGraftsArbor && !!helpGraftsFlux && helpGraftsArbor !== helpGraftsFlux,
     JSON.stringify({ noteKeysGone, helpGraftsArbor, helpGraftsFlux }));
 
-  // ---- PARKED - SUPERSEDED by FLUX V2 (Fable's brief, Nick Oct 21): the empty pane reads "Nothing connected yet." in Flux.
-  // Kept VERBATIM below and no longer run; the live successor follows.
-  //
-  // ok('(K3) the empty pane\'s line follows the theme too (grafted / linked)', k.arborEmpty === 'Nothing grafted yet.' && k.fluxEmpty === 'Nothing linked yet.', JSON.stringify(k));
-  // ---- PARKED - SUPERSEDED by #13 step 11 (Fable, Nov 5): drawerLinksEmpty is named by no source (the pane does not render it) and step 11
-  // deletes it. Kept VERBATIM below and no longer run; the live successor follows.
-  //
-  // ok('(K3 [flux-v2 successor]) the empty pane\'s line follows the theme too (grafted / connected)', k.arborEmpty === 'Nothing grafted yet.' && k.fluxEmpty === 'Nothing connected yet.', JSON.stringify(k));
+  // ARCHIVED PARK (#13 step 14): archive/drawers-p1.mjs.parked.md record 10
   ok('(K3 [step 11 successor]) the empty pane\'s line follows the theme too (grafted / connected) while the term exists; once step 11 deletes it, it is gone from both themes at once (never one theme\'s word left alone)',
     (k.arborEmpty === 'Nothing grafted yet.' && k.fluxEmpty === 'Nothing connected yet.') || (k.arborEmpty === null && k.fluxEmpty === null), JSON.stringify(k));
   const l = await partL();
@@ -620,11 +526,7 @@ function partM(tutor = tutorSrc, tabs = tabsSrc, note = noteSrc, c = css) {
   const m = partM();
   ok('(K5) the Tutor opens on the TUTOR tab; its body renders ONLY there and the empty links pane only on the other; the tab words are lexicon terms', m.defaultTutor && m.bodyOnTutorTab && m.tabWords, JSON.stringify(m));
 
-  // SUPERSEDED (help-buttons): the conditional-on-`linksNote` shape is gone -
-  // the "?" now renders unconditionally (helpGrafts always has words in both
-  // themes, so the old "an empty term gives none" gate is dead code this
-  // ticket removes along with it). Kept verbatim, no longer run:
-  //   ok('(K6) the "?" exists ONLY where the theme\'s term has words (an empty term gives none)', m.noteOnlyWhenWords, JSON.stringify(m));
+  // ARCHIVED PARK (#13 step 14): archive/drawers-p1.mjs.parked.md record 11
   const notesAlwaysRender = /notes: \{ links: <HelpButton helpKey="helpGrafts" subjectLabel=\{t\('drawerLinks'\)\} \/> \}/.test(tutorSrc);
   ok('(K6 [help-buttons successor]) the "?" renders unconditionally now - helpGrafts always has words in both themes, so there is no longer a theme that gets none',
     notesAlwaysRender, String(notesAlwaysRender));
@@ -632,15 +534,7 @@ function partM(tutor = tutorSrc, tabs = tabsSrc, note = noteSrc, c = css) {
   ok('(K7) the note is PRESSABLE, not a hover tooltip: a real button with aria-expanded/aria-controls and a role=note panel, no hover handlers; Escape, a press outside, or focus leaving closes it',
     m.pressable && m.escCloses && m.outsideCloses && m.blurCloses, JSON.stringify(m));
 
-  // SUPERSEDED (help-buttons): K8's own "brass outline" claim described
-  // DrawerNote's CSS, which this one call site no longer uses at all (it
-  // still reads true, since DrawerNote's OWN css is untouched for its other
-  // callers - but it is no longer describing the Grafts/Links tab, so it is
-  // a green check about the wrong thing now). Kept verbatim, no longer run:
-  //   ok('(K8) it displaces nothing and is not part of the tab: the notes overlay sits OUTSIDE the tablist, ignores the pointer except on the "?", and the open note is an absolutely positioned overlay; open is a brass outline, no fill',
-  //     m.outsideTablist && m.overlayInert && m.popOverlay && m.noteOpenOutline, JSON.stringify(m));
-  // Successor: the SAME shape of claim, read from the NEW mechanism's own
-  // files - HelpButton.tsx/HelpPop.tsx/their CSS, not DrawerNote's.
+  // ARCHIVED PARK (#13 step 14): archive/drawers-p1.mjs.parked.md record 12
   const helpBtnSrc = read('components/HelpButton.tsx');
   const helpPopSrc = read('components/HelpPop.tsx');
   const wzHelpOpen = ruleBody(css, ".wz-help[aria-expanded='true']{");

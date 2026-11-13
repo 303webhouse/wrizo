@@ -203,15 +203,7 @@ await withHarness(async (app) => {
           const last = s[s.length - 1];
           const gripRight = last.grip[0] + last.grip[2];
           const gap = Math.round((last.panelLeft - gripRight) * 100) / 100;
-          // ---- PARKED - SUPERSEDED by the DRAWER MIRROR (Nick, via Fable, Oct 24: "a tab's rect is unchanged by open/close, only the arrow flips";
-          // the Tutor | Grafts drawer is anchored to the page's right edge, the mirror of the Tools drawer). The tab no longer moves: the PANEL now
-          // starts at the tab ([page][tab][panel]), so the tab can never sit inside the panel's tab row - the bug the arrow move cured (ledger 57) is
-          // cured by the panel's place instead. Kept VERBATIM and no longer run; the successor restores the LEFT hand's claim for the right hand,
-          // plus the panel against its tab; record per theme (pok).
-          //
-          // ok(`L2 ${T} (${hand}) [tutor-drawer-arrow successor]: the tab's rect MOVES while the drawer opens, settling ${GRIP_GUTTER_PX}px outside the open panel's own left edge (never inside its tab row)`,
-          //   Math.abs(gap - GRIP_GUTTER_PX) < 1.5, JSON.stringify({ gripRight, panelLeft: last.panelLeft, gap }));
-          // ------------------------------------------------------------------
+          // ARCHIVED PARK (#13 step 14): archive/drawers-p1-live.mjs.parked.md record 1
           const still = s.every((x) => same(x.grip, s[0].grip));
           pok(`PARKED (was "L2 ${T} (${hand}) [tutor-drawer-arrow successor]: the tab's rect MOVES while the drawer opens, settling 16px outside the open panel's own left edge (never inside its tab row)") - SUPERSEDED by the drawer mirror (Oct 24): the tab never moves; the panel starts at it; live successor: L2 ${T} (${hand}) [drawer-mirror successor]`,
             still && Math.abs(gap) < 1.5, JSON.stringify({ gripRight, panelLeft: last.panelLeft, gap, still }));
@@ -308,11 +300,7 @@ await withHarness(async (app) => {
         footerToggle: [...document.querySelectorAll('.wz-sliver-body .wz-sliver-board-footer')].map(x => ({ pressed: x.getAttribute('aria-pressed'), label: x.textContent.trim() })),
         otherSections: document.querySelectorAll('.wz-sliver-type, .wz-sliver-actions, .wz-sliver-templates, .wz-sliver-fieldset').length,
         tabs: document.querySelectorAll('.wz-sliver-panel [role="tab"]').length }))()`);
-      // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
-      // "Show grafts" is RETIRED: the board's tools arm is the FOUR door buttons and no footer toggle.
-      // Quoted VERBATIM below. Successor: the check directly below.
-      // ok(`L5 ${T} BOARD (page-level): the tools arm keeps its list, now on the shared shell - FOUR door buttons (Add card, New page card, Existing page, From a deck) and the footer toggle, with no Typeface/Format/Actions/Templates and no tab row`,
-      //   b.items.length === 4 && b.items.every((x) => x.length > 0) && b.footerToggle.length === 1 && b.otherSections === 0 && b.tabs === 0, JSON.stringify(b));
+      // ARCHIVED PARK (#13 step 14): archive/drawers-p1-live.mjs.parked.md record 2
       ok(`L5 ${T} BOARD (page-level) [connector-a successor]: the tools arm keeps its list on the shared shell - FOUR door buttons (Add card, New Page, + Filed Pages, From a deck) and NO footer toggle (retired), with no Typeface/Format/Actions/Templates and no tab row`,
         b.items.length === 4 && b.items.every((x) => x.length > 0) && b.footerToggle.length === 0 && b.otherSections === 0 && b.tabs === 0, JSON.stringify(b));
     });
@@ -329,14 +317,7 @@ await withHarness(async (app) => {
         return { textTab: cs(t('text')) && { color: cs(t('text')).color, border: cs(t('text')).borderTopColor, bg: cs(t('text')).backgroundColor, on: t('text').getAttribute('data-on') },
                  inkTab: cs(t('ink')) && { color: cs(t('ink')).color, border: cs(t('ink')).borderTopColor, on: t('ink').getAttribute('data-on') },
                  gripColor: cs(grip).color, gripBorder: cs(grip).borderTopColor }; })()`);
-      // SUPERSEDED (item tutor-drawer-mirror round 2, Nick's live bug
-      // report, confirmed by tutor-drawer-probe.mjs: the open TUTOR tab
-      // measured brass rgb(255,152,0); "make it olive now") — the chosen
-      // DrawerTabs.tsx tab (shared by both the left Sliver's TEXT|INK row
-      // and the right Tutor's TUTOR|links row — ONE component) no longer
-      // wears brass at all; quoted verbatim:
-      // ok(`L6 ${T}: the CHOSEN tab (TEXT) computes to brass and takes no fill; the unchosen one (INK) does not`,
-      //   c.textTab && (c.textTab.border === brass || c.textTab.color === brass) && c.textTab.bg === 'rgba(0, 0, 0, 0)' && c.inkTab && c.inkTab.border !== brass && c.inkTab.color !== brass, JSON.stringify({ brass, c }));
+      // ARCHIVED PARK (#13 step 14): archive/drawers-p1-live.mjs.parked.md record 3
       ok(`L6 ${T} [tutor-drawer-mirror round 2 successor]: the CHOSEN tab (TEXT) computes to olive (--accent-rest) and takes no fill - the same "where you are" signal the drawer's own grip already carries; the unchosen one (INK) does not`,
         c.textTab && (c.textTab.border === accentRest || c.textTab.color === accentRest) && c.textTab.bg === 'rgba(0, 0, 0, 0)' && c.inkTab && c.inkTab.border !== accentRest && c.inkTab.color !== accentRest, JSON.stringify({ accentRest, c }));
       ok(`L6 ${T}: an OPEN drawer's tab wears the theme's where-you-are colour (olive in Arbor, mid text in Flux), never brass`, c.gripColor === olive && c.gripBorder === olive && c.gripColor !== brass, JSON.stringify({ olive, brass, grip: [c.gripColor, c.gripBorder] }));
@@ -359,23 +340,7 @@ await withHarness(async (app) => {
     // });
 
 
-    // ---- PARKED - SUPERSEDED by page-size (Fable's ruling, Oct 23): the Oct 12 "one drawer at a time, at every width" rule is REPLACED by the MEASURED rule - both
-    // drawers stand where the band holds the page AND both at their 200px minimum; otherwise opening one closes the other (Nick's Oct 7 rule, his original ask in
-    // menusDrawers.ts's header); the page never moves. The block below is the Oct 12 successor, kept VERBATIM and no longer run. Its measured successor follows.
-    //
-    // for (const w of [1100, 1280, 1400]) {
-    //   await guard(`L7 ${T} @${w}`, async () => {
-    //     if (!(await open(app, th, 'draft', w, 800))) { ok(`L7 ${T} fixture: draft opened at ${w}`, false); return; }
-    //     await ensureLeft(app, true);
-    //     await toggleRight(app); await sleep(900);
-    //     const a = { left: await leftOpen(app), right: await rightOpen(app) };
-    //     ok(`L7 ${T} @${w}: opening the RIGHT drawer while the left is open CLOSES the left - one drawer at a time`, a.right === true && a.left === false, JSON.stringify(a));
-    //     await toggleLeft(app); await sleep(900);
-    //     const b = { left: await leftOpen(app), right: await rightOpen(app) };
-    //     ok(`L7 ${T} @${w}: and opening the LEFT drawer while the right is open closes the right (the rule is symmetric)`, b.left === true && b.right === false, JSON.stringify(b));
-    //   });
-    // }
-    // ----------------------------------------------------------------------
+    // ARCHIVED PARK (#13 step 14): archive/drawers-p1-live.mjs.parked.md record 4
     pok(`PARKED (was "L7 ${T} @1100/1280/1400: opening the RIGHT drawer while the left is open CLOSES the left - one drawer at a time") - SUPERSEDED by page-size (Fable, Oct 23): the measured rule replaces Oct 12's`,
       true, 'successor: L7 [measured] - both stand where the band holds the page and both at DRAWER_MIN, else the later one closes the other');
     pok(`PARKED (was "L7 ${T} @1100/1280/1400: and opening the LEFT drawer while the right is open closes the right (the rule is symmetric)") - SUPERSEDED by page-size (Fable, Oct 23)`,
@@ -433,16 +398,7 @@ await withHarness(async (app) => {
       await modeTab(app, 'draft');
       const t0 = await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]')?.getAttribute('aria-pressed') ?? null`);
       ok(`L9 ${T}: the Typewriter toggle exists on Draft and reports aria-pressed`, t0 === 'true' || t0 === 'false', String(t0));
-      // PARKED - SUPERSEDED (Oct 12): this driver pressed Enter through app.key(), which sends rawKeyDown + keyUp only - no char event, so no keypress, so NO plain button is ever activated by it.
-      // Chat 1's run read the toggle as "did not flip"; the check was not testing a keyboard. The original is kept verbatim below; the successor sends a TRUSTED keyDown carrying the
-      // character, and proves the instrument on a CONTROL (the plain "..." button, which has no handler of ours) before it accuses the product.
-      //
-      // if (t0 != null) {
-      //   await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]').focus()`);
-      //   await app.key('Enter'); await sleep(400);
-      //   const t1 = await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]')?.getAttribute('aria-pressed') ?? null`);
-      //   ok(`L9 ${T}: Enter on the focused Typewriter toggle flips it (keyboard-operable)`, t1 != null && t1 !== t0, JSON.stringify({ t0, t1 }));
-      // }
+      // ARCHIVED PARK (#13 step 14): archive/drawers-p1-live.mjs.parked.md record 5
 
       if (t0 != null) {
         await ensureLeft(app, true);
@@ -461,16 +417,7 @@ await withHarness(async (app) => {
         await pressEnter(app); await sleep(400);
         const t2 = await app.evalJs(`document.querySelector('${sel}')?.getAttribute('aria-pressed') ?? null`);
         ok(`L9 ${T}: Enter on the focused Typewriter toggle FLIPS it, like any button`, t1 != null && t2 != null && t2 !== t1, JSON.stringify({ t1, t2 }));
-        // ---- PARKED - SUPERSEDED by page-size (Nick + Fable, Oct 23: the zoom's "panels tucked"): when Enter turns the Typewriter ON, the page enters the
-        // zoom, which TUCKS both drawers - the Sliver holding this toggle closes - and hands a stranded focus to the editor. The press below then
-        // focuses a hidden control and Space goes to the page (lane 3, Flux, whose default is off: t2 true, t3 true). Arbor passed only because its
-        // default is ON, so its Enter turned the zoom OFF. Kept VERBATIM and no longer run; successor follows; one record per theme in the parked section.
-        //
-        // await app.evalJs(`document.querySelector('${sel}')?.focus()`);
-        // await pressSpace(app); await sleep(400);
-        // const t3 = await app.evalJs(`document.querySelector('${sel}')?.getAttribute('aria-pressed') ?? null`);
-        // ok(`L9 ${T}: and Space flips it back`, t3 != null && t3 !== t2, JSON.stringify({ t2, t3 }));
-        // ------------------------------------------------------------------
+        // ARCHIVED PARK (#13 step 14): archive/drawers-p1-live.mjs.parked.md record 6
         let tuck = null;
         if (t2 === 'true') {
           // the zoom is ON now: the drawer is tucked and the focus is on the page, not stranded on the hidden toggle
@@ -486,27 +433,7 @@ await withHarness(async (app) => {
           t3 != null && t3 !== t2 && (t2 !== 'true' || (!!tuck && tuck.zoom === 'true' && tuck.left !== 'true')), JSON.stringify({ t2, t3, tuck }));
         ok(`L9 ${T}: and Space flips it back [page-size successor] (the drawer re-opened by the writer if the zoom tucked it)`, t3 != null && t3 !== t2, JSON.stringify({ t2, t3, tuck }));
       }
-      // SUPERSEDED WHOLE (help-buttons, Nick approved Oct 12): the Grafts/
-      // Links tab's own "?" moved off DrawerNote (.wz-drawer-note-btn) onto
-      // the new shared HelpButton (.wz-help, store/help.ts) - AND the
-      // Arbor-only/Flux-empty ruling this Flux branch asserted is ITSELF
-      // retired: helpGrafts now carries a real sentence in BOTH themes, so
-      // Flux gets a "?" too. Kept verbatim, no longer run:
-      //   const hasNote = await app.evalJs("!!document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')");
-      //   if (th.id === 'arbor') {
-      //     await ensureRight(app, true);
-      //     const n0 = await app.evalJs(`document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')?.getAttribute('aria-expanded') ?? null`);
-      //     await app.evalJs("document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')?.click()"); await sleep(300);
-      //     const n1 = await app.evalJs(`({ expanded: document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')?.getAttribute('aria-expanded'), role: document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-pop')?.getAttribute('role') ?? null })`);
-      //     await app.evalJs("document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')?.focus()"); await app.key('Escape'); await sleep(300);
-      //     const n2 = await app.evalJs("document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')?.getAttribute('aria-expanded') ?? null");
-      //     ok(`L9 ${T}: the Arbor "?" note is a button that reports aria-expanded, opens a role=note panel on press, and closes on Escape`, n0 === 'false' && n1.expanded === 'true' && n1.role === 'note' && n2 === 'false', JSON.stringify({ n0, n1, n2 }));
-      //   } else {
-      //     ok(`L9 ${T} [word-diet successor]: Flux's own tab row has NO "?" note (its word explains itself - by ruling)`, hasNote === false, String(hasNote));
-      //   }
-      // Successor: BOTH themes now carry the same claim - a "?" that reports
-      // aria-expanded, opens the SHARED fixed overlay (role=note), and closes
-      // on Escape, returning focus to the "?" itself.
+      // ARCHIVED PARK (#13 step 14): archive/drawers-p1-live.mjs.parked.md record 7
       await ensureRight(app, true);
       const hn0 = await app.evalJs(`document.querySelector('.wz-drawer-tabnotes .wz-help')?.getAttribute('aria-expanded') ?? null`);
       await realClick(app, '.wz-drawer-tabnotes .wz-help'); await sleep(300);

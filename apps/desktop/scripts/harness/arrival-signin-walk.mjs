@@ -76,11 +76,7 @@ await withHarness(async (app) => {
   await app.click('Sign out');
   await app.waitFor(`!!document.querySelector('.wz-logout-sheet')`, { label: 'blocked sheet shown' });
   const body = await app.evalJs(`document.querySelector('.wz-logout-sheet-body')?.textContent || ''`);
-  // SUPERSEDED (item word-diet, Nick) — logoutBlockedBody/BodyOne drop
-  // "to your account" ("changes haven't saved yet", not "...to your
-  // account yet").
-  // ok('(W1) the sheet says changes have not saved, in the approved words',
-  //   /haven.t saved to your account yet|hasn.t saved to your account yet/.test(body), body);
+  // ARCHIVED PARK (#13 step 14): archive/arrival-signin-walk.mjs.parked.md record 1
   ok('(W1) [word-diet successor] the sheet says changes have not saved, in the approved words',
     /haven.t saved yet|hasn.t saved yet/.test(body), body);
   const me = await app.evalJs(`fetch('/auth/me', { credentials: 'include' }).then((r) => r.ok)`);
