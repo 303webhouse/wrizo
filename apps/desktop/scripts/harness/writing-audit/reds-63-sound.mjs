@@ -81,6 +81,10 @@ await withHarness(async (app) => {
   try {
     await open(lines(14));
     const op = await openSettings(); if (op !== 'ok') f4.push(op);
+    // #94: the On and Off buttons sit together (Cast's Cool and Neutral sit 8 px apart): the gap between them is read here
+    const gap = await ev(`(() => { const r = document.querySelector('.wz-cascade-turnsound'); if (!r) return null; const b = [...r.querySelectorAll('button')].map((x) => x.getBoundingClientRect()); if (b.length !== 2) return null; return Math.round((b[1].left - b[0].right) * 10) / 10; })()`);
+    console.log(`NOTE ${TAG} the gap between On and Off is ${gap} px`);
+    if (gap === null) f4.push('no On / Off pair to measure'); else if (gap > 12) f4.push(`the On and Off buttons sit ${gap} px apart, want about 8 (Cast's pair)`);
     const other = DEFAULT_ON ? 'Off' : 'On';
     const res = await press(other);
     if (res !== 'ok') f4.push(res);
