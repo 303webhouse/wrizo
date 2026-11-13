@@ -9,7 +9,7 @@ import { revealCaret } from './caretInView';
 //         when a run starts, and kept until any other key, a click, or the editor losing focus ends the run. And DOWN FROM AN EMPTY ROW: the browser cannot leave an empty inline-block row downward (the caret stays in it), so Down from an empty row
 //         puts the caret on the first line of the row below, at the column of the run.
 // Shift+Up and Shift+Down extend the selection the same way. Everything else (inside a row, a one-line neighbour, a selection collapsing, composing) is left to the browser; a caret that cannot be placed here is never an error into the writer's key.
-const live = new WeakMap<HTMLElement, { x: number; owned: boolean }>();   // the column of the run of vertical keys in progress, per editor; owned = this file has already moved the caret in the run
+const live = new WeakMap<HTMLElement, { x: number; owned: boolean; reset: boolean }>();   // the column of the run of vertical keys in progress, per editor; owned = this file has already moved the caret in the run
 
 /** A click, a lost focus or any key that is not Up or Down ends the run: the next vertical key reads the column afresh. */
 export function clearVerticalGoal(el: HTMLElement): void { live.delete(el); }
@@ -103,10 +103,21 @@ export function rowsVerticalKey(el: HTMLElement, e: KeyboardEvent): boolean {
     const box = caretBox(w);
     // the run's column: read once, when the run starts, from where the caret is drawn
     let g = live.get(el);
-    if (!g) { if (!box) return false; g = { x: box.left, owned: false }; live.set(el, g); }
+    if (!g) { if (!box) return false; g = { x: box.left, owned: false, reset: false }; live.set(el, g); }
     const own = lineRects(w.row);
     const empty = own.length === 0;   // an empty row draws no text: nothing in it has a rectangle
     let target: { node: Node; offset: number } | null = null;
+    // THE PAGE'S EDGE: Up on the first line of the first row, or Down on the last line of the last row, is the browser's (it moves the caret to the start or the end of the page) and ends the column: the key after it starts from where the caret then stands
+    // (the browsers differ on whether the column survives that move; the Flux page kept it, so Down after Up-at-the-top went to the old column of the second line, not to its start)
+    let atEdge = false;
+    if (empty) atEdge = e.key === 'ArrowUp' ? w.at === 0 : w.at === R.rows.length - 1;
+    else if (box) {
+      const lh = Math.min(...own.map((q) => q.height));
+      if (e.key === 'ArrowUp') atEdge = w.at === 0 && box.top <= Math.min(...own.map((q) => q.top)) + lh * 0.6;
+      else atEdge = w.at === R.rows.length - 1 && box.top >= Math.max(...own.map((q) => q.top)) - lh * 0.6;
+    }
+    if (atEdge) { g.reset = true; return false; }
+    if (g.reset) { g.reset = false; if (box) { g.x = box.left; g.owned = true; } }
     if (g.owned) {
       // THE RUN IS OURS from the first step this file took in it: the browser's own goal column is now the caret's drawn column (a glyph's width from the writer's), so every further Up and Down of the run goes line by line at the run's column,
       // through the row's own lines and into the next row (its first line going down, its last going up); at the page's first or last line the browser has the key
