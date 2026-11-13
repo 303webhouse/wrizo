@@ -5,8 +5,7 @@ import { DrawerNote } from './DrawerNote';
 import { useChromeDissolve } from './useChromeDissolve';
 import { useWritingSettings, setWritingSettings, setTypewriterExplicit, typewriterForPage } from '../store/writingSettings';
 import type { ProgressMetric, FadeDepth, ProgressStyle } from '../store/writingSettings';
-// FLUX3 S4 - a mount point only: under ?flux3=1, a page's Typewriter in Flux is Jacked In (src/flux3/FluxJackedIn.tsx); without the flag nothing mounts
-import { FLUX3 } from '../flux3/flag';
+// FLUX WIRE IN (Fable, Nov 12 6:50 pm) - a mount point only: in Flux a page's free-writing mode is Wire In, the Corridor (src/flux3/FluxJackedIn.tsx); no flag, and in no other theme anything mounts
 import { fluxJackMode } from '../flux3/jackIn';
 import { FluxJackedIn } from '../flux3/FluxJackedIn';
 import { useDeskLexicon } from '../store/deskLexicon';
@@ -179,12 +178,13 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
   // the bar's label is desk chrome, so it takes the desk one.
   const { t: deskT } = useDeskLexicon();
   // Typewriter engages in Free Write and Draft only; Draft reads this page's own value, Free Write and pageId-less callers the shared field [ModeStage §6]
-  // FLUX3 S4 (draft 21 §6): in Flux under the flag JACK IN is the free-writing MODE: Free Write IS Jacked In, with no off inside it, and Draft (BUILD) is never the Typewriter
+  // FLUX WIRE IN (draft 21 §6; Fable, Nov 12 6:50 pm: no flag): in Flux Wire In is the free-writing MODE: Free Write IS Wire In, with no off inside it, and Draft (TEXT) is never the Typewriter. The PAPER Typewriter is retired in Flux, everywhere:
+  // no surface of Flux runs it and none offers its toggle (flux-wirein.css); every stored value is kept as data and read again in any other theme
   const stageTheme = useTheme();
   const fluxJack = fluxJackMode(stageTheme) && pageId != null;
   const typewriterOn = mode === 'drafting' && pageId != null
     ? typewriterForPage(pageId, words === 0)
-    : (mode === 'journal' || mode === 'drafting') && settings.typewriter;
+    : stageTheme !== 'flux' && (mode === 'journal' || mode === 'drafting') && settings.typewriter;
   // ... and Flux's Jacked In is the free-writing MODE: it runs the Typewriter whatever the setting says, and BUILD (Draft) never does (typewriterRun is typewriterOn in every other theme)
   const typewriterRun = fluxJack ? mode === 'journal' : typewriterOn;
   // the zoom: on the framed prose page Typewriter scales the same page ~1.6x by a transform, so no line reflows and the editor never unmounts (page primacy's one exception); entering tucks both drawers [ModeStage §7]
@@ -679,7 +679,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
         ))}
       </div>
 
-      {FLUX3 && pageId != null && <FluxJackedIn on={typewriterRun} scrollRef={scrollRef} unitCount={words} />}
+      {pageId != null && <FluxJackedIn on={typewriterRun} scrollRef={scrollRef} unitCount={words} />}
 
       {/* Connect AI — stub entry point (no provider wired in B3). */}
       {!framed && connectOpen && (
@@ -736,7 +736,7 @@ export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvail
           sliver's own TypewriterToggle), and both must arm the same
           session-explicit flag so neither can be silently overridden by a
           later Draft-open seed. */}
-      {typewriterAvailable && <Seg label="Typewriter" value={settings.typewriter ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setTypewriterExplicit(v === 'on')} />}
+      {typewriterAvailable && theme !== 'flux' && <Seg label="Typewriter" value={settings.typewriter ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setTypewriterExplicit(v === 'on')} />}
     </div>
   );
 }
@@ -759,8 +759,8 @@ export function ThemePanel() {
       <Seg label="Voice" value={prefs.voice} opts={[['serif', 'Serif'], ['sans', 'Sans']]} onPick={v => setThemePrefs({ voice: v as 'serif' | 'sans' })} />
       <PageToneRow page={prefs.page} />
       <Seg label="Fade" value={prefs.fade} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setThemePrefs({ fade: v as 'on' | 'off' })} />
-      {/* FLUX3 S4 (draft 23, 6a.9): Jacked In's idle line has its own switch, on by default; shown only where the line exists (Flux, under the flag) */}
-      {FLUX3 && theme === 'flux' && <Seg label="Idle line" value={prefs.idle} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setThemePrefs({ idle: v as 'on' | 'off' })} />}
+      {/* FLUX WIRE IN (draft 23, 6a.9): the Corridor's idle line has its own switch, on by default; shown only where the line exists (Flux) */}
+      {theme === 'flux' && <Seg label="Idle line" value={prefs.idle} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setThemePrefs({ idle: v as 'on' | 'off' })} />}
       {/* R2 (TH2 review) — a canon-level pref with no UI is a TH1 allowance,
           not a TH2 one, now that Flux actually schedules dial-scaled events. */}
       <Seg label="Ambiance" value={String(dial)} opts={[['0', '0'], ['25', '25'], ['50', '50'], ['75', '75'], ['100', '100']]} onPick={v => setAmbianceDial(Number(v))} />

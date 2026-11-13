@@ -4,7 +4,7 @@
 // "Jack In by default" switch and no overlay on the shared Typewriter field any more: the mode decides (fluxJackMode, read by ModeStage).
 //   - jacked: whether a Flux Typewriter is running right now (FluxJackedIn writes it; the idle glitch and the burst edge read it). Nothing is saved.
 import { useSyncExternalStore } from 'react';
-import { FLUX3 } from './flag';
+// WIRE IN ON ITS OWN (Fable, Nov 12 6:50 pm): the flag no longer gates this mode. The Corridor is Flux's Typewriter for every writer in Flux; the redesign's other pieces stay behind ?flux3=1.
 
 let jacked = false;
 const subs = new Set<() => void>();
@@ -15,8 +15,8 @@ export function getJacked(): boolean { return jacked; }
 export function setJacked(on: boolean): void { if (jacked === on) return; jacked = on; emit(); }
 export function useJacked(): boolean { return useSyncExternalStore(subscribe, getJacked, getJacked); }
 
-/** Flux under the flag: the free-writing slot is Jacked In and Draft/BUILD is the plain page (the Typewriter toggles are not offered in either). */
-export function fluxJackMode(theme: string): boolean { return FLUX3 && theme === 'flux'; }
+/** Flux: the free-writing slot (Wire In) is the Corridor and Draft (TEXT today, BUILD later) is the plain page; the paper Typewriter is retired in Flux and its toggles are not offered (flux-wirein.css). No flag. */
+export function fluxJackMode(theme: string): boolean { return theme === 'flux'; }
 
 /** FluxJackedIn asks its host page to leave Jacked In for BUILD on the same doc (an Esc tap, F9); the page editor owns the mode. */
 export const LEAVE_JACK_EVENT = 'flux3-leave-jack';

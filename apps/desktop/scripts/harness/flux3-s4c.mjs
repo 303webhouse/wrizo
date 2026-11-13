@@ -44,6 +44,9 @@ const SEED = Array.from({ length: 10 }, () => PARA).join('\n');
 const LAT_TEXT = Array.from({ length: 150 }, (_, i) => 'word' + i).join(' ');
 const CYCLE = 'the signal holds while she writes on ';
 const LINE = ' and the corridor keeps going forward with more plain words now, on and on across the measure of the page until it wraps again and again, line after line';
+// WIRE IN ON ITS OWN (Fable, Nov 12 6:50 pm): the same file runs BOTH WAYS. FLUX3_S4C_FLAG=0 opens every page without ?flux3=1 (the Corridor needs no flag now); unset, the flag is on as it always was. The redesign's own pieces (the room
+// ground, the 14 pt page and the Crimson Pro default) exist only with the flag, so their checks run only then; flag-off, the file asserts the OPPOSITE of them where it matters (flux-wirein-flagoff.mjs holds the full flag-off claim).
+const FLAG = process.env.FLUX3_S4C_FLAG !== '0';
 const ONLY_L = process.env.FLUX3_ONLY_L === '1';   // the control plan's L-only run: the method alone, on whatever tree is built
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const checks = [];
@@ -93,7 +96,7 @@ try { await withHarness(async (app) => {
   const mk = (row) => ev(`window.wrizoCreateJournalPage(${JSON.stringify(row)})`);
   let seq = 0;
   const fresh = async (text, id = `f3s4c-${Date.now()}-${seq += 1}`) => { await mk({ id, text, createdAt: new Date().toISOString(), origin: 'loose', source: 'page' }); await sleep(300); return id; };
-  const open = async ({ id, flag = true, tone = 'light', dial = 50, prefs = {}, reduced = false, mode = null } = {}) => {
+  const open = async ({ id, flag = FLAG, tone = 'light', dial = 50, prefs = {}, reduced = false, mode = null } = {}) => {
     await ev(`(() => { const p = JSON.parse(localStorage.getItem('wrizo-theme-prefs') || '{}'); p.page = ${JSON.stringify(tone)}; localStorage.setItem('wrizo-theme-prefs', JSON.stringify(p));
       localStorage.setItem('wrizo-theme', 'flux'); localStorage.setItem('wrizo-ambiance-dial', ${JSON.stringify(String(dial))});
       const w = JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}'); Object.assign(w, { flicker: true, progressStyle: 'bar', progress: 'words', instrumentsOn: true, typewriter: false }, ${JSON.stringify(prefs)}); localStorage.setItem('wrizo-writing-settings', JSON.stringify(w));
@@ -110,18 +113,22 @@ try { await withHarness(async (app) => {
 
   const doL = async () => {
   // ---- L: the Jacked In arm against the control (six interleaved rounds, TWO readings, scripts/lib/l-method.mjs) ---------------------------------------------
-  // J: Jacked In with the Corridor. C: the control (Flux, flag off, the Typewriter on). On `main` (ONLY_L) the method runs alone: the control against itself, then the +5 / +10 ms mutants.
+  // J: Jacked In with the Corridor. C: the control (Flux's TEXT page in the same flag state; before Nov 12: Flux, flag off, the paper Typewriter on). On `main` (ONLY_L) the method runs alone: the control against itself, then the +5 / +10 ms mutants.
   if (ON_BOX || process.env.FLUX3_L === '1') {
     const L = makeL({
       app, ev, sleep, cycle: CYCLE,
       prepare: async (arm, on) => {
         const id = await fresh(LAT_TEXT);
         const jacked = arm === 'J' && on;
-        await open({ id, tone: 'dark', flag: jacked, prefs: jacked ? {} : { typewriter: true } });
+        // SUPERSEDED (Nov 12, Wire In on its own): the control was `await open({ id, tone: 'dark', flag: jacked, prefs: jacked ? {} : { typewriter: true } })` - Flux with the flag OFF and the paper Typewriter ON. Flag-off Flux's free-writing mode is
+        // Wire In now and the paper Typewriter is retired in Flux, so that open is no longer a control. Original, verbatim:
+        //   stoodRight: (arm, on, stood) => !!stood && (arm === 'J' && on ? stood.flag && stood.jacked : !stood.flag) && stood.zoom === 'true',
+        // The control is Flux's TEXT page (the plain page, no Typewriter, no Corridor) in the same flag state as the arm under test.
+        await open({ id, tone: 'dark', flag: FLAG, mode: jacked ? null : 'drafting', prefs: {} });
         const s = await st();
         return { flag: s.flag, zoom: s.zoom, jacked: s.jacked };
       },
-      stoodRight: (arm, on, stood) => !!stood && (arm === 'J' && on ? stood.flag && stood.jacked : !stood.flag) && stood.zoom === 'true',
+      stoodRight: (arm, on, stood) => !!stood && stood.flag === FLAG && (arm === 'J' && on ? stood.jacked && stood.zoom === 'true' : !stood.jacked && stood.zoom !== 'true'),
     });
     await L.run(ok, { subject: 'Corridor', onlyMethod: ONLY_L });
   } else console.log('INFO L (Actions: timing is the box\'s to judge; FLUX3_L=1 runs it here)');
@@ -132,7 +139,7 @@ try { await withHarness(async (app) => {
   await open({ id: pid, tone: 'light' });
   const a = await st();
   const stored = await ev("JSON.parse(localStorage.getItem('wrizo-theme-prefs') || '{}').page");
-  ok('DEF Flux Free Write opens Jacked In (zoomed, marked) and is ALWAYS DARK even with the saved Page = light', a.flag && a.theme === 'flux' && a.jacked && a.zoom === 'true' && a.tone === 'dark' && stored === 'light', JSON.stringify({ ...a, stored }));
+  ok('DEF Flux Free Write opens Jacked In (zoomed, marked) and is ALWAYS DARK even with the saved Page = light', a.flag === FLAG && a.theme === 'flux' && a.jacked && a.zoom === 'true' && a.tone === 'dark' && stored === 'light', JSON.stringify({ ...a, stored }));
   await snap('c-entry');
 
   // ---- CHROME: nothing but the page and the corridor ----------------------------------------------------------------------------------------------
@@ -310,7 +317,7 @@ try { await withHarness(async (app) => {
   const bid = await fresh('a draft page with some words');
   await open({ id: bid, tone: 'dark', mode: 'drafting', prefs: { typewriter: true } });
   const bs = await st();
-  ok('BUILD (Draft) is never Jacked In: not marked, no zoom, no Typewriter toggle, even with the shared Typewriter setting on', bs.flag && !bs.jacked && bs.zoom !== 'true' && (await toggles()) === 0, JSON.stringify({ bs, toggles: await toggles() }));
+  ok('BUILD (Draft) is never Jacked In: not marked, no zoom, no Typewriter toggle, even with the shared Typewriter setting on', bs.flag === FLAG && !bs.jacked && bs.zoom !== 'true' && (await toggles()) === 0, JSON.stringify({ bs, toggles: await toggles() }));
   // ESC-HOLD: a held Esc is the browser's full-screen exit, not a leave
   const hid = await jackedOpen('held escape stays jacked in', 'dark');
   await keyTap('Escape', 'Escape', 27, 750);
@@ -501,7 +508,7 @@ try { await withHarness(async (app) => {
   const bNone = await ev("({ nudge: document.querySelectorAll('.flux3-nudge').length, exit: document.querySelectorAll('.flux3-exit-line').length, x: document.querySelectorAll('.flux3-leave-x').length, corridor: document.querySelectorAll('[data-flux3-corridor]').length })");
   await ev("localStorage.setItem('wrizo-theme', 'plateau')");
   const aid = await fresh('A page in Arbor');
-  await ev(`history.replaceState(null, '', '/?flux3=1#/page/${aid}')`); await app.reload();
+  await ev(`history.replaceState(null, '', '${FLAG ? '/?flux3=1' : '/'}#/page/${aid}')`); await app.reload();
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { timeout: 15000, label: 'the page' }).catch(() => {});
   await sleep(5300);
   const aNone = await ev("({ theme: document.documentElement.getAttribute('data-theme'), nudge: document.querySelectorAll('.flux3-nudge').length, exit: document.querySelectorAll('.flux3-exit-line').length, x: document.querySelectorAll('.flux3-leave-x').length, corridor: document.querySelectorAll('[data-flux3-corridor]').length })");
@@ -687,11 +694,11 @@ try { await withHarness(async (app) => {
   for (let i = 0; i < 80 && rowsUp < 2; i += 1) { await sleep(100); rowsUp = await ev("document.querySelectorAll('[data-flux3-compile] .flux3-compile-row').length"); }
   const gJ = await readGround();
   const groundOffOk = (g) => g.jacked && g.n === 0;
-  ok('GROUND-GATE while jacked the room\'s circuit ground is NOT drawn (no ground box on the page), and the rows have compiled (' + rowsUp + ' rows)', groundOffOk(gJ) && rowsUp >= 2, JSON.stringify({ gJ, rowsUp }));
+  FLAG && ok('GROUND-GATE while jacked the room\'s circuit ground is NOT drawn (no ground box on the page), and the rows have compiled (' + rowsUp + ' rows)', groundOffOk(gJ) && rowsUp >= 2, JSON.stringify({ gJ, rowsUp }));
   await ev("(() => { const b = document.createElement('div'); b.setAttribute('data-flux3-room-ground', ''); b.id = 'mut-ground'; document.body.appendChild(b); })()");
   const gM = await readGround();
   await ev("document.getElementById('mut-ground').remove()");
-  ok('MUT-GROUND-GATE the reader goes RED when a ground box stands on the page while jacked, and green again undone', !groundOffOk(gM) && groundOffOk(await readGround()), JSON.stringify(gM));
+  FLAG && ok('MUT-GROUND-GATE the reader goes RED when a ground box stands on the page while jacked, and green again undone', !groundOffOk(gM) && groundOffOk(await readGround()), JSON.stringify(gM));
   // the leave: a recorder installed before the tap samples every frame for 1.2 s
   await ev("(() => { window.__leave = []; window.__upAt = null; const t0 = performance.now(); window.__leaveT0 = t0; addEventListener('keyup', (e) => { if (e.key === 'Escape' && window.__upAt === null) window.__upAt = performance.now() - t0; }, true); const tick = () => { const L = document.querySelector('[data-flux3-compile]'); const w = L ? [...L.querySelectorAll('.flux3-compile-word')] : []; const rr = L ? L.querySelectorAll('.flux3-compile-row').length : 0; window.__leave.push({ t: Math.round(performance.now() - t0), words: w.length, rows: rr, op: L ? +getComputedStyle(L).opacity : 0, blocks: w.reduce((n, e) => n + e.children.length, 0) }); if (performance.now() - t0 < 1800) requestAnimationFrame(tick); }; requestAnimationFrame(tick); return true; })()");
   await keyTap('Escape', 'Escape', 27, 60);
@@ -705,18 +712,19 @@ try { await withHarness(async (app) => {
   ok('DECOMPILE the rows stay on the page, whole and visible, through the leave (every frame for 330 ms after the Esc tap holds the words and their blocks at opacity > 0), and are gone after the fade (' + (leave.s && leave.s.length) + ' frames sampled)', leaveOk(leave), JSON.stringify({ up: leave.up, first: (leave.s || []).filter((x) => x.t >= leave.up && x.t <= leave.up + 500).map((x) => [x.t, x.words, x.op]).slice(0, 14) }));
   ok('MUT-DECOMPILE the reader goes RED on a cut (the signal removed the instant she leaves) and green on the real fade', !leaveOk(cutSeq) && leaveOk(leave), '');
   const gB = await readGround();
-  ok('GROUND-BACK after Esc the ground is back on the BUILD page (one box), and its current is running (a point animating)', gB.n === 1 && !gB.jacked && gB.points > 0 && gB.running > 0, JSON.stringify(gB));
+  FLAG && ok('GROUND-BACK after Esc the ground is back on the BUILD page (one box), and its current is running (a point animating)', gB.n === 1 && !gB.jacked && gB.points > 0 && gB.running > 0, JSON.stringify(gB));
   const groundBackOk = (g) => g.n === 1 && !g.jacked && g.points > 0 && g.running > 0;
   await ev("document.querySelectorAll('[data-flux3-room-ground]').forEach((b) => b.getAnimations({ subtree: true }).forEach((a) => a.pause()))"); await sleep(150);
   const gBM = await readGround();
-  ok('MUT-GROUND-BACK the reader goes RED when the current is stopped, and when the ground is gone', !groundBackOk(gBM) && !groundBackOk({ ...gB, n: 0 }), JSON.stringify(gBM));
+  FLAG && ok('MUT-GROUND-BACK the reader goes RED when the current is stopped, and when the ground is gone', !groundBackOk(gBM) && !groundBackOk({ ...gB, n: 0 }), JSON.stringify(gBM));
 
   // ---- NEW PAGE + VOICE: a page born in Flux (under the flag) is 14 pt; the default Voice is Crimson Pro ----------------------------------------------
   const born = await ev("(() => { const e = window.wrizoCreateJournalPage(); return e && e.pageSettings ? e.pageSettings.size : null; })()");
   await sleep(400);
   const vid = await jackedOpen('the voice of the page', 'dark');
   const ff = await ev("getComputedStyle(document.querySelector('.forward-only-editor')).fontFamily");
-  ok(`NEWPAGE-14 a page born in Flux under the flag is 14 pt (got ${born}); VOICE the page's default face is Crimson Pro (got ${String(ff).slice(0, 40)})`, born === 14 && /^["']?Crimson Pro/.test(ff), JSON.stringify({ born, ff, vid }));
+  if (!FLAG) ok(`NEWPAGE-FLAGOFF a page born in Flux WITHOUT the flag keeps today's size (not 14: got ${born}) and today's face (not Crimson Pro: got ${String(ff).slice(0, 40)})`, born !== 14 && !/^["']?Crimson Pro/.test(ff), JSON.stringify({ born, ff, vid }));
+  FLAG && ok(`NEWPAGE-14 a page born in Flux under the flag is 14 pt (got ${born}); VOICE the page's default face is Crimson Pro (got ${String(ff).slice(0, 40)})`, born === 14 && /^["']?Crimson Pro/.test(ff), JSON.stringify({ born, ff, vid }));
 
   await doL();
   }
