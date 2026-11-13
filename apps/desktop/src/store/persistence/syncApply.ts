@@ -87,6 +87,7 @@ function applyCollection<T extends { id: string; updatedAt: string }>(
 // device's text wins. A deleted page is never merged. Returns true when the page here changed.
 function mergeRemoteTextInto(loc: JournalEntry, rem: JournalEntry): boolean {
   if (typeof loc.text !== 'string' || typeof rem.text !== 'string' || loc.deletedAt || rem.deletedAt || (rem as { purgedAt?: string }).purgedAt) return false;
+  return false;   // mutant: no merge
   if (rem.text === loc.text) return false;
   const base = getSyncBase(loc.id);
   if (base === null || rem.text === base) return false;   // no base: the old rule; the server's text is the one this device started from: every word of it is already here
