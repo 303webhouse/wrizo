@@ -167,11 +167,16 @@ function survives(rec, arch, live, used) {
   const b = bare(rec.lines);
   const host = live.find((r) => holds(bare(r.lines), b));
   if (host) return { kind: 'live', host };
-  for (let k = 1; k < rec.lines.length; k++) {
-    for (const [ap, lp] of [[rec.lines.slice(0, k), rec.lines.slice(k)], [rec.lines.slice(k), rec.lines.slice(0, k)]]) {
-      const pa = arch.find((r) => !(used && used.has(r)) && r.lines.join('\n') === ap.join('\n'));
-      const ph = pa && live.find((r) => holds(bare(r.lines), bare(lp)));
-      if (pa && ph) return { kind: 'split', arch: pa, host: ph };
+  // a split's archived part is a whole archive record at the head or the tail of the run: only those candidates are tried
+  const n = rec.lines.length;
+  for (const r of arch) {
+    const m = r.lines.length;
+    if ((used && used.has(r)) || m === 0 || m >= n) continue;
+    const head = rec.lines.slice(0, m).join('\n') === r.lines.join('\n') ? rec.lines.slice(m) : null;
+    const tail = rec.lines.slice(n - m).join('\n') === r.lines.join('\n') ? rec.lines.slice(0, n - m) : null;
+    for (const rest of [head, tail]) {
+      const ph = rest && live.find((x) => holds(bare(x.lines), bare(rest)));
+      if (ph) return { kind: 'split', arch: r, host: ph };
     }
   }
   return null;
