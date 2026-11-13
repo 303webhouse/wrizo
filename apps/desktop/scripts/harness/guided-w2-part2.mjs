@@ -66,6 +66,7 @@ await withHarness(async (app) => {
   };
   // the chip as she would meet it: its own and its ancestors' opacity multiplied, whether it takes the pointer, whether it is drawn
   const chipShown = () => q("(() => { const b = document.querySelector('[data-return-chip]'); if (!b) return null; const c = getComputedStyle(b); let e = b, o = 1; while (e && e !== document.documentElement) { o *= +getComputedStyle(e).opacity; e = e.parentElement; } return { op: +o.toFixed(2), pe: c.pointerEvents, disp: c.display, vis: c.visibility, jacked: document.documentElement.hasAttribute('data-flux3-jacked') }; })()");
+  const chipHiddenWI = (c) => !!c && c.jacked && (c.op <= 0.05 || c.pe === 'none');   // wired in: the chip is in the DOM but part of the hidden chrome
   const chipOk = (c) => !!c && c.op >= 0.9 && c.pe !== 'none' && c.disp !== 'none' && c.vis !== 'hidden' && !c.jacked;
 
   for (const theme of ['plateau', 'flux']) {
@@ -124,6 +125,12 @@ await withHarness(async (app) => {
         await shot(`${tag}-write-this-chip`);
         let wiChip = null;
         if (theme === 'flux') {
+          // WI-CHIP (the ruling, by design): while wired in the chip is not tappable - hidden with the rest of the chrome (opacity 0, no pointer) - and it is still named and in place (W3 above). MUT: its chrome forced visible goes RED.
+          const wiHid = await chipShown();
+          await q("(() => { const b = document.querySelector('[data-return-chip]'); const c = b && b.closest('.chrome-fade'); if (c) { c.style.setProperty('opacity', '1', 'important'); c.style.setProperty('pointer-events', 'auto', 'important'); } if (b) { b.style.setProperty('pointer-events', 'auto', 'important'); } })()"); const wiForced = await chipShown();
+          await q("(() => { const b = document.querySelector('[data-return-chip]'); const c = b && b.closest('.chrome-fade'); if (c) { c.style.removeProperty('opacity'); c.style.removeProperty('pointer-events'); } if (b) b.style.removeProperty('pointer-events'); })()");
+          ok(`${T}: WI-CHIP [Wire In successor] while wired in the return chip is not tappable (the Corridor hides the chrome it sits in: opacity 0, no pointer), by design; its way back is Unplug and then the chip on TEXT`, chipHiddenWI(wiHid), JSON.stringify(wiHid));
+          ok(`${T}: MUT-WI-CHIP [Wire In successor] the mutant LANDED (the chip's chrome forced visible: opacity ${wiForced && wiForced.op}) and the same read goes RED`, !!wiForced && wiForced.op >= 0.9 && !chipHiddenWI(wiForced), JSON.stringify(wiForced));
           await unplug(); wiChip = await chipShown();
           // MUT-CHIP-UNPLUG: the chip missing after Unplug goes RED, and so does a chip still hidden by the Corridor (a landed change, then the same read; undone)
           await q("document.querySelector('[data-return-chip]').style.setProperty('display', 'none', 'important')"); const wiGone = await chipShown();
