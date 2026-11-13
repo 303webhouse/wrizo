@@ -45,7 +45,7 @@ const INSTRUMENT = `(() => {
   W.chrome = () => ['.desk-rail', '.desk-frame-strip', '.desk-frame-corkboard'].map((s) => { const e = document.querySelector(s); if (!e) return [s, null, null]; const c = getComputedStyle(e); return [s, +c.opacity, c.pointerEvents]; });
   W.toggles = () => { const real = [...document.querySelectorAll('.typewriter-toggle, [data-mode-toggle="typewriter"]')].map((e) => getComputedStyle(e).display);
     const p = document.createElement('button'); p.className = 'typewriter-toggle'; p.id = '__w_probe'; document.body.appendChild(p); const probe = getComputedStyle(p).display; p.remove(); return { real, probe }; };
-  W.tabs = () => { const out = []; for (const e of document.querySelectorAll('.desk-frame-strip button, .desk-frame-strip [role="tab"]')) { const t = (e.textContent || '').trim(); if (/^text$/i.test(t)) out.push({ t, sel: e.getAttribute('aria-selected'), cur: e.getAttribute('aria-current'), cls: String(e.className) }); } return out; };
+  W.tabs = () => [...document.querySelectorAll('[data-mode-key]')].map((e) => ({ key: e.getAttribute('data-mode-key'), t: (e.textContent || '').trim(), sel: e.getAttribute('aria-selected') }));   // ModeStrip's own marker: data-mode-key
 })();`;
 
 // the landed mutants: [regex, replacement, which asset it lives in]; found exactly once, replaced in flight
@@ -146,7 +146,7 @@ try { await withHarness(async (app) => {
       await open({ id: pidMain, tone: 'dark' });
       const c = await ev('window.__w.chrome()');
       const seen = c.filter((x) => x[1] !== null);
-      const pass = seen.length >= 2 && seen.every((x) => x[1] === 0 && x[2] === 'none');
+      const pass = seen.length >= 1 && seen.every((x) => x[1] === 0 && x[2] === 'none');   // the strip is the one of the three this layout renders (the rail and corkboard have their own class names); a missing one is not counted, a seen one must be gone
       return { pass, detail: JSON.stringify(c) };
     },
   };
@@ -171,7 +171,7 @@ try { await withHarness(async (app) => {
     const chrome = await ev('window.__w.chrome()');
     const tabs = await ev('window.__w.tabs()');
     const stored1 = await ev("JSON.parse(localStorage.getItem('wrizo-theme-prefs') || '{}').page");
-    const textSel = tabs.some((x) => x.sel === 'true' || (x.cur && x.cur !== 'false') || /active|selected|on\b/.test(x.cls));
+    const textSel = tabs.some((x) => x.key === 'draft' && /^text$/i.test(x.t) && x.sel === 'true');
     ok('W6 LEAVE-TEXT an Esc tap leaves Wire In to TEXT (the Draft mode) on the SAME doc, the caret at the END of her text, and the chrome comes back (the TEXT tab is the selected one)',
       wired.jacked && !after.jacked && after.zoom !== 'true' && mode === 'drafting' && !!caret && caret.before === caret.total && chrome.filter((x) => x[1] !== null).every((x) => x[1] === 1) && textSel,
       JSON.stringify({ wired: wired.jacked, after: { jacked: after.jacked, zoom: after.zoom }, mode, caret, chrome, tabs }));
