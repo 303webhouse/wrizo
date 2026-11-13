@@ -1,0 +1,62 @@
+import { rowsFor } from './lineRows';
+import { revealCaret } from './caretInView';
+
+// #65 - ArrowUp INTO A WRAPPED PARAGRAPH. The page's rows (store/lineRows.ts) are inline-blocks, and the browser enters an inline-block from below at its FIRST line: Up from a short paragraph into a wrapped one above landed on that
+// paragraph's top line and skipped its lower lines (the probe: block or inline rows land on the last line, inline-block rows on the first; containment and baseline are not the cause). The rows' CSS carries the typing speed (contain),
+// so it stays; this one step is done here: when the caret is on a row's first visual line and the row above wraps over more than one line, Up puts the caret on that row's LAST visual line, at the column the caret came from.
+// Every other Up (inside a row, above a one-line row, a selection collapsing) is left to the browser. Shift+Up extends the selection the same way.
+const goal = new WeakMap<HTMLElement, { x: number; node: Node; offset: number }>();
+
+const lineRects = (node: Node): DOMRect[] => {
+  const r = document.createRange();
+  r.selectNodeContents(node);
+  return [...r.getClientRects()].filter((q) => q.height > 0 && q.width >= 0);
+};
+
+/** Handles the key and returns true when it did (the caller has nothing more to do); false leaves it to the browser. */
+export function rowsUpKey(el: HTMLElement, e: KeyboardEvent): boolean {
+  try {
+    if (e.key !== 'ArrowUp' || e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return false;
+    const R = rowsFor(el);
+    const sel = window.getSelection();
+    if (!R || !sel || !sel.rangeCount || !sel.focusNode || !el.contains(sel.focusNode)) return false;
+    if (!e.shiftKey && !sel.isCollapsed) return false;   // Up over a selection collapses it: native
+    const fnode = sel.focusNode, foff = sel.focusOffset;
+    const fe = fnode.nodeType === 1 ? (fnode as Element) : fnode.parentElement;
+    const row = fe ? (fe.closest('.wz-row') as HTMLElement | null) : null;
+    const at = row ? R.rows.indexOf(row) : -1;
+    if (!row || at <= 0) return false;
+    const here = document.createRange();
+    here.setStart(fnode, foff); here.collapse(true);
+    const hr = [...here.getClientRects()].find((q) => q.height > 0) ?? here.getBoundingClientRect();
+    if (!hr || hr.height <= 0) return false;
+    // only from the row's first visual line: inside a wrapped row the browser moves by line correctly
+    const own = lineRects(row);
+    if (!own.length) return false;
+    const ownTop = Math.min(...own.map((q) => q.top));
+    const ownLh = Math.min(...own.map((q) => q.height));
+    if (hr.top > ownTop + ownLh * 0.6) return false;
+    // the row above: only when it wraps (a one-line row is entered correctly by the browser)
+    const above = R.rows[at - 1];
+    const ar = lineRects(above);
+    if (!ar.length) return false;
+    const aboveTop = Math.min(...ar.map((q) => q.top));
+    const last = ar.reduce((m, q) => (q.bottom > m.bottom ? q : m), ar[0]);
+    if (last.top - aboveTop < last.height * 0.6) return false;
+    const g = goal.get(el);
+    const x = g && g.node === fnode && g.offset === foff ? g.x : hr.left;
+    const y = last.top + last.height / 2;
+    const d = document as unknown as { caretPositionFromPoint?: (x: number, y: number) => { offsetNode: Node; offset: number } | null; caretRangeFromPoint?: (x: number, y: number) => Range | null };
+    let node: Node | null = null, offset = 0;
+    if (d.caretPositionFromPoint) { const p = d.caretPositionFromPoint(x, y); if (p) { node = p.offsetNode; offset = p.offset; } }
+    else if (d.caretRangeFromPoint) { const r = d.caretRangeFromPoint(x, y); if (r) { node = r.startContainer; offset = r.startOffset; } }
+    if (!node || !above.contains(node)) return false;
+    if (e.shiftKey) sel.extend(node, offset); else sel.collapse(node, offset);
+    goal.set(el, { x, node, offset });
+    e.preventDefault();
+    if (!e.shiftKey) revealCaret(el);
+    return true;
+  } catch {
+    return false;   // a caret that cannot be placed here stays the browser's: never an error into the writer's key
+  }
+}
